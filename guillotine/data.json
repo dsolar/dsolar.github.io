@@ -1,26 +1,99 @@
 {
-  "league": "Bastille Day",
-  "season": 2026,
-  "week": 6,
-  "first_week": 1,
-  "total_teams": 15,
-  "updated": "2026-10-14T17:13:00Z",
-  "source": "Yahoo Fantasy, entered by hand",
-  "teams": [
-    { "name": "Drake Mayezini", "faab": 524, "proj": 140.63, "avg": 116.09 },
-    { "name": "Love a Kittle Lamb & WhiteRice", "faab": 485, "proj": 133.55, "avg": 133.42 },
-    { "name": "Liberté Égalité Henri", "faab": 623, "proj": 124.76, "avg": 116.5 },
-    { "name": "Holofernes", "mine": true, "faab": 681, "proj": 123.36, "avg": 120.72 },
-    { "name": "Love Purdy Flowers", "faab": 282, "proj": 119.31, "avg": 121.59 },
-    { "name": "Breece’s Pieces", "faab": 115, "proj": 118.97, "avg": 119.02 },
-    { "name": "Likely to Burden Tate w Penix", "faab": 464, "proj": 115.45, "avg": 125.44 },
-    { "name": "Maye I see your TDs", "faab": 5, "proj": 109.22, "avg": 107.96 },
-    { "name": "Deviated Rectums", "faab": 207, "proj": 95.13, "avg": 121.03 },
-    { "name": "Tai Streetz Lata?", "faab": 696, "proj": 0, "avg": 113.25 },
-    { "name": "Beast Mode Samuel", "faab": 1000, "out": 5 },
-    { "name": "Fly Zone Kristi", "faab": 844, "out": 4 },
-    { "name": "Filet-O-Fate", "faab": 898, "out": 3 },
-    { "name": "23 Richard", "faab": 990, "out": 2 },
-    { "name": "J Free FTW", "faab": 1000, "out": 1 }
-  ]
+ "league": "Bastille Day",
+ "season": 2026,
+ "week": 6,
+ "first_week": 1,
+ "total_teams": 15,
+ "updated": "2026-10-14T17:37:00Z",
+ "source": "Yahoo league page, pasted",
+ "teams": [
+  {
+   "name": "Drake Mayezini",
+   "faab": 524,
+   "proj": 140.63,
+   "avg": 116.09
+  },
+  {
+   "name": "Love a Kittle Lamb & WhiteRice",
+   "faab": 485,
+   "proj": 133.55,
+   "avg": 133.42
+  },
+  {
+   "name": "Liberté Égalité Henri",
+   "faab": 623,
+   "proj": 124.76,
+   "avg": 116.5
+  },
+  {
+   "name": "Holofernes",
+   "faab": 681,
+   "proj": 123.36,
+   "avg": 120.72
+  },
+  {
+   "name": "Love Purdy Flowers",
+   "faab": 282,
+   "proj": 119.31,
+   "avg": 121.59
+  },
+  {
+   "name": "Breece’s Pieces",
+   "faab": 115,
+   "proj": 118.97,
+   "avg": 119.02
+  },
+  {
+   "name": "Likely to Burden Tate w Penix",
+   "faab": 464,
+   "proj": 115.45,
+   "avg": 125.44
+  },
+  {
+   "name": "Maye I see your TDs",
+   "faab": 5,
+   "proj": 109.22,
+   "avg": 107.96
+  },
+  {
+   "name": "Deviated Rectums",
+   "faab": 207,
+   "proj": 95.13,
+   "avg": 121.03
+  },
+  {
+   "name": "Tai Streetz Lata?",
+   "faab": 696,
+   "proj": 0.0,
+   "avg": 113.25
+  },
+  {
+   "name": "Beast Mode Samuel",
+   "faab": 1000,
+   "out": 5
+  },
+  {
+   "name": "Fly Zone Kristi",
+   "faab": 844,
+   "out": 4
+  },
+  {
+   "name": "Filet-O-Fate",
+   "faab": 898,
+   "out": 3
+  },
+  {
+   "name": "23 Richard",
+   "faab": 990,
+   "out": 2
+  },
+  {
+   "name": "J Free FTW",
+   "faab": 1000,
+   "out": 1,
+   "scores": [
+    78.36
+   ]
+  }
+ ]
 }

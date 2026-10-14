@@ -45,6 +45,10 @@ def fail(msg):
     raise Failure(msg)
 
 
+class NotApproved(Exception):
+    """Yahoo signs us in but hasn't approved this app for Fantasy data yet."""
+
+
 def access_token():
     cid = os.environ.get("YAHOO_CLIENT_ID", "").strip()
     secret = os.environ.get("YAHOO_CLIENT_SECRET", "").strip()
@@ -103,6 +107,8 @@ class Yahoo:
                 body = re.sub(r"\s+", " ", e.read().decode(errors="replace"))[:300]
                 self.last_error = f"HTTP {e.code} on {path}: {body}"
                 print(self.last_error)
+                if e.code == 403 and "not authorized to perform this action" in body:
+                    raise NotApproved()
                 if e.code in (400, 404) or (soft and e.code in (401, 403)):
                     return None
                 if attempt == 1 and (e.code in (429, 999) or e.code >= 500):
@@ -285,6 +291,12 @@ def main():
     try:
         y = Yahoo(from_dir=a.from_dir) if a.from_dir else Yahoo(token=access_token())
         write_if_changed(build(y, league_id), a.out)
+    except NotApproved:
+        # Since mid-2026 Yahoo approves Fantasy API apps by hand. Until it does, every call returns
+        # this 403. Skip quietly (no failed run, no failure email); the page keeps its pasted data,
+        # and the first run after approval just works.
+        print("::warning::Yahoo hasn't approved this app for Fantasy data yet, so nothing was pulled. "
+              "Update the page by pasting the league page into guillotine/paste.txt instead (see README).")
     except Failure as e:
         # "::error::" puts the message on the GitHub run summary page.
         print(f"::error::{e}")

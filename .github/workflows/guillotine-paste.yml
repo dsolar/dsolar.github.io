@@ -1,0 +1,49 @@
+# Rebuilds davidsolar.dev/guillotine/ from a copy of the Yahoo league page.
+# Paste the whole League > Overview page into guillotine/paste.txt (GitHub's web editor is fine)
+# and commit. This turns it into guillotine/data.json and rebuilds the site.
+name: Guillotine paste
+
+on:
+  push:
+    branches: [main]
+    paths: [guillotine/paste.txt]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: guillotine-odds
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Read the pasted league page
+        run: python3 tools/guillotine_paste.py
+
+      - name: Commit the new data
+        id: commit
+        run: |
+          git add guillotine/data.json
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -m "Update guillotine odds from pasted league page"
+          git pull --rebase -q origin main
+          git push
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Rebuild the site
+        if: steps.commit.outputs.pushed == 'true'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds"

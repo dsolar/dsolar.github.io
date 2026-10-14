@@ -82,11 +82,15 @@ Visits show up in that same Web Analytics screen within a few minutes. It only c
 
 GitHub Pages sites are always public. When you want a private corner (for example `davidsolar.dev/lab/`), the domain is already on Cloudflare, so the usual route is Cloudflare Access (free for small use) in front of that folder, which asks for an email code before showing it. It needs the Cloudflare DNS records switched from gray to orange (proxied), so treat it as its own small project. Keep private things in their own top-level folder so the rule covers one path.
 
-## Guillotine odds: connecting Yahoo
+## Guillotine odds: keeping the data current
 
-`davidsolar.dev/guillotine/` shows survival odds for the Bastille Day league. It's listed on the home page, but the page itself asks search engines not to index it, since it shows friends' team names. Until Yahoo is connected, `guillotine/data.json` holds numbers entered by hand.
+`davidsolar.dev/guillotine/` shows survival odds for the Bastille Day league. It's listed on the home page, but the page itself asks search engines not to index it, since it shows friends' team names. It reads `guillotine/data.json`, which can be filled two ways.
 
-Once connected, a GitHub workflow runs every morning from September through January: it reads the league from Yahoo, saves `guillotine/data.json`, and the site rebuilds. Nothing to do week to week. One-time setup, about 10 minutes on a computer:
+**Paste the league page (works now).** On Yahoo, open the league's main page (League > Overview), select all, copy. On GitHub, open `guillotine/paste.txt`, click the pencil, select all, paste over it, and **Commit changes**. The "Guillotine paste" workflow turns it into `data.json` and the page updates a minute or two later. Pasting it into a Claude chat works too.
+
+**Automatic, once Yahoo approves.** Since mid-2026 Yahoo approves Fantasy API apps by hand: until it does, every request returns "This application is not authorized to perform this action", even with a working sign-in. The daily "Guillotine odds" workflow already has the sign-in (the three `YAHOO_` secrets below) and checks every morning. Until approval it skips without failing; after approval it pulls the league on its own. Apply at https://sports.yahoo.com/developer/access/ (Expected Users: Small; Client ID: the app's Client ID). If Yahoo's approval email asks for a new app, create it, then redo steps 2 to 4 below with its Client ID and Secret.
+
+The one-time sign-in setup, already done for app `davidsolar guillotine` (App ID 8zS5heCv):
 
 1. **Create a Yahoo app.** Signed in to the Yahoo account that's in the league, go to https://developer.yahoo.com/apps/create/. Application Name: `davidsolar guillotine`. Application Type: **Web Application**. Redirect URI: `https://davidsolar.dev/`. Under API Permissions, check **Fantasy Sports** and pick **Read**. Click **Create App**, then keep the page open: you need the **Client ID** and **Client Secret** it shows.
 2. **Approve access once.** Open this address with your Client ID pasted in: `https://api.login.yahoo.com/oauth2/request_auth?client_id=YOUR_CLIENT_ID&redirect_uri=https://davidsolar.dev/&response_type=code`. Click **Agree**. You'll land on davidsolar.dev with `?code=...` in the address bar. Copy everything after `code=` (stop at any `&`). The code expires in about 10 minutes, so do step 3 right away.
