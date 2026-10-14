@@ -1643,30 +1643,32 @@
   {
    "name": "Beast Mode Samuel",
    "faab": 1000,
-   "out": 5
+   "out": 5,
+   "cut": 94.12
   },
   {
    "name": "Fly Zone Kristi",
    "faab": 844,
-   "out": 4
+   "out": 4,
+   "cut": 74.14
   },
   {
    "name": "Filet-O-Fate",
    "faab": 898,
-   "out": 3
+   "out": 3,
+   "cut": 82.4
   },
   {
    "name": "23 Richard",
    "faab": 990,
-   "out": 2
+   "out": 2,
+   "cut": 50.36
   },
   {
    "name": "J Free FTW",
    "faab": 1000,
    "out": 1,
-   "scores": [
-    78.36
-   ]
+   "cut": 78.36
   }
  ],
  "league_url": "https://football.fantasysports.yahoo.com/f1/157731",

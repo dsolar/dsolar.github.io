@@ -116,7 +116,7 @@ def parse(txt):
         if section == "standings":
             # Rank, Team, Points, Projected, Season, FAB, Waiver, Moves, Pts/Week
             if len(c) >= 9 and c[0].isdigit():
-                alive.append({"name": c[1], "proj": num(c[3]), "faab": money(c[5]), "avg": num(c[8])})
+                alive.append({"name": c[1], "proj": num(c[3]), "season": num(c[4]), "faab": money(c[5]), "avg": num(c[8])})
                 continue
             section = None
         elif section == "eliminated":
@@ -141,6 +141,8 @@ def parse(txt):
         row["proj"] = t["proj"]
         if t["avg"] is not None:
             row["avg"] = t["avg"]
+        if t["season"] is not None:
+            row["season_pts"] = t["season"]
         if t["name"] in rosters:
             row["roster"] = rosters[t["name"]]
         teams.append(row)
@@ -150,7 +152,9 @@ def parse(txt):
             row["faab"] = f["faab"]
         row["out"] = f["out"]
         if f["out"] == 1 and f["season"] is not None:
-            row["scores"] = [f["season"]]  # a Week 1 casualty's season total is its elimination score
+            row["cut"] = f["season"]  # a Week 1 casualty's season total is its elimination score
+        if f["season"] is not None:
+            row["season_pts"] = f["season"]
         teams.append(row)
 
     data = {
@@ -180,6 +184,23 @@ def base_of(data):
     return d
 
 
+def carry_cuts(old, new):
+    """Keep known elimination scores, and work out new ones where the last paste allows.
+
+    A team cut in week W scored (season points now) - (season points before week W). The previous
+    paste has the second number if it was taken during week W, before that team's elimination."""
+    prev = {t["name"]: t for t in old.get("teams", [])}
+    for t in new["teams"]:
+        if not t.get("out") or "cut" in t:
+            continue
+        o = prev.get(t["name"], {})
+        if isinstance(o.get("cut"), (int, float)):
+            t["cut"] = o["cut"]
+        elif (not o.get("out") and old.get("week") == t["out"]
+              and isinstance(o.get("season_pts"), (int, float)) and isinstance(t.get("season_pts"), (int, float))):
+            t["cut"] = round(t["season_pts"] - o["season_pts"], 2)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("paste", nargs="?", default=os.path.join(ROOT, "guillotine", "paste.txt"))
@@ -188,9 +209,11 @@ def main():
     with open(a.paste, encoding="utf-8") as f:
         data = parse(f.read())
     out = os.path.abspath(a.out)
+    old = None
     if os.path.exists(out):
         with open(out, encoding="utf-8") as f:
             old = json.load(f)
+        carry_cuts(old, data)
         if base_of(old) == base_of(data):
             print("Pasted league data unchanged.")
             return

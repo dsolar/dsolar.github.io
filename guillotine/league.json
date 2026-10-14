@@ -1,5 +1,5 @@
 {
-  "_about": "Hand-kept details the Yahoo pull doesn't provide. Keyed by team name as it appears in Yahoo. Never put email addresses here: this file is public.",
+  "_about": "Hand-kept details the Yahoo pull doesn't provide. Keyed by team name as it appears in Yahoo. history_2025: each 2025 elimination with the cut team's season points at that point (not a weekly score). Never put email addresses here: this file is public.",
   "managers": {
     "23 Richard": "Gabriel",
     "Beast Mode Samuel": "Samuel",
@@ -63,5 +63,67 @@
         "Pass the tartar sauce"
       ]
     }
-  }
+  },
+  "history_2025": [
+    {
+      "week": 1,
+      "team": "Hit Squad Dane",
+      "season_pts": 77.62
+    },
+    {
+      "week": 2,
+      "team": "Liberté Égalité Henri",
+      "season_pts": 181.52
+    },
+    {
+      "week": 3,
+      "team": "Pop Douglas Demon Hunters",
+      "season_pts": 296.78
+    },
+    {
+      "week": 4,
+      "team": "Maye I see your TDs",
+      "season_pts": 414.42
+    },
+    {
+      "week": 5,
+      "team": "Fly Zone Kristi",
+      "season_pts": 514.88
+    },
+    {
+      "week": 6,
+      "team": "23 Richard",
+      "season_pts": 682.7
+    },
+    {
+      "week": 7,
+      "team": "Pinch the Purple Tip",
+      "season_pts": 866.68
+    },
+    {
+      "week": 8,
+      "team": "J Free FTW",
+      "season_pts": 1050.2
+    },
+    {
+      "week": 9,
+      "team": "Chase is back on the Case",
+      "season_pts": 1243.9
+    },
+    {
+      "week": 10,
+      "team": "Burrow McConkey in Your C Kupp",
+      "season_pts": 1195.92
+    },
+    {
+      "week": 11,
+      "team": "Hakuna MaChoppa",
+      "season_pts": 1290.16
+    },
+    {
+      "week": 12,
+      "team": "Deviated Rectums",
+      "season_pts": 1621.66
+    }
+  ]
 }

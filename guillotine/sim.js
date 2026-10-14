@@ -63,7 +63,7 @@
     var alive = teams.filter(function (t) { return !t.out; });
     var fallen = teams.filter(function (t) { return t.out; })
       .map(function (t) {
-        var s = t.scores && t.scores[t.out - first];
+        var s = typeof t.cut === "number" ? t.cut : t.scores && t.scores[t.out - first];
         return { name: t.name, week: t.out, score: typeof s === "number" ? s : null };
       })
       .sort(function (a, b) { return b.week - a.week; });
@@ -78,12 +78,22 @@
 
     var rows = alive.map(function (t) {
       var recent = t._recent === null ? leagueAvg : t._recent;
-      var later = (1 - o.shrink) * recent + o.shrink * leagueAvg;
+      // Later weeks: half season average, half what the current roster projects to (the better of
+      // this week and next, so a bye week doesn't drag it down). Rosters improve as cut teams'
+      // players get picked up, and the season average alone would miss that.
+      var strength = Math.max(t.best || 0, t.best_next || 0);
+      var base = strength > 0 ? (recent + strength) / 2 : recent;
+      var later = (1 - o.shrink) * base + o.shrink * leagueAvg;
       // This week: Yahoo's projection; with no lineup set (projection 0), the team's best possible
       // lineup from player projections; failing both, its average.
       var hasProj = typeof t.proj === "number" && t.proj > 0;
       var hasBest = typeof t.best === "number" && t.best > 0;
       var basis = hasProj ? "yahoo" : hasBest ? "best" : "avg";
+      var start = basis === "yahoo" ? t.proj : basis === "best" ? t.best : later;
+      // Games already final: swap their projections for what those starters actually scored.
+      var locked = o.pregame ? 0 : (t.locked || 0);
+      var shift = o.pregame ? 0 : locked - (t.locked_proj || 0);
+      var now = start + shift;
       return {
         name: t.name,
         faab: typeof t.faab === "number" ? t.faab : null,
@@ -92,8 +102,12 @@
         proj: hasProj ? t.proj : null,
         best: hasBest ? t.best : null,
         recent: t._recent,
-        now: basis === "yahoo" ? t.proj : basis === "best" ? t.best : later, // expected score this week
-        later: later                                                       // expected score in later weeks
+        start: start,                                   // expected score before any game this week
+        locked: locked,                                 // points already banked from final games
+        gamesFinal: o.pregame ? 0 : (t.games_final || 0),
+        now: now,                                       // expected score this week, as of now
+        sdNow: o.cv * Math.max(now - locked, 3),        // only points still to be played can swing
+        later: later                                    // expected score in later weeks
       };
     });
 
@@ -110,9 +124,11 @@
     var chopNow = new Float64Array(n);
     var aliveAfter = [];
     for (var i = 0; i < n; i++) aliveAfter.push(new Float64Array(weeksLeft));
-    var lows = new Float64Array(weeksLeft ? runs : 0);
+    var lows = [];
+    for (var w = 0; w < weeksLeft; w++) lows.push(new Float64Array(runs).fill(NaN));
     var alive = new Uint8Array(n);
     var nowMu = rows.map(function (r) { return r.now; });
+    var nowSd = rows.map(function (r) { return r.sdNow; });
     var laterMu = rows.map(function (r) { return r.later; });
 
     for (var r = 0; r < runs; r++) {
@@ -122,11 +138,12 @@
         var lowScore = Infinity, low = -1;
         for (var j = 0; j < n; j++) {
           if (!alive[j]) continue;
-          var s = mu[j] + o.cv * mu[j] * gauss();
+          var s = mu[j] + (k === 0 ? nowSd[j] : o.cv * mu[j]) * gauss();
           if (s < lowScore) { lowScore = s; low = j; }
         }
         alive[low] = 0;
-        if (k === 0) { chopNow[low]++; lows[r] = lowScore; }
+        lows[k][r] = lowScore;
+        if (k === 0) chopNow[low]++;
         for (j = 0; j < n; j++) if (alive[j]) aliveAfter[j][k]++;
       }
     }
@@ -140,7 +157,11 @@
       });
     });
 
-    var sorted = Array.prototype.slice.call(lows).sort(function (a, b) { return a - b; });
+    // The lowest score each week: this week's cut line, and how it should rise as weak teams go.
+    var cuts = lows.map(function (arr, k) {
+      var sorted = Array.prototype.slice.call(arr).sort(function (a, b) { return a - b; });
+      return { week: m.week + k, p10: quantile(sorted, 0.1), median: quantile(sorted, 0.5), p90: quantile(sorted, 0.9) };
+    });
     return {
       week: m.week,
       lastWeek: m.week + weeksLeft - 1,
@@ -148,7 +169,8 @@
       runs: runs,
       teams: out,
       fallen: m.fallen,
-      cut: { median: quantile(sorted, 0.5), p90: quantile(sorted, 0.9) },
+      cut: cuts[0] || { median: null, p90: null },
+      cuts: cuts,
       leagueAvg: m.leagueAvg,
       opts: o
     };
