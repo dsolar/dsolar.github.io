@@ -18,29 +18,11 @@
     "Tai Streetz Lata?": "Jeff S"
   },
   "eulogies": {
-    "J Free FTW": {
-      "image": "eulogies/2026-wk1-j-free-ftw.jpg",
-      "alt": "A grinning man in rimless sunglasses, bloodied, slumped against a tiled wall",
+    "Beast Mode Samuel": {
       "haiku": [
-        "Anna said goodbye",
-        "Funny Man got fileted",
-        "Pass the tartar sauce"
-      ]
-    },
-    "23 Richard": {
-      "image": "eulogies/2026-wk2-23-richard.jpg",
-      "alt": "Two men in ball caps and sunglasses against a padded wall, one with a bloody nose",
-      "haiku": [
-        "Club Epstein is full",
-        "Duval turned him away",
-        "Gabi sleeps with fish"
-      ]
-    },
-    "Filet-O-Fate": {
-      "haiku": [
-        "Round of applause",
-        "Wrecking Ball has claimed Dane-ski",
-        "He rests in Tessie"
+        "Island of Big Sam",
+        "The beasts never left the bench",
+        "Are we not men? No."
       ]
     },
     "Fly Zone Kristi": {
@@ -50,6 +32,33 @@
         "Pheasants rest easy",
         "The counselor hunts no more",
         "Albania mourns"
+      ]
+    },
+    "Filet-O-Fate": {
+      "image": "eulogies/2026-wk3-filet-o-fate.jpg",
+      "alt": "Two men in ball caps and sunglasses against a padded wall, one with a bloody nose",
+      "haiku": [
+        "Round of applause",
+        "Wrecking Ball has claimed Dane-ski",
+        "He rests in Tessie"
+      ]
+    },
+    "23 Richard": {
+      "image": "eulogies/2026-wk2-23-richard.jpg",
+      "alt": "A grinning man in a plaid sport coat walks in, flanked by two stern older men in dark suits",
+      "haiku": [
+        "Club Epstein is full",
+        "Duval turned him away",
+        "Gabi sleeps with fish"
+      ]
+    },
+    "J Free FTW": {
+      "image": "eulogies/2026-wk1-j-free-ftw.jpg",
+      "alt": "A grinning man in rimless sunglasses, bloodied, slumped against a tiled wall",
+      "haiku": [
+        "Anna said goodbye",
+        "Funny Man got fileted",
+        "Pass the tartar sauce"
       ]
     }
   }
