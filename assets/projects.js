@@ -51,5 +51,16 @@ window.PROJECTS = [
     summary: "The next chapter of The 31st Franchise. Keep running the team after year one, with multiple seasons, free agency, trades and rookie drafts.",
     stack: ["JavaScript", "Python"],
     cover: { bg: "#00653A", band: "#FFC200" }
+  },
+  {
+    title: "Chat with Nick",
+    type: "Experiment",
+    released: "2026-10",
+    url: "nick-chat/",
+    question: "What if the group chat had an on-demand Nick?",
+    summary: "A simple chat prototype inspired by Nick’s catchphrases and texting style. Try a conversation with scripted, topic-matched replies.",
+    action: "Chat with Nick",
+    stack: ["JavaScript"],
+    cover: { bg: "#e8ebf2", band: "#596579" }
   }
 ];
