@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-14T23:00:37Z",
+ "updated": "2026-10-14T23:02:53Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -235,6 +235,13 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7xpQk",
    "source": "ticketmaster",
+   "times": [
+    "18:30",
+    "19:00"
+   ],
+   "aka": [
+    "sg-18624935"
+   ],
    "score": 0
   },
   {
@@ -253,15 +260,23 @@
    "score": 0
   },
   {
+   "id": "sg-18666678",
    "date": "2026-10-16",
    "time": "19:00",
    "title": "Robert Kelly",
    "cat": "comedy",
    "venue": "Laugh Boston",
    "city": "Boston, MA",
-   "url": "https://comedy.tickets/city/boston/",
-   "source": "venues",
-   "id": "2026-10-16-robert-kelly-laugh-boston",
+   "url": "https://seatgeek.com/robert-kelly-tickets/comedy/2026-10-16-9-30-pm/18666678",
+   "source": "seatgeek",
+   "times": [
+    "19:00",
+    "21:30"
+   ],
+   "aka": [
+    "2026-10-16-robert-kelly-laugh-boston",
+    "2026-10-16-robert-kelly-laugh-boston"
+   ],
    "score": 2,
    "why": "fav"
   },
@@ -279,18 +294,6 @@
     "sg-18306988",
     "2026-10-16-ryan-beatty-citizens-house-of-bl"
    ],
-   "score": 0
-  },
-  {
-   "id": "sg-18624935",
-   "date": "2026-10-16",
-   "time": "19:00",
-   "title": "The Damned",
-   "cat": "music",
-   "venue": "Royale - Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/the-damned-tickets/boston-massachusetts-royale-boston-2026-10-16-7-pm/concert/18624935",
-   "source": "seatgeek",
    "score": 0
   },
   {
@@ -395,22 +398,6 @@
    "score": 0
   },
   {
-   "id": "sg-18666678",
-   "date": "2026-10-16",
-   "time": "21:30",
-   "title": "Robert Kelly",
-   "cat": "comedy",
-   "venue": "Laugh Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/robert-kelly-tickets/comedy/2026-10-16-9-30-pm/18666678",
-   "source": "seatgeek",
-   "aka": [
-    "2026-10-16-robert-kelly-laugh-boston"
-   ],
-   "score": 2,
-   "why": "fav"
-  },
-  {
    "id": "tm-1AtZkfsGkd9cod3",
    "date": "2026-10-16",
    "time": "22:00",
@@ -451,6 +438,13 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-10-17-2026/event/01006530AD064E6D",
    "source": "ticketmaster",
+   "times": [
+    "14:00",
+    "19:30"
+   ],
+   "aka": [
+    "tm-vv1AvZkfYGkecZ7yu"
+   ],
    "score": 0
   },
   {
@@ -463,9 +457,17 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/akaash-singh-generational-triumph-tour-boston-massachusetts-10-17-2026/event/01006512CDDD4341",
    "source": "ticketmaster",
-   "aka": [
-    "sg-18531270"
+   "times": [
+    "17:00",
+    "20:00"
    ],
+   "aka": [
+    "tm-vvG17Z_uCLzmJP",
+    "sg-18531270",
+    "sg-18398410",
+    "2026-10-17-akaash-singh-the-wilbur"
+   ],
+   "sub": "Generational Triumph Tour",
    "score": 1
   },
   {
@@ -479,7 +481,12 @@
    "url": "https://seatgeek.com/robert-kelly-tickets/comedy/2026-10-17-6-30-pm/18666672",
    "source": "seatgeek",
    "aka": [
+    "2026-10-17-robert-kelly-laugh-boston",
     "2026-10-17-robert-kelly-laugh-boston"
+   ],
+   "times": [
+    "18:30",
+    "21:00"
    ],
    "score": 2,
    "why": "fav"
@@ -550,10 +557,15 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/sylvan-esso-boston-massachusetts-10-17-2026/event/010064C3D87277C2",
    "source": "ticketmaster",
-   "sub": "with Arushi Jain",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
+    "sg-18299147",
     "2026-10-17-sylvan-esso-citizens-house-of-bl"
    ],
+   "sub": "with Arushi Jain",
    "score": 0
   },
   {
@@ -568,54 +580,15 @@
    "source": "ticketmaster",
    "aka": [
     "tm-vv1A8v0OtGA5uw7-",
+    "sg-18194413",
+    "sg-18194413",
     "2026-10-17-beck-mgm-music-hall-at-fe"
    ],
+   "times": [
+    "19:30",
+    "20:00"
+   ],
    "sub": "with Ioanna Gika",
-   "score": 2,
-   "why": "big"
-  },
-  {
-   "id": "tm-vv1AvZkfYGkecZ7yu",
-   "date": "2026-10-17",
-   "time": "19:30",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-10-17-2026/event/01006530AD004E4D",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_uCLzmJP",
-   "date": "2026-10-17",
-   "time": "20:00",
-   "title": "Akaash Singh: Generational Triumph Tour",
-   "cat": "comedy",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/akaash-singh-generational-triumph-tour-boston-massachusetts-10-17-2026/event/010064D39FE2E9A5",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18398410",
-    "2026-10-17-akaash-singh-the-wilbur"
-   ],
-   "sub": "Generational Triumph Tour",
-   "score": 1
-  },
-  {
-   "id": "sg-18194413",
-   "date": "2026-10-17",
-   "time": "20:00",
-   "title": "Beck",
-   "cat": "music",
-   "venue": "MGM Music Hall at Fenway",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/beck-tickets/boston-massachusetts-mgm-music-hall-at-fenway-2026-10-17-8-pm/concert/18194413",
-   "source": "seatgeek",
-   "aka": [
-    "sg-18194413"
-   ],
    "score": 2,
    "why": "big"
   },
@@ -651,18 +624,6 @@
    "score": 0
   },
   {
-   "id": "sg-18299147",
-   "date": "2026-10-17",
-   "time": "20:00",
-   "title": "Sylvan Esso",
-   "cat": "music",
-   "venue": "Citizens House of Blues Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/sylvan-esso-tickets/boston-massachusetts-citizens-house-of-blues-boston-2026-10-17-8-pm/concert/18299147",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
    "id": "sg-18249348",
    "date": "2026-10-17",
    "time": "20:00",
@@ -685,19 +646,6 @@
    "url": "https://www.ticketmaster.com/club-90s-presents-mj-night-18-boston-massachusetts-10-17-2026/event/01006511C0AF73C4",
    "source": "ticketmaster",
    "score": 0
-  },
-  {
-   "date": "2026-10-17",
-   "time": "21:00",
-   "title": "Robert Kelly",
-   "cat": "comedy",
-   "venue": "Laugh Boston",
-   "city": "Boston, MA",
-   "url": "https://comedy.tickets/city/boston/",
-   "source": "venues",
-   "id": "2026-10-17-robert-kelly-laugh-boston",
-   "score": 2,
-   "why": "fav"
   },
   {
    "id": "tm-vv1A8vPFJGA2771p",
@@ -751,28 +699,21 @@
    "score": 0
   },
   {
-   "id": "sg-18490360",
-   "date": "2026-10-18",
-   "time": "18:00",
-   "title": "Allison Russell with Autumn Nicholas",
-   "cat": "music",
-   "venue": "Royale - Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/allison-russell-tickets/boston-massachusetts-royale-boston-2026-10-18-6-pm/concert/18490360",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
    "id": "tm-Z7r9jZ1AAZJxF",
    "date": "2026-10-18",
-   "time": "19:00",
+   "time": "18:00",
    "title": "Allison Russell (18 and Over)",
    "cat": "music",
    "venue": "Royale Boston",
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZJxF",
    "source": "ticketmaster",
+   "times": [
+    "18:00",
+    "19:00"
+   ],
    "aka": [
+    "sg-18490360",
     "2026-10-18-allison-russell-royale"
    ],
    "score": 0
@@ -955,6 +896,13 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/cradle-of-filth-majestic-in-death-boston-massachusetts-10-20-2026/event/010064E8D764AEA4",
    "source": "ticketmaster",
+   "times": [
+    "18:00",
+    "19:00"
+   ],
+   "aka": [
+    "sg-18412442"
+   ],
    "score": 0
   },
   {
@@ -971,18 +919,6 @@
     "sg-18282548",
     "2026-10-20-plini-paradise-rock-club"
    ],
-   "score": 0
-  },
-  {
-   "id": "sg-18412442",
-   "date": "2026-10-20",
-   "time": "19:00",
-   "title": "Cradle of Filth with Moonspell, Worm, and Black Satellite",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/cradle-of-filth-tickets/boston-massachusetts-big-night-live-2026-10-20-7-pm/concert/18412442",
-   "source": "seatgeek",
    "score": 0
   },
   {
@@ -1102,10 +1038,15 @@
    "city": "Cambridge, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7Pp4p",
    "source": "ticketmaster",
-   "sub": "a Springsteen tribute",
+   "times": [
+    "19:30",
+    "20:30"
+   ],
    "aka": [
+    "sg-18297515",
     "2026-10-21-hank-azaria-and-the-ez-street-ba-the-sinclair"
    ],
+   "sub": "a Springsteen tribute",
    "score": 0
   },
   {
@@ -1149,18 +1090,6 @@
     "sg-18663266",
     "2026-10-21-the-tallest-man-on-earth-royale"
    ],
-   "score": 0
-  },
-  {
-   "id": "sg-18297515",
-   "date": "2026-10-21",
-   "time": "20:30",
-   "title": "Hank Azaria",
-   "cat": "music",
-   "venue": "The Sinclair - Cambridge",
-   "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/hank-azaria-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-10-21-8-30-pm/concert/18297515",
-   "source": "seatgeek",
    "score": 0
   },
   {
@@ -1557,6 +1486,13 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-10-24-2026/event/01006530AD204F19",
    "source": "ticketmaster",
+   "times": [
+    "14:00",
+    "19:30"
+   ],
+   "aka": [
+    "tm-vv1AvZkfYGkeckVDP"
+   ],
    "score": 0
   },
   {
@@ -1591,15 +1527,23 @@
    "score": 0
   },
   {
+   "id": "sg-18447598",
    "date": "2026-10-24",
    "time": "18:30",
    "title": "Ian Fidance",
    "cat": "comedy",
    "venue": "Laugh Boston",
    "city": "Boston, MA",
-   "url": "https://comedy.tickets/city/boston/",
-   "source": "venues",
-   "id": "2026-10-24-ian-fidance-laugh-boston",
+   "url": "https://seatgeek.com/ian-fidance-tickets/comedy/2026-10-24-9-pm/18447598",
+   "source": "seatgeek",
+   "times": [
+    "18:30",
+    "21:00"
+   ],
+   "aka": [
+    "2026-10-24-ian-fidance-laugh-boston",
+    "2026-10-24-ian-fidance-laugh-boston"
+   ],
    "score": 1
   },
   {
@@ -1612,6 +1556,13 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/an-evening-with-assembly-of-dust-boston-massachusetts-10-24-2026/event/01006453DDA5D0FC",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
+   "aka": [
+    "sg-18091258"
+   ],
    "score": 0
   },
   {
@@ -1673,30 +1624,6 @@
     "2026-10-24-trae-crowder-the-wilbur"
    ],
    "score": 1
-  },
-  {
-   "id": "tm-vv1AvZkfYGkeckVDP",
-   "date": "2026-10-24",
-   "time": "19:30",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-10-24-2026/event/01006530AD1B4EE5",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "sg-18091258",
-   "date": "2026-10-24",
-   "time": "20:00",
-   "title": "Assembly of Dust (18+)",
-   "cat": "music",
-   "venue": "Brighton Music Hall",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/assembly-of-dust-tickets/boston-massachusetts-brighton-music-hall-2026-10-24-8-pm/concert/18091258",
-   "source": "seatgeek",
-   "score": 0
   },
   {
    "id": "tm-Z7r9jZ1A7-VjN",
@@ -1783,21 +1710,6 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAv0_F",
    "source": "ticketmaster",
    "score": 0
-  },
-  {
-   "id": "sg-18447598",
-   "date": "2026-10-24",
-   "time": "21:00",
-   "title": "Ian Fidance",
-   "cat": "comedy",
-   "venue": "Laugh Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/ian-fidance-tickets/comedy/2026-10-24-9-pm/18447598",
-   "source": "seatgeek",
-   "aka": [
-    "2026-10-24-ian-fidance-laugh-boston"
-   ],
-   "score": 1
   },
   {
    "id": "tm-vv1AvZkfYGkeca0HS",
@@ -1937,10 +1849,15 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/rod-wave-dont-look-down-tour-boston-massachusetts-10-25-2026/event/010064D0AF18F3E7",
    "source": "ticketmaster",
-   "sub": "with Fridayy",
+   "times": [
+    "20:00",
+    "20:30"
+   ],
    "aka": [
+    "sg-18320058",
     "2026-10-25-rod-wave-td-garden"
    ],
+   "sub": "with Fridayy",
    "score": 0
   },
   {
@@ -1971,18 +1888,6 @@
    "aka": [
     "sg-18663865"
    ],
-   "score": 0
-  },
-  {
-   "id": "sg-18320058",
-   "date": "2026-10-25",
-   "time": "20:30",
-   "title": "Rod Wave with FRIDAYY",
-   "cat": "music",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/rod-wave-tickets/boston-massachusetts-td-garden-2026-10-25-8-30-pm/concert/18320058",
-   "source": "seatgeek",
    "score": 0
   },
   {
@@ -2461,6 +2366,13 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/20-years-of-nekrogoblikon-with-special-boston-massachusetts-10-30-2026/event/010064C1CF539DAA",
    "source": "ticketmaster",
+   "times": [
+    "18:00",
+    "19:00"
+   ],
+   "aka": [
+    "sg-18297078"
+   ],
    "score": 0
   },
   {
@@ -2499,18 +2411,6 @@
    "venue": "Royale - Boston",
    "city": "Boston, MA",
    "url": "https://seatgeek.com/meredith-marks-tickets/boston-massachusetts-royale-boston-2026-10-30-7-pm/concert/18620614",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "sg-18297078",
-   "date": "2026-10-30",
-   "time": "19:00",
-   "title": "Nekrogoblikon with Aborted, Signs of the Swarm, and Party Cannon",
-   "cat": "music",
-   "venue": "Paradise Rock Club",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/nekrogoblikon-tickets/boston-massachusetts-paradise-rock-club-2026-10-30-7-pm/concert/18297078",
    "source": "seatgeek",
    "score": 0
   },
@@ -2719,6 +2619,13 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-10-31-2026/event/01006530AD3B4F8F",
    "source": "ticketmaster",
+   "times": [
+    "14:00",
+    "19:30"
+   ],
+   "aka": [
+    "tm-vv1AvZkfYGkecu0Xe"
+   ],
    "score": 0
   },
   {
@@ -2774,18 +2681,6 @@
     "sg-18371965",
     "2026-10-31-sueco-paradise-rock-club"
    ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkfYGkecu0Xe",
-   "date": "2026-10-31",
-   "time": "19:30",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-10-31-2026/event/01006530AD364F82",
-   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -2953,21 +2848,33 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/eivr-18-boston-massachusetts-11-01-2026/event/01006497E14D0E65",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
+    "sg-18209210",
     "2026-11-01-eivr-paradise-rock-club"
    ],
    "score": 0
   },
   {
-   "id": "sg-18314040",
+   "id": "tm-Z7r9jZ1A7PE8w",
    "date": "2026-11-01",
    "time": "19:00",
    "title": "Vince Staples",
    "cat": "music",
-   "venue": "Roadrunner - Boston",
+   "venue": "Roadrunner-Boston",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/vince-staples-tickets/boston-massachusetts-roadrunner-boston-2026-11-01-7-pm/concert/18314040",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PE8w",
+   "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
+   "aka": [
+    "sg-18314040"
+   ],
    "score": 0
   },
   {
@@ -2986,18 +2893,6 @@
    "score": 0
   },
   {
-   "id": "sg-18209210",
-   "date": "2026-11-01",
-   "time": "20:00",
-   "title": "Eivor with The Messenger Birds (18+)",
-   "cat": "music",
-   "venue": "Paradise Rock Club",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/eivor-tickets/boston-massachusetts-paradise-rock-club-2026-11-01-8-pm/concert/18209210",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
    "id": "tm-Z7r9jZ1AAZp74",
    "date": "2026-11-01",
    "time": "20:00",
@@ -3010,18 +2905,6 @@
    "aka": [
     "sg-18663868"
    ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A7PE8w",
-   "date": "2026-11-01",
-   "time": "20:00",
-   "title": "Vince Staples",
-   "cat": "music",
-   "venue": "Roadrunner-Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PE8w",
-   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -3447,7 +3330,12 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/chief-keef-boston-massachusetts-11-05-2026/event/010064DEB7551F71",
    "source": "ticketmaster",
+   "times": [
+    "19:30",
+    "20:00"
+   ],
    "aka": [
+    "sg-18354395",
     "2026-11-05-chief-keef-mgm-music-hall-at-fe"
    ],
    "score": 0
@@ -3476,8 +3364,14 @@
    "city": "Somerville, MA",
    "url": "https://www.ticketmaster.com/joanne-mcnally-pinotphile-somerville-massachusetts-11-05-2026/event/01006466DD6DDBF8",
    "source": "ticketmaster",
+   "times": [
+    "19:30",
+    "21:30"
+   ],
    "aka": [
-    "sg-18119952"
+    "tm-vvG17Z_1D10Iub",
+    "sg-18119952",
+    "sg-18252738"
    ],
    "score": 0
   },
@@ -3527,18 +3421,6 @@
    "score": 0
   },
   {
-   "id": "sg-18354395",
-   "date": "2026-11-05",
-   "time": "20:00",
-   "title": "Chief Keef (21+) (Rescheduled from 10/10/2026)",
-   "cat": "music",
-   "venue": "MGM Music Hall at Fenway",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/chief-keef-tickets/boston-massachusetts-mgm-music-hall-at-fenway-2026-11-05-8-pm/concert/18354395",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
    "id": "tm-Z7r9jZ1AAZgG-",
    "date": "2026-11-05",
    "time": "20:00",
@@ -3577,21 +3459,6 @@
    "source": "ticketmaster",
    "aka": [
     "sg-18421895"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_1D10Iub",
-   "date": "2026-11-05",
-   "time": "21:30",
-   "title": "Joanne McNally: Pinotphile",
-   "cat": "comedy",
-   "venue": "Arts at the Armory",
-   "city": "Somerville, MA",
-   "url": "https://www.ticketmaster.com/joanne-mcnally-pinotphile-somerville-massachusetts-11-05-2026/event/010064AECA928358",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18252738"
    ],
    "score": 0
   },
@@ -3728,8 +3595,14 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/tim-dillon-boston-massachusetts-11-06-2026/event/01006505CB3A3F75",
    "source": "ticketmaster",
+   "times": [
+    "19:30",
+    "22:00"
+   ],
    "aka": [
+    "tm-vv177Z_8GkDdY5rJ",
     "sg-18472041",
+    "sg-18500387",
     "2026-11-06-tim-dillon-the-wilbur"
    ],
    "score": 2,
@@ -3766,8 +3639,7 @@
     "2026-11-06-beat-wang-theatre"
    ],
    "sub": "Adrian Belew, Steve Vai, Tony Levin and Terry Bozzio play '80s King Crimson",
-   "score": 2,
-   "why": "like"
+   "score": 0
   },
   {
    "id": "tm-Z7r9jZ1A7-VGp",
@@ -3877,22 +3749,6 @@
    "score": 0
   },
   {
-   "id": "tm-vv177Z_8GkDdY5rJ",
-   "date": "2026-11-06",
-   "time": "22:00",
-   "title": "Tim Dillon",
-   "cat": "comedy",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/tim-dillon-boston-massachusetts-11-06-2026/event/0100650EC3C0B7A6",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18500387"
-   ],
-   "score": 2,
-   "why": "fav"
-  },
-  {
    "id": "tm-Z7r9jZ1AAZa8E",
    "date": "2026-11-07",
    "time": "13:00",
@@ -3914,6 +3770,13 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-11-07-2026/event/01006530AD565024",
    "source": "ticketmaster",
+   "times": [
+    "14:00",
+    "19:30"
+   ],
+   "aka": [
+    "tm-vv1AvZkfYGkecfAZ3"
+   ],
    "score": 0
   },
   {
@@ -4003,18 +3866,6 @@
    "aka": [
     "sg-18371995"
    ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkfYGkecfAZ3",
-   "date": "2026-11-07",
-   "time": "19:30",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-11-07-2026/event/01006530AD505012",
-   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -4158,8 +4009,14 @@
    "city": "Medford, MA",
    "url": "https://www.ticketmaster.com/ben-schwartz-friends-medford-massachusetts-11-08-2026/event/01006470E8C45563",
    "source": "ticketmaster",
+   "times": [
+    "15:30",
+    "19:00"
+   ],
    "aka": [
+    "tm-vv1AvZko6GkePdnCI",
     "sg-18139448",
+    "sg-18066293",
     "2026-11-08-ben-schwartz-chevalier-theatre"
    ],
    "score": 2,
@@ -4176,22 +4033,6 @@
    "url": "https://www.espn.com/nfl/game/_/gameId/401873049/packers-patriots",
    "source": "espn",
    "score": 1
-  },
-  {
-   "id": "tm-vv1AvZko6GkePdnCI",
-   "date": "2026-11-08",
-   "time": "19:00",
-   "title": "Ben Schwartz & Friends",
-   "cat": "comedy",
-   "venue": "Chevalier Theatre",
-   "city": "Medford, MA",
-   "url": "https://www.ticketmaster.com/ben-schwartz-friends-medford-massachusetts-11-08-2026/event/01006447A50EA3A8",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18066293"
-   ],
-   "score": 2,
-   "why": "fav"
   },
   {
    "id": "tm-vvG17Z_5UG1WWT",
@@ -4759,27 +4600,22 @@
    "why": "love"
   },
   {
-   "id": "sg-18235940",
-   "date": "2026-11-13",
-   "time": "18:00",
-   "title": "Basement with High Vis, Big Boy, and First Day Back",
-   "cat": "music",
-   "venue": "Roadrunner - Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/basement-tickets/boston-massachusetts-roadrunner-boston-2026-11-13-6-pm/concert/18235940",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
    "id": "tm-Z7r9jZ1A70EvJ",
    "date": "2026-11-13",
-   "time": "18:30",
+   "time": "18:00",
    "title": "Basement w/ Fiddlehead",
    "cat": "music",
    "venue": "Roadrunner-Boston",
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A70EvJ",
    "source": "ticketmaster",
+   "times": [
+    "18:00",
+    "18:30"
+   ],
+   "aka": [
+    "sg-18235940"
+   ],
    "score": 0
   },
   {
@@ -5061,6 +4897,13 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/madeon-presents-victory-live-18-boston-massachusetts-11-13-2026/event/010064A5B98A7722",
    "source": "ticketmaster",
+   "times": [
+    "21:00",
+    "22:30"
+   ],
+   "aka": [
+    "sg-18230457"
+   ],
    "score": 0
   },
   {
@@ -5076,18 +4919,6 @@
    "score": 0
   },
   {
-   "id": "sg-18230457",
-   "date": "2026-11-13",
-   "time": "22:30",
-   "title": "Madeon (21+)",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/madeon-tickets/boston-massachusetts-big-night-live-2026-11-13-10-30-pm/concert/18230457",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
    "id": "tm-vv1AvZkfYGkecjAdl",
    "date": "2026-11-14",
    "time": "14:00",
@@ -5097,6 +4928,13 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-11-14-2026/event/01006530AD7050EB",
    "source": "ticketmaster",
+   "times": [
+    "14:00",
+    "19:30"
+   ],
+   "aka": [
+    "tm-vv1AvZkfYGkecQgd_"
+   ],
    "score": 0
   },
   {
@@ -5235,18 +5073,6 @@
     "sg-18294763",
     "2026-11-14-brothers-osborne-citizens-house-of-bl"
    ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkfYGkecQgd_",
-   "date": "2026-11-14",
-   "time": "19:30",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-11-14-2026/event/01006530AD6B50D9",
-   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -6158,6 +5984,13 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-11-21-2026/event/01006530AD8B5177",
    "source": "ticketmaster",
+   "times": [
+    "14:00",
+    "19:30"
+   ],
+   "aka": [
+    "tm-vv1AvZkfYGkec-gA-"
+   ],
    "score": 0
   },
   {
@@ -6170,8 +6003,14 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/ali-siddiq-the-custom-fit-tour-boston-massachusetts-11-21-2026/event/010064FCC8ACEB7F",
    "source": "ticketmaster",
+   "times": [
+    "17:00",
+    "20:00"
+   ],
    "aka": [
-    "sg-18413077"
+    "tm-vvG17Z_udGsPDf",
+    "sg-18413077",
+    "sg-18328212"
    ],
    "score": 1
   },
@@ -6250,18 +6089,6 @@
    "score": 0
   },
   {
-   "id": "tm-vv1AvZkfYGkec-gA-",
-   "date": "2026-11-21",
-   "time": "19:30",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-11-21-2026/event/01006530AD875161",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
    "id": "tm-vv177Z_oGkXBi8-I",
    "date": "2026-11-21",
    "time": "19:30",
@@ -6277,21 +6104,6 @@
    ],
    "score": 3,
    "why": "love"
-  },
-  {
-   "id": "tm-vvG17Z_udGsPDf",
-   "date": "2026-11-21",
-   "time": "20:00",
-   "title": "Ali Siddiq: The Custom Fit Tour",
-   "cat": "comedy",
-   "venue": "Boch Center Shubert Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/ali-siddiq-the-custom-fit-tour-boston-massachusetts-11-21-2026/event/010064D0CCC65ED4",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18328212"
-   ],
-   "score": 1
   },
   {
    "id": "tm-vv177Z_KGkDQyR3t",
@@ -6617,6 +6429,13 @@
    "city": "Boston, MA",
    "url": "https://seatgeek.com/sisters-christmas-catechism-tickets/comedy/2026-11-27-2-pm/18601258",
    "source": "seatgeek",
+   "times": [
+    "14:00",
+    "19:30"
+   ],
+   "aka": [
+    "sg-18601261"
+   ],
    "score": 0
   },
   {
@@ -6632,18 +6451,6 @@
    "aka": [
     "2026-11-27-the-hotelier-paradise-rock-club"
    ],
-   "score": 0
-  },
-  {
-   "id": "sg-18601261",
-   "date": "2026-11-27",
-   "time": "19:30",
-   "title": "Sister's Christmas Catechism",
-   "cat": "comedy",
-   "venue": "Charles Playhouse - Stage II",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/sisters-christmas-catechism-tickets/comedy/2026-11-27-7-30-pm/18601261",
-   "source": "seatgeek",
    "score": 0
   },
   {
@@ -6730,6 +6537,13 @@
    "city": "Boston, MA",
    "url": "https://seatgeek.com/sisters-christmas-catechism-tickets/comedy/2026-11-28-2-pm/18601274",
    "source": "seatgeek",
+   "times": [
+    "14:00",
+    "19:30"
+   ],
+   "aka": [
+    "sg-18601260"
+   ],
    "score": 0
   },
   {
@@ -6761,18 +6575,6 @@
    "aka": [
     "sg-18371996"
    ],
-   "score": 0
-  },
-  {
-   "id": "sg-18601260",
-   "date": "2026-11-28",
-   "time": "19:30",
-   "title": "Sister's Christmas Catechism",
-   "cat": "comedy",
-   "venue": "Charles Playhouse - Stage II",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/sisters-christmas-catechism-tickets/comedy/2026-11-28-7-30-pm/18601260",
-   "source": "seatgeek",
    "score": 0
   },
   {
@@ -6861,6 +6663,7 @@
    "url": "https://www.ticketweb.com/event/the-killers-my-chemical-cutting-room-tickets/14229174",
    "source": "ticketmaster",
    "drive_hours": 4.25,
+   "from": 26,
    "score": 2,
    "why": "big"
   },
@@ -6964,20 +6767,13 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7ZFp",
    "source": "ticketmaster",
    "drive_hours": 4.25,
-   "score": 2,
-   "why": "big"
-  },
-  {
-   "id": "sg-18634481",
-   "date": "2026-11-30",
-   "time": "20:00",
-   "title": "LCD Soundsystem",
-   "cat": "music",
-   "venue": "Brooklyn Steel",
-   "city": "Brooklyn, NY",
-   "url": "https://seatgeek.com/lcd-soundsystem-tickets/brooklyn-new-york-brooklyn-steel-2026-11-30-8-pm/concert/18634481",
-   "source": "seatgeek",
-   "drive_hours": 4.25,
+   "times": [
+    "19:00",
+    "20:00"
+   ],
+   "aka": [
+    "sg-18634481"
+   ],
    "score": 2,
    "why": "big"
   },
@@ -7407,8 +7203,14 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/gianmarco-soresi-the-misery-loves-tour-boston-massachusetts-12-04-2026/event/01006479EA92F101",
    "source": "ticketmaster",
+   "times": [
+    "19:30",
+    "22:00"
+   ],
    "aka": [
+    "tm-vv177Z_6GkInnBbL",
     "sg-18149269",
+    "sg-18150726",
     "2026-12-04-gianmarco-soresi-the-wilbur"
    ],
    "sub": "The Misery Loves Tour",
@@ -7505,22 +7307,6 @@
    "score": 0
   },
   {
-   "id": "tm-vv177Z_6GkInnBbL",
-   "date": "2026-12-04",
-   "time": "22:00",
-   "title": "Gianmarco Soresi: The Misery Loves Tour",
-   "cat": "comedy",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/gianmarco-soresi-the-misery-loves-tour-boston-massachusetts-12-04-2026/event/0100647A2AABA61F",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18150726"
-   ],
-   "score": 2,
-   "why": "fav"
-  },
-  {
    "id": "espn-401892859",
    "date": "2026-12-05",
    "time": "13:00",
@@ -7542,6 +7328,13 @@
    "city": "Boston, MA",
    "url": "https://seatgeek.com/sisters-christmas-catechism-tickets/comedy/2026-12-05-2-pm/18601250",
    "source": "seatgeek",
+   "times": [
+    "14:00",
+    "19:30"
+   ],
+   "aka": [
+    "sg-18601253"
+   ],
    "score": 0
   },
   {
@@ -7569,8 +7362,14 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/gianmarco-soresi-the-misery-loves-tour-boston-massachusetts-12-05-2026/event/01006471C8273C26",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "21:45"
+   ],
    "aka": [
+    "tm-vvG17Z_GXcmCQK",
     "sg-18138811",
+    "sg-18318690",
     "2026-12-05-gianmarco-soresi-the-wilbur"
    ],
    "sub": "The Misery Loves Tour",
@@ -7626,18 +7425,6 @@
    "score": 0
   },
   {
-   "id": "sg-18601253",
-   "date": "2026-12-05",
-   "time": "19:30",
-   "title": "Sister's Christmas Catechism",
-   "cat": "comedy",
-   "venue": "Charles Playhouse - Stage II",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/sisters-christmas-catechism-tickets/comedy/2026-12-05-7-30-pm/18601253",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
    "id": "tm-Z7r9jZ1AAvt4_",
    "date": "2026-12-05",
    "time": "20:00",
@@ -7681,22 +7468,6 @@
    "score": 0
   },
   {
-   "id": "tm-vvG17Z_GXcmCQK",
-   "date": "2026-12-05",
-   "time": "21:45",
-   "title": "Gianmarco Soresi: The Misery Loves Tour",
-   "cat": "comedy",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/gianmarco-soresi-the-misery-loves-tour-boston-massachusetts-12-05-2026/event/010064CFADB8E693",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18318690"
-   ],
-   "score": 2,
-   "why": "fav"
-  },
-  {
    "id": "tm-vv1AvZkfNGkdBy1cu",
    "date": "2026-12-05",
    "time": "22:30",
@@ -7733,8 +7504,15 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/brett-goldstein-sex-death-small-talk-boston-massachusetts-12-06-2026/event/0100651493A0AA56",
    "source": "ticketmaster",
+   "times": [
+    "16:00",
+    "19:00"
+   ],
    "aka": [
+    "tm-vv16vZkfo-8ZAu6F12",
     "sg-18523496",
+    "sg-18509448",
+    "2026-12-06-brett-goldstein-wang-theatre",
     "2026-12-06-brett-goldstein-wang-theatre"
    ],
    "score": 2,
@@ -7751,23 +7529,6 @@
    "url": "https://www.espn.com/nfl/game/_/gameId/401873105/bills-patriots",
    "source": "espn",
    "score": 1
-  },
-  {
-   "id": "tm-vv16vZkfo-8ZAu6F12",
-   "date": "2026-12-06",
-   "time": "19:00",
-   "title": "Brett Goldstein: Sex, Death & Small Talk",
-   "cat": "comedy",
-   "venue": "Boch Center Wang Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/brett-goldstein-sex-death-small-talk-boston-massachusetts-12-06-2026/event/01006511850C679E",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18509448",
-    "2026-12-06-brett-goldstein-wang-theatre"
-   ],
-   "score": 2,
-   "why": "fav"
   },
   {
    "id": "tm-vvG17Z_2QTPRRi",
@@ -8060,6 +7821,13 @@
    "city": "Beverly, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZKA6",
    "source": "ticketmaster",
+   "times": [
+    "18:00",
+    "20:30"
+   ],
+   "aka": [
+    "tm-Z7r9jZ1AAZKAk"
+   ],
    "score": 0
   },
   {
@@ -8188,18 +7956,6 @@
    "why": "love"
   },
   {
-   "id": "tm-Z7r9jZ1AAZKAk",
-   "date": "2026-12-11",
-   "time": "20:30",
-   "title": "The LeeVees",
-   "cat": "music",
-   "venue": "The Cabot",
-   "city": "Beverly, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZKAk",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
    "id": "tm-vv177Z_fGkYwZhNg",
    "date": "2026-12-11",
    "time": "22:00",
@@ -8233,6 +7989,13 @@
    "city": "Boston, MA",
    "url": "https://seatgeek.com/sisters-christmas-catechism-tickets/comedy/2026-12-12-2-pm/18601251",
    "source": "seatgeek",
+   "times": [
+    "14:00",
+    "19:30"
+   ],
+   "aka": [
+    "sg-18601252"
+   ],
    "score": 0
   },
   {
@@ -8261,6 +8024,13 @@
    "city": "Boston, MA",
    "url": "https://seatgeek.com/jeff-dye-tickets/comedy/2026-12-12-6-31-pm/18666683",
    "source": "seatgeek",
+   "times": [
+    "18:31",
+    "21:00"
+   ],
+   "aka": [
+    "sg-18670569"
+   ],
    "score": 1
   },
   {
@@ -8292,18 +8062,6 @@
    "aka": [
     "2026-12-12-neurosis-roadrunner"
    ],
-   "score": 0
-  },
-  {
-   "id": "sg-18601252",
-   "date": "2026-12-12",
-   "time": "19:30",
-   "title": "Sister's Christmas Catechism",
-   "cat": "comedy",
-   "venue": "Charles Playhouse - Stage II",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/sisters-christmas-catechism-tickets/comedy/2026-12-12-7-30-pm/18601252",
-   "source": "seatgeek",
    "score": 0
   },
   {
@@ -8348,18 +8106,6 @@
    ],
    "score": 3,
    "why": "love"
-  },
-  {
-   "id": "sg-18670569",
-   "date": "2026-12-12",
-   "time": "21:00",
-   "title": "Jeff Dye",
-   "cat": "comedy",
-   "venue": "Laugh Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/jeff-dye-tickets/comedy/2026-12-12-9-pm/18670569",
-   "source": "seatgeek",
-   "score": 1
   },
   {
    "id": "tm-vvG17Z_2OjptGG",
@@ -8591,15 +8337,23 @@
    "score": 0
   },
   {
-   "id": "sg-18538985",
+   "id": "tm-Z7r9jZ1AAvvAf",
    "date": "2026-12-17",
    "time": "20:00",
-   "title": "Amtrac",
+   "title": "Amtrac (18 and Over)",
    "cat": "music",
-   "venue": "The Sinclair - Cambridge",
+   "venue": "The Sinclair Music Hall",
    "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/amtrac-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-12-17-8-pm/concert/18538985",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAvvAf",
+   "source": "ticketmaster",
+   "times": [
+    "20:00",
+    "20:30"
+   ],
+   "aka": [
+    "sg-18538985",
+    "2026-12-17-amtrac-the-sinclair"
+   ],
    "score": 0
   },
   {
@@ -8629,21 +8383,6 @@
    "source": "ticketmaster",
    "aka": [
     "sg-18620741"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1AAvvAf",
-   "date": "2026-12-17",
-   "time": "20:30",
-   "title": "Amtrac (18 and Over)",
-   "cat": "music",
-   "venue": "The Sinclair Music Hall",
-   "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAvvAf",
-   "source": "ticketmaster",
-   "aka": [
-    "2026-12-17-amtrac-the-sinclair"
    ],
    "score": 0
   },
@@ -8773,6 +8512,13 @@
    "city": "Boston, MA",
    "url": "https://seatgeek.com/sisters-christmas-catechism-tickets/comedy/2026-12-19-2-pm/18601269",
    "source": "seatgeek",
+   "times": [
+    "14:00",
+    "19:30"
+   ],
+   "aka": [
+    "sg-18601266"
+   ],
    "score": 0
   },
   {
@@ -8819,18 +8565,6 @@
     "2026-12-19-godfrey-the-wilbur"
    ],
    "score": 1
-  },
-  {
-   "id": "sg-18601266",
-   "date": "2026-12-19",
-   "time": "19:30",
-   "title": "Sister's Christmas Catechism",
-   "cat": "comedy",
-   "venue": "Charles Playhouse - Stage II",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/sisters-christmas-catechism-tickets/comedy/2026-12-19-7-30-pm/18601266",
-   "source": "seatgeek",
-   "score": 0
   },
   {
    "id": "tm-Z7r9jZ1AAvU0w",
@@ -8965,6 +8699,13 @@
    "city": "Boston, MA",
    "url": "https://seatgeek.com/sisters-christmas-catechism-tickets/comedy/2026-12-26-2-pm/18601259",
    "source": "seatgeek",
+   "times": [
+    "14:00",
+    "19:30"
+   ],
+   "aka": [
+    "sg-18601270"
+   ],
    "score": 0
   },
   {
@@ -8977,8 +8718,15 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/bob-marley-comedian-boston-massachusetts-12-26-2026/event/01006549D97A5C3E",
    "source": "ticketmaster",
+   "times": [
+    "17:30",
+    "20:00"
+   ],
    "aka": [
-    "sg-18672967"
+    "tm-vv1AvZkfkGkdbXBFT",
+    "sg-18672967",
+    "sg-18472040",
+    "2026-12-26-bob-marley-the-wilbur"
    ],
    "score": 1
   },
@@ -8992,34 +8740,6 @@
    "city": "Boston, MA",
    "url": "https://www.espn.com/nhl/game/_/gameId/401892995/islanders-bruins",
    "source": "espn",
-   "score": 1
-  },
-  {
-   "id": "sg-18601270",
-   "date": "2026-12-26",
-   "time": "19:30",
-   "title": "Sister's Christmas Catechism",
-   "cat": "comedy",
-   "venue": "Charles Playhouse - Stage II",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/sisters-christmas-catechism-tickets/comedy/2026-12-26-7-30-pm/18601270",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkfkGkdbXBFT",
-   "date": "2026-12-26",
-   "time": "20:00",
-   "title": "Bob Marley Comedian",
-   "cat": "comedy",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/bob-marley-comedian-boston-massachusetts-12-26-2026/event/01006506D8FBA23F",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18472040",
-    "2026-12-26-bob-marley-the-wilbur"
-   ],
    "score": 1
   },
   {
@@ -9152,6 +8872,7 @@
    "url": "https://www.ticketweb.com/event/a-phish-after-party-with-le-poisson-rouge-tickets/14363004",
    "source": "ticketmaster",
    "drive_hours": 4.25,
+   "from": 56,
    "score": 3,
    "why": "love"
   },
@@ -9322,6 +9043,7 @@
    "url": "https://www.ticketweb.com/event/a-phish-after-party-tad-hill-country-live-tickets/14370224",
    "source": "ticketmaster",
    "drive_hours": 4.25,
+   "from": 22,
    "score": 3,
    "why": "love"
   },
@@ -9335,6 +9057,13 @@
    "city": "Boston, MA",
    "url": "https://seatgeek.com/sisters-christmas-catechism-tickets/comedy/2027-01-02-2-pm/18601249",
    "source": "seatgeek",
+   "times": [
+    "14:00",
+    "19:30"
+   ],
+   "aka": [
+    "sg-18601278"
+   ],
    "score": 0
   },
   {
@@ -9355,18 +9084,6 @@
    "sub": "Night 4, the band's 100th show at the Garden",
    "score": 3,
    "why": "love"
-  },
-  {
-   "id": "sg-18601278",
-   "date": "2027-01-02",
-   "time": "19:30",
-   "title": "Sister's Christmas Catechism",
-   "cat": "comedy",
-   "venue": "Charles Playhouse - Stage II",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/sisters-christmas-catechism-tickets/comedy/2027-01-02-7-30-pm/18601278",
-   "source": "seatgeek",
-   "score": 0
   },
   {
    "id": "tm-G5vVZ_8YGHxwf",
@@ -10920,6 +10637,13 @@
    "url": "https://www.ticketmaster.com/dropkick-murphys-brooklyn-new-york-03-07-2027/event/0000653B0EA63737",
    "source": "ticketmaster",
    "drive_hours": 4.5,
+   "times": [
+    "18:00",
+    "19:00"
+   ],
+   "aka": [
+    "sg-18633567"
+   ],
    "score": 2,
    "why": "big"
   },
@@ -10937,20 +10661,6 @@
     "sg-18592483"
    ],
    "score": 0
-  },
-  {
-   "id": "sg-18633567",
-   "date": "2027-03-07",
-   "time": "19:00",
-   "title": "Dropkick Murphys with Spiritual Cramp and Home Front",
-   "cat": "music",
-   "venue": "Brooklyn Paramount",
-   "city": "Brooklyn, NY",
-   "url": "https://seatgeek.com/dropkick-murphys-tickets/brooklyn-new-york-brooklyn-paramount-2027-03-07-7-pm/concert/18633567",
-   "source": "seatgeek",
-   "drive_hours": 4.5,
-   "score": 2,
-   "why": "big"
   },
   {
    "id": "tm-vvG17Z_GE-9Vq3",
@@ -11036,6 +10746,13 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZOOy",
    "source": "ticketmaster",
    "drive_hours": 1.75,
+   "times": [
+    "18:05",
+    "19:00"
+   ],
+   "aka": [
+    "sg-18633571"
+   ],
    "score": 2,
    "why": "big"
   },
@@ -11071,20 +10788,6 @@
     "sg-18347682"
    ],
    "score": 0
-  },
-  {
-   "id": "sg-18633571",
-   "date": "2027-03-10",
-   "time": "19:00",
-   "title": "Dropkick Murphys with Spiritual Cramp and Home Front",
-   "cat": "music",
-   "venue": "MassMutual Center",
-   "city": "Springfield, MA",
-   "url": "https://seatgeek.com/dropkick-murphys-tickets/springfield-massachusetts-massmutual-center-2027-03-10-7-pm/concert/18633571",
-   "source": "seatgeek",
-   "drive_hours": 1.75,
-   "score": 2,
-   "why": "big"
   },
   {
    "id": "tm-vv177Z_KGkSAw-nS",
@@ -11215,10 +10918,18 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/mini-concert-with-dropkick-murphys-boston-massachusetts-03-13-2027/event/01006533FFB73BBA",
    "source": "ticketmaster",
+   "times": [
+    "14:00",
+    "19:00"
+   ],
    "aka": [
+    "tm-vv1AvZkfSGkdTiNmr",
     "tm-vv1AvZkfSGkdTcSmB",
+    "tm-vv1AvZkfSGkdTiNmr",
     "sg-18685645",
+    "sg-18685642",
     "sg-18685645",
+    "sg-18685642",
     "2027-03-13-dropkick-murphys-mgm-music-hall-at-fe"
    ],
    "sub": "with The Home Front, Spiritual Cramp and Cittizins",
@@ -11235,8 +10946,14 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/des-bishop-grey-area-tour-boston-massachusetts-03-13-2027/event/01006536CD049523",
    "source": "ticketmaster",
+   "times": [
+    "16:00",
+    "19:00"
+   ],
    "aka": [
-    "sg-18633876"
+    "tm-vv1AvZkf4GkeVMl7M",
+    "sg-18633876",
+    "sg-18533197"
    ],
    "score": 1
   },
@@ -11250,21 +10967,6 @@
    "city": "Boston, MA",
    "url": "https://www.espn.com/nhl/game/_/gameId/401893516/flames-bruins",
    "source": "espn",
-   "score": 1
-  },
-  {
-   "id": "tm-vv1AvZkf4GkeVMl7M",
-   "date": "2027-03-13",
-   "time": "19:00",
-   "title": "Des Bishop: Grey Area Tour",
-   "cat": "comedy",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/des-bishop-grey-area-tour-boston-massachusetts-03-13-2027/event/01006515B4DEB137",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18533197"
-   ],
    "score": 1
   },
   {
@@ -11283,24 +10985,6 @@
    ],
    "sub": "with Horse Jumper of Love",
    "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkfSGkdTiNmr",
-   "date": "2027-03-13",
-   "time": "19:00",
-   "title": "Dropkick Murphys",
-   "cat": "music",
-   "venue": "MGM Music Hall at Fenway",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/dropkick-murphys-boston-massachusetts-03-13-2027/event/01006533FFB23B9E",
-   "source": "ticketmaster",
-   "aka": [
-    "tm-vv1AvZkfSGkdTiNmr",
-    "sg-18685642",
-    "sg-18685642"
-   ],
-   "score": 2,
-   "why": "big"
   },
   {
    "id": "tm-vv1AvZk46GkeM2Xgv",
@@ -11705,6 +11389,13 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/jimmy-o-yang-has-no-friends-boston-massachusetts-04-01-2027/event/01006548CEF94677",
    "source": "ticketmaster",
+   "times": [
+    "19:30",
+    "20:00"
+   ],
+   "aka": [
+    "sg-18675893"
+   ],
    "score": 1
   },
   {
@@ -11721,18 +11412,6 @@
     "sg-18674833"
    ],
    "score": 0
-  },
-  {
-   "id": "sg-18675893",
-   "date": "2027-04-01",
-   "time": "20:00",
-   "title": "Jimmy O. Yang",
-   "cat": "comedy",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/jimmy-o-yang-tickets/comedy/2027-04-01-8-pm/18675893",
-   "source": "seatgeek",
-   "score": 1
   },
   {
    "id": "tm-vv1k7Z_K8xG7IhPb",
@@ -11786,18 +11465,13 @@
    "city": "Medford, MA",
    "url": "https://www.ticketmaster.com/jimmy-o-yang-has-no-friends-medford-massachusetts-04-02-2027/event/01006548212C4F35",
    "source": "ticketmaster",
-   "score": 1
-  },
-  {
-   "id": "sg-18675895",
-   "date": "2027-04-02",
-   "time": "20:00",
-   "title": "Jimmy O. Yang",
-   "cat": "comedy",
-   "venue": "Chevalier Theatre",
-   "city": "Medford, MA",
-   "url": "https://seatgeek.com/jimmy-o-yang-tickets/comedy/2027-04-02-8-pm/18675895",
-   "source": "seatgeek",
+   "times": [
+    "19:30",
+    "20:00"
+   ],
+   "aka": [
+    "sg-18675895"
+   ],
    "score": 1
   },
   {
@@ -11828,27 +11502,22 @@
    "score": 1
   },
   {
-   "id": "sg-18574468",
-   "date": "2027-04-05",
-   "time": "19:00",
-   "title": "Beirut",
-   "cat": "music",
-   "venue": "Roadrunner - Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/beirut-tickets/boston-massachusetts-roadrunner-boston-2027-04-05-7-pm/concert/18574468",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
    "id": "tm-Z7r9jZ1AAv0uA",
    "date": "2027-04-05",
-   "time": "20:00",
+   "time": "19:00",
    "title": "Beirut",
    "cat": "music",
    "venue": "Roadrunner-Boston",
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAv0uA",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
+   "aka": [
+    "sg-18574468"
+   ],
    "score": 0
   },
   {
@@ -11948,22 +11617,13 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/usama-siddiquee-boston-massachusetts-04-10-2027/event/010064FCCD390A76",
    "source": "ticketmaster",
-   "aka": [
-    "sg-18410914"
+   "times": [
+    "19:00",
+    "21:45"
    ],
-   "score": 1
-  },
-  {
-   "id": "tm-vv1AvZk4kGkemQxig",
-   "date": "2027-04-10",
-   "time": "21:45",
-   "title": "Usama Siddiquee",
-   "cat": "comedy",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/usama-siddiquee-boston-massachusetts-04-10-2027/event/01006546AE6A2B35",
-   "source": "ticketmaster",
    "aka": [
+    "tm-vv1AvZk4kGkemQxig",
+    "sg-18410914",
     "sg-18663014"
    ],
    "score": 1
@@ -12085,9 +11745,9 @@
  ],
  "sources": {
   "picks": 5,
-  "venues": 10,
+  "venues": 7,
   "espn": 84,
-  "ticketmaster": 597,
-  "seatgeek": 137
+  "ticketmaster": 578,
+  "seatgeek": 108
  }
 }
