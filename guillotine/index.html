@@ -854,7 +854,7 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
         delete p.final; delete p.live; delete p.actual; delete p.frac;
         if (!g || g.state === "pre") return;
         p.actual = s ? s.pts : 0;
-        if (g.state === "post") p.final = true; else { p.live = true; p.frac = g.frac; p.clock = (g.period > 4 ? "OT" : "Q" + g.period) + " " + g.clock; }
+        if (g.state === "post") p.final = true; else { p.live = true; p.frac = g.frac; p.clock = g.period ? (g.period > 4 ? "OT" : "Q" + g.period) + " " + g.clock : "in progress"; }
       });
       var st = startersOf(t), locked = 0, lockedProj = 0, n = 0;
       st.forEach(function (p) {

@@ -12,6 +12,7 @@
 
 const DATA_URL = "https://davidsolar.dev/guillotine/data.json";
 const UA = "davidsolar-guillotine-live/1.0 (+https://davidsolar.dev/guillotine/)";
+const BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36";
 const FRESH_MS = 45000;
 
 const SCORING = {
@@ -36,7 +37,7 @@ export default {
       const [stats, board] = await Promise.all([
         getJSON(`https://api.sleeper.com/stats/nfl/${season}/${week}?season_type=regular` +
           "&position%5B%5D=QB&position%5B%5D=RB&position%5B%5D=WR&position%5B%5D=TE", 40),
-        getJSON(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=${season}&seasontype=2&week=${week}`, 30),
+        scoreboard(season, week),
       ]);
       const body = build(data, stats, board, now);
       memo = { at: now, body };
@@ -62,8 +63,8 @@ function build(data, stats, board, now) {
     const s = e.stats || {};
     pts[key] = { pts: score(s), gp: !!s.gp, team };
   }
-  const games = {};
-  for (const ev of board.events || []) {
+  const games = board ? {} : estimateGames(data, now);
+  for (const ev of (board && board.events) || []) {
     const st = ev.status || {};
     const comp = (ev.competitions || [])[0] || {};
     const g = {
@@ -78,7 +79,47 @@ function build(data, stats, board, now) {
       games[ESPN_FIX[abbr] || abbr] = g;
     }
   }
-  return { season: data.season, week: data.week, fetched: new Date(now).toISOString(), games, pts };
+  return { season: data.season, week: data.week, fetched: new Date(now).toISOString(),
+    clock: board ? "espn" : "estimate", games, pts };
+}
+
+// ESPN's scoreboard, asked the way a browser asks. Two addresses; null if both refuse.
+async function scoreboard(season, week) {
+  const q = `/apis/site/v2/sports/football/nfl/scoreboard?dates=${season}&seasontype=2&week=${week}`;
+  for (const host of ["https://site.api.espn.com", "https://site.web.api.espn.com"]) {
+    try { return await getJSON(host + q, 30, BROWSER_UA); } catch (e) { /* try the next one */ }
+  }
+  return null;
+}
+
+// Without ESPN: judge each game by its kickoff (Yahoo's "Sun 1:00 pm" plus Sleeper's game date).
+// A game counts as live for 3.5 hours after kickoff, its share played growing over about 3 hours 10 minutes.
+function estimateGames(data, now) {
+  const games = {};
+  for (const t of data.teams || []) for (const p of t.roster || []) {
+    if (!p.date || !p.game || games[p.nfl]) continue;
+    const m = /(\d{1,2}):(\d{2}) ([ap]m)/.exec(p.game);
+    if (!m) continue;
+    let h = +m[1] % 12 + (m[3] === "pm" ? 12 : 0);
+    const kick = easternToUtc(p.date, h, +m[2]);
+    const e = now - kick, H = 3600e3;
+    const g = e < 0 ? { state: "pre", frac: 0 } : e < 3.5 * H ? { state: "in", frac: Math.min(0.99, e / (3.17 * H)) } : { state: "post", frac: 1 };
+    g.period = 0; g.clock = ""; g.start = new Date(kick).toISOString();
+    games[p.nfl] = g;
+    const opp = (p.opp || "").replace(/^(vs|@) /, "");
+    if (opp && !games[opp]) games[opp] = g;
+  }
+  return games;
+}
+
+function easternToUtc(date, hour, minute) {
+  const [y, mo, d] = date.split("-").map(Number);
+  for (const offset of [4, 5]) { // EDT, then EST
+    const t = Date.UTC(y, mo - 1, d, hour + offset, minute);
+    const etHour = +new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "numeric", hourCycle: "h23" }).format(t);
+    if (etHour === hour) return t;
+  }
+  return Date.UTC(y, mo - 1, d, hour + 5, minute);
 }
 
 function fraction(st) {
@@ -102,8 +143,11 @@ function norm(name) {
     .replace(/[.'’`-]/g, "").split(/\s+/).filter((w) => w && !SUFFIX.has(w)).join(" ");
 }
 
-async function getJSON(url, ttl) {
-  const res = await fetch(url, { headers: { "User-Agent": UA }, cf: { cacheTtl: ttl, cacheEverything: true } });
+async function getJSON(url, ttl, ua) {
+  const res = await fetch(url, {
+    headers: { "User-Agent": ua || UA, "Accept": "application/json, text/plain, */*", "Accept-Language": "en-US,en;q=0.9" },
+    cf: { cacheTtl: ttl, cacheEverything: true },
+  });
   if (!res.ok) throw new Error(`${res.status} from ${new URL(url).host}`);
   return res.json();
 }
