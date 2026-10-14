@@ -73,6 +73,8 @@
       var played = (t.scores || []).slice(0, completed).filter(function (x) { return typeof x === "number"; });
       t._recent = played.length ? mean(played.slice(-o.recentWeeks)) : null;
     });
+    // A projection of exactly 0 while other teams have real ones means no starters are set.
+    var anyProj = alive.some(function (t) { return typeof t.proj === "number" && t.proj > 0; });
     var known = alive.map(function (t) { return t._recent; }).filter(function (x) { return x !== null; });
     var leagueAvg = known.length ? mean(known) : 100;
 
@@ -84,6 +86,7 @@
         name: t.name,
         faab: typeof t.faab === "number" ? t.faab : null,
         mine: !!t.mine,
+        noLineup: anyProj && t.proj === 0, // assumed to set one; if not, it scores 0 and is cut
         proj: hasProj ? t.proj : null,
         recent: t._recent,
         now: hasProj ? t.proj : later, // expected score this week
