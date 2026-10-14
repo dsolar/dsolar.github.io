@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-14T20:51:45Z",
+ "updated": "2026-10-14T20:52:29Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -40,6 +40,30 @@
    "score": 1
   },
   {
+   "id": "espn-401873001",
+   "date": "2026-10-18",
+   "time": "13:00",
+   "title": "Patriots vs Jets",
+   "cat": "sports",
+   "venue": "Gillette Stadium",
+   "city": "Foxborough, MA",
+   "url": "https://www.espn.com/nfl/game/_/gameId/401873001/jets-patriots",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401892552",
+   "date": "2026-10-22",
+   "time": "19:00",
+   "title": "Bruins vs Predators",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892552/predators-bruins",
+   "source": "espn",
+   "score": 1
+  },
+  {
    "date": "2026-10-22",
    "time": "19:30",
    "title": "Nate Jackson",
@@ -50,6 +74,18 @@
    "sub": "Big Dog",
    "source": "picks",
    "id": "2026-10-22-nate-jackson-the-wilbur",
+   "score": 1
+  },
+  {
+   "id": "espn-401909095",
+   "date": "2026-10-23",
+   "time": "19:00",
+   "title": "Celtics vs Knicks",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401909095/knicks-celtics",
+   "source": "espn",
    "score": 1
   },
   {
@@ -66,6 +102,18 @@
    "score": 1
   },
   {
+   "id": "espn-401892568",
+   "date": "2026-10-24",
+   "time": "19:00",
+   "title": "Bruins vs Sharks",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892568/sharks-bruins",
+   "source": "espn",
+   "score": 1
+  },
+  {
    "date": "2026-10-24",
    "time": "19:00",
    "title": "Trae Crowder",
@@ -75,6 +123,42 @@
    "url": "https://thewilbur.com/calendar/",
    "source": "picks",
    "id": "2026-10-24-trae-crowder-the-wilbur",
+   "score": 1
+  },
+  {
+   "id": "espn-401909870",
+   "date": "2026-10-26",
+   "time": "19:30",
+   "title": "Celtics vs Bulls",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401909870/bulls-celtics",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401909877",
+   "date": "2026-10-27",
+   "time": "19:30",
+   "title": "Celtics vs Nets",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401909877/nets-celtics",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401909278",
+   "date": "2026-10-30",
+   "time": "19:30",
+   "title": "Celtics vs Bulls",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401909278/bulls-celtics",
+   "source": "espn",
    "score": 1
   },
   {
@@ -91,6 +175,18 @@
    "why": "love"
   },
   {
+   "id": "espn-401892614",
+   "date": "2026-10-31",
+   "time": "13:00",
+   "title": "Bruins vs Blackhawks",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892614/blackhawks-bruins",
+   "source": "espn",
+   "score": 1
+  },
+  {
    "date": "2026-10-31",
    "time": "20:00",
    "title": "moe.",
@@ -103,6 +199,30 @@
    "id": "2026-10-31-moe-the-wilbur",
    "score": 3,
    "why": "love"
+  },
+  {
+   "id": "espn-401892629",
+   "date": "2026-11-02",
+   "time": "19:00",
+   "title": "Bruins vs Golden Knights",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892629/golden-knights-bruins",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401909924",
+   "date": "2026-11-04",
+   "time": "19:30",
+   "title": "Celtics vs Bucks",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401909924/bucks-celtics",
+   "source": "espn",
+   "score": 1
   },
   {
    "date": "2026-11-05",
@@ -169,6 +289,30 @@
    "why": "fav"
   },
   {
+   "id": "espn-401892674",
+   "date": "2026-11-08",
+   "time": "13:00",
+   "title": "Bruins vs Panthers",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892674/panthers-bruins",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401873049",
+   "date": "2026-11-08",
+   "time": "16:25",
+   "title": "Patriots vs Packers",
+   "cat": "sports",
+   "venue": "Gillette Stadium",
+   "city": "Foxborough, MA",
+   "url": "https://www.espn.com/nfl/game/_/gameId/401873049/packers-patriots",
+   "source": "espn",
+   "score": 1
+  },
+  {
    "date": "2026-11-08",
    "time": "19:00",
    "title": "DeRay Davis",
@@ -178,6 +322,18 @@
    "url": "https://thewilbur.com/calendar/",
    "source": "picks",
    "id": "2026-11-08-deray-davis-the-wilbur",
+   "score": 1
+  },
+  {
+   "id": "espn-401892696",
+   "date": "2026-11-12",
+   "time": "19:00",
+   "title": "Bruins vs Canadiens",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892696/canadiens-bruins",
+   "source": "espn",
    "score": 1
   },
   {
@@ -222,6 +378,18 @@
    "why": "love"
   },
   {
+   "id": "espn-401892709",
+   "date": "2026-11-14",
+   "time": "19:00",
+   "title": "Bruins vs Wild",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892709/wild-bruins",
+   "source": "espn",
+   "score": 1
+  },
+  {
    "date": "2026-11-14",
    "time": null,
    "title": "Goose",
@@ -236,6 +404,18 @@
    "why": "love"
   },
   {
+   "id": "espn-401909989",
+   "date": "2026-11-15",
+   "time": "18:00",
+   "title": "Celtics vs Mavericks",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401909989/mavericks-celtics",
+   "source": "espn",
+   "score": 1
+  },
+  {
    "date": "2026-11-15",
    "time": null,
    "title": "Goose",
@@ -248,6 +428,30 @@
    "id": "2026-11-15-goose-cross-insurance-aren",
    "score": 3,
    "why": "love"
+  },
+  {
+   "id": "espn-401909994",
+   "date": "2026-11-16",
+   "time": "19:00",
+   "title": "Celtics vs Magic",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401909994/magic-celtics",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401892728",
+   "date": "2026-11-17",
+   "time": "19:00",
+   "title": "Bruins vs Kings",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892728/kings-bruins",
+   "source": "espn",
+   "score": 1
   },
   {
    "date": "2026-11-17",
@@ -276,6 +480,18 @@
    "why": "fav"
   },
   {
+   "id": "espn-401892758",
+   "date": "2026-11-21",
+   "time": "19:00",
+   "title": "Bruins vs Capitals",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892758/capitals-bruins",
+   "source": "espn",
+   "score": 1
+  },
+  {
    "date": "2026-11-21",
    "time": "19:00",
    "title": "Ryan Hamilton",
@@ -289,6 +505,18 @@
    "score": 1
   },
   {
+   "id": "espn-401892781",
+   "date": "2026-11-25",
+   "time": "19:00",
+   "title": "Bruins vs Jets",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892781/jets-bruins",
+   "source": "espn",
+   "score": 1
+  },
+  {
    "date": "2026-11-25",
    "time": "19:30",
    "title": "Doughboys",
@@ -299,6 +527,66 @@
    "sub": "Live podcast",
    "source": "picks",
    "id": "2026-11-25-doughboys-the-wilbur",
+   "score": 1
+  },
+  {
+   "id": "espn-401892795",
+   "date": "2026-11-27",
+   "time": "13:00",
+   "title": "Bruins vs Maple Leafs",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892795/maple-leafs-bruins",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401909330",
+   "date": "2026-11-27",
+   "time": "20:00",
+   "title": "Celtics vs Hawks",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401909330/hawks-celtics",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401892824",
+   "date": "2026-11-29",
+   "time": "17:00",
+   "title": "Bruins vs Canucks",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892824/canucks-bruins",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401892835",
+   "date": "2026-12-01",
+   "time": "20:00",
+   "title": "Bruins vs Avalanche",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892835/avalanche-bruins",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401910078",
+   "date": "2026-12-02",
+   "time": "19:30",
+   "title": "Celtics vs Hornets",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401910078/hornets-celtics",
+   "source": "espn",
    "score": 1
   },
   {
@@ -330,6 +618,18 @@
    "why": "fav"
   },
   {
+   "id": "espn-401892859",
+   "date": "2026-12-05",
+   "time": "13:00",
+   "title": "Bruins vs Red Wings",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892859/red-wings-bruins",
+   "source": "espn",
+   "score": 1
+  },
+  {
    "date": "2026-12-05",
    "time": "19:00",
    "title": "Gianmarco Soresi",
@@ -342,6 +642,18 @@
    "id": "2026-12-05-gianmarco-soresi-the-wilbur",
    "score": 2,
    "why": "fav"
+  },
+  {
+   "id": "espn-401873105",
+   "date": "2026-12-06",
+   "time": "16:25",
+   "title": "Patriots vs Bills",
+   "cat": "sports",
+   "venue": "Gillette Stadium",
+   "city": "Foxborough, MA",
+   "url": "https://www.espn.com/nfl/game/_/gameId/401873105/bills-patriots",
+   "source": "espn",
+   "score": 1
   },
   {
    "date": "2026-12-06",
@@ -358,6 +670,30 @@
    "why": "like"
   },
   {
+   "id": "espn-401873109",
+   "date": "2026-12-10",
+   "time": "20:15",
+   "title": "Patriots vs Vikings",
+   "cat": "sports",
+   "venue": "Gillette Stadium",
+   "city": "Foxborough, MA",
+   "url": "https://www.espn.com/nfl/game/_/gameId/401873109/vikings-patriots",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401892909",
+   "date": "2026-12-12",
+   "time": "13:00",
+   "title": "Bruins vs Devils",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892909/devils-bruins",
+   "source": "espn",
+   "score": 1
+  },
+  {
    "date": "2026-12-13",
    "time": "20:00",
    "title": "Matt Rogers",
@@ -371,6 +707,66 @@
    "score": 1
   },
   {
+   "id": "espn-401910107",
+   "date": "2026-12-14",
+   "time": "19:30",
+   "title": "Celtics vs Wizards",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401910107/wizards-celtics",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401892931",
+   "date": "2026-12-15",
+   "time": "19:00",
+   "title": "Bruins vs Panthers",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892931/panthers-bruins",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401910117",
+   "date": "2026-12-16",
+   "time": "19:00",
+   "title": "Celtics vs Wizards",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401910117/wizards-celtics",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401892946",
+   "date": "2026-12-17",
+   "time": "19:00",
+   "title": "Bruins vs Blues",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892946/blues-bruins",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401910136",
+   "date": "2026-12-18",
+   "time": "19:30",
+   "title": "Celtics vs Jazz",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401910136/jazz-celtics",
+   "source": "espn",
+   "score": 1
+  },
+  {
    "date": "2026-12-19",
    "time": "19:00",
    "title": "Godfrey",
@@ -380,6 +776,66 @@
    "url": "https://thewilbur.com/calendar/",
    "source": "picks",
    "id": "2026-12-19-godfrey-the-wilbur",
+   "score": 1
+  },
+  {
+   "id": "espn-401892970",
+   "date": "2026-12-20",
+   "time": "13:00",
+   "title": "Bruins vs Flyers",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892970/flyers-bruins",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401910156",
+   "date": "2026-12-20",
+   "time": "20:00",
+   "title": "Celtics vs Pistons",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401910156/pistons-celtics",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401910175",
+   "date": "2026-12-23",
+   "time": "19:30",
+   "title": "Celtics vs Trail Blazers",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401910175/trail-blazers-celtics",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401909098",
+   "date": "2026-12-25",
+   "time": "14:30",
+   "title": "Celtics vs Heat",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401909098/heat-celtics",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401892995",
+   "date": "2026-12-26",
+   "time": "19:00",
+   "title": "Bruins vs Islanders",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892995/islanders-bruins",
+   "source": "espn",
    "score": 1
   },
   {
@@ -405,6 +861,30 @@
    "sub": "Wrap It Up!",
    "source": "picks",
    "id": "2026-12-27-joe-gatto-and-drew-lynch-the-wilbur",
+   "score": 1
+  },
+  {
+   "id": "espn-401910208",
+   "date": "2026-12-28",
+   "time": "20:00",
+   "title": "Celtics vs Cavaliers",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401910208/cavaliers-celtics",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401893032",
+   "date": "2026-12-30",
+   "time": "19:30",
+   "title": "Bruins vs Oilers",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401893032/oilers-bruins",
+   "source": "espn",
    "score": 1
   },
   {
@@ -466,6 +946,246 @@
    "id": "2027-01-02-phish-madison-square-garde",
    "score": 3,
    "why": "love"
+  },
+  {
+   "id": "espn-401873157",
+   "date": "2027-01-03",
+   "time": null,
+   "title": "Patriots vs Broncos",
+   "cat": "sports",
+   "venue": "Gillette Stadium",
+   "city": "Foxborough, MA",
+   "url": "https://www.espn.com/nfl/game/_/gameId/401873157/broncos-patriots",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401893075",
+   "date": "2027-01-05",
+   "time": "19:30",
+   "title": "Bruins vs Sabres",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401893075/sabres-bruins",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401873180",
+   "date": "2027-01-10",
+   "time": null,
+   "title": "Patriots vs Dolphins",
+   "cat": "sports",
+   "venue": "Gillette Stadium",
+   "city": "Foxborough, MA",
+   "url": "https://www.espn.com/nfl/game/_/gameId/401873180/dolphins-patriots",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401910315",
+   "date": "2027-01-11",
+   "time": "19:30",
+   "title": "Celtics vs Rockets",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401910315/rockets-celtics",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401893120",
+   "date": "2027-01-12",
+   "time": "19:00",
+   "title": "Bruins vs Hurricanes",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401893120/hurricanes-bruins",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401910328",
+   "date": "2027-01-13",
+   "time": "19:00",
+   "title": "Celtics vs Knicks",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401910328/knicks-celtics",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401893135",
+   "date": "2027-01-14",
+   "time": "19:00",
+   "title": "Bruins vs Stars",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401893135/stars-bruins",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401910352",
+   "date": "2027-01-16",
+   "time": "19:00",
+   "title": "Celtics vs Nets",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401910352/nets-celtics",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401893169",
+   "date": "2027-01-18",
+   "time": "13:30",
+   "title": "Bruins vs Lightning",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401893169/lightning-bruins",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401910377",
+   "date": "2027-01-20",
+   "time": "19:30",
+   "title": "Celtics vs Pacers",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401910377/pacers-celtics",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401910385",
+   "date": "2027-01-21",
+   "time": "19:30",
+   "title": "Celtics vs 76ers",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401910385/76ers-celtics",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401910402",
+   "date": "2027-01-23",
+   "time": "19:00",
+   "title": "Celtics vs Hornets",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401910402/hornets-celtics",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401910413",
+   "date": "2027-01-25",
+   "time": "19:00",
+   "title": "Celtics vs Raptors",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401910413/raptors-celtics",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401893226",
+   "date": "2027-01-26",
+   "time": "19:00",
+   "title": "Bruins vs Blue Jackets",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401893226/blue-jackets-bruins",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401910430",
+   "date": "2027-01-27",
+   "time": "19:30",
+   "title": "Celtics vs Clippers",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401910430/clippers-celtics",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401910446",
+   "date": "2027-01-29",
+   "time": "19:30",
+   "title": "Celtics vs Suns",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401910446/suns-celtics",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401893261",
+   "date": "2027-01-30",
+   "time": "19:00",
+   "title": "Bruins vs Maple Leafs",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401893261/maple-leafs-bruins",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401910477",
+   "date": "2027-02-02",
+   "time": "20:00",
+   "title": "Celtics vs Lakers",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401910477/lakers-celtics",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401910529",
+   "date": "2027-02-09",
+   "time": "19:30",
+   "title": "Celtics vs Nuggets",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401910529/nuggets-celtics",
+   "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "espn-401910541",
+   "date": "2027-02-10",
+   "time": "19:30",
+   "title": "Celtics vs Warriors",
+   "cat": "sports",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.espn.com/nba/game/_/gameId/401910541/warriors-celtics",
+   "source": "espn",
+   "score": 1
   }
  ],
  "movies": [
@@ -542,7 +1262,7 @@
  ],
  "sources": {
   "picks": 34,
-  "espn": 0,
+  "espn": 60,
   "ticketmaster": "no key yet"
  }
 }
