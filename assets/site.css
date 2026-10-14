@@ -169,6 +169,32 @@ a:hover{color:var(--red)}
 .entry-cover .band{display:block;height:8px;background:var(--cover-band,var(--red))}
 .entry-cover .typeset{aspect-ratio:4/3;display:flex;align-items:flex-end;padding:22px;color:var(--cover-ink,#fff);font-family:var(--f-display);font-weight:800;font-size:2rem;line-height:1}
 
+/* ---------- ESPN article archive ---------- */
+.writing{border-top:2px solid var(--ink)}
+.writing-intro{display:grid;grid-template-columns:var(--meta-col) minmax(0,1fr);gap:10px 40px;margin-bottom:40px}
+.writing-kicker{grid-column:2;color:var(--red);font-size:.88rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
+.writing-intro h2,.writing-intro>p:last-child{grid-column:2}
+.writing-intro h2{font-size:clamp(1.9rem,3.4vw,2.6rem);font-weight:700;letter-spacing:-.015em;line-height:1.12}
+.writing-intro>p:last-child{max-width:40em;color:var(--muted)}
+.writing-years{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:44px 40px;padding-left:calc(var(--meta-col) + 40px)}
+.writing-season{border-top:1px solid var(--ink);padding-top:14px}
+.writing-season h3{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:8px;font-size:1.35rem;font-weight:700}
+.writing-season h3 span{color:var(--muted);font-family:var(--f-body);font-size:.78rem;font-weight:500;white-space:nowrap}
+.article-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 20px;padding:0;margin:0;list-style:none}
+.article-list li{border-top:1px solid var(--rule)}
+.article-list a{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;text-decoration:none;font-size:.96rem}
+.article-list a:hover span:first-child{text-decoration:underline;text-decoration-color:var(--red);text-decoration-thickness:2px;text-underline-offset:.22em}
+.article-arrow{color:var(--red);font-size:.9rem;transition:transform .15s ease}
+.article-list a:hover .article-arrow{transform:translate(2px,-2px)}
+@media (max-width: 900px){
+  .writing-intro{grid-template-columns:minmax(0,1fr);gap:8px}
+  .writing-intro>*{grid-column:1}
+  .writing-years{grid-template-columns:minmax(0,1fr);gap:34px;padding-left:0}
+}
+@media (max-width: 520px){
+  .article-list{column-gap:14px}
+}
+
 /* ---------- About ---------- */
 .about{border-top:2px solid var(--ink)}
 .about-grid{display:grid;grid-template-columns:var(--meta-col) minmax(0,1fr);gap:20px 40px}
