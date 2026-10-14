@@ -1,0 +1,65 @@
+# Keeps davidsolar.dev/guillotine/ current without the Yahoo API.
+#  - guillotine/paste.txt holds copies of two Yahoo pages (league overview, starting rosters).
+#    Committing it rebuilds guillotine/data.json from them.
+#  - Every morning (and Sunday before kickoff) it refreshes player projections from Sleeper.
+name: Guillotine update
+
+on:
+  push:
+    branches: [main]
+    paths: [guillotine/paste.txt]
+  schedule:
+    - cron: "17 14 * 9-12,1 *"   # 10:17am ET daily (9:17 in winter), September through January
+    - cron: "47 16 * 9-12,1 0"   # 12:47pm ET Sundays, after inactives
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: guillotine-odds
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Read the pasted league pages
+        run: python3 tools/guillotine_paste.py
+
+      - name: Refresh player projections
+        run: python3 tools/guillotine_projections.py
+
+      - name: Commit the new data
+        id: commit
+        run: |
+          # Skip the commit when only timestamps moved.
+          if git show HEAD:guillotine/data.json > /tmp/old.json 2>/dev/null && python3 - <<'PY'
+          import json, sys
+          def core(p):
+              d = json.load(open(p)); d.pop("updated", None)
+              if isinstance(d.get("proj_source"), dict): d["proj_source"].pop("updated", None)
+              return d
+          sys.exit(0 if core("/tmp/old.json") == core("guillotine/data.json") else 1)
+          PY
+          then
+            echo "Nothing changed."
+            exit 0
+          fi
+          git add guillotine/data.json
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -m "Update guillotine odds data"
+          git pull --rebase -q origin main
+          git push
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Rebuild the site
+        if: steps.commit.outputs.pushed == 'true'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds"

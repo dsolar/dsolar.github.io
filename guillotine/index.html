@@ -30,6 +30,7 @@
   --blade:#C8102E;     /* the only red: the cut line and real danger */
   --bleu-rgb:29,63,143;/* survival shading */
   --hi-ink:#FFFFFF;    /* text on dark survival cells */
+  --danger:#C8102E; --bubble:#B35C00; --safe:#2E7D4F;  /* cut-risk tiers */
   --f-display:"Bodoni Moda","Didot","Bodoni 72",Georgia,serif;
   --f-body:"Libre Franklin","Franklin Gothic Medium","Helvetica Neue",Arial,sans-serif;
   color-scheme:light;
@@ -38,11 +39,13 @@
   :root:not([data-theme="light"]){
     --bg:#0A1120; --surface:#111A2C; --ink:#E7EBF2; --muted:#98A3B7; --rule:#223049; --track:#1B263B;
     --blade:#FF4D63; --bleu-rgb:110,152,235; --hi-ink:#0A1120; color-scheme:dark;
+    --danger:#FF4D63; --bubble:#F2A23A; --safe:#5FC48A;
   }
 }
 :root[data-theme="dark"]{
   --bg:#0A1120; --surface:#111A2C; --ink:#E7EBF2; --muted:#98A3B7; --rule:#223049; --track:#1B263B;
   --blade:#FF4D63; --bleu-rgb:110,152,235; --hi-ink:#0A1120; color-scheme:dark;
+  --danger:#FF4D63; --bubble:#F2A23A; --safe:#5FC48A;
 }
 
 *,*::before,*::after{box-sizing:border-box}
@@ -83,16 +86,19 @@ h2{font:700 1.6rem/1.1 var(--f-display);font-variation-settings:"opsz" 48;margin
 .axis{position:relative;height:2.5rem;margin:0 3.6rem 0 0;font-size:.7rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .axis span{position:absolute;bottom:.3rem;transform:translateX(-50%)}
 .rows{list-style:none;margin:0;padding:0;position:relative}
-.row{display:grid;grid-template-columns:minmax(0,1fr) 3.6rem;column-gap:0;row-gap:.3rem;padding:.7rem 0;border-top:1px solid var(--rule)}
+.pct-head{position:absolute;right:.9rem;top:.65rem;font-size:.62rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.row{display:grid;grid-template-columns:minmax(0,1fr) 4.2rem;column-gap:.4rem;row-gap:.3rem;padding:.7rem 0 .7rem .65rem;border-top:1px solid var(--rule);border-left:3px solid var(--tier,transparent);cursor:pointer}
 .row:first-child{border-top-color:transparent}
+.row:hover .tn{text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:3px}
 .who{min-width:0}
-.name{font-weight:600;font-size:.95rem;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tag{display:inline-block;margin-left:.4rem;padding:.05rem .4rem;border:1px solid currentColor;border-radius:2px;font-size:.62rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;vertical-align:.12em;color:var(--muted)}
-.tag.warn{color:var(--blade)}
+.team-btn{all:unset;display:flex;align-items:baseline;gap:.45rem;max-width:100%;cursor:pointer;border-radius:2px}
+.team-btn:focus-visible{outline:2px solid var(--blade);outline-offset:3px}
+.tn{font-weight:600;font-size:.95rem;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.mgr-in{flex:none;font-size:.78rem;font-weight:500;color:var(--muted);white-space:nowrap}
 .meta{font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
-.pct{grid-row:1 / span 2;grid-column:2;text-align:right;align-self:center;font:700 1.45rem/1 var(--f-display);font-variation-settings:"opsz" 48;font-variant-numeric:lining-nums tabular-nums}
-.pct small{display:block;font:500 .62rem/1.2 var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:.2rem}
-.pct.hot{color:var(--blade)}
+.pct{grid-row:1 / span 2;grid-column:2;text-align:right;align-self:center;color:var(--tier,var(--ink));font:700 1.45rem/1 var(--f-display);font-variation-settings:"opsz" 48;font-variant-numeric:lining-nums tabular-nums}
+.pct small{display:block;font:700 .6rem/1.2 var(--f-body);letter-spacing:.08em;text-transform:uppercase;margin-top:.25rem}
+.t-danger{--tier:var(--danger)} .t-bubble{--tier:var(--bubble)} .t-safe{--tier:var(--safe)}
 .lane{grid-column:1;position:relative;height:12px}
 .lane .track{position:absolute;inset:5px 0;background:var(--track);border-radius:2px}
 .lane .range{position:absolute;top:2px;bottom:2px;background:rgba(var(--bleu-rgb),.28);border-radius:2px}
@@ -109,13 +115,21 @@ h2{font:700 1.6rem/1.1 var(--f-display);font-variation-settings:"opsz" 48;margin
 .key .k-dot{width:9px;height:9px;border-radius:50%;background:var(--ink)}
 .key .k-est{width:9px;height:9px;border-radius:50%;border:2px solid var(--ink)}
 .key .k-blade{width:2px;height:12px;background:var(--blade)}
+.tiers{display:flex;flex-wrap:wrap;gap:.4rem 1.2rem;margin:.5rem 0 0;font-size:.75rem;color:var(--muted)}
+.tiers span{display:inline-flex;align-items:center;gap:.4rem}
+.tiers i{width:3px;height:12px;background:var(--tier)}
+.tiers b{color:var(--tier);font-weight:700}
 
 /* Survival by week */
 .scroll{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);border-radius:3px}
 table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:.8rem}
 th,td{padding:.5rem .35rem;text-align:center;white-space:nowrap}
 thead th{font-size:.68rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--rule);padding-top:.65rem}
-tbody th{text-align:left;font-weight:600;max-width:11rem;overflow:hidden;text-overflow:ellipsis;position:sticky;left:0;background:var(--surface);padding-left:.8rem;z-index:1}
+tbody th{text-align:left;font-weight:600;max-width:12rem;position:sticky;left:0;background:var(--surface);padding-left:.8rem;z-index:1}
+tbody th .team-btn{display:grid;gap:.05rem;max-width:11rem}
+tbody th .tn{font-size:.8rem}
+tbody th .mgr-in{font-size:.7rem}
+tbody th .tn::before{content:"";display:inline-block;width:.45rem;height:.45rem;border-radius:50%;background:var(--tier);margin-right:.4rem;vertical-align:.08em}
 thead th:first-child{text-align:left;padding-left:.8rem;position:sticky;left:0;background:var(--surface);z-index:1}
 tbody tr + tr > *{border-top:1px solid var(--bg)}
 td.c{min-width:2.6rem}
@@ -132,9 +146,9 @@ th.win{color:var(--ink)}
 .fallen summary:focus-visible{outline:2px solid var(--blade);outline-offset:3px}
 .fallen summary:hover .t{text-decoration-thickness:3px}
 .fallen .w{font:700 .95rem/1 var(--f-display);color:var(--muted)}
-.fallen .who2{min-width:0;display:grid;gap:.1rem}
+.fallen .who2{min-width:0;display:flex;align-items:baseline;gap:.45rem}
 .fallen .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;text-decoration:line-through;text-decoration-color:var(--blade);text-decoration-thickness:2px}
-.fallen .mgr{font-size:.75rem;color:var(--muted)}
+.fallen .mgr{flex:none;font-size:.78rem;color:var(--muted)}
 .fallen .end{display:flex;align-items:center;gap:.7rem;padding-right:.3rem;color:var(--muted);font-size:.8rem;font-variant-numeric:tabular-nums;white-space:nowrap}
 .fallen .cue{font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blade);display:inline-flex;align-items:center;gap:.45rem}
 .fallen .chev{width:.45rem;height:.45rem;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .15s ease}
@@ -148,6 +162,33 @@ th.win{color:var(--ink)}
 }
 @media (prefers-reduced-motion:reduce){.fallen .chev{transition:none}}
 .none{color:var(--muted);font-size:.9rem;margin:0}
+
+/* Team roster window */
+dialog.team{width:min(36rem, calc(100% - 24px));max-height:min(88vh, 52rem);padding:0;border:1px solid var(--rule);border-radius:6px;background:var(--surface);color:var(--ink);box-shadow:0 24px 64px rgba(0,0,0,.35);overflow:auto}
+dialog.team::backdrop{background:rgba(6,12,24,.6)}
+.dlg{padding:1rem 1rem 1.2rem;display:grid;gap:.9rem}
+.dlg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}
+.dlg-head h3{margin:0;font:700 1.45rem/1.1 var(--f-display);font-variation-settings:"opsz" 48;text-wrap:balance}
+.dlg-head p{margin:.25rem 0 0;color:var(--muted);font-size:.85rem}
+.dlg-close{all:unset;cursor:pointer;flex:none;width:2rem;height:2rem;display:grid;place-items:center;border:1px solid var(--rule);border-radius:50%;font-size:1.2rem;line-height:1;color:var(--muted)}
+.dlg-close:hover{color:var(--ink)}
+.dlg-close:focus-visible{outline:2px solid var(--blade);outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem}
+.chip{font-size:.75rem;padding:.2rem .5rem;border:1px solid var(--rule);border-radius:999px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip.tier{color:var(--tier);border-color:currentColor;font-weight:700}
+.roster{font-size:.82rem}
+.roster th,.roster td{text-align:left;white-space:normal;padding:.45rem .35rem;vertical-align:top}
+.roster thead th{position:static}
+.roster tbody tr + tr > *{border-top:1px solid var(--rule)}
+.roster .slot{width:3.6rem;color:var(--muted);font-size:.72rem;font-weight:600;letter-spacing:.04em}
+.roster .num{width:3.2rem;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.roster .pl b{font-weight:600}
+.roster .pl small{display:block;color:var(--muted);font-size:.72rem}
+.roster tr.sep th{padding-top:.9rem;font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-top:none}
+.roster tr.bad .pl b,.roster tr.bad .num{color:var(--danger)}
+.st{display:inline-block;margin-left:.35rem;padding:0 .3rem;border-radius:2px;font-size:.62rem;font-weight:700;letter-spacing:.04em;vertical-align:.1em;border:1px solid currentColor}
+.st.q{color:var(--bubble)} .st.o{color:var(--danger)} .st.go{color:var(--safe)}
+.dlg-note{margin:0;color:var(--muted);font-size:.72rem;line-height:1.45}
 
 .method{display:grid;gap:.75rem;max-width:38rem;font-size:.92rem}
 .method p{margin:0}
@@ -184,18 +225,20 @@ th.win{color:var(--ink)}
   <section id="week" aria-labelledby="week-title" hidden>
     <div class="section-head">
       <h2 id="week-title">Under the blade</h2>
-      <p>Each team's likely score this week, with the cut line. Teams whose range crosses the red line are in danger.</p>
+      <p>Each bar is a team's likely score this week: it lands inside the bar in 8 of 10 simulated weeks. The dot is the projection. The red line is where the week's lowest score usually lands, so the more of a bar sitting left of it, the bigger the danger. Tap a team for its roster.</p>
     </div>
     <div class="board">
+      <span class="pct-head" aria-hidden="true">Cut odds</span>
       <div class="axis" id="axis" aria-hidden="true"></div>
       <ol class="rows" id="rows"></ol>
     </div>
     <div class="key" aria-hidden="true">
-      <span><i class="k-range"></i>Likely range (8 in 10 weeks)</span>
-      <span><i class="k-dot"></i>Yahoo projection</span>
-      <span><i class="k-est"></i>No projection, team average used</span>
-      <span><i class="k-blade"></i>Cut line</span>
+      <span><i class="k-range"></i>Likely score (8 in 10 weeks)</span>
+      <span><i class="k-dot"></i>Projection</span>
+      <span><i class="k-est"></i>Team average (no projection)</span>
+      <span><i class="k-blade"></i>Typical lowest score</span>
     </div>
+    <div class="tiers" id="tiers"></div>
   </section>
 
   <section id="season" aria-labelledby="season-title" hidden>
@@ -215,15 +258,30 @@ th.win{color:var(--ink)}
   <section aria-labelledby="method-title">
     <div class="section-head"><h2 id="method-title">How the odds work</h2></div>
     <div class="method" id="method">
-      <p><b>This week</b>, each team's expected score is its Yahoo projection. A team without a projection uses its average instead. A team with no starters set is assumed to set them before kickoff. If it doesn't, it scores zero and is cut.</p>
+      <p><b>This week</b>, each team's expected score is its Yahoo projection. A team with no lineup set gets its best possible lineup instead, built from player projections. Failing both, it gets its average.</p>
       <p><b>Later weeks</b> use each team's <span id="m-avg">average over its last three weeks</span>, pulled a quarter of the way toward the league average. Rosters keep changing as cut teams' players go to waivers, so nobody's current form lasts all season.</p>
-      <p><b>Actual scores</b> swing about 22% either way from those numbers. Each simulation plays out the rest of the season, cutting the lowest score every week until one team is left. The page runs <span id="m-runs">20,000</span> of them and counts.</p>
+      <p><b>The range of outcomes.</b> A projection is a midpoint, not a promise. Weekly scores swing about 22% either way, so a team projected 120 lands between about 86 and 154 in 8 of 10 weeks, and under 86 one week in ten. That's why a 10-point edge isn't safety: a team projected 110 outscores one projected 120 about 4 times in 10.</p>
+      <p><b>The cut line</b> is the median lowest score across all simulations of this week. The safe score is the one that clears the lowest score in 9 of 10 simulations.</p>
+      <p><b>Each simulation</b> plays out the rest of the season, drawing every team's score from that range and cutting the lowest each week until one team is left. The page runs <span id="m-runs">20,000</span> of them and counts how often each team gets cut, survives each week and wins.</p>
+      <p><b>Cut-risk colors</b> compare each team with the average risk this week (one in however many teams are left). <b>Danger</b> is at least twice the average, <b>Bubble</b> is above average, and <b>Safe</b> is below it.</p>
       <p><b>Not in the model yet:</b> waiver pickups and money left. A team with a big budget will improve, and these odds don't know that.</p>
     </div>
   </section>
 
-  <p class="foot">Built by David Solar. League data from Yahoo Fantasy.</p>
+  <p class="foot">Built by David Solar. League data from Yahoo Fantasy, player projections from Sleeper.</p>
 </main>
+
+<dialog class="team" id="team-dlg" aria-labelledby="dlg-title">
+  <div class="dlg">
+    <div class="dlg-head">
+      <div><h3 id="dlg-title"></h3><p id="dlg-mgr"></p></div>
+      <button class="dlg-close" id="dlg-close" type="button" aria-label="Close">&times;</button>
+    </div>
+    <div class="chips" id="dlg-chips"></div>
+    <div id="dlg-body"></div>
+    <p class="dlg-note" id="dlg-note"></p>
+  </div>
+</dialog>
 
 <script src="sim.js"></script>
 <script>
@@ -239,16 +297,37 @@ th.win{color:var(--ink)}
   var esc = function (s) {
     return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; });
   };
+  var etTime = function (iso) {
+    var d = new Date(iso);
+    return isNaN(d) ? "" : d.toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + " ET";
+  };
+  // Cut-risk tier against the average risk this week (1 in n).
+  var tierOf = function (p, n) {
+    var avg = 1 / n;
+    return p >= 2 * avg ? "danger" : p >= avg ? "bubble" : "safe";
+  };
+  var TIER = { danger: "Danger", bubble: "Bubble", safe: "Safe" };
+
+  var state = {};
+
+  function teamButton(name, manager) {
+    return '<button class="team-btn" type="button" data-team="' + esc(name) + '"><span class="tn">' + esc(name) + "</span>" +
+      (manager ? '<span class="mgr-in">' + esc(manager) + "</span>" : "") + "</button>";
+  }
 
   function render(data, league) {
     var r = GuillotineSim.simulate(data);
     var managers = (league && league.managers) || {};
     var eulogies = (league && league.eulogies) || {};
-    var fromData = {};
-    (data.teams || []).forEach(function (t) { if (t.manager) fromData[t.name] = t.manager; });
-    var mgr = function (name) { return managers[name] || fromData[name] || null; };
+    var raw = {};
+    (data.teams || []).forEach(function (t) { raw[t.name] = t; });
+    var mgr = function (name) { return managers[name] || (raw[name] && raw[name].manager) || null; };
     var teams = r.teams;
-    var total = data.total_teams || (teams.length + r.fallen.length);
+    var n = teams.length;
+    var total = data.total_teams || (n + r.fallen.length);
+    var z = 1.2816, cv = r.opts.cv;
+    var rangeOf = function (t) { return [t.now * (1 - z * cv), t.now * (1 + z * cv)]; };
+    state = { data: data, raw: raw, mgr: mgr, sim: r, n: n, rangeOf: rangeOf };
 
     document.title = (data.league || "Guillotine") + " Odds | David Solar";
     $("league").textContent = (data.league || "Guillotine league") + " · " + (data.season || "") + " guillotine league";
@@ -257,15 +336,11 @@ th.win{color:var(--ink)}
     $("sample").hidden = !data.sample;
     if ((data.teams || []).some(function (t) { return !t.out && typeof t.avg === "number"; })) $("m-avg").textContent = "season scoring average";
 
-    if (data.updated) {
-      var d = new Date(data.updated);
-      if (!isNaN(d)) {
-        $("updated").textContent = "Updated " + d.toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + " ET";
-      }
-    }
+    var upd = data.updated ? "Updated " + etTime(data.updated) : "";
+    $("updated").innerHTML = esc(upd) + (data.league_url ? (upd ? " · " : "") + '<a href="' + esc(data.league_url) + '" target="_blank" rel="noopener">League on Yahoo</a>' : "");
 
-    if (teams.length < 2) {
-      $("lede").textContent = teams.length === 1 ? teams[0].name + " is the last team standing." : "No teams in the data yet.";
+    if (n < 2) {
+      $("lede").textContent = n === 1 ? teams[0].name + " is the last team standing." : "No teams in the data yet.";
       return;
     }
 
@@ -273,20 +348,17 @@ th.win{color:var(--ink)}
     var byRisk = teams.slice().sort(function (a, b) { return b.pChop - a.pChop; });
     var byWin = teams.slice().sort(function (a, b) { return b.pWin - a.pWin; });
     var top = byRisk[0], fav = byWin[0];
-    $("lede").innerHTML = "<b>" + esc(top.name) + "</b> is the likeliest to be cut this week (" + pct(top.pChop) + "). " +
-      "<b>" + esc(fav.name) + "</b> has the best chance of being the last team standing (" + pct(fav.pWin) + ")." +
-      teams.filter(function (t) { return t.noLineup; }).map(function (t) {
-        return " <b>" + esc(t.name) + "</b> has no starters set. These odds assume that changes; if it doesn't by kickoff, it's an automatic cut.";
-      }).join("");
-    $("f-left").innerHTML = teams.length + " <small>of " + total + "</small>";
+    var named = function (t) { var m = mgr(t.name); return "<b>" + esc(t.name) + "</b>" + (m ? " (" + esc(m) + ")" : ""); };
+    $("lede").innerHTML = named(top) + " is the likeliest to be cut this week (" + pct(top.pChop) + "). " +
+      named(fav) + " has the best chance of being the last team standing (" + pct(fav.pWin) + ").";
+    $("f-left").innerHTML = n + " <small>of " + total + "</small>";
     $("f-cut").textContent = pts(r.cut.median);
     $("f-safe").textContent = pts(r.cut.p90) + "+";
     $("figures").hidden = false;
 
     // This week: ranges on one shared scale, with the blade at the typical lowest score
-    var z = 1.2816, cv = r.opts.cv;
     var lo = Infinity, hi = -Infinity;
-    teams.forEach(function (t) { lo = Math.min(lo, t.now * (1 - z * cv)); hi = Math.max(hi, t.now * (1 + z * cv)); });
+    teams.forEach(function (t) { var g = rangeOf(t); lo = Math.min(lo, g[0]); hi = Math.max(hi, g[1]); });
     lo = Math.max(0, Math.floor(lo / 20) * 20); hi = Math.ceil(hi / 20) * 20;
     var x = function (v) { return ((v - lo) / (hi - lo)) * 100; };
 
@@ -296,22 +368,24 @@ th.win{color:var(--ink)}
     axis += '<span class="cut-label' + (cx < 10 ? " at-start" : cx > 90 ? " at-end" : "") + '" style="left:' + cx + '%">Cut line ' + pts(r.cut.median) + "</span>";
     $("axis").innerHTML = axis;
 
-    var rows = byRisk.map(function (t) {
-      var a = t.now * (1 - z * cv), b = t.now * (1 + z * cv);
-      var source = t.proj !== null ? "proj " + t.proj.toFixed(1) : (t.noLineup ? "no lineup set, " : "") + "est " + t.now.toFixed(1);
-      var meta = [mgr(t.name), source, t.faab !== null ? "$" + t.faab + " FAB" : null, "wins " + pct(t.pWin)].filter(Boolean).join(" · ");
-      var label = t.name + ": " + (t.noLineup ? "no lineup set. " : "") + (t.proj !== null ? "projected " : "estimated ") + pts(t.now) + " points, likely " + pts(a) + " to " + pts(b) + ". " + pct(t.pChop) + " chance of being cut.";
-      return '<li class="row" aria-label="' + esc(label) + '">' +
-        '<div class="who"><div class="name">' + esc(t.name) + (t.noLineup ? '<span class="tag warn">No lineup</span>' : "") + "</div>" +
-        '<div class="meta">' + esc(meta) + "</div></div>" +
-        '<div class="pct' + (t.pChop >= 0.15 ? " hot" : "") + '">' + pct(t.pChop) + "<small>cut</small></div>" +
+    $("rows").innerHTML = byRisk.map(function (t) {
+      var g = rangeOf(t), tier = tierOf(t.pChop, n);
+      var basis = t.basis === "yahoo" ? "proj " + t.proj.toFixed(1) : t.basis === "best" ? "best lineup " + t.best.toFixed(1) : "avg " + t.now.toFixed(1);
+      var meta = [basis, "likely " + pts(g[0]) + " to " + pts(g[1]), t.faab !== null ? "$" + t.faab + " FAB" : null, "wins " + pct(t.pWin)].filter(Boolean).join(" · ");
+      var label = t.name + (mgr(t.name) ? ", " + mgr(t.name) : "") + ": " + TIER[tier] + ". " + pct(t.pChop) + " chance of being cut. Expected " + pts(t.now) + " points, likely " + pts(g[0]) + " to " + pts(g[1]) + ".";
+      return '<li class="row t-' + tier + '" data-team="' + esc(t.name) + '" aria-label="' + esc(label) + '">' +
+        '<div class="who">' + teamButton(t.name, mgr(t.name)) + '<div class="meta">' + esc(meta) + "</div></div>" +
+        '<div class="pct">' + pct(t.pChop) + "<small>" + TIER[tier] + "</small></div>" +
         '<div class="lane" aria-hidden="true"><span class="track"></span>' +
-        '<span class="range" style="left:' + x(a) + "%;width:" + (x(b) - x(a)) + '%"></span>' +
+        '<span class="range" style="left:' + x(g[0]) + "%;width:" + (x(g[1]) - x(g[0])) + '%"></span>' +
         '<span class="cut" style="left:' + cx + '%"></span>' +
-        '<span class="dot' + (t.proj === null ? " est" : "") + '" style="left:' + x(t.now) + '%"></span></div></li>';
+        '<span class="dot' + (t.basis === "avg" ? " est" : "") + '" style="left:' + x(t.now) + '%"></span></div></li>';
     }).join("");
-    $("rows").innerHTML = rows;
-
+    var avg = Math.round(100 / n);
+    $("tiers").innerHTML =
+      '<span class="t-danger"><i></i><b>Danger</b> ' + Math.round(200 / n) + "%+ cut odds</span>" +
+      '<span class="t-bubble"><i></i><b>Bubble</b> ' + avg + "% to " + (Math.round(200 / n) - 1) + "%</span>" +
+      '<span class="t-safe"><i></i><b>Safe</b> under ' + avg + "%</span>";
     $("week").hidden = false;
 
     // Survival grid
@@ -327,13 +401,13 @@ th.win{color:var(--ink)}
         var cls = "c" + (alpha > 0.55 ? " hi" : "") + (k === t.surv.length - 1 ? " win" : "");
         return '<td class="' + cls + '" style="background:rgba(var(--bleu-rgb),' + alpha.toFixed(3) + ')">' + pct(p) + "</td>";
       }).join("");
-      return '<tr><th scope="row" title="' + esc(t.name) + '">' + esc(t.name) + "</th>" + cells + "</tr>";
+      return '<tr><th scope="row" class="t-' + tierOf(t.pChop, n) + '">' + teamButton(t.name, mgr(t.name)) + "</th>" + cells + "</tr>";
     }).join("") + "</tbody>";
-    $("grid").innerHTML = "<caption class=\"eyebrow\" style=\"position:absolute;left:-9999px\">Chance each team is still alive after each week</caption>" + head + body;
+    $("grid").innerHTML = "<caption style=\"position:absolute;left:-9999px\">Chance each team is still alive after each week</caption>" + head + body;
     $("season").hidden = false;
 
     // The fallen
-    var missing = total - teams.length - r.fallen.length;
+    var missing = total - n - r.fallen.length;
     if (r.fallen.length || missing > 0) {
       $("fallen").innerHTML = r.fallen.map(function (f) {
         var m = mgr(f.name), e = eulogies[f.name];
@@ -352,14 +426,80 @@ th.win{color:var(--ink)}
       }).join("");
       $("fallen").hidden = !r.fallen.length;
       if (missing > 0) {
-        $("fallen-none").textContent = r.fallen.length
-          ? missing + " more eliminated team" + (missing > 1 ? "s aren't" : " isn't") + " in this data."
-          : missing + " team" + (missing > 1 ? "s have" : " has") + " been cut so far. The full list arrives with the live Yahoo data.";
+        $("fallen-none").textContent = missing + " more eliminated team" + (missing > 1 ? "s aren't" : " isn't") + " in this data.";
         $("fallen-none").hidden = false;
       }
       $("fallen-sec").hidden = false;
     }
   }
+
+  // ---- Team roster window
+  var SLOT_ORDER = { QB: 1, RB: 2, WR: 3, TE: 4, "W/R/T": 5, "W/R": 5, "W/T": 5, "Q/W/R/T": 6, K: 7, DEF: 8 };
+  function playerRow(p, isStarter) {
+    if (p.empty) {
+      return '<tr class="bad"><td class="slot">' + esc(p.slot) + '</td><td class="pl"><b>Empty</b></td><td class="num">0.0</td><td class="num"></td></tr>';
+    }
+    var st = p.status ? '<span class="st ' + (p.status === "Q" ? "q" : "o") + '">' + esc(p.status) + "</span>" : "";
+    var start = !isStarter && p.in_best ? '<span class="st go">Start</span>' : "";
+    var where = p.bye ? p.nfl + " · Bye" : [p.nfl + (p.opp ? " " + p.opp : ""), p.game].filter(Boolean).join(" · ");
+    var proj = p.bye ? "Bye" : typeof p.proj === "number" ? p.proj.toFixed(1) : "–";
+    var bad = isStarter && (p.bye || p.status === "O" || /^IR|^PUP|^NA|^SUSP/.test(p.status || ""));
+    return '<tr' + (bad ? ' class="bad"' : "") + '><td class="slot">' + esc(p.slot) + "</td>" +
+      '<td class="pl"><b>' + esc(p.name) + "</b>" + st + start + "<small>" + esc(p.pos + " · " + where) + "</small></td>" +
+      '<td class="num">' + proj + '</td><td class="num">' + esc(p.rank || "") + "</td></tr>";
+  }
+
+  function openTeam(name) {
+    var t = state.raw[name];
+    if (!t) return;
+    var simT = (state.sim.teams || []).filter(function (s) { return s.name === name; })[0];
+    $("dlg-title").textContent = name;
+    $("dlg-mgr").textContent = state.mgr(name) || "";
+    var chips = [];
+    if (simT) {
+      var tier = tierOf(simT.pChop, state.n), g = state.rangeOf(simT);
+      chips.push('<span class="chip tier t-' + tier + '">' + TIER[tier] + " · " + pct(simT.pChop) + " cut</span>");
+      chips.push('<span class="chip">Wins ' + pct(simT.pWin) + "</span>");
+      chips.push('<span class="chip">Likely ' + pts(g[0]) + " to " + pts(g[1]) + "</span>");
+    }
+    if (typeof t.proj === "number" && t.proj > 0) chips.push('<span class="chip">Yahoo proj ' + t.proj.toFixed(1) + "</span>");
+    if (typeof t.best === "number") chips.push('<span class="chip">Best lineup ' + t.best.toFixed(1) + "</span>");
+    if (typeof t.faab === "number") chips.push('<span class="chip">$' + t.faab + " FAB</span>");
+    $("dlg-chips").innerHTML = chips.join("");
+
+    var roster = t.roster || [];
+    if (!roster.length) {
+      $("dlg-body").innerHTML = '<p class="none">This roster isn\'t in the latest league paste.</p>';
+    } else {
+      var starters = roster.filter(function (p) { return p.slot !== "BN" && p.slot !== "IR"; })
+        .sort(function (a, b) { return (SLOT_ORDER[a.slot] || 9) - (SLOT_ORDER[b.slot] || 9); });
+      var bench = roster.filter(function (p) { return p.slot === "BN"; })
+        .sort(function (a, b) { return (b.proj || 0) - (a.proj || 0); });
+      var ir = roster.filter(function (p) { return p.slot === "IR"; });
+      var html = '<div class="scroll" style="border:0"><table class="roster"><thead><tr><th>Slot</th><th>Player</th><th class="num">Proj</th><th class="num">Rank</th></tr></thead><tbody>';
+      html += starters.every(function (p) { return p.empty; })
+        ? '<tr class="bad"><td class="slot">All</td><td class="pl" colspan="3"><b>No lineup set yet</b><small>The odds use this roster\'s best lineup, marked Start below.</small></td></tr>'
+        : starters.map(function (p) { return playerRow(p, true); }).join("");
+      if (bench.length) html += '<tr class="sep"><th colspan="4">Bench</th></tr>' + bench.map(function (p) { return playerRow(p, false); }).join("");
+      if (ir.length) html += '<tr class="sep"><th colspan="4">Injured reserve</th></tr>' + ir.map(function (p) { return playerRow(p, false); }).join("");
+      $("dlg-body").innerHTML = html + "</tbody></table></div>";
+    }
+    var src = state.data.proj_source;
+    $("dlg-note").textContent = src
+      ? "Player projections from Sleeper, scored with league settings (half PPR, 4-point passing TDs). Rank is this week's projected position rank. Best lineup is the highest-projected legal lineup from this roster; Start marks bench players who belong in it. Projections as of " + etTime(src.updated) + "."
+      : "Player projections arrive with the next update.";
+    var dlg = $("team-dlg");
+    if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
+    dlg.scrollTop = 0;
+  }
+
+  document.addEventListener("click", function (e) {
+    var hit = e.target.closest("[data-team]");
+    if (hit) { openTeam(hit.getAttribute("data-team")); return; }
+    var dlg = $("team-dlg");
+    if (e.target === dlg) dlg.close(); // click on the dimmed backdrop
+  });
+  $("dlg-close").addEventListener("click", function () { $("team-dlg").close(); });
 
   var getJSON = function (url) {
     return fetch(url, { cache: "no-store" }).then(function (res) { if (!res.ok) throw new Error(res.status); return res.json(); });

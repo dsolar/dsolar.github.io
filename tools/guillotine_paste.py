@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
-"""Build guillotine/data.json from a copy of the Yahoo league overview page.
+"""Build guillotine/data.json from copies of two Yahoo league pages.
 
-The no-API way to update davidsolar.dev/guillotine/: on the league's Yahoo page (League > Overview),
-select all, copy, and paste it into guillotine/paste.txt (GitHub's web editor works on a phone).
-Committing that file runs the "Guillotine paste" workflow, which runs this script.
-
-It reads three things from the paste:
-  "Week 6 Matchup"   the current week
-  Standings table    Team, Projected Points, FAB and Pts Per Week for each team still alive
-  Eliminated table   Week, Team and FAB for each team that's been cut
+The no-API way to update davidsolar.dev/guillotine/. In guillotine/paste.txt, paste:
+  1. the league's main page (League > Overview): standings, projections, FAB, eliminations
+  2. optionally, League > Starting Rosters: every team's starters and bench
+Select all, copy, paste one after the other. Committing the file runs the "Guillotine update"
+workflow, which runs this script and then tools/guillotine_projections.py.
 
   python tools/guillotine_paste.py [paste file] [--out guillotine/data.json]
 """
@@ -21,6 +18,13 @@ from datetime import datetime, timezone
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..")
+SLOTS = {"QB", "RB", "WR", "TE", "W/R/T", "Q/W/R/T", "W/R", "W/T", "K", "DEF", "BN", "IR"}
+PROJ_KEYS = {"proj_source", "proj_updated", "best"}  # added later by guillotine_projections.py
+
+
+def clean(s):
+    # Yahoo pages carry private-use icon glyphs and \r line ends; drop both.
+    return re.sub(r"[-\r]", "", s)
 
 
 def cells(line):
@@ -37,12 +41,65 @@ def num(s):
     return float(s) if re.fullmatch(r"-?\d+(\.\d+)?", s) else None
 
 
+def parse_rosters(lines):
+    """Starting Rosters page -> {team name: [players]}."""
+    rosters, team, i = {}, None, 0
+    while i < len(lines):
+        line = lines[i].strip()
+        if line.startswith("Pos") and "Player" in line and "\t" in lines[i]:
+            # The team name is the last non-blank line before this header.
+            j = i - 1
+            while j >= 0 and not lines[j].strip():
+                j -= 1
+            team = lines[j].strip()
+            rosters[team] = []
+            i += 1
+            continue
+        if team and line in SLOTS and lines[i].rstrip().endswith(line) and i + 1 < len(lines):
+            slot = line
+            name = lines[i + 1].strip()
+            if name == "--empty--":
+                rosters[team].append({"slot": slot, "empty": True})
+                i += 3 if i + 2 < len(lines) and lines[i + 2].strip() == "(Empty)" else 2
+                continue
+            notes = lines[i + 2].strip() if i + 2 < len(lines) else ""
+            tp = lines[i + 3].strip() if i + 3 < len(lines) else ""
+            game = lines[i + 4].strip() if i + 4 < len(lines) else ""
+            m = re.fullmatch(r"([A-Za-z]{2,3}) - ([A-Z]{1,3})", tp)
+            if not m:
+                i += 1
+                continue
+            status = ""
+            if notes.startswith(name):
+                sm = re.match(r"(IR-R|PUP-R|PUP|IR|NA|SUSP|Q|D|O)(?=[A-Z ]|$)", notes[len(name):])
+                status = sm.group(1) if sm else ""
+            p = {"slot": slot, "name": name, "nfl": m.group(1).upper(), "pos": m.group(2)}
+            if status:
+                p["status"] = status
+            if game.lower() == "bye":
+                p["bye"] = True
+            else:
+                gm = re.match(r"(\w{3}) (\d{1,2}:\d{2} [ap]m) (vs|@) (\w{2,3})", game)
+                if gm:
+                    p["game"] = f"{gm.group(1)} {gm.group(2)}"
+                    p["opp"] = ("vs " if gm.group(3) == "vs" else "@ ") + gm.group(4).upper()
+            rosters[team].append(p)
+            i += 5
+            continue
+        if line.startswith("Yahoo Sports - NBC"):
+            team = None
+        i += 1
+    return {t: r for t, r in rosters.items() if any(not p.get("empty") for p in r)}
+
+
 def parse(txt):
-    lines = [l.rstrip("\n") for l in txt.splitlines()]
+    txt = clean(txt)
+    lines = txt.splitlines()
     league = "Bastille Day"
-    m = re.search(r"^\s*(.+?) \(ID# \d+\)", txt, re.M)
+    m = re.search(r"^\s*(.+?) \(ID# (\d+)\)", txt, re.M)
     if m:
         league = m.group(1).strip()
+    league_id = m.group(2) if m else None
 
     alive, fallen, section = [], [], None
     for line in lines:
@@ -59,10 +116,7 @@ def parse(txt):
         if section == "standings":
             # Rank, Team, Points, Projected, Season, FAB, Waiver, Moves, Pts/Week
             if len(c) >= 9 and c[0].isdigit():
-                alive.append({
-                    "name": c[1], "proj": num(c[3]), "season": num(c[4]),
-                    "faab": money(c[5]), "avg": num(c[8]),
-                })
+                alive.append({"name": c[1], "proj": num(c[3]), "faab": money(c[5]), "avg": num(c[8])})
                 continue
             section = None
         elif section == "eliminated":
@@ -75,8 +129,9 @@ def parse(txt):
     if not alive:
         sys.exit("Couldn't find the Standings table. Copy the whole League > Overview page from Yahoo.")
 
-    m = re.search(r"Week (\d+) Matchup", txt)
+    m = re.search(r"Week (\d+) Matchup", txt) or re.search(r"Starting Rosters[\s\S]{0,80}?Week (\d+)", txt)
     week = int(m.group(1)) if m else (max([f["out"] for f in fallen], default=0) + 1)
+    rosters = parse_rosters(lines) if "Starting Rosters" in txt else {}
 
     teams = []
     for t in sorted(alive, key=lambda t: -(t["proj"] or 0)):
@@ -86,18 +141,19 @@ def parse(txt):
         row["proj"] = t["proj"]
         if t["avg"] is not None:
             row["avg"] = t["avg"]
+        if t["name"] in rosters:
+            row["roster"] = rosters[t["name"]]
         teams.append(row)
     for f in sorted(fallen, key=lambda f: -f["out"]):
         row = {"name": f["name"]}
         if f["faab"] is not None:
             row["faab"] = f["faab"]
         row["out"] = f["out"]
-        # A Week 1 casualty's season total is its elimination score.
         if f["out"] == 1 and f["season"] is not None:
-            row["scores"] = [f["season"]]
+            row["scores"] = [f["season"]]  # a Week 1 casualty's season total is its elimination score
         teams.append(row)
 
-    return {
+    data = {
         "league": league,
         "season": datetime.now(timezone.utc).year,
         "week": week,
@@ -107,6 +163,21 @@ def parse(txt):
         "source": "Yahoo league page, pasted",
         "teams": teams,
     }
+    if league_id:
+        data["league_url"] = f"https://football.fantasysports.yahoo.com/f1/{league_id}"
+    return data
+
+
+def base_of(data):
+    """The pasted league data without the projection layer or timestamp, for change checks."""
+    d = {k: v for k, v in data.items() if k not in PROJ_KEYS and k != "updated"}
+    d["teams"] = []
+    for t in data.get("teams", []):
+        t = {k: v for k, v in t.items() if k not in PROJ_KEYS}
+        if "roster" in t:
+            t["roster"] = [{k: v for k, v in p.items() if k not in ("proj", "rank", "in_best")} for p in t["roster"]]
+        d["teams"].append(t)
+    return d
 
 
 def main():
@@ -120,14 +191,15 @@ def main():
     if os.path.exists(out):
         with open(out, encoding="utf-8") as f:
             old = json.load(f)
-        if {k: v for k, v in old.items() if k != "updated"} == {k: v for k, v in data.items() if k != "updated"}:
-            print("No change in league data.")
+        if base_of(old) == base_of(data):
+            print("Pasted league data unchanged.")
             return
     with open(out, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=1)
         f.write("\n")
     alive = sum(1 for t in data["teams"] if "out" not in t)
-    print(f"Wrote {out}: week {data['week']}, {alive} of {data['total_teams']} teams alive.")
+    with_roster = sum(1 for t in data["teams"] if t.get("roster"))
+    print(f"Wrote {out}: week {data['week']}, {alive} of {data['total_teams']} teams alive, {with_roster} rosters.")
 
 
 if __name__ == "__main__":

@@ -73,24 +73,27 @@
       var played = (t.scores || []).slice(0, completed).filter(function (x) { return typeof x === "number"; });
       t._recent = played.length ? mean(played.slice(-o.recentWeeks)) : null;
     });
-    // A projection of exactly 0 while other teams have real ones means no starters are set.
-    var anyProj = alive.some(function (t) { return typeof t.proj === "number" && t.proj > 0; });
     var known = alive.map(function (t) { return t._recent; }).filter(function (x) { return x !== null; });
     var leagueAvg = known.length ? mean(known) : 100;
 
     var rows = alive.map(function (t) {
       var recent = t._recent === null ? leagueAvg : t._recent;
       var later = (1 - o.shrink) * recent + o.shrink * leagueAvg;
+      // This week: Yahoo's projection; with no lineup set (projection 0), the team's best possible
+      // lineup from player projections; failing both, its average.
       var hasProj = typeof t.proj === "number" && t.proj > 0;
+      var hasBest = typeof t.best === "number" && t.best > 0;
+      var basis = hasProj ? "yahoo" : hasBest ? "best" : "avg";
       return {
         name: t.name,
         faab: typeof t.faab === "number" ? t.faab : null,
         mine: !!t.mine,
-        noLineup: anyProj && t.proj === 0, // assumed to set one; if not, it scores 0 and is cut
+        basis: basis,
         proj: hasProj ? t.proj : null,
+        best: hasBest ? t.best : null,
         recent: t._recent,
-        now: hasProj ? t.proj : later, // expected score this week
-        later: later                   // expected score in later weeks
+        now: basis === "yahoo" ? t.proj : basis === "best" ? t.best : later, // expected score this week
+        later: later                                                       // expected score in later weeks
       };
     });
 

@@ -4,68 +4,1281 @@
  "week": 6,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-10-14T17:37:00Z",
+ "updated": "2026-10-14T19:16:50Z",
  "source": "Yahoo league page, pasted",
  "teams": [
   {
    "name": "Drake Mayezini",
    "faab": 524,
    "proj": 140.63,
-   "avg": 116.09
+   "avg": 116.09,
+   "roster": [
+    {
+     "slot": "QB",
+     "name": "Drake Maye",
+     "nfl": "NE",
+     "pos": "QB",
+     "game": "Sun 1:00 pm",
+     "opp": "vs NYJ"
+    },
+    {
+     "slot": "RB",
+     "name": "Kyren Williams",
+     "nfl": "LAR",
+     "pos": "RB",
+     "game": "Sun 4:05 pm",
+     "opp": "vs ARI"
+    },
+    {
+     "slot": "RB",
+     "name": "Rhamondre Stevenson",
+     "nfl": "NE",
+     "pos": "RB",
+     "game": "Sun 1:00 pm",
+     "opp": "vs NYJ"
+    },
+    {
+     "slot": "WR",
+     "name": "George Pickens",
+     "nfl": "DAL",
+     "pos": "WR",
+     "game": "Sun 8:20 pm",
+     "opp": "@ GB"
+    },
+    {
+     "slot": "WR",
+     "name": "Puka Nacua",
+     "nfl": "LAR",
+     "pos": "WR",
+     "game": "Sun 4:05 pm",
+     "opp": "vs ARI"
+    },
+    {
+     "slot": "WR",
+     "name": "Nico Collins",
+     "nfl": "HOU",
+     "pos": "WR",
+     "game": "Sun 9:30 am",
+     "opp": "@ JAX"
+    },
+    {
+     "slot": "TE",
+     "name": "Travis Kelce",
+     "nfl": "KC",
+     "pos": "TE",
+     "game": "Sun 4:25 pm",
+     "opp": "vs LAC"
+    },
+    {
+     "slot": "W/R/T",
+     "name": "Mike Evans",
+     "nfl": "SF",
+     "pos": "WR",
+     "game": "Mon 8:15 pm",
+     "opp": "vs WAS"
+    },
+    {
+     "slot": "Q/W/R/T",
+     "name": "C.J. Stroud",
+     "nfl": "HOU",
+     "pos": "QB",
+     "game": "Sun 9:30 am",
+     "opp": "@ JAX"
+    },
+    {
+     "slot": "BN",
+     "name": "Cam Skattebo",
+     "nfl": "NYG",
+     "pos": "RB",
+     "game": "Sun 1:00 pm",
+     "opp": "vs NO"
+    },
+    {
+     "slot": "BN",
+     "name": "Romeo Doubs",
+     "nfl": "NE",
+     "pos": "WR",
+     "game": "Sun 1:00 pm",
+     "opp": "vs NYJ"
+    },
+    {
+     "slot": "BN",
+     "name": "Kenyon Sadiq",
+     "nfl": "NYJ",
+     "pos": "TE",
+     "status": "Q",
+     "game": "Sun 1:00 pm",
+     "opp": "@ NE"
+    },
+    {
+     "slot": "BN",
+     "name": "Sam Darnold",
+     "nfl": "SEA",
+     "pos": "QB",
+     "game": "Thu 8:15 pm",
+     "opp": "@ DEN"
+    },
+    {
+     "slot": "BN",
+     "name": "Woody Marks",
+     "nfl": "HOU",
+     "pos": "RB",
+     "game": "Sun 9:30 am",
+     "opp": "@ JAX"
+    }
+   ]
   },
   {
    "name": "Love a Kittle Lamb & WhiteRice",
    "faab": 485,
    "proj": 133.55,
-   "avg": 133.42
+   "avg": 133.42,
+   "roster": [
+    {
+     "slot": "QB",
+     "name": "Bryce Young",
+     "nfl": "CAR",
+     "pos": "QB",
+     "game": "Sun 1:00 pm",
+     "opp": "@ PHI"
+    },
+    {
+     "slot": "RB",
+     "name": "Jonathan Taylor",
+     "nfl": "IND",
+     "pos": "RB",
+     "game": "Sun 1:00 pm",
+     "opp": "vs TEN"
+    },
+    {
+     "slot": "RB",
+     "name": "Jeremiyah Love",
+     "nfl": "ARI",
+     "pos": "RB",
+     "game": "Sun 4:05 pm",
+     "opp": "@ LAR"
+    },
+    {
+     "slot": "WR",
+     "name": "CeeDee Lamb",
+     "nfl": "DAL",
+     "pos": "WR",
+     "status": "Q",
+     "game": "Sun 8:20 pm",
+     "opp": "@ GB"
+    },
+    {
+     "slot": "WR",
+     "name": "Christian Watson",
+     "nfl": "GB",
+     "pos": "WR",
+     "game": "Sun 8:20 pm",
+     "opp": "vs DAL"
+    },
+    {
+     "slot": "WR",
+     "name": "Rashee Rice",
+     "nfl": "KC",
+     "pos": "WR",
+     "status": "Q",
+     "game": "Sun 4:25 pm",
+     "opp": "vs LAC"
+    },
+    {
+     "slot": "TE",
+     "name": "George Kittle",
+     "nfl": "SF",
+     "pos": "TE",
+     "game": "Mon 8:15 pm",
+     "opp": "vs WAS"
+    },
+    {
+     "slot": "W/R/T",
+     "name": "Derrick Henry",
+     "nfl": "BAL",
+     "pos": "RB",
+     "game": "Sun 1:00 pm",
+     "opp": "@ CLE"
+    },
+    {
+     "slot": "Q/W/R/T",
+     "name": "Patrick Mahomes",
+     "nfl": "KC",
+     "pos": "QB",
+     "game": "Sun 4:25 pm",
+     "opp": "vs LAC"
+    },
+    {
+     "slot": "BN",
+     "name": "KC Concepcion Jr.",
+     "nfl": "CLE",
+     "pos": "WR",
+     "status": "Q",
+     "game": "Sun 1:00 pm",
+     "opp": "vs BAL"
+    },
+    {
+     "slot": "BN",
+     "name": "Malik Willis",
+     "nfl": "MIA",
+     "pos": "QB",
+     "bye": true
+    },
+    {
+     "slot": "BN",
+     "name": "Jacoby Brissett",
+     "nfl": "ARI",
+     "pos": "QB",
+     "game": "Sun 4:05 pm",
+     "opp": "@ LAR"
+    },
+    {
+     "slot": "BN",
+     "name": "Tyreek Hill",
+     "nfl": "MIA",
+     "pos": "WR",
+     "status": "NA",
+     "bye": true
+    },
+    {
+     "slot": "BN",
+     "name": "Xavier Worthy",
+     "nfl": "KC",
+     "pos": "WR",
+     "game": "Sun 4:25 pm",
+     "opp": "vs LAC"
+    }
+   ]
   },
   {
    "name": "Liberté Égalité Henri",
    "faab": 623,
    "proj": 124.76,
-   "avg": 116.5
+   "avg": 116.5,
+   "roster": [
+    {
+     "slot": "QB",
+     "name": "Matthew Stafford",
+     "nfl": "LAR",
+     "pos": "QB",
+     "game": "Sun 4:05 pm",
+     "opp": "vs ARI"
+    },
+    {
+     "slot": "RB",
+     "name": "James Cook III",
+     "nfl": "BUF",
+     "pos": "RB",
+     "game": "Sun 4:25 pm",
+     "opp": "@ LV"
+    },
+    {
+     "slot": "RB",
+     "name": "Kenneth Walker III",
+     "nfl": "KC",
+     "pos": "RB",
+     "game": "Sun 4:25 pm",
+     "opp": "vs LAC"
+    },
+    {
+     "slot": "WR",
+     "name": "Garrett Wilson",
+     "nfl": "NYJ",
+     "pos": "WR",
+     "game": "Sun 1:00 pm",
+     "opp": "@ NE"
+    },
+    {
+     "slot": "WR",
+     "name": "Jakobi Meyers",
+     "nfl": "JAX",
+     "pos": "WR",
+     "game": "Sun 9:30 am",
+     "opp": "vs HOU"
+    },
+    {
+     "slot": "WR",
+     "name": "Jaylen Waddle",
+     "nfl": "DEN",
+     "pos": "WR",
+     "game": "Thu 8:15 pm",
+     "opp": "vs SEA"
+    },
+    {
+     "slot": "TE",
+     "name": "Hunter Henry",
+     "nfl": "NE",
+     "pos": "TE",
+     "game": "Sun 1:00 pm",
+     "opp": "vs NYJ"
+    },
+    {
+     "slot": "W/R/T",
+     "name": "Chuba Hubbard",
+     "nfl": "CAR",
+     "pos": "RB",
+     "game": "Sun 1:00 pm",
+     "opp": "@ PHI"
+    },
+    {
+     "slot": "Q/W/R/T",
+     "name": "Daniel Jones",
+     "nfl": "IND",
+     "pos": "QB",
+     "game": "Sun 1:00 pm",
+     "opp": "vs TEN"
+    },
+    {
+     "slot": "BN",
+     "name": "Keon Coleman",
+     "nfl": "BUF",
+     "pos": "WR",
+     "game": "Sun 4:25 pm",
+     "opp": "@ LV"
+    },
+    {
+     "slot": "BN",
+     "name": "Rome Odunze",
+     "nfl": "CHI",
+     "pos": "WR",
+     "game": "Sun 1:00 pm",
+     "opp": "@ ATL"
+    },
+    {
+     "slot": "BN",
+     "name": "Marvin Harrison Jr.",
+     "nfl": "HOU",
+     "pos": "WR",
+     "game": "Sun 9:30 am",
+     "opp": "@ JAX"
+    },
+    {
+     "slot": "BN",
+     "name": "Tyler Allgeier",
+     "nfl": "ARI",
+     "pos": "RB",
+     "game": "Sun 4:05 pm",
+     "opp": "@ LAR"
+    },
+    {
+     "slot": "BN",
+     "name": "Sam LaPorta",
+     "nfl": "DET",
+     "pos": "TE",
+     "bye": true
+    }
+   ]
   },
   {
    "name": "Holofernes",
    "faab": 681,
    "proj": 123.36,
-   "avg": 120.72
+   "avg": 120.72,
+   "roster": [
+    {
+     "slot": "QB",
+     "name": "Josh Allen",
+     "nfl": "BUF",
+     "pos": "QB",
+     "game": "Sun 4:25 pm",
+     "opp": "@ LV"
+    },
+    {
+     "slot": "RB",
+     "name": "D'Andre Swift",
+     "nfl": "CHI",
+     "pos": "RB",
+     "game": "Sun 1:00 pm",
+     "opp": "@ ATL"
+    },
+    {
+     "slot": "RB",
+     "name": "Tony Pollard",
+     "nfl": "TEN",
+     "pos": "RB",
+     "status": "Q",
+     "game": "Sun 1:00 pm",
+     "opp": "@ IND"
+    },
+    {
+     "slot": "WR",
+     "name": "Matthew Golden",
+     "nfl": "GB",
+     "pos": "WR",
+     "game": "Sun 8:20 pm",
+     "opp": "vs DAL"
+    },
+    {
+     "slot": "WR",
+     "name": "DK Metcalf",
+     "nfl": "PIT",
+     "pos": "WR",
+     "game": "Sun 1:00 pm",
+     "opp": "@ TB"
+    },
+    {
+     "slot": "WR",
+     "name": "Terry McLaurin",
+     "nfl": "WAS",
+     "pos": "WR",
+     "game": "Mon 8:15 pm",
+     "opp": "@ SF"
+    },
+    {
+     "slot": "TE",
+     "name": "Brock Bowers",
+     "nfl": "LV",
+     "pos": "TE",
+     "game": "Sun 4:25 pm",
+     "opp": "vs BUF"
+    },
+    {
+     "slot": "W/R/T",
+     "name": "Dalton Kincaid",
+     "nfl": "BUF",
+     "pos": "TE",
+     "game": "Sun 4:25 pm",
+     "opp": "@ LV"
+    },
+    {
+     "slot": "Q/W/R/T",
+     "name": "Aaron Rodgers",
+     "nfl": "PIT",
+     "pos": "QB",
+     "game": "Sun 1:00 pm",
+     "opp": "@ TB"
+    },
+    {
+     "slot": "BN",
+     "name": "Jacory Croskey-Merritt",
+     "nfl": "WAS",
+     "pos": "RB",
+     "game": "Mon 8:15 pm",
+     "opp": "@ SF"
+    },
+    {
+     "slot": "BN",
+     "name": "Colston Loveland",
+     "nfl": "CHI",
+     "pos": "TE",
+     "game": "Sun 1:00 pm",
+     "opp": "@ ATL"
+    },
+    {
+     "slot": "BN",
+     "name": "Kyler Murray",
+     "nfl": "MIN",
+     "pos": "QB",
+     "bye": true
+    },
+    {
+     "slot": "BN",
+     "name": "Ja'Marr Chase",
+     "nfl": "CIN",
+     "pos": "WR",
+     "bye": true
+    },
+    {
+     "slot": "IR",
+     "name": "A.J. Brown",
+     "nfl": "NE",
+     "pos": "WR",
+     "status": "IR-R",
+     "game": "Sun 1:00 pm",
+     "opp": "vs NYJ"
+    }
+   ]
   },
   {
    "name": "Love Purdy Flowers",
    "faab": 282,
    "proj": 119.31,
-   "avg": 121.59
+   "avg": 121.59,
+   "roster": [
+    {
+     "slot": "QB",
+     "name": "Brock Purdy",
+     "nfl": "SF",
+     "pos": "QB",
+     "game": "Mon 8:15 pm",
+     "opp": "vs WAS"
+    },
+    {
+     "slot": "RB",
+     "name": "Christian McCaffrey",
+     "nfl": "SF",
+     "pos": "RB",
+     "game": "Mon 8:15 pm",
+     "opp": "vs WAS"
+    },
+    {
+     "slot": "RB",
+     "name": "Saquon Barkley",
+     "nfl": "PHI",
+     "pos": "RB",
+     "status": "Q",
+     "game": "Sun 1:00 pm",
+     "opp": "vs CAR"
+    },
+    {
+     "slot": "WR",
+     "name": "Zay Flowers",
+     "nfl": "BAL",
+     "pos": "WR",
+     "game": "Sun 1:00 pm",
+     "opp": "@ CLE"
+    },
+    {
+     "slot": "WR",
+     "name": "Tetairoa McMillan",
+     "nfl": "CAR",
+     "pos": "WR",
+     "game": "Sun 1:00 pm",
+     "opp": "@ PHI"
+    },
+    {
+     "slot": "WR",
+     "name": "Jalen Coker",
+     "nfl": "CAR",
+     "pos": "WR",
+     "status": "Q",
+     "game": "Sun 1:00 pm",
+     "opp": "@ PHI"
+    },
+    {
+     "slot": "TE",
+     "name": "Mark Andrews",
+     "nfl": "BAL",
+     "pos": "TE",
+     "game": "Sun 1:00 pm",
+     "opp": "@ CLE"
+    },
+    {
+     "slot": "W/R/T",
+     "name": "Omarion Hampton",
+     "nfl": "LAC",
+     "pos": "RB",
+     "game": "Sun 4:25 pm",
+     "opp": "@ KC"
+    },
+    {
+     "slot": "Q/W/R/T",
+     "name": "Jordan Love",
+     "nfl": "GB",
+     "pos": "QB",
+     "game": "Sun 8:20 pm",
+     "opp": "vs DAL"
+    },
+    {
+     "slot": "BN",
+     "name": "Aaron Jones Sr.",
+     "nfl": "MIN",
+     "pos": "RB",
+     "bye": true
+    },
+    {
+     "slot": "BN",
+     "name": "Chase Brown",
+     "nfl": "CIN",
+     "pos": "RB",
+     "bye": true
+    },
+    {
+     "slot": "BN",
+     "name": "Jordan Addison",
+     "nfl": "MIN",
+     "pos": "WR",
+     "status": "Q",
+     "bye": true
+    },
+    {
+     "slot": "BN",
+     "name": "Brian Robinson",
+     "nfl": "ATL",
+     "pos": "RB",
+     "game": "Sun 1:00 pm",
+     "opp": "vs CHI"
+    },
+    {
+     "slot": "BN",
+     "name": "Tre Tucker",
+     "nfl": "LV",
+     "pos": "WR",
+     "game": "Sun 4:25 pm",
+     "opp": "vs BUF"
+    }
+   ]
   },
   {
    "name": "Breece’s Pieces",
    "faab": 115,
    "proj": 118.97,
-   "avg": 119.02
+   "avg": 119.02,
+   "roster": [
+    {
+     "slot": "QB",
+     "name": "Caleb Williams",
+     "nfl": "CHI",
+     "pos": "QB",
+     "status": "Q",
+     "game": "Sun 1:00 pm",
+     "opp": "@ ATL"
+    },
+    {
+     "slot": "RB",
+     "name": "J.K. Dobbins",
+     "nfl": "DEN",
+     "pos": "RB",
+     "game": "Thu 8:15 pm",
+     "opp": "vs SEA"
+    },
+    {
+     "slot": "RB",
+     "name": "Braelon Allen",
+     "nfl": "NYJ",
+     "pos": "RB",
+     "game": "Sun 1:00 pm",
+     "opp": "@ NE"
+    },
+    {
+     "slot": "WR",
+     "name": "Jaxon Smith-Njigba",
+     "nfl": "SEA",
+     "pos": "WR",
+     "status": "Q",
+     "game": "Thu 8:15 pm",
+     "opp": "@ DEN"
+    },
+    {
+     "slot": "WR",
+     "name": "Malik Nabers",
+     "nfl": "NYG",
+     "pos": "WR",
+     "game": "Sun 1:00 pm",
+     "opp": "vs NO"
+    },
+    {
+     "slot": "WR",
+     "name": "Devaughn Vele",
+     "nfl": "NO",
+     "pos": "WR",
+     "game": "Sun 1:00 pm",
+     "opp": "@ NYG"
+    },
+    {
+     "slot": "TE",
+     "name": "Tyler Warren",
+     "nfl": "IND",
+     "pos": "TE",
+     "game": "Sun 1:00 pm",
+     "opp": "vs TEN"
+    },
+    {
+     "slot": "W/R/T",
+     "name": "Drake London",
+     "nfl": "ATL",
+     "pos": "WR",
+     "game": "Sun 1:00 pm",
+     "opp": "vs CHI"
+    },
+    {
+     "slot": "Q/W/R/T",
+     "name": "Lamar Jackson",
+     "nfl": "BAL",
+     "pos": "QB",
+     "status": "Q",
+     "game": "Sun 1:00 pm",
+     "opp": "@ CLE"
+    },
+    {
+     "slot": "BN",
+     "name": "Breece Hall",
+     "nfl": "NYJ",
+     "pos": "RB",
+     "status": "D",
+     "game": "Sun 1:00 pm",
+     "opp": "@ NE"
+    },
+    {
+     "slot": "BN",
+     "name": "Alvin Kamara",
+     "nfl": "NO",
+     "pos": "RB",
+     "game": "Sun 1:00 pm",
+     "opp": "@ NYG"
+    },
+    {
+     "slot": "BN",
+     "name": "Jameis Winston",
+     "nfl": "NYG",
+     "pos": "QB",
+     "game": "Sun 1:00 pm",
+     "opp": "vs NO"
+    },
+    {
+     "slot": "BN",
+     "name": "Tyson Bagent",
+     "nfl": "CHI",
+     "pos": "QB",
+     "game": "Sun 1:00 pm",
+     "opp": "@ ATL"
+    },
+    {
+     "slot": "BN",
+     "name": "Stefon Diggs",
+     "nfl": "WAS",
+     "pos": "WR",
+     "status": "Q",
+     "game": "Mon 8:15 pm",
+     "opp": "@ SF"
+    },
+    {
+     "slot": "IR",
+     "name": "Zach Charbonnet",
+     "nfl": "SEA",
+     "pos": "RB",
+     "status": "PUP-R",
+     "game": "Thu 8:15 pm",
+     "opp": "@ DEN"
+    }
+   ]
   },
   {
    "name": "Likely to Burden Tate w Penix",
    "faab": 464,
    "proj": 115.45,
-   "avg": 125.44
+   "avg": 125.44,
+   "roster": [
+    {
+     "slot": "QB",
+     "name": "Tyler Shough",
+     "nfl": "NO",
+     "pos": "QB",
+     "game": "Sun 1:00 pm",
+     "opp": "@ NYG"
+    },
+    {
+     "slot": "RB",
+     "name": "Ashton Jeanty",
+     "nfl": "LV",
+     "pos": "RB",
+     "game": "Sun 4:25 pm",
+     "opp": "vs BUF"
+    },
+    {
+     "slot": "RB",
+     "name": "Jaylen Warren",
+     "nfl": "PIT",
+     "pos": "RB",
+     "game": "Sun 1:00 pm",
+     "opp": "@ TB"
+    },
+    {
+     "slot": "WR",
+     "name": "Chris Olave",
+     "nfl": "NO",
+     "pos": "WR",
+     "game": "Sun 1:00 pm",
+     "opp": "@ NYG"
+    },
+    {
+     "slot": "WR",
+     "name": "Carnell Tate",
+     "nfl": "TEN",
+     "pos": "WR",
+     "game": "Sun 1:00 pm",
+     "opp": "@ IND"
+    },
+    {
+     "slot": "WR",
+     "name": "Denzel Boston",
+     "nfl": "CLE",
+     "pos": "WR",
+     "game": "Sun 1:00 pm",
+     "opp": "vs BAL"
+    },
+    {
+     "slot": "TE",
+     "name": "Isaiah Likely",
+     "nfl": "NYG",
+     "pos": "TE",
+     "game": "Sun 1:00 pm",
+     "opp": "vs NO"
+    },
+    {
+     "slot": "W/R/T",
+     "name": "Luther Burden III",
+     "nfl": "CHI",
+     "pos": "WR",
+     "game": "Sun 1:00 pm",
+     "opp": "@ ATL"
+    },
+    {
+     "slot": "Q/W/R/T",
+     "name": "Bo Nix",
+     "nfl": "DEN",
+     "pos": "QB",
+     "game": "Thu 8:15 pm",
+     "opp": "vs SEA"
+    },
+    {
+     "slot": "BN",
+     "name": "TreVeyon Henderson",
+     "nfl": "NE",
+     "pos": "RB",
+     "status": "D",
+     "game": "Sun 1:00 pm",
+     "opp": "vs NYJ"
+    },
+    {
+     "slot": "BN",
+     "name": "Jahmyr Gibbs",
+     "nfl": "DET",
+     "pos": "RB",
+     "bye": true
+    },
+    {
+     "slot": "BN",
+     "name": "Jake Ferguson",
+     "nfl": "DAL",
+     "pos": "TE",
+     "game": "Sun 8:20 pm",
+     "opp": "@ GB"
+    },
+    {
+     "slot": "BN",
+     "name": "Michael Penix Jr.",
+     "nfl": "ATL",
+     "pos": "QB",
+     "status": "Q",
+     "game": "Sun 1:00 pm",
+     "opp": "vs CHI"
+    },
+    {
+     "slot": "BN",
+     "name": "Kyle Pitts Sr.",
+     "nfl": "ATL",
+     "pos": "TE",
+     "game": "Sun 1:00 pm",
+     "opp": "vs CHI"
+    },
+    {
+     "slot": "IR",
+     "name": "Jordan Mason",
+     "nfl": "MIN",
+     "pos": "RB",
+     "status": "IR",
+     "bye": true
+    }
+   ]
   },
   {
    "name": "Maye I see your TDs",
    "faab": 5,
    "proj": 109.22,
-   "avg": 107.96
+   "avg": 107.96,
+   "roster": [
+    {
+     "slot": "QB",
+     "name": "Justin Herbert",
+     "nfl": "LAC",
+     "pos": "QB",
+     "game": "Sun 4:25 pm",
+     "opp": "@ KC"
+    },
+    {
+     "slot": "RB",
+     "name": "Quinshon Judkins",
+     "nfl": "CLE",
+     "pos": "RB",
+     "status": "Q",
+     "game": "Sun 1:00 pm",
+     "opp": "vs BAL"
+    },
+    {
+     "slot": "RB",
+     "name": "Bijan Robinson",
+     "nfl": "ATL",
+     "pos": "RB",
+     "game": "Sun 1:00 pm",
+     "opp": "vs CHI"
+    },
+    {
+     "slot": "WR",
+     "name": "Davante Adams",
+     "nfl": "LAR",
+     "pos": "WR",
+     "game": "Sun 4:05 pm",
+     "opp": "vs ARI"
+    },
+    {
+     "slot": "WR",
+     "name": "Wan'Dale Robinson",
+     "nfl": "TEN",
+     "pos": "WR",
+     "game": "Sun 1:00 pm",
+     "opp": "@ IND"
+    },
+    {
+     "slot": "WR",
+     "name": "DeVonta Smith",
+     "nfl": "PHI",
+     "pos": "WR",
+     "status": "Q",
+     "game": "Sun 1:00 pm",
+     "opp": "vs CAR"
+    },
+    {
+     "slot": "TE",
+     "name": "Trey McBride",
+     "nfl": "ARI",
+     "pos": "TE",
+     "game": "Sun 4:05 pm",
+     "opp": "@ LAR"
+    },
+    {
+     "slot": "W/R/T",
+     "name": "Tucker Kraft",
+     "nfl": "GB",
+     "pos": "TE",
+     "game": "Sun 8:20 pm",
+     "opp": "vs DAL"
+    },
+    {
+     "slot": "Q/W/R/T",
+     "name": "RJ Harvey",
+     "nfl": "DEN",
+     "pos": "RB",
+     "game": "Thu 8:15 pm",
+     "opp": "vs SEA"
+    },
+    {
+     "slot": "BN",
+     "name": "Dontayvion Wicks",
+     "nfl": "PHI",
+     "pos": "WR",
+     "game": "Sun 1:00 pm",
+     "opp": "vs CAR"
+    },
+    {
+     "slot": "BN",
+     "name": "Joe Burrow",
+     "nfl": "CIN",
+     "pos": "QB",
+     "bye": true
+    },
+    {
+     "slot": "BN",
+     "name": "Tee Higgins",
+     "nfl": "CIN",
+     "pos": "WR",
+     "bye": true
+    },
+    {
+     "slot": "BN",
+     "name": "Keaton Mitchell",
+     "nfl": "LAC",
+     "pos": "RB",
+     "game": "Sun 4:25 pm",
+     "opp": "@ KC"
+    },
+    {
+     "slot": "BN",
+     "name": "Germie Bernard",
+     "nfl": "PIT",
+     "pos": "WR",
+     "game": "Sun 1:00 pm",
+     "opp": "@ TB"
+    }
+   ]
   },
   {
    "name": "Deviated Rectums",
    "faab": 207,
    "proj": 95.13,
-   "avg": 121.03
+   "avg": 121.03,
+   "roster": [
+    {
+     "slot": "QB",
+     "name": "Dak Prescott",
+     "nfl": "DAL",
+     "pos": "QB",
+     "game": "Sun 8:20 pm",
+     "opp": "@ GB"
+    },
+    {
+     "slot": "RB",
+     "name": "Bucky Irving",
+     "nfl": "TB",
+     "pos": "RB",
+     "game": "Sun 1:00 pm",
+     "opp": "vs PIT"
+    },
+    {
+     "slot": "RB",
+     "name": "Kyle Monangai",
+     "nfl": "CHI",
+     "pos": "RB",
+     "status": "Q",
+     "game": "Sun 1:00 pm",
+     "opp": "@ ATL"
+    },
+    {
+     "slot": "WR",
+     "name": "Parker Washington",
+     "nfl": "JAX",
+     "pos": "WR",
+     "game": "Sun 9:30 am",
+     "opp": "vs HOU"
+    },
+    {
+     "slot": "WR",
+     "name": "Emeka Egbuka",
+     "nfl": "TB",
+     "pos": "WR",
+     "game": "Sun 1:00 pm",
+     "opp": "vs PIT"
+    },
+    {
+     "slot": "WR",
+     "empty": true
+    },
+    {
+     "slot": "TE",
+     "name": "Pat Freiermuth",
+     "nfl": "PIT",
+     "pos": "TE",
+     "game": "Sun 1:00 pm",
+     "opp": "@ TB"
+    },
+    {
+     "slot": "W/R/T",
+     "name": "MarShawn Lloyd",
+     "nfl": "GB",
+     "pos": "RB",
+     "game": "Sun 8:20 pm",
+     "opp": "vs DAL"
+    },
+    {
+     "slot": "Q/W/R/T",
+     "name": "Kirk Cousins",
+     "nfl": "LV",
+     "pos": "QB",
+     "game": "Sun 4:25 pm",
+     "opp": "vs BUF"
+    },
+    {
+     "slot": "BN",
+     "name": "Amon-Ra St. Brown",
+     "nfl": "DET",
+     "pos": "WR",
+     "bye": true
+    },
+    {
+     "slot": "BN",
+     "name": "Justin Jefferson",
+     "nfl": "MIN",
+     "pos": "WR",
+     "bye": true
+    },
+    {
+     "slot": "BN",
+     "name": "Jared Goff",
+     "nfl": "DET",
+     "pos": "QB",
+     "bye": true
+    },
+    {
+     "slot": "BN",
+     "name": "David Montgomery",
+     "nfl": "HOU",
+     "pos": "RB",
+     "status": "D",
+     "game": "Sun 9:30 am",
+     "opp": "@ JAX"
+    },
+    {
+     "slot": "BN",
+     "name": "Ollie Gordon II",
+     "nfl": "MIA",
+     "pos": "RB",
+     "bye": true
+    },
+    {
+     "slot": "IR",
+     "name": "Jayden Reed",
+     "nfl": "GB",
+     "pos": "WR",
+     "status": "IR",
+     "game": "Sun 8:20 pm",
+     "opp": "vs DAL"
+    }
+   ]
   },
   {
    "name": "Tai Streetz Lata?",
    "faab": 696,
    "proj": 0.0,
-   "avg": 113.25
+   "avg": 113.25,
+   "roster": [
+    {
+     "slot": "QB",
+     "empty": true
+    },
+    {
+     "slot": "RB",
+     "empty": true
+    },
+    {
+     "slot": "RB",
+     "empty": true
+    },
+    {
+     "slot": "WR",
+     "empty": true
+    },
+    {
+     "slot": "WR",
+     "empty": true
+    },
+    {
+     "slot": "WR",
+     "empty": true
+    },
+    {
+     "slot": "TE",
+     "empty": true
+    },
+    {
+     "slot": "W/R/T",
+     "empty": true
+    },
+    {
+     "slot": "Q/W/R/T",
+     "empty": true
+    },
+    {
+     "slot": "BN",
+     "name": "Josh Downs",
+     "nfl": "IND",
+     "pos": "WR",
+     "game": "Sun 1:00 pm",
+     "opp": "vs TEN"
+    },
+    {
+     "slot": "BN",
+     "name": "Michael Wilson",
+     "nfl": "ARI",
+     "pos": "WR",
+     "game": "Sun 4:05 pm",
+     "opp": "@ LAR"
+    },
+    {
+     "slot": "BN",
+     "name": "Javonte Williams",
+     "nfl": "DAL",
+     "pos": "RB",
+     "game": "Sun 8:20 pm",
+     "opp": "@ GB"
+    },
+    {
+     "slot": "BN",
+     "name": "Bhayshul Tuten",
+     "nfl": "JAX",
+     "pos": "RB",
+     "game": "Sun 9:30 am",
+     "opp": "vs HOU"
+    },
+    {
+     "slot": "BN",
+     "name": "Harold Fannin Jr.",
+     "nfl": "CLE",
+     "pos": "TE",
+     "game": "Sun 1:00 pm",
+     "opp": "vs BAL"
+    },
+    {
+     "slot": "BN",
+     "name": "Emanuel Wilson",
+     "nfl": "SEA",
+     "pos": "RB",
+     "game": "Thu 8:15 pm",
+     "opp": "@ DEN"
+    },
+    {
+     "slot": "BN",
+     "name": "Jayden Daniels",
+     "nfl": "WAS",
+     "pos": "QB",
+     "game": "Mon 8:15 pm",
+     "opp": "@ SF"
+    },
+    {
+     "slot": "BN",
+     "name": "DJ Moore",
+     "nfl": "BUF",
+     "pos": "WR",
+     "status": "Q",
+     "game": "Sun 4:25 pm",
+     "opp": "@ LV"
+    },
+    {
+     "slot": "BN",
+     "name": "Trevor Lawrence",
+     "nfl": "JAX",
+     "pos": "QB",
+     "game": "Sun 9:30 am",
+     "opp": "vs HOU"
+    },
+    {
+     "slot": "BN",
+     "name": "Khalil Shakir",
+     "nfl": "BUF",
+     "pos": "WR",
+     "game": "Sun 4:25 pm",
+     "opp": "@ LV"
+    },
+    {
+     "slot": "BN",
+     "name": "Jameson Williams",
+     "nfl": "DET",
+     "pos": "WR",
+     "bye": true
+    },
+    {
+     "slot": "BN",
+     "name": "Jalen Hurts",
+     "nfl": "PHI",
+     "pos": "QB",
+     "game": "Sun 1:00 pm",
+     "opp": "vs CAR"
+    },
+    {
+     "slot": "BN",
+     "name": "Geno Smith",
+     "nfl": "NYJ",
+     "pos": "QB",
+     "game": "Sun 1:00 pm",
+     "opp": "@ NE"
+    },
+    {
+     "slot": "BN",
+     "name": "Juwan Johnson",
+     "nfl": "NO",
+     "pos": "TE",
+     "game": "Sun 1:00 pm",
+     "opp": "@ NYG"
+    },
+    {
+     "slot": "IR",
+     "name": "Travis Etienne Jr.",
+     "nfl": "NO",
+     "pos": "RB",
+     "status": "IR",
+     "game": "Sun 1:00 pm",
+     "opp": "@ NYG"
+    }
+   ]
   },
   {
    "name": "Beast Mode Samuel",
@@ -95,5 +1308,6 @@
     78.36
    ]
   }
- ]
+ ],
+ "league_url": "https://football.fantasysports.yahoo.com/f1/157731"
 }
