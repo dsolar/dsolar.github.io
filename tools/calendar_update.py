@@ -65,6 +65,27 @@ def miles(a, b, c, d):
     return 2 * r * math.asin(math.sqrt(h))
 
 
+def geohash(lat, lon, precision=9):
+    """Ticketmaster's geoPoint filter wants a geohash (its old latlong filter is deprecated)."""
+    chars, bits, out = "0123456789bcdefghjkmnpqrstuvwxyz", [16, 8, 4, 2, 1], []
+    lat_r, lon_r, even, bit, ch = [-90.0, 90.0], [-180.0, 180.0], True, 0, 0
+    while len(out) < precision:
+        rng, val = (lon_r, lon) if even else (lat_r, lat)
+        mid = (rng[0] + rng[1]) / 2
+        if val > mid:
+            ch |= bits[bit]
+            rng[0] = mid
+        else:
+            rng[1] = mid
+        even = not even
+        if bit < 4:
+            bit += 1
+        else:
+            out.append(chars[ch])
+            bit, ch = 0, 0
+    return "".join(out)
+
+
 def drive_hours(mi):
     return round(mi * ROAD / MPH * 4) / 4
 
@@ -149,7 +170,8 @@ def tm_row(e, home, cat):
 def ticketmaster(taste, key, today, until):
     home = taste["home"]
     span = {"startDateTime": f"{today}T00:00:00Z", "endDateTime": f"{until}T23:59:59Z"}
-    near = dict(span, latlong=f"{home['lat']},{home['lon']}", radius=taste.get("local_miles", 30), unit="miles")
+    point = geohash(home["lat"], home["lon"])
+    near = dict(span, geoPoint=point, radius=taste.get("local_miles", 30), unit="miles")
     out = []
     try:
         out += [tm_row(e, home, "comedy") for e in tm_events(key, dict(near, classificationName="Comedy"))]
@@ -157,7 +179,7 @@ def ticketmaster(taste, key, today, until):
         reach = int(taste.get("road_trip_hours", 4.5) * MPH / ROAD)
         bands = taste.get("bands", {})
         for band in bands.get("love", []) + bands.get("big", []):
-            far = dict(span, latlong=f"{home['lat']},{home['lon']}", radius=reach, unit="miles",
+            far = dict(span, geoPoint=point, radius=reach, unit="miles",
                        keyword=band, classificationName="Music")
             out += [tm_row(e, home, "music") for e in tm_events(key, far, pages=1)]
             time.sleep(0.25)
