@@ -1,7 +1,8 @@
 # davidsolar.dev
-# The friends' pages (Bastille Day Odds, Night Out, Supper Club, the Nick games) carry a noindex tag,
-# so search engines can visit them but won't list them. The files below can't carry a tag, so
-# they're kept out of crawlers' reach instead: league send-off images, data files, and source.
+# Every page carries a noindex tag, so search engines can visit but won't list anything.
+# Pages aren't blocked here on purpose: a crawler has to see the tag to obey it.
+# The files below can't carry a tag, so they're kept out of crawlers' reach instead:
+# league send-off images, data files, and source.
 User-agent: *
 Disallow: /guillotine/eulogies/
 Disallow: /guillotine/paste.txt

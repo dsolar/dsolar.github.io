@@ -82,21 +82,9 @@ window.PROJECTS = [
     released: "2026-10",
     url: "calendar/",
     question: "What's worth leaving the couch for, and who's in?",
-    summary: "A shared calendar of shows, comics, games and movies around Boston, plus road trips for the bands we love. Friends mark Interested or Going.",
-    facts: [["Daily", "refresh of shows and games"], ["4", "kinds of nights: music, comedy, games, movies"], ["4½ hr", "longest road trip it looks for"]],
+    summary: "Our social calendar: shows, comics, games, movies and restaurants around Boston, plus road trips for the bands we love. Friends add plans and mark Interested or Going, and it watches ticket prices.",
+    facts: [["Daily", "refresh of shows and games"], ["32", "restaurants on our list"], ["4½ hr", "longest road trip it looks for"]],
     stack: ["JavaScript", "Python", "Cloudflare Workers", "GitHub Actions"],
-    cover: { bg: "#17130E", band: "#FFC53D" },
-    hidden: true
-  },
-  {
-    title: "Supper Club",
-    type: "Tool",
-    released: "2026-10",
-    url: "restaurants/",
-    question: "Where should we eat, near home, in town, or on the way to Marblehead?",
-    summary: "Our running list of restaurants: favorites and places to try, from Dedham to Marblehead. Friends mark Want to go or Loved it, and it can pick one for you.",
-    facts: [["32", "places on the list"], ["3", "parts of the map"], ["1 tap", "to pick tonight's spot"]],
-    stack: ["JavaScript", "JSON", "Cloudflare Workers"],
-    cover: { image: "assets/covers/restaurants.jpg", bg: "#F6F1E8", band: "#B5381F" }
+    cover: { image: "assets/covers/calendar.jpg", bg: "#17130E", band: "#FFC53D" }
   }
 ];

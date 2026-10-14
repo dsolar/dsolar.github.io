@@ -30,13 +30,13 @@ dsolar.github.io/
   nick-chat/                  Chat with Nick
   guillotine/                 Bastille Day Odds: index.html, sim.js (the simulation),
                               data.json (league data, written by the workflow below)
-  calendar/                   Night Out: index.html, taste.json and picks.json (edit these),
+  calendar/                   Night Out: index.html, taste.json, picks.json and places.json (edit these),
                               events.json and prices.json (written by the workflows)
-  restaurants/                Supper Club: index.html and places.json (the list; edit it)
+  restaurants/                old address of the restaurant list; forwards to Night Out
   robots.txt                  keeps send-off images and data files out of search engines
   tools/guillotine_update.py  pulls the league from Yahoo into guillotine/data.json
   tools/calendar_update.py    builds calendar/events.json; calendar_prices.py watches ticket prices;
-                              calendar-votes.js is the vote box for Night Out and Supper Club
+                              calendar-votes.js is Night Out's vote box (marks and plans)
   .github/workflows/          guillotine.yml runs that script every morning in season;
                               calendar-update.yml rebuilds the calendar every morning;
                               calendar-prices.yml checks ticket prices every 3 hours
@@ -142,26 +142,29 @@ Clicking that team in The Fallen then opens the image and haiku. Or send the ima
 
 How eliminations are found: in each finished week, the lowest score among teams still alive is the one that was cut. The model's settings (how many recent weeks count, how far later weeks lean toward the league average, how much scores swing) are the `DEFAULTS` at the top of `guillotine/sim.js`.
 
-## Night Out: the friends' calendar
+## Night Out: the social calendar
 
-`davidsolar.dev/calendar/` is a shared calendar of shows, comics, games and movies around Boston, plus road trips for the bands we love. It's link-only (hidden on the home page, `noindex` for search engines). Everything it shows comes from `calendar/events.json`, which the "Calendar update" workflow rebuilds every morning at 6:41am ET and whenever these files change:
+`davidsolar.dev/calendar/` is our social calendar: shows, comics, games, movies and restaurants around Boston, plus road trips for the bands we love. Friends add their own plans (a dinner, a game-watch, anything), and mark Interested or Going on anything on it. It's on the home page but marked `noindex` (see below). The shows and games come from `calendar/events.json`, which the "Calendar update" workflow rebuilds every morning at 6:41am ET and whenever these files change:
 
 - `calendar/taste.json`: who and what to watch for. Bands we **love** (shown anywhere within `road_trip_hours` of Boston), **big** bands like Pearl Jam (arena and stadium acts, also shown within the road-trip radius), bands we **like** and favorite **comedians** (flagged around Boston), the teams (home games only), the big rooms, and the two theaters (AMC Boston Common on weeknights, Showcase Legacy Place on weekends). Edit it on GitHub like any file; names match loosely.
+- `calendar/places.json`: our restaurant list, the page's "Where to eat" section, in three groups (near home, in town, on the way to Marblehead). Each place needs `name`, `area` (`home`, `boston` or `north`), `town`, `cuisine` and `note`; `status` is `loved` for our favorites (they sort first) or `try`. Optional: `order` (dishes to get), `good` (tags: Date night, Groups, Before a show, Before a game, Outdoor seating, Waterfront, Splurge, Book ahead), `site` and `reserve` links. A Google Maps link is added automatically. Friends mark Want to go or Loved it, "Plan a dinner" puts it on the calendar, and "Pick one for us" chooses one at random. The page reads this file directly, so an edit shows up as soon as the site rebuilds.
 - `calendar/picks.json`: hand-picked shows (road trips, Wilbur shows, anything the feeds miss) and the movie picks. Each event needs `date`, `title`, `cat` (`music`, `comedy` or `sports`), `venue`, `city`, and optionally `time` ("20:00"), `url`, `sub` (a second line) and `drive_hours`. Each movie needs `title` and `release` ("YYYY-MM-DD"), optionally `by`, `studio` and `why`. A movie shows as playing for six weeks after it opens.
 
 Sources: ESPN's public schedules for the Celtics, Bruins and Patriots (no key needed), Ticketmaster's Discovery API for Boston comedy and music and for loved bands within the road-trip radius, and `picks.json`. When Ticketmaster and a pick list the same show, the Ticketmaster one wins (real ticket link) and any Interested/Going marks carry over.
 
 **Turn on Ticketmaster (free, about 5 minutes).** Sign up at https://developer.ticketmaster.com/ > My Apps > copy the **Consumer Key**. Then repo > **Settings** > **Secrets and variables** > **Actions** > **New repository secret**: name `TICKETMASTER_KEY`, value the key. Run **Actions** > **Calendar update** > **Run workflow**. Until then the calendar runs on ESPN plus the hand picks.
 
-**Interested / Going.** Friends tap a button, type a first name once (kept on their phone), and the mark is shared with everyone on the link through a small vote box, `tools/calendar-votes.js`, running free on Cloudflare. One-time setup:
+**Plans, Interested / Going, Want to go / Loved it.** Friends type a first name once (kept on their phone). Their marks, and any plan they add with **+ Add a plan** or a restaurant's **Plan a dinner**, are shared with everyone on the link through a small vote box, `tools/calendar-votes.js`, running free on Cloudflare. Whoever adds a plan is marked Going, and only they see **Remove plan** on it. Plans drop off a month after their date. One-time setup:
 
 1. Cloudflare dashboard > **Storage & Databases** > **KV** > **Create a namespace**, name it `nightout-votes`.
 2. **Workers & Pages** > **Create** > **Create Worker**, name it `calendar-votes` > **Deploy**.
 3. **Edit code**, select everything, paste in `tools/calendar-votes.js`, **Deploy**.
 4. The worker's **Settings** > **Bindings** > **Add** > **KV namespace**: variable name `VOTES`, namespace `nightout-votes` > **Deploy**.
-5. Check it: https://calendar-votes.dsolar.workers.dev/ should show `{"votes":{}}`.
+5. Check it: https://calendar-votes.dsolar.workers.dev/ should show `{"votes":{},"plans":{}}`.
 
-The page looks for the vote box at `votes_url` in `calendar/taste.json`. Until it answers, marks save on each person's own phone and go up to the shared box the next time it's reachable. Free plan: 100,000 reads and 1,000 writes a day. Anyone with the link can mark things under any name, so keep the link among friends. Supper Club uses the same vote box (Want to go and Loved it).
+If you change `tools/calendar-votes.js` later, paste it into the worker again (Edit code > Deploy). The marks and plans already saved stay put.
+
+The page looks for the vote box at `votes_url` in `calendar/taste.json`. Until it answers, marks save on each person's own phone and go up to the shared box the next time it's reachable. Free plan: 100,000 reads and 1,000 writes a day. Anyone with the link can mark things under any name, so keep the link among friends.
 
 **Ticket price alerts.** `tools/calendar_prices.py` runs every 3 hours ("Ticket prices" workflow). It looks up the lowest SeatGeek price for the shows worth watching: bands we love, big shows, bands we like, favorite comics, and anything someone marked Interested or Going. Prices show on the calendar ("From $62", with the drop in green). When a show's lowest price falls at least 10% and $10 below the last alert (or the first price seen), it sends a push notification. To turn it on:
 
@@ -172,13 +175,9 @@ The page looks for the vote box at `votes_url` in `calendar/taste.json`. Until i
 
 The drop rule (10% and $10) and how many shows it watches are at the top of `tools/calendar_prices.py`.
 
-## Supper Club: the restaurant list
+## Keeping the site out of search
 
-`davidsolar.dev/restaurants/` is our restaurant list: favorites and places to try, in three groups (near home, in town, on the way to Marblehead). It's on the home page but marked `noindex`, so search engines don't list it. Everything comes from `restaurants/places.json`: edit it on GitHub to add a place. Each place needs `name`, `area` (`home`, `boston` or `north`), `town`, `cuisine` and `note`; `status` is `loved` for our favorites (they get a red edge and sort first) or `try`. Optional: `order` (dishes to get), `good` (tags: Date night, Groups, Before a show, Before a game, Outdoor seating, Waterfront, Splurge, Book ahead), `site` and `reserve` links. A Google Maps link is added automatically. Friends mark Want to go or Loved it through the Night Out vote box, and "Pick one for us" chooses a random place from whatever's showing.
-
-## Keeping friends' pages out of search
-
-Every friends' page (Bastille Day Odds, Night Out, Supper Club, the two Nick games) has `<meta name="robots" content="noindex">` in its head, so search engines can visit but won't list it. Don't block those pages in `robots.txt`: a crawler that can't visit a page never sees the noindex tag. `robots.txt` blocks only what can't carry a tag: the league send-off images, data files (`*.json`), `guillotine/paste.txt`, and the `tools/` and `src/` folders. A new friends' page needs the same meta tag.
+Every page on the site, the home page included, has `<meta name="robots" content="noindex">` in its head, so search engines can visit but won't list it. (The 31st Franchise gets it from `src/31st-franchise/page.html`, so it survives a rebuild.) Don't block pages in `robots.txt`: a crawler that can't visit a page never sees the noindex tag, and a page that was already listed would stay listed. `robots.txt` blocks only what can't carry a tag: the league send-off images, data files (`*.json`), `guillotine/paste.txt`, and the `tools/` and `src/` folders. Any new page needs the same meta tag. Pages Google listed before drop out as it revisits them, usually within a few weeks; Google Search Console's Removals tool speeds that up.
 
 ## Where things stand
 

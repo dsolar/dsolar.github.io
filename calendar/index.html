@@ -23,7 +23,7 @@
    the ticket-stub details (times, drives). */
 :root{
   --bg:#F4EFE6; --surface:#FFFDF8; --ink:#1C1915; --muted:#6B6358; --rule:#E3DACB; --wash:#EDE5D7;
-  --music:#7A3FD0; --comedy:#C2410C; --sports:#0B7A3B; --movies:#1F5FBF;
+  --music:#7A3FD0; --comedy:#C2410C; --sports:#0B7A3B; --movies:#1F5FBF; --food:#B4235F;
   --love:#B87200; --love-wash:#FFF1CF;
   --sign:#17130E; --sign-ink:#FFF3D6; --bulb:#FFC53D;
   --f-display:"Big Shoulders Display","Oswald","Arial Narrow",Impact,sans-serif;
@@ -34,13 +34,13 @@
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#13110E; --surface:#1D1A16; --ink:#F2ECE2; --muted:#A79E90; --rule:#332E27; --wash:#26221C;
-    --music:#B996F7; --comedy:#FF8F57; --sports:#4FC982; --movies:#7AAAF5;
+    --music:#B996F7; --comedy:#FF8F57; --sports:#4FC982; --movies:#7AAAF5; --food:#F77FB0;
     --love:#FFC53D; --love-wash:#3A2E12; --sign:#0B0907; color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --bg:#13110E; --surface:#1D1A16; --ink:#F2ECE2; --muted:#A79E90; --rule:#332E27; --wash:#26221C;
-  --music:#B996F7; --comedy:#FF8F57; --sports:#4FC982; --movies:#7AAAF5;
+  --music:#B996F7; --comedy:#FF8F57; --sports:#4FC982; --movies:#7AAAF5; --food:#F77FB0;
   --love:#FFC53D; --love-wash:#3A2E12; --sign:#0B0907; color-scheme:dark;
 }
 
@@ -70,6 +70,12 @@ h1{font:900 clamp(3.4rem,15vw,5.6rem)/.86 var(--f-display);text-transform:upperc
 .linkbtn{background:none;border:0;padding:0;text-decoration:underline;text-underline-offset:3px;cursor:pointer;color:inherit;font-size:inherit}
 .sign .linkbtn{color:var(--bulb)}
 .sync{font-size:.78rem;color:#A99B7D}
+.sign-acts{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;margin-top:1.1rem}
+.add{font:700 .9rem/1 var(--f-body);padding:.65rem 1.05rem;border-radius:999px;border:0;background:var(--bulb);color:#17130E;cursor:pointer;box-shadow:0 0 18px rgba(255,197,61,.3)}
+.add:hover{background:#FFD56A}
+.jl{display:flex;flex-wrap:wrap;gap:.2rem .9rem;font-size:.86rem}
+.jl a{color:#E9DEC6;text-decoration-color:rgba(255,197,61,.6)}
+.jl a:hover{color:#FFF6DF}
 
 /* ---------- Filters ---------- */
 .bar{position:sticky;top:env(safe-area-inset-top, 0px);z-index:40;background:var(--bg);border-bottom:1px solid var(--rule)}
@@ -131,7 +137,8 @@ h2{font:800 1.75rem/1 var(--f-display);text-transform:uppercase;letter-spacing:.
 .key .lv{width:11px;height:11px;border-radius:3px;background:var(--love-wash);box-shadow:inset 0 0 0 1.5px var(--love)}
 
 .c-music{--c:var(--music)} .c-comedy{--c:var(--comedy)} .c-sports{--c:var(--sports)} .c-movies{--c:var(--movies)}
-i.c-music,i.c-comedy,i.c-sports,i.c-movies,.dot.c-music,.dot.c-comedy,.dot.c-sports,.dot.c-movies{background:var(--c)}
+.c-food{--c:var(--food)} .c-plan{--c:var(--ink)}
+i[class^="c-"],.dot[class*=" c-"]{background:var(--c)}
 
 /* ---------- Agenda ---------- */
 .agenda{display:grid;gap:1.4rem}
@@ -190,6 +197,32 @@ a.tag.price span{color:var(--sports);font-weight:700}
 
 /* ---------- Movies ---------- */
 .films{display:grid;grid-template-columns:repeat(auto-fill,minmax(16rem,1fr));gap:.6rem}
+/* ---------- Restaurants ---------- */
+.tabs{display:flex;gap:.3rem;overflow-x:auto;scrollbar-width:none;margin:0 0 .8rem}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:none;font-size:.78rem;font-weight:600;padding:.34rem .7rem;border-radius:999px;border:1px solid var(--rule);background:none;color:var(--muted);cursor:pointer}
+.tabs button[aria-pressed="true"]{border-color:var(--food);color:var(--food);background:var(--surface)}
+.places{display:grid;grid-template-columns:repeat(auto-fill,minmax(17.5rem,1fr));gap:.6rem}
+.place{--c:var(--food);background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:.85rem .9rem .8rem;display:flex;flex-direction:column;gap:.3rem;scroll-margin-top:4rem}
+.place.loved{box-shadow:inset 4px 0 0 var(--food)}
+.place.flash{animation:pflash 1.6s ease-out}
+@keyframes pflash{0%{background:var(--love-wash)}100%{background:var(--surface)}}
+.place .top{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem}
+.place .t{font:800 1.3rem/1.02 var(--f-display);text-transform:uppercase;letter-spacing:.02em}
+.place .fav{flex:none;font:600 .62rem/1 var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--food)}
+.place .meta{font:500 .78rem/1.3 var(--f-mono);color:var(--food)}
+.place .note{font-size:.88rem;text-wrap:pretty}
+.place .order{font-size:.82rem;color:var(--muted)}
+.place .order b{color:var(--ink);font-weight:600;margin-right:.3rem}
+.place .links{display:flex;flex-wrap:wrap;gap:.2rem .8rem;font-size:.82rem;font-weight:600;margin-top:.1rem}
+.place .row{display:flex;gap:.3rem;flex-wrap:wrap;margin-top:auto;padding-top:.35rem}
+.place .plan{margin-left:auto;font-size:.75rem;font-weight:600;padding:.38rem .6rem;border-radius:999px;border:1px dashed var(--food);background:none;color:var(--food);cursor:pointer;white-space:nowrap}
+.place .plan:hover{background:var(--love-wash)}
+.eat-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.5rem 1rem;margin-bottom:.7rem}
+.eat-head .btn{background:var(--food);border-color:var(--food);color:#fff}
+.ev .by{font-size:.78rem;color:var(--muted);margin-top:.25rem}
+.ev .rm{font-size:.72rem;color:var(--muted);background:none;border:0;padding:0;text-decoration:underline;cursor:pointer;text-align:center}
+
 .film{--c:var(--movies);background:var(--surface);border:1px solid var(--rule);border-top:4px solid var(--movies);border-radius:8px;padding:.8rem .85rem;display:grid;gap:.3rem;align-content:start}
 .film .t{font:800 1.3rem/1.02 var(--f-display);text-transform:uppercase;letter-spacing:.02em}
 .film .by{font-size:.82rem;color:var(--muted)}
@@ -209,6 +242,12 @@ dialog p{margin:0 0 .8rem;font-size:.88rem;color:var(--muted)}
 dialog input{width:100%;font:inherit;font-size:1rem;padding:.6rem .7rem;border-radius:8px;border:1px solid var(--rule);background:var(--bg);color:var(--ink)}
 dialog .row{display:flex;justify-content:flex-end;gap:.5rem;margin-top:.9rem}
 dialog .ghost{background:none;color:var(--ink);border-color:var(--rule)}
+#plan-dlg{width:min(26rem,calc(100vw - 32px))}
+#plan-dlg label{display:grid;gap:.25rem;font-size:.78rem;font-weight:600;color:var(--muted);margin-bottom:.65rem}
+#plan-dlg .two{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+#plan-dlg .kinds{display:flex;gap:.4rem;margin:.1rem 0 .4rem}
+#plan-dlg .kinds label{display:flex;align-items:center;gap:.35rem;margin:0;font-size:.85rem;color:var(--ink);font-weight:500;border:1px solid var(--rule);border-radius:999px;padding:.35rem .7rem;cursor:pointer}
+#plan-dlg .kinds input{width:auto;margin:0;accent-color:var(--food)}
 .toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom, 0px));transform:translateX(-50%);z-index:60;
   background:var(--ink);color:var(--bg);font-size:.85rem;padding:.6rem 1rem;border-radius:999px;max-width:calc(100vw - 32px);box-shadow:0 6px 24px rgba(0,0,0,.25)}
 @media (prefers-reduced-motion: reduce){ .day.flash .dayhead{animation:none} html{scroll-behavior:auto} }
@@ -221,8 +260,12 @@ dialog .ghost{background:none;color:var(--ink);border-color:var(--rule)}
   <div class="wrap">
     <p class="eyebrow">Boston, plus a few road trips</p>
     <h1>Night Out</h1>
-    <p class="lede">Shows, comics, games and movies worth leaving the couch for. Tap Interested or Going so everyone can see who's in.</p>
+    <p class="lede">Shows, comics, games, movies and dinners worth leaving the couch for. Add a plan, then tap Interested or Going so everyone can see who's in.</p>
     <p class="me" id="me"></p>
+    <div class="sign-acts">
+      <button class="add" id="add-plan">+ Add a plan</button>
+      <nav class="jl" aria-label="Sections"><a href="#cal-sec">Calendar</a><a href="#movies">Movies</a><a href="#eat">Restaurants</a></nav>
+    </div>
   </div>
 </header>
 
@@ -250,6 +293,13 @@ dialog .ghost{background:none;color:var(--ink);border-color:var(--rule)}
     <div class="head"><h2>At the movies</h2><p>Weeknights at Boston Common, weekends at Legacy Place</p></div>
     <div class="films" id="films"></div>
   </section>
+
+  <section id="eat" hidden>
+    <div class="eat-head"><div class="head" style="margin:0"><h2>Where to eat</h2></div><button class="btn" id="pick">Pick one for us</button></div>
+    <p class="note" style="margin:-.3rem 0 .8rem">Near home, in town, and on the way to Marblehead. Mark Want to go or Loved it, or put a dinner on the calendar.</p>
+    <div class="tabs" id="tabs" role="toolbar" aria-label="Restaurants"></div>
+    <div class="places" id="places"></div>
+  </section>
 </main>
 
 <footer><div class="wrap" id="foot"></div></footer>
@@ -262,12 +312,29 @@ dialog .ghost{background:none;color:var(--ink);border-color:var(--rule)}
     <div class="row"><button class="btn ghost" value="cancel" formnovalidate>Cancel</button><button class="btn" value="ok">Save</button></div>
   </form>
 </dialog>
+<dialog id="plan-dlg">
+  <form method="dialog" id="plan-form">
+    <h3>Add a plan</h3>
+    <p>It goes on everyone's calendar, with you down as Going.</p>
+    <label id="pl-name-row">Your first name <input id="pl-name" maxlength="24" autocomplete="given-name" placeholder="First name"></label>
+    <label>What <input id="pl-title" maxlength="80" required placeholder="Dinner at Kaia"></label>
+    <label>Where <input id="pl-place" maxlength="80" list="pl-places" placeholder="A restaurant from our list, or anywhere"></label>
+    <datalist id="pl-places"></datalist>
+    <div class="two"><label>Day <input type="date" id="pl-date" required></label><label>Time <input type="time" id="pl-time"></label></div>
+    <div class="kinds" role="radiogroup" aria-label="Kind of plan">
+      <label><input type="radio" name="pl-kind" value="food" checked> Dinner or drinks</label>
+      <label><input type="radio" name="pl-kind" value="other"> Something else</label>
+    </div>
+    <div class="row"><button class="btn ghost" value="cancel" formnovalidate>Cancel</button><button class="btn" value="ok">Add it</button></div>
+  </form>
+</dialog>
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script>
 "use strict";
-const CATS = { music: "Music", comedy: "Comedy", sports: "Games", movies: "Movies" };
-const FILTERS = [["picks", "Our picks"], ["music", "Music"], ["comedy", "Comedy"], ["sports", "Games"], ["movies", "Movies"], ["road", "Road trips"], ["in", "Who's in"]];
+const CATS = { music: "Music", comedy: "Comedy", sports: "Games", movies: "Movies", food: "Dinner", plan: "Plan" };
+const FILTERS = [["picks", "Our picks"], ["plans", "Our plans"], ["music", "Music"], ["comedy", "Comedy"], ["sports", "Games"], ["movies", "Movies"], ["road", "Road trips"], ["in", "Who's in"]];
+const AREA_TABS = [["all", "All"], ["loved", "Our favorites"], ["home", "Near home"], ["boston", "In town"], ["north", "Marblehead run"], ["want", "Want to go"]];
 const RUN_DAYS = 42;            // how long a movie stays on the daily list after it opens
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const MON = MONTHS.map((m) => m.slice(0, 3));
@@ -281,6 +348,9 @@ const store = {
 
 let DATA = null, VOTES = {}, REMOTE = null; // REMOTE: true when the shared vote box answered
 let PRICES = { events: {}, drops: [] };     // lowest ticket prices, from tools/calendar_prices.py
+let PLANS = {};                              // plans friends added, from the vote box
+let PLACES = { areas: {}, places: [] };      // the restaurant list, places.json
+let AREA = store.get("eat-area", "all");
 let ME = store.get("name", "");
 let F = store.get("filter", "picks"), EVERYTHING = store.get("everything", false);
 let MONTH = null;                            // "YYYY-MM" on show
@@ -331,13 +401,15 @@ function hasVotes(item) { return Object.keys(votesFor(item)).length > 0; }
 async function loadVotes() {
   const url = DATA && DATA.votes_url;
   const local = store.get("votes", {});
-  if (!url) { VOTES = local; REMOTE = false; return; }
+  if (!url) { VOTES = local; PLANS = store.get("plans", {}); REMOTE = false; return; }
   try {
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) throw new Error(res.status);
     const body = await res.json();
     VOTES = body.votes || {};
+    PLANS = body.plans || {};
     REMOTE = true;
+    store.set("plans", {});      // plans saved on this phone go up with the queue below
     // Anything marked on this phone while the vote box was unreachable goes up now.
     const queued = store.get("queue", []);
     if (queued.length) {
@@ -345,7 +417,7 @@ async function loadVotes() {
       for (const q of queued) await send(q).catch(() => {});
     }
   } catch (e) {
-    VOTES = local; REMOTE = false;
+    VOTES = local; PLANS = store.get("plans", {}); REMOTE = false;
   }
 }
 
@@ -354,6 +426,8 @@ async function send(v) {
   if (!res.ok) throw new Error(res.status);
   const body = await res.json();
   if (body.votes) VOTES = body.votes;
+  if (body.plans) PLANS = body.plans;
+  return body;
 }
 
 async function vote(item, status) {
@@ -404,10 +478,21 @@ function toast(msg) {
 }
 
 // ---------- what to show ----------
+// Friends' plans, shaped like events so the calendar treats them the same way.
+function planEvents() {
+  return Object.entries(PLANS).map(([id, p]) => {
+    const r = p.food && PLACES.places.find((x) => x.id === p.food);
+    return { id, date: p.date, time: p.time || null, title: p.title, cat: p.kind === "food" ? "food" : "plan",
+      venue: p.place || "", city: r ? r.town : "", by: p.by, plan: true, food: p.food, score: 1 };
+  });
+}
+function allEvents() { return DATA.events.concat(planEvents()); }
+
 function showEvent(e) {
   if (!EVERYTHING && e.score < 1) return false;
   switch (F) {
     case "picks": return true;
+    case "plans": return !!e.plan;
     case "music": case "comedy": case "sports": return e.cat === F;
     case "road": return !!e.drive_hours;
     case "in": return hasVotes(e);
@@ -415,6 +500,8 @@ function showEvent(e) {
   }
 }
 function showMovies() { return F === "picks" || F === "movies" || F === "in"; }
+function placeById(id) { return PLACES.places.find((x) => x.id === id); }
+function mapLink(name, town) { return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(`${name} ${town || "Boston"} MA`); }
 function moviesOn(iso) {
   if (!showMovies()) return [];
   return DATA.movies.filter((m) => m.release <= iso && iso < addDays(m.release, RUN_DAYS) && (F !== "in" || hasVotes(m)));
@@ -444,7 +531,7 @@ function renderChips() {
   $("chips").querySelectorAll("[data-f]").forEach((b) => b.onclick = () => {
     F = b.dataset.f; store.set("filter", F);
     // If this month has nothing for the filter, jump to the first month that does.
-    const hit = (m) => DATA.events.some((e) => e.date >= TODAY && monthOf(e.date) === m && showEvent(e)) ||
+    const hit = (m) => allEvents().some((e) => e.date >= TODAY && monthOf(e.date) === m && showEvent(e)) ||
       (F === "movies" && DATA.movies.some((x) => monthOf(x.release) === m));
     if (!hit(MONTH)) { const m = months().find(hit); if (m) MONTH = m; }
     render();
@@ -474,7 +561,7 @@ function renderBig() {
 }
 
 function months() {
-  const last = [DATA.events.map((e) => e.date), DATA.movies.map((m) => m.release)].flat().sort().pop() || TODAY;
+  const last = [allEvents().map((e) => e.date), DATA.movies.map((m) => m.release)].flat().sort().pop() || TODAY;
   const out = [];
   let m = monthOf(TODAY);
   while (m <= monthOf(last) && out.length < 12) {
@@ -511,7 +598,7 @@ function renderGrid(byDay) {
   }
   $("grid").innerHTML = html;
   $("grid").querySelectorAll(".cell[data-d]:not(.past)").forEach((c) => c.onclick = () => goTo(c.dataset.d));
-  $("key").innerHTML = Object.entries(CATS).map(([k, l]) => `<span><i class="c-${k}"></i>${k === "movies" ? "Movie opens" : l}</span>`).join("") +
+  $("key").innerHTML = Object.entries(CATS).map(([k, l]) => `<span><i class="c-${k}"></i>${k === "movies" ? "Movie opens" : k === "food" ? "Dinner plan" : l}</span>`).join("") +
     `<span><span class="lv"></span>Band we love</span>`;
 }
 
@@ -530,19 +617,22 @@ function evCard(e) {
   const pr = priceTag(e);
   if (pr) tags.push(pr);
   const where = [e.venue, e.city && !/^Boston\b/.test(e.city) ? e.city : ""].filter(Boolean).map(esc).join(", ");
+  const link = e.url || (e.plan && e.venue ? (e.food && placeById(e.food) ? mapLink(placeById(e.food).name, placeById(e.food).town) : mapLink(e.venue, "")) : "");
   return `<article class="ev c-${e.cat}${e.why === "love" ? " love" : ""}" data-id="${esc(e.id)}">
     <div class="tm">${c ? `${c.t}<small>${c.ap}</small>` : `<small>Time<br>TBA</small>`}<span class="k">${CATS[e.cat] || ""}</span></div>
     <div>
-      <div class="title">${e.url ? `<a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.title)}</a>` : esc(e.title)}</div>
+      <div class="title">${link ? `<a href="${esc(link)}" target="_blank" rel="noopener">${esc(e.title)}</a>` : esc(e.title)}</div>
       ${e.sub ? `<div class="sub">${esc(e.sub)}</div>` : ""}
       <div class="where">${where}</div>
       ${tags.length ? `<div class="tags">${tags.join("")}</div>` : ""}
+      ${e.plan ? `<div class="by">Added by ${esc(e.by)}</div>` : ""}
       ${going.length || int.length ? `<div class="who">${going.length ? `<b>Going:</b> ${names(going)}` : ""}${going.length && int.length ? " · " : ""}${int.length ? `<b>Interested:</b> ${names(int)}` : ""}</div>` : ""}
     </div>
     <div class="acts">
       <button class="vote" data-s="interested" aria-pressed="${mine === "interested"}">Interested${int.length ? `<span class="ct">${int.length}</span>` : ""}</button>
       <button class="vote" data-s="going" aria-pressed="${mine === "going"}">Going${going.length ? `<span class="ct">${going.length}</span>` : ""}</button>
       <a class="ics" href="#" data-ics>Add to calendar</a>
+      ${e.plan && ME && e.by.toLowerCase() === ME.toLowerCase() ? `<button class="rm" data-rm>Remove plan</button>` : ""}
     </div>
   </article>`;
 }
@@ -608,10 +698,13 @@ function renderAgenda(byDay) {
   $("agenda").innerHTML = out.join("");
   const more = $("more");
   if (more) more.onclick = () => { MONTH = ms[i + 1]; render(); $("cal-sec").scrollIntoView({ behavior: "smooth" }); };
+  const evs = allEvents();
   $("agenda").querySelectorAll(".ev").forEach((card) => {
-    const e = DATA.events.find((x) => x.id === card.dataset.id);
+    const e = evs.find((x) => x.id === card.dataset.id);
     card.querySelectorAll(".vote").forEach((b) => b.onclick = () => vote(e, b.dataset.s));
     card.querySelector("[data-ics]").onclick = (ev) => { ev.preventDefault(); ics(e); };
+    const rm = card.querySelector("[data-rm]");
+    if (rm) rm.onclick = () => removePlan(e);
   });
 }
 
@@ -640,6 +733,138 @@ function renderFilms() {
   });
 }
 
+// ---------- restaurants ----------
+function showPlace(p) {
+  const v = votesFor(p);
+  switch (AREA) {
+    case "all": return true;
+    case "loved": return p.status === "loved" || Object.values(v).includes("loved");
+    case "want": return Object.values(v).includes("want");
+    default: return p.area === AREA;
+  }
+}
+
+function placeCard(p) {
+  const v = votesFor(p), mine = v[ME] || "";
+  const who = (s) => Object.keys(v).filter((n) => v[n] === s);
+  const loved = who("loved"), want = who("want");
+  const names = (arr) => arr.map((n) => n === ME ? `<span class="mine">${esc(n)}</span>` : esc(n)).join(", ");
+  const links = [`<a href="${mapLink(p.name, p.town)}" target="_blank" rel="noopener">Map</a>`];
+  if (p.reserve) links.push(`<a href="${esc(p.reserve)}" target="_blank" rel="noopener">Reserve</a>`);
+  if (p.site) links.push(`<a href="${esc(p.site)}" target="_blank" rel="noopener">Website</a>`);
+  const area = (PLACES.areas[p.area] || {}).name || "";
+  return `<article class="place${p.status === "loved" ? " loved" : ""}" id="p-${p.id}" data-id="${p.id}">
+    <div class="top"><span class="t">${esc(p.name)}</span>${p.status === "loved" ? `<span class="fav">Our favorite</span>` : ""}</div>
+    <div class="meta">${esc(p.town)} · ${esc(p.cuisine)}${AREA === "all" || AREA === "loved" || AREA === "want" ? ` · ${esc(area)}` : ""}</div>
+    <div class="note">${esc(p.note)}</div>
+    ${p.order ? `<div class="order"><b>Order</b>${p.order.map(esc).join(" · ")}</div>` : ""}
+    ${p.good && p.good.length ? `<div class="tags">${p.good.map((g) => `<span class="tag">${esc(g)}</span>`).join("")}</div>` : ""}
+    ${loved.length || want.length ? `<div class="who">${loved.length ? `<b>Loved it:</b> ${names(loved)}` : ""}${loved.length && want.length ? " · " : ""}${want.length ? `<b>Want to go:</b> ${names(want)}` : ""}</div>` : ""}
+    <div class="links">${links.join("")}</div>
+    <div class="row">
+      <button class="vote" data-s="want" aria-pressed="${mine === "want"}">Want to go${want.length ? `<span class="ct">${want.length}</span>` : ""}</button>
+      <button class="vote" data-s="loved" aria-pressed="${mine === "loved"}">Loved it${loved.length ? `<span class="ct">${loved.length}</span>` : ""}</button>
+      <button class="plan" data-plan>Plan a dinner</button>
+    </div>
+  </article>`;
+}
+
+function renderEat() {
+  $("eat").hidden = !PLACES.places.length;
+  $("tabs").innerHTML = AREA_TABS.map(([k, l]) => `<button data-a="${k}" aria-pressed="${AREA === k}">${l}</button>`).join("");
+  $("tabs").querySelectorAll("button").forEach((b) => b.onclick = () => { AREA = b.dataset.a; store.set("eat-area", AREA); renderEat(); });
+  // Our favorites first, then the list's own order (near home, in town, the Marblehead run).
+  const order = Object.keys(PLACES.areas);
+  const list = PLACES.places.filter(showPlace)
+    .sort((a, b) => (b.status === "loved") - (a.status === "loved") || order.indexOf(a.area) - order.indexOf(b.area));
+  $("places").innerHTML = list.map(placeCard).join("") ||
+    `<p class="empty">${AREA === "want" ? "Nobody's marked Want to go yet." : "Nothing here yet."}</p>`;
+  $("places").querySelectorAll(".place").forEach((el) => {
+    const p = placeById(el.dataset.id);
+    el.querySelectorAll(".vote").forEach((b) => b.onclick = () => vote(p, b.dataset.s));
+    el.querySelector("[data-plan]").onclick = () => openPlan({ title: `Dinner at ${p.name}`, place: p.name, kind: "food", food: p.id });
+  });
+}
+
+$("pick").onclick = () => {
+  const cards = [...document.querySelectorAll(".place")];
+  if (!cards.length) return;
+  const el = cards[Math.floor(Math.random() * cards.length)];
+  el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+  el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+  toast("Tonight: " + el.querySelector(".t").textContent);
+};
+
+// ---------- plans ----------
+let planFood = "";
+function openPlan(pre) {
+  pre = pre || {};
+  planFood = pre.food || "";
+  $("pl-name-row").hidden = !!ME;
+  $("pl-name").required = !ME;
+  $("pl-name").value = ME;
+  $("pl-title").value = pre.title || "";
+  $("pl-place").value = pre.place || "";
+  $("pl-date").value = pre.date || TODAY;
+  $("pl-date").min = TODAY;
+  $("pl-time").value = pre.time || (pre.kind === "food" ? "19:00" : "");
+  $("plan-form").querySelector(`[name="pl-kind"][value="${pre.kind === "other" ? "other" : "food"}"]`).checked = true;
+  $("pl-places").innerHTML = PLACES.places.map((p) => `<option value="${esc(p.name)}">${esc(p.town)}</option>`).join("");
+  $("plan-dlg").showModal();
+}
+$("add-plan").onclick = () => openPlan();
+$("pl-place").addEventListener("change", () => {
+  // Picking a restaurant from the list makes it a dinner and fills in the title if it's empty.
+  const r = PLACES.places.find((p) => p.name.toLowerCase() === $("pl-place").value.trim().toLowerCase());
+  planFood = r ? r.id : "";
+  if (r) {
+    $("plan-form").querySelector('[name="pl-kind"][value="food"]').checked = true;
+    if (!$("pl-title").value.trim()) $("pl-title").value = `Dinner at ${r.name}`;
+  }
+});
+$("plan-form").addEventListener("submit", async (e) => {
+  if (!e.submitter || e.submitter.value !== "ok") return;
+  if (!ME) {
+    const n = $("pl-name").value.trim().replace(/\s+/g, " ").slice(0, 24);
+    if (!n) { e.preventDefault(); $("pl-name").focus(); return; }
+    ME = n; store.set("name", ME);
+  }
+  const plan = { date: $("pl-date").value, time: $("pl-time").value, title: $("pl-title").value.trim(), place: $("pl-place").value.trim(),
+    kind: $("plan-form").querySelector('[name="pl-kind"]:checked').value, by: ME };
+  if (planFood) plan.food = planFood;
+  if (!plan.date || !plan.title) { e.preventDefault(); return; }
+  if (REMOTE) {
+    try {
+      const body = await send({ plan });
+      toast(`Added for ${DOW[dow(plan.date)]} ${short(plan.date)}.`);
+      render(); goTo(plan.date, body.id);
+      return;
+    } catch (err) { /* fall through to saving on this phone */ }
+  }
+  const id = "plan-local-" + Math.random().toString(36).slice(2, 8);
+  PLANS[id] = plan;
+  apply({ id, name: ME, status: "going" });
+  store.set("plans", PLANS); store.set("votes", VOTES);
+  if (DATA.votes_url) store.set("queue", store.get("queue", []).concat([{ plan }]));
+  toast(`Added for ${DOW[dow(plan.date)]} ${short(plan.date)}, on this phone until the vote box answers.`);
+  render(); goTo(plan.date, id);
+});
+
+async function removePlan(e) {
+  if (!confirm(`Take "${e.title}" off the calendar?`)) return;
+  const local = e.id.startsWith("plan-local-");
+  delete PLANS[e.id]; delete VOTES[e.id];
+  render();
+  if (local || !REMOTE) {
+    store.set("plans", PLANS); store.set("votes", VOTES);
+    if (local) store.set("queue", store.get("queue", []).filter((q) => !(q.plan && q.plan.title === e.title && q.plan.date === e.date)));
+    else if (DATA.votes_url) store.set("queue", store.get("queue", []).concat([{ unplan: e.id, name: ME }]));
+    return;
+  }
+  try { await send({ unplan: e.id, name: ME }); render(); }
+  catch (err) { toast("Couldn't reach the vote box. Try again in a minute."); await loadVotes(); render(); }
+}
+
 function renderFoot() {
   const up = new Date(DATA.updated);
   const when = isNaN(up) ? "" : up.toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
@@ -651,16 +876,17 @@ function renderFoot() {
   const priced = Object.keys(PRICES.events || {}).length;
   $("foot").innerHTML = `<p>Updated ${esc(when)} ET from ${bits.join(", ")}. Refreshes every morning.${priced ? ` Ticket prices for ${priced} shows come from SeatGeek and are checked every 3 hours.` : ""}</p>
     <p>Times and lineups change, so check the ticket link before you go. Drive times are rough estimates from downtown Boston.</p>
-    <p>Dinner first? <a href="../restaurants/">Supper Club</a> has our restaurant list.</p>`;
+    <p>Restaurants are our own list. Hours and menus change, so check before you go.</p>`;
 }
 
 function render() {
   const byDay = {};
-  for (const e of DATA.events) if (e.date >= TODAY && showEvent(e)) (byDay[e.date] = byDay[e.date] || []).push(e);
-  renderChips(); renderMe(); renderBig(); renderGrid(byDay); renderAgenda(byDay); renderFilms(); renderFoot();
+  for (const e of allEvents()) if (e.date >= TODAY && showEvent(e)) (byDay[e.date] = byDay[e.date] || []).push(e);
+  for (const d in byDay) byDay[d].sort((a, b) => (a.time || "99").localeCompare(b.time || "99"));
+  renderChips(); renderMe(); renderBig(); renderGrid(byDay); renderAgenda(byDay); renderFilms(); renderEat(); renderFoot();
 }
 
-function goTo(iso) {
+function goTo(iso, id) {
   if (monthOf(iso) !== MONTH) { MONTH = monthOf(iso); render(); }
   let el = $("d-" + iso) || [...document.querySelectorAll(".quiet")].find((q) => q.dataset.days.split(" ").includes(iso));
   if (!el) {
@@ -716,6 +942,10 @@ document.addEventListener("visibilitychange", async () => {
     const res = await fetch("events.json?v=" + Math.floor(Date.now() / 600000), { cache: "no-cache" });
     DATA = await res.json();
     const pr = await fetch("prices.json?v=" + Math.floor(Date.now() / 600000), { cache: "no-cache" }).catch(() => null);
+    const pl = await fetch("places.json?v=" + Math.floor(Date.now() / 600000), { cache: "no-cache" }).catch(() => null);
+    if (pl && pl.ok) PLACES = await pl.json().catch(() => PLACES);
+    const slugify = (x) => x.toLowerCase().normalize("NFKD").replace(/[^\w]+/g, "-").replace(/^-|-$/g, "");
+    PLACES.places.forEach((p) => { p.id = p.id || "food-" + slugify(p.name + " " + p.town); });
     if (pr && pr.ok) PRICES = await pr.json().catch(() => PRICES);
   } catch (e) {
     $("agenda").innerHTML = `<p class="empty">Couldn't load the calendar. Try again in a minute.</p>`;
