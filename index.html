@@ -19,7 +19,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Besley:ital,wght@0,500;0,600;0,700;0,800;1,500&family=Libre+Franklin:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="assets/site.css?v=20261014-logo">
+<link rel="stylesheet" href="assets/site.css?v=20261014-writing">
+<script src="assets/site.js" defer></script>
+<script src="assets/analytics.js" defer></script>
 </head>
 <body>
 
@@ -33,7 +35,7 @@
     </a>
     <nav class="site-nav" aria-label="Main">
       <a href="#projects">Projects</a>
-      <a href="#writing">ESPN</a>
+      <a href="#writing">Writing</a>
       <a href="#about">About</a>
     </nav>
   </div>
@@ -70,8 +72,13 @@
     </div>
   </section>
 
-    <section class="section writing" id="writing" aria-labelledby="writing-title">
+  <section class="section writing" id="writing" aria-labelledby="writing-title">
     <div class="wrap">
+      <div class="section-head">
+        <h2 id="writing-title">Writing</h2>
+        <span class="count" id="writing-count">35 articles</span>
+      </div>
+      <!-- One writing-intro + writing-years pair per outlet. Copy the pair to add another. -->
       <div class="writing-intro">
         <figure class="archive-visual" aria-label="Fenway Park scoreboard and a sample betting trend chart">
           <svg class="fenway-art" viewBox="0 0 280 172" aria-hidden="true" focusable="false">
@@ -100,7 +107,7 @@
           </svg>
         </figure>
         <p class="writing-kicker">ESPN Chalk · 2014–16</p>
-        <h2 id="writing-title">Weekly NFL betting analysis</h2>
+        <h3 id="espn-title">Weekly NFL betting analysis</h3>
         <p>For three NFL seasons, I wrote weekly columns on contrarian betting value, using market trends and Sports Insights data to look for edges. Browse recovered regular-season and playoff columns by year.</p>
       </div>
       <div class="writing-years">
@@ -173,12 +180,13 @@
     </div>
   </section>
 
-<section class="section about" id="about" aria-labelledby="about-title">
+  <section class="section about" id="about" aria-labelledby="about-title">
     <div class="wrap about-grid">
       <h2 id="about-title">About</h2>
       <div class="about-copy">
         <p class="lead">I'm David Solar. By day I work in marketing, where most of what I build is AI and automation that lives inside company systems.</p>
         <p>This site is for everything else: games, simulations and small tools, built in the evenings to get better at the craft and to answer questions I can't stop thinking about. Each project lists the question that started it.</p>
+        <p>Say hello at <a data-user="hello" data-domain="davidsolar.dev" data-show>hello [at] davidsolar.dev</a>.</p>
       </div>
     </div>
   </section>
@@ -195,8 +203,9 @@
     </div>
     <nav class="foot-nav" aria-label="Footer">
       <a href="#projects">Projects</a>
-      <a href="#writing">ESPN</a>
+      <a href="#writing">Writing</a>
       <a href="#about">About</a>
+      <a data-user="hello" data-domain="davidsolar.dev">Email</a>
     </nav>
   </div>
 </footer>

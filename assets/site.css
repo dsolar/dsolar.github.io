@@ -171,12 +171,13 @@ a:hover{color:var(--red)}
 .entry-cover .band{display:block;height:8px;background:var(--cover-band,var(--red))}
 .entry-cover .typeset{aspect-ratio:4/3;display:flex;align-items:flex-end;padding:22px;color:var(--cover-ink,#fff);font-family:var(--f-display);font-weight:800;font-size:2rem;line-height:1}
 
-/* ---------- ESPN article archive ---------- */
+/* ---------- Writing: one collection per outlet, ESPN Chalk first ---------- */
 .writing{border-top:2px solid var(--ink)}
-.writing-intro{display:grid;grid-template-columns:minmax(0,15rem) minmax(0,1fr);gap:10px 40px;margin-bottom:40px}
+.writing-intro{display:grid;grid-template-columns:minmax(0,15rem) minmax(0,1fr);gap:10px 40px;margin-bottom:40px;border-top:2px solid var(--ink);padding-top:clamp(32px,4.5vw,52px)}
+.writing-years + .writing-intro{margin-top:clamp(48px,6vw,72px)}
 .writing-kicker{grid-column:2;color:var(--red);font-size:.88rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
-.writing-intro h2,.writing-intro>p:last-child{grid-column:2}
-.writing-intro h2{font-size:clamp(1.9rem,3.4vw,2.6rem);font-weight:700;letter-spacing:-.015em;line-height:1.12}
+.writing-intro h3,.writing-intro>p:last-child{grid-column:2}
+.writing-intro h3{font-size:clamp(1.6rem,2.8vw,2.15rem);font-weight:700;letter-spacing:-.015em;line-height:1.12}
 .writing-intro>p:last-child{max-width:40em;color:var(--muted)}
 .archive-visual{grid-column:1;grid-row:1 / span 3;align-self:center;margin:0;padding:12px 14px 10px;border:1px solid var(--rule);border-top:3px solid var(--red);background:var(--paper-2);box-shadow:0 5px 14px rgba(0,34,68,.06)}
 .archive-visual svg{display:block;width:100%;height:auto}
@@ -212,8 +213,9 @@ a:hover{color:var(--red)}
 .article-list a:hover .article-arrow{transform:translate(2px,-2px)}
 @media (max-width: 900px){
   .writing-intro{grid-template-columns:minmax(0,1fr);gap:8px}
-  .writing-intro>*{grid-column:1}
-  .writing-intro .archive-visual{grid-column:1;grid-row:auto;width:min(100%,22rem);margin-bottom:12px}\n  .writing-intro{grid-template-columns:minmax(0,1fr)}\n  .writing-intro>*{grid-column:1}\n  .writing-years{grid-template-columns:minmax(0,1fr);gap:34px;padding-left:0}
+  .writing-intro>*,.writing-intro h3,.writing-intro>p:last-child{grid-column:1}
+  .writing-intro .archive-visual{grid-column:1;grid-row:auto;width:min(100%,22rem);margin-bottom:12px}
+  .writing-years{grid-template-columns:minmax(0,1fr);gap:34px;padding-left:0}
 }
 @media (max-width: 520px){
   .article-list{column-gap:14px}

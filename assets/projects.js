@@ -41,5 +41,15 @@ window.PROJECTS = [
     facts: [["8", "blocks between the bar and home"], ["4:00", "on the clock before it's over"], ["5", "endings to discover"]],
     stack: ["JavaScript", "HTML Canvas"],
     cover: { image: "assets/covers/degenerate-trail.jpg", bg: "#101916", band: "#D8EE82" }
+  },
+  {
+    title: "Franchise Mode",
+    type: "Game",
+    status: "building",
+    url: "franchise-mode/",
+    question: "Can Seattle turn an expansion roster into a contender, season after season?",
+    summary: "The next chapter of The 31st Franchise. Keep running the team after year one, with multiple seasons, free agency, trades and rookie drafts.",
+    stack: ["JavaScript", "Python"],
+    cover: { bg: "#00653A", band: "#FFC200" }
   }
 ];

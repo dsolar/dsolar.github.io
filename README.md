@@ -6,10 +6,13 @@ My personal site: a home page plus two games, **The 31st Franchise** (an NBA exp
 
 ```
 dsolar.github.io/
-  index.html                  home page: header, hero, project list, About, footer
+  index.html                  home page: header, hero, projects, writing, About, footer
+  404.html                    the page anyone sees at an address that doesn't exist
   assets/
     projects.js               THE LIST OF PROJECTS. Edit this to add or change one.
     site.css                  the site's colors, fonts and layout (colors are at the top)
+    site.js                   email links and the footer year, shared by every page
+    analytics.js              Cloudflare Web Analytics (paste the token here to turn it on)
     bar.css                   the slim "David Solar / All projects" bar on top of each game
     ds-mark.svg, favicon.svg  the DS logo
     apple-touch-icon.png      icon when someone saves the site to a phone home screen
@@ -38,6 +41,37 @@ dsolar.github.io/
 That's it. The home page reads the list, so it never needs editing for a new project. Once there's more than one type of project (say a Tool next to the Games), filter buttons show up on their own.
 
 To keep something off the home page but still reachable by its link, set `hidden: true`. To list something you're still building, set `status: "building"`.
+
+Each new game should also load analytics: put `<script src="../assets/analytics.js" defer></script>` in its `<head>` next to `bar.css`.
+
+## Adding writing
+
+The Writing section on the home page holds one collection per outlet. ESPN Chalk is the first. To add another (say Sports Insights), copy the `writing-intro` block and the `writing-years` block under it, paste them right after, and change the text and links. The article count next to the Writing heading updates itself.
+
+## Email: hello@davidsolar.dev
+
+The site links to hello@davidsolar.dev. Cloudflare forwards it to your real inbox, so your personal address never appears on the site. One-time setup:
+
+1. Cloudflare dashboard > davidsolar.dev > **Email** > **Email Routing** > **Get started**.
+2. Custom address: `hello`. Destination: your personal email. Save.
+3. Cloudflare emails the destination a verification link. Click it.
+4. Cloudflare offers to add its email DNS records. Accept (**Add records and enable**). They don't affect the website.
+
+To send a test, email hello@davidsolar.dev from another account. The address is written into the page as `data-user="hello" data-domain="davidsolar.dev"` and assembled by `assets/site.js`, which keeps it away from simple spam bots.
+
+## Analytics
+
+Cloudflare Web Analytics is wired into every page through `assets/analytics.js`, but it stays off until you add your site token:
+
+1. Cloudflare dashboard > **Analytics & Logs** > **Web Analytics** > **Add a site** > `davidsolar.dev` > **Done**.
+2. Cloudflare shows a short JS snippet. Copy the value after `"token":`.
+3. Paste it between the quotes on the `var TOKEN = "";` line in `assets/analytics.js`, then commit and push.
+
+Visits show up in that same Web Analytics screen within a few minutes. It only counts the live site, never local previews.
+
+## The 404 page
+
+`404.html` is what GitHub Pages shows for any address that doesn't exist. Its header and footer are copies of the home page's, so if you change the nav or footer in `index.html`, make the same change there.
 
 ## Adding a private area later
 
