@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-14T22:56:05Z",
+ "updated": "2026-10-14T23:00:37Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -60,19 +60,6 @@
    "score": 0
   },
   {
-   "id": "sg-18664309",
-   "date": "2026-10-14",
-   "time": "20:00",
-   "title": "Playing Dead (21+ Event)",
-   "cat": "music",
-   "venue": "Soundcheck Studios",
-   "city": "Pembroke, MA",
-   "url": "https://seatgeek.com/playing-dead-grateful-dead-tribute-tickets/pembroke-massachusetts-soundcheck-studios-1-1-2026-10-14-8-pm/concert/18664309",
-   "source": "seatgeek",
-   "score": 3,
-   "why": "love"
-  },
-  {
    "id": "tm-Z7r9jZ1A70UAf",
    "date": "2026-10-14",
    "time": "20:00",
@@ -112,6 +99,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/an-evening-with-lifehouse-best-of-boston-massachusetts-10-15-2026/event/01006495F12BD308",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18222465",
+    "2026-10-15-lifehouse-paradise-rock-club"
+   ],
    "score": 0
   },
   {
@@ -125,21 +116,6 @@
    "source": "venues",
    "id": "2026-10-15-anthony-fuentes-laugh-boston",
    "score": 1
-  },
-  {
-   "id": "sg-18222465",
-   "date": "2026-10-15",
-   "time": "19:00",
-   "title": "Lifehouse (18+)",
-   "cat": "music",
-   "venue": "Paradise Rock Club",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/lifehouse-tickets/boston-massachusetts-paradise-rock-club-2026-10-15-7-pm/concert/18222465",
-   "source": "seatgeek",
-   "aka": [
-    "2026-10-15-lifehouse-paradise-rock-club"
-   ],
-   "score": 0
   },
   {
    "id": "tm-vv177Z_aGkSbtQpc",
@@ -159,18 +135,6 @@
    "score": 0
   },
   {
-   "id": "sg-18176548",
-   "date": "2026-10-15",
-   "time": "19:30",
-   "title": "Chad Goes Deep",
-   "cat": "comedy",
-   "venue": "The Center for Arts at the Armory",
-   "city": "Somerville, MA",
-   "url": "https://seatgeek.com/chad-goes-deep-tickets/comedy/2026-10-15-7-30-pm/18176548",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
    "id": "tm-vv177Z_FGki_EKGA",
    "date": "2026-10-15",
    "time": "19:30",
@@ -180,6 +144,9 @@
    "city": "Somerville, MA",
    "url": "https://www.ticketmaster.com/chill-towards-enlightenment-a-stoke-seminar-somerville-massachusetts-10-15-2026/event/0100648B199D3305",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18176548"
+   ],
    "score": 0
   },
   {
@@ -283,8 +250,7 @@
    "aka": [
     "2026-10-16-bertha-grateful-drag-paradise-rock-club"
    ],
-   "score": 2,
-   "why": "like"
+   "score": 0
   },
   {
    "date": "2026-10-16",
@@ -399,36 +365,6 @@
    "score": 0
   },
   {
-   "id": "tm-rZ7HnEZ1AfJ6eK",
-   "date": "2026-10-16",
-   "time": "20:00",
-   "title": "Last Exit: Pearl Jam Tribute (Night One)",
-   "cat": "music",
-   "venue": "Daryl's House",
-   "city": "Pawling, NY",
-   "url": "https://www.ticketweb.com/event/last-exit-pearl-jam-tribute-daryls-house-tickets/14987093",
-   "source": "ticketmaster",
-   "drive_hours": 3.25,
-   "score": 2,
-   "why": "big"
-  },
-  {
-   "id": "sg-18664311",
-   "date": "2026-10-16",
-   "time": "20:00",
-   "title": "Reprise - A Phish Experience",
-   "cat": "music",
-   "venue": "Soundcheck Studios",
-   "city": "Pembroke, MA",
-   "url": "https://seatgeek.com/reprise-a-phish-experience-tickets/pembroke-massachusetts-soundcheck-studios-1-1-2026-10-16-8-pm/concert/18664311",
-   "source": "seatgeek",
-   "aka": [
-    "sg-18664311"
-   ],
-   "score": 3,
-   "why": "love"
-  },
-  {
    "id": "sg-18663856",
    "date": "2026-10-16",
    "time": "20:30",
@@ -531,18 +467,6 @@
     "sg-18531270"
    ],
    "score": 1
-  },
-  {
-   "id": "sg-18587871",
-   "date": "2026-10-17",
-   "time": "18:00",
-   "title": "Stand Up Showcase",
-   "cat": "comedy",
-   "venue": "Goofs Comedy Club - Somerville",
-   "city": "Somerville, MA",
-   "url": "https://seatgeek.com/stand-up-showcase-tickets/comedy/2026-10-17-6-pm/18587871",
-   "source": "seatgeek",
-   "score": 0
   },
   {
    "id": "sg-18666672",
@@ -692,20 +616,6 @@
    "aka": [
     "sg-18194413"
    ],
-   "score": 2,
-   "why": "big"
-  },
-  {
-   "id": "tm-rZ7HnEZ1AfJ67N",
-   "date": "2026-10-17",
-   "time": "20:00",
-   "title": "Last Exit: Pearl Jam Tribute (Night Two)",
-   "cat": "music",
-   "venue": "Daryl's House",
-   "city": "Pawling, NY",
-   "url": "https://www.ticketweb.com/event/last-exit-pearl-jam-tribute-daryls-house-tickets/14987123",
-   "source": "ticketmaster",
-   "drive_hours": 3.25,
    "score": 2,
    "why": "big"
   },
@@ -1226,22 +1136,6 @@
    "score": 0
   },
   {
-   "id": "sg-18664313",
-   "date": "2026-10-21",
-   "time": "20:00",
-   "title": "Playing Dead - Grateful Dead Tribute",
-   "cat": "music",
-   "venue": "Soundcheck Studios",
-   "city": "Pembroke, MA",
-   "url": "https://seatgeek.com/playing-dead-grateful-dead-tribute-tickets/pembroke-massachusetts-soundcheck-studios-1-1-2026-10-21-8-pm/concert/18664313",
-   "source": "seatgeek",
-   "aka": [
-    "sg-18664313"
-   ],
-   "score": 3,
-   "why": "love"
-  },
-  {
    "id": "tm-Z7r9jZ1A70MJF",
    "date": "2026-10-21",
    "time": "20:00",
@@ -1426,20 +1320,8 @@
    "url": "https://www.ticketmaster.com/an-evening-with-assembly-of-dust-boston-massachusetts-10-23-2026/event/01006453DD93D0B4",
    "source": "ticketmaster",
    "aka": [
-    "tm-vv1AvZkoKGkdIUXxy"
+    "sg-18091259"
    ],
-   "score": 0
-  },
-  {
-   "id": "sg-18091259",
-   "date": "2026-10-23",
-   "time": "19:00",
-   "title": "Assembly of Dust (18+)",
-   "cat": "music",
-   "venue": "Brighton Music Hall",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/assembly-of-dust-tickets/boston-massachusetts-brighton-music-hall-2026-10-23-7-pm/concert/18091259",
-   "source": "seatgeek",
    "score": 0
   },
   {
@@ -1666,20 +1548,6 @@
    "score": 0
   },
   {
-   "id": "tm-G5vVZ_32-wdRE",
-   "date": "2026-10-24",
-   "time": "12:00",
-   "title": "The Music Of Phish For Kids + More",
-   "cat": "music",
-   "venue": "Garcia's at The Capitol Theatre",
-   "city": "Port Chester, NY",
-   "url": "https://www.ticketmaster.com/the-music-of-phish-for-kids-port-chester-new-york-10-24-2026/event/1D006523E1C83BE7",
-   "source": "ticketmaster",
-   "drive_hours": 3.75,
-   "score": 3,
-   "why": "love"
-  },
-  {
    "id": "tm-vv1AvZkfYGkecF7H_",
    "date": "2026-10-24",
    "time": "14:00",
@@ -1704,18 +1572,6 @@
    "aka": [
     "sg-18346637"
    ],
-   "score": 0
-  },
-  {
-   "id": "sg-18587872",
-   "date": "2026-10-24",
-   "time": "18:00",
-   "title": "Stand Up Showcase",
-   "cat": "comedy",
-   "venue": "Goofs Comedy Club - Somerville",
-   "city": "Somerville, MA",
-   "url": "https://seatgeek.com/stand-up-showcase-tickets/comedy/2026-10-24-6-pm/18587872",
-   "source": "seatgeek",
    "score": 0
   },
   {
@@ -2425,22 +2281,6 @@
    "score": 0
   },
   {
-   "id": "sg-18664315",
-   "date": "2026-10-28",
-   "time": "20:00",
-   "title": "Playing Dead - Grateful Dead Tribute",
-   "cat": "music",
-   "venue": "Soundcheck Studios",
-   "city": "Pembroke, MA",
-   "url": "https://seatgeek.com/playing-dead-grateful-dead-tribute-tickets/pembroke-massachusetts-soundcheck-studios-1-1-2026-10-28-8-pm/concert/18664315",
-   "source": "seatgeek",
-   "aka": [
-    "sg-18664315"
-   ],
-   "score": 3,
-   "why": "love"
-  },
-  {
    "id": "tm-vvG17Z_5SEKxr4",
    "date": "2026-10-28",
    "time": "20:00",
@@ -2714,22 +2554,6 @@
    "score": 0
   },
   {
-   "id": "sg-18664470",
-   "date": "2026-10-30",
-   "time": "19:30",
-   "title": "Silly Goose",
-   "cat": "music",
-   "venue": "Taffeta Music Hall",
-   "city": "Lowell, MA",
-   "url": "https://seatgeek.com/silly-goose-tickets/lowell-massachusetts-taffeta-music-hall-2026-10-30-7-30-pm/concert/18664470",
-   "source": "seatgeek",
-   "aka": [
-    "sg-18664470"
-   ],
-   "score": 3,
-   "why": "love"
-  },
-  {
    "id": "tm-Z7r9jZ1A70z39",
    "date": "2026-10-30",
    "time": "20:00",
@@ -2759,33 +2583,6 @@
     "2026-10-30-paul-anka-chevalier-theatre"
    ],
    "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_2jd7hB1",
-   "date": "2026-10-30",
-   "time": "20:00",
-   "title": "Pink Talking Fish-A  Fusion of Pink Floyd, Talking Heads and Phish",
-   "cat": "music",
-   "venue": "Blue Ocean Music Hall",
-   "city": "Salisbury, MA",
-   "url": "https://www.ticketmaster.com/pink-talking-fisha-fusion-of-pink-salisbury-massachusetts-10-30-2026/event/010064F70311BE8A",
-   "source": "ticketmaster",
-   "drive_hours": 0.75,
-   "score": 3,
-   "why": "love"
-  },
-  {
-   "id": "sg-18664054",
-   "date": "2026-10-30",
-   "time": "20:00",
-   "title": "Playing Dead - Dead-O-Ween",
-   "cat": "music",
-   "venue": "Sanctuary",
-   "city": "Dorchester, MA",
-   "url": "https://seatgeek.com/playing-dead-grateful-dead-tribute-tickets/dorchester-massachusetts-sanctuary-7-2026-10-30-8-pm/concert/18664054",
-   "source": "seatgeek",
-   "score": 3,
-   "why": "love"
   },
   {
    "id": "tm-vv177Z_oGkYvQfab",
@@ -2883,18 +2680,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/yqb-presents-perreoween-eve-21-boston-massachusetts-10-30-2026/event/01006519C08D36D8",
    "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "sg-18534972",
-   "date": "2026-10-30",
-   "time": "21:30",
-   "title": "Yo Quiero Bailar Fest",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/yo-quiero-bailar-fest-tickets/boston-massachusetts-big-night-live-2026-10-30-9-30-pm/music-festival/18534972",
-   "source": "seatgeek",
+   "aka": [
+    "sg-18534972"
+   ],
    "score": 0
   },
   {
@@ -2931,35 +2719,6 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-10-31-2026/event/01006530AD3B4F8F",
    "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-k7vGF_G6MRW0-",
-   "date": "2026-10-31",
-   "time": "17:30",
-   "title": "Silly Goose - The Set It Off Tour",
-   "cat": "music",
-   "venue": "Mercury Lounge",
-   "city": "New York, NY",
-   "url": "https://www.ticketmaster.com/silly-goose-the-set-it-off-new-york-new-york-10-31-2026/event/000064C1F7BFD921",
-   "source": "ticketmaster",
-   "drive_hours": 4.25,
-   "aka": [
-    "sg-18282708"
-   ],
-   "score": 3,
-   "why": "love"
-  },
-  {
-   "id": "sg-18587873",
-   "date": "2026-10-31",
-   "time": "18:00",
-   "title": "Stand Up Showcase",
-   "cat": "comedy",
-   "venue": "Goofs Comedy Club - Somerville",
-   "city": "Somerville, MA",
-   "url": "https://seatgeek.com/stand-up-showcase-tickets/comedy/2026-10-31-6-pm/18587873",
-   "source": "seatgeek",
    "score": 0
   },
   {
@@ -3054,20 +2813,6 @@
    "score": 0
   },
   {
-   "id": "tm-rZ7HnEZ1A4Z-FN",
-   "date": "2026-10-31",
-   "time": "20:00",
-   "title": "Stella Blue's Band \"Stellaween\" - Grateful Dead Tribute",
-   "cat": "music",
-   "venue": "Hill Country Live",
-   "city": "New York, NY",
-   "url": "https://www.ticketweb.com/event/stella-blues-band-stellaween-hill-country-live-tickets/15021223",
-   "source": "ticketmaster",
-   "drive_hours": 4.25,
-   "score": 3,
-   "why": "love"
-  },
-  {
    "id": "tm-vvG17Z_ClEw-fE",
    "date": "2026-10-31",
    "time": "20:00",
@@ -3109,6 +2854,9 @@
    "city": "Boston, MA",
    "url": "https://www.universe.com/events/halloween-favela-encantada-boston-18-oct-31-studio-b-big-night-live-tickets-F7CTS1?ref=ticketmaster",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18641169"
+   ],
    "score": 0
   },
   {
@@ -3124,18 +2872,6 @@
    "aka": [
     "2026-10-31-trixie-mattel-and-katya-royale"
    ],
-   "score": 0
-  },
-  {
-   "id": "sg-18641169",
-   "date": "2026-10-31",
-   "time": "21:00",
-   "title": "iBlack USA with Favela Encantada (18+)",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/iblack-usa-tickets/boston-massachusetts-big-night-live-2026-10-31-9-pm/concert/18641169",
-   "source": "seatgeek",
    "score": 0
   },
   {
@@ -3202,18 +2938,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/an-evening-with-blu-detiger-the-boston-massachusetts-11-01-2026/event/0100650CDEDCB548",
    "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "sg-18507389",
-   "date": "2026-11-01",
-   "time": "19:00",
-   "title": "Blu DeTiger with DJ Carbo",
-   "cat": "music",
-   "venue": "Brighton Music Hall",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/blu-detiger-tickets/boston-massachusetts-brighton-music-hall-2026-11-01-7-pm/concert/18507389",
-   "source": "seatgeek",
+   "aka": [
+    "sg-18507389"
+   ],
    "score": 0
   },
   {
@@ -3561,6 +3288,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/best-friends-with-nicole-byer-sasheer-boston-massachusetts-11-04-2026/event/010064BDBEA2F1A2",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18516359"
+   ],
    "score": 1
   },
   {
@@ -3573,18 +3303,6 @@
    "city": "Boston, MA",
    "url": "https://www.espn.com/nba/game/_/gameId/401909924/bucks-celtics",
    "source": "espn",
-   "score": 1
-  },
-  {
-   "id": "sg-18516359",
-   "date": "2026-11-04",
-   "time": "19:30",
-   "title": "Nicole Byer and Sasheer Zamata",
-   "cat": "comedy",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/nicole-byer-and-sasheer-zamata-tickets/comedy/2026-11-04-7-30-pm/18516359",
-   "source": "seatgeek",
    "score": 1
   },
   {
@@ -4121,7 +3839,8 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A70go6",
    "source": "ticketmaster",
    "aka": [
-    "sg-18663876"
+    "sg-18663876",
+    "2026-11-06-a-place-to-bury-strangers-the-sinclair"
    ],
    "score": 0
   },
@@ -4174,18 +3893,6 @@
    "why": "fav"
   },
   {
-   "date": "2026-11-06",
-   "time": null,
-   "title": "A Place To Bury Strangers",
-   "cat": "music",
-   "venue": "The Sinclair",
-   "city": "Cambridge, MA",
-   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar",
-   "source": "venues",
-   "id": "2026-11-06-a-place-to-bury-strangers-the-sinclair",
-   "score": 0
-  },
-  {
    "id": "tm-Z7r9jZ1AAZa8E",
    "date": "2026-11-07",
    "time": "13:00",
@@ -4207,18 +3914,6 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-11-07-2026/event/01006530AD565024",
    "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "sg-18587874",
-   "date": "2026-11-07",
-   "time": "18:00",
-   "title": "Stand Up Showcase",
-   "cat": "comedy",
-   "venue": "Goofs Comedy Club - Somerville",
-   "city": "Somerville, MA",
-   "url": "https://seatgeek.com/stand-up-showcase-tickets/comedy/2026-11-07-6-pm/18587874",
-   "source": "seatgeek",
    "score": 0
   },
   {
@@ -4396,20 +4091,6 @@
    "url": "https://seatgeek.com/the-uncle-louie-variety-show-tickets/comedy/2026-11-07-8-pm/18663287",
    "source": "seatgeek",
    "score": 0
-  },
-  {
-   "id": "sg-18342899",
-   "date": "2026-11-07",
-   "time": "20:00",
-   "title": "Unforgettable Fire - U2 Tribute",
-   "cat": "music",
-   "venue": "SHU Community Theatre",
-   "city": "Fairfield, CT",
-   "url": "https://seatgeek.com/unforgettable-fire-a-tribute-to-u2-tickets/fairfield-connecticut-shu-community-theatre-2026-11-07-8-pm/concert/18342899",
-   "source": "seatgeek",
-   "drive_hours": 3.25,
-   "score": 2,
-   "why": "big"
   },
   {
    "id": "tm-vv177Z_3GkB_IahD",
@@ -4800,8 +4481,10 @@
    "url": "https://www.ticketmaster.com/beartooth-pure-ecstasy-world-tour-boston-massachusetts-11-11-2026/event/010064A8E6A0202F",
    "source": "ticketmaster",
    "aka": [
-    "sg-18253043"
+    "sg-18253043",
+    "2026-11-11-windwaker-and-don-broco-mgm-music-hall-at-fe"
    ],
+   "sub": "with Beartooth and Magnolia Park",
    "score": 0
   },
   {
@@ -4894,19 +4577,6 @@
    "score": 0
   },
   {
-   "date": "2026-11-11",
-   "time": null,
-   "title": "Windwaker and Don Broco",
-   "cat": "music",
-   "venue": "MGM Music Hall at Fenway",
-   "city": "Boston, MA",
-   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar",
-   "sub": "with Beartooth and Magnolia Park",
-   "source": "venues",
-   "id": "2026-11-11-windwaker-and-don-broco-mgm-music-hall-at-fe",
-   "score": 0
-  },
-  {
    "id": "tm-vv177Z_oGkSO2pLq",
    "date": "2026-11-12",
    "time": "19:00",
@@ -4982,22 +4652,6 @@
    "why": "love"
   },
   {
-   "id": "sg-18685640",
-   "date": "2026-11-12",
-   "time": "19:15",
-   "title": "John Legend with Nicolas Reyes (21+)",
-   "cat": "music",
-   "venue": "MGM Music Hall at Fenway",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/john-legend-tickets/boston-massachusetts-mgm-music-hall-at-fenway-2026-11-12-7-15-pm/concert/18685640",
-   "source": "seatgeek",
-   "sub": "with Gipsy Kings",
-   "aka": [
-    "2026-11-12-john-legend-mgm-music-hall-at-fe"
-   ],
-   "score": 0
-  },
-  {
    "id": "tm-vv177Z_KGkzNjON0",
    "date": "2026-11-12",
    "time": "19:15",
@@ -5007,6 +4661,11 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/the-quin-5th-anniversary-house-celebration-boston-massachusetts-11-12-2026/event/0100653E237208E4",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18685640",
+    "2026-11-12-john-legend-mgm-music-hall-at-fe"
+   ],
+   "sub": "with Gipsy Kings",
    "score": 0
   },
   {
@@ -5134,6 +4793,11 @@
    "url": "https://www.ticketmaster.com/an-evening-with-goose-uncasville-connecticut-11-13-2026/event/1D0064BBCB30A50B",
    "source": "ticketmaster",
    "drive_hours": 1.75,
+   "aka": [
+    "sg-18280633",
+    "sg-18280634",
+    "2026-11-13-goose-mohegan-sun-arena"
+   ],
    "score": 3,
    "why": "love"
   },
@@ -5198,20 +4862,6 @@
     "2026-11-13-jojo-royale"
    ],
    "score": 0
-  },
-  {
-   "id": "tm-rZ7HnEZ1AfGP17",
-   "date": "2026-11-13",
-   "time": "19:00",
-   "title": "THE WARPED TOUR BAND - EMO POP-PUNK NIGHT LIVE! with special guests: dookie - a green day cover band",
-   "cat": "music",
-   "venue": "Williams Center - Black Box - Rutherford",
-   "city": "Rutherford, NJ",
-   "url": "https://www.ticketweb.com/event/the-warped-tour-band-williams-center-black-tickets/14325284",
-   "source": "ticketmaster",
-   "drive_hours": 4.5,
-   "score": 2,
-   "why": "big"
   },
   {
    "id": "tm-vvG17Z_1rB3avF",
@@ -5438,25 +5088,6 @@
    "score": 0
   },
   {
-   "id": "tm-G5vVZ_5RCBQNp",
-   "date": "2026-11-13",
-   "time": null,
-   "title": "Goose - 2-day Ticket (11/13/26 & 11/14/26) Cannot Split By Day",
-   "cat": "music",
-   "venue": "Mohegan Sun Arena",
-   "city": "Uncasville, CT",
-   "url": "https://www.ticketmaster.com/goose-2day-ticket-111326-111426-cannot-uncasville-connecticut-11-13-2026/event/1D0064BBCEE9A8D6",
-   "source": "ticketmaster",
-   "drive_hours": 1.75,
-   "aka": [
-    "sg-18280633",
-    "sg-18280634",
-    "2026-11-13-goose-mohegan-sun-arena"
-   ],
-   "score": 3,
-   "why": "love"
-  },
-  {
    "id": "tm-vv1AvZkfYGkecjAdl",
    "date": "2026-11-14",
    "time": "14:00",
@@ -5484,18 +5115,6 @@
    "score": 0
   },
   {
-   "id": "sg-18587875",
-   "date": "2026-11-14",
-   "time": "18:00",
-   "title": "Stand Up Showcase",
-   "cat": "comedy",
-   "venue": "Goofs Comedy Club - Somerville",
-   "city": "Somerville, MA",
-   "url": "https://seatgeek.com/stand-up-showcase-tickets/comedy/2026-11-14-6-pm/18587875",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
    "id": "tm-G5vVZ_5RuGQjG",
    "date": "2026-11-14",
    "time": "19:00",
@@ -5506,6 +5125,10 @@
    "url": "https://www.ticketmaster.com/an-evening-with-goose-uncasville-connecticut-11-14-2026/event/1D0064BBCD31A70C",
    "source": "ticketmaster",
    "drive_hours": 1.75,
+   "aka": [
+    "sg-18280635",
+    "2026-11-14-goose-mohegan-sun-arena"
+   ],
    "score": 3,
    "why": "love"
   },
@@ -5551,23 +5174,6 @@
     "sg-18406746",
     "sg-18406746",
     "2026-11-14-dark-star-orchestra-orpheum-theatre"
-   ],
-   "score": 3,
-   "why": "love"
-  },
-  {
-   "id": "sg-18280635",
-   "date": "2026-11-14",
-   "time": "19:00",
-   "title": "Goose",
-   "cat": "music",
-   "venue": "Mohegan Sun Arena",
-   "city": "Uncasville, CT",
-   "url": "https://seatgeek.com/goose-tickets/uncasville-connecticut-mohegan-sun-arena-2026-11-14-7-pm/concert/18280635",
-   "source": "seatgeek",
-   "drive_hours": 1.75,
-   "aka": [
-    "2026-11-14-goose-mohegan-sun-arena"
    ],
    "score": 3,
    "why": "love"
@@ -5626,7 +5232,8 @@
    "url": "https://www.ticketmaster.com/12th-annual-coreyfest-featuring-brothers-osborne-boston-massachusetts-11-14-2026/event/010064C2E373ED36",
    "source": "ticketmaster",
    "aka": [
-    "sg-18294763"
+    "sg-18294763",
+    "2026-11-14-brothers-osborne-citizens-house-of-bl"
    ],
    "score": 0
   },
@@ -5683,20 +5290,6 @@
     "2026-11-14-carbon-leaf-the-sinclair"
    ],
    "score": 0
-  },
-  {
-   "id": "tm-rZ7HnEZ1Afk_PV",
-   "date": "2026-11-14",
-   "time": "20:00",
-   "title": "Damage, Inc: Tribute to Metallica",
-   "cat": "music",
-   "venue": "Daryl's House",
-   "city": "Pawling, NY",
-   "url": "https://www.ticketweb.com/event/damage-inc-tribute-to-metallica-daryls-house-tickets/14199974",
-   "source": "ticketmaster",
-   "drive_hours": 3.25,
-   "score": 2,
-   "why": "big"
   },
   {
    "id": "tm-vvG17Z_CLLJB6Q",
@@ -5757,32 +5350,6 @@
    "score": 0
   },
   {
-   "date": "2026-11-14",
-   "time": null,
-   "title": "Brothers Osborne",
-   "cat": "music",
-   "venue": "Citizens House of Blues",
-   "city": "Boston, MA",
-   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar",
-   "source": "venues",
-   "id": "2026-11-14-brothers-osborne-citizens-house-of-bl",
-   "score": 0
-  },
-  {
-   "id": "tm-k7vGF_KMlSPUO",
-   "date": "2026-11-15",
-   "time": "12:00",
-   "title": " The Rock And Roll Playhouse Plays: Music of Dave Matthews Band",
-   "cat": "music",
-   "venue": "Brooklyn Bowl",
-   "city": "Brooklyn, NY",
-   "url": "https://www.ticketmaster.com/the-rock-and-roll-playhouse-plays-brooklyn-new-york-11-15-2026/event/0000653DEBCE5DA0",
-   "source": "ticketmaster",
-   "drive_hours": 4.25,
-   "score": 2,
-   "why": "big"
-  },
-  {
    "id": "tm-vv1AvZkfYGkecqP71",
    "date": "2026-11-15",
    "time": "14:00",
@@ -5817,6 +5384,10 @@
    "url": "https://www.ticketmaster.com/an-evening-with-goose-portland-maine-11-15-2026/event/010064BC8EE6BA17",
    "source": "ticketmaster",
    "drive_hours": 2.25,
+   "aka": [
+    "sg-18280639",
+    "2026-11-15-goose-cross-insurance-aren"
+   ],
    "score": 3,
    "why": "love"
   },
@@ -5848,23 +5419,6 @@
    ],
    "sub": "with Duckwrth",
    "score": 0
-  },
-  {
-   "id": "sg-18280639",
-   "date": "2026-11-15",
-   "time": "19:00",
-   "title": "Goose",
-   "cat": "music",
-   "venue": "Cross Insurance Arena",
-   "city": "Portland, ME",
-   "url": "https://seatgeek.com/goose-tickets/portland-maine-cross-insurance-arena-2026-11-15-7-pm/concert/18280639",
-   "source": "seatgeek",
-   "drive_hours": 2.25,
-   "aka": [
-    "2026-11-15-goose-cross-insurance-aren"
-   ],
-   "score": 3,
-   "why": "love"
   },
   {
    "id": "tm-vvG17Z_5K2uBTq",
@@ -6030,18 +5584,6 @@
    "score": 0
   },
   {
-   "id": "sg-18551114",
-   "date": "2026-11-17",
-   "time": "18:30",
-   "title": "Amorphis and Insomnium (18+)",
-   "cat": "music",
-   "venue": "Paradise Rock Club",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/amorphis-tickets/boston-massachusetts-paradise-rock-club-2026-11-17-6-30-pm/concert/18551114",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
    "id": "tm-vv1AvZkfbGke-IlRI",
    "date": "2026-11-17",
    "time": "18:30",
@@ -6051,6 +5593,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/insomnium-amorphis-18-boston-massachusetts-11-17-2026/event/01006518A1A2BBE8",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18551114"
+   ],
    "score": 0
   },
   {
@@ -6387,7 +5932,6 @@
    "source": "ticketmaster",
    "drive_hours": 1.75,
    "aka": [
-    "tm-G5vVZ_6RTZyR2",
     "sg-18164314",
     "sg-18164315"
    ],
@@ -6448,21 +5992,9 @@
    "url": "https://www.ticketmaster.com/letters-to-cleo-18-boston-massachusetts-11-20-2026/event/0100650BE782A083",
    "source": "ticketmaster",
    "aka": [
-    "tm-vv177Z_8GkRIb15s",
+    "sg-18511823",
     "2026-11-20-letters-to-cleo-and-the-sheila-d-paradise-rock-club"
    ],
-   "score": 0
-  },
-  {
-   "id": "sg-18511823",
-   "date": "2026-11-20",
-   "time": "19:00",
-   "title": "The Sheila Divine (18+)",
-   "cat": "music",
-   "venue": "Paradise Rock Club",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/letters-to-cleo-tickets/boston-massachusetts-paradise-rock-club-2026-11-20-7-pm/concert/18511823",
-   "source": "seatgeek",
    "score": 0
   },
   {
@@ -6522,9 +6054,7 @@
    "source": "ticketmaster",
    "drive_hours": 1.0,
    "aka": [
-    "tm-vv177Z_oGkXBcO-X",
-    "tm-vv177Z_oGkXBnY-F",
-    "tm-vv177Z_oGkXBcO-X"
+    "tm-vv177Z_oGkXBnY-F"
    ],
    "score": 3,
    "why": "love"
@@ -6604,20 +6134,6 @@
    "score": 0
   },
   {
-   "id": "tm-rZ7HnEZ1A4Zaed",
-   "date": "2026-11-20",
-   "time": "20:00",
-   "title": "Workingman's Jed (Grateful Dead Tribute)",
-   "cat": "music",
-   "venue": "Hill Country Live",
-   "city": "New York, NY",
-   "url": "https://www.ticketweb.com/event/workingmans-jed-grateful-dead-tribute-hill-country-live-tickets/15009083",
-   "source": "ticketmaster",
-   "drive_hours": 4.25,
-   "score": 3,
-   "why": "love"
-  },
-  {
    "id": "tm-Z7r9jZ1A7J6jO",
    "date": "2026-11-20",
    "time": "23:00",
@@ -6660,18 +6176,6 @@
    "score": 1
   },
   {
-   "id": "sg-18587877",
-   "date": "2026-11-21",
-   "time": "18:00",
-   "title": "Stand Up Showcase",
-   "cat": "comedy",
-   "venue": "Goofs Comedy Club - Somerville",
-   "city": "Somerville, MA",
-   "url": "https://seatgeek.com/stand-up-showcase-tickets/comedy/2026-11-21-6-pm/18587877",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
    "id": "espn-401892758",
    "date": "2026-11-21",
    "time": "19:00",
@@ -6706,6 +6210,7 @@
    "url": "https://www.ticketmaster.com/letters-to-cleo-18-boston-massachusetts-11-21-2026/event/0100650BE7F0A1BD",
    "source": "ticketmaster",
    "aka": [
+    "sg-18511822",
     "2026-11-21-letters-to-cleo-and-the-sheila-d-paradise-rock-club"
    ],
    "score": 0
@@ -6742,18 +6247,6 @@
     "2026-11-21-the-menzingers-roadrunner"
    ],
    "sub": "with Hot Water Music and Weakened Friends",
-   "score": 0
-  },
-  {
-   "id": "sg-18511822",
-   "date": "2026-11-21",
-   "time": "19:00",
-   "title": "The Sheila Divine (18+)",
-   "cat": "music",
-   "venue": "Paradise Rock Club",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/letters-to-cleo-tickets/boston-massachusetts-paradise-rock-club-2026-11-21-7-pm/concert/18511822",
-   "source": "seatgeek",
    "score": 0
   },
   {
@@ -6813,20 +6306,6 @@
    "score": 0
   },
   {
-   "id": "sg-18425285",
-   "date": "2026-11-21",
-   "time": "20:00",
-   "title": "Harvest & Rust - A Neil Young Experience",
-   "cat": "music",
-   "venue": "The Park Theater",
-   "city": "Glens Falls, NY",
-   "url": "https://seatgeek.com/harvest-rust-tickets/glen-falls-new-york-the-park-theater-4-2026-11-21-8-pm/concert/18425285",
-   "source": "seatgeek",
-   "drive_hours": 3.5,
-   "score": 2,
-   "why": "big"
-  },
-  {
    "id": "sg-18634479",
    "date": "2026-11-21",
    "time": "20:00",
@@ -6873,20 +6352,6 @@
    ],
    "sub": "with Abbie Callahan",
    "score": 0
-  },
-  {
-   "id": "tm-k7vGF_3DdlHxx",
-   "date": "2026-11-22",
-   "time": "12:00",
-   "title": "The Rock And Roll Playhouse Plays: Music of Grateful Dead for Kids",
-   "cat": "music",
-   "venue": "Brooklyn Bowl",
-   "city": "Brooklyn, NY",
-   "url": "https://www.ticketmaster.com/the-rock-and-roll-playhouse-plays-brooklyn-new-york-11-22-2026/event/0000652EC3AFC8A2",
-   "source": "ticketmaster",
-   "drive_hours": 4.25,
-   "score": 3,
-   "why": "love"
   },
   {
    "id": "tm-vv1AvZkfYGkecNgk6",
@@ -7074,21 +6539,6 @@
    "score": 1
   },
   {
-   "id": "sg-18639991",
-   "date": "2026-11-25",
-   "time": "19:00",
-   "title": "Frank Reyes with Hector Acosta (18+)",
-   "cat": "music",
-   "venue": "Citizens House of Blues Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/frank-reyes-tickets/boston-massachusetts-citizens-house-of-blues-boston-2026-11-25-7-pm/concert/18639991",
-   "source": "seatgeek",
-   "aka": [
-    "2026-11-25-frank-reyes-and-hector-acosta-citizens-house-of-bl"
-   ],
-   "score": 0
-  },
-  {
    "id": "tm-vv177Z_KGkwBdrwB",
    "date": "2026-11-25",
    "time": "19:00",
@@ -7098,21 +6548,11 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/maestros-de-la-bachata-18-boston-massachusetts-11-25-2026/event/0100653CBA0DECBA",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18639991",
+    "2026-11-25-frank-reyes-and-hector-acosta-citizens-house-of-bl"
+   ],
    "score": 0
-  },
-  {
-   "id": "tm-rZ7HnEZ1AfFwa0",
-   "date": "2026-11-25",
-   "time": "19:00",
-   "title": "Tramps Like Us - THE NATIONS #1 BRUCE SPRINGSTEEN TRIBUTE BAND",
-   "cat": "music",
-   "venue": "Daryl's House",
-   "city": "Pawling, NY",
-   "url": "https://www.ticketweb.com/event/tramps-like-us-daryls-house-tickets/14232264",
-   "source": "ticketmaster",
-   "drive_hours": 3.25,
-   "score": 2,
-   "why": "big"
   },
   {
    "date": "2026-11-25",
@@ -7245,8 +6685,6 @@
    "source": "ticketmaster",
    "drive_hours": 3.75,
    "aka": [
-    "tm-k7vGF_2Khy__2",
-    "sg-18409092",
     "sg-18406757"
    ],
    "score": 3,
@@ -7291,18 +6729,6 @@
    "venue": "Charles Playhouse - Stage II",
    "city": "Boston, MA",
    "url": "https://seatgeek.com/sisters-christmas-catechism-tickets/comedy/2026-11-28-2-pm/18601274",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "sg-18587878",
-   "date": "2026-11-28",
-   "time": "18:00",
-   "title": "Stand Up Showcase",
-   "cat": "comedy",
-   "venue": "Goofs Comedy Club - Somerville",
-   "city": "Somerville, MA",
-   "url": "https://seatgeek.com/stand-up-showcase-tickets/comedy/2026-11-28-6-pm/18587878",
    "source": "seatgeek",
    "score": 0
   },
@@ -7841,8 +7267,7 @@
     "2026-12-03-the-allman-betts-family-revival-orpheum-theatre"
    ],
    "sub": "with Duane Betts, Robert Randolph, Judith Hill and more",
-   "score": 2,
-   "why": "like"
+   "score": 0
   },
   {
    "id": "sg-18299531",
@@ -8120,18 +7545,6 @@
    "score": 0
   },
   {
-   "id": "sg-18587879",
-   "date": "2026-12-05",
-   "time": "18:00",
-   "title": "Stand Up Showcase",
-   "cat": "comedy",
-   "venue": "Goofs Comedy Club - Somerville",
-   "city": "Somerville, MA",
-   "url": "https://seatgeek.com/stand-up-showcase-tickets/comedy/2026-12-05-6-pm/18587879",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
    "id": "tm-vv1avZkfEFAjEZe2u",
    "date": "2026-12-05",
    "time": "19:00",
@@ -8206,19 +7619,8 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/mix-1041s-deck-the-hall-ball-boston-massachusetts-12-05-2026/event/01006535DFB4A8F4",
    "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "sg-18629300",
-   "date": "2026-12-05",
-   "time": "19:30",
-   "title": "Sara Bareilles with Matt Nathanson",
-   "cat": "music",
-   "venue": "Agganis Arena",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/sara-bareilles-tickets/boston-massachusetts-agganis-arena-2026-12-05-7-30-pm/concert/18629300",
-   "source": "seatgeek",
    "aka": [
+    "sg-18629300",
     "2026-12-05-sara-bareilles-and-matt-nathanso-agganis-arena"
    ],
    "score": 0
@@ -8424,7 +7826,6 @@
    "url": "https://www.ticketmaster.com/syd-beard-tour-boston-massachusetts-12-06-2026/event/0100652B9C3BCB1B",
    "source": "ticketmaster",
    "aka": [
-    "tm-vv1k7Z_K7IG7zmDV",
     "sg-18592341",
     "2026-12-06-syd-citizens-house-of-bl"
    ],
@@ -8844,18 +8245,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PJ8t",
    "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "sg-18587876",
-   "date": "2026-12-12",
-   "time": "18:00",
-   "title": "Stand Up Showcase",
-   "cat": "comedy",
-   "venue": "Goofs Comedy Club - Somerville",
-   "city": "Somerville, MA",
-   "url": "https://seatgeek.com/stand-up-showcase-tickets/comedy/2026-12-12-6-pm/18587876",
-   "source": "seatgeek",
+   "aka": [
+    "sg-18321647",
+    "sg-18321646"
+   ],
    "score": 0
   },
   {
@@ -8912,20 +8305,6 @@
    "url": "https://seatgeek.com/sisters-christmas-catechism-tickets/comedy/2026-12-12-7-30-pm/18601252",
    "source": "seatgeek",
    "score": 0
-  },
-  {
-   "id": "tm-G5vVZ_3lEeTes",
-   "date": "2026-12-12",
-   "time": "20:00",
-   "title": "Gillian Welch And David Rawlings Play Grateful Dead",
-   "cat": "music",
-   "venue": "The Capitol Theatre",
-   "city": "Port Chester, NY",
-   "url": "https://www.ticketmaster.com/gillian-welch-and-david-rawlings-play-port-chester-new-york-12-12-2026/event/1D00652AE70BF0B1",
-   "source": "ticketmaster",
-   "drive_hours": 3.75,
-   "score": 3,
-   "why": "love"
   },
   {
    "id": "sg-18634494",
@@ -8998,21 +8377,6 @@
    "score": 0
   },
   {
-   "id": "sg-18321647",
-   "date": "2026-12-12",
-   "time": null,
-   "title": "Saddest Day Festival (2 Day Pass)",
-   "cat": "music",
-   "venue": "Roadrunner - Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/saddest-day-festival-tickets/boston-massachusetts-roadrunner-boston-2026-12-12-3-30-am/music-festival/18321647",
-   "source": "seatgeek",
-   "aka": [
-    "sg-18321646"
-   ],
-   "score": 0
-  },
-  {
    "id": "sg-18601276",
    "date": "2026-12-13",
    "time": "14:00",
@@ -9034,18 +8398,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PJ8Y",
    "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "sg-18321645",
-   "date": "2026-12-13",
-   "time": "15:30",
-   "title": "Saddest Day Festival (Sunday Pass)",
-   "cat": "music",
-   "venue": "Roadrunner - Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/saddest-day-festival-tickets/boston-massachusetts-roadrunner-boston-2026-12-13-3-30-pm/music-festival/18321645",
-   "source": "seatgeek",
+   "aka": [
+    "sg-18321645"
+   ],
    "score": 0
   },
   {
@@ -9058,10 +8413,11 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/kiss-108s-jingle-ball-presented-by-boston-massachusetts-12-13-2026/event/01006514E073E53F",
    "source": "ticketmaster",
-   "sub": "Nickelback, sombr, TOMORROW X TOGETHER, Hilary Duff and more",
    "aka": [
+    "sg-18621883",
     "2026-12-13-kiss-108-s-jingle-ball-td-garden"
    ],
+   "sub": "Nickelback, sombr, TOMORROW X TOGETHER, Hilary Duff and more",
    "score": 0
   },
   {
@@ -9082,32 +8438,6 @@
    "score": 0
   },
   {
-   "id": "sg-18621883",
-   "date": "2026-12-13",
-   "time": "18:00",
-   "title": "iHeartRadio Jingle Ball - Boston - with Sombr, Hilary Duff, Nickelback, and more",
-   "cat": "music",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/iheartradio-jingle-ball-tickets/boston-massachusetts-td-garden-2026-12-13-6-pm/concert/18621883",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-G5vVZ_3lIeTac",
-   "date": "2026-12-13",
-   "time": "19:00",
-   "title": "Gillian Welch And David Rawlings Play Grateful Dead",
-   "cat": "music",
-   "venue": "The Capitol Theatre",
-   "city": "Port Chester, NY",
-   "url": "https://www.ticketmaster.com/gillian-welch-and-david-rawlings-play-port-chester-new-york-12-13-2026/event/1D00652AE80BF26D",
-   "source": "ticketmaster",
-   "drive_hours": 3.75,
-   "score": 3,
-   "why": "love"
-  },
-  {
    "id": "tm-vvG17Z_2wSVFP-",
    "date": "2026-12-13",
    "time": "20:00",
@@ -9117,6 +8447,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/an-evening-with-lord-huron-boston-massachusetts-12-13-2026/event/010064FCB3D08961",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18421970",
+    "2026-12-13-lord-huron-mgm-music-hall-at-fe"
+   ],
    "score": 2,
    "why": "like"
   },
@@ -9148,22 +8482,6 @@
    "drive_hours": 4.25,
    "score": 2,
    "why": "big"
-  },
-  {
-   "id": "sg-18421970",
-   "date": "2026-12-13",
-   "time": "20:00",
-   "title": "Lord Huron",
-   "cat": "music",
-   "venue": "MGM Music Hall at Fenway",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/lord-huron-tickets/boston-massachusetts-mgm-music-hall-at-fenway-2026-12-13-8-pm/concert/18421970",
-   "source": "seatgeek",
-   "aka": [
-    "2026-12-13-lord-huron-mgm-music-hall-at-fe"
-   ],
-   "score": 2,
-   "why": "like"
   },
   {
    "id": "tm-vv1AvZkf-Gkd2I6Ft",
@@ -9210,18 +8528,6 @@
    "score": 0
   },
   {
-   "id": "tm-vvG17Z_CTlDUIc",
-   "date": "2026-12-15",
-   "time": "19:00",
-   "title": "Blue Man Group - A New Holiday Surprise",
-   "cat": "comedy",
-   "venue": "Boch Center Wang Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/blue-man-group-a-new-holiday-boston-massachusetts-12-15-2026/event/010064EFEBEF6A2D",
-   "source": "ticketmaster",
-   "score": 1
-  },
-  {
    "id": "espn-401892931",
    "date": "2026-12-15",
    "time": "19:00",
@@ -9234,18 +8540,6 @@
    "score": 1
   },
   {
-   "id": "tm-vvG17Z_CTlHUte",
-   "date": "2026-12-16",
-   "time": "19:00",
-   "title": "Blue Man Group - A New Holiday Surprise",
-   "cat": "comedy",
-   "venue": "Boch Center Wang Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/blue-man-group-a-new-holiday-boston-massachusetts-12-16-2026/event/010064EFEBF36A42",
-   "source": "ticketmaster",
-   "score": 1
-  },
-  {
    "id": "espn-401910117",
    "date": "2026-12-16",
    "time": "19:00",
@@ -9255,18 +8549,6 @@
    "city": "Boston, MA",
    "url": "https://www.espn.com/nba/game/_/gameId/401910117/wizards-celtics",
    "source": "espn",
-   "score": 1
-  },
-  {
-   "id": "tm-vvG17Z_CTlWUtj",
-   "date": "2026-12-17",
-   "time": "19:00",
-   "title": "Blue Man Group - A New Holiday Surprise",
-   "cat": "comedy",
-   "venue": "Boch Center Wang Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/blue-man-group-a-new-holiday-boston-massachusetts-12-17-2026/event/010064EFEBF76A5C",
-   "source": "ticketmaster",
    "score": 1
   },
   {
@@ -9382,18 +8664,6 @@
    "score": 0
   },
   {
-   "id": "tm-vvG17Z_CTlXUtE",
-   "date": "2026-12-18",
-   "time": "19:00",
-   "title": "Blue Man Group - A New Holiday Surprise",
-   "cat": "comedy",
-   "venue": "Boch Center Wang Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/blue-man-group-a-new-holiday-boston-massachusetts-12-18-2026/event/010064EFEBFB6A67",
-   "source": "ticketmaster",
-   "score": 1
-  },
-  {
    "id": "tm-vv1AvZk4AGkd9W0gU",
    "date": "2026-12-18",
    "time": "19:00",
@@ -9460,20 +8730,6 @@
    "score": 0
   },
   {
-   "id": "tm-G5vVZ_3lE72dA",
-   "date": "2026-12-18",
-   "time": "20:00",
-   "title": "Gillian Welch And David Rawlings Play Grateful Dead",
-   "cat": "music",
-   "venue": "The Capitol Theatre",
-   "city": "Port Chester, NY",
-   "url": "https://www.ticketmaster.com/gillian-welch-and-david-rawlings-play-port-chester-new-york-12-18-2026/event/1D00652AE710F0C5",
-   "source": "ticketmaster",
-   "drive_hours": 3.75,
-   "score": 3,
-   "why": "love"
-  },
-  {
    "id": "sg-18349689",
    "date": "2026-12-18",
    "time": "20:00",
@@ -9508,18 +8764,6 @@
    "score": 0
   },
   {
-   "id": "tm-vvG17Z_CTlTUtD",
-   "date": "2026-12-19",
-   "time": "13:00",
-   "title": "Blue Man Group - A New Holiday Surprise",
-   "cat": "comedy",
-   "venue": "Boch Center Wang Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/blue-man-group-a-new-holiday-boston-massachusetts-12-19-2026/event/010064EFEBFF6A7B",
-   "source": "ticketmaster",
-   "score": 1
-  },
-  {
    "id": "sg-18601269",
    "date": "2026-12-19",
    "time": "14:00",
@@ -9530,18 +8774,6 @@
    "url": "https://seatgeek.com/sisters-christmas-catechism-tickets/comedy/2026-12-19-2-pm/18601269",
    "source": "seatgeek",
    "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_CTiZUn2",
-   "date": "2026-12-19",
-   "time": "16:00",
-   "title": "Blue Man Group - A New Holiday Surprise",
-   "cat": "comedy",
-   "venue": "Boch Center Wang Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/blue-man-group-a-new-holiday-boston-massachusetts-12-19-2026/event/010064EFEC036A8F",
-   "source": "ticketmaster",
-   "score": 1
   },
   {
    "date": "2026-12-19",
@@ -9558,18 +8790,6 @@
    "why": "fav"
   },
   {
-   "id": "sg-18587880",
-   "date": "2026-12-19",
-   "time": "18:00",
-   "title": "Stand Up Showcase",
-   "cat": "comedy",
-   "venue": "Goofs Comedy Club - Somerville",
-   "city": "Somerville, MA",
-   "url": "https://seatgeek.com/stand-up-showcase-tickets/comedy/2026-12-19-6-pm/18587880",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
    "id": "tm-vv177Z_8GkM_N1EN",
    "date": "2026-12-19",
    "time": "18:30",
@@ -9583,18 +8803,6 @@
     "sg-18511824"
    ],
    "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_CTivJnh",
-   "date": "2026-12-19",
-   "time": "19:00",
-   "title": "Blue Man Group - A New Holiday Surprise",
-   "cat": "comedy",
-   "venue": "Boch Center Wang Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/blue-man-group-a-new-holiday-boston-massachusetts-12-19-2026/event/010064EFEC066A9B",
-   "source": "ticketmaster",
-   "score": 1
   },
   {
    "id": "tm-vv177Z_eGkBxAyH3",
@@ -9652,18 +8860,6 @@
    "score": 0
   },
   {
-   "id": "tm-vvG17Z_CTieJnl",
-   "date": "2026-12-20",
-   "time": "12:00",
-   "title": "Blue Man Group - A New Holiday Surprise",
-   "cat": "comedy",
-   "venue": "Boch Center Wang Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/blue-man-group-a-new-holiday-boston-massachusetts-12-20-2026/event/010064EFEC0A6AAB",
-   "source": "ticketmaster",
-   "score": 1
-  },
-  {
    "id": "espn-401892970",
    "date": "2026-12-20",
    "time": "13:00",
@@ -9688,30 +8884,6 @@
    "score": 0
   },
   {
-   "id": "tm-vvG17Z_CTidJnB",
-   "date": "2026-12-20",
-   "time": "15:00",
-   "title": "Blue Man Group - A New Holiday Surprise",
-   "cat": "comedy",
-   "venue": "Boch Center Wang Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/blue-man-group-a-new-holiday-boston-massachusetts-12-20-2026/event/010064EFEC0E6ABA",
-   "source": "ticketmaster",
-   "score": 1
-  },
-  {
-   "id": "tm-vvG17Z_CTi7JlC",
-   "date": "2026-12-20",
-   "time": "18:00",
-   "title": "Blue Man Group - A New Holiday Surprise",
-   "cat": "comedy",
-   "venue": "Boch Center Wang Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/blue-man-group-a-new-holiday-boston-massachusetts-12-20-2026/event/010064EFEC126ACE",
-   "source": "ticketmaster",
-   "score": 1
-  },
-  {
    "id": "espn-401910156",
    "date": "2026-12-20",
    "time": "20:00",
@@ -9734,42 +8906,6 @@
    "url": "https://seatgeek.com/clay-walker-tickets/lynn-massachusetts-lynn-memorial-auditorium-2026-12-20-8-pm/concert/18372203",
    "source": "seatgeek",
    "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_CTikJli",
-   "date": "2026-12-22",
-   "time": "19:00",
-   "title": "Blue Man Group - A New Holiday Surprise",
-   "cat": "comedy",
-   "venue": "Boch Center Wang Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/blue-man-group-a-new-holiday-boston-massachusetts-12-22-2026/event/010064EFEC1A6AEC",
-   "source": "ticketmaster",
-   "score": 1
-  },
-  {
-   "id": "tm-vvG17Z_CTi6Ji5",
-   "date": "2026-12-23",
-   "time": "16:00",
-   "title": "Blue Man Group - A New Holiday Surprise",
-   "cat": "comedy",
-   "venue": "Boch Center Wang Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/blue-man-group-a-new-holiday-boston-massachusetts-12-23-2026/event/010064EFEC1E6B0B",
-   "source": "ticketmaster",
-   "score": 1
-  },
-  {
-   "id": "tm-vvG17Z_CTiFJiQ",
-   "date": "2026-12-23",
-   "time": "19:00",
-   "title": "Blue Man Group - A New Holiday Surprise",
-   "cat": "comedy",
-   "venue": "Boch Center Wang Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/blue-man-group-a-new-holiday-boston-massachusetts-12-23-2026/event/010064EFEC226B1A",
-   "source": "ticketmaster",
-   "score": 1
   },
   {
    "id": "espn-401910175",
@@ -9845,18 +8981,6 @@
     "sg-18672967"
    ],
    "score": 1
-  },
-  {
-   "id": "sg-18587881",
-   "date": "2026-12-26",
-   "time": "18:00",
-   "title": "Stand Up Showcase",
-   "cat": "comedy",
-   "venue": "Goofs Comedy Club - Somerville",
-   "city": "Somerville, MA",
-   "url": "https://seatgeek.com/stand-up-showcase-tickets/comedy/2026-12-26-6-pm/18587881",
-   "source": "seatgeek",
-   "score": 0
   },
   {
    "id": "espn-401892995",
@@ -9995,7 +9119,6 @@
    "source": "ticketmaster",
    "drive_hours": 4.25,
    "aka": [
-    "tm-G5diZ_KV3XvTF",
     "sg-18659383",
     "2026-12-30-phish-madison-square-garde"
    ],
@@ -10027,20 +9150,6 @@
    "venue": "Le Poisson Rouge",
    "city": "New York, NY",
    "url": "https://www.ticketweb.com/event/a-phish-after-party-with-le-poisson-rouge-tickets/14363004",
-   "source": "ticketmaster",
-   "drive_hours": 4.25,
-   "score": 3,
-   "why": "love"
-  },
-  {
-   "id": "tm-k7vGF_fLUzWPq",
-   "date": "2026-12-30",
-   "time": "23:59",
-   "title": "lespecial - A Phish After-Party",
-   "cat": "music",
-   "venue": "Sony Hall",
-   "city": "New York, NY",
-   "url": "https://www.ticketmaster.com/lespecial-a-phish-afterparty-new-york-new-york-12-30-2026/event/00006547F6E3D95D",
    "source": "ticketmaster",
    "drive_hours": 4.25,
    "score": 3,
@@ -10229,18 +9338,6 @@
    "score": 0
   },
   {
-   "id": "sg-18587866",
-   "date": "2027-01-02",
-   "time": "18:00",
-   "title": "Stand Up Showcase",
-   "cat": "comedy",
-   "venue": "Goofs Comedy Club - Somerville",
-   "city": "Somerville, MA",
-   "url": "https://seatgeek.com/stand-up-showcase-tickets/comedy/2027-01-02-6-pm/18587866",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
    "id": "tm-G5diZ_KV3DvXt",
    "date": "2027-01-02",
    "time": "19:30",
@@ -10285,20 +9382,6 @@
    "aka": [
     "sg-18511850"
    ],
-   "score": 3,
-   "why": "love"
-  },
-  {
-   "id": "tm-rZ7HnEZ1AfuKA7",
-   "date": "2027-01-02",
-   "time": "23:59",
-   "title": "A Phish After-Party: Pink Talking Fish - A Fusion of Pink Floyd, Talking Heads and Phish",
-   "cat": "music",
-   "venue": "Cutting Room",
-   "city": "New York, NY",
-   "url": "https://www.ticketweb.com/event/a-phish-after-party-pink-cutting-room-tickets/14353144",
-   "source": "ticketmaster",
-   "drive_hours": 4.25,
    "score": 3,
    "why": "love"
   },
@@ -10380,20 +9463,6 @@
     "sg-18533198"
    ],
    "score": 1
-  },
-  {
-   "id": "tm-rZ7HnEZ1Afug8V",
-   "date": "2027-01-09",
-   "time": "20:00",
-   "title": "Grunge Rock Tribute: The Music of Pearl Jam, Soundgarden, Audioslave & Chris Cornell",
-   "cat": "music",
-   "venue": "Mulcahy's",
-   "city": "Wantagh, NY",
-   "url": "https://www.ticketweb.com/event/grunge-rock-tribute-the-music-mulcahys-tickets/14375434",
-   "source": "ticketmaster",
-   "drive_hours": 4.0,
-   "score": 2,
-   "why": "big"
   },
   {
    "id": "espn-401873180",
@@ -11008,6 +10077,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/bob-marleys-bday-reggae-winter-splash-boston-massachusetts-02-06-2027/event/010065389E7E19D7",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18645462"
+   ],
    "score": 0
   },
   {
@@ -11027,18 +10099,6 @@
    "score": 0
   },
   {
-   "id": "sg-18645462",
-   "date": "2027-02-06",
-   "time": "19:00",
-   "title": "Mighty Mystic (18+)",
-   "cat": "music",
-   "venue": "Brighton Music Hall",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/mighty-mystic-tickets/boston-massachusetts-brighton-music-hall-2027-02-06-7-pm/concert/18645462",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
    "id": "tm-vv1AvZkftGkeyYgcG",
    "date": "2027-02-06",
    "time": "20:00",
@@ -11054,23 +10114,6 @@
    ],
    "sub": "with Graham Barham",
    "score": 0
-  },
-  {
-   "id": "tm-k7vGF_oTjiEHk",
-   "date": "2027-02-06",
-   "time": "20:00",
-   "title": "The Ledbetters - A Tribute to Pearl Jam",
-   "cat": "music",
-   "venue": "Brooklyn Bowl",
-   "city": "Brooklyn, NY",
-   "url": "https://www.ticketmaster.com/the-ledbetters-a-tribute-to-pearl-brooklyn-new-york-02-06-2027/event/0000651FDCB27F06",
-   "source": "ticketmaster",
-   "drive_hours": 4.25,
-   "aka": [
-    "sg-18629609"
-   ],
-   "score": 2,
-   "why": "big"
   },
   {
    "id": "sg-18608478",
@@ -11213,18 +10256,6 @@
    "score": 1
   },
   {
-   "id": "sg-18299557",
-   "date": "2027-02-12",
-   "time": "19:30",
-   "title": "LETTERKENNY LIVE!",
-   "cat": "comedy",
-   "venue": "Agganis Arena",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/letterkenny-live-tickets/comedy/2027-02-12-7-30-pm/18299557",
-   "source": "seatgeek",
-   "score": 1
-  },
-  {
    "id": "tm-vvG17Z_G9x1qT7",
    "date": "2027-02-12",
    "time": "19:30",
@@ -11234,6 +10265,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/puppers-presents-letterkenny-live-boston-massachusetts-02-12-2027/event/010064C5E229DFC4",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18299557"
+   ],
    "score": 1
   },
   {
@@ -12184,8 +11218,10 @@
    "aka": [
     "tm-vv1AvZkfSGkdTcSmB",
     "sg-18685645",
-    "sg-18685645"
+    "sg-18685645",
+    "2027-03-13-dropkick-murphys-mgm-music-hall-at-fe"
    ],
+   "sub": "with The Home Front, Spiritual Cramp and Cittizins",
    "score": 2,
    "why": "big"
   },
@@ -12261,10 +11297,8 @@
    "aka": [
     "tm-vv1AvZkfSGkdTiNmr",
     "sg-18685642",
-    "sg-18685642",
-    "2027-03-13-dropkick-murphys-mgm-music-hall-at-fe"
+    "sg-18685642"
    ],
-   "sub": "with The Home Front, Spiritual Cramp and Cittizins",
    "score": 2,
    "why": "big"
   },
@@ -13051,9 +12085,9 @@
  ],
  "sources": {
   "picks": 5,
-  "venues": 13,
+  "venues": 10,
   "espn": 84,
-  "ticketmaster": 630,
-  "seatgeek": 178
+  "ticketmaster": 597,
+  "seatgeek": 137
  }
 }
