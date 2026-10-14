@@ -2,7 +2,7 @@
 
 My personal site: a home page plus **The 31st Franchise**, an NBA expansion draft game. It's a static site, just files, hosted free on GitHub Pages at the custom domain davidsolar.dev.
 
-## What's in this folder
+## What's in this repo
 
 ```
 dsolar.github.io/
@@ -19,84 +19,27 @@ dsolar.github.io/
   .gitignore                  files Git should skip
 ```
 
-All commands below are for **PowerShell** on Windows. Copy one block at a time.
+## Where things stand
+
+- [x] Repo created and site pushed
+- [x] GitHub Pages on: https://dsolar.github.io
+- [x] davidsolar.dev bought at Cloudflare
+- [ ] Connect the domain (steps 1 to 3 below, all in the browser)
+- [ ] Set up your own computer (at home, see below)
 
 ---
 
-## 1. Install the tools (once)
-
-```powershell
-winget install --id Git.Git -e --source winget
-winget install --id Microsoft.VisualStudioCode -e --source winget
-winget install --id Python.Python.3.13 -e --source winget
-```
-
-Python is only needed to rebuild the game. **Close and reopen PowerShell**, then tell Git who you are. Use the email on your GitHub account, or the private one GitHub gives you under Settings > Emails (it ends in `@users.noreply.github.com`).
-
-```powershell
-git --version
-git config --global user.name "David Solar"
-git config --global user.email "YOUR-GITHUB-EMAIL"
-```
-
-## 2. Unzip and open the folder
-
-```powershell
-New-Item -ItemType Directory -Force "$HOME\Projects" | Out-Null
-Expand-Archive "$HOME\Downloads\dsolar.github.io.zip" -DestinationPath "$HOME\Projects"
-cd "$HOME\Projects\dsolar.github.io"
-code .
-```
-
-To preview it, run a tiny local web server and open http://localhost:8000 in your browser. Press Ctrl+C to stop it.
-
-```powershell
-py -m http.server 8000
-```
-
-## 3. Create the GitHub repo
-
-1. Go to https://github.com/new
-2. Repository name: **dsolar.github.io** (this exact name makes it your personal site)
-3. Public. Don't add a README, .gitignore or license (you already have them).
-4. Create repository.
-
-## 4. Push the site
-
-```powershell
-git init -b main
-git add .
-git commit -m "First version of my site"
-git remote add origin https://github.com/dsolar/dsolar.github.io.git
-git push -u origin main
-```
-
-The first push opens a browser window to sign in to GitHub. That's Git Credential Manager, and it remembers you after that.
-
-## 5. Turn on GitHub Pages
-
-Repo > **Settings** > **Pages**. Under Build and deployment, set Source to **Deploy from a branch**, Branch to **main** and **/ (root)**, then Save. (For a repo named dsolar.github.io it may already be on.)
-
-After a minute or two the site is live at https://dsolar.github.io. The **Actions** tab shows each deploy.
-
-## 6. Buy davidsolar.dev
-
-1. Sign up at https://dash.cloudflare.com
-2. **Domain Registration** > **Register Domains**, search `davidsolar.dev`, buy it. Cloudflare sells at cost (about $8 the first year, about $12 a year after; check at checkout). Privacy protection is included. Leave auto-renew on.
-
-Cloudflare sets up DNS for the domain automatically.
-
-## 7. Verify the domain with GitHub (recommended)
+## 1. Verify the domain with GitHub
 
 This proves you own it, so nobody else can point a GitHub site at it.
 
-1. GitHub: your profile picture > **Settings** > **Pages** (left sidebar) > **Add a domain** > `davidsolar.dev`.
+1. GitHub: your profile picture > **Settings** > **Pages** (left sidebar, under "Code, planning, and automation") > **Add a domain** > `davidsolar.dev`.
 2. GitHub shows a TXT record. In Cloudflare: davidsolar.dev > **DNS** > **Records** > **Add record**. Type **TXT**, then copy the Name and Content exactly as GitHub shows them. Save.
 3. Back on GitHub, click **Verify**. It can take a few minutes.
 
-## 8. Connect the domain
+## 2. Connect the domain
 
-**First, in GitHub:** repo > Settings > Pages > **Custom domain** > `davidsolar.dev` > Save. This adds a file named `CNAME` to your repo, so run `git pull` before your next push.
+**First, in GitHub:** repo > **Settings** > **Pages** > **Custom domain** > `davidsolar.dev` > Save. This adds a file named `CNAME` to the repo, so run `git pull` before your next push from a computer.
 
 **Then, in Cloudflare:** DNS > Records. Add these. For every one, click the orange cloud so it turns **gray (DNS only)**. GitHub has to see its own servers to issue your HTTPS certificate.
 
@@ -112,27 +55,64 @@ This proves you own it, so nobody else can point a GitHub site at it.
 | AAAA | @ | 2606:50c0:8003::153 |
 | CNAME | www | dsolar.github.io |
 
-## 9. Turn on HTTPS
+If Cloudflare already created records for `@` or `www` (some parked-domain defaults), delete those first.
+
+## 3. Turn on HTTPS
 
 Back in repo > Settings > Pages, wait for **DNS check successful**, then tick **Enforce HTTPS** once it's available. That can take a few minutes or up to 24 hours.
 
 .dev domains only load over HTTPS, so until the certificate is issued, davidsolar.dev shows a privacy warning. That's normal. Wait it out.
 
-Then visit https://davidsolar.dev. Done.
-
 ---
+
+## Editing without installing anything
+
+On the repo page, press the **.** key (or change `github.com` to `github.dev` in the address bar). That opens VS Code in your browser, for free. Edit a file, then open **Source Control** in the left bar, write a message and **Commit & Push**. The site updates in about a minute.
+
+github.dev can't run programs, so for rebuilding the game use **Codespaces** instead: repo > **Code** > **Codespaces** > **Create codespace on main**. It's a full editor with a terminal, in the browser. Personal accounts get a free monthly allowance, and with no payment method on file it simply stops when that runs out instead of charging you.
+
+## Setting up your own computer (at home)
+
+All commands are for **PowerShell** on Windows. Copy one block at a time.
+
+```powershell
+winget install --id Git.Git -e --source winget --accept-package-agreements --accept-source-agreements
+winget install --id Microsoft.VisualStudioCode -e --source winget --accept-package-agreements --accept-source-agreements
+winget install --id Python.Python.3.13 -e --source winget --accept-package-agreements --accept-source-agreements
+```
+
+Close PowerShell, open a new window, then tell Git who you are (this is your private GitHub email, so your real address never shows up in commits) and download the repo:
+
+```powershell
+git config --global user.name "David Solar"
+git config --global user.email "84147177+dsolar@users.noreply.github.com"
+New-Item -ItemType Directory -Force "$HOME\Projects" | Out-Null
+cd "$HOME\Projects"
+git clone https://github.com/dsolar/dsolar.github.io.git
+cd dsolar.github.io
+code .
+```
+
+The first time Git talks to GitHub, a browser window opens to sign in. That's Git Credential Manager, and it remembers you after that.
+
+To preview the site, run a tiny local web server and open http://localhost:8000. Press Ctrl+C to stop it.
+
+```powershell
+py -m http.server 8000
+```
 
 ## Making changes
 
 Edit in VS Code, save, then:
 
 ```powershell
+git pull
 git add .
 git commit -m "Say what you changed"
 git push
 ```
 
-It's live in about a minute.
+It's live in about a minute. The repo's **Actions** tab shows each deploy.
 
 **Rebuilding the game** after editing anything in `src/31st-franchise`:
 
@@ -155,8 +135,8 @@ Online head-to-head and the shared GM leaderboard run on claude.ai's shared data
 
 - **"git" or "py" is not recognized:** close and reopen PowerShell after installing.
 - **404 after pushing:** wait two minutes, check the Actions tab, and make sure `index.html` is at the top of the repo.
-- **Push rejected after adding the custom domain:** run `git pull`, then `git push`.
-- **Domain shows a privacy warning:** the HTTPS certificate isn't ready yet (step 9), or a Cloudflare record is still orange instead of gray.
+- **Push rejected:** someone (or GitHub, when you set the custom domain) changed the repo. Run `git pull`, then `git push`.
+- **Domain shows a privacy warning:** the HTTPS certificate isn't ready yet (step 3), or a Cloudflare record is still orange instead of gray.
 
 ## Ideas for practice
 
