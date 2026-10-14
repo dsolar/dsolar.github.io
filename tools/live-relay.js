@@ -139,7 +139,7 @@ function score(s) {
 }
 
 function norm(name) {
-  return name.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase()
+  return name.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
     .replace(/[.'’`-]/g, "").split(/\s+/).filter((w) => w && !SUFFIX.has(w)).join(" ");
 }
 
