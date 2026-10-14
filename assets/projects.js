@@ -87,5 +87,16 @@ window.PROJECTS = [
     stack: ["JavaScript", "Python", "Cloudflare Workers", "GitHub Actions"],
     cover: { bg: "#17130E", band: "#FFC53D" },
     hidden: true
+  },
+  {
+    title: "Supper Club",
+    type: "Tool",
+    released: "2026-10",
+    url: "restaurants/",
+    question: "Where should we eat, near home, in town, or on the way to Marblehead?",
+    summary: "Our running list of restaurants: favorites and places to try, from Dedham to Marblehead. Friends mark Want to go or Loved it, and it can pick one for you.",
+    facts: [["32", "places on the list"], ["3", "parts of the map"], ["1 tap", "to pick tonight's spot"]],
+    stack: ["JavaScript", "JSON", "Cloudflare Workers"],
+    cover: { image: "assets/covers/restaurants.jpg", bg: "#F6F1E8", band: "#B5381F" }
   }
 ];

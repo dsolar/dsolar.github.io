@@ -1,0 +1,63 @@
+# Watches ticket prices for Night Out (davidsolar.dev/calendar/) and sends an alert when one drops.
+#  - Every 3 hours it looks up the lowest SeatGeek price for the shows worth watching: bands we love,
+#    big shows, bands we like, favorite comics, and anything a friend marked Interested or Going.
+#  - A drop of at least 10% and $10 below the last alert sends a push through ntfy (and email, if set).
+#  - Needs the SEATGEEK_CLIENT_ID secret; alerts need NTFY_TOPIC. ALERT_EMAIL is optional.
+name: Ticket prices
+
+on:
+  schedule:
+    - cron: "23 */3 * * *"
+  push:
+    branches: [main]
+    paths:
+      - tools/calendar_prices.py
+      - .github/workflows/calendar-prices.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: calendar-update      # shares a queue with the daily calendar build, so they never push at once
+  cancel-in-progress: false
+
+jobs:
+  prices:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set the bot's git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Check prices
+        env:
+          SEATGEEK_CLIENT_ID: ${{ secrets.SEATGEEK_CLIENT_ID }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
+        run: python3 tools/calendar_prices.py
+
+      - name: Commit the new prices
+        id: commit
+        run: |
+          if [ -z "$(git status --porcelain calendar/prices.json)" ]; then
+            echo "Nothing changed."
+            exit 0
+          fi
+          git add calendar/prices.json
+          git commit -m "Update Night Out ticket prices"
+          git pull --rebase -q origin main
+          git push
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Rebuild the site
+        if: steps.commit.outputs.pushed == 'true'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds"

@@ -1,8 +1,9 @@
-// Vote box for davidsolar.dev/calendar/ (a Cloudflare Worker with one KV namespace, free plan).
+// Vote box for davidsolar.dev/calendar/ and /restaurants/ (a Cloudflare Worker with one KV namespace, free plan).
 //
-// Holds who marked Interested or Going on each night, so everyone with the link sees the same thing.
-//   GET  /  -> {"votes": {"<event id>": {"<name>": "going" | "interested"}}}
-//   POST /  {"id": "<event id>", "name": "David", "status": "going" | "interested" | ""}   ("" clears)
+// Holds who marked what, so everyone with the link sees the same thing: Interested or Going on a
+// night out (Night Out), Want to go or Loved it on a restaurant (Supper Club).
+//   GET  /  -> {"votes": {"<id>": {"<name>": "going" | "interested" | "want" | "loved"}}}
+//   POST /  {"id": "<id>", "name": "David", "status": "going" | "interested" | "want" | "loved" | ""}   ("" clears)
 // Everything lives under one KV key. That's plenty for a group of friends: the free plan allows
 // 100,000 reads and 1,000 writes a day.
 //
@@ -16,7 +17,7 @@
 
 const KEY = "votes";
 const MAX_BYTES = 250000;              // a guard against someone filling the box with junk
-const STATUSES = new Set(["going", "interested", ""]);
+const STATUSES = new Set(["going", "interested", "want", "loved", ""]);
 
 export default {
   async fetch(request, env) {
@@ -31,7 +32,7 @@ export default {
     let body;
     try { body = await request.json(); } catch (e) { return reply({ error: "Send JSON" }, 400); }
     const id = clean(body.id, 100), name = clean(body.name, 24), status = body.status == null ? "" : String(body.status);
-    if (!id || !name || !STATUSES.has(status)) return reply({ error: "Need id, name and status (going, interested or empty)" }, 400);
+    if (!id || !name || !STATUSES.has(status)) return reply({ error: "Need id, name and status (going, interested, want, loved or empty)" }, 400);
 
     const votes = (await env.VOTES.get(KEY, "json")) || {};
     const ev = votes[id] || {};

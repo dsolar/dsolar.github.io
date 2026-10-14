@@ -160,7 +160,12 @@ i.c-music,i.c-comedy,i.c-sports,i.c-movies,.dot.c-music,.dot.c-comedy,.dot.c-spo
 .tags{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.35rem}
 .tag{font:600 .66rem/1 var(--f-body);letter-spacing:.06em;text-transform:uppercase;padding:.28rem .45rem;border-radius:4px;background:var(--wash);color:var(--muted)}
 .tag.love{background:var(--love);color:var(--sign)}
+.tag.big{background:var(--ink);color:var(--bg)}
 .tag.road{background:none;box-shadow:inset 0 0 0 1px var(--rule)}
+a.tag.price{background:none;box-shadow:inset 0 0 0 1px var(--rule);color:var(--ink);text-decoration:none;font-family:var(--f-mono);font-weight:500;letter-spacing:0;text-transform:none;font-size:.72rem}
+a.tag.price:hover{box-shadow:inset 0 0 0 1px var(--ink)}
+a.tag.price.drop{box-shadow:inset 0 0 0 1.5px var(--sports)}
+a.tag.price span{color:var(--sports);font-weight:700}
 .who{font-size:.8rem;color:var(--muted);margin-top:.4rem}
 .who b{color:var(--ink);font-weight:600}
 .who .mine{text-decoration:underline;text-decoration-color:var(--love);text-decoration-thickness:2px;text-underline-offset:3px}
@@ -225,7 +230,7 @@ dialog .ghost{background:none;color:var(--ink);border-color:var(--rule)}
 
 <main class="wrap">
   <section id="big-sec" hidden>
-    <div class="head"><h2>Circle these</h2><p>Bands we love</p></div>
+    <div class="head"><h2>Circle these</h2><p>Bands we love and big shows</p></div>
     <div class="big" id="big"></div>
   </section>
 
@@ -275,6 +280,7 @@ const store = {
 };
 
 let DATA = null, VOTES = {}, REMOTE = null; // REMOTE: true when the shared vote box answered
+let PRICES = { events: {}, drops: [] };     // lowest ticket prices, from tools/calendar_prices.py
 let ME = store.get("name", "");
 let F = store.get("filter", "picks"), EVERYTHING = store.get("everything", false);
 let MONTH = null;                            // "YYYY-MM" on show
@@ -448,8 +454,8 @@ function renderChips() {
 }
 
 function renderBig() {
-  // Runs of a loved band within a week of each other become one card.
-  const loved = DATA.events.filter((e) => e.why === "love");
+  // Runs of a loved band (or a big show) within a week of each other become one card.
+  const loved = DATA.events.filter((e) => e.date >= TODAY && (e.why === "love" || e.why === "big"));
   const runs = [];
   for (const e of loved) {
     const r = runs.find((r) => r.title === e.title && e.date <= addDays(r.last, 7));
@@ -460,8 +466,9 @@ function renderBig() {
     const places = [...new Set(r.items.map((e) => e.venue))].join(" · ");
     const going = new Set(r.items.flatMap((e) => Object.entries(votesFor(e)).filter(([, s]) => s === "going").map(([n]) => n)));
     const drive = r.items.find((e) => e.drive_hours);
+    const lows = r.items.map((e) => ((PRICES.events || {})[e.id] || {}).low).filter(Boolean);
     return `<button data-i="${i}"><span class="t">${esc(r.title)}</span><span class="d">${range(r.first, r.last)}${drive ? " · " + hours(drive.drive_hours) + " drive" : ""}</span>` +
-      `<span class="v">${esc(places)}</span>${going.size ? `<span class="v"><b>Going:</b> ${esc([...going].join(", "))}</span>` : ""}</button>`;
+      `<span class="v">${esc(places)}</span>${lows.length ? `<span class="v">Tickets from $${Math.round(Math.min(...lows))}</span>` : ""}${going.size ? `<span class="v"><b>Going:</b> ${esc([...going].join(", "))}</span>` : ""}</button>`;
   }).join("");
   $("big").querySelectorAll("button").forEach((b) => b.onclick = () => goTo(runs[+b.dataset.i].first));
 }
@@ -516,9 +523,12 @@ function evCard(e) {
   const names = (arr) => arr.map((n) => n === ME ? `<span class="mine">${esc(n)}</span>` : esc(n)).join(", ");
   const tags = [];
   if (e.why === "love") tags.push(`<span class="tag love">Band we love</span>`);
+  if (e.why === "big") tags.push(`<span class="tag big">Big show</span>`);
   if (e.why === "like") tags.push(`<span class="tag">On our list</span>`);
   if (e.why === "fav") tags.push(`<span class="tag">Favorite comic</span>`);
   if (e.drive_hours) tags.push(`<span class="tag road">Road trip · ${hours(e.drive_hours)} drive</span>`);
+  const pr = priceTag(e);
+  if (pr) tags.push(pr);
   const where = [e.venue, e.city && !/^Boston\b/.test(e.city) ? e.city : ""].filter(Boolean).map(esc).join(", ");
   return `<article class="ev c-${e.cat}${e.why === "love" ? " love" : ""}" data-id="${esc(e.id)}">
     <div class="tm">${c ? `${c.t}<small>${c.ap}</small>` : `<small>Time<br>TBA</small>`}<span class="k">${CATS[e.cat] || ""}</span></div>
@@ -535,6 +545,16 @@ function evCard(e) {
       <a class="ics" href="#" data-ics>Add to calendar</a>
     </div>
   </article>`;
+}
+
+// "From $62", plus how far it fell if it dropped in the last week. Links to the tickets.
+function priceTag(e) {
+  const r = (PRICES.events || {})[e.id];
+  if (!r || !r.low) return "";
+  const weekAgo = new Date(Date.now() - 7 * 864e5).toISOString();
+  const d = (PRICES.drops || []).find((x) => x.id === e.id && x.at >= weekAgo);
+  return `<a class="tag price${d ? " drop" : ""}" href="${esc(r.url)}" target="_blank" rel="noopener" title="Lowest listed price on SeatGeek">` +
+    `From $${Math.round(r.low)}${d ? ` <span>↓ $${Math.round(d.was - r.low)}</span>` : ""}</a>`;
 }
 
 function movieLinks(ms, iso) {
@@ -628,14 +648,16 @@ function renderFoot() {
   if (s.ticketmaster && s.ticketmaster !== "no key yet") bits.push("Ticketmaster");
   if (s.espn) bits.push("ESPN schedules");
   bits.push("hand-picked shows and movies");
-  $("foot").innerHTML = `<p>Updated ${esc(when)} ET from ${bits.join(", ")}. Refreshes every morning.</p>
-    <p>Times and lineups change, so check the ticket link before you go. Drive times are rough estimates from downtown Boston.</p>`;
+  const priced = Object.keys(PRICES.events || {}).length;
+  $("foot").innerHTML = `<p>Updated ${esc(when)} ET from ${bits.join(", ")}. Refreshes every morning.${priced ? ` Ticket prices for ${priced} shows come from SeatGeek and are checked every 3 hours.` : ""}</p>
+    <p>Times and lineups change, so check the ticket link before you go. Drive times are rough estimates from downtown Boston.</p>
+    <p>Dinner first? <a href="../restaurants/">Supper Club</a> has our restaurant list.</p>`;
 }
 
 function render() {
   const byDay = {};
   for (const e of DATA.events) if (e.date >= TODAY && showEvent(e)) (byDay[e.date] = byDay[e.date] || []).push(e);
-  renderChips(); renderMe(); renderBig(); renderGrid(byDay); renderAgenda(byDay); renderFilms();
+  renderChips(); renderMe(); renderBig(); renderGrid(byDay); renderAgenda(byDay); renderFilms(); renderFoot();
 }
 
 function goTo(iso) {
@@ -693,6 +715,8 @@ document.addEventListener("visibilitychange", async () => {
   try {
     const res = await fetch("events.json?v=" + Math.floor(Date.now() / 600000), { cache: "no-cache" });
     DATA = await res.json();
+    const pr = await fetch("prices.json?v=" + Math.floor(Date.now() / 600000), { cache: "no-cache" }).catch(() => null);
+    if (pr && pr.ok) PRICES = await pr.json().catch(() => PRICES);
   } catch (e) {
     $("agenda").innerHTML = `<p class="empty">Couldn't load the calendar. Try again in a minute.</p>`;
     return;

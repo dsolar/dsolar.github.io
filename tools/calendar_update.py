@@ -4,10 +4,10 @@
 Sources, merged and de-duplicated:
   calendar/picks.json   hand-picked events (road trips, special shows) and movies
   ESPN schedules        home games for the teams in calendar/taste.json (no key needed)
-  Ticketmaster          Boston-area comedy and music, plus road trips for the "love" bands,
+  Ticketmaster          Boston-area comedy and music, plus road trips for the "love" and "big" bands,
                         when a TICKETMASTER_KEY is set (free key: developer.ticketmaster.com)
 
-Each event gets a score: 3 for a band we love, 2 for one we like or a favorite comedian,
+Each event gets a score: 3 for a band we love, 2 for a big band, one we like or a favorite comedian,
 1 for other comedy, games and hand picks, 0 for other big-venue shows. The page shows
 score 1+ as "Our picks" and everything under "Everything".
 
@@ -152,7 +152,8 @@ def ticketmaster(taste, key, today, until):
         out += [tm_row(e, home, "comedy") for e in tm_events(key, dict(near, classificationName="Comedy"))]
         out += [tm_row(e, home, "music") for e in tm_events(key, dict(near, classificationName="Music"))]
         reach = int(taste.get("road_trip_hours", 4.5) * MPH / ROAD)
-        for band in taste.get("bands", {}).get("love", []):
+        bands = taste.get("bands", {})
+        for band in bands.get("love", []) + bands.get("big", []):
             far = dict(span, latlong=f"{home['lat']},{home['lon']}", radius=reach, unit="miles",
                        keyword=band, classificationName="Music")
             out += [tm_row(e, home, "music") for e in tm_events(key, far, pages=1)]
@@ -172,13 +173,15 @@ def big_room(venue, taste):
 
 
 def score(e, taste):
-    """3 a band we love, 2 a band we like or a favorite comic, 1 worth a look, 0 only under Everything."""
+    """3 a band we love, 2 a big band, a band we like or a favorite comic, 1 worth a look, 0 only under Everything."""
     bands, comics = taste.get("bands", {}), taste.get("comedians", [])
     text = " ".join([e["title"], e.get("sub", "")] + e.get("_acts", []))
     picked = e.get("source") != "ticketmaster"
     if e["cat"] == "music":
         if matches(text, bands.get("love", [])):
             return 3, "love"
+        if matches(text, bands.get("big", [])):
+            return 2, "big"
         if matches(text, bands.get("like", [])):
             return 2, "like"
         return (1, None) if picked else (0, None)
@@ -213,10 +216,10 @@ def main():
         mi = e.get("_miles")
         if mi is not None and mi > local_mi:
             e["drive_hours"] = drive_hours(mi)
-        s, _ = score(e, taste)
+        s, why = score(e, taste)
         far = mi is not None and mi > local_mi
-        # Around Boston: comedy, any band on our lists, and shows at the big rooms. Farther: love bands only.
-        if far and (s < 3 or e["drive_hours"] > taste.get("road_trip_hours", 4.5)):
+        # Around Boston: comedy, any band on our lists, and shows at the big rooms. Farther: love and big bands only.
+        if far and (why not in ("love", "big") or e["drive_hours"] > taste.get("road_trip_hours", 4.5)):
             continue
         if not far and s == 0 and not big_room(e["venue"], taste) and e["cat"] == "music":
             continue

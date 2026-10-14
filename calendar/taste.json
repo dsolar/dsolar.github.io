@@ -1,5 +1,5 @@
 {
- "_about": "Who and what Night Out watches for. Edit freely: names are matched loosely, case doesn't matter. 'love' bands are shown anywhere within road_trip_hours of Boston; everything else only around Boston.",
+ "_about": "Who and what Night Out watches for. Edit freely: names are matched loosely, case doesn't matter. 'love' bands are shown anywhere within road_trip_hours of Boston and flagged as bands we love; 'big' bands (arena and stadium acts) also show within road_trip_hours; 'like' bands show around Boston only.",
  "home": {
   "name": "Boston",
   "lat": 42.3601,
@@ -19,6 +19,37 @@
    "moe.",
    "Dark Star Orchestra",
    "Bob Weir"
+  ],
+  "big": [
+   "Pearl Jam",
+   "Eddie Vedder",
+   "Foo Fighters",
+   "Red Hot Chili Peppers",
+   "Dave Matthews Band",
+   "Bruce Springsteen",
+   "The Rolling Stones",
+   "U2",
+   "Metallica",
+   "Green Day",
+   "The Killers",
+   "Kings of Leon",
+   "The Black Crowes",
+   "Wilco",
+   "The National",
+   "Arcade Fire",
+   "Vampire Weekend",
+   "LCD Soundsystem",
+   "Tame Impala",
+   "The Strokes",
+   "Jack White",
+   "Neil Young",
+   "Bob Dylan",
+   "Chris Stapleton",
+   "Tyler Childers",
+   "Jason Isbell",
+   "Noah Kahan",
+   "Dropkick Murphys",
+   "Guster"
   ],
   "like": [
    "My Morning Jacket",
@@ -89,20 +120,6 @@
    "home_only": true
   }
  ],
- "film_people": [
-  "Nathan Fielder",
-  "Lance Oppenheim",
-  "Martin McDonagh",
-  "Denis Villeneuve",
-  "Robert Eggers",
-  "James Gray",
-  "Tony Gilroy",
-  "Jesse Eisenberg",
-  "Mike Leigh",
-  "Paul Thomas Anderson",
-  "Yorgos Lanthimos",
-  "the Safdies"
- ],
  "theaters": {
   "weekday": {
    "name": "AMC Boston Common 19",
@@ -139,5 +156,19 @@
   "Laugh Boston",
   "The Cabot"
  ],
- "votes_url": "https://calendar-votes.dsolar.workers.dev/"
+ "votes_url": "https://calendar-votes.dsolar.workers.dev/",
+ "film_people": [
+  "Nathan Fielder",
+  "Lance Oppenheim",
+  "Martin McDonagh",
+  "Denis Villeneuve",
+  "Robert Eggers",
+  "James Gray",
+  "Tony Gilroy",
+  "Jesse Eisenberg",
+  "Mike Leigh",
+  "Paul Thomas Anderson",
+  "Yorgos Lanthimos",
+  "the Safdies"
+ ]
 }

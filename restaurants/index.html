@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Supper Club | David Solar</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="Restaurants we've loved and ones to try, near Needham, in Boston, and on the way to Marblehead.">
+<link rel="canonical" href="https://davidsolar.dev/restaurants/">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#F6F1E8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#151612" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Besley:wght@700&family=Fraunces:ital,opsz,wght@0,9..144,600..800;1,9..144,500..700&family=Libre+Franklin:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/bar.css">
+<script src="../assets/analytics.js" defer></script>
+<style>
+/* A bistro menu card: linen paper, olive ink, one tomato red for the places we love.
+   Fraunces for the names (it reads like a menu), Franklin for everything else. Three sections,
+   one per part of the map, each a short list of cards you can mark Want to go or Loved it. */
+:root{
+  --bg:#F6F1E8; --surface:#FFFCF6; --ink:#22261C; --muted:#6A6B5C; --rule:#DED6C6; --wash:#EFE8DA;
+  --olive:#4F5D2F; --tomato:#B5381F; --tomato-wash:#F8E4DC;
+  --f-display:"Fraunces",Georgia,"Times New Roman",serif;
+  --f-body:"Libre Franklin","Franklin Gothic Medium","Helvetica Neue",Arial,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#151612; --surface:#1E1F1A; --ink:#EEEADF; --muted:#A6A491; --rule:#34352C; --wash:#24251F;
+    --olive:#A9BB7C; --tomato:#F07A5E; --tomato-wash:#3A221B; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#151612; --surface:#1E1F1A; --ink:#EEEADF; --muted:#A6A491; --rule:#34352C; --wash:#24251F;
+  --olive:#A9BB7C; --tomato:#F07A5E; --tomato-wash:#3A221B; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.55 var(--f-body)}
+[hidden]{display:none!important}
+a{color:inherit;text-underline-offset:3px;text-decoration-thickness:1px}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--tomato);outline-offset:2px;border-radius:4px}
+.wrap{max-width:52rem;margin:0 auto;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+
+header{padding-block:2.2rem 1.6rem}
+.eyebrow{font:600 .72rem/1.2 var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--olive);margin:0}
+h1{font:800 clamp(3rem,13vw,5.2rem)/.9 var(--f-display);font-variation-settings:"opsz" 144;letter-spacing:-.02em;margin:.5rem 0 0}
+h1 em{font-style:italic;font-weight:600;color:var(--tomato)}
+.rule{height:6px;border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);margin:1rem 0 0;max-width:20rem}
+.lede{margin:1rem 0 0;max-width:34rem;font-size:1.05rem;text-wrap:pretty}
+.me{margin:.9rem 0 0;font-size:.86rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:.3rem .6rem;align-items:center}
+.me strong{color:var(--ink)}
+.linkbtn{background:none;border:0;padding:0;text-decoration:underline;text-underline-offset:3px;cursor:pointer;color:var(--tomato);font-size:inherit}
+.hero-acts{display:flex;flex-wrap:wrap;gap:.5rem .9rem;align-items:center;margin-top:1.1rem}
+.btn{font-size:.88rem;font-weight:600;padding:.6rem 1.05rem;border-radius:999px;border:1px solid var(--tomato);background:var(--tomato);color:#fff;cursor:pointer}
+.btn.ghost{background:none;color:var(--ink);border-color:var(--rule)}
+.jumps{display:flex;flex-wrap:wrap;gap:.2rem .9rem;font-size:.86rem}
+.jumps a{color:var(--muted)}
+.jumps a:hover{color:var(--ink)}
+
+.bar{position:sticky;top:env(safe-area-inset-top, 0px);z-index:40;background:var(--bg);border-block:1px solid var(--rule)}
+.chips{display:flex;gap:.35rem;overflow-x:auto;scrollbar-width:none;padding-block:.55rem}
+.chips::-webkit-scrollbar{display:none}
+@media (min-width:52rem){ .chips{flex-wrap:wrap} }
+.chip{flex:none;font-size:.8rem;font-weight:600;cursor:pointer;padding:.38rem .75rem;border-radius:999px;border:1px solid var(--rule);background:var(--surface);color:var(--muted)}
+.chip:hover{color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+main{display:grid;gap:2.6rem;padding-block:1.8rem 3rem}
+main > section{scroll-margin-top:3.6rem}
+.shead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:.2rem 1rem;border-bottom:2px solid var(--ink);padding-bottom:.35rem;margin-bottom:.9rem}
+h2{font:700 1.75rem/1.05 var(--f-display);font-variation-settings:"opsz" 72;margin:0}
+.shead p{margin:0;color:var(--muted);font-size:.86rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(19rem,1fr));gap:.7rem}
+.place{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:1rem 1rem .9rem;display:flex;flex-direction:column;gap:.35rem;scroll-margin-top:4rem}
+.place.loved{border-color:color-mix(in srgb, var(--tomato) 45%, var(--rule));box-shadow:inset 3px 0 0 var(--tomato)}
+.place.flash{animation:flash 1.6s ease-out}
+@keyframes flash{0%{background:var(--tomato-wash)}100%{background:var(--surface)}}
+.top{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem}
+h3{font:700 1.3rem/1.15 var(--f-display);font-variation-settings:"opsz" 36;margin:0;text-wrap:balance}
+.fav{flex:none;font:600 .64rem/1 var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--tomato);white-space:nowrap}
+.meta{margin:0;font-size:.82rem;color:var(--olive);font-weight:600}
+.note{margin:0;font-size:.92rem;text-wrap:pretty}
+.order{margin:0;font-size:.86rem;color:var(--muted)}
+.order b{font:italic 600 .9rem var(--f-display);color:var(--ink);margin-right:.3rem}
+.tags{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.1rem}
+.tag{font:600 .64rem/1 var(--f-body);letter-spacing:.06em;text-transform:uppercase;padding:.28rem .45rem;border-radius:4px;background:var(--wash);color:var(--muted)}
+.foot{margin-top:auto;padding-top:.5rem;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.5rem}
+.links{display:flex;gap:.8rem;font-size:.84rem;font-weight:600}
+.marks{display:flex;gap:.3rem}
+.mark{font-size:.75rem;font-weight:600;padding:.36rem .65rem;border-radius:999px;border:1px solid var(--rule);background:var(--bg);cursor:pointer;color:var(--muted);white-space:nowrap}
+.mark:hover{color:var(--ink);border-color:var(--muted)}
+.mark[aria-pressed="true"]{background:var(--olive);border-color:var(--olive);color:var(--surface)}
+.mark[data-s="loved"][aria-pressed="true"]{background:var(--tomato);border-color:var(--tomato)}
+.mark .ct{margin-left:.25rem;opacity:.8}
+.who{margin:0;font-size:.8rem;color:var(--muted)}
+.who b{color:var(--ink);font-weight:600}
+.empty{color:var(--muted);font-size:.9rem;padding:1rem;border:1px dashed var(--rule);border-radius:8px;text-align:center;margin:0}
+
+footer{border-top:1px solid var(--rule);padding-block:1.2rem 2.5rem;color:var(--muted);font-size:.8rem}
+footer p{margin:.25rem 0;max-width:38rem}
+dialog{border:1px solid var(--rule);border-radius:12px;background:var(--surface);color:var(--ink);padding:1.2rem;width:min(22rem,calc(100vw - 32px))}
+dialog::backdrop{background:rgba(10,10,5,.5)}
+dialog h4{font:700 1.4rem/1 var(--f-display);margin:0 0 .4rem}
+dialog p{margin:0 0 .8rem;font-size:.88rem;color:var(--muted)}
+dialog input{width:100%;font:inherit;font-size:1rem;padding:.6rem .7rem;border-radius:8px;border:1px solid var(--rule);background:var(--bg);color:var(--ink)}
+dialog .row{display:flex;justify-content:flex-end;gap:.5rem;margin-top:.9rem}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom, 0px));transform:translateX(-50%);z-index:60;
+  background:var(--ink);color:var(--bg);font-size:.85rem;padding:.6rem 1rem;border-radius:999px;max-width:calc(100vw - 32px);box-shadow:0 6px 24px rgba(0,0,0,.25)}
+@media (prefers-reduced-motion: reduce){ .place.flash{animation:none} }
+</style>
+</head>
+<body>
+<nav class="ds-bar" aria-label="davidsolar.dev"><a href="../"><img src="../assets/ds-mark.svg" alt="" width="20" height="20"><span class="ds-bar-name">David Solar</span></a><a href="../#projects">All projects</a></nav>
+
+<header class="wrap">
+  <p class="eyebrow">Needham · Boston · the North Shore</p>
+  <h1>Supper <em>Club</em></h1>
+  <div class="rule"></div>
+  <p class="lede">Places we've loved and places to try: near home, in town, and on the way to Marblehead. Mark the ones you want to go to and the ones you loved.</p>
+  <p class="me" id="me"></p>
+  <div class="hero-acts">
+    <button class="btn" id="pick">Pick one for us</button>
+    <nav class="jumps" id="jumps" aria-label="Sections"></nav>
+  </div>
+</header>
+
+<div class="bar"><div class="wrap"><div class="chips" id="chips" role="toolbar" aria-label="Show"></div></div></div>
+
+<main class="wrap" id="main"></main>
+
+<footer><div class="wrap">
+  <p>Missing a favorite? The list lives in <code>restaurants/places.json</code> in the site's repo. Add a place there, or send it to David.</p>
+  <p>Hours and menus change, so check before you go.</p>
+</div></footer>
+
+<dialog id="name-dlg">
+  <form method="dialog" id="name-form">
+    <h4>Who's this?</h4>
+    <p>Your first name is enough. Anyone with the link sees who marked what.</p>
+    <input id="name-in" maxlength="24" autocomplete="given-name" required placeholder="First name">
+    <div class="row"><button class="btn ghost" value="cancel" formnovalidate>Cancel</button><button class="btn" value="ok">Save</button></div>
+  </form>
+</dialog>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+"use strict";
+const FILTERS = [["all", "All"], ["loved", "Our favorites"], ["Date night", "Date night"], ["Groups", "Groups"],
+  ["show", "Before a show or game"], ["Waterfront", "Waterfront"], ["Splurge", "Splurge"], ["want", "Want to go"]];
+const MARKS = { want: "Want to go", loved: "Loved it" };
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const slug = (s) => s.toLowerCase().normalize("NFKD").replace(/[^\w]+/g, "-").replace(/^-|-$/g, "");
+// Same storage names as Night Out, so a friend's name carries over between the two pages.
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("nightout." + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("nightout." + k, JSON.stringify(v)); } catch (e) { /* private mode */ } },
+};
+let DATA = null, VOTES = {}, REMOTE = null, ME = store.get("name", ""), F = store.get("food-filter", "all"), pendingVote = null;
+
+function votesFor(p) { return VOTES[p.id] || {}; }
+function show(p) {
+  const v = votesFor(p);
+  switch (F) {
+    case "all": return true;
+    case "loved": return p.status === "loved" || Object.values(v).includes("loved");
+    case "show": return (p.good || []).some((g) => g === "Before a show" || g === "Before a game");
+    case "want": return Object.values(v).includes("want");
+    default: return (p.good || []).includes(F);
+  }
+}
+
+function card(p) {
+  const v = votesFor(p), mine = v[ME] || "";
+  const who = (s) => Object.keys(v).filter((n) => v[n] === s);
+  const loved = who("loved"), want = who("want");
+  const map = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(`${p.name} ${p.town} MA`);
+  const links = [`<a href="${map}" target="_blank" rel="noopener">Map</a>`];
+  if (p.reserve) links.push(`<a href="${esc(p.reserve)}" target="_blank" rel="noopener">Reserve</a>`);
+  if (p.site) links.push(`<a href="${esc(p.site)}" target="_blank" rel="noopener">Website</a>`);
+  const names = (arr) => arr.map((n) => n === ME ? `<u>${esc(n)}</u>` : esc(n)).join(", ");
+  return `<article class="place${p.status === "loved" ? " loved" : ""}" id="p-${p.id}">
+    <div class="top"><h3>${esc(p.name)}</h3>${p.status === "loved" ? `<span class="fav">Our favorite</span>` : ""}</div>
+    <p class="meta">${esc(p.town)} · ${esc(p.cuisine)}</p>
+    <p class="note">${esc(p.note)}</p>
+    ${p.order ? `<p class="order"><b>Order</b>${p.order.map(esc).join(" · ")}</p>` : ""}
+    ${p.good && p.good.length ? `<div class="tags">${p.good.map((g) => `<span class="tag">${esc(g)}</span>`).join("")}</div>` : ""}
+    ${loved.length || want.length ? `<p class="who">${loved.length ? `<b>Loved it:</b> ${names(loved)}` : ""}${loved.length && want.length ? " · " : ""}${want.length ? `<b>Want to go:</b> ${names(want)}` : ""}</p>` : ""}
+    <div class="foot"><div class="links">${links.join("")}</div>
+      <div class="marks">${Object.entries(MARKS).map(([s, l]) => {
+        const n = who(s).length;
+        return `<button class="mark" data-s="${s}" aria-pressed="${mine === s}">${l}${n ? `<span class="ct">${n}</span>` : ""}</button>`;
+      }).join("")}</div></div>
+  </article>`;
+}
+
+function render() {
+  $("chips").innerHTML = FILTERS.map(([k, l]) => `<button class="chip" data-f="${esc(k)}" aria-pressed="${F === k}">${l}</button>`).join("");
+  $("chips").querySelectorAll(".chip").forEach((b) => b.onclick = () => { F = b.dataset.f; store.set("food-filter", F); render(); });
+  const areas = Object.entries(DATA.areas);
+  $("jumps").innerHTML = areas.map(([k, a]) => `<a href="#a-${k}">${esc(a.name)}</a>`).join("");
+  let any = false;
+  $("main").innerHTML = areas.map(([k, a]) => {
+    // Our favorites first, then the rest in list order.
+    const list = DATA.places.filter((p) => p.area === k && show(p)).sort((x, y) => (y.status === "loved") - (x.status === "loved"));
+    if (!list.length) return "";
+    any = true;
+    return `<section id="a-${k}"><div class="shead"><h2>${esc(a.name)}</h2><p>${esc(a.blurb)}</p></div>
+      <div class="cards">${list.map(card).join("")}</div></section>`;
+  }).join("") || "";
+  if (!any) $("main").innerHTML = `<p class="empty">${F === "want" ? "Nobody's marked Want to go yet." : "Nothing matches that yet."}</p>`;
+  $("main").querySelectorAll(".place").forEach((el) => {
+    const p = DATA.places.find((x) => "p-" + x.id === el.id);
+    el.querySelectorAll(".mark").forEach((b) => b.onclick = () => mark(p, b.dataset.s));
+  });
+  renderMe();
+}
+
+function renderMe() {
+  const where = REMOTE ? "Marks are shared with everyone on the link."
+    : REMOTE === false ? "The shared vote box isn't answering, so marks are saving on this phone for now." : "";
+  $("me").innerHTML = (ME ? `<span>You're <strong>${esc(ME)}</strong></span><button class="linkbtn" id="chg">change</button>`
+    : `<button class="linkbtn" id="chg">Add your name</button><span>so friends see who marked what</span>`) + (where ? `<span>${esc(where)}</span>` : "");
+  $("chg").onclick = askName;
+}
+
+// ---------- marks, shared through the same vote box as Night Out ----------
+async function loadVotes() {
+  if (!DATA.votes_url) { VOTES = store.get("food-votes", {}); REMOTE = false; return; }
+  try {
+    const res = await fetch(DATA.votes_url, { cache: "no-store" });
+    if (!res.ok) throw new Error(res.status);
+    VOTES = (await res.json()).votes || {};
+    REMOTE = true;
+    const queued = store.get("queue", []);
+    if (queued.length) { store.set("queue", []); for (const q of queued) await send(q).catch(() => {}); }
+  } catch (e) { VOTES = store.get("food-votes", {}); REMOTE = false; }
+}
+async function send(op) {
+  const res = await fetch(DATA.votes_url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(op) });
+  if (!res.ok) throw new Error(res.status);
+  const body = await res.json();
+  if (body.votes) VOTES = body.votes;
+}
+async function mark(p, status) {
+  if (!ME) { pendingVote = [p, status]; askName(); return; }
+  const op = { id: p.id, name: ME, status: (votesFor(p)[ME] || "") === status ? "" : status };
+  const ev = VOTES[op.id] || {};
+  if (op.status) ev[ME] = op.status; else delete ev[ME];
+  if (Object.keys(ev).length) VOTES[op.id] = ev; else delete VOTES[op.id];
+  render();
+  if (REMOTE) {
+    try { await send(op); render(); }
+    catch (e) { store.set("queue", store.get("queue", []).concat([op])); toast("Couldn't reach the vote box. Saved on this phone and will retry."); }
+  } else {
+    store.set("food-votes", VOTES);
+    if (DATA.votes_url) store.set("queue", store.get("queue", []).concat([op]));
+  }
+}
+function askName() { $("name-in").value = ME; $("name-dlg").showModal(); }
+$("name-form").addEventListener("submit", (e) => {
+  if (!e.submitter || e.submitter.value !== "ok") { pendingVote = null; return; }
+  const name = $("name-in").value.trim().replace(/\s+/g, " ").slice(0, 24);
+  if (!name) { e.preventDefault(); return; }
+  ME = name; store.set("name", ME); renderMe();
+  if (pendingVote) { const [p, s] = pendingVote; pendingVote = null; mark(p, s); }
+});
+$("name-dlg").addEventListener("close", () => { if ($("name-dlg").returnValue !== "ok") pendingVote = null; });
+let toastTimer;
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 4200); }
+
+$("pick").onclick = () => {
+  const cards = [...document.querySelectorAll(".place")];
+  if (!cards.length) return;
+  const el = cards[Math.floor(Math.random() * cards.length)];
+  el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+  el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+  toast("Tonight: " + el.querySelector("h3").textContent);
+};
+document.addEventListener("visibilitychange", async () => {
+  if (document.visibilityState === "visible" && DATA && REMOTE) { await loadVotes(); render(); }
+});
+
+(async function start() {
+  try {
+    DATA = await (await fetch("places.json?v=" + Math.floor(Date.now() / 600000), { cache: "no-cache" })).json();
+  } catch (e) {
+    $("main").innerHTML = `<p class="empty">Couldn't load the list. Try again in a minute.</p>`;
+    return;
+  }
+  DATA.places.forEach((p) => { p.id = p.id || "food-" + slug(p.name + " " + p.town); });
+  render();
+  await loadVotes();
+  render();
+})();
+</script>
+</body>
+</html>

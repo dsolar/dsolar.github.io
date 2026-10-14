@@ -31,11 +31,15 @@ dsolar.github.io/
   guillotine/                 Bastille Day Odds: index.html, sim.js (the simulation),
                               data.json (league data, written by the workflow below)
   calendar/                   Night Out: index.html, taste.json and picks.json (edit these),
-                              events.json (written by the calendar workflow)
+                              events.json and prices.json (written by the workflows)
+  restaurants/                Supper Club: index.html and places.json (the list; edit it)
+  robots.txt                  keeps send-off images and data files out of search engines
   tools/guillotine_update.py  pulls the league from Yahoo into guillotine/data.json
-  tools/calendar_update.py    builds calendar/events.json; calendar-votes.js is its vote box
+  tools/calendar_update.py    builds calendar/events.json; calendar_prices.py watches ticket prices;
+                              calendar-votes.js is the vote box for Night Out and Supper Club
   .github/workflows/          guillotine.yml runs that script every morning in season;
-                              calendar-update.yml rebuilds the calendar every morning
+                              calendar-update.yml rebuilds the calendar every morning;
+                              calendar-prices.yml checks ticket prices every 3 hours
   .nojekyll                   tells GitHub Pages to serve the files as-is
   .gitignore                  files Git should skip
 ```
@@ -142,7 +146,7 @@ How eliminations are found: in each finished week, the lowest score among teams 
 
 `davidsolar.dev/calendar/` is a shared calendar of shows, comics, games and movies around Boston, plus road trips for the bands we love. It's link-only (hidden on the home page, `noindex` for search engines). Everything it shows comes from `calendar/events.json`, which the "Calendar update" workflow rebuilds every morning at 6:41am ET and whenever these files change:
 
-- `calendar/taste.json`: who and what to watch for. Bands we **love** (shown anywhere within `road_trip_hours` of Boston), bands we **like** and favorite **comedians** (flagged around Boston), the teams (home games only), the big rooms, and the two theaters (AMC Boston Common on weeknights, Showcase Legacy Place on weekends). Edit it on GitHub like any file; names match loosely.
+- `calendar/taste.json`: who and what to watch for. Bands we **love** (shown anywhere within `road_trip_hours` of Boston), **big** bands like Pearl Jam (arena and stadium acts, also shown within the road-trip radius), bands we **like** and favorite **comedians** (flagged around Boston), the teams (home games only), the big rooms, and the two theaters (AMC Boston Common on weeknights, Showcase Legacy Place on weekends). Edit it on GitHub like any file; names match loosely.
 - `calendar/picks.json`: hand-picked shows (road trips, Wilbur shows, anything the feeds miss) and the movie picks. Each event needs `date`, `title`, `cat` (`music`, `comedy` or `sports`), `venue`, `city`, and optionally `time` ("20:00"), `url`, `sub` (a second line) and `drive_hours`. Each movie needs `title` and `release` ("YYYY-MM-DD"), optionally `by`, `studio` and `why`. A movie shows as playing for six weeks after it opens.
 
 Sources: ESPN's public schedules for the Celtics, Bruins and Patriots (no key needed), Ticketmaster's Discovery API for Boston comedy and music and for loved bands within the road-trip radius, and `picks.json`. When Ticketmaster and a pick list the same show, the Ticketmaster one wins (real ticket link) and any Interested/Going marks carry over.
@@ -157,7 +161,24 @@ Sources: ESPN's public schedules for the Celtics, Bruins and Patriots (no key ne
 4. The worker's **Settings** > **Bindings** > **Add** > **KV namespace**: variable name `VOTES`, namespace `nightout-votes` > **Deploy**.
 5. Check it: https://calendar-votes.dsolar.workers.dev/ should show `{"votes":{}}`.
 
-The page looks for the vote box at `votes_url` in `calendar/taste.json`. Until it answers, marks save on each person's own phone and go up to the shared box the next time it's reachable. Free plan: 100,000 reads and 1,000 writes a day. Anyone with the link can mark things under any name, so keep the link among friends.
+The page looks for the vote box at `votes_url` in `calendar/taste.json`. Until it answers, marks save on each person's own phone and go up to the shared box the next time it's reachable. Free plan: 100,000 reads and 1,000 writes a day. Anyone with the link can mark things under any name, so keep the link among friends. Supper Club uses the same vote box (Want to go and Loved it).
+
+**Ticket price alerts.** `tools/calendar_prices.py` runs every 3 hours ("Ticket prices" workflow). It looks up the lowest SeatGeek price for the shows worth watching: bands we love, big shows, bands we like, favorite comics, and anything someone marked Interested or Going. Prices show on the calendar ("From $62", with the drop in green). When a show's lowest price falls at least 10% and $10 below the last alert (or the first price seen), it sends a push notification. To turn it on:
+
+1. **SeatGeek key (free).** Sign in to SeatGeek and open https://seatgeek.com/account/develop (it may forward you to developer.seatgeek.com), create an app, copy its **Client ID**. Add it as a repo secret named `SEATGEEK_CLIENT_ID`.
+2. **Phone alerts with ntfy (free, no account).** Install the ntfy app (iPhone or Android). Make up a hard-to-guess topic name such as `nightout-` plus a few random words (anyone who knows it can read the alerts). In the app, tap **+** and subscribe to that topic on ntfy.sh. Add the topic as a repo secret named `NTFY_TOPIC`. Friends who want alerts subscribe to the same topic.
+3. **Email too (optional).** Add a repo secret `ALERT_EMAIL` with an address, and ntfy also emails each alert.
+4. Run **Actions** > **Ticket prices** > **Run workflow** once. After that it runs on its own.
+
+The drop rule (10% and $10) and how many shows it watches are at the top of `tools/calendar_prices.py`.
+
+## Supper Club: the restaurant list
+
+`davidsolar.dev/restaurants/` is our restaurant list: favorites and places to try, in three groups (near home, in town, on the way to Marblehead). It's on the home page but marked `noindex`, so search engines don't list it. Everything comes from `restaurants/places.json`: edit it on GitHub to add a place. Each place needs `name`, `area` (`home`, `boston` or `north`), `town`, `cuisine` and `note`; `status` is `loved` for our favorites (they get a red edge and sort first) or `try`. Optional: `order` (dishes to get), `good` (tags: Date night, Groups, Before a show, Before a game, Outdoor seating, Waterfront, Splurge, Book ahead), `site` and `reserve` links. A Google Maps link is added automatically. Friends mark Want to go or Loved it through the Night Out vote box, and "Pick one for us" chooses a random place from whatever's showing.
+
+## Keeping friends' pages out of search
+
+Every friends' page (Bastille Day Odds, Night Out, Supper Club, the two Nick games) has `<meta name="robots" content="noindex">` in its head, so search engines can visit but won't list it. Don't block those pages in `robots.txt`: a crawler that can't visit a page never sees the noindex tag. `robots.txt` blocks only what can't carry a tag: the league send-off images, data files (`*.json`), `guillotine/paste.txt`, and the `tools/` and `src/` folders. A new friends' page needs the same meta tag.
 
 ## Where things stand
 

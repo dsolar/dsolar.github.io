@@ -1,0 +1,417 @@
+{
+ "_about": "Supper Club's list. Edit freely. area: home (near Needham), boston (Boston, Brookline, Cambridge, Somerville) or north (on the way to Marblehead). status: loved (our favorites) or try. good: any of Date night, Groups, Before a show, Before a game, Outdoor seating, Waterfront, Splurge, Book ahead. site and reserve are optional links.",
+ "votes_url": "https://calendar-votes.dsolar.workers.dev/",
+ "areas": {
+  "home": {
+   "name": "Near home",
+   "blurb": "Needham, Newton, Wellesley, Dedham, Westwood"
+  },
+  "boston": {
+   "name": "In town",
+   "blurb": "Boston, Brookline, Cambridge, Somerville"
+  },
+  "north": {
+   "name": "On the way to Marblehead",
+   "blurb": "Up 128 and along the North Shore"
+  }
+ },
+ "places": [
+  {
+   "name": "Shkodra Byrek",
+   "area": "home",
+   "town": "Dedham",
+   "cuisine": "Albanian & Balkan",
+   "status": "loved",
+   "note": "Byrek, grills and clay-pot dishes from the owners of Elena's Cafes. Big bar, full liquor license, and a curved terrace lined with flowers.",
+   "order": [
+    "Spinach and feta byrek",
+    "Fli",
+    "Qebape",
+    "Tave kosi",
+    "Baklava Old Fashioned"
+   ],
+   "good": [
+    "Groups",
+    "Outdoor seating"
+   ],
+   "site": "https://shkodrabyrek.com",
+   "reserve": "https://www.opentable.com/r/shkodra-byrek-dedham"
+  },
+  {
+   "name": "Thistle & Leek",
+   "area": "home",
+   "town": "Newton Centre",
+   "cuisine": "Modern American",
+   "status": "try",
+   "note": "Small, seasonal neighborhood restaurant recommended by the Michelin Guide.",
+   "good": [
+    "Date night",
+    "Book ahead"
+   ]
+  },
+  {
+   "name": "Sycamore",
+   "area": "home",
+   "town": "Newton Centre",
+   "cuisine": "Contemporary American",
+   "status": "try",
+   "note": "Newton Centre's grown-up dinner spot, one of the best-reviewed tables around here.",
+   "good": [
+    "Date night"
+   ]
+  },
+  {
+   "name": "Buttonwood",
+   "area": "home",
+   "town": "Newton Highlands",
+   "cuisine": "American",
+   "status": "try",
+   "note": "Easygoing neighborhood restaurant and bar a few minutes from home.",
+   "good": [
+    "Groups"
+   ]
+  },
+  {
+   "name": "The Common Room",
+   "area": "home",
+   "town": "Needham",
+   "cuisine": "American",
+   "status": "try",
+   "note": "New in town, in the old Latina Kitchen space.",
+   "good": [
+    "Groups"
+   ]
+  },
+  {
+   "name": "Bar 'Cino",
+   "area": "home",
+   "town": "Westwood",
+   "cuisine": "Italian",
+   "status": "try",
+   "note": "Pizza, pasta and spritzes at University Station, from Newport Restaurant Group.",
+   "good": [
+    "Groups"
+   ],
+   "reserve": "https://www.opentable.com/r/bar-cino-westwood"
+  },
+  {
+   "name": "Cafe Mangal",
+   "area": "home",
+   "town": "Wellesley",
+   "cuisine": "Turkish & Mediterranean",
+   "status": "try",
+   "note": "Small Wellesley Square cafe with Turkish home cooking.",
+   "reserve": "https://www.opentable.com/r/cafe-mangal-wellesley"
+  },
+  {
+   "name": "Farmstead Table",
+   "area": "home",
+   "town": "Newton",
+   "cuisine": "Farm to table",
+   "status": "try",
+   "note": "Seasonal American cooking built around New England farms.",
+   "good": [
+    "Date night"
+   ]
+  },
+  {
+   "name": "Kaia",
+   "area": "boston",
+   "town": "South End",
+   "cuisine": "Coastal Greek",
+   "status": "loved",
+   "note": "Boston Magazine's best new restaurant of 2025, from the Bar Vlaha and Krasi team. A breezy Aegean room with whole fish and a deconstructed lamb-neck gyro.",
+   "order": [
+    "Whole fish",
+    "Lamb-neck gyro"
+   ],
+   "good": [
+    "Groups",
+    "Date night"
+   ],
+   "site": "https://kaiasouthend.com"
+  },
+  {
+   "name": "Bar Vlaha",
+   "area": "boston",
+   "town": "Brookline",
+   "cuisine": "Northern Greek",
+   "status": "loved",
+   "note": "Rustic Vlach cooking over open fire, rare wines from northern Greece, and a room that smells like lamb smoke. Book about a month out.",
+   "order": [
+    "Taramosalata with sourdough",
+    "Loukaniko",
+    "Spit-roasted lamb",
+    "Zucchini fritters"
+   ],
+   "good": [
+    "Date night",
+    "Book ahead"
+   ],
+   "reserve": "https://www.opentable.com/r/bar-vlaha-brookline"
+  },
+  {
+   "name": "Krasi",
+   "area": "boston",
+   "town": "Back Bay",
+   "cuisine": "Greek meze & wine",
+   "status": "try",
+   "note": "The same team's Back Bay meze and wine bar, with a deep all-Greek wine list.",
+   "good": [
+    "Date night"
+   ]
+  },
+  {
+   "name": "Fox & the Knife",
+   "area": "boston",
+   "town": "South Boston",
+   "cuisine": "Italian",
+   "status": "try",
+   "note": "Karen Akunowicz's enoteca, a Michelin Bib Gourmand. Handmade pasta is the reason to go.",
+   "good": [
+    "Date night",
+    "Book ahead"
+   ]
+  },
+  {
+   "name": "Bar Volpe",
+   "area": "boston",
+   "town": "South Boston",
+   "cuisine": "Southern Italian",
+   "status": "try",
+   "note": "Akunowicz's bigger, louder Southern Italian place, also a Bib Gourmand.",
+   "good": [
+    "Groups"
+   ]
+  },
+  {
+   "name": "Oleana",
+   "area": "boston",
+   "town": "Cambridge",
+   "cuisine": "Eastern Mediterranean",
+   "status": "try",
+   "note": "Ana Sortun's Turkish and Arabic-inspired classic, with a garden patio in warm weather.",
+   "good": [
+    "Date night",
+    "Outdoor seating"
+   ]
+  },
+  {
+   "name": "Sarma",
+   "area": "boston",
+   "town": "Somerville",
+   "cuisine": "Turkish meze",
+   "status": "try",
+   "note": "Sortun's meze bar: a long list of small plates made for sharing.",
+   "good": [
+    "Groups"
+   ]
+  },
+  {
+   "name": "Toro",
+   "area": "boston",
+   "town": "South End",
+   "cuisine": "Spanish tapas",
+   "status": "try",
+   "note": "Ken Oringer and Jamie Bissonnette's tapas bar. Grilled corn, paella, and a loud, fun room.",
+   "good": [
+    "Groups"
+   ]
+  },
+  {
+   "name": "Giulia",
+   "area": "boston",
+   "town": "Cambridge",
+   "cuisine": "Italian",
+   "status": "try",
+   "note": "Handmade pasta, rolled at a big pasta table in the dining room.",
+   "good": [
+    "Date night",
+    "Book ahead"
+   ]
+  },
+  {
+   "name": "La Padrona",
+   "area": "boston",
+   "town": "Back Bay",
+   "cuisine": "Italian-American",
+   "status": "try",
+   "note": "Jody Adams' Italian restaurant in the Raffles hotel, an easy walk to the Wilbur and the theater district.",
+   "good": [
+    "Before a show",
+    "Splurge"
+   ]
+  },
+  {
+   "name": "Neptune Oyster",
+   "area": "boston",
+   "town": "North End",
+   "cuisine": "Seafood",
+   "status": "try",
+   "note": "Tiny raw bar famous for its warm buttered lobster roll. No reservations, so go early before a Garden game.",
+   "good": [
+    "Before a game"
+   ]
+  },
+  {
+   "name": "Carmelina's",
+   "area": "boston",
+   "town": "North End",
+   "cuisine": "Italian-American",
+   "status": "try",
+   "note": "Red-sauce North End favorite, a short walk from TD Garden.",
+   "good": [
+    "Before a game",
+    "Groups"
+   ]
+  },
+  {
+   "name": "311 Omakase",
+   "area": "boston",
+   "town": "South End",
+   "cuisine": "Omakase",
+   "status": "try",
+   "note": "Ten seats and Boston's first Michelin star. Save it for a big occasion.",
+   "good": [
+    "Splurge",
+    "Book ahead"
+   ]
+  },
+  {
+   "name": "Woods Hill Pier 4",
+   "area": "boston",
+   "town": "Seaport",
+   "cuisine": "New American",
+   "status": "try",
+   "note": "Farm-to-table cooking, much of it from the restaurant's own farm, with harbor views.",
+   "good": [
+    "Waterfront",
+    "Date night"
+   ]
+  },
+  {
+   "name": "Il Ponte",
+   "area": "north",
+   "town": "Woburn",
+   "cuisine": "Umbrian Italian",
+   "status": "loved",
+   "note": "Chef Beni Kurti's 50-seat Umbrian kitchen on Main Street: wood-fired octopus, house-made pasta and bread, and his own limoncello.",
+   "order": [
+    "Grilled octopus",
+    "House-made pasta",
+    "Vitello alla Petroniana",
+    "Pistachio honey mousse"
+   ],
+   "good": [
+    "Date night"
+   ],
+   "site": "https://ilpontew.com"
+  },
+  {
+   "name": "Il Casale",
+   "area": "north",
+   "town": "Lexington",
+   "cuisine": "Italian",
+   "status": "try",
+   "note": "Lexington Center Italian from the Delia family.",
+   "good": [
+    "Groups"
+   ]
+  },
+  {
+   "name": "Sorella Cucina Toscana",
+   "area": "north",
+   "town": "Burlington",
+   "cuisine": "Tuscan",
+   "status": "try",
+   "note": "Opened February 2026 in the old Tuscan Kitchen space, with handmade pasta and a big room.",
+   "good": [
+    "Groups"
+   ]
+  },
+  {
+   "name": "Nightshade Noodle Bar",
+   "area": "north",
+   "town": "Lynn",
+   "cuisine": "Vietnamese-French",
+   "status": "try",
+   "note": "Downtown Lynn tasting-menu spot recommended by the Michelin Guide. The signature tasting runs 14 courses.",
+   "good": [
+    "Splurge",
+    "Book ahead",
+    "Date night"
+   ],
+   "reserve": "https://www.exploretock.com/nightshade-noodle-bar-lynn"
+  },
+  {
+   "name": "Settler",
+   "area": "north",
+   "town": "Salem",
+   "cuisine": "Mediterranean",
+   "status": "try",
+   "note": "Small Salem restaurant with a Mediterranean-leaning menu.",
+   "good": [
+    "Date night"
+   ],
+   "reserve": "https://www.opentable.com/r/settler-salem"
+  },
+  {
+   "name": "Ledger",
+   "area": "north",
+   "town": "Salem",
+   "cuisine": "New England",
+   "status": "try",
+   "note": "Modern New England cooking in a 19th-century bank building.",
+   "good": [
+    "Groups"
+   ]
+  },
+  {
+   "name": "Sea Level Oyster Bar",
+   "area": "north",
+   "town": "Salem",
+   "cuisine": "Seafood",
+   "status": "try",
+   "note": "Raw bar and harbor views on Pickering Wharf.",
+   "good": [
+    "Waterfront",
+    "Outdoor seating"
+   ]
+  },
+  {
+   "name": "Elia Taverna",
+   "area": "north",
+   "town": "Marblehead",
+   "cuisine": "Greek",
+   "status": "try",
+   "note": "A Greek taverna in Marblehead and one of the best-reviewed tables in town.",
+   "good": [
+    "Date night"
+   ],
+   "reserve": "https://www.opentable.com/r/elia-taverna-marblehead"
+  },
+  {
+   "name": "The Landing",
+   "area": "north",
+   "town": "Marblehead",
+   "cuisine": "American & seafood",
+   "status": "try",
+   "note": "Right on Marblehead Harbor, with a deck over the water.",
+   "good": [
+    "Waterfront",
+    "Outdoor seating"
+   ]
+  },
+  {
+   "name": "Daniella's Ristorante",
+   "area": "north",
+   "town": "Peabody",
+   "cuisine": "Italian",
+   "status": "try",
+   "note": "Reliable Peabody Italian just off Route 1.",
+   "good": [
+    "Groups"
+   ]
+  }
+ ]
+}
