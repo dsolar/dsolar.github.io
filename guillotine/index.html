@@ -80,6 +80,10 @@ h2{font:700 1.6rem/1.1 var(--f-display);font-variation-settings:"opsz" 48;margin
 .lede{font-size:1.1rem;line-height:1.5;margin:1rem 0 0;max-width:36rem;text-wrap:pretty}
 .lede b{font-weight:700}
 .updated{margin:.75rem 0 0;color:var(--muted);font-size:.8rem}
+.live-tag{display:inline-flex;align-items:center;gap:.35rem;color:var(--blade);font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:.72rem}
+.live-tag::before{content:"";width:.5rem;height:.5rem;border-radius:50%;background:var(--blade);animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.live-tag::before{animation:none}}
 
 .figures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-block:1px solid var(--rule);margin-top:1.5rem}
 .fig{padding:.9rem .75rem .8rem 0;display:grid;gap:.15rem;align-content:start}
@@ -244,6 +248,14 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
 .st.q{color:var(--bubble)} .st.o{color:var(--danger)} .st.go{color:var(--safe)}
 .dlg-note{margin:0;color:var(--muted);font-size:.72rem;line-height:1.45}
 
+.how{border-top:1px solid var(--rule);padding-top:.9rem}
+.how summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:.5rem;font-weight:600;font-size:.9rem;color:var(--muted)}
+.how summary::-webkit-details-marker{display:none}
+.how summary::after{content:"";width:.4rem;height:.4rem;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg)}
+.how[open] summary::after{transform:translateY(1px) rotate(-135deg)}
+.how summary:hover{color:var(--ink)}
+.how summary:focus-visible{outline:2px solid var(--blade);outline-offset:3px;border-radius:2px}
+.how .method{margin-top:1rem}
 .method{display:grid;gap:.75rem;max-width:38rem;font-size:.92rem}
 .method p{margin:0}
 .foot{color:var(--muted);font-size:.78rem;border-top:1px solid var(--rule);padding-top:1rem}
@@ -268,7 +280,6 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
   <a href="#season" data-sec="season">Season</a>
   <a href="#spot" data-sec="spot" id="jump-spot">Thursday</a>
   <a href="#fallen-sec" data-sec="fallen-sec">Fallen</a>
-  <a href="#how" data-sec="how">How it works</a>
 </div></nav>
 
 <main class="wrap" id="app">
@@ -347,11 +358,11 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
     <p class="none" id="fallen-none" hidden></p>
   </section>
 
-  <section id="how" aria-labelledby="method-title">
-    <div class="section-head"><h2 id="method-title">How the odds work</h2></div>
+  <details class="how" id="how">
+    <summary>How the odds work</summary>
     <div class="method" id="method">
       <p><b>This week</b>, each team's expected score is its Yahoo projection. A team with no lineup set gets its best possible lineup instead, built from player projections. Failing both, it gets its average.</p>
-      <p><b>As games finish</b>, each starter's projection is swapped for what he actually scored, and only the points still to be played can swing.</p>
+      <p><b>During games</b>, the page checks live scoring every minute. Each starter's points so far are banked, his projection is cut to the share of his game still to play, and the odds are rerun. Only points still to be played can swing, so the cut odds firm up as the week goes on.</p>
       <p><b>Later weeks</b> blend each team's <span id="m-avg">average over its last three weeks</span> with what its current roster projects to, then pull that a quarter of the way toward the league average. Rosters keep changing as cut teams' players go to waivers, so nobody's current form lasts all season.</p>
       <p id="m-check"></p>
       <p><b>The range of outcomes.</b> A projection is a midpoint, not a promise. Weekly scores swing about 22% either way, so a team projected 120 lands between about 86 and 154 in 8 of 10 weeks, and under 86 one week in ten. That's why a 10-point edge isn't safety: a team projected 110 outscores one projected 120 about 4 times in 10.</p>
@@ -360,7 +371,7 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
       <p><b>Cut-risk colors</b> compare each team with the average risk this week (one in however many teams are left). <b>Danger</b> is at least twice the average, <b>Bubble</b> is above average, and <b>Safe</b> is below it.</p>
       <p><b>Money left</b> buys the players that cut teams drop. From next week on, each team gets a boost or penalty based on its budget against the average still alive: twice the average is worth about 8 points a week, an empty wallet about 8 fewer, phased in over three weeks as the money gets spent. It never touches this week's odds.</p>
     </div>
-  </section>
+  </details>
 
   <p class="foot">Built by David Solar. League data from Yahoo Fantasy, player projections from Sleeper.</p>
 </main>
@@ -377,7 +388,7 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
   </div>
 </dialog>
 
-<script src="sim.js?v=4"></script>
+<script src="sim.js?v=5"></script>
 <script>
 (function () {
   "use strict";
@@ -433,7 +444,10 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
     if ((data.teams || []).some(function (t) { return !t.out && typeof t.avg === "number"; })) $("m-avg").textContent = "season scoring average";
 
     var upd = data.updated ? "Updated " + etTime(data.updated) : "";
-    $("updated").innerHTML = esc(upd) + (data.league_url ? (upd ? " · " : "") + '<a href="' + esc(data.league_url) + '" target="_blank" rel="noopener">League on Yahoo</a>' : "");
+    var lv = data.live;
+    var liveHtml = lv ? (lv.inProgress ? '<span class="live-tag">Live</span> ' + esc(lv.inProgress + " game" + (lv.inProgress > 1 ? "s" : "") + " on · scores as of " + etTime(lv.fetched)) :
+      lv.anyStarted ? esc("Results as of " + etTime(lv.fetched)) : "") : "";
+    $("updated").innerHTML = (liveHtml ? liveHtml + " · " : "") + esc(upd) + (data.league_url ? (upd ? " · " : "") + '<a href="' + esc(data.league_url) + '" target="_blank" rel="noopener">League on Yahoo</a>' : "");
 
     if (n < 2) {
       $("lede").textContent = n === 1 ? teams[0].name + " is the last team standing." : "No teams in the data yet.";
@@ -570,10 +584,11 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
       var st = startersOf(t);
       t.roster.forEach(function (p) { if (!p.empty) rows.push({ p: p, t: t, starting: st.indexOf(p) >= 0 }); });
     });
-    var final = rows.filter(function (x) { return x.p.final && x.starting; });
+    var final = rows.filter(function (x) { return (x.p.final || x.p.live) && x.starting; });
     if (pre && final.length) {
-      $("spot-title").textContent = "Since kickoff";
-      $("spot-sub").textContent = "Cut odds before the first game of Week " + r.week + " and now, with finished games' points banked.";
+      var inProg = data.live && data.live.inProgress;
+      $("spot-title").textContent = inProg ? "Live: how the odds are moving" : "Since kickoff";
+      $("spot-sub").textContent = "Cut odds before the first game of Week " + r.week + " and now, with points scored so far banked" + (inProg ? ". Updates every minute while games are on." : ".");
       var before = {};
       pre.teams.forEach(function (t) { before[t.name] = t.pChop; });
       var moves = r.teams.slice().sort(function (a, b) { return Math.abs(b.pChop - before[b.name]) - Math.abs(a.pChop - before[a.name]); });
@@ -585,9 +600,9 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
         }).join("") + "</tbody></table></div>";
       final.sort(function (a, b) { return Math.abs((b.p.actual || 0) - (b.p.proj || 0)) - Math.abs((a.p.actual || 0) - (a.p.proj || 0)); });
       var list = '<ul class="plist">' + final.slice(0, 8).map(function (x) {
-        var diff = (x.p.actual || 0) - (x.p.proj || 0);
-        return '<li><span class="pn">' + esc(x.p.name) + '</span><span class="pv ' + (diff >= 0 ? "up" : "down") + '">' + (x.p.actual || 0).toFixed(1) +
-          "<small>proj " + (x.p.proj || 0).toFixed(1) + '</small></span><span class="pt">' + esc(x.p.pos + " · " + x.p.nfl) + " · " + teamLabel(x.t.name) + "</span></li>";
+        var diff = (x.p.actual || 0) - (x.p.proj || 0) * (x.p.live ? x.p.frac || 0 : 1);
+        return '<li><span class="pn">' + esc(x.p.name) + (x.p.live ? ' <span class="st q">LIVE</span>' : "") + '</span><span class="pv ' + (diff >= 0 ? "up" : "down") + '">' + (x.p.actual || 0).toFixed(1) +
+          "<small>" + (x.p.live ? esc(x.p.clock || "") + " · " : "") + "proj " + (x.p.proj || 0).toFixed(1) + '</small></span><span class="pt">' + esc(x.p.pos + " · " + x.p.nfl) + " · " + teamLabel(x.t.name) + "</span></li>";
       }).join("") + "</ul>";
       $("spot-body").innerHTML = tbl + '<p class="sub" style="margin:.9rem 0 .2rem">Biggest swings among starters</p>' + list;
       $("spot").hidden = false;
@@ -675,14 +690,16 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
     var st = p.status ? '<span class="st ' + (p.status === "Q" ? "q" : "o") + '">' + esc(p.status) + "</span>" : "";
     var start = !isStarter && p.in_best ? '<span class="st go">Start</span>' : "";
     var where = p.bye ? p.nfl + " · Bye" : [p.nfl + (p.opp ? " " + p.opp : ""), p.game].filter(Boolean).join(" · ");
-    var proj = p.bye ? "Bye" : p.final ? "<b>" + (p.actual || 0).toFixed(1) + "</b>" : typeof p.proj === "number" ? p.proj.toFixed(1) : "–";
+    var proj = p.bye ? "Bye" : (p.final || p.live) ? "<b>" + (p.actual || 0).toFixed(1) + "</b>" : typeof p.proj === "number" ? p.proj.toFixed(1) : "–";
     var bad = isStarter && (p.bye || p.status === "O" || /^IR|^PUP|^NA|^SUSP/.test(p.status || ""));
     return '<tr' + (bad ? ' class="bad"' : "") + '><td class="slot">' + esc(p.slot) + "</td>" +
       '<td class="pl"><b>' + esc(p.name) + "</b>" + st + start + "<small>" + esc(p.pos + " · " + where) + "</small></td>" +
-      '<td class="num">' + proj + '</td><td class="num">' + (p.final ? "final" : esc(p.rank || "")) + "</td></tr>";
+      '<td class="num">' + proj + '</td><td class="num">' + (p.final ? "final" : p.live ? '<span class="st q">LIVE</span>' : esc(p.rank || "")) + "</td></tr>";
   }
 
+  var openName = null;
   function openTeam(name) {
+    openName = name;
     var t = state.raw[name];
     if (!t) return;
     var simT = (state.sim.teams || []).filter(function (s) { return s.name === name; })[0];
@@ -735,10 +752,14 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
   });
   $("dlg-close").addEventListener("click", function () { $("team-dlg").close(); });
 
+  function updateJumpLabels() {
+    Array.prototype.forEach.call(document.querySelectorAll("#jump a"), function (a) { var sec = $(a.getAttribute("data-sec")); a.hidden = !sec || sec.hidden; });
+    var t = $("spot-title").textContent;
+    $("jump-spot").textContent = /^Live/.test(t) ? "Live" : t === "Since kickoff" ? "Since kickoff" : "Thursday";
+  }
   function wireJump() {
     var links = Array.prototype.slice.call(document.querySelectorAll("#jump a"));
-    links.forEach(function (a) { var sec = $(a.getAttribute("data-sec")); a.hidden = !sec || sec.hidden; });
-    $("jump-spot").textContent = $("spot-title").textContent === "Since kickoff" ? "Since kickoff" : "Thursday";
+    updateJumpLabels();
     if (!("IntersectionObserver" in window)) return;
     var seen = {};
     var io = new IntersectionObserver(function (entries) {
@@ -757,8 +778,124 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
   var getJSON = function (url) {
     return fetch(url, { cache: "no-store" }).then(function (res) { if (!res.ok) throw new Error(res.status); return res.json(); });
   };
+
+  // ---- Live scoring: banked points, the share of each game left, odds rerun every minute
+  var SCORING = { pass_yd: 0.04, pass_td: 4, pass_int: -1, pass_2pt: 2, rush_yd: 0.1, rush_td: 6, rush_2pt: 2,
+    rec: 0.5, rec_yd: 0.1, rec_td: 6, rec_2pt: 2, fum_lost: -2 };
+  var SUFFIX = { jr: 1, sr: 1, ii: 1, iii: 1, iv: 1, v: 1 };
+  var norm = function (name) {
+    return name.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[.'’`-]/g, "")
+      .split(/\s+/).filter(function (w) { return w && !SUFFIX[w]; }).join(" ");
+  };
+  var BASE = null, LEAGUE = {}, liveTimer = null;
+
+  function score(s) {
+    var total = 0, any = false;
+    for (var k in SCORING) if (k in s) { any = true; total += (s[k] || 0) * SCORING[k]; }
+    return !any && typeof s.pts_half_ppr === "number" ? s.pts_half_ppr : Math.round(total * 100) / 100;
+  }
+  function fraction(st) {
+    var state = (st.type || {}).state;
+    if (state === "post") return 1;
+    if (state !== "in") return 0;
+    var p = st.period || 1, left = typeof st.clock === "number" ? st.clock : 900;
+    return p > 4 ? 0.98 : Math.min(1, ((p - 1) * 900 + (900 - left)) / 3600);
+  }
+  // The same answer the relay gives, built in the browser (used only if the relay isn't set up).
+  function liveDirect(data) {
+    var q = "?season_type=regular&position%5B%5D=QB&position%5B%5D=RB&position%5B%5D=WR&position%5B%5D=TE";
+    return Promise.all([
+      getJSON("https://api.sleeper.com/stats/nfl/" + data.season + "/" + data.week + q),
+      getJSON("https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=" + data.season + "&seasontype=2&week=" + data.week)
+    ]).then(function (res) {
+      var want = {};
+      (data.teams || []).forEach(function (t) { (t.roster || []).forEach(function (p) { if (p.name) want[norm(p.name) + "|" + p.pos] = p.nfl; }); });
+      var pts = {};
+      (res[0] || []).forEach(function (e) {
+        var pl = e.player || {}, key = norm((pl.first_name || "") + " " + (pl.last_name || "")) + "|" + pl.position;
+        if (!(key in want)) return;
+        var team = (e.team || pl.team || "").toUpperCase();
+        if (pts[key] && pts[key].team === want[key] && team !== want[key]) return;
+        var s = e.stats || {};
+        pts[key] = { pts: score(s), gp: !!s.gp, team: team };
+      });
+      var games = {};
+      ((res[1] || {}).events || []).forEach(function (ev) {
+        var st = ev.status || {}, comp = (ev.competitions || [])[0] || {};
+        var g = { state: (st.type || {}).state || "pre", frac: fraction(st), period: st.period || 0, clock: st.displayClock || "", start: ev.date };
+        (comp.competitors || []).forEach(function (c) { var a = ((c.team || {}).abbreviation || "").toUpperCase(); games[a === "WSH" ? "WAS" : a] = g; });
+      });
+      return { season: data.season, week: data.week, fetched: new Date().toISOString(), games: games, pts: pts };
+    });
+  }
+  function getLive(data) {
+    var relay = LEAGUE.live_url;
+    var direct = function () { return liveDirect(data); };
+    return relay ? getJSON(relay).then(function (b) { if (b.error || !b.games) throw new Error(b.error); return b; }).catch(direct) : direct();
+  }
+  // Overlay live scoring on the pasted data: points so far are banked, and each starter's
+  // projection counts only for the share of his game already played.
+  function applyLive(data, live) {
+    var d = JSON.parse(JSON.stringify(data));
+    if (!live || live.week !== d.week || !live.games) return d;
+    var inProgress = {}, anyStarted = false;
+    Object.keys(live.games).forEach(function (k) {
+      var g = live.games[k];
+      if (g.state === "in") inProgress[g.start + g.period + k] = 1;
+      if (g.state !== "pre") anyStarted = true;
+    });
+    var games = 0;
+    Object.keys(live.games).forEach(function (k) { if (live.games[k].state === "in") games++; });
+    d.teams.forEach(function (t) {
+      if (t.out || !t.roster) return;
+      t.roster.forEach(function (p) {
+        if (p.empty || p.bye) return;
+        var g = live.games[p.nfl], s = live.pts[norm(p.name) + "|" + p.pos];
+        delete p.final; delete p.live; delete p.actual; delete p.frac;
+        if (!g || g.state === "pre") return;
+        p.actual = s ? s.pts : 0;
+        if (g.state === "post") p.final = true; else { p.live = true; p.frac = g.frac; p.clock = (g.period > 4 ? "OT" : "Q" + g.period) + " " + g.clock; }
+      });
+      var st = startersOf(t), locked = 0, lockedProj = 0, n = 0;
+      st.forEach(function (p) {
+        if (!p.final && !p.live) return;
+        locked += p.actual || 0;
+        lockedProj += (p.proj || 0) * (p.final ? 1 : p.frac || 0);
+        n++;
+      });
+      t.locked = Math.round(locked * 100) / 100;
+      t.locked_proj = Math.round(lockedProj * 100) / 100;
+      t.games_final = n;
+    });
+    d.live = { fetched: live.fetched, inProgress: Math.round(games / 2), anyStarted: anyStarted };
+    return d;
+  }
+  function refreshLive() {
+    clearTimeout(liveTimer);
+    if (!BASE || document.visibilityState === "hidden") return;
+    getLive(BASE).then(function (live) {
+      var d = applyLive(BASE, live);
+      if (d.live) {
+        render(d, LEAGUE);
+        updateJumpLabels();
+        if (openName && $("team-dlg").open) openTeam(openName);
+      }
+      // Every minute while a game is on; every 10 minutes when one starts within 3 hours; otherwise stop.
+      var soon = Object.keys(live.games || {}).some(function (k) {
+        var g = live.games[k], t = Date.parse(g.start);
+        return g.state === "pre" && t - Date.now() < 3 * 3600e3 && t - Date.now() > -3600e3;
+      });
+      var on = d.live && d.live.inProgress;
+      if (on || soon) liveTimer = setTimeout(refreshLive, on ? 60e3 : 600e3);
+    }).catch(function () { /* no live feed reachable: the page keeps its last numbers */ });
+  }
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") refreshLive(); });
+
   Promise.all([getJSON("data.json"), getJSON("league.json").catch(function () { return {}; })])
-    .then(function (both) { setTimeout(function () { render(both[0], both[1]); wireJump(); }, 0); })
+    .then(function (both) {
+      BASE = both[0]; LEAGUE = both[1] || {};
+      setTimeout(function () { render(BASE, LEAGUE); wireJump(); refreshLive(); }, 0);
+    })
     .catch(function () {
       $("lede").textContent = "The league data didn't load. Refresh to try again.";
     });

@@ -1,5 +1,6 @@
 {
-  "_about": "Hand-kept details the Yahoo pull doesn't provide. Keyed by team name as it appears in Yahoo. history_2025: each 2025 elimination with the cut team's season points at that point (not a weekly score). Never put email addresses here: this file is public.",
+  "_about": "Hand-kept details the Yahoo pull doesn't provide. Keyed by team name as it appears in Yahoo. history_2025: each 2025 elimination with the cut team's season points at that point (not a weekly score). Never put email addresses here: this file is public. live_url: the live relay (tools/live-relay.js), once set up.",
+  "live_url": "https://live.davidsolar.dev/",
   "managers": {
     "23 Richard": "Gabriel",
     "Beast Mode Samuel": "Samuel",
