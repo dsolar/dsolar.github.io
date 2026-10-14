@@ -1,0 +1,464 @@
+OKC|Jalen Williams|25|41.5|44.8|48.1|51.5|
+OKC|Chet Holmgren|24|41.5|44.8|48.1|51.5|
+OKC|Shai Gilgeous-Alexander|28|40.8|61.0|65.9|70.8|
+OKC|Isaiah Hartenstein|28|23.1|25.0|26.9||2028-29 ng
+OKC|Alex Caruso|32|19.6|21.0|22.4||
+OKC|Jaylin Williams|24|7.8|7.8|||
+OKC|Cason Wallace|22|7.4||||
+OKC|Aday Mara|21|5.8|6.1|6.4|8.8|
+OKC|Nikola Topic|21|5.4|7.5|||
+OKC|Kenrich Williams|31|5.0||||
+OKC|Thomas Sorber|20|4.9|5.1|7.8||
+OKC|Bennett Stirtz|23|4.7|5.0|5.2|8.0|
+OKC|Jared McCain|22|4.4|6.8|||
+OKC|Ajay Mitchell|24|2.9|2.9|||2026-27 ng
+OKC|Christoph Tilly|23|1.4||||2026-27 ng
+ATL|Jalen Johnson|24|30.0|30.0|30.0|30.0|
+ATL|Dyson Daniels|23|25.0|25.0|25.0|25.0|
+ATL|CJ McCollum|35|21.0||||
+ATL|Luguentz Dort|27|18.2||||
+ATL|Onyeka Okongwu|25|16.1|16.9|||
+ATL|Nickeil Alexander-Walker|28|14.4|15.2|15.9||
+ATL|Jock Landale|30|14.1||||
+ATL|Corey Kispert|27|14.0|13.1|13.1||
+ATL|Dorian Finney-Smith|33|13.3|13.3|13.3||
+ATL|Aaron Wiggins|27|9.2|8.3|8.3||
+ATL|Kingston Flemings|19|7.3|7.7|8.1|10.3|
+ATL|Zuby Ejiofor|22|3.5|3.6|3.8|6.4|
+ATL|Asa Newell|21|3.4|3.6|6.0||
+ATL|Mouhamed Gueye|23|2.4||||
+ATL|Henri Veesaar|22|1.4|2.3|2.7|2.9|2028-29 ng
+BOS|Jayson Tatum|28|58.5|62.8|67.1|71.4|
+BOS|Paul George|36|54.1|56.6|||
+BOS|Derrick White|32|30.3|32.6|34.8||
+BOS|Mitchell Robinson|28|15.0|15.8|16.5||
+BOS|Sam Hauser|28|10.8|11.7|12.5||
+BOS|Payton Pritchard|28|7.8|8.3|||
+BOS|Ron Harper Jr.|26|3.2|3.3|3.5|3.8|2028-29 ng
+BOS|Chris Cenac Jr.|19|3.0|3.1|3.3|5.9|
+BOS|Hugo Gonzalez|20|2.9|3.1|5.5||
+BOS|Luka Garza|27|2.8||||
+BOS|Baylor Scheierman|26|2.7|5.0|||
+BOS|Neemias Queta|27|2.7|12.5|13.5|14.5|
+BOS|Mike Conley|39|2.4||||
+BOS|Jordan Walsh|22|2.4|4.6|5.0|5.4|
+BOS|Tucker DeVries|23|1.4||||2026-27 ng
+BOS|Milos Uzan|23|1.4||||2026-27 ng
+BRK|Michael Porter Jr.|28|40.8||||2026-27 ng
+BRK|Julius Randle|31|33.3|35.8|||
+BRK|Terance Mann|29|15.5|16.0|||
+BRK|Day'Ron Sharpe|24|10.0|10.0|||
+BRK|Moritz Wagner|29|9.3|9.7|||2027-28 ng
+BRK|Mikel Brown Jr.|20|8.8|9.2|9.7|12.3|
+BRK|Keon Ellis|26|8.8|9.2|||2027-28 ng
+BRK|Egor Demin|20|7.2|7.6|9.6||
+BRK|Noah Clowney|22|5.4||||
+BRK|Josh Minott|23|4.5|4.5|||
+BRK|Nolan Traore|20|4.0|4.2|6.5||
+BRK|Drake Powell|21|3.5|3.7|6.1||
+BRK|Ben Saraf|20|3.0|3.2|5.7||
+BRK|Joshua Jefferson|22|3.0|3.1|3.3|5.9|
+BRK|Danny Wolf|22|2.9|3.1|5.6||
+CHO|Naz Reid|27|23.3|25.0|26.7|28.4|
+CHO|Coby White|26|22.8|24.7|26.5||
+CHO|Grayson Allen|31|18.1|19.4|||
+CHO|Brandon Miller|23|15.1||||
+CHO|Dennis Schroder|33|14.8|15.5|||2027-28 ng
+CHO|Grant Williams|27|14.3||||
+CHO|Royce O'Neale|33|10.9|11.6|||
+CHO|Kon Knueppel|21|10.5|11.0|13.9||
+CHO|Tidjane Salaun|21|8.2|10.4|||
+CHO|Hannes Steinbach|20|5.2|5.5|5.8|8.5|
+CHO|Christian Anderson Jr.|20|4.3|4.5|4.7|7.2|
+CHO|Pat Connaughton|33|3.8||||
+CHO|Liam McNeeley|21|2.9|3.0|5.5||
+CHO|Moussa Diabate|24|2.5||||2026-27 ng
+CHO|Sion James|23|2.4|2.5|2.7||2027-28 ng
+CHO|Ryan Kalkbrenner|24|2.4|2.5|2.7||2027-28 ng
+CHO|Rob Dillingham|21|6.9||||2026-27 ng
+CHO|Ryan Nembhard|23|2.2||||2026-27 ng
+CHI|Josh Giddey|24|25.0|25.0|25.0||
+CHI|Nic Claxton|27|23.1|20.9|||
+CHI|Norman Powell|33|21.5|22.6|||
+CHI|Patrick Williams|25|18.0|18.0|18.0||
+CHI|Isaac Okoro|25|11.8||||
+CHI|Caleb Wilson|20|10.7|11.2|11.8|14.9|
+CHI|Buddy Hield|33|9.7|10.1|||
+CHI|Jalen Smith|26|9.4||||
+CHI|Zach Collins|28|8.3|8.7|||
+CHI|Tre Jones|26|8.0|8.0|||
+CHI|Matas Buzelis|22|5.7|7.6|||
+CHI|Noa Essengue|19|5.7|6.0|8.2||
+CHI|Dailyn Swain|21|5.0|5.2|5.5|8.4|
+CHI|Leonard Miller|22|2.4||||
+CLE|Evan Mobley|25|50.1|53.8|57.5|61.2|
+CLE|Donovan Mitchell|30|50.1|60.9|65.8|70.7|
+CLE|James Harden|37|30.6|32.2|33.7||
+CLE|Jarrett Allen|28|28.0|30.2|32.5||
+CLE|Peyton Watson|24|20.5|21.5|22.5|23.5|
+CLE|Sam Merrill|30|9.2|9.8|10.5||
+CLE|Jaylon Tyson|23|3.7|5.6|||
+CLE|Thomas Bryant|29|2.4||||
+CLE|Mario Hezonja|31|2.4||||
+CLE|Nae'Qwan Tomlin|25|2.4||||
+CLE|Craig Porter Jr.|26|2.4||||
+CLE|Tyrese Proctor|22|2.2|2.5|2.7||2027-28 ng
+CLE|Khalifa Diop|24|1.4|2.3|2.7|2.9|2027-28 ng
+CLE|Meleek Thomas|20|1.4|2.3|2.7|2.9|
+DAL|Kyrie Irving|34|39.5|42.4|||
+DAL|P.J. Washington|28|19.8|21.4|23.0|24.6|
+DAL|Daniel Gafford|28|17.3|18.1|19.0||
+DAL|Santi Aldama|25|17.0|17.0|||
+DAL|Cooper Flagg|19|14.5|15.2|19.2||
+DAL|Zaccharie Risacher|21|13.8|17.4|||
+DAL|Caleb Martin|31|10.0|9.4|||
+DAL|Naji Marshall|28|9.4|18.2|17.3|16.4|
+DAL|Max Christie|23|8.3|8.9|||
+DAL|Dereck Lively II|22|7.2||||
+DAL|Morez Johnson Jr.|20|6.8|7.1|7.4|9.5|
+DAL|Marcus Sasser|26|5.2||||
+DAL|Sergio de Larrea|20|3.2|3.3|3.5|6.3|
+DAL|Tarik Biberovic|25|3.0|3.0|||
+DAL|Moussa Cisse|24|2.2|2.6|||2027-28 ng
+DEN|Nikola Jokic|31|59.0|62.8|||
+DEN|Jamal Murray|29|50.1|53.8|57.5||
+DEN|Aaron Gordon|31|33.7|36.4|39.0||
+DEN|Cameron Johnson|30|23.1||||
+DEN|Christian Braun|25|21.6|23.3|25.0|26.7|
+DEN|Zeke Nnaji|25|7.5|7.5|||
+DEN|Spencer Jones|25|6.0|5.8|||
+DEN|Julian Strawther|24|4.8||||
+DEN|DaRon Holmes II|24|3.4|5.5|||
+DEN|Lonnie Walker IV|27|3.3||||2026-27 ng
+DEN|DeMar DeRozan|37|2.4||||
+DEN|Tyus Jones|30|2.4||||
+DEN|Marvin Bagley III|27|2.4||||
+DEN|Trevon Brazile|23|1.4||||
+DET|Cade Cunningham||50.1|53.8|57.5|61.2|
+DET|Jalen Duren||40.2|36.9|39.0|41.0|
+DET|John Collins||17.0|17.0|17.0||2027-28 ng
+DET|Duncan Robinson||16.0|15.2|||2027-28 ng
+DET|Isaiah Joe||11.3|11.3|||
+DET|Ausar Thompson||11.1|26.7|28.9|31.0|
+DET|Ron Holland||9.1|11.5|||
+DET|Kevin Huerter||8.3|9.0|9.7||
+DET|Paul Reed||5.6||||2026-27 ng
+DET|Ebuka Okorie||4.5|4.7|4.9|7.6|
+DET|Daniss Jenkins||4.0||||
+DET|Javonte Green||3.9||||
+DET|Taurean Prince||3.8||||
+DET|Tolu Smith||2.4||||
+DET|Chaz Lanier||2.2|2.5|2.7||2027-28 ng
+GSW|Stephen Curry|38|62.6|55.7|60.2||
+GSW|Jimmy Butler|37|56.8||||
+GSW|Draymond Green|36|27.7||||
+GSW|Kristaps Porzingis|31|19.5|20.5|||
+GSW|Moses Moody|24|12.5|13.4|||
+GSW|Al Horford|40|6.8|7.2|||
+GSW|Yaxel Lendeborg|24|6.1|6.4|6.7|8.9|
+GSW|Brandin Podziemski|23|5.7|19.0|20.5|22.0|
+GSW|De'Anthony Melton|28|5.5|5.8|||
+GSW|Gui Santos|24|4.6|5.0|5.4||
+GSW|Brandon Williams|26|2.4||||2026-27 ng
+GSW|Charles Bassey|25|2.4||||
+GSW|Gary Payton II|33|2.4||||
+GSW|Georges Niang|33|2.4||||2026-27 ng
+GSW|Alex Toohey|22|2.2||||2026-27 ng
+GSW|Will Richard|23|2.2|2.5|2.7||2027-28 ng
+GSW|Dalen Terry|24|1.4||||2026-27 ng
+HOU|Kevin Durant|38|43.9|46.1|||
+HOU|Alperen Sengun|24|35.6|37.3|39.0|39.0|
+HOU|Fred VanVleet|32|25.0||||
+HOU|Jabari Smith Jr.|23|23.6|21.8|23.6|25.5|
+HOU|Tari Eason|25|14.1|15.2|16.3|17.4|
+HOU|Steven Adams|33|13.0|11.9|||
+HOU|Amen Thompson|23|12.3|35.9|38.7|41.6|
+HOU|Reed Sheppard|22|11.1|14.0|||
+HOU|Clint Capela|32|7.0|7.4|||
+HOU|Marcus Smart|32|6.1|6.4|||
+HOU|Julian Phillips|22|2.5||||
+HOU|Oscar Tshiebwe|26|2.5||||
+HOU|Isaiah Crawford|24|2.4|2.7|||
+HOU|Bogdan Bogdanovic|34|2.4||||
+HOU|Jae'Sean Tate|30|2.4||||
+HOU|Bruce Thornton|23|1.4|2.3|2.7|2.9|2027-28 ng
+IND|Tyrese Haliburton|26|48.9|52.3|55.7||
+IND|Pascal Siakam|32|48.9|52.3|||
+IND|Ivica Zubac|29|20.3|21.8|||
+IND|Andrew Nembhard|26|19.6|21.0|||
+IND|Obi Toppin|28|15.0|16.0|||
+IND|T.J. McConnell|34|11.0|11.8|11.8||
+IND|Aaron Nesmith|26|11.0|19.4|21.0||
+IND|Jarace Walker|23|8.5||||
+IND|Kelly Oubre Jr.|30|8.1|8.5|||
+IND|Ben Sheppard|25|5.0||||
+IND|Jay Huff|28|2.7|3.0|||2027-28 ng
+IND|Larry Nance Jr.|33|2.4||||
+IND|Johnny Furphy|21|2.3|2.5|||
+IND|Keba Keita|23|1.4||||2026-27 ng
+IND|Rienk Mast|25|1.4||||2026-27 ng
+LAC|Darius Garland|26|42.2|44.9|||
+LAC|Brandon Ingram|29|40.0|41.9|||
+LAC|Max Strus|30|16.7||||
+LAC|Rui Hachimura|28|14.0|14.0|||
+LAC|Derrick Jones Jr.|29|10.5||||
+LAC|Keaton Wagler|19|9.7|10.2|10.6|13.5|
+LAC|Brook Lopez|38|9.2||||
+LAC|Gradey Dick|22|7.1||||
+LAC|Isaiah Jackson|24|7.0|6.4|||
+LAC|Bradley Beal|33|6.4|6.7|||
+LAC|Nicolas Batum|37|5.9||||
+LAC|Kris Dunn|32|5.7||||2026-27 ng
+LAC|Jordan Miller|26|5.3|5.0|5.0||2027-28 ng
+LAC|Yanic Konan Niederhauser|23|2.9|3.0|5.4||
+LAC|Kobe Sanders|24|2.6|2.8|2.9|3.0|2028-29 ng
+LAC|Yuki Kawamura|25|2.4||||2026-27 ng
+LAC|Cam Christie|21|2.3|2.5|||2026-27 ng
+LAC|Baba Miller|22|1.7|2.3|2.7|2.9|2028-29 ng
+LAL|Luka Doncic|27|49.8|53.8|57.8||
+LAL|Austin Reaves|28|41.2|44.5|47.8|51.1|
+LAL|Walker Kessler|25|30.2|31.7|33.3|34.8|
+LAL|Quentin Grimes|26|14.0|14.7|15.3|16.0|
+LAL|Sandro Mamukelashvili|27|13.0|12.4|13.0|13.7|
+LAL|Jarred Vanderbilt|27|12.4|13.3|||
+LAL|Collin Sexton|27|9.4|9.8|||
+LAL|Jake LaRavia|24|6.0||||
+LAL|Jaden Hardy|24|6.0|6.0|||
+LAL|Dalton Knecht|25|4.2|6.5|||
+LAL|Cameron Carr|21|3.3|3.5|3.6|6.4|
+LAL|Ziaire Williams|25|2.4||||
+LAL|Kevon Looney|30|2.4||||
+LAL|Matisse Thybulle|29|2.4||||
+LAL|Bronny James|22|2.3|2.5|||2026-27 ng
+LAL|Adou Thiero|22|2.2|2.5|||
+MEM|Jerami Grant|32|34.2|36.4|||
+MEM|Isaiah Stewart|25|15.0|15.0|||
+MEM|Cameron Boozer|19|11.8|12.4|13.0|16.5|
+MEM|Ty Jerome|29|9.2|9.7|||
+MEM|Quinten Post|26|8.3|8.7|9.1||2027-28 ng
+MEM|Taylor Hendricks|22|7.8||||
+MEM|Zach Edey|24|6.3|8.1|||
+MEM|Cedric Coward|23|6.0|6.3|8.3||
+MEM|Kris Murray|26|5.3||||
+MEM|Walter Clayton|23|4.2|4.4|6.8||
+MEM|Karim Lopez|19|3.7|3.9|4.1|6.6|
+MEM|Scotty Pippen Jr.|25|2.5|2.8|||2027-28 ng
+MEM|Cam Spencer|26|2.4|2.6|2.8||
+MEM|GG Jackson II|21|2.4||||
+MEM|Jaylen Wells|23|2.3|2.5|||2026-27 ng
+MEM|Micah Peavy|25|2.2|2.5|2.7||2027-28 ng
+MIA|Giannis Antetokounmpo|31|58.5|62.8|||
+MIA|Bam Adebayo|29|49.8|53.8|57.8||
+MIA|Andrew Wiggins|31|30.2|16.3|17.7||
+MIA|Nikola Jovic|23|16.2|14.9|15.1|16.2|
+MIA|Bobby Portis|31|14.5|15.6|||
+MIA|Davion Mitchell|28|12.4||||
+MIA|Tim Hardaway Jr.|34|6.5||||
+MIA|Klay Thompson|36|5.6|5.9|||
+MIA|Dru Smith|28|2.6|2.9|||2026-27 ng
+MIA|Simone Fontecchio|30|2.4||||
+MIA|Nick Richards|28|2.4||||
+MIA|Pelle Larsson|25|2.3|13.4|14.5|15.5|
+MIA|Bez Mbeng|23|2.2||||2026-27 ng
+MIA|Myron Gardner|25|2.2|2.5|||2027-28 ng
+MIA|Ryan Conwell|22|1.4|2.3|2.7||
+MIN|Anthony Edwards|25|48.9|52.3|55.7||
+MIN|LaMelo Ball|25|40.8|43.6|46.4||
+MIN|Rudy Gobert|34|36.5|38.0|||
+MIN|Jaden McDaniels|26|26.2|28.0|29.8||
+MIN|Ayo Dosunmu|26|19.3|20.9|22.4|23.9|
+MIN|Donte DiVincenzo|29|12.5||||
+MIN|Jonathan Kuminga|24|6.1|6.4|||
+MIN|Cody Williams|21|6.0|7.7|||
+MIN|Joan Beringer|19|4.4|4.6|7.1||
+MIN|Jaylen Clark|25|3.1|3.3|3.6||
+MIN|Bones Hyland|26|2.8||||
+MIN|Terrence Shannon Jr.|26|2.8|5.1|||
+MIN|Trey Lyles|30|2.4||||
+MIN|Isaiah Evans|20|1.4|2.3|2.7|2.9|
+MIN|John Konchar|30|2.1|2.1|2.1||ng
+MIL|Tyler Herro|26|33.0||||
+MIL|Myles Turner|30|26.6|27.9|29.1||
+MIL|Kyle Kuzma|31|20.3||||
+MIL|Gary Trent Jr.|27|15.2|16.4|16.4|16.0|
+MIL|Caris LeVert|32|14.8||||
+MIL|A.J. Green|27|10.0|10.8|11.7|12.5|
+MIL|Brayden Burries|21|6.4|6.7|7.1|9.0|
+MIL|Jaime Jaquez Jr.|25|5.9||||
+MIL|Ousmane Dieng|23|5.8|5.8|5.8||
+MIL|Nate Ament|19|5.5|5.8|6.1|8.6|
+MIL|Kevin Porter Jr.|26|5.4||||
+MIL|Kel'el Ware|22|4.7|7.1|||
+MIL|Ryan Rollins|24|4.0|4.0|||
+MIL|Kasparas Jakucionis|20|3.8|4.0|6.2||
+MIL|Jericho Sims|27|2.8||||
+MIL|Pete Nance|26|2.5|2.8|||
+MIL|Bogoljub Markovic|21|1.4|2.3|2.7|2.9|
+NOP|Zion Williamson|26|42.2|44.9|||
+NOP|Jordan Poole|27|34.0||||
+NOP|Dejounte Murray|30|32.8|30.8|||
+NOP|Trey Murphy III|26|27.0|29.0|31.0||
+NOP|Herbert Jones|28|14.9|20.9|22.5|24.2|
+NOP|Jeremiah Fears|19|7.9|8.3|10.5||
+NOP|Bennedict Mathurin|24|7.8|8.2|||
+NOP|Saddiq Bey|27|6.4|17.1|18.5|19.9|
+NOP|Derik Queen|21|5.4|5.7|8.1||
+NOP|DeAndre Jordan|38|3.9|4.1|||
+NOP|Yves Missi|22|3.5|5.6|||
+NOP|AJ Johnson|21|3.2|5.5|||
+NOP|Christian Koloko|26|2.6||||
+NOP|Caleb Houstan|23|2.6||||ng
+NOP|Bryce McGowens|23|2.6|2.9|||
+NOP|Trendon Watford|25|2.4||||ng
+NOP|Kobe Bufkin|23|2.4||||
+NOP|Karlo Matkovic|25|2.3||||
+NYK|Karl-Anthony Towns|30|57.1|61.0|||
+NYK|OG Anunoby|29|42.5|45.4|48.4||
+NYK|Jalen Brunson|30|37.7|40.5|43.3||
+NYK|Mikal Bridges|30|33.5|36.2|38.8|41.5|
+NYK|Josh Hart|31|20.9|22.4|||
+NYK|Landry Shamet|29|5.4|5.8|6.2|6.6|
+NYK|Jose Alvarado|28|4.5|4.9|5.2||
+NYK|Miles McBride|26|4.0||||
+NYK|Pacome Dadiet|21|3.0|5.4|||
+NYK|Jordan Clarkson|34|2.4||||
+NYK|Drew Eubanks|29|2.4||||2026-27 ng
+NYK|Andre Drummond|33|2.4||||
+NYK|Ochai Agbaji|26|2.4||||2026-27 ng
+NYK|Bruce Brown|30|2.4||||2026-27 ng
+NYK|James Wiseman|25|2.4||||2026-27 ng
+NYK|Tyler Kolek|25|2.3|2.5|||
+NYK|Mohamed Diawara|21|2.2|2.4|2.6|2.8|
+ORL|Franz Wagner|25|41.8|44.8|47.9|51.0|
+ORL|Paolo Banchero|23|41.5|44.8|48.1|51.5|
+ORL|Desmond Bane|28|39.4|42.2|44.9||
+ORL|Jalen Suggs|25|32.4|29.6|26.8|26.7|
+ORL|Wendell Carter Jr.|27|18.1|19.6|21.0||
+ORL|Jonathan Isaac|29|10.4||||
+ORL|Anthony Black|22|10.1||||
+ORL|Goga Bitadze|27|7.6||||
+ORL|Tristan Da Silva|25|4.0|6.1|||
+ORL|Jase Richardson|20|3.1|3.3|5.9||
+ORL|JD Davison|24|2.6||||2026-27 ng
+ORL|Jamal Cain|27|2.6||||
+ORL|Malaki Branham|23|2.5||||2026-27 ng
+ORL|Jevon Carter|31|2.4||||
+ORL|Nikola Vucevic|35|2.4||||
+ORL|Noah Penda|21|2.2|2.5|2.7||2027-28 ng
+PHI|Joel Embiid|32|58.1|62.7|67.4||
+PHI|Jaylen Brown|29|57.1|61.0|65.0||
+PHI|Tyrese Maxey|25|40.8|43.6|46.4||
+PHI|VJ Edgecombe|21|11.7|12.2|15.4||
+PHI|Dean Wade|29|9.0|9.5|9.9|10.4|2029-30 ng
+PHI|Anfernee Simons|27|6.0|6.3|||
+PHI|LeBron James|41|3.9|4.1|||
+PHI|Labaron Philon Jr.|20|3.6|3.8|4.0|6.5|
+PHI|Dominick Barlow|23|3.4||||
+PHI|Ariel Hukporti|24|3.4||||
+PHI|Jabari Walker|24|2.6||||2026-27 ng
+PHI|Dillon Jones|24|2.4||||2026-27 ng
+PHI|Kentavious Caldwell-Pope|33|2.4||||
+PHI|Justin Edwards|22|2.4|2.6|||
+PHI|Adem Bona|23|2.3|2.5|||2026-27 ng
+PHO|Devin Booker|29|57.1|61.0|64.1|69.2|
+PHO|Jalen Green|24|36.3|36.0|||
+PHO|Miles Bridges|28|22.8||||
+PHO|Dillon Brooks|30|20.0|22.5|24.3|26.1|
+PHO|Mark Williams|24|11.7|12.7|13.6||
+PHO|Collin Gillespie|27|10.7|11.6|12.4|13.3|
+PHO|Khaman Maluach|20|6.3|6.6|8.4||
+PHO|Luke Kennard|30|6.1|6.4|||
+PHO|Jordan Goodwin|27|5.9|6.3|6.8||
+PHO|Haywood Highsmith|29|3.4||||2026-27 ng
+PHO|Koa Peat|19|2.9|3.1|3.2|5.8|
+PHO|Ryan Dunn|23|2.8|5.0|||
+PHO|Jamaree Bouyea|27|2.6||||
+PHO|Oso Ighodaro|24|2.3|2.5|||2026-27 ng
+PHO|Rasheer Fleming|22|2.2|2.5|2.7||
+POR|Ja Morant|27|42.2|44.9|||
+POR|Jrue Holiday|36|34.8|37.2|||
+POR|Shaedon Sharpe|23|20.1|21.7|23.3|24.9|
+POR|Toumani Camara|26|18.1|19.5|21.0|22.4|
+POR|Robert Williams III|28|14.0|14.7|15.4||2027-28 ng
+POR|Scoot Henderson|22|13.6||||
+POR|Damian Lillard|36|13.4|14.1|||
+POR|Deni Avdija|25|13.1|11.9|||
+POR|Donovan Clingan|22|7.5|9.6|||
+POR|Yang Hansen|21|4.6|4.9|7.5||
+POR|Micah Potter|28|2.8||||
+POR|Vit Krejci|26|2.7|3.0|||2026-27 ng
+POR|Sidy Cissoko|22|2.5||||2026-27 ng
+POR|Jeremy Sochan|23|2.4||||
+POR|Branden Carlson|27|2.4||||
+SAC|Zach LaVine|31|49.0||||
+SAC|Domantas Sabonis|30|45.5|48.6|||
+SAC|De'Andre Hunter|28|24.9||||
+SAC|Keegan Murray|26|24.1|26.1|28.0|29.9|
+SAC|Malik Monk|28|20.2|21.6|||
+SAC|Darius Acuff Jr.|19|8.0|8.4|8.8|11.2|
+SAC|Precious Achiuwa|27|5.5|5.8|||
+SAC|Nique Clifford|24|3.3|3.4|6.0||
+SAC|Alex Karaban|23|2.9|3.1|3.2|5.9|
+SAC|Ben Simmons|30|2.4||||ng
+SAC|Daeqwon Plowden|28|2.4|2.7|||
+SAC|Maxime Raynaud|23|2.2|2.5|||
+SAC|Emanuel Sharp|22|1.4|2.3|2.7||
+SAS|De'Aaron Fox|28|49.8|53.8|57.8|61.8|
+SAS|Devin Vassell|26|27.0|24.7|27.0||
+SAS|Keldon Johnson|27|17.5||||
+SAS|Victor Wembanyama|22|16.9|43.5|47.0|50.5|
+SAS|Tobias Harris|34|15.0|15.8|||
+SAS|Julian Champagnie|25|13.9|15.0|16.1||
+SAS|Dylan Harper|20|13.0|13.6|17.2||
+SAS|Luke Kornet|31|10.5|9.9|9.4||2027-28 ng
+SAS|Stephon Castle|21|10.0|12.7|||
+SAS|Harrison Barnes|34|8.0||||
+SAS|Carter Bryant|20|5.1|5.4|8.0||
+SAS|Jayden Quaintance|19|3.9|4.1|4.3|6.6|
+SAS|Tarris Reed Jr.|23|3.1|3.2|3.4|6.1|
+SAS|Jordan McLaughlin|30|2.4||||
+SAS|Taelon Peter|24|2.2||||2026-27 ng
+TOR|Kawhi Leonard|35|50.3|56.1|58.9||
+TOR|Scottie Barnes|25|41.8|44.8|47.9|51.0|
+TOR|Immanuel Quickley|27|32.5|32.5|32.5||
+TOR|RJ Barrett|26|29.6||||
+TOR|Jakob Poeltl|30|19.5|27.3|29.5|27.3|
+TOR|Collin Murray-Boyles|21|6.6|7.0|8.9||
+TOR|Allen Graves|20|4.1|4.3|4.5|6.9|
+TOR|Ja'Kobe Walter|22|3.8|5.9|||
+TOR|Kyle Anderson|33|2.4||||
+TOR|Trayce Jackson-Davis|26|2.4||||
+TOR|Jamison Battle|25|2.3||||2026-27 ng
+TOR|Jamal Shead|24|2.3|7.4|8.0|8.6|
+TOR|Alijah Martin|24|2.2|2.6|||
+TOR|Jaden Bradley|23|1.4|2.3|2.7|2.9|2027-28 ng
+TOR|Nate Bittle|23|1.4||||2026-27 ng
+UTA|Jaren Jackson Jr.|27|49.0|50.5|52.0|53.5|
+UTA|Lauri Markkanen|29|46.1|49.8|53.5||
+UTA|Josh Green|25|14.7||||
+UTA|Darryn Peterson|19|13.2|13.9|14.5|18.3|
+UTA|Jusuf Nurkic|32|10.6|11.4|||
+UTA|Ace Bailey|20|9.5|10.0|12.6||
+UTA|Keyonte George|22|6.6|28.7|29.8|31.0|
+UTA|Josh Okogie|28|6.0|6.0|||
+UTA|Jaxson Hayes|26|6.0|6.0|||
+UTA|Brice Sensabaugh|22|4.9||||
+UTA|Svi Mykhailiuk|29|3.9|4.0|||2026-27 ng
+UTA|Mo Bamba|28|3.3|3.7|||
+UTA|Kyle Filipowski|22|3.0|3.0|||2026-27 ng
+UTA|Isaiah Collier|22|2.8|5.0|||
+UTA|Harrison Ingram|23|2.4||||
+WAS|Anthony Davis|33|58.5|62.8|||
+WAS|Trae Young|28|49.5|50.5|54.4|58.4|
+WAS|AJ Dybantsa|19|14.7|15.5|16.2|20.5|
+WAS|Alex Sarr|21|12.4|15.6|||
+WAS|Bilal Coulibaly|22|9.2||||
+WAS|Tre Johnson|20|8.6|9.1|11.5||
+WAS|Deandre Ayton|28|8.1||||
+WAS|Tre Mann|25|8.0|8.0|||
+WAS|Khris Middleton|35|5.6|5.9|6.2||2027-28 ng
+WAS|Bub Carrington|21|4.9|7.3|||
+WAS|Will Riley|20|3.7|3.9|6.2||
+WAS|Kyshawn George|22|3.1|5.4|||
+WAS|Justin Champagnie|25|2.7|3.0|||
+WAS|Anthony Gill|33|2.4||||

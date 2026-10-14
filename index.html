@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>David Solar</title>
+<meta name="description" content="Things David Solar builds to learn to code, starting with The 31st Franchise, an NBA expansion draft game.">
+<!-- The tab icon: a tiny SVG written straight into the page, so there's no image file to manage -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2300653A'/%3E%3Ctext x='32' y='42' font-family='Arial,sans-serif' font-size='28' font-weight='700' text-anchor='middle' fill='%23FFC200'%3EDS%3C/text%3E%3C/svg%3E">
+<style>
+  /* Colors live in variables so dark mode only has to swap them */
+  :root{
+    --bg:#F6F7F5; --surface:#FFFFFF; --ink:#141814; --muted:#5B655E; --line:#DDE2DE;
+    --accent:#00653A; --accent-2:#FFC200;
+    --font:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0E120F; --surface:#161C18; --ink:#E7ECE8; --muted:#97A39B; --line:#29322C; --accent:#3DBA7A; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.6}
+  main{max-width:720px;margin:0 auto;padding:64px 20px 48px}
+  h1{font-size:clamp(2rem,6vw,2.8rem);line-height:1.1;margin:0 0 12px;letter-spacing:-0.02em}
+  .lede{color:var(--muted);margin:0 0 48px;max-width:34em}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0 0 14px}
+  .project{display:block;background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--accent);border-radius:12px;padding:22px 24px;color:inherit;text-decoration:none;transition:transform .15s ease,border-color .15s ease}
+  .project:hover{transform:translateY(-2px);border-color:var(--accent)}
+  .project h3{margin:0 0 6px;font-size:1.3rem}
+  .project p{margin:0 0 14px;color:var(--muted)}
+  .project .go{font-weight:600;color:var(--accent)}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .tags span{font-size:12px;padding:2px 8px;border-radius:999px;background:var(--bg);border:1px solid var(--line);color:var(--muted)}
+  footer{max-width:720px;margin:0 auto;padding:0 20px 40px;color:var(--muted);font-size:14px;display:flex;gap:16px;flex-wrap:wrap}
+  footer a{color:inherit}
+</style>
+</head>
+<body>
+<main>
+  <h1>David Solar</h1>
+  <p class="lede">Things I build to get better at coding. Mostly sports, data and the occasional rabbit hole.</p>
+
+  <h2>Projects</h2>
+  <!-- One <a class="project"> per project. Copy this block to add the next one. -->
+  <a class="project" href="31st-franchise/">
+    <h3>The 31st Franchise</h3>
+    <p>An NBA expansion draft game. Build an expansion team from what 30 NBA teams leave unprotected, with real 2027-28 contracts, the real expansion rules and draft-day side deals, then play the season.</p>
+    <div class="tags"><span>JavaScript</span><span>Python</span><span>Monte Carlo sim</span></div>
+    <span class="go">Play it &rarr;</span>
+  </a>
+</main>
+<footer>
+  <span>&copy; 2026 David Solar</span>
+  <a href="https://github.com/dsolar">GitHub</a>
+</footer>
+</body>
+</html>
