@@ -40,7 +40,8 @@ window.PROJECTS = [
     summary: "An Oregon Trail-style browser game. Walk Nick home, dodge distractions, keep his energy, phone and cash alive, and talk your way through the encounters along the way.",
     facts: [["8", "blocks between the bar and home"], ["4:00", "on the clock before it's over"], ["5", "endings to discover"]],
     stack: ["JavaScript", "HTML Canvas"],
-    cover: { image: "assets/covers/degenerate-trail.jpg", bg: "#101916", band: "#D8EE82" }
+    cover: { image: "assets/covers/degenerate-trail.jpg", bg: "#101916", band: "#D8EE82" },
+    hidden: true
   },
   {
     title: "Franchise Mode",
@@ -61,6 +62,7 @@ window.PROJECTS = [
     summary: "A simple chat prototype inspired by Nick’s catchphrases and texting style. Try a conversation with scripted, topic-matched replies.",
     action: "Chat with Nick",
     stack: ["JavaScript"],
-    cover: { image: "assets/covers/nick-chat.jpg", bg: "#e8ebf2", band: "#596579" }
+    cover: { image: "assets/covers/nick-chat.jpg", bg: "#e8ebf2", band: "#596579" },
+    hidden: true
   }
 ];
