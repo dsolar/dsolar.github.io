@@ -1,0 +1,21 @@
+{
+  "league": "Bastille Day",
+  "season": 2026,
+  "week": 6,
+  "total_teams": 15,
+  "updated": "2026-10-14T17:00:00Z",
+  "source": "sample",
+  "sample": true,
+  "teams": [
+    { "name": "Holofernes", "mine": true, "faab": 681, "proj": 120.4, "avg": 116.6 },
+    { "name": "Love a Kittle Lamb & WhiteRice", "faab": 494, "proj": null, "avg": 137.7 },
+    { "name": "Likely to Burden Tate w Penix", "faab": 464, "proj": null, "avg": 124.4 },
+    { "name": "Love Purdy Flowers", "faab": 343, "proj": 104.0, "avg": 126.1 },
+    { "name": "Drake Mayezini", "faab": 524, "proj": null, "avg": 108.8 },
+    { "name": "Liberté Égalité Henri", "faab": 760, "proj": 107.5, "avg": 120.7 },
+    { "name": "Breece’s Pieces", "faab": 402, "proj": null, "avg": 116.4 },
+    { "name": "Tai Streetz Lata?", "faab": 723, "proj": 121.5, "avg": 110.5 },
+    { "name": "Maye I see your TDs", "faab": 425, "proj": 96.0, "avg": 109.8 },
+    { "name": "Deviated Rectums", "faab": 277, "proj": 70.0, "avg": 122.5 }
+  ]
+}

@@ -27,6 +27,11 @@ dsolar.github.io/
     *.txt, players.json       raw contracts, stats and ratings
     build_site.py             puts page + data + engine together
   degenerate-trail/           The Degenerate Trail, plain files, edit directly
+  nick-chat/                  Chat with Nick
+  guillotine/                 Bastille Day Odds (link-only): index.html, sim.js (the simulation),
+                              data.json (league data, written by the workflow below)
+  tools/guillotine_update.py  pulls the league from Yahoo into guillotine/data.json
+  .github/workflows/          guillotine.yml runs that script every morning in season
   .nojekyll                   tells GitHub Pages to serve the files as-is
   .gitignore                  files Git should skip
 ```
@@ -76,6 +81,29 @@ Visits show up in that same Web Analytics screen within a few minutes. It only c
 ## Adding a private area later
 
 GitHub Pages sites are always public. When you want a private corner (for example `davidsolar.dev/lab/`), the domain is already on Cloudflare, so the usual route is Cloudflare Access (free for small use) in front of that folder, which asks for an email code before showing it. It needs the Cloudflare DNS records switched from gray to orange (proxied), so treat it as its own small project. Keep private things in their own top-level folder so the rule covers one path.
+
+## Guillotine odds: connecting Yahoo
+
+`davidsolar.dev/guillotine/` shows survival odds for the Bastille Day league. It's link-only (`hidden: true` in `projects.js`) and kept out of search engines. Until Yahoo is connected it shows sample numbers with a note saying so.
+
+Once connected, a GitHub workflow runs every morning from September through January: it reads the league from Yahoo, saves `guillotine/data.json`, and the site rebuilds. Nothing to do week to week. One-time setup, about 10 minutes on a computer:
+
+1. **Create a Yahoo app.** Signed in to the Yahoo account that's in the league, go to https://developer.yahoo.com/apps/create/. Application Name: `davidsolar guillotine`. Application Type: **Web Application**. Redirect URI: `https://davidsolar.dev/`. Under API Permissions, check **Fantasy Sports** and pick **Read**. Click **Create App**, then keep the page open: you need the **Client ID** and **Client Secret** it shows.
+2. **Approve access once.** Open this address with your Client ID pasted in: `https://api.login.yahoo.com/oauth2/request_auth?client_id=YOUR_CLIENT_ID&redirect_uri=https://davidsolar.dev/&response_type=code`. Click **Agree**. You'll land on davidsolar.dev with `?code=...` in the address bar. Copy everything after `code=` (stop at any `&`). The code expires in about 10 minutes, so do step 3 right away.
+3. **Trade the code for a long-lasting token.** In PowerShell (built into Windows), paste your three values into the first line and run:
+   ```powershell
+   $id = "CLIENT_ID"; $secret = "CLIENT_SECRET"; $code = "CODE"
+   $auth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${id}:${secret}"))
+   $r = Invoke-RestMethod -Method Post -Uri "https://api.login.yahoo.com/oauth2/get_token" -Headers @{ Authorization = "Basic $auth" } -Body @{ grant_type = "authorization_code"; redirect_uri = "https://davidsolar.dev/"; code = $code }
+   $r.refresh_token
+   ```
+   The long string it prints is the refresh token.
+4. **Store the three values in GitHub.** Repo > **Settings** > **Secrets and variables** > **Actions** > **New repository secret**, three times: `YAHOO_CLIENT_ID`, `YAHOO_CLIENT_SECRET`, `YAHOO_REFRESH_TOKEN`. Secrets stay private even though the repo is public. Never paste them into a file in the repo.
+5. **Run it.** Repo > **Actions** > **Guillotine odds** > **Run workflow**. A minute or two later the page shows live numbers and the sample note is gone.
+
+If a run ever fails with "Yahoo sign-in failed", redo steps 2 to 4 for a fresh refresh token.
+
+How eliminations are found: in each finished week, the lowest score among teams still alive is the one that was cut. The model's settings (how many recent weeks count, how far later weeks lean toward the league average, how much scores swing) are the `DEFAULTS` at the top of `guillotine/sim.js`.
 
 ## Where things stand
 

@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bastille Day Odds | David Solar</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="Weekly survival odds for the Bastille Day guillotine fantasy football league, from a Monte Carlo simulation.">
+<link rel="canonical" href="https://davidsolar.dev/guillotine/">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#EEF1F5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0A1120" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Besley:wght@700&family=Bodoni+Moda:opsz,wght@6..96,500..800&family=Libre+Franklin:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/bar.css">
+<script src="../assets/analytics.js" defer></script>
+<style>
+/* Layout: one narrow column. The week's cut line runs as a red blade down through every
+   team's likely score range, then survival week by week, then the fallen.
+   Tricolore by way of Foxborough: navy ink, steel paper, one red for the blade. Didone display
+   type (the face of revolutionary France), Franklin for everything that gets read. */
+:root{
+  --bg:#EEF1F5;        /* steel paper */
+  --surface:#FFFFFF;
+  --ink:#0E1A30;       /* navy ink */
+  --muted:#566278;
+  --rule:#D3D9E2;
+  --track:#E3E8EF;
+  --blade:#C8102E;     /* the only red: the cut line and real danger */
+  --bleu-rgb:29,63,143;/* survival shading */
+  --hi-ink:#FFFFFF;    /* text on dark survival cells */
+  --f-display:"Bodoni Moda","Didot","Bodoni 72",Georgia,serif;
+  --f-body:"Libre Franklin","Franklin Gothic Medium","Helvetica Neue",Arial,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0A1120; --surface:#111A2C; --ink:#E7EBF2; --muted:#98A3B7; --rule:#223049; --track:#1B263B;
+    --blade:#FF4D63; --bleu-rgb:110,152,235; --hi-ink:#0A1120; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0A1120; --surface:#111A2C; --ink:#E7EBF2; --muted:#98A3B7; --rule:#223049; --track:#1B263B;
+  --blade:#FF4D63; --bleu-rgb:110,152,235; --hi-ink:#0A1120; color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.55 var(--f-body)}
+[hidden]{display:none!important}
+a{color:inherit;text-decoration-color:var(--blade);text-underline-offset:3px}
+a:focus-visible{outline:2px solid var(--blade);outline-offset:3px;border-radius:2px}
+
+.wrap{max-width:46rem;margin:0 auto;padding-block:2rem 3.5rem;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));
+  display:grid;gap:2.75rem}
+.wrap > *{min-width:0}
+
+.eyebrow{font:600 .75rem/1.2 var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0}
+h1{font:700 clamp(2.4rem,9vw,4rem)/.95 var(--f-display);font-variation-settings:"opsz" 96;letter-spacing:-.01em;margin:.5rem 0 0;text-wrap:balance}
+h1 .wk{display:block;color:var(--blade)}
+h2{font:700 1.6rem/1.1 var(--f-display);font-variation-settings:"opsz" 48;margin:0;text-wrap:balance}
+.section-head{display:grid;gap:.35rem;margin-bottom:1.1rem}
+.section-head p{margin:0;color:var(--muted);font-size:.9rem;max-width:36rem}
+
+.lede{font-size:1.1rem;line-height:1.5;margin:1rem 0 0;max-width:36rem;text-wrap:pretty}
+.lede b{font-weight:700}
+.updated{margin:.75rem 0 0;color:var(--muted);font-size:.8rem}
+
+.figures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-block:1px solid var(--rule);margin-top:1.5rem}
+.fig{padding:.9rem .75rem .8rem 0;display:grid;gap:.15rem;align-content:start}
+.fig + .fig{padding-left:.9rem;border-left:1px solid var(--rule)}
+.fig .n{font:700 clamp(1.7rem,6vw,2.3rem)/1 var(--f-display);font-variation-settings:"opsz" 72;font-variant-numeric:lining-nums tabular-nums}
+.fig .n small{font-size:.5em;font-weight:600;color:var(--muted)}
+.fig .l{font-size:.75rem;line-height:1.3;color:var(--muted)}
+.fig.cut .n{color:var(--blade)}
+
+.notice{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--blade);padding:.7rem .9rem;font-size:.85rem;line-height:1.45;border-radius:2px}
+
+/* This week: the blade chart */
+.board{position:relative;background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:.5rem .9rem .9rem}
+.axis{position:relative;height:2.5rem;margin:0 3.6rem 0 0;font-size:.7rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.axis span{position:absolute;bottom:.3rem;transform:translateX(-50%)}
+.rows{list-style:none;margin:0;padding:0;position:relative}
+.row{display:grid;grid-template-columns:minmax(0,1fr) 3.6rem;column-gap:0;row-gap:.3rem;padding:.7rem 0;border-top:1px solid var(--rule)}
+.row:first-child{border-top-color:transparent}
+.who{min-width:0}
+.name{font-weight:600;font-size:.95rem;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag{display:inline-block;margin-left:.4rem;padding:.05rem .4rem;border:1px solid currentColor;border-radius:2px;font-size:.62rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;vertical-align:.12em;color:var(--muted)}
+.meta{font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.pct{grid-row:1 / span 2;grid-column:2;text-align:right;align-self:center;font:700 1.45rem/1 var(--f-display);font-variation-settings:"opsz" 48;font-variant-numeric:lining-nums tabular-nums}
+.pct small{display:block;font:500 .62rem/1.2 var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:.2rem}
+.pct.hot{color:var(--blade)}
+.lane{grid-column:1;position:relative;height:12px}
+.lane .track{position:absolute;inset:5px 0;background:var(--track);border-radius:2px}
+.lane .range{position:absolute;top:2px;bottom:2px;background:rgba(var(--bleu-rgb),.28);border-radius:2px}
+.lane .dot{position:absolute;top:1px;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--ink)}
+.lane .dot.est{background:var(--surface);border:2px solid var(--ink)}
+.lane .cut{position:absolute;top:-.55rem;bottom:-.55rem;width:2px;margin-left:-1px;background:var(--blade)}
+.axis .cut-label{position:absolute;top:.15rem;bottom:auto;font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--blade);white-space:nowrap}
+.axis .cut-label.at-start{transform:none}
+.axis .cut-label.at-end{transform:translateX(-100%)}
+.key{display:flex;flex-wrap:wrap;gap:.4rem 1.2rem;margin:.8rem 0 0;font-size:.75rem;color:var(--muted)}
+.key span{display:inline-flex;align-items:center;gap:.4rem}
+.key i{display:inline-block;flex:none}
+.key .k-range{width:22px;height:8px;background:rgba(var(--bleu-rgb),.28);border-radius:2px}
+.key .k-dot{width:9px;height:9px;border-radius:50%;background:var(--ink)}
+.key .k-est{width:9px;height:9px;border-radius:50%;border:2px solid var(--ink)}
+.key .k-blade{width:2px;height:12px;background:var(--blade)}
+
+/* Survival by week */
+.scroll{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);border-radius:3px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:.8rem}
+th,td{padding:.5rem .35rem;text-align:center;white-space:nowrap}
+thead th{font-size:.68rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--rule);padding-top:.65rem}
+tbody th{text-align:left;font-weight:600;max-width:11rem;overflow:hidden;text-overflow:ellipsis;position:sticky;left:0;background:var(--surface);padding-left:.8rem;z-index:1}
+thead th:first-child{text-align:left;padding-left:.8rem;position:sticky;left:0;background:var(--surface);z-index:1}
+tbody tr + tr > *{border-top:1px solid var(--bg)}
+td.c{min-width:2.6rem}
+td.c.hi{color:var(--hi-ink);font-weight:600}
+td.c.win{font-weight:700}
+th.win{color:var(--ink)}
+
+/* The fallen */
+.fallen{list-style:none;margin:0;padding:0;display:grid;border-top:1px solid var(--rule)}
+.fallen li{display:grid;grid-template-columns:4.2rem minmax(0,1fr) auto;gap:.75rem;align-items:baseline;padding:.6rem 0;border-bottom:1px solid var(--rule);font-size:.9rem}
+.fallen .w{font:700 .95rem/1 var(--f-display);color:var(--muted)}
+.fallen .t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:line-through;text-decoration-color:var(--blade);text-decoration-thickness:2px}
+.fallen .s{color:var(--muted);font-variant-numeric:tabular-nums;font-size:.8rem}
+.none{color:var(--muted);font-size:.9rem;margin:0}
+
+.method{display:grid;gap:.75rem;max-width:38rem;font-size:.92rem}
+.method p{margin:0}
+.foot{color:var(--muted);font-size:.78rem;border-top:1px solid var(--rule);padding-top:1rem}
+
+.status{color:var(--muted);font-size:.95rem}
+
+@media (max-width:30rem){
+  .figures{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .fig + .fig{padding-left:.6rem}
+  .fig{padding-right:.4rem}
+  .board{padding:.4rem .7rem .8rem}
+}
+</style>
+</head>
+<body>
+<nav class="ds-bar" aria-label="davidsolar.dev"><a href="../"><img src="../assets/ds-mark.svg" alt="" width="20" height="20"><span class="ds-bar-name">David Solar</span></a><a href="../#projects">All projects</a></nav>
+
+<main class="wrap" id="app">
+  <header>
+    <p class="eyebrow" id="league">Guillotine league</p>
+    <h1><span id="h1-week" class="wk">This week</span>Survival odds</h1>
+    <p class="lede" id="lede">Running the numbers…</p>
+    <p class="updated" id="updated"></p>
+    <div class="figures" id="figures" hidden>
+      <div class="fig"><span class="n" id="f-left"></span><span class="l">teams still standing</span></div>
+      <div class="fig cut"><span class="n" id="f-cut"></span><span class="l">typical lowest score this week</span></div>
+      <div class="fig"><span class="n" id="f-safe"></span><span class="l">survives 9 in 10 simulations</span></div>
+    </div>
+  </header>
+
+  <p class="notice" id="sample" hidden>These are sample numbers from the Week 6 notes, so the page has something to show. Live Yahoo numbers replace them automatically once the league connection is set up.</p>
+
+  <section id="week" aria-labelledby="week-title" hidden>
+    <div class="section-head">
+      <h2 id="week-title">Under the blade</h2>
+      <p>Each team's likely score this week, with the cut line. Teams whose range crosses the red line are in danger.</p>
+    </div>
+    <div class="board">
+      <div class="axis" id="axis" aria-hidden="true"></div>
+      <ol class="rows" id="rows"></ol>
+    </div>
+    <div class="key" aria-hidden="true">
+      <span><i class="k-range"></i>Likely range (8 in 10 weeks)</span>
+      <span><i class="k-dot"></i>Yahoo projection</span>
+      <span><i class="k-est"></i>No projection yet, recent average</span>
+      <span><i class="k-blade"></i>Cut line</span>
+    </div>
+  </section>
+
+  <section id="season" aria-labelledby="season-title" hidden>
+    <div class="section-head">
+      <h2 id="season-title">Still standing after each week</h2>
+      <p id="season-note">Chance each team is still alive after that week's cut. The last column is the chance of winning the league.</p>
+    </div>
+    <div class="scroll"><table id="grid"></table></div>
+  </section>
+
+  <section id="fallen-sec" aria-labelledby="fallen-title" hidden>
+    <div class="section-head"><h2 id="fallen-title">The fallen</h2></div>
+    <ol class="fallen" id="fallen"></ol>
+    <p class="none" id="fallen-none" hidden></p>
+  </section>
+
+  <section aria-labelledby="method-title">
+    <div class="section-head"><h2 id="method-title">How the odds work</h2></div>
+    <div class="method" id="method">
+      <p><b>This week</b>, each team's expected score is its Yahoo projection. A team without a projection yet uses its recent average.</p>
+      <p><b>Later weeks</b> use each team's average over its last three weeks, pulled a quarter of the way toward the league average. Rosters keep changing as cut teams' players go to waivers, so nobody's current form lasts all season.</p>
+      <p><b>Actual scores</b> swing about 22% either way from those numbers. Each simulation plays out the rest of the season, cutting the lowest score every week until one team is left. The page runs <span id="m-runs">20,000</span> of them and counts.</p>
+      <p><b>Not in the model yet:</b> waiver pickups and money left. A team with a big budget will improve, and these odds don't know that.</p>
+    </div>
+  </section>
+
+  <p class="foot">Built by David Solar. League data from Yahoo Fantasy, refreshed daily during the season.</p>
+</main>
+
+<script src="sim.js"></script>
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var pct = function (p) {
+    if (p >= 0.995) return ">99%";
+    if (p > 0 && p < 0.005) return "<1%";
+    return Math.round(p * 100) + "%";
+  };
+  var pts = function (x) { return Math.round(x); };
+  var esc = function (s) {
+    return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; });
+  };
+
+  function render(data) {
+    var r = GuillotineSim.simulate(data);
+    var teams = r.teams;
+    var total = data.total_teams || (teams.length + r.fallen.length);
+
+    document.title = (data.league || "Guillotine") + " Odds | David Solar";
+    $("league").textContent = (data.league || "Guillotine league") + " · " + (data.season || "") + " guillotine league";
+    $("h1-week").textContent = "Week " + r.week;
+    $("m-runs").textContent = r.runs.toLocaleString("en-US");
+    $("sample").hidden = !data.sample;
+
+    if (data.updated) {
+      var d = new Date(data.updated);
+      if (!isNaN(d)) {
+        $("updated").textContent = "Updated " + d.toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + " ET";
+      }
+    }
+
+    if (teams.length < 2) {
+      $("lede").textContent = teams.length === 1 ? teams[0].name + " is the last team standing." : "No teams in the data yet.";
+      return;
+    }
+
+    // Headline
+    var byRisk = teams.slice().sort(function (a, b) { return b.pChop - a.pChop; });
+    var byWin = teams.slice().sort(function (a, b) { return b.pWin - a.pWin; });
+    var top = byRisk[0], fav = byWin[0];
+    $("lede").innerHTML = "<b>" + esc(top.name) + "</b> is the likeliest to be cut this week (" + pct(top.pChop) + "). " +
+      "<b>" + esc(fav.name) + "</b> has the best chance of being the last team standing (" + pct(fav.pWin) + ").";
+    $("f-left").innerHTML = teams.length + " <small>of " + total + "</small>";
+    $("f-cut").textContent = pts(r.cut.median);
+    $("f-safe").textContent = pts(r.cut.p90) + "+";
+    $("figures").hidden = false;
+
+    // This week: ranges on one shared scale, with the blade at the typical lowest score
+    var z = 1.2816, cv = r.opts.cv;
+    var lo = Infinity, hi = -Infinity;
+    teams.forEach(function (t) { lo = Math.min(lo, t.now * (1 - z * cv)); hi = Math.max(hi, t.now * (1 + z * cv)); });
+    lo = Math.max(0, Math.floor(lo / 20) * 20); hi = Math.ceil(hi / 20) * 20;
+    var x = function (v) { return ((v - lo) / (hi - lo)) * 100; };
+
+    var axis = "";
+    for (var v = lo; v <= hi; v += 20) axis += '<span style="left:' + x(v) + '%">' + v + "</span>";
+    var cx = x(r.cut.median);
+    axis += '<span class="cut-label' + (cx < 10 ? " at-start" : cx > 90 ? " at-end" : "") + '" style="left:' + cx + '%">Cut line ' + pts(r.cut.median) + "</span>";
+    $("axis").innerHTML = axis;
+
+    var rows = byRisk.map(function (t) {
+      var a = t.now * (1 - z * cv), b = t.now * (1 + z * cv);
+      var source = t.proj !== null ? "proj " + t.proj.toFixed(1) : "avg " + t.now.toFixed(1);
+      var meta = [source, t.faab !== null ? "$" + t.faab + " FAB" : null, "wins " + pct(t.pWin)].filter(Boolean).join(" · ");
+      var label = t.name + ": " + (t.proj !== null ? "projected " : "recent average ") + pts(t.now) + " points, likely " + pts(a) + " to " + pts(b) + ". " + pct(t.pChop) + " chance of being cut.";
+      return '<li class="row" aria-label="' + esc(label) + '">' +
+        '<div class="who"><div class="name">' + esc(t.name) + (t.mine ? '<span class="tag">David</span>' : "") + "</div>" +
+        '<div class="meta">' + esc(meta) + "</div></div>" +
+        '<div class="pct' + (t.pChop >= 0.15 ? " hot" : "") + '">' + pct(t.pChop) + "<small>cut</small></div>" +
+        '<div class="lane" aria-hidden="true"><span class="track"></span>' +
+        '<span class="range" style="left:' + x(a) + "%;width:" + (x(b) - x(a)) + '%"></span>' +
+        '<span class="cut" style="left:' + cx + '%"></span>' +
+        '<span class="dot' + (t.proj === null ? " est" : "") + '" style="left:' + x(t.now) + '%"></span></div></li>';
+    }).join("");
+    $("rows").innerHTML = rows;
+
+    $("week").hidden = false;
+
+    // Survival grid
+    var head = "<thead><tr><th scope=\"col\">Team</th>";
+    for (var k = 0; k < r.weeksLeft; k++) {
+      var last = k === r.weeksLeft - 1;
+      head += '<th scope="col"' + (last ? ' class="win"' : "") + ">" + (last ? "Wk " + (r.week + k) + " · Win" : "Wk " + (r.week + k)) + "</th>";
+    }
+    head += "</tr></thead>";
+    var body = "<tbody>" + byWin.map(function (t) {
+      var cells = t.surv.map(function (p, k) {
+        var alpha = 0.06 + 0.84 * p;
+        var cls = "c" + (alpha > 0.55 ? " hi" : "") + (k === t.surv.length - 1 ? " win" : "");
+        return '<td class="' + cls + '" style="background:rgba(var(--bleu-rgb),' + alpha.toFixed(3) + ')">' + pct(p) + "</td>";
+      }).join("");
+      return '<tr><th scope="row" title="' + esc(t.name) + '">' + esc(t.name) + "</th>" + cells + "</tr>";
+    }).join("") + "</tbody>";
+    $("grid").innerHTML = "<caption class=\"eyebrow\" style=\"position:absolute;left:-9999px\">Chance each team is still alive after each week</caption>" + head + body;
+    $("season").hidden = false;
+
+    // The fallen
+    var missing = total - teams.length - r.fallen.length;
+    if (r.fallen.length || missing > 0) {
+      $("fallen").innerHTML = r.fallen.map(function (f) {
+        return '<li><span class="w">Wk ' + f.week + '</span><span class="t">' + esc(f.name) + '</span><span class="s">' +
+          (f.score !== null ? f.score.toFixed(1) + " pts" : "") + "</span></li>";
+      }).join("");
+      $("fallen").hidden = !r.fallen.length;
+      if (missing > 0) {
+        $("fallen-none").textContent = r.fallen.length
+          ? missing + " more eliminated team" + (missing > 1 ? "s aren't" : " isn't") + " in this data."
+          : missing + " team" + (missing > 1 ? "s have" : " has") + " been cut so far. The full list arrives with the live Yahoo data.";
+        $("fallen-none").hidden = false;
+      }
+      $("fallen-sec").hidden = false;
+    }
+  }
+
+  fetch("data.json", { cache: "no-store" })
+    .then(function (res) { if (!res.ok) throw new Error(res.status); return res.json(); })
+    .then(function (data) { setTimeout(function () { render(data); }, 0); })
+    .catch(function () {
+      $("lede").textContent = "The league data didn't load. Refresh to try again.";
+    });
+})();
+</script>
+</body>
+</html>

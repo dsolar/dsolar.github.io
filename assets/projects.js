@@ -64,5 +64,17 @@ window.PROJECTS = [
     stack: ["JavaScript"],
     cover: { image: "assets/covers/nick-chat.jpg", bg: "#e8ebf2", band: "#596579" },
     hidden: true
+  },
+  {
+    title: "Bastille Day Odds",
+    type: "Simulation",
+    released: "2026-10",
+    url: "guillotine/",
+    question: "In a league that cuts its lowest score every week, who's next, and who's left in December?",
+    summary: "Survival odds for my guillotine fantasy football league. It pulls the league from Yahoo every morning and plays out the rest of the season 20,000 times.",
+    facts: [["20,000", "simulated seasons per update"], ["15", "teams, one cut every week"], ["Daily", "refresh from Yahoo"]],
+    stack: ["JavaScript", "Python", "Monte Carlo simulation", "GitHub Actions"],
+    cover: { bg: "#0E1A30", band: "#C8102E" },
+    hidden: true
   }
 ];
