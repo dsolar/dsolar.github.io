@@ -1,0 +1,74 @@
+'use strict';
+// Local phrase matching, not a language model. No word or phrase blacklist.
+(function(root){
+const normalize=s=>String(s).toLowerCase().replace(/[’‘]/g,"'").replace(/[^a-z0-9' ]/g,' ').replace(/\s+/g,' ').trim();
+const filler=new Set(['i','im','i’m','a','an','the','it','is','are','to','of','and','you','your','me','my','we','this','that','what','how','do','does','would','can','could','be','in','on','for']);
+const tokens=s=>new Set(normalize(s).split(' ').filter(w=>w&&!filler.has(w)));
+const bank={
+ hello:['yo folkz','champion','what we got'],
+ visit:['whens dat visit?','need dates folkz','Visit or peRish'],
+ visitNo:['Lolz. another cancelled visit','all talk folkz','visit committee in shambles'],
+ visitMaybe:['might. classic','need a date not a concept','whens dat visit?'],
+ visitYes:['champion. what dates','we do it all','top tier MTL incoming'],
+ visitDates:['now we have a date. champion','actual plans. we do it all','top tier MTL'],
+ boston:['magachusetts','magachusetts folkz at it again','Lolz. hometown propaganda'],
+ ring:['#Ring','hardware speaks folkz','champion. #Ring'],
+ work:['guy lost the plot','meeting about a meeting?','folkz doing the moost'],
+ music:['who has TouchTunes','hand over the playlist folkz','we do it all'],
+ dad:['international girl dad','girl dad hours','we do it all'],
+ montreal:['top tier MTL','MTL folkz know','StReetz'],
+ laugh:['Lolz','moost','folkz get it'],
+ yes:['champion','we do it all','there it is'],
+ no:['Lolz. noted','tough crowd folkz','guy lost the plot'],
+ repeat:['fair. new material needed','Lolz. caught me','guy has one bit'],
+ unknown:['what happened','go on folkz','need more here','explain that one'],
+ question:['need more context folkz','what are the options','what are we working with'],
+ followup:['go on','what happened next','explain that part'],
+ visitFollow:['a date. thats what we need','less theory more booking','whens dat visit?'],
+ ringFollow:['the hardware folkz. #Ring','champion credentials'],
+ workFollow:['what did they say','how many meetings are we talking','guy lost the plot'],
+ musicFollow:['what song','who picked this','TouchTunes situation?'],
+ montrealFollow:['top tier. self explanatory','MTL StReetz folkz'],
+ bostonFollow:['magachusetts defense team has arrived','Lolz. make the case'],
+ dadFollow:['international girl dad schedule','we do it all']
+};
+const rules=[['ring',/\b(world series|championship|baseball|ring)\b/],['work',/\b(work|boss|job|meeting|office|email|coworker|deadline)\b/],['music',/\b(music|song|jukebox|touchtunes|playlist|concert|bar)\b/],['dad',/\b(dad|father|parent|daughter|kid|kids|family)\b/],['visit',/\b(visit|trip|travel|flight|come over|coming|vacation|booked|booking)\b/],['boston',/\b(boston|massachusetts|magachusetts|sox|fenway)\b/],['montreal',/\b(montreal|mtl|canada|quebec)\b/]];
+function createEngine(random=Math.random){
+ let state={topic:null,age:0,recent:[],used:new Map(),lastInput:''};
+ function pick(pool){const fresh=pool.filter(s=>!state.recent.includes(s));const choices=fresh.length?fresh:pool;const min=Math.min(...choices.map(s=>state.used.get(s)||0));const least=choices.filter(s=>(state.used.get(s)||0)===min);return least[Math.floor(random()*least.length)];}
+ function reply(input,examples=[]){
+  const s=normalize(input), words=tokens(input);let topic=null,key=null;
+  // Exact user-supplied exchanges win. Related examples require meaningful overlap.
+  const matches=examples.filter(e=>e&&typeof e.prompt==='string'&&typeof e.reply==='string'&&e.reply.trim()).map(e=>{const p=normalize(e.prompt),t=tokens(e.prompt);const overlap=[...t].filter(w=>words.has(w)).length;return {e,score:s===p?100:overlap>=2?overlap/(t.size+words.size-overlap):0};}).filter(m=>m.score>=.45).sort((a,b)=>b.score-a.score);
+  let text;
+  if(matches.length){text=pick(matches.filter(m=>m.score===matches[0].score).map(m=>m.e.reply));topic='custom';}
+  else {
+   const found=rules.filter(([,re])=>re.test(s));
+   // Prefer the later topic after contrast: "not work, about the ring".
+   const contrast=s.split(/\b(?:but|instead|actually)\b/).pop();
+   topic=found.find(([,re])=>contrast!==s&&re.test(contrast))?.[0]||found[0]?.[0]||null;
+   const follow=/^(why|how so|really|what do you mean|tell me more|and then|what next|what about that|what|how come)\b/.test(s);
+   const negative=/\b(no|never|not|cant|cannot|can't|won't|wont|cancelled|canceled|busy)\b/.test(s);
+   const maybe=/\b(maybe|might|possibly|sometime|eventually|thinking)\b/.test(s);
+   const positive=/\b(yes|yeah|sure|okay|ok|agreed|deal|absolutely|booked|coming|will)\b/.test(s);
+   const date=/\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday|tomorrow|tonight|january|february|march|april|may|june|july|august|september|october|november|december|next week|next month|weekend)\b/.test(s);
+   if(/\b(repeating|repeat yourself|said that|same thing|another line|new material)\b/.test(s)||s===state.lastInput) key='repeat';
+   else if(!topic&&/^(hi|hey|hello|yo|sup)( nick| folkz)?$/.test(s))key='hello';
+   else if((topic==='visit'||(!topic&&state.topic==='visit'&&state.age<2&&(follow||negative||positive||date)))){topic='visit';key=negative?'visitNo':maybe?'visitMaybe':date?'visitDates':positive?'visitYes':follow?'visitFollow':'visit';}
+   else if(topic)key=topic;
+   else if(follow&&state.topic&&state.age<2)key=bank[state.topic+'Follow']?state.topic+'Follow':'followup';
+   else if(/^(lol|lolz|haha|hahaha|lmao)[! .]*$/.test(s))key='laugh';
+   else if(/^(yes|yeah|sure|okay|ok|agreed|deal|absolutely)$/.test(s))key='yes';
+   else if(/^(no|nah|nope|never)$/.test(s))key='no';
+   else key=input.includes('?')?'question':'unknown';
+   text=pick(bank[key]);
+  }
+  if(topic){state.topic=topic;state.age=0;}else state.age++;
+  state.lastInput=s;state.recent.push(text);state.recent=state.recent.slice(-8);state.used.set(text,(state.used.get(text)||0)+1);
+  return text;
+ }
+ return {reply,reset(){state={topic:null,age:0,recent:[],used:new Map(),lastInput:''};}};
+}
+root.NickEngine={createEngine,normalize};
+if(typeof module!=='undefined')module.exports=root.NickEngine;
+})(typeof globalThis!=='undefined'?globalThis:window);
