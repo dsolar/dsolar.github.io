@@ -7,7 +7,11 @@ name: Guillotine update
 on:
   push:
     branches: [main]
-    paths: [guillotine/paste.txt]
+    paths:
+      - guillotine/paste.txt
+      - tools/guillotine_paste.py
+      - tools/guillotine_projections.py
+      - .github/workflows/guillotine-update.yml
   schedule:
     - cron: "17 14 * 9-12,1 *"   # 10:17am ET daily (9:17 in winter), September through January
     - cron: "47 16 * 9-12,1 0"   # 12:47pm ET Sundays, after inactives
@@ -27,6 +31,11 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5
+
+      - name: Set the bot's git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Read the pasted league pages
         run: python3 tools/guillotine_paste.py
@@ -51,9 +60,8 @@ jobs:
             exit 0
           fi
           git add guillotine/data.json
-          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-            commit -m "Update guillotine odds data"
-          git pull --rebase -q origin main
+          git commit -m "Update guillotine odds data"
+          git pull --rebase -q origin main   # someone may have pushed while this ran
           git push
           echo "pushed=true" >> "$GITHUB_OUTPUT"
 
