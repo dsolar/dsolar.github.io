@@ -1,0 +1,532 @@
+{
+ "updated": "2026-10-14T22:56:19Z",
+ "source": "SeatGeek",
+ "events": {
+  "2026-10-30-moe-the-wilbur": {
+   "sg": 18371747,
+   "history": [],
+   "url": "https://seatgeek.com/moe-tickets/boston-massachusetts-the-wilbur-2026-10-30-3-30-am/concert/18371747",
+   "title": "moe.",
+   "date": "2026-10-30",
+   "venue": "The Wilbur",
+   "low": null
+  },
+  "2026-10-31-moe-the-wilbur": {
+   "sg": 18371751,
+   "history": [],
+   "url": "https://seatgeek.com/moe-tickets/boston-massachusetts-the-wilbur-2026-10-31-8-pm/concert/18371751",
+   "title": "moe.",
+   "date": "2026-10-31",
+   "venue": "The Wilbur",
+   "low": null
+  },
+  "2026-11-12-joe-russo-s-almost-dead-state-theatre": {
+   "sg": 18593361,
+   "history": [],
+   "url": "https://seatgeek.com/joe-russo-s-almost-dead-tickets/new-brunswick-new-jersey-state-theatre-new-jersey-2026-11-12-7-30-pm/concert/18593361",
+   "title": "Joe Russo's Almost Dead",
+   "date": "2026-11-12",
+   "venue": "State Theatre",
+   "low": null
+  },
+  "2026-11-13-goose-mohegan-sun-arena": {
+   "sg": 18280633,
+   "history": [],
+   "url": "https://seatgeek.com/goose-tickets/uncasville-connecticut-mohegan-sun-arena-2026-11-13-3-30-am/concert/18280633",
+   "title": "Goose",
+   "date": "2026-11-13",
+   "venue": "Mohegan Sun Arena",
+   "low": null
+  },
+  "2026-11-14-dark-star-orchestra-orpheum-theatre": {
+   "sg": 18406746,
+   "history": [],
+   "url": "https://seatgeek.com/dark-star-orchestra-tickets/boston-massachusetts-orpheum-theatre-boston-2026-11-14-7-pm/concert/18406746",
+   "title": "Dark Star Orchestra",
+   "date": "2026-11-14",
+   "venue": "Orpheum Theatre",
+   "low": null
+  },
+  "2026-11-14-goose-mohegan-sun-arena": {
+   "sg": 18280635,
+   "history": [],
+   "url": "https://seatgeek.com/goose-tickets/uncasville-connecticut-mohegan-sun-arena-2026-11-14-7-pm/concert/18280635",
+   "title": "Goose",
+   "date": "2026-11-14",
+   "venue": "Mohegan Sun Arena",
+   "low": null
+  },
+  "2026-11-15-goose-cross-insurance-aren": {
+   "sg": 18280639,
+   "history": [],
+   "url": "https://seatgeek.com/goose-tickets/portland-maine-cross-insurance-arena-2026-11-15-7-pm/concert/18280639",
+   "title": "Goose",
+   "date": "2026-11-15",
+   "venue": "Cross Insurance Arena",
+   "low": null
+  },
+  "2026-12-18-weird-phishes-the-sinclair": {
+   "sg": 18349689,
+   "history": [],
+   "url": "https://seatgeek.com/weird-phishes-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-12-18-8-pm/concert/18349689",
+   "title": "Weird Phishes",
+   "date": "2026-12-18",
+   "venue": "The Sinclair",
+   "low": null
+  },
+  "2026-12-30-phish-madison-square-garde": {
+   "sg": 18659383,
+   "history": [],
+   "url": "https://seatgeek.com/phish-tickets/new-york-new-york-madison-square-garden-2026-12-30-7-30-pm/concert/18659383",
+   "title": "Phish",
+   "date": "2026-12-30",
+   "venue": "Madison Square Garden",
+   "low": null
+  },
+  "2026-12-31-phish-madison-square-garde": {
+   "sg": 18659385,
+   "history": [],
+   "url": "https://seatgeek.com/phish-tickets/new-york-new-york-madison-square-garden-2026-12-31-7-30-pm/concert/18659385",
+   "title": "Phish",
+   "date": "2026-12-31",
+   "venue": "Madison Square Garden",
+   "low": null
+  },
+  "2027-01-01-phish-madison-square-garde": {
+   "sg": 18659382,
+   "history": [],
+   "url": "https://seatgeek.com/phish-tickets/new-york-new-york-madison-square-garden-2027-01-01-7-30-pm/concert/18659382",
+   "title": "Phish",
+   "date": "2027-01-01",
+   "venue": "Madison Square Garden",
+   "low": null
+  },
+  "2027-01-02-phish-madison-square-garde": {
+   "sg": 18659384,
+   "history": [],
+   "url": "https://seatgeek.com/phish-tickets/new-york-new-york-madison-square-garden-2027-01-02-7-30-pm/concert/18659384",
+   "title": "Phish",
+   "date": "2027-01-02",
+   "venue": "Madison Square Garden",
+   "low": null
+  },
+  "2026-10-16-robert-kelly-laugh-boston": {
+   "sg": 18666678,
+   "history": [],
+   "url": "https://seatgeek.com/robert-kelly-tickets/comedy/2026-10-16-9-30-pm/18666678",
+   "title": "Robert Kelly",
+   "date": "2026-10-16",
+   "venue": "Laugh Boston",
+   "low": null
+  },
+  "2026-10-16-bertha-grateful-drag-paradise-rock-club": {
+   "sg": 18236351,
+   "history": [],
+   "url": "https://seatgeek.com/bertha-grateful-drag-tickets/entertainment/2026-10-16-7-pm/18236351",
+   "title": "BERTHA: Grateful Drag",
+   "date": "2026-10-16",
+   "venue": "Paradise Rock Club",
+   "low": null
+  },
+  "2026-10-17-robert-kelly-laugh-boston": {
+   "sg": 18666672,
+   "history": [],
+   "url": "https://seatgeek.com/robert-kelly-tickets/comedy/2026-10-17-6-30-pm/18666672",
+   "title": "Robert Kelly",
+   "date": "2026-10-17",
+   "venue": "Laugh Boston",
+   "low": null
+  },
+  "2026-10-17-beck-mgm-music-hall-at-fe": {
+   "sg": 18194413,
+   "history": [],
+   "url": "https://seatgeek.com/beck-tickets/boston-massachusetts-mgm-music-hall-at-fenway-2026-10-17-8-pm/concert/18194413",
+   "title": "Beck",
+   "date": "2026-10-17",
+   "venue": "MGM Music Hall at Fenway",
+   "low": null
+  },
+  "2026-10-22-daniel-donato-s-cosmic-country-royale": {
+   "sg": 18477786,
+   "history": [],
+   "url": "https://seatgeek.com/daniel-donato-s-cosmic-country-tickets/boston-massachusetts-royale-boston-2026-10-22-8-pm/concert/18477786",
+   "title": "Daniel Donato's Cosmic Country",
+   "date": "2026-10-22",
+   "venue": "Royale",
+   "low": null
+  },
+  "2026-10-23-jim-gaffigan-wang-theatre": {
+   "sg": 18115555,
+   "history": [],
+   "url": "https://seatgeek.com/jim-gaffigan-tickets/comedy/2026-10-23-7-30-pm/18115555",
+   "title": "Jim Gaffigan",
+   "date": "2026-10-23",
+   "venue": "Wang Theatre",
+   "low": null
+  },
+  "2026-10-24-jim-gaffigan-wang-theatre": {
+   "sg": 18195850,
+   "history": [],
+   "url": "https://seatgeek.com/jim-gaffigan-tickets/comedy/2026-10-24-8-pm/18195850",
+   "title": "Jim Gaffigan",
+   "date": "2026-10-24",
+   "venue": "Wang Theatre",
+   "low": null
+  },
+  "2026-10-25-jim-gaffigan-wang-theatre": {
+   "sg": 18424078,
+   "history": [],
+   "url": "https://seatgeek.com/jim-gaffigan-tickets/comedy/2026-10-25-7-pm/18424078",
+   "title": "Jim Gaffigan",
+   "date": "2026-10-25",
+   "venue": "Wang Theatre",
+   "low": null
+  },
+  "2026-10-26-johnny-blue-skies-td-garden": {
+   "sg": 18582757,
+   "history": [],
+   "url": "https://seatgeek.com/johnny-blue-skies-tickets/boston-massachusetts-td-garden-2026-10-26-8-pm/concert/18582757",
+   "title": "Johnny Blue Skies",
+   "date": "2026-10-26",
+   "venue": "TD Garden",
+   "low": null
+  },
+  "2026-10-27-built-to-spill-the-sinclair": {
+   "sg": 18316712,
+   "history": [],
+   "url": "https://seatgeek.com/built-to-spill-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-10-27-8-30-pm/concert/18316712",
+   "title": "Built to Spill",
+   "date": "2026-10-27",
+   "venue": "The Sinclair",
+   "low": null
+  },
+  "2026-10-28-built-to-spill-the-sinclair": {
+   "sg": 18316715,
+   "history": [],
+   "url": "https://seatgeek.com/built-to-spill-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-10-28-8-30-pm/concert/18316715",
+   "title": "Built to Spill",
+   "date": "2026-10-28",
+   "venue": "The Sinclair",
+   "low": null
+  },
+  "2026-10-29-grahame-lesh-paradise-rock-club": {
+   "sg": 18514461,
+   "history": [],
+   "url": "https://seatgeek.com/grahame-lesh-tickets/boston-massachusetts-paradise-rock-club-2026-10-29-7-pm/concert/18514461",
+   "title": "Grahame Lesh",
+   "date": "2026-10-29",
+   "venue": "Paradise Rock Club",
+   "low": null
+  },
+  "2026-11-05-tim-dillon-the-wilbur": {
+   "sg": 18498698,
+   "history": [],
+   "url": "https://seatgeek.com/tim-dillon-tickets/comedy/2026-11-05-7-30-pm/18498698",
+   "title": "Tim Dillon",
+   "date": "2026-11-05",
+   "venue": "The Wilbur",
+   "low": null
+  },
+  "2026-11-06-tim-dillon-the-wilbur": {
+   "sg": 18472041,
+   "history": [],
+   "url": "https://seatgeek.com/tim-dillon-tickets/comedy/2026-11-06-7-30-pm/18472041",
+   "title": "Tim Dillon",
+   "date": "2026-11-06",
+   "venue": "The Wilbur",
+   "low": null
+  },
+  "2026-11-06-beat-wang-theatre": {
+   "sg": 18424077,
+   "history": [],
+   "url": "https://seatgeek.com/beat-tickets/boston-massachusetts-boch-center-wang-theatre-2026-11-06-8-pm/concert/18424077",
+   "title": "Beat",
+   "date": "2026-11-06",
+   "venue": "Wang Theatre",
+   "low": null
+  },
+  "2026-11-07-comics-come-home-td-garden": {
+   "sg": 18325146,
+   "history": [],
+   "url": "https://seatgeek.com/comics-come-home-tickets/comedy/2026-11-07-8-pm/18325146",
+   "title": "Comics Come Home",
+   "date": "2026-11-07",
+   "venue": "TD Garden",
+   "low": null
+  },
+  "2026-11-07-tim-dillon-the-wilbur": {
+   "sg": 18603764,
+   "history": [],
+   "url": "https://seatgeek.com/tim-dillon-tickets/comedy/2026-11-07-9-45-pm/18603764",
+   "title": "Tim Dillon",
+   "date": "2026-11-07",
+   "venue": "The Wilbur",
+   "low": null
+  },
+  "2026-11-08-ben-schwartz-chevalier-theatre": {
+   "sg": 18139448,
+   "history": [],
+   "url": "https://seatgeek.com/ben-schwartz-tickets/comedy/2026-11-08-3-30-pm/18139448",
+   "title": "Ben Schwartz",
+   "date": "2026-11-08",
+   "venue": "Chevalier Theatre",
+   "low": null
+  },
+  "2026-11-09-hiss-golden-messenger-the-sinclair": {
+   "sg": 18095621,
+   "history": [],
+   "url": "https://seatgeek.com/hiss-golden-messenger-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-11-09-8-pm/concert/18095621",
+   "title": "Hiss Golden Messenger",
+   "date": "2026-11-09",
+   "venue": "The Sinclair",
+   "low": null
+  },
+  "2026-11-13-bert-kreischer-the-vets": {
+   "sg": 18163952,
+   "history": [],
+   "url": "https://seatgeek.com/bert-kreischer-tickets/comedy/2026-11-13-8-pm/18163952",
+   "title": "Bert Kreischer",
+   "date": "2026-11-13",
+   "venue": "The Vets",
+   "low": null
+  },
+  "2026-11-13-dweezil-zappa-chevalier-theatre": {
+   "sg": 18282783,
+   "history": [],
+   "url": "https://seatgeek.com/dweezil-zappa-tickets/medford-massachusetts-chevalier-theatre-2026-11-13-8-pm/concert/18282783",
+   "title": "Dweezil Zappa",
+   "date": "2026-11-13",
+   "venue": "Chevalier Theatre",
+   "low": null
+  },
+  "2026-11-14-bert-kreischer-the-hanover-theatre": {
+   "sg": 18163954,
+   "history": [],
+   "url": "https://seatgeek.com/bert-kreischer-tickets/comedy/2026-11-14-7-pm/18163954",
+   "title": "Bert Kreischer",
+   "date": "2026-11-14",
+   "venue": "The Hanover Theatre",
+   "low": null
+  },
+  "2026-11-15-mountain-grass-unit-royale": {
+   "sg": 18321525,
+   "history": [],
+   "url": "https://seatgeek.com/mountain-grass-unit-tickets/boston-massachusetts-royale-boston-2026-11-15-8-pm/concert/18321525",
+   "title": "Mountain Grass Unit",
+   "date": "2026-11-15",
+   "venue": "Royale",
+   "low": null
+  },
+  "2026-11-15-third-eye-blind-roadrunner": {
+   "sg": 18608936,
+   "history": [],
+   "url": "https://seatgeek.com/third-eye-blind-tickets/boston-massachusetts-roadrunner-boston-2026-11-15-8-pm/concert/18608936",
+   "title": "Third Eye Blind",
+   "date": "2026-11-15",
+   "venue": "Roadrunner",
+   "low": null
+  },
+  "2026-11-17-ilana-glazer-the-wilbur": {
+   "sg": 18328185,
+   "history": [],
+   "url": "https://seatgeek.com/ilana-glazer-tickets/comedy/2026-11-17-7-pm/18328185",
+   "title": "Ilana Glazer",
+   "date": "2026-11-17",
+   "venue": "The Wilbur",
+   "low": null
+  },
+  "2026-11-20-hannibal-buress-the-wilbur": {
+   "sg": 18206450,
+   "history": [],
+   "url": "https://seatgeek.com/hannibal-buress-tickets/comedy/2026-11-20-7-30-pm/18206450",
+   "title": "Hannibal Buress",
+   "date": "2026-11-20",
+   "venue": "The Wilbur",
+   "low": null
+  },
+  "2026-12-02-nikki-glaser-mgm-music-hall-at-fe": {
+   "sg": 18002896,
+   "history": [],
+   "url": "https://seatgeek.com/nikki-glaser-tickets/comedy/2026-12-02-8-pm/18002896",
+   "title": "Nikki Glaser",
+   "date": "2026-12-02",
+   "venue": "MGM Music Hall at Fenway",
+   "low": null
+  },
+  "2026-12-03-gianmarco-soresi-the-wilbur": {
+   "sg": 18652858,
+   "history": [],
+   "url": "https://seatgeek.com/gianmarco-soresi-tickets/comedy/2026-12-03-7-30-pm/18652858",
+   "title": "Gianmarco Soresi",
+   "date": "2026-12-03",
+   "venue": "The Wilbur",
+   "low": null
+  },
+  "2026-12-03-nikki-glaser-mgm-music-hall-at-fe": {
+   "sg": 18006392,
+   "history": [],
+   "url": "https://seatgeek.com/nikki-glaser-tickets/comedy/2026-12-03-8-pm/18006392",
+   "title": "Nikki Glaser",
+   "date": "2026-12-03",
+   "venue": "MGM Music Hall at Fenway",
+   "low": null
+  },
+  "2026-12-03-michelle-wolf-chevalier-theatre": {
+   "sg": 18236562,
+   "history": [],
+   "url": "https://seatgeek.com/michelle-wolf-tickets/comedy/2026-12-03-7-30-pm/18236562",
+   "title": "Michelle Wolf",
+   "date": "2026-12-03",
+   "venue": "Chevalier Theatre",
+   "low": null
+  },
+  "2026-12-04-nikki-glaser-mgm-music-hall-at-fe": {
+   "sg": 18178308,
+   "history": [],
+   "url": "https://seatgeek.com/nikki-glaser-tickets/comedy/2026-12-04-7-pm/18178308",
+   "title": "Nikki Glaser",
+   "date": "2026-12-04",
+   "venue": "MGM Music Hall at Fenway",
+   "low": null
+  },
+  "2026-12-04-gianmarco-soresi-the-wilbur": {
+   "sg": 18149269,
+   "history": [],
+   "url": "https://seatgeek.com/gianmarco-soresi-tickets/comedy/2026-12-04-7-30-pm/18149269",
+   "title": "Gianmarco Soresi",
+   "date": "2026-12-04",
+   "venue": "The Wilbur",
+   "low": null
+  },
+  "2026-12-05-gianmarco-soresi-the-wilbur": {
+   "sg": 18138811,
+   "history": [],
+   "url": "https://seatgeek.com/gianmarco-soresi-tickets/comedy/2026-12-05-7-pm/18138811",
+   "title": "Gianmarco Soresi",
+   "date": "2026-12-05",
+   "venue": "The Wilbur",
+   "low": null
+  },
+  "2026-12-05-mihali-paradise-rock-club": {
+   "sg": 18484942,
+   "history": [],
+   "url": "https://seatgeek.com/mihali-tickets/boston-massachusetts-paradise-rock-club-2026-12-05-7-pm/concert/18484942",
+   "title": "Mihali",
+   "date": "2026-12-05",
+   "venue": "Paradise Rock Club",
+   "low": null
+  },
+  "2026-12-06-brett-goldstein-wang-theatre": {
+   "sg": 18523496,
+   "history": [],
+   "url": "https://seatgeek.com/brett-goldstein-tickets/comedy/2026-12-06-4-pm/18523496",
+   "title": "Brett Goldstein",
+   "date": "2026-12-06",
+   "venue": "Wang Theatre",
+   "low": null
+  },
+  "2026-12-06-jim-james-the-wilbur": {
+   "sg": 18408686,
+   "history": [],
+   "url": "https://seatgeek.com/jim-james-tickets/boston-massachusetts-the-wilbur-2026-12-06-8-pm/concert/18408686",
+   "title": "Jim James",
+   "date": "2026-12-06",
+   "venue": "The Wilbur",
+   "low": null
+  },
+  "2026-12-10-taper-s-choice-the-sinclair": {
+   "sg": 18609158,
+   "history": [],
+   "url": "https://seatgeek.com/taper-s-choice-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-12-10-8-pm/concert/18609158",
+   "title": "Taper's Choice",
+   "date": "2026-12-10",
+   "venue": "The Sinclair",
+   "low": null
+  },
+  "2026-12-13-lord-huron-mgm-music-hall-at-fe": {
+   "sg": 18421970,
+   "history": [],
+   "url": "https://seatgeek.com/lord-huron-tickets/boston-massachusetts-mgm-music-hall-at-fenway-2026-12-13-8-pm/concert/18421970",
+   "title": "Lord Huron",
+   "date": "2026-12-13",
+   "venue": "MGM Music Hall at Fenway",
+   "low": null
+  },
+  "2026-12-19-mark-normand-great-cedar-showroom": {
+   "sg": 18236597,
+   "history": [],
+   "url": "https://seatgeek.com/mark-normand-tickets/comedy/2026-12-19-6-pm/18236597",
+   "title": "Mark Normand",
+   "date": "2026-12-19",
+   "venue": "Great Cedar Showroom at Foxwoods",
+   "low": null
+  },
+  "2026-12-31-gov-t-mule-mgm-music-hall-at-fe": {
+   "sg": 18449511,
+   "history": [],
+   "url": "https://seatgeek.com/gov-t-mule-tickets/boston-massachusetts-mgm-music-hall-at-fenway-2026-12-31-8-pm/concert/18449511",
+   "title": "Gov't Mule",
+   "date": "2026-12-31",
+   "venue": "MGM Music Hall at Fenway",
+   "low": null
+  },
+  "2026-12-31-pigeons-playing-ping-pong-citizens-house-of-bl": {
+   "sg": 18408720,
+   "history": [],
+   "url": "https://seatgeek.com/pigeons-playing-ping-pong-tickets/boston-massachusetts-citizens-house-of-blues-boston-2026-12-31-7-pm/concert/18408720",
+   "title": "Pigeons Playing Ping Pong",
+   "date": "2026-12-31",
+   "venue": "Citizens House of Blues",
+   "low": null
+  },
+  "2027-03-05-greta-van-fleet-td-garden": {
+   "sg": 18641971,
+   "history": [],
+   "url": "https://seatgeek.com/greta-van-fleet-tickets/boston-massachusetts-td-garden-2027-03-05-7-pm/concert/18641971",
+   "title": "Greta Van Fleet",
+   "date": "2027-03-05",
+   "venue": "TD Garden",
+   "low": null
+  },
+  "2027-03-12-dropkick-murphys-mgm-music-hall-at-fe": {
+   "sg": 18685643,
+   "history": [],
+   "url": "https://seatgeek.com/dropkick-murphys-tickets/boston-massachusetts-mgm-music-hall-at-fenway-2027-03-12-7-pm/concert/18685643",
+   "title": "Dropkick Murphys",
+   "date": "2027-03-12",
+   "venue": "MGM Music Hall at Fenway",
+   "low": null
+  },
+  "2027-03-13-dropkick-murphys-mgm-music-hall-at-fe": {
+   "sg": 18685645,
+   "history": [],
+   "url": "https://seatgeek.com/dropkick-murphys-tickets/boston-massachusetts-mgm-music-hall-at-fenway-2027-03-13-2-pm/music-festival/18685645",
+   "title": "Dropkick Murphys",
+   "date": "2027-03-13",
+   "venue": "MGM Music Hall at Fenway",
+   "low": null
+  },
+  "2027-03-14-dropkick-murphys-mgm-music-hall-at-fe": {
+   "sg": 18685644,
+   "history": [],
+   "url": "https://seatgeek.com/dropkick-murphys-tickets/boston-massachusetts-mgm-music-hall-at-fenway-2027-03-14-4-pm/concert/18685644",
+   "title": "Dropkick Murphys",
+   "date": "2027-03-14",
+   "venue": "MGM Music Hall at Fenway",
+   "low": null
+  },
+  "2027-03-17-dropkick-murphys-citizens-house-of-bl": {
+   "sg": 18683920,
+   "history": [],
+   "url": "https://seatgeek.com/dropkick-murphys-tickets/boston-massachusetts-citizens-house-of-blues-boston-2027-03-17-5-pm/concert/18683920",
+   "title": "Dropkick Murphys",
+   "date": "2027-03-17",
+   "venue": "Citizens House of Blues",
+   "low": null
+  }
+ },
+ "misses": {
+  "2026-12-03-the-allman-betts-family-revival-orpheum-theatre": "2026-10-14"
+ },
+ "drops": []
+}
