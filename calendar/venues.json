@@ -1,0 +1,1881 @@
+{
+ "_about": "Shows at Boston's big rooms, copied from the venues' published calendars (mid-October 2026 onward). A stopgap until the Ticketmaster and SeatGeek keys feed the calendar on their own; the daily build merges these with those feeds and drops duplicates. Times are often unknown here (null). Shows that aren't on our lists only appear under All shows.",
+ "events": [
+  {
+   "date": "2026-10-14",
+   "time": null,
+   "title": "Dan and Phil",
+   "cat": "comedy",
+   "venue": "Wang Theatre",
+   "city": "Boston, MA",
+   "url": "https://comedy.tickets/venue/wang-theater-at-the-boch-center/"
+  },
+  {
+   "date": "2026-10-15",
+   "time": "19:00",
+   "title": "Anthony Fuentes",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://comedy.tickets/city/boston/"
+  },
+  {
+   "date": "2026-10-15",
+   "time": null,
+   "title": "Olivia Rodrigo",
+   "cat": "music",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.tdgarden.com/events",
+   "sub": "with Wolf Alice"
+  },
+  {
+   "date": "2026-10-15",
+   "time": null,
+   "title": "Little Big Town",
+   "cat": "music",
+   "venue": "Wang Theatre",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/886876-wang-theatre-boch-center/calendar"
+  },
+  {
+   "date": "2026-10-15",
+   "time": null,
+   "title": "Lifehouse",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2026-10-16",
+   "time": "19:00",
+   "title": "Robert Kelly",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://comedy.tickets/city/boston/"
+  },
+  {
+   "date": "2026-10-16",
+   "time": "21:30",
+   "title": "Robert Kelly",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://comedy.tickets/city/boston/"
+  },
+  {
+   "date": "2026-10-16",
+   "time": null,
+   "title": "Ryan Beatty",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar"
+  },
+  {
+   "date": "2026-10-16",
+   "time": null,
+   "title": "BERTHA: Grateful Drag",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2026-10-16",
+   "time": null,
+   "title": "Don Was & the Pan Detroit Ensemble",
+   "cat": "music",
+   "venue": "The Sinclair",
+   "city": "Cambridge, MA",
+   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar"
+  },
+  {
+   "date": "2026-10-17",
+   "time": "18:30",
+   "title": "Robert Kelly",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://comedy.tickets/city/boston/"
+  },
+  {
+   "date": "2026-10-17",
+   "time": "21:00",
+   "title": "Robert Kelly",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://comedy.tickets/city/boston/"
+  },
+  {
+   "date": "2026-10-17",
+   "time": null,
+   "title": "Olivia Rodrigo",
+   "cat": "music",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.tdgarden.com/events",
+   "sub": "with Wolf Alice"
+  },
+  {
+   "date": "2026-10-17",
+   "time": null,
+   "title": "Beck",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar",
+   "sub": "with Ioanna Gika"
+  },
+  {
+   "date": "2026-10-17",
+   "time": null,
+   "title": "Sylvan Esso",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar",
+   "sub": "with Arushi Jain"
+  },
+  {
+   "date": "2026-10-17",
+   "time": null,
+   "title": "Sin Bandera",
+   "cat": "music",
+   "venue": "Wang Theatre",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/886876-wang-theatre-boch-center/calendar"
+  },
+  {
+   "date": "2026-10-18",
+   "time": null,
+   "title": "Olivia Rodrigo",
+   "cat": "music",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.tdgarden.com/events",
+   "sub": "with Wolf Alice"
+  },
+  {
+   "date": "2026-10-18",
+   "time": null,
+   "title": "Sienna Spiro",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar",
+   "sub": "with Summer Joy"
+  },
+  {
+   "date": "2026-10-18",
+   "time": null,
+   "title": "for KING + COUNTRY",
+   "cat": "music",
+   "venue": "Wang Theatre",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/886876-wang-theatre-boch-center/calendar"
+  },
+  {
+   "date": "2026-10-18",
+   "time": null,
+   "title": "Allison Russell",
+   "cat": "music",
+   "venue": "Royale",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/895621-royale-boston/calendar"
+  },
+  {
+   "date": "2026-10-18",
+   "time": null,
+   "title": "Carly Pearce",
+   "cat": "music",
+   "venue": "The Sinclair",
+   "city": "Cambridge, MA",
+   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar"
+  },
+  {
+   "date": "2026-10-19",
+   "time": null,
+   "title": "Carly Pearce",
+   "cat": "music",
+   "venue": "The Sinclair",
+   "city": "Cambridge, MA",
+   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar"
+  },
+  {
+   "date": "2026-10-20",
+   "time": null,
+   "title": "Plini",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2026-10-21",
+   "time": null,
+   "title": "Cavetown",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar",
+   "sub": "with Chloe Moriondo"
+  },
+  {
+   "date": "2026-10-21",
+   "time": null,
+   "title": "The Tallest Man On Earth",
+   "cat": "music",
+   "venue": "Royale",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/895621-royale-boston/calendar"
+  },
+  {
+   "date": "2026-10-21",
+   "time": null,
+   "title": "Hank Azaria & The EZ Street Band",
+   "cat": "music",
+   "venue": "The Sinclair",
+   "city": "Cambridge, MA",
+   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar",
+   "sub": "a Springsteen tribute"
+  },
+  {
+   "date": "2026-10-22",
+   "time": null,
+   "title": "Hawthorne Heights",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar"
+  },
+  {
+   "date": "2026-10-22",
+   "time": null,
+   "title": "Eros Ramazzotti",
+   "cat": "music",
+   "venue": "Wang Theatre",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/886876-wang-theatre-boch-center/calendar"
+  },
+  {
+   "date": "2026-10-22",
+   "time": null,
+   "title": "Daniel Donato's Cosmic Country",
+   "cat": "music",
+   "venue": "Royale",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/895621-royale-boston/calendar"
+  },
+  {
+   "date": "2026-10-22",
+   "time": null,
+   "title": "Friko",
+   "cat": "music",
+   "venue": "The Sinclair",
+   "city": "Cambridge, MA",
+   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar"
+  },
+  {
+   "date": "2026-10-23",
+   "time": "19:00",
+   "title": "Ian Fidance",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://comedy.tickets/city/boston/"
+  },
+  {
+   "date": "2026-10-23",
+   "time": "19:30",
+   "title": "Jim Gaffigan",
+   "cat": "comedy",
+   "venue": "Wang Theatre",
+   "city": "Boston, MA",
+   "url": "https://comedy.tickets/venue/wang-theater-at-the-boch-center/"
+  },
+  {
+   "date": "2026-10-23",
+   "time": null,
+   "title": "Quadeca",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar"
+  },
+  {
+   "date": "2026-10-23",
+   "time": null,
+   "title": "Waylon Wyatt",
+   "cat": "music",
+   "venue": "Royale",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/895621-royale-boston/calendar"
+  },
+  {
+   "date": "2026-10-23",
+   "time": null,
+   "title": "Bruce Cockburn and Livingston Taylor",
+   "cat": "music",
+   "venue": "Chevalier Theatre",
+   "city": "Medford, MA",
+   "url": "https://beta.songkick.com/venues/88913-chevalier-theatre/calendar"
+  },
+  {
+   "date": "2026-10-24",
+   "time": "18:30",
+   "title": "Ian Fidance",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://comedy.tickets/city/boston/"
+  },
+  {
+   "date": "2026-10-24",
+   "time": "20:00",
+   "title": "Jim Gaffigan",
+   "cat": "comedy",
+   "venue": "Wang Theatre",
+   "city": "Boston, MA",
+   "url": "https://comedy.tickets/venue/wang-theater-at-the-boch-center/"
+  },
+  {
+   "date": "2026-10-24",
+   "time": "21:00",
+   "title": "Ian Fidance",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://comedy.tickets/city/boston/"
+  },
+  {
+   "date": "2026-10-24",
+   "time": null,
+   "title": "The Driveways, The Spill Canvas and Have Mercy",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar"
+  },
+  {
+   "date": "2026-10-24",
+   "time": null,
+   "title": "Big D and the Kids Table",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2026-10-24",
+   "time": null,
+   "title": "Nate Jackson",
+   "cat": "comedy",
+   "venue": "Chevalier Theatre",
+   "city": "Medford, MA",
+   "url": "https://beta.songkick.com/venues/88913-chevalier-theatre/calendar"
+  },
+  {
+   "date": "2026-10-25",
+   "time": "19:00",
+   "title": "Jim Gaffigan",
+   "cat": "comedy",
+   "venue": "Wang Theatre",
+   "city": "Boston, MA",
+   "url": "https://comedy.tickets/venue/wang-theater-at-the-boch-center/"
+  },
+  {
+   "date": "2026-10-25",
+   "time": "20:00",
+   "title": "Rod Wave",
+   "cat": "music",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.tdgarden.com/events",
+   "sub": "with Fridayy"
+  },
+  {
+   "date": "2026-10-26",
+   "time": null,
+   "title": "Johnny Blue Skies",
+   "cat": "music",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.tdgarden.com/events",
+   "sub": "Sturgill Simpson"
+  },
+  {
+   "date": "2026-10-27",
+   "time": null,
+   "title": "Built to Spill",
+   "cat": "music",
+   "venue": "The Sinclair",
+   "city": "Cambridge, MA",
+   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar",
+   "sub": "with Quasi"
+  },
+  {
+   "date": "2026-10-28",
+   "time": "20:00",
+   "title": "KATSEYE",
+   "cat": "music",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.tdgarden.com/events"
+  },
+  {
+   "date": "2026-10-28",
+   "time": null,
+   "title": "Arcangel",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar"
+  },
+  {
+   "date": "2026-10-28",
+   "time": null,
+   "title": "Candlebox and Sponge",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar"
+  },
+  {
+   "date": "2026-10-28",
+   "time": null,
+   "title": "Harbour",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2026-10-28",
+   "time": null,
+   "title": "Judah & the Lion",
+   "cat": "music",
+   "venue": "Royale",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/895621-royale-boston/calendar"
+  },
+  {
+   "date": "2026-10-28",
+   "time": null,
+   "title": "Built to Spill",
+   "cat": "music",
+   "venue": "The Sinclair",
+   "city": "Cambridge, MA",
+   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar",
+   "sub": "with Quasi"
+  },
+  {
+   "date": "2026-10-29",
+   "time": "19:00",
+   "title": "John Summit",
+   "cat": "music",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.tdgarden.com/events",
+   "sub": "with Alok and Jackie Hollander"
+  },
+  {
+   "date": "2026-10-29",
+   "time": "19:00",
+   "title": "Jessimae Peluso",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://comedy.tickets/city/boston/"
+  },
+  {
+   "date": "2026-10-29",
+   "time": null,
+   "title": "Grahame Lesh",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2026-10-30",
+   "time": null,
+   "title": "Rawayana",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar"
+  },
+  {
+   "date": "2026-10-30",
+   "time": null,
+   "title": "Paul Anka",
+   "cat": "music",
+   "venue": "Chevalier Theatre",
+   "city": "Medford, MA",
+   "url": "https://beta.songkick.com/venues/88913-chevalier-theatre/calendar"
+  },
+  {
+   "date": "2026-10-31",
+   "time": "18:30",
+   "title": "Jeff Allen",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://comedy.tickets/city/boston/"
+  },
+  {
+   "date": "2026-10-31",
+   "time": "21:00",
+   "title": "Demetrius Hullum",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://comedy.tickets/city/boston/"
+  },
+  {
+   "date": "2026-10-31",
+   "time": null,
+   "title": "Sueco",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2026-10-31",
+   "time": null,
+   "title": "Trixie Mattel and Katya",
+   "cat": "comedy",
+   "venue": "Royale",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/895621-royale-boston/calendar"
+  },
+  {
+   "date": "2026-11-01",
+   "time": null,
+   "title": "Eivør",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2026-11-03",
+   "time": null,
+   "title": "Disney Worlds Collide Tour",
+   "cat": "music",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.tdgarden.com/events"
+  },
+  {
+   "date": "2026-11-03",
+   "time": null,
+   "title": "Sleeping With Sirens",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar"
+  },
+  {
+   "date": "2026-11-03",
+   "time": null,
+   "title": "AJ McLean",
+   "cat": "music",
+   "venue": "Royale",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/895621-royale-boston/calendar"
+  },
+  {
+   "date": "2026-11-03",
+   "time": null,
+   "title": "half•alive",
+   "cat": "music",
+   "venue": "The Sinclair",
+   "city": "Cambridge, MA",
+   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar"
+  },
+  {
+   "date": "2026-11-04",
+   "time": null,
+   "title": "The Amity Affliction",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar",
+   "sub": "with blessthefall, Orthodox and Buried In Spring"
+  },
+  {
+   "date": "2026-11-04",
+   "time": null,
+   "title": "half•alive",
+   "cat": "music",
+   "venue": "The Sinclair",
+   "city": "Cambridge, MA",
+   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar"
+  },
+  {
+   "date": "2026-11-05",
+   "time": null,
+   "title": "Chief Keef",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar"
+  },
+  {
+   "date": "2026-11-05",
+   "time": null,
+   "title": "Palace",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar"
+  },
+  {
+   "date": "2026-11-05",
+   "time": null,
+   "title": "Air Supply",
+   "cat": "music",
+   "venue": "Chevalier Theatre",
+   "city": "Medford, MA",
+   "url": "https://beta.songkick.com/venues/88913-chevalier-theatre/calendar"
+  },
+  {
+   "date": "2026-11-06",
+   "time": null,
+   "title": "Gavin Adcock",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar",
+   "sub": "with Braxton Keith and The Creekers"
+  },
+  {
+   "date": "2026-11-06",
+   "time": null,
+   "title": "Amble",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar"
+  },
+  {
+   "date": "2026-11-06",
+   "time": null,
+   "title": "Beat",
+   "cat": "music",
+   "venue": "Wang Theatre",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/886876-wang-theatre-boch-center/calendar",
+   "sub": "Adrian Belew, Steve Vai, Tony Levin and Terry Bozzio play '80s King Crimson"
+  },
+  {
+   "date": "2026-11-06",
+   "time": null,
+   "title": "A Boogie Wit da Hoodie",
+   "cat": "music",
+   "venue": "Agganis Arena",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/811-agganis-arena/calendar"
+  },
+  {
+   "date": "2026-11-06",
+   "time": null,
+   "title": "nimino",
+   "cat": "music",
+   "venue": "Roadrunner",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/4568185-roadrunner-boston/calendar"
+  },
+  {
+   "date": "2026-11-06",
+   "time": null,
+   "title": "Almost Monday",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2026-11-06",
+   "time": null,
+   "title": "CamelPhat",
+   "cat": "music",
+   "venue": "Royale",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/895621-royale-boston/calendar"
+  },
+  {
+   "date": "2026-11-06",
+   "time": null,
+   "title": "A Place To Bury Strangers",
+   "cat": "music",
+   "venue": "The Sinclair",
+   "city": "Cambridge, MA",
+   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar"
+  },
+  {
+   "date": "2026-11-07",
+   "time": null,
+   "title": "Sammy Rae & the Friends",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar",
+   "sub": "with Melt"
+  },
+  {
+   "date": "2026-11-07",
+   "time": null,
+   "title": "A Boogie Wit da Hoodie",
+   "cat": "music",
+   "venue": "Agganis Arena",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/811-agganis-arena/calendar"
+  },
+  {
+   "date": "2026-11-07",
+   "time": null,
+   "title": "Fruit Bats",
+   "cat": "music",
+   "venue": "Royale",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/895621-royale-boston/calendar"
+  },
+  {
+   "date": "2026-11-08",
+   "time": null,
+   "title": "Wheeler Walker, Jr.",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar",
+   "sub": "with Channing Wilson"
+  },
+  {
+   "date": "2026-11-08",
+   "time": null,
+   "title": "Boston Manor",
+   "cat": "music",
+   "venue": "The Sinclair",
+   "city": "Cambridge, MA",
+   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar"
+  },
+  {
+   "date": "2026-11-08",
+   "time": null,
+   "title": "Ben Schwartz",
+   "cat": "comedy",
+   "venue": "Chevalier Theatre",
+   "city": "Medford, MA",
+   "url": "https://beta.songkick.com/venues/88913-chevalier-theatre/calendar"
+  },
+  {
+   "date": "2026-11-09",
+   "time": null,
+   "title": "George Clanton",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2026-11-09",
+   "time": null,
+   "title": "Hiss Golden Messenger",
+   "cat": "music",
+   "venue": "The Sinclair",
+   "city": "Cambridge, MA",
+   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar"
+  },
+  {
+   "date": "2026-11-10",
+   "time": null,
+   "title": "Journey",
+   "cat": "music",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.tdgarden.com/events"
+  },
+  {
+   "date": "2026-11-10",
+   "time": null,
+   "title": "Ax and the Hatchetmen",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar"
+  },
+  {
+   "date": "2026-11-11",
+   "time": null,
+   "title": "Windwaker and Don Broco",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar",
+   "sub": "with Beartooth and Magnolia Park"
+  },
+  {
+   "date": "2026-11-11",
+   "time": null,
+   "title": "Phillip Phillips",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2026-11-11",
+   "time": null,
+   "title": "The Bad Plus",
+   "cat": "music",
+   "venue": "The Sinclair",
+   "city": "Cambridge, MA",
+   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar"
+  },
+  {
+   "date": "2026-11-12",
+   "time": null,
+   "title": "John Legend",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar",
+   "sub": "with Gipsy Kings"
+  },
+  {
+   "date": "2026-11-12",
+   "time": null,
+   "title": "Giant Rooks",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar"
+  },
+  {
+   "date": "2026-11-13",
+   "time": null,
+   "title": "Victoria Monét",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar"
+  },
+  {
+   "date": "2026-11-13",
+   "time": null,
+   "title": "Blue October",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar"
+  },
+  {
+   "date": "2026-11-13",
+   "time": null,
+   "title": "Lucy Darling",
+   "cat": "comedy",
+   "venue": "Wang Theatre",
+   "city": "Boston, MA",
+   "url": "https://comedy.tickets/venue/wang-theater-at-the-boch-center/"
+  },
+  {
+   "date": "2026-11-13",
+   "time": null,
+   "title": "JoJo",
+   "cat": "music",
+   "venue": "Royale",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/895621-royale-boston/calendar"
+  },
+  {
+   "date": "2026-11-13",
+   "time": null,
+   "title": "Dweezil Zappa",
+   "cat": "music",
+   "venue": "Chevalier Theatre",
+   "city": "Medford, MA",
+   "url": "https://beta.songkick.com/venues/88913-chevalier-theatre/calendar"
+  },
+  {
+   "date": "2026-11-14",
+   "time": null,
+   "title": "Klass",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar"
+  },
+  {
+   "date": "2026-11-14",
+   "time": null,
+   "title": "Brothers Osborne",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar"
+  },
+  {
+   "date": "2026-11-14",
+   "time": null,
+   "title": "Dark Star Orchestra",
+   "cat": "music",
+   "venue": "Orpheum Theatre",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/1026-orpheum-theatre"
+  },
+  {
+   "date": "2026-11-14",
+   "time": null,
+   "title": "Jalen Ngonda",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2026-11-14",
+   "time": null,
+   "title": "Carbon Leaf",
+   "cat": "music",
+   "venue": "The Sinclair",
+   "city": "Cambridge, MA",
+   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar"
+  },
+  {
+   "date": "2026-11-15",
+   "time": null,
+   "title": "Gnarls Barkley",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar",
+   "sub": "with Duckwrth"
+  },
+  {
+   "date": "2026-11-15",
+   "time": null,
+   "title": "Third Eye Blind",
+   "cat": "music",
+   "venue": "Roadrunner",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/4568185-roadrunner-boston/calendar"
+  },
+  {
+   "date": "2026-11-15",
+   "time": null,
+   "title": "Mountain Grass Unit",
+   "cat": "music",
+   "venue": "Royale",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/895621-royale-boston/calendar"
+  },
+  {
+   "date": "2026-11-16",
+   "time": null,
+   "title": "Yung Gravy",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2026-11-16",
+   "time": null,
+   "title": "The War and Treaty",
+   "cat": "music",
+   "venue": "The Sinclair",
+   "city": "Cambridge, MA",
+   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar"
+  },
+  {
+   "date": "2026-11-17",
+   "time": null,
+   "title": "caroline",
+   "cat": "music",
+   "venue": "The Sinclair",
+   "city": "Cambridge, MA",
+   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar"
+  },
+  {
+   "date": "2026-11-18",
+   "time": null,
+   "title": "sombr",
+   "cat": "music",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.tdgarden.com/events",
+   "sub": "with Dove Cameron and Hannah Jadagu"
+  },
+  {
+   "date": "2026-11-18",
+   "time": null,
+   "title": "Tune-Yards",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2026-11-19",
+   "time": null,
+   "title": "Trippie Redd",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar"
+  },
+  {
+   "date": "2026-11-19",
+   "time": null,
+   "title": "AJ Lee and Blue Summit",
+   "cat": "music",
+   "venue": "The Sinclair",
+   "city": "Cambridge, MA",
+   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar"
+  },
+  {
+   "date": "2026-11-20",
+   "time": null,
+   "title": "Jubin Nautiyal",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar"
+  },
+  {
+   "date": "2026-11-20",
+   "time": null,
+   "title": "Tiny Habits",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar"
+  },
+  {
+   "date": "2026-11-20",
+   "time": null,
+   "title": "Letters to Cleo and The Sheila Divine",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2026-11-20",
+   "time": null,
+   "title": "Julia Jacklin",
+   "cat": "music",
+   "venue": "Royale",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/895621-royale-boston/calendar"
+  },
+  {
+   "date": "2026-11-20",
+   "time": null,
+   "title": "TroyBoi",
+   "cat": "music",
+   "venue": "Royale",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/895621-royale-boston/calendar"
+  },
+  {
+   "date": "2026-11-21",
+   "time": null,
+   "title": "Orville Peck",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar",
+   "sub": "with Abbie Callahan"
+  },
+  {
+   "date": "2026-11-21",
+   "time": null,
+   "title": "The Menzingers",
+   "cat": "music",
+   "venue": "Roadrunner",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/4568185-roadrunner-boston/calendar",
+   "sub": "with Hot Water Music and Weakened Friends"
+  },
+  {
+   "date": "2026-11-21",
+   "time": null,
+   "title": "Letters to Cleo and The Sheila Divine",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2026-11-22",
+   "time": null,
+   "title": "Jessie Reyez",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar"
+  },
+  {
+   "date": "2026-11-22",
+   "time": null,
+   "title": "Sweet Pill",
+   "cat": "music",
+   "venue": "The Sinclair",
+   "city": "Cambridge, MA",
+   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar"
+  },
+  {
+   "date": "2026-11-23",
+   "time": null,
+   "title": "Doja Cat",
+   "cat": "music",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.tdgarden.com/events"
+  },
+  {
+   "date": "2026-11-24",
+   "time": null,
+   "title": "Yaelokre and Ben Caplan",
+   "cat": "music",
+   "venue": "Royale",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/895621-royale-boston/calendar"
+  },
+  {
+   "date": "2026-11-25",
+   "time": null,
+   "title": "Tyla",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar"
+  },
+  {
+   "date": "2026-11-25",
+   "time": null,
+   "title": "Frank Reyes and Héctor Acosta",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar"
+  },
+  {
+   "date": "2026-11-27",
+   "time": null,
+   "title": "The Hotelier",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2026-11-28",
+   "time": null,
+   "title": "Bonobo",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar"
+  },
+  {
+   "date": "2026-11-28",
+   "time": null,
+   "title": "Jinkx Monsoon and BenDeLaCreme",
+   "cat": "comedy",
+   "venue": "Wang Theatre",
+   "city": "Boston, MA",
+   "url": "https://comedy.tickets/venue/wang-theater-at-the-boch-center/",
+   "sub": "holiday show"
+  },
+  {
+   "date": "2026-11-29",
+   "time": null,
+   "title": "Underoath",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar",
+   "sub": "with Emery, August Burns Red and Atreyu"
+  },
+  {
+   "date": "2026-12-01",
+   "time": null,
+   "title": "Sabaton",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar",
+   "sub": "with Pop Evil and Wings of Steel"
+  },
+  {
+   "date": "2026-12-01",
+   "time": null,
+   "title": "Nate Smith",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2026-12-02",
+   "time": "20:00",
+   "title": "Nikki Glaser",
+   "cat": "comedy",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://comedy.tickets/tickets/nikki-glaser/",
+   "sub": "The Stunning Tour"
+  },
+  {
+   "date": "2026-12-02",
+   "time": null,
+   "title": "Straight No Chaser",
+   "cat": "music",
+   "venue": "Orpheum Theatre",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/1026-orpheum-theatre"
+  },
+  {
+   "date": "2026-12-02",
+   "time": null,
+   "title": "We Are Scientists",
+   "cat": "music",
+   "venue": "The Sinclair",
+   "city": "Cambridge, MA",
+   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar"
+  },
+  {
+   "date": "2026-12-03",
+   "time": "20:00",
+   "title": "Nikki Glaser",
+   "cat": "comedy",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://comedy.tickets/tickets/nikki-glaser/",
+   "sub": "The Stunning Tour"
+  },
+  {
+   "date": "2026-12-03",
+   "time": null,
+   "title": "The Allman Betts Family Revival",
+   "cat": "music",
+   "venue": "Orpheum Theatre",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/1026-orpheum-theatre",
+   "sub": "with Duane Betts, Robert Randolph, Judith Hill and more"
+  },
+  {
+   "date": "2026-12-03",
+   "time": null,
+   "title": "Kyle Gordon",
+   "cat": "music",
+   "venue": "The Sinclair",
+   "city": "Cambridge, MA",
+   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar"
+  },
+  {
+   "date": "2026-12-03",
+   "time": null,
+   "title": "Michelle Wolf",
+   "cat": "comedy",
+   "venue": "Chevalier Theatre",
+   "city": "Medford, MA",
+   "url": "https://beta.songkick.com/venues/88913-chevalier-theatre/calendar"
+  },
+  {
+   "date": "2026-12-04",
+   "time": "19:00",
+   "title": "Nikki Glaser",
+   "cat": "comedy",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://comedy.tickets/tickets/nikki-glaser/",
+   "sub": "The Stunning Tour"
+  },
+  {
+   "date": "2026-12-04",
+   "time": null,
+   "title": "Dexter and The Moonrocks",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar",
+   "sub": "with Cigarettes @ Sunset and High June"
+  },
+  {
+   "date": "2026-12-04",
+   "time": null,
+   "title": "Brett Eldredge",
+   "cat": "music",
+   "venue": "Wang Theatre",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/886876-wang-theatre-boch-center/calendar"
+  },
+  {
+   "date": "2026-12-04",
+   "time": null,
+   "title": "Streetlight Manifesto",
+   "cat": "music",
+   "venue": "Roadrunner",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/4568185-roadrunner-boston/calendar"
+  },
+  {
+   "date": "2026-12-04",
+   "time": null,
+   "title": "Caspian and Pile",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2026-12-05",
+   "time": null,
+   "title": "Brett Eldredge",
+   "cat": "music",
+   "venue": "Wang Theatre",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/886876-wang-theatre-boch-center/calendar"
+  },
+  {
+   "date": "2026-12-05",
+   "time": null,
+   "title": "Sara Bareilles and Matt Nathanson",
+   "cat": "music",
+   "venue": "Agganis Arena",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/811-agganis-arena/calendar"
+  },
+  {
+   "date": "2026-12-05",
+   "time": null,
+   "title": "Mihali",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2026-12-06",
+   "time": "16:00",
+   "title": "Brett Goldstein",
+   "cat": "comedy",
+   "venue": "Wang Theatre",
+   "city": "Boston, MA",
+   "url": "https://comedy.tickets/venue/wang-theater-at-the-boch-center/"
+  },
+  {
+   "date": "2026-12-06",
+   "time": "19:00",
+   "title": "Brett Goldstein",
+   "cat": "comedy",
+   "venue": "Wang Theatre",
+   "city": "Boston, MA",
+   "url": "https://comedy.tickets/venue/wang-theater-at-the-boch-center/"
+  },
+  {
+   "date": "2026-12-06",
+   "time": null,
+   "title": "Syd",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar"
+  },
+  {
+   "date": "2026-12-06",
+   "time": null,
+   "title": "Engelbert Humperdinck",
+   "cat": "music",
+   "venue": "Chevalier Theatre",
+   "city": "Medford, MA",
+   "url": "https://beta.songkick.com/venues/88913-chevalier-theatre/calendar"
+  },
+  {
+   "date": "2026-12-08",
+   "time": null,
+   "title": "SMITH & MYERS",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar"
+  },
+  {
+   "date": "2026-12-08",
+   "time": null,
+   "title": "Eloise",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2026-12-10",
+   "time": null,
+   "title": "Andrea Bocelli",
+   "cat": "music",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.tdgarden.com/events"
+  },
+  {
+   "date": "2026-12-10",
+   "time": null,
+   "title": "Taper's Choice",
+   "cat": "music",
+   "venue": "The Sinclair",
+   "city": "Cambridge, MA",
+   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar"
+  },
+  {
+   "date": "2026-12-11",
+   "time": null,
+   "title": "Smokey Robinson",
+   "cat": "music",
+   "venue": "Chevalier Theatre",
+   "city": "Medford, MA",
+   "url": "https://beta.songkick.com/venues/88913-chevalier-theatre/calendar"
+  },
+  {
+   "date": "2026-12-12",
+   "time": null,
+   "title": "Neurosis",
+   "cat": "music",
+   "venue": "Roadrunner",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/4568185-roadrunner-boston/calendar"
+  },
+  {
+   "date": "2026-12-12",
+   "time": null,
+   "title": "Juice",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2026-12-13",
+   "time": null,
+   "title": "Kiss 108's Jingle Ball",
+   "cat": "music",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.tdgarden.com/events",
+   "sub": "Nickelback, sombr, TOMORROW X TOGETHER, Hilary Duff and more"
+  },
+  {
+   "date": "2026-12-13",
+   "time": null,
+   "title": "Lord Huron",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar"
+  },
+  {
+   "date": "2026-12-13",
+   "time": null,
+   "title": "Silverstein and Story of the Year",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar",
+   "sub": "with Stand Atlantic and FOOTBALLHEAD"
+  },
+  {
+   "date": "2026-12-17",
+   "time": null,
+   "title": "Amtrac",
+   "cat": "music",
+   "venue": "The Sinclair",
+   "city": "Cambridge, MA",
+   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar"
+  },
+  {
+   "date": "2026-12-18",
+   "time": null,
+   "title": "Street Dogs and Gang Green",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2026-12-18",
+   "time": null,
+   "title": "Night Lovell",
+   "cat": "music",
+   "venue": "Royale",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/895621-royale-boston/calendar"
+  },
+  {
+   "date": "2026-12-18",
+   "time": null,
+   "title": "Weird Phishes",
+   "cat": "music",
+   "venue": "The Sinclair",
+   "city": "Cambridge, MA",
+   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar",
+   "sub": "a Phish tribute"
+  },
+  {
+   "date": "2026-12-31",
+   "time": null,
+   "title": "Gov't Mule",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar",
+   "sub": "New Year's Eve"
+  },
+  {
+   "date": "2026-12-31",
+   "time": null,
+   "title": "Pigeons Playing Ping Pong",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar",
+   "sub": "New Year's Eve, with TAUK"
+  },
+  {
+   "date": "2027-01-08",
+   "time": null,
+   "title": "TesseracT",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2027-01-17",
+   "time": null,
+   "title": "Stella Lefty",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar"
+  },
+  {
+   "date": "2027-01-24",
+   "time": null,
+   "title": "The Womack Sisters",
+   "cat": "music",
+   "venue": "Royale",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/895621-royale-boston/calendar"
+  },
+  {
+   "date": "2027-01-30",
+   "time": null,
+   "title": "Hans Williams",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2027-02-02",
+   "time": null,
+   "title": "La Roux",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2027-02-04",
+   "time": null,
+   "title": "Braxton Keith",
+   "cat": "music",
+   "venue": "Royale",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/895621-royale-boston/calendar"
+  },
+  {
+   "date": "2027-02-05",
+   "time": null,
+   "title": "Boyz II Men",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar"
+  },
+  {
+   "date": "2027-02-06",
+   "time": null,
+   "title": "Dylan Scott",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar",
+   "sub": "with Graham Barham"
+  },
+  {
+   "date": "2027-02-06",
+   "time": null,
+   "title": "Ibeyi",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2027-02-08",
+   "time": null,
+   "title": "Bad Suns",
+   "cat": "music",
+   "venue": "Royale",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/895621-royale-boston/calendar"
+  },
+  {
+   "date": "2027-02-10",
+   "time": null,
+   "title": "Alan Walker",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar"
+  },
+  {
+   "date": "2027-02-12",
+   "time": null,
+   "title": "FLO",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar"
+  },
+  {
+   "date": "2027-02-13",
+   "time": null,
+   "title": "State Radio",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar"
+  },
+  {
+   "date": "2027-02-13",
+   "time": null,
+   "title": "Chelsea Cutler",
+   "cat": "music",
+   "venue": "Roadrunner",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/4568185-roadrunner-boston/calendar"
+  },
+  {
+   "date": "2027-02-13",
+   "time": null,
+   "title": "James Marriott",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar"
+  },
+  {
+   "date": "2027-02-24",
+   "time": null,
+   "title": "Hans Zimmer",
+   "cat": "music",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.tdgarden.com/events"
+  },
+  {
+   "date": "2027-03-01",
+   "time": null,
+   "title": "Gracie Abrams",
+   "cat": "music",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.tdgarden.com/events",
+   "sub": "with Grace Ives"
+  },
+  {
+   "date": "2027-03-02",
+   "time": null,
+   "title": "Gracie Abrams",
+   "cat": "music",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.tdgarden.com/events",
+   "sub": "with Grace Ives"
+  },
+  {
+   "date": "2027-03-02",
+   "time": null,
+   "title": "Remi Wolf",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar",
+   "sub": "with Emma Ogier"
+  },
+  {
+   "date": "2027-03-04",
+   "time": null,
+   "title": "Brit Floyd",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar"
+  },
+  {
+   "date": "2027-03-05",
+   "time": null,
+   "title": "Greta Van Fleet",
+   "cat": "music",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.tdgarden.com/events",
+   "sub": "with The Kooks and Luna Li"
+  },
+  {
+   "date": "2027-03-05",
+   "time": null,
+   "title": "NEEDTOBREATHE",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar",
+   "sub": "with Drew & Ellie Holcomb"
+  },
+  {
+   "date": "2027-03-06",
+   "time": null,
+   "title": "The Mary Wallopers",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar"
+  },
+  {
+   "date": "2027-03-07",
+   "time": null,
+   "title": "Polyphia",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar"
+  },
+  {
+   "date": "2027-03-07",
+   "time": null,
+   "title": "Morat",
+   "cat": "music",
+   "venue": "Agganis Arena",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/811-agganis-arena/calendar"
+  },
+  {
+   "date": "2027-03-10",
+   "time": null,
+   "title": "Nickelback",
+   "cat": "music",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.tdgarden.com/events",
+   "sub": "with Don Broco"
+  },
+  {
+   "date": "2027-03-11",
+   "time": null,
+   "title": "Sonic Symphony",
+   "cat": "music",
+   "venue": "Wang Theatre",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/886876-wang-theatre-boch-center/calendar"
+  },
+  {
+   "date": "2027-03-12",
+   "time": null,
+   "title": "Dropkick Murphys",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar",
+   "sub": "with Fiddlehead and Wisdom In Chains"
+  },
+  {
+   "date": "2027-03-12",
+   "time": null,
+   "title": "The High Kings",
+   "cat": "music",
+   "venue": "Chevalier Theatre",
+   "city": "Medford, MA",
+   "url": "https://beta.songkick.com/venues/88913-chevalier-theatre/calendar"
+  },
+  {
+   "date": "2027-03-13",
+   "time": null,
+   "title": "Dropkick Murphys",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar",
+   "sub": "with The Home Front, Spiritual Cramp and Cittizins"
+  },
+  {
+   "date": "2027-03-13",
+   "time": null,
+   "title": "Dinosaur Jr.",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar",
+   "sub": "with Horse Jumper of Love"
+  },
+  {
+   "date": "2027-03-14",
+   "time": null,
+   "title": "Dropkick Murphys",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar",
+   "sub": "with Brian Fallon and Ben Nichols"
+  },
+  {
+   "date": "2027-03-17",
+   "time": null,
+   "title": "Def Leppard",
+   "cat": "music",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.tdgarden.com/events"
+  },
+  {
+   "date": "2027-03-17",
+   "time": null,
+   "title": "Dropkick Murphys",
+   "cat": "music",
+   "venue": "Citizens House of Blues",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/50095-house-of-blues-boston/calendar",
+   "sub": "St. Patrick's Day"
+  },
+  {
+   "date": "2027-03-27",
+   "time": null,
+   "title": "Jay Wheeler",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://app.songkick.com/venues/4438511-mgm-music-hall-at-fenway/calendar"
+  }
+ ]
+}

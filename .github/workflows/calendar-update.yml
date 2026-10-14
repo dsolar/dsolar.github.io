@@ -1,7 +1,8 @@
 # Keeps davidsolar.dev/calendar/ (Night Out) current.
-#  - Every morning it rebuilds calendar/events.json: home games from ESPN, Boston shows and
-#    road trips from Ticketmaster (once a TICKETMASTER_KEY secret is set), plus calendar/picks.json.
-#  - Editing calendar/taste.json or calendar/picks.json rebuilds it right away.
+#  - Every morning it rebuilds calendar/events.json: home games from ESPN, Boston shows and road
+#    trips from Ticketmaster and SeatGeek (once their keys are set as secrets), plus the hand-kept
+#    calendar/picks.json and calendar/venues.json.
+#  - Editing taste.json, picks.json or venues.json rebuilds it right away.
 name: Calendar update
 
 on:
@@ -10,6 +11,7 @@ on:
     paths:
       - calendar/taste.json
       - calendar/picks.json
+      - calendar/venues.json
       - tools/calendar_update.py
       - .github/workflows/calendar-update.yml
   schedule:
@@ -39,6 +41,7 @@ jobs:
       - name: Build the calendar
         env:
           TICKETMASTER_KEY: ${{ secrets.TICKETMASTER_KEY }}
+          SEATGEEK_CLIENT_ID: ${{ secrets.SEATGEEK_CLIENT_ID }}
         run: python3 tools/calendar_update.py
 
       - name: Commit the new data

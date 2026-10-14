@@ -546,9 +546,11 @@ function renderMe() {
 
 function renderChips() {
   const anyZero = DATA.events.some((e) => e.score < 1);
-  $("chips").innerHTML = FILTERS.map(([k, label]) =>
-    `<button class="chip" data-f="${k}" aria-pressed="${F === k}">${CATS[k] ? `<span class="dot c-${k}"></span>` : ""}${label}</button>`).join("") +
-    (anyZero ? `<button class="chip" data-all aria-pressed="${EVERYTHING}" title="Also show other shows at the big rooms">Everything</button>` : "");
+  // "All shows" sits right after "Our picks": it adds every show at the big rooms, not just ours.
+  const chip = ([k, label]) => `<button class="chip" data-f="${k}" aria-pressed="${F === k}">${CATS[k] ? `<span class="dot c-${k}"></span>` : ""}${label}</button>`;
+  $("chips").innerHTML = chip(FILTERS[0]) +
+    (anyZero ? `<button class="chip" data-all aria-pressed="${EVERYTHING}" title="Every show at the big rooms, not just the ones on our lists">All shows</button>` : "") +
+    FILTERS.slice(1).map(chip).join("");
   $("chips").querySelectorAll("[data-f]").forEach((b) => b.onclick = () => {
     F = b.dataset.f; store.set("filter", F);
     // If this month has nothing for the filter, jump to the first month that does.
@@ -948,6 +950,8 @@ function renderFoot() {
   const s = DATA.sources || {};
   const bits = [];
   if (s.ticketmaster && s.ticketmaster !== "no key yet") bits.push("Ticketmaster");
+  if (s.seatgeek && s.seatgeek !== "no key yet") bits.push("SeatGeek");
+  if (s.venues) bits.push("the venues' own calendars");
   if (s.espn) bits.push("ESPN schedules");
   bits.push("hand-picked shows and movies");
   const priced = Object.keys(PRICES.events || {}).length;

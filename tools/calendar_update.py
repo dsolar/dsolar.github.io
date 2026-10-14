@@ -3,9 +3,12 @@
 
 Sources, merged and de-duplicated:
   calendar/picks.json   hand-picked events (road trips, special shows) and movies
+  calendar/venues.json  the big rooms' published calendars, copied by hand (a stopgap until the keys below)
   ESPN schedules        home games for the teams in calendar/taste.json (no key needed)
   Ticketmaster          Boston-area comedy and music, plus road trips for the "love" and "big" bands,
                         when a TICKETMASTER_KEY is set (free key: developer.ticketmaster.com)
+  SeatGeek              the same, including venues Ticketmaster doesn't sell (Roadrunner, Royale, the
+                        Sinclair), when a SEATGEEK_CLIENT_ID is set
 
 Each event gets a score: 3 for a band we love, 2 for a big band, one we like or a favorite comedian,
 1 for other comedy, games and hand picks, 0 for other big-venue shows. The page shows
@@ -29,7 +32,7 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 CAL = os.path.join(ROOT, "calendar")
 ET = ZoneInfo("America/New_York")
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
-DAYS_AHEAD = 120
+DAYS_AHEAD = 180
 MPH = 52          # average road speed for drive estimates
 ROAD = 1.2        # road miles per straight-line mile
 
@@ -163,6 +166,59 @@ def ticketmaster(taste, key, today, until):
     return out
 
 
+def sg_row(e, home):
+    v = e.get("venue") or {}
+    loc = v.get("location") or {}
+    kind = " ".join([e.get("type", "")] + [t.get("name", "") for t in e.get("taxonomies", [])])
+    local = e.get("datetime_local") or ""
+    row = {
+        "id": f"sg-{e['id']}",
+        "date": local[:10] or None,
+        "time": None if e.get("time_tbd") or e.get("datetime_tbd") else (local[11:16] or None),
+        "title": e.get("short_title") or e.get("title", ""),
+        "cat": "comedy" if "comedy" in kind else "music",
+        "venue": v.get("name", ""),
+        "city": ", ".join(x for x in (v.get("city"), v.get("state")) if x),
+        "url": e.get("url"),
+        "source": "seatgeek",
+        "_acts": [p.get("name", "") for p in e.get("performers", [])],
+    }
+    try:
+        row["_miles"] = miles(home["lat"], home["lon"], float(loc["lat"]), float(loc["lon"]))
+    except (KeyError, TypeError, ValueError):
+        pass
+    return row
+
+
+def seatgeek(taste, client, today, until):
+    home = taste["home"]
+    base = {"client_id": client, "datetime_local.gte": f"{today}T00:00:00", "datetime_local.lte": f"{until}T23:59:59",
+            "per_page": 100, "sort": "datetime_local.asc"}
+    out = []
+
+    def pages(params, limit):
+        for page in range(1, limit + 1):
+            data = get_json("https://api.seatgeek.com/2/events?" + urllib.parse.urlencode(dict(base, page=page, **params)))
+            evs = data.get("events", [])
+            out.extend(sg_row(e, home) for e in evs)
+            if len(evs) < base["per_page"]:
+                break
+            time.sleep(0.2)
+
+    try:
+        near = {"lat": home["lat"], "lon": home["lon"], "range": f"{taste.get('local_miles', 30)}mi"}
+        pages(dict(near, **{"taxonomies.name": "comedy"}), 3)
+        pages(dict(near, **{"taxonomies.name": "concert"}), 8)
+        reach = int(taste.get("road_trip_hours", 4.5) * MPH / ROAD)
+        bands = taste.get("bands", {})
+        for band in bands.get("love", []) + bands.get("big", []):
+            pages({"q": band, "lat": home["lat"], "lon": home["lon"], "range": f"{reach}mi"}, 1)
+            time.sleep(0.2)
+    except Exception as e:
+        print(f"::warning::SeatGeek failed partway: {e}")
+    return out
+
+
 # ------------------------------------------------------------------ build
 
 def big_room(venue, taste):
@@ -176,7 +232,7 @@ def score(e, taste):
     """3 a band we love, 2 a big band, a band we like or a favorite comic, 1 worth a look, 0 only under Everything."""
     bands, comics = taste.get("bands", {}), taste.get("comedians", [])
     text = " ".join([e["title"], e.get("sub", "")] + e.get("_acts", []))
-    picked = e.get("source") != "ticketmaster"
+    picked = e.get("source") not in ("ticketmaster", "seatgeek", "venues")
     if e["cat"] == "music":
         if matches(text, bands.get("love", [])):
             return 3, "love"
@@ -201,16 +257,21 @@ def main():
     local_mi = taste.get("local_miles", 30)
 
     events = []
-    for p in picks.get("events", []):
-        if today.isoformat() <= p["date"] <= until.isoformat():
-            e = dict(p, source="picks")
-            e["id"] = e.get("id") or f"{p['date']}-{slug(p['title'], 32)}-{slug(p.get('venue', ''), 20)}"
-            events.append(e)
+    vpath = os.path.join(CAL, "venues.json")
+    listed = json.load(open(vpath, encoding="utf-8")).get("events", []) if os.path.exists(vpath) else []
+    for source, rows in (("picks", picks.get("events", [])), ("venues", listed)):
+        for p in rows:
+            if today.isoformat() <= p["date"] <= until.isoformat():
+                e = dict(p, source=source)
+                e["id"] = e.get("id") or f"{p['date']}-{slug(p['title'], 32)}-{slug(p.get('venue', ''), 20)}"
+                events.append(e)
     games = espn_games(taste, today, until)
     events += games
     key = os.environ.get("TICKETMASTER_KEY", "").strip()
+    sg_key = os.environ.get("SEATGEEK_CLIENT_ID", "").strip()
     tm = ticketmaster(taste, key, today, until) if key else []
-    for e in tm:
+    sg = seatgeek(taste, sg_key, today, until) if sg_key else []
+    for e in tm + sg:
         if not e.get("date"):
             continue
         mi = e.get("_miles")
@@ -231,10 +292,14 @@ def main():
     def first(s):
         words = [w for w in norm(s).split() if w != "the"]
         return words[0] if words else ""
-    rank = {"ticketmaster": 0, "espn": 1, "picks": 2}
+    plain = {"the", "at", "of", "and", "theatre", "theater", "center", "centre", "boston", "music", "hall", "club",
+             "house", "arena", "citizens", "rock", "live"}
+    def place(s):
+        return {w for w in norm(s).split() if len(w) >= 3 and w not in plain}
+    rank = {"ticketmaster": 0, "seatgeek": 1, "espn": 2, "picks": 3, "venues": 4}
     kept = []
-    for e in sorted(events, key=lambda e: rank.get(e.get("source"), 3)):
-        twin = next((k for k in kept if k["date"] == e["date"] and first(k.get("venue")) == first(e.get("venue"))
+    for e in sorted(events, key=lambda e: rank.get(e.get("source"), 5)):
+        twin = next((k for k in kept if k["date"] == e["date"] and place(k.get("venue")) & place(e.get("venue"))
                      and first(k["title"]) == first(e["title"])
                      and (not k.get("time") or not e.get("time") or k["time"] == e["time"])), None)
         if twin:
@@ -260,8 +325,10 @@ def main():
         "events": final,
         "movies": picks.get("movies", []),
         "sources": {"picks": sum(1 for e in final if e["source"] == "picks"),
+                    "venues": sum(1 for e in final if e["source"] == "venues"),
                     "espn": sum(1 for e in final if e["source"] == "espn"),
-                    "ticketmaster": sum(1 for e in final if e["source"] == "ticketmaster") if key else "no key yet"},
+                    "ticketmaster": sum(1 for e in final if e["source"] == "ticketmaster") if key else "no key yet",
+                    "seatgeek": sum(1 for e in final if e["source"] == "seatgeek") if sg_key else "no key yet"},
     }
     path = os.path.join(CAL, "events.json")
     if os.path.exists(path):

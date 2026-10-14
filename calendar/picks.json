@@ -1,410 +1,442 @@
 {
-  "_about": "Hand-picked events and movies. The daily job adds team schedules (and Ticketmaster listings once its key is set) on top of these. Dates are local (YYYY-MM-DD), times 24-hour. drive_hours marks a road trip.",
-  "events": [
-    {
-      "date": "2026-11-13",
-      "time": null,
-      "title": "Goose",
-      "cat": "music",
-      "venue": "Mohegan Sun Arena",
-      "city": "Uncasville, CT",
-      "drive_hours": 1.75,
-      "url": "https://www.jambase.com/band/goose"
-    },
-    {
-      "date": "2026-11-14",
-      "time": null,
-      "title": "Goose",
-      "cat": "music",
-      "venue": "Mohegan Sun Arena",
-      "city": "Uncasville, CT",
-      "drive_hours": 1.75,
-      "url": "https://www.jambase.com/band/goose"
-    },
-    {
-      "date": "2026-11-15",
-      "time": null,
-      "title": "Goose",
-      "cat": "music",
-      "venue": "Cross Insurance Arena",
-      "city": "Portland, ME",
-      "drive_hours": 2,
-      "url": "https://www.jambase.com/band/goose"
-    },
-    {
-      "date": "2026-12-30",
-      "time": null,
-      "title": "Phish",
-      "sub": "New Year's run, night 1",
-      "cat": "music",
-      "venue": "Madison Square Garden",
-      "city": "New York, NY",
-      "drive_hours": 4,
-      "url": "https://phish.com/tours/"
-    },
-    {
-      "date": "2026-12-31",
-      "time": null,
-      "title": "Phish",
-      "sub": "New Year's Eve",
-      "cat": "music",
-      "venue": "Madison Square Garden",
-      "city": "New York, NY",
-      "drive_hours": 4,
-      "url": "https://phish.com/tours/"
-    },
-    {
-      "date": "2027-01-01",
-      "time": null,
-      "title": "Phish",
-      "sub": "New Year's run, night 3",
-      "cat": "music",
-      "venue": "Madison Square Garden",
-      "city": "New York, NY",
-      "drive_hours": 4,
-      "url": "https://phish.com/tours/"
-    },
-    {
-      "date": "2027-01-02",
-      "time": null,
-      "title": "Phish",
-      "sub": "Night 4, the band's 100th show at the Garden",
-      "cat": "music",
-      "venue": "Madison Square Garden",
-      "city": "New York, NY",
-      "drive_hours": 4,
-      "url": "https://phish.com/tours/"
-    },
-    {
-      "date": "2026-11-12",
-      "time": null,
-      "title": "Joe Russo's Almost Dead",
-      "cat": "music",
-      "venue": "State Theatre",
-      "city": "New Brunswick, NJ",
-      "drive_hours": 4.25,
-      "url": "https://www.jambase.com/article/joe-russos-almost-dead-tour-dates-2026-november"
-    },
-    {
-      "date": "2026-10-30",
-      "time": "20:00",
-      "title": "moe.",
-      "cat": "music",
-      "venue": "The Wilbur",
-      "city": "Boston, MA",
-      "url": "https://thewilbur.com/calendar/"
-    },
-    {
-      "date": "2026-10-31",
-      "time": "20:00",
-      "title": "moe.",
-      "cat": "music",
-      "venue": "The Wilbur",
-      "city": "Boston, MA",
-      "url": "https://thewilbur.com/calendar/",
-      "sub": "Halloween"
-    },
-    {
-      "date": "2026-12-06",
-      "time": "20:00",
-      "title": "Jim James",
-      "cat": "music",
-      "venue": "The Wilbur",
-      "city": "Boston, MA",
-      "url": "https://thewilbur.com/calendar/",
-      "sub": "Solo acoustic, Wowed Out Tour"
-    },
-    {
-      "date": "2026-10-16",
-      "time": "19:30",
-      "title": "Akaash Singh",
-      "cat": "comedy",
-      "venue": "The Wilbur",
-      "city": "Boston, MA",
-      "url": "https://thewilbur.com/calendar/",
-      "sub": "Generational Triumph Tour"
-    },
-    {
-      "date": "2026-10-17",
-      "time": "20:00",
-      "title": "Akaash Singh",
-      "cat": "comedy",
-      "venue": "The Wilbur",
-      "city": "Boston, MA",
-      "url": "https://thewilbur.com/calendar/",
-      "sub": "Generational Triumph Tour"
-    },
-    {
-      "date": "2026-10-22",
-      "time": "19:30",
-      "title": "Nate Jackson",
-      "cat": "comedy",
-      "venue": "The Wilbur",
-      "city": "Boston, MA",
-      "url": "https://thewilbur.com/calendar/",
-      "sub": "Big Dog"
-    },
-    {
-      "date": "2026-10-23",
-      "time": "19:30",
-      "title": "Nate Jackson",
-      "cat": "comedy",
-      "venue": "The Wilbur",
-      "city": "Boston, MA",
-      "url": "https://thewilbur.com/calendar/",
-      "sub": "Big Dog"
-    },
-    {
-      "date": "2026-10-24",
-      "time": "19:00",
-      "title": "Trae Crowder",
-      "cat": "comedy",
-      "venue": "The Wilbur",
-      "city": "Boston, MA",
-      "url": "https://thewilbur.com/calendar/"
-    },
-    {
-      "date": "2026-11-05",
-      "time": "19:30",
-      "title": "Tim Dillon",
-      "cat": "comedy",
-      "venue": "The Wilbur",
-      "city": "Boston, MA",
-      "url": "https://thewilbur.com/calendar/"
-    },
-    {
-      "date": "2026-11-06",
-      "time": "19:30",
-      "title": "Tim Dillon",
-      "cat": "comedy",
-      "venue": "The Wilbur",
-      "city": "Boston, MA",
-      "url": "https://thewilbur.com/calendar/"
-    },
-    {
-      "date": "2026-11-07",
-      "time": "21:45",
-      "title": "Tim Dillon",
-      "cat": "comedy",
-      "venue": "The Wilbur",
-      "city": "Boston, MA",
-      "url": "https://thewilbur.com/calendar/"
-    },
-    {
-      "date": "2026-11-07",
-      "time": "19:00",
-      "title": "Drew Dunn",
-      "cat": "comedy",
-      "venue": "The Wilbur",
-      "city": "Boston, MA",
-      "url": "https://thewilbur.com/calendar/"
-    },
-    {
-      "date": "2026-11-08",
-      "time": "19:00",
-      "title": "DeRay Davis",
-      "cat": "comedy",
-      "venue": "The Wilbur",
-      "city": "Boston, MA",
-      "url": "https://thewilbur.com/calendar/"
-    },
-    {
-      "date": "2026-11-13",
-      "time": "19:30",
-      "title": "Phoebe Robinson",
-      "cat": "comedy",
-      "venue": "The Wilbur",
-      "city": "Boston, MA",
-      "url": "https://thewilbur.com/calendar/",
-      "sub": "Feral & Fired Up!"
-    },
-    {
-      "date": "2026-11-17",
-      "time": "19:00",
-      "title": "Ilana Glazer",
-      "cat": "comedy",
-      "venue": "The Wilbur",
-      "city": "Boston, MA",
-      "url": "https://thewilbur.com/calendar/"
-    },
-    {
-      "date": "2026-11-20",
-      "time": "19:30",
-      "title": "Hannibal Buress",
-      "cat": "comedy",
-      "venue": "The Wilbur",
-      "city": "Boston, MA",
-      "url": "https://thewilbur.com/calendar/"
-    },
-    {
-      "date": "2026-11-21",
-      "time": "19:00",
-      "title": "Ryan Hamilton",
-      "cat": "comedy",
-      "venue": "The Wilbur",
-      "city": "Boston, MA",
-      "url": "https://thewilbur.com/calendar/",
-      "sub": "Making Good Time Tour"
-    },
-    {
-      "date": "2026-11-25",
-      "time": "19:30",
-      "title": "Doughboys",
-      "cat": "comedy",
-      "venue": "The Wilbur",
-      "city": "Boston, MA",
-      "url": "https://thewilbur.com/calendar/",
-      "sub": "Live podcast"
-    },
-    {
-      "date": "2026-12-03",
-      "time": "19:30",
-      "title": "Gianmarco Soresi",
-      "cat": "comedy",
-      "venue": "The Wilbur",
-      "city": "Boston, MA",
-      "url": "https://thewilbur.com/calendar/",
-      "sub": "The Misery Loves Tour"
-    },
-    {
-      "date": "2026-12-04",
-      "time": "19:30",
-      "title": "Gianmarco Soresi",
-      "cat": "comedy",
-      "venue": "The Wilbur",
-      "city": "Boston, MA",
-      "url": "https://thewilbur.com/calendar/",
-      "sub": "The Misery Loves Tour"
-    },
-    {
-      "date": "2026-12-05",
-      "time": "19:00",
-      "title": "Gianmarco Soresi",
-      "cat": "comedy",
-      "venue": "The Wilbur",
-      "city": "Boston, MA",
-      "url": "https://thewilbur.com/calendar/",
-      "sub": "The Misery Loves Tour"
-    },
-    {
-      "date": "2026-12-13",
-      "time": "20:00",
-      "title": "Matt Rogers",
-      "cat": "comedy",
-      "venue": "The Wilbur",
-      "city": "Boston, MA",
-      "url": "https://thewilbur.com/calendar/",
-      "sub": "This Time It's Really Christmas Tour"
-    },
-    {
-      "date": "2026-12-19",
-      "time": "19:00",
-      "title": "Godfrey",
-      "cat": "comedy",
-      "venue": "The Wilbur",
-      "city": "Boston, MA",
-      "url": "https://thewilbur.com/calendar/"
-    },
-    {
-      "date": "2026-12-26",
-      "time": "20:00",
-      "title": "Bob Marley",
-      "cat": "comedy",
-      "venue": "The Wilbur",
-      "city": "Boston, MA",
-      "url": "https://thewilbur.com/calendar/"
-    },
-    {
-      "date": "2026-12-27",
-      "time": "19:00",
-      "title": "Joe Gatto and Drew Lynch",
-      "cat": "comedy",
-      "venue": "The Wilbur",
-      "city": "Boston, MA",
-      "url": "https://thewilbur.com/calendar/",
-      "sub": "Wrap It Up!"
-    },
-    {
-      "date": "2026-11-07",
-      "time": "20:00",
-      "title": "Comics Come Home",
-      "sub": "30th annual",
-      "cat": "comedy",
-      "venue": "TD Garden",
-      "city": "Boston, MA",
-      "url": "https://www.tdgarden.com/events/category/comedy"
-    }
-  ],
-  "movies": [
-    {
-      "title": "You Can See Everything",
-      "release": "2026-10-16",
-      "by": "Nathan Fielder and Lance Oppenheim",
-      "studio": "A24",
-      "why": "Nathan Fielder's Elizabeth Holmes documentary"
-    },
-    {
-      "title": "Wild Horse Nine",
-      "release": "2026-11-06",
-      "by": "Martin McDonagh",
-      "studio": "Searchlight",
-      "why": "Oscar contender: Sam Rockwell, John Malkovich"
-    },
-    {
-      "title": "Club Kid",
-      "release": "2026-11-06",
-      "by": "Jordan Firstman",
-      "studio": "A24",
-      "why": "Oscar contender"
-    },
-    {
-      "title": "Paper Tiger",
-      "release": "2026-11-13",
-      "by": "James Gray",
-      "studio": "Neon",
-      "why": "Oscar contender: Adam Driver, Miles Teller, Scarlett Johansson"
-    },
-    {
-      "title": "Elsinore",
-      "release": "2026-11-20",
-      "by": "Simon Stone",
-      "studio": "Focus Features",
-      "why": "Oscar contender: Andrew Scott"
-    },
-    {
-      "title": "Behemoth!",
-      "release": "2026-12-04",
-      "by": "Tony Gilroy",
-      "studio": "Searchlight",
-      "why": "Oscar contender: Pedro Pascal"
-    },
-    {
-      "title": "Tender Loving Care",
-      "release": "2026-12-04",
-      "by": "Mike Leigh",
-      "studio": "StudioCanal",
-      "why": "Oscar contender"
-    },
-    {
-      "title": "The Debut",
-      "release": "2026-12-11",
-      "by": "Jesse Eisenberg",
-      "studio": "A24",
-      "why": "Oscar contender: Julianne Moore, Paul Giamatti"
-    },
-    {
-      "title": "Dune: Part Three",
-      "release": "2026-12-18",
-      "by": "Denis Villeneuve",
-      "studio": "Warner Bros.",
-      "why": "Oscar contender, see it in IMAX"
-    },
-    {
-      "title": "Werwulf",
-      "release": "2026-12-25",
-      "by": "Robert Eggers",
-      "studio": "Focus Features",
-      "why": "Oscar contender: Willem Dafoe, Aaron Taylor-Johnson"
-    }
-  ]
+ "_about": "Hand-picked events and movies. The daily job adds team schedules (and Ticketmaster listings once its key is set) on top of these. Dates are local (YYYY-MM-DD), times 24-hour. drive_hours marks a road trip.",
+ "events": [
+  {
+   "date": "2026-10-16",
+   "time": "19:30",
+   "title": "Akaash Singh",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://thewilbur.com/calendar/",
+   "sub": "Generational Triumph Tour"
+  },
+  {
+   "date": "2026-10-17",
+   "time": "20:00",
+   "title": "Akaash Singh",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://thewilbur.com/calendar/",
+   "sub": "Generational Triumph Tour"
+  },
+  {
+   "date": "2026-10-22",
+   "time": "19:30",
+   "title": "Nate Jackson",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://thewilbur.com/calendar/",
+   "sub": "Big Dog"
+  },
+  {
+   "date": "2026-10-23",
+   "time": "19:30",
+   "title": "Nate Jackson",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://thewilbur.com/calendar/",
+   "sub": "Big Dog"
+  },
+  {
+   "date": "2026-10-24",
+   "time": "19:00",
+   "title": "Trae Crowder",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://thewilbur.com/calendar/"
+  },
+  {
+   "date": "2026-10-30",
+   "time": "20:00",
+   "title": "moe.",
+   "cat": "music",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://thewilbur.com/calendar/"
+  },
+  {
+   "date": "2026-10-31",
+   "time": "20:00",
+   "title": "moe.",
+   "cat": "music",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://thewilbur.com/calendar/",
+   "sub": "Halloween"
+  },
+  {
+   "date": "2026-11-05",
+   "time": "19:30",
+   "title": "Tim Dillon",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://thewilbur.com/calendar/"
+  },
+  {
+   "date": "2026-11-06",
+   "time": "19:30",
+   "title": "Tim Dillon",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://thewilbur.com/calendar/"
+  },
+  {
+   "date": "2026-11-07",
+   "time": "19:00",
+   "title": "Drew Dunn",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://thewilbur.com/calendar/"
+  },
+  {
+   "date": "2026-11-07",
+   "time": "20:00",
+   "title": "Comics Come Home",
+   "sub": "30th annual: John Mulaney, Jimmy Fallon, Ray Romano, Leslie Jones, Sam Jay, Alex Edelman and Lenny Clarke",
+   "cat": "comedy",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.tdgarden.com/events/category/comedy"
+  },
+  {
+   "date": "2026-11-07",
+   "time": "21:45",
+   "title": "Tim Dillon",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://thewilbur.com/calendar/"
+  },
+  {
+   "date": "2026-11-08",
+   "time": "19:00",
+   "title": "DeRay Davis",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://thewilbur.com/calendar/"
+  },
+  {
+   "date": "2026-11-12",
+   "time": null,
+   "title": "Joe Russo's Almost Dead",
+   "cat": "music",
+   "venue": "State Theatre",
+   "city": "New Brunswick, NJ",
+   "drive_hours": 4.25,
+   "url": "https://www.jambase.com/article/joe-russos-almost-dead-tour-dates-2026-november"
+  },
+  {
+   "date": "2026-11-13",
+   "time": "19:00",
+   "title": "Bert Kreischer",
+   "sub": "Permission to Party tour",
+   "cat": "comedy",
+   "venue": "The Vets",
+   "city": "Providence, RI",
+   "drive_hours": 1,
+   "url": "https://comedy.tickets/tickets/bert-kreischer/"
+  },
+  {
+   "date": "2026-11-13",
+   "time": "19:30",
+   "title": "Phoebe Robinson",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://thewilbur.com/calendar/",
+   "sub": "Feral & Fired Up!"
+  },
+  {
+   "date": "2026-11-13",
+   "time": null,
+   "title": "Goose",
+   "cat": "music",
+   "venue": "Mohegan Sun Arena",
+   "city": "Uncasville, CT",
+   "drive_hours": 1.75,
+   "url": "https://www.jambase.com/band/goose"
+  },
+  {
+   "date": "2026-11-14",
+   "time": "19:00",
+   "title": "Bert Kreischer",
+   "sub": "Permission to Party tour",
+   "cat": "comedy",
+   "venue": "The Hanover Theatre",
+   "city": "Worcester, MA",
+   "drive_hours": 1,
+   "url": "https://comedy.tickets/tickets/bert-kreischer/"
+  },
+  {
+   "date": "2026-11-14",
+   "time": null,
+   "title": "Goose",
+   "cat": "music",
+   "venue": "Mohegan Sun Arena",
+   "city": "Uncasville, CT",
+   "drive_hours": 1.75,
+   "url": "https://www.jambase.com/band/goose"
+  },
+  {
+   "date": "2026-11-15",
+   "time": null,
+   "title": "Goose",
+   "cat": "music",
+   "venue": "Cross Insurance Arena",
+   "city": "Portland, ME",
+   "drive_hours": 2,
+   "url": "https://www.jambase.com/band/goose"
+  },
+  {
+   "date": "2026-11-17",
+   "time": "19:00",
+   "title": "Ilana Glazer",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://thewilbur.com/calendar/"
+  },
+  {
+   "date": "2026-11-20",
+   "time": "19:30",
+   "title": "Hannibal Buress",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://thewilbur.com/calendar/"
+  },
+  {
+   "date": "2026-11-21",
+   "time": "19:00",
+   "title": "Ryan Hamilton",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://thewilbur.com/calendar/",
+   "sub": "Making Good Time Tour"
+  },
+  {
+   "date": "2026-11-25",
+   "time": "19:30",
+   "title": "Doughboys",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://thewilbur.com/calendar/",
+   "sub": "Live podcast"
+  },
+  {
+   "date": "2026-12-03",
+   "time": "19:30",
+   "title": "Gianmarco Soresi",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://thewilbur.com/calendar/",
+   "sub": "The Misery Loves Tour"
+  },
+  {
+   "date": "2026-12-04",
+   "time": "19:30",
+   "title": "Gianmarco Soresi",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://thewilbur.com/calendar/",
+   "sub": "The Misery Loves Tour"
+  },
+  {
+   "date": "2026-12-05",
+   "time": "19:00",
+   "title": "Gianmarco Soresi",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://thewilbur.com/calendar/",
+   "sub": "The Misery Loves Tour"
+  },
+  {
+   "date": "2026-12-06",
+   "time": "20:00",
+   "title": "Jim James",
+   "cat": "music",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://thewilbur.com/calendar/",
+   "sub": "Solo acoustic, Wowed Out Tour"
+  },
+  {
+   "date": "2026-12-13",
+   "time": "20:00",
+   "title": "Matt Rogers",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://thewilbur.com/calendar/",
+   "sub": "This Time It's Really Christmas Tour"
+  },
+  {
+   "date": "2026-12-19",
+   "time": "18:00",
+   "title": "Mark Normand",
+   "cat": "comedy",
+   "venue": "Great Cedar Showroom at Foxwoods",
+   "city": "Mashantucket, CT",
+   "drive_hours": 1.75,
+   "url": "https://comedy.tickets/tickets/mark-normand/"
+  },
+  {
+   "date": "2026-12-19",
+   "time": "19:00",
+   "title": "Godfrey",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://thewilbur.com/calendar/"
+  },
+  {
+   "date": "2026-12-26",
+   "time": "20:00",
+   "title": "Bob Marley",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://thewilbur.com/calendar/"
+  },
+  {
+   "date": "2026-12-27",
+   "time": "19:00",
+   "title": "Joe Gatto and Drew Lynch",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://thewilbur.com/calendar/",
+   "sub": "Wrap It Up!"
+  },
+  {
+   "date": "2026-12-30",
+   "time": null,
+   "title": "Phish",
+   "sub": "New Year's run, night 1",
+   "cat": "music",
+   "venue": "Madison Square Garden",
+   "city": "New York, NY",
+   "drive_hours": 4,
+   "url": "https://phish.com/tours/"
+  },
+  {
+   "date": "2026-12-31",
+   "time": null,
+   "title": "Phish",
+   "sub": "New Year's Eve",
+   "cat": "music",
+   "venue": "Madison Square Garden",
+   "city": "New York, NY",
+   "drive_hours": 4,
+   "url": "https://phish.com/tours/"
+  },
+  {
+   "date": "2027-01-01",
+   "time": null,
+   "title": "Phish",
+   "sub": "New Year's run, night 3",
+   "cat": "music",
+   "venue": "Madison Square Garden",
+   "city": "New York, NY",
+   "drive_hours": 4,
+   "url": "https://phish.com/tours/"
+  },
+  {
+   "date": "2027-01-02",
+   "time": null,
+   "title": "Phish",
+   "sub": "Night 4, the band's 100th show at the Garden",
+   "cat": "music",
+   "venue": "Madison Square Garden",
+   "city": "New York, NY",
+   "drive_hours": 4,
+   "url": "https://phish.com/tours/"
+  }
+ ],
+ "movies": [
+  {
+   "title": "You Can See Everything",
+   "release": "2026-10-16",
+   "by": "Nathan Fielder and Lance Oppenheim",
+   "studio": "A24",
+   "why": "Nathan Fielder's Elizabeth Holmes documentary"
+  },
+  {
+   "title": "Wild Horse Nine",
+   "release": "2026-11-06",
+   "by": "Martin McDonagh",
+   "studio": "Searchlight",
+   "why": "Oscar contender: Sam Rockwell, John Malkovich"
+  },
+  {
+   "title": "Club Kid",
+   "release": "2026-11-06",
+   "by": "Jordan Firstman",
+   "studio": "A24",
+   "why": "Oscar contender"
+  },
+  {
+   "title": "Paper Tiger",
+   "release": "2026-11-13",
+   "by": "James Gray",
+   "studio": "Neon",
+   "why": "Oscar contender: Adam Driver, Miles Teller, Scarlett Johansson"
+  },
+  {
+   "title": "Elsinore",
+   "release": "2026-11-20",
+   "by": "Simon Stone",
+   "studio": "Focus Features",
+   "why": "Oscar contender: Andrew Scott"
+  },
+  {
+   "title": "Behemoth!",
+   "release": "2026-12-04",
+   "by": "Tony Gilroy",
+   "studio": "Searchlight",
+   "why": "Oscar contender: Pedro Pascal"
+  },
+  {
+   "title": "Tender Loving Care",
+   "release": "2026-12-04",
+   "by": "Mike Leigh",
+   "studio": "StudioCanal",
+   "why": "Oscar contender"
+  },
+  {
+   "title": "The Debut",
+   "release": "2026-12-11",
+   "by": "Jesse Eisenberg",
+   "studio": "A24",
+   "why": "Oscar contender: Julianne Moore, Paul Giamatti"
+  },
+  {
+   "title": "Dune: Part Three",
+   "release": "2026-12-18",
+   "by": "Denis Villeneuve",
+   "studio": "Warner Bros.",
+   "why": "Oscar contender, see it in IMAX"
+  },
+  {
+   "title": "Werwulf",
+   "release": "2026-12-25",
+   "by": "Robert Eggers",
+   "studio": "Focus Features",
+   "why": "Oscar contender: Willem Dafoe, Aaron Taylor-Johnson"
+  }
+ ]
 }
