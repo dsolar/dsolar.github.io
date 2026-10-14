@@ -17,5 +17,40 @@
     "Maye I see your TDs": "Matthew E",
     "Tai Streetz Lata?": "Jeff S"
   },
-  "eulogies": {}
+  "eulogies": {
+    "J Free FTW": {
+      "image": "eulogies/2026-wk1-j-free-ftw.jpg",
+      "alt": "A grinning man in rimless sunglasses, bloodied, slumped against a tiled wall",
+      "haiku": [
+        "Anna said goodbye",
+        "Funny Man got fileted",
+        "Pass the tartar sauce"
+      ]
+    },
+    "23 Richard": {
+      "image": "eulogies/2026-wk2-23-richard.jpg",
+      "alt": "Two men in ball caps and sunglasses against a padded wall, one with a bloody nose",
+      "haiku": [
+        "Club Epstein is full",
+        "Duval turned him away",
+        "Gabi sleeps with fish"
+      ]
+    },
+    "Filet-O-Fate": {
+      "haiku": [
+        "Round of applause",
+        "Wrecking Ball has claimed Dane-ski",
+        "He rests in Tessie"
+      ]
+    },
+    "Fly Zone Kristi": {
+      "image": "eulogies/2026-wk4-fly-zone-kristi.jpg",
+      "alt": "In a dark room, a man holds up a photo of a tiny Vikings quarterback to a man in glasses",
+      "haiku": [
+        "Pheasants rest easy",
+        "The counselor hunts no more",
+        "Albania mourns"
+      ]
+    }
+  }
 }
