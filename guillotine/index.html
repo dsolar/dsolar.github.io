@@ -263,10 +263,10 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
 
 <nav class="jump" id="jump" aria-label="On this page"><div class="jump-in">
   <a href="#week" data-sec="week">Odds</a>
-  <a href="#spot" data-sec="spot" id="jump-spot">Thursday</a>
   <a href="#byes-sec" data-sec="byes-sec">Byes</a>
   <a href="#hist-sec" data-sec="hist-sec">Cut line</a>
   <a href="#season" data-sec="season">Season</a>
+  <a href="#spot" data-sec="spot" id="jump-spot">Thursday</a>
   <a href="#fallen-sec" data-sec="fallen-sec">Fallen</a>
   <a href="#how" data-sec="how">How it works</a>
 </div></nav>
@@ -305,11 +305,6 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
     <div class="tiers" id="tiers"></div>
   </section>
 
-  <section class="spot" id="spot" aria-labelledby="spot-title" hidden>
-    <div class="section-head" style="margin:0"><h2 id="spot-title"></h2><p class="sub" id="spot-sub"></p></div>
-    <div id="spot-body"></div>
-  </section>
-
   <section id="byes-sec" aria-labelledby="byes-title" hidden>
     <div class="section-head">
       <h2 id="byes-title">Next week's bye trouble</h2>
@@ -339,6 +334,11 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
       <p id="season-note">Chance each team is still alive after that week's cut. The last column is the chance of winning the league.</p>
     </div>
     <div class="scroll"><table id="grid"></table></div>
+  </section>
+
+  <section class="spot" id="spot" aria-labelledby="spot-title" hidden>
+    <div class="section-head" style="margin:0"><h2 id="spot-title"></h2><p class="sub" id="spot-sub"></p></div>
+    <div id="spot-body"></div>
   </section>
 
   <section id="fallen-sec" aria-labelledby="fallen-title" hidden>
