@@ -22,6 +22,7 @@ import json
 import os
 import re
 import sys
+import time
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -29,18 +30,27 @@ from datetime import datetime, timezone
 
 API = "https://fantasysports.yahooapis.com/fantasy/v2/"
 TOKEN_URL = "https://api.login.yahoo.com/oauth2/get_token"
+UA = "davidsolar-guillotine/1.0 (+https://davidsolar.dev/guillotine/)"
 HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_OUT = os.path.join(HERE, "..", "guillotine", "data.json")
 
 
 # ---------------------------------------------------------------- fetching
 
+class Failure(Exception):
+    """A problem worth showing on the GitHub run summary."""
+
+
+def fail(msg):
+    raise Failure(msg)
+
+
 def access_token():
     cid = os.environ.get("YAHOO_CLIENT_ID", "").strip()
     secret = os.environ.get("YAHOO_CLIENT_SECRET", "").strip()
     refresh = os.environ.get("YAHOO_REFRESH_TOKEN", "").strip()
     if not (cid and secret and refresh):
-        sys.exit("Missing YAHOO_CLIENT_ID, YAHOO_CLIENT_SECRET or YAHOO_REFRESH_TOKEN.")
+        fail("Missing YAHOO_CLIENT_ID, YAHOO_CLIENT_SECRET or YAHOO_REFRESH_TOKEN.")
     body = urllib.parse.urlencode({
         "grant_type": "refresh_token",
         "refresh_token": refresh,
@@ -50,14 +60,15 @@ def access_token():
     req = urllib.request.Request(TOKEN_URL, data=body, headers={
         "Authorization": f"Basic {basic}",
         "Content-Type": "application/x-www-form-urlencoded",
+        "User-Agent": UA,
     })
     try:
         with urllib.request.urlopen(req, timeout=30) as res:
             tok = json.load(res)
     except urllib.error.HTTPError as e:
         detail = e.read().decode(errors="replace")[:300]
-        sys.exit(f"Yahoo sign-in failed ({e.code}). The refresh token may have been revoked; "
-                 f"redo the one-time setup in the README. Details: {detail}")
+        fail(f"Yahoo sign-in failed (HTTP {e.code}): {detail}. Check the three YAHOO_ secrets; "
+             f"if they're right, redo the one-time setup in the README for a fresh refresh token.")
     if tok.get("refresh_token") and tok["refresh_token"] != refresh:
         # Yahoo normally keeps the same refresh token. If it ever rotates it, the stored secret
         # will stop working, so say so in the run log (without printing the token).
@@ -71,6 +82,7 @@ class Yahoo:
 
     def __init__(self, token=None, from_dir=None):
         self.token, self.from_dir = token, from_dir
+        self.last_error = None
 
     def get(self, path):
         if self.from_dir:
@@ -80,14 +92,22 @@ class Yahoo:
                 return None
             with open(fp, "rb") as f:
                 return strip_ns(ET.fromstring(f.read()))
-        req = urllib.request.Request(API + path, headers={"Authorization": f"Bearer {self.token}"})
-        try:
-            with urllib.request.urlopen(req, timeout=30) as res:
-                return strip_ns(ET.fromstring(res.read()))
-        except urllib.error.HTTPError as e:
-            if e.code in (400, 404):
-                return None
-            raise
+        req = urllib.request.Request(API + path, headers={
+            "Authorization": f"Bearer {self.token}", "User-Agent": UA, "Accept": "application/xml"})
+        for attempt in (1, 2):
+            try:
+                with urllib.request.urlopen(req, timeout=30) as res:
+                    return strip_ns(ET.fromstring(res.read()))
+            except urllib.error.HTTPError as e:
+                body = re.sub(r"\s+", " ", e.read().decode(errors="replace"))[:300]
+                self.last_error = f"HTTP {e.code} on {path}: {body}"
+                print(self.last_error)
+                if e.code in (400, 404):
+                    return None
+                if attempt == 1 and (e.code in (429, 999) or e.code >= 500):
+                    time.sleep(5)
+                    continue
+                fail(f"Yahoo returned {self.last_error}")
 
 
 def strip_ns(root):
@@ -139,7 +159,16 @@ def build(y, league_id):
     key = f"nfl.l.{league_id}"
     league = y.get(f"league/{key}")
     if league is None:
-        sys.exit(f"Couldn't read league {league_id}. Check YAHOO_LEAGUE_ID.")
+        # The "nfl" shortcut didn't resolve; find the league among the signed-in user's NFL leagues.
+        mine = y.get("users;use_login=1/games;game_codes=nfl/leagues")
+        for lg in (mine.findall(".//league") if mine is not None else []):
+            if text(lg, "league_id") == str(league_id):
+                key = text(lg, "league_key")
+                print(f"Found league {league_id} as {key}.")
+                league = y.get(f"league/{key}")
+                break
+    if league is None:
+        fail(f"Couldn't read league {league_id}. Last Yahoo response: {y.last_error or 'none'}")
     lg = league.find(".//league")
     name = text(lg, "name") or "Guillotine"
     season = int(num(lg, "season") or datetime.now(timezone.utc).year)
@@ -149,6 +178,8 @@ def build(y, league_id):
     key = text(lg, "league_key") or key
 
     teams_root = y.get(f"league/{key}/teams")
+    if teams_root is None:
+        fail(f"Couldn't read the league's teams. Last Yahoo response: {y.last_error or 'none'}")
     teams = []
     for t in teams_root.findall(".//team"):
         teams.append({
@@ -239,8 +270,16 @@ def main():
     ap.add_argument("--from", dest="from_dir", help="build from saved XML files instead of the API")
     a = ap.parse_args()
     league_id = os.environ.get("YAHOO_LEAGUE_ID", "157731").strip()
-    y = Yahoo(from_dir=a.from_dir) if a.from_dir else Yahoo(token=access_token())
-    write_if_changed(build(y, league_id), a.out)
+    try:
+        y = Yahoo(from_dir=a.from_dir) if a.from_dir else Yahoo(token=access_token())
+        write_if_changed(build(y, league_id), a.out)
+    except Failure as e:
+        # "::error::" puts the message on the GitHub run summary page.
+        print(f"::error::{e}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"::error::Unexpected {type(e).__name__}: {e}")
+        raise
 
 
 if __name__ == "__main__":
