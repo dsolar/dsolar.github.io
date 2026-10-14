@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-14T23:03:05Z",
+ "updated": "2026-10-14T23:03:36Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -10,26 +10,6 @@
    "title": "Joe Russo's Almost Dead",
    "date": "2026-11-12",
    "venue": "State Theatre",
-   "low": null,
-   "src": null
-  },
-  "2026-10-16-robert-kelly-laugh-boston": {
-   "sg": 18666678,
-   "history": [],
-   "url": "https://comedy.tickets/city/boston/",
-   "title": "Robert Kelly",
-   "date": "2026-10-16",
-   "venue": "Laugh Boston",
-   "low": null,
-   "src": null
-  },
-  "2026-10-17-robert-kelly-laugh-boston": {
-   "sg": 18666672,
-   "history": [],
-   "url": "https://comedy.tickets/city/boston/",
-   "title": "Robert Kelly",
-   "date": "2026-10-17",
-   "venue": "Laugh Boston",
    "low": null,
    "src": null
   },
@@ -291,16 +271,6 @@
    "low": null,
    "src": null
   },
-  "sg-18194413": {
-   "sg": 18194413,
-   "history": [],
-   "url": "https://seatgeek.com/beck-tickets/boston-massachusetts-mgm-music-hall-at-fenway-2026-10-17-8-pm/concert/18194413",
-   "title": "Beck",
-   "date": "2026-10-17",
-   "venue": "MGM Music Hall at Fenway",
-   "low": null,
-   "src": null
-  },
   "tm-k7vGF_FCcIGqH": {
    "sg": 18194389,
    "history": [],
@@ -438,16 +408,6 @@
    "title": "BEAT: Belew/Vai/Levin/Bozzio Performing the Music of KING CRIMSON",
    "date": "2026-11-06",
    "venue": "Boch Center Wang Theatre",
-   "low": null,
-   "src": null
-  },
-  "tm-vv177Z_8GkDdY5rJ": {
-   "sg": 18472041,
-   "history": [],
-   "url": "https://www.ticketmaster.com/tim-dillon-boston-massachusetts-11-06-2026/event/0100650EC3C0B7A6",
-   "title": "Tim Dillon",
-   "date": "2026-11-06",
-   "venue": "The Wilbur",
    "low": null,
    "src": null
   },
@@ -600,6 +560,104 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7ZFp",
    "src": null,
    "low": null
+  },
+  "tm-rZ7HnEZ1AfuNZ7": {
+   "history": [
+    [
+     "2026-10-14",
+     56
+    ]
+   ],
+   "sg": null,
+   "title": "A Phish After-Party with Medeski Martin Metzger & Cline",
+   "date": "2026-12-30",
+   "venue": "Le Poisson Rouge",
+   "url": "https://www.ticketweb.com/event/a-phish-after-party-with-le-poisson-rouge-tickets/14363004",
+   "src": "Ticketmaster",
+   "low": 56,
+   "first": 56
+  },
+  "tm-rZ7HnEZ1AfuYF0": {
+   "history": [
+    [
+     "2026-10-14",
+     22
+    ]
+   ],
+   "sg": null,
+   "title": "A Phish After-Party: Tad Cautious & Friends",
+   "date": "2027-01-01",
+   "venue": "Hill Country Live",
+   "url": "https://www.ticketweb.com/event/a-phish-after-party-tad-hill-country-live-tickets/14370224",
+   "src": "Ticketmaster",
+   "low": 22,
+   "first": 22
+  },
+  "tm-rZ7HnEZ1AfFtAV": {
+   "history": [
+    [
+     "2026-10-14",
+     26
+    ]
+   ],
+   "sg": null,
+   "title": "The Killers & My Chemical Romance tributes Brightside and So Long And Good Night",
+   "date": "2026-11-28",
+   "venue": "Cutting Room",
+   "url": "https://www.ticketweb.com/event/the-killers-my-chemical-cutting-room-tickets/14229174",
+   "src": "Ticketmaster",
+   "low": 26,
+   "first": 26
+  },
+  "tm-Z7r9jZ1AA7e--": {
+   "history": [],
+   "sg": 18634480,
+   "title": "LCD Soundsystem (16 and Over)",
+   "date": "2026-12-01",
+   "venue": "Brooklyn Steel",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7e--",
+   "src": null,
+   "low": null
+  },
+  "tm-vv1AvZkC3Gkd2DoNO": {
+   "history": [],
+   "sg": 18002896,
+   "title": "Nikki Glaser: The Stunning Tour",
+   "date": "2026-12-02",
+   "venue": "MGM Music Hall at Fenway",
+   "url": "https://www.ticketmaster.com/nikki-glaser-the-stunning-tour-boston-massachusetts-12-02-2026/event/01006392CFED18E0",
+   "src": null,
+   "low": null
+  },
+  "tm-vv177Z_KGkM8oft3": {
+   "history": [],
+   "sg": 18652858,
+   "title": "Gianmarco Soresi: The Misery Loves Tour",
+   "date": "2026-12-03",
+   "venue": "The Wilbur",
+   "url": "https://www.ticketmaster.com/gianmarco-soresi-the-misery-loves-tour-boston-massachusetts-12-03-2026/event/0100653DD0454A52",
+   "src": null,
+   "low": null
+  },
+  "tm-vvG17Z_1LuUXcE": {
+   "history": [],
+   "sg": 18236562,
+   "title": "Michelle Wolf: Best Job in the World",
+   "date": "2026-12-03",
+   "venue": "Chevalier Theatre",
+   "url": "https://www.ticketmaster.com/michelle-wolf-best-job-in-the-medford-massachusetts-12-03-2026/event/010064A7CDDBEB67",
+   "src": null,
+   "low": null
+  },
+  "tm-Z7r9jZ1AA7Foo": {
+   "history": [],
+   "sg": 18634490,
+   "title": "LCD Soundsystem (16 and Over)",
+   "date": "2026-12-03",
+   "venue": "Brooklyn Steel",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7Foo",
+   "src": null,
+   "low": null
   }
  },
  "misses": {
@@ -618,13 +676,13 @@
   "tm-vv1AvZkf6Gkd94lLs": "2026-10-14",
   "tm-Z7r9jZ1A7-VGp": "2026-10-14",
   "tm-vv1AvZkoYGkdIsA4N": "2026-10-14",
-  "tm-vv1AvZko6GkePdnCI": "2026-10-14",
   "tm-vvG17Z_5wbduXe": "2026-10-14",
   "tm-Z7r9jZ1A7PJaJ": "2026-10-14",
   "tm-vvG17Z_u7Z_JCI": "2026-10-14",
   "tm-Z7r9jZ1AAvx-I": "2026-10-14",
   "tm-Z7r9jZ1AAvx-E": "2026-10-14",
-  "tm-rZ7HnEZ1AfFtAV": "2026-10-14"
+  "tm-rZ7HnEZ1AfFtAV": "2026-10-14",
+  "tm-Z7r9jZ1AA77-E": "2026-10-14"
  },
  "drops": []
 }
