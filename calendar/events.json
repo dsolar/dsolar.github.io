@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-14T23:02:53Z",
+ "updated": "2026-10-14T23:05:57Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -269,6 +269,7 @@
    "city": "Boston, MA",
    "url": "https://seatgeek.com/robert-kelly-tickets/comedy/2026-10-16-9-30-pm/18666678",
    "source": "seatgeek",
+   "act": "Robert Kelly",
    "times": [
     "19:00",
     "21:30"
@@ -480,6 +481,7 @@
    "city": "Boston, MA",
    "url": "https://seatgeek.com/robert-kelly-tickets/comedy/2026-10-17-6-30-pm/18666672",
    "source": "seatgeek",
+   "act": "Robert Kelly",
    "aka": [
     "2026-10-17-robert-kelly-laugh-boston",
     "2026-10-17-robert-kelly-laugh-boston"
@@ -578,6 +580,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/beck-ride-lonesome-tour-boston-massachusetts-10-17-2026/event/010064829B372121",
    "source": "ticketmaster",
+   "act": "Beck",
    "aka": [
     "tm-vv1A8v0OtGA5uw7-",
     "sg-18194413",
@@ -1131,6 +1134,7 @@
    "url": "https://www.ticketmaster.com/beck-ride-lonesome-tour-brooklyn-new-york-10-22-2026/event/00006483ADA0C77C",
    "source": "ticketmaster",
    "drive_hours": 4.5,
+   "act": "Beck",
    "aka": [
     "sg-18194389"
    ],
@@ -1200,6 +1204,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PK40",
    "source": "ticketmaster",
+   "act": "Daniel Donato",
    "aka": [
     "sg-18477786",
     "2026-10-22-daniel-donato-s-cosmic-country-royale"
@@ -1264,6 +1269,7 @@
    "url": "https://www.ticketmaster.com/beck-ride-lonesome-tour-brooklyn-new-york-10-23-2026/event/00006483ADA3C789",
    "source": "ticketmaster",
    "drive_hours": 4.5,
+   "act": "Beck",
    "aka": [
     "sg-18194390"
    ],
@@ -1365,6 +1371,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/jim-gaffigan-everything-is-wonderful-boston-massachusetts-10-23-2026/event/01006465AA881486",
    "source": "ticketmaster",
+   "act": "Jim Gaffigan",
    "aka": [
     "sg-18115555",
     "2026-10-23-jim-gaffigan-wang-theatre"
@@ -1650,6 +1657,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/jim-gaffigan-everything-is-wonderful-boston-massachusetts-10-24-2026/event/01006465AA8C1493",
    "source": "ticketmaster",
+   "act": "Jim Gaffigan",
    "aka": [
     "sg-18195850",
     "2026-10-24-jim-gaffigan-wang-theatre"
@@ -1772,6 +1780,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/jim-gaffigan-everything-is-wonderful-boston-massachusetts-10-25-2026/event/01006465AA8F14A4",
    "source": "ticketmaster",
+   "act": "Jim Gaffigan",
    "aka": [
     "sg-18424078",
     "2026-10-25-jim-gaffigan-wang-theatre"
@@ -1960,6 +1969,7 @@
    "city": "Boston, MA",
    "url": "https://seatgeek.com/johnny-blue-skies-tickets/boston-massachusetts-td-garden-2026-10-26-8-pm/concert/18582757",
    "source": "seatgeek",
+   "act": "Johnny Blue Skies",
    "sub": "Sturgill Simpson",
    "aka": [
     "2026-10-26-johnny-blue-skies-td-garden"
@@ -2061,6 +2071,7 @@
    "city": "Cambridge, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PIPk",
    "source": "ticketmaster",
+   "act": "Built to Spill",
    "aka": [
     "sg-18316712",
     "2026-10-27-built-to-spill-the-sinclair"
@@ -2225,6 +2236,7 @@
    "city": "Cambridge, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PIP6",
    "source": "ticketmaster",
+   "act": "Built to Spill",
    "aka": [
     "sg-18316715",
     "2026-10-28-built-to-spill-the-sinclair"
@@ -2258,6 +2270,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/grahame-lesh-friends-18-boston-massachusetts-10-29-2026/event/0100650ED5953028",
    "source": "ticketmaster",
+   "act": "Grahame Lesh",
    "aka": [
     "sg-18514461",
     "2026-10-29-grahame-lesh-paradise-rock-club"
@@ -2320,6 +2333,7 @@
    "url": "https://www.ticketmaster.com/third-eye-blind-halloween-2026-portland-maine-10-29-2026/event/01006507D756B7F1",
    "source": "ticketmaster",
    "drive_hours": 2.25,
+   "act": "Third Eye Blind",
    "aka": [
     "sg-18484697"
    ],
@@ -2541,6 +2555,7 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZJxd",
    "source": "ticketmaster",
    "drive_hours": 3.25,
+   "act": "Third Eye Blind",
    "aka": [
     "sg-18500992"
    ],
@@ -2557,6 +2572,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/moe-boston-massachusetts-10-30-2026/event/010064EAE7C6150B",
    "source": "ticketmaster",
+   "act": "moe.",
    "aka": [
     "tm-vvG17Z_ClEVv4g",
     "tm-vvG17Z_ClEs-f5",
@@ -2717,6 +2733,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/moe-boston-massachusetts-10-31-2026/event/010064EAE7CA1527",
    "source": "ticketmaster",
+   "act": "moe.",
    "aka": [
     "tm-vvG17Z_ClEw-fE",
     "sg-18371751",
@@ -3199,6 +3216,7 @@
    "url": "https://seatgeek.com/jason-isbell-tickets/groton-massachusetts-groton-hill-music-center-2026-11-04-8-pm/concert/18662147",
    "source": "seatgeek",
    "drive_hours": 0.75,
+   "act": "Jason Isbell",
    "score": 2,
    "why": "big"
   },
@@ -3351,6 +3369,7 @@
    "url": "https://seatgeek.com/jason-isbell-tickets/troy-new-york-troy-savings-bank-music-hall-2026-11-05-7-30-pm/concert/18660116",
    "source": "seatgeek",
    "drive_hours": 3.25,
+   "act": "Jason Isbell",
    "score": 2,
    "why": "big"
   },
@@ -3397,6 +3416,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/tim-dillon-boston-massachusetts-11-05-2026/event/0100650D9E50C422",
    "source": "ticketmaster",
+   "act": "Tim Dillon",
    "aka": [
     "sg-18498698",
     "2026-11-05-tim-dillon-the-wilbur"
@@ -3552,6 +3572,7 @@
    "url": "https://www.ticketmaster.com/jason-isbell-brookville-new-york-11-06-2026/event/0000649588B55256",
    "source": "ticketmaster",
    "drive_hours": 4.0,
+   "act": "Jason Isbell",
    "aka": [
     "sg-18209295"
    ],
@@ -3595,6 +3616,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/tim-dillon-boston-massachusetts-11-06-2026/event/01006505CB3A3F75",
    "source": "ticketmaster",
+   "act": "Tim Dillon",
    "times": [
     "19:30",
     "22:00"
@@ -3652,6 +3674,7 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7-VGp",
    "source": "ticketmaster",
    "drive_hours": 2.25,
+   "act": "Guster",
    "aka": [
     "sg-18470408"
    ],
@@ -3894,6 +3917,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/comics-come-home-boston-massachusetts-11-07-2026/event/010064D0A4D3D305",
    "source": "ticketmaster",
+   "act": "John Mulaney",
    "aka": [
     "sg-18325146",
     "2026-11-07-comics-come-home-td-garden"
@@ -3953,6 +3977,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/tim-dillon-boston-massachusetts-11-07-2026/event/0100652E99A096FB",
    "source": "ticketmaster",
+   "act": "Tim Dillon",
    "aka": [
     "sg-18603764",
     "2026-11-07-tim-dillon-the-wilbur"
@@ -4009,6 +4034,7 @@
    "city": "Medford, MA",
    "url": "https://www.ticketmaster.com/ben-schwartz-friends-medford-massachusetts-11-08-2026/event/01006470E8C45563",
    "source": "ticketmaster",
+   "act": "Ben Schwartz",
    "times": [
     "15:30",
     "19:00"
@@ -4194,6 +4220,7 @@
    "url": "https://www.ticketmaster.com/dave-matthews-band-providence-rhode-island-11-09-2026/event/010064F5A8CA454E",
    "source": "ticketmaster",
    "drive_hours": 1.0,
+   "act": "Dave Matthews Band",
    "aka": [
     "sg-18474897"
    ],
@@ -4210,6 +4237,7 @@
    "city": "Cambridge, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7-fPM",
    "source": "ticketmaster",
+   "act": "Hiss Golden Messenger",
    "aka": [
     "sg-18095621",
     "2026-11-09-hiss-golden-messenger-the-sinclair"
@@ -4275,6 +4303,7 @@
    "url": "https://www.ticketmaster.com/trey-anastasio-band-portland-maine-11-10-2026/event/0100652805A15A6D",
    "source": "ticketmaster",
    "drive_hours": 2.25,
+   "act": "Trey Anastasio",
    "aka": [
     "sg-18593197"
    ],
@@ -4486,6 +4515,7 @@
    "url": "https://www.ticketmaster.com/trey-anastasio-albany-new-york-11-12-2026/event/0000652ADCDBDAB5",
    "source": "ticketmaster",
    "drive_hours": 3.25,
+   "act": "Trey Anastasio",
    "aka": [
     "sg-18593196"
    ],
@@ -4520,6 +4550,7 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZ3uM",
    "source": "ticketmaster",
    "drive_hours": 1.0,
+   "act": "Dark Star Orchestra",
    "aka": [
     "sg-18406743"
    ],
@@ -4537,6 +4568,7 @@
    "url": "https://www.ticketmaster.com/dave-matthews-band-new-york-new-york-11-12-2026/event/3B0064F8E6F49510",
    "source": "ticketmaster",
    "drive_hours": 4.25,
+   "act": "Dave Matthews Band",
    "aka": [
     "sg-18474900"
    ],
@@ -4596,6 +4628,7 @@
    "url": "https://www.jambase.com/article/joe-russos-almost-dead-tour-dates-2026-november",
    "source": "picks",
    "id": "2026-11-12-joe-russo-s-almost-dead-state-theatre",
+   "act": "Joe Russo's Almost Dead",
    "score": 3,
    "why": "love"
   },
@@ -4629,6 +4662,7 @@
    "url": "https://www.ticketmaster.com/an-evening-with-goose-uncasville-connecticut-11-13-2026/event/1D0064BBCB30A50B",
    "source": "ticketmaster",
    "drive_hours": 1.75,
+   "act": "Goose",
    "aka": [
     "sg-18280633",
     "sg-18280634",
@@ -4649,6 +4683,7 @@
    "url": "https://comedy.tickets/tickets/bert-kreischer/",
    "source": "picks",
    "id": "2026-11-13-bert-kreischer-the-vets",
+   "act": "Bert Kreischer",
    "score": 2,
    "why": "fav"
   },
@@ -4725,6 +4760,7 @@
    "url": "https://www.ticketmaster.com/dark-star-orchestra-albany-new-york-11-13-2026/event/000064F7DC5D1B46",
    "source": "ticketmaster",
    "drive_hours": 3.25,
+   "act": "Dark Star Orchestra",
    "aka": [
     "sg-18406745"
    ],
@@ -4742,6 +4778,7 @@
    "url": "https://www.ticketmaster.com/dave-matthews-band-new-york-new-york-11-13-2026/event/3B0064F8E6EE9505",
    "source": "ticketmaster",
    "drive_hours": 4.25,
+   "act": "Dave Matthews Band",
    "aka": [
     "sg-18474898"
    ],
@@ -4803,6 +4840,7 @@
    "url": "https://www.ticketmaster.com/trey-anastasio-band-jersey-city-new-jersey-11-13-2026/event/02006529DDED3764",
    "source": "ticketmaster",
    "drive_hours": 4.5,
+   "act": "Trey Anastasio",
    "aka": [
     "sg-18593200"
    ],
@@ -4834,6 +4872,7 @@
    "city": "Medford, MA",
    "url": "https://www.ticketmaster.com/dweezil-zappa-dz20-like-father-like-medford-massachusetts-11-13-2026/event/010064BC980CDF82",
    "source": "ticketmaster",
+   "act": "Dweezil Zappa",
    "aka": [
     "sg-18282783",
     "2026-11-13-dweezil-zappa-chevalier-theatre"
@@ -4963,6 +5002,7 @@
    "url": "https://www.ticketmaster.com/an-evening-with-goose-uncasville-connecticut-11-14-2026/event/1D0064BBCD31A70C",
    "source": "ticketmaster",
    "drive_hours": 1.75,
+   "act": "Goose",
    "aka": [
     "sg-18280635",
     "2026-11-14-goose-mohegan-sun-arena"
@@ -4982,6 +5022,7 @@
    "url": "https://comedy.tickets/tickets/bert-kreischer/",
    "source": "picks",
    "id": "2026-11-14-bert-kreischer-the-hanover-theatre",
+   "act": "Bert Kreischer",
    "score": 2,
    "why": "fav"
   },
@@ -5007,6 +5048,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/dark-star-orchestra-boston-massachusetts-11-14-2026/event/010064F791E8D8D1",
    "source": "ticketmaster",
+   "act": "Dark Star Orchestra",
    "aka": [
     "tm-vvG17Z_2roBuNo",
     "sg-18406746",
@@ -5210,6 +5252,7 @@
    "url": "https://www.ticketmaster.com/an-evening-with-goose-portland-maine-11-15-2026/event/010064BC8EE6BA17",
    "source": "ticketmaster",
    "drive_hours": 2.25,
+   "act": "Goose",
    "aka": [
     "sg-18280639",
     "2026-11-15-goose-cross-insurance-aren"
@@ -5286,6 +5329,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PJaJ",
    "source": "ticketmaster",
+   "act": "Mountain Grass Unit",
    "aka": [
     "sg-18321525",
     "2026-11-15-mountain-grass-unit-royale"
@@ -5303,6 +5347,7 @@
    "city": "Boston, MA",
    "url": "https://seatgeek.com/third-eye-blind-tickets/boston-massachusetts-roadrunner-boston-2026-11-15-8-pm/concert/18608936",
    "source": "seatgeek",
+   "act": "Third Eye Blind",
    "aka": [
     "sg-18608936",
     "2026-11-15-third-eye-blind-roadrunner"
@@ -5373,6 +5418,7 @@
    "url": "https://www.ticketmaster.com/trey-anastasio-port-chester-new-york-11-16-2026/event/1D00652A999D6C2D",
    "source": "ticketmaster",
    "drive_hours": 3.75,
+   "act": "Trey Anastasio",
    "aka": [
     "sg-18593199"
    ],
@@ -5446,6 +5492,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/ilana-glazer-live-boston-massachusetts-11-17-2026/event/010064D1006663A8",
    "source": "ticketmaster",
+   "act": "Ilana Glazer",
    "aka": [
     "sg-18328185",
     "2026-11-17-ilana-glazer-the-wilbur"
@@ -5714,6 +5761,7 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAvx-I",
    "source": "ticketmaster",
    "drive_hours": 4.25,
+   "act": "Guster",
    "aka": [
     "sg-18584106"
    ],
@@ -5743,6 +5791,7 @@
    "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-11-19-8-pm/concert/18634478",
    "source": "seatgeek",
    "drive_hours": 4.25,
+   "act": "LCD Soundsystem",
    "score": 2,
    "why": "big"
   },
@@ -5757,6 +5806,7 @@
    "url": "https://www.ticketmaster.com/metallica-uncasville-connecticut-11-19-2026/event/1D00647A9EA3547F",
    "source": "ticketmaster",
    "drive_hours": 1.75,
+   "act": "Metallica",
    "aka": [
     "sg-18164314",
     "sg-18164315"
@@ -5849,6 +5899,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/hannibal-buress-boston-massachusetts-11-20-2026/event/010064970D1012D4",
    "source": "ticketmaster",
+   "act": "Hannibal Buress",
    "aka": [
     "sg-18206450",
     "2026-11-20-hannibal-buress-the-wilbur"
@@ -5879,6 +5930,7 @@
    "url": "https://www.ticketmaster.com/trey-anastasio-billy-strings-a-benefit-worcester-massachusetts-11-20-2026/event/0100651FBAAB0848",
    "source": "ticketmaster",
    "drive_hours": 1.0,
+   "act": "Trey Anastasio",
    "aka": [
     "tm-vv177Z_oGkXBnY-F"
    ],
@@ -5908,6 +5960,7 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAvx-E",
    "source": "ticketmaster",
    "drive_hours": 4.25,
+   "act": "Guster",
    "aka": [
     "sg-18584105"
    ],
@@ -5941,6 +5994,7 @@
    "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-11-20-8-pm/concert/18634477",
    "source": "seatgeek",
    "drive_hours": 4.25,
+   "act": "LCD Soundsystem",
    "score": 2,
    "why": "big"
   },
@@ -6099,6 +6153,7 @@
    "url": "https://www.ticketmaster.com/trey-anastasio-billy-strings-a-benefit-worcester-massachusetts-11-21-2026/event/0100651FBAB10868",
    "source": "ticketmaster",
    "drive_hours": 1.0,
+   "act": "Trey Anastasio",
    "aka": [
     "tm-vv177Z_oGkXBi8-I"
    ],
@@ -6128,6 +6183,7 @@
    "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-11-21-8-pm/concert/18634479",
    "source": "seatgeek",
    "drive_hours": 4.25,
+   "act": "LCD Soundsystem",
    "score": 2,
    "why": "big"
   },
@@ -6142,6 +6198,7 @@
    "url": "https://www.ticketmaster.com/metallica-uncasville-connecticut-11-21-2026/event/1D00647AA1E25998",
    "source": "ticketmaster",
    "drive_hours": 1.75,
+   "act": "Metallica",
    "aka": [
     "sg-18164313"
    ],
@@ -6264,6 +6321,7 @@
    "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-11-22-8-pm/concert/18634482",
    "source": "seatgeek",
    "drive_hours": 4.25,
+   "act": "LCD Soundsystem",
    "score": 2,
    "why": "big"
   },
@@ -6491,6 +6549,7 @@
    "url": "https://www.ticketmaster.com/dark-star-orchestra-huntington-new-york-11-27-2026/event/000064F4CA7F4D6E",
    "source": "ticketmaster",
    "drive_hours": 3.75,
+   "act": "Dark Star Orchestra",
    "aka": [
     "sg-18406757"
    ],
@@ -6615,6 +6674,7 @@
    "url": "https://www.ticketmaster.com/dark-star-orchestra-huntington-new-york-11-28-2026/event/000064F4CA7B4D5D",
    "source": "ticketmaster",
    "drive_hours": 3.75,
+   "act": "Dark Star Orchestra",
    "aka": [
     "sg-18406758"
    ],
@@ -6651,21 +6711,6 @@
     "sg-18511819"
    ],
    "score": 0
-  },
-  {
-   "id": "tm-rZ7HnEZ1AfFtAV",
-   "date": "2026-11-28",
-   "time": "21:30",
-   "title": "The Killers & My Chemical Romance tributes Brightside and So Long And Good Night",
-   "cat": "music",
-   "venue": "Cutting Room",
-   "city": "New York, NY",
-   "url": "https://www.ticketweb.com/event/the-killers-my-chemical-cutting-room-tickets/14229174",
-   "source": "ticketmaster",
-   "drive_hours": 4.25,
-   "from": 26,
-   "score": 2,
-   "why": "big"
   },
   {
    "id": "tm-vv177Z_8GkD9uNOB",
@@ -6767,6 +6812,7 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7ZFp",
    "source": "ticketmaster",
    "drive_hours": 4.25,
+   "act": "LCD Soundsystem",
    "times": [
     "19:00",
     "20:00"
@@ -6875,6 +6921,7 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7e--",
    "source": "ticketmaster",
    "drive_hours": 4.25,
+   "act": "LCD Soundsystem",
    "aka": [
     "sg-18634480"
    ],
@@ -6931,6 +6978,7 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA77-E",
    "source": "ticketmaster",
    "drive_hours": 4.25,
+   "act": "LCD Soundsystem",
    "aka": [
     "sg-18634489"
    ],
@@ -6947,6 +6995,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/nikki-glaser-the-stunning-tour-boston-massachusetts-12-02-2026/event/01006392CFED18E0",
    "source": "ticketmaster",
+   "act": "Nikki Glaser",
    "aka": [
     "sg-18002896",
     "2026-12-02-nikki-glaser-mgm-music-hall-at-fe"
@@ -7011,6 +7060,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/gianmarco-soresi-the-misery-loves-tour-boston-massachusetts-12-03-2026/event/0100653DD0454A52",
    "source": "ticketmaster",
+   "act": "Gianmarco Soresi",
    "aka": [
     "sg-18652858",
     "2026-12-03-gianmarco-soresi-the-wilbur"
@@ -7029,6 +7079,7 @@
    "city": "Medford, MA",
    "url": "https://www.ticketmaster.com/michelle-wolf-best-job-in-the-medford-massachusetts-12-03-2026/event/010064A7CDDBEB67",
    "source": "ticketmaster",
+   "act": "Michelle Wolf",
    "aka": [
     "sg-18236562",
     "2026-12-03-michelle-wolf-chevalier-theatre"
@@ -7091,6 +7142,7 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7Foo",
    "source": "ticketmaster",
    "drive_hours": 4.25,
+   "act": "LCD Soundsystem",
    "aka": [
     "sg-18634490"
    ],
@@ -7107,6 +7159,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/nikki-glaser-the-stunning-tour-boston-massachusetts-12-03-2026/event/01006392CFF218F5",
    "source": "ticketmaster",
+   "act": "Nikki Glaser",
    "aka": [
     "sg-18006392",
     "2026-12-03-nikki-glaser-mgm-music-hall-at-fe"
@@ -7170,6 +7223,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/nikki-glaser-the-stunning-tour-boston-massachusetts-12-04-2026/event/01006392CFF51918",
    "source": "ticketmaster",
+   "act": "Nikki Glaser",
    "aka": [
     "sg-18178308",
     "2026-12-04-nikki-glaser-mgm-music-hall-at-fe"
@@ -7203,6 +7257,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/gianmarco-soresi-the-misery-loves-tour-boston-massachusetts-12-04-2026/event/01006479EA92F101",
    "source": "ticketmaster",
+   "act": "Gianmarco Soresi",
    "times": [
     "19:30",
     "22:00"
@@ -7362,6 +7417,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/gianmarco-soresi-the-misery-loves-tour-boston-massachusetts-12-05-2026/event/01006471C8273C26",
    "source": "ticketmaster",
+   "act": "Gianmarco Soresi",
    "times": [
     "19:00",
     "21:45"
@@ -7386,6 +7442,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/mihali-presents-mihalidaze-18-boston-massachusetts-12-05-2026/event/01006504D8E3E277",
    "source": "ticketmaster",
+   "act": "Mihali",
    "aka": [
     "sg-18484942",
     "2026-12-05-mihali-paradise-rock-club"
@@ -7504,6 +7561,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/brett-goldstein-sex-death-small-talk-boston-massachusetts-12-06-2026/event/0100651493A0AA56",
    "source": "ticketmaster",
+   "act": "Brett Goldstein",
    "times": [
     "16:00",
     "19:00"
@@ -7602,6 +7660,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/jim-james-solo-acoustic-wowed-out-boston-massachusetts-12-06-2026/event/010064F78CD5C349",
    "source": "ticketmaster",
+   "act": "Jim James",
    "aka": [
     "sg-18408686",
     "2026-12-06-jim-james-the-wilbur"
@@ -7750,6 +7809,7 @@
    "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-12-10-8-pm/concert/18634491",
    "source": "seatgeek",
    "drive_hours": 4.25,
+   "act": "LCD Soundsystem",
    "score": 2,
    "why": "big"
   },
@@ -7778,6 +7838,7 @@
    "city": "Cambridge, MA",
    "url": "https://seatgeek.com/taper-s-choice-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-12-10-8-pm/concert/18609158",
    "source": "seatgeek",
+   "act": "Taper's Choice",
    "aka": [
     "2026-12-10-taper-s-choice-the-sinclair"
    ],
@@ -7908,6 +7969,7 @@
    "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-12-11-8-pm/concert/18634492",
    "source": "seatgeek",
    "drive_hours": 4.25,
+   "act": "LCD Soundsystem",
    "score": 2,
    "why": "big"
   },
@@ -7952,6 +8014,7 @@
    "url": "https://seatgeek.com/moe-tickets/woodstock-new-york-bearsville-theater-2026-12-11-8-pm/concert/18668758",
    "source": "seatgeek",
    "drive_hours": 3.75,
+   "act": "moe.",
    "score": 3,
    "why": "love"
   },
@@ -8075,6 +8138,7 @@
    "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-12-12-8-pm/concert/18634494",
    "source": "seatgeek",
    "drive_hours": 4.25,
+   "act": "LCD Soundsystem",
    "score": 2,
    "why": "big"
   },
@@ -8101,6 +8165,7 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAvS-9",
    "source": "ticketmaster",
    "drive_hours": 3.75,
+   "act": "moe.",
    "aka": [
     "sg-18668759"
    ],
@@ -8193,6 +8258,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/an-evening-with-lord-huron-boston-massachusetts-12-13-2026/event/010064FCB3D08961",
    "source": "ticketmaster",
+   "act": "Lord Huron",
    "aka": [
     "sg-18421970",
     "2026-12-13-lord-huron-mgm-music-hall-at-fe"
@@ -8226,6 +8292,7 @@
    "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-12-13-8-pm/concert/18634493",
    "source": "seatgeek",
    "drive_hours": 4.25,
+   "act": "LCD Soundsystem",
    "score": 2,
    "why": "big"
   },
@@ -8478,13 +8545,14 @@
    "city": "Cambridge, MA",
    "url": "https://seatgeek.com/weird-phishes-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-12-18-8-pm/concert/18349689",
    "source": "seatgeek",
+   "act": "Weird Phishes",
    "aka": [
     "sg-18349689",
     "2026-12-18-weird-phishes-the-sinclair"
    ],
    "sub": "a Phish tribute",
-   "score": 3,
-   "why": "love"
+   "score": 2,
+   "why": "like"
   },
   {
    "id": "tm-1AtZkfsGkdhCsax",
@@ -8532,6 +8600,7 @@
    "url": "https://comedy.tickets/tickets/mark-normand/",
    "source": "picks",
    "id": "2026-12-19-mark-normand-great-cedar-showroom",
+   "act": "Mark Normand",
    "score": 2,
    "why": "fav"
   },
@@ -8808,6 +8877,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/pigeons-playing-ping-pong-nye-2026-boston-massachusetts-12-30-2026/event/010064F5E3C3C6AF",
    "source": "ticketmaster",
+   "act": "Pigeons Playing Ping Pong",
    "aka": [
     "tm-vvG17Z_29z4Fyq",
     "sg-18408759"
@@ -8838,6 +8908,7 @@
    "url": "https://www.ticketmaster.com/phish-new-york-new-york-12-30-2026/event/3B00653D12D41F7C",
    "source": "ticketmaster",
    "drive_hours": 4.25,
+   "act": "Phish",
    "aka": [
     "sg-18659383",
     "2026-12-30-phish-madison-square-garde"
@@ -8872,6 +8943,7 @@
    "url": "https://www.ticketweb.com/event/a-phish-after-party-with-le-poisson-rouge-tickets/14363004",
    "source": "ticketmaster",
    "drive_hours": 4.25,
+   "act": "Phish",
    "from": 56,
    "score": 3,
    "why": "love"
@@ -8898,6 +8970,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/pigeons-playing-ping-pong-nye-2026-boston-massachusetts-12-31-2026/event/010064EFE3B83EE5",
    "source": "ticketmaster",
+   "act": "Pigeons Playing Ping Pong",
    "aka": [
     "sg-18408720",
     "2026-12-31-pigeons-playing-ping-pong-citizens-house-of-bl"
@@ -8929,6 +9002,7 @@
    "url": "https://www.ticketmaster.com/phish-new-york-new-york-12-31-2026/event/3B00653D12DC1F89",
    "source": "ticketmaster",
    "drive_hours": 4.25,
+   "act": "Phish",
    "aka": [
     "sg-18659385",
     "2026-12-31-phish-madison-square-garde"
@@ -8960,6 +9034,7 @@
    "url": "https://www.ticketmaster.com/dark-star-orchestra-port-chester-new-york-12-31-2026/event/1D00650C0CF62CAA",
    "source": "ticketmaster",
    "drive_hours": 3.75,
+   "act": "Dark Star Orchestra",
    "aka": [
     "sg-18511851"
    ],
@@ -8976,6 +9051,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/govt-mule-18-boston-massachusetts-12-31-2026/event/010064E8A046D797",
    "source": "ticketmaster",
+   "act": "Gov't Mule",
    "aka": [
     "sg-18449511",
     "2026-12-31-gov-t-mule-mgm-music-hall-at-fe"
@@ -8995,6 +9071,7 @@
    "url": "https://www.ticketmaster.com/phish-new-york-new-york-01-01-2027/event/3B00653D12E41F9F",
    "source": "ticketmaster",
    "drive_hours": 4.25,
+   "act": "Phish",
    "aka": [
     "sg-18659382",
     "2027-01-01-phish-madison-square-garde"
@@ -9026,6 +9103,7 @@
    "url": "https://www.ticketmaster.com/dark-star-orchestra-port-chester-new-york-01-01-2027/event/1D00650C0CEC2C7B",
    "source": "ticketmaster",
    "drive_hours": 3.75,
+   "act": "Dark Star Orchestra",
    "aka": [
     "sg-18511849"
    ],
@@ -9043,6 +9121,7 @@
    "url": "https://www.ticketweb.com/event/a-phish-after-party-tad-hill-country-live-tickets/14370224",
    "source": "ticketmaster",
    "drive_hours": 4.25,
+   "act": "Phish",
    "from": 22,
    "score": 3,
    "why": "love"
@@ -9077,6 +9156,7 @@
    "url": "https://www.ticketmaster.com/phish-new-york-new-york-01-02-2027/event/3B00653D12EC1FA9",
    "source": "ticketmaster",
    "drive_hours": 4.25,
+   "act": "Phish",
    "aka": [
     "sg-18659384",
     "2027-01-02-phish-madison-square-garde"
@@ -9096,6 +9176,7 @@
    "url": "https://www.ticketmaster.com/dark-star-orchestra-port-chester-new-york-01-02-2027/event/1D00650C0CF22C94",
    "source": "ticketmaster",
    "drive_hours": 3.75,
+   "act": "Dark Star Orchestra",
    "aka": [
     "sg-18511850"
    ],
@@ -9662,6 +9743,7 @@
    "url": "https://seatgeek.com/jason-isbell-tickets/new-york-new-york-the-metropolitan-museum-of-art-2027-02-02-7-pm/concert/18663188",
    "source": "seatgeek",
    "drive_hours": 4.25,
+   "act": "Jason Isbell",
    "score": 2,
    "why": "big"
   },
@@ -10470,6 +10552,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/greta-van-fleet-into-the-beginning-boston-massachusetts-03-05-2027/event/0100653AB7917C1E",
    "source": "ticketmaster",
+   "act": "Greta Van Fleet",
    "aka": [
     "tm-vv177Z_KGknM09Yr",
     "sg-18641971",
@@ -10550,6 +10633,7 @@
    "url": "https://www.ticketmaster.com/greta-van-fleet-into-the-beginning-albany-new-york-03-06-2027/event/0000653EAE1495D1",
    "source": "ticketmaster",
    "drive_hours": 3.25,
+   "act": "Greta Van Fleet",
    "aka": [
     "sg-18641972"
    ],
@@ -10637,6 +10721,7 @@
    "url": "https://www.ticketmaster.com/dropkick-murphys-brooklyn-new-york-03-07-2027/event/0000653B0EA63737",
    "source": "ticketmaster",
    "drive_hours": 4.5,
+   "act": "Dropkick Murphys",
    "times": [
     "18:00",
     "19:00"
@@ -10729,29 +10814,9 @@
    "url": "https://www.ticketmaster.com/greta-van-fleet-into-the-beginning-brooklyn-new-york-03-08-2027/event/3000653AE6DC9BB1",
    "source": "ticketmaster",
    "drive_hours": 4.5,
+   "act": "Greta Van Fleet",
    "aka": [
     "sg-18641973"
-   ],
-   "score": 2,
-   "why": "big"
-  },
-  {
-   "id": "tm-Z7r9jZ1AAZOOy",
-   "date": "2027-03-10",
-   "time": "18:05",
-   "title": "Springfield Thunderbirds vs. Charlotte Checkers",
-   "cat": "music",
-   "venue": "MassMutual Center",
-   "city": "Springfield, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZOOy",
-   "source": "ticketmaster",
-   "drive_hours": 1.75,
-   "times": [
-    "18:05",
-    "19:00"
-   ],
-   "aka": [
-    "sg-18633571"
    ],
    "score": 2,
    "why": "big"
@@ -10790,6 +10855,21 @@
    "score": 0
   },
   {
+   "id": "sg-18633571",
+   "date": "2027-03-10",
+   "time": "19:00",
+   "title": "Dropkick Murphys with Spiritual Cramp and Home Front",
+   "cat": "music",
+   "venue": "MassMutual Center",
+   "city": "Springfield, MA",
+   "url": "https://seatgeek.com/dropkick-murphys-tickets/springfield-massachusetts-massmutual-center-2027-03-10-7-pm/concert/18633571",
+   "source": "seatgeek",
+   "drive_hours": 1.75,
+   "act": "Dropkick Murphys",
+   "score": 2,
+   "why": "big"
+  },
+  {
    "id": "tm-vv177Z_KGkSAw-nS",
    "date": "2027-03-11",
    "time": "19:00",
@@ -10800,6 +10880,7 @@
    "url": "https://www.ticketmaster.com/dropkick-murphys-portland-maine-03-11-2027/event/0100653CC5CA1AB3",
    "source": "ticketmaster",
    "drive_hours": 2.25,
+   "act": "Dropkick Murphys",
    "aka": [
     "sg-18633572"
    ],
@@ -10843,6 +10924,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/dropkick-murphys-boston-massachusetts-03-12-2027/event/01006533FFA73B59",
    "source": "ticketmaster",
+   "act": "Dropkick Murphys",
    "aka": [
     "tm-vv1AvZkfSGkdTtSc_",
     "sg-18685643",
@@ -10918,6 +11000,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/mini-concert-with-dropkick-murphys-boston-massachusetts-03-13-2027/event/01006533FFB73BBA",
    "source": "ticketmaster",
+   "act": "Dropkick Murphys",
    "times": [
     "14:00",
     "19:00"
@@ -11011,6 +11094,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/dropkick-murphys-boston-massachusetts-03-14-2027/event/01006537BF0F93CE",
    "source": "ticketmaster",
+   "act": "Dropkick Murphys",
    "aka": [
     "tm-vv1AvZkfMGkeTdy2C",
     "sg-18685644",
@@ -11055,6 +11139,7 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/dropkick-murphys-boston-massachusetts-03-17-2027/event/01006539E0BB9980",
    "source": "ticketmaster",
+   "act": "Dropkick Murphys",
    "aka": [
     "tm-vv1AvZkfyGkdOmyJZ",
     "sg-18683920",
@@ -11747,7 +11832,7 @@
   "picks": 5,
   "venues": 7,
   "espn": 84,
-  "ticketmaster": 578,
-  "seatgeek": 108
+  "ticketmaster": 576,
+  "seatgeek": 109
  }
 }
