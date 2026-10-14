@@ -259,3 +259,40 @@ a:hover{color:var(--red)}
   .facts{gap:14px 12px}
   .facts dd{font-size:1.1rem;padding:8px 9px 7px}
 }
+
+/* Homepage refresh: carry the sports/data identity into the opening view. */
+.hero .wrap{align-items:center;padding-block:48px 36px;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:36px}
+.hero-text{padding-bottom:0;gap:20px}
+.hero-kicker{font-size:.82rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--red)}
+.hero h1{font-size:clamp(2.45rem,5vw,4.15rem);line-height:1.06}
+.hero-brand-art{display:block;width:100%;height:auto;max-width:25rem;justify-self:end}
+.section{padding-block:clamp(40px,5vw,64px)}
+.entry{padding-block:clamp(28px,3.5vw,40px)}
+.entry:last-child{padding-bottom:12px}
+.entry-cover{position:relative}
+.entry-cover:has(img){aspect-ratio:4/3}
+.entry-cover:has(img) .band{position:absolute;inset:auto 0 0;z-index:1}
+#\33 1st-franchise .entry-cover img{transform:scale(1.65);transform-origin:top left}
+#guillotine .entry-cover img{transform:scale(1.16);transform-origin:top left}
+#franchise-mode .entry-cover .typeset{aspect-ratio:2/1;font-size:1.6rem}
+.writing-intro{padding-top:32px;margin-bottom:28px}
+.featured-writing{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 24px;padding-left:calc(var(--meta-col) + 40px);margin-bottom:36px}
+.featured-label{grid-column:1/-1;font-size:.8rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.featured-column{display:flex;flex-direction:column;gap:10px;padding:22px;background:var(--paper-2);border-top:3px solid var(--monster);text-decoration:none}
+.featured-column>span{font-size:.8rem;color:var(--muted)}
+.featured-column h3{font-size:1.3rem;line-height:1.3;text-wrap:initial}
+.featured-column p{font-size:.9rem;color:var(--muted)}
+.featured-column b{font-size:.85rem;margin-top:auto;padding-top:8px;color:var(--red)}
+.featured-column:hover h3{text-decoration:underline;text-underline-offset:.2em}
+@media(max-width:900px){
+ .hero .wrap{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:20px;padding-block:32px}
+ .hero-brand-art{align-self:center}
+ .featured-writing{padding-left:0}
+}
+@media(max-width:600px){
+ .hero .wrap{grid-template-columns:1fr;gap:8px}
+ .hero-brand-art{width:60%;max-width:15rem;justify-self:center}
+ .hero h1{font-size:2.55rem}
+ .featured-writing{grid-template-columns:1fr}
+ .site-header .brand-logo{width:210px}
+}
