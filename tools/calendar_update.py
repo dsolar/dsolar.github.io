@@ -257,7 +257,7 @@ def big_room(venue, taste):
 
 
 TRIBUTE = re.compile(r"\b(tribute|cover band|covers|for kids|music of|experience|salute|celebrat)", re.I)
-JUNK = re.compile(r"\b(parking|vip (package|upgrade)|premium package|2-day ticket|two-day ticket|day ticket|gift card|add-on|shuttle)\b", re.I)
+JUNK = re.compile(r"\b(parking|vip (package|upgrade)|premium package|2-day ticket|two-day ticket|day ticket|gift card|add-on|shuttle|vs\.?)\b", re.I)
 
 
 def who(e, names):
@@ -286,16 +286,21 @@ def score(e, taste):
     """3 a band we love, 2 a big band, a band we like or a favorite comic, 1 worth a look, 0 only under All shows."""
     bands, comics = taste.get("bands", {}), taste.get("comedians", [])
     picked = e.get("source") not in ("ticketmaster", "seatgeek", "venues")
+    # A tribute never counts as the band it covers; tribute acts we like are on the "like" list by name.
+    tribute = bool(TRIBUTE.search(" ".join([e["title"], e.get("sub", "")])))
     if e["cat"] == "music":
-        if who(e, bands.get("love", [])):
-            return 3, "love"
-        if who(e, bands.get("big", [])):
-            return 2, "big"
-        if who(e, bands.get("like", [])):
-            return 2, "like"
+        for tier, s, why in (("love", 3, "love"), ("big", 2, "big"), ("like", 2, "like")):
+            if tribute and tier != "like":
+                continue
+            name = who(e, bands.get(tier, []))
+            if name:
+                e["act"] = name
+                return s, why
         return (1, None) if picked else (0, None)
     if e["cat"] == "comedy":
-        if who(e, comics):
+        name = who(e, comics)
+        if name:
+            e["act"] = name
             return 2, "fav"
         # Touring headliners play the big rooms; the clubs' nightly lineups go under Everything.
         return (1, None) if picked or big_room(e.get("venue", ""), taste) else (0, None)

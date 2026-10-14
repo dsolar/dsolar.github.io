@@ -564,12 +564,13 @@ function renderChips() {
 }
 
 function renderBig() {
-  // Runs of a loved band (or a big show) within a week of each other become one card.
-  const loved = DATA.events.filter((e) => e.date >= TODAY && (e.why === "love" || e.why === "big"));
+  // Bands we love, anywhere, and big shows here at home. A band's nights within a week of each other become one card.
+  const loved = DATA.events.filter((e) => e.date >= TODAY && (e.why === "love" || (e.why === "big" && !e.drive_hours)));
   const runs = [];
   for (const e of loved) {
-    const r = runs.find((r) => r.title === e.title && e.date <= addDays(r.last, 7));
-    if (r) { r.last = e.date; r.items.push(e); } else runs.push({ title: e.title, first: e.date, last: e.date, items: [e] });
+    const key = e.act || e.title;
+    const r = runs.find((r) => r.key === key && e.date <= addDays(r.last, 7));
+    if (r) { r.last = e.date; r.items.push(e); } else runs.push({ key, title: e.act || e.title, first: e.date, last: e.date, items: [e] });
   }
   $("big-sec").hidden = !runs.length;
   $("big").innerHTML = runs.map((r, i) => {
