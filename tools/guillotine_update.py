@@ -53,11 +53,17 @@ def access_token():
     })
     try:
         with urllib.request.urlopen(req, timeout=30) as res:
-            return json.load(res)["access_token"]
+            tok = json.load(res)
     except urllib.error.HTTPError as e:
         detail = e.read().decode(errors="replace")[:300]
         sys.exit(f"Yahoo sign-in failed ({e.code}). The refresh token may have been revoked; "
                  f"redo the one-time setup in the README. Details: {detail}")
+    if tok.get("refresh_token") and tok["refresh_token"] != refresh:
+        # Yahoo normally keeps the same refresh token. If it ever rotates it, the stored secret
+        # will stop working, so say so in the run log (without printing the token).
+        print("::warning::Yahoo issued a new refresh token. If the next run fails to sign in, "
+              "redo the one-time setup in the README.")
+    return tok["access_token"]
 
 
 class Yahoo:

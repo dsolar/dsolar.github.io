@@ -74,7 +74,6 @@ window.PROJECTS = [
     summary: "Survival odds for my guillotine fantasy football league. It pulls the league from Yahoo every morning and plays out the rest of the season 20,000 times.",
     facts: [["20,000", "simulated seasons per update"], ["15", "teams, one cut every week"], ["Daily", "refresh from Yahoo"]],
     stack: ["JavaScript", "Python", "Monte Carlo simulation", "GitHub Actions"],
-    cover: { bg: "#0E1A30", band: "#C8102E" },
-    hidden: true
+    cover: { image: "assets/covers/guillotine.jpg", bg: "#0E1A30", band: "#C8102E" }
   }
 ];

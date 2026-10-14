@@ -275,9 +275,9 @@ th.win{color:var(--ink)}
 
     var rows = byRisk.map(function (t) {
       var a = t.now * (1 - z * cv), b = t.now * (1 + z * cv);
-      var source = t.proj !== null ? "proj " + t.proj.toFixed(1) : (t.noLineup ? "no lineup set, " : "") + "avg " + t.now.toFixed(1);
+      var source = t.proj !== null ? "proj " + t.proj.toFixed(1) : (t.noLineup ? "no lineup set, " : "") + "est " + t.now.toFixed(1);
       var meta = [source, t.faab !== null ? "$" + t.faab + " FAB" : null, "wins " + pct(t.pWin)].filter(Boolean).join(" · ");
-      var label = t.name + ": " + (t.noLineup ? "no lineup set. " : "") + (t.proj !== null ? "projected " : "average ") + pts(t.now) + " points, likely " + pts(a) + " to " + pts(b) + ". " + pct(t.pChop) + " chance of being cut.";
+      var label = t.name + ": " + (t.noLineup ? "no lineup set. " : "") + (t.proj !== null ? "projected " : "estimated ") + pts(t.now) + " points, likely " + pts(a) + " to " + pts(b) + ". " + pct(t.pChop) + " chance of being cut.";
       return '<li class="row" aria-label="' + esc(label) + '">' +
         '<div class="who"><div class="name">' + esc(t.name) + (t.mine ? '<span class="tag">David</span>' : "") + (t.noLineup ? '<span class="tag warn">No lineup</span>' : "") + "</div>" +
         '<div class="meta">' + esc(meta) + "</div></div>" +

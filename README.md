@@ -28,7 +28,7 @@ dsolar.github.io/
     build_site.py             puts page + data + engine together
   degenerate-trail/           The Degenerate Trail, plain files, edit directly
   nick-chat/                  Chat with Nick
-  guillotine/                 Bastille Day Odds (link-only): index.html, sim.js (the simulation),
+  guillotine/                 Bastille Day Odds: index.html, sim.js (the simulation),
                               data.json (league data, written by the workflow below)
   tools/guillotine_update.py  pulls the league from Yahoo into guillotine/data.json
   .github/workflows/          guillotine.yml runs that script every morning in season
@@ -84,7 +84,7 @@ GitHub Pages sites are always public. When you want a private corner (for exampl
 
 ## Guillotine odds: connecting Yahoo
 
-`davidsolar.dev/guillotine/` shows survival odds for the Bastille Day league. It's link-only (`hidden: true` in `projects.js`) and kept out of search engines. Until Yahoo is connected it shows sample numbers with a note saying so.
+`davidsolar.dev/guillotine/` shows survival odds for the Bastille Day league. It's listed on the home page, but the page itself asks search engines not to index it, since it shows friends' team names. Until Yahoo is connected, `guillotine/data.json` holds numbers entered by hand.
 
 Once connected, a GitHub workflow runs every morning from September through January: it reads the league from Yahoo, saves `guillotine/data.json`, and the site rebuilds. Nothing to do week to week. One-time setup, about 10 minutes on a computer:
 
