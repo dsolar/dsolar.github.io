@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-14T23:03:36Z",
+ "updated": "2026-10-14T23:58:17Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -593,22 +593,6 @@
    "low": 22,
    "first": 22
   },
-  "tm-rZ7HnEZ1AfFtAV": {
-   "history": [
-    [
-     "2026-10-14",
-     26
-    ]
-   ],
-   "sg": null,
-   "title": "The Killers & My Chemical Romance tributes Brightside and So Long And Good Night",
-   "date": "2026-11-28",
-   "venue": "Cutting Room",
-   "url": "https://www.ticketweb.com/event/the-killers-my-chemical-cutting-room-tickets/14229174",
-   "src": "Ticketmaster",
-   "low": 26,
-   "first": 26
-  },
   "tm-Z7r9jZ1AA7e--": {
    "history": [],
    "sg": 18634480,
@@ -658,6 +642,26 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7Foo",
    "src": null,
    "low": null
+  },
+  "tm-vv1AvZkC3Gkd2H-Ng": {
+   "history": [],
+   "sg": 18006392,
+   "title": "Nikki Glaser: The Stunning Tour",
+   "date": "2026-12-03",
+   "venue": "MGM Music Hall at Fenway",
+   "url": "https://www.ticketmaster.com/nikki-glaser-the-stunning-tour-boston-massachusetts-12-03-2026/event/01006392CFF218F5",
+   "src": null,
+   "low": null
+  },
+  "tm-vv1AvZkC3Gkd2Wo0b": {
+   "history": [],
+   "sg": 18178308,
+   "title": "Nikki Glaser: The Stunning Tour",
+   "date": "2026-12-04",
+   "venue": "MGM Music Hall at Fenway",
+   "url": "https://www.ticketmaster.com/nikki-glaser-the-stunning-tour-boston-massachusetts-12-04-2026/event/01006392CFF51918",
+   "src": null,
+   "low": null
   }
  },
  "misses": {
@@ -681,7 +685,6 @@
   "tm-vvG17Z_u7Z_JCI": "2026-10-14",
   "tm-Z7r9jZ1AAvx-I": "2026-10-14",
   "tm-Z7r9jZ1AAvx-E": "2026-10-14",
-  "tm-rZ7HnEZ1AfFtAV": "2026-10-14",
   "tm-Z7r9jZ1AA77-E": "2026-10-14"
  },
  "drops": []
