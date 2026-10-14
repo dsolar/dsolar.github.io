@@ -517,6 +517,8 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
       var last = k === r.weeksLeft - 1;
       head += '<th scope="col"' + (last ? ' class="win"' : "") + ">" + (last ? "Wk " + (r.week + k) + " · Win" : "Wk " + (r.week + k)) + "</th>";
     }
+    var prev = ((HIST.weeks || {})[String(r.week - 1)] || {}).teams || null;
+    if (prev) head += '<th scope="col">Since Wk ' + (r.week - 1) + "</th>";
     head += "</tr></thead>";
     var body = "<tbody>" + byWin.map(function (t) {
       var cells = t.surv.map(function (p, k) {
@@ -524,8 +526,16 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
         var cls = "c" + (alpha > 0.55 ? " hi" : "") + (k === t.surv.length - 1 ? " win" : "");
         return '<td class="' + cls + '" style="background:rgba(var(--bleu-rgb),' + alpha.toFixed(3) + ')">' + pct(p) + "</td>";
       }).join("");
+      if (prev) {
+        var was = prev[t.name] ? prev[t.name].win : null;
+        var dd = was === null ? null : Math.round((t.pWin - was) * 100);
+        cells += '<td class="c ' + (dd > 0 ? "up" : dd < 0 ? "down" : "") + '" style="font-weight:700">' +
+          (dd === null ? "new" : (dd > 0 ? "+" : dd < 0 ? "−" : "") + Math.abs(dd)) + "</td>";
+      }
       return '<tr><th scope="row" class="t-' + tierOf(t.pChop, n) + '">' + teamButton(t.name, mgr(t.name)) + "</th>" + cells + "</tr>";
     }).join("") + "</tbody>";
+    $("season-note").textContent = "Chance each team is still alive after that week's cut. The Win column is the chance of winning the league" +
+      (prev ? "; the last column is how many points that chance moved since the start of Week " + (r.week - 1) + "." : ".");
     $("grid").innerHTML = "<caption style=\"position:absolute;left:-9999px\">Chance each team is still alive after each week</caption>" + head + body;
     $("season").hidden = false;
 
@@ -534,8 +544,10 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
     if (r.fallen.length || missing > 0) {
       $("fallen").innerHTML = r.fallen.map(function (f) {
         var m = mgr(f.name), e = eulogies[f.name];
+        var snap = (((HIST.weeks || {})[String(f.week)] || {}).teams || {})[f.name];
+        var given = snap ? " · given " + pct(snap.chop) + " cut odds" : "";
         var row = '<span class="w">Wk ' + f.week + '</span>' +
-          '<span class="who2"><span class="t">' + esc(f.name) + "</span>" + (m ? '<span class="mgr">' + esc(m) + "</span>" : "") + "</span>";
+          '<span class="who2"><span class="t">' + esc(f.name) + "</span>" + (m || given ? '<span class="mgr">' + esc((m || "") + given) + "</span>" : "") + "</span>";
         var score = f.score !== null ? "<span>" + f.score.toFixed(1) + " pts</span>" : "";
         if (!e || (!e.image && !e.haiku)) {
           return '<li><div class="frow">' + row + '<span class="end">' + score + '<span class="pending">No send-off yet</span></span></div></li>';
@@ -787,7 +799,7 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
     return name.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[.'’`-]/g, "")
       .split(/\s+/).filter(function (w) { return w && !SUFFIX[w]; }).join(" ");
   };
-  var BASE = null, LEAGUE = {}, liveTimer = null;
+  var BASE = null, LEAGUE = {}, HIST = { weeks: {} }, liveTimer = null;
 
   function score(s) {
     var total = 0, any = false;
@@ -891,9 +903,10 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
   }
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") refreshLive(); });
 
-  Promise.all([getJSON("data.json"), getJSON("league.json").catch(function () { return {}; })])
+  Promise.all([getJSON("data.json"), getJSON("league.json").catch(function () { return {}; }),
+               getJSON("history.json").catch(function () { return { weeks: {} }; })])
     .then(function (both) {
-      BASE = both[0]; LEAGUE = both[1] || {};
+      BASE = both[0]; LEAGUE = both[1] || {}; HIST = both[2] || { weeks: {} };
       setTimeout(function () { render(BASE, LEAGUE); wireJump(); refreshLive(); }, 0);
     })
     .catch(function () {

@@ -11,6 +11,7 @@ on:
       - guillotine/paste.txt
       - tools/guillotine_paste.py
       - tools/guillotine_projections.py
+      - tools/guillotine_snapshot.js
       - .github/workflows/guillotine-update.yml
   schedule:
     - cron: "17 14 * 9-12,1 *"   # 10:17am ET daily (9:17 in winter), September through January
@@ -43,10 +44,14 @@ jobs:
       - name: Refresh player projections
         run: python3 tools/guillotine_projections.py
 
+      - name: Save this week's odds
+        run: node tools/guillotine_snapshot.js
+
       - name: Commit the new data
         id: commit
         run: |
-          # Skip the commit when only timestamps moved.
+          # Skip timestamp-only changes to data.json; always keep a changed history.json.
+          DATA_SAME=0
           if git show HEAD:guillotine/data.json > /tmp/old.json 2>/dev/null && python3 - <<'PY'
           import json, sys
           def core(p):
@@ -56,10 +61,15 @@ jobs:
           sys.exit(0 if core("/tmp/old.json") == core("guillotine/data.json") else 1)
           PY
           then
+            DATA_SAME=1
+          fi
+          HIST_CHANGED=$(git status --porcelain guillotine/history.json)
+          if [ "$DATA_SAME" = 1 ] && [ -z "$HIST_CHANGED" ]; then
             echo "Nothing changed."
             exit 0
           fi
-          git add guillotine/data.json
+          if [ "$DATA_SAME" = 1 ]; then git checkout -- guillotine/data.json; fi
+          git add guillotine/data.json guillotine/history.json
           git commit -m "Update guillotine odds data"
           git pull --rebase -q origin main   # someone may have pushed while this ran
           git push
