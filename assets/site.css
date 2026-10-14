@@ -85,8 +85,9 @@ a:hover{color:var(--red)}
 .site-header .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px 24px;flex-wrap:wrap;padding-block:20px}
 .brand{display:flex;align-items:center;text-decoration:none}
 .brand:hover{color:inherit}
-.brand-logo{display:block;width:clamp(220px,26vw,290px);height:auto;background:#F5F4F0;border-radius:3px}
-.footer-brand{display:block;grid-column:1;grid-row:1;width:min(280px,100%);text-decoration:none}
+.brand-logo{display:block;height:auto;background:#F5F4F0;border-radius:3px}
+.site-header .brand-logo{width:clamp(220px,26vw,290px)}
+.footer-brand{display:block;grid-column:1;grid-row:1;width:min(360px,100%);text-decoration:none}
 .footer-brand .brand-logo{width:100%}
 .site-nav{display:flex;gap:4px 24px;flex-wrap:wrap;font-size:.95rem;font-weight:500}
 .site-nav a{text-decoration-color:transparent}
