@@ -84,7 +84,8 @@ class Yahoo:
         self.token, self.from_dir = token, from_dir
         self.last_error = None
 
-    def get(self, path):
+    def get(self, path, soft=False):
+        """soft=True: a refusal (400/401/403/404) returns None so the caller can try another route."""
         if self.from_dir:
             name = re.sub(r"[^A-Za-z0-9]+", "_", path).strip("_") + ".xml"
             fp = os.path.join(self.from_dir, name)
@@ -102,7 +103,7 @@ class Yahoo:
                 body = re.sub(r"\s+", " ", e.read().decode(errors="replace"))[:300]
                 self.last_error = f"HTTP {e.code} on {path}: {body}"
                 print(self.last_error)
-                if e.code in (400, 404):
+                if e.code in (400, 404) or (soft and e.code in (401, 403)):
                     return None
                 if attempt == 1 and (e.code in (429, 999) or e.code >= 500):
                     time.sleep(5)
@@ -156,15 +157,23 @@ def week_stats(y, key, week):
 
 
 def build(y, league_id):
-    key = f"nfl.l.{league_id}"
-    league = y.get(f"league/{key}")
+    # League keys need this season's numeric game key (like 461.l.157731), so look it up first.
+    league = None
+    game = y.get("game/nfl", soft=True)
+    game_key = text(game.find(".//game"), "game_key") if game is not None else None
+    if game_key:
+        key = f"{game_key}.l.{league_id}"
+        print(f"This season's NFL game key is {game_key}.")
+        league = y.get(f"league/{key}", soft=True)
     if league is None:
-        # The "nfl" shortcut didn't resolve; find the league among the signed-in user's NFL leagues.
-        mine = y.get("users;use_login=1/games;game_codes=nfl/leagues")
-        for lg in (mine.findall(".//league") if mine is not None else []):
+        # Otherwise find the league among the signed-in user's own NFL leagues.
+        mine = y.get("users;use_login=1/games;game_codes=nfl/leagues", soft=True)
+        found = mine.findall(".//league") if mine is not None else []
+        print("Your Yahoo NFL leagues: " + (", ".join(
+            f"{text(lg, 'name')} ({text(lg, 'league_key')}, {text(lg, 'season')})" for lg in found) or "none returned"))
+        for lg in found:
             if text(lg, "league_id") == str(league_id):
                 key = text(lg, "league_key")
-                print(f"Found league {league_id} as {key}.")
                 league = y.get(f"league/{key}")
                 break
     if league is None:
@@ -187,6 +196,7 @@ def build(y, league_id):
             "name": text(t, "name"),
             "faab": num(t, "faab_balance"),
             "mine": text(t, "is_owned_by_current_login") == "1",
+            "manager": text(t, "managers/manager/nickname"),
         })
     by_key = {t["key"]: t for t in teams}
 
@@ -222,6 +232,8 @@ def build(y, league_id):
         row = {"name": t["name"]}
         if t["mine"]:
             row["mine"] = True
+        if t["manager"] and t["manager"] != "--hidden--":
+            row["manager"] = t["manager"]
         if t["faab"] is not None:
             row["faab"] = int(t["faab"])
         if k in out_week:
