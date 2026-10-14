@@ -1,5 +1,5 @@
 {
- "_about": "Night Out's restaurant list (the Restaurants section). Edit freely. area: home (near Needham), boston (Boston, Brookline, Cambridge, Somerville) or north (on the way to Marblehead). status: loved (our favorites) or try. good: any of Date night, Groups, Before a show, Before a game, Outdoor seating, Waterfront, Splurge, Book ahead. site and reserve are optional links.",
+ "_about": "Night Out's restaurant list (the Where to eat section). Edit freely. area: home (near Needham), boston (Boston, Brookline, Cambridge, Somerville) or north (Up Norf). town is the neighborhood or town; spot is optional, for a square or village. status: loved (our favorites) or try. good: any of Guys night, Date night, Groups, Before a show, Before a game, Outdoor seating, Waterfront, Splurge, Book ahead. site and reserve are optional links. In town groups by town, in the order of areas.boston.towns.",
  "areas": {
   "home": {
    "name": "Near home",
@@ -7,11 +7,34 @@
   },
   "boston": {
    "name": "In town",
-   "blurb": "Boston, Brookline, Cambridge, Somerville"
+   "blurb": "Every corner of Boston, plus Brookline, Cambridge and Somerville",
+   "towns": [
+    "Back Bay",
+    "Bay Village",
+    "Beacon Hill",
+    "Downtown",
+    "Leather District",
+    "Chinatown",
+    "North End",
+    "Charlestown",
+    "East Boston",
+    "Seaport",
+    "Fort Point",
+    "South Boston",
+    "South End",
+    "Fenway",
+    "Jamaica Plain",
+    "Dorchester",
+    "Roslindale",
+    "Allston",
+    "Brookline",
+    "Cambridge",
+    "Somerville"
+   ]
   },
   "north": {
-   "name": "On the way to Marblehead",
-   "blurb": "Up 128 and along the North Shore"
+   "name": "Up Norf",
+   "blurb": "Up 128, Route 1 and along the North Shore"
   }
  },
  "places": [
@@ -35,6 +58,32 @@
    ],
    "site": "https://shkodrabyrek.com",
    "reserve": "https://www.opentable.com/r/shkodra-byrek-dedham"
+  },
+  {
+   "name": "The James Pub & Provisions",
+   "area": "home",
+   "town": "Needham",
+   "cuisine": "Irish pub",
+   "status": "try",
+   "note": "Needham Center's Irish pub: good pub food, pints, and an easy yes for a guys' night close to home.",
+   "good": [
+    "Guys night",
+    "Groups"
+   ],
+   "reserve": "https://resy.com/cities/bos/the-james-pub-and-provisions"
+  },
+  {
+   "name": "Kings Dining & Entertainment",
+   "area": "home",
+   "town": "Dedham",
+   "cuisine": "American, plus bowling",
+   "status": "try",
+   "note": "Bowling, games and a full menu at Legacy Place. Good for a big group that wants to do something besides sit.",
+   "good": [
+    "Guys night",
+    "Groups"
+   ],
+   "reserve": "https://www.opentable.com/r/kings-dedham"
   },
   {
    "name": "Thistle & Leek",
@@ -66,17 +115,6 @@
    "cuisine": "American",
    "status": "try",
    "note": "Easygoing neighborhood restaurant and bar a few minutes from home.",
-   "good": [
-    "Groups"
-   ]
-  },
-  {
-   "name": "The Common Room",
-   "area": "home",
-   "town": "Needham",
-   "cuisine": "American",
-   "status": "try",
-   "note": "New in town, in the old Latina Kitchen space.",
    "good": [
     "Groups"
    ]
@@ -114,119 +152,14 @@
    ]
   },
   {
-   "name": "Kaia",
-   "area": "boston",
-   "town": "South End",
-   "cuisine": "Coastal Greek",
-   "status": "loved",
-   "note": "Boston Magazine's best new restaurant of 2025, from the Bar Vlaha and Krasi team. A breezy Aegean room with whole fish and a deconstructed lamb-neck gyro.",
-   "order": [
-    "Whole fish",
-    "Lamb-neck gyro"
-   ],
-   "good": [
-    "Groups",
-    "Date night"
-   ],
-   "site": "https://kaiasouthend.com"
-  },
-  {
-   "name": "Bar Vlaha",
-   "area": "boston",
-   "town": "Brookline",
-   "cuisine": "Northern Greek",
-   "status": "loved",
-   "note": "Rustic Vlach cooking over open fire, rare wines from northern Greece, and a room that smells like lamb smoke. Book about a month out.",
-   "order": [
-    "Taramosalata with sourdough",
-    "Loukaniko",
-    "Spit-roasted lamb",
-    "Zucchini fritters"
-   ],
-   "good": [
-    "Date night",
-    "Book ahead"
-   ],
-   "reserve": "https://www.opentable.com/r/bar-vlaha-brookline"
-  },
-  {
    "name": "Krasi",
    "area": "boston",
    "town": "Back Bay",
    "cuisine": "Greek meze & wine",
    "status": "try",
-   "note": "The same team's Back Bay meze and wine bar, with a deep all-Greek wine list.",
+   "note": "From the Bar Vlaha and Kaia team: a Back Bay meze and wine bar with a deep all-Greek wine list.",
    "good": [
     "Date night"
-   ]
-  },
-  {
-   "name": "Fox & the Knife",
-   "area": "boston",
-   "town": "South Boston",
-   "cuisine": "Italian",
-   "status": "try",
-   "note": "Karen Akunowicz's enoteca, a Michelin Bib Gourmand. Handmade pasta is the reason to go.",
-   "good": [
-    "Date night",
-    "Book ahead"
-   ]
-  },
-  {
-   "name": "Bar Volpe",
-   "area": "boston",
-   "town": "South Boston",
-   "cuisine": "Southern Italian",
-   "status": "try",
-   "note": "Akunowicz's bigger, louder Southern Italian place, also a Bib Gourmand.",
-   "good": [
-    "Groups"
-   ]
-  },
-  {
-   "name": "Oleana",
-   "area": "boston",
-   "town": "Cambridge",
-   "cuisine": "Eastern Mediterranean",
-   "status": "try",
-   "note": "Ana Sortun's Turkish and Arabic-inspired classic, with a garden patio in warm weather.",
-   "good": [
-    "Date night",
-    "Outdoor seating"
-   ]
-  },
-  {
-   "name": "Sarma",
-   "area": "boston",
-   "town": "Somerville",
-   "cuisine": "Turkish meze",
-   "status": "try",
-   "note": "Sortun's meze bar: a long list of small plates made for sharing.",
-   "good": [
-    "Groups"
-   ]
-  },
-  {
-   "name": "Toro",
-   "area": "boston",
-   "town": "South End",
-   "cuisine": "Spanish tapas",
-   "status": "try",
-   "note": "Ken Oringer and Jamie Bissonnette's tapas bar. Grilled corn, paella, and a loud, fun room.",
-   "good": [
-    "Groups"
-   ]
-  },
-  {
-   "name": "Giulia",
-   "area": "boston",
-   "town": "Cambridge",
-   "cuisine": "Italian",
-   "status": "try",
-   "note": "Handmade pasta, rolled at a big pasta table in the dining room.",
-   "good": [
-    "Date night",
-    "Book ahead"
    ]
   },
   {
@@ -239,6 +172,75 @@
    "good": [
     "Before a show",
     "Splurge"
+   ]
+  },
+  {
+   "name": "Select Oyster Bar",
+   "area": "boston",
+   "town": "Back Bay",
+   "cuisine": "Seafood",
+   "status": "try",
+   "note": "Intimate raw bar with Mediterranean-leaning crudo and a sharp wine list. Recommended by the Michelin Guide.",
+   "good": [
+    "Date night"
+   ]
+  },
+  {
+   "name": "Mooncusser",
+   "area": "boston",
+   "town": "Bay Village",
+   "cuisine": "Seafood tasting menu",
+   "status": "try",
+   "note": "A nightly four-course seafood tasting menu from Top Chef alum Carl Dooley. Recommended by the Michelin Guide.",
+   "good": [
+    "Date night",
+    "Splurge",
+    "Book ahead"
+   ]
+  },
+  {
+   "name": "ZURiTO",
+   "area": "boston",
+   "town": "Beacon Hill",
+   "cuisine": "Basque pintxos",
+   "status": "try",
+   "note": "Basque-style pintxo bar with a deep Spanish wine list.",
+   "good": [
+    "Date night"
+   ]
+  },
+  {
+   "name": "haley.henry",
+   "area": "boston",
+   "town": "Downtown",
+   "cuisine": "Wine bar",
+   "status": "try",
+   "note": "Snug wine bar with low-intervention bottles and light seafood and snack plates.",
+   "good": [
+    "Date night"
+   ]
+  },
+  {
+   "name": "o ya",
+   "area": "boston",
+   "town": "Leather District",
+   "cuisine": "Japanese omakase",
+   "status": "try",
+   "note": "A long, expensive omakase in an old firehouse, and a 2026 James Beard semifinalist. The big-occasion sushi dinner.",
+   "good": [
+    "Splurge",
+    "Book ahead"
+   ]
+  },
+  {
+   "name": "Shojo",
+   "area": "boston",
+   "town": "Chinatown",
+   "cuisine": "Pan-Asian small plates",
+   "status": "try",
+   "note": "Fusion small plates and cocktails in Chinatown, good for a group that shares everything.",
+   "good": [
+    "Groups"
    ]
   },
   {
@@ -265,6 +267,140 @@
    ]
   },
   {
+   "name": "Warren Tavern",
+   "area": "boston",
+   "town": "Charlestown",
+   "cuisine": "Pub",
+   "status": "try",
+   "note": "A tavern from the 1780s that's still very much open: burgers, chowder and pints, a short walk from the Garden.",
+   "good": [
+    "Guys night",
+    "Before a game"
+   ]
+  },
+  {
+   "name": "Brewer's Fork",
+   "area": "boston",
+   "town": "Charlestown",
+   "cuisine": "Wood-fired pizza",
+   "status": "try",
+   "note": "Creative wood-fired pizzas and a strong beer list.",
+   "good": [
+    "Groups"
+   ]
+  },
+  {
+   "name": "Santarpio's",
+   "area": "boston",
+   "town": "East Boston",
+   "cuisine": "Pizza",
+   "status": "try",
+   "note": "Old-school Eastie pizza and lamb skewers off the grill, near the airport. On the Globe's 2026 list of the best pizza around.",
+   "good": [
+    "Guys night",
+    "Groups"
+   ]
+  },
+  {
+   "name": "Woods Hill Pier 4",
+   "area": "boston",
+   "town": "Seaport",
+   "cuisine": "New American",
+   "status": "try",
+   "note": "Farm-to-table cooking, much of it from the restaurant's own farm, with harbor views.",
+   "good": [
+    "Waterfront",
+    "Date night"
+   ]
+  },
+  {
+   "name": "Row 34",
+   "area": "boston",
+   "town": "Fort Point",
+   "cuisine": "Oysters & beer",
+   "status": "try",
+   "note": "Oysters, crudo and a long craft-beer list in a big, loud room. Easy for a group.",
+   "good": [
+    "Guys night",
+    "Groups"
+   ],
+   "reserve": "https://www.opentable.com/r/row-34-boston"
+  },
+  {
+   "name": "Fox & the Knife",
+   "area": "boston",
+   "town": "South Boston",
+   "cuisine": "Italian",
+   "status": "try",
+   "note": "Karen Akunowicz's enoteca, a Michelin Bib Gourmand. Handmade pasta is the reason to go.",
+   "good": [
+    "Date night",
+    "Book ahead"
+   ]
+  },
+  {
+   "name": "Bar Volpe",
+   "area": "boston",
+   "town": "South Boston",
+   "cuisine": "Southern Italian",
+   "status": "try",
+   "note": "Karen Akunowicz's bigger, louder Southern Italian place (she's also behind Fox & the Knife). A Michelin Bib Gourmand.",
+   "good": [
+    "Groups"
+   ]
+  },
+  {
+   "name": "Kaia",
+   "area": "boston",
+   "town": "South End",
+   "cuisine": "Coastal Greek",
+   "status": "loved",
+   "note": "Boston Magazine's best new restaurant of 2025, from the Bar Vlaha and Krasi team. A breezy Aegean room with whole fish and a deconstructed lamb-neck gyro.",
+   "order": [
+    "Whole fish",
+    "Lamb-neck gyro"
+   ],
+   "good": [
+    "Groups",
+    "Date night"
+   ],
+   "site": "https://kaiasouthend.com"
+  },
+  {
+   "name": "Toro",
+   "area": "boston",
+   "town": "South End",
+   "cuisine": "Spanish tapas",
+   "status": "try",
+   "note": "Ken Oringer and Jamie Bissonnette's tapas bar. Grilled corn, paella, and a loud, fun room.",
+   "good": [
+    "Groups"
+   ]
+  },
+  {
+   "name": "Myers + Chang",
+   "area": "boston",
+   "town": "South End",
+   "cuisine": "Pan-Asian",
+   "status": "try",
+   "note": "Joanne Chang's playful, shareable Chinese, Taiwanese, Thai and Vietnamese plates.",
+   "good": [
+    "Groups"
+   ]
+  },
+  {
+   "name": "SRV",
+   "area": "boston",
+   "town": "South End",
+   "cuisine": "Venetian",
+   "status": "try",
+   "note": "Venetian-style osteria: cicchetti, pastas, risotto, and a patio.",
+   "good": [
+    "Date night",
+    "Outdoor seating"
+   ]
+  },
+  {
    "name": "311 Omakase",
    "area": "boston",
    "town": "South End",
@@ -277,14 +413,225 @@
    ]
   },
   {
-   "name": "Woods Hill Pier 4",
+   "name": "Eastern Standard",
    "area": "boston",
-   "town": "Seaport",
-   "cuisine": "New American",
+   "town": "Fenway",
+   "spot": "Kenmore Square",
+   "cuisine": "Brasserie",
    "status": "try",
-   "note": "Farm-to-table cooking, much of it from the restaurant's own farm, with harbor views.",
+   "note": "The Kenmore Square brasserie is back, with its steaks, pastas and a famous cocktail list. Right by Fenway.",
    "good": [
-    "Waterfront",
+    "Before a game",
+    "Groups"
+   ]
+  },
+  {
+   "name": "Bleacher Bar",
+   "area": "boston",
+   "town": "Fenway",
+   "cuisine": "Sports bar",
+   "status": "try",
+   "note": "A bar built under the center-field bleachers, with a window onto the field.",
+   "good": [
+    "Guys night",
+    "Before a game"
+   ]
+  },
+  {
+   "name": "Brassica Kitchen + Cafe",
+   "area": "boston",
+   "town": "Jamaica Plain",
+   "cuisine": "Global bistro",
+   "status": "try",
+   "note": "Bistro cooking with house hot sauces, now in a bigger space with a brick oven for pizza.",
+   "good": [
+    "Groups"
+   ]
+  },
+  {
+   "name": "Comfort Kitchen",
+   "area": "boston",
+   "town": "Dorchester",
+   "cuisine": "Global",
+   "status": "try",
+   "note": "A polished, welcoming room built on BIPOC culinary traditions, with a patio. A 2026 James Beard semifinalist.",
+   "good": [
+    "Date night",
+    "Outdoor seating"
+   ]
+  },
+  {
+   "name": "Delfino",
+   "area": "boston",
+   "town": "Roslindale",
+   "cuisine": "Italian",
+   "status": "try",
+   "note": "Roslindale Village's Italian favorite: big windows, a full room, red sauce done right.",
+   "good": [
+    "Date night"
+   ]
+  },
+  {
+   "name": "Lone Star Taco Bar",
+   "area": "boston",
+   "town": "Allston",
+   "cuisine": "Tacos",
+   "status": "try",
+   "note": "Fish tacos, beef birria and margaritas; a brunch favorite.",
+   "good": [
+    "Groups"
+   ],
+   "reserve": "https://www.opentable.com/r/lone-star-taco-bar-allston"
+  },
+  {
+   "name": "Bar Vlaha",
+   "area": "boston",
+   "town": "Brookline",
+   "cuisine": "Northern Greek",
+   "status": "loved",
+   "note": "Rustic Vlach cooking over open fire, rare wines from northern Greece, and a room that smells like lamb smoke. Book about a month out.",
+   "order": [
+    "Taramosalata with sourdough",
+    "Loukaniko",
+    "Spit-roasted lamb",
+    "Zucchini fritters"
+   ],
+   "good": [
+    "Date night",
+    "Book ahead"
+   ],
+   "reserve": "https://www.opentable.com/r/bar-vlaha-brookline"
+  },
+  {
+   "name": "Mahaniyom",
+   "area": "boston",
+   "town": "Brookline",
+   "spot": "Brookline Village",
+   "cuisine": "Thai",
+   "status": "try",
+   "note": "A tight Thai drinking-food menu in a lively little bar, with strong cocktails. A Michelin Bib Gourmand.",
+   "good": [
+    "Date night"
+   ]
+  },
+  {
+   "name": "Oleana",
+   "area": "boston",
+   "town": "Cambridge",
+   "spot": "Inman Square",
+   "cuisine": "Eastern Mediterranean",
+   "status": "try",
+   "note": "Ana Sortun's Turkish and Arabic-inspired classic, with a garden patio in warm weather.",
+   "good": [
+    "Date night",
+    "Outdoor seating"
+   ]
+  },
+  {
+   "name": "Puritan & Company",
+   "area": "boston",
+   "town": "Cambridge",
+   "spot": "Inman Square",
+   "cuisine": "New England",
+   "status": "try",
+   "note": "Seasonal New England cooking with house-cured and smoked fish and meats.",
+   "good": [
+    "Date night"
+   ]
+  },
+  {
+   "name": "Pammy's",
+   "area": "boston",
+   "town": "Cambridge",
+   "spot": "Harvard Square",
+   "cuisine": "Italian-leaning New American",
+   "status": "try",
+   "note": "Italian-leaning cooking with Asian and African flavors, built around a marble bar. Recommended by the Michelin Guide.",
+   "good": [
+    "Date night"
+   ]
+  },
+  {
+   "name": "Giulia",
+   "area": "boston",
+   "town": "Cambridge",
+   "spot": "Porter Square",
+   "cuisine": "Italian",
+   "status": "try",
+   "note": "Handmade pasta, rolled at a big pasta table in the dining room.",
+   "good": [
+    "Date night",
+    "Book ahead"
+   ]
+  },
+  {
+   "name": "Moëca",
+   "area": "boston",
+   "town": "Cambridge",
+   "spot": "Porter Square",
+   "cuisine": "Seafood",
+   "status": "try",
+   "note": "Seafood with a menu that changes constantly, and standout desserts. Recommended by the Michelin Guide.",
+   "good": [
+    "Date night"
+   ]
+  },
+  {
+   "name": "Alice & Monarch",
+   "area": "boston",
+   "town": "Cambridge",
+   "spot": "Kendall Square",
+   "cuisine": "Italian & Mediterranean",
+   "status": "try",
+   "note": "An upstairs taverna for pasta and pizza, with a dessert-and-cocktail speakeasy downstairs.",
+   "good": [
+    "Groups"
+   ]
+  },
+  {
+   "name": "Sarma",
+   "area": "boston",
+   "town": "Somerville",
+   "spot": "Winter Hill",
+   "cuisine": "Turkish meze",
+   "status": "try",
+   "note": "Ana Sortun's meze bar (she's also behind Oleana): a long list of small plates made for sharing.",
+   "good": [
+    "Groups"
+   ]
+  },
+  {
+   "name": "Celeste",
+   "area": "boston",
+   "town": "Somerville",
+   "spot": "Union Square",
+   "cuisine": "Peruvian",
+   "status": "try",
+   "note": "Lively, social spot for ceviche and pisco or mezcal cocktails.",
+   "good": [
+    "Groups"
+   ]
+  },
+  {
+   "name": "Field & Vine",
+   "area": "boston",
+   "town": "Somerville",
+   "cuisine": "Farm to table",
+   "status": "try",
+   "note": "Farm-sourced, vegetable-led cooking in a calm room with an open kitchen.",
+   "good": [
+    "Date night"
+   ]
+  },
+  {
+   "name": "Spoke Wine Bar",
+   "area": "boston",
+   "town": "Somerville",
+   "spot": "Davis Square",
+   "cuisine": "Wine bar",
+   "status": "try",
+   "note": "Cozy wine bar with inventive, seasonal small plates.",
+   "good": [
     "Date night"
    ]
   },
@@ -305,6 +652,41 @@
     "Date night"
    ],
    "site": "https://ilpontew.com"
+  },
+  {
+   "name": "Kowloon",
+   "area": "north",
+   "town": "Saugus",
+   "cuisine": "Chinese & Polynesian",
+   "status": "try",
+   "note": "The Wong family's Route 1 landmark since 1950: pu pu platters, scorpion bowls, and stand-up comedy in the lounge. There's a plan to redevelop the site, so go while it's there.",
+   "good": [
+    "Guys night",
+    "Groups"
+   ]
+  },
+  {
+   "name": "Kelly's Roast Beef",
+   "area": "north",
+   "town": "Revere",
+   "cuisine": "Roast beef",
+   "status": "try",
+   "note": "The Revere Beach original. Get a large roast beef and eat it on the seawall.",
+   "good": [
+    "Guys night"
+   ]
+  },
+  {
+   "name": "Night Shift Brewing",
+   "area": "north",
+   "town": "Everett",
+   "cuisine": "Brewery",
+   "status": "try",
+   "note": "A huge taproom with a long tap list, food, and events most nights.",
+   "good": [
+    "Guys night",
+    "Groups"
+   ]
   },
   {
    "name": "Il Casale",

@@ -216,6 +216,23 @@ a.tag.price span{color:var(--sports);font-weight:700}
 .place .order b{color:var(--ink);font-weight:600;margin-right:.3rem}
 .place .links{display:flex;flex-wrap:wrap;gap:.2rem .8rem;font-size:.82rem;font-weight:600;margin-top:.1rem}
 .place .row{display:flex;gap:.3rem;flex-wrap:wrap;margin-top:auto;padding-top:.35rem}
+.place .rate{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.3rem .6rem;margin-top:.15rem;padding-top:.45rem;border-top:1px dashed var(--rule)}
+.place .avg{font:600 .9rem/1 var(--f-mono);color:var(--love)}
+.place .avg small{color:var(--muted);font-weight:500}
+.place .avg.none{font:500 .76rem/1 var(--f-body);color:var(--muted)}
+.place .mystars{display:flex;align-items:center;gap:.35rem}
+.place .mystars .lbl{font-size:.7rem;color:var(--muted)}
+.place .stars{display:flex}
+.place .star{background:none;border:0;padding:.15rem .1rem;font-size:1.35rem;line-height:1;color:var(--rule);cursor:pointer}
+.place .star.on{color:var(--love)}
+@media (hover:hover){ .place .stars:hover .star{color:var(--love)} .place .stars .star:hover ~ .star{color:var(--rule)} }
+.place .tag.guys{background:var(--ink);color:var(--bg)}
+.places .gh{grid-column:1 / -1;display:flex;align-items:baseline;gap:.6rem;flex-wrap:wrap;margin-top:.6rem}
+.places .gh:first-child{margin-top:0}
+.places .gh.area{border-bottom:2px solid var(--ink);padding-bottom:.25rem;margin-top:1.1rem}
+.places .gh.area span{font:800 1.35rem/1 var(--f-display);text-transform:uppercase;letter-spacing:.02em}
+.places .gh.area small{color:var(--muted);font-size:.8rem}
+.places .gh.town span{font:600 .72rem/1 var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--food)}
 .place .plan{margin-left:auto;font-size:.75rem;font-weight:600;padding:.38rem .6rem;border-radius:999px;border:1px dashed var(--food);background:none;color:var(--food);cursor:pointer;white-space:nowrap}
 .place .plan:hover{background:var(--love-wash)}
 .eat-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.5rem 1rem;margin-bottom:.7rem}
@@ -296,7 +313,7 @@ dialog .ghost{background:none;color:var(--ink);border-color:var(--rule)}
 
   <section id="eat" hidden>
     <div class="eat-head"><div class="head" style="margin:0"><h2>Where to eat</h2></div><button class="btn" id="pick">Pick one for us</button></div>
-    <p class="note" style="margin:-.3rem 0 .8rem">Near home, in town, and on the way to Marblehead. Mark Want to go or Loved it, or put a dinner on the calendar.</p>
+    <p class="note" style="margin:-.3rem 0 .8rem">Near home, every corner of town, and Up Norf. Been somewhere? Give it 1 to 5 stars. Mark Want to go, or put a dinner on the calendar.</p>
     <div class="tabs" id="tabs" role="toolbar" aria-label="Restaurants"></div>
     <div class="places" id="places"></div>
   </section>
@@ -334,7 +351,7 @@ dialog .ghost{background:none;color:var(--ink);border-color:var(--rule)}
 "use strict";
 const CATS = { music: "Music", comedy: "Comedy", sports: "Games", movies: "Movies", food: "Dinner", plan: "Plan" };
 const FILTERS = [["picks", "Our picks"], ["plans", "Our plans"], ["music", "Music"], ["comedy", "Comedy"], ["sports", "Games"], ["movies", "Movies"], ["road", "Road trips"], ["in", "Who's in"]];
-const AREA_TABS = [["all", "All"], ["loved", "Our favorites"], ["home", "Near home"], ["boston", "In town"], ["north", "Marblehead run"], ["want", "Want to go"]];
+const AREA_TABS = [["all", "All"], ["top", "Top rated"], ["guys", "Guys night"], ["home", "Near home"], ["boston", "In town"], ["north", "Up Norf"], ["want", "Want to go"]];
 const RUN_DAYS = 42;            // how long a movie stays on the daily list after it opens
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const MON = MONTHS.map((m) => m.slice(0, 3));
@@ -350,7 +367,9 @@ let DATA = null, VOTES = {}, REMOTE = null; // REMOTE: true when the shared vote
 let PRICES = { events: {}, drops: [] };     // lowest ticket prices, from tools/calendar_prices.py
 let PLANS = {};                              // plans friends added, from the vote box
 let PLACES = { areas: {}, places: [] };      // the restaurant list, places.json
+let RATINGS = {};                            // restaurant id -> {name: 1-5 stars}, from the vote box
 let AREA = store.get("eat-area", "all");
+if (!AREA_TABS.some(([k]) => k === AREA)) AREA = "all";
 let ME = store.get("name", "");
 let F = store.get("filter", "picks"), EVERYTHING = store.get("everything", false);
 let MONTH = null;                            // "YYYY-MM" on show
@@ -401,15 +420,16 @@ function hasVotes(item) { return Object.keys(votesFor(item)).length > 0; }
 async function loadVotes() {
   const url = DATA && DATA.votes_url;
   const local = store.get("votes", {});
-  if (!url) { VOTES = local; PLANS = store.get("plans", {}); REMOTE = false; return; }
+  if (!url) { VOTES = local; PLANS = store.get("plans", {}); RATINGS = store.get("ratings", {}); REMOTE = false; return; }
   try {
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) throw new Error(res.status);
     const body = await res.json();
     VOTES = body.votes || {};
     PLANS = body.plans || {};
+    RATINGS = body.ratings || {};
     REMOTE = true;
-    store.set("plans", {});      // plans saved on this phone go up with the queue below
+    store.set("plans", {}); store.set("ratings", {});   // what was saved on this phone goes up with the queue below
     // Anything marked on this phone while the vote box was unreachable goes up now.
     const queued = store.get("queue", []);
     if (queued.length) {
@@ -417,7 +437,7 @@ async function loadVotes() {
       for (const q of queued) await send(q).catch(() => {});
     }
   } catch (e) {
-    VOTES = local; PLANS = store.get("plans", {}); REMOTE = false;
+    VOTES = local; PLANS = store.get("plans", {}); RATINGS = store.get("ratings", {}); REMOTE = false;
   }
 }
 
@@ -427,6 +447,7 @@ async function send(v) {
   const body = await res.json();
   if (body.votes) VOTES = body.votes;
   if (body.plans) PLANS = body.plans;
+  if (body.ratings) RATINGS = body.ratings;
   return body;
 }
 
@@ -467,7 +488,7 @@ $("name-form").addEventListener("submit", (e) => {
   if (ME && ME !== name && REMOTE) toast("New name saved. Earlier marks stay under " + ME + ".");
   ME = name; store.set("name", ME);
   renderMe();
-  if (pendingVote) { const [it, s] = pendingVote; pendingVote = null; vote(it, s); }
+  if (pendingVote) { const pv = pendingVote; pendingVote = null; if (typeof pv === "function") pv(); else vote(pv[0], pv[1]); }
 });
 $("name-dlg").addEventListener("close", () => { if ($("name-dlg").returnValue !== "ok") pendingVote = null; });
 
@@ -734,36 +755,46 @@ function renderFilms() {
 }
 
 // ---------- restaurants ----------
+function ratingOf(p) {
+  const by = RATINGS[p.id] || {}, vals = Object.values(by);
+  return { by, n: vals.length, avg: vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0 };
+}
 function showPlace(p) {
-  const v = votesFor(p);
   switch (AREA) {
     case "all": return true;
-    case "loved": return p.status === "loved" || Object.values(v).includes("loved");
-    case "want": return Object.values(v).includes("want");
+    case "top": return ratingOf(p).n > 0;
+    case "guys": return (p.good || []).includes("Guys night");
+    case "want": return Object.values(votesFor(p)).includes("want");
     default: return p.area === AREA;
   }
 }
 
 function placeCard(p) {
   const v = votesFor(p), mine = v[ME] || "";
-  const who = (s) => Object.keys(v).filter((n) => v[n] === s);
-  const loved = who("loved"), want = who("want");
+  const want = Object.keys(v).filter((n) => v[n] === "want");
+  const r = ratingOf(p), myStars = r.by[ME] || 0;
   const names = (arr) => arr.map((n) => n === ME ? `<span class="mine">${esc(n)}</span>` : esc(n)).join(", ");
   const links = [`<a href="${mapLink(p.name, p.town)}" target="_blank" rel="noopener">Map</a>`];
   if (p.reserve) links.push(`<a href="${esc(p.reserve)}" target="_blank" rel="noopener">Reserve</a>`);
   if (p.site) links.push(`<a href="${esc(p.site)}" target="_blank" rel="noopener">Website</a>`);
+  const flat = !["all", "boston", "home", "north"].includes(AREA);
   const area = (PLACES.areas[p.area] || {}).name || "";
+  const rated = Object.entries(r.by).sort((a, b) => b[1] - a[1]).map(([n, x]) => `${n === ME ? `<span class="mine">${esc(n)}</span>` : esc(n)} ${x}`);
   return `<article class="place${p.status === "loved" ? " loved" : ""}" id="p-${p.id}" data-id="${p.id}">
     <div class="top"><span class="t">${esc(p.name)}</span>${p.status === "loved" ? `<span class="fav">Our favorite</span>` : ""}</div>
-    <div class="meta">${esc(p.town)} · ${esc(p.cuisine)}${AREA === "all" || AREA === "loved" || AREA === "want" ? ` · ${esc(area)}` : ""}</div>
+    <div class="meta">${esc([p.spot, p.town].filter(Boolean).join(", "))} · ${esc(p.cuisine)}${flat ? ` · ${esc(area)}` : ""}</div>
     <div class="note">${esc(p.note)}</div>
     ${p.order ? `<div class="order"><b>Order</b>${p.order.map(esc).join(" · ")}</div>` : ""}
-    ${p.good && p.good.length ? `<div class="tags">${p.good.map((g) => `<span class="tag">${esc(g)}</span>`).join("")}</div>` : ""}
-    ${loved.length || want.length ? `<div class="who">${loved.length ? `<b>Loved it:</b> ${names(loved)}` : ""}${loved.length && want.length ? " · " : ""}${want.length ? `<b>Want to go:</b> ${names(want)}` : ""}</div>` : ""}
+    ${p.good && p.good.length ? `<div class="tags">${p.good.map((g) => `<span class="tag${g === "Guys night" ? " guys" : ""}">${esc(g)}</span>`).join("")}</div>` : ""}
+    <div class="rate">
+      ${r.n ? `<span class="avg" title="Average of ${r.n} rating${r.n > 1 ? "s" : ""}">★ ${r.avg.toFixed(1)} <small>(${r.n})</small></span>` : `<span class="avg none">No ratings yet</span>`}
+      <span class="mystars"><span class="lbl">${myStars ? "Your rating" : "Been? Rate it"}</span><span class="stars" role="group" aria-label="Your rating">${[1, 2, 3, 4, 5].map((n) =>
+        `<button class="star${n <= myStars ? " on" : ""}" data-n="${n}" aria-label="${n} star${n > 1 ? "s" : ""}" aria-pressed="${n === myStars}">★</button>`).join("")}</span></span>
+    </div>
+    ${rated.length || want.length ? `<div class="who">${rated.length ? `<b>Rated:</b> ${rated.join(" · ")}` : ""}${rated.length && want.length ? "<br>" : ""}${want.length ? `<b>Want to go:</b> ${names(want)}` : ""}</div>` : ""}
     <div class="links">${links.join("")}</div>
     <div class="row">
       <button class="vote" data-s="want" aria-pressed="${mine === "want"}">Want to go${want.length ? `<span class="ct">${want.length}</span>` : ""}</button>
-      <button class="vote" data-s="loved" aria-pressed="${mine === "loved"}">Loved it${loved.length ? `<span class="ct">${loved.length}</span>` : ""}</button>
       <button class="plan" data-plan>Plan a dinner</button>
     </div>
   </article>`;
@@ -773,17 +804,63 @@ function renderEat() {
   $("eat").hidden = !PLACES.places.length;
   $("tabs").innerHTML = AREA_TABS.map(([k, l]) => `<button data-a="${k}" aria-pressed="${AREA === k}">${l}</button>`).join("");
   $("tabs").querySelectorAll("button").forEach((b) => b.onclick = () => { AREA = b.dataset.a; store.set("eat-area", AREA); renderEat(); });
-  // Our favorites first, then the list's own order (near home, in town, the Marblehead run).
-  const order = Object.keys(PLACES.areas);
-  const list = PLACES.places.filter(showPlace)
-    .sort((a, b) => (b.status === "loved") - (a.status === "loved") || order.indexOf(a.area) - order.indexOf(b.area));
-  $("places").innerHTML = list.map(placeCard).join("") ||
-    `<p class="empty">${AREA === "want" ? "Nobody's marked Want to go yet." : "Nothing here yet."}</p>`;
+  const areas = Object.keys(PLACES.areas);
+  const towns = (PLACES.areas.boston || {}).towns || [];
+  const favFirst = (a, b) => (b.status === "loved") - (a.status === "loved");
+  const list = PLACES.places.filter(showPlace);
+  const head = (t, sub, cls) => `<div class="gh ${cls || ""}"><span>${esc(t)}</span>${sub ? `<small>${esc(sub)}</small>` : ""}</div>`;
+  // In town reads best by neighborhood; the other areas by favorites first.
+  const byTown = (items) => {
+    const out = [];
+    for (const t of towns.concat([...new Set(items.map((p) => p.town))].filter((t) => !towns.includes(t)))) {
+      const here = items.filter((p) => p.town === t).sort(favFirst);
+      if (here.length) out.push(head(t, "", "town") + here.map(placeCard).join(""));
+    }
+    return out.join("");
+  };
+  let html = "";
+  if (AREA === "all") {
+    for (const a of areas) {
+      const items = list.filter((p) => p.area === a);
+      if (!items.length) continue;
+      html += head(PLACES.areas[a].name, PLACES.areas[a].blurb, "area") + (a === "boston" ? byTown(items) : items.sort(favFirst).map(placeCard).join(""));
+    }
+  } else if (AREA === "boston") {
+    html = byTown(list);
+  } else if (AREA === "top") {
+    html = list.sort((a, b) => ratingOf(b).avg - ratingOf(a).avg || ratingOf(b).n - ratingOf(a).n).map(placeCard).join("");
+  } else if (AREA === "want") {
+    const n = (p) => Object.values(votesFor(p)).filter((s) => s === "want").length;
+    html = list.sort((a, b) => n(b) - n(a)).map(placeCard).join("");
+  } else {
+    html = list.sort((a, b) => favFirst(a, b) || areas.indexOf(a.area) - areas.indexOf(b.area)).map(placeCard).join("");
+  }
+  const empty = { top: "No ratings yet. Rate the places you've been and the best ones rise to the top here.", want: "Nobody's marked Want to go yet." };
+  $("places").innerHTML = html || `<p class="empty">${empty[AREA] || "Nothing here yet."}</p>`;
   $("places").querySelectorAll(".place").forEach((el) => {
     const p = placeById(el.dataset.id);
     el.querySelectorAll(".vote").forEach((b) => b.onclick = () => vote(p, b.dataset.s));
+    el.querySelectorAll(".star").forEach((b) => b.onclick = () => rate(p, +b.dataset.n));
     el.querySelector("[data-plan]").onclick = () => openPlan({ title: `Dinner at ${p.name}`, place: p.name, kind: "food", food: p.id });
   });
+}
+
+// One to five stars from each friend who's been. Tapping your current rating again clears it.
+async function rate(p, n) {
+  if (!ME) { pendingVote = () => rate(p, n); askName(); return; }
+  const stars = ((RATINGS[p.id] || {})[ME] || 0) === n ? 0 : n;
+  const r = RATINGS[p.id] || {};
+  if (stars) r[ME] = stars; else delete r[ME];
+  if (Object.keys(r).length) RATINGS[p.id] = r; else delete RATINGS[p.id];
+  renderEat();
+  const op = { rate: p.id, name: ME, stars };
+  if (REMOTE) {
+    try { await send(op); renderEat(); }
+    catch (e) { store.set("queue", store.get("queue", []).concat([op])); toast("Couldn't reach the vote box. Saved on this phone and will retry."); }
+  } else {
+    store.set("ratings", RATINGS);
+    if (DATA.votes_url) store.set("queue", store.get("queue", []).concat([op]));
+  }
 }
 
 $("pick").onclick = () => {

@@ -83,7 +83,7 @@ window.PROJECTS = [
     url: "calendar/",
     question: "What's worth leaving the couch for, and who's in?",
     summary: "Our social calendar: shows, comics, games, movies and restaurants around Boston, plus road trips for the bands we love. Friends add plans and mark Interested or Going, and it watches ticket prices.",
-    facts: [["Daily", "refresh of shows and games"], ["32", "restaurants on our list"], ["4½ hr", "longest road trip it looks for"]],
+    facts: [["Daily", "refresh of shows and games"], ["62", "restaurants, rated 1 to 5 stars"], ["4½ hr", "longest road trip it looks for"]],
     stack: ["JavaScript", "Python", "Cloudflare Workers", "GitHub Actions"],
     cover: { image: "assets/covers/calendar.jpg", bg: "#17130E", band: "#FFC53D" }
   }
