@@ -250,21 +250,42 @@ def big_room(venue, taste):
     return any(b and (b in v or v in b) for b in (norm(x).removeprefix("the ") for x in taste.get("big_venues", [])))
 
 
+TRIBUTE = re.compile(r"\b(tribute|cover band|covers|for kids|music of|experience|salute|celebrat)", re.I)
+JUNK = re.compile(r"\b(parking|vip (package|upgrade)|premium package|2-day ticket|two-day ticket|day ticket|gift card|add-on|shuttle)\b", re.I)
+
+
+def who(e, names):
+    """The name on our list this show is by. With a performer list (Ticketmaster, SeatGeek), only a performer
+    counts, so "Silly Goose" isn't Goose and a Pearl Jam tribute isn't Pearl Jam. Hand-kept shows go by title."""
+    acts = [norm(a) for a in e.get("_acts", []) if a]
+    if acts:
+        for n in names:
+            nn = norm(n)
+            if any(a == nn or a.startswith(nn + " ") for a in acts):
+                return n
+        return matches(e.get("sub", ""), names)  # a lineup we wrote into a hand pick's second line
+    text = " ".join([e["title"], e.get("sub", "")])
+    if TRIBUTE.search(text):
+        # A tribute act counts only when it's on our list by its own name, which leads the title.
+        t = norm(e["title"])
+        return next((n for n in names if t.startswith(norm(n))), None)
+    return matches(text, names)
+
+
 def score(e, taste):
-    """3 a band we love, 2 a big band, a band we like or a favorite comic, 1 worth a look, 0 only under Everything."""
+    """3 a band we love, 2 a big band, a band we like or a favorite comic, 1 worth a look, 0 only under All shows."""
     bands, comics = taste.get("bands", {}), taste.get("comedians", [])
-    text = " ".join([e["title"], e.get("sub", "")] + e.get("_acts", []))
     picked = e.get("source") not in ("ticketmaster", "seatgeek", "venues")
     if e["cat"] == "music":
-        if matches(text, bands.get("love", [])):
+        if who(e, bands.get("love", [])):
             return 3, "love"
-        if matches(text, bands.get("big", [])):
+        if who(e, bands.get("big", [])):
             return 2, "big"
-        if matches(text, bands.get("like", [])):
+        if who(e, bands.get("like", [])):
             return 2, "like"
         return (1, None) if picked else (0, None)
     if e["cat"] == "comedy":
-        if matches(text, comics):
+        if who(e, comics):
             return 2, "fav"
         # Touring headliners play the big rooms; the clubs' nightly lineups go under Everything.
         return (1, None) if picked or big_room(e.get("venue", ""), taste) else (0, None)
@@ -293,8 +314,9 @@ def main():
     sg_key = os.environ.get("SEATGEEK_CLIENT_ID", "").strip()
     tm = ticketmaster(taste, key, today, until) if key else []
     sg = seatgeek(taste, sg_key, today, until) if sg_key else []
+    skip = [norm(x) for x in taste.get("skip", [])]
     for e in tm + sg:
-        if not e.get("date"):
+        if not e.get("date") or JUNK.search(e["title"]) or any(x and x in norm(e["title"]) for x in skip):
             continue
         mi = e.get("_miles")
         if mi is not None and mi > local_mi:
@@ -312,8 +334,14 @@ def main():
     # Same show = same day, same venue, same first word of the title, and the same start time when both have one
     # (so a comedian's 7:00 and 9:45 sets stay separate).
     def first(s):
-        words = [w for w in norm(s).split() if w != "the"]
+        words = [w for w in norm(s).split() if w not in ("the", "an", "a", "evening", "with", "live", "presents")]
         return words[0] if words else ""
+    def same_act(a, b):
+        # "An Evening With Goose" and "Goose - 2-day Ticket" are one show: same performer, or one title names the other's.
+        acts = lambda e: {norm(x) for x in e.get("_acts", []) if x}
+        if acts(a) & acts(b):
+            return True
+        return any(x and f" {x} " in f" {norm(b['title'])} " for x in acts(a)) or any(x and f" {x} " in f" {norm(a['title'])} " for x in acts(b))
     plain = {"the", "at", "of", "and", "theatre", "theater", "center", "centre", "boston", "music", "hall", "club",
              "house", "arena", "citizens", "rock", "live"}
     def place(s):
@@ -322,7 +350,7 @@ def main():
     kept = []
     for e in sorted(events, key=lambda e: rank.get(e.get("source"), 5)):
         twin = next((k for k in kept if k["date"] == e["date"] and place(k.get("venue")) & place(e.get("venue"))
-                     and first(k["title"]) == first(e["title"])
+                     and (first(k["title"]) == first(e["title"]) or same_act(k, e))
                      and (not k.get("time") or not e.get("time") or k["time"] == e["time"])), None)
         if twin:
             if e.get("sub") and not twin.get("sub"):

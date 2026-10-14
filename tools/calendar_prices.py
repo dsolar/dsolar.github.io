@@ -33,6 +33,8 @@ DROP_PCT, DROP_USD = 0.10, 10      # an alert needs both: 10% and $10 under the 
 MAX_WATCH = 80                     # shows looked up per run
 RETRY_MISS_DAYS = 3                # how long to wait before looking again for a show SeatGeek didn't have
 KEEP_DAYS = 90                     # price history kept per show
+PRICE_FIELDS = ("lowest_price", "lowest_sg_base_price", "lowest_price_good_deals", "lowest_sg_base_price_good_deals",
+                "median_price", "average_price")
 
 
 def get_json(url, data=None, headers=None):
@@ -167,6 +169,7 @@ def main():
         live[c["id"]] = c
 
     sent = 0
+    fields_seen = set()
     for e in watch:
         c = live.get(known.get(e["id"]))
         if not c:
@@ -175,7 +178,9 @@ def main():
         rec = recs.setdefault(e["id"], {"sg": c["id"], "history": []})
         # Only the lowest price is kept: listing counts and averages move every hour and would mean a commit each run.
         rec.update(sg=c["id"], url=c.get("url"), title=e["title"], date=e["date"], venue=e.get("venue", ""))
-        low = st.get("lowest_price")
+        # SeatGeek fills different price fields for different events; take the first one it gave us.
+        fields_seen.update(k for k, x in st.items() if x not in (None, 0, ""))
+        low = next((st.get(k) for k in PRICE_FIELDS if st.get(k)), None)
         rec["low"] = low
         if not low:
             continue
@@ -201,7 +206,8 @@ def main():
     misses = {k: v for k, v in misses.items() if k in ids}
     drops = [d for d in drops if d["id"] in recs][:30]
 
-    out = {"updated": now.strftime("%Y-%m-%dT%H:%M:%SZ"), "source": "SeatGeek", "events": recs, "misses": misses, "drops": drops}
+    out = {"updated": now.strftime("%Y-%m-%dT%H:%M:%SZ"), "source": "SeatGeek", "fields": sorted(fields_seen),
+           "events": recs, "misses": misses, "drops": drops}
     if json.dumps({k: v for k, v in out.items() if k != "updated"}, sort_keys=True) == before:
         print("No change.")
         return

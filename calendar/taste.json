@@ -124,6 +124,12 @@
   "Brett Goldstein",
   "Robert Kelly"
  ],
+ "skip": [
+  "Blue Man Group",
+  "Stand Up Showcase",
+  "Open Mic",
+  "Kidz Bop"
+ ],
  "teams": [
   {
    "name": "Celtics",
