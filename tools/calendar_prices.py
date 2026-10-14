@@ -106,7 +106,7 @@ def alert(rec, low, was, topic, email):
     msg = {
         "topic": topic,
         "title": f"{rec['title']}: ${low:.0f}",
-        "message": f"{when} at {rec['venue']}. Lowest ticket ${low:.0f}, down from ${was:.0f} (SeatGeek).",
+        "message": f"{when} at {rec['venue']}. Lowest ticket ${low:.0f}, down from ${was:.0f} ({rec.get('src') or 'SeatGeek'}).",
         "click": rec["url"],
         "tags": ["ticket", "chart_with_downwards_trend"],
     }
@@ -151,7 +151,7 @@ def main():
     ids = {e["id"] for e in watch}
 
     # Shows we already matched: one batched lookup. New ones: a search each.
-    known = {e["id"]: recs[e["id"]]["sg"] for e in watch if e["id"] in recs}
+    known = {e["id"]: recs[e["id"]]["sg"] for e in watch if e["id"] in recs and recs[e["id"]].get("sg")}
     live = by_ids(sorted(set(known.values())), client) if known else {}
     for e in watch:
         if e["id"] in known:
@@ -171,16 +171,20 @@ def main():
     sent = 0
     fields_seen = set()
     for e in watch:
-        c = live.get(known.get(e["id"]))
-        if not c:
-            continue
+        c = live.get(known.get(e["id"])) or {}
         st = c.get("stats") or {}
-        rec = recs.setdefault(e["id"], {"sg": c["id"], "history": []})
-        # Only the lowest price is kept: listing counts and averages move every hour and would mean a commit each run.
-        rec.update(sg=c["id"], url=c.get("url"), title=e["title"], date=e["date"], venue=e.get("venue", ""))
         # SeatGeek fills different price fields for different events; take the first one it gave us.
         fields_seen.update(k for k, x in st.items() if x not in (None, 0, ""))
-        low = next((st.get(k) for k in PRICE_FIELDS if st.get(k)), None)
+        sg_low = next((st.get(k) for k in PRICE_FIELDS if st.get(k)), None)
+        # When SeatGeek has no price, fall back on Ticketmaster's lowest face value from the calendar build.
+        low = sg_low or e.get("from")
+        if not low and not c:
+            continue
+        rec = recs.setdefault(e["id"], {"history": []})
+        # Only the lowest price is kept: listing counts and averages move every hour and would mean a commit each run.
+        rec.update(sg=c.get("id"), title=e["title"], date=e["date"], venue=e.get("venue", ""),
+                   url=c.get("url") if sg_low or not e.get("url") else e["url"],
+                   src="SeatGeek" if sg_low else ("Ticketmaster" if low else None))
         rec["low"] = low
         if not low:
             continue
@@ -206,7 +210,7 @@ def main():
     misses = {k: v for k, v in misses.items() if k in ids}
     drops = [d for d in drops if d["id"] in recs][:30]
 
-    out = {"updated": now.strftime("%Y-%m-%dT%H:%M:%SZ"), "source": "SeatGeek", "fields": sorted(fields_seen),
+    out = {"updated": now.strftime("%Y-%m-%dT%H:%M:%SZ"), "source": "SeatGeek, else Ticketmaster face value", "fields": sorted(fields_seen),
            "events": recs, "misses": misses, "drops": drops}
     if json.dumps({k: v for k, v in out.items() if k != "updated"}, sort_keys=True) == before:
         print("No change.")

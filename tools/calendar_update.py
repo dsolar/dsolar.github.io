@@ -157,6 +157,7 @@ def tm_row(e, home, cat):
         "city": ", ".join(x for x in ((v.get("city") or {}).get("name"), (v.get("state") or {}).get("stateCode")) if x),
         "url": e.get("url"),
         "source": "ticketmaster",
+        "_price": min((p["min"] for p in e.get("priceRanges", []) if p.get("min")), default=None),
         "_acts": [a.get("name", "") for a in e.get("_embedded", {}).get("attractions", [])],
     }
     try:
@@ -212,6 +213,11 @@ def sg_row(e, home):
     return row
 
 
+def sg_show(e):
+    kind = " ".join([e.get("type", "")] + [t.get("name", "") for t in e.get("taxonomies", [])])
+    return any(k in kind for k in ("concert", "comedy", "music_festival"))
+
+
 def seatgeek(taste, client, today, until):
     home = taste["home"]
     base = {"client_id": client, "datetime_local.gte": f"{today}T00:00:00", "datetime_local.lte": f"{until}T23:59:59",
@@ -222,7 +228,7 @@ def seatgeek(taste, client, today, until):
         for page in range(1, limit + 1):
             data = get_json("https://api.seatgeek.com/2/events?" + urllib.parse.urlencode(dict(base, page=page, **params)))
             evs = data.get("events", [])
-            out.extend(sg_row(e, home) for e in evs)
+            out.extend(sg_row(e, home) for e in evs if sg_show(e))
             if len(evs) < base["per_page"]:
                 break
             time.sleep(0.2)
@@ -258,6 +264,10 @@ def who(e, names):
     """The name on our list this show is by. With a performer list (Ticketmaster, SeatGeek), only a performer
     counts, so "Silly Goose" isn't Goose and a Pearl Jam tribute isn't Pearl Jam. Hand-kept shows go by title."""
     acts = [norm(a) for a in e.get("_acts", []) if a]
+    if TRIBUTE.search(e["title"]):
+        # A tribute act counts only when it's on our list by its own name, which leads the title.
+        t = norm(e["title"])
+        return next((n for n in names if t.startswith(norm(n))), None)
     if acts:
         for n in names:
             nn = norm(n)
@@ -350,16 +360,25 @@ def main():
     kept = []
     for e in sorted(events, key=lambda e: rank.get(e.get("source"), 5)):
         twin = next((k for k in kept if k["date"] == e["date"] and place(k.get("venue")) & place(e.get("venue"))
-                     and (first(k["title"]) == first(e["title"]) or same_act(k, e))
-                     and (not k.get("time") or not e.get("time") or k["time"] == e["time"])), None)
+                     and (first(k["title"]) == first(e["title"]) or same_act(k, e))), None)
         if twin:
             if e.get("sub") and not twin.get("sub"):
                 twin["sub"] = e["sub"]
+            if e.get("time") and not twin.get("time"):
+                twin["time"] = e["time"]
+            elif e.get("time") and e["time"] != twin["time"]:
+                # Early and late sets: one card, every start time.
+                twin["times"] = sorted(set(twin.get("times", [twin["time"]]) + [e["time"]]))
+                twin["time"] = twin["times"][0]
+            if e.get("_price") and (not twin.get("_price") or e["_price"] < twin["_price"]):
+                twin["_price"] = e["_price"]
             twin.setdefault("aka", []).append(e["id"])  # votes cast under the other id still count
             continue
         kept.append(e)
     final = []
     for e in kept:
+        if e.get("_price"):
+            e["from"] = round(e["_price"])   # Ticketmaster's lowest face value, in dollars
         e["score"], e["why"] = score(e, taste)
         if e["why"] is None:
             e.pop("why")

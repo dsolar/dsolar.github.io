@@ -642,7 +642,7 @@ function evCard(e) {
   const where = [e.venue, e.city && !/^Boston\b/.test(e.city) ? e.city : ""].filter(Boolean).map(esc).join(", ");
   const link = e.url || (e.plan && e.venue ? (e.food && placeById(e.food) ? mapLink(placeById(e.food).name, placeById(e.food).town) : mapLink(e.venue, "")) : "");
   return `<article class="ev c-${e.cat}${e.why === "love" ? " love" : ""}" data-id="${esc(e.id)}">
-    <div class="tm">${c ? `${c.t}<small>${c.ap}</small>` : `<small>Time<br>TBA</small>`}<span class="k">${CATS[e.cat] || ""}</span></div>
+    <div class="tm">${c ? `${c.t}<small>${c.ap}</small>` : `<small>Time<br>TBA</small>`}${e.times && e.times.length > 1 ? `<small>& ${e.times.slice(1).map((t) => { const x = clock(t); return x.t + x.ap; }).join(", ")}</small>` : ""}<span class="k">${CATS[e.cat] || ""}</span></div>
     <div>
       <div class="title">${link ? `<a href="${esc(link)}" target="_blank" rel="noopener">${esc(e.title)}</a>` : esc(e.title)}</div>
       ${e.sub ? `<div class="sub">${esc(e.sub)}</div>` : ""}
@@ -662,11 +662,12 @@ function evCard(e) {
 
 // "From $62", plus how far it fell if it dropped in the last week. Links to the tickets.
 function priceTag(e) {
-  const r = (PRICES.events || {})[e.id];
+  const r = (PRICES.events || {})[e.id] || (e.from ? { low: e.from, url: e.url, src: "Ticketmaster" } : null);
   if (!r || !r.low) return "";
   const weekAgo = new Date(Date.now() - 7 * 864e5).toISOString();
   const d = (PRICES.drops || []).find((x) => x.id === e.id && x.at >= weekAgo);
-  return `<a class="tag price${d ? " drop" : ""}" href="${esc(r.url)}" target="_blank" rel="noopener" title="Lowest listed price on SeatGeek">` +
+  const src = r.src === "Ticketmaster" ? "Lowest face value on Ticketmaster" : "Lowest listed price on SeatGeek";
+  return `<a class="tag price${d ? " drop" : ""}" href="${esc(r.url)}" target="_blank" rel="noopener" title="${src}">` +
     `From $${Math.round(r.low)}${d ? ` <span>↓ $${Math.round(d.was - r.low)}</span>` : ""}</a>`;
 }
 
