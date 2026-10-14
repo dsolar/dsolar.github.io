@@ -1,52 +1,57 @@
 {
- "updated": "2026-10-14T22:59:11Z",
- "source": "SeatGeek",
+ "updated": "2026-10-14T23:03:05Z",
+ "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
   "2026-11-12-joe-russo-s-almost-dead-state-theatre": {
    "sg": 18593361,
    "history": [],
-   "url": "https://seatgeek.com/joe-russo-s-almost-dead-tickets/new-brunswick-new-jersey-state-theatre-new-jersey-2026-11-12-7-30-pm/concert/18593361",
+   "url": "https://www.jambase.com/article/joe-russos-almost-dead-tour-dates-2026-november",
    "title": "Joe Russo's Almost Dead",
    "date": "2026-11-12",
    "venue": "State Theatre",
-   "low": null
+   "low": null,
+   "src": null
   },
   "2026-10-16-robert-kelly-laugh-boston": {
    "sg": 18666678,
    "history": [],
-   "url": "https://seatgeek.com/robert-kelly-tickets/comedy/2026-10-16-9-30-pm/18666678",
+   "url": "https://comedy.tickets/city/boston/",
    "title": "Robert Kelly",
    "date": "2026-10-16",
    "venue": "Laugh Boston",
-   "low": null
+   "low": null,
+   "src": null
   },
   "2026-10-17-robert-kelly-laugh-boston": {
    "sg": 18666672,
    "history": [],
-   "url": "https://seatgeek.com/robert-kelly-tickets/comedy/2026-10-17-6-30-pm/18666672",
+   "url": "https://comedy.tickets/city/boston/",
    "title": "Robert Kelly",
    "date": "2026-10-17",
    "venue": "Laugh Boston",
-   "low": null
+   "low": null,
+   "src": null
   },
   "2026-11-13-bert-kreischer-the-vets": {
    "sg": 18163952,
    "history": [],
-   "url": "https://seatgeek.com/bert-kreischer-tickets/comedy/2026-11-13-8-pm/18163952",
+   "url": "https://comedy.tickets/tickets/bert-kreischer/",
    "title": "Bert Kreischer",
    "date": "2026-11-13",
    "venue": "The Vets",
-   "low": null
+   "low": null,
+   "src": null
   },
   "2026-11-14-bert-kreischer-the-hanover-theatre": {
    "sg": 18163954,
    "history": [],
-   "url": "https://seatgeek.com/bert-kreischer-tickets/comedy/2026-11-14-7-pm/18163954",
+   "url": "https://comedy.tickets/tickets/bert-kreischer/",
    "title": "Bert Kreischer",
    "date": "2026-11-14",
    "venue": "The Hanover Theatre",
-   "low": null
+   "low": null,
+   "src": null
   },
   "2026-12-19-mark-normand-great-cedar-showroom": {
    "sg": 18236597,
@@ -57,158 +62,95 @@
    "venue": "Great Cedar Showroom at Foxwoods",
    "low": null
   },
-  "sg-18664309": {
-   "sg": 18664309,
-   "history": [],
-   "url": "https://seatgeek.com/playing-dead-grateful-dead-tribute-tickets/pembroke-massachusetts-soundcheck-studios-1-1-2026-10-14-8-pm/concert/18664309",
-   "title": "Playing Dead (21+ Event)",
-   "date": "2026-10-14",
-   "venue": "Soundcheck Studios",
-   "low": null
-  },
-  "sg-18664311": {
-   "sg": 18664311,
-   "history": [],
-   "url": "https://seatgeek.com/reprise-a-phish-experience-tickets/pembroke-massachusetts-soundcheck-studios-1-1-2026-10-16-8-pm/concert/18664311",
-   "title": "Reprise - A Phish Experience",
-   "date": "2026-10-16",
-   "venue": "Soundcheck Studios",
-   "low": null
-  },
-  "sg-18664313": {
-   "sg": 18664313,
-   "history": [],
-   "url": "https://seatgeek.com/playing-dead-grateful-dead-tribute-tickets/pembroke-massachusetts-soundcheck-studios-1-1-2026-10-21-8-pm/concert/18664313",
-   "title": "Playing Dead - Grateful Dead Tribute",
-   "date": "2026-10-21",
-   "venue": "Soundcheck Studios",
-   "low": null
-  },
-  "sg-18664315": {
-   "sg": 18664315,
-   "history": [],
-   "url": "https://seatgeek.com/playing-dead-grateful-dead-tribute-tickets/pembroke-massachusetts-soundcheck-studios-1-1-2026-10-28-8-pm/concert/18664315",
-   "title": "Playing Dead - Grateful Dead Tribute",
-   "date": "2026-10-28",
-   "venue": "Soundcheck Studios",
-   "low": null
-  },
-  "sg-18664470": {
-   "sg": 18664470,
-   "history": [],
-   "url": "https://seatgeek.com/silly-goose-tickets/lowell-massachusetts-taffeta-music-hall-2026-10-30-7-30-pm/concert/18664470",
-   "title": "Silly Goose",
-   "date": "2026-10-30",
-   "venue": "Taffeta Music Hall",
-   "low": null
-  },
-  "sg-18664054": {
-   "sg": 18664054,
-   "history": [],
-   "url": "https://seatgeek.com/playing-dead-grateful-dead-tribute-tickets/dorchester-massachusetts-sanctuary-7-2026-10-30-8-pm/concert/18664054",
-   "title": "Playing Dead - Dead-O-Ween",
-   "date": "2026-10-30",
-   "venue": "Sanctuary",
-   "low": null
-  },
   "tm-vvG17Z_ClEs-f5": {
    "sg": 18371747,
    "history": [],
-   "url": "https://seatgeek.com/moe-tickets/boston-massachusetts-the-wilbur-2026-10-30-3-30-am/concert/18371747",
+   "url": "https://www.ticketmaster.com/moe-boston-massachusetts-10-30-2026/event/010064EAE7C6150B",
    "title": "moe.",
    "date": "2026-10-30",
    "venue": "The Wilbur",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-vvG17Z_ClEw-fE": {
    "sg": 18371751,
    "history": [],
-   "url": "https://seatgeek.com/moe-tickets/boston-massachusetts-the-wilbur-2026-10-31-8-pm/concert/18371751",
+   "url": "https://www.ticketmaster.com/moe-boston-massachusetts-10-31-2026/event/010064EAE7CA1527",
    "title": "moe.",
    "date": "2026-10-31",
    "venue": "The Wilbur",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-k7vGF_3ljUWng": {
    "sg": 18593196,
    "history": [],
-   "url": "https://seatgeek.com/trey-anastasio-tickets/albany-new-york-palace-theatre-albany-2026-11-12-7-pm/concert/18593196",
+   "url": "https://www.ticketmaster.com/trey-anastasio-albany-new-york-11-12-2026/event/0000652ADCDBDAB5",
    "title": "Trey Anastasio",
    "date": "2026-11-12",
    "venue": "The Palace Theatre Albany",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-Z7r9jZ1AAZ3uM": {
    "sg": 18406743,
    "history": [],
-   "url": "https://seatgeek.com/dark-star-orchestra-tickets/providence-rhode-island-providence-performing-arts-center-2026-11-12-7-30-pm/concert/18406743",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZ3uM",
    "title": "Dark Star Orchestra",
    "date": "2026-11-12",
    "venue": "Providence Performing Arts",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-k7vGF_2Lj9ock": {
    "sg": 18406745,
    "history": [],
-   "url": "https://seatgeek.com/dark-star-orchestra-tickets/albany-new-york-palace-theatre-albany-2026-11-13-7-30-pm/concert/18406745",
+   "url": "https://www.ticketmaster.com/dark-star-orchestra-albany-new-york-11-13-2026/event/000064F7DC5D1B46",
    "title": "Dark Star Orchestra",
    "date": "2026-11-13",
    "venue": "The Palace Theatre Albany",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-vvG17Z_2roBuNo": {
    "sg": 18406746,
    "history": [],
-   "url": "https://seatgeek.com/dark-star-orchestra-tickets/boston-massachusetts-orpheum-theatre-boston-2026-11-14-7-pm/concert/18406746",
+   "url": "https://www.ticketmaster.com/dark-star-orchestra-boston-massachusetts-11-14-2026/event/010064F791E8D8D1",
    "title": "Dark Star Orchestra",
    "date": "2026-11-14",
    "venue": "Orpheum Theatre presented by Citizens",
-   "low": null
-  },
-  "sg-18280635": {
-   "sg": 18280635,
-   "history": [],
-   "url": "https://seatgeek.com/goose-tickets/uncasville-connecticut-mohegan-sun-arena-2026-11-14-7-pm/concert/18280635",
-   "title": "Goose",
-   "date": "2026-11-14",
-   "venue": "Mohegan Sun Arena",
-   "low": null
-  },
-  "sg-18280639": {
-   "sg": 18280639,
-   "history": [],
-   "url": "https://seatgeek.com/goose-tickets/portland-maine-cross-insurance-arena-2026-11-15-7-pm/concert/18280639",
-   "title": "Goose",
-   "date": "2026-11-15",
-   "venue": "Cross Insurance Arena",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-G5vVZ_3n_EpYc": {
    "sg": 18593199,
    "history": [],
-   "url": "https://seatgeek.com/trey-anastasio-tickets/port-chester-new-york-the-capitol-theatre-port-chester-2026-11-16-7-30-pm/concert/18593199",
+   "url": "https://www.ticketmaster.com/trey-anastasio-port-chester-new-york-11-16-2026/event/1D00652A999D6C2D",
    "title": "Trey Anastasio",
    "date": "2026-11-16",
    "venue": "The Capitol Theatre",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-k7vGF_2K1LVgm": {
    "sg": 18409092,
    "history": [],
-   "url": "https://seatgeek.com/dark-star-orchestra-tickets/huntington-new-york-the-paramount-huntington-2026-11-27-3-30-am/concert/18409092",
+   "url": "https://www.ticketmaster.com/dark-star-orchestra-huntington-new-york-11-27-2026/event/000064F4CA7F4D6E",
    "title": "Dark Star Orchestra",
    "date": "2026-11-27",
    "venue": "The Paramount in concert with Northwell",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-k7vGF_2K1rVgq": {
    "sg": 18406758,
    "history": [],
-   "url": "https://seatgeek.com/dark-star-orchestra-tickets/huntington-new-york-the-paramount-huntington-2026-11-28-8-pm/concert/18406758",
+   "url": "https://www.ticketmaster.com/dark-star-orchestra-huntington-new-york-11-28-2026/event/000064F4CA7B4D5D",
    "title": "Dark Star Orchestra",
    "date": "2026-11-28",
    "venue": "The Paramount in concert with Northwell",
-   "low": null
+   "low": null,
+   "src": null
   },
   "sg-18668758": {
    "sg": 18668758,
@@ -217,16 +159,18 @@
    "title": "moe.",
    "date": "2026-12-11",
    "venue": "Bearsville Theater",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-Z7r9jZ1AAvS-9": {
    "sg": 18668759,
    "history": [],
-   "url": "https://seatgeek.com/moe-tickets/woodstock-new-york-bearsville-theater-2026-12-12-8-pm/concert/18668759",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAvS-9",
    "title": "moe.",
    "date": "2026-12-12",
    "venue": "Bearsville Theatre",
-   "low": null
+   "low": null,
+   "src": null
   },
   "sg-18349689": {
    "sg": 18349689,
@@ -235,70 +179,78 @@
    "title": "Weird Phishes",
    "date": "2026-12-18",
    "venue": "The Sinclair - Cambridge",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-G5diZ_KV3gvWH": {
    "sg": 18659383,
    "history": [],
-   "url": "https://seatgeek.com/phish-tickets/new-york-new-york-madison-square-garden-2026-12-30-7-30-pm/concert/18659383",
+   "url": "https://www.ticketmaster.com/phish-new-york-new-york-12-30-2026/event/3B00653D12D41F7C",
    "title": "Phish",
    "date": "2026-12-30",
    "venue": "Madison Square Garden",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-G5diZ_KV3MvXa": {
    "sg": 18659385,
    "history": [],
-   "url": "https://seatgeek.com/phish-tickets/new-york-new-york-madison-square-garden-2026-12-31-7-30-pm/concert/18659385",
+   "url": "https://www.ticketmaster.com/phish-new-york-new-york-12-31-2026/event/3B00653D12DC1F89",
    "title": "Phish",
    "date": "2026-12-31",
    "venue": "Madison Square Garden",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-G5vVZ_8YGWxwn": {
    "sg": 18511851,
    "history": [],
-   "url": "https://seatgeek.com/dark-star-orchestra-tickets/port-chester-new-york-the-capitol-theatre-port-chester-2026-12-31-8-pm/concert/18511851",
+   "url": "https://www.ticketmaster.com/dark-star-orchestra-port-chester-new-york-12-31-2026/event/1D00650C0CF62CAA",
    "title": "Dark Star Orchestra",
    "date": "2026-12-31",
    "venue": "The Capitol Theatre",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-G5diZ_KV3yvXL": {
    "sg": 18659382,
    "history": [],
-   "url": "https://seatgeek.com/phish-tickets/new-york-new-york-madison-square-garden-2027-01-01-7-30-pm/concert/18659382",
+   "url": "https://www.ticketmaster.com/phish-new-york-new-york-01-01-2027/event/3B00653D12E41F9F",
    "title": "Phish",
    "date": "2027-01-01",
    "venue": "Madison Square Garden",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-G5vVZ_8YGDesD": {
    "sg": 18511849,
    "history": [],
-   "url": "https://seatgeek.com/dark-star-orchestra-tickets/port-chester-new-york-the-capitol-theatre-port-chester-2027-01-01-8-pm/concert/18511849",
+   "url": "https://www.ticketmaster.com/dark-star-orchestra-port-chester-new-york-01-01-2027/event/1D00650C0CEC2C7B",
    "title": "Dark Star Orchestra",
    "date": "2027-01-01",
    "venue": "The Capitol Theatre",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-G5diZ_KV3DvXt": {
    "sg": 18659384,
    "history": [],
-   "url": "https://seatgeek.com/phish-tickets/new-york-new-york-madison-square-garden-2027-01-02-7-30-pm/concert/18659384",
+   "url": "https://www.ticketmaster.com/phish-new-york-new-york-01-02-2027/event/3B00653D12EC1FA9",
    "title": "Phish",
    "date": "2027-01-02",
    "venue": "Madison Square Garden",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-G5vVZ_8YGHxwf": {
    "sg": 18511850,
    "history": [],
-   "url": "https://seatgeek.com/dark-star-orchestra-tickets/port-chester-new-york-the-capitol-theatre-port-chester-2027-01-02-8-pm/concert/18511850",
+   "url": "https://www.ticketmaster.com/dark-star-orchestra-port-chester-new-york-01-02-2027/event/1D00650C0CF22C94",
    "title": "Dark Star Orchestra",
    "date": "2027-01-02",
    "venue": "The Capitol Theatre",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-vvG17Z_1hhrKOS": {
    "sg": 18236351,
@@ -316,7 +268,8 @@
    "title": "Robert Kelly",
    "date": "2026-10-16",
    "venue": "Laugh Boston",
-   "low": null
+   "low": null,
+   "src": null
   },
   "sg-18666672": {
    "sg": 18666672,
@@ -325,16 +278,18 @@
    "title": "Robert Kelly",
    "date": "2026-10-17",
    "venue": "Laugh Boston",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-vv1A8v0OtGA5uw7-": {
    "sg": 18194413,
    "history": [],
-   "url": "https://seatgeek.com/beck-tickets/boston-massachusetts-mgm-music-hall-at-fenway-2026-10-17-8-pm/concert/18194413",
+   "url": "https://www.ticketmaster.com/beck-ride-lonesome-tour-boston-massachusetts-10-17-2026/event/010064829B372121",
    "title": "BECK: RIDE LONESOME TOUR",
    "date": "2026-10-17",
    "venue": "MGM Music Hall at Fenway",
-   "low": null
+   "low": null,
+   "src": null
   },
   "sg-18194413": {
    "sg": 18194413,
@@ -343,61 +298,68 @@
    "title": "Beck",
    "date": "2026-10-17",
    "venue": "MGM Music Hall at Fenway",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-k7vGF_FCcIGqH": {
    "sg": 18194389,
    "history": [],
-   "url": "https://seatgeek.com/beck-tickets/brooklyn-new-york-brooklyn-paramount-2026-10-22-7-pm/concert/18194389",
+   "url": "https://www.ticketmaster.com/beck-ride-lonesome-tour-brooklyn-new-york-10-22-2026/event/00006483ADA0C77C",
    "title": "BECK: RIDE LONESOME TOUR",
    "date": "2026-10-22",
    "venue": "Brooklyn Paramount",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-Z7r9jZ1A7PK40": {
    "sg": 18477786,
    "history": [],
-   "url": "https://seatgeek.com/daniel-donato-s-cosmic-country-tickets/boston-massachusetts-royale-boston-2026-10-22-8-pm/concert/18477786",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PK40",
    "title": "Daniel Donato's Cosmic Country (18 and Over)",
    "date": "2026-10-22",
    "venue": "Royale Boston",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-k7vGF_FCcIHra": {
    "sg": 18194390,
    "history": [],
-   "url": "https://seatgeek.com/beck-tickets/brooklyn-new-york-brooklyn-paramount-2026-10-23-7-pm/concert/18194390",
+   "url": "https://www.ticketmaster.com/beck-ride-lonesome-tour-brooklyn-new-york-10-23-2026/event/00006483ADA3C789",
    "title": "BECK: RIDE LONESOME TOUR",
    "date": "2026-10-23",
    "venue": "Brooklyn Paramount",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-vv1AvZkoPGkenxv3k": {
    "sg": 18115555,
    "history": [],
-   "url": "https://seatgeek.com/jim-gaffigan-tickets/comedy/2026-10-23-7-30-pm/18115555",
+   "url": "https://www.ticketmaster.com/jim-gaffigan-everything-is-wonderful-boston-massachusetts-10-23-2026/event/01006465AA881486",
    "title": "Jim Gaffigan: Everything is Wonderful!",
    "date": "2026-10-23",
    "venue": "Boch Center Wang Theatre",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-vv1AvZkoPGkenNv3K": {
    "sg": 18195850,
    "history": [],
-   "url": "https://seatgeek.com/jim-gaffigan-tickets/comedy/2026-10-24-8-pm/18195850",
+   "url": "https://www.ticketmaster.com/jim-gaffigan-everything-is-wonderful-boston-massachusetts-10-24-2026/event/01006465AA8C1493",
    "title": "Jim Gaffigan: Everything is Wonderful!",
    "date": "2026-10-24",
    "venue": "Boch Center Wang Theatre",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-vv1AvZkoPGkenNs30": {
    "sg": 18424078,
    "history": [],
-   "url": "https://seatgeek.com/jim-gaffigan-tickets/comedy/2026-10-25-7-pm/18424078",
+   "url": "https://www.ticketmaster.com/jim-gaffigan-everything-is-wonderful-boston-massachusetts-10-25-2026/event/01006465AA8F14A4",
    "title": "Jim Gaffigan: Everything is Wonderful!",
    "date": "2026-10-25",
    "venue": "Boch Center Wang Theatre",
-   "low": null
+   "low": null,
+   "src": null
   },
   "sg-18582757": {
    "sg": 18582757,
@@ -406,16 +368,18 @@
    "title": "Johnny Blue Skies",
    "date": "2026-10-26",
    "venue": "TD Garden",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-Z7r9jZ1AAZJxd": {
    "sg": 18500992,
    "history": [],
-   "url": "https://seatgeek.com/third-eye-blind-tickets/hudson-new-york-basilica-hudson-2026-10-30-8-pm/concert/18500992",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZJxd",
    "title": "Third Eye Blind: Halloween 2026",
    "date": "2026-10-30",
    "venue": "Basilica Hudson",
-   "low": null
+   "low": null,
+   "src": null
   },
   "sg-18662147": {
    "sg": 18662147,
@@ -424,7 +388,8 @@
    "title": "Jason Isbell",
    "date": "2026-11-04",
    "venue": "Concert Hall at Groton Hill Music Center",
-   "low": null
+   "low": null,
+   "src": null
   },
   "sg-18660116": {
    "sg": 18660116,
@@ -433,101 +398,233 @@
    "title": "Jason Isbell",
    "date": "2026-11-05",
    "venue": "Troy Savings Bank Music Hall",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-vv177Z_8GkUrfG8x": {
    "sg": 18498698,
    "history": [],
-   "url": "https://seatgeek.com/tim-dillon-tickets/comedy/2026-11-05-7-30-pm/18498698",
+   "url": "https://www.ticketmaster.com/tim-dillon-boston-massachusetts-11-05-2026/event/0100650D9E50C422",
    "title": "Tim Dillon",
    "date": "2026-11-05",
    "venue": "The Wilbur",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-k7v17_apFG7c4ap": {
    "sg": 18209295,
    "history": [],
-   "url": "https://seatgeek.com/jason-isbell-tickets/greenvale-new-york-tilles-center-concert-hall-2026-11-06-7-30-pm/concert/18209295",
+   "url": "https://www.ticketmaster.com/jason-isbell-brookville-new-york-11-06-2026/event/0000649588B55256",
    "title": "Jason Isbell",
    "date": "2026-11-06",
    "venue": "Tilles Center Concert Hall",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-vv1AvZkfAGkd5CNWg": {
    "sg": 18472041,
    "history": [],
-   "url": "https://seatgeek.com/tim-dillon-tickets/comedy/2026-11-06-7-30-pm/18472041",
+   "url": "https://www.ticketmaster.com/tim-dillon-boston-massachusetts-11-06-2026/event/01006505CB3A3F75",
    "title": "Tim Dillon",
    "date": "2026-11-06",
    "venue": "The Wilbur",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-vvG17Z_2Bxn386": {
    "sg": 18424077,
    "history": [],
-   "url": "https://seatgeek.com/beat-tickets/boston-massachusetts-boch-center-wang-theatre-2026-11-06-8-pm/concert/18424077",
+   "url": "https://www.ticketmaster.com/beat-belewvailevinbozzio-performing-the-music-of-boston-massachusetts-11-06-2026/event/010064FEA2A92407",
    "title": "BEAT: Belew/Vai/Levin/Bozzio Performing the Music of KING CRIMSON",
    "date": "2026-11-06",
    "venue": "Boch Center Wang Theatre",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-vv177Z_8GkDdY5rJ": {
    "sg": 18472041,
    "history": [],
-   "url": "https://seatgeek.com/tim-dillon-tickets/comedy/2026-11-06-7-30-pm/18472041",
+   "url": "https://www.ticketmaster.com/tim-dillon-boston-massachusetts-11-06-2026/event/0100650EC3C0B7A6",
    "title": "Tim Dillon",
    "date": "2026-11-06",
    "venue": "The Wilbur",
-   "low": null
+   "low": null,
+   "src": null
   },
   "tm-vvG17Z_ue0VWGA": {
    "sg": 18325146,
    "history": [],
-   "url": "https://seatgeek.com/comics-come-home-tickets/comedy/2026-11-07-8-pm/18325146",
+   "url": "https://www.ticketmaster.com/comics-come-home-boston-massachusetts-11-07-2026/event/010064D0A4D3D305",
    "title": "Comics Come Home",
    "date": "2026-11-07",
    "venue": "TD Garden",
+   "low": null,
+   "src": null
+  },
+  "tm-vv177Z_3GkB_IahD": {
+   "history": [],
+   "sg": 18603764,
+   "title": "Tim Dillon",
+   "date": "2026-11-07",
+   "venue": "The Wilbur",
+   "url": "https://www.ticketmaster.com/tim-dillon-boston-massachusetts-11-07-2026/event/0100652E99A096FB",
+   "src": null,
    "low": null
   },
-  "sg-18342899": {
-   "sg": 18342899,
+  "tm-vvG17Z_2pIw04C": {
    "history": [],
-   "url": "https://seatgeek.com/unforgettable-fire-a-tribute-to-u2-tickets/fairfield-connecticut-shu-community-theatre-2026-11-07-8-pm/concert/18342899",
-   "title": "Unforgettable Fire - U2 Tribute",
-   "date": "2026-11-07",
-   "venue": "SHU Community Theatre",
+   "sg": 18474897,
+   "title": "Dave Matthews Band",
+   "date": "2026-11-09",
+   "venue": "Amica Mutual Pavilion",
+   "url": "https://www.ticketmaster.com/dave-matthews-band-providence-rhode-island-11-09-2026/event/010064F5A8CA454E",
+   "src": null,
+   "low": null
+  },
+  "tm-Z7r9jZ1A7-fPM": {
+   "history": [],
+   "sg": 18095621,
+   "title": "Hiss Golden Messenger",
+   "date": "2026-11-09",
+   "venue": "The Sinclair Music Hall",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7-fPM",
+   "src": null,
+   "low": null
+  },
+  "tm-G5diZ_2NJWaf8": {
+   "history": [],
+   "sg": 18474900,
+   "title": "Dave Matthews Band",
+   "date": "2026-11-12",
+   "venue": "Madison Square Garden",
+   "url": "https://www.ticketmaster.com/dave-matthews-band-new-york-new-york-11-12-2026/event/3B0064F8E6F49510",
+   "src": null,
+   "low": null
+  },
+  "tm-G5diZ_2NJDtfA": {
+   "history": [],
+   "sg": 18474898,
+   "title": "Dave Matthews Band",
+   "date": "2026-11-13",
+   "venue": "Madison Square Garden",
+   "url": "https://www.ticketmaster.com/dave-matthews-band-new-york-new-york-11-13-2026/event/3B0064F8E6EE9505",
+   "src": null,
+   "low": null
+  },
+  "sg-18608936": {
+   "history": [],
+   "sg": 18608936,
+   "title": "Third Eye Blind",
+   "date": "2026-11-15",
+   "venue": "Roadrunner - Boston",
+   "url": "https://seatgeek.com/third-eye-blind-tickets/boston-massachusetts-roadrunner-boston-2026-11-15-8-pm/concert/18608936",
+   "src": null,
+   "low": null
+  },
+  "sg-18634478": {
+   "history": [],
+   "sg": 18634478,
+   "title": "LCD Soundsystem",
+   "date": "2026-11-19",
+   "venue": "Knockdown Center",
+   "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-11-19-8-pm/concert/18634478",
+   "src": null,
+   "low": null
+  },
+  "tm-G5vVZ_6nrIgoT": {
+   "history": [],
+   "sg": 18164314,
+   "title": "Metallica",
+   "date": "2026-11-19",
+   "venue": "Mohegan Sun Arena",
+   "url": "https://www.ticketmaster.com/metallica-uncasville-connecticut-11-19-2026/event/1D00647A9EA3547F",
+   "src": null,
+   "low": null
+  },
+  "tm-vv1A8v0PYGAu7v5f": {
+   "history": [],
+   "sg": 18206450,
+   "title": "Hannibal Buress",
+   "date": "2026-11-20",
+   "venue": "The Wilbur",
+   "url": "https://www.ticketmaster.com/hannibal-buress-boston-massachusetts-11-20-2026/event/010064970D1012D4",
+   "src": null,
+   "low": null
+  },
+  "sg-18634477": {
+   "history": [],
+   "sg": 18634477,
+   "title": "LCD Soundsystem",
+   "date": "2026-11-20",
+   "venue": "Knockdown Center",
+   "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-11-20-8-pm/concert/18634477",
+   "src": null,
+   "low": null
+  },
+  "sg-18634479": {
+   "history": [],
+   "sg": 18634479,
+   "title": "LCD Soundsystem",
+   "date": "2026-11-21",
+   "venue": "Knockdown Center",
+   "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-11-21-8-pm/concert/18634479",
+   "src": null,
+   "low": null
+  },
+  "tm-G5vVZ_6n-zPJb": {
+   "history": [],
+   "sg": 18164313,
+   "title": "Metallica",
+   "date": "2026-11-21",
+   "venue": "Mohegan Sun Arena",
+   "url": "https://www.ticketmaster.com/metallica-uncasville-connecticut-11-21-2026/event/1D00647AA1E25998",
+   "src": null,
+   "low": null
+  },
+  "sg-18634482": {
+   "history": [],
+   "sg": 18634482,
+   "title": "LCD Soundsystem",
+   "date": "2026-11-22",
+   "venue": "Knockdown Center",
+   "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-11-22-8-pm/concert/18634482",
+   "src": null,
+   "low": null
+  },
+  "tm-Z7r9jZ1AA7ZFp": {
+   "history": [],
+   "sg": 18634481,
+   "title": "LCD Soundsystem (16 and Over)",
+   "date": "2026-11-30",
+   "venue": "Brooklyn Steel",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7ZFp",
+   "src": null,
    "low": null
   }
  },
  "misses": {
-  "tm-G5vVZ_32-wdRE": "2026-10-14",
-  "tm-vvG17Z_2jd7hB1": "2026-10-14",
-  "tm-k7vGF_G6MRW0-": "2026-10-14",
-  "tm-rZ7HnEZ1A4Z-FN": "2026-10-14",
   "tm-vv1k7Z_3OAG7I4tc": "2026-10-14",
   "tm-G5vVZ_5R5G1f5": "2026-10-14",
   "tm-vv1AeZkftGkdqDKq0": "2026-10-14",
-  "tm-G5vVZ_5RCBQNp": "2026-10-14",
   "tm-G5vVZ_5RuGQjG": "2026-10-14",
   "tm-vvG17Z_5wCylI9": "2026-10-14",
   "tm-vv177Z_oGkXBnY-F": "2026-10-14",
-  "tm-rZ7HnEZ1A4Zaed": "2026-10-14",
   "tm-vv177Z_oGkXBi8-I": "2026-10-14",
-  "tm-k7vGF_3DdlHxx": "2026-10-14",
-  "tm-G5vVZ_3lEeTes": "2026-10-14",
-  "tm-G5vVZ_3lIeTac": "2026-10-14",
-  "tm-G5vVZ_3lE72dA": "2026-10-14",
   "tm-rZ7HnEZ1AfuNZ7": "2026-10-14",
-  "tm-k7vGF_fLUzWPq": "2026-10-14",
   "tm-rZ7HnEZ1AfuYF0": "2026-10-14",
-  "tm-rZ7HnEZ1AfuKA7": "2026-10-14",
-  "tm-rZ7HnEZ1AfJ6eK": "2026-10-14",
-  "tm-rZ7HnEZ1AfJ67N": "2026-10-14",
   "tm-Z7r9jZ1A7PIPk": "2026-10-14",
   "tm-Z7r9jZ1A7PIP6": "2026-10-14",
   "tm-vv177Z_8GkD4PKZI": "2026-10-14",
   "tm-vv1AvZkf6Gkd94lLs": "2026-10-14",
-  "tm-Z7r9jZ1A7-VGp": "2026-10-14"
+  "tm-Z7r9jZ1A7-VGp": "2026-10-14",
+  "tm-vv1AvZkoYGkdIsA4N": "2026-10-14",
+  "tm-vv1AvZko6GkePdnCI": "2026-10-14",
+  "tm-vvG17Z_5wbduXe": "2026-10-14",
+  "tm-Z7r9jZ1A7PJaJ": "2026-10-14",
+  "tm-vvG17Z_u7Z_JCI": "2026-10-14",
+  "tm-Z7r9jZ1AAvx-I": "2026-10-14",
+  "tm-Z7r9jZ1AAvx-E": "2026-10-14",
+  "tm-rZ7HnEZ1AfFtAV": "2026-10-14"
  },
  "drops": []
 }
