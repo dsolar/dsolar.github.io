@@ -181,17 +181,19 @@ a:hover{color:var(--red)}
 .writing-intro>p:last-child{max-width:40em;color:var(--muted)}
 .archive-visual{grid-column:1;grid-row:1 / span 3;align-self:center;margin:0;padding:12px 14px 10px;border:1px solid var(--rule);border-top:3px solid var(--red);background:var(--paper-2);box-shadow:0 5px 14px rgba(0,34,68,.06)}
 .archive-visual svg{display:block;width:100%;height:auto}
-.fenway-skyline{fill:none;stroke:var(--muted);stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round}
-.fenway-light{fill:none;stroke:var(--gold);stroke-width:1.4;stroke-linecap:round}
-.fenway-wall{fill:var(--monster);stroke:var(--ink);stroke-width:1}
-.fenway-rim{fill:none;stroke:var(--gold);stroke-width:1.6;stroke-linejoin:round}
-.fenway-board{fill:var(--ink);stroke:var(--gold);stroke-width:1.2}
-.fenway-label,.fenway-caption{fill:var(--muted);font-family:var(--f-body);font-size:5px;font-weight:700;letter-spacing:1px}
-.fenway-score{fill:var(--plate-ink);font-family:var(--f-body);font-size:4px;font-weight:700}
-.fenway-score-rule{fill:none;stroke:var(--plate-ink);stroke-width:.45;opacity:.45}
-.fenway-field,.fenway-baseline{fill:none;stroke:var(--line-art);stroke-width:1.3;stroke-linecap:round}
-.fenway-diamond{fill:var(--paper);stroke:var(--red);stroke-width:1}
-.fenway-star{fill:var(--red)}
+.football-skyline{fill:none;stroke:var(--muted);stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round}
+.citgo-sign{fill:var(--red);stroke:var(--ink);stroke-width:1.1;stroke-linejoin:round}
+.citgo-bars{fill:none;stroke:var(--paper-2);stroke-width:1}
+.football-board{fill:var(--ink);stroke:var(--gold);stroke-width:1.2}
+.football-board-title,.football-board-label,.football-field-label{fill:var(--plate-ink);font-family:var(--f-body);font-size:4px;font-weight:700;letter-spacing:.5px}
+.football-board-value{fill:var(--gold);font-family:var(--f-body);font-size:5px;font-weight:700}
+.football-board-rule{fill:none;stroke:var(--plate-ink);stroke-width:.45;opacity:.45}
+.football-field{fill:var(--monster);stroke:var(--ink);stroke-width:1}
+.football-endzone{fill:var(--ink);stroke:var(--paper-2);stroke-width:.65}
+.football-yardline,.football-hash{fill:none;stroke:var(--paper-2);stroke-width:.85;opacity:.8}
+.football-ball{fill:#8d492b;stroke:var(--paper-2);stroke-width:1}
+.football-lace{fill:none;stroke:var(--paper-2);stroke-width:1.15;stroke-linecap:round}
+.football-caption{fill:var(--muted);font-family:var(--f-body);font-size:5px;font-weight:700;letter-spacing:1px}
 .trend-art{margin-top:5px;border-top:1px solid var(--rule);padding-top:7px}
 .trend-grid{fill:none;stroke:var(--rule);stroke-width:.7;stroke-dasharray:2 3}
 .trend-axis{fill:none;stroke:var(--muted);stroke-width:.8}
@@ -199,8 +201,6 @@ a:hover{color:var(--red)}
 .trend-point{fill:var(--paper);stroke:var(--red);stroke-width:1.4}
 .trend-label{fill:var(--muted);font-family:var(--f-body);font-size:5px;font-weight:700;letter-spacing:.6px}
 .writing-years{grid-template-columns:repeat(2,minmax(0,1fr))}
-.writing-playoffs{border-top-style:dashed}
-.writing-playoffs h3{font-size:1.18rem}
 .writing-years{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:44px 40px;padding-left:calc(var(--meta-col) + 40px)}
 .writing-season{border-top:1px solid var(--ink);padding-top:14px}
 .writing-season h3{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:8px;font-size:1.35rem;font-weight:700}
