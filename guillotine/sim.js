@@ -15,7 +15,9 @@
     runs: 20000,
     recentWeeks: 3, // how many completed weeks make up a team's recent average
     shrink: 0.25,   // later weeks: share of the way each team is pulled toward the league average
-    cv: 0.22        // weekly noise, as a share of the expected score
+    cv: 0.22,       // weekly noise, as a share of the expected score
+    fabPts: 8,      // later weeks: points per week for twice the average money left (less money, a penalty)
+    fabRamp: 3      // weeks for that money to turn into better players
   };
 
   // Small seeded generator, so everyone who opens the page sees the same numbers.
@@ -75,6 +77,10 @@
     });
     var known = alive.map(function (t) { return t._recent; }).filter(function (x) { return x !== null; });
     var leagueAvg = known.length ? mean(known) : 100;
+    // Money left buys the players cut teams drop. Measured against the average budget still alive,
+    // so the league as a whole doesn't inflate; above average helps, below average hurts.
+    var budgets = alive.map(function (t) { return t.faab; }).filter(function (x) { return typeof x === "number"; });
+    var avgFab = budgets.length ? mean(budgets) : 0;
 
     var rows = alive.map(function (t) {
       var recent = t._recent === null ? leagueAvg : t._recent;
@@ -94,6 +100,7 @@
       var locked = o.pregame ? 0 : (t.locked || 0);
       var shift = o.pregame ? 0 : locked - (t.locked_proj || 0);
       var now = start + shift;
+      var fabEdge = avgFab > 0 && typeof t.faab === "number" ? o.fabPts * (t.faab / avgFab - 1) : 0;
       return {
         name: t.name,
         faab: typeof t.faab === "number" ? t.faab : null,
@@ -107,7 +114,8 @@
         gamesFinal: o.pregame ? 0 : (t.games_final || 0),
         now: now,                                       // expected score this week, as of now
         sdNow: o.cv * Math.max(now - locked, 3),        // only points still to be played can swing
-        later: later                                    // expected score in later weeks
+        later: later,                                   // expected score in later weeks, before money
+        fabEdge: fabEdge                                // points per week the budget adds once spent
       };
     });
 
@@ -130,6 +138,7 @@
     var nowMu = rows.map(function (r) { return r.now; });
     var nowSd = rows.map(function (r) { return r.sdNow; });
     var laterMu = rows.map(function (r) { return r.later; });
+    var fabEdge = rows.map(function (r) { return r.fabEdge; });
 
     for (var r = 0; r < runs; r++) {
       alive.fill(1);
@@ -138,7 +147,8 @@
         var lowScore = Infinity, low = -1;
         for (var j = 0; j < n; j++) {
           if (!alive[j]) continue;
-          var s = mu[j] + (k === 0 ? nowSd[j] : o.cv * mu[j]) * gauss();
+          var mj = k === 0 ? mu[j] : mu[j] + fabEdge[j] * Math.min(k / o.fabRamp, 1);
+          var s = mj + (k === 0 ? nowSd[j] : o.cv * mj) * gauss();
           if (s < lowScore) { lowScore = s; low = j; }
         }
         alive[low] = 0;

@@ -60,6 +60,16 @@ a:focus-visible{outline:2px solid var(--blade);outline-offset:3px;border-radius:
   display:grid;gap:2.75rem}
 .wrap > *{min-width:0}
 
+/* Sticky jump links: one row, scrolls sideways on a phone */
+.jump{position:sticky;top:env(safe-area-inset-top, 0px);z-index:40;background:var(--bg);border-bottom:1px solid var(--rule)}
+.jump-in{max-width:46rem;margin:0 auto;display:flex;gap:.3rem;overflow-x:auto;scrollbar-width:none;
+  padding-block:.5rem;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.jump-in::-webkit-scrollbar{display:none}
+.jump a{flex:none;font-size:.78rem;font-weight:600;text-decoration:none;color:var(--muted);padding:.3rem .65rem;border-radius:999px;border:1px solid transparent}
+.jump a:hover{color:var(--ink)}
+.jump a.on{color:var(--ink);border-color:var(--rule);background:var(--surface)}
+.wrap > section{scroll-margin-top:3.4rem}
+
 .eyebrow{font:600 .75rem/1.2 var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0}
 h1{font:700 clamp(2.4rem,9vw,4rem)/.95 var(--f-display);font-variation-settings:"opsz" 96;letter-spacing:-.01em;margin:.5rem 0 0;text-wrap:balance}
 h1 .wk{display:block;color:var(--blade)}
@@ -251,6 +261,16 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
 <body>
 <nav class="ds-bar" aria-label="davidsolar.dev"><a href="../"><img src="../assets/ds-mark.svg" alt="" width="20" height="20"><span class="ds-bar-name">David Solar</span></a><a href="../#projects">All projects</a></nav>
 
+<nav class="jump" id="jump" aria-label="On this page"><div class="jump-in">
+  <a href="#week" data-sec="week">Odds</a>
+  <a href="#spot" data-sec="spot" id="jump-spot">Thursday</a>
+  <a href="#byes-sec" data-sec="byes-sec">Byes</a>
+  <a href="#hist-sec" data-sec="hist-sec">Cut line</a>
+  <a href="#season" data-sec="season">Season</a>
+  <a href="#fallen-sec" data-sec="fallen-sec">Fallen</a>
+  <a href="#how" data-sec="how">How it works</a>
+</div></nav>
+
 <main class="wrap" id="app">
   <header>
     <p class="eyebrow" id="league">Guillotine league</p>
@@ -265,11 +285,6 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
   </header>
 
   <p class="notice" id="sample" hidden>These are sample numbers from the Week 6 notes, so the page has something to show. Live Yahoo numbers replace them automatically once the league connection is set up.</p>
-
-  <section class="spot" id="spot" aria-labelledby="spot-title" hidden>
-    <div class="section-head" style="margin:0"><h2 id="spot-title"></h2><p class="sub" id="spot-sub"></p></div>
-    <div id="spot-body"></div>
-  </section>
 
   <section id="week" aria-labelledby="week-title" hidden>
     <div class="section-head">
@@ -288,6 +303,11 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
       <span><i class="k-blade"></i>Typical lowest score</span>
     </div>
     <div class="tiers" id="tiers"></div>
+  </section>
+
+  <section class="spot" id="spot" aria-labelledby="spot-title" hidden>
+    <div class="section-head" style="margin:0"><h2 id="spot-title"></h2><p class="sub" id="spot-sub"></p></div>
+    <div id="spot-body"></div>
   </section>
 
   <section id="byes-sec" aria-labelledby="byes-title" hidden>
@@ -327,7 +347,7 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
     <p class="none" id="fallen-none" hidden></p>
   </section>
 
-  <section aria-labelledby="method-title">
+  <section id="how" aria-labelledby="method-title">
     <div class="section-head"><h2 id="method-title">How the odds work</h2></div>
     <div class="method" id="method">
       <p><b>This week</b>, each team's expected score is its Yahoo projection. A team with no lineup set gets its best possible lineup instead, built from player projections. Failing both, it gets its average.</p>
@@ -338,7 +358,7 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
       <p><b>The cut line</b> is the median lowest score across all simulations of this week. The safe score is the one that clears the lowest score in 9 of 10 simulations.</p>
       <p><b>Each simulation</b> plays out the rest of the season, drawing every team's score from that range and cutting the lowest each week until one team is left. The page runs <span id="m-runs">20,000</span> of them and counts how often each team gets cut, survives each week and wins.</p>
       <p><b>Cut-risk colors</b> compare each team with the average risk this week (one in however many teams are left). <b>Danger</b> is at least twice the average, <b>Bubble</b> is above average, and <b>Safe</b> is below it.</p>
-      <p><b>Not in the model yet:</b> waiver pickups and money left. A team with a big budget will improve, and these odds don't know that.</p>
+      <p><b>Money left</b> buys the players that cut teams drop. From next week on, each team gets a boost or penalty based on its budget against the average still alive: twice the average is worth about 8 points a week, an empty wallet about 8 fewer, phased in over three weeks as the money gets spent. It never touches this week's odds.</p>
     </div>
   </section>
 
@@ -357,7 +377,7 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
   </div>
 </dialog>
 
-<script src="sim.js?v=3"></script>
+<script src="sim.js?v=4"></script>
 <script>
 (function () {
   "use strict";
@@ -674,6 +694,7 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
       chips.push('<span class="chip tier t-' + tier + '">' + TIER[tier] + " · " + pct(simT.pChop) + " cut</span>");
       chips.push('<span class="chip">Wins ' + pct(simT.pWin) + "</span>");
       chips.push('<span class="chip">Likely ' + pts(g[0]) + " to " + pts(g[1]) + "</span>");
+      if (simT.fabEdge) chips.push('<span class="chip">Money ' + (simT.fabEdge > 0 ? "+" : "−") + Math.abs(simT.fabEdge).toFixed(1) + " pts/wk later</span>");
     }
     if (typeof t.proj === "number" && t.proj > 0) chips.push('<span class="chip">Yahoo proj ' + t.proj.toFixed(1) + "</span>");
     if (typeof t.best === "number") chips.push('<span class="chip">Best lineup ' + t.best.toFixed(1) + "</span>");
@@ -714,11 +735,30 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
   });
   $("dlg-close").addEventListener("click", function () { $("team-dlg").close(); });
 
+  function wireJump() {
+    var links = Array.prototype.slice.call(document.querySelectorAll("#jump a"));
+    links.forEach(function (a) { var sec = $(a.getAttribute("data-sec")); a.hidden = !sec || sec.hidden; });
+    $("jump-spot").textContent = $("spot-title").textContent === "Since kickoff" ? "Since kickoff" : "Thursday";
+    if (!("IntersectionObserver" in window)) return;
+    var seen = {};
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { seen[e.target.id] = e.isIntersecting; });
+      var current = null;
+      links.forEach(function (a) { if (!current && seen[a.getAttribute("data-sec")]) current = a; });
+      links.forEach(function (a) { a.classList.toggle("on", a === current); });
+      if (current && current.scrollIntoView && current.parentNode.scrollWidth > current.parentNode.clientWidth) {
+        var box = current.parentNode;
+        box.scrollLeft = current.offsetLeft - box.clientWidth / 2 + current.offsetWidth / 2;
+      }
+    }, { rootMargin: "-20% 0px -60% 0px" });
+    links.forEach(function (a) { var sec = $(a.getAttribute("data-sec")); if (sec) io.observe(sec); });
+  }
+
   var getJSON = function (url) {
     return fetch(url, { cache: "no-store" }).then(function (res) { if (!res.ok) throw new Error(res.status); return res.json(); });
   };
   Promise.all([getJSON("data.json"), getJSON("league.json").catch(function () { return {}; })])
-    .then(function (both) { setTimeout(function () { render(both[0], both[1]); }, 0); })
+    .then(function (both) { setTimeout(function () { render(both[0], both[1]); wireJump(); }, 0); })
     .catch(function () {
       $("lede").textContent = "The league data didn't load. Refresh to try again.";
     });
