@@ -19,7 +19,10 @@
      "nfl": "NE",
      "pos": "QB",
      "game": "Sun 1:00 pm",
-     "opp": "vs NYJ"
+     "opp": "vs NYJ",
+     "proj": 20.96,
+     "rank": "QB5",
+     "in_best": true
     },
     {
      "slot": "RB",
@@ -27,7 +30,10 @@
      "nfl": "LAR",
      "pos": "RB",
      "game": "Sun 4:05 pm",
-     "opp": "vs ARI"
+     "opp": "vs ARI",
+     "proj": 19.63,
+     "rank": "RB4",
+     "in_best": true
     },
     {
      "slot": "RB",
@@ -35,7 +41,10 @@
      "nfl": "NE",
      "pos": "RB",
      "game": "Sun 1:00 pm",
-     "opp": "vs NYJ"
+     "opp": "vs NYJ",
+     "proj": 16.21,
+     "rank": "RB6",
+     "in_best": true
     },
     {
      "slot": "WR",
@@ -43,7 +52,9 @@
      "nfl": "DAL",
      "pos": "WR",
      "game": "Sun 8:20 pm",
-     "opp": "@ GB"
+     "opp": "@ GB",
+     "proj": 11.08,
+     "rank": "WR20"
     },
     {
      "slot": "WR",
@@ -51,7 +62,10 @@
      "nfl": "LAR",
      "pos": "WR",
      "game": "Sun 4:05 pm",
-     "opp": "vs ARI"
+     "opp": "vs ARI",
+     "proj": 19.16,
+     "rank": "WR1",
+     "in_best": true
     },
     {
      "slot": "WR",
@@ -59,7 +73,10 @@
      "nfl": "HOU",
      "pos": "WR",
      "game": "Sun 9:30 am",
-     "opp": "@ JAX"
+     "opp": "@ JAX",
+     "proj": 15.01,
+     "rank": "WR6",
+     "in_best": true
     },
     {
      "slot": "TE",
@@ -67,7 +84,10 @@
      "nfl": "KC",
      "pos": "TE",
      "game": "Sun 4:25 pm",
-     "opp": "vs LAC"
+     "opp": "vs LAC",
+     "proj": 10.11,
+     "rank": "TE6",
+     "in_best": true
     },
     {
      "slot": "W/R/T",
@@ -75,7 +95,10 @@
      "nfl": "SF",
      "pos": "WR",
      "game": "Mon 8:15 pm",
-     "opp": "vs WAS"
+     "opp": "vs WAS",
+     "proj": 13.83,
+     "rank": "WR10",
+     "in_best": true
     },
     {
      "slot": "Q/W/R/T",
@@ -83,7 +106,10 @@
      "nfl": "HOU",
      "pos": "QB",
      "game": "Sun 9:30 am",
-     "opp": "@ JAX"
+     "opp": "@ JAX",
+     "proj": 15.09,
+     "rank": "QB19",
+     "in_best": true
     },
     {
      "slot": "BN",
@@ -91,7 +117,9 @@
      "nfl": "NYG",
      "pos": "RB",
      "game": "Sun 1:00 pm",
-     "opp": "vs NO"
+     "opp": "vs NO",
+     "proj": 12.05,
+     "rank": "RB17"
     },
     {
      "slot": "BN",
@@ -99,7 +127,9 @@
      "nfl": "NE",
      "pos": "WR",
      "game": "Sun 1:00 pm",
-     "opp": "vs NYJ"
+     "opp": "vs NYJ",
+     "proj": 8.72,
+     "rank": "WR30"
     },
     {
      "slot": "BN",
@@ -108,7 +138,9 @@
      "pos": "TE",
      "status": "Q",
      "game": "Sun 1:00 pm",
-     "opp": "@ NE"
+     "opp": "@ NE",
+     "proj": 4.48,
+     "rank": "TE28"
     },
     {
      "slot": "BN",
@@ -116,7 +148,9 @@
      "nfl": "SEA",
      "pos": "QB",
      "game": "Thu 8:15 pm",
-     "opp": "@ DEN"
+     "opp": "@ DEN",
+     "proj": 14.17,
+     "rank": "QB23"
     },
     {
      "slot": "BN",
@@ -124,9 +158,13 @@
      "nfl": "HOU",
      "pos": "RB",
      "game": "Sun 9:30 am",
-     "opp": "@ JAX"
+     "opp": "@ JAX",
+     "proj": 12.62,
+     "rank": "RB14",
+     "in_best": true
     }
-   ]
+   ],
+   "best": 142.6
   },
   {
    "name": "Love a Kittle Lamb & WhiteRice",
@@ -140,7 +178,10 @@
      "nfl": "CAR",
      "pos": "QB",
      "game": "Sun 1:00 pm",
-     "opp": "@ PHI"
+     "opp": "@ PHI",
+     "proj": 16.92,
+     "rank": "QB12",
+     "in_best": true
     },
     {
      "slot": "RB",
@@ -148,7 +189,10 @@
      "nfl": "IND",
      "pos": "RB",
      "game": "Sun 1:00 pm",
-     "opp": "vs TEN"
+     "opp": "vs TEN",
+     "proj": 21.29,
+     "rank": "RB2",
+     "in_best": true
     },
     {
      "slot": "RB",
@@ -156,7 +200,10 @@
      "nfl": "ARI",
      "pos": "RB",
      "game": "Sun 4:05 pm",
-     "opp": "@ LAR"
+     "opp": "@ LAR",
+     "proj": 9.18,
+     "rank": "RB23",
+     "in_best": true
     },
     {
      "slot": "WR",
@@ -165,7 +212,10 @@
      "pos": "WR",
      "status": "Q",
      "game": "Sun 8:20 pm",
-     "opp": "@ GB"
+     "opp": "@ GB",
+     "proj": 16.61,
+     "rank": "WR3",
+     "in_best": true
     },
     {
      "slot": "WR",
@@ -173,7 +223,10 @@
      "nfl": "GB",
      "pos": "WR",
      "game": "Sun 8:20 pm",
-     "opp": "vs DAL"
+     "opp": "vs DAL",
+     "proj": 15.91,
+     "rank": "WR4",
+     "in_best": true
     },
     {
      "slot": "WR",
@@ -182,7 +235,10 @@
      "pos": "WR",
      "status": "Q",
      "game": "Sun 4:25 pm",
-     "opp": "vs LAC"
+     "opp": "vs LAC",
+     "proj": 11.9,
+     "rank": "WR15",
+     "in_best": true
     },
     {
      "slot": "TE",
@@ -190,7 +246,10 @@
      "nfl": "SF",
      "pos": "TE",
      "game": "Mon 8:15 pm",
-     "opp": "vs WAS"
+     "opp": "vs WAS",
+     "proj": 12.3,
+     "rank": "TE3",
+     "in_best": true
     },
     {
      "slot": "W/R/T",
@@ -198,7 +257,10 @@
      "nfl": "BAL",
      "pos": "RB",
      "game": "Sun 1:00 pm",
-     "opp": "@ CLE"
+     "opp": "@ CLE",
+     "proj": 15.75,
+     "rank": "RB8",
+     "in_best": true
     },
     {
      "slot": "Q/W/R/T",
@@ -206,7 +268,10 @@
      "nfl": "KC",
      "pos": "QB",
      "game": "Sun 4:25 pm",
-     "opp": "vs LAC"
+     "opp": "vs LAC",
+     "proj": 19.23,
+     "rank": "QB7",
+     "in_best": true
     },
     {
      "slot": "BN",
@@ -215,14 +280,17 @@
      "pos": "WR",
      "status": "Q",
      "game": "Sun 1:00 pm",
-     "opp": "vs BAL"
+     "opp": "vs BAL",
+     "proj": 7.16,
+     "rank": "WR41"
     },
     {
      "slot": "BN",
      "name": "Malik Willis",
      "nfl": "MIA",
      "pos": "QB",
-     "bye": true
+     "bye": true,
+     "proj": 0.0
     },
     {
      "slot": "BN",
@@ -230,7 +298,9 @@
      "nfl": "ARI",
      "pos": "QB",
      "game": "Sun 4:05 pm",
-     "opp": "@ LAR"
+     "opp": "@ LAR",
+     "proj": 14.53,
+     "rank": "QB21"
     },
     {
      "slot": "BN",
@@ -238,7 +308,8 @@
      "nfl": "MIA",
      "pos": "WR",
      "status": "NA",
-     "bye": true
+     "bye": true,
+     "proj": 0.0
     },
     {
      "slot": "BN",
@@ -246,9 +317,12 @@
      "nfl": "KC",
      "pos": "WR",
      "game": "Sun 4:25 pm",
-     "opp": "vs LAC"
+     "opp": "vs LAC",
+     "proj": 8.24,
+     "rank": "WR35"
     }
-   ]
+   ],
+   "best": 139.1
   },
   {
    "name": "Liberté Égalité Henri",
@@ -262,7 +336,10 @@
      "nfl": "LAR",
      "pos": "QB",
      "game": "Sun 4:05 pm",
-     "opp": "vs ARI"
+     "opp": "vs ARI",
+     "proj": 21.72,
+     "rank": "QB2",
+     "in_best": true
     },
     {
      "slot": "RB",
@@ -270,7 +347,10 @@
      "nfl": "BUF",
      "pos": "RB",
      "game": "Sun 4:25 pm",
-     "opp": "@ LV"
+     "opp": "@ LV",
+     "proj": 16.15,
+     "rank": "RB7",
+     "in_best": true
     },
     {
      "slot": "RB",
@@ -278,7 +358,10 @@
      "nfl": "KC",
      "pos": "RB",
      "game": "Sun 4:25 pm",
-     "opp": "vs LAC"
+     "opp": "vs LAC",
+     "proj": 19.84,
+     "rank": "RB3",
+     "in_best": true
     },
     {
      "slot": "WR",
@@ -286,7 +369,10 @@
      "nfl": "NYJ",
      "pos": "WR",
      "game": "Sun 1:00 pm",
-     "opp": "@ NE"
+     "opp": "@ NE",
+     "proj": 12.61,
+     "rank": "WR13",
+     "in_best": true
     },
     {
      "slot": "WR",
@@ -294,7 +380,9 @@
      "nfl": "JAX",
      "pos": "WR",
      "game": "Sun 9:30 am",
-     "opp": "vs HOU"
+     "opp": "vs HOU",
+     "proj": 7.24,
+     "rank": "WR40"
     },
     {
      "slot": "WR",
@@ -302,7 +390,10 @@
      "nfl": "DEN",
      "pos": "WR",
      "game": "Thu 8:15 pm",
-     "opp": "vs SEA"
+     "opp": "vs SEA",
+     "proj": 9.17,
+     "rank": "WR26",
+     "in_best": true
     },
     {
      "slot": "TE",
@@ -310,7 +401,10 @@
      "nfl": "NE",
      "pos": "TE",
      "game": "Sun 1:00 pm",
-     "opp": "vs NYJ"
+     "opp": "vs NYJ",
+     "proj": 7.32,
+     "rank": "TE15",
+     "in_best": true
     },
     {
      "slot": "W/R/T",
@@ -318,7 +412,10 @@
      "nfl": "CAR",
      "pos": "RB",
      "game": "Sun 1:00 pm",
-     "opp": "@ PHI"
+     "opp": "@ PHI",
+     "proj": 14.93,
+     "rank": "RB10",
+     "in_best": true
     },
     {
      "slot": "Q/W/R/T",
@@ -326,7 +423,10 @@
      "nfl": "IND",
      "pos": "QB",
      "game": "Sun 1:00 pm",
-     "opp": "vs TEN"
+     "opp": "vs TEN",
+     "proj": 14.64,
+     "rank": "QB20",
+     "in_best": true
     },
     {
      "slot": "BN",
@@ -334,7 +434,9 @@
      "nfl": "BUF",
      "pos": "WR",
      "game": "Sun 4:25 pm",
-     "opp": "@ LV"
+     "opp": "@ LV",
+     "proj": 6.14,
+     "rank": "WR48"
     },
     {
      "slot": "BN",
@@ -342,7 +444,10 @@
      "nfl": "CHI",
      "pos": "WR",
      "game": "Sun 1:00 pm",
-     "opp": "@ ATL"
+     "opp": "@ ATL",
+     "proj": 8.5,
+     "rank": "WR33",
+     "in_best": true
     },
     {
      "slot": "BN",
@@ -350,7 +455,9 @@
      "nfl": "HOU",
      "pos": "WR",
      "game": "Sun 9:30 am",
-     "opp": "@ JAX"
+     "opp": "@ JAX",
+     "proj": 1.21,
+     "rank": "WR106"
     },
     {
      "slot": "BN",
@@ -358,16 +465,20 @@
      "nfl": "ARI",
      "pos": "RB",
      "game": "Sun 4:05 pm",
-     "opp": "@ LAR"
+     "opp": "@ LAR",
+     "proj": 5.42,
+     "rank": "RB41"
     },
     {
      "slot": "BN",
      "name": "Sam LaPorta",
      "nfl": "DET",
      "pos": "TE",
-     "bye": true
+     "bye": true,
+     "proj": 0.0
     }
-   ]
+   ],
+   "best": 124.9
   },
   {
    "name": "Holofernes",
@@ -381,7 +492,10 @@
      "nfl": "BUF",
      "pos": "QB",
      "game": "Sun 4:25 pm",
-     "opp": "@ LV"
+     "opp": "@ LV",
+     "proj": 24.91,
+     "rank": "QB1",
+     "in_best": true
     },
     {
      "slot": "RB",
@@ -389,7 +503,10 @@
      "nfl": "CHI",
      "pos": "RB",
      "game": "Sun 1:00 pm",
-     "opp": "@ ATL"
+     "opp": "@ ATL",
+     "proj": 13.96,
+     "rank": "RB12",
+     "in_best": true
     },
     {
      "slot": "RB",
@@ -398,7 +515,10 @@
      "pos": "RB",
      "status": "Q",
      "game": "Sun 1:00 pm",
-     "opp": "@ IND"
+     "opp": "@ IND",
+     "proj": 9.7,
+     "rank": "RB22",
+     "in_best": true
     },
     {
      "slot": "WR",
@@ -406,7 +526,10 @@
      "nfl": "GB",
      "pos": "WR",
      "game": "Sun 8:20 pm",
-     "opp": "vs DAL"
+     "opp": "vs DAL",
+     "proj": 12.76,
+     "rank": "WR12",
+     "in_best": true
     },
     {
      "slot": "WR",
@@ -414,7 +537,10 @@
      "nfl": "PIT",
      "pos": "WR",
      "game": "Sun 1:00 pm",
-     "opp": "@ TB"
+     "opp": "@ TB",
+     "proj": 9.99,
+     "rank": "WR22",
+     "in_best": true
     },
     {
      "slot": "WR",
@@ -422,7 +548,10 @@
      "nfl": "WAS",
      "pos": "WR",
      "game": "Mon 8:15 pm",
-     "opp": "@ SF"
+     "opp": "@ SF",
+     "proj": 8.91,
+     "rank": "WR28",
+     "in_best": true
     },
     {
      "slot": "TE",
@@ -430,7 +559,10 @@
      "nfl": "LV",
      "pos": "TE",
      "game": "Sun 4:25 pm",
-     "opp": "vs BUF"
+     "opp": "vs BUF",
+     "proj": 13.83,
+     "rank": "TE1",
+     "in_best": true
     },
     {
      "slot": "W/R/T",
@@ -438,7 +570,10 @@
      "nfl": "BUF",
      "pos": "TE",
      "game": "Sun 4:25 pm",
-     "opp": "@ LV"
+     "opp": "@ LV",
+     "proj": 8.79,
+     "rank": "TE8",
+     "in_best": true
     },
     {
      "slot": "Q/W/R/T",
@@ -446,7 +581,10 @@
      "nfl": "PIT",
      "pos": "QB",
      "game": "Sun 1:00 pm",
-     "opp": "@ TB"
+     "opp": "@ TB",
+     "proj": 15.85,
+     "rank": "QB15",
+     "in_best": true
     },
     {
      "slot": "BN",
@@ -454,7 +592,9 @@
      "nfl": "WAS",
      "pos": "RB",
      "game": "Mon 8:15 pm",
-     "opp": "@ SF"
+     "opp": "@ SF",
+     "proj": 7.57,
+     "rank": "RB29"
     },
     {
      "slot": "BN",
@@ -462,21 +602,25 @@
      "nfl": "CHI",
      "pos": "TE",
      "game": "Sun 1:00 pm",
-     "opp": "@ ATL"
+     "opp": "@ ATL",
+     "proj": 8.1,
+     "rank": "TE13"
     },
     {
      "slot": "BN",
      "name": "Kyler Murray",
      "nfl": "MIN",
      "pos": "QB",
-     "bye": true
+     "bye": true,
+     "proj": 0.0
     },
     {
      "slot": "BN",
      "name": "Ja'Marr Chase",
      "nfl": "CIN",
      "pos": "WR",
-     "bye": true
+     "bye": true,
+     "proj": 0.0
     },
     {
      "slot": "IR",
@@ -485,9 +629,11 @@
      "pos": "WR",
      "status": "IR-R",
      "game": "Sun 1:00 pm",
-     "opp": "vs NYJ"
+     "opp": "vs NYJ",
+     "proj": 0.0
     }
-   ]
+   ],
+   "best": 118.7
   },
   {
    "name": "Love Purdy Flowers",
@@ -501,7 +647,10 @@
      "nfl": "SF",
      "pos": "QB",
      "game": "Mon 8:15 pm",
-     "opp": "vs WAS"
+     "opp": "vs WAS",
+     "proj": 21.72,
+     "rank": "QB3",
+     "in_best": true
     },
     {
      "slot": "RB",
@@ -509,7 +658,10 @@
      "nfl": "SF",
      "pos": "RB",
      "game": "Mon 8:15 pm",
-     "opp": "vs WAS"
+     "opp": "vs WAS",
+     "proj": 18.58,
+     "rank": "RB5",
+     "in_best": true
     },
     {
      "slot": "RB",
@@ -518,7 +670,10 @@
      "pos": "RB",
      "status": "Q",
      "game": "Sun 1:00 pm",
-     "opp": "vs CAR"
+     "opp": "vs CAR",
+     "proj": 10.19,
+     "rank": "RB21",
+     "in_best": true
     },
     {
      "slot": "WR",
@@ -526,7 +681,10 @@
      "nfl": "BAL",
      "pos": "WR",
      "game": "Sun 1:00 pm",
-     "opp": "@ CLE"
+     "opp": "@ CLE",
+     "proj": 14.74,
+     "rank": "WR8",
+     "in_best": true
     },
     {
      "slot": "WR",
@@ -534,7 +692,10 @@
      "nfl": "CAR",
      "pos": "WR",
      "game": "Sun 1:00 pm",
-     "opp": "@ PHI"
+     "opp": "@ PHI",
+     "proj": 11.2,
+     "rank": "WR18",
+     "in_best": true
     },
     {
      "slot": "WR",
@@ -543,7 +704,10 @@
      "pos": "WR",
      "status": "Q",
      "game": "Sun 1:00 pm",
-     "opp": "@ PHI"
+     "opp": "@ PHI",
+     "proj": 10.83,
+     "rank": "WR21",
+     "in_best": true
     },
     {
      "slot": "TE",
@@ -551,7 +715,10 @@
      "nfl": "BAL",
      "pos": "TE",
      "game": "Sun 1:00 pm",
-     "opp": "@ CLE"
+     "opp": "@ CLE",
+     "proj": 7.74,
+     "rank": "TE14",
+     "in_best": true
     },
     {
      "slot": "W/R/T",
@@ -559,7 +726,9 @@
      "nfl": "LAC",
      "pos": "RB",
      "game": "Sun 4:25 pm",
-     "opp": "@ KC"
+     "opp": "@ KC",
+     "proj": 7.3,
+     "rank": "RB32"
     },
     {
      "slot": "Q/W/R/T",
@@ -567,21 +736,26 @@
      "nfl": "GB",
      "pos": "QB",
      "game": "Sun 8:20 pm",
-     "opp": "vs DAL"
+     "opp": "vs DAL",
+     "proj": 21.07,
+     "rank": "QB4",
+     "in_best": true
     },
     {
      "slot": "BN",
      "name": "Aaron Jones Sr.",
      "nfl": "MIN",
      "pos": "RB",
-     "bye": true
+     "bye": true,
+     "proj": 0.0
     },
     {
      "slot": "BN",
      "name": "Chase Brown",
      "nfl": "CIN",
      "pos": "RB",
-     "bye": true
+     "bye": true,
+     "proj": 0.0
     },
     {
      "slot": "BN",
@@ -589,7 +763,8 @@
      "nfl": "MIN",
      "pos": "WR",
      "status": "Q",
-     "bye": true
+     "bye": true,
+     "proj": 0.0
     },
     {
      "slot": "BN",
@@ -597,7 +772,9 @@
      "nfl": "ATL",
      "pos": "RB",
      "game": "Sun 1:00 pm",
-     "opp": "vs CHI"
+     "opp": "vs CHI",
+     "proj": 5.55,
+     "rank": "RB40"
     },
     {
      "slot": "BN",
@@ -605,9 +782,13 @@
      "nfl": "LV",
      "pos": "WR",
      "game": "Sun 4:25 pm",
-     "opp": "vs BUF"
+     "opp": "vs BUF",
+     "proj": 7.59,
+     "rank": "WR36",
+     "in_best": true
     }
-   ]
+   ],
+   "best": 123.7
   },
   {
    "name": "Breece’s Pieces",
@@ -622,7 +803,10 @@
      "pos": "QB",
      "status": "Q",
      "game": "Sun 1:00 pm",
-     "opp": "@ ATL"
+     "opp": "@ ATL",
+     "proj": 17.45,
+     "rank": "QB11",
+     "in_best": true
     },
     {
      "slot": "RB",
@@ -630,7 +814,9 @@
      "nfl": "DEN",
      "pos": "RB",
      "game": "Thu 8:15 pm",
-     "opp": "vs SEA"
+     "opp": "vs SEA",
+     "proj": 7.01,
+     "rank": "RB34"
     },
     {
      "slot": "RB",
@@ -638,7 +824,10 @@
      "nfl": "NYJ",
      "pos": "RB",
      "game": "Sun 1:00 pm",
-     "opp": "@ NE"
+     "opp": "@ NE",
+     "proj": 10.8,
+     "rank": "RB20",
+     "in_best": true
     },
     {
      "slot": "WR",
@@ -647,7 +836,10 @@
      "pos": "WR",
      "status": "Q",
      "game": "Thu 8:15 pm",
-     "opp": "@ DEN"
+     "opp": "@ DEN",
+     "proj": 18.88,
+     "rank": "WR2",
+     "in_best": true
     },
     {
      "slot": "WR",
@@ -655,7 +847,10 @@
      "nfl": "NYG",
      "pos": "WR",
      "game": "Sun 1:00 pm",
-     "opp": "vs NO"
+     "opp": "vs NO",
+     "proj": 11.23,
+     "rank": "WR17",
+     "in_best": true
     },
     {
      "slot": "WR",
@@ -663,7 +858,9 @@
      "nfl": "NO",
      "pos": "WR",
      "game": "Sun 1:00 pm",
-     "opp": "@ NYG"
+     "opp": "@ NYG",
+     "proj": 8.45,
+     "rank": "WR34"
     },
     {
      "slot": "TE",
@@ -671,7 +868,10 @@
      "nfl": "IND",
      "pos": "TE",
      "game": "Sun 1:00 pm",
-     "opp": "vs TEN"
+     "opp": "vs TEN",
+     "proj": 9.96,
+     "rank": "TE7",
+     "in_best": true
     },
     {
      "slot": "W/R/T",
@@ -679,7 +879,10 @@
      "nfl": "ATL",
      "pos": "WR",
      "game": "Sun 1:00 pm",
-     "opp": "vs CHI"
+     "opp": "vs CHI",
+     "proj": 15.74,
+     "rank": "WR5",
+     "in_best": true
     },
     {
      "slot": "Q/W/R/T",
@@ -688,7 +891,10 @@
      "pos": "QB",
      "status": "Q",
      "game": "Sun 1:00 pm",
-     "opp": "@ CLE"
+     "opp": "@ CLE",
+     "proj": 20.9,
+     "rank": "QB6",
+     "in_best": true
     },
     {
      "slot": "BN",
@@ -697,7 +903,8 @@
      "pos": "RB",
      "status": "D",
      "game": "Sun 1:00 pm",
-     "opp": "@ NE"
+     "opp": "@ NE",
+     "proj": 0.0
     },
     {
      "slot": "BN",
@@ -705,7 +912,10 @@
      "nfl": "NO",
      "pos": "RB",
      "game": "Sun 1:00 pm",
-     "opp": "@ NYG"
+     "opp": "@ NYG",
+     "proj": 8.86,
+     "rank": "RB24",
+     "in_best": true
     },
     {
      "slot": "BN",
@@ -713,7 +923,9 @@
      "nfl": "NYG",
      "pos": "QB",
      "game": "Sun 1:00 pm",
-     "opp": "vs NO"
+     "opp": "vs NO",
+     "proj": 13.54,
+     "rank": "QB25"
     },
     {
      "slot": "BN",
@@ -721,7 +933,8 @@
      "nfl": "CHI",
      "pos": "QB",
      "game": "Sun 1:00 pm",
-     "opp": "@ ATL"
+     "opp": "@ ATL",
+     "proj": 0.0
     },
     {
      "slot": "BN",
@@ -730,7 +943,10 @@
      "pos": "WR",
      "status": "Q",
      "game": "Mon 8:15 pm",
-     "opp": "@ SF"
+     "opp": "@ SF",
+     "proj": 8.63,
+     "rank": "WR31",
+     "in_best": true
     },
     {
      "slot": "IR",
@@ -739,9 +955,11 @@
      "pos": "RB",
      "status": "PUP-R",
      "game": "Thu 8:15 pm",
-     "opp": "@ DEN"
+     "opp": "@ DEN",
+     "proj": 0.0
     }
-   ]
+   ],
+   "best": 122.5
   },
   {
    "name": "Likely to Burden Tate w Penix",
@@ -755,7 +973,10 @@
      "nfl": "NO",
      "pos": "QB",
      "game": "Sun 1:00 pm",
-     "opp": "@ NYG"
+     "opp": "@ NYG",
+     "proj": 16.91,
+     "rank": "QB13",
+     "in_best": true
     },
     {
      "slot": "RB",
@@ -763,7 +984,10 @@
      "nfl": "LV",
      "pos": "RB",
      "game": "Sun 4:25 pm",
-     "opp": "vs BUF"
+     "opp": "vs BUF",
+     "proj": 12.39,
+     "rank": "RB15",
+     "in_best": true
     },
     {
      "slot": "RB",
@@ -771,7 +995,10 @@
      "nfl": "PIT",
      "pos": "RB",
      "game": "Sun 1:00 pm",
-     "opp": "@ TB"
+     "opp": "@ TB",
+     "proj": 14.39,
+     "rank": "RB11",
+     "in_best": true
     },
     {
      "slot": "WR",
@@ -779,7 +1006,10 @@
      "nfl": "NO",
      "pos": "WR",
      "game": "Sun 1:00 pm",
-     "opp": "@ NYG"
+     "opp": "@ NYG",
+     "proj": 14.27,
+     "rank": "WR9",
+     "in_best": true
     },
     {
      "slot": "WR",
@@ -787,7 +1017,10 @@
      "nfl": "TEN",
      "pos": "WR",
      "game": "Sun 1:00 pm",
-     "opp": "@ IND"
+     "opp": "@ IND",
+     "proj": 11.09,
+     "rank": "WR19",
+     "in_best": true
     },
     {
      "slot": "WR",
@@ -795,7 +1028,10 @@
      "nfl": "CLE",
      "pos": "WR",
      "game": "Sun 1:00 pm",
-     "opp": "vs BAL"
+     "opp": "vs BAL",
+     "proj": 8.73,
+     "rank": "WR29",
+     "in_best": true
     },
     {
      "slot": "TE",
@@ -803,7 +1039,10 @@
      "nfl": "NYG",
      "pos": "TE",
      "game": "Sun 1:00 pm",
-     "opp": "vs NO"
+     "opp": "vs NO",
+     "proj": 10.5,
+     "rank": "TE4",
+     "in_best": true
     },
     {
      "slot": "W/R/T",
@@ -811,7 +1050,10 @@
      "nfl": "CHI",
      "pos": "WR",
      "game": "Sun 1:00 pm",
-     "opp": "@ ATL"
+     "opp": "@ ATL",
+     "proj": 9.94,
+     "rank": "WR23",
+     "in_best": true
     },
     {
      "slot": "Q/W/R/T",
@@ -819,7 +1061,9 @@
      "nfl": "DEN",
      "pos": "QB",
      "game": "Thu 8:15 pm",
-     "opp": "vs SEA"
+     "opp": "vs SEA",
+     "proj": 14.29,
+     "rank": "QB22"
     },
     {
      "slot": "BN",
@@ -828,14 +1072,16 @@
      "pos": "RB",
      "status": "D",
      "game": "Sun 1:00 pm",
-     "opp": "vs NYJ"
+     "opp": "vs NYJ",
+     "proj": 0.0
     },
     {
      "slot": "BN",
      "name": "Jahmyr Gibbs",
      "nfl": "DET",
      "pos": "RB",
-     "bye": true
+     "bye": true,
+     "proj": 0.0
     },
     {
      "slot": "BN",
@@ -843,7 +1089,9 @@
      "nfl": "DAL",
      "pos": "TE",
      "game": "Sun 8:20 pm",
-     "opp": "@ GB"
+     "opp": "@ GB",
+     "proj": 7.17,
+     "rank": "TE17"
     },
     {
      "slot": "BN",
@@ -852,7 +1100,10 @@
      "pos": "QB",
      "status": "Q",
      "game": "Sun 1:00 pm",
-     "opp": "vs CHI"
+     "opp": "vs CHI",
+     "proj": 15.83,
+     "rank": "QB16",
+     "in_best": true
     },
     {
      "slot": "BN",
@@ -860,7 +1111,9 @@
      "nfl": "ATL",
      "pos": "TE",
      "game": "Sun 1:00 pm",
-     "opp": "vs CHI"
+     "opp": "vs CHI",
+     "proj": 6.73,
+     "rank": "TE19"
     },
     {
      "slot": "IR",
@@ -868,9 +1121,11 @@
      "nfl": "MIN",
      "pos": "RB",
      "status": "IR",
-     "bye": true
+     "bye": true,
+     "proj": 0.0
     }
-   ]
+   ],
+   "best": 114.0
   },
   {
    "name": "Maye I see your TDs",
@@ -884,7 +1139,10 @@
      "nfl": "LAC",
      "pos": "QB",
      "game": "Sun 4:25 pm",
-     "opp": "@ KC"
+     "opp": "@ KC",
+     "proj": 13.16,
+     "rank": "QB28",
+     "in_best": true
     },
     {
      "slot": "RB",
@@ -893,7 +1151,10 @@
      "pos": "RB",
      "status": "Q",
      "game": "Sun 1:00 pm",
-     "opp": "vs BAL"
+     "opp": "vs BAL",
+     "proj": 8.02,
+     "rank": "RB27",
+     "in_best": true
     },
     {
      "slot": "RB",
@@ -901,7 +1162,10 @@
      "nfl": "ATL",
      "pos": "RB",
      "game": "Sun 1:00 pm",
-     "opp": "vs CHI"
+     "opp": "vs CHI",
+     "proj": 24.06,
+     "rank": "RB1",
+     "in_best": true
     },
     {
      "slot": "WR",
@@ -909,7 +1173,10 @@
      "nfl": "LAR",
      "pos": "WR",
      "game": "Sun 4:05 pm",
-     "opp": "vs ARI"
+     "opp": "vs ARI",
+     "proj": 14.85,
+     "rank": "WR7",
+     "in_best": true
     },
     {
      "slot": "WR",
@@ -917,7 +1184,10 @@
      "nfl": "TEN",
      "pos": "WR",
      "game": "Sun 1:00 pm",
-     "opp": "@ IND"
+     "opp": "@ IND",
+     "proj": 9.09,
+     "rank": "WR27",
+     "in_best": true
     },
     {
      "slot": "WR",
@@ -926,7 +1196,10 @@
      "pos": "WR",
      "status": "Q",
      "game": "Sun 1:00 pm",
-     "opp": "vs CAR"
+     "opp": "vs CAR",
+     "proj": 9.3,
+     "rank": "WR25",
+     "in_best": true
     },
     {
      "slot": "TE",
@@ -934,7 +1207,10 @@
      "nfl": "ARI",
      "pos": "TE",
      "game": "Sun 4:05 pm",
-     "opp": "@ LAR"
+     "opp": "@ LAR",
+     "proj": 13.05,
+     "rank": "TE2",
+     "in_best": true
     },
     {
      "slot": "W/R/T",
@@ -942,7 +1218,10 @@
      "nfl": "GB",
      "pos": "TE",
      "game": "Sun 8:20 pm",
-     "opp": "vs DAL"
+     "opp": "vs DAL",
+     "proj": 10.21,
+     "rank": "TE5",
+     "in_best": true
     },
     {
      "slot": "Q/W/R/T",
@@ -950,7 +1229,10 @@
      "nfl": "DEN",
      "pos": "RB",
      "game": "Thu 8:15 pm",
-     "opp": "vs SEA"
+     "opp": "vs SEA",
+     "proj": 8.44,
+     "rank": "RB26",
+     "in_best": true
     },
     {
      "slot": "BN",
@@ -958,21 +1240,25 @@
      "nfl": "PHI",
      "pos": "WR",
      "game": "Sun 1:00 pm",
-     "opp": "vs CAR"
+     "opp": "vs CAR",
+     "proj": 4.85,
+     "rank": "WR58"
     },
     {
      "slot": "BN",
      "name": "Joe Burrow",
      "nfl": "CIN",
      "pos": "QB",
-     "bye": true
+     "bye": true,
+     "proj": 0.0
     },
     {
      "slot": "BN",
      "name": "Tee Higgins",
      "nfl": "CIN",
      "pos": "WR",
-     "bye": true
+     "bye": true,
+     "proj": 0.0
     },
     {
      "slot": "BN",
@@ -980,7 +1266,9 @@
      "nfl": "LAC",
      "pos": "RB",
      "game": "Sun 4:25 pm",
-     "opp": "@ KC"
+     "opp": "@ KC",
+     "proj": 7.06,
+     "rank": "RB33"
     },
     {
      "slot": "BN",
@@ -988,9 +1276,12 @@
      "nfl": "PIT",
      "pos": "WR",
      "game": "Sun 1:00 pm",
-     "opp": "@ TB"
+     "opp": "@ TB",
+     "proj": 7.42,
+     "rank": "WR37"
     }
-   ]
+   ],
+   "best": 110.2
   },
   {
    "name": "Deviated Rectums",
@@ -1004,7 +1295,10 @@
      "nfl": "DAL",
      "pos": "QB",
      "game": "Sun 8:20 pm",
-     "opp": "@ GB"
+     "opp": "@ GB",
+     "proj": 18.6,
+     "rank": "QB8",
+     "in_best": true
     },
     {
      "slot": "RB",
@@ -1012,7 +1306,10 @@
      "nfl": "TB",
      "pos": "RB",
      "game": "Sun 1:00 pm",
-     "opp": "vs PIT"
+     "opp": "vs PIT",
+     "proj": 13.61,
+     "rank": "RB13",
+     "in_best": true
     },
     {
      "slot": "RB",
@@ -1021,7 +1318,10 @@
      "pos": "RB",
      "status": "Q",
      "game": "Sun 1:00 pm",
-     "opp": "@ ATL"
+     "opp": "@ ATL",
+     "proj": 4.26,
+     "rank": "RB52",
+     "in_best": true
     },
     {
      "slot": "WR",
@@ -1029,7 +1329,10 @@
      "nfl": "JAX",
      "pos": "WR",
      "game": "Sun 9:30 am",
-     "opp": "vs HOU"
+     "opp": "vs HOU",
+     "proj": 12.76,
+     "rank": "WR11",
+     "in_best": true
     },
     {
      "slot": "WR",
@@ -1037,7 +1340,10 @@
      "nfl": "TB",
      "pos": "WR",
      "game": "Sun 1:00 pm",
-     "opp": "vs PIT"
+     "opp": "vs PIT",
+     "proj": 8.51,
+     "rank": "WR32",
+     "in_best": true
     },
     {
      "slot": "WR",
@@ -1049,7 +1355,10 @@
      "nfl": "PIT",
      "pos": "TE",
      "game": "Sun 1:00 pm",
-     "opp": "@ TB"
+     "opp": "@ TB",
+     "proj": 7.24,
+     "rank": "TE16",
+     "in_best": true
     },
     {
      "slot": "W/R/T",
@@ -1057,7 +1366,10 @@
      "nfl": "GB",
      "pos": "RB",
      "game": "Sun 8:20 pm",
-     "opp": "vs DAL"
+     "opp": "vs DAL",
+     "proj": 11.28,
+     "rank": "RB18",
+     "in_best": true
     },
     {
      "slot": "Q/W/R/T",
@@ -1065,28 +1377,34 @@
      "nfl": "LV",
      "pos": "QB",
      "game": "Sun 4:25 pm",
-     "opp": "vs BUF"
+     "opp": "vs BUF",
+     "proj": 17.73,
+     "rank": "QB10",
+     "in_best": true
     },
     {
      "slot": "BN",
      "name": "Amon-Ra St. Brown",
      "nfl": "DET",
      "pos": "WR",
-     "bye": true
+     "bye": true,
+     "proj": 0.0
     },
     {
      "slot": "BN",
      "name": "Justin Jefferson",
      "nfl": "MIN",
      "pos": "WR",
-     "bye": true
+     "bye": true,
+     "proj": 0.0
     },
     {
      "slot": "BN",
      "name": "Jared Goff",
      "nfl": "DET",
      "pos": "QB",
-     "bye": true
+     "bye": true,
+     "proj": 0.0
     },
     {
      "slot": "BN",
@@ -1095,14 +1413,16 @@
      "pos": "RB",
      "status": "D",
      "game": "Sun 9:30 am",
-     "opp": "@ JAX"
+     "opp": "@ JAX",
+     "proj": 0.0
     },
     {
      "slot": "BN",
      "name": "Ollie Gordon II",
      "nfl": "MIA",
      "pos": "RB",
-     "bye": true
+     "bye": true,
+     "proj": 0.0
     },
     {
      "slot": "IR",
@@ -1111,9 +1431,11 @@
      "pos": "WR",
      "status": "IR",
      "game": "Sun 8:20 pm",
-     "opp": "vs DAL"
+     "opp": "vs DAL",
+     "proj": 0.0
     }
-   ]
+   ],
+   "best": 94.0
   },
   {
    "name": "Tai Streetz Lata?",
@@ -1163,7 +1485,10 @@
      "nfl": "IND",
      "pos": "WR",
      "game": "Sun 1:00 pm",
-     "opp": "vs TEN"
+     "opp": "vs TEN",
+     "proj": 9.87,
+     "rank": "WR24",
+     "in_best": true
     },
     {
      "slot": "BN",
@@ -1171,7 +1496,10 @@
      "nfl": "ARI",
      "pos": "WR",
      "game": "Sun 4:05 pm",
-     "opp": "@ LAR"
+     "opp": "@ LAR",
+     "proj": 11.47,
+     "rank": "WR16",
+     "in_best": true
     },
     {
      "slot": "BN",
@@ -1179,7 +1507,10 @@
      "nfl": "DAL",
      "pos": "RB",
      "game": "Sun 8:20 pm",
-     "opp": "@ GB"
+     "opp": "@ GB",
+     "proj": 15.54,
+     "rank": "RB9",
+     "in_best": true
     },
     {
      "slot": "BN",
@@ -1187,7 +1518,10 @@
      "nfl": "JAX",
      "pos": "RB",
      "game": "Sun 9:30 am",
-     "opp": "vs HOU"
+     "opp": "vs HOU",
+     "proj": 10.94,
+     "rank": "RB19",
+     "in_best": true
     },
     {
      "slot": "BN",
@@ -1195,7 +1529,9 @@
      "nfl": "CLE",
      "pos": "TE",
      "game": "Sun 1:00 pm",
-     "opp": "vs BAL"
+     "opp": "vs BAL",
+     "proj": 8.4,
+     "rank": "TE11"
     },
     {
      "slot": "BN",
@@ -1203,7 +1539,10 @@
      "nfl": "SEA",
      "pos": "RB",
      "game": "Thu 8:15 pm",
-     "opp": "@ DEN"
+     "opp": "@ DEN",
+     "proj": 12.15,
+     "rank": "RB16",
+     "in_best": true
     },
     {
      "slot": "BN",
@@ -1211,7 +1550,10 @@
      "nfl": "WAS",
      "pos": "QB",
      "game": "Mon 8:15 pm",
-     "opp": "@ SF"
+     "opp": "@ SF",
+     "proj": 16.74,
+     "rank": "QB14",
+     "in_best": true
     },
     {
      "slot": "BN",
@@ -1220,7 +1562,10 @@
      "pos": "WR",
      "status": "Q",
      "game": "Sun 4:25 pm",
-     "opp": "@ LV"
+     "opp": "@ LV",
+     "proj": 12.51,
+     "rank": "WR14",
+     "in_best": true
     },
     {
      "slot": "BN",
@@ -1228,7 +1573,10 @@
      "nfl": "JAX",
      "pos": "QB",
      "game": "Sun 9:30 am",
-     "opp": "vs HOU"
+     "opp": "vs HOU",
+     "proj": 18.44,
+     "rank": "QB9",
+     "in_best": true
     },
     {
      "slot": "BN",
@@ -1236,14 +1584,17 @@
      "nfl": "BUF",
      "pos": "WR",
      "game": "Sun 4:25 pm",
-     "opp": "@ LV"
+     "opp": "@ LV",
+     "proj": 6.87,
+     "rank": "WR43"
     },
     {
      "slot": "BN",
      "name": "Jameson Williams",
      "nfl": "DET",
      "pos": "WR",
-     "bye": true
+     "bye": true,
+     "proj": 0.0
     },
     {
      "slot": "BN",
@@ -1251,7 +1602,9 @@
      "nfl": "PHI",
      "pos": "QB",
      "game": "Sun 1:00 pm",
-     "opp": "vs CAR"
+     "opp": "vs CAR",
+     "proj": 15.5,
+     "rank": "QB17"
     },
     {
      "slot": "BN",
@@ -1259,7 +1612,9 @@
      "nfl": "NYJ",
      "pos": "QB",
      "game": "Sun 1:00 pm",
-     "opp": "@ NE"
+     "opp": "@ NE",
+     "proj": 13.33,
+     "rank": "QB26"
     },
     {
      "slot": "BN",
@@ -1267,7 +1622,10 @@
      "nfl": "NO",
      "pos": "TE",
      "game": "Sun 1:00 pm",
-     "opp": "@ NYG"
+     "opp": "@ NYG",
+     "proj": 8.77,
+     "rank": "TE9",
+     "in_best": true
     },
     {
      "slot": "IR",
@@ -1276,9 +1634,11 @@
      "pos": "RB",
      "status": "IR",
      "game": "Sun 1:00 pm",
-     "opp": "@ NYG"
+     "opp": "@ NYG",
+     "proj": 0.0
     }
-   ]
+   ],
+   "best": 116.4
   },
   {
    "name": "Beast Mode Samuel",
@@ -1309,5 +1669,11 @@
    ]
   }
  ],
- "league_url": "https://football.fantasysports.yahoo.com/f1/157731"
+ "league_url": "https://football.fantasysports.yahoo.com/f1/157731",
+ "proj_source": {
+  "name": "Sleeper",
+  "updated": "2026-10-14T19:24:38Z",
+  "players": 3117,
+  "unmatched": []
+ }
 }
