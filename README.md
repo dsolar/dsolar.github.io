@@ -103,6 +103,20 @@ Once connected, a GitHub workflow runs every morning from September through Janu
 
 If a run ever fails with "Yahoo sign-in failed", redo steps 2 to 4 for a fresh refresh token.
 
+**Managers and send-offs** live in `guillotine/league.json`, which the Yahoo pull never touches. Manager names there override Yahoo's nicknames (some managers hide theirs). This file is public, so never put email addresses in it.
+
+To add a week's send-off from the league email: save the image as `guillotine/eulogies/2026-wk5-beast-mode-samuel.jpg` (about 1200px wide is plenty), then add an entry under `"eulogies"` keyed by the team name exactly as Yahoo shows it:
+
+```json
+"Beast Mode Samuel": {
+  "image": "eulogies/2026-wk5-beast-mode-samuel.jpg",
+  "alt": "One line on what the image shows",
+  "haiku": ["first line", "second line", "third line"]
+}
+```
+
+Clicking that team in The Fallen then opens the image and haiku. Or send the image and haiku to Claude and have it add them.
+
 How eliminations are found: in each finished week, the lowest score among teams still alive is the one that was cut. The model's settings (how many recent weeks count, how far later weeks lean toward the league average, how much scores swing) are the `DEFAULTS` at the top of `guillotine/sim.js`.
 
 ## Where things stand

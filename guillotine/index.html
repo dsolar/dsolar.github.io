@@ -12,7 +12,7 @@
 <meta name="theme-color" content="#0A1120" media="(prefers-color-scheme: dark)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Besley:wght@700&family=Bodoni+Moda:opsz,wght@6..96,500..800&family=Libre+Franklin:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Besley:wght@700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,500..800;1,6..96,500..800&family=Libre+Franklin:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="../assets/bar.css">
 <script src="../assets/analytics.js" defer></script>
 <style>
@@ -124,11 +124,29 @@ td.c.win{font-weight:700}
 th.win{color:var(--ink)}
 
 /* The fallen */
-.fallen{list-style:none;margin:0;padding:0;display:grid;border-top:1px solid var(--rule)}
-.fallen li{display:grid;grid-template-columns:4.2rem minmax(0,1fr) auto;gap:.75rem;align-items:baseline;padding:.6rem 0;border-bottom:1px solid var(--rule);font-size:.9rem}
+.fallen{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
+.fallen > li{border-bottom:1px solid var(--rule)}
+.fallen .frow,.fallen summary{display:grid;grid-template-columns:3.4rem minmax(0,1fr) auto;gap:.75rem;align-items:center;padding:.7rem 0;font-size:.9rem}
+.fallen summary{cursor:pointer;list-style:none;border-radius:2px}
+.fallen summary::-webkit-details-marker{display:none}
+.fallen summary:focus-visible{outline:2px solid var(--blade);outline-offset:3px}
+.fallen summary:hover .t{text-decoration-thickness:3px}
 .fallen .w{font:700 .95rem/1 var(--f-display);color:var(--muted)}
-.fallen .t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:line-through;text-decoration-color:var(--blade);text-decoration-thickness:2px}
-.fallen .s{color:var(--muted);font-variant-numeric:tabular-nums;font-size:.8rem}
+.fallen .who2{min-width:0;display:grid;gap:.1rem}
+.fallen .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;text-decoration:line-through;text-decoration-color:var(--blade);text-decoration-thickness:2px}
+.fallen .mgr{font-size:.75rem;color:var(--muted)}
+.fallen .end{display:flex;align-items:center;gap:.7rem;padding-right:.3rem;color:var(--muted);font-size:.8rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.fallen .cue{font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blade);display:inline-flex;align-items:center;gap:.45rem}
+.fallen .chev{width:.45rem;height:.45rem;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .15s ease}
+.fallen details[open] .chev{transform:translateY(2px) rotate(-135deg)}
+.fallen .pending{font-size:.7rem}
+.eulogy-body{display:grid;gap:1rem;padding:0 0 1.25rem}
+.eulogy-body img{display:block;width:100%;height:auto;border-radius:2px;background:var(--track)}
+.haiku{margin:0;font:italic 500 1.3rem/1.5 var(--f-display);font-variation-settings:"opsz" 36;white-space:pre-line}
+@media (min-width:40rem){
+  .eulogy-body{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:center;padding-left:4.15rem}
+}
+@media (prefers-reduced-motion:reduce){.fallen .chev{transition:none}}
 .none{color:var(--muted);font-size:.9rem;margin:0}
 
 .method{display:grid;gap:.75rem;max-width:38rem;font-size:.92rem}
@@ -189,7 +207,7 @@ th.win{color:var(--ink)}
   </section>
 
   <section id="fallen-sec" aria-labelledby="fallen-title" hidden>
-    <div class="section-head"><h2 id="fallen-title">The fallen</h2></div>
+    <div class="section-head"><h2 id="fallen-title">The fallen</h2><p>Open a team for its send-off from the league email.</p></div>
     <ol class="fallen" id="fallen"></ol>
     <p class="none" id="fallen-none" hidden></p>
   </section>
@@ -222,8 +240,13 @@ th.win{color:var(--ink)}
     return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; });
   };
 
-  function render(data) {
+  function render(data, league) {
     var r = GuillotineSim.simulate(data);
+    var managers = (league && league.managers) || {};
+    var eulogies = (league && league.eulogies) || {};
+    var fromData = {};
+    (data.teams || []).forEach(function (t) { if (t.manager) fromData[t.name] = t.manager; });
+    var mgr = function (name) { return managers[name] || fromData[name] || null; };
     var teams = r.teams;
     var total = data.total_teams || (teams.length + r.fallen.length);
 
@@ -276,10 +299,10 @@ th.win{color:var(--ink)}
     var rows = byRisk.map(function (t) {
       var a = t.now * (1 - z * cv), b = t.now * (1 + z * cv);
       var source = t.proj !== null ? "proj " + t.proj.toFixed(1) : (t.noLineup ? "no lineup set, " : "") + "est " + t.now.toFixed(1);
-      var meta = [source, t.faab !== null ? "$" + t.faab + " FAB" : null, "wins " + pct(t.pWin)].filter(Boolean).join(" · ");
+      var meta = [mgr(t.name), source, t.faab !== null ? "$" + t.faab + " FAB" : null, "wins " + pct(t.pWin)].filter(Boolean).join(" · ");
       var label = t.name + ": " + (t.noLineup ? "no lineup set. " : "") + (t.proj !== null ? "projected " : "estimated ") + pts(t.now) + " points, likely " + pts(a) + " to " + pts(b) + ". " + pct(t.pChop) + " chance of being cut.";
       return '<li class="row" aria-label="' + esc(label) + '">' +
-        '<div class="who"><div class="name">' + esc(t.name) + (t.mine ? '<span class="tag">David</span>' : "") + (t.noLineup ? '<span class="tag warn">No lineup</span>' : "") + "</div>" +
+        '<div class="who"><div class="name">' + esc(t.name) + (t.noLineup ? '<span class="tag warn">No lineup</span>' : "") + "</div>" +
         '<div class="meta">' + esc(meta) + "</div></div>" +
         '<div class="pct' + (t.pChop >= 0.15 ? " hot" : "") + '">' + pct(t.pChop) + "<small>cut</small></div>" +
         '<div class="lane" aria-hidden="true"><span class="track"></span>' +
@@ -313,8 +336,19 @@ th.win{color:var(--ink)}
     var missing = total - teams.length - r.fallen.length;
     if (r.fallen.length || missing > 0) {
       $("fallen").innerHTML = r.fallen.map(function (f) {
-        return '<li><span class="w">Wk ' + f.week + '</span><span class="t">' + esc(f.name) + '</span><span class="s">' +
-          (f.score !== null ? f.score.toFixed(1) + " pts" : "") + "</span></li>";
+        var m = mgr(f.name), e = eulogies[f.name];
+        var row = '<span class="w">Wk ' + f.week + '</span>' +
+          '<span class="who2"><span class="t">' + esc(f.name) + "</span>" + (m ? '<span class="mgr">' + esc(m) + "</span>" : "") + "</span>";
+        var score = f.score !== null ? "<span>" + f.score.toFixed(1) + " pts</span>" : "";
+        if (!e || (!e.image && !e.haiku)) {
+          return '<li><div class="frow">' + row + '<span class="end">' + score + '<span class="pending">No send-off yet</span></span></div></li>';
+        }
+        var haiku = Array.isArray(e.haiku) ? e.haiku.join("\n") : (e.haiku || "");
+        return '<li><details><summary>' + row + '<span class="end">' + score + '<span class="cue">Eulogy<i class="chev"></i></span></span></summary>' +
+          '<div class="eulogy-body">' +
+          (e.image ? '<img src="' + esc(e.image) + '" alt="' + esc(e.alt || ("Send-off image for " + f.name)) + '" loading="lazy">' : "") +
+          (haiku ? '<p class="haiku">' + esc(haiku) + "</p>" : "") +
+          "</div></details></li>";
       }).join("");
       $("fallen").hidden = !r.fallen.length;
       if (missing > 0) {
@@ -327,9 +361,11 @@ th.win{color:var(--ink)}
     }
   }
 
-  fetch("data.json", { cache: "no-store" })
-    .then(function (res) { if (!res.ok) throw new Error(res.status); return res.json(); })
-    .then(function (data) { setTimeout(function () { render(data); }, 0); })
+  var getJSON = function (url) {
+    return fetch(url, { cache: "no-store" }).then(function (res) { if (!res.ok) throw new Error(res.status); return res.json(); });
+  };
+  Promise.all([getJSON("data.json"), getJSON("league.json").catch(function () { return {}; })])
+    .then(function (both) { setTimeout(function () { render(both[0], both[1]); }, 0); })
     .catch(function () {
       $("lede").textContent = "The league data didn't load. Refresh to try again.";
     });
