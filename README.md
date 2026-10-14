@@ -25,7 +25,7 @@ dsolar.github.io/
 - [x] GitHub Pages on: https://dsolar.github.io
 - [x] davidsolar.dev bought at Cloudflare
 - [x] Domain verified, DNS records in, custom domain set: https://davidsolar.dev
-- [ ] Tick Enforce HTTPS in Settings > Pages once it's available
+- [x] Enforce HTTPS on
 - [ ] Set up your own computer (at home, see below)
 
 Steps 1 to 3 below are kept for reference in case you ever set up another domain.
