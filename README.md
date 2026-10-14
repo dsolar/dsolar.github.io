@@ -109,12 +109,12 @@ The one-time sign-in setup, already done for app `davidsolar guillotine` (App ID
 
 If a run ever fails with "Yahoo sign-in failed", redo steps 2 to 4 for a fresh refresh token.
 
-**Live scoring.** During games the page checks live scoring every minute and reruns the odds: each starter's points so far are banked and his projection counts only for the part of his game still to play. The scores come from a small relay, `tools/live-relay.js`, that runs free on Cloudflare at live.davidsolar.dev. It reads the rosters from `guillotine/data.json`, pulls Sleeper's stats and ESPN's scoreboard (cached ~45 seconds), and returns just the league's players. One-time setup:
+**Live scoring.** During games the page checks live scoring every minute and reruns the odds: each starter's points so far are banked and his projection counts only for the part of his game still to play. The scores come from a small relay, `tools/live-relay.js`, that runs free on Cloudflare at https://guillotine-live.dsolar.workers.dev/ (set up Oct 14, 2026). It reads the rosters from `guillotine/data.json`, pulls Sleeper's stats and ESPN's scoreboard (cached ~45 seconds), and returns just the league's players. One-time setup:
 
 1. Cloudflare dashboard > **Workers & Pages** > **Create** > **Create Worker**. Name it `guillotine-live` > **Deploy**.
 2. **Edit code**, select everything, paste in the contents of `tools/live-relay.js`, **Deploy**.
-3. The worker's **Settings** > **Domains & Routes** > **Add** > **Custom domain** > `live.davidsolar.dev` > **Add domain**.
-4. Check it: open https://live.davidsolar.dev/ in a browser. You should see a short JSON answer with `"games"` in it.
+3. Check it: open the worker's address (shown on its overview page) in a browser. You should see a short JSON answer with `"games"` in it.
+4. Optional: a custom domain such as live.davidsolar.dev (worker **Settings** > **Domains & Routes**). If you add one, update `live_url` in `guillotine/league.json`.
 
 The page looks for the relay at `live_url` in `guillotine/league.json`. If it can't reach it, it tries the feeds directly, and if that fails too it just keeps its last numbers. Free plan: 100,000 requests a day, far more than a league's worth of open phones.
 
