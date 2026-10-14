@@ -1,0 +1,62 @@
+# Keeps davidsolar.dev/calendar/ (Night Out) current.
+#  - Every morning it rebuilds calendar/events.json: home games from ESPN, Boston shows and
+#    road trips from Ticketmaster (once a TICKETMASTER_KEY secret is set), plus calendar/picks.json.
+#  - Editing calendar/taste.json or calendar/picks.json rebuilds it right away.
+name: Calendar update
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - calendar/taste.json
+      - calendar/picks.json
+      - tools/calendar_update.py
+      - .github/workflows/calendar-update.yml
+  schedule:
+    - cron: "41 10 * * *"   # 6:41am ET (5:41 in winter)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: calendar-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set the bot's git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Build the calendar
+        env:
+          TICKETMASTER_KEY: ${{ secrets.TICKETMASTER_KEY }}
+        run: python3 tools/calendar_update.py
+
+      - name: Commit the new data
+        id: commit
+        run: |
+          if [ -z "$(git status --porcelain calendar/events.json)" ]; then
+            echo "Nothing changed."
+            exit 0
+          fi
+          git add calendar/events.json
+          git commit -m "Update Night Out calendar"
+          git pull --rebase -q origin main   # someone may have pushed while this ran
+          git push
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Rebuild the site
+        if: steps.commit.outputs.pushed == 'true'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds"

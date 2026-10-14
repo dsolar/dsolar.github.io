@@ -75,5 +75,17 @@ window.PROJECTS = [
     facts: [["20,000", "simulated seasons per update"], ["15", "teams, one cut every week"], ["Daily", "refresh from Yahoo"]],
     stack: ["JavaScript", "Python", "Monte Carlo simulation", "GitHub Actions"],
     cover: { image: "assets/covers/guillotine.jpg", bg: "#0E1A30", band: "#C8102E" }
+  },
+  {
+    title: "Night Out",
+    type: "Tool",
+    released: "2026-10",
+    url: "calendar/",
+    question: "What's worth leaving the couch for, and who's in?",
+    summary: "A shared calendar of shows, comics, games and movies around Boston, plus road trips for the bands we love. Friends mark Interested or Going.",
+    facts: [["Daily", "refresh of shows and games"], ["4", "kinds of nights: music, comedy, games, movies"], ["4½ hr", "longest road trip it looks for"]],
+    stack: ["JavaScript", "Python", "Cloudflare Workers", "GitHub Actions"],
+    cover: { bg: "#17130E", band: "#FFC53D" },
+    hidden: true
   }
 ];

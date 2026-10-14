@@ -1,0 +1,143 @@
+{
+ "_about": "Who and what Night Out watches for. Edit freely: names are matched loosely, case doesn't matter. 'love' bands are shown anywhere within road_trip_hours of Boston; everything else only around Boston.",
+ "home": {
+  "name": "Boston",
+  "lat": 42.3601,
+  "lon": -71.0589
+ },
+ "local_miles": 30,
+ "road_trip_hours": 4.5,
+ "bands": {
+  "love": [
+   "Phish",
+   "Goose",
+   "Dead & Company",
+   "Grateful Dead",
+   "Joe Russo's Almost Dead",
+   "Trey Anastasio",
+   "Billy Strings",
+   "moe.",
+   "Dark Star Orchestra",
+   "Bob Weir"
+  ],
+  "like": [
+   "My Morning Jacket",
+   "Jim James",
+   "Umphrey's McGee",
+   "String Cheese Incident",
+   "Eggy",
+   "Spafford",
+   "Pigeons Playing Ping Pong",
+   "Twiddle",
+   "Dogs In A Pile",
+   "Mt. Joy",
+   "Khruangbin",
+   "Lettuce",
+   "Dopapod",
+   "Ghost Light",
+   "Tedeschi Trucks Band",
+   "Gov't Mule",
+   "Widespread Panic",
+   "Mike Gordon",
+   "Page McConnell"
+  ]
+ },
+ "comedians": [
+  "Nathan Fielder",
+  "Tim Robinson",
+  "Bill Burr",
+  "Shane Gillis",
+  "Tim Dillon",
+  "Hannibal Buress",
+  "John Mulaney",
+  "Nate Bargatze",
+  "Mark Normand",
+  "Sam Morril",
+  "Stavros Halkias",
+  "Matt Rife",
+  "Theo Von",
+  "Ilana Glazer",
+  "Tom Segura",
+  "Bert Kreischer",
+  "Gianmarco Soresi",
+  "Joe List",
+  "Dan Soder",
+  "Andrew Schulz",
+  "Nikki Glaser",
+  "Taylor Tomlinson",
+  "Conan O'Brien",
+  "Eric Andre",
+  "Tim Heidecker"
+ ],
+ "teams": [
+  {
+   "name": "Celtics",
+   "league": "basketball/nba",
+   "espn": "bos",
+   "home_only": true
+  },
+  {
+   "name": "Bruins",
+   "league": "hockey/nhl",
+   "espn": "bos",
+   "home_only": true
+  },
+  {
+   "name": "Patriots",
+   "league": "football/nfl",
+   "espn": "ne",
+   "home_only": true
+  }
+ ],
+ "film_people": [
+  "Nathan Fielder",
+  "Lance Oppenheim",
+  "Martin McDonagh",
+  "Denis Villeneuve",
+  "Robert Eggers",
+  "James Gray",
+  "Tony Gilroy",
+  "Jesse Eisenberg",
+  "Mike Leigh",
+  "Paul Thomas Anderson",
+  "Yorgos Lanthimos",
+  "the Safdies"
+ ],
+ "theaters": {
+  "weekday": {
+   "name": "AMC Boston Common 19",
+   "url": "https://www.amctheatres.com/movie-theatres/boston/amc-boston-common-19"
+  },
+  "weekend": {
+   "name": "Showcase Legacy Place",
+   "search_name": "Showcase Cinema de Lux Legacy Place Dedham",
+   "url": "https://www.showcasecinemas.com/theaters/showcase-cinema-de-lux-legacy-place"
+  }
+ },
+ "big_venues": [
+  "TD Garden",
+  "Fenway Park",
+  "Gillette Stadium",
+  "MGM Music Hall at Fenway",
+  "Leader Bank Pavilion",
+  "Roadrunner",
+  "House of Blues Boston",
+  "The Wilbur",
+  "Wilbur Theatre",
+  "Boch Center Wang Theatre",
+  "Orpheum Theatre",
+  "Citizens House of Blues Boston",
+  "Agganis Arena",
+  "Royale",
+  "Paradise Rock Club",
+  "The Sinclair",
+  "Brighton Music Hall",
+  "Big Night Live",
+  "Boch Center Shubert Theatre",
+  "Chevalier Theatre",
+  "Lynn Memorial Auditorium",
+  "Laugh Boston",
+  "The Cabot"
+ ],
+ "votes_url": "https://calendar-votes.dsolar.workers.dev/"
+}

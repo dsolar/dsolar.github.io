@@ -1,0 +1,709 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Night Out | David Solar</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="Shows, comics, games and movies around Boston worth leaving the couch for, plus a few road trips.">
+<link rel="canonical" href="https://davidsolar.dev/calendar/">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#F4EFE6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#13110E" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Besley:wght@700&family=Big+Shoulders+Display:wght@700;800;900&family=IBM+Plex+Mono:wght@500&family=Libre+Franklin:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/bar.css">
+<script src="../assets/analytics.js" defer></script>
+<style>
+/* A theater marquee over warm paper. The header is the sign (always lit, light or dark mode);
+   below it, a month at a glance and the nights themselves. Each kind of night has one color:
+   violet for music, orange for comedy, green for games, blue for movies. Amber is saved for
+   the bands we love. Condensed signage type for the display, Franklin for reading, a mono for
+   the ticket-stub details (times, drives). */
+:root{
+  --bg:#F4EFE6; --surface:#FFFDF8; --ink:#1C1915; --muted:#6B6358; --rule:#E3DACB; --wash:#EDE5D7;
+  --music:#7A3FD0; --comedy:#C2410C; --sports:#0B7A3B; --movies:#1F5FBF;
+  --love:#B87200; --love-wash:#FFF1CF;
+  --sign:#17130E; --sign-ink:#FFF3D6; --bulb:#FFC53D;
+  --f-display:"Big Shoulders Display","Oswald","Arial Narrow",Impact,sans-serif;
+  --f-body:"Libre Franklin","Franklin Gothic Medium","Helvetica Neue",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#13110E; --surface:#1D1A16; --ink:#F2ECE2; --muted:#A79E90; --rule:#332E27; --wash:#26221C;
+    --music:#B996F7; --comedy:#FF8F57; --sports:#4FC982; --movies:#7AAAF5;
+    --love:#FFC53D; --love-wash:#3A2E12; --sign:#0B0907; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#13110E; --surface:#1D1A16; --ink:#F2ECE2; --muted:#A79E90; --rule:#332E27; --wash:#26221C;
+  --music:#B996F7; --comedy:#FF8F57; --sports:#4FC982; --movies:#7AAAF5;
+  --love:#FFC53D; --love-wash:#3A2E12; --sign:#0B0907; color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.5 var(--f-body)}
+[hidden]{display:none!important}
+a{color:inherit;text-underline-offset:3px;text-decoration-thickness:1px}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--love);outline-offset:2px;border-radius:4px}
+.wrap{max-width:46rem;margin:0 auto;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+
+/* ---------- The sign ---------- */
+.sign{background:var(--sign);color:var(--sign-ink);position:relative;padding-block:1.9rem 1.6rem}
+.sign::before,.sign::after{content:"";position:absolute;left:0;right:0;height:8px;
+  background:radial-gradient(circle at 6px 4px, var(--bulb) 0 2.4px, rgba(255,197,61,.18) 2.6px 4px, transparent 4.2px) 0 0/16px 8px repeat-x}
+.sign::before{top:8px}
+.sign::after{bottom:8px}
+.eyebrow{font:600 .72rem/1.2 var(--f-body);letter-spacing:.14em;text-transform:uppercase;margin:0;color:var(--muted)}
+.sign .eyebrow{color:#CDBF9F}
+h1{font:900 clamp(3.4rem,15vw,5.6rem)/.86 var(--f-display);text-transform:uppercase;letter-spacing:.01em;margin:.45rem 0 0;
+  color:#FFF6DF;text-shadow:0 0 18px rgba(255,197,61,.35)}
+.lede{margin:.8rem 0 0;max-width:33rem;color:#E9DEC6;font-size:1.02rem;text-wrap:pretty}
+.me{margin:1rem 0 0;font-size:.88rem;color:#CDBF9F;display:flex;flex-wrap:wrap;gap:.35rem .6rem;align-items:center}
+.me strong{color:#FFF6DF}
+.linkbtn{background:none;border:0;padding:0;text-decoration:underline;text-underline-offset:3px;cursor:pointer;color:inherit;font-size:inherit}
+.sign .linkbtn{color:var(--bulb)}
+.sync{font-size:.78rem;color:#A99B7D}
+
+/* ---------- Filters ---------- */
+.bar{position:sticky;top:env(safe-area-inset-top, 0px);z-index:40;background:var(--bg);border-bottom:1px solid var(--rule)}
+.chips{display:flex;gap:.35rem;overflow-x:auto;scrollbar-width:none;padding-block:.55rem}
+.chips::-webkit-scrollbar{display:none}
+@media (min-width:48rem){ .chips{flex-wrap:wrap} }
+.chip{flex:none;display:inline-flex;align-items:center;gap:.4rem;font-size:.8rem;font-weight:600;cursor:pointer;
+  padding:.38rem .75rem;border-radius:999px;border:1px solid var(--rule);background:var(--surface);color:var(--muted)}
+.chip:hover{color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip .dot{width:.5rem;height:.5rem;border-radius:50%}
+
+main{display:grid;gap:2.4rem;padding-block:1.6rem 3rem}
+main > section{scroll-margin-top:3.6rem;min-width:0}
+h2{font:800 1.75rem/1 var(--f-display);text-transform:uppercase;letter-spacing:.02em;margin:0}
+.head{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;margin-bottom:.8rem}
+.head p{margin:0;color:var(--muted);font-size:.85rem}
+.note{color:var(--muted);font-size:.85rem;margin:.2rem 0 0;max-width:36rem}
+
+/* ---------- Circle these ---------- */
+.big{display:grid;grid-template-columns:repeat(auto-fill,minmax(13.5rem,1fr));gap:.6rem}
+.big button{all:unset;cursor:pointer;display:grid;gap:.15rem;padding:.75rem .85rem;border-radius:10px;
+  background:var(--love-wash);border:1px solid color-mix(in srgb, var(--love) 35%, transparent)}
+.big button:hover{border-color:var(--love)}
+.big button:focus-visible{outline:2px solid var(--love);outline-offset:2px}
+.big .t{font:800 1.35rem/1 var(--f-display);text-transform:uppercase;letter-spacing:.02em}
+.big .d{font:500 .8rem/1.3 var(--f-mono);color:var(--love)}
+.big .v{font-size:.8rem;color:var(--muted)}
+@media (max-width:34rem){
+  .big{display:flex;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;margin-inline:-16px;padding-inline:16px;scroll-padding-inline:16px}
+  .big::-webkit-scrollbar{display:none}
+  .big button{flex:0 0 min(72%, 17rem);scroll-snap-align:start}
+}
+
+/* ---------- Month grid ---------- */
+.month{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:.8rem .7rem .7rem}
+.mhead{display:flex;align-items:center;justify-content:space-between;margin:0 .1rem .5rem}
+.mhead h2{font-size:1.6rem}
+.mnav{display:flex;gap:.3rem}
+.mnav button{width:2.2rem;height:2.2rem;border-radius:50%;border:1px solid var(--rule);background:var(--bg);cursor:pointer;font-size:1.1rem;line-height:1}
+.mnav button:disabled{opacity:.35;cursor:default}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.dow{font:600 .66rem/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:center;padding:.2rem 0 .35rem}
+.cell{all:unset;box-sizing:border-box;min-height:3.1rem;border-radius:8px;padding:.3rem .25rem .25rem;display:flex;flex-direction:column;align-items:center;gap:.22rem;
+  cursor:pointer;background:var(--bg);position:relative}
+.cell:hover{background:var(--wash)}
+.cell:focus-visible{outline:2px solid var(--love)}
+.cell .n{font:600 .85rem/1 var(--f-body)}
+.cell.past{opacity:.38;cursor:default}
+.cell.blank{background:none;cursor:default}
+.cell.today .n{background:var(--ink);color:var(--bg);border-radius:999px;padding:.12rem .32rem;margin-top:-.12rem}
+.cell.love{background:var(--love-wash);box-shadow:inset 0 0 0 1.5px var(--love)}
+.cell .dots{display:flex;gap:2px;flex-wrap:wrap;justify-content:center}
+.cell .dots i{width:6px;height:6px;border-radius:50%}
+.cell .in{position:absolute;top:3px;right:3px;font:600 .56rem/1 var(--f-mono);background:var(--ink);color:var(--bg);border-radius:999px;padding:2px 4px}
+.key{display:flex;flex-wrap:wrap;gap:.3rem .9rem;margin:.6rem .2rem 0;font-size:.74rem;color:var(--muted)}
+.key span{display:inline-flex;align-items:center;gap:.3rem}
+.key i{width:7px;height:7px;border-radius:50%;display:inline-block}
+.key .lv{width:11px;height:11px;border-radius:3px;background:var(--love-wash);box-shadow:inset 0 0 0 1.5px var(--love)}
+
+.c-music{--c:var(--music)} .c-comedy{--c:var(--comedy)} .c-sports{--c:var(--sports)} .c-movies{--c:var(--movies)}
+i.c-music,i.c-comedy,i.c-sports,i.c-movies,.dot.c-music,.dot.c-comedy,.dot.c-sports,.dot.c-movies{background:var(--c)}
+
+/* ---------- Agenda ---------- */
+.agenda{display:grid;gap:1.4rem}
+.day{scroll-margin-top:3.8rem}
+.dayhead{display:flex;align-items:baseline;gap:.55rem;border-bottom:2px solid var(--ink);padding-bottom:.3rem;margin-bottom:.55rem}
+.dayhead .w{font:800 1.45rem/1 var(--f-display);text-transform:uppercase;letter-spacing:.02em}
+.dayhead .dt{font:500 .85rem/1 var(--f-mono);color:var(--muted)}
+.dayhead .rel{margin-left:auto;font:600 .7rem/1 var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--love)}
+.day.flash .dayhead{animation:flash 1.4s ease-out}
+@keyframes flash{0%{background:var(--love-wash)}100%{background:transparent}}
+.quiet{scroll-margin-top:3.8rem;margin:0;font-size:.84rem;color:var(--muted);border-top:1px dashed var(--rule);padding-top:.55rem;line-height:1.6}
+.quiet b{font:500 .8rem/1 var(--f-mono);color:var(--ink)}
+.quiet a{color:var(--ink);font-weight:600;text-decoration-color:color-mix(in srgb, var(--movies) 55%, transparent)}
+.quiet .lbl,.flicks .lbl{font:600 .64rem/1 var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--movies);margin-right:.35rem}
+
+.ev{display:grid;grid-template-columns:4.1rem 1fr auto;gap:.2rem .8rem;align-items:start;padding:.7rem .75rem .7rem .6rem;
+  background:var(--surface);border:1px solid var(--rule);border-left:4px solid var(--c);border-radius:8px;margin-bottom:.45rem}
+.ev.love{background:linear-gradient(90deg,var(--love-wash),var(--surface) 70%);border-color:color-mix(in srgb, var(--love) 45%, var(--rule));border-left-color:var(--c)}
+.ev .tm{font:500 .92rem/1.15 var(--f-mono);padding-top:.1rem}
+.ev .tm small{display:block;font-size:.68rem;color:var(--muted);letter-spacing:.04em}
+.ev .tm .k{display:block;margin-top:.35rem;font:600 .62rem/1 var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--c)}
+.ev .title{font-weight:700;font-size:1.02rem;line-height:1.25;text-wrap:balance}
+.ev .title a{text-decoration-color:color-mix(in srgb, var(--c) 60%, transparent)}
+.ev .sub{font-size:.84rem;color:var(--muted);margin-top:.1rem}
+.ev .where{font-size:.84rem;margin-top:.15rem}
+.tags{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.35rem}
+.tag{font:600 .66rem/1 var(--f-body);letter-spacing:.06em;text-transform:uppercase;padding:.28rem .45rem;border-radius:4px;background:var(--wash);color:var(--muted)}
+.tag.love{background:var(--love);color:var(--sign)}
+.tag.road{background:none;box-shadow:inset 0 0 0 1px var(--rule)}
+.who{font-size:.8rem;color:var(--muted);margin-top:.4rem}
+.who b{color:var(--ink);font-weight:600}
+.who .mine{text-decoration:underline;text-decoration-color:var(--love);text-decoration-thickness:2px;text-underline-offset:3px}
+.acts{display:flex;flex-direction:column;gap:.3rem;align-items:stretch}
+.vote{font-size:.75rem;font-weight:600;padding:.38rem .6rem;border-radius:999px;border:1px solid var(--rule);background:var(--bg);cursor:pointer;white-space:nowrap;color:var(--muted)}
+.vote:hover{color:var(--ink);border-color:var(--muted)}
+.vote[aria-pressed="true"]{background:var(--c, var(--ink));border-color:var(--c, var(--ink));color:var(--surface)}
+.vote .ct{font-family:var(--f-mono);font-weight:500;margin-left:.25rem;opacity:.8}
+.ics{font-size:.72rem;color:var(--muted);text-align:center;margin-top:.1rem}
+@media (max-width:34rem){
+  .ev{grid-template-columns:3.6rem 1fr}
+  .acts{grid-column:1 / -1;flex-direction:row;flex-wrap:wrap;align-items:center;margin-top:.35rem}
+  .ics{margin:0 0 0 auto}
+}
+
+.flicks{font-size:.86rem;padding:.55rem .75rem;border-radius:8px;background:var(--wash);border-left:4px solid var(--movies);line-height:1.55}
+.flicks .th,.quiet .th{color:var(--muted);font-weight:400}
+.flicks a{font-weight:600;text-decoration-color:color-mix(in srgb, var(--movies) 55%, transparent)}
+.next{justify-self:start;margin-top:.2rem}
+.btn{font-size:.85rem;font-weight:600;padding:.55rem 1rem;border-radius:999px;border:1px solid var(--ink);background:var(--ink);color:var(--bg);cursor:pointer}
+.empty{color:var(--muted);font-size:.9rem;padding:1rem;border:1px dashed var(--rule);border-radius:8px;text-align:center}
+
+/* ---------- Movies ---------- */
+.films{display:grid;grid-template-columns:repeat(auto-fill,minmax(16rem,1fr));gap:.6rem}
+.film{--c:var(--movies);background:var(--surface);border:1px solid var(--rule);border-top:4px solid var(--movies);border-radius:8px;padding:.8rem .85rem;display:grid;gap:.3rem;align-content:start}
+.film .t{font:800 1.3rem/1.02 var(--f-display);text-transform:uppercase;letter-spacing:.02em}
+.film .by{font-size:.82rem;color:var(--muted)}
+.film .why{font-size:.88rem}
+.film .when{font:500 .78rem/1.2 var(--f-mono);color:var(--movies)}
+.film .st{font-size:.82rem;display:grid;gap:.15rem;color:var(--muted)}
+.film .st a{font-weight:600;color:var(--ink)}
+.film .row{display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.2rem}
+
+footer{border-top:1px solid var(--rule);padding-block:1.2rem 2.5rem;color:var(--muted);font-size:.8rem}
+footer p{margin:.25rem 0;max-width:38rem}
+
+dialog{border:1px solid var(--rule);border-radius:12px;background:var(--surface);color:var(--ink);padding:1.2rem;width:min(22rem,calc(100vw - 32px))}
+dialog::backdrop{background:rgba(10,8,5,.55)}
+dialog h3{font:800 1.5rem/1 var(--f-display);text-transform:uppercase;margin:0 0 .4rem}
+dialog p{margin:0 0 .8rem;font-size:.88rem;color:var(--muted)}
+dialog input{width:100%;font:inherit;font-size:1rem;padding:.6rem .7rem;border-radius:8px;border:1px solid var(--rule);background:var(--bg);color:var(--ink)}
+dialog .row{display:flex;justify-content:flex-end;gap:.5rem;margin-top:.9rem}
+dialog .ghost{background:none;color:var(--ink);border-color:var(--rule)}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom, 0px));transform:translateX(-50%);z-index:60;
+  background:var(--ink);color:var(--bg);font-size:.85rem;padding:.6rem 1rem;border-radius:999px;max-width:calc(100vw - 32px);box-shadow:0 6px 24px rgba(0,0,0,.25)}
+@media (prefers-reduced-motion: reduce){ .day.flash .dayhead{animation:none} html{scroll-behavior:auto} }
+</style>
+</head>
+<body>
+<nav class="ds-bar" aria-label="davidsolar.dev"><a href="../"><img src="../assets/ds-mark.svg" alt="" width="20" height="20"><span class="ds-bar-name">David Solar</span></a><a href="../#projects">All projects</a></nav>
+
+<header class="sign">
+  <div class="wrap">
+    <p class="eyebrow">Boston, plus a few road trips</p>
+    <h1>Night Out</h1>
+    <p class="lede">Shows, comics, games and movies worth leaving the couch for. Tap Interested or Going so everyone can see who's in.</p>
+    <p class="me" id="me"></p>
+  </div>
+</header>
+
+<div class="bar"><div class="wrap"><div class="chips" id="chips" role="toolbar" aria-label="Show"></div></div></div>
+
+<main class="wrap">
+  <section id="big-sec" hidden>
+    <div class="head"><h2>Circle these</h2><p>Bands we love</p></div>
+    <div class="big" id="big"></div>
+  </section>
+
+  <section id="cal-sec">
+    <div class="month">
+      <div class="mhead"><h2 id="mname"></h2><div class="mnav"><button id="prev" aria-label="Previous month">‹</button><button id="next" aria-label="Next month">›</button></div></div>
+      <div class="grid" id="grid" role="grid"></div>
+      <div class="key" id="key"></div>
+    </div>
+  </section>
+
+  <section id="agenda-sec">
+    <div class="agenda" id="agenda"></div>
+  </section>
+
+  <section id="movies">
+    <div class="head"><h2>At the movies</h2><p>Weeknights at Boston Common, weekends at Legacy Place</p></div>
+    <div class="films" id="films"></div>
+  </section>
+</main>
+
+<footer><div class="wrap" id="foot"></div></footer>
+
+<dialog id="name-dlg">
+  <form method="dialog" id="name-form">
+    <h3>Who's this?</h3>
+    <p>Your first name is enough. Anyone with the link sees who marked what.</p>
+    <input id="name-in" maxlength="24" autocomplete="given-name" required placeholder="First name">
+    <div class="row"><button class="btn ghost" value="cancel" formnovalidate>Cancel</button><button class="btn" value="ok">Save</button></div>
+  </form>
+</dialog>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+"use strict";
+const CATS = { music: "Music", comedy: "Comedy", sports: "Games", movies: "Movies" };
+const FILTERS = [["picks", "Our picks"], ["music", "Music"], ["comedy", "Comedy"], ["sports", "Games"], ["movies", "Movies"], ["road", "Road trips"], ["in", "Who's in"]];
+const RUN_DAYS = 42;            // how long a movie stays on the daily list after it opens
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const MON = MONTHS.map((m) => m.slice(0, 3));
+const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("nightout." + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("nightout." + k, JSON.stringify(v)); } catch (e) { /* private mode */ } },
+};
+
+let DATA = null, VOTES = {}, REMOTE = null; // REMOTE: true when the shared vote box answered
+let ME = store.get("name", "");
+let F = store.get("filter", "picks"), EVERYTHING = store.get("everything", false);
+let MONTH = null;                            // "YYYY-MM" on show
+let pendingVote = null;
+
+// ---------- dates (all plain "YYYY-MM-DD" strings in Boston time) ----------
+const TODAY = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date());
+const parts = (iso) => iso.split("-").map(Number);
+const utc = (iso) => { const [y, m, d] = parts(iso); return new Date(Date.UTC(y, m - 1, d)); };
+const isoOf = (dt) => dt.toISOString().slice(0, 10);
+const addDays = (iso, n) => { const t = utc(iso); t.setUTCDate(t.getUTCDate() + n); return isoOf(t); };
+const dow = (iso) => utc(iso).getUTCDay();
+const weekend = (iso) => dow(iso) === 0 || dow(iso) === 6;
+const short = (iso) => { const [, m, d] = parts(iso); return `${MON[m - 1]} ${d}`; };
+const monthOf = (iso) => iso.slice(0, 7);
+function range(a, b) {
+  if (a === b) return short(a);
+  const [, ma, da] = parts(a), [, mb, db] = parts(b);
+  return ma === mb ? `${MON[ma - 1]} ${da}–${db}` : `${short(a)} – ${short(b)}`;
+}
+function relDay(iso) {
+  if (iso === TODAY) return "Tonight";
+  if (iso === addDays(TODAY, 1)) return "Tomorrow";
+  return "";
+}
+function clock(t) {
+  if (!t) return null;
+  let [h, m] = t.split(":").map(Number);
+  const ap = h >= 12 ? "pm" : "am";
+  h = h % 12 || 12;
+  return { t: m ? `${h}:${String(m).padStart(2, "0")}` : `${h}`, ap };
+}
+function hours(h) {
+  const whole = Math.floor(h), frac = Math.round((h - whole) * 4);
+  return (whole || "") + ["", "¼", "½", "¾"][frac] + " hr";
+}
+
+// ---------- votes ----------
+function votesFor(item) {
+  const out = {};
+  for (const id of [item.id].concat(item.aka || [])) {
+    for (const [name, s] of Object.entries(VOTES[id] || {})) if (out[name] !== "going") out[name] = s;
+  }
+  return out;
+}
+function hasVotes(item) { return Object.keys(votesFor(item)).length > 0; }
+
+async function loadVotes() {
+  const url = DATA && DATA.votes_url;
+  const local = store.get("votes", {});
+  if (!url) { VOTES = local; REMOTE = false; return; }
+  try {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(res.status);
+    const body = await res.json();
+    VOTES = body.votes || {};
+    REMOTE = true;
+    // Anything marked on this phone while the vote box was unreachable goes up now.
+    const queued = store.get("queue", []);
+    if (queued.length) {
+      store.set("queue", []);
+      for (const q of queued) await send(q).catch(() => {});
+    }
+  } catch (e) {
+    VOTES = local; REMOTE = false;
+  }
+}
+
+async function send(v) {
+  const res = await fetch(DATA.votes_url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(v) });
+  if (!res.ok) throw new Error(res.status);
+  const body = await res.json();
+  if (body.votes) VOTES = body.votes;
+}
+
+async function vote(item, status) {
+  if (!ME) { pendingVote = [item, status]; askName(); return; }
+  const mine = votesFor(item)[ME] || "";
+  const next = mine === status ? "" : status;
+  const ops = [{ id: item.id, name: ME, status: next }];
+  for (const a of item.aka || []) if (VOTES[a] && VOTES[a][ME]) ops.push({ id: a, name: ME, status: "" });
+  for (const op of ops) apply(op);        // show it right away
+  render();
+  if (REMOTE) {
+    try { for (const op of ops) await send(op); render(); }
+    catch (e) {
+      store.set("queue", store.get("queue", []).concat(ops));
+      toast("Couldn't reach the vote box. Saved on this phone and will retry.");
+    }
+  } else {
+    store.set("votes", VOTES);
+    if (DATA.votes_url) store.set("queue", store.get("queue", []).concat(ops));
+  }
+}
+function apply(op) {
+  const ev = VOTES[op.id] || {};
+  if (op.status) ev[op.name] = op.status; else delete ev[op.name];
+  if (Object.keys(ev).length) VOTES[op.id] = ev; else delete VOTES[op.id];
+}
+
+function askName() {
+  $("name-in").value = ME;
+  $("name-dlg").showModal();
+}
+$("name-form").addEventListener("submit", (e) => {
+  const btn = e.submitter;
+  if (!btn || btn.value !== "ok") { pendingVote = null; return; }
+  const name = $("name-in").value.trim().replace(/\s+/g, " ").slice(0, 24);
+  if (!name) { e.preventDefault(); return; }
+  if (ME && ME !== name && REMOTE) toast("New name saved. Earlier marks stay under " + ME + ".");
+  ME = name; store.set("name", ME);
+  renderMe();
+  if (pendingVote) { const [it, s] = pendingVote; pendingVote = null; vote(it, s); }
+});
+$("name-dlg").addEventListener("close", () => { if ($("name-dlg").returnValue !== "ok") pendingVote = null; });
+
+let toastTimer;
+function toast(msg) {
+  const t = $("toast"); t.textContent = msg; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 4200);
+}
+
+// ---------- what to show ----------
+function showEvent(e) {
+  if (!EVERYTHING && e.score < 1) return false;
+  switch (F) {
+    case "picks": return true;
+    case "music": case "comedy": case "sports": return e.cat === F;
+    case "road": return !!e.drive_hours;
+    case "in": return hasVotes(e);
+    default: return false;
+  }
+}
+function showMovies() { return F === "picks" || F === "movies" || F === "in"; }
+function moviesOn(iso) {
+  if (!showMovies()) return [];
+  return DATA.movies.filter((m) => m.release <= iso && iso < addDays(m.release, RUN_DAYS) && (F !== "in" || hasVotes(m)));
+}
+function theaterFor(iso) { return DATA.theaters[weekend(iso) ? "weekend" : "weekday"]; }
+function showtimes(m, th) {
+  return "https://www.google.com/search?q=" + encodeURIComponent(`${m.title} showtimes ${th.search_name || th.name}`);
+}
+
+// ---------- rendering ----------
+function renderMe() {
+  const where = REMOTE ? "Marks are shared with everyone on the link."
+    : REMOTE === false ? (DATA && DATA.votes_url ? "The shared vote box isn't answering, so marks are saving on this phone for now." : "Marks are saving on this phone only.")
+    : "";
+  $("me").innerHTML = (ME
+    ? `<span>You're <strong>${esc(ME)}</strong></span><button class="linkbtn" id="chg">change</button>`
+    : `<button class="linkbtn" id="chg">Add your name</button><span>so friends see who's in</span>`) +
+    (where ? `<span class="sync">${esc(where)}</span>` : "");
+  $("chg").onclick = askName;
+}
+
+function renderChips() {
+  const anyZero = DATA.events.some((e) => e.score < 1);
+  $("chips").innerHTML = FILTERS.map(([k, label]) =>
+    `<button class="chip" data-f="${k}" aria-pressed="${F === k}">${CATS[k] ? `<span class="dot c-${k}"></span>` : ""}${label}</button>`).join("") +
+    (anyZero ? `<button class="chip" data-all aria-pressed="${EVERYTHING}" title="Also show other shows at the big rooms">Everything</button>` : "");
+  $("chips").querySelectorAll("[data-f]").forEach((b) => b.onclick = () => {
+    F = b.dataset.f; store.set("filter", F);
+    // If this month has nothing for the filter, jump to the first month that does.
+    const hit = (m) => DATA.events.some((e) => e.date >= TODAY && monthOf(e.date) === m && showEvent(e)) ||
+      (F === "movies" && DATA.movies.some((x) => monthOf(x.release) === m));
+    if (!hit(MONTH)) { const m = months().find(hit); if (m) MONTH = m; }
+    render();
+  });
+  const all = $("chips").querySelector("[data-all]");
+  if (all) all.onclick = () => { EVERYTHING = !EVERYTHING; store.set("everything", EVERYTHING); render(); };
+}
+
+function renderBig() {
+  // Runs of a loved band within a week of each other become one card.
+  const loved = DATA.events.filter((e) => e.why === "love");
+  const runs = [];
+  for (const e of loved) {
+    const r = runs.find((r) => r.title === e.title && e.date <= addDays(r.last, 7));
+    if (r) { r.last = e.date; r.items.push(e); } else runs.push({ title: e.title, first: e.date, last: e.date, items: [e] });
+  }
+  $("big-sec").hidden = !runs.length;
+  $("big").innerHTML = runs.map((r, i) => {
+    const places = [...new Set(r.items.map((e) => e.venue))].join(" · ");
+    const going = new Set(r.items.flatMap((e) => Object.entries(votesFor(e)).filter(([, s]) => s === "going").map(([n]) => n)));
+    const drive = r.items.find((e) => e.drive_hours);
+    return `<button data-i="${i}"><span class="t">${esc(r.title)}</span><span class="d">${range(r.first, r.last)}${drive ? " · " + hours(drive.drive_hours) + " drive" : ""}</span>` +
+      `<span class="v">${esc(places)}</span>${going.size ? `<span class="v"><b>Going:</b> ${esc([...going].join(", "))}</span>` : ""}</button>`;
+  }).join("");
+  $("big").querySelectorAll("button").forEach((b) => b.onclick = () => goTo(runs[+b.dataset.i].first));
+}
+
+function months() {
+  const last = [DATA.events.map((e) => e.date), DATA.movies.map((m) => m.release)].flat().sort().pop() || TODAY;
+  const out = [];
+  let m = monthOf(TODAY);
+  while (m <= monthOf(last) && out.length < 12) {
+    out.push(m);
+    const [y, mo] = m.split("-").map(Number);
+    m = mo === 12 ? `${y + 1}-01` : `${y}-${String(mo + 1).padStart(2, "0")}`;
+  }
+  return out;
+}
+
+function renderGrid(byDay) {
+  const ms = months();
+  if (!ms.includes(MONTH)) MONTH = ms[0];
+  const [y, mo] = MONTH.split("-").map(Number);
+  $("mname").textContent = `${MONTHS[mo - 1]} ${y}`;
+  $("prev").disabled = MONTH === ms[0];
+  $("next").disabled = MONTH === ms[ms.length - 1];
+  const first = `${MONTH}-01`;
+  const days = new Date(Date.UTC(y, mo, 0)).getUTCDate();
+  let html = DOW.map((d) => `<div class="dow">${d.slice(0, 2)}</div>`).join("");
+  html += `<div class="cell blank"></div>`.repeat(dow(first));
+  for (let d = 1; d <= days; d++) {
+    const iso = `${MONTH}-${String(d).padStart(2, "0")}`;
+    const evs = byDay[iso] || [];
+    const cats = [...new Set(evs.map((e) => e.cat))];
+    if (showMovies() && DATA.movies.some((m) => m.release === iso && (F !== "in" || hasVotes(m)))) cats.push("movies");
+    const love = evs.some((e) => e.why === "love");
+    const going = new Set(evs.flatMap((e) => Object.entries(votesFor(e)).filter(([, s]) => s === "going").map(([n]) => n))).size;
+    const past = iso < TODAY;
+    const label = `${DOW[dow(iso)]} ${short(iso)}: ${evs.length ? evs.length + (evs.length === 1 ? " thing" : " things") : "nothing yet"}${love ? ", a band we love" : ""}`;
+    html += `<button class="cell${past ? " past" : ""}${iso === TODAY ? " today" : ""}${love ? " love" : ""}" data-d="${iso}" ${past ? "disabled" : ""} aria-label="${esc(label)}">` +
+      `<span class="n">${d}</span><span class="dots">${cats.map((c) => `<i class="c-${c}"></i>`).join("")}</span>` +
+      (going ? `<span class="in" title="${going} going">${going}</span>` : "") + `</button>`;
+  }
+  $("grid").innerHTML = html;
+  $("grid").querySelectorAll(".cell[data-d]:not(.past)").forEach((c) => c.onclick = () => goTo(c.dataset.d));
+  $("key").innerHTML = Object.entries(CATS).map(([k, l]) => `<span><i class="c-${k}"></i>${k === "movies" ? "Movie opens" : l}</span>`).join("") +
+    `<span><span class="lv"></span>Band we love</span>`;
+}
+
+function evCard(e) {
+  const c = clock(e.time);
+  const v = votesFor(e);
+  const going = Object.keys(v).filter((n) => v[n] === "going"), int = Object.keys(v).filter((n) => v[n] === "interested");
+  const mine = v[ME] || "";
+  const names = (arr) => arr.map((n) => n === ME ? `<span class="mine">${esc(n)}</span>` : esc(n)).join(", ");
+  const tags = [];
+  if (e.why === "love") tags.push(`<span class="tag love">Band we love</span>`);
+  if (e.why === "like") tags.push(`<span class="tag">On our list</span>`);
+  if (e.why === "fav") tags.push(`<span class="tag">Favorite comic</span>`);
+  if (e.drive_hours) tags.push(`<span class="tag road">Road trip · ${hours(e.drive_hours)} drive</span>`);
+  const where = [e.venue, e.city && !/^Boston\b/.test(e.city) ? e.city : ""].filter(Boolean).map(esc).join(", ");
+  return `<article class="ev c-${e.cat}${e.why === "love" ? " love" : ""}" data-id="${esc(e.id)}">
+    <div class="tm">${c ? `${c.t}<small>${c.ap}</small>` : `<small>Time<br>TBA</small>`}<span class="k">${CATS[e.cat] || ""}</span></div>
+    <div>
+      <div class="title">${e.url ? `<a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.title)}</a>` : esc(e.title)}</div>
+      ${e.sub ? `<div class="sub">${esc(e.sub)}</div>` : ""}
+      <div class="where">${where}</div>
+      ${tags.length ? `<div class="tags">${tags.join("")}</div>` : ""}
+      ${going.length || int.length ? `<div class="who">${going.length ? `<b>Going:</b> ${names(going)}` : ""}${going.length && int.length ? " · " : ""}${int.length ? `<b>Interested:</b> ${names(int)}` : ""}</div>` : ""}
+    </div>
+    <div class="acts">
+      <button class="vote" data-s="interested" aria-pressed="${mine === "interested"}">Interested${int.length ? `<span class="ct">${int.length}</span>` : ""}</button>
+      <button class="vote" data-s="going" aria-pressed="${mine === "going"}">Going${going.length ? `<span class="ct">${going.length}</span>` : ""}</button>
+      <a class="ics" href="#" data-ics>Add to calendar</a>
+    </div>
+  </article>`;
+}
+
+function movieLinks(ms, iso) {
+  const th = theaterFor(iso);
+  return ms.map((m) => `<a href="${showtimes(m, th)}" target="_blank" rel="noopener">${esc(m.title)}</a>`).join(", ") +
+    ` <span class="th">at ${esc(th.name)}</span>`;
+}
+
+function renderAgenda(byDay) {
+  const [y, mo] = MONTH.split("-").map(Number);
+  const days = new Date(Date.UTC(y, mo, 0)).getUTCDate();
+  let start = `${MONTH}-01`;
+  if (start < TODAY) start = TODAY;
+  const end = `${MONTH}-${String(days).padStart(2, "0")}`;
+  const out = [];
+  let quiet = [];
+  // A run of quiet days (weeknights or a weekend, never both) becomes one line with a movie idea.
+  const flushQuiet = () => {
+    if (!quiet.length) return;
+    if (F !== "picks" && F !== "movies") { quiet = []; return; }
+    const a = quiet[0], b = quiet[quiet.length - 1];
+    const playing = [...new Set(quiet.flatMap(moviesOn))];
+    const when = a === b ? `${DOW[dow(a)]} ${short(a)}` : `${DOW[dow(a)]} ${short(a)} – ${DOW[dow(b)]} ${short(b)}`;
+    const lead = F === "movies" ? "" : "Nothing on the radar.";
+    const idea = playing.length ? `${lead ? " " : ""}<span class="lbl">${F === "movies" ? "Playing" : "Movie night?"}</span>${movieLinks(playing, a)}` : "";
+    out.push(`<p class="quiet${playing.length ? " has" : ""}" id="d-${a}" data-days="${quiet.join(" ")}"><b>${when}</b> · ${lead}${idea}</p>`);
+    quiet = [];
+  };
+  for (let iso = start; iso <= end; iso = addDays(iso, 1)) {
+    const evs = byDay[iso] || [];
+    const opening = showMovies() ? DATA.movies.filter((m) => m.release === iso && (F !== "in" || hasVotes(m))) : [];
+    if (!evs.length && !opening.length) {
+      if (quiet.length && weekend(quiet[0]) !== weekend(iso)) flushQuiet();
+      quiet.push(iso);
+      continue;
+    }
+    flushQuiet();
+    const rel = relDay(iso);
+    const fl = opening.length ? `<div class="flicks"><span class="lbl">Opens today</span>${movieLinks(opening, iso)}</div>` : "";
+    out.push(`<section class="day" id="d-${iso}" aria-label="${DOW[dow(iso)]} ${short(iso)}">
+      <div class="dayhead"><span class="w">${DOW[dow(iso)]}</span><span class="dt">${short(iso)}</span>${rel ? `<span class="rel">${rel}</span>` : ""}</div>
+      ${evs.map(evCard).join("")}${fl}</section>`);
+  }
+  flushQuiet();
+  const ms = months(), i = ms.indexOf(MONTH);
+  if (!out.length) out.push(`<p class="empty">Nothing ${F === "in" ? "marked yet" : "for this filter"} in ${MONTHS[mo - 1]}.</p>`);
+  if (i < ms.length - 1) {
+    const [, nm] = ms[i + 1].split("-").map(Number);
+    out.push(`<button class="btn next" id="more">On to ${MONTHS[nm - 1]} →</button>`);
+  }
+  $("agenda").innerHTML = out.join("");
+  const more = $("more");
+  if (more) more.onclick = () => { MONTH = ms[i + 1]; render(); $("cal-sec").scrollIntoView({ behavior: "smooth" }); };
+  $("agenda").querySelectorAll(".ev").forEach((card) => {
+    const e = DATA.events.find((x) => x.id === card.dataset.id);
+    card.querySelectorAll(".vote").forEach((b) => b.onclick = () => vote(e, b.dataset.s));
+    card.querySelector("[data-ics]").onclick = (ev) => { ev.preventDefault(); ics(e); };
+  });
+}
+
+function renderFilms() {
+  const th = DATA.theaters;
+  const list = DATA.movies.filter((m) => addDays(m.release, RUN_DAYS) > TODAY && (F !== "in" || hasVotes(m)));
+  $("movies").hidden = !showMovies() || !list.length;
+  $("films").innerHTML = list.map((m) => {
+    const v = votesFor(m), mine = v[ME] || "";
+    const going = Object.keys(v).filter((n) => v[n] === "going"), int = Object.keys(v).filter((n) => v[n] === "interested");
+    const out = m.release <= TODAY;
+    return `<article class="film" data-id="${esc(m.id)}">
+      <div class="when">${out ? "In theaters now" : `Opens ${DOW[dow(m.release)]}, ${short(m.release)}`}</div>
+      <div class="t">${esc(m.title)}</div>
+      <div class="by">${esc([m.by, m.studio].filter(Boolean).join(" · "))}</div>
+      ${m.why ? `<div class="why">${esc(m.why)}</div>` : ""}
+      <div class="st"><span>Weeknights: <a href="${showtimes(m, th.weekday)}" target="_blank" rel="noopener">${esc(th.weekday.name)}</a></span><span>Weekends: <a href="${showtimes(m, th.weekend)}" target="_blank" rel="noopener">${esc(th.weekend.name)}</a></span></div>
+      ${going.length || int.length ? `<div class="who">${going.length ? `<b>Going:</b> ${esc(going.join(", "))}` : ""}${going.length && int.length ? " · " : ""}${int.length ? `<b>Interested:</b> ${esc(int.join(", "))}` : ""}</div>` : ""}
+      <div class="row"><button class="vote" data-s="interested" aria-pressed="${mine === "interested"}">Interested${int.length ? `<span class="ct">${int.length}</span>` : ""}</button>
+      <button class="vote" data-s="going" aria-pressed="${mine === "going"}">Going${going.length ? `<span class="ct">${going.length}</span>` : ""}</button></div>
+    </article>`;
+  }).join("");
+  $("films").querySelectorAll(".film").forEach((card) => {
+    const m = DATA.movies.find((x) => x.id === card.dataset.id);
+    card.querySelectorAll(".vote").forEach((b) => b.onclick = () => vote(m, b.dataset.s));
+  });
+}
+
+function renderFoot() {
+  const up = new Date(DATA.updated);
+  const when = isNaN(up) ? "" : up.toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  const s = DATA.sources || {};
+  const bits = [];
+  if (s.ticketmaster && s.ticketmaster !== "no key yet") bits.push("Ticketmaster");
+  if (s.espn) bits.push("ESPN schedules");
+  bits.push("hand-picked shows and movies");
+  $("foot").innerHTML = `<p>Updated ${esc(when)} ET from ${bits.join(", ")}. Refreshes every morning.</p>
+    <p>Times and lineups change, so check the ticket link before you go. Drive times are rough estimates from downtown Boston.</p>`;
+}
+
+function render() {
+  const byDay = {};
+  for (const e of DATA.events) if (e.date >= TODAY && showEvent(e)) (byDay[e.date] = byDay[e.date] || []).push(e);
+  renderChips(); renderMe(); renderBig(); renderGrid(byDay); renderAgenda(byDay); renderFilms();
+}
+
+function goTo(iso) {
+  if (monthOf(iso) !== MONTH) { MONTH = monthOf(iso); render(); }
+  let el = $("d-" + iso) || [...document.querySelectorAll(".quiet")].find((q) => q.dataset.days.split(" ").includes(iso));
+  if (!el) {
+    // Hidden by the current filter: go back to everything we picked.
+    if (F !== "picks") { F = "picks"; store.set("filter", F); render(); el = $("d-" + iso); }
+  }
+  if (!el) return;
+  el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+  if (el.classList.contains("day")) { el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
+}
+
+// One event as a calendar file: Apple Calendar, Google and Outlook all open it.
+function ics(e) {
+  const pad = (n) => String(n).padStart(2, "0");
+  const stamp = (d) => `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
+  const line = (s) => String(s || "").replace(/[\\;,]/g, (c) => "\\" + c).replace(/\n/g, "\\n");
+  let when;
+  if (e.time) {
+    const [h, mi] = e.time.split(":").map(Number);
+    const start = easternToUtc(e.date, h, mi);
+    when = `DTSTART:${stamp(new Date(start))}\r\nDTEND:${stamp(new Date(start + 3 * 3600e3))}`;
+  } else {
+    when = `DTSTART;VALUE=DATE:${e.date.replace(/-/g, "")}\r\nDTEND;VALUE=DATE:${addDays(e.date, 1).replace(/-/g, "")}`;
+  }
+  const body = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//davidsolar.dev//Night Out//EN", "BEGIN:VEVENT",
+    `UID:${e.id}@davidsolar.dev`, `DTSTAMP:${stamp(new Date())}`, when, `SUMMARY:${line(e.title)}`,
+    `LOCATION:${line([e.venue, e.city].filter(Boolean).join(", "))}`, e.url ? `URL:${e.url}` : "", "END:VEVENT", "END:VCALENDAR"]
+    .filter(Boolean).join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([body], { type: "text/calendar" }));
+  a.download = (e.title.replace(/[^\w]+/g, "-").replace(/^-|-$/g, "") || "event") + ".ics";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+function easternToUtc(date, hour, minute) {
+  const [y, mo, d] = parts(date);
+  for (const off of [4, 5]) {
+    const t = Date.UTC(y, mo - 1, d, hour + off, minute);
+    const h = +new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "numeric", hourCycle: "h23" }).format(t);
+    if (h === hour) return t;
+  }
+  return Date.UTC(y, mo - 1, d, hour + 5, minute);
+}
+
+$("prev").onclick = () => { const ms = months(), i = ms.indexOf(MONTH); if (i > 0) { MONTH = ms[i - 1]; render(); } };
+$("next").onclick = () => { const ms = months(), i = ms.indexOf(MONTH); if (i < ms.length - 1) { MONTH = ms[i + 1]; render(); } };
+document.addEventListener("visibilitychange", async () => {
+  if (document.visibilityState === "visible" && DATA && REMOTE) { await loadVotes(); render(); }
+});
+
+(async function start() {
+  try {
+    const res = await fetch("events.json?v=" + Math.floor(Date.now() / 600000), { cache: "no-cache" });
+    DATA = await res.json();
+  } catch (e) {
+    $("agenda").innerHTML = `<p class="empty">Couldn't load the calendar. Try again in a minute.</p>`;
+    return;
+  }
+  const slug = (s) => s.toLowerCase().normalize("NFKD").replace(/[^\w]+/g, "-").replace(/^-|-$/g, "");
+  DATA.movies.forEach((m) => { m.id = m.id || "movie-" + slug(m.title); });
+  MONTH = monthOf(TODAY);
+  render();                      // draw right away, then fill in who's in
+  await loadVotes();
+  render();
+})();
+</script>
+</body>
+</html>

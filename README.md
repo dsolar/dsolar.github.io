@@ -30,8 +30,12 @@ dsolar.github.io/
   nick-chat/                  Chat with Nick
   guillotine/                 Bastille Day Odds: index.html, sim.js (the simulation),
                               data.json (league data, written by the workflow below)
+  calendar/                   Night Out: index.html, taste.json and picks.json (edit these),
+                              events.json (written by the calendar workflow)
   tools/guillotine_update.py  pulls the league from Yahoo into guillotine/data.json
-  .github/workflows/          guillotine.yml runs that script every morning in season
+  tools/calendar_update.py    builds calendar/events.json; calendar-votes.js is its vote box
+  .github/workflows/          guillotine.yml runs that script every morning in season;
+                              calendar-update.yml rebuilds the calendar every morning
   .nojekyll                   tells GitHub Pages to serve the files as-is
   .gitignore                  files Git should skip
 ```
@@ -133,6 +137,27 @@ To add a week's send-off from the league email: save the image as `guillotine/eu
 Clicking that team in The Fallen then opens the image and haiku. Or send the image and haiku to Claude and have it add them.
 
 How eliminations are found: in each finished week, the lowest score among teams still alive is the one that was cut. The model's settings (how many recent weeks count, how far later weeks lean toward the league average, how much scores swing) are the `DEFAULTS` at the top of `guillotine/sim.js`.
+
+## Night Out: the friends' calendar
+
+`davidsolar.dev/calendar/` is a shared calendar of shows, comics, games and movies around Boston, plus road trips for the bands we love. It's link-only (hidden on the home page, `noindex` for search engines). Everything it shows comes from `calendar/events.json`, which the "Calendar update" workflow rebuilds every morning at 6:41am ET and whenever these files change:
+
+- `calendar/taste.json`: who and what to watch for. Bands we **love** (shown anywhere within `road_trip_hours` of Boston), bands we **like** and favorite **comedians** (flagged around Boston), the teams (home games only), the big rooms, and the two theaters (AMC Boston Common on weeknights, Showcase Legacy Place on weekends). Edit it on GitHub like any file; names match loosely.
+- `calendar/picks.json`: hand-picked shows (road trips, Wilbur shows, anything the feeds miss) and the movie picks. Each event needs `date`, `title`, `cat` (`music`, `comedy` or `sports`), `venue`, `city`, and optionally `time` ("20:00"), `url`, `sub` (a second line) and `drive_hours`. Each movie needs `title` and `release` ("YYYY-MM-DD"), optionally `by`, `studio` and `why`. A movie shows as playing for six weeks after it opens.
+
+Sources: ESPN's public schedules for the Celtics, Bruins and Patriots (no key needed), Ticketmaster's Discovery API for Boston comedy and music and for loved bands within the road-trip radius, and `picks.json`. When Ticketmaster and a pick list the same show, the Ticketmaster one wins (real ticket link) and any Interested/Going marks carry over.
+
+**Turn on Ticketmaster (free, about 5 minutes).** Sign up at https://developer.ticketmaster.com/ > My Apps > copy the **Consumer Key**. Then repo > **Settings** > **Secrets and variables** > **Actions** > **New repository secret**: name `TICKETMASTER_KEY`, value the key. Run **Actions** > **Calendar update** > **Run workflow**. Until then the calendar runs on ESPN plus the hand picks.
+
+**Interested / Going.** Friends tap a button, type a first name once (kept on their phone), and the mark is shared with everyone on the link through a small vote box, `tools/calendar-votes.js`, running free on Cloudflare. One-time setup:
+
+1. Cloudflare dashboard > **Storage & Databases** > **KV** > **Create a namespace**, name it `nightout-votes`.
+2. **Workers & Pages** > **Create** > **Create Worker**, name it `calendar-votes` > **Deploy**.
+3. **Edit code**, select everything, paste in `tools/calendar-votes.js`, **Deploy**.
+4. The worker's **Settings** > **Bindings** > **Add** > **KV namespace**: variable name `VOTES`, namespace `nightout-votes` > **Deploy**.
+5. Check it: https://calendar-votes.dsolar.workers.dev/ should show `{"votes":{}}`.
+
+The page looks for the vote box at `votes_url` in `calendar/taste.json`. Until it answers, marks save on each person's own phone and go up to the shared box the next time it's reachable. Free plan: 100,000 reads and 1,000 writes a day. Anyone with the link can mark things under any name, so keep the link among friends.
 
 ## Where things stand
 
