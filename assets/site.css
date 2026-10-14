@@ -1,0 +1,209 @@
+/* davidsolar.dev shared styles
+   Layout: a masthead with the Massachusetts State House standing on the hero's bottom rule,
+   then the projects as wide rows, then a short About.
+   Boston in the details: Patriots navy and red run the page, project numbers sit on
+   Green Monster scoreboard plates, the footer carries a BC maroon and gold stripe,
+   and at night the State House windows light up under its gold dome.
+   Every color is a variable below, so a palette change happens in one place. */
+
+:root{
+  --paper:#F5F4F0;      /* page background */
+  --paper-2:#E9E9E4;    /* quiet fills */
+  --ink:#002244;        /* Patriots navy: text and rules */
+  --muted:#4A586C;      /* secondary text */
+  --rule:#C9CED3;       /* light dividers, a lighter take on Patriots silver */
+  --red:#C60C30;        /* Patriots red: links, buttons, the mark's ring */
+  --monster:#1D4A36;    /* Green Monster scoreboard plates */
+  --plate-ink:#F5F4F0;  /* numbers on the plates */
+  --maroon:#98002E;     /* Boston College */
+  --gold:#BC9B6A;       /* Boston College */
+  --line-art:#002244;   /* the State House line drawing */
+  --dome:#C9A227;       /* its gold dome */
+  --dome-edge:#8A6D12;
+  --window:#E6E6E0; --window-lit:#E6E6E0;
+  --art-glow:none;
+  --mark-bg:#002244; --mark-fg:#FFFFFF;
+  --button:#002244; --button-ink:#FFFFFF;
+
+  --f-display:"Besley",Georgia,"Times New Roman",serif;
+  --f-body:"Libre Franklin","Franklin Gothic Medium","Helvetica Neue",Arial,sans-serif;
+
+  --wrap:74rem;         /* widest content */
+  --meta-col:8.5rem;    /* left column for project type/date and section names */
+  --gutter:max(16px, env(safe-area-inset-left, 0px));
+  --gutter-r:max(16px, env(safe-area-inset-right, 0px));
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#071628; --paper-2:#0F2440; --ink:#EEF0F2; --muted:#A3AFBF; --rule:#22395A;
+    --red:#F0475E; --monster:#1D4A36; --plate-ink:#F5F4F0; --maroon:#B3203F; --gold:#C9AC7E;
+    --line-art:#AFC0D6; --dome:#E2B84A; --dome-edge:#F5D27A; --window:#0F2440; --window-lit:#F2C14E;
+    --art-glow:drop-shadow(0 0 10px rgba(242,193,78,.22));
+    --mark-bg:#EEF0F2; --mark-fg:#002244;
+    --button:#EEF0F2; --button-ink:#002244;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#071628; --paper-2:#0F2440; --ink:#EEF0F2; --muted:#A3AFBF; --rule:#22395A;
+  --red:#F0475E; --monster:#1D4A36; --plate-ink:#F5F4F0; --maroon:#B3203F; --gold:#C9AC7E;
+  --line-art:#AFC0D6; --dome:#E2B84A; --dome-edge:#F5D27A; --window:#0F2440; --window-lit:#F2C14E;
+  --art-glow:drop-shadow(0 0 10px rgba(242,193,78,.22));
+  --mark-bg:#EEF0F2; --mark-fg:#002244;
+  --button:#EEF0F2; --button-ink:#002244;
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--f-body);font-size:17px;line-height:1.6;
+  font-feature-settings:"kern","liga";
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--red);color:#fff}
+img{max-width:100%;display:block}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance}
+p{margin:0}
+[hidden]{display:none!important}
+
+a{color:inherit;text-decoration-line:underline;text-decoration-color:var(--red);text-decoration-thickness:2px;text-underline-offset:.22em}
+a:hover{color:var(--red)}
+:focus-visible{outline:2px solid var(--red);outline-offset:3px;border-radius:2px}
+
+.wrap{max-width:var(--wrap);margin-inline:auto;padding-left:var(--gutter);padding-right:var(--gutter-r)}
+
+.skip{position:absolute;left:-999px;top:0}
+.skip:focus{left:var(--gutter);top:12px;background:var(--paper);padding:6px 10px;z-index:10}
+
+/* ---------- Brand mark: navy roundel, red ring, DS ---------- */
+.mark{display:block;width:var(--mark-size,38px);height:var(--mark-size,38px);flex:none}
+
+/* ---------- Header ---------- */
+.site-header .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px 24px;flex-wrap:wrap;padding-block:20px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.brand:hover{color:inherit}
+.brand-name{font-family:var(--f-display);font-weight:700;font-size:1.3rem;letter-spacing:-.01em;line-height:1}
+.site-nav{display:flex;gap:4px 24px;flex-wrap:wrap;font-size:.95rem;font-weight:500}
+.site-nav a{text-decoration-color:transparent}
+.site-nav a:hover{color:inherit;text-decoration-color:var(--red)}
+
+/* ---------- Hero: the State House ---------- */
+.hero{border-bottom:2px solid var(--ink);overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);align-items:end;gap:24px;padding-block:clamp(40px,7vw,96px) 0}
+.hero-text{padding-bottom:clamp(36px,5vw,64px);display:flex;flex-direction:column;gap:22px}
+.hero h1{font-weight:700;font-size:clamp(2.45rem,5.6vw,4.6rem);line-height:1.02;letter-spacing:-.02em;max-width:13em}
+.hero-sub{font-size:clamp(1.05rem,1.6vw,1.25rem);color:var(--muted);max-width:32em}
+.landmark{display:block;width:100%;height:auto;max-width:34rem;margin-left:auto;margin-bottom:-1px;filter:var(--art-glow)}
+.sh-line{fill:var(--paper);stroke:var(--line-art);stroke-width:1.4;stroke-linejoin:round}
+.sh-detail{fill:none;stroke:var(--line-art);stroke-width:1}
+.sh-win{fill:var(--window);stroke:var(--line-art);stroke-width:.8}
+.sh-win.lit{fill:var(--window-lit)}
+.sh-gold{fill:var(--dome);stroke:var(--dome-edge);stroke-width:1.2;animation:gild 1.4s .3s ease-out both}
+.sh-rib{fill:none;stroke:var(--dome-edge);stroke-width:1}
+@keyframes gild{from{fill:var(--paper)}to{fill:var(--dome)}}
+@media (prefers-reduced-motion: reduce){.sh-gold{animation:none}}
+
+/* ---------- Section heads ---------- */
+.section{padding-block:clamp(48px,7vw,88px)}
+.section-head{display:grid;grid-template-columns:var(--meta-col) minmax(0,1fr) auto;align-items:baseline;gap:12px 40px;margin-bottom:8px}
+.section-head h2{font-size:clamp(1.9rem,3.4vw,2.6rem);font-weight:700;letter-spacing:-.015em;grid-column:2}
+.section-head .count{color:var(--muted);font-size:.95rem}
+
+/* Type filters only appear once there's more than one kind of project */
+.filters{display:flex;gap:8px;flex-wrap:wrap;grid-column:2 / -1;margin-top:10px}
+.filters button{appearance:none;font:inherit;font-size:.9rem;font-weight:500;color:var(--ink);background:transparent;border:1.5px solid var(--rule);border-radius:999px;padding:5px 14px;cursor:pointer}
+.filters button:hover{border-color:var(--ink)}
+.filters button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+
+/* ---------- Projects ---------- */
+.catalog{display:flex;flex-direction:column}
+.entry{
+  display:grid;
+  grid-template-columns:var(--meta-col) minmax(0,1fr) minmax(0,25rem);
+  grid-template-areas:"meta body cover";
+  gap:24px 40px;align-items:start;
+  padding-block:clamp(32px,4.5vw,52px);
+  border-top:1px solid var(--rule);
+}
+.entry:first-child{border-top:2px solid var(--ink)}
+.entry-meta{grid-area:meta;display:flex;flex-direction:column;gap:2px;padding-top:.55rem;font-size:.92rem;color:var(--muted)}
+.entry-meta .type{color:var(--ink);font-weight:600}
+.entry-meta .state{color:var(--red);font-weight:600}
+
+.entry-body{grid-area:body;display:flex;flex-direction:column;gap:16px;min-width:0}
+.entry-body h3{font-size:clamp(1.75rem,3vw,2.35rem);font-weight:700;line-height:1.08;letter-spacing:-.015em}
+.entry-body h3 a{text-decoration:none}
+.entry-body h3 a:hover{color:inherit;text-decoration:underline;text-decoration-color:var(--red)}
+.question{font-family:var(--f-display);font-style:italic;font-weight:500;font-size:1.22rem;line-height:1.4;max-width:30em}
+.summary{max-width:36em}
+
+/* The numbers, hung like the Green Monster's hand-turned scoreboard */
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 20px;margin:8px 0 4px;max-width:36em}
+.facts div{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
+.facts dt{order:2;font-size:.85rem;line-height:1.35;color:var(--muted)}
+.facts dd{
+  order:1;margin:0;
+  background:var(--monster);color:var(--plate-ink);
+  font-family:var(--f-body);font-weight:700;font-size:clamp(1.2rem,2vw,1.45rem);line-height:1;
+  font-variant-numeric:tabular-nums lining-nums;letter-spacing:.01em;
+  padding:9px 11px 8px;border-radius:2px;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.08), 0 1px 0 rgba(0,0,0,.25);
+}
+
+.actions{display:flex;gap:12px 22px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.btn{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--button);color:var(--button-ink);text-decoration:none;
+  font-weight:600;font-size:.98rem;padding:11px 20px;border-radius:4px;
+}
+.btn:hover{background:var(--red);color:#fff}
+.btn .dot{width:9px;height:9px;border-radius:50%;background:var(--red)}
+.btn:hover .dot{background:#fff}
+.stack{font-size:.9rem;color:var(--muted)}
+
+.entry-cover{grid-area:cover;display:block;text-decoration:none;border-radius:6px;overflow:hidden;background:var(--cover-bg,var(--paper-2));box-shadow:0 0 0 1px var(--rule)}
+.entry-cover img{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;object-position:top left}
+.entry-cover .band{display:block;height:8px;background:var(--cover-band,var(--red))}
+.entry-cover .typeset{aspect-ratio:4/3;display:flex;align-items:flex-end;padding:22px;color:var(--cover-ink,#fff);font-family:var(--f-display);font-weight:800;font-size:2rem;line-height:1}
+
+/* ---------- About ---------- */
+.about{border-top:2px solid var(--ink)}
+.about-grid{display:grid;grid-template-columns:var(--meta-col) minmax(0,1fr);gap:20px 40px}
+.about-grid h2{grid-column:2;font-size:clamp(1.9rem,3.4vw,2.6rem);font-weight:700;letter-spacing:-.015em}
+.about-copy{grid-column:2;display:flex;flex-direction:column;gap:16px;max-width:36em;font-size:1.08rem}
+.about-copy .lead{font-family:var(--f-display);font-size:clamp(1.3rem,2.2vw,1.55rem);line-height:1.4;font-weight:500}
+
+/* ---------- Footer, with a Boston College stripe across the top ---------- */
+.site-footer{border-top:5px solid var(--maroon);box-shadow:inset 0 2px 0 var(--gold)}
+.site-footer .wrap{display:grid;grid-template-columns:var(--meta-col) minmax(0,1fr) auto;gap:20px 40px;align-items:start;padding-block:36px 48px}
+.site-footer .mark{--mark-size:42px}
+.foot-copy{display:flex;flex-direction:column;gap:4px;color:var(--muted);font-size:.92rem}
+.foot-copy strong{color:var(--ink);font-family:var(--f-display);font-size:1.15rem;font-weight:700}
+.foot-nav{display:flex;gap:6px 22px;flex-wrap:wrap;font-size:.95rem;font-weight:500}
+
+/* ---------- Phones and narrow windows ---------- */
+@media (max-width: 900px){
+  .hero .wrap{display:flex;flex-direction:column;align-items:stretch;gap:0}
+  .hero-text{padding-bottom:20px}
+  .landmark{margin-inline:auto}
+  .about-grid,.site-footer .wrap{grid-template-columns:minmax(0,1fr)}
+  .about-grid h2,.about-copy{grid-column:1}
+  .section-head{grid-template-columns:minmax(0,1fr) auto}
+  .section-head h2{grid-column:1}
+  .filters{grid-column:1 / -1}
+  .entry{grid-template-columns:minmax(0,1fr);grid-template-areas:"meta" "cover" "body";gap:18px}
+  .entry-meta{flex-direction:row;flex-wrap:wrap;gap:4px 14px;align-items:baseline;padding-top:0}
+  .entry-cover{max-width:34rem}
+}
+@media (max-width: 520px){
+  .site-header .wrap{gap:12px;padding-block:16px}
+  .brand{gap:10px}
+  .brand .mark{--mark-size:32px}
+  .brand-name{font-size:1.12rem}
+  .site-nav{gap:16px;font-size:.92rem}
+  .facts{gap:14px 12px}
+  .facts dd{font-size:1.1rem;padding:8px 9px 7px}
+}

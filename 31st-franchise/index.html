@@ -10,6 +10,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Barlow:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/bar.css">
 <style>
 /* Layout: a front-office war room. Intro = the two franchises side by side, then rules and the board. Draft = whoever's on the clock across the top, the player pool on the left, a depth chart pinned on the right. Results = scoreboard, then one team's numbers at a time. Team colors are the only loud things. */
 :root{
@@ -360,10 +362,17 @@ dialog.card-dlg::backdrop{background:rgba(0,0,0,.55)}
   .col-hide{display:none}
 }
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+/* davidsolar.dev bar: pulled out to the page edges past the body padding */
+.ds-bar{margin:-18px -16px 18px}
 </style>
 </head>
 <body>
 
+
+<nav class="ds-bar" aria-label="davidsolar.dev">
+  <a href="../"><img src="../assets/ds-mark.svg" alt="" width="20" height="20"><span class="ds-bar-name">David Solar</span></a>
+  <a href="../#projects">All projects</a>
+</nav>
 
 <div class="app">
   <header class="top">

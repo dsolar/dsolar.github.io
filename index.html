@@ -2,55 +2,185 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>David Solar</title>
-<meta name="description" content="Things David Solar builds to learn to code, starting with The 31st Franchise, an NBA expansion draft game.">
-<!-- The tab icon: a tiny SVG written straight into the page, so there's no image file to manage -->
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2300653A'/%3E%3Ctext x='32' y='42' font-family='Arial,sans-serif' font-size='28' font-weight='700' text-anchor='middle' fill='%23FFC200'%3EDS%3C/text%3E%3C/svg%3E">
-<style>
-  /* Colors live in variables so dark mode only has to swap them */
-  :root{
-    --bg:#F6F7F5; --surface:#FFFFFF; --ink:#141814; --muted:#5B655E; --line:#DDE2DE;
-    --accent:#00653A; --accent-2:#FFC200;
-    --font:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
-  }
-  @media (prefers-color-scheme: dark){
-    :root{ --bg:#0E120F; --surface:#161C18; --ink:#E7ECE8; --muted:#97A39B; --line:#29322C; --accent:#3DBA7A; }
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.6}
-  main{max-width:720px;margin:0 auto;padding:64px 20px 48px}
-  h1{font-size:clamp(2rem,6vw,2.8rem);line-height:1.1;margin:0 0 12px;letter-spacing:-0.02em}
-  .lede{color:var(--muted);margin:0 0 48px;max-width:34em}
-  h2{font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0 0 14px}
-  .project{display:block;background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--accent);border-radius:12px;padding:22px 24px;color:inherit;text-decoration:none;transition:transform .15s ease,border-color .15s ease}
-  .project:hover{transform:translateY(-2px);border-color:var(--accent)}
-  .project h3{margin:0 0 6px;font-size:1.3rem}
-  .project p{margin:0 0 14px;color:var(--muted)}
-  .project .go{font-weight:600;color:var(--accent)}
-  .tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
-  .tags span{font-size:12px;padding:2px 8px;border-radius:999px;background:var(--bg);border:1px solid var(--line);color:var(--muted)}
-  footer{max-width:720px;margin:0 auto;padding:0 20px 40px;color:var(--muted);font-size:14px;display:flex;gap:16px;flex-wrap:wrap}
-  footer a{color:inherit}
-</style>
+<meta name="description" content="Games and simulations by David Solar, mostly about sports and data. Everything here is live and playable in your browser.">
+<link rel="canonical" href="https://davidsolar.dev/">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="theme-color" content="#F5F4F0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#071628" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://davidsolar.dev/">
+<meta property="og:title" content="David Solar">
+<meta property="og:description" content="Games and simulations, mostly about sports and data. Everything here is live and playable.">
+<meta property="og:image" content="https://davidsolar.dev/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Besley:ital,wght@0,500;0,600;0,700;0,800;1,500&family=Libre+Franklin:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
-<main>
-  <h1>David Solar</h1>
-  <p class="lede">Things I build to get better at coding. Mostly sports, data and the occasional rabbit hole.</p>
+<!-- The DS mark, drawn once here and reused in the header and footer -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="ds-mark" viewBox="0 0 64 64">
+    <circle cx="32" cy="32" r="32" style="fill:var(--mark-bg)"/>
+    <circle cx="32" cy="32" r="28.25" style="fill:none;stroke:var(--red);stroke-width:2.5"/>
+    <path style="fill:var(--mark-fg)" d="M15 39.87Q15 40.13 15.11 40.19Q15.22 40.24 15.49 40.24H24.16Q26.59 40.24 28.33 39.62Q30.06 38.99 31.15 37.86Q32.24 36.74 32.75 35.23Q33.26 33.71 33.26 31.94Q33.26 30.17 32.78 28.66Q32.29 27.15 31.23 26.03Q30.16 24.9 28.42 24.27Q26.68 23.65 24.16 23.65H15.59Q15.26 23.65 15.13 23.74Q15 23.83 15 24.16V25.66Q15 25.99 15.1 26.08Q15.21 26.16 15.57 26.16H16.95Q17.28 26.16 17.36 26.26Q17.43 26.37 17.43 26.7V37.24Q17.43 37.53 17.38 37.63Q17.33 37.73 17.04 37.73H15.42Q15.17 37.73 15.08 37.81Q15 37.89 15 38.17ZM22.4 37.73Q22.05 37.73 21.92 37.66Q21.8 37.59 21.8 37.26V26.74Q21.8 26.37 21.92 26.26Q22.04 26.16 22.41 26.16H24Q25.36 26.16 26.34 26.83Q27.32 27.51 27.84 28.8Q28.37 30.09 28.37 31.94Q28.37 33.8 27.89 35.09Q27.4 36.38 26.44 37.06Q25.47 37.73 24 37.73ZM46.18 28.9Q46.25 29.29 46.31 29.42Q46.36 29.55 46.84 29.55H47.85Q48.22 29.55 48.32 29.47Q48.42 29.38 48.42 29.03V24.12Q48.42 23.83 48.31 23.74Q48.21 23.65 47.95 23.65H46.51Q46.27 23.65 46.22 23.71Q46.16 23.76 46.08 23.9L45.78 24.46Q45.57 24.82 45.41 24.83Q45.25 24.83 44.96 24.61Q44.24 24.04 43.25 23.69Q42.25 23.34 41.04 23.34Q39.96 23.34 38.91 23.63Q37.86 23.91 37.02 24.52Q36.17 25.13 35.67 26.08Q35.17 27.03 35.17 28.38Q35.17 29.74 35.69 30.63Q36.21 31.52 37.07 32.07Q37.93 32.63 38.96 32.97Q39.99 33.31 41.03 33.57Q42.06 33.82 42.92 34.13Q43.78 34.43 44.3 34.9Q44.82 35.37 44.82 36.15Q44.82 36.75 44.47 37.22Q44.12 37.69 43.41 37.96Q42.69 38.23 41.59 38.23Q40.27 38.23 39.27 37.7Q38.28 37.17 37.68 36.31Q37.09 35.44 36.96 34.45Q36.93 34.15 36.9 34.05Q36.86 33.95 36.52 33.95H35.21Q34.9 33.95 34.82 34.05Q34.75 34.14 34.75 34.46V39.89Q34.75 40.18 34.87 40.27Q34.99 40.35 35.3 40.35H36.4Q36.71 40.35 36.85 40.3Q36.99 40.25 37.1 40.05L37.33 39.55Q37.56 39.14 37.68 39.03Q37.8 38.91 38.12 39.21Q38.8 39.84 39.83 40.25Q40.87 40.66 42.3 40.66Q44.27 40.66 45.78 40.12Q47.3 39.59 48.15 38.41Q49 37.23 49 35.27Q49 33.89 48.47 32.96Q47.95 32.03 47.08 31.44Q46.21 30.84 45.18 30.46Q44.14 30.08 43.1 29.81Q42.07 29.53 41.2 29.24Q40.33 28.94 39.81 28.52Q39.28 28.09 39.28 27.41Q39.28 26.69 39.94 26.23Q40.6 25.77 41.91 25.77Q42.85 25.77 43.76 26.1Q44.67 26.44 45.34 27.13Q46 27.83 46.18 28.9Z"/>
+  </symbol>
+</svg>
 
-  <h2>Projects</h2>
-  <!-- One <a class="project"> per project. Copy this block to add the next one. -->
-  <a class="project" href="31st-franchise/">
-    <h3>The 31st Franchise</h3>
-    <p>An NBA expansion draft game. Build an expansion team from what 30 NBA teams leave unprotected, with real 2027-28 contracts, the real expansion rules and draft-day side deals, then play the season.</p>
-    <div class="tags"><span>JavaScript</span><span>Python</span><span>Monte Carlo sim</span></div>
-    <span class="go">Play it &rarr;</span>
-  </a>
+<a class="skip" href="#projects">Skip to projects</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="David Solar, home">
+      <svg class="mark" aria-hidden="true" focusable="false"><use href="#ds-mark"/></svg>
+      <span class="brand-name">David Solar</span>
+    </a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="#projects">Projects</a>
+      <a href="#about">About</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrap">
+      <div class="hero-text">
+        <h1 id="hero-title">I build games and simulations, mostly about sports and data.</h1>
+        <p class="hero-sub">Each one starts as a rabbit hole and ends up here, live and playable in your browser.</p>
+      </div>
+      <!-- The Massachusetts State House. The hero's bottom rule is the ground. -->
+      <svg class="landmark" viewBox="54 6 532 294" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false"><rect class="sh-line" x="64" y="198" width="158" height="102"/><rect class="sh-line" x="60" y="190" width="166" height="8"/><rect class="sh-win lit" x="79.6" y="212" width="14" height="24"/><rect class="sh-win lit" x="109.2" y="212" width="14" height="24"/><rect class="sh-win" x="138.8" y="212" width="14" height="24"/><rect class="sh-win lit" x="168.4" y="212" width="14" height="24"/><rect class="sh-win lit" x="79.6" y="252" width="14" height="30"/><rect class="sh-win" x="109.2" y="252" width="14" height="30"/><rect class="sh-win lit" x="138.8" y="252" width="14" height="30"/><rect class="sh-win lit" x="168.4" y="252" width="14" height="30"/><rect class="sh-line" x="418" y="198" width="158" height="102"/><rect class="sh-line" x="414" y="190" width="166" height="8"/><rect class="sh-win" x="457.6" y="212" width="14" height="24"/><rect class="sh-win lit" x="487.2" y="212" width="14" height="24"/><rect class="sh-win lit" x="516.8" y="212" width="14" height="24"/><rect class="sh-win" x="546.4" y="212" width="14" height="24"/><rect class="sh-win lit" x="457.6" y="252" width="14" height="30"/><rect class="sh-win lit" x="487.2" y="252" width="14" height="30"/><rect class="sh-win" x="516.8" y="252" width="14" height="30"/><rect class="sh-win lit" x="546.4" y="252" width="14" height="30"/><rect class="sh-line" x="198" y="246" width="244" height="54"/><path class="sh-line sh-arch" d="M204.4 300V274A11 11 0 0 1 226.4 274V300"/><path class="sh-line sh-arch" d="M239.3 300V274A11 11 0 0 1 261.3 274V300"/><path class="sh-line sh-arch" d="M274.1 300V274A11 11 0 0 1 296.1 274V300"/><path class="sh-line sh-arch" d="M309 300V274A11 11 0 0 1 331 274V300"/><path class="sh-line sh-arch" d="M343.9 300V274A11 11 0 0 1 365.9 274V300"/><path class="sh-line sh-arch" d="M378.7 300V274A11 11 0 0 1 400.7 274V300"/><path class="sh-line sh-arch" d="M413.6 300V274A11 11 0 0 1 435.6 274V300"/><rect class="sh-line" x="202" y="172" width="236" height="74"/><rect class="sh-win lit" x="221" y="186" width="8" height="18"/><rect class="sh-win" x="221" y="216" width="8" height="20"/><rect class="sh-win lit" x="245" y="186" width="8" height="18"/><rect class="sh-win lit" x="245" y="216" width="8" height="20"/><rect class="sh-win" x="269" y="186" width="8" height="18"/><rect class="sh-win lit" x="269" y="216" width="8" height="20"/><rect class="sh-win lit" x="293" y="186" width="8" height="18"/><rect class="sh-win" x="293" y="216" width="8" height="20"/><rect class="sh-win lit" x="317" y="186" width="8" height="18"/><rect class="sh-win lit" x="317" y="216" width="8" height="20"/><rect class="sh-win" x="341" y="186" width="8" height="18"/><rect class="sh-win lit" x="341" y="216" width="8" height="20"/><rect class="sh-win lit" x="365" y="186" width="8" height="18"/><rect class="sh-win" x="365" y="216" width="8" height="20"/><rect class="sh-win lit" x="389" y="186" width="8" height="18"/><rect class="sh-win lit" x="389" y="216" width="8" height="20"/><rect class="sh-win" x="413" y="186" width="8" height="18"/><rect class="sh-win lit" x="413" y="216" width="8" height="20"/><rect class="sh-line sh-col" x="206" y="178" width="8" height="68"/><rect class="sh-line sh-col" x="204" y="173" width="12" height="5"/><rect class="sh-line sh-col" x="230" y="178" width="8" height="68"/><rect class="sh-line sh-col" x="228" y="173" width="12" height="5"/><rect class="sh-line sh-col" x="254" y="178" width="8" height="68"/><rect class="sh-line sh-col" x="252" y="173" width="12" height="5"/><rect class="sh-line sh-col" x="278" y="178" width="8" height="68"/><rect class="sh-line sh-col" x="276" y="173" width="12" height="5"/><rect class="sh-line sh-col" x="302" y="178" width="8" height="68"/><rect class="sh-line sh-col" x="300" y="173" width="12" height="5"/><rect class="sh-line sh-col" x="326" y="178" width="8" height="68"/><rect class="sh-line sh-col" x="324" y="173" width="12" height="5"/><rect class="sh-line sh-col" x="350" y="178" width="8" height="68"/><rect class="sh-line sh-col" x="348" y="173" width="12" height="5"/><rect class="sh-line sh-col" x="374" y="178" width="8" height="68"/><rect class="sh-line sh-col" x="372" y="173" width="12" height="5"/><rect class="sh-line sh-col" x="398" y="178" width="8" height="68"/><rect class="sh-line sh-col" x="396" y="173" width="12" height="5"/><rect class="sh-line sh-col" x="422" y="178" width="8" height="68"/><rect class="sh-line sh-col" x="420" y="173" width="12" height="5"/><rect class="sh-line" x="196" y="160" width="248" height="13"/><path class="sh-line" d="M232 160L320 126L408 160Z"/><path class="sh-detail" d="M262 158L320 136L378 158"/><rect class="sh-line" x="262" y="106" width="116" height="22"/><rect class="sh-win lit" x="270" y="111" width="8" height="12"/><rect class="sh-win" x="288" y="111" width="8" height="12"/><rect class="sh-win lit" x="306" y="111" width="8" height="12"/><rect class="sh-win lit" x="324" y="111" width="8" height="12"/><rect class="sh-win" x="342" y="111" width="8" height="12"/><rect class="sh-win lit" x="360" y="111" width="8" height="12"/><path class="sh-gold" d="M254 108A66 56 0 0 1 386 108Z"/><path class="sh-rib" d="M287 108A33 56 0 0 1 353 108M320 108V52"/><rect class="sh-line" x="307" y="34" width="26" height="20"/><rect class="sh-win lit" x="310" y="38" width="4" height="12"/><rect class="sh-win" x="318" y="38" width="4" height="12"/><rect class="sh-win lit" x="326" y="38" width="4" height="12"/><path class="sh-gold" d="M304 35A16 9 0 0 1 336 35Z"/><path class="sh-rib" d="M320 26V17"/><circle class="sh-gold" cx="320" cy="14" r="3.6"/></svg>
+    </div>
+  </section>
+
+  <section class="section" id="projects" aria-labelledby="projects-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="projects-title">Projects</h2>
+        <span class="count" id="count"></span>
+        <div class="filters" id="filters" role="group" aria-label="Show projects by type" hidden></div>
+      </div>
+      <!-- Projects are listed in assets/projects.js. Edit that file, not this one. -->
+      <div class="catalog" id="catalog">
+        <noscript>
+          <ul>
+            <li><a href="31st-franchise/">The 31st Franchise</a>, an NBA expansion draft game</li>
+            <li><a href="degenerate-trail/">The Degenerate Trail</a>, an Oregon Trail-style game</li>
+          </ul>
+        </noscript>
+      </div>
+    </div>
+  </section>
+
+  <section class="section about" id="about" aria-labelledby="about-title">
+    <div class="wrap about-grid">
+      <h2 id="about-title">About</h2>
+      <div class="about-copy">
+        <p class="lead">I'm David Solar. By day I work in marketing, where most of what I build is AI and automation that lives inside company systems.</p>
+        <p>This site is for everything else: games, simulations and small tools, built in the evenings to get better at the craft and to answer questions I can't stop thinking about. Each project lists the question that started it.</p>
+      </div>
+    </div>
+  </section>
 </main>
-<footer>
-  <span>&copy; 2026 David Solar</span>
-  <a href="https://github.com/dsolar">GitHub</a>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <svg class="mark" aria-hidden="true" focusable="false"><use href="#ds-mark"/></svg>
+    <div class="foot-copy">
+      <strong>David Solar</strong>
+      <span>Built by hand outside Boston.</span>
+      <span>&copy; <span id="year">2026</span> David Solar</span>
+    </div>
+    <nav class="foot-nav" aria-label="Footer">
+      <a href="#projects">Projects</a>
+      <a href="#about">About</a>
+    </nav>
+  </div>
 </footer>
+
+<script src="assets/projects.js"></script>
+<script>
+/* Draws the project list from assets/projects.js. You shouldn't need to edit this. */
+(function () {
+  var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  var esc = function (s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  };
+  var when = function (ym) {
+    var p = String(ym || "").split("-");
+    return p.length === 2 ? MONTHS[+p[1] - 1] + " " + p[0] : esc(ym);
+  };
+  var slug = function (url) { return String(url || "").replace(/\/+$/, "").split("/").pop().replace(/\.html$/, "") || ""; };
+  var list = function (items) {
+    if (items.length < 2) return items.join("");
+    return items.slice(0, -1).join(", ") + " and " + items[items.length - 1];
+  };
+
+  var projects = (window.PROJECTS || []).filter(function (p) { return !p.hidden; });
+  projects.sort(function (a, b) {
+    return (!!b.featured - !!a.featured) || String(b.released || "").localeCompare(String(a.released || ""));
+  });
+
+  var catalog = document.getElementById("catalog");
+  catalog.innerHTML = projects.map(function (p) {
+    var building = p.status === "building";
+    var cover = p.cover || {};
+    var style = (cover.bg ? "--cover-bg:" + cover.bg + ";" : "") + (cover.band ? "--cover-band:" + cover.band : "");
+    var art = cover.image
+      ? '<img src="' + esc(cover.image) + '" alt="" loading="lazy" width="1040" height="780">'
+      : '<span class="typeset">' + esc(p.title) + "</span>";
+    var facts = (p.facts || []).map(function (f) {
+      return "<div><dt>" + esc(f[1]) + "</dt><dd>" + esc(f[0]) + "</dd></div>";
+    }).join("");
+    var title = building ? esc(p.title) : '<a href="' + esc(p.url) + '">' + esc(p.title) + "</a>";
+    return '<article class="entry" id="' + esc(slug(p.url)) + '" data-type="' + esc(p.type) + '" style="' + esc(style) + '">'
+      + '<div class="entry-meta"><span class="type">' + esc(p.type) + "</span>"
+      + (building ? '<span class="state">In progress</span>' : "<span>" + when(p.released) + "</span>") + "</div>"
+      + (building ? '<div class="entry-cover" aria-hidden="true">' + art + '<span class="band"></span></div>'
+                  : '<a class="entry-cover" href="' + esc(p.url) + '" tabindex="-1" aria-hidden="true">' + art + '<span class="band"></span></a>')
+      + '<div class="entry-body"><h3>' + title + "</h3>"
+      + (p.question ? '<p class="question">' + esc(p.question) + "</p>" : "")
+      + '<p class="summary">' + esc(p.summary) + "</p>"
+      + (facts ? '<dl class="facts">' + facts + "</dl>" : "")
+      + (building ? "" : '<div class="actions"><a class="btn" href="' + esc(p.url) + '"><span class="dot" aria-hidden="true"></span>Play ' + esc(p.title) + "</a></div>")
+      + (p.stack && p.stack.length ? '<p class="stack">Built with ' + esc(list(p.stack)) + "</p>" : "")
+      + "</div></article>";
+  }).join("");
+
+  var live = projects.filter(function (p) { return p.status !== "building"; }).length;
+  var inProgress = projects.length - live;
+  document.getElementById("count").textContent =
+    live + " live" + (inProgress ? ", " + inProgress + " in progress" : "");
+
+  // Filter buttons appear once there's more than one type of project
+  var types = [];
+  projects.forEach(function (p) { if (types.indexOf(p.type) < 0) types.push(p.type); });
+  if (types.length > 1) {
+    var filters = document.getElementById("filters");
+    filters.innerHTML = ["All"].concat(types).map(function (t, i) {
+      return '<button type="button" data-type="' + esc(t) + '" aria-pressed="' + (i === 0) + '">' + esc(t) + "</button>";
+    }).join("");
+    filters.hidden = false;
+    filters.addEventListener("click", function (e) {
+      var btn = e.target.closest("button");
+      if (!btn) return;
+      var t = btn.getAttribute("data-type");
+      filters.querySelectorAll("button").forEach(function (b) { b.setAttribute("aria-pressed", String(b === btn)); });
+      catalog.querySelectorAll(".entry").forEach(function (el) {
+        el.hidden = t !== "All" && el.getAttribute("data-type") !== t;
+      });
+    });
+  }
+
+  document.getElementById("year").textContent = new Date().getFullYear();
+})();
+</script>
 </body>
 </html>

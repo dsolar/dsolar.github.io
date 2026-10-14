@@ -1,0 +1,27 @@
+/* The slim davidsolar.dev bar at the top of every game.
+   Fixed colors on purpose: it looks the same on top of any game, in light or dark mode.
+   Markup to paste as the first thing inside <body> (paths assume the game is one folder deep):
+
+   <nav class="ds-bar" aria-label="davidsolar.dev">
+     <a href="../"><img src="../assets/ds-mark.svg" alt="" width="20" height="20"><span class="ds-bar-name">David Solar</span></a>
+     <a href="../#projects">All projects</a>
+   </nav>
+*/
+.ds-bar{
+  position:relative;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  min-height:38px;
+  padding-top:calc(7px + env(safe-area-inset-top, 0px));
+  padding-bottom:7px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  background:#002244;color:#F5F4F0;
+  border-bottom:2px solid #C60C30;
+  font:500 13px/1.2 "Libre Franklin","Franklin Gothic Medium","Helvetica Neue",Arial,sans-serif;
+  letter-spacing:0;text-transform:none;
+}
+.ds-bar a{display:inline-flex;align-items:center;gap:9px;color:inherit;text-decoration:none;padding:3px 0}
+.ds-bar a:hover{color:#FFFFFF;text-decoration:underline;text-decoration-color:#F0475E;text-decoration-thickness:2px;text-underline-offset:4px}
+.ds-bar a:focus-visible{outline:2px solid #F0475E;outline-offset:3px;border-radius:2px}
+.ds-bar img{width:20px;height:20px;display:block;flex:none}
+.ds-bar-name{font-family:"Besley",Georgia,"Times New Roman",serif;font-weight:700;font-size:14px}
