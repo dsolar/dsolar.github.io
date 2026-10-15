@@ -25,7 +25,8 @@ UA = "davidsolar-banner19/1.0 (+https://davidsolar.dev/celtics/)"
 STATS = ("https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/statistics/byathlete"
          "?region=us&lang=en&contentorigin=espn&isqualified=false&limit=250&page={page}"
          "&sort=general.avgMinutes:desc&season={season}&seasontype=2")
-STANDINGS = "https://site.api.espn.com/apis/v2/sports/basketball/nba/standings?season={season}"
+STANDINGS = ["https://site.web.api.espn.com/apis/v2/sports/basketball/nba/standings?region=us&lang=en&contentorigin=espn&season={season}",
+             "https://site.api.espn.com/apis/v2/sports/basketball/nba/standings?season={season}"]
 # ESPN abbreviations -> the site's (Basketball Reference style)
 TEAM = {"GS": "GSW", "NY": "NYK", "SA": "SAS", "NO": "NOP", "UTAH": "UTA", "WSH": "WAS", "BKN": "BRK", "CHA": "CHO",
         "PHX": "PHO"}
@@ -76,9 +77,19 @@ def pull_players(season):
     return out
 
 
-def pull_standings(season):
-    d = get(STANDINGS.format(season=season))
+def pull_standings(season, notes):
+    d = None
+    for url in STANDINGS:
+        try:
+            d = get(url.format(season=season))
+            if d.get("children"):
+                break
+            notes.append(f"standings: no conferences from {url.split('/')[2]}")
+        except Exception as e:
+            notes.append(f"standings: {url.split('/')[2]}: {type(e).__name__}: {e}"[:200])
     out = {}
+    if not d:
+        return out
     def walk(node):
         for e in node.get("standings", {}).get("entries", []):
             ab = e.get("team", {}).get("abbreviation")
@@ -94,18 +105,23 @@ def pull_standings(season):
 def main():
     season = int(sys.argv[1]) if len(sys.argv) > 1 else season_end_year(date.today())
     name = f"{season - 1}-{str(season)[2:]}"
+    notes = []
     players = pull_players(season)
     try:
-        standings = pull_standings(season)
+        standings = pull_standings(season, notes)
     except Exception as e:                          # standings are a bonus; stats still count
-        print("standings failed:", e)
+        notes.append(f"standings: {type(e).__name__}: {e}"[:200])
         standings = {}
+    for n in notes:
+        print(n)
     games = sum(v["w"] + v["l"] for v in standings.values()) // 2
     if not players and not standings:
         print(f"No {name} data yet; leaving {OUT} alone.")
         return
     data = {"updated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "season": name, "source": "ESPN",
             "games": games, "players": players, "standings": standings}
+    if notes:
+        data["notes"] = notes
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
