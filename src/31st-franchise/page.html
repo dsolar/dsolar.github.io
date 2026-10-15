@@ -532,7 +532,7 @@ dialog.card-dlg::backdrop{background:rgba(0,0,0,.55)}
     <div class="netbar" id="netBar2" hidden></div>
     <div class="score" id="scoreboard"></div>
     <p class="series" id="seriesLine" hidden></p>
-    <div class="card-row"><button class="btn-go" id="cardBtn" type="button" data-team="SEA">Share card</button></div>
+    <div class="card-row"><button class="btn-go" id="dynastyBtn" type="button">Continue into Dynasty Mode</button><button class="btn-go" id="cardBtn" type="button" data-team="SEA">Share card</button></div>
     <div class="tabs" id="resTabs" role="tablist" hidden></div>
 
     <div class="grid2" id="resBody">
@@ -1347,6 +1347,16 @@ function renderScoreboard(animate){
   } else { $("seriesLine").hidden=true; $("resTabs").hidden=true; }
 }
 $("resTabs").addEventListener("click",e=>{const b=e.target.closest(".tab");if(!b)return;S.resView=b.dataset.c;renderScoreboard(false);renderTeamResults(false);});
+$("dynastyBtn").addEventListener("click",()=>{
+  if(!D()||!R)return;
+  const user=NET.on?NET.my:(isHuman(S.resView)?S.resView:humanCodes()[0]);
+  if(!user){alert("Choose a human-controlled franchise to continue.");return;}
+  const teams={};
+  D().codes.forEach(c=>{teams[c]={name:fullName(c),roster:rosterOf(D(),c),assets:D().teams[c].assets||[],depth:D().teams[c].depth,coach:D().teams[c].coach,waived:D().teams[c].waived||[]};});
+  const results={};D().codes.forEach(c=>{results[c]={w:R.res[c].W,l:82-R.res[c].W};});
+  try{localStorage.setItem("dsolar-expansion-handoff-v1",JSON.stringify({version:1,user,teams,results,seed:S.seed}));location.href="../franchise-mode/";}
+  catch(e){alert("Browser storage is unavailable. Allow storage for this site to transfer your roster.");}
+});
 function renderTeamResults(animate){
   const d=D(), code=S.resView, r=R.res[code], et=r.et, games=r.season.games, W=r.W, L=82-W, mc=r.mc;
   setTeamAttr($("resBody"),code); setTeamAttr($("runBack"),code); setTeamAttr($("cardBtn"),code);
