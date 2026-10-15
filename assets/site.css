@@ -273,7 +273,8 @@ a:hover{color:var(--red)}
 .entry-cover:has(img){aspect-ratio:4/3}
 .entry-cover:has(img) .band{position:absolute;inset:auto 0 0;z-index:1}
 #\33 1st-franchise .entry-cover img{transform:scale(1.65);transform-origin:top left}
-#guillotine .entry-cover img{transform:scale(1.16);transform-origin:top left}
+#guillotine .entry-cover{aspect-ratio:16/10}
+#guillotine .entry-cover img{transform:none;object-position:top left}
 #franchise-mode .entry-cover .typeset{aspect-ratio:2/1;font-size:1.6rem}
 .writing-intro{padding-top:32px;margin-bottom:28px}
 .featured-writing{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 24px;padding-left:calc(var(--meta-col) + 40px);margin-bottom:36px}
