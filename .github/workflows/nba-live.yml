@@ -1,0 +1,42 @@
+# Pulls this season's NBA stats and standings from ESPN into celtics/live.json for Banner 19.
+# Runs every morning from October through June, when the script or this file changes, or by hand.
+name: NBA live stats
+
+on:
+  schedule:
+    - cron: "17 10 * 10-12,1-6 *"
+  push:
+    branches: [main]
+    paths:
+      - tools/nba_live_pull.py
+      - .github/workflows/nba-live.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nba-live
+  cancel-in-progress: false
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Pull stats and standings from ESPN
+        run: python3 tools/nba_live_pull.py
+
+      - name: Commit the stats
+        run: |
+          git add celtics/live.json
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -m "Update NBA live stats for Banner 19"
+          git pull --rebase -q
+          git push

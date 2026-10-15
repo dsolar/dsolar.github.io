@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Banner 19 | David Solar</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="Run the Boston Celtics front office from October 2026: the real cap sheet, the 2023 CBA's aprons and exceptions, trades with real front offices, and a multi-season GM mode.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://davidsolar.dev/celtics/">
+<meta property="og:title" content="Banner 19">
+<meta property="og:description" content="Run the Celtics front office from October 2026: the real cap sheet, aprons, exceptions, trades and a multi-season GM mode.">
+<meta property="og:image" content="https://davidsolar.dev/assets/covers/celtics.jpg">
+<meta property="og:image:width" content="1040">
+<meta property="og:image:height" content="780">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://davidsolar.dev/celtics/">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#007A33">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Extra+Condensed:wght@600;800&family=Public+Sans:wght@400;500;600;700&family=Libre+Franklin:wght@500&family=Besley:wght@700&display=swap">
+<link rel="stylesheet" href="../assets/bar.css">
+<script src="../assets/analytics.js" defer></script>
+<style>
+/* Banner 19. The rafters are the one loud thing: eighteen white championship banners hanging off a
+   Celtics-green band, and an empty dashed nineteenth that fills in if you win one. Everything under it
+   is a front-office tool: quiet surfaces, green structure, tabular numbers. Gold is only for banners
+   and the one number that matters most on each screen. */
+:root{
+  --paper:#F2F5F2; --surface:#FFFFFF; --sunk:#E8EEE9; --ink:#12211A; --muted:#55635A; --line:#D3DBD5;
+  --green:#007A33; --green-deep:#005C26; --green-ink:#00662B; --green-soft:#E1EFE6;
+  --gold:#BA9653; --gold-ink:#7A5D22;
+  --bad:#B42318; --bad-soft:#FCEBE9; --warn:#8A5300; --warn-soft:#FFF3DB; --good:#11683A;
+  --rafter:#007A33; --banner:#FFFFFF; --banner-ink:#007A33;
+  --f-d:"Saira Extra Condensed","Arial Narrow","Helvetica Neue",Arial,sans-serif;
+  --f-b:"Public Sans",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  --r:10px; --gut:16px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0C1410; --surface:#121D17; --sunk:#0F1914; --ink:#E5ECE7; --muted:#9BAAA1; --line:#25352C;
+    --green:#1C7A42; --green-deep:#15623A; --green-ink:#62D394; --green-soft:#15301F;
+    --gold:#D4B474; --gold-ink:#E3C88E;
+    --bad:#FF8B80; --bad-soft:#3A1612; --warn:#F3B24A; --warn-soft:#33250D; --good:#62D394;
+    --rafter:#0B4A26; --banner:#EDEFEA; --banner-ink:#0B5A2E;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0C1410; --surface:#121D17; --sunk:#0F1914; --ink:#E5ECE7; --muted:#9BAAA1; --line:#25352C;
+  --green:#1C7A42; --green-deep:#15623A; --green-ink:#62D394; --green-soft:#15301F;
+  --gold:#D4B474; --gold-ink:#E3C88E;
+  --bad:#FF8B80; --bad-soft:#3A1612; --warn:#F3B24A; --warn-soft:#33250D; --good:#62D394;
+  --rafter:#0B4A26; --banner:#EDEFEA; --banner-ink:#0B5A2E;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 15px/1.5 var(--f-b);font-variant-numeric:tabular-nums}
+a{color:var(--green-ink)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--green-ink);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 var(--gut)}
+.sr{position:absolute;left:0;top:0;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- Rafters ---------- */
+.rafters{background:var(--rafter);color:#fff;position:relative;overflow:hidden}
+.rafters .wrap{position:relative;padding-top:0;padding-bottom:22px}
+.banners{display:flex;gap:6px;justify-content:flex-end;padding:0 0 0 0;margin:0 0 6px;list-style:none;overflow:hidden}
+.banners li{flex:none}
+.banners svg{display:block;width:30px;height:60px}
+.banners .b-txt{font:800 10.5px/1 var(--f-d);fill:var(--banner-ink);letter-spacing:.2px}
+.banners .b-mark{fill:var(--banner-ink)}
+.banners .next text{font:800 15px/1 var(--f-d)}
+.banners .won .b-face{fill:var(--gold)}
+.title-row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+h1{font:800 clamp(52px,9vw,96px)/.82 var(--f-d);letter-spacing:.5px;margin:6px 0 0;text-transform:none}
+h1 .n{color:var(--banner)}
+.dek{max-width:46ch;margin:10px 0 0;color:#E4F1E8;font-size:14px}
+.status{display:flex;flex-wrap:wrap;gap:8px 18px;margin:16px 0 0;padding:0;list-style:none}
+.status li{display:flex;flex-direction:column;min-width:0}
+.status .k{font-size:12px;color:#EAF5EE}
+.status .v{font:600 22px/1.05 var(--f-d);letter-spacing:.3px;color:#fff}
+.status .v.hot{color:#FFE3A3}
+.theme-btn{background:transparent;border:1px solid rgba(255,255,255,.45);color:#fff;border-radius:999px;padding:4px 12px;font-size:13px;cursor:pointer}
+.theme-btn:hover{background:rgba(255,255,255,.12)}
+
+/* ---------- Tabs ---------- */
+.tabs{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.tabs .wrap{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tabs .wrap::-webkit-scrollbar{display:none}
+.tab{appearance:none;background:none;border:0;border-bottom:3px solid transparent;padding:12px 14px 9px;font:700 20px/1 var(--f-d);letter-spacing:.4px;color:var(--muted);cursor:pointer;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--green)}
+.tab:hover{color:var(--ink)}
+.tab .cnt{display:inline-block;min-width:20px;padding:1px 6px;margin-left:6px;border-radius:999px;background:var(--gold);color:#1B1305;font:700 12px/1.4 var(--f-b);vertical-align:2px}
+main{padding:22px 0 64px}
+section.panel{margin:0 0 28px}
+h2{font:800 30px/1 var(--f-d);letter-spacing:.3px;margin:0 0 4px}
+h3{font:700 21px/1.1 var(--f-d);letter-spacing:.3px;margin:0 0 8px}
+.sub{color:var(--muted);margin:0 0 14px;max-width:70ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.bad{color:var(--bad)} .good{color:var(--good)} .warnc{color:var(--warn)}
+.chip{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:1px 8px;font:600 12px/1.6 var(--f-b);border:1px solid var(--line);background:var(--sunk);color:var(--ink);white-space:nowrap}
+.chip.g{background:var(--green-soft);border-color:transparent;color:var(--green-ink)}
+.chip.w{background:var(--warn-soft);border-color:transparent;color:var(--warn)}
+.chip.b{background:var(--bad-soft);border-color:transparent;color:var(--bad)}
+.chip.gold{background:transparent;border-color:var(--gold);color:var(--gold-ink)}
+.btn{appearance:none;border:1px solid var(--green);background:var(--green);color:#fff;border-radius:8px;padding:8px 14px;font-weight:600;cursor:pointer;line-height:1.2}
+.btn:hover{background:var(--green-deep)}
+.btn.ghost{background:transparent;color:var(--green-ink)}
+.btn.ghost:hover{background:var(--green-soft)}
+.btn.sm{padding:4px 10px;font-size:13px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.linkish{appearance:none;background:none;border:0;padding:0;color:inherit;font:inherit;text-align:left;cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.linkish:hover{text-decoration-color:var(--green-ink)}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+label.f input,label.f select,select.f{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 9px;color:var(--ink);font-size:15px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.notice{border-left:4px solid var(--warn);background:var(--warn-soft);padding:10px 12px;border-radius:6px;margin:10px 0}
+.notice.bad{border-left-color:var(--bad);background:var(--bad-soft);color:var(--ink)}
+.notice.good{border-left-color:var(--green);background:var(--green-soft);color:var(--ink)}
+ul.plain{list-style:none;margin:0;padding:0}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0}
+.kv dt{color:var(--muted)} .kv dd{margin:0;text-align:right;font-weight:600}
+
+/* ---------- Books ---------- */
+.scroller{position:relative;overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table.sheet{border-collapse:separate;border-spacing:0;width:100%;min-width:820px;font-size:14px}
+.sheet th,.sheet td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;vertical-align:middle}
+.sheet thead th{position:sticky;top:0;background:var(--sunk);font:700 16px/1 var(--f-d);letter-spacing:.3px;color:var(--ink);z-index:2}
+.sheet th:first-child,.sheet td:first-child{text-align:left;position:sticky;left:0;background:var(--surface);z-index:1;min-width:200px;white-space:normal}
+.sheet thead th:first-child{background:var(--sunk);z-index:3}
+.sheet .grp th{background:var(--paper);font:700 13px/1.2 var(--f-b);color:var(--muted);text-align:left;padding-top:14px}
+.sheet .grp th:first-child{background:var(--paper)}
+.sheet .pname{font-weight:600}
+.sheet .pmeta{display:block;font-size:12px;color:var(--muted);font-weight:400;white-space:normal}
+.sheet td.hold{max-width:150px;white-space:normal}
+.sheet td.hold{color:var(--muted);font-style:italic}
+.sheet td.opt{background:linear-gradient(0deg,var(--sunk),var(--sunk))}
+.sheet td .tag{margin-left:6px}
+.sheet td.out{color:var(--muted);text-decoration:line-through}
+.sheet tfoot td,.sheet tfoot th{font-weight:700;background:var(--sunk)}
+.sheet tfoot th:first-child{background:var(--sunk)}
+.sheet tr.tot td{font-size:15px}
+.sheet .cur{box-shadow:inset 3px 0 0 var(--green)}
+.optbtn{appearance:none;display:block;margin:3px 0 0 auto;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:0 7px;font:600 11.5px/1.7 var(--f-b);cursor:pointer;color:var(--ink);white-space:nowrap}
+.optbtn.in{border-color:var(--green);color:var(--green-ink)}
+.optbtn.out{border-color:var(--bad);color:var(--bad)}
+/* apron ladder */
+.ladders{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px}
+.ladder{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px}
+.ladder .yr{font:700 18px/1 var(--f-d)}
+.ladder .big{font:800 30px/1 var(--f-d);margin:6px 0 2px}
+.bar{position:relative;height:16px;border-radius:4px;background:var(--sunk);margin:10px 0 18px;overflow:visible}
+.bar .fill{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:var(--green)}
+.bar .fill.tax{background:var(--warn)} .bar .fill.a1,.bar .fill.a2{background:var(--bad)}
+.bar .tick{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.7}
+.bar .tl{position:absolute;top:19px;transform:translateX(-50%);font-size:10.5px;color:var(--muted);white-space:nowrap}
+.bar .tick.hard{background:var(--bad);opacity:1;width:3px}
+
+/* ---------- Moves ---------- */
+.moves{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:18px;align-items:start}
+@media (max-width:900px){.moves{grid-template-columns:1fr}}
+.queue li{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:start;padding:10px 0;border-bottom:1px solid var(--line)}
+.queue .num{font:800 22px/1 var(--f-d);color:var(--muted)}
+.queue .ok .num{color:var(--green-ink)} .queue .fail .num{color:var(--bad)}
+.queue .ctl{display:flex;gap:4px}
+.icon-btn{appearance:none;border:1px solid var(--line);background:var(--surface);border-radius:6px;width:30px;height:30px;cursor:pointer;display:inline-grid;place-items:center;color:var(--ink)}
+.icon-btn:hover{background:var(--sunk)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+.seg button{appearance:none;border:0;background:var(--surface);padding:7px 12px;cursor:pointer;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--green);color:#fff}
+.pick-list{max-height:380px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.pick-list label{display:grid;grid-template-columns:20px 1fr auto;gap:8px;align-items:center;padding:7px 10px;border-bottom:1px solid var(--line);cursor:pointer;font-size:14px}
+.pick-list label:hover{background:var(--sunk)}
+.pick-list .m{color:var(--muted);font-size:12px}
+.sides{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:640px){.sides{grid-template-columns:1fr}}
+.verdict{font:800 26px/1 var(--f-d)}
+.math{font-size:13.5px}
+.math td,.math th{padding:3px 6px;text-align:right}
+.math th:first-child,.math td:first-child{text-align:left}
+.fo{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0}
+.fo b{font-weight:700}
+
+/* ---------- Rotation ---------- */
+.rot li{display:grid;grid-template-columns:minmax(0,1fr) 44px 150px 56px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+@media (max-width:560px){.rot li{grid-template-columns:minmax(0,1fr) 40px 96px 48px}}
+.rot .who b{display:block}
+.rot input[type=range]{width:100%;accent-color:var(--green)}
+.rot input[type=number]{width:56px;border:1px solid var(--line);border-radius:6px;padding:4px;background:var(--surface);text-align:right}
+.rot .ovr{font:800 20px/1 var(--f-d);text-align:center}
+.rot .starter .who b::after{content:"Starter";margin-left:8px;font:600 11px/1 var(--f-b);color:var(--green-ink);border:1px solid var(--green);border-radius:999px;padding:1px 6px;vertical-align:2px}
+.meter{height:8px;background:var(--sunk);border-radius:4px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--green)}
+.bigstat{font:800 44px/1 var(--f-d)}
+.bigstat.gold{color:var(--gold-ink)}
+
+/* ---------- Season ---------- */
+table.std{width:100%;border-collapse:collapse;font-size:14px}
+.std th,.std td{padding:5px 6px;border-bottom:1px solid var(--line);text-align:right}
+.std th:nth-child(2),.std td:nth-child(2){text-align:left}
+.std tr.us td{background:var(--green-soft);font-weight:700}
+.std tr.cut td{border-bottom:2px solid var(--muted)}
+.news li{padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
+.news time{color:var(--muted);font-size:12px;display:block}
+.offer{border:1px solid var(--line);border-radius:var(--r);padding:14px;background:var(--surface);margin:0 0 12px}
+
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);padding:0;max-width:min(680px,calc(100vw - 24px));width:100%}
+dialog::backdrop{background:rgba(5,20,12,.55)}
+dialog .dh{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
+dialog .db{padding:16px 18px;max-height:min(70vh,700px);overflow:auto}
+.footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:18px;padding-bottom:40px}
+@media (max-width:640px){
+  .sheet th:first-child,.sheet td:first-child{min-width:132px;max-width:150px}
+  .sheet th,.sheet td{padding:6px 8px}
+  .banners svg{width:22px;height:46px}
+  .banners{gap:4px}
+  .status .v{font-size:19px}
+  h2{font-size:26px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .banners .next rect{animation:none}
+}
+</style>
+</head>
+<body>
+<nav class="ds-bar" aria-label="davidsolar.dev"><a href="../"><img src="../assets/ds-mark.svg" alt="" width="20" height="20"><span class="ds-bar-name">David Solar</span></a><a href="../#projects">All projects</a></nav>
+<header class="rafters">
+  <div class="wrap">
+    <ul class="banners" id="banners" aria-label="Celtics championship banners"></ul>
+    <div class="title-row">
+      <div>
+        <h1>Banner <span class="n">19</span></h1>
+        <p class="dek">Run the Celtics front office from Oct. 15, 2026: the real cap sheet, the 2023 CBA's aprons and exceptions, trades with real front offices, and as many seasons as you want.</p>
+      </div>
+      <button class="theme-btn" id="theme" type="button" aria-pressed="false">Dark mode</button>
+    </div>
+    <ul class="status" id="status" aria-live="polite"></ul>
+  </div>
+</header>
+<nav class="tabs" aria-label="Sections">
+  <div class="wrap" role="tablist" id="tabs">
+    <button class="tab" role="tab" id="t-books" aria-controls="p-books" aria-selected="true" data-tab="books">Books</button>
+    <button class="tab" role="tab" id="t-moves" aria-controls="p-moves" aria-selected="false" data-tab="moves" tabindex="-1">Moves</button>
+    <button class="tab" role="tab" id="t-rot" aria-controls="p-rot" aria-selected="false" data-tab="rot" tabindex="-1">Rotation</button>
+    <button class="tab" role="tab" id="t-season" aria-controls="p-season" aria-selected="false" data-tab="season" tabindex="-1">Season</button>
+  </div>
+</nav>
+<main class="wrap">
+  <div role="tabpanel" id="p-books" aria-labelledby="t-books"></div>
+  <div role="tabpanel" id="p-moves" aria-labelledby="t-moves" hidden></div>
+  <div role="tabpanel" id="p-rot" aria-labelledby="t-rot" hidden></div>
+  <div role="tabpanel" id="p-season" aria-labelledby="t-season" hidden></div>
+  <p id="loading" class="muted">Loading the books.</p>
+</main>
+<footer class="wrap footer" id="footer"></footer>
+<dialog id="dlg" aria-labelledby="dlg-title"><div class="dh"><h3 id="dlg-title"></h3><button class="icon-btn" type="button" data-act="close" aria-label="Close">✕</button></div><div class="db" id="dlg-body"></div></dialog>
+<script src="cba.js?v=1"></script>
+<script src="model.js?v=1"></script>
+<script src="league.js?v=1"></script>
+<script src="season.js?v=1"></script>
+<script src="offseason.js?v=1"></script>
+<script src="app.js?v=1"></script>
+<script src="ui-books.js?v=1"></script>
+<script src="ui-moves.js?v=1"></script>
+<script src="ui-rot.js?v=1"></script>
+<script src="ui-season.js?v=1"></script>
+</body>
+</html>

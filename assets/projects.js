@@ -109,5 +109,17 @@ window.PROJECTS = [
     facts: [["5,600", "draft picks since 2013"], ["14", "seasons of champions and standings"], ["3", "keeper years, then back in the draft"]],
     stack: ["JavaScript", "Python"],
     cover: { image: "assets/covers/yoenis.jpg", bg: "#1F4532", band: "#BD3039" }
+  },
+  {
+    title: "Banner 19",
+    type: "Game",
+    released: "2026-10",
+    url: "celtics/",
+    action: "Run the front office",
+    question: "Can Boston get to Banner 19 without lighting money on fire?",
+    summary: "Run the Celtics front office from October 2026: the real cap sheet with holds, options and the Simons trade exception, the 2023 CBA's aprons and hard caps, trades with all 29 real front offices, and a GM mode with the real 2027 draft class that runs as many seasons as you want.",
+    facts: [["$1.7M", "under the tax on day one"], ["29", "front offices, each with its own tax stance"], ["60", "real prospects in the 2027 draft"]],
+    stack: ["JavaScript", "Python", "GitHub Actions"],
+    cover: { image: "assets/covers/celtics.jpg", bg: "#007A33", band: "#BA9653" }
   }
 ];
