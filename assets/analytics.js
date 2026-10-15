@@ -7,7 +7,7 @@
 
    Every page on the site loads this one file, so this is the only place the token goes. */
 (function () {
-  var TOKEN = "";
+  var TOKEN = "7d29c0960e854890be36b6505e8d0a27";
 
   // Only count visits to the live site, not previews or local copies
   if (!TOKEN || location.hostname !== "davidsolar.dev") return;
