@@ -1,3 +1,5 @@
+Roster amendments from Yahoo transaction screenshot: Oct 15, 2026 03:47 AM EDT. Five overnight transactions applied; existing starting lineups and Yahoo team projections retained pending a full league-page refresh. Brenton Strange cost $1; other displayed claims were $0.
+
 Yahoo Sports
 Yahoo Sports
 Search query
@@ -57,7 +59,7 @@ Rank	Team	Points	Projected Points	Season Points	FAB	Waiver	Moves	Pts Per Week
 4	Holofernes	0.00	123.36	603.60	$681	6	16	120.72
 3	Liberté Égalité Henri	0.00	124.76	582.52	$623	1	8	116.5
 2	Love a Kittle Lamb & WhiteRice	0.00	133.55	667.12	$485	2	4	133.42
-1	Drake Mayezini	0.00	140.63	580.46	$524	5	8	116.09
+1	Drake Mayezini	0.00	140.63	580.46	$523	5	8	116.09
 Eliminated
 Week	Team	Season Points	FAB	Moves	Pts Per Week
 5	Beast Mode Samuel	568.50	$1000	1	113.7
@@ -736,10 +738,15 @@ Jared GoffPlayer Note
 Det - QB
 Bye
 BN	
-David Montgomery
-David MontgomeryDPlayer Note
-Hou - RB
-Sun 9:30 am @ Jax
+Dameon Pierce
+Dameon PiercePlayer Note
+Phi - RB
+Sun 1:00 pm vs Car
+BN	
+DeMario Douglas
+DeMario DouglasPlayer Note
+NE - WR
+Sun 1:00 pm vs NYJ
 BN	
 Ollie Gordon II
 Ollie Gordon IIPlayer Note
@@ -977,10 +984,10 @@ Tee HigginsPlayer Note
 Cin - WR
 Bye
 BN	
-Keaton Mitchell
-Keaton MitchellVideo ForecastPlayer Note
-LAC - RB
-Sun 4:25 pm @ KC
+Cam Ward
+Cam WardPlayer Note
+Ten - QB
+Sun 1:00 pm @ Ind
 BN	
 Germie Bernard
 Germie BernardPlayer Note
@@ -1045,10 +1052,10 @@ Romeo DoubsVideo ForecastPlayer Note
 NE - WR
 Sun 1:00 pm vs NYJ
 BN	
-Kenyon Sadiq
-Kenyon SadiqQNew Player Note
-NYJ - TE
-Sun 1:00 pm @ NE
+Brenton Strange
+Brenton StrangePlayer Note
+Jax - TE
+Sun 9:30 am vs Hou
 BN	
 Sam Darnold
 Sam DarnoldPlayer Note
@@ -1306,10 +1313,10 @@ Michael Penix Jr.QNew Player Note
 Atl - QB
 Sun 1:00 pm vs Chi
 BN	
-Kyle Pitts Sr.
-Kyle Pitts Sr.Player Note
-Atl - TE
-Sun 1:00 pm vs Chi
+Dallas Goedert
+Dallas GoedertPlayer Note
+Phi - TE
+Sun 1:00 pm vs Car
 IR	
 Jordan Mason
 Jordan MasonIRPlayer Note
