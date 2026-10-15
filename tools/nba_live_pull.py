@@ -25,8 +25,8 @@ UA = "davidsolar-banner19/1.0 (+https://davidsolar.dev/celtics/)"
 STATS = ("https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/statistics/byathlete"
          "?region=us&lang=en&contentorigin=espn&isqualified=false&limit=250&page={page}"
          "&sort=general.avgMinutes:desc&season={season}&seasontype=2")
-STANDINGS = ["https://site.web.api.espn.com/apis/v2/sports/basketball/nba/standings?region=us&lang=en&contentorigin=espn&season={season}",
-             "https://site.api.espn.com/apis/v2/sports/basketball/nba/standings?season={season}"]
+STANDINGS = ["https://site.web.api.espn.com/apis/v2/sports/basketball/nba/standings?region=us&lang=en&contentorigin=espn&season={season}&seasontype=2",
+             "https://site.api.espn.com/apis/v2/sports/basketball/nba/standings?season={season}&seasontype=2"]
 # ESPN abbreviations -> the site's (Basketball Reference style)
 TEAM = {"GS": "GSW", "NY": "NYK", "SA": "SAS", "NO": "NOP", "UTAH": "UTA", "WSH": "WAS", "BKN": "BRK", "CHA": "CHO",
         "PHX": "PHO"}
