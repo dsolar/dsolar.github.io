@@ -169,6 +169,8 @@ details[open] .t-open::after{transform:translateY(.05rem) rotate(-135deg)}
 /* Rules */
 .rules{margin:1rem 0 0;padding-left:1.15rem;max-width:38rem}
 .rules li{margin:.4rem 0}
+.rule-group{margin-top:1.4rem}
+.rule-group .rules{margin-top:.4rem}
 
 footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);padding-top:1rem}
 .err{color:var(--red)}
@@ -200,7 +202,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       <a href="#managers">Managers</a>
       <a href="#graveyard">Graveyard</a>
       <a href="#drafts">Drafts</a>
-      <a href="#rules">Keeper rules</a>
+      <a href="#rules">Rules</a>
     </nav>
   </header>
 
@@ -245,7 +247,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
   <section id="drafts" aria-labelledby="drafts-title">
     <div class="section-head">
       <h2 id="drafts-title">Every draft since 2013</h2>
-      <p>Search a player across all 14 drafts, or browse one year by round or by team.</p>
+      <p>Search a player across all 14 drafts, or browse one year by team or by round.</p>
     </div>
     <div class="controls">
       <label class="field grow">Search all drafts<input type="search" id="d-find" placeholder="e.g. Mike Trout" autocomplete="off"></label>
@@ -253,8 +255,8 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     <ol class="hits" id="d-hits" aria-live="polite" hidden></ol>
     <div class="controls">
       <label class="field">Year<select id="d-year"></select></label>
-      <div class="field">View<span class="seg" role="group" aria-label="View"><button type="button" id="v-round" aria-pressed="true">By round</button><button type="button" id="v-team" aria-pressed="false">By team</button></span></div>
-      <label class="field" id="d-team-field" hidden>Team<select id="d-team"></select></label>
+      <div class="field">View<span class="seg" role="group" aria-label="View"><button type="button" id="v-team" aria-pressed="true">By team</button><button type="button" id="v-round" aria-pressed="false">By round</button></span></div>
+      <label class="field" id="d-team-field">Team<select id="d-team"></select></label>
     </div>
     <p class="first-pick" id="first-pick"></p>
     <div id="board"></div>
@@ -262,15 +264,41 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
   </section>
 
   <section id="rules" aria-labelledby="rules-title">
-    <div class="section-head"><h2 id="rules-title">Keeper rules</h2></div>
-    <ul class="rules">
-      <li>Keep up to 5 players, each for up to 3 seasons. After the third, he goes back into the draft.</li>
-      <li>Year one costs the round he was drafted in. Year two costs two rounds earlier, and year three costs six rounds earlier than year one.</li>
-      <li>Free agents count as round 15.</li>
-      <li>Nothing costs more than round 1, but each first-round keeper needs its own 1st-round pick.</li>
-      <li>Two keepers in the same round: one moves up a round unless you own two picks there. If that round is also taken, he keeps moving up to the next open pick.</li>
-      <li>Draft picks can be traded, but only in the offseason.</li>
-    </ul>
+    <div class="section-head"><h2 id="rules-title">League rules</h2></div>
+    <div class="rule-group">
+      <h3>Basics</h3>
+      <ul class="rules">
+        <li>16 teams, $125 buy-in.</li>
+        <li>Head-to-head categories. Hitting: runs, hits, home runs, RBI, steals, total bases, average and OPS. Pitching: wins, losses, saves, strikeouts, holds, ERA, WHIP and quality starts.</li>
+        <li>Eight teams make the playoffs, which run the last three weeks of the season with reseeding.</li>
+        <li>Up to 7 pickups a week, and at least 30 innings pitched a week. Waivers use a free agent budget.</li>
+      </ul>
+    </div>
+    <div class="rule-group">
+      <h3>Keepers</h3>
+      <ul class="rules">
+        <li>Keep up to 5 players, each for up to 3 seasons. After the third, he goes back into the draft.</li>
+        <li>Year one costs the round he was drafted in. Year two costs two rounds earlier, and year three costs six rounds earlier than year one.</li>
+        <li>Free agents count as round 15.</li>
+        <li>Nothing costs more than round 1, but each first-round keeper needs its own 1st-round pick.</li>
+        <li>Two keepers in the same round: one moves up a round unless you own two picks there. If that round is also taken, he keeps moving up to the next open pick.</li>
+      </ul>
+    </div>
+    <div class="rule-group">
+      <h3>Trades</h3>
+      <ul class="rules">
+        <li>Every accepted trade goes through the counter window. There are no vetoes, but any team can counter an accepted trade.</li>
+        <li>No more than two players from either team, so 2-for-2 at most.</li>
+        <li>A trade accepted before the deadline can finish its counter and review period after it.</li>
+        <li>Draft picks can be traded in the offseason, but every team must hold 25 picks at all times.</li>
+      </ul>
+    </div>
+    <div class="rule-group">
+      <h3>Draft</h3>
+      <ul class="rules">
+        <li>A lottery sets the order of the picks for teams that missed the playoffs.</li>
+      </ul>
+    </div>
   </section>
 
   <footer id="foot">Data from the league's Yahoo draft and standings pages and the keeper sheet.</footer>
@@ -335,7 +363,11 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     var sel = $("k-team"), teams = Object.keys(DATA.keepers2027).sort(function (a, b) { return a.localeCompare(b); });
     sel.innerHTML = teams.map(function (t) { return '<option value="' + esc(t) + '">' + esc(withMan(t)) + "</option>"; }).join("");
     var saved = store.get("yoenis-team"); if (saved && DATA.keepers2027[saved]) sel.value = saved;
-    sel.addEventListener("change", function () { store.set("yoenis-team", sel.value); $("k-find").value = ""; drawKeepers(); });
+    sel.addEventListener("change", function () {
+      store.set("yoenis-team", sel.value); $("k-find").value = ""; drawKeepers();
+      var last = DATA.seasons[DATA.seasons.length - 1]; dOwner = last.o[last.teams.indexOf(sel.value)];
+      if (SEASONS[$("d-year").value]) { fillTeams(); drawBoard(); }
+    });
     $("k-find").addEventListener("input", drawKeepers);
     drawKeepers();
   }
@@ -374,21 +406,22 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     });
     return c;
   }
+  function nYears(list) { var y = {}; list.forEach(function (x) { y[x.y] = 1; }); return Object.keys(y).length; }
   function teamNames(list) {
     var out = []; list.forEach(function (x) { if (out.indexOf(x.t) < 0) out.push(x.t); }); return out;
   }
   function initManagers() {
     var C = careers(), last = DATA.seasons[DATA.seasons.length - 1], now = last.o;
-    var all14 = now.filter(function (id) { return C[id].length === DATA.seasons.length; }).map(who).sort();
+    var all14 = now.filter(function (id) { return nYears(C[id]) === DATA.seasons.length; }).map(who).sort();
     if (all14.length > 1) $("managers-sub").textContent = all14.slice(0, -1).join(", ") + " and " + all14[all14.length - 1] + " have played all " + DATA.seasons.length + " seasons. Open a manager for every team name and finish.";
     var cur = now.slice().sort(function (a, b) {
       var ta = C[a].filter(function (x) { return x.r === 1; }).length, tb = C[b].filter(function (x) { return x.r === 1; }).length;
-      return tb - ta || C[b].length - C[a].length || who(a).localeCompare(who(b));
+      return tb - ta || nYears(C[b]) - nYears(C[a]) || who(a).localeCompare(who(b));
     });
     $("mlist").innerHTML = cur.map(function (id) {
       var L = C[id], wins = L.filter(function (x) { return x.r === 1; }), best = Math.min.apply(null, L.map(function (x) { return x.r; }));
       var team = last.teams[now.indexOf(id)];
-      var sub = team + ". " + L.length + (L.length === 1 ? " season" : " seasons") + " since " + L[0].y + "." + (wins.length ? "" : " Best finish " + ordinal(best) + ".");
+      var ny = nYears(L), sub = team + ". " + ny + (ny === 1 ? " season" : " seasons") + " since " + L[0].y + "." + (wins.length ? "" : " Best finish " + ordinal(best) + ".");
       var trophies = wins.length ? '<span class="trophies" role="img" aria-label="Titles: ' + wins.map(function (x) { return x.y; }).join(", ") + '">' +
         wins.map(function (x) { return '<span class="tile">' + String(x.y).slice(2) + "</span>"; }).join("") + "</span>" : "";
       var rows = L.slice().reverse().map(function (x) {
@@ -399,12 +432,12 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     }).join("");
     var gone = Object.keys(C).filter(function (id) { return now.indexOf(id) < 0 && who(id); }).sort(function (a, b) {
       var la = C[a][C[a].length - 1].y, lb = C[b][C[b].length - 1].y;
-      return lb - la || C[b].length - C[a].length || who(a).localeCompare(who(b));
+      return lb - la || nYears(C[b]) - nYears(C[a]) || who(a).localeCompare(who(b));
     });
     $("stones").innerHTML = gone.map(function (id) {
       var L = C[id], first = L[0].y, lastY = L[L.length - 1].y, wins = L.filter(function (x) { return x.r === 1; });
       var best = L.reduce(function (b, x) { return x.r < b.r ? x : b; }, L[0]);
-      var line = L.length + (L.length === 1 ? " season. " : " seasons. ") + (wins.length ? "Won it all in " + wins.map(function (x) { return x.y; }).join(" and ") + "." : "Best finish " + ordinal(best.r) + " in " + best.y + ".");
+      var ny = nYears(L), line = ny + (ny === 1 ? " season. " : " seasons. ") + (wins.length ? "Won it all in " + wins.map(function (x) { return x.y; }).join(" and ") + "." : "Best finish " + ordinal(best.r) + " in " + best.y + ".");
       var rip = OWN[id].rip ? '<p class="rip">' + esc(OWN[id].rip) + "</p>" : "";
       return '<li class="stone"><h3>' + esc(who(id)) + '</h3><p class="years num">' + (first === lastY ? first : first + "–" + lastY) + '</p><p class="line">' + esc(line) +
         '</p><p class="teams">' + esc(teamNames(L).join(", ")) + "</p>" + rip + "</li>";
@@ -412,12 +445,14 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
   }
 
   /* ---------- Drafts ---------- */
-  var view = "round";
+  var view = "team", dOwner = null;   /* the team view follows one manager from year to year */
   function initDrafts() {
     var ysel = $("d-year");
     ysel.innerHTML = DATA.seasons.slice().reverse().map(function (s) { return "<option>" + s.year + "</option>"; }).join("");
     ysel.addEventListener("change", function () { fillTeams(); drawBoard(); });
-    $("d-team").addEventListener("change", drawBoard);
+    $("d-team").addEventListener("change", function () { var s = SEASONS[$("d-year").value]; dOwner = s.o[s.teams.indexOf($("d-team").value)]; drawBoard(); });
+    var last = DATA.seasons[DATA.seasons.length - 1], saved = store.get("yoenis-team");
+    dOwner = last.o[Math.max(0, last.teams.indexOf(saved && DATA.keepers2027[saved] ? saved : $("k-team").value))];
     $("v-round").addEventListener("click", function () { setView("round"); });
     $("v-team").addEventListener("click", function () { setView("team"); });
     $("d-find").addEventListener("input", search);
@@ -429,10 +464,11 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     $("d-team-field").hidden = v !== "team"; drawBoard();
   }
   function fillTeams() {
-    var s = SEASONS[$("d-year").value], sel = $("d-team"), keep = sel.value;
+    var s = SEASONS[$("d-year").value], sel = $("d-team");
     var names = s.teams.slice().sort(function (a, b) { return a.localeCompare(b); });
     sel.innerHTML = names.map(function (t) { return '<option value="' + esc(t) + '">' + esc(teamMan(s, s.teams.indexOf(t))) + "</option>"; }).join("");
-    if (names.indexOf(keep) > -1) sel.value = keep;
+    var i = s.o.indexOf(dOwner);
+    if (i > -1) sel.value = s.teams[i];
   }
   function pickLi(p, idx, s, showTeam) {
     return '<li class="pick"><span class="pick-no num">' + pickNo(p[0], idx) + '</span><span><span class="pick-who">' + esc(p[2]) +
