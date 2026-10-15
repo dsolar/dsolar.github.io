@@ -207,7 +207,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
   <section id="keepers" aria-labelledby="keepers-title">
     <div class="section-head">
       <h2 id="keepers-title">2027 keeper costs</h2>
-      <p>Pick a team to see what each player from its 2026 draft would cost to keep next March.</p>
+      <p>Pick a team to see what each player on its final 2026 roster would cost to keep next March.</p>
     </div>
     <div class="controls">
       <label class="field">Team<select id="k-team"></select></label>
@@ -215,7 +215,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     </div>
     <p class="tiles-key" aria-hidden="true"><span class="tiles"><span class="tile">16</span><span class="tile">14</span><span class="tile now">10</span></span>Rounds for keeper years one, two and three. Red is 2027.</p>
     <ol class="klist" id="k-list" aria-live="polite"></ol>
-    <p class="note">Built from the 2026 draft and the keeper sheet. Trades, drops and pickups since the draft aren't in yet, so check anyone who changed teams. Free agents you pick up cost a 15th-round pick.</p>
+    <p class="note">From the final 2026 rosters, the 2026 draft and the keeper sheet. A player keeps his cost when he's traded. Anyone not drafted in 2026 costs a 15th-round pick, and so does a drafted player who was dropped and picked up.</p>
   </section>
 
   <section id="champions" aria-labelledby="champions-title">
@@ -322,7 +322,9 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     return "<b>Round " + r + "</b>" + (y === 3 ? "Final year" : y === 2 ? "Year 2 of 3" : "Year 1 of 3");
   }
   function subText(e, team) {
-    var s = e.k ? "Kept in 2026, year " + e.k[1] + " (round " + e.k[0] + ")" : "Drafted in round " + e.d;
+    var s = e.fa ? "Free agent pickup" :
+      e.k ? "Kept" + (e.via ? " by " + e.via : "") + " in 2026, year " + e.k[1] + " (round " + e.k[0] + ")" :
+      (e.via ? "Drafted by " + e.via + " in round " : "Drafted in round ") + e.d;
     return team ? withMan(team) + ". " + s : s;
   }
   function keeperRow(e, team) {
@@ -343,7 +345,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       Object.keys(DATA.keepers2027).forEach(function (t) {
         DATA.keepers2027[t].forEach(function (e) { if (fold(e.p).indexOf(q) > -1) out.push(keeperRow(e, t)); });
       });
-      $("k-list").innerHTML = out.length ? out.join("") : '<li class="empty">No one by that name was drafted in 2026. A free agent pickup costs a 15th-round pick.</li>';
+      $("k-list").innerHTML = out.length ? out.join("") : '<li class="empty">No one by that name is on a 2026 roster. A free agent you pick up costs a 15th-round pick.</li>';
     } else {
       $("k-list").innerHTML = DATA.keepers2027[$("k-team").value].map(function (e) { return keeperRow(e); }).join("");
     }
