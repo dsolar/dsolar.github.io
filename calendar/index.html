@@ -6,6 +6,14 @@
 <title>Night Out | David Solar</title>
 <meta name="robots" content="noindex">
 <meta name="description" content="Shows, comics, games and movies around Boston worth leaving the couch for, plus a few road trips.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://davidsolar.dev/calendar/">
+<meta property="og:title" content="Night Out">
+<meta property="og:description" content="Shows, comics, games and movies around Boston worth leaving the couch for, plus a few road trips.">
+<meta property="og:image" content="https://davidsolar.dev/assets/covers/calendar.jpg">
+<meta property="og:image:width" content="1040">
+<meta property="og:image:height" content="780">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://davidsolar.dev/calendar/">
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#F4EFE6" media="(prefers-color-scheme: light)">
@@ -24,7 +32,7 @@
 :root{
   --bg:#F4EFE6; --surface:#FFFDF8; --ink:#1C1915; --muted:#6B6358; --rule:#E3DACB; --wash:#EDE5D7;
   --music:#7A3FD0; --comedy:#C2410C; --sports:#0B7A3B; --movies:#1F5FBF; --food:#B4235F;
-  --love:#B87200; --love-wash:#FFF1CF;
+  --love:#975D00; --love-wash:#FFF1CF; --love-fill:#B87200;
   --sign:#17130E; --sign-ink:#FFF3D6; --bulb:#FFC53D;
   --f-display:"Big Shoulders Display","Oswald","Arial Narrow",Impact,sans-serif;
   --f-body:"Libre Franklin","Franklin Gothic Medium","Helvetica Neue",Arial,sans-serif;
@@ -35,13 +43,13 @@
   :root:not([data-theme="light"]){
     --bg:#13110E; --surface:#1D1A16; --ink:#F2ECE2; --muted:#A79E90; --rule:#332E27; --wash:#26221C;
     --music:#B996F7; --comedy:#FF8F57; --sports:#4FC982; --movies:#7AAAF5; --food:#F77FB0;
-    --love:#FFC53D; --love-wash:#3A2E12; --sign:#0B0907; color-scheme:dark;
+    --love:#FFC53D; --love-wash:#3A2E12; --love-fill:#FFC53D; --sign:#0B0907; color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --bg:#13110E; --surface:#1D1A16; --ink:#F2ECE2; --muted:#A79E90; --rule:#332E27; --wash:#26221C;
   --music:#B996F7; --comedy:#FF8F57; --sports:#4FC982; --movies:#7AAAF5; --food:#F77FB0;
-  --love:#FFC53D; --love-wash:#3A2E12; --sign:#0B0907; color-scheme:dark;
+  --love:#FFC53D; --love-wash:#3A2E12; --love-fill:#FFC53D; --sign:#0B0907; color-scheme:dark;
 }
 
 *,*::before,*::after{box-sizing:border-box}
@@ -166,7 +174,7 @@ i[class^="c-"],.dot[class*=" c-"]{background:var(--c)}
 .ev .where{font-size:.84rem;margin-top:.15rem}
 .tags{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.35rem}
 .tag{font:600 .66rem/1 var(--f-body);letter-spacing:.06em;text-transform:uppercase;padding:.28rem .45rem;border-radius:4px;background:var(--wash);color:var(--muted)}
-.tag.love{background:var(--love);color:var(--sign)}
+.tag.love{background:var(--love-fill);color:var(--sign)}
 .tag.big{background:var(--ink);color:var(--bg)}
 .tag.road{background:none;box-shadow:inset 0 0 0 1px var(--rule)}
 a.tag.price{background:none;box-shadow:inset 0 0 0 1px var(--rule);color:var(--ink);text-decoration:none;font-family:var(--f-mono);font-weight:500;letter-spacing:0;text-transform:none;font-size:.72rem}
@@ -237,6 +245,8 @@ a.tag.price span{color:var(--sports);font-weight:700}
 .place .plan:hover{background:var(--love-wash)}
 .eat-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.5rem 1rem;margin-bottom:.7rem}
 .eat-head .btn{background:var(--food);border-color:var(--food);color:#fff}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .eat-head .btn{color:#2A0A17}}
+:root[data-theme="dark"] .eat-head .btn{color:#2A0A17}
 .ev .by{font-size:.78rem;color:var(--muted);margin-top:.25rem}
 .ev .rm{font-size:.72rem;color:var(--muted);background:none;border:0;padding:0;text-decoration:underline;cursor:pointer;text-align:center}
 
@@ -297,7 +307,7 @@ dialog .ghost{background:none;color:var(--ink);border-color:var(--rule)}
   <section id="cal-sec">
     <div class="month">
       <div class="mhead"><h2 id="mname"></h2><div class="mnav"><button id="prev" aria-label="Previous month">‹</button><button id="next" aria-label="Next month">›</button></div></div>
-      <div class="grid" id="grid" role="grid"></div>
+      <div class="grid" id="grid" role="group" aria-label="Days"></div>
       <div class="key" id="key"></div>
     </div>
   </section>

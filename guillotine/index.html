@@ -6,6 +6,14 @@
 <title>Bastille Day Odds | David Solar</title>
 <meta name="robots" content="noindex">
 <meta name="description" content="Weekly survival odds for the Bastille Day guillotine fantasy football league, from a Monte Carlo simulation.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://davidsolar.dev/guillotine/">
+<meta property="og:title" content="Bastille Day Odds">
+<meta property="og:description" content="Weekly survival odds for the Bastille Day guillotine fantasy football league, from a Monte Carlo simulation.">
+<meta property="og:image" content="https://davidsolar.dev/assets/covers/guillotine.jpg">
+<meta property="og:image:width" content="1040">
+<meta property="og:image:height" content="780">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://davidsolar.dev/guillotine/">
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#EEF1F5" media="(prefers-color-scheme: light)">
@@ -30,7 +38,7 @@
   --blade:#C8102E;     /* the only red: the cut line and real danger */
   --bleu-rgb:29,63,143;/* survival shading */
   --hi-ink:#FFFFFF;    /* text on dark survival cells */
-  --danger:#C8102E; --bubble:#B35C00; --safe:#2E7D4F;  /* cut-risk tiers */
+  --danger:#C8102E; --bubble:#A85600; --safe:#2D7A4D;  /* cut-risk tiers */
   --f-display:"Bodoni Moda","Didot","Bodoni 72",Georgia,serif;
   --f-body:"Libre Franklin","Franklin Gothic Medium","Helvetica Neue",Arial,sans-serif;
   color-scheme:light;
@@ -519,7 +527,21 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
         pts(r.cut.p10) + " and " + pts(r.cut.p90) + ". That fits everything so far except Week 2, a real outlier.";
     }
 
-    // Survival grid
+    // Survival grid. Cell text switches to --hi-ink only where it reads better than the normal ink
+    // on that cell's blended shade (keeps every cell at readable contrast in light and dark).
+    var css = getComputedStyle(document.documentElement);
+    function rgbOf(v) { v = v.trim(); if (v[0] === "#") { var n = parseInt(v.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; } return v.split(",").map(Number); }
+    function lum(c) { c = c.map(function (x) { x /= 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; }
+    function ratio(a, b) { var x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+    var BLEU = rgbOf(css.getPropertyValue("--bleu-rgb")), SURF = rgbOf(css.getPropertyValue("--surface")),
+        INK = rgbOf(css.getPropertyValue("--ink")), HI = rgbOf(css.getPropertyValue("--hi-ink"));
+    function shade(a) { return SURF.map(function (s, i) { return Math.round(s * (1 - a) + BLEU[i] * a); }); }
+    // Darkest shade normal ink still reads on, and lightest shade --hi-ink reads on (4.5:1)
+    var INK_MAX = 0.06, HI_MIN = 0.9;
+    for (var a0 = 0.06; a0 <= 0.9; a0 += 0.005) { if (ratio(shade(a0), INK) >= 4.5) INK_MAX = a0; }
+    for (var a1 = 0.9; a1 >= 0.06; a1 -= 0.005) { if (ratio(shade(a1), HI) >= 4.5) HI_MIN = a1; }
+    function readable(a) { return a > INK_MAX && a < HI_MIN ? (a - INK_MAX < HI_MIN - a ? INK_MAX : HI_MIN) : a; }
+    function useHiInk(a) { return a >= HI_MIN && ratio(shade(a), HI) > ratio(shade(a), INK); }
     var head = "<thead><tr><th scope=\"col\">Team</th>";
     for (var k = 0; k < r.weeksLeft; k++) {
       var last = k === r.weeksLeft - 1;
@@ -530,8 +552,8 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
     head += "</tr></thead>";
     var body = "<tbody>" + byWin.map(function (t) {
       var cells = t.surv.map(function (p, k) {
-        var alpha = 0.06 + 0.84 * p;
-        var cls = "c" + (alpha > 0.55 ? " hi" : "") + (k === t.surv.length - 1 ? " win" : "");
+        var alpha = readable(0.06 + 0.84 * p);
+        var cls = "c" + (useHiInk(alpha) ? " hi" : "") + (k === t.surv.length - 1 ? " win" : "");
         return '<td class="' + cls + '" style="background:rgba(var(--bleu-rgb),' + alpha.toFixed(3) + ')">' + pct(p) + "</td>";
       }).join("");
       if (prev) {

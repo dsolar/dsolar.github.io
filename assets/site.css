@@ -284,6 +284,8 @@ a:hover{color:var(--red)}
 .featured-column h3{font-size:1.3rem;line-height:1.3;text-wrap:initial}
 .featured-column p{font-size:.9rem;color:var(--muted)}
 .featured-column b{font-size:.85rem;margin-top:auto;padding-top:8px;color:var(--red)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .featured-column b{color:#F15469}}
+:root[data-theme="dark"] .featured-column b{color:#F15469}
 .featured-column:hover h3{text-decoration:underline;text-underline-offset:.2em}
 @media(max-width:900px){
  .hero .wrap{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:20px;padding-block:32px}

@@ -44,7 +44,7 @@ window.PROJECTS = [
     hidden: true
   },
   {
-    title: "Franchise Mode",
+    title: "Dynasty Mode",
     type: "Game",
     status: "building",
     url: "franchise-mode/",
