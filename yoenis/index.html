@@ -36,12 +36,12 @@
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#0C1411; --surface:#121D18; --ink:#E5EBE7; --muted:#97A69D; --rule:#23342B;
-    --monster:#25553D; --chalk:#F1EEE2; --red:#E04A55; --red-ink:#FFFFFF; color-scheme:dark;
+    --monster:#25553D; --chalk:#F1EEE2; --red:#D23F4B; --red-ink:#FFFFFF; color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --bg:#0C1411; --surface:#121D18; --ink:#E5EBE7; --muted:#97A69D; --rule:#23342B;
-  --monster:#25553D; --chalk:#F1EEE2; --red:#E04A55; --red-ink:#FFFFFF; color-scheme:dark;
+  --monster:#25553D; --chalk:#F1EEE2; --red:#D23F4B; --red-ink:#FFFFFF; color-scheme:dark;
 }
 
 *,*::before,*::after{box-sizing:border-box}
@@ -187,7 +187,7 @@ details[open] .t-open::after{transform:translateY(.05rem) rotate(-135deg)}
 /* Drafts */
 .seg{display:inline-flex;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:var(--surface)}
 .seg button{font:600 .9375rem/1 var(--f-body);color:var(--muted);background:none;border:0;padding:0 .9rem;min-height:44px;cursor:pointer}
-.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.seg button[aria-pressed="true"],.seg button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
 .first-pick{margin:0 0 1rem;color:var(--muted)}
 .first-pick strong{color:var(--ink);font-weight:600}
 .round{margin:0 0 1.5rem;content-visibility:auto;contain-intrinsic-size:auto 700px}
@@ -338,7 +338,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
 
   <section id="rules" aria-labelledby="rules-title">
     <div class="section-head"><h2 id="rules-title">League rules</h2></div>
-    <div class="seg tabs" role="tablist" aria-label="Rule topics"><button type="button" role="tab" id="rt-basics" aria-controls="rp-basics" aria-selected="true" aria-pressed="true">Basics</button><button type="button" role="tab" id="rt-payouts" aria-controls="rp-payouts" aria-selected="false" aria-pressed="false" tabindex="-1">Payouts</button><button type="button" role="tab" id="rt-keepers" aria-controls="rp-keepers" aria-selected="false" aria-pressed="false" tabindex="-1">Keepers</button><button type="button" role="tab" id="rt-trades" aria-controls="rp-trades" aria-selected="false" aria-pressed="false" tabindex="-1">Trades</button><button type="button" role="tab" id="rt-draft" aria-controls="rp-draft" aria-selected="false" aria-pressed="false" tabindex="-1">Draft</button></div>
+    <div class="seg tabs" role="tablist" aria-label="Rule topics"><button type="button" role="tab" id="rt-basics" aria-controls="rp-basics" aria-selected="true">Basics</button><button type="button" role="tab" id="rt-payouts" aria-controls="rp-payouts" aria-selected="false" tabindex="-1">Payouts</button><button type="button" role="tab" id="rt-keepers" aria-controls="rp-keepers" aria-selected="false" tabindex="-1">Keepers</button><button type="button" role="tab" id="rt-trades" aria-controls="rp-trades" aria-selected="false" tabindex="-1">Trades</button><button type="button" role="tab" id="rt-draft" aria-controls="rp-draft" aria-selected="false" tabindex="-1">Draft</button></div>
     <div class="rule-group" role="tabpanel" id="rp-basics" aria-labelledby="rt-basics" tabindex="0">
       <ul class="rules">
         <li>16 teams. The $125 buy-in is due by Venmo before the draft, which makes a $2,000 pot.</li>
@@ -423,7 +423,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     function show(t, focus) {
       tabs.forEach(function (x) {
         var on = x === t;
-        x.setAttribute("aria-selected", String(on)); x.setAttribute("aria-pressed", String(on));
+        x.setAttribute("aria-selected", String(on));
         x.tabIndex = on ? 0 : -1;
         $(x.getAttribute("aria-controls")).hidden = !on;
       });
