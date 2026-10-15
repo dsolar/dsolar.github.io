@@ -1,0 +1,1389 @@
+{
+  "source": "ESPN draft recaps supplied by league owner on 2026-10-15",
+  "drafts": {
+    "2026": [
+      {
+        "team": "Flowers Powers",
+        "players": [
+          {
+            "name": "A.J. Brown",
+            "price": 48
+          },
+          {
+            "name": "D’Andre Swift",
+            "price": 10
+          },
+          {
+            "name": "Christian McCaffrey",
+            "price": 58
+          },
+          {
+            "name": "Ladd McConkey",
+            "price": 27
+          },
+          {
+            "name": "Ka’imi Fairbairn",
+            "price": 1
+          },
+          {
+            "name": "Terry McLaurin",
+            "price": 21
+          },
+          {
+            "name": "David Montgomery",
+            "price": 11
+          },
+          {
+            "name": "Ravens D/ST",
+            "price": 1
+          },
+          {
+            "name": "MarShawn Lloyd",
+            "price": 11
+          },
+          {
+            "name": "Jonathon Brooks",
+            "price": 9
+          },
+          {
+            "name": "Trevor Lawrence",
+            "price": 2
+          },
+          {
+            "name": "Romeo Doubs",
+            "price": 2
+          },
+          {
+            "name": "Travis Kelce",
+            "price": 1
+          },
+          {
+            "name": "Xavier Worthy",
+            "price": 1
+          },
+          {
+            "name": "Jalen Coker",
+            "price": 1
+          },
+          {
+            "name": "Rachaad White",
+            "price": 1
+          }
+        ]
+      },
+      {
+        "team": "The Price is Bijan, B****",
+        "players": [
+          {
+            "name": "Brock Bowers",
+            "price": 13
+          },
+          {
+            "name": "Nico Collins",
+            "price": 30
+          },
+          {
+            "name": "Drake Maye",
+            "price": 3
+          },
+          {
+            "name": "Bijan Robinson",
+            "price": 66
+          },
+          {
+            "name": "Jonah Coleman",
+            "price": 2
+          },
+          {
+            "name": "Harrison Mevis",
+            "price": 1
+          },
+          {
+            "name": "Garrett Wilson",
+            "price": 32
+          },
+          {
+            "name": "Eagles D/ST",
+            "price": 1
+          },
+          {
+            "name": "Jadarian Price",
+            "price": 29
+          },
+          {
+            "name": "Parker Washington",
+            "price": 16
+          },
+          {
+            "name": "Tyler Shough",
+            "price": 1
+          },
+          {
+            "name": "Chuba Hubbard",
+            "price": 2
+          },
+          {
+            "name": "Aaron Jones Sr.",
+            "price": 1
+          },
+          {
+            "name": "Chris Godwin Jr.",
+            "price": 2
+          },
+          {
+            "name": "Zach Charbonnet",
+            "price": 1
+          },
+          {
+            "name": "Jakobi Meyers",
+            "price": 1
+          }
+        ]
+      },
+      {
+        "team": "Ra’s Al Ghul",
+        "players": [
+          {
+            "name": "Drake London",
+            "price": 27
+          },
+          {
+            "name": "Chris Olave",
+            "price": 7
+          },
+          {
+            "name": "Javonte Williams",
+            "price": 1
+          },
+          {
+            "name": "Derrick Henry",
+            "price": 44
+          },
+          {
+            "name": "Jeremiyah Love",
+            "price": 40
+          },
+          {
+            "name": "Broncos D/ST",
+            "price": 2
+          },
+          {
+            "name": "Jason Myers",
+            "price": 1
+          },
+          {
+            "name": "Colston Loveland",
+            "price": 28
+          },
+          {
+            "name": "Malik Nabers",
+            "price": 36
+          },
+          {
+            "name": "Jalen Hurts",
+            "price": 5
+          },
+          {
+            "name": "Brock Purdy",
+            "price": 2
+          },
+          {
+            "name": "Bo Nix",
+            "price": 2
+          },
+          {
+            "name": "Fernando Mendoza",
+            "price": 1
+          },
+          {
+            "name": "Travis Hunter",
+            "price": 1
+          },
+          {
+            "name": "Matthew Stafford",
+            "price": 2
+          },
+          {
+            "name": "Alec Pierce",
+            "price": 4
+          }
+        ]
+      },
+      {
+        "team": "Bristol CT Murder Squad",
+        "players": [
+          {
+            "name": "Tyler Warren",
+            "price": 7
+          },
+          {
+            "name": "Omarion Hampton",
+            "price": 33
+          },
+          {
+            "name": "Rashee Rice",
+            "price": 10
+          },
+          {
+            "name": "Saquon Barkley",
+            "price": 49
+          },
+          {
+            "name": "Breece Hall",
+            "price": 35
+          },
+          {
+            "name": "Josh Jacobs",
+            "price": 2
+          },
+          {
+            "name": "Tetairoa McMillan",
+            "price": 31
+          },
+          {
+            "name": "TreVeyon Henderson",
+            "price": 11
+          },
+          {
+            "name": "Jake Bates",
+            "price": 1
+          },
+          {
+            "name": "Brian Thomas Jr.",
+            "price": 4
+          },
+          {
+            "name": "Christian Watson",
+            "price": 12
+          },
+          {
+            "name": "RJ Harvey",
+            "price": 2
+          },
+          {
+            "name": "Kyler Murray",
+            "price": 1
+          },
+          {
+            "name": "Quentin Johnston",
+            "price": 2
+          },
+          {
+            "name": "Jordyn Tyson",
+            "price": 2
+          },
+          {
+            "name": "Chargers D/ST",
+            "price": 1
+          }
+        ]
+      },
+      {
+        "team": "The Championship Winnin Crunch*",
+        "players": [
+          {
+            "name": "Quinshon Judkins",
+            "price": 3
+          },
+          {
+            "name": "DeVonta Smith",
+            "price": 19
+          },
+          {
+            "name": "Jayden Reed",
+            "price": 1
+          },
+          {
+            "name": "Lamar Jackson",
+            "price": 21
+          },
+          {
+            "name": "Ashton Jeanty",
+            "price": 45
+          },
+          {
+            "name": "Marvin Harrison Jr.",
+            "price": 7
+          },
+          {
+            "name": "DJ Moore",
+            "price": 29
+          },
+          {
+            "name": "George Kittle",
+            "price": 10
+          },
+          {
+            "name": "Lions D/ST",
+            "price": 1
+          },
+          {
+            "name": "Blake Corum",
+            "price": 8
+          },
+          {
+            "name": "Tucker Kraft",
+            "price": 5
+          },
+          {
+            "name": "Mike Evans",
+            "price": 8
+          },
+          {
+            "name": "J.K. Dobbins",
+            "price": 7
+          },
+          {
+            "name": "Courtland Sutton",
+            "price": 8
+          },
+          {
+            "name": "Eddy Pineiro",
+            "price": 1
+          },
+          {
+            "name": "Jake Ferguson",
+            "price": 1
+          }
+        ]
+      },
+      {
+        "team": "Vaginette Butts",
+        "players": [
+          {
+            "name": "Cam Skattebo",
+            "price": 2
+          },
+          {
+            "name": "Ja’Marr Chase",
+            "price": 47
+          },
+          {
+            "name": "De’Von Achane",
+            "price": 27
+          },
+          {
+            "name": "Puka Nacua",
+            "price": 64
+          },
+          {
+            "name": "Jaxson Dart",
+            "price": 3
+          },
+          {
+            "name": "Tee Higgins",
+            "price": 27
+          },
+          {
+            "name": "DK Metcalf",
+            "price": 2
+          },
+          {
+            "name": "Rhamondre Stevenson",
+            "price": 6
+          },
+          {
+            "name": "Davante Adams",
+            "price": 18
+          },
+          {
+            "name": "Kenny Gainwell",
+            "price": 2
+          },
+          {
+            "name": "Jared Goff",
+            "price": 1
+          },
+          {
+            "name": "Makai Lemon",
+            "price": 2
+          },
+          {
+            "name": "Dallas Goedert",
+            "price": 1
+          },
+          {
+            "name": "Jacory Croskey-Merritt",
+            "price": 1
+          },
+          {
+            "name": "Jaguars D/ST",
+            "price": 1
+          },
+          {
+            "name": "Tyler Loop",
+            "price": 1
+          }
+        ]
+      },
+      {
+        "team": "Van Buren Boys",
+        "players": [
+          {
+            "name": "Jahmyr Gibbs",
+            "price": 47
+          },
+          {
+            "name": "Justin Jefferson",
+            "price": 47
+          },
+          {
+            "name": "Travis Etienne Jr.",
+            "price": 21
+          },
+          {
+            "name": "Jayden Daniels",
+            "price": 6
+          },
+          {
+            "name": "Cameron Dicker",
+            "price": 1
+          },
+          {
+            "name": "Steelers D/ST",
+            "price": 1
+          },
+          {
+            "name": "George Pickens",
+            "price": 50
+          },
+          {
+            "name": "Carnell Tate",
+            "price": 14
+          },
+          {
+            "name": "Isaiah Likely",
+            "price": 6
+          },
+          {
+            "name": "Rico Dowdle",
+            "price": 6
+          },
+          {
+            "name": "Jordan Addison",
+            "price": 1
+          },
+          {
+            "name": "Adonai Mitchell",
+            "price": 1
+          },
+          {
+            "name": "Alvin Kamara",
+            "price": 1
+          },
+          {
+            "name": "Jacob Saylors",
+            "price": 1
+          },
+          {
+            "name": "Jalen McMillan",
+            "price": 1
+          },
+          {
+            "name": "Mark Andrews",
+            "price": 1
+          }
+        ]
+      },
+      {
+        "team": "Belichick’s UNC Bistro",
+        "players": [
+          {
+            "name": "Bucky Irving",
+            "price": 7
+          },
+          {
+            "name": "Amon-Ra St. Brown",
+            "price": 52
+          },
+          {
+            "name": "CeeDee Lamb",
+            "price": 45
+          },
+          {
+            "name": "Josh Allen",
+            "price": 31
+          },
+          {
+            "name": "Kyren Williams",
+            "price": 30
+          },
+          {
+            "name": "Cam Little",
+            "price": 1
+          },
+          {
+            "name": "Rams D/ST",
+            "price": 2
+          },
+          {
+            "name": "Harold Fannin Jr.",
+            "price": 8
+          },
+          {
+            "name": "Luther Burden III",
+            "price": 21
+          },
+          {
+            "name": "Kenyon Sadiq",
+            "price": 1
+          },
+          {
+            "name": "Matthew Golden",
+            "price": 2
+          },
+          {
+            "name": "Khalil Shakir",
+            "price": 1
+          },
+          {
+            "name": "KC Concepcion",
+            "price": 1
+          },
+          {
+            "name": "Woody Marks",
+            "price": 1
+          },
+          {
+            "name": "Jordan Mason",
+            "price": 1
+          },
+          {
+            "name": "Dalton Kincaid",
+            "price": 1
+          }
+        ]
+      },
+      {
+        "team": "Walker Texas Nabers",
+        "players": [
+          {
+            "name": "James Cook III",
+            "price": 32
+          },
+          {
+            "name": "Trey McBride",
+            "price": 20
+          },
+          {
+            "name": "Chase Brown",
+            "price": 13
+          },
+          {
+            "name": "Texans D/ST",
+            "price": 2
+          },
+          {
+            "name": "Caleb Williams",
+            "price": 5
+          },
+          {
+            "name": "Brandon Aubrey",
+            "price": 4
+          },
+          {
+            "name": "Emeka Egbuka",
+            "price": 25
+          },
+          {
+            "name": "Zay Flowers",
+            "price": 29
+          },
+          {
+            "name": "Sam LaPorta",
+            "price": 4
+          },
+          {
+            "name": "Bhayshul Tuten",
+            "price": 25
+          },
+          {
+            "name": "Justin Herbert",
+            "price": 3
+          },
+          {
+            "name": "Rome Odunze",
+            "price": 18
+          },
+          {
+            "name": "Michael Pittman Jr.",
+            "price": 3
+          },
+          {
+            "name": "Michael Wilson",
+            "price": 3
+          },
+          {
+            "name": "De’Zhaun Stribling",
+            "price": 7
+          },
+          {
+            "name": "Kyle Monangai",
+            "price": 3
+          }
+        ]
+      },
+      {
+        "team": "It’s gonna be Maye",
+        "players": [
+          {
+            "name": "Kyle Pitts Sr.",
+            "price": 1
+          },
+          {
+            "name": "Jaxon Smith-Njigba",
+            "price": 21
+          },
+          {
+            "name": "Jonathan Taylor",
+            "price": 47
+          },
+          {
+            "name": "Joe Burrow",
+            "price": 6
+          },
+          {
+            "name": "Kenneth Walker III",
+            "price": 55
+          },
+          {
+            "name": "Seahawks D/ST",
+            "price": 1
+          },
+          {
+            "name": "Jaylen Waddle",
+            "price": 28
+          },
+          {
+            "name": "Dak Prescott",
+            "price": 3
+          },
+          {
+            "name": "Tony Pollard",
+            "price": 2
+          },
+          {
+            "name": "Jameson Williams",
+            "price": 27
+          },
+          {
+            "name": "Jaylen Warren",
+            "price": 1
+          },
+          {
+            "name": "Patrick Mahomes",
+            "price": 2
+          },
+          {
+            "name": "Wan’Dale Robinson",
+            "price": 3
+          },
+          {
+            "name": "Harrison Butker",
+            "price": 1
+          },
+          {
+            "name": "Josh Downs",
+            "price": 1
+          },
+          {
+            "name": "Stefon Diggs",
+            "price": 6
+          }
+        ]
+      }
+    ],
+    "2025": [
+      {
+        "team": "Flowers Powers",
+        "players": [
+          {
+            "name": "J.K. Dobbins",
+            "price": 1
+          },
+          {
+            "name": "D’Andre Swift",
+            "price": 6
+          },
+          {
+            "name": "Ladd McConkey",
+            "price": 3
+          },
+          {
+            "name": "A.J. Brown",
+            "price": 48
+          },
+          {
+            "name": "Christian McCaffrey",
+            "price": 58
+          },
+          {
+            "name": "Patrick Mahomes",
+            "price": 10
+          },
+          {
+            "name": "Eagles D/ST",
+            "price": 1
+          },
+          {
+            "name": "Isiah Pacheco",
+            "price": 17
+          },
+          {
+            "name": "Chris Boswell",
+            "price": 1
+          },
+          {
+            "name": "Sam LaPorta",
+            "price": 11
+          },
+          {
+            "name": "Zay Flowers",
+            "price": 19
+          },
+          {
+            "name": "George Pickens",
+            "price": 21
+          },
+          {
+            "name": "Keon Coleman",
+            "price": 6
+          },
+          {
+            "name": "Jerome Ford",
+            "price": 1
+          },
+          {
+            "name": "Keenan Allen",
+            "price": 1
+          },
+          {
+            "name": "Xavier Legette",
+            "price": 1
+          }
+        ]
+      },
+      {
+        "team": "Aiyuk Aiyuk Aiyuk is On IR",
+        "players": [
+          {
+            "name": "Chuba Hubbard",
+            "price": 3
+          },
+          {
+            "name": "Brock Bowers",
+            "price": 2
+          },
+          {
+            "name": "Nico Collins",
+            "price": 29
+          },
+          {
+            "name": "Ashton Jeanty",
+            "price": 54
+          },
+          {
+            "name": "DK Metcalf",
+            "price": 21
+          },
+          {
+            "name": "Vikings D/ST",
+            "price": 1
+          },
+          {
+            "name": "Alvin Kamara",
+            "price": 26
+          },
+          {
+            "name": "Marvin Harrison Jr.",
+            "price": 30
+          },
+          {
+            "name": "Travis Hunter",
+            "price": 9
+          },
+          {
+            "name": "Dak Prescott",
+            "price": 3
+          },
+          {
+            "name": "Evan McPherson",
+            "price": 1
+          },
+          {
+            "name": "RJ Harvey",
+            "price": 19
+          },
+          {
+            "name": "Rico Dowdle",
+            "price": 1
+          },
+          {
+            "name": "Jordan Love",
+            "price": 1
+          },
+          {
+            "name": "Rashod Bateman",
+            "price": 1
+          },
+          {
+            "name": "Jake Ferguson",
+            "price": 1
+          }
+        ]
+      },
+      {
+        "team": "Ra’s Al Ghul",
+        "players": [
+          {
+            "name": "Drake London",
+            "price": 19
+          },
+          {
+            "name": "Jalen Hurts",
+            "price": 22
+          },
+          {
+            "name": "T.J. Hockenson",
+            "price": 1
+          },
+          {
+            "name": "Garrett Wilson",
+            "price": 27
+          },
+          {
+            "name": "Patriots D/ST",
+            "price": 1
+          },
+          {
+            "name": "James Conner",
+            "price": 26
+          },
+          {
+            "name": "Justin Herbert",
+            "price": 1
+          },
+          {
+            "name": "Rome Odunze",
+            "price": 12
+          },
+          {
+            "name": "Xavier Worthy",
+            "price": 26
+          },
+          {
+            "name": "Breece Hall",
+            "price": 19
+          },
+          {
+            "name": "Tyler Loop",
+            "price": 1
+          },
+          {
+            "name": "David Montgomery",
+            "price": 9
+          },
+          {
+            "name": "Jakobi Meyers",
+            "price": 7
+          },
+          {
+            "name": "Aaron Jones Sr.",
+            "price": 11
+          },
+          {
+            "name": "Cooper Kupp",
+            "price": 1
+          },
+          {
+            "name": "Jauan Jennings",
+            "price": 6
+          }
+        ]
+      },
+      {
+        "team": "Bristol CT Murder Squad",
+        "players": [
+          {
+            "name": "Mike Evans",
+            "price": 15
+          },
+          {
+            "name": "Trey McBride",
+            "price": 12
+          },
+          {
+            "name": "Tee Higgins",
+            "price": 18
+          },
+          {
+            "name": "Texans D/ST",
+            "price": 2
+          },
+          {
+            "name": "Omarion Hampton",
+            "price": 33
+          },
+          {
+            "name": "Cameron Dicker",
+            "price": 1
+          },
+          {
+            "name": "Jacory Croskey-Merritt",
+            "price": 9
+          },
+          {
+            "name": "Rashee Rice",
+            "price": 10
+          },
+          {
+            "name": "Kyler Murray",
+            "price": 9
+          },
+          {
+            "name": "Tony Pollard",
+            "price": 17
+          },
+          {
+            "name": "Jameson Williams",
+            "price": 17
+          },
+          {
+            "name": "Ricky Pearsall",
+            "price": 14
+          },
+          {
+            "name": "Emeka Egbuka",
+            "price": 24
+          },
+          {
+            "name": "Brandon Aiyuk",
+            "price": 2
+          },
+          {
+            "name": "Braelon Allen",
+            "price": 8
+          },
+          {
+            "name": "Zach Charbonnet",
+            "price": 7
+          }
+        ]
+      },
+      {
+        "team": "The Championship Winnin Crunch*",
+        "players": [
+          {
+            "name": "Tyrone Tracy Jr.",
+            "price": 1
+          },
+          {
+            "name": "Lamar Jackson",
+            "price": 21
+          },
+          {
+            "name": "George Kittle",
+            "price": 11
+          },
+          {
+            "name": "Tyreek Hill",
+            "price": 33
+          },
+          {
+            "name": "Josh Jacobs",
+            "price": 50
+          },
+          {
+            "name": "DeVonta Smith",
+            "price": 19
+          },
+          {
+            "name": "Calvin Ridley",
+            "price": 21
+          },
+          {
+            "name": "Cowboys D/ST",
+            "price": 1
+          },
+          {
+            "name": "Brock Purdy",
+            "price": 2
+          },
+          {
+            "name": "Cam Little",
+            "price": 1
+          },
+          {
+            "name": "David Njoku",
+            "price": 3
+          },
+          {
+            "name": "Nick Chubb",
+            "price": 5
+          },
+          {
+            "name": "Jayden Reed",
+            "price": 1
+          },
+          {
+            "name": "Quinshon Judkins",
+            "price": 3
+          },
+          {
+            "name": "Josh Downs",
+            "price": 5
+          },
+          {
+            "name": "Rashid Shaheed",
+            "price": 2
+          }
+        ]
+      },
+      {
+        "team": "Vaginette Butts",
+        "players": [
+          {
+            "name": "Bucky Irving",
+            "price": 1
+          },
+          {
+            "name": "De’Von Achane",
+            "price": 16
+          },
+          {
+            "name": "CeeDee Lamb",
+            "price": 42
+          },
+          {
+            "name": "Amon-Ra St. Brown",
+            "price": 52
+          },
+          {
+            "name": "Kyren Williams",
+            "price": 34
+          },
+          {
+            "name": "Davante Adams",
+            "price": 29
+          },
+          {
+            "name": "Steelers D/ST",
+            "price": 1
+          },
+          {
+            "name": "Harrison Butker",
+            "price": 1
+          },
+          {
+            "name": "Javonte Williams",
+            "price": 1
+          },
+          {
+            "name": "Chris Olave",
+            "price": 7
+          },
+          {
+            "name": "Evan Engram",
+            "price": 3
+          },
+          {
+            "name": "Cam Skattebo",
+            "price": 2
+          },
+          {
+            "name": "Michael Pittman Jr.",
+            "price": 5
+          },
+          {
+            "name": "Caleb Williams",
+            "price": 1
+          },
+          {
+            "name": "Chris Godwin Jr.",
+            "price": 7
+          },
+          {
+            "name": "Joe Mixon",
+            "price": 3
+          }
+        ]
+      },
+      {
+        "team": "Van Buren Boys",
+        "players": [
+          {
+            "name": "Jahmyr Gibbs",
+            "price": 42
+          },
+          {
+            "name": "Puka Nacua",
+            "price": 54
+          },
+          {
+            "name": "Justin Jefferson",
+            "price": 45
+          },
+          {
+            "name": "Chase McLaughlin",
+            "price": 1
+          },
+          {
+            "name": "Baker Mayfield",
+            "price": 7
+          },
+          {
+            "name": "Bo Nix",
+            "price": 2
+          },
+          {
+            "name": "Bills D/ST",
+            "price": 1
+          },
+          {
+            "name": "Mark Andrews",
+            "price": 2
+          },
+          {
+            "name": "Marvin Mims Jr.",
+            "price": 3
+          },
+          {
+            "name": "Tank Bigsby",
+            "price": 3
+          },
+          {
+            "name": "Jaylen Warren",
+            "price": 13
+          },
+          {
+            "name": "Travis Etienne Jr.",
+            "price": 21
+          },
+          {
+            "name": "Christian Kirk",
+            "price": 1
+          },
+          {
+            "name": "Brenton Strange",
+            "price": 1
+          },
+          {
+            "name": "Ollie Gordon II",
+            "price": 8
+          },
+          {
+            "name": "Cedric Tillman",
+            "price": 1
+          }
+        ]
+      },
+      {
+        "team": "Belichick’s UNC Bistro",
+        "players": [
+          {
+            "name": "Saquon Barkley",
+            "price": 50
+          },
+          {
+            "name": "Ja’Marr Chase",
+            "price": 42
+          },
+          {
+            "name": "Joe Burrow",
+            "price": 4
+          },
+          {
+            "name": "Brian Robinson Jr.",
+            "price": 2
+          },
+          {
+            "name": "Derrick Henry",
+            "price": 49
+          },
+          {
+            "name": "Brandon Aubrey",
+            "price": 1
+          },
+          {
+            "name": "Broncos D/ST",
+            "price": 1
+          },
+          {
+            "name": "Drake Maye",
+            "price": 1
+          },
+          {
+            "name": "DJ Moore",
+            "price": 14
+          },
+          {
+            "name": "Jaylen Waddle",
+            "price": 16
+          },
+          {
+            "name": "Colston Loveland",
+            "price": 4
+          },
+          {
+            "name": "Matthew Golden",
+            "price": 15
+          },
+          {
+            "name": "Khalil Shakir",
+            "price": 3
+          },
+          {
+            "name": "Dallas Goedert",
+            "price": 1
+          },
+          {
+            "name": "Hollywood Brown",
+            "price": 1
+          },
+          {
+            "name": "Tre’ Harris",
+            "price": 1
+          }
+        ]
+      },
+      {
+        "team": "Walker Texas Nabers",
+        "players": [
+          {
+            "name": "Terry McLaurin",
+            "price": 6
+          },
+          {
+            "name": "Malik Nabers",
+            "price": 34
+          },
+          {
+            "name": "Chase Brown",
+            "price": 2
+          },
+          {
+            "name": "Jake Bates",
+            "price": 1
+          },
+          {
+            "name": "Travis Kelce",
+            "price": 4
+          },
+          {
+            "name": "Josh Allen",
+            "price": 32
+          },
+          {
+            "name": "James Cook III",
+            "price": 32
+          },
+          {
+            "name": "Tetairoa McMillan",
+            "price": 23
+          },
+          {
+            "name": "Kenneth Walker III",
+            "price": 32
+          },
+          {
+            "name": "Lions D/ST",
+            "price": 1
+          },
+          {
+            "name": "Courtland Sutton",
+            "price": 14
+          },
+          {
+            "name": "Tyler Warren",
+            "price": 7
+          },
+          {
+            "name": "Austin Ekeler",
+            "price": 4
+          },
+          {
+            "name": "Deebo Samuel",
+            "price": 6
+          },
+          {
+            "name": "Jaydon Blue",
+            "price": 1
+          },
+          {
+            "name": "Jayden Higgins",
+            "price": 3
+          }
+        ]
+      },
+      {
+        "team": "It’s gonna be Maye",
+        "players": [
+          {
+            "name": "Brian Thomas Jr.",
+            "price": 7
+          },
+          {
+            "name": "Jaxon Smith-Njigba",
+            "price": 4
+          },
+          {
+            "name": "Jayden Daniels",
+            "price": 3
+          },
+          {
+            "name": "Bijan Robinson",
+            "price": 68
+          },
+          {
+            "name": "Justin Fields",
+            "price": 1
+          },
+          {
+            "name": "Jonathan Taylor",
+            "price": 47
+          },
+          {
+            "name": "Ravens D/ST",
+            "price": 1
+          },
+          {
+            "name": "TreVeyon Henderson",
+            "price": 29
+          },
+          {
+            "name": "Jake Elliott",
+            "price": 1
+          },
+          {
+            "name": "Jerry Jeudy",
+            "price": 12
+          },
+          {
+            "name": "Stefon Diggs",
+            "price": 4
+          },
+          {
+            "name": "Jordan Addison",
+            "price": 8
+          },
+          {
+            "name": "Tucker Kraft",
+            "price": 1
+          },
+          {
+            "name": "Rhamondre Stevenson",
+            "price": 7
+          },
+          {
+            "name": "Kaleb Johnson",
+            "price": 6
+          },
+          {
+            "name": "Jordan Mason",
+            "price": 6
+          }
+        ]
+      }
+    ]
+  }
+}
