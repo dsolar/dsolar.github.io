@@ -80,6 +80,7 @@ h2{font:700 1.6rem/1.1 var(--f-display);font-variation-settings:"opsz" 48;margin
 .lede{font-size:1.1rem;line-height:1.5;margin:1rem 0 0;max-width:36rem;text-wrap:pretty}
 .lede b{font-weight:700}
 .updated{margin:.75rem 0 0;color:var(--muted);font-size:.8rem}
+.updated .yh{display:inline-block;margin-top:.25rem}
 .live-tag{display:inline-flex;align-items:center;gap:.35rem;color:var(--blade);font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:.72rem}
 .live-tag::before{content:"";width:.5rem;height:.5rem;border-radius:50%;background:var(--blade);animation:pulse 1.6s ease-in-out infinite}
 @keyframes pulse{50%{opacity:.25}}
@@ -244,6 +245,8 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
 .roster .pl small{display:block;color:var(--muted);font-size:.72rem}
 .roster tr.sep th{padding-top:.9rem;font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-top:none}
 .roster tr.bad .pl b,.roster tr.bad .num{color:var(--danger)}
+.roster .ast{color:var(--bubble);font-weight:700;margin-left:.1rem}
+.roster tr.note td{border-top:none;padding-top:0}
 .st{display:inline-block;margin-left:.35rem;padding:0 .3rem;border-radius:2px;font-size:.62rem;font-weight:700;letter-spacing:.04em;vertical-align:.1em;border:1px solid currentColor}
 .st.q{color:var(--bubble)} .st.o{color:var(--danger)} .st.go{color:var(--safe)}
 .dlg-note{margin:0;color:var(--muted);font-size:.72rem;line-height:1.45}
@@ -388,7 +391,7 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
   </div>
 </dialog>
 
-<script src="sim.js?v=5"></script>
+<script src="sim.js?v=6"></script>
 <script>
 (function () {
   "use strict";
@@ -447,7 +450,12 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
     var lv = data.live;
     var liveHtml = lv ? (lv.inProgress ? '<span class="live-tag">Live</span> ' + esc(lv.inProgress + " game" + (lv.inProgress > 1 ? "s" : "") + " on · scores as of " + etTime(lv.fetched)) :
       lv.anyStarted ? esc("Results as of " + etTime(lv.fetched)) : "") : "";
-    $("updated").innerHTML = (liveHtml ? liveHtml + " · " : "") + esc(upd) + (data.league_url ? (upd ? " · " : "") + '<a href="' + esc(data.league_url) + '" target="_blank" rel="noopener">League on Yahoo</a>' : "");
+    $("updated").innerHTML = (liveHtml ? liveHtml + " · " : "") + esc(upd) + (data.league_url ? (upd ? " · " : "") + '<a href="' + esc(data.league_url) + '" target="_blank" rel="noopener">League on Yahoo</a>' : "") +
+      (YAHOO && YAHOO.status && YAHOO.status !== "connected"
+        ? '<br><span class="yh">' + (YAHOO.status === "waiting"
+            ? "Rosters come from the pasted league page. Yahoo hasn't approved the direct connection yet (waiting since " + esc(dayOf(YAHOO.since)) + "; checked every morning)."
+            : "Rosters come from the pasted league page. The Yahoo connection hit an error on " + esc(dayOf(YAHOO.since)) + ".") + "</span>"
+        : "");
 
     if (n < 2) {
       $("lede").textContent = n === 1 ? teams[0].name + " is the last team standing." : "No teams in the data yet.";
@@ -480,7 +488,7 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
 
     $("rows").innerHTML = byRisk.map(function (t) {
       var g = rangeOf(t), tier = tierOf(t.pChop, n);
-      var basis = t.basis === "yahoo" ? "proj " + t.proj.toFixed(1) : t.basis === "best" ? "best lineup " + t.best.toFixed(1) : "avg " + t.now.toFixed(1);
+      var basis = t.basis === "yahoo" ? "proj " + t.proj.toFixed(1) + (t.fill ? " with a stand-in*" : "") : t.basis === "best" ? "best lineup " + t.best.toFixed(1) + "*" : "avg " + t.now.toFixed(1);
       var banked = t.gamesFinal ? t.locked.toFixed(1) + " banked" : null;
       var meta = [basis, banked, "likely " + pts(g[0]) + " to " + pts(g[1]), t.faab !== null ? "$" + t.faab + " FAB" : null, "wins " + pct(t.pWin)].filter(Boolean).join(" · ");
       var kp = keyPlayers(raw[t.name]);
@@ -569,9 +577,10 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
   }
 
   var short = function (name) { var i = name.indexOf(" "); return i > 0 ? name[0] + ". " + name.slice(i + 1) : name; };
+  // This week's starters, counting the bench player assumed to fill any empty spot.
   function startersOf(t) {
     var roster = (t && t.roster) || [];
-    var s = roster.filter(function (p) { return p.slot !== "BN" && p.slot !== "IR" && !p.empty; });
+    var s = roster.filter(function (p) { return (p.slot !== "BN" && p.slot !== "IR" && !p.empty) || p.assumed_slot; });
     return s.length ? s : roster.filter(function (p) { return p.in_best; });
   }
   function keyPlayers(t) {
@@ -695,8 +704,11 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
 
   // ---- Team roster window
   var SLOT_ORDER = { QB: 1, RB: 2, WR: 3, TE: 4, "W/R/T": 5, "W/R": 5, "W/T": 5, "Q/W/R/T": 6, K: 7, DEF: 8 };
-  function playerRow(p, isStarter) {
+  function playerRow(p, isStarter, roster) {
     if (p.empty) {
+      // An empty spot shows the bench player the odds assume will fill it, marked with an asterisk.
+      var sub = p.assumed && (roster || []).filter(function (q) { return q.name === p.assumed && q.assumed_slot; })[0];
+      if (sub) return playerRow(Object.assign({}, sub, { slot: p.slot, stand: true }), true);
       return '<tr class="bad"><td class="slot">' + esc(p.slot) + '</td><td class="pl"><b>Empty</b></td><td class="num">0.0</td><td class="num"></td></tr>';
     }
     var st = p.status ? '<span class="st ' + (p.status === "Q" ? "q" : "o") + '">' + esc(p.status) + "</span>" : "";
@@ -705,7 +717,7 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
     var proj = p.bye ? "Bye" : (p.final || p.live) ? "<b>" + (p.actual || 0).toFixed(1) + "</b>" : typeof p.proj === "number" ? p.proj.toFixed(1) : "–";
     var bad = isStarter && (p.bye || p.status === "O" || /^IR|^PUP|^NA|^SUSP/.test(p.status || ""));
     return '<tr' + (bad ? ' class="bad"' : "") + '><td class="slot">' + esc(p.slot) + "</td>" +
-      '<td class="pl"><b>' + esc(p.name) + "</b>" + st + start + "<small>" + esc(p.pos + " · " + where) + "</small></td>" +
+      '<td class="pl"><b>' + esc(p.name) + (p.stand ? '<span class="ast" title="Assumed: this spot is empty in Yahoo">*</span>' : "") + "</b>" + st + start + "<small>" + esc(p.pos + " · " + where) + "</small></td>" +
       '<td class="num">' + proj + '</td><td class="num">' + (p.final ? "final" : p.live ? '<span class="st q">LIVE</span>' : esc(p.rank || "")) + "</td></tr>";
   }
 
@@ -725,7 +737,7 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
       chips.push('<span class="chip">Likely ' + pts(g[0]) + " to " + pts(g[1]) + "</span>");
       if (simT.fabEdge) chips.push('<span class="chip">Money ' + (simT.fabEdge > 0 ? "+" : "−") + Math.abs(simT.fabEdge).toFixed(1) + " pts/wk later</span>");
     }
-    if (typeof t.proj === "number" && t.proj > 0) chips.push('<span class="chip">Yahoo proj ' + t.proj.toFixed(1) + "</span>");
+    if (typeof t.proj === "number" && t.proj > 0) chips.push('<span class="chip">Yahoo proj ' + t.proj.toFixed(1) + (t.fill ? " + " + t.fill.toFixed(1) + " stand-in*" : "") + "</span>");
     if (typeof t.best === "number") chips.push('<span class="chip">Best lineup ' + t.best.toFixed(1) + "</span>");
     if (typeof t.faab === "number") chips.push('<span class="chip">$' + t.faab + " FAB</span>");
     $("dlg-chips").innerHTML = chips.join("");
@@ -736,13 +748,16 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
     } else {
       var starters = roster.filter(function (p) { return p.slot !== "BN" && p.slot !== "IR"; })
         .sort(function (a, b) { return (SLOT_ORDER[a.slot] || 9) - (SLOT_ORDER[b.slot] || 9); });
-      var bench = roster.filter(function (p) { return p.slot === "BN"; })
+      var bench = roster.filter(function (p) { return p.slot === "BN" && !p.assumed_slot; })
         .sort(function (a, b) { return (b.proj || 0) - (a.proj || 0); });
       var ir = roster.filter(function (p) { return p.slot === "IR"; });
       var html = '<div class="scroll" style="border:0"><table class="roster"><thead><tr><th>Slot</th><th>Player</th><th class="num">Proj</th><th class="num">Rank</th></tr></thead><tbody>';
-      html += starters.every(function (p) { return p.empty; })
-        ? '<tr class="bad"><td class="slot">All</td><td class="pl" colspan="3"><b>No lineup set yet</b><small>The odds use this roster\'s best lineup, marked Start below.</small></td></tr>'
-        : starters.map(function (p) { return playerRow(p, true); }).join("");
+      var noneSet = starters.every(function (p) { return p.empty; });
+      var stood = starters.filter(function (p) { return p.empty && p.assumed; }).length;
+      html += starters.map(function (p) { return playerRow(p, true, roster); }).join("");
+      if (stood) html += '<tr class="note"><td></td><td class="pl" colspan="3"><small>* ' + (noneSet
+        ? "No lineup is set in Yahoo yet, so the odds assume the best lineup this roster can field."
+        : (stood > 1 ? "These spots are" : "This spot is") + " empty in Yahoo, so the odds assume the best bench player who can fill " + (stood > 1 ? "them" : "it") + " starts.") + "</small></td></tr>";
       if (bench.length) html += '<tr class="sep"><th colspan="4">Bench</th></tr>' + bench.map(function (p) { return playerRow(p, false); }).join("");
       if (ir.length) html += '<tr class="sep"><th colspan="4">Injured reserve</th></tr>' + ir.map(function (p) { return playerRow(p, false); }).join("");
       $("dlg-body").innerHTML = html + "</tbody></table></div>";
@@ -799,7 +814,11 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
     return name.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[.'’`-]/g, "")
       .split(/\s+/).filter(function (w) { return w && !SUFFIX[w]; }).join(" ");
   };
-  var BASE = null, LEAGUE = {}, HIST = { weeks: {} }, liveTimer = null;
+  var BASE = null, LEAGUE = {}, HIST = { weeks: {} }, YAHOO = null, liveTimer = null;
+  function dayOf(iso) {
+    var d = new Date(iso + "T12:00:00Z");
+    return isNaN(d) ? iso : d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+  }
 
   function score(s) {
     var total = 0, any = false;
@@ -904,9 +923,10 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") refreshLive(); });
 
   Promise.all([getJSON("data.json"), getJSON("league.json").catch(function () { return {}; }),
-               getJSON("history.json").catch(function () { return { weeks: {} }; })])
+               getJSON("history.json").catch(function () { return { weeks: {} }; }),
+               getJSON("yahoo.json").catch(function () { return null; })])
     .then(function (both) {
-      BASE = both[0]; LEAGUE = both[1] || {}; HIST = both[2] || { weeks: {} };
+      BASE = both[0]; LEAGUE = both[1] || {}; HIST = both[2] || { weeks: {} }; YAHOO = both[3];
       setTimeout(function () { render(BASE, LEAGUE); wireJump(); refreshLive(); }, 0);
     })
     .catch(function () {

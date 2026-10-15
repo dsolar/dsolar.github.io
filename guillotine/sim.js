@@ -90,12 +90,13 @@
       var strength = Math.max(t.best || 0, t.best_next || 0);
       var base = strength > 0 ? (recent + strength) / 2 : recent;
       var later = (1 - o.shrink) * base + o.shrink * leagueAvg;
-      // This week: Yahoo's projection; with no lineup set (projection 0), the team's best possible
-      // lineup from player projections; failing both, its average.
+      // This week: Yahoo's projection, plus a bench stand-in for any empty starting spot (t.fill); with
+      // no lineup set (projection 0), the team's best possible lineup; failing both, its average.
       var hasProj = typeof t.proj === "number" && t.proj > 0;
       var hasBest = typeof t.best === "number" && t.best > 0;
+      var fill = hasProj ? (t.fill || 0) : 0;
       var basis = hasProj ? "yahoo" : hasBest ? "best" : "avg";
-      var start = basis === "yahoo" ? t.proj : basis === "best" ? t.best : later;
+      var start = basis === "yahoo" ? t.proj + fill : basis === "best" ? t.best : later;
       // Games already final: swap their projections for what those starters actually scored.
       var locked = o.pregame ? 0 : (t.locked || 0);
       var shift = o.pregame ? 0 : locked - (t.locked_proj || 0);
@@ -106,7 +107,8 @@
         faab: typeof t.faab === "number" ? t.faab : null,
         mine: !!t.mine,
         basis: basis,
-        proj: hasProj ? t.proj : null,
+        proj: hasProj ? t.proj + fill : null,
+        fill: fill,                                     // points from stand-ins for empty starting spots
         best: hasBest ? t.best : null,
         recent: t._recent,
         start: start,                                   // expected score before any game this week

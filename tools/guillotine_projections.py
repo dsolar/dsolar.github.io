@@ -136,6 +136,39 @@ def best_lineup(roster, key, flag=None, skip_bye_key=None):
     return round(total, 1)
 
 
+def fill_empty(team):
+    """Put a stand-in in every empty starting spot, the way a manager would before kickoff.
+
+    With some starters set, each empty spot gets the best healthy bench player who can play it; the team's
+    projection grows by their points (t["fill"]). With no lineup at all, the whole best lineup stands in.
+    The empty spot records who's assumed ("assumed"); that player records the spot ("assumed_slot").
+    """
+    roster = team["roster"]
+    empties = [p for p in roster if p.get("empty") and p["slot"] not in ("BN", "IR")]
+    team.pop("fill", None)
+    if not empties:
+        return
+    none_set = all(p.get("empty") for p in roster if p["slot"] not in ("BN", "IR"))
+    if none_set:
+        pool = [p for p in roster if p.get("in_best")]
+    else:
+        pool = [p for p in roster if p["slot"] == "BN" and not p.get("empty") and not p.get("bye")
+                and p.get("status") not in UNAVAILABLE and (p.get("proj") or 0) > 0]
+    pool.sort(key=lambda p: -(p.get("proj") or 0))
+    used, fill = set(), 0.0
+    for slot in sorted(empties, key=lambda e: len(ELIGIBLE.get(e["slot"], {e["slot"]}))):
+        ok = ELIGIBLE.get(slot["slot"], {slot["slot"]})
+        pick = next((p for p in pool if id(p) not in used and p["pos"] in ok), None)
+        if not pick:
+            continue
+        used.add(id(pick))
+        slot["assumed"] = pick["name"]
+        pick["assumed_slot"] = slot["slot"]
+        fill += pick.get("proj") or 0
+    if not none_set and fill:
+        team["fill"] = round(fill, 2)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--data", default=DATA)
@@ -171,7 +204,7 @@ def main():
     for t in teams:
         roster = t["roster"]
         for p in roster:
-            for k in ("proj", "rank", "in_best", "actual", "next_proj", "bye_next", "date", "final"):
+            for k in ("proj", "rank", "in_best", "actual", "next_proj", "bye_next", "date", "final", "assumed", "assumed_slot"):
                 p.pop(k, None)
             if p.get("empty"):
                 continue
@@ -200,11 +233,10 @@ def main():
 
         t["best"] = best_lineup(roster, "proj", flag="in_best")
         t["best_next"] = best_lineup(roster, "next_proj") if nxt.by_name else None
+        fill_empty(t)
 
-        # Points already banked by this week's starters (the best lineup if none is set).
-        starters = [p for p in roster if p["slot"] not in ("BN", "IR") and not p.get("empty")]
-        if not starters:
-            starters = [p for p in roster if p.get("in_best")]
+        # Points already banked by this week's starters, counting whoever stands in for an empty spot.
+        starters = [p for p in roster if (p["slot"] not in ("BN", "IR") and not p.get("empty")) or p.get("assumed_slot")]
         done = [p for p in starters if p.get("final")]
         t["locked"] = round(sum(p.get("actual", 0) for p in done), 2)
         t["locked_proj"] = round(sum(p.get("proj") or 0 for p in done), 2)

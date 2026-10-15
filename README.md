@@ -143,6 +143,8 @@ To add a week's send-off from the league email: save the image as `guillotine/eu
 
 Clicking that team in The Fallen then opens the image and haiku. Or send the image and haiku to Claude and have it add them.
 
+Empty starting spots: when a lineup has an empty spot, the odds assume the manager fills it with the best healthy bench player who can play it, and add that player's projection to Yahoo's. The roster window shows that player in the spot with an asterisk. With no lineup set at all, the odds use the roster's best lineup, also asterisked. Whether Yahoo has approved the direct connection shows under the page's "Updated" line (from `guillotine/yahoo.json`, which the daily Yahoo check keeps current).
+
 How eliminations are found: in each finished week, the lowest score among teams still alive is the one that was cut. The model's settings (how many recent weeks count, how far later weeks lean toward the league average, how much scores swing) are the `DEFAULTS` at the top of `guillotine/sim.js`.
 
 ## Night Out: the social calendar

@@ -282,6 +282,22 @@ def write_if_changed(data, path):
     return True
 
 
+def note_status(status, detail=""):
+    """Record the Yahoo connection's state in guillotine/yahoo.json for the page's footer.
+    Rewritten only when the state changes, so a quiet day makes no commit."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "guillotine", "yahoo.json")
+    try:
+        old = json.load(open(path, encoding="utf-8"))
+    except (OSError, ValueError):
+        old = {}
+    if old.get("status") == status and old.get("detail", "") == detail:
+        return
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump({"status": status, "since": today, "detail": detail}, f, indent=1)
+        f.write("\n")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--out", default=DEFAULT_OUT)
@@ -291,7 +307,10 @@ def main():
     try:
         y = Yahoo(from_dir=a.from_dir) if a.from_dir else Yahoo(token=access_token())
         write_if_changed(build(y, league_id), a.out)
+        if not a.from_dir:
+            note_status("connected")
     except NotApproved:
+        note_status("waiting", "Yahoo hasn't approved the app for Fantasy data yet")
         # Since mid-2026 Yahoo approves Fantasy API apps by hand. Until it does, every call returns
         # this 403. Skip quietly (no failed run, no failure email); the page keeps its pasted data,
         # and the first run after approval just works.
@@ -299,6 +318,7 @@ def main():
               "Update the page by pasting the league page into guillotine/paste.txt instead (see README).")
     except Failure as e:
         # "::error::" puts the message on the GitHub run summary page.
+        note_status("error", str(e)[:200])
         print(f"::error::{e}")
         sys.exit(1)
     except Exception as e:
