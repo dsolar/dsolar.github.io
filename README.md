@@ -28,6 +28,8 @@ dsolar.github.io/
     build_site.py             puts page + data + engine together
   degenerate-trail/           The Degenerate Trail, plain files, edit directly
   nick-chat/                  Chat with Nick
+  paint-the-corners/          Paint the Corners: index.html (layout, styles, UI) and engine.js
+                              (pitches, hitters, at-bat math). Plain files, edit directly.
   guillotine/                 Bastille Day Odds: index.html, sim.js (the simulation),
                               data.json (league data, written by the workflow below)
   calendar/                   Night Out: index.html, taste.json, picks.json and places.json (edit these),
@@ -35,6 +37,7 @@ dsolar.github.io/
   restaurants/                old address of the restaurant list; forwards to Night Out
   robots.txt                  keeps send-off images and data files out of search engines
   tools/guillotine_update.py  pulls the league from Yahoo into guillotine/data.json
+  tools/paint_the_corners_sim.js  balance check for Paint the Corners (node, see the top of the file)
   tools/calendar_update.py    builds calendar/events.json; calendar_prices.py watches ticket prices;
                               calendar-votes.js is Night Out's vote box (marks and plans)
   .github/workflows/          guillotine.yml runs that script every morning in season;

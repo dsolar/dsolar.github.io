@@ -86,5 +86,16 @@ window.PROJECTS = [
     facts: [["Daily", "refresh of shows and games"], ["62", "restaurants, rated 1 to 5 stars"], ["4½ hr", "longest road trip it looks for"]],
     stack: ["JavaScript", "Python", "Cloudflare Workers", "GitHub Actions"],
     cover: { image: "assets/covers/calendar.jpg", bg: "#17130E", band: "#FFC53D" }
+  },
+  {
+    title: "Paint the Corners",
+    type: "Game",
+    released: "2026-10",
+    url: "paint-the-corners/",
+    question: "Could you out-pitch Pedro against the 2003 and 2004 Yankees at Fenway?",
+    summary: "A pitching game at Fenway. Throw as Pedro Martinez or Jonathan Papelbon against the real Yankees lineups from the 2003 and 2004 ALCS, learn each hitter's hot and cold zones, and paint the corners.",
+    facts: [["14", "real Yankees across two ALCS lineups"], ["25", "spots to aim at, nine in the zone"], ["7", "pitches between Pedro and Papelbon"]],
+    stack: ["JavaScript", "Monte Carlo simulation"],
+    cover: { image: "assets/covers/paint-the-corners.jpg", bg: "#0A1A33", band: "#C8102E" }
   }
 ];
