@@ -4,7 +4,7 @@
  "week": 6,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-10-15T11:38:33Z",
+ "updated": "2026-10-15T12:18:54Z",
  "source": "Yahoo league page, pasted",
  "teams": [
   {
@@ -1622,7 +1622,8 @@
     },
     {
      "slot": "WR",
-     "empty": true
+     "empty": true,
+     "assumed": "DeMario Douglas"
     },
     {
      "slot": "TE",
@@ -1714,7 +1715,8 @@
      "rank": "WR59",
      "date": "2026-10-18",
      "next_proj": 5.66,
-     "in_best": true
+     "in_best": true,
+     "assumed_slot": "WR"
     },
     {
      "slot": "BN",
@@ -1739,6 +1741,7 @@
    ],
    "best": 101.9,
    "best_next": 120.4,
+   "fill": 4.8,
    "locked": 0,
    "locked_proj": 0,
    "games_final": 0
@@ -1752,39 +1755,48 @@
    "roster": [
     {
      "slot": "QB",
-     "empty": true
+     "empty": true,
+     "assumed": "Trevor Lawrence"
     },
     {
      "slot": "RB",
-     "empty": true
+     "empty": true,
+     "assumed": "Javonte Williams"
     },
     {
      "slot": "RB",
-     "empty": true
+     "empty": true,
+     "assumed": "Emanuel Wilson"
     },
     {
      "slot": "WR",
-     "empty": true
+     "empty": true,
+     "assumed": "DJ Moore"
     },
     {
      "slot": "WR",
-     "empty": true
+     "empty": true,
+     "assumed": "Michael Wilson"
     },
     {
      "slot": "WR",
-     "empty": true
+     "empty": true,
+     "assumed": "Josh Downs"
     },
     {
      "slot": "TE",
-     "empty": true
+     "empty": true,
+     "assumed": "Juwan Johnson"
     },
     {
      "slot": "W/R/T",
-     "empty": true
+     "empty": true,
+     "assumed": "Bhayshul Tuten"
     },
     {
      "slot": "Q/W/R/T",
-     "empty": true
+     "empty": true,
+     "assumed": "Jayden Daniels"
     },
     {
      "slot": "BN",
@@ -1797,7 +1809,8 @@
      "rank": "WR22",
      "date": "2026-10-18",
      "next_proj": 7.43,
-     "in_best": true
+     "in_best": true,
+     "assumed_slot": "WR"
     },
     {
      "slot": "BN",
@@ -1810,7 +1823,8 @@
      "rank": "WR16",
      "date": "2026-10-18",
      "next_proj": 10.8,
-     "in_best": true
+     "in_best": true,
+     "assumed_slot": "WR"
     },
     {
      "slot": "BN",
@@ -1823,7 +1837,8 @@
      "rank": "RB8",
      "date": "2026-10-18",
      "next_proj": 15.83,
-     "in_best": true
+     "in_best": true,
+     "assumed_slot": "RB"
     },
     {
      "slot": "BN",
@@ -1837,7 +1852,8 @@
      "date": "2026-10-18",
      "bye_next": true,
      "next_proj": 0.0,
-     "in_best": true
+     "in_best": true,
+     "assumed_slot": "W/R/T"
     },
     {
      "slot": "BN",
@@ -1862,7 +1878,8 @@
      "rank": "RB17",
      "date": "2026-10-15",
      "next_proj": 5.06,
-     "in_best": true
+     "in_best": true,
+     "assumed_slot": "RB"
     },
     {
      "slot": "BN",
@@ -1876,7 +1893,8 @@
      "date": "2026-10-19",
      "bye_next": true,
      "next_proj": 0.0,
-     "in_best": true
+     "in_best": true,
+     "assumed_slot": "Q/W/R/T"
     },
     {
      "slot": "BN",
@@ -1891,7 +1909,8 @@
      "date": "2026-10-18",
      "bye_next": true,
      "next_proj": 0.0,
-     "in_best": true
+     "in_best": true,
+     "assumed_slot": "WR"
     },
     {
      "slot": "BN",
@@ -1905,7 +1924,8 @@
      "date": "2026-10-18",
      "bye_next": true,
      "next_proj": 0.0,
-     "in_best": true
+     "in_best": true,
+     "assumed_slot": "QB"
     },
     {
      "slot": "BN",
@@ -1964,7 +1984,8 @@
      "rank": "TE8",
      "date": "2026-10-18",
      "next_proj": 9.43,
-     "in_best": true
+     "in_best": true,
+     "assumed_slot": "TE"
     },
     {
      "slot": "IR",
@@ -2029,7 +2050,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-10-15T11:38:34Z",
+  "updated": "2026-10-15T12:18:55Z",
   "players": 3045,
   "unmatched": []
  }
