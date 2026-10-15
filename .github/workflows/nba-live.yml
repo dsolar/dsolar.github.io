@@ -11,6 +11,11 @@ on:
       - tools/nba_live_pull.py
       - .github/workflows/nba-live.yml
   workflow_dispatch:
+    inputs:
+      season:
+        description: "Season to pull, named by the year it ends (blank = current)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -27,7 +32,7 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Pull stats and standings from ESPN
-        run: python3 tools/nba_live_pull.py
+        run: python3 tools/nba_live_pull.py ${{ github.event.inputs.season }}
 
       - name: Commit the stats
         run: |
