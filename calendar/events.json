@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-14T23:05:57Z",
+ "updated": "2026-10-15T15:20:21Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,67 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-vvG17Z_G5vAvix",
-   "date": "2026-10-14",
-   "time": "19:00",
-   "title": "Wishy: Nature's Pill Tour",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/wishy-natures-pill-tour-boston-massachusetts-10-14-2026/event/010064C2C1141B22",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18297992"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_GCJgM7r",
-   "date": "2026-10-14",
-   "time": "19:30",
-   "title": "Dan and Phil: Hard Launch World Tour",
-   "cat": "comedy",
-   "venue": "Boch Center Wang Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/dan-and-phil-hard-launch-world-boston-massachusetts-10-14-2026/event/010064C3A6D7711E",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18328341",
-    "2026-10-14-dan-and-phil-wang-theatre"
-   ],
-   "score": 1
-  },
-  {
-   "id": "tm-Z7r9jZ1A70OFU",
-   "date": "2026-10-14",
-   "time": "20:00",
-   "title": "Fantastic Cat",
-   "cat": "music",
-   "venue": "The Sinclair Music Hall",
-   "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A70OFU",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18663852"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A70UAf",
-   "date": "2026-10-14",
-   "time": "20:00",
-   "title": "feeble little horse w/ Snuggle",
-   "cat": "music",
-   "venue": "Royale Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A70UAf",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18266282"
-   ],
-   "score": 0
-  },
   {
    "id": "tm-vv177Z_aGkmJ1XTT",
    "date": "2026-10-15",
@@ -720,6 +659,18 @@
     "2026-10-18-allison-russell-royale"
    ],
    "score": 0
+  },
+  {
+   "id": "sg-18663015",
+   "date": "2026-10-18",
+   "time": "19:00",
+   "title": "Improv With My Friends From Work",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/improv-with-my-friends-from-work-tickets/comedy/2026-10-18-7-pm/18663015",
+   "source": "seatgeek",
+   "score": 1
   },
   {
    "id": "tm-vvG17Z_5wJG-IB",
@@ -6463,6 +6414,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/bvd-boston-presents-kocaina-21-boston-massachusetts-11-26-2026/event/0100654E695D2FEA",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18688581"
+   ],
    "score": 0
   },
   {
@@ -10416,6 +10370,18 @@
    "score": 0
   },
   {
+   "id": "tm-vv1avZk4kOwvsZeGk",
+   "date": "2027-02-27",
+   "time": "21:00",
+   "title": "Swimming Paul - North America Tour 2027 ( 18+ )",
+   "cat": "music",
+   "venue": "Big Night Live",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/swimming-paul-north-america-tour-2027-boston-massachusetts-02-27-2027/event/01006546832071B5",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv1AvZkfYGkdvXBUH",
    "date": "2027-02-28",
    "time": "18:00",
@@ -11377,6 +11343,18 @@
    "score": 1
   },
   {
+   "id": "tm-vv1AvZk46GkdkQNG-",
+   "date": "2027-03-26",
+   "time": "19:00",
+   "title": "Red NOT Chili Peppers",
+   "cat": "music",
+   "venue": "Paradise Rock Club presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/red-not-chili-peppers-boston-massachusetts-03-26-2027/event/01006547C66A3321",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv1k7Z_KOfG7H97t",
    "date": "2027-03-26",
    "time": "19:30",
@@ -11754,6 +11732,18 @@
     "sg-18235530"
    ],
    "score": 0
+  },
+  {
+   "id": "sg-18649732",
+   "date": "2027-04-13",
+   "time": "20:00",
+   "title": "Lola Young",
+   "cat": "music",
+   "venue": "Roadrunner - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/lola-young-tickets/boston-massachusetts-roadrunner-boston-2027-04-13-8-pm/concert/18649732",
+   "source": "seatgeek",
+   "score": 0
   }
  ],
  "movies": [
@@ -11832,7 +11822,7 @@
   "picks": 5,
   "venues": 7,
   "espn": 84,
-  "ticketmaster": 576,
-  "seatgeek": 109
+  "ticketmaster": 574,
+  "seatgeek": 111
  }
 }
