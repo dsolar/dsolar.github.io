@@ -137,6 +137,19 @@ details[open] .t-open::after{transform:translateY(.05rem) rotate(-135deg)}
 .records td.v{font:600 1.15rem/1.1 var(--f-sign);white-space:nowrap}
 .records .r{text-align:right}
 
+/* Awards */
+.awards{display:grid;grid-template-columns:11rem minmax(0,1fr);margin:1rem 0 0;border-top:1px solid var(--rule)}
+.awards dt,.awards dd{margin:0;padding:.75rem 0;border-bottom:1px solid var(--rule)}
+.awards dt{font:600 1.2rem/1.2 var(--f-sign);padding-right:1rem}
+.awards dd b{font-weight:600}
+.awards .aw-team{display:block;font-size:.875rem;color:var(--muted)}
+.awards .aw-line{display:block;font-size:.875rem;font-variant-numeric:tabular-nums;margin-top:.15rem}
+.awards .aw-why{display:block;font-size:.8125rem;color:var(--muted)}
+@media (max-width:480px){
+  .awards{grid-template-columns:1fr}
+  .awards dt{border-bottom:0;padding-bottom:0}
+}
+
 /* Managers */
 .mlist{list-style:none;margin:1.25rem 0 0;padding:0;border-top:1px solid var(--rule)}
 .mlist>li{border-bottom:1px solid var(--rule)}
@@ -219,12 +232,13 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
 <main class="wrap">
   <header>
     <h1>Don't Forget to Wipe Yoenis</h1>
-    <p class="lede">The record book for our 16-team Yahoo keeper league. Every champion and every draft pick since 2013, plus what your players will cost to keep in 2027.</p>
+    <p class="lede">The record book for our 16-team Yahoo keeper league. Every champion, draft pick and award since 2013, plus what your players will cost to keep in 2027.</p>
     <p class="reigning" id="reigning"></p>
     <nav class="jump" aria-label="On this page">
       <a href="#keepers">2027 keepers</a>
       <a href="#champions">Champions</a>
       <a href="#stats">Team stats</a>
+      <a href="#awards">Awards</a>
       <a href="#managers">Managers</a>
       <a href="#graveyard">Graveyard</a>
       <a href="#drafts">Drafts</a>
@@ -268,6 +282,18 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     <h3 class="sub-h">Single-season records</h3>
     <p class="note">The best season in each category, leaving out the 60-game 2020 season.</p>
     <table class="records" id="records"></table>
+  </section>
+
+  <section id="awards" aria-labelledby="awards-title">
+    <div class="section-head">
+      <h2 id="awards-title">Awards</h2>
+      <p>Handed out after the fact from real MLB stats, scored with our 16 categories. A player award goes to the team that drafted or kept him that spring.</p>
+    </div>
+    <div class="controls">
+      <label class="field">Year<select id="a-year"></select></label>
+    </div>
+    <dl class="awards" id="awards-list"></dl>
+    <p class="note">A player's value adds up how far above or below a typical rostered player he was in each category, with average, OPS, ERA and WHIP weighted by playing time. Keepers are marked from 2022 on, when the keeper sheet starts. Stats from MLB.</p>
   </section>
 
   <section id="managers" aria-labelledby="managers-title">
@@ -388,7 +414,24 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     var last = d.seasons[d.seasons.length - 1], champ = last.teams[last.standings[0][1]];
     $("reigning").innerHTML = last.year + " champion: <strong>" + esc(champ) + "</strong>" + (MAN[champ] ? " (" + esc(MAN[champ]) + ")" : "");
     $("foot").textContent = "Updated " + new Date(d.updated + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) + ". Data from the league's Yahoo draft and standings pages, the keeper sheet and the commissioner's league emails.";
-    initKeepers(); initTitles(); initStats(); initManagers(); initDrafts();
+    initKeepers(); initTitles(); initStats(); initAwards(); initManagers(); initDrafts();
+  }
+
+  /* ---------- Awards ---------- */
+  function initAwards() {
+    var years = Object.keys(DATA.awards || {}).sort().reverse();
+    if (!years.length) { $("awards").hidden = true; return; }
+    $("a-year").innerHTML = years.map(function (y) { return "<option>" + y + "</option>"; }).join("");
+    $("a-year").addEventListener("change", drawAwards);
+    drawAwards();
+  }
+  function drawAwards() {
+    var y = $("a-year").value, s = SEASONS[y];
+    $("awards-list").innerHTML = DATA.awards[y].map(function (a) {
+      var head = a.p ? "<b>" + esc(a.p.replace(/ \((Batter|Pitcher)\)$/, "")) + '</b><span class="aw-team">' + esc(teamMan(s, a.ti)) + "</span>"
+                     : "<b>" + esc(teamMan(s, a.ti)) + "</b>";
+      return "<dt>" + esc(a.a) + "</dt><dd>" + head + '<span class="aw-line">' + esc(a.line) + '</span><span class="aw-why">' + esc(a.detail) + "</span></dd>";
+    }).join("");
   }
 
   /* ---------- Team stats ---------- */
