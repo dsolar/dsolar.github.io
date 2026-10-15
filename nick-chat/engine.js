@@ -5,34 +5,67 @@ const normalize=s=>String(s).toLowerCase().replace(/[’‘]/g,"'").replace(/[^a
 const filler=new Set(['i','im','i’m','a','an','the','it','is','are','to','of','and','you','your','me','my','we','this','that','what','how','do','does','would','can','could','be','in','on','for']);
 const tokens=s=>new Set(normalize(s).split(' ').filter(w=>w&&!filler.has(w)));
 const bank={
- hello:['yo folkz','champion','what we got'],
+ hello:['yo folkz','champion','what we got bra','bruv'],
  visit:['whens dat visit?','need dates folkz','Visit or peRish'],
- visitNo:['Lolz. another cancelled visit','all talk folkz','visit committee in shambles'],
- visitMaybe:['might. classic','need a date not a concept','whens dat visit?'],
- visitYes:['champion. what dates','we do it all','top tier MTL incoming'],
- visitDates:['now we have a date. champion','actual plans. we do it all','top tier MTL'],
+ visitNo:['Lolz\nanother cancelled visit','all talk folkz','guy lost the plot\nVisit or peRish'],
+ visitMaybe:['might. classic','need a date not a concept bud','whens dat visit?'],
+ visitYes:['champion\nwhat dates','we do it all','top tier MTL incoming'],
+ visitDates:['now we have a date\nchampion','actual plans\nwe do it all','top tier MTL'],
  boston:['magachusetts','magachusetts folkz at it again','Lolz. hometown propaganda'],
+ bostonToMtl:['Boston to MTL','magachusetts to da great norfe','top tier route folkz'],
  ring:['#Ring','hardware speaks folkz','champion. #Ring'],
- work:['guy lost the plot','meeting about a meeting?','folkz doing the moost'],
- music:['who has TouchTunes','hand over the playlist folkz','we do it all'],
+ work:['guy lost the plot','meeting about a meeting rn?','folkz doing the moost'],
+ music:['who has TouchTunes','hand over the playlist folkz','we do it all\nTouchTunes tho'],
  dad:['international girl dad','girl dad hours','we do it all'],
  montreal:['top tier MTL','MTL folkz know','StReetz'],
+ sports:['we Up','champion behavior','Son-He\nchapHim','sports folkz rn'],
+ fashion:["your favorite rapper's dressin' like Comic Con",'Comic Con fit bra','guy dressed for the moost'],
+ relationship:['international singlehood','whipped friendz rn','Lolz\nchapHim'],
+ beach:['all white beach town','beach folkz doing the moost'],
+ matt:['Mattenyahu','Matt Trump','Mattenyahu rn'],
+ wednesday:['WednesDaze','WednesDaze folkz'],
+ north:['da great norfe','top tier da great norfe'],
+ quebec:['Queeb','Queeb StReetz','top tier Queeb'],
+ goodbye:['talk soonZ','talk soonZ bruv'],
  laugh:['Lolz','moost','folkz get it'],
  yes:['champion','we do it all','there it is'],
  no:['Lolz. noted','tough crowd folkz','guy lost the plot'],
  repeat:['fair. new material needed','Lolz. caught me','guy has one bit'],
- unknown:['what happened','go on folkz','need more here','explain that one'],
- question:['need more context folkz','what are the options','what are we working with'],
- followup:['go on','what happened next','explain that part'],
+ unknown:['what happened bra','go on folkz','need more here bud','bruv\nexplain that one'],
+ question:['need more context folkz','what are the options rn','what are we working with bruv'],
+ followup:['go on bra','what happened next','explain that part bud'],
  visitFollow:['a date. thats what we need','less theory more booking','whens dat visit?'],
  ringFollow:['the hardware folkz. #Ring','champion credentials'],
  workFollow:['what did they say','how many meetings are we talking','guy lost the plot'],
  musicFollow:['what song','who picked this','TouchTunes situation?'],
  montrealFollow:['top tier. self explanatory','MTL StReetz folkz'],
  bostonFollow:['magachusetts defense team has arrived','Lolz. make the case'],
- dadFollow:['international girl dad schedule','we do it all']
+ dadFollow:['international girl dad schedule','we do it all'],
+ sportsFollow:['champion tho','we Up','Son-He'],
+ fashionFollow:['Comic Con bruv','the fit doing the moost'],
+ relationshipFollow:['international singlehood tho','chapHim'],
+ beachFollow:['all white beach town','beach folkz'],
+ mattFollow:['Mattenyahu','Matt Trump'],
+ quebecFollow:['Queeb folkz','top tier Queeb']
 };
-const rules=[['ring',/\b(world series|championship|baseball|ring)\b/],['work',/\b(work|boss|job|meeting|office|email|coworker|deadline)\b/],['music',/\b(music|song|jukebox|touchtunes|playlist|concert|bar)\b/],['dad',/\b(dad|father|parent|daughter|kid|kids|family)\b/],['visit',/\b(visit|trip|travel|flight|come over|coming|vacation|booked|booking)\b/],['boston',/\b(boston|massachusetts|magachusetts|sox|fenway)\b/],['montreal',/\b(montreal|mtl|canada|quebec)\b/]];
+const rules=[
+ ['matt',/\b(matt|matthew|mattenyahu)\b/],
+ ['ring',/\b(world series|championship|baseball|ring)\b/],
+ ['work',/\b(work|boss|job|meeting|office|email|coworker|deadline)\b/],
+ ['music',/\b(music|song|jukebox|touchtunes|playlist|concert|bar)\b/],
+ ['dad',/\b(dad|father|parent|daughter|kid|kids|family|coparent|coparenting)\b/],
+ ['fashion',/\b(rapper|comic con|outfit|fit|fashion|dress|dressed|dressing)\b/],
+ ['relationship',/\b(girlfriend|boyfriend|wife|husband|wedding|date|dating|single|whipped)\b/],
+ ['beach',/\b(beach|shore|ocean|seaside)\b/],
+ ['sports',/\b(soccer|football|basketball|nba|nfl|celtics|bruins|habs|hockey|spurs|tottenham|son heung|min|game|playoffs|match)\b/],
+ ['wednesday',/\bwednesday\b/],
+ ['goodbye',/\b(bye|goodbye|later|talk soon|good night|goodnight)\b/],
+ ['visit',/\b(visit|trip|travel|flight|come over|coming|vacation|booked|booking)\b/],
+ ['boston',/\b(boston|massachusetts|magachusetts|sox|fenway)\b/],
+ ['quebec',/\b(quebec|queb|queeb)\b/],
+ ['montreal',/\b(montreal|mtl)\b/],
+ ['north',/\b(canada|north|norfe)\b/]
+];
 function createEngine(random=Math.random){
  let state={topic:null,age:0,recent:[],used:new Map(),lastInput:''};
  function pick(pool){const fresh=pool.filter(s=>!state.recent.includes(s));const choices=fresh.length?fresh:pool;const min=Math.min(...choices.map(s=>state.used.get(s)||0));const least=choices.filter(s=>(state.used.get(s)||0)===min);return least[Math.floor(random()*least.length)];}
@@ -47,6 +80,7 @@ function createEngine(random=Math.random){
    // Prefer the later topic after contrast: "not work, about the ring".
    const contrast=s.split(/\b(?:but|instead|actually)\b/).pop();
    topic=found.find(([,re])=>contrast!==s&&re.test(contrast))?.[0]||found[0]?.[0]||null;
+   if(/\b(boston|magachusetts)\b.*\b(montreal|mtl)\b|\b(montreal|mtl)\b.*\b(boston|magachusetts)\b/.test(s))topic='bostonToMtl';
    const follow=/^(why|how so|really|what do you mean|tell me more|and then|what next|what about that|what|how come)\b/.test(s);
    const negative=/\b(no|never|not|cant|cannot|can't|won't|wont|cancelled|canceled|busy)\b/.test(s);
    const maybe=/\b(maybe|might|possibly|sometime|eventually|thinking)\b/.test(s);
