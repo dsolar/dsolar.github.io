@@ -370,7 +370,7 @@
   };
   function queueHTML(W) {
     const q = W.queue;
-    if (!q.length) return `<h3>Your moves</h3><p class="muted">Nothing lined up. Build a trade, an extension, a signing or a waiver on the right and add it here.</p>${App.ui.lastRun ? lastRunHTML() : ""}`;
+    if (!q.length) return `<h3>Your moves</h3><p class="muted">Nothing lined up yet. Build a trade, an extension, a signing or a waiver, then add it here.</p>${App.ui.lastRun ? lastRunHTML() : ""}`;
     const res = App.runQueue(W, q, false);
     const allOk = res.every(r => r.ok);
     return `<h3>Your moves, in order</h3>
