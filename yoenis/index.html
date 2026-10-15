@@ -120,6 +120,23 @@ details[open] .t-open::after{transform:translateY(.05rem) rotate(-135deg)}
 .standings tr.podium td{font-weight:600}
 .season-note{font-size:.8125rem;color:var(--muted);margin:-.4rem 0 .9rem}
 
+/* Team stats */
+.tbl-wrap{overflow-x:auto;margin:0 0 .5rem;border-top:2px solid var(--ink)}
+.stats{border-collapse:collapse;font-size:.875rem;width:100%}
+.stats.wide{min-width:36rem}
+.stats th{font-weight:600;color:var(--muted);text-align:right;padding:.4rem .5rem;border-bottom:1px solid var(--rule);white-space:nowrap}
+.stats td{text-align:right;padding:.38rem .5rem;border-bottom:1px solid color-mix(in srgb, var(--rule) 60%, transparent);white-space:nowrap}
+.stats th.tm,.stats td.tm{text-align:left;position:sticky;left:0;background:var(--bg);white-space:normal;min-width:9.5rem;max-width:13rem;overflow-wrap:anywhere;padding-left:0}
+.stats td.tm{font-weight:600}
+.stats td.lead{font-weight:700;box-shadow:inset 0 -2px 0 var(--monster)}
+.stats td.rk{color:var(--muted);text-align:left;padding-left:0}
+.sub-h{margin:2rem 0 .3rem}
+.records{width:100%;border-collapse:collapse;font-size:.875rem;margin-top:.6rem}
+.records th{font-weight:600;color:var(--muted);text-align:left;padding:.35rem .5rem .35rem 0;border-bottom:1px solid var(--rule)}
+.records td{padding:.38rem .5rem .38rem 0;border-bottom:1px solid color-mix(in srgb, var(--rule) 60%, transparent);vertical-align:top;overflow-wrap:anywhere}
+.records td.v{font:600 1.15rem/1.1 var(--f-sign);white-space:nowrap}
+.records .r{text-align:right}
+
 /* Managers */
 .mlist{list-style:none;margin:1.25rem 0 0;padding:0;border-top:1px solid var(--rule)}
 .mlist>li{border-bottom:1px solid var(--rule)}
@@ -207,6 +224,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     <nav class="jump" aria-label="On this page">
       <a href="#keepers">2027 keepers</a>
       <a href="#champions">Champions</a>
+      <a href="#stats">Team stats</a>
       <a href="#managers">Managers</a>
       <a href="#graveyard">Graveyard</a>
       <a href="#drafts">Drafts</a>
@@ -234,6 +252,22 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       <p>Open a season for its final standings. Records are category wins, losses and ties.</p>
     </div>
     <ol class="titles" id="titles"></ol>
+  </section>
+
+  <section id="stats" aria-labelledby="stats-title">
+    <div class="section-head">
+      <h2 id="stats-title">Team stats</h2>
+      <p>Every team's season totals, and how the year would have ended as a roto league: 16 points for first in a category, down to 1 for last.</p>
+    </div>
+    <div class="controls">
+      <label class="field">Year<select id="s-year"></select></label>
+      <div class="field">Show<span class="seg" role="group" aria-label="Show" id="s-view"><button type="button" data-v="roto" aria-pressed="true">Roto</button><button type="button" data-v="b" aria-pressed="false">Batting</button><button type="button" data-v="p" aria-pressed="false">Pitching</button></span></div>
+    </div>
+    <p class="first-pick" id="s-sum"></p>
+    <div class="tbl-wrap" tabindex="0" role="region" aria-label="Team stats table"><table class="stats" id="s-table"></table></div>
+    <h3 class="sub-h">Single-season records</h3>
+    <p class="note">The best season in each category, leaving out the 60-game 2020 season.</p>
+    <table class="records" id="records"></table>
   </section>
 
   <section id="managers" aria-labelledby="managers-title">
@@ -354,7 +388,86 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     var last = d.seasons[d.seasons.length - 1], champ = last.teams[last.standings[0][1]];
     $("reigning").innerHTML = last.year + " champion: <strong>" + esc(champ) + "</strong>" + (MAN[champ] ? " (" + esc(MAN[champ]) + ")" : "");
     $("foot").textContent = "Updated " + new Date(d.updated + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) + ". Data from the league's Yahoo draft and standings pages, the keeper sheet and the commissioner's league emails.";
-    initKeepers(); initTitles(); initManagers(); initDrafts();
+    initKeepers(); initTitles(); initStats(); initManagers(); initDrafts();
+  }
+
+  /* ---------- Team stats ---------- */
+  var CATS = { b: ["R", "H", "HR", "RBI", "SB", "TB", "AVG", "OPS"], p: ["W", "L", "SV", "K", "HLD", "ERA", "WHIP", "QS"] };
+  var LOWER = { L: 1, ERA: 1, WHIP: 1 };
+  var CAT_NAME = { R: "Runs", H: "Hits", HR: "Home runs", RBI: "RBI", SB: "Steals", TB: "Total bases", AVG: "Average", OPS: "OPS",
+    W: "Wins", L: "Losses", SV: "Saves", K: "Strikeouts", HLD: "Holds", ERA: "ERA", WHIP: "WHIP", QS: "Quality starts" };
+  function fmtStat(c, v) {
+    if (c === "AVG" || c === "OPS") return v.toFixed(3).replace(/^0/, "");
+    if (c === "ERA" || c === "WHIP") return v.toFixed(2);
+    return v.toLocaleString("en-US");
+  }
+  function fmtPts(v) { return v % 1 ? v.toFixed(1) : String(v); }
+  var sView = "roto";
+  function initStats() {
+    var withStats = DATA.seasons.filter(function (s) { return s.stats; });
+    if (!withStats.length) { $("stats").hidden = true; return; }
+    $("s-year").innerHTML = withStats.slice().reverse().map(function (s) { return "<option>" + s.year + "</option>"; }).join("");
+    $("s-year").addEventListener("change", drawStats);
+    [].forEach.call($("s-view").querySelectorAll("button"), function (b) {
+      b.addEventListener("click", function () {
+        sView = b.getAttribute("data-v");
+        [].forEach.call($("s-view").querySelectorAll("button"), function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+        drawStats();
+      });
+    });
+    drawStats();
+    $("records").innerHTML = '<thead><tr><th scope="col">Category</th><th scope="col">Record</th><th scope="col">Team</th><th scope="col" class="r">Year</th></tr></thead><tbody>' +
+      DATA.records.map(function (r) {
+        return "<tr><td>" + CAT_NAME[r.c] + '</td><td class="v num">' + fmtStat(r.c, r.v) + "</td><td>" +
+          r.who.map(function (w) { return esc(teamMan(SEASONS[w[0]], w[1])); }).join("<br>") + '</td><td class="r num">' +
+          r.who.map(function (w) { return w[0]; }).join("<br>") + "</td></tr>";
+      }).join("") + "</tbody>";
+  }
+  function drawStats() {
+    var s = SEASONS[$("s-year").value], n = s.teams.length, finish = {};
+    s.standings.forEach(function (r) { finish[r[1]] = r[0]; });
+    var order = s.teams.map(function (t, i) { return i; });
+    if (s.roto) order.sort(function (a, b) { return s.roto[b][0] - s.roto[a][0] || finish[a] - finish[b]; });
+    else order.sort(function (a, b) { return finish[a] - finish[b]; });
+    var rank = {}; order.forEach(function (ti) {
+      var pos = 1 + order.filter(function (x) { return s.roto && s.roto[x][0] > s.roto[ti][0]; }).length;
+      var tied = s.roto && order.filter(function (x) { return s.roto[x][0] === s.roto[ti][0]; }).length > 1;
+      rank[ti] = (tied ? "T" : "") + pos;
+    });
+    var missing = ["b", "p"].filter(function (k) { return !s.stats[k]; }).map(function (k) { return k === "b" ? "batting" : "pitching"; });
+    var sum = "";
+    if (s.roto) {
+      var top = order[0], champ = s.standings[0][1];
+      sum = "Roto winner: <strong>" + esc(teamMan(s, top)) + "</strong>, " + fmtPts(s.roto[top][0]) + " points. " +
+        (top === champ ? "Also the champion." : "The champion, " + esc(teamMan(s, champ)) + ", was " + ordinal(parseInt(rank[champ].replace("T", ""), 10)) + " in roto.");
+    } else sum = "The " + s.year + " " + missing.join(" and ") + " totals aren't in yet, so there are no roto standings for this season.";
+    if (s.year === 2020) sum += " The 60-game season.";
+    $("s-sum").innerHTML = sum;
+    var head, rows;
+    if (sView === "roto") {
+      if (!s.roto) { $("s-table").innerHTML = ""; return; }
+      head = '<th scope="col" class="tm">Team</th><th scope="col">Points</th><th scope="col">Batting</th><th scope="col">Pitching</th><th scope="col">Finish</th>';
+      rows = order.map(function (ti) {
+        var r = s.roto[ti];
+        return '<tr><td class="tm">' + rank[ti] + ". " + esc(s.teams[ti]) + '<span class="m-sub">' + esc(man(s, ti)) + '</span></td><td class="num">' + fmtPts(r[0]) +
+          '</td><td class="num">' + fmtPts(r[1]) + '</td><td class="num">' + fmtPts(r[2]) + '</td><td class="num">' + ordinal(finish[ti]) + "</td></tr>";
+      });
+    } else {
+      var st = s.stats[sView], cats = CATS[sView];
+      if (!st) { $("s-table").innerHTML = '<tbody><tr><td class="tm">No ' + (sView === "b" ? "batting" : "pitching") + " totals for " + s.year + " yet.</td></tr></tbody>"; return; }
+      var best = cats.map(function (c, ci) {
+        var vals = st.map(function (row) { return row[ci]; });
+        return LOWER[c] ? Math.min.apply(null, vals) : Math.max.apply(null, vals);
+      });
+      head = '<th scope="col" class="tm">Team</th>' + cats.map(function (c) { return '<th scope="col"><abbr title="' + CAT_NAME[c] + '">' + c + "</abbr></th>"; }).join("");
+      rows = order.map(function (ti) {
+        return '<tr><td class="tm">' + esc(s.teams[ti]) + '<span class="m-sub">' + esc(man(s, ti)) + "</span></td>" + st[ti].map(function (v, ci) {
+          return '<td class="num' + (v === best[ci] ? " lead" : "") + '">' + fmtStat(cats[ci], v) + "</td>";
+        }).join("") + "</tr>";
+      });
+    }
+    $("s-table").className = "stats" + (sView === "roto" ? "" : " wide");
+    $("s-table").innerHTML = "<caption hidden>" + s.year + " team stats</caption><thead><tr>" + head + "</tr></thead><tbody>" + rows.join("") + "</tbody>";
   }
 
   /* ---------- 2027 keepers ---------- */
