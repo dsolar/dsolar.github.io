@@ -35,6 +35,8 @@ dsolar.github.io/
   calendar/                   Night Out: index.html, taste.json, picks.json and places.json (edit these),
                               events.json and prices.json (written by the workflows)
   restaurants/                old address of the restaurant list; forwards to Night Out
+  yoenis/                     Don't Forget to Wipe Yoenis, the keeper baseball league's record book:
+                              index.html (page) and data.json (every draft, standing, manager and 2027 keeper cost)
   robots.txt                  keeps send-off images and data files out of search engines
   tools/guillotine_update.py  pulls the league from Yahoo into guillotine/data.json
   tools/paint_the_corners_sim.js  balance check for Paint the Corners (node, see the top of the file)

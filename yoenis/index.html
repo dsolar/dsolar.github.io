@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Don't Forget to Wipe Yoenis | David Solar</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="Record book for a 16-team Yahoo keeper baseball league: champions, final standings and every draft pick since 2013, plus 2027 keeper costs.">
+<link rel="canonical" href="https://davidsolar.dev/yoenis/">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#EEF1EC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C1411" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Besley:wght@700&family=Libre+Franklin:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/bar.css">
+<script src="../assets/analytics.js" defer></script>
+<style>
+/* One narrow column. The memorable thing is the keeper path: three hand-hung tiles like the
+   Green Monster's manual scoreboard, one per keeper year, with next season's tile lit in red.
+   Everything else stays quiet: concrete paper, navy ink, stadium-sign condensed headings. */
+:root{
+  --bg:#EEF1EC;        /* concrete */
+  --surface:#F8FAF7;
+  --ink:#102033;       /* navy */
+  --muted:#5D6B63;
+  --rule:#D4DBD3;
+  --monster:#1F4532;   /* scoreboard green */
+  --chalk:#F3F1E7;     /* tile numerals */
+  --red:#BD3039;       /* next season's tile, nothing else */
+  --red-ink:#FFFFFF;
+  --f-sign:"Barlow Condensed","Arial Narrow","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Libre Franklin","Franklin Gothic Medium","Helvetica Neue",Arial,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C1411; --surface:#121D18; --ink:#E5EBE7; --muted:#97A69D; --rule:#23342B;
+    --monster:#25553D; --chalk:#F1EEE2; --red:#E04A55; --red-ink:#FFFFFF; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C1411; --surface:#121D18; --ink:#E5EBE7; --muted:#97A69D; --rule:#23342B;
+  --monster:#25553D; --chalk:#F1EEE2; --red:#E04A55; --red-ink:#FFFFFF; color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.55 var(--f-body)}
+[hidden]{display:none!important}
+a{color:inherit;text-decoration-color:var(--red);text-underline-offset:3px}
+a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--red);outline-offset:2px;border-radius:2px}
+.num{font-variant-numeric:tabular-nums}
+
+.wrap{max-width:46rem;margin:0 auto;padding-block:2.25rem 4rem;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));
+  display:grid;grid-template-columns:minmax(0,1fr);gap:3.25rem}
+
+/* Header */
+h1{font:700 clamp(2.7rem, 10vw, 4.6rem)/.92 var(--f-sign);letter-spacing:-.005em;margin:0 0 .9rem}
+.lede{font-size:1.075rem;max-width:36rem;margin:0}
+.reigning{margin:1rem 0 0;color:var(--muted)}
+.reigning strong{color:var(--ink);font-weight:600}
+.jump{display:flex;flex-wrap:wrap;gap:.35rem 1.4rem;margin-top:1.5rem;padding-top:.9rem;border-top:1px solid var(--rule)}
+.jump a{font:600 1.05rem/1.3 var(--f-sign);letter-spacing:.01em;text-decoration:none;color:var(--muted)}
+.jump a:hover{color:var(--ink);text-decoration:underline}
+
+/* Sections */
+h2{font:600 2.05rem/1 var(--f-sign);margin:0 0 .45rem}
+h3{font:600 1.3rem/1.1 var(--f-sign);margin:0}
+.section-head p{margin:0;color:var(--muted);max-width:38rem}
+.note{font-size:.875rem;color:var(--muted);margin:1rem 0 0;max-width:38rem}
+
+.controls{display:flex;flex-wrap:wrap;gap:.75rem 1rem;align-items:end;margin:1.25rem 0 1rem}
+.field{display:grid;gap:.25rem;min-width:0;max-width:100%;font-size:.8125rem;font-weight:600;color:var(--muted)}
+select,input[type=search]{font:500 1rem/1.3 var(--f-body);color:var(--ink);background:var(--surface);
+  border:1px solid var(--rule);border-radius:4px;padding:.55rem .65rem;min-height:44px;max-width:100%}
+select{padding-right:2rem}
+#k-team{width:22rem;max-width:100%}
+.field.grow{flex:1 1 12rem}
+.field.grow input{width:100%}
+
+/* The scoreboard tiles */
+.tiles{display:flex;gap:4px}
+.tile{display:grid;place-items:center;width:2.15rem;height:2.5rem;border-radius:2px;
+  background:var(--monster);color:var(--chalk);font:600 1.45rem/1 var(--f-sign);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12), inset 0 -3px 0 rgba(0,0,0,.28)}
+.tile.spent{opacity:.32}
+.tile.now{background:var(--red);color:var(--red-ink)}
+.tiles-key{display:flex;align-items:center;gap:.6rem;font-size:.8125rem;color:var(--muted);margin:0 0 .75rem}
+.tiles-key .tile{width:1.5rem;height:1.75rem;font-size:1rem}
+
+/* Keeper list */
+.klist{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
+.kp{display:grid;grid-template-columns:1fr auto;gap:.25rem 1rem;align-items:center;padding:.7rem 0;border-bottom:1px solid var(--rule)}
+.kp-name{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.kp-sub{display:block;font-size:.8125rem;color:var(--muted);font-weight:400}
+.kp-right{display:flex;align-items:center;gap:.9rem}
+.kp-cost{min-width:6.6rem;text-align:right;font-size:.875rem;line-height:1.25}
+.kp-cost b{display:block;font:600 1.15rem/1.1 var(--f-sign)}
+.kp.out .kp-name{color:var(--muted)}
+.empty{padding:1rem 0;color:var(--muted)}
+
+/* Champions */
+.titles{list-style:none;margin:1.25rem 0 0;padding:0;border-top:1px solid var(--rule)}
+.titles>li{border-bottom:1px solid var(--rule)}
+.titles summary{display:grid;grid-template-columns:3.4rem 1fr auto;gap:.2rem 1rem;align-items:baseline;padding:.75rem 0;cursor:pointer;list-style:none}
+.titles summary::-webkit-details-marker{display:none}
+.t-year{font:600 1.55rem/1 var(--f-sign)}
+.t-champ{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.t-rest{display:block;font-size:.8125rem;color:var(--muted);font-weight:400}
+.t-open{font-size:.8125rem;color:var(--muted);white-space:nowrap}
+.t-open::after{content:"";display:inline-block;width:.45rem;height:.45rem;margin-left:.4rem;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:translateY(-.15rem) rotate(45deg);transition:transform .15s}
+details[open] .t-open::after{transform:translateY(.05rem) rotate(-135deg)}
+@media (prefers-reduced-motion: reduce){.t-open::after{transition:none}}
+.standings{width:100%;border-collapse:collapse;font-size:.875rem;margin:0 0 1rem}
+.standings th{font-weight:600;color:var(--muted);text-align:left;padding:.3rem .4rem .3rem 0;border-bottom:1px solid var(--rule)}
+.standings td{padding:.3rem .4rem .3rem 0;overflow-wrap:anywhere;border-bottom:1px solid color-mix(in srgb, var(--rule) 60%, transparent)}
+.standings .r{text-align:right}
+.standings tr.podium td{font-weight:600}
+.season-note{font-size:.8125rem;color:var(--muted);margin:-.4rem 0 .9rem}
+
+/* Managers */
+.mlist{list-style:none;margin:1.25rem 0 0;padding:0;border-top:1px solid var(--rule)}
+.mlist>li{border-bottom:1px solid var(--rule)}
+.mlist summary{display:grid;grid-template-columns:1fr auto;gap:.15rem 1rem;align-items:center;padding:.7rem 0;cursor:pointer;list-style:none}
+.mlist summary::-webkit-details-marker{display:none}
+.m-name{font-weight:600;min-width:0}
+.m-sub{display:block;font-size:.8125rem;color:var(--muted);font-weight:400}
+.trophies{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:3px;max-width:12rem}
+.trophies .tile{width:1.7rem;height:1.95rem;font-size:1.05rem}
+.career{width:100%;border-collapse:collapse;font-size:.875rem;margin:0 0 1rem}
+.career td{padding:.28rem .5rem .28rem 0;border-bottom:1px solid color-mix(in srgb, var(--rule) 60%, transparent);overflow-wrap:anywhere}
+.career td:first-child{width:3.2rem;color:var(--muted)}
+.career td:last-child{text-align:right;white-space:nowrap}
+.career tr.won td{font-weight:600}
+
+/* Graveyard: headstones */
+.stones{list-style:none;margin:1.5rem 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(13.5rem,calc(50% - .4rem)),1fr));gap:1.1rem .8rem}
+.stone{position:relative;text-align:center;padding:1.6rem 1rem 1.1rem;background:var(--surface);
+  border:1px solid var(--rule);border-bottom:4px solid var(--monster);border-radius:7rem 7rem 3px 3px / 4.5rem 4.5rem 3px 3px}
+.stone h3{font-size:1.45rem}
+.stone .years{font:600 1rem/1.2 var(--f-sign);color:var(--muted);margin:.2rem 0 .6rem;letter-spacing:.02em}
+.stone .line{font-size:.875rem;margin:0}
+.stone .teams{font-size:.8125rem;color:var(--muted);margin:.5rem 0 0;overflow-wrap:anywhere}
+.stone .rip{font-style:italic;font-size:.9375rem;margin:.7rem 0 0}
+
+/* Drafts */
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:var(--surface)}
+.seg button{font:600 .9375rem/1 var(--f-body);color:var(--muted);background:none;border:0;padding:0 .9rem;min-height:44px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.first-pick{margin:0 0 1rem;color:var(--muted)}
+.first-pick strong{color:var(--ink);font-weight:600}
+.round{margin:0 0 1.5rem;content-visibility:auto;contain-intrinsic-size:auto 700px}
+.round h3{padding-bottom:.35rem;border-bottom:2px solid var(--ink)}
+.picks{list-style:none;margin:0;padding:0}
+.pick{display:grid;grid-template-columns:3.1rem 1fr;gap:0 .6rem;padding:.42rem 0;border-bottom:1px solid var(--rule)}
+.pick-no{font-size:.875rem;color:var(--muted);padding-top:.1rem}
+.pick-who{font-weight:600}
+.pick-team{display:block;font-size:.8125rem;color:var(--muted);font-weight:400;overflow-wrap:anywhere}
+.kbadge{display:inline-grid;place-items:center;width:1.15rem;height:1.3rem;margin-left:.4rem;vertical-align:.1rem;border-radius:2px;
+  background:var(--monster);color:var(--chalk);font:600 .85rem/1 var(--f-sign)}
+.hits{list-style:none;margin:0 0 1.75rem;padding:0}
+.hit{padding:.65rem 0;border-bottom:1px solid var(--rule)}
+.hit-name{font-weight:600;overflow-wrap:anywhere}
+.hit-years{display:grid;grid-template-columns:3rem 3.1rem 1fr;gap:.1rem .6rem;margin-top:.35rem;font-size:.875rem}
+.hit-years span:nth-child(3n+3){color:var(--muted);overflow-wrap:anywhere}
+
+/* Rules */
+.rules{margin:1rem 0 0;padding-left:1.15rem;max-width:38rem}
+.rules li{margin:.4rem 0}
+
+footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);padding-top:1rem}
+.err{color:var(--red)}
+
+@media (max-width:480px){
+  .kp{grid-template-columns:1fr}
+  .kp-right{justify-content:space-between}
+  .kp-cost{text-align:left;min-width:0}
+  .controls>.field:not(.grow), #k-team, #d-year, #d-team{width:100%}
+  .titles summary{grid-template-columns:3rem 1fr}
+  .t-open{grid-column:2}
+  .stone{padding:1.3rem .6rem .9rem;border-radius:5rem 5rem 3px 3px / 3.5rem 3.5rem 3px 3px}
+  .stone h3{font-size:1.25rem}
+  .stone .line{font-size:.8125rem}
+}
+</style>
+</head>
+<body>
+<nav class="ds-bar" aria-label="davidsolar.dev"><a href="../"><img src="../assets/ds-mark.svg" alt="" width="20" height="20"><span class="ds-bar-name">David Solar</span></a><a href="../#projects">All projects</a></nav>
+
+<main class="wrap">
+  <header>
+    <h1>Don't Forget to Wipe Yoenis</h1>
+    <p class="lede">The record book for our 16-team Yahoo keeper league. Every champion and every draft pick since 2013, plus what your players will cost to keep in 2027.</p>
+    <p class="reigning" id="reigning"></p>
+    <nav class="jump" aria-label="On this page">
+      <a href="#keepers">2027 keepers</a>
+      <a href="#champions">Champions</a>
+      <a href="#managers">Managers</a>
+      <a href="#graveyard">Graveyard</a>
+      <a href="#drafts">Drafts</a>
+      <a href="#rules">Keeper rules</a>
+    </nav>
+  </header>
+
+  <section id="keepers" aria-labelledby="keepers-title">
+    <div class="section-head">
+      <h2 id="keepers-title">2027 keeper costs</h2>
+      <p>Pick a team to see what each player from its 2026 draft would cost to keep next March.</p>
+    </div>
+    <div class="controls">
+      <label class="field">Team<select id="k-team"></select></label>
+      <label class="field grow">Or find a player<input type="search" id="k-find" placeholder="Any team, e.g. Skenes" autocomplete="off"></label>
+    </div>
+    <p class="tiles-key" aria-hidden="true"><span class="tiles"><span class="tile">16</span><span class="tile">14</span><span class="tile now">10</span></span>Rounds for keeper years one, two and three. Red is 2027.</p>
+    <ol class="klist" id="k-list" aria-live="polite"></ol>
+    <p class="note">Built from the 2026 draft and the keeper sheet. Trades, drops and pickups since the draft aren't in yet, so check anyone who changed teams. Free agents you pick up cost a 15th-round pick.</p>
+  </section>
+
+  <section id="champions" aria-labelledby="champions-title">
+    <div class="section-head">
+      <h2 id="champions-title">Champions</h2>
+      <p>Open a season for its final standings. Records are category wins, losses and ties.</p>
+    </div>
+    <ol class="titles" id="titles"></ol>
+  </section>
+
+  <section id="managers" aria-labelledby="managers-title">
+    <div class="section-head">
+      <h2 id="managers-title">Managers</h2>
+      <p id="managers-sub">Everyone in the league now. Open a manager for every team name and finish.</p>
+    </div>
+    <ol class="mlist" id="mlist"></ol>
+  </section>
+
+  <section id="graveyard" aria-labelledby="graveyard-title">
+    <div class="section-head">
+      <h2 id="graveyard-title">The graveyard</h2>
+      <p>Managers who left the league, most recent first.</p>
+    </div>
+    <ol class="stones" id="stones"></ol>
+  </section>
+
+  <section id="drafts" aria-labelledby="drafts-title">
+    <div class="section-head">
+      <h2 id="drafts-title">Every draft since 2013</h2>
+      <p>Search a player across all 14 drafts, or browse one year by round or by team.</p>
+    </div>
+    <div class="controls">
+      <label class="field grow">Search all drafts<input type="search" id="d-find" placeholder="e.g. Mike Trout" autocomplete="off"></label>
+    </div>
+    <ol class="hits" id="d-hits" aria-live="polite" hidden></ol>
+    <div class="controls">
+      <label class="field">Year<select id="d-year"></select></label>
+      <div class="field">View<span class="seg" role="group" aria-label="View"><button type="button" id="v-round" aria-pressed="true">By round</button><button type="button" id="v-team" aria-pressed="false">By team</button></span></div>
+      <label class="field" id="d-team-field" hidden>Team<select id="d-team"></select></label>
+    </div>
+    <p class="first-pick" id="first-pick"></p>
+    <div id="board"></div>
+    <p class="note" id="k-legend"><span class="kbadge" aria-hidden="true">K</span> marks a keeper, from the keeper sheet (2022 on).</p>
+  </section>
+
+  <section id="rules" aria-labelledby="rules-title">
+    <div class="section-head"><h2 id="rules-title">Keeper rules</h2></div>
+    <ul class="rules">
+      <li>Keep up to 5 players, each for up to 3 seasons. After the third, he goes back into the draft.</li>
+      <li>Year one costs the round he was drafted in. Year two costs two rounds earlier, and year three costs six rounds earlier than year one.</li>
+      <li>Free agents count as round 15.</li>
+      <li>Nothing costs more than round 1, but each first-round keeper needs its own 1st-round pick.</li>
+      <li>Two keepers in the same round: one moves up a round unless you own two picks there. If that round is also taken, he keeps moving up to the next open pick.</li>
+      <li>Draft picks can be traded, but only in the offseason.</li>
+    </ul>
+  </section>
+
+  <footer id="foot">Data from the league's Yahoo draft and standings pages and the keeper sheet.</footer>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  var DATA, SEASONS = {}, MAN = {}, OWN = {};
+  var $ = function (id) { return document.getElementById(id); };
+  var store = {
+    get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  };
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function fold(s) { return s.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9 ]/g, "").replace(/\s+/g, " ").trim(); }
+  function withMan(t) { return MAN[t] ? t + " (" + MAN[t] + ")" : t; }
+  function pct(wlt) { var p = wlt.split("-").map(Number), g = p[0] + p[1] + p[2]; return g ? ((p[0] + p[2] / 2) / g).toFixed(3).replace(/^0/, "") : ""; }
+  function ordinal(n) { var s = ["th", "st", "nd", "rd"], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
+  function who(id) { return OWN[id].n || ""; }   /* owners Yahoo hides stay unnamed until confirmed */
+  function man(s, ti) { var n = who(s.o[ti]); return n ? n + (s.co && s.co[ti] ? " and " + s.co[ti] : "") : ""; }
+  function teamMan(s, ti) { var m = man(s, ti); return s.teams[ti] + (m ? " (" + m + ")" : ""); }
+  function pickNo(r, i) { return r + "." + (i < 9 ? "0" : "") + (i + 1); }
+
+  fetch("data.json").then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(init).catch(function () {
+    $("k-list").innerHTML = '<li class="empty err">The league data didn\'t load. Refresh to try again.</li>';
+  });
+
+  function init(d) {
+    DATA = d; MAN = d.managers; OWN = d.owners;
+    d.seasons.forEach(function (s) { SEASONS[s.year] = s; });
+    var last = d.seasons[d.seasons.length - 1], champ = last.teams[last.standings[0][1]];
+    $("reigning").innerHTML = last.year + " champion: <strong>" + esc(champ) + "</strong>" + (MAN[champ] ? " (" + esc(MAN[champ]) + ")" : "");
+    $("foot").textContent = "Updated " + new Date(d.updated + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) + ". Data from the league's Yahoo draft and standings pages and the keeper sheet.";
+    initKeepers(); initTitles(); initManagers(); initDrafts();
+  }
+
+  /* ---------- 2027 keepers ---------- */
+  function tilesHtml(e) {
+    var now = e.next ? e.next[1] - 1 : 3;
+    var label = "Keeper rounds: year one " + e.path[0] + ", year two " + e.path[1] + ", year three " + e.path[2] + (e.next ? ". 2027 is year " + e.next[1] + "." : ". Already kept three years.");
+    return '<span class="tiles" role="img" aria-label="' + esc(label) + '">' + e.path.map(function (r, i) {
+      return '<span class="tile' + (i < now ? " spent" : i === now ? " now" : "") + '">' + r + "</span>";
+    }).join("") + "</span>";
+  }
+  function costHtml(e) {
+    if (!e.next) return "<b>Back in the draft</b>Kept 3 years";
+    var r = e.next[0], y = e.next[1];
+    return "<b>Round " + r + "</b>" + (y === 3 ? "Final year" : y === 2 ? "Year 2 of 3" : "Year 1 of 3");
+  }
+  function subText(e, team) {
+    var s = e.k ? "Kept in 2026, year " + e.k[1] + " (round " + e.k[0] + ")" : "Drafted in round " + e.d;
+    return team ? withMan(team) + ". " + s : s;
+  }
+  function keeperRow(e, team) {
+    return '<li class="kp' + (e.next ? "" : " out") + '"><div class="kp-name">' + esc(e.p) + '<span class="kp-sub">' + esc(subText(e, team)) + "</span></div>" +
+      '<div class="kp-right">' + tilesHtml(e) + '<div class="kp-cost">' + costHtml(e) + "</div></div></li>";
+  }
+  function initKeepers() {
+    var sel = $("k-team"), teams = Object.keys(DATA.keepers2027).sort(function (a, b) { return a.localeCompare(b); });
+    sel.innerHTML = teams.map(function (t) { return '<option value="' + esc(t) + '">' + esc(withMan(t)) + "</option>"; }).join("");
+    var saved = store.get("yoenis-team"); if (saved && DATA.keepers2027[saved]) sel.value = saved;
+    sel.addEventListener("change", function () { store.set("yoenis-team", sel.value); $("k-find").value = ""; drawKeepers(); });
+    $("k-find").addEventListener("input", drawKeepers);
+    drawKeepers();
+  }
+  function drawKeepers() {
+    var q = fold($("k-find").value), out = [];
+    if (q.length >= 2) {
+      Object.keys(DATA.keepers2027).forEach(function (t) {
+        DATA.keepers2027[t].forEach(function (e) { if (fold(e.p).indexOf(q) > -1) out.push(keeperRow(e, t)); });
+      });
+      $("k-list").innerHTML = out.length ? out.join("") : '<li class="empty">No one by that name was drafted in 2026. A free agent pickup costs a 15th-round pick.</li>';
+    } else {
+      $("k-list").innerHTML = DATA.keepers2027[$("k-team").value].map(function (e) { return keeperRow(e); }).join("");
+    }
+  }
+
+  /* ---------- Champions ---------- */
+  function initTitles() {
+    $("titles").innerHTML = DATA.seasons.slice().reverse().map(function (s) {
+      var T = s.teams, st = s.standings;
+      var rows = st.map(function (r) {
+        return '<tr' + (r[0] <= 3 ? ' class="podium"' : "") + '><td class="num">' + r[0] + "</td><td>" + esc(T[r[1]]) + '<span class="m-sub">' + esc(man(s, r[1])) + '</span></td><td class="r num">' + r[2] + '</td><td class="r num">' + pct(r[2]) + "</td></tr>";
+      }).join("");
+      return '<li><details><summary><span class="t-year num">' + s.year + '</span><span class="t-champ">' + esc(teamMan(s, st[0][1])) +
+        '<span class="t-rest">Runner-up ' + esc(teamMan(s, st[1][1])) + ". Third " + esc(teamMan(s, st[2][1])) + '.</span></span><span class="t-open">Standings</span></summary>' +
+        (s.year === 2020 ? '<p class="season-note">The 60-game season.</p>' : "") +
+        '<table class="standings"><caption hidden>' + s.year + ' final standings</caption><thead><tr><th scope="col">Finish</th><th scope="col">Team</th><th scope="col" class="r">Record</th><th scope="col" class="r">Pct</th></tr></thead><tbody>' + rows + "</tbody></table></details></li>";
+    }).join("");
+  }
+
+  /* ---------- Managers and the graveyard ---------- */
+  function careers() {
+    var c = {};
+    DATA.seasons.forEach(function (s) {
+      var rank = {}; s.standings.forEach(function (r) { rank[r[1]] = r[0]; });
+      s.o.forEach(function (id, ti) { (c[id] = c[id] || []).push({ y: s.year, t: s.teams[ti], r: rank[ti] }); });
+    });
+    return c;
+  }
+  function teamNames(list) {
+    var out = []; list.forEach(function (x) { if (out.indexOf(x.t) < 0) out.push(x.t); }); return out;
+  }
+  function initManagers() {
+    var C = careers(), last = DATA.seasons[DATA.seasons.length - 1], now = last.o;
+    var all14 = now.filter(function (id) { return C[id].length === DATA.seasons.length; }).map(who).sort();
+    if (all14.length > 1) $("managers-sub").textContent = all14.slice(0, -1).join(", ") + " and " + all14[all14.length - 1] + " have played all " + DATA.seasons.length + " seasons. Open a manager for every team name and finish.";
+    var cur = now.slice().sort(function (a, b) {
+      var ta = C[a].filter(function (x) { return x.r === 1; }).length, tb = C[b].filter(function (x) { return x.r === 1; }).length;
+      return tb - ta || C[b].length - C[a].length || who(a).localeCompare(who(b));
+    });
+    $("mlist").innerHTML = cur.map(function (id) {
+      var L = C[id], wins = L.filter(function (x) { return x.r === 1; }), best = Math.min.apply(null, L.map(function (x) { return x.r; }));
+      var team = last.teams[now.indexOf(id)];
+      var sub = team + ". " + L.length + (L.length === 1 ? " season" : " seasons") + " since " + L[0].y + "." + (wins.length ? "" : " Best finish " + ordinal(best) + ".");
+      var trophies = wins.length ? '<span class="trophies" role="img" aria-label="Titles: ' + wins.map(function (x) { return x.y; }).join(", ") + '">' +
+        wins.map(function (x) { return '<span class="tile">' + String(x.y).slice(2) + "</span>"; }).join("") + "</span>" : "";
+      var rows = L.slice().reverse().map(function (x) {
+        return '<tr' + (x.r === 1 ? ' class="won"' : "") + '><td class="num">' + x.y + "</td><td>" + esc(x.t) + '</td><td class="num">' + ordinal(x.r) + "</td></tr>";
+      }).join("");
+      return '<li><details><summary><span class="m-name">' + esc(who(id)) + '<span class="m-sub">' + esc(sub) + "</span></span>" + trophies +
+        '</summary><table class="career"><caption hidden>' + esc(who(id)) + ' by season</caption><tbody>' + rows + "</tbody></table></details></li>";
+    }).join("");
+    var gone = Object.keys(C).filter(function (id) { return now.indexOf(id) < 0 && who(id); }).sort(function (a, b) {
+      var la = C[a][C[a].length - 1].y, lb = C[b][C[b].length - 1].y;
+      return lb - la || C[b].length - C[a].length || who(a).localeCompare(who(b));
+    });
+    $("stones").innerHTML = gone.map(function (id) {
+      var L = C[id], first = L[0].y, lastY = L[L.length - 1].y, wins = L.filter(function (x) { return x.r === 1; });
+      var best = L.reduce(function (b, x) { return x.r < b.r ? x : b; }, L[0]);
+      var line = L.length + (L.length === 1 ? " season. " : " seasons. ") + (wins.length ? "Won it all in " + wins.map(function (x) { return x.y; }).join(" and ") + "." : "Best finish " + ordinal(best.r) + " in " + best.y + ".");
+      var rip = OWN[id].rip ? '<p class="rip">' + esc(OWN[id].rip) + "</p>" : "";
+      return '<li class="stone"><h3>' + esc(who(id)) + '</h3><p class="years num">' + (first === lastY ? first : first + "–" + lastY) + '</p><p class="line">' + esc(line) +
+        '</p><p class="teams">' + esc(teamNames(L).join(", ")) + "</p>" + rip + "</li>";
+    }).join("");
+  }
+
+  /* ---------- Drafts ---------- */
+  var view = "round";
+  function initDrafts() {
+    var ysel = $("d-year");
+    ysel.innerHTML = DATA.seasons.slice().reverse().map(function (s) { return "<option>" + s.year + "</option>"; }).join("");
+    ysel.addEventListener("change", function () { fillTeams(); drawBoard(); });
+    $("d-team").addEventListener("change", drawBoard);
+    $("v-round").addEventListener("click", function () { setView("round"); });
+    $("v-team").addEventListener("click", function () { setView("team"); });
+    $("d-find").addEventListener("input", search);
+    fillTeams(); drawBoard();
+  }
+  function setView(v) {
+    view = v;
+    $("v-round").setAttribute("aria-pressed", v === "round"); $("v-team").setAttribute("aria-pressed", v === "team");
+    $("d-team-field").hidden = v !== "team"; drawBoard();
+  }
+  function fillTeams() {
+    var s = SEASONS[$("d-year").value], sel = $("d-team"), keep = sel.value;
+    var names = s.teams.slice().sort(function (a, b) { return a.localeCompare(b); });
+    sel.innerHTML = names.map(function (t) { return '<option value="' + esc(t) + '">' + esc(teamMan(s, s.teams.indexOf(t))) + "</option>"; }).join("");
+    if (names.indexOf(keep) > -1) sel.value = keep;
+  }
+  function pickLi(p, idx, s, showTeam) {
+    return '<li class="pick"><span class="pick-no num">' + pickNo(p[0], idx) + '</span><span><span class="pick-who">' + esc(p[2]) +
+      (p[3] ? '<span class="kbadge" title="Keeper">K</span>' : "") + "</span>" + (showTeam ? '<span class="pick-team">' + esc(teamMan(s, p[1])) + "</span>" : "") + "</span></li>";
+  }
+  function drawBoard() {
+    var s = SEASONS[$("d-year").value], html = "", byRound = {};
+    s.draft.forEach(function (p) { (byRound[p[0]] = byRound[p[0]] || []).push(p); });
+    var first = s.draft[0];
+    $("first-pick").innerHTML = "First pick: <strong>" + esc(first[2]) + "</strong>, by " + esc(s.teams[first[1]]) + ".";
+    if (view === "round") {
+      Object.keys(byRound).forEach(function (r) {
+        html += '<div class="round"><h3>Round ' + r + '</h3><ol class="picks">' + byRound[r].map(function (p, i) { return pickLi(p, i, s, true); }).join("") + "</ol></div>";
+      });
+    } else {
+      var team = $("d-team").value, rows = [];
+      Object.keys(byRound).forEach(function (r) { byRound[r].forEach(function (p, i) { if (s.teams[p[1]] === team) rows.push(pickLi(p, i, s, false)); }); });
+      html = '<div class="round"><h3>' + esc(teamMan(s, s.teams.indexOf(team))) + '</h3><ol class="picks">' + rows.join("") + "</ol></div>";
+    }
+    $("board").innerHTML = html;
+    $("k-legend").hidden = !s.keepers_known;
+  }
+  function search() {
+    var q = fold($("d-find").value), box = $("d-hits");
+    if (q.length < 3) { box.hidden = true; box.innerHTML = ""; return; }
+    var found = {};
+    DATA.seasons.forEach(function (s) {
+      var seen = {};
+      s.draft.forEach(function (p) {
+        var r = p[0]; seen[r] = (seen[r] || 0) + 1;
+        if (fold(p[2]).indexOf(q) > -1) {
+          (found[p[2]] = found[p[2]] || []).push([s.year, pickNo(r, seen[r] - 1), teamMan(s, p[1]), p[3]]);
+        }
+      });
+    });
+    var names = Object.keys(found).sort(function (a, b) { return found[b].length - found[a].length || a.localeCompare(b); }).slice(0, 12);
+    box.hidden = false;
+    box.innerHTML = names.length ? names.map(function (n) {
+      var y = found[n];
+      return '<li class="hit"><span class="hit-name">' + esc(n) + '</span> <span class="kp-sub" style="display:inline">drafted ' + y.length + (y.length === 1 ? " time" : " times") + '</span><div class="hit-years num">' +
+        y.slice().reverse().map(function (h) { return "<span>" + h[0] + "</span><span>" + h[1] + "</span><span>" + esc(h[2]) + (h[3] ? " (kept)" : "") + "</span>"; }).join("") + "</div></li>";
+    }).join("") : '<li class="hit">No draft pick matches that name.</li>';
+  }
+})();
+</script>
+</body>
+</html>

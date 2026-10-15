@@ -97,5 +97,17 @@ window.PROJECTS = [
     facts: [["14", "real Yankees across two ALCS lineups"], ["25", "spots to aim at, nine in the zone"], ["7", "pitches between Pedro and Papelbon"]],
     stack: ["JavaScript", "Monte Carlo simulation"],
     cover: { image: "assets/covers/paint-the-corners.jpg", bg: "#0A1A33", band: "#C8102E" }
+  },
+  {
+    title: "Don't Forget to Wipe Yoenis",
+    type: "Tool",
+    released: "2026-10",
+    url: "yoenis/",
+    action: "Open the record book",
+    question: "Fourteen drafts in, who's worth keeping next March?",
+    summary: "The record book for my 16-team Yahoo keeper baseball league: every champion, final standing and draft pick since 2013, a graveyard for managers who left, and what each player will cost to keep in 2027.",
+    facts: [["5,600", "draft picks since 2013"], ["14", "seasons of champions and standings"], ["3", "keeper years, then back in the draft"]],
+    stack: ["JavaScript", "Python"],
+    cover: { image: "assets/covers/yoenis.jpg", bg: "#1F4532", band: "#BD3039" }
   }
 ];
