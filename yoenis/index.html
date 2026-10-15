@@ -61,6 +61,7 @@ h1{font:700 clamp(2.7rem, 10vw, 4.6rem)/.92 var(--f-sign);letter-spacing:-.005em
 .lede{font-size:1.075rem;max-width:36rem;margin:0}
 .reigning{margin:1rem 0 0;color:var(--muted)}
 .reigning strong{color:var(--ink);font-weight:600}
+.ext{display:flex;flex-wrap:wrap;gap:.3rem 1.25rem;margin:.6rem 0 0;font-weight:600}
 .jump{display:flex;flex-wrap:wrap;gap:.35rem 1.4rem;margin-top:1.5rem;padding-top:.9rem;border-top:1px solid var(--rule)}
 .jump a{font:600 1.05rem/1.3 var(--f-sign);letter-spacing:.01em;text-decoration:none;color:var(--muted)}
 .jump a:hover{color:var(--ink);text-decoration:underline}
@@ -207,8 +208,10 @@ details[open] .t-open::after{transform:translateY(.05rem) rotate(-135deg)}
 /* Rules */
 .rules{margin:1rem 0 0;padding-left:1.15rem;max-width:38rem}
 .rules li{margin:.4rem 0}
-.rule-group{margin-top:1.4rem}
-.rule-group .rules{margin-top:.4rem}
+.tabs{margin-top:1rem;max-width:100%}
+.rule-group{margin-top:.25rem}
+.rule-group .rules{margin-top:.75rem}
+@media (max-width:480px){.tabs button{padding:0 .6rem}}
 
 footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);padding-top:1rem}
 .err{color:var(--red)}
@@ -234,6 +237,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     <h1>Don't Forget to Wipe Yoenis</h1>
     <p class="lede">The record book for our 16-team Yahoo keeper league. Every champion, draft pick and award since 2013, plus what your players will cost to keep in 2027.</p>
     <p class="reigning" id="reigning"></p>
+    <p class="ext"><a href="https://docs.google.com/spreadsheets/d/1hikrKHBKWI65A81MFbOQ1n2vezeBwmUfNVFymItL0ZY/edit?usp=sharing" rel="noopener">Keeper sheet</a><a href="https://baseball.fantasysports.yahoo.com/b1/30639" rel="noopener">Yahoo league</a></p>
     <nav class="jump" aria-label="On this page">
       <a href="#keepers">2027 keepers</a>
       <a href="#champions">Champions</a>
@@ -334,8 +338,8 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
 
   <section id="rules" aria-labelledby="rules-title">
     <div class="section-head"><h2 id="rules-title">League rules</h2></div>
-    <div class="rule-group">
-      <h3>Basics</h3>
+    <div class="seg tabs" role="tablist" aria-label="Rule topics"><button type="button" role="tab" id="rt-basics" aria-controls="rp-basics" aria-selected="true" aria-pressed="true">Basics</button><button type="button" role="tab" id="rt-payouts" aria-controls="rp-payouts" aria-selected="false" aria-pressed="false" tabindex="-1">Payouts</button><button type="button" role="tab" id="rt-keepers" aria-controls="rp-keepers" aria-selected="false" aria-pressed="false" tabindex="-1">Keepers</button><button type="button" role="tab" id="rt-trades" aria-controls="rp-trades" aria-selected="false" aria-pressed="false" tabindex="-1">Trades</button><button type="button" role="tab" id="rt-draft" aria-controls="rp-draft" aria-selected="false" aria-pressed="false" tabindex="-1">Draft</button></div>
+    <div class="rule-group" role="tabpanel" id="rp-basics" aria-labelledby="rt-basics" tabindex="0">
       <ul class="rules">
         <li>16 teams. The $125 buy-in is due by Venmo before the draft, which makes a $2,000 pot.</li>
         <li>Head-to-head categories. Hitting: runs, hits, home runs, RBI, steals, total bases, average and OPS. Pitching: wins, losses, saves, strikeouts, holds, ERA, WHIP and quality starts.</li>
@@ -343,15 +347,13 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
         <li>Up to 7 pickups a week, and at least 30 innings pitched a week. Waivers use a free agent budget.</li>
       </ul>
     </div>
-    <div class="rule-group">
-      <h3>Payouts</h3>
+    <div class="rule-group" role="tabpanel" id="rp-payouts" aria-labelledby="rt-payouts" tabindex="0" hidden>
       <ul class="rules">
         <li>Playoff champion $600, runner-up $400, third place $200.</li>
         <li>Best regular-season record $500, second best $300.</li>
       </ul>
     </div>
-    <div class="rule-group">
-      <h3>Keepers</h3>
+    <div class="rule-group" role="tabpanel" id="rp-keepers" aria-labelledby="rt-keepers" tabindex="0" hidden>
       <ul class="rules">
         <li>Keep up to 5 players, each for up to 3 seasons in a row, no matter who keeps him. After the third, he goes back into the draft.</li>
         <li>Year one costs the round he was drafted in. Year two costs two rounds earlier, and year three costs six rounds earlier than year one.</li>
@@ -359,11 +361,10 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
         <li>To be kept, a player has to be on your roster before September 1.</li>
         <li>Nothing costs more than round 1, but each first-round keeper needs its own 1st-round pick.</li>
         <li>If you have no pick in a keeper's round, or two keepers there and one pick, he moves up to your next open pick. He still counts at his real round the next year.</li>
-        <li>Keepers lock a week or so before the draft.</li>
+        <li>Keepers lock a week or so before the draft. Enter them in Yahoo or on the <a href="https://docs.google.com/spreadsheets/d/1hikrKHBKWI65A81MFbOQ1n2vezeBwmUfNVFymItL0ZY/edit?usp=sharing" rel="noopener">keeper sheet</a>.</li>
       </ul>
     </div>
-    <div class="rule-group">
-      <h3>Trades</h3>
+    <div class="rule-group" role="tabpanel" id="rp-trades" aria-labelledby="rt-trades" tabindex="0" hidden>
       <ul class="rules">
         <li>Both managers confirm a trade on the league email thread.</li>
         <li>Every accepted trade goes through a 48-hour counter window. There are no vetoes, but any team can counter. A counter has to be for the same players, with nothing added.</li>
@@ -373,8 +374,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
         <li>No swapping picks just to move up or down in a round where you're keeping someone.</li>
       </ul>
     </div>
-    <div class="rule-group">
-      <h3>Draft</h3>
+    <div class="rule-group" role="tabpanel" id="rp-draft" aria-labelledby="rt-draft" tabindex="0" hidden>
       <ul class="rules">
         <li>25 rounds, snake order, as close to Opening Day as possible. The league votes on the date.</li>
         <li>A lottery sets the order for the eight teams that missed the playoffs. Playoff teams pick 9th through 16th in reverse order of finish, so the champion picks last.</li>
@@ -416,6 +416,29 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     $("foot").textContent = "Updated " + new Date(d.updated + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) + ". Data from the league's Yahoo draft and standings pages, the keeper sheet and the commissioner's league emails.";
     initKeepers(); initTitles(); initStats(); initAwards(); initManagers(); initDrafts();
   }
+
+  /* ---------- Rules tabs ---------- */
+  function initRuleTabs() {
+    var tabs = [].slice.call(document.querySelectorAll('#rules [role="tab"]'));
+    function show(t, focus) {
+      tabs.forEach(function (x) {
+        var on = x === t;
+        x.setAttribute("aria-selected", String(on)); x.setAttribute("aria-pressed", String(on));
+        x.tabIndex = on ? 0 : -1;
+        $(x.getAttribute("aria-controls")).hidden = !on;
+      });
+      if (focus) t.focus();
+    }
+    tabs.forEach(function (t, i) {
+      t.addEventListener("click", function () { show(t); });
+      t.addEventListener("keydown", function (e) {
+        var j = e.key === "ArrowRight" ? i + 1 : e.key === "ArrowLeft" ? i - 1 : e.key === "Home" ? 0 : e.key === "End" ? tabs.length - 1 : null;
+        if (j === null) return;
+        e.preventDefault(); show(tabs[(j + tabs.length) % tabs.length], true);
+      });
+    });
+  }
+  initRuleTabs();
 
   /* ---------- Awards ---------- */
   function initAwards() {
