@@ -34,8 +34,10 @@
     let step;
     if (a <= 25 && p.pot != null && p.pot > r) step = (p.pot - r) * (a <= 21 ? 0.3 : a <= 23 ? 0.25 : 0.2);
     else step = M.ageStep(a + 1);
-    const sig = a <= 22 ? 0.75 : a <= 29 ? 0.5 : 0.45;
-    const z = M.gauss(rng) * sig;
+    // young players mostly get better: their bad summers are smaller than their good ones
+    const sig = a <= 22 ? 0.6 : a <= 29 ? 0.5 : 0.45;
+    let z = M.gauss(rng) * sig;
+    if (z < 0 && a <= 23) z *= 0.55;
     const d = step + z;
     p.o = +(p.o + d * 0.6).toFixed(2); p.d = +(p.d + d * 0.4).toFixed(2);
     if (p.pot != null) p.pot = +(Math.max(p.pot + z * 0.5, M.r(p))).toFixed(2);
@@ -58,7 +60,7 @@
     const floor = CBA.minSal(yos ?? 3, i);
     return Math.max(floor, v < 3e6 * CBA.cap(i) / CAP_2526 ? floor : v);
   };
-  M.mv = (p, i, W) => M.valueOf(M.rAhead(p, i - W.season), p.h, i, (p.yos || 3) + (i - W.season));
+  M.mv = (p, i, W) => M.valueOf(M.rAhead(p, i - W.season), p.h, i, (p.yos ?? 3) + (i - W.season));
   // ---------- The market (what teams actually pay) ----------
   // A log-linear fit on current veteran contracts (data.cba.market): impact, scoring, minutes and age.
   // Points and minutes come from his real numbers, fading toward what his rating implies as seasons pass.
@@ -72,7 +74,7 @@
     return { r, ppg: Math.max(0, ppg), mpg: clamp(mpg, 0, 38) };
   };
   M.market = (p, i, W) => {
-    const b = CBA.D().market, s = M.statLine(p, i, W), age = M.ageIn(p, i, W), yos = (p.yos || 3) + i - W.season;
+    const b = CBA.D().market, s = M.statLine(p, i, W), age = M.ageIn(p, i, W), yos = (p.yos ?? 3) + i - W.season;
     let share = Math.exp(b[0] + b[1] * Math.max(s.r, -3) + b[2] * s.ppg + b[3] * s.mpg + b[4] * Math.max(0, age - 30) + b[5] * Math.max(0, 25 - age));
     let v = share * CBA.cap(i);
     if (age >= 34) v *= Math.pow(0.85, age - 33);                       // the market fades old players fast
@@ -82,19 +84,25 @@
   // What a player believes he's worth: the market, with a name premium for players who've been paid like stars
   M.perceived = (p, i, W) => {
     const prior = Math.max(...[W.season - 1, W.season, W.season + 1].map(j => (p.c && p.c.sal && p.c.sal[j]) || 0));
-    const yos = (p.yos || 3) + i - W.season;
+    const yos = (p.yos ?? 3) + i - W.season;
+    // an undrafted rookie gets a minimum-level deal his first summer, whatever his rating
+    if (p.undrafted && !p.yos && i === W.season) return CBA.minSal(0, i) * 1.15;
     return Math.min(CBA.maxSal(yos, i), Math.max(M.market(p, i, W) * 1.05, 0.15 * prior, CBA.minSal(yos, i)));
   };
   // Stars want long deals into their thirties; role players get shorter ones
   M.faYears = (age, r) => {
-    const star = (r ?? 0) >= 2.5;
-    return age <= 29 ? 4 : age <= 31 ? (star ? 4 : 3) : age <= 33 ? (star ? 3 : 2) : age <= 35 ? (star ? 2 : 1) : 1;
+    const star = (r ?? 0) >= 2.5, good = (r ?? 0) >= 0.8;
+    return age <= 29 ? 4 : age <= 31 ? (star ? 4 : 3) : age <= 33 ? (star ? 3 : 2) : age <= 35 ? (good ? 2 : 1) : 1;
   };
   // Unsigned free agents come down over time: about 1.2% a week, to 60% of the opening ask
   M.askDecay = (p, W) => {
     if (!p.faDate || !W.date) return 1;
     const weeks = Math.max(0, (Date.parse(W.date) - Date.parse(p.faDate)) / 6048e5);
-    return Math.max(0.6, 1 - 0.012 * weeks);
+    let k = Math.max(0.6, 1 - 0.012 * weeks);
+    // once the season tips off, an unsigned player's price falls fast: most end up taking what's there
+    const open = Date.UTC(2026 + (W.season || 0), 9, 20), now = Date.parse(W.date);
+    if (now > open && ["reg", "deadline", "reg2"].includes(W.phase)) k *= Math.max(0.4, 0.9 - 0.06 * (now - open) / 6048e5);
+    return k;
   };
   // Chance a player keeps playing at a given age
   M.keepsPlaying = (age, r) => age < 34 ? 1 : age >= 41 ? 0.15 : clamp(1 - (age - 33) * 0.12 + (r + 1) * 0.08, 0.1, 1);
@@ -114,16 +122,20 @@
 
   // ---------- Player decisions ----------
   // Player option for season j at salary s: in if the option beats what the market would give him.
-  M.playerOptionOdds = (p, j, W) => {
+  // happy (0-1): a good team and a real role. Happy players stay when it's close; unhappy ones look around.
+  M.playerOptionOdds = (p, j, W, happy = 0.5) => {
     const s = p.c.sal[j] || 0;
     const age = M.ageIn(p, j, W);
     const out = M.faHaul(p, j, W);
-    // opting in: the option salary, then the market a year older for the rest of a deal
+    // opting in: the option salary, then the market a year older for the rest of the deal he could get now
     const later = M.faHaul(p, j + 1, W);
-    const inside = s + later.total * (out.years - 1) / Math.max(1, later.years) * M.keepsPlaying(age + 1, M.rAhead(p, j - W.season + 1));
+    // money a year from now isn't guaranteed (injury, decline, a cooler market), so it's worth less than a deal today
+    const laterPart = later.total * (out.years - 1) / Math.max(1, later.years) * M.keepsPlaying(age + 1, M.rAhead(p, j - W.season + 1)) * 0.85;
+    const inside = s + laterPart;
     const ratio = out.total / Math.max(1, inside);
-    const pOut = 1 / (1 + Math.exp(-(ratio - 1.08) / 0.06));
-    return { pIn: 1 - pOut, outside: out, inside };
+    const center = 1.02 + 0.10 * happy;
+    const pOut = 1 / (1 + Math.exp(-(ratio - center) / 0.05));
+    return { pIn: 1 - pOut, outside: out, inside, laterPart, option: s, happy };
   };
   // A player's view of an offer (re-sign, extension, opt-out deal). Returns acceptance odds.
   // alt: what he expects otherwise, in total dollars. security: older players value guaranteed money.

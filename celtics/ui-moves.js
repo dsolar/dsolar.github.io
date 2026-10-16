@@ -36,6 +36,34 @@
     return { chk, react, ours, before, after, bBefore, bAfter };
   };
 
+  // Boston's read of a trade: each piece with age and surplus value, then salary, wins, exception and the total
+  App.readHTML = (W, tr, A) => {
+    const prot = tr.prot || {};
+    const sv = v => `${v >= 0 ? "+" : ""}${m(v)}`;
+    const item = id => {
+      const p = W.P[id];
+      if (tr.snt && tr.snt[id] && p.t === "FA") return `<li>${esc(p.n)} <span class="muted">(${p.age}, sign-and-trade: ${tr.snt[id].sal.length} yrs, ${m(tr.snt[id].sal.reduce((a, b) => a + b, 0))})</span></li>`;
+      return `<li><button class="linkish" type="button" data-act="player" data-id="${id}">${esc(p.n)}</button> <span class="muted">(${p.age}, ${sv(L.playerValue(W, "BOS", L.sntView(W, tr, id)))})</span></li>`;
+    };
+    const pick = id => { const pk = W.picks.find(x => x.id === id); return `<li>${esc(L.pickName(W, id, prot[id]))} <span class="muted">(${sv(pk ? L.pickValue(W, "BOS", pk, prot[id]) : 0)})</span></li>`; };
+    const list = c => { const s = tr.side[c] || { players: [], picks: [] }; return [...s.players.map(item), ...(s.picks || []).map(pick), ...(s.cash ? [`<li>${m(s.cash)} in cash</li>`] : [])].join("") || `<li class="muted">Nothing</li>`; };
+    const rB = A.chk.teams.BOS || {}, sol = rB.sol || {};
+    const dPay = (rB.P2 || 0) - (rB.P || 0);
+    const used = (sol.used || [])[0], tp = used ? W.T.BOS.tpes.find(x => x.id === used.id) : null;
+    const nt = (sol.newTpes || []).filter(x => x.amt >= 250000).sort((a, b) => b.amt - a.amt)[0];
+    const exc = used && tp ? [`Uses ${m(used.amt)}`, `of the ${tp.from} exception, ${m(Math.max(0, tp.amt - used.amt))} left`] : nt ? [`New ${m(nt.amt)}`, `trade exception from ${W.P[nt.from] ? W.P[nt.from].n : ""}, good for a year`] : ["None", "no exception used or created"];
+    const dW = A.after ? A.after.BOS - A.before.BOS : null;
+    return `<div class="read">
+      <div class="read-sides"><div><h4>Boston gets</h4><ul>${list(tr.b)}</ul></div><div><h4>Boston sends</h4><ul>${list("BOS")}</ul></div></div>
+      <p class="small muted" style="margin:6px 0 0">In parentheses: age, and surplus value to Boston (what he adds over his contract).</p>
+      <dl class="read-stats">
+        <div><dt>Salary this season</dt><dd class="${dPay > 0 ? "warnc" : ""}">${dPay >= 0 ? "+" : "-"}${m(Math.abs(dPay))}</dd><dd class="rs">${m(rB.P || 0)} → ${m(rB.P2 || 0)}</dd></div>
+        <div><dt>Wins</dt><dd class="${dW == null ? "" : dW >= 0.5 ? "good" : dW <= -0.5 ? "bad" : ""}">${dW == null ? "n/a" : (dW >= 0 ? "+" : "") + dW.toFixed(1)}</dd><dd class="rs">${A.after ? `${A.before.BOS.toFixed(0)} → ${A.after.BOS.toFixed(0)} projected` : "projection after the trade"}</dd></div>
+        <div><dt>Exception</dt><dd>${esc(exc[0])}</dd><dd class="rs">${esc(exc[1])}</dd></div>
+        <div><dt>Boston's read</dt><dd class="${A.ours >= 0 ? "good" : "bad"}">${sv(A.ours)}</dd><dd class="rs">total surplus value</dd></div>
+      </dl></div>`;
+  };
+
   App.views.moves = {
     render(el) {
       const W = App.W, ui = App.ui;
@@ -139,11 +167,9 @@
         <div><h3>${esc(W.T[tr.b].name)}</h3>${sideMath(W, rP, tr.b)}</div>
       </div>
       <div class="card" style="margin-top:14px;background:var(--sunk)">
-        <div class="row" style="justify-content:space-between;align-items:center">
-          <div><div class="small muted">${esc(App.poss(W.T[tr.b].fo.lead))} answer</div><div class="verdict ${re.verdict === "yes" ? "good" : re.verdict === "close" ? "warnc" : "bad"}">${verdictName}</div></div>
-          <div class="small" style="text-align:right">Boston's read: <b class="${A.ours >= 0 ? "good" : "bad"}">${A.ours >= 0 ? "+" : ""}${m(A.ours)}</b> in value<br>${A.after ? `Projected wins: ${A.before.BOS.toFixed(0)} → <b>${A.after.BOS.toFixed(0)}</b>` : ""}</div>
-        </div>
-        <p class="small" style="margin:8px 0 0">${esc(re.veto || (re.verdict === "yes" ? "The value works for them." : re.verdict === "close" ? "They want a little more." : "They don't see enough value."))}${re.why.length ? " " + esc(re.why.join(". ")) + "." : ""}</p>
+        <div><div class="small muted">${esc(App.poss(W.T[tr.b].fo.lead))} answer</div><div class="verdict ${re.verdict === "yes" ? "good" : re.verdict === "close" ? "warnc" : "bad"}">${verdictName}</div></div>
+        <p class="small" style="margin:8px 0 10px">${esc(re.veto || (re.verdict === "yes" ? "The value works for them." : re.verdict === "close" ? "They want a little more." : "They don't see enough value."))}${re.why.length ? " " + esc(re.why.join(". ")) + "." : ""}</p>
+        ${App.readHTML(W, tr, A)}
         ${guard.map(g => `<p class="notice" style="margin:8px 0 0">${esc(g)}</p>`).join("")}
         ${taxRows ? `<table class="std small" style="margin-top:10px"><thead><tr><th scope="col">Season</th><th scope="col">Boston payroll</th><th scope="col">Tax bill</th></tr></thead><tbody>${taxRows}</tbody></table>` : ""}
         ${["BOS", tr.b].filter(c => !tr.side[c].players.length && !(tr.side[c].picks || []).length && !(tr.side[c].cash > 0)).map(c => `<p class="small" style="margin:8px 0 0">Nothing is going from ${esc(W.T[c].name)} yet, and every trade needs something going each way. <button class="linkish" type="button" data-act="trToken" data-code="${c}">Add ${L.token(W, c).picks.length ? "a protected second" : "$250K in cash"}</button></p>`).join("")}
@@ -283,52 +309,122 @@
   };
 
   // ================= Signings =================
+  const TOOL = { room: "Cap room", ntmle: "Mid-level", tmle: "Taxpayer mid-level", rmle: "Room mid-level", bae: "Bi-annual", min: "Minimum", bird: "Bird rights", two: "Two-way" };
+  App.TOOL = TOOL;
+  const raiseOf = via => via === "bird" ? 0.08 : via === "min" ? 0 : 0.05;
+  const yearsFor = (via, ask) => via === "min" || via === "tmle" || via === "bae" ? Math.min(2, ask.years) : Math.min(via === "bird" ? 5 : 4, ask.years);
+  // Boston's simplest way to sign him: his Bird rights if Boston has them, else the smallest tool that covers his ask
+  App.faBest = (W, p) => {
+    const i = W.season, ask = Mo.faHaul(p, i, W), b = L.budget(W, "BOS", p);
+    const opts = b.opts.map(o => { const years = yearsFor(o.via, ask); return { via: o.via, amt: o.amt, years, cap: o.via === "min" ? o.amt : o.amt * L.raiseFac(years, raiseOf(o.via)) }; });
+    const own = opts.find(o => o.via === "bird");
+    const cover = opts.filter(o => o.cap >= ask.aav * 0.98).sort((x, y) => x.cap - y.cap);
+    const pick = own || (ask.aav <= CBA.minSal(p.yos, i) * 1.05 && opts.find(o => o.via === "min")) || cover[0] || opts.filter(o => o.via !== "min").sort((x, y) => y.cap - x.cap)[0] || opts[0];
+    if (!pick) return null;
+    const aav = Math.min(ask.aav, pick.cap);
+    return { via: pick.via, years: pick.years, total: Math.round(aav * pick.years / 1e5) * 1e5, covers: pick.cap >= ask.aav * 0.98, ask, opts };
+  };
+  App.twoOpen = W => L.twoWays(W, "BOS", W.season + (["draft", "options", "expansion"].includes(W.phase) ? 1 : 0)).length < 3;
+  // Summer free agency: offers go out when the round runs. Any other time: he signs now (or doesn't).
+  const summer = W => W.phase === "fa";
+  App.faRow = (W, p, own) => {
+    const i = W.season, best = App.faBest(W, p), o = (W.faOffers || {})[p.id], ask = best ? best.ask : Mo.faHaul(p, i, W);
+    const meta = `${esc(App.posName(p))}, ${p.age}, rated ${App.ovr(p)}${own ? `, ${esc(p.rights.kind)} rights, hold ${m(p.rights.hold)}` : p.rights && W.T[p.rights.team] ? `, ${esc(W.T[p.rights.team].name)}${p.rights.rfa && p.rights.tendered ? " (restricted)" : ""}` : ""}${p.undrafted ? ", undrafted" : ""}`;
+    const rfa = p.rights && p.rights.rfa && p.rights.tendered ? `<span class="chip w">Restricted: qualifying offer ${m(p.rights.qo)}</span>` : "";
+    const two = L.takesTwoWay(W, p) && App.twoOpen(W) && !own;
+    let acts = "";
+    if (o) acts = `<span class="chip g">${o.via === "two" ? "Two-way offered" : `Offered ${m(o.total / o.years)} x ${o.years}`}</span>${o.failed ? `<span class="small bad">${esc(o.failed)}</span>` : ""}<button class="btn ghost sm" type="button" data-act="faOffer" data-id="${p.id}">Change</button><button class="btn ghost sm" type="button" data-act="faPull" data-id="${p.id}">Pull</button>`;
+    else if (best) {
+      const lbl = `${summer(W) ? (own ? "Re-sign" : "Offer") : "Sign"} ${m(best.total / best.years)} x ${best.years}`;
+      acts = `<button class="btn sm" type="button" data-act="faQuick" data-id="${p.id}">${lbl}</button><button class="btn ghost sm" type="button" data-act="faOffer" data-id="${p.id}">Adjust</button>${two ? `<button class="btn ghost sm" type="button" data-act="faTwo" data-id="${p.id}">Two-way</button>` : ""}`;
+    } else acts = two ? `<button class="btn ghost sm" type="button" data-act="faTwo" data-id="${p.id}">Two-way</button>` : `<span class="small muted">No way to fit him now</span>`;
+    if (own) acts += `<button class="btn ghost sm" type="button" data-act="faSnt" data-id="${p.id}">Sign-and-trade</button><button class="btn ghost sm" type="button" data-act="faRenounce" data-id="${p.id}">Renounce</button>`;
+    return `<li class="fa">
+      <div class="fa-who"><button class="linkish" type="button" data-act="player" data-id="${p.id}"><b>${esc(p.n)}</b></button><span class="small muted">${meta}</span>${rfa}</div>
+      <div class="fa-ask"><b>${m(ask.aav)} x ${ask.years}</b><span class="small muted">${best ? (best.covers ? `fits: ${TOOL[best.via]}` : `${TOOL[best.via]} tops out at ${m(best.total / best.years)}`) : "asking"}${Mo.askDecay(p, W) < 0.97 ? ", asking less lately" : ""}</span></div>
+      <div class="fa-act">${acts}</div></li>`;
+  };
+  App.faList = (W, list, own) => `<ul class="plain fa-list">${list.map(p => App.faRow(W, p, own)).join("") || `<li class="muted small" style="padding:8px 0">Nobody in that group.</li>`}</ul>`;
+  App.faFilters = (W, key) => {
+    const i = W.season, b = L.budget(W, "BOS"), cur = App.ui[key] || "all";
+    const amtOf = v => Math.max(0, ...b.opts.filter(o => v.includes(o.via)).map(o => o.amt));
+    const FITS = { all: () => true, min: p => Mo.faHaul(p, i, W).aav <= CBA.minSal(p.yos, i) * 1.15, two: p => L.takesTwoWay(W, p), mle: p => Mo.faHaul(p, i, W).aav <= amtOf(["ntmle", "tmle", "rmle"]) * 1.05, bae: p => Mo.faHaul(p, i, W).aav <= amtOf(["bae"]) * 1.05, room: p => Mo.faHaul(p, i, W).aav <= amtOf(["room"]) * 1.05 };
+    const btns = [["all", "Everyone"], ["min", "Takes the minimum"], ["two", "Takes a two-way"], ["mle", "Fits a mid-level"], ["bae", "Fits the bi-annual"], ["room", "Fits cap room"]].filter(([k]) => k === "all" || k === "min" || (k === "two" && App.twoOpen(W)) || (k === "mle" && amtOf(["ntmle", "tmle", "rmle"])) || (k === "bae" && amtOf(["bae"])) || (k === "room" && amtOf(["room"])));
+    return { fit: FITS[cur] || FITS.all, html: `<div class="seg" role="group" aria-label="Show">${btns.map(([k, n]) => `<button type="button" aria-pressed="${cur === k}" data-act="faFit" data-key="${key}" data-k="${k}">${n}</button>`).join("")}</div>` };
+  };
+  App.acts.faFit = el => { App.ui[el.dataset.key || "faFit"] = el.dataset.k; App.render(); };
   function signHTML(W) {
-    const i0 = W.season;
-    const tools = L.tools(W, "BOS", i0).tools.filter(t => t.ok && !t.tpe && (t.key !== "room" || t.amt > 0));
-    const st = App.ui.sign || (App.ui.sign = {});
-    st.fit = st.fit || "all";
     const twos = Object.values(W.P).filter(p => p.t === "BOS" && p.two);
-    const toolAmt = k => (tools.find(t => t.key === k) || { amt: 0 }).amt;
-    const fits = { all: () => true, min: p => Mo.faHaul(p, i0, W).aav <= CBA.minSal(p.yos, i0) * 1.15,
-      mle: p => Mo.faHaul(p, i0, W).aav <= Math.max(toolAmt("ntmle"), toolAmt("tmle"), toolAmt("rmle")) * 1.05,
-      bae: p => Mo.faHaul(p, i0, W).aav <= toolAmt("bae") * 1.05, room: p => Mo.faHaul(p, i0, W).aav <= toolAmt("room") * 1.05 };
-    const all = Object.values(W.P).filter(p => p.t === "FA" && !p.retired && !p.offerSheet).sort((a, b) => Mo.r(b) - Mo.r(a));
-    const fas = all.filter(fits[st.fit]);
     let html = "";
-    if (twos.length) html += `<h3>Convert a two-way deal</h3><p class="small muted">Moves him to a standard minimum contract and onto the 15-man roster.</p><ul class="plain">${twos.map(p => `<li class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${esc(p.n)} <span class="small muted">rated ${App.ovr(p)}</span></span><button class="btn ghost sm" type="button" data-act="cvQueue" data-id="${p.id}">Add to moves</button></li>`).join("")}</ul>`;
-    const filters = [["all", "Everyone"], ["min", "Will take the minimum"], ["mle", "Fits a mid-level"], ["bae", "Fits the bi-annual"], ["room", "Fits cap room"]].filter(([k]) => k === "all" || k === "min" || (k === "mle" && (toolAmt("ntmle") || toolAmt("tmle") || toolAmt("rmle"))) || (k === "bae" && toolAmt("bae")) || (k === "room" && toolAmt("room")));
-    html += `<h3 style="margin-top:14px">Free agents</h3><div class="seg" role="group" aria-label="Show">${filters.map(([k, n]) => `<button type="button" aria-pressed="${st.fit === k}" data-act="sgFit" data-k="${k}">${n}</button>`).join("")}</div>`;
-    if (!fas.length) return html + `<p class="muted">${all.length ? "Nobody in that group right now." : "No unsigned free agents. The market opens July 1 in GM mode."}</p>`;
-    const p = W.P[st.id] && fas.includes(W.P[st.id]) ? W.P[st.id] : fas[0]; st.id = p.id;
-    const ask = Mo.faHaul(p, i0, W);
-    st.via = st.via && tools.find(t => t.key === st.via) ? st.via : (tools.find(t => t.amt >= ask.aav) || tools[0] || { key: "min" }).key;
-    st.years = st.years || Math.min(ask.years, 2);
-    st.total = st.total || Math.round(Math.min(ask.aav, (tools.find(t => t.key === st.via) || { amt: ask.aav }).amt) * st.years / 1e6 * 10) / 10;
-    const tool = tools.find(t => t.key === st.via);
-    return html + `
-      <ul class="plain" style="margin-top:8px;max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:8px">${fas.slice(0, 40).map(x => { const a = Mo.faHaul(x, i0, W); return `<li style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--line)"><span>${esc(x.n)} <span class="small muted">${esc(App.posName(x))}, ${x.age}, rated ${App.ovr(x)}${x.rights && x.rights.team === "BOS" ? ", your rights" : ""}</span></span><span class="small">${m(a.aav)} x ${a.years}${Mo.askDecay(x, W) < 0.99 ? " <span class='muted'>(asking less lately)</span>" : ""}</span><button class="btn ghost sm" type="button" data-act="sgPlayer" data-id="${x.id}" aria-pressed="${x.id === p.id}">${x.id === p.id ? "Selected" : "Pick"}</button></li>`; }).join("")}</ul>
-      <p class="small" style="margin-top:10px"><b>${esc(p.n)}</b> is looking for about ${m(ask.aav)} a year for ${ask.years} year${ask.years > 1 ? "s" : ""}.</p>
-      <div class="row">
-        <label class="f">Using<select data-on="sgVia">${tools.map(t => `<option value="${t.key}"${t.key === st.via ? " selected" : ""}>${esc(t.name)} (${m(t.amt)})</option>`).join("")}${p.rights && p.rights.team === "BOS" ? `<option value="bird"${st.via === "bird" ? " selected" : ""}>His Bird rights</option>` : ""}</select></label>
-        <label class="f">Years<select data-on="sgYears">${[1, 2, 3, 4].map(y => `<option${y === st.years ? " selected" : ""}>${y}</option>`).join("")}</select></label>
-        <label class="f">Total ($M)<input type="number" step="0.1" min="0.5" value="${st.total}" data-on="sgTotal"></label>
-      </div>
-      <button class="btn" type="button" data-act="sgQueue">Add to moves</button>
-      <p class="small muted">${tool ? esc(tool.why) : ""}</p>`;
+    html += `<p class="small" style="margin-top:0">${summer(W) ? "Free agency is on: offers go out when you run the next round in the Season tab." : "Outside the July rounds, a free agent decides on the spot."} Boston has ${L.rosterCount(W, "BOS")} players on standard deals and ${twos.length} of 3 two-way spots filled.</p>`;
+    if (twos.length) html += `<h3>Two-way players</h3><ul class="plain">${twos.map(p => `<li class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${esc(p.n)} <span class="small muted">rated ${App.ovr(p)}, through ${App.sn(p.c.twoEnd ?? W.season)}</span></span><span class="row" style="gap:6px"><button class="btn ghost sm" type="button" data-act="cvQueue" data-id="${p.id}">Convert to a standard deal</button><button class="btn ghost sm" type="button" data-act="twCut" data-id="${p.id}">Release</button></span></li>`).join("")}</ul>`;
+    const F = App.faFilters(W, "sgFit");
+    const all = Object.values(W.P).filter(p => p.t === "FA" && !p.offerSheet).sort((a, b) => Mo.r(b) - Mo.r(a));
+    html += `<h3 style="margin-top:14px">Free agents</h3>${F.html}`;
+    if (!all.length) return html + `<p class="muted">No unsigned free agents. The market opens July 1.</p>`;
+    return html + App.faList(W, all.filter(F.fit).slice(0, 40), false);
   }
-  App.acts.sgFit = el => { App.ui.sign = { fit: el.dataset.k }; App.render(); };
-  App.acts.sgPlayer = el => { App.ui.sign = { id: el.dataset.id || el.value, fit: (App.ui.sign || {}).fit }; App.render(); };
-  App.acts.sgVia = el => { App.ui.sign.via = el.value; App.render(); };
-  App.acts.sgYears = el => { App.ui.sign.years = +el.value; App.render(); };
-  App.acts.sgTotal = el => { App.ui.sign.total = +el.value; App.render(); };
-  App.acts.sgQueue = () => {
-    const W = App.W, st = App.ui.sign, p = W.P[st.id];
-    W.queue.push({ type: "sign", id: p.id, via: st.via, years: st.years, total: Math.round(st.total * 1e6), shape: "flat", label: `Sign ${p.n}: ${st.years} year${st.years > 1 ? "s" : ""}, ${m(st.total * 1e6)}` });
-    App.ui.sign = {};
+  App.acts.cvQueue = el => { const p = App.W.P[el.dataset.id]; App.W.queue.push({ type: "convert", id: p.id, label: `Convert ${p.n} to a standard contract` }); App.afterChange(); };
+  App.acts.twCut = el => { const W = App.W, p = W.P[el.dataset.id]; p.t = "FA"; p.two = false; p.faDate = W.date; p.c = { sal: [], opt: {}, dec: {}, signed: W.season, bird: 0 }; L.news(W, `Boston releases ${p.n} from his two-way deal.`, "move", "BOS"); App.flash(true, `Released ${p.n}.`); App.afterChange(); };
+  // Sign now (outside the July rounds): checks the roster, the hard cap and the tool, then he decides
+  App.signNow = (W, p, via, years, total) => {
+    const i = W.season, sal = CBA.buildSalaries(years, total, via === "min" ? "flat" : "up", raiseOf(via));
+    const hard = W.T.BOS.hard[i], pay = L.payrollNow(W, "BOS");
+    const tool = L.budget(W, "BOS", p).opts.find(o => o.via === via);
+    if (L.inSeason(W) && L.rosterCount(W, "BOS") >= 15) return { ok: false, why: "The roster is full (15). Waive someone first." };
+    if (hard && pay + sal[0] > CBA.levelAmt(hard, i)) return { ok: false, why: `Boston is hard-capped at the ${CBA.LEVEL_NAME[hard]}: only ${m(Math.max(0, CBA.levelAmt(hard, i) - pay))} of room.` };
+    if (!tool || sal[0] > tool.amt + 1000) return { ok: false, why: tool ? `The ${TOOL[via].toLowerCase()} covers ${m(tool.amt)} a year now.` : "That tool isn't available." };
+    const ask = Mo.faHaul(p, i, W), odds = Mo.offerOdds(total, ask.aav * Math.min(years, ask.years) * (L.inSeason(W) ? 0.75 : 0.9), p.age);
+    const r = L.rng(W);
+    if (r() > odds) return { ok: false, why: `${p.n} passed (${App.pct(odds)} odds). More money or years might do it.` };
+    L.sign(W, "BOS", p.id, years, total, via === "min" ? "flat" : "up", via);
+    return { ok: true, why: `${p.n} signs: ${years} year${years > 1 ? "s" : ""}, ${m(total)}.` };
+  };
+  App.acts.faQuick = el => {
+    const W = App.W, p = W.P[el.dataset.id], best = App.faBest(W, p); if (!best) return;
+    if (summer(W)) { W.faOffers = W.faOffers || {}; W.faOffers[p.id] = { years: best.years, total: best.total, via: best.via, shape: "up" }; App.flash(true, `Offer out to ${p.n}: ${best.years} years, ${m(best.total)} (${TOOL[best.via]}). He decides when the round runs.`); }
+    else { const r = App.signNow(W, p, best.via, best.years, best.total); App.flash(r.ok, r.why); }
     App.afterChange();
   };
-  App.acts.cvQueue = el => { const p = App.W.P[el.dataset.id]; App.W.queue.push({ type: "convert", id: p.id, label: `Convert ${p.n} to a standard contract` }); App.afterChange(); };
+  App.acts.faTwo = el => {
+    const W = App.W, p = W.P[el.dataset.id], yrs = p.yos ? 1 : 2;
+    if (summer(W)) { W.faOffers = W.faOffers || {}; W.faOffers[p.id] = { years: yrs, total: 0, via: "two" }; App.flash(true, `Two-way offer out to ${p.n}.`); }
+    else { L.signTwoWay(W, "BOS", p.id, yrs); App.flash(true, `${p.n} signs a two-way deal.`); }
+    App.afterChange();
+  };
+  App.acts.faPull = el => { delete (App.W.faOffers || {})[el.dataset.id]; App.afterChange(); };
+  App.acts.faOffer = el => {
+    const W = App.W, p = W.P[el.dataset.id], best = App.faBest(W, p), o = (W.faOffers || {})[p.id];
+    const via = o && o.via !== "two" ? o.via : best ? best.via : "min";
+    App.ui.fao = { id: p.id, via, years: o && o.via !== "two" ? o.years : best ? best.years : 1, total: o && o.via !== "two" ? o.total : best ? best.total : CBA.minSal(p.yos, W.season) };
+    renderFAO();
+  };
+  function renderFAO() {
+    const W = App.W, st = App.ui.fao, p = W.P[st.id], i = W.season, ask = Mo.faHaul(p, i, W), b = L.budget(W, "BOS", p);
+    if (!b.opts.length) { App.dlg(`Offer: ${p.n}`, `<p>Boston has no way to sign him right now.</p>`); return; }
+    const tool = b.opts.find(o => o.via === st.via) || b.opts[0]; st.via = tool.via;
+    const sal = CBA.buildSalaries(st.years, st.total, st.via === "min" ? "flat" : "up", raiseOf(st.via));
+    const over = sal[0] > tool.amt + 1000;
+    const odds = Mo.offerOdds(st.total, ask.aav * Math.min(st.years, ask.years) * (summer(W) ? 1 : L.inSeason(W) ? 0.75 : 0.9), p.age);
+    App.dlg(`${summer(W) ? "Offer" : "Sign"}: ${p.n}`, `<p class="small">He's asking about ${m(ask.aav)} a year for ${ask.years} year${ask.years > 1 ? "s" : ""}. Raises are built in: 8% a year on Bird rights, 5% otherwise.</p>
+      <div class="row"><label class="f">Using<select data-on="faoVia">${b.opts.map(o => `<option value="${o.via}"${o.via === st.via ? " selected" : ""}>${TOOL[o.via]} (first year up to ${m(o.amt)})</option>`).join("")}</select></label>
+      <label class="f">Years<select data-on="faoYears">${[1, 2, 3, 4, 5].filter(y => st.via === "bird" || y <= 4).map(y => `<option${y === st.years ? " selected" : ""}>${y}</option>`).join("")}</select></label>
+      <label class="f">Total ($M)<input type="number" step="0.1" min="0.5" value="${(st.total / 1e6).toFixed(1)}" data-on="faoTotal"></label></div>
+      <p class="small">${sal.map((x, k) => `${App.sn(i + k)} ${m2(x)}`).join(", ")}${over ? ` <span class="bad">First year is over the ${m(tool.amt)} available.</span>` : ""}</p>
+      ${summer(W) ? `<p class="small muted">Other teams bid too. He weighs money, years and how good each team is.</p>` : `<p class="small"><b>${App.pct(odds)}</b> he signs.</p>`}
+      <div class="row"><button class="btn" type="button" data-act="faoSave"${over ? " disabled" : ""}>${summer(W) ? "Make the offer" : "Sign him"}</button>${(W.faOffers || {})[p.id] ? `<button class="btn ghost" type="button" data-act="faoPull">Pull it</button>` : ""}</div>`);
+  }
+  App.acts.faoVia = el => { App.ui.fao.via = el.value; renderFAO(); };
+  App.acts.faoYears = el => { App.ui.fao.years = +el.value; renderFAO(); };
+  App.acts.faoTotal = el => { App.ui.fao.total = Math.round((+el.value || 0) * 1e6); renderFAO(); };
+  App.acts.faoSave = () => {
+    const W = App.W, st = App.ui.fao, p = W.P[st.id];
+    App.closeDlg();
+    if (summer(W)) { W.faOffers = W.faOffers || {}; W.faOffers[st.id] = { years: st.years, total: st.total, via: st.via, shape: st.via === "min" ? "flat" : "up" }; }
+    else { const r = App.signNow(W, p, st.via, st.years, st.total); App.flash(r.ok, r.why); }
+    App.afterChange();
+  };
+  App.acts.faoPull = () => { delete App.W.faOffers[App.ui.fao.id]; App.closeDlg(); App.afterChange(); };
 
   // ================= Waivers =================
   function waiveHTML(W) {

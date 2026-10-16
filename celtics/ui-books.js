@@ -95,7 +95,8 @@
       <section class="panel" aria-labelledby="books-h">
         <h2 id="books-h">The books</h2>
         <p class="owner-line"><b>${esc(o.name)}'s rule for ${App.sn(i0)}:</b> ${esc(mand && mand.season === i0 ? mand.text : "None set.")} <span class="${mc.ok ? "good" : "bad"}">${mc.ok ? (mc.room != null ? m2(mc.room) + " of room." : "On track.") : esc(mc.text)}</span> <span class="muted">Trust ${o.trust} of 100.</span>
-        ${hard ? `<br><b>Hard-capped at the ${CBA.LEVEL_NAME[hard]} (${m2(CBA.levelAmt(hard, i0))}) all season.</b> <span class="muted">${esc((W.T.BOS.hardWhy || {})[i0] || "")}. No move can take Boston over it.</span>` : ""}</p>
+        ${hard ? `<br><b>Hard-capped at the ${CBA.LEVEL_NAME[hard]} (${m2(CBA.levelAmt(hard, i0))}) all season.</b> <span class="muted">${esc((W.T.BOS.hardWhy || {})[i0] || "")}. No move can take Boston over it.</span>` : ""}
+        <br><b>${L.repeaterNote(W).repeater ? "Repeater taxpayer." : "Not a repeater this season."}</b> <span class="muted">${esc(L.repeaterNote(W).text)}</span></p>
         <p class="sub small">Every dollar committed through ${App.sn(i0 + YEARS - 1)}. Click an option to set your plan. Expiring deals turn into cap holds; future seasons assume 7% cap growth and empty spots filled at the minimum.</p>
         <div class="scroller"><table class="sheet">${head}${body}${foot}</table></div>
         <div class="ladders">${ladders}</div>
@@ -172,9 +173,9 @@
     const rows = list.map(({ p, j, kind }) => {
       const v = L.optionView(W, p, j);
       let read;
-      if (kind === "PO") read = `${App.pct(v.pIn)} he opts in. He's worth about ${m(v.mv)} that season by the model.`;
-      else if (kind === "MO") read = `Either side can pick it up. He ${v.pIn >= 0.5 ? "would" : "wouldn't"} (${App.pct(v.pIn)}); the model ${v.teamWants ? "says Boston should" : "says Boston shouldn't"} (worth ${m(v.mv)}).`;
-      else read = `Worth about ${m(v.mv)} by the model, ${v.teamWants ? "so keep him" : "so it's a decline"}.`;
+      if (kind === "PO") read = App.optRead(W, p, j);
+      else if (kind === "MO") read = `Either side can pick it up. ${App.optRead(W, p, j)} The model ${v.teamWants ? "says Boston should keep him" : "says Boston should pass"} (on-court value about ${m(v.mv)}).`;
+      else read = `On-court value about ${m(v.mv)} that season, ${v.teamWants ? "so keep him" : "so it's a decline"}.`;
       const neg = kind === "PO" && v.pIn >= 0.5 ? `<button class="btn ghost sm" type="button" data-act="optout" data-id="${p.id}" data-j="${j}">Ask him to opt out for a longer deal</button>` : "";
       return `<li style="padding:10px 0;border-bottom:1px solid var(--line)"><b>${esc(p.n)}</b>, ${App.sn(j)} ${CBA.OPT_NAME[kind].toLowerCase()} at ${m2(p.c.sal[j])}<br><span class="small muted">${esc(read)}</span><div class="row" style="margin-top:6px">${optChip(W, p, j)}${neg}</div></li>`;
     }).join("");
@@ -254,12 +255,12 @@
     const W = App.W, p = W.P[id], i0 = W.season, dec = L.decider(W);
     const lv = p.live;
     const rows = [];
-    for (let j = i0; j < i0 + 6; j++) { const raw = p.c.sal[j] || 0; if (!raw) continue; rows.push(`<tr><td>${App.sn(j)}</td><td>${m2(raw)}</td><td>${p.c.opt[j] ? esc(CBA.OPT_NAME[p.c.opt[j]]) + ": " + (CBA.optionState(p, j, dec) === "in" ? "in" : "out") : "Guaranteed"}</td><td>${m(Mo.mv(p, j, W))}</td></tr>`); }
+    for (let j = i0; j < i0 + 6; j++) { const raw = p.c.sal[j] || 0; if (!raw) continue; rows.push(`<tr><td>${App.sn(j)}</td><td>${m2(raw)}</td><td>${p.c.opt[j] ? esc(CBA.OPT_SHORT[p.c.opt[j]]) + " " + (CBA.optionState(p, j, dec) === "in" ? "in" : "out") : "Guaranteed"}</td><td>${m(Mo.market(p, j, W))}</td><td>${m(Mo.mv(p, j, W))}</td></tr>`); }
     const e = CBA.extEligible(p, i0);
     const team = W.T[p.t] ? W.T[p.t].name : p.t === "FA" ? "Free agent" : "";
     const r = Mo.r(p);
     const html = `
-      <p class="small muted" style="margin-top:0">${esc(team)}. ${esc(App.posName(p))}, age ${p.age}, ${p.yos} years of service. ${p.note ? esc(p.note) : ""}</p>
+      <p class="small muted" style="margin-top:0">${esc(team)}${p.two ? " (two-way)" : ""}. ${esc(App.posName(p))}, age ${p.age}, ${p.yos} years of service. ${p.note ? esc(p.note) : ""}</p>
       <div class="grid3" style="gap:10px">
         <div><div class="small muted">Rating</div><div class="bigstat">${App.ovr(p)}</div><div class="small">${r >= 0 ? "+" : ""}${r.toFixed(1)} per 100 (${p.o >= 0 ? "+" : ""}${p.o.toFixed(1)} offense, ${p.d >= 0 ? "+" : ""}${p.d.toFixed(1)} defense)${p.form ? `, shooting form ${p.form > 0 ? "+" : ""}${p.form}` : ""}</div></div>
         <div><div class="small muted">Availability</div><div class="bigstat">${App.pct(p.h)}</div><div class="small">of games, by the injury model</div></div>
@@ -268,7 +269,7 @@
       ${p.ppg != null ? `<p class="small" style="margin:12px 0 0"><b>2025-26:</b> ${p.gp ?? "?"} games, ${p.mpg ?? "?"} minutes, ${p.ppg} points, ${p.rpg} rebounds, ${p.apg} assists.</p>` : ""}
       ${lv ? `<p class="small" style="margin:4px 0 0"><b>${esc(lv.season || "This season")} (live):</b> ${lv.gp} games, ${lv.mpg} minutes, ${lv.ppg} points, ${lv.rpg} rebounds, ${lv.apg} assists, ${lv.tpa} threes tried a game, ${lv.tov} turnovers.</p>` : ""}
       <h3 style="margin-top:14px">Contract</h3>
-      ${rows.length ? `<table class="std"><thead><tr><th scope="col">Season</th><th scope="col">Salary</th><th scope="col">Status</th><th scope="col">Worth (model)</th></tr></thead><tbody>${rows.join("")}</tbody></table>` : "<p class='muted'>No contract.</p>"}
+      ${rows.length ? `<p class="small muted" style="margin:0 0 4px">Market is what teams would pay him (the contract model). On-court is what his impact is worth in salary terms, which runs higher for players who don't score much.</p><table class="std"><thead><tr><th scope="col">Season</th><th scope="col">Salary</th><th scope="col">Status</th><th scope="col">Market</th><th scope="col">On-court</th></tr></thead><tbody>${rows.join("")}</tbody></table>` : "<p class='muted'>No contract.</p>"}
       ${W.T[p.t] || p.t === "FA" ? (() => {
         const vals = Object.keys(W.T).filter(c => c !== p.t).map(c => ({ c, v: L.playerValue(W, c, p) })).sort((a, b) => b.v - a.v);
         const top = vals.slice(0, 3), low = vals[vals.length - 1];
@@ -312,7 +313,7 @@
     W.plan = JSON.parse(save); L.bump(W);
     const fx = before.map((b, k) => `<tr><td>${App.sn(b.i)}</td><td>${m2(b.payroll)}</td><td>${m2(after[k].payroll)}</td><td class="${after[k].tax - b.tax > 0 ? "bad" : "good"}">${m(b.tax)} → ${m(after[k].tax)}</td></tr>`).join("");
     const html = `
-      <p style="margin-top:0">${esc(p.n)} holds a ${m2(s)} player option for ${App.sn(j)}. He'll pick it up (${App.pct(Mo.playerOptionOdds(p, j, W).pIn)}) unless you give him a reason not to: decline it, then re-sign with Boston on his Bird rights for more total money spread over more years.</p>
+      <p style="margin-top:0">${esc(p.n)} holds a ${m2(s)} player option for ${App.sn(j)}. He'll pick it up (${App.pct(L.optOdds(W, p, j).pIn)}) unless you give him a reason not to: decline it, then re-sign with Boston on his Bird rights for more total money spread over more years.</p>
       <div class="row">
         <label class="f">Years<select data-on="ooYears" autofocus>${[2, 3, 4].map(y => `<option${y === years ? " selected" : ""}>${y}</option>`).join("")}</select></label>
         <label class="f">Total ($M)<input type="number" min="10" max="200" step="1" value="${st.total}" data-on="ooTotal" data-live></label>

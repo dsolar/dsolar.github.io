@@ -50,7 +50,7 @@
         }
         if (code === "BOS") { delete W.plan.resign[id]; for (const k of Object.keys(W.plan.opt)) if (k.startsWith(id + "@")) delete W.plan.opt[k]; delete W.plan.renounce[id]; }
         p.t = other;
-        p.acq = W.date;
+        p.acq = W.date; p.since = i; p.joinGP = L.inSeason(W) ? W.T[other].w + W.T[other].l : 0;
       }
       for (const pid of side.picks || []) {
         const pk = W.picks.find(x => x.id === pid); if (!pk) continue;
@@ -87,6 +87,7 @@
     p.c = { sal: [], opt: {}, dec: {}, signed: i, bird: own ? (p.c.bird || 3) : 1, how: via, rk: p.c && p.c.rk && own ? p.c.rk : null };
     sal.forEach((x, k) => { p.c.sal[i + k] = x; });
     if (via === "min" && years === 1) p.c.sal[i] = Math.min(p.c.sal[i], CBA.minCapHit(p.yos, i));
+    if (p.t !== code) { p.since = i; p.joinGP = L.inSeason(W) ? t.w + t.l : 0; }
     p.t = code; p.rights = null; p.two = false;
     p.tradeOk = L.inSeason(W) ? addMonths(W.date, 3) : `${2026 + i}-12-15`;
     t.used[i] = t.used[i] || {};
@@ -184,11 +185,25 @@
     }
     return out;
   };
-  L.simGame = (W, g, r) => {
+  // Chemistry: new faces cost a little until they've played about 25 games together. Returning players count
+  // fully; a team that turned over its whole rotation starts about 1.2 points of net rating worse.
+  L.CHEM_GAMES = 25; L.CHEM_MAX = 1.2;
+  L.continuity = (W, code) => {
+    const t = W.T[code], gp = t.w + t.l, rot = L.rotationFor(W, code).mins;
+    let tot = 0, w = 0;
+    for (const [id, m] of Object.entries(rot)) {
+      const p = W.P[id]; if (!p || !m) continue;
+      const k = p.since == null || p.since < W.season ? 1 : Math.min(1, Math.max(0, gp - (p.joinGP || 0)) / L.CHEM_GAMES);
+      tot += m; w += m * k;
+    }
+    return tot ? w / tot : 1;
+  };
+  L.chem = (W, code) => -L.CHEM_MAX * (1 - L.continuity(W, code));
+  L.simGame = (W, g, r, chem) => {
     const mean = W._mean ?? (L.teamNets(W), W._mean);
     const outH = availToday(W, g.h, r), outA = availToday(W, g.a, r);
-    const nh = Mo.netOf(L.teamRaw(W, g.h, p => !outH.has(p.id)), mean);
-    const na = Mo.netOf(L.teamRaw(W, g.a, p => !outA.has(p.id)), mean);
+    const nh = Mo.netOf(L.teamRaw(W, g.h, p => !outH.has(p.id)), mean) + ((chem && chem[g.h]) || 0);
+    const na = Mo.netOf(L.teamRaw(W, g.a, p => !outA.has(p.id)), mean) + ((chem && chem[g.a]) || 0);
     const margin = nh - na + 1.5 + Mo.gauss(r) * 12;
     const hw = margin > 0;
     const base = 112 + Mo.gauss(r) * 6;
@@ -204,10 +219,12 @@
   L.simUntil = (W, date) => {
     const r = rng(W);
     L.teamNets(W);
+    let chem = null, n = 0;
     for (const g of W.sched) {
       if (g.done) continue;
       if (g.d > date) break;
-      L.simGame(W, g, r);
+      if (!chem || n++ % 60 === 0) { chem = {}; for (const c of Object.keys(W.T)) chem[c] = L.chem(W, c); }   // refreshed every few days of games
+      L.simGame(W, g, r, chem);
     }
     W.date = date;
     L.bump(W);

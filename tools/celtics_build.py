@@ -273,6 +273,47 @@ def yos_guess(age):
     return max(0, min(18, (age or 25) - 20))
 
 
+# Rookie-year rating and ceiling by draft slot: the same curves the app uses for every later class
+def rookie_now(k):
+    return round(-0.35 - 1.65 * min(1.25, (k - 1) / 59) ** 0.7, 2)
+
+
+def rookie_pot(k):
+    return round(4.0 - 5.2 * min(1.25, (k - 1) / 59) ** 0.6, 2)
+
+
+def rate_rookie(p, k, year):
+    """No NBA minutes yet: rate him like every drafted rookie from that slot (the app's own curves)."""
+    now = rookie_now(k)
+    p["o"], p["d"], p["pot"] = round(now * 0.6, 2), round(now * 0.4, 2), rookie_pot(k)
+    if not p.get("note"):
+        p["note"] = f"{year} draft, about No. {k}. No NBA minutes yet, so he's rated like any rookie from that slot."
+
+
+def rookie_info(age, sal, rp):
+    """First-round rookie-scale deals: (draft year, slot), or None. A 2026 draftee is flagged by the source;
+    earlier classes show the scale's shape: small raises, then the big jump into year four."""
+    scale = [x * 1e6 for x in CBA["rookie"]]
+    n = sum(1 for x in sal[:4] if x)
+    # an earlier class signed off a smaller scale (it grows with the cap), then got 5% raises
+    nearest = lambda amt, yr: min(range(30), key=lambda k: abs(scale[k] / (1.07 ** yr) * (1.05 ** yr) - amt)) + 1
+    if rp.get("src") == "rookie":
+        if not sal[0] or sal[0] < scale[29] * 0.9 / 1.07:
+            return None                                  # a second-rounder on a minimum-style deal
+        if n == 3:
+            return 2025, nearest(sal[0], 1)              # a 2025 pick who missed his rookie season
+        return 2026, nearest(sal[0], 0)
+    if not age or age > 24 or n not in (2, 3):
+        return None
+    last, prev = sal[n - 1], sal[n - 2]
+    if not prev or not (1.2 <= last / prev <= 1.9) or last > 30e6:
+        return None
+    if n == 3 and not (1.02 <= sal[1] / sal[0] <= 1.08):
+        return None
+    year = 2025 if n == 3 else 2024
+    return year, nearest(sal[0], 2026 - year)
+
+
 def load_injury_inputs():
     """DARKO, RAPM and the 31st Franchise's CraftedNBA priors for players whose 2025-26 was cut short."""
     b = (SRC / "build.py").read_text(encoding="utf-8")
@@ -357,6 +398,8 @@ def main():
         if c.get("rk"): p["c"]["rk"] = c["rk"]
         if c.get("note"): p["note"] = c["note"]
         p.update(player_fields(R[c["n"]], p["age"]) if c["n"] in R else {})
+        if c.get("rk") and R.get(c["n"], {}).get("src") == "rookie":
+            rate_rookie(p, c["rk"][1], c["rk"][0])
         if c["n"] == "Jayson Tatum":          # 16 games at the four and five after the Achilles; he's a forward
             p["pos"], p["ps"] = "W", ["SF", "PF"]
         players.append(p)
@@ -396,9 +439,14 @@ def main():
             p["two"] = True; p["c"]["sal"] = [0] * NY
         if rp.get("st") == "rfa":
             p["c"]["rfa"] = True          # restricted free agent in 2027 if not extended
-        if rp.get("src") == "rookie":
-            p["c"]["rk"] = [2026, 0]
         p.update(player_fields(rp, age) if rp else {})
+        rk = rookie_info(age, sal, rp)
+        if rk:
+            p["c"]["rk"] = list(rk); p["yos"] = 2026 - rk[0]
+        elif rp.get("src") == "rookie":
+            p["yos"] = 0
+        if rp.get("src") == "rookie":
+            rate_rookie(p, rk[1] if rk else 45, rk[0] if rk else 2026)
         players.append(p)
 
     teams = {}
@@ -417,8 +465,31 @@ def main():
 
     recruits = {str(y): [{"id": slug(n), "n": n, "pos": pos, "hs": int(k), "school": f"Class of {y - 1} recruit (ESPN No. {k})"}
                          for n, pos, k in (l.split("|") for l in txt.splitlines())] for y, txt in RECRUITS.items()}
-    data = {"updated": "2026-10-15", "version": 2, "cba": CBA, "teams": teams, "players": players,
-            "celtics": CELTICS_EXTRA, "draft": {"2027": draft}, "recruits": recruits}
+    # Saved games from data version 2 keep going: these patches carry the rookie fixes into them
+    migrate = {}
+    try:
+        old = {q["id"]: q for q in json.loads(OUT.read_text(encoding="utf-8"))["players"]}
+        prev_version = json.loads(OUT.read_text(encoding="utf-8")).get("version")
+    except Exception:
+        old, prev_version = {}, None
+    if prev_version == 2 or (prev_version == 3 and "migrate" in json.loads(OUT.read_text(encoding="utf-8"))):
+        prior = json.loads(OUT.read_text(encoding="utf-8")).get("migrate", {}).get("2") if prev_version == 3 else None
+        if prior is not None:
+            migrate = prior
+        else:
+            for q in players:
+                o0 = old.get(q["id"])
+                if not o0:
+                    continue
+                fx = {}
+                dr = round((q.get("o", 0) + q.get("d", 0)) - (o0.get("o", 0) + o0.get("d", 0)), 2)
+                if abs(dr) >= 0.05: fx["dr"] = dr
+                if q.get("pot") is not None and o0.get("pot") is not None and abs(q["pot"] - o0["pot"]) >= 0.05: fx["dpot"] = round(q["pot"] - o0["pot"], 2)
+                if q.get("yos") != o0.get("yos"): fx["dyos"] = q["yos"] - (o0.get("yos") or 0)
+                if q["c"].get("rk") != o0["c"].get("rk"): fx["rk"] = q["c"].get("rk")
+                if fx: migrate[q["id"]] = fx
+    data = {"updated": "2026-10-15", "version": 3, "cba": CBA, "teams": teams, "players": players,
+            "celtics": CELTICS_EXTRA, "draft": {"2027": draft}, "recruits": recruits, "migrate": {"2": migrate}}
     OUT.parent.mkdir(exist_ok=True)
     txt = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
     assert "@" not in txt

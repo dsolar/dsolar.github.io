@@ -19,9 +19,9 @@
     end: `${Y(i) + 1}-04-11`, playoffs: `${Y(i) + 1}-04-18`, finals: `${Y(i) + 1}-06-15`, draft: `${Y(i) + 1}-06-24`,
     options: `${Y(i) + 1}-06-29`, fa: `${Y(i) + 1}-07-01`, camp: `${Y(i) + 1}-09-29`
   });
-  L.PHASES = ["pre", "reg", "deadline", "reg2", "playoffs", "draft", "options", "fa", "summer"];
+  L.PHASES = ["pre", "reg", "deadline", "reg2", "playoffs", "draft", "expansion", "options", "fa", "summer"];
   L.PHASE_NAME = { pre: "Preseason", reg: "Regular season", deadline: "Trade deadline", reg2: "Regular season", playoffs: "Playoffs",
-                   draft: "Draft", options: "Option decisions", fa: "Free agency", summer: "Summer" };
+                   draft: "Draft", expansion: "Expansion draft", options: "Option decisions", fa: "Free agency", summer: "Summer" };
   L.inSeason = W => ["pre", "reg", "deadline", "reg2", "playoffs"].includes(W.phase);
   // fraction of the current season's salary still to be paid (for trade value)
   L.seasonLeft = W => {
@@ -74,6 +74,9 @@
     pk("2027-2-PHI").owner = "BOS"; pk("2028-2-PHI").owner = "BOS";
     for (let y = 2027; y <= 2033; y++) pk(`${y}-2-BOS`).owner = "OUT";   // Boston's own seconds: traded away over the years
     W.draft[2027] = L.scoutClass(data.draft["2027"], 2027, W.seed);
+    // ESPN's board stops at 60; generated prospects fill out the undrafted pool
+    const extra = L.genClass(2027, W.seed).slice(0, 30).map((g, k) => ({ id: g.id, n: g.n, pos: g.pos, school: g.school, age: g.age, gen: true, rank: 61 + k }));
+    W.draft[2027] = W.draft[2027].concat(L.scoutClass(extra, 2027, W.seed + 1));
     W.recruits = data.recruits || {};
     W.owner = { name: "Bill Chisholm", trust: 60, mandate: { season: 0, rule: "tax", text: "No tax in 2026-27." }, log: [] };
     W.live = live || null;
@@ -85,13 +88,17 @@
   L.isOver = (W, d) => W.date >= d;
 
   // ---------- Prospects ----------
+  // Expected rookie-year rating and ceiling by draft slot (or board rank)
+  L.rookieNow = k => +(-0.35 - 1.65 * Math.pow(Math.min(1.25, (k - 1) / 59), 0.7)).toFixed(2);
+  L.rookiePot = k => +(4.0 - 5.2 * Math.pow(Math.min(1.25, (k - 1) / 59), 0.6)).toFixed(2);
   // Public view comes from the big board rank. The truth (how good he really becomes) is hidden and seeded.
   L.scoutClass = (list, year, seed) => {
     const rng = Mo.rng(seed * 7919 + year);
     return list.map(x => {
       const k = x.rank, f = Math.min(1.25, (k - 1) / 59);
-      const estNow = -1.2 - 2.0 * f;                         // rookie-year impact
-      const estPot = 4.0 - 5.2 * Math.pow(f, 0.6);           // where he's headed by 25
+      // rookie-year impact, calibrated to how the 2024 and 2025 classes rated as rookies on this same scale
+      const estNow = L.rookieNow(k);
+      const estPot = L.rookiePot(k);                         // where he's headed by 25
       return Object.assign({}, x, { year, estNow: +estNow.toFixed(2), estPot: +estPot.toFixed(2),
         trueNow: +(estNow + Mo.gauss(rng) * 0.5).toFixed(2), truePot: +(estPot + Mo.gauss(rng) * 1.1).toFixed(2) });
     });
@@ -103,7 +110,7 @@
   L.genClass = (year, seed) => {
     const rng = Mo.rng(seed * 104729 + year);
     const used = new Set(), list = [];
-    for (let k = 1; k <= 70; k++) {
+    for (let k = 1; k <= 100; k++) {
       let n; do { n = FIRST[Math.floor(rng() * FIRST.length)] + " " + LAST[Math.floor(rng() * LAST.length)]; } while (used.has(n)); used.add(n);
       list.push({ id: "gen-" + year + "-" + k, n, pos: POS[Math.floor(rng() * 5)], school: "Generated prospect", age: +(19 + rng() * 3).toFixed(1), rank: k, gen: true });
     }
@@ -138,13 +145,13 @@
       if (memo[mk]) return memo[mk];
       let d = "in";
       const s = p.c.sal[j] || 0;
-      if (kind === "PO") d = Mo.playerOptionOdds(p, j, W).pIn >= 0.5 ? "in" : "out";
+      if (kind === "PO") d = L.optOdds(W, p, j).pIn >= 0.5 ? "in" : "out";
       else if (kind === "TO") d = Mo.mv(p, j, W) >= s * 0.8 ? "in" : "out";
       else if (kind === "NG") d = Mo.mv(p, j, W) >= s * 0.7 ? "in" : "out";
       else if (kind === "MO") {
         // the 2026-style "mutual" option: picked up if either side wants it
         const team = set || (Mo.mv(p, j, W) >= s * 0.8 ? "in" : "out");
-        d = team === "in" || Mo.playerOptionOdds(p, j, W).pIn >= 0.5 ? "in" : "out";
+        d = team === "in" || L.optOdds(W, p, j).pIn >= 0.5 ? "in" : "out";
       }
       memo[mk] = d;
       return d;
@@ -154,10 +161,22 @@
     const kind = p.c.opt[j]; if (!kind) return null;
     const key = p.id + "@" + j, set = W.plan.opt[key], dec = p.c.dec[j];
     const s = p.c.sal[j] || 0, mv = Mo.mv(p, j, W);
-    const po = (kind === "PO" || kind === "MO") ? Mo.playerOptionOdds(p, j, W) : null;
+    const po = (kind === "PO" || kind === "MO") ? L.optOdds(W, p, j) : null;
     const final = dec || L.decider(W)(p, j, kind);
-    return { kind, set, dec, final, pIn: po ? po.pIn : null, mv, sal: s, teamWants: mv >= s * 0.8 };
+    return { kind, set, dec, final, pIn: po ? po.pIn : null, po, mv, mkt: Mo.market(p, j, W), sal: s, teamWants: mv >= s * 0.8 };
   };
+  // How happy a player is where he is (0-1): half how good the team is, half how big his role is
+  L.happy = (W, p) => {
+    if (!W.T[p.t]) return 0.5;
+    const memo = W._memo || (W._memo = {}), key = "happy:" + p.id;
+    if (memo[key] != null) return memo[key];
+    const ranks = W._ranks || L.strengthRanks(W);            // 1 = worst
+    const team = ((ranks[p.t] || 15) - 1) / (Object.keys(W.T).length - 1);
+    const mins = (L.rotationFor(W, p.t).mins || {})[p.id] || 0;
+    const role = Math.max(0, Math.min(1, mins / 30));
+    return (memo[key] = 0.5 * team + 0.5 * role);
+  };
+  L.optOdds = (W, p, j) => Mo.playerOptionOdds(p, j, W, L.happy(W, p));
 
   // ---------- Books ----------
   L.repeater = (W, code, i, proj) => {
@@ -167,6 +186,19 @@
       else if (j >= W.season && proj) { if (proj(j) > CBA.tax(j)) n++; }
     }
     return n >= 3;
+  };
+  // The repeater clock in words: is a bill this season at repeater rates, and what staying under buys next season
+  L.repeaterNote = (W, code = "BOS") => {
+    const t = W.T[code], i = W.season;
+    const paid = j => !!t.taxHist[j];
+    const n = [i - 4, i - 3, i - 2, i - 1].filter(paid).length;
+    const yrs = [i - 4, i - 3, i - 2, i - 1].filter(paid).map(j => CBA.seasonName(j));
+    const nextIfUnder = [i - 3, i - 2, i - 1].filter(paid).length, nextIfOver = nextIfUnder + 1;
+    const now = n >= 3 ? `Boston paid tax in ${n} of the last four seasons (${yrs.join(", ")}), so any ${CBA.seasonName(i)} bill is at repeater rates.`
+      : `Boston paid tax in ${n} of the last four seasons${n ? ` (${yrs.join(", ")})` : ""}: standard rates this season.`;
+    const next = nextIfOver >= 3 && nextIfUnder < 3 ? ` Stay under this season and ${CBA.seasonName(i + 1)} is at standard rates; pay tax and Boston is a repeater next season too.`
+      : nextIfUnder >= 3 ? ` Even staying under, ${CBA.seasonName(i + 1)} would still be at repeater rates.` : ` ${CBA.seasonName(i + 1)} is at standard rates either way.`;
+    return { repeater: n >= 3, text: now + next };
   };
   // Projected slot of a team's pick (1 = best) from current strength, regressed to the middle further out
   L.projSlot = (W, from, y) => {
@@ -322,20 +354,30 @@
     let pm = L.prefMult(fo, p);
     if (fo.mode === "contend" || fo.mode === "rise") pm *= 1 + 0.12 * Math.max(0, Mo.r(p) - 2);   // stars win titles
     let v = 0;
-    const last = Math.min(i + 3, Math.max(i, CBA.lastYear(p, dec, i)));
+    // rebuilding teams look further out and care less about this season; contenders the reverse
+    const horizon = fo.mode === "rebuild" ? 5 : fo.mode === "retool" ? 4 : 3;
+    const rate = fo.mode === "rebuild" ? 0.92 : fo.mode === "contend" ? 0.82 : 0.86;
+    const ageNow = p.age;
+    const ageW = fo.mode === "rebuild" ? (ageNow >= 30 ? 0.75 : ageNow >= 27 ? 0.9 : ageNow <= 23 ? 1.1 : 1) : fo.mode === "retool" ? (ageNow >= 31 ? 0.88 : 1) : 1;
+    const last = Math.min(i + horizon, Math.max(i, CBA.lastYear(p, dec, i)));
     for (let j = i; j <= last; j++) {
       const k = j - i, s = CBA.salaryIn(p, j, dec) + (j === i && opts.kick ? opts.kick : 0);
       if (!s && j > i) break;
       // analytics shops pay for impact; traditional ones for what the market (box score, minutes) says
       const a = fo.analytics ?? 0.6;
       // production value runs rich next to what the market pays, so it's discounted a quarter
-      const mv = (a * 0.75 * Mo.mv(p, j, W) + (1 - a) * Mo.market(p, j, W)) * pm;
-      const disc = Math.pow(0.85, k);
+      const mv = (a * 0.75 * Mo.mv(p, j, W) + (1 - a) * Mo.market(p, j, W)) * pm * ageW;
+      const disc = Math.pow(rate, k);
       const w = (k === 0 ? wNow * frac : k === 1 ? (wNow + 1) / 2 : 1) * disc;
       const cost = s * L.costMult(W, code, j) * (k === 0 ? frac : 1) * disc;
       v += w * mv - cost;
     }
     if (p.age <= 24 && p.pot != null && p.pot > Mo.r(p)) v += 0.35 * (p.pot - Mo.r(p)) * 5e6 * (MODE_YOUTH[fo.mode] || 1);
+    // a rookie-scale player comes with restricted free agency: the team keeps him past his deal
+    if (p.c && p.c.rk && p.c.rk[1] > 0 && p.age <= 24) {
+      const after = CBA.lastYear(p, dec, i) + 1;
+      if (after - i <= horizon) v += 0.3 * Math.max(0, Mo.mv(p, after, W) * 0.75 - Mo.market(p, after, W)) * Math.pow(rate, after - i) * (MODE_YOUTH[fo.mode] || 1);
+    }
     return v;
   };
   // Projected slot for a pick, taking the better of two when a pick conveys as the best of a pair

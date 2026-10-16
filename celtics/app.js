@@ -60,22 +60,35 @@
   function renderHeader() {
     const W = App.W, B = L.books(W, "BOS", W.season);
     renderBanners();
-    const under = B.taxLine - B.payroll;
     const hard = W.T.BOS.hard[W.season];
+    // every line, not just the tax: over/under the cap (counting holds), the tax, and both aprons
+    const line = (name, amt, cmp, hot) => { const d = amt - cmp; return [d >= 0 ? `Under ${name}` : `Over ${name}`, App.m(Math.abs(d)), null, d < 0 && hot]; };
+    const capItem = (() => { const d = B.cap - B.capNum; return [d >= 0 ? "Cap room" : "Over the cap", App.m(Math.abs(d)), null, false]; })();
     const rec = W.T.BOS.w + W.T.BOS.l > 0 ? `${W.T.BOS.w}-${W.T.BOS.l}` : null;
     const pw = Math.round(L.projWins(W, "BOS"));
     const odds = App.titleOdds();
     const items = [
       ["Today", `${L.fmtDate(W.date)}`, L.PHASE_NAME[W.phase] + " " + App.sn(W.season)],
       ["Payroll", App.m(B.payroll)],
-      [under >= 0 ? "Under the tax" : "Over the tax", App.m(Math.abs(under)), null, under < 0],
-      ["Hard cap", hard ? (hard === "a1" ? "First apron" : "Second apron") : "None"],
+      capItem,
+      line("the tax", B.taxLine, B.payroll, true),
+      ((x) => { if (hard === "a1") x[0] += " (hard cap)"; return x; })(line("1st apron", B.a1, B.payroll, true)),
+      ((x) => { if (hard === "a2") x[0] += " (hard cap)"; return x; })(line("2nd apron", B.a2, B.payroll, true)),
       ["Owner trust", `${L.ensureOwner(W).trust} of 100`, null, L.ensureOwner(W).trust < 35],
       [rec ? "Record" : "Projected", rec || `${pw}-${82 - pw}`],
       ["Title odds", App.pct(odds.BOS || 0)]
     ];
     $("#status").innerHTML = items.map(([k, v, sub, hot]) => `<li><span class="k">${esc(k)}${sub ? ` <span class="sr">,</span>` : ""}</span><span class="v${hot ? " hot" : ""}">${esc(v)}</span>${sub ? `<span class="k">${esc(sub)}</span>` : ""}</li>`).join("");
   }
+  // A player option in plain words: what the open market would pay him against opting in
+  App.optRead = (W, p, j) => {
+    const v = L.optionView(W, p, j); if (!v || !v.po) return "";
+    const o = v.po.outside, m = App.m;
+    const close = v.pIn > 0.15 && v.pIn < 0.85;
+    const mood = !close ? "" : v.po.happy >= 0.6 ? "It's close, and he likes it here (good team, real role), which tips it toward staying." : v.po.happy <= 0.35 ? "It's close, and he isn't thrilled with his situation, which tips it toward leaving." : "It's close.";
+    const rest = o.years - 1;
+    return `On the open market he'd expect about ${m(o.aav)} a year for ${o.years} year${o.years > 1 ? "s" : ""} (${m(o.total)} guaranteed). Opting in pays ${m(v.sal)}${rest ? `, then he'd be a free agent a year older: about ${m(v.po.laterPart)} over the next ${rest > 1 ? rest + " years" : "year"}, with no guarantee` : ""}. ${App.pct(v.pIn)} he opts in. ${mood}`.trim();
+  };
   App.titleOdds = () => {
     const W = App.W;
     if (!W._odds || W._oddsTick !== W.tick) { W._odds = L.titleOdds(W, 400); W._oddsTick = W.tick; }
@@ -148,9 +161,11 @@
     try { App.LIVE = await get("live.json"); } catch (e) { App.LIVE = null; }
     CBA.init(App.DATA.cba);
     const saved = App.load();
-    if (saved && saved.v === 1 && saved.P && saved.T && saved.dataVersion === App.DATA.version) {
+    const mig = App.DATA.migrate || {};
+    if (saved && saved.v === 1 && saved.P && saved.T && (saved.dataVersion === App.DATA.version || mig[saved.dataVersion])) {
       App.W = saved;
       App.W.live = App.LIVE;
+      if (saved.dataVersion !== App.DATA.version) { App.migrate(App.W, mig[saved.dataVersion]); App.ui.flash = { ok: true, text: "Your game carried over. Rookie ratings, two-way contracts, the expansion step and the free-agent fixes are in; anything already decided stays decided." }; }
       if (App.LIVE && App.W.phase === "pre") L.applyLive(App.W, App.LIVE);
     } else {
       App.W = L.newWorld(App.DATA, App.LIVE, 19);
@@ -164,11 +179,24 @@
     renderFooter();
     App.render();
   }
+  // Bring a saved game up to the current data: rating and service-time fixes for players still on their first deals
+  App.migrate = (W, fix) => {
+    for (const [id, f] of Object.entries(fix || {})) {
+      const p = W.P[id]; if (!p) continue;
+      if (f.dr) { p.o = +(p.o + f.dr * 0.6).toFixed(2); p.d = +(p.d + f.dr * 0.4).toFixed(2); }
+      if (f.dpot && p.pot != null) p.pot = +(p.pot + f.dpot).toFixed(2);
+      if (f.dyos) p.yos = (p.yos || 0) + f.dyos;
+      if (f.rk && p.c && (p.c.signed ?? -1) <= 0 && !p.c.rk) p.c.rk = f.rk;
+    }
+    for (const p of Object.values(W.P)) if (p.two && p.c && p.c.twoEnd == null) p.c.twoEnd = W.season;
+    if (W.T.LVA && W.T.LVA.name === "Las Vegas Aces") W.T.LVA.name = "Las Vegas";
+    L.bump(W);
+  };
   function renderFooter() {
     const lv = App.LIVE;
     $("#footer").innerHTML = `<p>Contracts: ShamSports, NBC Sports Boston and Hoops Rumors, checked Oct. 15, 2026. Cap figures: the NBA's 2026-27 release, then 7% growth a season.
       Ratings and aging: the same impact blend as <a href="../31st-franchise/">The 31st Franchise</a>. Front offices: team announcements through June 2026.
-      2027 draft class: ESPN's top 60 (June 2026); later classes are generated.
+      Draft classes: ESPN's top 60 for 2027 and ESPN's recruiting rankings for 2028 through 2030 (real names); later classes are generated.
       ${lv && lv.updated && lv.games && lv.season === App.sn(App.W.season) ? `Live stats and standings from ESPN, updated ${esc(L.fmtDate(lv.updated.slice(0, 10)))}.` : "Live stats from ESPN start loading each morning once the 2026-27 season tips off Oct. 20."}</p>
       <p>Your game saves in this browser. <button class="linkish" type="button" data-act="resetGame">Start over from Oct. 15, 2026</button></p>`;
   }

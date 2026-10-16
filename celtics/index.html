@@ -232,6 +232,33 @@ table.std{width:100%;border-collapse:collapse;font-size:14px}
 .news time{color:var(--muted);font-size:12px;display:block}
 .offer{border:1px solid var(--line);border-radius:var(--r);padding:14px;background:var(--surface);margin:0 0 12px}
 
+/* checkboxes start the line, text wraps beside them */
+label.chk{display:flex;gap:8px;align-items:flex-start;margin:6px 0;cursor:pointer}
+label.chk input{margin:3px 0 0;flex:none}
+/* starting five picker */
+.starters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:4px 0 0}
+.starters select{width:100%;min-width:0}
+@media (max-width:560px){.starters{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:420px){.starters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* Boston's read of a trade */
+.read{margin-top:12px}
+.read-sides{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.read h4{font:700 16px/1.1 var(--f-d);letter-spacing:.3px;margin:0 0 4px}
+.read ul{list-style:none;margin:0;padding:0;font-size:14px}
+.read li{padding:2px 0}
+.read-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0 0}
+.read-stats>div{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:0}
+.offer .read-stats>div{background:var(--sunk);border-color:transparent}
+.read-stats dt{font-size:12px;color:var(--muted)}
+.read-stats dd{margin:0;font:700 21px/1.15 var(--f-d);letter-spacing:.2px;overflow-wrap:anywhere}
+.read-stats dd.rs{font:400 12px/1.35 var(--f-b);color:var(--muted);letter-spacing:0}
+@media (max-width:560px){.read-sides{grid-template-columns:1fr}.read-stats{grid-template-columns:1fr 1fr}}
+/* free agents: a list that stacks on phones */
+.fa-list li.fa{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto;gap:6px 12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.fa-who,.fa-ask{display:flex;flex-direction:column;min-width:0}
+.fa-who .chip{align-self:flex-start;margin-top:3px}
+.fa-act{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+@media (max-width:760px){.fa-list li.fa{grid-template-columns:minmax(0,1fr)}.fa-ask{flex-direction:row;flex-wrap:wrap;gap:0 10px;align-items:baseline}.fa-act{justify-content:flex-start}}
 dialog{border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);padding:0;max-width:min(680px,calc(100vw - 24px));width:100%}
 dialog::backdrop{background:rgba(5,20,12,.55)}
 dialog .dh{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}

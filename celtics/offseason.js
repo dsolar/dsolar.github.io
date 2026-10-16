@@ -26,8 +26,14 @@
       const fresh = p => (p.c.signed >= W.season && p.c.how && p.c.how !== "min") || (p.c.rk && p.c.rk[1] > 0 && 2026 + W.season - p.c.rk[0] <= (p.c.rk[1] <= 14 ? 4 : 2));
       const cands = ps.filter(p => !fresh(p));
       const pool = cands.length ? cands : ps;
-      const cut = pool.map(p => ({ p, dead: L.deadIfWaived(W, p), v: pv(W, code, p) }))
-        .sort((a, b) => (a.dead > 3e6) - (b.dead > 3e6) || a.dead - b.dead || a.v - b.v)[0].p;
+      // keeping a player is worth what he produces, less whatever cutting him would save (guaranteed money is spent either way)
+      const dec = L.decider(W), i = W.season;
+      const keep = p => {
+        let prod = 0, owed = 0;
+        for (let j = i; j < i + 3; j++) { const s = CBA.salaryIn(p, j, dec); if (!s) break; prod += Mo.mv(p, j, W) * Math.pow(0.85, j - i); owed += s; }
+        return prod - Math.max(0, owed - L.deadIfWaived(W, p));
+      };
+      const cut = pool.map(p => ({ p, k: keep(p) })).sort((a, b) => a.k - b.k)[0].p;
       L.waive(W, code, cut.id, false);
       ps = L.teamPlayers(W, code);
     }
@@ -67,19 +73,30 @@
     return payroll > lvl ? { ok: false, text: `${M$(payroll - lvl)} over the ${CBA.LEVEL_NAME[m.rule === "tax" ? "tax" : m.rule]}. Ownership's rule: ${m.text}` } : { ok: true, room: lvl - payroll };
   };
   const PTS = { "Won the title": 5, "Lost in the Finals": 4, "Lost in the conference finals": 3, "Lost in the second round": 2, "Lost in the first round": 1, "Lost in the play-in": 0.4, "Missed the playoffs": 0 };
+  // What ownership expects in the playoffs from where Boston ranked in the preseason (title odds are long for everyone)
+  L.expectedRun = rank => rank <= 1 ? 3.0 : rank <= 3 ? 2.6 : rank <= 6 ? 2.0 : rank <= 10 ? 1.3 : rank <= 16 ? 0.7 : 0.3;
+  const EXP_NAME = x => x >= 3 ? "the conference finals" : x >= 2.5 ? "the second round or better" : x >= 2 ? "the second round" : x >= 1.3 ? "a playoff series" : x >= 0.7 ? "the play-in" : "progress";
+  const sgn = x => (x >= 0 ? "+" : "") + Math.round(x);
   L.ownerReview = (W, run, payroll, tax) => {
     const o = L.ensureOwner(W), i = W.season, e = W.exp || {};
-    const rank = e.rank || 10;
-    const expPts = rank <= 2 ? 4 : rank <= 4 ? 3 : rank <= 8 ? 2 : rank <= 16 ? 1 : 0.3;
+    const rank = e.rank || 10, expPts = L.expectedRun(rank);
     const res = PTS[run] ?? 0;
     const kept = L.mandateCheck(W, payroll, i).ok;
     const before = o.trust;
-    let d = 7 * (res - expPts) - tax / 8e6 + (kept ? 4 : -18) + (res === 5 ? 15 : 0);
+    const B = W.T.BOS;
+    // the regular season counts: beating the projection by a lot buys real credit even if the playoffs go badly
+    const dReg = e.projWins ? Math.max(-10, Math.min(10, 0.8 * (B.w - e.projWins))) : 0;
+    const dPost = 5 * (res - expPts);
+    const dTax = tax ? -(tax / 8e6) * (res < expPts ? 1.3 : res > expPts ? 0.7 : 1) : 0;   // big bills sting more when the run falls short
+    const dRule = kept ? 4 : -18, dTitle = res === 5 ? 15 : 0;
+    const d = dReg + dPost + dTax + dRule + dTitle;
     o.trust = Math.max(0, Math.min(100, Math.round(before + d)));
     const rule = L.ruleFor(o.trust);
     const lines = [];
-    lines.push(`${run}${tax ? ` with a ${M$(tax)} tax bill` : ""}${e.projWins ? `, after a preseason projection of ${Math.round(e.projWins)} wins` : ""}.`);
-    if (!kept) lines.push("You broke this season's rule.");
+    if (e.projWins) lines.push(`${B.w}-${B.l} against a ${Math.round(e.projWins)}-win projection: ${sgn(dReg)}.`);
+    lines.push(`${run}; he expected ${EXP_NAME(expPts)}: ${sgn(dPost + dTitle)}.`);
+    lines.push(tax ? `A ${M$(tax)} tax bill: ${sgn(dTax)}.` : "No tax bill.");
+    lines.push(kept ? `Kept his rule: +4.` : `Broke his rule: -18.`);
     if (o.trust < 15) { o.fired = true; lines.push("Ownership has seen enough: you're fired."); }
     else lines.push(`Next season: ${L.MANDATES[rule]}`);
     o.mandate = { season: i + 1, rule, text: L.MANDATES[rule] };
@@ -114,6 +131,7 @@
     L.simUntil(W, target);
     if (target === "9999-12-31") W.date = d.end;
     L.expireOffers(W);
+    if (W.phase === "reg" || W.phase === "reg2" || W.phase === "deadline") L.inSeasonSignings(W);
     let calls = 0;
     if (W.phase === "reg" && W.date >= L.addDays(d.deadline, -21) && W.date < d.deadline) {
       const busy = new Set((W.offers || []).filter(o => !o.done).map(o => o.from));
@@ -186,6 +204,8 @@
         const chk = L.checkTrade(W, c.tr);
         if (!chk.ok) continue;
         if (chk.teams.BOS.P2 > chk.teams.BOS.P && !L.mandateCheck(W, chk.teams.BOS.P2).ok) continue;   // they know Boston's owner won't allow it
+        // a salary dump has to actually take money off their books
+        if (c.cut && chk.teams[c.tr.b].P - chk.teams[c.tr.b].P2 < c.cut) continue;
         const re = L.aiReact(W, c.tr, c.tr.b);
         if (re.verdict !== "yes") continue;
         const v = L.ourValue(W, c.tr);
@@ -203,6 +223,8 @@
       const theirs = L.teamPlayers(W, code).filter(tradeable);
       const picks = W.picks.filter(x => x.owner === code && x.y >= 2027 + i && !x.used).sort((a, b) => b.r - a.r || b.y - a.y);
       const seconds = picks.filter(x => x.r === 2), firsts = picks.filter(x => x.r === 1);
+      // a first goes out protected: lottery-protected from a good team, top-10 from a middling one
+      const protFirst = () => { const f = firsts.slice(-1)[0]; if (!f) return null; const slot = L.pickSlot(W, f); return { picks: [f.id], prot: { [f.id]: slot >= 18 ? 14 : slot >= 10 ? 10 : 5 } }; };
       const cheapBos = bos.filter(p => p.id !== "jayson-tatum").sort((a, b) => ourVal(a.id) / Math.max(1, sal(a)) - ourVal(b.id) / Math.max(1, sal(b))).slice(0, 6);
       // 1) money moves: a team that wants out of the tax sends Boston a contract, and pays for it with seconds.
       //    A first only for a contract that's truly underwater.
@@ -212,10 +234,12 @@
         const cands = [];
         for (const p of dumps) {
           const bad = pv(W, code, p) <= -20e6;
-          const sweets = [[], seconds.slice(0, 1), seconds.slice(0, 2)].concat(bad && firsts.length ? [firsts.slice(-1)] : []).map(a => a.map(x => x.id));
-          for (const sw of sweets) for (const back of [[], ...cheapBos.slice(0, 3).map(x => [x.id])]) {
-            const o = mk(code, { players: back }, { players: [p.id], picks: sw }, `${fo.lead} wants ${/s$/.test(p.n) ? p.n + "'" : p.n + "'s"} salary off the books${sw.length ? " and will attach a pick to move it" : ""}.`);
-            o.tol = -1.5e6; cands.push(o);
+          const sweets = [{ picks: [] }, { picks: seconds.slice(0, 1).map(x => x.id) }, { picks: seconds.slice(0, 2).map(x => x.id) }].concat(bad && protFirst() ? [protFirst()] : []);
+          // anything Boston sends back has to be much cheaper, or it isn't a salary dump
+          const backs = [[], ...cheapBos.filter(x => sal(x) <= sal(p) * 0.4).slice(0, 3).map(x => [x.id])];
+          for (const sw of sweets) for (const back of backs) {
+            const o = mk(code, { players: back }, { players: [p.id], picks: sw.picks, prot: sw.prot }, `${fo.lead} wants ${/s$/.test(p.n) ? p.n + "'" : p.n + "'s"} salary off the books${sw.picks.length ? " and will attach a pick to move it" : ""}.`);
+            o.tol = -1.5e6; o.cut = Math.max(2e6, 0.6 * sal(p)); cands.push(o);
           }
         }
         if (tryAdd(cands)) continue;
@@ -228,8 +252,10 @@
         for (const { p: target } of targets) for (const pkg of combos(fodder, 3)) {
           const s2 = pkg.reduce((a, x) => a + sal(x), 0);
           if (s2 > sal(target) * 2.2 + 3e6 || s2 < sal(target) * 0.4 - 3e6) continue;
-          const sweets = [[], seconds.slice(0, 1), seconds.slice(0, 2)].concat(ourVal(target.id) >= 15e6 && firsts.length ? [firsts.slice(-1)] : []).map(a => a.map(x => x.id));
-          for (const sw of sweets) { const o = mk(code, { players: [target.id] }, { players: pkg.map(x => x.id), picks: sw }, `${fo.lead} wants ${target.n}.`); o.tol = -Math.max(3e6, 0.15 * Math.abs(ourVal(target.id))); cands.push(o); }
+          // a first only for a real difference-maker, and protected
+          const real = pv(W, code, target) >= 25e6 && Mo.r(target) >= 1.5;
+          const sweets = [{ picks: [] }, { picks: seconds.slice(0, 1).map(x => x.id) }, { picks: seconds.slice(0, 2).map(x => x.id) }].concat(real && protFirst() ? [protFirst()] : []);
+          for (const sw of sweets) { const o = mk(code, { players: [target.id] }, { players: pkg.map(x => x.id), picks: sw.picks, prot: sw.prot }, `${fo.lead} wants ${target.n}.`); o.tol = -Math.max(3e6, 0.15 * Math.abs(ourVal(target.id))); cands.push(o); }
         }
         if (tryAdd(cands)) continue;
       }
@@ -341,8 +367,9 @@
       if (ds.slots[ds.next].owner === "BOS") return { act: "dfGo", label: `Make Boston's pick (No. ${ds.slots[ds.next].slot})` };
       return { act: "dfRun", label: ds.slots.slice(ds.next).some(x => x.owner === "BOS") ? "Draft to Boston's pick" : "Finish the draft" };
     }
-    if (ph === "options") return { act: "opGo", label: "Make the calls, open free agency" };
-    if (ph === "fa") return (W.faRound || 0) >= 3 ? { act: "faCamp", label: "To training camp" } : { act: "faNext", label: `Next free-agency round (${(W.faRound || 0) + 1} of 4)` };
+    if (ph === "expansion") return W.expanded ? { act: "exDone", label: "On to option decisions" } : { act: "exRun", label: "Run the expansion draft" };
+    if (ph === "options") return L.expansionDue(W) ? { act: "exOpen", label: "Hold the expansion draft" } : { act: "opGo", label: "Make the calls, open free agency" };
+    if (ph === "fa") return (W.faRound || 0) >= 4 ? { act: "faCamp", label: "To training camp" } : { act: "faNext", label: `Next free-agency round (${(W.faRound || 0) + 1} of 4)` };
     return { act: "seStart", label: "Next" };
   };
 
@@ -366,7 +393,7 @@
     }
     const gen = L.genClass(year, W.seed).filter(g => !list.some(y => y.n === g.n));
     let k = 1;
-    for (const g of gen) { while (list.some(y => y.rank === k)) k++; if (list.length >= 70) break; list.push(Object.assign({}, g, { rank: k })); }
+    for (const g of gen) { while (list.some(y => y.rank === k)) k++; if (list.length >= 90) break; list.push(Object.assign({}, g, { rank: k })); }
     const scouted = L.scoutClass(list.sort((a, b) => a.rank - b.rank).map((x, j) => Object.assign({}, x, { rank: j + 1 })), year, W.seed);
     // returning players keep what was really in them
     return scouted.map((x, j) => { const o = list.find(y => y.id === x.id); return o && o.truePot != null ? Object.assign(x, { trueNow: o.trueNow, truePot: o.truePot }) : x; });
@@ -438,11 +465,27 @@
     return W.ds;
   };
   const posBucket = pos => pos === "C" ? "B" : pos === "PF" || pos === "SF" ? "W" : "G";
+  // Each front office has its own board: its scouts' read on a prospect (seeded, so it's stable), what the roster
+  // needs, and its taste (young upside for analytics shops, size for teams that want it)
+  const hashStr = str => { let h = 2166136261; for (let k = 0; k < str.length; k++) { h ^= str.charCodeAt(k); h = Math.imul(h, 16777619); } return h >>> 0; };
+  L.needAt = (W, code, bucket) => {
+    const i = W.season + 1, dec = L.decider(W);
+    const good = Object.values(W.P).filter(p => p.t === code && !p.two && (p.pos || "W") === bucket && CBA.salaryIn(p, i, dec) > 0 && Mo.rAhead(p, 1) >= 0).length;
+    return Math.max(0, (bucket === "W" ? 3 : 2) - good);
+  };
   L.boardValue = (W, code, x) => {
     const fo = W.T[code].fo;
     const potW = fo.mode === "rebuild" ? 0.8 : fo.mode === "contend" ? 0.5 : 0.65;
-    return x.estPot * potW + x.estNow * (1 - potW) - x.rank * 0.002;
+    const rr = Mo.rng(hashStr(code + "|" + x.id) ^ W.seed);
+    const scout = Mo.gauss(rr) * 0.55;
+    const bucket = posBucket(x.pos);
+    const need = L.needAt(W, code, bucket) * (fo.mode === "contend" ? 0.25 : fo.mode === "rebuild" ? 0.08 : 0.15);
+    let taste = 0;
+    if ((fo.wants || []).includes("size") && bucket === "B") taste += 0.2;
+    if ((fo.wants || []).includes("youth") || (fo.analytics || 0.6) >= 0.75) taste += Math.max(0, 20 - x.age) * 0.15;
+    return x.estPot * potW + x.estNow * (1 - potW) + scout + need + taste - x.rank * 0.002;
   };
+  L.boardFor = (W, code) => L.available(W).map(x => ({ x, v: L.boardValue(W, code, x) })).sort((a, b) => b.v - a.v).map(y => y.x);
   L.available = W => { const ds = W.ds, taken = new Set(ds.slots.filter(s => s.pick).map(s => s.pick)); return W.draft[ds.year].filter(x => !taken.has(x.id)); };
   L.makePick = (W, prospectId) => {
     const ds = W.ds, s = ds.slots[ds.next], x = W.draft[ds.year].find(y => y.id === prospectId);
@@ -453,7 +496,14 @@
       pot: x.truePot, h: 0.88, tpar: pos === "B" ? 0.15 : pos === "G" ? 0.42 : 0.38, ts: 0.55, usg: 18, note: `${ds.year} draft, No. ${s.slot}${x.gen ? " (generated prospect)" : ""}, from ${x.school}.`,
       c: { sal: [], opt: {}, dec: {}, signed: i, bird: 0, rk: s.round === 1 ? [ds.year, s.slot] : null } };
     if (s.round === 1) { const d = CBA.rookieDeal(s.slot, i); p.c.sal = d.sal; p.c.opt = d.opt; }
-    else { p.c.sal[i] = CBA.minSal(0, i); p.c.sal[i + 1] = CBA.minSal(1, i + 1); p.c.opt = { [i + 1]: "NG" }; p.c.rfa = true; }
+    else {
+      // second-rounders: usually a two-way deal (no cap hit), if there's a two-way spot open
+      const open = L.twoWays(W, s.owner, i).length < 3;
+      const asTwo = open && (s.owner === "BOS" ? ds.bosTwo !== false : x.estNow < -0.9);
+      if (asTwo) { p.two = true; p.c.how = "two"; p.c.twoEnd = i + 1; }
+      else { p.c.sal[i] = CBA.minSal(0, i); p.c.sal[i + 1] = CBA.minSal(1, i + 1); p.c.opt = { [i + 1]: "NG" }; p.c.rfa = true; }
+    }
+    p.since = i;
     W.P[pid] = p; s.pick = x.id; s.player = pid;
     if (s.pid) { const pk = W.picks.find(y => y.id === s.pid); if (pk) pk.used = true; }
     ds.next++;
@@ -467,17 +517,26 @@
     while (ds.next < ds.slots.length) {
       const s = ds.slots[ds.next];
       if (s.owner === "BOS") return s;
-      const av = L.available(W).sort((a, b) => L.boardValue(W, s.owner, b) - L.boardValue(W, s.owner, a));
+      const av = L.boardFor(W, s.owner);
       if (!av.length) { ds.next++; continue; }
       L.makePick(W, av[0].id);
     }
     return null;
   };
   L.finishDraft = W => {
+    // the best older prospects nobody drafted become free agents (two-way and camp candidates); the young ones go back to school
+    const taken = new Set(W.ds.slots.filter(s => s.pick).map(s => s.pick)), i = W.season + 1;
+    const undrafted = W.draft[W.ds.year].filter(x => !taken.has(x.id) && (x.gen || x.age >= 20.5)).sort((a, b) => a.rank - b.rank).slice(0, 45);
+    for (const x of undrafted) {
+      const pid = x.id + "-nba"; if (W.P[pid]) continue;
+      const pos = posBucket(x.pos);
+      W.P[pid] = { id: pid, n: x.n, t: "FA", age: Math.floor(x.age), yos: 0, pos, ps: [x.pos], o: +(x.trueNow * 0.6).toFixed(2), d: +(x.trueNow * 0.4).toFixed(2),
+        pot: x.truePot, h: 0.88, tpar: pos === "B" ? 0.15 : pos === "G" ? 0.42 : 0.38, ts: 0.55, usg: 16, faDate: W.date, undrafted: true,
+        note: `Undrafted in ${W.ds.year}${x.gen ? " (generated prospect)" : ""}, from ${x.school}.`, c: { sal: [], opt: {}, dec: {}, signed: i, bird: 0 } };
+    }
     W.picks = W.picks.filter(x => x.y !== W.ds.year);
     W.ds.done = true;
-    if (W.settings.expansion && W.ds.year === 2028 && !W.expanded) L.runExpansion(W);
-    W.phase = "options"; W.date = L.dates(W.season).options;
+    W.phase = L.expansionDue(W) ? "expansion" : "options"; W.date = L.dates(W.season).options;
     L.bump(W);
   };
 
@@ -495,11 +554,11 @@
           const odds = Mo.optOutDealOdds(p, j, re.sal.length, sum(re.sal), W).odds;
           if (r() < odds) { d = "out"; W.handshake = W.handshake || {}; W.handshake[p.id] = re; out.push(`${p.n} opts out and agrees to re-sign: ${re.sal.length} years, ${M$(sum(re.sal))}.`); }
           else { d = "in"; delete W.plan.resign[p.id]; out.push(`${p.n} turned down the opt-out deal and picked up his option.`); }
-        } else d = r() < Mo.playerOptionOdds(p, j, W).pIn ? "in" : "out";
+        } else d = r() < L.optOdds(W, p, j).pIn ? "in" : "out";
       } else if (kind === "TO" || kind === "NG") d = bos ? (W.plan.opt[p.id + "@" + j] || dec(p, j, kind)) : dec(p, j, kind);
       else if (kind === "MO") {
         const team = bos ? (W.plan.opt[p.id + "@" + j] || (Mo.mv(p, j, W) >= p.c.sal[j] * 0.8 ? "in" : "out")) : (Mo.mv(p, j, W) >= p.c.sal[j] * 0.8 ? "in" : "out");
-        const player = r() < Mo.playerOptionOdds(p, j, W).pIn ? "in" : "out";
+        const player = r() < L.optOdds(W, p, j).pIn ? "in" : "out";
         d = team === "in" || player === "in" ? "in" : "out";
       }
       if (kind === "NG") continue;                          // guarantees are decided in camp
@@ -528,7 +587,14 @@
         if (p.t === "FA" && (p.age >= 40 || (p.age >= 35 && Mo.r(p) < -1.5) || (Mo.r(p) < -3.2 && p.age >= 27))) { p.t = "RET"; }
         continue;
       }
-      if (p.two) { p.t = "FA"; p.two = false; p.rights = null; p.faDate = W.date; p.c = { sal: [], opt: {}, dec: {}, signed: i, bird: 0 }; continue; }
+      if (p.two) {
+        if ((p.c.twoEnd ?? prev) >= i) continue;               // a two-year two-way deal carries over
+        // a two-way deal that ends: his team can tender a qualifying offer and keep him as a restricted free agent
+        const qo = CBA.minSal(p.yos, i) + 200000;
+        p.t = "FA"; p.two = false; p.faDate = W.date; p.c = { sal: [], opt: {}, dec: {}, signed: i, bird: 1 };
+        p.rights = Mo.r(p) >= -1 ? { team, kind: "Non-Bird", hold: qo, rfa: true, qo, prevSal: CBA.minSal(p.yos, prev), tendered: false, two: true } : null;
+        continue;
+      }
       if (CBA.salaryIn(p, i, dec) > 0) { p.c.bird = (p.c.bird || 0) + 1; p.c.ext = false; continue; }
       // contract over: free agent, with his old team holding his rights (bird already counts the season just played)
       const prevSal = p.c.sal[prev] || CBA.minSal(p.yos, prev);
@@ -563,8 +629,9 @@
     }
     W.handshake = {};
     for (const id of Object.keys(W.plan.resign)) if (W.plan.resign[id].start <= i) delete W.plan.resign[id];
-    W.phase = "fa"; W.faRound = 0; W.faOffers = {}; W.post = null;
+    W.phase = "fa"; W.faRound = 0; W.faOffers = {}; W.post = null; W.offers = [];
     news(W, `Free agency opens for ${CBA.seasonName(i)}. The cap is ${M$(CBA.cap(i))}, the tax line ${M$(CBA.tax(i))}.`, "info");
+    L.sntOffers(W);
     L.bump(W);
   };
   L.signSal = (W, code, id, sal, via, label) => {
@@ -605,6 +672,29 @@
     if (fo.tax === "dodge") return fo.mode === "contend" ? pay <= CBA.a1(i) : pay <= CBA.tax(i);
     return pay <= CBA.a2(i) + 2e6;
   };
+  // A contract's yearly average relative to its first year, with standard raises (8% on Bird rights, 5% otherwise)
+  const raiseFac = (years, raise) => 1 + raise * (years - 1) / 2;
+  L.raiseFac = raiseFac;
+  const raiseOf = via => via === "bird" ? 0.08 : via === "min" ? 0 : 0.05;
+  const yearsFor = (via, ask) => via === "min" || via === "tmle" || via === "bae" ? Math.min(2, ask.years) : ask.years;
+  // What a CPU team would offer a free agent right now (or null)
+  const cpuOffer = (W, c, p, ask, res, r) => {
+    const i = W.season, own = p.rights && p.rights.team === c && !p.rights.renounced;
+    if (L.rosterCount(W, c) >= 15 && !(Mo.r(p) >= 1.5)) return null;
+    const value = Mo.mv(p, i, W) * L.prefMult(W.T[c].fo, p) * (own ? 1.05 : 1);
+    const want = Math.min(value, ask.aav * (1.02 - 0.05 * r()));
+    if (want < ask.aav * res && want < CBA.minSal(p.yos, i) * 1.05) return null;
+    const b = L.budget(W, c, p);
+    // the tool that can pay the most per year over the deal, raises included
+    const tool = b.opts.filter(o => o.via !== "min" || want <= CBA.minSal(p.yos, i) * 1.2)
+      .map(o => ({ o, cap: o.amt * raiseFac(yearsFor(o.via, ask), raiseOf(o.via)) })).sort((x, y) => y.cap - x.cap)[0];
+    if (!tool) return null;
+    const aav = Math.min(want, tool.cap);
+    const franchise = own && (Mo.r(p) >= 2.5 || Mo.mv(p, i, W) >= 0.18 * CBA.cap(i));
+    if (!franchise && !affordable(W, c, aav) && aav > CBA.minSal(p.yos, i) * 1.01) return null;
+    const years = yearsFor(tool.o.via, ask);
+    return { code: c, years, total: aav * years, via: tool.o.via, shape: tool.o.via === "min" ? "flat" : "up" };
+  };
   L.faRound = W => {
     const i = W.season, r = L.rng(W), round = W.faRound || 0;
     const res = [0.97, 0.88, 0.75, 0.6][Math.min(3, round)];
@@ -612,35 +702,26 @@
     const signed = [];
     const odds = L.titleOdds(W, 60);
     for (const p of fas) {
+      if (p.t !== "FA") continue;
       const ask = Mo.faHaul(p, i, W);
       const offers = [];
       // Boston's offer (made on the board)
       const bo = (W.faOffers || {})[p.id];
-      if (bo) {
+      if (bo && bo.via === "two") {
+        if (L.twoWays(W, "BOS", i).length < 3 && L.takesTwoWay(W, p)) { L.signTwoWay(W, "BOS", p.id, bo.years); delete W.faOffers[p.id]; signed.push(p.id); continue; }
+        bo.failed = "He wants a standard contract.";
+      } else if (bo) {
         const b = L.budget(W, "BOS", p).opts.find(o => o.via === bo.via);
-        const sal = CBA.buildSalaries(bo.years, bo.total, bo.shape || "flat", bo.via === "bird" ? 0.08 : 0.05);
-        if (b && sal[0] <= b.amt + 1000 && (L.rosterCount(W, "BOS") < 15 || !L.inSeason(W))) offers.push({ code: "BOS", years: bo.years, total: bo.total, via: bo.via, shape: bo.shape || "flat" });
+        const sal = CBA.buildSalaries(bo.years, bo.total, bo.shape || "up", raiseOf(bo.via));
+        if (b && sal[0] <= b.amt + 1000 && (L.rosterCount(W, "BOS") < 15 || !L.inSeason(W))) offers.push({ code: "BOS", years: bo.years, total: bo.total, via: bo.via, shape: bo.shape || "up" });
         else bo.failed = b ? `Only ${M$(b.amt)} available through that tool now.` : "That tool isn't available anymore.";
       }
-      // CPU teams: his old team first, then the rest
+      // CPU teams: his old team first, then the teams that like him most
       const cands = teamCodes(W).filter(c => c !== "BOS").map(c => ({ c, s: L.prefMult(W.T[c].fo, p) * (W.T[c].fo.mode === "contend" ? 1.15 : 1) * (0.7 + r() * 0.6) * (L.rosterCount(W, c) < 13 ? 1.4 : L.rosterCount(W, c) >= 15 ? 0.2 : 1) }))
         .sort((a, b) => b.s - a.s).slice(0, 8).map(x => x.c);
       if (p.rights && p.rights.team !== "BOS" && !cands.includes(p.rights.team)) cands.unshift(p.rights.team);
-      for (const c of cands) {
-        const own = p.rights && p.rights.team === c && !p.rights.renounced;
-        if (L.rosterCount(W, c) >= 15 && !(Mo.r(p) >= 1.5)) continue;
-        const value = Mo.mv(p, i, W) * L.prefMult(W.T[c].fo, p) * (own ? 1.05 : 1);
-        const want = Math.min(value, ask.aav * (1.02 - 0.05 * r()));
-        if (want < ask.aav * res && want < CBA.minSal(p.yos, i) * 1.05) continue;
-        const b = L.budget(W, c, p);
-        const tool = b.opts.filter(o => o.amt >= Math.min(want, o.amt) && (o.via !== "min" || want <= CBA.minSal(p.yos, i) * 1.2)).sort((x, y) => y.amt - x.amt)[0];
-        if (!tool) continue;
-        const aav = Math.min(want, tool.amt);
-        const franchise = own && (Mo.r(p) >= 2.5 || Mo.mv(p, i, W) >= 0.18 * CBA.cap(i));
-        if (!franchise && !affordable(W, c, aav) && aav > CBA.minSal(p.yos, i) * 1.01) continue;
-        const years = tool.via === "min" ? Math.min(2, ask.years) : tool.via === "tmle" || tool.via === "bae" ? Math.min(2, ask.years) : ask.years;
-        offers.push({ code: c, years, total: aav * years, via: tool.via, shape: "flat" });
-      }
+      // undrafted rookies wait for two-way and camp deals; CPU teams don't hand them standard contracts in July
+      if (!(p.undrafted && !p.yos)) for (const c of cands) { const o = cpuOffer(W, c, p, ask, res, r); if (o) offers.push(o); }
       if (!offers.length) continue;
       const score = o => o.total / o.years * (1 + Math.min(o.years, ask.years) * 0.04) * (1 + 0.25 * (odds[o.code] || 0)) * (p.rights && p.rights.team === o.code ? 1.04 : 1);
       offers.sort((a, b) => score(b) - score(a));
@@ -652,7 +733,7 @@
         if (p.rights.team === "BOS") { p.offerSheet = best; news(W, `${W.T[best.code].name} sign ${p.n} to an offer sheet: ${best.years} years, ${M$(best.total)}. Boston can match.`, "sign", "BOS"); continue; }
         const rt = p.rights.team;
         if (Mo.mv(p, i, W) * 1.1 >= best.total / best.years && affordable(W, rt, best.total / best.years)) {
-          L.sign(W, rt, p.id, best.years, best.total, "flat", "bird"); signed.push(p.id);
+          L.sign(W, rt, p.id, best.years, best.total, "up", "bird"); signed.push(p.id);
           news(W, `${W.T[rt].name} match ${W.T[best.code].name}'s offer sheet for ${p.n}.`, "sign");
           continue;
         }
@@ -662,20 +743,112 @@
       if (best.code !== "BOS") L.trimRoster(W, best.code, 15);
       signed.push(p.id);
     }
-    if (round >= 3) {
-      for (const p of Object.values(W.P).filter(q => q.t === "FA" && !q.offerSheet)) {
-        const ask = Mo.faHaul(p, i, W);
-        if (ask.aav < CBA.minSal(p.yos, i) * 1.6) continue;
-        const own = p.rights && !p.rights.renounced && p.rights.team !== "BOS" ? p.rights.team : null;
-        if (own && (L.rosterCount(W, own) < 15 || Mo.r(p) >= 1.5)) { L.sign(W, own, p.id, Math.min(ask.years, 3), Math.round(ask.aav * 0.85) * Math.min(ask.years, 3), "flat", "bird"); L.trimRoster(W, own); signed.push(p.id); continue; }
-        const roomy = teamCodes(W).filter(c => c !== "BOS" && (L.rosterCount(W, c) < 15 || Mo.r(p) >= 1.5)).map(c => ({ c, b: L.budget(W, c, p) })).map(x => ({ c: x.c, amt: Math.max(...x.b.opts.filter(o => o.via !== "min").map(o => o.amt), 0) })).sort((a, b) => b.amt - a.amt)[0];
-        if (roomy && roomy.amt >= CBA.minSal(p.yos, i) * 1.5) { const aav = Math.min(roomy.amt, ask.aav); const via = L.budget(W, roomy.c, p).opts.find(o => o.amt >= aav - 1000 && o.via !== "min"); if (via) { L.sign(W, roomy.c, p.id, Math.min(2, ask.years), aav * Math.min(2, ask.years), "flat", via.via); L.trimRoster(W, roomy.c); signed.push(p.id); } }
-      }
-    }
+    if (round >= 3) signed.push(...L.placeLeftovers(W, "summer"));
     W.faRound = round + 1;
     W.date = L.addDays(W.date, round === 0 ? 5 : 4);
+    L.sntOffers(W);
     L.bump(W);
     return signed;
+  };
+  // Nobody good stays unsigned: late in the summer (and every week of the season) the players left take what's out
+  // there. His old team gets the first call, then whoever has the most to spend, then a one-year minimum.
+  L.placeLeftovers = (W, when) => {
+    const i = W.season, out = [], busy = new Set();
+    // real rotation players only; minimum-level guys fill camp rosters and two-way spots instead
+    const left = Object.values(W.P).filter(q => q.t === "FA" && !q.offerSheet && !(q.rights && q.rights.team === "BOS" && !q.rights.renounced && when === "summer") && Mo.r(q) >= -0.6 && Mo.faHaul(q, i, W).aav > CBA.minSal(q.yos, i) * 1.3)
+      .sort((a, b) => Mo.r(b) - Mo.r(a));
+    const worst = {};
+    for (const c of teamCodes(W)) worst[c] = Math.min(9, ...L.teamPlayers(W, c).filter(q => CBA.salaryIn(q, i, L.decider(W)) > 0).map(q => Mo.r(q)));
+    for (const p of left) {
+      const ask = Mo.faHaul(p, i, W), star = Mo.r(p) >= 1.5;
+      if (when === "season" && (Date.parse(W.date) - Date.parse(p.faDate || W.date)) / 864e5 < 10 && !star) continue;
+      // a spot, or a roster where he's clearly better than the worst player (who gets cut)
+      const room = c => !busy.has(c) && (L.rosterCount(W, c) < 15 || ((star || (when !== "summer" && Mo.r(p) >= worst[c] + 1.2)) && L.rosterCount(W, c) < 16));
+      const own = p.rights && !p.rights.renounced && p.rights.team !== "BOS" && W.T[p.rights.team] ? p.rights.team : null;
+      const done = (c, years, total, via) => { L.sign(W, c, p.id, years, total, via === "min" ? "flat" : "up", via); L.trimRoster(W, c); out.push(p.id); if (when === "season") busy.add(c); };
+      if (own && room(own)) {
+        const b = L.budget(W, own, p).opts.find(o => o.via === "bird");
+        if (b) { const yrs = Math.min(ask.years, 3), aav = Math.min(ask.aav * 0.9, b.amt * raiseFac(yrs, 0.08)); done(own, yrs, Math.round(aav * yrs), "bird"); continue; }
+      }
+      const offers = teamCodes(W).filter(c => c !== "BOS" && room(c)).map(c => {
+        const b = L.budget(W, c, p).opts.filter(o => o.via !== "min");
+        const best = b.map(o => ({ o, cap: o.amt * raiseFac(yearsFor(o.via, ask), raiseOf(o.via)) })).sort((x, y) => y.cap - x.cap)[0];
+        return best ? { c, via: best.o.via, cap: best.cap } : null;
+      }).filter(Boolean).sort((a, b) => b.cap - a.cap);
+      const top = offers[0];
+      if (top && top.cap >= Math.min(ask.aav * 0.55, CBA.minSal(p.yos, i) * 2)) {
+        const yrs = Math.min(2, ask.years), aav = Math.min(top.cap, ask.aav);
+        done(top.c, yrs, Math.round(aav * yrs), top.via); continue;
+      }
+      // a one-year minimum to prove it, with whoever has a spot (good players only)
+      if (Mo.r(p) >= 0) {
+        const c = teamCodes(W).filter(x => x !== "BOS" && room(x)).sort((a, b) => L.teamNets(W)[b] - L.teamNets(W)[a])[0];
+        if (c) done(c, 1, CBA.minCapHit(p.yos, i), "min");
+      }
+    }
+    if (out.length) L.bump(W);
+    return out;
+  };
+  // Two-way deals: up to three per team, players with fewer than four years of service, no cap hit
+  L.twoWays = (W, code, upTo) => Object.values(W.P).filter(p => p.t === code && p.two && (upTo == null || (p.c.twoEnd ?? W.season) >= upTo));
+  L.twoEligible = p => (p.yos || 0) <= 3;
+  // will he take a two-way? Undrafted rookies and fringe young players will; anyone with a real market won't
+  L.takesTwoWay = (W, p) => L.twoEligible(p) && p.age <= 26 && (p.undrafted || Mo.r(p) <= -1 || Mo.faHaul(p, W.season, W).aav <= CBA.minSal(p.yos, W.season) * 1.4);
+  L.signTwoWay = (W, code, id, years = 1) => {
+    const p = W.P[id], i = W.season + (W.phase === "draft" || W.phase === "options" || W.phase === "expansion" ? 1 : 0);
+    p.t = code; p.two = true; p.rights = null; p.offerSheet = null;
+    p.c = { sal: [], opt: {}, dec: {}, signed: i, bird: 0, how: "two", twoEnd: i + Math.max(1, Math.min(2, years)) - 1 };
+    p.since = i;
+    news(W, `${W.T[code].name} sign ${p.n} to a two-way deal.`, "sign", code === "BOS" ? "BOS" : null);
+    L.bump(W);
+  };
+  // Sign-and-trade calls: a team that wants one of Boston's free agents but can't fit him with room or an
+  // exception offers something for him instead (the receiving team has to stay under the first apron)
+  L.sntOffers = W => {
+    if (W.phase !== "fa") return [];
+    const i = W.season, r = L.rng(W), dec = L.decider(W), made = [];
+    W.offers = (W.offers || []).filter(o => !(o.snt && (o.done || !W.P[o.snt] || W.P[o.snt].t !== "FA")));
+    const mine = Object.values(W.P).filter(p => p.t === "FA" && p.rights && p.rights.team === "BOS" && !p.rights.renounced && !p.offerSheet && Mo.r(p) >= 0.3);
+    for (const p of mine) {
+      if ((W.offers || []).some(o => !o.done && o.snt === p.id)) continue;
+      const ask = Mo.faHaul(p, i, W);
+      if (ask.aav < 8e6) continue;
+      const years = Math.max(3, Math.min(4, ask.years));
+      const y1 = CBA.k1(Math.min(ask.aav, CBA.maxSal(p.yos, i)) / raiseFac(years, 0.05));
+      const sal = Array.from({ length: years }, (_, k) => CBA.k1(y1 * (1 + 0.05 * k)));
+      const teams = teamCodes(W).filter(c => c !== "BOS" && L.rosterCount(W, c) < 15).filter(c => {
+        const b = L.budget(W, c, p).opts.filter(o => o.via !== "min" && o.via !== "bird");
+        const most = Math.max(0, ...b.map(o => o.amt));
+        return most < y1 * 0.9 && L.payrollNow(W, c) + y1 <= CBA.a1(i) - 1e6;     // can't sign him outright, can absorb him
+      }).map(c => ({ c, s: L.prefMult(W.T[c].fo, p) * (0.8 + r() * 0.4) })).sort((a, b) => b.s - a.s).slice(0, 4).map(x => x.c);
+      for (const c of teams) {
+        const theirs = L.teamPlayers(W, c).filter(q => CBA.salaryIn(q, i, dec) > 0 && !(q.tradeOk && W.date < q.tradeOk) && !(q.noTrade && W.date < q.noTrade));
+        const seconds = W.picks.filter(x => x.owner === c && x.r === 2 && x.y > 2027 + i - 1 && !x.used).sort((a, b) => a.y - b.y);
+        const firsts = W.picks.filter(x => x.owner === c && x.r === 1 && x.y > 2027 + i - 1 && !x.used && !x.prot).sort((a, b) => b.y - a.y);
+        const fodder = theirs.sort((a, b) => L.playerValue(W, c, a) / Math.max(1, CBA.salaryIn(a, i, dec)) - L.playerValue(W, c, b) / Math.max(1, CBA.salaryIn(b, i, dec))).slice(0, 3);
+        const variants = [];
+        for (const back of [[], ...fodder.map(q => [q.id])]) {
+          if (firsts.length) variants.push({ players: back, picks: [firsts[0].id], prot: { [firsts[0].id]: 14 } });
+          if (seconds.length > 1) variants.push({ players: back, picks: seconds.slice(0, 2).map(x => x.id) });
+          if (seconds.length) variants.push({ players: back, picks: [seconds[0].id] });
+        }
+        let pick = null;
+        for (const v of variants) {
+          const tr = { a: "BOS", b: c, side: { BOS: { players: [p.id], picks: [], cash: 0 }, [c]: { players: v.players, picks: v.picks, cash: 0 } }, kickWaive: {}, prot: v.prot || {}, snt: { [p.id]: { sal } } };
+          const chk = L.checkTrade(W, tr); if (!chk.ok) continue;
+          const re = L.aiReact(W, tr, c); if (re.verdict !== "yes") continue;
+          if (!pick || re.delta < pick.d) pick = { tr, d: re.delta };       // the least they can get away with
+        }
+        if (pick) {
+          const o = { id: "snt" + W.tick + "-" + p.id + "-" + c, from: c, done: false, snt: p.id, exp: L.dates(i - 1).camp, tr: pick.tr,
+            note: `${W.T[c].fo.lead} wants ${p.n} but can't fit him under the cap. Sign-and-trade: ${years} years, ${M$(sal.reduce((x, y) => x + y, 0))}.` };
+          W.offers.push(o); made.push(o);
+          break;
+        }
+      }
+    }
+    if (made.length) news(W, `${made.length} team${made.length > 1 ? "s" : ""} called about a sign-and-trade.`, "info", "BOS");
+    return made;
   };
   L.matchSheet = (W, id, match) => {
     const p = W.P[id], o = p.offerSheet; if (!o) return;
@@ -700,24 +873,38 @@
   };
   L.toCamp = W => {
     const i = W.season, r = L.rng(W), dec = L.decider(W);
+    while ((W.faRound || 0) < 4) L.faRound(W);                 // every round runs before camp
     L.cpuExtensions(W);
     for (const p of Object.values(W.P)) if (p.t === "FA" && p.offerSheet) L.matchSheet(W, p.id, false);
     // unsigned restricted free agents take their qualifying offers
     for (const p of Object.values(W.P)) if (p.t === "FA" && p.rights && p.rights.rfa && p.rights.tendered && p.rights.team !== "BOS")
       L.sign(W, p.rights.team, p.id, 1, p.rights.qo, "flat", "bird");
+    L.placeLeftovers(W, "camp");
     for (const code of teamCodes(W)) {
       if (code === "BOS") continue;
       // non-guaranteed years: keep the ones worth it
       for (const p of L.teamPlayers(W, code)) if (p.c.opt[i] === "NG" && !p.c.dec[i]) p.c.dec[i] = Mo.mv(p, i, W) >= p.c.sal[i] * 0.7 ? "in" : "out";
       for (const p of L.teamPlayers(W, code)) if (!(CBA.salaryIn(p, i, L.decider(W)) > 0)) { p.t = "FA"; p.rights = null; p.faDate = W.date; }
       L.trimRoster(W, code);
+      // a two-way player who's earned it gets a standard deal if there's a spot
+      for (const p of L.twoWays(W, code).sort((a, b) => Mo.r(b) - Mo.r(a))) {
+        if (Mo.r(p) < 0.3 || L.rosterCount(W, code) >= 15) break;
+        p.two = false; p.c.sal[i] = CBA.minSal(p.yos, i); p.c.sal[i + 1] = CBA.minSal(p.yos + 1, i + 1); p.c.opt = { [i + 1]: "NG" }; p.c.signed = i; p.c.how = "min";
+        news(W, `${W.T[code].name} convert ${p.n} to a standard contract.`, "sign");
+      }
       let ps = L.teamPlayers(W, code);
       while (ps.length < 14) {
-        const fa = Object.values(W.P).filter(p => p.t === "FA" && !p.offerSheet && Mo.faHaul(p, i, W).aav <= CBA.minSal(p.yos, i) * 1.4).sort((a, b) => Mo.r(b) - Mo.r(a))[0];
+        const fa = Object.values(W.P).filter(p => p.t === "FA" && !p.offerSheet && !(p.rights && p.rights.team === "BOS" && !p.rights.renounced) && Mo.faHaul(p, i, W).aav <= CBA.minSal(p.yos, i) * 1.4).sort((a, b) => Mo.r(b) - Mo.r(a))[0];
         if (!fa) break;
         L.sign(W, code, fa.id, 1, CBA.minCapHit(fa.yos, i), "flat", "min");
         ps = L.teamPlayers(W, code);
       }
+    }
+    // two-way spots, taking turns: the best young players left who'll take one
+    for (let round = 0; round < 3; round++) for (const code of teamCodes(W).filter(c => c !== "BOS").sort((a, b) => L.teamNets(W)[a] - L.teamNets(W)[b])) {
+      if (L.twoWays(W, code).length >= 3) continue;
+      const fa = Object.values(W.P).filter(p => p.t === "FA" && !p.offerSheet && !(p.rights && p.rights.team === "BOS" && !p.rights.renounced) && L.takesTwoWay(W, p)).sort((a, b) => Mo.r(b) - Mo.r(a))[0];
+      if (fa) L.signTwoWay(W, code, fa.id, 1);
     }
     // Boston: fill to 14 with the best minimum players left, so opening night is legal
     let nb = L.teamPlayers(W, "BOS");
@@ -736,6 +923,8 @@
     news(W, `Training camp for ${CBA.seasonName(i)}.`, "info");
     L.bump(W);
   };
+  // In season: teams with an open spot sign the best free agents who've waited long enough (one a week each)
+  L.inSeasonSignings = W => L.placeLeftovers(W, "season");
 
   // ================= Expansion =================
   // 2004 Bobcats rules: each team protects eight; an expansion team takes at most one player from each team.
@@ -748,7 +937,8 @@
   };
   L.protectList = (W, code, i) => {
     const dec = L.decider(W);
-    const ps = Object.values(W.P).filter(p => p.t === code && !p.two && CBA.salaryIn(p, i, dec) > 0);
+    // this year's draft picks are exempt (the real expansion draft comes before the draft)
+    const ps = Object.values(W.P).filter(p => p.t === code && !p.two && CBA.salaryIn(p, i, dec) > 0 && p.since !== i);
     if (code === "BOS" && W.expProtect && W.expProtect.length) return ps.filter(p => W.expProtect.includes(p.id)).slice(0, 8);
     return ps.sort((a, b) => (Mo.r(b) + (b.age <= 25 ? 0.5 * Math.max(0, (b.pot || 0) - Mo.r(b)) : 0)) - (Mo.r(a) + (a.age <= 25 ? 0.5 * Math.max(0, (a.pot || 0) - Mo.r(a)) : 0))).slice(0, 8);
   };
@@ -767,27 +957,31 @@
     }
     return { i, protect, exposed, likely, why };
   };
+  // Due in the 2028 offseason (after the draft, before options) when the setting is on
+  L.expansionDue = W => !!(W.settings && W.settings.expansion) && !W.expanded && W.season === 1 && ["draft", "expansion", "options"].includes(W.phase) && (W.phase !== "draft" || (W.ds && W.ds.done));
   L.runExpansion = W => {
     const i = W.season + 1, r = L.rng(W);
-    const exp = [{ code: "SEA", name: "Seattle SuperSonics", conf: "W" }, { code: "LVA", name: "Las Vegas Aces", conf: "W" }];
+    const exp = [{ code: "SEA", name: "Seattle SuperSonics", conf: "W" }, { code: "LVA", name: "Las Vegas", conf: "W" }];
     W.T.MEM.conf = "E";
     for (const e of exp) W.T[e.code] = { code: e.code, name: e.name, conf: e.conf, fo: { lead: "Expansion GM", title: "General manager", tax: "never", mode: "rebuild", wants: ["youth", "picks"], style: "Brand-new franchise building from the expansion draft." }, rep: false, tpes: [], dead: [], holds: [], used: {}, hard: {}, taxHist: {}, w: 0, l: 0, rot: null, expansion: true };
     const pool = [];
     for (const code of teamCodes(W)) {
       if (exp.some(e => e.code === code)) continue;
       const prot = new Set(L.protectList(W, code, i).map(p => p.id));
-      for (const p of Object.values(W.P)) if (p.t === code && !p.two && !prot.has(p.id) && CBA.salaryIn(p, i, L.decider(W)) > 0) pool.push({ p, code, v: expValue(W, p, i) });
+      for (const p of Object.values(W.P)) if (p.t === code && !p.two && !prot.has(p.id) && p.since !== i && CBA.salaryIn(p, i, L.decider(W)) > 0) pool.push({ p, code, v: expValue(W, p, i) });
     }
     pool.sort((a, b) => b.v - a.v);
-    const lost = new Set();
+    const lost = new Set(), picks = [];
     let k = 0;
     for (const x of pool) {
       if (lost.has(x.code)) continue;
       const e = exp[k % 2];
-      x.p.t = e.code; lost.add(x.code); k++;
+      x.p.t = e.code; x.p.since = i; lost.add(x.code); k++;
+      picks.push({ n: k, to: e.code, from: x.code, id: x.p.id, name: x.p.n, sal: CBA.salaryIn(x.p, i, L.decider(W)) });
       if (x.code === "BOS") news(W, `Expansion draft: ${e.name} take ${x.p.n} from Boston.`, "draft", "BOS");
       if (lost.size >= teamCodes(W).length - 2) break;
     }
+    W.expResult = { picks, protectedBos: L.protectList(W, "BOS", i).map(p => p.id) };
     for (const e of exp) for (let y = 2029; y <= 2035; y++) for (const rd of [1, 2]) W.picks.push({ id: `${y}-${rd}-${e.code}`, y, r: rd, from: e.code, owner: e.code });
     W.expanded = true;
     news(W, "Seattle and Las Vegas join the league for 2028-29. Memphis moves to the East.", "info");
