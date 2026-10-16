@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """Pull the Bastille Day guillotine league from Yahoo Fantasy into guillotine/data.json.
 
+Writes weekly scores, this week's projections, FAB, eliminations and every surviving team's
+lineup, in the same shape tools/guillotine_paste.py builds from the pasted Yahoo pages.
 The page at davidsolar.dev/guillotine/ reads that file and runs the simulation in the browser.
-A GitHub workflow (.github/workflows/guillotine.yml) runs this every morning during the season.
+The "Guillotine update" workflow (.github/workflows/guillotine-update.yml) runs this first, then
+adds Sleeper projections and saves the week's odds.
 
 Needs three values, set as GitHub repository secrets (see the README for the one-time setup):
   YAHOO_CLIENT_ID       from the Yahoo developer app
@@ -12,7 +15,7 @@ Optional:
   YAHOO_LEAGUE_ID       defaults to 157731 (Bastille Day)
   YAHOO_REDIRECT_URI    defaults to https://davidsolar.dev/ (must match the Yahoo app)
 
-Standard library only, so it runs anywhere Python 3.8+ does.
+Standard library only, so it runs anywhere Python 3.9+ does.
   python tools/guillotine_update.py              pull from Yahoo and write guillotine/data.json
   python tools/guillotine_update.py --from DIR   build from saved Yahoo XML responses (for testing)
 """
@@ -27,10 +30,16 @@ import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 API = "https://fantasysports.yahooapis.com/fantasy/v2/"
 TOKEN_URL = "https://api.login.yahoo.com/oauth2/get_token"
 UA = "davidsolar-guillotine/1.0 (+https://davidsolar.dev/guillotine/)"
+# ESPN's public scoreboard fills in game times, which Yahoo's API leaves out (same feed as tools/live-relay.js).
+ESPN = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates={season}&seasontype=2&week={week}"
+BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
+ESPN_FIX = {"WSH": "WAS"}  # ESPN's abbreviations that differ from Yahoo's
+EASTERN = ZoneInfo("America/New_York")
 HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_OUT = os.path.join(HERE, "..", "guillotine", "data.json")
 
@@ -162,6 +171,90 @@ def week_stats(y, key, week):
     return out
 
 
+def roster_slots(y, key):
+    """The league's lineup spots in Yahoo's order, like [("QB", 1), ("RB", 2), ..., ("BN", 5), ("IR", 1)]."""
+    root = y.get(f"league/{key}/settings", soft=True)
+    out = []
+    for rp in (root.findall(".//roster_positions/roster_position") if root is not None else []):
+        pos, count = text(rp, "position"), int(num(rp, "count") or 0)
+        if pos and count:
+            out.append((pos, count))
+    return out
+
+
+def team_roster(y, team_key, week, slots):
+    """One team's lineup for the week, in the shape tools/guillotine_paste.py reads off Yahoo's
+    Starting Rosters page, so tools/guillotine_projections.py, the page and the live relay
+    can't tell the two sources apart. None if Yahoo won't return it."""
+    root = y.get(f"team/{team_key}/roster;week={week}", soft=True)
+    if root is None:
+        return None
+    players = []
+    for p in root.findall(".//roster/players/player"):
+        pos = text(p, "primary_position") or (text(p, "display_position") or "").split(",")[0]
+        row = {
+            "slot": text(p, "selected_position/position") or "BN",
+            "name": text(p, "name/full"),
+            "nfl": (text(p, "editorial_team_abbr") or "").upper(),
+            "pos": pos,
+        }
+        if not (row["name"] and row["nfl"] and pos):
+            continue
+        status = text(p, "status")
+        if status:
+            row["status"] = status
+        if str(week) in [b.text.strip() for b in p.findall("bye_weeks/week") if b.text]:
+            row["bye"] = True
+        players.append(row)
+    if not players:
+        return None
+    # Yahoo lists only the players. Put them in the league's slot order and mark any starting
+    # spot left open, as the Starting Rosters page does, so the odds can fill it from the bench.
+    ordered, used = [], set()
+    for slot, count in slots:
+        here = [p for p in players if p["slot"] == slot]
+        ordered += here
+        used.update(id(p) for p in here)
+        if slot not in ("BN", "IR"):
+            ordered += [{"slot": slot, "empty": True} for _ in range(count - len(here))]
+    ordered += [p for p in players if id(p) not in used]  # any slot the settings didn't list
+    return ordered
+
+
+def kickoffs(season, week, from_dir=None):
+    """{team: ("Sun 1:00 pm", "vs NYJ")} for the week's games, as Yahoo's Starting Rosters page shows
+    them. The page's roster windows and Thursday preview use these. Empty if ESPN doesn't answer."""
+    try:
+        if from_dir:
+            fp = os.path.join(from_dir, f"espn_{week}.json")
+            if not os.path.exists(fp):
+                return {}
+            with open(fp, encoding="utf-8") as f:
+                sb = json.load(f)
+        else:
+            req = urllib.request.Request(ESPN.format(season=season, week=week), headers={"User-Agent": BROWSER_UA})
+            with urllib.request.urlopen(req, timeout=30) as res:
+                sb = json.load(res)
+    except Exception as e:
+        print(f"::warning::Couldn't read ESPN's schedule ({type(e).__name__}: {e}), so rosters go without game times.")
+        return {}
+    out = {}
+    for ev in sb.get("events") or []:
+        comp = (ev.get("competitions") or [{}])[0]
+        sides = {}
+        for c in comp.get("competitors") or []:
+            abbr = ((c.get("team") or {}).get("abbreviation") or "").upper()
+            sides[c.get("homeAway")] = ESPN_FIX.get(abbr, abbr)
+        home, away, when = sides.get("home"), sides.get("away"), ev.get("date") or comp.get("date")
+        if not (home and away and when):
+            continue
+        t = datetime.fromisoformat(when.replace("Z", "+00:00")).astimezone(EASTERN)
+        game = f"{t:%a} {t.hour % 12 or 12}:{t:%M} {'am' if t.hour < 12 else 'pm'}"
+        out[home] = (game, f"vs {away}")
+        out[away] = (game, f"@ {home}")
+    return out
+
+
 def build(y, league_id):
     # League keys need this season's numeric game key (like 461.l.157731), so look it up first.
     league = None
@@ -232,6 +325,22 @@ def build(y, league_id):
         out_week[low] = w
         alive.remove(low)
 
+    # This week's lineups for the teams still alive (roster windows, best lineups, live scoring).
+    rosters = {}
+    if not finished:
+        slots = roster_slots(y, key)
+        for k in alive:
+            r = team_roster(y, k, current, slots)
+            if r:
+                rosters[k] = r
+        print(f"Read {len(rosters)} of {len(alive)} rosters for week {current}.")
+        if rosters:
+            games = kickoffs(season, current, y.from_dir)
+            for r in rosters.values():
+                for p in r:
+                    if not p.get("empty") and not p.get("bye") and p["nfl"] in games:
+                        p["game"], p["opp"] = games[p["nfl"]]
+
     rows = []
     for t in teams:
         k = t["key"]
@@ -247,10 +356,13 @@ def build(y, league_id):
         else:
             row["proj"] = proj.get(k)
         row["scores"] = scores[k]
+        if k in rosters:
+            row["roster"] = rosters[k]
         rows.append(row)
-    rows.sort(key=lambda r: (r.get("out") or 99, r["name"].lower()), reverse=False)
+    # Same order as the pasted data: teams alive by projection, then the fallen, latest first.
+    rows.sort(key=lambda r: (1, -r["out"]) if r.get("out") else (0, -(r.get("proj") or 0)))
 
-    return {
+    data = {
         "league": name,
         "season": season,
         "week": current if not finished else last_done + 1,
@@ -260,6 +372,10 @@ def build(y, league_id):
         "source": "Yahoo Fantasy",
         "teams": rows,
     }
+    url = text(lg, "url")
+    data["league_url"] = url if url and url.startswith("https://") else \
+        f"https://football.fantasysports.yahoo.com/f1/{league_id}"
+    return data
 
 
 def write_if_changed(data, path):

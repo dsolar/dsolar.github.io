@@ -40,13 +40,13 @@ dsolar.github.io/
   yoenis/                     Don't Forget to Wipe Yoenis, the keeper baseball league's record book:
                               index.html (page) and data.json (every draft, standing, manager and 2027 keeper cost)
   robots.txt                  keeps send-off images and data files out of search engines
-  tools/guillotine_update.py  pulls the league from Yahoo into guillotine/data.json
+  tools/guillotine_update.py  pulls the league and every lineup from Yahoo into guillotine/data.json
   tools/paint_the_corners_sim.js  balance check for Paint the Corners (node, see the top of the file)
   tools/win_probability_check.js  checks Win Probability's data and grading (node tools/win_probability_check.js)
   tools/win_probability_supabase.sql  one-time setup for Win Probability's crowd votes (see below)
   tools/calendar_update.py    builds calendar/events.json; calendar_prices.py watches ticket prices;
                               calendar-votes.js is Night Out's vote box (marks and plans)
-  .github/workflows/          guillotine.yml runs that script every morning in season;
+  .github/workflows/          guillotine-update.yml runs that script every morning in season;
                               calendar-update.yml rebuilds the calendar every morning;
                               calendar-prices.yml checks ticket prices every 3 hours
   .nojekyll                   tells GitHub Pages to serve the files as-is
@@ -114,15 +114,23 @@ GitHub Pages sites are always public. When you want a private corner (for exampl
 
 `davidsolar.dev/guillotine/` shows survival odds for the Bastille Day league. It's listed on the home page, but the page itself asks search engines not to index it, since it shows friends' team names. It reads `guillotine/data.json`, which can be filled two ways.
 
-**Paste the league pages (works now).** On Yahoo, copy two pages (select all, copy): the league's main page (League > Overview) and League > Starting Rosters. On GitHub, open `guillotine/paste.txt`, click the pencil, select all, paste the overview, then paste the rosters right after it, and **Commit changes**. The "Guillotine update" workflow turns them into `data.json`, adds player projections from Sleeper, and the page updates a minute or two later. Pasting both into a Claude chat works too. The rosters are optional: without them the page still works, just without roster windows or best-lineup estimates.
+**Paste the league pages (works any time).** On Yahoo, copy two pages (select all, copy): the league's main page (League > Overview) and League > Starting Rosters. On GitHub, open `guillotine/paste.txt`, click the pencil, select all, paste the overview, then paste the rosters right after it, and **Commit changes**. The "Guillotine update" workflow turns them into `data.json`, adds player projections from Sleeper, and the page updates a minute or two later. Pasting both into a Claude chat works too. The rosters are optional: without them the page still works, just without roster windows or best-lineup estimates. Once Yahoo is filling `data.json`, the paste is used only when you commit a new one, and the next morning's Yahoo pull takes over again.
 
 Player projections refresh on their own every morning and on Sunday at 12:47pm ET. They come from Sleeper's public feed, rescored with the league's settings (`tools/guillotine_projections.py`).
 
-**Automatic, once Yahoo approves.** Since mid-2026 Yahoo approves Fantasy API apps by hand: until it does, every request returns "This application is not authorized to perform this action", even with a working sign-in. The daily "Guillotine odds" workflow already has the sign-in (the three `YAHOO_` secrets below) and checks every morning. Until approval it skips without failing; after approval it pulls the league on its own. Apply at https://sports.yahoo.com/developer/access/ (Expected Users: Small; Client ID: the app's Client ID). If Yahoo's approval email asks for a new app, create it, then redo steps 2 to 4 below with its Client ID and Secret.
+**Automatic, through Yahoo.** Since mid-2026 Yahoo approves Fantasy API apps by hand: until it does, every request returns "This application is not authorized to perform this action", even with a working sign-in. The "Guillotine update" workflow tries Yahoo first on every run and skips quietly until then. Once Yahoo answers, it reads the standings, weekly scores, FAB, eliminations and every surviving team's lineup (game times come from ESPN's public scoreboard), so no more pasting.
 
-The one-time sign-in setup, already done for app `davidsolar guillotine` (App ID 8zS5heCv):
+Yahoo approved the application on Oct 16, 2026. Its approval email has three steps, and an existing app doesn't pick up the permission, so it takes a new one:
 
-1. **Create a Yahoo app.** Signed in to the Yahoo account that's in the league, go to https://developer.yahoo.com/apps/create/. Application Name: `davidsolar guillotine`. Application Type: **Web Application**. Redirect URI: `https://davidsolar.dev/`. Under API Permissions, check **Fantasy Sports** and pick **Read**. Click **Create App**, then keep the page open: you need the **Client ID** and **Client Secret** it shows.
+- Sign the API Access and Use Agreement in the DocuSign envelope.
+- Create a new app (step 1 below, named `davidsolar guillotine 2`).
+- Send the new app's Client ID, your name and email on the Developer Application Confirmation Form linked in the email. List every email you've used with Yahoo in its notes field.
+
+Once Yahoo turns access on, do steps 2 to 5 below with the new app's Client ID and Secret. Until then the new app gets the same "not authorized" answer, so there's no point testing it early.
+
+The sign-in setup (done once in Oct 2026 for the first app, `davidsolar guillotine`; redo it for the app Yahoo approves):
+
+1. **Create a Yahoo app.** Signed in to the Yahoo account that's in the league, go to https://developer.yahoo.com/apps/create/. Application Name: `davidsolar guillotine 2` (any name works). Application Type: **Web Application**. Redirect URI: `https://davidsolar.dev/`. Under API Permissions, check **Fantasy Sports** and pick **Read**. Click **Create App**, then keep the page open: you need the **Client ID** and **Client Secret** it shows.
 2. **Approve access once.** Open this address with your Client ID pasted in: `https://api.login.yahoo.com/oauth2/request_auth?client_id=YOUR_CLIENT_ID&redirect_uri=https://davidsolar.dev/&response_type=code`. Click **Agree**. You'll land on davidsolar.dev with `?code=...` in the address bar. Copy everything after `code=` (stop at any `&`). The code expires in about 10 minutes, so do step 3 right away.
 3. **Trade the code for a long-lasting token.** In PowerShell (built into Windows), paste your three values into the first line and run:
    ```powershell
@@ -132,8 +140,8 @@ The one-time sign-in setup, already done for app `davidsolar guillotine` (App ID
    $r.refresh_token
    ```
    The long string it prints is the refresh token.
-4. **Store the three values in GitHub.** Repo > **Settings** > **Secrets and variables** > **Actions** > **New repository secret**, three times: `YAHOO_CLIENT_ID`, `YAHOO_CLIENT_SECRET`, `YAHOO_REFRESH_TOKEN`. Secrets stay private even though the repo is public. Never paste them into a file in the repo.
-5. **Run it.** Repo > **Actions** > **Guillotine odds** > **Run workflow**. A minute or two later the page shows live numbers and the sample note is gone.
+4. **Store the three values in GitHub.** Repo > **Settings** > **Secrets and variables** > **Actions**. Update `YAHOO_CLIENT_ID`, `YAHOO_CLIENT_SECRET` and `YAHOO_REFRESH_TOKEN` (pencil icon next to each), or add any that are missing with **New repository secret**. Secrets stay private even though the repo is public. Never paste them into a file in the repo.
+5. **Run it.** Repo > **Actions** > **Guillotine update** > **Run workflow**. A minute or two later the page shows Yahoo's numbers and the "Yahoo hasn't approved" note under the Updated line is gone.
 
 If a run ever fails with "Yahoo sign-in failed", redo steps 2 to 4 for a fresh refresh token.
 
