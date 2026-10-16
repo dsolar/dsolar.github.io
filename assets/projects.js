@@ -16,7 +16,7 @@
                block with the title is drawn instead). bg / band: the project's own colors.
      featured  true puts it at the top of the list, ahead of anything newer.
      status    "live" (default) or "building" (listed with no Play button).
-     hidden    true keeps it off the home page. The page itself still works by direct link.
+     hidden    true hides it until the homepage app code is entered. Direct links still work.
 */
 window.PROJECTS = [
   {
@@ -45,6 +45,8 @@ window.PROJECTS = [
   },
   {
     title: "Dynasty Mode",
+    hidden: true,
+    action: "Open beta",
     type: "Simulations",
     status: "building",
     url: "franchise-mode/",
@@ -79,6 +81,7 @@ window.PROJECTS = [
   },
   {
     title: "Night Out",
+    hidden: true,
     type: "Social Tools",
     released: "2026-10",
     url: "calendar/",

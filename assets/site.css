@@ -368,3 +368,12 @@ a:hover{color:var(--red)}
 .about-copy p{line-height:1.75}
 .writing-intro>p:last-child{line-height:1.7}
 @media(prefers-reduced-motion:reduce){.entry{transition:none}}
+
+.app-code{grid-column:1 / -1;color:var(--muted);font-size:.85rem;max-width:26rem}
+.app-code summary{cursor:pointer;width:fit-content}
+.app-code form{margin-top:12px}
+.app-code label{display:block;margin-bottom:6px}
+.app-code-fields{display:flex;gap:8px;flex-wrap:wrap}
+.app-code input{min-width:0;flex:1;padding:9px;border:1px solid var(--muted);border-radius:4px;background:var(--paper,#fff);color:var(--ink)}
+.app-code button{cursor:pointer;padding:9px 12px;border:1px solid var(--muted);border-radius:4px;background:transparent;color:var(--ink);font:inherit}
+.app-code [hidden]{display:none}

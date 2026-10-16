@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Besley:ital,wght@0,500;0,600;0,700;0,800;1,500&family=Libre+Franklin:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="assets/site.css?v=20261016-executive">
+<link rel="stylesheet" href="assets/site.css?v=20261016-app-code">
 <script src="assets/site.js" defer></script>
 <script src="assets/analytics.js" defer></script>
 </head>
@@ -87,7 +87,6 @@
           <ul>
             <li><a href="31st-franchise/">The 31st Franchise</a>, an NBA expansion draft game</li>
             <li><a href="guillotine/">Bastille Day Odds</a>, survival odds for a guillotine fantasy football league</li>
-            <li><a href="calendar/">Night Out</a>, our social calendar of shows, games, movies and restaurants</li>
           </ul>
         </noscript>
       </div>
@@ -223,10 +222,19 @@
       <a href="#about">About</a>
       <a data-user="hello" data-domain="davidsolar.dev">Email</a>
     </nav>
+    <details class="app-code">
+      <summary>App code</summary>
+      <form id="app-code-form">
+        <label for="app-code-input">Enter your app code</label>
+        <div class="app-code-fields"><input id="app-code-input" type="password" autocomplete="off" spellcheck="false" required><button type="submit">Show apps</button></div>
+      </form>
+      <p id="app-code-status" role="status" aria-live="polite"></p>
+      <button id="hide-apps" type="button" hidden>Hide hidden apps</button>
+    </details>
   </div>
 </footer>
 
-<script src="assets/projects.js?v=20261016-curated"></script>
+<script src="assets/projects.js?v=20261016-hidden-apps"></script>
 <script>
 /* Draws the project list from assets/projects.js. You shouldn't need to edit this. */
 (function () {
@@ -246,7 +254,11 @@
     return items.slice(0, -1).join(", ") + " and " + items[items.length - 1];
   };
 
-  var projects = (window.PROJECTS || []).filter(function (p) { return !p.hidden; });
+  var showHidden = false;
+  try { showHidden = sessionStorage.getItem("dsolar-hidden-apps") === "shown"; } catch (e) {}
+  var syncCategory = function () {};
+  function renderProjects() {
+  var projects = (window.PROJECTS || []).filter(function (p) { return showHidden || !p.hidden; });
   projects.sort(function (a, b) {
     return (!!b.featured - !!a.featured) || String(b.released || "").localeCompare(String(a.released || ""));
   });
@@ -256,6 +268,7 @@
   var slugCategories = {fantasy:"Fantasy Leagues",simulations:"Simulations",games:"Games",social:"Social Tools"};
   catalog.innerHTML = projects.map(function (p) {
     var building = p.status === "building";
+    var accessible = !building || (showHidden && p.hidden);
     var cover = p.cover || {};
     var style = (cover.bg ? "--cover-bg:" + cover.bg + ";" : "") + (cover.band ? "--cover-band:" + cover.band : "");
     var art = cover.image
@@ -264,17 +277,17 @@
     var facts = (p.facts || []).map(function (f) {
       return "<div><dt>" + esc(f[1]) + "</dt><dd>" + esc(f[0]) + "</dd></div>";
     }).join("");
-    var title = building ? esc(p.title) : '<a href="' + esc(p.url) + '">' + esc(p.title) + "</a>";
+    var title = !accessible ? esc(p.title) : '<a href="' + esc(p.url) + '">' + esc(p.title) + "</a>";
     return '<article class="entry" id="' + esc(slug(p.url)) + '" data-type="' + esc(p.type) + '" style="' + esc(style) + '">'
       + '<div class="entry-meta"><span class="type">' + esc(p.type) + "</span>" + (p.featured ? '<span class="featured-tag">Featured</span>' : '')
       + (building ? '<span class="state">In progress</span>' : "<span>" + when(p.released) + "</span>") + "</div>"
-      + (building ? '<div class="entry-cover" aria-hidden="true">' + art + '<span class="band"></span></div>'
+      + (!accessible ? '<div class="entry-cover" aria-hidden="true">' + art + '<span class="band"></span></div>'
                   : '<a class="entry-cover" href="' + esc(p.url) + '" tabindex="-1" aria-hidden="true">' + art + '<span class="band"></span></a>')
       + '<div class="entry-body"><h3>' + title + "</h3>"
       + (p.question ? '<p class="question">' + esc(p.question) + "</p>" : "")
       + '<p class="summary">' + esc(p.summary) + "</p>"
       + (facts ? '<dl class="facts">' + facts + "</dl>" : "")
-      + (building ? "" : '<div class="actions"><a class="btn" href="' + esc(p.url) + '"><span class="dot" aria-hidden="true"></span>' + esc(p.action || ({"Fantasy Leagues":"View League","Simulations":"Run Simulation","Games":"Play Game","Social Tools":"Open Tool"}[p.type] || "Explore Project")) + "</a></div>")
+      + (!accessible ? "" : '<div class="actions"><a class="btn" href="' + esc(p.url) + '"><span class="dot" aria-hidden="true"></span>' + esc(p.action || ({"Fantasy Leagues":"View League","Simulations":"Run Simulation","Games":"Play Game","Social Tools":"Open Tool"}[p.type] || "Explore Project")) + "</a></div>")
       + (p.stack && p.stack.length ? '<p class="stack">Built with ' + esc(list(p.stack)) + "</p>" : "")
       + "</div></article>";
   }).join("");
@@ -311,18 +324,47 @@
         applyCategory(slugCategories[hash] || "All");
       }
     }
-    filters.addEventListener("click", function (event) {
+    filters.onclick = function (event) {
       var button = event.target.closest("button");
       if (!button) return;
       var type = button.getAttribute("data-type");
       var hash = type === "All" ? "#projects" : "#" + categorySlugs[type];
       if (window.location.hash === hash) applyCategory(type);
       else window.location.hash = hash;
-    });
-    window.addEventListener("hashchange", syncFromHash);
+    };
+    syncCategory = syncFromHash;
     syncFromHash();
   }
 
+  }
+  function updateAccess() {
+    renderProjects();
+    document.getElementById("hide-apps").hidden = !showHidden;
+    document.getElementById("app-code-form").hidden = showHidden;
+    document.getElementById("app-code-status").textContent = showHidden ? "Hidden apps are visible in this tab." : "";
+  }
+  document.getElementById("app-code-form").onsubmit = function (event) {
+    event.preventDefault();
+    var input = document.getElementById("app-code-input");
+    if (input.value.trim().toUpperCase() !== "GREENMONSTER") {
+      document.getElementById("app-code-status").textContent = "That code didn’t match. Try again.";
+      return;
+    }
+    input.value = "";
+    showHidden = true;
+    try { sessionStorage.setItem("dsolar-hidden-apps", "shown"); } catch (e) {}
+    window.location.hash = "projects";
+    updateAccess();
+    document.getElementById("projects").scrollIntoView({behavior: "smooth"});
+  };
+  document.getElementById("hide-apps").onclick = function () {
+    showHidden = false;
+    try { sessionStorage.removeItem("dsolar-hidden-apps"); } catch (e) {}
+    updateAccess();
+    document.querySelector(".app-code summary").focus();
+  };
+  window.addEventListener("hashchange", function () { syncCategory(); });
+  updateAccess();
   document.getElementById("year").textContent = new Date().getFullYear();
 })();
 </script>
