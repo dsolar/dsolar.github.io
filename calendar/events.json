@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-15T15:20:21Z",
+ "updated": "2026-10-16T15:00:42Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,157 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-vv177Z_aGkmJ1XTT",
-   "date": "2026-10-15",
-   "time": "19:00",
-   "title": "Alana Springsteen's I HOPE THIS HELPS Tour",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/alana-springsteens-i-hope-this-helps-boston-massachusetts-10-15-2026/event/0100649BA62BEFFF",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18222500"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZk34Gkds1WGF",
-   "date": "2026-10-15",
-   "time": "19:00",
-   "title": "An Evening With Lifehouse Best Of Acoustic (18+)",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/an-evening-with-lifehouse-best-of-boston-massachusetts-10-15-2026/event/01006495F12BD308",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18222465",
-    "2026-10-15-lifehouse-paradise-rock-club"
-   ],
-   "score": 0
-  },
-  {
-   "date": "2026-10-15",
-   "time": "19:00",
-   "title": "Anthony Fuentes",
-   "cat": "comedy",
-   "venue": "Laugh Boston",
-   "city": "Boston, MA",
-   "url": "https://comedy.tickets/city/boston/",
-   "source": "venues",
-   "id": "2026-10-15-anthony-fuentes-laugh-boston",
-   "score": 1
-  },
-  {
-   "id": "tm-vv177Z_aGkSbtQpc",
-   "date": "2026-10-15",
-   "time": "19:00",
-   "title": "Olivia Rodrigo: The Unraveled Tour",
-   "cat": "music",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/olivia-rodrigo-the-unraveled-tour-boston-massachusetts-10-15-2026/event/0100649CD8A5A5AD",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18211681",
-    "2026-10-15-olivia-rodrigo-td-garden"
-   ],
-   "sub": "with Wolf Alice",
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_FGki_EKGA",
-   "date": "2026-10-15",
-   "time": "19:30",
-   "title": "Chill Towards Enlightenment: A Stoke Seminar with Chad Goes Deep",
-   "cat": "comedy",
-   "venue": "Arts at the Armory",
-   "city": "Somerville, MA",
-   "url": "https://www.ticketmaster.com/chill-towards-enlightenment-a-stoke-seminar-somerville-massachusetts-10-15-2026/event/0100648B199D3305",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18176548"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkfYGkeiW0ze",
-   "date": "2026-10-15",
-   "time": "19:30",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-10-15-2026/event/01006530ACF64E02",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_G9nAo4I",
-   "date": "2026-10-15",
-   "time": "19:30",
-   "title": "Little Big Town - For The Art Of It Tour",
-   "cat": "music",
-   "venue": "Boch Center Wang Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/little-big-town-for-the-art-boston-massachusetts-10-15-2026/event/010064C5EA151568",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18292608",
-    "2026-10-15-little-big-town-wang-theatre"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18600421",
-   "date": "2026-10-15",
-   "time": "19:30",
-   "title": "Shane Dawson",
-   "cat": "music",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/shane-dawson-tickets/boston-massachusetts-the-wilbur-2026-10-15-7-30-pm/concert/18600421",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "sg-18663854",
-   "date": "2026-10-15",
-   "time": "20:00",
-   "title": "Tokyo Tea Room",
-   "cat": "music",
-   "venue": "The Sinclair - Cambridge",
-   "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/tokyo-tea-room-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-10-15-8-pm/concert/18663854",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "sg-18309434",
-   "date": "2026-10-15",
-   "time": "21:30",
-   "title": "Yousuke Yukimatsu",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/yousuke-yukimatsu-tickets/boston-massachusetts-big-night-live-2026-10-15-9-30-pm/concert/18309434",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_GfAdRL_",
-   "date": "2026-10-15",
-   "time": "21:30",
-   "title": "¥ØU$UK? ¥UK1MAT$U: Autumn 2026 Tour ( 21+ )",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/uuk-uk1matu-autumn-2026-tour-21-boston-massachusetts-10-15-2026/event/010064C5050EF7D9",
-   "source": "ticketmaster",
-   "score": 0
-  },
   {
    "id": "tm-Z7r9jZ1A7xpQk",
    "date": "2026-10-16",
@@ -1429,8 +1278,8 @@
    "source": "ticketmaster",
    "aka": [
     "tm-Z7r9jZ1AAvVjY",
-    "sg-18349655",
-    "sg-18346734"
+    "sg-18346734",
+    "sg-18349655"
    ],
    "score": 0
   },
@@ -2972,6 +2821,26 @@
    "score": 0
   },
   {
+   "id": "tm-vvG17Z_GmBZ9_J",
+   "date": "2026-11-03",
+   "time": "18:00",
+   "title": "Sleeping With Sirens: An Ending In Itself Tour",
+   "cat": "music",
+   "venue": "Citizens House of Blues Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/sleeping-with-sirens-an-ending-in-boston-massachusetts-11-03-2026/event/010064CBBA017666",
+   "source": "ticketmaster",
+   "times": [
+    "18:00",
+    "19:00"
+   ],
+   "aka": [
+    "sg-18311622",
+    "2026-11-03-sleeping-with-sirens-citizens-house-of-bl"
+   ],
+   "score": 0
+  },
+  {
    "id": "tm-1AtZkfsGkdbyvA0",
    "date": "2026-11-03",
    "time": "19:00",
@@ -3004,21 +2873,6 @@
    "score": 0
   },
   {
-   "id": "tm-vvG17Z_u51GBov",
-   "date": "2026-11-03",
-   "time": "19:00",
-   "title": "Gavn! (18+)",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/gavn-18-boston-massachusetts-11-03-2026/event/010064D2CA33A441",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18325402"
-   ],
-   "score": 0
-  },
-  {
    "id": "tm-vv1AvZkf7GkeB8Ah7",
    "date": "2026-11-03",
    "time": "19:00",
@@ -3034,19 +2888,15 @@
    "score": 0
   },
   {
-   "id": "tm-vvG17Z_GmBZ9_J",
+   "id": "sg-18325402",
    "date": "2026-11-03",
    "time": "19:00",
-   "title": "Sleeping With Sirens: An Ending In Itself Tour",
+   "title": "gavn (18+)",
    "cat": "music",
-   "venue": "Citizens House of Blues Boston",
+   "venue": "Brighton Music Hall",
    "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/sleeping-with-sirens-an-ending-in-boston-massachusetts-11-03-2026/event/010064CBBA017666",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18311622",
-    "2026-11-03-sleeping-with-sirens-citizens-house-of-bl"
-   ],
+   "url": "https://seatgeek.com/gavn-tickets/boston-massachusetts-brighton-music-hall-2026-11-03-7-pm/concert/18325402",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -6679,6 +6529,22 @@
    "score": 0
   },
   {
+   "id": "tm-rZ7HnEZ1Afugk7",
+   "date": "2026-11-28",
+   "time": "23:55",
+   "title": "Chris Beck",
+   "cat": "music",
+   "venue": "Smalls Jazz Club",
+   "city": "New York, NY",
+   "url": "https://www.ticketweb.com/event/chris-beck-smalls-jazz-club-tickets/14375184",
+   "source": "ticketmaster",
+   "drive_hours": 4.25,
+   "act": "Beck",
+   "from": 28,
+   "score": 2,
+   "why": "big"
+  },
+  {
    "id": "sg-18601262",
    "date": "2026-11-29",
    "time": "14:00",
@@ -9557,6 +9423,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/seb-lowe-us-2027-boston-massachusetts-01-26-2027/event/0100652FDBC67E23",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18690435"
+   ],
    "score": 0
   },
   {
@@ -10153,6 +10022,18 @@
    "score": 1
   },
   {
+   "id": "sg-18568868",
+   "date": "2027-02-14",
+   "time": "19:00",
+   "title": "Maxim Galkin",
+   "cat": "comedy",
+   "venue": "John Hancock Hall",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/maxim-galkin-tickets/comedy/2027-02-14-7-pm/18568868",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "espn-401893321",
    "date": "2027-02-15",
    "time": "14:00",
@@ -10379,6 +10260,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/swimming-paul-north-america-tour-2027-boston-massachusetts-02-27-2027/event/01006546832071B5",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18691310"
+   ],
    "score": 0
   },
   {
@@ -10475,6 +10359,18 @@
    "aka": [
     "sg-18254078"
    ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv1AvZk4kGkdrWRfA",
+   "date": "2027-03-03",
+   "time": "20:00",
+   "title": "Remi Wolf: The Mud Tour",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/remi-wolf-the-mud-tour-boston-massachusetts-03-03-2027/event/01006546DEF6F505",
+   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -11352,6 +11248,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/red-not-chili-peppers-boston-massachusetts-03-26-2027/event/01006547C66A3321",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18690395"
+   ],
    "score": 0
   },
   {
@@ -11565,6 +11464,18 @@
    "score": 1
   },
   {
+   "id": "sg-18689170",
+   "date": "2027-04-03",
+   "time": "22:00",
+   "title": "Cyclops",
+   "cat": "music",
+   "venue": "Royale - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/cyclops-tickets/boston-massachusetts-royale-boston-2027-04-03-10-pm/concert/18689170",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-Z7r9jZ1AAv0uA",
    "date": "2027-04-05",
    "time": "19:00",
@@ -11581,6 +11492,18 @@
    "aka": [
     "sg-18574468"
    ],
+   "score": 0
+  },
+  {
+   "id": "tm-Z7r9jZ1AA780A",
+   "date": "2027-04-06",
+   "time": "20:00",
+   "title": "John Splithoff",
+   "cat": "music",
+   "venue": "The Sinclair Music Hall",
+   "city": "Cambridge, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA780A",
+   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -11734,15 +11657,18 @@
    "score": 0
   },
   {
-   "id": "sg-18649732",
+   "id": "tm-Z7r9jZ1AAebvP",
    "date": "2027-04-13",
    "time": "20:00",
    "title": "Lola Young",
    "cat": "music",
-   "venue": "Roadrunner - Boston",
+   "venue": "Roadrunner-Boston",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/lola-young-tickets/boston-massachusetts-roadrunner-boston-2027-04-13-8-pm/concert/18649732",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAebvP",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18649732"
+   ],
    "score": 0
   }
  ],
@@ -11820,9 +11746,9 @@
  ],
  "sources": {
   "picks": 5,
-  "venues": 7,
+  "venues": 6,
   "espn": 84,
-  "ticketmaster": 574,
-  "seatgeek": 111
+  "ticketmaster": 570,
+  "seatgeek": 110
  }
 }
