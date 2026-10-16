@@ -6,7 +6,7 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#f9f1e8">
   <meta name="description" content="An unofficial, single-player collection and battle game inspired by real Jellycat plush characters.">
-  <title>Jellycat Battle Club • The Softlands v0.5</title>
+  <title>Jellycat Battle Club • The Softlands v0.6</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A5%90%3C/text%3E%3C/svg%3E">
   <style>
 
@@ -112,9 +112,76 @@ kbd{display:inline-block;border:1px solid #ada2a1;background:#f1ece5;border-radi
 @media(max-width:650px){.world-grid{--map-cols:13}.world-player-overlay{width:clamp(39px,10%,58px);height:clamp(46px,13%,70px)}.world-npc{width:145%;height:155%}.world-stamp{width:82px;height:82px}.world-stamp-count{font-size:1.8rem}.world-viewport{touch-action:pan-y}.shortcut-grid{grid-template-columns:1fr}.shortcut-grid dd{margin:-7px 0 2px}}
 @media(prefers-reduced-motion:reduce){.world-player-overlay{transition:none}}
 
+/* v0.6: buffered smooth-scrolling world camera and comfortable mobile touch joystick. */
+.world-viewport{position:relative;overflow:hidden;touch-action:pan-y;}
+.world-pan{position:absolute;top:0;left:0;will-change:transform;transform:translate3d(0,0,0);}
+.world-pan .world-grid{width:100%;}
+.world-pan .world-player-overlay{transition:none;will-change:left,top;}
+.world-pan .world-player-overlay.moving .plush-svg{animation:player-hop .25s ease-in-out infinite;}
+#mobile-movement{display:none;}
+@media (max-width:720px) and (pointer:coarse){
+ body.mobile-world .wrap{padding-bottom:calc(195px + env(safe-area-inset-bottom, 0px));}
+ body.mobile-world .dpad{display:none;}
+ body.mobile-world .world-commands-right [data-action="interact"]{display:none;}
+ body.mobile-world .world-help{font-size:.73rem;}
+ body.mobile-world #mobile-movement{display:flex;position:fixed;bottom:calc(12px + env(safe-area-inset-bottom, 0px));left:0;right:0;z-index:45;align-items:flex-end;justify-content:space-between;gap:12px;padding:0 18px 2px;pointer-events:none;}
+ .touch-stick{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;flex:0 0 126px;width:126px;height:126px;border:2px solid #725a86;border-radius:50%;background:radial-gradient(circle,#fef9fcdd 3%,#e7d6f5ee 78%);box-shadow:0 6px 20px #362a4580,inset 0 0 0 9px #ffffff50;display:grid;place-items:center;position:relative;pointer-events:auto;}
+ .touch-stick::before{content:'↖   ↑   ↗';position:absolute;top:13px;left:0;right:0;font-size:.65rem;font-weight:900;text-align:center;letter-spacing:.07em;color:#735c80;opacity:.7;}
+ .stick-thumb{width:60px;height:60px;border:2px solid #5d3d77;border-radius:50%;display:grid;place-items:center;position:absolute;left:calc(50% - 30px);top:calc(50% - 30px);background:linear-gradient(135deg,#bd9bd9,#8a66b4);box-shadow:2px 4px 0 #513567;transform:translate3d(var(--stick-x,0px),var(--stick-y,0px),0);color:white;font-size:1.25rem;font-weight:900;pointer-events:none;transition:transform .12s ease-out;}
+ .touch-stick.steering .stick-thumb{transition:none;}
+ .touch-actions{display:flex;flex-direction:column;gap:8px;align-items:end;pointer-events:auto;padding-bottom:10px;max-width:52%;}
+ .touch-interact{min-height:64px;min-width:96px;border-radius:26px;background:#ffe3a8;border:2.5px solid #4f3d4f;box-shadow:3px 5px 0 #4f3d4f;padding:10px 14px;font-size:1.03rem;font-weight:900;color:#513963;touch-action:manipulation;}
+ .touch-interact:active{transform:translateY(2px);box-shadow:1px 2px 0 #4f3d4f;}
+ .touch-hint{font-size:.63rem;font-weight:850;text-align:right;color:#3f3545;background:#fffdf2e6;border-radius:9px;padding:5px 8px;max-width:145px;}
+}
+@media (max-width:370px){#mobile-movement .touch-stick{width:114px;height:114px;flex-basis:114px;}#mobile-movement .touch-interact{min-width:90px;}}
+/* Make the map the first thing a player sees on a phone. */
+@media (max-width:720px) and (pointer:coarse){
+ body.mobile-world .head-wrap{padding:9px 13px;gap:8px;align-items:center;}
+ body.mobile-world .wordmark .mark{font-size:2rem;}
+ body.mobile-world .wordmark{gap:8px;}
+ body.mobile-world .wordmark strong{font-size:1.38rem;}
+ body.mobile-world .wordmark small{font-size:.44rem;}
+ body.mobile-world .head-meta{font-size:.58rem;}
+ body.mobile-world .test-chip{padding:5px 8px;}
+ body.mobile-world .wrap{padding:10px 12px calc(170px + env(safe-area-inset-bottom, 0px));}
+ body.mobile-world .game-nav{flex-wrap:nowrap;gap:2px;overflow-x:auto;overscroll-behavior-x:contain;white-space:nowrap;margin-bottom:12px;padding:4px;border-radius:14px;box-shadow:2px 3px 0 #302b37;scrollbar-width:none;}
+ body.mobile-world .game-nav::-webkit-scrollbar{display:none;}
+ body.mobile-world .game-nav button{padding:9px 10px;flex-shrink:0;font-size:.78rem;}
+ body.mobile-world .game-nav .spacer,body.mobile-world .game-nav .stars{display:none;}
+ body.mobile-world .world-intro{gap:9px;align-items:center;padding:4px 3px 10px;}
+ body.mobile-world .world-intro h1{font-size:2.05rem;margin:2px 0 0;}
+ body.mobile-world .world-intro p{display:none;}
+ body.mobile-world .world-intro .eyebrow{font-size:.51rem;letter-spacing:.1em;}
+ body.mobile-world .world-stamp{width:54px;height:54px;flex:0 0 54px;}
+ body.mobile-world .world-stamp-count{font-size:1.35rem;}
+ body.mobile-world .world-stamp-count span{font-size:.68rem;}
+ body.mobile-world .world-stamp small{font-size:.4rem;line-height:1.05;}
+ body.mobile-world .world-toolbar{margin:3px 5px 6px;font-size:.75rem;}
+ body.mobile-world .world-toolbar>span:last-child{display:none;}
+ body.mobile-world .world-commands{padding:7px 3px 0;}
+ body.mobile-world .world-help{display:none;}
+}
+@media (max-height:550px) and (max-width:940px) and (pointer:coarse){
+ body.mobile-world #mobile-movement{padding-left:12px;padding-right:12px;}
+ body.mobile-world .touch-stick{flex-basis:98px;width:98px;height:98px;}
+ body.mobile-world .touch-interact{min-height:50px;}
+ body.mobile-world .touch-hint{display:none;}
+}
+
+
 </style>
 </head>
 <body>
+  <div id="mobile-movement" aria-label="Touch walking controls">
+    <div class="touch-stick" id="touch-stick" role="group" aria-label="Drag the purple joystick in any direction to walk">
+      <span class="stick-thumb" id="stick-thumb" aria-hidden="true">✿</span>
+    </div>
+    <div class="touch-actions">
+      <span class="touch-hint">Drag to walk · Tap map to travel</span>
+      <button type="button" class="touch-interact" id="touch-interact" aria-label="Talk to or inspect a nearby friend">✦ Talk</button>
+    </div>
+  </div>
   <a class="skip" href="#main">Skip to game</a>
   <header class="site-head">
     <div class="head-wrap">
@@ -630,7 +697,7 @@ function ensureWorld(s){const defaults=freshWorld(),w=(s.world&&typeof s.world==
 function stepWorld(s,dx,dy){
  ensureWorld(s);
  const size=Math.abs(dx)+Math.abs(dy);
- if(!Number.isFinite(size)||size<=0||size>1.001|| (dx!==0&&dy!==0))throw Error('Only horizontal or vertical movement up to one tile');
+ if(!Number.isFinite(size)||Math.hypot(dx,dy)<=0||Math.hypot(dx,dy)>1.001)throw Error('Movement must be finite and at most one tile');
  const w=s.world;
  const x=+Math.max(0,Math.min(WORLD_W-1,w.x+dx)).toFixed(3),y=+Math.max(0,Math.min(WORLD_H-1,w.y+dy)).toFixed(3);
  if(x===w.x&&y===w.y)return {moved:false,zone:null,treasure:null,npc:null};
@@ -664,7 +731,7 @@ function persist(){state=ensureWorld(validateSave(state));try{localStorage.setIt
 function update(fn){state=fn(state);persist();render();}
 function el(tag,cl,text){const x=document.createElement(tag);if(cl)x.className=cl;if(text)x.textContent=text;return x;}
 function notify(message){let t=$('.toast');if(!t){t=el('div','toast');t.setAttribute('role','status');document.body.append(t);}t.textContent=message;t.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.add('hidden'),3600);}
-function go(p){if(typeof stopHeld==='function')stopHeld();stopWalking();if(p==='battle'&&!state.battle){notify('Find a Parlor Keeper or explore tall grass for your next battle!');p='world';}page=p;detail=null;render();window.scrollTo({top:0,behavior:'instant'});}
+function go(p){if(typeof stopHeld==='function')stopHeld();if(typeof stopTouchWalking==='function')stopTouchWalking();stopWalking();finishWorldMotion();if(p==='battle'&&!state.battle){notify('Find a Parlor Keeper or explore tall grass for your next battle!');p='world';}page=p;detail=null;render();window.scrollTo({top:0,behavior:'instant'});}
 const badge=(txt,style='')=>`<span class="mini-pill" ${style?`style="${style}"`:''}>${safe(txt)}</span>`;
 const rarityTag=p=>badge(p.rarity,p.rarity==='Legendary'?'background:#ffe49f;color:#68431c':p.rarity==='Rare'?'background:#eddbff;color:#61358c':'');
 const bigAvatar=(p,hidden=false)=>`<div class="avatar ${hidden?'mystery':''}" style="background:${hidden?'#d9d4da':TYPE_COLOR[p.typeIndex]};">${plushArt(p)}</div>`;
@@ -690,6 +757,8 @@ function render(){let output=`<main id="main" class="wrap">${nav()}`;
  else output+=clubhouse();
  output+='</main>';
  $('#app').innerHTML=output;
+ document.body.classList.toggle('mobile-world',page==='world'&&!!state.onboarded&&!state.pending);
+ if(page==='world'&&state.onboarded&&!state.pending)syncWorldCamera();
  if(detail)showDetail();
 }
 function onboard(){const p=BY_ID.get(STARTER_ID);return `<div class="hero">
@@ -816,24 +885,26 @@ function scenery(x,y,zone){
 }
 function worldTerrain(x,y,z){if((y===20&&x>3&&x<52)||(x===27&&y>2&&y<38)||(x===10&&y>5&&y<36)||(x===46&&y>7&&y<36)||(y===7&&x>8&&x<48)||(y===33&&x>6&&x<49))return 'trail';return z;}
 function worldScreen(){ensureWorld(state);const w=state.world,here=ZONES.find(z=>z.id===zoneAt(w.x,w.y));
- const vx=window.innerWidth<650?13:window.innerWidth<950?17:21,vy=window.innerWidth<650?11:14;
- const cx=Math.max(0,Math.min(WORLD_W-vx,Math.floor(w.x)-Math.floor(vx/2))),cy=Math.max(0,Math.min(WORLD_H-vy,Math.floor(w.y)-Math.floor(vy/2)));
- let tiles='';for(let y=cy;y<cy+vy;y++)for(let x=cx;x<cx+vx;x++){
+ const vx=window.innerWidth<650?11:window.innerWidth<950?17:21,vy=window.innerWidth<650?10:14;
+ const pad=3,cols=vx+pad*2,rows=vy+pad*2;
+ const cx=Math.max(0,Math.min(WORLD_W-cols,Math.floor(w.x)-Math.floor(vx/2)-pad)),cy=Math.max(0,Math.min(WORLD_H-rows,Math.floor(w.y)-Math.floor(vy/2)-pad));
+ let tiles='';for(let y=cy;y<cy+rows;y++)for(let x=cx;x<cx+cols;x++){
   const zone=zoneAt(x,y),style=worldTerrain(x,y,zone),npc=NPCS.find(n=>n.x===x&&n.y===y),parlor=PARLORS.find(p=>p.x===x&&p.y===y),treasure=TREASURES.find(t=>t.x===x&&t.y===y&&!w.found.includes(t.id)),landmark=LANDMARKS.find(t=>t.x===x&&t.y===y),grass=isTallGrass(x,y);
   const sprite=npc?`<span class="world-npc">${plushArt(BY_ID.get(slugId(npc.product)))}</span><span class="npc-bubble">${safe(npc.icon)}</span>`:parlor?`<span class="world-parlor">✿<small>PARLOR</small></span>`:treasure?'<span class="world-treasure">✧</span>':landmark?`<span class="world-landmark" title="${safe(landmark.name)}">${landmark.icon}</span>`:grass?'<span class="tall-grass" aria-hidden="true">♣</span>':`<span class="world-decor">${scenery(x,y,zone)}</span>`;
   const what=npc?`Talk to ${npc.name}`:parlor?`${parlor.name}, earn the ${parlor.patch}`:treasure?`Find ${treasure.title}`:grass?'Tall grass: surprise battles possible':landmark?landmark.name:`Walk to ${x}, ${y}`;
   tiles+=`<button type="button" tabindex="-1" class="world-tile terrain-${style} ${grass?'has-grass':''}" data-action="tile" data-x="${x}" data-y="${y}" title="${safe(what)}" aria-label="${safe(what)}">${sprite}</button>`;
  }
- const px=(w.x-cx+.5)/vx*100,py=(w.y-cy+.94)/vy*100;
+ const px=(w.x-cx+.5)/cols*100,py=(w.y-cy+.94)/rows*100;
  const friend=nearbyNpcs(w),parlor=nearbyParlor(w);
  return `<section class="world-intro"><div><span class="eyebrow">An open little world · 8 districts · ${PARLORS.length} Parlors</span><h1>The Softlands <span class="world-title-star">✦</span></h1><p>Walk freely through the Softlands. Surprise battles hide in tall grass, while Parlor Keepers offer embroidered patches for victories. Each win brings XP and a new plush friend.</p></div><div class="world-stamp"><span class="world-stamp-count">${w.parlorBadges.length}<span>/${PARLORS.length}</span></span><small>Parlor patches</small></div></section>
  <div class="world-layout"><section class="world-shell" aria-label="Explore the Softlands">
  <div class="world-toolbar"><span><span class="location-dot">●</span> ${safe(here.name)}</span><span>✿ ${w.parlorBadges.length} patches &nbsp; · &nbsp; ✦ ${w.found.length}/${TREASURES.length} found</span></div>
- <div class="world-viewport" id="world-viewport" tabindex="0" aria-label="Move smoothly with WASD or arrow keys; E to interact"><div class="world-grid" style="--map-cols:${vx}">${tiles}</div>
- <span class="world-player-overlay" style="left:${px}%;top:${py}%;--player-step:${w.steps%2?'-2px':'0px'}">${plushArt(BY_ID.get(state.team[0]))}</span></div>
+ <div class="world-viewport" id="world-viewport" tabindex="0" style="aspect-ratio:${vx}/${vy}" aria-label="Drag the joystick to walk, or tap a spot on the map to travel">
+ <div class="world-pan" id="world-pan" data-base-x="${cx}" data-base-y="${cy}" data-cols="${cols}" data-rows="${rows}" data-visible-cols="${vx}" data-visible-rows="${vy}" style="width:${100*cols/vx}%"><div class="world-grid" style="--map-cols:${cols}">${tiles}</div>
+ <span class="world-player-overlay" style="left:${px}%;top:${py}%">${plushArt(BY_ID.get(state.team[0]))}</span></div></div>
  <div class="world-commands"><div class="dpad" aria-label="Movement controls"><button data-action="step" data-dx="0" data-dy="-1" aria-label="Walk north">↑</button><div><button data-action="step" data-dx="-1" data-dy="0" aria-label="Walk west">←</button><button data-action="step" data-dx="0" data-dy="1" aria-label="Walk south">↓</button><button data-action="step" data-dx="1" data-dy="0" aria-label="Walk east">→</button></div></div>
  <div class="world-commands-right"><button class="btn mint" data-action="interact"><kbd>E</kbd> Talk / inspect</button>${state.battle?'<button class="btn pink" data-action="nav" data-id="battle"><kbd>5</kbd> Resume battle</button>':parlor?`<button class="btn pink" data-action="parlor" data-id="${parlor.id}"><kbd>P</kbd> ${safe(parlor.name)}</button>`:'<span class="encounter-hint">🌿 Tall grass = surprise encounters</span>'}</div></div>
- <p class="world-help"><kbd>W A S D</kbd> / arrows: walk and hold to keep moving · <kbd>E</kbd>: interact · <kbd>P</kbd>: nearby Parlor · <kbd>?</kbd>: all controls. Tap the map to walk to a place.</p>
+ <p class="world-help"><kbd>W A S D</kbd> / arrows: walk and hold to keep moving · <kbd>E</kbd>: interact · <kbd>P</kbd>: nearby Parlor · <kbd>?</kbd>: all controls. On mobile, drag the round joystick in any direction, or tap the map to travel.</p>
  </section><aside class="world-sidebar">
  ${panel(`<span class="eyebrow">People along the way</span><h2>Friends nearby</h2>${friend.length?friend.map(n=>`<button class="friend-row" data-action="talk" data-id="${n.id}"><span class="friend-portrait">${plushArt(BY_ID.get(slugId(n.product)))}</span><span><strong>${safe(n.name)}</strong><small>${safe(n.hint)}</small></span><span aria-hidden="true">→</span></button>`).join(''):'<p class="small muted">Keep wandering! Someone is just around the corner.</p>'}<p class="small muted mb-0">🌿 Look for fluffy patches of grass for unexpected challengers.</p>`,'friend-panel')}
  ${panel(`<div class="row between"><h2 class="mb-0">Parlor Passport</h2>${badge(w.parlorBadges.length+' / '+PARLORS.length)}</div><p class="tiny muted mt-12">Challenge a Keeper and earn an embroidered patch. Later Parlors unlock as you collect patches.</p><div class="parlor-passport">${PARLORS.map((pl,i)=>`<button class="parlor-row ${w.parlorBadges.includes(pl.id)?'earned':''}" data-action="walkto" data-id="${zoneAt(pl.x,pl.y)}" title="Walk toward ${safe(pl.name)}"><span class="patch-icon">${w.parlorBadges.includes(pl.id)?'✿':i+1}</span><span><strong>${safe(pl.name)}</strong><small>${safe(w.parlorBadges.includes(pl.id)?pl.patch:pl.required<=w.parlorBadges.length?pl.theme:'Earn '+pl.required+' patch(es) first')}</small></span></button>`).join('')}</div>`,'journey-panel')}
@@ -841,7 +912,7 @@ function worldScreen(){ensureWorld(state);const w=state.world,here=ZONES.find(z=
  </aside></div>`;
 }
 function slugId(name){return name.normalize('NFKD').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');}
-function stopWalking(){if(walkingTimer){clearInterval(walkingTimer);walkingTimer=null;}}
+function stopWalking(){if(walkingTimer){clearInterval(walkingTimer);walkingTimer=null;finishWorldMotion();}}
 function launchBattle(source='wild',parlorId=null){
  stopWalking();if(state.pending||state.battle)return go('battle');
  try{const next=structuredClone(state);makeBattle(next,Math.random,{source,parlorId});next.world.firstBattle=true;state=next;persist();page='battle';render();window.scrollTo(0,0);}catch(err){notify(err.message||'Unable to start the match.');}
@@ -855,10 +926,23 @@ function showParlor(p){if(!p)return;stopWalking();if(Math.hypot(p.x-state.world.
  $('#parlor-modal')?.remove();const already=state.world.parlorBadges.includes(p.id),unlocked=canChallenge(p);
  const div=el('div','modal-backdrop');div.id='parlor-modal';div.innerHTML=`<section class="modal center" role="dialog" aria-modal="true" aria-label="${safe(p.name)}"><span class="eyebrow">✿ Official Softlands Parlor</span><h2>${safe(p.name)}</h2><div class="parlor-host">${plushArt(BY_ID.get(slugId(p.product)))}</div><h3>Keeper ${safe(p.keeper)}</h3><p>${safe(p.theme)}. Win to earn the <strong>${safe(p.patch)}</strong> for your Passport.</p><p class="small muted">${already?'✓ Patch already earned. Come back to visit!':unlocked?'Your team is welcome to take the challenge.':`Earn ${p.required} patch${p.required===1?'':'es'} before challenging this Keeper.`}</p><div class="row" style="justify-content:center">${unlocked?`<button class="btn" data-action="parlor-battle" data-id="${p.id}"><kbd>1</kbd> Challenge Keeper →</button>`:''}<button class="btn cream" data-action="close-parlor"><kbd>Esc</kbd> ${already?'See you soon':'Maybe later'}</button></div></section>`;document.body.append(div);div.querySelector('button')?.focus();
 }
+let worldSaveAt=0,worldDirty=false;
+function saveWorldMotion(force=false){worldDirty=true;const now=Date.now();if(force||now-worldSaveAt>300){persist();worldSaveAt=now;worldDirty=false;}}
+function finishWorldMotion(){if(worldDirty)saveWorldMotion(true);}
+function syncWorldCamera(){const pan=$('#world-pan'),view=$('#world-viewport');if(!pan||!view)return;
+ const {x,y}=state.world,baseX=Number(pan.dataset.baseX),baseY=Number(pan.dataset.baseY),cols=Number(pan.dataset.cols),rows=Number(pan.dataset.rows),vx=Number(pan.dataset.visibleCols),vy=Number(pan.dataset.visibleRows);
+ const desiredX=Math.max(0,Math.min(WORLD_W-cols,Math.floor(x)-Math.floor(vx/2)-3)),desiredY=Math.max(0,Math.min(WORLD_H-rows,Math.floor(y)-Math.floor(vy/2)-3));
+ if(Math.abs(desiredX-baseX)>=2||Math.abs(desiredY-baseY)>=2){render();return;}
+ const p=pan.querySelector('.world-player-overlay');if(p){p.style.left=`${100*(x-baseX+.5)/cols}%`;p.style.top=`${100*(y-baseY+.94)/rows}%`;}
+ const tile=view.clientWidth/vx;
+ const shiftX=Math.max(-(cols-vx)*tile,Math.min(0,(vx/2-(x-baseX+.5))*tile));
+ const shiftY=Math.max(-(rows-vy)*tile,Math.min(0,(vy/2-(y-baseY+.5))*tile));
+ pan.style.transform=`translate3d(${shiftX.toFixed(2)}px,${shiftY.toFixed(2)}px,0)`;
+}
 function performStep(dx,dy,quiet=false){if(page!=='world'||!state.onboarded||state.pending||challengeState||document.querySelector('.modal-backdrop'))return false;
  const result=stepWorld(state,dx,dy);
  if(result.npc){stopWalking();if(!quiet)showTalk(result.npc);return false;}
- if(result.moved){persist();render();if(result.treasure){stopWalking();showFound(result.treasure);}else if(result.encounter){showEncounter();}else if(result.zone&&!quiet)notify(`Welcome to ${result.zone.name}!`);}return !!result.moved;
+ if(result.moved){saveWorldMotion();syncWorldCamera();if(result.treasure){stopWalking();finishWorldMotion();render();showFound(result.treasure);}else if(result.encounter){finishWorldMotion();render();showEncounter();}else if(result.zone){render();if(!quiet)notify(`Welcome to ${result.zone.name}!`);}}return !!result.moved;
 }
 function walkToward(tx,ty,npcToMeet=null){stopWalking();ensureWorld(state);
  tx=Math.max(0,Math.min(WORLD_W-1,Math.round(tx)));ty=Math.max(0,Math.min(WORLD_H-1,Math.round(ty)));
@@ -929,8 +1013,47 @@ document.addEventListener('pointerdown',e=>{const btn=e.target.closest('.dpad [d
 document.addEventListener('pointerup',e=>{if(walkHeldTimer){clearInterval(walkHeldTimer);walkHeldTimer=null;}});
 document.addEventListener('click',e=>{const btn=e.target.closest('.dpad [data-action="step"]');if(btn&&btn.dataset.held==='1'){btn.dataset.held='0';e.stopImmediatePropagation();e.preventDefault();}},true);
 
+
+// v0.6: A stable, analog-feeling touch joystick that survives map refreshes.
+const touchStick=document.getElementById('touch-stick'),stickThumb=document.getElementById('stick-thumb');
+const touchMotion={pointerId:null,x:0,y:0,last:0,raf:0};
+function stopTouchWalking(){
+ if(touchMotion.raf)cancelAnimationFrame(touchMotion.raf);
+ touchMotion.raf=0;touchMotion.last=0;touchMotion.pointerId=null;touchMotion.x=0;touchMotion.y=0;
+ touchStick?.classList.remove('steering');if(stickThumb){stickThumb.style.setProperty('--stick-x','0px');stickThumb.style.setProperty('--stick-y','0px');}
+ finishWorldMotion();
+}
+function touchVector(e){
+ const box=touchStick.getBoundingClientRect(),r=Math.min(box.width,box.height)*.34;
+ const dx=e.clientX-(box.left+box.width/2),dy=e.clientY-(box.top+box.height/2),distance=Math.hypot(dx,dy);
+ const power=Math.min(1,distance/r),magnitude=power<.12?0:(power-.12)/.88;
+ touchMotion.x=distance?dx/distance*magnitude:0;touchMotion.y=distance?dy/distance*magnitude:0;
+ const thumbX=distance?dx/distance*power*r:0,thumbY=distance?dy/distance*power*r:0;
+ stickThumb.style.setProperty('--stick-x',`${thumbX.toFixed(1)}px`);stickThumb.style.setProperty('--stick-y',`${thumbY.toFixed(1)}px`);
+}
+function touchFrame(now){if(touchMotion.pointerId===null||page!=='world'||!state.onboarded||state.pending||document.querySelector('.modal-backdrop')){stopTouchWalking();return;}
+ const seconds=touchMotion.last?Math.min(.05,(now-touchMotion.last)/1000):0;touchMotion.last=now;
+ if(seconds){const magnitude=Math.hypot(touchMotion.x,touchMotion.y),speed=2.0+2.1*magnitude;
+  if(magnitude>.05)performStep(touchMotion.x*speed*seconds,touchMotion.y*speed*seconds,true);
+ }
+ touchMotion.raf=requestAnimationFrame(touchFrame);
+}
+touchStick?.addEventListener('pointerdown',e=>{
+ if(touchMotion.pointerId!==null||page!=='world'||!state.onboarded||document.querySelector('.modal-backdrop'))return;
+ e.preventDefault();stopWalking();stopHeld();touchMotion.pointerId=e.pointerId;touchStick.classList.add('steering');touchStick.setPointerCapture(e.pointerId);touchVector(e);
+ touchMotion.last=0;touchMotion.raf=requestAnimationFrame(touchFrame);
+});
+touchStick?.addEventListener('pointermove',e=>{if(touchMotion.pointerId===e.pointerId){e.preventDefault();touchVector(e);}});
+for(const name of ['pointerup','pointercancel','lostpointercapture'])touchStick?.addEventListener(name,e=>{if(touchMotion.pointerId===e.pointerId)stopTouchWalking();});
+document.getElementById('touch-interact')?.addEventListener('click',()=>{stopTouchWalking();talkOrInspect();});
+window.addEventListener('blur',stopTouchWalking);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopTouchWalking();});
+window.addEventListener('resize',()=>{if(page==='world'&&state.onboarded&&!state.pending)render();});
+window.addEventListener('pagehide',finishWorldMotion);
+
 // Initialize the interface after all keyboard handlers are registered.
 render();
+
 </script>
 </body>
 </html>
