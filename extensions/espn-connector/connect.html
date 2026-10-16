@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Connect ESPN · Sports Data Nonsense</title><link rel="stylesheet" href="connect.css"></head>
+<body><main>
+  <p class="brand">SPORTS, DATA, NONSENSE.</p>
+  <span class="tag">ESPN FOOTBALL · READ ONLY</span>
+  <h1>Bring your league<br>to the table.</h1>
+  <p class="intro">Connect the ESPN account already signed into this browser. Your league’s actual rules, rosters, and available players come with it.</p>
+  <ol><li><a href="https://fantasy.espn.com/football/" target="_blank" rel="noreferrer">Open ESPN and sign in</a> in this browser.</li><li>Open the league you want to connect.</li><li>Select it below, then connect.</li></ol>
+  <form id="connect-form">
+    <div id="open-leagues" hidden><label for="league-tabs">Open ESPN leagues</label><div class="select-row"><select id="league-tabs"></select><button type="button" id="find-leagues">Check tabs</button></div></div>
+    <label for="league">League link or ID</label><input id="league" required autocomplete="off" spellcheck="false" value="270405">
+    <label for="season">Season</label><input id="season" type="number" min="2018" max="2027" required value="2026">
+    <button id="connect" class="primary" type="submit">Connect ESPN league <span aria-hidden="true">↗</span></button>
+    <p id="status" role="status" aria-live="polite">Your ESPN password is never requested by this extension.</p>
+  </form>
+  <section id="success" hidden><h2 id="league-name"></h2><p id="import-summary"></p><button type="button" class="primary" id="view">View your imported league ↗</button></section>
+  <details><summary>What happens when I connect?</summary><p>The extension reads your existing ESPN session and sends it over HTTPS to the connection service. The saved session is encrypted and used to refresh the selected league approximately every 20 minutes, including while your browser is closed.</p><p>League data stays private to this browser’s connection. The connector cannot submit trades, add or drop players, or change lineups. Disconnecting from the league page deletes its saved session and imports. Unused connections expire after 90 days.</p></details>
+</main><script type="module" src="connect.mjs"></script></body></html>

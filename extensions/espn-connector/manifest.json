@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Sports Data Nonsense — ESPN Connect",
+  "version": "0.1.0",
+  "description": "Connect your ESPN fantasy football league to your private trade analyzer workspace.",
+  "permissions": ["cookies", "storage"],
+  "host_permissions": ["https://*.espn.com/*", "https://baxrczyufqbzrogftmyn.supabase.co/*"],
+  "background": {"service_worker": "worker.mjs", "type": "module"},
+  "action": {"default_title": "Connect an ESPN league"},
+  "content_scripts": [{
+    "matches": ["https://davidsolar.dev/trade-analyzer/*", "https://dsolar.github.io/trade-analyzer/*"],
+    "js": ["bridge.js"],
+    "run_at": "document_start"
+  }],
+  "content_security_policy": {"extension_pages": "script-src 'self'; object-src 'none'; connect-src https://baxrczyufqbzrogftmyn.supabase.co"},
+  "minimum_chrome_version": "109"
+}
