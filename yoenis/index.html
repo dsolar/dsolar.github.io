@@ -891,7 +891,9 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
        sheetOrder: the 16 teams in the keeper sheet's column order, for creating the 2027 tab
        trades: [{ d: "2027-01-12", a: "<team>", b: "<team>", aGets: ["Bulba's 2027 5th", "Player"], bGets: [...], note: "",
                   picks: [{ r: 5, of: "Bulba", to: "Robbers" }] }]   (picks moves draft picks for the order and keeper slots)
-       draft:   { opening, openingNight, caveat, pick: null }   (the candidate dates come from the sheet's "2027 Draft Vote" tab) */
+       draft:   { opening, openingNight, caveat, pick: null, ballot: ["2027-03-14", ...] }
+                (ballot: the candidate dates; the first vote creates the sheet's "2027 Draft Vote" tab from them, and after
+                 that the tab is the ballot, so dates added or removed there show up here) */
   function OFF() { return DATA.offseason || {}; }
   function lastSeason() { return DATA.seasons[DATA.seasons.length - 1]; }
   function longDate(d, wd) { return new Date(d + "T12:00:00").toLocaleDateString("en-US", { weekday: wd ? "long" : undefined, month: "long", day: "numeric", year: wd ? undefined : "numeric" }); }
@@ -1091,27 +1093,31 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     drawOrder(); drawVotes();
   }
   function drawVotes() {
-    var dr = OFF().draft || {}, when = dr.pick, team = $("k-team").value, v = SHEET && SHEET.vote, dates = v ? v.dates : [];
+    var dr = OFF().draft || {}, when = dr.pick, team = $("k-team").value, v = SHEET && SHEET.vote;
+    var ballot = (dr.ballot || []).map(function (id) { return { id: id, label: longDate(id, true) }; });
+    var dates = v && v.dates.length ? v.dates : ballot, open = !!(v && !SHEET_ERR);
     var html = '<div class="slot">';
     if (when) html += '<p class="k">The 2027 draft: ' + esc(longDate(when.d, true)) + (when.t ? ", " + esc(when.t) : "") + ".</p>";
     else if (dates.length) {
-      var mine = (v.marks[team] || {}), tally = function (id) { return Object.keys(v.marks).filter(function (t) { return v.marks[t][id] === 1; }); };
+      var marks = v ? v.marks : {}, mine = marks[team] || {}, tally = function (id) { return Object.keys(marks).filter(function (t) { return marks[t][id] === 1; }); };
       var best = Math.max.apply(null, dates.map(function (d) { return tally(d.id).length; }));
-      html += '<p class="k">Which dates can you make?</p><p class="muted">Voting for ' + esc(withMan(team)) + ' (pick your team in 2027 keepers). Checks go straight into the keeper sheet\'s 2027 Draft Vote tab.</p>' +
-        '<div class="row"><input class="pin" id="v-pin" type="password" inputmode="numeric" placeholder="Team PIN" aria-label="Team PIN, 4 to 8 digits" autocomplete="off" value="' + esc(store.get("yoenis-pin:" + team) || "") + '"></div>' +
+      html += '<p class="k">Which draft dates can you make?</p><p class="muted">' + (open ? "Voting for " + esc(withMan(team)) + " (pick your team in 2027 keepers). Checks go straight into the keeper sheet's 2027 Draft Vote tab, and the date with the most yeses wins." :
+          "The 10 days before Opening Day. " + (sheetUrl() ? (SHEET_ERR ? "The keeper sheet didn't answer, so voting is paused." : "Loading votes from the keeper sheet.") : "Voting opens here once the page is hooked up to the keeper sheet: every team checks the dates it can make, and the most yeses wins.")) + "</p>" +
+        (open ? '<div class="row"><input class="pin" id="v-pin" type="password" inputmode="numeric" placeholder="Team PIN" aria-label="Team PIN, 4 to 8 digits" autocomplete="off" value="' + esc(store.get("yoenis-pin:" + team) || "") + '"></div>' : "") +
         '<ol class="votes">' + dates.map(function (d) {
           var yes = tally(d.id);
-          return '<li><label class="keep" style="color:var(--ink)"><input type="checkbox" data-vote="' + esc(d.id) + '"' + (mine[d.id] === 1 ? " checked" : "") + ">" + esc(d.label) + '</label><span class="num' + (yes.length === best && best ? " lead-v" : "") + '" title="' + esc(yes.join(", ")) + '">' + yes.length + " of 16</span></li>";
+          return '<li><label class="keep" style="color:var(--ink)"><input type="checkbox" data-vote="' + esc(d.id) + '"' + (mine[d.id] === 1 ? " checked" : "") + (open ? "" : " disabled") + ">" + esc(d.label) + "</label>" +
+            (open ? '<span class="num' + (yes.length === best && best ? " lead-v" : "") + '" title="' + esc(yes.join(", ")) + '">' + yes.length + " of 16</span>" : "") + "</li>";
         }).join("") + '</ol><p class="status" id="v-msg"></p>';
-    } else html += '<p class="k">The 2027 draft-date vote opens here in the new year.</p><p class="muted">' + (sheetUrl() ? "Once the commissioner adds the candidate dates to the keeper sheet, every team checks the ones it can make right here." : "It works like the draft vote tab in the keeper sheet: every team checks the dates it can make, and the most yeses wins.") + "</p>";
-    if (dr.opening) html += '<p class="muted">The draft goes as close to Opening Day as we can get it. ' + esc(longDate(dr.opening, true)) + " is Opening Day" +
-      (dr.openingNight ? ", after one Opening Night game on " + esc(longDate(dr.openingNight, true)) : "") + ". Keepers lock about a week before the draft." + (dr.caveat ? " " + esc(dr.caveat) : "") + "</p>";
+    } else html += '<p class="k">The 2027 draft-date vote opens here in the new year.</p>';
+    if (dr.opening) html += '<p class="muted">The draft goes as close to Opening Day as we can get it. ' + esc(longDate(dr.openingNight || dr.opening, true)) + " is Opening Day" +
+      (dr.openingNight && dr.opening !== dr.openingNight ? " (one game, then the full slate on " + esc(longDate(dr.opening, true)) + ")" : "") + ". Keepers lock about a week before the draft." + (dr.caveat ? " " + esc(dr.caveat) : "") + "</p>";
     $("o-draft").innerHTML = html + "</div>";
-    [].forEach.call($("o-draft").querySelectorAll("input[data-vote]"), function (cb) {
+    [].forEach.call($("o-draft").querySelectorAll("input[data-vote]:not([disabled])"), function (cb) {
       cb.addEventListener("change", function () {
         var pin = ($("v-pin").value || store.get("yoenis-pin:" + team) || "").trim();
         if (!/^\d{4,8}$/.test(pin)) { cb.checked = !cb.checked; $("v-msg").textContent = "Type your team PIN first (4 to 8 digits)."; $("v-pin").focus(); return; }
-        post({ action: "vote", y: 2027, team: team, pin: pin, date: cb.getAttribute("data-vote"), yes: cb.checked }).then(function () { store.set("yoenis-pin:" + team, pin); drawVotes(); },
+        post({ action: "vote", y: 2027, team: team, pin: pin, date: cb.getAttribute("data-vote"), yes: cb.checked, ballot: dr.ballot || [] }).then(function () { store.set("yoenis-pin:" + team, pin); drawVotes(); },
           function (e) { cb.checked = !cb.checked; $("v-msg").textContent = String(e.message || e); });
       });
     });

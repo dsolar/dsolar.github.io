@@ -5,6 +5,7 @@
  *   - each team declares its keepers on the page, and they land in that year's tab ("2027"), in the same
  *     two-blocks-of-eight layout as every past year: "Player (round/keeper year)"
  *   - each team marks the draft dates it can make, and the marks land in "<year> Draft Vote" as 1s and 0s
+ *     (the first vote creates that tab from the page's ballot if it isn't there yet)
  * The sheet stays the official record: anything you change by hand shows up on the page too.
  *
  *   GET  ?y=2027  -> {"keepers": {"<team>": [["Aaron Judge", 1, 3, false], ...]},
@@ -12,7 +13,8 @@
  *                     "lock": "<ISO time or empty>"}
  *   POST (text/plain JSON) {"action": "keepers", "y": 2027, "team": "Bulba", "pin": "4821",
  *                            "players": [["Aaron Judge", 1, 3]], "order": ["<16 team names in column order>"]}
- *   POST {"action": "vote", "y": 2027, "team": "Bulba", "pin": "4821", "date": "2027-03-20", "yes": true}
+ *   POST {"action": "vote", "y": 2027, "team": "Bulba", "pin": "4821", "date": "2027-03-20", "yes": true,
+ *         "ballot": ["2027-03-14", ...]}   (the ballot only matters for the first vote, which creates the tab)
  * Every POST answers with the same shape as GET, or {"error": "..."}.
  *
  * A team's first save sets its PIN (4 to 8 digits); every change after that needs it. PINs are kept only as
@@ -59,7 +61,7 @@ function doPost(e) {
       return json(view(y));
     }
     if (body.action === "vote") {
-      var ok = writeVote(y, team, clean(body.date, 40), !!body.yes);
+      var ok = writeVote(y, team, clean(body.date, 40), !!body.yes, body.ballot);
       if (!ok) return json({ error: "That date isn't on the ballot." });
       if (!have) props.setProperty(key, hash);
       return json(view(y));
@@ -125,6 +127,22 @@ function parseCell(s) {
 
 /* ---------- Draft-date vote ---------- */
 function voteTab(y) { return SpreadsheetApp.getActive().getSheetByName(y + " Draft Vote"); }
+// The first vote creates the tab from the page's ballot (ISO dates): dates across the top, a Totals row under
+// them that adds up every team row below it. Dates can be added, removed or relabeled by hand afterward.
+function makeVoteTab(y, ballot) {
+  var dates = (ballot || []).map(function (d) { return String(d); }).filter(function (d) { return /^\d{4}-\d\d-\d\d$/.test(d); }).slice(0, 21);
+  if (!dates.length) return null;
+  var sh = SpreadsheetApp.getActive().insertSheet(y + " Draft Vote");
+  var n = dates.length, col = function (c) { return String.fromCharCode(65 + c); };
+  sh.getRange(1, 1).setValue("Team");
+  sh.getRange(1, 2, 1, n).setValues([dates]).setNumberFormat("ddd, mmm d");        // typed like a person would, so they become dates
+  sh.getRange(2, 1).setValue("Totals");
+  sh.getRange(2, 2, 1, n).setFormulas([dates.map(function (d, k) { return "=SUM(" + col(k + 1) + "3:" + col(k + 1) + ")"; })]);
+  sh.getRange(1, 1, 2, n + 1).setFontWeight("bold");
+  sh.setFrozenRows(2);
+  sh.setColumnWidth(1, 240);
+  return sh;
+}
 function dateId(v, tz) { return Object.prototype.toString.call(v) === "[object Date]" ? Utilities.formatDate(v, tz, "yyyy-MM-dd") : String(v).trim(); }
 function dateLabel(v, tz) { return Object.prototype.toString.call(v) === "[object Date]" ? Utilities.formatDate(v, tz, "EEEE, MMMM d") : String(v).replace(/,\s*$/, "").trim(); }
 function readVote(y) {
@@ -142,8 +160,8 @@ function readVote(y) {
   }
   return { dates: dates.map(function (d) { return { id: d.id, label: d.label }; }), marks: marks };
 }
-function writeVote(y, team, id, yes) {
-  var sh = voteTab(y);
+function writeVote(y, team, id, yes, ballot) {
+  var sh = voteTab(y) || makeVoteTab(y, ballot);
   if (!sh) return false;
   var tz = SpreadsheetApp.getActive().getSpreadsheetTimeZone(), vals = sh.getDataRange().getValues(), col = -1, row = -1;
   for (var c = 1; c < vals[0].length; c++) if (vals[0][c] !== "" && dateId(vals[0][c], tz) === id) col = c;
@@ -155,7 +173,8 @@ function writeVote(y, team, id, yes) {
     if (/^totals?$/i.test(name) && totals === vals.length) totals = r;
   }
   if (row < 0) {
-    if (totals < vals.length) { sh.insertRowBefore(totals + 1); row = totals; }
+    // a Totals row under the team rows (the old tabs): the new team goes just above it; otherwise at the bottom
+    if (totals < vals.length && totals > 1) { sh.insertRowBefore(totals + 1); row = totals; }
     else { row = sh.getLastRow(); }
     sh.getRange(row + 1, 1).setValue(team);
   }
