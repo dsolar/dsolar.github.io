@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">\n  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#f9f1e8">
+  <meta name="description" content="An unofficial, single-player collection and battle game inspired by real Jellycat plush characters.">
+  <title>Jellycat Battle Club • Playtest</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A5%90%3C/text%3E%3C/svg%3E">
+  <style>
+500;600;700;800&family=Fraunces:opsz,wght,SOFT,WONK@9..144,650,15,1;9..144,800,20,1&display=swap');
+:root{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:#292537;background:#faf4ea;font-synthesis:none}*{box-sizing:border-box}body{margin:0;min-width:320px}button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.42}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #c178ff;outline-offset:3px}a{color:#56368a}button{border:none}h1,h2,h3,p{margin-top:0}h1,h2,h3{line-height:1.1}h1,h2,.big-number,.wordmark strong{font-family:'Fraunces',Georgia,serif}h1{font-size:clamp(2.6rem,6vw,4.2rem);letter-spacing:-.045em;margin-bottom:.45rem}h2{font-size:clamp(1.45rem,3vw,2rem);letter-spacing:-.025em}h3{font-size:1.13rem}p{line-height:1.55}.skip{position:absolute;top:-100px;left:0;padding:10px;background:white;z-index:100}.skip:focus{top:0}.site-head{border-bottom:2px solid #24212c;background:#f6c9d8}.head-wrap{max-width:1180px;padding:21px 25px;margin:auto;display:flex;align-items:end;justify-content:space-between;gap:20px}.wordmark{display:flex;align-items:center;gap:14px}.wordmark .mark{font-size:3.6rem;color:#693884;line-height:.9}.wordmark small{display:block;font-weight:800;letter-spacing:.18em;font-size:.58rem;margin-bottom:4px}.wordmark strong{font-size:clamp(1.5rem,3vw,2.12rem);line-height:.89;display:block}.period{color:#f18d59}.head-meta{display:flex;flex-direction:column;align-items:end;gap:6px;font-size:.74rem;font-weight:800;letter-spacing:.045em}.test-chip{border:1.5px solid #45304d;border-radius:25px;padding:7px 11px;background:#fff3f4;white-space:nowrap}.wrap{max-width:1180px;margin:auto;padding:23px 25px 75px}.game-nav{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px;border:2px solid #302b37;border-radius:18px;background:#fffefb;box-shadow:4px 5px 0 #302b37;margin-bottom:28px}.game-nav button{background:transparent;color:#463c50;padding:12px 19px;font-weight:800;border-radius:11px}.game-nav button[aria-current="page"]{background:#663e91;color:white}.game-nav .spacer{flex:1}.game-nav .stars{padding:0 13px;font-size:.83rem;font-weight:800;white-space:nowrap}.tag{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;letter-spacing:.065em;font-weight:800;text-transform:uppercase}.accent-tag{color:#8a4b73}.eyebrow{font-size:.71rem;text-transform:uppercase;letter-spacing:.2em;font-weight:800;color:#925474}.intro{max-width:690px}.hero{display:grid;grid-template-columns:1.12fr .88fr;gap:22px;margin-bottom:24px;align-items:stretch}.panel{background:#fffefa;border:2px solid #302b37;border-radius:24px;box-shadow:4px 5px 0 #302b37;padding:24px}.panel.soft{background:#f7eaf5}.hero-panel{padding:clamp(24px,4vw,43px);background:#fbe4db}.hero-panel p{max-width:430px}.hero-pic{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;background:repeating-linear-gradient(-45deg,#d9e9ea 0,#d9e9ea 20px,#d4e3e5 20px,#d4e3e5 40px);min-height:280px}.hero-pic .big{font-size:clamp(130px,23vw,260px);filter:drop-shadow(12px 18px 0 rgba(43,34,47,.12));transform:rotate(-8deg)}.scribble{position:absolute;top:20px;right:22px;background:#fff5b4;transform:rotate(8deg);border:2px solid #302b37;padding:9px 13px;border-radius:50%;font-weight:900;font-size:.75rem}.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}.grid-collection{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:14px}.stack{display:flex;flex-direction:column;gap:16px}.row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.between{justify-content:space-between}.muted{color:#756f79}.tiny{font-size:.75rem}.small{font-size:.88rem}.center{text-align:center}.bold{font-weight:800}.mb-0{margin-bottom:0}.mt-12{margin-top:12px}.mt-20{margin-top:20px}.mb-18{margin-bottom:18px}.btn{padding:12px 20px;font-weight:800;border-radius:12px;border:2px solid #302b37;background:#64398e;color:#fff;box-shadow:3px 3px 0 #302b37;min-height:46px;transition:transform .1s,box-shadow .1s}.btn:hover:not(:disabled){transform:translate(1px,1px);box-shadow:2px 2px 0 #302b37}.btn.pink{background:#f6c9d8;color:#302b37}.btn.cream{background:#fffefa;color:#302b37}.btn.mint{background:#d4eecd;color:#302b37}.btn.full{width:100%}.btn.micro{min-height:32px;padding:6px 10px;font-size:.76rem;box-shadow:2px 2px 0 #302b37}.btn.ghost{background:transparent;box-shadow:none;border:1.5px solid #b2a6ba;color:#593e67}.btn:disabled{box-shadow:none}.ribbon{display:flex;gap:8px;flex-wrap:wrap}.mini-pill{border-radius:99px;background:#f3ebdf;padding:6px 11px;font-size:.73rem;font-weight:800}.stat-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:23px}.stat-item{padding:14px 12px;border-radius:16px;background:#fffefa;border:1.5px solid #302b37;display:flex;flex-direction:column;gap:2px}.big-number{font-size:2.25rem;font-weight:800}.stat-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;font-weight:800}.plush{border:2px solid #403647;background:#fffefa;border-radius:18px;padding:13px;text-align:left;display:flex;flex-direction:column;gap:6px;position:relative;min-width:0}.plush.selected{background:#f2e1ff;border-color:#663e91;box-shadow:inset 0 0 0 2px #663e91}.plush.locked{background:#f0ece8;border-color:#c7bfbe}.plush .avatar{height:102px;border-radius:14px;display:grid;place-items:center;position:relative;font-size:4rem;user-select:none}.avatar{font-family:system-ui;display:grid;place-items:center;min-height:105px;font-size:4.7rem;border-radius:16px}.starter-portrait .avatar{min-height:220px;font-size:9rem;background:#ffe1c0!important}.starter-portrait{display:flex;flex-direction:column;justify-content:center;gap:10px}.plush .avatar.mystery{filter:grayscale(1)}.plush .avatar.mystery span{font-size:4.3rem;color:#a29aa3;filter:grayscale(1)}.plush-title{font-weight:800;line-height:1.2;min-height:2.3em;font-size:.89rem;overflow-wrap:anywhere}.plush-detail{font-size:.72rem;color:#706976}.plush .level{position:absolute;top:9px;right:9px;background:white;border:1px solid #403647;border-radius:99px;padding:3px 7px;font-size:.65rem;font-weight:900}.choice-card{min-width:0}.choice-card .plush-title{min-height:auto}.source-link{display:inline-block;margin-top:5px;font-size:.75rem;text-decoration:underline}.bar{height:12px;border:1.5px solid #33303b;border-radius:20px;background:#f0ede6;overflow:hidden}.fill{height:100%;background:#66ac89;border-radius:20px;transition:width .25s}.fill.low{background:#e8887a}.fill.xp{background:#b498f3}.battle-board{display:grid;grid-template-columns:1fr 55px 1fr;align-items:stretch;gap:8px}.fighter{padding:18px;border-radius:20px;border:2px solid #332f3a;background:#fffefa;min-width:0}.fighter.enemy{background:#fbe7ef}.fighter.you{background:#e7f3eb}.fighter .avatar{display:grid;place-items:center;font-size:6.2rem;min-height:145px;filter:drop-shadow(6px 8px 0 rgba(25,15,25,.10))}.vs{align-self:center;text-align:center;font-weight:900;font-size:1.3rem;transform:rotate(-8deg)}.hp-meta{display:flex;justify-content:space-between;gap:8px;margin:9px 0 6px;font-weight:900;font-size:.83rem}.fighter h3{overflow-wrap:anywhere;margin:8px 0 3px}.fighter .sub{font-size:.7rem;font-weight:700;color:#6d626d}.party{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0 0}.party span{border:1.5px solid #332f3a;background:#fff;border-radius:100px;padding:5px 8px;font-size:.68rem;font-weight:800}.party .fainted{opacity:.38;text-decoration:line-through}.move-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.move{display:flex;flex-direction:column;align-items:start;justify-content:space-between;gap:9px;min-height:118px;text-align:left;background:#fffefa;border:2px solid #302b37;padding:16px;border-radius:17px;box-shadow:3px 4px 0 #302b37;color:#302b37}.move:hover:not(:disabled){background:#f5e6fe}.move strong{font-size:.96rem}.move .small{font-size:.72rem}.move.signature{background:#f6e0f1}.move.heal{background:#d8edcd}.battle-log{background:#f1ebe3;border-radius:16px;padding:16px;max-height:200px;overflow:auto;font-size:.84rem}.battle-log p{padding:4px 0;margin:0}.battle-log p:last-child{font-weight:800}.select{border:2px solid #4f4754;background:#fffefa;padding:11px;border-radius:12px;max-width:100%;min-width:130px}.input{border:2px solid #4f4754;background:#fffefa;padding:12px;border-radius:12px;width:100%;max-width:400px}.label{font-size:.73rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:6px}.filter-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:17px 0 19px}.filter-row .input{width:auto;flex:1;min-width:145px}.empty{padding:42px 14px;text-align:center;background:#fffdf9;border-radius:20px;border:2px dashed #bbaeb4}.reward-banner{background:#f4e3a8;padding:23px;border-radius:22px;border:2px solid #302b37;text-align:center;margin-bottom:20px}.confetti{font-size:2.3rem}.notice{background:#eee5f8;border-left:5px solid #7748a0;border-radius:10px;padding:12px 15px;margin-bottom:20px}.progress{background:#ede6e2;border-radius:99px;height:12px;overflow:hidden;margin:7px 0}.progress > div{background:#8c62bc;height:100%}.meter{display:flex;justify-content:space-between;font-size:.7rem;font-weight:800}.modal-backdrop{position:fixed;inset:0;background:rgba(28,24,39,.63);z-index:90;display:grid;place-items:center;padding:20px}.modal{max-width:470px;width:100%;border:3px solid #302b37;border-radius:23px;background:#fffefa;box-shadow:6px 7px 0 #302b37;padding:27px}.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:95;background:#302b37;color:white;border-radius:14px;padding:13px 18px;max-width:calc(100vw - 40px);font-size:.89rem;font-weight:800;box-shadow:0 6px 18px #0002}.hidden{display:none!important}.site-foot{margin:auto;max-width:1100px;text-align:center;padding:10px 25px 35px;font-size:.71rem;color:#716975;line-height:1.5}.deco{font-family:'Fraunces',Georgia,serif;font-size:1.5rem}.collection-meta{font-size:.77rem;color:#706777}.spirit{font-size:1.35rem}.source-note{font-size:.73rem;color:#716975}.sticky-actions{display:flex;gap:12px;flex-wrap:wrap}.story-item{border-bottom:1px solid #e1d6d6;padding:11px 0;font-size:.86rem}.story-item:last-child{border:none}
+@media(max-width:800px){.hero{grid-template-columns:1fr 1fr}.stat-strip{grid-template-columns:repeat(2,1fr)}.hero-pic .big{font-size:155px}.grid-3{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.head-wrap{padding:16px}.head-meta>span:last-child{display:none}.wordmark .mark{font-size:2.4rem}.game-nav button{padding:10px 13px;font-size:.82rem}.game-nav .stars{width:100%;text-align:center;padding:4px}.wrap{padding:16px 14px 75px}.hero,.grid-2{grid-template-columns:1fr}.hero-pic{min-height:215px}.hero-pic .big{font-size:170px}.panel{padding:18px}.battle-board{grid-template-columns:1fr 34px 1fr;gap:3px}.fighter{padding:10px}.fighter .avatar{min-height:95px;font-size:4.1rem}.fighter h3{font-size:.88rem}.vs{font-size:.89rem}.move-grid{grid-template-columns:1fr}.move{min-height:65px;padding:13px;flex-direction:row;align-items:center}.grid-collection{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important}}
+
+</style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to game</a>
+  <header class="site-head">
+    <div class="head-wrap">
+      <div class="wordmark"><span class="mark">✳</span><div><small>THE LITTLE PLUSH LEAGUE</small><strong>Jellycat<br>Battle Club<span class="period">.</span></strong></div></div>
+      <div class="head-meta"><span class="test-chip">● UNLISTED PLAYTEST</span><span>Collect. Cuddle. Compete.</span></div>
+    </div>
+  </header>
+  <div id="app"></div>
+  <footer class="site-foot">Unofficial fan-made prototype. Jellycat product names are linked to official catalog references. Original game rules and icon-only placeholders; no official product photos or affiliation. Your save stays in this browser.</footer>
+  <script type="module">
+/**
+ * Research-backed playable catalog. Every entry appears on the indicated official
+ * Jellycat catalog listing (checked 2026-10-16). Listed here by *product*, not species.
+ * No product photographs are reproduced. Categories are game-specific, not Jellycat's.
+ */
+const TYPES=['Food','Furry Animals','Bugs & Garden','Ocean','Silly & Spooky','Adventure'];
+const TYPE_EMOJI=['🥐','🐻','🌼','🐙','👻','🎒'];
+const TYPE_COLOR=['#ffdec0','#ead6bb','#e0f1d3','#caecf5','#e9d9f5','#d7e8fb'];
+const source=(p)=>typeof p==='number'?`https://us.jellycat.com/collections/all-soft-toys?page=${p}`:p;
+const PLANTS='https://us.jellycat.com/amuseables/amuseables-plants-woodland';
+const OCEAN='https://us.jellycat.com/animals/ocean';
+const SEA='https://us.jellycat.com/collections/ocean-sea-life';
+const HALLOWEEN='https://us.jellycat.com/collections/halloween';
+const SPORTS='https://us.jellycat.com/amuseables/amuseables-sports';
+// name | category index | catalog page | visual emoji | legendary flag
+const raw=[
+['Amuseables Croissant',0,11,'🥐'], // separately verified on official product page
+['Amuseables Birthday Cake',0,11,'🎂',1],
+['Amuseables Rainbow Birthday Cake',0,11,'🍰',1],
+['Amuseables Peanut',0,11,'🥜'],
+['Amuseables Espresso Cup',0,11,'☕'],
+['Amuseables Glazespun Doughnut',0,1,'🍩'],
+['Amuseables Mullover Spiced Drink',0,1,'☕'],
+['Amuseables Garlic',0,1,'🧄'],
+['Amuseables Vampop Drink',0,1,'🥤'],
+["Amuseables S'mores",0,3,'🍫'],
+['Amuseables Steepy Tea Bag',0,4,'🫖'],
+['Amuseables Raclette',0,6,'🧀'],
+['Amuseables Cheese Fondue',0,6,'🧀'],
+['Amuseables Toastie Pink and White Marshmallows',0,6,'🍡'],
+['Amuseables Sourdough',0,7,'🍞'],
+['Amuseables Camembert',0,7,'🧀'],
+['Amuseables Parmesan',0,7,'🧀'],
+['Amuseables Goat Cheese',0,7,'🧀'],
+['Amuseables Mia Macaron',0,10,'🍪'],
+['Amuseables Mona Macaron',0,10,'🍪'],
+['Amuseables Max Macaron',0,10,'🍪'],
+['Amuseables Bagel',0,11,'🥯'],
+['Amuseables Peach',0,12,'🍑'],
+['Amuseables Cherry',0,12,'🍒'],
+['Amuseables Eggplant',0,19,'🍆'],
+['Amuseables Peanut ‘Yeti’',4,2,'🥜'],
+['Amuseables Silver Star',4,1,'⭐'],
+['Amuseables Zapperty Lightning Bolt',4,3,'⚡'],
+['Amuseables Sun',4,11,'☀️',1],
+['Amuseables Moon',4,11,'🌙'],
+['Bretti Yeti',4,2,'❄️',1],
+['Bo Bigfoot',4,0,'👣',1],
+['Growlston Gargoyle',4,1,'🪨'],
+['Ghost Bob',4,1,'👻'],
+['Jellycat Jack Junior',4,1,'🐈‍⬛'],
+['Zumblebi Alien',4,5,'👽',1],
+['Rockleton',4,2,'🪨'],
+['Amuseables Flickerty Candle',4,1,'🕯️'],
+['Ooky Jack O Lantern',4,11,'🎃'],
+['Sky Dragon',4,12,'🐉',1],
+['Amuseables Ort & Tum Acorns',2,2,'🌰'],
+['Amuseables Mulshi Woodland Floor',2,3,'🍄'],
+['Amuseables Bouquet of Flowers',2,11,'💐'],
+['Amuseables Coral',2,11,'🪸'],
+['Wonda Wombat',2,7,'🌿'],
+['Blushkin Blossom Luxe Bunny',2,4,'🌸'],
+['Thistlepop Blossom Luxe Bunny',2,4,'🌸'],
+['Bashful Woodland Bunny',2,7,'🌲'],
+['Amuseables Eggplant Bag Charm',2,19,'🍆'],
+['Bashful Tulip Pink Bunny',2,16,'🌷'],
+['Bizzlestomp Bear',1,1,'🐻',1],
+['Ulrich Wolf',1,1,'🐺'],
+["Munro Scottie Dog 'Winter Jumper'",1,1,'🐕'],
+['Tawoola Owl',1,1,'🦉'],
+['Trixiwoo Raccoon',1,2,'🦝'],
+['Bartholomew Bear ‘Sun’',1,2,'🐻'],
+['Bartholomew Bear ‘Hiking’',1,2,'🐻'],
+['Bartholomew Bear ‘All-in-one’',1,4,'🐻'],
+['Golden Puppy',1,4,'🐶'],
+['Jerboa',1,4,'🐭'],
+['Wheat Flufflet Bunny',1,4,'🐰'],
+['Oat Flufflet Bunny',1,4,'🐰'],
+['Fawn Flufflet Bunny',1,4,'🐰'],
+['Leola Bear',1,6,'🐻'],
+['Bartholomew Bear',1,11,'🐻'],
+['Smudge Elephant',1,11,'🐘'],
+['Peanut Penguin',1,11,'🐧'],
+['Ricky Rain Frog',1,11,'🐸'],
+['Bashful Turtle',1,11,'🐢'],
+['Bashful Beige Bunny',1,16,'🐰'],
+['Bashful Pink Bunny',1,16,'🐰'],
+['Bashful Cream Bunny',1,16,'🐰'],
+['Bashful Black & Cream Puppy',1,16,'🐶'],
+['Smudge Monkey',1,10,'🐵'],
+['Brooke Otter',3,12,'🦦'],
+['Gobfrey Whale Shark',3,11,'🦈',1],
+['Timmy Turtle',3,11,'🐢'],
+['Amuseables Sports Ski Club Goggles',5,1,'🥽'],
+['Amuseables Fitswell Mitten',5,1,'🧤'],
+['Amuseables Perta Snow Boot',5,1,'🥾'],
+['Amuseables Sports Walston Whistle',5,2,'📣'],
+['Amuseables Canada Soccer Ball',5,1,'⚽'],
+['Amuseables USA Soccer Ball',5,1,'⚽'],
+['Amuseables Mexico Soccer Ball',5,2,'⚽'],
+['Amuseables Sports Fowla Red Card',5,2,'🟥'],
+['Amuseables Sports Warni Yellow Card',5,2,'🟨'],
+['Amuseables Sports Pickleball',5,7,'🏓'],
+['Amuseables Sports Ski Goggles',5,11,'🥽'],
+['Bartholomew Bear ‘Bathrobe’',5,11,'🛁'],
+['Munro Scottie Dog ‘Space’',5,5,'🚀'],
+['Rufferty Puppy ‘Wizard’',5,1,'🪄'],
+['Amuseables Diamond Ring with Personalized Bag',5,16,'💍'],
+['Strutton Pigeon',5,4,'🕊️'],
+['Jellycat Jack',5,11,'🐈‍⬛',1],
+['Amuseables Pomilly',5,1,'🧶'],
+["Ewert Sheepdog",1,8,"🐕"],
+["Amuseables Pinecone Tree",2,PLANTS,"🌲"],
+["Amuseables Ivy",2,PLANTS,"🌿"],
+["Amuseables Hydrangea",2,PLANTS,"💐"],
+["Amuseables Siofra Shamrock Bag Charm",2,PLANTS,"☘️"],
+["Amuseables Siofra Shamrock",2,PLANTS,"☘️"],
+["Amuseables Pammie Palm Tree",2,PLANTS,"🌴"],
+["Amuseables Sunflower",2,PLANTS,"🌻"],
+["Amuseables Pink Orchid",2,PLANTS,"🌺"],
+["Amuseables Rose Bouquet",2,PLANTS,"🌹"],
+["Amuseables Monstera Plant",2,PLANTS,"🪴"],
+["Amuseables Daisy",2,PLANTS,"🌼"],
+["Albee Bee",2,9,"🐝"],
+["Amuseables Happy Raindrop",2,9,"💧"],
+["Amuseables Pebble",2,6,"🪨"],
+["Amuseables Pinecone Wreath",2,"https://us.jellycat.com/amuseables","🌲"],
+["Roarwell Sea Lion",3,OCEAN,"🦭"],
+["Keli Pelican",3,OCEAN,"🐦"],
+["Larry Lobster ‘Sailor’",3,OCEAN,"🦞"],
+["Fancy Carp",3,OCEAN,"🐟"],
+["Pinchsnap Crab",3,OCEAN,"🦀"],
+["Puddlesea Bunny",3,SEA,"🐰"],
+["Bartholomew Bear ‘Seafarer’",3,SEA,"⛵"],
+["Amuseables Life Ring",3,SEA,"🛟"],
+["Thimble Turtle",3,OCEAN,"🐢"],
+["Galumphous Seal",3,OCEAN,"🦭"],
+["Amuseables Sardine Tin",3,SEA,"🐟"],
+["Amuseables Michelle Mussel",3,SEA,"🐚"],
+["Fluffy Turtle",3,OCEAN,"🐢"],
+["Sheldon Shrimp",3,OCEAN,"🦐"],
+["Odell Octopus",3,OCEAN,"🐙"],
+["Fluffy Whale",3,OCEAN,"🐳"],
+["Fluffy Crab",3,OCEAN,"🦀"],
+["Chip Seagull",3,OCEAN,"🐦"],
+["Maya Octopus",3,OCEAN,"🐙"],
+["Amuseables Aruba Coconut",3,SEA,"🥥"],
+["Amuseables Lemonade",3,SEA,"🍋"],
+["Amuseables Sun 'Roller Skates'",3,SEA,"☀️"],
+["Amuseables Snow Globe",4,HALLOWEEN,"❄️"],
+["Amuseables Peanut ‘Cat’",4,HALLOWEEN,"🐈‍⬛"],
+["Broox Bat",4,HALLOWEEN,"🦇"],
+["Bartholomew Bear 'Spider'",4,HALLOWEEN,"🕷️"],
+["Amuseables Toffee Apple",4,HALLOWEEN,"🍎"],
+["Heccaty Hootnightly",4,HALLOWEEN,"🦉"],
+["Hocus Crow",4,HALLOWEEN,"🐦‍⬛"],
+["Spookipaws Cat",4,HALLOWEEN,"🐈‍⬛"],
+["Mummy Bob",4,HALLOWEEN,"👻"],
+["Skeleton Bob",4,HALLOWEEN,"💀"],
+["Amuseables Sports Sparely Bowling Pin",5,SPORTS,"🎳"],
+["Amuseables Jellycat Soccer Ball",5,SPORTS,"⚽"],
+["Amuseables Sports Cariss Curling Stone",5,SPORTS,"🥌"],
+["Amuseables Sports Ice Hockey Puck",5,SPORTS,"🏒"],
+["Amuseables Sports Tennis Ball",5,SPORTS,"🎾"],
+["Amuseables Sports Golf Ball",5,SPORTS,"⛳"],
+["Amuseables Sports Baseball",5,SPORTS,"⚾"],
+];
+const overrideSource={
+  'Amuseables Croissant':'https://us.jellycat.com/amuseables-croissant/',
+  'Bo Bigfoot':'https://us.jellycat.com/bo-bigfoot/',
+};
+function slug(s){return s.normalize('NFKD').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
+const CATALOG=raw.map(([officialName,typeIdx,page,emoji,legendary],i)=>{
+  const id=slug(officialName);
+  const rarity=legendary?'Legendary': i%10===0?'Rare':i%4===0?'Uncommon':'Common';
+  const level=rarity==='Legendary'?3:rarity==='Rare'?2:1;
+  return {id,officialName,type:TYPES[typeIdx],typeIndex:typeIdx,emoji,rarity,source:overrideSource[officialName]||source(page),verified:true,
+    base:{hp:86+((i*7)%29)+level*3,attack:25+((i*13)%16)+level*2,defense:22+((i*11)%18)+level,speed:19+((i*17)%20)+level},
+    moves:[{name:moveName(officialName,typeIdx,0),kind:'quick',power:40,accuracy:1},
+           {name:moveName(officialName,typeIdx,1),kind:'signature',power:65,accuracy:.83},
+           {name:moveName(officialName,typeIdx,2),kind:'heal',power:0,accuracy:1}]
+  }
+});
+function moveName(n,t,i){const p=n.replace(/^Amuseables /,'').split(/[ ‘']/)[0];const words=[['Crumb Toss','Golden Crunch','Cozy Snack'],['Soft Tackle','Fluff Flurry','Cuddle Break'],['Petal Pop','Garden Gust','Sunshine Snooze'],['Bubble Bounce','Tidal Twirl','Sea Breeze'],['Silly Scare','Moonlight Mischief','Dreamy Nap'],['Quick Dash','Victory Spin','Rest Stop']];return (i===0?p+' '+words[t][0]:i===1?words[t][1]:words[t][2]);}
+const BY_ID=new Map(CATALOG.map(x=>[x.id,x]));
+const STARTER_ID='amuseables-croissant';
+const COLLECTION_GOAL=150;
+const LEGENDARIES=CATALOG.filter(x=>x.rarity==='Legendary');
+
+
+const SAVE_KEY='jbc-progress-v3';
+const MAX_LEVEL=50;
+const XP_TO_LEVEL=l=>50+25*l;
+const rand=(rng=Math.random)=>rng();
+const take=(list,rng=Math.random)=>list.length?list[Math.min(list.length-1,Math.floor(rand(rng)*list.length))]:null;
+const shuffle=(xs,rng=Math.random)=>{const a=[...xs];for(let i=a.length-1;i>0;i--){const j=Math.floor(rand(rng)*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const owned=(s,id)=>s.owned.includes(id);
+const label=(s,id)=>s.nicknames[id]||BY_ID.get(id)?.officialName||'Unknown Jellycat';
+const fighterStats=(id,level=1,boost=0)=>{const x=BY_ID.get(id);if(!x)throw Error('Unknown character '+id);return {hp:x.base.hp+(level-1)*5+boost*4,attack:x.base.attack+(level-1)*2+boost,defense:x.base.defense+(level-1)*2+boost,speed:x.base.speed+Math.floor((level-1)/3)};};
+function freshSave(){return {version:3,onboarded:false,owned:[STARTER_ID],team:[STARTER_ID],nicknames:{},levels:{[STARTER_ID]:1},xp:{[STARTER_ID]:0},wins:0,losses:0,streak:0,bestStreak:0,points:0,jars:0,bossWins:0,pending:null,battle:null,history:[]};}
+function validateSave(input){const d=freshSave();if(!input||typeof input!=='object')return d;
+ const ids=(a)=>Array.isArray(a)?[...new Set(a.filter(x=>typeof x==='string'&&BY_ID.has(x)))]:[];
+ const out={...d,...input};out.owned=ids(input.owned);if(!out.owned.includes(STARTER_ID))out.owned.unshift(STARTER_ID);
+ out.team=ids(input.team).filter(x=>out.owned.includes(x)).slice(0,3);if(!out.team.length)out.team=[STARTER_ID];
+ const values=(obj,fn)=>Object.fromEntries(Object.entries(obj||{}).filter(([id])=>out.owned.includes(id)).map(([id,x])=>[id,fn(x)]));
+ out.nicknames=values(input.nicknames,x=>String(x||'').trim().slice(0,24));
+ out.levels=values(input.levels,x=>Math.max(1,Math.min(MAX_LEVEL,Math.floor(Number(x)||1))));
+ out.xp=values(input.xp,x=>Math.max(0,Math.floor(Number(x)||0)));
+ for(const id of out.owned){out.levels[id]??=1;out.xp[id]??=0;}
+ for(const k of ['wins','losses','streak','bestStreak','points','jars','bossWins'])out[k]=Math.max(0,Math.floor(Number(input[k])||0));
+ out.onboarded=Boolean(input.onboarded);
+ out.pending=input.pending&&typeof input.pending==='object'?sanitizePending(input.pending,out):null;
+ out.battle=input.battle&&typeof input.battle==='object'?sanitizeBattle(input.battle,out):null;
+ out.history=Array.isArray(input.history)?input.history.filter(x=>typeof x==='string').slice(-30):[];
+ out.version=3;return out;
+}
+function sanitizePending(p,s){const choices=[...new Set((p.choices||[]).filter(x=>BY_ID.has(x)&&!s.owned.includes(x)))].slice(0,3);return choices.length?{choices,boss:Boolean(p.boss)}:null;}
+function sanitizeBattle(b,s){if(!Array.isArray(b.mine)||!Array.isArray(b.theirs))return null;
+ const clean=(list,player)=>list.slice(0,3).filter(f=>BY_ID.has(f.id)&&(!player||s.owned.includes(f.id))).map(f=>({id:f.id,level:Math.max(1,Math.min(50,Math.floor(f.level)||1)),hp:Math.max(0,Math.min(999,Math.floor(f.hp)||0)),maxHp:Math.max(1,Math.min(999,Math.floor(f.maxHp)||100)),heals:Math.max(0,Math.min(1,Math.floor(f.heals)||0)),boost:Math.max(0,Math.min(25,Math.floor(f.boost)||0))}));
+ const mine=clean(b.mine,true),theirs=clean(b.theirs,false);if(!mine.length||!theirs.length)return null;
+ return {...b,mine,theirs,mi:Math.max(0,Math.min(mine.length-1,Math.floor(b.mi)||0)),ei:Math.max(0,Math.min(theirs.length-1,Math.floor(b.ei)||0)),log:Array.isArray(b.log)?b.log.filter(x=>typeof x==='string').slice(-35):[],kind:b.kind==='boss'?'boss':'normal',cpuScale:Math.max(.45,Math.min(1.2,Number(b.cpuScale)||1)),round:Math.max(1,Math.floor(b.round)||1)};
+}
+function typeMultiplier(a,b){const ai=TYPES.indexOf(a),bi=TYPES.indexOf(b);if(ai<0||bi<0)return 1;if((ai+1)%TYPES.length===bi)return 1.35;if((bi+1)%TYPES.length===ai)return .75;return 1;}
+function participant(id,level,boost=0){const {hp}=fighterStats(id,level,boost);return {id,level,hp,maxHp:hp,heals:0,boost};}
+function nextAlive(team){return team.findIndex(x=>x.hp>0)};
+const allOut=(team)=>team.every(x=>x.hp<=0);
+function makeBattle(save,rng=Math.random){if(save.pending)throw Error('Claim your reward first');if(save.battle)return save.battle;
+ const n=Math.min(3,save.team.length);let boss=save.wins>0&&(save.wins+1)%7===0&&LEGENDARIES.some(x=>!save.owned.includes(x.id));
+ const regular=shuffle(CATALOG.filter(x=>x.rarity!=='Legendary'&&!save.owned.includes(x.id)),rng);
+ let enemy=regular.slice(0,n);if(enemy.length<n)enemy.push(...shuffle(CATALOG.filter(x=>x.rarity!=='Legendary'&&!enemy.includes(x)),rng).slice(0,n-enemy.length));
+ if(boss){const candidates=LEGENDARIES.filter(x=>!save.owned.includes(x.id));enemy[0]=take(candidates,rng);}
+ if(!enemy.length)throw Error('No opponents available');
+ // Start CPU slightly weaker, ramp up slowly. Never scale unboundedly.
+ const average=save.team.reduce((sum,id)=>sum+(save.levels[id]||1),0)/n;
+ const enemyLevel=Math.max(1,Math.min(50,Math.round(average-1+save.wins/9)));
+ const boost=Math.min(16,Math.floor(save.wins/5));
+ const b={kind:boss?'boss':'normal',mine:save.team.slice(0,3).map(id=>participant(id,save.levels[id]||1)),theirs:enemy.map(x=>participant(x.id,enemyLevel,boss?boost+1:boost)),mi:0,ei:0,round:1,cpuScale:Math.min(1.08,.36+save.wins*.024),log:[boss?'A legendary challenger appears!':'A new match begins. Choose your move!']};
+ save.battle=b;return b;
+}
+function active(b,side){return b[side][b[side==='mine'?'mi':'ei']];}
+function calculateHit(from,to,move,rng,cpuScale=1){const attacker=BY_ID.get(from.id),defender=BY_ID.get(to.id);
+ if(move.kind==='heal'){if(from.heals>=1)return {text:`${attacker.officialName} already used its cuddle break.`,done:false};const amt=Math.min(Math.round(from.maxHp*.34),from.maxHp-from.hp);from.hp+=amt;from.heals++;return {text:`${attacker.officialName} used ${move.name} and recovered ${amt} HP.`,done:true,heal:amt};}
+ if(rand(rng)>=move.accuracy)return {text:`${attacker.officialName} used ${move.name}, but missed!`,done:true,miss:true};
+ const a=fighterStats(from.id,from.level,from.boost),d=fighterStats(to.id,to.level,to.boost);
+ const mult=move.kind==='signature'?typeMultiplier(attacker.type,defender.type):1;
+ const crit=rand(rng)<.07?1.35:1;
+ const dmg=Math.max(3,Math.round((move.power*.55)*(a.attack/d.defense)*mult*(.90+rand(rng)*.2)*crit*cpuScale));
+ to.hp=Math.max(0,to.hp-dmg);
+ const suffix=mult>1?' Super effective!':mult<1?' Not very effective.':'';
+ return {text:`${attacker.officialName} used ${move.name}: ${dmg} damage.${suffix}${crit>1?' Critical hit!':''}`,done:true,damage:dmg,mult};
+}
+function chooseCpuMove(b,rng=Math.random){const cpu=active(b,'theirs'),you=active(b,'mine'),c=BY_ID.get(cpu.id);const mult=typeMultiplier(c.type,BY_ID.get(you.id).type);
+ if(cpu.heals===0&&cpu.hp/cpu.maxHp<.30)return 2;
+ if(mult>1.01)return 1;
+ if(mult<1&&rand(rng)<.75)return 0;
+ return rand(rng)<.55?1:0;
+}
+function combatAction(b,side,index,rng){const from=active(b,side),to=active(b,side==='mine'?'theirs':'mine'),move=BY_ID.get(from.id).moves[index];
+ const outcome=calculateHit(from,to,move,rng,side==='theirs'?(b.cpuScale??1):1);b.log.push((side==='theirs'?'CPU: ':'')+outcome.text);return outcome;
+}
+function takeTurn(b,action,rng=Math.random){if(!b||allOut(b.mine)||allOut(b.theirs))throw Error('Battle finished');
+ const next=structuredClone(b);
+ const player=active(next,'mine'),cpu=active(next,'theirs');if(player.hp<=0||cpu.hp<=0)throw Error('Select a healthy fighter');
+ if(action.type==='switch'){
+  if(!Number.isInteger(action.index)||action.index<0||action.index>=next.mine.length||next.mi===action.index||next.mine[action.index].hp<=0)throw Error('Invalid switch');
+  next.mi=action.index;next.log.push(`${BY_ID.get(active(next,'mine').id).officialName} switched in!`);
+  combatAction(next,'theirs',chooseCpuMove(next,rng),rng);
+ }else{
+  if(action.type!=='move'||![0,1,2].includes(action.index))throw Error('Invalid move');
+  if(action.index===2&&player.heals>=1)throw Error('Cuddle break already used');
+  const speedP=fighterStats(player.id,player.level).speed,speedC=fighterStats(cpu.id,cpu.level,cpu.boost).speed;
+  const order=speedP>=speedC?['mine','theirs']:['theirs','mine'];
+  for(const side of order){if(active(next,'mine').hp<=0||active(next,'theirs').hp<=0)break;combatAction(next,side,side==='mine'?action.index:chooseCpuMove(next,rng),rng);}
+ }
+ if(active(next,'mine').hp<=0&&!allOut(next.mine)){next.mi=nextAlive(next.mine);next.log.push(`${BY_ID.get(active(next,'mine').id).officialName} takes the field!`);}
+ if(active(next,'theirs').hp<=0&&!allOut(next.theirs)){next.ei=nextAlive(next.theirs);next.log.push(`CPU sends in ${BY_ID.get(active(next,'theirs').id).officialName}!`);}
+ next.round++;next.log=next.log.slice(-35);
+ const result=allOut(next.theirs)?'win':allOut(next.mine)?'loss':null;
+ return {battle:next,result};
+}
+function grantXp(s,id,amount){let level=s.levels[id]||1,xp=(s.xp[id]||0)+amount;while(level<MAX_LEVEL&&xp>=XP_TO_LEVEL(level)){xp-=XP_TO_LEVEL(level);level++;}if(level>=MAX_LEVEL)xp=0;s.levels[id]=level;s.xp[id]=xp;}
+function rewardChoices(s,rng,boss=false,defeated=[]){let pool=CATALOG.filter(p=>!owned(s,p.id));if(!pool.length)return [];
+ let options=[];
+ if(boss){const bossChar=defeated.map(id=>BY_ID.get(id)).find(p=>p?.rarity==='Legendary'&&!owned(s,p.id));if(bossChar)options.push(bossChar);}
+ const normal=shuffle(pool.filter(p=>!options.some(o=>o.id===p.id)&&p.rarity!=='Legendary'),rng);
+ const rare=shuffle(normal.filter(p=>p.rarity==='Rare'||p.rarity==='Uncommon'),rng);
+ if(rare.length&&rand(rng)<.55)options.push(rare[0]);
+ options.push(...normal.filter(p=>!options.some(x=>x.id===p.id)));
+ if(options.length<3)options.push(...shuffle(pool.filter(p=>!options.some(x=>x.id===p.id)),rng));
+ return options.slice(0,3).map(p=>p.id);
+}
+function concludeBattle(save,result,rng=Math.random){if(!save.battle)throw Error('No battle running');if(!['win','loss'].includes(result))throw Error('Bad result');
+ const s=structuredClone(save),b=s.battle;s.battle=null;
+ if(result==='win'){
+  if(!allOut(b.theirs))throw Error('Opponent not defeated');
+  s.wins++;s.streak++;s.bestStreak=Math.max(s.bestStreak,s.streak);s.points++;
+  if(s.wins%5===0)s.jars++;
+  if(b.kind==='boss')s.bossWins++;
+  b.mine.forEach(f=>grantXp(s,f.id,f.hp>0?35:22));
+  const options=rewardChoices(s,rng,b.kind==='boss',b.theirs.map(f=>f.id));
+  s.pending=options.length?{choices:options,boss:b.kind==='boss'}:null;
+  s.history.push(`${b.kind==='boss'?'Legendary':'Team'} victory: +1 point · streak ${s.streak}`);
+ }else{
+  if(!allOut(b.mine))throw Error('Your team has not been defeated');
+  s.losses++;s.streak=0;s.history.push('Defeat: streak reset · collection safe');
+ }
+ s.history=s.history.slice(-30);return s;
+}
+function claimReward(save,id){if(!save.pending?.choices.includes(id))throw Error('Not a reward choice');if(owned(save,id))throw Error('Already owned');const s=structuredClone(save);s.owned.push(id);s.levels[id]=1;s.xp[id]=0;s.pending=null;if(s.team.length<3)s.team.push(id);s.history.push(`Discovered ${BY_ID.get(id).officialName}`);s.history=s.history.slice(-30);return s;}
+function jarDrop(save,rng=Math.random){if(save.jars<=0)throw Error('No jars');const s=structuredClone(save),unowned=CATALOG.filter(x=>!owned(s,x.id));if(!unowned.length)return {save:s,found:null};
+ const legends=unowned.filter(x=>x.rarity==='Legendary'),ordinary=unowned.filter(x=>x.rarity!=='Legendary');
+ const list=(legends.length&&rand(rng)<.15)||!ordinary.length?legends:ordinary;
+ const found=take(list,rng);if(!found)return {save:s,found:null};
+ s.jars--;s.owned.push(found.id);s.levels[found.id]=1;s.xp[found.id]=0;
+ s.history.push(`Mystery jar revealed ${found.officialName}`);s.history=s.history.slice(-30);return {save:s,found:found.id};
+}
+function changeTeam(s,id){if(!owned(s,id))throw Error('Not collected');const a=structuredClone(s);if(a.battle)throw Error('Finish the battle first');
+ if(a.team.includes(id)){if(a.team.length===1)throw Error('You need at least one team member');a.team=a.team.filter(x=>x!==id);}else {if(a.team.length===3)throw Error('Team already full');a.team.push(id);}return a;}
+function saveNickname(s,id,text){if(!owned(s,id))throw Error('Not collected');const a=structuredClone(s);const name=String(text||'').trim().slice(0,24);if(!name)throw Error('Enter a nickname');a.nicknames[id]=name;return a;}
+
+
+
+const $=s=>document.querySelector(s);
+const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let state=loadSave(),page='home',category='All',query='',ownership='All',detail=null,toastTimer=null;
+function loadSave(){try{const v=localStorage.getItem(SAVE_KEY);if(v)return validateSave(JSON.parse(v));const old=JSON.parse(localStorage.getItem('jbc-v2')||'null');if(old){const d=freshSave();d.nicknames[STARTER_ID]=String(old.names?.croissant||'').slice(0,24);d.onboarded=!!old.onboarded;d.wins=Math.max(0,old.wins|0);d.losses=Math.max(0,old.losses|0);d.streak=Math.max(0,old.streak|0);d.bestStreak=d.streak;d.points=Math.max(0,old.points|0);d.jars=Math.max(0,old.jars|0);d.levels[STARTER_ID]=Math.max(1,old.levels?.croissant||1);d.xp[STARTER_ID]=Math.max(0,old.xp?.croissant||0);return validateSave(d);}}catch(e){console.warn('Save recovery:',e)}return freshSave();}
+function persist(){state=validateSave(state);try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch(e){notify('Could not save progress in this browser. Check storage permissions.');}}
+function update(fn){state=fn(state);persist();render();}
+function el(tag,cl,text){const x=document.createElement(tag);if(cl)x.className=cl;if(text)x.textContent=text;return x;}
+function notify(message){let t=$('.toast');if(!t){t=el('div','toast');t.setAttribute('role','status');document.body.append(t);}t.textContent=message;t.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.add('hidden'),3600);}
+function go(p){page=p;detail=null;render();window.scrollTo({top:0,behavior:'instant'});}
+const badge=(txt,style='')=>`<span class="mini-pill" ${style?`style="${style}"`:''}>${safe(txt)}</span>`;
+const rarityTag=p=>badge(p.rarity,p.rarity==='Legendary'?'background:#ffe49f;color:#68431c':p.rarity==='Rare'?'background:#eddbff;color:#61358c':'');
+const bigAvatar=(p,hidden=false)=>`<div class="avatar ${hidden?'mystery':''}" style="background:${hidden?'#d9d4da':TYPE_COLOR[p.typeIndex]};"><span aria-hidden="true">${hidden?'?':safe(p.emoji)}</span></div>`;
+function progressBar(value,max,kind='hp'){const percentage=Math.max(0,Math.min(100,Math.round(100*value/max)));return `<div class="bar" role="progressbar" aria-valuenow="${value}" aria-valuemin="0" aria-valuemax="${max}"><div class="fill ${kind==='xp'?'xp':percentage<28?'low':''}" style="width:${percentage}%"></div></div>`;}
+function statBar(){return `<div class="stat-strip"><div class="stat-item"><span class="stat-label">Matches won</span><span class="big-number">${state.wins}</span></div><div class="stat-item"><span class="stat-label">Win streak</span><span class="big-number">${state.streak} <span style="font:normal 1.2rem sans-serif">🔥</span></span></div><div class="stat-item"><span class="stat-label">Your collection</span><span class="big-number">${state.owned.length}<span style="font-size:.91rem">/${COLLECTION_GOAL}</span></span></div><div class="stat-item"><span class="stat-label">Star points</span><span class="big-number">${state.points} <span style="font:normal 1.2rem sans-serif">★</span></span></div></div>`;}
+function nav(){return `<nav class="game-nav" aria-label="Game sections">
+${[['home','⌂ Home'],['battle','⚔ Battle'],['collection','▦ Collection'],['clubhouse','✦ Clubhouse']].map(([id,t])=>`<button type="button" data-action="nav" data-id="${id}" ${page===id?'aria-current="page"':''}>${t}</button>`).join('')}
+<span class="spacer"></span><span class="stars">★ ${state.points} points &nbsp; · &nbsp; 🫙 ${state.jars} jars</span></nav>`;}
+function panel(c,cl=''){return `<section class="panel ${cl}">${c}</section>`;}
+function card(p,hidden=false,selected=false,action='detail',labelOverride=null){let name=hidden?'????':(labelOverride||label(state,p.id));return `<button type="button" class="plush ${hidden?'locked':''} ${selected?'selected':''}" data-action="${action}" data-id="${safe(p.id)}" ${hidden?'aria-label="Undiscovered character"':''}>
+${bigAvatar(p,hidden)}<span class="plush-title">${safe(name)}</span><span class="plush-detail">${hidden?'Not discovered':`${safe(p.type)} · ${safe(p.rarity)}`}</span>
+${!hidden&&owned(state,p.id)?`<span class="level">LV ${state.levels[p.id]||1}</span>`:''}</button>`;}
+function render(){let output=`<main id="main" class="wrap">${nav()}`;
+ if(!state.onboarded)output+=onboard();
+ else if(state.pending)output+=rewards();
+ else if(page==='home')output+=home();
+ else if(page==='battle')output+=battle();
+ else if(page==='collection')output+=collection();
+ else output+=clubhouse();
+ output+='</main>';
+ $('#app').innerHTML=output;
+ if(detail)showDetail();
+}
+function onboard(){const p=BY_ID.get(STARTER_ID);return `<div class="hero">
+${panel(`<span class="eyebrow">Welcome, trainer!</span><h1>Your first little<br>champion.</h1><p>Every great collection starts with one Jellycat. Meet your first teammate, the real <strong>Amuseables Croissant</strong>. You can call yours Amy, Beth, or anything you like.</p>
+<form id="starter-form"><label class="label" for="starter-name">Give your croissant a nickname</label><input required class="input" id="starter-name" maxlength="24" placeholder="Amy, Beth…" autocomplete="off"><div class="row mt-20"><button class="btn" type="submit">Start my adventure →</button></div></form>`, 'hero-panel')}
+${panel(`${bigAvatar(p)}<div class="center" style="margin-top:12px"><span class="eyebrow">01 / The first friend</span><h2>${safe(p.officialName)}</h2><a class="source-link" href="${safe(p.source)}" target="_blank" rel="noopener noreferrer">Official Jellycat listing ↗</a></div>`)}
+</div>${panel(`<h2>How it works</h2><div class="grid-3"><div><span class="spirit">⚔️</span><h3>Battle</h3><p class="small">Choose one of three moves. Build up to a team of three as you collect more.</p></div><div><span class="spirit">🎁</span><h3>Collect</h3><p class="small">Win, then choose one of three mystery rewards. Legendary bosses appear later.</p></div><div><span class="spirit">⭐</span><h3>Grow</h3><p class="small">Earn experience and level up. Your Jellycats stay the characters they are.</p></div></div>`)}`;}
+function home(){const started=state.battle!==null;const featured=BY_ID.get(state.team[0]);return `${statBar()}<div class="hero">
+${panel(`<div class="eyebrow">Your adventure starts here</div><h1>Your team.<br>Your rules.</h1><p>Build a little dream team, challenge the computer, and collect new real Jellycat characters. Each victory gets you closer to the full collection.</p><div class="ribbon mb-18">${badge('3 moves each')}${badge('6 battle types')}${badge('★ 1 point per win')}</div><button class="btn" data-action="nav" data-id="battle">${started?'Resume your battle →':'Find a battle →'}</button>`,'hero-panel')}
+${panel(`<div class="eyebrow">Your lead Jellycat</div><div class="center">${bigAvatar(featured)}<h2 class="mt-12">${safe(label(state,featured.id))}</h2><p class="small">${safe(featured.officialName)} · Level ${state.levels[featured.id]||1}</p></div>`, 'starter-portrait')}
+</div><div class="grid-2">
+${panel(`<div class="row between mb-18"><div><div class="eyebrow">Pick up to three</div><h2 class="mb-0">Your battle team</h2></div>${badge(`${state.team.length} / 3 ready`)}</div>
+<div class="grid-3">${state.team.map(id=>card(BY_ID.get(id))).join('')}</div><p class="small muted mt-12">To switch your lineup, visit the Collection and select a different teammate.</p><button class="btn pink" data-action="nav" data-id="collection">Manage team</button>`) }
+${panel(`<div class="row between"><div><div class="eyebrow">A little surprise</div><h2>🫙 Mystery jars</h2></div>${badge(`${state.jars} available`)}</div><p>Every fifth win earns a special jar. Most contain a new regular character, but sometimes a legendary Jellycat is hiding inside!</p><button class="btn mint" data-action="jar" ${state.jars?'':'disabled'}>Open mystery jar</button><p class="source-note mt-12">Legendary chance: 15%. You'll never receive a duplicate.</p>`)}
+</div>${panel(`<div class="row between"><h2 class="mb-0">Your latest highlights</h2>${badge(`Best streak: ${state.bestStreak}`)}</div>${state.history.length?state.history.slice(-4).reverse().map(s=>`<div class="story-item">✳ &nbsp; ${safe(s)}</div>`).join(''):'<p class="small muted mt-20">No battles yet. Your story starts with your first match.</p>'}`)}`;}
+function collection(){const list=CATALOG.filter(p=>{
+ const has=owned(state,p.id);return(category==='All'||p.type===category)&&(ownership==='All'||(ownership==='Owned'?has:!has))&&(!query||(has&&(label(state,p.id)+' '+p.officialName).toLowerCase().includes(query.toLowerCase())));
+ });
+ return `${statBar()}<div class="row between mb-18"><div><span class="eyebrow">The collector's notebook</span><h1>The collection.</h1><p class="mb-0 muted">Discover their real names after you win. Undiscovered entries stay a mystery.</p></div><div class="center"><span class="big-number">${state.owned.length}</span><div class="small muted">of ${COLLECTION_GOAL} planned</div></div></div>
+${panel(`<div class="meter"><span>Collection progress</span><span>${Math.round(100*state.owned.length/COLLECTION_GOAL)}%</span></div><div class="progress"><div style="width:${100*state.owned.length/COLLECTION_GOAL}%"></div></div><div class="filter-row"><label class="label" for="filter-type">Type</label><select id="filter-type" class="select"><option>All</option>${TYPES.map(t=>`<option ${category===t?'selected':''}>${safe(t)}</option>`).join('')}</select><label class="label" for="filter-owned">Show</label><select id="filter-owned" class="select">${['All','Owned','Mystery'].map(x=>`<option ${ownership===x?'selected':''}>${x}</option>`).join('')}</select><input class="input" id="filter-query" aria-label="Search discovered characters" value="${safe(query)}" placeholder="Search discovered friends…"></div>
+<p class="source-note">All ${CATALOG.length} collectible names are real Jellycat catalog products. Characters you haven’t won yet remain hidden, and each unlocked profile links to its source.</p>
+<div class="grid-collection">${list.map(p=>card(p,!owned(state,p.id))).join('')}${category==='All'&&ownership!=='Owned'&&!query?Array.from({length:COLLECTION_GOAL-CATALOG.length},(_,i)=>`<div class="plush locked" aria-label="Catalog spot not yet researched"><div class="avatar mystery" style="background:#d9d4da"><span>?</span></div><span class="plush-title">Future entry ${CATALOG.length+i+1}</span><span class="plush-detail">Catalog research pending</span></div>`).join(''):''}</div>
+${!list.length?'<div class="empty">No matching collected Jellycats.</div>':''}`)}`;}
+function battle(){const b=state.battle;if(!b)return `${statBar()}${panel(`<div class="eyebrow">Ready, set, cuddle!</div><h1>The battle arena.</h1><p>Choose your three Jellycats and face a computer team. Early battles are easier. As your winning record grows, opponents become stronger.</p>
+<div class="grid-3 mb-18">${state.team.map(id=>card(BY_ID.get(id))).join('')}</div><div class="notice"><strong>Your lineup has ${state.team.length} Jellycat${state.team.length===1?'':'s'}.</strong> The opponent's team will match your team size. Collect three to unlock full three-versus-three battles.</div>
+<button class="btn" data-action="start-battle">Start a new match →</button><button class="btn cream" data-action="nav" data-id="home" style="margin-left:10px">Change my team</button>
+<p class="source-note mt-20">Legendary boss matches appear every seventh victory once available. You keep your collection if you lose.</p>`)}`;
+ const me=b.mine[b.mi],enemy=b.theirs[b.ei],mp=BY_ID.get(me.id),ep=BY_ID.get(enemy.id);const mult=typeMultiplier(mp.type,ep.type);
+ const badgeText=(b.kind==='boss'?'✦ LEGENDARY BOSS':'⚔ TEAM MATCH');
+ return `<div class="row between mb-18"><div><span class="eyebrow">${badgeText} · Round ${b.round}</span><h1>${b.kind==='boss'?'The boss is here.':'Your move.'}</h1></div><div>${badge(`${b.mine.length} vs ${b.theirs.length} team`)}</div></div>
+${panel(`<div class="battle-board"><div class="fighter you"><div class="eyebrow">Your Jellycat</div><div class="avatar">${safe(mp.emoji)}</div><h3>${safe(label(state,me.id))}</h3><div class="sub">${safe(mp.type)} · LV ${me.level}</div><div class="hp-meta"><span>HP</span><span>${me.hp} / ${me.maxHp}</span></div>${progressBar(me.hp,me.maxHp)}</div><div class="vs">VS.</div><div class="fighter enemy"><div class="eyebrow">Computer</div><div class="avatar">${safe(ep.emoji)}</div><h3>${safe(ep.officialName)}</h3><div class="sub">${safe(ep.type)} · LV ${enemy.level}</div><div class="hp-meta"><span>HP</span><span>${enemy.hp} / ${enemy.maxHp}</span></div>${progressBar(enemy.hp,enemy.maxHp)}</div></div>
+<div class="row between mt-20"><div><span class="tag">Your team</span><div class="party">${b.mine.map((f,i)=>`<span class="${f.hp===0?'fainted':''}">${i===b.mi?'◆ ':''}${safe(label(state,f.id))} · ${f.hp} HP</span>`).join('')}</div></div><div><span class="tag">Computer team</span><div class="party">${b.theirs.map((f,i)=>`<span class="${f.hp===0?'fainted':''}">${i===b.ei?'◆ ':''}${safe(BY_ID.get(f.id).officialName)} · ${f.hp} HP</span>`).join('')}</div></div></div>`)}
+<div class="grid-2 mt-20"><section class="panel"><div class="row between mb-18"><h2 class="mb-0">Choose your move</h2>${badge(mult>1?'Type advantage ▲':mult<1?'Type disadvantage ▼':'Even matchup')}</div>
+<div class="move-grid">${mp.moves.map((m,i)=>`<button class="move ${m.kind==='signature'?'signature':m.kind==='heal'?'heal':''}" data-action="move" data-index="${i}" ${m.kind==='heal'&&me.heals?'disabled':''}><strong>${safe(m.name)}</strong><span class="small">${m.kind==='heal'?(me.heals?'Already used':'Heal 34% · once per match'):m.kind==='quick'?'Always hits · steady damage':`Strong · ${Math.round(m.accuracy*100)}% accurate`}</span></button>`).join('')}</div><h3 class="mt-20">Switch teammate</h3><div class="row">${b.mine.map((f,i)=>`<button class="btn micro pink" data-action="switch" data-index="${i}" ${f.hp===0||b.mi===i?'disabled':''}>${safe(label(state,f.id))} · ${f.hp} HP</button>`).join('')}</div><p class="source-note mt-12">Switching uses your turn. Cuddle Break can only be used once per Jellycat per battle.</p></section>
+<section class="panel soft"><h2>Battle diary</h2><div role="log" aria-live="polite" class="battle-log">${b.log.slice(-10).map(line=>`<p>${safe(line)}</p>`).join('')}</div><p class="source-note mt-12">Type wheel: Food → Furry → Bugs & Garden → Ocean → Silly & Spooky → Adventure → Food.</p></section></div>`;
+}
+function rewards(){const p=state.pending;return `${statBar()}<div class="reward-banner"><div class="confetti">🎉 ✦ 🎁 ✦ 🎉</div><span class="eyebrow">+1 star point · battle won</span><h1>${p.boss?'You defeated a legend!':'Victory! Pick your prize.'}</h1><p>Three real Jellycats are waiting. <strong>Choose just one</strong> to join your collection.</p></div>
+<div class="grid-3">${p.choices.map(id=>{const x=BY_ID.get(id);return panel(`<div class="center">${bigAvatar(x)}<div class="mt-12">${rarityTag(x)}</div><h2 class="mt-12">${safe(x.officialName)}</h2><p class="small muted">${safe(x.type)} type · Level 1</p><button class="btn full" data-action="claim" data-id="${safe(id)}">Choose this Jellycat →</button></div>`,'choice-card')}).join('')}</div>${panel(`<p class="center mb-0 small">The two you don't choose remain undiscovered. You can find them again in a future battle.</p>`,'soft')}`;}
+function clubhouse(){return `${statBar()}<div class="grid-2">
+${panel(`<div class="eyebrow">Collection milestones</div><h1>Your clubhouse.</h1><div class="story-item"><strong>🏆 Best winning streak</strong><span style="float:right">${state.bestStreak}</span></div><div class="story-item"><strong>✨ Boss victories</strong><span style="float:right">${state.bossWins}</span></div><div class="story-item"><strong>🧸 Jellycats collected</strong><span style="float:right">${state.owned.length}</span></div><div class="story-item"><strong>🎯 Win / loss record</strong><span style="float:right">${state.wins} / ${state.losses}</span></div><p class="source-note mt-20">Your progress is stored only in this browser. Export a save file to move it to another computer or protect it from browser resets.</p><div class="row"><button class="btn pink" data-action="export">Export save</button><button class="btn cream" data-action="import">Import save</button><input type="file" id="import-file" class="hidden" accept="application/json,.json"></div>`)}
+${panel(`<div class="eyebrow">Behind the game</div><h2>Real Jellycats. Original rules.</h2><p>All ${CATALOG.length} playable characters use names from the official Jellycat catalog, with 25 assigned to each of six game categories. The illustrations are temporary emoji icons, not official product photos.</p><p>Battle moves, strengths, levels, and rarity assignments are fan-game inventions, not official Jellycat characteristics.</p><p><strong>Six types:</strong> ${TYPES.map((x,i)=>TYPE_EMOJI[i]+' '+x).join(' · ')}</p><p><strong>Ten legendary characters</strong> have been selected for this fan-made game. Legendary status is invented for gameplay.</p><a href="https://us.jellycat.com/collections/all-soft-toys" target="_blank" rel="noopener noreferrer">Browse the official Jellycat catalog ↗</a>`)}
+</div>${panel(`<div class="row between"><h2 class="mb-0">Game settings</h2>${badge('Saved locally')}</div><p class="small muted mt-12">Only reset if you're sure. You can export your save first.</p><button class="btn ghost" data-action="reset">Reset game progress</button><div class="story-item"></div><h3 class="mt-20">Recent activity</h3>${state.history.length?state.history.slice(-8).reverse().map(x=>`<div class="story-item">✳ ${safe(x)}</div>`).join(''):'<p class="muted small">Your wins and discoveries will appear here.</p>'}`)}`;}
+function showDetail(){const p=BY_ID.get(detail);if(!p||!owned(state,p.id))return;let l=state.levels[p.id]||1,xp=state.xp[p.id]||0,required=XP_TO_LEVEL(l),stats=fighterStats(p.id,l);
+ const bg=el('div','modal-backdrop');bg.id='detail-modal';bg.innerHTML=`<section class="modal" role="dialog" aria-modal="true" aria-label="Jellycat details"><div class="row between"><div class="eyebrow">Member profile</div><button type="button" data-action="close" class="btn micro cream">✕ Close</button></div><div class="center mt-20">${bigAvatar(p)}<h2 class="mt-12">${safe(label(state,p.id))}</h2><p class="small">Official name: <strong>${safe(p.officialName)}</strong></p><div class="row" style="justify-content:center">${rarityTag(p)}${badge(p.type)}${badge('LV '+l)}</div></div>
+<div class="mt-20 meter"><span>Experience</span><span>${l>=MAX_LEVEL?'MAX LEVEL':xp+' / '+required}</span></div><div class="progress"><div style="width:${l>=MAX_LEVEL?100:100*xp/required}%"></div></div>
+<div class="grid-2 mt-12"><div><b>❤️ ${stats.hp} HP</b></div><div><b>⚡ ${stats.speed} speed</b></div><div><b>💥 ${stats.attack} attack</b></div><div><b>🛡️ ${stats.defense} defense</b></div></div><p class="source-note mt-12">Moves: ${p.moves.map(m=>safe(m.name)).join(' · ')}</p><a href="${safe(p.source)}" target="_blank" rel="noopener noreferrer" class="source-link">View official catalog source ↗</a>
+<div class="mt-20"><label class="label" for="rename-input">Nickname</label><input class="input" id="rename-input" maxlength="24" value="${safe(label(state,p.id))}"><button class="btn mt-12" data-action="rename" data-id="${safe(p.id)}">Save nickname</button></div>
+<div class="row mt-20"><button class="btn ${state.team.includes(p.id)?'pink':'mint'}" data-action="team" data-id="${safe(p.id)}">${state.team.includes(p.id)?'Remove from team':'Add to team'}</button></div></section>`;
+ document.body.append(bg);$('#rename-input')?.focus();}
+function closeDetail(){detail=null;$('#detail-modal')?.remove();}
+function confirmReset(){const bg=el('div','modal-backdrop');bg.id='confirm-modal';bg.innerHTML=`<div class="modal" role="dialog" aria-modal="true" aria-label="Confirm reset"><h2>Start everything over?</h2><p>This permanently clears your Jellycats, levels, wins, and nicknames from this browser. Export your save first if you want to keep a copy.</p><div class="row"><button class="btn cream" data-action="cancel-reset">Keep my collection</button><button class="btn pink" data-action="confirm-reset">Yes, reset</button></div></div>`;document.body.append(bg);}
+function action(el){const type=el.dataset.action,id=el.dataset.id;
+ try{
+ if(type==='nav'){go(id);return;}
+ if(type==='start-battle'){update(s=>{const n=structuredClone(s);makeBattle(n);return n;});return;}
+ if(type==='move'||type==='switch'){
+  if(!state.battle)return;const step=takeTurn(state.battle,{type:type==='move'?'move':'switch',index:Number(el.dataset.index)});
+  let n=structuredClone(state);n.battle=step.battle;if(step.result)n=concludeBattle(n,step.result);state=n;persist();render();if(step.result==='loss')notify('Streak reset, but your collection is safe. Try again!');return;
+ }
+ if(type==='claim'){update(s=>claimReward(s,id));notify('A new friend joined your collection!');return;}
+ if(type==='jar'){const result=jarDrop(state);state=result.save;persist();render();if(result.found){detail=result.found;showDetail();notify('Mystery jar opened!');}return;}
+ if(type==='detail'){if(owned(state,id)){detail=id;showDetail();}else notify('Keep battling to discover this Jellycat!');return;}
+ if(type==='team'){update(s=>changeTeam(s,id));closeDetail();notify('Team updated.');return;}
+ if(type==='close'){closeDetail();return;}
+ if(type==='rename'){const field=$('#rename-input');update(s=>saveNickname(s,id,field?.value));closeDetail();notify('Nickname saved!');return;}
+ if(type==='reset'){confirmReset();return;}
+ if(type==='cancel-reset'){$('#confirm-modal')?.remove();return;}
+ if(type==='confirm-reset'){state=freshSave();persist();$('#confirm-modal')?.remove();go('home');return;}
+ if(type==='export'){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='jellycat-battle-club-save.json';document.body.append(a);a.click();a.remove();URL.revokeObjectURL(url);notify('Save downloaded.');return;}
+ if(type==='import'){$('#import-file')?.click();return;}
+ }catch(e){console.error(e);notify(e.message||'Something went wrong. Please try again.');}
+}
+document.addEventListener('click',e=>{const btn=e.target.closest('[data-action]');if(btn){e.preventDefault();action(btn);}else if(e.target.classList?.contains('modal-backdrop'))closeDetail();});
+document.addEventListener('submit',e=>{if(e.target.id==='starter-form'){e.preventDefault();const value=$('#starter-name').value.trim();if(!value){notify('Please give your croissant a nickname.');return;}state.nicknames[STARTER_ID]=value.slice(0,24);state.onboarded=true;persist();render();notify('Welcome to the Battle Club!');}});
+document.addEventListener('change',async e=>{
+ if(e.target.id==='filter-type'){category=e.target.value;render();}
+ if(e.target.id==='filter-owned'){ownership=e.target.value==='Mystery'?'Mystery':e.target.value;render();}
+ if(e.target.id==='import-file'&&e.target.files?.[0]){try{const f=e.target.files[0];if(f.size>1e6)throw Error('Save file too large.');const txt=await f.text(),raw=JSON.parse(txt);if(raw.version!==3)throw Error('This save is not a version 3 game file.');state=validateSave(raw);persist();go('home');notify('Save imported successfully.');}catch(err){notify(err.message||'Could not read this save.');}}
+});
+document.addEventListener('input',e=>{if(e.target.id==='filter-query'){query=e.target.value;const i=e.target.selectionStart;render();const x=$('#filter-query');if(x){x.focus();x.setSelectionRange(i,i);}}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDetail();$('#confirm-modal')?.remove();}});
+render();
+
+</script>
+</body>
+</html>
