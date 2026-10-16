@@ -28,7 +28,7 @@ window.PROJECTS = [
     summary: "Build an NBA expansion roster, navigate the salary cap, and test your decisions across simulated seasons.",
     facts: [["$117.2M", "hard cap in year one"], ["14", "picks, one per NBA team at most"], ["1,000", "simulated seasons behind every grade"]],
     stack: ["JavaScript", "Python", "Monte Carlo simulation"],
-    cover: { image: "assets/covers/31st-franchise.jpg", bg: "#00653A", band: "#FFC200" },
+    cover: { image: "assets/covers/31st-franchise-seattle.svg", bg: "#00653A", band: "#FFC200" },
     featured: true
   },
   {
