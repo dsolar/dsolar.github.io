@@ -51,7 +51,7 @@ window.PROJECTS = [
     question: "Can Seattle turn an expansion roster into a contender, season after season?",
     summary: "A multi-season front-office simulation with drafts, trades, and free agency.",
     stack: ["JavaScript", "Python"],
-    cover: { bg: "#00653A", band: "#FFC200" }
+    cover: { image: "assets/covers/dynasty-mode.svg", bg: "#10251f", band: "#d6b46e" }
   },
   {
     title: "Chat with Nick",
