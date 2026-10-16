@@ -88,8 +88,12 @@ h1 .n{color:var(--banner)}
 .theme-btn:hover{background:rgba(255,255,255,.12)}
 
 /* ---------- Tabs ---------- */
-.tabs{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
-.tabs .wrap{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tabs{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px;padding-right:max(var(--gut),calc((100vw - 1180px)/2 + var(--gut)))}
+.tabs .wrap{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin:0;flex:1 1 auto;max-width:none;padding-right:0;padding-left:max(var(--gut),calc((100vw - 1180px)/2 + var(--gut)))}
+.next-wrap{display:flex;align-items:center;gap:8px;flex:none}
+.next-k{font-size:12px;color:var(--muted)}
+#next{white-space:nowrap}
+@media (max-width:640px){.tabs{flex-wrap:wrap;padding-bottom:8px}.tabs .wrap{flex-basis:100%}.next-wrap{padding-left:var(--gut);width:100%}.next-wrap .btn{flex:1}}
 .tabs .wrap::-webkit-scrollbar{display:none}
 .tab{appearance:none;background:none;border:0;border-bottom:3px solid transparent;padding:12px 14px 9px;font:700 20px/1 var(--f-d);letter-spacing:.4px;color:var(--muted);cursor:pointer;white-space:nowrap}
 .tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--green)}
@@ -130,6 +134,17 @@ ul.plain{list-style:none;margin:0;padding:0}
 .kv dt{color:var(--muted)} .kv dd{margin:0;text-align:right;font-weight:600}
 
 /* ---------- Books ---------- */
+.owner-line{margin:4px 0 6px;font-size:14px;max-width:none}
+details.more{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);margin:0 0 8px}
+details.more>summary{cursor:pointer;list-style:none;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;padding:11px 14px}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary::before{content:"+";font:700 18px/1 var(--f-d);color:var(--green-ink);width:12px}
+details.more[open]>summary::before{content:"−"}
+details.more .mt{font:700 19px/1.1 var(--f-d);letter-spacing:.3px}
+details.more .ml{font-size:13px;color:var(--muted)}
+details.more .mb{padding:0 14px 14px}
+details.more .mb>.card{border:0;padding:0;background:transparent}
+details.more .mb>.card>h3:first-child{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .scroller{position:relative;overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
 table.sheet{border-collapse:separate;border-spacing:0;width:100%;min-width:820px;font-size:14px}
 .sheet th,.sheet td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;vertical-align:middle}
@@ -190,13 +205,17 @@ table.sheet{border-collapse:separate;border-spacing:0;width:100%;min-width:820px
 .fo b{font-weight:700}
 
 /* ---------- Rotation ---------- */
-.rot li{display:grid;grid-template-columns:minmax(0,1fr) 44px 150px 56px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
-@media (max-width:560px){.rot li{grid-template-columns:minmax(0,1fr) 40px 96px 48px}}
+.rot li{display:grid;grid-template-columns:40px minmax(0,1fr) 44px 150px 56px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+@media (max-width:560px){.rot li{grid-template-columns:34px minmax(0,1fr) 34px 84px 48px;gap:6px}}
+.rot .slot{font:700 15px/1 var(--f-d);color:var(--muted);text-align:center;border:1px solid var(--line);border-radius:6px;padding:5px 0}
+.rot .slot.st{background:var(--green);border-color:var(--green);color:#fff}
+.rot-h{margin:14px 0 2px;font-size:18px}
+.rot-h:first-of-type{margin-top:4px}
 .rot .who b{display:block}
 .rot input[type=range]{width:100%;accent-color:var(--green)}
 .rot input[type=number]{width:56px;border:1px solid var(--line);border-radius:6px;padding:4px;background:var(--surface);text-align:right}
 .rot .ovr{font:800 20px/1 var(--f-d);text-align:center}
-.rot .starter .who b::after{content:"Starter";margin-left:8px;font:600 11px/1 var(--f-b);color:var(--green-ink);border:1px solid var(--green);border-radius:999px;padding:1px 6px;vertical-align:2px}
+
 .meter{height:8px;background:var(--sunk);border-radius:4px;overflow:hidden}
 .meter i{display:block;height:100%;background:var(--green)}
 .bigstat{font:800 44px/1 var(--f-d)}
@@ -206,6 +225,7 @@ table.sheet{border-collapse:separate;border-spacing:0;width:100%;min-width:820px
 table.std{width:100%;border-collapse:collapse;font-size:14px}
 .std th,.std td{padding:5px 6px;border-bottom:1px solid var(--line);text-align:right}
 .std th:nth-child(2),.std td:nth-child(2){text-align:left}
+.std .pmeta{display:block;font-size:12px;color:var(--muted)}
 .std tr.us td{background:var(--green-soft);font-weight:700}
 .std tr.cut td{border-bottom:2px solid var(--muted)}
 .news li{padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
@@ -252,6 +272,7 @@ dialog .db{padding:16px 18px;max-height:min(70vh,700px);overflow:auto}
     <button class="tab" role="tab" id="t-rot" aria-controls="p-rot" aria-selected="false" data-tab="rot" tabindex="-1">Rotation</button>
     <button class="tab" role="tab" id="t-season" aria-controls="p-season" aria-selected="false" data-tab="season" tabindex="-1">Season</button>
   </div>
+  <div class="next-wrap"><span class="next-k">Next</span><button class="btn" id="next" type="button">Start the season</button></div>
 </nav>
 <main class="wrap">
   <div role="tabpanel" id="p-books" aria-labelledby="t-books"></div>

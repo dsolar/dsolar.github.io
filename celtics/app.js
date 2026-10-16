@@ -26,7 +26,7 @@
     } catch (e) { /* storage full or blocked: the game still runs */ }
   };
   App.load = () => { try { const s = localStorage.getItem(KEY); return s ? JSON.parse(s) : null; } catch (e) { return null; } };
-  App.reset = () => { try { localStorage.removeItem(KEY); } catch (e) { } App.W = L.newWorld(App.DATA, App.LIVE, 19); App.afterChange(); };
+  App.reset = () => { try { localStorage.removeItem(KEY); } catch (e) { } App.W = L.newWorld(App.DATA, App.LIVE, 19); App.W.dataVersion = App.DATA.version; App.afterChange(); };
 
   // ---------- Rendering ----------
   App.afterChange = () => { L.bump(App.W); App.save(); App.render(); };
@@ -37,6 +37,8 @@
       panel.hidden = !on; tab.setAttribute("aria-selected", on ? "true" : "false"); tab.tabIndex = on ? 0 : -1;
       if (on && App.views[t]) App.views[t].render(panel);
     }
+    const nx = L.nextAction(App.W), nb = $("#next");
+    nb.textContent = nx.label; nb.dataset.next = nx.act;
     const q = App.W.queue.length;
     $("#t-moves").innerHTML = "Moves" + (q ? `<span class="cnt" aria-label="${q} queued">${q}</span>` : "");
     const inbox = (App.W.offers || []).filter(o => !o.done).length;
@@ -68,6 +70,7 @@
       ["Payroll", App.m(B.payroll)],
       [under >= 0 ? "Under the tax" : "Over the tax", App.m(Math.abs(under)), null, under < 0],
       ["Hard cap", hard ? (hard === "a1" ? "First apron" : "Second apron") : "None"],
+      ["Owner trust", `${L.ensureOwner(W).trust} of 100`, null, L.ensureOwner(W).trust < 35],
       [rec ? "Record" : "Projected", rec || `${pw}-${82 - pw}`],
       ["Title odds", App.pct(odds.BOS || 0)]
     ];
@@ -75,7 +78,7 @@
   }
   App.titleOdds = () => {
     const W = App.W;
-    if (!W._odds || W._oddsTick !== W.tick) { W._odds = L.titleOdds(W, 160); W._oddsTick = W.tick; }
+    if (!W._odds || W._oddsTick !== W.tick) { W._odds = L.titleOdds(W, 400); W._oddsTick = W.tick; }
     return W._odds;
   };
 
@@ -107,6 +110,13 @@
   document.addEventListener("change", onInput);
   document.addEventListener("input", e => { if (e.target.matches("[data-live]")) onInput(e); });
   $("#tabs").addEventListener("click", e => { const b = e.target.closest("[data-tab]"); if (b) App.go(b.dataset.tab); });
+  // The next step, from any tab: do it, then show the result on the Season tab
+  $("#next").addEventListener("click", () => {
+    const act = $("#next").dataset.next, fn = App.acts[act];
+    App.ui.tab = "season";
+    if (fn) fn($("#next")); else App.render();
+    App.go("season");
+  });
   $("#tabs").addEventListener("keydown", e => {
     const order = ["books", "moves", "rot", "season"], k = order.indexOf(App.ui.tab);
     let n = null;
@@ -138,11 +148,17 @@
     try { App.LIVE = await get("live.json"); } catch (e) { App.LIVE = null; }
     CBA.init(App.DATA.cba);
     const saved = App.load();
-    if (saved && saved.v === 1 && saved.P && saved.T) {
+    if (saved && saved.v === 1 && saved.P && saved.T && saved.dataVersion === App.DATA.version) {
       App.W = saved;
       App.W.live = App.LIVE;
       if (App.LIVE && App.W.phase === "pre") L.applyLive(App.W, App.LIVE);
-    } else App.W = L.newWorld(App.DATA, App.LIVE, 19);
+    } else {
+      App.W = L.newWorld(App.DATA, App.LIVE, 19);
+      if (saved) App.ui.flash = { ok: true, text: "The game data was updated (ratings, the market and real draft classes), so this is a fresh start from Oct. 15, 2026." };
+    }
+    App.W.dataVersion = App.DATA.version;
+    L.ensureOwner(App.W);
+    if (!App.W.recruits) App.W.recruits = App.DATA.recruits || {};
     L.bump(App.W);
     $("#loading").remove();
     renderFooter();
@@ -161,5 +177,5 @@
   };
   App.acts.resetYes = () => { App.closeDlg(); App.reset(); };
   App.boot = boot;
-  window.addEventListener("DOMContentLoaded", () => boot().catch(err => { $("#loading").textContent = "Couldn't load the game data. Refresh to try again."; console.error(err); }));
+  window.addEventListener("DOMContentLoaded", () => boot().catch(err => { const l = $("#loading"); if (l) l.textContent = "Couldn't load the game data. Refresh to try again."; console.error(err && err.stack ? err.stack : err); }));
 })();

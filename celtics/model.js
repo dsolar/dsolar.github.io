@@ -16,7 +16,8 @@
   // ---------- Ratings and aging ----------
   M.r = p => (p.o || 0) + (p.d || 0);
   M.ageStep = a => a < 21 ? 0.65 : ({ 21: 0.5, 22: 0.45, 23: 0.40, 24: 0.10, 25: 0.10, 26: 0.10, 27: 0, 28: 0, 29: -0.05, 30: -0.1, 31: -0.2, 32: -0.3, 33: -0.45, 34: -0.65, 35: -0.9 })[a] ?? -1.2;
-  M.ageIn = (p, i, W) => p.age + (i - (W ? W.season0 || 0 : 0));
+  // p.age is his age in the current season (it goes up each summer), so look ahead from the current season
+  M.ageIn = (p, i, W) => p.age + (i - (W ? W.season : 0));
   // Expected rating k seasons from now (mean path). Young players move toward their potential.
   M.rAhead = (p, k) => {
     let r = M.r(p), a = p.age;
@@ -58,24 +59,56 @@
     return Math.max(floor, v < 3e6 * CBA.cap(i) / CAP_2526 ? floor : v);
   };
   M.mv = (p, i, W) => M.valueOf(M.rAhead(p, i - W.season), p.h, i, (p.yos || 3) + (i - W.season));
-  // What a player believes he's worth: the model, plus a name premium for players who've been paid like stars
+  // ---------- The market (what teams actually pay) ----------
+  // A log-linear fit on current veteran contracts (data.cba.market): impact, scoring, minutes and age.
+  // Points and minutes come from his real numbers, fading toward what his rating implies as seasons pass.
+  const ppgFor = r => clamp(3 + 3.2 * (r + 2), 2, 32) * Math.min(1, M.roleMin(r) / 32);
+  M.statLine = (p, i, W) => {
+    const r = M.rAhead(p, i - W.season), k = Math.pow(0.7, Math.max(0, i - (p.statSeason ?? 0)));
+    const lv = p.live && p.live.gp >= 10 ? p.live : null;
+    const ppg0 = lv ? lv.ppg : p.ppg, mpg0 = lv ? lv.mpg : p.mpg;
+    const ppg = ppg0 != null ? ppgFor(r) + (ppg0 - ppgFor(M.r(p))) * k : ppgFor(r);
+    const mpg = mpg0 != null ? M.roleMin(r) + (mpg0 - M.roleMin(M.r(p))) * k : M.roleMin(r);
+    return { r, ppg: Math.max(0, ppg), mpg: clamp(mpg, 0, 38) };
+  };
+  M.market = (p, i, W) => {
+    const b = CBA.D().market, s = M.statLine(p, i, W), age = M.ageIn(p, i, W), yos = (p.yos || 3) + i - W.season;
+    let share = Math.exp(b[0] + b[1] * Math.max(s.r, -3) + b[2] * s.ppg + b[3] * s.mpg + b[4] * Math.max(0, age - 30) + b[5] * Math.max(0, 25 - age));
+    let v = share * CBA.cap(i);
+    if (age >= 34) v *= Math.pow(0.85, age - 33);                       // the market fades old players fast
+    if (s.r >= 3.2 || (s.r >= 2.5 && s.ppg >= 19)) v = Math.max(v, 0.95 * CBA.maxSal(yos, i));   // stars get the max
+    return clamp(v, CBA.minSal(yos, i), CBA.maxSal(yos, i));
+  };
+  // What a player believes he's worth: the market, with a name premium for players who've been paid like stars
   M.perceived = (p, i, W) => {
     const prior = Math.max(...[W.season - 1, W.season, W.season + 1].map(j => (p.c && p.c.sal && p.c.sal[j]) || 0));
     const yos = (p.yos || 3) + i - W.season;
-    return Math.min(CBA.maxSal(yos, i) * 1.08 ** Math.max(0, i - W.season), Math.max(M.mv(p, i, W) * 1.2, 0.15 * prior, CBA.minSal(yos, i)));
+    return Math.min(CBA.maxSal(yos, i), Math.max(M.market(p, i, W) * 1.05, 0.15 * prior, CBA.minSal(yos, i)));
   };
-  M.faYears = age => age <= 25 ? 4 : age <= 28 ? 4 : age <= 30 ? 3 : age <= 33 ? 2 : 1;
+  // Stars want long deals into their thirties; role players get shorter ones
+  M.faYears = (age, r) => {
+    const star = (r ?? 0) >= 2.5;
+    return age <= 29 ? 4 : age <= 31 ? (star ? 4 : 3) : age <= 33 ? (star ? 3 : 2) : age <= 35 ? (star ? 2 : 1) : 1;
+  };
+  // Unsigned free agents come down over time: about 1.2% a week, to 60% of the opening ask
+  M.askDecay = (p, W) => {
+    if (!p.faDate || !W.date) return 1;
+    const weeks = Math.max(0, (Date.parse(W.date) - Date.parse(p.faDate)) / 6048e5);
+    return Math.max(0.6, 1 - 0.012 * weeks);
+  };
   // Chance a player keeps playing at a given age
   M.keepsPlaying = (age, r) => age < 34 ? 1 : age >= 41 ? 0.15 : clamp(1 - (age - 33) * 0.12 + (r + 1) * 0.08, 0.1, 1);
   // Expected free-agent haul if he hits the market in season i (sum over the deal he'd get)
   M.faHaul = (p, i, W) => {
     const age = M.ageIn(p, i, W);
-    const yrs = M.faYears(age);
+    const yrs = M.faYears(age, M.rAhead(p, i - W.season));
+    const dk = i === W.season ? M.askDecay(p, W) : 1;
     let tot = 0, alive = 1;
     for (let k = 0; k < yrs; k++) {
       alive *= M.keepsPlaying(age + k, M.rAhead(p, i - W.season + k));
-      tot += M.perceived(Object.assign({}, p, { age: p.age }), i + k, W) * (k === 0 ? 1 : alive);
+      tot += M.perceived(p, i + k, W) * (k === 0 ? 1 : alive);
     }
+    tot *= dk;
     return { total: tot, years: yrs, aav: tot / yrs };
   };
 

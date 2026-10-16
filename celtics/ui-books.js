@@ -76,28 +76,43 @@
         ${tr("Tax bill", b => b.tax ? `<span class="bad">${m2(b.tax)}</span><span class="pmeta">${b.rep ? "Repeater rates" : "Standard rates"}</span>` : `$0<span class="pmeta">${b.rep ? "Would be repeater" : "Standard rates"}</span>`, "tot")}
       </tfoot>`;
       const ladders = books.map(b => ladder(b)).join("");
+      const o = L.ensureOwner(W), mand = o.mandate, mc = L.mandateCheck(W, books[0].payroll);
+      const hard = W.T.BOS.hard[i0];
+      const open = App.ui.open || (App.ui.open = {});
+      const more = (k, title, line, html) => `<details class="more" data-k="${k}"${open[k] ? " open" : ""}><summary><span class="mt">${esc(title)}</span><span class="ml">${line}</span></summary><div class="mb">${html}</div></details>`;
+      // one-line summaries for the folded sections
+      const optOpen = [];
+      for (const p of bosAll(W)) for (const [j, kind] of Object.entries(p.c.opt)) if (+j >= i0 && +j <= i0 + 4 && !p.c.dec[j] && p.c.sal[j] > 0) optOpen.push({ p, j: +j, kind });
+      optOpen.sort((a, b) => a.j - b.j || b.p.c.sal[b.j] - a.p.c.sal[a.j]);
+      const bigOpt = optOpen.find(x => x.kind === "PO");
+      const tl = L.tools(W, "BOS", i0).tools.filter(t => t.ok && t.amt > 0);
+      const elig = bosAll(W).filter(p => CBA.extEligible(p, i0).ok).map(p => p.n.split(" ").slice(-1)[0]);
+      const firsts = W.picks.filter(x => x.owner === "BOS" && x.r === 1);
+      const best = firsts.slice().sort((a, b) => L.pickSlot(W, a) - L.pickSlot(W, b))[0];
+      const tpes = W.T.BOS.tpes.filter(t => !(t.exp && W.date > t.exp));
+      const pvw = L.expansionPreview ? L.expansionPreview(W) : null;
       el.innerHTML = `
       <section class="panel" aria-labelledby="books-h">
         <h2 id="books-h">The books</h2>
-        <p class="sub">Every dollar Boston has committed, ${App.sn(i0)} through ${App.sn(i0 + YEARS - 1)}. Options show what the model expects; click one to set your plan. Players whose deals end turn into cap holds the next summer. Future seasons assume the cap grows 7% a year and empty roster spots get filled at the minimum.</p>
+        <p class="owner-line"><b>${esc(o.name)}'s rule for ${App.sn(i0)}:</b> ${esc(mand && mand.season === i0 ? mand.text : "None set.")} <span class="${mc.ok ? "good" : "bad"}">${mc.ok ? (mc.room != null ? m2(mc.room) + " of room." : "On track.") : esc(mc.text)}</span> <span class="muted">Trust ${o.trust} of 100.</span>
+        ${hard ? `<br><b>Hard-capped at the ${CBA.LEVEL_NAME[hard]} (${m2(CBA.levelAmt(hard, i0))}) all season.</b> <span class="muted">${esc((W.T.BOS.hardWhy || {})[i0] || "")}. No move can take Boston over it.</span>` : ""}</p>
+        <p class="sub small">Every dollar committed through ${App.sn(i0 + YEARS - 1)}. Click an option to set your plan. Expiring deals turn into cap holds; future seasons assume 7% cap growth and empty spots filled at the minimum.</p>
         <div class="scroller"><table class="sheet">${head}${body}${foot}</table></div>
         <div class="ladders">${ladders}</div>
       </section>
-      <div class="grid2">
-        ${guardCard(W, books)}
-        ${optionsCard(W)}
-      </div>
-      <div class="grid2" style="margin-top:16px">
-        ${toolsCard(W, i0)}
-        ${extCard(W)}
-      </div>
-      <div class="grid2" style="margin-top:16px">
-        ${picksCard(W)}
-        ${tpeCard(W)}
-      </div>
-      <div style="margin-top:16px">${L.expansionPreview ? expansionCard(W) : ""}</div>`;
+      <section class="panel" aria-label="More on the books">
+        ${more("own", "Ownership and the tax", `Trust ${o.trust} of 100. ${esc(mand ? mand.text : "")}`, guardCard(W, books))}
+        ${more("opt", "Option calls", optOpen.length ? `${optOpen.length} open${bigOpt ? `. ${esc(bigOpt.p.n)}, ${App.sn(bigOpt.j)}: ${App.pct(L.optionView(W, bigOpt.p, bigOpt.j).pIn)} he opts in` : ""}` : "None open", optionsCard(W))}
+        ${more("tools", "Cap tools", tl.map(t => `${esc(t.name.replace("Trade exception", "Exception"))} ${m(t.amt)}`).join(", ") || "Minimums only", toolsCard(W, i0))}
+        ${more("ext", "Extensions", elig.length ? "Eligible now: " + esc(elig.join(", ")) : "Nobody eligible right now", extCard(W))}
+        ${more("picks", "Draft picks", `${firsts.length} firsts through 2033${best ? `; best is the ${esc(L.pickName(W, best.id))}, about No. ${L.pickSlot(W, best)}` : ""}`, picksCard(W))}
+        ${more("tpe", "Trade exceptions", tpes.length ? tpes.map(t => `${m(t.amt)} (${esc(t.from)}), expires ${esc(L.fmtDate(t.exp))}`).join("; ") : "None", tpeCard(W))}
+        ${pvw ? more("exp", "Expansion draft, if it happens", pvw.likely ? `Most likely loss: ${esc(pvw.likely.p.n)}` : "Boston could protect everyone under contract for 2028-29", expansionCard(W)) : ""}
+      </section>`;
+      el.querySelectorAll("details.more").forEach(d => d.addEventListener("toggle", () => { open[d.dataset.k] = d.open; }));
     }
   };
+  const bosAll = W => Object.values(W.P).filter(p => p.t === "BOS" && !p.two);
 
   function ladder(b) {
     const top = Math.max(b.a2 * 1.06, b.payroll * 1.03), x = v => Math.min(100, v / top * 100);
@@ -114,24 +129,21 @@
   }
 
   function guardCard(W, books) {
-    const i0 = W.season, out = [];
-    const s = W.settings;
-    if (i0 === 0) {
-      const b = books[0], ok = b.payroll <= b.taxLine;
-      out.push(`<li><span class="chip ${ok ? "g" : "b"}">${ok ? "On track" : "Broken"}</span> <b>No tax in 2026-27.</b> ${ok ? `${m(b.taxLine - b.payroll)} of room under the line.` : `${m(b.payroll - b.taxLine)} over the line.`} Boston is also hard-capped at the first apron (${m(b.a1)}) after signing Robinson with the full mid-level.</li>`);
-    }
-    const taxYears = books.filter(b => b.tax > 0 && b.i > 0);
-    out.push(`<li><span class="chip g">Allowed</span> <b>Tax from 2027-28 on.</b> ${taxYears.length ? "Projected bills: " + taxYears.map(b => `${App.sn(b.i)} ${m(b.tax)}${b.rep ? " (repeater)" : ""}`).join(", ") + "." : "Nothing projected yet."}</li>`);
-    const a2 = books.filter(b => b.status === "a2");
+    const i0 = W.season, out = [], o = L.ensureOwner(W), mand = o.mandate;
+    const mc = L.mandateCheck(W, books[0].payroll);
+    out.push(`<li><span class="chip ${mc.ok ? "g" : "b"}">${mc.ok ? "On track" : "Broken"}</span> <b>This season: ${esc(mand && mand.season === i0 ? mand.text : "no rule set")}</b> ${mc.ok ? (mc.room != null ? `${m(mc.room)} of room.` : "") : esc(mc.text)}</li>`);
+    const taxYears = books.filter(b => b.tax > 0);
+    out.push(`<li><span class="chip">Projected</span> <b>Tax bills:</b> ${taxYears.length ? taxYears.map(b => `${App.sn(b.i)} ${m(b.tax)}${b.rep ? " (repeater)" : ""}`).join(", ") + "." : "none in the next five seasons."}</li>`);
     const twoRun = books.some((b, k) => k > 0 && b.status === "a2" && books[k - 1].status === "a2");
-    const odds = App.titleOdds().BOS || 0;
-    out.push(`<li><span class="chip ${twoRun ? "b" : a2.length ? "w" : "g"}">${twoRun ? "Broken" : a2.length ? "Check" : "On track"}</span> <b>Second apron only as a title contender, never two years running.</b> ${a2.length ? `Projected over it in ${a2.map(b => App.sn(b.i)).join(", ")}. Title odds right now: ${App.pct(odds)}.` : "Not projected over it."} A season over it freezes a first-round pick seven years out.</li>`);
-    // repeater clock
+    const a2 = books.filter(b => b.status === "a2");
+    out.push(`<li><span class="chip ${twoRun ? "b" : a2.length ? "w" : "g"}">${twoRun ? "Broken" : a2.length ? "Check" : "On track"}</span> <b>Always:</b> the second apron only for a real title shot, never two years running. ${a2.length ? `Projected over it in ${a2.map(b => App.sn(b.i)).join(", ")}; title odds now ${App.pct(App.titleOdds().BOS || 0)}.` : ""} A season over it freezes a first-round pick seven years out.</li>`);
     const t = W.T.BOS, hist = [-4, -3, -2, -1].map(j => `${App.sn(j)} ${t.taxHist[j] ? "paid" : "no tax"}`).join(", ");
     const reps = books.map(b => `${App.sn(b.i)}: ${b.rep ? "repeater" : "standard"}`).join(", ");
-    return `<section class="card" aria-labelledby="guard-h"><h3 id="guard-h">Ownership's rules</h3>
+    return `<section class="card" aria-labelledby="guard-h"><h3 id="guard-h">Ownership and the tax</h3>
+      <p class="small" style="margin-top:0">${esc(o.name)} sets a spending rule each season. Beat expectations and his trust goes up and the leash gets longer; pay a big tax bill and come up short and it goes the other way: under the second apron, then the first, then out of the tax. Below 15, you're fired.</p>
       <ul class="plain" style="display:grid;gap:10px">${out.join("")}</ul>
-      <p class="small muted" style="margin:12px 0 0"><b>Repeater clock.</b> Teams that paid tax in three of the previous four seasons pay higher rates. History: ${esc(hist)}. If Boston stays out this season, the next bill is at standard rates. Rates as projected: ${esc(reps)}.</p>
+      ${o.log.length ? `<h3 style="margin-top:14px">His reviews</h3><ul class="small" style="margin:0;padding-left:18px">${o.log.slice(0, 5).map(x => `<li>${App.sn(x.season)}: trust ${x.before} → ${x.after}. ${esc(x.text)}</li>`).join("")}</ul>` : ""}
+      <p class="small muted" style="margin:12px 0 0"><b>Repeater clock.</b> Teams that paid tax in three of the previous four seasons pay higher rates. History: ${esc(hist)}. Rates as projected: ${esc(reps)}.</p>
       ${planList(W)}
     </section>`;
   }
@@ -196,7 +208,7 @@
   function picksCard(W) {
     const own = W.picks.filter(p => p.owner === "BOS").sort((a, b) => a.y - b.y || a.r - b.r);
     const owed = W.picks.filter(p => p.from === "BOS" && p.owner !== "BOS").sort((a, b) => a.y - b.y || a.r - b.r);
-    const row = p => `<tr><td>${p.y}</td><td>${p.r === 1 ? "First" : "Second"}</td><td>${esc(p.from === "BOS" ? "Own" : W.T[p.from].name)}${p.note ? `<span class="pmeta">${esc(p.note)}</span>` : ""}</td><td>${p.r === 1 ? "No. " + L.projSlot(W, p.from, p.y) : ""}</td></tr>`;
+    const row = p => { const pa = p.alt ? W.picks.find(x => x.id === p.alt) : null; return `<tr><td>${p.y}</td><td>${p.r === 1 ? "First" : "Second"}</td><td>${esc(p.from === "BOS" ? "Own" : pa ? `Better of ${W.T[p.from].name} (No. ${L.projSlot(W, p.from, p.y)}) and ${W.T[pa.from].name} (No. ${L.projSlot(W, pa.from, p.y)})` : W.T[p.from].name)}${p.prot ? `<span class="pmeta">${esc(L.protName(p, p.prot.upTo))}</span>` : ""}${p.note && !pa ? `<span class="pmeta">${esc(p.note)}</span>` : ""}</td><td>${p.r === 1 ? "No. " + L.pickSlot(W, p) : ""}</td></tr>`; };
     return `<section class="card" aria-labelledby="picks-h"><h3 id="picks-h">Draft picks</h3>
       <table class="std"><thead><tr><th scope="col">Year</th><th scope="col">Round</th><th scope="col">Whose</th><th scope="col">Projected</th></tr></thead><tbody>${own.map(row).join("")}</tbody></table>
       <p class="small muted" style="margin:10px 0 0"><b>Owed away:</b> ${owed.filter(p => p.r === 1).map(p => `${p.y} first to ${W.T[p.owner] ? W.T[p.owner].name : "another team"}`).join(", ") || "none"}. Boston's own seconds were traded away over the years. Stepien rule: Boston can't be without a first in back-to-back drafts, so with 2029 gone, the 2028 and 2030 firsts are locked unless another first comes back.</p></section>`;
@@ -206,7 +218,7 @@
     const list = W.T.BOS.tpes.filter(t => !(t.exp && W.date > t.exp));
     const st = L.books(W, "BOS", W.season).status;
     return `<section class="card" aria-labelledby="tpe-h"><h3 id="tpe-h">Trade exceptions</h3>
-      ${list.length ? `<ul class="plain">${list.map(t => { const u = L.tpeUsable(W, W.T.BOS, t, st); return `<li style="padding:8px 0;border-bottom:1px solid var(--line)"><span class="bigstat gold" style="font-size:32px">${m(t.amt)}</span><br><b>From ${esc(t.from)}</b>, made ${esc(L.fmtDate(t.made))}, expires ${esc(L.fmtDate(t.exp))}.<br><span class="small muted">Absorbs one or more players earning up to ${m(t.amt + 250000)} combined. ${u.ok ? "Usable now" : esc(u.why)}. It can't be combined with another exception or with player salary. Teams that end a trade over the first apron can't use one made in an earlier season.</span></li>`; }).join("")}</ul>` : "<p class='muted'>None right now.</p>"}
+      ${list.length ? `<ul class="plain">${list.map(t => { const u = L.tpeUsable(W, W.T.BOS, t, st); return `<li style="padding:8px 0;border-bottom:1px solid var(--line)"><span class="bigstat gold" style="font-size:32px">${m(t.amt)}</span>${t.orig && t.orig > t.amt ? ` <span class="small muted">left of ${m(t.orig)}</span>` : ""}<br><b>From ${esc(t.from)}</b>, made ${esc(L.fmtDate(t.made))}, expires ${esc(L.fmtDate(t.exp))}.<br><span class="small muted">Absorbs one or more players earning up to ${m(t.amt + 250000)} combined. ${u.ok ? "Usable now" : esc(u.why)}. It can't be combined with another exception or with player salary. Teams that end a trade over the first apron can't use one made in an earlier season.</span></li>`; }).join("")}</ul>` : "<p class='muted'>None right now.</p>"}
       <p class="small muted" style="margin:10px 0 0">The trade builder looks for the structure that leaves the biggest new exception: absorb incoming salary into an old exception and send players out on their own, the way Boston turned the Simons trade into a $27.7M exception.</p></section>`;
   }
 
@@ -257,6 +269,13 @@
       ${lv ? `<p class="small" style="margin:4px 0 0"><b>${esc(lv.season || "This season")} (live):</b> ${lv.gp} games, ${lv.mpg} minutes, ${lv.ppg} points, ${lv.rpg} rebounds, ${lv.apg} assists, ${lv.tpa} threes tried a game, ${lv.tov} turnovers.</p>` : ""}
       <h3 style="margin-top:14px">Contract</h3>
       ${rows.length ? `<table class="std"><thead><tr><th scope="col">Season</th><th scope="col">Salary</th><th scope="col">Status</th><th scope="col">Worth (model)</th></tr></thead><tbody>${rows.join("")}</tbody></table>` : "<p class='muted'>No contract.</p>"}
+      ${W.T[p.t] || p.t === "FA" ? (() => {
+        const vals = Object.keys(W.T).filter(c => c !== p.t).map(c => ({ c, v: L.playerValue(W, c, p) })).sort((a, b) => b.v - a.v);
+        const top = vals.slice(0, 3), low = vals[vals.length - 1];
+        const tag = c => (W.T[c].fo.analytics >= 0.7 ? "analytics-heavy" : W.T[c].fo.analytics <= 0.45 ? "old-school" : "mixed");
+        return `<p class="small" style="margin:10px 0 0"><b>Who values him most:</b> ${top.map(x => `${esc(W.T[x.c].name)} (${x.v >= 0 ? "+" : ""}${m(x.v)}, ${tag(x.c)})`).join(", ")}. Least: ${esc(W.T[low.c].name)} (${low.v >= 0 ? "+" : ""}${m(low.v)}).${p.t !== "BOS" ? ` Boston: ${(L.playerValue(W, "BOS", p) >= 0 ? "+" : "") + m(L.playerValue(W, "BOS", p))}.` : ""}</p>
+          <p class="small muted" style="margin:2px 0 0">Value is what he'd add over his contract. Analytics shops price impact; old-school ones lean on scoring, minutes and the market. Contenders pay up for help now and for stars, rebuilders for youth and picks, and teams near the tax count every dollar of salary extra.</p>`;
+      })() : ""}
       <p class="small muted">${p.c.kick ? `15% trade kicker (about ${m(CBA.kicker(p, i0, dec))} a season to the team that acquires him). ` : ""}${CBA.birdOf(p)} rights. ${esc(e.why)}.${p.noTrade && W.date < p.noTrade ? ` Can't be traded until ${L.fmtDate(p.noTrade)}.` : ""}</p>
       ${p.t === "BOS" ? `<div class="row">
         <button class="btn sm" type="button" data-act="goTrade" data-id="${p.id}">Shop him</button>

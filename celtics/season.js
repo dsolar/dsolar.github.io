@@ -28,7 +28,7 @@
       t.tpes = t.tpes.filter(x => x.amt > 250000);
       if (r.sol && r.sol.newTpes) for (const nt of r.sol.newTpes) {
         if (nt.amt < 250000) continue;
-        t.tpes.push({ id: "tpe-" + code + "-" + (W.tick + 1) + "-" + nt.from, amt: nt.amt, from: W.P[nt.from].n, made: W.date, exp: addDays(addMonths(W.date, 12), 0), season: i, snt: !!(tr.snt && tr.snt[nt.from]) });
+        t.tpes.push({ id: "tpe-" + code + "-" + (W.tick + 1) + "-" + nt.from, amt: nt.amt, orig: nt.amt, from: W.P[nt.from].n, made: W.date, exp: addDays(addMonths(W.date, 12), 0), season: i, snt: !!(tr.snt && tr.snt[nt.from]) });
       }
       if (r.newHard) { t.hard[i] = r.newHard; (t.hardWhy || (t.hardWhy = {}))[i] = `A ${L.fmtDate(W.date)} trade that ${r.newHard === "a1" ? "took back more salary than it sent" : "combined salaries or sent cash"}`; }
       const side = tr.side[code] || {};
@@ -52,16 +52,19 @@
         p.t = other;
         p.acq = W.date;
       }
-      for (const pid of side.picks || []) { const pk = W.picks.find(x => x.id === pid); if (pk) pk.owner = other; }
+      for (const pid of side.picks || []) {
+        const pk = W.picks.find(x => x.id === pid); if (!pk) continue;
+        const upTo = (tr.prot || {})[pid];
+        if (upTo) pk.prot = { upTo, back: code };          // doesn't convey inside the protection: stays with the sender
+        pk.owner = other;
+        // during the draft, the slot on the board changes hands too
+        if (W.ds && !W.ds.done) for (const sl of W.ds.slots) if (sl.pid === pid && !sl.pick) sl.owner = other;
+      }
     }
-    const names = c => (tr.side[c].players.map(id => W.P[id].n).concat((tr.side[c].picks || []).map(id => L.pickName(W, id)))).join(", ") || "nothing";
+    const names = c => (tr.side[c].players.map(id => W.P[id].n).concat((tr.side[c].picks || []).map(id => L.pickName(W, id, (tr.prot || {})[id]))).concat(tr.side[c].cash ? [M$(tr.side[c].cash) + " cash"] : [])).join(", ") || "nothing";
     news(W, `${W.T[tr.a].name} trade ${names(tr.a)} to ${W.T[tr.b].name} for ${names(tr.b)}.`, "trade", tr.a === "BOS" || tr.b === "BOS" ? "BOS" : null);
     L.bump(W);
     return chk;
-  };
-  L.pickName = (W, id) => {
-    const pk = W.picks.find(x => x.id === id); if (!pk) return id;
-    return `${pk.y} ${pk.r === 1 ? "first" : "second"} (${pk.from})`;
   };
 
   // Extensions: new seasons added after his current deal
@@ -112,7 +115,7 @@
       for (let k = 0; k < yrs; k++) dead[i + (L.inSeason(W) ? 1 : 0) + k] = Math.round(tot / yrs);
     } else rem.forEach((x, k) => { dead[i + k] = x; });
     if (rem.length) t.dead.push({ n: p.n, sal: dead, why: stretch ? "Waived and stretched" : "Waived" });
-    p.t = "FA"; p.c = { sal: [], opt: {}, dec: {}, signed: i, bird: 0 }; p.rights = null;
+    p.t = "FA"; p.c = { sal: [], opt: {}, dec: {}, signed: i, bird: 0 }; p.rights = null; p.faDate = W.date;
     news(W, `${t.name} waive ${p.n}${stretch ? " and stretch his salary" : ""}.`, "move", code);
     L.bump(W);
   };
@@ -274,7 +277,7 @@
 
   // Title odds by Monte Carlo from current nets (for the contender test and the header)
   L.titleOdds = (W, n = 200) => {
-    const nets = L.teamNets(W), r = Mo.rng(W.seed + W.tick * 31);
+    const nets = L.teamNets(W), r = Mo.rng(W.seed + W.season * 31);   // same draws all season: odds move only when the teams do
     const codes = Object.keys(W.T), wins = {}; codes.forEach(c => { wins[c] = 0; });
     for (let k = 0; k < n; k++) {
       // regular season by expectation plus noise, then a quick bracket

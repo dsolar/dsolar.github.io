@@ -54,7 +54,7 @@
         taxHist: t.rep ? { "-4": true, "-3": true, "-2": true, "-1": true } : {}, w: 0, l: 0, rot: null };
     }
     const B = W.T.BOS, cx = data.celtics;
-    B.tpes = cx.tpe.map((t, k) => ({ id: "tpe-bos-" + k, amt: t.amt, from: t.from, made: t.made, exp: t.exp, season: t.season }));
+    B.tpes = cx.tpe.map((t, k) => ({ id: "tpe-bos-" + k, amt: t.amt, orig: t.amt, from: t.from, made: t.made, exp: t.exp, season: t.season }));
     B.holds = cx.holds.map(h => ({ n: h.n, amt: h.amt, kind: h.kind, season: 0 }));
     B.used = { 0: { ntmle: data.cba.ntmle } };
     B.hard = { 0: "a1" };
@@ -74,6 +74,8 @@
     pk("2027-2-PHI").owner = "BOS"; pk("2028-2-PHI").owner = "BOS";
     for (let y = 2027; y <= 2033; y++) pk(`${y}-2-BOS`).owner = "OUT";   // Boston's own seconds: traded away over the years
     W.draft[2027] = L.scoutClass(data.draft["2027"], 2027, W.seed);
+    W.recruits = data.recruits || {};
+    W.owner = { name: "Bill Chisholm", trust: 60, mandate: { season: 0, rule: "tax", text: "No tax in 2026-27." }, log: [] };
     W.live = live || null;
     L.applyLive(W, live);
     if (L.newSchedule) L.newSchedule(W);
@@ -87,7 +89,7 @@
   L.scoutClass = (list, year, seed) => {
     const rng = Mo.rng(seed * 7919 + year);
     return list.map(x => {
-      const k = x.rank, f = (k - 1) / 59;
+      const k = x.rank, f = Math.min(1.25, (k - 1) / 59);
       const estNow = -1.2 - 2.0 * f;                         // rookie-year impact
       const estPot = 4.0 - 5.2 * Math.pow(f, 0.6);           // where he's headed by 25
       return Object.assign({}, x, { year, estNow: +estNow.toFixed(2), estPot: +estPot.toFixed(2),
@@ -216,8 +218,8 @@
       // first-round picks not yet signed
       const draftYear = 2026 + i;
       for (const pk of W.picks) if (pk.owner === code && pk.r === 1 && pk.y === draftYear) {
-        const slot = L.projSlot(W, pk.from, pk.y);
-        holds.push({ n: `${pk.y} first-round pick (${pk.from}, about No. ${slot})`, amt: CBA.rookieY1(slot, i), kind: "Draft pick", pick: pk.id, proj: true });
+        const slot = L.pickSlot(W, pk);
+        holds.push({ n: `${L.pickName(W, pk.id)}, about No. ${slot}`, amt: CBA.rookieY1(slot, i), kind: "Draft pick", pick: pk.id, proj: true });
       }
     }
     // the George-style plans replace the option year
@@ -283,7 +285,8 @@
       out.push({ key: tp.id, name: `Trade exception (${tp.from})`, amt: tp.amt, ok: u.ok, tpe: true, exp: tp.exp,
         why: u.ok ? `Absorb up to ${M$(tp.amt + CBA.D().match.plus)} without sending salary back. Expires ${L.fmtDate(tp.exp)}` : u.why });
     }
-    out.push({ key: "min", name: "Minimum contracts", amt: CBA.minSal(2, i), ok: true, why: "Always available. Up to two years" });
+    const minRoom = hard ? CBA.levelAmt(hard, i) - pay : Infinity;
+    out.push({ key: "min", name: "Minimum contracts", amt: CBA.minSal(2, i), ok: minRoom >= CBA.minSal(0, i), why: minRoom >= CBA.minSal(2, i) ? "Always available. Up to two years" : minRoom >= CBA.minSal(0, i) ? `Only ${M$(minRoom)} under the hard cap: a rookie-minimum player fits, a veteran minimum doesn't` : "No room under the hard cap" });
     return { tools: out, hard, hardWhy: (t.hardWhy || {})[i], books: b };
   };
   L.fmtDate = s => { if (!s) return ""; const d = new Date(s + "T12:00:00Z"); return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }); };
@@ -323,7 +326,10 @@
     for (let j = i; j <= last; j++) {
       const k = j - i, s = CBA.salaryIn(p, j, dec) + (j === i && opts.kick ? opts.kick : 0);
       if (!s && j > i) break;
-      const mv = Mo.mv(p, j, W) * pm;
+      // analytics shops pay for impact; traditional ones for what the market (box score, minutes) says
+      const a = fo.analytics ?? 0.6;
+      // production value runs rich next to what the market pays, so it's discounted a quarter
+      const mv = (a * 0.75 * Mo.mv(p, j, W) + (1 - a) * Mo.market(p, j, W)) * pm;
       const disc = Math.pow(0.85, k);
       const w = (k === 0 ? wNow * frac : k === 1 ? (wNow + 1) / 2 : 1) * disc;
       const cost = s * L.costMult(W, code, j) * (k === 0 ? frac : 1) * disc;
@@ -332,14 +338,44 @@
     if (p.age <= 24 && p.pot != null && p.pot > Mo.r(p)) v += 0.35 * (p.pot - Mo.r(p)) * 5e6 * (MODE_YOUTH[fo.mode] || 1);
     return v;
   };
-  L.pickValue = (W, code, pk) => {
+  // Projected slot for a pick, taking the better of two when a pick conveys as the best of a pair
+  L.pickSlot = (W, pk) => {
+    let slot = L.projSlot(W, pk.from, pk.y);
+    if (pk.alt) { const pa = W.picks.find(x => x.id === pk.alt); if (pa) slot = Math.min(slot, L.projSlot(W, pa.from, pk.y)); }
+    return slot;
+  };
+  // Chance a protected pick actually conveys (slot is uncertain, more so further out)
+  L.conveyOdds = (W, pk, upTo) => {
+    if (!upTo) return 1;
+    const yrs = Math.max(0, pk.y - (2027 + W.season));
+    const slot = L.pickSlot(W, pk) + (pk.r === 2 ? 30 : 0), sd = 4 + 2.5 * yrs;
+    return 1 - Mo.phi((upTo + 0.5 - slot) / sd);
+  };
+  L.pickValue = (W, code, pk, upTo) => {
     const fo = W.T[code].fo;
     const yrs = Math.max(0, pk.y - (2027 + W.season) + (L.inSeason(W) ? 0 : -1));
-    let slot = L.projSlot(W, pk.from, pk.y);
-    if (pk.alt) { const pa = W.picks.find(x => x.id === pk.alt); if (pa) slot = Math.min(slot, L.projSlot(W, pa.from, pk.y)) - 1; }
-    const base = pk.r === 1 ? 75e6 * Math.exp(-(Math.max(1, slot) - 1) / 6) + 4e6 : 2e6;
+    let slot = L.pickSlot(W, pk);
+    if (pk.alt) slot -= 1;                                   // the better of two is worth a bit more than either
+    const base = pk.r === 1 ? 110e6 * Math.exp(-(Math.max(1, slot) - 1) / 5.5) + 5e6 : 2.5e6;
     const w = (MODE_PICK[fo.mode] || 1) * ((fo.wants || []).includes("picks") ? 1.2 : 1);
-    return base * w * Math.pow(0.93, yrs);
+    const prot = upTo ?? (pk.prot ? pk.prot.upTo : 0);
+    const c = L.conveyOdds(W, pk, prot);
+    // a first that doesn't convey rolls into a later pick, so it keeps some value
+    return base * w * Math.pow(0.93, yrs) * (c + (pk.r === 1 ? (1 - c) * 0.35 : 0));
+  };
+  L.protName = (pk, upTo) => !upTo ? "" : pk.r === 2 ? "protected 31-" + upTo : "top-" + upTo + " protected";
+  L.pickName = (W, id, upTo) => {
+    const pk = W.picks.find(x => x.id === id); if (!pk) return id;
+    const pa = pk.alt ? W.picks.find(x => x.id === pk.alt) : null;
+    const whose = pa ? `better of ${pk.from} and ${pa.from}` : pk.from;
+    const prot = L.protName(pk, upTo ?? (pk.prot ? pk.prot.upTo : 0));
+    return `${pk.y} ${pk.r === 1 ? "first" : "second"} (${whose}${prot ? ", " + prot : ""})`;
+  };
+  // The smallest thing a team can send so a trade has something going each way
+  L.token = (W, code, exclude = []) => {
+    const sec = W.picks.filter(x => x.owner === code && x.r === 2 && !x.used && !exclude.includes(x.id)).sort((a, b) => b.y - a.y)[0];
+    if (sec) return { picks: [sec.id], prot: { [sec.id]: 55 }, cash: 0 };
+    return { picks: [], prot: {}, cash: 250000 };
   };
 
   // ---------- Trades ----------
@@ -410,6 +446,10 @@
         if (p.two) { r.ok = false; r.msgs.push(`${p.n} is on a two-way deal.`); }
         if (p.tradeOk && W.date < p.tradeOk && !(tr.snt && tr.snt[p.id])) { r.ok = false; r.msgs.push(`${p.n} signed recently and can't be traded until ${L.fmtDate(p.tradeOk)}.`); }
       }
+      // every trade needs something going each way, even if it's a protected second or a little cash
+      if (!out.players.length && !(out.picks || []).length && !(out.cash > 0) && (inn.players.length || (inn.picks || []).length)) {
+        r.ok = false; r.msgs.push(`${t.name} has to send something back, even a protected second-round pick or cash.`);
+      }
       // picks (Stepien)
       const firsts = {};
       for (const pk of W.picks) if (pk.owner === code && pk.r === 1) firsts[pk.y] = (firsts[pk.y] || 0) + 1;
@@ -442,8 +482,9 @@
     // value players at this team's post-trade payroll for the money side
     for (const id of get.players) vin += L.playerValue(W, code, L.sntView(W, tr, id), { kick: (tr.kickWaive || {})[id] || (tr.snt || {})[id] ? 0 : CBA.kicker(W.P[id], i, L.decider(W)) });
     for (const id of give.players) vout += (tr.snt || {})[id] ? 0 : L.playerValue(W, code, W.P[id]);   // a free agent leaving costs nothing he was under contract for
-    for (const id of get.picks || []) vin += L.pickValue(W, code, W.picks.find(x => x.id === id));
-    for (const id of give.picks || []) vout += L.pickValue(W, code, W.picks.find(x => x.id === id));
+    const prot = tr.prot || {};
+    for (const id of get.picks || []) vin += L.pickValue(W, code, W.picks.find(x => x.id === id), prot[id]);
+    for (const id of give.picks || []) vout += L.pickValue(W, code, W.picks.find(x => x.id === id), prot[id]);
     vin += (get.cash || 0) * (fo.mode === "rebuild" ? 1 : 0.8); vout += give.cash || 0;
     // tax stance
     const P2 = chk ? chk.P2 : L.payrollNow(W, code);
@@ -472,8 +513,10 @@
     let v = 0;
     for (const id of get.players) v += L.playerValue(W, code, L.sntView(W, tr, id));
     for (const id of give.players) v -= (tr.snt || {})[id] ? 0 : L.playerValue(W, code, W.P[id]);
-    for (const id of get.picks || []) v += L.pickValue(W, code, W.picks.find(x => x.id === id));
-    for (const id of give.picks || []) v -= L.pickValue(W, code, W.picks.find(x => x.id === id));
+    const prot = tr.prot || {};
+    for (const id of get.picks || []) v += L.pickValue(W, code, W.picks.find(x => x.id === id), prot[id]);
+    for (const id of give.picks || []) v -= L.pickValue(W, code, W.picks.find(x => x.id === id), prot[id]);
+    v += (get.cash || 0) - (give.cash || 0);
     return v;
   };
 

@@ -40,8 +40,8 @@
     render(el) {
       const W = App.W, ui = App.ui;
       ui.compose = ui.compose || "trade";
-      const window_ = L.inSeason(W) ? (W.date <= L.dates(W.season).deadlineEnd ? `Trades are open until the deadline, ${L.fmtDate(L.dates(W.season).deadlineEnd)}.` : "The trade deadline has passed. Signings and waivers only until the season ends.") : "Offseason: trades, signings and extensions are open.";
-      const tradesOpen = !L.inSeason(W) || W.date <= L.dates(W.season).deadlineEnd;
+      const window_ = ["reg2", "playoffs"].includes(W.phase) ? "The trade deadline has passed; trades reopen after the Finals. Signings and waivers are still open." : L.inSeason(W) ? `Trades are open until the deadline, ${L.fmtDate(L.dates(W.season).deadlineEnd)}.` : W.phase === "draft" ? "Draft season: trades are open, including the picks on the board." : "Offseason: trades, signings and extensions are open.";
+      const tradesOpen = !["reg2", "playoffs"].includes(W.phase);
       el.innerHTML = `
       <section class="panel" aria-labelledby="moves-h">
         <h2 id="moves-h">Moves</h2>
@@ -50,9 +50,9 @@
           <div class="card">${queueHTML(W)}</div>
           <div class="card">
             <div class="seg" role="group" aria-label="Kind of move">
-              ${[["trade", "Trade"], ["extend", "Extend"], ["sign", "Sign"], ["waive", "Waive"]].map(([k, n]) => `<button type="button" aria-pressed="${ui.compose === k}" data-act="compose" data-k="${k}">${n}</button>`).join("")}
+              ${[["trade", "Trade"], ["shop", "Dump salary"], ["extend", "Extend"], ["sign", "Sign"], ["waive", "Waive"]].map(([k, n]) => `<button type="button" aria-pressed="${ui.compose === k}" data-act="compose" data-k="${k}">${n}</button>`).join("")}
             </div>
-            <div id="composer" style="margin-top:14px">${ui.compose === "trade" ? (tradesOpen ? tradeHTML(W) : "<p class='muted'>The deadline has passed.</p>") : ui.compose === "extend" ? extendHTML(W) : ui.compose === "sign" ? signHTML(W) : waiveHTML(W)}</div>
+            <div id="composer" style="margin-top:14px">${ui.compose === "trade" ? (tradesOpen ? tradeHTML(W) : "<p class='muted'>The deadline has passed. Trades reopen after the Finals, before the draft.</p>") : ui.compose === "shop" ? (tradesOpen ? shopHTML(W) : "<p class='muted'>The deadline has passed. Trades reopen after the Finals, before the draft.</p>") : ui.compose === "extend" ? extendHTML(W) : ui.compose === "sign" ? signHTML(W) : waiveHTML(W)}</div>
           </div>
         </div>
       </section>`;
@@ -77,7 +77,11 @@
       }).join("");
       return `<div class="pick-list" role="group" aria-label="${esc(W.T[code].name)} sends">${sntRows}
         ${ps.map(p => `<label><input type="checkbox" data-on="trToggle" data-code="${code}" data-id="${p.id}"${s.players.includes(p.id) ? " checked" : ""}><span>${esc(p.n)} <span class="m">${esc(App.posName(p))}, ${p.age}, rated ${App.ovr(p)}</span></span><span class="m">${m(CBA.salaryIn(p, i0, dec))}${(p.c.opt[i0 + 1] ? " " + p.c.opt[i0 + 1] : "")}</span></label>`).join("")}
-        ${picks.map(pk => `<label><input type="checkbox" data-on="trPick" data-code="${code}" data-id="${pk.id}"${(s.picks || []).includes(pk.id) ? " checked" : ""}><span>${pk.y} ${pk.r === 1 ? "first" : "second"} <span class="m">${pk.from === code ? "own" : esc(W.T[pk.from].name)}${pk.note ? ", " + esc(pk.note) : ""}</span></span><span class="m">${pk.r === 1 ? "No. " + L.projSlot(W, pk.from, pk.y) : ""}</span></label>`).join("")}
+        ${picks.map(pk => {
+          const on = (s.picks || []).includes(pk.id), pa = pk.alt ? W.picks.find(x => x.id === pk.alt) : null, up = (tr.prot || {})[pk.id] || 0;
+          const opts = pk.r === 1 ? [[0, "Unprotected"], [10, "Top-10 protected"], [14, "Top-14 protected"], [20, "Top-20 protected"]] : [[0, "Unprotected"], [55, "Protected 31-55 (rarely conveys)"]];
+          return `<label><input type="checkbox" data-on="trPick" data-code="${code}" data-id="${pk.id}"${on ? " checked" : ""}><span>${pk.y} ${pk.r === 1 ? "first" : "second"} <span class="m">${pk.from === code ? "own" : esc(pa ? `better of ${pk.from} and ${pa.from}` : W.T[pk.from].name)}${pk.prot ? ", " + esc(L.protName(pk, pk.prot.upTo)) : ""}</span></span><span class="m">${pk.r === 1 ? "No. " + L.pickSlot(W, pk) : ""}</span></label>${on && !pk.prot ? `<div class="row" style="padding:6px 10px;border-bottom:1px solid var(--line)"><label class="f">Protection<select data-on="trProt" data-id="${pk.id}">${opts.map(([v, n]) => `<option value="${v}"${v === up ? " selected" : ""}>${n}</option>`).join("")}</select></label><span class="small muted">${up ? `Conveys ${App.pct(L.conveyOdds(W, pk, up))} of the time${pk.r === 1 ? "; otherwise next year's first goes instead" : ""}.` : ""}</span></div>` : ""}`;
+        }).join("")}
       </div>
       <label class="f" style="margin-top:8px">Cash ${esc(W.T[code].name)} sends ($M)<input type="number" min="0" max="${(CBA.cashLimit(i0) / 1e6).toFixed(1)}" step="0.5" value="${(s.cash || 0) / 1e6}" data-on="trCash" data-code="${code}"></label>`;
     };
@@ -100,7 +104,7 @@
     const lines = [];
     if (sol.room) lines.push("Ends under the cap, so no matching needed.");
     for (const s of sol.subs || []) {
-      if (s.tpe) { const tp = t.tpes.find(x => x.id === s.tpe); lines.push(`${esc(s.in.map(id => App.W.P[id].n).join(" and "))} (${m(s.inSal)}) absorbed into the ${m(s.tpeAmt)} ${esc(tp ? tp.from : "")} exception.`); }
+      if (s.tpe) { const tp = t.tpes.find(x => x.id === s.tpe); lines.push(`${esc(s.in.map(id => App.W.P[id].n).join(" and "))} (${m(s.inSal)}) absorbed into the ${esc(tp ? tp.from : "")} exception: uses ${m(Math.min(s.inSal, s.tpeAmt))} of ${m(s.tpeAmt)}, <b>${m(Math.max(0, s.tpeAmt - s.inSal))} left</b>${tp && tp.exp ? ` until ${esc(L.fmtDate(tp.exp))}` : ""}.`); }
       else if (s.agg) lines.push(`${esc(s.out.map(id => App.W.P[id].n).join(" + "))} (${m(s.outSal)}, combined) for ${esc(s.in.map(id => App.W.P[id].n).join(" and "))} (${m(s.inSal)}).`);
       else lines.push(`${esc(App.W.P[s.out[0]].n)} (${m(s.outSal)}) for ${esc(s.in.map(id => App.W.P[id].n).join(" and "))} (${m(s.inSal)}).`);
     }
@@ -123,7 +127,8 @@
     const i0 = W.season;
     const guard = [];
     if (A.bAfter) {
-      if (i0 === 0 && W.settings.noTax0 && A.bAfter[0].payroll > A.bAfter[0].taxLine) guard.push(`Puts Boston ${m(A.bAfter[0].payroll - A.bAfter[0].taxLine)} into the tax this season. Ownership said no tax in 2026-27.`);
+      const mc = L.mandateCheck(W, A.bAfter[0].payroll);
+      if (!mc.ok) guard.push(`Breaks ownership's rule: ${mc.text}`);
       for (let k = 1; k < 3; k++) if (A.bAfter[k].status === "a2" && A.bBefore[k].status !== "a2") guard.push(`Projects Boston over the second apron in ${App.sn(i0 + k)}.`);
     }
     const taxRows = A.bAfter ? A.bBefore.map((b, k) => `<tr><td>${App.sn(b.i)}</td><td>${m(b.payroll)} → ${m(A.bAfter[k].payroll)}</td><td>${m(b.tax)} → ${m(A.bAfter[k].tax)}</td></tr>`).join("") : "";
@@ -141,6 +146,7 @@
         <p class="small" style="margin:8px 0 0">${esc(re.veto || (re.verdict === "yes" ? "The value works for them." : re.verdict === "close" ? "They want a little more." : "They don't see enough value."))}${re.why.length ? " " + esc(re.why.join(". ")) + "." : ""}</p>
         ${guard.map(g => `<p class="notice" style="margin:8px 0 0">${esc(g)}</p>`).join("")}
         ${taxRows ? `<table class="std small" style="margin-top:10px"><thead><tr><th scope="col">Season</th><th scope="col">Boston payroll</th><th scope="col">Tax bill</th></tr></thead><tbody>${taxRows}</tbody></table>` : ""}
+        ${["BOS", tr.b].filter(c => !tr.side[c].players.length && !(tr.side[c].picks || []).length && !(tr.side[c].cash > 0)).map(c => `<p class="small" style="margin:8px 0 0">Nothing is going from ${esc(W.T[c].name)} yet, and every trade needs something going each way. <button class="linkish" type="button" data-act="trToken" data-code="${c}">Add ${L.token(W, c).picks.length ? "a protected second" : "$250K in cash"}</button></p>`).join("")}
         <div class="row" style="margin-top:12px">
           <button class="btn" type="button" data-act="trQueue"${A.chk.ok ? "" : " disabled"}>Add to moves</button>
           ${re.verdict !== "yes" ? `<button class="btn ghost" type="button" data-act="trSweeten">What would it take?</button>` : ""}
@@ -157,7 +163,7 @@
   App.acts.trPick = el => {
     const tr = App.ui.trade, s = tr.side[el.dataset.code], id = el.dataset.id;
     s.picks = s.picks || [];
-    if (el.checked) { if (!s.picks.includes(id)) s.picks.push(id); } else s.picks = s.picks.filter(x => x !== id);
+    if (el.checked) { if (!s.picks.includes(id)) s.picks.push(id); } else { s.picks = s.picks.filter(x => x !== id); if (tr.prot) delete tr.prot[id]; }
     App.render();
   };
   const sntSal = (years, y1) => Array.from({ length: years }, (_, k) => CBA.k1(y1 * (1 + 0.05 * k)));
@@ -173,6 +179,8 @@
   };
   App.acts.trSntYears = el => { const o = App.ui.trade.snt[el.dataset.id]; o.sal = sntSal(+el.value, o.sal[0]); App.render(); };
   App.acts.trSntAav = el => { const o = App.ui.trade.snt[el.dataset.id]; o.sal = sntSal(o.sal.length, CBA.k1((+el.value || 1) * 1e6)); App.render(); };
+  App.acts.trProt = el => { const tr = App.ui.trade; tr.prot = tr.prot || {}; const v = +el.value; if (v) tr.prot[el.dataset.id] = v; else delete tr.prot[el.dataset.id]; App.render(); };
+  App.acts.trToken = el => { const tr = App.ui.trade, code = el.dataset.code, tk = L.token(App.W, code, tr.side[code].picks || []); tr.side[code].picks = (tr.side[code].picks || []).concat(tk.picks); tr.side[code].cash = (tr.side[code].cash || 0) + tk.cash; tr.prot = Object.assign(tr.prot || {}, tk.prot); App.render(); };
   App.acts.trCash = el => { App.ui.trade.side[el.dataset.code].cash = Math.max(0, Math.round((+el.value || 0) * 1e6)); App.render(); };
   App.acts.trClear = () => { App.ui.trade = App.newTrade(App.ui.trade.b); App.render(); };
   // Find the cheapest Boston addition that gets a yes: a second, then a first, then cash, then a young player
@@ -180,7 +188,10 @@
     const W = App.W, tr = App.ui.trade;
     const tries = [];
     const ownPicks = W.picks.filter(p => p.owner === "BOS" && !(tr.side.BOS.picks || []).includes(p.id)).sort((a, b) => b.r - a.r || L.pickValue(W, tr.b, a) - L.pickValue(W, tr.b, b));
-    for (const pk of ownPicks) tries.push(t => { t.side.BOS.picks = [...(t.side.BOS.picks || []), pk.id]; return L.pickName(W, pk.id); });
+    for (const pk of ownPicks) {
+      if (pk.r === 1 && !pk.prot) tries.push(t => { t.side.BOS.picks = [...(t.side.BOS.picks || []), pk.id]; t.prot = Object.assign(t.prot || {}, { [pk.id]: 10 }); return L.pickName(W, pk.id, 10); });
+      tries.push(t => { t.side.BOS.picks = [...(t.side.BOS.picks || []), pk.id]; return L.pickName(W, pk.id); });
+    }
     tries.push(t => { t.side.BOS.cash = CBA.cashLimit(W.season); return `${m(CBA.cashLimit(W.season))} in cash`; });
     const young = Object.values(W.P).filter(p => p.t === "BOS" && !p.two && p.age <= 24 && !tr.side.BOS.players.includes(p.id)).sort((a, b) => L.playerValue(W, "BOS", a) - L.playerValue(W, "BOS", b));
     for (const p of young) tries.push(t => { t.side.BOS.players = [...t.side.BOS.players, p.id]; return p.n; });
@@ -198,11 +209,41 @@
   App.acts.trUseSweet = el => { App.ui.trade = JSON.parse(el.dataset.t); App.closeDlg(); App.render(); };
   App.acts.trQueue = () => {
     const W = App.W, tr = App.ui.trade;
-    const names = c => (tr.side[c].players.map(id => (tr.snt && tr.snt[id] ? "sign-and-trade " : "") + W.P[id].n).concat((tr.side[c].picks || []).map(id => L.pickName(W, id))).concat(tr.side[c].cash ? [m(tr.side[c].cash) + " cash"] : [])).join(", ") || "nothing";
+    const names = c => (tr.side[c].players.map(id => (tr.snt && tr.snt[id] ? "sign-and-trade " : "") + W.P[id].n).concat((tr.side[c].picks || []).map(id => L.pickName(W, id, (tr.prot || {})[id]))).concat(tr.side[c].cash ? [m(tr.side[c].cash) + " cash"] : [])).join(", ") || "nothing";
     W.queue.push({ type: "trade", tr: JSON.parse(JSON.stringify(tr)), label: `Trade ${names("BOS")} to ${W.T[tr.b].name} for ${names(tr.b)}` });
     App.ui.trade = App.newTrade(tr.b);
     App.afterChange();
   };
+
+  // ================= Dump salary =================
+  function shopHTML(W) {
+    const i0 = W.season, dec = L.decider(W);
+    const ps = Object.values(W.P).filter(p => p.t === "BOS" && !p.two && CBA.salaryIn(p, i0, dec) > 0 && !(p.noTrade && W.date < p.noTrade)).sort((a, b) => CBA.salaryIn(b, i0, dec) - CBA.salaryIn(a, i0, dec));
+    const st = App.ui.shop || (App.ui.shop = { ids: [] });
+    const b = L.books(W, "BOS", i0);
+    const res = st.res;
+    const line = (x) => {
+      const tr = x.tr, them = tr.b;
+      const what = c => [...tr.side[c].players.map(id => W.P[id].n), ...(tr.side[c].picks || []).map(id => L.pickName(W, id, (tr.prot || {})[id])), ...(tr.side[c].cash ? [m(tr.side[c].cash) + " cash"] : [])].join(", ");
+      return `<li style="padding:10px 0;border-bottom:1px solid var(--line)"><b>${esc(W.T[them].name)}</b> <span class="small muted">${esc(W.T[them].fo.lead)}</span><br>
+        <span class="small">Boston sends ${esc(what("BOS"))}. ${esc(W.T[them].name)} send ${esc(what(them))}.</span><br>
+        <span class="small">${x.saved > 0 ? `Takes ${m(x.saved)} off this season's payroll` : "No payroll savings"}${x.taxSaved > 0 ? `, saves ${m(x.taxSaved)} in tax` : ""}${x.tpe >= 250000 ? `, leaves a ${m(x.tpe)} trade exception` : ""}. Boston's read: <b class="${x.ours >= 0 ? "good" : "bad"}">${x.ours >= 0 ? "+" : ""}${m(x.ours)}</b>.</span>
+        <div class="row" style="margin-top:6px"><button class="btn sm" type="button" data-act="shopUse" data-k="${res.indexOf(x)}">Add to moves</button><button class="btn ghost sm" type="button" data-act="shopEdit" data-k="${res.indexOf(x)}">Open in the trade builder</button></div></li>`;
+    };
+    return `<p class="small" style="margin-top:0">Pick the contracts you want gone. Every team gets asked what it would take: what they'd give you, or what you'd have to attach. Teams need cap room, a trade exception or matching salary to take on money, so in-season takers are scarce; in the offseason there are more. Payroll now ${m(b.payroll)}${b.tax ? `, tax bill ${m(b.tax)}` : ""}.</p>
+      <div class="pick-list" role="group" aria-label="Contracts to move">${ps.map(p => `<label><input type="checkbox" data-on="shopToggle" data-id="${p.id}"${st.ids.includes(p.id) ? " checked" : ""}><span>${esc(p.n)} <span class="m">${p.age}, rated ${App.ovr(p)}</span></span><span class="m">${m(CBA.salaryIn(p, i0, dec))}</span></label>`).join("")}</div>
+      <button class="btn" type="button" data-act="shopRun" style="margin-top:10px"${st.ids.length ? "" : " disabled"}>Call around</button>
+      ${res ? (res.length ? `<ol class="plain" style="margin-top:10px">${res.slice(0, 8).map(line).join("")}</ol>` : `<p class="notice" style="margin-top:10px">Nobody can take that on right now without sending as much salary back. Try a smaller contract, or wait for the offseason when teams have cap room.</p>`) : ""}`;
+  }
+  App.acts.shopToggle = el => { const st = App.ui.shop; if (el.checked) st.ids.push(el.dataset.id); else st.ids = st.ids.filter(x => x !== el.dataset.id); st.res = null; App.render(); };
+  App.acts.shopRun = () => { const st = App.ui.shop; st.res = L.shopPlayers(App.W, st.ids); App.render(); };
+  App.acts.shopUse = el => {
+    const W = App.W, x = App.ui.shop.res[+el.dataset.k], tr = x.tr;
+    const what = c => [...tr.side[c].players.map(id => W.P[id].n), ...(tr.side[c].picks || []).map(id => L.pickName(W, id, (tr.prot || {})[id]))].join(", ") || "cash";
+    W.queue.push({ type: "trade", tr: JSON.parse(JSON.stringify(tr)), label: `Trade ${what("BOS")} to ${W.T[tr.b].name} for ${what(tr.b)}` });
+    App.ui.shop = { ids: [] }; App.afterChange();
+  };
+  App.acts.shopEdit = el => { App.ui.trade = JSON.parse(JSON.stringify(App.ui.shop.res[+el.dataset.k].tr)); App.ui.compose = "trade"; App.render(); };
 
   // ================= Extensions =================
   function extendHTML(W) {
@@ -244,22 +285,30 @@
   // ================= Signings =================
   function signHTML(W) {
     const i0 = W.season;
-    const fas = Object.values(W.P).filter(p => p.t === "FA" && !p.retired).sort((a, b) => Mo.r(b) - Mo.r(a));
-    const twos = Object.values(W.P).filter(p => p.t === "BOS" && p.two);
-    const tools = L.tools(W, "BOS", i0).tools.filter(t => t.ok && !t.tpe && t.key !== "room" || (t.key === "room" && t.amt > 0));
+    const tools = L.tools(W, "BOS", i0).tools.filter(t => t.ok && !t.tpe && (t.key !== "room" || t.amt > 0));
     const st = App.ui.sign || (App.ui.sign = {});
+    st.fit = st.fit || "all";
+    const twos = Object.values(W.P).filter(p => p.t === "BOS" && p.two);
+    const toolAmt = k => (tools.find(t => t.key === k) || { amt: 0 }).amt;
+    const fits = { all: () => true, min: p => Mo.faHaul(p, i0, W).aav <= CBA.minSal(p.yos, i0) * 1.15,
+      mle: p => Mo.faHaul(p, i0, W).aav <= Math.max(toolAmt("ntmle"), toolAmt("tmle"), toolAmt("rmle")) * 1.05,
+      bae: p => Mo.faHaul(p, i0, W).aav <= toolAmt("bae") * 1.05, room: p => Mo.faHaul(p, i0, W).aav <= toolAmt("room") * 1.05 };
+    const all = Object.values(W.P).filter(p => p.t === "FA" && !p.retired && !p.offerSheet).sort((a, b) => Mo.r(b) - Mo.r(a));
+    const fas = all.filter(fits[st.fit]);
     let html = "";
     if (twos.length) html += `<h3>Convert a two-way deal</h3><p class="small muted">Moves him to a standard minimum contract and onto the 15-man roster.</p><ul class="plain">${twos.map(p => `<li class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${esc(p.n)} <span class="small muted">rated ${App.ovr(p)}</span></span><button class="btn ghost sm" type="button" data-act="cvQueue" data-id="${p.id}">Add to moves</button></li>`).join("")}</ul>`;
-    if (!fas.length) return html + `<h3 style="margin-top:14px">Free agents</h3><p class="muted">No unsigned free agents worth a roster spot right now. The market opens July 1 in GM mode.</p>`;
-    const p = W.P[st.id] || fas[0]; st.id = p.id;
+    const filters = [["all", "Everyone"], ["min", "Will take the minimum"], ["mle", "Fits a mid-level"], ["bae", "Fits the bi-annual"], ["room", "Fits cap room"]].filter(([k]) => k === "all" || k === "min" || (k === "mle" && (toolAmt("ntmle") || toolAmt("tmle") || toolAmt("rmle"))) || (k === "bae" && toolAmt("bae")) || (k === "room" && toolAmt("room")));
+    html += `<h3 style="margin-top:14px">Free agents</h3><div class="seg" role="group" aria-label="Show">${filters.map(([k, n]) => `<button type="button" aria-pressed="${st.fit === k}" data-act="sgFit" data-k="${k}">${n}</button>`).join("")}</div>`;
+    if (!fas.length) return html + `<p class="muted">${all.length ? "Nobody in that group right now." : "No unsigned free agents. The market opens July 1 in GM mode."}</p>`;
+    const p = W.P[st.id] && fas.includes(W.P[st.id]) ? W.P[st.id] : fas[0]; st.id = p.id;
     const ask = Mo.faHaul(p, i0, W);
-    st.via = st.via && tools.find(t => t.key === st.via) ? st.via : (tools[0] || { key: "min" }).key;
+    st.via = st.via && tools.find(t => t.key === st.via) ? st.via : (tools.find(t => t.amt >= ask.aav) || tools[0] || { key: "min" }).key;
     st.years = st.years || Math.min(ask.years, 2);
-    st.total = st.total || Math.round(ask.aav * st.years / 1e6 * 10) / 10;
+    st.total = st.total || Math.round(Math.min(ask.aav, (tools.find(t => t.key === st.via) || { amt: ask.aav }).amt) * st.years / 1e6 * 10) / 10;
     const tool = tools.find(t => t.key === st.via);
-    return html + `<h3 style="margin-top:14px">Free agents</h3>
-      <label class="f">Player<select data-on="sgPlayer">${fas.slice(0, 80).map(x => `<option value="${x.id}"${x.id === p.id ? " selected" : ""}>${esc(x.n)}, ${x.age}, rated ${App.ovr(x)}${x.rights && x.rights.team === "BOS" ? " (your rights)" : ""}</option>`).join("")}</select></label>
-      <p class="small muted">He's looking for about ${m(ask.aav)} a year for ${ask.years} year${ask.years > 1 ? "s" : ""}.</p>
+    return html + `
+      <ul class="plain" style="margin-top:8px;max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:8px">${fas.slice(0, 40).map(x => { const a = Mo.faHaul(x, i0, W); return `<li style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--line)"><span>${esc(x.n)} <span class="small muted">${esc(App.posName(x))}, ${x.age}, rated ${App.ovr(x)}${x.rights && x.rights.team === "BOS" ? ", your rights" : ""}</span></span><span class="small">${m(a.aav)} x ${a.years}${Mo.askDecay(x, W) < 0.99 ? " <span class='muted'>(asking less lately)</span>" : ""}</span><button class="btn ghost sm" type="button" data-act="sgPlayer" data-id="${x.id}" aria-pressed="${x.id === p.id}">${x.id === p.id ? "Selected" : "Pick"}</button></li>`; }).join("")}</ul>
+      <p class="small" style="margin-top:10px"><b>${esc(p.n)}</b> is looking for about ${m(ask.aav)} a year for ${ask.years} year${ask.years > 1 ? "s" : ""}.</p>
       <div class="row">
         <label class="f">Using<select data-on="sgVia">${tools.map(t => `<option value="${t.key}"${t.key === st.via ? " selected" : ""}>${esc(t.name)} (${m(t.amt)})</option>`).join("")}${p.rights && p.rights.team === "BOS" ? `<option value="bird"${st.via === "bird" ? " selected" : ""}>His Bird rights</option>` : ""}</select></label>
         <label class="f">Years<select data-on="sgYears">${[1, 2, 3, 4].map(y => `<option${y === st.years ? " selected" : ""}>${y}</option>`).join("")}</select></label>
@@ -268,7 +317,8 @@
       <button class="btn" type="button" data-act="sgQueue">Add to moves</button>
       <p class="small muted">${tool ? esc(tool.why) : ""}</p>`;
   }
-  App.acts.sgPlayer = el => { App.ui.sign = { id: el.value }; App.render(); };
+  App.acts.sgFit = el => { App.ui.sign = { fit: el.dataset.k }; App.render(); };
+  App.acts.sgPlayer = el => { App.ui.sign = { id: el.dataset.id || el.value, fit: (App.ui.sign || {}).fit }; App.render(); };
   App.acts.sgVia = el => { App.ui.sign.via = el.value; App.render(); };
   App.acts.sgYears = el => { App.ui.sign.years = +el.value; App.render(); };
   App.acts.sgTotal = el => { App.ui.sign.total = +el.value; App.render(); };
@@ -338,7 +388,9 @@
             const n = L.rosterCount(S, "BOS");
             const tool = L.tools(S, "BOS", S.season).tools.find(t => t.key === mv.via);
             const sal = CBA.buildSalaries(mv.years, mv.total, mv.shape || "flat", mv.via === "bird" ? 0.08 : 0.05);
+            const hardLvl = S.T.BOS.hard[S.season], payNow = L.payrollNow(S, "BOS");
             if (n >= 15 && L.inSeason(S)) { res.ok = false; res.msg = "The roster is full (15)."; }
+            else if (hardLvl && payNow + sal[0] > CBA.levelAmt(hardLvl, S.season)) { res.ok = false; res.msg = `Boston is hard-capped at the ${CBA.LEVEL_NAME[hardLvl]}: only ${m(Math.max(0, CBA.levelAmt(hardLvl, S.season) - payNow))} of room.`; }
             else if (mv.via !== "bird" && mv.via !== "min" && (!tool || !tool.ok || sal[0] > tool.amt)) { res.ok = false; res.msg = tool ? `The ${tool.name.toLowerCase()} only covers ${m(tool.amt)} now. ${tool.ok ? "" : tool.why}` : "That exception isn't available."; }
             else if (mv.via === "min" && sal[0] > CBA.minSal(p.yos, S.season) * 1.001 + 1000) { res.ok = false; res.msg = `A minimum deal for him is ${m(CBA.minSal(p.yos, S.season))}.`; }
             else {
@@ -355,13 +407,15 @@
           const p = S.P[mv.id];
           if (!p || !p.two) { res.ok = false; res.msg = "Not on a two-way deal."; }
           else if (L.rosterCount(S, "BOS") >= 15) { res.ok = false; res.msg = "The roster is full (15)."; }
+          else if (S.T.BOS.hard[S.season] && L.payrollNow(S, "BOS") + CBA.minSal(p.yos, S.season) > CBA.levelAmt(S.T.BOS.hard[S.season], S.season)) { res.ok = false; res.msg = `Boston is hard-capped at the ${CBA.LEVEL_NAME[S.T.BOS.hard[S.season]]} and this would go over.`; }
           else { p.two = false; p.c.sal[S.season] = CBA.minSal(p.yos, S.season); p.c.signed = S.season; L.bump(S); L.news(S, `Boston converts ${p.n} to a standard contract.`, "sign", "BOS"); res.msg = `Adds ${m(CBA.minSal(p.yos, S.season))}.`; }
         }
       } catch (e) { console.error(e); res.ok = false; res.msg = "Something in this move doesn't add up anymore."; }
       if (res.ok) {
         const b = L.books(S, "BOS", S.season);
         res.after = b.payroll;
-        if (S.season === 0 && S.settings.noTax0 && b.payroll > b.taxLine) res.warn = `Boston is ${m(b.payroll - b.taxLine)} into the tax after this step.`;
+        const mc = L.mandateCheck(S, b.payroll);
+        if (!mc.ok) res.warn = `Breaks ownership's rule after this step: ${mc.text}`;
       }
       out.push(res);
       if (!res.ok && real) break;

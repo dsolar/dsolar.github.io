@@ -29,17 +29,34 @@
       const tov = live ? wavg(ps, cur.mins, p => p.live && p.live.gp ? p.live.tov / Math.max(1, p.live.mpg) * 36 : null) : null;
       const reb = live ? wavg(ps, cur.mins, p => p.live && p.live.gp ? p.live.rpg / Math.max(1, p.live.mpg) * 36 : null) : null;
       const bucket = { G: 0, W: 0, B: 0 }; for (const p of ps) bucket[p.pos || "W"] += cur.mins[p.id] || 0;
-      const starters = new Set(ps.filter(p => (cur.mins[p.id] || 0) > 0).slice(0, 5).map(p => p.id));
-      const rows = ps.map(p => {
+      const playing = ps.filter(p => (cur.mins[p.id] || 0) > 0);
+      const five = playing.slice(0, 5), bench = playing.slice(5), out = ps.filter(p => !(cur.mins[p.id] || 0));
+      // put the starting five in positions: the arrangement where everyone is closest to a spot he plays
+      const POS5 = ["PG", "SG", "SF", "PF", "C"];
+      const dist = (p, k) => Math.min(...((p.ps && p.ps.length ? p.ps : [p.pos === "G" ? "SG" : p.pos === "B" ? "C" : "SF"]).map(x => Math.abs(POS5.indexOf(x) - k))));
+      let bestPerm = null, bestCost = 1e9;
+      const perm = (arr, used, acc) => {
+        if (acc.length === five.length) { const c = acc.reduce((a, p, k) => a + dist(p, k), 0); if (c < bestCost) { bestCost = c; bestPerm = acc.slice(); } return; }
+        for (let k = 0; k < arr.length; k++) if (!used[k]) { used[k] = 1; acc.push(arr[k]); perm(arr, used, acc); acc.pop(); used[k] = 0; }
+      };
+      perm(five, [], []);
+      const slotOf = new Map((bestPerm || five).map((p, k) => [p.id, POS5[k]]));
+      const ORD = ["6th", "7th", "8th", "9th", "10th", "11th", "12th", "13th"];
+      const row = (p, tag) => {
         const mm = Math.round(cur.mins[p.id] || 0);
         const lv = p.live && p.live.gp ? `, ${p.live.mpg} a night so far` : p.mpg ? `, ${p.mpg} last season` : "";
-        return `<li class="${starters.has(p.id) ? "starter" : ""}">
-          <div class="who"><b><button class="linkish" type="button" data-act="player" data-id="${p.id}">${esc(p.n)}</button></b><span class="small muted">${esc(App.posName(p))}${p.two ? ", two-way" : ""}${esc(lv)}</span></div>
+        const off = dist(p, POS5.indexOf(tag)) >= 2 && POS5.includes(tag);
+        return `<li>
+          <span class="slot${POS5.includes(tag) ? " st" : ""}">${esc(tag)}</span>
+          <div class="who"><b><button class="linkish" type="button" data-act="player" data-id="${p.id}">${esc(p.n)}</button></b><span class="small muted">${esc(App.posName(p))}${p.two ? ", two-way" : ""}${esc(lv)}</span>${off ? `<span class="small warnc" style="display:block">Out of position at ${tag}</span>` : ""}</div>
           <div class="ovr" title="Rating">${App.ovr(p)}</div>
           <input type="range" min="0" max="42" step="1" value="${mm}" aria-label="Minutes for ${esc(p.n)}" data-on="rotMin" data-live data-id="${p.id}">
           <input type="number" min="0" max="48" step="1" value="${mm}" aria-label="Minutes for ${esc(p.n)} (number)" data-on="rotMin" data-id="${p.id}">
         </li>`;
-      }).join("");
+      };
+      const rows = `<h3 class="rot-h">Starting five</h3><ul class="plain rot">${(bestPerm || five).map(p => row(p, slotOf.get(p.id))).join("")}</ul>
+        <h3 class="rot-h">Bench</h3><ul class="plain rot">${bench.map((p, k) => row(p, ORD[k] || "")).join("") || `<li class="muted small">Nobody off the bench.</li>`}</ul>
+        ${out.length ? `<h3 class="rot-h">Out of the rotation</h3><ul class="plain rot">${out.map(p => row(p, "DNP")).join("")}</ul>` : ""}`;
       const meter = (label, val, lgv, fmt, note, lo, hi) => {
         if (val == null) return `<div><div class="small muted">${esc(label)}</div><div class="small">${esc(note)}</div></div>`;
         const pctv = Math.max(0, Math.min(1, (val - lo) / (hi - lo)));
@@ -48,21 +65,21 @@
       el.innerHTML = `
       <section class="panel" aria-labelledby="rot-h">
         <h2 id="rot-h">Rotation</h2>
-        <p class="sub">${esc(W.T.BOS.coach || "Joe Mazzulla")}'s minutes, your call. The top five by minutes start. ${cur.auto ? "This is the model's rotation; move any slider to make it yours." : "Your rotation. When someone's hurt, his minutes go to the rest of your rotation."}</p>
+        <p class="sub">${esc(W.T.BOS.coach || "Joe Mazzulla")}'s minutes, your call. The five with the most minutes start, placed at the positions they fit best; everyone else comes off the bench in order of minutes. ${cur.auto ? "This is the model's rotation; move any slider to make it yours." : "Your rotation. When someone's hurt, his minutes go to the rest of your rotation."}</p>
         <div class="grid2">
           <div class="card">
             <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px">
               <div><span class="bigstat ${Math.abs(total - 240) < 1 ? "" : "bad"}">${Math.round(total)}</span> <span class="muted">of 240 minutes</span></div>
               <div class="row"><button class="btn ghost sm" type="button" data-act="rotFit"${Math.abs(total - 240) < 1 ? " disabled" : ""}>Fit to 240</button><button class="btn ghost sm" type="button" data-act="rotAuto"${cur.auto ? " disabled" : ""}>Use the model's</button></div>
             </div>
-            <ul class="plain rot">${rows}</ul>
+            ${rows}
           </div>
           <div>
             <div class="card">
               <div class="grid3" style="gap:10px">
                 <div><div class="small muted">Net rating</div><div class="bigstat gold">${net >= 0 ? "+" : ""}${net.toFixed(1)}</div><div class="small">${rank}${["th", "st", "nd", "rd"][rank % 10 > 3 || [11, 12, 13].includes(rank) ? 0 : rank % 10]} in the league</div></div>
                 <div><div class="small muted">Projected wins</div><div class="bigstat">${wins.toFixed(0)}</div><div class="small">${cur.auto ? "Model's rotation" : `Model's rotation: ${autoWins.toFixed(0)}`}</div></div>
-                <div><div class="small muted">Title odds</div><div class="bigstat">${App.pct(App.titleOdds().BOS || 0)}</div><div class="small">From 160 simulated playoffs</div></div>
+                <div><div class="small muted">Title odds</div><div class="bigstat">${App.pct(App.titleOdds().BOS || 0)}</div><div class="small">From 400 simulated seasons</div></div>
               </div>
             </div>
             <div class="card" style="margin-top:14px">

@@ -11,20 +11,87 @@
   const pv = (W, code, p) => L.playerValue(W, code, p);
   const teamCodes = W => Object.keys(W.T);
 
-  // ================= In-season phases =================
+  // ================= Rosters =================
+  // Guaranteed money still owed if a team waived him today
+  L.deadIfWaived = (W, p) => {
+    const i = W.season, dec = L.decider(W); let s = 0;
+    for (let j = i; j < i + 6; j++) { const x = CBA.salaryIn(p, j, dec); if (!x) continue; if (p.c.opt[j] === "NG" || p.c.opt[j] === "TO") break; s += x; }
+    return s;
+  };
+  // Get a CPU roster to 15 the way real teams do: non-guaranteed and minimum deals go first, then the smallest
+  // dead-money hit. Never someone signed this summer.
+  L.trimRoster = (W, code, max = 15) => {
+    let ps = L.teamPlayers(W, code);
+    while (ps.length > max) {
+      const fresh = p => (p.c.signed >= W.season && p.c.how && p.c.how !== "min") || (p.c.rk && p.c.rk[1] > 0 && 2026 + W.season - p.c.rk[0] <= (p.c.rk[1] <= 14 ? 4 : 2));
+      const cands = ps.filter(p => !fresh(p));
+      const pool = cands.length ? cands : ps;
+      const cut = pool.map(p => ({ p, dead: L.deadIfWaived(W, p), v: pv(W, code, p) }))
+        .sort((a, b) => (a.dead > 3e6) - (b.dead > 3e6) || a.dead - b.dead || a.v - b.v)[0].p;
+      L.waive(W, code, cut.id, false);
+      ps = L.teamPlayers(W, code);
+    }
+  };
   L.cpuRosters = W => {
     const i = W.season, dec = L.decider(W);
     for (const code of teamCodes(W)) {
       if (code === "BOS") continue;
       for (const p of L.teamPlayers(W, code)) if (p.c.opt[i] === "NG" && !p.c.dec[i]) p.c.dec[i] = Mo.mv(p, i, W) >= p.c.sal[i] * 0.7 ? "in" : "out";
-      for (const p of L.teamPlayers(W, code)) if (!(CBA.salaryIn(p, i, dec) > 0)) { p.t = "FA"; p.rights = null; }
-      let ps = L.teamPlayers(W, code);
-      while (ps.length > 15) { const cut = ps.sort((a, b) => pv(W, code, a) - pv(W, code, b))[0]; L.waive(W, code, cut.id, false); ps = L.teamPlayers(W, code); }
+      for (const p of L.teamPlayers(W, code)) if (!(CBA.salaryIn(p, i, dec) > 0)) { p.t = "FA"; p.rights = null; p.faDate = W.date; }
+      L.trimRoster(W, code);
     }
     L.bump(W);
   };
+
+  // ================= Ownership =================
+  // Bill Chisholm's patience. Results against expectations and the tax bill move it; it sets next season's rule.
+  L.MANDATES = {
+    a2once: "Spend what it takes for a real title shot. The second apron is fine, just not two years running.",
+    a2: "Tax is fine. Stay under the second apron.",
+    a1: "Stay under the first apron.",
+    tax: "Get under the tax."
+  };
+  L.ensureOwner = W => {
+    if (!W.owner) W.owner = { name: "Bill Chisholm", trust: 60, mandate: { season: 0, rule: "tax", text: "No tax in 2026-27." }, log: [] };
+    return W.owner;
+  };
+  L.ruleFor = trust => trust >= 75 ? "a2once" : trust >= 55 ? "a2" : trust >= 35 ? "a1" : "tax";
+  L.mandateCheck = (W, payroll, i = W.season) => {
+    const o = L.ensureOwner(W), m = o.mandate;
+    if (!m || m.season !== i) return { ok: true };
+    const lvl = m.rule === "tax" ? CBA.tax(i) : m.rule === "a1" ? CBA.a1(i) : CBA.a2(i);
+    if (m.rule === "a2once") {
+      const last = (W.T.BOS.overA2 || []).includes(i - 1);
+      return payroll > lvl && last ? { ok: false, text: "Over the second apron two years running." } : { ok: true };
+    }
+    return payroll > lvl ? { ok: false, text: `${M$(payroll - lvl)} over the ${CBA.LEVEL_NAME[m.rule === "tax" ? "tax" : m.rule]}. Ownership's rule: ${m.text}` } : { ok: true, room: lvl - payroll };
+  };
+  const PTS = { "Won the title": 5, "Lost in the Finals": 4, "Lost in the conference finals": 3, "Lost in the second round": 2, "Lost in the first round": 1, "Lost in the play-in": 0.4, "Missed the playoffs": 0 };
+  L.ownerReview = (W, run, payroll, tax) => {
+    const o = L.ensureOwner(W), i = W.season, e = W.exp || {};
+    const rank = e.rank || 10;
+    const expPts = rank <= 2 ? 4 : rank <= 4 ? 3 : rank <= 8 ? 2 : rank <= 16 ? 1 : 0.3;
+    const res = PTS[run] ?? 0;
+    const kept = L.mandateCheck(W, payroll, i).ok;
+    const before = o.trust;
+    let d = 7 * (res - expPts) - tax / 8e6 + (kept ? 4 : -18) + (res === 5 ? 15 : 0);
+    o.trust = Math.max(0, Math.min(100, Math.round(before + d)));
+    const rule = L.ruleFor(o.trust);
+    const lines = [];
+    lines.push(`${run}${tax ? ` with a ${M$(tax)} tax bill` : ""}${e.projWins ? `, after a preseason projection of ${Math.round(e.projWins)} wins` : ""}.`);
+    if (!kept) lines.push("You broke this season's rule.");
+    if (o.trust < 15) { o.fired = true; lines.push("Ownership has seen enough: you're fired."); }
+    else lines.push(`Next season: ${L.MANDATES[rule]}`);
+    o.mandate = { season: i + 1, rule, text: L.MANDATES[rule] };
+    o.log.unshift({ season: i, before, after: o.trust, run, tax, text: lines.join(" ") });
+    news(W, `${o.name}: ${lines.join(" ")}`, "owner", "BOS");
+    return o;
+  };
+
+  // ================= In-season phases =================
   L.startSeason = W => {
     L.cpuRosters(W);
+    L.ensureOwner(W);
     const n = L.rosterCount(W, "BOS");
     if (n > 15) return { ok: false, why: `Boston has ${n} players under contract. Get to 15 before opening night (Moves: waive).` };
     const rec = W.season === 0 ? L.liveStart(W) : null;
@@ -32,34 +99,49 @@
     else if (!W.sched || !W.sched.length || W.sched.some(g => g.done)) L.newSchedule(W);
     W.phase = "reg";
     if (!rec) W.date = L.dates(W.season).open;
+    const nets = L.teamNets(W), rank = Object.values(nets).filter(x => x > nets.BOS).length + 1;
+    W.exp = { season: W.season, projWins: L.projWins(W, "BOS"), rank, odds: (L.titleOdds(W, 120).BOS || 0) };
     L.bump(W);
     return { ok: true };
   };
+  // Calls start coming three weeks before the deadline, a couple a week; each one is good for about ten days
+  L.expireOffers = W => { for (const o of W.offers || []) if (!o.done && o.exp && W.date > o.exp) { o.done = true; o.result = "expired"; } };
   L.simDays = (W, days) => {
     const d = L.dates(W.season);
     let target = L.addDays(W.date, days);
     if (W.phase === "reg" && target >= d.deadline) target = d.deadline;
-    if (target >= d.end) target = d.end;
+    if (target >= d.end) target = "9999-12-31";                 // last week: finish every scheduled game
     L.simUntil(W, target);
+    if (target === "9999-12-31") W.date = d.end;
+    L.expireOffers(W);
+    let calls = 0;
+    if (W.phase === "reg" && W.date >= L.addDays(d.deadline, -21) && W.date < d.deadline) {
+      const busy = new Set((W.offers || []).filter(o => !o.done).map(o => o.from));
+      const more = L.makeOffers(W, 2, busy).map(o => Object.assign(o, { exp: L.addDays(W.date, 10) < d.deadlineEnd ? L.addDays(W.date, 10) : d.deadlineEnd }));
+      W.offers = (W.offers || []).concat(more); calls = more.length;
+      if (calls) news(W, `${calls} team${calls > 1 ? "s" : ""} called about a trade.`, "info", "BOS");
+    }
     if (W.phase === "reg" && W.date >= d.deadline) L.openDeadline(W);
     else if (W.date >= d.end) W.phase = W.phase === "deadline" ? "deadline" : "reg2";
-    return W.date;
+    L.bump(W);
+    return { date: W.date, calls };
   };
   L.openDeadline = W => {
     W.phase = "deadline"; W.date = L.dates(W.season).deadline;
-    W.offers = (W.offers || []).filter(o => !o.done).concat(L.makeOffers(W, 5));
-    news(W, `Deadline week. ${W.offers.filter(o => !o.done).length} teams called Boston.`, "info", "BOS");
+    L.expireOffers(W);
+    const busy = new Set((W.offers || []).filter(o => !o.done).map(o => o.from));
+    W.offers = (W.offers || []).concat(L.makeOffers(W, 4, busy).map(o => Object.assign(o, { exp: L.dates(W.season).deadlineEnd })));
+    news(W, `Deadline week. ${W.offers.filter(o => !o.done).length} offers on the table.`, "info", "BOS");
     L.bump(W);
   };
   L.closeDeadline = W => {
     W.phase = "reg2"; W.date = L.dates(W.season).deadlineEnd;
-    W.offers.forEach(o => { if (!o.done) { o.done = true; o.result = "expired"; } });
-    // CPU teams that never pay tax dump salary on their own if they're over
+    (W.offers || []).forEach(o => { if (!o.done) { o.done = true; o.result = "expired"; } });
     L.cpuDeadlineDumps(W);
     L.bump(W);
   };
   L.finishRegular = W => {
-    if (W.phase === "reg" ) { L.simUntil(W, L.dates(W.season).deadline); L.openDeadline(W); return; }
+    if (W.phase === "reg") { L.simUntil(W, L.dates(W.season).deadline); L.openDeadline(W); return; }
     if (W.phase === "deadline") L.closeDeadline(W);
     L.simUntil(W, "9999-12-31");                           // every scheduled game, even a straggler
     W.phase = "playoffs"; W.date = L.dates(W.season).end;
@@ -72,67 +154,82 @@
     if (W.post.champ === "BOS") { W.titles = W.titles || []; W.titles.push(year); }
     const b = L.books(W, "BOS", W.season);
     W.hist.push({ season: W.season, w: B.w, l: B.l, run, payroll: b.payroll, tax: b.tax, champ: W.post.champ });
+    L.ownerReview(W, run, b.payroll, b.tax);
     W.phase = "draft"; W.date = L.dates(W.season).finals;
     L.bump(W);
     return run;
   };
 
-  // ================= Deadline offers =================
-  // Teams call Boston with deals they'd actually sign off on. Each one is checked against the CBA for both sides.
-  L.makeOffers = (W, max) => {
+  // ================= Trade calls =================
+  // Teams call with deals they'd sign off on: the most they can get that Boston might take. Every offer is
+  // checked against the CBA for both sides, and every trade has something going each way.
+  L.makeOffers = (W, max, skip) => {
     const r = L.rng(W), out = [], i = W.season, dec = L.decider(W);
     const sal = p => CBA.salaryIn(p, i, dec);
-    const codes = teamCodes(W).filter(c => c !== "BOS").sort(() => r() - 0.5);
-    const tradeable = (p, code) => !(p.noTrade && W.date < p.noTrade) && !p.two && sal(p) > 0;
-    const bos = L.teamPlayers(W, "BOS").filter(p => tradeable(p, "BOS"));
-    const ok = tr => { const c = L.checkTrade(W, tr); return c.ok && L.aiReact(W, tr, tr.b).verdict === "yes"; };
-    const mk = (code, give, get, note) => ({ id: "o" + W.tick + "-" + out.length + "-" + code, from: code, done: false, note,
-      tr: { a: "BOS", b: code, side: { BOS: { players: give.players || [], picks: give.picks || [], cash: 0 }, [code]: { players: get.players || [], picks: get.picks || [], cash: 0 } }, kickWaive: {} } });
+    const codes = teamCodes(W).filter(c => c !== "BOS" && !(skip && skip.has(c))).sort(() => r() - 0.5);
+    const tradeable = p => !(p.noTrade && W.date < p.noTrade) && !(p.tradeOk && W.date < p.tradeOk) && !p.two && sal(p) > 0;
+    const bos = L.teamPlayers(W, "BOS").filter(tradeable);
+    const mk = (code, give, get, note) => {
+      const tr = { a: "BOS", b: code, side: { BOS: { players: give.players || [], picks: give.picks || [], cash: give.cash || 0 }, [code]: { players: get.players || [], picks: get.picks || [], cash: get.cash || 0 } }, kickWaive: {}, prot: Object.assign({}, give.prot || {}, get.prot || {}) };
+      // nothing going back? Boston sends the smallest thing it can
+      if (!tr.side.BOS.players.length && !tr.side.BOS.picks.length && !tr.side.BOS.cash) { const tk = L.token(W, "BOS"); tr.side.BOS.picks = tk.picks; tr.side.BOS.cash = tk.cash; Object.assign(tr.prot, tk.prot); }
+      if (!tr.side[code].players.length && !tr.side[code].picks.length && !tr.side[code].cash) { const tk = L.token(W, code); tr.side[code].picks = tk.picks; tr.side[code].cash = tk.cash; Object.assign(tr.prot, tk.prot); }
+      return { id: "o" + W.tick + "-" + out.length + "-" + code, from: code, done: false, note, tr };
+    };
     const combos = (arr, k) => { const res = []; const rec = (st, cur) => { if (cur.length && cur.length <= k) res.push(cur.slice()); if (cur.length === k) return; for (let x = st; x < arr.length; x++) { cur.push(arr[x]); rec(x + 1, cur); cur.pop(); } }; rec(0, []); return res; };
     const ourVal = id => pv(W, "BOS", W.P[id]);
-    let budget = 2500;                                   // cap on trade checks so deadline day stays quick
-    const tryAdd = (cands) => {
+    let budget = 2200;                                   // cap on trade checks so a sim week stays quick
+    const tryAdd = cands => {
       let best = null;
       for (const c of cands) {
         if (budget-- <= 0) break;
-        if (!ok(c.tr)) continue;
+        const chk = L.checkTrade(W, c.tr);
+        if (!chk.ok) continue;
+        if (chk.teams.BOS.P2 > chk.teams.BOS.P && !L.mandateCheck(W, chk.teams.BOS.P2).ok) continue;   // they know Boston's owner won't allow it
+        const re = L.aiReact(W, c.tr, c.tr.b);
+        if (re.verdict !== "yes") continue;
         const v = L.ourValue(W, c.tr);
         if (v < c.tol) continue;
-        if (!best || v > best.v) best = { o: c, v };
+        // they ask for as much as they think Boston will stand for
+        if (!best || re.delta > best.d) best = { o: c, d: re.delta };
       }
-      if (best) out.push(best.o);
+      if (best) { out.push(best.o); best.o.tr.side.BOS.players.forEach(id => asked.add(id)); }
       return !!best;
     };
+    const asked = new Set((W.offers || []).filter(o => !o.done).flatMap(o => o.tr.side.BOS.players));
     for (const code of codes) {
       if (out.length >= max || budget <= 0) break;
       const t = W.T[code], fo = t.fo, pay = L.payrollNow(W, code);
-      const theirs = L.teamPlayers(W, code).filter(p => tradeable(p, code));
+      const theirs = L.teamPlayers(W, code).filter(tradeable);
       const picks = W.picks.filter(x => x.owner === code && x.y >= 2027 + i && !x.used).sort((a, b) => b.r - a.r || b.y - a.y);
-      const sweet = [[], picks.filter(x => x.r === 2).slice(0, 1), picks.filter(x => x.r === 2).slice(0, 2), picks.filter(x => x.r === 1).slice(0, 1)].map(a => a.map(x => x.id));
+      const seconds = picks.filter(x => x.r === 2), firsts = picks.filter(x => x.r === 1);
       const cheapBos = bos.filter(p => p.id !== "jayson-tatum").sort((a, b) => ourVal(a.id) / Math.max(1, sal(a)) - ourVal(b.id) / Math.max(1, sal(b))).slice(0, 6);
-      // 1) money moves: a team that wants out from under the tax sends Boston a contract, paying to do it
+      // 1) money moves: a team that wants out of the tax sends Boston a contract, and pays for it with seconds.
+      //    A first only for a contract that's truly underwater.
       const wantsOut = (fo.tax === "never" && pay > CBA.tax(i) - 3e6) || (fo.tax === "dodge" && pay > CBA.tax(i) && fo.mode !== "contend") || (pay > CBA.a2(i) && fo.tax !== "pay");
       if (wantsOut) {
         const dumps = theirs.filter(p => sal(p) >= 2e6 && !(p.c.rk && p.age <= 23)).sort((a, b) => pv(W, code, a) - pv(W, code, b)).slice(0, 5);
         const cands = [];
-        for (const p of dumps) for (const sw of sweet) for (const back of [[], ...cheapBos.slice(0, 3).map(x => [x.id])]) {
-          const o = mk(code, { players: back }, { players: [p.id], picks: sw }, `${fo.lead} wants ${/s$/.test(p.n) ? p.n + "'" : p.n + "'s"} salary off the books${sw.length ? " and will pay you to take it" : ""}.`);
-          o.tol = -2e6; cands.push(o);
+        for (const p of dumps) {
+          const bad = pv(W, code, p) <= -20e6;
+          const sweets = [[], seconds.slice(0, 1), seconds.slice(0, 2)].concat(bad && firsts.length ? [firsts.slice(-1)] : []).map(a => a.map(x => x.id));
+          for (const sw of sweets) for (const back of [[], ...cheapBos.slice(0, 3).map(x => [x.id])]) {
+            const o = mk(code, { players: back }, { players: [p.id], picks: sw }, `${fo.lead} wants ${/s$/.test(p.n) ? p.n + "'" : p.n + "'s"} salary off the books${sw.length ? " and will attach a pick to move it" : ""}.`);
+            o.tol = -1.5e6; cands.push(o);
+          }
         }
         if (tryAdd(cands)) continue;
       }
       // 2) a contender or riser asks for a Boston player and builds a package around him
       if (fo.mode === "contend" || fo.mode === "rise") {
-        const targets = bos.filter(p => Mo.r(p) >= 0.3 && sal(p) <= 40e6).map(p => ({ p, d: pv(W, code, p) - ourVal(p.id) })).sort((a, b) => b.d - a.d).slice(0, 2);
+        const targets = bos.filter(p => Mo.r(p) >= 0.3 && sal(p) <= 40e6 && !asked.has(p.id)).map(p => ({ p, d: pv(W, code, p) - ourVal(p.id) })).sort((a, b) => b.d - a.d).slice(0, 2);
         const fodder = theirs.filter(p => sal(p) > 0).sort((a, b) => pv(W, code, a) / Math.max(1, sal(a)) - pv(W, code, b) / Math.max(1, sal(b))).slice(0, 7);
         const cands = [];
         for (const { p: target } of targets) for (const pkg of combos(fodder, 3)) {
           const s2 = pkg.reduce((a, x) => a + sal(x), 0);
           if (s2 > sal(target) * 2.2 + 3e6 || s2 < sal(target) * 0.4 - 3e6) continue;
-          for (const sw of sweet) {
-            if (sw.some(id => id.split("-")[1] === "1") && ourVal(target.id) < 15e6) continue;   // no firsts for role players
-            const o = mk(code, { players: [target.id] }, { players: pkg.map(x => x.id), picks: sw }, `${fo.lead} wants ${target.n} for a playoff push.`); o.tol = -Math.max(3e6, 0.15 * Math.abs(ourVal(target.id))); cands.push(o);
-          }
+          const sweets = [[], seconds.slice(0, 1), seconds.slice(0, 2)].concat(ourVal(target.id) >= 15e6 && firsts.length ? [firsts.slice(-1)] : []).map(a => a.map(x => x.id));
+          for (const sw of sweets) { const o = mk(code, { players: [target.id] }, { players: pkg.map(x => x.id), picks: sw }, `${fo.lead} wants ${target.n}.`); o.tol = -Math.max(3e6, 0.15 * Math.abs(ourVal(target.id))); cands.push(o); }
         }
         if (tryAdd(cands)) continue;
       }
@@ -161,6 +258,49 @@
     L.applyTrade(W, o.tr); o.done = true; o.result = "accepted";
     return { ok: true };
   };
+
+  // ================= Shopping a contract =================
+  // Every team's price to take Boston players off the books: what they'd give, or what Boston has to attach.
+  // Ordered from best to worst for Boston.
+  L.shopPlayers = (W, ids) => {
+    const i = W.season, dec = L.decider(W), out = [];
+    const sal = p => CBA.salaryIn(p, i, dec);
+    const bp = W.picks.filter(x => x.owner === "BOS" && x.y >= 2027 + i && !x.used).sort((a, b) => a.y - b.y || a.r - b.r);
+    const b2 = bp.filter(x => x.r === 2), b1 = bp.filter(x => x.r === 1).sort((a, b) => b.y - a.y);   // farthest-out first is cheapest
+    const P0 = L.payrollNow(W, "BOS");
+    for (const code of teamCodes(W)) {
+      if (code === "BOS") continue;
+      const theirs = L.teamPlayers(W, code).filter(p => sal(p) > 0 && !p.two && !(p.noTrade && W.date < p.noTrade));
+      const cp = W.picks.filter(x => x.owner === code && x.y >= 2027 + i && !x.used).sort((a, b) => b.r - a.r || b.y - a.y);
+      const c2 = cp.filter(x => x.r === 2), c1 = cp.filter(x => x.r === 1);
+      // salary they might need to send back to make the trade legal for them: their least valuable per dollar
+      const fodder = theirs.sort((a, b) => pv(W, code, a) / Math.max(1, sal(a)) - pv(W, code, b) / Math.max(1, sal(b))).slice(0, 3);
+      const outSal = ids.reduce((a, id) => a + sal(W.P[id]), 0);
+      const backs = [[], ...fodder.filter(p => sal(p) <= outSal * 0.7).sort((a, b) => sal(a) - sal(b)).map(p => [p.id])];
+      const variants = [];
+      for (const back of backs) {
+        if (c1.length) variants.push({ get: { players: back, picks: [c1[c1.length - 1].id] }, give: {} });
+        if (c2.length > 1) variants.push({ get: { players: back, picks: c2.slice(0, 2).map(x => x.id) }, give: {} });
+        if (c2.length) variants.push({ get: { players: back, picks: [c2[0].id] }, give: {} });
+        variants.push({ get: { players: back }, give: {} });
+        if (b2.length) variants.push({ get: { players: back }, give: { picks: [b2[0].id] } });
+        if (b2.length > 1) variants.push({ get: { players: back }, give: { picks: b2.slice(0, 2).map(x => x.id) } });
+        for (const f of b1) { variants.push({ get: { players: back }, give: { picks: [f.id], prot: { [f.id]: 10 } } }); variants.push({ get: { players: back }, give: { picks: [f.id] } }); }
+      }
+      for (const v of variants) {
+        const tr = { a: "BOS", b: code, side: { BOS: { players: ids.slice(), picks: v.give.picks || [], cash: 0 }, [code]: { players: v.get.players || [], picks: v.get.picks || [], cash: 0 } }, kickWaive: {}, prot: Object.assign({}, v.give.prot || {}) };
+        if (!tr.side[code].players.length && !tr.side[code].picks.length) { const tk = L.token(W, code); tr.side[code].picks = tk.picks; tr.side[code].cash = tk.cash; Object.assign(tr.prot, tk.prot); }
+        const chk = L.checkTrade(W, tr);
+        if (!chk.ok) continue;
+        const re = L.aiReact(W, tr, code);
+        if (re.verdict !== "yes") continue;
+        const P2 = chk.teams.BOS.P2;
+        out.push({ code, tr, ours: L.ourValue(W, tr), saved: P0 - P2, taxSaved: CBA.taxBill(P0, i, L.repeater(W, "BOS", i)) - CBA.taxBill(P2, i, L.repeater(W, "BOS", i)), tpe: (chk.teams.BOS.sol.newTpes || []).reduce((a, x) => Math.max(a, x.amt), 0) });
+        break;                                               // variants run best-for-Boston first
+      }
+    }
+    return out.sort((a, b) => (b.taxSaved + b.ours + 0.2 * b.saved) - (a.taxSaved + a.ours + 0.2 * a.saved));
+  };
   L.cpuDeadlineDumps = W => {
     const i = W.season;
     for (const code of teamCodes(W)) {
@@ -169,20 +309,68 @@
       if (t.fo.tax !== "never") continue;
       const pay = L.payrollNow(W, code);
       if (pay <= CBA.tax(i)) continue;
-      // find any team with room or an exception to take its worst contract (simplified: salary leaves the league ledger)
       const p = L.teamPlayers(W, code).filter(x => CBA.salaryIn(x, i, L.decider(W)) >= pay - CBA.tax(i)).sort((a, b) => pv(W, code, a) - pv(W, code, b))[0];
       if (!p) continue;
       const taker = teamCodes(W).filter(c => c !== code && c !== "BOS" && L.payrollNow(W, c) + CBA.salaryIn(p, i, L.decider(W)) < CBA.cap(i)).sort((a, b) => L.payrollNow(W, a) - L.payrollNow(W, b))[0];
       if (!taker) continue;
       const pk = W.picks.find(x => x.owner === code && x.r === 2 && x.y > 2027 + i);
       p.t = taker; if (pk) pk.owner = taker;
-      news(W, `${t.name} dump ${p.n} on ${W.T[taker].name}${pk ? " with a second-round pick" : ""} to get under the tax.`, "trade");
+      news(W, `${t.name} send ${p.n}${pk ? " and a second-round pick" : ""} to ${W.T[taker].name} to get under the tax.`, "trade");
     }
     L.bump(W);
   };
 
+  // ================= Next step =================
+  // One button that always knows what comes next
+  L.nextAction = W => {
+    const o = L.ensureOwner(W);
+    if (o.fired) return { act: "seRehire", label: "Start over as the new GM" };
+    const ph = W.phase;
+    if (ph === "pre") return { act: "seStart", label: "Start the season" };
+    if (ph === "reg" || ph === "reg2") {
+      if (!L.gamesLeft(W) || W.date >= L.dates(W.season).end) return { act: "seEnd", label: "Start the playoffs" };
+      const calls = (W.offers || []).filter(x => !x.done).length;
+      return { act: "seWeek", label: calls ? `Sim a week (${calls} call${calls > 1 ? "s" : ""} waiting)` : "Sim a week" };
+    }
+    if (ph === "deadline") return { act: "seClose", label: "Close the deadline" };
+    if (ph === "playoffs") return { act: "sePlay", label: "Play the playoffs" };
+    if (ph === "draft") {
+      const ds = W.ds && W.ds.year === L.draftYear(W) ? W.ds : null;
+      if (!ds) return { act: "seLottery", label: "Run the lottery" };
+      if (ds.next >= ds.slots.length || ds.done) return { act: "dfDone", label: "On to option decisions" };
+      if (ds.slots[ds.next].owner === "BOS") return { act: "dfGo", label: `Make Boston's pick (No. ${ds.slots[ds.next].slot})` };
+      return { act: "dfRun", label: ds.slots.slice(ds.next).some(x => x.owner === "BOS") ? "Draft to Boston's pick" : "Finish the draft" };
+    }
+    if (ph === "options") return { act: "opGo", label: "Make the calls, open free agency" };
+    if (ph === "fa") return (W.faRound || 0) >= 3 ? { act: "faCamp", label: "To training camp" } : { act: "faNext", label: `Next free-agency round (${(W.faRound || 0) + 1} of 4)` };
+    return { act: "seStart", label: "Next" };
+  };
+
   // ================= Lottery and draft =================
   L.draftYear = W => 2027 + W.season;
+  // Classes after 2027: real high school recruits as one-and-done freshmen, real prospects who went undrafted
+  // last year coming back, then generated players to fill out the board.
+  const HS_SLOTS = [1, 2, 3, 5, 6, 8, 10, 12, 14, 16, 19, 22, 25, 28, 31, 34, 37];
+  L.buildClass = (W, year) => {
+    const rec = (W.recruits || {})[year] || [];
+    const list = [];
+    rec.forEach((x, k) => list.push({ id: x.id, n: x.n, pos: x.pos, school: x.school, age: 19, rank: HS_SLOTS[k] ?? 40 + k, real: true }));
+    const prev = W.draft[year - 1] || [];
+    const taken = new Set(Object.values(W.P).map(p => p.n));
+    const back = prev.filter(x => !taken.has(x.n) && !x.gen && x.age + 1 < 24).slice(0, 25);
+    let slot = 4;
+    for (const x of back) {
+      while (list.some(y => y.rank === slot)) slot++;
+      list.push({ id: x.id, n: x.n, pos: x.pos, school: x.school + " (returning)", age: +(x.age + 1).toFixed(1), rank: slot, real: !x.gen, trueNow: x.trueNow + 0.3, truePot: x.truePot });
+      slot += 2;
+    }
+    const gen = L.genClass(year, W.seed).filter(g => !list.some(y => y.n === g.n));
+    let k = 1;
+    for (const g of gen) { while (list.some(y => y.rank === k)) k++; if (list.length >= 70) break; list.push(Object.assign({}, g, { rank: k })); }
+    const scouted = L.scoutClass(list.sort((a, b) => a.rank - b.rank).map((x, j) => Object.assign({}, x, { rank: j + 1 })), year, W.seed);
+    // returning players keep what was really in them
+    return scouted.map((x, j) => { const o = list.find(y => y.id === x.id); return o && o.truePot != null ? Object.assign(x, { trueNow: o.trueNow, truePot: o.truePot }) : x; });
+  };
   L.runLottery = W => {
     const r = L.rng(W), year = L.draftYear(W);
     const all = L.standings(W).slice().reverse().map(t => t.code);       // worst first
@@ -230,8 +418,19 @@
       const a = slotOf(pk.from), b = slotOf(W.picks.find(x => x.id === pk.alt).from);
       if (a && b && b.slot < a.slot) { const o = a.owner; a.owner = b.owner; b.owner = o; }
     }
+    // protected picks that land inside their protection stay home; a protected first rolls to next year's first
+    for (const s of slots) {
+      const pk = s.pid ? W.picks.find(x => x.id === s.pid) : null;
+      if (!pk || !pk.prot || s.slot > pk.prot.upTo) continue;
+      const recv = s.owner; s.owner = pk.prot.back;
+      if (pk.r === 1) {
+        const next = W.picks.find(x => x.y === year + 1 && x.r === 1 && x.from === pk.from && x.owner === pk.prot.back && !x.prot);
+        if (next) next.owner = recv;
+        news(W, `${W.T[pk.prot.back].name} keep their ${year} first (${L.protName(pk, pk.prot.upTo)}). ${next ? `${W.T[recv].name} get their ${year + 1} first instead.` : ""}`, "draft", recv === "BOS" || pk.prot.back === "BOS" ? "BOS" : null);
+      }
+    }
     for (const s of slots) if (s.owner === "OUT") s.owner = teamCodes(W).filter(c => c !== "BOS")[Math.floor(r() * (teamCodes(W).length - 1))];
-    if (!W.draft[year]) W.draft[year] = L.genClass(year, W.seed);
+    if (!W.draft[year]) W.draft[year] = L.buildClass(W, year);
     W.ds = { year, slots, next: 0, lottery: order.slice(0, 16), balls: lot };
     const bos = slots.filter(s => s.owner === "BOS");
     news(W, `Lottery: ${W.T[order[0]].name} win the No. 1 pick.${bos.length ? ` Boston picks ${bos.map(s => "No. " + s.slot).join(" and ")}.` : ""}`, "draft");
@@ -329,14 +528,14 @@
         if (p.t === "FA" && (p.age >= 40 || (p.age >= 35 && Mo.r(p) < -1.5) || (Mo.r(p) < -3.2 && p.age >= 27))) { p.t = "RET"; }
         continue;
       }
-      if (p.two) { p.t = "FA"; p.two = false; p.rights = null; p.c = { sal: [], opt: {}, dec: {}, signed: i, bird: 0 }; continue; }
+      if (p.two) { p.t = "FA"; p.two = false; p.rights = null; p.faDate = W.date; p.c = { sal: [], opt: {}, dec: {}, signed: i, bird: 0 }; continue; }
       if (CBA.salaryIn(p, i, dec) > 0) { p.c.bird = (p.c.bird || 0) + 1; p.c.ext = false; continue; }
       // contract over: free agent, with his old team holding his rights (bird already counts the season just played)
       const prevSal = p.c.sal[prev] || CBA.minSal(p.yos, prev);
       const h = CBA.holdFor(p, i, prevSal);
       const rfa = !!((p.c.rk && p.c.rk[1] > 0 && p.c.rk[0] + 4 <= 2026 + i) || p.c.rfa) && p.yos <= 4;
       p.rights = { team, kind: h.bird, hold: h.amt, rfa, qo: rfa ? CBA.qualifyingOffer(p, i) : 0, prevSal, tendered: false };
-      p.t = "FA";
+      p.t = "FA"; p.faDate = W.date;
       if (p.age >= 39 || (p.age >= 36 && Mo.r(p) < -1.6)) { p.t = "RET"; p.rights = null; news(W, `${p.n} retires.`, "info", team === "BOS" ? "BOS" : null); }
     }
     for (const code of teamCodes(W)) {
@@ -350,12 +549,13 @@
       if (p.t !== "FA" || !p.rights || !p.rights.rfa) continue;
       const bos = p.rights.team === "BOS";
       const worth = Mo.mv(p, i, W) >= p.rights.qo * 0.9;
-      p.rights.tendered = bos ? !W.plan.renounce[p.id] && worth : worth;
+      const planQo = (W.plan.qo || {})[p.id];
+      p.rights.tendered = bos ? (planQo != null ? planQo : worth) && !W.plan.renounce[p.id] : worth;
       if (!p.rights.tendered) p.rights.rfa = false;
     }
     // Boston's renounced players
     for (const id of Object.keys(W.plan.renounce)) { const p = W.P[id]; if (p && p.rights && p.rights.team === "BOS") p.rights.renounced = true; }
-    W.plan.renounce = {};
+    W.plan.renounce = {}; W.plan.qo = {};
     // handshake deals agreed at the option deadline
     for (const [id, re] of Object.entries(W.handshake || {})) {
       const p = W.P[id]; if (!p || p.t !== "FA") continue;
@@ -394,7 +594,8 @@
     if (!used.ntmle && pay + CBA.line("tmle", i) <= Math.min(CBA.a2(i), hard) && !used.tmle) opts.push({ via: "tmle", amt: CBA.line("tmle", i) });
     if (!used.room && !used.bae && !(t.used[i - 1] || {}).bae && pay + CBA.line("bae", i) <= Math.min(CBA.a1(i), hard)) opts.push({ via: "bae", amt: CBA.line("bae", i) });
     if (used.room && !used.rmle) opts.push({ via: "rmle", amt: CBA.line("rmle", i) });
-    opts.push({ via: "min", amt: p ? CBA.minSal(p.yos, i) : CBA.minSal(2, i) });
+    const minAmt = p ? CBA.minSal(p.yos, i) : CBA.minSal(2, i);
+    if (pay + Math.min(minAmt, CBA.minCapHit(p ? p.yos : 2, i)) <= hard) opts.push({ via: "min", amt: minAmt });
     return { opts: opts.filter(o => o.amt > 0), pay, room, n };
   };
   // Will this front office pay this much in this season, given its tax stance?
@@ -426,8 +627,8 @@
         .sort((a, b) => b.s - a.s).slice(0, 8).map(x => x.c);
       if (p.rights && p.rights.team !== "BOS" && !cands.includes(p.rights.team)) cands.unshift(p.rights.team);
       for (const c of cands) {
-        if (L.rosterCount(W, c) >= 15) continue;
         const own = p.rights && p.rights.team === c && !p.rights.renounced;
+        if (L.rosterCount(W, c) >= 15 && !(Mo.r(p) >= 1.5)) continue;
         const value = Mo.mv(p, i, W) * L.prefMult(W.T[c].fo, p) * (own ? 1.05 : 1);
         const want = Math.min(value, ask.aav * (1.02 - 0.05 * r()));
         if (want < ask.aav * res && want < CBA.minSal(p.yos, i) * 1.05) continue;
@@ -458,6 +659,7 @@
       }
       if (best.code === "BOS") delete W.faOffers[p.id];
       L.sign(W, best.code, p.id, best.years, best.total, best.shape, best.via);
+      if (best.code !== "BOS") L.trimRoster(W, best.code, 15);
       signed.push(p.id);
     }
     if (round >= 3) {
@@ -465,9 +667,9 @@
         const ask = Mo.faHaul(p, i, W);
         if (ask.aav < CBA.minSal(p.yos, i) * 1.6) continue;
         const own = p.rights && !p.rights.renounced && p.rights.team !== "BOS" ? p.rights.team : null;
-        if (own && L.rosterCount(W, own) < 15) { L.sign(W, own, p.id, Math.min(ask.years, 3), Math.round(ask.aav * 0.85) * Math.min(ask.years, 3), "flat", "bird"); signed.push(p.id); continue; }
-        const roomy = teamCodes(W).filter(c => c !== "BOS" && L.rosterCount(W, c) < 15).map(c => ({ c, b: L.budget(W, c, p) })).map(x => ({ c: x.c, amt: Math.max(...x.b.opts.filter(o => o.via !== "min").map(o => o.amt), 0) })).sort((a, b) => b.amt - a.amt)[0];
-        if (roomy && roomy.amt >= CBA.minSal(p.yos, i) * 1.5) { const aav = Math.min(roomy.amt, ask.aav); const via = L.budget(W, roomy.c, p).opts.find(o => o.amt >= aav - 1000 && o.via !== "min"); if (via) { L.sign(W, roomy.c, p.id, Math.min(2, ask.years), aav * Math.min(2, ask.years), "flat", via.via); signed.push(p.id); } }
+        if (own && (L.rosterCount(W, own) < 15 || Mo.r(p) >= 1.5)) { L.sign(W, own, p.id, Math.min(ask.years, 3), Math.round(ask.aav * 0.85) * Math.min(ask.years, 3), "flat", "bird"); L.trimRoster(W, own); signed.push(p.id); continue; }
+        const roomy = teamCodes(W).filter(c => c !== "BOS" && (L.rosterCount(W, c) < 15 || Mo.r(p) >= 1.5)).map(c => ({ c, b: L.budget(W, c, p) })).map(x => ({ c: x.c, amt: Math.max(...x.b.opts.filter(o => o.via !== "min").map(o => o.amt), 0) })).sort((a, b) => b.amt - a.amt)[0];
+        if (roomy && roomy.amt >= CBA.minSal(p.yos, i) * 1.5) { const aav = Math.min(roomy.amt, ask.aav); const via = L.budget(W, roomy.c, p).opts.find(o => o.amt >= aav - 1000 && o.via !== "min"); if (via) { L.sign(W, roomy.c, p.id, Math.min(2, ask.years), aav * Math.min(2, ask.years), "flat", via.via); L.trimRoster(W, roomy.c); signed.push(p.id); } }
       }
     }
     W.faRound = round + 1;
@@ -483,8 +685,22 @@
   };
 
   // ================= Camp: rosters to 15, new schedule =================
+  L.cpuExtensions = W => {
+    const i = W.season, r = L.rng(W), dec = L.decider(W);
+    for (const p of Object.values(W.P)) {
+      if (!W.T[p.t] || p.t === "BOS" || p.two) continue;
+      if (CBA.lastYear(p, dec, i) !== i || Mo.r(p) < 1 || p.age > 32) continue;
+      const e = CBA.extEligible(p, i); if (!e.ok) continue;
+      if (r() > (Mo.r(p) >= 2.5 ? 0.85 : 0.55)) continue;
+      const lim = CBA.extLimit(p, i), ask = Mo.faHaul(p, i + 1, W);
+      const yrs = Math.max(1, Math.min(lim.maxYears || 4, ask.years));
+      const aav = Math.min(lim.first, ask.aav * (0.95 + r() * 0.1));
+      L.extend(W, p.t, p.id, yrs, Math.round(aav * yrs), "flat");
+    }
+  };
   L.toCamp = W => {
     const i = W.season, r = L.rng(W), dec = L.decider(W);
+    L.cpuExtensions(W);
     for (const p of Object.values(W.P)) if (p.t === "FA" && p.offerSheet) L.matchSheet(W, p.id, false);
     // unsigned restricted free agents take their qualifying offers
     for (const p of Object.values(W.P)) if (p.t === "FA" && p.rights && p.rights.rfa && p.rights.tendered && p.rights.team !== "BOS")
@@ -493,10 +709,9 @@
       if (code === "BOS") continue;
       // non-guaranteed years: keep the ones worth it
       for (const p of L.teamPlayers(W, code)) if (p.c.opt[i] === "NG" && !p.c.dec[i]) p.c.dec[i] = Mo.mv(p, i, W) >= p.c.sal[i] * 0.7 ? "in" : "out";
-      let ps = L.teamPlayers(W, code).filter(p => CBA.salaryIn(p, i, dec) > 0 || p.c.sal[i] > 0);
-      for (const p of L.teamPlayers(W, code)) if (!(CBA.salaryIn(p, i, L.decider(W)) > 0)) { p.t = "FA"; p.rights = null; }
-      ps = L.teamPlayers(W, code);
-      while (ps.length > 15) { const cut = ps.sort((a, b) => pv(W, code, a) - pv(W, code, b))[0]; L.waive(W, code, cut.id, false); ps = L.teamPlayers(W, code); }
+      for (const p of L.teamPlayers(W, code)) if (!(CBA.salaryIn(p, i, L.decider(W)) > 0)) { p.t = "FA"; p.rights = null; p.faDate = W.date; }
+      L.trimRoster(W, code);
+      let ps = L.teamPlayers(W, code);
       while (ps.length < 14) {
         const fa = Object.values(W.P).filter(p => p.t === "FA" && !p.offerSheet && Mo.faHaul(p, i, W).aav <= CBA.minSal(p.yos, i) * 1.4).sort((a, b) => Mo.r(b) - Mo.r(a))[0];
         if (!fa) break;

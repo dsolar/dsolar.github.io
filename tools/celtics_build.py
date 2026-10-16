@@ -52,6 +52,10 @@ CBA = {
     "rookie": [14.70, 13.20, 11.85, 10.65, 9.65, 8.75, 7.98, 7.30, 6.70, 6.36, 6.04, 5.74, 5.45, 5.18, 4.93,
                4.73, 4.54, 4.36, 4.18, 4.01, 3.85, 3.69, 3.55, 3.41, 3.27, 3.14, 2.99, 2.92, 2.86, 2.80],
     "roster_max": 15, "roster_min": 14, "two_way_max": 3,
+    # What the open market pays, as a share of the cap: a log-linear fit on 317 current veteran contracts
+    # (R2 0.60): exp(b0 + b1*impact + b2*points + b3*minutes + b4*years past 30 + b5*years under 25).
+    # It prices Pritchard's extension at $22.0M (real: $21.2M) and Queta's at $12.5M (real: $12.5M).
+    "market": [-4.0211, 0.066, 0.0618, 0.0264, 0.0095, -0.1184],
 }
 
 # ---------------- Celtics ----------------
@@ -154,6 +158,11 @@ FO = {
  "UTA": ("Austin Ainge", "President of basketball operations", "never", "rebuild", ["picks", "youth"], "Pick hoarder. Always taking calls on veterans."),
  "WAS": ("Michael Winger", "President, Monumental Basketball", "never", "rebuild", ["picks", "youth"], "Rebuild with Anthony Davis as a trade chip. GM Will Dawkins."),
 }
+# How much each front office trusts impact metrics over the box score and the market (1 = all analytics)
+ANALYTICS = {"BOS": 0.85, "HOU": 0.8, "OKC": 0.8, "MEM": 0.8, "ATL": 0.75, "BRK": 0.7, "CLE": 0.7, "SAS": 0.7, "DET": 0.65,
+             "UTA": 0.65, "TOR": 0.6, "DAL": 0.6, "MIN": 0.6, "DEN": 0.6, "LAC": 0.6, "CHO": 0.6, "CHI": 0.6, "WAS": 0.6,
+             "GSW": 0.55, "IND": 0.55, "PHI": 0.5, "LAL": 0.5, "POR": 0.5, "MIL": 0.45, "ORL": 0.45, "PHO": 0.45,
+             "SAC": 0.4, "NYK": 0.4, "MIA": 0.35, "NOP": 0.3}
 EAST = {"ATL", "BOS", "BRK", "CHI", "CHO", "CLE", "DET", "IND", "MIA", "MIL", "NYK", "ORL", "PHI", "TOR", "WAS"}
 REPEATER = {"GSW", "LAC", "PHO", "MIL", "DEN"}     # taxpayers in 3 of the last 4 seasons (approximate)
 
@@ -220,6 +229,37 @@ Killyan Toure|PG|Iowa State|So
 John Blackwell|SG|Duke|Sr"""
 CLASS_AGE = {"Fr": 19.2, "So": 20.2, "Jr": 21.2, "Sr": 22.4, "Intl": 19.5}
 
+# Real high school recruits for later drafts, as freshmen one-and-dones (ESPN recruiting rankings, May-Aug 2026).
+# No big board exists yet for 2028 on, so these are the public consensus on the best players in each class.
+RECRUITS = {
+    2028: """Beckham Black|PG|1
+Demarcus Henry|SF|2
+Marcus Spears Jr.|PF|3
+C.J. Rosser|PF|4
+Cayden Daughtry|PG|5
+A.J. Williams|SG|6
+Lewis Uvwo|C|7
+Adan Diggs|SG|8
+Asa Montgomery|SF|9
+Darius Wabbington|C|10
+Reese Alston|PG|11
+Nasir Anderson|PG|12
+NaVorro Bowman|PG|13
+King Gibson|SG|14
+Jordan Page|SF|15
+Moussa Kamissoko|PF|16
+Malachi Jordan|SF|17""",
+    2029: """Yann Kamagate|C|1
+Colton Hiller|SG|2
+Bamba Touray|C|3
+Benjamin Berrouet|PF|4
+Erick Dampier Jr.|C|5
+Mason Collins|SF|6""",
+    2030: """JJ Crawford|SG|1
+Draydne McDaniel|SF|2
+RJ Evans|SF|3""",
+}
+
 
 def age_step(age):
     """Stephen Noh's aging curve (the same one the 31st Franchise uses): expected change in impact per season."""
@@ -233,6 +273,51 @@ def yos_guess(age):
     return max(0, min(18, (age or 25) - 20))
 
 
+def load_injury_inputs():
+    """DARKO, RAPM and the 31st Franchise's CraftedNBA priors for players whose 2025-26 was cut short."""
+    b = (SRC / "build.py").read_text(encoding="utf-8")
+    ident = lambda n: n
+    partial = eval(re.search(r"PARTIAL = (\{.*?\n\})", b, re.S).group(1), {"key": ident})
+    games3 = eval(re.search(r"GAMES3 = \{key\(n\): g for n, g in (\{.*?\})\.items\(\)\}", b, re.S).group(1))
+    darko, rapm = {}, {}
+    for line in (SRC / "darko_team.txt").read_text(encoding="utf-8").splitlines():
+        t, n, o, d, tot = line.split("|"); darko[n] = (float(o), float(d))
+    for line in (SRC / "darko_lb.txt").read_text(encoding="utf-8").splitlines():
+        n, o, d, tot = line.split("|"); darko[n] = (float(o), float(d))
+    for line in (SRC / "rapm.txt").read_text(encoding="utf-8").splitlines():
+        n, o, d = line.split("|"); rapm[n] = (0.8 * float(o), 0.8 * float(d))
+    return partial, games3, darko, rapm
+
+
+INJ = None
+CHANGED = []
+
+
+def injury_fix(name, o, d, a28):
+    """A player who missed much of 2025-26 keeps his per-possession production; his problem is availability,
+    which the health number already carries. Re-blend with DARKO at 15% (it shrinks players who sit),
+    RAPM at 45% and CraftedNBA at 40%, then age to the middle of 2026-27. Only ever raises a rating."""
+    global INJ
+    if INJ is None:
+        INJ = load_injury_inputs()
+    partial, games3, darko, rapm = INJ
+    short = name in partial or (name in games3 and games3[name][2] <= 45)
+    if not short or name not in rapm or not a28:
+        return o, d
+    parts = [(0.15, darko[name])] if name in darko else []
+    parts.append((0.45, rapm[name]))
+    if name in partial: parts.append((0.40, partial[name]))
+    w = sum(x for x, _ in parts)
+    ao = sum(x * v[0] for x, v in parts) / w; ad = sum(x * v[1] for x, v in parts) / w
+    age26 = a28 - 2
+    step = age_step(age26) * 0.25 + age_step(age26 + 1) * 0.5
+    ao += step * 0.6; ad += step * 0.4
+    if ao + ad > o + d + 0.05:
+        CHANGED.append(f"{name}: {o + d:+.2f} -> {ao + ad:+.2f}")
+        return ao, ad
+    return o, d
+
+
 def player_fields(p, age):
     """Ratings for 2026-27. data.js holds 2027-28 projections, so back out the half-season of aging on
     each side of the 2026-27 midpoint."""
@@ -243,6 +328,7 @@ def player_fields(p, age):
     if a28:
         back = age_step(a28 - 1) * 0.5 + age_step(a28) * 0.5
         o -= back * 0.6; d -= back * 0.4
+        o, d = injury_fix(p["n"], o, d, a28)
     pot = p.get("pot")
     out = {"o": round(o, 2), "d": round(d, 2), "pot": round(pot, 2) if pot is not None else None,
            "h": p.get("h"), "pos": p.get("pos"), "ps": p.get("ps") or [p.get("bpos")], "tpar": p.get("tpar"),
@@ -319,7 +405,8 @@ def main():
     for code, nm in TEAMS.items():
         lead, title, tax, mode, wants, style = FO[code]
         teams[code] = {"name": nm, "conf": "E" if code in EAST else "W",
-                       "fo": {"lead": lead, "title": title, "tax": tax, "mode": mode, "wants": wants, "style": style},
+                       "fo": {"lead": lead, "title": title, "tax": tax, "mode": mode, "wants": wants, "style": style,
+                              "analytics": ANALYTICS[code]},
                        "rep": code in REPEATER}
 
     draft = []
@@ -328,8 +415,10 @@ def main():
         age = float(a) if a[0].isdigit() else CLASS_AGE[a]
         draft.append({"id": slug(n), "n": n, "pos": pos, "school": school, "age": age, "rank": i + 1})
 
-    data = {"updated": "2026-10-15", "cba": CBA, "teams": teams, "players": players,
-            "celtics": CELTICS_EXTRA, "draft": {"2027": draft}}
+    recruits = {str(y): [{"id": slug(n), "n": n, "pos": pos, "hs": int(k), "school": f"Class of {y - 1} recruit (ESPN No. {k})"}
+                         for n, pos, k in (l.split("|") for l in txt.splitlines())] for y, txt in RECRUITS.items()}
+    data = {"updated": "2026-10-15", "version": 2, "cba": CBA, "teams": teams, "players": players,
+            "celtics": CELTICS_EXTRA, "draft": {"2027": draft}, "recruits": recruits}
     OUT.parent.mkdir(exist_ok=True)
     txt = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
     assert "@" not in txt
@@ -338,6 +427,7 @@ def main():
     unrated = [p["n"] for p in players if "o" not in p]
     print(f"Wrote {OUT.relative_to(ROOT)}: {len(players)} players ({nb} Celtics), {len(draft)} prospects, "
           f"{OUT.stat().st_size // 1024} KB. Unrated: {len(unrated)} {unrated[:8]}")
+    print("Injury-shortened ratings raised:", "; ".join(CHANGED))
 
 
 if __name__ == "__main__":
