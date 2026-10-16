@@ -204,6 +204,8 @@ input.who{width:9rem}
 .kh-k{list-style:none;margin:0;padding:0}
 .kh-k li{display:flex;justify-content:space-between;align-items:baseline;gap:.75rem;padding:.12rem 0}
 .kh-k .muted{color:var(--muted);font-size:.8125rem;white-space:nowrap;font-variant-numeric:tabular-nums}
+.yh-links{list-style:none;margin:.6rem 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));gap:.35rem 1.5rem}
+.yh-links a{color:var(--ink)}
 @media (max-width:640px){.khlist{grid-template-columns:1fr}}
 .votes li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.2rem 1rem;align-items:center;padding:.3rem 0;border-bottom:1px solid var(--rule)}
 
@@ -1036,9 +1038,15 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
 
   /* Keepers by year: 2027 from the sheet as teams declare, earlier years from the sheet's history */
   var HY = "2027";
+  // Years without a keeper list (the sheet before 2022 was lost) share one "Earlier" tab of Yahoo links
+  function lostYears() {
+    var have = DATA.keeperHistory || {};
+    return DATA.seasons.filter(function (s) { return s.year > DATA.seasons[0].year && !have[s.year]; }).map(function (s) { return s.year; }).reverse();
+  }
   function initHistory() {
     var years = Object.keys(DATA.keeperHistory || {}).sort().reverse(), list = $("kh-years");
-    list.innerHTML = ["2027"].concat(years).map(function (y, k) {
+    var tabs = ["2027"].concat(years).concat(lostYears().length ? ["Earlier"] : []);
+    list.innerHTML = tabs.map(function (y, k) {
       return '<button type="button" role="tab" id="kh-' + y + '" aria-controls="kh-body" aria-selected="' + (k === 0) + '"' + (k ? ' tabindex="-1"' : "") + ">" + y + "</button>";
     }).join("");
     list.onshow = function (t) { HY = t.id.slice(3); drawHistory(); };
@@ -1055,6 +1063,15 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
           return "<li><span>" + esc(k[0]) + '</span><span class="muted">' + esc(roundName(k)) + (k[3] ? '<span title="Round corrected by the commissioner">*</span>' : "") + "</span></li>";
         }).join("") + "</ul>" : '<p class="kh-k muted" style="margin:0">' + esc(empty || "None") + "</p>");
     };
+    if (HY === "Earlier") {
+      var lost = lostYears();
+      box.innerHTML = '<div class="slot"><p class="k">The keeper sheet before 2022 was lost.</p><p class="muted">Yahoo still has each year\'s keepers. These pages open for league members signed in to Yahoo. ' + DATA.seasons[0].year + " was the first draft, so nobody was kept.</p>" +
+        '<ul class="yh-links">' + lost.map(function (y) {
+          var s = SEASONS[y];
+          return '<li><a href="https://baseball.fantasysports.yahoo.com/' + y + "/b1/" + s.lid + '/viewkeepers" rel="noopener">' + y + " keepers on Yahoo</a></li>";
+        }).join("") + "</ul></div>";
+      return;
+    }
     if (HY === "2027") {
       var order = (OFF().sheetOrder || Object.keys(DATA.keepers2027)).slice().sort(function (a, b) { return a.localeCompare(b); });
       if (!dbOn()) { box.innerHTML = '<div class="slot"><p class="k">2027 keepers show up here as teams declare them.</p><p class="muted">Each team saves its keepers from the 2027 keepers tab, and this list reads them back. That switches on once the page is hooked up to the league\'s keeper database.</p></div>'; return; }
