@@ -136,7 +136,7 @@ language plpgsql stable security definer set search_path = public as $$
 declare rows jsonb := '[]'::jsonb; blk int; i int; t record; line jsonb; cell text; ks jsonb;
 begin
   if p_tab = 'vote' then
-    rows := rows || jsonb_build_array(jsonb_build_array('Team') || coalesce((select jsonb_agg(to_char(day, 'Dy, Mon FMDD') order by day) from yoenis_ballot where y = p_y), '[]'::jsonb));
+    rows := rows || jsonb_build_array(jsonb_build_array('Team') || coalesce((select jsonb_agg(to_char(day, 'Mon FMDD "("Dy")"') order by day) from yoenis_ballot where y = p_y), '[]'::jsonb));
     rows := rows || jsonb_build_array(jsonb_build_array('Totals') || coalesce((select jsonb_agg((select count(*) from yoenis_votes v where v.y = p_y and v.day = b.day and v.yes)::int order by b.day) from yoenis_ballot b where b.y = p_y), '[]'::jsonb));
     for t in select team from yoenis_teams where y = p_y order by col loop
       rows := rows || jsonb_build_array(jsonb_build_array(t.team) || coalesce((select jsonb_agg(coalesce(to_jsonb(case when v.yes then 1 when v.yes is not null then 0 end), '""'::jsonb) order by b.day)
