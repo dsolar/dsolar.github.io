@@ -4,7 +4,7 @@
  "week": 6,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-10-15T18:16:01Z",
+ "updated": "2026-10-16T18:01:56Z",
  "source": "Yahoo league page, pasted",
  "teams": [
   {
@@ -21,10 +21,10 @@
      "pos": "QB",
      "game": "Sun 1:00 pm",
      "opp": "vs NYJ",
-     "proj": 20.7,
-     "rank": "QB5",
+     "proj": 20.66,
+     "rank": "QB4",
      "date": "2026-10-18",
-     "next_proj": 20.41,
+     "next_proj": 20.17,
      "in_best": true
     },
     {
@@ -34,10 +34,10 @@
      "pos": "RB",
      "game": "Sun 4:05 pm",
      "opp": "vs ARI",
-     "proj": 19.69,
+     "proj": 19.65,
      "rank": "RB4",
      "date": "2026-10-18",
-     "next_proj": 18.18,
+     "next_proj": 18.68,
      "in_best": true
     },
     {
@@ -47,10 +47,10 @@
      "pos": "RB",
      "game": "Sun 1:00 pm",
      "opp": "vs NYJ",
-     "proj": 16.09,
-     "rank": "RB7",
+     "proj": 13.86,
+     "rank": "RB10",
      "date": "2026-10-18",
-     "next_proj": 12.21,
+     "next_proj": 15.01,
      "in_best": true
     },
     {
@@ -60,10 +60,10 @@
      "pos": "WR",
      "game": "Sun 8:20 pm",
      "opp": "@ GB",
-     "proj": 10.88,
-     "rank": "WR20",
+     "proj": 10.86,
+     "rank": "WR22",
      "date": "2026-10-18",
-     "next_proj": 9.93
+     "next_proj": 9.84
     },
     {
      "slot": "WR",
@@ -72,10 +72,10 @@
      "pos": "WR",
      "game": "Sun 4:05 pm",
      "opp": "vs ARI",
-     "proj": 19.51,
+     "proj": 19.41,
      "rank": "WR1",
      "date": "2026-10-18",
-     "next_proj": 16.83,
+     "next_proj": 17.03,
      "in_best": true
     },
     {
@@ -85,10 +85,10 @@
      "pos": "WR",
      "game": "Sun 9:30 am",
      "opp": "@ JAX",
-     "proj": 15.0,
+     "proj": 14.93,
      "rank": "WR6",
      "date": "2026-10-18",
-     "next_proj": 15.05,
+     "next_proj": 14.31,
      "in_best": true
     },
     {
@@ -98,10 +98,10 @@
      "pos": "TE",
      "game": "Sun 4:25 pm",
      "opp": "vs LAC",
-     "proj": 10.03,
+     "proj": 9.64,
      "rank": "TE7",
      "date": "2026-10-18",
-     "next_proj": 9.85,
+     "next_proj": 9.55,
      "in_best": true
     },
     {
@@ -114,7 +114,7 @@
      "proj": 14.06,
      "rank": "WR10",
      "date": "2026-10-19",
-     "next_proj": 15.08,
+     "next_proj": 14.75,
      "in_best": true
     },
     {
@@ -124,10 +124,10 @@
      "pos": "QB",
      "game": "Sun 9:30 am",
      "opp": "@ JAX",
-     "proj": 15.08,
-     "rank": "QB18",
+     "proj": 15.03,
+     "rank": "QB16",
      "date": "2026-10-18",
-     "next_proj": 16.37,
+     "next_proj": 15.69,
      "in_best": true
     },
     {
@@ -138,9 +138,9 @@
      "game": "Sun 1:00 pm",
      "opp": "vs NO",
      "proj": 12.09,
-     "rank": "RB18",
+     "rank": "RB17",
      "date": "2026-10-18",
-     "next_proj": 10.83
+     "next_proj": 10.48
     },
     {
      "slot": "BN",
@@ -149,10 +149,10 @@
      "pos": "WR",
      "game": "Sun 1:00 pm",
      "opp": "vs NYJ",
-     "proj": 8.02,
+     "proj": 7.92,
      "rank": "WR36",
      "date": "2026-10-18",
-     "next_proj": 9.73
+     "next_proj": 9.81
     },
     {
      "slot": "BN",
@@ -161,7 +161,7 @@
      "pos": "TE",
      "game": "Sun 9:30 am",
      "opp": "vs HOU",
-     "proj": 8.21,
+     "proj": 8.16,
      "rank": "TE12",
      "date": "2026-10-18",
      "bye_next": true,
@@ -174,10 +174,12 @@
      "pos": "QB",
      "game": "Thu 8:15 pm",
      "opp": "@ DEN",
-     "proj": 14.18,
-     "rank": "QB22",
+     "proj": 14.14,
+     "rank": "QB21",
      "date": "2026-10-15",
-     "next_proj": 14.29
+     "final": true,
+     "actual": 13.02,
+     "next_proj": 14.54
     },
     {
      "slot": "BN",
@@ -186,15 +188,15 @@
      "pos": "RB",
      "game": "Sun 9:30 am",
      "opp": "@ JAX",
-     "proj": 12.62,
+     "proj": 12.71,
      "rank": "RB14",
      "date": "2026-10-18",
      "next_proj": 8.95,
      "in_best": true
     }
    ],
-   "best": 142.8,
-   "best_next": 134.8,
+   "best": 139.9,
+   "best_next": 135.7,
    "locked": 0,
    "locked_proj": 0,
    "games_final": 0
@@ -213,10 +215,10 @@
      "pos": "QB",
      "game": "Sun 1:00 pm",
      "opp": "@ PHI",
-     "proj": 16.95,
-     "rank": "QB13",
+     "proj": 17.11,
+     "rank": "QB10",
      "date": "2026-10-18",
-     "next_proj": 19.63,
+     "next_proj": 18.56,
      "in_best": true
     },
     {
@@ -226,10 +228,10 @@
      "pos": "RB",
      "game": "Sun 1:00 pm",
      "opp": "vs TEN",
-     "proj": 21.5,
+     "proj": 22.03,
      "rank": "RB2",
      "date": "2026-10-18",
-     "next_proj": 16.29,
+     "next_proj": 17.1,
      "in_best": true
     },
     {
@@ -239,10 +241,10 @@
      "pos": "RB",
      "game": "Sun 4:05 pm",
      "opp": "@ LAR",
-     "proj": 9.12,
+     "proj": 9.21,
      "rank": "RB23",
      "date": "2026-10-18",
-     "next_proj": 9.99,
+     "next_proj": 10.29,
      "in_best": true
     },
     {
@@ -253,10 +255,10 @@
      "status": "Q",
      "game": "Sun 8:20 pm",
      "opp": "@ GB",
-     "proj": 16.27,
+     "proj": 16.25,
      "rank": "WR3",
      "date": "2026-10-18",
-     "next_proj": 15.27,
+     "next_proj": 14.98,
      "in_best": true
     },
     {
@@ -266,10 +268,10 @@
      "pos": "WR",
      "game": "Sun 8:20 pm",
      "opp": "vs DAL",
-     "proj": 15.6,
-     "rank": "WR5",
+     "proj": 15.46,
+     "rank": "WR4",
      "date": "2026-10-18",
-     "next_proj": 14.99,
+     "next_proj": 14.48,
      "in_best": true
     },
     {
@@ -280,10 +282,10 @@
      "status": "Q",
      "game": "Sun 4:25 pm",
      "opp": "vs LAC",
-     "proj": 11.88,
-     "rank": "WR15",
+     "proj": 11.43,
+     "rank": "WR16",
      "date": "2026-10-18",
-     "next_proj": 11.58,
+     "next_proj": 11.2,
      "in_best": true
     },
     {
@@ -296,7 +298,7 @@
      "proj": 12.51,
      "rank": "TE3",
      "date": "2026-10-19",
-     "next_proj": 12.89,
+     "next_proj": 12.59,
      "in_best": true
     },
     {
@@ -306,10 +308,10 @@
      "pos": "RB",
      "game": "Sun 1:00 pm",
      "opp": "@ CLE",
-     "proj": 15.49,
-     "rank": "RB9",
+     "proj": 16.98,
+     "rank": "RB6",
      "date": "2026-10-18",
-     "next_proj": 18.41,
+     "next_proj": 17.37,
      "in_best": true
     },
     {
@@ -319,10 +321,10 @@
      "pos": "QB",
      "game": "Sun 4:25 pm",
      "opp": "vs LAC",
-     "proj": 19.08,
-     "rank": "QB7",
+     "proj": 18.6,
+     "rank": "QB6",
      "date": "2026-10-18",
-     "next_proj": 17.5,
+     "next_proj": 16.7,
      "in_best": true
     },
     {
@@ -333,10 +335,10 @@
      "status": "Q",
      "game": "Sun 1:00 pm",
      "opp": "vs BAL",
-     "proj": 7.14,
-     "rank": "WR42",
+     "proj": 7.15,
+     "rank": "WR41",
      "date": "2026-10-18",
-     "next_proj": 8.16
+     "next_proj": 7.85
     },
     {
      "slot": "BN",
@@ -345,7 +347,7 @@
      "pos": "QB",
      "bye": true,
      "proj": 0.0,
-     "next_proj": 16.16
+     "next_proj": 14.83
     },
     {
      "slot": "BN",
@@ -354,10 +356,10 @@
      "pos": "QB",
      "game": "Sun 4:05 pm",
      "opp": "@ LAR",
-     "proj": 14.45,
-     "rank": "QB20",
+     "proj": 14.55,
+     "rank": "QB18",
      "date": "2026-10-18",
-     "next_proj": 13.87
+     "next_proj": 14.79
     },
     {
      "slot": "BN",
@@ -376,14 +378,14 @@
      "pos": "WR",
      "game": "Sun 4:25 pm",
      "opp": "vs LAC",
-     "proj": 8.23,
+     "proj": 7.97,
      "rank": "WR35",
      "date": "2026-10-18",
-     "next_proj": 7.67
+     "next_proj": 7.43
     }
    ],
-   "best": 138.4,
-   "best_next": 136.5,
+   "best": 139.6,
+   "best_next": 133.3,
    "locked": 0,
    "locked_proj": 0,
    "games_final": 0
@@ -402,10 +404,10 @@
      "pos": "QB",
      "game": "Sun 4:05 pm",
      "opp": "vs ARI",
-     "proj": 21.76,
+     "proj": 21.72,
      "rank": "QB3",
      "date": "2026-10-18",
-     "next_proj": 17.64,
+     "next_proj": 18.09,
      "in_best": true
     },
     {
@@ -416,7 +418,7 @@
      "game": "Sun 4:25 pm",
      "opp": "@ LV",
      "proj": 16.15,
-     "rank": "RB6",
+     "rank": "RB7",
      "date": "2026-10-18",
      "bye_next": true,
      "next_proj": 0.0,
@@ -429,10 +431,10 @@
      "pos": "RB",
      "game": "Sun 4:25 pm",
      "opp": "vs LAC",
-     "proj": 19.79,
+     "proj": 19.98,
      "rank": "RB3",
      "date": "2026-10-18",
-     "next_proj": 16.82,
+     "next_proj": 16.2,
      "in_best": true
     },
     {
@@ -445,7 +447,7 @@
      "proj": 12.55,
      "rank": "WR12",
      "date": "2026-10-18",
-     "next_proj": 15.1,
+     "next_proj": 13.99,
      "in_best": true
     },
     {
@@ -455,8 +457,8 @@
      "pos": "WR",
      "game": "Sun 9:30 am",
      "opp": "vs HOU",
-     "proj": 7.23,
-     "rank": "WR41",
+     "proj": 7.19,
+     "rank": "WR40",
      "date": "2026-10-18",
      "bye_next": true,
      "next_proj": 0.0
@@ -468,10 +470,12 @@
      "pos": "WR",
      "game": "Thu 8:15 pm",
      "opp": "vs SEA",
-     "proj": 9.17,
+     "proj": 9.18,
      "rank": "WR26",
      "date": "2026-10-15",
-     "next_proj": 11.6,
+     "final": true,
+     "actual": 4.4,
+     "next_proj": 11.69,
      "in_best": true
     },
     {
@@ -481,10 +485,10 @@
      "pos": "TE",
      "game": "Sun 1:00 pm",
      "opp": "vs NYJ",
-     "proj": 7.26,
+     "proj": 7.13,
      "rank": "TE16",
      "date": "2026-10-18",
-     "next_proj": 7.33,
+     "next_proj": 7.46,
      "in_best": true
     },
     {
@@ -494,10 +498,10 @@
      "pos": "RB",
      "game": "Sun 1:00 pm",
      "opp": "@ PHI",
-     "proj": 15.11,
-     "rank": "RB10",
+     "proj": 15.52,
+     "rank": "RB9",
      "date": "2026-10-18",
-     "next_proj": 14.33,
+     "next_proj": 14.18,
      "in_best": true
     },
     {
@@ -507,10 +511,10 @@
      "pos": "QB",
      "game": "Sun 1:00 pm",
      "opp": "vs TEN",
-     "proj": 14.85,
-     "rank": "QB19",
+     "proj": 14.81,
+     "rank": "QB17",
      "date": "2026-10-18",
-     "next_proj": 10.38,
+     "next_proj": 10.82,
      "in_best": true
     },
     {
@@ -533,10 +537,10 @@
      "pos": "WR",
      "game": "Sun 1:00 pm",
      "opp": "@ ATL",
-     "proj": 8.51,
-     "rank": "WR33",
+     "proj": 8.12,
+     "rank": "WR34",
      "date": "2026-10-18",
-     "next_proj": 8.19,
+     "next_proj": 8.36,
      "in_best": true
     },
     {
@@ -546,10 +550,10 @@
      "pos": "WR",
      "game": "Sun 9:30 am",
      "opp": "@ JAX",
-     "proj": 2.04,
-     "rank": "WR98",
+     "proj": 2.03,
+     "rank": "WR94",
      "date": "2026-10-18",
-     "next_proj": 3.34
+     "next_proj": 3.19
     },
     {
      "slot": "BN",
@@ -558,10 +562,10 @@
      "pos": "RB",
      "game": "Sun 4:05 pm",
      "opp": "@ LAR",
-     "proj": 6.21,
-     "rank": "RB38",
+     "proj": 6.27,
+     "rank": "RB37",
      "date": "2026-10-18",
-     "next_proj": 5.55
+     "next_proj": 5.62
     },
     {
      "slot": "BN",
@@ -574,10 +578,10 @@
     }
    ],
    "best": 125.2,
-   "best_next": 111.7,
-   "locked": 0,
-   "locked_proj": 0,
-   "games_final": 0
+   "best_next": 111.1,
+   "locked": 4.4,
+   "locked_proj": 9.18,
+   "games_final": 1
   },
   {
    "name": "Holofernes",
@@ -607,10 +611,10 @@
      "pos": "RB",
      "game": "Sun 1:00 pm",
      "opp": "@ ATL",
-     "proj": 13.92,
+     "proj": 13.12,
      "rank": "RB12",
      "date": "2026-10-18",
-     "next_proj": 14.19,
+     "next_proj": 14.46,
      "in_best": true
     },
     {
@@ -624,7 +628,7 @@
      "proj": 9.76,
      "rank": "RB22",
      "date": "2026-10-18",
-     "next_proj": 9.29,
+     "next_proj": 9.48,
      "in_best": true
     },
     {
@@ -634,10 +638,10 @@
      "pos": "WR",
      "game": "Sun 8:20 pm",
      "opp": "vs DAL",
-     "proj": 12.48,
+     "proj": 12.41,
      "rank": "WR14",
      "date": "2026-10-18",
-     "next_proj": 12.04,
+     "next_proj": 11.85,
      "in_best": true
     },
     {
@@ -647,10 +651,10 @@
      "pos": "WR",
      "game": "Sun 1:00 pm",
      "opp": "@ TB",
-     "proj": 10.02,
-     "rank": "WR24",
+     "proj": 11.06,
+     "rank": "WR19",
      "date": "2026-10-18",
-     "next_proj": 9.48,
+     "next_proj": 10.31,
      "in_best": true
     },
     {
@@ -661,7 +665,7 @@
      "game": "Mon 8:15 pm",
      "opp": "@ SF",
      "proj": 9.01,
-     "rank": "WR29",
+     "rank": "WR28",
      "date": "2026-10-19",
      "bye_next": true,
      "next_proj": 0.0,
@@ -677,7 +681,7 @@
      "proj": 13.83,
      "rank": "TE1",
      "date": "2026-10-18",
-     "next_proj": 13.19,
+     "next_proj": 13.11,
      "in_best": true
     },
     {
@@ -701,10 +705,10 @@
      "pos": "QB",
      "game": "Sun 1:00 pm",
      "opp": "@ TB",
-     "proj": 15.88,
-     "rank": "QB16",
+     "proj": 17.1,
+     "rank": "QB11",
      "date": "2026-10-18",
-     "next_proj": 14.53,
+     "next_proj": 17.13,
      "in_best": true
     },
     {
@@ -727,10 +731,10 @@
      "pos": "TE",
      "game": "Sun 1:00 pm",
      "opp": "@ ATL",
-     "proj": 8.17,
-     "rank": "TE13",
+     "proj": 7.6,
+     "rank": "TE15",
      "date": "2026-10-18",
-     "next_proj": 7.52
+     "next_proj": 7.72
     },
     {
      "slot": "BN",
@@ -739,7 +743,7 @@
      "pos": "QB",
      "bye": true,
      "proj": 0.0,
-     "next_proj": 16.37
+     "next_proj": 17.99
     },
     {
      "slot": "BN",
@@ -748,7 +752,7 @@
      "pos": "WR",
      "bye": true,
      "proj": 0.0,
-     "next_proj": 14.86
+     "next_proj": 15.23
     },
     {
      "slot": "IR",
@@ -758,14 +762,14 @@
      "status": "IR-R",
      "game": "Sun 1:00 pm",
      "opp": "vs NYJ",
-     "proj": 9.99,
-     "rank": "WR25",
+     "proj": 10.92,
+     "rank": "WR21",
      "date": "2026-10-18",
-     "next_proj": 0.0
+     "next_proj": 10.81
     }
    ],
-   "best": 118.6,
-   "best_next": 111.5,
+   "best": 120.0,
+   "best_next": 117.3,
    "locked": 0,
    "locked_proj": 0,
    "games_final": 0
@@ -787,7 +791,7 @@
      "proj": 22.16,
      "rank": "QB2",
      "date": "2026-10-19",
-     "next_proj": 21.18,
+     "next_proj": 20.32,
      "in_best": true
     },
     {
@@ -800,7 +804,7 @@
      "proj": 18.83,
      "rank": "RB5",
      "date": "2026-10-19",
-     "next_proj": 19.16,
+     "next_proj": 18.53,
      "in_best": true
     },
     {
@@ -811,10 +815,10 @@
      "status": "Q",
      "game": "Sun 1:00 pm",
      "opp": "vs CAR",
-     "proj": 10.18,
+     "proj": 9.98,
      "rank": "RB21",
      "date": "2026-10-18",
-     "next_proj": 13.68,
+     "next_proj": 14.07,
      "in_best": true
     },
     {
@@ -824,10 +828,10 @@
      "pos": "WR",
      "game": "Sun 1:00 pm",
      "opp": "@ CLE",
-     "proj": 14.56,
-     "rank": "WR8",
+     "proj": 14.6,
+     "rank": "WR7",
      "date": "2026-10-18",
-     "next_proj": 17.08,
+     "next_proj": 16.54,
      "in_best": true
     },
     {
@@ -837,10 +841,10 @@
      "pos": "WR",
      "game": "Sun 1:00 pm",
      "opp": "@ PHI",
-     "proj": 11.07,
-     "rank": "WR19",
+     "proj": 10.93,
+     "rank": "WR20",
      "date": "2026-10-18",
-     "next_proj": 12.99,
+     "next_proj": 12.44,
      "in_best": true
     },
     {
@@ -851,10 +855,10 @@
      "status": "Q",
      "game": "Sun 1:00 pm",
      "opp": "@ PHI",
-     "proj": 10.72,
-     "rank": "WR21",
+     "proj": 10.66,
+     "rank": "WR23",
      "date": "2026-10-18",
-     "next_proj": 12.33,
+     "next_proj": 11.71,
      "in_best": true
     },
     {
@@ -864,10 +868,10 @@
      "pos": "TE",
      "game": "Sun 1:00 pm",
      "opp": "@ CLE",
-     "proj": 7.67,
+     "proj": 7.68,
      "rank": "TE14",
      "date": "2026-10-18",
-     "next_proj": 9.21,
+     "next_proj": 8.88,
      "in_best": true
     },
     {
@@ -877,7 +881,7 @@
      "pos": "RB",
      "game": "Sun 4:25 pm",
      "opp": "@ KC",
-     "proj": 7.23,
+     "proj": 7.3,
      "rank": "RB32",
      "date": "2026-10-18",
      "bye_next": true,
@@ -890,10 +894,10 @@
      "pos": "QB",
      "game": "Sun 8:20 pm",
      "opp": "vs DAL",
-     "proj": 20.83,
-     "rank": "QB4",
+     "proj": 20.58,
+     "rank": "QB5",
      "date": "2026-10-18",
-     "next_proj": 20.81,
+     "next_proj": 19.17,
      "in_best": true
     },
     {
@@ -903,7 +907,7 @@
      "pos": "RB",
      "bye": true,
      "proj": 0.0,
-     "next_proj": 8.04
+     "next_proj": 8.74
     },
     {
      "slot": "BN",
@@ -912,7 +916,7 @@
      "pos": "RB",
      "bye": true,
      "proj": 0.0,
-     "next_proj": 13.26
+     "next_proj": 13.42
     },
     {
      "slot": "BN",
@@ -922,7 +926,7 @@
      "status": "Q",
      "bye": true,
      "proj": 0.0,
-     "next_proj": 7.2
+     "next_proj": 7.56
     },
     {
      "slot": "BN",
@@ -931,10 +935,10 @@
      "pos": "RB",
      "game": "Sun 1:00 pm",
      "opp": "vs CHI",
-     "proj": 5.67,
-     "rank": "RB41",
+     "proj": 5.18,
+     "rank": "RB43",
      "date": "2026-10-18",
-     "next_proj": 4.24
+     "next_proj": 4.62
     },
     {
      "slot": "BN",
@@ -946,12 +950,12 @@
      "proj": 7.59,
      "rank": "WR37",
      "date": "2026-10-18",
-     "next_proj": 7.17,
+     "next_proj": 7.12,
      "in_best": true
     }
    ],
-   "best": 123.6,
-   "best_next": 139.7,
+   "best": 123.0,
+   "best_next": 135.1,
    "locked": 0,
    "locked_proj": 0,
    "games_final": 0
@@ -971,10 +975,10 @@
      "status": "Q",
      "game": "Sun 1:00 pm",
      "opp": "@ ATL",
-     "proj": 17.49,
-     "rank": "QB11",
+     "proj": 16.11,
+     "rank": "QB14",
      "date": "2026-10-18",
-     "next_proj": 17.05,
+     "next_proj": 17.63,
      "in_best": true
     },
     {
@@ -984,10 +988,12 @@
      "pos": "RB",
      "game": "Thu 8:15 pm",
      "opp": "vs SEA",
-     "proj": 7.01,
-     "rank": "RB33",
+     "proj": 7.0,
+     "rank": "RB34",
      "date": "2026-10-15",
-     "next_proj": 8.45
+     "final": true,
+     "actual": 12.1,
+     "next_proj": 8.72
     },
     {
      "slot": "RB",
@@ -999,7 +1005,7 @@
      "proj": 12.47,
      "rank": "RB15",
      "date": "2026-10-18",
-     "next_proj": 6.67,
+     "next_proj": 6.61,
      "in_best": true
     },
     {
@@ -1010,10 +1016,12 @@
      "status": "Q",
      "game": "Thu 8:15 pm",
      "opp": "@ DEN",
-     "proj": 18.9,
+     "proj": 19.17,
      "rank": "WR2",
      "date": "2026-10-15",
-     "next_proj": 18.56,
+     "final": true,
+     "actual": 19.4,
+     "next_proj": 18.78,
      "in_best": true
     },
     {
@@ -1026,7 +1034,7 @@
      "proj": 11.31,
      "rank": "WR17",
      "date": "2026-10-18",
-     "next_proj": 11.49,
+     "next_proj": 11.06,
      "in_best": true
     },
     {
@@ -1037,9 +1045,9 @@
      "game": "Sun 1:00 pm",
      "opp": "@ NYG",
      "proj": 8.47,
-     "rank": "WR34",
+     "rank": "WR31",
      "date": "2026-10-18",
-     "next_proj": 8.67
+     "next_proj": 8.42
     },
     {
      "slot": "TE",
@@ -1048,10 +1056,10 @@
      "pos": "TE",
      "game": "Sun 1:00 pm",
      "opp": "vs TEN",
-     "proj": 10.11,
-     "rank": "TE5",
+     "proj": 9.95,
+     "rank": "TE6",
      "date": "2026-10-18",
-     "next_proj": 7.87,
+     "next_proj": 8.07,
      "in_best": true
     },
     {
@@ -1061,10 +1069,10 @@
      "pos": "WR",
      "game": "Sun 1:00 pm",
      "opp": "vs CHI",
-     "proj": 15.84,
-     "rank": "WR4",
+     "proj": 15.01,
+     "rank": "WR5",
      "date": "2026-10-18",
-     "next_proj": 13.58,
+     "next_proj": 14.33,
      "in_best": true
     },
     {
@@ -1075,11 +1083,8 @@
      "status": "Q",
      "game": "Sun 1:00 pm",
      "opp": "@ CLE",
-     "proj": 20.58,
-     "rank": "QB6",
-     "date": "2026-10-18",
-     "next_proj": 24.23,
-     "in_best": true
+     "proj": 0.0,
+     "next_proj": 23.08
     },
     {
      "slot": "BN",
@@ -1090,7 +1095,7 @@
      "game": "Sun 1:00 pm",
      "opp": "@ NE",
      "proj": 0.0,
-     "next_proj": 12.87
+     "next_proj": 12.74
     },
     {
      "slot": "BN",
@@ -1102,7 +1107,7 @@
      "proj": 8.79,
      "rank": "RB24",
      "date": "2026-10-18",
-     "next_proj": 9.07,
+     "next_proj": 8.68,
      "in_best": true
     },
     {
@@ -1115,7 +1120,8 @@
      "proj": 13.45,
      "rank": "QB24",
      "date": "2026-10-18",
-     "next_proj": 12.86
+     "next_proj": 12.35,
+     "in_best": true
     },
     {
      "slot": "BN",
@@ -1136,7 +1142,7 @@
      "game": "Mon 8:15 pm",
      "opp": "@ SF",
      "proj": 8.73,
-     "rank": "WR30",
+     "rank": "WR29",
      "date": "2026-10-19",
      "bye_next": true,
      "next_proj": 0.0,
@@ -1151,14 +1157,14 @@
      "game": "Thu 8:15 pm",
      "opp": "@ DEN",
      "proj": 0.0,
-     "next_proj": 7.46
+     "next_proj": 7.7
     }
    ],
-   "best": 124.2,
-   "best_next": 123.4,
-   "locked": 0,
-   "locked_proj": 0,
-   "games_final": 0
+   "best": 115.0,
+   "best_next": 123.1,
+   "locked": 31.5,
+   "locked_proj": 26.17,
+   "games_final": 2
   },
   {
    "name": "Likely to Burden Tate w Penix",
@@ -1177,7 +1183,7 @@
      "proj": 16.97,
      "rank": "QB12",
      "date": "2026-10-18",
-     "next_proj": 17.61,
+     "next_proj": 16.78,
      "in_best": true
     },
     {
@@ -1190,7 +1196,7 @@
      "proj": 12.39,
      "rank": "RB16",
      "date": "2026-10-18",
-     "next_proj": 13.53,
+     "next_proj": 13.16,
      "in_best": true
     },
     {
@@ -1200,10 +1206,10 @@
      "pos": "RB",
      "game": "Sun 1:00 pm",
      "opp": "@ TB",
-     "proj": 14.37,
+     "proj": 13.69,
      "rank": "RB11",
      "date": "2026-10-18",
-     "next_proj": 13.62,
+     "next_proj": 14.41,
      "in_best": true
     },
     {
@@ -1216,7 +1222,7 @@
      "proj": 14.31,
      "rank": "WR9",
      "date": "2026-10-18",
-     "next_proj": 15.22,
+     "next_proj": 14.79,
      "in_best": true
     },
     {
@@ -1229,7 +1235,7 @@
      "proj": 11.12,
      "rank": "WR18",
      "date": "2026-10-18",
-     "next_proj": 10.48,
+     "next_proj": 10.11,
      "in_best": true
     },
     {
@@ -1239,11 +1245,10 @@
      "pos": "WR",
      "game": "Sun 1:00 pm",
      "opp": "vs BAL",
-     "proj": 8.71,
-     "rank": "WR31",
+     "proj": 8.66,
+     "rank": "WR30",
      "date": "2026-10-18",
-     "next_proj": 9.64,
-     "in_best": true
+     "next_proj": 9.29
     },
     {
      "slot": "TE",
@@ -1255,7 +1260,7 @@
      "proj": 10.58,
      "rank": "TE4",
      "date": "2026-10-18",
-     "next_proj": 10.21,
+     "next_proj": 9.74,
      "in_best": true
     },
     {
@@ -1265,10 +1270,10 @@
      "pos": "WR",
      "game": "Sun 1:00 pm",
      "opp": "@ ATL",
-     "proj": 10.03,
-     "rank": "WR23",
+     "proj": 9.52,
+     "rank": "WR25",
      "date": "2026-10-18",
-     "next_proj": 9.57,
+     "next_proj": 9.95,
      "in_best": true
     },
     {
@@ -1278,10 +1283,12 @@
      "pos": "QB",
      "game": "Thu 8:15 pm",
      "opp": "vs SEA",
-     "proj": 14.3,
-     "rank": "QB21",
+     "proj": 14.26,
+     "rank": "QB20",
      "date": "2026-10-15",
-     "next_proj": 20.33
+     "final": true,
+     "actual": 4.48,
+     "next_proj": 20.83
     },
     {
      "slot": "BN",
@@ -1291,9 +1298,10 @@
      "status": "D",
      "game": "Sun 1:00 pm",
      "opp": "vs NYJ",
-     "proj": 0.0,
+     "proj": 5.47,
+     "rank": "RB42",
      "date": "2026-10-18",
-     "next_proj": 9.6
+     "next_proj": 0.0
     },
     {
      "slot": "BN",
@@ -1302,7 +1310,7 @@
      "pos": "RB",
      "bye": true,
      "proj": 0.0,
-     "next_proj": 23.34
+     "next_proj": 22.19
     },
     {
      "slot": "BN",
@@ -1314,7 +1322,7 @@
      "proj": 7.0,
      "rank": "TE17",
      "date": "2026-10-18",
-     "next_proj": 6.65
+     "next_proj": 6.45
     },
     {
      "slot": "BN",
@@ -1324,10 +1332,10 @@
      "status": "Q",
      "game": "Sun 1:00 pm",
      "opp": "vs CHI",
-     "proj": 16.03,
-     "rank": "QB15",
+     "proj": 14.43,
+     "rank": "QB19",
      "date": "2026-10-18",
-     "next_proj": 12.82,
+     "next_proj": 14.54,
      "in_best": true
     },
     {
@@ -1337,10 +1345,11 @@
      "pos": "TE",
      "game": "Sun 1:00 pm",
      "opp": "vs CAR",
-     "proj": 8.67,
+     "proj": 8.7,
      "rank": "TE10",
      "date": "2026-10-18",
-     "next_proj": 10.19
+     "next_proj": 10.15,
+     "in_best": true
     },
     {
      "slot": "IR",
@@ -1350,14 +1359,14 @@
      "status": "IR",
      "bye": true,
      "proj": 0.0,
-     "next_proj": 8.53
+     "next_proj": 9.65
     }
    ],
-   "best": 114.5,
-   "best_next": 134.0,
-   "locked": 0,
-   "locked_proj": 0,
-   "games_final": 0
+   "best": 111.7,
+   "best_next": 132.4,
+   "locked": 4.48,
+   "locked_proj": 14.26,
+   "games_final": 1
   },
   {
    "name": "Maye I see your TDs",
@@ -1373,8 +1382,8 @@
      "pos": "QB",
      "game": "Sun 4:25 pm",
      "opp": "@ KC",
-     "proj": 13.07,
-     "rank": "QB27",
+     "proj": 13.08,
+     "rank": "QB26",
      "date": "2026-10-18",
      "bye_next": true,
      "next_proj": 0.0,
@@ -1388,10 +1397,10 @@
      "status": "Q",
      "game": "Sun 1:00 pm",
      "opp": "vs BAL",
-     "proj": 8.05,
+     "proj": 8.06,
      "rank": "RB28",
      "date": "2026-10-18",
-     "next_proj": 10.17
+     "next_proj": 10.38
     },
     {
      "slot": "RB",
@@ -1400,10 +1409,10 @@
      "pos": "RB",
      "game": "Sun 1:00 pm",
      "opp": "vs CHI",
-     "proj": 24.25,
+     "proj": 22.68,
      "rank": "RB1",
      "date": "2026-10-18",
-     "next_proj": 19.1,
+     "next_proj": 20.62,
      "in_best": true
     },
     {
@@ -1413,10 +1422,10 @@
      "pos": "WR",
      "game": "Sun 4:05 pm",
      "opp": "vs ARI",
-     "proj": 14.56,
-     "rank": "WR7",
+     "proj": 14.54,
+     "rank": "WR8",
      "date": "2026-10-18",
-     "next_proj": 14.0,
+     "next_proj": 14.21,
      "in_best": true
     },
     {
@@ -1429,7 +1438,7 @@
      "proj": 9.11,
      "rank": "WR27",
      "date": "2026-10-18",
-     "next_proj": 8.56,
+     "next_proj": 8.28,
      "in_best": true
     },
     {
@@ -1440,11 +1449,8 @@
      "status": "Q",
      "game": "Sun 1:00 pm",
      "opp": "vs CAR",
-     "proj": 9.1,
-     "rank": "WR28",
-     "date": "2026-10-18",
-     "next_proj": 11.76,
-     "in_best": true
+     "proj": 0.0,
+     "next_proj": 11.58
     },
     {
      "slot": "TE",
@@ -1453,10 +1459,10 @@
      "pos": "TE",
      "game": "Sun 4:05 pm",
      "opp": "@ LAR",
-     "proj": 12.99,
+     "proj": 13.11,
      "rank": "TE2",
      "date": "2026-10-18",
-     "next_proj": 12.14,
+     "next_proj": 12.57,
      "in_best": true
     },
     {
@@ -1466,10 +1472,10 @@
      "pos": "TE",
      "game": "Sun 8:20 pm",
      "opp": "vs DAL",
-     "proj": 10.04,
-     "rank": "TE6",
+     "proj": 9.97,
+     "rank": "TE5",
      "date": "2026-10-18",
-     "next_proj": 9.67,
+     "next_proj": 9.48,
      "in_best": true
     },
     {
@@ -1480,9 +1486,11 @@
      "game": "Thu 8:15 pm",
      "opp": "vs SEA",
      "proj": 8.44,
-     "rank": "RB27",
+     "rank": "RB26",
      "date": "2026-10-15",
-     "next_proj": 9.72,
+     "final": true,
+     "actual": 13.1,
+     "next_proj": 9.84,
      "in_best": true
     },
     {
@@ -1492,10 +1500,10 @@
      "pos": "WR",
      "game": "Sun 1:00 pm",
      "opp": "vs CAR",
-     "proj": 4.78,
-     "rank": "WR59",
+     "proj": 7.02,
+     "rank": "WR42",
      "date": "2026-10-18",
-     "next_proj": 5.7
+     "next_proj": 5.64
     },
     {
      "slot": "BN",
@@ -1504,7 +1512,7 @@
      "pos": "QB",
      "bye": true,
      "proj": 0.0,
-     "next_proj": 18.36
+     "next_proj": 18.93
     },
     {
      "slot": "BN",
@@ -1513,7 +1521,7 @@
      "pos": "WR",
      "bye": true,
      "proj": 0.0,
-     "next_proj": 12.51
+     "next_proj": 12.72
     },
     {
      "slot": "BN",
@@ -1523,9 +1531,9 @@
      "game": "Sun 1:00 pm",
      "opp": "@ IND",
      "proj": 15.27,
-     "rank": "QB17",
+     "rank": "QB15",
      "date": "2026-10-18",
-     "next_proj": 14.23,
+     "next_proj": 13.86,
      "in_best": true
     },
     {
@@ -1535,17 +1543,18 @@
      "pos": "WR",
      "game": "Sun 1:00 pm",
      "opp": "@ TB",
-     "proj": 7.44,
-     "rank": "WR38",
+     "proj": 8.28,
+     "rank": "WR33",
      "date": "2026-10-18",
-     "next_proj": 6.9
+     "next_proj": 7.44,
+     "in_best": true
     }
    ],
-   "best": 116.8,
-   "best_next": 122.0,
-   "locked": 0,
-   "locked_proj": 0,
-   "games_final": 0
+   "best": 114.5,
+   "best_next": 124.7,
+   "locked": 13.1,
+   "locked_proj": 8.44,
+   "games_final": 1
   },
   {
    "name": "Deviated Rectums",
@@ -1561,10 +1570,10 @@
      "pos": "QB",
      "game": "Sun 8:20 pm",
      "opp": "@ GB",
-     "proj": 18.4,
-     "rank": "QB9",
+     "proj": 18.35,
+     "rank": "QB7",
      "date": "2026-10-18",
-     "next_proj": 17.06,
+     "next_proj": 16.44,
      "in_best": true
     },
     {
@@ -1574,10 +1583,10 @@
      "pos": "RB",
      "game": "Sun 1:00 pm",
      "opp": "vs PIT",
-     "proj": 13.59,
+     "proj": 12.8,
      "rank": "RB13",
      "date": "2026-10-18",
-     "next_proj": 14.24,
+     "next_proj": 14.9,
      "in_best": true
     },
     {
@@ -1588,10 +1597,10 @@
      "status": "Q",
      "game": "Sun 1:00 pm",
      "opp": "@ ATL",
-     "proj": 4.25,
-     "rank": "RB52",
+     "proj": 4.02,
+     "rank": "RB53",
      "date": "2026-10-18",
-     "next_proj": 8.37
+     "next_proj": 8.46
     },
     {
      "slot": "WR",
@@ -1600,7 +1609,7 @@
      "pos": "WR",
      "game": "Sun 9:30 am",
      "opp": "vs HOU",
-     "proj": 12.74,
+     "proj": 12.62,
      "rank": "WR11",
      "date": "2026-10-18",
      "bye_next": true,
@@ -1614,10 +1623,10 @@
      "pos": "WR",
      "game": "Sun 1:00 pm",
      "opp": "vs PIT",
-     "proj": 8.54,
+     "proj": 8.42,
      "rank": "WR32",
      "date": "2026-10-18",
-     "next_proj": 8.19,
+     "next_proj": 8.52,
      "in_best": true
     },
     {
@@ -1632,10 +1641,10 @@
      "pos": "TE",
      "game": "Sun 1:00 pm",
      "opp": "@ TB",
-     "proj": 7.27,
-     "rank": "TE15",
+     "proj": 8.09,
+     "rank": "TE13",
      "date": "2026-10-18",
-     "next_proj": 7.6,
+     "next_proj": 8.33,
      "in_best": true
     },
     {
@@ -1645,10 +1654,10 @@
      "pos": "RB",
      "game": "Sun 8:20 pm",
      "opp": "vs DAL",
-     "proj": 11.51,
+     "proj": 11.39,
      "rank": "RB19",
      "date": "2026-10-18",
-     "next_proj": 10.23,
+     "next_proj": 9.35,
      "in_best": true
     },
     {
@@ -1659,9 +1668,9 @@
      "game": "Sun 4:25 pm",
      "opp": "vs BUF",
      "proj": 17.73,
-     "rank": "QB10",
+     "rank": "QB9",
      "date": "2026-10-18",
-     "next_proj": 15.56,
+     "next_proj": 15.27,
      "in_best": true
     },
     {
@@ -1671,7 +1680,7 @@
      "pos": "WR",
      "bye": true,
      "proj": 0.0,
-     "next_proj": 16.59
+     "next_proj": 16.34
     },
     {
      "slot": "BN",
@@ -1680,7 +1689,7 @@
      "pos": "WR",
      "bye": true,
      "proj": 0.0,
-     "next_proj": 14.2
+     "next_proj": 14.77
     },
     {
      "slot": "BN",
@@ -1689,7 +1698,7 @@
      "pos": "QB",
      "bye": true,
      "proj": 0.0,
-     "next_proj": 19.62
+     "next_proj": 18.96
     },
     {
      "slot": "BN",
@@ -1698,10 +1707,10 @@
      "pos": "RB",
      "game": "Sun 1:00 pm",
      "opp": "vs CAR",
-     "proj": 8.67,
-     "rank": "RB25",
+     "proj": 8.44,
+     "rank": "RB27",
      "date": "2026-10-18",
-     "next_proj": 2.4,
+     "next_proj": 4.74,
      "in_best": true
     },
     {
@@ -1711,10 +1720,10 @@
      "pos": "WR",
      "game": "Sun 1:00 pm",
      "opp": "vs NYJ",
-     "proj": 4.8,
-     "rank": "WR58",
+     "proj": 3.48,
+     "rank": "WR72",
      "date": "2026-10-18",
-     "next_proj": 5.66,
+     "next_proj": 5.68,
      "in_best": true,
      "assumed_slot": "WR"
     },
@@ -1725,7 +1734,7 @@
      "pos": "RB",
      "bye": true,
      "proj": 0.0,
-     "next_proj": 12.71
+     "next_proj": 12.04
     },
     {
      "slot": "IR",
@@ -1739,9 +1748,9 @@
      "next_proj": 0.0
     }
    ],
-   "best": 103.2,
-   "best_next": 120.4,
-   "fill": 4.8,
+   "best": 101.3,
+   "best_next": 119.6,
+   "fill": 3.48,
    "locked": 0,
    "locked_proj": 0,
    "games_final": 0
@@ -1805,10 +1814,10 @@
      "pos": "WR",
      "game": "Sun 1:00 pm",
      "opp": "vs TEN",
-     "proj": 10.04,
-     "rank": "WR22",
+     "proj": 9.94,
+     "rank": "WR24",
      "date": "2026-10-18",
-     "next_proj": 7.43,
+     "next_proj": 7.44,
      "in_best": true,
      "assumed_slot": "WR"
     },
@@ -1819,10 +1828,10 @@
      "pos": "WR",
      "game": "Sun 4:05 pm",
      "opp": "@ LAR",
-     "proj": 11.41,
-     "rank": "WR16",
+     "proj": 11.5,
+     "rank": "WR15",
      "date": "2026-10-18",
-     "next_proj": 10.8,
+     "next_proj": 11.18,
      "in_best": true,
      "assumed_slot": "WR"
     },
@@ -1833,10 +1842,10 @@
      "pos": "RB",
      "game": "Sun 8:20 pm",
      "opp": "@ GB",
-     "proj": 15.95,
+     "proj": 16.04,
      "rank": "RB8",
      "date": "2026-10-18",
-     "next_proj": 15.83,
+     "next_proj": 15.15,
      "in_best": true,
      "assumed_slot": "RB"
     },
@@ -1847,7 +1856,7 @@
      "pos": "RB",
      "game": "Sun 9:30 am",
      "opp": "vs HOU",
-     "proj": 11.0,
+     "proj": 11.03,
      "rank": "RB20",
      "date": "2026-10-18",
      "bye_next": true,
@@ -1862,10 +1871,10 @@
      "pos": "TE",
      "game": "Sun 1:00 pm",
      "opp": "vs BAL",
-     "proj": 8.38,
+     "proj": 8.39,
      "rank": "TE11",
      "date": "2026-10-18",
-     "next_proj": 9.37
+     "next_proj": 8.99
     },
     {
      "slot": "BN",
@@ -1874,10 +1883,12 @@
      "pos": "RB",
      "game": "Thu 8:15 pm",
      "opp": "@ DEN",
-     "proj": 12.14,
-     "rank": "RB17",
+     "proj": 12.08,
+     "rank": "RB18",
      "date": "2026-10-15",
-     "next_proj": 5.06,
+     "final": true,
+     "actual": 5.2,
+     "next_proj": 5.26,
      "in_best": true,
      "assumed_slot": "RB"
     },
@@ -1889,7 +1900,7 @@
      "game": "Mon 8:15 pm",
      "opp": "@ SF",
      "proj": 16.93,
-     "rank": "QB14",
+     "rank": "QB13",
      "date": "2026-10-19",
      "bye_next": true,
      "next_proj": 0.0,
@@ -1919,7 +1930,7 @@
      "pos": "QB",
      "game": "Sun 9:30 am",
      "opp": "vs HOU",
-     "proj": 18.43,
+     "proj": 18.33,
      "rank": "QB8",
      "date": "2026-10-18",
      "bye_next": true,
@@ -1947,7 +1958,7 @@
      "pos": "WR",
      "bye": true,
      "proj": 0.0,
-     "next_proj": 9.8
+     "next_proj": 9.78
     },
     {
      "slot": "BN",
@@ -1957,7 +1968,7 @@
      "game": "Sun 1:00 pm",
      "opp": "vs CAR",
      "proj": 0.0,
-     "next_proj": 20.1
+     "next_proj": 20.4
     },
     {
      "slot": "BN",
@@ -1967,9 +1978,9 @@
      "game": "Sun 1:00 pm",
      "opp": "@ NE",
      "proj": 13.21,
-     "rank": "QB26",
+     "rank": "QB25",
      "date": "2026-10-18",
-     "next_proj": 17.3
+     "next_proj": 15.92
     },
     {
      "slot": "BN",
@@ -1981,7 +1992,7 @@
      "proj": 8.8,
      "rank": "TE8",
      "date": "2026-10-18",
-     "next_proj": 9.43,
+     "next_proj": 9.08,
      "in_best": true,
      "assumed_slot": "TE"
     },
@@ -1998,10 +2009,10 @@
     }
    ],
    "best": 117.2,
-   "best_next": 105.1,
-   "locked": 0,
-   "locked_proj": 0,
-   "games_final": 0
+   "best_next": 103.2,
+   "locked": 5.2,
+   "locked_proj": 12.08,
+   "games_final": 1
   },
   {
    "name": "Beast Mode Samuel",
@@ -2048,7 +2059,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-10-15T18:16:01Z",
+  "updated": "2026-10-16T18:01:57Z",
   "players": 3045,
   "unmatched": []
  }
