@@ -847,13 +847,14 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
   /* ---------- Offseason ---------- */
   /* data.json "offseason":
        lottery: null, or the official order of picks 1-8 (team names) once the real lottery runs
-       sheet_url: the keeper sheet's Apps Script web app (tools/yoenis-sheet.gs); null keeps keeper picks in this browser
-       sheetOrder: the 16 teams in the keeper sheet's column order, for creating the 2027 tab
+       db: { url, key, mirror } the Supabase project (tools/yoenis-supabase.sql) and its public key; null keeps keeper
+           picks in this browser. mirror: true once the keeper sheet's 2027 tabs IMPORTDATA from tools/yoenis-sheet-function.ts
+       sheetOrder: the 16 teams in the keeper sheet's column order (the yoenis_teams seed in tools/yoenis-supabase.sql)
        trades: [{ d: "2027-01-12", a: "<team>", b: "<team>", aGets: ["Bulba's 2027 5th", "Player"], bGets: [...], note: "",
                   picks: [{ r: 5, of: "Bulba", to: "Robbers" }] }]   (picks moves draft picks for the order and keeper slots)
        draft:   { opening, openingNight, caveat, pick: null, ballot: ["2027-03-14", ...] }
-                (ballot: the candidate dates; the first vote creates the sheet's "2027 Draft Vote" tab from them, and after
-                 that the tab is the ballot, so dates added or removed there show up here) */
+                (ballot: the candidate dates shown before the page is hooked up; after that the database's yoenis_ballot
+                 table is the ballot) */
   function OFF() { return DATA.offseason || {}; }
   function lastSeason() { return DATA.seasons[DATA.seasons.length - 1]; }
   function longDate(d, wd) { return new Date(d + "T12:00:00").toLocaleDateString("en-US", { weekday: wd ? "long" : undefined, month: "long", day: "numeric", year: wd ? undefined : "numeric" }); }
@@ -934,9 +935,11 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     });
     return { list: out, errs: errs };
   }
-  /* Picks live in this browser until they're saved to the keeper sheet (through tools/yoenis-sheet.gs) */
+  /* Picks live in this browser until a team saves them to the league's keeper database (Supabase,
+     tools/yoenis-supabase.sql). The keeper sheet mirrors that database (tools/yoenis-sheet-function.ts). */
   var MINE = {}, SHEET = null, SHEET_ERR = "";
-  function sheetUrl() { return OFF().sheet_url || ""; }
+  function dbOn() { var db = OFF().db; return !!(db && db.url && db.key); }
+  function mirrored() { return !!(OFF().db || {}).mirror; }
   function loadMine() { try { MINE = JSON.parse(store.get("yoenis-keepers") || "{}") || {}; } catch (e) { MINE = {}; } }
   function matchRoster(team, name) {
     var f = fold(name), all = DATA.keepers2027[team] || [];
@@ -957,29 +960,29 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
   }
   function drawMine() {
     var team = $("k-team").value; if (!team || !DATA.keepers2027[team]) return;
-    var names = mineFor(team), kk = slotKeepers(team, names), live = !!sheetUrl(), inSheet = sheetFor(team);
+    var names = mineFor(team), kk = slotKeepers(team, names), live = dbOn(), inSheet = sheetFor(team);
     var rows = kk.list.map(function (x) {
       var sl = x.pick ? slotOf(x.pick.of) : null;
       return "<li><b>" + esc(x.e.p) + "</b>, round " + x.cost + (x.pick ? (x.pick.r !== x.cost ? ", moves up to round " + x.pick.r + " (no open pick in round " + x.cost + ")" : "") + (sl ? ", pick " + pickLabel(x.pick.r, sl) + " (No. " + overall(x.pick.r, sl) + " overall)" : "") : "") + "</li>";
     }).join("");
     var status = "";
     if (live) {
-      if (SHEET_ERR) status = "The keeper sheet didn't answer, so these are saved in this browser for now.";
-      else if (!SHEET) status = "Checking the keeper sheet.";
+      if (SHEET_ERR) status = "The keeper database didn't answer, so these are saved in this browser for now.";
+      else if (!SHEET) status = "Checking for saved keepers.";
       else if (locked()) status = "Keepers are locked." + (inSheet && inSheet.length ? "" : " This team didn't declare.");
-      else if (inSheet && inSheet.length && !dirty(team)) status = "These are in the keeper sheet. Change them anytime before keepers lock.";
-      else status = inSheet && inSheet.length ? "Changed since the keeper sheet was updated. Save to update it." : "Not in the keeper sheet yet.";
+      else if (inSheet && inSheet.length && !dirty(team)) status = "Saved for the league. Change them anytime before keepers lock.";
+      else status = inSheet && inSheet.length ? "Changed since you saved. Save again to update them." : "Not saved yet.";
     }
     var canSave = live && SHEET && !locked();
     var html = '<div class="slot mine" aria-live="polite"><p class="k">' + esc(withMan(team)) + "'s 2027 keepers: " + names.length + " of 5</p>" +
       (rows ? "<ol>" + rows + "</ol>" : '<p class="muted">Check the Keep box next to anyone below.</p>') +
       kk.errs.map(function (e) { return '<p class="warn">' + esc(e) + "</p>"; }).join("") + (flashText ? '<p class="' + (flashOk ? "okmsg" : "warn") + '">' + esc(flashText) + "</p>" : "") +
-      '<div class="row">' + (canSave ? '<input class="pin" id="k-pin" type="password" inputmode="numeric" placeholder="Team PIN" aria-label="Team PIN, 4 to 8 digits" autocomplete="off" value="' + esc(store.get("yoenis-pin:" + team) || "") + '"><button class="btn" type="button" id="k-save"' + (kk.errs.length ? " disabled" : "") + ">Save to the keeper sheet</button>" : "") +
+      '<div class="row">' + (canSave ? '<input class="pin" id="k-pin" type="password" inputmode="numeric" placeholder="Team PIN" aria-label="Team PIN, 4 to 8 digits" autocomplete="off" value="' + esc(store.get("yoenis-pin:" + team) || "") + '"><button class="btn" type="button" id="k-save"' + (kk.errs.length ? " disabled" : "") + ">Save my keepers</button>" : "") +
       (!live || SHEET_ERR ? '<button class="btn" type="button" id="k-copy"' + (names.length ? "" : " disabled") + ">Copy my keepers</button>" : "") +
       (names.length && !locked() ? '<button class="btn ghost" type="button" id="k-clear">Clear</button>' : "") + "</div>" +
       (status ? '<p class="status">' + esc(status) + "</p>" : "") +
-      (canSave ? '<p class="status">Saving writes them straight into the 2027 tab of the <a href="https://docs.google.com/spreadsheets/d/1hikrKHBKWI65A81MFbOQ1n2vezeBwmUfNVFymItL0ZY/edit?usp=sharing" rel="noopener">keeper sheet</a>. The first time you save, the PIN you type becomes your team\'s PIN, and every change after needs it. Forgot it? The commissioner can reset it.</p>' :
-        !live ? '<p class="status">Saved in this browser for now. Once the page is hooked up to the keeper sheet, a Save button writes them straight into it.</p>' : "") + "</div>";
+      (canSave ? '<p class="status">Saved keepers show up in 2027 declarations right away' + (mirrored() ? ' and in the 2027 tab of the <a href="https://docs.google.com/spreadsheets/d/1hikrKHBKWI65A81MFbOQ1n2vezeBwmUfNVFymItL0ZY/edit?usp=sharing" rel="noopener">keeper sheet</a> within the hour' : "") + '. The first time you save, the PIN you type becomes your team\'s PIN, and every change after needs it. Forgot it? The commissioner can reset it.</p>' :
+        !live ? '<p class="status">Saved in this browser for now. Once the page is hooked up to the league\'s keeper database, a Save button saves them for everyone to see.</p>' : "") + "</div>";
     flashText = "";
     $("k-mine").innerHTML = html;
     if ($("k-copy")) $("k-copy").addEventListener("click", function () {
@@ -992,23 +995,36 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       if (!/^\d{4,8}$/.test(pin)) { flashMine("The team PIN is 4 to 8 digits."); return; }
       $("k-save").disabled = true; $("k-save").textContent = "Saving";
       var players = slotKeepers(team, mineFor(team)).list.map(function (x) { return [x.e.p, x.cost, x.e.next[1]]; });
-      post({ action: "keepers", y: 2027, team: team, pin: pin, players: players, order: OFF().sheetOrder || [] }).then(function () {
+      post({ action: "keepers", y: 2027, team: team, pin: pin, players: players }).then(function () {
         store.set("yoenis-pin:" + team, pin); delete MINE[team]; store.set("yoenis-keepers", JSON.stringify(MINE));
-        drawKeepers(); drawOrder(); drawHistory(); drawVotes(); flashMine("Saved to the keeper sheet.", true);
+        drawKeepers(); drawOrder(); drawHistory(); drawVotes(); flashMine("Saved.", true);
       }).catch(function (e) { flashMine(String(e.message || e)); });
     });
   }
   function normSheet(b) { return { keepers: b.keepers || {}, vote: b.vote || { dates: [], marks: {} }, lock: b.lock || "" }; }
+  /* Supabase database functions, called with the project's public key. Each answers with the whole 2027 view
+     ({keepers, vote, lock}) or {error}. A JWT-style legacy key also goes in Authorization; a publishable key doesn't. */
+  function rpc(fn, args) {
+    var db = OFF().db, h = { "Content-Type": "application/json", apikey: db.key };
+    if (/^eyJ/.test(db.key)) h.Authorization = "Bearer " + db.key;
+    return fetch(db.url.replace(/\/$/, "") + "/rest/v1/rpc/" + fn, { method: "POST", headers: h, body: JSON.stringify(args), cache: "no-store" })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (b) {
+        if (!r.ok) throw new Error("The keeper database didn't answer. Try again in a minute.");
+        if (b && b.error) throw new Error(b.error);
+        return b;
+      }); });
+  }
   function loadSheet() {
-    if (!sheetUrl()) { drawHistory(); drawVotes(); return; }
-    fetch(sheetUrl() + (sheetUrl().indexOf("?") > -1 ? "&" : "?") + "y=2027", { cache: "no-store" }).then(function (r) { return r.json(); })
-      .then(function (b) { if (b.error) throw new Error(b.error); SHEET = normSheet(b); SHEET_ERR = ""; })
+    if (!dbOn()) { drawHistory(); drawVotes(); return; }
+    rpc("yoenis_view", { p_y: 2027 })
+      .then(function (b) { SHEET = normSheet(b); SHEET_ERR = ""; })
       .catch(function () { SHEET_ERR = "down"; }).then(function () { drawKeepers(); drawOrder(); drawHistory(); drawVotes(); });
   }
-  /* A plain-text POST, so the browser sends it straight to Apps Script without a preflight */
   function post(body) {
-    return fetch(sheetUrl(), { method: "POST", body: JSON.stringify(body) }).then(function (r) { return r.json(); })
-      .then(function (b) { if (b.error) throw new Error(b.error); SHEET = normSheet(b); return b; });
+    var call = body.action === "vote"
+      ? rpc("yoenis_vote", { p_y: body.y, p_team: body.team, p_pin: body.pin, p_day: body.date, p_yes: !!body.yes })
+      : rpc("yoenis_save_keepers", { p_y: body.y, p_team: body.team, p_pin: body.pin, p_players: body.players });
+    return call.then(function (b) { SHEET = normSheet(b); return b; });
   }
 
   /* Keepers by year: 2027 from the sheet as teams declare, earlier years from the sheet's history */
@@ -1031,8 +1047,8 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     };
     if (HY === "2027") {
       var order = (OFF().sheetOrder || Object.keys(DATA.keepers2027)).slice().sort(function (a, b) { return a.localeCompare(b); });
-      if (!sheetUrl()) { box.innerHTML = '<div class="slot"><p class="k">2027 keepers show up here as teams declare them.</p><p class="muted">Each team saves its keepers from the 2027 keepers tab, straight into the keeper sheet, and this list reads them back. That switches on once the page is hooked up to the sheet.</p></div>'; return; }
-      if (!SHEET) { box.innerHTML = '<p class="muted">' + (SHEET_ERR ? "The keeper sheet didn't answer, so 2027 declarations can't load right now." : "Loading 2027 declarations from the keeper sheet.") + "</p>"; return; }
+      if (!dbOn()) { box.innerHTML = '<div class="slot"><p class="k">2027 keepers show up here as teams declare them.</p><p class="muted">Each team saves its keepers from the 2027 keepers tab, and this list reads them back. That switches on once the page is hooked up to the league\'s keeper database.</p></div>'; return; }
+      if (!SHEET) { box.innerHTML = '<p class="muted">' + (SHEET_ERR ? "The keeper database didn't answer, so 2027 declarations can't load right now." : "Loading 2027 declarations.") + "</p>"; return; }
       var done = order.filter(function (t) { return SHEET.keepers[t] && SHEET.keepers[t].length; }).length;
       box.innerHTML = '<p class="first-pick"><strong>' + done + " of 16</strong> teams have declared." + (SHEET.lock ? " Keepers lock " + new Date(SHEET.lock).toLocaleString("en-US", { weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" }) + "." : "") + "</p>" +
         '<ol class="khlist">' + order.map(function (t) { return row(t, MAN[t] || "", SHEET.keepers[t], "Not declared yet"); }).join("") + "</ol>";
@@ -1061,8 +1077,8 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     else if (dates.length) {
       var marks = v ? v.marks : {}, mine = marks[team] || {}, tally = function (id) { return Object.keys(marks).filter(function (t) { return marks[t][id] === 1; }); };
       var best = Math.max.apply(null, dates.map(function (d) { return tally(d.id).length; }));
-      html += '<p class="k">Which draft dates can you make?</p><p class="muted">' + (open ? "Voting for " + esc(withMan(team)) + " (pick your team in 2027 keepers). Checks go straight into the keeper sheet's 2027 Draft Vote tab, and the date with the most yeses wins." :
-          "The 10 days before Opening Day. " + (sheetUrl() ? (SHEET_ERR ? "The keeper sheet didn't answer, so voting is paused." : "Loading votes from the keeper sheet.") : "Voting opens here once the page is hooked up to the keeper sheet: every team checks the dates it can make, and the most yeses wins.")) + "</p>" +
+      html += '<p class="k">Which draft dates can you make?</p><p class="muted">' + (open ? "Voting for " + esc(withMan(team)) + " (pick your team in 2027 keepers). Each check saves right away, and the date with the most yeses wins." :
+          "The 10 days before Opening Day. " + (dbOn() ? (SHEET_ERR ? "The keeper database didn't answer, so voting is paused." : "Loading votes.") : "Voting opens here once the page is hooked up to the league's keeper database: every team checks the dates it can make, and the most yeses wins.")) + "</p>" +
         (open ? '<div class="row"><input class="pin" id="v-pin" type="password" inputmode="numeric" placeholder="Team PIN" aria-label="Team PIN, 4 to 8 digits" autocomplete="off" value="' + esc(store.get("yoenis-pin:" + team) || "") + '"></div>' : "") +
         '<ol class="votes">' + dates.map(function (d) {
           var yes = tally(d.id);
@@ -1077,7 +1093,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       cb.addEventListener("change", function () {
         var pin = ($("v-pin").value || store.get("yoenis-pin:" + team) || "").trim();
         if (!/^\d{4,8}$/.test(pin)) { cb.checked = !cb.checked; $("v-msg").textContent = "Type your team PIN first (4 to 8 digits)."; $("v-pin").focus(); return; }
-        post({ action: "vote", y: 2027, team: team, pin: pin, date: cb.getAttribute("data-vote"), yes: cb.checked, ballot: dr.ballot || [] }).then(function () { store.set("yoenis-pin:" + team, pin); drawVotes(); },
+        post({ action: "vote", y: 2027, team: team, pin: pin, date: cb.getAttribute("data-vote"), yes: cb.checked }).then(function () { store.set("yoenis-pin:" + team, pin); drawVotes(); },
           function (e) { cb.checked = !cb.checked; $("v-msg").textContent = String(e.message || e); });
       });
     });
