@@ -175,7 +175,7 @@ details[open] .t-open::after{transform:translateY(.05rem) rotate(-135deg)}
 .btn.ghost{background:transparent;color:var(--ink)}
 .btn[disabled]{opacity:.5;cursor:not-allowed}
 .pin{width:7.5rem}
-input.pin,input.who{font:500 1rem/1.3 var(--f-body);color:var(--ink);background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:.55rem .65rem;min-height:44px}
+input.pin,input.who{letter-spacing:.08em;font:500 1rem/1.3 var(--f-body);color:var(--ink);background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:.55rem .65rem;min-height:44px}
 input.who{width:9rem}
 .status{font-size:.8125rem;color:var(--muted);margin:.5rem 0 0}
 /* Draft order */
@@ -192,7 +192,15 @@ input.who{width:9rem}
 .mypicks li{break-inside:avoid;padding:.12rem 0}
 .mypicks li.k{font-weight:700}
 .votes{list-style:none;margin:.6rem 0 0;padding:0}
-.votes li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.2rem 1rem;padding:.5rem 0;border-bottom:1px solid var(--rule)}
+.votes .lead-v{font-weight:700}
+.panel-lede{margin:1rem 0 0;color:var(--muted);max-width:38rem}
+.years{margin-top:1rem}
+.khlist{list-style:none;margin:1rem 0 0;padding:0;border-top:1px solid var(--rule)}
+.kh{display:grid;grid-template-columns:minmax(0,13rem) minmax(0,1fr);gap:.2rem 1rem;padding:.6rem 0;border-bottom:1px solid var(--rule);font-size:.9375rem}
+.kh-team{font-weight:600;overflow-wrap:anywhere}
+.kh-k .muted{color:var(--muted);font-size:.8125rem}
+@media (max-width:560px){.kh{grid-template-columns:1fr}}
+.votes li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.2rem 1rem;align-items:center;padding:.3rem 0;border-bottom:1px solid var(--rule)}
 
 /* Team stats */
 .tbl-wrap{overflow-x:auto;margin:0 0 .5rem;border-top:2px solid var(--ink)}
@@ -322,23 +330,25 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
   </header>
 
   <nav class="jump" aria-label="On this page">
-    <a href="#keepers">2027 keepers</a>
+    <a href="#keepers">Keepers and drafts</a>
     <a href="#offseason">Offseason</a>
     <a href="#champions">Standings</a>
     <a href="#stats">Team stats</a>
     <a href="#awards">Awards</a>
     <a href="#managers">Managers</a>
     <a href="#graveyard">Graveyard</a>
-    <a href="#drafts">Drafts</a>
     <a href="#rules">Rules</a>
   </nav>
 
   <section id="keepers" aria-labelledby="keepers-title">
     <div class="section-head">
-      <h2 id="keepers-title">2027 keeper costs</h2>
-      <p>Pick a team to see its final 2026 roster: what each player would cost to keep next March, or why he can't be kept. Check up to five to set your keepers.</p>
+      <h2 id="keepers-title">Keepers and drafts</h2>
+      <p>What your players cost to keep in 2027, every team's keepers by year, and all 14 drafts.</p>
     </div>
-    <div class="controls">
+    <div class="seg tabs" role="tablist" aria-label="Keepers and drafts" data-remember="yoenis-ktab"><button type="button" role="tab" id="kt-cost" aria-controls="kp-cost" aria-selected="true">2027 keepers</button><button type="button" role="tab" id="kt-hist" aria-controls="kp-hist" aria-selected="false" tabindex="-1">Keepers by year</button><button type="button" role="tab" id="kt-draft" aria-controls="kp-draft" aria-selected="false" tabindex="-1">Every draft</button></div>
+    <div role="tabpanel" id="kp-cost" aria-labelledby="kt-cost">
+      <p class="panel-lede">Pick a team to see its final 2026 roster: what each player would cost to keep next March, or why he can't be kept. Check up to five to set your keepers.</p>
+      <div class="controls">
       <label class="field">Team<select id="k-team"></select></label>
       <label class="field grow">Or find a player<input type="search" id="k-find" placeholder="Any team, e.g. Skenes" autocomplete="off"></label>
     </div>
@@ -346,21 +356,38 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     <p class="tiles-key" aria-hidden="true"><span class="tiles"><span class="tile">16</span><span class="tile">14</span><span class="tile now">10</span></span>Rounds for keeper years one, two and three. Red is 2027.</p>
     <ol class="klist" id="k-list" aria-live="polite"></ol>
     <p class="note">From the final 2026 rosters, the 2026 draft, the keeper sheet and the September transactions. Anyone added on or after Sept. 1 can't be kept. Anyone else not drafted in 2026 costs a 15th-round pick. A player drafted by another team keeps his draft round, which holds after a trade or a waiver claim. If he cleared waivers first, he's a 15th-rounder.</p>
+    </div>
+    <div role="tabpanel" id="kp-hist" aria-labelledby="kt-hist" hidden>
+      <div class="seg tabs years" role="tablist" aria-label="Year" id="kh-years"></div>
+      <div id="kh-body"></div>
+      <p class="note">From the keeper sheet. Rounds are what each keeper cost that spring; an asterisk marks a round the commissioner corrected. 2022's sheet didn't track keeper years.</p>
+    </div>
+    <div role="tabpanel" id="kp-draft" aria-labelledby="kt-draft" hidden>
+      <p class="panel-lede">Search a player across all 14 drafts, or browse one year by team or by round.</p>
+    <div class="controls">
+      <label class="field grow">Search all drafts<input type="search" id="d-find" placeholder="e.g. Mike Trout" autocomplete="off"></label>
+    </div>
+    <ol class="hits" id="d-hits" aria-live="polite" hidden></ol>
+    <div class="controls">
+      <label class="field">Year<select id="d-year"></select></label>
+      <div class="field">View<span class="seg" role="group" aria-label="View"><button type="button" id="v-team" aria-pressed="true">By team</button><button type="button" id="v-round" aria-pressed="false">By round</button></span></div>
+      <label class="field" id="d-team-field">Team<select id="d-team"></select></label>
+    </div>
+    <p class="first-pick" id="first-pick"></p>
+    <div id="board"></div>
+    <p class="note" id="k-legend"><span class="kbadge" aria-hidden="true">K</span> marks a keeper, from the keeper sheet (2022 on).</p>
+    </div>
   </section>
 
   <section id="offseason" aria-labelledby="offseason-title">
     <div class="section-head">
       <h2 id="offseason-title">2027 offseason</h2>
-      <p>The draft order, everyone's keepers, pick trades and the draft-day vote. It fills in as the winter goes.</p>
+      <p>The draft order, pick trades and the draft-day vote. It fills in as the winter goes.</p>
     </div>
-    <h3 class="sub-h">Draft order</h3>
-    <div id="o-order"></div>
-    <h3 class="sub-h">Keeper declarations</h3>
-    <div id="o-decl"></div>
-    <h3 class="sub-h">Trades</h3>
-    <div id="o-trades"></div>
-    <h3 class="sub-h">Draft day</h3>
-    <div id="o-draft"></div>
+    <div class="seg tabs" role="tablist" aria-label="Offseason" data-remember="yoenis-otab"><button type="button" role="tab" id="ot-order" aria-controls="op-order" aria-selected="true">Draft order</button><button type="button" role="tab" id="ot-trades" aria-controls="op-trades" aria-selected="false" tabindex="-1">Trades</button><button type="button" role="tab" id="ot-day" aria-controls="op-day" aria-selected="false" tabindex="-1">Draft day</button></div>
+    <div role="tabpanel" id="op-order" aria-labelledby="ot-order"><div id="o-order"></div></div>
+    <div role="tabpanel" id="op-trades" aria-labelledby="ot-trades" hidden><div id="o-trades"></div></div>
+    <div role="tabpanel" id="op-day" aria-labelledby="ot-day" hidden><div id="o-draft"></div></div>
   </section>
 
   <section id="champions" aria-labelledby="champions-title">
@@ -377,17 +404,18 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
   <section id="stats" aria-labelledby="stats-title">
     <div class="section-head">
       <h2 id="stats-title">Team stats</h2>
-      <p>Every team's season totals, and how the year would have ended as a roto league: 16 points for first in a category, down to 1 for last.</p>
+      <p>Every team's season totals, how the year would have ended as a roto league (16 points for first in a category, down to 1 for last), and the best single seasons ever.</p>
     </div>
     <div class="controls">
-      <label class="field">Year<select id="s-year"></select></label>
-      <div class="field">Show<span class="seg" role="group" aria-label="Show" id="s-view"><button type="button" data-v="roto" aria-pressed="true">Roto</button><button type="button" data-v="b" aria-pressed="false">Batting</button><button type="button" data-v="p" aria-pressed="false">Pitching</button></span></div>
+      <label class="field" id="s-year-field">Year<select id="s-year"></select></label>
+      <div class="field">Show<span class="seg" role="group" aria-label="Show" id="s-view"><button type="button" data-v="roto" aria-pressed="true">Roto</button><button type="button" data-v="b" aria-pressed="false">Batting</button><button type="button" data-v="p" aria-pressed="false">Pitching</button><button type="button" data-v="rec" aria-pressed="false">Records</button></span></div>
     </div>
     <p class="first-pick" id="s-sum"></p>
     <div class="tbl-wrap" tabindex="0" role="region" aria-label="Team stats table"><table class="stats" id="s-table"></table></div>
-    <h3 class="sub-h">Single-season records</h3>
-    <p class="note">The best season in each category, leaving out the 60-game 2020 season.</p>
-    <table class="records" id="records"></table>
+    <div id="s-rec" hidden>
+      <table class="records" id="records"></table>
+      <p class="note">The best season in each category, leaving out the 60-game 2020 season.</p>
+    </div>
   </section>
 
   <section id="awards" aria-labelledby="awards-title">
@@ -417,25 +445,6 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       <p>Managers who left the league, most recent first.</p>
     </div>
     <ol class="stones" id="stones"></ol>
-  </section>
-
-  <section id="drafts" aria-labelledby="drafts-title">
-    <div class="section-head">
-      <h2 id="drafts-title">Every draft since 2013</h2>
-      <p>Search a player across all 14 drafts, or browse one year by team or by round.</p>
-    </div>
-    <div class="controls">
-      <label class="field grow">Search all drafts<input type="search" id="d-find" placeholder="e.g. Mike Trout" autocomplete="off"></label>
-    </div>
-    <ol class="hits" id="d-hits" aria-live="polite" hidden></ol>
-    <div class="controls">
-      <label class="field">Year<select id="d-year"></select></label>
-      <div class="field">View<span class="seg" role="group" aria-label="View"><button type="button" id="v-team" aria-pressed="true">By team</button><button type="button" id="v-round" aria-pressed="false">By round</button></span></div>
-      <label class="field" id="d-team-field">Team<select id="d-team"></select></label>
-    </div>
-    <p class="first-pick" id="first-pick"></p>
-    <div id="board"></div>
-    <p class="note" id="k-legend"><span class="kbadge" aria-hidden="true">K</span> marks a keeper, from the keeper sheet (2022 on).</p>
   </section>
 
   <section id="rules" aria-labelledby="rules-title">
@@ -516,8 +525,9 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     var last = d.seasons[d.seasons.length - 1], champ = last.teams[last.standings[0][1]];
     $("reigning").innerHTML = last.year + " champion: <strong>" + esc(champ) + "</strong>" + (MAN[champ] ? " (" + esc(MAN[champ]) + ")" : "");
     $("foot").textContent = "Updated " + new Date(d.updated + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) + ". Data from the league's Yahoo draft and standings pages, the keeper sheet and the commissioner's league emails.";
-    loadMine(); initKeepers(); initOffseason(); initTitles(); initRegular(); initStats(); initAwards(); initManagers(); initDrafts();
-    loadBox();
+    loadMine(); initKeepers(); initHistory(); initOffseason(); initTitles(); initRegular(); initStats(); initAwards(); initManagers(); initDrafts();
+    loadSheet();
+    if (location.hash === "#drafts") { $("kt-draft").click(); $("keepers").scrollIntoView(); }
   }
 
   /* ---------- Pinned section links: mark the section in view ---------- */
@@ -542,17 +552,15 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     links.forEach(function (a) { var sec = document.getElementById(a.getAttribute("href").slice(1)); if (sec) io.observe(sec); });
   })();
 
-  /* ---------- Tabs (rules and standings) ---------- */
-  function initTabs(sel) {
-    var tabs = [].slice.call(document.querySelectorAll(sel + ' [role="tab"]'));
+  /* ---------- Tabs ---------- */
+  function initTabList(list) {
+    var tabs = [].filter.call(list.children, function (x) { return x.getAttribute("role") === "tab"; }), key = list.getAttribute("data-remember");
     function show(t, focus) {
-      tabs.forEach(function (x) {
-        var on = x === t;
-        x.setAttribute("aria-selected", String(on));
-        x.tabIndex = on ? 0 : -1;
-        $(x.getAttribute("aria-controls")).hidden = !on;
-      });
+      tabs.forEach(function (x) { var on = x === t; x.setAttribute("aria-selected", String(on)); x.tabIndex = on ? 0 : -1; if (!on && $(x.getAttribute("aria-controls"))) $(x.getAttribute("aria-controls")).hidden = true; });
+      $(t.getAttribute("aria-controls")).hidden = false;
+      if (key) store.set(key, t.id);
       if (focus) t.focus();
+      if (list.onshow) list.onshow(t);
     }
     tabs.forEach(function (t, i) {
       t.addEventListener("click", function () { show(t); });
@@ -562,8 +570,10 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
         e.preventDefault(); show(tabs[(j + tabs.length) % tabs.length], true);
       });
     });
+    var saved = key && store.get(key);
+    if (saved && $(saved) && tabs.indexOf($(saved)) > -1) show($(saved));
   }
-  initTabs("#rules"); initTabs("#champions");
+  [].forEach.call(document.querySelectorAll('.tabs[role="tablist"]:not(#kh-years)'), initTabList);
 
   /* ---------- Awards ---------- */
   function initAwards() {
@@ -603,7 +613,9 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       b.addEventListener("click", function () {
         sView = b.getAttribute("data-v");
         [].forEach.call($("s-view").querySelectorAll("button"), function (x) { x.setAttribute("aria-pressed", String(x === b)); });
-        drawStats();
+        var rec = sView === "rec";
+        $("s-year-field").hidden = rec; $("s-sum").hidden = rec; document.querySelector("#stats .tbl-wrap").hidden = rec; $("s-rec").hidden = !rec;
+        if (!rec) drawStats();
       });
     });
     drawStats();
@@ -696,7 +708,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     sel.innerHTML = teams.map(function (t) { return '<option value="' + esc(t) + '">' + esc(withMan(t)) + "</option>"; }).join("");
     var saved = store.get("yoenis-team"); if (saved && DATA.keepers2027[saved]) sel.value = saved;
     sel.addEventListener("change", function () {
-      store.set("yoenis-team", sel.value); $("k-find").value = ""; drawKeepers(); drawOrder();
+      store.set("yoenis-team", sel.value); $("k-find").value = ""; drawKeepers(); drawOrder(); drawVotes();
       var last = DATA.seasons[DATA.seasons.length - 1]; dOwner = last.o[last.teams.indexOf(sel.value)];
       if (SEASONS[$("d-year").value]) { fillTeams(); drawBoard(); }
     });
@@ -774,10 +786,11 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
   /* ---------- Offseason ---------- */
   /* data.json "offseason":
        lottery: null, or the official order of picks 1-8 (team names) once the real lottery runs
-       box_url: the keeper box (tools/yoenis-box.js) once it's deployed; null keeps keeper picks in this browser
+       sheet_url: the keeper sheet's Apps Script web app (tools/yoenis-sheet.gs); null keeps keeper picks in this browser
+       sheetOrder: the 16 teams in the keeper sheet's column order, for creating the 2027 tab
        trades: [{ d: "2027-01-12", a: "<team>", b: "<team>", aGets: ["Bulba's 2027 5th", "Player"], bGets: [...], note: "",
                   picks: [{ r: 5, of: "Bulba", to: "Robbers" }] }]   (picks moves draft picks for the order and keeper slots)
-       draft:   { opening, openingNight, caveat, options: [{ id: "2027-03-21", d: "2027-03-21", t: "7:00 p.m." }], pick: null } */
+       draft:   { opening, openingNight, caveat, pick: null }   (the candidate dates come from the sheet's "2027 Draft Vote" tab) */
   function OFF() { return DATA.offseason || {}; }
   function lastSeason() { return DATA.seasons[DATA.seasons.length - 1]; }
   function longDate(d, wd) { return new Date(d + "T12:00:00").toLocaleDateString("en-US", { weekday: wd ? "long" : undefined, month: "long", day: "numeric", year: wd ? undefined : "numeric" }); }
@@ -858,12 +871,20 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     });
     return { list: out, errs: errs };
   }
-  var MINE = {}, BOX = null, BOX_ERR = "", DIRTY = {};
+  /* Picks live in this browser until they're saved to the keeper sheet (through tools/yoenis-sheet.gs) */
+  var MINE = {}, SHEET = null, SHEET_ERR = "";
+  function sheetUrl() { return OFF().sheet_url || ""; }
   function loadMine() { try { MINE = JSON.parse(store.get("yoenis-keepers") || "{}") || {}; } catch (e) { MINE = {}; } }
-  function mineFor(team) { return MINE[team] || (BOX && BOX.keepers[team] ? BOX.keepers[team].players : []); }
-  function setMine(team, list) { MINE[team] = list; DIRTY[team] = true; store.set("yoenis-keepers", JSON.stringify(MINE)); }
-  function dirty(team) { var sv = BOX && BOX.keepers[team]; return !!MINE[team] && (!sv || JSON.stringify(MINE[team]) !== JSON.stringify(sv.players)); }
-  function locked() { return BOX && BOX.lock && Date.now() > Date.parse(BOX.lock); }
+  function matchRoster(team, name) {
+    var f = fold(name), all = DATA.keepers2027[team] || [];
+    var hit = all.filter(function (e) { return fold(e.p) === f; })[0] || all.filter(function (e) { var a = fold(e.p).split(" "), b = f.split(" "); return a[a.length - 1] === b[b.length - 1] && a[0][0] === b[0][0]; })[0];
+    return hit ? hit.p : name;
+  }
+  function sheetFor(team) { return SHEET && SHEET.keepers[team] ? SHEET.keepers[team].map(function (k) { return matchRoster(team, k[0]); }) : null; }
+  function mineFor(team) { return MINE[team] || sheetFor(team) || []; }
+  function setMine(team, list) { MINE[team] = list; store.set("yoenis-keepers", JSON.stringify(MINE)); }
+  function dirty(team) { var sv = sheetFor(team) || []; return !!MINE[team] && JSON.stringify(MINE[team].slice().sort()) !== JSON.stringify(sv.slice().sort()); }
+  function locked() { return SHEET && SHEET.lock && Date.now() > Date.parse(SHEET.lock); }
   var flashText = "", flashOk = false;
   function flashMine(t, ok) { flashText = t; flashOk = !!ok; drawMine(); }
   function keeperText(team, kk) {
@@ -873,67 +894,89 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
   }
   function drawMine() {
     var team = $("k-team").value; if (!team || !DATA.keepers2027[team]) return;
-    var names = mineFor(team), kk = slotKeepers(team, names), shared = !!OFF().box_url, saved = BOX && BOX.keepers[team];
+    var names = mineFor(team), kk = slotKeepers(team, names), live = !!sheetUrl(), inSheet = sheetFor(team);
     var rows = kk.list.map(function (x) {
       var sl = x.pick ? slotOf(x.pick.of) : null;
       return "<li><b>" + esc(x.e.p) + "</b>, round " + x.cost + (x.pick ? (x.pick.r !== x.cost ? ", moves up to round " + x.pick.r + " (no open pick in round " + x.cost + ")" : "") + (sl ? ", pick " + pickLabel(x.pick.r, sl) + " (No. " + overall(x.pick.r, sl) + " overall)" : "") : "") + "</li>";
     }).join("");
     var status = "";
-    if (shared) {
-      if (BOX_ERR) status = "The keeper box didn't answer: " + BOX_ERR + " Your picks are saved in this browser for now.";
-      else if (!BOX) status = "Checking the keeper box.";
-      else if (locked()) status = "Keepers are locked" + (saved ? ". Declared " + new Date(saved.at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + "." : ", and this team didn't declare.");
-      else if (saved && !dirty(team)) status = "Declared " + new Date(saved.at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + (saved.by ? " by " + saved.by : "") + ". Change them anytime before the lock.";
-      else status = saved ? "Changed since you declared. Save to update the league." : "Not declared yet. Save to show the league.";
+    if (live) {
+      if (SHEET_ERR) status = "The keeper sheet didn't answer, so these are saved in this browser for now.";
+      else if (!SHEET) status = "Checking the keeper sheet.";
+      else if (locked()) status = "Keepers are locked." + (inSheet && inSheet.length ? "" : " This team didn't declare.");
+      else if (inSheet && inSheet.length && !dirty(team)) status = "These are in the keeper sheet. Change them anytime before keepers lock.";
+      else status = inSheet && inSheet.length ? "Changed since the keeper sheet was updated. Save to update it." : "Not in the keeper sheet yet.";
     }
+    var canSave = live && SHEET && !locked();
     var html = '<div class="slot mine" aria-live="polite"><p class="k">' + esc(withMan(team)) + "'s 2027 keepers: " + names.length + " of 5</p>" +
       (rows ? "<ol>" + rows + "</ol>" : '<p class="muted">Check the Keep box next to anyone below.</p>') +
       kk.errs.map(function (e) { return '<p class="warn">' + esc(e) + "</p>"; }).join("") + (flashText ? '<p class="' + (flashOk ? "okmsg" : "warn") + '">' + esc(flashText) + "</p>" : "") +
-      '<div class="row">' + (shared && BOX && !locked() ? '<input class="who" id="k-by" placeholder="Your name" aria-label="Your name" autocomplete="name" value="' + esc(store.get("yoenis-name") || MAN[team] || "") + '"><input class="pin" id="k-pin" inputmode="numeric" placeholder="Team PIN" aria-label="Team PIN, 4 to 8 digits" autocomplete="off"><button class="btn" type="button" id="k-save"' + (kk.errs.length ? " disabled" : "") + ">Declare</button>" : "") +
-      '<button class="btn' + (shared && BOX ? " ghost" : "") + '" type="button" id="k-copy"' + (names.length ? "" : " disabled") + '>Copy for the league thread</button>' + (names.length && !locked() ? '<button class="btn ghost" type="button" id="k-clear">Clear</button>' : "") + "</div>" +
+      '<div class="row">' + (canSave ? '<input class="pin" id="k-pin" type="password" inputmode="numeric" placeholder="Team PIN" aria-label="Team PIN, 4 to 8 digits" autocomplete="off" value="' + esc(store.get("yoenis-pin:" + team) || "") + '"><button class="btn" type="button" id="k-save"' + (kk.errs.length ? " disabled" : "") + ">Save to the keeper sheet</button>" : "") +
+      (!live || SHEET_ERR ? '<button class="btn" type="button" id="k-copy"' + (names.length ? "" : " disabled") + ">Copy my keepers</button>" : "") +
+      (names.length && !locked() ? '<button class="btn ghost" type="button" id="k-clear">Clear</button>' : "") + "</div>" +
       (status ? '<p class="status">' + esc(status) + "</p>" : "") +
-      (shared && BOX && !locked() ? '<p class="status">The first time you declare, the PIN you type becomes your team\'s PIN, and every change after needs it. Forgot it? Ask David to reset it.</p>' : !shared ? '<p class="status">Saved in this browser. Copy them into the league thread or the keeper sheet to make it official.</p>' : "") + "</div>";
+      (canSave ? '<p class="status">Saving writes them straight into the 2027 tab of the <a href="https://docs.google.com/spreadsheets/d/1hikrKHBKWI65A81MFbOQ1n2vezeBwmUfNVFymItL0ZY/edit?usp=sharing" rel="noopener">keeper sheet</a>. The first time you save, the PIN you type becomes your team\'s PIN, and every change after needs it. Forgot it? The commissioner can reset it.</p>' :
+        !live ? '<p class="status">Saved in this browser for now. Once the page is hooked up to the keeper sheet, a Save button writes them straight into it.</p>' : "") + "</div>";
     flashText = "";
     $("k-mine").innerHTML = html;
-    $("k-copy").addEventListener("click", function () {
+    if ($("k-copy")) $("k-copy").addEventListener("click", function () {
       var text = keeperText(team, kk), done = function () { flashMine("Copied: " + text, true); };
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function () { flashMine("Copy this: " + text, true); }); else flashMine("Copy this: " + text, true);
     });
     if ($("k-clear")) $("k-clear").addEventListener("click", function () { setMine(team, []); drawKeepers(); drawOrder(); });
     if ($("k-save")) $("k-save").addEventListener("click", function () {
-      var pin = $("k-pin").value.trim(), by = $("k-by").value.trim();
+      var pin = $("k-pin").value.trim();
       if (!/^\d{4,8}$/.test(pin)) { flashMine("The team PIN is 4 to 8 digits."); return; }
-      store.set("yoenis-name", by);
-      post({ team: team, pin: pin, by: by, players: mineFor(team) }).then(function () { delete DIRTY[team]; delete MINE[team]; store.set("yoenis-keepers", JSON.stringify(MINE)); drawKeepers(); drawDecl(); drawOrder(); flashMine("Declared. The league can see them now.", true); })
-        .catch(function (e) { flashMine(String(e.message || e)); });
+      $("k-save").disabled = true; $("k-save").textContent = "Saving";
+      var players = slotKeepers(team, mineFor(team)).list.map(function (x) { return [x.e.p, x.cost, x.e.next[1]]; });
+      post({ action: "keepers", y: 2027, team: team, pin: pin, players: players, order: OFF().sheetOrder || [] }).then(function () {
+        store.set("yoenis-pin:" + team, pin); delete MINE[team]; store.set("yoenis-keepers", JSON.stringify(MINE));
+        drawKeepers(); drawOrder(); drawHistory(); drawVotes(); flashMine("Saved to the keeper sheet.", true);
+      }).catch(function (e) { flashMine(String(e.message || e)); });
     });
   }
-  function loadBox() {
-    var url = OFF().box_url; drawDecl();
-    if (!url) return;
-    fetch(url, { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (b) { BOX = { keepers: b.keepers || {}, votes: b.votes || {}, lock: b.lock || "" }; BOX_ERR = ""; })
-      .catch(function () { BOX_ERR = "it may be down."; }).then(function () { drawKeepers(); drawDecl(); drawOrder(); drawVotes(); });
+  function normSheet(b) { return { keepers: b.keepers || {}, vote: b.vote || { dates: [], marks: {} }, lock: b.lock || "" }; }
+  function loadSheet() {
+    if (!sheetUrl()) { drawHistory(); drawVotes(); return; }
+    fetch(sheetUrl() + (sheetUrl().indexOf("?") > -1 ? "&" : "?") + "y=2027", { cache: "no-store" }).then(function (r) { return r.json(); })
+      .then(function (b) { if (b.error) throw new Error(b.error); SHEET = normSheet(b); SHEET_ERR = ""; })
+      .catch(function () { SHEET_ERR = "down"; }).then(function () { drawKeepers(); drawOrder(); drawHistory(); drawVotes(); });
   }
+  /* A plain-text POST, so the browser sends it straight to Apps Script without a preflight */
   function post(body) {
-    return fetch(OFF().box_url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
-      .then(function (r) { return r.json().then(function (b) { if (!r.ok || b.error) throw new Error(b.error || "The keeper box said no."); BOX = { keepers: b.keepers || {}, votes: b.votes || {}, lock: b.lock || "" }; return b; }); });
+    return fetch(sheetUrl(), { method: "POST", body: JSON.stringify(body) }).then(function (r) { return r.json(); })
+      .then(function (b) { if (b.error) throw new Error(b.error); SHEET = normSheet(b); return b; });
   }
-  function drawDecl() {
-    var teams = Object.keys(DATA.keepers2027).sort(function (a, b) { return a.localeCompare(b); });
-    if (!OFF().box_url) {
-      $("o-decl").innerHTML = '<div class="slot"><p class="k">Pick your keepers in <a href="#keepers">2027 keeper costs</a>.</p><p class="muted">Check up to five players on your team: the page slots them into your picks the way the rules say and copies them for the league thread. Once the shared keeper box is switched on, every team\'s declarations show up here as they\'re saved, with a PIN per team so nobody else can change yours.</p></div>';
+
+  /* Keepers by year: 2027 from the sheet as teams declare, earlier years from the sheet's history */
+  var HY = "2027";
+  function initHistory() {
+    var years = Object.keys(DATA.keeperHistory || {}).sort().reverse(), list = $("kh-years");
+    list.innerHTML = ["2027"].concat(years).map(function (y, k) {
+      return '<button type="button" role="tab" id="kh-' + y + '" aria-controls="kh-body" aria-selected="' + (k === 0) + '"' + (k ? ' tabindex="-1"' : "") + ">" + y + "</button>";
+    }).join("");
+    list.onshow = function (t) { HY = t.id.slice(3); drawHistory(); };
+    initTabList(list);
+    drawHistory();
+  }
+  function roundName(k) { return k[1] ? ordinal(k[1]) + " round" + (k[2] ? ", year " + k[2] : "") : ""; }
+  function drawHistory() {
+    var box = $("kh-body"); if (!box) return;
+    var row = function (team, man, ks, empty) {
+      return '<li class="kh"><div class="kh-team">' + esc(team) + '<span class="m-sub">' + esc(man) + '</span></div><div class="kh-k">' +
+        (ks && ks.length ? ks.map(function (k) { return esc(k[0]) + ' <span class="muted">(' + esc(roundName(k)) + ")" + (k[3] ? "*" : "") + "</span>"; }).join(", ") : '<span class="muted">' + esc(empty || "None") + "</span>") + "</div></li>";
+    };
+    if (HY === "2027") {
+      var order = (OFF().sheetOrder || Object.keys(DATA.keepers2027)).slice().sort(function (a, b) { return a.localeCompare(b); });
+      if (!sheetUrl()) { box.innerHTML = '<div class="slot"><p class="k">2027 keepers show up here as teams declare them.</p><p class="muted">Each team saves its keepers from the 2027 keepers tab, straight into the keeper sheet, and this list reads them back. That switches on once the page is hooked up to the sheet.</p></div>'; return; }
+      if (!SHEET) { box.innerHTML = '<p class="muted">' + (SHEET_ERR ? "The keeper sheet didn't answer, so 2027 declarations can't load right now." : "Loading 2027 declarations from the keeper sheet.") + "</p>"; return; }
+      var done = order.filter(function (t) { return SHEET.keepers[t] && SHEET.keepers[t].length; }).length;
+      box.innerHTML = '<p class="first-pick"><strong>' + done + " of 16</strong> teams have declared." + (SHEET.lock ? " Keepers lock " + new Date(SHEET.lock).toLocaleString("en-US", { weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" }) + "." : "") + "</p>" +
+        '<ol class="khlist">' + order.map(function (t) { return row(t, MAN[t] || "", SHEET.keepers[t], "Not declared yet"); }).join("") + "</ol>";
       return;
     }
-    if (!BOX) { $("o-decl").innerHTML = '<div class="slot"><p class="muted">' + (BOX_ERR ? "The keeper box didn't answer, so declarations can't load right now." : "Loading declarations.") + "</p></div>"; return; }
-    var n = teams.filter(function (t) { return BOX.keepers[t]; }).length;
-    var yes = teams.filter(function (t) { return BOX.keepers[t]; }), no = teams.filter(function (t) { return !BOX.keepers[t]; });
-    $("o-decl").innerHTML = '<div class="slot"><p class="k">' + n + " of 16 teams have declared." + (BOX.lock ? " Keepers lock " + new Date(BOX.lock).toLocaleString("en-US", { weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" }) + "." : "") + "</p>" +
-      (yes.length ? '<ol class="trades">' + yes.map(function (t) {
-        var kk = slotKeepers(t, BOX.keepers[t].players);
-        return '<li class="trade"><b>' + esc(withMan(t)) + '</b><br><span style="font-size:.875rem">' +
-          (kk.list.map(function (x) { return esc(x.e.p) + " (round " + x.cost + (x.pick && x.pick.r !== x.cost ? ", up to " + x.pick.r : "") + ")"; }).join(", ") || "No keepers") + "</span></li>";
-      }).join("") + "</ol>" : "") +
-      (no.length ? '<p class="muted" style="margin-top:.6rem">Still to declare: ' + no.map(function (t) { return esc(withMan(t)); }).join(", ") + ".</p>" : "") + "</div>";
+    var s = SEASONS[HY], rows = (DATA.keeperHistory[HY] || []).slice().sort(function (a, b) { return s.teams[a[0]].localeCompare(s.teams[b[0]]); });
+    box.innerHTML = '<ol class="khlist">' + rows.map(function (r) { return row(s.teams[r[0]], man(s, r[0]), r[1]); }).join("") + "</ol>";
   }
 
   /* Trades and the draft-day vote */
@@ -947,28 +990,28 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     drawOrder(); drawVotes();
   }
   function drawVotes() {
-    var dr = OFF().draft || {}, opts = dr.options || [], when = dr.pick, live = !!(OFF().box_url && BOX);
+    var dr = OFF().draft || {}, when = dr.pick, team = $("k-team").value, v = SHEET && SHEET.vote, dates = v ? v.dates : [];
     var html = '<div class="slot">';
     if (when) html += '<p class="k">The 2027 draft: ' + esc(longDate(when.d, true)) + (when.t ? ", " + esc(when.t) : "") + ".</p>";
-    else html += '<p class="k">' + (opts.length ? "Vote on a 2027 draft date. Check every date you can make." : "The 2027 draft date vote opens here in the new year.") + "</p>";
-    if (opts.length && !when) {
-      var me = store.get("yoenis-name") || "";
-      html += (live ? '<div class="row" style="margin-top:.4rem"><input class="who" id="v-name" placeholder="Your name" aria-label="Your name for the vote" value="' + esc(me) + '"></div>' : "") +
-        '<ol class="votes">' + opts.map(function (x) {
-          var v = live ? (BOX.votes[x.id] || []) : [], mine = me && v.some(function (n) { return n.toLowerCase() === me.toLowerCase(); });
-          return "<li><span>" + (live ? '<label class="keep" style="color:var(--ink)"><input type="checkbox" data-vote="' + esc(x.id) + '"' + (mine ? " checked" : "") + ">" : "") + esc(longDate(x.d, true)) + (x.t ? ", " + esc(x.t) : "") + (live ? "</label>" : "") +
-            '</span><span class="num" title="' + esc(v.join(", ")) + '">' + v.length + (v.length === 1 ? " vote" : " votes") + "</span></li>";
-        }).join("") + "</ol>";
-    }
+    else if (dates.length) {
+      var mine = (v.marks[team] || {}), tally = function (id) { return Object.keys(v.marks).filter(function (t) { return v.marks[t][id] === 1; }); };
+      var best = Math.max.apply(null, dates.map(function (d) { return tally(d.id).length; }));
+      html += '<p class="k">Which dates can you make?</p><p class="muted">Voting for ' + esc(withMan(team)) + ' (pick your team in 2027 keepers). Checks go straight into the keeper sheet\'s 2027 Draft Vote tab.</p>' +
+        '<div class="row"><input class="pin" id="v-pin" type="password" inputmode="numeric" placeholder="Team PIN" aria-label="Team PIN, 4 to 8 digits" autocomplete="off" value="' + esc(store.get("yoenis-pin:" + team) || "") + '"></div>' +
+        '<ol class="votes">' + dates.map(function (d) {
+          var yes = tally(d.id);
+          return '<li><label class="keep" style="color:var(--ink)"><input type="checkbox" data-vote="' + esc(d.id) + '"' + (mine[d.id] === 1 ? " checked" : "") + ">" + esc(d.label) + '</label><span class="num' + (yes.length === best && best ? " lead-v" : "") + '" title="' + esc(yes.join(", ")) + '">' + yes.length + " of 16</span></li>";
+        }).join("") + '</ol><p class="status" id="v-msg"></p>';
+    } else html += '<p class="k">The 2027 draft-date vote opens here in the new year.</p><p class="muted">' + (sheetUrl() ? "Once the commissioner adds the candidate dates to the keeper sheet, every team checks the ones it can make right here." : "It works like the draft vote tab in the keeper sheet: every team checks the dates it can make, and the most yeses wins.") + "</p>";
     if (dr.opening) html += '<p class="muted">The draft goes as close to Opening Day as we can get it. ' + esc(longDate(dr.opening, true)) + " is Opening Day" +
       (dr.openingNight ? ", after one Opening Night game on " + esc(longDate(dr.openingNight, true)) : "") + ". Keepers lock about a week before the draft." + (dr.caveat ? " " + esc(dr.caveat) : "") + "</p>";
     $("o-draft").innerHTML = html + "</div>";
     [].forEach.call($("o-draft").querySelectorAll("input[data-vote]"), function (cb) {
       cb.addEventListener("change", function () {
-        var name = ($("v-name").value || "").trim();
-        if (!name) { cb.checked = !cb.checked; $("v-name").focus(); return; }
-        store.set("yoenis-name", name);
-        post({ vote: cb.getAttribute("data-vote"), name: name, on: cb.checked }).then(drawVotes, function () { cb.checked = !cb.checked; });
+        var pin = ($("v-pin").value || store.get("yoenis-pin:" + team) || "").trim();
+        if (!/^\d{4,8}$/.test(pin)) { cb.checked = !cb.checked; $("v-msg").textContent = "Type your team PIN first (4 to 8 digits)."; $("v-pin").focus(); return; }
+        post({ action: "vote", y: 2027, team: team, pin: pin, date: cb.getAttribute("data-vote"), yes: cb.checked }).then(function () { store.set("yoenis-pin:" + team, pin); drawVotes(); },
+          function (e) { cb.checked = !cb.checked; $("v-msg").textContent = String(e.message || e); });
       });
     });
   }

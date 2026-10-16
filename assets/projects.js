@@ -105,7 +105,7 @@ window.PROJECTS = [
     url: "yoenis/",
     action: "Open the record book",
     question: "Fourteen drafts in, who's worth keeping next March?",
-    summary: "The record book for my 16-team Yahoo keeper baseball league: every champion, regular-season table, draft pick, team stat line and yearly award since 2013, a graveyard for managers who left, what each player will cost to keep in 2027, a draft-order lottery simulator, keeper declarations, offseason trades and the draft-day vote.",
+    summary: "The record book for my 16-team Yahoo keeper baseball league: every champion, regular-season table, draft pick, team stat line and yearly award since 2013, a graveyard for managers who left, what each player will cost to keep in 2027, every team's keepers by year, a draft-order lottery simulator, and keeper picks and the draft-day vote that write straight into the league's keeper sheet.",
     facts: [["5,600", "draft picks since 2013"], ["14", "seasons of champions and standings"], ["3", "keeper years, then back in the draft"]],
     stack: ["JavaScript", "Python"],
     cover: { image: "assets/covers/yoenis.jpg", bg: "#1F4532", band: "#BD3039" }
