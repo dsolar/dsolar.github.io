@@ -126,9 +126,9 @@ Yahoo approved the application on Oct 16, 2026. Its approval email has three ste
 - Create a new app (step 1 below, named `davidsolar guillotine 2`).
 - Send the new app's Client ID, your name and email on the Developer Application Confirmation Form linked in the email. List every email you've used with Yahoo in its notes field.
 
-Once Yahoo turns access on, do steps 2 to 5 below with the new app's Client ID and Secret. Until then the new app gets the same "not authorized" answer, so there's no point testing it early.
+Then do steps 2 to 5 below with the new app's Client ID and Secret. They work before Yahoo turns access on: the sign-in succeeds and each run reports "Yahoo hasn't approved this app" until access is on, then the first run after that pulls the league by itself. You'll know it's on when the "Yahoo hasn't approved" note under the page's Updated line disappears.
 
-The sign-in setup (done once in Oct 2026 for the first app, `davidsolar guillotine`; redo it for the app Yahoo approves):
+The sign-in setup (done in Oct 2026 for the first app, `davidsolar guillotine`, App ID 8zS5heCv, and redone for the new app, `davidsolar guillotine 2`, App ID anjKvxxp):
 
 1. **Create a Yahoo app.** Signed in to the Yahoo account that's in the league, go to https://developer.yahoo.com/apps/create/. Application Name: `davidsolar guillotine 2` (any name works). Application Type: **Web Application**. Redirect URI: `https://davidsolar.dev/`. Under API Permissions, check **Fantasy Sports** and pick **Read**. Click **Create App**, then keep the page open: you need the **Client ID** and **Client Secret** it shows.
 2. **Approve access once.** Open this address with your Client ID pasted in: `https://api.login.yahoo.com/oauth2/request_auth?client_id=YOUR_CLIENT_ID&redirect_uri=https://davidsolar.dev/&response_type=code`. Click **Agree**. You'll land on davidsolar.dev with `?code=...` in the address bar. Copy everything after `code=` (stop at any `&`). The code expires in about 10 minutes, so do step 3 right away.
