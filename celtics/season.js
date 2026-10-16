@@ -199,11 +199,56 @@
     return tot ? w / tot : 1;
   };
   L.chem = (W, code) => -L.CHEM_MAX * (1 - L.continuity(W, code));
+  // ---------- Box scores ----------
+  // Games are played team against team, so each player's line is built from what the sim knows about the night:
+  // minutes from that night's rotation (an injured player's minutes go to the others), points split from the
+  // team's score by usage and shooting, rebounds and assists from his per-minute rates. Regular season only.
+  // Usage and shooting start from his 2025-26 numbers and move with his offensive rating as he develops.
+  const POS_REB = { G: 0.13, W: 0.19, B: 0.30 }, POS_AST = { G: 0.16, W: 0.09, B: 0.07 };
+  const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+  const r1 = x => Math.round(x * 10) / 10;
+  L.rates = (W, p) => {
+    const c = W._rates || (W._rates = {}), k = c[p.id];
+    if (k && k.s === W.season && k.o === p.o) return k;
+    const own = p.usg != null && p.o0 != null, dO = own ? p.o - p.o0 : 0, pos = POS_REB[p.pos] ? p.pos : "W";
+    const usg = clamp(own ? p.usg + 2.2 * dO : 19 + 2.2 * p.o, 9, 36);
+    const ts = clamp(own && p.ts ? p.ts + 0.006 * dO : 0.555 + 0.006 * p.o, 0.45, 0.68);
+    // his own rebounding and passing rates, trusted in proportion to the minutes behind them
+    const n = p.mpg > 0 && p.gp > 0 && p.rpg != null && p.apg != null ? Math.min(1, p.gp * p.mpg / 600) : 0;
+    const reb = (n * (n ? p.rpg / p.mpg : 0) + (1 - n) * POS_REB[pos]) * 0.92;      // the sim's rotations lean big
+    const ast = (n * (n ? p.apg / p.mpg : 0) + (1 - n) * POS_AST[pos]) * (own ? Math.sqrt(usg / Math.max(9, p.usg)) : 1);
+    // coaches don't play everyone exactly his slot's minutes: a steady lean either way for the season
+    let h = W.season * 977 + (W.seed || 0); for (let k = 0; k < p.id.length; k++) h = Math.imul(h ^ p.id.charCodeAt(k), 2654435761);
+    const mf = clamp(1 + 0.05 * Mo.gauss(Mo.rng(h >>> 0)), 0.9, 1.1);
+    return (c[p.id] = { s: W.season, o: p.o, sh: usg * ts, reb, ast, mf });
+  };
+  // p.st[season] = [[team, games, minutes, points, rebounds, assists], ...]: one row per team he played for
+  L.boxScore = (W, code, mins, pts) => {
+    const i = W.season, on = [];
+    let tot = 0, m0 = 0, m1 = 0;
+    for (const id in mins) { const p = W.P[id], m = mins[id]; if (!p || !(m >= 1)) continue; const rt = L.rates(W, p); on.push([p, m * rt.mf, rt]); m0 += m; m1 += m * rt.mf; }
+    for (const x of on) { x[1] *= m0 / m1; tot += x[1] * x[2].sh; }
+    for (const [p, m, rt] of on) {
+      const st = p.st || (p.st = {}), rows = st[i] || (st[i] = []);
+      let row = rows[rows.length - 1];
+      if (!row || row[0] !== code) rows.push(row = [code, 0, 0, 0, 0, 0]);
+      row[1]++; row[2] = r1(row[2] + m); row[3] = r1(row[3] + pts * m * rt.sh / tot); row[4] = r1(row[4] + m * rt.reb); row[5] = r1(row[5] + m * rt.ast);
+    }
+  };
+  // One season's per-game line across every team he played for
+  L.seasonLine = (p, i) => {
+    const rows = p.st && p.st[i]; if (!rows || !rows.length) return null;
+    const t = [0, 0, 0, 0, 0]; for (const r of rows) for (let k = 0; k < 5; k++) t[k] += r[k + 1];
+    if (!t[0]) return null;
+    return { gp: t[0], mpg: t[1] / t[0], ppg: t[2] / t[0], rpg: t[3] / t[0], apg: t[4] / t[0], teams: rows.map(r => r[0]).filter((c, k, a) => a.indexOf(c) === k) };
+  };
+
   L.simGame = (W, g, r, chem) => {
     const mean = W._mean ?? (L.teamNets(W), W._mean);
     const outH = availToday(W, g.h, r), outA = availToday(W, g.a, r);
-    const nh = Mo.netOf(L.teamRaw(W, g.h, p => !outH.has(p.id)), mean) + ((chem && chem[g.h]) || 0);
-    const na = Mo.netOf(L.teamRaw(W, g.a, p => !outA.has(p.id)), mean) + ((chem && chem[g.a]) || 0);
+    const rotH = L.rotationFor(W, g.h, p => !outH.has(p.id)).mins, rotA = L.rotationFor(W, g.a, p => !outA.has(p.id)).mins;
+    const nh = Mo.netOf(Mo.raw(L.teamPlayers(W, g.h, { two: true }), rotH), mean) + ((chem && chem[g.h]) || 0);
+    const na = Mo.netOf(Mo.raw(L.teamPlayers(W, g.a, { two: true }), rotA), mean) + ((chem && chem[g.a]) || 0);
     const margin = nh - na + 1.5 + Mo.gauss(r) * 12;
     const hw = margin > 0;
     const base = 112 + Mo.gauss(r) * 6;
@@ -211,6 +256,7 @@
     const hs = Math.round(base + (hw ? mg / 2 : -mg / 2)), as = hs + (hw ? -mg : mg);
     g.hs = hs; g.as = as; g.done = true;
     W.T[hw ? g.h : g.a].w++; W.T[hw ? g.a : g.h].l++;
+    L.boxScore(W, g.h, rotH, hs); L.boxScore(W, g.a, rotA, as);
     if (g.h === "BOS" || g.a === "BOS") {
       const outB = g.h === "BOS" ? outH : outA;
       W.games.push({ d: g.d, opp: g.h === "BOS" ? g.a : g.h, home: g.h === "BOS", us: g.h === "BOS" ? hs : as, them: g.h === "BOS" ? as : hs, out: [...outB].map(id => W.P[id].n) });

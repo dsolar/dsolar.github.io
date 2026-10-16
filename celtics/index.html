@@ -263,6 +263,7 @@ dialog{border:1px solid var(--line);border-radius:14px;background:var(--surface)
 dialog::backdrop{background:rgba(5,20,12,.55)}
 dialog .dh{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
 dialog .db{padding:16px 18px;max-height:min(70vh,700px);overflow:auto}
+@media (max-width:420px){dialog .db{padding:14px 12px}dialog .std{font-size:13px}dialog .std th,dialog .std td{padding:5px 4px}}
 .footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:18px;padding-bottom:40px}
 @media (max-width:640px){
   .sheet th:first-child,.sheet td:first-child{min-width:132px;max-width:150px}

@@ -38,7 +38,7 @@
     CBA.init(data.cba);
     const W = { v: 1, seed: seed || 19, tick: 0, season: 0, phase: "pre", date: "2026-10-15", P: {}, T: {}, picks: [],
       plan: { opt: {}, resign: {}, renounce: {}, optout: {} }, queue: [], log: [], news: [], offers: [],
-      draft: {}, settings: { expansion: false, noTax0: true, a2Once: true }, hist: [], seasons: {} };
+      draft: {}, settings: { expansion: false, noTax0: true, a2Once: true }, hist: [], seasons: {}, boxFrom: "2026-10-15" };
     for (const p0 of data.players) {
       const p = clone(p0);
       p.c.sal = Array.from({ length: 5 }, (_, i) => p.c.sal[i] || 0);
@@ -47,6 +47,7 @@
       if (p.id === "payton-pritchard") p.noTrade = "2027-04-13";      // six months after a big-raise extension
       p.h = p.h ?? 0.85;
       if (p.o == null) { p.o = -1.6; p.d = -0.4; }
+      p.o0 = p.o;                                                        // offense when his 2025-26 numbers were put up
       W.P[p.id] = p;
     }
     for (const [code, t] of Object.entries(data.teams)) {

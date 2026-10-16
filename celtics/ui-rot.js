@@ -53,7 +53,10 @@
       const ORD = ["6th", "7th", "8th", "9th", "10th", "11th", "12th", "13th"];
       const row = (p, tag) => {
         const mm = Math.round(cur.mins[p.id] || 0);
-        const lv = p.live && p.live.gp ? `, ${p.live.mpg} a night so far` : p.mpg ? `, ${p.mpg} last season` : "";
+        // minutes he's played: this season once it's under way, else the last one he played
+        const playing = ["reg", "deadline", "reg2"].includes(W.phase), over = ["playoffs", "draft", "expansion", "options"].includes(W.phase);
+        const now = L.seasonLine(p, W.season), last = over ? now : W.season > 0 ? L.seasonLine(p, W.season - 1) : null;
+        const lv = playing && now ? `, ${now.mpg.toFixed(1)} a night so far` : playing && p.live && p.live.gp ? `, ${p.live.mpg} a night so far` : last ? `, ${last.mpg.toFixed(1)} last season` : p.mpg && W.season === 0 && !over ? `, ${p.mpg} last season` : "";
         const off = dist(p, POS5.indexOf(tag)) >= 2 && POS5.includes(tag);
         return `<li>
           <span class="slot${POS5.includes(tag) ? " st" : ""}">${esc(tag)}</span>

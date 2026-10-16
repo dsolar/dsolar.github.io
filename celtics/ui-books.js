@@ -253,7 +253,6 @@
   App.acts.player = el => App.playerCard(el.dataset.id);
   App.playerCard = id => {
     const W = App.W, p = W.P[id], i0 = W.season, dec = L.decider(W);
-    const lv = p.live;
     const rows = [];
     for (let j = i0; j < i0 + 6; j++) { const raw = p.c.sal[j] || 0; if (!raw) continue; rows.push(`<tr><td>${App.sn(j)}</td><td>${m2(raw)}</td><td>${p.c.opt[j] ? esc(CBA.OPT_SHORT[p.c.opt[j]]) + " " + (CBA.optionState(p, j, dec) === "in" ? "in" : "out") : "Guaranteed"}</td><td>${m(Mo.market(p, j, W))}</td><td>${m(Mo.mv(p, j, W))}</td></tr>`); }
     const e = CBA.extEligible(p, i0);
@@ -266,8 +265,7 @@
         <div><div class="small muted">Availability</div><div class="bigstat">${App.pct(p.h)}</div><div class="small">of games, by the injury model</div></div>
         <div><div class="small muted">Shooting profile</div><div class="bigstat">${p.tpar != null ? App.pct(p.tpar) : "n/a"}</div><div class="small">of shots from three${p.ts ? `, ${(p.ts * 100).toFixed(1)}% true shooting` : ""}</div></div>
       </div>
-      ${p.ppg != null ? `<p class="small" style="margin:12px 0 0"><b>2025-26:</b> ${p.gp ?? "?"} games, ${p.mpg ?? "?"} minutes, ${p.ppg} points, ${p.rpg} rebounds, ${p.apg} assists.</p>` : ""}
-      ${lv ? `<p class="small" style="margin:4px 0 0"><b>${esc(lv.season || "This season")} (live):</b> ${lv.gp} games, ${lv.mpg} minutes, ${lv.ppg} points, ${lv.rpg} rebounds, ${lv.apg} assists, ${lv.tpa} threes tried a game, ${lv.tov} turnovers.</p>` : ""}
+      ${statsHTML(W, p)}
       <h3 style="margin-top:14px">Contract</h3>
       ${rows.length ? `<p class="small muted" style="margin:0 0 4px">Market is what teams would pay him (the contract model). On-court is what his impact is worth in salary terms, which runs higher for players who don't score much.</p><table class="std"><thead><tr><th scope="col">Season</th><th scope="col">Salary</th><th scope="col">Status</th><th scope="col">Market</th><th scope="col">On-court</th></tr></thead><tbody>${rows.join("")}</tbody></table>` : "<p class='muted'>No contract.</p>"}
       ${W.T[p.t] || p.t === "FA" ? (() => {
@@ -286,7 +284,29 @@
       </div>` : W.T[p.t] ? `<div class="row"><button class="btn sm" type="button" data-act="goTradeFor" data-id="${p.id}">Trade for him</button></div>` : ""}`;
     App.dlg(p.n, html);
   };
-  App.acts.goTrade = el => { App.tradeAdd("BOS", el.dataset.id); App.closeDlg(); App.ui.compose = "trade"; App.go("moves"); };
+  // Season by season: his real 2025-26 line, real games this season if ESPN has them, then every simulated season
+  function statsHTML(W, p) {
+    const f = x => (x == null || x === "" ? "" : (+x).toFixed(1));
+    const rows = [];
+    if (p.ppg != null) rows.push({ s: "2025-26", note: "Real", gp: p.gp, mpg: p.mpg, ppg: p.ppg, rpg: p.rpg, apg: p.apg });
+    const lv = p.live && p.live.gp ? p.live : null, lvS = lv ? lv.season || App.sn(0) : null;   // ESPN data only ever covers 2026-27
+    for (let j = 0; j <= W.season; j++) {
+      const sn = App.sn(j);
+      if (lvS === sn) rows.push({ s: sn, note: "Real games", gp: lv.gp, mpg: lv.mpg, ppg: lv.ppg, rpg: lv.rpg, apg: lv.apg });
+      const sl = L.seasonLine(p, j);
+      const now = j === W.season && ["reg", "deadline", "reg2"].includes(W.phase);
+      if (sl) rows.push(Object.assign({ s: sn, note: (lvS === sn ? "Simulated games, " : "") + sl.teams.join(", ") + (now ? ", so far" : "") }, sl));
+    }
+    // games simmed before box scores existed (older saves) left no player lines
+    const bf = W.boxFrom || "", bfSeason = (+bf.slice(5, 7) >= 7 ? +bf.slice(0, 4) : +bf.slice(0, 4) - 1) - 2026;
+    const late = bf > L.dates(0).open && W.season <= bfSeason + 1 ?` Player stats started with games after ${L.fmtDate(W.boxFrom)}, so games simulated before then aren't counted.` : "";
+    if (!rows.length) return `<p class="small muted" style="margin:12px 0 0">No stats yet. His line shows up here once he plays in a simulated game.${late}</p>`;
+    return `<h3 style="margin-top:14px">Stats</h3>
+      <table class="std"><thead><tr><th scope="col" style="text-align:left">Season</th><th scope="col" style="text-align:right">Games</th><th scope="col">Min</th><th scope="col">Pts</th><th scope="col">Reb</th><th scope="col">Ast</th></tr></thead>
+      <tbody>${rows.map(r => `<tr><td style="text-align:left">${esc(r.s)}<span class="pmeta">${esc(r.note)}</span></td><td style="text-align:right">${r.gp ?? ""}</td><td>${f(r.mpg)}</td><td>${f(r.ppg)}</td><td>${f(r.rpg)}</td><td>${f(r.apg)}</td></tr>`).join("")}</tbody></table>
+      <p class="small muted" style="margin:4px 0 0">Per game. Simulated seasons count the regular season only.${late}</p>`;
+  }
+  App.acts.goTrade =el => { App.tradeAdd("BOS", el.dataset.id); App.closeDlg(); App.ui.compose = "trade"; App.go("moves"); };
   App.acts.goTradeFor = el => { const p = App.W.P[el.dataset.id]; App.ui.trade = App.newTrade(p.t); App.tradeAdd(p.t, p.id); App.closeDlg(); App.ui.compose = "trade"; App.go("moves"); };
   App.acts.goWaive = el => { App.ui.compose = "waive"; App.ui.waive = { id: el.dataset.id, stretch: false }; App.closeDlg(); App.go("moves"); };
 
