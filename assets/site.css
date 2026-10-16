@@ -168,7 +168,7 @@ a:hover{color:var(--red)}
 .stack{font-size:.9rem;color:var(--muted)}
 
 .entry-cover{grid-area:cover;display:block;text-decoration:none;border-radius:6px;overflow:hidden;background:var(--cover-bg,var(--paper-2));box-shadow:0 0 0 1px var(--rule)}
-.entry-cover img{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;object-position:top left}
+.entry-cover img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;object-position:center center}
 .entry-cover .band{display:block;height:8px;background:var(--cover-band,var(--red))}
 .entry-cover .typeset{aspect-ratio:4/3;display:flex;align-items:flex-end;padding:22px;color:var(--cover-ink,#fff);font-family:var(--f-display);font-weight:800;font-size:2rem;line-height:1}
 
