@@ -19,3 +19,20 @@ for(const n of [30,31,32]){s=seed();if(n>30)s.teams.SEA={name:'Seattle',spend:'a
 // Tax rises progressively and repeater status increases cost.
 s=seed();let pay=E.limits(s.year).tax+20;let normal=E.tax(s,c,pay);s.teams[c].taxHistory=[true,true,true];assert(E.tax(s,c,pay)>normal);
 console.log('Passed: atomic trades, apron legality, RFA reservation/matching, FA validation, import identity/assets, 30/31/32-team schedules, rollover, progressive tax.');
+// Scheduled guarantees survive waivers and each offseason.
+s=fixture();s.players=[{...player('guaranteed',c,10),years:3,schedule:[12,14]}];assert(E.release(s,c,'guaranteed').ok);assert.equal(E.payroll(s,c),10);s.phase='results';E.rollover(s);assert.equal(E.payroll(s,c),12);s.phase='results';E.rollover(s);assert.equal(E.payroll(s,c),14);s.phase='results';E.rollover(s);assert.equal(E.payroll(s,c),0);
+// Minimum/maximum depend on service, and a cap hold is replaced by a signing.
+s=fixture();let f={...player('min',null,3),market:3,yos:0};s.players=[f];assert(E.minimum(s,f)<E.minimum(s,{...f,yos:10}));assert.equal(E.maximum(s,f),Math.round(E.limits(s.year).cap*.25*100)/100);assert(!E.sign(s,c,'min',E.maximum(s,f)+1,1).ok);
+// Mid-levels are a finite pool with persistent hard caps, including pending offer sheets.
+s=fixture();s.teams[c].dead=E.limits(s.year).cap;s.players=[{...player('r',null,5),rights:b,rfa:true},{...player('u',null,12),market:12}];assert(E.sign(s,c,'r',5,2).ok);assert(s.offers[0].route.hard);assert(!E.sign(s,c,'u',12,2).ok,'pending sheet reserves MLE');assert(E.resolve(s,'r',false).ok);assert.equal(s.teams[c].mleUsed,5);assert(!E.sign(s,c,'u',12,2).ok,'committed MLE cannot be reused');
+s=fixture();s.teams[c].dead=E.limits(s.year).first-1;s.players=[{...player('taxmle',null,5),market:5}];assert(E.sign(s,c,'taxmle',5,2).ok);assert.equal(s.teams[c].hardCap,E.limits(s.year).second);
+// A completed season closes trades and FA; opening another offseason twice cannot age everyone.
+s=seed();s.phase='results';const snapshot=JSON.stringify(s);assert(!E.evaluateTrade(s,c,b,[],['bad']).ok);assert(!E.sign(s,c,'bad',5,1).ok);assert.equal(JSON.stringify(s),snapshot);E.rollover(s);let age=s.players[0].age;assert(!E.rollover(s).ok);assert.equal(s.players[0].age,age);
+// Talent uses impact, and deeper rotations cushion injuries. Health isn't applied twice.
+s=fixture();s.players=[{...player('star',c,10,90),o:5,d:2,h:.5},{...player('backup',c,2,60),o:-2,d:-1,h:.9}];const strength=E.strength(s,c);s.players[0].h=.95;assert.equal(E.strength(s,c),strength);assert(E.strength(s,c,p=>p.id!=='star')<strength);
+// Monte Carlo: stationary injury burden tracks health; every season conserves results.
+let played=0,opportunities=0,healthyPlayed=0,healthyOpportunities=0,wins=0;
+for(let run=0;run<40;run++){s=seed();s.seed=run*991+23;for(const code of Object.keys(s.teams))while(E.roster(s,code).length<14)s.players.push({...player(code+'-extra-'+s.players.length,code,3),h:.85});for(const p of s.players)p.h=p.id===s.players[0].id?.6:.9;const id=s.players[0].id,other=s.players.find(p=>p.team&&p.id!==id).id;assert(E.simulate(s).ok);const h=s.history.at(-1);played+=h.availability[id];opportunities+=82;healthyPlayed+=h.availability[other];healthyOpportunities+=82;wins+=Object.values(h.records).reduce((n,r)=>n+r.w,0);E.validate(s);}
+assert(Math.abs(played/opportunities-.6)<.06,`fragile availability ${played/opportunities}`);assert(Math.abs(healthyPlayed/healthyOpportunities-.9)<.04,`healthy availability ${healthyPlayed/healthyOpportunities}`);assert.equal(wins,40*30*41);
+s=seed();s.injuries='off';for(const code of Object.keys(s.teams))while(E.roster(s,code).length<14)s.players.push(player(code+'-extra-'+s.players.length,code,3));assert(E.simulate(s).ok);for(const p of s.players.filter(p=>p.team))assert.equal(s.history.at(-1).availability[p.id],82);
+console.log(`Passed: scheduled dead money, service-based salary bounds, MLE reservations/hard caps, phase guards, rotation depth and 40-season injury calibration (${(100*played/opportunities).toFixed(1)}% / ${(100*healthyPlayed/healthyOpportunities).toFixed(1)}%).`);
