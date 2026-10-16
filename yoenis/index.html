@@ -326,9 +326,10 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
 .player-popover-head{display:flex;justify-content:space-between;gap:10px;align-items:start;border-bottom:1px solid var(--rule);padding-bottom:9px}
 .player-popover-head strong{font-size:14px}
 .player-popover-head span{white-space:nowrap}
+.player-stat-body,.player-stat-kind,.player-stat-unavailable{display:block}
 .player-stat-kind{font-weight:700;margin:10px 0 5px}
 .player-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 6px}
-.player-stat-grid div{display:flex;flex-direction:column;gap:2px}
+.player-stat-grid>span{display:flex;flex-direction:column;gap:2px}
 .player-stat-grid small{font-size:10px;color:var(--muted)}
 .player-stat-grid b{font-size:13px}
 .player-source{display:block;color:var(--muted);font-size:10px;margin-top:10px}
@@ -719,89 +720,48 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
   /* Yahoo Sports early 2027 top 25, Fred Zinkie, Sept. 25, 2026.
      Ohtani is ranked as a hitter only. No ranking is inferred for other players. */
   var YAHOO_TOP25 = ["Pete Crow-Armstrong","Junior Caminero","Shohei Ohtani","Bobby Witt Jr.","Elly De La Cruz","Jacob Misiorowski","Aaron Judge","Juan Soto","Fernando Tatis Jr.","Yordan Alvarez","Jackson Chourio","James Wood","Tarik Skubal","Jordan Walker","Sal Stewart","Corbin Carroll","Cam Schlittler","Yoshinobu Yamamoto","Julio Rodriguez","CJ Abrams","Kyle Schwarber","Mason Miller","Cristopher Sanchez","Jose Ramirez","Pete Alonso"];
-  var playerStatsCache = {};
   function yahooRank(name) {
-    var normalized = fold(name).replace(/ jr$/,"").replace(/ ii$/,"");
-    if (/ohtani/i.test(name) && /pitch|sp|p\b/i.test(name)) return "N/A";
-    var n = YAHOO_TOP25.findIndex(function (p) { return fold(p).replace(/ jr$/,"").replace(/ ii$/,"") === normalized; });
+    if (/\(pitcher\)$/i.test(name)) return "N/A";
+    var bare = function (n) { return fold(n.replace(/\s*\(batter\)$/i, "")).replace(/ (jr|ii|iii)$/, ""); }, me = bare(name);
+    var n = YAHOO_TOP25.findIndex(function (p) { return bare(p) === me; });
     return n < 0 ? "N/A" : "#" + (n + 1);
   }
-  function statValue(v, decimals) {
-    if (v == null || v === "") return "—";
-    if (decimals && !isNaN(Number(v))) return Number(v).toFixed(3).replace(/^0/,"");
-    return String(v);
+  /* 2026 lines come from DATA.stats2026 (tools/yoenis_stat_cards.py, from MLB's Stats API) */
+  var rate = function (v) { return v.toFixed(3).replace(/^0/, ""); }, two = function (v) { return v.toFixed(2); };
+  var BAT_COLS = [["R"], ["H"], ["HR"], ["RBI"], ["SB"], ["TB"], ["AVG", rate], ["OPS", rate]];
+  var PIT_COLS = [["W"], ["L"], ["SV"], ["K"], ["HLD"], ["ERA", two], ["WHIP", two], ["QS"]];
+  function statsGrid(vals, cols) {
+    return '<span class="player-stat-grid">' + cols.map(function (c, i) {
+      return "<span><small>" + c[0] + "</small><b>" + esc(c[1] ? c[1](vals[i]) : String(vals[i])) + "</b></span>";
+    }).join("") + "</span>";
   }
-  function statsGrid(stats, pitching) {
-    var cols = pitching
-      ? [["W","wins"],["L","losses"],["SV","saves"],["K","strikeOuts"],["HLD","holds"],["ERA","era"],["WHIP","whip"],["QS","qualityStarts"]]
-      : [["R","runs"],["H","hits"],["HR","homeRuns"],["RBI","rbi"],["SB","stolenBases"],["TB","totalBases"],["AVG","avg"],["OPS","ops"]];
-    return '<div class="player-stat-grid">' + cols.map(function (pair) {
-      return '<div><small>' + pair[0] + '</small><b>' + statValue(stats[pair[1]]) + '</b></div>';
-    }).join("") + '</div>';
-  }
-  function loadPlayerStats(name, card) {
-    var target = card.querySelector(".player-stat-body");
-    if (!target) return;
-    if (playerStatsCache[name]) { target.innerHTML = playerStatsCache[name]; return; }
-    target.textContent = "Loading 2026 MLB statistics…";
-    fetch("https://statsapi.mlb.com/api/v1/people/search?names=" + encodeURIComponent(name))
-      .then(function (r) { if (!r.ok) throw Error("search"); return r.json(); })
-      .then(function (data) {
-        var matches = (data.people || []).filter(function (p) { return fold(p.fullName) === fold(name); });
-        if (matches.length !== 1) throw Error("unmatched");
-        return fetch("https://statsapi.mlb.com/api/v1/people/" + matches[0].id + "/stats?stats=season&season=2026&group=hitting,pitching");
-      })
-      .then(function (r) { if (!r.ok) throw Error("stats"); return r.json(); })
-      .then(function (data) {
-        var all = [];
-        (data.stats || []).forEach(function (block) {
-          var splits = (block.splits || []).filter(function (x) { return x.season === "2026" || !x.season; });
-          if (!splits.length) return;
-          var pitching = /pitching/i.test(block.group && block.group.displayName || "");
-          var hitting = /hitting/i.test(block.group && block.group.displayName || "");
-          if (pitching || hitting) all.push({pitching:pitching,stat:splits[0].stat || {}});
-        });
-        if (!all.length) throw Error("no season stats");
-        var html = all.map(function (x) {
-          return '<p class="player-stat-kind">' + (x.pitching ? "Pitching" : "Hitting") + ' · 2026 MLB</p>' + statsGrid(x.stat,x.pitching);
-        }).join("");
-        playerStatsCache[name] = html;
-        target.innerHTML = html;
-      }).catch(function () {
-        target.innerHTML = '<p class="player-stat-unavailable">2026 stats unavailable for this player. No values have been estimated.</p>';
-      });
+  function statBody(name) {
+    var s = (DATA.stats2026 || {})[name];
+    if (!s) return '<span class="player-stat-unavailable">No 2026 MLB stats: he didn\'t play in the majors this year.</span>';
+    return (s.b ? '<span class="player-stat-kind">2026 hitting, ' + s.b[8] + " plate appearances</span>" + statsGrid(s.b, BAT_COLS) : "") +
+      (s.p ? '<span class="player-stat-kind">2026 pitching, ' + s.p[8] + " innings</span>" + statsGrid(s.p, PIT_COLS) : "");
   }
   function playerCard(name) {
-    return '<span class="player-detail"><button type="button" class="player-name-trigger" aria-expanded="false" aria-label="2026 statistics and Yahoo rank for ' + esc(name) + '">' + esc(name) + '</button>' +
-      '<span class="player-popover" role="group"><span class="player-popover-head"><strong>' + esc(name) + '</strong><span>Yahoo 2027: <b>' + yahooRank(name) + '</b></span></span>' +
-      '<span class="player-stat-body">Hover or tap for 2026 statistics.</span>' +
-      '<span class="player-source">Yahoo early top 25 · 2026 stats from MLB</span></span></span>';
+    return '<span class="player-detail"><button type="button" class="player-name-trigger" aria-expanded="false">' + esc(name) + "</button>" +
+      '<span class="player-popover" role="group" aria-label="' + esc(name) + ', 2026 stats"><span class="player-popover-head"><strong>' + esc(name) + "</strong><span>Yahoo 2027: <b>" + yahooRank(name) + "</b></span></span>" +
+      '<span class="player-stat-body">' + statBody(name) + "</span>" +
+      '<span class="player-source">Stats from MLB. Rank from Yahoo\'s early 2027 top 25.</span></span></span>';
   }
+  // Hover or focus shows a card; a tap toggles it (for phones), and a tap elsewhere or Escape closes it
   function initPlayerCards() {
-    var list = $("k-list");
-    list.addEventListener("pointerover",function (e) {
-      var card=e.target.closest(".player-detail"); if(card) loadPlayerStats(card.querySelector(".player-name-trigger").textContent,card);
+    var closeAll = function (except) { [].forEach.call(document.querySelectorAll(".player-name-trigger[aria-expanded=true]"), function (b) { if (b !== except) b.setAttribute("aria-expanded", "false"); }); };
+    document.addEventListener("click", function (e) {
+      var btn = e.target.closest(".player-name-trigger");
+      closeAll(btn);
+      if (btn) btn.setAttribute("aria-expanded", btn.getAttribute("aria-expanded") === "true" ? "false" : "true");
     });
-    list.addEventListener("focusin",function (e) {
-      var card=e.target.closest(".player-detail"); if(card) loadPlayerStats(card.querySelector(".player-name-trigger").textContent,card);
-    });
-    list.addEventListener("click",function (e) {
-      var btn=e.target.closest(".player-name-trigger"); if(!btn) return;
-      var open=btn.getAttribute("aria-expanded")==="true";
-      list.querySelectorAll(".player-name-trigger[aria-expanded=true]").forEach(function (b) {b.setAttribute("aria-expanded","false");});
-      btn.setAttribute("aria-expanded",String(!open));
-      if(!open) loadPlayerStats(btn.textContent,btn.closest(".player-detail"));
-    });
-    document.addEventListener("click",function(e) {
-      if(e.target.closest(".player-detail"))return;
-      list.querySelectorAll(".player-name-trigger[aria-expanded=true]").forEach(function(b){b.setAttribute("aria-expanded","false");});
-    });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeAll(null); });
   }
 
   function keeperRow(e, team, pickable) {
     var on = pickable && mineFor(pickable).indexOf(e.p) > -1;
     var box = pickable && e.next ? '<label class="keep"><input type="checkbox" data-keep="' + esc(e.p) + '"' + (on ? " checked" : "") + (locked() ? " disabled" : "") + '>Keep</label>' : "";
-    return '<li class="kp' + (e.next ? "" : " out") + (on ? " picked" : "") + '"><div class="kp-name">' + esc(e.p) + '<span class="kp-sub">' + esc(subText(e, team)) + "</span></div>" +
+    return '<li class="kp' + (e.next ? "" : " out") + (on ? " picked" : "") + '"><div class="kp-name">' + playerCard(e.p) + '<span class="kp-sub">' + esc(subText(e, team)) + "</span></div>" +
       '<div class="kp-right">' + tilesHtml(e) + '<div class="kp-cost">' + costHtml(e) + "</div>" + box + "</div></li>";
   }
   function initKeepers() {

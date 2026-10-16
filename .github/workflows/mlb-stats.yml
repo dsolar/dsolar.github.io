@@ -1,5 +1,5 @@
 # Pulls MLB season stats (2013 on) from MLB's public Stats API into tools/mlb/ for the
-# Wipe Yoenis awards. Runs when the script or this file changes, or by hand from the Actions tab.
+# Wipe Yoenis awards and player stat cards. Runs when the script or this file changes, or by hand from the Actions tab.
 name: MLB season stats
 
 on:
@@ -27,9 +27,12 @@ jobs:
       - name: Pull season stats from MLB
         run: python3 tools/mlb_stats_pull.py
 
+      - name: Refresh the player stat cards
+        run: python3 tools/yoenis_stat_cards.py
+
       - name: Commit the stats
         run: |
-          git add tools/mlb
+          git add tools/mlb yoenis/data.json
           if git diff --cached --quiet; then
             echo "Nothing changed."
             exit 0
