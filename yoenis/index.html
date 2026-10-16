@@ -141,6 +141,24 @@ details[open] .t-open::after{transform:translateY(.05rem) rotate(-135deg)}
 .standings .r{text-align:right}
 .standings tr.podium td{font-weight:600}
 .season-note{font-size:.8125rem;color:var(--muted);margin:-.4rem 0 .9rem}
+.titles+.note,.tabs+[role=tabpanel]{margin-top:.25rem}
+.standings tr.cut td{border-bottom:2px solid var(--ink)}
+.standings td.gb{color:var(--muted)}
+/* Offseason: modules that start empty and fill in */
+.slot{border:1px dashed var(--rule);border-radius:4px;padding:.85rem 1rem;margin-top:.6rem;background:var(--surface)}
+.slot p{margin:0;max-width:38rem}
+.slot p+p{margin-top:.45rem}
+.slot .k{font:600 1.08rem/1.2 var(--f-sign)}
+.slot .muted{color:var(--muted);font-size:.875rem}
+.trades{list-style:none;margin:.6rem 0 0;padding:0;border-top:1px solid var(--rule)}
+.trade{padding:.7rem 0;border-bottom:1px solid var(--rule)}
+.trade-d{font-size:.8125rem;color:var(--muted)}
+.trade-sides{display:grid;grid-template-columns:1fr 1fr;gap:.2rem 1rem;margin-top:.3rem}
+.trade-sides b{display:block;font-weight:600;overflow-wrap:anywhere}
+.trade-sides span{font-size:.875rem}
+@media (max-width:480px){.trade-sides{grid-template-columns:1fr}}
+.votes{list-style:none;margin:.6rem 0 0;padding:0}
+.votes li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.2rem 1rem;padding:.5rem 0;border-bottom:1px solid var(--rule)}
 
 /* Team stats */
 .tbl-wrap{overflow-x:auto;margin:0 0 .5rem;border-top:2px solid var(--ink)}
@@ -271,7 +289,8 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
 
   <nav class="jump" aria-label="On this page">
     <a href="#keepers">2027 keepers</a>
-    <a href="#champions">Champions</a>
+    <a href="#offseason">Offseason</a>
+    <a href="#champions">Standings</a>
     <a href="#stats">Team stats</a>
     <a href="#awards">Awards</a>
     <a href="#managers">Managers</a>
@@ -294,12 +313,26 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     <p class="note">From the final 2026 rosters, the 2026 draft, the keeper sheet and the September transactions. Anyone added on or after Sept. 1 can't be kept. Anyone else not drafted in 2026 costs a 15th-round pick. A player drafted by another team keeps his draft round, which holds after a trade or a waiver claim. If he cleared waivers first, he's a 15th-rounder.</p>
   </section>
 
+  <section id="offseason" aria-labelledby="offseason-title">
+    <div class="section-head">
+      <h2 id="offseason-title">2027 offseason</h2>
+      <p>Pick trades and the draft-day vote. Both fill in as the winter goes.</p>
+    </div>
+    <h3 class="sub-h">Trades</h3>
+    <div id="o-trades"></div>
+    <h3 class="sub-h">Draft day</h3>
+    <div id="o-draft"></div>
+  </section>
+
   <section id="champions" aria-labelledby="champions-title">
     <div class="section-head">
-      <h2 id="champions-title">Champions</h2>
-      <p>Open a season for its final standings. Records are category wins, losses and ties.</p>
+      <h2 id="champions-title">Standings</h2>
+      <p>Every season's playoff finish and regular-season table. Records are category wins, losses and ties.</p>
     </div>
-    <ol class="titles" id="titles"></ol>
+    <div class="seg tabs" role="tablist" aria-label="Standings"><button type="button" role="tab" id="st-final" aria-controls="sp-final" aria-selected="true">Playoffs</button><button type="button" role="tab" id="st-reg" aria-controls="sp-reg" aria-selected="false" tabindex="-1">Regular season</button></div>
+    <div role="tabpanel" id="sp-final" aria-labelledby="st-final"><ol class="titles" id="titles"></ol></div>
+    <div role="tabpanel" id="sp-reg" aria-labelledby="st-reg" hidden><ol class="titles" id="regular"></ol>
+      <p class="note">Ordered by winning percentage, with ties counting as half a win and equal percentages broken by wins; T marks a tie Yahoo settled some other way. The top eight make the playoffs (the line under eighth). GB is category games behind the leader. Under the current payouts, the best regular-season record wins $500 and second best $300.</p></div>
   </section>
 
   <section id="stats" aria-labelledby="stats-title">
@@ -444,7 +477,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     var last = d.seasons[d.seasons.length - 1], champ = last.teams[last.standings[0][1]];
     $("reigning").innerHTML = last.year + " champion: <strong>" + esc(champ) + "</strong>" + (MAN[champ] ? " (" + esc(MAN[champ]) + ")" : "");
     $("foot").textContent = "Updated " + new Date(d.updated + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) + ". Data from the league's Yahoo draft and standings pages, the keeper sheet and the commissioner's league emails.";
-    initKeepers(); initTitles(); initStats(); initAwards(); initManagers(); initDrafts();
+    initKeepers(); initOffseason(); initTitles(); initRegular(); initStats(); initAwards(); initManagers(); initDrafts();
   }
 
   /* ---------- Pinned section links: mark the section in view ---------- */
@@ -469,9 +502,9 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     links.forEach(function (a) { var sec = document.getElementById(a.getAttribute("href").slice(1)); if (sec) io.observe(sec); });
   })();
 
-  /* ---------- Rules tabs ---------- */
-  function initRuleTabs() {
-    var tabs = [].slice.call(document.querySelectorAll('#rules [role="tab"]'));
+  /* ---------- Tabs (rules and standings) ---------- */
+  function initTabs(sel) {
+    var tabs = [].slice.call(document.querySelectorAll(sel + ' [role="tab"]'));
     function show(t, focus) {
       tabs.forEach(function (x) {
         var on = x === t;
@@ -490,7 +523,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       });
     });
   }
-  initRuleTabs();
+  initTabs("#rules"); initTabs("#champions");
 
   /* ---------- Awards ---------- */
   function initAwards() {
@@ -656,6 +689,60 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
         (s.note ? '<p class="season-note">' + esc(s.note) + "</p>" : "") +
         '<table class="standings"><caption hidden>' + s.year + ' final standings</caption><thead><tr><th scope="col">Finish</th><th scope="col">Team</th><th scope="col" class="r">Record</th><th scope="col" class="r">Pct</th></tr></thead><tbody>' + rows + "</tbody></table></details></li>";
     }).join("");
+  }
+
+  /* ---------- Regular season: every year's table, sorted by record ---------- */
+  function regularTable(s) {
+    var finish = {}; s.standings.forEach(function (r) { finish[r[1]] = r[0]; });
+    var rows = s.standings.map(function (r) {
+      var p = r[2].split("-").map(Number), g = p[0] + p[1] + p[2];
+      return { ti: r[1], rec: r[2], w: p[0], l: p[1], pct: g ? (p[0] + p[2] / 2) / g : 0 };
+    }).sort(function (a, b) { return b.pct - a.pct || b.w - a.w; });
+    rows.forEach(function (x) {
+      x.rank = 1 + rows.filter(function (y) { return y.pct > x.pct + 1e-9 || (Math.abs(y.pct - x.pct) < 1e-9 && y.w > x.w); }).length;
+      x.tied = rows.filter(function (y) { return Math.abs(y.pct - x.pct) < 1e-9 && y.w === x.w; }).length > 1;
+      x.gb = ((rows[0].w - x.w) + (x.l - rows[0].l)) / 2;
+      x.fin = finish[x.ti];
+    });
+    return rows;
+  }
+  function initRegular() {
+    $("regular").innerHTML = DATA.seasons.slice().reverse().map(function (s) {
+      var rows = regularTable(s), a = rows[0], b = rows[1];
+      var body = rows.map(function (x, k) {
+        return "<tr" + (k === 7 ? ' class="cut"' : "") + '><td class="num">' + (x.tied ? "T" : "") + x.rank + "</td><td>" + esc(s.teams[x.ti]) + '<span class="m-sub">' + esc(man(s, x.ti)) + '</span></td><td class="r num">' + x.rec +
+          '</td><td class="r num">' + pct(x.rec) + '</td><td class="r num gb">' + (x.gb ? x.gb.toFixed(1) : "") + '</td><td class="r num">' + ordinal(x.fin) + "</td></tr>";
+      }).join("");
+      var champ = s.standings[0][1];
+      return '<li><details><summary><span class="t-year num">' + s.year + '</span><span class="t-champ">' + esc(teamMan(s, a.ti)) + ", " + a.rec +
+        '<span class="t-rest">Second ' + esc(teamMan(s, b.ti)) + ", " + b.rec + "." + (a.ti === champ ? " Won the title too." : " Finished " + ordinal(a.fin) + " in the playoffs.") + '</span></span><span class="t-open">Standings</span></summary>' +
+        '<table class="standings"><caption hidden>' + s.year + ' regular-season standings</caption><thead><tr><th scope="col">Rank</th><th scope="col">Team</th><th scope="col" class="r">Record</th><th scope="col" class="r">Pct</th><th scope="col" class="r"><abbr title="Games behind">GB</abbr></th><th scope="col" class="r">Final</th></tr></thead><tbody>' + body + "</tbody></table></details></li>";
+    }).join("");
+  }
+
+  /* ---------- Offseason: pick trades and the draft-day vote ---------- */
+  /* data.json "offseason":
+       trades: [{ d: "2027-01-12", a: "<team>", b: "<team>", aGets: ["Bulba's 2027 5th", "Player Name"], bGets: ["Robbers' 2027 3rd"], note: "" }]
+       draft:  { opening: "2027-03-25", openingNight: "2027-03-24", options: [{ d: "2027-03-21", t: "7:00 p.m.", votes: ["Craig", ...] }], pick: null } */
+  function longDate(d, wd) { return new Date(d + "T12:00:00").toLocaleDateString("en-US", { weekday: wd ? "long" : undefined, month: "long", day: "numeric", year: wd ? undefined : "numeric" }); }
+  function initOffseason() {
+    var o = DATA.offseason || {}, tr = o.trades || [], dr = o.draft || {};
+    $("o-trades").innerHTML = tr.length ? '<ol class="trades">' + tr.slice().reverse().map(function (t) {
+      var side = function (team, gets) { return "<div><b>" + esc(withMan(team)) + " get</b><span>" + esc(gets.join(", ")) + "</span></div>"; };
+      return '<li class="trade"><span class="trade-d">' + esc(longDate(t.d)) + '</span><div class="trade-sides">' + side(t.a, t.aGets) + side(t.b, t.bGets) + "</div>" + (t.note ? '<p class="note" style="margin-top:.35rem">' + esc(t.note) + "</p>" : "") + "</li>";
+    }).join("") + "</ol>" :
+      '<div class="slot"><p class="k">No trades yet this offseason.</p><p class="muted">Once both managers confirm a deal on the league thread and its 48-hour counter window closes, it goes here with every pick and player that moved. Picks only trade in the offseason, each side sends the same number, and every team keeps 25.</p></div>';
+    var opts = dr.options || [], when = dr.pick;
+    var html = '<div class="slot">';
+    if (when) html += '<p class="k">The 2027 draft: ' + esc(longDate(when.d, true)) + (when.t ? ", " + esc(when.t) : "") + ".</p>";
+    else html += '<p class="k">' + (opts.length ? "Vote on a 2027 draft date." : "The 2027 draft date vote opens here in the new year.") + "</p>";
+    if (opts.length && !when) html += '<ol class="votes">' + opts.map(function (x) {
+      return '<li><span>' + esc(longDate(x.d, true)) + (x.t ? ", " + esc(x.t) : "") + '</span><span class="num">' + (x.votes || []).length + ((x.votes || []).length === 1 ? " vote" : " votes") + "</span></li>";
+    }).join("") + "</ol>";
+    if (dr.opening) html += '<p class="muted">The draft goes as close to Opening Day as we can get it. ' + esc(longDate(dr.opening, true)) + " is Opening Day" +
+      (dr.openingNight ? ", after one Opening Night game on " + esc(longDate(dr.openingNight, true)) : "") + ". Keepers lock about a week before the draft." +
+      (dr.caveat ? " " + esc(dr.caveat) : "") + "</p>";
+    $("o-draft").innerHTML = html + "</div>";
   }
 
   /* ---------- Managers and the graveyard ---------- */
