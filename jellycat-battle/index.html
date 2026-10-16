@@ -6,7 +6,7 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#f9f1e8">
   <meta name="description" content="An unofficial, single-player collection and battle game inspired by real Jellycat plush characters.">
-  <title>Jellycat Battle Club • Playtest</title>
+  <title>Jellycat Battle Club • The Softlands v0.5</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A5%90%3C/text%3E%3C/svg%3E">
   <style>
 500;600;700;800&family=Fraunces:opsz,wght,SOFT,WONK@9..144,650,15,1;9..144,800,20,1&display=swap');
@@ -87,6 +87,30 @@ kbd{display:inline-block;border:1px solid #ada2a1;background:#f1ece5;border-radi
 .terrain-garden{background-image:radial-gradient(circle at 20% 10%,#faffd299 0,transparent 55%)}
 .terrain-moon{background-image:radial-gradient(circle at 40% 70%,#fff7ff7a,transparent 65%)}
 .terrain-cove{background-image:repeating-linear-gradient(125deg,transparent 0 13px,#d5f8ff35 14px 17px,transparent 19px 28px)}
+
+/* V5: organic, tighter world tiles; quarter-step walking and a free-floating sprite. */
+.world-viewport{position:relative;isolation:isolate;background:#d6e4bf;touch-action:pan-y;}
+.world-grid{--map-cols:21;}
+.world-tile{box-shadow:none;transition:none;border-radius:0;overflow:visible;}
+.world-tile:hover{box-shadow:inset 0 0 0 1px #fdfaf89c;background-image:radial-gradient(circle at center,#fff5,transparent 80%);z-index:5;}
+.world-tile.terrain-trail{background:#edddc9;box-shadow:none;}
+.world-tile.has-grass{background-image:radial-gradient(ellipse at 25% 75%,#4d9b503b,transparent 80%);}
+.tall-grass{pointer-events:none;position:absolute;inset:-15% -8% -8%;display:grid;place-items:center;font-size:clamp(.95rem,2.1vw,1.65rem);color:#448d50;font-weight:900;text-shadow:1px 2px #badb9b;transform:rotate(-7deg);opacity:.85;}
+.world-player-overlay{position:absolute;z-index:18;transform:translate(-50%,-95%) translateY(var(--player-step,0px));width:clamp(42px,7.8%,64px);height:clamp(52px,9.6%,78px);pointer-events:none;filter:drop-shadow(0 5px 2px #2b302d4d);transition:left .065s linear,top .065s linear;}
+.world-player-overlay .plush-svg{width:100%;height:100%;max-height:none;}
+.world-npc{width:140%;height:160%;left:-20%;bottom:-10%;}
+.world-parlor{z-index:2;display:grid;place-items:center;position:absolute;inset:-20%;border:2px solid #75579f;background:radial-gradient(ellipse,#f8e8ff,#c0a5e3 72%);border-radius:43% 57% 48% 52%;font-size:1.25rem;color:#66418d;box-shadow:0 2px 8px #41345561;}
+.world-parlor small{display:block;font:900 .38rem/1.1 'DM Sans',sans-serif;letter-spacing:.04em;position:absolute;bottom:13%;background:#fffdf7;border-radius:5px;padding:1px 3px;}
+.parlor-passport{display:grid;gap:7px;margin-top:12px;}.parlor-row{width:100%;display:flex;align-items:center;text-align:left;gap:10px;background:#fcf8f0;border:1.5px solid #d2c6d5;border-radius:13px;padding:9px;color:#44384c;}.parlor-row:hover{background:#f3eafa;}.parlor-row.earned{background:#e4efde;border-color:#95bd94;}.parlor-row span:last-child{flex:1;min-width:0;}.parlor-row strong{font-size:.78rem;display:block;}.parlor-row small{font-size:.64rem;display:block;color:#746d73;line-height:1.3;}.patch-icon{flex:0 0 auto;width:33px;height:33px;border:2px dashed #8664ad;display:grid;place-items:center;border-radius:50%;background:#ead7f6;font:900 1.25rem 'Fraunces',serif;color:#61417a;}.earned .patch-icon{background:#dcf4d3;border-color:#549760;color:#3f8052;}
+.game-nav button kbd,.btn kbd,.move kbd{border:1px solid currentColor;color:inherit;background:#ffffff20;font-weight:900;margin-right:4px;min-width:18px;text-align:center;}
+.help-toggle{padding:10px 12px!important;background:#f8eaf8!important;border:1px solid #b9a1c4!important;font-size:.76rem!important;}.game-nav button[aria-current="page"] kbd{color:white;border-color:#c8b3d8;}
+.shortcut-grid{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;margin:20px 0;}.shortcut-grid dt,.shortcut-grid dd{margin:0;font-size:.81rem;}.shortcut-grid dt{white-space:nowrap;}.shortcut-grid dd{color:#655769;line-height:1.4;}.help-modal{max-height:min(88vh,750px);overflow:auto;}
+.encounter-art,.parlor-host{display:grid;place-items:center;height:145px;margin:10px auto;max-width:230px;background:radial-gradient(ellipse,#e2f2d4,transparent 70%);}.encounter-art .plush-svg,.parlor-host .plush-svg{height:150px;width:150px;}
+.encounter-hint{font-size:.74rem;color:#617257;font-weight:800;align-self:center;}.patch-award{display:inline-block;background:#fffdf0;border:2px dashed #9875ac;padding:7px 15px;border-radius:20px;font-weight:800;margin:6px 0;}
+.world-stamp{width:115px;height:115px;}.world-stamp-count{font-size:2.8rem;}
+@media(max-width:950px){.world-grid{--map-cols:17}}
+@media(max-width:650px){.world-grid{--map-cols:13}.world-player-overlay{width:clamp(39px,10%,58px);height:clamp(46px,13%,70px)}.world-npc{width:145%;height:155%}.world-stamp{width:82px;height:82px}.world-stamp-count{font-size:1.8rem}.world-viewport{touch-action:pan-y}.shortcut-grid{grid-template-columns:1fr}.shortcut-grid dd{margin:-7px 0 2px}}
+@media(prefers-reduced-motion:reduce){.world-player-overlay{transition:none}}
 
 </style>
 </head>
@@ -317,27 +341,34 @@ function validateSave(input){const d=freshSave();if(!input||typeof input!=='obje
  out.history=Array.isArray(input.history)?input.history.filter(x=>typeof x==='string').slice(-30):[];
  out.version=3;return out;
 }
-function sanitizePending(p,s){const choices=[...new Set((p.choices||[]).filter(x=>BY_ID.has(x)&&!s.owned.includes(x)))].slice(0,3);return choices.length?{choices,boss:Boolean(p.boss)}:null;}
+function sanitizePending(p,s){const choices=[...new Set((p.choices||[]).filter(x=>BY_ID.has(x)&&!s.owned.includes(x)))].slice(0,3);return choices.length?{choices,boss:Boolean(p.boss),patchId:typeof p.patchId==='string'?p.patchId.slice(0,40):null}:null;}
 function sanitizeBattle(b,s){if(!Array.isArray(b.mine)||!Array.isArray(b.theirs))return null;
  const clean=(list,player)=>list.slice(0,3).filter(f=>BY_ID.has(f.id)&&(!player||s.owned.includes(f.id))).map(f=>({id:f.id,level:Math.max(1,Math.min(50,Math.floor(f.level)||1)),hp:Math.max(0,Math.min(999,Math.floor(f.hp)||0)),maxHp:Math.max(1,Math.min(999,Math.floor(f.maxHp)||100)),heals:Math.max(0,Math.min(1,Math.floor(f.heals)||0)),boost:Math.max(0,Math.min(25,Math.floor(f.boost)||0))}));
  const mine=clean(b.mine,true),theirs=clean(b.theirs,false);if(!mine.length||!theirs.length)return null;
- return {...b,mine,theirs,mi:Math.max(0,Math.min(mine.length-1,Math.floor(b.mi)||0)),ei:Math.max(0,Math.min(theirs.length-1,Math.floor(b.ei)||0)),log:Array.isArray(b.log)?b.log.filter(x=>typeof x==='string').slice(-35):[],kind:b.kind==='boss'?'boss':'normal',cpuScale:Math.max(.45,Math.min(1.2,Number(b.cpuScale)||1)),round:Math.max(1,Math.floor(b.round)||1)};
+ return {...b,parlorId:typeof b.parlorId==='string'?b.parlorId:null,mine,theirs,mi:Math.max(0,Math.min(mine.length-1,Math.floor(b.mi)||0)),ei:Math.max(0,Math.min(theirs.length-1,Math.floor(b.ei)||0)),log:Array.isArray(b.log)?b.log.filter(x=>typeof x==='string').slice(-35):[],kind:['boss','parlor','wild'].includes(b.kind)?b.kind:'normal',cpuScale:Math.max(.45,Math.min(1.2,Number(b.cpuScale)||1)),round:Math.max(1,Math.floor(b.round)||1)};
 }
 function typeMultiplier(a,b){const ai=TYPES.indexOf(a),bi=TYPES.indexOf(b);if(ai<0||bi<0)return 1;if((ai+1)%TYPES.length===bi)return 1.35;if((bi+1)%TYPES.length===ai)return .75;return 1;}
 function participant(id,level,boost=0){const {hp}=fighterStats(id,level,boost);return {id,level,hp,maxHp:hp,heals:0,boost};}
 function nextAlive(team){return team.findIndex(x=>x.hp>0)};
 const allOut=(team)=>team.every(x=>x.hp<=0);
-function makeBattle(save,rng=Math.random){if(save.pending)throw Error('Claim your reward first');if(save.battle)return save.battle;
+function makeBattle(save,rng=Math.random,opts={}){if(save.pending)throw Error('Claim your reward first');if(save.battle)return save.battle;
  const n=Math.min(3,save.team.length);let boss=save.wins>0&&(save.wins+1)%7===0&&LEGENDARIES.some(x=>!save.owned.includes(x.id));
  const regular=shuffle(CATALOG.filter(x=>x.rarity!=='Legendary'&&!save.owned.includes(x.id)),rng);
  let enemy=regular.slice(0,n);if(enemy.length<n)enemy.push(...shuffle(CATALOG.filter(x=>x.rarity!=='Legendary'&&!enemy.includes(x)),rng).slice(0,n-enemy.length));
+ if(opts.parlorId){
+  // The lead opponent is the Keeper's recognizable signature Jellycat.
+  const keepers={village:'Bashful Beige Bunny',garden:'Amuseables Sunflower',cove:'Larry Lobster ‘Sailor’',moon:'Ghost Bob'};
+  const signature=CATALOG.find(p=>p.officialName===keepers[opts.parlorId]);
+  if(signature)enemy[0]=signature;
+  boss=false;
+ }
  if(boss){const candidates=LEGENDARIES.filter(x=>!save.owned.includes(x.id));enemy[0]=take(candidates,rng);}
  if(!enemy.length)throw Error('No opponents available');
  // Start CPU slightly weaker, ramp up slowly. Never scale unboundedly.
  const average=save.team.reduce((sum,id)=>sum+(save.levels[id]||1),0)/n;
  const enemyLevel=Math.max(1,Math.min(50,Math.round(average-1+save.wins/9)));
- const boost=Math.min(16,Math.floor(save.wins/5));
- const b={kind:boss?'boss':'normal',mine:save.team.slice(0,3).map(id=>participant(id,save.levels[id]||1)),theirs:enemy.map(x=>participant(x.id,enemyLevel,boss?boost+1:boost)),mi:0,ei:0,round:1,cpuScale:Math.min(1.08,.36+save.wins*.024),log:[boss?'A legendary challenger appears!':'A new match begins. Choose your move!']};
+ const boost=Math.min(16,Math.floor(save.wins/5))+(opts.parlorId?1:0);
+ const b={kind:opts.parlorId?'parlor':boss?'boss':opts.source==='wild'?'wild':'normal',parlorId:opts.parlorId||null,mine:save.team.slice(0,3).map(id=>participant(id,save.levels[id]||1)),theirs:enemy.map(x=>participant(x.id,enemyLevel,boss?boost+1:boost)),mi:0,ei:0,round:1,cpuScale:Math.min(1.08,.36+save.wins*.024),log:[boss?'A legendary challenger appears!':'A new match begins. Choose your move!']};
  save.battle=b;return b;
 }
 function active(b,side){return b[side][b[side==='mine'?'mi':'ei']];}
@@ -399,13 +430,14 @@ function concludeBattle(save,result,rng=Math.random){if(!save.battle)throw Error
   s.wins++;s.streak++;s.bestStreak=Math.max(s.bestStreak,s.streak);s.points++;
   if(s.wins%5===0)s.jars++;
   if(b.kind==='boss')s.bossWins++;
+  if(b.kind==='parlor'&&b.parlorId){s.world??={};s.world.parlorBadges??=[];if(!s.world.parlorBadges.includes(b.parlorId)){s.world.parlorBadges.push(b.parlorId);s.history.push(`Earned the ${b.parlorId} Parlor patch!`);}}
   b.mine.forEach(f=>grantXp(s,f.id,f.hp>0?35:22));
   const options=rewardChoices(s,rng,b.kind==='boss',b.theirs.map(f=>f.id));
-  s.pending=options.length?{choices:options,boss:b.kind==='boss'}:null;
+  s.pending=options.length?{choices:options,boss:b.kind==='boss',patchId:b.kind==='parlor'?b.parlorId:null}:null;
   s.history.push(`${b.kind==='boss'?'Legendary':'Team'} victory: +1 point · streak ${s.streak}`);
  }else{
   if(!allOut(b.mine))throw Error('Your team has not been defeated');
-  s.losses++;s.streak=0;s.history.push('Defeat: streak reset · collection safe');
+  s.losses++;s.streak=0;b.mine.forEach(f=>grantXp(s,f.id,8));s.history.push('Defeat: streak reset · collection safe · +8 XP');
  }
  s.history=s.history.slice(-30);return s;
 }
@@ -436,8 +468,7 @@ function plushArt(p,extraClass=''){if(!p)return '';
  const [c,d,l]=col;
  const id='felt'+h;
  const esc=s=>String(s).replace(/[&<>"']/g,v=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[v]));
- const path=(d,fill,stroke=d2)=>''; // no-op helper left private to the module
- const ellipse=(x,y,rx,ry,f,stroke='none',sw=2)=>`<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${f}" stroke="${stroke}" stroke-width="${sw}"/>`;
+  const ellipse=(x,y,rx,ry,f,stroke='none',sw=2)=>`<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${f}" stroke="${stroke}" stroke-width="${sw}"/>`;
  const circle=(x,y,r,f,stroke='none',sw=2)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${f}" stroke="${stroke}" stroke-width="${sw}"/>`;
  const P=(d,f,stroke='none',sw=2)=>`<path d="${d}" fill="${f}" stroke="${stroke}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/>`;
  const thin='#574a59';let ears='',body='',acc='',legs='',arms='',faceY=79,faceX=80;
@@ -445,9 +476,13 @@ function plushArt(p,extraClass=''){if(!p)return '';
  arms=`<g>${P('M39 83 Q23 78 18 91 Q14 100 23 104 Q35 106 48 97',c,d,2)}${P('M116 83 Q134 80 142 91 Q146 104 134 105 L112 96',c,d,2)}</g>`;
  const oval=()=>ellipse(80,78,49,54,`url(#${id})`,d,2.5);
  if(/croissant/.test(n)){
-  body=P('M17 83 C22 33 51 24 78 44 C109 21 139 42 144 82 C145 100 135 108 122 101 C102 89 99 76 80 77 C63 77 57 93 37 104 C23 112 12 100 17 83Z',`url(#${id})`,d,3);
-  acc=P('M43 56 Q61 68 53 92 M79 45 Q89 60 87 77 M113 52 Q106 72 119 90','none','#c68c4e',4);
-  faceY=79;
+  // The pastry is ONE connected stuffed body, not a horseshoe with a floating face.
+  // A soft dough belly joins the curved pastry ends and anchors both legs.
+  body=ellipse(80,82,40,44,`url(#${id})`,d,2);
+  body+=P('M17 83 C22 33 51 24 78 44 C109 21 139 42 144 82 C145 100 133 108 122 103 C103 96 98 70 80 71 C62 72 58 96 37 104 C23 112 12 100 17 83Z',`url(#${id})`,d,3);
+  acc=P('M43 56 Q61 68 53 92 M79 45 Q89 58 87 74 M113 52 Q106 72 119 90','none','#c68c4e',4);
+  legs=`<g stroke="${d}" stroke-width="2.4">${P('M56 112 Q53 133 54 143 Q55 151 67 146 L70 114',c,d,2.4)}${P('M92 114 Q94 136 98 146 Q111 151 111 140 L106 112',c,d,2.4)}</g>`;
+  faceY=95;
  }else if(/golf ball/.test(n)){
   body=circle(80,78,52,`url(#${id})`,d,2.5);
   for(let y=43;y<=109;y+=14)for(let x=39+(y%28?7:0);x<=122;x+=15){if(Math.hypot(x-80,y-78)<43)acc+=ellipse(x,y,3,2,'#e6e0dc','#c9c2bf',.65)}
@@ -511,6 +546,8 @@ export {plushArt};
 /* Softlands overworld: deterministic, entirely offline, all movement is real game state. */
 const WORLD_W=56, WORLD_H=40;
 const WORLD_START={x:27,y:20};
+// Coarse terrain coordinates, but the player can travel in quarter-tile increments.
+const WALK_INCREMENT=.25;
 const ZONES=[
  {id:'wood',name:'Whispering Woods',color:'#bdd8b0',x:2,y:2,description:'Mossy paths and very tall stories.'},
  {id:'garden',name:'Petal Gardens',color:'#dce3a1',x:26,y:5,description:'Flowers, butterflies, and tiny adventures.'},
@@ -523,7 +560,7 @@ const ZONES=[
 ];
 function zoneAt(x,y){if(y>=28&&x<19)return 'sports';if(y>=28&&x<36)return 'hill';if(x>=36&&y>=16)return 'cove';if(x>=36)return 'moon';if(y<14&&x<19)return 'wood';if(y<14)return 'garden';if(x<19)return 'bakery';return 'square';}
 const NPCS=[
- {id:'postie',name:'Pip the Postie',product:'Bashful Beige Bunny',x:26,y:19,icon:'✉',hint:'Welcome, explorer! What are you looking for?',say:'Hello! Welcome to Cuddlewick. Every path leads to someone with a story. Try the bakery to the west, or the gardens to the north. The big rainbow circle is where battles happen.',challenge:null},
+ {id:'postie',name:'Pip the Postie',product:'Bashful Beige Bunny',x:26,y:19,icon:'✉',hint:'Welcome, explorer! What are you looking for?',say:'Hello! Welcome to Cuddlewick. Every path leads to someone with a story. Try the bakery to the west, or the gardens to the north. Look for a little ✿ Parlor sign to challenge a Keeper, or venture into tall grass for surprise matches.',challenge:null},
  {id:'baker',name:'Chef Crumbs',product:'Amuseables Sourdough',x:9,y:18,icon:'🥐',hint:'A warm little baking challenge.',say:'I have three doughy mysteries to solve. Help me make the perfect cozy croissant and I will give you a starry reward!',challenge:'baker'},
  {id:'florist',name:'Petal the Gardener',product:'Amuseables Sunflower',x:27,y:7,icon:'✿',hint:'The garden needs some careful tending.',say:'A garden is a little bit of magic you can water. Can you help my flowers and find their favorite things?',challenge:'garden'},
  {id:'reader',name:'Professor Noodle',product:'Smudge Elephant',x:31,y:20,icon:'♧',hint:'A very serious plush researcher.',say:'I am making a field guide to the Softlands. People who explore all eight districts earn the title Wandering Wonder. Every mystery silhouette is a friend you have not met yet.',challenge:null},
@@ -533,6 +570,28 @@ const NPCS=[
  {id:'coach',name:'Coach Bounce',product:'Amuseables Sports Tennis Ball',x:10,y:32,icon:'★',hint:'Playground games with a tiny coach.',say:'The only rule of playtime is that it must be fun. And maybe bring snacks. Ready for a two-round sporting challenge?',challenge:'sports'},
  {id:'dreamer',name:'Stella the Star',product:'Amuseables Silver Star',x:29,y:34,icon:'✦',hint:'A dreamy little inventor.',say:'Sometimes adventures are about being curious. Sometimes they are about winning battles. The very best adventures are a little of both.',challenge:null},
 ];
+// Parlor Keepers are the Softlands' equivalent of gym leaders. Earn a unique patch
+// from each Keeper. Later Parlors require earlier patches, without locking free exploration.
+const PARLORS=[
+ {id:'village',name:'Cuddlewick Parlor',patch:'Button Patch',keeper:'Mabel the Keeper',product:'Bashful Beige Bunny',x:30,y:23,required:0,theme:'A welcoming first challenge'},
+ {id:'garden',name:'Petal Parlor',patch:'Bloom Patch',keeper:'Petal the Keeper',product:'Amuseables Sunflower',x:30,y:10,required:1,theme:'The garden favors clever matchups'},
+ {id:'cove',name:'Tidepool Parlor',patch:'Shell Patch',keeper:'Captain Larry',product:'Larry Lobster ‘Sailor’',x:43,y:30,required:2,theme:'A splashy test of teamwork'},
+ {id:'moon',name:'Moonbeam Parlor',patch:'Moon Patch',keeper:'Bob the Dreamer',product:'Ghost Bob',x:48,y:12,required:3,theme:'Your toughest cozy challenge yet'}
+];
+const parlorById=id=>PARLORS.find(p=>p.id===id);
+function nearbyParlor(w,radius=1.7){return PARLORS.find(p=>Math.hypot(p.x-w.x,p.y-w.y)<=radius)||null;}
+// Deterministic tall-grass pockets. No invisible random battles on paths or inside town.
+function isTallGrass(x,y){const z=zoneAt(x,y),u=Math.floor(x),v=Math.floor(y);
+ if(!['wood','garden','sports','hill','moon'].includes(z))return false;
+ if((v===20&&u>3&&u<52)||(u===27&&v>2&&v<38)||(u===10&&v>5&&v<36)||(u===46&&v>7&&v<36)||(v===7&&u>8&&u<48)||(v===33&&u>6&&u<49))return false;
+ if(NPCS.some(n=>Math.hypot(n.x-u,n.y-v)<2)||PARLORS.some(p=>Math.hypot(p.x-u,p.y-v)<2))return false;
+ return hashTile(u,v)%7<3;
+}
+function rollGrassEncounter(world,fromX,fromY,rng=Math.random){
+ const cellChanged=Math.floor(fromX)!==Math.floor(world.x)||Math.floor(fromY)!==Math.floor(world.y);
+ if(!cellChanged||!isTallGrass(world.x,world.y)||world.steps-world.lastEncounterStep<14)return false;
+ if(rng()<.19){world.lastEncounterStep=world.steps;return true;}return false;
+}
 const LANDMARKS=[
  {x:23,y:18,icon:'🏠',name:'Cuddlewick cottage'},{x:29,y:18,icon:'🏡',name:'Little village house'},
  {x:32,y:21,icon:'🛍️',name:'General store'},{x:24,y:23,icon:'⛲',name:'Wishing fountain'},
@@ -561,27 +620,31 @@ const CHALLENGES={
  sea:{title:'Captain Larry’s Shell School',steps:[{question:'Which of these might you find along the shore?',answers:['A seashell','A traffic light','A frying pan'],correct:0},{question:'A little crab is crossing the path. What should you do?',answers:['Give it some space','Pick it up and throw it','Build a wall around it'],correct:0}]},
  sports:{title:'Coach Bounce’s Playtime Quiz',steps:[{question:'What shape is a golf ball plush?',answers:['A golf hole','A round, cuddly ball','A golf cart'],correct:1},{question:'What matters most during a friendly game?',answers:['Having fun together','Always being the loudest','Winning every time'],correct:0}]}
 };
-function freshWorld(){return {x:WORLD_START.x,y:WORLD_START.y,steps:0,visited:['square'],talked:[],completed:[],found:[],firstBattle:false};}
+function freshWorld(){return {x:WORLD_START.x,y:WORLD_START.y,steps:0,lastEncounterStep:-100,parlorBadges:[],visited:['square'],talked:[],completed:[],found:[],firstBattle:false};}
 function ensureWorld(s){const defaults=freshWorld(),w=(s.world&&typeof s.world==='object')?s.world:{};
  const uniqueIds=(v,valid)=>Array.isArray(v)?[...new Set(v.filter(x=>typeof x==='string'&&valid.includes(x)))]:[];
- s.world={...defaults,x:Math.max(0,Math.min(WORLD_W-1,Math.floor(Number.isFinite(Number(w.x))?Number(w.x):WORLD_START.x))),y:Math.max(0,Math.min(WORLD_H-1,Math.floor(Number.isFinite(Number(w.y))?Number(w.y):WORLD_START.y))),steps:Math.max(0,Math.min(999999,Math.floor(Number(w.steps)||0))),visited:uniqueIds(w.visited,ZONES.map(z=>z.id)),talked:uniqueIds(w.talked,NPCS.map(n=>n.id)),completed:uniqueIds(w.completed,Object.keys(CHALLENGES)),found:uniqueIds(w.found,TREASURES.map(t=>t.id)),firstBattle:!!w.firstBattle};
+ s.world={...defaults,x:Math.max(0,Math.min(WORLD_W-1,Number.isFinite(Number(w.x))?Number(w.x):WORLD_START.x)),y:Math.max(0,Math.min(WORLD_H-1,Number.isFinite(Number(w.y))?Number(w.y):WORLD_START.y)),steps:Math.max(0,Math.min(999999,Math.floor(Number(w.steps)||0))),lastEncounterStep:Math.max(-100,Math.min(999999,(Number.isFinite(Number(w.lastEncounterStep))?Math.floor(Number(w.lastEncounterStep)):-100))),parlorBadges:uniqueIds(w.parlorBadges,PARLORS.map(p=>p.id)),visited:uniqueIds(w.visited,ZONES.map(z=>z.id)),talked:uniqueIds(w.talked,NPCS.map(n=>n.id)),completed:uniqueIds(w.completed,Object.keys(CHALLENGES)),found:uniqueIds(w.found,TREASURES.map(t=>t.id)),firstBattle:!!w.firstBattle};
  const zone=zoneAt(s.world.x,s.world.y);if(!s.world.visited.includes(zone))s.world.visited.push(zone);
  return s;
 }
-function stepWorld(s,dx,dy){ensureWorld(s);if(Math.abs(dx)+Math.abs(dy)!==1)throw Error('Only move one space at a time');const w=s.world;
- const x=Math.max(0,Math.min(WORLD_W-1,w.x+dx)),y=Math.max(0,Math.min(WORLD_H-1,w.y+dy));
+function stepWorld(s,dx,dy){
+ ensureWorld(s);
+ const size=Math.abs(dx)+Math.abs(dy);
+ if(!Number.isFinite(size)||size<=0||size>1.001|| (dx!==0&&dy!==0))throw Error('Only horizontal or vertical movement up to one tile');
+ const w=s.world;
+ const x=+Math.max(0,Math.min(WORLD_W-1,w.x+dx)).toFixed(3),y=+Math.max(0,Math.min(WORLD_H-1,w.y+dy)).toFixed(3);
  if(x===w.x&&y===w.y)return {moved:false,zone:null,treasure:null,npc:null};
- const npc=NPCS.find(n=>n.x===x&&n.y===y);
+ const npc=NPCS.find(n=>Math.hypot(n.x-x,n.y-y)<.72);
  if(npc)return {moved:false,npc,zone:null,treasure:null};
- const oldZone=zoneAt(w.x,w.y);w.x=x;w.y=y;w.steps++;
+ const previous={x:w.x,y:w.y};w.x=x;w.y=y;w.steps++;
  const zone=zoneAt(x,y);let newZone=null;
  if(!w.visited.includes(zone)){w.visited.push(zone);newZone=ZONES.find(z=>z.id===zone);s.history.push(`Explored ${newZone.name}`);s.history=s.history.slice(-30);}
- let treasure=TREASURES.find(t=>t.x===x&&t.y===y&&!w.found.includes(t.id));
+ const treasure=TREASURES.find(t=>Math.hypot(t.x-x,t.y-y)<.55&&!w.found.includes(t.id));
  if(treasure){w.found.push(treasure.id);s.points+=treasure.points;s.history.push(`Found ${treasure.title} (+${treasure.points} star)`);s.history=s.history.slice(-30);}
- return {moved:true,zone:newZone,treasure,npc:null};
+ return {moved:true,zone:newZone,treasure,npc:null,encounter:rollGrassEncounter(w,previous.x,previous.y)};
 }
-function nearbyNpcs(w){return NPCS.filter(n=>Math.abs(n.x-w.x)+Math.abs(n.y-w.y)<=2)}
-function nearbyArena(w){return Math.abs(30-w.x)+Math.abs(23-w.y)<=2}
+function nearbyNpcs(w){return NPCS.filter(n=>Math.hypot(n.x-w.x,n.y-w.y)<=1.75)}
+function nearbyArena(w){return !!nearbyParlor(w)}
 function completeChallenge(s,id){ensureWorld(s);if(!CHALLENGES[id])throw Error('Unknown challenge');if(s.world.completed.includes(id))return false;
  s.world.completed.push(id);s.points+=2;
  if(s.world.completed.length%3===0)s.jars++;
@@ -601,15 +664,18 @@ function persist(){state=ensureWorld(validateSave(state));try{localStorage.setIt
 function update(fn){state=fn(state);persist();render();}
 function el(tag,cl,text){const x=document.createElement(tag);if(cl)x.className=cl;if(text)x.textContent=text;return x;}
 function notify(message){let t=$('.toast');if(!t){t=el('div','toast');t.setAttribute('role','status');document.body.append(t);}t.textContent=message;t.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.add('hidden'),3600);}
-function go(p){stopWalking();page=p;detail=null;render();window.scrollTo({top:0,behavior:'instant'});}
+function go(p){if(typeof stopHeld==='function')stopHeld();stopWalking();if(p==='battle'&&!state.battle){notify('Find a Parlor Keeper or explore tall grass for your next battle!');p='world';}page=p;detail=null;render();window.scrollTo({top:0,behavior:'instant'});}
 const badge=(txt,style='')=>`<span class="mini-pill" ${style?`style="${style}"`:''}>${safe(txt)}</span>`;
 const rarityTag=p=>badge(p.rarity,p.rarity==='Legendary'?'background:#ffe49f;color:#68431c':p.rarity==='Rare'?'background:#eddbff;color:#61358c':'');
 const bigAvatar=(p,hidden=false)=>`<div class="avatar ${hidden?'mystery':''}" style="background:${hidden?'#d9d4da':TYPE_COLOR[p.typeIndex]};">${plushArt(p)}</div>`;
 function progressBar(value,max,kind='hp'){const percentage=Math.max(0,Math.min(100,Math.round(100*value/max)));return `<div class="bar" role="progressbar" aria-valuenow="${value}" aria-valuemin="0" aria-valuemax="${max}"><div class="fill ${kind==='xp'?'xp':percentage<28?'low':''}" style="width:${percentage}%"></div></div>`;}
 function statBar(){return `<div class="stat-strip"><div class="stat-item"><span class="stat-label">Matches won</span><span class="big-number">${state.wins}</span></div><div class="stat-item"><span class="stat-label">Win streak</span><span class="big-number">${state.streak} <span style="font:normal 1.2rem sans-serif">🔥</span></span></div><div class="stat-item"><span class="stat-label">Your collection</span><span class="big-number">${state.owned.length}<span style="font-size:.91rem">/${COLLECTION_GOAL}</span></span></div><div class="stat-item"><span class="stat-label">Star points</span><span class="big-number">${state.points} <span style="font:normal 1.2rem sans-serif">★</span></span></div></div>`;}
-function nav(){return `<nav class="game-nav" aria-label="Game sections">
-${[['world','✿ Explore'],['home','⌂ My team'],['battle','⚔ Battle'],['collection','▦ Collection'],['clubhouse','✦ Clubhouse']].map(([id,t])=>`<button type="button" data-action="nav" data-id="${id}" ${page===id?'aria-current="page"':''}>${t}</button>`).join('')}
-<span class="spacer"></span><span class="stars">★ ${state.points} points &nbsp; · &nbsp; 🫙 ${state.jars} jars</span></nav>`;}
+function nav(){const items=[['world','✿ Explore','G'],['home','⌂ My team','T'],['collection','▦ Collection','C'],['clubhouse','✦ Clubhouse','H']];
+ if(state.battle)items.push(['battle','⚔ In battle','V']);
+ return `<nav class="game-nav" aria-label="Game sections">${items.map(([id,t,k])=>`<button type="button" data-action="nav" data-id="${id}" ${page===id?'aria-current="page"':''}><kbd>${k}</kbd> ${t}</button>`).join('')}
+ <button class="help-toggle" data-action="help" title="Keyboard shortcuts (? key)"><kbd>?</kbd> Controls</button>
+ <span class="spacer"></span><span class="stars">★ ${state.points} points &nbsp; · &nbsp; 🫙 ${state.jars} bags</span></nav>`;
+}
 function panel(c,cl=''){return `<section class="panel ${cl}">${c}</section>`;}
 function card(p,hidden=false,selected=false,action='detail',labelOverride=null){let name=hidden?'????':(labelOverride||label(state,p.id));return `<button type="button" class="plush ${hidden?'locked':''} ${selected?'selected':''}" data-action="${action}" data-id="${safe(p.id)}" ${hidden?'aria-label="Undiscovered character"':''}>
 ${bigAvatar(p,hidden)}<span class="plush-title">${safe(name)}</span><span class="plush-detail">${hidden?'Not discovered':`${safe(p.type)} · ${safe(p.rarity)}`}</span>
@@ -632,7 +698,7 @@ ${panel(`<span class="eyebrow">Welcome, trainer!</span><h1>Your first little<br>
 ${panel(`${bigAvatar(p)}<div class="center" style="margin-top:12px"><span class="eyebrow">01 / The first friend</span><h2>${safe(p.officialName)}</h2><p class="small muted">An original little plush illustration, just for our game.</p></div>`)}
 </div>${panel(`<h2>How it works</h2><div class="grid-3"><div><span class="spirit">⚔️</span><h3>Battle</h3><p class="small">Explore the Softlands and challenge your friends in the arena.</p></div><div><span class="spirit">🎁</span><h3>Collect</h3><p class="small">Win, then choose one of three mystery rewards. Legendary bosses appear later.</p></div><div><span class="spirit">⭐</span><h3>Grow</h3><p class="small">Earn experience and level up. Your Jellycats stay the characters they are.</p></div></div>`)}`;}
 function home(){const started=state.battle!==null;const featured=BY_ID.get(state.team[0]);return `${statBar()}<div class="hero">
-${panel(`<div class="eyebrow">Your adventure starts here</div><h1>Your team.<br>Your rules.</h1><p>Build a little dream team, challenge the computer, and collect new real Jellycat characters. Each victory gets you closer to the full collection.</p><div class="ribbon mb-18">${badge('3 moves each')}${badge('6 battle types')}${badge('★ 1 point per win')}</div><button class="btn" data-action="nav" data-id="battle">${started?'Resume your battle →':'Find a battle →'}</button>`,'hero-panel')}
+${panel(`<div class="eyebrow">Your adventure starts here</div><h1>Your team.<br>Your rules.</h1><p>Build a little dream team, find battles while exploring, and collect new real Jellycat characters. Each victory gets you closer to the full collection.</p><div class="ribbon mb-18">${badge('3 moves each')}${badge('6 battle types')}${badge('★ 1 point per win')}</div><button class="btn" data-action="nav" data-id="${started?'battle':'world'}">${started?'Resume your battle →':'Explore to find a battle →'}</button>`,'hero-panel')}
 ${panel(`<div class="eyebrow">Your lead Jellycat</div><div class="center">${bigAvatar(featured)}<h2 class="mt-12">${safe(label(state,featured.id))}</h2><p class="small">${safe(featured.officialName)} · Level ${state.levels[featured.id]||1}</p></div>`, 'starter-portrait')}
 </div><div class="grid-2">
 ${panel(`<div class="row between mb-18"><div><div class="eyebrow">Pick up to three</div><h2 class="mb-0">Your battle team</h2></div>${badge(`${state.team.length} / 3 ready`)}</div>
@@ -647,28 +713,28 @@ ${panel(`<div class="meter"><span>Collection progress</span><span>${Math.round(1
 <p class="source-note">Collected characters show their real product names and original illustrated plush portraits. Undiscovered friends stay hidden.</p>
 <div class="grid-collection">${list.map(p=>card(p,!owned(state,p.id))).join('')}${category==='All'&&ownership!=='Owned'&&!query?Array.from({length:COLLECTION_GOAL-CATALOG.length},(_,i)=>`<div class="plush locked" aria-label="Catalog spot not yet researched"><div class="avatar mystery" style="background:#d9d4da"><span>?</span></div><span class="plush-title">Future entry ${CATALOG.length+i+1}</span><span class="plush-detail">Catalog research pending</span></div>`).join(''):''}</div>
 ${!list.length?'<div class="empty">No matching collected Jellycats.</div>':''}`)}`;}
-function battle(){const b=state.battle;if(!b)return `${statBar()}${panel(`<div class="eyebrow">Ready, set, cuddle!</div><h1>The battle arena.</h1><p>Choose your three Jellycats and face a computer team. Early battles are easier. As your winning record grows, opponents become stronger.</p>
+function battle(){const b=state.battle;if(!b)return `${statBar()}${panel(`<div class="eyebrow">Ready, set, cuddle!</div><h1>A challenge has found you.</h1><p>Explore the world and encounter a Parlor Keeper or tall-grass challenger. Early battles are easier. As your winning record grows, opponents become stronger.</p>
 <div class="grid-3 mb-18">${state.team.map(id=>card(BY_ID.get(id))).join('')}</div><div class="notice"><strong>Your lineup has ${state.team.length} Jellycat${state.team.length===1?'':'s'}.</strong> The opponent's team will match your team size. Collect three to unlock full three-versus-three battles.</div>
-<button class="btn" data-action="start-battle">Start a new match →</button><button class="btn cream" data-action="nav" data-id="home" style="margin-left:10px">Change my team</button>
+<button class="btn" data-action="nav" data-id="world">Return to the Softlands →</button><button class="btn cream" data-action="nav" data-id="home" style="margin-left:10px">Change my team</button>
 <p class="source-note mt-20">Legendary boss matches appear every seventh victory once available. You keep your collection if you lose.</p>`)}`;
  const me=b.mine[b.mi],enemy=b.theirs[b.ei],mp=BY_ID.get(me.id),ep=BY_ID.get(enemy.id);const mult=typeMultiplier(mp.type,ep.type);
- const badgeText=(b.kind==='boss'?'✦ LEGENDARY BOSS':'⚔ TEAM MATCH');
+ const badgeText=(b.kind==='boss'?'✦ LEGENDARY BOSS':b.kind==='parlor'?'✿ PARLOR CHALLENGE':b.kind==='wild'?'🌿 TALL-GRASS ENCOUNTER':'⚔ TEAM MATCH');
  return `<div class="row between mb-18"><div><span class="eyebrow">${badgeText} · Round ${b.round}</span><h1>${b.kind==='boss'?'The boss is here.':'Your move.'}</h1></div><div>${badge(`${b.mine.length} vs ${b.theirs.length} team`)}</div></div>
 ${panel(`<div class="battle-board" id="battle-board"><div class="move-fx" aria-hidden="true">✦ ✿ ✦</div><div class="fighter you"><div class="eyebrow">Your Jellycat</div><div class="avatar art-fighter">${plushArt(mp)}</div><h3>${safe(label(state,me.id))}</h3><div class="sub">${safe(mp.type)} · LV ${me.level}</div><div class="hp-meta"><span>HP</span><span>${me.hp} / ${me.maxHp}</span></div>${progressBar(me.hp,me.maxHp)}</div><div class="vs">VS.</div><div class="fighter enemy"><div class="eyebrow">Computer</div><div class="avatar art-fighter">${plushArt(ep)}</div><h3>${safe(ep.officialName)}</h3><div class="sub">${safe(ep.type)} · LV ${enemy.level}</div><div class="hp-meta"><span>HP</span><span>${enemy.hp} / ${enemy.maxHp}</span></div>${progressBar(enemy.hp,enemy.maxHp)}</div></div>
 <div class="row between mt-20"><div><span class="tag">Your team</span><div class="party">${b.mine.map((f,i)=>`<span class="${f.hp===0?'fainted':''}">${i===b.mi?'◆ ':''}${safe(label(state,f.id))} · ${f.hp} HP</span>`).join('')}</div></div><div><span class="tag">Computer team</span><div class="party">${b.theirs.map((f,i)=>`<span class="${f.hp===0?'fainted':''}">${i===b.ei?'◆ ':''}${safe(BY_ID.get(f.id).officialName)} · ${f.hp} HP</span>`).join('')}</div></div></div>`)}
 <div class="grid-2 mt-20"><section class="panel"><div class="row between mb-18"><h2 class="mb-0">Choose your move</h2>${badge(mult>1?'Type advantage ▲':mult<1?'Type disadvantage ▼':'Even matchup')}</div>
-<div class="move-grid">${mp.moves.map((m,i)=>`<button class="move ${m.kind==='signature'?'signature':m.kind==='heal'?'heal':''}" data-action="move" data-index="${i}" ${m.kind==='heal'&&me.heals?'disabled':''}><strong>${safe(m.name)}</strong><span class="small">${m.kind==='heal'?(me.heals?'Already used':'Heal 34% · once per match'):m.kind==='quick'?'Always hits · steady damage':`Strong · ${Math.round(m.accuracy*100)}% accurate`}</span></button>`).join('')}</div><h3 class="mt-20">Switch teammate</h3><div class="row">${b.mine.map((f,i)=>`<button class="btn micro pink" data-action="switch" data-index="${i}" ${f.hp===0||b.mi===i?'disabled':''}>${safe(label(state,f.id))} · ${f.hp} HP</button>`).join('')}</div><p class="source-note mt-12">Switching uses your turn. Cuddle Break can only be used once per Jellycat per battle.</p></section>
+<div class="move-grid">${mp.moves.map((m,i)=>`<button class="move ${m.kind==='signature'?'signature':m.kind==='heal'?'heal':''}" data-action="move" data-index="${i}" aria-keyshortcuts="${i+1}" ${m.kind==='heal'&&me.heals?'disabled':''}><strong><kbd>${i+1}</kbd> ${safe(m.name)}</strong><span class="small">${m.kind==='heal'?(me.heals?'Already used':'Heal 34% · once per match'):m.kind==='quick'?'Always hits · steady damage':`Strong · ${Math.round(m.accuracy*100)}% accurate`}</span></button>`).join('')}</div><h3 class="mt-20">Switch teammate</h3><div class="row">${b.mine.map((f,i)=>`<button class="btn micro pink" data-action="switch" data-index="${i}" aria-keyshortcuts="${i+4}" ${f.hp===0||b.mi===i?'disabled':''}><kbd>${i+4}</kbd> ${safe(label(state,f.id))} · ${f.hp} HP</button>`).join('')}</div><p class="source-note mt-12">Switching uses your turn. Cuddle Break can only be used once per Jellycat per battle.</p></section>
 <section class="panel soft"><h2>Battle diary</h2><div role="log" aria-live="polite" class="battle-log">${b.log.slice(-10).map(line=>`<p>${safe(line)}</p>`).join('')}</div><p class="source-note mt-12">Type wheel: Food → Furry → Bugs & Garden → Ocean → Silly & Spooky → Adventure → Food.</p></section></div>`;
 }
 function giftBag(large=false){return `<div class="gift-bag ${large?'big-bag':''}" aria-hidden="true"><span class="bag-handle left"></span><span class="bag-handle right"></span><div class="bag-tissue">✧</div><div class="bag-front"><span class="bag-star">✦</span></div><span class="bag-shadow"></span></div>`;}
-function rewards(){const p=state.pending;if(!bagOpen)return `${statBar()}<section class="bag-reveal-panel"><span class="eyebrow">A win! · +1 star</span><h1>A new friend is waiting.</h1><p>Something cuddly is hiding in a little powder-blue gift bag. Ready for your surprise?</p>${giftBag(true)}<button class="btn" data-action="open-bag">Open the surprise bag ✨</button><p class="small muted mt-20">You'll get to choose one of three real Jellycats.</p></section>`;
- return `${statBar()}<div class="reward-banner"><span class="eyebrow">A special reveal · choose just one</span><h1>${p.boss?'A legendary surprise!':'Meet your new friends!'}</h1><p>Three little plush friends popped out of the gift bag. Who will join your team?</p></div>
- <div class="reward-choices">${p.choices.map(id=>{const x=BY_ID.get(id);return `<article class="gift-card"><div class="gift-card-art">${bigAvatar(x)}</div><span class="gift-rarity">${rarityTag(x)}</span><h2>${safe(x.officialName)}</h2><p class="small muted">${safe(x.type)} · Level 1</p><button class="btn full" data-action="claim" data-id="${safe(id)}">Choose this friend →</button></article>`}).join('')}</div>${panel('<p class="center mb-0 small">The others will be waiting for you somewhere in the world. You can find them another time!</p>','soft')}`;
+function rewards(){const p=state.pending;if(!bagOpen)return `${statBar()}<section class="bag-reveal-panel"><span class="eyebrow">A win! · +1 star</span><h1>A new friend is waiting.</h1><p>Something cuddly is hiding in a little powder-blue gift bag. Ready for your surprise?</p>${giftBag(true)}<button class="btn" data-action="open-bag"><kbd>Enter</kbd> Open the surprise bag ✨</button><p class="small muted mt-20">You'll get to choose one of three real Jellycats.</p></section>`;
+ return `${statBar()}<div class="reward-banner"><span class="eyebrow">A special reveal · choose just one</span>${p.patchId?`<p class="patch-award">✿ You earned the ${safe(parlorById(p.patchId)?.patch||'Parlor')}!</p>`:''}<h1>${p.boss?'A legendary surprise!':'Meet your new friends!'}</h1><p>Three little plush friends popped out of the gift bag. Who will join your team?</p></div>
+ <div class="reward-choices">${p.choices.map(id=>{const x=BY_ID.get(id);return `<article class="gift-card"><div class="gift-card-art">${bigAvatar(x)}</div><span class="gift-rarity">${rarityTag(x)}</span><h2>${safe(x.officialName)}</h2><p class="small muted">${safe(x.type)} · Level 1</p><button class="btn full" data-action="claim" data-id="${safe(id)}"><kbd>${p.choices.indexOf(id)+1}</kbd> Choose this friend →</button></article>`}).join('')}</div>${panel('<p class="center mb-0 small">The others will be waiting for you somewhere in the world. You can find them another time!</p>','soft')}`;
 }
 function showClaimReveal(id,fromJar=false){const p=BY_ID.get(id);if(!p)return;const div=el('div','modal-backdrop');div.id='claimed-modal';div.innerHTML=`<section class="modal claimed-modal center" role="dialog" aria-modal="true" aria-label="New Jellycat revealed"><span class="eyebrow">${fromJar?'Mystery bag surprise':'A new friend!'}</span><div class="bag-claim">${giftBag(true)}<span class="bag-pop">${plushArt(p)}</span></div><h2>Welcome, ${safe(p.officialName)}!</h2><p>You're officially part of the club. Pick a nickname later in your Collection if you like.</p><button class="btn" data-action="finish-claim">Let's explore together →</button></section>`;document.body.append(div);}
 
 function clubhouse(){return `${statBar()}<div class="grid-2">
-${panel(`<div class="eyebrow">Collection milestones</div><h1>Your clubhouse.</h1><div class="story-item"><strong>🏆 Best winning streak</strong><span style="float:right">${state.bestStreak}</span></div><div class="story-item"><strong>✨ Boss victories</strong><span style="float:right">${state.bossWins}</span></div><div class="story-item"><strong>🧸 Jellycats collected</strong><span style="float:right">${state.owned.length}</span></div><div class="story-item"><strong>🎯 Win / loss record</strong><span style="float:right">${state.wins} / ${state.losses}</span></div><p class="source-note mt-20">Your progress is stored only in this browser. Export a save file to move it to another computer or protect it from browser resets.</p><div class="row"><button class="btn pink" data-action="export">Export save</button><button class="btn cream" data-action="import">Import save</button><input type="file" id="import-file" class="hidden" accept="application/json,.json"></div>`)}
+${panel(`<div class="eyebrow">Collection milestones</div><h1>Your clubhouse.</h1><div class="story-item"><strong>🏆 Best winning streak</strong><span style="float:right">${state.bestStreak}</span></div><div class="story-item"><strong>✿ Parlor patches</strong><span style="float:right">${state.world.parlorBadges.length} / ${PARLORS.length}</span></div><div class="story-item"><strong>✨ Boss victories</strong><span style="float:right">${state.bossWins}</span></div><div class="story-item"><strong>🧸 Jellycats collected</strong><span style="float:right">${state.owned.length}</span></div><div class="story-item"><strong>🎯 Win / loss record</strong><span style="float:right">${state.wins} / ${state.losses}</span></div><p class="source-note mt-20">Your progress is stored only in this browser. Export a save file to move it to another computer or protect it from browser resets.</p><div class="row"><button class="btn pink" data-action="export">Export save</button><button class="btn cream" data-action="import">Import save</button><input type="file" id="import-file" class="hidden" accept="application/json,.json"></div>`)}
 ${panel(`<div class="eyebrow">Behind the game</div><h2>Real Jellycats. Original rules.</h2><p>All ${CATALOG.length} playable entries use names researched from the Jellycat catalog. Portraits are original soft-toy-style illustrations, not official photographs or exact recreations.</p><p>Battle moves, strengths, levels, and rarity assignments are fan-game inventions, not official Jellycat characteristics.</p><p><strong>Six types:</strong> ${TYPES.map((x,i)=>TYPE_EMOJI[i]+' '+x).join(' · ')}</p><p><strong>Ten legendary characters</strong> have been selected for this fan-made game. Legendary status is invented for gameplay.</p><p class="small muted">Independent fan game, not affiliated with Jellycat. Catalog references are maintained separately from gameplay.</p>`)}
 </div>${panel(`<div class="row between"><h2 class="mb-0">Game settings</h2>${badge('Saved locally')}</div><p class="small muted mt-12">Only reset if you're sure. You can export your save first.</p><button class="btn ghost" data-action="reset">Reset game progress</button><div class="story-item"></div><h3 class="mt-20">Recent activity</h3>${state.history.length?state.history.slice(-8).reverse().map(x=>`<div class="story-item">✳ ${safe(x)}</div>`).join(''):'<p class="muted small">Your wins and discoveries will appear here.</p>'}`)}`;}
 function showDetail(){const p=BY_ID.get(detail);if(!p||!owned(state,p.id))return;let l=state.levels[p.id]||1,xp=state.xp[p.id]||0,required=XP_TO_LEVEL(l),stats=fighterStats(p.id,l);
@@ -683,9 +749,16 @@ function confirmReset(){const bg=el('div','modal-backdrop');bg.id='confirm-modal
 function action(el){const type=el.dataset.action,id=el.dataset.id;
  try{
  if(type==='nav'){go(id);return;}
+ if(type==='help'){showKeyboardHelp();return;}
  if(type==='open-bag'){bagOpen=true;render();return;}
  if(type==='finish-claim'){$('#claimed-modal')?.remove();return;}
- if(type==='start-battle'){bagOpen=false;update(s=>{const n=structuredClone(s);makeBattle(n);return n;});return;}
+ if(type==='start-battle'){notify('Walk through tall grass or visit a Plush Parlor to find an opponent.');go('world');return;}
+ if(type==='confirm-encounter'){closeEncounter();launchBattle('wild');return;}
+ if(type==='flee-encounter'){closeEncounter();notify('You tiptoed safely out of the grass.');return;}
+ if(type==='parlor'){showParlor(parlorById(id)||nearbyParlor(state.world));return;}
+ if(type==='parlor-battle'){const parlor=parlorById(id);if(parlor&&canChallenge(parlor)){$('#parlor-modal')?.remove();launchBattle('parlor',id);}return;}
+ if(type==='close-parlor'){$('#parlor-modal')?.remove();return;}
+ if(type==='close-help'){$('#keyboard-modal')?.remove();return;}
  if(type==='move'||type==='switch'){
   if(!state.battle||animating)return;animating=true;const action={type:type==='move'?'move':'switch',index:Number(el.dataset.index)};
   const board=$('#battle-board');board?.classList.add(action.type==='move'?(action.index===2?'is-healing':'is-attacking'):'is-switching');
@@ -699,7 +772,7 @@ function action(el){const type=el.dataset.action,id=el.dataset.id;
  if(type==='team'){update(s=>changeTeam(s,id));closeDetail();notify('Team updated.');return;}
  if(type==='close'){closeDetail();return;}
  if(type==='rename'){const field=$('#rename-input');update(s=>saveNickname(s,id,field?.value));closeDetail();notify('Nickname saved!');return;}
- if(type==='step'){stopWalking();performStep(Number(el.dataset.dx),Number(el.dataset.dy));return;}
+ if(type==='step'){stopWalking();performStep(Number(el.dataset.dx)*WALK_INCREMENT,Number(el.dataset.dy)*WALK_INCREMENT);return;}
  if(type==='tile'){
   const tx=Number(el.dataset.x),ty=Number(el.dataset.y),friend=NPCS.find(n=>n.x===tx&&n.y===ty);
   if(friend){const options=[[1,0],[-1,0],[0,1],[0,-1]].map(([dx,dy])=>[tx+dx,ty+dy]).filter(([x,y])=>x>=0&&y>=0&&x<WORLD_W&&y<WORLD_H&&!NPCS.some(n=>n.x===x&&n.y===y));
@@ -708,9 +781,9 @@ function action(el){const type=el.dataset.action,id=el.dataset.id;
   }else walkToward(tx,ty);
   return;}
  if(type==='walkto'){const place=ZONES.find(z=>z.id===id);if(place)walkToward(place.x,place.y);return;}
- if(type==='talk'){const n=NPCS.find(n=>n.id===id);if(n)showTalk(n);return;}
+ if(type==='talk'){const n=NPCS.find(n=>n.id===id);if(n&&Math.hypot(n.x-state.world.x,n.y-state.world.y)<=1.75)showTalk(n);else notify('Walk closer before talking!');return;}
  if(type==='interact'){talkOrInspect();return;}
- if(type==='world-battle'){go('battle');return;}
+ if(type==='world-battle'){talkOrInspect();return;}
  if(type==='close-talk'){$('#talk-modal')?.remove();return;}
  if(type==='begin-challenge'){showChallenge(id);return;}
  if(type==='answer'){answerChallenge(Number(el.dataset.index));return;}
@@ -731,7 +804,7 @@ document.addEventListener('change',async e=>{
  if(e.target.id==='import-file'&&e.target.files?.[0]){try{const f=e.target.files[0];if(f.size>1e6)throw Error('Save file too large.');const txt=await f.text(),raw=JSON.parse(txt);if(raw.version!==3)throw Error('This save is not a version 3 game file.');state=ensureWorld(validateSave(raw));persist();go('world');notify('Save imported successfully.');}catch(err){notify(err.message||'Could not read this save.');}}
 });
 document.addEventListener('input',e=>{if(e.target.id==='filter-query'){query=e.target.value;const i=e.target.selectionStart;render();const x=$('#filter-query');if(x){x.focus();x.setSelectionRange(i,i);}}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDetail();$('#confirm-modal')?.remove();$('#talk-modal')?.remove();$('#milestone-modal')?.remove();challengeState=null;$('#challenge-modal')?.remove();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDetail();$('#confirm-modal')?.remove();$('#talk-modal')?.remove();$('#milestone-modal')?.remove();$('#encounter-modal')?.remove();$('#parlor-modal')?.remove();$('#keyboard-modal')?.remove();challengeState=null;$('#challenge-modal')?.remove();}});
 // World screen, conversations, discoveries, and walking controls.
 let walkingTimer=null,challengeState=null,bagOpen=false,recentClaim=null,animating=false;
 function scenery(x,y,zone){
@@ -742,42 +815,64 @@ function scenery(x,y,zone){
  return '';
 }
 function worldTerrain(x,y,z){if((y===20&&x>3&&x<52)||(x===27&&y>2&&y<38)||(x===10&&y>5&&y<36)||(x===46&&y>7&&y<36)||(y===7&&x>8&&x<48)||(y===33&&x>6&&x<49))return 'trail';return z;}
-function worldScreen(){ensureWorld(state);const w=state.world,here=ZONES.find(z=>z.id===zoneAt(w.x,w.y));const vx=window.innerWidth<650?9:window.innerWidth<950?11:15,vy=window.innerWidth<650?9:11,cx=Math.max(0,Math.min(WORLD_W-vx,w.x-Math.floor(vx/2))),cy=Math.max(0,Math.min(WORLD_H-vy,w.y-Math.floor(vy/2)));
+function worldScreen(){ensureWorld(state);const w=state.world,here=ZONES.find(z=>z.id===zoneAt(w.x,w.y));
+ const vx=window.innerWidth<650?13:window.innerWidth<950?17:21,vy=window.innerWidth<650?11:14;
+ const cx=Math.max(0,Math.min(WORLD_W-vx,Math.floor(w.x)-Math.floor(vx/2))),cy=Math.max(0,Math.min(WORLD_H-vy,Math.floor(w.y)-Math.floor(vy/2)));
  let tiles='';for(let y=cy;y<cy+vy;y++)for(let x=cx;x<cx+vx;x++){
-  const zone=zoneAt(x,y),style=worldTerrain(x,y,zone),npc=NPCS.find(n=>n.x===x&&n.y===y),treasure=TREASURES.find(t=>t.x===x&&t.y===y&&!w.found.includes(t.id)),landmark=LANDMARKS.find(t=>t.x===x&&t.y===y),isPlayer=x===w.x&&y===w.y,arena=x===30&&y===23;
-  const sprite=isPlayer?`<span class="world-player">${plushArt(BY_ID.get(state.team[0]))}</span><span class="world-sparkle">✧</span>`:npc?`<span class="world-npc">${plushArt(BY_ID.get(slugId(npc.product)))}</span><span class="npc-bubble">${safe(npc.icon)}</span>`:arena?'<span class="world-arena">✦<small>ARENA</small></span>':treasure?'<span class="world-treasure">✧</span>':landmark?`<span class="world-landmark" title="${safe(landmark.name)}">${landmark.icon}</span>`:`<span class="world-decor">${scenery(x,y,zone)}</span>`;
-  const what=npc?`Talk to ${npc.name}`:arena?'Battle arena':treasure?`Find ${treasure.title}`:landmark?landmark.name:`Walk to ${x}, ${y}`;
-  tiles+=`<button type="button" tabindex="-1" class="world-tile terrain-${style} ${isPlayer?'current':''}" data-action="tile" data-x="${x}" data-y="${y}" title="${safe(what)}" aria-label="${safe(what)}">${sprite}</button>`;
+  const zone=zoneAt(x,y),style=worldTerrain(x,y,zone),npc=NPCS.find(n=>n.x===x&&n.y===y),parlor=PARLORS.find(p=>p.x===x&&p.y===y),treasure=TREASURES.find(t=>t.x===x&&t.y===y&&!w.found.includes(t.id)),landmark=LANDMARKS.find(t=>t.x===x&&t.y===y),grass=isTallGrass(x,y);
+  const sprite=npc?`<span class="world-npc">${plushArt(BY_ID.get(slugId(npc.product)))}</span><span class="npc-bubble">${safe(npc.icon)}</span>`:parlor?`<span class="world-parlor">✿<small>PARLOR</small></span>`:treasure?'<span class="world-treasure">✧</span>':landmark?`<span class="world-landmark" title="${safe(landmark.name)}">${landmark.icon}</span>`:grass?'<span class="tall-grass" aria-hidden="true">♣</span>':`<span class="world-decor">${scenery(x,y,zone)}</span>`;
+  const what=npc?`Talk to ${npc.name}`:parlor?`${parlor.name}, earn the ${parlor.patch}`:treasure?`Find ${treasure.title}`:grass?'Tall grass: surprise battles possible':landmark?landmark.name:`Walk to ${x}, ${y}`;
+  tiles+=`<button type="button" tabindex="-1" class="world-tile terrain-${style} ${grass?'has-grass':''}" data-action="tile" data-x="${x}" data-y="${y}" title="${safe(what)}" aria-label="${safe(what)}">${sprite}</button>`;
  }
- const closest=nearbyNpcs(w);
- return `<section class="world-intro"><div><span class="eyebrow">An open little world · 8 districts</span><h1>The Softlands <span class="world-title-star">✦</span></h1><p>Wander, meet plush friends, discover secrets, play little games, and battle whenever you're ready. Every path has something to find.</p></div><div class="world-stamp"><span class="world-stamp-count">${w.visited.length}<span>/8</span></span><small>places discovered</small></div></section>
+ const px=(w.x-cx+.5)/vx*100,py=(w.y-cy+.94)/vy*100;
+ const friend=nearbyNpcs(w),parlor=nearbyParlor(w);
+ return `<section class="world-intro"><div><span class="eyebrow">An open little world · 8 districts · ${PARLORS.length} Parlors</span><h1>The Softlands <span class="world-title-star">✦</span></h1><p>Walk freely through the Softlands. Surprise battles hide in tall grass, while Parlor Keepers offer embroidered patches for victories. Each win brings XP and a new plush friend.</p></div><div class="world-stamp"><span class="world-stamp-count">${w.parlorBadges.length}<span>/${PARLORS.length}</span></span><small>Parlor patches</small></div></section>
  <div class="world-layout"><section class="world-shell" aria-label="Explore the Softlands">
- <div class="world-toolbar"><span><span class="location-dot">●</span> ${safe(here.name)}</span><span>✦ ${w.found.length}/${TREASURES.length} found &nbsp; · &nbsp; ★ ${state.points}</span></div>
- <div class="world-viewport" id="world-viewport" tabindex="0" aria-label="Walk around the map with arrow keys, WASD, touch controls, or click tiles"><div class="world-grid" style="--map-cols:${vx}">${tiles}</div></div>
+ <div class="world-toolbar"><span><span class="location-dot">●</span> ${safe(here.name)}</span><span>✿ ${w.parlorBadges.length} patches &nbsp; · &nbsp; ✦ ${w.found.length}/${TREASURES.length} found</span></div>
+ <div class="world-viewport" id="world-viewport" tabindex="0" aria-label="Move smoothly with WASD or arrow keys; E to interact"><div class="world-grid" style="--map-cols:${vx}">${tiles}</div>
+ <span class="world-player-overlay" style="left:${px}%;top:${py}%;--player-step:${w.steps%2?'-2px':'0px'}">${plushArt(BY_ID.get(state.team[0]))}</span></div>
  <div class="world-commands"><div class="dpad" aria-label="Movement controls"><button data-action="step" data-dx="0" data-dy="-1" aria-label="Walk north">↑</button><div><button data-action="step" data-dx="-1" data-dy="0" aria-label="Walk west">←</button><button data-action="step" data-dx="0" data-dy="1" aria-label="Walk south">↓</button><button data-action="step" data-dx="1" data-dy="0" aria-label="Walk east">→</button></div></div>
- <div class="world-commands-right"><button class="btn mint" data-action="interact">💬 Talk / inspect</button><button class="btn pink" data-action="world-battle">✦ Battle</button></div></div>
- <p class="world-help">Use <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> or <kbd>W A S D</kbd> to walk. Tap a destination to walk there. Step beside a friend and talk. You can explore without battling.</p>
+ <div class="world-commands-right"><button class="btn mint" data-action="interact"><kbd>E</kbd> Talk / inspect</button>${state.battle?'<button class="btn pink" data-action="nav" data-id="battle"><kbd>5</kbd> Resume battle</button>':parlor?`<button class="btn pink" data-action="parlor" data-id="${parlor.id}"><kbd>P</kbd> ${safe(parlor.name)}</button>`:'<span class="encounter-hint">🌿 Tall grass = surprise encounters</span>'}</div></div>
+ <p class="world-help"><kbd>W A S D</kbd> / arrows: walk and hold to keep moving · <kbd>E</kbd>: interact · <kbd>P</kbd>: nearby Parlor · <kbd>?</kbd>: all controls. Tap the map to walk to a place.</p>
  </section><aside class="world-sidebar">
- ${panel(`<span class="eyebrow">Your next discovery</span><h2>Friends nearby</h2>${closest.length?closest.map(n=>`<button class="friend-row" data-action="talk" data-id="${n.id}"><span class="friend-portrait">${plushArt(BY_ID.get(slugId(n.product)))}</span><span><strong>${safe(n.name)}</strong><small>${safe(n.hint)}</small></span><span aria-hidden="true">→</span></button>`).join(''):'<p class="small muted">Keep wandering! You’ll meet somebody soon.</p>'}<p class="small muted mb-0">✦ Violet star gate: start a battle.</p>`, 'friend-panel')}
- ${panel(`<div class="row between"><h2 class="mb-0">Your journey</h2>${badge(w.visited.length+' / 8')}</div><p class="tiny muted mt-12">Choose a district to follow a walkable route.</p><div class="zone-grid">${ZONES.map(z=>`<button data-action="walkto" data-id="${z.id}" class="zone-link ${w.visited.includes(z.id)?'visited':''} ${here.id===z.id?'active':''}"><span class="zone-dot" style="background:${z.color}"></span><span>${safe(z.name)}</span>${w.visited.includes(z.id)?'✓':'?'}</button>`).join('')}</div>`, 'journey-panel')}
- ${panel(`<span class="eyebrow">Your adventures</span><h3>${w.completed.length} little quests finished</h3><p class="small mb-0">${w.talked.length} friends met · ${w.steps} steps walked</p>${w.completed.length?`<p class="tiny mt-12 mb-0">${w.completed.map(x=>CHALLENGES[x]?.title).filter(Boolean).map(safe).join(' · ')}</p>`:''}`,'soft')}
+ ${panel(`<span class="eyebrow">People along the way</span><h2>Friends nearby</h2>${friend.length?friend.map(n=>`<button class="friend-row" data-action="talk" data-id="${n.id}"><span class="friend-portrait">${plushArt(BY_ID.get(slugId(n.product)))}</span><span><strong>${safe(n.name)}</strong><small>${safe(n.hint)}</small></span><span aria-hidden="true">→</span></button>`).join(''):'<p class="small muted">Keep wandering! Someone is just around the corner.</p>'}<p class="small muted mb-0">🌿 Look for fluffy patches of grass for unexpected challengers.</p>`,'friend-panel')}
+ ${panel(`<div class="row between"><h2 class="mb-0">Parlor Passport</h2>${badge(w.parlorBadges.length+' / '+PARLORS.length)}</div><p class="tiny muted mt-12">Challenge a Keeper and earn an embroidered patch. Later Parlors unlock as you collect patches.</p><div class="parlor-passport">${PARLORS.map((pl,i)=>`<button class="parlor-row ${w.parlorBadges.includes(pl.id)?'earned':''}" data-action="walkto" data-id="${zoneAt(pl.x,pl.y)}" title="Walk toward ${safe(pl.name)}"><span class="patch-icon">${w.parlorBadges.includes(pl.id)?'✿':i+1}</span><span><strong>${safe(pl.name)}</strong><small>${safe(w.parlorBadges.includes(pl.id)?pl.patch:pl.required<=w.parlorBadges.length?pl.theme:'Earn '+pl.required+' patch(es) first')}</small></span></button>`).join('')}</div>`,'journey-panel')}
+ ${panel(`<span class="eyebrow">Your journey</span><h3>${w.visited.length} of 8 areas explored</h3><p class="small mb-0">${w.completed.length} tiny quests · ${w.talked.length} friends met · ${w.steps} little steps</p><div class="zone-grid mt-12">${ZONES.map((z,i)=>`<button data-action="walkto" data-id="${z.id}" class="zone-link ${w.visited.includes(z.id)?'visited':''} ${here.id===z.id?'active':''}" title="Shift + ${i+1}"><span class="zone-dot" style="background:${z.color}"></span><span>${safe(z.name)}</span>${w.visited.includes(z.id)?'✓':'?'}</button>`).join('')}</div>`,'soft')}
  </aside></div>`;
 }
 function slugId(name){return name.normalize('NFKD').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');}
 function stopWalking(){if(walkingTimer){clearInterval(walkingTimer);walkingTimer=null;}}
-function performStep(dx,dy,quiet=false){if(page!=='world'||!state.onboarded||state.pending||challengeState)return;
- const result=stepWorld(state,dx,dy);
- if(result.npc){stopWalking();showTalk(result.npc);return;}
- if(result.moved){persist();render();if(result.treasure){stopWalking();showFound(result.treasure);}else if(result.zone&&!quiet)notify(`Welcome to ${result.zone.name}!`);}
+function launchBattle(source='wild',parlorId=null){
+ stopWalking();if(state.pending||state.battle)return go('battle');
+ try{const next=structuredClone(state);makeBattle(next,Math.random,{source,parlorId});next.world.firstBattle=true;state=next;persist();page='battle';render();window.scrollTo(0,0);}catch(err){notify(err.message||'Unable to start the match.');}
 }
-function walkToward(x,y,npcToMeet=null){stopWalking();ensureWorld(state);x=Math.max(0,Math.min(WORLD_W-1,x));y=Math.max(0,Math.min(WORLD_H-1,y));const w=state.world;
- // Breadth-first path avoids NPC tiles, works across all eight connected districts.
- const key=(x,y)=>y*WORLD_W+x,q=[[w.x,w.y]],seen=new Set([key(w.x,w.y)]),parent=new Map(),blocked=new Set(NPCS.map(n=>key(n.x,n.y)));
- let head=0,found=false;while(head<q.length){const [cx,cy]=q[head++];if(cx===x&&cy===y){found=true;break;}
-  for(const [dx,dy] of [[1,0],[0,1],[-1,0],[0,-1]]){const nx=cx+dx,ny=cy+dy,k=key(nx,ny);if(nx<0||nx>=WORLD_W||ny<0||ny>=WORLD_H||seen.has(k)||blocked.has(k))continue;seen.add(k);parent.set(k,[cx,cy]);q.push([nx,ny]);}}
- if(!found){notify('That spot is busy. Try another square beside it.');return;}
- const path=[];let cur=[x,y];while(cur[0]!==w.x||cur[1]!==w.y){path.push(cur);cur=parent.get(key(cur[0],cur[1]));}path.reverse();if(!path.length)return;
- let i=0;walkingTimer=setInterval(()=>{if(page!=='world'||i>=path.length){stopWalking();return;}const next=path[i++],dx=next[0]-state.world.x,dy=next[1]-state.world.y;performStep(dx,dy,true);if(i>=path.length){stopWalking();if(npcToMeet)showTalk(npcToMeet);}},95);
+function closeEncounter(){$('#encounter-modal')?.remove();}
+function showEncounter(){stopWalking();if($('#encounter-modal')||state.battle||state.pending)return;
+ const div=el('div','modal-backdrop');div.id='encounter-modal';div.innerHTML=`<section class="modal center" role="dialog" aria-modal="true" aria-label="Wild encounter"><span class="eyebrow">🌿 A rustle in the tall grass</span><h2>Someone wants to play!</h2><div class="encounter-art">${plushArt(BY_ID.get(CATALOG.filter(p=>p.rarity!=='Legendary')[Math.floor(Math.random()*(CATALOG.length-10))].id))}</div><p>A plush challenger jumps out from the grass. Time for a friendly match?</p><div class="row" style="justify-content:center"><button class="btn" data-action="confirm-encounter"><kbd>1</kbd> Let's battle!</button><button class="btn cream" data-action="flee-encounter"><kbd>2</kbd> Sneak away</button></div></section>`;document.body.append(div);div.querySelector('[data-action="confirm-encounter"]')?.focus();
+}
+function canChallenge(p){return !!p&&state.world.parlorBadges.length>=p.required&&!state.world.parlorBadges.includes(p.id);}
+function showParlor(p){if(!p)return;stopWalking();if(Math.hypot(p.x-state.world.x,p.y-state.world.y)>1.8){notify('Walk up to the Parlor door to meet its Keeper.');return;}
+ $('#parlor-modal')?.remove();const already=state.world.parlorBadges.includes(p.id),unlocked=canChallenge(p);
+ const div=el('div','modal-backdrop');div.id='parlor-modal';div.innerHTML=`<section class="modal center" role="dialog" aria-modal="true" aria-label="${safe(p.name)}"><span class="eyebrow">✿ Official Softlands Parlor</span><h2>${safe(p.name)}</h2><div class="parlor-host">${plushArt(BY_ID.get(slugId(p.product)))}</div><h3>Keeper ${safe(p.keeper)}</h3><p>${safe(p.theme)}. Win to earn the <strong>${safe(p.patch)}</strong> for your Passport.</p><p class="small muted">${already?'✓ Patch already earned. Come back to visit!':unlocked?'Your team is welcome to take the challenge.':`Earn ${p.required} patch${p.required===1?'':'es'} before challenging this Keeper.`}</p><div class="row" style="justify-content:center">${unlocked?`<button class="btn" data-action="parlor-battle" data-id="${p.id}"><kbd>1</kbd> Challenge Keeper →</button>`:''}<button class="btn cream" data-action="close-parlor"><kbd>Esc</kbd> ${already?'See you soon':'Maybe later'}</button></div></section>`;document.body.append(div);div.querySelector('button')?.focus();
+}
+function performStep(dx,dy,quiet=false){if(page!=='world'||!state.onboarded||state.pending||challengeState||document.querySelector('.modal-backdrop'))return false;
+ const result=stepWorld(state,dx,dy);
+ if(result.npc){stopWalking();if(!quiet)showTalk(result.npc);return false;}
+ if(result.moved){persist();render();if(result.treasure){stopWalking();showFound(result.treasure);}else if(result.encounter){showEncounter();}else if(result.zone&&!quiet)notify(`Welcome to ${result.zone.name}!`);}return !!result.moved;
+}
+function walkToward(tx,ty,npcToMeet=null){stopWalking();ensureWorld(state);
+ tx=Math.max(0,Math.min(WORLD_W-1,Math.round(tx)));ty=Math.max(0,Math.min(WORLD_H-1,Math.round(ty)));
+ const w=state.world,key=(x,y)=>y*WORLD_W+x,sx=Math.round(w.x),sy=Math.round(w.y),queue=[[sx,sy]],seen=new Set([key(sx,sy)]),parent=new Map(),blocked=new Set(NPCS.map(n=>key(n.x,n.y)));let head=0,found=false;
+ while(head<queue.length){const [cx,cy]=queue[head++];if(cx===tx&&cy===ty){found=true;break;}for(const [dx,dy] of [[1,0],[0,1],[-1,0],[0,-1]]){const nx=cx+dx,ny=cy+dy,k=key(nx,ny);if(nx<0||nx>=WORLD_W||ny<0||ny>=WORLD_H||seen.has(k)||blocked.has(k))continue;seen.add(k);parent.set(k,[cx,cy]);queue.push([nx,ny]);}}
+ if(!found){notify('That place is occupied. Try the path beside it.');return;}
+ const waypoints=[];let cur=[tx,ty];while(cur[0]!==sx||cur[1]!==sy){waypoints.push(cur);cur=parent.get(key(cur[0],cur[1]));if(!cur)break;}waypoints.reverse();if(!waypoints.length&&Math.hypot(w.x-tx,w.y-ty)>.15)waypoints.push([tx,ty]);
+ let at=0,frames=0;walkingTimer=setInterval(()=>{if(page!=='world'||document.querySelector('.modal-backdrop')||frames++>1400){stopWalking();return;}if(at>=waypoints.length){stopWalking();if(npcToMeet)showTalk(npcToMeet);return;}
+  const [x,y]=waypoints[at],dX=x-state.world.x,dY=y-state.world.y;
+  if(Math.abs(dX)+Math.abs(dY)<.15){at++;return;}
+  const deltaX=Math.abs(dX)>.12?Math.sign(dX)*Math.min(WALK_INCREMENT,Math.abs(dX)):0;
+  const deltaY=deltaX?0:Math.sign(dY)*Math.min(WALK_INCREMENT,Math.abs(dY));
+  if(!performStep(deltaX,deltaY,true))stopWalking();
+ },48);
 }
 function showTalk(n){stopWalking();$('#talk-modal')?.remove();ensureWorld(state);if(!state.world.talked.includes(n.id)){state.world.talked.push(n.id);persist();}const plush=BY_ID.get(slugId(n.product));const completed=state.world.completed.includes(n.challenge);
  const div=el('div','modal-backdrop');div.id='talk-modal';div.innerHTML=`<section class="modal talk-modal" role="dialog" aria-modal="true" aria-label="Talking with ${safe(n.name)}"><div class="row between"><span class="eyebrow">${safe(ZONES.find(z=>z.id===zoneAt(n.x,n.y))?.name||'The Softlands')}</span><button class="btn micro cream" data-action="close-talk">✕ Close</button></div><div class="talk-portrait">${plushArt(plush)}</div><h2>${safe(n.name)}</h2><p class="dialogue-line">“${safe(n.say)}”</p><div class="row">${n.challenge?`<button class="btn" data-action="begin-challenge" data-id="${safe(n.challenge)}">${completed?'Play again':'Play a little game'} →</button>`:''}<button class="btn cream" data-action="close-talk">${n.challenge?'Maybe later':'Thanks for the tip!'}</button></div>${completed?'<p class="tiny muted mt-12">✓ You already earned this friend’s one-time reward.</p>':''}</section>`;document.body.append(div);div.querySelector('button')?.focus();}
@@ -790,14 +885,49 @@ function answerChallenge(i){if(!challengeState)return;const c=CHALLENGES[challen
  const id=challengeState.id;challengeState=null;$('#challenge-modal')?.remove();const fresh=completeChallenge(state,id);persist();render();showMilestone(fresh?'Brilliant! +2 ★': 'You did it again!',fresh?'This little adventure earned two stars. Three different activities also earn a special mystery jar.':'You have already collected this adventure’s reward.');}
 function showMilestone(title,desc){const div=el('div','modal-backdrop');div.id='milestone-modal';div.innerHTML=`<section class="modal center" role="dialog" aria-modal="true" aria-label="Discovery"><div class="giant-star">✦</div><h2>${safe(title)}</h2><p>${safe(desc)}</p><button class="btn" data-action="close-milestone">Keep exploring →</button></section>`;document.body.append(div);}
 function showFound(t){showMilestone(`You found ${t.title}!`,`${t.text} You earned ${t.points} star.`);}
-function talkOrInspect(){ensureWorld(state);let npc=nearbyNpcs(state.world)[0];if(npc){showTalk(npc);return;}if(nearbyArena(state.world)){go('battle');return;}notify('Look for a plush friend or a purple battle gate. There’s more to see as you walk!');}
+function talkOrInspect(){ensureWorld(state);const npc=nearbyNpcs(state.world)[0],parlor=nearbyParlor(state.world);
+ if(npc){showTalk(npc);return;}if(parlor){showParlor(parlor);return;}notify('Walk closer to a plush friend or a Parlor, or explore tall grass!');}
+function showKeyboardHelp(){if($('#keyboard-modal'))return;const div=el('div','modal-backdrop');div.id='keyboard-modal';div.innerHTML=`<section class="modal help-modal" role="dialog" aria-modal="true" aria-label="Keyboard controls"><span class="eyebrow">Play without your mouse</span><h2>Keyboard controls</h2><dl class="shortcut-grid"><dt><kbd>W A S D</kbd> / arrows</dt><dd>Walk. Hold to keep walking.</dd><dt><kbd>E</kbd> / <kbd>Space</kbd></dt><dd>Talk or inspect what's nearby.</dd><dt><kbd>P</kbd></dt><dd>Talk to a nearby Parlor Keeper.</dd><dt><kbd>G</kbd> <kbd>T</kbd> <kbd>C</kbd> <kbd>H</kbd></dt><dd>Explore, Team, Collection, Clubhouse.</dd><dt><kbd>V</kbd></dt><dd>Resume an active battle.</dd><dt><kbd>1</kbd>–<kbd>3</kbd> in battle</dt><dd>Use a move. <kbd>4</kbd>–<kbd>6</kbd> switches friends.</dd><dt><kbd>1</kbd>–<kbd>3</kbd> at rewards</dt><dd>Choose a gift-bag friend.</dd><dt><kbd>Shift</kbd> + <kbd>1</kbd>–<kbd>8</kbd></dt><dd>Walk to a district.</dd><dt><kbd>J</kbd></dt><dd>Open an earned mystery jar from Team.</dd><dt><kbd>/</kbd></dt><dd>Search your Collection.</dd><dt><kbd>Tab</kbd>, <kbd>Enter</kbd></dt><dd>Reach and activate any button or form.</dd><dt><kbd>Esc</kbd></dt><dd>Close dialogs.</dd></dl><button class="btn" data-action="close-help">Got it! <kbd>Esc</kbd></button></section>`;document.body.append(div);div.querySelector('button')?.focus();}
 
-render();
-
-// Hold movement controls and keyboard controls work without requiring map focus.
-document.addEventListener('keydown',e=>{if(page!=='world'||!state.onboarded||document.querySelector('.modal-backdrop')||e.altKey||e.ctrlKey||e.metaKey)return;
- if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;
- const move={ArrowUp:[0,-1],w:[0,-1],W:[0,-1],ArrowDown:[0,1],s:[0,1],S:[0,1],ArrowLeft:[-1,0],a:[-1,0],A:[-1,0],ArrowRight:[1,0],d:[1,0],D:[1,0]};if(move[e.key]){e.preventDefault();stopWalking();performStep(...move[e.key]);}else if(e.key===' '||e.key==='Enter'){if(document.activeElement?.tagName==='BUTTON')return;e.preventDefault();talkOrInspect();}});
+// Keyboard controls work on every screen, including the modal questions and claim panels.
+const pressed=new Set();let walkHeldTimer=null;
+function stopHeld(){clearInterval(walkHeldTimer);walkHeldTimer=null;pressed.clear();}
+function walkKey(){const keys=[['arrowup',0,-1],['w',0,-1],['arrowdown',0,1],['s',0,1],['arrowleft',-1,0],['a',-1,0],['arrowright',1,0],['d',1,0]];for(const [k,dx,dy] of keys)if(pressed.has(k))return [dx,dy];return null;}
+function doHeldMove(){const dir=walkKey();if(!dir||document.querySelector('.modal-backdrop')||page!=='world'){stopHeld();return;}stopWalking();performStep(dir[0]*WALK_INCREMENT,dir[1]*WALK_INCREMENT,true);}
+document.addEventListener('keydown',e=>{
+ if(e.altKey||e.ctrlKey||e.metaKey)return;
+ const key=e.key.toLowerCase(),input=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName);
+ const modal=document.querySelector('.modal-backdrop');
+ if(modal){if(e.key==='Escape')return;
+  if(input)return;
+  if(key==='enter'&&document.activeElement?.tagName==='BUTTON')return;
+  const question=modal.querySelector('.mini-options');
+  if(/^[1-9]$/.test(key)){const buttons=[...(question?.querySelectorAll('button:not(:disabled)')||modal.querySelectorAll('button:not(:disabled)'))];const btn=buttons[Number(key)-1];if(btn){e.preventDefault();btn.click();}return;}
+  if(key==='enter'){const primary=modal.querySelector('.btn:not(.cream):not(:disabled)');if(primary){e.preventDefault();primary.click();}}return;
+ }
+ if(input)return;
+ if(key==='?'||(key==='/'&&e.shiftKey)){e.preventDefault();showKeyboardHelp();return;}
+ if(page==='world'&&state.onboarded&&['arrowup','arrowdown','arrowleft','arrowright','w','a','s','d'].includes(key)){
+  e.preventDefault();if(!pressed.has(key)){pressed.add(key);doHeldMove();if(!walkHeldTimer)walkHeldTimer=setInterval(doHeldMove,65);}return;
+ }
+ if(page==='world'&&e.shiftKey&&/^[1-8]$/.test(key)){e.preventDefault();const z=ZONES[Number(key)-1];walkToward(z.x,z.y);return;}
+ if(page==='world'&&['e',' ','enter'].includes(key)&&document.activeElement?.tagName!=='BUTTON'){e.preventDefault();talkOrInspect();return;}
+ if(page==='world'&&key==='p'){e.preventDefault();const pl=nearbyParlor(state.world);if(pl)showParlor(pl);else notify('No Parlor nearby. Follow the ✿ signs!');return;}
+ if(page==='battle'&&state.battle&&/^[1-6]$/.test(key)){
+  e.preventDefault();const n=Number(key);const btn=document.querySelector(n<=3?`[data-action="move"][data-index="${n-1}"]`:`[data-action="switch"][data-index="${n-4}"]`);if(btn&&!btn.disabled)btn.click();return;
+ }
+ if(state.pending){if(!bagOpen&&key==='enter'){$('[data-action="open-bag"]')?.click();e.preventDefault();return;}if(bagOpen&&/^[1-3]$/.test(key)){e.preventDefault();document.querySelectorAll('[data-action="claim"]')[Number(key)-1]?.click();return;}}
+ if(page==='home'&&key==='j'&&state.jars){e.preventDefault();$('[data-action="jar"]')?.click();return;}
+ if(page==='collection'&&key==='/'){e.preventDefault();$('#filter-query')?.focus();return;}
+ if(page==='clubhouse'&&['e','i','r'].includes(key)){const a={e:'export',i:'import',r:'reset'}[key];$(`[data-action="${a}"]`)?.click();e.preventDefault();return;}
+ if(!state.onboarded||state.pending)return;
+ if(!e.shiftKey&&['g','t','c','h','v'].includes(key)){const p={g:'world',t:'home',c:'collection',h:'clubhouse',v:'battle'}[key];if(p!=='battle'||state.battle){e.preventDefault();go(p);}return;}
+ if(/^[1-5]$/.test(key)&&!e.shiftKey){const pages=['world','home','collection','clubhouse','battle'];const selected=pages[Number(key)-1];if(selected==='battle'&&!state.battle)return;e.preventDefault();go(selected);}
+});
+document.addEventListener('keyup',e=>{pressed.delete(e.key.toLowerCase());if(!walkKey())stopHeld();});window.addEventListener('blur',stopHeld);
+document.addEventListener('pointerdown',e=>{const btn=e.target.closest('.dpad [data-action="step"]');if(!btn)return;const dx=Number(btn.dataset.dx),dy=Number(btn.dataset.dy);stopHeld();stopWalking();performStep(dx*WALK_INCREMENT,dy*WALK_INCREMENT);if(walkHeldTimer)clearInterval(walkHeldTimer);walkHeldTimer=setInterval(()=>performStep(dx*WALK_INCREMENT,dy*WALK_INCREMENT,true),70);btn.dataset.held='1';});
+document.addEventListener('pointerup',e=>{if(walkHeldTimer){clearInterval(walkHeldTimer);walkHeldTimer=null;}});
+document.addEventListener('click',e=>{const btn=e.target.closest('.dpad [data-action="step"]');if(btn&&btn.dataset.held==='1'){btn.dataset.held='0';e.stopImmediatePropagation();e.preventDefault();}},true);
 
 </script>
 </body>
