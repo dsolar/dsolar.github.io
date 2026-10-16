@@ -236,7 +236,7 @@
       $("clock-sec").textContent = Math.ceil(left);
       $("clock-bar").style.transform = `scaleX(${left / CLOCK_SECONDS})`;
       $("clock").classList.toggle("low", left <= 5);
-      if (left <= 0) { clockTimer = null; choose(E.safeChoice(state.s), true); return; }
+      if (left <= 0) { clockTimer = null; choose(null, true); return; }
       clockTimer = requestAnimationFrame(tick);
     };
     clockTimer = requestAnimationFrame(tick);
