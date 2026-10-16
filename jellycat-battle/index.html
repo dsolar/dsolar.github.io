@@ -9,11 +9,84 @@
   <title>Jellycat Battle Club • Playtest</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A5%90%3C/text%3E%3C/svg%3E">
   <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght,SOFT,WONK@9..144,650,15,1;9..144,800,20,1&display=swap');
+500;600;700;800&family=Fraunces:opsz,wght,SOFT,WONK@9..144,650,15,1;9..144,800,20,1&display=swap');
 :root{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:#292537;background:#faf4ea;font-synthesis:none}*{box-sizing:border-box}body{margin:0;min-width:320px}button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.42}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #c178ff;outline-offset:3px}a{color:#56368a}button{border:none}h1,h2,h3,p{margin-top:0}h1,h2,h3{line-height:1.1}h1,h2,.big-number,.wordmark strong{font-family:'Fraunces',Georgia,serif}h1{font-size:clamp(2.6rem,6vw,4.2rem);letter-spacing:-.045em;margin-bottom:.45rem}h2{font-size:clamp(1.45rem,3vw,2rem);letter-spacing:-.025em}h3{font-size:1.13rem}p{line-height:1.55}.skip{position:absolute;top:-100px;left:0;padding:10px;background:white;z-index:100}.skip:focus{top:0}.site-head{border-bottom:2px solid #24212c;background:#f6c9d8}.head-wrap{max-width:1180px;padding:21px 25px;margin:auto;display:flex;align-items:end;justify-content:space-between;gap:20px}.wordmark{display:flex;align-items:center;gap:14px}.wordmark .mark{font-size:3.6rem;color:#693884;line-height:.9}.wordmark small{display:block;font-weight:800;letter-spacing:.18em;font-size:.58rem;margin-bottom:4px}.wordmark strong{font-size:clamp(1.5rem,3vw,2.12rem);line-height:.89;display:block}.period{color:#f18d59}.head-meta{display:flex;flex-direction:column;align-items:end;gap:6px;font-size:.74rem;font-weight:800;letter-spacing:.045em}.test-chip{border:1.5px solid #45304d;border-radius:25px;padding:7px 11px;background:#fff3f4;white-space:nowrap}.wrap{max-width:1180px;margin:auto;padding:23px 25px 75px}.game-nav{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px;border:2px solid #302b37;border-radius:18px;background:#fffefb;box-shadow:4px 5px 0 #302b37;margin-bottom:28px}.game-nav button{background:transparent;color:#463c50;padding:12px 19px;font-weight:800;border-radius:11px}.game-nav button[aria-current="page"]{background:#663e91;color:white}.game-nav .spacer{flex:1}.game-nav .stars{padding:0 13px;font-size:.83rem;font-weight:800;white-space:nowrap}.tag{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;letter-spacing:.065em;font-weight:800;text-transform:uppercase}.accent-tag{color:#8a4b73}.eyebrow{font-size:.71rem;text-transform:uppercase;letter-spacing:.2em;font-weight:800;color:#925474}.intro{max-width:690px}.hero{display:grid;grid-template-columns:1.12fr .88fr;gap:22px;margin-bottom:24px;align-items:stretch}.panel{background:#fffefa;border:2px solid #302b37;border-radius:24px;box-shadow:4px 5px 0 #302b37;padding:24px}.panel.soft{background:#f7eaf5}.hero-panel{padding:clamp(24px,4vw,43px);background:#fbe4db}.hero-panel p{max-width:430px}.hero-pic{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;background:repeating-linear-gradient(-45deg,#d9e9ea 0,#d9e9ea 20px,#d4e3e5 20px,#d4e3e5 40px);min-height:280px}.hero-pic .big{font-size:clamp(130px,23vw,260px);filter:drop-shadow(12px 18px 0 rgba(43,34,47,.12));transform:rotate(-8deg)}.scribble{position:absolute;top:20px;right:22px;background:#fff5b4;transform:rotate(8deg);border:2px solid #302b37;padding:9px 13px;border-radius:50%;font-weight:900;font-size:.75rem}.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}.grid-collection{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:14px}.stack{display:flex;flex-direction:column;gap:16px}.row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.between{justify-content:space-between}.muted{color:#756f79}.tiny{font-size:.75rem}.small{font-size:.88rem}.center{text-align:center}.bold{font-weight:800}.mb-0{margin-bottom:0}.mt-12{margin-top:12px}.mt-20{margin-top:20px}.mb-18{margin-bottom:18px}.btn{padding:12px 20px;font-weight:800;border-radius:12px;border:2px solid #302b37;background:#64398e;color:#fff;box-shadow:3px 3px 0 #302b37;min-height:46px;transition:transform .1s,box-shadow .1s}.btn:hover:not(:disabled){transform:translate(1px,1px);box-shadow:2px 2px 0 #302b37}.btn.pink{background:#f6c9d8;color:#302b37}.btn.cream{background:#fffefa;color:#302b37}.btn.mint{background:#d4eecd;color:#302b37}.btn.full{width:100%}.btn.micro{min-height:32px;padding:6px 10px;font-size:.76rem;box-shadow:2px 2px 0 #302b37}.btn.ghost{background:transparent;box-shadow:none;border:1.5px solid #b2a6ba;color:#593e67}.btn:disabled{box-shadow:none}.ribbon{display:flex;gap:8px;flex-wrap:wrap}.mini-pill{border-radius:99px;background:#f3ebdf;padding:6px 11px;font-size:.73rem;font-weight:800}.stat-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:23px}.stat-item{padding:14px 12px;border-radius:16px;background:#fffefa;border:1.5px solid #302b37;display:flex;flex-direction:column;gap:2px}.big-number{font-size:2.25rem;font-weight:800}.stat-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;font-weight:800}.plush{border:2px solid #403647;background:#fffefa;border-radius:18px;padding:13px;text-align:left;display:flex;flex-direction:column;gap:6px;position:relative;min-width:0}.plush.selected{background:#f2e1ff;border-color:#663e91;box-shadow:inset 0 0 0 2px #663e91}.plush.locked{background:#f0ece8;border-color:#c7bfbe}.plush .avatar{height:102px;border-radius:14px;display:grid;place-items:center;position:relative;font-size:4rem;user-select:none}.avatar{font-family:system-ui;display:grid;place-items:center;min-height:105px;font-size:4.7rem;border-radius:16px}.starter-portrait .avatar{min-height:220px;font-size:9rem;background:#ffe1c0!important}.starter-portrait{display:flex;flex-direction:column;justify-content:center;gap:10px}.plush .avatar.mystery{filter:grayscale(1)}.plush .avatar.mystery span{font-size:4.3rem;color:#a29aa3;filter:grayscale(1)}.plush-title{font-weight:800;line-height:1.2;min-height:2.3em;font-size:.89rem;overflow-wrap:anywhere}.plush-detail{font-size:.72rem;color:#706976}.plush .level{position:absolute;top:9px;right:9px;background:white;border:1px solid #403647;border-radius:99px;padding:3px 7px;font-size:.65rem;font-weight:900}.choice-card{min-width:0}.choice-card .plush-title{min-height:auto}.source-link{display:inline-block;margin-top:5px;font-size:.75rem;text-decoration:underline}.bar{height:12px;border:1.5px solid #33303b;border-radius:20px;background:#f0ede6;overflow:hidden}.fill{height:100%;background:#66ac89;border-radius:20px;transition:width .25s}.fill.low{background:#e8887a}.fill.xp{background:#b498f3}.battle-board{display:grid;grid-template-columns:1fr 55px 1fr;align-items:stretch;gap:8px}.fighter{padding:18px;border-radius:20px;border:2px solid #332f3a;background:#fffefa;min-width:0}.fighter.enemy{background:#fbe7ef}.fighter.you{background:#e7f3eb}.fighter .avatar{display:grid;place-items:center;font-size:6.2rem;min-height:145px;filter:drop-shadow(6px 8px 0 rgba(25,15,25,.10))}.vs{align-self:center;text-align:center;font-weight:900;font-size:1.3rem;transform:rotate(-8deg)}.hp-meta{display:flex;justify-content:space-between;gap:8px;margin:9px 0 6px;font-weight:900;font-size:.83rem}.fighter h3{overflow-wrap:anywhere;margin:8px 0 3px}.fighter .sub{font-size:.7rem;font-weight:700;color:#6d626d}.party{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0 0}.party span{border:1.5px solid #332f3a;background:#fff;border-radius:100px;padding:5px 8px;font-size:.68rem;font-weight:800}.party .fainted{opacity:.38;text-decoration:line-through}.move-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.move{display:flex;flex-direction:column;align-items:start;justify-content:space-between;gap:9px;min-height:118px;text-align:left;background:#fffefa;border:2px solid #302b37;padding:16px;border-radius:17px;box-shadow:3px 4px 0 #302b37;color:#302b37}.move:hover:not(:disabled){background:#f5e6fe}.move strong{font-size:.96rem}.move .small{font-size:.72rem}.move.signature{background:#f6e0f1}.move.heal{background:#d8edcd}.battle-log{background:#f1ebe3;border-radius:16px;padding:16px;max-height:200px;overflow:auto;font-size:.84rem}.battle-log p{padding:4px 0;margin:0}.battle-log p:last-child{font-weight:800}.select{border:2px solid #4f4754;background:#fffefa;padding:11px;border-radius:12px;max-width:100%;min-width:130px}.input{border:2px solid #4f4754;background:#fffefa;padding:12px;border-radius:12px;width:100%;max-width:400px}.label{font-size:.73rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:6px}.filter-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:17px 0 19px}.filter-row .input{width:auto;flex:1;min-width:145px}.empty{padding:42px 14px;text-align:center;background:#fffdf9;border-radius:20px;border:2px dashed #bbaeb4}.reward-banner{background:#f4e3a8;padding:23px;border-radius:22px;border:2px solid #302b37;text-align:center;margin-bottom:20px}.confetti{font-size:2.3rem}.notice{background:#eee5f8;border-left:5px solid #7748a0;border-radius:10px;padding:12px 15px;margin-bottom:20px}.progress{background:#ede6e2;border-radius:99px;height:12px;overflow:hidden;margin:7px 0}.progress > div{background:#8c62bc;height:100%}.meter{display:flex;justify-content:space-between;font-size:.7rem;font-weight:800}.modal-backdrop{position:fixed;inset:0;background:rgba(28,24,39,.63);z-index:90;display:grid;place-items:center;padding:20px}.modal{max-width:470px;width:100%;border:3px solid #302b37;border-radius:23px;background:#fffefa;box-shadow:6px 7px 0 #302b37;padding:27px}.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:95;background:#302b37;color:white;border-radius:14px;padding:13px 18px;max-width:calc(100vw - 40px);font-size:.89rem;font-weight:800;box-shadow:0 6px 18px #0002}.hidden{display:none!important}.site-foot{margin:auto;max-width:1100px;text-align:center;padding:10px 25px 35px;font-size:.71rem;color:#716975;line-height:1.5}.deco{font-family:'Fraunces',Georgia,serif;font-size:1.5rem}.collection-meta{font-size:.77rem;color:#706777}.spirit{font-size:1.35rem}.source-note{font-size:.73rem;color:#716975}.sticky-actions{display:flex;gap:12px;flex-wrap:wrap}.story-item{border-bottom:1px solid #e1d6d6;padding:11px 0;font-size:.86rem}.story-item:last-child{border:none}
 @media(max-width:800px){.hero{grid-template-columns:1fr 1fr}.stat-strip{grid-template-columns:repeat(2,1fr)}.hero-pic .big{font-size:155px}.grid-3{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){.head-wrap{padding:16px}.head-meta>span:last-child{display:none}.wordmark .mark{font-size:2.4rem}.game-nav button{padding:10px 13px;font-size:.82rem}.game-nav .stars{width:100%;text-align:center;padding:4px}.wrap{padding:16px 14px 75px}.hero,.grid-2{grid-template-columns:1fr}.hero-pic{min-height:215px}.hero-pic .big{font-size:170px}.panel{padding:18px}.battle-board{grid-template-columns:1fr 34px 1fr;gap:3px}.fighter{padding:10px}.fighter .avatar{min-height:95px;font-size:4.1rem}.fighter h3{font-size:.88rem}.vs{font-size:.89rem}.move-grid{grid-template-columns:1fr}.move{min-height:65px;padding:13px;flex-direction:row;align-items:center}.grid-collection{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-3{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important}}
+
+/* V4: a walkable illustrated Softlands, with plushes as characters rather than icons. */
+.plush-svg{width:100%;height:100%;max-height:220px;overflow:visible;filter:drop-shadow(0 5px 2px #392c4220)}
+.avatar .plush-svg{width:min(95%,155px);height:min(95%,155px)}
+.plush .avatar .plush-svg{width:95px;height:95px}
+.plush.locked .plush-svg{filter:brightness(0) opacity(.25)!important}
+.starter-portrait .avatar .plush-svg{width:210px;height:210px}
+.world-intro{display:flex;justify-content:space-between;align-items:center;gap:25px;padding:14px 6px 24px}
+.world-intro h1{font-size:clamp(2.6rem,5vw,4.5rem);margin:5px 0 8px;line-height:1.02}
+.world-intro p{max-width:690px;margin:0;line-height:1.5;color:#61586a}
+.world-title-star{color:#b97e58;font-size:.68em}
+.world-stamp{flex:0 0 auto;display:grid;place-items:center;width:128px;height:128px;background:#f3e1bd;border:2px dashed #826047;border-radius:50%;transform:rotate(8deg);text-align:center;color:#6f4f33}
+.world-stamp-count{font:800 3.2rem/1 Georgia,serif}.world-stamp-count span{font-size:1.4rem}.world-stamp small{font-size:.72rem;font-weight:900;max-width:85px;text-transform:uppercase;letter-spacing:.07em}
+.world-layout{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:20px;align-items:start}
+.world-shell{border:2px solid #483b4c;background:#fffefa;border-radius:26px;padding:13px;box-shadow:5px 6px 0 #3c3144;min-width:0}
+.world-toolbar{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin:2px 5px 13px;font-size:.81rem;font-weight:900}
+.location-dot{color:#b88cda}.world-viewport{overflow:hidden;border:3px solid #4b3b52;border-radius:19px;background:#e8ddcc;box-shadow:inset 0 0 0 3px #ffffff5a;outline-offset:3px}
+.world-grid{--map-cols:15;display:grid;grid-template-columns:repeat(var(--map-cols),minmax(0,1fr));width:100%;isolation:isolate}
+.world-tile{position:relative;aspect-ratio:1;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;border:0;border-radius:0;padding:0;box-shadow:inset 0 0 0 1px #705f5411;overflow:visible;transition:background .15s;outline-offset:-2px}
+.world-tile:hover{box-shadow:inset 0 0 0 2px #ffffff99;background-image:linear-gradient(#fff7,#fff7);z-index:5}
+.terrain-square{background:#e6d1ba}.terrain-bakery{background:#f6cba7}.terrain-wood{background:#b9d6b5}.terrain-garden{background:#dce9a5}.terrain-moon{background:#c9bbde}.terrain-cove{background:#a8dae1}.terrain-sports{background:#b5dcac}.terrain-hill{background:#cadcec}
+.terrain-trail{background:#eedfd0;box-shadow:inset 0 0 0 1px #99866b21}
+.world-tile:nth-child(3n).terrain-wood{background:#b3d1ae}.world-tile:nth-child(5n).terrain-cove{background:#a0d1db}.world-tile:nth-child(7n).terrain-garden{background:#d5e1a0}
+.world-decor{pointer-events:none;font-family:Georgia,serif;color:#ffffff90;font-size:clamp(.65rem,1.35vw,1.15rem)}
+.world-player,.world-npc{width:103%;height:114%;display:block;position:absolute;z-index:3;bottom:0;pointer-events:none;filter:drop-shadow(0 3px 1px #0003)}
+.world-player .plush-svg,.world-npc .plush-svg{max-height:none;height:100%;width:100%}
+.world-player{animation:player-hop 1.2s ease-in-out infinite}
+.world-tile.current{box-shadow:inset 0 0 0 2px #62488d;background:#f7e5ae;z-index:10}
+.world-sparkle{position:absolute;top:-11px;right:-4px;color:#9d4bc4;text-shadow:0 1px white;font-size:1.2rem;animation:twinkle 1.4s infinite}
+.npc-bubble{position:absolute;right:-5px;top:-9px;z-index:5;font-weight:900;font-size:.64rem;background:#fffdf7;border:1px solid #795e7d;border-radius:100%;height:18px;min-width:18px;display:grid;place-items:center;box-shadow:1px 2px 0 #503d4f}
+.world-arena{z-index:2;display:grid;place-items:center;width:91%;height:90%;border:2px solid #6a4d9e;border-radius:50%;background:radial-gradient(circle,#d8c0ff,#9d7ad1);color:#fff5c5;font-size:1.5rem;box-shadow:0 2px 0 #4d387c,0 0 12px #9560dd88;animation:twinkle 2s ease-in-out infinite}
+.world-arena small{font-size:.34rem;letter-spacing:.05em;color:#fff;font-weight:900}
+.world-treasure{color:#fff;background:#d69cb9;border-radius:50%;font-size:1.3rem;line-height:1.4rem;height:25px;width:25px;box-shadow:0 0 0 3px #ffffff8f;animation:twinkle 1.5s ease-in-out infinite}
+.world-commands{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 4px 5px}
+.dpad{display:grid;gap:3px;justify-items:center}.dpad>button{margin-left:0}.dpad div{display:flex;gap:4px}
+.dpad button{width:38px;height:35px;border:2px solid #41344b;border-radius:11px;background:#e9d9fa;box-shadow:2px 2px #41344b;color:#4c3473;font-weight:900}.dpad button:active{transform:translate(1px,1px);box-shadow:1px 1px #41344b}
+.world-commands-right{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:9px}
+.world-help{font-size:.72rem;line-height:1.7;color:#746b74;padding:0 5px;margin:10px 0 1px}
+kbd{display:inline-block;border:1px solid #ada2a1;background:#f1ece5;border-radius:4px;padding:0 4px;font:800 .7rem sans-serif}
+.world-sidebar{display:grid;gap:16px}.world-sidebar .panel{padding:18px}
+.friend-row{background:transparent;border:0;border-bottom:1px solid #eee6e6;display:flex;gap:10px;align-items:center;text-align:left;padding:10px 0;width:100%;color:#3f3541}
+.friend-row:hover{background:#fbf0df}.friend-row:last-child{border:0}.friend-row span:nth-child(2){flex:1;min-width:0}.friend-row strong{display:block;font-size:.87rem}.friend-row small{display:block;font-size:.69rem;line-height:1.4;color:#706777}.friend-portrait{width:50px;height:52px;background:#f3e6d4;border:1px solid #e6d3bf;border-radius:13px;flex:none;display:grid;place-items:center}
+.friend-portrait .plush-svg{max-height:51px}
+.zone-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.zone-link{border:1.5px solid #d8c8d9;background:#fff;border-radius:11px;padding:10px 8px;display:flex;align-items:center;gap:7px;text-align:left;font-size:.65rem;font-weight:800;min-width:0;color:#433b45}.zone-link span:nth-child(2){flex:1}.zone-link.active{background:#efe0ff;border-color:#9573b9}.zone-link.visited{border-color:#9abc8c}.zone-dot{width:12px;height:12px;border-radius:50%;flex:none}
+.talk-modal{text-align:center}.talk-modal .row:first-child{justify-content:space-between}.talk-portrait{height:175px;margin:12px auto 2px;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse,#fff1d8,transparent 65%)}.talk-portrait .plush-svg{width:175px;height:175px}.dialogue-line{font:600 1.15rem/1.55 'Fraunces',Georgia,serif;background:#f5e8e8;border-radius:15px;padding:15px}
+.mini-options{display:grid;gap:9px}.mini-options button{text-align:left}.mini-sparkle{font-size:2.5rem;text-align:center;color:#b789bf;margin:20px}.giant-star{font-size:5rem;color:#f1b96b;animation:twinkle 2s infinite}
+.bag-reveal-panel{min-height:500px;background:radial-gradient(ellipse at 50% 40%,#f5fff9,#f4e7fa 55%,#d9edfa);border:2px solid #342c44;border-radius:26px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 20px;box-shadow:4px 5px #342c44}
+.bag-reveal-panel h1{font-size:clamp(2.2rem,4vw,3.8rem);margin:.4em 0}.bag-reveal-panel p{max-width:500px}.gift-bag{position:relative;width:140px;height:175px;margin:20px auto 26px;isolation:isolate;animation:bag-wiggle 2.4s ease-in-out infinite}
+.gift-bag.big-bag{width:185px;height:235px}.bag-front{position:absolute;z-index:3;left:10%;width:80%;bottom:5%;height:69%;background:linear-gradient(130deg,#cceef5 3%,#b3dfed 65%,#92cbdc);border:3px solid #83bccd;border-radius:5px 5px 19px 19px;box-shadow:10px 13px 0 #618fa322;display:grid;place-items:center}.bag-star{font-size:2.9rem;color:#fff9fa;text-shadow:1px 2px #72b7cc}
+.bag-handle{position:absolute;top:10%;left:32%;width:37%;height:34%;border:8px solid #7dbbcb;border-bottom:0;border-radius:80px 80px 0 0;z-index:1}.bag-handle.right{left:37%;border-color:#b2e2eb;z-index:2}.bag-tissue{position:absolute;z-index:2;top:17%;left:20%;width:60%;height:30%;background:#eaf9fb;clip-path:polygon(0 65%,12% 20%,35% 68%,53% 7%,80% 65%,100% 34%,98% 100%,0 100%);color:#c9a0c9;font-size:2rem;animation:tissue-rustle 1.6s infinite}.bag-shadow{position:absolute;width:70%;height:14px;bottom:0;left:15%;background:#4e618b29;filter:blur(5px);border-radius:50%}
+.reward-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:18px;align-items:stretch}.gift-card{display:flex;flex-direction:column;align-items:center;text-align:center;gap:11px;padding:20px 16px;border:2px solid #382f42;background:#fffefa;border-radius:22px;box-shadow:4px 5px #382f42;min-width:0}.gift-card-art{width:100%;padding:9px;border-radius:16px;background:#e6f6f7}.gift-card-art .avatar{height:155px}.gift-card h2{font-size:clamp(.98rem,1.5vw,1.25rem);margin:5px 0 0;line-height:1.28;min-height:3em;display:flex;align-items:center;justify-content:center}.gift-card .small{margin:0}.gift-card .btn{margin-top:auto;white-space:normal;min-height:52px}.gift-rarity{margin-bottom:-7px}
+.claimed-modal{overflow:hidden}.bag-claim{height:235px;position:relative;display:grid;place-items:center}.bag-claim .gift-bag{z-index:3;opacity:.9;animation:bag-drop .8s .3s both}.bag-pop{z-index:4;position:absolute;width:155px;height:160px;left:50%;bottom:30px;transform:translateX(-50%);animation:plush-pop 1s .45s both}.bag-pop .plush-svg{width:100%;height:100%}
+.move-fx{display:none;position:absolute;z-index:15;pointer-events:none;left:40%;top:37%;font-size:3rem;color:#fff8b6;text-shadow:0 0 12px #9352bb}.battle-board{position:relative}.battle-board.is-attacking .fighter.you .plush-svg{animation:attack-lunge .65s ease-in-out}.battle-board.is-attacking .fighter.enemy .plush-svg{animation:hit-wobble .6s .14s both}.battle-board.is-healing .fighter.you .plush-svg{animation:heal-pulse .7s ease-out}.battle-board.is-switching .fighter.you .plush-svg{animation:plush-pop .65s}.battle-board:is(.is-attacking,.is-healing) .move-fx{display:block;animation:fx-flash .7s both}.battle-board.is-healing .move-fx{color:#81cf9a}
+@keyframes player-hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes twinkle{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.65;transform:scale(1.14)}}
+@keyframes bag-wiggle{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(3deg) translateY(-3px)}}
+@keyframes tissue-rustle{0%,100%{transform:rotate(0)}50%{transform:rotate(5deg)}}
+@keyframes bag-drop{0%{transform:translateY(-80px) rotate(20deg);opacity:1}100%{transform:translateY(100px) rotate(-8deg);opacity:.45}}
+@keyframes plush-pop{0%{transform:translate(-50%,70px) scale(.2);opacity:0}65%{transform:translate(-50%,-25px) scale(1.15);opacity:1}100%{transform:translate(-50%,-10px) scale(1);opacity:1}}
+@keyframes attack-lunge{0%,100%{transform:translateX(0) rotate(0)}40%{transform:translateX(32%) rotate(8deg) scale(1.09)}}
+@keyframes hit-wobble{0%,100%{transform:translateX(0) rotate(0)}45%{transform:translateX(11px) rotate(-13deg)}75%{transform:translateX(-7px) rotate(8deg)}}
+@keyframes heal-pulse{0%,100%{filter:drop-shadow(0 5px 2px #392c4220);transform:scale(1)}45%{filter:drop-shadow(0 0 18px #7adb9d);transform:scale(1.12)}}
+@keyframes fx-flash{0%{opacity:0;transform:translate(-25px,20px) scale(.2)}40%{opacity:1;transform:translate(0,-10px) scale(1.2)}100%{opacity:0;transform:translate(25px,-50px) scale(.8)}}
+@media (max-width:950px){.world-layout{grid-template-columns:1fr}.world-sidebar{grid-template-columns:repeat(2,minmax(0,1fr))}.world-sidebar .panel:last-child{grid-column:span 2}.world-grid{--map-cols:11}}
+@media (max-width:650px){.world-intro{gap:8px}.world-stamp{width:84px;height:84px}.world-stamp-count{font-size:2rem}.world-stamp-count span{font-size:.9rem}.world-stamp small{font-size:.57rem}.world-sidebar{grid-template-columns:1fr}.world-sidebar .panel:last-child{grid-column:auto}.world-shell{padding:7px}.world-grid{--map-cols:9}.world-toolbar{font-size:.68rem}.world-commands-right .btn{min-height:37px;padding:7px 10px;font-size:.75rem}.dpad button{width:35px;height:32px}.world-help{font-size:.63rem}.reward-choices{grid-template-columns:1fr;max-width:480px;margin-inline:auto}.gift-card{display:grid;grid-template-columns:100px minmax(0,1fr);grid-template-rows:auto auto auto;gap:5px 12px;text-align:left;align-items:center}.gift-card-art{grid-row:span 3;padding:2px}.gift-card-art .avatar{height:110px;min-height:110px}.gift-card .avatar .plush-svg{width:95px;height:95px}.gift-rarity{grid-column:2}.gift-card h2{grid-column:2;min-height:0;margin:0;justify-content:flex-start}.gift-card .small{grid-column:2}.gift-card .btn{grid-column:1 / 3;margin-top:8px}.world-player,.world-npc{height:125%;width:110%}.npc-bubble{min-width:13px;height:13px;font-size:.5rem}}
+@media (prefers-reduced-motion:reduce){.world-player,.world-sparkle,.gift-bag,.bag-tissue,.bag-pop,.battle-board .plush-svg,.move-fx{animation:none!important}}
+.world-landmark{font-size:clamp(.9rem,2.2vw,2rem);display:grid;place-items:center;position:absolute;inset:0;filter:drop-shadow(1px 3px 0 #5b472033);pointer-events:none}
+.world-decor{font-size:clamp(.7rem,1.8vw,1.45rem);filter:drop-shadow(1px 2px 0 #5876481a)}
+.ground-grass{font-size:.65rem;color:#5b9c67}
+.terrain-wood{background-image:radial-gradient(ellipse at 25% 75%,#84b07d22 0,transparent 65%)}
+.terrain-garden{background-image:radial-gradient(circle at 20% 10%,#faffd299 0,transparent 55%)}
+.terrain-moon{background-image:radial-gradient(circle at 40% 70%,#fff7ff7a,transparent 65%)}
+.terrain-cove{background-image:repeating-linear-gradient(125deg,transparent 0 13px,#d5f8ff35 14px 17px,transparent 19px 28px)}
 
 </style>
 </head>
@@ -26,7 +99,7 @@
     </div>
   </header>
   <div id="app"></div>
-  <footer class="site-foot">Unofficial fan-made prototype. Jellycat product names are linked to official catalog references. Original game rules and icon-only placeholders; no official product photos or affiliation. Your save stays in this browser.</footer>
+  <footer class="site-foot">Unofficial fan-made playtest with original plush illustrations. Not affiliated with Jellycat. No official product photos. Progress is stored in this browser.</footer>
   <script type="module">
 /**
  * Research-backed playable catalog. Every entry appears on the indicated official
@@ -348,24 +421,194 @@ function changeTeam(s,id){if(!owned(s,id))throw Error('Not collected');const a=s
  if(a.team.includes(id)){if(a.team.length===1)throw Error('You need at least one team member');a.team=a.team.filter(x=>x!==id);}else {if(a.team.length===3)throw Error('Team already full');a.team.push(id);}return a;}
 function saveNickname(s,id,text){if(!owned(s,id))throw Error('Not collected');const a=structuredClone(s);const name=String(text||'').trim().slice(0,24);if(!name)throw Error('Enter a nickname');a.nicknames[id]=name;return a;}
 
+/* Original hand-coded character illustrations. These are NOT official Jellycat artwork. */
+function artHash(s){let x=0;for(const c of s)x=(Math.imul(x,31)+c.charCodeAt(0))>>>0;return x;}
+const ART_PALETTES=[['#efbc74','#d99a53','#fff0d6'],['#d0ad90','#b48972','#f6e7d6'],['#bddc9e','#91bc79','#eaf6ca'],['#a6d9e3','#7aafc9','#def3f9'],['#c9b1de','#a98ac8','#f0e0fb'],['#c2d8ee','#85b2dc','#f0f7ff']];
+function plushArt(p,extraClass=''){if(!p)return '';
+ const n=p.officialName.toLowerCase(),h=artHash(n),idx=p.typeIndex??0,base=ART_PALETTES[idx];let col=[base[0],base[1],base[2]];
+ if(/croissant|sourdough|bagel|toastie|bread/.test(n))col=['#e9b16b','#c98a4d','#ffebc0'];
+ else if(/golf ball|baseball|snow|cloud|ghost|white bunny|cream bunny|whale|tennis ball/.test(n))col=['#f5f1e9','#d9d2cb','#ffffff'];
+ else if(/soccer ball|penguin|pigeon|black/.test(n))col=['#dadfe2','#858d9d','#ffffff'];
+ else if(/tennis ball|sunflower|sun'|lemon|star|lightning/.test(n))col=['#e8d96b','#d0b950','#fff5b3'];
+ else if(/pink|cherry|rose|strawberry|peach/.test(n))col=['#f4b4bf','#d8869d','#ffe0dc'];
+ else if(/frog|plant|shamrock|ivy|palm|cactus/.test(n))col=['#a9d69b','#6eac78','#def3bb'];
+ else if(/bear|bigfoot|yeti|wolf|dog|puppy/.test(n))col=['#cbb39d','#aa8d73','#e7d4be'];
+ const [c,d,l]=col;
+ const id='felt'+h;
+ const esc=s=>String(s).replace(/[&<>"']/g,v=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[v]));
+ const path=(d,fill,stroke=d2)=>''; // no-op helper left private to the module
+ const ellipse=(x,y,rx,ry,f,stroke='none',sw=2)=>`<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${f}" stroke="${stroke}" stroke-width="${sw}"/>`;
+ const circle=(x,y,r,f,stroke='none',sw=2)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${f}" stroke="${stroke}" stroke-width="${sw}"/>`;
+ const P=(d,f,stroke='none',sw=2)=>`<path d="${d}" fill="${f}" stroke="${stroke}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/>`;
+ const thin='#574a59';let ears='',body='',acc='',legs='',arms='',faceY=79,faceX=80;
+ legs=`<g stroke="${d}" stroke-width="3">${P('M55 109 Q50 129 51 142 Q53 150 63 146 L70 116',c)}${P('M92 116 Q92 140 96 148 Q111 152 110 141 L108 109',c)}</g>`;
+ arms=`<g>${P('M39 83 Q23 78 18 91 Q14 100 23 104 Q35 106 48 97',c,d,2)}${P('M116 83 Q134 80 142 91 Q146 104 134 105 L112 96',c,d,2)}</g>`;
+ const oval=()=>ellipse(80,78,49,54,`url(#${id})`,d,2.5);
+ if(/croissant/.test(n)){
+  body=P('M17 83 C22 33 51 24 78 44 C109 21 139 42 144 82 C145 100 135 108 122 101 C102 89 99 76 80 77 C63 77 57 93 37 104 C23 112 12 100 17 83Z',`url(#${id})`,d,3);
+  acc=P('M43 56 Q61 68 53 92 M79 45 Q89 60 87 77 M113 52 Q106 72 119 90','none','#c68c4e',4);
+  faceY=79;
+ }else if(/golf ball/.test(n)){
+  body=circle(80,78,52,`url(#${id})`,d,2.5);
+  for(let y=43;y<=109;y+=14)for(let x=39+(y%28?7:0);x<=122;x+=15){if(Math.hypot(x-80,y-78)<43)acc+=ellipse(x,y,3,2,'#e6e0dc','#c9c2bf',.65)}
+ }else if(/soccer ball/.test(n)){
+  body=circle(80,78,52,`url(#${id})`,d,2.5);
+  acc=P('M80 44 L98 56 L91 76 L69 76 L62 56 Z','#646a76');acc+=P('M80 44 L80 27 M62 56 L42 52 M98 56 L118 52 M69 76 L52 97 M91 76 L108 97','none','#929aa6',3);
+ }else if(/baseball/.test(n)){
+  body=circle(80,78,51,`url(#${id})`,d,2.5);
+  acc=P('M45 44 Q65 72 42 109 M113 45 Q94 78 117 110','none','#dc6d73',2.8);
+  for(let y=53;y<=101;y+=12){acc+=P(`M${45-(y-75)*(y-75)/130} ${y-3}l7 6 M${108+(y-75)*(y-75)/130} ${y-3}l-7 6`,'none','#c44a55',2)}
+ }else if(/tennis ball|pickleball/.test(n)){
+  col[0]='#dbea77';body=circle(80,78,52,'#deed79','#a8be5d',2.5);acc=P('M46 38 Q88 76 45 117 M115 39 Q76 77 115 118','none','#fcfff2',5);
+ }else if(/cake|macaron|doughnut|bagel|fondue|cheese|camembert|parmesan|raclette/.test(n)){
+  if(/cake/.test(n)){body=P('M33 60 Q80 45 127 60 L127 117 Q80 135 33 117Z',`url(#${id})`,d,2.5);acc=P('M33 68 Q49 79 63 69 T95 69 T127 68 L127 83 Q115 100 101 88 T67 89 T33 83Z','#fff9f4','#f1d6dd',2);acc+=P('M78 60V43','none','#bd717d',3)+ellipse(79,39,5,8,'#ffd876');faceY=100;}
+  else if(/doughnut|bagel/.test(n)){body=circle(80,80,52,`url(#${id})`,d,3);acc=circle(80,78,16,'#f9e4ce',d,2);faceY=105;}
+  else {body=oval();acc=P('M38 66 Q79 53 123 65 L118 77 Q79 67 41 78Z',l,'none');}
+ }else if(/espresso|drink|tea bag|lemonade/.test(n)){
+  body=P('M43 45 L119 45 L113 127 Q80 138 48 125Z',`url(#${id})`,d,2.5);
+  acc=P('M118 61 C151 52 150 98 115 102','none',d,9)+P('M118 61 C145 59 142 93 116 95','none',l,4);faceY=93;
+ }else if(/peanut/.test(n)){
+  body=P('M77 19 C119 15 126 44 109 61 C132 83 119 133 79 130 C40 134 27 90 51 62 C29 42 45 19 77 19Z',`url(#${id})`,d,2.6);
+  acc=ellipse(80,46,30,4,l,'none')+ellipse(79,113,28,4,d,'none');faceY=84;
+ }else if(/sunflower|flower|orchid|daisy|bouquet|rose/.test(n)){
+  const petals=['#ffe199','#fff7cc','#f5b4ca','#ffd4a5','#d9a6e0'];const cc=petals[h%petals.length];
+  for(let j=0;j<9;j++){let a=j*40*Math.PI/180;ears+=ellipse(80+36*Math.sin(a),69+36*Math.cos(a),17,26,cc,d,1.2)}
+  body=circle(80,72,35,`url(#${id})`,d,2.8);
+  acc=P('M80 112v29 M78 125 q-27 -23 -29 -4 M84 131 q27 -26 28 -8','none','#87a86f',8);faceY=75;
+ }else if(/bee/.test(n)){
+  ears=ellipse(52,51,25,18,'#f8faf8',d,1.4)+ellipse(108,51,25,18,'#f8faf8',d,1.4);
+  body=oval();acc=P('M42 54 Q79 64 118 54 M38 91 Q80 105 122 91','none','#664e55',13);faceY=76;
+ }else if(/octopus/.test(n)){
+  legs='';for(let k=0;k<7;k++){const x=32+k*15;legs+=P(`M${x} 106q-16 19 -5 35q14 7 13 -11` , 'none', d, 9)+P(`M${x} 106q-16 19 -5 35q14 7 13 -11`,'none',c,6)}body=ellipse(80,74,50,51,`url(#${id})`,d,3);
+ }else if(/whale|fish|carp|sardine|shrimp|crab|shark|seal|turtle|lobster|mussel|pelican|seagull/.test(n)){
+  body=oval();if(/fish|carp|whale|shark|sardine/.test(n))ears=P('M120 64 L153 40 L150 111 L121 92Z',c,d,2);if(/crab|lobster/.test(n))ears+=P('M35 79 Q5 42 12 37 Q27 19 40 45','none',d,10);if(/turtle/.test(n))acc+=ellipse(80,85,32,30,d)+ellipse(80,85,25,23,c);
+ }else if(/bunny|rabbit/.test(n)){
+  ears=P('M46 44 Q27 -16 49 6 Q66 21 63 51Z',c,d,3)+P('M95 48 Q97 -14 114 4 Q126 25 112 58Z',c,d,3)+ellipse(51,27,8,19,'#f9c6cb')+ellipse(108,26,8,18,'#f9c6cb');body=oval();
+ }else if(/penguin|owl|bird|crow|pigeon/.test(n)){
+  body=oval();acc=ellipse(80,90,34,36,l,d,1.5);acc+=P('M72 87 L88 87 L80 96Z','#d9a256');
+ }else if(/bigfoot|yeti/.test(n)){
+  ears=P('M38 41 L28 10 L62 29 M100 29 L130 10 L122 43',c,d,3);body=oval();acc=P('M45 76 Q80 58 115 76 L110 110 Q78 134 51 109Z',l);faceY=75;
+ }else if(/soccer|sports|ball|puck|curling stone|bowling/.test(n)){
+  body=oval();acc=circle(80,52,18,l,d,1);faceY=86;
+ }else if(/sun|moon|star|rainbow|lightning/.test(n)){
+  body=oval();for(let a=0;a<8;a++){const t=a*Math.PI/4;ears+=P(`M${80+48*Math.sin(t)} ${78+48*Math.cos(t)} l${11*Math.sin(t)} ${11*Math.cos(t)}`,'none',d,6)}
+ }else if(/bear|puppy|dog|wolf|raccoon|koala|mouse|cat|otter|wombat|monkey|frog|elephant|dragon|bat|alien|gargoyle|owl/.test(n)){
+  ears=circle(43,35,19,c,d,2)+circle(117,35,19,c,d,2);body=oval();
+  if(/dog|puppy|wolf|spaniel|sheepdog/.test(n))ears=P('M47 49 Q9 27 22 70 Q31 79 49 66Z',d)+P('M113 49 Q151 27 138 70 Q129 79 111 66Z',d)+body;
+  if(/frog/.test(n))ears=circle(47,35,17,c,d,2)+circle(112,35,17,c,d,2)+circle(47,32,8,l)+circle(112,32,8,l);
+  if(/elephant/.test(n))acc=P('M71 81 Q77 83 76 104 Q75 113 85 112 Q97 103 89 85',c,d,3);
+ }else if(/pinecone|tree|palm|plant|shamrock|ivy|cactus/.test(n)){
+  ears=P('M79 5 C91 30 124 40 121 65 Q137 86 116 96 Q97 117 80 123 Q63 117 44 96 Q23 78 43 61 Q55 35 79 5Z',l,d,2);body=ellipse(80,85,42,42,`url(#${id})`,d,2.7);
+  acc=P('M78 43l0 72 M48 67l63 24 M48 95l60 -30','none',d,2);
+ }else{body=oval();if(/ring/.test(n))acc=circle(80,48,20,'none','#fff8db',5);if(/whistle/.test(n))acc=circle(80,50,15,l,d,2)}
+ // Feel like a plush: visible arms, soft blushing cheeks, stitched smile, dangling legs and top fluff.
+ const eyes=`${ellipse(faceX-15,faceY-2,4.2,5.6,'#342c35')}${ellipse(faceX+15,faceY-2,4.2,5.6,'#342c35')}${circle(faceX-16.3,faceY-4,1.35,'#fff')}${circle(faceX+13.7,faceY-4,1.35,'#fff')}`;
+ const face=`${ellipse(faceX-28,faceY+7,8,4,'#ed9c9e','none')}${ellipse(faceX+28,faceY+7,8,4,'#ed9c9e','none')}${eyes}${P(`M${faceX-7} ${faceY+10}q7 9 14 0`,'none','#6b4752',2.4)}`;
+ return `<svg class="plush-svg ${esc(extraClass)}" viewBox="0 0 160 165" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Original cuddly illustration of ${esc(p.officialName)}"><defs><radialGradient id="${id}" cx="36%" cy="24%" r="88%"><stop offset="0" stop-color="${l}"/><stop offset=".65" stop-color="${c}"/><stop offset="1" stop-color="${d}"/></radialGradient></defs>${ellipse(80,154,52,7,'#473c481c')}${legs}${ears}${arms}${body}${acc}${face}${P('M43 113q7 4 12 4 M108 115q7 2 10 -3','none','#fff9',1.5)}</svg>`;
+}
+export {plushArt};
+
+/* Softlands overworld: deterministic, entirely offline, all movement is real game state. */
+const WORLD_W=56, WORLD_H=40;
+const WORLD_START={x:27,y:20};
+const ZONES=[
+ {id:'wood',name:'Whispering Woods',color:'#bdd8b0',x:2,y:2,description:'Mossy paths and very tall stories.'},
+ {id:'garden',name:'Petal Gardens',color:'#dce3a1',x:26,y:5,description:'Flowers, butterflies, and tiny adventures.'},
+ {id:'moon',name:'Moonbeam Hollow',color:'#c8b3dc',x:45,y:8,description:'A sleepy place full of mysterious friends.'},
+ {id:'bakery',name:'Snack Street',color:'#e6bc9f',x:9,y:20,description:'Warm pastries and friendly conversations.'},
+ {id:'square',name:'Cuddlewick Village',color:'#e8d8bd',x:27,y:20,description:'The busy little heart of the Softlands.'},
+ {id:'cove',name:'Tidepool Cove',color:'#a7d7dc',x:46,y:27,description:'Seashells, tidepools, and salty surprises.'},
+ {id:'sports',name:'Playtime Park',color:'#b5d8a6',x:10,y:34,description:'A field for games and friendly rivalries.'},
+ {id:'hill',name:'Starlight Ridge',color:'#c3d5e4',x:27,y:35,description:'Blue skies and distant mountains.'},
+];
+function zoneAt(x,y){if(y>=28&&x<19)return 'sports';if(y>=28&&x<36)return 'hill';if(x>=36&&y>=16)return 'cove';if(x>=36)return 'moon';if(y<14&&x<19)return 'wood';if(y<14)return 'garden';if(x<19)return 'bakery';return 'square';}
+const NPCS=[
+ {id:'postie',name:'Pip the Postie',product:'Bashful Beige Bunny',x:26,y:19,icon:'✉',hint:'Welcome, explorer! What are you looking for?',say:'Hello! Welcome to Cuddlewick. Every path leads to someone with a story. Try the bakery to the west, or the gardens to the north. The big rainbow circle is where battles happen.',challenge:null},
+ {id:'baker',name:'Chef Crumbs',product:'Amuseables Sourdough',x:9,y:18,icon:'🥐',hint:'A warm little baking challenge.',say:'I have three doughy mysteries to solve. Help me make the perfect cozy croissant and I will give you a starry reward!',challenge:'baker'},
+ {id:'florist',name:'Petal the Gardener',product:'Amuseables Sunflower',x:27,y:7,icon:'✿',hint:'The garden needs some careful tending.',say:'A garden is a little bit of magic you can water. Can you help my flowers and find their favorite things?',challenge:'garden'},
+ {id:'reader',name:'Professor Noodle',product:'Smudge Elephant',x:31,y:20,icon:'♧',hint:'A very serious plush researcher.',say:'I am making a field guide to the Softlands. People who explore all eight districts earn the title Wandering Wonder. Every mystery silhouette is a friend you have not met yet.',challenge:null},
+ {id:'ranger',name:'Bo the Ranger',product:'Bo Bigfoot',x:9,y:7,icon:'☘',hint:'A surprisingly gentle forest guide.',say:'Shhh! The woods are full of squishy little sounds. Take your time and notice the glowing treasures. They reward explorers who step onto them.',challenge:'wood'},
+ {id:'stargazer',name:'Bob of the Moon',product:'Ghost Bob',x:46,y:8,icon:'☾',hint:'A ghost with surprisingly good advice.',say:'Woooo! Oh, sorry. I was practicing my greetings. The brightest star in the sky has a story. Would you like to hear a little moonbeam riddle?',challenge:'moon'},
+ {id:'sailor',name:'Captain Larry',product:'Larry Lobster ‘Sailor’',x:45,y:26,icon:'⚓',hint:'An old sailor with shell puzzles.',say:'Ahoy, little wanderer! The tides leave treasures all over the beach. Before setting sail, can you help me sort the things that belong by the sea?',challenge:'sea'},
+ {id:'coach',name:'Coach Bounce',product:'Amuseables Sports Tennis Ball',x:10,y:32,icon:'★',hint:'Playground games with a tiny coach.',say:'The only rule of playtime is that it must be fun. And maybe bring snacks. Ready for a two-round sporting challenge?',challenge:'sports'},
+ {id:'dreamer',name:'Stella the Star',product:'Amuseables Silver Star',x:29,y:34,icon:'✦',hint:'A dreamy little inventor.',say:'Sometimes adventures are about being curious. Sometimes they are about winning battles. The very best adventures are a little of both.',challenge:null},
+];
+const LANDMARKS=[
+ {x:23,y:18,icon:'🏠',name:'Cuddlewick cottage'},{x:29,y:18,icon:'🏡',name:'Little village house'},
+ {x:32,y:21,icon:'🛍️',name:'General store'},{x:24,y:23,icon:'⛲',name:'Wishing fountain'},
+ {x:13,y:19,icon:'🥖',name:'Bakery cart'},{x:7,y:22,icon:'🏠',name:'Bakery home'},
+ {x:12,y:8,icon:'🌳',name:'Tall forest tree'},{x:6,y:6,icon:'🪵',name:'Forest hideout'},
+ {x:24,y:8,icon:'🪴',name:'Garden greenhouse'},{x:30,y:6,icon:'🌷',name:'Blooming flowerbed'},
+ {x:42,y:8,icon:'🔭',name:'Moonbeam lookout'},{x:49,y:9,icon:'🌙',name:'Moon gate'},
+ {x:45,y:29,icon:'⛵',name:'Boat dock'},{x:51,y:23,icon:'🏖️',name:'Cozy beach hut'},
+ {x:8,y:31,icon:'🛝',name:'Playground slide'},{x:14,y:36,icon:'🛝',name:'Playground'},
+ {x:27,y:36,icon:'🏕️',name:'Starlight camp'},{x:32,y:34,icon:'⛰️',name:'Mountain viewpoint'},
+];
+const TREASURES=[
+ {id:'lost-ribbon',x:15,y:22,title:'A little pink ribbon',text:'You found a ribbon blowing along Snack Street!',points:1},
+ {id:'silver-button',x:11,y:10,title:'A shiny button',text:'A sparkly button was tucked beneath a forest fern.',points:1},
+ {id:'petal-token',x:32,y:9,title:'A painted petal',text:'Someone left a tiny painted petal by the garden.',points:1},
+ {id:'moon-pebble',x:50,y:13,title:'A moonlit pebble',text:'This shimmering pebble feels like a wish.',points:1},
+ {id:'beach-shell',x:42,y:33,title:'A striped seashell',text:'You discovered a sweet little shell by the tide.',points:1},
+ {id:'lucky-whistle',x:6,y:35,title:'A lucky whistle',text:'A lost playground whistle! Maybe Coach Bounce knows whose it is.',points:1},
+ {id:'wish-feather',x:31,y:37,title:'A wish feather',text:'A feather swirls around your feet. A lucky find!',points:1}
+];
+const CHALLENGES={
+ baker:{title:'Chef Crumbs’ Tiny Bake-Off',steps:[{question:'What should you do first when making a croissant?',answers:['Give the dough a cozy mix','Put it straight in the oven','Cover it in seashells'],correct:0},{question:'What makes a croissant’s layers so flaky?',answers:['A big splash of water','Folding the dough with butter','Putting it in the freezer forever'],correct:1}]},
+ garden:{title:'The Blooming Garden',steps:[{question:'A little flower is thirsty. What do you offer?',answers:['A soft sprinkle of water','A mountain of confetti','A basketball'],correct:0},{question:'Where should a sunflower grow?',answers:['In a dark box','In a sunny patch of soil','At the bottom of the sea'],correct:1}]},
+ wood:{title:'The Whispering Woods',steps:[{question:'What would help you find a path through the woods?',answers:['Following little trail signs','Closing your eyes','Spinning until dizzy'],correct:0},{question:'You see a tiny lost friend. What do you do?',answers:['Ignore them','Offer to help','Hide their map'],correct:1}]},
+ moon:{title:'Bob’s Moonbeam Riddles',steps:[{question:'I shine at night but am not a lamp. What am I?',answers:['A pillow','The moon','A croissant'],correct:1},{question:'What is the best thing to bring on a sleepy moon walk?',answers:['A cozy scarf','A noisy alarm','A big snow shovel'],correct:0}]},
+ sea:{title:'Captain Larry’s Shell School',steps:[{question:'Which of these might you find along the shore?',answers:['A seashell','A traffic light','A frying pan'],correct:0},{question:'A little crab is crossing the path. What should you do?',answers:['Give it some space','Pick it up and throw it','Build a wall around it'],correct:0}]},
+ sports:{title:'Coach Bounce’s Playtime Quiz',steps:[{question:'What shape is a golf ball plush?',answers:['A golf hole','A round, cuddly ball','A golf cart'],correct:1},{question:'What matters most during a friendly game?',answers:['Having fun together','Always being the loudest','Winning every time'],correct:0}]}
+};
+function freshWorld(){return {x:WORLD_START.x,y:WORLD_START.y,steps:0,visited:['square'],talked:[],completed:[],found:[],firstBattle:false};}
+function ensureWorld(s){const defaults=freshWorld(),w=(s.world&&typeof s.world==='object')?s.world:{};
+ const uniqueIds=(v,valid)=>Array.isArray(v)?[...new Set(v.filter(x=>typeof x==='string'&&valid.includes(x)))]:[];
+ s.world={...defaults,x:Math.max(0,Math.min(WORLD_W-1,Math.floor(Number.isFinite(Number(w.x))?Number(w.x):WORLD_START.x))),y:Math.max(0,Math.min(WORLD_H-1,Math.floor(Number.isFinite(Number(w.y))?Number(w.y):WORLD_START.y))),steps:Math.max(0,Math.min(999999,Math.floor(Number(w.steps)||0))),visited:uniqueIds(w.visited,ZONES.map(z=>z.id)),talked:uniqueIds(w.talked,NPCS.map(n=>n.id)),completed:uniqueIds(w.completed,Object.keys(CHALLENGES)),found:uniqueIds(w.found,TREASURES.map(t=>t.id)),firstBattle:!!w.firstBattle};
+ const zone=zoneAt(s.world.x,s.world.y);if(!s.world.visited.includes(zone))s.world.visited.push(zone);
+ return s;
+}
+function stepWorld(s,dx,dy){ensureWorld(s);if(Math.abs(dx)+Math.abs(dy)!==1)throw Error('Only move one space at a time');const w=s.world;
+ const x=Math.max(0,Math.min(WORLD_W-1,w.x+dx)),y=Math.max(0,Math.min(WORLD_H-1,w.y+dy));
+ if(x===w.x&&y===w.y)return {moved:false,zone:null,treasure:null,npc:null};
+ const npc=NPCS.find(n=>n.x===x&&n.y===y);
+ if(npc)return {moved:false,npc,zone:null,treasure:null};
+ const oldZone=zoneAt(w.x,w.y);w.x=x;w.y=y;w.steps++;
+ const zone=zoneAt(x,y);let newZone=null;
+ if(!w.visited.includes(zone)){w.visited.push(zone);newZone=ZONES.find(z=>z.id===zone);s.history.push(`Explored ${newZone.name}`);s.history=s.history.slice(-30);}
+ let treasure=TREASURES.find(t=>t.x===x&&t.y===y&&!w.found.includes(t.id));
+ if(treasure){w.found.push(treasure.id);s.points+=treasure.points;s.history.push(`Found ${treasure.title} (+${treasure.points} star)`);s.history=s.history.slice(-30);}
+ return {moved:true,zone:newZone,treasure,npc:null};
+}
+function nearbyNpcs(w){return NPCS.filter(n=>Math.abs(n.x-w.x)+Math.abs(n.y-w.y)<=2)}
+function nearbyArena(w){return Math.abs(30-w.x)+Math.abs(23-w.y)<=2}
+function completeChallenge(s,id){ensureWorld(s);if(!CHALLENGES[id])throw Error('Unknown challenge');if(s.world.completed.includes(id))return false;
+ s.world.completed.push(id);s.points+=2;
+ if(s.world.completed.length%3===0)s.jars++;
+ s.history.push(`Helped a Softlands friend: ${CHALLENGES[id].title} (+2 stars)`);s.history=s.history.slice(-30);return true;
+}
+function hashTile(x,y){let n=(x*374761393+y*668265263)>>>0;n=(Math.imul(n^(n>>>13),1274126177))>>>0;return (n^(n>>>16))>>>0;}
+
+
+
 
 
 const $=s=>document.querySelector(s);
 const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let state=loadSave(),page='home',category='All',query='',ownership='All',detail=null,toastTimer=null;
+let state=ensureWorld(loadSave()),page='world',category='All',query='',ownership='All',detail=null,toastTimer=null;
 function loadSave(){try{const v=localStorage.getItem(SAVE_KEY);if(v)return validateSave(JSON.parse(v));const old=JSON.parse(localStorage.getItem('jbc-v2')||'null');if(old){const d=freshSave();d.nicknames[STARTER_ID]=String(old.names?.croissant||'').slice(0,24);d.onboarded=!!old.onboarded;d.wins=Math.max(0,old.wins|0);d.losses=Math.max(0,old.losses|0);d.streak=Math.max(0,old.streak|0);d.bestStreak=d.streak;d.points=Math.max(0,old.points|0);d.jars=Math.max(0,old.jars|0);d.levels[STARTER_ID]=Math.max(1,old.levels?.croissant||1);d.xp[STARTER_ID]=Math.max(0,old.xp?.croissant||0);return validateSave(d);}}catch(e){console.warn('Save recovery:',e)}return freshSave();}
-function persist(){state=validateSave(state);try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch(e){notify('Could not save progress in this browser. Check storage permissions.');}}
+function persist(){state=ensureWorld(validateSave(state));try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch(e){notify('Could not save progress in this browser. Check storage permissions.');}}
 function update(fn){state=fn(state);persist();render();}
 function el(tag,cl,text){const x=document.createElement(tag);if(cl)x.className=cl;if(text)x.textContent=text;return x;}
 function notify(message){let t=$('.toast');if(!t){t=el('div','toast');t.setAttribute('role','status');document.body.append(t);}t.textContent=message;t.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.add('hidden'),3600);}
-function go(p){page=p;detail=null;render();window.scrollTo({top:0,behavior:'instant'});}
+function go(p){stopWalking();page=p;detail=null;render();window.scrollTo({top:0,behavior:'instant'});}
 const badge=(txt,style='')=>`<span class="mini-pill" ${style?`style="${style}"`:''}>${safe(txt)}</span>`;
 const rarityTag=p=>badge(p.rarity,p.rarity==='Legendary'?'background:#ffe49f;color:#68431c':p.rarity==='Rare'?'background:#eddbff;color:#61358c':'');
-const bigAvatar=(p,hidden=false)=>`<div class="avatar ${hidden?'mystery':''}" style="background:${hidden?'#d9d4da':TYPE_COLOR[p.typeIndex]};"><span aria-hidden="true">${hidden?'?':safe(p.emoji)}</span></div>`;
+const bigAvatar=(p,hidden=false)=>`<div class="avatar ${hidden?'mystery':''}" style="background:${hidden?'#d9d4da':TYPE_COLOR[p.typeIndex]};">${plushArt(p)}</div>`;
 function progressBar(value,max,kind='hp'){const percentage=Math.max(0,Math.min(100,Math.round(100*value/max)));return `<div class="bar" role="progressbar" aria-valuenow="${value}" aria-valuemin="0" aria-valuemax="${max}"><div class="fill ${kind==='xp'?'xp':percentage<28?'low':''}" style="width:${percentage}%"></div></div>`;}
 function statBar(){return `<div class="stat-strip"><div class="stat-item"><span class="stat-label">Matches won</span><span class="big-number">${state.wins}</span></div><div class="stat-item"><span class="stat-label">Win streak</span><span class="big-number">${state.streak} <span style="font:normal 1.2rem sans-serif">🔥</span></span></div><div class="stat-item"><span class="stat-label">Your collection</span><span class="big-number">${state.owned.length}<span style="font-size:.91rem">/${COLLECTION_GOAL}</span></span></div><div class="stat-item"><span class="stat-label">Star points</span><span class="big-number">${state.points} <span style="font:normal 1.2rem sans-serif">★</span></span></div></div>`;}
 function nav(){return `<nav class="game-nav" aria-label="Game sections">
-${[['home','⌂ Home'],['battle','⚔ Battle'],['collection','▦ Collection'],['clubhouse','✦ Clubhouse']].map(([id,t])=>`<button type="button" data-action="nav" data-id="${id}" ${page===id?'aria-current="page"':''}>${t}</button>`).join('')}
+${[['world','✿ Explore'],['home','⌂ My team'],['battle','⚔ Battle'],['collection','▦ Collection'],['clubhouse','✦ Clubhouse']].map(([id,t])=>`<button type="button" data-action="nav" data-id="${id}" ${page===id?'aria-current="page"':''}>${t}</button>`).join('')}
 <span class="spacer"></span><span class="stars">★ ${state.points} points &nbsp; · &nbsp; 🫙 ${state.jars} jars</span></nav>`;}
 function panel(c,cl=''){return `<section class="panel ${cl}">${c}</section>`;}
 function card(p,hidden=false,selected=false,action='detail',labelOverride=null){let name=hidden?'????':(labelOverride||label(state,p.id));return `<button type="button" class="plush ${hidden?'locked':''} ${selected?'selected':''}" data-action="${action}" data-id="${safe(p.id)}" ${hidden?'aria-label="Undiscovered character"':''}>
@@ -374,6 +617,7 @@ ${!hidden&&owned(state,p.id)?`<span class="level">LV ${state.levels[p.id]||1}</s
 function render(){let output=`<main id="main" class="wrap">${nav()}`;
  if(!state.onboarded)output+=onboard();
  else if(state.pending)output+=rewards();
+ else if(page==='world')output+=worldScreen();
  else if(page==='home')output+=home();
  else if(page==='battle')output+=battle();
  else if(page==='collection')output+=collection();
@@ -385,8 +629,8 @@ function render(){let output=`<main id="main" class="wrap">${nav()}`;
 function onboard(){const p=BY_ID.get(STARTER_ID);return `<div class="hero">
 ${panel(`<span class="eyebrow">Welcome, trainer!</span><h1>Your first little<br>champion.</h1><p>Every great collection starts with one Jellycat. Meet your first teammate, the real <strong>Amuseables Croissant</strong>. You can call yours Amy, Beth, or anything you like.</p>
 <form id="starter-form"><label class="label" for="starter-name">Give your croissant a nickname</label><input required class="input" id="starter-name" maxlength="24" placeholder="Amy, Beth…" autocomplete="off"><div class="row mt-20"><button class="btn" type="submit">Start my adventure →</button></div></form>`, 'hero-panel')}
-${panel(`${bigAvatar(p)}<div class="center" style="margin-top:12px"><span class="eyebrow">01 / The first friend</span><h2>${safe(p.officialName)}</h2><a class="source-link" href="${safe(p.source)}" target="_blank" rel="noopener noreferrer">Official Jellycat listing ↗</a></div>`)}
-</div>${panel(`<h2>How it works</h2><div class="grid-3"><div><span class="spirit">⚔️</span><h3>Battle</h3><p class="small">Choose one of three moves. Build up to a team of three as you collect more.</p></div><div><span class="spirit">🎁</span><h3>Collect</h3><p class="small">Win, then choose one of three mystery rewards. Legendary bosses appear later.</p></div><div><span class="spirit">⭐</span><h3>Grow</h3><p class="small">Earn experience and level up. Your Jellycats stay the characters they are.</p></div></div>`)}`;}
+${panel(`${bigAvatar(p)}<div class="center" style="margin-top:12px"><span class="eyebrow">01 / The first friend</span><h2>${safe(p.officialName)}</h2><p class="small muted">An original little plush illustration, just for our game.</p></div>`)}
+</div>${panel(`<h2>How it works</h2><div class="grid-3"><div><span class="spirit">⚔️</span><h3>Battle</h3><p class="small">Explore the Softlands and challenge your friends in the arena.</p></div><div><span class="spirit">🎁</span><h3>Collect</h3><p class="small">Win, then choose one of three mystery rewards. Legendary bosses appear later.</p></div><div><span class="spirit">⭐</span><h3>Grow</h3><p class="small">Earn experience and level up. Your Jellycats stay the characters they are.</p></div></div>`)}`;}
 function home(){const started=state.battle!==null;const featured=BY_ID.get(state.team[0]);return `${statBar()}<div class="hero">
 ${panel(`<div class="eyebrow">Your adventure starts here</div><h1>Your team.<br>Your rules.</h1><p>Build a little dream team, challenge the computer, and collect new real Jellycat characters. Each victory gets you closer to the full collection.</p><div class="ribbon mb-18">${badge('3 moves each')}${badge('6 battle types')}${badge('★ 1 point per win')}</div><button class="btn" data-action="nav" data-id="battle">${started?'Resume your battle →':'Find a battle →'}</button>`,'hero-panel')}
 ${panel(`<div class="eyebrow">Your lead Jellycat</div><div class="center">${bigAvatar(featured)}<h2 class="mt-12">${safe(label(state,featured.id))}</h2><p class="small">${safe(featured.officialName)} · Level ${state.levels[featured.id]||1}</p></div>`, 'starter-portrait')}
@@ -400,7 +644,7 @@ function collection(){const list=CATALOG.filter(p=>{
  });
  return `${statBar()}<div class="row between mb-18"><div><span class="eyebrow">The collector's notebook</span><h1>The collection.</h1><p class="mb-0 muted">Discover their real names after you win. Undiscovered entries stay a mystery.</p></div><div class="center"><span class="big-number">${state.owned.length}</span><div class="small muted">of ${COLLECTION_GOAL} planned</div></div></div>
 ${panel(`<div class="meter"><span>Collection progress</span><span>${Math.round(100*state.owned.length/COLLECTION_GOAL)}%</span></div><div class="progress"><div style="width:${100*state.owned.length/COLLECTION_GOAL}%"></div></div><div class="filter-row"><label class="label" for="filter-type">Type</label><select id="filter-type" class="select"><option>All</option>${TYPES.map(t=>`<option ${category===t?'selected':''}>${safe(t)}</option>`).join('')}</select><label class="label" for="filter-owned">Show</label><select id="filter-owned" class="select">${['All','Owned','Mystery'].map(x=>`<option ${ownership===x?'selected':''}>${x}</option>`).join('')}</select><input class="input" id="filter-query" aria-label="Search discovered characters" value="${safe(query)}" placeholder="Search discovered friends…"></div>
-<p class="source-note">All ${CATALOG.length} collectible names are real Jellycat catalog products. Characters you haven’t won yet remain hidden, and each unlocked profile links to its source.</p>
+<p class="source-note">Collected characters show their real product names and original illustrated plush portraits. Undiscovered friends stay hidden.</p>
 <div class="grid-collection">${list.map(p=>card(p,!owned(state,p.id))).join('')}${category==='All'&&ownership!=='Owned'&&!query?Array.from({length:COLLECTION_GOAL-CATALOG.length},(_,i)=>`<div class="plush locked" aria-label="Catalog spot not yet researched"><div class="avatar mystery" style="background:#d9d4da"><span>?</span></div><span class="plush-title">Future entry ${CATALOG.length+i+1}</span><span class="plush-detail">Catalog research pending</span></div>`).join(''):''}</div>
 ${!list.length?'<div class="empty">No matching collected Jellycats.</div>':''}`)}`;}
 function battle(){const b=state.battle;if(!b)return `${statBar()}${panel(`<div class="eyebrow">Ready, set, cuddle!</div><h1>The battle arena.</h1><p>Choose your three Jellycats and face a computer team. Early battles are easier. As your winning record grows, opponents become stronger.</p>
@@ -410,22 +654,27 @@ function battle(){const b=state.battle;if(!b)return `${statBar()}${panel(`<div c
  const me=b.mine[b.mi],enemy=b.theirs[b.ei],mp=BY_ID.get(me.id),ep=BY_ID.get(enemy.id);const mult=typeMultiplier(mp.type,ep.type);
  const badgeText=(b.kind==='boss'?'✦ LEGENDARY BOSS':'⚔ TEAM MATCH');
  return `<div class="row between mb-18"><div><span class="eyebrow">${badgeText} · Round ${b.round}</span><h1>${b.kind==='boss'?'The boss is here.':'Your move.'}</h1></div><div>${badge(`${b.mine.length} vs ${b.theirs.length} team`)}</div></div>
-${panel(`<div class="battle-board"><div class="fighter you"><div class="eyebrow">Your Jellycat</div><div class="avatar">${safe(mp.emoji)}</div><h3>${safe(label(state,me.id))}</h3><div class="sub">${safe(mp.type)} · LV ${me.level}</div><div class="hp-meta"><span>HP</span><span>${me.hp} / ${me.maxHp}</span></div>${progressBar(me.hp,me.maxHp)}</div><div class="vs">VS.</div><div class="fighter enemy"><div class="eyebrow">Computer</div><div class="avatar">${safe(ep.emoji)}</div><h3>${safe(ep.officialName)}</h3><div class="sub">${safe(ep.type)} · LV ${enemy.level}</div><div class="hp-meta"><span>HP</span><span>${enemy.hp} / ${enemy.maxHp}</span></div>${progressBar(enemy.hp,enemy.maxHp)}</div></div>
+${panel(`<div class="battle-board" id="battle-board"><div class="move-fx" aria-hidden="true">✦ ✿ ✦</div><div class="fighter you"><div class="eyebrow">Your Jellycat</div><div class="avatar art-fighter">${plushArt(mp)}</div><h3>${safe(label(state,me.id))}</h3><div class="sub">${safe(mp.type)} · LV ${me.level}</div><div class="hp-meta"><span>HP</span><span>${me.hp} / ${me.maxHp}</span></div>${progressBar(me.hp,me.maxHp)}</div><div class="vs">VS.</div><div class="fighter enemy"><div class="eyebrow">Computer</div><div class="avatar art-fighter">${plushArt(ep)}</div><h3>${safe(ep.officialName)}</h3><div class="sub">${safe(ep.type)} · LV ${enemy.level}</div><div class="hp-meta"><span>HP</span><span>${enemy.hp} / ${enemy.maxHp}</span></div>${progressBar(enemy.hp,enemy.maxHp)}</div></div>
 <div class="row between mt-20"><div><span class="tag">Your team</span><div class="party">${b.mine.map((f,i)=>`<span class="${f.hp===0?'fainted':''}">${i===b.mi?'◆ ':''}${safe(label(state,f.id))} · ${f.hp} HP</span>`).join('')}</div></div><div><span class="tag">Computer team</span><div class="party">${b.theirs.map((f,i)=>`<span class="${f.hp===0?'fainted':''}">${i===b.ei?'◆ ':''}${safe(BY_ID.get(f.id).officialName)} · ${f.hp} HP</span>`).join('')}</div></div></div>`)}
 <div class="grid-2 mt-20"><section class="panel"><div class="row between mb-18"><h2 class="mb-0">Choose your move</h2>${badge(mult>1?'Type advantage ▲':mult<1?'Type disadvantage ▼':'Even matchup')}</div>
 <div class="move-grid">${mp.moves.map((m,i)=>`<button class="move ${m.kind==='signature'?'signature':m.kind==='heal'?'heal':''}" data-action="move" data-index="${i}" ${m.kind==='heal'&&me.heals?'disabled':''}><strong>${safe(m.name)}</strong><span class="small">${m.kind==='heal'?(me.heals?'Already used':'Heal 34% · once per match'):m.kind==='quick'?'Always hits · steady damage':`Strong · ${Math.round(m.accuracy*100)}% accurate`}</span></button>`).join('')}</div><h3 class="mt-20">Switch teammate</h3><div class="row">${b.mine.map((f,i)=>`<button class="btn micro pink" data-action="switch" data-index="${i}" ${f.hp===0||b.mi===i?'disabled':''}>${safe(label(state,f.id))} · ${f.hp} HP</button>`).join('')}</div><p class="source-note mt-12">Switching uses your turn. Cuddle Break can only be used once per Jellycat per battle.</p></section>
 <section class="panel soft"><h2>Battle diary</h2><div role="log" aria-live="polite" class="battle-log">${b.log.slice(-10).map(line=>`<p>${safe(line)}</p>`).join('')}</div><p class="source-note mt-12">Type wheel: Food → Furry → Bugs & Garden → Ocean → Silly & Spooky → Adventure → Food.</p></section></div>`;
 }
-function rewards(){const p=state.pending;return `${statBar()}<div class="reward-banner"><div class="confetti">🎉 ✦ 🎁 ✦ 🎉</div><span class="eyebrow">+1 star point · battle won</span><h1>${p.boss?'You defeated a legend!':'Victory! Pick your prize.'}</h1><p>Three real Jellycats are waiting. <strong>Choose just one</strong> to join your collection.</p></div>
-<div class="grid-3">${p.choices.map(id=>{const x=BY_ID.get(id);return panel(`<div class="center">${bigAvatar(x)}<div class="mt-12">${rarityTag(x)}</div><h2 class="mt-12">${safe(x.officialName)}</h2><p class="small muted">${safe(x.type)} type · Level 1</p><button class="btn full" data-action="claim" data-id="${safe(id)}">Choose this Jellycat →</button></div>`,'choice-card')}).join('')}</div>${panel(`<p class="center mb-0 small">The two you don't choose remain undiscovered. You can find them again in a future battle.</p>`,'soft')}`;}
+function giftBag(large=false){return `<div class="gift-bag ${large?'big-bag':''}" aria-hidden="true"><span class="bag-handle left"></span><span class="bag-handle right"></span><div class="bag-tissue">✧</div><div class="bag-front"><span class="bag-star">✦</span></div><span class="bag-shadow"></span></div>`;}
+function rewards(){const p=state.pending;if(!bagOpen)return `${statBar()}<section class="bag-reveal-panel"><span class="eyebrow">A win! · +1 star</span><h1>A new friend is waiting.</h1><p>Something cuddly is hiding in a little powder-blue gift bag. Ready for your surprise?</p>${giftBag(true)}<button class="btn" data-action="open-bag">Open the surprise bag ✨</button><p class="small muted mt-20">You'll get to choose one of three real Jellycats.</p></section>`;
+ return `${statBar()}<div class="reward-banner"><span class="eyebrow">A special reveal · choose just one</span><h1>${p.boss?'A legendary surprise!':'Meet your new friends!'}</h1><p>Three little plush friends popped out of the gift bag. Who will join your team?</p></div>
+ <div class="reward-choices">${p.choices.map(id=>{const x=BY_ID.get(id);return `<article class="gift-card"><div class="gift-card-art">${bigAvatar(x)}</div><span class="gift-rarity">${rarityTag(x)}</span><h2>${safe(x.officialName)}</h2><p class="small muted">${safe(x.type)} · Level 1</p><button class="btn full" data-action="claim" data-id="${safe(id)}">Choose this friend →</button></article>`}).join('')}</div>${panel('<p class="center mb-0 small">The others will be waiting for you somewhere in the world. You can find them another time!</p>','soft')}`;
+}
+function showClaimReveal(id,fromJar=false){const p=BY_ID.get(id);if(!p)return;const div=el('div','modal-backdrop');div.id='claimed-modal';div.innerHTML=`<section class="modal claimed-modal center" role="dialog" aria-modal="true" aria-label="New Jellycat revealed"><span class="eyebrow">${fromJar?'Mystery bag surprise':'A new friend!'}</span><div class="bag-claim">${giftBag(true)}<span class="bag-pop">${plushArt(p)}</span></div><h2>Welcome, ${safe(p.officialName)}!</h2><p>You're officially part of the club. Pick a nickname later in your Collection if you like.</p><button class="btn" data-action="finish-claim">Let's explore together →</button></section>`;document.body.append(div);}
+
 function clubhouse(){return `${statBar()}<div class="grid-2">
 ${panel(`<div class="eyebrow">Collection milestones</div><h1>Your clubhouse.</h1><div class="story-item"><strong>🏆 Best winning streak</strong><span style="float:right">${state.bestStreak}</span></div><div class="story-item"><strong>✨ Boss victories</strong><span style="float:right">${state.bossWins}</span></div><div class="story-item"><strong>🧸 Jellycats collected</strong><span style="float:right">${state.owned.length}</span></div><div class="story-item"><strong>🎯 Win / loss record</strong><span style="float:right">${state.wins} / ${state.losses}</span></div><p class="source-note mt-20">Your progress is stored only in this browser. Export a save file to move it to another computer or protect it from browser resets.</p><div class="row"><button class="btn pink" data-action="export">Export save</button><button class="btn cream" data-action="import">Import save</button><input type="file" id="import-file" class="hidden" accept="application/json,.json"></div>`)}
-${panel(`<div class="eyebrow">Behind the game</div><h2>Real Jellycats. Original rules.</h2><p>All ${CATALOG.length} playable characters use names from the official Jellycat catalog, with 25 assigned to each of six game categories. The illustrations are temporary emoji icons, not official product photos.</p><p>Battle moves, strengths, levels, and rarity assignments are fan-game inventions, not official Jellycat characteristics.</p><p><strong>Six types:</strong> ${TYPES.map((x,i)=>TYPE_EMOJI[i]+' '+x).join(' · ')}</p><p><strong>Ten legendary characters</strong> have been selected for this fan-made game. Legendary status is invented for gameplay.</p><a href="https://us.jellycat.com/collections/all-soft-toys" target="_blank" rel="noopener noreferrer">Browse the official Jellycat catalog ↗</a>`)}
+${panel(`<div class="eyebrow">Behind the game</div><h2>Real Jellycats. Original rules.</h2><p>All ${CATALOG.length} playable entries use names researched from the Jellycat catalog. Portraits are original soft-toy-style illustrations, not official photographs or exact recreations.</p><p>Battle moves, strengths, levels, and rarity assignments are fan-game inventions, not official Jellycat characteristics.</p><p><strong>Six types:</strong> ${TYPES.map((x,i)=>TYPE_EMOJI[i]+' '+x).join(' · ')}</p><p><strong>Ten legendary characters</strong> have been selected for this fan-made game. Legendary status is invented for gameplay.</p><p class="small muted">Independent fan game, not affiliated with Jellycat. Catalog references are maintained separately from gameplay.</p>`)}
 </div>${panel(`<div class="row between"><h2 class="mb-0">Game settings</h2>${badge('Saved locally')}</div><p class="small muted mt-12">Only reset if you're sure. You can export your save first.</p><button class="btn ghost" data-action="reset">Reset game progress</button><div class="story-item"></div><h3 class="mt-20">Recent activity</h3>${state.history.length?state.history.slice(-8).reverse().map(x=>`<div class="story-item">✳ ${safe(x)}</div>`).join(''):'<p class="muted small">Your wins and discoveries will appear here.</p>'}`)}`;}
 function showDetail(){const p=BY_ID.get(detail);if(!p||!owned(state,p.id))return;let l=state.levels[p.id]||1,xp=state.xp[p.id]||0,required=XP_TO_LEVEL(l),stats=fighterStats(p.id,l);
  const bg=el('div','modal-backdrop');bg.id='detail-modal';bg.innerHTML=`<section class="modal" role="dialog" aria-modal="true" aria-label="Jellycat details"><div class="row between"><div class="eyebrow">Member profile</div><button type="button" data-action="close" class="btn micro cream">✕ Close</button></div><div class="center mt-20">${bigAvatar(p)}<h2 class="mt-12">${safe(label(state,p.id))}</h2><p class="small">Official name: <strong>${safe(p.officialName)}</strong></p><div class="row" style="justify-content:center">${rarityTag(p)}${badge(p.type)}${badge('LV '+l)}</div></div>
 <div class="mt-20 meter"><span>Experience</span><span>${l>=MAX_LEVEL?'MAX LEVEL':xp+' / '+required}</span></div><div class="progress"><div style="width:${l>=MAX_LEVEL?100:100*xp/required}%"></div></div>
-<div class="grid-2 mt-12"><div><b>❤️ ${stats.hp} HP</b></div><div><b>⚡ ${stats.speed} speed</b></div><div><b>💥 ${stats.attack} attack</b></div><div><b>🛡️ ${stats.defense} defense</b></div></div><p class="source-note mt-12">Moves: ${p.moves.map(m=>safe(m.name)).join(' · ')}</p><a href="${safe(p.source)}" target="_blank" rel="noopener noreferrer" class="source-link">View official catalog source ↗</a>
+<div class="grid-2 mt-12"><div><b>❤️ ${stats.hp} HP</b></div><div><b>⚡ ${stats.speed} speed</b></div><div><b>💥 ${stats.attack} attack</b></div><div><b>🛡️ ${stats.defense} defense</b></div></div><p class="source-note mt-12">Moves: ${p.moves.map(m=>safe(m.name)).join(' · ')}</p>
 <div class="mt-20"><label class="label" for="rename-input">Nickname</label><input class="input" id="rename-input" maxlength="24" value="${safe(label(state,p.id))}"><button class="btn mt-12" data-action="rename" data-id="${safe(p.id)}">Save nickname</button></div>
 <div class="row mt-20"><button class="btn ${state.team.includes(p.id)?'pink':'mint'}" data-action="team" data-id="${safe(p.id)}">${state.team.includes(p.id)?'Remove from team':'Add to team'}</button></div></section>`;
  document.body.append(bg);$('#rename-input')?.focus();}
@@ -434,34 +683,121 @@ function confirmReset(){const bg=el('div','modal-backdrop');bg.id='confirm-modal
 function action(el){const type=el.dataset.action,id=el.dataset.id;
  try{
  if(type==='nav'){go(id);return;}
- if(type==='start-battle'){update(s=>{const n=structuredClone(s);makeBattle(n);return n;});return;}
+ if(type==='open-bag'){bagOpen=true;render();return;}
+ if(type==='finish-claim'){$('#claimed-modal')?.remove();return;}
+ if(type==='start-battle'){bagOpen=false;update(s=>{const n=structuredClone(s);makeBattle(n);return n;});return;}
  if(type==='move'||type==='switch'){
-  if(!state.battle)return;const step=takeTurn(state.battle,{type:type==='move'?'move':'switch',index:Number(el.dataset.index)});
-  let n=structuredClone(state);n.battle=step.battle;if(step.result)n=concludeBattle(n,step.result);state=n;persist();render();if(step.result==='loss')notify('Streak reset, but your collection is safe. Try again!');return;
+  if(!state.battle||animating)return;animating=true;const action={type:type==='move'?'move':'switch',index:Number(el.dataset.index)};
+  const board=$('#battle-board');board?.classList.add(action.type==='move'?(action.index===2?'is-healing':'is-attacking'):'is-switching');
+  document.querySelectorAll('.move,[data-action="switch"]').forEach(b=>b.disabled=true);
+  setTimeout(()=>{try{const step=takeTurn(state.battle,action);let n=structuredClone(state);n.battle=step.battle;if(step.result)n=concludeBattle(n,step.result);state=n;persist();if(step.result==='win')bagOpen=false;render();if(step.result==='loss')notify('Your streak resets, but your little friends stay safe.');}catch(err){notify(err.message||'Could not make that move.');}finally{animating=false;}},720);
+  return;
  }
- if(type==='claim'){update(s=>claimReward(s,id));notify('A new friend joined your collection!');return;}
- if(type==='jar'){const result=jarDrop(state);state=result.save;persist();render();if(result.found){detail=result.found;showDetail();notify('Mystery jar opened!');}return;}
+ if(type==='claim'){update(s=>claimReward(s,id));bagOpen=false;page='world';render();showClaimReveal(id);return;}
+ if(type==='jar'){const result=jarDrop(state);state=result.save;persist();render();if(result.found){showClaimReveal(result.found,true);}return;}
  if(type==='detail'){if(owned(state,id)){detail=id;showDetail();}else notify('Keep battling to discover this Jellycat!');return;}
  if(type==='team'){update(s=>changeTeam(s,id));closeDetail();notify('Team updated.');return;}
  if(type==='close'){closeDetail();return;}
  if(type==='rename'){const field=$('#rename-input');update(s=>saveNickname(s,id,field?.value));closeDetail();notify('Nickname saved!');return;}
+ if(type==='step'){stopWalking();performStep(Number(el.dataset.dx),Number(el.dataset.dy));return;}
+ if(type==='tile'){
+  const tx=Number(el.dataset.x),ty=Number(el.dataset.y),friend=NPCS.find(n=>n.x===tx&&n.y===ty);
+  if(friend){const options=[[1,0],[-1,0],[0,1],[0,-1]].map(([dx,dy])=>[tx+dx,ty+dy]).filter(([x,y])=>x>=0&&y>=0&&x<WORLD_W&&y<WORLD_H&&!NPCS.some(n=>n.x===x&&n.y===y));
+    options.sort((a,b)=>Math.abs(a[0]-state.world.x)+Math.abs(a[1]-state.world.y)-Math.abs(b[0]-state.world.x)-Math.abs(b[1]-state.world.y));
+    if(options.length)walkToward(options[0][0],options[0][1],friend);else showTalk(friend);
+  }else walkToward(tx,ty);
+  return;}
+ if(type==='walkto'){const place=ZONES.find(z=>z.id===id);if(place)walkToward(place.x,place.y);return;}
+ if(type==='talk'){const n=NPCS.find(n=>n.id===id);if(n)showTalk(n);return;}
+ if(type==='interact'){talkOrInspect();return;}
+ if(type==='world-battle'){go('battle');return;}
+ if(type==='close-talk'){$('#talk-modal')?.remove();return;}
+ if(type==='begin-challenge'){showChallenge(id);return;}
+ if(type==='answer'){answerChallenge(Number(el.dataset.index));return;}
+ if(type==='close-challenge'){challengeState=null;$('#challenge-modal')?.remove();return;}
+ if(type==='close-milestone'){$('#milestone-modal')?.remove();return;}
  if(type==='reset'){confirmReset();return;}
  if(type==='cancel-reset'){$('#confirm-modal')?.remove();return;}
- if(type==='confirm-reset'){state=freshSave();persist();$('#confirm-modal')?.remove();go('home');return;}
+ if(type==='confirm-reset'){state=ensureWorld(freshSave());persist();$('#confirm-modal')?.remove();go('world');return;}
  if(type==='export'){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='jellycat-battle-club-save.json';document.body.append(a);a.click();a.remove();URL.revokeObjectURL(url);notify('Save downloaded.');return;}
  if(type==='import'){$('#import-file')?.click();return;}
  }catch(e){console.error(e);notify(e.message||'Something went wrong. Please try again.');}
 }
 document.addEventListener('click',e=>{const btn=e.target.closest('[data-action]');if(btn){e.preventDefault();action(btn);}else if(e.target.classList?.contains('modal-backdrop'))closeDetail();});
-document.addEventListener('submit',e=>{if(e.target.id==='starter-form'){e.preventDefault();const value=$('#starter-name').value.trim();if(!value){notify('Please give your croissant a nickname.');return;}state.nicknames[STARTER_ID]=value.slice(0,24);state.onboarded=true;persist();render();notify('Welcome to the Battle Club!');}});
+document.addEventListener('submit',e=>{if(e.target.id==='starter-form'){e.preventDefault();const value=$('#starter-name').value.trim();if(!value){notify('Please give your croissant a nickname.');return;}state.nicknames[STARTER_ID]=value.slice(0,24);state.onboarded=true;page='world';persist();render();notify('Welcome to the Softlands! Walk around and say hello.');}});
 document.addEventListener('change',async e=>{
  if(e.target.id==='filter-type'){category=e.target.value;render();}
  if(e.target.id==='filter-owned'){ownership=e.target.value==='Mystery'?'Mystery':e.target.value;render();}
- if(e.target.id==='import-file'&&e.target.files?.[0]){try{const f=e.target.files[0];if(f.size>1e6)throw Error('Save file too large.');const txt=await f.text(),raw=JSON.parse(txt);if(raw.version!==3)throw Error('This save is not a version 3 game file.');state=validateSave(raw);persist();go('home');notify('Save imported successfully.');}catch(err){notify(err.message||'Could not read this save.');}}
+ if(e.target.id==='import-file'&&e.target.files?.[0]){try{const f=e.target.files[0];if(f.size>1e6)throw Error('Save file too large.');const txt=await f.text(),raw=JSON.parse(txt);if(raw.version!==3)throw Error('This save is not a version 3 game file.');state=ensureWorld(validateSave(raw));persist();go('world');notify('Save imported successfully.');}catch(err){notify(err.message||'Could not read this save.');}}
 });
 document.addEventListener('input',e=>{if(e.target.id==='filter-query'){query=e.target.value;const i=e.target.selectionStart;render();const x=$('#filter-query');if(x){x.focus();x.setSelectionRange(i,i);}}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDetail();$('#confirm-modal')?.remove();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDetail();$('#confirm-modal')?.remove();$('#talk-modal')?.remove();$('#milestone-modal')?.remove();challengeState=null;$('#challenge-modal')?.remove();}});
+// World screen, conversations, discoveries, and walking controls.
+let walkingTimer=null,challengeState=null,bagOpen=false,recentClaim=null,animating=false;
+function scenery(x,y,zone){
+ const h=hashTile(x,y),v=h%13;
+ const props={wood:['🌲','🌿','🍄','🌲','🌱'],garden:['🌷','🌼','🌻','🌿','🌸'],moon:['✧','🌙','✨','✦','☁️'],bakery:['🌼','🧺','🍂','✿','♡'],square:['🌳','🌷','✿','☘','🌳'],cove:['🐚','🪸','🌊','🐠','﹏'],sports:['🍀','🌼','⚽','🏀','✿'],hill:['🌲','⛰️','☁️','✦','🌼']};
+ if(v<5)return props[zone]?.[v]||'';
+ if(v===8||v===11)return '<span class="ground-grass">✿</span>';
+ return '';
+}
+function worldTerrain(x,y,z){if((y===20&&x>3&&x<52)||(x===27&&y>2&&y<38)||(x===10&&y>5&&y<36)||(x===46&&y>7&&y<36)||(y===7&&x>8&&x<48)||(y===33&&x>6&&x<49))return 'trail';return z;}
+function worldScreen(){ensureWorld(state);const w=state.world,here=ZONES.find(z=>z.id===zoneAt(w.x,w.y));const vx=window.innerWidth<650?9:window.innerWidth<950?11:15,vy=window.innerWidth<650?9:11,cx=Math.max(0,Math.min(WORLD_W-vx,w.x-Math.floor(vx/2))),cy=Math.max(0,Math.min(WORLD_H-vy,w.y-Math.floor(vy/2)));
+ let tiles='';for(let y=cy;y<cy+vy;y++)for(let x=cx;x<cx+vx;x++){
+  const zone=zoneAt(x,y),style=worldTerrain(x,y,zone),npc=NPCS.find(n=>n.x===x&&n.y===y),treasure=TREASURES.find(t=>t.x===x&&t.y===y&&!w.found.includes(t.id)),landmark=LANDMARKS.find(t=>t.x===x&&t.y===y),isPlayer=x===w.x&&y===w.y,arena=x===30&&y===23;
+  const sprite=isPlayer?`<span class="world-player">${plushArt(BY_ID.get(state.team[0]))}</span><span class="world-sparkle">✧</span>`:npc?`<span class="world-npc">${plushArt(BY_ID.get(slugId(npc.product)))}</span><span class="npc-bubble">${safe(npc.icon)}</span>`:arena?'<span class="world-arena">✦<small>ARENA</small></span>':treasure?'<span class="world-treasure">✧</span>':landmark?`<span class="world-landmark" title="${safe(landmark.name)}">${landmark.icon}</span>`:`<span class="world-decor">${scenery(x,y,zone)}</span>`;
+  const what=npc?`Talk to ${npc.name}`:arena?'Battle arena':treasure?`Find ${treasure.title}`:landmark?landmark.name:`Walk to ${x}, ${y}`;
+  tiles+=`<button type="button" tabindex="-1" class="world-tile terrain-${style} ${isPlayer?'current':''}" data-action="tile" data-x="${x}" data-y="${y}" title="${safe(what)}" aria-label="${safe(what)}">${sprite}</button>`;
+ }
+ const closest=nearbyNpcs(w);
+ return `<section class="world-intro"><div><span class="eyebrow">An open little world · 8 districts</span><h1>The Softlands <span class="world-title-star">✦</span></h1><p>Wander, meet plush friends, discover secrets, play little games, and battle whenever you're ready. Every path has something to find.</p></div><div class="world-stamp"><span class="world-stamp-count">${w.visited.length}<span>/8</span></span><small>places discovered</small></div></section>
+ <div class="world-layout"><section class="world-shell" aria-label="Explore the Softlands">
+ <div class="world-toolbar"><span><span class="location-dot">●</span> ${safe(here.name)}</span><span>✦ ${w.found.length}/${TREASURES.length} found &nbsp; · &nbsp; ★ ${state.points}</span></div>
+ <div class="world-viewport" id="world-viewport" tabindex="0" aria-label="Walk around the map with arrow keys, WASD, touch controls, or click tiles"><div class="world-grid" style="--map-cols:${vx}">${tiles}</div></div>
+ <div class="world-commands"><div class="dpad" aria-label="Movement controls"><button data-action="step" data-dx="0" data-dy="-1" aria-label="Walk north">↑</button><div><button data-action="step" data-dx="-1" data-dy="0" aria-label="Walk west">←</button><button data-action="step" data-dx="0" data-dy="1" aria-label="Walk south">↓</button><button data-action="step" data-dx="1" data-dy="0" aria-label="Walk east">→</button></div></div>
+ <div class="world-commands-right"><button class="btn mint" data-action="interact">💬 Talk / inspect</button><button class="btn pink" data-action="world-battle">✦ Battle</button></div></div>
+ <p class="world-help">Use <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> or <kbd>W A S D</kbd> to walk. Tap a destination to walk there. Step beside a friend and talk. You can explore without battling.</p>
+ </section><aside class="world-sidebar">
+ ${panel(`<span class="eyebrow">Your next discovery</span><h2>Friends nearby</h2>${closest.length?closest.map(n=>`<button class="friend-row" data-action="talk" data-id="${n.id}"><span class="friend-portrait">${plushArt(BY_ID.get(slugId(n.product)))}</span><span><strong>${safe(n.name)}</strong><small>${safe(n.hint)}</small></span><span aria-hidden="true">→</span></button>`).join(''):'<p class="small muted">Keep wandering! You’ll meet somebody soon.</p>'}<p class="small muted mb-0">✦ Violet star gate: start a battle.</p>`, 'friend-panel')}
+ ${panel(`<div class="row between"><h2 class="mb-0">Your journey</h2>${badge(w.visited.length+' / 8')}</div><p class="tiny muted mt-12">Choose a district to follow a walkable route.</p><div class="zone-grid">${ZONES.map(z=>`<button data-action="walkto" data-id="${z.id}" class="zone-link ${w.visited.includes(z.id)?'visited':''} ${here.id===z.id?'active':''}"><span class="zone-dot" style="background:${z.color}"></span><span>${safe(z.name)}</span>${w.visited.includes(z.id)?'✓':'?'}</button>`).join('')}</div>`, 'journey-panel')}
+ ${panel(`<span class="eyebrow">Your adventures</span><h3>${w.completed.length} little quests finished</h3><p class="small mb-0">${w.talked.length} friends met · ${w.steps} steps walked</p>${w.completed.length?`<p class="tiny mt-12 mb-0">${w.completed.map(x=>CHALLENGES[x]?.title).filter(Boolean).map(safe).join(' · ')}</p>`:''}`,'soft')}
+ </aside></div>`;
+}
+function slugId(name){return name.normalize('NFKD').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');}
+function stopWalking(){if(walkingTimer){clearInterval(walkingTimer);walkingTimer=null;}}
+function performStep(dx,dy,quiet=false){if(page!=='world'||!state.onboarded||state.pending||challengeState)return;
+ const result=stepWorld(state,dx,dy);
+ if(result.npc){stopWalking();showTalk(result.npc);return;}
+ if(result.moved){persist();render();if(result.treasure){stopWalking();showFound(result.treasure);}else if(result.zone&&!quiet)notify(`Welcome to ${result.zone.name}!`);}
+}
+function walkToward(x,y,npcToMeet=null){stopWalking();ensureWorld(state);x=Math.max(0,Math.min(WORLD_W-1,x));y=Math.max(0,Math.min(WORLD_H-1,y));const w=state.world;
+ // Breadth-first path avoids NPC tiles, works across all eight connected districts.
+ const key=(x,y)=>y*WORLD_W+x,q=[[w.x,w.y]],seen=new Set([key(w.x,w.y)]),parent=new Map(),blocked=new Set(NPCS.map(n=>key(n.x,n.y)));
+ let head=0,found=false;while(head<q.length){const [cx,cy]=q[head++];if(cx===x&&cy===y){found=true;break;}
+  for(const [dx,dy] of [[1,0],[0,1],[-1,0],[0,-1]]){const nx=cx+dx,ny=cy+dy,k=key(nx,ny);if(nx<0||nx>=WORLD_W||ny<0||ny>=WORLD_H||seen.has(k)||blocked.has(k))continue;seen.add(k);parent.set(k,[cx,cy]);q.push([nx,ny]);}}
+ if(!found){notify('That spot is busy. Try another square beside it.');return;}
+ const path=[];let cur=[x,y];while(cur[0]!==w.x||cur[1]!==w.y){path.push(cur);cur=parent.get(key(cur[0],cur[1]));}path.reverse();if(!path.length)return;
+ let i=0;walkingTimer=setInterval(()=>{if(page!=='world'||i>=path.length){stopWalking();return;}const next=path[i++],dx=next[0]-state.world.x,dy=next[1]-state.world.y;performStep(dx,dy,true);if(i>=path.length){stopWalking();if(npcToMeet)showTalk(npcToMeet);}},95);
+}
+function showTalk(n){stopWalking();$('#talk-modal')?.remove();ensureWorld(state);if(!state.world.talked.includes(n.id)){state.world.talked.push(n.id);persist();}const plush=BY_ID.get(slugId(n.product));const completed=state.world.completed.includes(n.challenge);
+ const div=el('div','modal-backdrop');div.id='talk-modal';div.innerHTML=`<section class="modal talk-modal" role="dialog" aria-modal="true" aria-label="Talking with ${safe(n.name)}"><div class="row between"><span class="eyebrow">${safe(ZONES.find(z=>z.id===zoneAt(n.x,n.y))?.name||'The Softlands')}</span><button class="btn micro cream" data-action="close-talk">✕ Close</button></div><div class="talk-portrait">${plushArt(plush)}</div><h2>${safe(n.name)}</h2><p class="dialogue-line">“${safe(n.say)}”</p><div class="row">${n.challenge?`<button class="btn" data-action="begin-challenge" data-id="${safe(n.challenge)}">${completed?'Play again':'Play a little game'} →</button>`:''}<button class="btn cream" data-action="close-talk">${n.challenge?'Maybe later':'Thanks for the tip!'}</button></div>${completed?'<p class="tiny muted mt-12">✓ You already earned this friend’s one-time reward.</p>':''}</section>`;document.body.append(div);div.querySelector('button')?.focus();}
+function showChallenge(id){if(!CHALLENGES[id])return;$('#talk-modal')?.remove();challengeState={id,index:0,mistakes:0};renderChallenge();}
+function renderChallenge(){if(!challengeState)return;const {id,index}=challengeState,c=CHALLENGES[id],step=c.steps[index];let div=$('#challenge-modal');if(!div){div=el('div','modal-backdrop');div.id='challenge-modal';document.body.append(div)}
+ div.innerHTML=`<section class="modal mini-modal" role="dialog" aria-modal="true" aria-label="${safe(c.title)}"><div class="row between"><span class="eyebrow">Tiny adventure · Round ${index+1} / ${c.steps.length}</span><button data-action="close-challenge" class="btn micro cream">✕</button></div><div class="mini-sparkle">✿ ✦ ✿</div><h2>${safe(c.title)}</h2><p>${safe(step.question)}</p><div class="mini-options">${step.answers.map((answer,i)=>`<button class="btn cream" data-action="answer" data-index="${i}">${safe(answer)}</button>`).join('')}</div><p class="small muted mt-12">${challengeState.mistakes?'Try another answer. You can keep going!':'Choose the answer you think is right.'}</p></section>`;
+ div.querySelector('.mini-options button')?.focus();}
+function answerChallenge(i){if(!challengeState)return;const c=CHALLENGES[challengeState.id],step=c.steps[challengeState.index];if(i!==step.correct){challengeState.mistakes++;notify('Not quite! Try another idea.');renderChallenge();return;}
+ challengeState.index++;if(challengeState.index<c.steps.length){renderChallenge();return;}
+ const id=challengeState.id;challengeState=null;$('#challenge-modal')?.remove();const fresh=completeChallenge(state,id);persist();render();showMilestone(fresh?'Brilliant! +2 ★': 'You did it again!',fresh?'This little adventure earned two stars. Three different activities also earn a special mystery jar.':'You have already collected this adventure’s reward.');}
+function showMilestone(title,desc){const div=el('div','modal-backdrop');div.id='milestone-modal';div.innerHTML=`<section class="modal center" role="dialog" aria-modal="true" aria-label="Discovery"><div class="giant-star">✦</div><h2>${safe(title)}</h2><p>${safe(desc)}</p><button class="btn" data-action="close-milestone">Keep exploring →</button></section>`;document.body.append(div);}
+function showFound(t){showMilestone(`You found ${t.title}!`,`${t.text} You earned ${t.points} star.`);}
+function talkOrInspect(){ensureWorld(state);let npc=nearbyNpcs(state.world)[0];if(npc){showTalk(npc);return;}if(nearbyArena(state.world)){go('battle');return;}notify('Look for a plush friend or a purple battle gate. There’s more to see as you walk!');}
+
 render();
+
+// Hold movement controls and keyboard controls work without requiring map focus.
+document.addEventListener('keydown',e=>{if(page!=='world'||!state.onboarded||document.querySelector('.modal-backdrop')||e.altKey||e.ctrlKey||e.metaKey)return;
+ if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;
+ const move={ArrowUp:[0,-1],w:[0,-1],W:[0,-1],ArrowDown:[0,1],s:[0,1],S:[0,1],ArrowLeft:[-1,0],a:[-1,0],A:[-1,0],ArrowRight:[1,0],d:[1,0],D:[1,0]};if(move[e.key]){e.preventDefault();stopWalking();performStep(...move[e.key]);}else if(e.key===' '||e.key==='Enter'){if(document.activeElement?.tagName==='BUTTON')return;e.preventDefault();talkOrInspect();}});
 
 </script>
 </body>
