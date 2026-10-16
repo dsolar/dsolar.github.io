@@ -59,7 +59,7 @@ export function optimizeLineup(roster,slots,value,{unavailable=new Set(),fixed=[
   return {total:lineup.reduce((n,x)=>n+x.points,0),lineup,missing:lineup.filter(x=>!x.player).length};
 }
 
-function evaluate(s,roster,original,weeks,overrides,multipliers={},now=Date.now(),forecasts){
+export function evaluateRoster(s,roster,original,weeks,overrides,multipliers={},now=Date.now(),forecasts){
   const slots=starterSlots(s),weekly=[];
   for(const week of weeks){
     const fixed=week===s.week?original.filter(p=>![20,21,25].includes(p.lineupSlotId)&&hasStarted(s,p,week,now)&&roster.some(x=>x.id===p.id)).map(player=>({slotId:player.lineupSlotId,player,points:stat(player,0,1,week)?.points || 0})):[];
@@ -130,7 +130,7 @@ function candidates(s,weeks,overrides,includeWaivers,now,forecasts){
 
 function adjustWorld(s,teams,originals,weeks,overrides,settings,options,multipliers){
   const cap=activeLimit(s),pool=candidates(s,weeks,overrides,options.includeWaivers,options.now,options.forecasts),used=new Set(),moves=[[],[]];
-  const evaluateTeam=(i,roster)=>evaluate(s,roster,originals[i],weeks,overrides,multipliers,options.now,options.forecasts);
+  const evaluateTeam=(i,roster)=>evaluateRoster(s,roster,originals[i],weeks,overrides,multipliers,options.now,options.forecasts);
   const activeCount=roster=>roster.filter(p=>![21,25].includes(p.lineupSlotId)).length;
   const droppable=p=>![21,25].includes(p.lineupSlotId)&&!(weeks[0]===s.week&&hasStarted(s,p,s.week,options.now));
   // Required drops are explicit in the report, not hidden in a value score.
@@ -165,7 +165,16 @@ function adjustWorld(s,teams,originals,weeks,overrides,settings,options,multipli
   return {teams,moves,results:teams.map((r,i)=>evaluateTeam(i,r))};
 }
 
-export function analyzeTrade(s,offer,settings,overrides={},options={}){
+// A finder run reuses immutable forecasts, market values and pair-specific
+// baselines. The pair matters because both teams share one replacement pool.
+export function createTradeContext(s,settings,overrides={},options={}){
+  const now=options.now ?? Date.now(),start=Math.max(s.week,Math.trunc(Number(options.startWeek)||s.week)),end=Math.min(finalWeek(s),Math.trunc(Number(options.endWeek)||finalWeek(s)));
+  if(start>end)throw new Error('Choose an end week on or after the start week.');
+  const weeks=Array.from({length:end-start+1},(_,i)=>start+i);
+  return {snapshot:s,settings,overrides,now,weeks,forecasts:new Map(allPlayers(s).map(p=>[p.id,new Map(weeks.map(w=>[w,projection(s,p,w,overrides,now)]))])),market:marketEstimates(s,settings,overrides),baselines:new Map()};
+}
+
+export function analyzeTrade(s,offer,settings,overrides={},options={},context=null){
   const teamA=s.teams.find(t=>t.id===offer.teamA),teamB=s.teams.find(t=>t.id===offer.teamB);
   if(!teamA||!teamB||teamA.id===teamB.id)throw new Error('Choose two different teams.');
   const outA=teamA.roster.filter(p=>offer.sendA.includes(p.id)),outB=teamB.roster.filter(p=>offer.sendB.includes(p.id));
@@ -181,11 +190,14 @@ export function analyzeTrade(s,offer,settings,overrides={},options={}){
   if([...teamA.roster,...teamB.roster].some(p=>[21,25].includes(p.lineupSlotId)))warnings.push('Players currently in IR or reserve slots remain outside starting lineups. Future activations and their required drops are not assumed.');
   const weeks=Array.from({length:end-start+1},(_,i)=>start+i),originals=[teamA.roster,teamB.roster];
   const after=[teamA.roster.filter(p=>!offer.sendA.includes(p.id)).concat(outB.map(p=>({...p,lineupSlotId:20,lineupSlot:'Bench'}))),teamB.roster.filter(p=>!offer.sendB.includes(p.id)).concat(outA.map(p=>({...p,lineupSlotId:20,lineupSlot:'Bench'})))];
-  const forecasts=new Map(allPlayers(s).map(p=>[p.id,new Map(weeks.map(w=>[w,projection(s,p,w,overrides,now)]))]));
+  const shared=context?.snapshot===s&&context.settings===settings&&context.overrides===overrides&&context.now===now&&context.weeks.join(',')===weeks.join(',')?context:null;
+  const forecasts=shared?.forecasts || new Map(allPlayers(s).map(p=>[p.id,new Map(weeks.map(w=>[w,projection(s,p,w,overrides,now)]))]));
   const opts={optimizeWaivers:options.optimizeWaivers!==false,includeWaivers:options.includeWaivers===true,now,forecasts};
-  const baseline=adjustWorld(s,originals.map(r=>r.slice()),originals,weeks,overrides,settings,opts,{});
+  const baselineKey=`${teamA.id}:${teamB.id}:${opts.optimizeWaivers}:${opts.includeWaivers}`;
+  const baseline=shared?.baselines.get(baselineKey) || adjustWorld(s,originals.map(r=>r.slice()),originals,weeks,overrides,settings,opts,{});
+  if(shared)shared.baselines.set(baselineKey,baseline);
   const changed=adjustWorld(s,after.map(r=>r.slice()),originals,weeks,overrides,settings,opts,{});
-  const market=marketEstimates(s,settings,overrides),traded=[new Set(outB.map(p=>p.id)),new Set(outA.map(p=>p.id))];
+  const market=shared?.market || marketEstimates(s,settings,overrides),traded=[new Set(outB.map(p=>p.id)),new Set(outA.map(p=>p.id))];
   const teams=[teamA,teamB].map((team,i)=>{
     const before=baseline.results[i],after=changed.results[i];
     const keepBefore=keeperPortfolio(baseline.teams[i],settings,market,overrides,new Set(),activeLimit(s));
@@ -198,8 +210,8 @@ export function analyzeTrade(s,offer,settings,overrides={},options={}){
   for(const direction of [-1,1]){
     const multipliers=Object.fromEntries([...outA.map(p=>[p.id,1-direction*stress]),...outB.map(p=>[p.id,1+direction*stress])]);
     for(let i=0;i<2;i++){
-      const before=evaluate(s,baseline.teams[i],originals[i],weeks,overrides,multipliers,now,forecasts);
-      const after=evaluate(s,changed.teams[i],originals[i],weeks,overrides,multipliers,now,forecasts);
+      const before=evaluateRoster(s,baseline.teams[i],originals[i],weeks,overrides,multipliers,now,forecasts);
+      const after=evaluateRoster(s,changed.teams[i],originals[i],weeks,overrides,multipliers,now,forecasts);
       ranges[i].push(after.total-before.total);
     }
   }
@@ -209,6 +221,6 @@ export function analyzeTrade(s,offer,settings,overrides={},options={}){
   if(opts.includeWaivers)warnings.push('Waiver replacements assume successful claims. Their acquisition is not guaranteed.');
   if(opts.optimizeWaivers)warnings.push('Free-agent suggestions screen the top five projected players per position and allow up to two optional upgrades per team. Claim costs, position caps and future transactions are not modeled.');
   warnings.push('Future weeks allocate ESPN remaining-season totals across scheduled games. They are not separate matchup-specific weekly forecasts.');
-  const verdict=teams.every(t=>t.delta>1)?'Both teams improve their projected starting lineups.':teams.every(t=>Math.abs(t.delta)<=1)?'The projected starting-lineup impact is close to even.':teams[0].delta>1?'Your projected starting lineup improves.':teams[0].delta< -1?'Your projected starting lineup loses points.':'Your projected starting lineup changes very little.';
+  const verdict=teams.every(t=>t.delta>.01)?'Both teams improve their projected starting lineups.':teams.every(t=>Math.abs(t.delta)<=1)?'The projected starting-lineup impact is close to even.':teams[0].delta>1?'Your projected starting lineup improves.':teams[0].delta< -1?'Your projected starting lineup loses points.':'Your projected starting lineup changes very little.';
   return {weeks,teams,outgoing:[outA,outB],verdict,warnings:[...new Set(warnings)],market,options:{optimizeWaivers:opts.optimizeWaivers,includeWaivers:opts.includeWaivers,now}};
 }

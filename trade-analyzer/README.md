@@ -97,6 +97,30 @@ No affiliation or official ESPN API agreement is implied.
   worlds. It is not a calibrated probability interval. ESPN is currently the only
   forecast source. Championship odds and multi-source consensus are not claimed.
 
+## Mutual-benefit finder
+
+Find win-win trades searches your team against the whole league or one partner.
+It checks eligible one-for-one exchanges and screens two-for-one and two-for-two
+packages using marginal lineup contributions. Each partner gets a share of a
+bounded shortlist for full analysis; this is not an exhaustive package search.
+Only offers whose fully analyzed starter-point gains pass the minimum and gain
+balance filters for both teams appear. The default requires +0.5 points per
+week for each team, with the larger gain at most three times the smaller.
+
+The full pass includes the same shared replacement-pool baseline, required
+drops, keeper portfolios and sensitivity checks used for manual offers. No
+missing starter forecast may justify a suggestion. IR/reserve players, locked
+players and candidates without usable forecasts are excluded; kickers/defenses
+are optional. Keeper protection requires complete costs and nonnegative keeper
+surplus changes for both teams. Without it, unknown keeper implications are
+flagged rather than treated as fair long-term value.
+
+Search runs in a same-origin module worker with progress and cancellation.
+Changing rules, rosters, overrides, your team or search assumptions invalidates
+results. Analyze this trade copies a suggestion and its week/waiver assumptions
+into the existing offer builder for a full review. The finder makes no network
+requests to ESPN, submits no offers, and predicts no manager acceptance.
+
 ## Backend
 
 Project: `baxrczyufqbzrogftmyn`. Function: `espn-sync`.
@@ -120,7 +144,7 @@ the function runtime and must never be put in this repository or browser files.
 
 ```sh
 python3 tools/build-espn-connector.py
-node --test tests/espn-connector.test.mjs tests/trade-analyzer.test.mjs
+node --test tests/espn-connector.test.mjs tests/trade-analyzer.test.mjs tests/trade-finder.test.mjs
 ```
 
 Tests cover custom scoring, full-pool pagination, data completeness, session

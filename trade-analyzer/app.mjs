@@ -1,5 +1,5 @@
-import {createTradeTool} from './trade-ui.mjs?v=2';
-import {stat,auctionPrice} from './lib/trade.mjs?v=2';
+import {createTradeTool} from './trade-ui.mjs?v=3';
+import {stat,auctionPrice} from './lib/trade.mjs?v=3';
 const $=id=>document.getElementById(id);
 const pending=new Map();
 let installed=false,snapshot=null,availableLimit=100,busy=false;
@@ -51,7 +51,7 @@ async function loadLeagues(){
   const list=result.leagues || [];
   $('league-select').replaceChildren();
   for(const l of list){const option=element('option',`${l.summary.name} · ${l.season}`);option.value=`${l.league_id}:${l.season}`;$('league-select').append(option);}
-  if(!list.length){snapshot=null;$('workspace').hidden=true;$('setup').hidden=false;$('connection-label').textContent='Ready to connect';$('connection-dot').className='status-dot';return;}
+  if(!list.length){snapshot=null;tradeTool.reset();$('workspace').hidden=true;$('setup').hidden=false;$('connection-label').textContent='Ready to connect';$('connection-dot').className='status-dot';return;}
   const preferred=result.selectedLeague?`${result.selectedLeague.leagueId}:${result.selectedLeague.season}`:null;
   if(preferred && list.some(l=>`${l.league_id}:${l.season}`===preferred))$('league-select').value=preferred;
   await loadSnapshot();

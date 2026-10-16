@@ -1,4 +1,5 @@
-import { allPlayers,auctionPrice,leagueDefaults,keeperCost,marketEstimates,analyzeTrade,projection,stat,finite,finalWeek,starterSlots } from './lib/trade.mjs?v=2';
+import { allPlayers,auctionPrice,leagueDefaults,keeperCost,marketEstimates,analyzeTrade,projection,stat,finite,finalWeek,starterSlots } from './lib/trade.mjs?v=3';
+import {createTradeFinder} from './finder-ui.mjs?v=3';
 const $=id=>document.getElementById(id);
 const el=(tag,text,cls)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(cls)node.className=cls;return node;};
 const number=v=>finite(v)?v.toLocaleString(undefined,{maximumFractionDigits:1}):'N/A';
@@ -25,7 +26,7 @@ export function createTradeTool({onTeamChange=()=>{}}={}){
     $('keeper-increase-wrap').hidden=!['fixed','percent'].includes(settings.increaseType);$('keeper-waiver-cost').value=settings.waiverCost ?? '';
     $('keeper-trade-rule').value=settings.tradedKeeperRule;$('keeper-min-bid').value=settings.minBid;
     $('keeper-settings-status').textContent=settings.format==='redraft'?'Redraft selected. Keeper costs do not affect this trade comparison.':settings.format==='dynasty'?'Dynasty selected. All eligible retained assets are compared using editable planning values.':settings.increaseType==='unconfirmed'||settings.tradedKeeperRule==='unconfirmed'?'Set annual cost changes and traded-player eligibility to complete the keeper comparison.':'Keeper rules saved for analysis. Missing player costs are flagged individually.';
-    market=marketEstimates(data,settings,overrides);renderPlayers();renderAuction();if(lastResult)run(false);
+    market=marketEstimates(data,settings,overrides);renderPlayers();renderAuction();finder.invalidate();finder.assumptions();if(lastResult)run(false);
   }
   function updateSettings(){
     if(!data)return;
@@ -57,7 +58,7 @@ export function createTradeTool({onTeamChange=()=>{}}={}){
   for(const side of ['a','b']){
     $(`trade-search-${side}`).addEventListener('input',renderPlayers);
     $(`trade-players-${side}`).addEventListener('change',event=>{const input=event.target;if(input.type!=='checkbox')return;const list=side==='a'?offer.sendA:offer.sendB,id=Number(input.dataset.playerId);if(input.checked&&!list.includes(id))list.push(id);else if(!input.checked)list.splice(list.indexOf(id),1);renderPlayers();lastResult=null;$('trade-results').replaceChildren();error('');});
-    $(`trade-team-${side}`).addEventListener('change',()=>{offer[side==='a'?'teamA':'teamB']=Number($(`trade-team-${side}`).value);offer[side==='a'?'sendA':'sendB']=[];if(side==='a')onTeamChange(offer.teamA);lastResult=null;$('trade-results').replaceChildren();renderPlayers();});
+    $(`trade-team-${side}`).addEventListener('change',()=>{offer[side==='a'?'teamA':'teamB']=Number($(`trade-team-${side}`).value);offer[side==='a'?'sendA':'sendB']=[];if(side==='a'){onTeamChange(offer.teamA);finder.update(data,offer.teamA);}lastResult=null;$('trade-results').replaceChildren();renderPlayers();});
   }
 
   function updateHorizon(){
@@ -105,7 +106,7 @@ export function createTradeTool({onTeamChange=()=>{}}={}){
     if(field==='eligible')overrides[id][field]=target.checked;
     else if(target.value==='')delete overrides[id][field];
     else{const value=Number(target.value);if(!finite(value)||!target.checkValidity()){target.reportValidity();return;}overrides[id][field]=value;}
-    persist();market=marketEstimates(data,settings,overrides);renderPlayers();renderAuction();if(lastResult)run(false);
+    persist();market=marketEstimates(data,settings,overrides);renderPlayers();renderAuction();finder.invalidate();if(lastResult)run(false);
   });
 
   function renderResults(result){
@@ -141,8 +142,20 @@ export function createTradeTool({onTeamChange=()=>{}}={}){
     try{const result=analyzeTrade(data,offer,settings,overrides,{startWeek:Number($('trade-start').value),endWeek:Number($('trade-end').value),optimizeWaivers:$('trade-waivers').checked,includeWaivers:$('trade-claims').checked,stress:Number($('trade-stress').value)});lastResult=result;renderResults(result);if(scroll)$('trade-results').scrollIntoView({behavior:'smooth',block:'start'});}catch(e){error(e.message);}finally{running=false;$('analyze-trade').disabled=false;$('analyze-trade').replaceChildren(document.createTextNode('Analyze trade '),el('span','↗'));}
   }
   $('analyze-trade').addEventListener('click',()=>run());
+  const finder=createTradeFinder({
+    getState:()=>({snapshot:data,settings,overrides,stress:Number($('trade-stress').value)}),
+    onTeamChange:id=>{offer.teamA=id;offer.sendA=[];$('trade-team-a').value=id;onTeamChange(id);renderPlayers();lastResult=null;$('trade-results').replaceChildren();finder.update(data,id);},
+    onOffer:(selected,options)=>{
+      offer={...selected,sendA:[...selected.sendA],sendB:[...selected.sendB]};
+      $('trade-team-a').value=offer.teamA;$('trade-team-b').value=offer.teamB;
+      $('trade-search-a').value='';$('trade-search-b').value='';$('trade-horizon').value='custom';$('trade-start').value=options.startWeek;$('trade-end').value=options.endWeek;$('trade-waivers').checked=options.optimizeWaivers;$('trade-claims').checked=options.includeWaivers;
+      lastResult=null;$('trade-results').replaceChildren();renderPlayers();showTab('trade');run();
+    }
+  });
+  $('trade-stress').addEventListener('change',()=>finder.invalidate());
 
   return {
+    reset(){finder.invalidate();data=null;offer={teamA:null,teamB:null,sendA:[],sendB:[]};lastResult=null;$('trade-results').replaceChildren();$('trade-players-a').replaceChildren();$('trade-players-b').replaceChildren();},
     update(snapshot,selectedTeam){
       const previous=data?`${data.leagueId}:${data.season}`:null;data=snapshot;
       const saved=read(key(),{});settings={...leagueDefaults(data),...saved.settings};overrides=saved.overrides || {};
@@ -150,9 +163,9 @@ export function createTradeTool({onTeamChange=()=>{}}={}){
       for(const [id,selected]of [['trade-team-a',offer.teamA],['trade-team-b',offer.teamB],['auction-team',Number(selectedTeam || offer.teamA)]]){const select=$(id);select.replaceChildren();if(id==='auction-team')select.append(new Option('All rosters',0));for(const team of data.teams)select.append(new Option(team.name,team.id));select.value=String(selected);}
       offer.sendA=offer.sendA.filter(id=>team(offer.teamA)?.roster.some(p=>p.id===id));offer.sendB=offer.sendB.filter(id=>team(offer.teamB)?.roster.some(p=>p.id===id));
       $('trade-start').min=data.week;$('trade-start').max=finalWeek(data);$('trade-end').min=data.week;$('trade-end').max=finalWeek(data);
-      updateHorizon();refreshSettings();
+      updateHorizon();refreshSettings();finder.update(data,offer.teamA);
       const rosters=data.teams.flatMap(t=>t.roster),withRos=rosters.filter(p=>finite(stat(p,1,0,0)?.points)),free=data.availablePlayers.filter(p=>p.availability==='FREEAGENT').length;$('trade-projection-source').textContent=`ESPN: ${withRos.length}/${rosters.length} rostered players with ROS forecasts · ${free} immediate free agents · ${data.availablePlayers.length-free} on waivers · ${data.nflSchedule?'NFL byes imported':'Refresh ESPN to load NFL byes'}`;
     },
-    selectTeam(id){if(!data)return;offer.teamA=id;offer.sendA=[];$('trade-team-a').value=id;renderPlayers();lastResult=null;$('trade-results').replaceChildren();},
+    selectTeam(id){if(!data)return;offer.teamA=id;offer.sendA=[];$('trade-team-a').value=id;renderPlayers();lastResult=null;$('trade-results').replaceChildren();finder.update(data,id);},
   };
 }
