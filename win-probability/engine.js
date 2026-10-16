@@ -179,7 +179,7 @@
     if (s.model === "espn") a.push("Numbers: ESPN Analytics, as reported after the game.");
     if (s.model === "anfl") a.push("Numbers: Advanced NFL Stats, as analyzed by the Harvard Sports Analysis Collective in 2012.");
     if (s.model === "nfl4th") a.push("It doesn't know about injuries, the specific matchup, or this kicker's leg beyond league averages.");
-    if (s.wind >= 15 && s.roof === "outdoors") a.push(`Wind is ${s.wind} mph. The model treats weather only through averages, so kicks are riskier than it thinks.`);
+    if (s.wind >= 15 && s.roof === "outdoors") a.push(`Wind is ${s.wind} mph. Wind speed is not modeled explicitly; actual kicking chances may differ.`);
     if (s.rules) a.push(s.rules);
     return a;
   }

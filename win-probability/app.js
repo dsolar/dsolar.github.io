@@ -381,7 +381,7 @@
     const parts = [`went for it ${f1(c.go || 0)}%`];
     if ("punt" in s.opts || (c.punt || 0) > 0) parts.push(`punted ${f1(c.punt || 0)}%`);
     if ("fg" in s.opts || (c.fg || 0) > 0) parts.push(`kicked a field goal ${f1(c.fg || 0)}%`);
-    return `<p>NFL coaches in spots like this since 2021 ${parts.join(", ")} (${c.n} plays).</p>`;
+    return `<p>Broad historical comparison since 2021: coaches ${parts.join(", ")} (${c.n} plays). Groups match distance bands, ten-yard field-position bands, and broad score/quarter categories, not the exact clock, timeout or team situation.</p>`;
   }
 
   function realLifeHtml(s) {
