@@ -72,7 +72,7 @@ h1{font:700 clamp(2.7rem, 10vw, 4.6rem)/.92 var(--f-sign);letter-spacing:-.005em
 .reigning strong{color:var(--ink);font-weight:600}
 .ext{display:flex;flex-wrap:wrap;gap:.3rem 1.25rem;margin:.6rem 0 0;font-weight:600}
 /* Section links stay pinned under the site bar while you scroll; one swipeable row on phones */
-.jump{position:sticky;top:0;z-index:20;display:flex;gap:1.4rem;overflow-x:auto;scrollbar-width:none;white-space:nowrap;
+.jump{position:sticky;top:0;z-index:20;display:flex;gap:1.15rem;overflow-x:auto;scrollbar-width:none;white-space:nowrap;
   margin-top:-2.4rem;padding:.65rem 0;background:var(--bg);border-block:1px solid var(--rule);
   box-shadow:0 0 0 100vmax var(--bg);clip-path:inset(0 -100vmax)}
 .jump::-webkit-scrollbar{display:none}
@@ -132,6 +132,8 @@ select{padding-right:2rem}
 .t-year{font:600 1.55rem/1 var(--f-sign)}
 .t-champ{font-weight:600;min-width:0;overflow-wrap:anywhere}
 .t-rest{display:block;font-size:.8125rem;color:var(--muted);font-weight:400}
+.t-rest+.t-rest{margin-top:.05rem}
+.t-k{display:inline-block;min-width:4.6rem}
 .t-open{font-size:.8125rem;color:var(--muted);white-space:nowrap}
 .t-open::after{content:"";display:inline-block;width:.45rem;height:.45rem;margin-left:.4rem;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:translateY(-.15rem) rotate(45deg);transition:transform .15s}
 details[open] .t-open::after{transform:translateY(.05rem) rotate(-135deg)}
@@ -195,11 +197,14 @@ input.who{width:9rem}
 .votes .lead-v{font-weight:700}
 .panel-lede{margin:1rem 0 0;color:var(--muted);max-width:38rem}
 .years{margin-top:1rem}
-.khlist{list-style:none;margin:1rem 0 0;padding:0;border-top:1px solid var(--rule)}
-.kh{display:grid;grid-template-columns:minmax(0,13rem) minmax(0,1fr);gap:.2rem 1rem;padding:.6rem 0;border-bottom:1px solid var(--rule);font-size:.9375rem}
-.kh-team{font-weight:600;overflow-wrap:anywhere}
-.kh-k .muted{color:var(--muted);font-size:.8125rem}
-@media (max-width:560px){.kh{grid-template-columns:1fr}}
+.khlist{list-style:none;margin:1rem 0 0;padding:0;border-bottom:1px solid var(--rule);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:2.25rem}
+.kh{padding:.75rem 0 .8rem;border-top:1px solid var(--rule);font-size:.9375rem}
+.kh-team{font-weight:600;overflow-wrap:anywhere;margin-bottom:.3rem}
+.kh-team .m-sub{display:inline;margin-left:.4rem}
+.kh-k{list-style:none;margin:0;padding:0}
+.kh-k li{display:flex;justify-content:space-between;align-items:baseline;gap:.75rem;padding:.12rem 0}
+.kh-k .muted{color:var(--muted);font-size:.8125rem;white-space:nowrap;font-variant-numeric:tabular-nums}
+@media (max-width:640px){.khlist{grid-template-columns:1fr}}
 .votes li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.2rem 1rem;align-items:center;padding:.3rem 0;border-bottom:1px solid var(--rule)}
 
 /* Team stats */
@@ -248,6 +253,8 @@ input.who{width:9rem}
 .badge.vet{color:var(--ink)}
 .badge-key{display:flex;flex-wrap:wrap;gap:.4rem 1.2rem;font-size:.8125rem;color:var(--muted);margin:.8rem 0 0}
 .badge-key .badge{margin:0 .4rem 0 0}
+.badge-key>span{display:inline-flex;align-items:center}
+.badge-key .tiles{display:inline-flex}
 .stone .badge{margin:.35rem 0 0}
 .career{width:100%;border-collapse:collapse;font-size:.875rem;margin:0 0 1rem}
 .career td{padding:.28rem .5rem .28rem 0;border-bottom:1px solid color-mix(in srgb, var(--rule) 60%, transparent);overflow-wrap:anywhere}
@@ -350,10 +357,10 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
   </header>
 
   <nav class="jump" aria-label="On this page">
-    <a href="#keepers">Keepers and drafts</a>
+    <a href="#keepers">Keepers</a>
     <a href="#offseason">Offseason</a>
     <a href="#champions">Standings</a>
-    <a href="#stats">Team stats</a>
+    <a href="#stats">Stats</a>
     <a href="#awards">Awards</a>
     <a href="#managers">Managers</a>
     <a href="#graveyard">Graveyard</a>
@@ -809,7 +816,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
         return '<tr' + (r[0] <= 3 ? ' class="podium"' : "") + '><td class="num">' + r[0] + "</td><td>" + esc(T[r[1]]) + '<span class="m-sub">' + esc(man(s, r[1])) + '</span></td><td class="r num">' + r[2] + '</td><td class="r num">' + pct(r[2]) + "</td></tr>";
       }).join("");
       return '<li><details><summary><span class="t-year num">' + s.year + '</span><span class="t-champ">' + esc(teamMan(s, st[0][1])) +
-        '<span class="t-rest">Runner-up ' + esc(teamMan(s, st[1][1])) + ". Third " + esc(teamMan(s, st[2][1])) + '.</span></span><span class="t-open">Standings</span></summary>' +
+        '<span class="t-rest"><span class="t-k">Runner-up</span>' + esc(teamMan(s, st[1][1])) + '</span><span class="t-rest"><span class="t-k">Third</span>' + esc(teamMan(s, st[2][1])) + '</span></span><span class="t-open">Standings</span></summary>' +
         (s.note ? '<p class="season-note">' + esc(s.note) + "</p>" : "") +
         '<table class="standings"><caption hidden>' + s.year + ' final standings</caption><thead><tr><th scope="col">Finish</th><th scope="col">Team</th><th scope="col" class="r">Record</th><th scope="col" class="r">Pct</th></tr></thead><tbody>' + rows + "</tbody></table></details></li>";
     }).join("");
@@ -839,7 +846,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       }).join("");
       var champ = s.standings[0][1];
       return '<li><details><summary><span class="t-year num">' + s.year + '</span><span class="t-champ">' + esc(teamMan(s, a.ti)) + ", " + a.rec +
-        '<span class="t-rest">Second ' + esc(teamMan(s, b.ti)) + ", " + b.rec + "." + (a.ti === champ ? " Won the title too." : " Finished " + ordinal(a.fin) + " in the playoffs.") + '</span></span><span class="t-open">Standings</span></summary>' +
+        '<span class="t-rest"><span class="t-k">Second</span>' + esc(teamMan(s, b.ti)) + ", " + b.rec + '</span><span class="t-rest"><span class="t-k">Playoffs</span>' + (a.ti === champ ? "Won the title too" : "Finished " + ordinal(a.fin)) + '</span></span><span class="t-open">Standings</span></summary>' +
         '<table class="standings"><caption hidden>' + s.year + ' regular-season standings</caption><thead><tr><th scope="col">Rank</th><th scope="col">Team</th><th scope="col" class="r">Record</th><th scope="col" class="r">Pct</th><th scope="col" class="r"><abbr title="Games behind">GB</abbr></th><th scope="col" class="r">Final</th></tr></thead><tbody>' + body + "</tbody></table></details></li>";
     }).join("");
   }
@@ -1038,12 +1045,15 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     initTabList(list);
     drawHistory();
   }
-  function roundName(k) { return k[1] ? ordinal(k[1]) + " round" + (k[2] ? ", year " + k[2] : "") : ""; }
+  function roundName(k) { return k[1] ? "Round " + k[1] + (k[2] ? ", year " + k[2] : "") : ""; }
   function drawHistory() {
     var box = $("kh-body"); if (!box) return;
+    // one card per team, one keeper per line: name on the left, what he cost on the right
     var row = function (team, man, ks, empty) {
-      return '<li class="kh"><div class="kh-team">' + esc(team) + '<span class="m-sub">' + esc(man) + '</span></div><div class="kh-k">' +
-        (ks && ks.length ? ks.map(function (k) { return esc(k[0]) + ' <span class="muted">(' + esc(roundName(k)) + ")" + (k[3] ? "*" : "") + "</span>"; }).join(", ") : '<span class="muted">' + esc(empty || "None") + "</span>") + "</div></li>";
+      return '<li class="kh"><div class="kh-team">' + esc(team) + '<span class="m-sub">' + esc(man) + "</span></div>" +
+        (ks && ks.length ? '<ul class="kh-k">' + ks.map(function (k) {
+          return "<li><span>" + esc(k[0]) + '</span><span class="muted">' + esc(roundName(k)) + (k[3] ? '<span title="Round corrected by the commissioner">*</span>' : "") + "</span></li>";
+        }).join("") + "</ul>" : '<p class="kh-k muted" style="margin:0">' + esc(empty || "None") + "</p>");
     };
     if (HY === "2027") {
       var order = (OFF().sheetOrder || Object.keys(DATA.keepers2027)).slice().sort(function (a, b) { return a.localeCompare(b); });
