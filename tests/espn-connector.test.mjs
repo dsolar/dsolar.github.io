@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
-import { importLeague, leagueIdentity, validateSession, normalizeLeague } from '../trade-analyzer/lib/espn.mjs';
+import { importLeague, leagueIdentity, validateSession, normalizeLeague, loadProSchedule } from '../trade-analyzer/lib/espn.mjs';
 import { createHandler, hashToken, sessionKey, sealSession, openSession } from '../supabase/functions/espn-sync/handler.mjs';
 
 // Synthetic ESPN-shaped fixtures, never live private league data or credentials.
@@ -71,9 +71,15 @@ test('all available-player pages import and rostered players never become replac
   assert.deepEqual(s.availablePlayers.map(p=>p.id),[301,302,303]);
   assert.equal(s.availablePlayers[1].availability,'WAIVERS');
   assert.equal(s.coverage.availablePlayers,true);
-  assert.equal(calls.length,3);
+  assert.equal(calls.length,4);
   assert.equal(JSON.parse(calls[2].options.headers['X-Fantasy-Filter']).players.offset,2);
   assert.ok(calls.every(c=>new URL(c.url).hostname==='lm-api-reads.fantasy.espn.com'&&c.options.method==='GET'&&c.options.redirect==='error'));
+  assert.equal(calls[3].options.headers.cookie,undefined);
+});
+test('NFL schedule preserves dates, opponents and bye gaps without league credentials',async()=>{
+  const teams=Array.from({length:32},(_,i)=>({id:i+1,byeWeek:3,proGamesByScoringPeriod:{2:[{date:1792080000000,homeProTeamId:i+1,awayProTeamId:99}],4:[{date:1793289600000,homeProTeamId:99,awayProTeamId:i+1}]}}));
+  const schedule=await loadProSchedule(2025,async(url,opts)=>{assert.equal(opts.headers.cookie,undefined);assert.ok(url.endsWith('?view=proTeamSchedules_wl'));return Response.json({settings:{proTeams:teams}});});
+  assert.equal(schedule[1].byeWeek,3);assert.equal(schedule[1].games[3],undefined);assert.equal(schedule[1].games[2][0].date,1792080000000);assert.equal(schedule[1].games[4][0].opponentId,99);
 });
 test('ignored pagination is reported as incomplete rather than full coverage',async()=>{
   const {fetcher}=espnFetcher({available:[player(301),player(302)],repeat:true});

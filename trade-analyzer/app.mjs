@@ -1,8 +1,12 @@
+import {createTradeTool} from './trade-ui.mjs?v=2';
+import {stat,auctionPrice} from './lib/trade.mjs?v=2';
 const $=id=>document.getElementById(id);
 const pending=new Map();
 let installed=false,snapshot=null,availableLimit=100,busy=false;
 const n=value=>Number.isFinite(value)?value.toLocaleString(undefined,{maximumFractionDigits:2}):'Unavailable';
 const element=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;};
+function saveTeam(id){if(!snapshot)return;$('my-team').value=id;try{localStorage.setItem(`sdn-espn-team:${snapshot.leagueId}:${snapshot.season}`,String(id));}catch{}}
+const tradeTool=createTradeTool({onTeamChange:saveTeam});
 
 function request(command,data={},timeout=120000){
   const id=crypto.randomUUID();
@@ -86,7 +90,7 @@ function render(data,status='connected'){
   const prior=$('position-filter').value;$('position-filter').replaceChildren(new Option('All positions',''));
   for(const position of [...new Set(data.availablePlayers.map(p=>p.position))].sort())$('position-filter').append(new Option(position,position));
   if([...$('position-filter').options].some(o=>o.value===prior))$('position-filter').value=prior;
-  renderAvailable();renderSchedule();
+  renderAvailable();renderSchedule();tradeTool.update(data,Number($('my-team').value));
 }
 
 function renderRosters(){
@@ -99,7 +103,7 @@ function renderRosters(){
     const d=element('details',undefined,'team-roster');if(query)d.open=true;
     const s=element('summary'),wrap=element('span'),r=team.record?.overall;
     wrap.append(element('strong',team.name),element('small',`${r?`${r.wins}–${r.losses}${r.ties?`–${r.ties}`:''} · `:''}${team.roster.length} players`));s.append(wrap);d.append(s);
-    const scroll=element('div',undefined,'table-scroll');scroll.append(table(['Slot','Player','Position','NFL','Injury status',`Week ${snapshot.week} proj.`],players.map(p=>[p.lineupSlot || '—',p.name,p.position,p.nflTeam,p.injuryStatus,n(weeklyPoints(p))])));d.append(scroll);$('rosters').append(d);
+    const scroll=element('div',undefined,'table-scroll');scroll.append(table(['Slot','Player','Position','NFL','Injury status',`Week ${snapshot.week} proj.`,'Remaining proj.','Original auction'],players.map(p=>[p.lineupSlot || '—',p.name,p.position,p.nflTeam,p.injuryStatus,n(weeklyPoints(p)),n(stat(p,1,0)?.points),auctionPrice(p)===null?'Not returned':`$${n(auctionPrice(p))}`])));d.append(scroll);$('rosters').append(d);
   }
 }
 function renderAvailable(){
@@ -108,7 +112,7 @@ function renderAvailable(){
   const players=snapshot.availablePlayers.filter(p=>(!search||p.name.toLowerCase().includes(search))&&(!position||p.position===position)&&(!status||p.availability===status)).sort((a,b)=>(weeklyPoints(b)??-Infinity)-(weeklyPoints(a)??-Infinity)||(b.percentOwned??0)-(a.percentOwned??0));
   $('available-coverage').textContent=snapshot.coverage.availablePlayers?'All pages returned by ESPN were imported. Players on waivers are labeled separately.':'ESPN returned a partial pool. Refresh the import before using these players as replacement options.';
   $('available-count').textContent=`Showing ${Math.min(availableLimit,players.length)} of ${players.length} matching players`;
-  $('available-table').replaceChildren(table(['Player','Position','NFL','Availability','Injury status',`Week ${snapshot.week} proj.`],players.slice(0,availableLimit).map(p=>[p.name,p.position,p.nflTeam,p.availability==='WAIVERS'?'Waivers':'Free agent',p.injuryStatus,n(weeklyPoints(p))])));
+  $('available-table').replaceChildren(table(['Player','Position','NFL','Availability','Injury status',`Week ${snapshot.week} proj.`,'Remaining proj.'],players.slice(0,availableLimit).map(p=>[p.name,p.position,p.nflTeam,p.availability==='WAIVERS'?'Waivers':'Free agent',p.injuryStatus,n(weeklyPoints(p)),n(stat(p,1,0)?.points)])));
   $('more-available').hidden=players.length<=availableLimit;
 }
 function renderSchedule(){
@@ -133,7 +137,7 @@ $('refresh').addEventListener('click',async()=>{
   if(busy)return;busy=true;$('refresh').disabled=true;$('refresh').textContent='Refreshing…';notice('Checking ESPN’s settings, rosters, and available players.');
   try{const result=await request('refresh',identity());render(result.snapshot);notice(result.cached?'Your most recent import is already current.':'ESPN import refreshed.');}catch(error){showError(error);}finally{busy=false;$('refresh').disabled=false;$('refresh').textContent='Refresh ESPN';}
 });
-$('my-team').addEventListener('change',()=>{try{localStorage.setItem(`sdn-espn-team:${snapshot.leagueId}:${snapshot.season}`,$('my-team').value);}catch{}});
+$('my-team').addEventListener('change',()=>{saveTeam(Number($('my-team').value));tradeTool.selectTeam(Number($('my-team').value));});
 $('roster-search').addEventListener('input',renderRosters);
 for(const id of ['available-search','position-filter','availability-filter'])$(id).addEventListener(id.endsWith('search')?'input':'change',()=>{availableLimit=100;renderAvailable();});
 $('more-available').addEventListener('click',()=>{availableLimit+=100;renderAvailable();});
@@ -143,4 +147,5 @@ $('disconnect').addEventListener('click',async()=>{if(busy)return;busy=true;$('d
 const tabs=[...document.querySelectorAll('[role=tab]')];
 function showTab(tab){for(const t of tabs){const selected=t===tab;t.setAttribute('aria-selected',String(selected));t.tabIndex=selected?0:-1;$(t.getAttribute('aria-controls')).hidden=!selected;}}
 for(const tab of tabs){tab.addEventListener('click',()=>showTab(tab));tab.addEventListener('keydown',event=>{const index=tabs.indexOf(tab);if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?tabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;showTab(tabs[next]);tabs[next].focus();});}
+document.addEventListener('sdn-show-tab',event=>{const tab=tabs.find(t=>t.dataset.tab===event.detail);if(tab){showTab(tab);tab.focus();}});
 detect();

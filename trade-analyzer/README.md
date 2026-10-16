@@ -1,7 +1,8 @@
-# ESPN league connection
+# League-aware trade analyzer
 
-This is the first stage of the trade analyzer. It imports real ESPN football
-league data; it does not yet recommend trades or estimate championship odds.
+Build an offer from two connected ESPN rosters, compare projected starting
+lineups before and after, and inspect keeper portfolio changes under your
+league’s rules. The tool is read only at ESPN.
 
 ## Use
 
@@ -11,8 +12,14 @@ league data; it does not yet recommend trades or estimate championship odds.
 3. Sign into ESPN in the same browser and open the league to connect.
 4. Refresh the connection page and choose Connect ESPN. The extension can select
    a league from open ESPN tabs, or accept an ESPN football league link/ID.
-5. Confirm imported scoring rules, starting slots, every roster, and player
-   availability. Rohan is the initial suggested league, ID `270405`.
+5. Check the league format and keeper count, then select players on both sides
+   under Analyze a trade. Rohan is the initial suggested league, ID `270405`.
+6. Under Keeper rules, confirm annual price changes, waiver keeper costs and
+   traded-player eligibility. Auction & player values shows imported prices,
+   the full draft, and per-player cost/projection/value overrides.
+
+Existing installations work with this update. Refresh the analyzer page and
+choose Refresh ESPN; reinstalling the extension is not required.
 
 The first release is distributed as an unpacked extension, not a Chrome Web
 Store listing. No ESPN cookies or passwords need to be pasted anywhere.
@@ -60,6 +67,36 @@ the community-maintained [espn-api documentation](https://github.com/cwendt94/es
 and [FantasyPros' description of its ESPN session-based sync](https://support.fantasypros.com/hc/en-us/articles/360051313453).
 No affiliation or official ESPN API agreement is implied.
 
+## Analysis model
+
+- Weekly starting lineups use exact positional assignment, including FLEX, with
+  one player per slot. Current locked starters retain their actual points.
+- Current-week forecasts use ESPN’s league-scored weekly projections. Future
+  weeks distribute its in-season remaining-season projections (source 1, split 0)
+  over scheduled games. NFL schedules/byes come from `proTeamSchedules_wl`.
+  Future-week allocations are not opponent-specific forecasts. Preseason split 2
+  projections are never substituted for missing in-season data.
+- Required drops and open roster spots are explicit. The same shared replacement
+  pool is considered in the before and after worlds, so an already-available
+  waiver upgrade is not falsely credited to a trade. Candidates screen the top
+  five per position, with up to two optional upgrades per team. Waiver claims
+  require a separate explicit assumption. FAAB, position caps, future transactions
+  and future IR activations are not modeled.
+- IR/reserve players do not silently join starting lineups. A player whose game
+  has started cannot be traded into this week’s comparison or suggested as a
+  current-week add/drop. Trades involving locked players start next week.
+- Redraft, keeper count and dynasty change keeper treatment. The keeper optimizer
+  selects the best eligible portfolio under the keeper count, auction budget and
+  remaining minimum-bid reserve. Original auction prices, next-year keeper costs,
+  planning market dollars and fantasy points remain separate. Missing costs block
+  an overall keeper verdict until the relevant house rule or override is supplied.
+- Market planning dollars are a current-projection value-above-replacement budget
+  allocation. They are editable estimates, not predictions of next year’s auction.
+  Keeper house rules/overrides persist locally per league and season.
+- The ±10/20/30% sensitivity test changes traded players’ projections in both
+  worlds. It is not a calibrated probability interval. ESPN is currently the only
+  forecast source. Championship odds and multi-source consensus are not claimed.
+
 ## Backend
 
 Project: `baxrczyufqbzrogftmyn`. Function: `espn-sync`.
@@ -83,11 +120,14 @@ the function runtime and must never be put in this repository or browser files.
 
 ```sh
 python3 tools/build-espn-connector.py
-node --test tests/espn-connector.test.mjs
+node --test tests/espn-connector.test.mjs tests/trade-analyzer.test.mjs
 ```
 
 Tests cover custom scoring, full-pool pagination, data completeness, session
 encryption, private access isolation, failure preservation, scheduler auth, and
-the extension's page/credential boundary. Live private-league verification
+the extension's page/credential boundary. Analysis tests cover bench promotion,
+replacement fairness, shared waivers, flex assignment, byes, locks, negative
+projections, IR exclusion, keeper cost/budget/count rules, and sensitivity.
+Live private-league verification
 requires installing the extension in a browser signed into that league; a
 passing fixture test does not establish a successful live ESPN sync.

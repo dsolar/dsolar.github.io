@@ -1,8 +1,8 @@
 // ESPN's league read endpoints are undocumented. Preserve original rule IDs and
 // parameters so unfamiliar scoring categories never silently become defaults.
-export const VERSION = '0.1.0';
+export const VERSION = '0.2.0';
 export const SLOTS = {0:'QB',1:'Team QB',2:'RB',3:'RB/WR',4:'WR',5:'WR/TE',6:'TE',7:'Superflex',8:'DT',9:'DE',10:'LB',11:'DL',12:'CB',13:'S',14:'DB',15:'IDP',16:'D/ST',17:'K',18:'P',19:'HC',20:'Bench',21:'IR',23:'FLEX',24:'Edge',25:'Rookie'};
-export const POSITIONS = {1:'QB',2:'RB',3:'WR',4:'TE',5:'K',6:'D/ST',7:'DT',8:'DE',9:'LB',10:'CB',11:'S'};
+export const POSITIONS = {1:'QB',2:'RB',3:'WR',4:'TE',5:'K',6:'D/ST',7:'DT',8:'DE',9:'LB',10:'CB',11:'S',16:'D/ST'};
 export const NFL_TEAMS = {0:'FA',1:'ATL',2:'BUF',3:'CHI',4:'CIN',5:'CLE',6:'DAL',7:'DEN',8:'DET',9:'GB',10:'TEN',11:'IND',12:'KC',13:'LV',14:'LAR',15:'MIA',16:'MIN',17:'NE',18:'NO',19:'NYG',20:'NYJ',21:'PHI',22:'ARI',23:'PIT',24:'LAC',25:'SF',26:'SEA',27:'TB',28:'WSH',29:'CAR',30:'JAX',33:'BAL',34:'HOU'};
 export const STAT_LABELS = {0:'Pass attempts',1:'Completions',2:'Incompletions',3:'Passing yards',4:'Passing touchdowns',5:'Every 5 passing yards',6:'Every 10 passing yards',7:'Every 20 passing yards',8:'Every 25 passing yards',9:'Every 50 passing yards',10:'Every 100 passing yards',15:'40+ yard passing TD bonus',16:'50+ yard passing TD bonus',17:'300–399 passing yards',18:'400+ passing yards',19:'Passing two-point conversions',20:'Interceptions thrown',23:'Rush attempts',24:'Rushing yards',25:'Rushing touchdowns',26:'Rushing two-point conversions',27:'Every 5 rushing yards',28:'Every 10 rushing yards',29:'Every 20 rushing yards',30:'Every 25 rushing yards',31:'Every 50 rushing yards',32:'Every 100 rushing yards',35:'40+ yard rushing TD bonus',36:'50+ yard rushing TD bonus',37:'100–199 rushing yards',38:'200+ rushing yards',41:'Receptions',42:'Receiving yards',43:'Receiving touchdowns',44:'Receiving two-point conversions',45:'40+ yard receiving TD bonus',46:'50+ yard receiving TD bonus',47:'Every 5 receiving yards',48:'Every 10 receiving yards',49:'Every 20 receiving yards',50:'Every 25 receiving yards',51:'Every 50 receiving yards',52:'Every 100 receiving yards',53:'Each reception',56:'100–199 receiving yards',57:'200+ receiving yards',58:'Targets',63:'Fumble recovery touchdowns',64:'Times sacked',68:'Fumbles',72:'Fumbles lost',74:'Field goals: 50+ yards',77:'Field goals: 40–49 yards',80:'Field goals: under 40 yards',83:'Field goals made',85:'Field goals missed',86:'Extra points made',88:'Extra points missed',89:'D/ST: 0 points allowed',90:'D/ST: 1–6 points allowed',91:'D/ST: 7–13 points allowed',92:'D/ST: 14–17 points allowed',93:'Blocked kick return touchdowns',94:'Defensive touchdowns',95:'Defensive interceptions',96:'Defensive fumble recoveries',97:'Blocked kicks',98:'Safeties',99:'Sacks',101:'Kickoff return touchdowns',102:'Punt return touchdowns',103:'Interception return touchdowns',104:'Fumble return touchdowns',105:'Total return touchdowns',106:'Forced fumbles',107:'Assisted tackles',108:'Solo tackles',109:'Total tackles',113:'Passes defended',114:'Kickoff return yards',115:'Punt return yards',120:'Points allowed',121:'D/ST: 18–21 points allowed',122:'D/ST: 22–27 points allowed',123:'D/ST: 28–34 points allowed',124:'D/ST: 35–45 points allowed',125:'D/ST: 46+ points allowed',127:'Yards allowed',128:'D/ST: under 100 yards allowed',129:'D/ST: 100–199 yards allowed',130:'D/ST: 200–299 yards allowed',131:'D/ST: 300–349 yards allowed',132:'D/ST: 350–399 yards allowed',133:'D/ST: 400–449 yards allowed',134:'D/ST: 450–499 yards allowed',135:'D/ST: 500–549 yards allowed',136:'D/ST: 550+ yards allowed',201:'Field goals: 60+ yards',205:'Defensive two-point returns'};
 
@@ -58,7 +58,7 @@ async function readJSON(url, session, fetcher, filter) {
 function compactStats(stats, season) {
   return (stats || []).filter(s => s.seasonId === season && [0,1].includes(s.statSourceId)).map(s => ({
     sourceId:s.statSourceId, splitTypeId:s.statSplitTypeId, week:s.scoringPeriodId ?? 0,
-    matchupPeriodId:s.matchupPeriodId ?? null, points:Number.isFinite(s.appliedTotal) ? s.appliedTotal : null, stats:s.stats || {},
+    matchupPeriodId:s.matchupPeriodId ?? null, points:Number.isFinite(s.appliedTotal) ? s.appliedTotal : null, average:Number.isFinite(s.appliedAverage)?s.appliedAverage:null, stats:s.stats || {},
   }));
 }
 
@@ -115,6 +115,7 @@ export function normalizeLeague(core, available, identity, options = {}) {
       scoringItems:scoring.map(item => ({...item,label:STAT_LABELS[item.statId] || `ESPN scoring category ${item.statId}`})),
     },
     teams, availablePlayers:[...players.values()],
+    draftResults:(core.draftDetail?.picks || []).map(p=>({playerId:p.playerId,teamId:p.teamId,auctionPrice:p.bidAmount ?? null,keeper:p.keeper ?? null,overallPick:p.overallPickNumber ?? null,round:p.roundId ?? null})),
     schedule:(core.schedule || []).map(m => ({id:m.id,matchupPeriodId:m.matchupPeriodId,winner:m.winner ?? null,playoffTierType:m.playoffTierType ?? null,
       home:m.home ? {teamId:m.home.teamId,totalPoints:m.home.totalPoints ?? null,totalProjectedPoints:m.home.totalProjectedPoints ?? null,pointsByScoringPeriod:m.home.pointsByScoringPeriod || {}} : null,
       away:m.away ? {teamId:m.away.teamId,totalPoints:m.away.totalPoints ?? null,totalProjectedPoints:m.away.totalProjectedPoints ?? null,pointsByScoringPeriod:m.away.pointsByScoringPeriod || {}} : null})),
@@ -122,6 +123,18 @@ export function normalizeLeague(core, available, identity, options = {}) {
     keeperRules:{platform:s.draftSettings || {},houseRules:null,reviewRequired:true},
     warnings,
   };
+}
+
+let scheduleCache;
+export async function loadProSchedule(season,fetcher=fetch){
+  if(scheduleCache?.season===season && Date.now()-scheduleCache.fetched<6*3600000)return scheduleCache.data;
+  const response=await fetcher(`https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${season}?view=proTeamSchedules_wl`,{method:'GET',headers:{accept:'application/json'},redirect:'error',signal:AbortSignal.timeout(18000)});
+  if(!response.ok)throw new SyncError('schedule_unavailable','The NFL schedule could not be loaded.');
+  const data=await response.json();
+  const teams=data.settings?.proTeams;
+  if(!Array.isArray(teams)||teams.length<32)throw new SyncError('schedule_unavailable','The NFL schedule was incomplete.');
+  const normalized=Object.fromEntries(teams.filter(t=>t.id>0).map(t=>[t.id,{byeWeek:t.byeWeek ?? null,games:Object.fromEntries(Object.entries(t.proGamesByScoringPeriod || {}).filter(([w])=>Number(w)>0&&Number(w)<=18).map(([w,games])=>[w,games.map(g=>({date:g.date,opponentId:g.homeProTeamId===t.id?g.awayProTeamId:g.homeProTeamId}))]))}]));
+  scheduleCache={season,fetched:Date.now(),data:normalized};return normalized;
 }
 
 export async function importLeague(identity, sessionInput, {fetcher = fetch, now, pageSize = 250, maxPages = 40} = {}) {
@@ -144,5 +157,7 @@ export async function importLeague(identity, sessionInput, {fetcher = fetch, now
     if (data.players.length < pageSize || (Number.isFinite(data.total) && seen.size >= data.total)) { complete = true; break; }
     if (!added) break; // ESPN ignored pagination; explicitly mark the pool incomplete.
   }
-  return normalizeLeague(core,available,identity,{availableComplete:complete,viewerSwid:session.swid,now});
+  const snapshot=normalizeLeague(core,available,identity,{availableComplete:complete,viewerSwid:session.swid,now});
+  try{snapshot.nflSchedule=await loadProSchedule(identity.season,fetcher);}catch{snapshot.nflSchedule=null;snapshot.warnings.push('The NFL schedule is unavailable. Future-week bye and lineup-lock checks need a refresh.');}
+  return snapshot;
 }
