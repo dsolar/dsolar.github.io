@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-16T04:42:08Z",
+ "updated": "2026-10-16T16:46:36Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -678,6 +678,22 @@
    "url": "https://www.ticketmaster.com/nikki-glaser-the-stunning-tour-boston-massachusetts-12-04-2026/event/01006392CFF51918",
    "src": null,
    "low": null
+  },
+  "tm-rZ7HnEZ1Afugk7": {
+   "history": [
+    [
+     "2026-10-16",
+     28
+    ]
+   ],
+   "sg": null,
+   "title": "Chris Beck",
+   "date": "2026-11-28",
+   "venue": "Smalls Jazz Club",
+   "url": "https://www.ticketweb.com/event/chris-beck-smalls-jazz-club-tickets/14375184",
+   "src": "Ticketmaster",
+   "low": 28,
+   "first": 28
   }
  },
  "misses": {
@@ -701,7 +717,8 @@
   "tm-vvG17Z_u7Z_JCI": "2026-10-14",
   "tm-Z7r9jZ1AAvx-I": "2026-10-14",
   "tm-Z7r9jZ1AAvx-E": "2026-10-14",
-  "tm-Z7r9jZ1AA77-E": "2026-10-14"
+  "tm-Z7r9jZ1AA77-E": "2026-10-14",
+  "tm-rZ7HnEZ1Afugk7": "2026-10-16"
  },
  "drops": []
 }
