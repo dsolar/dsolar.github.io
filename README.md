@@ -28,6 +28,8 @@ dsolar.github.io/
     build_site.py             puts page + data + engine together
   degenerate-trail/           The Degenerate Trail, plain files, edit directly
   nick-chat/                  Chat with Nick
+  win-probability/            Win Probability: index.html (layout, styles), app.js (screens, play clock, crowd votes),
+                              engine.js (grading, modes, style labels) and data.js (every scenario; generated, don't edit)
   paint-the-corners/          Paint the Corners: index.html (layout, styles, UI) and engine.js
                               (pitches, hitters, at-bat math). Plain files, edit directly.
   guillotine/                 Bastille Day Odds: index.html, sim.js (the simulation),
@@ -40,6 +42,8 @@ dsolar.github.io/
   robots.txt                  keeps send-off images and data files out of search engines
   tools/guillotine_update.py  pulls the league from Yahoo into guillotine/data.json
   tools/paint_the_corners_sim.js  balance check for Paint the Corners (node, see the top of the file)
+  tools/win_probability_check.js  checks Win Probability's data and grading (node tools/win_probability_check.js)
+  tools/win_probability_supabase.sql  one-time setup for Win Probability's crowd votes (see below)
   tools/calendar_update.py    builds calendar/events.json; calendar_prices.py watches ticket prices;
                               calendar-votes.js is Night Out's vote box (marks and plans)
   .github/workflows/          guillotine.yml runs that script every morning in season;
@@ -76,6 +80,17 @@ The site links to hello@davidsolar.dev. Cloudflare forwards it to your real inbo
 4. Cloudflare offers to add its email DNS records. Accept (**Add records and enable**). They don't affect the website.
 
 To send a test, email hello@davidsolar.dev from another account. The address is written into the page as `data-user="hello" data-domain="davidsolar.dev"` and assembled by `assets/site.js`, which keeps it away from simple spam bots.
+
+## Win Probability: crowd votes
+
+After each call, Win Probability shows how other players called it. The votes live in a free Supabase project. The page uses its publishable key, which is safe in public code because it can only add a vote and read one scenario's totals. One-time setup:
+
+1. Supabase dashboard > the project > **SQL Editor** > **New query**.
+2. Paste all of `tools/win_probability_supabase.sql` and click **Run**.
+
+That's it. Until it's set up, the game shows what NFL coaches did in similar spots instead, so nothing breaks. Crowd numbers appear on a scenario once it has 20 votes.
+
+The scenarios themselves (`win-probability/data.js`) are built from a separate data package of nflverse play-by-play and Ben Baldwin's nfl4th model. To add newer games, rebuild that package and run `tools/win_probability_build_bank.py` against it, which rewrites `data.js`.
 
 ## Analytics
 

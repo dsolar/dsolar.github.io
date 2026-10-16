@@ -123,5 +123,17 @@ window.PROJECTS = [
     facts: [["$1.7M", "under the tax on day one"], ["29", "front offices, each with its own tax stance"], ["60", "real prospects in the 2027 draft"]],
     stack: ["JavaScript", "Python", "GitHub Actions"],
     cover: { image: "assets/covers/celtics.jpg", bg: "#007A33", band: "#BA9653" }
+  },
+  {
+    title: "Win Probability",
+    type: "Games",
+    released: "2026-10",
+    url: "win-probability/",
+    action: "Make the call",
+    question: "Go for it, punt, or kick? Would the math agree with you?",
+    summary: "Coach through real NFL decisions, from Belichick's 4th-and-2 to last Sunday, and get graded on win probability, not on whether the play worked.",
+    facts: [["1,500+", "real situations to call"], ["26", "famous calls, 2009 to Super Bowl LX"], ["25", "seconds on the play clock"]],
+    stack: ["JavaScript", "Python", "R", "Supabase"],
+    cover: { image: "assets/covers/win-probability.jpg", bg: "#0E2A1F", band: "#F7D23E" }
   }
 ];
