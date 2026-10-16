@@ -259,8 +259,9 @@
   var syncCategory = function () {};
   function renderProjects() {
   var projects = (window.PROJECTS || []).filter(function (p) { return showHidden || !p.hidden; });
+  var categoryOrder = {"Simulations":0,"Games":1,"Fantasy Leagues":2,"Social Tools":3};
   projects.sort(function (a, b) {
-    return (!!b.featured - !!a.featured) || String(b.released || "").localeCompare(String(a.released || ""));
+    return ((categoryOrder[a.type] ?? 4) - (categoryOrder[b.type] ?? 4)) || (!!b.featured - !!a.featured) || String(b.released || "").localeCompare(String(a.released || ""));
   });
 
   var catalog = document.getElementById("catalog");
