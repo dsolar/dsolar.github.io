@@ -9,6 +9,7 @@ const dir = path.join(__dirname, "..", "win-probability");
 const ctx = { window: {}, globalThis: {} };
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(dir, "data.js"), "utf8"), ctx);
+vm.runInContext(fs.readFileSync(path.join(dir, "practice.js"), "utf8"), ctx);
 const D = ctx.window.WP_DATA;
 const E = require(path.join(dir, "engine.js"));
 
@@ -32,7 +33,7 @@ for (const s of all) {
 console.log(`scenarios: ${D.scenarios.length} + ${D.famous.length} famous, teams: ${Object.keys(D.teams).length}, coaches: ${D.coaches.length}`);
 
 // ---- game building
-const lengths = { quick: 10, fourth: 10, pat: 10, daily: 5 };
+const lengths = { quick: 10, fourth: 10, pat: 10, daily: 5, clock: 6, overtime: 4 };
 for (const mode of Object.keys(lengths)) {
   for (let seed = 1; seed <= 300; seed++) {
     const g = E.buildGame(D, mode, { seed, dayIndex: seed });
@@ -95,5 +96,24 @@ for (const [name, fn] of Object.entries(strategies)) {
 const best = E.summarize(E.buildGame(D, "quick", { seed: 11 }).list.map((s) => ({ s, g: E.grade(s, s.best) })), D);
 check(best.grade === "A+" && best.style.id === "analytically_minded", "perfect game should be A+ Analytically Minded");
 
+// Regression: one moderate mistake in ten should still be an A; bonus cannot change grade.
+const regression = E.buildGame(D, "quick", {seed:11}).list.map(s => ({s,g:E.grade(s,s.best)}));
+regression[0].g = {...regression[0].g,points:35,lost:3.5,cost:3.5};
+const reg = E.summarize(regression,D);
+check(reg.grade === "A" && reg.basePoints === 935, "935/1000 must be an A");
+regression[0].bonus={correct:true};
+check(E.summarize(regression,D).grade === reg.grade, "bonus changed the grade");
+for(const s of D.practice) {
+  for(const key of Object.keys(s.opts)) check(E.grade(s,key).points === (s.accepted.includes(key)?100:35), "practice credit " + s.id);
+}
+const fg66=all.filter(s=>s.kind==="4th" && s.model==="nfl4th" && s.inputs.fgDist===66 && Number.isFinite(s.inputs.wpM));
+check(fg66.every(s=>"fg" in s.opts), "missing 66-yard FG option");
+const scenarios=E.pools(D).fourth;
+check(!scenarios.some(s=>s.best==="punt"&&s.ytg>=8&&s.yl>=50&&s.qtr<4), "obvious long punt still in pool");
+const bold=all.find(s=>s.kind==="4th"&&s.best==="go"&&s.yl>=75&&s.ytg===1);
+const mild=all.filter(s=>s.kind==="4th"&&s.best==="go"&&s.opts.fg!=null&&s.opts.go-s.opts.fg>=1.5&&s.opts.go-s.opts.fg<2.5).slice(0,2);
+check(Boolean(bold)&&mild.length===2,"personality regression fixtures missing");
+const balanced=[{s:bold,g:E.grade(bold,"go")},...mild.map(s=>({s,g:E.grade(s,"fg")}))];
+check(E.summarize(balanced,D).style.id!=="punters_best_friend","field goals wrongly trigger punter label");
 console.log(fails ? `${fails} checks failed` : "all checks passed");
 process.exit(fails ? 1 : 0);

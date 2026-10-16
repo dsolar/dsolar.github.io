@@ -19,13 +19,15 @@
     { id: "daily", name: "Daily Challenge", desc: "The same five decisions for everyone today", len: "5" },
     { id: "fourth", name: "Fourth Down", desc: "Go for it, punt, or kick", len: "10" },
     { id: "pat", name: "Two-Point Calls", desc: "Kick the extra point or go for two", len: "10" },
+    { id: "clock", name: "Clock Management", desc: "Timeouts, kneels, and the seconds you cannot waste", len: "6" },
+    { id: "overtime", name: "Overtime Toss", desc: "Receive or kick? The rules and tradeoffs change by era", len: "4" },
     { id: "survival", name: "Survival", desc: "Keep coaching until your third costly call", len: "3 strikes" },
   ];
 
   // ---------- storage (never required) ----------
   const store = {
-    get(k, d) { try { const v = localStorage.getItem("wp." + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
-    set(k, v) { try { localStorage.setItem("wp." + k, JSON.stringify(v)); } catch (e) { /* private mode */ } },
+    get(k, d) { try { const v = localStorage.getItem("mtc.v2." + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem("mtc.v2." + k, JSON.stringify(v)); } catch (e) { /* private mode */ } },
   };
 
   function today() {
@@ -99,19 +101,20 @@
     const ezText = (t, cx) => `<text x="${cx}" y="76" text-anchor="middle" transform="rotate(${cx < 600 ? -90 : 90} ${cx} 70)" font-family="Saira Extra Condensed, Arial Narrow, sans-serif" font-weight="800" font-size="34" fill="${lightColor(t.c1) ? "#1b1b1b" : "#fff"}" opacity=".9">${esc(t.abbr)}</text>`;
     const markers = opts.hero ? "" : `<line x1="${bx}" y1="8" x2="${bx}" y2="132" stroke="var(--scrimmage)" stroke-width="4"/>
       <line x1="${tx}" y1="8" x2="${tx}" y2="132" stroke="var(--yellow)" stroke-width="5"/>`;
-    return `<svg class="field" viewBox="0 0 1200 140" role="img" aria-label="Ball on ${esc(spotText(s.yl, "own "))}">
-      <rect x="0" y="0" width="1200" height="140" fill="#1E5A3C"/>
+    return `<svg class="field" viewBox="0 0 1200 360" role="img" aria-label="Ball on ${esc(spotText(s.yl, "own "))}">
+      <g transform="scale(1 2.25)"><rect x="0" y="0" width="1200" height="140" fill="#1E5A3C"/>
       <rect x="100" y="0" width="1000" height="140" fill="url(#mow)"/>
       <defs><pattern id="mow" width="100" height="140" patternUnits="userSpaceOnUse"><rect width="50" height="140" fill="#22643F"/><rect x="50" width="50" height="140" fill="#1F5C3A"/></pattern></defs>
       <rect x="0" y="0" width="100" height="140" fill="${off.c1}"/>${ezText(off, 50)}
       <rect x="1100" y="0" width="100" height="140" fill="${def.c1}"/>${ezText(def, 1150)}
       ${lines}
       <rect x="0" y="0" width="1200" height="140" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="4"/>
-      ${markers}
+      ${markers}<path d="M ${bx+20} 46 h 60 m -15 -8 l 15 8 -15 8" fill="none" stroke="#F7D23E" stroke-width="3"/>
       <g class="ball-g" id="ball-g" style="transform: translateX(0px)">
         <ellipse cx="${bx}" cy="64" rx="15" ry="9" fill="var(--ball)" stroke="#2b1408" stroke-width="1.5"/>
         <line x1="${bx - 6}" y1="64" x2="${bx + 6}" y2="64" stroke="#fff" stroke-width="1.6"/>
       </g>
+      </g><text x="110" y="347" fill="#F1F4EC" font-family="Arial,sans-serif" font-size="22">${esc(off.abbr)} attacking →</text><text x="1090" y="347" text-anchor="end" fill="#F7D23E" font-family="Arial,sans-serif" font-size="20">Blue: ball · Yellow: line to gain</text>
     </svg>`;
   }
   function moveBall(dxYards) {
@@ -184,6 +187,13 @@
     const s = state.game.list[state.idx];
     state.s = s; state.locked = false; state.bonus = null;
     renderProgress();
+    if (s.practice) {
+      $("scenario").innerHTML = `<div class="famous-tag"><b>Constructed practice</b><span>${esc(s.title)}</span></div><p class="situation">${esc(s.prompt)}</p><p class="muted">Rules and strategy exercise. No numerical win probability is assigned.</p>`;
+      $("choices").innerHTML = E.optionOrder(s).map((k, i) => `<button class="choice" data-k="${k}"><span class="key">${i+1}</span>${esc(E.optionLabel(s,k))}</button>`).join("");
+      $("choices").querySelectorAll(".choice").forEach(b => b.addEventListener("click", () => choose(b.dataset.k,false)));
+      $("bonus").innerHTML = ""; $("reveal").innerHTML = ""; $("ask").hidden = false; $("clock").hidden = !clockOn();
+      window.scrollTo(0,0); startClock(); return;
+    }
     const you = team(s.you), opp = team(s.opp);
     const youHasBall = s.ball !== "opp";
     const tag = s.famous ? `<div class="famous-tag"><b>Famous call</b><span>${esc(s.famous.title)}</span></div>` : "";
@@ -217,7 +227,7 @@
     facts.push(["Weather", weatherText(s)]);
     const lt = lineText(s); if (lt) facts.push(["Vegas line", lt]);
     if (s.kind !== "let" && s.oppQb) facts.push(["Their QB", s.oppQb]);
-    if (s.rules) facts.push(["Rules", "Both teams get the ball in playoff overtime"]);
+    if (s.rules) facts.push(["Rules", s.rules]);
 
     $("scenario").innerHTML = `${tag}${bug}${fieldSVG(s)}
       <p class="situation">${sit}</p>
@@ -265,7 +275,7 @@
     state.choice = key; state.timedOut = timedOut;
     $("choices").querySelectorAll(".choice").forEach((b) => { b.disabled = true; b.classList.toggle("picked", b.dataset.k === key); });
     $("clock").hidden = true;
-    crowdVote(s, key);
+    if (!s.practice) crowdVote(s, key);
     const bk = bonusFor(s, key);
     if (bk && !timedOut) return askBonus(bk);
     reveal(null);
@@ -291,11 +301,11 @@
   function inputsText(s, k) {
     const i = s.inputs || {};
     if (s.model !== "nfl4th") return "";
-    if (k === "go") return `${f1(i.conv)}% to ${s.yl <= s.ytg ? "score" : "convert"}, ${f1(i.wpS)}% if it works, ${f1(i.wpF)}% if it doesn't`;
-    if (k === "fg") return `${f1(i.fgp)}% to make from ${i.fgDist} yards, ${f1(i.wpM)}% if good, ${f1(i.wpX)}% if not`;
+    if (k === "go") return `${f1(i.conv)}% to ${s.yl <= s.ytg ? "score" : "convert"}, ${f1(i.wpS)}% chance to win if successful, ${f1(i.wpF)}% chance to win if unsuccessful`;
+    if (k === "fg") return `${f1(i.fgp)}% to make from ${i.fgDist} yards, ${f1(i.wpM)}% chance to win if good, ${f1(i.wpX)}% chance to win if missed`;
     if (k === "punt") return "Pins them deep, gives up the ball";
-    if (k === "kick") return `${f1(i.xp)}% to make, ${f1(i.wp1)}% if good, ${f1(i.wp0)}% if not`;
-    if (k === "two") return `${f1(i.two)}% to convert, ${f1(i.wp2)}% if good, ${f1(i.wp0)}% if not`;
+    if (k === "kick") return `${f1(i.xp)}% to make, ${f1(i.wp1)}% chance to win if good, ${f1(i.wp0)}% chance to win if missed`;
+    if (k === "two") return `${f1(i.two)}% to convert, ${f1(i.wp2)}% chance to win if good, ${f1(i.wp0)}% chance to win if missed`;
     return "";
   }
   const DID = { go: "went for it", punt: "punted", fg: "kicked the field goal", kick: "kicked the extra point", two: "went for two" };
@@ -304,7 +314,7 @@
   function reveal(bonus) {
     const s = state.s, key = state.choice;
     const g = E.grade(s, key);
-    const outcome = E.simulate(s, key, state.simRand);
+    const outcome = s.practice ? { success: null, text: "" } : E.simulate(s, key, state.simRand);
     const badges = E.badgesFor(s, g, { timedOut: state.timedOut, outcome });
     const result = { s, g, bonus, badges, outcome, timedOut: state.timedOut };
     state.results.push(result);
@@ -312,9 +322,13 @@
     if (state.mode === "survival" && E.SURVIVAL_STRIKE(g)) state.strikes++;
     renderProgress();
 
+    if (s.practice) {
+      $("reveal").innerHTML = `<div class="verdict"><span class="tier t-${g.tier}">${esc(g.tierLabel)}</span><span>${g.points}/100 decision points</span></div><p>${esc(s.explanation)}</p><p class="muted">${s.accepted.length > 1 ? "Both choices receive full credit. This is a tradeoff discussion." : "Scored on the stated rules and assumptions."} <a href="${esc(s.source)}" target="_blank" rel="noopener">NFL rulebook</a></p><button class="next" id="next">${isLast() ? "See your grade" : "Next decision"}</button>`;
+      $("next").addEventListener("click", next); $("next").focus({preventScroll:true}); $("reveal").scrollIntoView({block:"start"}); return;
+    }
     const ranked = E.rankedOptions(s);
     const sub = [];
-    sub.push(`${g.points} points`);
+    sub.push(`${g.points}/100 decision points`);
     if (g.lost) sub.push(`you gave up ${f1(g.cost)} points of win probability`);
     else if (g.tier === "close") sub.push("within a point of the best call");
     const t = state.timedOut ? `<p class="muted">The play clock ran out, so your coordinator made the safe call.</p>` : "";
@@ -325,21 +339,21 @@
     }
     const rows = ranked.map(([k, v]) => {
       const tags = [k === key ? "your call" : "", k === ranked[0][0] ? "best" : ""].filter(Boolean).join(", ");
-      return `<li class="wp-row${k === ranked[0][0] ? " best" : ""}"><div class="top"><span class="name">${esc(E.shortLabel(k))}${tags ? `<em>${tags}</em>` : ""}</span><span class="val">${f1(v)}%</span></div>
-        <div class="track"><i style="width:${Math.max(1, Math.min(100, v))}%"></i></div>${inputsText(s, k) ? `<div class="inputs">${esc(inputsText(s, k))}</div>` : ""}</li>`;
+      return `<li class="wp-row${k === ranked[0][0] ? " best" : ""}"><div class="top"><span class="name">${esc(E.shortLabel(k))}${tags ? `<em>${tags}</em>` : ""}</span><span class="val">${f1(v)}% <small>chance to win</small></span></div>
+        <div class="track"><i style="width:${Math.max(1, Math.min(100, v))}%"></i></div>${inputsText(s, k) ? `<div class="inputs">${esc(inputsText(s, k))}</div>` : ""}<div class="comparisons">${ranked.filter(([other]) => other !== k).map(([other, wp]) => `${v >= wp ? "+" : "−"}${f1(Math.abs(v-wp))} percentage points vs. ${esc(E.shortLabel(other).toLowerCase())}`).join(" · ")}</div></li>`;
     }).join("");
     const ex = E.explain(s);
-    const explainLines = s.model === "nfl4th" ? ex.slice(-1) : ex;
+    const explainLines = ex;
     const assume = E.assumptions(s).map((a) => `<p>${esc(a)}</p>`).join("");
 
     const tagLine = E.processResultTag(g, outcome);
-    const simHtml = `<div class="block"><h3>How it played out this time</h3><p class="result-line">${esc(outcome.text)}</p>
+    const simHtml = `<div class="block"><h3>Simulated play outcome</h3><p class="result-line">${esc(outcome.text)}</p>
       ${tagLine ? `<span class="tag-line">${esc(tagLine)}</span>` : ""}
       ${badges.length ? `<div class="badges">${badges.map((b) => `<span class="badge" title="${esc(b.note)}">${esc(b.label)}</span>`).join("")}</div>` : ""}
       <p class="muted">The grade was locked in before the play ran. A good call can fail and a bad one can work.</p></div>`;
 
     $("reveal").innerHTML = `<div class="verdict"><span class="tier t-${g.tier}">${esc(g.tierLabel)}</span><span class="sub">${esc(sub.join(", "))}</span></div>${t}${bonusHtml}
-      <ul class="wp-list" aria-label="Win probability by option">${rows}</ul>
+      <h3>Chance of winning the game after each decision</h3><p class="muted">These are separate alternatives, not shares of a vote. They do not add to 100%. Each includes the chance of the play succeeding or failing.</p><ul class="wp-list" aria-label="Win probability by option">${rows}</ul>
       <div class="explain">${explainLines.map((l) => `<p>${esc(l)}</p>`).join("")}</div>
       <div class="assume">${assume}</div>
       <div class="block" id="crowd-block"><h3>How everyone else called it</h3>${coachesHtml(s)}<div id="crowd-live"></div></div>
@@ -444,6 +458,7 @@
 
   function recapLabel(s) {
     const you = team(s.you), opp = team(s.opp);
+    if (s.practice) return s.title;
     if (s.famous) return s.famous.title;
     if (s.kind === "pat") return `${s.season} ${you.nick} vs. ${opp.nick}, try at ${s.score[0]}-${s.score[1]}`;
     return `${s.season} ${you.nick}, 4th and ${s.yl <= s.ytg ? "goal" : s.ytg} at ${spotText(s.yl, "own ")}`;
@@ -455,24 +470,51 @@
     const allBadges = [];
     results.forEach((r) => (r.badges || []).forEach((b) => { if (!allBadges.some((x) => x.id === b.id)) allBadges.push(b); }));
     const bonusHits = results.filter((r) => r.bonus && r.bonus.correct).length;
-    const coach = summary.coach ? `<div class="block"><h3>Your coaching twin</h3><p>${esc(summary.coach.line)}</p></div>` : "";
+    const coach = summary.coach ? `<div class="block"><h3>Your coaching tendencies</h3><p>${esc(summary.coach.line)}</p></div>` : "";
     const sw = summary.strength ? `<div class="block"><h3>Scouting report</h3><p>Best at ${esc(summary.strength[0].toLowerCase())} (${Math.round(summary.strength[1])} points a call).${summary.weakness ? ` Worst at ${esc(summary.weakness[0].toLowerCase())} (${Math.round(summary.weakness[1])}).` : ""}${summary.misses ? ` Of your ${summary.misses} misses, ${summary.cons} were too conservative and ${summary.agg} too aggressive.` : ""}</p></div>` : "";
-    const recap = results.map((r) => `<li><span class="dot t-${r.g.tier}"></span><span class="what">${esc(recapLabel(r.s))}. You: <b>${esc(E.shortLabel(r.g.choice))}</b>${r.g.choice !== r.g.best ? `, best: <b>${esc(E.shortLabel(r.g.best))}</b>` : ""}</span><span class="lost">${r.g.lost ? "-" + f1(r.g.lost) : "0"}</span></li>`).join("");
+    const recap = results.map((r) => `<li><span class="dot t-${r.g.tier}"></span><span class="what">${esc(recapLabel(r.s))}. You: <b>${esc(r.s.practice ? E.optionLabel(r.s,r.g.choice) : E.shortLabel(r.g.choice))}</b>${r.g.choice !== r.g.best && r.g.tier !== "close" && r.g.tier !== "optimal" ? `, best: <b>${esc(r.s.practice ? E.optionLabel(r.s,r.g.best) : E.shortLabel(r.g.best))}</b>` : ""}</span><span class="lost">${r.s.practice ? (r.g.tier === "optimal" ? "Good call" : "Review") : r.s.disputed ? "Debatable" : r.g.lost ? "−" + f1(r.g.lost) + " pp" : r.g.cost > 0 ? "Close call" : "Best call"}</span></li>`).join("");
     const meta = { mode: state.mode, modeLabel: modeName, dateLabel: prettyDate(state.date || today()) };
     const share = E.shareText(summary, results, meta);
     $("end").innerHTML = `<div class="topline"><span>${esc(modeName)}${state.mode === "daily" ? ", " + esc(prettyDate(state.date || today())) : ""}</span><span></span></div>
       <div class="final-grade"><span class="letter">${esc(summary.grade)}</span><div><div class="label">${esc(summary.style.label)}</div><div class="line">${esc(summary.gradeLine)}</div></div></div>
       <p class="style-line">${esc(summary.style.line)}</p>
-      <div class="stat-row"><div><b>${summary.points}</b><span>points</span></div><div><b>${f1(summary.lost)}</b><span>win probability given up</span></div><div><b>${summary.n}</b><span>decisions</span></div>${bonusHits ? `<div><b>${bonusHits}</b><span>bonus calls</span></div>` : ""}</div>
+      <div class="stat-row"><div><b>${summary.basePoints}/${summary.n * 100}</b><span>decision points · ${f1(summary.scorePct)}%</span></div><div><b>+${summary.bonusPoints}</b><span>bonus points (separate from grade)</span></div>${summary.wpCount ? `<div><b>${f1(summary.lost)}</b><span>WP points lost vs. best</span></div>` : ""}<div><b>${summary.n}</b><span>decisions</span></div>${bonusHits ? `<div><b>${bonusHits}</b><span>bonus calls</span></div>` : ""}</div>
       ${coach}${sw}
       ${allBadges.length ? `<div class="block"><h3>Badges</h3><div class="badges">${allBadges.map((b) => `<span class="badge">${esc(b.label)}</span>`).join("")}</div></div>` : ""}
-      <div class="block"><h3>Every call</h3><ul class="recap">${recap}</ul></div>
-      <div class="actions"><button class="next" id="share">Share result</button><button class="ghost" id="again">${state.mode === "daily" ? "Play a Quick Game" : "Play again"}</button></div>
+      <div class="block"><h3>Every call</h3><p class="muted">Best call = no win probability left on the table. Negative numbers show percentage points lost versus the model’s best option, not the change from before the snap.</p><ul class="recap">${recap}</ul></div>
+      <div class="actions"><button class="next" id="share">Share graphic</button><button class="ghost" id="copy-result">Copy result text</button><button class="ghost" id="again">${state.mode === "daily" ? "Play a Quick Game" : "Play again"}</button></div>
       <p><button class="quit ghost" id="home" style="margin-top:10px">All modes</button></p>`;
-    $("share").addEventListener("click", () => doShare(share));
+    $("share").addEventListener("click", () => shareGraphic(summary, results, modeName, share));
+    $("copy-result").addEventListener("click", () => doShare(share));
     $("again").addEventListener("click", () => startGame(state.mode === "daily" ? "quick" : state.mode));
     $("home").addEventListener("click", renderStart);
     window.scrollTo({ top: 0 });
+  }
+
+  async function shareGraphic(summary, results, modeName, text) {
+    const canvas = document.createElement("canvas"); canvas.width = 1200; canvas.height = 1200;
+    const c = canvas.getContext("2d");
+    c.fillStyle = "#0E2A1F"; c.fillRect(0,0,1200,1200);
+    c.strokeStyle = "#24523c"; c.lineWidth=2;
+    for(let x=60; x<1200; x+=100) { c.beginPath(); c.moveTo(x,0); c.lineTo(x,1200); c.stroke(); }
+    const line = (txt,y,size,color="#F1F4EC") => { c.fillStyle=color; c.font=`bold ${size}px Arial`; c.fillText(txt,70,y,1060); };
+    line("MAKE THE CALL",115,70,"#F7D23E"); line(modeName.toUpperCase(),175,28);
+    line(summary.grade,460,260,"#F7D23E"); line(summary.style.label,555,50);
+    line(`${summary.basePoints}/${summary.n*100} decision points`,650,46);
+    line(`+${summary.bonusPoints} bonus · ${summary.n} decisions`,710,32);
+    line(summary.wpCount ? `${summary.lost} WP points left on the table` : "Rules and strategy practice",785,32);
+    const colors={optimal:"#F7D23E",close:"#F7D23E",defensible:"#8FD6B0",costly:"#F2913D",blunder:"#EE5A55"};
+    results.slice(0,40).forEach((r,i) => { c.fillStyle=colors[r.g.tier]; c.fillRect(70+(i%10)*104,840+Math.floor(i/10)*38,88,26); });
+    line(summary.wpCount ? "Real NFL decisions. Your instincts. The math." : "The clock. The rules. Your call.",1060,30);
+    line("davidsolar.dev/win-probability",1120,30,"#F7D23E");
+    canvas.toBlob(async blob => {
+      if(!blob) return toast("Could not create graphic. Try copying result text.");
+      const file=new File([blob],"make-the-call-result.png",{type:"image/png"});
+      try {
+        if(navigator.canShare && navigator.canShare({files:[file]}) && matchMedia("(pointer: coarse)").matches) { await navigator.share({files:[file],text}); return; }
+        const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=file.name; a.click(); setTimeout(()=>URL.revokeObjectURL(url),60000); toast("Graphic downloaded.");
+      } catch(e) { if(e.name!=="AbortError") toast("Could not share. Try copying result text."); }
+    },"image/png");
   }
 
   async function doShare(text) {

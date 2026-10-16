@@ -7,13 +7,13 @@
 <meta name="description" content="Real NFL decisions, from Belichick's 4th-and-2 to last Sunday. Make the call and get graded on the math, not the result.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://davidsolar.dev/win-probability/">
-<meta property="og:title" content="Win Probability">
+<meta property="og:title" content="Make the Call">
 <meta property="og:description" content="Go for it, punt, or kick? Real NFL decisions, graded on the math, not the result.">
 <meta property="og:image" content="https://davidsolar.dev/assets/covers/win-probability.jpg">
 <meta property="og:image:width" content="1040">
 <meta property="og:image:height" content="780">
 <meta name="twitter:card" content="summary_large_image">
-<title>Win Probability | David Solar</title>
+<title>Make the Call | David Solar</title>
 <link rel="canonical" href="https://davidsolar.dev/win-probability/">
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#0E2A1F">
@@ -60,7 +60,7 @@ body {
 button { font: inherit; color: inherit; }
 a { color: var(--yellow); }
 :focus-visible { outline: 2px solid var(--yellow); outline-offset: 3px; }
-.wrap { max-width: 760px; margin: 0 auto; padding: 18px 16px 64px; }
+.wrap { max-width: 1040px; margin: 0 auto; padding: 18px 16px 64px; }
 [hidden] { display: none !important; }
 
 /* ---------- start screen ---------- */
@@ -233,6 +233,10 @@ a { color: var(--yellow); }
 .ghost:hover { border-color: var(--chalk-dim); }
 .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--chalk); color: var(--turf-deep); padding: 8px 16px; border-radius: 6px; font-weight: 600; z-index: 60; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.comparisons { color: var(--mint); font-size: 14px; margin-top: 5px; }
+.wp-row .val small {font: 13px var(--body); color: var(--chalk-dim);}
+.wp-row {padding: 14px; background:var(--panel); border:1px solid var(--line); border-radius:6px;}
+@media(min-width:800px){.wp-list {grid-template-columns:repeat(auto-fit,minmax(250px,1fr));}.choices {grid-template-columns:repeat(auto-fit,minmax(230px,1fr));}}
 </style>
 </head>
 <body>
@@ -243,7 +247,7 @@ a { color: var(--yellow); }
 
 <main class="wrap" id="app">
   <section id="start">
-    <h1 class="title">Win<br>Probability<span class="pct">%</span></h1>
+    <h1 class="title">Make<br>the <span class="pct">Call</span></h1>
     <p class="tagline">Real NFL decisions, from Belichick's 4th-and-2 to last Sunday. You make the call and the math grades it. Whether the play works doesn't count. The decision does.</p>
     <div class="hero-field" id="hero-field" aria-hidden="true"></div>
     <ul class="modes" id="modes"></ul>
@@ -251,7 +255,7 @@ a { color: var(--yellow); }
       <label class="switch"><input type="checkbox" id="clock-toggle" checked> 25-second play clock</label>
     </div>
     <p class="record" id="record"></p>
-    <p class="credits">Every situation is a real play from nflverse play-by-play data, 2009 through this season. Win probabilities come from Ben Baldwin's <a href="https://rbsdm.com/stats/fourth_calculator/">nfl4th model</a>, with famous calls checked against published analysis from Advanced NFL Stats, EdjSports, ESPN and the NFL's Next Gen Stats.</p>
+    <p class="credits">Historical modes use real plays from nflverse play-by-play data, 2009 through this season. Clock Management and Overtime Toss use clearly labeled constructed teaching situations; they do not assign numerical win probabilities. Win probabilities come from Ben Baldwin's <a href="https://rbsdm.com/stats/fourth_calculator/">nfl4th model</a>, with famous calls checked against published analysis from Advanced NFL Stats, EdjSports, ESPN and the NFL's Next Gen Stats.</p>
   </section>
 
   <section id="play" hidden>
@@ -271,6 +275,7 @@ a { color: var(--yellow); }
 </main>
 
 <script src="data.js"></script>
+<script src="practice.js"></script>
 <script src="engine.js"></script>
 <script src="app.js"></script>
 </body>

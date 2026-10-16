@@ -125,7 +125,7 @@ window.PROJECTS = [
     cover: { image: "assets/covers/celtics.jpg", bg: "#007A33", band: "#BA9653" }
   },
   {
-    title: "Win Probability",
+    title: "Make the Call",
     type: "Games",
     released: "2026-10",
     url: "win-probability/",

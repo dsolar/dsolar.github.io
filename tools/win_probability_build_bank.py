@@ -134,7 +134,7 @@ def options_4th(go, punt, fg, fgp, yl):
     o = {"go": pct(go)}
     if punt is not None and not pd.isna(punt):
         o["punt"] = pct(punt)
-    if fg is not None and not pd.isna(fg) and fgp is not None and not pd.isna(fgp) and fgp >= 0.10 and yl + 17 <= 66:
+    if fg is not None and not pd.isna(fg) and fgp is not None and not pd.isna(fgp) and yl + 17 <= 66:
         o["fg"] = pct(fg)
     return o
 
@@ -273,7 +273,7 @@ for c in famous:
             inputs = {"conv": i.get("conversion_prob"), "wpS": i.get("wp_if_convert"), "wpF": i.get("wp_if_fail"),
                       "fgp": i.get("fg_make_prob"), "wpM": i.get("wp_if_fg_made"), "wpX": i.get("wp_if_fg_missed"),
                       "fgDist": int(c["yardline_100"] + 17)}
-            if not inputs["fgp"] or inputs["fgp"] < 10 or c["yardline_100"] + 17 > 66:
+            if inputs["fgp"] is None or c["yardline_100"] + 17 > 66:
                 opts.pop("fg", None)
             model = "nfl4th"
         else:

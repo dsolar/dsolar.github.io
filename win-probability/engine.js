@@ -11,13 +11,14 @@
     { id: "blunder", max: Infinity, points: 0, label: "Blunder" },
   ];
   const BONUS_POINTS = 25;
+  // Letter grade follows decision points, with bonuses reported separately.
   const GRADES = [
-    { g: "A+", max: 1, line: "Hire this person. Fire the analytics department." },
-    { g: "A", max: 3, line: "The fourth-down bot would follow you anywhere." },
-    { g: "B", max: 6, line: "Playoff coach. Not a Super Bowl coach. Yet." },
-    { g: "C", max: 10, line: "Middle of the pack. The pack is not great." },
-    { g: "D", max: 15, line: "Your coordinator is updating his resume." },
-    { g: "F", max: Infinity, line: "Black Monday is circled on your calendar." },
+    { g: "A+", min: 97, line: "An outstanding day on the sideline." },
+    { g: "A", min: 90, line: "Excellent decisions. Keep the headset." },
+    { g: "B", min: 80, line: "A strong game with room to sharpen a few calls." },
+    { g: "C", min: 70, line: "Some good calls. A few worth reviewing." },
+    { g: "D", min: 60, line: "Time to spend another week in the film room." },
+    { g: "F", min: 0, line: "Your coordinator would like a word." },
   ];
   const AGGRESSION = { punt: 0, fg: 1, go: 2, kick: 0, two: 1, defend: 0, let: 1 };
   const SAFE_ORDER = ["punt", "fg", "kick", "defend", "go", "two", "let"]; // what the coordinator picks when the clock runs out
@@ -52,6 +53,7 @@
     return r.length > 1 ? +(r[0][1] - r[1][1]).toFixed(1) : 0;
   }
   function optionLabel(s, key) {
+    if (s.labels && s.labels[key]) return s.labels[key];
     switch (key) {
       case "go": return s.kind === "4th" && s.yl <= s.ytg ? "Go for the touchdown" : "Go for it";
       case "punt": return "Punt";
@@ -71,10 +73,10 @@
   }
   function optionOrder(s) {
     const order = ["go", "fg", "punt", "two", "kick", "let", "defend"];
-    return order.filter((k) => k in s.opts);
+    return s.practice ? Object.keys(s.opts) : order.filter((k) => k in s.opts);
   }
   function safeChoice(s) {
-    return SAFE_ORDER.find((k) => k in s.opts);
+    return SAFE_ORDER.find((k) => k in s.opts) || Object.keys(s.opts)[0];
   }
 
   // ---------- grading ----------
@@ -82,9 +84,13 @@
     const ranked = rankedOptions(s);
     const best = ranked[0][0];
     const bestWp = ranked[0][1];
+    if (s.practice) {
+      const correct = s.accepted.includes(choice);
+      return { choice, best: s.answer, cost: 0, lost: 0, tier: correct ? "optimal" : "costly", tierLabel: correct ? "Good call" : "Review the situation", points: correct ? 100 : 35, direction: "same", practice: true };
+    }
     const cost = Math.max(0, +(bestWp - s.opts[choice]).toFixed(1));
     let tier;
-    if (s.disputed) tier = { id: choice === best ? "optimal" : "close", points: 100, label: choice === best ? "Optimal" : "Close call" };
+    if (s.disputed && (s.disputed.accepted || Object.keys(s.opts)).includes(choice)) tier = { id: choice === best ? "optimal" : "close", points: 100, label: choice === best ? "Optimal" : "Close call" };
     else if (cost < CLOSE) tier = choice === best ? { id: "optimal", points: 100, label: "Optimal" } : { id: "close", points: 100, label: "Close call" };
     else tier = Object.assign({}, TIERS.find((t) => cost < t.max));
     const lost = tier.id === "optimal" || tier.id === "close" ? 0 : cost;
@@ -180,7 +186,11 @@
 
   // ---------- game building ----------
   function pools(data) {
-    const s = data.scenarios;
+    const s = data.scenarios.filter((x) => {
+      // A low WP gap can reflect low conversion odds, not an interesting decision.
+      const seconds = x.clock.split(":").reduce((a, v) => a * 60 + Number(v), 0);
+      return !(x.kind === "4th" && x.best === "punt" && x.ytg >= 8 && x.yl >= 50 && (x.qtr < 4 || seconds > 120));
+    });
     return {
       fourth: s.filter((x) => x.kind === "4th"),
       pat: s.filter((x) => x.kind === "pat"),
@@ -203,7 +213,9 @@
     const d = (lvl) => (x) => x.diff === lvl;
     const notCoin = (x) => x.diff !== "coin";
     let list = [];
-    if (mode === "quick") {
+    if (mode === "clock" || mode === "overtime") {
+      list = shuffle(data.practice.filter((x) => x.kind === mode), rand);
+    } else if (mode === "quick") {
       list = [
         pickFresh(P.fourth, rand, seen, d("easy")), pickFresh(P.fourth, rand, seen, d("easy")),
         pickFresh(P.fourth, rand, seen, d("medium")), pickFresh(P.pat, rand, seen, notCoin),
@@ -250,21 +262,29 @@
     const n = results.length;
     const lost = results.reduce((a, r) => a + r.g.lost, 0);
     const points = results.reduce((a, r) => a + r.g.points + (r.bonus && r.bonus.correct ? BONUS_POINTS : 0), 0);
-    const per10 = n ? (lost * 10) / n : 0;
-    const gradeRow = GRADES.find((x) => per10 <= x.max);
+    const basePoints = results.reduce((a, r) => a + r.g.points, 0);
+    const bonusPoints = points - basePoints;
+    const scorePct = n ? basePoints / n : 0;
+    const gradeRow = GRADES.find((x) => scorePct >= x.min);
 
-    const misses = results.filter((r) => !r.s.disputed && r.g.cost >= 1.5);
+    const misses = results.filter((r) => !r.s.practice && !r.s.disputed && r.g.lost > 0);
     const agg = misses.filter((r) => r.g.direction === "aggressive").length;
     const cons = misses.filter((r) => r.g.direction === "conservative").length;
-    const lean = misses.length ? (agg - cons) / misses.length : 0;
-    let style;
-    if (misses.length <= 1) style = { id: "analytically_minded", label: "Analytically Minded", line: "You don't coach on vibes. You coach on spreadsheets, and the spreadsheets love you back." };
-    else if (lean <= -0.5) style = { id: "punters_best_friend", label: "Punter's Best Friend", line: "Your punter has a fantasy team built around you." };
-    else if (lean >= 0.5) style = { id: "loose_cannon", label: "Loose Cannon", line: "Fourth-and-long from your own 20? You've seen worse odds. You haven't, actually." };
-    else style = { id: "vibes_coach", label: "Vibes Coach", line: "Aggressive when you should punt, timid when you should go. Bold strategy." };
+    const clearGo = results.filter(r => r.s.kind === "4th" && !r.s.disputed && r.g.best === "go" && gapOf(r.s) >= 2);
+    const timidPunts = clearGo.filter(r => r.g.choice === "punt" && r.g.cost >= 3);
+    const reckless = results.filter(r => r.s.kind === "4th" && r.g.choice === "go" && r.g.cost >= 3);
+    let style = { id: "analytically_minded", label: "Analytically Minded", line: "You usually find the edge, whether that means attacking or taking the sensible punt." };
+    if (timidPunts.length >= 2 && timidPunts.length >= clearGo.length / 2)
+      style = { id: "punters_best_friend", label: "Punter's Best Friend", line: "You repeatedly sent out the punter when going for it had a clear edge." };
+    else if (reckless.length >= 2)
+      style = { id: "loose_cannon", label: "Loose Cannon", line: "You kept attacking even when the numbers strongly favored another call." };
+    else if (cons >= 2 && cons > agg && clearGo.filter(r => r.g.choice === "go").length === 0)
+      style = { id: "cautious", label: "Safety First", line: "You leaned toward taking the points when the model preferred another shot." };
+    else if (scorePct < 80)
+      style = { id: "film_room", label: "Back to the Film Room", line: "The decisions were mixed. Review the alternatives and find your next edge." };
 
     // Strengths and weaknesses by the kind of call the math wanted
-    const cat = (r) => (r.s.famous ? "Famous calls" : r.s.kind === "pat" ? (r.g.best === "two" ? "Two-point spots" : "Extra-point spots")
+    const cat = (r) => (r.s.practice ? (r.s.kind === "clock" ? "Clock situations" : "Overtime situations") : r.s.famous ? "Famous calls" : r.s.kind === "pat" ? (r.g.best === "two" ? "Two-point spots" : "Extra-point spots")
       : { go: "Go-for-it spots", punt: "Punt spots", fg: "Field goal spots" }[r.g.best] || "Other");
     const byCat = {};
     for (const r of results) { const c = cat(r); (byCat[c] = byCat[c] || []).push(r.g.points); }
@@ -273,7 +293,7 @@
     const strength = cats.length ? cats[0] : null;
     const weakness = cats.length > 1 && cats[cats.length - 1][1] < cats[0][1] ? cats[cats.length - 1] : null;
 
-    return { n, lost: +lost.toFixed(1), points, grade: gradeRow.g, gradeLine: gradeRow.line, style, misses: misses.length, agg, cons,
+    return { n, basePoints, bonusPoints, scorePct, wpCount: results.filter(r => !r.s.practice).length, lost: +lost.toFixed(1), points, grade: gradeRow.g, gradeLine: gradeRow.line, style, misses: misses.length, agg, cons,
       strength, weakness, coach: coachMatch(results, data && data.coaches) };
   }
 
@@ -300,16 +320,16 @@
       coachGoWhenGo: c.go_pct_when_model_says_go,
       line: reckless
         ? `No NFL coach since 2014 has gone for it this often when the math said kick. The closest is ${c.coach}.`
-        : `You coach like ${c.coach} (${years}): he went for it ${Math.round(c.go_pct_when_model_says_go)}% of the time when the math said go.`,
+        : `Closest tendency match: ${c.coach} (${years}). In your ${goSpots.length} clear go-for-it opportunities, you went for it ${gwg == null ? "N/A" : Math.round(gwg) + "%"} of the time; his rate was ${Math.round(c.go_pct_when_model_says_go)}%. This is a small-sample comparison, not a coaching rating.`,
     };
   }
 
   const SQUARE = { optimal: "🟩", close: "🟩", defensible: "🟨", costly: "🟧", blunder: "🟥" };
   function shareText(summary, results, meta) {
     const grid = results.map((r) => SQUARE[r.g.tier]).join("");
-    const head = meta.mode === "daily" ? `Win Probability Daily, ${meta.dateLabel}` : `Win Probability: ${meta.modeLabel}`;
-    const lostLine = summary.lost ? `${summary.lost} points of win probability left on the table` : "Not a point of win probability left on the table";
-    return `${head}\nGrade ${summary.grade}. ${summary.style.label}\n${lostLine}\n${grid}\nhttps://davidsolar.dev/win-probability/`;
+    const head = meta.mode === "daily" ? `Make the Call Daily, ${meta.dateLabel}` : `Make the Call: ${meta.modeLabel}`;
+    const lostLine = !summary.wpCount ? "Rules and strategy practice" : summary.lost ? `${summary.lost} points of win probability left on the table` : "Not a point of win probability left on the table";
+    return `${head}\nGrade ${summary.grade}. ${summary.style.label}\n${summary.basePoints}/${summary.n * 100} decision points (+${summary.bonusPoints} bonus)\n${lostLine}\n${grid}\nhttps://davidsolar.dev/win-probability/`;
   }
 
   const api = { CLOSE, TIERS, GRADES, BONUS_POINTS, hashString, mulberry32, shuffle, rankedOptions, gapOf, optionLabel, shortLabel,
