@@ -204,6 +204,7 @@ input.who{width:9rem}
 .kh-k{list-style:none;margin:0;padding:0}
 .kh-k li{display:flex;justify-content:space-between;align-items:baseline;gap:.75rem;padding:.12rem 0}
 .kh-k .muted{color:var(--muted);font-size:.8125rem;white-space:nowrap;font-variant-numeric:tabular-nums}
+.kh-partial{margin:1rem 0 0;max-width:42rem;font-size:.875rem;color:var(--muted)}
 .yh-links{list-style:none;margin:.6rem 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));gap:.35rem 1.5rem}
 .yh-links a{color:var(--ink)}
 @media (max-width:640px){.khlist{grid-template-columns:1fr}}
@@ -389,7 +390,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     <div role="tabpanel" id="kp-hist" aria-labelledby="kt-hist" hidden>
       <div class="seg tabs years" role="tablist" aria-label="Year" id="kh-years"></div>
       <div id="kh-body"></div>
-      <p class="note">From the keeper sheet (2022 on) and Yahoo's keeper pages (before that). Rounds are what each keeper cost that spring; an asterisk marks a round the commissioner corrected. Keeper years start with 2022, and that year's are partly reconstructed. Before 2022, Yahoo lists keepers by the team that had them at season's end, so each one is credited to the team that drafted him that spring; a keeper dropped during the season isn't listed.</p>
+      <p class="note">From the keeper sheet (2022 on), Yahoo's keeper pages (2017 to 2021) and the drafts (2014 to 2016, partial). Rounds are what each keeper cost that spring; an asterisk marks a round the commissioner corrected. Keeper years start in 2022. Before that, each keeper is credited to the team that drafted him that spring.</p>
     </div>
     <div role="tabpanel" id="kp-draft" aria-labelledby="kt-draft" hidden>
       <p class="panel-lede">Search a player across all 14 drafts, or browse one year by team or by round.</p>
@@ -1081,8 +1082,13 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
         '<ol class="khlist">' + order.map(function (t) { return row(t, MAN[t] || "", SHEET.keepers[t], "Not declared yet"); }).join("") + "</ol>";
       return;
     }
-    var s = SEASONS[HY], rows = (DATA.keeperHistory[HY] || []).slice().sort(function (a, b) { return s.teams[a[0]].localeCompare(s.teams[b[0]]); });
-    box.innerHTML = '<ol class="khlist">' + rows.map(function (r) { return row(s.teams[r[0]], man(s, r[0]), r[1]); }).join("") + "</ol>";
+    var s = SEASONS[HY], rows = (DATA.keeperHistory[HY] || []).slice();
+    // rebuilt years: every team gets a card, even where no keeper could be placed
+    var partial = (DATA.keeperPartial || []).indexOf(HY) > -1;
+    if (partial) s.teams.forEach(function (t, i) { if (!rows.some(function (r) { return r[0] === i; })) rows.push([i, []]); });
+    rows.sort(function (a, b) { return s.teams[a[0]].localeCompare(s.teams[b[0]]); });
+    box.innerHTML = (partial ? '<p class="kh-partial">Partial list. No keeper sheet or Yahoo keeper page survives for ' + esc(HY) + ", so these are rebuilt from the drafts: a pick counts when the round matches the keeper rules from one year to the next. Most are right, but expect a few misses, and free-agent and traded keepers usually can\'t be traced. Teams kept " + (+HY < 2016 ? "four" : "five") + " players that year.</p>" : "") +
+      '<ol class="khlist">' + rows.map(function (r) { return row(s.teams[r[0]], man(s, r[0]), r[1], partial ? "None found" : ""); }).join("") + "</ol>";
   }
 
   /* Trades and the draft-day vote */
