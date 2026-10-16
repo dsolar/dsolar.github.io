@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>David Solar | Sports. Data. Nonsense.</title>
-<meta name="robots" content="noindex">
-<meta name="description" content="Sports. Data. Nonsense. Games and simulations by David Solar, live and playable in your browser.">
+<meta name="robots" content="index,follow">
+<meta name="description" content="Marketing leadership, digital experiences, sports analytics, simulations and writing by David Solar.">
 <link rel="canonical" href="https://davidsolar.dev/">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -14,13 +14,13 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://davidsolar.dev/">
 <meta property="og:title" content="David Solar | Sports. Data. Nonsense.">
-<meta property="og:description" content="Sports. Data. Nonsense. Games and simulations by David Solar. Everything here is live and playable.">
+<meta property="og:description" content="Marketing leadership, sports analytics and original digital projects by David Solar.">
 <meta property="og:image" content="https://davidsolar.dev/assets/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Besley:ital,wght@0,500;0,600;0,700;0,800;1,500&family=Libre+Franklin:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="assets/site.css?v=20261016-portfolio">
+<link rel="stylesheet" href="assets/site.css?v=20261016-executive">
 <script src="assets/site.js" defer></script>
 <script src="assets/analytics.js" defer></script>
 </head>
@@ -47,8 +47,8 @@
     <div class="wrap">
       <div class="hero-text">
         <p class="hero-kicker">Sports. Data. Nonsense.</p>
-        <h1 id="hero-title">I build games and simulations, mostly about sports and data.</h1>
-        <p class="hero-sub">Each one starts as a rabbit hole and ends up here, live and playable in your browser.</p>
+        <h1 id="hero-title">Strategy, technology, and a healthy obsession with sports.</h1>
+        <p class="hero-sub">I lead marketing, build digital experiences, and use data to turn complicated questions into useful products. Here, I explore those ideas through sports analytics, simulations, and the occasional ridiculous experiment.</p>
       </div>
       <svg class="hero-brand-art" viewBox="0 0 280 280" aria-hidden="true" focusable="false">
     <g transform="translate(22 18)" stroke-linecap="round" stroke-linejoin="round">
@@ -76,11 +76,12 @@
   <section class="section" id="projects" aria-labelledby="projects-title">
     <div class="wrap">
       <div class="section-head">
-        <h2 id="projects-title">Projects</h2>
+        <h2 id="projects-title">Selected projects</h2>
         <span class="count" id="count"></span>
         <div class="filters" id="filters" role="group" aria-label="Show projects by type" hidden></div>
       </div>
       <!-- Projects are listed in assets/projects.js. Edit that file, not this one. -->
+      <p class="portfolio-intro">Sports analytics, simulations, games, and useful tools. Explore by category.</p>
       <div class="catalog" id="catalog">
         <noscript>
           <ul>
@@ -132,7 +133,7 @@
           </svg>
         </figure>
         <p class="writing-kicker">ESPN Chalk · 2014–16</p>
-        <h3 id="espn-title">Weekly NFL betting analysis</h3>
+        <h3 id="espn-title">ESPN Chalk: weekly NFL analysis</h3>
         <p>For three NFL seasons, I wrote weekly columns on contrarian betting value, using market trends and Sports Insights data to look for edges. Browse recovered regular-season and playoff columns by year.</p>
       </div>
       <div class="featured-writing" aria-label="Featured columns">
@@ -199,8 +200,8 @@
     <div class="wrap about-grid">
       <h2 id="about-title">About</h2>
       <div class="about-copy">
-        <p class="lead">I'm David Solar. By day I work in marketing, where most of what I build is AI and automation that lives inside company systems.</p>
-        <p>This site is for everything else: games, simulations and small tools, built in the evenings to get better at the craft and to answer questions I can't stop thinking about. Each project lists the question that started it.</p>
+        <p class="lead">I'm David Solar, a Boston-area marketing leader focused on strategy, digital experiences, and the intersection of technology and storytelling.</p>
+        <p>My work spans marketing strategy, analytics, CRM, automation, and digital product development. I care about making complex systems useful, communicating clearly, and building things that solve real problems.</p><p>Outside of work, I apply the same curiosity to sports. These projects are hands-on experiments in modeling, design, and product thinking. I also wrote weekly NFL betting analysis for ESPN Chalk.</p>
         <p>Say hello at <a data-user="hello" data-domain="davidsolar.dev" data-show>hello [at] davidsolar.dev</a>.</p>
       </div>
     </div>
@@ -225,7 +226,7 @@
   </div>
 </footer>
 
-<script src="assets/projects.js?v=20261016-actions"></script>
+<script src="assets/projects.js?v=20261016-curated"></script>
 <script>
 /* Draws the project list from assets/projects.js. You shouldn't need to edit this. */
 (function () {
@@ -251,6 +252,8 @@
   });
 
   var catalog = document.getElementById("catalog");
+  var categorySlugs = {"Fantasy Leagues":"fantasy","Simulations":"simulations","Games":"games","Social Tools":"social"};
+  var slugCategories = {fantasy:"Fantasy Leagues",simulations:"Simulations",games:"Games",social:"Social Tools"};
   catalog.innerHTML = projects.map(function (p) {
     var building = p.status === "building";
     var cover = p.cover || {};
@@ -263,7 +266,7 @@
     }).join("");
     var title = building ? esc(p.title) : '<a href="' + esc(p.url) + '">' + esc(p.title) + "</a>";
     return '<article class="entry" id="' + esc(slug(p.url)) + '" data-type="' + esc(p.type) + '" style="' + esc(style) + '">'
-      + '<div class="entry-meta"><span class="type">' + esc(p.type) + "</span>"
+      + '<div class="entry-meta"><span class="type">' + esc(p.type) + "</span>" + (p.featured ? '<span class="featured-tag">Featured</span>' : '')
       + (building ? '<span class="state">In progress</span>' : "<span>" + when(p.released) + "</span>") + "</div>"
       + (building ? '<div class="entry-cover" aria-hidden="true">' + art + '<span class="band"></span></div>'
                   : '<a class="entry-cover" href="' + esc(p.url) + '" tabindex="-1" aria-hidden="true">' + art + '<span class="band"></span></a>')
@@ -290,15 +293,34 @@
       return '<button type="button" data-type="' + esc(t) + '" aria-pressed="' + (i === 0) + '">' + esc(t) + "</button>";
     }).join("");
     filters.hidden = false;
-    filters.addEventListener("click", function (e) {
-      var btn = e.target.closest("button");
-      if (!btn) return;
-      var t = btn.getAttribute("data-type");
-      filters.querySelectorAll("button").forEach(function (b) { b.setAttribute("aria-pressed", String(b === btn)); });
-      catalog.querySelectorAll(".entry").forEach(function (el) {
-        el.hidden = t !== "All" && el.getAttribute("data-type") !== t;
+    function applyCategory(type) {
+      var selected = types.indexOf(type) >= 0 ? type : "All";
+      filters.querySelectorAll("button").forEach(function (button) {
+        button.setAttribute("aria-pressed", String(button.getAttribute("data-type") === selected));
       });
+      catalog.querySelectorAll(".entry").forEach(function (entry) {
+        entry.hidden = selected !== "All" && entry.getAttribute("data-type") !== selected;
+      });
+      document.getElementById("count").textContent = selected === "All"
+        ? live + " live" + (inProgress ? ", " + inProgress + " in progress" : "")
+        : projects.filter(function (p) { return p.type === selected; }).length + " projects";
+    }
+    function syncFromHash() {
+      var hash = window.location.hash.slice(1).toLowerCase();
+      if (hash === "projects" || hash === "" || slugCategories[hash]) {
+        applyCategory(slugCategories[hash] || "All");
+      }
+    }
+    filters.addEventListener("click", function (event) {
+      var button = event.target.closest("button");
+      if (!button) return;
+      var type = button.getAttribute("data-type");
+      var hash = type === "All" ? "#projects" : "#" + categorySlugs[type];
+      if (window.location.hash === hash) applyCategory(type);
+      else window.location.hash = hash;
     });
+    window.addEventListener("hashchange", syncFromHash);
+    syncFromHash();
   }
 
   document.getElementById("year").textContent = new Date().getFullYear();
