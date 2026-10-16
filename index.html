@@ -225,7 +225,7 @@
   </div>
 </footer>
 
-<script src="assets/projects.js?v=20261014-home-refresh"></script>
+<script src="assets/projects.js?v=20261016-actions"></script>
 <script>
 /* Draws the project list from assets/projects.js. You shouldn't need to edit this. */
 (function () {
@@ -271,7 +271,7 @@
       + (p.question ? '<p class="question">' + esc(p.question) + "</p>" : "")
       + '<p class="summary">' + esc(p.summary) + "</p>"
       + (facts ? '<dl class="facts">' + facts + "</dl>" : "")
-      + (building ? "" : '<div class="actions"><a class="btn" href="' + esc(p.url) + '"><span class="dot" aria-hidden="true"></span>' + esc(p.action || ("Play " + p.title)) + "</a></div>")
+      + (building ? "" : '<div class="actions"><a class="btn" href="' + esc(p.url) + '"><span class="dot" aria-hidden="true"></span>' + esc(p.action || ({"Fantasy Leagues":"View League","Simulations":"Run Simulation","Games":"Play Game","Social Tools":"Open Tool"}[p.type] || "Explore Project")) + "</a></div>")
       + (p.stack && p.stack.length ? '<p class="stack">Built with ' + esc(list(p.stack)) + "</p>" : "")
       + "</div></article>";
   }).join("");
