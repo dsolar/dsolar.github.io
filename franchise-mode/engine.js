@@ -74,7 +74,7 @@ function signingRoute(s,c,p,salary,years){
  const l=limits(s.year),t=s.teams[c],own=p.rights===c,after=payroll(s,c)+reserved(s,c)+salary;
  if(own&&p.tenure>=3)return {ok:true,name:'Bird rights',raise:.08};
  if(own&&salary<=Math.max((p.lastSalary||p.salary)*1.2,minimum(s,p)*1.2))return {ok:true,name:'Non-Bird rights',raise:.05};
- if(!(t.mleUsed||s.offers.some(o=>o.bidder===c&&o.route?.mle))&&capUsed(s,c,p.id)+salary-(roster(s,c).length<12?l.min:0)<=l.cap+.001)return {ok:true,name:'Cap room',raise:.05};
+ if(!(t.mleUsed||s.offers.some(o=>o.bidder===c&&o.route?.mle))&&capUsed(s,c,p.id)+salary-(roster(s,c).length+s.offers.filter(o=>o.bidder===c).length<12?l.min:0)<=l.cap+.001)return {ok:true,name:'Cap room',raise:.05};
  if(salary<=minimum(s,p)+.01&&years<=2)return {ok:true,name:'Minimum exception',raise:0};
  const pending=s.offers.filter(o=>o.bidder===c&&o.route?.mle),kind=t.mleKind||pending[0]?.route?.kind;const used=(t.mleUsed||0)+sum(pending.map(o=>o.salary)),nt=15.044*l.cap/164.961,tm=6.064*l.cap/164.961;
  if(t.usedRoom&&used+salary<=9.366*l.cap/164.961+.001&&years<=3)return {ok:true,name:'Room mid-level',mle:salary,kind:'room'};
