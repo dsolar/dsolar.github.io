@@ -389,7 +389,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     <div role="tabpanel" id="kp-hist" aria-labelledby="kt-hist" hidden>
       <div class="seg tabs years" role="tablist" aria-label="Year" id="kh-years"></div>
       <div id="kh-body"></div>
-      <p class="note">From the keeper sheet. Rounds are what each keeper cost that spring; an asterisk marks a round the commissioner corrected. 2022's sheet didn't track keeper years.</p>
+      <p class="note">From the keeper sheet (2022 on) and Yahoo's keeper pages (before that). Rounds are what each keeper cost that spring; an asterisk marks a round the commissioner corrected. Keeper years start with 2022, and that year's are partly reconstructed. Before 2022, Yahoo lists keepers by the team that had them at season's end, so each one is credited to the team that drafted him that spring; a keeper dropped during the season isn't listed.</p>
     </div>
     <div role="tabpanel" id="kp-draft" aria-labelledby="kt-draft" hidden>
       <p class="panel-lede">Search a player across all 14 drafts, or browse one year by team or by round.</p>
@@ -404,7 +404,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     </div>
     <p class="first-pick" id="first-pick"></p>
     <div id="board"></div>
-    <p class="note" id="k-legend"><span class="kbadge" aria-hidden="true">K</span> marks a keeper, from the keeper sheet (2022 on).</p>
+    <p class="note" id="k-legend"><span class="kbadge" aria-hidden="true">K</span> marks a keeper, from the keeper sheet and Yahoo's keeper pages.</p>
     </div>
   </section>
 
@@ -1065,7 +1065,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     };
     if (HY === "Earlier") {
       var lost = lostYears();
-      box.innerHTML = '<div class="slot"><p class="k">The keeper sheet before 2022 was lost.</p><p class="muted">Yahoo still has each year\'s keepers. These pages open for league members signed in to Yahoo. ' + DATA.seasons[0].year + " was the first draft, so nobody was kept.</p>" +
+      box.innerHTML = '<div class="slot"><p class="k">These years\' keepers aren\'t on the page yet.</p><p class="muted">Yahoo still has them. These pages open for league members signed in to Yahoo. ' + DATA.seasons[0].year + " was the first draft, so nobody was kept.</p>" +
         '<ul class="yh-links">' + lost.map(function (y) {
           var s = SEASONS[y];
           return '<li><a href="https://baseball.fantasysports.yahoo.com/' + y + "/b1/" + s.lid + '/viewkeepers" rel="noopener">' + y + " keepers on Yahoo</a></li>";
