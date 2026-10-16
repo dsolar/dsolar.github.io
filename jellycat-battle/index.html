@@ -929,6 +929,8 @@ document.addEventListener('pointerdown',e=>{const btn=e.target.closest('.dpad [d
 document.addEventListener('pointerup',e=>{if(walkHeldTimer){clearInterval(walkHeldTimer);walkHeldTimer=null;}});
 document.addEventListener('click',e=>{const btn=e.target.closest('.dpad [data-action="step"]');if(btn&&btn.dataset.held==='1'){btn.dataset.held='0';e.stopImmediatePropagation();e.preventDefault();}},true);
 
+// Initialize the interface after all keyboard handlers are registered.
+render();
 </script>
 </body>
 </html>
