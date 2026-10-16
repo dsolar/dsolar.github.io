@@ -213,6 +213,8 @@ input.who{width:9rem}
 .best .b-line{display:block;font-size:.875rem;font-variant-numeric:tabular-nums}
 .best .b-sub{display:block;font-size:.8125rem;color:var(--muted)}
 @media (max-width:640px){.best-grid{grid-template-columns:1fr;gap:1.25rem}}
+.koy{display:inline-block;margin-left:.35rem;padding:.05rem .35rem;border-radius:2px;background:var(--monster);color:var(--chalk);font-size:.6875rem;font-weight:600;vertical-align:.1rem;white-space:nowrap}
+.fine{font-size:.75rem;line-height:1.5;color:var(--muted);max-width:44rem;margin:2rem 0 .75rem}
 .kh-partial{margin:1rem 0 0;max-width:42rem;font-size:.875rem;color:var(--muted)}
 .yh-links{list-style:none;margin:.6rem 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));gap:.35rem 1.5rem}
 .yh-links a{color:var(--ink)}
@@ -399,12 +401,12 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     <div role="tabpanel" id="kp-hist" aria-labelledby="kt-hist" hidden>
       <div class="controls"><label class="field">Year<select id="kh-year"></select></label></div>
       <div id="kh-body" aria-live="polite"></div>
-      <p class="note">From the keeper sheet (2022 on), Yahoo's keeper pages (2017 to 2021) and the drafts (2014 to 2016, partial). Rounds are what each keeper cost that spring; an asterisk marks a round the commissioner corrected. Keeper years start in 2022. Before that, each keeper is credited to the team that drafted him that spring.</p>
+      <p class="note">From the keeper sheet (2022 on), Yahoo's keeper pages (2017 to 2021) and the drafts (2014 to 2016, partial). Rounds are what each keeper cost that spring; an asterisk marks a round the commissioner corrected. Before 2023, keeper years are worked out from the rounds, and each keeper is credited to the team that drafted him that spring. The badge marks each year's keeper of the year: the Best keeper award from 2022 on, and before that, the keeper who beat his draft slot by the most.</p>
     </div>
     <div role="tabpanel" id="kp-best" aria-labelledby="kt-best" hidden>
-      <p class="panel-lede">The five hitters and five pitchers who did the most while they were kept, added up over every season someone kept them.</p>
+      <p class="panel-lede">The five hitters and five pitchers with the best keeper windows: the season before a player was first kept, plus his kept seasons.</p>
       <div class="best-grid"><section aria-labelledby="best-b"><h3 id="best-b">Hitters</h3><ol class="best" id="best-b-list"></ol></section><section aria-labelledby="best-p"><h3 id="best-p">Pitchers</h3><ol class="best" id="best-p-list"></ol></section></div>
-      <p class="note">Each kept season counts the same way as the awards: how far above or below a typical rostered player he was in our 16 categories. Stats are totals for his kept seasons only. 2014 to 2016 use the partial, rebuilt keeper lists. Stats from MLB.</p>
+      <p class="note">A window runs up to four seasons: the year before he was kept, then year one at his round, year two two rounds earlier and year three four rounds earlier than that. 2020's short season didn't count against the clock, so a window can hold both 2020 and 2021. Each season counts the same way as the awards, by how far above or below a typical rostered player he was in our 16 categories. Stats are totals for the window, and each player shows his best window. 2014 to 2016 use the partial, rebuilt keeper lists. Stats from MLB.</p>
     </div>
     <div role="tabpanel" id="kp-draft" aria-labelledby="kt-draft" hidden>
       <p class="panel-lede">Search a player across all 14 drafts, or browse one year by team or by round.</p>
@@ -537,6 +539,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     </div>
   </section>
 
+  <p class="fine" id="news"><b>New for 2027:</b> declare your keepers right here. Under Keepers and drafts, pick your team, check up to five keepers and save them with a team PIN. Your first save sets the PIN, and the commissioner can reset a forgotten one. Vote on the draft date under 2027 offseason, Draft day, by checking every date you can make. Both feed the keeper sheet.</p>
   <footer id="foot">Data from the league's Yahoo draft and standings pages, the keeper sheet and the commissioner's league emails.</footer>
 </main>
 
@@ -1083,7 +1086,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       $("best-" + kind + "-list").innerHTML = (best[kind] || []).map(function (x) {
         var seen = {}, teams = [];                     // by manager: one name per person, however many team names
         x.teams.forEach(function (t) { var n = man(SEASONS[t[0]], t[1]) || SEASONS[t[0]].teams[t[1]]; if (!seen[n]) { seen[n] = 1; teams.push(n); } });
-        return "<li><span><b>" + esc(x.n.replace(/\s*\((Batter|Pitcher)\)$/, "")) + '</b><span class="b-line">' + esc(x.line) + '</span><span class="b-sub">Kept ' + x.years.length + " season" + (x.years.length > 1 ? "s" : "") + ", " + esc(span(x.years)) + ", by " + esc(yearsText(teams)) + "</span></span></li>";
+        return "<li><span><b>" + esc(x.n.replace(/\s*(\((Batter|Pitcher)\)|\[[BP]\]|\b(Batter|Pitcher|B|P))$/, "")) + '</b><span class="b-line">' + esc(x.line) + '</span><span class="b-sub">' + x.orig + " to " + x.years[x.years.length - 1] + ": kept " + esc(span(x.years)) + " by " + esc(yearsText(teams)) + "</span></span></li>";
       }).join("");
     });
   }
@@ -1091,10 +1094,11 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
   function drawHistory() {
     var box = $("kh-body"); if (!box) return;
     // one card per team, one keeper per line: name on the left, what he cost on the right
+    var koy = (DATA.keeperOfYear || {})[HY] ? fold(DATA.keeperOfYear[HY]) : "";
     var row = function (team, man, ks, empty) {
       return '<li class="kh"><div class="kh-team">' + esc(team) + '<span class="m-sub">' + esc(man) + "</span></div>" +
         (ks && ks.length ? '<ul class="kh-k">' + ks.map(function (k) {
-          return "<li><span>" + esc(k[0]) + '</span><span class="muted">' + esc(roundName(k)) + (k[3] ? '<span title="Round corrected by the commissioner">*</span>' : "") + "</span></li>";
+          return "<li><span>" + esc(k[0]) + (koy && fold(k[0]) === koy ? ' <span class="koy" title="Keeper of the year: beat his draft slot by the most">Keeper of the year</span>' : "") + '</span><span class="muted">' + esc(roundName(k)) + (k[3] ? '<span title="Round corrected by the commissioner">*</span>' : "") + "</span></li>";
         }).join("") + "</ul>" : '<p class="kh-k muted" style="margin:0">' + esc(empty || "None") + "</p>");
     };
     if (HY === "Earlier") {
