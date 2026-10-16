@@ -1,4 +1,5 @@
 -- Keeper declarations and the draft-date vote for Don't Forget to Wipe Yoenis (davidsolar.dev/yoenis/).
+-- Live in the Supabase project "dsolar's Project" (baxrczyufqbzrogftmyn) as migration yoenis_keepers_and_vote.
 --
 -- The page calls three functions with the project's public (anon/publishable) key:
 --   yoenis_view(p_y)                                              -> {keepers, vote: {dates, marks}, lock}

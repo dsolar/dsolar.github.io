@@ -2,8 +2,8 @@
 // teams save on davidsolar.dev/yoenis/, as CSV. The data lives in Supabase (tools/yoenis-supabase.sql).
 //
 // In the Fantasy Keepers sheet, cell A1 of a tab:
-//   "2027" tab:             =IMPORTDATA("https://<project>.supabase.co/functions/v1/yoenis-sheet?y=2027&tab=keepers")
-//   "2027 Draft Vote" tab:  =IMPORTDATA("https://<project>.supabase.co/functions/v1/yoenis-sheet?y=2027&tab=vote")
+//   "2027" tab:             =IMPORTDATA("https://baxrczyufqbzrogftmyn.supabase.co/functions/v1/yoenis-sheet?y=2027&tab=keepers")
+//   "2027 Draft Vote" tab:  =IMPORTDATA("https://baxrczyufqbzrogftmyn.supabase.co/functions/v1/yoenis-sheet?y=2027&tab=vote")
 // Google refreshes IMPORTDATA about once an hour. Deployed with JWT verification off so the sheet can read it.
 
 Deno.serve(async (req: Request) => {
