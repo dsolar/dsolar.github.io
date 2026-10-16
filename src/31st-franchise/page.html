@@ -358,6 +358,19 @@ dialog.card-dlg::backdrop{background:rgba(0,0,0,.55)}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 /* davidsolar.dev bar: pulled out to the page edges past the body padding */
 .ds-bar{margin:-18px -16px 18px}
+
+.setup-sidebar{display:flex;flex-direction:column;gap:12px;min-width:0}.draft-brief{padding:24px;border-left:3px solid var(--sea-2);background:var(--surface-2)}.draft-brief h3{font:800 34px/1 var(--f-display);text-transform:uppercase;margin:12px 0}.draft-brief>p:last-child{font-size:13px;color:var(--muted);max-width:400px}
+/* Expansion identity: team program, court lines and an active draft board. */
+.expansion-hero{display:grid;grid-template-columns:1.2fr 1fr;gap:18px;background:#005436;color:#fff7dc;border-top:5px solid #ffc200;position:relative;overflow:hidden;padding:34px 40px 30px;align-items:center}
+.expansion-hero .eyebrow{color:#c3d5b8;font:600 10px var(--f-mono);letter-spacing:.13em;margin-bottom:18px}
+.expansion-hero h1{font:900 clamp(50px,7vw,88px)/.92 var(--f-display);text-transform:uppercase;letter-spacing:-.025em;color:#fff9dc;margin-bottom:18px}
+.expansion-copy>p:not(.eyebrow){font-size:17px;color:#d4e4d6;max-width:420px}.expansion-art{width:100%;max-height:320px;color:#a0bba0;opacity:.9}
+.draft-ticket{display:flex;gap:24px;flex-wrap:wrap;border-top:1px solid #73a288;margin-top:26px;padding-top:16px}.draft-ticket span{font:10px var(--f-mono);color:#d4e0cc}.draft-ticket b{display:block;font:800 30px var(--f-display);color:#ffc200;margin-bottom:4px}.hero-jump{display:inline-block;color:#fff9dc;font-size:13px;font-weight:700;margin-top:22px;text-underline-offset:5px}
+.top{border-bottom:0;padding-bottom:0}.top .meta{font:10px var(--f-mono)}.wordmark{font-size:23px}.banner{border-radius:0}.banner-in{padding:18px 22px 25px}.banner .nick{font-size:clamp(26px,3vw,42px)}.banner .city{font-size:10px}.banner .sub{font-size:12px}.banner .badge.logo{width:68px;height:68px}.setup-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:14px;align-items:start;scroll-margin-top:24px}.mode-panel{grid-row:auto;border-top:4px solid var(--sea-1)}.mode-panel .eyebrow{color:var(--mark)}.mode-panel h3{font-size:30px}.mode-panel .cards{grid-template-columns:1fr 1fr;gap:10px}.mode-panel .choice{padding:15px 13px;border-radius:0;min-height:106px}.mode-panel .choice strong{font-size:15px}.mode-panel .choice:has(input:checked){border-left:4px solid var(--mark);padding-left:10px;background:var(--surface-2);box-shadow:none}.mode-panel #startBtn{margin-top:8px}.setup-reference{display:block;padding:0;border-radius:0}.setup-reference summary{cursor:pointer;padding:18px 20px;font:700 20px var(--f-display);text-transform:uppercase;letter-spacing:.03em}.reference-body{padding:0 20px 22px;font-size:13px}.panel,.pool,.scout,.capbar{border-radius:2px}.clock{border-radius:0;border-left:6px solid var(--t2);padding:17px 18px}.clock::after{display:none}.clock .what b{font-size:clamp(25px,4vw,38px)}.capbar{border-top:0}.draft-grid>.side>.depth{border-top:4px solid var(--t1)}.depth h3{font-size:26px}.prow{padding-block:14px}.phead{padding-block:9px}.draft-btn{border-radius:2px}.board-log{font-family:var(--f-mono);font-size:11px}.panel>h3{letter-spacing:.025em}.franchises{gap:14px}.expansion-hero+.franchises{margin-top:-8px}
+@media(max-width:850px){.expansion-hero{grid-template-columns:1.2fr .8fr;padding:28px}.expansion-hero h1{font-size:62px}.draft-ticket{gap:18px}.setup-grid{grid-template-columns:1fr}.mode-panel{grid-row:auto}.setup-reference{width:100%}}
+@media(max-width:560px){.expansion-hero{grid-template-columns:1fr;padding:26px 22px}.expansion-hero h1{font-size:59px}.expansion-art{position:absolute;right:-75px;top:35px;width:235px;opacity:.12;pointer-events:none}.expansion-copy{position:relative;z-index:1}.expansion-copy>p:not(.eyebrow){font-size:15px;max-width:290px}.draft-ticket{gap:23px}.draft-ticket span{font-size:8px}.draft-ticket b{font-size:27px}.top .meta{font-size:9px}.mode-panel .cards{grid-template-columns:1fr}.mode-panel .choice{min-height:0;padding:12px}.banner-in{padding:16px 16px 24px;gap:12px}.banner .badge.logo{width:52px;height:52px}.banner .nick{font-size:34px}.clock{gap:10px}.clock .btn{font-size:12px;padding:8px}.setup-grid{gap:10px}.expansion-hero .eyebrow{font-size:9px;line-height:1.7}.hero-jump{margin-top:18px}}
+@media(prefers-reduced-motion:reduce){.fill,.banner{transition:none}}
+
 </style>
 
 <nav class="ds-bar" aria-label="davidsolar.dev">
@@ -373,10 +386,14 @@ dialog.card-dlg::backdrop{background:rgba(0,0,0,.55)}
 
   <!-- INTRO -->
   <main id="scr-intro" class="stack">
+    <section class="expansion-hero" aria-labelledby="expansion-title">
+      <div class="expansion-copy"><p class="eyebrow">SEATTLE / EXPANSION DRAFT / 2027 SCENARIO</p><h1 id="expansion-title">Seattle gets<br>another shot.</h1><p>The league protects its stars. You build with what’s left.</p><div class="draft-ticket"><span><b>14</b> picks to build with</span><span><b>30</b> rosters to scout</span><span><b>82</b> games to prove it</span></div><a class="hero-jump" href="#draft-setup">Take the GM seat ↓</a></div>
+      <svg class="expansion-art" viewBox="0 0 440 340" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor"><path d="M28 90h384v222H28zM220 90v222" stroke-width="2"/><circle cx="220" cy="201" r="40" stroke-width="2"/><path d="M28 139h69v124H28m384-124h-69v124h69M28 107c140 0 140 188 0 188m384-188c-140 0-140 188 0 188" stroke-width="2"/><path d="M28 161h23v80H28m384-80h-23v80h23" stroke-width="2"/><path d="M18 72h404M18 325h404" opacity=".5"/><path d="M322 71l10-38h16l10 38m-18-58v57m-22-40h44l-12-7h-20z" stroke-width="2"/></g><text x="220" y="237" text-anchor="middle" fill="#ffc200" font-size="132" font-weight="900" font-family="Impact,Arial Narrow,sans-serif">31</text><text x="30" y="55" fill="currentColor" font-size="13" letter-spacing="5" font-family="monospace">SEATTLE / WA</text><path d="M28 312h384" stroke="#ffc200" stroke-width="7"/></svg>
+    </section>
     <div class="franchises">
       <div class="banner" data-team="SEA" id="bnSEA"><div class="banner-in">
         <div class="badge logo" aria-hidden="true" data-logo="SEA"></div>
-        <div class="id-block"><div class="city">Seattle · Since 1967</div><h1 class="nick wm-sea">SuperSonics</h1><p class="sub">Back in the league. Roughly a $7B expansion fee.</p></div>
+        <div class="id-block"><div class="city">Seattle · Since 1967</div><h2 class="nick wm-sea">SuperSonics</h2><p class="sub">Back in the league. Roughly a $7B expansion fee.</p></div>
       </div></div>
       <div class="banner" data-team="LV" id="bnLV"><div class="banner-in">
         <div class="badge logo" aria-hidden="true" data-logo="LV"></div>
@@ -384,9 +401,9 @@ dialog.card-dlg::backdrop{background:rgba(0,0,0,.55)}
       </div></div>
     </div>
 
-    <div class="grid3">
-      <section class="panel">
-        <h3>Pick a format</h3>
+    <div class="setup-grid" id="draft-setup">
+      <section class="panel mode-panel">
+        <p class="eyebrow">01 / YOUR DRAFT ROOM</p><h3>Choose your format</h3>
         <div class="cards" id="modeCards">
           <label class="choice"><input type="radio" name="mode" value="solo" checked><strong>Seattle only</strong><small>One expansion team. The whole unprotected pool is yours.</small></label>
           <label class="choice"><input type="radio" name="mode" value="ai"><strong>You vs. the computer</strong><small>Seattle and Las Vegas alternate picks from one pool. A coin flip decides who goes first.</small></label>
@@ -401,8 +418,8 @@ dialog.card-dlg::backdrop{background:rgba(0,0,0,.55)}
         </div>
         <p class="hint" id="netNote"></p>
       </section>
-      <section class="panel">
-        <h3>The rules</h3>
+      <div class="setup-sidebar"><section class="draft-brief"><p class="eyebrow">THE ASSIGNMENT</p><h3>Build the first<br>starting five.</h3><p>Draft 14 players, with no more than one from any NBA team. Stay under the projected $117.2M expansion cap, then finish your roster in free agency.</p></section>
+      <details class="panel setup-reference"><summary>02 / The draft rules</summary><div class="reference-body">
         <dl class="rules">
           <dt>Picks</dt><dd><b>14 per team</b>, no more than one player from any NBA team.</dd>
           <dt>Protection</dt><dd>Each NBA team protects up to 8 and exposes the rest. Projected lists.</dd>
@@ -413,9 +430,8 @@ dialog.card-dlg::backdrop{background:rgba(0,0,0,.55)}
           <dt>Side deals</dt><dd>Teams with the league's worst contracts pay picks for you to take them. A team can also pay you to pass on a young player.</dd>
           <dt>Free agency</dt><dd>After the draft. Sign 2027 free agents into your room under the same cap, up to 15 players. Waived players come off the cap but still get paid.</dd>
         </dl>
-      </section>
-      <section class="panel">
-        <h3>How you're scored</h3>
+      </div></details>
+      <details class="panel setup-reference"><summary>03 / How you’re scored</summary><div class="reference-body">
         <ol class="steps">
           <li>Every player has an offense and a defense impact rating built from DARKO, RAPM, CraftedNBA and box score numbers. The rating shown is for 2027-28, on a scale where 84 is All-Star level and 90 is All-NBA.</li>
           <li>Your depth chart sets minutes: starters 28 to 34, the first five off the bench 10 to 24.</li>
@@ -423,7 +439,7 @@ dialog.card-dlg::backdrop{background:rgba(0,0,0,.55)}
           <li>You play 82 games with injuries and players beating or missing projections.</li>
           <li>Your <b>record</b> goes on the leaderboard. Your <b>grade</b> is the average of 1,000 more seasons.</li>
         </ol>
-      </section>
+      </div></details></div>
     </div>
 
     <div class="grid2">
