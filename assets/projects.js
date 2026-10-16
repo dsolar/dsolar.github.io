@@ -4,7 +4,7 @@
 
    Fields
      title     Project name.
-     type      What kind of thing it is: "Game", "Tool", "Simulation", "Writing", "Experiment".
+     type      Homepage category: "Fantasy Leagues", "Simulations", "Games", "Social Tools".
                Once there's more than one type, filter buttons appear on the home page.
      released  Year and month it went live, "YYYY-MM". Newest shows first.
      url       Where it lives on this site, relative to the home page (folder name + /).
@@ -21,7 +21,7 @@
 window.PROJECTS = [
   {
     title: "The 31st Franchise",
-    type: "Game",
+    type: "Simulations",
     released: "2026-10",
     url: "31st-franchise/",
     question: "How good a team could Seattle build from what the rest of the NBA leaves unprotected?",
@@ -33,7 +33,7 @@ window.PROJECTS = [
   },
   {
     title: "The Degenerate Trail",
-    type: "Game",
+    type: "Games",
     released: "2026-10",
     url: "degenerate-trail/",
     question: "Can Nick make it eight blocks home through Montreal before the night wins?",
@@ -45,7 +45,7 @@ window.PROJECTS = [
   },
   {
     title: "Dynasty Mode",
-    type: "Game",
+    type: "Simulations",
     status: "building",
     url: "franchise-mode/",
     question: "Can Seattle turn an expansion roster into a contender, season after season?",
@@ -55,7 +55,7 @@ window.PROJECTS = [
   },
   {
     title: "Chat with Nick",
-    type: "Experiment",
+    type: "Social Tools",
     released: "2026-10",
     url: "nick-chat/",
     question: "What if the group chat had an on-demand Nick?",
@@ -67,7 +67,7 @@ window.PROJECTS = [
   },
   {
     title: "Bastille Day Odds",
-    type: "Simulation",
+    type: "Fantasy Leagues",
     released: "2026-10",
     url: "guillotine/",
     question: "In a league that cuts its lowest score every week, who's next, and who's left in December?",
@@ -78,7 +78,7 @@ window.PROJECTS = [
   },
   {
     title: "Night Out",
-    type: "Tool",
+    type: "Social Tools",
     released: "2026-10",
     url: "calendar/",
     question: "What's worth leaving the couch for, and who's in?",
@@ -89,7 +89,7 @@ window.PROJECTS = [
   },
   {
     title: "Paint the Corners",
-    type: "Game",
+    type: "Games",
     released: "2026-10",
     url: "paint-the-corners/",
     question: "Could you out-pitch Pedro against the 2003 and 2004 Yankees at Fenway?",
@@ -100,7 +100,7 @@ window.PROJECTS = [
   },
   {
     title: "Don't Forget to Wipe Yoenis",
-    type: "Tool",
+    type: "Fantasy Leagues",
     released: "2026-10",
     url: "yoenis/",
     action: "Open the record book",
@@ -112,7 +112,7 @@ window.PROJECTS = [
   },
   {
     title: "Banner 19",
-    type: "Game",
+    type: "Simulations",
     released: "2026-10",
     url: "celtics/",
     action: "Run the front office",
