@@ -73,21 +73,18 @@
   }
   function optionOrder(s) {
     const order = ["go", "fg", "punt", "two", "kick", "let", "defend"];
-    return s.practice ? Object.keys(s.opts) : order.filter((k) => k in s.opts);
+    return order.filter((k) => k in s.opts);
   }
   function safeChoice(s) {
     return SAFE_ORDER.find((k) => k in s.opts) || Object.keys(s.opts)[0];
   }
 
   // ---------- grading ----------
-  function grade(s, choice) {
+  function grade(s, choice, flags) {
     const ranked = rankedOptions(s);
     const best = ranked[0][0];
     const bestWp = ranked[0][1];
-    if (s.practice) {
-      const correct = s.accepted.includes(choice);
-      return { choice, best: s.answer, cost: 0, lost: 0, tier: correct ? "optimal" : "costly", tierLabel: correct ? "Good call" : "Review the situation", points: correct ? 100 : 35, direction: "same", practice: true };
-    }
+    if (flags && flags.timedOut) return {choice: null, best, cost: 0, lost: 0, tier: "delay", tierLabel: "Delay of Game", points: 0, direction: "same", timedOut: true};
     const cost = Math.max(0, +(bestWp - s.opts[choice]).toFixed(1));
     let tier;
     if (s.disputed && (s.disputed.accepted || Object.keys(s.opts)).includes(choice)) tier = { id: choice === best ? "optimal" : "close", points: 100, label: choice === best ? "Optimal" : "Close call" };
@@ -101,7 +98,7 @@
   function badgesFor(s, g, opts) {
     const out = [];
     const goEdge = s.opts.go != null ? s.opts.go - Math.max(s.opts.punt ?? -1, s.opts.fg ?? -1) : null;
-    if (opts.timedOut) out.push({ id: "delay", label: "Delay of Game", note: "The clock ran out, so your coordinator made the safe call." });
+    if (opts.timedOut) out.push({ id: "delay", label: "Delay of Game", note: "The play clock expired before you made a decision." });
     if (s.kind === "4th" && g.choice === "punt" && goEdge >= 5) out.push({ id: "coward_punt", label: "Coward Punt", note: "Going for it was worth " + goEdge.toFixed(1) + " more points." });
     if (s.kind === "4th" && g.choice === "fg" && s.opts.go - s.opts.fg >= 5) out.push({ id: "took_points", label: "Took the Points (They Took You)", note: "" });
     if (s.kind === "4th" && g.choice === "go" && g.best !== "go" && g.cost >= 5) out.push({ id: "loose_cannon", label: "Loose Cannon", note: "" });
@@ -185,15 +182,25 @@
   }
 
   // ---------- game building ----------
+  // Editorial suitability is separate from the model's numerical gap.
+  function compellingFourth(x) {
+    const seconds = x.clock.split(":").reduce((a,v) => a*60+Number(v),0);
+    const margin = x.score[0]-x.score[1];
+    if (Math.abs(margin) > 16 || Math.max(...Object.values(x.opts)) < 5) return false;
+    if (x.yl > 50 && x.ytg >= 6 && !(x.qtr === 4 && seconds <= 180 && margin < 0)) return false;
+    if (x.best === "punt" && x.ytg >= 8 && x.yl >= 50) return false;
+    // A compulsory last-gasp attempt offers little decision tension.
+    if (x.qtr === 4 && seconds <= 90 && margin < -3 && x.best === "go" && x.ytg >= 6) return false;
+    return true;
+  }
+  function compellingPat(x) {
+    const margin = x.score[0]-x.score[1];
+    return x.qtr >= 3 && Math.abs(margin) <= 16 && ![0,3,6,8,9,10].includes(margin) && gapOf(x) >= 1;
+  }
   function pools(data) {
-    const s = data.scenarios.filter((x) => {
-      // A low WP gap can reflect low conversion odds, not an interesting decision.
-      const seconds = x.clock.split(":").reduce((a, v) => a * 60 + Number(v), 0);
-      return !(x.kind === "4th" && x.best === "punt" && x.ytg >= 8 && x.yl >= 50 && (x.qtr < 4 || seconds > 120));
-    });
     return {
-      fourth: s.filter((x) => x.kind === "4th"),
-      pat: s.filter((x) => x.kind === "pat"),
+      fourth: data.scenarios.filter(x => x.kind === "4th" && compellingFourth(x)),
+      pat: data.scenarios.filter(x => x.kind === "pat" && compellingPat(x)),
       famous: data.famous,
     };
   }
@@ -213,29 +220,20 @@
     const d = (lvl) => (x) => x.diff === lvl;
     const notCoin = (x) => x.diff !== "coin";
     let list = [];
-    if (mode === "clock" || mode === "overtime") {
-      list = shuffle(data.practice.filter((x) => x.kind === mode), rand);
-    } else if (mode === "quick") {
+    if (mode === "quick") {
+      const clockCalls = P.famous.filter(x => x.kind === "let");
       list = [
-        pickFresh(P.fourth, rand, seen, d("easy")), pickFresh(P.fourth, rand, seen, d("easy")),
-        pickFresh(P.fourth, rand, seen, d("medium")), pickFresh(P.pat, rand, seen, notCoin),
-        pickFresh(P.fourth, rand, seen, d("medium")), pickFresh(P.famous, rand, seen),
-        pickFresh(P.fourth, rand, seen, d("hard")), pickFresh(P.pat, rand, seen, notCoin),
-        pickFresh(P.fourth, rand, seen, d("hard")), pickFresh(P.fourth, rand, seen, (x) => x.diff === "coin" || x.diff === "hard"),
+        pickFresh(P.fourth, rand, seen, d("easy")),
+        pickFresh(P.fourth, rand, seen, d("medium")),
+        pickFresh(P.pat, rand, seen, notCoin),
+        pickFresh(P.fourth, rand, seen, d("medium")),
+        pickFresh(P.famous, rand, seen, x => x.kind !== "let"),
+        pickFresh(P.fourth, rand, seen, d("hard")),
+        pickFresh(P.pat, rand, seen, notCoin),
+        pickFresh(P.fourth, rand, seen, x => x.diff === "medium" || x.diff === "hard"),
+        pickFresh(rand() < 0.35 ? clockCalls : P.famous, rand, seen),
+        pickFresh(P.fourth, rand, seen, d("hard")),
       ];
-    } else if (mode === "fourth") {
-      const famous4 = P.famous.filter((x) => x.kind === "4th");
-      list = [
-        pickFresh(P.fourth, rand, seen, d("easy")), pickFresh(P.fourth, rand, seen, d("easy")), pickFresh(P.fourth, rand, seen, d("medium")),
-        pickFresh(P.fourth, rand, seen, d("medium")), pickFresh(famous4, rand, seen), pickFresh(P.fourth, rand, seen, d("medium")),
-        pickFresh(P.fourth, rand, seen, d("hard")), pickFresh(P.fourth, rand, seen, d("hard")), pickFresh(P.fourth, rand, seen, d("hard")),
-        pickFresh(P.fourth, rand, seen, d("coin")),
-      ];
-    } else if (mode === "pat") {
-      const famousPat = P.famous.filter((x) => x.kind === "pat");
-      list = [];
-      for (let i = 0; i < 9; i++) list.push(pickFresh(P.pat, rand, seen, i < 7 ? notCoin : null));
-      list.splice(4, 0, pickFresh(famousPat, rand, seen));
     } else if (mode === "daily") {
       // Same five for everyone on a given date: ignore personal history.
       const none = new Set();
@@ -252,10 +250,10 @@
     const r = game.rand();
     const level = index < 4 ? "easy" : index < 9 ? "medium" : "hard";
     if (r < 0.1) return pickFresh(P.famous, game.rand, game.seen);
-    if (r < 0.25) return pickFresh(P.pat, game.rand, game.seen, (x) => x.diff !== "coin");
+    if (r < 0.3) return pickFresh(P.pat, game.rand, game.seen, (x) => x.diff !== "coin");
     return pickFresh(P.fourth, game.rand, game.seen, (x) => x.diff === level);
   }
-  const SURVIVAL_STRIKE = (g) => g.tier === "costly" || g.tier === "blunder";
+  const SURVIVAL_STRIKE = (g) => g.tier === "costly" || g.tier === "blunder" || g.tier === "delay";
 
   // ---------- end-of-game summary ----------
   function summarize(results, data) {
@@ -267,24 +265,28 @@
     const scorePct = n ? basePoints / n : 0;
     const gradeRow = GRADES.find((x) => scorePct >= x.min);
 
-    const misses = results.filter((r) => !r.s.practice && !r.s.disputed && r.g.lost > 0);
+    const misses = results.filter((r) => !r.s.disputed && r.g.lost > 0);
     const agg = misses.filter((r) => r.g.direction === "aggressive").length;
     const cons = misses.filter((r) => r.g.direction === "conservative").length;
     const clearGo = results.filter(r => r.s.kind === "4th" && !r.s.disputed && r.g.best === "go" && gapOf(r.s) >= 2);
     const timidPunts = clearGo.filter(r => r.g.choice === "punt" && r.g.cost >= 3);
     const reckless = results.filter(r => r.s.kind === "4th" && r.g.choice === "go" && r.g.cost >= 3);
-    let style = { id: "analytically_minded", label: "Analytically Minded", line: "You usually find the edge, whether that means attacking or taking the sensible punt." };
+    let style = { id: "analytically_minded", label: "Analytically Minded", line: "You usually find the edge, whether that means going for it or taking the sensible punt." };
     if (timidPunts.length >= 2 && timidPunts.length >= clearGo.length / 2)
       style = { id: "punters_best_friend", label: "Punter's Best Friend", line: "You repeatedly sent out the punter when going for it had a clear edge." };
     else if (reckless.length >= 2)
-      style = { id: "loose_cannon", label: "Loose Cannon", line: "You kept attacking even when the numbers strongly favored another call." };
+      style = { id: "loose_cannon", label: "Loose Cannon", line: "You kept going for it even when the numbers strongly favored another call." };
     else if (cons >= 2 && cons > agg && clearGo.filter(r => r.g.choice === "go").length === 0)
       style = { id: "cautious", label: "Safety First", line: "You leaned toward taking the points when the model preferred another shot." };
     else if (scorePct < 80)
       style = { id: "film_room", label: "Back to the Film Room", line: "The decisions were mixed. Review the alternatives and find your next edge." };
 
+    const boldCalls = results.filter(r => r.s.kind === "4th" && r.g.choice === "go" && r.g.cost < CLOSE && r.s.ytg <= 2 && r.s.yl >= 70);
+    const boldNote = boldCalls.length ? ` You also went for it on ${boldCalls.length === 1 ? "a short fourth down" : boldCalls.length + " short fourth downs"} deep in your own territory when the model backed you.` : "";
+    style = {...style, line: style.line + boldNote};
+
     // Strengths and weaknesses by the kind of call the math wanted
-    const cat = (r) => (r.s.practice ? (r.s.kind === "clock" ? "Clock situations" : "Overtime situations") : r.s.famous ? "Famous calls" : r.s.kind === "pat" ? (r.g.best === "two" ? "Two-point spots" : "Extra-point spots")
+    const cat = (r) => (r.s.famous ? "Famous calls" : r.s.kind === "pat" ? (r.g.best === "two" ? "Two-point spots" : "Extra-point spots")
       : { go: "Go-for-it spots", punt: "Punt spots", fg: "Field goal spots" }[r.g.best] || "Other");
     const byCat = {};
     for (const r of results) { const c = cat(r); (byCat[c] = byCat[c] || []).push(r.g.points); }
@@ -293,13 +295,13 @@
     const strength = cats.length ? cats[0] : null;
     const weakness = cats.length > 1 && cats[cats.length - 1][1] < cats[0][1] ? cats[cats.length - 1] : null;
 
-    return { n, basePoints, bonusPoints, scorePct, wpCount: results.filter(r => !r.s.practice).length, lost: +lost.toFixed(1), points, grade: gradeRow.g, gradeLine: gradeRow.line, style, misses: misses.length, agg, cons,
+    return { n, basePoints, bonusPoints, scorePct, delays: results.filter(r => r.g.timedOut).length, wpCount: results.filter(r => !r.g.timedOut).length, lost: +lost.toFixed(1), points, grade: gradeRow.g, gradeLine: gradeRow.line, style, misses: misses.length, agg, cons,
       strength, weakness, coach: coachMatch(results, data && data.coaches) };
   }
 
   function coachMatch(results, coaches) {
     if (!coaches || !coaches.length) return null;
-    const fourth = results.filter((r) => r.s.kind === "4th" && "go" in r.s.opts);
+    const fourth = results.filter((r) => !r.g.timedOut && r.s.kind === "4th" && "go" in r.s.opts);
     const goSpots = fourth.filter((r) => r.g.best === "go" && gapOf(r.s) >= 2);
     const kickSpots = fourth.filter((r) => r.g.best !== "go" && r.s.opts[r.g.best] - r.s.opts.go >= 2);
     if (goSpots.length + kickSpots.length < 2) return null;
@@ -324,17 +326,17 @@
     };
   }
 
-  const SQUARE = { optimal: "🟩", close: "🟩", defensible: "🟨", costly: "🟧", blunder: "🟥" };
+  const SQUARE = { optimal: "🟩", close: "🟩", defensible: "🟨", costly: "🟧", blunder: "🟥", delay: "⏱" };
   function shareText(summary, results, meta) {
     const grid = results.map((r) => SQUARE[r.g.tier]).join("");
     const head = meta.mode === "daily" ? `Make the Call Daily, ${meta.dateLabel}` : `Make the Call: ${meta.modeLabel}`;
-    const lostLine = !summary.wpCount ? "Rules and strategy practice" : summary.lost ? `${summary.lost} points of win probability left on the table` : "Not a point of win probability left on the table";
-    return `${head}\nGrade ${summary.grade}. ${summary.style.label}\n${summary.basePoints}/${summary.n * 100} decision points (+${summary.bonusPoints} bonus)\n${lostLine}\n${grid}\nhttps://davidsolar.dev/win-probability/`;
+    const lostLine = !summary.wpCount ? "No completed decisions" : summary.lost ? `${summary.lost} points of win probability left on the table` : "Not a point of win probability left on the table";
+    return `${head}\nGrade ${summary.grade}. ${summary.style.label}\n${summary.basePoints}/${summary.n * 100} decision points (+${summary.bonusPoints} bonus)\n${lostLine}${summary.delays ? " · " + summary.delays + " delay of game" : ""}\n${grid}\nhttps://davidsolar.dev/win-probability/`;
   }
 
   const api = { CLOSE, TIERS, GRADES, BONUS_POINTS, hashString, mulberry32, shuffle, rankedOptions, gapOf, optionLabel, shortLabel,
     optionOrder, safeChoice, grade, badgesFor, simulate, processResultTag, explain, assumptions, buildGame, nextSurvival,
-    SURVIVAL_STRIKE, summarize, coachMatch, shareText, pools };
+    SURVIVAL_STRIKE, compellingFourth, compellingPat, summarize, coachMatch, shareText, pools };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.WPEngine = api;
 })(typeof window !== "undefined" ? window : globalThis);

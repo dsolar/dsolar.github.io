@@ -15,12 +15,8 @@
   const CROWD_MIN = 20;
 
   const MODES = [
-    { id: "quick", name: "Quick Game", desc: "A bit of everything, including one famous call", len: "10" },
+    { id: "quick", name: "Quick Game", desc: "Ten decisions. Real games. Two famous calls.", len: "10" },
     { id: "daily", name: "Daily Challenge", desc: "The same five decisions for everyone today", len: "5" },
-    { id: "fourth", name: "Fourth Down", desc: "Go for it, punt, or kick", len: "10" },
-    { id: "pat", name: "Two-Point Calls", desc: "Kick the extra point or go for two", len: "10" },
-    { id: "clock", name: "Clock Management", desc: "Timeouts, kneels, and the seconds you cannot waste", len: "6" },
-    { id: "overtime", name: "Overtime Toss", desc: "Receive or kick? The rules and tradeoffs change by era", len: "4" },
     { id: "survival", name: "Survival", desc: "Keep coaching until your third costly call", len: "3 strikes" },
   ];
 
@@ -109,20 +105,14 @@
       <rect x="1100" y="0" width="100" height="140" fill="${def.c1}"/>${ezText(def, 1150)}
       ${lines}
       <rect x="0" y="0" width="1200" height="140" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="4"/>
-      ${markers}<path d="M ${bx+20} 46 h 60 m -15 -8 l 15 8 -15 8" fill="none" stroke="#F7D23E" stroke-width="3"/>
+      ${markers}
       <g class="ball-g" id="ball-g" style="transform: translateX(0px)">
         <ellipse cx="${bx}" cy="64" rx="15" ry="9" fill="var(--ball)" stroke="#2b1408" stroke-width="1.5"/>
         <line x1="${bx - 6}" y1="64" x2="${bx + 6}" y2="64" stroke="#fff" stroke-width="1.6"/>
       </g>
-      </g><text x="110" y="347" fill="#F1F4EC" font-family="Arial,sans-serif" font-size="22">${esc(off.abbr)} attacking →</text><text x="1090" y="347" text-anchor="end" fill="#F7D23E" font-family="Arial,sans-serif" font-size="20">Blue: ball · Yellow: line to gain</text>
+      </g><text x="110" y="347" fill="#F1F4EC" font-family="Arial,sans-serif" font-size="22">Possession: ${esc(off.abbr)} →</text><text x="1090" y="347" text-anchor="end" fill="#F7D23E" font-family="Arial,sans-serif" font-size="20">Blue: ball · Yellow: line to gain</text>
     </svg>`;
   }
-  function moveBall(dxYards) {
-    const g = $("ball-g");
-    if (!g) return;
-    requestAnimationFrame(() => { g.style.transform = `translateX(${dxYards * 10}px)`; });
-  }
-
   // ---------- state ----------
   let state = null;
   let clockTimer = null;
@@ -143,7 +133,7 @@
     $("modes").querySelectorAll(".mode").forEach((b) => b.addEventListener("click", () => startGame(b.dataset.mode)));
     $("clock-toggle").checked = clockOn();
     const best = store.get("best", {});
-    const bits = Object.entries(best).map(([m, v]) => `${(MODES.find((x) => x.id === m) || {}).name || m}: ${v.grade}`);
+    const bits = Object.entries(best).filter(([m]) => MODES.some(x => x.id === m)).map(([m, v]) => `${(MODES.find((x) => x.id === m) || {}).name || m}: ${v.grade}`);
     $("record").textContent = bits.length ? "Your best so far. " + bits.join(", ") : "";
     $("hero-field").innerHTML = fieldSVG({ kind: "4th", you: "NE", opp: "IND", yl: 72, ytg: 2, down: 4 });
   }
@@ -187,13 +177,6 @@
     const s = state.game.list[state.idx];
     state.s = s; state.locked = false; state.bonus = null;
     renderProgress();
-    if (s.practice) {
-      $("scenario").innerHTML = `<div class="famous-tag"><b>Constructed practice</b><span>${esc(s.title)}</span></div><p class="situation">${esc(s.prompt)}</p><p class="muted">Rules and strategy exercise. No numerical win probability is assigned.</p>`;
-      $("choices").innerHTML = E.optionOrder(s).map((k, i) => `<button class="choice" data-k="${k}"><span class="key">${i+1}</span>${esc(E.optionLabel(s,k))}</button>`).join("");
-      $("choices").querySelectorAll(".choice").forEach(b => b.addEventListener("click", () => choose(b.dataset.k,false)));
-      $("bonus").innerHTML = ""; $("reveal").innerHTML = ""; $("ask").hidden = false; $("clock").hidden = !clockOn();
-      window.scrollTo(0,0); startClock(); return;
-    }
     const you = team(s.you), opp = team(s.opp);
     const youHasBall = s.ball !== "opp";
     const tag = s.famous ? `<div class="famous-tag"><b>Famous call</b><span>${esc(s.famous.title)}</span></div>` : "";
@@ -231,7 +214,7 @@
 
     $("scenario").innerHTML = `${tag}${bug}${fieldSVG(s)}
       <p class="situation">${sit}</p>
-      <dl class="facts">${facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>`;
+      <p class="model-context">${s.model === "nfl4th" ? "QB and weather are game context. Grades use a league-average model, not player-specific matchup ratings." : "Published estimates and assumptions are explained after your call."}</p><dl class="facts">${facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>`;
 
     const keys = E.optionOrder(s);
     $("choices").innerHTML = keys.map((k, i) => `<button class="choice" data-k="${k}"><span class="key">${i + 1}</span>${esc(E.optionLabel(s, k))}</button>`).join("");
@@ -275,7 +258,7 @@
     state.choice = key; state.timedOut = timedOut;
     $("choices").querySelectorAll(".choice").forEach((b) => { b.disabled = true; b.classList.toggle("picked", b.dataset.k === key); });
     $("clock").hidden = true;
-    if (!s.practice) crowdVote(s, key);
+    if (!timedOut) crowdVote(s, key);
     const bk = bonusFor(s, key);
     if (bk && !timedOut) return askBonus(bk);
     reveal(null);
@@ -313,8 +296,8 @@
 
   function reveal(bonus) {
     const s = state.s, key = state.choice;
-    const g = E.grade(s, key);
-    const outcome = s.practice ? { success: null, text: "" } : E.simulate(s, key, state.simRand);
+    const g = E.grade(s, key, {timedOut: state.timedOut});
+    const outcome = state.timedOut ? { success: null, text: "" } : E.simulate(s, key, state.simRand);
     const badges = E.badgesFor(s, g, { timedOut: state.timedOut, outcome });
     const result = { s, g, bonus, badges, outcome, timedOut: state.timedOut };
     state.results.push(result);
@@ -322,8 +305,8 @@
     if (state.mode === "survival" && E.SURVIVAL_STRIKE(g)) state.strikes++;
     renderProgress();
 
-    if (s.practice) {
-      $("reveal").innerHTML = `<div class="verdict"><span class="tier t-${g.tier}">${esc(g.tierLabel)}</span><span>${g.points}/100 decision points</span></div><p>${esc(s.explanation)}</p><p class="muted">${s.accepted.length > 1 ? "Both choices receive full credit. This is a tradeoff discussion." : "Scored on the stated rules and assumptions."} <a href="${esc(s.source)}" target="_blank" rel="noopener">NFL rulebook</a></p><button class="next" id="next">${isLast() ? "See your grade" : "Next decision"}</button>`;
+    if (state.timedOut) {
+      $("reveal").innerHTML = `<div class="verdict"><span class="tier t-delay">Delay of Game</span><span class="sub">0/100 decision points</span></div><p>The play clock expired before you made a call. No play was chosen or simulated.</p><p class="muted">This counts as a missed decision${state.mode === "survival" ? " and a strike" : ""}. No win probability loss is estimated for an unplayed snap.</p><button class="next" id="next">${isLast() ? "See your grade" : "Next decision"}</button>`;
       $("next").addEventListener("click", next); $("next").focus({preventScroll:true}); $("reveal").scrollIntoView({block:"start"}); return;
     }
     const ranked = E.rankedOptions(s);
@@ -331,7 +314,6 @@
     sub.push(`${g.points}/100 decision points`);
     if (g.lost) sub.push(`you gave up ${f1(g.cost)} points of win probability`);
     else if (g.tier === "close") sub.push("within a point of the best call");
-    const t = state.timedOut ? `<p class="muted">The play clock ran out, so your coordinator made the safe call.</p>` : "";
     let bonusHtml = "";
     if (bonus) {
       const b = D.bonus[bonus.key];
@@ -342,6 +324,10 @@
       return `<li class="wp-row${k === ranked[0][0] ? " best" : ""}"><div class="top"><span class="name">${esc(E.shortLabel(k))}${tags ? `<em>${tags}</em>` : ""}</span><span class="val">${f1(v)}% <small>chance to win</small></span></div>
         <div class="track"><i style="width:${Math.max(1, Math.min(100, v))}%"></i></div>${inputsText(s, k) ? `<div class="inputs">${esc(inputsText(s, k))}</div>` : ""}<div class="comparisons">${ranked.filter(([other]) => other !== k).map(([other, wp]) => `${v >= wp ? "+" : "−"}${f1(Math.abs(v-wp))} percentage points vs. ${esc(E.shortLabel(other).toLowerCase())}`).join(" · ")}</div></li>`;
     }).join("");
+    const bestKey = ranked[0][0];
+    const alternative = ranked.find(([k]) => k !== key);
+    const edge = alternative ? s.opts[key] - alternative[1] : 0;
+    const callSummary = `<div class="call-summary"><p><strong>Your call: ${esc(E.shortLabel(key))}</strong> · ${f1(s.opts[key])}% chance to win</p><p>${s.disputed ? "Published models disagree here. Either call receives full credit; see the analysis below." : g.cost < E.CLOSE && key !== bestKey ? `A close call: ${f1(g.cost)} percentage points behind ${esc(E.shortLabel(bestKey).toLowerCase())}. Full credit.` : key === bestKey ? `The model’s best call. ${edge > 0 ? "+" : ""}${f1(edge)} percentage points versus ${esc(E.shortLabel(alternative[0]).toLowerCase())}.` : `${esc(E.shortLabel(bestKey))} was the model’s best call: ${f1(s.opts[bestKey])}% to win, a ${f1(g.cost)} percentage-point edge.`}</p></div>`;
     const ex = E.explain(s);
     const explainLines = ex;
     const assume = E.assumptions(s).map((a) => `<p>${esc(a)}</p>`).join("");
@@ -350,28 +336,22 @@
     const simHtml = `<div class="block"><h3>Simulated play outcome</h3><p class="result-line">${esc(outcome.text)}</p>
       ${tagLine ? `<span class="tag-line">${esc(tagLine)}</span>` : ""}
       ${badges.length ? `<div class="badges">${badges.map((b) => `<span class="badge" title="${esc(b.note)}">${esc(b.label)}</span>`).join("")}</div>` : ""}
-      <p class="muted">The grade was locked in before the play ran. A good call can fail and a bad one can work.</p></div>`;
+      <p class="muted">This is a simulated result, not the historical play. It does not affect your grade. A good call can fail and a bad one can work.</p></div>`;
 
-    $("reveal").innerHTML = `<div class="verdict"><span class="tier t-${g.tier}">${esc(g.tierLabel)}</span><span class="sub">${esc(sub.join(", "))}</span></div>${t}${bonusHtml}
-      <h3>Chance of winning the game after each decision</h3><p class="muted">These are separate alternatives, not shares of a vote. They do not add to 100%. Each includes the chance of the play succeeding or failing.</p><ul class="wp-list" aria-label="Win probability by option">${rows}</ul>
-      <div class="explain">${explainLines.map((l) => `<p>${esc(l)}</p>`).join("")}</div>
-      <div class="assume">${assume}</div>
-      <div class="block" id="crowd-block"><h3>How everyone else called it</h3>${coachesHtml(s)}<div id="crowd-live"></div></div>
-      ${simHtml}
+    $("reveal").innerHTML = `<div class="verdict"><span class="tier t-${g.tier}">${esc(g.tierLabel)}</span><span class="sub">${esc(sub.join(", "))}</span></div>
+      ${callSummary}
       ${realLifeHtml(s)}
+      <details class="analysis-details"><summary>See the odds and calculations</summary><h3>Chance of winning the game after each decision</h3><p class="muted">These are separate alternatives, not shares of a vote. They do not add to 100%. Each includes the chance of the play succeeding or failing.</p><ul class="wp-list" aria-label="Win probability by option">${rows}</ul>
+      <div class="explain">${explainLines.map((l) => `<p>${esc(l)}</p>`).join("")}</div>
+      <div class="assume">${assume}</div>${bonusHtml}</details>
+      <details class="analysis-details" id="crowd-block"><summary>Compare with coaches and other players</summary>${coachesHtml(s)}<div id="crowd-live"></div></details>
+      <details class="analysis-details"><summary>Simulate the play outcome</summary>${simHtml}</details>
       <button class="next" id="next">${isLast() ? "See your grade" : "Next decision"}</button>`;
     $("next").addEventListener("click", next);
     $("next").focus({ preventScroll: true });
     $("reveal").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
-    animateOutcome(s, key, outcome);
-    crowdShow(s);
-  }
 
-  function animateOutcome(s, key, outcome) {
-    if (key === "go") moveBall(outcome.success ? (s.yl <= s.ytg ? s.yl + 1 : s.ytg + 3) : Math.max(0, s.ytg - 1) * 0.4);
-    else if (key === "fg") moveBall(Math.min(s.yl + 9, 108 - (100 - s.yl)));
-    else if (key === "punt") moveBall(Math.min(45, s.yl + 8));
-    else if (key === "kick" || key === "two" || key === "let") moveBall(3);
+    crowdShow(s);
   }
 
   function coachesHtml(s) {
@@ -389,7 +369,7 @@
     const fin = s.final === "won" ? `The ${you.nick} won the game.` : s.final === "lost" ? `The ${you.nick} lost the game.` : "The game ended in a tie.";
     if (s.famous) {
       const v = (s.famous.verdicts || []).map((x) => `<p class="sources">${esc(x.summary)} <a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.source)}</a></p>`).join("");
-      return `<div class="block"><h3>What really happened</h3><p>${esc(s.famous.decider)}: ${esc(s.famous.did)} ${esc(fin)}</p>${v}</div>`;
+      return `<div class="block"><h3>What really happened</h3><p>${esc(s.famous.decider)}: ${esc(s.famous.did)} ${esc(fin)}</p>${v ? `<details><summary>Sources and published analysis</summary>${v}</details>` : ""}</div>`;
     }
     const did = DID[s.real.did] || s.real.did;
     const res = RESULT[s.real.result] || "";
@@ -458,7 +438,6 @@
 
   function recapLabel(s) {
     const you = team(s.you), opp = team(s.opp);
-    if (s.practice) return s.title;
     if (s.famous) return s.famous.title;
     if (s.kind === "pat") return `${s.season} ${you.nick} vs. ${opp.nick}, try at ${s.score[0]}-${s.score[1]}`;
     return `${s.season} ${you.nick}, 4th and ${s.yl <= s.ytg ? "goal" : s.ytg} at ${spotText(s.yl, "own ")}`;
@@ -472,14 +451,14 @@
     const bonusHits = results.filter((r) => r.bonus && r.bonus.correct).length;
     const coach = summary.coach ? `<div class="block"><h3>Your coaching tendencies</h3><p>${esc(summary.coach.line)}</p></div>` : "";
     const sw = summary.strength ? `<div class="block"><h3>Scouting report</h3><p>Best at ${esc(summary.strength[0].toLowerCase())} (${Math.round(summary.strength[1])} points a call).${summary.weakness ? ` Worst at ${esc(summary.weakness[0].toLowerCase())} (${Math.round(summary.weakness[1])}).` : ""}${summary.misses ? ` Of your ${summary.misses} misses, ${summary.cons} were too conservative and ${summary.agg} too aggressive.` : ""}</p></div>` : "";
-    const recap = results.map((r) => `<li><span class="dot t-${r.g.tier}"></span><span class="what">${esc(recapLabel(r.s))}. You: <b>${esc(r.s.practice ? E.optionLabel(r.s,r.g.choice) : E.shortLabel(r.g.choice))}</b>${r.g.choice !== r.g.best && r.g.tier !== "close" && r.g.tier !== "optimal" ? `, best: <b>${esc(r.s.practice ? E.optionLabel(r.s,r.g.best) : E.shortLabel(r.g.best))}</b>` : ""}</span><span class="lost">${r.s.practice ? (r.g.tier === "optimal" ? "Good call" : "Review") : r.s.disputed ? "Debatable" : r.g.lost ? "−" + f1(r.g.lost) + " pp" : r.g.cost > 0 ? "Close call" : "Best call"}</span></li>`).join("");
+    const recap = results.map((r) => `<li><span class="dot t-${r.g.tier}"></span><span class="what">${esc(recapLabel(r.s))}. You: <b>${esc(r.g.timedOut ? "Delay of Game" : E.shortLabel(r.g.choice))}</b>${!r.g.timedOut && r.g.choice !== r.g.best && r.g.tier !== "close" && r.g.tier !== "optimal" ? `, best: <b>${esc(E.shortLabel(r.g.best))}</b>` : ""}</span><span class="lost">${r.g.timedOut ? "No call" : r.s.disputed ? "Debatable" : r.g.lost ? "−" + f1(r.g.lost) + " pp" : r.g.cost > 0 ? "Close call" : "Best call"}</span></li>`).join("");
     const meta = { mode: state.mode, modeLabel: modeName, dateLabel: prettyDate(state.date || today()) };
     const share = E.shareText(summary, results, meta);
     $("end").innerHTML = `<div class="topline"><span>${esc(modeName)}${state.mode === "daily" ? ", " + esc(prettyDate(state.date || today())) : ""}</span><span></span></div>
       <div class="final-grade"><span class="letter">${esc(summary.grade)}</span><div><div class="label">${esc(summary.style.label)}</div><div class="line">${esc(summary.gradeLine)}</div></div></div>
       <p class="style-line">${esc(summary.style.line)}</p>
-      <div class="stat-row"><div><b>${summary.basePoints}/${summary.n * 100}</b><span>decision points · ${f1(summary.scorePct)}%</span></div><div><b>+${summary.bonusPoints}</b><span>bonus points (separate from grade)</span></div>${summary.wpCount ? `<div><b>${f1(summary.lost)}</b><span>WP points lost vs. best</span></div>` : ""}<div><b>${summary.n}</b><span>decisions</span></div>${bonusHits ? `<div><b>${bonusHits}</b><span>bonus calls</span></div>` : ""}</div>
-      ${coach}${sw}
+      <div class="stat-row"><div><b>${summary.basePoints}/${summary.n * 100}</b><span>decision points · ${f1(summary.scorePct)}%</span></div><div><b>+${summary.bonusPoints}</b><span>bonus points (separate from grade)</span></div>${summary.wpCount ? `<div><b>${f1(summary.lost)}</b><span>WP points lost on completed calls</span></div>` : ""}<div><b>${summary.n}</b><span>decisions</span></div>${bonusHits ? `<div><b>${bonusHits}</b><span>bonus calls</span></div>` : ""}</div>
+      ${summary.delays ? `<p>${summary.delays} delay of game: zero points for each missed decision.</p>` : ""}${coach}${sw}
       ${allBadges.length ? `<div class="block"><h3>Badges</h3><div class="badges">${allBadges.map((b) => `<span class="badge">${esc(b.label)}</span>`).join("")}</div></div>` : ""}
       <div class="block"><h3>Every call</h3><p class="muted">Best call = no win probability left on the table. Negative numbers show percentage points lost versus the model’s best option, not the change from before the snap.</p><ul class="recap">${recap}</ul></div>
       <div class="actions"><button class="next" id="share">Share graphic</button><button class="ghost" id="copy-result">Copy result text</button><button class="ghost" id="again">${state.mode === "daily" ? "Play a Quick Game" : "Play again"}</button></div>
@@ -501,9 +480,9 @@
     line("MAKE THE CALL",115,70,"#F7D23E"); line(modeName.toUpperCase(),175,28);
     line(summary.grade,460,260,"#F7D23E"); line(summary.style.label,555,50);
     line(`${summary.basePoints}/${summary.n*100} decision points`,650,46);
-    line(`+${summary.bonusPoints} bonus · ${summary.n} decisions`,710,32);
-    line(summary.wpCount ? `${summary.lost} WP points left on the table` : "Rules and strategy practice",785,32);
-    const colors={optimal:"#F7D23E",close:"#F7D23E",defensible:"#8FD6B0",costly:"#F2913D",blunder:"#EE5A55"};
+    line(`+${summary.bonusPoints} bonus · ${summary.n} decisions${summary.delays ? " · " + summary.delays + " delay of game" : ""}`,710,32);
+    line(summary.wpCount ? `${summary.lost} WP points left on the table` : "No completed decisions",785,32);
+    const colors={optimal:"#F7D23E",close:"#F7D23E",defensible:"#8FD6B0",costly:"#F2913D",blunder:"#EE5A55",delay:"#F2913D"};
     results.slice(0,40).forEach((r,i) => { c.fillStyle=colors[r.g.tier]; c.fillRect(70+(i%10)*104,840+Math.floor(i/10)*38,88,26); });
     line(summary.wpCount ? "Real NFL decisions. Your instincts. The math." : "The clock. The rules. Your call.",1060,30);
     line("davidsolar.dev/win-probability",1120,30,"#F7D23E");

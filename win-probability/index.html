@@ -237,6 +237,14 @@ a { color: var(--yellow); }
 .wp-row .val small {font: 13px var(--body); color: var(--chalk-dim);}
 .wp-row {padding: 14px; background:var(--panel); border:1px solid var(--line); border-radius:6px;}
 @media(min-width:800px){.wp-list {grid-template-columns:repeat(auto-fit,minmax(250px,1fr));}.choices {grid-template-columns:repeat(auto-fit,minmax(230px,1fr));}}
+.analysis-details { margin: 14px 0 0; padding: 12px 0; border-top: 1px solid var(--line); }
+.analysis-details summary { cursor: pointer; color: var(--chalk-dim); font-weight: 600; }
+.analysis-details[open] summary { margin-bottom: 14px; color: var(--yellow); }
+.call-summary { padding: 14px 18px; margin-top: 14px; border-left: 3px solid var(--yellow); background: var(--panel); }
+.call-summary p { margin: 4px 0; }
+.model-context { color: var(--chalk-dim); font-size: 13px; margin: 8px 0; }
+.progress span.t-delay, .dot.t-delay { background: var(--orange); }
+.verdict .tier.t-delay { color: var(--orange); }
 </style>
 </head>
 <body>
@@ -255,7 +263,7 @@ a { color: var(--yellow); }
       <label class="switch"><input type="checkbox" id="clock-toggle" checked> 25-second play clock</label>
     </div>
     <p class="record" id="record"></p>
-    <p class="credits">Historical modes use real plays from nflverse play-by-play data, 2009 through this season. Clock Management and Overtime Toss use clearly labeled constructed teaching situations; they do not assign numerical win probabilities. Win probabilities come from Ben Baldwin's <a href="https://rbsdm.com/stats/fourth_calculator/">nfl4th model</a>, with famous calls checked against published analysis from Advanced NFL Stats, EdjSports, ESPN and the NFL's Next Gen Stats.</p>
+    <p class="credits">Play through real NFL situations from nflverse play-by-play data, 2009 through this season. Win probabilities come from Ben Baldwin's <a href="https://rbsdm.com/stats/fourth_calculator/">nfl4th model</a>, with famous calls checked against published analysis from Advanced NFL Stats, EdjSports, ESPN and the NFL's Next Gen Stats.</p>
   </section>
 
   <section id="play" hidden>
@@ -275,7 +283,7 @@ a { color: var(--yellow); }
 </main>
 
 <script src="data.js"></script>
-<script src="practice.js"></script>
+<script src="scenario-adjustments.js"></script>
 <script src="engine.js"></script>
 <script src="app.js"></script>
 </body>
