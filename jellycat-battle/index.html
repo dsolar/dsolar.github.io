@@ -6,7 +6,7 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#f9f1e8">
   <meta name="description" content="An unofficial, single-player collection and battle game inspired by real Jellycat plush characters.">
-  <title>Jellycat Battle Club • The Softlands v0.9</title>
+  <title>Jellycat Battle Club • The Softlands v1.0</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A5%90%3C/text%3E%3C/svg%3E">
   <style>
 
@@ -210,6 +210,12 @@ body.pixel-world-active .world-shell{border-radius:13px;}
 body.pixel-world-active .world-parlor{border-radius:4px;background:#f4dfd1;border:3px solid #665b80;box-shadow:2px 3px 0 #544b72;}
 @keyframes pixel-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 @media(prefers-reduced-motion:reduce){body.pixel-world-active .world-pan,body.pixel-world-active .world-player-overlay{transition:none;}body.pixel-world-active .world-player-overlay.moving .pixel-plush{animation:none;}}
+
+/* v1.0 bespoke plush portrait pixels: sharp outlines, no smoothing, transparent background */
+.plush-pixel-art{image-rendering:pixelated;image-rendering:crisp-edges;shape-rendering:crispEdges;filter:drop-shadow(2px 4px 0 #4b344225);}
+.avatar .plush-pixel-art{max-width:86%;max-height:100%;object-fit:contain;}
+.fighter .plush-pixel-art{height:145px;}
+.starter-portrait .plush-pixel-art{height:205px;}
 
 </style>
 </head>
@@ -561,10 +567,90 @@ function changeTeam(s,id){if(!owned(s,id))throw Error('Not collected');const a=s
  if(a.team.includes(id)){if(a.team.length===1)throw Error('You need at least one team member');a.team=a.team.filter(x=>x!==id);}else {if(a.team.length===3)throw Error('Team already full');a.team.push(id);}return a;}
 function saveNickname(s,id,text){if(!owned(s,id))throw Error('Not collected');const a=structuredClone(s);const name=String(text||'').trim().slice(0,24);if(!name)throw Error('Enter a nickname');a.nicknames[id]=name;return a;}
 
+/* The Softlands · twenty-five hand-designed, original 32×40 pixel plush silhouettes.
+   Deliberately no external photos or sprites. The same pixels power cards and world sprites. */
+const FEATURED_SPRITES = Object.freeze({
+ 'Amuseables Croissant':'croissant',
+ 'Amuseables Birthday Cake':'cake',
+ 'Amuseables Peanut':'peanut',
+ 'Amuseables Espresso Cup':'cup',
+ 'Amuseables Glazespun Doughnut':'doughnut',
+ 'Amuseables Sourdough':'bread',
+ 'Amuseables Peach':'peach',
+ 'Amuseables Sunflower':'sunflower',
+ 'Albee Bee':'bee',
+ 'Amuseables Daisy':'daisy',
+ 'Bashful Beige Bunny':'bunny',
+ 'Bo Bigfoot':'bigfoot',
+ 'Bartholomew Bear':'bear',
+ 'Peanut Penguin':'penguin',
+ 'Smudge Elephant':'elephant',
+ 'Ricky Rain Frog':'frog',
+ 'Ghost Bob':'ghost',
+ 'Jellycat Jack':'cat',
+ 'Odell Octopus':'octopus',
+ 'Timmy Turtle':'turtle',
+ 'Gobfrey Whale Shark':'shark',
+ 'Amuseables Sports Golf Ball':'golf',
+ 'Amuseables Sports Tennis Ball':'tennis',
+ 'Amuseables Sports Baseball':'baseball',
+ 'Amuseables Jellycat Soccer Ball':'soccer',
+});
+const INK='#51435a', IVORY='#fff9eb', EYE='#342c38', CHEEK='#dc899a';
+// Each model's body, appendages and signature features are independent pixel geometry.
+function spritePixels(name){const kind=FEATURED_SPRITES[name];if(!kind)return null;
+ const a=new Array(32*40).fill(null);
+ const r=(x,y,w,h,c)=>{for(let yy=Math.max(0,Math.floor(y));yy<Math.min(40,Math.ceil(y+h));yy++)for(let xx=Math.max(0,Math.floor(x));xx<Math.min(32,Math.ceil(x+w));xx++)a[yy*32+xx]=c;};
+ const e=(cx,cy,rx,ry,c)=>{for(let y=Math.floor(cy-ry);y<=cy+ry;y++)for(let x=Math.floor(cx-rx);x<=cx+rx;x++)if((((x+.5-cx)/rx)**2+((y+.5-cy)/ry)**2)<=1)r(x,y,1,1,c);};
+ const stripe=(x,y,l,c)=>r(x,y,l,1,c);
+ const body=(x,y,w,h,color,shade)=>{e(x+w/2,y+h/2,w/2+1,h/2+1,INK);e(x+w/2,y+h/2,w/2-1,h/2-1,shade);e(x+w/2-2,y+h/2-2,w/2-3,h/2-4,color);};
+ const foot=(x,y,fill)=>{r(x,y,5,8,INK);r(x+1,y,3,6,fill);r(x-1,y+6,7,2,INK);r(x,y+6,5,1,fill);};
+ const feet=(fill)=>{foot(8,29,fill);foot(20,29,fill)};
+ const arms=(fill)=>{r(3,23,6,7,INK);r(4,23,4,6,fill);r(24,23,6,7,INK);r(25,23,4,6,fill);};
+ const face=(y=22,x=16)=>{r(x-6,y,2,3,EYE);r(x+5,y,2,3,EYE);r(x-5,y,1,1,IVORY);r(x+6,y,1,1,IVORY);r(x-9,y+4,3,1,CHEEK);r(x+8,y+4,3,1,CHEEK);r(x-2,y+4,5,1,INK);r(x-3,y+3,1,1,INK);r(x+3,y+3,1,1,INK);};
+ switch(kind){
+ case 'croissant':feet('#b9783f');arms('#df9e56');body(5,12,22,21,'#efbc77','#c88746');e(5,20,5,10,INK);e(27,20,5,10,INK);e(5,19,3,8,'#b47b42');e(27,19,3,8,'#b47b42');e(16,21,9,10,'#f1c07c');r(13,9,7,4,'#c48d50');r(14,9,5,4,'#ffe0a1');stripe(10,17,3,'#bd8548');stripe(21,17,3,'#bd8548');stripe(9,23,3,'#dfa15b');face(24);break;
+ case 'cake':feet('#bd82a6');arms('#f4bfd3');r(5,14,22,19,INK);r(6,16,20,15,'#e6abc3');r(6,15,20,7,'#fff2e0');r(8,11,16,6,'#fff2e0');r(10,9,12,4,'#f4b6c7');r(15,4,2,6,'#715068');r(14,2,4,4,'#ffd878');r(8,20,4,5,'#fff2e0');r(18,20,4,5,'#fff2e0');face(26);break;
+ case 'peanut':feet('#c9965b');arms('#d4aa6f');e(16,14,10,11,INK);e(16,27,10,10,INK);e(16,14,8,9,'#e1b47a');e(16,27,8,9,'#d7a66b');r(12,18,8,5,'#d7a66b');stripe(12,11,7,'#f0cb91');stripe(12,30,7,'#b88959');face(23);break;
+ case 'cup':feet('#f0dec1');arms('#e9dfc9');r(7,12,18,21,INK);r(8,13,16,18,'#fcf4df');r(8,13,16,4,'#9a6d50');r(10,10,12,4,'#d7b4a1');r(24,17,6,12,INK);r(25,19,3,7,IVORY);r(10,8,1,4,'#d5d1c3');r(19,7,1,5,'#d5d1c3');face(25);break;
+ case 'doughnut':feet('#d69a69');arms('#e3ae80');e(16,20,13,13,INK);e(16,19,11,11,'#ca966d');e(16,17,11,9,'#f5b3ba');e(16,19,4,5,INK);e(16,19,2,3,'#f7e2bc');for(const q of [[7,18],[21,13],[24,23],[11,11],[7,25]])r(q[0],q[1],3,1,['#fff1a6','#d6e6bf','#fff5eb'][q[0]%3]);face(28);break;
+ case 'bread':feet('#c58d59');arms('#d5a36f');e(16,19,13,12,INK);e(16,17,11,10,'#e8b77b');r(6,19,20,12,'#dcaa72');r(10,16,12,3,'#f5d29c');stripe(10,21,2,'#a7754b');stripe(16,20,2,'#a7754b');stripe(22,21,2,'#a7754b');face(26);break;
+ case 'peach':feet('#e8a0a8');arms('#f0b4b5');e(12,19,10,12,INK);e(20,19,10,12,INK);e(12,19,8,10,'#f5b3b7');e(20,19,8,10,'#f3adab');e(17,8,6,4,'#669761');r(15,11,2,6,'#9d7957');stripe(9,15,4,'#ffd1bf');face(24);break;
+ case 'sunflower':feet('#6aa172');arms('#6da071');r(14,21,5,16,'#5e8e58');for(let i=0;i<10;i++){const t=i*Math.PI/5;e(16+9*Math.cos(t),17+9*Math.sin(t),5,6,INK);e(16+9*Math.cos(t),17+9*Math.sin(t),4,5,'#ffdc67');}e(16,17,9,9,INK);e(16,17,7,7,'#926347');r(4,28,9,5,'#71a76a');r(20,28,9,5,'#71a76a');face(18);break;
+ case 'bee':feet('#d8ac55');arms('#f1cd6e');e(9,13,7,9,'#bce5ed');e(23,13,7,9,'#dceefa');e(16,23,12,12,INK);e(16,22,10,10,'#f3d66e');r(7,17,18,5,'#594b55');r(8,26,16,4,'#594b55');r(12,8,2,6,INK);r(20,8,2,6,INK);face(22);break;
+ case 'daisy':feet('#6b9b67');arms('#93ad76');r(14,20,5,17,'#5f9b65');for(let i=0;i<8;i++){const t=i*Math.PI/4;e(16+9*Math.cos(t),16+9*Math.sin(t),5,6,INK);e(16+9*Math.cos(t),16+9*Math.sin(t),4,5,'#faf4eb');}e(16,16,8,8,INK);e(16,16,6,6,'#edc65f');face(17);break;
+ case 'bunny':feet('#c9b4a3');arms('#e7d6c3');r(7,3,7,16,INK);r(19,2,7,17,INK);r(9,4,3,13,'#efc4c8');r(21,3,3,14,'#efc4c8');body(5,14,22,20,'#eee0ce','#c7b7a5');r(12,28,8,3,'#fcf2e3');face(23);break;
+ case 'bigfoot':feet('#8f6e59');arms('#a18167');r(5,6,22,29,INK);r(7,4,18,28,'#9b7961');r(8,7,16,8,'#b69475');r(11,18,11,10,'#e5cfb0');r(4,30,9,7,INK);r(20,30,9,7,INK);r(5,31,7,5,'#b08d72');r(21,31,7,5,'#b08d72');face(23);break;
+ case 'bear':feet('#b88f74');arms('#caa58b');e(8,11,6,6,INK);e(24,11,6,6,INK);e(8,11,4,4,'#bd977f');e(24,11,4,4,'#bd977f');body(5,10,22,23,'#d4af93','#a77f68');e(16,26,5,4,'#e8d0b7');face(21);break;
+ case 'penguin':feet('#e6a459');arms('#667387');body(5,8,22,24,'#7c8596','#4f5969');e(16,23,9,12,'#f7f3e9');r(13,24,6,3,'#e6ac54');face(18);break;
+ case 'elephant':feet('#a6a5b7');arms('#b9b8c6');e(5,19,8,11,INK);e(27,19,8,11,INK);e(5,19,6,9,'#b3b1c0');e(27,19,6,9,'#b3b1c0');body(6,10,20,23,'#c2c1cc','#a1a1b0');r(14,24,6,10,INK);r(15,25,4,8,'#c2c1cc');face(21);break;
+ case 'frog':feet('#72ad70');arms('#98ce83');e(9,12,6,7,INK);e(23,12,6,7,INK);e(9,12,4,5,'#a5d28c');e(23,12,4,5,'#a5d28c');body(5,13,22,20,'#a0d17c','#6a9e63');r(9,27,15,2,'#669e60');face(21);break;
+ case 'ghost':e(16,20,12,14,INK);e(16,20,10,12,'#fff4ec');r(6,21,20,13,'#fff4ec');r(6,32,6,4,'#fff4ec');r(14,33,5,4,'#fff4ec');r(22,31,5,5,'#fff4ec');face(23);break;
+ case 'cat':feet('#444857');arms('#434654');r(6,5,9,12,INK);r(18,5,9,12,INK);r(8,7,5,6,'#b5a8b8');r(20,7,5,6,'#b5a8b8');body(5,13,22,20,'#525462','#343644');r(25,15,4,3,'#f2deb4');face(24);break;
+ case 'octopus':for(let i=0;i<4;i++){let x=4+i*7;r(x,29,5,8,INK);r(x+1,29,3,7,'#d9a3a4');}arms('#e8aeb2');e(16,20,12,13,INK);e(16,18,10,11,'#efb8b6');r(10,12,12,5,'#ffd5ce');face(21);break;
+ case 'turtle':feet('#769a7c');arms('#8aa98b');e(16,23,12,11,INK);e(16,23,10,9,'#698f74');e(16,22,7,7,'#9fba80');r(10,20,13,1,'#4f715d');r(13,16,7,12,'#6d8e6c');e(16,11,7,8,'#abc8a0');face(10);break;
+ case 'shark':feet('#789dad');arms('#8ab3c7');e(16,22,13,11,INK);e(16,21,11,9,'#84b6c5');r(11,23,14,7,'#d7e9e6');r(14,5,5,10,INK);r(15,6,3,9,'#84b6c5');r(22,15,8,7,'#7799af');r(9,30,4,2,'#e5edef');face(20);break;
+ case 'golf':case 'tennis':case 'baseball':case 'soccer':{
+ const shade=kind==='tennis'?'#b5c35b':kind==='golf'?'#b6b9af':'#aaadb5',fill=kind==='tennis'?'#deee79':kind==='golf'?'#f1f0e8':'#f8f3e9';feet(shade);arms(fill);e(16,21,13,13,INK);e(16,20,11,11,fill);
+ if(kind==='golf')for(let y=12;y<30;y+=5)for(let x=8+(y%2);x<25;x+=6){if(((x-16)**2+(y-20)**2)<100)r(x,y,2,1,'#ccd0cb');}
+ if(kind==='tennis'){for(let y=12;y<28;y++){let x=Math.round(16+8*Math.cos((y-12)*Math.PI/16));r(x,y,2,1,IVORY);r(31-x,y,2,1,IVORY);}}
+ if(kind==='baseball'){for(let y=11;y<29;y++){let x=Math.round(11+2*Math.sin((y-11)/4));r(x,y,1,2,'#cf777a');r(32-x,y,1,2,'#cf777a');}}
+ if(kind==='soccer'){e(16,17,5,5,'#565965');r(9,12,4,4,'#596070');r(21,12,4,4,'#596070');r(9,26,5,3,'#596070');r(21,26,5,3,'#596070');}
+ face(23);break;
+ }
+ }
+ return a;
+}
+function runsOf(pixels,emit){for(let y=0;y<40;y++){let x=0;while(x<32){const c=pixels[y*32+x];if(!c){x++;continue;}let end=x+1;while(end<32&&pixels[y*32+end]===c)end++;emit(x,y,end-x,1,c);x=end;}}}
+function drawFeaturedPlush(ctx,name){const pixels=spritePixels(name);if(!pixels)return false;runsOf(pixels,(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h)});return true;}
+function featuredPlushSvg(name){const pixels=spritePixels(name);if(!pixels)return null;let out='';runsOf(pixels,(x,y,w,h,c)=>{out+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`});return `<svg class="plush-svg plush-pixel-art" viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Original pixel plush illustration of ${name.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}">${out}</svg>`;}
+
+
 /* Original hand-coded character illustrations. These are NOT official Jellycat artwork. */
 function artHash(s){let x=0;for(const c of s)x=(Math.imul(x,31)+c.charCodeAt(0))>>>0;return x;}
 const ART_PALETTES=[['#efbc74','#d99a53','#fff0d6'],['#d0ad90','#b48972','#f6e7d6'],['#bddc9e','#91bc79','#eaf6ca'],['#a6d9e3','#7aafc9','#def3f9'],['#c9b1de','#a98ac8','#f0e0fb'],['#c2d8ee','#85b2dc','#f0f7ff']];
 function plushArt(p,extraClass=''){if(!p)return '';
+ const sprite=featuredPlushSvg(p.officialName);if(sprite)return sprite;
  const n=p.officialName.toLowerCase(),h=artHash(n),idx=p.typeIndex??0,base=ART_PALETTES[idx];let col=[base[0],base[1],base[2]];
  if(/croissant|sourdough|bagel|toastie|bread/.test(n))col=['#e9b16b','#c98a4d','#ffebc0'];
  else if(/golf ball|baseball|snow|cloud|ghost|white bunny|cream bunny|whale|tennis ball/.test(n))col=['#f5f1e9','#d9d2cb','#ffffff'];
@@ -651,6 +737,8 @@ function plushArt(p,extraClass=''){if(!p)return '';
 }
 export {plushArt};
 
+
+
 /* Softlands GBA-inspired renderer. Original, hand-defined 32px pixel vocabulary.
    Terrain is visually independent from the collision/interaction tile grid.
    Both layers share world-grid coordinates and the existing camera transform. */
@@ -658,13 +746,13 @@ const PIXEL_TILE = 32;
 const PIXEL_PALETTE = Object.freeze({grass:'#87b76b',tree:'#4e8354',water:'#68b9c9',path:'#dfc18a',roof:'#bd6877'});
 function pixelHash(x,y,n=0){let a=(Math.imul(x+101,374761393)^Math.imul(y+77,668265263)^Math.imul(n+1,2246822519))>>>0;return (Math.imul(a^(a>>>13),1274126177)^(a>>>16))>>>0;}
 const pal={
- wood:['#72a66c','#a2c77a','#4d8258'],garden:['#b2c77b','#c7d894','#819c59'],moon:['#8c8fb4','#b2aed1','#777a9c'],bakery:['#9bb879','#bbcd89','#77985e'],square:['#9fbe7a','#c4d399','#76995e'],cove:['#a6bd8d','#c3d6a5','#819b7e'],sports:['#85b86f','#a9ca81','#649751'],hill:['#81aa8f','#a7c3ae','#698d76'],orchard:['#9fc078','#c7d88c','#729b68'], 'orchard-flower':['#a8c981','#c6d989','#7a9f68'],riverside:['#9fc69a','#c3d6a2','#80aa80'],grove:['#648e62','#86ad6c','#476d51'],trail:['#dcbd89','#f0d7a1','#ac9568'],paved:['#c8b1a0','#e2cfb7','#a18c83'],bridge:['#b18c64','#cfb084','#826646'],river:['#65b3c6','#86d1d4','#3c8caa'],cliff:['#9c9c9e','#bab3ae','#686d77'],house:['#9ac083','#b6c788','#759968'],'cave-floor':['#888690','#a5a1a9','#5e5e6c'],crystal:['#9792a3','#b4aacc','#6b6981'], 'wood-floor':['#bd936b','#d4ac78','#967252'],rug:['#b68caa','#d0acc4','#8e688f'],counter:['#c18f70','#dbac80','#94694f'],shelf:['#9f846b','#bc9e7c','#745c49'],wall:['#9c8c82','#b9a8a0','#766d70'],doorway:['#b7a080','#d4b894','#846950']
+ wood:['#72a66c','#a2c77a','#4d8258'],garden:['#b2c77b','#c7d894','#819c59'],moon:['#8c8fb4','#b2aed1','#777a9c'],bakery:['#9bb879','#bbcd89','#77985e'],square:['#9fbe7a','#c4d399','#76995e'],cove:['#a6bd8d','#c3d6a5','#819b7e'],sports:['#85b86f','#a9ca81','#649751'],hill:['#81aa8f','#a7c3ae','#698d76'],orchard:['#9fc078','#c7d88c','#729b68'], 'orchard-flower':['#a8c981','#c6d989','#7a9f68'],riverside:['#9fc69a','#c3d6a2','#80aa80'],grove:['#648e62','#86ad6c','#476d51'],trail:['#dcbd89','#f0d7a1','#ac9568'],paved:['#c8b1a0','#e2cfb7','#a18c83'],bridge:['#b18c64','#cfb084','#826646'],river:['#65b3c6','#86d1d4','#3c8caa'],cliff:['#9c9c9e','#bab3ae','#686d77'],house:['#9ac083','#b6c788','#759968'],'cave-floor':['#888690','#a5a1a9','#5e5e6c'],crystal:['#9792a3','#b4aacc','#6b6981'], 'wood-floor':['#bd936b','#d4ac78','#967252'],rug:['#b68caa','#d0acc4','#8e688f'],counter:['#c18f70','#dbac80','#94694f'],shelf:['#9f846b','#bc9e7c','#745c49'],stairs:['#c4ab88','#dfc69e','#967f6d'],display:['#aa8f82','#decaa5','#846758'],'shop-floor':['#dfc9aa','#f2dfbd','#bb9f89'],'greenhouse-floor':['#8eb985','#b6d49c','#71a672'],'glass-wall':['#91c1b9','#d2e9d0','#628a83'],'glass-path':['#ccc7a1','#e5dfb2','#a49e88'],planter:['#966c53','#b98b66','#6b4f43'],'flower-bed':['#638955','#a6bd78','#446b46'],'potting-bench':['#9b8069','#bf9a75','#70553e'],wall:['#9c8c82','#b9a8a0','#766d70'],doorway:['#b7a080','#d4b894','#846950']
 };
 function kindOf(tile){for(const k of tile.classList){if(k.startsWith('terrain-'))return k.slice(8)}return 'square'}
 function box(g,x,y,w,h,c){g.fillStyle=c;g.fillRect(x|0,y|0,w|0,h|0)}
 function pathTile(g,x,y,seed){const c=pal.trail;box(g,x,y,32,32,c[0]);for(let i=0;i<5;i++){const h=pixelHash(seed,i);box(g,x+(h%29),y+((h>>>6)%30),2+(h%3),1,c[i%2?1:2]);}box(g,x+1,y+1,30,1,'#eacb98');}
 function paintGround(g,x,y,kind,wx,wy){const p=pal[kind]||pal.square, h=pixelHash(wx,wy);
- box(g,x,y,32,32,p[0]);if(['trail','paved','bridge','cave-floor','wood-floor','rug','counter','shelf','wall','doorway'].includes(kind)){
+ box(g,x,y,32,32,p[0]);if(['trail','paved','bridge','cave-floor','wood-floor','rug','counter','shelf','wall','doorway','stairs','display','glass-wall','glass-path','planter','flower-bed','potting-bench','greenhouse-floor','shop-floor'].includes(kind)){
    if(kind==='trail')pathTile(g,x,y,wx*5+wy*3);
    else if(kind==='paved'){for(let r=0;r<3;r++){const yy=y+r*11;box(g,x,yy+10,32,1,'#b5a091');box(g,x+(r%2?19:5),yy,1,10,'#b5a091');}box(g,x+2,y+3,5,2,'#e6d9c0');}
    else if(kind==='bridge'){for(let i=0;i<4;i++){box(g,x,y+i*8,32,7,i%2?'#bf9972':'#cba77c');box(g,x,y+i*8+7,32,1,'#806448');}box(g,x+1,y,2,32,'#7b664d');box(g,x+29,y,2,32,'#7b664d');}
@@ -672,6 +760,13 @@ function paintGround(g,x,y,kind,wx,wy){const p=pal[kind]||pal.square, h=pixelHas
    else if(kind==='wood-floor'||kind==='doorway'){for(let i=0;i<4;i++){box(g,x,y+i*8+7,32,1,'#9b7155');box(g,x+((wy+i)%2?10:23),y+i*8,1,7,'#aa7e5e');}}
    else if(kind==='rug'){box(g,x+1,y+1,30,30,'#af799c');box(g,x+4,y+4,24,24,'#d8aec3');box(g,x+9,y+9,14,14,'#be8ead');}
    else if(kind==='counter'||kind==='shelf'){box(g,x,y,32,32,'#c5aa8e');for(let i=0;i<3;i++)box(g,x+1,y+3+i*10,30,6,'#88614e');if(kind==='shelf')for(let i=0;i<5;i++)box(g,x+2+i*6,y+8,4,5,['#b96167','#e5bb67','#69939b'][i%3]);}
+   else if(kind==='stairs'){box(g,x,y,32,32,'#8e8578');for(let i=0;i<4;i++){box(g,x+1,y+i*8,30,7,i%2?'#d3bd9b':'#e0c7a2');box(g,x+1,y+7+i*8,30,1,'#8b7969');}box(g,x,y,3,32,'#827668');box(g,x+29,y,3,32,'#827668');}
+   else if(kind==='shop-floor'){for(let yy=0;yy<4;yy++)for(let xx=0;xx<4;xx++)box(g,x+xx*8,y+yy*8,8,8,(xx+yy)%2?'#e7d1ad':'#f2dfbf');box(g,x+1,y+1,30,1,'#c8ad90');}
+   else if(kind==='greenhouse-floor'){box(g,x,y,32,32,'#aacb93');for(let i=0;i<6;i++){let q=pixelHash(wx,wy,i);box(g,x+q%30,y+(q>>>7)%30,3,2,i%2?'#7da871':'#c8d9a0');}}
+   else if(kind==='glass-wall'){box(g,x,y,32,32,'#a4c9bd');box(g,x+3,y+3,26,26,'#d5e9d0');box(g,x+16,y,2,32,'#638f89');box(g,x,y+17,32,2,'#638f89');box(g,x+6,y+6,5,15,'#eef6dc');}
+   else if(kind==='glass-path'){box(g,x,y,32,32,'#b5bf98');box(g,x+1,y+1,30,30,'#d9dabb');for(let i=0;i<3;i++)box(g,x+2,y+10*i+8,28,1,'#b2bc9b');}
+   else if(kind==='planter'||kind==='flower-bed'){box(g,x,y,32,32,'#b5ca8f');box(g,x+2,y+5,28,24,'#6b8a59');box(g,x+4,y+8,24,18,'#855e4d');for(let i=0;i<4;i++){let q=pixelHash(wx,wy,i),cx=x+6+(q%20),cy=y+9+((q>>>6)%13);box(g,cx,cy,2,10,'#6c9f5e');box(g,cx-3,cy-2,8,5,['#f9d783','#e5a6b4','#efe9ea','#adbbf1'][i]);box(g,cx,cy,2,2,'#f5ecac');}box(g,x+2,y+4,28,3,'#c7986d');}
+   else if(kind==='potting-bench'||kind==='display'){box(g,x,y,32,32,'#987b64');box(g,x+1,y+3,30,9,'#d1ad82');box(g,x+2,y+14,28,13,'#ae8767');for(let i=0;i<3;i++){box(g,x+4+i*9,y+6,7,6,['#a6cda1','#b6add8','#f2c78e'][i]);box(g,x+5+i*9,y+3,4,4,'#f6e2bb');}box(g,x+4,y+27,3,5,'#735a49');box(g,x+25,y+27,3,5,'#735a49');}
    else if(kind==='wall'){box(g,x,y,32,32,'#aa9f99');for(let i=0;i<3;i++){box(g,x,y+9+i*10,32,1,'#7d7776');box(g,x+(i%2?14:3),y+i*10,1,9,'#827b79');}}
    return;
  }
@@ -683,6 +778,41 @@ function paintGround(g,x,y,kind,wx,wy){const p=pal[kind]||pal.square, h=pixelHas
  if(kind==='moon'){box(g,x+5+(h%13),y+4,2,2,'#d3c9e2');}
  if(kind==='sports'){box(g,x+6,y+20,8,1,'#d8e4ae');}
 }
+function terrainFamily(k){if(['orchard','orchard-flower','riverside','garden','square','wood','bakery','sports','hill','moon','grove','house'].includes(k))return 'meadow';if(['trail','paved','stairs','bridge','doorway'].includes(k))return 'path';if(k==='river')return 'water';if(k==='cliff')return 'rock';return 'interior';}
+function transitionKind(k,neighbor){const a=terrainFamily(k),b=terrainFamily(neighbor);return a===b?'none':(a==='water'||b==='water')?'shore':(a==='rock'||b==='rock')?'cliff':((a==='path'&&b==='meadow')||(b==='path'&&a==='meadow'))?'path-grass':'none';}
+function paintTerrainTransitions(g,cells,cols,rows,baseX,baseY,area){const map=new Map(cells.map(c=>[`${c.dataset.x},${c.dataset.y}`,kindOf(c)]));
+ const neighbor=(X,Y)=>map.get(`${X},${Y}`),ambient='#739e67';
+ for(const c of cells){const X=+c.dataset.x,Y=+c.dataset.y,x=(X-baseX)*32,y=(Y-baseY)*32,k=kindOf(c),fam=terrainFamily(k);
+  for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+   const n=neighbor(X+dx,Y+dy);if(!n)continue;
+   const type=transitionKind(k,n),edgeRight=dx===1,edgeBottom=dy===1;
+   if(type==='path-grass'&&fam==='path'&&k!=='bridge'&&k!=='stairs'){
+    // Uneven grassy bites into a trail: 3–5px staggered, not a hard ruler-straight edge.
+    for(let i=0;i<5;i++){const q=pixelHash(X,Y,i+dx*5+dy*19),bite=2+q%3;
+     if(dx)box(g,x+(edgeRight?32-bite:0),y+i*7,bite,5,i%2?'#a8c68b':ambient);
+     else box(g,x+i*7,y+(edgeBottom?32-bite:0),5,bite,i%2?'#b3c990':ambient);
+    }
+   }
+   if(type==='shore'&&fam==='water'){
+    const color=terrainFamily(n)==='rock'?'#9aacc0':'#ead6a5';
+    if(dx){box(g,x+(edgeRight?29:0),y,3,32,color);for(let i=0;i<4;i++)box(g,x+(edgeRight?27:3),y+i*8+3,2,4,'#a8d7c8');}
+    else {box(g,x,y+(edgeBottom?29:0),32,3,color);for(let i=0;i<4;i++)box(g,x+i*8+2,y+(edgeBottom?27:3),4,2,'#a8d7c8');}
+   }
+   if(type==='cliff'&&fam==='rock'&&terrainFamily(n)!=='rock'){
+    if(dy===1){box(g,x,y+28,32,3,'#77727a');for(let i=0;i<4;i++)box(g,x+i*8+1,y+30,5,2,'#514f60');}
+    if(dx===1)box(g,x+29,y+6,3,24,'#77727a');
+   }
+  }
+  if(area==='orchard'){
+   const high=areaElevation('orchard',X,Y),low=areaElevation('orchard',X,Y+1);
+   if(high>low&&k!=='river'&&k!=='bridge'&&k!=='stairs'&&terrainFamily(k)!=='rock'){
+    box(g,x,y+28,32,3,'#bfa88b');box(g,x,y+31,32,1,'#746d72');
+    for(let i=0;i<4;i++)box(g,x+i*8+1,y+29,3,2,'#e8d2ac');
+   }
+   if(k==='stairs'){box(g,x+1,y+1,30,2,'#f7dfb8');box(g,x+2,y+9,28,2,'#f7dfb8');}
+  }
+ }
+}
 function drawBush(g,x,y,scale=1){box(g,x+10*scale,y+15*scale,12*scale,9*scale,'#4e7954');box(g,x+5*scale,y+8*scale,22*scale,15*scale,'#477956');box(g,x+9*scale,y+4*scale,15*scale,7*scale,'#6aa56b');box(g,x+7*scale,y+12*scale,5*scale,4*scale,'#80b477');box(g,x+21*scale,y+15*scale,4*scale,4*scale,'#315f4b');}
 function drawTreeCanopy(g,x,y,seed){let pal2=['#396f50','#4e9259','#6baa64','#90bd73'];box(g,x+6,y+5,22,22,pal2[0]);box(g,x+2,y+11,30,17,pal2[0]);box(g,x+5,y+1,23,21,pal2[1]);box(g,x+1,y+12,29,12,pal2[1]);box(g,x+10,y+4,13,8,pal2[2]);box(g,x+7,y+11,9,6,pal2[2]);box(g,x+22,y+14,5,4,pal2[3]);if(seed%4===0){box(g,x+16,y+6,3,2,'#c3d68a');box(g,x+8,y+18,4,2,'#9ccf84');}}
 function drawHouse(g,x,y,seed,name=''){const bakery=/bakery|oven/i.test(name),shop=/store|market/i.test(name),home=/cottage|home|house|hut/i.test(name),farm=/barn|windmill/i.test(name);
@@ -691,7 +821,12 @@ function drawHouse(g,x,y,seed,name=''){const bakery=/bakery|oven/i.test(name),sh
  box(g,x+3,y+12,27,21,'#f6e4c7');box(g,x+2,y+29,29,4,'#9b7765');box(g,x+7,y+20,5,7,'#739eaf');box(g,x+9,y+21,2,4,'#d9f5f3');box(g,x+20,y+20,8,12,'#896b59');box(g,x+22,y+21,4,10,'#bd9474');box(g,x+26,y+25,1,1,'#ffeeb1');
  box(g,x,y+10,32,5,'#624b5f');box(g,x+3,y+4,26,10,roof);box(g,x+7,y,19,5,roof);box(g,x+1,y+14,30,2,'#e7bd9c');box(g,x+5,y+8,4,2,'#edb6b0');if(shop){box(g,x+5,y+15,24,5,'#f3d8a1');for(let i=0;i<4;i++)box(g,x+7+i*6,y+15,3,5,'#bfe1d6');}
  if(bakery){box(g,x+11,y+13,12,5,'#f7e5a6');box(g,x+14,y+15,5,2,'#ba7c55');}
- if(home&&seed%3===0)box(g,x+3,y+21,2,3,'#f4a9b4');}
+ if(home&&seed%3===0)box(g,x+3,y+21,2,3,'#f4a9b4');
+ if(shop){box(g,x+1,y+10,30,4,'#517d83');box(g,x+2,y+14,28,8,'#e8edbe');for(let i=0;i<5;i++)box(g,x+4+i*5,y+14,3,8,i%2?'#c7d5b8':'#75a7a9');box(g,x+11,y+8,11,3,'#f6dc8d');}
+ if(bakery){box(g,x+4,y+8,24,4,'#ab5c4d');box(g,x+5,y+12,22,4,'#f3d5aa');box(g,x+11,y-1,7,7,'#9a6b5c');box(g,x+12,y,5,5,'#dfb58a');box(g,x+11,y+15,11,3,'#f9dfa4');}
+ if(farm){box(g,x+3,y+4,26,7,'#a06963');box(g,x+9,y+0,13,6,'#c38d81');box(g,x+14,y+17,8,14,'#784e50');box(g,x+15,y+18,6,13,'#cfaa80');}
+ if(/greenhouse/i.test(name)){box(g,x+1,y+9,30,23,'#608b76');box(g,x+4,y+12,24,19,'#bee3b6');for(let i=0;i<3;i++){box(g,x+7+i*8,y+12,2,19,'#628f7b');box(g,x+5+i*8,y+20,7,2,'#628f7b');}box(g,x+4,y+5,24,7,'#79a993');box(g,x+9,y+1,14,5,'#95c1ab');box(g,x+14,y+22,5,10,'#795b60');}
+ }
 function drawLandmark(g,x,y,name,icon,seed){if(/house|cottage|bakery|store|greenhouse|barn|market|home|hut/i.test(name)||/🏠|🏡|🏘|🛍/.test(icon)){drawHouse(g,x,y,seed,name);return;}
  if(/fountain/i.test(name)||/⛲/.test(icon)){box(g,x+3,y+23,26,7,'#778baa');box(g,x+7,y+17,18,7,'#b0c7c9');box(g,x+12,y+12,8,6,'#83c9d4');box(g,x+14,y+5,4,8,'#b4e5f0');box(g,x+8,y+24,16,3,'#8bd3d5');return;}
  if(/tree|🌳/.test(name+icon)){drawTreeCanopy(g,x,y,seed);return;}
@@ -719,9 +854,11 @@ function drawProps(g,top,tiles,cols,rows){for(const tile of tiles){const X=Numbe
 let activeMap=null;
 function mountPixelWorld(){const pan=document.querySelector('#world-pan'),grid=pan?.querySelector('.world-grid');if(!pan||!grid){activeMap=null;return false;}
  const cells=[...grid.querySelectorAll('.world-tile')],cols=Number(pan.dataset.cols),rows=Number(pan.dataset.rows),baseX=Number(pan.dataset.baseX),baseY=Number(pan.dataset.baseY);if(!cols||!rows||cells.length!==cols*rows)return false;
+ const area=pan.dataset.area||'cuddlewick';
  const canvas=document.createElement('canvas'),foliage=document.createElement('canvas'),ripples=document.createElement('canvas');for(const c of [canvas,foliage,ripples]){c.width=cols*32;c.height=rows*32;c.className='pixel-world-canvas';c.setAttribute('aria-hidden','true');c.style.width='100%';c.style.height='100%';}
  canvas.classList.add('pixel-ground');foliage.classList.add('pixel-canopy');ripples.classList.add('pixel-water');const g=canvas.getContext('2d'),tg=foliage.getContext('2d'),wg=ripples.getContext('2d');g.imageSmoothingEnabled=false;tg.imageSmoothingEnabled=false;wg.imageSmoothingEnabled=false;
  cells.forEach(c=>{const X=Number(c.dataset.x)-baseX,Y=Number(c.dataset.y)-baseY,kind=kindOf(c);paintGround(g,X*32,Y*32,kind,Number(c.dataset.x),Number(c.dataset.y));});
+ paintTerrainTransitions(g,cells,cols,rows,baseX,baseY,area);
  // Use local coordinates for props instead of navigating game state. This renders identically after loading saves.
  for(const c of cells){c.dataset.minX=String(baseX);c.dataset.minY=String(baseY);}
  drawProps(g,tg,cells,cols,rows);
@@ -737,7 +874,7 @@ let waterTimer=null;
 function startPixelWater(){if(waterTimer)clearInterval(waterTimer);if(!activeMap)return;waterTimer=setInterval(()=>animateWater(Date.now()),280);}
 function stopPixelWater(){if(waterTimer)clearInterval(waterTimer);waterTimer=null;activeMap=null;}
 function replacePlush(node,name){if(!node||!name)return;let p=document.createElement('canvas');p.width=32;p.height=40;p.className='pixel-plush';p.setAttribute('aria-hidden','true');p.title=name;paintPlush(p.getContext('2d'),name);node.innerHTML='';node.append(p);}
-function paintPlush(g,name){const s=(name||'').toLowerCase(),h=pixelHash(s.length,s.charCodeAt(1)||3),sweets=/croissant|bread|cake|sourdough|toast|cookie|bagel|bun|pretzel/i.test(s),pink=/peach|strawberry|rose|flamingo|pink/i.test(s),blue=/ocean|mussel|whale|blue|shark/i.test(s),brown=/bigfoot|bear|acorn|squirrel|fox/i.test(s),ghost=/ghost/i.test(s),flower=/flower|sunflower/i.test(s),star=/star/i.test(s),bunny=/bunny|rabbit/i.test(s),ball=/ball|sports/i.test(s);
+function paintPlush(g,name){if(drawFeaturedPlush(g,name))return;const s=(name||'').toLowerCase(),h=pixelHash(s.length,s.charCodeAt(1)||3),sweets=/croissant|bread|cake|sourdough|toast|cookie|bagel|bun|pretzel/i.test(s),pink=/peach|strawberry|rose|flamingo|pink/i.test(s),blue=/ocean|mussel|whale|blue|shark/i.test(s),brown=/bigfoot|bear|acorn|squirrel|fox/i.test(s),ghost=/ghost/i.test(s),flower=/flower|sunflower/i.test(s),star=/star/i.test(s),bunny=/bunny|rabbit/i.test(s),ball=/ball|sports/i.test(s);
  const outline='#604a58',light=sweets?'#efba6d':pink?'#edb1ac':blue?'#9ac9db':brown?'#b9977d':ghost?'#f4efe4':flower?'#edc475':star?'#e6d28c':bunny?'#dfccbb':ball?'#e9e5d8':['#c3acbf','#bcb4cc','#b9cba6'][h%3];const shade=sweets?'#c8864c':pink?'#c88686':blue?'#689dad':brown?'#8d6b5c':ghost?'#d3ced2':flower?'#bb9858':star?'#bba46d':bunny?'#a79691':ball?'#b5b9b6':'#948ba0';
  // Feet are part of the silhouette, never detached from the body.
  box(g,9,29,5,6,outline);box(g,20,29,5,6,outline);box(g,10,29,3,6,shade);box(g,21,29,3,6,shade);box(g,9,34,6,2,light);box(g,19,34,7,2,light);
@@ -760,6 +897,8 @@ const REGION_AREAS={
  grotto:{id:'grotto',name:'Whisperstone Grotto',subtitle:'A hidden optional dungeon',width:36,height:28,color:'#b9b5bd',entry:{x:3,y:22},description:'An echoing limestone cave beneath Orchard Way, filled with quiet secrets.'},
  cottage:{id:'cottage',name:'Your Cozy Cottage',subtitle:'Cuddlewick · Home sweet home',width:16,height:12,color:'#d8bca9',entry:{x:8,y:8},interior:true,description:'A quilt, a bookshelf and the warmest little welcome in Cuddlewick.'},
  'bakery-room':{id:'bakery-room',name:'The Little Bakehouse',subtitle:'Snack Street · Fresh from the oven',width:18,height:13,color:'#e6c69e',entry:{x:8,y:9},interior:true,description:'The tiny bakery kitchen is full of warm bread and friendly advice.'},
+ 'store-room':{id:'store-room',name:'The Little General Store',subtitle:'Cuddlewick · Stars and tiny treasures',width:18,height:13,color:'#dfd4af',entry:{x:8,y:9},interior:true,description:'Browse shelves of ribbons, postcards and powder-blue mystery bags.'},
+ 'greenhouse-room':{id:'greenhouse-room',name:'Petal’s Greenhouse',subtitle:'Petal Gardens · A glasshouse full of flowers',width:20,height:14,color:'#b6d8aa',entry:{x:10,y:10},interior:true,description:'Little plants grow beneath a sun-warmed glass roof, with potting benches and colorful blooms.'},
  willowmere:{id:'willowmere',name:'Willowmere',subtitle:'The first town beyond Cuddlewick',width:48,height:36,color:'#b8ddc4',entry:{x:2,y:18},description:'A waterside market town where the orchard road meets the great eastern river.'},
 };
 const REGION_ZONES=Object.values(REGION_AREAS).filter(a=>!a.interior).map(a=>({id:a.id,name:a.name,color:a.color,x:a.entry.x,y:a.entry.y,description:a.description}));
@@ -813,6 +952,8 @@ const REGION_NPCS=[
  {id:'willow-keeper',area:'willowmere',name:'Mayor Clementine',product:'Amuseables Peach',x:18,y:15,icon:'✉',hint:'Welcomes travelers to Willowmere.',say:'We made our town beside the river because the bridges connect everyone. Bring me news from Poppy and I will tell you about our old river festival.',challenge:null},
  {id:'willow-fisher',area:'willowmere',name:'Mina by the Water',product:'Amuseables Michelle Mussel',x:37,y:23,icon:'🐚',hint:'A water-crossing mystery.',say:'See that little island beyond the river? Nobody can reach it without learning the Ferry Friend skill. You will come back someday!',challenge:null},
  {id:'cottage-host',area:'cottage',name:'Nana Fluff',product:'Bashful Beige Bunny',x:11,y:5,icon:'♡',hint:'Your first friend in Cuddlewick.',say:'Home is where every adventure starts. Come back whenever you want a quiet moment. The quilt was made from scraps of every town in the Softlands.',challenge:null},
+ {id:'store-clerk',area:'store-room',name:'Muffin the Shopkeeper',product:'Amuseables Peanut',x:12,y:6,icon:'✦',hint:'Trade stars for tiny treasures.',say:'Welcome to the General Store! We have sky-blue surprise bags, ribbons and postcards. Nothing is too small to be a treasure.',challenge:null},
+ {id:'greenhouse-host',area:'greenhouse-room',name:'Petal’s Helper',product:'Amuseables Sunflower',x:14,y:7,icon:'✿',hint:'Tend a little seedling.',say:'Every seedling needs patience and a dash of sunshine. Help me care for this one and it will be yours to remember.',challenge:null},
  {id:'bakery-host',area:'bakery-room',name:'Baker Crumbs',product:'Amuseables Sourdough',x:12,y:6,icon:'🥐',hint:'A warm pastry and a baking challenge.',say:'Welcome into my kitchen! The golden recipe is all about timing. Want to try the bake-off? We can always make a fresh batch.',challenge:'baker'},
  {id:'grotto-guide',area:'grotto',name:'Pebble the Cave Guide',product:'Amuseables Pebble',x:11,y:17,icon:'✦',hint:'Explains the old echoes.',say:'Listen. The cave hums when you pass the shining walls. There is a map scrap hidden in the far gallery, if you can find the way around the rock columns.',challenge:null},
 ];
@@ -847,23 +988,37 @@ function areaTreasures(area){return REGION_TREASURES.filter(n=>n.area===area);}
 function areaLandmarks(area){return REGION_LANDMARKS.filter(n=>n.area===area);}
 function windingRoad(x){return 19+Math.round(2.2*Math.sin(x/7));}
 function areaTile(area,x,y){const X=Math.floor(x),Y=Math.floor(y),h=(Math.imul(X+7,374761393)^Math.imul(Y+3,668265263))>>>0;
- if(area==='cottage'||area==='bakery-room'){
+ if(REGION_AREAS[area]?.interior){
   const W=REGION_AREAS[area].width,H=REGION_AREAS[area].height;
-  if(X<=0||X>=W-1||Y<=0||Y>=H-1)return {kind:(Y>=H-1&&X>=7&&X<=9?'doorway':'wall'),solid:!(Y>=H-1&&X>=7&&X<=9)};
-  if(Y===1||X===1||X===W-2)return {kind:'wall',solid:true};
+  const doorX=area==='greenhouse-room'?[9,11]:[7,9];
+  if(X<=0||X>=W-1||Y<=0||Y>=H-1)return {kind:(Y>=H-1&&X>=doorX[0]&&X<=doorX[1]?'doorway':'wall'),solid:!(Y>=H-1&&X>=doorX[0]&&X<=doorX[1])};
+  if(Y===1||X===1||X===W-2)return {kind:area==='greenhouse-room'&&Y===1?'glass-wall':'wall',solid:true};
   if(area==='cottage'){
    if(X>=5&&X<=10&&Y>=4&&Y<=6)return {kind:'rug',solid:false};
    if((X>=3&&X<=5&&Y>=2&&Y<=3)||(X>=12&&X<=13&&Y>=3&&Y<=4))return {kind:'shelf',solid:true};
    if(X>=3&&X<=4&&Y>=7&&Y<=8)return {kind:'counter',solid:true};
-  }else{
+  }else if(area==='bakery-room'){
    if(X>=4&&X<=13&&Y>=3&&Y<=4)return {kind:'counter',solid:true};
    if(X>=3&&X<=5&&Y>=6&&Y<=8)return {kind:'shelf',solid:true};
    if(X>=13&&X<=15&&Y>=7&&Y<=8)return {kind:'rug',solid:false};
+  }else if(area==='store-room'){
+   if((X>=3&&X<=5&&Y>=3&&Y<=7)||(X>=13&&X<=15&&Y>=3&&Y<=4))return {kind:'shelf',solid:true};
+   if(X>=8&&X<=12&&Y>=5&&Y<=5)return {kind:'display',solid:true};
+   if(X>=6&&X<=10&&Y>=3&&Y<=3)return {kind:'counter',solid:true};
+   if(X>=7&&X<=10&&Y>=8&&Y<=9)return {kind:'rug',solid:false};
+  }else if(area==='greenhouse-room'){
+   if((X>=3&&X<=6&&Y>=3&&Y<=5)||(X>=13&&X<=16&&Y>=3&&Y<=5))return {kind:'planter',solid:true};
+   if(X>=3&&X<=6&&Y>=8&&Y<=10)return {kind:'flower-bed',solid:true};
+   if(X>=14&&X<=16&&Y>=9&&Y<=10)return {kind:'potting-bench',solid:true};
+   if(X>=8&&X<=12&&Y>=6&&Y<=6)return {kind:'glass-path',solid:false};
+   return {kind:'greenhouse-floor',solid:false};
   }
-  return {kind:'wood-floor',solid:false};
+  return {kind:area==='store-room'?'shop-floor':'wood-floor',solid:false};
  }
  if(area==='orchard'){
   const road=windingRoad(X),main=Math.abs(Y-road)<=1.45;
+  // The northern orchard is a raised terrace. Stairs form deliberate shortcuts.
+  if(Y===13&&X>=17&&X<=32)return (X>=21&&X<=23)||(X>=30&&X<=31)?{kind:'stairs',solid:false}:{kind:'cliff',solid:true};
   const high=(X>=17&&X<=42&&Math.abs(Y-10)<=1)||(X>=33&&X<=37&&Y>=7&&Y<=road);
   const south=(X>=37&&X<=49&&Math.abs(Y-29)<=1)||(X>=41&&X<=44&&Y>=road&&Y<=29);
   const bridge=X>=26&&X<=30&&Math.abs(Y-road)<=2;
@@ -892,11 +1047,16 @@ function areaTile(area,x,y){const X=Math.floor(x),Y=Math.floor(y),h=(Math.imul(X
  }
  return {kind:'trail',solid:false};
 }
+function areaElevation(area,x,y){const X=Math.floor(x),Y=Math.floor(y);if(area!=='orchard')return 0;if(X<16||X>43)return 0;return Y<=9?2:Y<=13?1:0;}
 function areaGate(area,x,y){
  if(area==='cuddlewick'&&Math.hypot(x-23,y-18)<=.44)return {area:'cottage',x:8,y:8,message:'Welcome home!'};
  if(area==='cuddlewick'&&Math.hypot(x-7,y-22)<=.44)return {area:'bakery-room',x:8,y:9,message:'The Little Bakehouse smells wonderful'};
+ if(area==='cuddlewick'&&Math.hypot(x-32,y-21)<=.44)return {area:'store-room',x:8,y:9,message:'The General Store is full of little treasures'};
+ if(area==='cuddlewick'&&Math.hypot(x-24,y-8)<=.44)return {area:'greenhouse-room',x:10,y:10,message:'Sunshine warms the greenhouse glass'};
  if(area==='cottage'&&x>=7&&x<=9&&y>=10.5)return {area:'cuddlewick',x:23,y:19,message:'Back in Cuddlewick'};
  if(area==='bakery-room'&&x>=7&&x<=9&&y>=11.5)return {area:'cuddlewick',x:7,y:23,message:'Back on Snack Street'};
+ if(area==='store-room'&&x>=7&&x<=9&&y>=11.5)return {area:'cuddlewick',x:32,y:20,message:'Back in the village square'};
+ if(area==='greenhouse-room'&&x>=9&&x<=11&&y>=12.5)return {area:'cuddlewick',x:24,y:7,message:'Back among the garden flowers'};
  if(area==='cuddlewick'&&x>=54.8&&y>=16&&y<=24)return {area:'orchard',x:2.1,y:19,message:'Route 01: Orchard Way'};
  if(area==='orchard'&&x<=1.1&&y>=15&&y<=24)return {area:'cuddlewick',x:53.9,y:20,message:'Back in Cuddlewick'};
  if(area==='orchard'&&x>=56.8&&y>=13&&y<=25)return {area:'willowmere',x:2,y:18,message:'Welcome to Willowmere'};
@@ -1058,7 +1218,7 @@ const SPECIAL_PLACES=[
 ];
 function nearbySpecial(w,radius=1.85){return SPECIAL_PLACES.find(p=>Math.hypot(p.x-w.x,p.y-w.y)<=radius)||null;}
 function canWish(s){const w=s.world||{};return (s.wins||0)-(Number.isFinite(Number(w.lastWishWins))?w.lastWishWins:-5)>=5;}
-function usePlace(s,id,action,grantXp){const p=SPECIAL_PLACES.find(z=>z.id===id);if(!p)throw Error('Unknown place');const w=s.world;if(!w)throw Error('World missing');if(Math.hypot(w.x-p.x,w.y-p.y)>1.85)throw Error('Walk closer to visit this place');
+function usePlace(s,id,action,grantXp){const p=SPECIAL_PLACES.find(z=>z.id===id);if(!p)throw Error('Unknown place');const w=s.world;if(!w)throw Error('World missing');if(!((id==='shop'&&w.area==='store-room'&&Math.hypot(w.x-12,w.y-6)<3)||(id==='greenhouse'&&w.area==='greenhouse-room'&&Math.hypot(w.x-14,w.y-7)<3))&&Math.hypot(w.x-p.x,w.y-p.y)>1.85)throw Error('Walk closer to visit this place');
  let message='';
  if(id==='fountain'&&action==='wish'){
   if(!canWish(s))throw Error('The fountain needs five more victories to recharge.');w.lastWishWins=s.wins;w.wishes=(w.wishes||0)+1;s.points+=1;s.team.forEach(t=>grantXp(s,t,30));message='The fountain sparkles. +1 star and 30 XP for your team!';
@@ -1243,6 +1403,8 @@ function action(el){const type=el.dataset.action,id=el.dataset.id;
  if(type==='claim-quest'){const quest=claimQuest(state,id,grantXp);persist();render();showMilestone('Adventure complete!',`${quest.title}: ${quest.reward.stars} stars, ${quest.reward.xp} XP for your team${quest.reward.bags?', and '+quest.reward.bags+' gift bag(s)':''}.`);return;}
  if(type==='place-action'){const msg=usePlace(state,id,el.dataset.option,grantXp);persist();$('#place-modal')?.remove();render();showMilestone('A little discovery!',msg);return;}
  if(type==='close-place'){$('#place-modal')?.remove();return;}
+ if(type==='visit-shop'){$('#talk-modal')?.remove();showPlace(SPECIAL_PLACES.find(p=>p.id==='shop'));return;}
+ if(type==='tend-greenhouse'){$('#talk-modal')?.remove();showPlace(SPECIAL_PLACES.find(p=>p.id==='greenhouse'));return;}
  if(type==='quest-guide'){const q=QUESTS.find(q=>q.id===id);if(q){const z=ZONES.find(z=>z.id===q.destination);go('world');if(z&&state.world.area==='cuddlewick')walkToward(z.x,z.y);else if(REGION_AREAS[q.destination]&&state.world.area!==q.destination)notify('Follow the eastern gate from Cuddlewick to reach the new routes. Open the Region Map (M) for directions.');}return;}
  if(type==='open-bag'){bagOpen=true;render();return;}
  if(type==='finish-claim'){$('#claimed-modal')?.remove();return;}
@@ -1354,7 +1516,7 @@ function regionalWorldScreen(){const w=state.world,info=areaInfo(w.area),aNpcs=a
  const routeProgress=REGION_ZONES.filter(z=>w.visited.includes(z.id)).length;
  return `<section class="world-intro"><div><span class="eyebrow">${safe(info.subtitle)} · ${routeProgress} of ${REGION_ZONES.length} new places discovered</span><h1>${safe(info.name)} <span class="world-title-star">✦</span></h1><p>${safe(info.description)} The paths branch, and landmarks may hide shortcuts. See the Region Map for the larger journey.</p></div><button class="btn cream" data-action="nav" data-id="atlas">◈ Region map <kbd>M</kbd></button></section>
  <div class="world-layout"><section class="world-shell" aria-label="Explore ${safe(info.name)}"><div class="world-toolbar"><span><span class="location-dot">●</span> ${safe(info.name)}</span><span>✦ ${aTreasures.filter(t=>w.found.includes(t.id)).length}/${aTreasures.length} local finds · ✿ ${w.parlorBadges.length} patches</span></div>
- <div class="world-viewport" id="world-viewport" tabindex="0" style="aspect-ratio:${vx}/${vy}" aria-label="Drag the joystick to walk or tap a path to travel"><div class="world-pan" id="world-pan" data-base-x="${cx}" data-base-y="${cy}" data-cols="${cols}" data-rows="${rows}" data-visible-cols="${vx}" data-visible-rows="${vy}" style="width:${100*cols/vx}%"><div class="world-grid" style="--map-cols:${cols}">${tiles}</div><span class="world-player-overlay" data-actor-name="${safe(BY_ID.get(state.team[0])?.officialName||'Amuseables Croissant')}" style="left:${px}%;top:${py}%">${plushArt(BY_ID.get(state.team[0]))}</span></div></div>
+ <div class="world-viewport" id="world-viewport" tabindex="0" style="aspect-ratio:${vx}/${vy}" aria-label="Drag the joystick to walk or tap a path to travel"><div class="world-pan" id="world-pan" data-area="${w.area}" data-base-x="${cx}" data-base-y="${cy}" data-cols="${cols}" data-rows="${rows}" data-visible-cols="${vx}" data-visible-rows="${vy}" style="width:${100*cols/vx}%"><div class="world-grid" style="--map-cols:${cols}">${tiles}</div><span class="world-player-overlay" data-actor-name="${safe(BY_ID.get(state.team[0])?.officialName||'Amuseables Croissant')}" style="left:${px}%;top:${py}%">${plushArt(BY_ID.get(state.team[0]))}</span></div></div>
  <div class="world-commands"><div class="dpad" aria-label="Movement controls"><button data-action="step" data-dx="0" data-dy="-1">↑</button><div><button data-action="step" data-dx="-1" data-dy="0">←</button><button data-action="step" data-dx="0" data-dy="1">↓</button><button data-action="step" data-dx="1" data-dy="0">→</button></div></div><div class="world-commands-right"><button class="btn mint" data-action="interact"><kbd>E</kbd> Talk / inspect</button>${parlor?`<button class="btn pink" data-action="parlor" data-id="${parlor.id}">✿ ${safe(parlor.name)}</button>`:'<span class="encounter-hint">Follow the winding road and investigate side paths.</span>'}</div></div>
  <p class="world-help">Move with WASD, arrow keys, or the mobile joystick. Trees, water, cliffs and cave walls block walking. Cross bridges and enter gateways to reach the next map.</p></section><aside class="world-sidebar">
  ${panel(`<span class="eyebrow">Beyond the village</span><h2>Who's nearby?</h2>${near.length?near.map(n=>`<button class="friend-row" data-action="talk" data-id="${n.id}"><span class="friend-portrait">${plushArt(BY_ID.get(slugId(n.product)))}</span><span><strong>${safe(n.name)}</strong><small>${safe(n.hint)}</small></span><span>→</span></button>`).join(''):'<p class="small muted">Wander off the road to find someone new.</p>'}`,'friend-panel')}
@@ -1377,7 +1539,7 @@ function worldScreen(){ensureWorld(state);if(state.world.area!=='cuddlewick')ret
  <div class="world-layout"><section class="world-shell" aria-label="Explore the Softlands">
  <div class="world-toolbar"><span><span class="location-dot">●</span> ${safe(here.name)}</span><span>✿ ${w.parlorBadges.length} patches &nbsp; · &nbsp; ✦ ${w.found.length}/${TREASURES.length} found</span></div>
  <div class="world-viewport" id="world-viewport" tabindex="0" style="aspect-ratio:${vx}/${vy}" aria-label="Drag the joystick to walk, or tap a spot on the map to travel">
- <div class="world-pan" id="world-pan" data-base-x="${cx}" data-base-y="${cy}" data-cols="${cols}" data-rows="${rows}" data-visible-cols="${vx}" data-visible-rows="${vy}" style="width:${100*cols/vx}%"><div class="world-grid" style="--map-cols:${cols}">${tiles}</div>
+ <div class="world-pan" id="world-pan" data-area="${w.area}" data-base-x="${cx}" data-base-y="${cy}" data-cols="${cols}" data-rows="${rows}" data-visible-cols="${vx}" data-visible-rows="${vy}" style="width:${100*cols/vx}%"><div class="world-grid" style="--map-cols:${cols}">${tiles}</div>
  <span class="world-player-overlay" data-actor-name="${safe(BY_ID.get(state.team[0])?.officialName||'Amuseables Croissant')}" style="left:${px}%;top:${py}%">${plushArt(BY_ID.get(state.team[0]))}</span></div></div>
  <div class="world-commands"><div class="dpad" aria-label="Movement controls"><button data-action="step" data-dx="0" data-dy="-1" aria-label="Walk north">↑</button><div><button data-action="step" data-dx="-1" data-dy="0" aria-label="Walk west">←</button><button data-action="step" data-dx="0" data-dy="1" aria-label="Walk south">↓</button><button data-action="step" data-dx="1" data-dy="0" aria-label="Walk east">→</button></div></div>
  <div class="world-commands-right"><button class="btn mint" data-action="interact"><kbd>E</kbd> Talk / inspect</button>${state.battle?'<button class="btn pink" data-action="nav" data-id="battle"><kbd>5</kbd> Resume battle</button>':parlor?`<button class="btn pink" data-action="parlor" data-id="${parlor.id}"><kbd>P</kbd> ${safe(parlor.name)}</button>`:'<span class="encounter-hint">🌿 Tall grass = surprise encounters</span>'}</div></div>
@@ -1446,7 +1608,7 @@ function showTalk(n){stopWalking();$('#talk-modal')?.remove();ensureWorld(state)
  }
  persist();const plush=BY_ID.get(slugId(n.product));const completed=state.world.completed.includes(n.challenge);const best=n.challenge?(state.world.miniBests?.[n.challenge]||0):0;
  const dialogue=n.id==='orchard-farmer'&&state.world.storyFlags.includes('returned-orchard-key')?'You found my orchard key! What a thoughtful friend. Here are some stars for your team. The northern trail leads to an echoing cave; the eastern bridge leads to Willowmere.':n.id==='willow-keeper'&&state.world.talked.includes('orchard-farmer')?'Poppy sent word that you crossed the orchard road! You are welcome in Willowmere. A River Patch awaits at our Parlor, beside the market.':n.id==='grotto-guide'&&state.world.found.includes('grotto-map')?'You have the map scrap! It shows a journey far beyond the hills. Keep it safe; new routes will open over time.':n.say;
- const div=el('div','modal-backdrop');div.id='talk-modal';div.innerHTML=`<section class="modal talk-modal" role="dialog" aria-modal="true" aria-label="Talking with ${safe(n.name)}"><div class="row between"><span class="eyebrow">${safe((n.area?REGION_AREAS[n.area]?.name:ZONES.find(z=>z.id===zoneAt(n.x,n.y))?.name)||'The Softlands')}</span><button class="btn micro cream" data-action="close-talk">✕ Close</button></div><div class="talk-portrait">${plushArt(plush)}</div><h2>${safe(n.name)}</h2><p class="dialogue-line">“${safe(completed&&n.challenge?`You were lovely at my little game! Come back to try for a gold ribbon, and keep helping your friends around the Softlands.`:dialogue)}”</p><div class="row">${n.challenge?`<button class="btn" data-action="begin-challenge" data-id="${safe(n.challenge)}">${completed?'Play again':'Play a little game'} →</button>`:''}<button class="btn cream" data-action="close-talk">${n.challenge?'Maybe later':'Thanks for the tip!'}</button></div>${completed?`<p class="tiny muted mt-12">✓ Best ribbons: ${'✦'.repeat(best)}${'·'.repeat(3-best)} · Replay to improve your record.</p>`:''}</section>`;document.body.append(div);div.querySelector('button')?.focus();}
+ const div=el('div','modal-backdrop');div.id='talk-modal';div.innerHTML=`<section class="modal talk-modal" role="dialog" aria-modal="true" aria-label="Talking with ${safe(n.name)}"><div class="row between"><span class="eyebrow">${safe((n.area?REGION_AREAS[n.area]?.name:ZONES.find(z=>z.id===zoneAt(n.x,n.y))?.name)||'The Softlands')}</span><button class="btn micro cream" data-action="close-talk">✕ Close</button></div><div class="talk-portrait">${plushArt(plush)}</div><h2>${safe(n.name)}</h2><p class="dialogue-line">“${safe(completed&&n.challenge?`You were lovely at my little game! Come back to try for a gold ribbon, and keep helping your friends around the Softlands.`:dialogue)}”</p><div class="row">${n.id==='store-clerk'?'<button class="btn mint" data-action="visit-shop">Browse the shelves ★</button>':''}${n.id==='greenhouse-host'?'<button class="btn mint" data-action="tend-greenhouse">Help the seedlings ✿</button>':''}${n.challenge?`<button class="btn" data-action="begin-challenge" data-id="${safe(n.challenge)}">${completed?'Play again':'Play a little game'} →</button>`:''}<button class="btn cream" data-action="close-talk">${n.challenge?'Maybe later':'Thanks for the tip!'}</button></div>${completed?`<p class="tiny muted mt-12">✓ Best ribbons: ${'✦'.repeat(best)}${'·'.repeat(3-best)} · Replay to improve your record.</p>`:''}</section>`;document.body.append(div);div.querySelector('button')?.focus();}
 // Activities are now skill-based experiences rather than multiple-choice trivia.
 function showChallenge(id){openMini(id);}
 function answerChallenge(index){miniAct('mini-flower',index);}
