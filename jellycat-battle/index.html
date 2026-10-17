@@ -6,7 +6,7 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#f9f1e8">
   <meta name="description" content="An unofficial, single-player collection and battle game inspired by real Jellycat plush characters.">
-  <title>Jellycat Battle Club • The Softlands v0.7</title>
+  <title>Jellycat Battle Club • The Softlands v0.8</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A5%90%3C/text%3E%3C/svg%3E">
   <style>
 
@@ -179,6 +179,16 @@ kbd{display:inline-block;border:1px solid #ada2a1;background:#f1ece5;border-radi
 .place-modal .place-illustration{font-size:5.8rem;margin:6px auto 14px;line-height:1.5;filter:drop-shadow(4px 8px #765b7940)}.place-modal .place-offerings{display:flex;flex-wrap:wrap;justify-content:center;gap:9px;margin:16px auto}.place-offerings>button{flex:1 1 170px;max-width:250px;min-width:170px}.place-modal>p{max-width:450px;margin-inline:auto}.place-modal .ghost{margin-top:12px}
 @media(max-width:650px){.place-modal .place-illustration{font-size:4rem}.place-modal .place-offerings{flex-direction:column}.place-offerings>button{max-width:100%;min-width:0;flex:auto}}
 .souvenir-shelf{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:17px}.souvenir{display:grid;place-items:center;gap:7px;border:2px dashed #c4b7be;border-radius:14px;padding:14px 5px;background:#f4f0ed;filter:grayscale(1);opacity:.5}.souvenir.found{background:#fff3d9;border-style:solid;border-color:#d8bfa2;filter:none;opacity:1}.souvenir>span{font-size:2.4rem}.souvenir small{text-align:center;font-size:.7rem;font-weight:800}
+
+/* v0.8 regional architecture: distinct walkable biomes and a strategic atlas. */
+.atlas-heading{display:flex;justify-content:space-between;align-items:center;gap:18px;margin:22px 0 18px}.atlas-heading h1{font:800 clamp(2.2rem,5vw,4rem)/1.05 'Fraunces',Georgia,serif;margin:9px 0}.atlas-heading p{max-width:780px;color:#605965;line-height:1.6}.atlas-heading .btn{flex-shrink:0}
+.atlas-card{background:#f9fbf1;border:2px solid #433d49;border-radius:25px;overflow:hidden;box-shadow:5px 6px 0 #433d49}.atlas-scroll{overflow-x:auto;overflow-y:hidden;background:#d4dcb0}.atlas-svg{width:100%;min-width:760px;display:block;max-height:650px}.atlas-road{fill:none;stroke-width:3.2;stroke-linecap:round;opacity:.8}.atlas-road.planned{stroke:#675d6b;stroke-dasharray:3 8;opacity:.4}.atlas-road.ready{stroke:#fff5b8;stroke-width:9;filter:drop-shadow(1px 2px 0 #9d813e)}
+.atlas-stop circle{fill:#f8f3e7;stroke:#423d4b;stroke-width:2.7}.atlas-stop.reachable circle{fill:#f2d477;stroke:#6c522d;stroke-width:3.7}.atlas-stop-name{font:800 11px 'DM Sans',system-ui,sans-serif;fill:#3b3941;paint-order:stroke;stroke:#f8f7e9;stroke-width:4;stroke-linejoin:round}.atlas-stop.future .atlas-stop-name{font-size:10px;fill:#6d6771}.atlas-terrain-label{font:900 17px Georgia,serif;letter-spacing:3px;fill:#496f66;opacity:.7}.atlas-legend{display:flex;gap:23px;align-items:center;flex-wrap:wrap;padding:14px 18px;background:#fffcf6;font-weight:800;font-size:.75rem}.atlas-legend b{display:inline-block;width:24px;border-top:4px solid #e9c85b;vertical-align:middle;margin-right:6px}.atlas-legend b.legend-dash{border-top:3px dashed #8f8a91}.atlas-bottom{display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,1.3fr);gap:20px;margin-top:22px}.atlas-bottom .panel{margin:0}.atlas-route-list{max-height:540px;overflow:auto;padding-right:5px}.atlas-route{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:9px;align-items:start;padding:10px 2px;border-bottom:1px solid #e4dce0}.atlas-route-num{font-size:.75rem;font-weight:900;background:#e9dfee;border-radius:8px;text-align:center;padding:6px 0}.atlas-route strong{font-size:.89rem;display:block}.atlas-route small{font-size:.75rem;color:#6d6470;line-height:1.45;display:block;margin-top:3px}.atlas-open,.atlas-locked{font-size:.68rem;font-weight:900;border-radius:18px;padding:4px 8px;white-space:nowrap}.atlas-open{color:#386f40;background:#c7efc1}.atlas-locked{color:#807786;background:#f0eaef}
+.world-tile.solid{box-shadow:inset 0 0 0 1px #3441221c}.world-tile.terrain-orchard{background:#d8e3aa}.world-tile.terrain-orchard-flower{background:#e8e9b1;background-image:radial-gradient(circle at 20% 30%,#f6b6a2 0 6%,transparent 10%)}.world-tile.terrain-grove{background:#a5bd87;background-image:linear-gradient(120deg,#6c8e6b20,transparent)}.world-tile.terrain-river{background:#83c4d4;background-image:repeating-linear-gradient(-20deg,transparent 0 10px,#d7f5ef8c 11px 12px,transparent 14px 22px)}.world-tile.terrain-bridge{background:#cbb18f;background-image:repeating-linear-gradient(90deg,#9d85623b 0 1px,transparent 2px 10px)}.world-tile.terrain-cliff{background:#a3a1a6;background-image:repeating-linear-gradient(0deg,#5751602e 0 2px,transparent 3px 15px)}.world-tile.terrain-paved{background:#e7d1b7;background-image:repeating-linear-gradient(90deg,#8e735021 0 1px,transparent 2px 17px)}.world-tile.terrain-riverside{background:#c5ddba}.world-tile.terrain-house{background:#ceaaa2;background-image:linear-gradient(135deg,#b27e7e 0 45%,#6f586f 46% 49%,#d7a3a7 50%)}.world-tile.terrain-cave-floor{background:#827f88;background-image:radial-gradient(circle,#a4a0ae 0 1px,transparent 2px)}.world-tile.terrain-crystal{background:#b0a4bd;background-image:linear-gradient(40deg,#d3cbf5b0,transparent)}
+.region-finds{max-height:250px;overflow:auto}.region-finds .story-item{font-size:.8rem;padding:7px 0}.region-map-tile{font-size:.8rem}.atlas-page .panel p{line-height:1.6}
+@media(max-width:750px){.atlas-heading{align-items:start;flex-direction:column}.atlas-bottom{grid-template-columns:minmax(0,1fr)}.atlas-scroll{border-radius:0}.atlas-svg{min-width:750px}.atlas-heading h1{font-size:2.45rem}.atlas-route-list{max-height:400px}}
+
+.atlas-swipe{font-size:.76rem;font-weight:800;background:#faf7e9;padding:8px 14px;margin:0;color:#77627f;display:none}@media(max-width:750px){.atlas-swipe{display:block}}
 
 </style>
 </head>
@@ -434,7 +444,7 @@ function makeBattle(save,rng=Math.random,opts={}){if(save.pending)throw Error('C
  let enemy=regular.slice(0,n);if(enemy.length<n)enemy.push(...shuffle(CATALOG.filter(x=>x.rarity!=='Legendary'&&!enemy.includes(x)),rng).slice(0,n-enemy.length));
  if(opts.parlorId){
   // The lead opponent is the Keeper's recognizable signature Jellycat.
-  const keepers={village:'Bashful Beige Bunny',garden:'Amuseables Sunflower',cove:'Larry Lobster ‘Sailor’',moon:'Ghost Bob'};
+  const keepers={village:'Bashful Beige Bunny',garden:'Amuseables Sunflower',cove:'Larry Lobster ‘Sailor’',moon:'Ghost Bob',willow:'Amuseables Peach'};
   const signature=CATALOG.find(p=>p.officialName===keepers[opts.parlorId]);
   if(signature)enemy[0]=signature;
   boss=false;
@@ -620,6 +630,152 @@ function plushArt(p,extraClass=''){if(!p)return '';
 }
 export {plushArt};
 
+/* The Softlands regional expansion. All new maps are discrete traversable spaces,
+   not travel buttons or decorative atlas-only destinations. Atlas depicts planned
+   geography honestly; only marked solid routes are available in this build. */
+const REGION_AREAS={
+ orchard:{id:'orchard',name:'Orchard Way',subtitle:'Route 01 · The road through the orchards',width:58,height:38,color:'#d3dcb0',entry:{x:2,y:19},description:'A branching country route of barns, bridges, orchards and an unusual grotto.'},
+ grotto:{id:'grotto',name:'Whisperstone Grotto',subtitle:'A hidden optional dungeon',width:36,height:28,color:'#b9b5bd',entry:{x:3,y:22},description:'An echoing limestone cave beneath Orchard Way, filled with quiet secrets.'},
+ willowmere:{id:'willowmere',name:'Willowmere',subtitle:'The first town beyond Cuddlewick',width:48,height:36,color:'#b8ddc4',entry:{x:2,y:18},description:'A waterside market town where the orchard road meets the great eastern river.'},
+};
+const REGION_ZONES=Object.values(REGION_AREAS).map(a=>({id:a.id,name:a.name,color:a.color,x:a.entry.x,y:a.entry.y,description:a.description}));
+// Every future atlas destination is distinct, with geographic position and purpose.
+const ATLAS_TOWNS=[
+ {id:'cuddlewick',name:'Cuddlewick',x:36,y:47,kind:'town',playable:true,role:'Starting village'},
+ {id:'willowmere',name:'Willowmere',x:48,y:44,kind:'town',playable:true,role:'Riverside market'},
+ {id:'briar',name:'Briarbrook',x:18,y:43,kind:'town',role:'Orchard and farming town'},
+ {id:'canopy',name:'Canopy Hollow',x:28,y:23,kind:'town',role:'Forest town on boardwalks'},
+ {id:'glassmere',name:'Glassmere',x:47,y:25,kind:'town',role:'Lake town and boathouses'},
+ {id:'pillowport',name:'Pillowport',x:22,y:78,kind:'city',role:'Coastal harbor'},
+ {id:'grandstitch',name:'Grandstitch City',x:53,y:59,kind:'city',role:'Largest city and train hub'},
+ {id:'riverlace',name:'Riverlace',x:76,y:47,kind:'city',role:'River and wetlands city'},
+ {id:'suncairn',name:'Suncairn',x:79,y:75,kind:'town',role:'Desert oasis settlement'},
+ {id:'snowbell',name:'Snowbell',x:73,y:14,kind:'town',role:'Alpine city'},
+ {id:'pinewatch',name:'Pinewatch',x:18,y:13,kind:'village',role:'Remote logging village'},
+ {id:'lakeside',name:'Little Dock',x:57,y:32,kind:'village',role:'Secluded fishing outpost'},
+ {id:'mossford',name:'Mossford',x:87,y:36,kind:'village',role:'Marsh research hamlet'},
+ {id:'dunebell',name:'Dunebell',x:91,y:68,kind:'village',role:'Desert-edge railway stop'},
+ {id:'coral',name:'Coral Nook',x:47,y:91,kind:'village',role:'Southern island village'},
+];
+const ATLAS_ROUTES=[
+ ['01','cuddlewick','willowmere',true,'Orchard Way','A forked route with farmstead, stone bridge and hidden grotto'],
+ ['02','briar','cuddlewick',false,'Button Lane','Orchards, split paths and a windy hill'],
+ ['03','briar','canopy',false,'Pine Lantern Trail','Woodland ledges and logging camp'],
+ ['04','canopy','glassmere',false,'Moonflower Path','Ancient trees, woodland streams and an abandoned tower'],
+ ['05','glassmere','willowmere',false,'Lake Ribbon Road','A lakefront loop with two routes around the water'],
+ ['06','willowmere','grandstitch',false,'Riverpost Road','Canals, a bridge and increasing city traffic'],
+ ['07','grandstitch','riverlace',false,'Pavilion Path','A manicured trail turning into woodlands with a waterfall cave'],
+ ['08','riverlace','mossford',false,'Reedwalk','Wetlands and narrow boardwalks'],
+ ['09','mossford','snowbell',false,'Frostbloom Switchbacks','Steep climbs and an alpine pass'],
+ ['10','snowbell','glassmere',false,'High Window Trail','Frozen lakes and narrow mountain overlooks'],
+ ['11','canopy','pinewatch',false,'Ferncrest Rise','Abandoned mine and hidden logging paths'],
+ ['12','pinewatch','snowbell',false,'Twin Peaks Pass','Mountain lake, waterfalls and a narrow summit'],
+ ['13','grandstitch','pillowport',false,'Saltwater Road','Descending cliffs and coastal views'],
+ ['14','pillowport','coral',false,'Harbor Crossing','Ferry islands and turquoise shallows'],
+ ['15','grandstitch','suncairn',false,'Golden Dust Route','Grassland turning to scrub, canyon and dunes'],
+ ['16','suncairn','dunebell',false,'Desert Rails','Broken rail line and archaeological ruins'],
+ ['17','dunebell','riverlace',false,'Marsh Canyon Path','Oasis and a cliffside bridge'],
+ ['18','pillowport','briar',false,'Windmill Road','Farm fields meeting the coast'],
+ ['19','riverlace','snowbell',false,'Whitewater Road','Follow the river from marshland to snow'],
+ ['20','cuddlewick','glassmere',false,'Secret Stitchway','A shortcut around a mountain lake, discovered later'],
+ ['21','grandstitch','glassmere',false,'North Railway','Rail tunnels and an elevated forest'],
+ ['22','coral','suncairn',false,'Volcano Isles Passage','A boat crossing, volcanic island and cave'],
+ ['23','pillowport','suncairn',false,'Seabreeze Canyon','Coastal cliffs into warm scrubland'],
+ ['24','briar','pinewatch',false,'Ancient Orchard Track','An old route through ruins and secret groves'],
+].map(([id,from,to,playable,name,detail])=>({id,from,to,playable,name,detail}));
+const REGION_NPCS=[
+ {id:'orchard-farmer',area:'orchard',name:'Poppy the Orchard Keeper',product:'Amuseables Peach',x:12,y:19,icon:'🍑',hint:'Knows every fork in the orchard road.',say:'The road crosses a stone bridge before Willowmere. The northern path leads to a mysterious grotto. I lost my little brass orchard key near the old windmill.',challenge:null},
+ {id:'orchard-watcher',area:'orchard',name:'Acorn the Pathfinder',product:'Amuseables Ort & Tum Acorns',x:30,y:14,icon:'🌰',hint:'A tip about the secret cave.',say:'A shortcut circles the pond north of the road. Follow the stones uphill, then look for a cave mouth tucked above the orchard.',challenge:null},
+ {id:'willow-keeper',area:'willowmere',name:'Mayor Clementine',product:'Amuseables Peach',x:18,y:15,icon:'✉',hint:'Welcomes travelers to Willowmere.',say:'We made our town beside the river because the bridges connect everyone. Bring me news from Poppy and I will tell you about our old river festival.',challenge:null},
+ {id:'willow-fisher',area:'willowmere',name:'Mina by the Water',product:'Amuseables Michelle Mussel',x:37,y:23,icon:'🐚',hint:'A water-crossing mystery.',say:'See that little island beyond the river? Nobody can reach it without learning the Ferry Friend skill. You will come back someday!',challenge:null},
+ {id:'grotto-guide',area:'grotto',name:'Pebble the Cave Guide',product:'Amuseables Pebble',x:11,y:17,icon:'✦',hint:'Explains the old echoes.',say:'Listen. The cave hums when you pass the shining walls. There is a map scrap hidden in the far gallery, if you can find the way around the rock columns.',challenge:null},
+];
+const REGION_TREASURES=[
+ {id:'orchard-key',area:'orchard',x:21,y:12,title:'A tiny orchard key',text:'A windmill key glitters under the fallen leaves. Poppy will be delighted!',points:2},
+ {id:'orchard-apples',area:'orchard',x:43,y:29,title:'A basket of velvet apples',text:'An orchard worker left a tiny basket beside the southern detour.',points:2},
+ {id:'grotto-map',area:'grotto',x:29,y:8,title:'The missing map scrap',text:'The cave wall conceals a torn map to the wider Softlands.',points:3},
+ {id:'grotto-crystal',area:'grotto',x:26,y:21,title:'A lavender crystal',text:'A shimmering stone sparkles under the cave lantern.',points:2},
+ {id:'willow-postcard',area:'willowmere',x:26,y:12,title:'A Willowmere postcard',text:'A bright postcard sits beside the town square.',points:2},
+ {id:'willow-ribbon',area:'willowmere',x:37,y:29,title:'A river-blue ribbon',text:'A wave carried a ribbon onto the shore.',points:2},
+];
+const REGION_LANDMARKS=[
+ {area:'orchard',x:8,y:16,name:'The Orchard Gate',icon:'🚧'},
+ {area:'orchard',x:21,y:11,name:'Old Windmill',icon:'🌬️'},
+ {area:'orchard',x:28,y:21,name:'The Great Stone Bridge',icon:'🌉'},
+ {area:'orchard',x:35,y:7,name:'Whisperstone Grotto',icon:'🪨'},
+ {area:'orchard',x:43,y:26,name:'Little Apple Barn',icon:'🏡'},
+ {area:'willowmere',x:16,y:13,name:'Willowmere Market',icon:'🏘️'},
+ {area:'willowmere',x:24,y:17,name:'Rivergate Bridge',icon:'🌉'},
+ {area:'willowmere',x:31,y:8,name:'The Waterwheel',icon:'🛞'},
+ {area:'willowmere',x:39,y:11,name:'Reed Island',icon:'🌾'},
+ {area:'willowmere',x:11,y:23,name:'Little Riverside Cottage',icon:'🏡'},
+ {area:'grotto',x:15,y:10,name:'Echo Pillars',icon:'🪨'},
+ {area:'grotto',x:27,y:9,name:'The Hidden Gallery',icon:'✨'},
+];
+const REGION_PARLORS=[{id:'willow',area:'willowmere',name:'Willowmere Parlor',patch:'River Patch',keeper:'Mayor Clementine',product:'Amuseables Peach',x:24,y:21,required:1,theme:'A riverside test of careful teamwork'}];
+function areaInfo(area='cuddlewick'){return REGION_AREAS[area]||null;}
+function areaSize(area){const a=areaInfo(area);return a?{width:a.width,height:a.height}:{width:56,height:40};}
+function areaNpcs(area){return REGION_NPCS.filter(n=>n.area===area);}
+function areaParlors(area){return REGION_PARLORS.filter(n=>n.area===area);}
+function areaTreasures(area){return REGION_TREASURES.filter(n=>n.area===area);}
+function areaLandmarks(area){return REGION_LANDMARKS.filter(n=>n.area===area);}
+function windingRoad(x){return 19+Math.round(2.2*Math.sin(x/7));}
+function areaTile(area,x,y){const X=Math.floor(x),Y=Math.floor(y),h=(Math.imul(X+7,374761393)^Math.imul(Y+3,668265263))>>>0;
+ if(area==='orchard'){
+  const road=windingRoad(X),main=Math.abs(Y-road)<=1.45;
+  const high=(X>=17&&X<=42&&Math.abs(Y-10)<=1)||(X>=33&&X<=37&&Y>=7&&Y<=road);
+  const south=(X>=37&&X<=49&&Math.abs(Y-29)<=1)||(X>=41&&X<=44&&Y>=road&&Y<=29);
+  const bridge=X>=26&&X<=30&&Math.abs(Y-road)<=2;
+  if(X>=26&&X<=30&&Y>=1&&Y<=36)return bridge?{kind:'bridge',solid:false}:{kind:'river',solid:true};
+  if((Y<5&&X>10&&X<51)||(Y>33&&X>14&&X<51))return {kind:'cliff',solid:true};
+  if(main||high||south)return {kind:'trail',solid:false};
+  if((X<11||X>46)&&h%13===0)return {kind:'grove',solid:true};
+  if(X>13&&X<48&&h%17<2)return {kind:'grove',solid:true};
+  return {kind:((h%9===0)?'orchard-flower':'orchard'),solid:false};
+ }
+ if(area==='willowmere'){
+  const river=(X>=29&&X<=35&&Y>2&&Y<34),bridge=(Y>=16&&Y<=19&&X>=28&&X<=36);
+  const lake=(X>35&&Y<10)||(X>40&&Y>24&&Y<34);
+  if((river||lake)&&!bridge)return {kind:'river',solid:true};
+  if(bridge)return {kind:'bridge',solid:false};
+  const street=Math.abs(Y-18)<2||Math.abs(X-18)<2||(X>=18&&X<=40&&Math.abs(Y-27)<1.5);
+  if(street)return {kind:'paved',solid:false};
+  if((X>7&&X<26&&Y>6&&Y<33&&h%18===0))return {kind:'house',solid:true};
+  return {kind:(h%8===0?'orchard-flower':'riverside'),solid:false};
+ }
+ if(area==='grotto'){
+  if(X<=1||Y<=1||X>=34||Y>=26)return {kind:'cliff',solid:true};
+  const corridor=(Math.abs(Y-21)<=2)||(Math.abs(X-11)<=2&&Y>6)||(Y>=7&&Y<=11&&X>=10&&X<=31)||(Math.abs(X-29)<=2&&Y>=8&&Y<=22);
+  if(!corridor)return {kind:'cliff',solid:true};
+  return {kind:(h%11===0?'crystal':'cave-floor'),solid:false};
+ }
+ return {kind:'trail',solid:false};
+}
+function areaGate(area,x,y){
+ if(area==='cuddlewick'&&x>=54.8&&y>=16&&y<=24)return {area:'orchard',x:2.1,y:19,message:'Route 01: Orchard Way'};
+ if(area==='orchard'&&x<=1.1&&y>=15&&y<=24)return {area:'cuddlewick',x:53.9,y:20,message:'Back in Cuddlewick'};
+ if(area==='orchard'&&x>=56.8&&y>=13&&y<=25)return {area:'willowmere',x:2,y:18,message:'Welcome to Willowmere'};
+ if(area==='willowmere'&&x<=1.1&&y>=14&&y<=24)return {area:'orchard',x:55.8,y:windingRoad(55),message:'Back on Orchard Way'};
+ if(area==='orchard'&&Math.hypot(x-35,y-7)<=.7)return {area:'grotto',x:3,y:22,message:'You found Whisperstone Grotto!'};
+ if(area==='grotto'&&x<=2.1&&y>=18&&y<=24)return {area:'orchard',x:35,y:8.5,message:'You emerge above Orchard Way'};
+ return null;
+}
+function regionStep(s,dx,dy,rng=Math.random){const w=s.world,area=w.area,a=areaInfo(area);if(!a)throw Error('Unknown region');
+ const x=+Math.max(0,Math.min(a.width-1,w.x+dx)).toFixed(3),y=+Math.max(0,Math.min(a.height-1,w.y+dy)).toFixed(3);
+ if(x===w.x&&y===w.y)return {moved:false,zone:null,treasure:null,npc:null};
+ const gate=areaGate(area,x,y);
+ if(gate){w.area=gate.area;w.x=gate.x;w.y=gate.y;w.steps++;if(!w.visited.includes(gate.area)){w.visited.push(gate.area);s.history.push(`Discovered ${gate.message}`);}return {moved:true,transition:gate,zone:{id:gate.area,name:gate.message},treasure:null};}
+ if(areaTile(area,x,y).solid)return {moved:false,blocked:true,zone:null,treasure:null,npc:null};
+ const npc=areaNpcs(area).find(n=>Math.hypot(n.x-x,n.y-y)<.75);
+ if(npc)return {moved:false,npc,zone:null,treasure:null};
+ const oldX=w.x,oldY=w.y;w.x=x;w.y=y;w.steps++;
+ const treasure=areaTreasures(area).find(t=>Math.hypot(t.x-x,t.y-y)<.55&&!w.found.includes(t.id));
+ if(treasure){w.found.push(treasure.id);s.points+=treasure.points;s.history.push(`Found ${treasure.title} (+${treasure.points} stars)`);}
+ let encounter=false;if((area==='orchard'||area==='grotto')&&Math.floor(oldX)!==Math.floor(x)&&w.steps-w.lastEncounterStep>18&&areaTile(area,x,y).kind==='orchard'&&rng()<.16){w.lastEncounterStep=w.steps;encounter=true;}
+ return {moved:true,zone:null,treasure,npc:null,encounter};
+}
+
+
 /* Softlands overworld: deterministic, entirely offline, all movement is real game state. */
 const WORLD_W=56, WORLD_H=40;
 const WORLD_START={x:27,y:20};
@@ -655,8 +811,8 @@ const PARLORS=[
  {id:'cove',name:'Tidepool Parlor',patch:'Shell Patch',keeper:'Captain Larry',product:'Larry Lobster ‘Sailor’',x:43,y:30,required:2,theme:'A splashy test of teamwork'},
  {id:'moon',name:'Moonbeam Parlor',patch:'Moon Patch',keeper:'Bob the Dreamer',product:'Ghost Bob',x:48,y:12,required:3,theme:'Your toughest cozy challenge yet'}
 ];
-const parlorById=id=>PARLORS.find(p=>p.id===id);
-function nearbyParlor(w,radius=1.7){return PARLORS.find(p=>Math.hypot(p.x-w.x,p.y-w.y)<=radius)||null;}
+const parlorById=id=>[...PARLORS,...REGION_PARLORS].find(p=>p.id===id);
+function nearbyParlor(w,radius=1.7){return (w.area&&w.area!=='cuddlewick'?areaParlors(w.area):PARLORS).find(p=>Math.hypot(p.x-w.x,p.y-w.y)<=radius)||null;}
 // Deterministic tall-grass pockets. No invisible random battles on paths or inside town.
 function isTallGrass(x,y){const z=zoneAt(x,y),u=Math.floor(x),v=Math.floor(y);
  if(!['wood','garden','sports','hill','moon'].includes(z))return false;
@@ -697,11 +853,13 @@ const CHALLENGES={
  sea:{title:'Captain Larry’s Shell School',steps:[{question:'Which of these might you find along the shore?',answers:['A seashell','A traffic light','A frying pan'],correct:0},{question:'A little crab is crossing the path. What should you do?',answers:['Give it some space','Pick it up and throw it','Build a wall around it'],correct:0}]},
  sports:{title:'Coach Bounce’s Playtime Quiz',steps:[{question:'What shape is a golf ball plush?',answers:['A golf hole','A round, cuddly ball','A golf cart'],correct:1},{question:'What matters most during a friendly game?',answers:['Having fun together','Always being the loudest','Winning every time'],correct:0}]}
 };
-function freshWorld(){return {x:WORLD_START.x,y:WORLD_START.y,steps:0,lastEncounterStep:-100,parlorBadges:[],visited:['square'],talked:[],completed:[],found:[],firstBattle:false,claimedQuests:[],miniBests:{},miniAttempts:{},souvenirs:[],wishes:0,lastWishWins:-5,shopBagPurchases:0,campVisited:false,greenhouseVisited:false};}
+function freshWorld(){return {area:'cuddlewick',storyFlags:[],x:WORLD_START.x,y:WORLD_START.y,steps:0,lastEncounterStep:-100,parlorBadges:[],visited:['square'],talked:[],completed:[],found:[],firstBattle:false,claimedQuests:[],miniBests:{},miniAttempts:{},souvenirs:[],wishes:0,lastWishWins:-5,shopBagPurchases:0,campVisited:false,greenhouseVisited:false};}
 function ensureWorld(s){const defaults=freshWorld(),w=(s.world&&typeof s.world==='object')?s.world:{};
  const uniqueIds=(v,valid)=>Array.isArray(v)?[...new Set(v.filter(x=>typeof x==='string'&&valid.includes(x)))]:[];
- s.world={...defaults,x:Math.max(0,Math.min(WORLD_W-1,Number.isFinite(Number(w.x))?Number(w.x):WORLD_START.x)),y:Math.max(0,Math.min(WORLD_H-1,Number.isFinite(Number(w.y))?Number(w.y):WORLD_START.y)),steps:Math.max(0,Math.min(999999,Math.floor(Number(w.steps)||0))),lastEncounterStep:Math.max(-100,Math.min(999999,(Number.isFinite(Number(w.lastEncounterStep))?Math.floor(Number(w.lastEncounterStep)):-100))),parlorBadges:uniqueIds(w.parlorBadges,PARLORS.map(p=>p.id)),visited:uniqueIds(w.visited,ZONES.map(z=>z.id)),talked:uniqueIds(w.talked,NPCS.map(n=>n.id)),completed:uniqueIds(w.completed,Object.keys(CHALLENGES)),found:uniqueIds(w.found,TREASURES.map(t=>t.id)),firstBattle:!!w.firstBattle,claimedQuests:uniqueIds(w.claimedQuests,['first-steps','petal-post','forest-whispers','tide-and-treasure','playtime','starlight','little-explorer','every-little-thing','patchwork']),miniBests:Object.fromEntries(Object.entries(w.miniBests||{}).filter(([id,n])=>Object.keys(CHALLENGES).includes(id)&&Number.isFinite(Number(n))).map(([id,n])=>[id,Math.max(0,Math.min(3,Math.floor(n)))])),miniAttempts:Object.fromEntries(Object.entries(w.miniAttempts||{}).filter(([id,n])=>Object.keys(CHALLENGES).includes(id)&&Number.isFinite(Number(n))).map(([id,n])=>[id,Math.max(0,Math.min(99999,Math.floor(n)))])),souvenirs:uniqueIds(w.souvenirs,['ribbon','postcards','seedling']),wishes:Math.max(0,Math.min(999,Math.floor(Number(w.wishes)||0))),lastWishWins:Number.isFinite(Number(w.lastWishWins))?Math.max(-5,Math.min(999999,Math.floor(Number(w.lastWishWins)))):-5,shopBagPurchases:Math.max(0,Math.min(99999,Math.floor(Number(w.shopBagPurchases)||0))),campVisited:!!w.campVisited,greenhouseVisited:!!w.greenhouseVisited};
- const zone=zoneAt(s.world.x,s.world.y);if(!s.world.visited.includes(zone))s.world.visited.push(zone);
+ const area=typeof w.area==='string'&&REGION_AREAS[w.area]?w.area:'cuddlewick';
+ const bounds=areaInfo(area),width=bounds?.width??WORLD_W,height=bounds?.height??WORLD_H;
+ s.world={...defaults,area,storyFlags:uniqueIds(w.storyFlags,['returned-orchard-key']),x:Math.max(0,Math.min(width-1,Number.isFinite(Number(w.x))?Number(w.x):WORLD_START.x)),y:Math.max(0,Math.min(height-1,Number.isFinite(Number(w.y))?Number(w.y):WORLD_START.y)),steps:Math.max(0,Math.min(999999,Math.floor(Number(w.steps)||0))),lastEncounterStep:Math.max(-100,Math.min(999999,(Number.isFinite(Number(w.lastEncounterStep))?Math.floor(Number(w.lastEncounterStep)):-100))),parlorBadges:uniqueIds(w.parlorBadges,[...PARLORS,...REGION_PARLORS].map(p=>p.id)),visited:uniqueIds(w.visited,[...ZONES,...REGION_ZONES].map(z=>z.id)),talked:uniqueIds(w.talked,[...NPCS,...REGION_NPCS].map(n=>n.id)),completed:uniqueIds(w.completed,Object.keys(CHALLENGES)),found:uniqueIds(w.found,[...TREASURES,...REGION_TREASURES].map(t=>t.id)),firstBattle:!!w.firstBattle,claimedQuests:uniqueIds(w.claimedQuests,['first-steps','petal-post','forest-whispers','tide-and-treasure','playtime','starlight','little-explorer','every-little-thing','patchwork','beyond-the-gate','stone-and-story','willowmere-welcome']),miniBests:Object.fromEntries(Object.entries(w.miniBests||{}).filter(([id,n])=>Object.keys(CHALLENGES).includes(id)&&Number.isFinite(Number(n))).map(([id,n])=>[id,Math.max(0,Math.min(3,Math.floor(n)))])),miniAttempts:Object.fromEntries(Object.entries(w.miniAttempts||{}).filter(([id,n])=>Object.keys(CHALLENGES).includes(id)&&Number.isFinite(Number(n))).map(([id,n])=>[id,Math.max(0,Math.min(99999,Math.floor(n)))])),souvenirs:uniqueIds(w.souvenirs,['ribbon','postcards','seedling']),wishes:Math.max(0,Math.min(999,Math.floor(Number(w.wishes)||0))),lastWishWins:Number.isFinite(Number(w.lastWishWins))?Math.max(-5,Math.min(999999,Math.floor(Number(w.lastWishWins)))):-5,shopBagPurchases:Math.max(0,Math.min(99999,Math.floor(Number(w.shopBagPurchases)||0))),campVisited:!!w.campVisited,greenhouseVisited:!!w.greenhouseVisited};
+ const zone=s.world.area==='cuddlewick'?zoneAt(s.world.x,s.world.y):s.world.area;if(!s.world.visited.includes(zone))s.world.visited.push(zone);
  return s;
 }
 function stepWorld(s,dx,dy){
@@ -709,8 +867,10 @@ function stepWorld(s,dx,dy){
  const size=Math.abs(dx)+Math.abs(dy);
  if(!Number.isFinite(size)||Math.hypot(dx,dy)<=0||Math.hypot(dx,dy)>1.001)throw Error('Movement must be finite and at most one tile');
  const w=s.world;
+ if(w.area!=='cuddlewick')return regionStep(s,dx,dy);
  const x=+Math.max(0,Math.min(WORLD_W-1,w.x+dx)).toFixed(3),y=+Math.max(0,Math.min(WORLD_H-1,w.y+dy)).toFixed(3);
  if(x===w.x&&y===w.y)return {moved:false,zone:null,treasure:null,npc:null};
+ const gate=areaGate('cuddlewick',x,y);if(gate){w.area=gate.area;w.x=gate.x;w.y=gate.y;w.steps++;if(!w.visited.includes(gate.area))w.visited.push(gate.area);return {moved:true,transition:gate,zone:{id:gate.area,name:gate.message},treasure:null};}
  const npc=NPCS.find(n=>Math.hypot(n.x-x,n.y-y)<.72);
  if(npc)return {moved:false,npc,zone:null,treasure:null};
  const previous={x:w.x,y:w.y};w.x=x;w.y=y;w.steps++;
@@ -720,7 +880,7 @@ function stepWorld(s,dx,dy){
  if(treasure){w.found.push(treasure.id);s.points+=treasure.points;s.history.push(`Found ${treasure.title} (+${treasure.points} star)`);s.history=s.history.slice(-30);}
  return {moved:true,zone:newZone,treasure,npc:null,encounter:rollGrassEncounter(w,previous.x,previous.y)};
 }
-function nearbyNpcs(w){return NPCS.filter(n=>Math.hypot(n.x-w.x,n.y-w.y)<=1.75)}
+function nearbyNpcs(w){if(w.area&&w.area!=='cuddlewick')return areaNpcs(w.area).filter(n=>Math.hypot(n.x-w.x,n.y-w.y)<=1.75);return NPCS.filter(n=>Math.hypot(n.x-w.x,n.y-w.y)<=1.75)}
 function nearbyArena(w){return !!nearbyParlor(w)}
 function completeChallenge(s,id){ensureWorld(s);if(!CHALLENGES[id])throw Error('Unknown challenge');if(s.world.completed.includes(id))return false;
  s.world.completed.push(id);s.points+=2;
@@ -765,16 +925,21 @@ const QUESTS=[
  {id:'little-explorer',title:'The Softlands Field Guide',chapter:'Chapter 4 · A sky full of friends',story:'Professor Noodle will publish your adventures once you’ve visited every district.',objectives:[['talk','reader','Visit Professor Noodle'],['visits',8,'Explore all eight districts'],['activities',4,'Complete four different activities']],reward:{stars:8,xp:100,bags:1},destination:'square'},
  {id:'every-little-thing',title:'Wishes, Ribbons & Campfire Stories',chapter:'Side story · Little treasures',story:'The best adventures leave you with keepsakes. Make a wish, buy a tiny ribbon, and share a campfire story.',objectives:[['wish',1,'Make a wish at the village fountain'],['souvenir','ribbon','Buy a velvet ribbon at the village store'],['camp',1,'Share a story at Starlight Camp']],reward:{stars:6,xp:85,bags:1},destination:'square'},
  {id:'patchwork',title:'A Patch for Every Place',chapter:'Final chapter · The Grand Cuddle Club',story:'The four Keepers have been waiting for a kind, capable challenger. Collect their embroidered patches.',objectives:[['patches',4,'Collect all four Parlor patches'],['wins',5,'Win five battles']],reward:{stars:12,xp:150,bags:2},destination:'square'},
+ {id:'beyond-the-gate',title:'The Orchard Beyond',chapter:'Chapter 5 · Beyond Cuddlewick',story:'Poppy lost a key on the orchard trail. Find the windmill and explore the paths beyond the village gate.',objectives:[['visit','orchard','Enter Orchard Way'],['talk','orchard-farmer','Meet Poppy the Orchard Keeper'],['find','orchard-key','Find the lost orchard key'],['flag','returned-orchard-key','Bring the little key back to Poppy']],reward:{stars:6,xp:90,bags:1},destination:'orchard'},
+ {id:'stone-and-story',title:'Whispers Under the Orchard',chapter:'Chapter 5 · Beyond Cuddlewick',story:'A stone arch hides a grotto. Bring back the map scrap from its far gallery.',objectives:[['visit','grotto','Explore Whisperstone Grotto'],['talk','grotto-guide','Speak with Pebble'],['find','grotto-map','Discover the hidden map scrap']],reward:{stars:8,xp:115,bags:1},destination:'grotto'},
+ {id:'willowmere-welcome',title:'A River Runs Through It',chapter:'Chapter 6 · New horizons',story:'Cross the orchard bridge, reach Willowmere and earn the embroidered River Patch.',objectives:[['visit','willowmere','Reach Willowmere'],['talk','willow-keeper','Greet Mayor Clementine'],['patches',5,'Collect five Parlor patches']],reward:{stars:10,xp:145,bags:1},destination:'willowmere'},
 ];
+const HOME_ZONES=new Set(['wood','garden','moon','bakery','square','cove','sports','hill']);
 function objectiveCount(s,obj){const [kind,value]=obj;const w=s.world||{};
+ if(kind==='flag')return (w.storyFlags||[]).includes(value)?1:0;
  if(kind==='talk')return (w.talked||[]).includes(value)?1:0;
  if(kind==='mini')return (w.completed||[]).includes(value)?1:0;
  if(kind==='find')return (w.found||[]).includes(value)?1:0;
  if(kind==='visit')return (w.visited||[]).includes(value)?1:0;
  if(kind==='wins')return Math.min(value,s.wins||0);
- if(kind==='visits')return Math.min(value,(w.visited||[]).length);
+ if(kind==='visits')return Math.min(value,(w.visited||[]).filter(id=>HOME_ZONES.has(id)).length);
  if(kind==='activities')return Math.min(value,(w.completed||[]).length);
- if(kind==='patches')return Math.min(value,(w.parlorBadges||[]).length);
+ if(kind==='patches')return Math.min(value,value===4?(w.parlorBadges||[]).filter(id=>['village','garden','cove','moon'].includes(id)).length:(w.parlorBadges||[]).length);
  if(kind==='souvenir')return (w.souvenirs||[]).includes(value)?1:0;
  if(kind==='wish')return Math.min(value,w.wishes||0);
  if(kind==='camp')return w.campVisited?1:0;
@@ -803,6 +968,7 @@ function saveMiniScore(s,id,score,grantXp,completeChallenge){if(!Number.isIntege
 
 
 
+
 const $=s=>document.querySelector(s);
 const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let state=ensureWorld(loadSave()),page='world',category='All',query='',ownership='All',detail=null,toastTimer=null;
@@ -817,7 +983,7 @@ const rarityTag=p=>badge(p.rarity,p.rarity==='Legendary'?'background:#ffe49f;col
 const bigAvatar=(p,hidden=false)=>`<div class="avatar ${hidden?'mystery':''}" style="background:${hidden?'#d9d4da':TYPE_COLOR[p.typeIndex]};">${plushArt(p)}</div>`;
 function progressBar(value,max,kind='hp'){const percentage=Math.max(0,Math.min(100,Math.round(100*value/max)));return `<div class="bar" role="progressbar" aria-valuenow="${value}" aria-valuemin="0" aria-valuemax="${max}"><div class="fill ${kind==='xp'?'xp':percentage<28?'low':''}" style="width:${percentage}%"></div></div>`;}
 function statBar(){return `<div class="stat-strip"><div class="stat-item"><span class="stat-label">Matches won</span><span class="big-number">${state.wins}</span></div><div class="stat-item"><span class="stat-label">Win streak</span><span class="big-number">${state.streak} <span style="font:normal 1.2rem sans-serif">🔥</span></span></div><div class="stat-item"><span class="stat-label">Your collection</span><span class="big-number">${state.owned.length}<span style="font-size:.91rem">/${COLLECTION_GOAL}</span></span></div><div class="stat-item"><span class="stat-label">Star points</span><span class="big-number">${state.points} <span style="font:normal 1.2rem sans-serif">★</span></span></div></div>`;}
-function nav(){const items=[['world','✿ Explore','G'],['journal','✧ Adventures','Q'],['home','⌂ My team','T'],['collection','▦ Collection','C'],['clubhouse','✦ Clubhouse','H']];
+function nav(){const items=[['world','✿ Explore','G'],['atlas','◈ Region map','M'],['journal','✧ Adventures','Q'],['home','⌂ My team','T'],['collection','▦ Collection','C'],['clubhouse','✦ Clubhouse','H']];
  if(state.battle)items.push(['battle','⚔ In battle','V']);
  return `<nav class="game-nav" aria-label="Game sections">${items.map(([id,t,k])=>`<button type="button" data-action="nav" data-id="${id}" ${page===id?'aria-current="page"':''}><kbd>${k}</kbd> ${t}</button>`).join('')}
  <button class="help-toggle" data-action="help" title="Keyboard shortcuts (? key)"><kbd>?</kbd> Controls</button>
@@ -831,6 +997,7 @@ function render(){let output=`<main id="main" class="wrap">${nav()}`;
  if(!state.onboarded)output+=onboard();
  else if(state.pending)output+=rewards();
  else if(page==='world')output+=worldScreen();
+ else if(page==='atlas')output+=regionalAtlas();
  else if(page==='home')output+=home();
  else if(page==='journal')output+=journal();
  else if(page==='battle')output+=battle();
@@ -886,7 +1053,7 @@ function showClaimReveal(id,fromJar=false){const p=BY_ID.get(id);if(!p)return;co
 function storyObjective(row){const [kind,key,title]=row;return `${safe(title)}`;}
 function questCard(q){const p=questProgress(state,q),progress=p.completed.reduce((a,b)=>a+b,0),maximum=p.total.reduce((a,b)=>a+b,0),finished=p.claimed;
  return `<article class="quest-card ${finished?'claimed':''} ${p.done&&!finished?'ready':''}"><div class="row between"><span class="eyebrow">${safe(q.chapter)}</span>${badge(finished?'✓ Completed':p.done?'✦ Reward ready':`${progress} / ${maximum} objectives`)}</div><h3>${safe(q.title)}</h3><p class="small muted">${safe(q.story)}</p><div class="quest-meter"><div style="width:${100*progress/maximum}%"></div></div><ul class="quest-tasks">${q.objectives.map((obj,i)=>`<li class="${p.completed[i]>=p.total[i]?'done':''}"><span>${p.completed[i]>=p.total[i]?'✓':'○'}</span><span>${storyObjective(obj)}</span><small>${p.completed[i]}/${p.total[i]}</small></li>`).join('')}</ul>
- <div class="quest-actions"><span class="quest-prize">★ ${q.reward.stars} · ${q.reward.xp} XP ${q.reward.bags?'· 🫙 '+q.reward.bags:''}</span>${!finished&&p.done?`<button class="btn micro" data-action="claim-quest" data-id="${q.id}">Claim reward ✦</button>`:!finished?`<button class="btn cream micro" data-action="quest-guide" data-id="${q.id}">Visit ${safe(ZONES.find(z=>z.id===q.destination)?.name||'the village')} →</button>`:`<span class="quest-done">Ribbon earned</span>`}</div></article>`;
+ <div class="quest-actions"><span class="quest-prize">★ ${q.reward.stars} · ${q.reward.xp} XP ${q.reward.bags?'· 🫙 '+q.reward.bags:''}</span>${!finished&&p.done?`<button class="btn micro" data-action="claim-quest" data-id="${q.id}">Claim reward ✦</button>`:!finished?`<button class="btn cream micro" data-action="quest-guide" data-id="${q.id}">Visit ${safe([...ZONES,...REGION_ZONES].find(z=>z.id===q.destination)?.name||'the village')} →</button>`:`<span class="quest-done">Ribbon earned</span>`}</div></article>`;
 }
 function journal(){ensureWorld(state);const claimed=state.world.claimedQuests.length,ready=QUESTS.filter(q=>questProgress(state,q).done&&!questProgress(state,q).claimed).length;
  return `<div class="journal-hero"><div><span class="eyebrow">The Softlands · Your adventure notebook</span><h1>Every friend has a story.</h1><p>Help neighbors, travel across the world, collect Parlor patches and earn rewards for the little things that make a big adventure.</p><span class="mini-pill">${claimed} / ${QUESTS.length} stories finished</span> ${ready?`<span class="mini-pill">✦ ${ready} rewards waiting</span>`:''}</div><span class="journal-book">📖</span></div>
@@ -895,7 +1062,7 @@ function journal(){ensureWorld(state);const claimed=state.world.claimedQuests.le
  </aside></div>`;
 }
 function clubhouse(){return `${statBar()}<div class="grid-2">
-${panel(`<div class="eyebrow">Collection milestones</div><h1>Your clubhouse.</h1><div class="story-item"><strong>🏆 Best winning streak</strong><span style="float:right">${state.bestStreak}</span></div><div class="story-item"><strong>✿ Parlor patches</strong><span style="float:right">${state.world.parlorBadges.length} / ${PARLORS.length}</span></div><div class="story-item"><strong>📖 Adventures completed</strong><span style="float:right">${state.world.claimedQuests.length} / ${QUESTS.length}</span></div><div class="story-item"><strong>🎀 Best activity ribbons</strong><span style="float:right">${Object.values(state.world.miniBests||{}).reduce((a,b)=>a+b,0)} / 18</span></div><div class="story-item"><strong>✨ Boss victories</strong><span style="float:right">${state.bossWins}</span></div><div class="story-item"><strong>🧸 Jellycats collected</strong><span style="float:right">${state.owned.length}</span></div><div class="story-item"><strong>🎯 Win / loss record</strong><span style="float:right">${state.wins} / ${state.losses}</span></div><p class="source-note mt-20">Your progress is stored only in this browser. Export a save file to move it to another computer or protect it from browser resets.</p><div class="row"><button class="btn pink" data-action="export">Export save</button><button class="btn cream" data-action="import">Import save</button><input type="file" id="import-file" class="hidden" accept="application/json,.json"></div>`)}
+${panel(`<div class="eyebrow">Collection milestones</div><h1>Your clubhouse.</h1><div class="story-item"><strong>🏆 Best winning streak</strong><span style="float:right">${state.bestStreak}</span></div><div class="story-item"><strong>✿ Parlor patches</strong><span style="float:right">${state.world.parlorBadges.length} / ${PARLORS.length+REGION_PARLORS.length}</span></div><div class="story-item"><strong>📖 Adventures completed</strong><span style="float:right">${state.world.claimedQuests.length} / ${QUESTS.length}</span></div><div class="story-item"><strong>🎀 Best activity ribbons</strong><span style="float:right">${Object.values(state.world.miniBests||{}).reduce((a,b)=>a+b,0)} / 18</span></div><div class="story-item"><strong>✨ Boss victories</strong><span style="float:right">${state.bossWins}</span></div><div class="story-item"><strong>🧸 Jellycats collected</strong><span style="float:right">${state.owned.length}</span></div><div class="story-item"><strong>🎯 Win / loss record</strong><span style="float:right">${state.wins} / ${state.losses}</span></div><p class="source-note mt-20">Your progress is stored only in this browser. Export a save file to move it to another computer or protect it from browser resets.</p><div class="row"><button class="btn pink" data-action="export">Export save</button><button class="btn cream" data-action="import">Import save</button><input type="file" id="import-file" class="hidden" accept="application/json,.json"></div>`)}
 ${panel(`<div class="eyebrow">Little keepsakes</div><h2>Your souvenir shelf.</h2><p>Souvenirs stay with you, even after a tough battle.</p><div class="souvenir-shelf">${[['ribbon','🎀','Velvet Ribbon'],['postcards','💌','Postcards'],['seedling','🪴','Tiny Seedling']].map(([id,icon,label])=>`<div class="souvenir ${state.world.souvenirs.includes(id)?'found':''}"><span>${icon}</span><small>${state.world.souvenirs.includes(id)?label:'Not discovered'}</small></div>`).join('')}</div><p class="small muted mt-12">💫 ${state.world.wishes} wishes granted · 🏕️ ${state.world.campVisited?'Campfire story told':'Campfire story waiting'}</p>`,'soft')}
  ${panel(`<div class="eyebrow">Behind the game</div><h2>Real Jellycats. Original rules.</h2><p>All ${CATALOG.length} playable entries use names researched from the Jellycat catalog. Portraits are original soft-toy-style illustrations, not official photographs or exact recreations.</p><p>Battle moves, strengths, levels, and rarity assignments are fan-game inventions, not official Jellycat characteristics.</p><p><strong>Six types:</strong> ${TYPES.map((x,i)=>TYPE_EMOJI[i]+' '+x).join(' · ')}</p><p><strong>Ten legendary characters</strong> have been selected for this fan-made game. Legendary status is invented for gameplay.</p><p class="small muted">Independent fan game, not affiliated with Jellycat. Catalog references are maintained separately from gameplay.</p>`)}
 </div>${panel(`<div class="row between"><h2 class="mb-0">Game settings</h2>${badge('Saved locally')}</div><p class="small muted mt-12">Only reset if you're sure. You can export your save first.</p><button class="btn ghost" data-action="reset">Reset game progress</button><div class="story-item"></div><h3 class="mt-20">Recent activity</h3>${state.history.length?state.history.slice(-8).reverse().map(x=>`<div class="story-item">✳ ${safe(x)}</div>`).join(''):'<p class="muted small">Your wins and discoveries will appear here.</p>'}`)}`;}
@@ -915,7 +1082,7 @@ function action(el){const type=el.dataset.action,id=el.dataset.id;
  if(type==='claim-quest'){const quest=claimQuest(state,id,grantXp);persist();render();showMilestone('Adventure complete!',`${quest.title}: ${quest.reward.stars} stars, ${quest.reward.xp} XP for your team${quest.reward.bags?', and '+quest.reward.bags+' gift bag(s)':''}.`);return;}
  if(type==='place-action'){const msg=usePlace(state,id,el.dataset.option,grantXp);persist();$('#place-modal')?.remove();render();showMilestone('A little discovery!',msg);return;}
  if(type==='close-place'){$('#place-modal')?.remove();return;}
- if(type==='quest-guide'){const q=QUESTS.find(q=>q.id===id);if(q){const z=ZONES.find(z=>z.id===q.destination);go('world');if(z)walkToward(z.x,z.y);}return;}
+ if(type==='quest-guide'){const q=QUESTS.find(q=>q.id===id);if(q){const z=ZONES.find(z=>z.id===q.destination);go('world');if(z&&state.world.area==='cuddlewick')walkToward(z.x,z.y);else if(REGION_AREAS[q.destination]&&state.world.area!==q.destination)notify('Follow the eastern gate from Cuddlewick to reach the new routes. Open the Region Map (M) for directions.');}return;}
  if(type==='open-bag'){bagOpen=true;render();return;}
  if(type==='finish-claim'){$('#claimed-modal')?.remove();return;}
  if(type==='start-battle'){notify('Walk through tall grass or visit a Plush Parlor to find an opponent.');go('world');return;}
@@ -940,14 +1107,14 @@ function action(el){const type=el.dataset.action,id=el.dataset.id;
  if(type==='rename'){const field=$('#rename-input');update(s=>saveNickname(s,id,field?.value));closeDetail();notify('Nickname saved!');return;}
  if(type==='step'){stopWalking();performStep(Number(el.dataset.dx)*WALK_INCREMENT,Number(el.dataset.dy)*WALK_INCREMENT);return;}
  if(type==='tile'){
-  const tx=Number(el.dataset.x),ty=Number(el.dataset.y),friend=NPCS.find(n=>n.x===tx&&n.y===ty);
-  if(friend){const options=[[1,0],[-1,0],[0,1],[0,-1]].map(([dx,dy])=>[tx+dx,ty+dy]).filter(([x,y])=>x>=0&&y>=0&&x<WORLD_W&&y<WORLD_H&&!NPCS.some(n=>n.x===x&&n.y===y));
+  const tx=Number(el.dataset.x),ty=Number(el.dataset.y),localNpcs=state.world.area==='cuddlewick'?NPCS:areaNpcs(state.world.area),localSize=areaSize(state.world.area),friend=localNpcs.find(n=>n.x===tx&&n.y===ty);
+  if(friend){const options=[[1,0],[-1,0],[0,1],[0,-1]].map(([dx,dy])=>[tx+dx,ty+dy]).filter(([x,y])=>x>=0&&y>=0&&x<localSize.width&&y<localSize.height&&!localNpcs.some(n=>n.x===x&&n.y===y));
     options.sort((a,b)=>Math.abs(a[0]-state.world.x)+Math.abs(a[1]-state.world.y)-Math.abs(b[0]-state.world.x)-Math.abs(b[1]-state.world.y));
     if(options.length)walkToward(options[0][0],options[0][1],friend);else showTalk(friend);
-  }else{const place=SPECIAL_PLACES.find(p=>p.x===tx&&p.y===ty);walkToward(tx,ty,null,place||null);}
+  }else{const place=state.world.area==='cuddlewick'?SPECIAL_PLACES.find(p=>p.x===tx&&p.y===ty):null;walkToward(tx,ty,null,place||null);}
   return;}
- if(type==='walkto'){const place=ZONES.find(z=>z.id===id);if(place)walkToward(place.x,place.y);return;}
- if(type==='talk'){const n=NPCS.find(n=>n.id===id);if(n&&Math.hypot(n.x-state.world.x,n.y-state.world.y)<=1.75)showTalk(n);else notify('Walk closer before talking!');return;}
+ if(type==='walkto'){const place=ZONES.find(z=>z.id===id);if(place&&state.world.area==='cuddlewick')walkToward(place.x,place.y);else notify('Follow the paths and gateways to explore other regions!');return;}
+ if(type==='talk'){const n=[...NPCS,...REGION_NPCS].find(n=>n.id===id&&(n.area||'cuddlewick')===state.world.area);if(n&&Math.hypot(n.x-state.world.x,n.y-state.world.y)<=1.75)showTalk(n);else notify('Walk closer before talking!');return;}
  if(type==='interact'){talkOrInspect();return;}
  if(type==='world-battle'){talkOrInspect();return;}
  if(type==='close-talk'){$('#talk-modal')?.remove();return;}
@@ -982,19 +1149,71 @@ function scenery(x,y,zone){
  return '';
 }
 function worldTerrain(x,y,z){if((y===20&&x>3&&x<52)||(x===27&&y>2&&y<38)||(x===10&&y>5&&y<36)||(x===46&&y>7&&y<36)||(y===7&&x>8&&x<48)||(y===33&&x>6&&x<49))return 'trail';return z;}
-function worldScreen(){ensureWorld(state);const w=state.world,here=ZONES.find(z=>z.id===zoneAt(w.x,w.y));
+// A region overview for orientation, not a fake teleport interface. Each planned route
+// has its own graph edge and specific terrain description; currently playable places
+// are marked separately and unlocked by walking through actual portals.
+function regionalAtlas(){const nodes=new Map(ATLAS_TOWNS.map(t=>[t.id,t]));
+ const linePaths=ATLAS_ROUTES.map(r=>{const a=nodes.get(r.from),b=nodes.get(r.to);if(!a||!b)return '';const x=a.x*10,y=a.y*6.5,tx=b.x*10,ty=b.y*6.5,cx=(x+tx)/2+(Number(r.id)%3-1)*14,cy=(y+ty)/2+((Number(r.id)+1)%3-1)*20;return `<path d="M${x} ${y}Q${cx} ${cy} ${tx} ${ty}" class="atlas-road ${r.playable?'ready':'planned'}" aria-label="Route ${r.id}: ${safe(r.name)}"/>`;}).join('');
+ const markers=ATLAS_TOWNS.map(t=>`<g class="atlas-stop ${t.playable?'reachable':'future'}" transform="translate(${t.x*10} ${t.y*6.5})"><circle r="${t.kind==='city'?9:7}"/><text class="atlas-stop-name" x="12" y="4">${safe(t.name)}</text></g>`).join('');
+ const visited=[...new Set(state.world.visited)];return `<div class="atlas-page">
+ <div class="atlas-heading"><div><span class="eyebrow">The Softlands · Regional atlas</span><h1>There's a whole world out there.</h1><p>Forests, mountains, rivers, railway towns, coastal islands and hidden routes all connect. The solid golden road is <strong>currently playable</strong>. Dotted paths are future destinations, not shortcuts or teleport buttons.</p></div><button class="btn" data-action="nav" data-id="world">Back to exploring →</button></div>
+ <section class="atlas-card"><p class="atlas-swipe">Swipe sideways to explore the full map ↔</p><div class="atlas-scroll"><svg class="atlas-svg" viewBox="0 0 1000 650" role="img" aria-label="Regional map with the western forests, northern snowy peaks, central metropolitan city, eastern river wetlands, southern desert, harbor and islands">
+ <defs><linearGradient id="atlas-ground" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#bbd6a5"/><stop offset=".5" stop-color="#d7dda2"/><stop offset="1" stop-color="#e9cb8d"/></linearGradient><filter id="softBlur"><feGaussianBlur stdDeviation="9"/></filter></defs>
+ <rect width="1000" height="650" rx="15" fill="url(#atlas-ground)"/>
+ <path d="M0 485Q110 510 180 478T315 506Q420 555 400 650H0Z" fill="#7bc9d7"/>
+ <path d="M280 650Q470 550 640 650Z" fill="#70c3ce"/>
+ <path d="M0 0H330Q350 80 280 150L180 250 0 180Z" fill="#82b39a"/>
+ <path d="M630 0H1000V300Q860 245 730 205L620 135Z" fill="#b7d4d5"/>
+ <path d="M650 490Q780 455 1000 380V650H530Z" fill="#ead39f"/>
+ <path d="M750 530Q880 440 1000 500V650H660Z" fill="#dfba7e"/>
+ <path d="M635 0Q650 175 730 260T790 410Q710 460 645 490T610 610" fill="none" stroke="#72bac9" stroke-width="24" stroke-linecap="round"/>
+ <path d="M360 0Q400 130 500 180T635 245" fill="none" stroke="#8fc9d2" stroke-width="15" stroke-linecap="round"/>
+ <path d="M60 72l65-65 46 75 68-70 60 60 46-30 65 77-350 20Z" fill="#719183" opacity=".65"/>
+ <path d="M550 75l42-60 36 40 40-45 62 55 28-40 70 100-250 45Z" fill="#edf5f5" stroke="#91b7b7" stroke-width="5"/>
+ <path d="M320 580Q350 630 460 630T590 650" fill="none" stroke="#579ba2" stroke-width="33" stroke-dasharray="8 24"/>
+ <path d="M870 630a58 58 0 1 0 -1 0" fill="#9db69c" stroke="#739b79" stroke-width="7"/>
+ <path d="M870 545l52 88h-104Z" fill="#886e62" stroke="#59484b" stroke-width="5"/>
+ <text class="atlas-terrain-label" x="80" y="122">NORTHWOOD</text><text class="atlas-terrain-label" x="648" y="108">SNOWBELL PEAKS</text><text class="atlas-terrain-label" x="705" y="350">REED MARSH</text><text class="atlas-terrain-label" x="725" y="578">SUNC AIRN DESERT</text><text class="atlas-terrain-label" x="100" y="580">SEAGLASS COAST</text>
+ ${linePaths}${markers}
+ </svg></div><div class="atlas-legend"><span><b class="legend-solid"></b> Playable road</span><span><b class="legend-dash"></b> Planned routes</span><span>✦ ${visited.length} areas discovered</span></div></section>
+ <div class="atlas-bottom"><section class="panel"><span class="eyebrow">Available right now</span><h2>Start with the Orchard Road</h2><p>Leave Cuddlewick heading east through the village gate. Route 01 splits into an orchard loop and a riverside trail, with an optional grotto hidden off the main road. Cross through to Willowmere, meet its residents and challenge a new Parlor Keeper.</p><div class="row">${badge(state.world.area==='cuddlewick'?'In Cuddlewick now':'Exploring '+(REGION_AREAS[state.world.area]?.name||'Softlands'))}<button class="btn mint" data-action="nav" data-id="world">Return to the path →</button></div></section>
+ <section class="panel"><span class="eyebrow">Regional travel ledger</span><h2>24 designed routes</h2><div class="atlas-route-list">${ATLAS_ROUTES.map(r=>`<div class="atlas-route"><span class="atlas-route-num">${r.id}</span><span><strong>${safe(r.name)}</strong><small>${safe(r.detail)}</small></span><span class="${r.playable?'atlas-open':'atlas-locked'}">${r.playable?'Explore':'Future'}</span></div>`).join('')}</div></section></div></div>`;}
+
+function regionalWorldScreen(){const w=state.world,info=areaInfo(w.area),aNpcs=areaNpcs(w.area),aParlors=areaParlors(w.area),aTreasures=areaTreasures(w.area),aLandmarks=areaLandmarks(w.area);
+ if(!info)return panel('<h2>Unknown location</h2><button class="btn" data-action="nav" data-id="atlas">See the region map</button>');
+ const vx=window.innerWidth<650?11:window.innerWidth<950?17:21,vy=window.innerWidth<650?10:14,pad=3,cols=vx+pad*2,rows=vy+pad*2;
+ const cx=Math.max(0,Math.min(info.width-cols,Math.floor(w.x)-Math.floor(vx/2)-pad)),cy=Math.max(0,Math.min(info.height-rows,Math.floor(w.y)-Math.floor(vy/2)-pad));
+ let tiles='';for(let y=cy;y<cy+rows;y++)for(let x=cx;x<cx+cols;x++){
+  const tt=areaTile(w.area,x,y),npc=aNpcs.find(n=>n.x===x&&n.y===y),parlor=aParlors.find(p=>p.x===x&&p.y===y),treasure=aTreasures.find(t=>t.x===x&&t.y===y&&!w.found.includes(t.id)),landmark=aLandmarks.find(t=>t.x===x&&t.y===y),gate=areaGate(w.area,x,y);
+  const icon=npc?`<span class="world-npc">${plushArt(BY_ID.get(slugId(npc.product)))}</span><span class="npc-bubble">${safe(npc.icon)}</span>`:parlor?`<span class="world-parlor">✿<small>PARLOR</small></span>`:treasure?'<span class="world-treasure">✧</span>':gate&&((w.area==='orchard'&&(x===1&&y===19||x===57&&y===windingRoad(57)||x===35&&y===7))||(w.area==='grotto'&&x===2&&y===21)||(w.area==='willowmere'&&x===1&&y===18))?'<span class="world-landmark" title="Follow the path">⇥</span>':landmark?`<span class="world-landmark" title="${safe(landmark.name)}">${landmark.icon}</span>`:tt.kind==='grove'?'<span class="world-decor">🌳</span>':tt.kind==='cliff'?'<span class="world-decor">⛰</span>':tt.kind==='crystal'?'<span class="world-decor">✧</span>':tt.kind==='river'?'<span class="world-decor">〰</span>':(hashTile(x,y)%11===0?'<span class="world-decor">✿</span>':'');
+  const what=npc?'Talk to '+npc.name:parlor?'Challenge '+parlor.name:treasure?'Find '+treasure.title:gate?'Walk to the next area':landmark?landmark.name:tt.solid?'A natural obstacle':'Walk to '+x+','+y;
+  tiles+=`<button tabindex="-1" type="button" class="world-tile terrain-${tt.kind} ${tt.solid?'solid':''}" data-action="tile" data-x="${x}" data-y="${y}" title="${safe(what)}" aria-label="${safe(what)}">${icon}</button>`;
+ }
+ const px=(w.x-cx+.5)/cols*100,py=(w.y-cy+.94)/rows*100,near=nearbyNpcs(w),parlor=nearbyParlor(w);
+ const routeProgress=REGION_ZONES.filter(z=>w.visited.includes(z.id)).length;
+ return `<section class="world-intro"><div><span class="eyebrow">${safe(info.subtitle)} · ${routeProgress} of ${REGION_ZONES.length} new places discovered</span><h1>${safe(info.name)} <span class="world-title-star">✦</span></h1><p>${safe(info.description)} The paths branch, and landmarks may hide shortcuts. See the Region Map for the larger journey.</p></div><button class="btn cream" data-action="nav" data-id="atlas">◈ Region map <kbd>M</kbd></button></section>
+ <div class="world-layout"><section class="world-shell" aria-label="Explore ${safe(info.name)}"><div class="world-toolbar"><span><span class="location-dot">●</span> ${safe(info.name)}</span><span>✦ ${aTreasures.filter(t=>w.found.includes(t.id)).length}/${aTreasures.length} local finds · ✿ ${w.parlorBadges.length} patches</span></div>
+ <div class="world-viewport" id="world-viewport" tabindex="0" style="aspect-ratio:${vx}/${vy}" aria-label="Drag the joystick to walk or tap a path to travel"><div class="world-pan" id="world-pan" data-base-x="${cx}" data-base-y="${cy}" data-cols="${cols}" data-rows="${rows}" data-visible-cols="${vx}" data-visible-rows="${vy}" style="width:${100*cols/vx}%"><div class="world-grid" style="--map-cols:${cols}">${tiles}</div><span class="world-player-overlay" style="left:${px}%;top:${py}%">${plushArt(BY_ID.get(state.team[0]))}</span></div></div>
+ <div class="world-commands"><div class="dpad" aria-label="Movement controls"><button data-action="step" data-dx="0" data-dy="-1">↑</button><div><button data-action="step" data-dx="-1" data-dy="0">←</button><button data-action="step" data-dx="0" data-dy="1">↓</button><button data-action="step" data-dx="1" data-dy="0">→</button></div></div><div class="world-commands-right"><button class="btn mint" data-action="interact"><kbd>E</kbd> Talk / inspect</button>${parlor?`<button class="btn pink" data-action="parlor" data-id="${parlor.id}">✿ ${safe(parlor.name)}</button>`:'<span class="encounter-hint">Follow the winding road and investigate side paths.</span>'}</div></div>
+ <p class="world-help">Move with WASD, arrow keys, or the mobile joystick. Trees, water, cliffs and cave walls block walking. Cross bridges and enter gateways to reach the next map.</p></section><aside class="world-sidebar">
+ ${panel(`<span class="eyebrow">Beyond the village</span><h2>Who's nearby?</h2>${near.length?near.map(n=>`<button class="friend-row" data-action="talk" data-id="${n.id}"><span class="friend-portrait">${plushArt(BY_ID.get(slugId(n.product)))}</span><span><strong>${safe(n.name)}</strong><small>${safe(n.hint)}</small></span><span>→</span></button>`).join(''):'<p class="small muted">Wander off the road to find someone new.</p>'}`,'friend-panel')}
+ ${panel(`<span class="eyebrow">Route guide</span><h3>Paths worth exploring</h3><p class="small">${w.area==='orchard'?'Cross the middle bridge toward Willowmere. The northern orchard trail leads to a cave; the southern detour hides a basket.':w.area==='grotto'?'The stone columns block straight shortcuts. Wind through the galleries to the old map scrap, then follow the low passage out.':'Follow the road from the west through market town. The river crossing leads to mysterious eastern shores you can see but cannot yet reach.'}</p><button class="btn cream" data-action="nav" data-id="atlas">View the whole region ◈</button>`,'soft')}
+ ${panel(`<h2>Treasure trail</h2><div class="region-finds">${aTreasures.map(t=>`<div class="story-item">${w.found.includes(t.id)?'✦':'◇'} ${w.found.includes(t.id)?safe(t.title):'Undiscovered treasure'}</div>`).join('')}</div>${aParlors.map(k=>`<p class="small muted">✿ ${safe(k.name)} · ${w.parlorBadges.includes(k.id)?'Patch earned':'A Keeper awaits'}</p>`).join('')}`,'journey-panel')}</aside></div>`;
+}
+
+function worldScreen(){ensureWorld(state);if(state.world.area!=='cuddlewick')return regionalWorldScreen();const w=state.world,here=ZONES.find(z=>z.id===zoneAt(w.x,w.y));
  const vx=window.innerWidth<650?11:window.innerWidth<950?17:21,vy=window.innerWidth<650?10:14;
  const pad=3,cols=vx+pad*2,rows=vy+pad*2;
  const cx=Math.max(0,Math.min(WORLD_W-cols,Math.floor(w.x)-Math.floor(vx/2)-pad)),cy=Math.max(0,Math.min(WORLD_H-rows,Math.floor(w.y)-Math.floor(vy/2)-pad));
  let tiles='';for(let y=cy;y<cy+rows;y++)for(let x=cx;x<cx+cols;x++){
   const zone=zoneAt(x,y),style=worldTerrain(x,y,zone),npc=NPCS.find(n=>n.x===x&&n.y===y),parlor=PARLORS.find(p=>p.x===x&&p.y===y),treasure=TREASURES.find(t=>t.x===x&&t.y===y&&!w.found.includes(t.id)),landmark=LANDMARKS.find(t=>t.x===x&&t.y===y),grass=isTallGrass(x,y);
-  const sprite=npc?`<span class="world-npc">${plushArt(BY_ID.get(slugId(npc.product)))}</span><span class="npc-bubble">${safe(npc.icon)}</span>`:parlor?`<span class="world-parlor">✿<small>PARLOR</small></span>`:treasure?'<span class="world-treasure">✧</span>':landmark?`<span class="world-landmark" title="${safe(landmark.name)}">${landmark.icon}</span>`:grass?'<span class="tall-grass" aria-hidden="true">♣</span>':`<span class="world-decor">${scenery(x,y,zone)}</span>`;
-  const what=npc?`Talk to ${npc.name}`:parlor?`${parlor.name}, earn the ${parlor.patch}`:treasure?`Find ${treasure.title}`:grass?'Tall grass: surprise battles possible':landmark?landmark.name:`Walk to ${x}, ${y}`;
+  const gate=(x===55&&y===20),sprite=gate?'<span class="world-landmark" title="Orchard Way awaits">🚪</span>':npc?`<span class="world-npc">${plushArt(BY_ID.get(slugId(npc.product)))}</span><span class="npc-bubble">${safe(npc.icon)}</span>`:parlor?`<span class="world-parlor">✿<small>PARLOR</small></span>`:treasure?'<span class="world-treasure">✧</span>':landmark?`<span class="world-landmark" title="${safe(landmark.name)}">${landmark.icon}</span>`:grass?'<span class="tall-grass" aria-hidden="true">♣</span>':`<span class="world-decor">${scenery(x,y,zone)}</span>`;
+  const what=gate?'Route 01: Orchard Way':npc?`Talk to ${npc.name}`:parlor?`${parlor.name}, earn the ${parlor.patch}`:treasure?`Find ${treasure.title}`:grass?'Tall grass: surprise battles possible':landmark?landmark.name:`Walk to ${x}, ${y}`;
   tiles+=`<button type="button" tabindex="-1" class="world-tile terrain-${style} ${grass?'has-grass':''}" data-action="tile" data-x="${x}" data-y="${y}" title="${safe(what)}" aria-label="${safe(what)}">${sprite}</button>`;
  }
  const px=(w.x-cx+.5)/cols*100,py=(w.y-cy+.94)/rows*100;
  const friend=nearbyNpcs(w),parlor=nearbyParlor(w);
- return `<section class="world-intro"><div><span class="eyebrow">An open little world · 8 districts · ${PARLORS.length} Parlors</span><h1>The Softlands <span class="world-title-star">✦</span></h1><p>Walk freely through the Softlands. Surprise battles hide in tall grass, while Parlor Keepers offer embroidered patches for victories. Each win brings XP and a new plush friend.</p></div><div class="world-stamp"><span class="world-stamp-count">${w.parlorBadges.length}<span>/${PARLORS.length}</span></span><small>Parlor patches</small></div></section>
+ return `<section class="world-intro"><div><span class="eyebrow">A larger world awaits · 8 home districts · ${PARLORS.length+REGION_PARLORS.length} Parlors</span><h1>The Softlands <span class="world-title-star">✦</span></h1><p>Follow the eastern gate toward Orchard Way and Willowmere. Surprise battles hide in tall grass, while Parlor Keepers offer embroidered patches for victories. Each win brings XP and a new plush friend.</p></div><div class="world-stamp"><span class="world-stamp-count">${w.parlorBadges.length}<span>/${PARLORS.length+REGION_PARLORS.length}</span></span><small>Parlor patches</small></div></section>
  <div class="world-layout"><section class="world-shell" aria-label="Explore the Softlands">
  <div class="world-toolbar"><span><span class="location-dot">●</span> ${safe(here.name)}</span><span>✿ ${w.parlorBadges.length} patches &nbsp; · &nbsp; ✦ ${w.found.length}/${TREASURES.length} found</span></div>
  <div class="world-viewport" id="world-viewport" tabindex="0" style="aspect-ratio:${vx}/${vy}" aria-label="Drag the joystick to walk, or tap a spot on the map to travel">
@@ -1006,9 +1225,9 @@ function worldScreen(){ensureWorld(state);const w=state.world,here=ZONES.find(z=
  </section><aside class="world-sidebar">
  ${panel(`<span class="eyebrow">People along the way</span><h2>Friends nearby</h2>${friend.length?friend.map(n=>`<button class="friend-row" data-action="talk" data-id="${n.id}"><span class="friend-portrait">${plushArt(BY_ID.get(slugId(n.product)))}</span><span><strong>${safe(n.name)}</strong><small>${safe(n.hint)}</small></span><span aria-hidden="true">→</span></button>`).join(''):'<p class="small muted">Keep wandering! Someone is just around the corner.</p>'}<p class="small muted mb-0">🌿 Look for fluffy patches of grass for unexpected challengers.</p>`,'friend-panel')}
  ${panel(`<span class="eyebrow">Secret corners</span><h3>Little places to visit</h3>${SPECIAL_PLACES.map(p=>`<div class="journal-teaser"><strong>${p.icon} ${safe(p.name)}</strong><small>${safe(ZONES.find(z=>z.id===zoneAt(p.x,p.y))?.name||'Softlands')}</small></div>`).join('')}`,'soft')}
- ${panel(`<div class="row between"><h2 class="mb-0">Parlor Passport</h2>${badge(w.parlorBadges.length+' / '+PARLORS.length)}</div><p class="tiny muted mt-12">Challenge a Keeper and earn an embroidered patch. Later Parlors unlock as you collect patches.</p><div class="parlor-passport">${PARLORS.map((pl,i)=>`<button class="parlor-row ${w.parlorBadges.includes(pl.id)?'earned':''}" data-action="walkto" data-id="${zoneAt(pl.x,pl.y)}" title="Walk toward ${safe(pl.name)}"><span class="patch-icon">${w.parlorBadges.includes(pl.id)?'✿':i+1}</span><span><strong>${safe(pl.name)}</strong><small>${safe(w.parlorBadges.includes(pl.id)?pl.patch:pl.required<=w.parlorBadges.length?pl.theme:'Earn '+pl.required+' patch(es) first')}</small></span></button>`).join('')}</div>`,'journey-panel')}
+ ${panel(`<div class="row between"><h2 class="mb-0">Parlor Passport</h2>${badge(w.parlorBadges.length+' / '+(PARLORS.length+REGION_PARLORS.length))}</div><p class="tiny muted mt-12">Challenge a Keeper and earn an embroidered patch. Later Parlors unlock as you collect patches.</p><div class="parlor-passport">${PARLORS.map((pl,i)=>`<button class="parlor-row ${w.parlorBadges.includes(pl.id)?'earned':''}" data-action="walkto" data-id="${zoneAt(pl.x,pl.y)}" title="Walk toward ${safe(pl.name)}"><span class="patch-icon">${w.parlorBadges.includes(pl.id)?'✿':i+1}</span><span><strong>${safe(pl.name)}</strong><small>${safe(w.parlorBadges.includes(pl.id)?pl.patch:pl.required<=w.parlorBadges.length?pl.theme:'Earn '+pl.required+' patch(es) first')}</small></span></button>`).join('')}</div>`,'journey-panel')}
  ${panel(`<span class="eyebrow">Adventure Journal</span><h3>Stories waiting to unfold</h3>${outstandingQuests(state).slice(0,2).map(q=>{const p=questProgress(state,q);return `<div class="journal-teaser"><strong>${safe(q.title)}</strong><small>${p.done?'✦ Your reward is ready!':p.completed.reduce((a,b)=>a+b,0)+' / '+p.total.reduce((a,b)=>a+b,0)+' tasks finished'}</small></div>`}).join('')}<button class="btn micro pink mt-12" data-action="nav" data-id="journal"><kbd>Q</kbd> Open journal →</button>`,'soft')}
- ${panel(`<span class="eyebrow">Your journey</span><h3>${w.visited.length} of 8 areas explored</h3><p class="small mb-0">${w.completed.length} activities · ${w.talked.length} friends met · ${w.steps} little steps</p><div class="zone-grid mt-12">${ZONES.map((z,i)=>`<button data-action="walkto" data-id="${z.id}" class="zone-link ${w.visited.includes(z.id)?'visited':''} ${here.id===z.id?'active':''}" title="Shift + ${i+1}"><span class="zone-dot" style="background:${z.color}"></span><span>${safe(z.name)}</span>${w.visited.includes(z.id)?'✓':'?'}</button>`).join('')}</div>`,'soft')}
+ ${panel(`<span class="eyebrow">Your journey</span><h3>${w.visited.length} of ${8+REGION_ZONES.length} explorable areas</h3><p class="small mb-0">${w.completed.length} activities · ${w.talked.length} friends met · ${w.steps} little steps</p><div class="zone-grid mt-12">${ZONES.map((z,i)=>`<button data-action="walkto" data-id="${z.id}" class="zone-link ${w.visited.includes(z.id)?'visited':''} ${here.id===z.id?'active':''}" title="Shift + ${i+1}"><span class="zone-dot" style="background:${z.color}"></span><span>${safe(z.name)}</span>${w.visited.includes(z.id)?'✓':'?'}</button>`).join('')}</div>`,'soft')}
  </aside></div>`;
 }
 function slugId(name){return name.normalize('NFKD').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');}
@@ -1031,7 +1250,8 @@ function saveWorldMotion(force=false){worldDirty=true;const now=Date.now();if(fo
 function finishWorldMotion(){if(worldDirty)saveWorldMotion(true);}
 function syncWorldCamera(){const pan=$('#world-pan'),view=$('#world-viewport');if(!pan||!view)return;
  const {x,y}=state.world,baseX=Number(pan.dataset.baseX),baseY=Number(pan.dataset.baseY),cols=Number(pan.dataset.cols),rows=Number(pan.dataset.rows),vx=Number(pan.dataset.visibleCols),vy=Number(pan.dataset.visibleRows);
- const desiredX=Math.max(0,Math.min(WORLD_W-cols,Math.floor(x)-Math.floor(vx/2)-3)),desiredY=Math.max(0,Math.min(WORLD_H-rows,Math.floor(y)-Math.floor(vy/2)-3));
+ const dim=areaSize(state.world.area);
+ const desiredX=Math.max(0,Math.min(dim.width-cols,Math.floor(x)-Math.floor(vx/2)-3)),desiredY=Math.max(0,Math.min(dim.height-rows,Math.floor(y)-Math.floor(vy/2)-3));
  if(Math.abs(desiredX-baseX)>=2||Math.abs(desiredY-baseY)>=2){render();return;}
  const p=pan.querySelector('.world-player-overlay');if(p){p.style.left=`${100*(x-baseX+.5)/cols}%`;p.style.top=`${100*(y-baseY+.94)/rows}%`;}
  const tile=view.clientWidth/vx;
@@ -1042,12 +1262,12 @@ function syncWorldCamera(){const pan=$('#world-pan'),view=$('#world-viewport');i
 function performStep(dx,dy,quiet=false){if(page!=='world'||!state.onboarded||state.pending||challengeState||document.querySelector('.modal-backdrop'))return false;
  const result=stepWorld(state,dx,dy);
  if(result.npc){stopWalking();if(!quiet)showTalk(result.npc);return false;}
- if(result.moved){saveWorldMotion();syncWorldCamera();if(result.treasure){stopWalking();finishWorldMotion();render();showFound(result.treasure);}else if(result.encounter){finishWorldMotion();render();showEncounter();}else if(result.zone){render();if(!quiet)notify(`Welcome to ${result.zone.name}!`);}}return !!result.moved;
+ if(result.moved){saveWorldMotion();if(result.transition){stopWalking();render();notify(result.transition.message);return true;}syncWorldCamera();if(result.treasure){stopWalking();finishWorldMotion();render();showFound(result.treasure);}else if(result.encounter){finishWorldMotion();render();showEncounter();}else if(result.zone){render();if(!quiet)notify(`Welcome to ${result.zone.name}!`);}}return !!result.moved;
 }
 function walkToward(tx,ty,npcToMeet=null,placeToMeet=null){stopWalking();ensureWorld(state);
- tx=Math.max(0,Math.min(WORLD_W-1,Math.round(tx)));ty=Math.max(0,Math.min(WORLD_H-1,Math.round(ty)));
- const w=state.world,key=(x,y)=>y*WORLD_W+x,sx=Math.round(w.x),sy=Math.round(w.y),queue=[[sx,sy]],seen=new Set([key(sx,sy)]),parent=new Map(),blocked=new Set(NPCS.map(n=>key(n.x,n.y)));let head=0,found=false;
- while(head<queue.length){const [cx,cy]=queue[head++];if(cx===tx&&cy===ty){found=true;break;}for(const [dx,dy] of [[1,0],[0,1],[-1,0],[0,-1]]){const nx=cx+dx,ny=cy+dy,k=key(nx,ny);if(nx<0||nx>=WORLD_W||ny<0||ny>=WORLD_H||seen.has(k)||blocked.has(k))continue;seen.add(k);parent.set(k,[cx,cy]);queue.push([nx,ny]);}}
+ const bounds=areaSize(state.world.area);tx=Math.max(0,Math.min(bounds.width-1,Math.round(tx)));ty=Math.max(0,Math.min(bounds.height-1,Math.round(ty)));
+ const w=state.world,key=(x,y)=>y*bounds.width+x,sx=Math.round(w.x),sy=Math.round(w.y),queue=[[sx,sy]],seen=new Set([key(sx,sy)]),parent=new Map(),blocked=new Set((w.area==='cuddlewick'?NPCS:areaNpcs(w.area)).map(n=>key(n.x,n.y)));let head=0,found=false;
+ while(head<queue.length){const [cx,cy]=queue[head++];if(cx===tx&&cy===ty){found=true;break;}for(const [dx,dy] of [[1,0],[0,1],[-1,0],[0,-1]]){const nx=cx+dx,ny=cy+dy,k=key(nx,ny);if(nx<0||nx>=bounds.width||ny<0||ny>=bounds.height||(w.area!=='cuddlewick'&&areaTile(w.area,nx,ny).solid)||seen.has(k)||blocked.has(k))continue;seen.add(k);parent.set(k,[cx,cy]);queue.push([nx,ny]);}}
  if(!found){notify('That place is occupied. Try the path beside it.');return;}
  const waypoints=[];let cur=[tx,ty];while(cur[0]!==sx||cur[1]!==sy){waypoints.push(cur);cur=parent.get(key(cur[0],cur[1]));if(!cur)break;}waypoints.reverse();if(!waypoints.length&&Math.hypot(w.x-tx,w.y-ty)>.15)waypoints.push([tx,ty]);
  let at=0,frames=0;walkingTimer=setInterval(()=>{if(page!=='world'||document.querySelector('.modal-backdrop')||frames++>1400){stopWalking();return;}if(at>=waypoints.length){stopWalking();if(npcToMeet)showTalk(npcToMeet);else if(placeToMeet)showPlace(placeToMeet);return;}
@@ -1060,16 +1280,22 @@ function walkToward(tx,ty,npcToMeet=null,placeToMeet=null){stopWalking();ensureW
 }
 function showPlace(p){stopWalking();const w=state.world;const offerings=p.id==='fountain'?`${canWish(state)?`<button class="btn" data-action="place-action" data-id="fountain" data-option="wish">Make a wish · +1 star and team XP</button>`:`<p class="muted small">The fountain needs ${Math.max(0,5-(state.wins-w.lastWishWins))} more battle victories to recharge.</p>`}`:p.id==='shop'?`<button class="btn cream" data-action="place-action" data-id="shop" data-option="bag">🫙 Mystery gift bag · 8 ★</button>${w.souvenirs.includes('ribbon')?'':`<button class="btn cream" data-action="place-action" data-id="shop" data-option="ribbon">🎀 Velvet ribbon · 4 ★</button>`}${w.souvenirs.includes('postcards')?'':`<button class="btn cream" data-action="place-action" data-id="shop" data-option="postcards">✉ Tiny postcards · 3 ★</button>`}`:p.id==='greenhouse'?(w.greenhouseVisited?'<p>✓ Your little seedling is happily growing here.</p>':'<button class="btn" data-action="place-action" data-id="greenhouse" data-option="tend">Tend the little seedling · free</button>'):(w.campVisited?'<p>✓ You have already shared your first campfire story.</p>':'<button class="btn" data-action="place-action" data-id="camp" data-option="rest">Gather by the campfire · free</button>');
  const div=el('div','modal-backdrop');div.id='place-modal';div.innerHTML=`<section class="modal center place-modal" role="dialog" aria-modal="true" aria-label="${safe(p.name)}"><span class="eyebrow">A special spot in the Softlands</span><div class="place-illustration">${p.icon}</div><h2>${safe(p.name)}</h2><p>${safe(p.description)}</p><div class="place-offerings">${offerings}</div><p class="tiny muted">★ ${state.points} stars · 🫙 ${state.jars} bags</p><button class="btn micro ghost" data-action="close-place">Keep exploring →</button></section>`;document.body.append(div);div.querySelector('button')?.focus();}
-function showTalk(n){stopWalking();$('#talk-modal')?.remove();ensureWorld(state);if(!state.world.talked.includes(n.id)){state.world.talked.push(n.id);persist();}const plush=BY_ID.get(slugId(n.product));const completed=state.world.completed.includes(n.challenge);const best=n.challenge?(state.world.miniBests?.[n.challenge]||0):0;
- const div=el('div','modal-backdrop');div.id='talk-modal';div.innerHTML=`<section class="modal talk-modal" role="dialog" aria-modal="true" aria-label="Talking with ${safe(n.name)}"><div class="row between"><span class="eyebrow">${safe(ZONES.find(z=>z.id===zoneAt(n.x,n.y))?.name||'The Softlands')}</span><button class="btn micro cream" data-action="close-talk">✕ Close</button></div><div class="talk-portrait">${plushArt(plush)}</div><h2>${safe(n.name)}</h2><p class="dialogue-line">“${safe(completed&&n.challenge?`You were lovely at my little game! Come back to try for a gold ribbon, and keep helping your friends around the Softlands.`:n.say)}”</p><div class="row">${n.challenge?`<button class="btn" data-action="begin-challenge" data-id="${safe(n.challenge)}">${completed?'Play again':'Play a little game'} →</button>`:''}<button class="btn cream" data-action="close-talk">${n.challenge?'Maybe later':'Thanks for the tip!'}</button></div>${completed?`<p class="tiny muted mt-12">✓ Best ribbons: ${'✦'.repeat(best)}${'·'.repeat(3-best)} · Replay to improve your record.</p>`:''}</section>`;document.body.append(div);div.querySelector('button')?.focus();}
+function showTalk(n){stopWalking();$('#talk-modal')?.remove();ensureWorld(state);
+ if(!state.world.talked.includes(n.id))state.world.talked.push(n.id);
+ if(n.id==='orchard-farmer'&&state.world.found.includes('orchard-key')&&!state.world.storyFlags.includes('returned-orchard-key')){
+  state.world.storyFlags.push('returned-orchard-key');state.points+=2;state.team.forEach(id=>grantXp(state,id,35));state.history.push('Returned the little orchard key to Poppy (+2 stars, +35 team XP)');
+ }
+ persist();const plush=BY_ID.get(slugId(n.product));const completed=state.world.completed.includes(n.challenge);const best=n.challenge?(state.world.miniBests?.[n.challenge]||0):0;
+ const dialogue=n.id==='orchard-farmer'&&state.world.storyFlags.includes('returned-orchard-key')?'You found my orchard key! What a thoughtful friend. Here are some stars for your team. The northern trail leads to an echoing cave; the eastern bridge leads to Willowmere.':n.id==='willow-keeper'&&state.world.talked.includes('orchard-farmer')?'Poppy sent word that you crossed the orchard road! You are welcome in Willowmere. A River Patch awaits at our Parlor, beside the market.':n.id==='grotto-guide'&&state.world.found.includes('grotto-map')?'You have the map scrap! It shows a journey far beyond the hills. Keep it safe; new routes will open over time.':n.say;
+ const div=el('div','modal-backdrop');div.id='talk-modal';div.innerHTML=`<section class="modal talk-modal" role="dialog" aria-modal="true" aria-label="Talking with ${safe(n.name)}"><div class="row between"><span class="eyebrow">${safe((n.area?REGION_AREAS[n.area]?.name:ZONES.find(z=>z.id===zoneAt(n.x,n.y))?.name)||'The Softlands')}</span><button class="btn micro cream" data-action="close-talk">✕ Close</button></div><div class="talk-portrait">${plushArt(plush)}</div><h2>${safe(n.name)}</h2><p class="dialogue-line">“${safe(completed&&n.challenge?`You were lovely at my little game! Come back to try for a gold ribbon, and keep helping your friends around the Softlands.`:dialogue)}”</p><div class="row">${n.challenge?`<button class="btn" data-action="begin-challenge" data-id="${safe(n.challenge)}">${completed?'Play again':'Play a little game'} →</button>`:''}<button class="btn cream" data-action="close-talk">${n.challenge?'Maybe later':'Thanks for the tip!'}</button></div>${completed?`<p class="tiny muted mt-12">✓ Best ribbons: ${'✦'.repeat(best)}${'·'.repeat(3-best)} · Replay to improve your record.</p>`:''}</section>`;document.body.append(div);div.querySelector('button')?.focus();}
 // Activities are now skill-based experiences rather than multiple-choice trivia.
 function showChallenge(id){openMini(id);}
 function answerChallenge(index){miniAct('mini-flower',index);}
 function showMilestone(title,desc){const div=el('div','modal-backdrop');div.id='milestone-modal';div.innerHTML=`<section class="modal center" role="dialog" aria-modal="true" aria-label="Discovery"><div class="giant-star">✦</div><h2>${safe(title)}</h2><p>${safe(desc)}</p><button class="btn" data-action="close-milestone">Keep exploring →</button></section>`;document.body.append(div);}
 function showFound(t){showMilestone(`You found ${t.title}!`,`${t.text} You earned ${t.points} star.`);}
 function talkOrInspect(){ensureWorld(state);const npc=nearbyNpcs(state.world)[0],parlor=nearbyParlor(state.world);
- const place=nearbySpecial(state.world);const distances=[[npc,()=>showTalk(npc)],[parlor,()=>showParlor(parlor)],[place,()=>showPlace(place)]].filter(([x])=>x).sort((a,b)=>Math.hypot(a[0].x-state.world.x,a[0].y-state.world.y)-Math.hypot(b[0].x-state.world.x,b[0].y-state.world.y));if(distances.length){distances[0][1]();return;}notify('Walk closer to a friend, landmark, or Parlor, or explore tall grass!');}
-function showKeyboardHelp(){if($('#keyboard-modal'))return;const div=el('div','modal-backdrop');div.id='keyboard-modal';div.innerHTML=`<section class="modal help-modal" role="dialog" aria-modal="true" aria-label="Keyboard controls"><span class="eyebrow">Play without your mouse</span><h2>Keyboard controls</h2><dl class="shortcut-grid"><dt><kbd>W A S D</kbd> / arrows</dt><dd>Walk. Hold to keep walking.</dd><dt><kbd>E</kbd> / <kbd>Space</kbd></dt><dd>Talk, explore shops, and inspect nearby landmarks.</dd><dt><kbd>P</kbd></dt><dd>Talk to a nearby Parlor Keeper.</dd><dt><kbd>G</kbd> <kbd>Q</kbd> <kbd>T</kbd> <kbd>C</kbd> <kbd>H</kbd></dt><dd>Explore, Journal, Team, Collection, Clubhouse.</dd><dt><kbd>V</kbd></dt><dd>Resume an active battle.</dd><dt><kbd>1</kbd>–<kbd>3</kbd> in battle</dt><dd>Use a move. <kbd>4</kbd>–<kbd>6</kbd> switches friends.</dd><dt><kbd>Space</kbd> in activities</dt><dd>Time shots and baking, or begin/end a mini-game. Flowers and shells use number keys.</dd><dt><kbd>1</kbd>–<kbd>3</kbd> at rewards</dt><dd>Choose a gift-bag friend.</dd><dt><kbd>Shift</kbd> + <kbd>1</kbd>–<kbd>8</kbd></dt><dd>Walk to a district.</dd><dt><kbd>J</kbd></dt><dd>Open an earned mystery jar from Team.</dd><dt><kbd>/</kbd></dt><dd>Search your Collection.</dd><dt><kbd>Tab</kbd>, <kbd>Enter</kbd></dt><dd>Reach and activate any button or form.</dd><dt><kbd>Esc</kbd></dt><dd>Close dialogs.</dd></dl><button class="btn" data-action="close-help">Got it! <kbd>Esc</kbd></button></section>`;document.body.append(div);div.querySelector('button')?.focus();}
+ const place=state.world.area==='cuddlewick'?nearbySpecial(state.world):null;const distances=[[npc,()=>showTalk(npc)],[parlor,()=>showParlor(parlor)],[place,()=>showPlace(place)]].filter(([x])=>x).sort((a,b)=>Math.hypot(a[0].x-state.world.x,a[0].y-state.world.y)-Math.hypot(b[0].x-state.world.x,b[0].y-state.world.y));if(distances.length){distances[0][1]();return;}if(state.world.area!=='cuddlewick'){const near=areaLandmarks(state.world.area).find(l=>Math.hypot(l.x-state.world.x,l.y-state.world.y)<=1.8);if(near){showMilestone(near.name,near.name==='Whisperstone Grotto'?'Step onto the cave entrance to explore inside.':'A lovely landmark on your journey through the Softlands.');return;}}notify('Walk closer to a friend, landmark, or Parlor, or explore tall grass!');}
+function showKeyboardHelp(){if($('#keyboard-modal'))return;const div=el('div','modal-backdrop');div.id='keyboard-modal';div.innerHTML=`<section class="modal help-modal" role="dialog" aria-modal="true" aria-label="Keyboard controls"><span class="eyebrow">Play without your mouse</span><h2>Keyboard controls</h2><dl class="shortcut-grid"><dt><kbd>W A S D</kbd> / arrows</dt><dd>Walk. Hold to keep walking.</dd><dt><kbd>E</kbd> / <kbd>Space</kbd></dt><dd>Talk, explore shops, and inspect nearby landmarks.</dd><dt><kbd>P</kbd></dt><dd>Talk to a nearby Parlor Keeper.</dd><dt><kbd>G</kbd> <kbd>M</kbd> <kbd>Q</kbd> <kbd>T</kbd> <kbd>C</kbd> <kbd>H</kbd></dt><dd>Explore, Region map, Journal, Team, Collection, Clubhouse.</dd><dt><kbd>V</kbd></dt><dd>Resume an active battle.</dd><dt><kbd>1</kbd>–<kbd>3</kbd> in battle</dt><dd>Use a move. <kbd>4</kbd>–<kbd>6</kbd> switches friends.</dd><dt><kbd>Space</kbd> in activities</dt><dd>Time shots and baking, or begin/end a mini-game. Flowers and shells use number keys.</dd><dt><kbd>1</kbd>–<kbd>3</kbd> at rewards</dt><dd>Choose a gift-bag friend.</dd><dt><kbd>Shift</kbd> + <kbd>1</kbd>–<kbd>8</kbd></dt><dd>Walk to a district.</dd><dt><kbd>J</kbd></dt><dd>Open an earned mystery jar from Team.</dd><dt><kbd>/</kbd></dt><dd>Search your Collection.</dd><dt><kbd>Tab</kbd>, <kbd>Enter</kbd></dt><dd>Reach and activate any button or form.</dd><dt><kbd>Esc</kbd></dt><dd>Close dialogs.</dd></dl><button class="btn" data-action="close-help">Got it! <kbd>Esc</kbd></button></section>`;document.body.append(div);div.querySelector('button')?.focus();}
 
 // Keyboard controls work on every screen, including the modal questions and claim panels.
 const pressed=new Set();let walkHeldTimer=null;
@@ -1104,7 +1330,7 @@ document.addEventListener('keydown',e=>{
  if(page==='collection'&&key==='/'){e.preventDefault();$('#filter-query')?.focus();return;}
  if(page==='clubhouse'&&['e','i','r'].includes(key)){const a={e:'export',i:'import',r:'reset'}[key];$(`[data-action="${a}"]`)?.click();e.preventDefault();return;}
  if(!state.onboarded||state.pending)return;
- if(!e.shiftKey&&['g','q','t','c','h','v'].includes(key)){const p={g:'world',q:'journal',t:'home',c:'collection',h:'clubhouse',v:'battle'}[key];if(p!=='battle'||state.battle){e.preventDefault();go(p);}return;}
+ if(!e.shiftKey&&['g','m','q','t','c','h','v'].includes(key)){const p={g:'world',m:'atlas',q:'journal',t:'home',c:'collection',h:'clubhouse',v:'battle'}[key];if(p!=='battle'||state.battle){e.preventDefault();go(p);}return;}
  if(/^[1-5]$/.test(key)&&!e.shiftKey){const pages=['world','home','collection','clubhouse','battle'];const selected=pages[Number(key)-1];if(selected==='battle'&&!state.battle)return;e.preventDefault();go(selected);}
 });
 document.addEventListener('keyup',e=>{pressed.delete(e.key.toLowerCase());if(!walkKey())stopHeld();});window.addEventListener('blur',stopHeld);
