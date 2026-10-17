@@ -4,7 +4,7 @@
  "week": 6,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-10-17T00:01:54Z",
+ "updated": "2026-10-17T00:49:28Z",
  "source": "Yahoo league page, pasted",
  "teams": [
   {
@@ -849,7 +849,7 @@
      "game": "Sun 1:00 pm",
      "opp": "@ PHI",
      "proj": 10.6,
-     "rank": "WR22",
+     "rank": "WR21",
      "date": "2026-10-18",
      "next_proj": 11.71,
      "in_best": true
@@ -1226,8 +1226,8 @@
      "pos": "WR",
      "game": "Sun 1:00 pm",
      "opp": "@ IND",
-     "proj": 10.84,
-     "rank": "WR21",
+     "proj": 10.41,
+     "rank": "WR22",
      "date": "2026-10-18",
      "next_proj": 10.11,
      "in_best": true
@@ -1356,7 +1356,7 @@
      "next_proj": 9.65
     }
    ],
-   "best": 111.4,
+   "best": 111.0,
    "best_next": 132.4,
    "locked": 4.48,
    "locked_proj": 14.26,
@@ -2053,7 +2053,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-10-17T00:01:55Z",
+  "updated": "2026-10-17T00:49:29Z",
   "players": 3045,
   "unmatched": []
  }
