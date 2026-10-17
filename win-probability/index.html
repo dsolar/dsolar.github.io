@@ -89,6 +89,18 @@ a { color: var(--yellow); }
 .switch input:checked { background: var(--yellow); border-color: var(--yellow); }
 .switch input:checked::after { transform: translateX(18px); background: var(--yellow-ink); }
 .record { color: var(--chalk-faint); font-size: 14px; margin: 8px 0 0; }
+.leaderboard { margin-top: 24px; }
+.leaderboard h2 { margin: 0 0 6px; color: var(--yellow); font: 700 22px var(--display); text-transform: uppercase; }
+.leaderboard-rows { list-style: none; padding: 0; margin: 14px 0 0; }
+.leaderboard-rows li { display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); }
+.leaderboard-rows .rank { color: var(--yellow); font-weight: 700; }
+.leaderboard-rows .player { font-weight: 700; }
+.leaderboard-rows small { display: block; color: var(--chalk-faint); font-size: 12px; font-weight: 400; }
+.leaderboard-rows b { font-variant-numeric: tabular-nums; }
+.score-entry label { display: block; margin: 12px 0; }
+.score-entry input[name="nickname"] { display: block; margin-top: 6px; width: 100%; max-width: 320px; padding: 10px; color: var(--chalk); background: #092a22; border: 1px solid var(--line); border-radius: 5px; }
+.score-entry .consent { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; }
+.speed-result h3 { color: var(--yellow); }
 .credits { color: var(--chalk-faint); font-size: 13px; margin-top: 30px; max-width: 46em; }
 .credits a { color: var(--chalk-dim); }
 
@@ -260,9 +272,14 @@ a { color: var(--yellow); }
     <div class="hero-field" id="hero-field" aria-hidden="true"></div>
     <ul class="modes" id="modes"></ul>
     <div class="settings">
-      <label class="switch"><input type="checkbox" id="clock-toggle" checked> 25-second play clock</label>
+      <label class="switch"><input type="checkbox" id="clock-toggle" checked> 25-second play clock (Speed Round is always timed)</label>
     </div>
     <p class="record" id="record"></p>
+    <section class="leaderboard block" aria-labelledby="leaderboard-title">
+      <h2 id="leaderboard-title">Today’s Speed Round leaderboard</h2>
+      <p class="muted">Same ten calls for everyone. Scores are optional, submitted under a display name, and not independently verified.</p>
+      <div id="leaderboard-list" aria-live="polite"><p class="muted">Loading today’s scores…</p></div>
+    </section>
     <p class="credits">Play through real NFL situations from nflverse play-by-play data, 2009 through this season. Win probabilities come from Ben Baldwin's <a href="https://rbsdm.com/stats/fourth_calculator/">nfl4th model</a>, with famous calls checked against published analysis from Advanced NFL Stats, EdjSports, ESPN and the NFL's Next Gen Stats.</p>
   </section>
 

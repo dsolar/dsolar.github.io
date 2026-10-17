@@ -220,19 +220,20 @@
     const d = (lvl) => (x) => x.diff === lvl;
     const notCoin = (x) => x.diff !== "coin";
     let list = [];
-    if (mode === "quick") {
+    if (mode === "quick" || mode === "speed") {
       const clockCalls = P.famous.filter(x => x.kind === "let");
+      const pickSeen = mode === "speed" ? new Set() : seen;
       list = [
-        pickFresh(P.fourth, rand, seen, d("easy")),
-        pickFresh(P.fourth, rand, seen, d("medium")),
-        pickFresh(P.pat, rand, seen, notCoin),
-        pickFresh(P.fourth, rand, seen, d("medium")),
-        pickFresh(P.famous, rand, seen, x => x.kind !== "let"),
-        pickFresh(P.fourth, rand, seen, d("hard")),
-        pickFresh(P.pat, rand, seen, notCoin),
-        pickFresh(P.fourth, rand, seen, x => x.diff === "medium" || x.diff === "hard"),
-        pickFresh(rand() < 0.35 ? clockCalls : P.famous, rand, seen),
-        pickFresh(P.fourth, rand, seen, d("hard")),
+        pickFresh(P.fourth, rand, pickSeen, d("easy")),
+        pickFresh(P.fourth, rand, pickSeen, d("medium")),
+        pickFresh(P.pat, rand, pickSeen, notCoin),
+        pickFresh(P.fourth, rand, pickSeen, d("medium")),
+        pickFresh(P.famous, rand, pickSeen, x => x.kind !== "let"),
+        pickFresh(P.fourth, rand, pickSeen, d("hard")),
+        pickFresh(P.pat, rand, pickSeen, notCoin),
+        pickFresh(P.fourth, rand, pickSeen, x => x.diff === "medium" || x.diff === "hard"),
+        pickFresh(rand() < 0.35 ? clockCalls : P.famous, rand, pickSeen),
+        pickFresh(P.fourth, rand, pickSeen, d("hard")),
       ];
     } else if (mode === "daily") {
       // Same five for everyone on a given date: ignore personal history.
@@ -331,7 +332,8 @@
     const grid = results.map((r) => SQUARE[r.g.tier]).join("");
     const head = meta.mode === "daily" ? `Make the Call Daily, ${meta.dateLabel}` : `Make the Call: ${meta.modeLabel}`;
     const lostLine = !summary.wpCount ? "No completed decisions" : summary.lost ? `${summary.lost} points of win probability left on the table` : "Not a point of win probability left on the table";
-    return `${head}\nGrade ${summary.grade}. ${summary.style.label}\n${summary.basePoints}/${summary.n * 100} decision points (+${summary.bonusPoints} bonus)\n${lostLine}${summary.delays ? " · " + summary.delays + " delay of game" : ""}\n${grid}\nhttps://davidsolar.dev/win-probability/`;
+    const speed = meta.mode === "speed" ? `Speed score ${results.reduce((sum, r) => sum + (r.speedPoints || 0), 0)}/1000 · ${results.length ? (results.reduce((sum, r) => sum + (r.elapsedMs || 0), 0) / results.length / 1000).toFixed(1) : "0.0"} sec avg\n` : "";
+    return `${head}\nGrade ${summary.grade}. ${summary.style.label}\n${summary.basePoints}/${summary.n * 100} decision points (+${summary.bonusPoints} bonus)\n${speed}${lostLine}${summary.delays ? " · " + summary.delays + " delay of game" : ""}\n${grid}\nhttps://davidsolar.dev/win-probability/`;
   }
 
   const api = { CLOSE, TIERS, GRADES, BONUS_POINTS, hashString, mulberry32, shuffle, rankedOptions, gapOf, optionLabel, shortLabel,

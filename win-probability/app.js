@@ -8,8 +8,7 @@
   const f1 = (v) => (v == null ? "?" : (Math.round(v * 10) / 10).toFixed(1).replace(/\.0$/, ""));
   const CLOCK_SECONDS = 25;
 
-  // Crowd votes: a small Supabase table (see tools/win_probability_supabase.sql). Safe to publish: the key only allows
-  // calling the two vote functions. If the table isn't set up, the game quietly falls back to what NFL coaches did.
+  // The publishable key is safe in the browser; database grants and RLS constrain public votes and opt-in speed scores.
   const SUPABASE_URL = "https://baxrczyufqbzrogftmyn.supabase.co";
   const SUPABASE_KEY = "sb_publishable_brDXGevzcoI7mBaPO7Plow_yaUy4gk4";
   const CROWD_MIN = 20;
@@ -17,6 +16,7 @@
   const MODES = [
     { id: "quick", name: "Quick Game", desc: "Ten decisions. Real games. Two famous calls.", len: "10" },
     { id: "daily", name: "Daily Challenge", desc: "The same five decisions for everyone today", len: "5" },
+    { id: "speed", name: "Speed Round", desc: "Ten shared calls. Answer within 25 seconds; speed affects this score, not your coaching grade.", len: "10 · timed" },
     { id: "survival", name: "Survival", desc: "Keep coaching until your third costly call", len: "3 strikes" },
   ];
 
@@ -119,18 +119,36 @@
 
   function clockOn() { return store.get("clock", true); }
 
+  function speedPoints(basePoints, elapsedMs) {
+    const seconds = Math.min(CLOCK_SECONDS, Math.max(0, elapsedMs / 1000));
+    return Math.round(basePoints * (1 - 0.35 * seconds / CLOCK_SECONDS));
+  }
+  function speedSummary(results) {
+    const n = results.length;
+    return {
+      score: results.reduce((sum, r) => sum + (r.speedPoints || 0), 0),
+      averageSeconds: n ? +(results.reduce((sum, r) => sum + (r.elapsedMs || 0), 0) / n / 1000).toFixed(1) : 0
+    };
+  }
+
   // ---------- start screen ----------
   function renderStart() {
     $("start").hidden = false; $("play").hidden = true; $("end").hidden = true;
     const daily = store.get("daily." + today(), null);
+    const speed = store.get("speed." + today(), null);
     $("modes").innerHTML = MODES.map((m) => {
-      const done = m.id === "daily" && daily;
+      const saved = m.id === "daily" ? daily : m.id === "speed" ? speed : null;
+      const done = Boolean(saved);
+      const doneLabel = m.id === "speed" && saved
+        ? `Done today: ${saved.speed.score}/1000. Tap to see it again.`
+        : saved ? `Done today: grade ${esc(saved.grade)}. Tap to see it again.` : "";
       return `<li><button class="mode${done ? " done" : ""}" data-mode="${m.id}">
         <span class="mode-name">${esc(m.name)}</span>
-        <span class="mode-desc">${done ? `Done today: grade ${esc(daily.grade)}. Tap to see it again.` : esc(m.desc)}</span>
-        <span class="mode-len">${done ? daily.grade : esc(m.len)}</span></button></li>`;
+        <span class="mode-desc">${done ? esc(doneLabel) : esc(m.desc)}</span>
+        <span class="mode-len">${done ? (m.id === "speed" ? saved.speed.score : esc(saved.grade)) : esc(m.len)}</span></button></li>`;
     }).join("");
     $("modes").querySelectorAll(".mode").forEach((b) => b.addEventListener("click", () => startGame(b.dataset.mode)));
+    loadLeaderboard();
     $("clock-toggle").checked = clockOn();
     const best = store.get("best", {});
     const bits = Object.entries(best).filter(([m]) => MODES.some(x => x.id === m)).map(([m, v]) => `${(MODES.find((x) => x.id === m) || {}).name || m}: ${v.grade}`);
@@ -144,9 +162,13 @@
       const prev = store.get("daily." + today(), null);
       if (prev && prev.summary) { state = { mode, results: prev.results, replay: true, date: today() }; return renderEnd(prev.summary, prev.results); }
     }
+    if (mode === "speed") {
+      const prev = store.get("speed." + today(), null);
+      if (prev && prev.summary) { state = { mode, results: prev.results, speed: prev.speed, replay: true, date: today() }; return renderEnd(prev.summary, prev.results); }
+    }
     const date = today();
     const opts = { seen: store.get("seen", []) };
-    if (mode === "daily") { opts.seed = E.hashString("wp-daily-" + date); opts.dayIndex = Math.max(0, dayIndex(date)); }
+    if (mode === "daily" || mode === "speed") { opts.seed = E.hashString("wp-" + mode + "-" + date); opts.dayIndex = Math.max(0, dayIndex(date)); }
     const game = E.buildGame(D, mode, opts);
     state = { mode, game, idx: 0, results: [], strikes: 0, date, simRand: E.mulberry32((game.seed ^ 0x9e3779b9) >>> 0) };
     if (mode === "survival") game.list.push(E.nextSurvival(D, game, 0));
@@ -166,11 +188,14 @@
     }
     $("progress").innerHTML = cells.join("");
     const pts = state.results.reduce((a, r) => a + r.g.points + (r.bonus && r.bonus.correct ? E.BONUS_POINTS : 0), 0);
+    const liveSpeed = state.mode === "speed" ? state.results.reduce((a, r) => a + (r.speedPoints || 0), 0) : null;
     const modeName = (MODES.find((m) => m.id === state.mode) || {}).name;
     $("topline-left").innerHTML = `${esc(modeName)} <button class="quit" id="quit">Quit</button>`;
     $("quit").addEventListener("click", () => { stopClock(); renderStart(); });
     const strikes = state.mode === "survival" ? ` <span class="lives" aria-label="${state.strikes} of 3 strikes">${"✕".repeat(state.strikes)}${"·".repeat(3 - state.strikes)}</span>` : "";
-    $("topline-right").innerHTML = `Decision ${state.idx + 1}${n ? " of " + n : ""}, ${pts} points${strikes}`;
+    $("topline-right").innerHTML = state.mode === "speed"
+      ? `Decision ${state.idx + 1} of ${n}, speed score ${liveSpeed}/1000${strikes}`
+      : `Decision ${state.idx + 1}${n ? " of " + n : ""}, ${pts} points${strikes}`;
   }
 
   function renderScenario() {
@@ -221,7 +246,7 @@
     $("choices").querySelectorAll(".choice").forEach((b) => b.addEventListener("click", () => choose(b.dataset.k, false)));
     $("bonus").innerHTML = ""; $("reveal").innerHTML = "";
     $("ask").hidden = false;
-    $("clock").hidden = !clockOn();
+    $("clock").hidden = !(clockOn() || state.mode === "speed");
     window.scrollTo(0, 0);
     startClock();
   }
@@ -229,8 +254,9 @@
   // ---------- play clock ----------
   function startClock() {
     stopClock();
-    if (!clockOn()) return;
+    if (!clockOn() && state.mode !== "speed") return;
     const t0 = performance.now();
+    state.questionStartedAt = t0;
     const tick = () => {
       const left = Math.max(0, CLOCK_SECONDS - (performance.now() - t0) / 1000);
       $("clock-sec").textContent = Math.ceil(left);
@@ -255,6 +281,10 @@
     state.locked = true;
     stopClock();
     const s = state.s;
+    state.elapsedMs = state.mode === "speed"
+      ? Math.min(CLOCK_SECONDS * 1000, Math.max(0, performance.now() - (state.questionStartedAt || performance.now())))
+      : null;
+    if (timedOut && state.mode === "speed") state.elapsedMs = CLOCK_SECONDS * 1000;
     state.choice = key; state.timedOut = timedOut;
     $("choices").querySelectorAll(".choice").forEach((b) => { b.disabled = true; b.classList.toggle("picked", b.dataset.k === key); });
     $("clock").hidden = true;
@@ -299,7 +329,9 @@
     const g = E.grade(s, key, {timedOut: state.timedOut});
     const outcome = state.timedOut ? { success: null, text: "" } : E.simulate(s, key, state.simRand);
     const badges = E.badgesFor(s, g, { timedOut: state.timedOut, outcome });
-    const result = { s, g, bonus, badges, outcome, timedOut: state.timedOut };
+    const elapsedMs = state.mode === "speed" ? state.elapsedMs : null;
+    const result = { s, g, bonus, badges, outcome, timedOut: state.timedOut, elapsedMs,
+      speedPoints: state.mode === "speed" ? speedPoints(g.points, elapsedMs) : null };
     state.results.push(result);
     if (state.mode !== "daily") { const seen = store.get("seen", []); seen.push(s.id); store.set("seen", seen.slice(-500)); }
     if (state.mode === "survival" && E.SURVIVAL_STRIKE(g)) state.strikes++;
@@ -312,6 +344,7 @@
     const ranked = E.rankedOptions(s);
     const sub = [];
     sub.push(`${g.points}/100 decision points`);
+    if (state.mode === "speed") sub.push(`${(elapsedMs / 1000).toFixed(1)} sec · ${result.speedPoints} speed points`);
     if (g.lost) sub.push(`you gave up ${f1(g.cost)} points of win probability`);
     else if (g.tier === "close") sub.push("within a point of the best call");
     let bonusHtml = "";
@@ -388,6 +421,61 @@
     renderScenario();
   }
 
+  // ---------- public daily speed leaderboard ----------
+  function playerKey() {
+    let key = store.get("speed-player-key", null);
+    if (!key) {
+      key = window.crypto && crypto.randomUUID ? crypto.randomUUID() : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+        const r = Math.random() * 16 | 0; return (c === "x" ? r : (r & 3 | 8)).toString(16);
+      });
+      store.set("speed-player-key", key);
+    }
+    return key;
+  }
+  async function loadLeaderboard(targetId) {
+    const box = $(targetId || "leaderboard-list");
+    if (!box) return;
+    box.innerHTML = '<p class="muted">Loading today’s scores…</p>';
+    try {
+      const rows = await rpc("wp_speed_leaderboard", { p_challenge_date: today() });
+      if (!rows || !rows.length) { box.innerHTML = '<p class="muted">No scores yet today. Be the first to post one.</p>'; return; }
+      box.innerHTML = `<ol class="leaderboard-rows">${rows.slice(0, 20).map((r, i) => `<li><span class="rank">${i + 1}</span><span class="player">${esc(r.nickname)}<small>${esc(r.grade)} · ${Number(r.average_seconds).toFixed(1)} sec avg</small></span><b>${Number(r.score)}/1000</b></li>`).join("")}</ol>`;
+    } catch (e) {
+      box.innerHTML = '<p class="muted">The public leaderboard is temporarily unavailable.</p>';
+    }
+  }
+  function bindSpeedEntry(summary, speed) {
+    const form = $("speed-entry");
+    if (!form) return;
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const status = form.querySelector(".entry-status");
+      const button = form.querySelector('button[type="submit"]');
+      if (!form.reportValidity()) return;
+      const nickname = form.elements.nickname.value.trim();
+      button.disabled = true; status.textContent = "Submitting your score…";
+      try {
+        const inserted = await rpc("wp_submit_speed_score", {
+          p_challenge_date: state.date || today(),
+          p_player_key: playerKey(),
+          p_nickname: nickname,
+          p_score: speed.score,
+          p_base_points: summary.basePoints,
+          p_average_seconds: speed.averageSeconds,
+          p_grade: summary.grade
+        });
+        store.set("speed-submitted." + (state.date || today()), true);
+        form.innerHTML = inserted
+          ? "<h3>Score submitted</h3><p class=\"muted\">You’re on today’s public leaderboard.</p>"
+          : "<h3>Score already submitted</h3><p class=\"muted\">One score per browser per day. The public board is below.</p>";
+        await loadLeaderboard("end-leaderboard-list");
+      } catch (e) {
+        button.disabled = false;
+        status.textContent = "Couldn’t submit right now. Your result is saved on this device; try again later.";
+      }
+    });
+  }
+
   // ---------- crowd ----------
   async function rpc(fn, body) {
     const headers = { apikey: SUPABASE_KEY, "Content-Type": "application/json" };
@@ -426,6 +514,7 @@
   // ---------- end ----------
   function finish() {
     const summary = E.summarize(state.results, D);
+    if (state.mode === "speed") state.speed = speedSummary(state.results);
     const best = store.get("best", {});
     const prev = best[state.mode];
     if (!prev || summary.points / summary.n > prev.points / prev.n) { best[state.mode] = { grade: summary.grade, points: summary.points, n: summary.n }; store.set("best", best); }
@@ -433,6 +522,7 @@
       const lite = state.results.map((r) => ({ s: { id: r.s.id, kind: r.s.kind, you: r.s.you, opp: r.s.opp, season: r.s.season, famous: r.s.famous ? { title: r.s.famous.title } : null, opts: r.s.opts, ytg: r.s.ytg, yl: r.s.yl, score: r.s.score }, g: r.g, bonus: r.bonus, badges: r.badges }));
       store.set("daily." + state.date, { grade: summary.grade, summary, results: lite });
     }
+    if (state.mode === "speed") store.set("speed." + state.date, { grade: summary.grade, summary, results: state.results, speed: state.speed });
     renderEnd(summary, state.results);
   }
 
@@ -449,6 +539,8 @@
     const allBadges = [];
     results.forEach((r) => (r.badges || []).forEach((b) => { if (!allBadges.some((x) => x.id === b.id)) allBadges.push(b); }));
     const bonusHits = results.filter((r) => r.bonus && r.bonus.correct).length;
+    const speed = state.mode === "speed" ? (state.speed || speedSummary(results)) : null;
+    const submittedToday = state.mode === "speed" && store.get("speed-submitted." + (state.date || today()), false);
     const coach = summary.coach ? `<div class="block"><h3>Your coaching tendencies</h3><p>${esc(summary.coach.line)}</p></div>` : "";
     const sw = summary.strength ? `<div class="block"><h3>Scouting report</h3><p>Best at ${esc(summary.strength[0].toLowerCase())} (${Math.round(summary.strength[1])} points a call).${summary.weakness ? ` Worst at ${esc(summary.weakness[0].toLowerCase())} (${Math.round(summary.weakness[1])}).` : ""}${summary.misses ? ` Of your ${summary.misses} misses, ${summary.cons} were too conservative and ${summary.agg} too aggressive.` : ""}</p></div>` : "";
     const recap = results.map((r) => `<li><span class="dot t-${r.g.tier}"></span><span class="what">${esc(recapLabel(r.s))}. You: <b>${esc(r.g.timedOut ? "Delay of Game" : E.shortLabel(r.g.choice))}</b>${!r.g.timedOut && r.g.choice !== r.g.best && r.g.tier !== "close" && r.g.tier !== "optimal" ? `, best: <b>${esc(E.shortLabel(r.g.best))}</b>` : ""}</span><span class="lost">${r.g.timedOut ? "No call" : r.s.disputed ? "Debatable" : r.g.lost ? "−" + f1(r.g.lost) + " pp" : r.g.cost > 0 ? "Close call" : "Best call"}</span></li>`).join("");
@@ -458,6 +550,9 @@
       <div class="final-grade"><span class="letter">${esc(summary.grade)}</span><div><div class="label">${esc(summary.style.label)}</div><div class="line">${esc(summary.gradeLine)}</div></div></div>
       <p class="style-line">${esc(summary.style.line)}</p>
       <div class="stat-row"><div><b>${summary.basePoints}/${summary.n * 100}</b><span>decision points · ${f1(summary.scorePct)}%</span></div><div><b>+${summary.bonusPoints}</b><span>bonus points (separate from grade)</span></div>${summary.wpCount ? `<div><b>${f1(summary.lost)}</b><span>WP points lost on completed calls</span></div>` : ""}<div><b>${summary.n}</b><span>decisions</span></div>${bonusHits ? `<div><b>${bonusHits}</b><span>bonus calls</span></div>` : ""}</div>
+      ${speed ? `<div class="block speed-result"><h3>Speed score: ${speed.score}/1000</h3><p>Average answer time: ${speed.averageSeconds}s. Your coaching grade still reflects the quality of each decision; the speed score rewards quick calls.</p></div>` : ""}
+      ${state.mode === "speed" && !submittedToday ? `<form class="block score-entry" id="speed-entry"><h3>Join today’s public leaderboard</h3><p>Choose a display name. Only your name, score, grade and average answer time will appear.</p><label>Display name <input name="nickname" maxlength="20" minlength="2" pattern="[A-Za-z0-9 ._-]{2,20}" required autocomplete="nickname"></label><label class="consent"><input type="checkbox" name="consent" required> Show my display name and score on the public leaderboard</label><button class="ghost" type="submit">Submit score</button><p class="entry-status muted" aria-live="polite"></p></form>` : state.mode === "speed" ? `<div class="block"><p class="muted">Your score has already been submitted for today.</p></div>` : ""}
+      ${speed ? `<div class="block"><h3>Today’s public leaderboard</h3><div id="end-leaderboard-list" aria-live="polite"><p class="muted">Loading today’s scores…</p></div></div>` : ""}
       ${summary.delays ? `<p>${summary.delays} delay of game: zero points for each missed decision.</p>` : ""}${coach}${sw}
       ${allBadges.length ? `<div class="block"><h3>Badges</h3><div class="badges">${allBadges.map((b) => `<span class="badge">${esc(b.label)}</span>`).join("")}</div></div>` : ""}
       <div class="block"><h3>Every call</h3><p class="muted">Best call = no win probability left on the table. Negative numbers show percentage points lost versus the model’s best option, not the change from before the snap.</p><ul class="recap">${recap}</ul></div>
@@ -467,6 +562,8 @@
     $("copy-result").addEventListener("click", () => doShare(share));
     $("again").addEventListener("click", () => startGame(state.mode === "daily" ? "quick" : state.mode));
     $("home").addEventListener("click", renderStart);
+    if (speed) loadLeaderboard("end-leaderboard-list");
+    if (speed && !submittedToday) bindSpeedEntry(summary, speed);
     window.scrollTo({ top: 0 });
   }
 
@@ -481,7 +578,11 @@
     line(summary.grade,460,260,"#F7D23E"); line(summary.style.label,555,50);
     line(`${summary.basePoints}/${summary.n*100} decision points`,650,46);
     line(`+${summary.bonusPoints} bonus · ${summary.n} decisions${summary.delays ? " · " + summary.delays + " delay of game" : ""}`,710,32);
-    line(summary.wpCount ? `${summary.lost} WP points left on the table` : "No completed decisions",785,32);
+    if (state.mode === "speed") {
+      const speed = state.speed || speedSummary(results);
+      line(`SPEED SCORE ${speed.score}/1000 · ${speed.averageSeconds}s avg`,765,32,"#F7D23E");
+    }
+    line(summary.wpCount ? `${summary.lost} WP points left on the table` : "No completed decisions",810,32);
     const colors={optimal:"#F7D23E",close:"#F7D23E",defensible:"#8FD6B0",costly:"#F2913D",blunder:"#EE5A55",delay:"#F2913D"};
     results.slice(0,40).forEach((r,i) => { c.fillStyle=colors[r.g.tier]; c.fillRect(70+(i%10)*104,840+Math.floor(i/10)*38,88,26); });
     line(summary.wpCount ? "Real NFL decisions. Your instincts. The math." : "The clock. The rules. Your call.",1060,30);
