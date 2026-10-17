@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-17T04:39:08Z",
+ "updated": "2026-10-17T15:42:51Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -687,6 +687,22 @@
    "src": "Ticketmaster",
    "low": 28,
    "first": 28
+  },
+  "tm-rZ7HnEZ1AfCA0f": {
+   "history": [
+    [
+     "2026-10-17",
+     22
+    ]
+   ],
+   "sg": null,
+   "title": "The Pod That Jane Likes - Live Taping [A Dave Matthews Band MSG Preshow Event]",
+   "date": "2026-11-13",
+   "venue": "Hill Country Live",
+   "url": "https://www.ticketweb.com/event/the-pod-that-jane-likes-hill-country-live-tickets/14385914",
+   "src": "Ticketmaster",
+   "low": 22,
+   "first": 22
   }
  },
  "misses": {
@@ -711,7 +727,8 @@
   "tm-Z7r9jZ1AAvx-I": "2026-10-17",
   "tm-Z7r9jZ1AAvx-E": "2026-10-17",
   "tm-Z7r9jZ1AA77-E": "2026-10-17",
-  "tm-rZ7HnEZ1Afugk7": "2026-10-16"
+  "tm-rZ7HnEZ1Afugk7": "2026-10-16",
+  "tm-rZ7HnEZ1AfCA0f": "2026-10-17"
  },
  "drops": []
 }
