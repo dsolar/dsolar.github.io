@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-16T15:00:42Z",
+ "updated": "2026-10-17T13:56:03Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,195 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-Z7r9jZ1A7xpQk",
-   "date": "2026-10-16",
-   "time": "18:30",
-   "title": "The Damned (18 and Over)",
-   "cat": "music",
-   "venue": "Royale Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7xpQk",
-   "source": "ticketmaster",
-   "times": [
-    "18:30",
-    "19:00"
-   ],
-   "aka": [
-    "sg-18624935"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_1hhrKOS",
-   "date": "2026-10-16",
-   "time": "19:00",
-   "title": "Bertha: Grateful Drag (18+)",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/bertha-grateful-drag-18-boston-massachusetts-10-16-2026/event/010064A6DB793833",
-   "source": "ticketmaster",
-   "aka": [
-    "2026-10-16-bertha-grateful-drag-paradise-rock-club"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18666678",
-   "date": "2026-10-16",
-   "time": "19:00",
-   "title": "Robert Kelly",
-   "cat": "comedy",
-   "venue": "Laugh Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/robert-kelly-tickets/comedy/2026-10-16-9-30-pm/18666678",
-   "source": "seatgeek",
-   "act": "Robert Kelly",
-   "times": [
-    "19:00",
-    "21:30"
-   ],
-   "aka": [
-    "2026-10-16-robert-kelly-laugh-boston",
-    "2026-10-16-robert-kelly-laugh-boston"
-   ],
-   "score": 2,
-   "why": "fav"
-  },
-  {
-   "id": "tm-vvG17Z_GE3PRbM",
-   "date": "2026-10-16",
-   "time": "19:00",
-   "title": "Ryan Beatty - Arms Over Armor North American Tour '26",
-   "cat": "music",
-   "venue": "Citizens House of Blues Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/ryan-beatty-arms-over-armor-north-boston-massachusetts-10-16-2026/event/010064C9D296F637",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18306988",
-    "2026-10-16-ryan-beatty-citizens-house-of-bl"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_1OAFi-_",
-   "date": "2026-10-16",
-   "time": "19:30",
-   "title": "Akaash Singh: Generational Triumph Tour",
-   "cat": "comedy",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/akaash-singh-generational-triumph-tour-boston-massachusetts-10-16-2026/event/010064A80522C859",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18281088",
-    "2026-10-16-akaash-singh-the-wilbur"
-   ],
-   "sub": "Generational Triumph Tour",
-   "score": 1
-  },
-  {
-   "id": "tm-vv1AvZkfYGkeiXVzB",
-   "date": "2026-10-16",
-   "time": "19:30",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-10-16-2026/event/01006530ACFB4E3A",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_uJQNiKy",
-   "date": "2026-10-16",
-   "time": "20:00",
-   "title": "Desert Dwellers with Entangled Mind and Skysia (18+)",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/desert-dwellers-with-entangled-mind-and-boston-massachusetts-10-16-2026/event/010064D99A8EC4F9",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18350258"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_7GkUhJLGO",
-   "date": "2026-10-16",
-   "time": "20:00",
-   "title": "Here's John Bishop",
-   "cat": "comedy",
-   "venue": "Boch Center Shubert Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/heres-john-bishop-boston-massachusetts-10-16-2026/event/0100644D9B99F320",
-   "source": "ticketmaster",
-   "score": 1
-  },
-  {
-   "id": "tm-Z7r9jZ1A704oP",
-   "date": "2026-10-16",
-   "time": "20:00",
-   "title": "JPEGMAFIA w/ redveil",
-   "cat": "music",
-   "venue": "Roadrunner-Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A704oP",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18212674"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18663856",
-   "date": "2026-10-16",
-   "time": "20:30",
-   "title": "Don Was",
-   "cat": "music",
-   "venue": "The Sinclair - Cambridge",
-   "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/don-was-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-10-16-8-30-pm/concert/18663856",
-   "source": "seatgeek",
-   "aka": [
-    "2026-10-16-don-was-and-the-pan-detroit-ense-the-sinclair"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_uCNdT3f",
-   "date": "2026-10-16",
-   "time": "21:00",
-   "title": "DJ Habibeats ( 18+ )",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/dj-habibeats-18-boston-massachusetts-10-16-2026/event/010064D3A30FF494",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18328779"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-1AtZkfsGkd9cod3",
-   "date": "2026-10-16",
-   "time": "22:00",
-   "title": "Walker & Royce",
-   "cat": "music",
-   "venue": "Royale Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketweb.com/event/walker-royce-royale-boston-tickets/14327994?REFERRAL_ID=tmfeed",
-   "source": "ticketmaster",
-   "aka": [
-    "tm-Z7r9jZ1AAvVjt",
-    "sg-18603832"
-   ],
-   "score": 0
-  },
   {
    "id": "tm-vvG17Z_2i1ZrAf",
    "date": "2026-10-17",
@@ -690,21 +501,17 @@
    "score": 0
   },
   {
-   "id": "tm-vvG17Z_CN9_1B0",
+   "id": "tm-vv177Z_fGkTgPh1J",
    "date": "2026-10-20",
    "time": "18:00",
    "title": "CRADLE OF FILTH: Majestic In Death II",
    "cat": "music",
-   "venue": "Big Night Live",
+   "venue": "Brighton Music Hall presented by Citizens",
    "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/cradle-of-filth-majestic-in-death-boston-massachusetts-10-20-2026/event/010064E8D764AEA4",
+   "url": "https://www.ticketmaster.com/cradle-of-filth-majestic-in-death-boston-massachusetts-10-20-2026/event/0100654FF595B2A6",
    "source": "ticketmaster",
-   "times": [
-    "18:00",
-    "19:00"
-   ],
    "aka": [
-    "sg-18412442"
+    "tm-vvG17Z_CN9_1B0"
    ],
    "score": 0
   },
@@ -722,6 +529,18 @@
     "sg-18282548",
     "2026-10-20-plini-paradise-rock-club"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18412442",
+   "date": "2026-10-20",
+   "time": "19:00",
+   "title": "Cradle of Filth with Moonspell, Worm, and Black Satellite",
+   "cat": "music",
+   "venue": "Big Night Live",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/cradle-of-filth-tickets/boston-massachusetts-big-night-live-2026-10-20-7-pm/concert/18412442",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -3604,6 +3423,21 @@
    "score": 0
   },
   {
+   "id": "tm-vv1AvZk48GkdJmEWd",
+   "date": "2026-11-07",
+   "time": "18:00",
+   "title": "SoTalented presents TopOppGen, Chuckyy & B-Lovee",
+   "cat": "music",
+   "venue": "Big Night Live",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/sotalented-presents-topoppgen-chuckyy-blovee-boston-massachusetts-11-07-2026/event/01006550E6BA7F43",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18693801"
+   ],
+   "score": 0
+  },
+  {
    "id": "tm-vv177Z_aGkzkA6zp",
    "date": "2026-11-07",
    "time": "19:00",
@@ -4432,6 +4266,22 @@
    "act": "Joe Russo's Almost Dead",
    "score": 3,
    "why": "love"
+  },
+  {
+   "id": "tm-rZ7HnEZ1AfCA0f",
+   "date": "2026-11-13",
+   "time": "17:00",
+   "title": "The Pod That Jane Likes - Live Taping [A Dave Matthews Band MSG Preshow Event]",
+   "cat": "music",
+   "venue": "Hill Country Live",
+   "city": "New York, NY",
+   "url": "https://www.ticketweb.com/event/the-pod-that-jane-likes-hill-country-live-tickets/14385914",
+   "source": "ticketmaster",
+   "drive_hours": 4.25,
+   "act": "Dave Matthews Band",
+   "from": 22,
+   "score": 2,
+   "why": "big"
   },
   {
    "id": "tm-Z7r9jZ1A70EvJ",
@@ -9417,11 +9267,11 @@
    "id": "tm-vv177Z_3GkThsEzN",
    "date": "2027-01-26",
    "time": "19:00",
-   "title": "Seb Lowe US 2027",
+   "title": "Seb Lowe US 2027 - As Part of the Fenway Recordings Sessions",
    "cat": "music",
    "venue": "Brighton Music Hall presented by Citizens",
    "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/seb-lowe-us-2027-boston-massachusetts-01-26-2027/event/0100652FDBC67E23",
+   "url": "https://www.ticketmaster.com/seb-lowe-us-2027-as-part-boston-massachusetts-01-26-2027/event/0100652FDBC67E23",
    "source": "ticketmaster",
    "aka": [
     "sg-18690435"
@@ -10371,6 +10221,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/remi-wolf-the-mud-tour-boston-massachusetts-03-03-2027/event/01006546DEF6F505",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18693829"
+   ],
    "score": 0
   },
   {
@@ -11239,6 +11092,18 @@
    "score": 1
   },
   {
+   "id": "sg-18692018",
+   "date": "2027-03-25",
+   "time": "20:00",
+   "title": "Elderbrook with Arlo and Rules",
+   "cat": "music",
+   "venue": "Roadrunner - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/elderbrook-tickets/boston-massachusetts-roadrunner-boston-2027-03-25-8-pm/concert/18692018",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vv1AvZk46GkdkQNG-",
    "date": "2027-03-26",
    "time": "19:00",
@@ -11340,6 +11205,21 @@
     "sg-18564016"
    ],
    "score": 0
+  },
+  {
+   "id": "tm-vv1AvZk4FGkdCWf_Q",
+   "date": "2027-03-31",
+   "time": "19:30",
+   "title": "Jimmy O. Yang Has No Friends Tour",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/jimmy-o-yang-has-no-friends-boston-massachusetts-03-31-2027/event/01006548CEF5465A",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18692731"
+   ],
+   "score": 1
   },
   {
    "id": "tm-vv1AvZk4FGkdCXf_M",
@@ -11748,7 +11628,7 @@
   "picks": 5,
   "venues": 6,
   "espn": 84,
-  "ticketmaster": 570,
+  "ticketmaster": 563,
   "seatgeek": 110
  }
 }
