@@ -6,7 +6,7 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#f9f1e8">
   <meta name="description" content="An unofficial, single-player collection and battle game inspired by real Jellycat plush characters.">
-  <title>Jellycat Battle Club • The Softlands v0.8</title>
+  <title>Jellycat Battle Club • The Softlands v0.9</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A5%90%3C/text%3E%3C/svg%3E">
   <style>
 
@@ -189,6 +189,27 @@ kbd{display:inline-block;border:1px solid #ada2a1;background:#f1ece5;border-radi
 @media(max-width:750px){.atlas-heading{align-items:start;flex-direction:column}.atlas-bottom{grid-template-columns:minmax(0,1fr)}.atlas-scroll{border-radius:0}.atlas-svg{min-width:750px}.atlas-heading h1{font-size:2.45rem}.atlas-route-list{max-height:400px}}
 
 .atlas-swipe{font-size:.76rem;font-weight:800;background:#faf7e9;padding:8px 14px;margin:0;color:#77627f;display:none}@media(max-width:750px){.atlas-swipe{display:block}}
+
+/* v0.9 · GBA-inspired handcrafted pixel renderer. All visuals are new game assets. */
+body.pixel-world-active .world-pan{transition:transform .105s linear;}
+body.pixel-world-active .world-pan .world-grid{position:relative;z-index:6;}
+body.pixel-world-active .world-tile,body.pixel-world-active .world-tile:hover{background:none!important;background-image:none!important;box-shadow:none!important;outline-offset:-2px;}
+body.pixel-world-active .world-tile:focus-visible{outline:2px solid #fff8d8!important;outline-offset:-3px;}
+body.pixel-world-active .world-tile :is(.world-decor,.tall-grass,.world-landmark){visibility:hidden;}
+body.pixel-world-active .pixel-world-canvas{position:absolute;inset:0;display:block;pointer-events:none;image-rendering:pixelated;image-rendering:crisp-edges;}
+body.pixel-world-active .pixel-ground{z-index:1;}
+body.pixel-world-active .pixel-water{z-index:2;}
+body.pixel-world-active .pixel-canopy{z-index:19;}
+body.pixel-world-active .world-player-overlay{z-index:18;image-rendering:pixelated;filter:drop-shadow(2px 3px 0 #34334255);transition:left .045s linear,top .045s linear;}
+body.pixel-world-active .world-player-overlay .pixel-plush{height:100%;width:100%;max-height:none;image-rendering:pixelated;}
+body.pixel-world-active .world-player-overlay.facing-left .pixel-plush{transform:scaleX(-1);}
+body.pixel-world-active .world-player-overlay.moving .pixel-plush{animation:pixel-bob .22s steps(2,end) infinite;}
+body.pixel-world-active .world-npc .pixel-plush{height:100%;width:100%;image-rendering:pixelated;}
+body.pixel-world-active .world-viewport{background:#8fba78;border-radius:7px;border:4px solid #4b494d;box-shadow:inset 0 0 0 2px #e9dcba,4px 5px 0 #97848a;}
+body.pixel-world-active .world-shell{border-radius:13px;}
+body.pixel-world-active .world-parlor{border-radius:4px;background:#f4dfd1;border:3px solid #665b80;box-shadow:2px 3px 0 #544b72;}
+@keyframes pixel-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@media(prefers-reduced-motion:reduce){body.pixel-world-active .world-pan,body.pixel-world-active .world-player-overlay{transition:none;}body.pixel-world-active .world-player-overlay.moving .pixel-plush{animation:none;}}
 
 </style>
 </head>
@@ -630,15 +651,118 @@ function plushArt(p,extraClass=''){if(!p)return '';
 }
 export {plushArt};
 
+/* Softlands GBA-inspired renderer. Original, hand-defined 32px pixel vocabulary.
+   Terrain is visually independent from the collision/interaction tile grid.
+   Both layers share world-grid coordinates and the existing camera transform. */
+const PIXEL_TILE = 32;
+const PIXEL_PALETTE = Object.freeze({grass:'#87b76b',tree:'#4e8354',water:'#68b9c9',path:'#dfc18a',roof:'#bd6877'});
+function pixelHash(x,y,n=0){let a=(Math.imul(x+101,374761393)^Math.imul(y+77,668265263)^Math.imul(n+1,2246822519))>>>0;return (Math.imul(a^(a>>>13),1274126177)^(a>>>16))>>>0;}
+const pal={
+ wood:['#72a66c','#a2c77a','#4d8258'],garden:['#b2c77b','#c7d894','#819c59'],moon:['#8c8fb4','#b2aed1','#777a9c'],bakery:['#9bb879','#bbcd89','#77985e'],square:['#9fbe7a','#c4d399','#76995e'],cove:['#a6bd8d','#c3d6a5','#819b7e'],sports:['#85b86f','#a9ca81','#649751'],hill:['#81aa8f','#a7c3ae','#698d76'],orchard:['#9fc078','#c7d88c','#729b68'], 'orchard-flower':['#a8c981','#c6d989','#7a9f68'],riverside:['#9fc69a','#c3d6a2','#80aa80'],grove:['#648e62','#86ad6c','#476d51'],trail:['#dcbd89','#f0d7a1','#ac9568'],paved:['#c8b1a0','#e2cfb7','#a18c83'],bridge:['#b18c64','#cfb084','#826646'],river:['#65b3c6','#86d1d4','#3c8caa'],cliff:['#9c9c9e','#bab3ae','#686d77'],house:['#9ac083','#b6c788','#759968'],'cave-floor':['#888690','#a5a1a9','#5e5e6c'],crystal:['#9792a3','#b4aacc','#6b6981'], 'wood-floor':['#bd936b','#d4ac78','#967252'],rug:['#b68caa','#d0acc4','#8e688f'],counter:['#c18f70','#dbac80','#94694f'],shelf:['#9f846b','#bc9e7c','#745c49'],wall:['#9c8c82','#b9a8a0','#766d70'],doorway:['#b7a080','#d4b894','#846950']
+};
+function kindOf(tile){for(const k of tile.classList){if(k.startsWith('terrain-'))return k.slice(8)}return 'square'}
+function box(g,x,y,w,h,c){g.fillStyle=c;g.fillRect(x|0,y|0,w|0,h|0)}
+function pathTile(g,x,y,seed){const c=pal.trail;box(g,x,y,32,32,c[0]);for(let i=0;i<5;i++){const h=pixelHash(seed,i);box(g,x+(h%29),y+((h>>>6)%30),2+(h%3),1,c[i%2?1:2]);}box(g,x+1,y+1,30,1,'#eacb98');}
+function paintGround(g,x,y,kind,wx,wy){const p=pal[kind]||pal.square, h=pixelHash(wx,wy);
+ box(g,x,y,32,32,p[0]);if(['trail','paved','bridge','cave-floor','wood-floor','rug','counter','shelf','wall','doorway'].includes(kind)){
+   if(kind==='trail')pathTile(g,x,y,wx*5+wy*3);
+   else if(kind==='paved'){for(let r=0;r<3;r++){const yy=y+r*11;box(g,x,yy+10,32,1,'#b5a091');box(g,x+(r%2?19:5),yy,1,10,'#b5a091');}box(g,x+2,y+3,5,2,'#e6d9c0');}
+   else if(kind==='bridge'){for(let i=0;i<4;i++){box(g,x,y+i*8,32,7,i%2?'#bf9972':'#cba77c');box(g,x,y+i*8+7,32,1,'#806448');}box(g,x+1,y,2,32,'#7b664d');box(g,x+29,y,2,32,'#7b664d');}
+   else if(kind==='cave-floor'){for(let i=0;i<4;i++){const q=pixelHash(wx,wy,i);box(g,x+(q%28),y+((q>>>5)%29),3,2,'#686a72');}box(g,x,y+30,32,2,'#74747b');}
+   else if(kind==='wood-floor'||kind==='doorway'){for(let i=0;i<4;i++){box(g,x,y+i*8+7,32,1,'#9b7155');box(g,x+((wy+i)%2?10:23),y+i*8,1,7,'#aa7e5e');}}
+   else if(kind==='rug'){box(g,x+1,y+1,30,30,'#af799c');box(g,x+4,y+4,24,24,'#d8aec3');box(g,x+9,y+9,14,14,'#be8ead');}
+   else if(kind==='counter'||kind==='shelf'){box(g,x,y,32,32,'#c5aa8e');for(let i=0;i<3;i++)box(g,x+1,y+3+i*10,30,6,'#88614e');if(kind==='shelf')for(let i=0;i<5;i++)box(g,x+2+i*6,y+8,4,5,['#b96167','#e5bb67','#69939b'][i%3]);}
+   else if(kind==='wall'){box(g,x,y,32,32,'#aa9f99');for(let i=0;i<3;i++){box(g,x,y+9+i*10,32,1,'#7d7776');box(g,x+(i%2?14:3),y+i*10,1,9,'#827b79');}}
+   return;
+ }
+ if(kind==='river'){box(g,x,y,32,32,p[0]);for(let i=0;i<4;i++){const q=pixelHash(wx,wy,i),xx=(q%21)+2,yy=((q>>>8)%28);box(g,x+xx,y+yy,8,1,p[1]);box(g,x+xx+2,y+yy+2,5,1,'#4898af');}return;}
+ if(kind==='cliff'){box(g,x,y,32,32,'#999ca3');box(g,x,y,32,5,'#d5cab5');box(g,x,y+5,32,3,'#70747f');for(let i=0;i<4;i++){let q=pixelHash(wx,wy,i),a=q%26,b=(q>>>5)%25;box(g,x+a,y+b+7,6,2,'#747782');box(g,x+a+2,y+b+9,2,5,'#c2bdba');}return;}
+ for(let i=0;i<7;i++){const q=pixelHash(wx,wy,i),xx=q%30,yy=(q>>>9)%31;
+  box(g,x+xx,y+yy,i%3+1,(i%2)+1,i%4===0?p[1]:p[2]);}
+ if(kind==='orchard-flower'||kind==='garden'){for(let i=0;i<2;i++){const q=pixelHash(wx,wy,i+21),fx=x+(q%25)+3,fy=y+((q>>>7)%23)+4;box(g,fx,fy,2,4,'#61865a');box(g,fx-2,fy-2,6,2,['#f8db87','#f4b0bb','#faf1d5'][q%3]);box(g,fx,fy-4,2,6,['#f8db87','#f4b0bb','#faf1d5'][q%3]);box(g,fx,fy-2,2,2,'#fff1a1');}}
+ if(kind==='moon'){box(g,x+5+(h%13),y+4,2,2,'#d3c9e2');}
+ if(kind==='sports'){box(g,x+6,y+20,8,1,'#d8e4ae');}
+}
+function drawBush(g,x,y,scale=1){box(g,x+10*scale,y+15*scale,12*scale,9*scale,'#4e7954');box(g,x+5*scale,y+8*scale,22*scale,15*scale,'#477956');box(g,x+9*scale,y+4*scale,15*scale,7*scale,'#6aa56b');box(g,x+7*scale,y+12*scale,5*scale,4*scale,'#80b477');box(g,x+21*scale,y+15*scale,4*scale,4*scale,'#315f4b');}
+function drawTreeCanopy(g,x,y,seed){let pal2=['#396f50','#4e9259','#6baa64','#90bd73'];box(g,x+6,y+5,22,22,pal2[0]);box(g,x+2,y+11,30,17,pal2[0]);box(g,x+5,y+1,23,21,pal2[1]);box(g,x+1,y+12,29,12,pal2[1]);box(g,x+10,y+4,13,8,pal2[2]);box(g,x+7,y+11,9,6,pal2[2]);box(g,x+22,y+14,5,4,pal2[3]);if(seed%4===0){box(g,x+16,y+6,3,2,'#c3d68a');box(g,x+8,y+18,4,2,'#9ccf84');}}
+function drawHouse(g,x,y,seed,name=''){const bakery=/bakery|oven/i.test(name),shop=/store|market/i.test(name),home=/cottage|home|house|hut/i.test(name),farm=/barn|windmill/i.test(name);
+ let roof=bakery?'#cb8468':shop?'#719ca0':farm?'#9b6f68':'#ad758a';
+ // One footprint tile with an overhanging roof. Nearby solid buildings still use region collision.
+ box(g,x+3,y+12,27,21,'#f6e4c7');box(g,x+2,y+29,29,4,'#9b7765');box(g,x+7,y+20,5,7,'#739eaf');box(g,x+9,y+21,2,4,'#d9f5f3');box(g,x+20,y+20,8,12,'#896b59');box(g,x+22,y+21,4,10,'#bd9474');box(g,x+26,y+25,1,1,'#ffeeb1');
+ box(g,x,y+10,32,5,'#624b5f');box(g,x+3,y+4,26,10,roof);box(g,x+7,y,19,5,roof);box(g,x+1,y+14,30,2,'#e7bd9c');box(g,x+5,y+8,4,2,'#edb6b0');if(shop){box(g,x+5,y+15,24,5,'#f3d8a1');for(let i=0;i<4;i++)box(g,x+7+i*6,y+15,3,5,'#bfe1d6');}
+ if(bakery){box(g,x+11,y+13,12,5,'#f7e5a6');box(g,x+14,y+15,5,2,'#ba7c55');}
+ if(home&&seed%3===0)box(g,x+3,y+21,2,3,'#f4a9b4');}
+function drawLandmark(g,x,y,name,icon,seed){if(/house|cottage|bakery|store|greenhouse|barn|market|home|hut/i.test(name)||/🏠|🏡|🏘|🛍/.test(icon)){drawHouse(g,x,y,seed,name);return;}
+ if(/fountain/i.test(name)||/⛲/.test(icon)){box(g,x+3,y+23,26,7,'#778baa');box(g,x+7,y+17,18,7,'#b0c7c9');box(g,x+12,y+12,8,6,'#83c9d4');box(g,x+14,y+5,4,8,'#b4e5f0');box(g,x+8,y+24,16,3,'#8bd3d5');return;}
+ if(/tree|🌳/.test(name+icon)){drawTreeCanopy(g,x,y,seed);return;}
+ if(/cave|grotto|🪨/.test(name+icon)){box(g,x,y+6,32,26,'#777c86');box(g,x+5,y+10,22,22,'#3d4e63');box(g,x+11,y+14,12,18,'#1b3142');box(g,x+1,y+4,10,13,'#999ba0');box(g,x+21,y+3,10,11,'#999ba0');return;}
+ if(/bridge|🌉/.test(name+icon)){box(g,x,y+16,32,6,'#9b705a');box(g,x+3,y+12,3,14,'#d1ad81');box(g,x+26,y+12,3,14,'#d1ad81');return;}
+ if(/dock|⛵/.test(name+icon)){box(g,x+5,y+4,22,23,'#c39e74');for(let i=0;i<4;i++)box(g,x+6,y+8+6*i,21,1,'#765b55');return;}
+ if(/camp|🏕/.test(name+icon)){box(g,x+3,y+22,28,8,'#916f60');box(g,x+7,y+13,19,11,'#e3b56c');box(g,x+15,y+8,6,12,'#ffe1a3');box(g,x+10,y+14,7,8,'#b77f6e');return;}
+ if(/flowers|flowerbed|garden|🌷/.test(name+icon)){for(let i=0;i<7;i++){const px=x+(i%4)*7+4,py=y+7+Math.floor(i/4)*10;box(g,px,py,2,7,'#547f50');box(g,px-2,py-3,6,5,['#e8a3a1','#efdc8e','#e8cbe0'][i%3]);}return;}
+ if(/parlor/i.test(name)){box(g,x+6,y+12,20,18,'#e6c8e5');box(g,x+4,y+7,24,9,'#9d76a7');return;}
+ if(/slide|playground|🛝/.test(name+icon)){box(g,x+6,y+6,4,24,'#a5737a');box(g,x+10,y+12,17,3,'#eac779');box(g,x+22,y+12,5,15,'#eac779');return;}
+ if(/viewpoint|mountain|⛰/.test(name+icon)){box(g,x+2,y+20,26,12,'#9097a2');box(g,x+9,y+8,13,12,'#b9b4b8');box(g,x+13,y+5,6,8,'#f0e8df');return;}
+ if(/waterwheel/i.test(name)){box(g,x+4,y+5,25,25,'#9d7d65');box(g,x+11,y+12,12,12,'#d3c3ab');box(g,x+15,y+5,4,25,'#746250');box(g,x+4,y+15,25,4,'#746250');return;}
+ box(g,x+13,y+7,6,21,'#826c5e');box(g,x+4,y+8,24,6,'#e9ce9a');box(g,x+7,y+9,18,3,'#b48b70');}
+function drawProps(g,top,tiles,cols,rows){for(const tile of tiles){const X=Number(tile.dataset.x),Y=Number(tile.dataset.y),x=(X-Number(tile.dataset.minX||0))*32,y=(Y-Number(tile.dataset.minY||0))*32;const landmark=tile.querySelector('.world-landmark'),decor=tile.querySelector('.world-decor');const kind=kindOf(tile),seed=pixelHash(X,Y);
+ if(kind==='house'){drawHouse(g,x,y,seed,'house');continue;}
+ if(landmark){drawLandmark(g,x,y,landmark.getAttribute('title')||tile.title,landmark.textContent||'',seed);continue;}
+ if(kind==='grove'||(decor&&/🌳|🌲/.test(decor.textContent||''))){box(g,x+13,y+12,7,23,'#6d6054');box(g,x+15,y+17,3,10,'#8d7763');drawTreeCanopy(top,x,y-18,seed);continue;}
+ if(kind==='cliff'){box(g,x+4,y+5,7,2,'#cecfcb');box(g,x+19,y+18,9,2,'#676975');continue;}
+ if(kind==='crystal'){box(g,x+13,y+7,6,20,'#d2d5ee');box(g,x+10,y+14,12,11,'#847cb4');box(g,x+14,y+8,4,14,'#eef3fa');continue;}
+ if(tile.classList.contains('has-grass')){for(let i=0;i<3;i++){box(g,x+6+i*8,y+21-(seed%4),3,10,'#437e4a');box(g,x+5+i*8,y+18-(seed%4),6,4,'#579b56');}continue;}
+  if(kind==='wood'&&seed%7===0){box(g,x+12,y+21,7,9,'#665943');drawTreeCanopy(top,x,y-17,seed);continue;}
+ if(kind==='riverside'&&seed%21===0){drawBush(g,x,y);continue;}
+ if(kind==='garden'&&seed%17===0)drawBush(g,x,y);
+}}
+let activeMap=null;
+function mountPixelWorld(){const pan=document.querySelector('#world-pan'),grid=pan?.querySelector('.world-grid');if(!pan||!grid){activeMap=null;return false;}
+ const cells=[...grid.querySelectorAll('.world-tile')],cols=Number(pan.dataset.cols),rows=Number(pan.dataset.rows),baseX=Number(pan.dataset.baseX),baseY=Number(pan.dataset.baseY);if(!cols||!rows||cells.length!==cols*rows)return false;
+ const canvas=document.createElement('canvas'),foliage=document.createElement('canvas'),ripples=document.createElement('canvas');for(const c of [canvas,foliage,ripples]){c.width=cols*32;c.height=rows*32;c.className='pixel-world-canvas';c.setAttribute('aria-hidden','true');c.style.width='100%';c.style.height='100%';}
+ canvas.classList.add('pixel-ground');foliage.classList.add('pixel-canopy');ripples.classList.add('pixel-water');const g=canvas.getContext('2d'),tg=foliage.getContext('2d'),wg=ripples.getContext('2d');g.imageSmoothingEnabled=false;tg.imageSmoothingEnabled=false;wg.imageSmoothingEnabled=false;
+ cells.forEach(c=>{const X=Number(c.dataset.x)-baseX,Y=Number(c.dataset.y)-baseY,kind=kindOf(c);paintGround(g,X*32,Y*32,kind,Number(c.dataset.x),Number(c.dataset.y));});
+ // Use local coordinates for props instead of navigating game state. This renders identically after loading saves.
+ for(const c of cells){c.dataset.minX=String(baseX);c.dataset.minY=String(baseY);}
+ drawProps(g,tg,cells,cols,rows);
+ pan.insertBefore(canvas,grid);pan.insertBefore(ripples,grid);pan.append(foliage);
+ pan.querySelectorAll('.world-npc').forEach(n=>replacePlush(n,n.dataset.actorName||''));replacePlush(pan.querySelector('.world-player-overlay'),pan.querySelector('.world-player-overlay')?.dataset.actorName||'');
+ activeMap={pan,ripples,wg,cells,baseX,baseY,cols,rows};document.body.classList.add('pixel-world-active');animateWater(0);return true;
+}
+function animateWater(time){const m=activeMap;if(!m||!m.pan.isConnected||m.pan!==document.querySelector('#world-pan'))return;
+ if(document.hidden||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;
+ const g=m.wg;g.clearRect(0,0,m.cols*32,m.rows*32);const frame=Math.floor(time/280)%6;for(const c of m.cells){if(kindOf(c)!=='river')continue;const x=(Number(c.dataset.x)-m.baseX)*32,y=(Number(c.dataset.y)-m.baseY)*32,n=pixelHash(Number(c.dataset.x),Number(c.dataset.y));for(let i=0;i<3;i++){const a=(n+5*i+frame*3)%25+3,b=(6+i*11+n%5)%30;box(g,x+a,y+b,6,1,'#b5e6e2');box(g,x+a+2,y+b+2,3,1,'#8bd2d7');}}
+}
+let waterTimer=null;
+function startPixelWater(){if(waterTimer)clearInterval(waterTimer);if(!activeMap)return;waterTimer=setInterval(()=>animateWater(Date.now()),280);}
+function stopPixelWater(){if(waterTimer)clearInterval(waterTimer);waterTimer=null;activeMap=null;}
+function replacePlush(node,name){if(!node||!name)return;let p=document.createElement('canvas');p.width=32;p.height=40;p.className='pixel-plush';p.setAttribute('aria-hidden','true');p.title=name;paintPlush(p.getContext('2d'),name);node.innerHTML='';node.append(p);}
+function paintPlush(g,name){const s=(name||'').toLowerCase(),h=pixelHash(s.length,s.charCodeAt(1)||3),sweets=/croissant|bread|cake|sourdough|toast|cookie|bagel|bun|pretzel/i.test(s),pink=/peach|strawberry|rose|flamingo|pink/i.test(s),blue=/ocean|mussel|whale|blue|shark/i.test(s),brown=/bigfoot|bear|acorn|squirrel|fox/i.test(s),ghost=/ghost/i.test(s),flower=/flower|sunflower/i.test(s),star=/star/i.test(s),bunny=/bunny|rabbit/i.test(s),ball=/ball|sports/i.test(s);
+ const outline='#604a58',light=sweets?'#efba6d':pink?'#edb1ac':blue?'#9ac9db':brown?'#b9977d':ghost?'#f4efe4':flower?'#edc475':star?'#e6d28c':bunny?'#dfccbb':ball?'#e9e5d8':['#c3acbf','#bcb4cc','#b9cba6'][h%3];const shade=sweets?'#c8864c':pink?'#c88686':blue?'#689dad':brown?'#8d6b5c':ghost?'#d3ced2':flower?'#bb9858':star?'#bba46d':bunny?'#a79691':ball?'#b5b9b6':'#948ba0';
+ // Feet are part of the silhouette, never detached from the body.
+ box(g,9,29,5,6,outline);box(g,20,29,5,6,outline);box(g,10,29,3,6,shade);box(g,21,29,3,6,shade);box(g,9,34,6,2,light);box(g,19,34,7,2,light);
+ if(bunny){box(g,9,4,5,13,outline);box(g,19,4,5,13,outline);box(g,10,4,3,12,light);box(g,20,4,3,12,light);box(g,11,8,2,6,'#e8b6bb');box(g,21,8,2,6,'#e8b6bb');}
+ if(ghost){box(g,7,11,20,21,outline);box(g,8,9,17,22,light);for(let i=0;i<3;i++)box(g,8+i*7,30,6,4,light);}
+ else if(sweets&&s.includes('croissant')){box(g,5,17,22,15,outline);box(g,3,13,9,15,outline);box(g,20,13,9,15,outline);box(g,5,14,8,15,shade);box(g,19,14,8,15,shade);box(g,9,10,15,20,light);box(g,13,9,7,4,'#ffd998');box(g,7,18,5,2,'#f8d28f');box(g,21,18,5,2,'#f8d28f');}
+ else if(star){box(g,14,5,5,28,outline);box(g,5,13,24,9,outline);box(g,8,9,17,20,outline);box(g,10,11,13,17,light);box(g,8,15,18,6,light);box(g,15,7,3,23,light);}
+ else if(flower){box(g,13,9,8,24,outline);box(g,8,12,18,16,shade);box(g,12,10,10,18,light);box(g,15,19,5,6,'#785a48');box(g,5,16,23,8,'#f8d77e');box(g,10,9,14,20,'#f0bd4f');}
+ else{box(g,7,11,20,22,outline);box(g,10,8,15,4,outline);box(g,8,12,18,19,shade);box(g,10,11,15,19,light);box(g,13,7,9,5,light);if(ball){box(g,9,16,16,1,'#b3adac');box(g,13,12,1,4,'#c5bfbe');}}
+ box(g,4,23,4,6,outline);box(g,24,23,4,6,outline);box(g,5,23,3,5,light);box(g,25,23,3,5,light);
+ // Small button eyes and tiny smile in front, consistent plush design.
+ box(g,13,21,2,3,outline);box(g,21,21,2,3,outline);box(g,16,25,4,1,outline);box(g,15,24,1,1,outline);box(g,20,24,1,1,outline);box(g,11,24,2,1,'#d89ca6');box(g,24,24,2,1,'#d89ca6');
+}
+
 /* The Softlands regional expansion. All new maps are discrete traversable spaces,
    not travel buttons or decorative atlas-only destinations. Atlas depicts planned
    geography honestly; only marked solid routes are available in this build. */
 const REGION_AREAS={
  orchard:{id:'orchard',name:'Orchard Way',subtitle:'Route 01 · The road through the orchards',width:58,height:38,color:'#d3dcb0',entry:{x:2,y:19},description:'A branching country route of barns, bridges, orchards and an unusual grotto.'},
  grotto:{id:'grotto',name:'Whisperstone Grotto',subtitle:'A hidden optional dungeon',width:36,height:28,color:'#b9b5bd',entry:{x:3,y:22},description:'An echoing limestone cave beneath Orchard Way, filled with quiet secrets.'},
+ cottage:{id:'cottage',name:'Your Cozy Cottage',subtitle:'Cuddlewick · Home sweet home',width:16,height:12,color:'#d8bca9',entry:{x:8,y:8},interior:true,description:'A quilt, a bookshelf and the warmest little welcome in Cuddlewick.'},
+ 'bakery-room':{id:'bakery-room',name:'The Little Bakehouse',subtitle:'Snack Street · Fresh from the oven',width:18,height:13,color:'#e6c69e',entry:{x:8,y:9},interior:true,description:'The tiny bakery kitchen is full of warm bread and friendly advice.'},
  willowmere:{id:'willowmere',name:'Willowmere',subtitle:'The first town beyond Cuddlewick',width:48,height:36,color:'#b8ddc4',entry:{x:2,y:18},description:'A waterside market town where the orchard road meets the great eastern river.'},
 };
-const REGION_ZONES=Object.values(REGION_AREAS).map(a=>({id:a.id,name:a.name,color:a.color,x:a.entry.x,y:a.entry.y,description:a.description}));
+const REGION_ZONES=Object.values(REGION_AREAS).filter(a=>!a.interior).map(a=>({id:a.id,name:a.name,color:a.color,x:a.entry.x,y:a.entry.y,description:a.description}));
 // Every future atlas destination is distinct, with geographic position and purpose.
 const ATLAS_TOWNS=[
  {id:'cuddlewick',name:'Cuddlewick',x:36,y:47,kind:'town',playable:true,role:'Starting village'},
@@ -688,6 +812,8 @@ const REGION_NPCS=[
  {id:'orchard-watcher',area:'orchard',name:'Acorn the Pathfinder',product:'Amuseables Ort & Tum Acorns',x:30,y:14,icon:'🌰',hint:'A tip about the secret cave.',say:'A shortcut circles the pond north of the road. Follow the stones uphill, then look for a cave mouth tucked above the orchard.',challenge:null},
  {id:'willow-keeper',area:'willowmere',name:'Mayor Clementine',product:'Amuseables Peach',x:18,y:15,icon:'✉',hint:'Welcomes travelers to Willowmere.',say:'We made our town beside the river because the bridges connect everyone. Bring me news from Poppy and I will tell you about our old river festival.',challenge:null},
  {id:'willow-fisher',area:'willowmere',name:'Mina by the Water',product:'Amuseables Michelle Mussel',x:37,y:23,icon:'🐚',hint:'A water-crossing mystery.',say:'See that little island beyond the river? Nobody can reach it without learning the Ferry Friend skill. You will come back someday!',challenge:null},
+ {id:'cottage-host',area:'cottage',name:'Nana Fluff',product:'Bashful Beige Bunny',x:11,y:5,icon:'♡',hint:'Your first friend in Cuddlewick.',say:'Home is where every adventure starts. Come back whenever you want a quiet moment. The quilt was made from scraps of every town in the Softlands.',challenge:null},
+ {id:'bakery-host',area:'bakery-room',name:'Baker Crumbs',product:'Amuseables Sourdough',x:12,y:6,icon:'🥐',hint:'A warm pastry and a baking challenge.',say:'Welcome into my kitchen! The golden recipe is all about timing. Want to try the bake-off? We can always make a fresh batch.',challenge:'baker'},
  {id:'grotto-guide',area:'grotto',name:'Pebble the Cave Guide',product:'Amuseables Pebble',x:11,y:17,icon:'✦',hint:'Explains the old echoes.',say:'Listen. The cave hums when you pass the shining walls. There is a map scrap hidden in the far gallery, if you can find the way around the rock columns.',challenge:null},
 ];
 const REGION_TREASURES=[
@@ -721,6 +847,21 @@ function areaTreasures(area){return REGION_TREASURES.filter(n=>n.area===area);}
 function areaLandmarks(area){return REGION_LANDMARKS.filter(n=>n.area===area);}
 function windingRoad(x){return 19+Math.round(2.2*Math.sin(x/7));}
 function areaTile(area,x,y){const X=Math.floor(x),Y=Math.floor(y),h=(Math.imul(X+7,374761393)^Math.imul(Y+3,668265263))>>>0;
+ if(area==='cottage'||area==='bakery-room'){
+  const W=REGION_AREAS[area].width,H=REGION_AREAS[area].height;
+  if(X<=0||X>=W-1||Y<=0||Y>=H-1)return {kind:(Y>=H-1&&X>=7&&X<=9?'doorway':'wall'),solid:!(Y>=H-1&&X>=7&&X<=9)};
+  if(Y===1||X===1||X===W-2)return {kind:'wall',solid:true};
+  if(area==='cottage'){
+   if(X>=5&&X<=10&&Y>=4&&Y<=6)return {kind:'rug',solid:false};
+   if((X>=3&&X<=5&&Y>=2&&Y<=3)||(X>=12&&X<=13&&Y>=3&&Y<=4))return {kind:'shelf',solid:true};
+   if(X>=3&&X<=4&&Y>=7&&Y<=8)return {kind:'counter',solid:true};
+  }else{
+   if(X>=4&&X<=13&&Y>=3&&Y<=4)return {kind:'counter',solid:true};
+   if(X>=3&&X<=5&&Y>=6&&Y<=8)return {kind:'shelf',solid:true};
+   if(X>=13&&X<=15&&Y>=7&&Y<=8)return {kind:'rug',solid:false};
+  }
+  return {kind:'wood-floor',solid:false};
+ }
  if(area==='orchard'){
   const road=windingRoad(X),main=Math.abs(Y-road)<=1.45;
   const high=(X>=17&&X<=42&&Math.abs(Y-10)<=1)||(X>=33&&X<=37&&Y>=7&&Y<=road);
@@ -752,6 +893,10 @@ function areaTile(area,x,y){const X=Math.floor(x),Y=Math.floor(y),h=(Math.imul(X
  return {kind:'trail',solid:false};
 }
 function areaGate(area,x,y){
+ if(area==='cuddlewick'&&Math.hypot(x-23,y-18)<=.44)return {area:'cottage',x:8,y:8,message:'Welcome home!'};
+ if(area==='cuddlewick'&&Math.hypot(x-7,y-22)<=.44)return {area:'bakery-room',x:8,y:9,message:'The Little Bakehouse smells wonderful'};
+ if(area==='cottage'&&x>=7&&x<=9&&y>=10.5)return {area:'cuddlewick',x:23,y:19,message:'Back in Cuddlewick'};
+ if(area==='bakery-room'&&x>=7&&x<=9&&y>=11.5)return {area:'cuddlewick',x:7,y:23,message:'Back on Snack Street'};
  if(area==='cuddlewick'&&x>=54.8&&y>=16&&y<=24)return {area:'orchard',x:2.1,y:19,message:'Route 01: Orchard Way'};
  if(area==='orchard'&&x<=1.1&&y>=15&&y<=24)return {area:'cuddlewick',x:53.9,y:20,message:'Back in Cuddlewick'};
  if(area==='orchard'&&x>=56.8&&y>=13&&y<=25)return {area:'willowmere',x:2,y:18,message:'Welcome to Willowmere'};
@@ -820,6 +965,20 @@ function isTallGrass(x,y){const z=zoneAt(x,y),u=Math.floor(x),v=Math.floor(y);
  if(NPCS.some(n=>Math.hypot(n.x-u,n.y-v)<2)||PARLORS.some(p=>Math.hypot(p.x-u,p.y-v)<2))return false;
  return hashTile(u,v)%7<3;
 }
+// Matching collision for objects drawn by the 32px pixel renderer.
+// Only solid scenery blocks; paths and interactive doorway cells remain accessible.
+function isVillagePath(x,y){return (y===20&&x>3&&x<52)||(x===27&&y>2&&y<38)||(x===10&&y>5&&y<36)||(x===46&&y>7&&y<36)||(y===7&&x>8&&x<48)||(y===33&&x>6&&x<49);}
+function pixelTreeHash(x,y){let a=(Math.imul(x+101,374761393)^Math.imul(y+77,668265263)^Math.imul(1,2246822519))>>>0;return (Math.imul(a^(a>>>13),1274126177)^(a>>>16))>>>0;}
+function villageBlockedAt(x,y){const X=Math.floor(x),Y=Math.floor(y);if(X<0||Y<0||X>=WORLD_W||Y>=WORLD_H)return true;
+ if(isVillagePath(X,Y)||(X===23&&Y===18)||(X===7&&Y===22))return false;
+ const l=LANDMARKS.find(p=>p.x===X&&p.y===Y);
+ if(l)return /house|cottage|home|store|greenhouse|tree|hideout|beach hut|viewpoint|fountain|slide|camp|garden|flowerbed|dock/i.test(l.name);
+ const z=zoneAt(X,Y),v=hashTile(X,Y)%13;
+ if(z==='wood')return v===0||v===3||pixelTreeHash(X,Y)%7===0;
+ if(z==='square')return v===0||v===4;
+ if(z==='hill')return v===0;
+ return false;
+}
 function rollGrassEncounter(world,fromX,fromY,rng=Math.random){
  const cellChanged=Math.floor(fromX)!==Math.floor(world.x)||Math.floor(fromY)!==Math.floor(world.y);
  if(!cellChanged||!isTallGrass(world.x,world.y)||world.steps-world.lastEncounterStep<14)return false;
@@ -858,7 +1017,7 @@ function ensureWorld(s){const defaults=freshWorld(),w=(s.world&&typeof s.world==
  const uniqueIds=(v,valid)=>Array.isArray(v)?[...new Set(v.filter(x=>typeof x==='string'&&valid.includes(x)))]:[];
  const area=typeof w.area==='string'&&REGION_AREAS[w.area]?w.area:'cuddlewick';
  const bounds=areaInfo(area),width=bounds?.width??WORLD_W,height=bounds?.height??WORLD_H;
- s.world={...defaults,area,storyFlags:uniqueIds(w.storyFlags,['returned-orchard-key']),x:Math.max(0,Math.min(width-1,Number.isFinite(Number(w.x))?Number(w.x):WORLD_START.x)),y:Math.max(0,Math.min(height-1,Number.isFinite(Number(w.y))?Number(w.y):WORLD_START.y)),steps:Math.max(0,Math.min(999999,Math.floor(Number(w.steps)||0))),lastEncounterStep:Math.max(-100,Math.min(999999,(Number.isFinite(Number(w.lastEncounterStep))?Math.floor(Number(w.lastEncounterStep)):-100))),parlorBadges:uniqueIds(w.parlorBadges,[...PARLORS,...REGION_PARLORS].map(p=>p.id)),visited:uniqueIds(w.visited,[...ZONES,...REGION_ZONES].map(z=>z.id)),talked:uniqueIds(w.talked,[...NPCS,...REGION_NPCS].map(n=>n.id)),completed:uniqueIds(w.completed,Object.keys(CHALLENGES)),found:uniqueIds(w.found,[...TREASURES,...REGION_TREASURES].map(t=>t.id)),firstBattle:!!w.firstBattle,claimedQuests:uniqueIds(w.claimedQuests,['first-steps','petal-post','forest-whispers','tide-and-treasure','playtime','starlight','little-explorer','every-little-thing','patchwork','beyond-the-gate','stone-and-story','willowmere-welcome']),miniBests:Object.fromEntries(Object.entries(w.miniBests||{}).filter(([id,n])=>Object.keys(CHALLENGES).includes(id)&&Number.isFinite(Number(n))).map(([id,n])=>[id,Math.max(0,Math.min(3,Math.floor(n)))])),miniAttempts:Object.fromEntries(Object.entries(w.miniAttempts||{}).filter(([id,n])=>Object.keys(CHALLENGES).includes(id)&&Number.isFinite(Number(n))).map(([id,n])=>[id,Math.max(0,Math.min(99999,Math.floor(n)))])),souvenirs:uniqueIds(w.souvenirs,['ribbon','postcards','seedling']),wishes:Math.max(0,Math.min(999,Math.floor(Number(w.wishes)||0))),lastWishWins:Number.isFinite(Number(w.lastWishWins))?Math.max(-5,Math.min(999999,Math.floor(Number(w.lastWishWins)))):-5,shopBagPurchases:Math.max(0,Math.min(99999,Math.floor(Number(w.shopBagPurchases)||0))),campVisited:!!w.campVisited,greenhouseVisited:!!w.greenhouseVisited};
+ s.world={...defaults,area,storyFlags:uniqueIds(w.storyFlags,['returned-orchard-key']),x:Math.max(0,Math.min(width-1,Number.isFinite(Number(w.x))?Number(w.x):WORLD_START.x)),y:Math.max(0,Math.min(height-1,Number.isFinite(Number(w.y))?Number(w.y):WORLD_START.y)),steps:Math.max(0,Math.min(999999,Math.floor(Number(w.steps)||0))),lastEncounterStep:Math.max(-100,Math.min(999999,(Number.isFinite(Number(w.lastEncounterStep))?Math.floor(Number(w.lastEncounterStep)):-100))),parlorBadges:uniqueIds(w.parlorBadges,[...PARLORS,...REGION_PARLORS].map(p=>p.id)),visited:uniqueIds(w.visited,[...ZONES,...REGION_ZONES].map(z=>z.id).concat(Object.keys(REGION_AREAS).filter(id=>REGION_AREAS[id].interior))),talked:uniqueIds(w.talked,[...NPCS,...REGION_NPCS].map(n=>n.id)),completed:uniqueIds(w.completed,Object.keys(CHALLENGES)),found:uniqueIds(w.found,[...TREASURES,...REGION_TREASURES].map(t=>t.id)),firstBattle:!!w.firstBattle,claimedQuests:uniqueIds(w.claimedQuests,['first-steps','petal-post','forest-whispers','tide-and-treasure','playtime','starlight','little-explorer','every-little-thing','patchwork','beyond-the-gate','stone-and-story','willowmere-welcome']),miniBests:Object.fromEntries(Object.entries(w.miniBests||{}).filter(([id,n])=>Object.keys(CHALLENGES).includes(id)&&Number.isFinite(Number(n))).map(([id,n])=>[id,Math.max(0,Math.min(3,Math.floor(n)))])),miniAttempts:Object.fromEntries(Object.entries(w.miniAttempts||{}).filter(([id,n])=>Object.keys(CHALLENGES).includes(id)&&Number.isFinite(Number(n))).map(([id,n])=>[id,Math.max(0,Math.min(99999,Math.floor(n)))])),souvenirs:uniqueIds(w.souvenirs,['ribbon','postcards','seedling']),wishes:Math.max(0,Math.min(999,Math.floor(Number(w.wishes)||0))),lastWishWins:Number.isFinite(Number(w.lastWishWins))?Math.max(-5,Math.min(999999,Math.floor(Number(w.lastWishWins)))):-5,shopBagPurchases:Math.max(0,Math.min(99999,Math.floor(Number(w.shopBagPurchases)||0))),campVisited:!!w.campVisited,greenhouseVisited:!!w.greenhouseVisited};
  const zone=s.world.area==='cuddlewick'?zoneAt(s.world.x,s.world.y):s.world.area;if(!s.world.visited.includes(zone))s.world.visited.push(zone);
  return s;
 }
@@ -871,6 +1030,7 @@ function stepWorld(s,dx,dy){
  const x=+Math.max(0,Math.min(WORLD_W-1,w.x+dx)).toFixed(3),y=+Math.max(0,Math.min(WORLD_H-1,w.y+dy)).toFixed(3);
  if(x===w.x&&y===w.y)return {moved:false,zone:null,treasure:null,npc:null};
  const gate=areaGate('cuddlewick',x,y);if(gate){w.area=gate.area;w.x=gate.x;w.y=gate.y;w.steps++;if(!w.visited.includes(gate.area))w.visited.push(gate.area);return {moved:true,transition:gate,zone:{id:gate.area,name:gate.message},treasure:null};}
+ if(villageBlockedAt(x,y))return {moved:false,blocked:true,zone:null,treasure:null,npc:null};
  const npc=NPCS.find(n=>Math.hypot(n.x-x,n.y-y)<.72);
  if(npc)return {moved:false,npc,zone:null,treasure:null};
  const previous={x:w.x,y:w.y};w.x=x;w.y=y;w.steps++;
@@ -969,6 +1129,7 @@ function saveMiniScore(s,id,score,grantXp,completeChallenge){if(!Number.isIntege
 
 
 
+
 const $=s=>document.querySelector(s);
 const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let state=ensureWorld(loadSave()),page='world',category='All',query='',ownership='All',detail=null,toastTimer=null;
@@ -1006,7 +1167,7 @@ function render(){let output=`<main id="main" class="wrap">${nav()}`;
  output+='</main>';
  $('#app').innerHTML=output;
  document.body.classList.toggle('mobile-world',page==='world'&&!!state.onboarded&&!state.pending);
- if(page==='world'&&state.onboarded&&!state.pending)syncWorldCamera();
+ if(page==='world'&&state.onboarded&&!state.pending){mountPixelWorld();startPixelWater();syncWorldCamera();}else stopPixelWater();
  if(detail)showDetail();
 }
 function onboard(){const p=BY_ID.get(STARTER_ID);return `<div class="hero">
@@ -1185,7 +1346,7 @@ function regionalWorldScreen(){const w=state.world,info=areaInfo(w.area),aNpcs=a
  const cx=Math.max(0,Math.min(info.width-cols,Math.floor(w.x)-Math.floor(vx/2)-pad)),cy=Math.max(0,Math.min(info.height-rows,Math.floor(w.y)-Math.floor(vy/2)-pad));
  let tiles='';for(let y=cy;y<cy+rows;y++)for(let x=cx;x<cx+cols;x++){
   const tt=areaTile(w.area,x,y),npc=aNpcs.find(n=>n.x===x&&n.y===y),parlor=aParlors.find(p=>p.x===x&&p.y===y),treasure=aTreasures.find(t=>t.x===x&&t.y===y&&!w.found.includes(t.id)),landmark=aLandmarks.find(t=>t.x===x&&t.y===y),gate=areaGate(w.area,x,y);
-  const icon=npc?`<span class="world-npc">${plushArt(BY_ID.get(slugId(npc.product)))}</span><span class="npc-bubble">${safe(npc.icon)}</span>`:parlor?`<span class="world-parlor">✿<small>PARLOR</small></span>`:treasure?'<span class="world-treasure">✧</span>':gate&&((w.area==='orchard'&&(x===1&&y===19||x===57&&y===windingRoad(57)||x===35&&y===7))||(w.area==='grotto'&&x===2&&y===21)||(w.area==='willowmere'&&x===1&&y===18))?'<span class="world-landmark" title="Follow the path">⇥</span>':landmark?`<span class="world-landmark" title="${safe(landmark.name)}">${landmark.icon}</span>`:tt.kind==='grove'?'<span class="world-decor">🌳</span>':tt.kind==='cliff'?'<span class="world-decor">⛰</span>':tt.kind==='crystal'?'<span class="world-decor">✧</span>':tt.kind==='river'?'<span class="world-decor">〰</span>':(hashTile(x,y)%11===0?'<span class="world-decor">✿</span>':'');
+  const icon=npc?`<span class="world-npc" data-actor-name="${safe(npc.product)}">${plushArt(BY_ID.get(slugId(npc.product)))}</span><span class="npc-bubble">${safe(npc.icon)}</span>`:parlor?`<span class="world-parlor">✿<small>PARLOR</small></span>`:treasure?'<span class="world-treasure">✧</span>':gate&&((w.area==='orchard'&&(x===1&&y===19||x===57&&y===windingRoad(57)||x===35&&y===7))||(w.area==='grotto'&&x===2&&y===21)||(w.area==='willowmere'&&x===1&&y===18))?'<span class="world-landmark" title="Follow the path">⇥</span>':landmark?`<span class="world-landmark" title="${safe(landmark.name)}">${landmark.icon}</span>`:tt.kind==='grove'?'<span class="world-decor">🌳</span>':tt.kind==='cliff'?'<span class="world-decor">⛰</span>':tt.kind==='crystal'?'<span class="world-decor">✧</span>':tt.kind==='river'?'<span class="world-decor">〰</span>':(hashTile(x,y)%11===0?'<span class="world-decor">✿</span>':'');
   const what=npc?'Talk to '+npc.name:parlor?'Challenge '+parlor.name:treasure?'Find '+treasure.title:gate?'Walk to the next area':landmark?landmark.name:tt.solid?'A natural obstacle':'Walk to '+x+','+y;
   tiles+=`<button tabindex="-1" type="button" class="world-tile terrain-${tt.kind} ${tt.solid?'solid':''}" data-action="tile" data-x="${x}" data-y="${y}" title="${safe(what)}" aria-label="${safe(what)}">${icon}</button>`;
  }
@@ -1193,32 +1354,31 @@ function regionalWorldScreen(){const w=state.world,info=areaInfo(w.area),aNpcs=a
  const routeProgress=REGION_ZONES.filter(z=>w.visited.includes(z.id)).length;
  return `<section class="world-intro"><div><span class="eyebrow">${safe(info.subtitle)} · ${routeProgress} of ${REGION_ZONES.length} new places discovered</span><h1>${safe(info.name)} <span class="world-title-star">✦</span></h1><p>${safe(info.description)} The paths branch, and landmarks may hide shortcuts. See the Region Map for the larger journey.</p></div><button class="btn cream" data-action="nav" data-id="atlas">◈ Region map <kbd>M</kbd></button></section>
  <div class="world-layout"><section class="world-shell" aria-label="Explore ${safe(info.name)}"><div class="world-toolbar"><span><span class="location-dot">●</span> ${safe(info.name)}</span><span>✦ ${aTreasures.filter(t=>w.found.includes(t.id)).length}/${aTreasures.length} local finds · ✿ ${w.parlorBadges.length} patches</span></div>
- <div class="world-viewport" id="world-viewport" tabindex="0" style="aspect-ratio:${vx}/${vy}" aria-label="Drag the joystick to walk or tap a path to travel"><div class="world-pan" id="world-pan" data-base-x="${cx}" data-base-y="${cy}" data-cols="${cols}" data-rows="${rows}" data-visible-cols="${vx}" data-visible-rows="${vy}" style="width:${100*cols/vx}%"><div class="world-grid" style="--map-cols:${cols}">${tiles}</div><span class="world-player-overlay" style="left:${px}%;top:${py}%">${plushArt(BY_ID.get(state.team[0]))}</span></div></div>
+ <div class="world-viewport" id="world-viewport" tabindex="0" style="aspect-ratio:${vx}/${vy}" aria-label="Drag the joystick to walk or tap a path to travel"><div class="world-pan" id="world-pan" data-base-x="${cx}" data-base-y="${cy}" data-cols="${cols}" data-rows="${rows}" data-visible-cols="${vx}" data-visible-rows="${vy}" style="width:${100*cols/vx}%"><div class="world-grid" style="--map-cols:${cols}">${tiles}</div><span class="world-player-overlay" data-actor-name="${safe(BY_ID.get(state.team[0])?.officialName||'Amuseables Croissant')}" style="left:${px}%;top:${py}%">${plushArt(BY_ID.get(state.team[0]))}</span></div></div>
  <div class="world-commands"><div class="dpad" aria-label="Movement controls"><button data-action="step" data-dx="0" data-dy="-1">↑</button><div><button data-action="step" data-dx="-1" data-dy="0">←</button><button data-action="step" data-dx="0" data-dy="1">↓</button><button data-action="step" data-dx="1" data-dy="0">→</button></div></div><div class="world-commands-right"><button class="btn mint" data-action="interact"><kbd>E</kbd> Talk / inspect</button>${parlor?`<button class="btn pink" data-action="parlor" data-id="${parlor.id}">✿ ${safe(parlor.name)}</button>`:'<span class="encounter-hint">Follow the winding road and investigate side paths.</span>'}</div></div>
  <p class="world-help">Move with WASD, arrow keys, or the mobile joystick. Trees, water, cliffs and cave walls block walking. Cross bridges and enter gateways to reach the next map.</p></section><aside class="world-sidebar">
  ${panel(`<span class="eyebrow">Beyond the village</span><h2>Who's nearby?</h2>${near.length?near.map(n=>`<button class="friend-row" data-action="talk" data-id="${n.id}"><span class="friend-portrait">${plushArt(BY_ID.get(slugId(n.product)))}</span><span><strong>${safe(n.name)}</strong><small>${safe(n.hint)}</small></span><span>→</span></button>`).join(''):'<p class="small muted">Wander off the road to find someone new.</p>'}`,'friend-panel')}
- ${panel(`<span class="eyebrow">Route guide</span><h3>Paths worth exploring</h3><p class="small">${w.area==='orchard'?'Cross the middle bridge toward Willowmere. The northern orchard trail leads to a cave; the southern detour hides a basket.':w.area==='grotto'?'The stone columns block straight shortcuts. Wind through the galleries to the old map scrap, then follow the low passage out.':'Follow the road from the west through market town. The river crossing leads to mysterious eastern shores you can see but cannot yet reach.'}</p><button class="btn cream" data-action="nav" data-id="atlas">View the whole region ◈</button>`,'soft')}
+ ${panel(`<span class="eyebrow">${info.interior?'Indoors · A cozy little room':'Route guide'}</span><h3>${info.interior?'Look around and say hello':'Paths worth exploring'}</h3><p class="small">${info.interior?'Talk to your plush host, look at the furniture, and leave through the doorway at the bottom of the room.':w.area==='orchard'?'Cross the middle bridge toward Willowmere. The northern orchard trail leads to a cave; the southern detour hides a basket.':w.area==='grotto'?'The stone columns block straight shortcuts. Wind through the galleries to the old map scrap, then follow the low passage out.':'Follow the road from the west through market town. The river crossing leads to mysterious eastern shores you can see but cannot yet reach.'}</p><button class="btn cream" data-action="nav" data-id="atlas">View the whole region ◈</button>`,'soft')}
  ${panel(`<h2>Treasure trail</h2><div class="region-finds">${aTreasures.map(t=>`<div class="story-item">${w.found.includes(t.id)?'✦':'◇'} ${w.found.includes(t.id)?safe(t.title):'Undiscovered treasure'}</div>`).join('')}</div>${aParlors.map(k=>`<p class="small muted">✿ ${safe(k.name)} · ${w.parlorBadges.includes(k.id)?'Patch earned':'A Keeper awaits'}</p>`).join('')}`,'journey-panel')}</aside></div>`;
 }
 
 function worldScreen(){ensureWorld(state);if(state.world.area!=='cuddlewick')return regionalWorldScreen();const w=state.world,here=ZONES.find(z=>z.id===zoneAt(w.x,w.y));
  const vx=window.innerWidth<650?11:window.innerWidth<950?17:21,vy=window.innerWidth<650?10:14;
- const pad=3,cols=vx+pad*2,rows=vy+pad*2;
- const cx=Math.max(0,Math.min(WORLD_W-cols,Math.floor(w.x)-Math.floor(vx/2)-pad)),cy=Math.max(0,Math.min(WORLD_H-rows,Math.floor(w.y)-Math.floor(vy/2)-pad));
+ const cols=WORLD_W,rows=WORLD_H,cx=0,cy=0; // Entire map stays mounted: the camera never rebuilds terrain while walking.
  let tiles='';for(let y=cy;y<cy+rows;y++)for(let x=cx;x<cx+cols;x++){
   const zone=zoneAt(x,y),style=worldTerrain(x,y,zone),npc=NPCS.find(n=>n.x===x&&n.y===y),parlor=PARLORS.find(p=>p.x===x&&p.y===y),treasure=TREASURES.find(t=>t.x===x&&t.y===y&&!w.found.includes(t.id)),landmark=LANDMARKS.find(t=>t.x===x&&t.y===y),grass=isTallGrass(x,y);
-  const gate=(x===55&&y===20),sprite=gate?'<span class="world-landmark" title="Orchard Way awaits">🚪</span>':npc?`<span class="world-npc">${plushArt(BY_ID.get(slugId(npc.product)))}</span><span class="npc-bubble">${safe(npc.icon)}</span>`:parlor?`<span class="world-parlor">✿<small>PARLOR</small></span>`:treasure?'<span class="world-treasure">✧</span>':landmark?`<span class="world-landmark" title="${safe(landmark.name)}">${landmark.icon}</span>`:grass?'<span class="tall-grass" aria-hidden="true">♣</span>':`<span class="world-decor">${scenery(x,y,zone)}</span>`;
+  const gate=(x===55&&y===20),sprite=gate?'<span class="world-landmark" title="Orchard Way awaits">🚪</span>':npc?`<span class="world-npc" data-actor-name="${safe(npc.product)}">${plushArt(BY_ID.get(slugId(npc.product)))}</span><span class="npc-bubble">${safe(npc.icon)}</span>`:parlor?`<span class="world-parlor">✿<small>PARLOR</small></span>`:treasure?'<span class="world-treasure">✧</span>':landmark?`<span class="world-landmark" title="${safe(landmark.name)}">${landmark.icon}</span>`:grass?'<span class="tall-grass" aria-hidden="true">♣</span>':`<span class="world-decor">${style==='trail'?'':scenery(x,y,zone)}</span>`;
   const what=gate?'Route 01: Orchard Way':npc?`Talk to ${npc.name}`:parlor?`${parlor.name}, earn the ${parlor.patch}`:treasure?`Find ${treasure.title}`:grass?'Tall grass: surprise battles possible':landmark?landmark.name:`Walk to ${x}, ${y}`;
   tiles+=`<button type="button" tabindex="-1" class="world-tile terrain-${style} ${grass?'has-grass':''}" data-action="tile" data-x="${x}" data-y="${y}" title="${safe(what)}" aria-label="${safe(what)}">${sprite}</button>`;
  }
  const px=(w.x-cx+.5)/cols*100,py=(w.y-cy+.94)/rows*100;
  const friend=nearbyNpcs(w),parlor=nearbyParlor(w);
- return `<section class="world-intro"><div><span class="eyebrow">A larger world awaits · 8 home districts · ${PARLORS.length+REGION_PARLORS.length} Parlors</span><h1>The Softlands <span class="world-title-star">✦</span></h1><p>Follow the eastern gate toward Orchard Way and Willowmere. Surprise battles hide in tall grass, while Parlor Keepers offer embroidered patches for victories. Each win brings XP and a new plush friend.</p></div><div class="world-stamp"><span class="world-stamp-count">${w.parlorBadges.length}<span>/${PARLORS.length+REGION_PARLORS.length}</span></span><small>Parlor patches</small></div></section>
+ return `<section class="world-intro"><div><span class="eyebrow">A larger world awaits · 8 home districts · ${PARLORS.length+REGION_PARLORS.length} Parlors</span><h1>The Softlands <span class="world-title-star">✦</span></h1><p>Visit the cottage and bakery to explore their interiors, or follow the eastern gate toward Orchard Way and Willowmere. Surprise battles hide in tall grass, while Parlor Keepers offer embroidered patches for victories. Each win brings XP and a new plush friend.</p></div><div class="world-stamp"><span class="world-stamp-count">${w.parlorBadges.length}<span>/${PARLORS.length+REGION_PARLORS.length}</span></span><small>Parlor patches</small></div></section>
  <div class="world-layout"><section class="world-shell" aria-label="Explore the Softlands">
  <div class="world-toolbar"><span><span class="location-dot">●</span> ${safe(here.name)}</span><span>✿ ${w.parlorBadges.length} patches &nbsp; · &nbsp; ✦ ${w.found.length}/${TREASURES.length} found</span></div>
  <div class="world-viewport" id="world-viewport" tabindex="0" style="aspect-ratio:${vx}/${vy}" aria-label="Drag the joystick to walk, or tap a spot on the map to travel">
  <div class="world-pan" id="world-pan" data-base-x="${cx}" data-base-y="${cy}" data-cols="${cols}" data-rows="${rows}" data-visible-cols="${vx}" data-visible-rows="${vy}" style="width:${100*cols/vx}%"><div class="world-grid" style="--map-cols:${cols}">${tiles}</div>
- <span class="world-player-overlay" style="left:${px}%;top:${py}%">${plushArt(BY_ID.get(state.team[0]))}</span></div></div>
+ <span class="world-player-overlay" data-actor-name="${safe(BY_ID.get(state.team[0])?.officialName||'Amuseables Croissant')}" style="left:${px}%;top:${py}%">${plushArt(BY_ID.get(state.team[0]))}</span></div></div>
  <div class="world-commands"><div class="dpad" aria-label="Movement controls"><button data-action="step" data-dx="0" data-dy="-1" aria-label="Walk north">↑</button><div><button data-action="step" data-dx="-1" data-dy="0" aria-label="Walk west">←</button><button data-action="step" data-dx="0" data-dy="1" aria-label="Walk south">↓</button><button data-action="step" data-dx="1" data-dy="0" aria-label="Walk east">→</button></div></div>
  <div class="world-commands-right"><button class="btn mint" data-action="interact"><kbd>E</kbd> Talk / inspect</button>${state.battle?'<button class="btn pink" data-action="nav" data-id="battle"><kbd>5</kbd> Resume battle</button>':parlor?`<button class="btn pink" data-action="parlor" data-id="${parlor.id}"><kbd>P</kbd> ${safe(parlor.name)}</button>`:'<span class="encounter-hint">🌿 Tall grass = surprise encounters</span>'}</div></div>
  <p class="world-help"><kbd>W A S D</kbd> / arrows: walk and hold to keep moving · <kbd>E</kbd>: interact · <kbd>P</kbd>: nearby Parlor · <kbd>?</kbd>: all controls. On mobile, drag the round joystick in any direction, or tap the map to travel.</p>
@@ -1251,8 +1411,7 @@ function finishWorldMotion(){if(worldDirty)saveWorldMotion(true);}
 function syncWorldCamera(){const pan=$('#world-pan'),view=$('#world-viewport');if(!pan||!view)return;
  const {x,y}=state.world,baseX=Number(pan.dataset.baseX),baseY=Number(pan.dataset.baseY),cols=Number(pan.dataset.cols),rows=Number(pan.dataset.rows),vx=Number(pan.dataset.visibleCols),vy=Number(pan.dataset.visibleRows);
  const dim=areaSize(state.world.area);
- const desiredX=Math.max(0,Math.min(dim.width-cols,Math.floor(x)-Math.floor(vx/2)-3)),desiredY=Math.max(0,Math.min(dim.height-rows,Math.floor(y)-Math.floor(vy/2)-3));
- if(Math.abs(desiredX-baseX)>=2||Math.abs(desiredY-baseY)>=2){render();return;}
+ // Full area is mounted, so movement only changes the transform and the actor location.
  const p=pan.querySelector('.world-player-overlay');if(p){p.style.left=`${100*(x-baseX+.5)/cols}%`;p.style.top=`${100*(y-baseY+.94)/rows}%`;}
  const tile=view.clientWidth/vx;
  const shiftX=Math.max(-(cols-vx)*tile,Math.min(0,(vx/2-(x-baseX+.5))*tile));
@@ -1262,12 +1421,12 @@ function syncWorldCamera(){const pan=$('#world-pan'),view=$('#world-viewport');i
 function performStep(dx,dy,quiet=false){if(page!=='world'||!state.onboarded||state.pending||challengeState||document.querySelector('.modal-backdrop'))return false;
  const result=stepWorld(state,dx,dy);
  if(result.npc){stopWalking();if(!quiet)showTalk(result.npc);return false;}
- if(result.moved){saveWorldMotion();if(result.transition){stopWalking();render();notify(result.transition.message);return true;}syncWorldCamera();if(result.treasure){stopWalking();finishWorldMotion();render();showFound(result.treasure);}else if(result.encounter){finishWorldMotion();render();showEncounter();}else if(result.zone){render();if(!quiet)notify(`Welcome to ${result.zone.name}!`);}}return !!result.moved;
+ if(result.moved){const sprite=document.querySelector('.world-player-overlay');if(sprite){sprite.classList.toggle('facing-left',dx<0);sprite.classList.toggle('facing-right',dx>0);}saveWorldMotion();if(result.transition){stopWalking();render();notify(result.transition.message);return true;}syncWorldCamera();if(result.treasure){stopWalking();finishWorldMotion();render();showFound(result.treasure);}else if(result.encounter){finishWorldMotion();render();showEncounter();}else if(result.zone){render();if(!quiet)notify(`Welcome to ${result.zone.name}!`);}}return !!result.moved;
 }
 function walkToward(tx,ty,npcToMeet=null,placeToMeet=null){stopWalking();ensureWorld(state);
  const bounds=areaSize(state.world.area);tx=Math.max(0,Math.min(bounds.width-1,Math.round(tx)));ty=Math.max(0,Math.min(bounds.height-1,Math.round(ty)));
  const w=state.world,key=(x,y)=>y*bounds.width+x,sx=Math.round(w.x),sy=Math.round(w.y),queue=[[sx,sy]],seen=new Set([key(sx,sy)]),parent=new Map(),blocked=new Set((w.area==='cuddlewick'?NPCS:areaNpcs(w.area)).map(n=>key(n.x,n.y)));let head=0,found=false;
- while(head<queue.length){const [cx,cy]=queue[head++];if(cx===tx&&cy===ty){found=true;break;}for(const [dx,dy] of [[1,0],[0,1],[-1,0],[0,-1]]){const nx=cx+dx,ny=cy+dy,k=key(nx,ny);if(nx<0||nx>=bounds.width||ny<0||ny>=bounds.height||(w.area!=='cuddlewick'&&areaTile(w.area,nx,ny).solid)||seen.has(k)||blocked.has(k))continue;seen.add(k);parent.set(k,[cx,cy]);queue.push([nx,ny]);}}
+ while(head<queue.length){const [cx,cy]=queue[head++];if(cx===tx&&cy===ty){found=true;break;}for(const [dx,dy] of [[1,0],[0,1],[-1,0],[0,-1]]){const nx=cx+dx,ny=cy+dy,k=key(nx,ny);if(nx<0||nx>=bounds.width||ny<0||ny>=bounds.height||(w.area!=='cuddlewick'?areaTile(w.area,nx,ny).solid:(villageBlockedAt(nx,ny)&&!areaGate('cuddlewick',nx,ny)))||seen.has(k)||blocked.has(k))continue;seen.add(k);parent.set(k,[cx,cy]);queue.push([nx,ny]);}}
  if(!found){notify('That place is occupied. Try the path beside it.');return;}
  const waypoints=[];let cur=[tx,ty];while(cur[0]!==sx||cur[1]!==sy){waypoints.push(cur);cur=parent.get(key(cur[0],cur[1]));if(!cur)break;}waypoints.reverse();if(!waypoints.length&&Math.hypot(w.x-tx,w.y-ty)>.15)waypoints.push([tx,ty]);
  let at=0,frames=0;walkingTimer=setInterval(()=>{if(page!=='world'||document.querySelector('.modal-backdrop')||frames++>1400){stopWalking();return;}if(at>=waypoints.length){stopWalking();if(npcToMeet)showTalk(npcToMeet);else if(placeToMeet)showPlace(placeToMeet);return;}
