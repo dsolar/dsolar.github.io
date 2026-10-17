@@ -270,6 +270,10 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
 .method{display:grid;gap:.75rem;max-width:38rem;font-size:.92rem}
 .method p{margin:0}
 .foot{color:var(--muted);font-size:.78rem;border-top:1px solid var(--rule);padding-top:1rem}
+/* Yahoo's required credit: official logo, unaltered, on a white chip so it reads in dark mode too */
+.yf{display:flex;align-items:center;flex-wrap:wrap;gap:.5rem;margin-top:.6rem}
+.yf .yf-logo{display:inline-flex;background:#fff;border-radius:4px;padding:3px 6px}
+.yf .yf-logo img{display:block;height:16px;width:auto}
 
 .status{color:var(--muted);font-size:.95rem}
 
@@ -384,7 +388,8 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
     </div>
   </details>
 
-  <p class="foot">Built by David Solar. League data from Yahoo Fantasy, player projections from Sleeper.</p>
+  <p class="foot">Built by David Solar. Player projections from Sleeper.
+    <span class="yf"><a class="yf-logo" href="https://sports.yahoo.com/fantasy/" target="_blank" rel="noopener"><img src="https://763445962456-brand-assets.s3.us-west-2.amazonaws.com/brandwebsite/s3fs-public/Yahoo_Fantasy.svg" alt="Yahoo Fantasy" height="16" onerror="this.parentNode.remove()"></a><a href="https://sports.yahoo.com/fantasy/" target="_blank" rel="noopener">Fantasy data provided by Yahoo Fantasy</a></span></p>
 </main>
 
 <dialog class="team" id="team-dlg" aria-labelledby="dlg-title">
