@@ -6,7 +6,7 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#f9f1e8">
   <meta name="description" content="An unofficial, single-player collection and battle game inspired by real Jellycat plush characters.">
-  <title>Jellycat Battle Club • The Softlands v0.6</title>
+  <title>Jellycat Battle Club • The Softlands v0.7</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A5%90%3C/text%3E%3C/svg%3E">
   <style>
 
@@ -169,6 +169,16 @@ kbd{display:inline-block;border:1px solid #ada2a1;background:#f1ece5;border-radi
  body.mobile-world .touch-hint{display:none;}
 }
 
+/* V7: Adventure Journal and actual skill-based mini-games */
+.journal-hero{display:flex;align-items:center;justify-content:space-between;gap:20px;background:linear-gradient(120deg,#f7e1ec,#f9eed8 55%,#dceee5);border:2px solid #302b37;border-radius:27px;padding:30px;margin-bottom:22px;box-shadow:4px 5px 0 #302b37}.journal-hero p{max-width:670px}.journal-book{font-size:6rem;filter:drop-shadow(4px 5px 0 #483e4b35);transform:rotate(-9deg)}.quest-layout{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(255px,1fr);gap:18px;align-items:start}.quest-layout aside{display:grid;gap:16px}.quest-list{display:grid;gap:16px}.quest-card{background:#fffefa;border:2px solid #352e3c;border-radius:21px;padding:21px 24px;box-shadow:3px 4px 0 #352e3c}.quest-card.ready{background:#fff6de;border-color:#99642f}.quest-card.claimed{background:#e6efe4;border-color:#92a899}.quest-card h3{font-size:1.35rem;margin:10px 0}.quest-card .small{margin-bottom:14px}.quest-meter{height:9px;background:#e4dbe5;border:1px solid #a49baf;border-radius:99px;overflow:hidden}.quest-meter>div{height:100%;border-radius:99px;background:linear-gradient(90deg,#9b69c1,#d89bca);transition:width .2s}.quest-tasks{padding:8px 0 0;list-style:none}.quest-tasks li{display:flex;gap:10px;align-items:center;font-size:.83rem;padding:5px 0;color:#6e6673}.quest-tasks li.done{color:#458156}.quest-tasks li>span:first-child{font-size:1.1rem;font-weight:900}.quest-tasks li>span:nth-child(2){flex:1}.quest-tasks small{font-size:.7rem;font-weight:800}.quest-actions{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}.quest-prize{font-size:.79rem;font-weight:800}.quest-done{font-size:.76rem;color:#36814c;font-weight:900}.mini-record-list{display:grid;gap:6px}.mini-record-list>div{padding:8px 0;display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid #dccbdb;font-size:.77rem}.mini-record-list>div>span:last-child{color:#97721e;font-size:1.08rem;letter-spacing:.12em}.journal-teaser{display:flex;flex-direction:column;gap:4px;border-bottom:1px dashed #c7afcf;padding:10px 0;font-size:.82rem}.journal-teaser small{color:#87698a;font-weight:800}
+.skill-modal{width:min(640px,calc(100vw - 22px));max-height:min(92dvh,790px);overflow:auto;overscroll-behavior:contain}.skill-modal h2{margin:10px 0 15px}.mini-score{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;background:#f6e9f5;border-radius:14px;padding:10px 15px;font-size:.81rem;font-weight:700}.mini-score strong{font-size:1rem}.mini-score>span:last-child strong{color:#a87d24;letter-spacing:.12em}.skill-play-area{text-align:center;padding:16px 0 8px;min-height:175px}.mini-intro-hero{font-size:5.8rem;line-height:1.3;animation:mini-float 1.6s ease-in-out infinite}.skill-play-area p{max-width:480px;margin:12px auto}.mini-target-head{display:flex;align-items:center;justify-content:space-between;text-align:left;gap:10px;font-size:.9rem;font-weight:900}.mini-timing-track{height:100px;position:relative;margin:20px 2px 22px;border-radius:22px;border:3px solid #3a3440;background:linear-gradient(180deg,#e3dbcc,#fef3d4);box-shadow:inset 0 7px 0 #63505a16;overflow:hidden}.sports-track{background:linear-gradient(180deg,#cfebd4,#f0fae4)}.mini-perfect-range{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,#a6d69a,#79c49a,#b7e7a8);border-inline:2px dashed #6e9d66}.mini-bullseye{position:absolute;top:0;bottom:0;border-left:2px dashed #fffdf2;transform:translateX(-50%)}.mini-timing-needle{position:absolute;z-index:2;bottom:8px;transform:translateX(-50%);font-size:2.25rem;filter:drop-shadow(1px 3px #473a4d55);transition:none}.mini-main-action{min-width:min(100%,290px);min-height:55px}.mini-result-feedback{padding:12px 16px;border-radius:14px;background:#f3ebce;color:#553c50;font-weight:900;margin:15px auto 0;max-width:410px}.flower-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:19px auto;max-width:480px}.flower-key{min-height:112px;display:flex;align-items:center;flex-direction:column;justify-content:center;gap:8px;background:#fff9dc;border:3px solid #c6b3a5;border-radius:18px;box-shadow:3px 4px 0 #6a4b5b33;transition:background .12s,transform .12s,box-shadow .12s}.flower-key span{font-size:2.9rem;transition:transform .18s}.flower-key small{font-size:.66rem;color:#684f69}.flower-key.lit,.flower-key:active:not(:disabled){background:#ffd4e6;border-color:#a45e94;box-shadow:0 0 0 5px #ffd2e7aa}.flower-key.lit span{transform:scale(1.35)}.forage-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;max-width:410px;margin:15px auto}.forage-tile{display:grid;place-items:center;background:radial-gradient(circle,#e9f5d5 15%,#b9d7b0);border:2px solid #66896a;border-radius:19px;min-height:88px;font-size:3rem;transition:transform .1s}.forage-tile:hover{transform:scale(1.05);background:#fff5d2}.mini-big-icon{font-size:2.4rem;vertical-align:middle}.mini-feedback{font-size:.91rem;font-weight:700}.shell-stage{height:195px;position:relative;margin:14px auto 4px;max-width:470px;border-radius:20px;background:repeating-linear-gradient(145deg,#e0e8e4,#e0e8e4 18px,#cbe1d7 18px,#cbe1d7 35px);border:2px solid #96b4a5}.shell-cup{position:absolute;top:22%;width:30%;height:120px;transform:translateX(-50%);transition:left .45s cubic-bezier(.23,.8,.33,1);border-radius:18px;background:#f6e6bc;border:2px solid #9d8786;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;box-shadow:3px 5px #a68c754d}.shell-cup span{font-size:4rem}.shell-cup small{font-size:1rem;min-height:20px}.shell-cup:disabled{opacity:1}.constellation-field{display:block;max-width:440px;width:100%;margin:12px auto;min-height:235px;background:radial-gradient(ellipse at 43% 42%,#59427d,#1b203f);border-radius:23px;border:2px solid #4e416a;box-shadow:inset 0 0 20px #ffffff12}.star-node{cursor:pointer;transition:filter .15s}.star-node circle{transition:fill .15s}.star-node:hover circle,.star-node.connected circle{fill:#ffda7d}.star-node text{fill:#463b70;pointer-events:none}.star-node text:last-child{fill:#fff9e7;font-size:3.9px}.star-choices{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}.star-choices .btn{min-height:38px}.skill-play-area button:disabled{opacity:.75;cursor:default}
+@keyframes mini-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@media (max-width:900px){.quest-layout{grid-template-columns:1fr}.quest-layout aside{grid-template-columns:1fr 1fr}}
+@media (max-width:650px){.journal-hero{padding:19px 17px}.journal-hero h1{font-size:2.1rem}.journal-book{font-size:3.6rem}.quest-layout aside{grid-template-columns:1fr}.quest-card{padding:16px}.mini-score{gap:6px;font-size:.73rem}.skill-modal{padding:15px!important}.flower-grid{gap:5px}.flower-key{min-height:86px}.flower-key span{font-size:2.3rem}.flower-key small{font-size:.55rem}.shell-stage{height:157px}.shell-cup{height:99px}.shell-cup span{font-size:3rem}.forage-tile{min-height:72px;font-size:2.4rem}.constellation-field{min-height:190px}.mini-timing-track{height:87px}}
+@media (prefers-reduced-motion:reduce){.mini-intro-hero,.flower-key span{animation:none!important;transition:none!important}}
+.place-modal .place-illustration{font-size:5.8rem;margin:6px auto 14px;line-height:1.5;filter:drop-shadow(4px 8px #765b7940)}.place-modal .place-offerings{display:flex;flex-wrap:wrap;justify-content:center;gap:9px;margin:16px auto}.place-offerings>button{flex:1 1 170px;max-width:250px;min-width:170px}.place-modal>p{max-width:450px;margin-inline:auto}.place-modal .ghost{margin-top:12px}
+@media(max-width:650px){.place-modal .place-illustration{font-size:4rem}.place-modal .place-offerings{flex-direction:column}.place-offerings>button{max-width:100%;min-width:0;flex:auto}}
+.souvenir-shelf{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:17px}.souvenir{display:grid;place-items:center;gap:7px;border:2px dashed #c4b7be;border-radius:14px;padding:14px 5px;background:#f4f0ed;filter:grayscale(1);opacity:.5}.souvenir.found{background:#fff3d9;border-style:solid;border-color:#d8bfa2;filter:none;opacity:1}.souvenir>span{font-size:2.4rem}.souvenir small{text-align:center;font-size:.7rem;font-weight:800}
 
 </style>
 </head>
@@ -687,10 +697,10 @@ const CHALLENGES={
  sea:{title:'Captain Larry’s Shell School',steps:[{question:'Which of these might you find along the shore?',answers:['A seashell','A traffic light','A frying pan'],correct:0},{question:'A little crab is crossing the path. What should you do?',answers:['Give it some space','Pick it up and throw it','Build a wall around it'],correct:0}]},
  sports:{title:'Coach Bounce’s Playtime Quiz',steps:[{question:'What shape is a golf ball plush?',answers:['A golf hole','A round, cuddly ball','A golf cart'],correct:1},{question:'What matters most during a friendly game?',answers:['Having fun together','Always being the loudest','Winning every time'],correct:0}]}
 };
-function freshWorld(){return {x:WORLD_START.x,y:WORLD_START.y,steps:0,lastEncounterStep:-100,parlorBadges:[],visited:['square'],talked:[],completed:[],found:[],firstBattle:false};}
+function freshWorld(){return {x:WORLD_START.x,y:WORLD_START.y,steps:0,lastEncounterStep:-100,parlorBadges:[],visited:['square'],talked:[],completed:[],found:[],firstBattle:false,claimedQuests:[],miniBests:{},miniAttempts:{},souvenirs:[],wishes:0,lastWishWins:-5,shopBagPurchases:0,campVisited:false,greenhouseVisited:false};}
 function ensureWorld(s){const defaults=freshWorld(),w=(s.world&&typeof s.world==='object')?s.world:{};
  const uniqueIds=(v,valid)=>Array.isArray(v)?[...new Set(v.filter(x=>typeof x==='string'&&valid.includes(x)))]:[];
- s.world={...defaults,x:Math.max(0,Math.min(WORLD_W-1,Number.isFinite(Number(w.x))?Number(w.x):WORLD_START.x)),y:Math.max(0,Math.min(WORLD_H-1,Number.isFinite(Number(w.y))?Number(w.y):WORLD_START.y)),steps:Math.max(0,Math.min(999999,Math.floor(Number(w.steps)||0))),lastEncounterStep:Math.max(-100,Math.min(999999,(Number.isFinite(Number(w.lastEncounterStep))?Math.floor(Number(w.lastEncounterStep)):-100))),parlorBadges:uniqueIds(w.parlorBadges,PARLORS.map(p=>p.id)),visited:uniqueIds(w.visited,ZONES.map(z=>z.id)),talked:uniqueIds(w.talked,NPCS.map(n=>n.id)),completed:uniqueIds(w.completed,Object.keys(CHALLENGES)),found:uniqueIds(w.found,TREASURES.map(t=>t.id)),firstBattle:!!w.firstBattle};
+ s.world={...defaults,x:Math.max(0,Math.min(WORLD_W-1,Number.isFinite(Number(w.x))?Number(w.x):WORLD_START.x)),y:Math.max(0,Math.min(WORLD_H-1,Number.isFinite(Number(w.y))?Number(w.y):WORLD_START.y)),steps:Math.max(0,Math.min(999999,Math.floor(Number(w.steps)||0))),lastEncounterStep:Math.max(-100,Math.min(999999,(Number.isFinite(Number(w.lastEncounterStep))?Math.floor(Number(w.lastEncounterStep)):-100))),parlorBadges:uniqueIds(w.parlorBadges,PARLORS.map(p=>p.id)),visited:uniqueIds(w.visited,ZONES.map(z=>z.id)),talked:uniqueIds(w.talked,NPCS.map(n=>n.id)),completed:uniqueIds(w.completed,Object.keys(CHALLENGES)),found:uniqueIds(w.found,TREASURES.map(t=>t.id)),firstBattle:!!w.firstBattle,claimedQuests:uniqueIds(w.claimedQuests,['first-steps','petal-post','forest-whispers','tide-and-treasure','playtime','starlight','little-explorer','every-little-thing','patchwork']),miniBests:Object.fromEntries(Object.entries(w.miniBests||{}).filter(([id,n])=>Object.keys(CHALLENGES).includes(id)&&Number.isFinite(Number(n))).map(([id,n])=>[id,Math.max(0,Math.min(3,Math.floor(n)))])),miniAttempts:Object.fromEntries(Object.entries(w.miniAttempts||{}).filter(([id,n])=>Object.keys(CHALLENGES).includes(id)&&Number.isFinite(Number(n))).map(([id,n])=>[id,Math.max(0,Math.min(99999,Math.floor(n)))])),souvenirs:uniqueIds(w.souvenirs,['ribbon','postcards','seedling']),wishes:Math.max(0,Math.min(999,Math.floor(Number(w.wishes)||0))),lastWishWins:Number.isFinite(Number(w.lastWishWins))?Math.max(-5,Math.min(999999,Math.floor(Number(w.lastWishWins)))):-5,shopBagPurchases:Math.max(0,Math.min(99999,Math.floor(Number(w.shopBagPurchases)||0))),campVisited:!!w.campVisited,greenhouseVisited:!!w.greenhouseVisited};
  const zone=zoneAt(s.world.x,s.world.y);if(!s.world.visited.includes(zone))s.world.visited.push(zone);
  return s;
 }
@@ -719,6 +729,76 @@ function completeChallenge(s,id){ensureWorld(s);if(!CHALLENGES[id])throw Error('
 }
 function hashTile(x,y){let n=(x*374761393+y*668265263)>>>0;n=(Math.imul(n^(n>>>13),1274126177))>>>0;return (n^(n>>>16))>>>0;}
 
+/* Meaningful overworld destinations, independent of the six mini-games. */
+const SPECIAL_PLACES=[
+ {id:'fountain',name:'Wishing Fountain',x:24,y:23,icon:'⛲',description:'Whisper a wish to the water. The fountain remembers your adventures.'},
+ {id:'shop',name:'The Little General Store',x:32,y:21,icon:'🛍️',description:'Spend hard-earned star points on gifts and souvenirs.'},
+ {id:'greenhouse',name:'Petal’s Greenhouse',x:24,y:8,icon:'🪴',description:'Find a little bit of green-thumb magic.'},
+ {id:'camp',name:'Starlight Camp',x:27,y:36,icon:'🏕️',description:'A warm place to rest and tell stories under the stars.'},
+];
+function nearbySpecial(w,radius=1.85){return SPECIAL_PLACES.find(p=>Math.hypot(p.x-w.x,p.y-w.y)<=radius)||null;}
+function canWish(s){const w=s.world||{};return (s.wins||0)-(Number.isFinite(Number(w.lastWishWins))?w.lastWishWins:-5)>=5;}
+function usePlace(s,id,action,grantXp){const p=SPECIAL_PLACES.find(z=>z.id===id);if(!p)throw Error('Unknown place');const w=s.world;if(!w)throw Error('World missing');if(Math.hypot(w.x-p.x,w.y-p.y)>1.85)throw Error('Walk closer to visit this place');
+ let message='';
+ if(id==='fountain'&&action==='wish'){
+  if(!canWish(s))throw Error('The fountain needs five more victories to recharge.');w.lastWishWins=s.wins;w.wishes=(w.wishes||0)+1;s.points+=1;s.team.forEach(t=>grantXp(s,t,30));message='The fountain sparkles. +1 star and 30 XP for your team!';
+ }else if(id==='shop'&&action==='bag'){
+  if(s.points<8)throw Error('A mystery bag costs eight stars.');s.points-=8;s.jars++;w.shopBagPurchases=(w.shopBagPurchases||0)+1;message='A sky-blue mystery bag is yours! Open it from My Team.';
+ }else if(id==='shop'&&['ribbon','postcards'].includes(action)){
+  const cost=action==='ribbon'?4:3;if(w.souvenirs.includes(action))throw Error('You already have this souvenir.');if(s.points<cost)throw Error(`You need ${cost} star points.`);s.points-=cost;w.souvenirs.push(action);message=action==='ribbon'?'You tucked a velvet ribbon into your collection!':'You collected a bundle of tiny postcards!';
+ }else if(id==='greenhouse'&&action==='tend'){
+  if(w.greenhouseVisited)throw Error('The greenhouse is already blooming thanks to you.');w.greenhouseVisited=true;s.points++;w.souvenirs.push('seedling');message='Your little seedling bloomed! You earned a star and a seedling keepsake.';
+ }else if(id==='camp'&&action==='rest'){
+  if(w.campVisited)throw Error('You have already shared your first campfire story.');w.campVisited=true;s.team.forEach(t=>grantXp(s,t,40));message='Stories by the campfire warmed everyone’s hearts. +40 XP for your team!';
+ }else throw Error('That option is not available.');
+ s.history.push(`${p.name}: ${message}`);s.history=s.history.slice(-30);return message;
+}
+
+/* Softlands Adventures: persistent story objectives and non-repeatable rewards. */
+const QUESTS=[
+ {id:'first-steps',title:'A Welcome Worth Sharing',chapter:'Chapter 1 · A new home',story:'Pip is delivering a welcome letter, but needs a friend to help spread a little joy.',objectives:[['talk','postie','Say hello to Pip'],['mini','baker','Help Chef Crumbs at the bakery']],reward:{stars:3,xp:45,bags:0},destination:'bakery'},
+ {id:'petal-post',title:'Special Delivery',chapter:'Chapter 2 · A trail of kindness',story:'The bakery has a little thank-you for the florist. Take your good news into Petal Gardens.',objectives:[['mini','baker','Complete the Bake-Off'],['talk','florist','Visit Petal the Gardener'],['mini','garden','Help the garden grow']],reward:{stars:4,xp:60,bags:1},destination:'garden'},
+ {id:'forest-whispers',title:'The Forest Whisper',chapter:'Chapter 2 · A trail of kindness',story:'Bo heard something glimmering under the ferns. Can you find the missing woodland button?',objectives:[['talk','ranger','Meet Bo in the woods'],['find','silver-button','Find the shiny forest button'],['mini','wood','Finish Forest Forage']],reward:{stars:5,xp:65,bags:0},destination:'wood'},
+ {id:'tide-and-treasure',title:'Captain Larry’s Lost Cargo',chapter:'Chapter 3 · Farther from home',story:'A sea breeze scattered Larry’s treasures over the sand. Search the coast and lend a claw.',objectives:[['talk','sailor','Meet Captain Larry'],['find','beach-shell','Find the striped seashell'],['mini','sea','Win a round of Shell Shuffle']],reward:{stars:5,xp:70,bags:1},destination:'cove'},
+ {id:'playtime',title:'The Great Playtime',chapter:'Chapter 3 · Farther from home',story:'Coach Bounce is organizing friendly games. Bring a little practice and a little courage.',objectives:[['talk','coach','Meet Coach Bounce'],['mini','sports','Try the target game'],['wins',2,'Win two plush battles']],reward:{stars:5,xp:75,bags:0},destination:'sports'},
+ {id:'starlight',title:'A Wish Written in Stars',chapter:'Chapter 4 · A sky full of friends',story:'Bob wants to find a missing constellation. The ridge has the best view of the sky.',objectives:[['talk','stargazer','Find Bob in Moonbeam Hollow'],['mini','moon','Trace a constellation'],['visit','hill','Reach Starlight Ridge']],reward:{stars:6,xp:90,bags:1},destination:'moon'},
+ {id:'little-explorer',title:'The Softlands Field Guide',chapter:'Chapter 4 · A sky full of friends',story:'Professor Noodle will publish your adventures once you’ve visited every district.',objectives:[['talk','reader','Visit Professor Noodle'],['visits',8,'Explore all eight districts'],['activities',4,'Complete four different activities']],reward:{stars:8,xp:100,bags:1},destination:'square'},
+ {id:'every-little-thing',title:'Wishes, Ribbons & Campfire Stories',chapter:'Side story · Little treasures',story:'The best adventures leave you with keepsakes. Make a wish, buy a tiny ribbon, and share a campfire story.',objectives:[['wish',1,'Make a wish at the village fountain'],['souvenir','ribbon','Buy a velvet ribbon at the village store'],['camp',1,'Share a story at Starlight Camp']],reward:{stars:6,xp:85,bags:1},destination:'square'},
+ {id:'patchwork',title:'A Patch for Every Place',chapter:'Final chapter · The Grand Cuddle Club',story:'The four Keepers have been waiting for a kind, capable challenger. Collect their embroidered patches.',objectives:[['patches',4,'Collect all four Parlor patches'],['wins',5,'Win five battles']],reward:{stars:12,xp:150,bags:2},destination:'square'},
+];
+function objectiveCount(s,obj){const [kind,value]=obj;const w=s.world||{};
+ if(kind==='talk')return (w.talked||[]).includes(value)?1:0;
+ if(kind==='mini')return (w.completed||[]).includes(value)?1:0;
+ if(kind==='find')return (w.found||[]).includes(value)?1:0;
+ if(kind==='visit')return (w.visited||[]).includes(value)?1:0;
+ if(kind==='wins')return Math.min(value,s.wins||0);
+ if(kind==='visits')return Math.min(value,(w.visited||[]).length);
+ if(kind==='activities')return Math.min(value,(w.completed||[]).length);
+ if(kind==='patches')return Math.min(value,(w.parlorBadges||[]).length);
+ if(kind==='souvenir')return (w.souvenirs||[]).includes(value)?1:0;
+ if(kind==='wish')return Math.min(value,w.wishes||0);
+ if(kind==='camp')return w.campVisited?1:0;
+ return 0;
+}
+function objectiveTarget(obj){return ['wins','visits','activities','patches','wish','camp'].includes(obj[0])?obj[1]:1;}
+function questProgress(s,q){const completed=q.objectives.map(o=>objectiveCount(s,o));const total=q.objectives.map(o=>objectiveTarget(o));return {completed,total,done:completed.every((n,i)=>n>=total[i]),claimed:(s.world?.claimedQuests||[]).includes(q.id)};}
+function outstandingQuests(s){return QUESTS.filter(q=>!questProgress(s,q).claimed)}
+function claimQuest(s,id,grantXp){const q=QUESTS.find(q=>q.id===id);if(!q)throw Error('Unknown adventure');const status=questProgress(s,q);if(status.claimed||!status.done)throw Error('That adventure is not ready to claim.');
+ s.world.claimedQuests??=[];s.world.claimedQuests.push(id);s.points+=q.reward.stars;s.jars+=q.reward.bags;
+ for(const member of s.team)grantXp(s,member,q.reward.xp);
+ s.history.push(`Adventure completed: ${q.title} (+${q.reward.stars} stars)`);s.history=s.history.slice(-30);
+ return q;
+}
+function saveMiniScore(s,id,score,grantXp,completeChallenge){if(!Number.isInteger(score)||score<0||score>3)throw Error('Invalid mini-game score');if(!['baker','garden','wood','moon','sea','sports'].includes(id))throw Error('Unknown mini-game');
+ s.world.miniBests??={};s.world.miniAttempts??={};s.world.miniAttempts[id]=(s.world.miniAttempts[id]||0)+1;
+ const previous=s.world.miniBests[id]||0,oldComplete=s.world.completed.includes(id);s.world.miniBests[id]=Math.max(previous,score);
+ if(score>=1&&!oldComplete){completeChallenge(s,id);s.team.forEach(member=>grantXp(s,member,20+score*10));}
+ if(score===3&&previous<3){s.points++;s.history.push(`Golden ribbon in ${id}: +1 star`);s.history=s.history.slice(-30);}
+ return {firstClear:score>=1&&!oldComplete,improved:score>previous,gold:score===3&&previous<3,score,best:s.world.miniBests[id]};
+}
+
+
+
 
 
 
@@ -737,7 +817,7 @@ const rarityTag=p=>badge(p.rarity,p.rarity==='Legendary'?'background:#ffe49f;col
 const bigAvatar=(p,hidden=false)=>`<div class="avatar ${hidden?'mystery':''}" style="background:${hidden?'#d9d4da':TYPE_COLOR[p.typeIndex]};">${plushArt(p)}</div>`;
 function progressBar(value,max,kind='hp'){const percentage=Math.max(0,Math.min(100,Math.round(100*value/max)));return `<div class="bar" role="progressbar" aria-valuenow="${value}" aria-valuemin="0" aria-valuemax="${max}"><div class="fill ${kind==='xp'?'xp':percentage<28?'low':''}" style="width:${percentage}%"></div></div>`;}
 function statBar(){return `<div class="stat-strip"><div class="stat-item"><span class="stat-label">Matches won</span><span class="big-number">${state.wins}</span></div><div class="stat-item"><span class="stat-label">Win streak</span><span class="big-number">${state.streak} <span style="font:normal 1.2rem sans-serif">🔥</span></span></div><div class="stat-item"><span class="stat-label">Your collection</span><span class="big-number">${state.owned.length}<span style="font-size:.91rem">/${COLLECTION_GOAL}</span></span></div><div class="stat-item"><span class="stat-label">Star points</span><span class="big-number">${state.points} <span style="font:normal 1.2rem sans-serif">★</span></span></div></div>`;}
-function nav(){const items=[['world','✿ Explore','G'],['home','⌂ My team','T'],['collection','▦ Collection','C'],['clubhouse','✦ Clubhouse','H']];
+function nav(){const items=[['world','✿ Explore','G'],['journal','✧ Adventures','Q'],['home','⌂ My team','T'],['collection','▦ Collection','C'],['clubhouse','✦ Clubhouse','H']];
  if(state.battle)items.push(['battle','⚔ In battle','V']);
  return `<nav class="game-nav" aria-label="Game sections">${items.map(([id,t,k])=>`<button type="button" data-action="nav" data-id="${id}" ${page===id?'aria-current="page"':''}><kbd>${k}</kbd> ${t}</button>`).join('')}
  <button class="help-toggle" data-action="help" title="Keyboard shortcuts (? key)"><kbd>?</kbd> Controls</button>
@@ -752,6 +832,7 @@ function render(){let output=`<main id="main" class="wrap">${nav()}`;
  else if(state.pending)output+=rewards();
  else if(page==='world')output+=worldScreen();
  else if(page==='home')output+=home();
+ else if(page==='journal')output+=journal();
  else if(page==='battle')output+=battle();
  else if(page==='collection')output+=collection();
  else output+=clubhouse();
@@ -802,9 +883,21 @@ function rewards(){const p=state.pending;if(!bagOpen)return `${statBar()}<sectio
 }
 function showClaimReveal(id,fromJar=false){const p=BY_ID.get(id);if(!p)return;const div=el('div','modal-backdrop');div.id='claimed-modal';div.innerHTML=`<section class="modal claimed-modal center" role="dialog" aria-modal="true" aria-label="New Jellycat revealed"><span class="eyebrow">${fromJar?'Mystery bag surprise':'A new friend!'}</span><div class="bag-claim">${giftBag(true)}<span class="bag-pop">${plushArt(p)}</span></div><h2>Welcome, ${safe(p.officialName)}!</h2><p>You're officially part of the club. Pick a nickname later in your Collection if you like.</p><button class="btn" data-action="finish-claim">Let's explore together →</button></section>`;document.body.append(div);}
 
+function storyObjective(row){const [kind,key,title]=row;return `${safe(title)}`;}
+function questCard(q){const p=questProgress(state,q),progress=p.completed.reduce((a,b)=>a+b,0),maximum=p.total.reduce((a,b)=>a+b,0),finished=p.claimed;
+ return `<article class="quest-card ${finished?'claimed':''} ${p.done&&!finished?'ready':''}"><div class="row between"><span class="eyebrow">${safe(q.chapter)}</span>${badge(finished?'✓ Completed':p.done?'✦ Reward ready':`${progress} / ${maximum} objectives`)}</div><h3>${safe(q.title)}</h3><p class="small muted">${safe(q.story)}</p><div class="quest-meter"><div style="width:${100*progress/maximum}%"></div></div><ul class="quest-tasks">${q.objectives.map((obj,i)=>`<li class="${p.completed[i]>=p.total[i]?'done':''}"><span>${p.completed[i]>=p.total[i]?'✓':'○'}</span><span>${storyObjective(obj)}</span><small>${p.completed[i]}/${p.total[i]}</small></li>`).join('')}</ul>
+ <div class="quest-actions"><span class="quest-prize">★ ${q.reward.stars} · ${q.reward.xp} XP ${q.reward.bags?'· 🫙 '+q.reward.bags:''}</span>${!finished&&p.done?`<button class="btn micro" data-action="claim-quest" data-id="${q.id}">Claim reward ✦</button>`:!finished?`<button class="btn cream micro" data-action="quest-guide" data-id="${q.id}">Visit ${safe(ZONES.find(z=>z.id===q.destination)?.name||'the village')} →</button>`:`<span class="quest-done">Ribbon earned</span>`}</div></article>`;
+}
+function journal(){ensureWorld(state);const claimed=state.world.claimedQuests.length,ready=QUESTS.filter(q=>questProgress(state,q).done&&!questProgress(state,q).claimed).length;
+ return `<div class="journal-hero"><div><span class="eyebrow">The Softlands · Your adventure notebook</span><h1>Every friend has a story.</h1><p>Help neighbors, travel across the world, collect Parlor patches and earn rewards for the little things that make a big adventure.</p><span class="mini-pill">${claimed} / ${QUESTS.length} stories finished</span> ${ready?`<span class="mini-pill">✦ ${ready} rewards waiting</span>`:''}</div><span class="journal-book">📖</span></div>
+ <div class="quest-layout"><section class="quest-list">${QUESTS.map(questCard).join('')}</section><aside>${panel(`<h2>Activity album</h2><p class="small muted">Six skill games to replay for a gold ribbon. First clears earn stars and XP; improving your best to gold earns one more star.</p><div class="mini-record-list">${Object.entries(MINI_INFO).map(([id,m])=>`<div><span>${m.icon} <strong>${safe(m.title)}</strong></span><span>${'✦'.repeat(state.world.miniBests[id]||0)}${'·'.repeat(3-(state.world.miniBests[id]||0))}</span></div>`).join('')}</div><p class="small muted mt-12">Talk to a friend in their home district to replay their game.</p>`,'soft')}
+ ${panel(`<h2>Explorer's log</h2><p>${state.world.visited.length} of 8 districts visited</p><p>${state.world.talked.length} neighbors met</p><p>${state.world.found.length} secret keepsakes found</p><p>${state.world.parlorBadges.length} Keeper patches</p><p>${state.wins} friendly victories</p>`)}
+ </aside></div>`;
+}
 function clubhouse(){return `${statBar()}<div class="grid-2">
-${panel(`<div class="eyebrow">Collection milestones</div><h1>Your clubhouse.</h1><div class="story-item"><strong>🏆 Best winning streak</strong><span style="float:right">${state.bestStreak}</span></div><div class="story-item"><strong>✿ Parlor patches</strong><span style="float:right">${state.world.parlorBadges.length} / ${PARLORS.length}</span></div><div class="story-item"><strong>✨ Boss victories</strong><span style="float:right">${state.bossWins}</span></div><div class="story-item"><strong>🧸 Jellycats collected</strong><span style="float:right">${state.owned.length}</span></div><div class="story-item"><strong>🎯 Win / loss record</strong><span style="float:right">${state.wins} / ${state.losses}</span></div><p class="source-note mt-20">Your progress is stored only in this browser. Export a save file to move it to another computer or protect it from browser resets.</p><div class="row"><button class="btn pink" data-action="export">Export save</button><button class="btn cream" data-action="import">Import save</button><input type="file" id="import-file" class="hidden" accept="application/json,.json"></div>`)}
-${panel(`<div class="eyebrow">Behind the game</div><h2>Real Jellycats. Original rules.</h2><p>All ${CATALOG.length} playable entries use names researched from the Jellycat catalog. Portraits are original soft-toy-style illustrations, not official photographs or exact recreations.</p><p>Battle moves, strengths, levels, and rarity assignments are fan-game inventions, not official Jellycat characteristics.</p><p><strong>Six types:</strong> ${TYPES.map((x,i)=>TYPE_EMOJI[i]+' '+x).join(' · ')}</p><p><strong>Ten legendary characters</strong> have been selected for this fan-made game. Legendary status is invented for gameplay.</p><p class="small muted">Independent fan game, not affiliated with Jellycat. Catalog references are maintained separately from gameplay.</p>`)}
+${panel(`<div class="eyebrow">Collection milestones</div><h1>Your clubhouse.</h1><div class="story-item"><strong>🏆 Best winning streak</strong><span style="float:right">${state.bestStreak}</span></div><div class="story-item"><strong>✿ Parlor patches</strong><span style="float:right">${state.world.parlorBadges.length} / ${PARLORS.length}</span></div><div class="story-item"><strong>📖 Adventures completed</strong><span style="float:right">${state.world.claimedQuests.length} / ${QUESTS.length}</span></div><div class="story-item"><strong>🎀 Best activity ribbons</strong><span style="float:right">${Object.values(state.world.miniBests||{}).reduce((a,b)=>a+b,0)} / 18</span></div><div class="story-item"><strong>✨ Boss victories</strong><span style="float:right">${state.bossWins}</span></div><div class="story-item"><strong>🧸 Jellycats collected</strong><span style="float:right">${state.owned.length}</span></div><div class="story-item"><strong>🎯 Win / loss record</strong><span style="float:right">${state.wins} / ${state.losses}</span></div><p class="source-note mt-20">Your progress is stored only in this browser. Export a save file to move it to another computer or protect it from browser resets.</p><div class="row"><button class="btn pink" data-action="export">Export save</button><button class="btn cream" data-action="import">Import save</button><input type="file" id="import-file" class="hidden" accept="application/json,.json"></div>`)}
+${panel(`<div class="eyebrow">Little keepsakes</div><h2>Your souvenir shelf.</h2><p>Souvenirs stay with you, even after a tough battle.</p><div class="souvenir-shelf">${[['ribbon','🎀','Velvet Ribbon'],['postcards','💌','Postcards'],['seedling','🪴','Tiny Seedling']].map(([id,icon,label])=>`<div class="souvenir ${state.world.souvenirs.includes(id)?'found':''}"><span>${icon}</span><small>${state.world.souvenirs.includes(id)?label:'Not discovered'}</small></div>`).join('')}</div><p class="small muted mt-12">💫 ${state.world.wishes} wishes granted · 🏕️ ${state.world.campVisited?'Campfire story told':'Campfire story waiting'}</p>`,'soft')}
+ ${panel(`<div class="eyebrow">Behind the game</div><h2>Real Jellycats. Original rules.</h2><p>All ${CATALOG.length} playable entries use names researched from the Jellycat catalog. Portraits are original soft-toy-style illustrations, not official photographs or exact recreations.</p><p>Battle moves, strengths, levels, and rarity assignments are fan-game inventions, not official Jellycat characteristics.</p><p><strong>Six types:</strong> ${TYPES.map((x,i)=>TYPE_EMOJI[i]+' '+x).join(' · ')}</p><p><strong>Ten legendary characters</strong> have been selected for this fan-made game. Legendary status is invented for gameplay.</p><p class="small muted">Independent fan game, not affiliated with Jellycat. Catalog references are maintained separately from gameplay.</p>`)}
 </div>${panel(`<div class="row between"><h2 class="mb-0">Game settings</h2>${badge('Saved locally')}</div><p class="small muted mt-12">Only reset if you're sure. You can export your save first.</p><button class="btn ghost" data-action="reset">Reset game progress</button><div class="story-item"></div><h3 class="mt-20">Recent activity</h3>${state.history.length?state.history.slice(-8).reverse().map(x=>`<div class="story-item">✳ ${safe(x)}</div>`).join(''):'<p class="muted small">Your wins and discoveries will appear here.</p>'}`)}`;}
 function showDetail(){const p=BY_ID.get(detail);if(!p||!owned(state,p.id))return;let l=state.levels[p.id]||1,xp=state.xp[p.id]||0,required=XP_TO_LEVEL(l),stats=fighterStats(p.id,l);
  const bg=el('div','modal-backdrop');bg.id='detail-modal';bg.innerHTML=`<section class="modal" role="dialog" aria-modal="true" aria-label="Jellycat details"><div class="row between"><div class="eyebrow">Member profile</div><button type="button" data-action="close" class="btn micro cream">✕ Close</button></div><div class="center mt-20">${bigAvatar(p)}<h2 class="mt-12">${safe(label(state,p.id))}</h2><p class="small">Official name: <strong>${safe(p.officialName)}</strong></p><div class="row" style="justify-content:center">${rarityTag(p)}${badge(p.type)}${badge('LV '+l)}</div></div>
@@ -819,6 +912,10 @@ function action(el){const type=el.dataset.action,id=el.dataset.id;
  try{
  if(type==='nav'){go(id);return;}
  if(type==='help'){showKeyboardHelp();return;}
+ if(type==='claim-quest'){const quest=claimQuest(state,id,grantXp);persist();render();showMilestone('Adventure complete!',`${quest.title}: ${quest.reward.stars} stars, ${quest.reward.xp} XP for your team${quest.reward.bags?', and '+quest.reward.bags+' gift bag(s)':''}.`);return;}
+ if(type==='place-action'){const msg=usePlace(state,id,el.dataset.option,grantXp);persist();$('#place-modal')?.remove();render();showMilestone('A little discovery!',msg);return;}
+ if(type==='close-place'){$('#place-modal')?.remove();return;}
+ if(type==='quest-guide'){const q=QUESTS.find(q=>q.id===id);if(q){const z=ZONES.find(z=>z.id===q.destination);go('world');if(z)walkToward(z.x,z.y);}return;}
  if(type==='open-bag'){bagOpen=true;render();return;}
  if(type==='finish-claim'){$('#claimed-modal')?.remove();return;}
  if(type==='start-battle'){notify('Walk through tall grass or visit a Plush Parlor to find an opponent.');go('world');return;}
@@ -847,7 +944,7 @@ function action(el){const type=el.dataset.action,id=el.dataset.id;
   if(friend){const options=[[1,0],[-1,0],[0,1],[0,-1]].map(([dx,dy])=>[tx+dx,ty+dy]).filter(([x,y])=>x>=0&&y>=0&&x<WORLD_W&&y<WORLD_H&&!NPCS.some(n=>n.x===x&&n.y===y));
     options.sort((a,b)=>Math.abs(a[0]-state.world.x)+Math.abs(a[1]-state.world.y)-Math.abs(b[0]-state.world.x)-Math.abs(b[1]-state.world.y));
     if(options.length)walkToward(options[0][0],options[0][1],friend);else showTalk(friend);
-  }else walkToward(tx,ty);
+  }else{const place=SPECIAL_PLACES.find(p=>p.x===tx&&p.y===ty);walkToward(tx,ty,null,place||null);}
   return;}
  if(type==='walkto'){const place=ZONES.find(z=>z.id===id);if(place)walkToward(place.x,place.y);return;}
  if(type==='talk'){const n=NPCS.find(n=>n.id===id);if(n&&Math.hypot(n.x-state.world.x,n.y-state.world.y)<=1.75)showTalk(n);else notify('Walk closer before talking!');return;}
@@ -855,8 +952,9 @@ function action(el){const type=el.dataset.action,id=el.dataset.id;
  if(type==='world-battle'){talkOrInspect();return;}
  if(type==='close-talk'){$('#talk-modal')?.remove();return;}
  if(type==='begin-challenge'){showChallenge(id);return;}
+ if(type==='mini-start'||type==='mini-finish'||type==='mini-hit'||type==='mini-flower'||type==='mini-forage'||type==='mini-shell'||type==='mini-star'){miniAct(type,el.dataset.index??el.dataset.flower??el.dataset.shell);return;}
  if(type==='answer'){answerChallenge(Number(el.dataset.index));return;}
- if(type==='close-challenge'){challengeState=null;$('#challenge-modal')?.remove();return;}
+ if(type==='close-challenge'){miniClose();return;}
  if(type==='close-milestone'){$('#milestone-modal')?.remove();return;}
  if(type==='reset'){confirmReset();return;}
  if(type==='cancel-reset'){$('#confirm-modal')?.remove();return;}
@@ -865,7 +963,7 @@ function action(el){const type=el.dataset.action,id=el.dataset.id;
  if(type==='import'){$('#import-file')?.click();return;}
  }catch(e){console.error(e);notify(e.message||'Something went wrong. Please try again.');}
 }
-document.addEventListener('click',e=>{const btn=e.target.closest('[data-action]');if(btn){e.preventDefault();action(btn);}else if(e.target.classList?.contains('modal-backdrop'))closeDetail();});
+document.addEventListener('click',e=>{const star=e.target.closest('[data-star]');if(star){miniAct('mini-star',star.dataset.star);return;}const btn=e.target.closest('[data-action]');if(btn){e.preventDefault();action(btn);}else if(e.target.classList?.contains('modal-backdrop'))closeDetail();});
 document.addEventListener('submit',e=>{if(e.target.id==='starter-form'){e.preventDefault();const value=$('#starter-name').value.trim();if(!value){notify('Please give your croissant a nickname.');return;}state.nicknames[STARTER_ID]=value.slice(0,24);state.onboarded=true;page='world';persist();render();notify('Welcome to the Softlands! Walk around and say hello.');}});
 document.addEventListener('change',async e=>{
  if(e.target.id==='filter-type'){category=e.target.value;render();}
@@ -873,7 +971,7 @@ document.addEventListener('change',async e=>{
  if(e.target.id==='import-file'&&e.target.files?.[0]){try{const f=e.target.files[0];if(f.size>1e6)throw Error('Save file too large.');const txt=await f.text(),raw=JSON.parse(txt);if(raw.version!==3)throw Error('This save is not a version 3 game file.');state=ensureWorld(validateSave(raw));persist();go('world');notify('Save imported successfully.');}catch(err){notify(err.message||'Could not read this save.');}}
 });
 document.addEventListener('input',e=>{if(e.target.id==='filter-query'){query=e.target.value;const i=e.target.selectionStart;render();const x=$('#filter-query');if(x){x.focus();x.setSelectionRange(i,i);}}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDetail();$('#confirm-modal')?.remove();$('#talk-modal')?.remove();$('#milestone-modal')?.remove();$('#encounter-modal')?.remove();$('#parlor-modal')?.remove();$('#keyboard-modal')?.remove();challengeState=null;$('#challenge-modal')?.remove();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDetail();$('#confirm-modal')?.remove();$('#talk-modal')?.remove();$('#milestone-modal')?.remove();$('#encounter-modal')?.remove();$('#parlor-modal')?.remove();$('#keyboard-modal')?.remove();$('#place-modal')?.remove();miniClose();}});
 // World screen, conversations, discoveries, and walking controls.
 let walkingTimer=null,challengeState=null,bagOpen=false,recentClaim=null,animating=false;
 function scenery(x,y,zone){
@@ -907,8 +1005,10 @@ function worldScreen(){ensureWorld(state);const w=state.world,here=ZONES.find(z=
  <p class="world-help"><kbd>W A S D</kbd> / arrows: walk and hold to keep moving · <kbd>E</kbd>: interact · <kbd>P</kbd>: nearby Parlor · <kbd>?</kbd>: all controls. On mobile, drag the round joystick in any direction, or tap the map to travel.</p>
  </section><aside class="world-sidebar">
  ${panel(`<span class="eyebrow">People along the way</span><h2>Friends nearby</h2>${friend.length?friend.map(n=>`<button class="friend-row" data-action="talk" data-id="${n.id}"><span class="friend-portrait">${plushArt(BY_ID.get(slugId(n.product)))}</span><span><strong>${safe(n.name)}</strong><small>${safe(n.hint)}</small></span><span aria-hidden="true">→</span></button>`).join(''):'<p class="small muted">Keep wandering! Someone is just around the corner.</p>'}<p class="small muted mb-0">🌿 Look for fluffy patches of grass for unexpected challengers.</p>`,'friend-panel')}
+ ${panel(`<span class="eyebrow">Secret corners</span><h3>Little places to visit</h3>${SPECIAL_PLACES.map(p=>`<div class="journal-teaser"><strong>${p.icon} ${safe(p.name)}</strong><small>${safe(ZONES.find(z=>z.id===zoneAt(p.x,p.y))?.name||'Softlands')}</small></div>`).join('')}`,'soft')}
  ${panel(`<div class="row between"><h2 class="mb-0">Parlor Passport</h2>${badge(w.parlorBadges.length+' / '+PARLORS.length)}</div><p class="tiny muted mt-12">Challenge a Keeper and earn an embroidered patch. Later Parlors unlock as you collect patches.</p><div class="parlor-passport">${PARLORS.map((pl,i)=>`<button class="parlor-row ${w.parlorBadges.includes(pl.id)?'earned':''}" data-action="walkto" data-id="${zoneAt(pl.x,pl.y)}" title="Walk toward ${safe(pl.name)}"><span class="patch-icon">${w.parlorBadges.includes(pl.id)?'✿':i+1}</span><span><strong>${safe(pl.name)}</strong><small>${safe(w.parlorBadges.includes(pl.id)?pl.patch:pl.required<=w.parlorBadges.length?pl.theme:'Earn '+pl.required+' patch(es) first')}</small></span></button>`).join('')}</div>`,'journey-panel')}
- ${panel(`<span class="eyebrow">Your journey</span><h3>${w.visited.length} of 8 areas explored</h3><p class="small mb-0">${w.completed.length} tiny quests · ${w.talked.length} friends met · ${w.steps} little steps</p><div class="zone-grid mt-12">${ZONES.map((z,i)=>`<button data-action="walkto" data-id="${z.id}" class="zone-link ${w.visited.includes(z.id)?'visited':''} ${here.id===z.id?'active':''}" title="Shift + ${i+1}"><span class="zone-dot" style="background:${z.color}"></span><span>${safe(z.name)}</span>${w.visited.includes(z.id)?'✓':'?'}</button>`).join('')}</div>`,'soft')}
+ ${panel(`<span class="eyebrow">Adventure Journal</span><h3>Stories waiting to unfold</h3>${outstandingQuests(state).slice(0,2).map(q=>{const p=questProgress(state,q);return `<div class="journal-teaser"><strong>${safe(q.title)}</strong><small>${p.done?'✦ Your reward is ready!':p.completed.reduce((a,b)=>a+b,0)+' / '+p.total.reduce((a,b)=>a+b,0)+' tasks finished'}</small></div>`}).join('')}<button class="btn micro pink mt-12" data-action="nav" data-id="journal"><kbd>Q</kbd> Open journal →</button>`,'soft')}
+ ${panel(`<span class="eyebrow">Your journey</span><h3>${w.visited.length} of 8 areas explored</h3><p class="small mb-0">${w.completed.length} activities · ${w.talked.length} friends met · ${w.steps} little steps</p><div class="zone-grid mt-12">${ZONES.map((z,i)=>`<button data-action="walkto" data-id="${z.id}" class="zone-link ${w.visited.includes(z.id)?'visited':''} ${here.id===z.id?'active':''}" title="Shift + ${i+1}"><span class="zone-dot" style="background:${z.color}"></span><span>${safe(z.name)}</span>${w.visited.includes(z.id)?'✓':'?'}</button>`).join('')}</div>`,'soft')}
  </aside></div>`;
 }
 function slugId(name){return name.normalize('NFKD').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');}
@@ -944,13 +1044,13 @@ function performStep(dx,dy,quiet=false){if(page!=='world'||!state.onboarded||sta
  if(result.npc){stopWalking();if(!quiet)showTalk(result.npc);return false;}
  if(result.moved){saveWorldMotion();syncWorldCamera();if(result.treasure){stopWalking();finishWorldMotion();render();showFound(result.treasure);}else if(result.encounter){finishWorldMotion();render();showEncounter();}else if(result.zone){render();if(!quiet)notify(`Welcome to ${result.zone.name}!`);}}return !!result.moved;
 }
-function walkToward(tx,ty,npcToMeet=null){stopWalking();ensureWorld(state);
+function walkToward(tx,ty,npcToMeet=null,placeToMeet=null){stopWalking();ensureWorld(state);
  tx=Math.max(0,Math.min(WORLD_W-1,Math.round(tx)));ty=Math.max(0,Math.min(WORLD_H-1,Math.round(ty)));
  const w=state.world,key=(x,y)=>y*WORLD_W+x,sx=Math.round(w.x),sy=Math.round(w.y),queue=[[sx,sy]],seen=new Set([key(sx,sy)]),parent=new Map(),blocked=new Set(NPCS.map(n=>key(n.x,n.y)));let head=0,found=false;
  while(head<queue.length){const [cx,cy]=queue[head++];if(cx===tx&&cy===ty){found=true;break;}for(const [dx,dy] of [[1,0],[0,1],[-1,0],[0,-1]]){const nx=cx+dx,ny=cy+dy,k=key(nx,ny);if(nx<0||nx>=WORLD_W||ny<0||ny>=WORLD_H||seen.has(k)||blocked.has(k))continue;seen.add(k);parent.set(k,[cx,cy]);queue.push([nx,ny]);}}
  if(!found){notify('That place is occupied. Try the path beside it.');return;}
  const waypoints=[];let cur=[tx,ty];while(cur[0]!==sx||cur[1]!==sy){waypoints.push(cur);cur=parent.get(key(cur[0],cur[1]));if(!cur)break;}waypoints.reverse();if(!waypoints.length&&Math.hypot(w.x-tx,w.y-ty)>.15)waypoints.push([tx,ty]);
- let at=0,frames=0;walkingTimer=setInterval(()=>{if(page!=='world'||document.querySelector('.modal-backdrop')||frames++>1400){stopWalking();return;}if(at>=waypoints.length){stopWalking();if(npcToMeet)showTalk(npcToMeet);return;}
+ let at=0,frames=0;walkingTimer=setInterval(()=>{if(page!=='world'||document.querySelector('.modal-backdrop')||frames++>1400){stopWalking();return;}if(at>=waypoints.length){stopWalking();if(npcToMeet)showTalk(npcToMeet);else if(placeToMeet)showPlace(placeToMeet);return;}
   const [x,y]=waypoints[at],dX=x-state.world.x,dY=y-state.world.y;
   if(Math.abs(dX)+Math.abs(dY)<.15){at++;return;}
   const deltaX=Math.abs(dX)>.12?Math.sign(dX)*Math.min(WALK_INCREMENT,Math.abs(dX)):0;
@@ -958,20 +1058,18 @@ function walkToward(tx,ty,npcToMeet=null){stopWalking();ensureWorld(state);
   if(!performStep(deltaX,deltaY,true))stopWalking();
  },48);
 }
-function showTalk(n){stopWalking();$('#talk-modal')?.remove();ensureWorld(state);if(!state.world.talked.includes(n.id)){state.world.talked.push(n.id);persist();}const plush=BY_ID.get(slugId(n.product));const completed=state.world.completed.includes(n.challenge);
- const div=el('div','modal-backdrop');div.id='talk-modal';div.innerHTML=`<section class="modal talk-modal" role="dialog" aria-modal="true" aria-label="Talking with ${safe(n.name)}"><div class="row between"><span class="eyebrow">${safe(ZONES.find(z=>z.id===zoneAt(n.x,n.y))?.name||'The Softlands')}</span><button class="btn micro cream" data-action="close-talk">✕ Close</button></div><div class="talk-portrait">${plushArt(plush)}</div><h2>${safe(n.name)}</h2><p class="dialogue-line">“${safe(n.say)}”</p><div class="row">${n.challenge?`<button class="btn" data-action="begin-challenge" data-id="${safe(n.challenge)}">${completed?'Play again':'Play a little game'} →</button>`:''}<button class="btn cream" data-action="close-talk">${n.challenge?'Maybe later':'Thanks for the tip!'}</button></div>${completed?'<p class="tiny muted mt-12">✓ You already earned this friend’s one-time reward.</p>':''}</section>`;document.body.append(div);div.querySelector('button')?.focus();}
-function showChallenge(id){if(!CHALLENGES[id])return;$('#talk-modal')?.remove();challengeState={id,index:0,mistakes:0};renderChallenge();}
-function renderChallenge(){if(!challengeState)return;const {id,index}=challengeState,c=CHALLENGES[id],step=c.steps[index];let div=$('#challenge-modal');if(!div){div=el('div','modal-backdrop');div.id='challenge-modal';document.body.append(div)}
- div.innerHTML=`<section class="modal mini-modal" role="dialog" aria-modal="true" aria-label="${safe(c.title)}"><div class="row between"><span class="eyebrow">Tiny adventure · Round ${index+1} / ${c.steps.length}</span><button data-action="close-challenge" class="btn micro cream">✕</button></div><div class="mini-sparkle">✿ ✦ ✿</div><h2>${safe(c.title)}</h2><p>${safe(step.question)}</p><div class="mini-options">${step.answers.map((answer,i)=>`<button class="btn cream" data-action="answer" data-index="${i}">${safe(answer)}</button>`).join('')}</div><p class="small muted mt-12">${challengeState.mistakes?'Try another answer. You can keep going!':'Choose the answer you think is right.'}</p></section>`;
- div.querySelector('.mini-options button')?.focus();}
-function answerChallenge(i){if(!challengeState)return;const c=CHALLENGES[challengeState.id],step=c.steps[challengeState.index];if(i!==step.correct){challengeState.mistakes++;notify('Not quite! Try another idea.');renderChallenge();return;}
- challengeState.index++;if(challengeState.index<c.steps.length){renderChallenge();return;}
- const id=challengeState.id;challengeState=null;$('#challenge-modal')?.remove();const fresh=completeChallenge(state,id);persist();render();showMilestone(fresh?'Brilliant! +2 ★': 'You did it again!',fresh?'This little adventure earned two stars. Three different activities also earn a special mystery jar.':'You have already collected this adventure’s reward.');}
+function showPlace(p){stopWalking();const w=state.world;const offerings=p.id==='fountain'?`${canWish(state)?`<button class="btn" data-action="place-action" data-id="fountain" data-option="wish">Make a wish · +1 star and team XP</button>`:`<p class="muted small">The fountain needs ${Math.max(0,5-(state.wins-w.lastWishWins))} more battle victories to recharge.</p>`}`:p.id==='shop'?`<button class="btn cream" data-action="place-action" data-id="shop" data-option="bag">🫙 Mystery gift bag · 8 ★</button>${w.souvenirs.includes('ribbon')?'':`<button class="btn cream" data-action="place-action" data-id="shop" data-option="ribbon">🎀 Velvet ribbon · 4 ★</button>`}${w.souvenirs.includes('postcards')?'':`<button class="btn cream" data-action="place-action" data-id="shop" data-option="postcards">✉ Tiny postcards · 3 ★</button>`}`:p.id==='greenhouse'?(w.greenhouseVisited?'<p>✓ Your little seedling is happily growing here.</p>':'<button class="btn" data-action="place-action" data-id="greenhouse" data-option="tend">Tend the little seedling · free</button>'):(w.campVisited?'<p>✓ You have already shared your first campfire story.</p>':'<button class="btn" data-action="place-action" data-id="camp" data-option="rest">Gather by the campfire · free</button>');
+ const div=el('div','modal-backdrop');div.id='place-modal';div.innerHTML=`<section class="modal center place-modal" role="dialog" aria-modal="true" aria-label="${safe(p.name)}"><span class="eyebrow">A special spot in the Softlands</span><div class="place-illustration">${p.icon}</div><h2>${safe(p.name)}</h2><p>${safe(p.description)}</p><div class="place-offerings">${offerings}</div><p class="tiny muted">★ ${state.points} stars · 🫙 ${state.jars} bags</p><button class="btn micro ghost" data-action="close-place">Keep exploring →</button></section>`;document.body.append(div);div.querySelector('button')?.focus();}
+function showTalk(n){stopWalking();$('#talk-modal')?.remove();ensureWorld(state);if(!state.world.talked.includes(n.id)){state.world.talked.push(n.id);persist();}const plush=BY_ID.get(slugId(n.product));const completed=state.world.completed.includes(n.challenge);const best=n.challenge?(state.world.miniBests?.[n.challenge]||0):0;
+ const div=el('div','modal-backdrop');div.id='talk-modal';div.innerHTML=`<section class="modal talk-modal" role="dialog" aria-modal="true" aria-label="Talking with ${safe(n.name)}"><div class="row between"><span class="eyebrow">${safe(ZONES.find(z=>z.id===zoneAt(n.x,n.y))?.name||'The Softlands')}</span><button class="btn micro cream" data-action="close-talk">✕ Close</button></div><div class="talk-portrait">${plushArt(plush)}</div><h2>${safe(n.name)}</h2><p class="dialogue-line">“${safe(completed&&n.challenge?`You were lovely at my little game! Come back to try for a gold ribbon, and keep helping your friends around the Softlands.`:n.say)}”</p><div class="row">${n.challenge?`<button class="btn" data-action="begin-challenge" data-id="${safe(n.challenge)}">${completed?'Play again':'Play a little game'} →</button>`:''}<button class="btn cream" data-action="close-talk">${n.challenge?'Maybe later':'Thanks for the tip!'}</button></div>${completed?`<p class="tiny muted mt-12">✓ Best ribbons: ${'✦'.repeat(best)}${'·'.repeat(3-best)} · Replay to improve your record.</p>`:''}</section>`;document.body.append(div);div.querySelector('button')?.focus();}
+// Activities are now skill-based experiences rather than multiple-choice trivia.
+function showChallenge(id){openMini(id);}
+function answerChallenge(index){miniAct('mini-flower',index);}
 function showMilestone(title,desc){const div=el('div','modal-backdrop');div.id='milestone-modal';div.innerHTML=`<section class="modal center" role="dialog" aria-modal="true" aria-label="Discovery"><div class="giant-star">✦</div><h2>${safe(title)}</h2><p>${safe(desc)}</p><button class="btn" data-action="close-milestone">Keep exploring →</button></section>`;document.body.append(div);}
 function showFound(t){showMilestone(`You found ${t.title}!`,`${t.text} You earned ${t.points} star.`);}
 function talkOrInspect(){ensureWorld(state);const npc=nearbyNpcs(state.world)[0],parlor=nearbyParlor(state.world);
- if(npc){showTalk(npc);return;}if(parlor){showParlor(parlor);return;}notify('Walk closer to a plush friend or a Parlor, or explore tall grass!');}
-function showKeyboardHelp(){if($('#keyboard-modal'))return;const div=el('div','modal-backdrop');div.id='keyboard-modal';div.innerHTML=`<section class="modal help-modal" role="dialog" aria-modal="true" aria-label="Keyboard controls"><span class="eyebrow">Play without your mouse</span><h2>Keyboard controls</h2><dl class="shortcut-grid"><dt><kbd>W A S D</kbd> / arrows</dt><dd>Walk. Hold to keep walking.</dd><dt><kbd>E</kbd> / <kbd>Space</kbd></dt><dd>Talk or inspect what's nearby.</dd><dt><kbd>P</kbd></dt><dd>Talk to a nearby Parlor Keeper.</dd><dt><kbd>G</kbd> <kbd>T</kbd> <kbd>C</kbd> <kbd>H</kbd></dt><dd>Explore, Team, Collection, Clubhouse.</dd><dt><kbd>V</kbd></dt><dd>Resume an active battle.</dd><dt><kbd>1</kbd>–<kbd>3</kbd> in battle</dt><dd>Use a move. <kbd>4</kbd>–<kbd>6</kbd> switches friends.</dd><dt><kbd>1</kbd>–<kbd>3</kbd> at rewards</dt><dd>Choose a gift-bag friend.</dd><dt><kbd>Shift</kbd> + <kbd>1</kbd>–<kbd>8</kbd></dt><dd>Walk to a district.</dd><dt><kbd>J</kbd></dt><dd>Open an earned mystery jar from Team.</dd><dt><kbd>/</kbd></dt><dd>Search your Collection.</dd><dt><kbd>Tab</kbd>, <kbd>Enter</kbd></dt><dd>Reach and activate any button or form.</dd><dt><kbd>Esc</kbd></dt><dd>Close dialogs.</dd></dl><button class="btn" data-action="close-help">Got it! <kbd>Esc</kbd></button></section>`;document.body.append(div);div.querySelector('button')?.focus();}
+ const place=nearbySpecial(state.world);const distances=[[npc,()=>showTalk(npc)],[parlor,()=>showParlor(parlor)],[place,()=>showPlace(place)]].filter(([x])=>x).sort((a,b)=>Math.hypot(a[0].x-state.world.x,a[0].y-state.world.y)-Math.hypot(b[0].x-state.world.x,b[0].y-state.world.y));if(distances.length){distances[0][1]();return;}notify('Walk closer to a friend, landmark, or Parlor, or explore tall grass!');}
+function showKeyboardHelp(){if($('#keyboard-modal'))return;const div=el('div','modal-backdrop');div.id='keyboard-modal';div.innerHTML=`<section class="modal help-modal" role="dialog" aria-modal="true" aria-label="Keyboard controls"><span class="eyebrow">Play without your mouse</span><h2>Keyboard controls</h2><dl class="shortcut-grid"><dt><kbd>W A S D</kbd> / arrows</dt><dd>Walk. Hold to keep walking.</dd><dt><kbd>E</kbd> / <kbd>Space</kbd></dt><dd>Talk, explore shops, and inspect nearby landmarks.</dd><dt><kbd>P</kbd></dt><dd>Talk to a nearby Parlor Keeper.</dd><dt><kbd>G</kbd> <kbd>Q</kbd> <kbd>T</kbd> <kbd>C</kbd> <kbd>H</kbd></dt><dd>Explore, Journal, Team, Collection, Clubhouse.</dd><dt><kbd>V</kbd></dt><dd>Resume an active battle.</dd><dt><kbd>1</kbd>–<kbd>3</kbd> in battle</dt><dd>Use a move. <kbd>4</kbd>–<kbd>6</kbd> switches friends.</dd><dt><kbd>Space</kbd> in activities</dt><dd>Time shots and baking, or begin/end a mini-game. Flowers and shells use number keys.</dd><dt><kbd>1</kbd>–<kbd>3</kbd> at rewards</dt><dd>Choose a gift-bag friend.</dd><dt><kbd>Shift</kbd> + <kbd>1</kbd>–<kbd>8</kbd></dt><dd>Walk to a district.</dd><dt><kbd>J</kbd></dt><dd>Open an earned mystery jar from Team.</dd><dt><kbd>/</kbd></dt><dd>Search your Collection.</dd><dt><kbd>Tab</kbd>, <kbd>Enter</kbd></dt><dd>Reach and activate any button or form.</dd><dt><kbd>Esc</kbd></dt><dd>Close dialogs.</dd></dl><button class="btn" data-action="close-help">Got it! <kbd>Esc</kbd></button></section>`;document.body.append(div);div.querySelector('button')?.focus();}
 
 // Keyboard controls work on every screen, including the modal questions and claim panels.
 const pressed=new Set();let walkHeldTimer=null;
@@ -983,6 +1081,7 @@ document.addEventListener('keydown',e=>{
  const key=e.key.toLowerCase(),input=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName);
  const modal=document.querySelector('.modal-backdrop');
  if(modal){if(e.key==='Escape')return;
+  if(challengeState&&modal.id==='challenge-modal'){if([' ','enter'].includes(key)){e.preventDefault();if(challengeState.phase==='ready')miniAct('mini-start');else if(challengeState.phase==='done')miniAct('mini-finish');else if(['baker','sports'].includes(challengeState.id)&&challengeState.phase==='playing')miniAct('mini-hit');return;}if(/^[1-5]$/.test(key)&&challengeState.phase==='playing'){e.preventDefault();if(challengeState.id==='garden')miniAct('mini-flower',Number(key)-1);else if(challengeState.id==='sea')miniAct('mini-shell',Number(key)-1);else if(challengeState.id==='moon')miniAct('mini-star',Number(key)-1);else if(challengeState.id==='wood')miniAct('mini-forage',Number(key)-1);return;}}
   if(input)return;
   if(key==='enter'&&document.activeElement?.tagName==='BUTTON')return;
   const question=modal.querySelector('.mini-options');
@@ -1005,7 +1104,7 @@ document.addEventListener('keydown',e=>{
  if(page==='collection'&&key==='/'){e.preventDefault();$('#filter-query')?.focus();return;}
  if(page==='clubhouse'&&['e','i','r'].includes(key)){const a={e:'export',i:'import',r:'reset'}[key];$(`[data-action="${a}"]`)?.click();e.preventDefault();return;}
  if(!state.onboarded||state.pending)return;
- if(!e.shiftKey&&['g','t','c','h','v'].includes(key)){const p={g:'world',t:'home',c:'collection',h:'clubhouse',v:'battle'}[key];if(p!=='battle'||state.battle){e.preventDefault();go(p);}return;}
+ if(!e.shiftKey&&['g','q','t','c','h','v'].includes(key)){const p={g:'world',q:'journal',t:'home',c:'collection',h:'clubhouse',v:'battle'}[key];if(p!=='battle'||state.battle){e.preventDefault();go(p);}return;}
  if(/^[1-5]$/.test(key)&&!e.shiftKey){const pages=['world','home','collection','clubhouse','battle'];const selected=pages[Number(key)-1];if(selected==='battle'&&!state.battle)return;e.preventDefault();go(selected);}
 });
 document.addEventListener('keyup',e=>{pressed.delete(e.key.toLowerCase());if(!walkKey())stopHeld();});window.addEventListener('blur',stopHeld);
@@ -1050,6 +1149,105 @@ window.addEventListener('blur',stopTouchWalking);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopTouchWalking();});
 window.addEventListener('resize',()=>{if(page==='world'&&state.onboarded&&!state.pending)render();});
 window.addEventListener('pagehide',finishWorldMotion);
+
+/* Interactive Softlands activities. Separate from combat, shared on desktop & touch. */
+const MINI_INFO={
+ baker:{title:'The Cozy Bake-Off',subtitle:'Three trays, three perfect golden moments.',icon:'🥐',how:'Watch the oven needle and tap BAKE when it reaches the golden window.'},
+ garden:{title:'Petal’s Flower Orchestra',subtitle:'Remember the order the flowers light up.',icon:'🌼',how:'Watch the glowing flowers, then tap them back in the same order.'},
+ wood:{title:'Bo’s Forest Forage',subtitle:'Find the right woodland treasure among the leaves.',icon:'🍄',how:'Find the requested treasure in each cluster. Try to avoid the decoys.'},
+ moon:{title:'Bob’s Constellation Workshop',subtitle:'Join the stars in the pattern Bob shows you.',icon:'🌟',how:'Connect the glowing star names in order. A wrong star skips your chance that round.'},
+ sea:{title:'Captain Larry’s Shell Shuffle',subtitle:'Keep your eyes on the hidden pearl.',icon:'🐚',how:'Watch the shells swap places. Tap the shell with the pearl at the end.'},
+ sports:{title:'Coach Bounce’s Target Practice',subtitle:'A little accuracy makes a big difference.',icon:'🎾',how:'Stop the moving ball inside the colored target zone. Each round moves faster.'}
+};
+const MINI_FLOWERS=['🌷','🌻','🌸','🌼'];
+const FOREST_TREASURES=['🍄','🌰','🪶','🍁','🪺','🌲'];
+const STARS=[{x:16,y:68,name:'Pip'},{x:36,y:25,name:'Twinkle'},{x:73,y:17,name:'Wish'},{x:84,y:67,name:'Dream'},{x:53,y:79,name:'Glow'}];
+const STAR_PATHS=[[0,1,2],[4,0,1,2],[3,2,1,0,4]];
+let miniTimer=0,miniTimers=[],miniFrame=0,miniSession=0;
+function clearMiniTimers(){clearTimeout(miniTimer);miniTimers.forEach(clearTimeout);miniTimers=[];if(miniFrame)cancelAnimationFrame(miniFrame);miniFrame=0;}
+const queueMini=(fn,ms)=>{miniTimers.push(setTimeout(fn,ms));};
+function miniBase(id){return {id,round:0,score:0,phase:'ready',started:0,sequence:[],entered:[],index:0,lock:false,misses:0,position:0,pearl:0,lanes:[0,1,2],starPath:[],roundData:null,session:++miniSession};}
+function openMini(id){if(!MINI_INFO[id]||!state.onboarded)return;
+ stopWalking();stopHeld();stopTouchWalking();$('#talk-modal')?.remove();clearMiniTimers();
+ challengeState=miniBase(id);renderMini();}
+function miniClose(){clearMiniTimers();challengeState=null;$('#challenge-modal')?.remove();}
+function startMini(){if(!challengeState||challengeState.phase!=='ready')return;nextMiniRound();}
+function nextMiniRound(){clearMiniTimers();const m=challengeState;if(!m)return;
+ if(m.round>=3){finishMini();return;}m.phase='playing';m.started=performance.now();m.entered=[];m.index=0;m.lock=false;m.misses=0;
+ if(m.id==='baker'||m.id==='sports'){
+  m.target=m.id==='baker'?[.31,.67,.48][m.round]:[.70,.24,.57][m.round];m.duration=(m.id==='baker'?1600:1350)-m.round*140;
+  renderMini();animateMiniNeedle();
+ }else if(m.id==='garden'){
+  m.sequence=Array.from({length:3+m.round},()=>Math.floor(Math.random()*4));m.phase='preview';renderMini();
+  const session=m.session;let delay=480;m.sequence.forEach((flower)=>{queueMini(()=>{if(challengeState?.session===session){const node=$(`[data-flower="${flower}"]`);node?.classList.add('lit');}},delay);queueMini(()=>{if(challengeState?.session===session)document.querySelectorAll('.flower-key').forEach(n=>n.classList.remove('lit'));},delay+470);delay+=720;});
+  queueMini(()=>{if(challengeState?.session===session){m.phase='playing';renderMini();}},delay+250);
+ }else if(m.id==='wood'){
+  const target=FOREST_TREASURES[(m.round*2+1)%FOREST_TREASURES.length];m.target=target;m.choices=Array.from({length:9},(_,i)=>FOREST_TREASURES[(i+m.round+3)%FOREST_TREASURES.length]);m.answer=Math.floor(Math.random()*9);m.choices[m.answer]=target;
+  // Guarantee one true treasure among the decoys.
+  m.choices=m.choices.map((x,i)=>i!==m.answer&&x===target?'🌿':x);
+  renderMini();
+ }else if(m.id==='sea'){
+  m.pearl=Math.floor(Math.random()*3);m.lanes=[0,1,2];m.phase='preview';renderMini();const session=m.session;
+  queueMini(()=>{if(challengeState?.session!==session)return;m.phase='shuffling';renderMini();},1100);
+  for(let n=0;n<3+m.round;n++)queueMini(()=>{if(challengeState?.session!==session)return;let a=Math.floor(Math.random()*3),b=(a+1+Math.floor(Math.random()*2))%3;[m.lanes[a],m.lanes[b]]=[m.lanes[b],m.lanes[a]];renderShellPosition();},1600+n*680);
+  queueMini(()=>{if(challengeState?.session===session){m.phase='playing';renderMini();}},1800+(3+m.round)*680);
+ }else if(m.id==='moon'){
+  m.starPath=STAR_PATHS[m.round];m.phase='playing';renderMini();
+ }
+}
+function miniStatus(m){return `<div class="mini-score"><span>Round <strong>${Math.min(m.round+1,3)} / 3</strong></span><span>Golden ribbons <strong>${'✦'.repeat(m.score)}${'·'.repeat(3-m.score)}</strong></span></div>`;}
+function miniContent(m){const id=m.id;
+ if(m.phase==='ready')return `<div class="mini-intro-hero">${MINI_INFO[id].icon}</div><p>${safe(MINI_INFO[id].how)}</p><button class="btn" data-action="mini-start"><kbd>Enter</kbd> Start playing →</button>`;
+ if(m.phase==='done')return `<div class="mini-intro-hero">${m.score===3?'🏅':m.score?'🎀':'💛'}</div><h3>${m.score===3?'Perfect little performance!':m.score?'What a lovely effort!':'A little more practice?'}</h3><p>${m.score} of 3 golden ribbons. ${m.score===3?'You earned the gold-ribbon bonus!':'You can try again anytime.'}</p><button class="btn" data-action="mini-finish">Collect rewards →</button>`;
+ if(id==='baker'||id==='sports')return `<div class="mini-target-head">${id==='baker'?'🔥 Watch the oven!':'🎾 Aim for the center!'}<span class="tiny muted">${m.phase==='feedback'?'Good try!':'Tap at the right time'}</span></div>
+ <div class="mini-timing-track ${id==='baker'?'oven-track':'sports-track'}" role="img" aria-label="Moving timing needle with target area"><div class="mini-perfect-range" style="left:${(m.target-.095)*100}%;width:19%"></div><div class="mini-bullseye" style="left:${m.target*100}%"></div><div class="mini-timing-needle" id="mini-needle" style="left:${m.position*100}%">${id==='baker'?'🥐':'🎾'}</div></div>
+ <button class="btn mini-main-action" data-action="mini-hit" ${m.phase!=='playing'?'disabled':''}><kbd>Space</kbd> ${id==='baker'?'Take out the tray!':'Take the shot!'}</button>`;
+ if(id==='garden')return `<p>${m.phase==='preview'?'Watch the flowers carefully. Your turn is coming!':'Repeat the glowing flower pattern.'}</p><div class="flower-grid">${MINI_FLOWERS.map((f,i)=>`<button class="flower-key" data-action="mini-flower" data-flower="${i}" ${m.phase!=='playing'?'disabled':''}><span>${f}</span><small><kbd>${i+1}</kbd> Flower ${i+1}</small></button>`).join('')}</div><p class="mini-feedback" aria-live="polite">${m.phase==='preview'?'Remember the sequence…':`${m.entered.length} of ${m.sequence.length} flowers recalled`}</p>`;
+ if(id==='wood')return `<h3>Find this treasure: <span class="mini-big-icon">${m.target}</span></h3><div class="forage-grid">${m.choices.map((f,i)=>`<button class="forage-tile" data-action="mini-forage" data-index="${i}" aria-label="Woodland object ${i+1}: ${f}" ${m.phase!=='playing'?'disabled':''}>${f}</button>`).join('')}</div><p class="mini-feedback">Choose the matching item from the forest floor.</p>`;
+ if(id==='sea')return `<p class="mini-feedback">${m.phase==='preview'?'The pearl glows under one shell. Watch it!':m.phase==='shuffling'?'The shells are swapping places…':'Which shell hides the pearl?'}</p><div class="shell-stage">${[0,1,2].map(i=>`<button class="shell-cup" data-shell="${i}" data-action="mini-shell" ${m.phase!=='playing'?'disabled':''} style="left:${m.lanes[i]*33.333+16.667}%"><span>🐚</span><small>${m.phase==='preview'&&m.pearl===i?'💎':'?'}</small></button>`).join('')}</div>`;
+ if(id==='moon'){
+  const joined=m.starPath.slice(0,m.index).map(i=>`${STARS[i].x},${STARS[i].y}`).join(' ');
+  const goal=m.starPath.map(i=>STARS[i].name).join(' → ');
+  return `<p class="mini-feedback">Connect in this order: <strong>${safe(goal)}</strong></p><svg class="constellation-field" viewBox="0 0 100 100" role="img" aria-label="Five labeled stars to connect">${m.index>=2?`<polyline points="${joined}" fill="none" stroke="#fae6a1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`:''}${STARS.map((star,i)=>`<g class="star-node ${m.starPath.slice(0,m.index).includes(i)?'connected':''}" data-star="${i}"><circle cx="${star.x}" cy="${star.y}" r="6.5" fill="#fcf4d9" stroke="#7e68ac" stroke-width="1"/><text x="${star.x}" y="${star.y+1.4}" text-anchor="middle" font-size="5">✦</text><text x="${star.x}" y="${star.y+10}" text-anchor="middle" font-size="4.2">${star.name}</text></g>`).join('')}</svg><div class="star-choices">${STARS.map((star,i)=>`<button class="btn micro cream" data-action="mini-star" data-index="${i}" ${m.phase!=='playing'?'disabled':''}>${safe(star.name)}</button>`).join('')}</div><p class="tiny muted">${m.index} of ${m.starPath.length} stars connected</p>`;
+ }
+ return '';
+}
+function renderMini(){const m=challengeState;if(!m)return;let div=$('#challenge-modal');if(!div){div=el('div','modal-backdrop');div.id='challenge-modal';document.body.append(div);}
+ const data=MINI_INFO[m.id];div.innerHTML=`<section class="modal mini-modal skill-modal" role="dialog" aria-modal="true" aria-label="${safe(data.title)}"><div class="row between"><span class="eyebrow">Softlands activity · ${safe(data.subtitle)}</span><button data-action="close-challenge" class="btn micro cream" aria-label="Leave activity">✕ Leave</button></div><h2>${safe(data.title)}</h2>${miniStatus(m)}<div class="skill-play-area">${miniContent(m)}</div><p class="tiny muted mt-12">${m.phase==='ready'?'Play on desktop or touch. All activities have keyboard controls.':'Your best result is kept in your adventure journal.'}</p></section>`;
+ div.querySelector('[data-action="mini-start"], .mini-main-action, .flower-key:not(:disabled), [data-action="mini-finish"]')?.focus({preventScroll:true});}
+function animateMiniNeedle(){if(!challengeState||!['baker','sports'].includes(challengeState.id))return;const session=challengeState.session;
+ const frame=now=>{const m=challengeState;if(!m||m.session!==session||m.phase!=='playing')return;
+  m.position=(1-Math.cos((now-m.started)/m.duration*Math.PI*2))/2;
+  const needle=$('#mini-needle');if(needle)needle.style.left=(m.position*100).toFixed(1)+'%';miniFrame=requestAnimationFrame(frame);
+ };miniFrame=requestAnimationFrame(frame);
+}
+function renderShellPosition(){const m=challengeState;if(!m)return;for(let i=0;i<3;i++){const shell=$(`[data-shell="${i}"]`);if(shell)shell.style.left=`${m.lanes[i]*33.333+16.667}%`;}}
+function miniAdvance(success,message=''){const m=challengeState;if(!m||m.phase==='feedback')return;m.score+=success?1:0;m.phase='feedback';clearMiniTimers();renderMini();const content=$('.skill-play-area');if(content){const feedback=el('div','mini-result-feedback',`${success?'✦ Golden ribbon!':'♡ Not this time.'} ${message}`);content.append(feedback);}const session=m.session;
+ queueMini(()=>{if(challengeState?.session!==session)return;m.round++;if(m.round>=3){m.phase='done';renderMini();}else nextMiniRound();},1150);
+}
+function miniAct(type,val){const m=challengeState;if(!m)return;
+ if(type==='mini-start'){startMini();return;}
+ if(type==='mini-finish'){finishMini();return;}
+ if(m.phase!=='playing')return;
+ if(type==='mini-hit'&&['baker','sports'].includes(m.id)){const error=Math.abs(m.position-m.target);miniAdvance(error<.155,error<.075?'Perfect center!':error<.155?'Beautiful timing!':'The timing was a little off.');return;}
+ if(type==='mini-flower'&&m.id==='garden'){
+  const i=Number(val);m.entered.push(i);if(i!==m.sequence[m.entered.length-1])miniAdvance(false,'The flowers need a different order.');else if(m.entered.length===m.sequence.length)miniAdvance(true,'You remembered every flower!');else renderMini();return;
+ }
+ if(type==='mini-forage'&&m.id==='wood'){miniAdvance(Number(val)===m.answer,'Bo has a basket ready for your finds.');return;}
+ if(type==='mini-shell'&&m.id==='sea'){miniAdvance(m.lanes[Number(val)]===m.lanes[m.pearl],'Captain Larry lifts the shell…');return;}
+ if(type==='mini-star'&&m.id==='moon'){
+  if(Number(val)!==m.starPath[m.index]){miniAdvance(false,'A little star wandered off the trail.');return;}
+  m.index++;if(m.index===m.starPath.length)miniAdvance(true,'You drew a shining constellation!');else renderMini();return;
+ }
+}
+function finishMini(){const m=challengeState;if(!m)return;const {id,score}=m;miniClose();ensureWorld(state);
+ const result=saveMiniScore(state,id,score,grantXp,completeChallenge);persist();render();
+ const reward=result.firstClear?'You earned 2 stars and experience for your team. ':'';
+ const gold=result.gold?'You also earned the bonus gold-ribbon star. ':'';
+ const note=score===0?'No ribbons this time, but you can play again!':`You collected ${score} of 3 golden ribbons. `;
+ showMilestone(score===3?'Gold-ribbon masterpiece!':score?'A little victory!':'Practice makes plush-perfect',note+reward+gold+(result.firstClear&&state.world.completed.length%3===0?'A mystery jar has been added to your collection!':''));
+}
+
 
 // Initialize the interface after all keyboard handlers are registered.
 render();
