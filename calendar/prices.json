@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-17T15:42:51Z",
+ "updated": "2026-10-18T04:44:34Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -229,26 +229,6 @@
    "title": "Dark Star Orchestra",
    "date": "2027-01-02",
    "venue": "The Capitol Theatre",
-   "low": null,
-   "src": null
-  },
-  "sg-18666672": {
-   "sg": 18666672,
-   "history": [],
-   "url": "https://seatgeek.com/robert-kelly-tickets/comedy/2026-10-17-6-30-pm/18666672",
-   "title": "Robert Kelly",
-   "date": "2026-10-17",
-   "venue": "Laugh Boston",
-   "low": null,
-   "src": null
-  },
-  "tm-vv1A8v0OtGA5uw7-": {
-   "sg": 18194413,
-   "history": [],
-   "url": "https://www.ticketmaster.com/beck-ride-lonesome-tour-boston-massachusetts-10-17-2026/event/010064829B372121",
-   "title": "BECK: RIDE LONESOME TOUR",
-   "date": "2026-10-17",
-   "venue": "MGM Music Hall at Fenway",
    "low": null,
    "src": null
   },
@@ -559,6 +539,10 @@
     [
      "2026-10-17",
      56
+    ],
+    [
+     "2026-10-18",
+     56
     ]
    ],
    "sg": null,
@@ -586,6 +570,10 @@
     ],
     [
      "2026-10-17",
+     22
+    ],
+    [
+     "2026-10-18",
      22
     ]
    ],
@@ -677,6 +665,10 @@
     [
      "2026-10-17",
      28
+    ],
+    [
+     "2026-10-18",
+     28
     ]
    ],
    "sg": null,
@@ -693,6 +685,10 @@
     [
      "2026-10-17",
      22
+    ],
+    [
+     "2026-10-18",
+     22
     ]
    ],
    "sg": null,
@@ -703,6 +699,16 @@
    "src": "Ticketmaster",
    "low": 22,
    "first": 22
+  },
+  "tm-vv1AvZkoyGkdn0R7v": {
+   "history": [],
+   "sg": 18149269,
+   "title": "Gianmarco Soresi: The Misery Loves Tour",
+   "date": "2026-12-04",
+   "venue": "The Wilbur",
+   "url": "https://www.ticketmaster.com/gianmarco-soresi-the-misery-loves-tour-boston-massachusetts-12-04-2026/event/01006479EA92F101",
+   "src": null,
+   "low": null
   }
  },
  "misses": {
