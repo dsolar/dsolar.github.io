@@ -4,7 +4,7 @@
  "week": 6,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-10-18T17:20:50Z",
+ "updated": "2026-10-18T18:57:30Z",
  "source": "Yahoo league page, pasted",
  "teams": [
   {
@@ -610,7 +610,7 @@
      "proj": 14.02,
      "rank": "RB10",
      "date": "2026-10-18",
-     "next_proj": 14.21,
+     "next_proj": 14.15,
      "in_best": true
     },
     {
@@ -650,7 +650,7 @@
      "proj": 10.82,
      "rank": "WR20",
      "date": "2026-10-18",
-     "next_proj": 10.53,
+     "next_proj": 10.47,
      "in_best": true
     },
     {
@@ -763,7 +763,7 @@
     }
    ],
    "best": 122.2,
-   "best_next": 117.3,
+   "best_next": 117.2,
    "locked": 0,
    "locked_proj": 0,
    "games_final": 0
@@ -970,7 +970,7 @@
      "proj": 15.95,
      "rank": "QB14",
      "date": "2026-10-18",
-     "next_proj": 17.32,
+     "next_proj": 17.26,
      "in_best": true
     },
     {
@@ -1235,7 +1235,7 @@
      "game": "Sun 1:00 pm",
      "opp": "vs BAL",
      "proj": 9.28,
-     "rank": "WR28",
+     "rank": "WR27",
      "date": "2026-10-18",
      "next_proj": 9.31,
      "in_best": true
@@ -1371,7 +1371,7 @@
      "pos": "QB",
      "game": "Sun 4:25 pm",
      "opp": "@ KC",
-     "proj": 12.94,
+     "proj": 12.9,
      "rank": "QB26",
      "date": "2026-10-18",
      "bye_next": true,
@@ -1536,7 +1536,7 @@
      "proj": 8.12,
      "rank": "WR34",
      "date": "2026-10-18",
-     "next_proj": 7.61
+     "next_proj": 7.55
     }
    ],
    "best": 116.0,
@@ -2046,7 +2046,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-10-18T17:20:51Z",
+  "updated": "2026-10-18T18:57:31Z",
   "players": 3045,
   "unmatched": []
  }
