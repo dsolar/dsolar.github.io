@@ -119,7 +119,7 @@ kbd{display:inline-block;border:1px solid #ada2a1;background:#f1ece5;border-radi
 .world-pan .world-player-overlay{transition:none;will-change:left,top;}
 .world-pan .world-player-overlay.moving .plush-svg{animation:player-hop .25s ease-in-out infinite;}
 #mobile-movement{display:none;}
-@media (max-width:720px) and (pointer:coarse){
+@media (any-pointer:coarse){
  body.mobile-world .wrap{padding-bottom:calc(195px + env(safe-area-inset-bottom, 0px));}
  body.mobile-world .dpad{display:none;}
  body.mobile-world .world-commands-right [data-action="interact"]{display:none;}
@@ -330,6 +330,15 @@ body.battle-focus .battle-log{max-height:21dvh;overflow:auto;padding:9px;}
  body.battle-focus .battle-pane-content{max-height:36dvh;}
  body.battle-focus .fighter .avatar{max-height:95px;}
  body.battle-focus .battle-heading h1{font-size:1.1rem;}
+}
+
+/* iPad: keep touch controls visible in both orientations, including with a trackpad. */
+@media (min-width:721px) and (any-pointer:coarse){
+ body.game-focus #mobile-movement{bottom:calc(18px + env(safe-area-inset-bottom,0px));padding:0 24px;}
+ body.game-focus .touch-stick{width:118px;height:118px;flex-basis:118px;background:radial-gradient(circle,#fef9fcdc,#e7d6f5d9 78%);}
+ body.game-focus .touch-interact{min-width:104px;min-height:56px;}
+ body.game-focus .touch-hint{display:none;}
+ body.game-focus .world-commands .dpad{display:none;}
 }
 </style>
 </head>
