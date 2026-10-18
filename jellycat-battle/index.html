@@ -1583,8 +1583,8 @@ function regionalAtlas(){const nodes=new Map(ATLAS_TOWNS.map(t=>[t.id,t]));
 
 function regionalWorldScreen(){const w=state.world,info=areaInfo(w.area),aNpcs=areaNpcs(w.area),aParlors=areaParlors(w.area),aTreasures=areaTreasures(w.area),aLandmarks=areaLandmarks(w.area);
  if(!info)return panel('<h2>Unknown location</h2><button class="btn" data-action="nav" data-id="atlas">See the region map</button>');
- const vx=window.innerWidth<650?11:window.innerWidth<950?17:21;const tilePixels=(window.innerWidth-24)/vx;const vy=Math.max(10,Math.min(27,Math.ceil((window.innerHeight-100)/tilePixels)+2));const pad=3,cols=vx+pad*2,rows=vy+pad*2;
- const cx=Math.max(0,Math.min(info.width-cols,Math.floor(w.x)-Math.floor(vx/2)-pad)),cy=Math.max(0,Math.min(info.height-rows,Math.floor(w.y)-Math.floor(vy/2)-pad));
+ const vx=window.innerWidth<650?11:window.innerWidth<950?17:21;const tilePixels=(window.innerWidth-24)/vx;const vy=Math.max(10,Math.min(27,Math.ceil((window.innerHeight-100)/tilePixels)+2));// Mount the full region exactly once. The camera must never outrun a windowed terrain slice.
+ const cols=info.width,rows=info.height,cx=0,cy=0;
  let tiles='';for(let y=cy;y<cy+rows;y++)for(let x=cx;x<cx+cols;x++){
   const tt=areaTile(w.area,x,y),npc=aNpcs.find(n=>n.x===x&&n.y===y),parlor=aParlors.find(p=>p.x===x&&p.y===y),treasure=aTreasures.find(t=>t.x===x&&t.y===y&&!w.found.includes(t.id)),landmark=aLandmarks.find(t=>t.x===x&&t.y===y),gate=areaGate(w.area,x,y);
   const icon=npc?`<span class="world-npc" data-actor-name="${safe(npc.product)}">${plushArt(BY_ID.get(slugId(npc.product)))}</span><span class="npc-bubble">${safe(npc.icon)}</span>`:parlor?`<span class="world-parlor">✿<small>PARLOR</small></span>`:treasure?'<span class="world-treasure">✧</span>':gate&&((w.area==='orchard'&&(x===1&&y===19||x===57&&y===windingRoad(57)||x===35&&y===7))||(w.area==='grotto'&&x===2&&y===21)||(w.area==='willowmere'&&x===1&&y===18))?'<span class="world-landmark" title="Follow the path">⇥</span>':landmark?`<span class="world-landmark" title="${safe(landmark.name)}">${landmark.icon}</span>`:tt.kind==='broken-bridge'?'<span class="world-landmark" title="Broken bridge">🪵</span>':tt.kind==='grove'?'<span class="world-decor">🌳</span>':tt.kind==='cliff'?'<span class="world-decor">⛰</span>':tt.kind==='crystal'?'<span class="world-decor">✧</span>':tt.kind==='river'?'<span class="world-decor">〰</span>':(hashTile(x,y)%11===0?'<span class="world-decor">✿</span>':'');
@@ -1647,17 +1647,17 @@ function showParlor(p){if(!p)return;stopWalking();if(Math.hypot(p.x-state.world.
  const div=el('div','modal-backdrop');div.id='parlor-modal';div.innerHTML=`<section class="modal center" role="dialog" aria-modal="true" aria-label="${safe(p.name)}"><span class="eyebrow">✿ Official Softlands Parlor</span><h2>${safe(p.name)}</h2><div class="parlor-host">${plushArt(BY_ID.get(slugId(p.product)))}</div><h3>Keeper ${safe(p.keeper)}</h3><p>${safe(p.theme)}. Win to earn the <strong>${safe(p.patch)}</strong> for your Passport.${p.id==='cove'?'<br><strong>Boss prize: the Softboard</strong> — lets your team cross open water and revisit river islands.':''}</p>${needsTrial?`<p class="small muted">First Parlor lesson: Mabel has sewn a pattern into three paths. Which path shows <strong>button → blossom → button</strong>?</p><div class="parlor-path-buttons"><button data-action="parlor-trial" data-id="village" data-option="dots"><span>✿ ✿ ✿</span>All blossoms</button><button data-action="parlor-trial" data-id="village" data-option="pattern"><span>● ✿ ●</span>Button trail</button><button data-action="parlor-trial" data-id="village" data-option="stars"><span>★ ● ★</span>Star trail</button></div>`:''}<p class="small muted">${already?'✓ Patch already earned. Come back to visit!':unlocked?'Your team is welcome to take the challenge.':`Earn ${p.required} patch${p.required===1?'':'es'} before challenging this Keeper.`}</p><div class="row" style="justify-content:center">${unlocked&&!needsTrial?`<button class="btn" data-action="parlor-battle" data-id="${p.id}"><kbd>1</kbd> Challenge Keeper →</button>`:''}<button class="btn cream" data-action="close-parlor"><kbd>Esc</kbd> ${already?'See you soon':'Maybe later'}</button></div></section>`;document.body.append(div);div.querySelector('button')?.focus();
 }
 let worldSaveAt=0,worldDirty=false;
-function saveWorldMotion(force=false){worldDirty=true;const now=Date.now();if(force||now-worldSaveAt>300){persist();worldSaveAt=now;worldDirty=false;}}
+function saveWorldMotion(force=false){worldDirty=true;const now=Date.now();if(force||now-worldSaveAt>1500){persist();worldSaveAt=now;worldDirty=false;}}
 function finishWorldMotion(){if(worldDirty)saveWorldMotion(true);}
 function syncWorldCamera(){const pan=$('#world-pan'),view=$('#world-viewport');if(!pan||!view)return;
  const {x,y}=state.world,baseX=Number(pan.dataset.baseX),baseY=Number(pan.dataset.baseY),cols=Number(pan.dataset.cols),rows=Number(pan.dataset.rows),vx=Number(pan.dataset.visibleCols),vy=Number(pan.dataset.visibleRows);
- const dim=areaSize(state.world.area);
  // Full area is mounted, so movement only changes the transform and the actor location.
  const p=pan.querySelector('.world-player-overlay');if(p){p.style.left=`${100*(x-baseX+.5)/cols}%`;p.style.top=`${100*(y-baseY+.94)/rows}%`;}
  const tile=view.clientWidth/vx;
- const shiftX=Math.max(-(cols-vx)*tile,Math.min(0,(vx/2-(x-baseX+.5))*tile));
- const shiftY=Math.max(-(rows-vy)*tile,Math.min(0,(vy/2-(y-baseY+.5))*tile));
- pan.style.transform=`translate3d(${shiftX.toFixed(2)}px,${shiftY.toFixed(2)}px,0)`;if(p)p.classList.toggle('on-water',onWater(state));updateParlorCompass();
+ const shiftX=Math.max(-Math.max(0,cols-vx)*tile,Math.min(0,(vx/2-(x-baseX+.5))*tile));
+ const shiftY=Math.max(-Math.max(0,rows-vy)*tile,Math.min(0,(vy/2-(y-baseY+.5))*tile));
+ pan.style.transform=`translate3d(${shiftX.toFixed(2)}px,${shiftY.toFixed(2)}px,0)`;if(p)p.classList.toggle('on-water',onWater(state));
+ const now=performance.now();if(!syncWorldCamera.lastCompass||now-syncWorldCamera.lastCompass>160){syncWorldCamera.lastCompass=now;updateParlorCompass();}
 }
 function performStep(dx,dy,quiet=false){if(page!=='world'||!state.onboarded||state.pending||challengeState||document.querySelector('.modal-backdrop'))return false;
  const result=stepWorld(state,dx,dy);
