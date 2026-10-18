@@ -267,6 +267,70 @@ body.game-focus.pixel-world-active .world-pan{transition:transform .085s linear;
  body.game-focus .touch-hint{display:none;}
 }
 @media(max-height:500px){body.game-focus .world-toolbar{display:none;}body.game-focus .world-commands{min-height:30px;padding:2px;}}
+
+/* Handheld-style battle screen: the fight stays visible; secondary information has tabs. */
+body.battle-focus{height:100dvh;overflow:hidden;overscroll-behavior:none;}
+body.battle-focus .site-head,body.battle-focus .site-foot{display:none!important;}
+body.battle-focus #app{height:100dvh;overflow:hidden;}
+body.battle-focus .wrap{height:100dvh;max-width:none;display:flex;flex-direction:column;min-height:0;overflow:hidden;padding:7px 10px 9px!important;gap:5px;}
+body.battle-focus .game-nav{flex:none;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;min-height:40px;margin:0;padding:3px 5px;border-radius:10px;scrollbar-width:thin;}
+body.battle-focus .game-nav button{flex:none;white-space:nowrap;font-size:.76rem;padding:7px 10px;}
+body.battle-focus .game-nav .stars{flex:none;font-size:.73rem;}
+body.battle-focus .battle-heading{flex:none;min-height:0;margin:0!important;gap:8px;align-items:center;}
+body.battle-focus .battle-heading h1{font-size:clamp(1.15rem,2.8vw,1.65rem);line-height:1.1;margin:0;}
+body.battle-focus .battle-heading .eyebrow{font-size:.64rem;}
+body.battle-focus .battle-heading .mini-pill{font-size:.7rem;}
+body.battle-focus .wrap>.panel{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column;padding:8px 12px;margin:0;}
+body.battle-focus .battle-board{flex:1 1 auto;min-height:0;grid-template-columns:minmax(0,1fr) 30px minmax(0,1fr);gap:5px;}
+body.battle-focus .fighter{display:flex;min-height:0;flex-direction:column;align-items:stretch;justify-content:center;padding:8px;overflow:hidden;border-radius:13px;}
+body.battle-focus .fighter .eyebrow{font-size:.62rem;letter-spacing:.08em;}
+body.battle-focus .fighter .avatar{flex:1 1 auto;min-height:25px;max-height:170px;font-size:4rem;overflow:hidden;}
+body.battle-focus .fighter .avatar .plush-svg{max-height:100%;max-width:100%;}
+body.battle-focus .fighter h3{font-size:clamp(.75rem,1.8vw,1.05rem);margin:4px 0 0;line-height:1.2;}
+body.battle-focus .fighter .sub{font-size:.64rem;}
+body.battle-focus .fighter .hp-meta{margin:3px 0;font-size:.68rem;}
+body.battle-focus .fighter .bar{flex:none;}
+body.battle-focus .vs{font-size:.87rem;}
+body.battle-focus .wrap>.panel>.row.mt-20{display:none!important;}
+body.battle-focus .battle-panes{flex:0 0 auto;min-height:0;display:flex;flex-direction:column;gap:5px;}
+.battle-pane-tabs{display:flex;flex:none;gap:5px;}
+.battle-pane-tabs button{flex:1;min-width:0;background:#f4eaf7;border:2px solid #4a3e54;border-radius:10px;padding:8px;font-weight:850;color:#41344e;}
+.battle-pane-tabs button.active{background:#69448c;color:#fff;}
+.battle-pane-content{min-height:0;max-height:min(35dvh,275px);overflow-y:auto;overscroll-behavior:contain;}
+.battle-pane[hidden]{display:none!important;}
+body.battle-focus .battle-pane{margin:0;padding:9px 12px;border-radius:12px;}
+body.battle-focus .battle-pane h2{font-size:1rem;}
+body.battle-focus .battle-pane h3{margin:4px 0 8px;font-size:.95rem;}
+body.battle-focus .battle-pane .mb-18{margin-bottom:7px!important;}
+body.battle-focus .move-grid{gap:7px;grid-template-columns:repeat(3,minmax(0,1fr));}
+body.battle-focus .move{min-height:70px;padding:8px;gap:4px;border-radius:10px;box-shadow:2px 2px 0 #302b37;}
+body.battle-focus .move strong{font-size:.78rem;line-height:1.15;}
+body.battle-focus .move .small{font-size:.66rem;line-height:1.2;}
+body.battle-focus .battle-log{max-height:21dvh;overflow:auto;padding:9px;}
+@media(max-width:680px){
+ body.battle-focus .wrap{padding:4px 5px 6px!important;gap:4px;}
+ body.battle-focus .game-nav{min-height:36px;}
+ body.battle-focus .game-nav button{padding:7px 9px;font-size:.72rem;}
+ body.battle-focus .battle-heading .mini-pill{display:none;}
+ body.battle-focus .wrap>.panel{padding:5px;flex:1 1 auto;}
+ body.battle-focus .battle-board{grid-template-columns:minmax(0,1fr) 19px minmax(0,1fr);gap:3px;}
+ body.battle-focus .fighter{padding:5px;border-radius:9px;}
+ body.battle-focus .fighter .avatar{max-height:150px;}
+ body.battle-focus .fighter h3{font-size:.76rem;}
+ body.battle-focus .vs{font-size:.72rem;}
+ body.battle-focus .battle-pane{padding:8px;}
+ body.battle-focus .battle-pane .row .mini-pill{font-size:.62rem;}
+ body.battle-focus .move{min-height:78px;padding:6px;}
+ body.battle-focus .move strong{font-size:.71rem;}
+ body.battle-focus .move .small{font-size:.61rem;}
+ body.battle-focus .battle-pane-content{max-height:36dvh;}
+ body.battle-focus .battle-pane-tabs button{padding:7px 4px;font-size:.8rem;}
+}
+@media(max-height:650px){
+ body.battle-focus .battle-pane-content{max-height:36dvh;}
+ body.battle-focus .fighter .avatar{max-height:95px;}
+ body.battle-focus .battle-heading h1{font-size:1.1rem;}
+}
 </style>
 </head>
 <body>
@@ -1403,7 +1467,7 @@ function render(){let output=`<main id="main" class="wrap">${nav()}`;
  else output+=clubhouse();
  output+='</main>';
  $('#app').innerHTML=output;
- document.body.classList.toggle('mobile-world',page==='world'&&!!state.onboarded&&!state.pending);document.body.classList.toggle('game-focus',page==='world'&&!!state.onboarded&&!state.pending);
+ document.body.classList.toggle('mobile-world',page==='world'&&!!state.onboarded&&!state.pending);document.body.classList.toggle('game-focus',page==='world'&&!!state.onboarded&&!state.pending);document.body.classList.toggle('battle-focus',page==='battle'&&!!state.battle&&!!state.onboarded&&!state.pending);
  if(page==='world'&&state.onboarded&&!state.pending){mountPixelWorld();startPixelWater();syncWorldCamera();}else stopPixelWater();
  if(detail)showDetail();
 }
@@ -1428,18 +1492,19 @@ ${panel(`<div class="meter"><span>Collection progress</span><span>${Math.round(1
 <p class="source-note">Collected characters show their real product names and original illustrated plush portraits. Undiscovered friends stay hidden.</p>
 <div class="grid-collection">${list.map(p=>card(p,!owned(state,p.id))).join('')}${category==='All'&&ownership!=='Owned'&&!query?Array.from({length:COLLECTION_GOAL-CATALOG.length},(_,i)=>`<div class="plush locked" aria-label="Catalog spot not yet researched"><div class="avatar mystery" style="background:#d9d4da"><span>?</span></div><span class="plush-title">Future entry ${CATALOG.length+i+1}</span><span class="plush-detail">Catalog research pending</span></div>`).join(''):''}</div>
 ${!list.length?'<div class="empty">No matching collected Jellycats.</div>':''}`)}`;}
+let battlePane='moves';
 function battle(){const b=state.battle;if(!b)return `${statBar()}${panel(`<div class="eyebrow">Ready, set, cuddle!</div><h1>A challenge has found you.</h1><p>Explore the world and encounter a Parlor Keeper or tall-grass challenger. Early battles are easier. As your winning record grows, opponents become stronger.</p>
 <div class="grid-3 mb-18">${state.team.map(id=>card(BY_ID.get(id))).join('')}</div><div class="notice"><strong>Your lineup has ${state.team.length} Jellycat${state.team.length===1?'':'s'}.</strong> The opponent's team will match your team size. Collect three to unlock full three-versus-three battles.</div>
 <button class="btn" data-action="nav" data-id="world">Return to the Softlands →</button><button class="btn cream" data-action="nav" data-id="home" style="margin-left:10px">Change my team</button>
 <p class="source-note mt-20">Legendary boss matches appear every seventh victory once available. You keep your collection if you lose.</p>`)}`;
  const me=b.mine[b.mi],enemy=b.theirs[b.ei],mp=BY_ID.get(me.id),ep=BY_ID.get(enemy.id);const mult=typeMultiplier(mp.type,ep.type);
  const badgeText=(b.kind==='boss'?'✦ LEGENDARY BOSS':b.kind==='parlor'?'✿ PARLOR CHALLENGE':b.kind==='wild'?'🌿 TALL-GRASS ENCOUNTER':'⚔ TEAM MATCH');
- return `<div class="row between mb-18"><div><span class="eyebrow">${badgeText} · Round ${b.round}</span><h1>${b.kind==='boss'?'The boss is here.':'Your move.'}</h1></div><div>${badge(`${b.mine.length} vs ${b.theirs.length} team`)}</div></div>
+ return `<div class="battle-heading row between mb-18"><div><span class="eyebrow">${badgeText} · Round ${b.round}</span><h1>${b.kind==='boss'?'The boss is here.':'Your move.'}</h1></div><div>${badge(`${b.mine.length} vs ${b.theirs.length} team`)}</div></div>
 ${panel(`<div class="battle-board" id="battle-board"><div class="move-fx" aria-hidden="true">✦ ✿ ✦</div><div class="fighter you"><div class="eyebrow">Your Jellycat</div><div class="avatar art-fighter">${plushArt(mp)}</div><h3>${safe(label(state,me.id))}</h3><div class="sub">${safe(mp.type)} · LV ${me.level}</div><div class="hp-meta"><span>HP</span><span>${me.hp} / ${me.maxHp}</span></div>${progressBar(me.hp,me.maxHp)}</div><div class="vs">VS.</div><div class="fighter enemy"><div class="eyebrow">Computer</div><div class="avatar art-fighter">${plushArt(ep)}</div><h3>${safe(ep.officialName)}</h3><div class="sub">${safe(ep.type)} · LV ${enemy.level}</div><div class="hp-meta"><span>HP</span><span>${enemy.hp} / ${enemy.maxHp}</span></div>${progressBar(enemy.hp,enemy.maxHp)}</div></div>
 <div class="row between mt-20"><div><span class="tag">Your team</span><div class="party">${b.mine.map((f,i)=>`<span class="${f.hp===0?'fainted':''}">${i===b.mi?'◆ ':''}${safe(label(state,f.id))} · ${f.hp} HP</span>`).join('')}</div></div><div><span class="tag">Computer team</span><div class="party">${b.theirs.map((f,i)=>`<span class="${f.hp===0?'fainted':''}">${i===b.ei?'◆ ':''}${safe(BY_ID.get(f.id).officialName)} · ${f.hp} HP</span>`).join('')}</div></div></div>`)}
-<div class="grid-2 mt-20"><section class="panel"><div class="row between mb-18"><h2 class="mb-0">Choose your move</h2>${badge(mult>1?'Type advantage ▲':mult<1?'Type disadvantage ▼':'Even matchup')}</div>
-<div class="move-grid">${mp.moves.map((m,i)=>`<button class="move ${m.kind==='signature'?'signature':m.kind==='heal'?'heal':''}" data-action="move" data-index="${i}" aria-keyshortcuts="${i+1}" ${m.kind==='heal'&&me.heals?'disabled':''}><strong><kbd>${i+1}</kbd> ${safe(m.name)}</strong><span class="small">${m.kind==='heal'?(me.heals?'Already used':'Heal 34% · once per match'):m.kind==='quick'?'Always hits · steady damage':`Strong · ${Math.round(m.accuracy*100)}% accurate`}</span></button>`).join('')}</div><h3 class="mt-20">Switch teammate</h3><div class="row">${b.mine.map((f,i)=>`<button class="btn micro pink" data-action="switch" data-index="${i}" aria-keyshortcuts="${i+4}" ${f.hp===0||b.mi===i?'disabled':''}><kbd>${i+4}</kbd> ${safe(label(state,f.id))} · ${f.hp} HP</button>`).join('')}</div><p class="source-note mt-12">Switching uses your turn. Cuddle Break can only be used once per Jellycat per battle.</p></section>
-<section class="panel soft"><h2>Battle diary</h2><div role="log" aria-live="polite" class="battle-log">${b.log.slice(-10).map(line=>`<p>${safe(line)}</p>`).join('')}</div><p class="source-note mt-12">Type wheel: Food → Furry → Bugs & Garden → Ocean → Silly & Spooky → Adventure → Food.</p></section></div>`;
+<div class="battle-panes"><div class="battle-pane-tabs" role="tablist" aria-label="Battle options"><button type="button" data-action="battle-pane" data-id="moves" role="tab" aria-selected="${battlePane==='moves'}" class="${battlePane==='moves'?'active':''}">⚔ Moves</button><button type="button" data-action="battle-pane" data-id="team" role="tab" aria-selected="${battlePane==='team'}" class="${battlePane==='team'?'active':''}">♡ Team</button><button type="button" data-action="battle-pane" data-id="diary" role="tab" aria-selected="${battlePane==='diary'}" class="${battlePane==='diary'?'active':''}">☰ Diary</button></div><div class="battle-pane-content"><section class="panel battle-pane" data-pane="moves" ${battlePane!=='moves'?'hidden':''}><div class="row between mb-18"><h2 class="mb-0">Choose your move</h2>${badge(mult>1?'Type advantage ▲':mult<1?'Type disadvantage ▼':'Even matchup')}</div>
+<div class="move-grid">${mp.moves.map((m,i)=>`<button class="move ${m.kind==='signature'?'signature':m.kind==='heal'?'heal':''}" data-action="move" data-index="${i}" aria-keyshortcuts="${i+1}" ${m.kind==='heal'&&me.heals?'disabled':''}><strong><kbd>${i+1}</kbd> ${safe(m.name)}</strong><span class="small">${m.kind==='heal'?(me.heals?'Already used':'Heal 34% · once per match'):m.kind==='quick'?'Always hits · steady damage':`Strong · ${Math.round(m.accuracy*100)}% accurate`}</span></button>`).join('')}</div></section><section class="panel battle-pane" data-pane="team" ${battlePane!=='team'?'hidden':''}><h3 class="mt-20">Switch teammate</h3><div class="row">${b.mine.map((f,i)=>`<button class="btn micro pink" data-action="switch" data-index="${i}" aria-keyshortcuts="${i+4}" ${f.hp===0||b.mi===i?'disabled':''}><kbd>${i+4}</kbd> ${safe(label(state,f.id))} · ${f.hp} HP</button>`).join('')}</div><p class="source-note mt-12">Switching uses your turn. Cuddle Break can only be used once per Jellycat per battle.</p></section>
+<section class="panel soft battle-pane" data-pane="diary" ${battlePane!=='diary'?'hidden':''}><h2>Battle diary</h2><div role="log" aria-live="polite" class="battle-log">${b.log.slice(-10).map(line=>`<p>${safe(line)}</p>`).join('')}</div><p class="source-note mt-12">Type wheel: Food → Furry → Bugs & Garden → Ocean → Silly & Spooky → Adventure → Food.</p></section></div></div>`;
 }
 function giftBag(large=false){return `<div class="gift-bag ${large?'big-bag':''}" aria-hidden="true"><span class="bag-handle left"></span><span class="bag-handle right"></span><div class="bag-tissue">✧</div><div class="bag-front"><span class="bag-star">✦</span></div><span class="bag-shadow"></span></div>`;}
 function rewards(){const p=state.pending;if(!bagOpen)return `${statBar()}<section class="bag-reveal-panel"><span class="eyebrow">A win! · +1 star</span><h1>A new friend is waiting.</h1><p>Something cuddly is hiding in a little powder-blue gift bag. Ready for your surprise?</p>${giftBag(true)}<button class="btn" data-action="open-bag"><kbd>Enter</kbd> Open the surprise bag ✨</button><p class="small muted mt-20">You'll get to choose one of three real Jellycats.</p></section>`;
@@ -1476,6 +1541,7 @@ function confirmReset(){const bg=el('div','modal-backdrop');bg.id='confirm-modal
 function action(el){const type=el.dataset.action,id=el.dataset.id;
  try{
  if(type==='nav'){go(id);return;}
+ if(type==='battle-pane'){battlePane=id;document.querySelectorAll('.battle-pane').forEach(p=>{p.hidden=p.dataset.pane!==id;});document.querySelectorAll('.battle-pane-tabs button').forEach(b=>{const selected=b.dataset.id===id;b.classList.toggle('active',selected);b.setAttribute('aria-selected',String(selected));});return;}
  if(type==='help'){showKeyboardHelp();return;}
  if(type==='claim-quest'){const quest=claimQuest(state,id,grantXp);persist();render();showMilestone('Adventure complete!',`${quest.title}: ${quest.reward.stars} stars, ${quest.reward.xp} XP for your team${quest.reward.bags?', and '+quest.reward.bags+' gift bag(s)':''}.`);return;}
  if(type==='place-action'){const msg=usePlace(state,id,el.dataset.option,grantXp);persist();$('#place-modal')?.remove();render();showMilestone('A little discovery!',msg);return;}
