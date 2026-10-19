@@ -1718,9 +1718,37 @@ function showEncounter(){stopWalking();if($('#encounter-modal')||state.battle||s
  const div=el('div','modal-backdrop');div.id='encounter-modal';div.innerHTML=`<section class="modal center" role="dialog" aria-modal="true" aria-label="Wild encounter"><span class="eyebrow">🌿 A rustle in the tall grass</span><h2>Someone wants to play!</h2><div class="encounter-art">${plushArt(BY_ID.get(CATALOG.filter(p=>p.rarity!=='Legendary')[Math.floor(Math.random()*(CATALOG.length-10))].id))}</div><p>A plush challenger jumps out from the grass. Time for a friendly match?</p><div class="row" style="justify-content:center"><button class="btn" data-action="confirm-encounter"><kbd>1</kbd> Let's battle!</button><button class="btn cream" data-action="flee-encounter"><kbd>2</kbd> Sneak away</button></div></section>`;document.body.append(div);div.querySelector('[data-action="confirm-encounter"]')?.focus();
 }
 function canChallenge(p){return !!p&&state.world.parlorBadges.length>=p.required&&!state.world.parlorBadges.includes(p.id);}
-function showParlor(p){if(!p)return;stopWalking();if(Math.hypot(p.x-state.world.x,p.y-state.world.y)>1.8){notify('Walk up to the Parlor door to meet its Keeper.');return;}
- $('#parlor-modal')?.remove();const already=state.world.parlorBadges.includes(p.id),unlocked=canChallenge(p);const needsTrial=p.id==='village'&&!state.world.parlorTrials.includes('village')&&!already;
- const div=el('div','modal-backdrop');div.id='parlor-modal';div.innerHTML=`<section class="modal center" role="dialog" aria-modal="true" aria-label="${safe(p.name)}"><span class="eyebrow">✿ Official Softlands Parlor</span><h2>${safe(p.name)}</h2><div class="parlor-host">${plushArt(BY_ID.get(slugId(p.product)))}</div><h3>Keeper ${safe(p.keeper)}</h3><p>${safe(p.theme)}. Win to earn the <strong>${safe(p.patch)}</strong> for your Passport.${p.id==='cove'?'<br><strong>Boss prize: the Softboard</strong> — lets your team cross open water and revisit river islands.':''}</p>${needsTrial?`<p class="small muted">First Parlor lesson: Mabel has sewn a pattern into three paths. Which path shows <strong>button → blossom → button</strong>?</p><div class="parlor-path-buttons"><button data-action="parlor-trial" data-id="village" data-option="dots"><span>✿ ✿ ✿</span>All blossoms</button><button data-action="parlor-trial" data-id="village" data-option="pattern"><span>● ✿ ●</span>Button trail</button><button data-action="parlor-trial" data-id="village" data-option="stars"><span>★ ● ★</span>Star trail</button></div>`:''}<p class="small muted">${already?'✓ Patch already earned. Come back to visit!':unlocked?'Your team is welcome to take the challenge.':`Earn ${p.required} patch${p.required===1?'':'es'} before challenging this Keeper.`}</p><div class="row" style="justify-content:center">${unlocked&&!needsTrial?`<button class="btn" data-action="parlor-battle" data-id="${p.id}"><kbd>1</kbd> Challenge Keeper →</button>`:''}<button class="btn cream" data-action="close-parlor"><kbd>Esc</kbd> ${already?'See you soon':'Maybe later'}</button></div></section>`;document.body.append(div);div.querySelector('button')?.focus();
+
+const PARLOR_STYLE={
+ village:['✿','button','Quilted Welcome Hall','Patchwork rugs and velvet curtains'],
+ garden:['❀','bloom','Blossom Conservatory','Sunlit glass and colorful flowerbeds'],
+ cove:['♒','shell','Tidepool Pavilion','Shell mosaics and ocean lanterns'],
+ moon:['☾','moon','Dreamlight Chamber','Starry windows and midnight velvet'],
+ willow:['♧','river','Riverside Assembly','Willow branches and a river-stone floor']
+};
+function patchArtwork(p,earned=false){const [symbol,theme]=PARLOR_STYLE[p.id]||PARLOR_STYLE.village;return `<span class="patch-medallion ${theme} ${earned?'earned':''}" role="img" aria-label="${safe(p.patch)} ${earned?'earned':'locked'}"><span>${symbol}</span></span>`;}
+function storeItem(icon,title,note,cost,option,owned=false){
+ return `<button type="button" class="shop-item ${owned?'is-owned':''}" data-action="place-action" data-id="shop" data-option="${option}" ${owned||state.points<cost?'disabled':''}><span class="shop-item-icon">${icon}</span><span class="shop-item-copy"><strong>${safe(title)}</strong><small>${safe(note)}</small></span><span class="shop-item-cost">${owned?'✓ Owned':cost+' ★'}</span></button>`;
+}
+function showParlor(p){
+ if(!p)return;stopWalking();
+ if(Math.hypot(p.x-state.world.x,p.y-state.world.y)>1.8){notify('Walk up to the Parlor door to meet its Keeper.');return;}
+ $('#parlor-modal')?.remove();
+ const already=state.world.parlorBadges.includes(p.id),unlocked=canChallenge(p);
+ const needsTrial=p.id==='village'&&!state.world.parlorTrials.includes('village')&&!already;
+ const [mark,theme,room,decor]=PARLOR_STYLE[p.id]||PARLOR_STYLE.village;
+ const div=el('div','modal-backdrop');div.id='parlor-modal';
+ div.innerHTML=`<section class="modal parlor-lobby ${theme}" role="dialog" aria-modal="true" aria-label="${safe(p.name)}">
+ <div class="parlor-lobby-head"><strong>✦ SOFTLANDS PARLOR ✦</strong><span>${safe(room)}</span></div>
+ <div class="parlor-lobby-stage"><div class="lobby-window left">✦</div><div class="lobby-window right">✦</div><div class="lobby-banner">${mark} ✧ ${mark}</div><div class="lobby-plush">${plushArt(BY_ID.get(slugId(p.product)))}</div><div class="lobby-carpet"></div></div>
+ <div class="parlor-lobby-paper"><div class="lobby-title-row"><div><span class="eyebrow">KEEPER CHALLENGE</span><h2>${safe(p.name)}</h2><small>${safe(p.keeper)} · ${safe(decor)}</small></div>${patchArtwork(p,already)}</div>
+ <div class="lobby-prize"><span class="prize-star">✿</span><div><small>THE EMBROIDERED REWARD</small><strong>${safe(p.patch)}</strong>${p.id==='cove'?'<span>Plus the Softboard — cross open water!</span>':''}</div></div>
+ <p class="lobby-flavor">${safe(p.theme)}.</p>
+ <p class="lobby-status">${already?'✓ Patch already earned — proudly displayed in your collection.':unlocked?'✦ Your team is welcome to challenge this Keeper.':`🔒 Earn ${p.required} earlier patch${p.required===1?'':'es'} to enter.`}</p>
+ ${needsTrial?`<div class="lobby-trial"><strong>Mabel's stitched-path lesson</strong><p>Which path shows button → blossom → button?</p><div class="parlor-path-buttons"><button data-action="parlor-trial" data-id="village" data-option="dots"><span>✿ ✿ ✿</span>All blossoms</button><button data-action="parlor-trial" data-id="village" data-option="pattern"><span>● ✿ ●</span>Button trail</button><button data-action="parlor-trial" data-id="village" data-option="stars"><span>★ ● ★</span>Star trail</button></div></div>`:''}
+ <div class="lobby-actions">${unlocked&&!needsTrial?`<button class="btn" data-action="parlor-battle" data-id="${p.id}"><kbd>1</kbd> Challenge Keeper →</button>`:''}<button class="btn cream" data-action="close-parlor"><kbd>Esc</kbd> ${already?'Visit again later':'Maybe later'}</button></div>
+ </div></section>`;
+ document.body.append(div);div.querySelector('button')?.focus();
 }
 let worldSaveAt=0,worldDirty=false;
 function saveWorldMotion(force=false){worldDirty=true;const now=Date.now();if(force||now-worldSaveAt>1500){persist();worldSaveAt=now;worldDirty=false;}}
