@@ -138,5 +138,43 @@ window.PROJECTS = [
     facts: [["1,500+", "real situations to call"], ["26", "famous calls, 2009 to Super Bowl LX"], ["25", "seconds on the play clock"]],
     stack: ["JavaScript", "Python", "R", "Supabase"],
     cover: { image: "assets/covers/win-probability.jpg", bg: "#0E2A1F", band: "#F7D23E" }
+  },
+  {
+    title: "Jellycat Battle Club",
+    hidden: true,
+    type: "Games",
+    released: "2026-10",
+    url: "jellycat-battle/",
+    action: "Start the adventure",
+    question: "What if the plush on the shelf had to battle for its spot?",
+    summary: "An unofficial, fan-made collect-and-battle game. Pick a starter, explore the Softlands, win battles, and grow your Jellycat collection.",
+    facts: [["150", "Jellycats to collect"], ["24", "routes across the Softlands"], ["6", "types, from Food to Adventure"]],
+    stack: ["JavaScript"],
+    cover: { image: "assets/covers/jellycat-battle.jpg", bg: "#F9F1E8", band: "#64398E" }
+  },
+  {
+    title: "Lige de Rohan",
+    hidden: true,
+    type: "Fantasy Leagues",
+    released: "2026-10",
+    url: "rohan/",
+    action: "Enter the league",
+    question: "Twenty-one seasons in, who's actually running this league?",
+    summary: "The league house for a 10-team ESPN keeper league: live matchups and projections, league history, rules, and drafts.",
+    facts: [["21", "seasons since 2006"], ["$205", "auction budget per team"], ["3", "keepers per team"]],
+    stack: ["JavaScript", "ESPN and Sleeper data"],
+    cover: { image: "assets/covers/rohan.jpg", bg: "#122B24", band: "#D4C08A" }
+  },
+  {
+    title: "Trade Analyzer",
+    hidden: true,
+    type: "Fantasy Leagues",
+    released: "2026-10",
+    url: "trade-analyzer/",
+    action: "Analyze a trade",
+    question: "Who wins this trade under your league's actual rules?",
+    summary: "Connect an ESPN league, build an offer from two real rosters, and compare lineups and keeper costs before and after. Needs a browser extension.",
+    stack: ["JavaScript", "Browser extension", "Supabase"],
+    cover: { image: "assets/covers/trade-analyzer.jpg", bg: "#F5F1E8", band: "#173A31" }
   }
 ];
