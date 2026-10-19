@@ -222,8 +222,9 @@ def team_roster(y, team_key, week, slots):
 
 
 def kickoffs(season, week, from_dir=None):
-    """{team: ("Sun 1:00 pm", "vs NYJ")} for the week's games, as Yahoo's Starting Rosters page shows
-    them. The page's roster windows and Thursday preview use these. Empty if ESPN doesn't answer."""
+    """{team: ("Sun 1:00 pm", "vs NYJ", final)} for the week's games, as Yahoo's Starting Rosters page shows
+    them, plus whether the game is over. The page's roster windows and Thursday preview use these.
+    Empty if ESPN doesn't answer."""
     try:
         if from_dir:
             fp = os.path.join(from_dir, f"espn_{week}.json")
@@ -250,8 +251,9 @@ def kickoffs(season, week, from_dir=None):
             continue
         t = datetime.fromisoformat(when.replace("Z", "+00:00")).astimezone(EASTERN)
         game = f"{t:%a} {t.hour % 12 or 12}:{t:%M} {'am' if t.hour < 12 else 'pm'}"
-        out[home] = (game, f"vs {away}")
-        out[away] = (game, f"@ {home}")
+        done = ((ev.get("status") or {}).get("type") or {}).get("state") == "post"
+        out[home] = (game, f"vs {away}", done)
+        out[away] = (game, f"@ {home}", done)
     return out
 
 
@@ -307,10 +309,12 @@ def build(y, league_id):
         for k in scores:
             pts = st.get(k, [None, None])[0]
             scores[k].append(round(pts, 2) if pts is not None else None)
-    proj = {}
+    proj, so_far = {}, {}
     if not finished:
         for k, (pts, pj) in week_stats(y, key, current).items():
             proj[k] = round(pj, 2) if pj is not None else None
+            if pts:
+                so_far[k] = round(pts, 2)
 
     # Guillotine rule: in each completed week, the lowest score among teams still alive is cut.
     alive = [t["key"] for t in teams]
@@ -339,7 +343,10 @@ def build(y, league_id):
             for r in rosters.values():
                 for p in r:
                     if not p.get("empty") and not p.get("bye") and p["nfl"] in games:
-                        p["game"], p["opp"] = games[p["nfl"]]
+                        g = games[p["nfl"]]
+                        p["game"], p["opp"] = g[0], g[1]
+                        if g[2]:
+                            p["yfinal"] = True  # over, so Yahoo's points so far include him
 
     rows = []
     for t in teams:
@@ -355,6 +362,8 @@ def build(y, league_id):
             row["out"] = out_week[k]
         else:
             row["proj"] = proj.get(k)
+            if k in so_far:
+                row["points"] = so_far[k]  # this week so far; the page banks it exactly
         row["scores"] = scores[k]
         if k in rosters:
             row["roster"] = rosters[k]

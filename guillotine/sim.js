@@ -1,7 +1,10 @@
 /* Guillotine league survival odds: a Monte Carlo simulation.
 
    Each simulated week, every team still alive gets a score:
-     this week    its Yahoo projection
+     this week    points already scored (exact: Yahoo's Points for games it shows as Final, live
+                  scoring for games since), plus the expected points of starters still to play.
+                  Only those players can swing, and a player can't lose more than a couple of points,
+                  so a team that's done scoring is locked at its total.
      later weeks  its average over its last 3 completed weeks, pulled part of the way toward
                   the league average (rosters churn as cut teams' players hit waivers)
    plus random noise (CV of the mean). The lowest score is cut. Repeat until one team is left.
@@ -17,8 +20,56 @@
     shrink: 0.25,   // later weeks: share of the way each team is pulled toward the league average
     cv: 0.22,       // weekly noise, as a share of the expected score
     fabPts: 8,      // later weeks: points per week for twice the average money left (less money, a penalty)
-    fabRamp: 3      // weeks for that money to turn into better players
+    fabRamp: 3,     // weeks for that money to turn into better players
+    floorPerPlayer: -2 // the worst a starter still to play is assumed to add (fumbles, picks)
   };
+
+  // How much a player's weekly score swings, as a share of his projection. Quarterbacks are the
+  // steadiest; tight ends the least predictable. Used only to split a team's swing among its players.
+  var POS_CV = { QB: 0.40, RB: 0.55, WR: 0.65, TE: 0.75, K: 0.6, DEF: 0.8 };
+
+  function isStarter(p) { return !p.empty && ((p.slot !== "BN" && p.slot !== "IR") || !!p.assumed_slot); }
+
+  // This week for one team, as of now. full = the team's expected full-week score from its
+  // projection basis (Yahoo, best lineup or average). Returns points banked, expected points still to
+  // come, how much those can swing, and which starters are still to play.
+  function thisWeek(t, full, o) {
+    var pregame = !!o.pregame;
+    var roster = (t.roster || []).filter(function (p) { return !p.empty; });
+    var starters = roster.filter(isStarter);
+    if (!starters.length) starters = roster.filter(function (p) { return p.in_best; });
+    var base = pregame ? 0 : (typeof t.points === "number" ? t.points : 0);
+    if (!starters.length) {
+      var rem0 = Math.max(full - base, 0);
+      return { banked: base, remMu: rem0, sd: o.cv * full, nRem: rem0 > 0 ? 9 : 0, left: [], done: rem0 === 0 && base > 0, played: 0 };
+    }
+    // Starters whose points aren't in Yahoo's Points yet
+    var pend = starters.filter(function (p) { return pregame || !p.yfinal; });
+    var projOf = function (p) { return p.bye ? 0 : (p.proj || 0); };
+    var S = pend.reduce(function (a, p) { return a + projOf(p); }, 0);
+    var w = function (p, f) { var x = (POS_CV[p.pos] || 0.6) * projOf(p) * (f == null ? 1 : f); return x * x; };
+    var all2 = starters.reduce(function (a, p) { return a + w(p); }, 0);
+    // Yahoo's expectation for those players, used to scale Sleeper's per-player projections
+    var yRem = Math.max(full - base, 0);
+    var k = S > 0 ? yRem / S : 1;
+    var banked = base, remMu = 0, rem2 = 0, left = [], played = starters.length - pend.length;
+    pend.forEach(function (p) {
+      var pj = projOf(p);
+      if (!pregame && (p.final || p.live)) {
+        banked += p.actual || 0;
+        if (p.final) { played++; return; }
+        var f = 1 - (p.frac || 0);
+        remMu += k * pj * f; rem2 += w(p, f); left.push(p);
+        return;
+      }
+      if (p.bye || /^(O|IR|IR-R|PUP|PUP-R|NA|SUSP)$/.test(p.status || "")) { played++; return; }
+      remMu += k * pj; rem2 += w(p); left.push(p);
+    });
+    if (S === 0 && yRem > 0 && !left.length) { remMu = yRem; rem2 = all2 || 1; }
+    var scale = (typeof t.proj_pre === "number" && t.proj_pre > 0 && !pregame) ? t.proj_pre : full;
+    var sd = all2 > 0 ? o.cv * scale * Math.sqrt(rem2 / all2) : o.cv * remMu;
+    return { banked: banked, remMu: remMu, sd: sd, nRem: left.length, left: left, done: left.length === 0, played: played };
+  }
 
   // Small seeded generator, so everyone who opens the page sees the same numbers.
   function mulberry32(a) {
@@ -92,30 +143,34 @@
       var later = (1 - o.shrink) * base + o.shrink * leagueAvg;
       // This week: Yahoo's projection, plus a bench stand-in for any empty starting spot (t.fill); with
       // no lineup set (projection 0), the team's best possible lineup; failing both, its average.
-      var hasProj = typeof t.proj === "number" && t.proj > 0;
+      var yProj = o.pregame && typeof t.proj_pre === "number" && t.proj_pre > 0 ? t.proj_pre : t.proj;
+      var hasProj = typeof yProj === "number" && yProj > 0;
       var hasBest = typeof t.best === "number" && t.best > 0;
       var fill = hasProj ? (t.fill || 0) : 0;
       var basis = hasProj ? "yahoo" : hasBest ? "best" : "avg";
-      var start = basis === "yahoo" ? t.proj + fill : basis === "best" ? t.best : later;
-      // Games already final: swap their projections for what those starters actually scored.
-      var locked = o.pregame ? 0 : (t.locked || 0);
-      var shift = o.pregame ? 0 : locked - (t.locked_proj || 0);
-      var now = start + shift;
+      var start = basis === "yahoo" ? yProj + fill : basis === "best" ? t.best : later;
+      var wk = thisWeek(t, start, o);
+      var now = wk.banked + wk.remMu;
       var fabEdge = avgFab > 0 && typeof t.faab === "number" ? o.fabPts * (t.faab / avgFab - 1) : 0;
       return {
         name: t.name,
         faab: typeof t.faab === "number" ? t.faab : null,
         mine: !!t.mine,
         basis: basis,
-        proj: hasProj ? t.proj + fill : null,
+        proj: hasProj ? yProj + fill : null,
+        projPre: typeof t.proj_pre === "number" && t.proj_pre > 0 ? t.proj_pre + fill : (hasProj ? yProj + fill : null),
         fill: fill,                                     // points from stand-ins for empty starting spots
         best: hasBest ? t.best : null,
         recent: t._recent,
         start: start,                                   // expected score before any game this week
-        locked: locked,                                 // points already banked from final games
-        gamesFinal: o.pregame ? 0 : (t.games_final || 0),
+        locked: wk.banked,                              // points already scored this week
+        gamesFinal: o.pregame ? 0 : wk.played,          // starters whose games are over
+        remMu: wk.remMu,                                // expected points still to come
+        nRem: wk.nRem,                                  // starters still to play
+        left: wk.left.map(function (p) { return p.name; }),
+        done: !o.pregame && wk.done,                    // every starter has played: the score is final
         now: now,                                       // expected score this week, as of now
-        sdNow: o.cv * Math.max(now - locked, 3),        // only points still to be played can swing
+        sdNow: wk.sd,                                   // only points still to be played can swing
         later: later,                                   // expected score in later weeks, before money
         fabEdge: fabEdge                                // points per week the budget adds once spent
       };
@@ -137,20 +192,27 @@
     var lows = [];
     for (var w = 0; w < weeksLeft; w++) lows.push(new Float64Array(runs).fill(NaN));
     var alive = new Uint8Array(n);
-    var nowMu = rows.map(function (r) { return r.now; });
+    var nowBank = rows.map(function (r) { return r.locked; });
+    var nowRem = rows.map(function (r) { return r.remMu; });
     var nowSd = rows.map(function (r) { return r.sdNow; });
+    var nowFloor = rows.map(function (r) { return r.nRem * o.floorPerPlayer; });
     var laterMu = rows.map(function (r) { return r.later; });
     var fabEdge = rows.map(function (r) { return r.fabEdge; });
 
     for (var r = 0; r < runs; r++) {
       alive.fill(1);
       for (var k = 0; k < weeksLeft; k++) {
-        var mu = k === 0 ? nowMu : laterMu;
         var lowScore = Infinity, low = -1;
         for (var j = 0; j < n; j++) {
           if (!alive[j]) continue;
-          var mj = k === 0 ? mu[j] : mu[j] + fabEdge[j] * Math.min(k / o.fabRamp, 1);
-          var s = mj + (k === 0 ? nowSd[j] : o.cv * mj) * gauss();
+          var s;
+          if (k === 0) {
+            // Banked points are fixed; only the players still to play swing, and not below a floor.
+            s = nowBank[j] + (nowSd[j] > 0 ? Math.max(nowRem[j] + nowSd[j] * gauss(), nowFloor[j]) : nowRem[j]);
+          } else {
+            var mj = laterMu[j] + fabEdge[j] * Math.min(k / o.fabRamp, 1);
+            s = mj + o.cv * mj * gauss();
+          }
           if (s < lowScore) { lowScore = s; low = j; }
         }
         alive[low] = 0;
@@ -188,7 +250,7 @@
     };
   }
 
-  var api = { simulate: simulate, model: model, DEFAULTS: DEFAULTS };
+  var api = { simulate: simulate, model: model, thisWeek: thisWeek, isStarter: isStarter, DEFAULTS: DEFAULTS };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.GuillotineSim = api;
 })(this);

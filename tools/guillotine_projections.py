@@ -12,6 +12,8 @@ Every rostered player gets:
   next_proj  projected points next week (0 if on bye next week)
   bye_next   true if his team is off next week
   in_best    part of the team's best lineup this week
+  season     weeks 1 to last week: games played, league points each week, and season totals
+             (passing, rushing, receiving), for the stat card that opens on a player's name
 Every team still alive gets:
   best       points its best lineup projects to this week
   best_next  the same for next week, byes included
@@ -116,6 +118,55 @@ class Feed:
         return max(cands, key=lambda c: c["pts"]) if cands else None
 
 
+SEASON_KEYS = ("pass_yd", "pass_td", "pass_int", "rush_att", "rush_yd", "rush_td",
+               "rec", "rec_tgt", "rec_yd", "rec_td", "fum_lost")
+
+
+def season_lines(season, week, from_dir):
+    """Every completed week's Sleeper stats, added up per player. None if no week loaded."""
+    weeks = list(range(1, week))
+    by, got = {}, 0
+    for w in weeks:
+        try:
+            entries = load("stats", season, w, from_dir)
+        except Exception as e:  # one missing week shouldn't sink the rest
+            print(f"::warning::Couldn't load week {w} stats ({type(e).__name__}: {e}).")
+            continue
+        got += 1
+        for e in entries or []:
+            pl = e.get("player") or {}
+            pos = pl.get("position")
+            if pos not in ("QB", "RB", "WR", "TE"):
+                continue
+            stats = e.get("stats") or {}
+            name = f"{pl.get('first_name', '')} {pl.get('last_name', '')}".strip()
+            team = (e.get("team") or pl.get("team") or "").upper()
+            pid = e.get("player_id") or name
+            agg = by.setdefault((norm(name), pos), {}).setdefault(
+                pid, {"team": team, "g": 0, "wk": [None] * len(weeks), "tot": {}})
+            if team:
+                agg["team"] = team
+            if not stats.get("gp"):
+                continue
+            agg["g"] += 1
+            agg["wk"][w - 1] = league_points(stats)
+            for k in SEASON_KEYS:
+                v = stats.get(k)
+                if isinstance(v, (int, float)) and v:
+                    agg["tot"][k] = agg["tot"].get(k, 0) + v
+    return by if got else None
+
+
+def season_for(lines, p):
+    cands = list((lines.get((norm(p["name"]), p["pos"])) or {}).values())
+    if not cands:
+        return None
+    same = [c for c in cands if c["team"] == p["nfl"]]
+    a = max(same or cands, key=lambda c: c["g"])
+    return {"g": a["g"], "wk": [round(x, 1) if isinstance(x, (int, float)) else None for x in a["wk"]],
+            "tot": {k: round(v) for k, v in a["tot"].items()}}
+
+
 def best_lineup(roster, key, flag=None, skip_bye_key=None):
     """Fill the most restrictive slots first; with nested flex slots this is optimal."""
     slots = [p["slot"] for p in roster if p["slot"] not in ("BN", "IR")]
@@ -200,6 +251,12 @@ def main():
         print(f"::warning::Couldn't load this week's stats ({e}).")
         res = Feed([])
 
+    try:
+        lines = season_lines(season, week, a.from_dir)
+    except Exception as e:
+        print(f"::warning::Couldn't build season stats ({type(e).__name__}: {e}).")
+        lines = None
+
     unmatched = []
     for t in teams:
         roster = t["roster"]
@@ -208,6 +265,11 @@ def main():
                 p.pop(k, None)
             if p.get("empty"):
                 continue
+            if lines is not None:  # keep the last season lines if this run couldn't get new ones
+                p.pop("season", None)
+                sl = season_for(lines, p)
+                if sl:
+                    p["season"] = sl
             m = now.find(p)
             if p.get("bye") or p["nfl"] in now.byes:
                 p["proj"] = 0.0

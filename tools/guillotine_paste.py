@@ -4,7 +4,9 @@
 The no-API way to update davidsolar.dev/guillotine/. In guillotine/paste.txt, paste:
   1. the league's main page (League > Overview): standings, projections, FAB, eliminations
   2. optionally, League > Starting Rosters: every team's starters and bench
-Select all, copy, paste one after the other. Committing the file runs the "Guillotine update"
+Select all, copy, paste one after the other. A paste taken mid-week is fine: each team's Points so far
+are kept, and every starter whose game Yahoo shows as Final is marked yfinal, so the page banks
+those points exactly and only the players still to play can move the odds. Committing the file runs the "Guillotine update"
 workflow, which runs this script and then tools/guillotine_projections.py.
 
   python tools/guillotine_paste.py [paste file] [--out guillotine/data.json]
@@ -65,6 +67,7 @@ def parse_rosters(lines):
             notes = lines[i + 2].strip() if i + 2 < len(lines) else ""
             tp = lines[i + 3].strip() if i + 3 < len(lines) else ""
             game = lines[i + 4].strip() if i + 4 < len(lines) else ""
+            game = re.sub(r"\s+", " ", game)
             m = re.fullmatch(r"([A-Za-z]{2,3}) - ([A-Z]{1,3})", tp)
             if not m:
                 i += 1
@@ -80,9 +83,15 @@ def parse_rosters(lines):
                 p["bye"] = True
             else:
                 gm = re.match(r"(\w{3}) (\d{1,2}:\d{2} [ap]m) (vs|@) (\w{2,3})", game)
+                fm = re.match(r"Final(?: ?/ ?OT)? ([WLT]) (\d+-\d+) (vs|@) (\w{2,3})", game)
                 if gm:
                     p["game"] = f"{gm.group(1)} {gm.group(2)}"
                     p["opp"] = ("vs " if gm.group(3) == "vs" else "@ ") + gm.group(4).upper()
+                elif fm:
+                    # Yahoo shows this game as over: the team's Points already include this player.
+                    p["yfinal"] = True
+                    p["result"] = f"{fm.group(1)} {fm.group(2)}"
+                    p["opp"] = ("vs " if fm.group(3) == "vs" else "@ ") + fm.group(4).upper()
             rosters[team].append(p)
             i += 5
             continue
@@ -116,7 +125,7 @@ def parse(txt):
         if section == "standings":
             # Rank, Team, Points, Projected, Season, FAB, Waiver, Moves, Pts/Week
             if len(c) >= 9 and c[0].isdigit():
-                alive.append({"name": c[1], "proj": num(c[3]), "season": num(c[4]), "faab": money(c[5]), "avg": num(c[8])})
+                alive.append({"name": c[1], "points": num(c[2]), "proj": num(c[3]), "season": num(c[4]), "faab": money(c[5]), "avg": num(c[8])})
                 continue
             section = None
         elif section == "eliminated":
@@ -139,6 +148,8 @@ def parse(txt):
         if t["faab"] is not None:
             row["faab"] = t["faab"]
         row["proj"] = t["proj"]
+        if t["points"]:
+            row["points"] = t["points"]  # scored so far this week (Yahoo), from games already played
         if t["avg"] is not None:
             row["avg"] = t["avg"]
         if t["season"] is not None:
@@ -201,6 +212,24 @@ def carry_cuts(old, new):
             t["cut"] = round(t["season_pts"] - o["season_pts"], 2)
 
 
+def carry_pregame(old, new):
+    """Keep each team's projection from before the week's first game (proj_pre).
+
+    Once games are played, Yahoo's Projected Points mixes actual points with projections, so the
+    pregame number only survives if an earlier paste of the same week had it."""
+    prev = {t["name"]: t for t in (old or {}).get("teams", [])} if (old or {}).get("week") == new["week"] else {}
+    for t in new["teams"]:
+        if t.get("out"):
+            continue
+        o = prev.get(t["name"], {})
+        if isinstance(o.get("proj_pre"), (int, float)):
+            t["proj_pre"] = o["proj_pre"]
+        elif o and not o.get("points") and isinstance(o.get("proj"), (int, float)) and o["proj"] > 0:
+            t["proj_pre"] = o["proj"]
+        elif not t.get("points") and isinstance(t.get("proj"), (int, float)) and t["proj"] > 0:
+            t["proj_pre"] = t["proj"]
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("paste", nargs="?", default=os.path.join(ROOT, "guillotine", "paste.txt"))
@@ -214,6 +243,8 @@ def main():
         with open(out, encoding="utf-8") as f:
             old = json.load(f)
         carry_cuts(old, data)
+    carry_pregame(old, data)
+    if old is not None:
         if base_of(old) == base_of(data):
             print("Pasted league data unchanged.")
             return

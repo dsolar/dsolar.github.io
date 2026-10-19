@@ -283,12 +283,66 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
   .fig{padding-right:.4rem}
   .board{padding:.4rem .7rem .8rem}
 }
+/* Book lines: cut and win chances as American odds */
+.row{grid-template-columns:minmax(0,1fr) 4.2rem 4.4rem}
+.axis{margin-right:8.4rem}
+.pct-head{right:5.7rem}
+.line-head{position:absolute;right:.9rem;top:.65rem;width:4.4rem;text-align:center;font-size:.62rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.row .line{grid-row:1 / span 2;grid-column:3;align-self:center;text-align:center;font:700 .82rem/1 var(--f-body);font-variant-numeric:tabular-nums;padding:.45rem .15rem;border:1px solid var(--rule);border-radius:4px;background:var(--bg);color:var(--ink);white-space:nowrap}
+.row .line.off,td.line.off{color:var(--muted);font-weight:600;font-size:.66rem;letter-spacing:.08em}
+td.line{font-weight:700;color:var(--ink);border-left:1px solid var(--rule)}
+th.line{border-left:1px solid var(--rule)}
+.book{display:flex;align-items:center;flex-wrap:wrap;gap:.35rem .55rem;margin:.75rem 0 0;font-size:.72rem;color:var(--muted)}
+.book b{font:700 .6rem/1 var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--surface);background:var(--ink);padding:.32rem .5rem;border-radius:3px;flex:none}
+.lane .dot.fin{border-radius:2px;width:8px;height:8px;top:2px;margin-left:-4px}
+@media (max-width:30rem){
+  .row{grid-template-columns:minmax(0,1fr) 3.4rem 3.9rem}
+  .axis{margin-right:7.1rem}
+  .pct-head{right:5.2rem}
+  .line-head{width:3.9rem}
+  .pct{font-size:1.1rem}
+  .row .line{font-size:.74rem}
+}
+
+/* Monday night showcase */
+.mnf{background:var(--surface);border:1px solid var(--rule);border-top:3px solid var(--blade);border-radius:3px;padding:1rem .9rem 1.1rem;display:grid;gap:.85rem;margin-bottom:2.2rem}
+.mnf .eyebrow{color:var(--blade)}
+.mnf h2{font-size:1.45rem;margin:.2rem 0 .25rem}
+.mnf .sub{margin:0;color:var(--muted);font-size:.85rem}
+.mnf-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));gap:.7rem}
+.mnf-card{border:1px solid var(--rule);border-left:3px solid var(--tier,var(--rule));border-radius:3px;padding:.8rem .85rem .85rem;display:grid;gap:.45rem;align-content:start;background:var(--bg)}
+.mnf-card .tag{font:700 .62rem/1.2 var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--tier,var(--muted))}
+.mnf-card h3{margin:0;font:700 1rem/1.25 var(--f-body)}
+.mnf-card h3 small{font-weight:500;color:var(--muted);margin-left:.3rem;font-size:.8rem}
+.mnf-card .big{font:700 1.75rem/1 var(--f-display);font-variation-settings:"opsz" 72;font-variant-numeric:lining-nums tabular-nums}
+.mnf-card .big small{font:600 .75rem/1 var(--f-body);color:var(--muted);margin-left:.35rem}
+.mnf-card p{margin:0;font-size:.84rem;line-height:1.45}
+.mnf-card ul{list-style:none;margin:0;padding:0;font-size:.78rem;display:grid;gap:.15rem}
+.mnf-card li{display:flex;justify-content:space-between;gap:.6rem;font-variant-numeric:tabular-nums}
+.mnf-card li span:last-child{color:var(--muted);white-space:nowrap}
+.need{height:8px;background:var(--track);border-radius:4px;overflow:hidden}
+.need i{display:block;height:100%;background:var(--safe);border-radius:4px}
+.mnf .clear{margin:0;font-size:.8rem;color:var(--muted);line-height:1.5}
+
+/* Player stat cards */
+[data-p]{text-decoration:underline dotted;text-decoration-color:var(--muted);text-underline-offset:2px;cursor:help}
+.pcard{position:fixed;z-index:60;width:min(17.5rem,calc(100vw - 24px));background:var(--surface);color:var(--ink);border:1px solid var(--rule);border-radius:6px;box-shadow:0 14px 34px rgba(6,12,24,.25);padding:.75rem .85rem .8rem;font-size:.78rem;line-height:1.4;pointer-events:none;margin:0}
+.pcard h4{margin:0;font:700 .98rem/1.2 var(--f-body)}
+.pcard .pc-sub{color:var(--muted);font-size:.72rem;margin:.15rem 0 .5rem}
+.pcard dl{display:grid;grid-template-columns:auto 1fr;gap:.22rem .7rem;margin:0}
+.pcard dt{color:var(--muted)}
+.pcard dd{margin:0;font-variant-numeric:tabular-nums;font-weight:600}
+.pcard .wks{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px;margin-top:.6rem;text-align:center;font-variant-numeric:tabular-nums}
+.pcard .wks span{display:grid;gap:1px;font-weight:600;font-size:.72rem;padding:.2rem 0;background:var(--bg);border-radius:2px}
+.pcard .wks small{font-weight:500;font-size:.58rem;color:var(--muted);letter-spacing:.04em}
+.pcard .pc-note{margin:.5rem 0 0;color:var(--muted);font-size:.68rem}
 </style>
 </head>
 <body>
 <nav class="ds-bar" aria-label="davidsolar.dev"><a href="../"><img src="../assets/ds-mark.svg" alt="" width="20" height="20"><span class="ds-bar-name">David Solar</span></a><a href="../#projects">All projects</a></nav>
 
 <nav class="jump" id="jump" aria-label="On this page"><div class="jump-in">
+  <a href="#mnf" data-sec="mnf">Monday</a>
   <a href="#week" data-sec="week">Odds</a>
   <a href="#byes-sec" data-sec="byes-sec">Byes</a>
   <a href="#hist-sec" data-sec="hist-sec">Cut line</a>
@@ -312,6 +366,12 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
 
   <p class="notice" id="sample" hidden>These are sample numbers from the Week 6 notes, so the page has something to show. Live Yahoo numbers replace them automatically once the league connection is set up.</p>
 
+  <section class="mnf" id="mnf" aria-labelledby="mnf-title" hidden>
+    <div><p class="eyebrow">Monday night showcase</p><h2 id="mnf-title"></h2><p class="sub" id="mnf-sub"></p></div>
+    <div class="mnf-cards" id="mnf-cards"></div>
+    <p class="clear" id="mnf-clear" hidden></p>
+  </section>
+
   <section id="week" aria-labelledby="week-title" hidden>
     <div class="section-head">
       <h2 id="week-title">Under the blade</h2>
@@ -319,6 +379,7 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
     </div>
     <div class="board">
       <span class="pct-head" aria-hidden="true">Cut odds</span>
+      <span class="line-head" aria-hidden="true">Line</span>
       <div class="axis" id="axis" aria-hidden="true"></div>
       <ol class="rows" id="rows"></ol>
     </div>
@@ -329,6 +390,7 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
       <span><i class="k-blade"></i>Typical lowest score</span>
     </div>
     <div class="tiers" id="tiers"></div>
+    <p class="book"><b>Bastille Book</b><span>Lines are the cut odds as American odds with a 4.5% house edge. OFF means the board is closed: it can't happen. Just for fun, no real wagers.</span></p>
   </section>
 
   <section id="byes-sec" aria-labelledby="byes-title" hidden>
@@ -377,7 +439,7 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
     <summary>How the odds work</summary>
     <div class="method" id="method">
       <p><b>This week</b>, each team's expected score is its Yahoo projection. A team with no lineup set gets its best possible lineup instead, built from player projections. Failing both, it gets its average.</p>
-      <p><b>During games</b>, the page checks live scoring every minute. Each starter's points so far are banked, his projection is cut to the share of his game still to play, and the odds are rerun. Only points still to be played can swing, so the cut odds firm up as the week goes on.</p>
+      <p><b>During the week</b>, points already scored are banked exactly: Yahoo's own totals from the latest league paste, then live scoring for games since. Only starters still to play can move a team's score, each by an amount that fits his position (quarterbacks swing least, tight ends most), and nobody still to play is assumed to lose more than 2 points. A team that's done scoring is locked at its total, so the cut odds firm up as the week goes on. The page checks live scoring every minute while games are on.</p>
       <p><b>Later weeks</b> blend each team's <span id="m-avg">average over its last three weeks</span> with what its current roster projects to, then pull that a quarter of the way toward the league average. Rosters keep changing as cut teams' players go to waivers, so nobody's current form lasts all season.</p>
       <p id="m-check"></p>
       <p><b>The range of outcomes.</b> A projection is a midpoint, not a promise. Weekly scores swing about 22% either way, so a team projected 120 lands between about 86 and 154 in 8 of 10 weeks, and under 86 one week in ten. That's why a 10-point edge isn't safety: a team projected 110 outscores one projected 120 about 4 times in 10.</p>
@@ -392,6 +454,8 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
     <span class="yf"><a class="yf-logo" href="https://sports.yahoo.com/fantasy/" target="_blank" rel="noopener"><img src="https://763445962456-brand-assets.s3.us-west-2.amazonaws.com/brandwebsite/s3fs-public/Yahoo_Fantasy.svg" alt="Yahoo Fantasy" height="16" onerror="this.parentNode.remove()"></a><a href="https://sports.yahoo.com/fantasy/" target="_blank" rel="noopener">Fantasy data provided by Yahoo Fantasy</a></span></p>
 </main>
 
+<div class="pcard" id="pcard" role="tooltip" hidden></div>
+
 <dialog class="team" id="team-dlg" aria-labelledby="dlg-title">
   <div class="dlg">
     <div class="dlg-head">
@@ -404,12 +468,13 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
   </div>
 </dialog>
 
-<script src="sim.js?v=6"></script>
+<script src="sim.js?v=7"></script>
 <script>
 (function () {
   "use strict";
   var $ = function (id) { return document.getElementById(id); };
   var pct = function (p) {
+    if (p >= 1) return "100%";
     if (p >= 0.995) return ">99%";
     if (p > 0 && p < 0.005) return "<1%";
     return Math.round(p * 100) + "%";
@@ -428,6 +493,34 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
     return p >= 2 * avg ? "danger" : p >= avg ? "bubble" : "safe";
   };
   var TIER = { danger: "Danger", bubble: "Bubble", safe: "Safe" };
+  // Bastille Book: a chance as American odds, with a small house edge, rounded the way books post them.
+  var HOLD = 0.045;
+  function american(p) {
+    if (!(p > 0) || p >= 0.9995) return null;
+    var q = Math.min(p * (1 + HOLD), 0.995);
+    var raw = q >= 0.5 ? -100 * q / (1 - q) : 100 * (1 - q) / q;
+    var a = Math.abs(raw), step = a < 200 ? 5 : a < 500 ? 10 : a < 1000 ? 25 : a < 2000 ? 50 : a < 5000 ? 100 : 500;
+    a = Math.min(50000, Math.max(100, Math.round(a / step) * step));
+    return raw < 0 ? "\u2212" + a : "+" + a;
+  }
+  var two = function (x) { return (Math.round(x * 100) / 100).toFixed(2); };
+  // This week's score, in words: final, so far, or projected.
+  function scoreText(t) {
+    if (t.done) return "Final " + two(t.locked) + (t.projPre != null ? " · proj " + t.projPre.toFixed(1) : "");
+    if (t.gamesFinal > 0 || t.locked > 0) return two(t.locked) + " so far, " + t.nRem + " to play · proj " + t.now.toFixed(1);
+    return t.basis === "yahoo" ? "proj " + t.proj.toFixed(1) + (t.fill ? " with a stand-in*" : "") : t.basis === "best" ? "best lineup " + t.best.toFixed(1) + "*" : "avg " + t.now.toFixed(1);
+  }
+  var NOW = function () {
+    var q = /[?&]now=([^&]+)/.exec(location.search);
+    var d = q ? new Date(decodeURIComponent(q[1])) : new Date();
+    return isNaN(d) ? new Date() : d;
+  };
+  function etParts(d) {
+    var parts = {};
+    new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", weekday: "short", hour: "numeric", hourCycle: "h23" })
+      .formatToParts(d).forEach(function (x) { parts[x.type] = x.value; });
+    return { day: parts.weekday, hour: +parts.hour };
+  }
 
   var state = {};
 
@@ -448,9 +541,9 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
     var total = data.total_teams || (n + r.fallen.length);
     var z = 1.2816, cv = r.opts.cv;
     var rangeOf = function (t) { var sd = t.sdNow != null ? t.sdNow : t.now * cv; return [t.now - z * sd, t.now + z * sd]; };
-    var anyFinal = teams.some(function (t) { return t.gamesFinal > 0; });
-    var pre = anyFinal ? GuillotineSim.simulate(data, { pregame: true }) : null;
+    var started = teams.some(function (t) { return t.gamesFinal > 0 || t.locked > 0; });
     state = { data: data, raw: raw, mgr: mgr, sim: r, n: n, rangeOf: rangeOf };
+    var before = started ? openingOdds(data, r.week) : null;
 
     document.title = (data.league || "Guillotine") + " Odds | David Solar";
     $("league").textContent = (data.league || "Guillotine league") + " · " + (data.season || "") + " guillotine league";
@@ -480,7 +573,8 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
     var byWin = teams.slice().sort(function (a, b) { return b.pWin - a.pWin; });
     var top = byRisk[0], fav = byWin[0];
     var named = function (t) { var m = mgr(t.name); return "<b>" + esc(t.name) + "</b>" + (m ? " (" + esc(m) + ")" : ""); };
-    $("lede").innerHTML = named(top) + " is the likeliest to be cut this week (" + pct(top.pChop) + "). " +
+    $("lede").innerHTML = named(top) + (top.done && top.pChop >= 1 ? " is done at " + two(top.locked) + ", the lowest score this week, and gets cut. "
+      : (top.done ? " is done at " + two(top.locked) + " and" : "") + " is the likeliest to be cut this week (" + pct(top.pChop) + "). ") +
       named(fav) + " has the best chance of being the last team standing (" + pct(fav.pWin) + ").";
     $("f-left").innerHTML = n + " <small>of " + total + "</small>";
     $("f-cut").textContent = pts(r.cut.median);
@@ -501,18 +595,19 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
 
     $("rows").innerHTML = byRisk.map(function (t) {
       var g = rangeOf(t), tier = tierOf(t.pChop, n);
-      var basis = t.basis === "yahoo" ? "proj " + t.proj.toFixed(1) + (t.fill ? " with a stand-in*" : "") : t.basis === "best" ? "best lineup " + t.best.toFixed(1) + "*" : "avg " + t.now.toFixed(1);
-      var banked = t.gamesFinal ? t.locked.toFixed(1) + " banked" : null;
-      var meta = [basis, banked, "likely " + pts(g[0]) + " to " + pts(g[1]), t.faab !== null ? "$" + t.faab + " FAB" : null, "wins " + pct(t.pWin)].filter(Boolean).join(" · ");
-      var kp = keyPlayers(raw[t.name]);
-      var label = t.name + (mgr(t.name) ? ", " + mgr(t.name) : "") + ": " + TIER[tier] + ". " + pct(t.pChop) + " chance of being cut. Expected " + pts(t.now) + " points, likely " + pts(g[0]) + " to " + pts(g[1]) + ".";
+      var meta = [scoreText(t), t.done ? null : "likely " + pts(g[0]) + " to " + pts(g[1]), t.faab !== null ? "$" + t.faab + " FAB" : null, "wins " + pct(t.pWin)].filter(Boolean).join(" · ");
+      var kp = keyPlayers(raw[t.name], t);
+      var odds = american(t.pChop);
+      var label = t.name + (mgr(t.name) ? ", " + mgr(t.name) : "") + ": " + TIER[tier] + ". " + pct(t.pChop) + " chance of being cut" + (odds ? ", " + odds.replace("\u2212", "minus ") : "") + ". " +
+        (t.done ? "Final score " + two(t.locked) + "." : "Expected " + pts(t.now) + " points, likely " + pts(g[0]) + " to " + pts(g[1]) + ".");
       return '<li class="row t-' + tier + '" data-team="' + esc(t.name) + '" aria-label="' + esc(label) + '">' +
         '<div class="who">' + teamButton(t.name, mgr(t.name)) + '<div class="meta">' + esc(meta) + "</div>" + kp + "</div>" +
         '<div class="pct">' + pct(t.pChop) + "<small>" + TIER[tier] + "</small></div>" +
+        '<div class="line' + (odds ? "" : " off") + '" aria-hidden="true">' + (odds || "OFF") + "</div>" +
         '<div class="lane" aria-hidden="true"><span class="track"></span>' +
         '<span class="range" style="left:' + x(g[0]) + "%;width:" + (x(g[1]) - x(g[0])) + '%"></span>' +
         '<span class="cut" style="left:' + cx + '%"></span>' +
-        '<span class="dot' + (t.basis === "avg" ? " est" : "") + '" style="left:' + x(t.now) + '%"></span></div></li>';
+        '<span class="dot' + (t.done ? " fin" : t.basis === "avg" ? " est" : "") + '" style="left:' + x(t.now) + '%"></span></div></li>';
     }).join("");
     var avg = Math.round(100 / n);
     $("tiers").innerHTML =
@@ -521,7 +616,8 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
       '<span class="t-safe"><i></i><b>Safe</b> under ' + avg + "%</span>";
     $("week").hidden = false;
 
-    renderSpotlight(r, pre);
+    renderShowcase(r);
+    renderSpotlight(r, before);
     renderByes(r);
     renderHistory(r, league);
     var cutList = r.fallen.filter(function (f) { return f.score !== null; }).sort(function (a, b) { return a.week - b.week; });
@@ -552,6 +648,7 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
       var last = k === r.weeksLeft - 1;
       head += '<th scope="col"' + (last ? ' class="win"' : "") + ">" + (last ? "Wk " + (r.week + k) + " · Win" : "Wk " + (r.week + k)) + "</th>";
     }
+    head += '<th scope="col" class="line">Win line</th>';
     var prev = ((HIST.weeks || {})[String(r.week - 1)] || {}).teams || null;
     if (prev) head += '<th scope="col">Since Wk ' + (r.week - 1) + "</th>";
     head += "</tr></thead>";
@@ -561,6 +658,8 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
         var cls = "c" + (useHiInk(alpha) ? " hi" : "") + (k === t.surv.length - 1 ? " win" : "");
         return '<td class="' + cls + '" style="background:rgba(var(--bleu-rgb),' + alpha.toFixed(3) + ')">' + pct(p) + "</td>";
       }).join("");
+      var wl = american(t.pWin);
+      cells += '<td class="c line' + (wl ? "" : " off") + '">' + (wl || "OFF") + "</td>";
       if (prev) {
         var was = prev[t.name] ? prev[t.name].win : null;
         var dd = was === null ? null : Math.round((t.pWin - was) * 100);
@@ -569,7 +668,7 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
       }
       return '<tr><th scope="row" class="t-' + tierOf(t.pChop, n) + '">' + teamButton(t.name, mgr(t.name)) + "</th>" + cells + "</tr>";
     }).join("") + "</tbody>";
-    $("season-note").textContent = "Chance each team is still alive after that week's cut. The Win column is the chance of winning the league" +
+    $("season-note").textContent = "Chance each team is still alive after that week's cut. The Win column is the chance of winning the league, and Win line is that chance as Bastille Book odds" +
       (prev ? "; the last column is how many points that chance moved since the start of Week " + (r.week - 1) + "." : ".");
     $("grid").innerHTML = "<caption style=\"position:absolute;left:-9999px\">Chance each team is still alive after each week</caption>" + head + body;
     $("season").hidden = false;
@@ -610,12 +709,27 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
     var s = roster.filter(function (p) { return (p.slot !== "BN" && p.slot !== "IR" && !p.empty) || p.assumed_slot; });
     return s.length ? s : roster.filter(function (p) { return p.in_best; });
   }
-  function keyPlayers(t) {
+  // A player's name, hooked up to his stat card.
+  function pname(p, t, full) {
+    return '<span data-p="' + esc(p.name) + '" data-pt="' + esc(t.name) + '">' + esc(full ? p.name : short(p.name)) + "</span>";
+  }
+  function keyPlayers(t, s) {
     var st = startersOf(t);
     if (!st.length) return "";
+    if (s && (s.gamesFinal > 0 || s.locked > 0)) {
+      var left = st.filter(function (p) { return s.left.indexOf(p.name) >= 0; });
+      if (left.length) {
+        return '<div class="keyp">To play: ' + left.map(function (p) {
+          return pname(p, t) + " " + (p.live ? (p.actual || 0).toFixed(1) + " live" : (p.proj || 0).toFixed(1) + " proj");
+        }).join(" · ") + "</div>";
+      }
+      var scored = st.filter(function (p) { return typeof p.actual === "number"; })
+        .sort(function (a, b) { return b.actual - a.actual; }).slice(0, 3);
+      return scored.length ? '<div class="keyp">Top: ' + scored.map(function (p) { return pname(p, t) + " " + p.actual.toFixed(1); }).join(" · ") + "</div>" : "";
+    }
     var top = st.filter(function (p) { return (p.proj || 0) > 0; })
       .sort(function (a, b) { return b.proj - a.proj; }).slice(0, 3)
-      .map(function (p) { return esc(short(p.name)) + " " + p.proj.toFixed(1); });
+      .map(function (p) { return pname(p, t) + " " + p.proj.toFixed(1); });
     var byes = st.filter(function (p) { return p.bye; }).map(function (p) { return esc(short(p.name)); });
     return '<div class="keyp">' + (top.length ? "Top: " + top.join(" · ") : "") +
       (byes.length ? (top.length ? " · " : "") + '<span class="warn">Bye: ' + byes.join(", ") + "</span>" : "") + "</div>";
@@ -625,7 +739,16 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
     return esc(name) + (m ? " (" + esc(m) + ")" : "");
   }
 
-  function renderSpotlight(r, pre) {
+  // Cut odds going into the week: the saved snapshot, or failing that a pregame run.
+  function openingOdds(data, week) {
+    var snap = ((HIST.weeks || {})[String(week)] || {}).teams;
+    var out = {};
+    if (snap) { Object.keys(snap).forEach(function (k) { out[k] = snap[k].chop; }); return out; }
+    GuillotineSim.simulate(data, { pregame: true }).teams.forEach(function (t) { out[t.name] = t.pChop; });
+    return out;
+  }
+
+  function renderSpotlight(r, before) {
     var data = state.data, alive = (data.teams || []).filter(function (t) { return !t.out && t.roster; });
     var rows = [];
     alive.forEach(function (t) {
@@ -633,12 +756,11 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
       t.roster.forEach(function (p) { if (!p.empty) rows.push({ p: p, t: t, starting: st.indexOf(p) >= 0 }); });
     });
     var final = rows.filter(function (x) { return (x.p.final || x.p.live) && x.starting; });
-    if (pre && final.length) {
+    if (before && final.length) {
       var inProg = data.live && data.live.inProgress;
       $("spot-title").textContent = inProg ? "Live: how the odds are moving" : "Since kickoff";
       $("spot-sub").textContent = "Cut odds before the first game of Week " + r.week + " and now, with points scored so far banked" + (inProg ? ". Updates every minute while games are on." : ".");
-      var before = {};
-      pre.teams.forEach(function (t) { before[t.name] = t.pChop; });
+      r.teams.forEach(function (t) { if (!(t.name in before)) before[t.name] = t.pChop; });
       var moves = r.teams.slice().sort(function (a, b) { return Math.abs(b.pChop - before[b.name]) - Math.abs(a.pChop - before[a.name]); });
       var tbl = '<div class="scroll" style="border:0"><table class="moves"><thead><tr><th>Team</th><th class="num">Before</th><th class="num">Now</th><th class="num">Change</th></tr></thead><tbody>' +
         moves.map(function (t) {
@@ -649,7 +771,7 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
       final.sort(function (a, b) { return Math.abs((b.p.actual || 0) - (b.p.proj || 0)) - Math.abs((a.p.actual || 0) - (a.p.proj || 0)); });
       var list = '<ul class="plist">' + final.slice(0, 8).map(function (x) {
         var diff = (x.p.actual || 0) - (x.p.proj || 0) * (x.p.live ? x.p.frac || 0 : 1);
-        return '<li><span class="pn">' + esc(x.p.name) + (x.p.live ? ' <span class="st q">LIVE</span>' : "") + '</span><span class="pv ' + (diff >= 0 ? "up" : "down") + '">' + (x.p.actual || 0).toFixed(1) +
+        return '<li><span class="pn">' + pname(x.p, x.t, true) + (x.p.live ? ' <span class="st q">LIVE</span>' : "") + '</span><span class="pv ' + (diff >= 0 ? "up" : "down") + '">' + (x.p.actual || 0).toFixed(1) +
           "<small>" + (x.p.live ? esc(x.p.clock || "") + " · " : "") + "proj " + (x.p.proj || 0).toFixed(1) + '</small></span><span class="pt">' + esc(x.p.pos + " · " + x.p.nfl) + " · " + teamLabel(x.t.name) + "</span></li>";
       }).join("") + "</ul>";
       $("spot-body").innerHTML = tbl + '<p class="sub" style="margin:.9rem 0 .2rem">Biggest swings among starters</p>' + list;
@@ -668,11 +790,101 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
       (most ? ". Most riding on it: " + teamLabel(most) + ", with " + stake[most].toFixed(1) + " projected points starting." : ".");
     thu.sort(function (a, b) { return (b.p.proj || 0) - (a.p.proj || 0); });
     $("spot-body").innerHTML = '<ul class="plist">' + thu.map(function (x) {
-      return '<li><span class="pn">' + esc(x.p.name) + (x.p.status ? '<span class="st ' + (x.p.status === "Q" ? "q" : "o") + '">' + esc(x.p.status) + "</span>" : "") +
+      return '<li><span class="pn">' + pname(x.p, x.t, true) + (x.p.status ? '<span class="st ' + (x.p.status === "Q" ? "q" : "o") + '">' + esc(x.p.status) + "</span>" : "") +
         '</span><span class="pv">' + (x.p.proj || 0).toFixed(1) + "<small>" + esc(x.p.rank || "") + "</small></span>" +
         '<span class="pt">' + esc(x.p.pos + " · " + x.p.nfl) + " · " + teamLabel(x.t.name) + " · " + (x.starting ? "starting" : "bench") + "</span></li>";
     }).join("") + "</ul>";
     $("spot").hidden = false;
+  }
+
+  // Monday morning to Tuesday morning (ET): who Monday night decides, and what has to happen.
+  function renderShowcase(r) {
+    var sec = $("mnf"), et = etParts(NOW());
+    var data = state.data;
+    var onWindow = et.day === "Mon" || (et.day === "Tue" && et.hour < 6);
+    var mon = [];
+    (data.teams || []).forEach(function (t) {
+      if (t.out || !t.roster) return;
+      startersOf(t).forEach(function (p) { if (/^Mon/.test(p.game || "")) mon.push({ p: p, t: t }); });
+    });
+    if (!onWindow || !mon.length || state.n < 2) { sec.hidden = true; return; }
+    var who = function (name) { return state.mgr(name) || name; };
+    var teams = r.teams;
+    var done = teams.filter(function (t) { return t.done; }).sort(function (a, b) { return a.locked - b.locked; });
+    var pend = teams.filter(function (t) { return !t.done; });
+    if (!done.length) { sec.hidden = true; return; }
+    var floor = done[0];
+    var jeop = pend.filter(function (t) { return t.locked < floor.locked; }).sort(function (a, b) { return b.pChop - a.pChop; });
+    var clear = pend.filter(function (t) { return t.locked >= floor.locked; });
+    var list = function (xs) { return xs.length < 2 ? xs.join("") : xs.slice(0, -1).join(", ") + (xs.length > 2 ? "," : "") + " and " + xs[xs.length - 1]; };
+
+    // The games: "WAS at SF, 8:15 pm ET", or the live clock once they're on
+    var games = {}, liveClock = null;
+    mon.forEach(function (x) {
+      var p = x.p, opp = (p.opp || "").replace(/^(vs|@) /, ""), home = /^vs/.test(p.opp || "");
+      var key = home ? opp + " at " + p.nfl : p.nfl + " at " + opp;
+      games[key] = (p.game || "").replace(/^Mon /, "") + " ET";
+      if (p.live && p.clock) liveClock = p.clock;
+    });
+    var allOver = !pend.length;
+    $("mnf-sub").textContent = Object.keys(games).map(function (g) { return g + (allOver ? ", final" : liveClock ? ", " + liveClock : ", " + games[g]); }).join(" · ") +
+      (allOver ? ". Every game this week is final." : ". Every other game this week is final.");
+
+    var cards = [];
+    var floorTxt;
+    if (allOver) {
+      $("mnf-title").textContent = who(floor.name) + " is out at " + two(floor.locked);
+      var played = mon.some(function (x) { return x.t.name === floor.name; }), next = done[1];
+      var base0 = (state.raw[floor.name] || {}).points;
+      floorTxt = played && next && typeof base0 === "number"
+        ? "Needed " + two(next.locked - base0) + " on Monday night and got " + two(floor.locked - base0) + ". " + who(next.name) + " survives at " + two(next.locked) + "."
+        : "Lowest score of Week " + r.week + ". Nobody playing Monday night finished below it.";
+    } else if (jeop.length === 1) {
+      $("mnf-title").textContent = "Can " + who(jeop[0].name) + " catch " + who(floor.name) + "?";
+      var j = jeop[0];
+      floorTxt = "Lowest final score this week. Needs " + who(j.name) + "'s " + list(j.left.map(short)) + " to finish under " + two(floor.locked - j.locked) + " combined.";
+    } else if (jeop.length > 1) {
+      $("mnf-title").textContent = "Who catches " + who(floor.name) + "?";
+      floorTxt = "Lowest final score this week. Needs at least one of the teams below to fall short.";
+    } else {
+      $("mnf-title").textContent = who(floor.name) + " is waiting on nobody";
+      floorTxt = "Everyone still playing is already past " + two(floor.locked) + ", so this score gets cut.";
+    }
+    cards.push('<div class="mnf-card t-danger"><span class="tag">' + (allOver ? "Cut" : "Done scoring") + "</span>" +
+      "<h3>" + teamButton(floor.name, state.mgr(floor.name)) + "</h3>" +
+      '<div class="big">' + two(floor.locked) + "<small>final</small></div>" +
+      "<p>" + esc(floorTxt) + "</p>" +
+      (allOver ? "" : "<p><b>Cut odds " + pct(floor.pChop) + "</b>" + (american(floor.pChop) ? " · " + american(floor.pChop) : "") + "</p>") + "</div>");
+
+    jeop.forEach(function (t) {
+      var rt = state.raw[t.name] || {}, base = typeof rt.points === "number" ? rt.points : t.locked;
+      var need = floor.locked - t.locked, got = t.locked - base, goal = floor.locked - base;
+      var tier = tierOf(t.pChop, state.n);
+      if (tier === "safe") tier = "bubble"; // still below the mark, so never shown as safe here
+      var players = startersOf(rt).filter(function (p) { return t.left.indexOf(p.name) >= 0; });
+      cards.push('<div class="mnf-card t-' + tier + '"><span class="tag">Needs ' + two(need) + "</span>" +
+        "<h3>" + teamButton(t.name, state.mgr(t.name)) + "</h3>" +
+        '<div class="big">' + two(t.locked) + "<small>so far</small></div>" +
+        "<p>Needs " + two(need) + " from " + list(players.map(function (p) { return pname(p, rt); })) + " to catch " + esc(who(floor.name)) + ". Projected " + t.remMu.toFixed(1) + " from them.</p>" +
+        '<div class="need" role="img" aria-label="' + esc(two(Math.max(got, 0)) + " of " + two(goal) + " needed") + '"><i style="width:' + Math.max(0, Math.min(100, goal > 0 ? got / goal * 100 : 0)).toFixed(1) + '%"></i></div>' +
+        "<ul>" + players.map(function (p) {
+          return "<li><span>" + pname(p, rt, true) + " " + esc(p.pos) + "</span><span>" + (p.live || p.final ? (p.actual || 0).toFixed(1) + (p.live ? " live" : " final") : "proj " + (p.proj || 0).toFixed(1)) + "</span></li>";
+        }).join("") + "</ul>" +
+        "<p><b>Cut odds " + pct(t.pChop) + "</b>" + (american(t.pChop) ? " · " + american(t.pChop) : "") + "</p></div>");
+    });
+    $("mnf-cards").innerHTML = cards.join("");
+
+    if (clear.length) {
+      $("mnf-clear").innerHTML = "Already past " + two(floor.locked) + " with players still to go: " + clear.map(function (t) {
+        var rt = state.raw[t.name] || {};
+        var left = startersOf(rt).filter(function (p) { return t.left.indexOf(p.name) >= 0; });
+        return "<b>" + esc(t.name) + "</b> (" + two(t.locked) + ", " + list(left.map(function (p) { return pname(p, rt); })) + ")";
+      }).join("; ") + ".";
+      $("mnf-clear").hidden = false;
+    } else {
+      $("mnf-clear").hidden = true;
+    }
+    sec.hidden = false;
   }
 
   function renderByes(r) {
@@ -741,11 +953,15 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
     var st = p.status ? '<span class="st ' + (p.status === "Q" ? "q" : "o") + '">' + esc(p.status) + "</span>" : "";
     var start = !isStarter && p.in_best ? '<span class="st go">Start</span>' : "";
     var where = p.bye ? p.nfl + " · Bye" : [p.nfl + (p.opp ? " " + p.opp : ""), p.game].filter(Boolean).join(" · ");
-    var proj = p.bye ? "Bye" : (p.final || p.live) ? "<b>" + (p.actual || 0).toFixed(1) + "</b>" : typeof p.proj === "number" ? p.proj.toFixed(1) : "–";
+    if (p.result) where = p.nfl + " " + (p.opp || "") + " · " + p.result;
+    var proj = p.bye ? "Bye" : typeof p.proj === "number" ? p.proj.toFixed(1) : "–";
+    var scored = (p.final || p.live) ? "<b>" + (p.actual || 0).toFixed(1) + "</b>" + (p.live ? '<span class="st q">LIVE</span>' : "")
+      : p.yfinal ? "<small>final</small>" : "";
     var bad = isStarter && (p.bye || p.status === "O" || /^IR|^PUP|^NA|^SUSP/.test(p.status || ""));
+    var team = { name: openName || "" };
     return '<tr' + (bad ? ' class="bad"' : "") + '><td class="slot">' + esc(p.slot) + "</td>" +
-      '<td class="pl"><b>' + esc(p.name) + (p.stand ? '<span class="ast" title="Assumed: this spot is empty in Yahoo">*</span>' : "") + "</b>" + st + start + "<small>" + esc(p.pos + " · " + where) + "</small></td>" +
-      '<td class="num">' + proj + '</td><td class="num">' + (p.final ? "final" : p.live ? '<span class="st q">LIVE</span>' : esc(p.rank || "")) + "</td></tr>";
+      '<td class="pl"><b><span data-p="' + esc(p.name) + '" data-pt="' + esc(team.name) + '" tabindex="0">' + esc(p.name) + "</span>" + (p.stand ? '<span class="ast" title="Assumed: this spot is empty in Yahoo">*</span>' : "") + "</b>" + st + start + "<small>" + esc(p.pos + " · " + where + (p.rank ? " · " + p.rank : "")) + "</small></td>" +
+      '<td class="num">' + proj + '</td><td class="num">' + scored + "</td></tr>";
   }
 
   var openName = null;
@@ -759,11 +975,14 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
     var chips = [];
     if (simT) {
       var tier = tierOf(simT.pChop, state.n), g = state.rangeOf(simT);
-      chips.push('<span class="chip tier t-' + tier + '">' + TIER[tier] + " · " + pct(simT.pChop) + " cut</span>");
+      chips.push('<span class="chip tier t-' + tier + '">' + TIER[tier] + " · " + pct(simT.pChop) + " cut" + (american(simT.pChop) ? " · " + american(simT.pChop) : "") + "</span>");
+      if (simT.done) chips.push('<span class="chip"><b>Final ' + two(simT.locked) + "</b></span>");
+      else if (simT.gamesFinal > 0 || simT.locked > 0) chips.push('<span class="chip"><b>' + two(simT.locked) + " so far</b> · " + simT.nRem + " to play</span>");
       chips.push('<span class="chip">Wins ' + pct(simT.pWin) + "</span>");
-      chips.push('<span class="chip">Likely ' + pts(g[0]) + " to " + pts(g[1]) + "</span>");
+      if (!simT.done) chips.push('<span class="chip">Likely ' + pts(g[0]) + " to " + pts(g[1]) + "</span>");
       if (simT.fabEdge) chips.push('<span class="chip">Money ' + (simT.fabEdge > 0 ? "+" : "−") + Math.abs(simT.fabEdge).toFixed(1) + " pts/wk later</span>");
     }
+    if (typeof t.proj_pre === "number" && t.proj_pre > 0 && t.points) chips.push('<span class="chip">Pregame proj ' + t.proj_pre.toFixed(1) + "</span>");
     if (typeof t.proj === "number" && t.proj > 0) chips.push('<span class="chip">Yahoo proj ' + t.proj.toFixed(1) + (t.fill ? " + " + t.fill.toFixed(1) + " stand-in*" : "") + "</span>");
     if (typeof t.best === "number") chips.push('<span class="chip">Best lineup ' + t.best.toFixed(1) + "</span>");
     if (typeof t.faab === "number") chips.push('<span class="chip">$' + t.faab + " FAB</span>");
@@ -778,7 +997,7 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
       var bench = roster.filter(function (p) { return p.slot === "BN" && !p.assumed_slot; })
         .sort(function (a, b) { return (b.proj || 0) - (a.proj || 0); });
       var ir = roster.filter(function (p) { return p.slot === "IR"; });
-      var html = '<div class="scroll" style="border:0"><table class="roster"><thead><tr><th>Slot</th><th>Player</th><th class="num">Proj</th><th class="num">Rank</th></tr></thead><tbody>';
+      var html = '<div class="scroll" style="border:0"><table class="roster"><thead><tr><th>Slot</th><th>Player</th><th class="num">Proj</th><th class="num">Pts</th></tr></thead><tbody>';
       var noneSet = starters.every(function (p) { return p.empty; });
       var stood = starters.filter(function (p) { return p.empty && p.assumed; }).length;
       html += starters.map(function (p) { return playerRow(p, true, roster); }).join("");
@@ -791,20 +1010,91 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
     }
     var src = state.data.proj_source;
     $("dlg-note").textContent = src
-      ? "Player projections from Sleeper, scored with league settings (half PPR, 4-point passing TDs). Rank is this week's projected position rank. Best lineup is the highest-projected legal lineup from this roster; Start marks bench players who belong in it. Projections as of " + etTime(src.updated) + "."
+      ? "Player projections and points from Sleeper, scored with league settings (half PPR, 4-point passing TDs); team totals come from Yahoo. Final means Yahoo shows the game over. The rank after each player is his projected position rank this week. Hover or tap a name for his season stats. Best lineup is the highest-projected legal lineup from this roster; Start marks bench players who belong in it. Projections as of " + etTime(src.updated) + "."
       : "Player projections arrive with the next update.";
     var dlg = $("team-dlg");
     if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
     dlg.scrollTop = 0;
   }
 
+  // ---- Player stat cards: hover on a name (or tap one in a roster window)
+  var STAT_NAMES = { O: "Out", Q: "Questionable", D: "Doubtful", IR: "Injured reserve", "IR-R": "Injured reserve", "PUP-R": "PUP list", PUP: "PUP list", NA: "Not active", SUSP: "Suspended" };
+  var cardFor = null;
+  function num0(x) { return Math.round(x).toLocaleString("en-US"); }
+  function statLine(pos, s) {
+    var parts = [];
+    var pass = s.pass_yd ? num0(s.pass_yd) + " pass yds, " + (s.pass_td || 0) + " TD, " + (s.pass_int || 0) + " INT" : "";
+    var rush = s.rush_yd || s.rush_td ? num0(s.rush_yd || 0) + " rush yds" + (s.rush_att ? " on " + s.rush_att : "") + ", " + (s.rush_td || 0) + " TD" : "";
+    var rec = s.rec || s.rec_yd ? (s.rec || 0) + " rec" + (s.rec_tgt ? " (" + s.rec_tgt + " tgt)" : "") + ", " + num0(s.rec_yd || 0) + " yds, " + (s.rec_td || 0) + " TD" : "";
+    if (pos === "QB") parts = [pass, rush];
+    else if (pos === "RB") parts = [rush, rec];
+    else parts = [rec, rush];
+    return parts.filter(Boolean);
+  }
+  function cardHtml(p, t) {
+    var where = p.bye ? "Bye this week" : p.result ? (p.opp || "") + " · " + p.result : [p.opp, p.game ? p.game + " ET" : null].filter(Boolean).join(" · ");
+    var rows = [];
+    rows.push(["This week", where || "–"]);
+    if (!p.bye && typeof p.proj === "number") rows.push(["Projection", p.proj.toFixed(1) + (p.rank ? " · " + p.rank : "")]);
+    if (p.final || p.live) rows.push(["Scored", (p.actual || 0).toFixed(1) + (p.live ? " so far" + (p.clock ? " · " + p.clock : "") : "")]);
+    else if (p.yfinal) rows.push(["Scored", "Final in Yahoo"]);
+    var s = p.season;
+    if (s && s.g) {
+      var tot = (s.wk || []).reduce(function (a, v) { return a + (typeof v === "number" ? v : 0); }, 0);
+      rows.push(["Season", (tot / s.g).toFixed(1) + " pts a game · " + s.g + " game" + (s.g > 1 ? "s" : "")]);
+      statLine(p.pos, s.tot || {}).forEach(function (l, i) { rows.push([i ? "" : "Stats", l]); });
+    }
+    if (typeof p.next_proj === "number") rows.push(["Next week", p.bye_next ? "Bye" : p.next_proj.toFixed(1) + " proj"]);
+    var wks = s && s.wk && s.wk.length ? '<div class="wks">' + s.wk.map(function (v, i) {
+      return "<span><small>W" + (i + 1) + "</small>" + (typeof v === "number" ? v.toFixed(1) : "–") + "</span>";
+    }).join("") + "</div>" : "";
+    return "<h4>" + esc(p.name) + "</h4>" +
+      '<p class="pc-sub">' + esc([p.pos, p.nfl, STAT_NAMES[p.status] || p.status, t ? t.name : null].filter(Boolean).join(" · ")) + "</p>" +
+      "<dl>" + rows.map(function (r) { return "<dt>" + esc(r[0]) + "</dt><dd>" + esc(r[1]) + "</dd>"; }).join("") + "</dl>" + wks +
+      (s ? "" : '<p class="pc-note">Season stats arrive with the next morning update.</p>');
+  }
+  function showCard(el) {
+    var t = state.raw && state.raw[el.getAttribute("data-pt")];
+    var name = el.getAttribute("data-p");
+    var p = t && (t.roster || []).filter(function (q) { return q.name === name; })[0];
+    var card = $("pcard");
+    if (!p) return;
+    card.innerHTML = cardHtml(p, t);
+    var host = el.closest("dialog") || document.body;
+    if (card.parentNode !== host) host.appendChild(card);
+    card.hidden = false;
+    var b = el.getBoundingClientRect(), w = card.offsetWidth, h = card.offsetHeight;
+    var left = Math.min(Math.max(8, b.left), window.innerWidth - w - 8);
+    var top = b.bottom + 6;
+    if (top + h > window.innerHeight - 8) top = Math.max(8, b.top - h - 6);
+    card.style.left = left + "px"; card.style.top = top + "px";
+    cardFor = el;
+  }
+  function hideCard() { $("pcard").hidden = true; cardFor = null; }
+  var hoverable = window.matchMedia && window.matchMedia("(hover: hover)").matches;
+  document.addEventListener("mouseover", function (e) {
+    if (!hoverable) return;
+    var el = e.target.closest && e.target.closest("[data-p]");
+    if (el) { if (el !== cardFor) showCard(el); } else if (cardFor) hideCard();
+  });
+  document.addEventListener("focusin", function (e) { var el = e.target.closest && e.target.closest("[data-p]"); if (el) showCard(el); else if (cardFor) hideCard(); });
+  window.addEventListener("scroll", function () { if (cardFor) hideCard(); }, true);
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && cardFor) hideCard(); });
+
   document.addEventListener("click", function (e) {
+    var pl = e.target.closest("[data-p]");
+    if (pl && (pl.closest("dialog") || !hoverable) && !pl.closest(".row")) {
+      if (cardFor === pl) hideCard(); else showCard(pl);
+      return;
+    }
+    if (cardFor) hideCard();
     var hit = e.target.closest("[data-team]");
     if (hit) { openTeam(hit.getAttribute("data-team")); return; }
     var dlg = $("team-dlg");
     if (e.target === dlg) dlg.close(); // click on the dimmed backdrop
   });
   $("dlg-close").addEventListener("click", function () { $("team-dlg").close(); });
+  $("team-dlg").addEventListener("close", hideCard);
 
   function updateJumpLabels() {
     Array.prototype.forEach.call(document.querySelectorAll("#jump a"), function (a) { var sec = $(a.getAttribute("data-sec")); a.hidden = !sec || sec.hidden; });

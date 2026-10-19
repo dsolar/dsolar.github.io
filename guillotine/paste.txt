@@ -1,4 +1,4 @@
-Roster amendments from Yahoo transaction screenshot: Oct 15, 2026 03:47 AM EDT. Five overnight transactions applied; existing starting lineups and Yahoo team projections retained pending a full league-page refresh. Brenton Strange cost $1; other displayed claims were $0.
+Pasted Oct 19, 2026, after Sunday's games (Yahoo standings as of Mon Oct 19 02:44am EDT): League > Overview, then League > Starting Rosters. Recent waiver moves through Oct 18 are already reflected in these rosters.
 
 Yahoo Sports
 Yahoo Sports
@@ -10,7 +10,7 @@ Finance
 Sports
 
 More
-99+
+2
 
 D
  Fantasy Football
@@ -33,33 +33,35 @@ Yahoo Sports Fantasy Football
 Open chat
 team logo
 Bastille Day
- League Announcements
+
+1
+ League Announcements
 Matchups  
- Week 6 Matchup  Not started yet
+ Week 6 Matchup  In progress
 Holofernes
 SAFE
  logo
  
-0.00
-123.36
+111.32
+121.46
 vs	
-0.00
-0.00
+86.12
+86.12
  
 logo 
-Tai Streetz Lata?
+Maye I see your TDs
 Standings
 Rank	Team	Points	Projected Points	Season Points	FAB	Waiver	Moves	Pts Per Week
-10	Tai Streetz Lata?	0.00	0.00	566.26	$696	7	17	113.25
-9	Deviated Rectums	0.00	95.13	605.14	$207	3	8	121.03
-8	Maye I see your TDs	0.00	109.22	539.82	$5	4	8	107.96
-7	Likely to Burden Tate w Penix	0.00	115.45	627.22	$464	8	12	125.44
-6	Breece’s Pieces	0.00	118.97	595.10	$115	9	11	119.02
-5	Love Purdy Flowers	0.00	119.31	607.96	$282	10	11	121.59
-4	Holofernes	0.00	123.36	603.60	$681	6	16	120.72
-3	Liberté Égalité Henri	0.00	124.76	582.52	$623	1	8	116.5
-2	Love a Kittle Lamb & WhiteRice	0.00	133.55	667.12	$485	2	4	133.42
-1	Drake Mayezini	0.00	140.63	580.46	$523	5	8	116.09
+10	Maye I see your TDs	86.12	86.12	625.94	$5	9	10	107.96
+9	Deviated Rectums	93.34	93.34	698.48	$207	7	10	121.03
+8	Drake Mayezini	97.58	97.58	678.04	$480	2	10	116.09
+7	Breece’s Pieces	108.48	108.48	703.58	$115	5	13	119.02
+6	Love a Kittle Lamb & WhiteRice	98.32	110.42	765.44	$485	8	5	133.42
+5	Love Purdy Flowers	62.04	111.04	670.00	$275	6	13	121.59
+4	Tai Streetz Lata?	92.94	111.84	659.20	$673	3	19	113.25
+3	Holofernes	111.32	121.46	714.92	$681	10	17	120.72
+2	Liberté Égalité Henri	135.34	135.34	717.86	$623	1	8	116.5
+1	Likely to Burden Tate w Penix	137.36	137.36	764.58	$464	4	13	125.44
 Eliminated
 Week	Team	Season Points	FAB	Moves	Pts Per Week
 5	Beast Mode Samuel	568.50	$1000	1	113.7
@@ -67,7 +69,7 @@ Week	Team	Season Points	FAB	Moves	Pts Per Week
 3	Filet-O-Fate	233.48	$898	5	77.83
 2	23 Richard	141.92	$990	3	70.96
 1	J Free FTW	78.36	$1000	0	78.36
-Last standings update: Wed Oct 14 02:43am EDT 
+Last standings update: Mon Oct 19 02:44am EDT 
 Recent Transactions
 View All
 All Transactions
@@ -80,46 +82,49 @@ Trades
  
 FAB Offers
 
-Dalton Kincaid Buf - TE 
-$0 Waiver
-Holofernes
-Oct 14, 4:24 am
- logo
-
 
-Germie Bernard Pit - WR 
+Tyler Higbee LAR - TE 
 $0 Waiver
-Courtland Sutton Den - WR 
+Alvin Kamara NO - RB 
 To Waivers
-Maye I see your TDs
-Oct 14, 4:24 am
+Breece’s Pieces
+Oct 18, 3:26 am
  logo
 
 
-Keaton Mitchell LAC - RB 
-$0 Waiver
+Ladd McConkey LAC - WR Q 
+$2 Waiver
+Jalen Hurts Phi - QB IR 
+To Waivers
+Tai Streetz Lata?
+Oct 18, 3:26 am
+ logo
+
+
+Rachaad White Was - RB 
+$7 Waiver
 Blake Corum LAR - RB 
 To Waivers
-Maye I see your TDs
-Oct 14, 4:24 am
+Love Purdy Flowers
+Oct 18, 3:26 am
  logo
 
 
-Pat Freiermuth Pit - TE 
+Blake Corum LAR - RB 
 $0 Waiver
-T.J. Hockenson Min - TE Q 
-To Waivers
-Deviated Rectums
-Oct 14, 4:24 am
- logo
-
-
-Tre Tucker LV - WR 
-$0 Waiver
-Malik Washington Mia - WR 
+Jordan Addison Min - WR Q 
 To Waivers
 Love Purdy Flowers
-Oct 14, 4:24 am
+Oct 17, 3:47 am
+ logo
+
+
+Tyler Huntley Bal - QB 
+$0 Waiver
+Tyson Bagent Chi - QB 
+To Waivers
+Breece’s Pieces
+Oct 17, 3:47 am
  logo
 Commish Notes
 logo 
@@ -132,116 +137,116 @@ Use the Commissioner Note to communicate key league messages or post weekly wrap
 Commish Updates
 logo Holofernes
 (David S)
-1 day ago
+6 days ago
  
 Jordyn Tyson (Waiver Date) changed from '2026-10-16' to '2026-10-14'
 
 logo Holofernes
 (David S)
-1 day ago
+6 days ago
  
 Omarion Hampton (Waiver Date) changed from '2026-10-16' to '2026-10-14'
 
 logo Holofernes
 (David S)
-1 day ago
+6 days ago
  
 Nicholas Singleton (Waiver Date) changed from '2026-10-16' to '2026-10-14'
 
 logo Holofernes
 (David S)
-1 day ago
+6 days ago
  
 Cam Ward (Waiver Date) changed from '2026-10-16' to '2026-10-14'
 
 logo Holofernes
 (David S)
-1 day ago
+6 days ago
  
 Drake London (Waiver Date) changed from '2026-10-16' to '2026-10-14'
 
 logo Holofernes
 (David S)
-1 day ago
+6 days ago
  
 Garrett Wilson (Waiver Date) changed from '2026-10-16' to '2026-10-14'
 
 logo Holofernes
 (David S)
-1 day ago
+6 days ago
  
 Emeka Egbuka (Waiver Date) changed from '2026-10-16' to '2026-10-14'
 
 logo Holofernes
 (David S)
-1 day ago
+6 days ago
  
 Bijan Robinson (Waiver Date) changed from '2026-10-16' to '2026-10-14'
 
 logo Holofernes
 (David S)
-1 day ago
+6 days ago
  
 Dalton Kincaid (Waiver Date) changed from '2026-10-16' to '2026-10-14'
 
 logo Holofernes
 (David S)
-1 day ago
+6 days ago
  
 Juwan Johnson (Waiver Date) changed from '2026-10-16' to '2026-10-14'
 
 Show More 
 Fantasy News
 
-Bears QB Caleb Williams on track to play in Week 6 following return to practice
-Williams has missed three games after injuring his hamstring late in the Bears' Week 2 loss to the Vikings.
+NFL Injury Report, Week 7: Latest news, updates for Lamar Jackson, Saquon Barkley, more players
+We go over the Week 7 NFL injury report, providing updates and fantasy football analysis.
 Yahoo Sports
-20m ago
+13m ago
 
-2026 Trade Value Charts — Justin Boone's fantasy football quarterback breakdown for Week 6
-Fantasy football analyst Justin Boone reveals his quarterback trade values.
+Fantasy Football: DeVonta Smith's target share with Tanner McKee at QB, plus more key stats that may go overlooked from Week 6
+Joel Smyth covers important stats from Week 6 that may go overlooked for fantasy football.
 Yahoo Sports
-2h ago
+1h ago
 
-2026 Trade Value Charts — Justin Boone's fantasy football running back breakdown for Week 6
-Fantasy football analyst Justin Boone reveals his running back trade values.
+NFL Monday Night Football preview: 49ers try to stay undefeated vs. Commanders
+The Commanders are looking for a win to get back in the NFC East race.
 Yahoo Sports
-2h ago
+1h ago
 
-2026 Trade Value Charts — Justin Boone's fantasy football wide receiver breakdown for Week 6
-Fantasy football analyst Justin Boone reveals his wide receiver trade values.
+Fantasy Football Stock Report: C.J. Stroud finding form, Patrick Mahomes no longer sure-fire start after Week 6
+Matt Okada goes over players whose stock is up and down coming out of Week 6 for fantasy football.
 Yahoo Sports
-2h ago
+3h ago
 
-2026 Trade Value Charts — Justin Boone's fantasy football tight end breakdown for Week 6
-Fantasy football analyst Justin Boone reveals his tight end trade values.
+NFL news, live updates: Eagles QB Jalen Hurts reportedly out for season as he undergoes treatment for DVT, blood clots in lungs; Colts fire Chris Ballard
+Follow along with the latest NFL news coming out of Week 6.
 Yahoo Sports
-2h ago
+5h ago
 
-Fantasy Football: The Jaguars, Bills, Chargers and Commanders will be on bye next week — and we have questions
-Fantasy football analyst Chris Allen examines four teams set to take a break in Week 7.
+Fantasy Football: Texans going all-in on the pass game — and it's revealed a new flex option
+Fantasy football analyst Chris Allen breaks down some of the interesting storylines coming out of Week 6's Sunday action.
 Yahoo Sports
-2h ago
+15h ago
 
-10 Fantasy Data Points you need to know for Week 6
-Week 5 was a fantasy football goldmine, delivering massive player performances, unexpected breakouts and game-changing developments that could reshape your season! Matt Harmon and Dwain McFarland of Fantasy Life break down 10 key fantasy data points from Week 5, uncovering the player breakouts, usage trends and potential red flags you need to know before they impact your fantasy team. Plus, they recap the biggest takeaways from the week and check in on the latest Yahoo Expert League standings!
+Fantasy Football Week 6 Booms & Busts: Caleb Williams makes triumphant return, breathes life into Colston Loveland, Luther Burden III
+Fantasy football analyst Scott Pianowski examines the biggest winners and losers from Week 6's Sunday action.
 Yahoo Sports
-13h ago
+18h ago
 
-Expert League Recap: Bills-Rams classic fuels near-comeback in highest-scoring fantasy matchup of the season
-We recap another week in the Yahoo Fantasy Football Expert League, plus lookahead to Week 6.
+Dak Prescott, Cowboys offense were surprising no-shows as Packers get emphatic win
+The Cowboys fell to 4-2 with the offense doing very little on Sunday night.
 Yahoo Sports
-1d ago
+18h ago
 
-Week 6 Fantasy Football Full PPR Rankings
-Here are our consensus Full PPR ranking for fantasy football in Week 6.
+Fantasy Football RB Report: Cam Skattebo frozen out of Giants' backfield leads messy Week 6 for splits
+We go over some of the more frustrating RB committees for fantasy football coming out of Week 6.
 Yahoo Sports
-1d ago
+19h ago
 
-Week 6 Fantasy Football Full PPR RB Rankings
-Here are our RB rankings for Full PPR fantasy football in Week 6.
+Fantasy Football Week 7 Early Waiver Wire: Omar Cooper Jr. leads group of young wide receivers worth adding
+We go over some early options off the fantasy football waiver wire going into Week 7.
 Yahoo Sports
-1d ago
+21h ago
 
 
 Week 6
@@ -249,125 +254,22 @@ Week 6
 Bye Teams:
 Cincinnati, Detroit, Miami, Minnesota
 Favorites
-Sun, 1:00 PM EDT
-FOX
+Final 10/18
 Chicago Bears
-3-2
+31
 CHI
 Atlanta Falcons
-2-3
+23
 ATL
-CHI -2.5O/U 50.5
-Sun, 1:00 PM EDT
-CBS
+Final 10/18
 New York Jets
-2-3
+19
 NYJ
 New England Patriots
-3-2
+26
 NE
-NE -7.5O/U 43.5
 Upcoming
-Thu, 8:15 PM EDT
-AMZN
-Seattle Seahawks
-3-2
-SEA
-Denver Broncos
-3-2
-DEN
-SEA -2.5O/U 40.5
-Sun, 9:30 AM EDT
-NFLN
-Houston Texans
-1-4
-HOU
-Jacksonville Jaguars
-4-1
-JAX
-HOU +2.5O/U 42.5
-Sun, 1:00 PM EDT
-FOX
-Baltimore Ravens
-4-1
-BAL
-Cleveland Browns
-3-2
-CLE
-BAL -5.5O/U 42.5
-Sun, 1:00 PM EDT
-FOX
-Tennessee Titans
-0-5
-TEN
-Indianapolis Colts
-2-3
-IND
-IND -7O/U 44
-Sun, 1:00 PM EDT
-FOX
-New Orleans Saints
-1-4
-NO
-New York Giants
-3-1-1
-NYG
-NYG +1.5O/U 45.5
-Sun, 1:00 PM EDT
-CBS
-Carolina Panthers
-2-2
-CAR
-Philadelphia Eagles
-2-3
-PHI
-PHI +1O/U 40.5
-Sun, 1:00 PM EDT
-CBS
-Pittsburgh Steelers
-3-2
-PIT
-Tampa Bay Buccaneers
-1-4
-TB
-TB +2.5O/U 39.5
-Sun, 4:05 PM EDT
-FOX
-Arizona Cardinals
-1-4
-ARI
-Los Angeles Rams
-2-3
-LAR
-LAR -12.5O/U 52
-Sun, 4:25 PM EDT
-CBS
-Los Angeles Chargers
-0-5
-LAC
-Kansas City Chiefs
-4-0
-KC
-KC -8O/U 42.5
-Sun, 4:25 PM EDT
-CBS
-Buffalo Bills
-4-1
-BUF
-Las Vegas Raiders
-3-2
-LV
-BUF -5O/U 53.5
-Sun, 8:20 PM EDT
-NBC/P
-Dallas Cowboys
-2-3
-DAL
-Green Bay Packers
-3-2
-GB
-GB -1.5O/U 53
-Mon, 8:15 PM EDT
+8:15 PM EDT
 ABC/E
 Washington Commanders
 1-3-1
@@ -375,13 +277,94 @@ WAS
 San Francisco 49ers
 5-0
 SF
-SF -7.5O/U 50.5
+SF -7.5O/U 52
+Completed
+Final / OT 10/15
+Seattle Seahawks
+14
+SEA
+Denver Broncos
+17
+DEN
+Final 10/18
+Houston Texans
+34
+HOU
+Jacksonville Jaguars
+31
+JAX
+Final 10/18
+Baltimore Ravens
+10
+BAL
+Cleveland Browns
+13
+CLE
+Final 10/18
+Tennessee Titans
+26
+TEN
+Indianapolis Colts
+20
+IND
+Final 10/18
+New Orleans Saints
+34
+NO
+New York Giants
+27
+NYG
+Final 10/18
+Carolina Panthers
+25
+CAR
+Philadelphia Eagles
+14
+PHI
+Final / OT 10/18
+Pittsburgh Steelers
+26
+PIT
+Tampa Bay Buccaneers
+19
+TB
+Final 10/18
+Arizona Cardinals
+18
+ARI
+Los Angeles Rams
+16
+LAR
+Final 10/18
+Los Angeles Chargers
+6
+LAC
+Kansas City Chiefs
+22
+KC
+Final 10/18
+Buffalo Bills
+33
+BUF
+Las Vegas Raiders
+30
+LV
+Final 10/18
+Dallas Cowboys
+13
+DAL
+Green Bay Packers
+23
+GB
+
+
 Yahoo Sports - NBC Sports Network - Paid Fantasy Terms - Feedback - Terms and Privacy Policy - Privacy Dashboard  - About Our Ads - Help
 Certain Data by Sportradar, Rotowire, FTN, BAKER Engine and THE BLITZ
 
 Guillotine trademarks are used with Fantasy Life's permission.
 
 © 2026 Yahoo Fantasy Sports LLC. All rights reserved.
+
 
 
 Yahoo Sports
@@ -394,7 +377,7 @@ Finance
 Sports
 
 More
-99+
+2
 
 D
  Fantasy Football
@@ -414,7 +397,6 @@ Network
 Fantasy Plus
 Bastille Day (ID# 157731)
 Yahoo Sports Fantasy Football
-Open chat
 Starting Rosters
 Team
  
@@ -427,59 +409,59 @@ Holofernes 
 Pos	Player
 QB	
 Josh Allen
-Josh AllenPlayer Note
+Josh AllenVideo ForecastNew Player Note
 Buf - QB
-Sun 4:25 pm @ LV
+Final W 33-30 @ LV
 RB	
 D'Andre Swift
-D'Andre SwiftPlayer Note
+D'Andre SwiftVideo ForecastNew Player Note
 Chi - RB
-Sun 1:00 pm @ Atl
+Final W 31-23 @ Atl
 RB	
 Tony Pollard
-Tony PollardQNew Player Note
+Tony PollardVideo ForecastNew Player Note
 Ten - RB
-Sun 1:00 pm @ Ind
+Final W 26-20 @ Ind
 WR	
 Matthew Golden
-Matthew GoldenPlayer Note
+Matthew GoldenVideo ForecastNew Player Note
 GB - WR
-Sun 8:20 pm vs Dal
+Final W 23-13 vs Dal
 WR	
 DK Metcalf
-DK MetcalfPlayer Note
+DK MetcalfVideo ForecastNew Player Note
 Pit - WR
-Sun 1:00 pm @ TB
+Final W 26-19 @ TB
 WR	
-Terry McLaurin
-Terry McLaurinPlayer Note
-Was - WR
-Mon 8:15 pm @ SF
+A.J. Brown
+A.J. BrownVideo ForecastNew Player Note
+NE - WR
+Final W 26-19 vs NYJ
 TE	
 Brock Bowers
-Brock BowersVideo ForecastPlayer Note
+Brock BowersNew Player Note
 LV - TE
-Sun 4:25 pm vs Buf
+Final L 30-33 vs Buf
 W/R/T	
-Dalton Kincaid
-Dalton KincaidPlayer Note
-Buf - TE
-Sun 4:25 pm @ LV
+Terry McLaurin
+Terry McLaurinVideo ForecastPlayer Note
+Was - WR
+Mon 8:15 pm @ SF
 Q/W/R/T	
 Aaron Rodgers
-Aaron RodgersPlayer Note
+Aaron RodgersNew Player Note
 Pit - QB
-Sun 1:00 pm @ TB
+Final W 26-19 @ TB
 BN	
-Jacory Croskey-Merritt
-Jacory Croskey-MerrittPlayer Note
-Was - RB
-Mon 8:15 pm @ SF
+Dalton Kincaid
+Dalton KincaidQVideo ForecastNew Player Note
+Buf - TE
+Final W 33-30 @ LV
 BN	
 Colston Loveland
-Colston LovelandVideo ForecastPlayer Note
+Colston LovelandVideo ForecastNew Player Note
 Chi - TE
-Sun 1:00 pm @ Atl
+Final W 31-23 @ Atl
 BN	
 Kyler Murray
 Kyler MurrayPlayer Note
@@ -490,11 +472,16 @@ Ja'Marr Chase
 Ja'Marr ChasePlayer Note
 Cin - WR
 Bye
+BN	
+Kendre Miller
+Kendre MillerVideo ForecastNew Player Note
+NO - RB
+Final W 34-27 @ NYG
 IR	
-A.J. Brown
-A.J. BrownIR-RPlayer Note
-NE - WR
-Sun 1:00 pm vs NYJ
+Jacory Croskey-Merritt
+Jacory Croskey-MerrittOVideo ForecastPlayer Note
+Was - RB
+Mon 8:15 pm @ SF
 23 Richard 
 
 Pos	Player
@@ -530,49 +517,54 @@ Love Purdy Flowers 
 Pos	Player
 QB	
 Brock Purdy
-Brock PurdyPlayer Note
+Brock PurdyVideo ForecastPlayer Note
 SF - QB
 Mon 8:15 pm vs Was
 RB	
 Christian McCaffrey
-Christian McCaffreyPlayer Note
+Christian McCaffreyVideo ForecastPlayer Note
 SF - RB
 Mon 8:15 pm vs Was
 RB	
-Saquon Barkley
-Saquon BarkleyQVideo ForecastPlayer Note
-Phi - RB
-Sun 1:00 pm vs Car
+Omarion Hampton
+Omarion HamptonVideo ForecastNew Player Note
+LAC - RB
+Final L 6-22 @ KC
 WR	
 Zay Flowers
-Zay FlowersVideo ForecastPlayer Note
+Zay FlowersVideo ForecastNew Player Note
 Bal - WR
-Sun 1:00 pm @ Cle
+Final L 10-13 @ Cle
 WR	
 Tetairoa McMillan
-Tetairoa McMillanPlayer Note
+Tetairoa McMillanVideo ForecastNew Player Note
 Car - WR
-Sun 1:00 pm @ Phi
+Final W 25-14 @ Phi
 WR	
 Jalen Coker
-Jalen CokerQNew Player Note
+Jalen CokerVideo ForecastNew Player Note
 Car - WR
-Sun 1:00 pm @ Phi
+Final W 25-14 @ Phi
 TE	
 Mark Andrews
-Mark AndrewsPlayer Note
+Mark AndrewsNew Player Note
 Bal - TE
-Sun 1:00 pm @ Cle
+Final L 10-13 @ Cle
 W/R/T	
-Omarion Hampton
-Omarion HamptonPlayer Note
-LAC - RB
-Sun 4:25 pm @ KC
+Rachaad White
+Rachaad WhitePlayer Note
+Was - RB
+Mon 8:15 pm @ SF
 Q/W/R/T	
 Jordan Love
-Jordan LovePlayer Note
+Jordan LoveVideo ForecastNew Player Note
 GB - QB
-Sun 8:20 pm vs Dal
+Final W 23-13 vs Dal
+BN	
+Tre Tucker
+Tre TuckerVideo ForecastNew Player Note
+LV - WR
+Final L 30-33 vs Buf
 BN	
 Aaron Jones Sr.
 Aaron Jones Sr.Video ForecastPlayer Note
@@ -580,148 +572,150 @@ Min - RB
 Bye
 BN	
 Chase Brown
-Chase BrownNew Player Note
+Chase BrownVideo ForecastPlayer Note
 Cin - RB
 Bye
 BN	
-Jordan Addison
-Jordan AddisonQPlayer Note
-Min - WR
-Bye
-BN	
-Brian Robinson
-Brian RobinsonVideo ForecastPlayer Note
+Brian Robinson Jr.
+Brian Robinson Jr.Video ForecastNew Player Note
 Atl - RB
-Sun 1:00 pm vs Chi
-BN	
-Tre Tucker
-Tre TuckerPlayer Note
-LV - WR
-Sun 4:25 pm vs Buf
+Final L 23-31 vs Chi
+IR	
+Saquon Barkley
+Saquon BarkleyOVideo ForecastPlayer Note
+Phi - RB
+Final L 14-25 vs Car
 Breece’s Pieces 
 
 Pos	Player
 QB	
 Caleb Williams
-Caleb WilliamsQVideo ForecastNew Player Note
+Caleb WilliamsNew Player Note
 Chi - QB
-Sun 1:00 pm @ Atl
+Final W 31-23 @ Atl
 RB	
 J.K. Dobbins
 J.K. DobbinsVideo ForecastPlayer Note
 Den - RB
-Thu 8:15 pm vs Sea
+Final W 17-14 vs Sea
 RB	
 Braelon Allen
-Braelon AllenPlayer Note
+Braelon AllenVideo ForecastNew Player Note
 NYJ - RB
-Sun 1:00 pm @ NE
+Final L 19-26 @ NE
 WR	
 Jaxon Smith-Njigba
-Jaxon Smith-NjigbaQNew Player Note
+Jaxon Smith-NjigbaVideo ForecastPlayer Note
 Sea - WR
-Thu 8:15 pm @ Den
+Final L 14-17 @ Den
 WR	
 Malik Nabers
-Malik NabersVideo ForecastPlayer Note
+Malik NabersVideo ForecastNew Player Note
 NYG - WR
-Sun 1:00 pm vs NO
+Final L 27-34 vs NO
 WR	
 Devaughn Vele
-Devaughn VeleVideo ForecastPlayer Note
+Devaughn VeleNew Player Note
 NO - WR
-Sun 1:00 pm @ NYG
+Final W 34-27 @ NYG
 TE	
-Tyler Warren
-Tyler WarrenPlayer Note
-Ind - TE
-Sun 1:00 pm vs Ten
+Tyler Higbee
+Tyler HigbeeVideo ForecastNew Player Note
+LAR - TE
+Final L 16-18 vs Ari
 W/R/T	
 Drake London
-Drake LondonPlayer Note
+Drake LondonVideo ForecastNew Player Note
 Atl - WR
-Sun 1:00 pm vs Chi
+Final L 23-31 vs Chi
 Q/W/R/T	
-Lamar Jackson
-Lamar JacksonQVideo ForecastNew Player Note
+Jameis Winston
+Jameis WinstonVideo ForecastNew Player Note
+NYG - QB
+Final L 27-34 vs NO
+BN	
+Tyler Warren
+Tyler WarrenOVideo ForecastPlayer Note
+Ind - TE
+Final L 20-26 vs Ten
+BN	
+Tyler Huntley
+Tyler HuntleyNew Player Note
 Bal - QB
-Sun 1:00 pm @ Cle
+Final L 10-13 @ Cle
+BN	
+Lamar Jackson
+Lamar JacksonOPlayer Note
+Bal - QB
+Final L 10-13 @ Cle
 BN	
 Breece Hall
-Breece HallDNew Player Note
+Breece HallOPlayer Note
 NYJ - RB
-Sun 1:00 pm @ NE
-BN	
-Alvin Kamara
-Alvin KamaraVideo ForecastPlayer Note
-NO - RB
-Sun 1:00 pm @ NYG
-BN	
-Jameis Winston
-Jameis WinstonVideo ForecastPlayer Note
-NYG - QB
-Sun 1:00 pm vs NO
-BN	
-Tyson Bagent
-Tyson BagentPlayer Note
-Chi - QB
-Sun 1:00 pm @ Atl
+Final L 19-26 @ NE
 BN	
 Stefon Diggs
-Stefon DiggsQPlayer Note
+Stefon DiggsQVideo ForecastPlayer Note
 Was - WR
 Mon 8:15 pm @ SF
 IR	
 Zach Charbonnet
-Zach CharbonnetPUP-RNew Player Note
+Zach CharbonnetPUP-RPlayer Note
 Sea - RB
-Thu 8:15 pm @ Den
+Final L 14-17 @ Den
 Deviated Rectums 
 
 Pos	Player
 QB	
 Dak Prescott
-Dak PrescottPlayer Note
+Dak PrescottNew Player Note
 Dal - QB
-Sun 8:20 pm @ GB
+Final L 13-23 @ GB
 RB	
 Bucky Irving
-Bucky IrvingVideo ForecastPlayer Note
+Bucky IrvingVideo ForecastNew Player Note
 TB - RB
-Sun 1:00 pm vs Pit
+Final L 19-26 vs Pit
 RB	
-Kyle Monangai
-Kyle MonangaiQVideo ForecastPlayer Note
-Chi - RB
-Sun 1:00 pm @ Atl
+MarShawn Lloyd
+MarShawn LloydVideo ForecastNew Player Note
+GB - RB
+Final W 23-13 vs Dal
 WR	
 Parker Washington
-Parker WashingtonPlayer Note
+Parker WashingtonVideo ForecastNew Player Note
 Jax - WR
-Sun 9:30 am vs Hou
+Final L 31-34 vs Hou
 WR	
 Emeka Egbuka
-Emeka EgbukaPlayer Note
+Emeka EgbukaVideo ForecastNew Player Note
 TB - WR
-Sun 1:00 pm vs Pit
+Final L 19-26 vs Pit
 WR	
---empty--
-(Empty)
+DeMario Douglas
+DeMario DouglasNew Player Note
+NE - WR
+Final W 26-19 vs NYJ
 TE	
 Pat Freiermuth
-Pat FreiermuthPlayer Note
+Pat FreiermuthNew Player Note
 Pit - TE
-Sun 1:00 pm @ TB
+Final W 26-19 @ TB
 W/R/T	
-MarShawn Lloyd
-MarShawn LloydPlayer Note
-GB - RB
-Sun 8:20 pm vs Dal
+Dameon Pierce
+Dameon PierceVideo ForecastNew Player Note
+Phi - RB
+Final L 14-25 vs Car
 Q/W/R/T	
 Kirk Cousins
-Kirk CousinsPlayer Note
+Kirk CousinsNew Player Note
 LV - QB
-Sun 4:25 pm vs Buf
+Final L 30-33 vs Buf
+BN	
+Kyle Monangai
+Kyle MonangaiOPlayer Note
+Chi - RB
+Final W 31-23 @ Atl
 BN	
 Amon-Ra St. Brown
 Amon-Ra St. BrownPlayer Note
@@ -729,7 +723,7 @@ Det - WR
 Bye
 BN	
 Justin Jefferson
-Justin JeffersonVideo ForecastPlayer Note
+Justin JeffersonPlayer Note
 Min - WR
 Bye
 BN	
@@ -738,25 +732,15 @@ Jared GoffPlayer Note
 Det - QB
 Bye
 BN	
-Dameon Pierce
-Dameon PiercePlayer Note
-Phi - RB
-Sun 1:00 pm vs Car
-BN	
-DeMario Douglas
-DeMario DouglasPlayer Note
-NE - WR
-Sun 1:00 pm vs NYJ
-BN	
 Ollie Gordon II
-Ollie Gordon IIPlayer Note
+Ollie Gordon IIVideo ForecastPlayer Note
 Mia - RB
 Bye
 IR	
 Jayden Reed
 Jayden ReedIRNo new player Notes
 GB - WR
-Sun 8:20 pm vs Dal
+Final W 23-13 vs Dal
 Fly Zone Kristi 
 
 Pos	Player
@@ -852,72 +836,72 @@ Liberté Égalité Henri 
 Pos	Player
 QB	
 Matthew Stafford
-Matthew StaffordPlayer Note
+Matthew StaffordNew Player Note
 LAR - QB
-Sun 4:05 pm vs Ari
+Final L 16-18 vs Ari
 RB	
 James Cook III
-James Cook IIINew Player Note
+James Cook IIIVideo ForecastNew Player Note
 Buf - RB
-Sun 4:25 pm @ LV
+Final W 33-30 @ LV
 RB	
 Kenneth Walker III
-Kenneth Walker IIIPlayer Note
+Kenneth Walker IIINew Player Note
 KC - RB
-Sun 4:25 pm vs LAC
+Final W 22-6 vs LAC
 WR	
 Garrett Wilson
-Garrett WilsonVideo ForecastPlayer Note
+Garrett WilsonVideo ForecastNew Player Note
 NYJ - WR
-Sun 1:00 pm @ NE
+Final L 19-26 @ NE
 WR	
 Jakobi Meyers
-Jakobi MeyersPlayer Note
+Jakobi MeyersNew Player Note
 Jax - WR
-Sun 9:30 am vs Hou
+Final L 31-34 vs Hou
 WR	
 Jaylen Waddle
 Jaylen WaddleVideo ForecastPlayer Note
 Den - WR
-Thu 8:15 pm vs Sea
+Final W 17-14 vs Sea
 TE	
 Hunter Henry
-Hunter HenryPlayer Note
+Hunter HenryNew Player Note
 NE - TE
-Sun 1:00 pm vs NYJ
+Final W 26-19 vs NYJ
 W/R/T	
 Chuba Hubbard
-Chuba HubbardVideo ForecastPlayer Note
+Chuba HubbardVideo ForecastNew Player Note
 Car - RB
-Sun 1:00 pm @ Phi
+Final W 25-14 @ Phi
 Q/W/R/T	
 Daniel Jones
-Daniel JonesPlayer Note
+Daniel JonesNew Player Note
 Ind - QB
-Sun 1:00 pm vs Ten
+Final L 20-26 vs Ten
 BN	
 Keon Coleman
 Keon ColemanVideo ForecastNew Player Note
 Buf - WR
-Sun 4:25 pm @ LV
+Final W 33-30 @ LV
 BN	
 Rome Odunze
-Rome OdunzePlayer Note
+Rome OdunzeVideo ForecastNew Player Note
 Chi - WR
-Sun 1:00 pm @ Atl
+Final W 31-23 @ Atl
 BN	
 Marvin Harrison Jr.
-Marvin Harrison Jr.Player Note
+Marvin Harrison Jr.Video ForecastNew Player Note
 Hou - WR
-Sun 9:30 am @ Jax
+Final W 34-31 @ Jax
 BN	
 Tyler Allgeier
-Tyler AllgeierVideo ForecastPlayer Note
+Tyler AllgeierVideo ForecastNew Player Note
 Ari - RB
-Sun 4:05 pm @ LAR
+Final W 18-16 @ LAR
 BN	
 Sam LaPorta
-Sam LaPortaPlayer Note
+Sam LaPortaVideo ForecastPlayer Note
 Det - TE
 Bye
 Maye I see your TDs 
@@ -925,57 +909,67 @@ Maye I see your TDs 
 Pos	Player
 QB	
 Justin Herbert
-Justin HerbertPlayer Note
+Justin HerbertVideo ForecastNew Player Note
 LAC - QB
-Sun 4:25 pm @ KC
-RB	
-Quinshon Judkins
-Quinshon JudkinsQNew Player Note
-Cle - RB
-Sun 1:00 pm vs Bal
+Final L 6-22 @ KC
 RB	
 Bijan Robinson
-Bijan RobinsonVideo ForecastPlayer Note
+Bijan RobinsonNew Player Note
 Atl - RB
-Sun 1:00 pm vs Chi
+Final L 23-31 vs Chi
+RB	
+RJ Harvey
+RJ HarveyPlayer Note
+Den - RB
+Final W 17-14 vs Sea
 WR	
 Davante Adams
-Davante AdamsPlayer Note
+Davante AdamsVideo ForecastNew Player Note
 LAR - WR
-Sun 4:05 pm vs Ari
+Final L 16-18 vs Ari
 WR	
 Wan'Dale Robinson
-Wan'Dale RobinsonPlayer Note
+Wan'Dale RobinsonNew Player Note
 Ten - WR
-Sun 1:00 pm @ Ind
+Final W 26-20 @ Ind
 WR	
-DeVonta Smith
-DeVonta SmithQVideo ForecastPlayer Note
-Phi - WR
-Sun 1:00 pm vs Car
+Germie Bernard
+Germie BernardVideo ForecastNew Player Note
+Pit - WR
+Final W 26-19 @ TB
 TE	
 Trey McBride
-Trey McBridePlayer Note
+Trey McBrideNew Player Note
 Ari - TE
-Sun 4:05 pm @ LAR
+Final W 18-16 @ LAR
 W/R/T	
 Tucker Kraft
-Tucker KraftVideo ForecastPlayer Note
+Tucker KraftNew Player Note
 GB - TE
-Sun 8:20 pm vs Dal
+Final W 23-13 vs Dal
 Q/W/R/T	
-RJ Harvey
-RJ HarveyVideo ForecastPlayer Note
-Den - RB
-Thu 8:15 pm vs Sea
+Jalon Daniels
+Jalon DanielsNew Player Note
+TB - QB
+Final L 19-26 vs Pit
+BN	
+Quinshon Judkins
+Quinshon JudkinsOVideo ForecastPlayer Note
+Cle - RB
+Final W 13-10 vs Bal
 BN	
 Dontayvion Wicks
-Dontayvion WicksVideo ForecastPlayer Note
+Dontayvion WicksNew Player Note
 Phi - WR
-Sun 1:00 pm vs Car
+Final L 14-25 vs Car
+BN	
+DeVonta Smith
+DeVonta SmithVideo ForecastNew Player Note
+Phi - WR
+Final L 14-25 vs Car
 BN	
 Joe Burrow
-Joe BurrowVideo ForecastPlayer Note
+Joe BurrowPlayer Note
 Cin - QB
 Bye
 BN	
@@ -983,320 +977,288 @@ Tee Higgins
 Tee HigginsPlayer Note
 Cin - WR
 Bye
-BN	
-Cam Ward
-Cam WardPlayer Note
-Ten - QB
-Sun 1:00 pm @ Ind
-BN	
-Germie Bernard
-Germie BernardPlayer Note
-Pit - WR
-Sun 1:00 pm @ TB
 Drake Mayezini 
 
 Pos	Player
 QB	
 Drake Maye
-Drake MayePlayer Note
+Drake MayeNew Player Note
 NE - QB
-Sun 1:00 pm vs NYJ
+Final W 26-19 vs NYJ
 RB	
 Kyren Williams
-Kyren WilliamsPlayer Note
+Kyren WilliamsVideo ForecastNew Player Note
 LAR - RB
-Sun 4:05 pm vs Ari
+Final L 16-18 vs Ari
 RB	
 Rhamondre Stevenson
-Rhamondre StevensonNew Player Note
+Rhamondre StevensonVideo ForecastNew Player Note
 NE - RB
-Sun 1:00 pm vs NYJ
+Final W 26-19 vs NYJ
 WR	
 George Pickens
-George PickensVideo ForecastPlayer Note
+George PickensVideo ForecastNew Player Note
 Dal - WR
-Sun 8:20 pm @ GB
+Final L 13-23 @ GB
 WR	
 Puka Nacua
-Puka NacuaPlayer Note
+Puka NacuaVideo ForecastNew Player Note
 LAR - WR
-Sun 4:05 pm vs Ari
+Final L 16-18 vs Ari
 WR	
 Nico Collins
-Nico CollinsPlayer Note
+Nico CollinsVideo ForecastNew Player Note
 Hou - WR
-Sun 9:30 am @ Jax
+Final W 34-31 @ Jax
 TE	
 Travis Kelce
-Travis KelcePlayer Note
+Travis KelceNew Player Note
 KC - TE
-Sun 4:25 pm vs LAC
+Final W 22-6 vs LAC
 W/R/T	
-Mike Evans
-Mike EvansVideo ForecastPlayer Note
-SF - WR
-Mon 8:15 pm vs Was
+Cam Skattebo
+Cam SkatteboVideo ForecastNew Player Note
+NYG - RB
+Final L 27-34 vs NO
 Q/W/R/T	
 C.J. Stroud
 C.J. StroudPlayer Note
 Hou - QB
-Sun 9:30 am @ Jax
+Final W 34-31 @ Jax
 BN	
-Cam Skattebo
-Cam SkatteboPlayer Note
-NYG - RB
-Sun 1:00 pm vs NO
-BN	
-Romeo Doubs
-Romeo DoubsVideo ForecastPlayer Note
-NE - WR
-Sun 1:00 pm vs NYJ
-BN	
-Brenton Strange
-Brenton StrangePlayer Note
-Jax - TE
-Sun 9:30 am vs Hou
+Mike Evans
+Mike EvansQVideo ForecastNew Player Note
+SF - WR
+Mon 8:15 pm vs Was
 BN	
 Sam Darnold
-Sam DarnoldPlayer Note
+Sam DarnoldVideo ForecastPlayer Note
 Sea - QB
-Thu 8:15 pm @ Den
+Final L 14-17 @ Den
 BN	
 Woody Marks
-Woody MarksPlayer Note
+Woody MarksVideo ForecastNew Player Note
 Hou - RB
-Sun 9:30 am @ Jax
+Final W 34-31 @ Jax
+BN	
+Brenton Strange
+Brenton StrangeNew Player Note
+Jax - TE
+Final L 31-34 vs Hou
+BN	
+Josh Jacobs
+Josh JacobsCELPlayer Note
+GB - RB
+Final W 23-13 vs Dal
 Tai Streetz Lata? 
 
 Pos	Player
 QB	
---empty--
-(Empty)
+Trevor Lawrence
+Trevor LawrenceNew Player Note
+Jax - QB
+Final L 31-34 vs Hou
 RB	
---empty--
-(Empty)
-RB	
---empty--
-(Empty)
-WR	
---empty--
-(Empty)
-WR	
---empty--
-(Empty)
-WR	
---empty--
-(Empty)
-TE	
---empty--
-(Empty)
-W/R/T	
---empty--
-(Empty)
-Q/W/R/T	
---empty--
-(Empty)
-BN	
-Josh Downs
-Josh DownsVideo ForecastPlayer Note
-Ind - WR
-Sun 1:00 pm vs Ten
-BN	
-Michael Wilson
-Michael WilsonPlayer Note
-Ari - WR
-Sun 4:05 pm @ LAR
-BN	
-Javonte Williams
-Javonte WilliamsVideo ForecastPlayer Note
-Dal - RB
-Sun 8:20 pm @ GB
-BN	
-Bhayshul Tuten
-Bhayshul TutenPlayer Note
-Jax - RB
-Sun 9:30 am vs Hou
-BN	
-Harold Fannin Jr.
-Harold Fannin Jr.Player Note
-Cle - TE
-Sun 1:00 pm vs Bal
-BN	
 Emanuel Wilson
-Emanuel WilsonPlayer Note
+Emanuel WilsonVideo ForecastPlayer Note
 Sea - RB
-Thu 8:15 pm @ Den
-BN	
+Final L 14-17 @ Den
+RB	
+Bhayshul Tuten
+Bhayshul TutenVideo ForecastNew Player Note
+Jax - RB
+Final L 31-34 vs Hou
+WR	
+Josh Downs
+Josh DownsVideo ForecastNew Player Note
+Ind - WR
+Final L 20-26 vs Ten
+WR	
+Michael Wilson
+Michael WilsonVideo ForecastNew Player Note
+Ari - WR
+Final W 18-16 @ LAR
+WR	
+Khalil Shakir
+Khalil ShakirNew Player Note
+Buf - WR
+Final W 33-30 @ LV
+TE	
+Harold Fannin Jr.
+Harold Fannin Jr.Video ForecastNew Player Note
+Cle - TE
+Final W 13-10 vs Bal
+W/R/T	
+Javonte Williams
+Javonte WilliamsVideo ForecastNew Player Note
+Dal - RB
+Final L 13-23 @ GB
+Q/W/R/T	
 Jayden Daniels
 Jayden DanielsVideo ForecastPlayer Note
 Was - QB
 Mon 8:15 pm @ SF
 BN	
 DJ Moore
-DJ MooreQPlayer Note
+DJ MooreONew Player Note
 Buf - WR
-Sun 4:25 pm @ LV
-BN	
-Trevor Lawrence
-Trevor LawrencePlayer Note
-Jax - QB
-Sun 9:30 am vs Hou
-BN	
-Khalil Shakir
-Khalil ShakirPlayer Note
-Buf - WR
-Sun 4:25 pm @ LV
+Final W 33-30 @ LV
 BN	
 Jameson Williams
 Jameson WilliamsPlayer Note
 Det - WR
 Bye
 BN	
-Jalen Hurts
-Jalen HurtsVideo ForecastPlayer Note
-Phi - QB
-Sun 1:00 pm vs Car
-BN	
 Geno Smith
-Geno SmithPlayer Note
+Geno SmithVideo ForecastNew Player Note
 NYJ - QB
-Sun 1:00 pm @ NE
+Final L 19-26 @ NE
 BN	
-Juwan Johnson
-Juwan JohnsonPlayer Note
-NO - TE
-Sun 1:00 pm @ NYG
+Deshaun Watson
+Deshaun WatsonNew Player Note
+Cle - QB
+Final W 13-10 vs Bal
+BN	
+Ladd McConkey
+Ladd McConkeyQVideo ForecastNew Player Note
+LAC - WR
+Final L 6-22 @ KC
 IR	
 Travis Etienne Jr.
 Travis Etienne Jr.IRNo new player Notes
 NO - RB
-Sun 1:00 pm @ NYG
+Final W 34-27 @ NYG
 Love a Kittle Lamb & WhiteRice 
 
 Pos	Player
 QB	
 Bryce Young
-Bryce YoungPlayer Note
+Bryce YoungVideo ForecastNew Player Note
 Car - QB
-Sun 1:00 pm @ Phi
+Final W 25-14 @ Phi
 RB	
 Jonathan Taylor
-Jonathan TaylorVideo ForecastPlayer Note
+Jonathan TaylorNew Player Note
 Ind - RB
-Sun 1:00 pm vs Ten
+Final L 20-26 vs Ten
 RB	
-Jeremiyah Love
-Jeremiyah LoveVideo ForecastNew Player Note
-Ari - RB
-Sun 4:05 pm @ LAR
+Derrick Henry
+Derrick HenryVideo ForecastNew Player Note
+Bal - RB
+Final L 10-13 @ Cle
 WR	
 CeeDee Lamb
-CeeDee LambQPlayer Note
+CeeDee LambVideo ForecastNew Player Note
 Dal - WR
-Sun 8:20 pm @ GB
+Final L 13-23 @ GB
 WR	
 Christian Watson
-Christian WatsonPlayer Note
+Christian WatsonNew Player Note
 GB - WR
-Sun 8:20 pm vs Dal
+Final W 23-13 vs Dal
 WR	
-Rashee Rice
-Rashee RiceQVideo ForecastPlayer Note
-KC - WR
-Sun 4:25 pm vs LAC
+Keenan Allen
+Keenan AllenNew Player Note
+Ind - WR
+Final L 20-26 vs Ten
 TE	
 George Kittle
-George KittleVideo ForecastPlayer Note
+George KittlePlayer Note
 SF - TE
 Mon 8:15 pm vs Was
 W/R/T	
-Derrick Henry
-Derrick HenryVideo ForecastPlayer Note
-Bal - RB
-Sun 1:00 pm @ Cle
+Xavier Worthy
+Xavier WorthyVideo ForecastNew Player Note
+KC - WR
+Final W 22-6 vs LAC
 Q/W/R/T	
 Patrick Mahomes
-Patrick MahomesVideo ForecastPlayer Note
+Patrick MahomesNew Player Note
 KC - QB
-Sun 4:25 pm vs LAC
+Final W 22-6 vs LAC
 BN	
-KC Concepcion Jr.
-KC Concepcion Jr.QNew Player Note
-Cle - WR
-Sun 1:00 pm vs Bal
+Rashee Rice
+Rashee RiceONew Player Note
+KC - WR
+Final W 22-6 vs LAC
 BN	
 Malik Willis
-Malik WillisPlayer Note
+Malik WillisNew Player Note
 Mia - QB
 Bye
 BN	
 Jacoby Brissett
-Jacoby BrissettPlayer Note
+Jacoby BrissettNew Player Note
 Ari - QB
-Sun 4:05 pm @ LAR
+Final W 18-16 @ LAR
 BN	
 Tyreek Hill
-Tyreek HillNANew Player Note
+Tyreek HillNAPlayer Note
 Mia - WR
 Bye
-BN	
-Xavier Worthy
-Xavier WorthyPlayer Note
-KC - WR
-Sun 4:25 pm vs LAC
+IR	
+Jeremiyah Love
+Jeremiyah LoveOVideo ForecastNew Player Note
+Ari - RB
+Final W 18-16 @ LAR
 Likely to Burden Tate w Penix 
 
 Pos	Player
 QB	
 Tyler Shough
-Tyler ShoughVideo ForecastPlayer Note
+Tyler ShoughVideo ForecastNew Player Note
 NO - QB
-Sun 1:00 pm @ NYG
+Final W 34-27 @ NYG
 RB	
 Ashton Jeanty
-Ashton JeantyVideo ForecastPlayer Note
+Ashton JeantyVideo ForecastNew Player Note
 LV - RB
-Sun 4:25 pm vs Buf
+Final L 30-33 vs Buf
 RB	
 Jaylen Warren
-Jaylen WarrenPlayer Note
+Jaylen WarrenNew Player Note
 Pit - RB
-Sun 1:00 pm @ TB
-WR	
-Chris Olave
-Chris OlavePlayer Note
-NO - WR
-Sun 1:00 pm @ NYG
+Final W 26-19 @ TB
 WR	
 Carnell Tate
-Carnell TateVideo ForecastPlayer Note
+Carnell TateVideo ForecastNew Player Note
 Ten - WR
-Sun 1:00 pm @ Ind
+Final W 26-20 @ Ind
+WR	
+Luther Burden III
+Luther Burden IIIVideo ForecastNew Player Note
+Chi - WR
+Final W 31-23 @ Atl
 WR	
 Denzel Boston
-Denzel BostonVideo ForecastPlayer Note
+Denzel BostonVideo ForecastNew Player Note
 Cle - WR
-Sun 1:00 pm vs Bal
+Final W 13-10 vs Bal
 TE	
 Isaiah Likely
-Isaiah LikelyPlayer Note
+Isaiah LikelyVideo ForecastNew Player Note
 NYG - TE
-Sun 1:00 pm vs NO
+Final L 27-34 vs NO
 W/R/T	
-Luther Burden III
-Luther Burden IIIPlayer Note
-Chi - WR
-Sun 1:00 pm @ Atl
+Chris Olave
+Chris OlaveVideo ForecastNew Player Note
+NO - WR
+Final W 34-27 @ NYG
 Q/W/R/T	
+Michael Penix Jr.
+Michael Penix Jr.Video ForecastNew Player Note
+Atl - QB
+Final L 23-31 vs Chi
+BN	
 Bo Nix
-Bo NixPlayer Note
+Bo NixVideo ForecastPlayer Note
 Den - QB
-Thu 8:15 pm vs Sea
+Final W 17-14 vs Sea
 BN	
 TreVeyon Henderson
-TreVeyon HendersonDVideo ForecastPlayer Note
+TreVeyon HendersonNew Player Note
 NE - RB
-Sun 1:00 pm vs NYJ
+Final W 26-19 vs NYJ
 BN	
 Jahmyr Gibbs
 Jahmyr GibbsPlayer Note
@@ -1304,19 +1266,14 @@ Det - RB
 Bye
 BN	
 Jake Ferguson
-Jake FergusonPlayer Note
+Jake FergusonNew Player Note
 Dal - TE
-Sun 8:20 pm @ GB
-BN	
-Michael Penix Jr.
-Michael Penix Jr.QNew Player Note
-Atl - QB
-Sun 1:00 pm vs Chi
+Final L 13-23 @ GB
 BN	
 Dallas Goedert
-Dallas GoedertPlayer Note
+Dallas GoedertVideo ForecastNew Player Note
 Phi - TE
-Sun 1:00 pm vs Car
+Final L 14-25 vs Car
 IR	
 Jordan Mason
 Jordan MasonIRPlayer Note
