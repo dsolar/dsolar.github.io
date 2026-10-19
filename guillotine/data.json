@@ -4,7 +4,7 @@
  "week": 6,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-10-19T17:41:01Z",
+ "updated": "2026-10-19T19:54:00Z",
  "source": "Yahoo league page, pasted",
  "teams": [
   {
@@ -276,7 +276,7 @@
       }
      },
      "proj": 14.4,
-     "rank": "WR8",
+     "rank": "WR9",
      "date": "2026-10-18",
      "final": true,
      "actual": 12.3,
@@ -1254,8 +1254,8 @@
        "rec_td": 1
       }
      },
-     "proj": 9.72,
-     "rank": "WR22",
+     "proj": 9.59,
+     "rank": "WR23",
      "date": "2026-10-19",
      "bye_next": true,
      "next_proj": 0.0,
@@ -1476,7 +1476,7 @@
     }
    ],
    "proj_pre": 123.36,
-   "best": 125.3,
+   "best": 125.2,
    "best_next": 122.6,
    "locked": 111.32,
    "locked_proj": 115.61,
@@ -1782,7 +1782,7 @@
        "rush_td": 2
       }
      },
-     "proj": 17.25,
+     "proj": 17.66,
      "rank": "QB10",
      "date": "2026-10-19",
      "bye_next": true,
@@ -1974,7 +1974,7 @@
      "next_proj": 0.0
     }
    ],
-   "best": 115.2,
+   "best": 115.6,
    "best_next": 88.9,
    "locked": 92.94,
    "locked_proj": 97.22,
@@ -2013,7 +2013,7 @@
        "rush_td": 1
       }
      },
-     "proj": 22.15,
+     "proj": 22.38,
      "rank": "QB2",
      "date": "2026-10-19",
      "next_proj": 20.0,
@@ -2044,7 +2044,7 @@
        "rush_td": 5
       }
      },
-     "proj": 18.82,
+     "proj": 19.08,
      "rank": "RB5",
      "date": "2026-10-19",
      "next_proj": 17.53,
@@ -2242,7 +2242,7 @@
        "rec_td": 1
       }
      },
-     "proj": 9.7,
+     "proj": 9.67,
      "rank": "RB24",
      "date": "2026-10-19",
      "bye_next": true,
@@ -2437,7 +2437,7 @@
     }
    ],
    "proj_pre": 119.31,
-   "best": 122.7,
+   "best": 123.1,
    "best_next": 128.3,
    "locked": 62.04,
    "locked_proj": 71.69,
@@ -2676,7 +2676,7 @@
        "rec_td": 4
       }
      },
-     "proj": 12.5,
+     "proj": 12.58,
      "rank": "TE3",
      "date": "2026-10-19",
      "next_proj": 12.46,
@@ -2883,7 +2883,7 @@
     }
    ],
    "proj_pre": 133.55,
-   "best": 135.8,
+   "best": 135.9,
    "best_next": 120.2,
    "locked": 98.32,
    "locked_proj": 123.32,
@@ -3346,7 +3346,7 @@
        "rec_td": 3
       }
      },
-     "proj": 7.8,
+     "proj": 7.73,
      "rank": "WR38",
      "date": "2026-10-19",
      "bye_next": true,
@@ -3721,8 +3721,8 @@
        "rec_td": 3
       }
      },
-     "proj": 14.05,
-     "rank": "WR10",
+     "proj": 14.49,
+     "rank": "WR8",
      "date": "2026-10-19",
      "next_proj": 14.62,
      "in_best": true
@@ -3849,7 +3849,7 @@
     }
    ],
    "proj_pre": 140.63,
-   "best": 141.4,
+   "best": 141.8,
    "best_next": 138.0,
    "locked": 97.58,
    "locked_proj": 135.69,
@@ -4477,7 +4477,7 @@
       }
      },
      "proj": 14.33,
-     "rank": "WR9",
+     "rank": "WR10",
      "date": "2026-10-18",
      "final": true,
      "actual": 5.4,
@@ -4735,7 +4735,7 @@
       }
      },
      "proj": 9.65,
-     "rank": "WR23",
+     "rank": "WR22",
      "date": "2026-10-18",
      "final": true,
      "actual": 17.0,
@@ -4848,7 +4848,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-10-19T17:41:04Z",
+  "updated": "2026-10-19T19:54:01Z",
   "players": 3045,
   "unmatched": []
  }
