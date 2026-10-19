@@ -341,6 +341,63 @@ body.battle-focus .battle-log{max-height:21dvh;overflow:auto;padding:9px;}
  body.game-focus .touch-hint{display:none;}
  body.game-focus .world-commands .dpad{display:none;}
 }
+
+/* Softlands Parlor and shop visual refresh — original GBA-style decorative CSS. */
+.parlor-lobby,.item-boutique{width:min(94vw,620px);max-width:620px;max-height:88dvh;overflow-y:auto!important;padding:0!important;text-align:left!important;border:3px solid #453c52!important;border-radius:14px!important;box-shadow:6px 7px 0 #342e4255;background:#fffaee}
+.parlor-lobby{--parlor:#876287;--light:#e7c6dd;--dark:#594360}
+.parlor-lobby.bloom{--parlor:#78a878;--light:#d6e9bd;--dark:#4c705e}
+.parlor-lobby.shell{--parlor:#5d9bae;--light:#bfe3e4;--dark:#426b7f}
+.parlor-lobby.moon{--parlor:#7467a0;--light:#dad1ee;--dark:#4e4475}
+.parlor-lobby.river{--parlor:#61a59d;--light:#c6e2d7;--dark:#487471}
+.parlor-lobby-head{padding:9px 15px;background:var(--dark);color:#fff8e6;display:flex;justify-content:space-between;flex-wrap:wrap;gap:5px;font-size:.7rem;letter-spacing:.05em}
+.parlor-lobby-stage{height:176px;position:relative;overflow:hidden;background:repeating-linear-gradient(90deg,var(--light) 0 34px,#fff9ef 34px 39px);border-bottom:9px solid var(--parlor)}
+.parlor-lobby-stage:before{content:'';position:absolute;inset:65% 0 0;background:repeating-linear-gradient(90deg,#c8a6a6 0 35px,#947d84 35px 38px);border-top:5px solid var(--dark)}
+.lobby-window{position:absolute;top:13px;width:65px;height:74px;border:6px solid var(--dark);border-radius:30px 30px 4px 4px;background:linear-gradient(135deg,#f4ffff,#a7d8db);text-align:center;line-height:60px;font-size:24px;color:#fff}
+.lobby-window.left{left:9%}.lobby-window.right{right:9%}
+.lobby-banner{position:absolute;top:0;left:33%;width:34%;text-align:center;color:var(--dark);font-weight:900;font-size:23px;letter-spacing:.2em}
+.lobby-carpet{position:absolute;bottom:-20px;left:32%;width:36%;height:45px;background:var(--light);border:5px solid var(--dark);border-radius:50%}
+.lobby-plush{position:absolute;left:50%;bottom:5px;transform:translateX(-50%);width:120px;height:120px;display:grid;place-items:center;z-index:1;filter:drop-shadow(3px 5px 1px #352b4466)}
+.lobby-plush svg{width:100%;height:100%}
+.parlor-lobby-paper{padding:14px 17px 17px;background:repeating-linear-gradient(0deg,transparent 0 30px,#ead8c55c 30px 31px),#fffaf0}
+.lobby-title-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.lobby-title-row h2{margin:2px 0;font-size:clamp(1.3rem,3vw,1.9rem)}
+.lobby-title-row small{color:#6c5f6a;font-size:.68rem}
+.patch-medallion{width:58px;height:67px;flex:none;display:grid;place-items:center;clip-path:polygon(50% 0,95% 15%,95% 72%,50% 100%,5% 72%,5% 15%);background:#8e8a90;filter:grayscale(1);}
+.patch-medallion.earned{filter:none}
+.patch-medallion.button{background:#b17ba2}.patch-medallion.bloom{background:#72ab80}.patch-medallion.shell{background:#65a5b9}.patch-medallion.moon{background:#8874bf}.patch-medallion.river{background:#70b1a9}
+.patch-medallion span{display:grid;place-items:center;width:75%;height:76%;border:3px dashed #fff0d4;color:white;font-size:26px;text-shadow:2px 2px #493a55}
+.lobby-prize{display:flex;align-items:center;gap:12px;margin:12px 0;padding:10px;border:2px dashed #af9a84;border-radius:8px;background:#f2e7d8}
+.prize-star{font-size:26px;width:40px;height:40px;border:3px solid #a58f7a;background:#fff5db;display:grid;place-items:center}
+.lobby-prize div{display:grid;gap:2px}
+.lobby-prize small{font-size:.58rem;letter-spacing:.1em;font-weight:900}.lobby-prize strong{font-size:1rem}.lobby-prize div span{font-size:.72rem}
+.lobby-flavor{font-size:.8rem;margin:6px 0!important}.lobby-status{font-size:.76rem;padding:9px 11px;background:var(--light);border-left:5px solid var(--parlor);margin:8px 0!important}
+.lobby-trial{background:var(--light);padding:10px;border:2px solid var(--parlor);border-radius:8px}
+.lobby-trial p{margin:3px 0 9px;font-size:.8rem}
+.lobby-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-top:13px}
+.item-boutique{--shop:#82648c}.item-boutique.garden{--shop:#67916a}.item-boutique.fountain{--shop:#6795ae}.item-boutique.camp{--shop:#a58365}
+.boutique-awning{text-align:center;padding:11px 15px;background:repeating-linear-gradient(90deg,var(--shop) 0 36px,#ffffff30 36px 62px);color:#fff8e8;border-bottom:8px solid #53435c}
+.boutique-awning>span{font-size:.7rem;font-weight:900;letter-spacing:.12em}
+.boutique-icon{font-size:48px;filter:drop-shadow(2px 3px #3c315b77)}
+.boutique-awning h2{color:#fff8eb;text-shadow:2px 2px #493955;margin:2px 0;font-size:1.7rem}
+.boutique-inner{padding:15px 17px;background:repeating-linear-gradient(0deg,transparent 0 29px,#e8dacf6e 29px 30px),#fffaf0}
+.boutique-inner>p{font-size:.82rem;margin:0 0 11px}
+.shop-stock{display:grid;gap:9px}
+.shop-item{display:flex;align-items:center;text-align:left;gap:10px;width:100%;padding:9px;background:#fffef8;border:2px solid #55495d;border-radius:10px;color:#342c3c;box-shadow:3px 3px #59485a55}
+.shop-item:disabled{opacity:.62;cursor:not-allowed}.shop-item:not(:disabled):hover{background:#f8f0ff}
+.shop-item-icon{display:grid;place-items:center;flex:none;width:55px;height:55px;font-size:29px;background:#c9eaf1;border:3px solid #6d637b;border-radius:7px}
+.shop-item:nth-child(2) .shop-item-icon{background:#f0d0db}.shop-item:nth-child(3) .shop-item-icon{background:#f5e6b8}
+.shop-item-copy{display:grid;flex:1;gap:3px;min-width:0}.shop-item-copy strong{font-size:.86rem}.shop-item-copy small{font-size:.66rem;color:#685d69}
+.shop-item-cost{white-space:nowrap;font-size:.72rem;font-weight:900;padding:6px;background:#ffe8ad;border:2px solid #ad9268;border-radius:6px}
+.boutique-wallet{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0;border-block:2px dotted #c5b2a4;padding:10px 0;font-size:.73rem}
+.boutique-wallet span{font-weight:900;letter-spacing:.09em}.boutique-wallet strong{font-weight:850}
+.shop-locked{background:#f2eedd;border:2px dashed #ad9b82;padding:12px;border-radius:7px}
+.patch-case{background:#624c60;border:5px ridge #ad8b85;border-radius:12px;padding:10px;margin:12px 0;box-shadow:inset 0 0 0 2px #d3aca0}
+.patch-case-title{color:#fff0db;text-align:center;font-size:.66rem;letter-spacing:.14em;font-weight:900;margin-bottom:9px}
+.patch-case-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.patch-slot{display:grid;justify-items:center;gap:4px;background:#372d3e77;border:2px solid #ffffff29;border-radius:7px;padding:6px 2px;min-width:0}
+.patch-slot .patch-medallion{transform:scale(.78);margin:-7px 0}
+.patch-slot small{font-size:.56rem;color:#fff7ea;text-align:center;overflow-wrap:anywhere}
+@media(max-width:530px){.parlor-lobby-stage{height:125px}.lobby-window{width:43px;height:58px;line-height:45px}.lobby-plush{height:95px;width:95px}.parlor-lobby-paper{padding:10px 12px}.patch-medallion{width:46px;height:53px}.patch-medallion span{font-size:19px}.lobby-prize{margin:8px 0}.boutique-icon{font-size:38px}.shop-item-icon{width:45px;height:45px;font-size:23px}.patch-case-grid{gap:3px}.patch-slot small{font-size:.48rem}}
 </style>
 </head>
 <body>
@@ -1535,7 +1592,7 @@ function journal(){ensureWorld(state);const claimed=state.world.claimedQuests.le
  </aside></div>`;
 }
 function clubhouse(){return `${statBar()}<div class="grid-2">
-${panel(`<div class="eyebrow">Collection milestones</div><h1>Your clubhouse.</h1><div class="story-item"><strong>🏆 Best winning streak</strong><span style="float:right">${state.bestStreak}</span></div><div class="story-item"><strong>✿ Parlor patches</strong><span style="float:right">${state.world.parlorBadges.length} / ${PARLORS.length+REGION_PARLORS.length}</span></div><div class="story-item"><strong>📖 Adventures completed</strong><span style="float:right">${state.world.claimedQuests.length} / ${QUESTS.length}</span></div><div class="story-item"><strong>🎀 Best activity ribbons</strong><span style="float:right">${Object.values(state.world.miniBests||{}).reduce((a,b)=>a+b,0)} / 18</span></div><div class="story-item"><strong>🏄 Water travel</strong><span style="float:right">${hasSoftboard(state)?'Softboard earned':'Locked · Shell Patch boss'}</span></div><div class="story-item"><strong>✨ Boss victories</strong><span style="float:right">${state.bossWins}</span></div><div class="story-item"><strong>🧸 Jellycats collected</strong><span style="float:right">${state.owned.length}</span></div><div class="story-item"><strong>🎯 Win / loss record</strong><span style="float:right">${state.wins} / ${state.losses}</span></div><p class="source-note mt-20">Your progress is stored only in this browser. Export a save file to move it to another computer or protect it from browser resets.</p><div class="row"><button class="btn pink" data-action="export">Export save</button><button class="btn cream" data-action="import">Import save</button><input type="file" id="import-file" class="hidden" accept="application/json,.json"></div>`)}
+${panel(`<div class="eyebrow">Collection milestones</div><h1>Your clubhouse.</h1><div class="patch-case"><div class="patch-case-title">✦ THE EMBROIDERED PATCH CASE ✦</div><div class="patch-case-grid">${[...PARLORS,...REGION_PARLORS].map(p=>`<div class="patch-slot">${patchArtwork(p,state.world.parlorBadges.includes(p.id))}<small>${safe(p.patch)}</small></div>`).join('')}</div></div><div class="story-item"><strong>🏆 Best winning streak</strong><span style="float:right">${state.bestStreak}</span></div><div class="story-item"><strong>✿ Parlor patches</strong><span style="float:right">${state.world.parlorBadges.length} / ${PARLORS.length+REGION_PARLORS.length}</span></div><div class="story-item"><strong>📖 Adventures completed</strong><span style="float:right">${state.world.claimedQuests.length} / ${QUESTS.length}</span></div><div class="story-item"><strong>🎀 Best activity ribbons</strong><span style="float:right">${Object.values(state.world.miniBests||{}).reduce((a,b)=>a+b,0)} / 18</span></div><div class="story-item"><strong>🏄 Water travel</strong><span style="float:right">${hasSoftboard(state)?'Softboard earned':'Locked · Shell Patch boss'}</span></div><div class="story-item"><strong>✨ Boss victories</strong><span style="float:right">${state.bossWins}</span></div><div class="story-item"><strong>🧸 Jellycats collected</strong><span style="float:right">${state.owned.length}</span></div><div class="story-item"><strong>🎯 Win / loss record</strong><span style="float:right">${state.wins} / ${state.losses}</span></div><p class="source-note mt-20">Your progress is stored only in this browser. Export a save file to move it to another computer or protect it from browser resets.</p><div class="row"><button class="btn pink" data-action="export">Export save</button><button class="btn cream" data-action="import">Import save</button><input type="file" id="import-file" class="hidden" accept="application/json,.json"></div>`)}
 ${panel(`<div class="eyebrow">Little keepsakes</div><h2>Your souvenir shelf.</h2><p>Souvenirs stay with you, even after a tough battle.</p><div class="souvenir-shelf">${[['ribbon','🎀','Velvet Ribbon'],['postcards','💌','Postcards'],['seedling','🪴','Tiny Seedling']].map(([id,icon,label])=>`<div class="souvenir ${state.world.souvenirs.includes(id)?'found':''}"><span>${icon}</span><small>${state.world.souvenirs.includes(id)?label:'Not discovered'}</small></div>`).join('')}</div><p class="small muted mt-12">💫 ${state.world.wishes} wishes granted · 🏕️ ${state.world.campVisited?'Campfire story told':'Campfire story waiting'}</p>`,'soft')}
  ${panel(`<div class="eyebrow">Behind the game</div><h2>Real Jellycats. Original rules.</h2><p>All ${CATALOG.length} playable entries use names researched from the Jellycat catalog. Portraits are original soft-toy-style illustrations, not official photographs or exact recreations.</p><p>Battle moves, strengths, levels, and rarity assignments are fan-game inventions, not official Jellycat characteristics.</p><p><strong>Six types:</strong> ${TYPES.map((x,i)=>TYPE_EMOJI[i]+' '+x).join(' · ')}</p><p><strong>Ten legendary characters</strong> have been selected for this fan-made game. Legendary status is invented for gameplay.</p><p class="small muted">Independent fan game, not affiliated with Jellycat. Catalog references are maintained separately from gameplay.</p>`)}
 </div>${panel(`<div class="row between"><h2 class="mb-0">Game settings</h2>${badge('Saved locally')}</div><p class="small muted mt-12">Only reset if you're sure. You can export your save first.</p><button class="btn ghost" data-action="reset">Reset game progress</button><div class="story-item"></div><h3 class="mt-20">Recent activity</h3>${state.history.length?state.history.slice(-8).reverse().map(x=>`<div class="story-item">✳ ${safe(x)}</div>`).join(''):'<p class="muted small">Your wins and discoveries will appear here.</p>'}`)}`;}
@@ -1783,8 +1840,17 @@ function walkToward(tx,ty,npcToMeet=null,placeToMeet=null){stopWalking();ensureW
   if(!performStep(deltaX,deltaY,true))stopWalking();
  },28);
 }
-function showPlace(p){stopWalking();const w=state.world;const offerings=p.id==='fountain'?`${canWish(state)?`<button class="btn" data-action="place-action" data-id="fountain" data-option="wish">Make a wish · +1 star and team XP</button>`:`<p class="muted small">The fountain needs ${Math.max(0,5-(state.wins-w.lastWishWins))} more battle victories to recharge.</p>`}`:p.id==='shop'?`<button class="btn cream" data-action="place-action" data-id="shop" data-option="bag">🫙 Mystery gift bag · 8 ★</button>${w.souvenirs.includes('ribbon')?'':`<button class="btn cream" data-action="place-action" data-id="shop" data-option="ribbon">🎀 Velvet ribbon · 4 ★</button>`}${w.souvenirs.includes('postcards')?'':`<button class="btn cream" data-action="place-action" data-id="shop" data-option="postcards">✉ Tiny postcards · 3 ★</button>`}`:p.id==='greenhouse'?(w.greenhouseVisited?'<p>✓ Your little seedling is happily growing here.</p>':'<button class="btn" data-action="place-action" data-id="greenhouse" data-option="tend">Tend the little seedling · free</button>'):(w.campVisited?'<p>✓ You have already shared your first campfire story.</p>':'<button class="btn" data-action="place-action" data-id="camp" data-option="rest">Gather by the campfire · free</button>');
- const div=el('div','modal-backdrop');div.id='place-modal';div.innerHTML=`<section class="modal center place-modal" role="dialog" aria-modal="true" aria-label="${safe(p.name)}"><span class="eyebrow">A special spot in the Softlands</span><div class="place-illustration">${p.icon}</div><h2>${safe(p.name)}</h2><p>${safe(p.description)}</p><div class="place-offerings">${offerings}</div><p class="tiny muted">★ ${state.points} stars · 🫙 ${state.jars} bags</p><button class="btn micro ghost" data-action="close-place">Keep exploring →</button></section>`;document.body.append(div);div.querySelector('button')?.focus();}
+function showPlace(p){
+ stopWalking();const w=state.world;
+ const offerings=p.id==='fountain'?(canWish(state)?'<button class="btn" data-action="place-action" data-id="fountain" data-option="wish">✦ Make a wish · +1 star and team XP</button>':`<p class="shop-locked">✦ The fountain recharges after more battle victories.</p>`):
+ p.id==='shop'?storeItem('🛍️','Powder-blue mystery bag','A surprise waiting for your team',8,'bag')+storeItem('🎀','Velvet ribbon','A treasure for your clubhouse shelf',4,'ribbon',w.souvenirs.includes('ribbon'))+storeItem('💌','Travel postcards','Remember your favorite places',3,'postcards',w.souvenirs.includes('postcards')):
+ p.id==='greenhouse'?(w.greenhouseVisited?'<p class="shop-locked">✓ Your seedling is happily growing here.</p>':'<button class="btn" data-action="place-action" data-id="greenhouse" data-option="tend">🪴 Tend the little seedling · free</button>'):
+ (w.campVisited?'<p class="shop-locked">✓ You have shared your first campfire story.</p>':'<button class="btn" data-action="place-action" data-id="camp" data-option="rest">🏕️ Gather by the campfire · free</button>');
+ const style=p.id==='shop'?'store':p.id==='greenhouse'?'garden':p.id==='fountain'?'fountain':'camp';
+ const div=el('div','modal-backdrop');div.id='place-modal';
+ div.innerHTML=`<section class="modal place-modal item-boutique ${style}" role="dialog" aria-modal="true" aria-label="${safe(p.name)}"><div class="boutique-awning"><span>✦ THE LITTLE SOFTLANDS FINDS ✦</span><div class="boutique-icon" aria-hidden="true">${p.icon}</div><h2>${safe(p.name)}</h2></div><div class="boutique-inner"><p>${safe(p.description)}</p><div class="shop-stock">${offerings}</div><div class="boutique-wallet"><span>YOUR SATCHEL</span><strong>★ ${state.points} stars</strong><strong>🫙 ${state.jars} bags</strong></div><button class="btn micro ghost" data-action="close-place">Keep exploring →</button></div></section>`;
+ document.body.append(div);div.querySelector('button')?.focus();
+}
 function showTalk(n){stopWalking();$('#talk-modal')?.remove();ensureWorld(state);
  if(!state.world.talked.includes(n.id))state.world.talked.push(n.id);
  if(n.id==='orchard-farmer'&&state.world.found.includes('orchard-key')&&!state.world.storyFlags.includes('returned-orchard-key')){
