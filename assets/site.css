@@ -272,9 +272,6 @@ a:hover{color:var(--red)}
 .entry-cover{position:relative}
 .entry-cover:has(img){aspect-ratio:4/3}
 .entry-cover:has(img) .band{position:absolute;inset:auto 0 0;z-index:1}
-#\33 1st-franchise .entry-cover img{transform:scale(1.65);transform-origin:top left}
-#guillotine .entry-cover{aspect-ratio:16/10}
-#guillotine .entry-cover img{transform:none;object-position:top left}
 #franchise-mode .entry-cover .typeset{aspect-ratio:2/1;font-size:1.6rem}
 .writing-intro{padding-top:32px;margin-bottom:28px}
 .featured-writing{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 24px;padding-left:calc(var(--meta-col) + 40px);margin-bottom:36px}
@@ -317,9 +314,10 @@ a:hover{color:var(--red)}
 .filters button{font-size:.84rem;padding:7px 14px}
 .catalog{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;align-items:stretch}
 .entry,.entry:first-child{display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:"cover" "meta" "body";gap:0;align-content:start;border:1px solid var(--rule);border-radius:10px;overflow:hidden;padding:0;background:var(--paper)}
-.entry-cover,.entry-cover:has(img),#guillotine .entry-cover{grid-area:cover;max-width:none;aspect-ratio:16/9;border-radius:0;box-shadow:none}
-.entry-cover img{width:100%;height:100%;aspect-ratio:16/9;object-fit:cover}
-.entry-cover .typeset,#franchise-mode .entry-cover .typeset{aspect-ratio:16/9;font-size:1.7rem}
+/* Covers are 1040x780 (4:3); keep cards at 4:3 so nothing gets cropped. */
+.entry-cover,.entry-cover:has(img){grid-area:cover;max-width:none;aspect-ratio:4/3;border-radius:0;box-shadow:none}
+.entry-cover img{width:100%;height:100%;aspect-ratio:4/3;object-fit:cover}
+.entry-cover .typeset,#franchise-mode .entry-cover .typeset{aspect-ratio:4/3;font-size:1.7rem}
 .entry-meta{grid-area:meta;display:flex;flex-direction:row;align-items:center;gap:12px;padding:22px 24px 0;font-size:.78rem}
 .entry-meta .type{font-weight:700;color:var(--red)}
 .entry-body{grid-area:body;gap:12px;padding:10px 24px 24px}
@@ -354,7 +352,7 @@ a:hover{color:var(--red)}
  .section-head{margin-bottom:18px}
  .filters{gap:7px}
  .filters button{font-size:.79rem;padding:7px 11px}
- .entry-cover,.entry-cover:has(img),#guillotine .entry-cover{aspect-ratio:16/9}
+ .entry-cover,.entry-cover:has(img){aspect-ratio:4/3}
 }
 
 
