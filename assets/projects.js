@@ -14,7 +14,8 @@
      stack     What it's built with.
      cover     image: screenshot in assets/covers/ (optional; without one, a colored
                block with the title is drawn instead). bg / band: the project's own colors.
-     featured  true puts it at the top of the list, ahead of anything newer.
+     featured  true puts it at the top of its category and adds a Featured tag.
+     spotlight true puts it first on the page in a full-width card (use on one project).
      status    "live" (default) or "building" (listed with no Play button).
      hidden    true hides it until the homepage app code is entered. Direct links still work.
 */
@@ -28,8 +29,7 @@ window.PROJECTS = [
     summary: "Build an NBA expansion roster, navigate the salary cap, and test your decisions across simulated seasons.",
     facts: [["$117.2M", "hard cap in year one"], ["14", "picks, one per NBA team at most"], ["1,000", "simulated seasons behind every grade"]],
     stack: ["JavaScript", "Python", "Monte Carlo simulation"],
-    cover: { image: "assets/covers/31st-franchise-seattle.svg", bg: "#00653A", band: "#FFC200" },
-    featured: true
+    cover: { image: "assets/covers/31st-franchise-seattle.svg", bg: "#00653A", band: "#FFC200" }
   },
   {
     title: "The Degenerate Trail",
@@ -69,7 +69,6 @@ window.PROJECTS = [
   },
   {
     title: "Bastille Day Odds",
-    featured: true,
     type: "Fantasy Leagues",
     released: "2026-10",
     url: "guillotine/",
@@ -116,7 +115,6 @@ window.PROJECTS = [
   },
   {
     title: "Banner 19",
-    featured: true,
     type: "Simulations",
     released: "2026-10",
     url: "celtics/",
@@ -129,6 +127,8 @@ window.PROJECTS = [
   },
   {
     title: "Make the Call",
+    featured: true,
+    spotlight: true,
     type: "Games",
     released: "2026-10",
     url: "win-probability/",
@@ -141,13 +141,12 @@ window.PROJECTS = [
   },
   {
     title: "Jellycat Battle Club",
-    hidden: true,
     type: "Games",
     released: "2026-10",
     url: "jellycat-battle/",
     action: "Start the adventure",
     question: "What if the plush on the shelf had to battle for its spot?",
-    summary: "An unofficial, fan-made collect-and-battle game. Pick a starter, explore the Softlands, win battles, and grow your Jellycat collection.",
+    summary: "A collect-and-battle game I designed for my daughter. Pick a starter, explore the Softlands, win battles, and grow your Jellycat collection. Unofficial and fan-made.",
     facts: [["150", "Jellycats to collect"], ["24", "routes across the Softlands"], ["6", "types, from Food to Adventure"]],
     stack: ["JavaScript"],
     cover: { image: "assets/covers/jellycat-battle.jpg", bg: "#F9F1E8", band: "#64398E" }

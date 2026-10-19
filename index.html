@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Besley:ital,wght@0,500;0,600;0,700;0,800;1,500&family=Libre+Franklin:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="assets/site.css?v=20261019-covers">
+<link rel="stylesheet" href="assets/site.css?v=20261019-spotlight">
 <script src="assets/site.js" defer></script>
 <script src="assets/analytics.js" defer></script>
 </head>
@@ -234,7 +234,7 @@
   </div>
 </footer>
 
-<script src="assets/projects.js?v=20261019-hidden-games"></script>
+<script src="assets/projects.js?v=20261019-spotlight"></script>
 <script>
 /* Draws the project list from assets/projects.js. You shouldn't need to edit this. */
 (function () {
@@ -261,7 +261,7 @@
   var projects = (window.PROJECTS || []).filter(function (p) { return showHidden || !p.hidden; });
   var categoryOrder = {"Simulations":0,"Games":1,"Fantasy Leagues":2,"Social Tools":3};
   projects.sort(function (a, b) {
-    return ((categoryOrder[a.type] ?? 4) - (categoryOrder[b.type] ?? 4)) || (!!b.featured - !!a.featured) || String(b.released || "").localeCompare(String(a.released || ""));
+    return (!!b.spotlight - !!a.spotlight) || ((categoryOrder[a.type] ?? 4) - (categoryOrder[b.type] ?? 4)) || (!!b.featured - !!a.featured) || String(b.released || "").localeCompare(String(a.released || ""));
   });
 
   var catalog = document.getElementById("catalog");
@@ -279,7 +279,7 @@
       return "<div><dt>" + esc(f[1]) + "</dt><dd>" + esc(f[0]) + "</dd></div>";
     }).join("");
     var title = !accessible ? esc(p.title) : '<a href="' + esc(p.url) + '">' + esc(p.title) + "</a>";
-    return '<article class="entry" id="' + esc(slug(p.url)) + '" data-type="' + esc(p.type) + '" style="' + esc(style) + '">'
+    return '<article class="entry' + (p.spotlight ? ' spotlight' : '') + '" id="' + esc(slug(p.url)) + '" data-type="' + esc(p.type) + '" style="' + esc(style) + '">'
       + '<div class="entry-meta"><span class="type">' + esc(p.type) + "</span>" + (p.featured ? '<span class="featured-tag">Featured</span>' : '')
       + (building ? '<span class="state">In progress</span>' : "<span>" + when(p.released) + "</span>") + "</div>"
       + (!accessible ? '<div class="entry-cover" aria-hidden="true">' + art + '<span class="band"></span></div>'

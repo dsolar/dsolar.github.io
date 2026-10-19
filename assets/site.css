@@ -375,3 +375,13 @@ a:hover{color:var(--red)}
 .app-code input{min-width:0;flex:1;padding:9px;border:1px solid var(--muted);border-radius:4px;background:var(--paper,#fff);color:var(--ink)}
 .app-code button{cursor:pointer;padding:9px 12px;border:1px solid var(--muted);border-radius:4px;background:transparent;color:var(--ink);font:inherit}
 .app-code [hidden]{display:none}
+
+/* Spotlight: one project shown first, across the full width, cover beside the copy. */
+.catalog .entry.spotlight{grid-column:1/-1}
+.entry.spotlight .facts{display:grid;margin:6px 0 2px}
+@media(min-width:641px){
+ .entry.spotlight,.entry.spotlight:first-child{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);grid-template-areas:"cover meta" "cover body";align-content:stretch}
+ .entry.spotlight .entry-cover{align-self:stretch;height:100%}
+ .entry.spotlight .entry-meta{padding-top:28px}
+ .entry.spotlight .entry-body h3{font-size:clamp(1.7rem,2.8vw,2.3rem)}
+}
