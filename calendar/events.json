@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-18T14:09:33Z",
+ "updated": "2026-10-19T17:10:17Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,170 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "espn-401873001",
-   "date": "2026-10-18",
-   "time": "13:00",
-   "title": "Patriots vs Jets",
-   "cat": "sports",
-   "venue": "Gillette Stadium",
-   "city": "Foxborough, MA",
-   "url": "https://www.espn.com/nfl/game/_/gameId/401873001/jets-patriots",
-   "source": "espn",
-   "score": 1
-  },
-  {
-   "id": "tm-vv1AvZkfYGkeceVBv",
-   "date": "2026-10-18",
-   "time": "14:00",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-10-18-2026/event/01006530AD0B4E81",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1AAZJxF",
-   "date": "2026-10-18",
-   "time": "18:00",
-   "title": "Allison Russell (18 and Over)",
-   "cat": "music",
-   "venue": "Royale Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZJxF",
-   "source": "ticketmaster",
-   "times": [
-    "18:00",
-    "19:00"
-   ],
-   "aka": [
-    "sg-18490360",
-    "2026-10-18-allison-russell-royale"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18663015",
-   "date": "2026-10-18",
-   "time": "19:00",
-   "title": "Improv With My Friends From Work",
-   "cat": "comedy",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/improv-with-my-friends-from-work-tickets/comedy/2026-10-18-7-pm/18663015",
-   "source": "seatgeek",
-   "score": 1
-  },
-  {
-   "id": "tm-vvG17Z_5wJG-IB",
-   "date": "2026-10-18",
-   "time": "19:00",
-   "title": "LAUREN SANDERSON: COME SAY SUM TOUR",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/lauren-sanderson-come-say-sum-tour-boston-massachusetts-10-18-2026/event/010064BCA6321A3A",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18281455"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_13S_x9k",
-   "date": "2026-10-18",
-   "time": "19:00",
-   "title": "Olivia Rodrigo: The Unraveled Tour",
-   "cat": "music",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/olivia-rodrigo-the-unraveled-tour-boston-massachusetts-10-18-2026/event/010064A4B36625C6",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18224681",
-    "2026-10-18-olivia-rodrigo-td-garden"
-   ],
-   "sub": "with Wolf Alice",
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_GpsEn49",
-   "date": "2026-10-18",
-   "time": "19:00",
-   "title": "Sienna Spiro: My House Tour",
-   "cat": "music",
-   "venue": "Citizens House of Blues Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/sienna-spiro-my-house-tour-boston-massachusetts-10-18-2026/event/010064C5B19EA557",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18318250",
-    "2026-10-18-sienna-spiro-citizens-house-of-bl"
-   ],
-   "sub": "with Summer Joy",
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_1RIGXpi",
-   "date": "2026-10-18",
-   "time": "19:00",
-   "title": "for KING & COUNTRY",
-   "cat": "music",
-   "venue": "Boch Center Wang Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/for-king-country-boston-massachusetts-10-18-2026/event/010064ABE833E5AC",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18252118",
-    "2026-10-18-for-king-country-wang-theatre"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A7PwfS",
-   "date": "2026-10-18",
-   "time": "20:00",
-   "title": "Brand New",
-   "cat": "music",
-   "venue": "Roadrunner-Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PwfS",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18319869"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A7PI-a",
-   "date": "2026-10-18",
-   "time": "20:00",
-   "title": "Carly Pearce w/ Belle Frantz",
-   "cat": "music",
-   "venue": "The Sinclair Music Hall",
-   "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PI-a",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18334250",
-    "2026-10-18-carly-pearce-the-sinclair"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1A8vPuJGAulScu",
-   "date": "2026-10-18",
-   "time": "22:00",
-   "title": "Jamal's Dreams Presents: Battle of the Sexes DJ Battle ( 21+ )",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/jamals-dreams-presents-battle-of-the-boston-massachusetts-10-18-2026/event/010065366DAF3B4D",
-   "source": "ticketmaster",
-   "score": 0
-  },
   {
    "id": "tm-Z7r9jZ1A7Oa-4",
    "date": "2026-10-19",
@@ -610,7 +446,6 @@
    "url": "https://www.ticketmaster.com/an-evening-with-assembly-of-dust-boston-massachusetts-10-23-2026/event/01006453DD93D0B4",
    "source": "ticketmaster",
    "aka": [
-    "sg-18091257",
     "sg-18091259"
    ],
    "score": 0
@@ -5413,6 +5248,7 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7J6jO",
    "source": "ticketmaster",
    "aka": [
+    "sg-18696771",
     "2026-11-20-troyboi-royale"
    ],
    "score": 0
@@ -5975,6 +5811,25 @@
    "source": "ticketmaster",
    "aka": [
     "sg-18618955"
+   ],
+   "score": 0
+  },
+  {
+   "id": "sg-18696801",
+   "date": "2026-11-28",
+   "time": "14:00",
+   "title": "Golden Girls: The Laughs Continue",
+   "cat": "comedy",
+   "venue": "Emerson Colonial Theatre",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/golden-girls-tickets/comedy/2026-11-28-2-pm/18696801",
+   "source": "seatgeek",
+   "times": [
+    "14:00",
+    "19:00"
+   ],
+   "aka": [
+    "sg-18696802"
    ],
    "score": 0
   },
@@ -7232,26 +7087,10 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A70w7P",
    "source": "ticketmaster",
    "aka": [
+    "sg-18293501",
     "sg-18293501"
    ],
    "score": 0
-  },
-  {
-   "id": "sg-18609158",
-   "date": "2026-12-10",
-   "time": "20:00",
-   "title": "Taper's Choice (18+)",
-   "cat": "music",
-   "venue": "The Sinclair - Cambridge",
-   "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/taper-s-choice-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-12-10-8-pm/concert/18609158",
-   "source": "seatgeek",
-   "act": "Taper's Choice",
-   "aka": [
-    "2026-12-10-taper-s-choice-the-sinclair"
-   ],
-   "score": 2,
-   "why": "like"
   },
   {
    "id": "espn-401873109",
@@ -7264,6 +7103,20 @@
    "url": "https://www.espn.com/nfl/game/_/gameId/401873109/vikings-patriots",
    "source": "espn",
    "score": 1
+  },
+  {
+   "date": "2026-12-10",
+   "time": null,
+   "title": "Taper's Choice",
+   "cat": "music",
+   "venue": "The Sinclair",
+   "city": "Cambridge, MA",
+   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar",
+   "source": "venues",
+   "id": "2026-12-10-taper-s-choice-the-sinclair",
+   "act": "Taper's Choice",
+   "score": 2,
+   "why": "like"
   },
   {
    "id": "tm-vvG17Z_2Y3jL7_",
@@ -8318,6 +8171,7 @@
    "drive_hours": 4.25,
    "act": "Phish",
    "aka": [
+    "sg-18659386",
     "sg-18659383",
     "2026-12-30-phish-madison-square-garde"
    ],
@@ -8755,6 +8609,18 @@
    "score": 0
   },
   {
+   "id": "tm-vv177Z_fGkXIhHIk",
+   "date": "2027-01-16",
+   "time": "19:00",
+   "title": "Anthony Jeselnik: Wrath of Man",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/anthony-jeselnik-wrath-of-man-boston-massachusetts-01-16-2027/event/0100654FA86FCA06",
+   "source": "ticketmaster",
+   "score": 1
+  },
+  {
    "id": "espn-401910352",
    "date": "2027-01-16",
    "time": "19:00",
@@ -8832,6 +8698,18 @@
    "url": "https://www.espn.com/nba/game/_/gameId/401910385/76ers-celtics",
    "source": "espn",
    "score": 1
+  },
+  {
+   "id": "tm-vv177Z_fGkS0J2rq",
+   "date": "2027-01-22",
+   "time": "18:30",
+   "title": "Mollie Elizabeth: People Pleaser Live",
+   "cat": "music",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/mollie-elizabeth-people-pleaser-live-boston-massachusetts-01-22-2027/event/0100654CE498F79D",
+   "source": "ticketmaster",
+   "score": 0
   },
   {
    "id": "sg-18548738",
@@ -9546,7 +9424,12 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/anthony-rodia-insanely-funny-tour-boston-massachusetts-02-13-2027/event/0100651ACA7C43D1",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "21:45"
+   ],
    "aka": [
+    "tm-vv177Z_fGkX4oyDu",
     "sg-18551640"
    ],
    "score": 1
@@ -9785,6 +9668,18 @@
    "score": 1
   },
   {
+   "id": "tm-vv177Z_fGkDZXRx4",
+   "date": "2027-02-26",
+   "time": "19:00",
+   "title": "Ruby Waters: Suppre$$ions North America Tour",
+   "cat": "music",
+   "venue": "Paradise Rock Club presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/ruby-waters-suppreions-north-america-tour-boston-massachusetts-02-26-2027/event/0100654EC0FAF895",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv177Z_8GknI6DKy",
    "date": "2027-02-26",
    "time": "19:30",
@@ -9962,6 +9857,18 @@
    "score": 0
   },
   {
+   "id": "tm-vv117Z_47AvJoN",
+   "date": "2027-03-03",
+   "time": "20:00",
+   "title": "Gaelic Storm",
+   "cat": "music",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/gaelic-storm-boston-massachusetts-03-03-2027/event/0100655105066463",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv1AvZk4kGkdrWRfA",
    "date": "2027-03-03",
    "time": "20:00",
@@ -10058,6 +9965,18 @@
    "aka": [
     "sg-18572210"
    ],
+   "score": 1
+  },
+  {
+   "id": "tm-vv177Z_fGkMPv_zX",
+   "date": "2027-03-05",
+   "time": "19:30",
+   "title": "Paula Poundstone",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/paula-poundstone-boston-massachusetts-03-05-2027/event/0100654DE5059E3E",
+   "source": "ticketmaster",
    "score": 1
   },
   {
@@ -10227,6 +10146,18 @@
     "2027-03-07-polyphia-mgm-music-hall-at-fe"
    ],
    "score": 0
+  },
+  {
+   "id": "tm-vv177Z_fGkzeD51Z",
+   "date": "2027-03-07",
+   "time": "20:00",
+   "title": "Darcy & Jer: Average At Best Tour",
+   "cat": "comedy",
+   "venue": "Boch Center Shubert Theatre",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/darcy-jer-average-at-best-tour-boston-massachusetts-03-07-2027/event/0100654E02ECB280",
+   "source": "ticketmaster",
+   "score": 1
   },
   {
    "id": "tm-vvG17Z_1B5Nnhl",
@@ -10662,6 +10593,18 @@
    "score": 0
   },
   {
+   "id": "tm-vv177Z_fGkSbJWBw",
+   "date": "2027-03-18",
+   "time": "19:00",
+   "title": "Tommy Lefroy",
+   "cat": "music",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/tommy-lefroy-boston-massachusetts-03-18-2027/event/0100654CD89BDEB2",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv177Z_3GkmVpNdN",
    "date": "2027-03-18",
    "time": "19:00",
@@ -10801,6 +10744,18 @@
    "url": "https://www.espn.com/nhl/game/_/gameId/401893587/sabres-bruins",
    "source": "espn",
    "score": 1
+  },
+  {
+   "id": "tm-vv177Z_fGkD-V4W1",
+   "date": "2027-03-24",
+   "time": "19:00",
+   "title": "Alex Sampson",
+   "cat": "music",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/alex-sampson-boston-massachusetts-03-24-2027/event/0100654EE1D15F4A",
+   "source": "ticketmaster",
+   "score": 0
   },
   {
    "id": "espn-401910803",
@@ -11330,6 +11285,23 @@
     "sg-18288580"
    ],
    "score": 1
+  },
+  {
+   "id": "tm-vv1avZkfza_GKZeuv",
+   "date": "2027-04-17",
+   "time": "19:00",
+   "title": "Joe List",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/joe-list-boston-massachusetts-04-17-2027/event/01006538259313C0",
+   "source": "ticketmaster",
+   "act": "Joe List",
+   "aka": [
+    "sg-18629444"
+   ],
+   "score": 2,
+   "why": "fav"
   }
  ],
  "movies": [
@@ -11406,9 +11378,9 @@
  ],
  "sources": {
   "picks": 5,
-  "venues": 6,
-  "espn": 84,
+  "venues": 7,
+  "espn": 83,
   "ticketmaster": 552,
-  "seatgeek": 108
+  "seatgeek": 107
  }
 }
