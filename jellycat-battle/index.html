@@ -398,6 +398,14 @@ body.battle-focus .battle-log{max-height:21dvh;overflow:auto;padding:9px;}
 .patch-slot .patch-medallion{transform:scale(.78);margin:-7px 0}
 .patch-slot small{font-size:.56rem;color:#fff7ea;text-align:center;overflow-wrap:anywhere}
 @media(max-width:530px){.parlor-lobby-stage{height:125px}.lobby-window{width:43px;height:58px;line-height:45px}.lobby-plush{height:95px;width:95px}.parlor-lobby-paper{padding:10px 12px}.patch-medallion{width:46px;height:53px}.patch-medallion span{font-size:19px}.lobby-prize{margin:8px 0}.boutique-icon{font-size:38px}.shop-item-icon{width:45px;height:45px;font-size:23px}.patch-case-grid{gap:3px}.patch-slot small{font-size:.48rem}}
+
+.discovery-scroll{max-width:490px;padding:26px 23px!important;border:5px double #896e79!important;border-radius:14px!important;background:repeating-linear-gradient(0deg,transparent 0 30px,#e6d4c866 30px 31px),#fff9e8!important;box-shadow:7px 9px 0 #52445266!important}
+.discovery-ribbon{padding:8px 9px;background:#785b85;color:#fff6de;font-size:.7rem;font-weight:900;letter-spacing:.14em;border-radius:6px}
+.discovery-item{height:110px;width:110px;margin:17px auto;display:grid;place-items:center;background:radial-gradient(#fff4c6,#e2c597);border:5px double #a48360;border-radius:14px;transform:rotate(-6deg);box-shadow:5px 6px 0 #92776c55}
+.discovery-item span{font-size:73px;color:#fffbed;text-shadow:3px 4px #a8896e}
+.discovery-scroll h2{font-size:clamp(1.4rem,4vw,2rem);margin:5px 0}.discovery-scroll p{margin:8px 0 16px}
+.reward-banner{position:relative;overflow:hidden;border:3px solid #8f7790;border-radius:13px;background:repeating-linear-gradient(90deg,#f9e5f0 0 30px,#fff4e9 30px 60px);box-shadow:4px 5px 0 #624f6177}
+.reward-banner:before{content:'✦ ✿ ✦';position:absolute;right:18px;top:8px;color:#ad89aa;letter-spacing:12px;font-size:21px}
 </style>
 </head>
 <body>
@@ -1862,7 +1870,7 @@ function showTalk(n){stopWalking();$('#talk-modal')?.remove();ensureWorld(state)
 // Activities are now skill-based experiences rather than multiple-choice trivia.
 function showChallenge(id){openMini(id);}
 function answerChallenge(index){miniAct('mini-flower',index);}
-function showMilestone(title,desc){const div=el('div','modal-backdrop');div.id='milestone-modal';div.innerHTML=`<section class="modal center" role="dialog" aria-modal="true" aria-label="Discovery"><div class="giant-star">✦</div><h2>${safe(title)}</h2><p>${safe(desc)}</p><button class="btn" data-action="close-milestone">Keep exploring →</button></section>`;document.body.append(div);}
+function showMilestone(title,desc){const div=el('div','modal-backdrop');div.id='milestone-modal';div.innerHTML=`<section class="modal center discovery-scroll" role="dialog" aria-modal="true" aria-label="Discovery"><div class="discovery-ribbon">✦ A SOFTLANDS DISCOVERY ✦</div><div class="discovery-item" aria-hidden="true"><span>✧</span></div><h2>${safe(title)}</h2><p>${safe(desc)}</p><button class="btn" data-action="close-milestone">Keep exploring →</button></section>`;document.body.append(div);}
 function showFound(t){showMilestone(`You found ${t.title}!`,`${t.text} You earned ${t.points} star.`);}
 function talkOrInspect(){ensureWorld(state);const npc=nearbyNpcs(state.world)[0],parlor=nearbyParlor(state.world);
  const place=state.world.area==='cuddlewick'?nearbySpecial(state.world):null;const distances=[[npc,()=>showTalk(npc)],[parlor,()=>showParlor(parlor)],[place,()=>showPlace(place)]].filter(([x])=>x).sort((a,b)=>Math.hypot(a[0].x-state.world.x,a[0].y-state.world.y)-Math.hypot(b[0].x-state.world.x,b[0].y-state.world.y));if(distances.length){distances[0][1]();return;}if(state.world.area!=='cuddlewick'){const near=areaLandmarks(state.world.area).find(l=>Math.hypot(l.x-state.world.x,l.y-state.world.y)<=1.8);if(near){showMilestone(near.name,near.name==='Whisperstone Grotto'?'Step onto the cave entrance to explore inside.':'A lovely landmark on your journey through the Softlands.');return;}}notify('Walk closer to a friend, landmark, or Parlor, or explore tall grass!');}
