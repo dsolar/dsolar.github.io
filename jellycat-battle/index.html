@@ -406,6 +406,11 @@ body.battle-focus .battle-log{max-height:21dvh;overflow:auto;padding:9px;}
 .discovery-scroll h2{font-size:clamp(1.4rem,4vw,2rem);margin:5px 0}.discovery-scroll p{margin:8px 0 16px}
 .reward-banner{position:relative;overflow:hidden;border:3px solid #8f7790;border-radius:13px;background:repeating-linear-gradient(90deg,#f9e5f0 0 30px,#fff4e9 30px 60px);box-shadow:4px 5px 0 #624f6177}
 .reward-banner:before{content:'✦ ✿ ✦';position:absolute;right:18px;top:8px;color:#ad89aa;letter-spacing:12px;font-size:21px}
+
+/* Once parlor and destination art is on the canvas, suppress legacy floating markers. */
+body.pixel-world-active .world-parlor{visibility:hidden!important;}
+body.pixel-world-active .world-treasure{font-size:20px;filter:drop-shadow(0 0 5px #fff7c1);animation:treasure-glint 2.2s ease-in-out infinite;}
+@keyframes treasure-glint{0%,100%{opacity:.75;transform:scale(.9)}50%{opacity:1;transform:scale(1.13)}}
 </style>
 </head>
 <body>
@@ -1016,6 +1021,36 @@ function drawHouse(g,x,y,seed,name=''){const bakery=/bakery|oven/i.test(name),sh
  if(farm){box(g,x+3,y+4,26,7,'#a06963');box(g,x+9,y+0,13,6,'#c38d81');box(g,x+14,y+17,8,14,'#784e50');box(g,x+15,y+18,6,13,'#cfaa80');}
  if(/greenhouse/i.test(name)){box(g,x+1,y+9,30,23,'#608b76');box(g,x+4,y+12,24,19,'#bee3b6');for(let i=0;i<3;i++){box(g,x+7+i*8,y+12,2,19,'#628f7b');box(g,x+5+i*8,y+20,7,2,'#628f7b');}box(g,x+4,y+5,24,7,'#79a993');box(g,x+9,y+1,14,5,'#95c1ab');box(g,x+14,y+22,5,10,'#795b60');}
  }
+
+/* Distinctive handcrafted pixel facades. Coordinates match actual interactive cells. */
+function drawParlorExterior(g,x,y,p,earned=false){
+ const theme={village:['#b07ca0','#f0d7df','#6d4a75','✿'],garden:['#74a981','#d9eac7','#467357','❀'],cove:['#5e9bb2','#c6e7e8','#426c89','♒'],moon:['#8b7ab9','#d9d0ec','#554777','☾'],willow:['#6da69c','#d0e5d9','#447673','♧']}[p.id]||['#a47da2','#ead5e4','#684d73','✿'];
+ const [roof,wall,trim]=theme;
+ // Backdrop and connected roof form a facade, not a floating marker.
+ box(g,x+1,y+15,30,17,'#564858');box(g,x+3,y+16,26,15,wall);
+ box(g,x+1,y+9,30,7,trim);box(g,x+4,y+4,24,9,roof);box(g,x+8,y+1,16,5,roof);
+ box(g,x+4,y+11,24,2,'#fff1d9');box(g,x+1,y+15,30,2,trim);
+ // Two glass windows.
+ for(const wx of [5,23]){box(g,x+wx,y+18,5,8,trim);box(g,x+wx+1,y+19,3,6,'#9ed5de');box(g,x+wx+2,y+20,1,3,'#f4f7de');}
+ // A dark walk-in arch and threshold, aligned with the tile approach.
+ box(g,x+12,y+19,8,13,trim);box(g,x+14,y+22,4,10,'#423647');box(g,x+11,y+30,10,2,'#dfba85');
+ // Distinct sign/emblem at the roof apex.
+ box(g,x+12,y+5,8,7,'#fff4dc');box(g,x+13,y+6,6,5,trim);
+ if(p.id==='garden'){for(const d of [2,26]){box(g,x+d,y+25,4,5,'#5f9767');box(g,x+d-1,y+23,6,3,'#edcc79');}}
+ else if(p.id==='cove'){box(g,x+2,y+29,7,2,'#88c5cf');box(g,x+23,y+29,7,2,'#88c5cf');}
+ else if(p.id==='moon'){box(g,x+8,y+7,2,2,'#fff3a7');box(g,x+22,y+7,2,2,'#fff3a7');}
+ else if(p.id==='willow'){box(g,x+2,y+19,2,9,'#65936b');box(g,x+28,y+19,2,9,'#65936b');}
+ // A small shining award marker above the doorway when completed.
+ if(earned){box(g,x+16,y+7,2,2,'#fff3a5');box(g,x+15,y+9,4,1,'#e8c66d');}
+}
+function drawPixelInteractable(g,x,y,name,seed){
+ const t=String(name).toLowerCase();
+ if(/bakery cart/.test(t)){box(g,x+3,y+19,26,9,'#95634f');box(g,x+4,y+12,24,8,'#f5d4a4');for(let i=0;i<4;i++){box(g,x+6+i*6,y+7,5,6,'#d99f5c');box(g,x+7+i*6,y+8,3,2,'#ffdf9d')}box(g,x+6,y+28,6,4,'#57475c');box(g,x+20,y+28,6,4,'#57475c');return true;}
+ if(/gate|lookout/.test(t)){box(g,x+5,y+5,4,27,'#776357');box(g,x+23,y+5,4,27,'#776357');box(g,x+7,y+7,20,5,'#d5ba91');box(g,x+9,y+10,16,2,'#966d68');if(/lookout/.test(t)){box(g,x+10,y+17,12,5,'#9faabd');box(g,x+15,y+13,3,13,'#485f72');}return true;}
+ if(/windmill/.test(t)){box(g,x+11,y+11,12,21,'#eee0c5');box(g,x+8,y+8,18,6,'#b67972');box(g,x+15,y+2,3,26,'#685b61');box(g,x+5,y+14,24,3,'#efe8ce');return true;}
+ if(/whistle|key|ribbon|keepsake|postcard/.test(t)){box(g,x+9,y+11,14,15,'#fff1bb');box(g,x+12,y+13,8,10,'#d4a6b6');box(g,x+15,y+6,2,5,'#fff7d6');return true;}
+ return false;
+}
 function drawLandmark(g,x,y,name,icon,seed){if(/house|cottage|bakery|store|greenhouse|barn|market|home|hut/i.test(name)||/🏠|🏡|🏘|🛍/.test(icon)){drawHouse(g,x,y,seed,name);return;}
  if(/fountain/i.test(name)||/⛲/.test(icon)){box(g,x+3,y+23,26,7,'#778baa');box(g,x+7,y+17,18,7,'#b0c7c9');box(g,x+12,y+12,8,6,'#83c9d4');box(g,x+14,y+5,4,8,'#b4e5f0');box(g,x+8,y+24,16,3,'#8bd3d5');return;}
  if(/tree|🌳/.test(name+icon)){drawTreeCanopy(g,x,y,seed);return;}
@@ -1032,7 +1067,10 @@ function drawLandmark(g,x,y,name,icon,seed){if(/house|cottage|bakery|store|green
 function drawProps(g,top,tiles,cols,rows){for(const tile of tiles){const X=Number(tile.dataset.x),Y=Number(tile.dataset.y),x=(X-Number(tile.dataset.minX||0))*32,y=(Y-Number(tile.dataset.minY||0))*32;const landmark=tile.querySelector('.world-landmark'),decor=tile.querySelector('.world-decor');const kind=kindOf(tile),seed=pixelHash(X,Y);
  if(kind==='broken-bridge'){box(g,x,y+9,32,3,'#705d54');box(g,x+2,y+16,11,5,'#ab8568');box(g,x+20,y+17,10,5,'#ab8568');box(g,x+10,y+20,3,6,'#715952');box(g,x+20,y+12,3,5,'#715952');continue;}
  if(kind==='house'){drawHouse(g,x,y,seed,'house');continue;}
- if(landmark){drawLandmark(g,x,y,landmark.getAttribute('title')||tile.title,landmark.textContent||'',seed);continue;}
+ const parlorElement=tile.querySelector('.world-parlor');
+ if(parlorElement){const area=tile.closest('.world-pan')?.dataset.area||'cuddlewick';const p=area==='cuddlewick'?PARLORS.find(p=>p.x===X&&p.y===Y):REGION_PARLORS.find(p=>p.area===area&&p.x===X&&p.y===Y);if(p){drawParlorExterior(g,x,y,p,state.world.parlorBadges.includes(p.id));continue;}}
+
+ if(landmark){const name=landmark.getAttribute('title')||tile.title;if(!drawPixelInteractable(g,x,y,name,seed))drawLandmark(g,x,y,name,landmark.textContent||'',seed);continue;}
  if(kind==='grove'||(decor&&/🌳|🌲/.test(decor.textContent||''))){box(g,x+13,y+12,7,23,'#6d6054');box(g,x+15,y+17,3,10,'#8d7763');drawTreeCanopy(top,x,y-18,seed);continue;}
  if(kind==='cliff'){box(g,x+4,y+5,7,2,'#cecfcb');box(g,x+19,y+18,9,2,'#676975');continue;}
  if(kind==='crystal'){box(g,x+13,y+7,6,20,'#d2d5ee');box(g,x+10,y+14,12,11,'#847cb4');box(g,x+14,y+8,4,14,'#eef3fa');continue;}
