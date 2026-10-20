@@ -7,7 +7,7 @@
 <meta property="og:image" content="https://davidsolar.dev/assets/covers/jellycat-battle.jpg"><meta property="og:image:width" content="1040"><meta property="og:image:height" content="780"><meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#f9f1e8">
   <meta name="description" content="An unofficial, single-player collection and battle game inspired by real Jellycat plush characters.">
-  <title>Jellycat Battle Club • The Softlands v1.2</title>
+  <title>Jellycat Battle Club • The Softlands · Village Landmark Update</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A5%90%3C/text%3E%3C/svg%3E">
   <style>
 
@@ -1466,6 +1466,11 @@ function isTallGrass(x,y){const z=zoneAt(x,y),u=Math.floor(x),v=Math.floor(y);
 function isVillagePath(x,y){return (y===20&&x>3&&x<52)||(x===27&&y>2&&y<38)||(x===10&&y>5&&y<36)||(x===46&&y>7&&y<36)||(y===7&&x>8&&x<48)||(y===33&&x>6&&x<49);}
 function pixelTreeHash(x,y){let a=(Math.imul(x+101,374761393)^Math.imul(y+77,668265263)^Math.imul(1,2246822519))>>>0;return (Math.imul(a^(a>>>13),1274126177)^(a>>>16))>>>0;}
 function villageBlockedAt(x,y){const X=Math.floor(x),Y=Math.floor(y);if(X<0||Y<0||X>=WORLD_W||Y>=WORLD_H)return true;
+ // Roof/wall footprint of the first Parlor. The original entrance (30,23) stays open.
+ if(X>=29&&X<=31&&Y>=21&&Y<=22)return true;
+ // Existing homes get physical side walls; never obstruct their saved entrance tiles.
+ if(X>=22&&X<=24&&Y>=16&&Y<=17)return true;
+ if(X>=23&&X<=25&&Y>=5&&Y<=6)return true;
  if(isVillagePath(X,Y)||(X===23&&Y===18)||(X===7&&Y===22))return false;
  const l=LANDMARKS.find(p=>p.x===X&&p.y===Y);
  if(l)return /house|cottage|home|store|greenhouse|tree|hideout|beach hut|viewpoint|fountain|slide|camp|garden|flowerbed|dock/i.test(l.name);
