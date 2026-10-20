@@ -1145,6 +1145,85 @@ function paintVillageLandmarkLayer(g,area,baseX,baseY){
  for(const [x,y,k] of courtyards)drawVillageCourtyard(g,X(x)/32,Y(y)/32,k);
  for(const f of VILLAGE_FACADES)drawVillageFacade(g,{...f,x:f.x-baseX,y:f.y-baseY});
 }
+
+/* Landmark-sized Parlor destinations. All art is deterministic and decorative;
+   the existing interactable coordinate and pathfinding remain unchanged. */
+const DESTINATION_GROUNDS={
+ garden:{roof:'#80b482',wall:'#e3f0d5',trim:'#4d7d63',accent:'#f1b4c8',sign:'PETAL',ground:'#d8dbad',symbol:'flower'},
+ cove:{roof:'#609cbb',wall:'#d2e6e5',trim:'#47738d',accent:'#fff0ac',sign:'TIDE',ground:'#d7cba1',symbol:'shell'},
+ moon:{roof:'#8b78b9',wall:'#ded7ef',trim:'#504970',accent:'#fff3b1',sign:'MOON',ground:'#9f96b5',symbol:'stars'},
+ willow:{roof:'#70a79c',wall:'#d8e6d8',trim:'#47766d',accent:'#e8ca87',sign:'RIVER',ground:'#c5d3ad',symbol:'reeds'}
+};
+function paintParlorGrounds(g,x,y,p){
+ const c=DESTINATION_GROUNDS[p.id];if(!c)return;
+ const L=(x-1)*32,T=(y-2)*32;
+ // Painted forecourt flanks the central entrance, leaving the pathway visible.
+ for(const offset of [-1,1]){
+  let ax=(x+offset)*32,ay=(y+1)*32;
+  box(g,ax+2,ay+3,28,26,c.ground);box(g,ax+4,ay+5,24,22,'#e7dbbe');
+  if(c.symbol==='flower'){for(let i=0;i<3;i++){box(g,ax+7+i*7,ay+15,2,9,'#618d68');box(g,ax+4+i*7,ay+11,8,6,i%2?'#f7d99f':'#e7a4b8');}}
+  if(c.symbol==='shell'){box(g,ax+8,ay+13,16,9,'#e5c6a0');box(g,ax+12,ay+8,8,9,'#f9e8c5');box(g,ax+10,ay+17,12,2,'#a77f76');}
+  if(c.symbol==='stars'){box(g,ax+12,ay+12,8,9,'#e1d0e3');box(g,ax+15,ay+8,2,5,'#fff0a8');box(g,ax+15,ay+21,2,4,'#fff0a8');}
+  if(c.symbol==='reeds'){for(let i=0;i<4;i++){box(g,ax+6+i*6,ay+10+(i%2)*4,2,15,'#5c966d');box(g,ax+6+i*6,ay+7+(i%2)*4,3,7,'#b99b76');}}
+ }
+ // Ground border and tiled steps directly below the door.
+ box(g,x*32+3,(y+1)*32+1,26,8,'#ac987d');
+ box(g,x*32+7,(y+1)*32+1,18,6,'#ead5b1');
+ for(let i=0;i<3;i++)box(g,x*32+13+(i%2)*4,(y+1)*32+11+i*6,3,2,'#cebba0');
+}
+function drawDestinationParlor(g,p){
+ const c=DESTINATION_GROUNDS[p.id];if(!c)return;
+ const L=(p.x-1)*32,T=(p.y-2)*32;
+ // Three-tile wide timber-and-stone frontage, with a stepped roof.
+ box(g,L+3,T+35,90,57,c.trim);
+ box(g,L+7,T+39,82,48,c.wall);
+ box(g,L+0,T+31,96,12,c.trim);
+ box(g,L+3,T+24,90,10,c.roof);
+ box(g,L+12,T+16,72,10,c.roof);
+ box(g,L+22,T+9,52,9,c.roof);
+ box(g,L+32,T+3,32,8,c.roof);
+ box(g,L+6,T+38,84,3,'#fff1d9');
+ // Windows with tiny flower boxes, shutters or colored lanterns.
+ for(const a of [15,67]){
+  box(g,L+a-4,T+48,19,27,c.trim);
+  box(g,L+a-1,T+51,13,19,'#bce5e2');
+  box(g,L+a+5,T+51,2,19,'#f4fae5');
+  box(g,L+a-1,T+60,13,2,'#f4fae5');
+  box(g,L+a-5,T+73,21,4,c.roof);
+ }
+ // Entrance retains exactly the original Parlor coordinate.
+ box(g,L+38,T+53,20,35,c.trim);
+ box(g,L+42,T+58,12,30,'#483e59');
+ box(g,L+52,T+73,2,3,'#fbe9aa');
+ box(g,L+36,T+87,24,3,'#eed7b0');
+ box(g,L+33,T+34,30,16,'#fcf1d0');
+ box(g,L+35,T+36,26,12,c.trim);
+ box(g,L+36,T+37,24,10,'#fff1db');
+ paintFacadeLettering(g,L+48-(c.sign.length*4-1)/2,T+39,c.sign,c.trim);
+ if(c.symbol==='flower'){
+  for(const xx of [8,80]){box(g,L+xx,T+78,10,10,'#977a5e');box(g,L+xx+2,T+73,6,8,'#6ca078');box(g,L+xx,T+70,10,5,c.accent);}
+  box(g,L+45,T+16,6,7,'#ffefd1');
+ }else if(c.symbol==='shell'){
+  for(const xx of [7,78]){box(g,L+xx,T+78,11,9,'#dbbd8a');box(g,L+xx+2,T+73,7,7,'#f8e4bb');}
+  box(g,L+45,T+14,7,6,'#a8e0ea');
+ }else if(c.symbol==='stars'){
+  for(const [xx,yy] of [[11,19],[79,20],[46,13],[25,28]]){box(g,L+xx,T+yy,4,4,c.accent);box(g,L+xx+1,T+yy-2,2,8,'#fff7cf');}
+ }else if(c.symbol==='reeds'){
+  for(const xx of [6,85]){box(g,L+xx,T+74,3,13,'#5d906e');box(g,L+xx-2,T+70,7,5,'#aaca86');}
+  box(g,L+43,T+17,10,4,'#ebd6a4');
+ }
+ if(state.world.parlorBadges.includes(p.id)){box(g,L+48,T+15,3,3,'#fff3a5');box(g,L+46,T+18,7,2,'#f5db97');}
+}
+function drawParlorDestinationLayer(g,area,baseX,baseY){
+ const parlors=area==='cuddlewick'?PARLORS:REGION_PARLORS.filter(p=>p.area===area);
+ for(const p of parlors){
+  if(!DESTINATION_GROUNDS[p.id])continue;
+  const local={...p,x:p.x-baseX,y:p.y-baseY};
+  // A legible silhouette + landscape in the same map space, never a popup overlay.
+  paintParlorGrounds(g,local.x,local.y,p);
+  drawDestinationParlor(g,local);
+ }
+}
 function drawProps(g,top,tiles,cols,rows){for(const tile of tiles){const X=Number(tile.dataset.x),Y=Number(tile.dataset.y),x=(X-Number(tile.dataset.minX||0))*32,y=(Y-Number(tile.dataset.minY||0))*32;const landmark=tile.querySelector('.world-landmark'),decor=tile.querySelector('.world-decor');const kind=kindOf(tile),seed=pixelHash(X,Y);
  if(kind==='broken-bridge'){box(g,x,y+9,32,3,'#705d54');box(g,x+2,y+16,11,5,'#ab8568');box(g,x+20,y+17,10,5,'#ab8568');box(g,x+10,y+20,3,6,'#715952');box(g,x+20,y+12,3,5,'#715952');continue;}
  if(kind==='house'){drawHouse(g,x,y,seed,'house');continue;}
@@ -1159,7 +1238,7 @@ function drawProps(g,top,tiles,cols,rows){for(const tile of tiles){const X=Numbe
   if(kind==='wood'&&seed%7===0){box(g,x+12,y+21,7,9,'#665943');drawTreeCanopy(top,x,y-17,seed);continue;}
  if(kind==='riverside'&&seed%21===0){drawBush(g,x,y);continue;}
  if(kind==='garden'&&seed%17===0)drawBush(g,x,y);
-} const first=tiles[0];if(first)paintVillageLandmarkLayer(g,first.closest('.world-pan')?.dataset.area||'cuddlewick',Number(first.dataset.minX||0),Number(first.dataset.minY||0));
+} const first=tiles[0];if(first){const area=first.closest('.world-pan')?.dataset.area||'cuddlewick',bx=Number(first.dataset.minX||0),by=Number(first.dataset.minY||0);paintVillageLandmarkLayer(g,area,bx,by);drawParlorDestinationLayer(g,area,bx,by);}
 }
 let activeMap=null;
 function mountPixelWorld(){const pan=document.querySelector('#world-pan'),grid=pan?.querySelector('.world-grid');if(!pan||!grid){activeMap=null;return false;}
