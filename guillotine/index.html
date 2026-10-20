@@ -673,10 +673,21 @@ th.line{border-left:1px solid var(--rule)}
     $("grid").innerHTML = "<caption style=\"position:absolute;left:-9999px\">Chance each team is still alive after each week</caption>" + head + body;
     $("season").hidden = false;
 
+    // Confirmed send-offs can arrive before the next Yahoo roster import.
+    // Display them here without changing the current week's scores or simulation.
+    var fallen = r.fallen.slice();
+    Object.keys(eulogies).forEach(function (name) {
+      var e = eulogies[name];
+      if (Number.isInteger(e.week) && e.week <= r.week &&
+          !fallen.some(function (f) { return f.name === name; })) {
+        fallen.push({ name: name, week: e.week, score: typeof e.score === "number" ? e.score : null });
+      }
+    });
+    fallen.sort(function (a, b) { return b.week - a.week; });
     // The fallen
-    var missing = total - n - r.fallen.length;
-    if (r.fallen.length || missing > 0) {
-      $("fallen").innerHTML = r.fallen.map(function (f) {
+    var missing = Math.max(0, total - n - fallen.length);
+    if (fallen.length || missing > 0) {
+      $("fallen").innerHTML = fallen.map(function (f) {
         var m = mgr(f.name), e = eulogies[f.name];
         var snap = (((HIST.weeks || {})[String(f.week)] || {}).teams || {})[f.name];
         var given = snap ? " · given " + pct(snap.chop) + " cut odds" : "";
@@ -693,7 +704,7 @@ th.line{border-left:1px solid var(--rule)}
           (haiku ? '<p class="haiku">' + esc(haiku) + "</p>" : "") +
           "</div></details></li>";
       }).join("");
-      $("fallen").hidden = !r.fallen.length;
+      $("fallen").hidden = !fallen.length;
       if (missing > 0) {
         $("fallen-none").textContent = missing + " more eliminated team" + (missing > 1 ? "s aren't" : " isn't") + " in this data.";
         $("fallen-none").hidden = false;
