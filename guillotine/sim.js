@@ -3,8 +3,11 @@
    Each simulated week, every team still alive gets a score:
      this week    points already scored (exact: Yahoo's Points for games it shows as Final, live
                   scoring for games since), plus the expected points of starters still to play.
-                  Only those players can swing, and a player can't lose more than a couple of points,
-                  so a team that's done scoring is locked at its total.
+                  Until a starter's game locks, managers are assumed to fix holes (empty spots, byes,
+                  players ruled out): the higher of Yahoo's projection of the lineup as set and the
+                  best lineup the roster can still field. Only players still to play can swing, and a
+                  player can't lose more than a couple of points, so a team that's done scoring is
+                  locked at its total.
      later weeks  its average over its last 3 completed weeks, pulled part of the way toward
                   the league average (rosters churn as cut teams' players hit waivers)
    plus random noise (CV of the mean). The lowest score is cut. Repeat until one team is left.
@@ -18,7 +21,9 @@
     runs: 20000,
     recentWeeks: 3, // how many completed weeks make up a team's recent average
     shrink: 0.25,   // later weeks: share of the way each team is pulled toward the league average
-    cv: 0.22,       // weekly noise, as a share of the expected score
+    // Weekly noise, as a share of the expected score. Calibrated on this season's real cuts: run on the
+    // teams alive in Weeks 3-6, the median lowest score averaged 83.2 against 84.2 actual (0.22 gave 75.3).
+    cv: 0.17,
     fabPts: 8,      // later weeks: points per week for twice the average money left (less money, a penalty)
     fabRamp: 3,     // weeks for that money to turn into better players
     floorPerPlayer: -2 // the worst a starter still to play is assumed to add (fumbles, picks)
@@ -28,24 +33,61 @@
   // steadiest; tight ends the least predictable. Used only to split a team's swing among its players.
   var POS_CV = { QB: 0.40, RB: 0.55, WR: 0.65, TE: 0.75, K: 0.6, DEF: 0.8 };
 
-  function isStarter(p) { return !p.empty && ((p.slot !== "BN" && p.slot !== "IR") || !!p.assumed_slot); }
+  // Starting spots, and who can fill each. With nested flex spots, filling the narrowest first is optimal.
+  var SLOTS = ["QB", "RB", "RB", "WR", "WR", "WR", "TE", "W/R/T", "Q/W/R/T"];
+  var ELIG = { QB: ["QB"], RB: ["RB"], WR: ["WR"], TE: ["TE"], K: ["K"], DEF: ["DEF"],
+    "W/R/T": ["RB", "WR", "TE"], "W/R": ["RB", "WR"], "W/T": ["WR", "TE"], "Q/W/R/T": ["QB", "RB", "WR", "TE"] };
+  var OUT_RE = /^(O|IR|IR-R|PUP|PUP-R|NA|SUSP)$/;
 
-  // This week for one team, as of now. full = the team's expected full-week score from its
-  // projection basis (Yahoo, best lineup or average). Returns points banked, expected points still to
-  // come, how much those can swing, and which starters are still to play.
-  function thisWeek(t, full, o) {
+  function unavailable(p) { return !!p.bye || OUT_RE.test(p.status || ""); }
+  // In a starting spot in Yahoo (not counting a bench player the page assumes for an empty spot).
+  function isSet(p) { return !p.empty && p.slot !== "BN" && p.slot !== "IR"; }
+  function isStarter(p) { return !p.empty && ((p.slot !== "BN" && p.slot !== "IR") || !!p.assumed_slot); }
+  function hasStarted(p, pregame) { return !pregame && !!(p.final || p.live || p.yfinal); }
+  function projOf(p) { return unavailable(p) ? 0 : (p.proj || 0); }
+
+  // The best lineup a team can still field. Starters whose games have begun stay where they are; every
+  // other starting spot goes to the highest-projected player who hasn't played yet and isn't on a bye,
+  // Out or on IR. Before kickoff that's simply the best legal lineup. Null without player projections.
+  function fixedLineup(t, pregame) {
+    var roster = (t.roster || []).filter(function (p) { return !p.empty; });
+    if (!roster.some(function (p) { return (p.proj || 0) > 0; })) return null;
+    var slots = (t.roster || []).filter(function (p) { return p.slot !== "BN" && p.slot !== "IR"; }).map(function (p) { return p.slot; });
+    if (!slots.length) slots = SLOTS.slice();
+    var locked = roster.filter(function (p) { return isSet(p) && hasStarted(p, pregame); });
+    locked.forEach(function (p) { var i = slots.indexOf(p.slot); if (i >= 0) slots.splice(i, 1); });
+    var pool = roster.filter(function (p) {
+      return p.slot !== "IR" && locked.indexOf(p) < 0 && !hasStarted(p, pregame) && !unavailable(p) && (p.proj || 0) > 0;
+    }).sort(function (a, b) { return b.proj - a.proj; });
+    var width = function (s) { return (ELIG[s] || [s]).length; };
+    var picks = [];
+    slots.sort(function (a, b) { return width(a) - width(b); }).forEach(function (s) {
+      var ok = ELIG[s] || [s];
+      for (var i = 0; i < pool.length; i++) {
+        if (ok.indexOf(pool[i].pos) >= 0) { picks.push(pool.splice(i, 1)[0]); return; }
+      }
+    });
+    return locked.concat(picks);
+  }
+
+  // This week for one team, as of now. full = the team's expected full-week score for this lineup
+  // (Yahoo's projection, the fixed lineup's, or its average); lineup = who starts (default: the lineup as
+  // set); scale = the pregame total the swing is measured against. Returns points banked, expected points
+  // still to come, how much those can swing, and which starters are still to play.
+  function thisWeek(t, full, o, lineup, scale) {
     var pregame = !!o.pregame;
     var roster = (t.roster || []).filter(function (p) { return !p.empty; });
-    var starters = roster.filter(isStarter);
+    var starters = lineup || roster.filter(isSet);
+    if (!starters.length) starters = roster.filter(isStarter);
     if (!starters.length) starters = roster.filter(function (p) { return p.in_best; });
     var base = pregame ? 0 : (typeof t.points === "number" ? t.points : 0);
     if (!starters.length) {
       var rem0 = Math.max(full - base, 0);
       return { banked: base, remMu: rem0, sd: o.cv * full, nRem: rem0 > 0 ? 9 : 0, left: [], done: rem0 === 0 && base > 0, played: 0 };
     }
-    // Starters whose points aren't in Yahoo's Points yet
+    // Starters whose points aren't in Yahoo's Points yet. Byes and players ruled out project to zero,
+    // the same as in Yahoo's team projection.
     var pend = starters.filter(function (p) { return pregame || !p.yfinal; });
-    var projOf = function (p) { return p.bye ? 0 : (p.proj || 0); };
     var S = pend.reduce(function (a, p) { return a + projOf(p); }, 0);
     var w = function (p, f) { var x = (POS_CV[p.pos] || 0.6) * projOf(p) * (f == null ? 1 : f); return x * x; };
     var all2 = starters.reduce(function (a, p) { return a + w(p); }, 0);
@@ -62,11 +104,12 @@
         remMu += k * pj * f; rem2 += w(p, f); left.push(p);
         return;
       }
-      if (p.bye || /^(O|IR|IR-R|PUP|PUP-R|NA|SUSP)$/.test(p.status || "")) { played++; return; }
+      if (unavailable(p)) { played++; return; }
       remMu += k * pj; rem2 += w(p); left.push(p);
     });
-    if (S === 0 && yRem > 0 && !left.length) { remMu = yRem; rem2 = all2 || 1; }
-    var scale = (typeof t.proj_pre === "number" && t.proj_pre > 0 && !pregame) ? t.proj_pre : full;
+    // No player projections: Yahoo's (or the stand-in) total is all there is to go on.
+    if (S === 0 && yRem > 0) { remMu = yRem; rem2 = all2 || 1; }
+    if (scale == null) scale = (typeof t.proj_pre === "number" && t.proj_pre > 0 && !pregame) ? t.proj_pre : full;
     var sd = all2 > 0 ? o.cv * scale * Math.sqrt(rem2 / all2) : o.cv * remMu;
     return { banked: banked, remMu: remMu, sd: sd, nRem: left.length, left: left, done: left.length === 0, played: played };
   }
@@ -141,25 +184,47 @@
       var strength = Math.max(t.best || 0, t.best_next || 0);
       var base = strength > 0 ? (recent + strength) / 2 : recent;
       var later = (1 - o.shrink) * base + o.shrink * leagueAvg;
-      // This week: Yahoo's projection, plus a bench stand-in for any empty starting spot (t.fill); with
-      // no lineup set (projection 0), the team's best possible lineup; failing both, its average.
+      // This week, managers are assumed to fix lineup holes (empty spots, byes, players ruled out) before
+      // their games lock. So a team gets the higher of (a) Yahoo's projection of the lineup as set and
+      // (b) the best lineup it can still field. Starters whose games have begun count as they are.
       var yProj = o.pregame && typeof t.proj_pre === "number" && t.proj_pre > 0 ? t.proj_pre : t.proj;
       var hasProj = typeof yProj === "number" && yProj > 0;
       var hasBest = typeof t.best === "number" && t.best > 0;
-      var fill = hasProj ? (t.fill || 0) : 0;
-      var basis = hasProj ? "yahoo" : hasBest ? "best" : "avg";
-      var start = basis === "yahoo" ? yProj + fill : basis === "best" ? t.best : later;
-      var wk = thisWeek(t, start, o);
+      var base0 = o.pregame ? 0 : (typeof t.points === "number" ? t.points : 0);
+      var setScale = !o.pregame && typeof t.proj_pre === "number" && t.proj_pre > 0 ? t.proj_pre : yProj;
+      var A = hasProj ? thisWeek(t, yProj, o, null, setScale) : null;
+      var B = null, fixFull = null;
+      var lineup = fixedLineup(t, o.pregame);
+      if (lineup && lineup.length) {
+        var lineupPre = lineup.reduce(function (a, p) { return a + projOf(p); }, 0);
+        fixFull = base0 + lineup.reduce(function (a, p) { return a + (o.pregame || !p.yfinal ? projOf(p) : 0); }, 0);
+        B = thisWeek(t, fixFull, o, lineup, lineupPre);
+      } else if (hasProj && typeof t.avg === "number" && (t.roster || []).length) {
+        // No player projections: each hole in the lineup as set is worth a ninth of the team's average.
+        var holes = t.roster.filter(function (p) {
+          return p.slot !== "BN" && p.slot !== "IR" && (p.empty || (unavailable(p) && !hasStarted(p, o.pregame)));
+        }).length;
+        if (holes) { fixFull = yProj + holes * t.avg / 9; B = thisWeek(t, fixFull, o, null, fixFull - base0); }
+      }
+      var nowA = A ? A.banked + A.remMu : 0, nowB = B ? B.banked + B.remMu : -Infinity;
+      var useFix = !!B && nowB > nowA;
+      var wk = useFix ? B : A || thisWeek(t, later, o);
+      var basis = useFix ? "fix" : A ? "yahoo" : "avg";
+      var start = useFix ? fixFull : A ? yProj : later;
       var now = wk.banked + wk.remMu;
+      var fixGain = useFix ? nowB - nowA : 0;
       var fabEdge = avgFab > 0 && typeof t.faab === "number" ? o.fabPts * (t.faab / avgFab - 1) : 0;
       return {
         name: t.name,
         faab: typeof t.faab === "number" ? t.faab : null,
         mine: !!t.mine,
-        basis: basis,
-        proj: hasProj ? yProj + fill : null,
-        projPre: typeof t.proj_pre === "number" && t.proj_pre > 0 ? t.proj_pre + fill : (hasProj ? yProj + fill : null),
-        fill: fill,                                     // points from stand-ins for empty starting spots
+        basis: basis,                                   // yahoo: lineup as set; fix: holes filled; avg: no projection
+        proj: hasProj ? yProj : null,                   // Yahoo's projection of the lineup as set
+        projPre: typeof t.proj_pre === "number" && t.proj_pre > 0 ? t.proj_pre : (hasProj ? yProj : null),
+        setNow: nowA,                                   // expected score if the lineup stays as set
+        fixGain: fixGain,                               // points the fixed lineup adds over the lineup as set
+        assumesFix: fixGain >= 5,                       // worth flagging: the odds count on a lineup change
+        lineup: useFix && lineup ? lineup.map(function (p) { return p.name; }) : null,
         best: hasBest ? t.best : null,
         recent: t._recent,
         start: start,                                   // expected score before any game this week
@@ -250,7 +315,7 @@
     };
   }
 
-  var api = { simulate: simulate, model: model, thisWeek: thisWeek, isStarter: isStarter, DEFAULTS: DEFAULTS };
+  var api = { simulate: simulate, model: model, thisWeek: thisWeek, fixedLineup: fixedLineup, isStarter: isStarter, isSet: isSet, DEFAULTS: DEFAULTS };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.GuillotineSim = api;
 })(this);

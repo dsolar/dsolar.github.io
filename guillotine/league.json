@@ -1,5 +1,5 @@
 {
-  "_about": "Hand-kept details the Yahoo pull doesn't provide. Keyed by team name as it appears in Yahoo. history_2025: each 2025 elimination with the cut team's season points at that point (not a weekly score). Never put email addresses here: this file is public. live_url: the live relay (tools/live-relay.js), once set up.",
+  "_about": "Hand-kept details the Yahoo pull doesn't provide. Keyed by team name as it appears in Yahoo. history_2025: each 2025 elimination with the cut team's season points at that point (not a weekly score). cut_history: the score that got cut each week, by season; score is exact, max means only an upper bound is known. 2025 is waiting on the weekly cut scores. eulogies.*.hide_odds: leave the model's pregame cut odds off that team's send-off. Never put email addresses here: this file is public. live_url: the live relay (tools/live-relay.js), once set up.",
   "live_url": "https://guillotine-live.dsolar.workers.dev/",
   "managers": {
     "23 Richard": "Gabriel",
@@ -70,10 +70,11 @@
       "image": "eulogies/2026-wk6-matt-epstein.jpg",
       "alt": "Clearly labeled edited joke image of Matt, for his fantasy football elimination send-off. Not a real photograph of an encounter.",
       "haiku": [
-        "Gold crowns catch the light",
-        "Matt counts molars and millions",
-        "Floss like you mean it"
-      ]
+        "Epstein didn't kill",
+        "himself, they say. This one did:",
+        "benched DeVonta Smith."
+      ],
+      "hide_odds": true
     }
   },
   "history_2025": [
@@ -137,5 +138,41 @@
       "team": "Deviated Rectums",
       "season_pts": 1621.66
     }
-  ]
+  ],
+  "cut_history": {
+    "2026": [
+      {
+        "week": 1,
+        "team": "J Free FTW",
+        "score": 78.36
+      },
+      {
+        "week": 2,
+        "team": "23 Richard",
+        "max": 63.56,
+        "note": "Exact score unknown. Season total 141.92 minus a Week 1 score above the 78.36 cut leaves at most 63.56."
+      },
+      {
+        "week": 3,
+        "team": "Filet-O-Fate",
+        "score": 82.4
+      },
+      {
+        "week": 4,
+        "team": "Fly Zone Kristi",
+        "score": 74.14
+      },
+      {
+        "week": 5,
+        "team": "Beast Mode Samuel",
+        "score": 94.12
+      },
+      {
+        "week": 6,
+        "team": "Maye I see your TDs",
+        "score": 86.12
+      }
+    ],
+    "2025": []
+  }
 }

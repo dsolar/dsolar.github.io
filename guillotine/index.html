@@ -121,6 +121,8 @@ h2{font:700 1.6rem/1.1 var(--f-display);font-variation-settings:"opsz" 48;margin
 .meta{font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .keyp{font-size:.75rem;color:var(--ink);font-variant-numeric:tabular-nums;margin-top:.1rem}
 .keyp .warn{color:var(--danger);font-weight:600}
+.meta .fixtag{display:table;margin:.2rem 0 .15rem}
+.fixtag{display:inline-block;margin-right:.4rem;padding:0 .3rem;border-radius:2px;font-size:.6rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--bubble);border:1px solid currentColor;vertical-align:.08em;white-space:nowrap;cursor:help}
 .pct{grid-row:1 / span 2;grid-column:2;text-align:right;align-self:center;color:var(--tier,var(--ink));font:700 1.3rem/1 var(--f-body);letter-spacing:-.01em;font-variant-numeric:tabular-nums}
 .pct small{display:block;font:700 .6rem/1.2 var(--f-body);letter-spacing:.08em;text-transform:uppercase;margin-top:.25rem}
 .t-danger{--tier:var(--danger)} .t-bubble{--tier:var(--bubble)} .t-safe{--tier:var(--safe)}
@@ -161,6 +163,8 @@ td.c{min-width:2.6rem}
 td.c.hi{color:var(--hi-ink);font-weight:600}
 td.c.win{font-weight:700}
 th.win{color:var(--ink)}
+th abbr{text-decoration:underline dotted;text-underline-offset:3px;cursor:help}
+td.chg{font-weight:700;border-left:1px solid var(--rule)}
 
 /* The fallen */
 .fallen{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
@@ -219,16 +223,22 @@ th.win{color:var(--ink)}
 .chart .med{stroke:rgb(var(--bleu-rgb));stroke-width:2;fill:none;stroke-dasharray:5 4}
 .chart .medpt{fill:var(--surface);stroke:rgb(var(--bleu-rgb));stroke-width:2}
 .chart .act{fill:var(--blade)}
+.chart .actline{stroke:var(--blade);stroke-width:2.25;fill:none;stroke-linejoin:round}
+.chart .actdot{stroke:var(--blade);stroke-width:1.5;fill:none;stroke-dasharray:1.5 3.5;stroke-linecap:round;opacity:.8}
+.chart .bound{fill:var(--surface);stroke:var(--blade);stroke-width:2}
+.chart .boundarr{stroke:var(--blade);stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.chart .priorpt{fill:var(--muted);opacity:.7}
 .chart .actl{fill:var(--blade);font:700 11px var(--f-body)}
 .chart .prior{stroke:var(--muted);stroke-width:1.5;fill:none;opacity:.55}
 .chart .now{stroke:var(--ink);stroke-width:1;stroke-dasharray:2 3}
 .legend{display:flex;flex-wrap:wrap;gap:.35rem 1.1rem;margin:.6rem .4rem 0;font-size:.72rem;color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:.4rem}
 .legend i{display:inline-block;flex:none}
-.lg-act{width:9px;height:9px;border-radius:50%;background:var(--blade)}
+.lg-act{width:18px;border-top:2.25px solid var(--blade)}
+.lg-bound{width:9px;height:9px;border-radius:50%;border:2px solid var(--blade);box-sizing:border-box}
 .lg-med{width:18px;border-top:2px dashed rgb(var(--bleu-rgb))}
 .lg-band{width:18px;height:9px;background:rgba(var(--bleu-rgb),.18)}
-.lg-prior{width:18px;border-top:1.5px solid var(--muted);opacity:.6}
+.lg-prior{width:18px;border-top:1.5px solid var(--muted);opacity:.7}
 
 /* Team roster window */
 dialog.team{width:min(36rem, calc(100% - 24px));max-height:min(88vh, 52rem);padding:0;border:1px solid var(--rule);border-radius:6px;background:var(--surface);color:var(--ink);box-shadow:0 24px 64px rgba(0,0,0,.35);overflow:auto}
@@ -404,14 +414,15 @@ th.line{border-left:1px solid var(--rule)}
   <section id="hist-sec" aria-labelledby="hist-title" hidden>
     <div class="section-head">
       <h2 id="hist-title">The blade over time</h2>
-      <p>Red dots are the scores that actually got teams cut this season. The dashed line is the model's typical cut line for each week ahead, with the shaded band covering 8 in 10 simulations. It climbs because the weakest teams keep leaving and rosters keep improving.</p>
+      <p>The solid red line is the score that actually got cut each week. Week 2's exact score isn't known, only that it was at most 63.6, so it shows as an open circle. The dashed line is the typical lowest score for each week ahead, counting only the teams still alive in each simulation, with the shaded band covering 8 in 10 simulations. It climbs because the weakest teams keep leaving and rosters keep improving.</p>
     </div>
     <div class="chart"><div id="hist"></div>
       <div class="legend" aria-hidden="true">
         <span><i class="lg-act"></i>Actual cut score</span>
-        <span><i class="lg-med"></i>Projected cut line</span>
+        <span id="lg-bound-wrap"><i class="lg-bound"></i>At most (exact score unknown)</span>
+        <span><i class="lg-med"></i>Typical lowest score, teams still alive</span>
         <span><i class="lg-band"></i>8 in 10 simulations</span>
-        <span id="lg-prior-wrap"><i class="lg-prior"></i>2025: season average of the team cut</span>
+        <span id="lg-prior-wrap" hidden><i class="lg-prior"></i>2025 cut scores</span>
       </div>
     </div>
   </section>
@@ -438,11 +449,11 @@ th.line{border-left:1px solid var(--rule)}
   <details class="how" id="how">
     <summary>How the odds work</summary>
     <div class="method" id="method">
-      <p><b>This week</b>, each team's expected score is its Yahoo projection. A team with no lineup set gets its best possible lineup instead, built from player projections. Failing both, it gets its average.</p>
+      <p><b>This week</b>, managers are assumed to fix lineup holes before kickoff. Each team's expected score is the higher of Yahoo's projection for the lineup as set and the best legal lineup its roster can field (QB, 2 RB, 3 WR, TE, W/R/T and Q/W/R/T), leaving out players on a bye, ruled out or on IR. When the fixed lineup is worth 5 or more points more, the team is tagged <b>Assumes lineup fix</b>. Once a player's game starts, his spot counts as set in Yahoo. Without player projections, each hole is worth a ninth of the team's average; without any projection, a team gets its average.</p>
       <p><b>During the week</b>, points already scored are banked exactly: Yahoo's own totals from the latest league paste, then live scoring for games since. Only starters still to play can move a team's score, each by an amount that fits his position (quarterbacks swing least, tight ends most), and nobody still to play is assumed to lose more than 2 points. A team that's done scoring is locked at its total, so the cut odds firm up as the week goes on. The page checks live scoring every minute while games are on.</p>
       <p><b>Later weeks</b> blend each team's <span id="m-avg">average over its last three weeks</span> with what its current roster projects to, then pull that a quarter of the way toward the league average. Rosters keep changing as cut teams' players go to waivers, so nobody's current form lasts all season.</p>
       <p id="m-check"></p>
-      <p><b>The range of outcomes.</b> A projection is a midpoint, not a promise. Weekly scores swing about 22% either way, so a team projected 120 lands between about 86 and 154 in 8 of 10 weeks, and under 86 one week in ten. That's why a 10-point edge isn't safety: a team projected 110 outscores one projected 120 about 4 times in 10.</p>
+      <p id="m-range"><b>The range of outcomes.</b> A projection is a midpoint, not a promise. Weekly scores swing about 17% either way, so a team projected 120 lands between about 94 and 146 in 8 of 10 weeks, and under 94 one week in ten. That's why a 10-point edge isn't safety: a team projected 110 outscores one projected 120 about 4 times in 10.</p>
       <p><b>The cut line</b> is the median lowest score across all simulations of this week. The safe score is the one that clears the lowest score in 9 of 10 simulations.</p>
       <p><b>Each simulation</b> plays out the rest of the season, drawing every team's score from that range and cutting the lowest each week until one team is left. The page runs <span id="m-runs">20,000</span> of them and counts how often each team gets cut, survives each week and wins.</p>
       <p><b>Cut-risk colors</b> compare each team with the average risk this week (one in however many teams are left). <b>Danger</b> is at least twice the average, <b>Bubble</b> is above average, and <b>Safe</b> is below it.</p>
@@ -468,7 +479,7 @@ th.line{border-left:1px solid var(--rule)}
   </div>
 </dialog>
 
-<script src="sim.js?v=7"></script>
+<script src="sim.js?v=8"></script>
 <script>
 (function () {
   "use strict";
@@ -504,11 +515,25 @@ th.line{border-left:1px solid var(--rule)}
     return raw < 0 ? "\u2212" + a : "+" + a;
   }
   var two = function (x) { return (Math.round(x * 100) / 100).toFixed(2); };
+  // The tag on a team whose odds count on its manager fixing lineup holes.
+  function fixTag(t) {
+    if (!t || !t.assumesFix) return "";
+    var tip = "The odds assume this lineup gets fixed before kickoff: empty spots filled, byes and players ruled out swapped for healthy bench players. " +
+      (t.proj != null ? "Yahoo projects the lineup as set at " + t.proj.toFixed(1) : "No lineup is set in Yahoo yet") + "; fixed, it projects " + t.now.toFixed(1) + ".";
+    return '<span class="fixtag" title="' + esc(tip) + '">Assumes lineup fix</span>';
+  }
+  // Chance a normal draw lands above x standard deviations
+  function upper(x) {
+    var t = 1 / (1 + 0.3275911 * Math.abs(x) / Math.SQRT2);
+    var e = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x / 2);
+    return x >= 0 ? (1 - e) / 2 : (1 + e) / 2;
+  }
   // This week's score, in words: final, so far, or projected.
   function scoreText(t) {
     if (t.done) return "Final " + two(t.locked) + (t.projPre != null ? " · proj " + t.projPre.toFixed(1) : "");
     if (t.gamesFinal > 0 || t.locked > 0) return two(t.locked) + " so far, " + t.nRem + " to play · proj " + t.now.toFixed(1);
-    return t.basis === "yahoo" ? "proj " + t.proj.toFixed(1) + (t.fill ? " with a stand-in*" : "") : t.basis === "best" ? "best lineup " + t.best.toFixed(1) + "*" : "avg " + t.now.toFixed(1);
+    if (t.basis === "fix") return "proj " + t.now.toFixed(1) + (t.assumesFix ? (t.proj != null ? " (" + t.proj.toFixed(1) + " as set)" : " (no lineup set)") : "");
+    return t.basis === "yahoo" ? "proj " + t.proj.toFixed(1) : "avg " + t.now.toFixed(1);
   }
   var NOW = function () {
     var q = /[?&]now=([^&]+)/.exec(location.search);
@@ -551,6 +576,12 @@ th.line{border-left:1px solid var(--rule)}
     $("m-runs").textContent = r.runs.toLocaleString("en-US");
     $("sample").hidden = !data.sample;
     if ((data.teams || []).some(function (t) { return !t.out && typeof t.avg === "number"; })) $("m-avg").textContent = "season scoring average";
+    var lo120 = Math.round(120 * (1 - 1.2816 * cv)), hi120 = Math.round(120 * (1 + 1.2816 * cv));
+    var upset = upper(10 / Math.sqrt(Math.pow(110 * cv, 2) + Math.pow(120 * cv, 2)));
+    $("m-range").innerHTML = "<b>The range of outcomes.</b> A projection is a midpoint, not a promise. Weekly scores swing about " + Math.round(cv * 100) +
+      "% either way, so a team projected 120 lands between about " + lo120 + " and " + hi120 + " in 8 of 10 weeks, and under " + lo120 +
+      " one week in ten. That's why a 10-point edge isn't safety: a team projected 110 outscores one projected 120 about " + Math.round(upset * 10) + " times in 10. " +
+      "The " + Math.round(cv * 100) + "% is set from this season's real cuts: run on the teams alive in Weeks 3 to 6, the typical lowest score averaged 83, against 84 for the scores that actually got cut.";
 
     var upd = data.updated ? "Updated " + etTime(data.updated) : "";
     var lv = data.live;
@@ -599,9 +630,10 @@ th.line{border-left:1px solid var(--rule)}
       var kp = keyPlayers(raw[t.name], t);
       var odds = american(t.pChop);
       var label = t.name + (mgr(t.name) ? ", " + mgr(t.name) : "") + ": " + TIER[tier] + ". " + pct(t.pChop) + " chance of being cut" + (odds ? ", " + odds.replace("\u2212", "minus ") : "") + ". " +
-        (t.done ? "Final score " + two(t.locked) + "." : "Expected " + pts(t.now) + " points, likely " + pts(g[0]) + " to " + pts(g[1]) + ".");
+        (t.done ? "Final score " + two(t.locked) + "." : "Expected " + pts(t.now) + " points, likely " + pts(g[0]) + " to " + pts(g[1]) + ".") +
+        (t.assumesFix ? " Assumes lineup fix." : "");
       return '<li class="row t-' + tier + '" data-team="' + esc(t.name) + '" aria-label="' + esc(label) + '">' +
-        '<div class="who">' + teamButton(t.name, mgr(t.name)) + '<div class="meta">' + esc(meta) + "</div>" + kp + "</div>" +
+        '<div class="who">' + teamButton(t.name, mgr(t.name)) + '<div class="meta">' + fixTag(t) + esc(meta) + "</div>" + kp + "</div>" +
         '<div class="pct">' + pct(t.pChop) + "<small>" + TIER[tier] + "</small></div>" +
         '<div class="line' + (odds ? "" : " off") + '" aria-hidden="true">' + (odds || "OFF") + "</div>" +
         '<div class="lane" aria-hidden="true"><span class="track"></span>' +
@@ -620,12 +652,12 @@ th.line{border-left:1px solid var(--rule)}
     renderSpotlight(r, before);
     renderByes(r);
     renderHistory(r, league);
-    var cutList = r.fallen.filter(function (f) { return f.score !== null; }).sort(function (a, b) { return a.week - b.week; });
+    var cutList = cutHistory(r, league);
     if (cutList.length && r.cut.median != null) {
-      $("m-check").innerHTML = "<b>How it checks out.</b> Teams have been cut this season with " +
-        cutList.map(function (f) { return f.score.toFixed(1); }).join(", ").replace(/, ([^,]*)$/, " and $1") +
-        " points. This week the model puts the cut line at " + pts(r.cut.median) + ", with 8 in 10 simulations landing between " +
-        pts(r.cut.p10) + " and " + pts(r.cut.p90) + ". That fits everything so far except Week 2, a real outlier.";
+      $("m-check").innerHTML = "<b>How it checks out.</b> The scores that got cut this season: " +
+        cutList.map(function (c) { return (c.bound ? "at most " : "") + c.v.toFixed(1) + " in Week " + c.w; }).join(", ").replace(/, ([^,]*)$/, " and $1") +
+        ". This week the model puts the cut line at " + pts(r.cut.median) + ", with 8 in 10 simulations landing between " +
+        pts(r.cut.p10) + " and " + pts(r.cut.p90) + ".";
     }
 
     // Survival grid. Cell text switches to --hi-ink only where it reads better than the normal ink
@@ -650,7 +682,7 @@ th.line{border-left:1px solid var(--rule)}
     }
     head += '<th scope="col" class="line">Win line</th>';
     var prev = ((HIST.weeks || {})[String(r.week - 1)] || {}).teams || null;
-    if (prev) head += '<th scope="col">Since Wk ' + (r.week - 1) + "</th>";
+    if (prev) head += '<th scope="col"><abbr title="Change in the chance of winning the league since last week\'s update (the start of Week ' + (r.week - 1) + '), in percentage points">Win vs last wk</abbr></th>';
     head += "</tr></thead>";
     var body = "<tbody>" + byWin.map(function (t) {
       var cells = t.surv.map(function (p, k) {
@@ -663,13 +695,15 @@ th.line{border-left:1px solid var(--rule)}
       if (prev) {
         var was = prev[t.name] ? prev[t.name].win : null;
         var dd = was === null ? null : Math.round((t.pWin - was) * 100);
-        cells += '<td class="c ' + (dd > 0 ? "up" : dd < 0 ? "down" : "") + '" style="font-weight:700">' +
-          (dd === null ? "new" : (dd > 0 ? "+" : dd < 0 ? "−" : "") + Math.abs(dd)) + "</td>";
+        var tip = dd === null ? "Not in last week's update" : "Chance of winning: " + pct(was) + " at last week's update, " + pct(t.pWin) + " now. " +
+          (dd === 0 ? "No change" : (dd > 0 ? "Up " : "Down ") + Math.abs(dd) + " percentage point" + (Math.abs(dd) === 1 ? "" : "s")) + ".";
+        cells += '<td class="c chg ' + (dd > 0 ? "up" : dd < 0 ? "down" : "") + '" title="' + esc(tip) + '" aria-label="' + esc(tip) + '">' +
+          (dd === null ? "new" : (dd > 0 ? "+" : dd < 0 ? "−" : "") + Math.abs(dd) + (Math.abs(dd) === 1 ? " pt" : " pts")) + "</td>";
       }
       return '<tr><th scope="row" class="t-' + tierOf(t.pChop, n) + '">' + teamButton(t.name, mgr(t.name)) + "</th>" + cells + "</tr>";
     }).join("") + "</tbody>";
     $("season-note").textContent = "Chance each team is still alive after that week's cut. The Win column is the chance of winning the league, and Win line is that chance as Bastille Book odds" +
-      (prev ? "; the last column is how many points that chance moved since the start of Week " + (r.week - 1) + "." : ".");
+      (prev ? ". The last column is how much the chance of winning moved since last week's update, in percentage points: +7 pts means something like 12% to 19%." : ".");
     $("grid").innerHTML = "<caption style=\"position:absolute;left:-9999px\">Chance each team is still alive after each week</caption>" + head + body;
     $("season").hidden = false;
 
@@ -690,10 +724,13 @@ th.line{border-left:1px solid var(--rule)}
       $("fallen").innerHTML = fallen.map(function (f) {
         var m = mgr(f.name), e = eulogies[f.name];
         var snap = (((HIST.weeks || {})[String(f.week)] || {}).teams || {})[f.name];
-        var given = snap ? " · given " + pct(snap.chop) + " cut odds" : "";
+        var given = snap && !(e && e.hide_odds) ? " · given " + pct(snap.chop) + " cut odds" : "";
         var row = '<span class="w">Wk ' + f.week + '</span>' +
           '<span class="who2"><span class="t">' + esc(f.name) + "</span>" + (m || given ? '<span class="mgr">' + esc((m || "") + given) + "</span>" : "") + "</span>";
-        var score = f.score !== null ? "<span>" + f.score.toFixed(1) + " pts</span>" : "";
+        var known = cutHistory(r, league).filter(function (c) { return c.w === f.week; })[0];
+        var score = f.score !== null ? "<span>" + f.score.toFixed(1) + " pts</span>"
+          : known && known.bound ? '<span title="Exact score unknown; at most ' + known.v.toFixed(2) + '">≤' + known.v.toFixed(1) + " pts</span>"
+          : known ? "<span>" + known.v.toFixed(1) + " pts</span>" : "";
         if (!e || (!e.image && !e.haiku)) {
           return '<li><div class="frow">' + row + '<span class="end">' + score + '<span class="pending">No send-off yet</span></span></div></li>';
         }
@@ -724,11 +761,17 @@ th.line{border-left:1px solid var(--rule)}
   function pname(p, t, full) {
     return '<span data-p="' + esc(p.name) + '" data-pt="' + esc(t.name) + '">' + esc(full ? p.name : short(p.name)) + "</span>";
   }
+  // The lineup the odds count: the fixed lineup when the model assumes one, otherwise the lineup as set.
+  function usedLineup(t, s) {
+    if (s && s.lineup) return (t.roster || []).filter(function (p) { return !p.empty && s.lineup.indexOf(p.name) >= 0; });
+    return startersOf(t);
+  }
+  function stillToPlay(t, s) { return (t.roster || []).filter(function (p) { return !p.empty && s.left.indexOf(p.name) >= 0; }); }
   function keyPlayers(t, s) {
-    var st = startersOf(t);
+    var st = usedLineup(t, s);
     if (!st.length) return "";
     if (s && (s.gamesFinal > 0 || s.locked > 0)) {
-      var left = st.filter(function (p) { return s.left.indexOf(p.name) >= 0; });
+      var left = stillToPlay(t, s);
       if (left.length) {
         return '<div class="keyp">To play: ' + left.map(function (p) {
           return pname(p, t) + " " + (p.live ? (p.actual || 0).toFixed(1) + " live" : (p.proj || 0).toFixed(1) + " proj");
@@ -741,7 +784,7 @@ th.line{border-left:1px solid var(--rule)}
     var top = st.filter(function (p) { return (p.proj || 0) > 0; })
       .sort(function (a, b) { return b.proj - a.proj; }).slice(0, 3)
       .map(function (p) { return pname(p, t) + " " + p.proj.toFixed(1); });
-    var byes = st.filter(function (p) { return p.bye; }).map(function (p) { return esc(short(p.name)); });
+    var byes = (s && s.assumesFix ? [] : st).filter(function (p) { return p.bye; }).map(function (p) { return esc(short(p.name)); });
     return '<div class="keyp">' + (top.length ? "Top: " + top.join(" · ") : "") +
       (byes.length ? (top.length ? " · " : "") + '<span class="warn">Bye: ' + byes.join(", ") + "</span>" : "") + "</div>";
   }
@@ -789,21 +832,22 @@ th.line{border-left:1px solid var(--rule)}
       $("spot").hidden = false;
       return;
     }
-    var thu = rows.filter(function (x) { return /^Thu/.test(x.p.game || "") && !x.p.final; });
+    // Players in starting spots only (QB, RB, WR, TE, W/R/T, Q/W/R/T), not bench or IR.
+    var thu = rows.filter(function (x) { return /^Thu/.test(x.p.game || "") && !x.p.final && x.p.slot !== "BN" && x.p.slot !== "IR"; });
     if (!thu.length) { $("spot").hidden = true; return; }
     var g = thu[0].p, opp = g.opp || "";
     var matchup = opp.indexOf("@ ") === 0 ? g.nfl + " at " + opp.slice(2) : opp.slice(3) + " at " + g.nfl;
     var stake = {};
-    thu.forEach(function (x) { if (x.starting) stake[x.t.name] = (stake[x.t.name] || 0) + (x.p.proj || 0); });
+    thu.forEach(function (x) { stake[x.t.name] = (stake[x.t.name] || 0) + (x.p.proj || 0); });
     var most = Object.keys(stake).sort(function (a, b) { return stake[b] - stake[a]; })[0];
     $("spot-title").textContent = "Thursday night spotlight";
-    $("spot-sub").innerHTML = esc(matchup + ", " + g.game + " ET.") + " The first points of Week " + r.week + " on league rosters" +
+    $("spot-sub").innerHTML = esc(matchup + ", " + g.game + " ET.") + " The first points of Week " + r.week + " from league starting lineups" +
       (most ? ". Most riding on it: " + teamLabel(most) + ", with " + stake[most].toFixed(1) + " projected points starting." : ".");
     thu.sort(function (a, b) { return (b.p.proj || 0) - (a.p.proj || 0); });
     $("spot-body").innerHTML = '<ul class="plist">' + thu.map(function (x) {
       return '<li><span class="pn">' + pname(x.p, x.t, true) + (x.p.status ? '<span class="st ' + (x.p.status === "Q" ? "q" : "o") + '">' + esc(x.p.status) + "</span>" : "") +
         '</span><span class="pv">' + (x.p.proj || 0).toFixed(1) + "<small>" + esc(x.p.rank || "") + "</small></span>" +
-        '<span class="pt">' + esc(x.p.pos + " · " + x.p.nfl) + " · " + teamLabel(x.t.name) + " · " + (x.starting ? "starting" : "bench") + "</span></li>";
+        '<span class="pt">' + esc(x.p.pos + " · " + x.p.nfl) + " · " + teamLabel(x.t.name) + (x.p.slot !== x.p.pos ? " · " + esc(x.p.slot) : "") + "</span></li>";
     }).join("") + "</ul>";
     $("spot").hidden = false;
   }
@@ -872,7 +916,7 @@ th.line{border-left:1px solid var(--rule)}
       var need = floor.locked - t.locked, got = t.locked - base, goal = floor.locked - base;
       var tier = tierOf(t.pChop, state.n);
       if (tier === "safe") tier = "bubble"; // still below the mark, so never shown as safe here
-      var players = startersOf(rt).filter(function (p) { return t.left.indexOf(p.name) >= 0; });
+      var players = stillToPlay(rt, t);
       cards.push('<div class="mnf-card t-' + tier + '"><span class="tag">Needs ' + two(need) + "</span>" +
         "<h3>" + teamButton(t.name, state.mgr(t.name)) + "</h3>" +
         '<div class="big">' + two(t.locked) + "<small>so far</small></div>" +
@@ -888,7 +932,7 @@ th.line{border-left:1px solid var(--rule)}
     if (clear.length) {
       $("mnf-clear").innerHTML = "Already past " + two(floor.locked) + " with players still to go: " + clear.map(function (t) {
         var rt = state.raw[t.name] || {};
-        var left = startersOf(rt).filter(function (p) { return t.left.indexOf(p.name) >= 0; });
+        var left = stillToPlay(rt, t);
         return "<b>" + esc(t.name) + "</b> (" + two(t.locked) + ", " + list(left.map(function (p) { return pname(p, rt); })) + ")";
       }).join("; ") + ".";
       $("mnf-clear").hidden = false;
@@ -920,18 +964,34 @@ th.line{border-left:1px solid var(--rule)}
     $("byes-sec").hidden = false;
   }
 
+  // Scores that actually got cut, by week: the kept history in league.json first, then anything newer
+  // the data has. A week known only as an upper bound ("max") is marked bound.
+  function cutHistory(r, league, season) {
+    var kept = ((league && league.cut_history) || {})[String(season || state.data.season)] || [];
+    var byWeek = {};
+    kept.forEach(function (h) {
+      if (typeof h.score === "number") byWeek[h.week] = { w: h.week, v: h.score, bound: false, team: h.team };
+      else if (typeof h.max === "number") byWeek[h.week] = { w: h.week, v: h.max, bound: true, team: h.team };
+    });
+    if (!season) (r.fallen || []).forEach(function (f) { if (!byWeek[f.week] && f.score !== null) byWeek[f.week] = { w: f.week, v: f.score, bound: false, team: f.name }; });
+    return Object.keys(byWeek).map(function (k) { return byWeek[k]; }).sort(function (a, b) { return a.w - b.w; });
+  }
+
   function renderHistory(r, league) {
-    var actual = r.fallen.filter(function (f) { return f.score !== null; }).map(function (f) { return { w: f.week, v: f.score }; });
+    var actual = cutHistory(r, league);
+    // The typical lowest score each week ahead, among the teams still alive in each simulation
     var proj = (r.cuts || []).filter(function (c) { return c.median != null; });
     if (!actual.length && !proj.length) { $("hist-sec").hidden = true; return; }
-    var prior = ((league && league.history_2025) || []).map(function (h) { return { w: h.week, v: h.season_pts / h.week }; });
+    var prior = cutHistory(r, league, state.data.season - 1);
     $("lg-prior-wrap").hidden = !prior.length;
+    $("lg-bound-wrap").hidden = !actual.some(function (a) { return a.bound; });
     var lastW = Math.max.apply(null, [r.lastWeek || 1].concat(actual.map(function (a) { return a.w; })).concat(prior.map(function (a) { return a.w; })));
-    var vals = actual.map(function (a) { return a.v; }).concat(proj.map(function (c) { return c.p90; }), proj.map(function (c) { return c.p10; }), prior.map(function (a) { return a.v; }));
+    var vals = actual.map(function (a) { return a.bound ? a.v - 16 : a.v; }).concat(proj.map(function (c) { return c.p90; }), proj.map(function (c) { return c.p10; }), prior.map(function (a) { return a.v; }));
     var y0 = Math.floor(Math.min.apply(null, vals) / 20) * 20, y1 = Math.ceil(Math.max.apply(null, vals) / 20) * 20;
-    var W = 640, H = 260, L = 34, R = 12, T = 14, B = 28;
+    var W = 640, H = 260, L = 34, R = 12, T = 16, B = 28;
     var X = function (w) { return L + (w - 1) / Math.max(lastW - 1, 1) * (W - L - R); };
     var Y = function (v) { return T + (1 - (v - y0) / (y1 - y0)) * (H - T - B); };
+    var f1 = function (v) { return v.toFixed(1); };
     var g = "";
     for (var v = y0; v <= y1; v += 20) g += '<line class="grid" x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(v) + '" y2="' + Y(v) + '"/><text class="ax" x="' + (L - 6) + '" y="' + (Y(v) + 4) + '" text-anchor="end">' + v + "</text>";
     for (var w = 1; w <= lastW; w++) g += '<text class="ax" x="' + X(w) + '" y="' + (H - 8) + '" text-anchor="middle">' + (w === 1 ? "Wk 1" : w) + "</text>";
@@ -940,15 +1000,33 @@ th.line{border-left:1px solid var(--rule)}
       var band = proj.map(function (c) { return X(c.week) + "," + Y(c.p90); }).concat(proj.slice().reverse().map(function (c) { return X(c.week) + "," + Y(c.p10); }));
       g += '<polygon class="band" points="' + band.join(" ") + '"/>';
       g += '<polyline class="med" points="' + proj.map(function (c) { return X(c.week) + "," + Y(c.median); }).join(" ") + '"/>';
-      g += proj.map(function (c) { return '<circle class="medpt" cx="' + X(c.week) + '" cy="' + Y(c.median) + '" r="3.5"/>'; }).join("");
-      var c0 = proj[0];
-      g += '<text class="actl" style="fill:rgb(var(--bleu-rgb))" x="' + X(c0.week) + '" y="' + (Y(c0.median) - 9) + '" text-anchor="middle">' + pts(c0.median) + "</text>";
+      g += proj.map(function (c) { return '<circle class="medpt" cx="' + X(c.week) + '" cy="' + Y(c.median) + '" r="3.5"><title>Week ' + c.week + ": typical lowest score " + pts(c.median) + "</title></circle>"; }).join("");
+      // Label this week's typical lowest score (left of the now line) and the last week's
+      var c0 = proj[0], cN = proj.length > 1 ? proj[proj.length - 1] : null;
+      g += '<text class="actl" style="fill:rgb(var(--bleu-rgb))" x="' + (X(c0.week) - 7) + '" y="' + (Y(c0.median) + 4) + '" text-anchor="end">' + pts(c0.median) + "</text>";
+      if (cN) g += '<text class="actl" style="fill:rgb(var(--bleu-rgb))" x="' + X(cN.week) + '" y="' + (Y(cN.median) - 9) + '" text-anchor="' + (X(cN.week) > W - R - 14 ? "end" : "middle") + '">' + pts(cN.median) + "</text>";
     }
-    if (prior.length) g += '<polyline class="prior" points="' + prior.map(function (a) { return X(a.w) + "," + Y(a.v); }).join(" ") + '"/>';
+    if (prior.length) {
+      g += '<polyline class="prior" points="' + prior.map(function (a) { return X(a.w) + "," + Y(a.v); }).join(" ") + '"/>';
+      g += prior.map(function (a) { return '<circle class="priorpt" cx="' + X(a.w) + '" cy="' + Y(a.v) + '" r="2.5"><title>2025 Week ' + a.w + ": " + f1(a.v) + "</title></circle>"; }).join("");
+    }
+    // Actual cuts: solid between known scores, dotted to and from a week known only as an upper bound
+    for (var i = 1; i < actual.length; i++) {
+      var a = actual[i - 1], b = actual[i];
+      g += '<line class="' + (a.bound || b.bound ? "actdot" : "actline") + '" x1="' + X(a.w) + '" y1="' + Y(a.v) + '" x2="' + X(b.w) + '" y2="' + Y(b.v) + '"/>';
+    }
     g += actual.map(function (a) {
-      return '<circle class="act" cx="' + X(a.w) + '" cy="' + Y(a.v) + '" r="4.5"/><text class="actl" x="' + X(a.w) + '" y="' + (Y(a.v) - 9) + '" text-anchor="middle">' + pts(a.v) + "</text>";
+      var x = X(a.w), y = Y(a.v), tip = "<title>Week " + a.w + (a.team ? ", " + esc(a.team) : "") + ": " + (a.bound ? "at most " + a.v.toFixed(2) + " (exact score unknown)" : a.v.toFixed(2)) + "</title>";
+      if (a.bound) {
+        return '<circle class="bound" cx="' + x + '" cy="' + y + '" r="4.5">' + tip + "</circle>" +
+          '<path class="boundarr" d="M' + x + "," + (y + 7) + " V" + (y + 19) + " M" + (x - 3.5) + "," + (y + 15) + " L" + x + "," + (y + 19) + " L" + (x + 3.5) + "," + (y + 15) + '"/>' +
+          '<text class="actl" x="' + (x + 7) + '" y="' + (y + 17) + '" text-anchor="start">≤' + pts(a.v) + "</text>";
+      }
+      return '<circle class="act" cx="' + x + '" cy="' + y + '" r="4.5">' + tip + '</circle><text class="actl" x="' + x + '" y="' + (y - 9) + '" text-anchor="middle">' + pts(a.v) + "</text>";
     }).join("");
-    $("hist").innerHTML = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Cut scores so far this season and the projected cut line for each remaining week">' + g + "</svg>";
+    var desc = "Cut scores by week: " + actual.map(function (a) { return "Week " + a.w + " " + (a.bound ? "at most " : "") + f1(a.v); }).join(", ") +
+      (proj.length ? ". Typical lowest score ahead, teams still alive: " + proj.map(function (c) { return "Week " + c.week + " " + pts(c.median); }).join(", ") : "") + ".";
+    $("hist").innerHTML = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(desc) + '">' + g + "</svg>";
     $("hist-sec").hidden = false;
   }
 
@@ -962,7 +1040,7 @@ th.line{border-left:1px solid var(--rule)}
       return '<tr class="bad"><td class="slot">' + esc(p.slot) + '</td><td class="pl"><b>Empty</b></td><td class="num">0.0</td><td class="num"></td></tr>';
     }
     var st = p.status ? '<span class="st ' + (p.status === "Q" ? "q" : "o") + '">' + esc(p.status) + "</span>" : "";
-    var start = !isStarter && p.in_best ? '<span class="st go">Start</span>' : "";
+    var start = !isStarter && (fixNames ? fixNames[p.name] : p.in_best) ? '<span class="st go">Start</span>' : "";
     var where = p.bye ? p.nfl + " · Bye" : [p.nfl + (p.opp ? " " + p.opp : ""), p.game].filter(Boolean).join(" · ");
     if (p.result) where = p.nfl + " " + (p.opp || "") + " · " + p.result;
     var proj = p.bye ? "Bye" : typeof p.proj === "number" ? p.proj.toFixed(1) : "–";
@@ -975,12 +1053,14 @@ th.line{border-left:1px solid var(--rule)}
       '<td class="num">' + proj + '</td><td class="num">' + scored + "</td></tr>";
   }
 
-  var openName = null;
+  var openName = null, fixNames = null;
   function openTeam(name) {
     openName = name;
     var t = state.raw[name];
     if (!t) return;
     var simT = (state.sim.teams || []).filter(function (s) { return s.name === name; })[0];
+    fixNames = null;
+    if (simT && simT.lineup) { fixNames = {}; simT.lineup.forEach(function (n) { fixNames[n] = true; }); }
     $("dlg-title").textContent = name;
     $("dlg-mgr").textContent = state.mgr(name) || "";
     var chips = [];
@@ -994,7 +1074,8 @@ th.line{border-left:1px solid var(--rule)}
       if (simT.fabEdge) chips.push('<span class="chip">Money ' + (simT.fabEdge > 0 ? "+" : "−") + Math.abs(simT.fabEdge).toFixed(1) + " pts/wk later</span>");
     }
     if (typeof t.proj_pre === "number" && t.proj_pre > 0 && t.points) chips.push('<span class="chip">Pregame proj ' + t.proj_pre.toFixed(1) + "</span>");
-    if (typeof t.proj === "number" && t.proj > 0) chips.push('<span class="chip">Yahoo proj ' + t.proj.toFixed(1) + (t.fill ? " + " + t.fill.toFixed(1) + " stand-in*" : "") + "</span>");
+    if (simT && simT.assumesFix) chips.push('<span class="chip fix">' + fixTag(simT).replace("fixtag", "fixtag in-chip") + "proj " + simT.now.toFixed(1) + "</span>");
+    if (typeof t.proj === "number" && t.proj > 0) chips.push('<span class="chip">Yahoo proj ' + t.proj.toFixed(1) + (simT && simT.assumesFix ? " as set" : "") + "</span>");
     if (typeof t.best === "number") chips.push('<span class="chip">Best lineup ' + t.best.toFixed(1) + "</span>");
     if (typeof t.faab === "number") chips.push('<span class="chip">$' + t.faab + " FAB</span>");
     $("dlg-chips").innerHTML = chips.join("");
@@ -1015,6 +1096,9 @@ th.line{border-left:1px solid var(--rule)}
       if (stood) html += '<tr class="note"><td></td><td class="pl" colspan="3"><small>* ' + (noneSet
         ? "No lineup is set in Yahoo yet, so the odds assume the best lineup this roster can field."
         : (stood > 1 ? "These spots are" : "This spot is") + " empty in Yahoo, so the odds assume the best bench player who can fill " + (stood > 1 ? "them" : "it") + " starts.") + "</small></td></tr>";
+      if (simT && simT.assumesFix) html += '<tr class="note"><td></td><td class="pl" colspan="3"><small>' + (simT.proj != null
+        ? "Assumes lineup fix: the odds count on the bench players marked Start moving in for the spots in red before their games lock. As set, Yahoo projects " + simT.proj.toFixed(1) + "; fixed, " + simT.now.toFixed(1) + "."
+        : "Assumes lineup fix: no lineup is set in Yahoo, so the odds count on the best lineup this roster can field, the players marked * and Start (" + simT.now.toFixed(1) + ").") + "</small></td></tr>";
       if (bench.length) html += '<tr class="sep"><th colspan="4">Bench</th></tr>' + bench.map(function (p) { return playerRow(p, false); }).join("");
       if (ir.length) html += '<tr class="sep"><th colspan="4">Injured reserve</th></tr>' + ir.map(function (p) { return playerRow(p, false); }).join("");
       $("dlg-body").innerHTML = html + "</tbody></table></div>";
