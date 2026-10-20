@@ -1,5 +1,5 @@
 {
-  "_about": "Hand-kept details the Yahoo pull doesn't provide. Keyed by team name as it appears in Yahoo. history_2025: each 2025 elimination with the cut team's season points at that point (not a weekly score). cut_history: the score that got cut each week, by season; score is exact, max means only an upper bound is known, proj is the cut team's Yahoo projection that week. eulogies.*.hide_odds: leave the model's pregame cut odds off that team's send-off. Never put email addresses here: this file is public. live_url: the live relay (tools/live-relay.js), once set up.",
+  "_about": "Hand-kept details the Yahoo pull doesn't provide. Keyed by team name as it appears in Yahoo. history_2025: each 2025 elimination with the cut team's season points at that point (not a weekly score). cut_history: the score that got cut each week, by season; score is exact, max means only an upper bound is known, proj is the cut team's Yahoo projection that week. Past seasons also carry next_team/next_score (the closest survivor Yahoo shows on the cut team's page), best (the best lineup the cut team's own roster could have started, in actual points), bench (the bench players that lineup uses) and send_off (the closing line of that week's In Memoriam email). champions: each finished season's winner and a line from the champion tribute. eulogies.*.hide_odds: leave the model's pregame cut odds off that team's send-off. Never put email addresses here: this file is public. live_url: the live relay (tools/live-relay.js), once set up.",
   "live_url": "https://guillotine-live.dsolar.workers.dev/",
   "managers": {
     "23 Richard": "Gabriel",
@@ -177,74 +177,296 @@
         "week": 1,
         "team": "Hit Squad Dane",
         "score": 77.62,
-        "proj": 118.8
+        "proj": 118.8,
+        "manager": "Dane",
+        "next_team": "Hakuna MaChoppa",
+        "next_score": 84.76,
+        "best": 91.92,
+        "bench": [
+          {
+            "name": "Keenan Allen",
+            "pts": 16.3
+          },
+          {
+            "name": "Wan'Dale Robinson",
+            "pts": 8.5
+          }
+        ],
+        "send_off": "Here lies Dane: six feet under center, buried with a 12-pack of Sam Summer."
       },
       {
         "week": 2,
         "team": "Liberté Égalité Henri",
         "score": 75.3,
-        "proj": 111.57
+        "proj": 111.57,
+        "manager": "Henry",
+        "next_team": "23 Richard",
+        "next_score": 88.08,
+        "best": 96.8,
+        "bench": [
+          {
+            "name": "Nick Chubb",
+            "pts": 14.2
+          },
+          {
+            "name": "Dylan Sampson",
+            "pts": 9.4
+          }
+        ],
+        "send_off": "May Henri’s soul rest in its eternal bye week, his head forever rolling across the fantasy sideline."
       },
       {
         "week": 3,
         "team": "Pop Douglas Demon Hunters",
         "score": 82.86,
-        "proj": 123.95
+        "proj": 123.95,
+        "manager": "Jeff S",
+        "next_team": "Fly Zone Kristi",
+        "next_score": 94.4,
+        "best": 127.46,
+        "bench": [
+          {
+            "name": "Omarion Hampton",
+            "pts": 21.9
+          },
+          {
+            "name": "Ricky Pearsall",
+            "pts": 15.7
+          },
+          {
+            "name": "Khalil Shakir",
+            "pts": 12.5
+          },
+          {
+            "name": "Chig Okonkwo",
+            "pts": 9.1
+          }
+        ],
+        "send_off": "Rest not in peace, Jeff, but in paranoia. You weren’t cut for bad lineups. You were cut for asking the wrong questions."
       },
       {
         "week": 4,
         "team": "Maye I see your TDs",
         "score": 94.64,
-        "proj": 107.75
+        "proj": 107.75,
+        "manager": "Matthew E",
+        "next_team": "Fly Zone Kristi",
+        "next_score": 94.8,
+        "best": 138.84,
+        "bench": [
+          {
+            "name": "Woody Marks",
+            "pts": 25.9
+          },
+          {
+            "name": "Kyle Pitts",
+            "pts": 15.5
+          },
+          {
+            "name": "Khalil Shakir",
+            "pts": 15.4
+          }
+        ],
+        "send_off": "May he recline in the great dentist’s chair of the beyond, flossing ghosts of failed lineups past."
       },
       {
         "week": 5,
         "team": "Fly Zone Kristi",
         "score": 103.9,
-        "proj": 96.66
+        "proj": 96.66,
+        "manager": "Kristi",
+        "next_team": "Hakuna MaChoppa",
+        "next_score": 104.92,
+        "best": 103.9,
+        "bench": [],
+        "send_off": "May his eternal bye week be free of regulation, ethics, and soft-tissue reform."
       },
       {
         "week": 6,
         "team": "23 Richard",
         "score": 82.78,
-        "proj": 119.94
+        "proj": 119.94,
+        "manager": "Gabriel",
+        "next_team": "Hakuna MaChoppa",
+        "next_score": 105.68,
+        "best": 99.92,
+        "bench": [
+          {
+            "name": "Jaxson Dart",
+            "pts": 23.6
+          },
+          {
+            "name": "Romeo Doubs",
+            "pts": 8.0
+          },
+          {
+            "name": "Tony Pollard",
+            "pts": 5.7
+          },
+          {
+            "name": "Zay Flowers",
+            "pts": 5.6
+          }
+        ],
+        "send_off": "May their stats rise again, their hammies hold firm, and their next chef be less cursed."
       },
       {
         "week": 7,
         "team": "Pinch the Purple Tip",
         "score": 99.78,
-        "proj": 116.35
+        "proj": 116.35,
+        "manager": "Scott",
+        "next_team": "Burrow McConkey in Your C Kupp",
+        "next_score": 102.32,
+        "best": 123.44,
+        "bench": [
+          {
+            "name": "Matthew Stafford",
+            "pts": 27.38
+          },
+          {
+            "name": "Stefon Diggs",
+            "pts": 10.4
+          }
+        ],
+        "send_off": "His campaign is over. His eternal bye week begins in silence, mud, and unwashed glory."
       },
       {
         "week": 8,
         "team": "J Free FTW",
         "score": 117.14,
-        "proj": 114.19
+        "proj": 114.19,
+        "manager": "Josh",
+        "next_team": "Burrow McConkey in Your C Kupp",
+        "next_score": 136.06,
+        "best": 118.24,
+        "bench": [
+          {
+            "name": "Jauan Jennings",
+            "pts": 6.5
+          }
+        ],
+        "send_off": "May his account rest in eternal lockout, his bench stay forever warm, and his jokes finally find a laugh."
       },
       {
         "week": 9,
         "team": "Chase is back on the Case",
         "score": 103.86,
-        "proj": 130.19
+        "proj": 130.19,
+        "manager": "Garhett",
+        "next_team": "Deviated Rectums",
+        "next_score": 119.54,
+        "best": 163.46,
+        "bench": [
+          {
+            "name": "Brock Bowers",
+            "pts": 37.3
+          },
+          {
+            "name": "Sam LaPorta",
+            "pts": 18.7
+          },
+          {
+            "name": "Jaylen Waddle",
+            "pts": 11.2
+          }
+        ],
+        "send_off": "The quiet assassin has finally been silenced. The case file is sealed, the blade wiped clean, and the league moves on without a trace."
       },
       {
         "week": 10,
         "team": "Burrow McConkey in Your C Kupp",
         "score": 106.64,
-        "proj": 135.73
+        "proj": 135.73,
+        "manager": "Nate",
+        "next_team": "Deviated Rectums",
+        "next_score": 140.46,
+        "best": 120.14,
+        "bench": [
+          {
+            "name": "Kyren Williams",
+            "pts": 21.4
+          },
+          {
+            "name": "Jaylen Warren",
+            "pts": 10.1
+          }
+        ],
+        "send_off": "May Nate’s team rest peacefully in its eternal bye week, free from bad matchups and premature tilting. He went deep, came up short, but still left everyone smiling and satisfied."
       },
       {
         "week": 11,
         "team": "Hakuna MaChoppa",
         "score": 114.74,
-        "proj": 134.41
+        "proj": 134.41,
+        "manager": "Adam",
+        "next_team": "Holofernes",
+        "next_score": 153.56,
+        "best": 147.24,
+        "bench": [
+          {
+            "name": "George Kittle",
+            "pts": 21.7
+          },
+          {
+            "name": "Derrick Henry",
+            "pts": 19.2
+          },
+          {
+            "name": "Rashee Rice",
+            "pts": 6.8
+          }
+        ],
+        "send_off": "Rest easy, Adam. The kingdom forgives, but it never forgets."
       },
       {
         "week": 12,
         "team": "Deviated Rectums",
         "score": 122.14,
-        "proj": 134.41
+        "proj": 134.41,
+        "manager": "Mark",
+        "next_team": "Holofernes",
+        "next_score": 167.18,
+        "best": 138.38,
+        "bench": [
+          {
+            "name": "Drake Maye",
+            "pts": 16.96
+          },
+          {
+            "name": "DeVonta Smith",
+            "pts": 11.9
+          },
+          {
+            "name": "Javonte Williams",
+            "pts": 11.1
+          },
+          {
+            "name": "Brock Bowers",
+            "pts": 8.5
+          }
+        ],
+        "send_off": "The signal fades, the season ends, and the Commish’s voice carries on through the static."
       }
     ]
+  },
+  "champions": {
+    "2025": {
+      "team": "Holofernes",
+      "manager": "David S",
+      "final": {
+        "week": 12,
+        "score": 167.18,
+        "opp": "Deviated Rectums",
+        "opp_score": 122.14
+      },
+      "tribute": {
+        "by": "Dane",
+        "lines": [
+          "The rest of us? We’re basically battling for second place.",
+          "He’s the dynasty. He’s the standard. He’s the Guillotine League’s final boss."
+        ]
+      }
+    }
   }
 }

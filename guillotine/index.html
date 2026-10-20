@@ -191,6 +191,41 @@ td.chg{font-weight:700;border-left:1px solid var(--rule)}
 }
 @media (prefers-reduced-motion:reduce){.fallen .chev{transition:none}}
 .none{color:var(--muted);font-size:.9rem;margin:0}
+/* Past seasons, under the fallen */
+.past{margin-top:1.5rem;border:1px solid var(--rule);border-radius:3px;background:var(--surface)}
+.past > summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:.75rem;padding:.85rem .9rem;border-radius:3px}
+.past > summary::-webkit-details-marker{display:none}
+.past > summary:focus-visible{outline:2px solid var(--blade);outline-offset:3px}
+.past-t{flex:none;font:700 1.2rem/1.2 var(--f-display)}
+.past-s{flex:1;min-width:0;color:var(--muted);font-size:.8rem}
+.past > summary .chev{flex:none;width:.5rem;height:.5rem;border-right:2px solid var(--blade);border-bottom:2px solid var(--blade);transform:translateY(-2px) rotate(45deg);transition:transform .15s ease}
+.past[open] > summary .chev{transform:translateY(2px) rotate(-135deg)}
+.past-in{padding:0 .9rem .4rem;display:grid;gap:1rem}
+.champ{border-left:3px solid var(--bubble);padding:.15rem 0 .15rem .8rem;display:grid;gap:.35rem}
+.champ .eyebrow{color:var(--bubble)}
+.champ h3{margin:0;font:700 1.25rem/1.2 var(--f-display)}
+.champ h3 small{font:500 .8rem var(--f-body);color:var(--muted);margin-left:.45rem}
+.champ p{margin:0;font-size:.85rem;color:var(--muted)}
+.champ blockquote,.sendoff{margin:.15rem 0 0;font:italic 500 1.05rem/1.5 var(--f-display)}
+.champ cite,.sendoff cite{display:block;margin-top:.3rem;font:normal 500 .72rem/1.3 var(--f-body);color:var(--muted)}
+.past-note{margin:0;font-size:.85rem;color:var(--ink)}
+.past .fallen{border-top:1px solid var(--rule)}
+.past .fallen > li:last-child{border-bottom:0}
+.past-body{display:grid;gap:.85rem;padding:0 0 1.1rem}
+.facts{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.35rem .85rem;margin:0;font-size:.85rem}
+.facts dt{color:var(--muted)}
+.facts dd{margin:0;font-variant-numeric:tabular-nums}
+.facts .save{color:var(--safe);font-weight:600}
+.sendoff{border-left:2px solid var(--blade);padding-left:.75rem}
+@media (min-width:40rem){.past-body{padding-left:4.15rem}}
+/* Phones: team names get the room (manager under the name, chevron without its label) */
+@media (max-width:30rem){
+  .fallen .who2{flex-direction:column;align-items:flex-start;gap:.1rem}
+  .fallen .t{white-space:normal;overflow:visible}
+  .fallen .cue{font-size:0;gap:0}
+  .fallen .cue .chev{font-size:1rem}
+}
+@media (prefers-reduced-motion:reduce){.past > summary .chev{transition:none}}
 
 /* Spotlight, byes, cut history */
 .spot{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:1rem .9rem;display:grid;gap:.8rem}
@@ -444,6 +479,7 @@ th.line{border-left:1px solid var(--rule)}
     <div class="section-head"><h2 id="fallen-title">The fallen</h2><p>Open a team for its send-off from the league email.</p></div>
     <ol class="fallen" id="fallen"></ol>
     <p class="none" id="fallen-none" hidden></p>
+    <div id="past"></div>
   </section>
 
   <details class="how" id="how">
@@ -748,6 +784,52 @@ th.line{border-left:1px solid var(--rule)}
       }
       $("fallen-sec").hidden = false;
     }
+    if (renderPast(league)) $("fallen-sec").hidden = false;
+  }
+
+  // Last season, under the fallen: who went out, by how much, what the bench could have done, and the
+  // closing line of that week's In Memoriam email. Returns true when there's a season to show.
+  function renderPast(league) {
+    var host = $("past"), yr = String((state.data.season || 0) - 1);
+    var rows = (((league && league.cut_history) || {})[yr] || []).filter(function (h) { return typeof h.score === "number"; });
+    var champ = ((league && league.champions) || {})[yr];
+    if (!rows.length) { host.innerHTML = ""; return false; }
+    var avg = function (xs) { return xs.reduce(function (a, b) { return a + b; }, 0) / xs.length; };
+    var proj = rows.filter(function (h) { return typeof h.proj === "number"; });
+    var known = rows.filter(function (h) { return typeof h.best === "number" && typeof h.next_score === "number"; });
+    var saved = known.filter(function (h) { return h.best > h.next_score; });
+    var note = (proj.length ? "The team that got cut was projected for " + Math.round(avg(proj.map(function (h) { return h.proj; }))) +
+      " on average and scored " + Math.round(avg(proj.map(function (h) { return h.score; }))) + ". " : "") +
+      (known.length ? (["None", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"][saved.length] || saved.length) + " of the " + known.length +
+        " had a lineup on their own roster that would have survived." : "");
+    var champHtml = champ ? '<div class="champ"><p class="eyebrow">Champion</p><h3>' + esc(champ.team) + (champ.manager ? "<small>" + esc(champ.manager) + "</small>" : "") + "</h3>" +
+      (champ.final ? "<p>Last team standing. Won the Week " + champ.final.week + " final " + two(champ.final.score) + " to " + two(champ.final.opp_score) + " over " + esc(champ.final.opp) + ".</p>" : "") +
+      (champ.tribute ? "<blockquote>" + esc(champ.tribute.lines.join(" ")) + "<cite>" + esc(champ.tribute.by) + ", in the champion tribute</cite></blockquote>" : "") + "</div>" : "";
+    var list = rows.slice().sort(function (a, b) { return b.week - a.week; }).map(function (h) {
+      var facts = [];
+      if (typeof h.next_score === "number") {
+        var final = champ && champ.final && champ.final.week === h.week;
+        var gap = two(h.next_score - h.score);
+        facts.push(final ? ["Lost the final", "By " + gap + " to " + esc(h.next_team) + "."] : ["Missed by", gap + ". " + esc(h.next_team) + " survived at " + two(h.next_score) + "."]);
+      }
+      if (typeof h.proj === "number") facts.push(["Projected", h.proj.toFixed(1) + ", scored " + h.score.toFixed(1)]);
+      if (typeof h.best === "number") {
+        var bench = (h.bench || []).map(function (p) { return esc(p.name) + " " + p.pts.toFixed(1); }).join(", ");
+        var ok = typeof h.next_score === "number" && h.best > h.next_score;
+        facts.push(["Bench", h.best <= h.score + 0.005 ? "Nothing better on it."
+          : ok ? '<span class="save">Could have saved it.</span> The best lineup on the roster scored ' + h.best.toFixed(1) + " with " + bench + "."
+          : "Not enough. The best lineup on the roster scored " + h.best.toFixed(1) + (bench ? " with " + bench : "") + "."]);
+      }
+      var row = '<span class="w">Wk ' + h.week + '</span><span class="who2"><span class="t">' + esc(h.team) + "</span>" +
+        (h.manager ? '<span class="mgr">' + esc(h.manager) + "</span>" : "") + "</span>";
+      return '<li><details><summary>' + row + '<span class="end"><span>' + h.score.toFixed(1) + ' pts</span><span class="cue">Send-off<i class="chev"></i></span></span></summary>' +
+        '<div class="past-body"><dl class="facts">' + facts.map(function (f) { return "<dt>" + f[0] + "</dt><dd>" + f[1] + "</dd>"; }).join("") + "</dl>" +
+        (h.send_off ? '<blockquote class="sendoff">' + esc(h.send_off) + "<cite>In Memoriam, Week " + h.week + "</cite></blockquote>" : "") + "</div></details></li>";
+    }).join("");
+    host.innerHTML = '<details class="past"><summary><span class="past-t">' + esc(yr) + ' season</span><span class="past-s">' + (rows.length + 1) + " teams" +
+      (champ ? ", won by " + esc(champ.team) + (champ.manager ? " (" + esc(champ.manager) + ")" : "") : "") + '</span><i class="chev"></i></summary>' +
+      '<div class="past-in">' + champHtml + (note ? '<p class="past-note">' + esc(note) + "</p>" : "") + '<ol class="fallen">' + list + "</ol></div></details>";
+    return true;
   }
 
   var short = function (name) { var i = name.indexOf(" "); return i > 0 ? name[0] + ". " + name.slice(i + 1) : name; };
