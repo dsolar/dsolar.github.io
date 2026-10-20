@@ -738,7 +738,7 @@ function concludeBattle(save,result,rng=Math.random){if(!save.battle)throw Error
   s.wins++;s.streak++;s.bestStreak=Math.max(s.bestStreak,s.streak);s.points++;
   if(s.wins%5===0)s.jars++;
   if(b.kind==='boss')s.bossWins++;
-  if(b.kind==='parlor'&&b.parlorId){s.world??={};s.world.parlorBadges??=[];if(!s.world.parlorBadges.includes(b.parlorId)){s.world.parlorBadges.push(b.parlorId);s.history.push(`Earned the ${b.parlorId} Parlor patch!`);if(b.parlorId==='cove')s.history.push('Captain Larry awarded the Softboard! Open water routes are now accessible.');}}
+  if(b.kind==='parlor'&&b.parlorId){s.world??={};s.world.parlorBadges??=[];if(!s.world.parlorBadges.includes(b.parlorId)){s.world.parlorBadges.push(b.parlorId);s.history.push(`Earned the ${b.parlorId} Parlor patch!`);if(b.parlorId==='cove')s.history.push('Captain Larry awarded the Softboard! Open water routes are now accessible.');if(b.parlorId==='island')s.history.push('Skipper Pearl awarded the Climbing Mittens! Cloudstep Pass is unlocked.');}}
   b.mine.forEach(f=>grantXp(s,f.id,f.hp>0?35:22));
   const options=rewardChoices(s,rng,b.kind==='boss',b.theirs.map(f=>f.id));
   s.pending=options.length?{choices:options,boss:b.kind==='boss',patchId:b.kind==='parlor'?b.parlorId:null}:null;
@@ -1152,7 +1152,7 @@ const DESTINATION_GROUNDS={
  garden:{roof:'#80b482',wall:'#e3f0d5',trim:'#4d7d63',accent:'#f1b4c8',sign:'PETAL',ground:'#d8dbad',symbol:'flower'},
  cove:{roof:'#609cbb',wall:'#d2e6e5',trim:'#47738d',accent:'#fff0ac',sign:'TIDE',ground:'#d7cba1',symbol:'shell'},
  moon:{roof:'#8b78b9',wall:'#ded7ef',trim:'#504970',accent:'#fff3b1',sign:'MOON',ground:'#9f96b5',symbol:'stars'},
- willow:{roof:'#70a79c',wall:'#d8e6d8',trim:'#47766d',accent:'#e8ca87',sign:'RIVER',ground:'#c5d3ad',symbol:'reeds'}
+ willow:{roof:'#70a79c',wall:'#d8e6d8',trim:'#47766d',accent:'#e8ca87',sign:'RIVER',ground:'#c5d3ad',symbol:'reeds'},island:{roof:'#78b5c1',wall:'#e3ecdf',trim:'#537a90',accent:'#f8e5af',sign:'PEARL',ground:'#dbd0a6',symbol:'shell'}
 };
 function paintParlorGrounds(g,x,y,p){
  const c=DESTINATION_GROUNDS[p.id];if(!c)return;
@@ -1289,12 +1289,16 @@ const REGION_AREAS={
  'store-room':{id:'store-room',name:'The Little General Store',subtitle:'Cuddlewick · Stars and tiny treasures',width:18,height:13,color:'#dfd4af',entry:{x:8,y:9},interior:true,description:'Browse shelves of ribbons, postcards and powder-blue mystery bags.'},
  'greenhouse-room':{id:'greenhouse-room',name:'Petal’s Greenhouse',subtitle:'Petal Gardens · A glasshouse full of flowers',width:20,height:14,color:'#b6d8aa',entry:{x:10,y:10},interior:true,description:'Little plants grow beneath a sun-warmed glass roof, with potting benches and colorful blooms.'},
  willowmere:{id:'willowmere',name:'Willowmere',subtitle:'The first town beyond Cuddlewick',width:48,height:36,color:'#b8ddc4',entry:{x:2,y:18},description:'A waterside market town where the orchard road meets the great eastern river.'},
+ 'reed-keys':{id:'reed-keys',name:'The Reed Keys',subtitle:'Softboard island crossing',width:46,height:34,color:'#b4d9cf',entry:{x:3,y:17},description:'A chain of little shell islands and coves, with an island Keeper waiting across the channels.'},
+ 'cloudstep-pass':{id:'cloudstep-pass',name:'Cloudstep Pass',subtitle:'The highland trail · Climbing Mittens',width:46,height:34,color:'#bfcab6',entry:{x:3,y:17},description:'A mountain route of stone terraces, switchbacks and the old Orchard shortcut.'},
 };
 const REGION_ZONES=Object.values(REGION_AREAS).filter(a=>!a.interior).map(a=>({id:a.id,name:a.name,color:a.color,x:a.entry.x,y:a.entry.y,description:a.description}));
 // Every future atlas destination is distinct, with geographic position and purpose.
 const ATLAS_TOWNS=[
  {id:'cuddlewick',name:'Cuddlewick',x:36,y:47,kind:'town',playable:true,role:'Starting village'},
  {id:'willowmere',name:'Willowmere',x:48,y:44,kind:'town',playable:true,role:'Riverside market'},
+ {id:'reed-keys',name:'The Reed Keys',x:63,y:52,kind:'village',playable:true,role:'Softboard islands'},
+ {id:'cloudstep-pass',name:'Cloudstep Pass',x:65,y:35,kind:'village',playable:true,role:'Climbing Mittens route'},
  {id:'briar',name:'Briarbrook',x:18,y:43,kind:'town',role:'Orchard and farming town'},
  {id:'canopy',name:'Canopy Hollow',x:28,y:23,kind:'town',role:'Forest town on boardwalks'},
  {id:'glassmere',name:'Glassmere',x:47,y:25,kind:'town',role:'Lake town and boathouses'},
@@ -1311,6 +1315,9 @@ const ATLAS_TOWNS=[
 ];
 const ATLAS_ROUTES=[
  ['01','cuddlewick','willowmere',true,'Orchard Way','A forked route with farmstead, stone bridge and hidden grotto'],
+ ['25','willowmere','reed-keys',true,'Softboard Crossing','An island chain beyond Willowmere'],
+ ['26','reed-keys','cloudstep-pass',true,'Cloudstep Climb','Mittens unlock the highland trail'],
+ ['27','cloudstep-pass','cuddlewick',true,'Highland Return','An old shortcut back to Orchard Way'],
  ['02','briar','cuddlewick',false,'Button Lane','Orchards, split paths and a windy hill'],
  ['03','briar','canopy',false,'Pine Lantern Trail','Woodland ledges and logging camp'],
  ['04','canopy','glassmere',false,'Moonflower Path','Ancient trees, woodland streams and an abandoned tower'],
@@ -1340,6 +1347,9 @@ const REGION_NPCS=[
  {id:'orchard-watcher',area:'orchard',name:'Acorn the Pathfinder',product:'Amuseables Ort & Tum Acorns',x:30,y:14,icon:'🌰',hint:'A tip about the secret cave.',say:'A shortcut circles the pond north of the road. Follow the stones uphill, then look for a cave mouth tucked above the orchard.',challenge:null},
  {id:'willow-keeper',area:'willowmere',name:'Mayor Clementine',product:'Amuseables Peach',x:18,y:15,icon:'✉',hint:'Welcomes travelers to Willowmere.',say:'We made our town beside the river because the bridges connect everyone. Bring me news from Poppy and I will tell you about our old river festival.',challenge:null},
  {id:'island-guide',area:'willowmere',name:'Ripple the Reed Keeper',product:'Amuseables Pebble',x:40,y:12,icon:'🛶',hint:'A secret friend beyond the water.',say:'You sailed the open channel! That means you earned the Softboard from Captain Larry, not that you found a shortcut by luck. The river has more secrets yet.',challenge:null},
+ {id:'island-sailor',area:'reed-keys',name:'Skipper Puddle',product:'Amuseables Michelle Mussel',x:9,y:16,icon:'🐚',hint:'Knows the Softboard crossings',say:'Our islands are separated by deep channels. Only the Softboard can carry you to the Shellkeeper, whose Pearl Patch comes with Climbing Mittens.',challenge:null},
+ {id:'island-gardener',area:'reed-keys',name:'Pearl the Beachcomber',product:'Amuseables Peach',x:19,y:10,icon:'🌾',hint:'Treasure beyond the tide',say:'Look along the coves for hidden treasures, and challenge Skipper Pearl before attempting the steep mountain route.',challenge:null},
+ {id:'mountain-guide',area:'cloudstep-pass',name:'Pip the Peak Scout',product:'Amuseables Pebble',x:20,y:15,icon:'⛰️',hint:'The secret mountain return',say:'Follow the ridge north for an old shortcut back to Orchard Way. Your Mittens make the ascent possible.',challenge:null},
  {id:'willow-fisher',area:'willowmere',name:'Mina by the Water',product:'Amuseables Michelle Mussel',x:37,y:23,icon:'🐚',hint:'A water-crossing mystery.',say:'See Reed Island across the water? Win the Shell Patch from Captain Larry at Tidepool Parlor to earn a Softboard. Until then, the river is too deep to cross!',challenge:null},
  {id:'cottage-host',area:'cottage',name:'Nana Fluff',product:'Bashful Beige Bunny',x:11,y:5,icon:'♡',hint:'Your first friend in Cuddlewick.',say:'Home is where every adventure starts. Come back whenever you want a quiet moment. The quilt was made from scraps of every town in the Softlands.',challenge:null},
  {id:'store-clerk',area:'store-room',name:'Muffin the Shopkeeper',product:'Amuseables Peanut',x:12,y:6,icon:'✦',hint:'Trade stars for tiny treasures.',say:'Welcome to the General Store! We have sky-blue surprise bags, ribbons and postcards. Nothing is too small to be a treasure.',challenge:null},
@@ -1354,6 +1364,10 @@ const REGION_TREASURES=[
  {id:'grotto-crystal',area:'grotto',x:26,y:21,title:'A lavender crystal',text:'A shimmering stone sparkles under the cave lantern.',points:2},
  {id:'willow-postcard',area:'willowmere',x:26,y:12,title:'A Willowmere postcard',text:'A bright postcard sits beside the town square.',points:2},
  {id:'willow-ribbon',area:'willowmere',x:37,y:29,title:'A river-blue ribbon',text:'A wave carried a ribbon onto the shore.',points:2},
+ {id:'island-shell',area:'reed-keys',x:15,y:11,title:'The pearly shell compass',text:'A tiny sea-polished compass lies in the seagrass.',points:4},
+ {id:'island-glass',area:'reed-keys',x:33,y:23,title:'Tidepool sea glass',text:'A luminous piece of sea glass.',points:3},
+ {id:'mountain-flower',area:'cloudstep-pass',x:20,y:7,title:'A mountain snowflower',text:'An alpine bloom among the stones.',points:5},
+ {id:'mountain-ribbon',area:'cloudstep-pass',x:36,y:25,title:'A climber’s ribbon',text:'A ribbon marks the old climbing trail.',points:3},
  {id:'reed-island-keepsake',area:'willowmere',x:42,y:14,title:'The Reed Island Keepsake',text:'Only someone who earned the Softboard could reach this tiny shore. A silver river charm lies among the reeds!',points:7},
 ];
 const REGION_LANDMARKS=[
@@ -1368,10 +1382,16 @@ const REGION_LANDMARKS=[
  {area:'willowmere',x:39,y:11,name:'Reed Island · Softboard required',icon:'🌾'},
  {area:'willowmere',x:31,y:8,name:'Broken North Bridge',icon:'🪵'},
  {area:'willowmere',x:11,y:23,name:'Little Riverside Cottage',icon:'🏡'},
+ {area:'reed-keys',x:4,y:17,name:'Softboard Landing',icon:'⛵'},
+ {area:'reed-keys',x:28,y:15,name:'Shellkeeper Pavilion',icon:'🐚'},
+ {area:'reed-keys',x:42,y:17,name:'Cloudstep Cliffs',icon:'⛰️'},
+ {area:'cloudstep-pass',x:7,y:17,name:'Highland Trailhead',icon:'⛰️'},
+ {area:'cloudstep-pass',x:23,y:3,name:'The Old Orchard Shortcut',icon:'🚪'},
  {area:'grotto',x:15,y:10,name:'Echo Pillars',icon:'🪨'},
  {area:'grotto',x:27,y:9,name:'The Hidden Gallery',icon:'✨'},
 ];
-const REGION_PARLORS=[{id:'willow',area:'willowmere',name:'Willowmere Parlor',patch:'River Patch',keeper:'Mayor Clementine',product:'Amuseables Peach',x:24,y:21,required:1,theme:'A riverside test of careful teamwork'}];
+const REGION_PARLORS=[{id:'willow',area:'willowmere',name:'Willowmere Parlor',patch:'River Patch',keeper:'Mayor Clementine',product:'Amuseables Peach',x:24,y:21,required:1,theme:'A riverside test of careful teamwork'},
+{id:'island',area:'reed-keys',name:'Shellkeeper Parlor',patch:'Pearl Patch',keeper:'Skipper Pearl',product:'Amuseables Michelle Mussel',x:30,y:16,required:2,theme:'An island test of careful currents and courage'}];
 function areaInfo(area='cuddlewick'){return REGION_AREAS[area]||null;}
 function areaSize(area){const a=areaInfo(area);return a?{width:a.width,height:a.height}:{width:56,height:40};}
 function areaNpcs(area){return REGION_NPCS.filter(n=>n.area===area);}
@@ -1406,6 +1426,19 @@ function areaTile(area,x,y){const X=Math.floor(x),Y=Math.floor(y),h=(Math.imul(X
    return {kind:'greenhouse-floor',solid:false};
   }
   return {kind:area==='store-room'?'shop-floor':'wood-floor',solid:false};
+ }
+ if(area==='reed-keys'){
+  if(X<2||X>43||Y<2||Y>31)return {kind:'river',solid:true};
+  const islands=[[7,17,100,70],[19,10,71,54],[30,17,111,83],[36,26,66,46]];
+  if(!islands.some(([cx,cy,rx,ry])=>((X-cx)**2)/rx+((Y-cy)**2)/ry<1))return {kind:'river',solid:true};
+  if((X>=24&&X<=35&&Math.abs(Y-16)<2)||(X<=14&&Math.abs(Y-17)<2))return {kind:'trail',solid:false};
+  return {kind:h%7===0?'orchard-flower':'riverside',solid:false};
+ }
+ if(area==='cloudstep-pass'){
+  if(X<2||X>43||Y<2||Y>31)return {kind:'cliff',solid:true};
+  if((X>=12&&X<=14&&Y>=10&&Y<=22)||(X>=25&&X<=27&&Y>=7&&Y<=27))return {kind:'stairs',solid:false};
+  if((Y>=3&&Y<=9&&X>=15&&X<=30)||(Y>=24&&Y<=27&&X>=15&&X<=38)||Math.abs(Y-17)<=2||Math.abs(Y-(17+Math.round(6*Math.sin(X/5))))<=2)return {kind:'trail',solid:false};
+  return {kind:h%19===0?'grove':'hill',solid:h%19===0};
  }
  if(area==='orchard'){
   const road=windingRoad(X),main=Math.abs(Y-road)<=1.45;
@@ -1448,6 +1481,12 @@ function areaTile(area,x,y){const X=Math.floor(x),Y=Math.floor(y),h=(Math.imul(X
 }
 function areaElevation(area,x,y){const X=Math.floor(x),Y=Math.floor(y);if(area!=='orchard')return 0;if(X<16||X>43)return 0;return Y<=9?2:Y<=13?1:0;}
 function areaGate(area,x,y){
+ if(area==='willowmere'&&x>=46.7&&y>=16&&y<=20)return {area:'reed-keys',x:3,y:17,message:'The Reed Keys · Softboard Crossing',requires:'board'};
+ if(area==='reed-keys'&&x<=2.1&&y>=14&&y<=20)return {area:'willowmere',x:45.5,y:18,message:'Back in Willowmere'};
+ if(area==='reed-keys'&&x>=43&&y>=14&&y<=20)return {area:'cloudstep-pass',x:3,y:17,message:'Cloudstep Pass · High Mountain Trail',requires:'mittens'};
+ if(area==='cloudstep-pass'&&x<=2.1&&y>=14&&y<=20)return {area:'reed-keys',x:41,y:17,message:'Back to the Reed Keys'};
+ if(area==='cloudstep-pass'&&x>=21&&x<=25&&y<=2.2)return {area:'orchard',x:39,y:6,message:'Old Highland Shortcut · Orchard Way'};
+ if(area==='orchard'&&x>=38&&x<=41&&y<=5.3)return {area:'cloudstep-pass',x:23,y:3,message:'Old Highland Shortcut · Cloudstep Pass',requires:'mittens'};
  if(area==='cuddlewick'&&Math.hypot(x-23,y-18)<=.44)return {area:'cottage',x:8,y:8,message:'Welcome home!'};
  if(area==='cuddlewick'&&Math.hypot(x-7,y-22)<=.44)return {area:'bakery-room',x:8,y:9,message:'The Little Bakehouse smells wonderful'};
  if(area==='cuddlewick'&&Math.hypot(x-32,y-21)<=.44)return {area:'store-room',x:8,y:9,message:'The General Store is full of little treasures'};
@@ -1465,13 +1504,17 @@ function areaGate(area,x,y){
  return null;
 }
 function hasSoftboard(s){return !!s.world?.parlorBadges?.includes('cove');}
+function hasClimbingMittens(s){return !!s.world?.parlorBadges?.includes('island');}
 function walkableRegion(s,area,x,y){const t=areaTile(area,x,y);return !t.solid||(t.kind==='river'&&hasSoftboard(s));}
 function onWater(s){return !!(s?.world?.area&&s.world.area!=='cuddlewick'&&areaTile(s.world.area,s.world.x,s.world.y).kind==='river');}
 function regionStep(s,dx,dy,rng=Math.random){const w=s.world,area=w.area,a=areaInfo(area);if(!a)throw Error('Unknown region');
  const x=+Math.max(0,Math.min(a.width-1,w.x+dx)).toFixed(3),y=+Math.max(0,Math.min(a.height-1,w.y+dy)).toFixed(3);
  if(x===w.x&&y===w.y)return {moved:false,zone:null,treasure:null,npc:null};
  const gate=areaGate(area,x,y);
- if(gate){w.area=gate.area;w.x=gate.x;w.y=gate.y;w.steps++;if(!w.visited.includes(gate.area)){w.visited.push(gate.area);s.history.push(`Discovered ${gate.message}`);}return {moved:true,transition:gate,zone:{id:gate.area,name:gate.message},treasure:null};}
+ if(gate){
+  if(gate.requires==='board'&&!hasSoftboard(s))return {moved:false,blocked:true,needsBoard:true};
+  if(gate.requires==='mittens'&&!hasClimbingMittens(s))return {moved:false,blocked:true,needsMittens:true};
+  w.area=gate.area;w.x=gate.x;w.y=gate.y;w.steps++;if(!w.visited.includes(gate.area)){w.visited.push(gate.area);s.history.push(`Discovered ${gate.message}`);}return {moved:true,transition:gate,zone:{id:gate.area,name:gate.message},treasure:null};}
  if(!walkableRegion(s,area,x,y))return {moved:false,blocked:true,needsBoard:areaTile(area,x,y).kind==='river',zone:null,treasure:null,npc:null};
  const npc=areaNpcs(area).find(n=>Math.hypot(n.x-x,n.y-y)<.75);
  if(npc)return {moved:false,npc,zone:null,treasure:null};
@@ -1522,11 +1565,11 @@ const parlorById=id=>[...PARLORS,...REGION_PARLORS].find(p=>p.id===id);
 function nextParlor(){ensureWorld(state);const list=[...PARLORS,...REGION_PARLORS];return list.find(p=>!state.world.parlorBadges.includes(p.id)&&state.world.parlorBadges.length>=p.required)||null;}
 function parlorCompass(){const next=nextParlor();return `<div class="quest-compass" id="quest-compass" role="status" aria-live="off"><span class="quest-arrow" id="quest-arrow" aria-hidden="true">✿</span><div class="quest-copy"><strong>${next?`Next: ${safe(next.name)}`:'All available patches earned!'}</strong><small id="quest-distance">${next?'Find the Keeper and earn your next patch':'New routes are being prepared'}</small></div>${next?'<button class="quest-guide-btn" data-action="guide-parlor" title="Walk toward your next Parlor">Guide me →</button>':''}</div>`;}
 function updateParlorCompass(){const guide=document.getElementById('quest-compass');if(!guide||!state?.world)return;const p=nextParlor(),arrow=document.getElementById('quest-arrow'),distance=document.getElementById('quest-distance');if(!p){guide.classList.add('complete');return;}
- const w=state.world,here=w.area||'cuddlewick';if(p.area&&p.area!==here||(!p.area&&here!=='cuddlewick')){arrow.textContent='◈';arrow.style.transform='none';distance.textContent=here==='cuddlewick'?'Follow the eastern gate to Orchard Way':'Return to Cuddlewick for the next patch';return;}
+ const w=state.world,here=w.area||'cuddlewick';if(p.area&&p.area!==here||(!p.area&&here!=='cuddlewick')){arrow.textContent='◈';arrow.style.transform='none';distance.textContent=p.area==='reed-keys'?(hasSoftboard(state)?'Cross east from Willowmere to the Reed Keys':'Win the Shell Patch to earn the Softboard'):here==='cuddlewick'?'Follow the eastern gate to Orchard Way':'Check the Region Map for directions';return;}
  const dx=p.x-w.x,dy=p.y-w.y,steps=Math.round(Math.hypot(dx,dy));arrow.textContent=steps<2?'✿':'↑';arrow.style.transform=steps<2?'none':`rotate(${Math.atan2(dx,-dy)*180/Math.PI}deg)`;distance.textContent=steps<2?'You found the Keeper! Press E or Talk.':`${steps} steps away · ${dx>1?'east':dx< -1?'west':'straight ahead'}${Math.abs(dy)>1?(dy>0?' and south':' and north'):''}`;
 }
 function guideNextParlor(){const p=nextParlor();if(!p){notify('You have earned every available patch!');return;}
- if((p.area||'cuddlewick')!==(state.world.area||'cuddlewick')){notify('Follow the Region Map routes to reach '+p.name+'.');go('atlas');return;}
+ if((p.area||'cuddlewick')!==(state.world.area||'cuddlewick')){notify(p.area==='reed-keys'?'Cross east from Willowmere using the Softboard to reach Shellkeeper Parlor.':'Follow the Region Map routes to reach '+p.name+'.');go('atlas');return;}
  const candidates=[[p.x,p.y-1],[p.x-1,p.y],[p.x+1,p.y],[p.x,p.y+1],[p.x-1,p.y-1],[p.x+1,p.y-1]];
  const dest=candidates.find(([x,y])=>x>=0&&y>=0&&x<areaSize(state.world.area).width&&y<areaSize(state.world.area).height&&!(state.world.area==='cuddlewick'?villageBlockedAt(x,y):areaTile(state.world.area,x,y).solid));
  if(!dest){notify('Look for the ✿ PARLOR sign near the village square.');return;}
@@ -1787,7 +1830,7 @@ ${panel(`<div class="battle-board" id="battle-board"><div class="move-fx" aria-h
 }
 function giftBag(large=false){return `<div class="gift-bag ${large?'big-bag':''}" aria-hidden="true"><span class="bag-handle left"></span><span class="bag-handle right"></span><div class="bag-tissue">✧</div><div class="bag-front"><span class="bag-star">✦</span></div><span class="bag-shadow"></span></div>`;}
 function rewards(){const p=state.pending;if(!bagOpen)return `${statBar()}<section class="bag-reveal-panel"><span class="eyebrow">A win! · +1 star</span><h1>A new friend is waiting.</h1><p>Something cuddly is hiding in a little powder-blue gift bag. Ready for your surprise?</p>${giftBag(true)}<button class="btn" data-action="open-bag"><kbd>Enter</kbd> Open the surprise bag ✨</button><p class="small muted mt-20">You'll get to choose one of three real Jellycats.</p></section>`;
- return `${statBar()}<div class="reward-banner"><span class="eyebrow">A special reveal · choose just one</span>${p.patchId?`<p class="patch-award">✿ You earned the ${safe(parlorById(p.patchId)?.patch||'Parlor')}!${p.patchId==='cove'?' 🏄 Captain Larry also awarded the Softboard — you can now cross open water!':''}</p>`:''}<h1>${p.boss?'A legendary surprise!':'Meet your new friends!'}</h1><p>Three little plush friends popped out of the gift bag. Who will join your team?</p></div>
+ return `${statBar()}<div class="reward-banner"><span class="eyebrow">A special reveal · choose just one</span>${p.patchId?`<p class="patch-award">✿ You earned the ${safe(parlorById(p.patchId)?.patch||'Parlor')}!${p.patchId==='cove'?' 🏄 Captain Larry also awarded the Softboard — you can now cross open water!':p.patchId==='island'?' 🧤 Skipper Pearl awarded the Climbing Mittens!':''}</p>`:''}<h1>${p.boss?'A legendary surprise!':'Meet your new friends!'}</h1><p>Three little plush friends popped out of the gift bag. Who will join your team?</p></div>
  <div class="reward-choices">${p.choices.map(id=>{const x=BY_ID.get(id);return `<article class="gift-card"><div class="gift-card-art">${bigAvatar(x)}</div><span class="gift-rarity">${rarityTag(x)}</span><h2>${safe(x.officialName)}</h2><p class="small muted">${safe(x.type)} · Level 1</p><button class="btn full" data-action="claim" data-id="${safe(id)}"><kbd>${p.choices.indexOf(id)+1}</kbd> Choose this friend →</button></article>`}).join('')}</div>${panel('<p class="center mb-0 small">The others will be waiting for you somewhere in the world. You can find them another time!</p>','soft')}`;
 }
 function showClaimReveal(id,fromJar=false){const p=BY_ID.get(id);if(!p)return;const div=el('div','modal-backdrop');div.id='claimed-modal';div.innerHTML=`<section class="modal claimed-modal center" role="dialog" aria-modal="true" aria-label="New Jellycat revealed"><span class="eyebrow">${fromJar?'Mystery bag surprise':'A new friend!'}</span><div class="bag-claim">${giftBag(true)}<span class="bag-pop">${plushArt(p)}</span></div><h2>Welcome, ${safe(p.officialName)}!</h2><p>You're officially part of the club. Pick a nickname later in your Collection if you like.</p><button class="btn" data-action="finish-claim">Let's explore together →</button></section>`;document.body.append(div);}
@@ -1993,7 +2036,7 @@ const PARLOR_STYLE={
  garden:['❀','bloom','Blossom Conservatory','Sunlit glass and colorful flowerbeds'],
  cove:['♒','shell','Tidepool Pavilion','Shell mosaics and ocean lanterns'],
  moon:['☾','moon','Dreamlight Chamber','Starry windows and midnight velvet'],
- willow:['♧','river','Riverside Assembly','Willow branches and a river-stone floor']
+ willow:['♧','river','Riverside Assembly','Willow branches and a river-stone floor'],island:['🐚','shell','Shellkeeper Pavilion','Pearl mosaics and sea-glass windows']
 };
 function patchArtwork(p,earned=false){const [symbol,theme]=PARLOR_STYLE[p.id]||PARLOR_STYLE.village;return `<span class="patch-medallion ${theme} ${earned?'earned':''}" role="img" aria-label="${safe(p.patch)} ${earned?'earned':'locked'}"><span>${symbol}</span></span>`;}
 function storeItem(icon,title,note,cost,option,owned=false){
@@ -2011,7 +2054,7 @@ function showParlor(p){
  <div class="parlor-lobby-head"><strong>✦ SOFTLANDS PARLOR ✦</strong><span>${safe(room)}</span></div>
  <div class="parlor-lobby-stage"><div class="lobby-window left">✦</div><div class="lobby-window right">✦</div><div class="lobby-banner">${mark} ✧ ${mark}</div><div class="lobby-plush">${plushArt(BY_ID.get(slugId(p.product)))}</div><div class="lobby-carpet"></div></div>
  <div class="parlor-lobby-paper"><div class="lobby-title-row"><div><span class="eyebrow">KEEPER CHALLENGE</span><h2>${safe(p.name)}</h2><small>${safe(p.keeper)} · ${safe(decor)}</small></div>${patchArtwork(p,already)}</div>
- <div class="lobby-prize"><span class="prize-star">✿</span><div><small>THE EMBROIDERED REWARD</small><strong>${safe(p.patch)}</strong>${p.id==='cove'?'<span>Plus the Softboard — cross open water!</span>':''}</div></div>
+ <div class="lobby-prize"><span class="prize-star">✿</span><div><small>THE EMBROIDERED REWARD</small><strong>${safe(p.patch)}</strong>${p.id==='cove'?'<span>Plus the Softboard — cross open water!</span>':p.id==='island'?'<span>Plus the Climbing Mittens — unlock Cloudstep Pass!</span>':''}</div></div>
  <p class="lobby-flavor">${safe(p.theme)}.</p>
  <p class="lobby-status">${already?'✓ Patch already earned — proudly displayed in your collection.':unlocked?'✦ Your team is welcome to challenge this Keeper.':`🔒 Earn ${p.required} earlier patch${p.required===1?'':'es'} to enter.`}</p>
  ${needsTrial?`<div class="lobby-trial"><strong>Mabel's stitched-path lesson</strong><p>Which path shows button → blossom → button?</p><div class="parlor-path-buttons"><button data-action="parlor-trial" data-id="village" data-option="dots"><span>✿ ✿ ✿</span>All blossoms</button><button data-action="parlor-trial" data-id="village" data-option="pattern"><span>● ✿ ●</span>Button trail</button><button data-action="parlor-trial" data-id="village" data-option="stars"><span>★ ● ★</span>Star trail</button></div></div>`:''}
@@ -2035,7 +2078,7 @@ function syncWorldCamera(){const pan=$('#world-pan'),view=$('#world-viewport');i
 function performStep(dx,dy,quiet=false){if(page!=='world'||!state.onboarded||state.pending||challengeState||document.querySelector('.modal-backdrop'))return false;
  const result=stepWorld(state,dx,dy);
  if(result.npc){stopWalking();if(!quiet)showTalk(result.npc);return false;}
- if(result.needsBoard&&!quiet){notify('Deep water! Earn the Softboard by defeating Captain Larry at Tidepool Parlor (after two patches).');}
+ if(result.needsBoard&&!quiet){notify('Deep water! Earn the Softboard by defeating Captain Larry at Tidepool Parlor (after two patches).');}if(result.needsMittens&&!quiet){notify('Climbing Mittens required! Defeat Skipper Pearl at Shellkeeper Parlor on the Reed Keys.');}
  if(result.moved){const sprite=document.querySelector('.world-player-overlay');if(sprite){sprite.classList.toggle('facing-left',dx<0);sprite.classList.toggle('facing-right',dx>0);}saveWorldMotion();if(result.transition){stopWalking();render();notify(result.transition.message);return true;}syncWorldCamera();if(result.treasure){stopWalking();finishWorldMotion();render();showFound(result.treasure);}else if(result.encounter){finishWorldMotion();render();showEncounter();}else if(result.zone){render();if(!quiet)notify(`Welcome to ${result.zone.name}!`);}}return !!result.moved;
 }
 function walkToward(tx,ty,npcToMeet=null,placeToMeet=null){stopWalking();ensureWorld(state);
