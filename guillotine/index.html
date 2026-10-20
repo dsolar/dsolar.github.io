@@ -163,6 +163,19 @@ td.c{min-width:2.6rem}
 td.c.hi{color:var(--hi-ink);font-weight:600}
 td.c.win{font-weight:700}
 th.win{color:var(--ink)}
+tbody th .tn .short{display:none}
+tbody th .tn{white-space:normal}
+tbody th .team-btn{max-width:14rem}
+.grid-all{display:none}
+.meta .m-x{white-space:normal}
+@media (max-width:30rem){
+  .meta .m-x{display:none}
+  #grid-wrap:not(.all) .mid,#grid-wrap:not(.all) .wk-l{display:none}
+  #grid-wrap:not(.all) tbody th .tn .full,#grid-wrap:not(.all) tbody th .mgr-in{display:none}
+  #grid-wrap:not(.all) tbody th .tn .short{display:inline}
+  .grid-all{all:unset;display:inline-block;cursor:pointer;margin:0 0 .6rem;font-size:.8rem;font-weight:600;color:var(--blade)}
+  .grid-all:focus-visible{outline:2px solid var(--blade);outline-offset:3px}
+}
 th abbr{text-decoration:underline dotted;text-underline-offset:3px;cursor:help}
 td.chg{font-weight:700;border-left:1px solid var(--rule)}
 
@@ -405,10 +418,10 @@ th.line{border-left:1px solid var(--rule)}
 <nav class="jump" id="jump" aria-label="On this page"><div class="jump-in">
   <a href="#mnf" data-sec="mnf">Monday</a>
   <a href="#week" data-sec="week">Odds</a>
-  <a href="#byes-sec" data-sec="byes-sec">Byes</a>
+  <a href="#spot" data-sec="spot" id="jump-spot">Thursday</a>
   <a href="#hist-sec" data-sec="hist-sec">Cut line</a>
   <a href="#season" data-sec="season">Season</a>
-  <a href="#spot" data-sec="spot" id="jump-spot">Thursday</a>
+  <a href="#byes-sec" data-sec="byes-sec">Byes</a>
   <a href="#close-sec" data-sec="close-sec">Closest</a>
   <a href="#fallen-sec" data-sec="fallen-sec">Fallen</a>
 </div></nav>
@@ -455,12 +468,9 @@ th.line{border-left:1px solid var(--rule)}
     <p class="book"><b>Bastille Book</b><span>Lines are the cut odds as American odds with a 4.5% house edge. OFF means the board is closed: it can't happen. Just for fun, no real wagers.</span></p>
   </section>
 
-  <section id="byes-sec" aria-labelledby="byes-title" hidden>
-    <div class="section-head">
-      <h2 id="byes-title">Next week's bye trouble</h2>
-      <p id="byes-note"></p>
-    </div>
-    <ol class="byes" id="byes"></ol>
+  <section class="spot" id="spot" aria-labelledby="spot-title" hidden>
+    <div class="section-head" style="margin:0"><h2 id="spot-title"></h2><p class="sub" id="spot-sub"></p></div>
+    <div id="spot-body"></div>
   </section>
 
   <section id="hist-sec" aria-labelledby="hist-title" hidden>
@@ -484,12 +494,16 @@ th.line{border-left:1px solid var(--rule)}
       <h2 id="season-title">Still standing after each week</h2>
       <p id="season-note">Chance each team is still alive after that week's cut. The last column is the chance of winning the league.</p>
     </div>
-    <div class="scroll"><table id="grid"></table></div>
+    <button class="grid-all" id="grid-all" type="button" aria-controls="grid" aria-expanded="false">Show every week</button>
+    <div class="scroll" id="grid-wrap"><table id="grid"></table></div>
   </section>
 
-  <section class="spot" id="spot" aria-labelledby="spot-title" hidden>
-    <div class="section-head" style="margin:0"><h2 id="spot-title"></h2><p class="sub" id="spot-sub"></p></div>
-    <div id="spot-body"></div>
+  <section id="byes-sec" aria-labelledby="byes-title" hidden>
+    <div class="section-head">
+      <h2 id="byes-title">Next week's bye trouble</h2>
+      <p id="byes-note"></p>
+    </div>
+    <ol class="byes" id="byes"></ol>
   </section>
 
   <section id="close-sec" aria-labelledby="close-title" hidden>
@@ -685,14 +699,15 @@ th.line{border-left:1px solid var(--rule)}
 
     $("rows").innerHTML = byRisk.map(function (t) {
       var g = rangeOf(t), tier = tierOf(t.pChop, n);
-      var meta = [scoreText(t), t.done ? null : "likely " + pts(g[0]) + " to " + pts(g[1]), t.faab !== null ? "$" + t.faab + " FAB" : null, "wins " + pct(t.pWin)].filter(Boolean).join(" · ");
+      var meta = esc([scoreText(t), t.done ? null : "likely " + pts(g[0]) + " to " + pts(g[1])].filter(Boolean).join(" · ")) +
+        '<span class="m-x">' + esc([t.faab !== null ? "$" + t.faab + " FAB" : null, "wins " + pct(t.pWin)].filter(Boolean).map(function (x) { return " · " + x; }).join("")) + "</span>";
       var kp = keyPlayers(raw[t.name], t);
       var odds = american(t.pChop);
       var label = t.name + (mgr(t.name) ? ", " + mgr(t.name) : "") + ": " + TIER[tier] + ". " + pct(t.pChop) + " chance of being cut" + (odds ? ", " + odds.replace("\u2212", "minus ") : "") + ". " +
         (t.done ? "Final score " + two(t.locked) + "." : "Expected " + pts(t.now) + " points, likely " + pts(g[0]) + " to " + pts(g[1]) + ".") +
         (t.assumesFix ? " Assumes lineup fix." : "");
       return '<li class="row t-' + tier + '" data-team="' + esc(t.name) + '" aria-label="' + esc(label) + '">' +
-        '<div class="who">' + teamButton(t.name, mgr(t.name)) + '<div class="meta">' + fixTag(t) + esc(meta) + "</div>" + kp + "</div>" +
+        '<div class="who">' + teamButton(t.name, mgr(t.name)) + '<div class="meta">' + fixTag(t) + meta + "</div>" + kp + "</div>" +
         '<div class="pct">' + pct(t.pChop) + "<small>" + TIER[tier] + "</small></div>" +
         '<div class="line' + (odds ? "" : " off") + '" aria-hidden="true">' + (odds || "OFF") + "</div>" +
         '<div class="lane" aria-hidden="true"><span class="track"></span>' +
@@ -714,7 +729,7 @@ th.line{border-left:1px solid var(--rule)}
     var cutList = cutHistory(r, league);
     if (cutList.length && r.cut.median != null) {
       $("m-check").innerHTML = "<b>How it checks out.</b> The scores that got cut this season: " +
-        cutList.map(function (c) { return (c.bound ? "at most " : "") + c.v.toFixed(1) + " in Week " + c.w; }).join(", ").replace(/, ([^,]*)$/, " and $1") +
+        cutList.map(function (c) { return (c.bound ? "at most " : "") + two(c.v) + " in Week " + c.w; }).join(", ").replace(/, ([^,]*)$/, " and $1") +
         ". This week the model puts the cut line at " + pts(r.cut.median) + ", with 8 in 10 simulations landing between " +
         pts(r.cut.p10) + " and " + pts(r.cut.p90) + ".";
     }
@@ -737,20 +752,20 @@ th.line{border-left:1px solid var(--rule)}
     var head = "<thead><tr><th scope=\"col\">Team</th>";
     for (var k = 0; k < r.weeksLeft; k++) {
       var last = k === r.weeksLeft - 1;
-      head += '<th scope="col"' + (last ? ' class="win"' : "") + ">" + (last ? "Wk " + (r.week + k) + " · Win" : "Wk " + (r.week + k)) + "</th>";
+      head += '<th scope="col"' + (last ? ' class="win"' : k ? ' class="mid"' : "") + ">" + (last ? '<span class="wk-l">Wk ' + (r.week + k) + " · </span>Win" : "Wk " + (r.week + k)) + "</th>";
     }
-    head += '<th scope="col" class="line">Win line</th>';
+    head += '<th scope="col" class="line mid">Win line</th>';
     var prev = ((HIST.weeks || {})[String(r.week - 1)] || {}).teams || null;
     if (prev) head += '<th scope="col"><abbr title="Change in the chance of winning the league since last week\'s update (the start of Week ' + (r.week - 1) + '), in percentage points">Win vs last wk</abbr></th>';
     head += "</tr></thead>";
     var body = "<tbody>" + byWin.map(function (t) {
       var cells = t.surv.map(function (p, k) {
         var alpha = readable(0.06 + 0.84 * p);
-        var cls = "c" + (useHiInk(alpha) ? " hi" : "") + (k === t.surv.length - 1 ? " win" : "");
+        var cls = "c" + (useHiInk(alpha) ? " hi" : "") + (k === t.surv.length - 1 ? " win" : k ? " mid" : "");
         return '<td class="' + cls + '" style="background:rgba(var(--bleu-rgb),' + alpha.toFixed(3) + ')">' + pct(p) + "</td>";
       }).join("");
       var wl = american(t.pWin);
-      cells += '<td class="c line' + (wl ? "" : " off") + '">' + (wl || "OFF") + "</td>";
+      cells += '<td class="c line mid' + (wl ? "" : " off") + '">' + (wl || "OFF") + "</td>";
       if (prev) {
         var was = prev[t.name] ? prev[t.name].win : null;
         var dd = was === null ? null : Math.round((t.pWin - was) * 100);
@@ -759,7 +774,10 @@ th.line{border-left:1px solid var(--rule)}
         cells += '<td class="c chg ' + (dd > 0 ? "up" : dd < 0 ? "down" : "") + '" title="' + esc(tip) + '" aria-label="' + esc(tip) + '">' +
           (dd === null ? "new" : (dd > 0 ? "+" : dd < 0 ? "−" : "") + Math.abs(dd) + (Math.abs(dd) === 1 ? " pt" : " pts")) + "</td>";
       }
-      return '<tr><th scope="row" class="t-' + tierOf(t.pChop, n) + '">' + teamButton(t.name, mgr(t.name)) + "</th>" + cells + "</tr>";
+      var m = mgr(t.name);
+      var who = '<button class="team-btn" type="button" data-team="' + esc(t.name) + '"><span class="tn"><span class="full">' + esc(t.name) + "</span>" +
+        '<span class="short">' + esc(m || t.name) + "</span></span>" + (m ? '<span class="mgr-in">' + esc(m) + "</span>" : "") + "</button>";
+      return '<tr><th scope="row" class="t-' + tierOf(t.pChop, n) + '">' + who + "</th>" + cells + "</tr>";
     }).join("") + "</tbody>";
     $("season-note").textContent = "Chance each team is still alive after that week's cut. The Win column is the chance of winning the league, and Win line is that chance as Bastille Book odds" +
       (prev ? ". The last column is how much the chance of winning moved since last week's update, in percentage points: +7 pts means something like 12% to 19%." : ".");
@@ -787,9 +805,9 @@ th.line{border-left:1px solid var(--rule)}
         var row = '<span class="w">Wk ' + f.week + '</span>' +
           '<span class="who2"><span class="t">' + esc(f.name) + "</span>" + (m || given ? '<span class="mgr">' + esc((m || "") + given) + "</span>" : "") + "</span>";
         var known = cutHistory(r, league).filter(function (c) { return c.w === f.week; })[0];
-        var score = f.score !== null ? "<span>" + f.score.toFixed(1) + " pts</span>"
-          : known && known.bound ? '<span title="Exact score unknown; at most ' + known.v.toFixed(2) + '">≤' + known.v.toFixed(1) + " pts</span>"
-          : known ? "<span>" + known.v.toFixed(1) + " pts</span>" : "";
+        var score = f.score !== null ? "<span>" + two(f.score) + " pts</span>"
+          : known && known.bound ? '<span title="Exact score unknown; at most ' + two(known.v) + '">≤' + two(known.v) + " pts</span>"
+          : known ? "<span>" + two(known.v) + " pts</span>" : "";
         if (!e || (!e.image && !e.haiku)) {
           return '<li><div class="frow">' + row + '<span class="end">' + score + '<span class="pending">No send-off yet</span></span></div></li>';
         }
@@ -880,17 +898,17 @@ th.line{border-left:1px solid var(--rule)}
         var gap = two(h.next_score - h.score);
         facts.push(final ? ["Lost the final", "By " + gap + " to " + esc(h.next_team) + "."] : ["Missed by", gap + ". " + esc(h.next_team) + " survived at " + two(h.next_score) + "."]);
       }
-      if (typeof h.proj === "number") facts.push(["Projected", h.proj.toFixed(1) + ", scored " + h.score.toFixed(1)]);
+      if (typeof h.proj === "number") facts.push(["Projected", h.proj.toFixed(1) + ", scored " + two(h.score)]);
       if (typeof h.best === "number") {
         var bench = (h.bench || []).map(function (p) { return esc(p.name) + " " + p.pts.toFixed(1); }).join(", ");
         var ok = typeof h.next_score === "number" && h.best > h.next_score;
         facts.push(["Bench", h.best <= h.score + 0.005 ? "Nothing better on it."
-          : ok ? '<span class="save">Could have saved it.</span> The best lineup on the roster scored ' + h.best.toFixed(1) + " with " + bench + "."
-          : "Not enough. The best lineup on the roster scored " + h.best.toFixed(1) + (bench ? " with " + bench : "") + "."]);
+          : ok ? '<span class="save">Could have saved it.</span> The best lineup on the roster scored ' + two(h.best) + " with " + bench + "."
+          : "Not enough. The best lineup on the roster scored " + two(h.best) + (bench ? " with " + bench : "") + "."]);
       }
       var row = '<span class="w">Wk ' + h.week + '</span><span class="who2"><span class="t">' + esc(h.team) + "</span>" +
         (h.manager ? '<span class="mgr">' + esc(h.manager) + "</span>" : "") + "</span>";
-      return '<li><details><summary>' + row + '<span class="end"><span>' + h.score.toFixed(1) + ' pts</span><span class="cue">Send-off<i class="chev"></i></span></span></summary>' +
+      return '<li><details><summary>' + row + '<span class="end"><span>' + two(h.score) + ' pts</span><span class="cue">Send-off<i class="chev"></i></span></span></summary>' +
         '<div class="past-body"><dl class="facts">' + facts.map(function (f) { return "<dt>" + f[0] + "</dt><dd>" + f[1] + "</dd>"; }).join("") + "</dl>" +
         (h.send_off ? '<blockquote class="sendoff">' + esc(h.send_off) + "<cite>In Memoriam, Week " + h.week + "</cite></blockquote>" : "") + "</div></details></li>";
     }).join("");
@@ -1339,6 +1357,11 @@ th.line{border-left:1px solid var(--rule)}
     if (e.target === dlg) dlg.close(); // click on the dimmed backdrop
   });
   $("dlg-close").addEventListener("click", function () { $("team-dlg").close(); });
+  $("grid-all").addEventListener("click", function () {
+    var on = $("grid-wrap").classList.toggle("all");
+    this.setAttribute("aria-expanded", on ? "true" : "false");
+    this.textContent = on ? "Show fewer weeks" : "Show every week";
+  });
   $("team-dlg").addEventListener("close", hideCard);
 
   function updateJumpLabels() {
