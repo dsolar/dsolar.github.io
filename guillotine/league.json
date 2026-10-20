@@ -1,5 +1,5 @@
 {
-  "_about": "Hand-kept details the Yahoo pull doesn't provide. Keyed by team name as it appears in Yahoo. history_2025: each 2025 elimination with the cut team's season points at that point (not a weekly score). cut_history: the score that got cut each week, by season; score is exact, max means only an upper bound is known. 2025 is waiting on the weekly cut scores. eulogies.*.hide_odds: leave the model's pregame cut odds off that team's send-off. Never put email addresses here: this file is public. live_url: the live relay (tools/live-relay.js), once set up.",
+  "_about": "Hand-kept details the Yahoo pull doesn't provide. Keyed by team name as it appears in Yahoo. history_2025: each 2025 elimination with the cut team's season points at that point (not a weekly score). cut_history: the score that got cut each week, by season; score is exact, max means only an upper bound is known, proj is the cut team's Yahoo projection that week. eulogies.*.hide_odds: leave the model's pregame cut odds off that team's send-off. Never put email addresses here: this file is public. live_url: the live relay (tools/live-relay.js), once set up.",
   "live_url": "https://guillotine-live.dsolar.workers.dev/",
   "managers": {
     "23 Richard": "Gabriel",
@@ -149,8 +149,7 @@
       {
         "week": 2,
         "team": "23 Richard",
-        "max": 63.56,
-        "note": "Exact score unknown. Season total 141.92 minus a Week 1 score above the 78.36 cut leaves at most 63.56."
+        "score": 50.36
       },
       {
         "week": 3,
@@ -173,6 +172,79 @@
         "score": 86.12
       }
     ],
-    "2025": []
+    "2025": [
+      {
+        "week": 1,
+        "team": "Hit Squad Dane",
+        "score": 77.62,
+        "proj": 118.8
+      },
+      {
+        "week": 2,
+        "team": "Liberté Égalité Henri",
+        "score": 75.3,
+        "proj": 111.57
+      },
+      {
+        "week": 3,
+        "team": "Pop Douglas Demon Hunters",
+        "score": 82.86,
+        "proj": 123.95
+      },
+      {
+        "week": 4,
+        "team": "Maye I see your TDs",
+        "score": 94.64,
+        "proj": 107.75
+      },
+      {
+        "week": 5,
+        "team": "Fly Zone Kristi",
+        "score": 103.9,
+        "proj": 96.66
+      },
+      {
+        "week": 6,
+        "team": "23 Richard",
+        "score": 82.78,
+        "proj": 119.94
+      },
+      {
+        "week": 7,
+        "team": "Pinch the Purple Tip",
+        "score": 99.78,
+        "proj": 116.35
+      },
+      {
+        "week": 8,
+        "team": "J Free FTW",
+        "score": 117.14,
+        "proj": 114.19
+      },
+      {
+        "week": 9,
+        "team": "Chase is back on the Case",
+        "score": 103.86,
+        "proj": 130.19
+      },
+      {
+        "week": 10,
+        "team": "Burrow McConkey in Your C Kupp",
+        "score": 106.64,
+        "proj": 135.73
+      },
+      {
+        "week": 11,
+        "team": "Hakuna MaChoppa",
+        "score": 114.74,
+        "proj": 134.41
+      },
+      {
+        "week": 12,
+        "team": "Deviated Rectums",
+        "score": 122.14,
+        "proj": 134.41
+      }
+    ]
   }
 }
