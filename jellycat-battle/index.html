@@ -1071,6 +1071,80 @@ function drawLandmark(g,x,y,name,icon,seed){if(/house|cottage|bakery|store|green
  if(/viewpoint|mountain|⛰/.test(name+icon)){box(g,x+2,y+20,26,12,'#9097a2');box(g,x+9,y+8,13,12,'#b9b4b8');box(g,x+13,y+5,6,8,'#f0e8df');return;}
  if(/waterwheel/i.test(name)){box(g,x+4,y+5,25,25,'#9d7d65');box(g,x+11,y+12,12,12,'#d3c3ab');box(g,x+15,y+5,4,25,'#746250');box(g,x+4,y+15,25,4,'#746250');return;}
  box(g,x+13,y+7,6,21,'#826c5e');box(g,x+4,y+8,24,6,'#e9ce9a');box(g,x+7,y+9,18,3,'#b48b70');}
+
+/* Large destination facades are composed on the same pixel canvas as the map.
+   The bottom-center tile remains the real, saved-game-compatible entrance. */
+const VILLAGE_FACADES=[
+ {id:'village',x:30,y:23,kind:'parlor',title:'BUTTON',roof:'#ab779c',trim:'#684f79',wall:'#f0daca'},
+ {id:'store',x:32,y:21,kind:'store',title:'GOODS',roof:'#649ba0',trim:'#496f83',wall:'#f3e2c3'},
+ {id:'bakery',x:7,y:22,kind:'bakery',title:'BAKE',roof:'#cf806a',trim:'#865456',wall:'#f1d2b1'},
+ {id:'greenhouse',x:24,y:8,kind:'greenhouse',title:'BLOOM',roof:'#82ae84',trim:'#507b6c',wall:'#d4e5c3'},
+ {id:'cottage',x:23,y:18,kind:'cottage',title:'HOME',roof:'#b486a2',trim:'#7c637f',wall:'#f7e3cd'}
+];
+function paintFacadeLettering(g,x,y,label,color){
+ // Pixel glyphs, independent of web fonts and canvas scaling.
+ const chars={A:['010','101','111','101','101'],B:['110','101','110','101','110'],D:['110','101','101','101','110'],E:['111','100','110','100','111'],G:['011','100','101','101','011'],H:['101','101','111','101','101'],K:['101','110','100','110','101'],L:['100','100','100','100','111'],M:['10101','11111','10101','10101','10101'],N:['101','111','111','111','101'],O:['111','101','101','101','111'],S:['011','100','010','001','110'],T:['111','010','010','010','010']};
+ let pos=x;for(const c of label.toUpperCase()){const rows=chars[c]||[];for(let j=0;j<rows.length;j++)for(let k=0;k<rows[j].length;k++)if(rows[j][k]==='1')box(g,pos+k,y+j,1,1,color);pos+=(rows[0]?.length||3)+1;}
+}
+function drawVillageFacade(g,facade){
+ const {x,y,kind,title,roof,trim,wall}=facade;
+ const left=(x-1)*32,top=(y-2)*32;
+ // Three tiles wide and nearly three tiles tall, centered over the entrance.
+ box(g,left+2,top+38,92,51,'#584b5b');
+ box(g,left+5,top+39,86,48,wall);
+ for(let c=0;c<3;c++){box(g,left+7+c*29,top+45,25,1,'#fff8ed');box(g,left+9+c*29,top+73,21,2,'#c8aa91');}
+ // Layered roof, stepped gable, chimney and rafter edging.
+ box(g,left+0,top+29,96,12,trim);box(g,left+4,top+23,88,9,roof);
+ box(g,left+12,top+17,72,8,roof);box(g,left+22,top+10,52,8,roof);
+ box(g,left+32,top+4,32,8,roof);box(g,left+37,top+1,22,5,'#f3e6ca');
+ box(g,left+5,top+32,86,3,'#f4d2ac');
+ if(kind==='bakery'||kind==='cottage'){box(g,left+70,top+4,11,19,trim);box(g,left+72,top+3,7,13,'#a68883');}
+ // Showcase windows to the left and right of the central doorway.
+ for(const px of [left+15,left+66]){
+  box(g,px-3,top+51,19,26,trim);box(g,px,top+54,13,18,'#a8d8db');
+  box(g,px+6,top+55,2,16,'#e9f3ce');box(g,px+1,top+62,11,2,'#ecf2dd');
+  box(g,px-3,top+75,19,3,'#ead5b2');
+ }
+ // Front opening is always at the original entry coordinate.
+ box(g,left+40,top+54,16,34,trim);box(g,left+43,top+58,10,27,'#463b53');
+ box(g,left+54,top+71,2,3,'#ffe9a7');box(g,left+36,top+87,24,3,'#c19b79');
+ // Hanging readable signs and differentiated merchandise.
+ box(g,left+33,top+32,30,18,'#f4dfaa');box(g,left+35,top+34,26,14,trim);
+ box(g,left+36,top+36,24,10,'#fff0ce');
+ paintFacadeLettering(g,left+(96-(title.length*4-1))/2,top+38,title,trim);
+ if(kind==='parlor'){
+  box(g,left+5,top+83,9,7,'#8eb07b');box(g,left+7,top+79,5,7,'#d3abc9');
+  box(g,left+82,top+83,9,7,'#8eb07b');box(g,left+83,top+80,7,5,'#e9d4b6');
+  box(g,left+46,top+13,4,4,'#fff2ae');box(g,left+44,top+17,8,2,'#f0d9be');
+ }else if(kind==='store'){
+  box(g,left+7,top+79,10,9,'#94b1c1');box(g,left+20,top+80,8,8,'#f3c4a1');
+  box(g,left+80,top+79,9,9,'#c6a5c9');
+ }else if(kind==='bakery'){
+  for(let i=0;i<3;i++){box(g,left+8+i*7,top+80,6,7,'#bc8058');box(g,left+9+i*7,top+78,4,4,'#f7d8a4');}
+ }else if(kind==='greenhouse'){
+  for(let i=0;i<4;i++){box(g,left+13+i*19,top+12,3,12,'#5c8a77');box(g,left+11+i*19,top+14,12,4,'#bce3d5');}
+  box(g,left+6,top+78,10,12,'#759b6c');box(g,left+80,top+78,10,12,'#88aa78');
+ }else if(kind==='cottage'){
+  box(g,left+7,top+80,9,7,'#90b08e');box(g,left+80,top+79,9,8,'#e6adad');
+ }
+}
+function drawVillageCourtyard(g,x,y,kind){
+ // Nonblocking pathways, planters and individual lamps around important entrances.
+ const sx=x*32,sy=y*32,h=pixelHash(x,y);
+ box(g,sx+2,sy+2,28,28,'#d8c39f');
+ for(let i=0;i<5;i++){const xx=sx+4+((h+i*17)%23),yy=sy+5+((h>>>4+i*11)%21);box(g,xx,yy,3,2,'#b69a79');}
+ if(kind==='flower'){for(const a of [6,21]){box(g,sx+a,sy+15,3,11,'#619568');box(g,sx+a-3,sy+12,9,4,'#e3a9b5');box(g,sx+a,sy+11,3,3,'#fbe2ac');}}
+ if(kind==='lamp'){box(g,sx+14,sy+7,4,24,'#705d65');box(g,sx+9,sy+4,14,8,'#f7e5a9');box(g,sx+11,sy+6,10,4,'#fff7d8');}
+}
+function paintVillageLandmarkLayer(g,area,baseX,baseY){
+ if(area!=='cuddlewick')return;
+ const X=wx=>(wx-baseX)*32,Y=wy=>(wy-baseY)*32;
+ const courtyards=[[30,24,'path'],[29,24,'flower'],[31,24,'flower'],[30,25,'path'],
+  [32,22,'path'],[33,22,'flower'],[7,23,'path'],[8,23,'flower'],
+  [24,9,'path'],[25,9,'flower'],[23,19,'path'],[22,19,'flower'],[28,23,'lamp']];
+ for(const [x,y,k] of courtyards)drawVillageCourtyard(g,X(x)/32,Y(y)/32,k);
+ for(const f of VILLAGE_FACADES)drawVillageFacade(g,{...f,x:f.x-baseX,y:f.y-baseY});
+}
 function drawProps(g,top,tiles,cols,rows){for(const tile of tiles){const X=Number(tile.dataset.x),Y=Number(tile.dataset.y),x=(X-Number(tile.dataset.minX||0))*32,y=(Y-Number(tile.dataset.minY||0))*32;const landmark=tile.querySelector('.world-landmark'),decor=tile.querySelector('.world-decor');const kind=kindOf(tile),seed=pixelHash(X,Y);
  if(kind==='broken-bridge'){box(g,x,y+9,32,3,'#705d54');box(g,x+2,y+16,11,5,'#ab8568');box(g,x+20,y+17,10,5,'#ab8568');box(g,x+10,y+20,3,6,'#715952');box(g,x+20,y+12,3,5,'#715952');continue;}
  if(kind==='house'){drawHouse(g,x,y,seed,'house');continue;}
@@ -1085,7 +1159,8 @@ function drawProps(g,top,tiles,cols,rows){for(const tile of tiles){const X=Numbe
   if(kind==='wood'&&seed%7===0){box(g,x+12,y+21,7,9,'#665943');drawTreeCanopy(top,x,y-17,seed);continue;}
  if(kind==='riverside'&&seed%21===0){drawBush(g,x,y);continue;}
  if(kind==='garden'&&seed%17===0)drawBush(g,x,y);
-}}
+} const first=tiles[0];if(first)paintVillageLandmarkLayer(g,first.closest('.world-pan')?.dataset.area||'cuddlewick',Number(first.dataset.minX||0),Number(first.dataset.minY||0));
+}
 let activeMap=null;
 function mountPixelWorld(){const pan=document.querySelector('#world-pan'),grid=pan?.querySelector('.world-grid');if(!pan||!grid){activeMap=null;return false;}
  const cells=[...grid.querySelectorAll('.world-tile')],cols=Number(pan.dataset.cols),rows=Number(pan.dataset.rows),baseX=Number(pan.dataset.baseX),baseY=Number(pan.dataset.baseY);if(!cols||!rows||cells.length!==cols*rows)return false;
