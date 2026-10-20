@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Save each week's opening odds to guillotine/history.json.
+// Save each week's opening odds to guillotine/history.json, plus every team's score once a week is over.
 //
 // Runs after the data pull. Until the week's first game kicks off, every run refreshes that week's
 // snapshot (rosters and projections settle as waivers clear); once a game has started the snapshot
@@ -53,6 +53,52 @@ if (!entry.frozen) {
   if (!same || !entry.taken) entry.taken = new Date().toISOString().replace(/\.\d+Z$/, "Z");
   if (started) entry.frozen = true;
   hist.weeks[wk] = entry;
+}
+
+// Every team's score each finished week, and the closest chop: the gap between the team that got cut and
+// the lowest team that survived. Yahoo's pull carries weekly scores (t.scores, first week first); the pasted
+// league page only has season totals, so there each score is the change in season points between the
+// last update of one week and the first update of the next (Yahoo's season total already counts the
+// points scored so far, which the paste records as t.points).
+const r2 = (x) => Math.round(x * 100) / 100;
+function recordWeek(w, scores, overwrite) {
+  const e = (hist.weeks[String(w)] = hist.weeks[String(w)] || {});
+  if (e.scores && !overwrite) return;
+  e.scores = scores;
+  const cut = (data.teams || []).find((t) => t.out === w);
+  const cutScore = cut ? (typeof scores[cut.name] === "number" ? scores[cut.name] : cut.cut) : null;
+  const rest = Object.keys(scores).filter((n) => !cut || n !== cut.name).sort((a, b) => scores[a] - scores[b]);
+  if (cut && typeof cutScore === "number" && rest.length && scores[rest[0]] >= cutScore) {
+    e.next_team = rest[0];
+    e.next_score = scores[rest[0]];
+  }
+}
+const first = data.first_week || 1;
+if ((data.teams || []).some((t) => Array.isArray(t.scores))) {
+  for (let w = first; w < data.week; w++) {
+    const scores = {};
+    for (const t of data.teams) {
+      const s = (t.scores || [])[w - first];
+      if (typeof s === "number" && (!t.out || t.out >= w)) scores[t.name] = r2(s);
+    }
+    if (Object.keys(scores).length > 1) recordWeek(w, scores, true);
+  }
+} else {
+  const seen = hist.last_seen;
+  if (seen && seen.week === data.week - 1) {
+    const scores = {};
+    for (const t of data.teams || []) {
+      const s = seen.teams[t.name];
+      if (s && typeof t.season_pts === "number") scores[t.name] = r2(t.season_pts - s.season + (s.points || 0));
+    }
+    if (Object.keys(scores).length > 1) recordWeek(seen.week, scores, false);
+  }
+}
+// Remember where each team's season total stands, for next week's scores.
+if (alive.some((t) => typeof t.season_pts === "number")) {
+  const teams = {};
+  for (const t of alive) if (typeof t.season_pts === "number") teams[t.name] = { season: t.season_pts, points: t.points || 0 };
+  hist.last_seen = { week: data.week, teams };
 }
 
 // Keep weeks in order in the file.

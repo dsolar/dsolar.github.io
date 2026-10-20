@@ -191,6 +191,22 @@ td.chg{font-weight:700;border-left:1px solid var(--rule)}
 }
 @media (prefers-reduced-motion:reduce){.fallen .chev{transition:none}}
 .none{color:var(--muted);font-size:.9rem;margin:0}
+/* Closest chops */
+.close{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
+.close li{display:grid;grid-template-columns:1.5rem 4.2rem minmax(0,1fr);gap:.2rem .6rem;align-items:baseline;padding:.65rem 0;border-bottom:1px solid var(--rule)}
+.close .cr{color:var(--muted);font:700 .85rem/1 var(--f-display);font-variant-numeric:tabular-nums}
+.close .cg{font:700 1.35rem/1 var(--f-display);font-variant-numeric:tabular-nums;color:var(--blade)}
+.close .cg small{display:block;margin-top:.25rem;font:600 .58rem/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.close .cw{min-width:0;font-size:.85rem}
+.close .cw b{font-weight:600}
+.close .cw .mg{color:var(--muted);font-size:.78rem;margin-left:.35rem;white-space:nowrap}
+.close .cw small{display:block;color:var(--muted);font-size:.75rem;margin-top:.15rem;font-variant-numeric:tabular-nums}
+.close .yr{display:inline-block;margin-left:.35rem;padding:0 .3rem;border-radius:2px;font-size:.6rem;font-weight:700;letter-spacing:.05em;color:var(--bubble);border:1px solid currentColor;vertical-align:.1em}
+.close-more{margin-top:.2rem}
+.close-more > summary{cursor:pointer;display:inline-block;padding:.6rem 0;font-size:.8rem;font-weight:600;color:var(--blade)}
+.close-more .close{border-top:0}
+#close-note small{display:block;margin-top:.3rem;font-size:.8rem}
+
 /* Past seasons, under the fallen */
 .past{margin-top:1.5rem;border:1px solid var(--rule);border-radius:3px;background:var(--surface)}
 .past > summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:.75rem;padding:.85rem .9rem;border-radius:3px}
@@ -393,6 +409,7 @@ th.line{border-left:1px solid var(--rule)}
   <a href="#hist-sec" data-sec="hist-sec">Cut line</a>
   <a href="#season" data-sec="season">Season</a>
   <a href="#spot" data-sec="spot" id="jump-spot">Thursday</a>
+  <a href="#close-sec" data-sec="close-sec">Closest</a>
   <a href="#fallen-sec" data-sec="fallen-sec">Fallen</a>
 </div></nav>
 
@@ -473,6 +490,12 @@ th.line{border-left:1px solid var(--rule)}
   <section class="spot" id="spot" aria-labelledby="spot-title" hidden>
     <div class="section-head" style="margin:0"><h2 id="spot-title"></h2><p class="sub" id="spot-sub"></p></div>
     <div id="spot-body"></div>
+  </section>
+
+  <section id="close-sec" aria-labelledby="close-title" hidden>
+    <div class="section-head"><h2 id="close-title">Closest chops</h2><p id="close-note">The smallest gaps between the team that got cut and the lowest team that survived, this season and last.</p></div>
+    <ol class="close" id="close"></ol>
+    <details class="close-more" id="close-more" hidden><summary></summary><ol class="close" id="close-rest"></ol></details>
   </section>
 
   <section id="fallen-sec" aria-labelledby="fallen-title" hidden>
@@ -785,6 +808,51 @@ th.line{border-left:1px solid var(--rule)}
       $("fallen-sec").hidden = false;
     }
     if (renderPast(league)) $("fallen-sec").hidden = false;
+    renderClose(league);
+  }
+
+  // Closest chops: the gap between each week's cut and the lowest team that survived. Past seasons come
+  // from league.json; this season from history.json, filled in each week from every team's score.
+  function renderClose(league) {
+    var cur = state.data.season, out = [], ch = (league && league.cut_history) || {};
+    var champs = (league && league.champions) || {};
+    Object.keys(ch).forEach(function (yr) {
+      if (+yr === cur) return;
+      (ch[yr] || []).forEach(function (h) {
+        if (typeof h.score === "number" && typeof h.next_score === "number") {
+          var c = champs[yr];
+          out.push({ yr: +yr, w: h.week, team: h.team, mgr: h.manager, score: h.score, next: h.next_team, nextScore: h.next_score, final: !!(c && c.final && c.final.week === h.week) });
+        }
+      });
+    });
+    var missing = [];
+    Object.keys(HIST.weeks || {}).forEach(function (w) {
+      var e = HIST.weeks[w];
+      if (!e.cut_team) return;
+      if (typeof e.cut_score === "number" && typeof e.next_score === "number") {
+        out.push({ yr: cur, w: +w, team: e.cut_team, mgr: state.mgr(e.cut_team), score: e.cut_score, next: e.next_team, nextScore: e.next_score });
+      } else missing.push(+w);
+    });
+    if (!out.length) { $("close-sec").hidden = true; return; }
+    out.forEach(function (x) { x.gap = x.nextScore - x.score; });
+    out.sort(function (a, b) { return a.gap - b.gap; });
+    var item = function (x, i) {
+      return '<li><span class="cr">' + (i + 1) + '</span><span class="cg">' + two(x.gap) + "<small>pts</small></span>" +
+        '<span class="cw"><b>' + esc(x.team) + "</b>" + (x.mgr ? '<span class="mg">' + esc(x.mgr) + "</span>" : "") +
+        (x.yr === cur ? '<span class="yr">' + x.yr + "</span>" : "") +
+        "<small>" + two(x.score) + " vs " + esc(x.next) + " at " + two(x.nextScore) + (x.final ? " in the final" : "") + " · " + (x.yr === cur ? "" : x.yr + ", ") + "Week " + x.w + "</small></span></li>";
+    };
+    var TOP = 5;
+    $("close").innerHTML = out.slice(0, TOP).map(item).join("");
+    var rest = out.slice(TOP);
+    $("close-rest").innerHTML = rest.map(function (x, i) { return item(x, i + TOP); }).join("");
+    $("close-more").querySelector("summary").textContent = "Show all " + out.length;
+    $("close-more").hidden = !rest.length;
+    missing.sort(function (a, b) { return a - b; });
+    var span = missing.length ? (missing.length === 1 ? "Week " + missing[0] : "Weeks " + missing[0] + " to " + missing[missing.length - 1]) : "";
+    $("close-note").innerHTML = "The smallest gaps between the team that got cut and the lowest team that survived, this season and last." +
+      (span ? "<small>This season's " + esc(span) + " fill in once the Yahoo connection is live.</small>" : "");
+    $("close-sec").hidden = false;
   }
 
   // Last season, under the fallen: who went out, by how much, what the bench could have done, and the
