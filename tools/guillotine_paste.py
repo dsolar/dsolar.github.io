@@ -199,7 +199,7 @@ def carry_cuts(old, new):
     """Keep known elimination scores, and work out new ones where the last paste allows.
 
     A team cut in week W scored (season points now) - (season points before week W). The previous
-    paste has the second number if it was taken during week W, before that team's elimination."""
+    paste includes week W points in its season total, so subtract those first."""
     prev = {t["name"]: t for t in old.get("teams", [])}
     for t in new["teams"]:
         if not t.get("out") or "cut" in t:
@@ -209,7 +209,7 @@ def carry_cuts(old, new):
             t["cut"] = o["cut"]
         elif (not o.get("out") and old.get("week") == t["out"]
               and isinstance(o.get("season_pts"), (int, float)) and isinstance(t.get("season_pts"), (int, float))):
-            t["cut"] = round(t["season_pts"] - o["season_pts"], 2)
+            t["cut"] = round(t["season_pts"] - o["season_pts"] + (o.get("points") or 0), 2)
 
 
 def carry_pregame(old, new):
