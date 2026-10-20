@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-20T08:41:34Z",
+ "updated": "2026-10-20T19:21:54Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -129,16 +129,6 @@
    "title": "Dark Star Orchestra",
    "date": "2026-11-28",
    "venue": "The Paramount in concert with Northwell",
-   "low": null,
-   "src": null
-  },
-  "sg-18668758": {
-   "sg": 18668758,
-   "history": [],
-   "url": "https://seatgeek.com/moe-tickets/woodstock-new-york-bearsville-theater-2026-12-11-8-pm/concert/18668758",
-   "title": "moe.",
-   "date": "2026-12-11",
-   "venue": "Bearsville Theater",
    "low": null,
    "src": null
   },
@@ -312,26 +302,6 @@
    "low": null,
    "src": null
   },
-  "sg-18662147": {
-   "sg": 18662147,
-   "history": [],
-   "url": "https://seatgeek.com/jason-isbell-tickets/groton-massachusetts-groton-hill-music-center-2026-11-04-8-pm/concert/18662147",
-   "title": "Jason Isbell",
-   "date": "2026-11-04",
-   "venue": "Concert Hall at Groton Hill Music Center",
-   "low": null,
-   "src": null
-  },
-  "sg-18660116": {
-   "sg": 18660116,
-   "history": [],
-   "url": "https://seatgeek.com/jason-isbell-tickets/troy-new-york-troy-savings-bank-music-hall-2026-11-05-7-30-pm/concert/18660116",
-   "title": "Jason Isbell",
-   "date": "2026-11-05",
-   "venue": "Troy Savings Bank Music Hall",
-   "low": null,
-   "src": null
-  },
   "tm-vv177Z_8GkUrfG8x": {
    "sg": 18498698,
    "history": [],
@@ -442,16 +412,6 @@
    "src": null,
    "low": null
   },
-  "sg-18634478": {
-   "history": [],
-   "sg": 18634478,
-   "title": "LCD Soundsystem",
-   "date": "2026-11-19",
-   "venue": "Knockdown Center",
-   "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-11-19-8-pm/concert/18634478",
-   "src": null,
-   "low": null
-  },
   "tm-G5vVZ_6nrIgoT": {
    "history": [],
    "sg": 18164314,
@@ -472,26 +432,6 @@
    "src": null,
    "low": null
   },
-  "sg-18634477": {
-   "history": [],
-   "sg": 18634477,
-   "title": "LCD Soundsystem",
-   "date": "2026-11-20",
-   "venue": "Knockdown Center",
-   "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-11-20-8-pm/concert/18634477",
-   "src": null,
-   "low": null
-  },
-  "sg-18634479": {
-   "history": [],
-   "sg": 18634479,
-   "title": "LCD Soundsystem",
-   "date": "2026-11-21",
-   "venue": "Knockdown Center",
-   "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-11-21-8-pm/concert/18634479",
-   "src": null,
-   "low": null
-  },
   "tm-G5vVZ_6n-zPJb": {
    "history": [],
    "sg": 18164313,
@@ -499,16 +439,6 @@
    "date": "2026-11-21",
    "venue": "Mohegan Sun Arena",
    "url": "https://www.ticketmaster.com/metallica-uncasville-connecticut-11-21-2026/event/1D00647AA1E25998",
-   "src": null,
-   "low": null
-  },
-  "sg-18634482": {
-   "history": [],
-   "sg": 18634482,
-   "title": "LCD Soundsystem",
-   "date": "2026-11-22",
-   "venue": "Knockdown Center",
-   "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-11-22-8-pm/concert/18634482",
    "src": null,
    "low": null
   },
@@ -741,6 +671,46 @@
    "url": "https://www.ticketmaster.com/gianmarco-soresi-the-misery-loves-tour-boston-massachusetts-12-04-2026/event/01006479EA92F101",
    "src": null,
    "low": null
+  },
+  "tm-vv1AvZkosGkdFaSYJ": {
+   "history": [],
+   "sg": 18138811,
+   "title": "Gianmarco Soresi: The Misery Loves Tour",
+   "date": "2026-12-05",
+   "venue": "The Wilbur",
+   "url": "https://www.ticketmaster.com/gianmarco-soresi-the-misery-loves-tour-boston-massachusetts-12-05-2026/event/01006471C8273C26",
+   "src": null,
+   "low": null
+  },
+  "tm-vv1k7Z_o3KG7I1tp": {
+   "history": [],
+   "sg": 18523496,
+   "title": "Brett Goldstein: Sex, Death & Small Talk",
+   "date": "2026-12-06",
+   "venue": "Boch Center Wang Theatre",
+   "url": "https://www.ticketmaster.com/brett-goldstein-sex-death-small-talk-boston-massachusetts-12-06-2026/event/0100651493A0AA56",
+   "src": null,
+   "low": null
+  },
+  "tm-vvG17Z_2rGgjua": {
+   "history": [],
+   "sg": 18408686,
+   "title": "Jim James (Solo Acoustic) - Wowed Out Tour",
+   "date": "2026-12-06",
+   "venue": "The Wilbur",
+   "url": "https://www.ticketmaster.com/jim-james-solo-acoustic-wowed-out-boston-massachusetts-12-06-2026/event/010064F78CD5C349",
+   "src": null,
+   "low": null
+  },
+  "sg-18609158": {
+   "history": [],
+   "sg": 18609158,
+   "title": "Taper's Choice (18+)",
+   "date": "2026-12-10",
+   "venue": "The Sinclair - Cambridge",
+   "url": "https://seatgeek.com/taper-s-choice-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-12-10-8-pm/concert/18609158",
+   "src": null,
+   "low": null
   }
  },
  "misses": {
@@ -766,7 +736,9 @@
   "tm-Z7r9jZ1AAvx-E": "2026-10-19",
   "tm-Z7r9jZ1AA77-E": "2026-10-19",
   "tm-rZ7HnEZ1Afugk7": "2026-10-19",
-  "tm-rZ7HnEZ1AfCA0f": "2026-10-19"
+  "tm-rZ7HnEZ1AfCA0f": "2026-10-19",
+  "tm-vv1AvZkf7GkdbzXaM": "2026-10-20",
+  "tm-vvG17Z_2wSVFP-": "2026-10-20"
  },
  "drops": []
 }
