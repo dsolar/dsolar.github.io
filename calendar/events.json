@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-20T15:22:56Z",
+ "updated": "2026-10-21T15:37:11Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,73 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-vv177Z_fGkTgPh1J",
-   "date": "2026-10-20",
-   "time": "18:00",
-   "title": "CRADLE OF FILTH: Majestic In Death II",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/cradle-of-filth-majestic-in-death-boston-massachusetts-10-20-2026/event/0100654FF595B2A6",
-   "source": "ticketmaster",
-   "aka": [
-    "tm-vvG17Z_CN9_1B0"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_5SOWZgR",
-   "date": "2026-10-20",
-   "time": "18:00",
-   "title": "Plini: An Unnameable Desire North American Tour (18+)",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/plini-an-unnameable-desire-north-american-boston-massachusetts-10-20-2026/event/010064BCE0F40D6F",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18282548",
-    "2026-10-20-plini-paradise-rock-club"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18412442",
-   "date": "2026-10-20",
-   "time": "19:00",
-   "title": "Cradle of Filth with Moonspell, Worm, and Black Satellite",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/cradle-of-filth-tickets/boston-massachusetts-big-night-live-2026-10-20-7-pm/concert/18412442",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "sg-18328342",
-   "date": "2026-10-20",
-   "time": "19:00",
-   "title": "Thorn",
-   "cat": "music",
-   "venue": "Boch Center Wang Theatre",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/thorn-tickets/boston-massachusetts-boch-center-wang-theatre-2026-10-20-7-pm/concert/18328342",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "sg-18663860",
-   "date": "2026-10-20",
-   "time": "20:00",
-   "title": "Greg Freeman",
-   "cat": "music",
-   "venue": "The Sinclair - Cambridge",
-   "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/greg-freeman-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-10-20-8-pm/concert/18663860",
-   "source": "seatgeek",
-   "score": 0
-  },
   {
    "id": "tm-vv1AvZkozGkegyOOB",
    "date": "2026-10-21",
@@ -267,6 +200,9 @@
    "source": "ticketmaster",
    "drive_hours": 4.5,
    "act": "Beck",
+   "aka": [
+    "sg-18194389"
+   ],
    "score": 2,
    "why": "big"
   },
@@ -396,6 +332,9 @@
    "source": "ticketmaster",
    "drive_hours": 4.5,
    "act": "Beck",
+   "aka": [
+    "sg-18194390"
+   ],
    "score": 2,
    "why": "big"
   },
@@ -464,9 +403,6 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/roa-usa-tour-boston-massachusetts-10-23-2026/event/0100651F7DBE59B7",
    "source": "ticketmaster",
-   "aka": [
-    "sg-18550498"
-   ],
    "score": 0
   },
   {
@@ -601,8 +537,8 @@
    "source": "ticketmaster",
    "aka": [
     "tm-Z7r9jZ1AAvVjY",
-    "sg-18346734",
-    "sg-18349655"
+    "sg-18349655",
+    "sg-18346734"
    ],
    "score": 0
   },
@@ -1457,6 +1393,9 @@
    "source": "ticketmaster",
    "drive_hours": 2.25,
    "act": "Third Eye Blind",
+   "aka": [
+    "sg-18484697"
+   ],
    "score": 2,
    "why": "big"
   },
@@ -1676,6 +1615,9 @@
    "source": "ticketmaster",
    "drive_hours": 3.25,
    "act": "Third Eye Blind",
+   "aka": [
+    "sg-18500992"
+   ],
    "score": 2,
    "why": "big"
   },
@@ -1694,6 +1636,8 @@
     "tm-vvG17Z_ClEVv4g",
     "tm-vvG17Z_ClEs-f5",
     "tm-vvG17Z_ClEVv4g",
+    "sg-18371747",
+    "sg-18371749",
     "sg-18371747",
     "sg-18371749",
     "2026-10-30-moe-the-wilbur"
@@ -1772,18 +1716,6 @@
    "score": 1
   },
   {
-   "id": "sg-18316935",
-   "date": "2026-10-31",
-   "time": "18:45",
-   "title": "strongboi with Salami Rose Joe Louis",
-   "cat": "music",
-   "venue": "The Sinclair - Cambridge",
-   "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/strongboi-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-10-31-6-45-pm/concert/18316935",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
    "id": "tm-vv1AvZkfAGkdi83p_",
    "date": "2026-10-31",
    "time": "19:00",
@@ -1852,6 +1784,7 @@
    "aka": [
     "tm-vvG17Z_ClEw-fE",
     "sg-18371751",
+    "sg-18371751",
     "2026-10-31-moe-the-wilbur"
    ],
    "sub": "Halloween",
@@ -1869,6 +1802,18 @@
    "source": "venues",
    "id": "2026-10-31-demetrius-hullum-laugh-boston",
    "score": 1
+  },
+  {
+   "id": "sg-18702687",
+   "date": "2026-10-31",
+   "time": "21:00",
+   "title": "Divaland of the Dead",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/divaland-of-the-dead-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-10-31-9-pm/concert/18702687",
+   "source": "seatgeek",
+   "score": 0
   },
   {
    "id": "tm-LvZ18Qnxhqv1gd8Kv2xCg",
@@ -2120,18 +2065,9 @@
    "city": "Boston, MA",
    "url": "https://seatgeek.com/this-is-lorelei-tickets/boston-massachusetts-royale-boston-2026-11-02-8-pm/concert/18663271",
    "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "sg-18237438",
-   "date": "2026-11-02",
-   "time": "20:00",
-   "title": "This is Lorelei with @",
-   "cat": "music",
-   "venue": "The Sinclair - Cambridge",
-   "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/this-is-lorelei-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-11-02-8-pm/concert/18237438",
-   "source": "seatgeek",
+   "aka": [
+    "sg-18237438"
+   ],
    "score": 0
   },
   {
@@ -2321,6 +2257,21 @@
    "score": 1
   },
   {
+   "id": "sg-18662147",
+   "date": "2026-11-04",
+   "time": "20:00",
+   "title": "Jason Isbell",
+   "cat": "music",
+   "venue": "Concert Hall at Groton Hill Music Center",
+   "city": "Groton, MA",
+   "url": "https://seatgeek.com/jason-isbell-tickets/groton-massachusetts-groton-hill-music-center-2026-11-04-8-pm/concert/18662147",
+   "source": "seatgeek",
+   "drive_hours": 0.75,
+   "act": "Jason Isbell",
+   "score": 2,
+   "why": "big"
+  },
+  {
    "id": "tm-Z7r9jZ1A7J4Zs",
    "date": "2026-11-04",
    "time": "20:00",
@@ -2346,7 +2297,7 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAvOZo",
    "source": "ticketmaster",
    "aka": [
-    "sg-18663874"
+    "sg-18702691"
    ],
    "score": 0
   },
@@ -2457,6 +2408,21 @@
     "2026-11-05-chief-keef-mgm-music-hall-at-fe"
    ],
    "score": 0
+  },
+  {
+   "id": "sg-18660116",
+   "date": "2026-11-05",
+   "time": "19:30",
+   "title": "Jason Isbell",
+   "cat": "music",
+   "venue": "Troy Savings Bank Music Hall",
+   "city": "Troy, NY",
+   "url": "https://seatgeek.com/jason-isbell-tickets/troy-new-york-troy-savings-bank-music-hall-2026-11-05-7-30-pm/concert/18660116",
+   "source": "seatgeek",
+   "drive_hours": 3.25,
+   "act": "Jason Isbell",
+   "score": 2,
+   "why": "big"
   },
   {
    "id": "tm-vv1AvZkoJGkdqhqRz",
@@ -2658,6 +2624,9 @@
    "source": "ticketmaster",
    "drive_hours": 4.0,
    "act": "Jason Isbell",
+   "aka": [
+    "sg-18209295"
+   ],
    "score": 2,
    "why": "big"
   },
@@ -2757,6 +2726,9 @@
    "source": "ticketmaster",
    "drive_hours": 2.25,
    "act": "Guster",
+   "aka": [
+    "sg-18470408"
+   ],
    "score": 2,
    "why": "big"
   },
@@ -3080,6 +3052,18 @@
    "why": "fav"
   },
   {
+   "id": "tm-vv16vZk4KuAZACa6F1",
+   "date": "2026-11-07",
+   "time": "22:00",
+   "title": "A BOOGIE WIT DA HOODIE & DABABY - OFFICIAL AFTER PARTY ( 21+ )",
+   "cat": "music",
+   "venue": "Big Night Live",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/a-boogie-wit-da-hoodie-dababy-boston-massachusetts-11-07-2026/event/01006553345D8679",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-1AtZkfsGkdQd-ko",
    "date": "2026-11-07",
    "time": "22:00",
@@ -3315,6 +3299,9 @@
    "source": "ticketmaster",
    "drive_hours": 1.0,
    "act": "Dave Matthews Band",
+   "aka": [
+    "sg-18474897"
+   ],
    "score": 2,
    "why": "big"
   },
@@ -3395,6 +3382,9 @@
    "source": "ticketmaster",
    "drive_hours": 2.25,
    "act": "Trey Anastasio",
+   "aka": [
+    "sg-18593197"
+   ],
    "score": 3,
    "why": "love"
   },
@@ -3426,6 +3416,18 @@
    "aka": [
     "sg-18156008"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18702694",
+   "date": "2026-11-10",
+   "time": "20:00",
+   "title": "The Olllam",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/the-olllam-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-11-10-8-pm/concert/18702694",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -3604,6 +3606,9 @@
    "source": "ticketmaster",
    "drive_hours": 3.25,
    "act": "Trey Anastasio",
+   "aka": [
+    "sg-18593196"
+   ],
    "score": 3,
    "why": "love"
   },
@@ -3636,6 +3641,9 @@
    "source": "ticketmaster",
    "drive_hours": 1.0,
    "act": "Dark Star Orchestra",
+   "aka": [
+    "sg-18406743"
+   ],
    "score": 3,
    "why": "love"
   },
@@ -3651,6 +3659,9 @@
    "source": "ticketmaster",
    "drive_hours": 4.25,
    "act": "Dave Matthews Band",
+   "aka": [
+    "sg-18474900"
+   ],
    "score": 2,
    "why": "big"
   },
@@ -3759,6 +3770,8 @@
    "drive_hours": 1.75,
    "act": "Goose",
    "aka": [
+    "sg-18280633",
+    "sg-18280634",
     "2026-11-13-goose-mohegan-sun-arena"
    ],
    "score": 3,
@@ -3854,6 +3867,9 @@
    "source": "ticketmaster",
    "drive_hours": 3.25,
    "act": "Dark Star Orchestra",
+   "aka": [
+    "sg-18406745"
+   ],
    "score": 3,
    "why": "love"
   },
@@ -3869,6 +3885,9 @@
    "source": "ticketmaster",
    "drive_hours": 4.25,
    "act": "Dave Matthews Band",
+   "aka": [
+    "sg-18474898"
+   ],
    "score": 2,
    "why": "big"
   },
@@ -3928,6 +3947,9 @@
    "source": "ticketmaster",
    "drive_hours": 4.5,
    "act": "Trey Anastasio",
+   "aka": [
+    "sg-18593200"
+   ],
    "score": 3,
    "why": "love"
   },
@@ -4088,6 +4110,7 @@
    "drive_hours": 1.75,
    "act": "Goose",
    "aka": [
+    "sg-18280635",
     "2026-11-14-goose-mohegan-sun-arena"
    ],
    "score": 3,
@@ -4134,6 +4157,7 @@
    "act": "Dark Star Orchestra",
    "aka": [
     "tm-vvG17Z_2roBuNo",
+    "sg-18406746",
     "sg-18406746",
     "2026-11-14-dark-star-orchestra-orpheum-theatre"
    ],
@@ -4237,6 +4261,7 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PIPE",
    "source": "ticketmaster",
    "aka": [
+    "sg-18702699",
     "2026-11-14-carbon-leaf-the-sinclair"
    ],
    "score": 0
@@ -4336,6 +4361,7 @@
    "drive_hours": 2.25,
    "act": "Goose",
    "aka": [
+    "sg-18280639",
     "2026-11-15-goose-cross-insurance-aren"
    ],
    "score": 3,
@@ -4430,6 +4456,7 @@
    "source": "seatgeek",
    "act": "Third Eye Blind",
    "aka": [
+    "sg-18608936",
     "2026-11-15-third-eye-blind-roadrunner"
    ],
    "score": 2,
@@ -4499,6 +4526,9 @@
    "source": "ticketmaster",
    "drive_hours": 3.75,
    "act": "Trey Anastasio",
+   "aka": [
+    "sg-18593199"
+   ],
    "score": 3,
    "why": "love"
   },
@@ -4513,6 +4543,7 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PI8x",
    "source": "ticketmaster",
    "aka": [
+    "sg-18702249",
     "2026-11-16-the-war-and-treaty-the-sinclair"
    ],
    "score": 0
@@ -4593,6 +4624,21 @@
    "score": 0
   },
   {
+   "id": "sg-18702700",
+   "date": "2026-11-17",
+   "time": "20:00",
+   "title": "Caroline",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/caroline-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-11-17-8-pm/concert/18702700",
+   "source": "seatgeek",
+   "aka": [
+    "2026-11-17-caroline-the-sinclair"
+   ],
+   "score": 0
+  },
+  {
    "id": "sg-18580636",
    "date": "2026-11-17",
    "time": "20:00",
@@ -4617,18 +4663,6 @@
    "aka": [
     "sg-18253466"
    ],
-   "score": 0
-  },
-  {
-   "date": "2026-11-17",
-   "time": null,
-   "title": "caroline",
-   "cat": "music",
-   "venue": "The Sinclair",
-   "city": "Cambridge, MA",
-   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar",
-   "source": "venues",
-   "id": "2026-11-17-caroline-the-sinclair",
    "score": 0
   },
   {
@@ -4701,6 +4735,9 @@
    "city": "Cambridge, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZg-z",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18702702"
+   ],
    "score": 0
   },
   {
@@ -4798,6 +4835,21 @@
    "score": 0
   },
   {
+   "id": "sg-18702704",
+   "date": "2026-11-19",
+   "time": "20:00",
+   "title": "AJ Lee and Blue Summit",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/aj-lee-blue-summit-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-11-19-8-pm/concert/18702704",
+   "source": "seatgeek",
+   "aka": [
+    "2026-11-19-aj-lee-and-blue-summit-the-sinclair"
+   ],
+   "score": 0
+  },
+  {
    "id": "tm-Z7r9jZ1A70IP0",
    "date": "2026-11-19",
    "time": "20:00",
@@ -4839,6 +4891,9 @@
    "source": "ticketmaster",
    "drive_hours": 4.25,
    "act": "Guster",
+   "aka": [
+    "sg-18584106"
+   ],
    "score": 2,
    "why": "big"
   },
@@ -4855,6 +4910,21 @@
    "score": 0
   },
   {
+   "id": "sg-18634478",
+   "date": "2026-11-19",
+   "time": "20:00",
+   "title": "LCD Soundsystem",
+   "cat": "music",
+   "venue": "Knockdown Center",
+   "city": "Queens, NY",
+   "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-11-19-8-pm/concert/18634478",
+   "source": "seatgeek",
+   "drive_hours": 4.25,
+   "act": "LCD Soundsystem",
+   "score": 2,
+   "why": "big"
+  },
+  {
    "id": "tm-G5vVZ_6nrIgoT",
    "date": "2026-11-19",
    "time": "20:00",
@@ -4866,20 +4936,12 @@
    "source": "ticketmaster",
    "drive_hours": 1.75,
    "act": "Metallica",
+   "aka": [
+    "sg-18164314",
+    "sg-18164315"
+   ],
    "score": 2,
    "why": "big"
-  },
-  {
-   "date": "2026-11-19",
-   "time": null,
-   "title": "AJ Lee and Blue Summit",
-   "cat": "music",
-   "venue": "The Sinclair",
-   "city": "Cambridge, MA",
-   "url": "https://labs.songkick.com/venues/1974904-sinclair/calendar",
-   "source": "venues",
-   "id": "2026-11-19-aj-lee-and-blue-summit-the-sinclair",
-   "score": 0
   },
   {
    "id": "tm-vv1AvZkf_GkdaXg-T",
@@ -4987,7 +5049,9 @@
    "drive_hours": 1.0,
    "act": "Trey Anastasio",
    "aka": [
-    "tm-vv177Z_oGkXBnY-F"
+    "tm-vv177Z_oGkXBnY-F",
+    "sg-18571687",
+    "sg-18571687"
    ],
    "score": 3,
    "why": "love"
@@ -5016,6 +5080,9 @@
    "source": "ticketmaster",
    "drive_hours": 4.25,
    "act": "Guster",
+   "aka": [
+    "sg-18584105"
+   ],
    "score": 2,
    "why": "big"
   },
@@ -5034,6 +5101,21 @@
     "2026-11-20-jubin-nautiyal-mgm-music-hall-at-fe"
    ],
    "score": 0
+  },
+  {
+   "id": "sg-18634477",
+   "date": "2026-11-20",
+   "time": "20:00",
+   "title": "LCD Soundsystem",
+   "cat": "music",
+   "venue": "Knockdown Center",
+   "city": "Queens, NY",
+   "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-11-20-8-pm/concert/18634477",
+   "source": "seatgeek",
+   "drive_hours": 4.25,
+   "act": "LCD Soundsystem",
+   "score": 2,
+   "why": "big"
   },
   {
    "id": "tm-Z7r9jZ1A7xdjN",
@@ -5211,6 +5293,21 @@
    "score": 0
   },
   {
+   "id": "sg-18634479",
+   "date": "2026-11-21",
+   "time": "20:00",
+   "title": "LCD Soundsystem",
+   "cat": "music",
+   "venue": "Knockdown Center",
+   "city": "Queens, NY",
+   "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-11-21-8-pm/concert/18634479",
+   "source": "seatgeek",
+   "drive_hours": 4.25,
+   "act": "LCD Soundsystem",
+   "score": 2,
+   "why": "big"
+  },
+  {
    "id": "tm-G5vVZ_6n-zPJb",
    "date": "2026-11-21",
    "time": "20:00",
@@ -5222,6 +5319,9 @@
    "source": "ticketmaster",
    "drive_hours": 1.75,
    "act": "Metallica",
+   "aka": [
+    "sg-18164313"
+   ],
    "score": 2,
    "why": "big"
   },
@@ -5295,6 +5395,7 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A70tjs",
    "source": "ticketmaster",
    "aka": [
+    "sg-18702709",
     "2026-11-22-sweet-pill-the-sinclair"
    ],
    "score": 0
@@ -5329,6 +5430,21 @@
     "2026-11-22-jessie-reyez-mgm-music-hall-at-fe"
    ],
    "score": 0
+  },
+  {
+   "id": "sg-18634482",
+   "date": "2026-11-22",
+   "time": "20:00",
+   "title": "LCD Soundsystem",
+   "cat": "music",
+   "venue": "Knockdown Center",
+   "city": "Queens, NY",
+   "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-11-22-8-pm/concert/18634482",
+   "source": "seatgeek",
+   "drive_hours": 4.25,
+   "act": "LCD Soundsystem",
+   "score": 2,
+   "why": "big"
   },
   {
    "id": "tm-vvG17Z_2r0FNm1",
@@ -5558,6 +5674,9 @@
    "source": "ticketmaster",
    "drive_hours": 3.75,
    "act": "Dark Star Orchestra",
+   "aka": [
+    "sg-18406757"
+   ],
    "score": 3,
    "why": "love"
   },
@@ -5699,6 +5818,9 @@
    "source": "ticketmaster",
    "drive_hours": 3.75,
    "act": "Dark Star Orchestra",
+   "aka": [
+    "sg-18406758"
+   ],
    "score": 3,
    "why": "love"
   },
@@ -5850,6 +5972,13 @@
    "source": "ticketmaster",
    "drive_hours": 4.25,
    "act": "LCD Soundsystem",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
+   "aka": [
+    "sg-18634481"
+   ],
    "score": 2,
    "why": "big"
   },
@@ -5952,6 +6081,9 @@
    "source": "ticketmaster",
    "drive_hours": 4.25,
    "act": "LCD Soundsystem",
+   "aka": [
+    "sg-18634480"
+   ],
    "score": 2,
    "why": "big"
   },
@@ -6006,6 +6138,9 @@
    "source": "ticketmaster",
    "drive_hours": 4.25,
    "act": "LCD Soundsystem",
+   "aka": [
+    "sg-18634489"
+   ],
    "score": 2,
    "why": "big"
   },
@@ -6055,6 +6190,7 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PEok",
    "source": "ticketmaster",
    "aka": [
+    "sg-18702710",
     "2026-12-02-we-are-scientists-the-sinclair"
    ],
    "score": 0
@@ -6167,6 +6303,9 @@
    "source": "ticketmaster",
    "drive_hours": 4.25,
    "act": "LCD Soundsystem",
+   "aka": [
+    "sg-18634490"
+   ],
    "score": 2,
    "why": "big"
   },
@@ -6820,6 +6959,21 @@
    "score": 0
   },
   {
+   "id": "sg-18634491",
+   "date": "2026-12-10",
+   "time": "20:00",
+   "title": "LCD Soundsystem",
+   "cat": "music",
+   "venue": "Knockdown Center",
+   "city": "Queens, NY",
+   "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-12-10-8-pm/concert/18634491",
+   "source": "seatgeek",
+   "drive_hours": 4.25,
+   "act": "LCD Soundsystem",
+   "score": 2,
+   "why": "big"
+  },
+  {
    "id": "tm-Z7r9jZ1A70w7P",
    "date": "2026-12-10",
    "time": "20:00",
@@ -6965,6 +7119,21 @@
    "score": 0
   },
   {
+   "id": "sg-18634492",
+   "date": "2026-12-11",
+   "time": "20:00",
+   "title": "LCD Soundsystem",
+   "cat": "music",
+   "venue": "Knockdown Center",
+   "city": "Queens, NY",
+   "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-12-11-8-pm/concert/18634492",
+   "source": "seatgeek",
+   "drive_hours": 4.25,
+   "act": "LCD Soundsystem",
+   "score": 2,
+   "why": "big"
+  },
+  {
    "id": "tm-Z7r9jZ1AAvkZ_",
    "date": "2026-12-11",
    "time": "20:00",
@@ -6993,6 +7162,21 @@
     "sg-18618106"
    ],
    "score": 0
+  },
+  {
+   "id": "sg-18668758",
+   "date": "2026-12-11",
+   "time": "20:00",
+   "title": "moe.",
+   "cat": "music",
+   "venue": "Bearsville Theater",
+   "city": "Woodstock, NY",
+   "url": "https://seatgeek.com/moe-tickets/woodstock-new-york-bearsville-theater-2026-12-11-8-pm/concert/18668758",
+   "source": "seatgeek",
+   "drive_hours": 3.75,
+   "act": "moe.",
+   "score": 3,
+   "why": "love"
   },
   {
    "id": "tm-vv177Z_fGkYwZhNg",
@@ -7104,6 +7288,21 @@
    "score": 0
   },
   {
+   "id": "sg-18634494",
+   "date": "2026-12-12",
+   "time": "20:00",
+   "title": "LCD Soundsystem",
+   "cat": "music",
+   "venue": "Knockdown Center",
+   "city": "Queens, NY",
+   "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-12-12-8-pm/concert/18634494",
+   "source": "seatgeek",
+   "drive_hours": 4.25,
+   "act": "LCD Soundsystem",
+   "score": 2,
+   "why": "big"
+  },
+  {
    "id": "sg-18155507",
    "date": "2026-12-12",
    "time": "20:00",
@@ -7127,6 +7326,9 @@
    "source": "ticketmaster",
    "drive_hours": 3.75,
    "act": "moe.",
+   "aka": [
+    "sg-18668759"
+   ],
    "score": 3,
    "why": "love"
   },
@@ -7238,6 +7440,21 @@
     "sg-18634314"
    ],
    "score": 0
+  },
+  {
+   "id": "sg-18634493",
+   "date": "2026-12-13",
+   "time": "20:00",
+   "title": "LCD Soundsystem",
+   "cat": "music",
+   "venue": "Knockdown Center",
+   "city": "Queens, NY",
+   "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-12-13-8-pm/concert/18634493",
+   "source": "seatgeek",
+   "drive_hours": 4.25,
+   "act": "LCD Soundsystem",
+   "score": 2,
+   "why": "big"
   },
   {
    "id": "tm-vv1AvZkf-Gkd2I6Ft",
@@ -7489,10 +7706,11 @@
    "url": "https://seatgeek.com/weird-phishes-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-12-18-8-pm/concert/18349689",
    "source": "seatgeek",
    "act": "Weird Phishes",
-   "sub": "a Phish tribute",
    "aka": [
+    "sg-18349689",
     "2026-12-18-weird-phishes-the-sinclair"
    ],
+   "sub": "a Phish tribute",
    "score": 2,
    "why": "like"
   },
@@ -7587,6 +7805,9 @@
    "city": "Cambridge, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAvU0w",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18702713"
+   ],
    "score": 0
   },
   {
@@ -7851,10 +8072,12 @@
    "source": "ticketmaster",
    "drive_hours": 4.25,
    "act": "Phish",
-   "sub": "New Year's run, night 1",
    "aka": [
+    "sg-18659386",
+    "sg-18659383",
     "2026-12-30-phish-madison-square-garde"
    ],
+   "sub": "New Year's run, night 1",
    "score": 3,
    "why": "love"
   },
@@ -7944,10 +8167,11 @@
    "source": "ticketmaster",
    "drive_hours": 4.25,
    "act": "Phish",
-   "sub": "New Year's Eve",
    "aka": [
+    "sg-18659385",
     "2026-12-31-phish-madison-square-garde"
    ],
+   "sub": "New Year's Eve",
    "score": 3,
    "why": "love"
   },
@@ -7975,6 +8199,9 @@
    "source": "ticketmaster",
    "drive_hours": 3.75,
    "act": "Dark Star Orchestra",
+   "aka": [
+    "sg-18511851"
+   ],
    "score": 3,
    "why": "love"
   },
@@ -8009,10 +8236,11 @@
    "source": "ticketmaster",
    "drive_hours": 4.25,
    "act": "Phish",
-   "sub": "New Year's run, night 3",
    "aka": [
+    "sg-18659382",
     "2027-01-01-phish-madison-square-garde"
    ],
+   "sub": "New Year's run, night 3",
    "score": 3,
    "why": "love"
   },
@@ -8040,6 +8268,9 @@
    "source": "ticketmaster",
    "drive_hours": 3.75,
    "act": "Dark Star Orchestra",
+   "aka": [
+    "sg-18511849"
+   ],
    "score": 3,
    "why": "love"
   },
@@ -8090,10 +8321,11 @@
    "source": "ticketmaster",
    "drive_hours": 4.25,
    "act": "Phish",
-   "sub": "Night 4, the band's 100th show at the Garden",
    "aka": [
+    "sg-18659384",
     "2027-01-02-phish-madison-square-garde"
    ],
+   "sub": "Night 4, the band's 100th show at the Garden",
    "score": 3,
    "why": "love"
   },
@@ -8109,6 +8341,9 @@
    "source": "ticketmaster",
    "drive_hours": 3.75,
    "act": "Dark Star Orchestra",
+   "aka": [
+    "sg-18511850"
+   ],
    "score": 3,
    "why": "love"
   },
@@ -8370,6 +8605,21 @@
    "score": 1
   },
   {
+   "id": "tm-vv177Z_fGkTQbkeK",
+   "date": "2027-01-21",
+   "time": "19:00",
+   "title": "Puzzle",
+   "cat": "music",
+   "venue": "Paradise Rock Club presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/puzzle-boston-massachusetts-01-21-2027/event/0100654FDA606093",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18703392"
+   ],
+   "score": 0
+  },
+  {
    "id": "espn-401910385",
    "date": "2027-01-21",
    "time": "19:30",
@@ -8391,6 +8641,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/mollie-elizabeth-people-pleaser-live-boston-massachusetts-01-22-2027/event/0100654CE498F79D",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18700869"
+   ],
    "score": 0
   },
   {
@@ -8517,6 +8770,21 @@
    "score": 0
   },
   {
+   "id": "tm-vv16vZk4K18ZAuFFCF",
+   "date": "2027-01-23",
+   "time": "22:00",
+   "title": "KREAM ( 21+ )",
+   "cat": "music",
+   "venue": "Big Night Live",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/kream-21-boston-massachusetts-01-23-2027/event/01006553290C77D7",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18705507"
+   ],
+   "score": 0
+  },
+  {
    "id": "tm-vv177Z_KGkSVwjCp",
    "date": "2027-01-24",
    "time": "18:30",
@@ -8610,6 +8878,9 @@
    "city": "Cambridge, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAeaQA",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18702715"
+   ],
    "score": 0
   },
   {
@@ -8726,6 +8997,21 @@
    "url": "https://www.ticketmaster.com/giggly-squad-the-gehls-gehl-tour-medford-massachusetts-01-31-2027/event/0100654799E198F0",
    "source": "ticketmaster",
    "score": 1
+  },
+  {
+   "id": "sg-18663188",
+   "date": "2027-02-02",
+   "time": "19:00",
+   "title": "Jason Isbell",
+   "cat": "music",
+   "venue": "The Metropolitan Museum of Art",
+   "city": "New York, NY",
+   "url": "https://seatgeek.com/jason-isbell-tickets/new-york-new-york-the-metropolitan-museum-of-art-2027-02-02-7-pm/concert/18663188",
+   "source": "seatgeek",
+   "drive_hours": 4.25,
+   "act": "Jason Isbell",
+   "score": 2,
+   "why": "big"
   },
   {
    "id": "tm-vv177Z_3GkDpMkq9",
@@ -9263,6 +9549,9 @@
    "city": "Cambridge, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7P-Co",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18316935"
+   ],
    "score": 0
   },
   {
@@ -9299,6 +9588,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/deric-cahill-boston-massachusetts-02-24-2027/event/01006551D5806A1B",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18703271"
+   ],
    "score": 1
   },
   {
@@ -9327,6 +9619,9 @@
    "city": "Cambridge, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAebpZ",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18702716"
+   ],
    "score": 0
   },
   {
@@ -9638,6 +9933,7 @@
    "aka": [
     "tm-vv177Z_KGknM09Yr",
     "sg-18641971",
+    "sg-18641971",
     "2027-03-05-greta-van-fleet-td-garden"
    ],
    "sub": "with The Kooks and Luna Li",
@@ -9730,6 +10026,9 @@
    "source": "ticketmaster",
    "drive_hours": 3.25,
    "act": "Greta Van Fleet",
+   "aka": [
+    "sg-18641972"
+   ],
    "score": 2,
    "why": "big"
   },
@@ -9815,6 +10114,13 @@
    "source": "ticketmaster",
    "drive_hours": 4.5,
    "act": "Dropkick Murphys",
+   "times": [
+    "18:00",
+    "19:00"
+   ],
+   "aka": [
+    "sg-18633567"
+   ],
    "score": 2,
    "why": "big"
   },
@@ -9916,6 +10222,9 @@
    "source": "ticketmaster",
    "drive_hours": 4.5,
    "act": "Greta Van Fleet",
+   "aka": [
+    "sg-18641973"
+   ],
    "score": 2,
    "why": "big"
   },
@@ -9953,6 +10262,21 @@
    "score": 0
   },
   {
+   "id": "sg-18633571",
+   "date": "2027-03-10",
+   "time": "19:00",
+   "title": "Dropkick Murphys with Spiritual Cramp and Home Front",
+   "cat": "music",
+   "venue": "MassMutual Center",
+   "city": "Springfield, MA",
+   "url": "https://seatgeek.com/dropkick-murphys-tickets/springfield-massachusetts-massmutual-center-2027-03-10-7-pm/concert/18633571",
+   "source": "seatgeek",
+   "drive_hours": 1.75,
+   "act": "Dropkick Murphys",
+   "score": 2,
+   "why": "big"
+  },
+  {
    "id": "tm-vv177Z_KGkSAw-nS",
    "date": "2027-03-11",
    "time": "19:00",
@@ -9964,6 +10288,9 @@
    "source": "ticketmaster",
    "drive_hours": 2.25,
    "act": "Dropkick Murphys",
+   "aka": [
+    "sg-18633572"
+   ],
    "score": 2,
    "why": "big"
   },
@@ -9995,6 +10322,21 @@
    "score": 0
   },
   {
+   "id": "tm-vv1AvZk48GkeSgCZP",
+   "date": "2027-03-11",
+   "time": "20:00",
+   "title": "The Wood Brothers",
+   "cat": "music",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/the-wood-brothers-boston-massachusetts-03-11-2027/event/01006550B3D4E025",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18703273"
+   ],
+   "score": 0
+  },
+  {
    "id": "tm-vv1AvZkfSGkdTtSc_",
    "date": "2027-03-12",
    "time": "19:00",
@@ -10007,6 +10349,7 @@
    "act": "Dropkick Murphys",
    "aka": [
     "tm-vv1AvZkfSGkdTtSc_",
+    "sg-18685643",
     "sg-18685643",
     "2027-03-12-dropkick-murphys-mgm-music-hall-at-fe"
    ],
@@ -10088,6 +10431,8 @@
     "tm-vv1AvZkfSGkdTiNmr",
     "tm-vv1AvZkfSGkdTcSmB",
     "tm-vv1AvZkfSGkdTiNmr",
+    "sg-18685645",
+    "sg-18685642",
     "sg-18685645",
     "sg-18685642",
     "2027-03-13-dropkick-murphys-mgm-music-hall-at-fe"
@@ -10175,6 +10520,7 @@
    "aka": [
     "tm-vv1AvZkfMGkeTdy2C",
     "sg-18685644",
+    "sg-18685644",
     "2027-03-14-dropkick-murphys-mgm-music-hall-at-fe"
    ],
    "sub": "with Brian Fallon and Ben Nichols",
@@ -10191,6 +10537,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/thrown-unwanted-north-america-tour-2027-boston-massachusetts-03-14-2027/event/0100654EE2D861D0",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18703390"
+   ],
    "score": 0
   },
   {
@@ -10230,6 +10579,7 @@
    "act": "Dropkick Murphys",
    "aka": [
     "tm-vv1AvZkfyGkdOmyJZ",
+    "sg-18683920",
     "sg-18683920",
     "2027-03-17-dropkick-murphys-citizens-house-of-bl"
    ],
@@ -10335,6 +10685,24 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/jack-jack-boston-massachusetts-03-19-2027/event/0100654ED13A2D9D",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18703535"
+   ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv177Z_fGkU0diHz",
+   "date": "2027-03-19",
+   "time": "19:00",
+   "title": "Lucky Daye - The ALOUD! Tour",
+   "cat": "music",
+   "venue": "Citizens House of Blues Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/lucky-daye-the-aloud-tour-boston-massachusetts-03-19-2027/event/0100654DA40ECF38",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18703375"
+   ],
    "score": 0
   },
   {
@@ -10381,6 +10749,18 @@
     "sg-18629445"
    ],
    "score": 1
+  },
+  {
+   "id": "sg-18704413",
+   "date": "2027-03-19",
+   "time": "20:00",
+   "title": "The Outlaws",
+   "cat": "music",
+   "venue": "Lynn Memorial Auditorium",
+   "city": "Lynn, MA",
+   "url": "https://seatgeek.com/the-outlaws-tickets/lynn-massachusetts-lynn-memorial-auditorium-2027-03-19-8-pm/concert/18704413",
+   "source": "seatgeek",
+   "score": 0
   },
   {
    "id": "tm-vv1AvZkfNGkeE1oDM",
@@ -10438,6 +10818,18 @@
    "url": "https://www.espn.com/nba/game/_/gameId/401910779/pelicans-celtics",
    "source": "espn",
    "score": 1
+  },
+  {
+   "id": "sg-18702719",
+   "date": "2027-03-21",
+   "time": "20:00",
+   "title": "Paco Versailles",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/paco-versailles-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-03-21-8-pm/concert/18702719",
+   "source": "seatgeek",
+   "score": 0
   },
   {
    "id": "espn-401893587",
@@ -10514,6 +10906,18 @@
    "venue": "Roadrunner - Boston",
    "city": "Boston, MA",
    "url": "https://seatgeek.com/elderbrook-tickets/boston-massachusetts-roadrunner-boston-2027-03-25-8-pm/concert/18692018",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
+   "id": "sg-18703106",
+   "date": "2027-03-26",
+   "time": "19:00",
+   "title": "Lambrini Girls",
+   "cat": "music",
+   "venue": "Roadrunner - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/lambrini-girls-tickets/boston-massachusetts-roadrunner-boston-2027-03-26-7-pm/concert/18703106",
    "source": "seatgeek",
    "score": 0
   },
@@ -10634,6 +11038,21 @@
     "sg-18692731"
    ],
    "score": 1
+  },
+  {
+   "id": "tm-vv117Z_47a1FA9",
+   "date": "2027-03-31",
+   "time": "20:00",
+   "title": "Calvin Harris - North America Tour",
+   "cat": "music",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/calvin-harris-north-america-tour-boston-massachusetts-03-31-2027/event/0100655109288157",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18701776"
+   ],
+   "score": 0
   },
   {
    "id": "tm-vv1AvZk4FGkdCXf_M",
@@ -10798,6 +11217,9 @@
    "city": "Cambridge, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA780A",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18702621"
+   ],
    "score": 0
   },
   {
@@ -11006,6 +11428,9 @@
    "url": "https://www.ticketmaster.com/eric-andre-subtle-medford-massachusetts-04-16-2027/event/0100654FBEA3088F",
    "source": "ticketmaster",
    "act": "Eric Andre",
+   "aka": [
+    "sg-18703009"
+   ],
    "score": 2,
    "why": "fav"
   },
@@ -11025,6 +11450,37 @@
    ],
    "score": 2,
    "why": "fav"
+  },
+  {
+   "id": "tm-vv177Z_fGkToT0xi",
+   "date": "2027-04-18",
+   "time": "19:00",
+   "title": "deca joins (18+)",
+   "cat": "music",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/deca-joins-18-boston-massachusetts-04-18-2027/event/0100654FD1FE48AC",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
+   "id": "tm-vvG17Z_5QRRO-j",
+   "date": "2027-04-19",
+   "time": "19:00",
+   "title": "Nothing But Thieves: The Stray Dogs World Tour",
+   "cat": "music",
+   "venue": "Citizens House of Blues Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/nothing-but-thieves-the-stray-dogs-boston-massachusetts-04-19-2027/event/010064B6AFBE085C",
+   "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
+   "aka": [
+    "sg-18266365"
+   ],
+   "score": 0
   }
  ],
  "movies": [
@@ -11101,9 +11557,9 @@
  ],
  "sources": {
   "picks": 5,
-  "venues": 7,
+  "venues": 5,
   "espn": 83,
-  "ticketmaster": 553,
-  "seatgeek": 96
+  "ticketmaster": 559,
+  "seatgeek": 111
  }
 }
