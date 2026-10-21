@@ -666,7 +666,7 @@ function makeBattle(save,rng=Math.random,opts={}){if(save.pending)throw Error('C
  let enemy=regular.slice(0,n);if(enemy.length<n)enemy.push(...shuffle(CATALOG.filter(x=>x.rarity!=='Legendary'&&!enemy.includes(x)),rng).slice(0,n-enemy.length));
  if(opts.parlorId){
   // The lead opponent is the Keeper's recognizable signature Jellycat.
-  const keepers={village:'Bashful Beige Bunny',garden:'Amuseables Sunflower',cove:'Larry Lobster ‘Sailor’',moon:'Ghost Bob',willow:'Amuseables Peach'};
+  const keepers={village:'Bashful Beige Bunny',garden:'Amuseables Sunflower',cove:'Larry Lobster ‘Sailor’',moon:'Ghost Bob',willow:'Amuseables Peach',island:'Amuseables Michelle Mussel'};
   const signature=CATALOG.find(p=>p.officialName===keepers[opts.parlorId]);
   if(signature)enemy[0]=signature;
   boss=false;
@@ -694,11 +694,17 @@ function calculateHit(from,to,move,rng,cpuScale=1){const attacker=BY_ID.get(from
  const suffix=(mult>1?' Super effective!':mult<1?' Not very effective.':'')+(guarded?' Guard softened the blow!':'');
  return {text:`${attacker.officialName} used ${move.name}: ${dmg} damage.${suffix}${crit>1?' Critical hit!':''}`,done:true,damage:dmg,mult};
 }
-function chooseCpuMove(b,rng=Math.random){const cpu=active(b,'theirs'),you=active(b,'mine'),c=BY_ID.get(cpu.id);const mult=typeMultiplier(c.type,BY_ID.get(you.id).type);
- if(cpu.heals===0&&cpu.hp/cpu.maxHp<.30)return 2;
- if(mult>1.01)return 1;
- if(mult<1&&rand(rng)<.75)return 0;
- return rand(rng)<.55?1:0;
+function chooseCpuMove(b,rng=Math.random){
+ const cpu=active(b,'theirs'),you=active(b,'mine'),card=BY_ID.get(cpu.id),target=BY_ID.get(you.id);
+ const moves=card.moves,stats=fighterStats(cpu.id,cpu.level,cpu.boost),def=fighterStats(you.id,you.level,you.boost);
+ const expected=move=>move&&move.kind!=='heal'?move.power*.55*(stats.attack/def.defense)*(move.kind==='signature'?typeMultiplier(card.type,target.type):1)*(move.accuracy??1)*(b.cpuScale??1):0;
+ const recover=moves[2]?.kind==='heal'&&cpu.heals<1?Math.min(Math.round(cpu.maxHp*.34),cpu.maxHp-cpu.hp):0;
+ const incoming=Math.max(3,...target.moves.filter(m=>m.kind!=='heal').map(m=>m.power*.55*(def.attack/stats.defense)*(m.kind==='signature'?typeMultiplier(target.type,card.type):1)));
+ if(recover>=Math.max(10,cpu.maxHp*.20)&&cpu.hp/cpu.maxHp<.46&&cpu.hp>incoming*.75&&rand(rng)<.82)return 2;
+ const quick=expected(moves[0]),signature=expected(moves[1]);
+ if(signature>quick*1.12)return 1;
+ if(quick>signature*1.12)return 0;
+ return rand(rng)<.5?0:1;
 }
 function combatAction(b,side,index,rng){const from=active(b,side),to=active(b,side==='mine'?'theirs':'mine'),move=BY_ID.get(from.id).moves[index];
  const outcome=calculateHit(from,to,move,rng,side==='theirs'?(b.cpuScale??1):1);b.log.push((side==='theirs'?'CPU: ':'')+outcome.text);return outcome;
