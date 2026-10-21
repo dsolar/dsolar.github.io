@@ -632,7 +632,7 @@ const shuffle=(xs,rng=Math.random)=>{const a=[...xs];for(let i=a.length-1;i>0;i-
 const owned=(s,id)=>s.owned.includes(id);
 const label=(s,id)=>s.nicknames[id]||BY_ID.get(id)?.officialName||'Unknown Jellycat';
 const fighterStats=(id,level=1,boost=0)=>{const x=BY_ID.get(id);if(!x)throw Error('Unknown character '+id);return {hp:x.base.hp+(level-1)*5+boost*4,attack:x.base.attack+(level-1)*2+boost,defense:x.base.defense+(level-1)*2+boost,speed:x.base.speed+Math.floor((level-1)/3)};};
-function freshSave(){return {version:3,onboarded:false,owned:[STARTER_ID],team:[STARTER_ID],nicknames:{},levels:{[STARTER_ID]:1},xp:{[STARTER_ID]:0},wins:0,losses:0,streak:0,bestStreak:0,points:0,jars:0,bossWins:0,pending:null,battle:null,history:[]};}
+function freshSave(){return {version:3,onboarded:false,owned:[STARTER_ID],team:[STARTER_ID],nicknames:{},levels:{[STARTER_ID]:1},xp:{[STARTER_ID]:0},wins:0,losses:0,streak:0,bestStreak:0,points:0,jars:0,bossWins:0,snacks:1,pending:null,battle:null,history:[]};}
 function validateSave(input){const d=freshSave();if(!input||typeof input!=='object')return d;
  const ids=(a)=>Array.isArray(a)?[...new Set(a.filter(x=>typeof x==='string'&&BY_ID.has(x)))]:[];
  const out={...d,...input};out.owned=ids(input.owned);if(!out.owned.includes(STARTER_ID))out.owned.unshift(STARTER_ID);
@@ -643,6 +643,7 @@ function validateSave(input){const d=freshSave();if(!input||typeof input!=='obje
  out.xp=values(input.xp,x=>Math.max(0,Math.floor(Number(x)||0)));
  for(const id of out.owned){out.levels[id]??=1;out.xp[id]??=0;}
  for(const k of ['wins','losses','streak','bestStreak','points','jars','bossWins'])out[k]=Math.max(0,Math.floor(Number(input[k])||0));
+ out.snacks=Math.max(0,Math.min(5,Math.floor(Number(input.snacks??1)||0)));
  out.onboarded=Boolean(input.onboarded);
  out.pending=input.pending&&typeof input.pending==='object'?sanitizePending(input.pending,out):null;
  out.battle=input.battle&&typeof input.battle==='object'?sanitizeBattle(input.battle,out):null;
@@ -651,7 +652,7 @@ function validateSave(input){const d=freshSave();if(!input||typeof input!=='obje
 }
 function sanitizePending(p,s){const choices=[...new Set((p.choices||[]).filter(x=>BY_ID.has(x)&&!s.owned.includes(x)))].slice(0,3);return choices.length?{choices,boss:Boolean(p.boss),patchId:typeof p.patchId==='string'?p.patchId.slice(0,40):null}:null;}
 function sanitizeBattle(b,s){if(!Array.isArray(b.mine)||!Array.isArray(b.theirs))return null;
- const clean=(list,player)=>list.slice(0,3).filter(f=>BY_ID.has(f.id)&&(!player||s.owned.includes(f.id))).map(f=>({id:f.id,level:Math.max(1,Math.min(50,Math.floor(f.level)||1)),hp:Math.max(0,Math.min(999,Math.floor(f.hp)||0)),maxHp:Math.max(1,Math.min(999,Math.floor(f.maxHp)||100)),heals:Math.max(0,Math.min(1,Math.floor(f.heals)||0)),boost:Math.max(0,Math.min(25,Math.floor(f.boost)||0))}));
+ const clean=(list,player)=>list.slice(0,3).filter(f=>BY_ID.has(f.id)&&(!player||s.owned.includes(f.id))).map(f=>({id:f.id,level:Math.max(1,Math.min(50,Math.floor(f.level)||1)),hp:Math.max(0,Math.min(999,Math.floor(f.hp)||0)),maxHp:Math.max(1,Math.min(999,Math.floor(f.maxHp)||100)),heals:Math.max(0,Math.min(1,Math.floor(f.heals)||0)),boost:Math.max(0,Math.min(25,Math.floor(f.boost)||0)),guard:Math.max(0,Math.min(1,Math.floor(f.guard)||0))}));
  const mine=clean(b.mine,true),theirs=clean(b.theirs,false);if(!mine.length||!theirs.length)return null;
  return {...b,parlorId:typeof b.parlorId==='string'?b.parlorId:null,mine,theirs,mi:Math.max(0,Math.min(mine.length-1,Math.floor(b.mi)||0)),ei:Math.max(0,Math.min(theirs.length-1,Math.floor(b.ei)||0)),log:Array.isArray(b.log)?b.log.filter(x=>typeof x==='string').slice(-35):[],kind:['boss','parlor','wild'].includes(b.kind)?b.kind:'normal',cpuScale:Math.max(.45,Math.min(1.2,Number(b.cpuScale)||1)),round:Math.max(1,Math.floor(b.round)||1)};
 }
@@ -686,9 +687,11 @@ function calculateHit(from,to,move,rng,cpuScale=1){const attacker=BY_ID.get(from
  const a=fighterStats(from.id,from.level,from.boost),d=fighterStats(to.id,to.level,to.boost);
  const mult=move.kind==='signature'?typeMultiplier(attacker.type,defender.type):1;
  const crit=rand(rng)<.07?1.35:1;
- const dmg=Math.max(3,Math.round((move.power*.55)*(a.attack/d.defense)*mult*(.90+rand(rng)*.2)*crit*cpuScale));
+ const baseDamage=Math.max(3,Math.round((move.power*.55)*(a.attack/d.defense)*mult*(.90+rand(rng)*.2)*crit*cpuScale));
+ const guarded=to.guard>0,dmg=guarded?Math.max(1,Math.ceil(baseDamage*.45)):baseDamage;
+ if(guarded)to.guard=0;
  to.hp=Math.max(0,to.hp-dmg);
- const suffix=mult>1?' Super effective!':mult<1?' Not very effective.':'';
+ const suffix=(mult>1?' Super effective!':mult<1?' Not very effective.':'')+(guarded?' Guard softened the blow!':'');
  return {text:`${attacker.officialName} used ${move.name}: ${dmg} damage.${suffix}${crit>1?' Critical hit!':''}`,done:true,damage:dmg,mult};
 }
 function chooseCpuMove(b,rng=Math.random){const cpu=active(b,'theirs'),you=active(b,'mine'),c=BY_ID.get(cpu.id);const mult=typeMultiplier(c.type,BY_ID.get(you.id).type);
@@ -703,7 +706,10 @@ function combatAction(b,side,index,rng){const from=active(b,side),to=active(b,si
 function takeTurn(b,action,rng=Math.random){if(!b||allOut(b.mine)||allOut(b.theirs))throw Error('Battle finished');
  const next=structuredClone(b);
  const player=active(next,'mine'),cpu=active(next,'theirs');if(player.hp<=0||cpu.hp<=0)throw Error('Select a healthy fighter');
- if(action.type==='switch'){
+ if(action.type==='guard'){
+  player.guard=1;next.log.push(`${BY_ID.get(player.id).officialName} curled up and guarded against the next hit!`);
+  combatAction(next,'theirs',chooseCpuMove(next,rng),rng);
+ }else if(action.type==='switch'){
   if(!Number.isInteger(action.index)||action.index<0||action.index>=next.mine.length||next.mi===action.index||next.mine[action.index].hp<=0)throw Error('Invalid switch');
   next.mi=action.index;next.log.push(`${BY_ID.get(active(next,'mine').id).officialName} switched in!`);
   combatAction(next,'theirs',chooseCpuMove(next,rng),rng);
@@ -719,6 +725,18 @@ function takeTurn(b,action,rng=Math.random){if(!b||allOut(b.mine)||allOut(b.thei
  next.round++;next.log=next.log.slice(-35);
  const result=allOut(next.theirs)?'win':allOut(next.mine)?'loss':null;
  return {battle:next,result};
+}
+function useBattleSnack(save,rng=Math.random){
+ if(!save.battle||save.snacks<=0)throw Error('No healing snacks in your satchel.');
+ const s=structuredClone(save),b=structuredClone(s.battle),friend=active(b,'mine');
+ if(friend.hp<=0||friend.hp>=friend.maxHp)throw Error('Choose a hurt Jellycat before using a healing snack.');
+ const healed=Math.min(friend.maxHp-friend.hp,Math.max(12,Math.round(friend.maxHp*.3)));
+ friend.hp+=healed;s.snacks--;b.log.push(`${BY_ID.get(friend.id).officialName} enjoyed a cozy snack and recovered ${healed} HP!`);
+ combatAction(b,'theirs',chooseCpuMove(b,rng),rng);
+ if(active(b,'mine').hp<=0&&!allOut(b.mine)){b.mi=nextAlive(b.mine);b.log.push(`${BY_ID.get(active(b,'mine').id).officialName} takes the field!`);}
+ if(active(b,'theirs').hp<=0&&!allOut(b.theirs)){b.ei=nextAlive(b.theirs);}
+ b.round++;b.log=b.log.slice(-35);s.battle=b;
+ return {save:s,result:allOut(b.theirs)?'win':allOut(b.mine)?'loss':null};
 }
 function grantXp(s,id,amount){let level=s.levels[id]||1,xp=(s.xp[id]||0)+amount;while(level<MAX_LEVEL&&xp>=XP_TO_LEVEL(level)){xp-=XP_TO_LEVEL(level);level++;}if(level>=MAX_LEVEL)xp=0;s.levels[id]=level;s.xp[id]=xp;}
 function rewardChoices(s,rng,boss=false,defeated=[]){let pool=CATALOG.filter(p=>!owned(s,p.id));if(!pool.length)return [];
@@ -1687,6 +1705,10 @@ function usePlace(s,id,action,grantXp){const p=SPECIAL_PLACES.find(z=>z.id===id)
   if(!canWish(s))throw Error('The fountain needs five more victories to recharge.');w.lastWishWins=s.wins;w.wishes=(w.wishes||0)+1;s.points+=1;s.team.forEach(t=>grantXp(s,t,30));message='The fountain sparkles. +1 star and 30 XP for your team!';
  }else if(id==='shop'&&action==='bag'){
   if(s.points<8)throw Error('A mystery bag costs eight stars.');s.points-=8;s.jars++;w.shopBagPurchases=(w.shopBagPurchases||0)+1;message='A sky-blue mystery bag is yours! Open it from My Team.';
+ }else if(id==='shop'&&action==='snack'){
+  if(s.snacks>=5)throw Error('Your satchel is full (5 snacks).');
+  if(s.points<3)throw Error('A healing snack costs three stars.');
+  s.points-=3;s.snacks++;message='A cozy healing snack is in your satchel! In battle, use Items to restore 30% HP. It uses your turn.';
  }else if(id==='shop'&&['ribbon','postcards'].includes(action)){
   const cost=action==='ribbon'?4:3;if(w.souvenirs.includes(action))throw Error('You already have this souvenir.');if(s.points<cost)throw Error(`You need ${cost} star points.`);s.points-=cost;w.souvenirs.push(action);message=action==='ribbon'?'You tucked a velvet ribbon into your collection!':'You collected a bundle of tiny postcards!';
  }else if(id==='greenhouse'&&action==='tend'){
@@ -2098,12 +2120,12 @@ function walkToward(tx,ty,npcToMeet=null,placeToMeet=null){stopWalking();ensureW
 function showPlace(p){
  stopWalking();const w=state.world;
  const offerings=p.id==='fountain'?(canWish(state)?'<button class="btn" data-action="place-action" data-id="fountain" data-option="wish">✦ Make a wish · +1 star and team XP</button>':`<p class="shop-locked">✦ The fountain recharges after more battle victories.</p>`):
- p.id==='shop'?storeItem('🛍️','Powder-blue mystery bag','A surprise waiting for your team',8,'bag')+storeItem('🎀','Velvet ribbon','A treasure for your clubhouse shelf',4,'ribbon',w.souvenirs.includes('ribbon'))+storeItem('💌','Travel postcards','Remember your favorite places',3,'postcards',w.souvenirs.includes('postcards')):
+ p.id==='shop'?storeItem('🍪','Cozy healing snack',`Restore 30% HP in battle · ${state.snacks}/5 carried`,3,'snack',state.snacks>=5)+storeItem('🛍️','Powder-blue mystery bag','A surprise waiting for your team',8,'bag')+storeItem('🎀','Velvet ribbon','A treasure for your clubhouse shelf',4,'ribbon',w.souvenirs.includes('ribbon'))+storeItem('💌','Travel postcards','Remember your favorite places',3,'postcards',w.souvenirs.includes('postcards')):
  p.id==='greenhouse'?(w.greenhouseVisited?'<p class="shop-locked">✓ Your seedling is happily growing here.</p>':'<button class="btn" data-action="place-action" data-id="greenhouse" data-option="tend">🪴 Tend the little seedling · free</button>'):
  (w.campVisited?'<p class="shop-locked">✓ You have shared your first campfire story.</p>':'<button class="btn" data-action="place-action" data-id="camp" data-option="rest">🏕️ Gather by the campfire · free</button>');
  const style=p.id==='shop'?'store':p.id==='greenhouse'?'garden':p.id==='fountain'?'fountain':'camp';
  const div=el('div','modal-backdrop');div.id='place-modal';
- div.innerHTML=`<section class="modal place-modal item-boutique ${style}" role="dialog" aria-modal="true" aria-label="${safe(p.name)}"><div class="boutique-awning"><span>✦ THE LITTLE SOFTLANDS FINDS ✦</span><div class="boutique-icon" aria-hidden="true">${p.icon}</div><h2>${safe(p.name)}</h2></div><div class="boutique-inner"><p>${safe(p.description)}</p><div class="shop-stock">${offerings}</div><div class="boutique-wallet"><span>YOUR SATCHEL</span><strong>★ ${state.points} stars</strong><strong>🫙 ${state.jars} bags</strong></div><button class="btn micro ghost" data-action="close-place">Keep exploring →</button></div></section>`;
+ div.innerHTML=`<section class="modal place-modal item-boutique ${style}" role="dialog" aria-modal="true" aria-label="${safe(p.name)}"><div class="boutique-awning"><span>✦ THE LITTLE SOFTLANDS FINDS ✦</span><div class="boutique-icon" aria-hidden="true">${p.icon}</div><h2>${safe(p.name)}</h2></div><div class="boutique-inner"><p>${safe(p.description)}</p><div class="shop-stock">${offerings}</div><div class="boutique-wallet"><span>YOUR SATCHEL</span><strong>★ ${state.points} stars</strong><strong>🫙 ${state.jars} bags</strong><strong>🍪 ${state.snacks} snacks</strong></div><button class="btn micro ghost" data-action="close-place">Keep exploring →</button></div></section>`;
  document.body.append(div);div.querySelector('button')?.focus();
 }
 function showTalk(n){stopWalking();$('#talk-modal')?.remove();ensureWorld(state);
