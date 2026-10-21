@@ -213,6 +213,9 @@
       var start = useFix ? fixFull : A ? yProj : later;
       var now = wk.banked + wk.remMu;
       var fixGain = useFix ? nowB - nowA : 0;
+      // The tag means a lineup change: someone moves in. When the best lineup is the lineup as set, the
+      // gap is only Sleeper projecting it higher than Yahoo, so the higher number counts but isn't tagged.
+      var moves = useFix && (!lineup || lineup.some(function (p) { return !isSet(p); }));
       var fabEdge = avgFab > 0 && typeof t.faab === "number" ? o.fabPts * (t.faab / avgFab - 1) : 0;
       return {
         name: t.name,
@@ -223,7 +226,7 @@
         projPre: typeof t.proj_pre === "number" && t.proj_pre > 0 ? t.proj_pre : (hasProj ? yProj : null),
         setNow: nowA,                                   // expected score if the lineup stays as set
         fixGain: fixGain,                               // points the fixed lineup adds over the lineup as set
-        assumesFix: fixGain >= 5,                       // worth flagging: the odds count on a lineup change
+        assumesFix: fixGain >= 5 && moves,              // worth flagging: the odds count on a lineup change
         lineup: useFix && lineup ? lineup.map(function (p) { return p.name; }) : null,
         best: hasBest ? t.best : null,
         recent: t._recent,
