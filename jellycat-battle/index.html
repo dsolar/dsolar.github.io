@@ -660,10 +660,23 @@ function typeMultiplier(a,b){const ai=TYPES.indexOf(a),bi=TYPES.indexOf(b);if(ai
 function participant(id,level,boost=0){const {hp}=fighterStats(id,level,boost);return {id,level,hp,maxHp:hp,heals:0,boost};}
 function nextAlive(team){return team.findIndex(x=>x.hp>0)};
 const allOut=(team)=>team.every(x=>x.hp<=0);
+const REGION_ENCOUNTER_TYPES={cuddlewick:['Food','Furry'],orchard:['Food','Bugs & Garden'],grotto:['Silly & Spooky','Adventure'],willowmere:['Ocean','Furry'],'reed-keys':['Ocean','Adventure'],'cloudstep-pass':['Adventure','Furry']};
+function regionalWildCandidate(s,rng=Math.random){
+ const area=s.world?.area||'cuddlewick',zone=area==='cuddlewick'?zoneAt(s.world?.x??27,s.world?.y??20):area;
+ const local=area==='cuddlewick'?({wood:['Furry','Bugs & Garden'],garden:['Bugs & Garden','Food'],cove:['Ocean','Food'],moon:['Silly & Spooky','Furry'],hill:['Adventure','Furry']}[zone]||REGION_ENCOUNTER_TYPES.cuddlewick):(REGION_ENCOUNTER_TYPES[area]||REGION_ENCOUNTER_TYPES.orchard);
+ const pool=CATALOG.filter(p=>p.rarity!=='Legendary'&&!s.owned.includes(p.id));
+ const regional=pool.filter(p=>local.includes(p.type)),candidates=regional.length?regional:pool;
+ if(!candidates.length)return null;
+ const roll=rand(rng),tier=roll<.10?'Rare':roll<.37?'Uncommon':'Common';
+ const available=candidates.filter(p=>p.rarity===tier);
+ return take(available.length?available:candidates,rng);
+}
 function makeBattle(save,rng=Math.random,opts={}){if(save.pending)throw Error('Claim your reward first');if(save.battle)return save.battle;
  const n=Math.min(3,save.team.length);let boss=save.wins>0&&(save.wins+1)%7===0&&LEGENDARIES.some(x=>!save.owned.includes(x.id));
  const regular=shuffle(CATALOG.filter(x=>x.rarity!=='Legendary'&&!save.owned.includes(x.id)),rng);
- let enemy=regular.slice(0,n);if(enemy.length<n)enemy.push(...shuffle(CATALOG.filter(x=>x.rarity!=='Legendary'&&!enemy.includes(x)),rng).slice(0,n-enemy.length));
+ let enemy=regular.slice(0,n);
+ if(opts.source==='wild'&&opts.wildId&&BY_ID.has(opts.wildId)){const wild=BY_ID.get(opts.wildId);if(wild.rarity!=='Legendary')enemy[0]=wild;}
+ if(enemy.length<n)enemy.push(...shuffle(CATALOG.filter(x=>x.rarity!=='Legendary'&&!enemy.includes(x)),rng).slice(0,n-enemy.length));
  if(opts.parlorId){
   // The lead opponent is the Keeper's recognizable signature Jellycat.
   const keepers={village:'Bashful Beige Bunny',garden:'Amuseables Sunflower',cove:'Larry Lobster ‘Sailor’',moon:'Ghost Bob',willow:'Amuseables Peach',island:'Amuseables Michelle Mussel'};
@@ -2059,11 +2072,14 @@ function slugId(name){return name.normalize('NFKD').toLowerCase().replace(/[^a-z
 function stopWalking(){if(walkingTimer){clearInterval(walkingTimer);walkingTimer=null;finishWorldMotion();}}
 function launchBattle(source='wild',parlorId=null){
  stopWalking();if(state.pending||state.battle)return go('battle');
- try{const next=structuredClone(state);makeBattle(next,Math.random,{source,parlorId});next.world.firstBattle=true;state=next;persist();page='battle';render();window.scrollTo(0,0);}catch(err){notify(err.message||'Unable to start the match.');}
+ try{const next=structuredClone(state);makeBattle(next,Math.random,{source,parlorId,wildId:source==='wild'?pendingWildId:null});pendingWildId=null;next.world.firstBattle=true;state=next;persist();page='battle';render();window.scrollTo(0,0);}catch(err){notify(err.message||'Unable to start the match.');}
 }
+let pendingWildId=null;
 function closeEncounter(){$('#encounter-modal')?.remove();}
 function showEncounter(){stopWalking();if($('#encounter-modal')||state.battle||state.pending)return;
- const div=el('div','modal-backdrop');div.id='encounter-modal';div.innerHTML=`<section class="modal center" role="dialog" aria-modal="true" aria-label="Wild encounter"><span class="eyebrow">🌿 A rustle in the tall grass</span><h2>Someone wants to play!</h2><div class="encounter-art">${plushArt(BY_ID.get(CATALOG.filter(p=>p.rarity!=='Legendary')[Math.floor(Math.random()*(CATALOG.length-10))].id))}</div><p>A plush challenger jumps out from the grass. Time for a friendly match?</p><div class="row" style="justify-content:center"><button class="btn" data-action="confirm-encounter"><kbd>1</kbd> Let's battle!</button><button class="btn cream" data-action="flee-encounter"><kbd>2</kbd> Sneak away</button></div></section>`;document.body.append(div);div.querySelector('[data-action="confirm-encounter"]')?.focus();
+ const sighting=regionalWildCandidate(state);if(!sighting)return;pendingWildId=sighting.id;
+ const area=areaInfo(state.world.area)?.name||'Cuddlewick';
+ const div=el('div','modal-backdrop');div.id='encounter-modal';div.innerHTML=`<section class="modal center" role="dialog" aria-modal="true" aria-label="Wild encounter"><span class="eyebrow">🌿 ${safe(area)} · a rustle in the grass</span><h2>A new friend appears!</h2><div class="encounter-art">${plushArt(sighting)}</div><p><strong>${safe(sighting.officialName)}</strong> · ${safe(sighting.rarity)} · ${safe(sighting.type)}. Battle this Jellycat for a chance to add a new friend to your collection.</p><div class="row" style="justify-content:center"><button class="btn" data-action="confirm-encounter"><kbd>1</kbd> Let's battle!</button><button class="btn cream" data-action="flee-encounter"><kbd>2</kbd> Sneak away</button></div></section>`;document.body.append(div);div.querySelector('[data-action="confirm-encounter"]')?.focus();
 }
 function canChallenge(p){return !!p&&state.world.parlorBadges.length>=p.required&&!state.world.parlorBadges.includes(p.id);}
 
