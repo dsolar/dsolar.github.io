@@ -1561,7 +1561,10 @@ function regionStep(s,dx,dy,rng=Math.random){const w=s.world,area=w.area,a=areaI
  const oldX=w.x,oldY=w.y;w.x=x;w.y=y;w.steps++;
  const treasure=areaTreasures(area).find(t=>Math.hypot(t.x-x,t.y-y)<.55&&!w.found.includes(t.id));
  if(treasure){w.found.push(treasure.id);s.points+=treasure.points;s.history.push(`Found ${treasure.title} (+${treasure.points} stars)`);}
- let encounter=false;if((area==='orchard'||area==='grotto')&&Math.floor(oldX)!==Math.floor(x)&&w.steps-w.lastEncounterStep>18&&areaTile(area,x,y).kind==='orchard'&&rng()<.16){w.lastEncounterStep=w.steps;encounter=true;}
+ let encounter=false;
+ const kind=areaTile(area,x,y).kind;
+ const encounterTerrain=area==='orchard'?['orchard','orchard-flower'].includes(kind):area==='grotto'?kind==='cave-floor':area==='reed-keys'?['riverside','orchard-flower'].includes(kind):area==='cloudstep-pass'?['hill','orchard-flower'].includes(kind):false;
+ if(encounterTerrain&&(Math.floor(oldX)!==Math.floor(x)||Math.floor(oldY)!==Math.floor(y))&&w.steps-w.lastEncounterStep>18&&rng()<.16){w.lastEncounterStep=w.steps;encounter=true;}
  return {moved:true,zone:null,treasure,npc:null,encounter};
 }
 
