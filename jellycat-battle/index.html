@@ -1523,7 +1523,10 @@ function areaGate(area,x,y){
 }
 function hasSoftboard(s){return !!s.world?.parlorBadges?.includes('cove');}
 function hasClimbingMittens(s){return !!s.world?.parlorBadges?.includes('island');}
-function walkableRegion(s,area,x,y){const t=areaTile(area,x,y);return !t.solid||(t.kind==='river'&&hasSoftboard(s));}
+function walkableRegion(s,area,x,y){
+ const X=Math.floor(x),Y=Math.floor(y);
+ if(areaParlors(area).some(p=>X>=p.x-1&&X<=p.x+1&&Y>=p.y-2&&Y<=p.y-1))return false;
+ const t=areaTile(area,x,y);return !t.solid||(t.kind==='river'&&hasSoftboard(s));}
 function onWater(s){return !!(s?.world?.area&&s.world.area!=='cuddlewick'&&areaTile(s.world.area,s.world.x,s.world.y).kind==='river');}
 function regionStep(s,dx,dy,rng=Math.random){const w=s.world,area=w.area,a=areaInfo(area);if(!a)throw Error('Unknown region');
  const x=+Math.max(0,Math.min(a.width-1,w.x+dx)).toFixed(3),y=+Math.max(0,Math.min(a.height-1,w.y+dy)).toFixed(3);
@@ -1533,7 +1536,7 @@ function regionStep(s,dx,dy,rng=Math.random){const w=s.world,area=w.area,a=areaI
   if(gate.requires==='board'&&!hasSoftboard(s))return {moved:false,blocked:true,needsBoard:true};
   if(gate.requires==='mittens'&&!hasClimbingMittens(s))return {moved:false,blocked:true,needsMittens:true};
   w.area=gate.area;w.x=gate.x;w.y=gate.y;w.steps++;if(!w.visited.includes(gate.area)){w.visited.push(gate.area);s.history.push(`Discovered ${gate.message}`);}return {moved:true,transition:gate,zone:{id:gate.area,name:gate.message},treasure:null};}
- if(!walkableRegion(s,area,x,y))return {moved:false,blocked:true,needsBoard:areaTile(area,x,y).kind==='river',zone:null,treasure:null,npc:null};
+ if(!walkableRegion(s,area,x,y))return {moved:false,blocked:true,needsBoard:areaTile(area,x,y).kind==='river'&&!hasSoftboard(s),zone:null,treasure:null,npc:null};
  const npc=areaNpcs(area).find(n=>Math.hypot(n.x-x,n.y-y)<.75);
  if(npc)return {moved:false,npc,zone:null,treasure:null};
  const oldX=w.x,oldY=w.y;w.x=x;w.y=y;w.steps++;
@@ -1607,7 +1610,7 @@ function isVillagePath(x,y){return (y===20&&x>3&&x<52)||(x===27&&y>2&&y<38)||(x=
 function pixelTreeHash(x,y){let a=(Math.imul(x+101,374761393)^Math.imul(y+77,668265263)^Math.imul(1,2246822519))>>>0;return (Math.imul(a^(a>>>13),1274126177)^(a>>>16))>>>0;}
 function villageBlockedAt(x,y){const X=Math.floor(x),Y=Math.floor(y);if(X<0||Y<0||X>=WORLD_W||Y>=WORLD_H)return true;
  // Roof/wall footprint of the first Parlor. The original entrance (30,23) stays open.
- if(X>=29&&X<=31&&Y>=21&&Y<=22)return true;
+ if(PARLORS.some(p=>X>=p.x-1&&X<=p.x+1&&Y>=p.y-2&&Y<=p.y-1))return true;
  // Existing homes get physical side walls; never obstruct their saved entrance tiles.
  if(X>=22&&X<=24&&Y>=16&&Y<=17)return true;
  if(X>=23&&X<=25&&Y>=5&&Y<=6)return true;
@@ -2125,7 +2128,7 @@ function walkToward(tx,ty,npcToMeet=null,placeToMeet=null){stopWalking();ensureW
 function showPlace(p){
  stopWalking();const w=state.world;
  const offerings=p.id==='fountain'?(canWish(state)?'<button class="btn" data-action="place-action" data-id="fountain" data-option="wish">✦ Make a wish · +1 star and team XP</button>':`<p class="shop-locked">✦ The fountain recharges after more battle victories.</p>`):
- p.id==='shop'?storeItem('🍪','Cozy healing snack',`Restore 30% HP in battle · ${state.snacks}/5 carried`,3,'snack',state.snacks>=5)+storeItem('🛍️','Powder-blue mystery bag','A surprise waiting for your team',8,'bag')+storeItem('🎀','Velvet ribbon','A treasure for your clubhouse shelf',4,'ribbon',w.souvenirs.includes('ribbon'))+storeItem('💌','Travel postcards','Remember your favorite places',3,'postcards',w.souvenirs.includes('postcards')):
+ p.id==='shop'?storeItem('🍪',state.snacks>=5?'Healing snacks · Satchel full':'Cozy healing snack',`Restore 30% HP in battle · ${state.snacks}/5 carried`,3,'snack',state.snacks>=5)+storeItem('🛍️','Powder-blue mystery bag','A surprise waiting for your team',8,'bag')+storeItem('🎀','Velvet ribbon','A treasure for your clubhouse shelf',4,'ribbon',w.souvenirs.includes('ribbon'))+storeItem('💌','Travel postcards','Remember your favorite places',3,'postcards',w.souvenirs.includes('postcards')):
  p.id==='greenhouse'?(w.greenhouseVisited?'<p class="shop-locked">✓ Your seedling is happily growing here.</p>':'<button class="btn" data-action="place-action" data-id="greenhouse" data-option="tend">🪴 Tend the little seedling · free</button>'):
  (w.campVisited?'<p class="shop-locked">✓ You have shared your first campfire story.</p>':'<button class="btn" data-action="place-action" data-id="camp" data-option="rest">🏕️ Gather by the campfire · free</button>');
  const style=p.id==='shop'?'store':p.id==='greenhouse'?'garden':p.id==='fountain'?'fountain':'camp';
