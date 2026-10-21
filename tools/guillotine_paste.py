@@ -216,10 +216,14 @@ def carry_pregame(old, new):
     """Keep each team's projection from before the week's first game (proj_pre).
 
     Once games are played, Yahoo's Projected Points mixes actual points with projections, so the
-    pregame number only survives if an earlier paste of the same week had it."""
+    pregame number only survives if an earlier paste of the same week had it. Before a team has
+    scored, its current projection is the pregame one (waiver claims and lineup moves change it)."""
     prev = {t["name"]: t for t in (old or {}).get("teams", [])} if (old or {}).get("week") == new["week"] else {}
     for t in new["teams"]:
         if t.get("out"):
+            continue
+        if not t.get("points") and isinstance(t.get("proj"), (int, float)) and t["proj"] > 0:
+            t["proj_pre"] = t["proj"]
             continue
         o = prev.get(t["name"], {})
         if isinstance(o.get("proj_pre"), (int, float)):

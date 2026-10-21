@@ -2,15 +2,15 @@ Bastille Day (ID# 157731)
 Week 7 Matchup
 Standings
 Rank	Team	Points	Projected Points	Season Points	FAB	Waiver	Moves	Pts Per Week
-9	Tai Streetz Lata?	0.00	0.00	680.20	$673	3	19	113.37
-8	Breece’s Pieces	0.00	88.36	703.58	$115	5	13	117.26
-7	Love Purdy Flowers	0.00	102.83	727.26	$275	6	13	121.21
-6	Liberté Égalité Henri	0.00	112.12	717.86	$623	1	8	119.64
-5	Deviated Rectums	0.00	117.43	698.48	$207	7	10	116.41
-4	Love a Kittle Lamb & WhiteRice	0.00	119.79	780.84	$485	8	5	130.14
-3	Holofernes	0.00	125.78	718.12	$681	9	17	119.69
-2	Likely to Burden Tate w Penix	0.00	129.37	764.58	$464	4	13	127.43
-1	Drake Mayezini	0.00	130.59	678.04	$480	2	10	113.01
+9	Tai Streetz Lata?	0.00	0.00	680.20	$224	3	19	113.37
+8	Breece’s Pieces	0.00	128.98	703.58	$1	5	13	117.26
+7	Love Purdy Flowers	0.00	132.18	727.26	$275	6	13	121.21
+6	Liberté Égalité Henri	0.00	121.02	717.86	$316	1	8	119.64
+5	Deviated Rectums	0.00	113.82	698.48	$207	7	10	116.41
+4	Love a Kittle Lamb & WhiteRice	0.00	116.93	780.84	$416	8	5	130.14
+3	Holofernes	0.00	128.31	718.12	$679	9	17	119.69
+2	Likely to Burden Tate w Penix	0.00	126.91	764.58	$417	4	13	127.43
+1	Drake Mayezini	0.00	133.49	678.04	$473	2	10	113.01
 Eliminated
 Week	Team	Season Points	FAB	Moves	Pts Per Week
 6	Maye I see your TDs	625.94	$5	10	104.32
@@ -113,15 +113,25 @@ Josh AllenVideo ForecastPlayer Note
 Buf - QB
 Bye
 BN	
-Colston Loveland
-Colston LovelandVideo ForecastPlayer Note
-Chi - TE
-Thu 8:15 pm vs NE
-BN	
 Kendre Miller
 Kendre MillerVideo ForecastPlayer Note
 NO - RB
 Sun 9:30 am vs Pit
+BN	
+Blake Corum
+Blake CorumPlayer Note
+LAR - RB
+Sun 4:25 pm @ LV
+BN	
+Justin Herbert
+Justin HerbertPlayer Note
+LAC - QB
+Bye
+BN	
+Quinshon Judkins
+Quinshon JudkinsPlayer Note
+Cle - RB
+Sun 1:00 pm @ Ten
 IR	
 Jacory Croskey-Merritt
 J. Croskey-MerrittIRVideo ForecastNew Player Note
@@ -221,10 +231,10 @@ Chase BrownVideo ForecastPlayer Note
 Cin - RB
 Sun 1:00 pm @ Bal
 BN	
-Brian Robinson Jr.
-Brian Robinson Jr.Video ForecastPlayer Note
-Atl - RB
-Sun 1:00 pm vs SF
+Dontayvion Wicks
+Dontayvion WicksPlayer Note
+Phi - WR
+Mon 8:15 pm vs Dal
 IR	
 Saquon Barkley
 Saquon BarkleyOVideo ForecastPlayer Note
@@ -264,10 +274,10 @@ Drake LondonVideo ForecastPlayer Note
 Atl - WR
 Sun 1:00 pm vs SF
 TE	
-Tyler Higbee
-Tyler HigbeeVideo ForecastNew Player Note
-LAR - TE
-Sun 4:25 pm @ LV
+Trey McBride
+Trey McBridePlayer Note
+Ari - TE
+Sun 4:05 pm vs Den
 W/R/T	
 Devaughn Vele
 Devaughn VeleNew Player Note
@@ -342,10 +352,8 @@ Justin JeffersonPlayer Note
 Min - WR
 Sun 1:00 pm vs Ind
 TE	
-Pat Freiermuth
-Pat FreiermuthPlayer Note
-Pit - TE
-Sun 9:30 am @ NO
+--empty--
+(Empty)
 W/R/T	
 Dameon Pierce
 Dameon PierceVideo ForecastPlayer Note
@@ -362,11 +370,6 @@ DeMario DouglasVideo ForecastPlayer Note
 NE - WR
 Thu 8:15 pm @ Chi
 BN	
-MarShawn Lloyd
-MarShawn LloydVideo ForecastPlayer Note
-GB - RB
-Sun 4:25 pm @ Det
-BN	
 Kirk Cousins
 Kirk CousinsPlayer Note
 LV - QB
@@ -381,11 +384,6 @@ Kyle Monangai
 Kyle MonangaiONew Player Note
 Chi - RB
 Thu 8:15 pm vs NE
-IR	
-Jayden Reed
-Jayden ReedIRNo new player Notes
-GB - WR
-Sun 4:25 pm @ Det
 Fly Zone Kristi 
 
 Pos	Player
@@ -520,10 +518,10 @@ Hunter HenryPlayer Note
 NE - TE
 Thu 8:15 pm @ Chi
 Q/W/R/T	
-Daniel Jones
-Daniel JonesNew Player Note
-Ind - QB
-Sun 1:00 pm @ Min
+Joe Burrow
+Joe BurrowPlayer Note
+Cin - QB
+Sun 1:00 pm @ Bal
 BN	
 Marvin Harrison Jr.
 Marvin Harrison Jr.Video ForecastPlayer Note
@@ -643,10 +641,10 @@ Woody MarksVideo ForecastPlayer Note
 Hou - RB
 Sun 1:00 pm vs NYG
 BN	
-Brenton Strange
-Brenton StrangePlayer Note
-Jax - TE
-Bye
+Tucker Kraft
+Tucker KraftPlayer Note
+GB - TE
+Sun 4:25 pm @ Det
 BN	
 Josh Jacobs
 Josh JacobsNew Player Note
@@ -682,11 +680,6 @@ W/R/T
 Q/W/R/T	
 --empty--
 (Empty)
-BN	
-Josh Downs
-Josh DownsVideo ForecastPlayer Note
-Ind - WR
-Sun 1:00 pm @ Min
 BN	
 Michael Wilson
 Michael WilsonVideo ForecastPlayer Note
@@ -738,20 +731,25 @@ Jayden DanielsVideo ForecastNew Player Note
 Was - QB
 Bye
 BN	
-Khalil Shakir
-Khalil ShakirPlayer Note
-Buf - WR
-Bye
-BN	
 DJ Moore
 DJ MooreOPlayer Note
 Buf - WR
 Bye
 BN	
-Ladd McConkey
-Ladd McConkeyQVideo ForecastPlayer Note
-LAC - WR
-Bye
+Bijan Robinson
+Bijan RobinsonPlayer Note
+Atl - RB
+Sun 1:00 pm vs SF
+BN	
+DeVonta Smith
+DeVonta SmithPlayer Note
+Phi - WR
+Mon 8:15 pm vs Dal
+BN	
+RJ Harvey
+RJ HarveyPlayer Note
+Den - RB
+Sun 4:05 pm @ Ari
 IR	
 Travis Etienne Jr.
 Travis Etienne Jr.IRNo new player Notes
@@ -786,10 +784,10 @@ Christian WatsonPlayer Note
 GB - WR
 Sun 4:25 pm @ Det
 WR	
-Keenan Allen
-Keenan AllenPlayer Note
-Ind - WR
-Sun 1:00 pm @ Min
+Tee Higgins
+Tee HigginsPlayer Note
+Cin - WR
+Sun 1:00 pm @ Bal
 TE	
 George Kittle
 George KittleNew Player Note
@@ -811,15 +809,10 @@ Rashee RiceOPlayer Note
 KC - WR
 Sun 8:20 pm @ Sea
 BN	
-Malik Willis
-Malik WillisNew Player Note
-Mia - QB
-Sun 1:00 pm @ NYJ
-BN	
-Jacoby Brissett
-Jacoby BrissettPlayer Note
-Ari - QB
-Sun 4:05 pm vs Den
+Tanner McKee
+Tanner McKeePlayer Note
+Phi - QB
+Mon 8:15 pm vs Dal
 BN	
 Tyreek Hill
 Tyreek HillNAPlayer Note
@@ -899,10 +892,10 @@ TreVeyon HendersonVideo ForecastPlayer Note
 NE - RB
 Thu 8:15 pm @ Chi
 BN	
-Jake Ferguson
-Jake FergusonPlayer Note
-Dal - TE
-Mon 8:15 pm @ Phi
+Germie Bernard
+Germie BernardPlayer Note
+Pit - WR
+Sun 9:30 am @ NO
 IR	
 Jordan Mason
 Jordan MasonIR-RNew Player Note
