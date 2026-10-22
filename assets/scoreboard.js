@@ -6,6 +6,7 @@
      - the league scoreboard for that game's date: score, clock and period, records, odds, finals
      - the same scoreboard's ticket listing: the lowest resale price (Vivid Seats, via ESPN)
      - assets/picks.json: David's picks, graded when the game ends (how to add one is in that file)
+   Big games from around the sports world follow our teams' games (see BIG below for what counts).
    Times are Boston time. While a game is on, the ticker refreshes every 30 seconds. */
 (function () {
   var TEAMS = [
@@ -21,6 +22,15 @@
   // The league scoreboards leave most college games out unless asked for the whole division.
   var BOARD_QUERY = { "football/college-football": "&groups=80&limit=300", "basketball/mens-college-basketball": "&groups=50&limit=400" };
   var API = "https://site.api.espn.com/apis/site/v2/sports/";
+  // Big games, from these leagues' scoreboards for today and the next two days: any playoff or postseason game,
+  // ranked vs. ranked in college, special events ESPN headlines (international, outdoor), and NFL games
+  // between two teams at .650 or better. Never more than MAX_BIG, and never our own teams' games twice.
+  var BIG = [
+    { path: "football/nfl", tag: "NFL" }, { path: "basketball/nba", tag: "NBA" }, { path: "hockey/nhl", tag: "NHL" },
+    { path: "baseball/mlb", tag: "MLB" }, { path: "football/college-football", tag: "College football", college: true },
+    { path: "basketball/mens-college-basketball", tag: "College hoops", college: true }
+  ];
+  var BIG_DAYS = 3, MAX_BIG = 6;
   var TZ = "America/New_York";
   var CACHE_MS = 10 * 60e3;      // schedules and other days' scoreboards are reused this long; today's never are
   var STEP_MS = 5000;            // the ticker moves one game along this often
@@ -57,7 +67,8 @@
     var all = t.logos || [], has = function (l, r) { return (l.rel || []).indexOf(r) >= 0; };
     var pick = function (test) { return (all.filter(test)[0] || {}).href; };
     return pick(function (l) { return has(l, "scoreboard") && has(l, "dark"); }) || pick(function (l) { return has(l, "dark"); })
-      || pick(function (l) { return has(l, "default"); }) || t.logo;
+      || pick(function (l) { return has(l, "default"); })
+      || (t.logo && t.logo.replace("/500/", "/500-dark/"));   // scoreboard teams carry one logo; its dark twin sits beside it
   }
   function side(c) {
     var t = c.team || {}, rank = (c.curatedRank || {}).current;
@@ -169,7 +180,7 @@
     var showScore = g.state === "in" || g.state === "post" && g.done;
     var line = function (s, other) {
       var lost = g.state === "post" && g.done && other.winner;
-      return '<div class="tk-line' + (s === g.us ? " tk-us" : "") + (lost ? " tk-lost" : "") + '">' + logo(s)
+      return '<div class="tk-line' + (s === g.us && !r.big ? " tk-us" : "") + (lost ? " tk-lost" : "") + '">' + logo(s)
         + '<span class="tk-name">' + (s.rank ? '<span class="tk-rank">' + s.rank + "</span>" : "") + esc(s.abbr || s.name)
         + (s.record ? "<small>" + esc(s.record) + "</small>" : "")
         + "</span>" + (showScore ? '<span class="tk-pts">' + esc(s.score) + "</span>" : '<span class="tk-odds">' + esc(s.line || "") + "</span>") + "</div>";
@@ -183,7 +194,7 @@
       status = isToday(g) ? (g.timeKnown && hourET(g.date) >= 17 ? "Tonight " : "Today ") + esc(time) : esc(weekday(g.date)) + " · " + esc(time);
     }
     var dot = ' <span aria-hidden="true">·</span> ';
-    var lines = g.state === "pre" ? [[g.tv, g.tix ? "Tix $" + g.tix.low : "", g.odds]]
+    var lines = g.state === "pre" ? [[g.tv, g.tix ? "Tix $" + g.tix.low.toLocaleString("en-US") : "", g.odds]]
       : g.state === "in" ? [[g.situation, g.tv]] : [];
     var foot = lines.map(function (l) { return l.filter(Boolean).map(esc).join(dot); }).filter(Boolean)
       .map(function (l) { return '<div class="tk-foot">' + l + "</div>"; }).join("");
@@ -191,12 +202,12 @@
     var pick = g.pick ? '<div class="tk-pick tk-pick-' + (g.graded || "open") + '">' + mark + esc(g.pick) + "</div>" : "";
     var inner = '<div class="tk-top"><span class="tk-tag">' + esc(t.tag) + '</span><span class="tk-status">' + status + "</span></div>"
       + line(away, home) + line(home, away) + (foot || pick ? foot + pick : '<div class="tk-foot">&nbsp;</div>');
-    var cls = "tk-item" + (g.state === "in" ? " tk-now" : isToday(g) ? " tk-today" : "");
+    var cls = "tk-item" + (r.big ? " tk-big" : "") + (g.state === "in" ? " tk-now" : isToday(g) ? " tk-today" : "");
     return '<li class="' + cls + '">' + (g.url ? '<a href="' + esc(g.url) + '" aria-label="' + esc(label(r)) + '">' + inner + "</a>" : inner) + "</li>";
   }
   // What a screen reader hears for one game: "Bruins vs Predators, tonight 7:00 PM, NESN"
   function label(r) {
-    var g = r.game, parts = [r.team.name + (g.home ? " vs " : " at ") + g.them.name];
+    var g = r.game, parts = [r.big ? g.us.name + " at " + g.them.name + ", " + r.team.tag : r.team.name + (g.home ? " vs " : " at ") + g.them.name];
     if (g.state === "in" || g.state === "post" && g.done) parts.push(g.us.score + " to " + g.them.score);
     parts.push(g.state === "pre" ? (isToday(g) ? "today " : weekday(g.date) + " ") + (g.timeKnown ? clock(g.date) : "time TBD") : g.detail);
     if (g.tv && g.state !== "post") parts.push(g.tv);
@@ -210,20 +221,21 @@
   }
 
   // Live games first, then the rest of today by start time, then today's finals, then the next games by date.
+  // Live and today: our teams before the big games. Later games simply by date.
   function rank(r) {
-    var g = r.game;
-    if (!g) return [4, 0];
-    if (g.state === "in") return [0, +new Date(g.date)];
-    if (isToday(g)) return [g.state === "post" ? 2 : 1, +new Date(g.date)];
-    return [3, +new Date(g.date)];
+    var g = r.game, b = r.big ? 1 : 0;
+    if (!g) return [4, b, 0];
+    if (g.state === "in") return [0, b, +new Date(g.date)];
+    if (isToday(g)) return [g.state === "post" ? 2 : 1, b, +new Date(g.date)];
+    return [3, 0, +new Date(g.date)];
   }
 
   function render(rows) {
-    rows = rows.slice().sort(function (a, b) { var x = rank(a), y = rank(b); return x[0] - y[0] || x[1] - y[1]; });
+    rows = rows.slice().sort(function (a, b) { var x = rank(a), y = rank(b); return x[0] - y[0] || x[1] - y[1] || x[2] - y[2]; });
     var keep = viewport.scrollLeft;
     list.innerHTML = rows.map(item).join("");
     viewport.scrollLeft = keep;
-    var today = rows.filter(function (r) { return r.game && isToday(r.game); }).length;
+    var today = rows.filter(function (r) { return r.game && !r.big && isToday(r.game); }).length;
     var live = rows.filter(function (r) { return r.game && r.game.state === "in"; }).length;
     note.textContent = live ? live + " live" : today ? today + " today" : "Next up";
     bar.hidden = rows.every(function (r) { return r.error; });
@@ -263,7 +275,61 @@
           return copy;
         });
       }));
-    }).then(extras);
+    }).then(extras).then(function (list) {
+      var ours = {};
+      list.forEach(function (r) { if (r.game) ours[r.game.id] = 1; });
+      return bigGames(ours).then(function (big) { return list.concat(big); }, function () { return list; });
+    });
+  }
+
+  function bigReason(ev, league) {
+    var comp = (ev.competitions || [])[0] || {}, sides = comp.competitors || [];
+    var note = ((comp.notes || [])[0] || {}).headline || "";
+    if ((ev.season || {}).type === 3) return note || league.tag + " playoffs";
+    if (league.college) {
+      var ranks = sides.map(function (c) { return (c.curatedRank || {}).current || 99; });
+      return sides.length === 2 && ranks.every(function (n) { return n <= 25; }) ? "Top 25 matchup" : "";
+    }
+    if (note) return note;
+    if (league.path === "football/nfl") {
+      var pct = sides.map(function (c) {
+        var m = /^(\d+)-(\d+)(?:-(\d+))?/.exec(((c.records || [])[0] || {}).summary || "");
+        if (!m) return 0;
+        var w = +m[1], l = +m[2], t = +(m[3] || 0), n = w + l + t;
+        return n >= 5 ? (w + t / 2) / n : 0;
+      });
+      if (sides.length === 2 && pct.every(function (x) { return x >= 0.65; })) return "Big matchup";
+    }
+    return "";
+  }
+  function bigGames(ours) {
+    var days = [];
+    for (var n = 0; n < BIG_DAYS; n++) days.push(dayET(Date.now() + n * 864e5).replace(/-/g, ""));
+    var jobs = [];
+    BIG.forEach(function (league) {
+      days.forEach(function (d) {
+        jobs.push(board(league.path, d).then(function (evs) { return (evs || []).map(function (ev) { return { league: league, ev: ev }; }); }));
+      });
+    });
+    return Promise.all(jobs).then(function (lists) {
+      var out = [], seen = {};
+      [].concat.apply([], lists).forEach(function (x) {
+        var ev = x.ev, why = bigReason(ev, x.league), id = String(ev.id);
+        if (!why || ours[id] || seen[id]) return;
+        var comp = (ev.competitions || [])[0] || {};
+        var away = (comp.competitors || []).filter(function (c) { return c.homeAway === "away"; })[0];
+        var g = away && game({ id: String((away.team || {}).id) }, ev);   // "us" is the away team, listed on top
+        if (!g) return;
+        overlay(g, comp, ev.status, x.league.path);
+        if (g.state === "post" && !isToday(g)) return;                    // yesterday's final is old news
+        var national = (comp.broadcasts || []).filter(function (b) { return b.market === "national"; })
+          .map(function (b) { return (b.names || [])[0]; }).filter(Boolean);
+        if (national.length) g.tv = national.slice(0, 2).join(", ");
+        seen[id] = 1;
+        out.push({ team: { name: g.us.name, tag: why, path: x.league.path, key: "" }, game: g, big: true });
+      });
+      return out.sort(function (a, b) { var x = rank(a), y = rank(b); return x[0] - y[0] || x[2] - y[2]; }).slice(0, MAX_BIG);
+    });
   }
 
   // Picks, layered on after the scores.
