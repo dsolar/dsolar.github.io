@@ -441,9 +441,6 @@ a:hover{color:var(--red)}
 .hero h1{color:var(--night-ink)}
 .hero-kicker{color:#E2B84A}
 .hero-sub{color:var(--night-muted)}
-.hero-plates{display:flex;flex-wrap:wrap;gap:12px 22px;list-style:none;margin:6px 0 0;padding:0}
-.hero-plates li{display:flex;align-items:center;gap:10px;font-size:.86rem;color:var(--night-muted)}
-.hero-plates b{min-width:2.6ch;padding:4px 8px;text-align:center;background:#1D4A36;color:#F5F4F0;border-radius:3px;box-shadow:inset 0 -3px 0 rgba(0,0,0,.25);font:700 1.35rem/1.1 var(--f-body);font-variant-numeric:tabular-nums}
 .section-head h2::after{content:"";display:block;width:2.4rem;height:4px;margin-top:10px;background:var(--red);border-radius:2px}
 .entry,.entry:first-child{border-top:5px solid var(--cover-band,var(--ink))}
 @media (hover:hover) and (prefers-reduced-motion: no-preference){.entry{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}.entry:hover{transform:translateY(-3px)}}
