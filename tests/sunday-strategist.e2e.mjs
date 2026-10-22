@@ -85,6 +85,30 @@ try {
     await page.click('#quit');
     assert.match(await page.textContent('#report'), /Nickel pressure\s*\d+/);
 
+    // A real snap: real teams on the scorebug, the lesson's options, and what really happened.
+    await page.click('[data-real="nickel-man-3rd-5"]');
+    assert.match(await page.textContent('#scen-title'), /Patriots/);
+    assert.match(await page.textContent('#bug'), /NE/);
+    assert.match(await page.textContent('#sit'), /QB /);
+    assert.match(await page.textContent('#prov'), /real snap/i);
+    for (const q of ['personnel', 'shell', 'pressure', 'confidence']) await page.check(`input[name="${q}"] >> nth=0`);
+    await page.click('#field .def[data-id="NB"]');
+    for (let i = 0; i < 4; i++) {
+      await page.click('#next');
+      for (const n of ['protection', 'play', 'key', 'contingency']) {
+        const box = page.locator(`input[name="${n}"]`).first();
+        if (await box.count() && !(await page.locator(`input[name="${n}"]:checked`).count())) await box.check();
+      }
+      if (await page.locator('input[name="key"]').count() && !(await page.locator('input[name="key"]:checked').count())) await page.locator('input[name="key"]').first().check();
+    }
+    await page.click('#next');
+    await page.waitForSelector('#review:not([hidden]) .real-facts');
+    const real = await page.textContent('#review');
+    assert.match(real, /What really happened/);
+    assert.match(real, /Expected points added/);
+    assert.match(real, /Cover 1/);
+    await page.click('#home');
+
     // Phone width: no sideways scrolling.
     await page.setViewportSize({ width: 390, height: 844 });
     await page.click('[data-start="nickel-bluff-2nd-7"]');
@@ -93,7 +117,7 @@ try {
     assert.deepEqual(errors, []);
     await ctx.close();
   }
-  console.log('Passed: full snap with keyboard-free and field input, motion reveal, routes, six grades, review sections, replays, saved progress, next scenario, phone layout (with and without reduced motion).');
+  console.log('Passed: real snap with team, roster and real result; full snap with keyboard-free and field input, motion reveal, routes, six grades, review sections, replays, saved progress, next scenario, phone layout (with and without reduced motion).');
 } finally {
   await browser.close();
   server.close();

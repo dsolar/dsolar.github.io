@@ -53,8 +53,8 @@ window.PROJECTS = [
     url: "sunday-strategist/",
     action: "Read the defense",
     question: "The nickel's walked down and showing blitz. Is he coming, and where does the ball go if he is?",
-    summary: "A football coaching game: diagnose the defense, set the protection, call the play, then see who had to hold up and why it worked. Graded on the decision, not the result.",
-    facts: [["6", "grades on every snap"], ["400", "reps behind every call's odds"], ["2", "scenarios, one pre-snap picture"]],
+    summary: "A football coaching game: diagnose the defense, set the protection, call the play, then see who had to hold up and why it worked. Learn each look, then call it on real NFL snaps. Graded on the decision, not the result.",
+    facts: [["4", "pressure looks, fire zone to Cover 0"], ["32", "real NFL snaps from 2023 to 2025"], ["6", "grades on every snap"]],
     stack: ["JavaScript", "SVG"],
     cover: { image: "assets/covers/sunday-strategist.svg", bg: "#0D1821", band: "#F7D23E" }
   },
