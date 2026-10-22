@@ -4,7 +4,6 @@
    Where the data comes from:
      - each team's schedule: its next game, both teams' logos, AP ranks, TV and the Gamecast link
      - the league scoreboard for that game's date: score, clock and period, records, odds, finals
-     - ESPN's Matchup Predictor (NFL, NBA, college football): our side's chance to win
      - the same scoreboard's ticket listing: the lowest resale price (Vivid Seats, via ESPN)
      - assets/picks.json: David's picks, graded when the game ends (how to add one is in that file)
    Times are Boston time. While a game is on, the ticker refreshes every 30 seconds. */
@@ -22,7 +21,6 @@
   // The league scoreboards leave most college games out unless asked for the whole division.
   var BOARD_QUERY = { "football/college-football": "&groups=80&limit=300", "basketball/mens-college-basketball": "&groups=50&limit=400" };
   var API = "https://site.api.espn.com/apis/site/v2/sports/";
-  var PREDICTOR = { "football/nfl": 1, "basketball/nba": 1, "football/college-football": 1 };   // leagues ESPN predicts
   var TZ = "America/New_York";
   var CACHE_MS = 10 * 60e3;      // schedules and other days' scoreboards are reused this long; today's never are
   var STEP_MS = 5000;            // the ticker moves one game along this often
@@ -30,7 +28,7 @@
   var bar = document.getElementById("scores"), list = document.getElementById("scoreboard-list");
   if (!bar || !list) return;
   var viewport = bar.querySelector(".tk-viewport"), note = document.getElementById("scoreboard-note");
-  var timer = null, fails = 0, last = null, schedules = {}, boards = {}, files = { at: 0 }, predictions = {};
+  var timer = null, fails = 0, last = null, schedules = {}, boards = {}, files = { at: 0 };
 
   var esc = function (s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
@@ -87,7 +85,7 @@
     var link = (ev.links || []).filter(function (l) { return (l.rel || []).indexOf("summary") >= 0 && (l.rel || []).indexOf("desktop") >= 0; })[0];
     var g = { id: String(ev.id), date: ev.date, home: me.homeAway === "home", timeKnown: comp.timeValid !== false,
       us: side(me), them: side(opp), tv: tv.slice(0, 2).join(", "), url: link && link.href, odds: "", situation: "",
-      wp: null, tix: null, pick: "", graded: "" };
+      tix: null, pick: "", graded: "" };
     setStatus(g, comp.status || ev.status);
     return g;
   }
@@ -124,6 +122,13 @@
       if (fav) [g.us, g.them].forEach(function (x) { if (x.abbr === fav[1]) x.line = fav[2]; });
     }
     g.odds = g.state === "pre" && o.overUnder != null ? "O/U " + o.overUnder : "";
+    // Only the favorite's number is shown (the lower, more negative one); the over/under takes the other row.
+    var num = function (x) { var n = parseFloat(x.line); return isFinite(n) ? n : Infinity; };
+    var fav = num(g.us) < num(g.them) ? g.us : num(g.them) < num(g.us) ? g.them : null;
+    if (fav && num(fav) < 0) {
+      var dog = fav === g.us ? g.them : g.us;
+      dog.line = g.odds; g.odds = "";
+    } else if (g.odds) { g.us.line = g.them.line = ""; }   // no clear favorite: just the total, in the footer
     var sit = comp.situation;
     g.situation = g.state === "in" && sit && (sit.downDistanceText || sit.shortDownDistanceText) || "";
   }
@@ -166,7 +171,7 @@
       var lost = g.state === "post" && g.done && other.winner;
       return '<div class="tk-line' + (s === g.us ? " tk-us" : "") + (lost ? " tk-lost" : "") + '">' + logo(s)
         + '<span class="tk-name">' + (s.rank ? '<span class="tk-rank">' + s.rank + "</span>" : "") + esc(s.abbr || s.name)
-        + (s.record ? "<small>" + esc(s.record) + (s === g.us && g.wp != null && g.state === "pre" ? " · " + g.wp + "%" : "") + "</small>" : "")
+        + (s.record ? "<small>" + esc(s.record) + "</small>" : "")
         + "</span>" + (showScore ? '<span class="tk-pts">' + esc(s.score) + "</span>" : '<span class="tk-odds">' + esc(s.line || "") + "</span>") + "</div>";
     };
     var away = g.home ? g.them : g.us, home = g.home ? g.us : g.them;
@@ -195,9 +200,10 @@
     if (g.state === "in" || g.state === "post" && g.done) parts.push(g.us.score + " to " + g.them.score);
     parts.push(g.state === "pre" ? (isToday(g) ? "today " : weekday(g.date) + " ") + (g.timeKnown ? clock(g.date) : "time TBD") : g.detail);
     if (g.tv && g.state !== "post") parts.push(g.tv);
-    if (g.state === "pre" && (g.us.line || g.them.line)) parts.push("line " + [g.us, g.them].filter(function (x) { return x.line; }).map(function (x) { return x.abbr + " " + x.line; }).join(", "));
+    if (g.state === "pre") [g.us, g.them].forEach(function (x) {
+      if (x.line) parts.push(/^O\/U/.test(x.line) ? x.line.replace("O/U", "over-under") : x.abbr + " favored, " + x.line);
+    });
     if (g.state === "pre" && g.odds) parts.push(g.odds.replace("O/U", "over-under"));
-    if (g.state === "pre" && g.wp != null) parts.push("ESPN gives " + r.team.name + " a " + g.wp + " percent chance");
     if (g.tix) parts.push("tickets from $" + Math.round(g.tix.low));
     if (g.pick) parts.push("my pick " + g.pick + (g.graded ? ", " + g.graded : ""));
     return parts.join(", ");
@@ -260,7 +266,7 @@
     }).then(extras);
   }
 
-  // Picks and ESPN's win probability, layered on after the scores.
+  // Picks, layered on after the scores.
   function sideFiles() {
     if (!files.at || Date.now() - files.at > CACHE_MS) {
       var v = "?v=" + Math.floor(Date.now() / CACHE_MS);
@@ -269,28 +275,15 @@
     }
     return files.picks;
   }
-  function predictor(r) {
-    var g = r.game;
-    if (!PREDICTOR[r.team.path] || g.state !== "pre" || new Date(g.date) - Date.now() > 7 * 864e5) return Promise.resolve(null);
-    var have = predictions[g.id];
-    if (have && Date.now() - have.at < 3 * CACHE_MS) return have.pct;
-    var pct = getJSON(API + r.team.path + "/summary?event=" + g.id).then(function (d) {
-      var p = d.predictor || {}, mine = [p.homeTeam || {}, p.awayTeam || {}].filter(function (s) { return String(s.id) === g.us.id; })[0];
-      var n = mine ? parseFloat(mine.gameProjection) : NaN;
-      return isFinite(n) ? Math.round(n) : null;
-    }, function () { return null; });
-    predictions[g.id] = { at: Date.now(), pct: pct };
-    return pct;
-  }
   function extras(list) {
     return sideFiles().then(function (picks) {
-      return Promise.all(list.map(function (r) {
+      return list.map(function (r) {
         var g = r.game;
         if (!g) return r;
         g.pick = picks[g.id] || picks[r.team.key + " " + dayET(g.date)] || "";
         g.graded = g.pick ? grade(g.pick, g) : "";
-        return predictor(r).then(function (pct) { g.wp = pct; return r; });
-      }));
+        return r;
+      });
     });
   }
   // "BOS -1.5", "NE +3", "BOS ML" or "BOS -142" (a moneyline), "O 50.5", "U 6.5": won, lost or push once it's final.
