@@ -1,0 +1,4 @@
+{
+  "_about": "Your picks for the home page ticker. Add one line per game under \"picks\", keyed by team and game date in Boston time, for example \"bruins 2026-10-24\": \"BOS -1.5\". Teams: patriots, celtics, redsox, bruins, bc-football, bc-hoops, psu-football, psu-hoops. A pick can be a spread (\"BOS -1.5\", \"NE +3\"), a moneyline (\"BOS ML\" or \"BOS -142\"), or a total (\"O 50.5\", \"U 6.5\"); team codes are the ones on the ticker. When the game ends the ticker marks it with a check, an X or Push. This file is public, like everything else on the site: picks, not dollar amounts.",
+  "picks": {}
+}
