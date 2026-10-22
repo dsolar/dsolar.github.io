@@ -166,6 +166,7 @@
         decisive = critFail ? critFail.player + ": " + critFail.fail + "." : "The " + role(sc, C.conflict).toLowerCase() + " was in the lane.";
       } else {
         kind = r() < route.intRisk ? "int" : "incomplete";
+        if (kind === "incomplete" && C.short && !route.early && r() < C.short) { kind = "complete"; yards = roll(r, C.shortYards, 1); }
         decisive = critFail ? critFail.player + ": " + critFail.fail + "." : "The window closed: the " + role(sc, C.conflict).toLowerCase() + " was right where the ball was going.";
       }
     }
@@ -215,18 +216,24 @@
   }
 
   /* The same call, n times: the decision's real quality, separate from one roll of the dice. */
+  // The game's success rule: 40% of the distance on 1st down, 60% on 2nd, all of it on 3rd and 4th (or a touchdown).
+  function needYards(ctx) {
+    var goal = ctx.side === "opp" && ctx.yardLine <= ctx.distance;
+    return goal ? ctx.distance : ctx.down === 1 ? Math.ceil(ctx.distance * 0.4) : ctx.down === 2 ? Math.ceil(ctx.distance * 0.6) : ctx.distance;
+  }
   function expected(sc, pick, n) {
     n = n || 400;
-    var t = { first: 0, yards: 0, int: 0, sack: 0, big: 0 };
+    var t = { first: 0, yards: 0, int: 0, sack: 0, big: 0, ok: 0 }, need = needYards(sc.context);
     for (var i = 1; i <= n; i++) {
       var x = resolve(sc, pick, i * 7919);
       if (x.firstDown || x.touchdown) t.first++;
+      if (x.touchdown || (x.kind !== "int" && x.kind !== "sack" && x.yards >= need)) t.ok++;
       t.yards += x.yards;
       if (x.kind === "int") t.int++;
       if (x.kind === "sack") t.sack++;
       if (x.yards >= 20) t.big++;
     }
-    return { n: n, convert: t.first / n, avgYards: t.yards / n, turnover: t.int / n, sack: t.sack / n, explosive: t.big / n };
+    return { n: n, convert: t.first / n, success: t.ok / n, need: need, avgYards: t.yards / n, turnover: t.int / n, sack: t.sack / n, explosive: t.big / n };
   }
 
   /* Everything the review screen shows, from structured facts only. */
@@ -372,7 +379,7 @@
   }
 
   return {
-    rng: rng, fromReal: fromReal, catalog: catalog, letter: letter, interactions: interactions, scoreDiagnosis: scoreDiagnosis, resolve: resolve,
+    rng: rng, needYards: needYards, fromReal: fromReal, catalog: catalog, letter: letter, interactions: interactions, scoreDiagnosis: scoreDiagnosis, resolve: resolve,
     expected: expected, review: review, emptyRecord: emptyRecord, record: record, report: report, next: next,
     ERRORS: ERRORS, CATEGORY_LABEL: CATEGORY_LABEL
   };

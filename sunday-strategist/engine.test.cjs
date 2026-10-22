@@ -156,13 +156,23 @@ test('film room: hundreds of real snaps across situations, personnel and package
   }
 });
 
-test('film room grades: count the box', () => {
-  const D1 = { down: 1, dist: 10, yl100: 65, offPers: '11', ol: 5, fb: 0, kind: 'run' };
-  const best = (box, shell) => ['inside-zone', 'outside-zone', 'pa-shot', 'quick', 'smash'].map(c => [c, G.processOdds(c, { ...D1, box }, shell, D, box)]).sort((a, b) => b[1] - a[1])[0][0];
-  assert.equal(best(5, 'one'), 'inside-zone', 'light box: run it');
-  assert.notEqual(best(8, 'one'), 'inside-zone', 'eight in the box: throw it');
-  assert.equal(best(7, 'two'), 'smash', 'two-high with seven in the box: smash');
-  // Short yardage: the sneak for a yard, not for five.
+test('film room grades come from the fitted model, and the sim reproduces them', () => {
+  const M = require('./model.js');
+  assert.ok(M.snaps > 50000 && M.pass.quick.early.three[1] > 100, 'model fitted on real snaps');
+  const D1 = { down: 1, dist: 10, yl100: 65, offPers: '11', ol: 5, fb: 0, pkg: 'nickel', situation: 'first-ten' };
+  // Runs lose ground against heavier boxes; passing on 3rd and long is harder than on 1st down.
+  assert.ok(G.runRate('inside-zone', D1, 8).rate < G.runRate('inside-zone', D1, 5).rate);
+  assert.ok(G.passRate('quick', { ...D1, down: 3, dist: 9 }, 'three', 6).rate < G.passRate('quick', D1, 'three', 6).rate);
+  // A sneak is for a yard, not five.
   const sneak = d => G.processOdds('sneak', { ...D1, down: 3, dist: d, box: 8 }, 'one', D, 8);
-  assert.ok(sneak(1) > 0.5 && sneak(5) < 0.1);
+  assert.ok(sneak(1) > 0.7 && sneak(5) < 0.35);
+  // Calibration: running the recommended call 400 times lands near its real rate against what the defense did.
+  const film = E.catalog(D, R).filter(s => s.module === 'film-room');
+  const gaps = film.map(s => {
+    const r = s.real, g = G.GROUP[r.coverage] || ((r.box || 7) >= 8 ? 'three' : 'quarters'), p = s.plays.find(x => x.id === s.recommended.play);
+    const target = p.kind === 'run' ? G.runRate(p.id, r, r.box || 7).rate : G.passRate(p.id, r, g, r.box).rate;
+    return Math.abs(E.expected(s, { ...s.recommended, key: p.key.answer }, 400).success - target);
+  }).sort((a, b) => a - b);
+  assert.ok(gaps[Math.floor(gaps.length * 0.9)] <= 0.06, `90th percentile calibration gap ${gaps[Math.floor(gaps.length * 0.9)]}`);
+  for (const s of film) assert.ok(s.plays.every(p => /NFL since 2023/.test(p.why)), s.id + ' explains with real data');
 });

@@ -57,6 +57,23 @@ Film-room snaps (`lesson` missing) also carry:
 
 `engine.catalog()` turns each lesson snap into a playable scenario with `type: "adapted"`. It takes the real context, teams and provenance, and borrows the lesson's drawing and option grades. Every fact is labeled as verified, charted or reconstructed.
 
+## Fitted model (`model.js`, written by `tools/strategist_model.py`)
+Cells are `[rate, snaps]`.
+
+| Table | What it holds |
+|---|---|
+| `pass[concept][downGroup][coverageGroup]` | Concept success rates |
+| `targeted[downGroup][coverageGroup]` | All targeted throws (the baseline for each concept's ratio) |
+| `dropback[downGroup][coverageGroup]` | Every called pass, sacks and throwaways included |
+| `box[downGroup][boxBucket]` | Called-pass success by box count |
+| `run[concept][runGroup][blockers − box]` | Run success rates |
+| `rush[rushers]` | Pressure and sack rates by number of rushers |
+| `prior["pkg\|box\|situation"]` | Which coverage groups defenses played |
+| `offense["situation\|personnel"]` | What offenses called (for the defensive side) |
+| `allowed["personnel\|package\|kind\|situation"]` | Success allowed |
+
+Down groups: early, short, medium, long and red (the red zone). Coverage groups: zero, man, twoMan, two, three and quarters.
+
 ## Saved progress (localStorage `ss-record-v1`)
 `{ v: 1, tags: {tag: {seen, total, last}}, scenarios: {id: {plays, best, last}}, errors: {type: count} }`. Process scores only, never results.
 

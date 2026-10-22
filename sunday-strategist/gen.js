@@ -13,7 +13,7 @@
 (function (root, api) {
   if (typeof module === "object" && module.exports) module.exports = api;
   else root.SS_GEN = api;
-})(this, (function () {
+})(this, (function (root) {
   var BX = 26.65; // the ball sits in the middle of the field; the real spot isn't charted
   var GROUP = { "Cover 0": "zero", "Cover 1": "man", "2-Man": "twoMan", "Cover 2": "two", "Cover 3": "three", "Cover 9": "three",
     "Cover 4 (quarters)": "quarters", "Cover 6": "quarters", "Combination coverage": "quarters" };
@@ -58,6 +58,58 @@
     "goal-line": ["power", "inside-zone", "fade", "quick", "pa-shot"],
     "two-minute": ["quick", "smash", "dagger", "verts", "draw"]
   };
+
+  // The fitted tables (model.js, from tools/strategist_model.py). Without them the hand-set tables below still work.
+  var M = null;
+  try { M = typeof module === "object" && module.exports ? require("./model.js") : root.SS_MODEL || null; } catch (e) { M = null; }
+  var GNAME = { zero: "Cover 0", man: "Cover 1", twoMan: "2-Man", two: "Cover 2", three: "Cover 3", quarters: "quarters" };
+  var DGNAME = { early: "1st and 2nd down", short: "3rd and 4th and short", medium: "3rd and 4th and medium", long: "3rd and 4th and long", red: "the red zone" };
+  var RGNAME = { short: "short yardage", standard: "standard downs", long: "long yardage" };
+  function dgOf(r) { return r.yl100 <= 20 ? "red" : r.down <= 2 ? "early" : r.dist <= 2 ? "short" : r.dist <= 6 ? "medium" : "long"; }
+  function rgOf(r) { return r.dist <= 2 ? "short" : r.down >= 2 && r.dist >= 7 ? "long" : "standard"; }
+  function bucket(box) { return box <= 5 ? "5" : box >= 8 ? "8" : String(box); }
+  // Pass: a called pass's real success rate here (sacks and throwaways included), scaled by how this concept does
+  // relative to all targeted throws. Route charting only sees where the ball went, so the ratio, not the raw rate, is the concept's edge.
+  function passRate(c, r, g, box) {
+    if (!M) return null;
+    var dg = dgOf(r), cell = (M.pass[c] || {})[dg] || (c === "fade" ? (M.pass.verts || {})[dg] : null), db = (M.dropback[dg] || {})[g], tg = (M.targeted[dg] || {})[g];
+    if (!cell || !db || !tg) return null;
+    var x = cell[g] || cell.all, bx = (M.box[dg] || {})[bucket(box || r.box || 6)], all = (M.box[dg] || {})["6"];
+    var boxAdj = bx && all ? bx[0] / all[0] : 1; // passes do a little better against loaded boxes
+    return { rate: clamp(db[0] * x[0] / tg[0] * boxAdj, 0.03, 0.95), n: x[1], dg: dg };
+  }
+  function runRate(c, r, box) {
+    if (!M) return null;
+    var rg = rgOf(r), adv = String(clamp(blockers(r) - box, -3, 2)), base = c === "outside-zone" ? "outside-zone" : c === "sneak" ? "sneak" : "inside-zone";
+    var table = (M.run[base] || {})[rg] || (M.run[base] || {}).short;
+    if (!table) return null;
+    var x = base === "sneak" ? table.all : (table[adv] || table.all), rate = x[0];
+    if (c === "sneak" && r.dist > 1) rate *= 0.35;
+    if (c === "power") rate += r.dist <= 2 ? 0.03 : -0.03;
+    if (c === "draw") rate += rg === "long" ? 0.05 : -0.05;
+    return { rate: clamp(rate, 0.03, 0.95), n: x[1], rg: rg, adv: +adv };
+  }
+  function coveragePrior(r, shell, box) {
+    var p = M && M.prior[r.pkg + "|" + bucket(box) + "|" + r.situation], out = {}, sum = 0;
+    if (p) Object.keys(SHELL).forEach(function (g) { if (SHELL[g] === shell && p[g]) { out[g] = p[g]; sum += p[g]; } });
+    if (sum < 0.15) return PRIOR[shell];
+    Object.keys(out).forEach(function (g) { out[g] /= sum; });
+    return out;
+  }
+  function first(t) { return t.split(". ")[0].replace(/\.$/, ""); }
+  function dataLine(c, r, g, box) {
+    var map = { stick: "quick", "hot-slant": "quick" }, k = map[c] || c;
+    if (RUN[k] || k === "draw") {
+      var x = runRate(k, r, box || 7);
+      if (!x) return null;
+      var adv = x.adv;
+      return "NFL since 2023: runs like this on " + RGNAME[x.rg] + (k === "sneak" ? "" : " with " + (adv > 0 ? "more blockers than box defenders" : adv === 0 ? "even numbers in the box" : (-adv) + " more in the box than blockers")) + " succeeded " + pct(x.rate) + " (" + x.n.toLocaleString("en-US") + " runs).";
+    }
+    if (!g) return null;
+    var y = passRate(k, r, g, box);
+    if (!y) return null;
+    return "NFL since 2023: this kind of throw against " + GNAME[g] + " on " + DGNAME[y.dg] + " succeeded " + pct(y.rate) + " (" + y.n.toLocaleString("en-US") + " throws, adjusted for sacks and throwaways).";
+  }
 
   function clamp(x, lo, hi) { return Math.max(lo, Math.min(hi, x)); }
   function r1(x) { return Math.round(x * 10) / 10; }
@@ -238,6 +290,12 @@
   // Chance an option succeeds (gets the yards this down needs), before the snap: shell prior, rush the box can send.
   function processOdds(c, r, shell, data, box) {
     var need = needYards(r);
+    if (RUN[c] && runRate(c, r, box)) return runRate(c, r, box).rate;
+    if (PASS[c] && M) {
+      var pr = coveragePrior(r, shell, box), t = 0, w = 0;
+      Object.keys(pr).forEach(function (g) { var x = passRate(c, r, g, box); if (x) { t += pr[g] * x.rate; w += pr[g]; } });
+      if (w > 0.5) return t / w;
+    }
     if (RUN[c]) {
       var R = RUN[c], w = runWindow(c, r, box);
       return 0.85 * w * pAtLeast(R.yards, R.spread, need) + (1 - 0.85 * w) * pAtLeast(R.failYards, R.failSpread, need);
@@ -252,6 +310,15 @@
       });
     });
     return total;
+  }
+
+  // The window that makes a rep succeed as often as the real rate against what the defense actually did:
+  // success = window x (the critical assignments holding up), plus the small luck and failed-but-enough cases.
+  function calibrate(target, asg, luck, failOk) {
+    var crit = asg.filter(function (a) { return a.critical; }).reduce(function (m, a) { return m * Math.min(1, a.p + (a.keyBonus || 0)); }, 1);
+    var q = luck + (1 - luck) * failOk;
+    target = Math.min(0.97, target + 0.03); // the sim loses about 3 points to pressure and interceptions; measured over all film snaps
+    return Math.round(clamp((target - q) / (1 - q) / crit, 0.05, 0.95) * 100) / 100;
   }
 
   function pick(O, ids) { for (var i = 0; i < ids.length; i++) { var p = O.filter(function (x) { return x.id === ids[i]; })[0]; if (p) return p; } return O.filter(function (x) { return x.id === "QB"; })[0]; }
@@ -277,7 +344,7 @@
         var R = RUN[c], adv = blockers(r) - box;
         key = nearest(D, runX, 4.5, function (p) { return p.y > 1 && p.y < 9; });
         why = word(box).replace(/^./, function (s) { return s.toUpperCase(); }) + " in the box against " + word(blockers(r)) + " blockers: " +
-          (adv > 0 ? "you have more blockers than they have defenders. That's a run look." : adv === 0 ? "even numbers, so the back has to beat one man." : "they have " + word(-adv) + " more defender" + (adv < -1 ? "s" : "") + " than you can block, and the extra man makes the tackle.") + " " + concept.plain.split(". ")[0] + ".";
+          (adv > 0 ? "you have more blockers than they have defenders. That's a run look." : adv === 0 ? "even numbers, so the back has to beat one man." : "they have " + word(-adv) + " more defender" + (adv < -1 ? "s" : "") + " than you can block, and the extra man makes the tackle.") + " " + first(concept.plain) + ".";
         if (c === "sneak") why = r.dist <= 1 ? "A yard or less: the sneak is the highest-percentage play in football for one yard. The quarterback is already at the line." : "The sneak gets a yard. This needs " + r.dist + ".";
         var tx = c === "outside-zone" ? BX + 9 : c === "sneak" ? BX : runX;
         routes = [{ from: c === "sneak" ? "QB" : RB.id, path: [[(c === "sneak" ? BX : RB.x), c === "sneak" ? -0.5 : -2], [tx, 1], [tx, 6]] }];
@@ -285,14 +352,19 @@
           { player: c === "sneak" ? "C" : "LG", assignment: c === "power" ? "Pull and kick out the end man on the line" : c === "sneak" ? "Drive the nose tackle off the ball" : "Combo the down lineman up to the linebacker", key: nearest(D, BX, 1).id, win: "Wins at the point of attack", fail: "Gets stood up; the hole closes", p: 0.8, critical: true },
           { player: c === "sneak" ? "QB" : RB.id, assignment: c === "sneak" ? "Follow the center, get low, get the yard" : "Read the " + key.role.split(",")[0].toLowerCase() + " and hit the hole he leaves", key: key.id, win: "Picks the right hole", fail: "Runs into the unblocked defender", p: 0.8, keyBonus: 0.08, critical: true }
         ];
-        opt = { kind: "run", need: 0, window: r1(runWindow(c, r, box) * 100) / 100, yards: R.yards, spread: R.spread, failYards: R.failYards, failSpread: R.failSpread, luck: 0.04 };
+        opt = { kind: "run", need: 0, window: r1(runWindow(c, r, box) * 100) / 100, yards: Math.max(R.yards, needYards(r) + R.spread), spread: R.spread, failYards: R.failYards, failSpread: R.failSpread, luck: 0.04 };
+        var rr = runRate(c, r, box);
+        if (rr) opt.window = calibrate(rr.rate, asg, 0.04, pAtLeast(opt.failYards, opt.failSpread, needYards(r)));
+        var dl = dataLine(c, r, null, box);
+        if (dl) why += " " + dl;
+        opt.data = !!dl;
       } else {
         var P = PASS[c], w = passWindow(c, g, r, data);
         if (c === "screen" && (r.rushers || 4) >= 5) w += 0.1;
-        var pri = Object.keys(PRIOR[shell]).sort(function (a, b) { return PRIOR[shell][b] - PRIOR[shell][a]; }).slice(0, 2);
-        why = concept.plain.split(". ")[0] + ". Before the snap, a " + shell + "-high shell usually means " + pri.map(function (k) { return { zero: "Cover 0", man: "Cover 1", twoMan: "2-Man", two: "Cover 2", three: "Cover 3", quarters: "quarters" }[k]; }).join(" or ") +
-          ". " + data.matrix[c][pri[0]][1];
-        if (shell === "zero") why = concept.plain.split(". ")[0] + ". " + data.matrix[c].zero[1];
+        var cp = coveragePrior(r, shell, box), pri = Object.keys(cp).sort(function (a, b) { return cp[b] - cp[a]; }).slice(0, 2);
+        why = first(concept.plain) + ". From this look (" + shell + "-high, " + word(box) + " in the box), defenses " + (M ? "played" : "usually play") + " " + pri.map(function (k) { return { zero: "Cover 0", man: "Cover 1", twoMan: "2-Man", two: "Cover 2", three: "Cover 3", quarters: "quarters" }[k]; }).join(" or ") +
+          (M && pri[0] ? " most (" + pct(cp[pri[0]]) + " of the time since 2023)" : "") + ". " + data.matrix[c][pri[0]][1];
+        if (shell === "zero") why = first(concept.plain) + ". " + data.matrix[c].zero[1];
         key = { quick: flatD, smash: cbR, mesh: mike, dagger: mike, verts: fs, "pa-shot": fs, fade: cbR, screen: mike }[c];
         var rec = { quick: [Z, [[Z.x - 3.5, 5]]], smash: [H, [[H.x, 8], [H.x + 4, 13]]], mesh: [Y, [[BX, 3.5], [BX - 9, 4]]], dagger: [Z, [[Z.x, 14], [BX + 2, 14.5]]],
           verts: [H, [[H.x, 18]]], "pa-shot": [Z, [[Z.x, 12], [Z.x - 7, 20]]], fade: [X, [[X.x + 1.5, 18]]], screen: [RB, [[RB.x + 4, -2], [RB.x + 7, 1]]] }[c];
@@ -308,20 +380,29 @@
           { player: rec[0].id, assignment: { quick: "Slant inside, win leverage on the third step", smash: "Corner route over the hitch", mesh: "Cross underneath and rub the man defenders", dagger: "Deep dig behind the linebackers", verts: "Seam up the middle", "pa-shot": "Post behind the safeties after the fake", fade: "Win the release and get on top", screen: "Sell the block, then catch it behind the line" }[c],
             key: (MANISH[g] ? nearest(D, rec[0].x, 3) : key).id, win: "Wins his route", fail: "Gets covered up", p: c === "screen" ? 0.8 : 0.78, critical: true }
         ];
-        opt = { need: P.need, window: r1(w * 100) / 100, yards: P.yards, spread: P.spread, intRisk: P.intRisk, luck: c === "verts" || c === "pa-shot" || c === "fade" ? 0.08 : 0.03 };
+        opt = { need: P.need, window: r1(w * 100) / 100, yards: Math.max(P.yards, needYards(r) + P.spread), spread: P.spread, intRisk: P.intRisk, luck: c === "verts" || c === "pa-shot" || c === "fade" ? 0.08 : 0.03 };
+        var pr2 = passRate(c, r, g, box);
+        if (pr2) { opt.window = calibrate(pr2.rate, asg, opt.luck, 0); w = opt.window; }
+        var sh = { quick: 0.45, mesh: 0.45, screen: 0.5, smash: 0.3, dagger: 0.2 }[c];
+        if (sh && needYards(r) > 2) { opt.short = sh; opt.shortYards = Math.max(1, needYards(r) - 3); }
+        var dl2 = dataLine(c, r, Object.keys(coveragePrior(r, shell, box)).sort(function (a, b) { return coveragePrior(r, shell, box)[b] - coveragePrior(r, shell, box)[a]; })[0], box);
+        if (dl2) why += " " + dl2;
+        opt.data = !!dl2;
         if (P.hot) opt.hot = { window: r1(w * 0.85 * 100) / 100, yards: Math.max(3, Math.round(P.yards * 0.7)), spread: 2, text: "Ball out early to the quick route" };
       }
-      return Object.assign({ id: c, concept: c, label: concept.name, detail: concept.plain.split(". ")[0] + ".", conflict: key.id, why: why, key: { answer: key.id, partial: {} }, routes: routes, assignments: asg, odds: odds }, opt);
+      return Object.assign({ id: c, concept: c, label: concept.name, detail: first(concept.plain) + ".", conflict: key.id, why: why, key: { answer: key.id, partial: {} }, routes: routes, assignments: asg, odds: odds }, opt);
     });
     // Grades: the best pre-snap odds earn the top grade; the rest are graded by how far behind they are.
     var best = Math.max.apply(null, out.map(function (o) { return o.odds; }));
     var worst = Math.min.apply(null, out.map(function (o) { return o.odds; }));
     var bigYards = out.slice().sort(function (a, b) { return (b.yards + b.spread) - (a.yards + a.spread); })[0];
+    // Within 2 points of the best is a statistical tie: the data can't separate them, so they share the top grade.
     out.forEach(function (o) {
-      o.grade = Math.round(clamp(95 - 170 * (best - o.odds), 25, 95));
-      o.category = o.odds === best ? "recommended" : o.odds === worst && best - worst > 0.05 ? "poor" : o === bigYards ? "aggressive" : "valid";
-      o.why += " Before the snap, this call succeeds about " + pct(o.odds) + " of the time from this look.";
-      delete o.odds;
+      var gap = Math.max(0, best - o.odds - 0.02);
+      o.grade = Math.round(clamp(95 - 170 * gap, 25, 95));
+      o.category = gap === 0 ? "recommended" : o.odds === worst && best - worst > 0.05 ? "poor" : o === bigYards ? "aggressive" : "valid";
+      o.why += o.kind === "run" ? "" : o.data ? " Weighing the coverages this look really turns into, this call succeeds about " + pct(o.odds) + " of the time." : " Before the snap, this call succeeds about " + pct(o.odds) + " of the time from this look.";
+      delete o.odds; delete o.data;
     });
     return out;
   }
@@ -489,5 +570,5 @@
     };
   }
 
-  return { build: build, GROUP: GROUP, processOdds: processOdds, blockers: blockers };
-})());
+  return { build: build, GROUP: GROUP, processOdds: processOdds, blockers: blockers, passRate: passRate, runRate: runRate, dataLine: dataLine, model: function () { return M; } };
+})(this));
