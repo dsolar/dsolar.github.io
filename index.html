@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Besley:ital,wght@0,500;0,600;0,700;0,800;1,500&family=Libre+Franklin:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="assets/site.css?v=20261022-kids">
+<link rel="stylesheet" href="assets/site.css?v=20261022-matchups">
 <script src="assets/site.js" defer></script>
 <script src="assets/analytics.js" defer></script>
 <script src="assets/scoreboard.js?v=20261022-fav" defer></script>
@@ -256,7 +256,7 @@
   </div>
 </footer>
 
-<script src="assets/projects.js?v=20261022-kids"></script>
+<script src="assets/projects.js?v=20261022-matchups"></script>
 <script>
 /* Draws the project list from assets/projects.js. You shouldn't need to edit this. */
 (function () {
@@ -289,6 +289,20 @@
   var catalog = document.getElementById("catalog");
   var categorySlugs = {"Fantasy Leagues":"fantasy","Simulations":"simulations","Games":"games","Social Tools":"social"};
   var slugCategories = {fantasy:"Fantasy Leagues",simulations:"Simulations",games:"Games",social:"Social Tools"};
+  // NFL logos from ESPN's image service: a 64px copy for a 22px spot, and the dark-background version in dark mode
+  var nflLogo = function (abbr) {
+    var a = (abbr === "WAS" ? "wsh" : String(abbr).toLowerCase());
+    var url = function (v) { return "https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/" + v + "/" + a + ".png&w=64&h=64"; };
+    return '<picture class="mu-logo"><source media="(prefers-color-scheme: dark)" srcset="' + esc(url("500-dark")) + '">'
+      + '<img src="' + esc(url("500")) + '" alt="" width="22" height="22" loading="lazy" data-abbr="' + esc(abbr) + '"></picture>';
+  };
+  var matchups = function (p) {
+    if (!p.matchups || !p.matchups.length) return "";
+    return '<div class="matchups"><p class="matchups-label">Famous calls inside</p><ul>' + p.matchups.map(function (m) {
+      return '<li><span class="mu-teams">' + nflLogo(m.you) + "<b>" + esc(m.you) + "</b><span>" + (m.home || m.neutral ? "vs" : "at") + "</span>"
+        + nflLogo(m.opp) + "<b>" + esc(m.opp) + "</b></span><span class=\"mu-label\">" + esc(m.label) + "</span></li>";
+    }).join("") + "</ul></div>";
+  };
   function card(p) {
     var building = p.status === "building";
     var accessible = !building || (showHidden && p.hidden);
@@ -313,9 +327,17 @@
       + (facts ? '<dl class="facts">' + facts + "</dl>" : "")
       + (!accessible ? "" : '<div class="actions"><a class="btn" href="' + esc(p.url) + '"><span class="dot" aria-hidden="true"></span>' + esc(p.action || ({"Fantasy Leagues":"View League","Simulations":"Run Simulation","Games":"Play Game","Social Tools":"Open Tool"}[p.type] || "Explore Project")) + (p.external ? " ↗" : "") + "</a></div>")
       + (p.stack && p.stack.length ? '<p class="stack">Built with ' + esc(list(p.stack)) + "</p>" : "")
-      + "</div></article>";
+      + "</div>" + matchups(p) + "</article>";
   }
   catalog.innerHTML = projects.map(card).join("");
+  // A team logo that doesn't load gives way to its abbreviation
+  if (!catalog.dataset.logoFallback) {
+    catalog.dataset.logoFallback = "1";
+    catalog.addEventListener("error", function (e) {
+      var img = e.target;
+      if (img.tagName === "IMG" && img.closest(".mu-logo")) img.closest(".mu-logo").replaceWith(document.createTextNode(""));
+    }, true);
+  }
   document.getElementById("kids-catalog").innerHTML = kids.map(card).join("");
   document.getElementById("kids").hidden = !kids.length;
 

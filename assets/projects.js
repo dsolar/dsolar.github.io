@@ -20,6 +20,8 @@
      hidden    true hides it until the homepage app code is entered. Direct links still work.
      section   "kids" puts it in the "Made for my daughter" section at the bottom of the page instead.
      external  true for a project that lives on another site (url is then the full address).
+     matchups  real games inside, shown on the card with both teams' logos: { you, opp, home or neutral, label },
+               where you/opp are NFL abbreviations (Make the Call's famous calls, from its data.js).
 
    The home page shows projects in this list's order (the spotlight first), so order matters.
 */
@@ -35,6 +37,12 @@ window.PROJECTS = [
     question: "Go for it, punt, or kick? Would the math agree with you?",
     summary: "Coach through real NFL decisions, from Belichick's 4th-and-2 to last Sunday, and get graded on win probability, not on whether the play worked.",
     facts: [["1,500+", "real situations to call"], ["26", "famous calls, 2009 to Super Bowl LX"], ["25", "seconds on the play clock"]],
+    matchups: [
+      { you: "NE", opp: "IND", home: false, label: "4th-and-2, 2009" },
+      { you: "SEA", opp: "NE", neutral: true, label: "Super Bowl XLIX" },
+      { you: "PHI", opp: "NE", neutral: true, label: "The Philly Special" },
+      { you: "DET", opp: "SF", home: false, label: "NFC Title Game, 2023" }
+    ],
     stack: ["JavaScript", "Python", "R", "Supabase"],
     cover: { image: "assets/covers/win-probability.jpg", bg: "#0E2A1F", band: "#F7D23E" }
   },

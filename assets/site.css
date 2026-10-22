@@ -462,3 +462,23 @@ a:hover{color:var(--red)}
 /* "Made for my daughter": the last section, a little softer */
 .kids{border-top:1px solid var(--rule);background:linear-gradient(180deg,rgba(232,106,146,.07),transparent 60%)}
 .kids .section-head h2::after{background:linear-gradient(90deg,#E86A92,#7B4FB3)}
+
+/* Make the Call's famous calls, with the real teams' logos (featured card) */
+/* Its own row under the card body, full width on the spotlight card, so the cover keeps its size */
+.matchups{grid-area:mu;padding:0 24px 24px}
+.entry:has(.matchups){grid-template-areas:"cover" "meta" "body" "mu"}
+@media(min-width:641px){
+ .entry.spotlight:has(.matchups){grid-template-areas:"cover meta" "cover body" "mu mu"}
+ .entry.spotlight .matchups{padding-top:18px;border-top:1px solid var(--rule)}
+}
+@media(min-width:900px){.entry.spotlight .matchups ul{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.matchups-label{margin:0 0 8px;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.matchups ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;list-style:none;margin:0;padding:0}
+.matchups li{display:flex;flex-direction:column;gap:3px;padding:8px 10px;border:1px solid var(--rule);border-radius:6px;background:var(--paper)}
+.mu-teams{display:flex;align-items:center;gap:6px;font-size:.88rem}
+.mu-teams b{font-weight:700}
+.mu-teams>span{color:var(--muted);font-size:.78rem}
+.mu-logo,.mu-logo img{width:22px;height:22px;display:block;flex:none}
+.mu-logo img{object-fit:contain}
+.mu-label{font-size:.78rem;color:var(--muted)}
+@media(max-width:640px){.matchups{padding:0 18px 20px}.matchups li{padding:7px 9px}.mu-teams{gap:4px;font-size:.84rem}}
