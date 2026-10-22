@@ -31,6 +31,8 @@ UA = "davidsolar-nightout/1.0 (+https://davidsolar.dev/calendar/)"
 DROP_PCT, DROP_USD = 0.10, 10      # an alert needs both: 10% and $10 under the last alert
 MAX_WATCH = 80                     # shows looked up per run
 RETRY_MISS_DAYS = 3                # how long to wait before looking again for a show SeatGeek didn't have
+GAME_DAYS = 14                     # home games (Celtics, Bruins, Patriots) this many days out are watched too,
+                                   # so the home page ticker can show their ticket prices
 KEEP_DAYS = 90                     # price history kept per show
 PRICE_FIELDS = ("lowest_price", "lowest_sg_base_price", "lowest_price_good_deals", "lowest_sg_base_price_good_deals",
                 "median_price", "average_price")
@@ -148,8 +150,13 @@ def main():
     def marked(e):
         return any(votes.get(i) for i in [e["id"]] + e.get("aka", []))
 
-    watch = [e for e in events["events"] if e["date"] >= today and (e.get("score", 0) >= 2 or marked(e))]
-    watch.sort(key=lambda e: (not marked(e), -e.get("score", 0), e["date"]))
+    soon = (now.astimezone(ET).date() + timedelta(days=GAME_DAYS)).isoformat()
+
+    def game_soon(e):
+        return e.get("source") == "espn" and e["date"] <= soon
+
+    watch = [e for e in events["events"] if e["date"] >= today and (e.get("score", 0) >= 2 or marked(e) or game_soon(e))]
+    watch.sort(key=lambda e: (not (marked(e) or game_soon(e)), -e.get("score", 0), e["date"]))
     watch = watch[:MAX_WATCH]
     ids = {e["id"] for e in watch}
 

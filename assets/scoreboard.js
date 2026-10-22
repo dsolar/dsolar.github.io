@@ -4,21 +4,25 @@
    Where the data comes from:
      - each team's schedule: its next game, both teams' logos, AP ranks, TV and the Gamecast link
      - the league scoreboard for that game's date: score, clock and period, records, odds, finals
+     - ESPN's Matchup Predictor (NFL, NBA, college football): our side's chance to win
+     - calendar/prices.json, which Night Out's price watcher keeps: lowest ticket price for home games
+     - assets/picks.json: David's picks, graded when the game ends (how to add one is in that file)
    Times are Boston time. While a game is on, the ticker refreshes every 30 seconds. */
 (function () {
   var TEAMS = [
-    { name: "Patriots", path: "football/nfl", id: "ne", tag: "NFL" },
-    { name: "Celtics", path: "basketball/nba", id: "bos", tag: "NBA" },
-    { name: "Red Sox", path: "baseball/mlb", id: "bos", tag: "MLB" },
-    { name: "Bruins", path: "hockey/nhl", id: "bos", tag: "NHL" },
-    { name: "BC", path: "football/college-football", id: "103", tag: "BC football" },
-    { name: "BC", path: "basketball/mens-college-basketball", id: "103", tag: "BC hoops" },
-    { name: "Penn State", path: "football/college-football", id: "213", tag: "PSU football" },
-    { name: "Penn State", path: "basketball/mens-college-basketball", id: "213", tag: "PSU hoops" }
+    { name: "Patriots", key: "patriots", path: "football/nfl", id: "ne", tag: "NFL" },
+    { name: "Celtics", key: "celtics", path: "basketball/nba", id: "bos", tag: "NBA" },
+    { name: "Red Sox", key: "redsox", path: "baseball/mlb", id: "bos", tag: "MLB" },
+    { name: "Bruins", key: "bruins", path: "hockey/nhl", id: "bos", tag: "NHL" },
+    { name: "BC", key: "bc-football", path: "football/college-football", id: "103", tag: "BC football" },
+    { name: "BC", key: "bc-hoops", path: "basketball/mens-college-basketball", id: "103", tag: "BC hoops" },
+    { name: "Penn State", key: "psu-football", path: "football/college-football", id: "213", tag: "PSU football" },
+    { name: "Penn State", key: "psu-hoops", path: "basketball/mens-college-basketball", id: "213", tag: "PSU hoops" }
   ];
   // The league scoreboards leave most college games out unless asked for the whole division.
   var BOARD_QUERY = { "football/college-football": "&groups=80&limit=300", "basketball/mens-college-basketball": "&groups=50&limit=400" };
   var API = "https://site.api.espn.com/apis/site/v2/sports/";
+  var PREDICTOR = { "football/nfl": 1, "basketball/nba": 1, "football/college-football": 1 };   // leagues ESPN predicts
   var TZ = "America/New_York";
   var CACHE_MS = 10 * 60e3;      // schedules and other days' scoreboards are reused this long; today's never are
   var STEP_MS = 5000;            // the ticker moves one game along this often
@@ -26,7 +30,7 @@
   var bar = document.getElementById("scores"), list = document.getElementById("scoreboard-list");
   if (!bar || !list) return;
   var viewport = bar.querySelector(".tk-viewport"), note = document.getElementById("scoreboard-note");
-  var timer = null, fails = 0, last = null, schedules = {}, boards = {};
+  var timer = null, fails = 0, last = null, schedules = {}, boards = {}, files = { at: 0 }, predictions = {};
 
   var esc = function (s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
@@ -82,7 +86,8 @@
       .filter(function (n, i, all) { return n && all.indexOf(n) === i; });
     var link = (ev.links || []).filter(function (l) { return (l.rel || []).indexOf("summary") >= 0 && (l.rel || []).indexOf("desktop") >= 0; })[0];
     var g = { id: String(ev.id), date: ev.date, home: me.homeAway === "home", timeKnown: comp.timeValid !== false,
-      us: side(me), them: side(opp), tv: tv.slice(0, 2).join(", "), url: link && link.href, odds: "", situation: "" };
+      us: side(me), them: side(opp), tv: tv.slice(0, 2).join(", "), url: link && link.href, odds: "", situation: "",
+      wp: null, tix: null, pick: "", graded: "" };
     setStatus(g, comp.status || ev.status);
     return g;
   }
@@ -159,9 +164,16 @@
       var time = g.timeKnown ? clock(g.date) : "TBD";
       status = isToday(g) ? (g.timeKnown && hourET(g.date) >= 17 ? "Tonight " : "Today ") + esc(time) : esc(weekday(g.date)) + " · " + esc(time);
     }
-    var foot = [g.situation || g.tv, g.state === "pre" ? g.odds : ""].filter(Boolean).map(esc).join(' <span aria-hidden="true">·</span> ');
+    var dot = ' <span aria-hidden="true">·</span> ';
+    var lines = g.state === "pre" ? [[g.tv, g.tix ? "Tix $" + Math.round(g.tix.low) + (g.tix.down ? " ↓" : "") : ""],
+                                     [g.odds, g.wp != null ? "ESPN: " + (g.us.abbr || g.us.name) + " " + g.wp + "%" : ""]]
+      : g.state === "in" ? [[g.situation, g.tv]] : [];
+    var foot = lines.map(function (l) { return l.filter(Boolean).map(esc).join(dot); }).filter(Boolean)
+      .map(function (l) { return '<div class="tk-foot">' + l + "</div>"; }).join("");
+    var mark = { won: "✓ ", lost: "✗ ", push: "Push · " }[g.graded] || "Pick: ";
+    var pick = g.pick ? '<div class="tk-pick tk-pick-' + (g.graded || "open") + '">' + mark + esc(g.pick) + "</div>" : "";
     var inner = '<div class="tk-top"><span class="tk-tag">' + esc(t.tag) + '</span><span class="tk-status">' + status + "</span></div>"
-      + line(away, home) + line(home, away) + '<div class="tk-foot">' + (foot || "&nbsp;") + "</div>";
+      + line(away, home) + line(home, away) + (foot || pick ? foot + pick : '<div class="tk-foot">&nbsp;</div>');
     var cls = "tk-item" + (g.state === "in" ? " tk-now" : isToday(g) ? " tk-today" : "");
     return '<li class="' + cls + '">' + (g.url ? '<a href="' + esc(g.url) + '" aria-label="' + esc(label(r)) + '">' + inner + "</a>" : inner) + "</li>";
   }
@@ -170,8 +182,11 @@
     var g = r.game, parts = [r.team.name + (g.home ? " vs " : " at ") + g.them.name];
     if (g.state === "in" || g.state === "post" && g.done) parts.push(g.us.score + " to " + g.them.score);
     parts.push(g.state === "pre" ? (isToday(g) ? "today " : weekday(g.date) + " ") + (g.timeKnown ? clock(g.date) : "time TBD") : g.detail);
-    if (g.tv) parts.push(g.tv);
+    if (g.tv && g.state !== "post") parts.push(g.tv);
     if (g.state === "pre" && g.odds) parts.push("odds " + g.odds);
+    if (g.state === "pre" && g.wp != null) parts.push("ESPN gives " + r.team.name + " a " + g.wp + " percent chance");
+    if (g.tix) parts.push("tickets from $" + Math.round(g.tix.low));
+    if (g.pick) parts.push("my pick " + g.pick + (g.graded ? ", " + g.graded : ""));
     return parts.join(", ");
   }
 
@@ -229,7 +244,60 @@
           return copy;
         });
       }));
+    }).then(extras);
+  }
+
+  // Ticket prices, picks and ESPN's win probability, layered on after the scores.
+  function sideFiles() {
+    if (!files.at || Date.now() - files.at > CACHE_MS) {
+      var v = "?v=" + Math.floor(Date.now() / CACHE_MS);
+      files = { at: Date.now(),
+        prices: getJSON("calendar/prices.json" + v).then(function (d) { return d.events || {}; }, function () { return {}; }),
+        picks: getJSON("assets/picks.json" + v).then(function (d) { return d.picks || {}; }, function () { return {}; }) };
+    }
+    return Promise.all([files.prices, files.picks]);
+  }
+  function predictor(r) {
+    var g = r.game;
+    if (!PREDICTOR[r.team.path] || g.state !== "pre" || new Date(g.date) - Date.now() > 7 * 864e5) return Promise.resolve(null);
+    var have = predictions[g.id];
+    if (have && Date.now() - have.at < 3 * CACHE_MS) return have.pct;
+    var pct = getJSON(API + r.team.path + "/summary?event=" + g.id).then(function (d) {
+      var p = d.predictor || {}, mine = [p.homeTeam || {}, p.awayTeam || {}].filter(function (s) { return String(s.id) === g.us.id; })[0];
+      var n = mine ? parseFloat(mine.gameProjection) : NaN;
+      return isFinite(n) ? Math.round(n) : null;
+    }, function () { return null; });
+    predictions[g.id] = { at: Date.now(), pct: pct };
+    return pct;
+  }
+  function extras(list) {
+    return sideFiles().then(function (f) {
+      var prices = f[0], picks = f[1];
+      return Promise.all(list.map(function (r) {
+        var g = r.game;
+        if (!g) return r;
+        var rec = prices["espn-" + g.id], h = rec && rec.history || [];
+        if (rec && rec.low && g.state === "pre") g.tix = { low: rec.low, down: h.length > 1 && h[h.length - 1][1] < h[h.length - 2][1] };
+        g.pick = picks[g.id] || picks[r.team.key + " " + dayET(g.date)] || "";
+        g.graded = g.pick ? grade(g.pick, g) : "";
+        return predictor(r).then(function (pct) { g.wp = pct; return r; });
+      }));
     });
+  }
+  // "BOS -1.5", "NE +3", "BOS ML" or "BOS -142" (a moneyline), "O 50.5", "U 6.5": won, lost or push once it's final.
+  function grade(pick, g) {
+    if (!(g.state === "post" && g.done)) return "";
+    var us = parseFloat(g.us.score), them = parseFloat(g.them.score);
+    if (!isFinite(us) || !isFinite(them)) return "";
+    var m = /^\s*(o|over|u|under)\s*(\d+(?:\.\d+)?)\s*$/i.exec(pick);
+    if (m) { var total = us + them, line = +m[2]; return total === line ? "push" : (total > line) === /^o/i.test(m[1]) ? "won" : "lost"; }
+    m = /^\s*([a-z]{2,5})\s*([+-]?\d+(?:\.\d+)?)?\s*(ml)?\s*$/i.exec(pick);
+    if (!m) return "";
+    var team = m[1].toUpperCase(), ours = team === g.us.abbr.toUpperCase(), theirs = team === g.them.abbr.toUpperCase();
+    if (!ours && !theirs) return "";
+    var spread = m[2] && !m[3] && Math.abs(+m[2]) < 100 ? +m[2] : 0;   // three digits is a moneyline price, not a spread
+    var margin = (ours ? us - them : them - us) + spread;
+    return margin === 0 ? "push" : margin > 0 ? "won" : "lost";
   }
 
   // Every 30 seconds while a game is on; every minute in the 15 minutes before one starts; otherwise wake up
