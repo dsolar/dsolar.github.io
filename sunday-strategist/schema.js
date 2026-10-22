@@ -187,5 +187,38 @@
     return errs;
   }
 
-  return { validate: validate, TYPES: TYPES, CONFIDENCE: CONFIDENCE };
+  /* Defense-side lessons: every option the coordinator can pick needs its hand-written reason.
+     opts is defense.js's option lists ({ PACKAGES, PRESSURES, COVERAGES, AREAS }). */
+  function validateDefense(data, opts) {
+    var errs = [], seen = {};
+    function err(path, msg) { errs.push(path + ": " + msg); }
+    function str(o, k, path) { if (typeof (o || {})[k] !== "string" || !o[k].trim()) err(path + "." + k, "required text"); }
+    var ids = { pkg: opts.PACKAGES.map(function (x) { return x.id; }), pressure: opts.PRESSURES.map(function (x) { return x.id; }), cov: Object.keys(opts.COVERAGES), area: opts.AREAS.map(function (x) { return x.id; }) };
+    (data.defenseLessons || []).forEach(function (l, i) {
+      var p = "defenseLessons[" + i + "]";
+      if (!/^def-/.test(l.id || "")) err(p + ".id", "must start with def-");
+      if (seen[l.id]) err(p + ".id", "duplicate id"); seen[l.id] = true;
+      str(l, "title", p); str(l, "takeaway", p); str(l, "next", p);
+      if (!l.provenance || l.provenance.type !== "synthetic" || !l.provenance.label) err(p + ".provenance", "synthetic, with a label");
+      var sn = l.snap || {};
+      ["down", "dist", "yl100", "qtr", "offScore", "defScore"].forEach(function (k) { if (typeof sn[k] !== "number") err(p + ".snap." + k, "required number"); });
+      ["situation", "offPers", "formation", "kind", "clock", "desc"].forEach(function (k) { str(sn, k, p + ".snap"); });
+      if (["run", "pass"].indexOf(sn.kind) < 0) err(p + ".snap.kind", "run or pass");
+      str(l.read, "pers", p + ".read"); str(l.read, "likely", p + ".read");
+      str(l.context, "objective", p + ".context"); str(l.context, "scouting", p + ".context");
+      Object.keys(ids).forEach(function (k) {
+        ids[k].forEach(function (id) { str(((l.why || {})[k] || {}), id, p + ".why." + k); });
+        if (ids[k].indexOf((l.best || {})[k]) < 0) err(p + ".best." + k, "unknown option " + (l.best || {})[k]);
+      });
+      var pz = opts.PRESSURES.filter(function (x) { return x.id === (l.best || {}).pressure; })[0];
+      if (pz && pz.covers.indexOf(l.best.cov) < 0) err(p + ".best.cov", "not a coverage that goes with " + pz.id);
+      (l.clues || []).forEach(function (c, j) { if (["meaningful", "deceptive", "uncertain"].indexOf(c.kind) < 0) err(p + ".clues[" + j + "].kind", "unknown kind"); });
+      if (!(l.clues || []).length) err(p + ".clues", "required");
+      if (!l.fit || !Array.isArray(l.fit.downs) || !Array.isArray(l.fit.distance)) err(p + ".fit", "needs downs and distance");
+      if (!((l.learning || {}).tags || []).length) err(p + ".learning.tags", "required");
+    });
+    return errs;
+  }
+
+  return { validate: validate, validateDefense: validateDefense, TYPES: TYPES, CONFIDENCE: CONFIDENCE };
 })());

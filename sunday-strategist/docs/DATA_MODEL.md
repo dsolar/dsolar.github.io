@@ -74,6 +74,23 @@ Cells are `[rate, snaps]`.
 
 Down groups: early, short, medium, long and red (the red zone). Coverage groups: zero, man, twoMan, two, three and quarters.
 
+## Defense lessons (`defenseLessons` in scenarios.js)
+Each one has these fields; `schema.validateDefense` enforces them.
+
+| Field | Meaning |
+|---|---|
+| `id` | Starts with `def-` |
+| `title`, `order`, `provenance` | Identity, and the label shown on screen (synthetic) |
+| `snap` | The same fields as a real snap (`down`, `dist`, `yl100`, `situation`, `offPers`, `wrs`, `formation`, `kind`, `route`, `desc`…), so `defense.js` grades it exactly like film |
+| `context` | `objective` and `scouting` |
+| `read` | `pers` and `likely`: the explanations for the read step |
+| `why` | `{pkg, pressure, cov, area}`, a reason for every option |
+| `best` | The hand-picked best call. A test requires it to be within 0.02 expected points of the model's best |
+| `clues`, `next`, `takeaway`, `learning.tags` | Teaching content and the skills it practices |
+| `fit` | Like an offense lesson fit, plus `yl: [min, max]` and `situation: [...]` |
+
+Real snaps for these lessons carry `lesson: "def-…"`. The catalog builds them like film snaps and tags them `dlesson`.
+
 ## Saved progress (localStorage `ss-record-v1`)
 `{ v: 1, tags: {tag: {seen, total, last}}, scenarios: {id: {plays, best, last}}, errors: {type: count} }`. Process scores only, never results.
 

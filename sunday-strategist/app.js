@@ -59,6 +59,7 @@
       b.onclick = function () { side = b.getAttribute("data-side"); var p = load(PREFS, {}); p.side = side; save(PREFS, p); renderStart(); };
     });
     $("module").hidden = side === "defense";
+    renderDefLessons(rec);
     var items = lessons.map(function (s, i) {
       var r = rec && rec.scenarios[s.id], reals = realOf(s.id);
       var played = reals.filter(function (x) { return rec && rec.scenarios[x.id]; }).length;
@@ -560,12 +561,55 @@
   var F = window.SS_DEF;
   var DSTEPS = [{ id: "read", label: "Read" }, { id: "personnel", label: "Personnel" }, { id: "pressure", label: "Pressure" }, { id: "coverage", label: "Coverage" }, { id: "takeaway", label: "Take away" }];
   var AREA_NAME = { run: "run", quick: "quick game and screens", middle: "intermediate middle", deep: "deep shots" };
+  /* Defense-side lessons: hand-written teaching, grades from defense.js (scenarios.js defenseLessons). */
+  var dlessons = (D.defenseLessons || []).slice().sort(function (a, b) { return a.order - b.order; });
+  var dproblems = V.validateDefense ? V.validateDefense(D, F) : [];
+  if (dproblems.length) { if (window.console) console.error("Defense lesson problems", dproblems); dlessons = []; }
+  function dlessonSnaps(id) { return film.filter(function (s) { return s.dlesson === id; }); }
+  function lessonReal(L) {
+    return Object.assign({ id: L.id, off: "OFF", def: "DEF", home: "OFF", season: 2026, week: 1, gameId: "synthetic", playId: 0, result: L.snap.kind === "run" ? "run" : "complete", epa: 0, yards: 0, tendency: {} }, L.snap);
+  }
+  function renderDefLessons(rec) {
+    var box = $("dmodule");
+    box.hidden = side !== "defense" || !dlessons.length;
+    if (box.hidden) return;
+    box.innerHTML = "<h2>Defense lessons</h2><p>Five situations every coordinator has to win: matching personnel, playing the sticks, the empty set, the goal line and the two-minute drill. Learn each, then call it on real NFL snaps.</p>" +
+      '<ul class="scen-list">' + dlessons.map(function (L, i) {
+        var r = rec && rec.scenarios["def:" + L.id], reals = dlessonSnaps(L.id), played = reals.filter(function (x) { return rec && rec.scenarios["def:" + x.id]; }).length;
+        return '<li><button type="button" data-dstart="' + esc(L.id) + '"><span class="n">' + (i + 1) + '</span><span class="t">' + esc(L.title) + '</span><span class="b' + (r ? " done" : "") + '">' + (r ? esc(E.letter(r.best)) : "New") + '</span><span class="s">' +
+          esc(ord(L.snap.down) + " & " + (L.snap.yl100 <= L.snap.dist ? "goal" : L.snap.dist) + " · " + L.snap.offPers + " personnel · " + L.context.objective) + "</span></button>" +
+          (reals.length ? '<button type="button" class="real-btn" data-dreal="' + esc(L.id) + '"><span class="logos">' + reals.slice(0, 8).map(function (x) { return logo(x.real.off, 18); }).join("") + "</span><span>" + reals.length + " real snaps" + (played ? " · " + played + " played" : "") + " \u2192</span></button>" : "") + "</li>";
+      }).join("") + '</ul><button type="button" class="primary" id="dgo">' + (rec ? "Play your next rep" : "Start") + " \u2192</button>";
+    Array.prototype.forEach.call(box.querySelectorAll("[data-dstart]"), function (b) { b.onclick = function () { beginDef(b.getAttribute("data-dstart")); }; });
+    Array.prototype.forEach.call(box.querySelectorAll("[data-dreal]"), function (b) { b.onclick = function () { beginDef(nextDef(dlessonSnaps(b.getAttribute("data-dreal")))); }; });
+    $("dgo").onclick = function () {
+      var rec2 = load(STORE, null), fresh = dlessons.filter(function (L) { return !(rec2 && rec2.scenarios["def:" + L.id]); });
+      beginDef(fresh.length ? fresh[0].id : nextDef(film.filter(function (s) { return s.dlesson; }).concat(film)));
+    };
+  }
+  // An unplayed snap from the pool if there is one, otherwise any.
+  function nextDef(pool, skip) {
+    var rec = load(STORE, null), fresh = pool.filter(function (s) { return !(rec && rec.scenarios["def:" + s.id]) && s.id !== skip; });
+    var from = fresh.length ? fresh : pool;
+    return from[Math.floor(Math.random() * from.length)].id;
+  }
   function beginDef(id) {
-    var base = by(film, id);
-    st = { side: "defense", base: base, r: base.real, step: 0, answers: { rushers: [] }, call: {}, pick: { motion: "none" }, seed: (Date.now() % 100000) + 1, snapped: false, recorded: false, hideD: true };
+    var L = by(dlessons, id), base, lesson = L;
+    if (L) base = window.SS_GEN.build(D, window.SS_REAL, lessonReal(L));
+    else { base = by(film, id); lesson = base.dlesson ? by(dlessons, base.dlesson) : null; }
+    st = { side: "defense", base: base, r: base.real, lesson: lesson, synthetic: !!L, step: 0, answers: { rushers: [] }, call: {}, pick: { motion: "none" }, seed: (Date.now() % 100000) + 1, snapped: false, recorded: false, hideD: true };
     st.sc = F.view(D, window.SS_REAL, st.r, {});
-    header(base, "Film room · " + (window.SS_REAL.situations[base.situation] || "") + " · you call the defense");
-    $("prov").innerHTML = "<b>Real snap</b><span>You're the " + esc(base.teams.defName) + "' defensive coordinator. The offense's personnel, formation and the play they ran are real; your defense is drawn from your call.</span>";
+    var where = lesson ? "Defense lesson " + (dlessons.indexOf(lesson) + 1) + " of " + dlessons.length + ": " + lesson.title + (L ? "" : " · real snap") : "Film room · " + (window.SS_REAL.situations[base.situation] || "") + " · you call the defense";
+    header(base, where);
+    if (L) {
+      var sn = L.snap;
+      $("scen-title").textContent = L.title;
+      $("scen-sub").hidden = true;
+      $("prov").innerHTML = "<b>Synthetic</b><span>" + esc(L.provenance.label) + "</span>";
+      $("bug").innerHTML = '<div><small>Them</small><b>' + sn.offScore + '</b></div><div><small>You</small><b>' + sn.defScore + '</b></div><div><small>' + (sn.qtr > 4 ? "OT" : "Q" + sn.qtr) + "</small><b>" + esc(sn.clock) + '</b></div><div class="down"><small>' + (sn.yl100 <= 50 ? "Your " + sn.yl100 : "Their " + (100 - sn.yl100)) + "</small><b>" + ord(sn.down) + " &amp; " + (sn.yl100 <= sn.dist ? "Goal" : sn.dist) + "</b></div>";
+    } else {
+      $("prov").innerHTML = "<b>Real snap</b><span>You're the " + esc(base.teams.defName) + "' defensive coordinator. The offense's personnel, formation and the play they ran are real; your defense is drawn from your call.</span>";
+    }
     drawField();
     renderDefStep();
     window.scrollTo(0, 0);
@@ -580,7 +624,13 @@
     $("sit").innerHTML = [["Their offense", told ? sc.offense.personnelText + ". " + sc.offense.formation + "." : "Count them yourself: that's question one."],
       ["Your defense", pk ? pk.label + ". " + pk.detail : "You pick it in step 2."],
       ["The job", r.down >= 3 ? "Get off the field: stop them short of the sticks." : r.yl100 <= 20 ? "Hold them to a field goal or less." : "Win the down: keep them under " + E.needYards(c) + " yards so they're behind schedule."],
-      ["Scouting report", offenseLine(r)]].map(function (x) { return "<div><dt>" + esc(x[0]) + "</dt><dd>" + esc(x[1]) + "</dd></div>"; }).join("");
+      ["Scouting report", st.synthetic ? st.lesson.context.scouting : offenseLine(r)]].map(function (x) { return "<div><dt>" + esc(x[0]) + "</dt><dd>" + esc(x[1]) + "</dd></div>"; }).join("");
+    if (st.synthetic) $("sit").querySelectorAll("dd")[2].textContent = st.lesson.context.objective;
+  }
+  // In a lesson, each option's small text is the lesson's reason for it, so it teaches as you pick.
+  function why(kind, items) {
+    var w = st.lesson && st.lesson.why[kind];
+    return w ? items.map(function (o) { return Object.assign({}, o, { detail: w[o.id] || o.detail }); }) : items;
   }
   function renderDefStep() {
     var r = st.r, f = $("step"), s = DSTEPS[st.step], html = "", a = st.answers, c = st.call;
@@ -594,14 +644,14 @@
         "<fieldset><legend>What are they most likely to run?</legend>" + radio("likely", F.AREAS.map(function (x) { return { id: x.id, label: { run: "A run", quick: "A quick throw or screen", middle: "An intermediate throw", deep: "A deep shot" }[x.id] }; }), a.likely) + "</fieldset>" +
         '<fieldset><legend>How sure are you of that read?</legend><div class="opts row">' + radio("confidence", D.confidence, a.confidence).replace('<div class="opts">', "").replace(/<\/div>$/, "") + "</div></fieldset>";
     } else if (s.id === "personnel") {
-      html = "<h2>Match their personnel</h2><p class=\"hint\">Your package sets the box count and who covers their receivers. Your defense draws on the field as you pick.</p><fieldset><legend>Your package</legend>" + radio("pkg", F.PACKAGES, c.pkg, detail) + "</fieldset>";
+      html = "<h2>Match their personnel</h2><p class=\"hint\">Your package sets the box count and who covers their receivers. Your defense draws on the field as you pick.</p><fieldset><legend>Your package</legend>" + radio("pkg", why("pkg", F.PACKAGES), c.pkg, detail) + "</fieldset>";
     } else if (s.id === "pressure") {
-      html = "<h2>Call the pressure</h2><p class=\"hint\">How many come, and from where.</p><fieldset><legend>Pressure</legend>" + radio("pressure", F.PRESSURES, c.pressure, detail) + "</fieldset>";
+      html = "<h2>Call the pressure</h2><p class=\"hint\">How many come, and from where.</p><fieldset><legend>Pressure</legend>" + radio("pressure", why("pressure", F.PRESSURES), c.pressure, detail) + "</fieldset>";
     } else if (s.id === "coverage") {
       var pz = F.PRESSURES.filter(function (p) { return p.id === c.pressure; })[0];
-      html = "<h2>Call the coverage</h2><p class=\"hint\">These are the coverages that go with " + esc(pz.label.toLowerCase()) + ".</p><fieldset><legend>Coverage</legend>" + radio("cov", pz.covers.map(function (k) { return { id: k, label: F.COVERAGES[k].label, detail: F.COVERAGES[k].detail }; }), c.cov, detail) + "</fieldset>";
+      html = "<h2>Call the coverage</h2><p class=\"hint\">These are the coverages that go with " + esc(pz.label.toLowerCase()) + ".</p><fieldset><legend>Coverage</legend>" + radio("cov", why("cov", pz.covers.map(function (k) { return { id: k, label: F.COVERAGES[k].label, detail: F.COVERAGES[k].detail }; })), c.cov, detail) + "</fieldset>";
     } else {
-      html = "<h2>What do you take away?</h2><p class=\"hint\">Every call gives something up. Pick what you refuse to let them have.</p><fieldset><legend>Take away</legend>" + radio("area", F.AREAS, c.area, detail) + "</fieldset>";
+      html = "<h2>What do you take away?</h2><p class=\"hint\">Every call gives something up. Pick what you refuse to let them have.</p><fieldset><legend>Take away</legend>" + radio("area", why("area", F.AREAS), c.area, detail) + "</fieldset>";
     }
     html += '<div class="nav">' + (st.step > 0 ? '<button type="button" class="ghost" id="back">\u2190 Back</button>' : "<span></span>") +
       '<span class="need" id="need"></span><button type="submit" class="primary" id="next">' + (st.step === DSTEPS.length - 1 ? "Snap it" : "Next \u2192") + "</button></div>";
@@ -657,7 +707,7 @@
   function renderDefReview(first) {
     var r = st.r, rv = F.review(r, st.answers, st.call, st.seed), rep = rv.rep, box = $("review");
     if (first && !st.recorded) {
-      save(STORE, E.record(load(STORE, null), { id: "def:" + st.base.id, learning: { tags: ["dc-personnel", "dc-coverage"] } }, rv, Date.now()));
+      save(STORE, E.record(load(STORE, null), { id: "def:" + (st.synthetic ? st.lesson.id : st.base.id), learning: { tags: st.lesson ? st.lesson.learning.tags : ["dc-personnel", "dc-coverage"] } }, rv, Date.now()));
       st.recorded = true;
     }
     var good = rep.stopped, last = rep.events[rep.events.length - 1].text;
@@ -674,27 +724,34 @@
       '<div class="odds"><p>Against what offenses run here, your call allows <b>' + epaText(rv.expected) + " expected points</b> per play and a <b>" + pct(rv.expectedSuccess) + "</b> success rate. The best call on the board allows " + epaText(rv.best.v) + ". Against the play they actually ran, it holds " + pct(1 - rep.p) + " of the time.</p>" +
       '<button type="button" class="ghost" id="again">Run this rep again</button></div>' +
       sec(1, "Your read", '<ul class="qlist"><li><div class="q"><span>Their personnel</span><span class="pill ' + (st.answers.pers === r.offPers ? "ok\">Right" : "no\">Missed") + "</span></div><div class=\"ans\">You: " + esc(st.answers.pers) + " · Real: " + esc(r.offPers) + "</div></li>" +
-        '<li><div class="q"><span>What they were most likely to run</span><span class="pill ' + (st.answers.likely === rv.likely ? "ok\">Right" : "part\">" + rv.grades.read + "/100") + "</span></div><div class=\"ans\">You: " + esc(likelyName[st.answers.likely]) + " · Most likely: " + esc(likelyName[rv.likely]) + "</div><div class=\"ex\">" + esc(offenseLine(r)) + "</div></li></ul>") +
-      sec(2, "What the offense really ran", '<ul class="real-facts"><li><span class="pill ok">Verified</span><b>The play</b><span>' + esc(r.desc) + "</span></li><li><span class=\"pill uncertain\">Charted</span><b>In your terms</b><span>" + esc(real + " That's " + F.NAMES[rep.concept] + ".") + "</span></li></ul>") +
+        '<li><div class="q"><span>What they were most likely to run</span><span class="pill ' + (st.answers.likely === rv.likely ? "ok\">Right" : "part\">" + rv.grades.read + "/100") + "</span></div><div class=\"ans\">You: " + esc(likelyName[st.answers.likely]) + " · Most likely: " + esc(likelyName[rv.likely]) + "</div><div class=\"ex\">" + esc(offenseLine(r)) + "</div></li></ul>" +
+        (st.lesson ? '<p class="calib">' + esc(st.lesson.read.pers + " " + st.lesson.read.likely) + "</p>" : "")) +
+      (st.lesson ? sec("\u2605", "What mattered", '<ul class="clues">' + st.lesson.clues.map(function (c) {
+        return '<li><span class="pill ' + c.kind + '">' + ({ meaningful: "Meaningful", deceptive: "Deceptive", uncertain: "Uncertain" })[c.kind] + "</span><span>" + esc(c.text) + "</span></li>";
+      }).join("") + "</ul>") : "") +
+      sec(2, st.synthetic ? "What the offense ran" : "What the offense really ran", st.synthetic ? '<ul class="real-facts"><li><span class="pill part">Synthetic</span><b>The play</b><span>' + esc(r.desc + " That's " + F.NAMES[rep.concept] + ".") + "</span></li></ul>" :
+        '<ul class="real-facts"><li><span class="pill ok">Verified</span><b>The play</b><span>' + esc(r.desc) + "</span></li><li><span class=\"pill uncertain\">Charted</span><b>In your terms</b><span>" + esc(real + " That's " + F.NAMES[rep.concept] + ".") + "</span></li></ul>") +
       sec(3, "Your call against it", "<p><b>" + esc(callText(st.call)) + ".</b> " + (F.mismatch(r, st.call.pkg) ? "That leaves " + F.mismatch(r, st.call.pkg) + " of their receivers on linebackers. " : "") + "</p>" +
+        (st.lesson ? '<ul class="notes">' + [["pkg", st.call.pkg], ["pressure", st.call.pressure], ["cov", st.call.cov], ["area", st.call.area]].map(function (x) { return "<li>" + esc(st.lesson.why[x[0]][x[1]]) + "</li>"; }).join("") + "</ul>" : "") +
         '<div class="cards">' + rep.cards.map(function (c) { return '<div class="acard ' + (c.held ? "held" : "fail") + '"><h4>' + esc(c.who) + "<span>" + (c.held ? "\u2713 Won" : "\u2717 Lost") + "</span></h4><p><b>Job:</b> " + esc(c.job) + "</p><p><b>" + (c.held ? "Won:" : "Lost:") + "</b> " + esc(c.held ? c.win : c.fail) + "</p></div>"; }).join("") + "</div>" +
         '<ol class="timeline">' + rep.events.map(function (t) { return "<li><time>" + t.t.toFixed(1) + "s</time>" + esc(t.text) + "</li>"; }).join("") + "</ol>") +
-      sec(4, "What the real defense called", '<ul class="real-facts"><li><span class="pill uncertain">Charted</span><b>Their call</b><span>' + esc(r.pkg.replace(/^./, function (x) { return x.toUpperCase(); }) + (r.box ? ", " + r.box + " in the box" : "") + (r.kind === "pass" ? ", " + (r.rushers || 0) + " rushers, " + (r.coverage || "coverage not charted") : ", coverage " + (r.coverage || "not charted on runs"))) + "</span></li><li><span class=\"pill ok\">Verified</span><b>How it went</b><span>" +
-        esc((r.td ? "Touchdown" : r.result === "int" ? "Intercepted" : r.result === "sack" ? "Sack" : r.result === "incomplete" ? "Incomplete" : r.yards + " yards" + (r.first ? ", first down" : "")) + ". Offense's expected points: " + epaText(r.epa) + ".") + "</span></li></ul>") +
+      (st.synthetic ? "" : sec(4, "What the real defense called", '<ul class="real-facts"><li><span class="pill uncertain">Charted</span><b>Their call</b><span>' + esc(r.pkg.replace(/^./, function (x) { return x.toUpperCase(); }) + (r.box ? ", " + r.box + " in the box" : "") + (r.kind === "pass" ? ", " + (r.rushers || 0) + " rushers, " + (r.coverage || "coverage not charted") : ", coverage " + (r.coverage || "not charted on runs"))) + "</span></li><li><span class=\"pill ok\">Verified</span><b>How it went</b><span>" +
+        esc((r.td ? "Touchdown" : r.result === "int" ? "Intercepted" : r.result === "sack" ? "Sack" : r.result === "incomplete" ? "Incomplete" : r.yards + " yards" + (r.first ? ", first down" : "")) + ". Offense's expected points: " + epaText(r.epa) + ".") + "</span></li></ul>")) +
+      (st.lesson ? sec("\u2713", "The lesson's call", "<p><b>" + esc(callText(st.lesson.best)) + ".</b></p>" + '<ul class="notes">' + [["pkg", st.lesson.best.pkg], ["pressure", st.lesson.best.pressure], ["cov", st.lesson.best.cov], ["area", st.lesson.best.area]].map(function (x) { return "<li>" + esc(st.lesson.why[x[0]][x[1]]) + "</li>"; }).join("") + "</ul>") : "") +
       sec(5, "The best call in each package", "<p>Each package with its best pressure, coverage and take-away against what offenses run here. Lower is better for you.</p>" + '<ul class="alts">' + rv.alternatives.map(function (x, i) {
         return '<li class="' + (x.call.pkg === st.call.pkg ? "yours" : "") + '"><div class="head"><span class="pill ' + (i === 0 ? "ok" : "part") + '">' + (i === 0 ? "Best" : "#" + (i + 1)) + "</span><b>" + esc(callText(x.call)) + "</b>" + (x.call.pkg === st.call.pkg ? '<span class="pill uncertain">Your package</span>' : "") + '<span class="stats">' + epaText(x.allowed) + " EPA/play</span></div></li>";
       }).join("") + "</ul>") +
-      '<div class="takeaway"><small>Takeaway</small><p>' + esc((D.situationsDefense || {})[r.situation] || "Match their personnel, then take away what this personnel runs on this down.") + "</p></div>" +
+      (st.lesson ? sec(6, "Next time", "<p>" + esc(st.lesson.next) + "</p>") : "") +
+      '<div class="takeaway"><small>Takeaway</small><p>' + esc(st.lesson ? st.lesson.takeaway : (D.situationsDefense || {})[r.situation] || "Match their personnel, then take away what this personnel runs on this down.") + "</p></div>" +
       '<div class="after"><button type="button" class="primary" id="next-scen">Next snap \u2192</button><button type="button" class="ghost" id="replay">Call this one again</button><button type="button" class="ghost" id="home">Back to start</button></div>';
     box.innerHTML = html;
     box.hidden = false;
     $("again").onclick = function () { st.seed = (st.seed * 48271) % 2147483647 || 7; renderDefReview(false); say("New rep. " + $("result-line").textContent); };
     $("next-scen").onclick = function () {
-      var rec = load(STORE, null), pool = filmMatches(), fresh = pool.filter(function (s) { return !(rec && rec.scenarios["def:" + s.id]) && s.id !== st.base.id; });
-      var from = fresh.length ? fresh : pool;
-      beginDef(from[Math.floor(Math.random() * from.length)].id);
+      // In a lesson, its real snaps come next; otherwise another film snap.
+      beginDef(st.lesson && dlessonSnaps(st.lesson.id).length ? nextDef(dlessonSnaps(st.lesson.id), st.base.id) : nextDef(filmMatches(), st.base.id));
     };
-    $("replay").onclick = function () { beginDef(st.base.id); };
+    $("replay").onclick = function () { beginDef(st.synthetic ? st.lesson.id : st.base.id); };
     $("home").onclick = function () { $("quit").click(); };
     if (first) { $("result-line").focus({ preventScroll: true }); box.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" }); }
   }

@@ -75,7 +75,7 @@ def lessons():
     """Read each lesson's id and fit out of scenarios.js (it's a JS file, so this is a light parse)."""
     src = open(os.path.join(ROOT, "sunday-strategist", "scenarios.js"), encoding="utf-8").read()
     out = []
-    for m in re.finditer(r'id: "([\w-]+)",\s*\n\s*title:.*?fit: (\{.*?\}),\n', src, re.S):
+    for m in re.finditer(r'id: "([\w-]+)",\s*\n\s*title:.*?fit: (\{[^\n]*\})', src, re.S):
         fit = re.sub(r"(\w+):", r'"\1":', m.group(2))
         out.append((m.group(1), json.loads(fit)))
     return out
@@ -117,10 +117,15 @@ def package(dp):
     return "heavy" if dbs <= 3 else "base" if dbs == 4 else "nickel" if dbs == 5 else "dime" if dbs == 6 else "quarter"
 
 
-def lesson_fits(fit, kind, down, dist, pers, pkg, box, cov, rush, blitz, wrs):
+def lesson_fits(fit, kind, down, dist, pers, pkg, box, cov, rush, blitz, wrs, yl=50, sit=None):
     """A lesson's fit, from scenarios.js. Missing keys keep the original lessons' defaults:
     a pass from 11 personnel (three receivers) against nickel."""
     if kind not in fit.get("kinds", ["pass"]):
+        return False
+    lo, hi = fit.get("yl", [20, 80])
+    if not lo <= yl <= hi:
+        return False
+    if "situation" in fit and sit not in fit["situation"]:
         return False
     if down not in fit["downs"] or not fit["distance"][0] <= dist <= fit["distance"][1]:
         return False
@@ -175,11 +180,11 @@ def season(year, fits):
         wp = num(r["wp"], 0.5)
         if not 0.05 <= wp <= 0.95:
             continue
-        if 20 <= yl <= 80 and 0.12 <= wp <= 0.88 and f["is_screen_pass"] != "TRUE" and (kind == "run" or p.get("route")):
+        if 0.12 <= wp <= 0.88 and f["is_screen_pass"] != "TRUE" and (kind == "run" or p.get("route")):
             pers = f"{count(o, {'RB', 'FB'})}{count(o, {'TE'})}"
             box = int(num(p["defenders_in_box"], 0))
             for lid, fit in fits:
-                if lesson_fits(fit, kind, down, dist, pers, package(dp), box, cov, rush, blitz, count(o, {"WR"})):
+                if lesson_fits(fit, kind, down, dist, pers, package(dp), box, cov, rush, blitz, count(o, {"WR"}), yl, sit):
                     found[lid].append(snap(year, r, p, f, rush, blitz, wp, sit))
         if sit:
             broad.append(snap(year, r, p, f, rush, blitz, wp, sit))
@@ -329,9 +334,11 @@ def main():
         for (team, k), t in drop.items():
             tend[(y, team, k)] = t
         broad.extend(b)
-    plays = []
+    plays, used = [], set()
     for lid, _ in fits:
-        chosen = choose(allc[lid])
+        # A real snap belongs to one lesson only.
+        chosen = choose([c for c in allc[lid] if (c["gameId"], c["playId"]) not in used])
+        used.update((c["gameId"], c["playId"]) for c in chosen)
         print(f"{lid}: {len(allc[lid])} matching snaps, {len(chosen)} chosen")
         for i, c in enumerate(chosen):
             c["tendency"] = tendency(tend, c, "3rd")

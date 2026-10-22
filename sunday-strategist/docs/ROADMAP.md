@@ -1,6 +1,7 @@
 # Sunday Strategist: roadmap
 
 **Done.**
+- **Five defense lessons:** Match the Personnel, Play the Sticks, Empty Set, Goal Line Stand and Two-Minute Defense. Each has hand-written reasons for every package, pressure, coverage and take-away, grades from `defense.js`, and 8 real snaps. A test makes sure each lesson's hand-picked best call is the model's best.
 - **Five more lessons:** Quarters Wall, The Rotation, Creeper (simulated pressure), 2-Man on Third and Long, and Count the Box (12 personnel against an eight-man box). Lesson fits now take personnel, package, box count and run or pass, so lessons go beyond 11 personnel vs nickel. That makes 9 lessons with 72 real snaps.
 - **Defensive coordinator mode:** switch sides on the start screen and call the defense on any film-room snap. Graded on expected points allowed, and the real play runs against your call.
 - **LCB and RCB labels** on every corner, for coverage talk.

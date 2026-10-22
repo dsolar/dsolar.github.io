@@ -153,6 +153,25 @@ try {
     const dtext = await page.textContent('#review');
     for (const s of ['What the offense really ran', 'Your call against it', 'What the real defense called', 'The best call in each package']) assert.ok(dtext.includes(s), s);
     await page.click('#home');
+
+    // A defense lesson: hand-written reasons under each option, then the lesson's own review.
+    assert.equal(await page.isHidden('#dmodule'), false, 'defense lessons show on the defense side');
+    await page.click('[data-dstart="def-personnel"]');
+    assert.equal(await page.textContent('#scen-title'), 'Match the Personnel');
+    await page.check('input[name="pers"][value="12"]'); await page.check('input[name="likely"][value="run"]'); await page.check('input[name="confidence"] >> nth=2');
+    await page.click('#next');
+    assert.match(await page.textContent('#step'), /textbook match/, 'package options carry the lesson\'s reasons');
+    await page.check('input[name="pkg"][value="base"]'); await page.click('#next');
+    await page.check('input[name="pressure"][value="four"]'); await page.click('#next');
+    await page.check('input[name="cov"][value="man"]'); await page.click('#next');
+    await page.check('input[name="area"][value="run"]'); await page.click('#next');
+    await page.waitForSelector('#review:not([hidden]) .grades-5');
+    const ltext = await page.textContent('#review');
+    for (const s of ['What mattered', "The lesson's call", 'Match personnel first']) assert.ok(ltext.includes(s), s);
+    assert.ok(!ltext.includes('What the real defense called'), 'synthetic lessons have no real defense');
+    await page.click('#next-scen');
+    assert.match(await page.textContent('#where'), /Match the Personnel · real snap/);
+    await page.click('#quit');
     await page.click('[data-side="offense"]');
 
     // Phone width: no sideways scrolling.
@@ -163,7 +182,7 @@ try {
     assert.deepEqual(errors, []);
     await ctx.close();
   }
-  console.log('Passed: defensive coordinator flow; film room filter, deal and play; real snap with team, roster and real result; full snap with keyboard-free and field input, motion reveal, routes, six grades, review sections, replays, saved progress, next scenario, phone layout (with and without reduced motion).');
+  console.log('Passed: defense lesson and its real snaps; defensive coordinator flow; film room filter, deal and play; real snap with team, roster and real result; full snap with keyboard-free and field input, motion reveal, routes, six grades, review sections, replays, saved progress, next scenario, phone layout (with and without reduced motion).');
 } finally {
   await browser.close();
   server.close();
