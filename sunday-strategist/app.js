@@ -54,6 +54,11 @@
   /* ---------- start screen ---------- */
   function renderStart() {
     var rec = load(STORE, null);
+    $("side").innerHTML = '<span>You call the</span><button type="button" data-side="offense" aria-pressed="' + (side === "offense") + '">Offense</button><button type="button" data-side="defense" aria-pressed="' + (side === "defense") + '">Defense</button>';
+    Array.prototype.forEach.call($("side").querySelectorAll("button"), function (b) {
+      b.onclick = function () { side = b.getAttribute("data-side"); var p = load(PREFS, {}); p.side = side; save(PREFS, p); renderStart(); };
+    });
+    $("module").hidden = side === "defense";
     var items = lessons.map(function (s, i) {
       var r = rec && rec.scenarios[s.id], reals = realOf(s.id);
       var played = reals.filter(function (x) { return rec && rec.scenarios[x.id]; }).length;
@@ -79,6 +84,9 @@
     });
   }
 
+  var side = load(PREFS, {}).side === "defense" ? "defense" : "offense";
+  function recId(id) { return side === "defense" ? "def:" + id : id; }
+
   /* ---------- film room: every real snap, filterable ---------- */
   var filters = load(PREFS, {}).film || {};
   // A stable shuffle, so the list mixes situations, seasons and teams instead of following the file's order.
@@ -103,13 +111,14 @@
     var sits = Object.keys(window.SS_REAL.situations).map(function (k) { return [k, window.SS_REAL.situations[k]]; });
     var pc = count(function (r) { return r.offPers; }), pers = Object.keys(pc).sort(function (a, b) { return pc[b] - pc[a]; }).map(function (k) { return [k, k + " personnel"]; });
     var teams = Object.keys(window.SS_REAL.teams).sort(function (a, b) { return window.SS_REAL.teams[a].localeCompare(window.SS_REAL.teams[b]); }).map(function (k) { return [k, window.SS_REAL.teams[k]]; });
-    var list = filmMatches(), played = list.filter(function (s) { return rec && rec.scenarios[s.id]; }).length;
-    box.innerHTML = '<h2>Film room</h2><p>' + film.length + " real snaps from 2023 to 2025, every down and distance, every personnel group, runs and passes. Pick a situation or a team, or let it deal you one.</p>" +
+    var list = filmMatches(), played = list.filter(function (s) { return rec && rec.scenarios[recId(s.id)]; }).length;
+    box.innerHTML = '<h2>Film room' + (side === "defense" ? ": call the defense" : "") + '</h2><p>' + film.length + " real snaps from 2023 to 2025, every down and distance, every personnel group, runs and passes. " +
+      (side === "defense" ? "You're the defensive coordinator: read their personnel, match it, call the pressure and coverage, and the real play runs against you." : "Pick a situation or a team, or let it deal you one.") + "</p>" +
       '<div class="flts">' + select("sit", "Situation", sits) + select("pers", "Your personnel", pers) +
       select("pkg", "Their package", [["heavy", "Goal line"], ["base", "Base"], ["nickel", "Nickel"], ["dime", "Dime"]]) + select("kind", "Real call", [["run", "Run"], ["pass", "Pass"]]) + select("team", "Team", teams) + "</div>" +
       '<p class="flt-count">' + list.length + " snap" + (list.length === 1 ? "" : "s") + " match" + (played ? " · " + played + " played" : "") + "</p>" +
       '<ul class="film-list">' + list.slice(0, 12).map(function (s) {
-        var r = s.real, done = rec && rec.scenarios[s.id];
+        var r = s.real, done = rec && rec.scenarios[recId(s.id)];
         return '<li><button type="button" data-start="' + esc(s.id) + '"><span class="fl-teams">' + logo(r.off, 20) + "<b>" + esc(r.off) + "</b><span>" + (r.home === r.off ? "vs" : "at") + "</span>" + logo(r.def, 20) + "<b>" + esc(r.def) + "</b></span>" +
           '<span class="fl-sit">' + esc(["", "1st", "2nd", "3rd", "4th"][r.down] + " & " + (r.yl100 <= r.dist ? "goal" : r.dist) + " · " + r.offPers + " vs " + r.pkg + " · " + (r.round || "Wk " + r.week) + " " + r.season) + "</span>" +
           '<span class="fl-grade' + (done ? " done" : "") + '">' + (done ? esc(E.letter(done.best)) : "") + "</span></button></li>";
@@ -119,7 +128,7 @@
     });
     Array.prototype.forEach.call(box.querySelectorAll("[data-start]"), function (b) { b.onclick = function () { begin(b.getAttribute("data-start")); }; });
     if ($("deal")) $("deal").onclick = function () {
-      var pool = filmMatches(), fresh = pool.filter(function (s) { var r = load(STORE, null); return !(r && r.scenarios[s.id]); });
+      var pool = filmMatches(), fresh = pool.filter(function (s) { var r = load(STORE, null); return !(r && r.scenarios[recId(s.id)]); });
       var from = fresh.length ? fresh : pool;
       begin(from[Math.floor(Math.random() * from.length)].id);
     };
@@ -130,11 +139,19 @@
     return ["QB " + r.qb, "RB " + r.rb, "TE " + r.te, "WR " + r.wr.join(", ")].filter(function (x) { return !/ (null|undefined)$/.test(x); }).join(" · ");
   }
   function begin(id) {
+    if (side === "defense" && by(film, id)) return beginDef(id);
     var sc = by(scenarios, id) || scenarios[0];
     st = { sc: sc, step: 0, answers: { rushers: [] }, pick: { motion: "none" }, seed: (Date.now() % 100000) + 1, snapped: false, recorded: false };
-    $("start").hidden = true; $("play").hidden = false; $("review").hidden = true; $("review").innerHTML = "";
     var lesson = !sc.real ? sc : sc.lesson ? by(lessons, sc.lesson) : null;
-    $("where").textContent = lesson ? "Lesson " + (lessons.indexOf(lesson) + 1) + " of " + lessons.length + ": " + lesson.title + (sc.real ? " · real snap" : "") : "Film room · " + (window.SS_REAL.situations[sc.situation] || "") + " · real snap";
+    header(sc, lesson ? "Lesson " + (lessons.indexOf(lesson) + 1) + " of " + lessons.length + ": " + lesson.title + (sc.real ? " · real snap" : "") : "Film room · " + (window.SS_REAL.situations[sc.situation] || "") + " · real snap");
+    drawField();
+    renderStep();
+    window.scrollTo(0, 0);
+    $("scen-title").focus({ preventScroll: true });
+  }
+  function header(sc, where) {
+    $("start").hidden = true; $("play").hidden = false; $("review").hidden = true; $("review").innerHTML = "";
+    $("where").textContent = where;
     $("scen-title").innerHTML = sc.real ? logo(sc.real.off, 40) + esc(sc.title) + logo(sc.real.def, 40) : esc(sc.title);
     $("scen-sub").textContent = sc.real ? sc.subtitle : "";
     $("scen-sub").hidden = !sc.real;
@@ -144,10 +161,6 @@
       ? '<div class="team">' + logo(sc.real.off, 26) + '<span><small>' + esc(sc.real.off) + '</small><b>' + c.score.you + '</b></span></div><div class="team">' + logo(sc.real.def, 26) + '<span><small>' + esc(sc.real.def) + '</small><b>' + c.score.opp + '</b></span></div>'
       : '<div><small>You</small><b>' + c.score.you + '</b></div><div><small>Opp</small><b>' + c.score.opp + '</b></div>') +
       '<div><small>' + (c.quarter > 4 ? "OT" : "Q" + c.quarter) + '</small><b>' + esc(c.clock) + '</b></div><div class="down"><small>' + (c.side === "opp" ? "Opp " : "Own ") + c.yardLine + '</small><b>' + ord(c.down) + " &amp; " + c.distance + "</b></div>";
-    drawField();
-    renderStep();
-    window.scrollTo(0, 0);
-    $("scen-title").focus({ preventScroll: true });
   }
 
   function positions() {
@@ -210,16 +223,16 @@
     sc.offense.players.forEach(function (p) {
       var g = el("g", { class: "pl off", "data-id": p.id }, pl);
       el("circle", { class: "body", r: 10.5, fill: "#EEF2F5", stroke: "#0D1821", "stroke-width": 1.5 }, g);
-      var t = el("text", { class: "lab", y: 3.6, "text-anchor": "middle", "font-size": p.label.length > 1 ? 9.5 : 11, "font-weight": 700, fill: "#0D1821", "font-family": "Saira, sans-serif" }, g);
+      var t = el("text", { class: "lab", y: 3.6, "text-anchor": "middle", "font-size": p.label.length > 2 ? 8 : p.label.length > 1 ? 9.5 : 11, "font-weight": 700, fill: "#0D1821", "font-family": "Saira, sans-serif" }, g);
       t.textContent = p.label;
     });
-    sc.defense.players.forEach(function (p) {
+    (st.hideD ? [] : sc.defense.players).forEach(function (p) {
       var g = el("g", { class: "pl def", "data-id": p.id, tabindex: -1, role: "checkbox", "aria-checked": "false", "aria-label": p.role }, pl);
       el("circle", { class: "ring", r: 15, fill: "none", stroke: "#F7D23E", "stroke-width": 2.5, "stroke-dasharray": "4 3" }, g);
       el("rect", { class: "body", x: -10, y: -10, width: 20, height: 20, rx: 3, fill: "#FF7A6B", stroke: "#0D1821", "stroke-width": 1.5 }, g);
-      var t = el("text", { class: "lab", y: 3.6, "text-anchor": "middle", "font-size": p.label.length > 1 ? 9.5 : 11, "font-weight": 700, fill: "#0D1821", "font-family": "Saira, sans-serif" }, g);
+      var t = el("text", { class: "lab", y: 3.6, "text-anchor": "middle", "font-size": p.label.length > 2 ? 8 : p.label.length > 1 ? 9.5 : 11, "font-weight": 700, fill: "#0D1821", "font-family": "Saira, sans-serif" }, g);
       t.textContent = p.label;
-      g.addEventListener("click", function () { if (st.step === 0 && !st.snapped) toggleRusher(p.id); });
+      g.addEventListener("click", function () { if (st.step === 0 && !st.snapped && st.side !== "defense") toggleRusher(p.id); });
       g.addEventListener("keydown", function (e) { if ((e.key === " " || e.key === "Enter") && st.step === 0 && !st.snapped) { e.preventDefault(); toggleRusher(p.id); } });
     });
     el("circle", { cx: sx(ballX()), cy: sy(0) + 3, r: 3, fill: "#8C4A26" }, svg);
@@ -244,7 +257,7 @@
         var sel = st.answers.rushers.indexOf(id) >= 0;
         g.classList.toggle("sel", sel && !st.snapped);
         g.setAttribute("aria-checked", sel ? "true" : "false");
-        var pick = st.step === 0 && !st.snapped;
+        var pick = st.step === 0 && !st.snapped && st.side !== "defense";
         g.classList.toggle("pick", pick);
         g.setAttribute("tabindex", pick ? 0 : -1);
       }
@@ -315,6 +328,7 @@
   }
 
   function renderStep() {
+    if (st.side === "defense") return renderDefStep();
     var sc = st.sc, s = STEPS[st.step], f = $("step"), html = "";
     renderSit();
     $("steps").innerHTML = STEPS.map(function (x, i) { return "<li" + (i < st.step ? ' class="done"' : "") + (i === st.step ? ' aria-current="step"' : "") + ">" + x.label + "</li>"; }).join("");
@@ -355,6 +369,7 @@
   }
 
   function missing() {
+    if (st.side === "defense") return defMissing();
     var a = st.answers, p = st.pick, s = STEPS[st.step].id;
     if (s === "diagnose") {
       var left = st.sc.diagnosis.questions.filter(function (q) { return q.kind === "rushers" ? !a.rushers.length : !a[q.id]; }).length + (a.confidence ? 0 : 1);
@@ -372,6 +387,7 @@
   }
 
   $("step").addEventListener("change", function (e) {
+    if (st.side === "defense") return defChange(e.target);
     var t = e.target, n = t.name, sc = st.sc;
     if (n === "rushers") { toggleRusher(t.value); return; }
     if (n === "motion") {
@@ -393,6 +409,7 @@
   });
   $("step").addEventListener("submit", function (e) {
     e.preventDefault();
+    if (st.side === "defense") return defSubmit();
     if (missing()) return;
     if (st.step < STEPS.length - 1) {
       st.step++;
@@ -402,7 +419,7 @@
     }
     snap();
   });
-  $("labels").addEventListener("change", function () { var p = load(PREFS, {}); p.labels = this.checked; save(PREFS, p); setLabels(this.checked); if (st && st.step === 0 && !st.snapped) renderStep(); });
+  $("labels").addEventListener("change", function () { var p = load(PREFS, {}); p.labels = this.checked; save(PREFS, p); setLabels(this.checked); if (st && st.step === 0 && !st.snapped && st.side !== "defense") renderStep(); });
   $("quit").onclick = function () { $("play").hidden = true; $("start").hidden = false; renderStart(); window.scrollTo(0, 0); };
 
   /* ---------- the snap and the review ---------- */
@@ -538,6 +555,149 @@
   }
   function sec(n, title, body) { return '<section class="sec"><h3><span>' + n + "</span>" + esc(title) + "</h3>" + body + "</section>"; }
   function roleOf(id) { var p = by(st.sc.defense.players, id); return p ? p.role.split(",")[0].toLowerCase() : id; }
+
+  /* ---------- defensive coordinator mode (defense.js does the football) ---------- */
+  var F = window.SS_DEF;
+  var DSTEPS = [{ id: "read", label: "Read" }, { id: "personnel", label: "Personnel" }, { id: "pressure", label: "Pressure" }, { id: "coverage", label: "Coverage" }, { id: "takeaway", label: "Take away" }];
+  var AREA_NAME = { run: "run", quick: "quick game and screens", middle: "intermediate middle", deep: "deep shots" };
+  function beginDef(id) {
+    var base = by(film, id);
+    st = { side: "defense", base: base, r: base.real, step: 0, answers: { rushers: [] }, call: {}, pick: { motion: "none" }, seed: (Date.now() % 100000) + 1, snapped: false, recorded: false, hideD: true };
+    st.sc = F.view(D, window.SS_REAL, st.r, {});
+    header(base, "Film room · " + (window.SS_REAL.situations[base.situation] || "") + " · you call the defense");
+    $("prov").innerHTML = "<b>Real snap</b><span>You're the " + esc(base.teams.defName) + "' defensive coordinator. The offense's personnel, formation and the play they ran are real; your defense is drawn from your call.</span>";
+    drawField();
+    renderDefStep();
+    window.scrollTo(0, 0);
+    $("scen-title").focus({ preventScroll: true });
+  }
+  function offenseLine(r) {
+    var a = F.areaDist(r), n = F.offenseDist(r).n;
+    return "From " + r.offPers + " personnel on " + (window.SS_REAL.situations[r.situation] || "this down").toLowerCase() + ", offenses ran it " + pct(a.run) + " of the time, threw quick " + pct(a.quick) + ", went to the intermediate middle " + pct(a.middle) + " and took deep shots " + pct(a.deep) + (n ? " (" + n.toLocaleString("en-US") + " snaps, 2023 to 2025)." : ".");
+  }
+  function renderSitDef() {
+    var sc = st.base, r = st.r, c = sc.context, told = st.step > 0 || st.snapped, pk = F.PACKAGES.filter(function (p) { return p.id === st.call.pkg; })[0];
+    $("sit").innerHTML = [["Their offense", told ? sc.offense.personnelText + ". " + sc.offense.formation + "." : "Count them yourself: that's question one."],
+      ["Your defense", pk ? pk.label + ". " + pk.detail : "You pick it in step 2."],
+      ["The job", r.down >= 3 ? "Get off the field: stop them short of the sticks." : r.yl100 <= 20 ? "Hold them to a field goal or less." : "Win the down: keep them under " + E.needYards(c) + " yards so they're behind schedule."],
+      ["Scouting report", offenseLine(r)]].map(function (x) { return "<div><dt>" + esc(x[0]) + "</dt><dd>" + esc(x[1]) + "</dd></div>"; }).join("");
+  }
+  function renderDefStep() {
+    var r = st.r, f = $("step"), s = DSTEPS[st.step], html = "", a = st.answers, c = st.call;
+    renderSitDef();
+    $("steps").innerHTML = DSTEPS.map(function (x, i) { return "<li" + (i < st.step ? ' class="done"' : "") + (i === st.step ? ' aria-current="step"' : "") + ">" + x.label + "</li>"; }).join("");
+    if (s.id === "read") {
+      var pers = ["10", "11", "12", "13", "21", "22"];
+      if (pers.indexOf(r.offPers) < 0) pers.push(r.offPers);
+      html = "<h2>Read the offense</h2><p class=\"hint\">Count their backs and tight ends, then think about what this personnel runs on this down.</p>" +
+        '<fieldset><legend>What personnel are they in?</legend><div class="opts row">' + pers.map(function (p) { return '<label class="opt"><input type="radio" name="pers" value="' + p + '"' + (a.pers === p ? " checked" : "") + "><span><b>" + p + "</b><small>" + (+p[0]) + " back" + (p[0] === "1" ? "" : "s") + ", " + (+p[1]) + " TE</small></span></label>"; }).join("") + "</div></fieldset>" +
+        "<fieldset><legend>What are they most likely to run?</legend>" + radio("likely", F.AREAS.map(function (x) { return { id: x.id, label: { run: "A run", quick: "A quick throw or screen", middle: "An intermediate throw", deep: "A deep shot" }[x.id] }; }), a.likely) + "</fieldset>" +
+        '<fieldset><legend>How sure are you of that read?</legend><div class="opts row">' + radio("confidence", D.confidence, a.confidence).replace('<div class="opts">', "").replace(/<\/div>$/, "") + "</div></fieldset>";
+    } else if (s.id === "personnel") {
+      html = "<h2>Match their personnel</h2><p class=\"hint\">Your package sets the box count and who covers their receivers. Your defense draws on the field as you pick.</p><fieldset><legend>Your package</legend>" + radio("pkg", F.PACKAGES, c.pkg, detail) + "</fieldset>";
+    } else if (s.id === "pressure") {
+      html = "<h2>Call the pressure</h2><p class=\"hint\">How many come, and from where.</p><fieldset><legend>Pressure</legend>" + radio("pressure", F.PRESSURES, c.pressure, detail) + "</fieldset>";
+    } else if (s.id === "coverage") {
+      var pz = F.PRESSURES.filter(function (p) { return p.id === c.pressure; })[0];
+      html = "<h2>Call the coverage</h2><p class=\"hint\">These are the coverages that go with " + esc(pz.label.toLowerCase()) + ".</p><fieldset><legend>Coverage</legend>" + radio("cov", pz.covers.map(function (k) { return { id: k, label: F.COVERAGES[k].label, detail: F.COVERAGES[k].detail }; }), c.cov, detail) + "</fieldset>";
+    } else {
+      html = "<h2>What do you take away?</h2><p class=\"hint\">Every call gives something up. Pick what you refuse to let them have.</p><fieldset><legend>Take away</legend>" + radio("area", F.AREAS, c.area, detail) + "</fieldset>";
+    }
+    html += '<div class="nav">' + (st.step > 0 ? '<button type="button" class="ghost" id="back">\u2190 Back</button>' : "<span></span>") +
+      '<span class="need" id="need"></span><button type="submit" class="primary" id="next">' + (st.step === DSTEPS.length - 1 ? "Snap it" : "Next \u2192") + "</button></div>";
+    f.innerHTML = html;
+    if ($("back")) $("back").onclick = function () { st.step--; renderDefStep(); };
+    updateNav();
+  }
+  function defMissing() {
+    var a = st.answers, c = st.call, s = DSTEPS[st.step].id;
+    if (s === "read") return (a.pers ? 0 : 1) + (a.likely ? 0 : 1) + (a.confidence ? 0 : 1) ? "Answer all three" : "";
+    if (s === "personnel") return c.pkg ? "" : "Pick a package";
+    if (s === "pressure") return c.pressure ? "" : "Pick a pressure";
+    if (s === "coverage") return c.cov ? "" : "Pick a coverage";
+    return c.area ? "" : "Pick what you take away";
+  }
+  function redrawDefense() {
+    st.hideD = !st.call.pkg;
+    st.sc = F.view(D, window.SS_REAL, st.r, st.call);
+    drawField();
+  }
+  function defChange(t) {
+    var n = t.name;
+    if (n === "pers" || n === "likely" || n === "confidence") st.answers[n] = t.value;
+    else {
+      st.call[n] = t.value;
+      if (n === "pressure") { var pz = F.PRESSURES.filter(function (p) { return p.id === t.value; })[0]; if (pz.covers.indexOf(st.call.cov) < 0) st.call.cov = pz.covers.length === 1 ? pz.covers[0] : null; }
+      if (n === "pkg" || n === "pressure" || n === "cov") redrawDefense();
+      if (n === "pkg") renderSitDef();
+    }
+    updateNav();
+  }
+  function defSubmit() {
+    if (defMissing()) return;
+    if (st.step < DSTEPS.length - 1) {
+      st.step++;
+      renderDefStep();
+      var h = $("step").querySelector("h2"); if (h) { h.tabIndex = -1; h.focus(); }
+      return;
+    }
+    st.snapped = true;
+    redrawDefense();
+    place();
+    drawPost();
+    Array.prototype.forEach.call($("step").querySelectorAll("input,button"), function (x) { x.disabled = true; });
+    $("steps").innerHTML = DSTEPS.map(function (x) { return '<li class="done">' + x.label + "</li>"; }).join("");
+    setTimeout(function () { renderDefReview(true); }, reduce ? 0 : 900);
+  }
+  function callText(c) {
+    var pk = F.PACKAGES.filter(function (p) { return p.id === c.pkg; })[0], pz = F.PRESSURES.filter(function (p) { return p.id === c.pressure; })[0];
+    return pk.label + ", " + pz.label.toLowerCase() + ", " + F.COVERAGES[c.cov].label + ", taking away the " + AREA_NAME[c.area];
+  }
+  function epaText(v) { return (v > 0 ? "+" : "") + v.toFixed(2); }
+  function renderDefReview(first) {
+    var r = st.r, rv = F.review(r, st.answers, st.call, st.seed), rep = rv.rep, box = $("review");
+    if (first && !st.recorded) {
+      save(STORE, E.record(load(STORE, null), { id: "def:" + st.base.id, learning: { tags: ["dc-personnel", "dc-coverage"] } }, rv, Date.now()));
+      st.recorded = true;
+    }
+    var good = rep.stopped, last = rep.events[rep.events.length - 1].text;
+    if (good && !rep.firstDown && /for \d+ yards?\.$/.test(last) && r.down >= 3) last += " Short of the sticks: a stop.";
+    else if (good && /for \d+ yards?\.$/.test(last)) last += " Under what they needed: a stop.";
+    var G = [["read", "Read", "process"], ["personnel", "Personnel", "process"], ["call", "Call", "process"], ["takeaway", "Take away", "process"], ["result", "Result", "outcome"]];
+    var a = rv.areaDist, likelyName = { run: "a run", quick: "a quick throw or screen", middle: "an intermediate throw", deep: "a deep shot" };
+    var real = r.kind === "run" ? (r.rusher || "The back") + " ran " + (r.runLoc === "middle" ? "up the middle" : "to the " + (r.runLoc || "line")) + "." : (r.target ? r.passer + " threw to " + r.target + (r.route ? " (" + r.route.toLowerCase() + ")" : "") : r.passer + " dropped back") + ".";
+    var html =
+      '<p class="result-line ' + (good ? "good" : "bad") + '" id="result-line" tabindex="-1">' + esc(last) + "</p>" +
+      '<p class="verdict"><b>' + esc(rv.verdict.title) + ".</b>" + esc(rv.verdict.text) + "</p>" +
+      '<div class="grades grades-5">' + G.map(function (g) { var l = rv.letters[g[0]]; return '<div class="grade ' + g[2] + " " + gradeClass(l) + '"><b>' + esc(l) + "</b><small>" + g[1] + "</small></div>"; }).join("") + "</div>" +
+      '<p class="grade-key"><span><i style="background:var(--mint)"></i>Process: your calls (' + rv.process + "/100)</span><span><i style=\"background:var(--orange)\"></i>Outcome: this one rep</span></p>" +
+      '<div class="odds"><p>Against what offenses run here, your call allows <b>' + epaText(rv.expected) + " expected points</b> per play and a <b>" + pct(rv.expectedSuccess) + "</b> success rate. The best call on the board allows " + epaText(rv.best.v) + ". Against the play they actually ran, it holds " + pct(1 - rep.p) + " of the time.</p>" +
+      '<button type="button" class="ghost" id="again">Run this rep again</button></div>' +
+      sec(1, "Your read", '<ul class="qlist"><li><div class="q"><span>Their personnel</span><span class="pill ' + (st.answers.pers === r.offPers ? "ok\">Right" : "no\">Missed") + "</span></div><div class=\"ans\">You: " + esc(st.answers.pers) + " · Real: " + esc(r.offPers) + "</div></li>" +
+        '<li><div class="q"><span>What they were most likely to run</span><span class="pill ' + (st.answers.likely === rv.likely ? "ok\">Right" : "part\">" + rv.grades.read + "/100") + "</span></div><div class=\"ans\">You: " + esc(likelyName[st.answers.likely]) + " · Most likely: " + esc(likelyName[rv.likely]) + "</div><div class=\"ex\">" + esc(offenseLine(r)) + "</div></li></ul>") +
+      sec(2, "What the offense really ran", '<ul class="real-facts"><li><span class="pill ok">Verified</span><b>The play</b><span>' + esc(r.desc) + "</span></li><li><span class=\"pill uncertain\">Charted</span><b>In your terms</b><span>" + esc(real + " That's " + F.NAMES[rep.concept] + ".") + "</span></li></ul>") +
+      sec(3, "Your call against it", "<p><b>" + esc(callText(st.call)) + ".</b> " + (F.mismatch(r, st.call.pkg) ? "That leaves " + F.mismatch(r, st.call.pkg) + " of their receivers on linebackers. " : "") + "</p>" +
+        '<div class="cards">' + rep.cards.map(function (c) { return '<div class="acard ' + (c.held ? "held" : "fail") + '"><h4>' + esc(c.who) + "<span>" + (c.held ? "\u2713 Won" : "\u2717 Lost") + "</span></h4><p><b>Job:</b> " + esc(c.job) + "</p><p><b>" + (c.held ? "Won:" : "Lost:") + "</b> " + esc(c.held ? c.win : c.fail) + "</p></div>"; }).join("") + "</div>" +
+        '<ol class="timeline">' + rep.events.map(function (t) { return "<li><time>" + t.t.toFixed(1) + "s</time>" + esc(t.text) + "</li>"; }).join("") + "</ol>") +
+      sec(4, "What the real defense called", '<ul class="real-facts"><li><span class="pill uncertain">Charted</span><b>Their call</b><span>' + esc(r.pkg.replace(/^./, function (x) { return x.toUpperCase(); }) + (r.box ? ", " + r.box + " in the box" : "") + (r.kind === "pass" ? ", " + (r.rushers || 0) + " rushers, " + (r.coverage || "coverage not charted") : ", coverage " + (r.coverage || "not charted on runs"))) + "</span></li><li><span class=\"pill ok\">Verified</span><b>How it went</b><span>" +
+        esc((r.td ? "Touchdown" : r.result === "int" ? "Intercepted" : r.result === "sack" ? "Sack" : r.result === "incomplete" ? "Incomplete" : r.yards + " yards" + (r.first ? ", first down" : "")) + ". Offense's expected points: " + epaText(r.epa) + ".") + "</span></li></ul>") +
+      sec(5, "The best call in each package", "<p>Each package with its best pressure, coverage and take-away against what offenses run here. Lower is better for you.</p>" + '<ul class="alts">' + rv.alternatives.map(function (x, i) {
+        return '<li class="' + (x.call.pkg === st.call.pkg ? "yours" : "") + '"><div class="head"><span class="pill ' + (i === 0 ? "ok" : "part") + '">' + (i === 0 ? "Best" : "#" + (i + 1)) + "</span><b>" + esc(callText(x.call)) + "</b>" + (x.call.pkg === st.call.pkg ? '<span class="pill uncertain">Your package</span>' : "") + '<span class="stats">' + epaText(x.allowed) + " EPA/play</span></div></li>";
+      }).join("") + "</ul>") +
+      '<div class="takeaway"><small>Takeaway</small><p>' + esc((D.situationsDefense || {})[r.situation] || "Match their personnel, then take away what this personnel runs on this down.") + "</p></div>" +
+      '<div class="after"><button type="button" class="primary" id="next-scen">Next snap \u2192</button><button type="button" class="ghost" id="replay">Call this one again</button><button type="button" class="ghost" id="home">Back to start</button></div>';
+    box.innerHTML = html;
+    box.hidden = false;
+    $("again").onclick = function () { st.seed = (st.seed * 48271) % 2147483647 || 7; renderDefReview(false); say("New rep. " + $("result-line").textContent); };
+    $("next-scen").onclick = function () {
+      var rec = load(STORE, null), pool = filmMatches(), fresh = pool.filter(function (s) { return !(rec && rec.scenarios["def:" + s.id]) && s.id !== st.base.id; });
+      var from = fresh.length ? fresh : pool;
+      beginDef(from[Math.floor(Math.random() * from.length)].id);
+    };
+    $("replay").onclick = function () { beginDef(st.base.id); };
+    $("home").onclick = function () { $("quit").click(); };
+    if (first) { $("result-line").focus({ preventScroll: true }); box.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" }); }
+  }
 
   renderStart();
 })();

@@ -220,7 +220,9 @@
     "zero-pressure": "Beating all-out pressure",
     "run-vs-box": "Run or pass by the box count",
     "coverage-id": "Reading the coverage shell",
-    "situational": "Situational football"
+    "situational": "Situational football",
+    "dc-personnel": "Matching personnel (defense)",
+    "dc-coverage": "Calling pressure and coverage (defense)"
   },
 
   /* The film room grades real snaps with these tables. Coverage groups:
@@ -307,6 +309,21 @@
     "two-minute": "In the two-minute drill, time is a resource: throws that stop the clock or gain big chunks; avoid sacks and runs that let the clock bleed."
   },
 
+  // The one principle each situation teaches from the defensive side.
+  situationsDefense: {
+    "first-ten": "First and 10: hold them under 4 yards and you're ahead. Match personnel and play sound; the big pressure call is a bad bet on a down where they can run or throw anything.",
+    "second-long": "Second and long: they need chunks. Keep everything in front, rally to the catch, and make them earn a manageable third down.",
+    "second-medium": "Second and medium is the offense's freest down. Play your base answer to their personnel and don't guess.",
+    "second-short": "Second and short: they'll take a shot because a miss still leaves third and short. Stop the run without giving up the play-action shot over the top.",
+    "third-short": "Third and short: count the box. If you can't outnumber their blockers, take away the quick throw and make them win with a run they have to block perfectly.",
+    "third-medium": "Third and medium: everything happens at the sticks. Rush enough to speed up the quarterback, and sit on the routes that reach the line to gain.",
+    "third-long": "Third and long: you're playing the sticks, not the ball. Keep it in front, rally and tackle short of the line; a completion short of the sticks is a win.",
+    "fourth-down": "Fourth down: one stop wins the series. Take away the call they trust most on this distance and make them beat your best.",
+    "red-zone": "In the red zone the field shrinks in your favor: fewer deep threats, tighter windows. Play man where you can and don't give up the easy run.",
+    "goal-line": "At the goal line every gap matters. Match heavy personnel with bodies, and don't let a play-action throw leak behind a run fit.",
+    "two-minute": "In the two-minute drill, time is your friend. Keep the ball in front and inbounds, rally to the catch, and make them burn the clock."
+  },
+
   // Answer choices shared by every scenario's diagnosis step.
   confidence: [
     { id: "guess", label: "Guessing" },
@@ -364,7 +381,7 @@
         boxCount: 7,
         disguise: "high",
         players: [
-          { id: "CBB", label: "CB", role: "Boundary corner", x: 6.5, y: 7 },
+          { id: "CBB", label: "LCB", role: "Left cornerback (boundary)", x: 6.5, y: 7 },
           { id: "FS", label: "FS", role: "Free safety (boundary)", x: 17, y: 13 },
           { id: "DEB", label: "E", role: "Boundary end", x: 20.2, y: 1 },
           { id: "WILL", label: "W", role: "Will linebacker, mugged in the B-gap", x: 21.6, y: 2.6 },
@@ -374,7 +391,7 @@
           { id: "DEF", label: "E", role: "Field end", x: 27.6, y: 1 },
           { id: "NB", label: "NB", role: "Nickel, walked down over the slot", x: 33.5, y: 2.2 },
           { id: "SS", label: "SS", role: "Strong safety (field, trips side)", x: 33, y: 13 },
-          { id: "CBF", label: "CB", role: "Field corner", x: 44, y: 7 }
+          { id: "CBF", label: "RCB", role: "Right cornerback (field)", x: 44, y: 7 }
         ]
       },
       actual: {
@@ -657,7 +674,7 @@
         boxCount: 7,
         disguise: "high",
         players: [
-          { id: "CBF", label: "CB", role: "Field corner", x: 9, y: 6 },
+          { id: "CBF", label: "LCB", role: "Left cornerback (field)", x: 9, y: 6 },
           { id: "NB", label: "NB", role: "Nickel, walked down over the slot", x: 18, y: 2.2 },
           { id: "FS", label: "FS", role: "Free safety (field)", x: 21, y: 13 },
           { id: "DEF", label: "E", role: "Field end", x: 26, y: 1 },
@@ -667,7 +684,7 @@
           { id: "WILL", label: "W", role: "Will linebacker, mugged in the B-gap", x: 31.7, y: 2.6 },
           { id: "DEB", label: "E", role: "Boundary end", x: 33.6, y: 1 },
           { id: "SS", label: "SS", role: "Strong safety (boundary, tight end side)", x: 37, y: 13 },
-          { id: "CBB", label: "CB", role: "Boundary corner", x: 46, y: 7 }
+          { id: "CBB", label: "RCB", role: "Right cornerback (boundary)", x: 46, y: 7 }
         ]
       },
       actual: {
@@ -947,7 +964,7 @@
         boxCount: 6,
         disguise: "low",
         players: [
-          { id: "CBL", label: "CB", role: "Left corner, pressed on X", x: 8, y: 1.5 },
+          { id: "CBL", label: "LCB", role: "Left cornerback, pressed on X", x: 8, y: 1.5 },
           { id: "NB", label: "NB", role: "Nickel, walked down over the slot", x: 18, y: 2 },
           { id: "SS", label: "SS", role: "Strong safety, down at 8 yards", x: 22, y: 8.5 },
           { id: "DEL", label: "E", role: "Left end", x: 23, y: 1 },
@@ -957,7 +974,7 @@
           { id: "NT", label: "N", role: "Nose tackle", x: 27.5, y: 1 },
           { id: "MIKE", label: "M", role: "Mike linebacker", x: 28.4, y: 4.5 },
           { id: "DER", label: "E", role: "Right end", x: 30.6, y: 1 },
-          { id: "CBR", label: "CB", role: "Right corner, pressed on Z", x: 45, y: 1.5 }
+          { id: "CBR", label: "RCB", role: "Right cornerback, pressed on Z", x: 45, y: 1.5 }
         ]
       },
       actual: {
@@ -1229,7 +1246,7 @@
         boxCount: 8,
         disguise: "low",
         players: [
-          { id: "CBL", label: "CB", role: "Left corner, pressed on Z", x: 7, y: 1.5 },
+          { id: "CBL", label: "LCB", role: "Left cornerback, pressed on Z", x: 7, y: 1.5 },
           { id: "NB", label: "NB", role: "Nickel, pressed on the slot", x: 15.5, y: 1.5 },
           { id: "SS", label: "SS", role: "Strong safety, walked down over the tight end", x: 24.5, y: 5.5 },
           { id: "DEL", label: "E", role: "Left end", x: 26.2, y: 1 },
@@ -1239,7 +1256,7 @@
           { id: "NT", label: "N", role: "Nose tackle", x: 31.7, y: 1 },
           { id: "DER", label: "E", role: "Right end", x: 33.5, y: 1 },
           { id: "FS", label: "FS", role: "Free safety, 9 yards over the back", x: 33, y: 9 },
-          { id: "CBR", label: "CB", role: "Right corner, pressed on X", x: 47, y: 1.5 }
+          { id: "CBR", label: "RCB", role: "Right cornerback, pressed on X", x: 47, y: 1.5 }
         ]
       },
       actual: {

@@ -1,7 +1,7 @@
 // Sunday Strategist engine and content checks. Run: node --test sunday-strategist/engine.test.cjs
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const D = require('./scenarios.js'), S = require('./schema.js'), E = require('./engine.js'), R = require('./real-plays.js'), G = require('./gen.js');
+const D = require('./scenarios.js'), S = require('./schema.js'), E = require('./engine.js'), R = require('./real-plays.js'), G = require('./gen.js'), F = require('./defense.js');
 const clone = x => JSON.parse(JSON.stringify(x));
 const [fire, bluff] = D.scenarios;
 const best = sc => ({ ...sc.recommended, key: sc.plays.find(p => p.id === sc.recommended.play).key.answer });
@@ -175,4 +175,29 @@ test('film room grades come from the fitted model, and the sim reproduces them',
   }).sort((a, b) => a - b);
   assert.ok(gaps[Math.floor(gaps.length * 0.9)] <= 0.06, `90th percentile calibration gap ${gaps[Math.floor(gaps.length * 0.9)]}`);
   for (const s of film) assert.ok(s.plays.every(p => /NFL since 2023/.test(p.why)), s.id + ' explains with real data');
+});
+
+test('defense: personnel matching and coverage calls follow the data and the rules', () => {
+  const film = R.plays.filter(p => !p.lesson);
+  const best = (r, pkg) => F.bestOf(r, c => c.pkg === pkg).v;
+  // Against three or more receivers on 3rd and long, nickel or dime beats base and goal line.
+  for (const r of film.filter(r => r.situation === 'third-long' && r.wrs >= 3)) {
+    assert.ok(Math.min(best(r, 'nickel'), best(r, 'dime')) < Math.min(best(r, 'base'), best(r, 'heavy')), r.id);
+  }
+  // Heavy personnel at the goal line: base or goal line beats dime.
+  const heavy = film.filter(r => r.situation === 'goal-line' && +r.offPers[1] >= 2);
+  assert.ok(heavy.length > 0);
+  for (const r of heavy) assert.ok(Math.min(best(r, 'base'), best(r, 'heavy')) < best(r, 'dime'), r.id);
+  // A linebacker on a receiver costs you on passes.
+  const r11 = film.find(r => r.offPers === '11' && r.situation === 'third-medium');
+  assert.equal(F.mismatch(r11, 'heavy'), 2); assert.equal(F.mismatch(r11, 'nickel'), 0);
+  // Taking away what they ran helps; the real play maps to a concept; a rep is repeatable.
+  const call = { pkg: 'nickel', pressure: 'four', cov: 'three', area: 'quick' };
+  const c = F.conceptOf(r11);
+  assert.ok(F.allowed(r11, { ...call, area: F.resolve(r11, call, 1).area }, c) < F.allowed(r11, { ...call, area: 'run' }, c) || F.resolve(r11, call, 1).area === 'run');
+  assert.deepEqual(F.resolve(r11, call, 7), F.resolve(r11, call, 7));
+  const rv = F.review(r11, { pers: '11', likely: 'quick', confidence: 'some' }, call, 3);
+  assert.deepEqual(Object.keys(rv.grades), ['read', 'personnel', 'call', 'takeaway', 'result']);
+  assert.equal(rv.alternatives.length, 4);
+  for (const g of Object.values(rv.grades)) assert.ok(g >= 0 && g <= 100);
 });
