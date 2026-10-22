@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 780">
+  <!-- Bastille Day Odds cover: illustration only, so it never shows stale odds or anyone's team name. -->
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#0E1A30"/><stop offset="1" stop-color="#16294A"/></linearGradient>
+    <linearGradient id="blade" x1="0" x2="1"><stop stop-color="#E8EDF3"/><stop offset="1" stop-color="#9AA8BA"/></linearGradient>
+    <pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.4" fill="#fff" opacity=".07"/></pattern>
+  </defs>
+  <rect width="1040" height="780" fill="url(#sky)"/>
+  <rect width="1040" height="780" fill="url(#dots)"/>
+  <!-- tricolor -->
+  <rect width="347" height="14" fill="#1E4FA1"/><rect x="347" width="346" height="14" fill="#F5F4F0"/><rect x="693" width="347" height="14" fill="#C8102E"/>
+  <!-- survival odds, as bars with no names -->
+  <g transform="translate(80 150)" font-family="Arial, Helvetica, sans-serif" font-weight="700">
+    <text fill="#9FB0C4" font-size="20" letter-spacing="4">CUT ODDS THIS WEEK</text>
+    <g transform="translate(0 40)">
+      <rect width="360" height="34" rx="4" fill="#fff" opacity=".07"/><rect width="300" height="34" rx="4" fill="#C8102E"/>
+      <rect y="56" width="360" height="34" rx="4" fill="#fff" opacity=".07"/><rect y="56" width="210" height="34" rx="4" fill="#D98C2B"/>
+      <rect y="112" width="360" height="34" rx="4" fill="#fff" opacity=".07"/><rect y="112" width="150" height="34" rx="4" fill="#D98C2B" opacity=".85"/>
+      <rect y="168" width="360" height="34" rx="4" fill="#fff" opacity=".07"/><rect y="168" width="90" height="34" rx="4" fill="#2E8B57"/>
+      <rect y="224" width="360" height="34" rx="4" fill="#fff" opacity=".07"/><rect y="224" width="48" height="34" rx="4" fill="#2E8B57"/>
+      <g fill="#F5F4F0" font-size="22"><text x="378" y="25">?</text><text x="378" y="81">?</text><text x="378" y="137">?</text><text x="378" y="193">?</text><text x="378" y="249">?</text></g>
+    </g>
+  </g>
+  <!-- the guillotine -->
+  <g transform="translate(650 70) scale(.84)" stroke-linejoin="round">
+    <rect x="-30" y="520" width="380" height="24" rx="4" fill="#5B3A22"/>
+    <rect x="20" y="30" width="34" height="500" fill="#8A5A34" stroke="#3E2715" stroke-width="4"/>
+    <rect x="266" y="30" width="34" height="500" fill="#8A5A34" stroke="#3E2715" stroke-width="4"/>
+    <rect x="0" y="0" width="320" height="42" rx="6" fill="#A06B3F" stroke="#3E2715" stroke-width="4"/>
+    <path d="M54 92h212v86L54 136Z" fill="url(#blade)" stroke="#3E2715" stroke-width="4"/>
+    <path d="M54 136l212 42" stroke="#fff" stroke-width="3" opacity=".7"/>
+    <rect x="140" y="40" width="40" height="52" fill="#3E2715" opacity=".6"/>
+    <!-- stocks with a football in them -->
+    <rect x="54" y="378" width="212" height="70" rx="6" fill="#A06B3F" stroke="#3E2715" stroke-width="4"/>
+    <g transform="translate(160 413) rotate(-14)">
+      <ellipse rx="70" ry="42" fill="#7A3E1D" stroke="#3E2715" stroke-width="4"/>
+      <path d="M-34-28c-8 18-8 38 0 56M34-28c8 18 8 38 0 56" stroke="#F5F4F0" stroke-width="5" fill="none"/>
+      <path d="M-22 0h44M-14-8v16M-4-8v16M6-8v16M16-8v16" stroke="#F5F4F0" stroke-width="4"/>
+    </g>
+  </g>
+  <!-- title -->
+  <g font-family="Georgia, 'Times New Roman', serif" fill="#F5F4F0">
+    <text x="80" y="612" font-size="70" font-weight="700" letter-spacing="1">Bastille Day Odds</text>
+  </g>
+  <text x="82" y="664" font-family="Arial, Helvetica, sans-serif" font-size="25" fill="#C3CEDB" letter-spacing="1">One team cut every week. Who survives to December?</text>
+  <rect x="80" y="694" width="120" height="6" rx="3" fill="#C8102E"/>
+</svg>
