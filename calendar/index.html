@@ -441,11 +441,15 @@ async function loadVotes() {
     REMOTE = true;
     store.set("plans", {}); store.set("ratings", {});   // what was saved on this phone goes up with the queue below
     // Anything marked on this phone while the vote box was unreachable goes up now.
+    // Each one leaves the queue only once the box has it (or turned it down for good), so nothing is lost.
     const queued = store.get("queue", []);
-    if (queued.length) {
-      store.set("queue", []);
-      for (const q of queued) await send(q).catch(() => {});
+    let done = 0;
+    for (const q of queued) {
+      try { await send(q); }
+      catch (e) { if (e.message !== "400" && e.message !== "403") break; }
+      done++;
     }
+    if (done) store.set("queue", store.get("queue", []).slice(done));
   } catch (e) {
     VOTES = local; PLANS = store.get("plans", {}); RATINGS = store.get("ratings", {}); REMOTE = false;
   }
