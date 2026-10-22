@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-22T15:39:33Z",
+ "updated": "2026-10-22T16:12:35Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -10444,6 +10444,18 @@
    "score": 1
   },
   {
+   "id": "tm-vv1AvZk4fGkdhIUQQ",
+   "date": "2027-03-16",
+   "time": "19:00",
+   "title": "Ashe: The Girl of Your Dreams Tour",
+   "cat": "music",
+   "venue": "Citizens House of Blues Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/ashe-the-girl-of-your-dreams-boston-massachusetts-03-16-2027/event/01006554DBA3669A",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "espn-401910740",
    "date": "2027-03-16",
    "time": "19:30",
@@ -11482,7 +11494,7 @@
   "picks": 5,
   "venues": 5,
   "espn": 83,
-  "ticketmaster": 555,
+  "ticketmaster": 556,
   "seatgeek": 109
  }
 }
