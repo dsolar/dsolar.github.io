@@ -458,3 +458,7 @@ a:hover{color:var(--red)}
 .writing-season[open] summary::after{content:"Hide"}
 .writing-season summary:hover h3{text-decoration:underline;text-decoration-color:var(--red);text-decoration-thickness:2px;text-underline-offset:.2em}
 .writing-season summary:focus-visible{outline:2px solid var(--red);outline-offset:4px}
+
+/* "Made for my daughter": the last section, a little softer */
+.kids{border-top:1px solid var(--rule);background:linear-gradient(180deg,rgba(232,106,146,.07),transparent 60%)}
+.kids .section-head h2::after{background:linear-gradient(90deg,#E86A92,#7B4FB3)}
