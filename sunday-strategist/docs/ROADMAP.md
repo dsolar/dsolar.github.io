@@ -1,6 +1,7 @@
 # Sunday Strategist: roadmap
 
 **Done.**
+- **Five more lessons:** Quarters Wall, The Rotation, Creeper (simulated pressure), 2-Man on Third and Long, and Count the Box (12 personnel against an eight-man box). Lesson fits now take personnel, package, box count and run or pass, so lessons go beyond 11 personnel vs nickel. That makes 9 lessons with 72 real snaps.
 - **Defensive coordinator mode:** switch sides on the start screen and call the defense on any film-room snap. Graded on expected points allowed, and the real play runs against your call.
 - **LCB and RCB labels** on every corner, for coverage talk.
 - Grades fitted to real data: `model.js`, from 86,500 snaps from 2023 to 2025. Every film-room option cites its real success rate and sample size, and lessons show the same data line next to their hand-made grades.
@@ -15,7 +16,7 @@
   - runs and passes about half and half;
   - every snap built into a full scenario by `gen.js`, and graded by rules: concept vs coverage from `data.matrix`, blockers vs the box for runs, and protection vs rushers.
 
-1. **More lessons.** Add a Cover 3 rotation from the bluff picture, quarters and Cover 6 against four-man rushes, simulated pressure (creeper), and 2-Man on third and long. Each one adds a `fit`, and the importer fills it with real snaps automatically.
+1. **More lessons.** Red-zone and goal-line lessons (compressed coverage, the fade, goal-line fronts), and defensive-side lessons for the coordinator mode. Each one adds a `fit`, and the importer fills it with real snaps automatically.
 2. **Fresher real snaps.** nflverse hasn't published 2026 participation (coverage) data yet. When it does, rerun `python tools/strategist_real.py 2024 2025 2026`, or schedule it weekly in a GitHub Action like the site's other data jobs, for "last Sunday" snaps.
 3. **Assistance levels.** Fade the help from all labels, to threats highlighted, to no labels, to a play clock, to motion and disguise.
 4. **Teach-back mode.** Pick the conflict defender, the numbers advantage and the time requirement before the result shows.

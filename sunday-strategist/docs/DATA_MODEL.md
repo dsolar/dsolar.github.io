@@ -36,7 +36,7 @@ All content lives in `scenarios.js` and `schema.js` enforces it. Coordinates are
 | `learning` | `objectives[]`, `tags[]` (keys of `data.tags`), `misconceptions[]`, `difficulty`, `transfer[]`, `revisitDays` |
 
 ## Lesson fit (for real snaps)
-`fit: { downs[], distance: [min, max], coverage: [nflverse coverage codes], rushers: [min, max], blitz }`. This says which real snaps a lesson can stand in for.
+`fit: { downs[], distance: [min, max], coverage?: [nflverse coverage codes], rushers?: [min, max], blitz?, offPers?: ["11"], pkg?: ["nickel"], box?: [min, max], kinds?: ["pass"] }`. This says which real snaps a lesson can stand in for. Keys left out use the original defaults (a pass from 11 personnel against nickel), and coverage, rushers and blitz apply to passes only.
 
 ## Real snaps (`real-plays.js`, written by `tools/strategist_real.py`)
 `{ updated, seasons, source, teams{abbr: nickname}, plays[] }`. Each play has:
