@@ -150,7 +150,7 @@
         disguise: "high",
         players: [
           { id: "CBB", label: "CB", role: "Boundary corner", x: 6.5, y: 7 },
-          { id: "SSB", label: "S", role: "Boundary safety", x: 17, y: 13 },
+          { id: "FS", label: "FS", role: "Free safety (boundary)", x: 17, y: 13 },
           { id: "DEB", label: "E", role: "Boundary end", x: 20.2, y: 1 },
           { id: "WILL", label: "W", role: "Will linebacker, mugged in the B-gap", x: 21.6, y: 2.6 },
           { id: "DT", label: "T", role: "Defensive tackle (3-technique)", x: 22.6, y: 1 },
@@ -158,7 +158,7 @@
           { id: "MIKE", label: "M", role: "Mike linebacker", x: 25, y: 5 },
           { id: "DEF", label: "E", role: "Field end", x: 27.6, y: 1 },
           { id: "NB", label: "NB", role: "Nickel, walked down over the slot", x: 33.5, y: 2.2 },
-          { id: "FSF", label: "S", role: "Field safety", x: 33, y: 13 },
+          { id: "SS", label: "SS", role: "Strong safety (field, trips side)", x: 33, y: 13 },
           { id: "CBF", label: "CB", role: "Field corner", x: 44, y: 7 }
         ]
       },
@@ -168,7 +168,7 @@
         rushers: ["DT", "NT", "DEF", "WILL", "NB"],
         droppers: ["DEB", "MIKE"],
         coverage: "Cover 3 (fire zone)",
-        rotation: "The field safety rotates down to replace the nickel; the boundary safety rotates to the deep middle.",
+        rotation: "The strong safety rotates down to replace the nickel; the free safety rotates to the deep middle.",
         post: {
           DEB: { x: 17, y: 7, zone: "Hook-curl" },
           DT: { x: 22.3, y: -3 },
@@ -179,13 +179,13 @@
           MIKE: { x: 26, y: 8, zone: "Middle hook" },
           CBB: { x: 9, y: 15, zone: "Deep third" },
           CBF: { x: 43, y: 15, zone: "Deep third" },
-          SSB: { x: 26.5, y: 16, zone: "Deep middle" },
-          FSF: { x: 36, y: 7, zone: "Curl-flat (replaces the nickel)" }
+          FS: { x: 26.5, y: 16, zone: "Deep middle" },
+          SS: { x: 36, y: 7, zone: "Curl-flat (replaces the nickel)" }
         },
         events: [
           { t: 0.3, text: "The nickel and the Will declare: five are coming." },
           { t: 0.5, text: "The boundary end drops out to the hook-curl. The line now has a 'rusher' who isn't rushing." },
-          { t: 0.8, text: "The field safety rotates down to replace the nickel. The two-high picture becomes Cover 3." }
+          { t: 0.8, text: "The strong safety rotates down to replace the nickel. The two-high picture becomes Cover 3." }
         ]
       },
       diagnosis: {
@@ -220,9 +220,9 @@
         {
           id: "yoyo", label: "Slot yo-yo motion", detail: "H motions in toward the tight end and back out.",
           path: { from: "H", to: [30.5, -2], back: true },
-          moves: { FSF: [34, 10.5], MIKE: [25.6, 5] },
-          text: "Nobody traveled with the slot, and the field safety crept from 13 yards to 10. Zone, with that safety coming down. That's evidence, not proof: a well-coached defense can fake both.",
-          clue: "No one followed the motion and the field safety crept to 10 yards: zone behind the pressure, with that safety rotating down."
+          moves: { SS: [34, 10.5], MIKE: [25.6, 5] },
+          text: "Nobody traveled with the slot, and the strong safety crept from 13 yards to 10. Zone, with that safety coming down. That's evidence, not proof: a well-coached defense can fake both.",
+          clue: "No one followed the motion and the strong safety crept to 10 yards: zone behind the pressure, with that safety rotating down."
         },
         {
           id: "rbshift", label: "Shift the back to the nickel's side", detail: "RB moves from the weak side to the trips side.",
@@ -278,9 +278,9 @@
           need: 2.2, window: 0.78, yards: 7, spread: 2, intRisk: 0.04, luck: 0.03,
           hot: { window: 0.62, yards: 6, spread: 2, text: "Ball out early to the stick" },
           grade: 95, category: "recommended",
-          conflict: "FSF",
+          conflict: "SS",
           why: "Stick puts two receivers on the defender who replaces the nickel. If the rotating safety widens to the flat, the stick is open inside him; if he sits on the stick, the flat is open. It also gets the ball out before a fifth rusher arrives.",
-          key: { answer: "FSF", partial: { NB: "The nickel decides your protection, not where this ball goes. The safety who replaces him is the read.", MIKE: "The Mike is the inside limit of the window, but the read is the safety who rotates down." } },
+          key: { answer: "SS", partial: { NB: "The nickel decides your protection, not where this ball goes. The safety who replaces him is the read.", MIKE: "The Mike is the inside limit of the window, but the read is the safety who rotates down." } },
           routes: [
             { from: "H", path: [[34.5, 2], [35, 6], [34.2, 5.6]] },
             { from: "Y", path: [[30, 1], [37, 2.5], [41, 3]] },
@@ -288,9 +288,9 @@
             { from: "X", path: [[7.5, 2], [12, 5]] }
           ],
           assignments: [
-            { player: "QB", assignment: "Read the field safety as he rotates down: flat if he sits, stick if he widens", key: "FSF", win: "Throws away from the safety on rhythm", fail: "Stares at the stick and the safety jumps it", p: 0.82, keyBonus: 0.1, critical: true },
+            { player: "QB", assignment: "Read the strong safety as he rotates down: flat if he sits, stick if he widens", key: "SS", win: "Throws away from the safety on rhythm", fail: "Stares at the stick and the safety jumps it", p: 0.82, keyBonus: 0.1, critical: true },
             { player: "H", assignment: "Stick at 6 yards, settle between the Mike and the rotating safety", key: "MIKE", win: "Sits in the window facing the QB", fail: "Drifts outside into the safety", p: 0.85, critical: true },
-            { player: "Y", assignment: "Arrow to the flat to widen the safety", key: "FSF", win: "Gets width fast enough to pull the safety", fail: "Gets rerouted and the safety never has to choose", p: 0.9, critical: true },
+            { player: "Y", assignment: "Arrow to the flat to widen the safety", key: "SS", win: "Gets width fast enough to pull the safety", fail: "Gets rerouted and the safety never has to choose", p: 0.9, critical: true },
             { player: "Z", assignment: "Clear the field corner deep", key: "CBF", win: "Takes the corner out of the flat", fail: "Corner passes him off and squats", p: 0.95 }
           ]
         },
@@ -299,9 +299,9 @@
           detail: "X and Z go, H and Y run the seams. The back checks, then releases.",
           need: 2.9, window: 0.56, yards: 24, spread: 8, intRisk: 0.12, luck: 0.1,
           grade: 76, category: "aggressive",
-          conflict: "SSB",
+          conflict: "FS",
           why: "Against three deep, two seams on one middle safety is a real advantage, and the payoff is a chunk play. But it needs nearly three seconds, which is exactly what a five-man pressure is built to deny.",
-          key: { answer: "SSB", partial: { FSF: "He's the read on the stick. On verticals he rotates down and out of the picture; the deep-middle safety is the one choosing a seam." } },
+          key: { answer: "FS", partial: { SS: "He's the read on the stick. On verticals he rotates down and out of the picture; the deep-middle safety is the one choosing a seam." } },
           routes: [
             { from: "X", path: [[6.5, 18]] },
             { from: "Z", path: [[44, 18]] },
@@ -309,8 +309,8 @@
             { from: "Y", path: [[29, 6], [28, 18]] }
           ],
           assignments: [
-            { player: "QB", assignment: "Hold the deep-middle safety with his eyes, then throw the seam he leaves", key: "SSB", win: "Moves the safety and throws on time", fail: "Locks on one seam; the safety breaks on it", p: 0.72, keyBonus: 0.1, critical: true },
-            { player: "H", assignment: "Seam: stay on the landmark outside the middle safety", key: "SSB", win: "Stays on his landmark through the throw", fail: "Drifts inside and gives the safety two routes in one spot", p: 0.75, critical: true },
+            { player: "QB", assignment: "Hold the deep-middle safety with his eyes, then throw the seam he leaves", key: "FS", win: "Moves the safety and throws on time", fail: "Locks on one seam; the safety breaks on it", p: 0.72, keyBonus: 0.1, critical: true },
+            { player: "H", assignment: "Seam: stay on the landmark outside the middle safety", key: "FS", win: "Stays on his landmark through the throw", fail: "Drifts inside and gives the safety two routes in one spot", p: 0.75, critical: true },
             { player: "X", assignment: "Win on the go against the boundary corner", key: "CBB", win: "Holds the corner deep", fail: "Gets pressed to the sideline", p: 0.8 }
           ]
         },
@@ -333,13 +333,13 @@
           detail: "H runs a three-step slant right through the spot the nickel just left.",
           need: 1.3, window: 0.28, yards: 7, spread: 3, intRisk: 0.22, luck: 0.02,
           grade: 35, category: "poor",
-          conflict: "FSF",
-          why: "It's the most natural answer and the one this call is designed to bait. The nickel leaves, but the field safety is already rotating into exactly that window, and the Mike's hook drop squeezes it from inside.",
-          key: { answer: "NB", partial: { FSF: "Right defender, wrong plan: if he's the threat, the slant shouldn't be the call." } },
+          conflict: "SS",
+          why: "It's the most natural answer and the one this call is designed to bait. The nickel leaves, but the strong safety is already rotating into exactly that window, and the Mike's hook drop squeezes it from inside.",
+          key: { answer: "NB", partial: { SS: "Right defender, wrong plan: if he's the threat, the slant shouldn't be the call." } },
           routes: [{ from: "H", path: [[34.5, 1], [30.5, 4.5]] }, { from: "Z", path: [[44, 1.5], [40.5, 5]] }],
           assignments: [
             { player: "QB", assignment: "Throw hot the moment the nickel declares", key: "NB", win: "Ball out in rhythm", fail: "Late; the safety has arrived", p: 0.95, critical: true },
-            { player: "H", assignment: "Flat slant, inside the nickel's vacated spot", key: "FSF", win: "Catches it before the safety triggers", fail: "Runs into the rotating safety", p: 0.85, critical: true }
+            { player: "H", assignment: "Flat slant, inside the nickel's vacated spot", key: "SS", win: "Catches it before the safety triggers", fail: "Runs into the rotating safety", p: 0.85, critical: true }
           ]
         }
       ],
@@ -353,7 +353,7 @@
           id: "sight", label: "Sight adjust: the slot converts his route to a slant against pressure", onPressure: "sight",
           throw: { window: 0.28, yards: 7, spread: 3, intRisk: 0.22, text: "Sight-adjusted slant" },
           grades: { stick: 50, verts: 60, draw: 40, slant: 60 },
-          why: "A real tool, but against a fire zone it throws into the replacement defender: the slant goes where the field safety is rotating."
+          why: "A real tool, but against a fire zone it throws into the replacement defender: the slant goes where the strong safety is rotating."
         },
         {
           id: "throwaway", label: "If the window closes, climb and throw it away", onPressure: "throwaway",
@@ -443,14 +443,14 @@
         players: [
           { id: "CBF", label: "CB", role: "Field corner", x: 9, y: 6 },
           { id: "NB", label: "NB", role: "Nickel, walked down over the slot", x: 18, y: 2.2 },
-          { id: "FSF", label: "S", role: "Field safety", x: 21, y: 13 },
+          { id: "FS", label: "FS", role: "Free safety (field)", x: 21, y: 13 },
           { id: "DEF", label: "E", role: "Field end", x: 26, y: 1 },
           { id: "MIKE", label: "M", role: "Mike linebacker", x: 28.6, y: 5 },
           { id: "NT", label: "N", role: "Nose tackle", x: 29.2, y: 1 },
           { id: "DT", label: "T", role: "Defensive tackle (3-technique)", x: 31.4, y: 1 },
           { id: "WILL", label: "W", role: "Will linebacker, mugged in the B-gap", x: 31.7, y: 2.6 },
           { id: "DEB", label: "E", role: "Boundary end", x: 33.6, y: 1 },
-          { id: "SSB", label: "S", role: "Boundary safety", x: 37, y: 13 },
+          { id: "SS", label: "SS", role: "Strong safety (boundary, tight end side)", x: 37, y: 13 },
           { id: "CBB", label: "CB", role: "Boundary corner", x: 46, y: 7 }
         ]
       },
@@ -464,14 +464,14 @@
         post: {
           CBF: { x: 11, y: 4, zone: "Flat" },
           NB: { x: 19.5, y: 8, zone: "Curl (bluffed)" },
-          FSF: { x: 17, y: 17, zone: "Deep half" },
+          FS: { x: 17, y: 17, zone: "Deep half" },
           DEF: { x: 27, y: -3.5 },
           MIKE: { x: 27, y: 9, zone: "Middle hook" },
           NT: { x: 29.4, y: -3 },
           DT: { x: 31, y: -3 },
           WILL: { x: 34, y: 8, zone: "Curl (bluffed)" },
           DEB: { x: 33, y: -3.5 },
-          SSB: { x: 40, y: 17, zone: "Deep half" },
+          SS: { x: 40, y: 17, zone: "Deep half" },
           CBB: { x: 44, y: 4, zone: "Flat" }
         },
         events: [
@@ -572,7 +572,7 @@
           grade: 95, category: "recommended",
           conflict: "CBF",
           why: "Smash high-lows the field corner, the flat defender in Cover 2. If he squats on the hitch, the corner route is open behind him before the halves safety can get there; if he sinks, the hitch is free. Against pressure, the hitch is the hot answer.",
-          key: { answer: "CBF", partial: { FSF: "He's the help over the top. The corner's choice decides the throw.", NB: "The nickel decides your protection. In Cover 2, he bails inside of smash." } },
+          key: { answer: "CBF", partial: { FS: "He's the help over the top. The corner's choice decides the throw.", NB: "The nickel decides your protection. In Cover 2, he bails inside of smash." } },
           routes: [
             { from: "X", path: [[9, 5], [9.6, 4.2]] },
             { from: "H", path: [[17, 9], [11, 15]] },
@@ -581,7 +581,7 @@
           ],
           assignments: [
             { player: "QB", assignment: "Read the field corner: hitch if he sinks, corner route if he squats", key: "CBF", win: "Throws away from the corner on time", fail: "Throws the hitch into a squatting corner", p: 0.84, keyBonus: 0.1, critical: true },
-            { player: "H", assignment: "Corner route: break at 10 to 12 yards, stay away from the halves safety", key: "FSF", win: "Climbs to the sideline, away from the safety", fail: "Flattens the route into the safety's range", p: 0.82, critical: true },
+            { player: "H", assignment: "Corner route: break at 10 to 12 yards, stay away from the halves safety", key: "FS", win: "Climbs to the sideline, away from the safety", fail: "Flattens the route into the safety's range", p: 0.82, critical: true },
             { player: "X", assignment: "Hitch at 5: win inside and present your numbers", key: "CBF", win: "Squares up fast", fail: "Drifts and makes a tight window tighter", p: 0.9 }
           ]
         },
@@ -590,9 +590,9 @@
           detail: "X and Z go, H and Y bend their seams away from the halves safeties.",
           need: 2.8, window: 0.6, yards: 22, spread: 8, intRisk: 0.1, luck: 0.1,
           grade: 80, category: "aggressive",
-          conflict: "FSF",
+          conflict: "FS",
           why: "Cover 2 is soft down the middle seams, and a four-man rush gives you time. It's a real shot, but it would have been a sack if the nickel had come. You couldn't know he wouldn't.",
-          key: { answer: "FSF", partial: { MIKE: "In Tampa 2 the Mike runs the middle. Here he stays shallow, so the halves safety is the choice." } },
+          key: { answer: "FS", partial: { MIKE: "In Tampa 2 the Mike runs the middle. Here he stays shallow, so the halves safety is the choice." } },
           routes: [
             { from: "X", path: [[9, 18]] },
             { from: "H", path: [[17, 7], [22, 18]] },
@@ -600,8 +600,8 @@
             { from: "Z", path: [[46, 18]] }
           ],
           assignments: [
-            { player: "QB", assignment: "Hold the field safety with his eyes, throw the seam he leaves", key: "FSF", win: "Moves the safety and throws on time", fail: "Stares at H and the safety rides the seam", p: 0.74, keyBonus: 0.1, critical: true },
-            { player: "H", assignment: "Bend the seam away from the halves safety", key: "FSF", win: "Splits the halves safeties", fail: "Runs into the safety's leverage", p: 0.76, critical: true }
+            { player: "QB", assignment: "Hold the free safety with his eyes, throw the seam he leaves", key: "FS", win: "Moves the safety and throws on time", fail: "Stares at H and the safety rides the seam", p: 0.74, keyBonus: 0.1, critical: true },
+            { player: "H", assignment: "Bend the seam away from the halves safety", key: "FS", win: "Splits the halves safeties", fail: "Runs into the safety's leverage", p: 0.76, critical: true }
           ]
         },
         {

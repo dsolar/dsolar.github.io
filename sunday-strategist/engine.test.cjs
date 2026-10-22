@@ -53,7 +53,7 @@ test('a free rusher with no answer gets home; a built-in hot answer saves the pl
   assert.equal(hot.sack, 0);
   assert.ok(hot.convert > none.convert + 0.15);
   // Verticals has no quick route, so "hot" can't save it.
-  assert.ok(E.expected(fire, { ...pick, play: 'verts', key: 'SSB', contingency: 'built-in' }).sack > 0.6);
+  assert.ok(E.expected(fire, { ...pick, play: 'verts', key: 'FS', contingency: 'built-in' }).sack > 0.6);
 });
 
 test('interactions: shifting the back fixes the slide-away protection', () => {
