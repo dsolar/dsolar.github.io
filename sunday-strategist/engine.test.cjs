@@ -1,0 +1,112 @@
+// Sunday Strategist engine and content checks. Run: node --test sunday-strategist/engine.test.cjs
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const D = require('./scenarios.js'), S = require('./schema.js'), E = require('./engine.js');
+const clone = x => JSON.parse(JSON.stringify(x));
+const [fire, bluff] = D.scenarios;
+const best = sc => ({ ...sc.recommended, key: sc.plays.find(p => p.id === sc.recommended.play).key.answer });
+const read = { personnel: 'nickel', shell: 'two', rushers: ['DEB', 'DT', 'NT', 'DEF', 'WILL', 'MIKE', 'NB'], pressure: 'five', confidence: 'strong' };
+
+test('every bundled scenario passes the schema', () => {
+  assert.deepEqual(S.validate(D), []);
+});
+
+test('the schema catches broken content', () => {
+  const d = clone(D);
+  d.scenarios[0].plays[0].key.answer = 'NOBODY';
+  d.scenarios[0].actual.rushers.push('MIKE'); // MIKE also drops
+  d.scenarios[1].provenance.type = 'verified';
+  d.scenarios[1].type = 'verified'; // a "real" play with no source or game
+  d.scenarios[0].contingencies[0].grades = {};
+  const errs = S.validate(d).join('\n');
+  assert.match(errs, /plays\[0\]\.key\.answer/);
+  assert.match(errs, /can't both rush and drop/);
+  assert.match(errs, /needs at least one source/);
+  assert.match(errs, /historical\.gameId/);
+  assert.match(errs, /no grade for play stick/);
+});
+
+test('a seed makes a rep repeatable', () => {
+  for (const sc of D.scenarios) assert.deepEqual(E.resolve(sc, best(sc), 42), E.resolve(sc, best(sc), 42));
+});
+
+test('the recommended call converts more often than any other call', () => {
+  for (const sc of D.scenarios) {
+    const rec = E.expected(sc, best(sc));
+    for (const p of sc.plays.filter(p => p.id !== sc.recommended.play)) {
+      const alt = E.expected(sc, { ...best(sc), play: p.id, key: p.key.answer });
+      assert.ok(rec.convert > alt.convert, `${sc.id}: ${p.id} ${alt.convert} vs ${rec.convert}`);
+    }
+  }
+});
+
+test('the hot slant throws into the replacement defender', () => {
+  const x = E.expected(fire, { ...best(fire), play: 'slant', key: 'NB' });
+  assert.ok(x.turnover > 0.12, `interceptions ${x.turnover}`);
+});
+
+test('a free rusher with no answer gets home; a built-in hot answer saves the play', () => {
+  const pick = { ...best(fire), protection: 'five', motion: 'none' };
+  const none = E.expected(fire, { ...pick, contingency: 'none' });
+  const hot = E.expected(fire, { ...pick, contingency: 'built-in' });
+  assert.ok(none.sack > 0.6, `sacks ${none.sack}`);
+  assert.equal(hot.sack, 0);
+  assert.ok(hot.convert > none.convert + 0.15);
+  // Verticals has no quick route, so "hot" can't save it.
+  assert.ok(E.expected(fire, { ...pick, play: 'verts', key: 'SSB', contingency: 'built-in' }).sack > 0.6);
+});
+
+test('interactions: shifting the back fixes the slide-away protection', () => {
+  const base = { ...best(fire), protection: 'slide-away', motion: 'none' };
+  assert.ok(E.resolve(fire, base, 1).beat);
+  assert.ok(!E.resolve(fire, { ...base, motion: 'rbshift' }, 1).beat);
+  const g = E.review(fire, { ...base, motion: 'rbshift' }, read, 1).grades.protection;
+  assert.ok(g > E.review(fire, base, read, 1).grades.protection);
+});
+
+test('process is graded apart from the result', () => {
+  // The same good decision gets the same process grade on every rep, good or bad.
+  const reps = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(seed => E.review(fire, best(fire), read, seed));
+  assert.equal(new Set(reps.map(r => r.process)).size, 1);
+  assert.ok(reps.some(r => r.grades.result >= 95) && reps.some(r => r.grades.result < 75), 'results vary');
+  assert.ok(reps.some(r => r.verdict.title === 'Good call, bad result'));
+  // A bad call that happens to work is still called a bad call.
+  const lucky = Array.from({ length: 200 }, (_, i) => E.review(fire, { ...best(fire), play: 'slant', key: 'NB', contingency: 'none', protection: 'max' }, read, i + 1))
+    .find(r => r.grades.result >= 95);
+  assert.ok(lucky, 'the slant sometimes works');
+  assert.equal(lucky.verdict.title, 'Bad call, good result');
+});
+
+test('diagnosis: credit for reading the evidence, even when the defense lies', () => {
+  const d = E.scoreDiagnosis(bluff, read);
+  assert.equal(bluff.actual.pressure, 'four');
+  assert.equal(d.score, 100, 'five-man was the right read of the same picture');
+  const miss = E.scoreDiagnosis(fire, { ...read, rushers: read.rushers.filter(x => x !== 'NB'), confidence: 'certain', shell: 'zero' });
+  assert.ok(miss.items.find(i => i.id === 'rushers').credit <= 50, 'forgetting the nickel is capped');
+  assert.ok(miss.errors.includes('pressure-count') && miss.errors.includes('shell'));
+  const over = E.scoreDiagnosis(fire, { personnel: 'base', shell: 'zero', rushers: ['CBB'], pressure: 'six', confidence: 'certain' });
+  assert.equal(over.calibration.kind, 'overconfident');
+  assert.ok(over.errors.includes('overconfidence'));
+});
+
+test('the review explains every grade from structured facts', () => {
+  const rv = E.review(fire, best(fire), read, 3);
+  assert.deepEqual(Object.keys(rv.grades), ['diagnosis', 'call', 'protection', 'contingency', 'execution', 'result']);
+  for (const g of Object.values(rv.grades)) assert.ok(g >= 0 && g <= 100);
+  assert.ok(rv.rep.cards.length >= 4 && rv.rep.cards.every(c => c.assignment && c.keyRole));
+  assert.ok(rv.rep.timeline.length >= 5 && rv.rep.decisive);
+  assert.deepEqual(rv.alternatives.map(a => a.category), ['recommended', 'aggressive', 'conservative', 'poor']);
+  assert.equal(rv.key.score, 100);
+});
+
+test('mastery: unseen scenarios first, then the weakest skill', () => {
+  let rec = E.emptyRecord();
+  assert.equal(E.next(D, rec, 0, null), fire.id);
+  rec = E.record(rec, fire, E.review(fire, best(fire), read, 1), 0);
+  assert.equal(E.next(D, rec, 0, fire.id), bluff.id);
+  rec = E.record(rec, bluff, E.review(bluff, { ...best(bluff), play: 'slant', key: 'NB' }, read, 1), 0);
+  assert.equal(E.next(D, rec, 86400000, null), bluff.id, 'the weaker scenario comes back');
+  const rep = E.report(rec, D);
+  assert.ok(rep.tags.find(t => t.id === 'pressure-disguise').level < rep.tags.find(t => t.id === 'replacement-defender').level);
+  assert.ok(rep.errors.some(e => e.id === 'replacement-defender'));
+});
