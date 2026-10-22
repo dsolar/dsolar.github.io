@@ -51,11 +51,32 @@ The process score is the average of the first four.
 - Results are announced in a live region, and reduced motion is respected.
 - No team colors are used.
 
-## Film room grading (gen.js)
+## Film room grading (gen.js + model.js)
 
-Every film-room option gets a **process grade** from what was knowable before the snap:
-- **Passes:** the shell's usual coverages (two-high is roughly 40% quarters, 30% Cover 2 and so on), times the concept's window against each one (`data.matrix`, which also holds the reason), times protection timing against the rush the box can send.
-- **Runs:** the window grows or shrinks with run blockers minus box defenders.
-- **Success:** yards needed for the down: 40% of the distance on 1st down, 60% on 2nd, all of it on 3rd and 4th.
+`tools/strategist_model.py` fits the grading tables to every eligible 2023–2025 snap (about 86,500) and writes `model.js`.
 
-The best option earns the top grade, and the others are graded by how far behind it they are. The **rep** then resolves against what the defense actually did: the charted coverage and rush.
+**Success** is the game's rule: 40% of the distance on 1st down, 60% on 2nd, all of it on 3rd and 4th, or a touchdown.
+
+**Passes**
+- The concept comes from the charted target route.
+- Route charting only sees where the ball went, and the QB throws to whoever is open. So a concept's raw rate is optimistic. The model uses the concept's rate *relative* to all targeted throws, times the real success rate of every called pass in that down group and coverage (sacks, throwaways and scrambles included).
+- A small box adjustment: passes do a little better against loaded boxes.
+
+**Runs**
+- Rates by down group and run blockers minus box defenders.
+
+**Thin cells**
+- Thin cells shrink toward the down group's average, at k = 40 snaps.
+
+**Process grade**
+- The option's rate weighted by the coverages defenses actually played from this package, box count and situation, restricted to the shell shown.
+- Calls within 2 points of the best tie for the top grade, because the data can't separate them.
+
+**The rep**
+- The rep runs against the real coverage.
+- Each option's window is calibrated so 400 reps land on the real rate: measured over all film snaps, the 90th-percentile gap is within 6 points, and a unit test enforces it.
+- On early downs the review reports "gains N+ yards" instead of first downs.
+
+The hand-written tables in `scenarios.js` (`matrix`) still supply the *reason* text, and they're the fallback if `model.js` is missing.
+
+**Caveat:** charting can't see the play that was called, only where the ball went. Concept rates are therefore a guide to how each kind of throw fares, not a controlled experiment.

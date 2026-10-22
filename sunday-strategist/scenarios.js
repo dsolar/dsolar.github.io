@@ -171,34 +171,38 @@
 
   defenses: {
     "fire-zone-3": {
+      group: "three",
       name: "Nickel fire zone, Cover 3 behind it",
       plain: "Five rush (the nickel and a linebacker blitz, an end drops). Three deep, three underneath. The safety on the blitz side rotates down to replace the nickel.",
       vulnerable: ["Seams against three deep", "The hook-curl windows between three underneath defenders", "Quick game away from the rotating safety"],
       counters: ["Stick and spacing", "Max-protected seams", "Screens away from the pressure"]
     },
     "cover-1-nickel": {
+      group: "man",
       name: "Nickel pressure, Cover 1 behind it",
       plain: "Five rush, the nickel among them. Everyone else is in man, with one free safety deep in the middle. Whoever covers the nickel's receiver has to come from farther away.",
       vulnerable: ["Quick throws to the receiver the blitzer left", "Crossing routes that rub man defenders", "Anything outside the free safety's reach"],
       counters: ["Hot slant", "Mesh", "Sight adjusts"]
     },
     "cover-0": {
+      group: "zero",
       name: "Cover 0 all-out pressure",
       plain: "Six or more rush. Every other defender is in man, and nobody is deep.",
       vulnerable: ["Any quick throw that wins leverage, with no safety to tackle behind it", "One-on-ones deep, if protection holds"],
       counters: ["Quick slants", "Max protection with a fade", "Sight adjusts"]
     },
-    "gen-cover-0": { name: "Cover 0", plain: "Man-to-man with nobody deep. Everyone not covering someone is rushing.", vulnerable: ["Any quick throw that wins leverage", "One-on-ones deep with no help"], counters: ["Quick game", "Fade", "Sight adjusts"] },
-    "gen-cover-1": { name: "Cover 1", plain: "Man-to-man across the board with one free safety deep in the middle, and often a robber underneath.", vulnerable: ["Crossers that rub man defenders", "Matchups outside, away from the free safety"], counters: ["Mesh", "Quick game", "Fade"] },
-    "gen-2-man": { name: "2-Man", plain: "Man-to-man underneath with two deep safeties splitting the field. Defenders trail receivers, knowing help is over the top.", vulnerable: ["Underneath crossers and option routes", "Quarterback runs: everyone's back is turned"], counters: ["Mesh", "Quick game", "Runs and scrambles"] },
-    "gen-cover-2": { name: "Cover 2", plain: "Five underneath zones, two deep halves. Corners squat in the flats.", vulnerable: ["The hole between the corner and the halves safety (smash)", "Seams down the middle"], counters: ["Smash", "Four verticals", "Runs against a light box"] },
-    "gen-cover-3": { name: "Cover 3", plain: "Three deep thirds, four underneath zones. A one-high shell, usually with a safety rolled down near the box.", vulnerable: ["Seams against three deep", "Flats and curl windows underneath"], counters: ["Dagger", "Four verticals", "Quick game"] },
-    "gen-cover-4": { name: "Quarters (Cover 4)", plain: "Four deep defenders reading the receivers in front of them; safeties fit the run aggressively.", vulnerable: ["Short throws underneath, especially to the flats", "Runs before the safeties can fit"], counters: ["Quick game", "Smash", "Mesh"] },
-    "gen-cover-6": { name: "Cover 6", plain: "Quarters to one side, Cover 2 to the other: a split-field coverage.", vulnerable: ["Smash to the Cover 2 side", "The seam on the quarters side"], counters: ["Smash", "Quick game", "Dagger"] },
-    "gen-cover-9": { name: "Cover 9 (match 3)", plain: "A three-deep match coverage: it plays like Cover 3 but carries vertical routes like man.", vulnerable: ["Quick throws underneath", "Crossers that stress the matching rules"], counters: ["Quick game", "Mesh", "Smash"] },
-    "gen-combo": { name: "Combination coverage", plain: "Different rules on each side of the formation, often man on one side and zone on the other.", vulnerable: ["Whichever side is playing the softer rule"], counters: ["Quick game", "Mesh"] },
+    "gen-cover-0": { group: "zero", name: "Cover 0", plain: "Man-to-man with nobody deep. Everyone not covering someone is rushing.", vulnerable: ["Any quick throw that wins leverage", "One-on-ones deep with no help"], counters: ["Quick game", "Fade", "Sight adjusts"] },
+    "gen-cover-1": { group: "man", name: "Cover 1", plain: "Man-to-man across the board with one free safety deep in the middle, and often a robber underneath.", vulnerable: ["Crossers that rub man defenders", "Matchups outside, away from the free safety"], counters: ["Mesh", "Quick game", "Fade"] },
+    "gen-2-man": { group: "twoMan", name: "2-Man", plain: "Man-to-man underneath with two deep safeties splitting the field. Defenders trail receivers, knowing help is over the top.", vulnerable: ["Underneath crossers and option routes", "Quarterback runs: everyone's back is turned"], counters: ["Mesh", "Quick game", "Runs and scrambles"] },
+    "gen-cover-2": { group: "two", name: "Cover 2", plain: "Five underneath zones, two deep halves. Corners squat in the flats.", vulnerable: ["The hole between the corner and the halves safety (smash)", "Seams down the middle"], counters: ["Smash", "Four verticals", "Runs against a light box"] },
+    "gen-cover-3": { group: "three", name: "Cover 3", plain: "Three deep thirds, four underneath zones. A one-high shell, usually with a safety rolled down near the box.", vulnerable: ["Seams against three deep", "Flats and curl windows underneath"], counters: ["Dagger", "Four verticals", "Quick game"] },
+    "gen-cover-4": { group: "quarters", name: "Quarters (Cover 4)", plain: "Four deep defenders reading the receivers in front of them; safeties fit the run aggressively.", vulnerable: ["Short throws underneath, especially to the flats", "Runs before the safeties can fit"], counters: ["Quick game", "Smash", "Mesh"] },
+    "gen-cover-6": { group: "quarters", name: "Cover 6", plain: "Quarters to one side, Cover 2 to the other: a split-field coverage.", vulnerable: ["Smash to the Cover 2 side", "The seam on the quarters side"], counters: ["Smash", "Quick game", "Dagger"] },
+    "gen-cover-9": { group: "three", name: "Cover 9 (match 3)", plain: "A three-deep match coverage: it plays like Cover 3 but carries vertical routes like man.", vulnerable: ["Quick throws underneath", "Crossers that stress the matching rules"], counters: ["Quick game", "Mesh", "Smash"] },
+    "gen-combo": { group: "quarters", name: "Combination coverage", plain: "Different rules on each side of the formation, often man on one side and zone on the other.", vulnerable: ["Whichever side is playing the softer rule"], counters: ["Quick game", "Mesh"] },
     "gen-run-fit": { name: "Run fits", plain: "On a run, every defender owns a gap. The coverage behind it matters less than whether the box has more defenders than you have blockers.", vulnerable: ["The extra gap when you have more blockers than they have defenders", "Cutback lanes against fast-flowing linebackers"], counters: ["Inside zone", "Power", "Play action"] },
     "cover-2-bluff": {
+      group: "two",
       name: "Nickel bluff, Cover 2",
       plain: "Four rush. The nickel shows blitz, then bails to the curl. Corners squat in the flats, two safeties split the deep halves.",
       vulnerable: ["The hole between the corner and the halves safety (smash)", "Seams down the middle", "Draws against a four-man rush"],

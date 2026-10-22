@@ -1,6 +1,7 @@
 # Sunday Strategist: roadmap
 
 **Done.**
+- Grades fitted to real data: `model.js`, from 86,500 snaps from 2023 to 2025. Every film-room option cites its real success rate and sample size, and lessons show the same data line next to their hand-made grades.
 - Phases 1 to 3, slice-sized: the page, the data-driven scenario engine, schema validation, provenance, the explainable four-stage simulation, six grades, expected value over 400 reps, mastery tracking, the error taxonomy, revisit scheduling, unit tests and an end-to-end test.
 - Four lessons: a nickel fire zone, the bluff into Cover 2, Cover 1 man pressure, and Cover 0.
 - Phase 4: `tools/strategist_real.py` pulls real snaps that match each lesson from nflverse play-by-play, participation (NGS) and FTN charting for 2023 to 2025. There are 32 real snaps (8 per lesson, a spread of teams, seasons and outcomes, always one Patriots snap). They're shown with real teams, ESPN logos, the roster on the field, and a "What really happened" section with a confidence chip on every fact.

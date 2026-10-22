@@ -457,7 +457,7 @@
         var l = rv.letters[g[0]];
         return '<div class="grade ' + g[2] + " " + gradeClass(l) + '"><b>' + esc(l) + "</b><small>" + g[1] + "</small></div>";
       }).join("") + '</div><p class="grade-key"><span><i style="background:var(--mint)"></i>Process: your decisions (' + rv.process + "/100)</span><span><i style=\"background:var(--orange)\"></i>Outcome: this one rep</span></p>" +
-      '<div class="odds"><p>Run this exact call 400 times and it converts <b>' + pct(e.convert) + "</b>, averaging <b>" + e.avgYards.toFixed(1) + " yards</b>" +
+      '<div class="odds"><p>Run this exact call 400 times and it ' + verb(e) + " <b>" + pct(rate(e)) + "</b> of the time, averaging <b>" + e.avgYards.toFixed(1) + " yards</b>" +
       (e.turnover >= 0.005 ? ", with an interception " + pct(e.turnover) + " of the time" : "") + (e.sack >= 0.005 ? " and a sack " + pct(e.sack) : "") + ".</p>" +
       '<button type="button" class="ghost" id="again">Run this rep again</button></div>' +
 
@@ -491,7 +491,7 @@
 
       sec(7, "The other calls", "<p>Each one run 300 times with the best protection and answer for it, so the comparison is about the call.</p>" + '<ul class="alts">' + rv.alternatives.map(function (a) {
         return '<li class="' + (a.yours ? "yours" : "") + '"><div class="head"><span class="pill ' + (a.category === "poor" ? "no" : a.category === "recommended" ? "ok" : "part") + '">' + esc(a.categoryLabel) + "</span><b>" + esc(a.label) + "</b>" + (a.yours ? '<span class="pill uncertain">Your call</span>' : "") +
-          '<span class="stats">' + pct(a.odds.convert) + " convert · " + a.odds.avgYards.toFixed(1) + " yds" + (a.odds.turnover >= 0.005 ? " · " + pct(a.odds.turnover) + " INT" : "") + "</span></div><p>" + esc(a.why) + "</p></li>";
+          '<span class="stats">' + pct(rate(a.odds)) + " " + short(a.odds) + " · " + a.odds.avgYards.toFixed(1) + " yds" + (a.odds.turnover >= 0.005 ? " · " + pct(a.odds.turnover) + " INT" : "") + "</span></div><p>" + esc(a.why) + (lessonData(sc, a.id) ? " " + esc(lessonData(sc, a.id)) : "") + "</p></li>";
       }).join("") + "</ul>") +
 
       sec(8, "Next time", "<p>" + esc(sc.next) + "</p>") +
@@ -520,9 +520,21 @@
       ["Charted", "The defense", (r.rushers || 0) + " rushers, " + (r.blitzers || 0) + " of them blitzers, " + r.coverage + (r.manZone ? " (" + r.manZone + ")" : "") + (r.box ? ", " + r.box + " in the box" : "") + ". " + (r.pressure ? "The quarterback was pressured." : "No pressure on the quarterback.")],
       ["Reconstructed", "The drawing", sc.lesson ? "Which defenders rushed and where everyone lined up come from the lesson, not from charting." : "Built from the charted personnel, formation, box count, rush and coverage. Exact spots and which defenders rushed aren't charted."]
     ];
-    var yourOdds = Math.round(rv.expected.convert * 100);
+    var yourOdds = Math.round(rate(rv.expected) * 100);
     return sec("\u2605", "What really happened", '<ul class="real-facts">' + rows.map(function (x) { return "<li>" + chip(x[0]) + "<b>" + esc(x[1]) + "</b><span>" + esc(x[2]) + "</span></li>"; }).join("") + "</ul>" +
-      "<p>Your call converts " + yourOdds + "% of the time against what this defense did. The real call " + (r.epa > 0 ? "worked (it added expected points)" : "didn't work (it lost expected points)") + ", once. One snap is evidence, not a verdict: a real call isn't right because it happened, and it isn't wrong because it failed.</p>");
+      "<p>Your call " + verb(rv.expected) + " " + yourOdds + "% of the time against what this defense did. The real call " + (r.epa > 0 ? "worked (it added expected points)" : "didn't work (it lost expected points)") + ", once. One snap is evidence, not a verdict: a real call isn't right because it happened, and it isn't wrong because it failed.</p>");
+  }
+  // Third and fourth down count conversions; earlier downs count the game's success rule (4 yards on 1st and 10, and so on).
+  function late() { return st.sc.context.down >= 3; }
+  function rate(o) { return late() ? o.convert : o.success; }
+  function verb(o) { return late() ? "converts" : "gains " + o.need + "+ yards"; }
+  function short(o) { return late() ? "convert" : o.need + "+ yds"; }
+  // Lessons are hand-graded; show what the real data says about the same kind of call next to it.
+  function lessonData(sc, playId) {
+    if (sc.module === "film-room" || !window.SS_GEN) return null;
+    var p = by(sc.plays, playId), c = sc.context, def = D.defenses[sc.actual.call];
+    var r = { down: c.down, dist: c.distance, yl100: c.side === "opp" ? c.yardLine : 100 - c.yardLine, box: sc.defense.boxCount, offPers: sc.offense.personnel || "11", ol: 5, fb: 0 };
+    return window.SS_GEN.dataLine(p.concept, r, def && def.group, sc.defense.boxCount);
   }
   function sec(n, title, body) { return '<section class="sec"><h3><span>' + n + "</span>" + esc(title) + "</h3>" + body + "</section>"; }
   function roleOf(id) { var p = by(st.sc.defense.players, id); return p ? p.role.split(",")[0].toLowerCase() : id; }
