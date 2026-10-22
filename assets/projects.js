@@ -76,7 +76,7 @@ window.PROJECTS = [
     summary: "A Yahoo-powered fantasy football dashboard that models survival odds across thousands of seasons.",
     facts: [["20,000", "simulated seasons per update"], ["15", "teams, one cut every week"], ["Daily", "refresh from Yahoo"]],
     stack: ["JavaScript", "Python", "Monte Carlo simulation", "GitHub Actions"],
-    cover: { image: "assets/covers/guillotine.jpg", bg: "#0E1A30", band: "#C8102E" }
+    cover: { image: "assets/covers/guillotine.svg", bg: "#0E1A30", band: "#C8102E" }
   },
   {
     title: "Night Out",
@@ -111,7 +111,7 @@ window.PROJECTS = [
     summary: "A searchable history of a long-running fantasy baseball league, with keeper analysis and draft tools.",
     facts: [["5,600", "draft picks since 2013"], ["14", "seasons of champions and standings"], ["3", "keeper years, then back in the draft"]],
     stack: ["JavaScript", "Python"],
-    cover: { image: "assets/covers/yoenis.jpg", bg: "#1F4532", band: "#BD3039" }
+    cover: { image: "assets/covers/yoenis.svg", bg: "#1F4532", band: "#BD3039" }
   },
   {
     title: "Banner 19",

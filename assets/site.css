@@ -385,3 +385,74 @@ a:hover{color:var(--red)}
  .entry.spotlight .entry-meta{padding-top:28px}
  .entry.spotlight .entry-body h3{font-size:clamp(1.7rem,2.8vw,2.3rem)}
 }
+
+/* ---------- Ticker: the scoreboard across the top (assets/scoreboard.js fills it) ----------
+   ESPN BottomLine in spirit: always dark, one tile per game, moving one tile along every few seconds. */
+.ticker{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;align-items:stretch;background:#04111F;color:#EEF0F2;border-bottom:3px solid #C60C30;font-family:var(--f-body)}
+.ticker[hidden]{display:none}
+.tk-label{display:flex;flex-direction:column;justify-content:center;gap:2px;padding:0 14px 0 max(16px, env(safe-area-inset-left, 0px));background:#C60C30;color:#fff;font-weight:800;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;line-height:1.1}
+.tk-label small{font-weight:600;font-size:.68rem;letter-spacing:.02em;text-transform:none;opacity:.9}
+.tk-btn{appearance:none;background:transparent;border:0;color:#EEF0F2;font:400 1.7rem/1 var(--f-body);width:34px;cursor:pointer;padding:0}
+.tk-btn:hover{background:rgba(255,255,255,.08)}
+.tk-btn:focus-visible{outline:2px solid #F0475E;outline-offset:-3px}
+.tk-viewport{overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.tk-viewport::-webkit-scrollbar{display:none}
+.tk-track{display:flex;gap:10px;list-style:none;margin:0;padding:8px 10px}
+.tk-item{flex:0 0 236px;scroll-snap-align:start;display:grid;gap:3px;padding:7px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px}
+.tk-item>a{display:grid;gap:3px;color:inherit;text-decoration:none}
+.tk-item>a:focus-visible{outline:2px solid #F0475E;outline-offset:4px;border-radius:3px}
+.tk-item:hover{border-color:rgba(255,255,255,.32)}
+.tk-now{border-color:#F0475E;background:rgba(240,71,94,.1)}
+.tk-today{border-color:rgba(226,184,74,.45)}
+.tk-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:.66rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#9FB0C4;white-space:nowrap}
+.tk-status{font-size:.74rem;letter-spacing:0;text-transform:none;color:#EEF0F2;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis}
+.tk-line{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:8px;font-size:.9rem;line-height:1.25}
+.tk-logo,.tk-mono{width:22px;height:22px;object-fit:contain;display:block}
+.tk-mono{display:inline-flex;align-items:center;justify-content:center;font-size:.52rem;font-weight:700;border:1px solid rgba(255,255,255,.3);border-radius:50%}
+.tk-name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tk-name small{font-weight:400;font-size:.74rem;color:#9FB0C4;margin-left:6px}
+.tk-us .tk-name{font-weight:800;color:#fff}
+.tk-lost{opacity:.55}
+.tk-pts{font-weight:800;font-size:1.05rem;font-variant-numeric:tabular-nums}
+.tk-rank{font-size:.66rem;font-weight:700;color:#E2B84A;margin-right:4px}
+.tk-foot{font-size:.72rem;color:#9FB0C4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tk-quiet .tk-foot{color:#C3CEDB}
+.tk-live{color:#FF6B7F;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.tk-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;margin-right:4px;vertical-align:.12em;animation:tk-pulse 1.6s ease-in-out infinite}
+@keyframes tk-pulse{50%{opacity:.25}}
+.tk-wl{background:#EEF0F2;color:#04111F;border-radius:3px;padding:0 4px;font-weight:800;font-size:.68rem}
+@media (prefers-reduced-motion: reduce){.tk-dot{animation:none}}
+@media (max-width: 640px){
+  .ticker{grid-template-columns:minmax(0,1fr)}
+  .tk-btn{display:none}
+  .tk-label{flex-direction:row;align-items:baseline;justify-content:space-between;padding:4px max(12px, env(safe-area-inset-left, 0px));font-size:.64rem}
+  .tk-item{flex-basis:212px}
+}
+
+/* ---------- 2026-10 flavor: a night game up top, team colors on the cards, a shaded writing archive ---------- */
+:root{--night:#002244;--night-ink:#F5F4F0;--night-muted:#C3CEDB}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--night:#0E2747}}
+:root[data-theme="dark"]{--night:#0E2747}
+.site-header{background:var(--night);color:var(--night-ink);border-bottom:1px solid rgba(255,255,255,.12)}
+.site-nav a{color:var(--night-ink)}
+.site-nav a:hover{color:#fff}
+.hero{background:var(--night);color:var(--night-ink);border-bottom:4px solid #C60C30;
+  background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.028) 0 64px,transparent 64px 128px)}
+.hero h1{color:var(--night-ink)}
+.hero-kicker{color:#E2B84A}
+.hero-sub{color:var(--night-muted)}
+.hero-plates{display:flex;flex-wrap:wrap;gap:12px 22px;list-style:none;margin:6px 0 0;padding:0}
+.hero-plates li{display:flex;align-items:center;gap:10px;font-size:.86rem;color:var(--night-muted)}
+.hero-plates b{min-width:2.6ch;padding:4px 8px;text-align:center;background:#1D4A36;color:#F5F4F0;border-radius:3px;box-shadow:inset 0 -3px 0 rgba(0,0,0,.25);font:700 1.35rem/1.1 var(--f-body);font-variant-numeric:tabular-nums}
+.section-head h2::after{content:"";display:block;width:2.4rem;height:4px;margin-top:10px;background:var(--red);border-radius:2px}
+.entry,.entry:first-child{border-top:5px solid var(--cover-band,var(--ink))}
+@media (hover:hover) and (prefers-reduced-motion: no-preference){.entry{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}.entry:hover{transform:translateY(-3px)}}
+.writing{background:var(--paper-2)}
+.writing .featured-column{background:var(--paper)}
+.writing-season summary{display:flex;align-items:baseline;gap:14px;cursor:pointer;list-style:none}
+.writing-season summary::-webkit-details-marker{display:none}
+.writing-season summary h3{flex:1;margin-bottom:8px}
+.writing-season summary::after{content:"Show";flex:none;font-size:.78rem;font-weight:700;color:var(--red);letter-spacing:.04em;text-transform:uppercase}
+.writing-season[open] summary::after{content:"Hide"}
+.writing-season summary:hover h3{text-decoration:underline;text-decoration-color:var(--red);text-decoration-thickness:2px;text-underline-offset:.2em}
+.writing-season summary:focus-visible{outline:2px solid var(--red);outline-offset:4px}

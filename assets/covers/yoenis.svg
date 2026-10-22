@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 780">
+  <!-- Don't Forget to Wipe Yoenis cover: illustration only, so it never shows stale keeper costs. -->
+  <defs>
+    <linearGradient id="monster" x2="0" y2="1"><stop stop-color="#1F4532"/><stop offset="1" stop-color="#173627"/></linearGradient>
+    <pattern id="pin" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M20 0v40" stroke="#fff" stroke-opacity=".05" stroke-width="2"/></pattern>
+  </defs>
+  <rect width="1040" height="780" fill="url(#monster)"/>
+  <rect width="1040" height="780" fill="url(#pin)"/>
+  <rect y="0" width="1040" height="12" fill="#BD3039"/>
+  <!-- keeper rounds on scoreboard plates -->
+  <g font-family="Arial Narrow, Arial, Helvetica, sans-serif" font-weight="700" text-anchor="middle">
+    <text x="760" y="104" fill="#C9D8CC" font-size="20" letter-spacing="5">KEEPER ROUNDS</text>
+    <g transform="translate(610 128)">
+      <rect width="88" height="104" rx="6" fill="#0F2A1D" stroke="#6E8F79" stroke-width="3"/><text x="44" y="76" fill="#F5F4F0" font-size="64">16</text>
+      <rect x="106" width="88" height="104" rx="6" fill="#0F2A1D" stroke="#6E8F79" stroke-width="3"/><text x="150" y="76" fill="#F5F4F0" font-size="64">14</text>
+      <rect x="212" width="88" height="104" rx="6" fill="#BD3039" stroke="#7F1D24" stroke-width="3"/><text x="256" y="76" fill="#F5F4F0" font-size="64">10</text>
+    </g>
+  </g>
+  <!-- the record book -->
+  <g transform="translate(90 120) rotate(-4)">
+    <path d="M0 30Q130 0 250 30V420Q130 392 0 420Z" fill="#F3EEDF" stroke="#3B2E1A" stroke-width="5"/>
+    <path d="M250 30Q370 0 500 30V420Q370 392 250 420Z" fill="#FBF7EC" stroke="#3B2E1A" stroke-width="5"/>
+    <path d="M250 30V420" stroke="#3B2E1A" stroke-width="5"/>
+    <g stroke="#B7AE96" stroke-width="3">
+      <path d="M30 100h190M30 140h190M30 180h190M30 220h190M30 260h190M30 300h190M30 340h190"/>
+      <path d="M280 100h190M280 140h190M280 180h190M280 220h190M280 260h190M280 300h190M280 340h190"/>
+    </g>
+    <g font-family="Georgia, 'Times New Roman', serif" font-weight="700" fill="#1F4532">
+      <text x="125" y="76" font-size="30" text-anchor="middle">2013</text>
+      <text x="375" y="76" font-size="30" text-anchor="middle">2026</text>
+    </g>
+    <g fill="#BD3039"><circle cx="40" cy="124" r="6"/><circle cx="290" cy="164" r="6"/><circle cx="290" cy="284" r="6"/></g>
+  </g>
+  <!-- a baseball -->
+  <g transform="translate(790 420)">
+    <circle r="108" fill="#F7F4EC" stroke="#3B2E1A" stroke-width="5"/>
+    <path d="M-62-86c40 40 40 132 0 172M62-86c-40 40-40 132 0 172" fill="none" stroke="#BD3039" stroke-width="5"/>
+    <g stroke="#BD3039" stroke-width="4">
+      <path d="M-44-60l-14-6M-30-34l-15-3M-25-6h-15M-30 22l-15 3M-44 48l-14 6"/>
+      <path d="M44-60l14-6M30-34l15-3M25-6h15M30 22l15 3M44 48l14 6"/>
+    </g>
+  </g>
+  <!-- title -->
+  <text x="80" y="628" font-family="Georgia, 'Times New Roman', serif" font-size="60" font-weight="700" fill="#F5F4F0">Don't Forget to Wipe Yoenis</text>
+  <text x="82" y="678" font-family="Arial, Helvetica, sans-serif" font-size="25" fill="#C9D8CC" letter-spacing="1">The keeper league's record book, every draft since 2013</text>
+  <rect x="80" y="706" width="120" height="6" rx="3" fill="#BD3039"/>
+</svg>
