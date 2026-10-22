@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Besley:ital,wght@0,500;0,600;0,700;0,800;1,500&family=Libre+Franklin:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="assets/site.css?v=20261022-ticker">
+<link rel="stylesheet" href="assets/site.css?v=20261022-noplates">
 <script src="assets/site.js" defer></script>
 <script src="assets/analytics.js" defer></script>
 <script src="assets/scoreboard.js?v=20261022-ticker" defer></script>
@@ -58,12 +58,6 @@
         <p class="hero-kicker">Sports. Data. Nonsense.</p>
         <h1 id="hero-title">Strategy, technology, and a healthy obsession with sports.</h1>
         <p class="hero-sub">I lead marketing, build digital experiences, and use data to turn complicated questions into useful products. Here, I explore those ideas through sports analytics, simulations, and the occasional ridiculous experiment.</p>
-        <!-- Green Monster scoreboard plates; the numbers fill in from the page itself -->
-        <ul class="hero-plates" aria-label="By the numbers">
-          <li><b id="plate-projects">8</b><span>projects live</span></li>
-          <li><b id="plate-writing">35</b><span>ESPN columns</span></li>
-          <li><b>8</b><span>teams on the ticker</span></li>
-        </ul>
       </div>
       <svg class="hero-brand-art" viewBox="0 0 280 280" aria-hidden="true" focusable="false">
     <g transform="translate(22 18)" stroke-linecap="round" stroke-linejoin="round">
@@ -382,9 +376,6 @@
   window.addEventListener("hashchange", function () { syncCategory(); });
   updateAccess();
   document.getElementById("year").textContent = new Date().getFullYear();
-  // Hero plates: live projects (hidden ones aside) and the article count, so they never go stale
-  document.getElementById("plate-projects").textContent = (window.PROJECTS || []).filter(function (p) { return !p.hidden && p.status !== "building"; }).length;
-  document.getElementById("plate-writing").textContent = document.querySelectorAll("#writing .article-list li").length;
 })();
 </script>
 </body>
