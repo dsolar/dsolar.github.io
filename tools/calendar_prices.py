@@ -18,7 +18,6 @@ import os
 import re
 import time
 import unicodedata
-import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
@@ -58,16 +57,20 @@ def sg(params, client):
     return get_json(SG + "?" + urllib.parse.urlencode(q))
 
 
+FAILED = object()                  # find(): the search itself failed, as opposed to SeatGeek not having the show
+
+
 def find(e, client):
-    """The SeatGeek event for one of our shows: same day, same venue (or at least the same city)."""
+    """The SeatGeek event for one of our shows: same day, same venue (or at least the same city).
+    None when SeatGeek doesn't have it; FAILED when the search couldn't be made (network, bad answer)."""
     q = re.sub(r"\bvs\.?\b", " ", e["title"], flags=re.I)
     q = re.sub(r"[:(].*$", "", q).strip()
     nxt = (datetime.fromisoformat(e["date"]) + timedelta(days=1)).date().isoformat()
     try:
         res = sg({"q": q, "datetime_local.gte": e["date"], "datetime_local.lt": nxt, "per_page": 10}, client)
-    except urllib.error.HTTPError as err:
+    except Exception as err:
         print(f"::warning::SeatGeek search for {e['title']} failed: {err}")
-        return None
+        return FAILED
     best, best_score = None, 0
     city = norm((e.get("city") or "").split(",")[0])
     for c in res.get("events", []):
@@ -90,14 +93,14 @@ def by_ids(ids, client):
             res = sg({"id": ",".join(map(str, chunk)), "per_page": len(chunk)}, client)
             for c in res.get("events", []):
                 out[c["id"]] = c
-        except urllib.error.HTTPError as err:
+        except Exception as err:
             print(f"::warning::SeatGeek batch lookup failed: {err}")
     for i in [i for i in ids if i not in out]:  # one at a time for anything the batch missed
         try:
             out[i] = get_json(f"{SG}/{i}?" + urllib.parse.urlencode({"client_id": client}))
             time.sleep(0.2)
-        except urllib.error.HTTPError as err:
-            print(f"::notice::SeatGeek event {i} unavailable ({err.code}).")
+        except Exception as err:
+            print(f"::notice::SeatGeek event {i} unavailable ({getattr(err, 'code', err)}).")
     return out
 
 
@@ -161,6 +164,8 @@ def main():
             continue
         c = find(e, client)
         time.sleep(0.2)
+        if c is FAILED:             # try again next run, without counting it as a show SeatGeek doesn't have
+            continue
         if not c:
             misses[e["id"]] = today
             continue
@@ -176,6 +181,10 @@ def main():
         # SeatGeek fills different price fields for different events; take the first one it gave us.
         fields_seen.update(k for k, x in st.items() if x not in (None, 0, ""))
         sg_low = next((st.get(k) for k in PRICE_FIELDS if st.get(k)), None)
+        # A show SeatGeek has priced before keeps its record when SeatGeek gives no price this run (lookup failed,
+        # or no listings right now): Ticketmaster's face value isn't comparable and would read as a false drop.
+        if not sg_low and recs.get(e["id"], {}).get("src") == "SeatGeek":
+            continue
         # When SeatGeek has no price, fall back on Ticketmaster's lowest face value from the calendar build.
         low = sg_low or e.get("from")
         if not low and not c:

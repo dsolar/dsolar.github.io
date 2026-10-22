@@ -93,7 +93,8 @@ def drive_hours(mi):
 # ------------------------------------------------------------------ sources
 
 def espn_games(taste, today, until):
-    out = []
+    """The teams' home games, plus the names of any team whose schedule couldn't be read."""
+    out, failed = [], []
     for t in taste.get("teams", []):
         url = (f"https://site.api.espn.com/apis/site/v2/sports/{t['league']}/teams/{t['espn']}/schedule"
                "?seasontype=2")
@@ -101,6 +102,7 @@ def espn_games(taste, today, until):
             data = get_json(url)
         except Exception as e:
             print(f"::warning::ESPN schedule for {t['name']} failed: {e}")
+            failed.append(t["name"])
             continue
         for ev in data.get("events", []):
             comp = (ev.get("competitions") or [{}])[0]
@@ -128,7 +130,7 @@ def espn_games(taste, today, until):
                 "url": link or f"https://www.espn.com/{t['league'].split('/')[1]}/team/schedule/_/name/{t['espn']}",
                 "source": "espn",
             })
-    return out
+    return out, failed
 
 
 def tm_events(key, params, pages=5):
@@ -173,7 +175,7 @@ def ticketmaster(taste, key, today, until):
     span = {"startDateTime": f"{today}T00:00:00Z", "endDateTime": f"{until}T23:59:59Z"}
     point = geohash(home["lat"], home["lon"])
     near = dict(span, geoPoint=point, radius=taste.get("local_miles", 30), unit="miles")
-    out = []
+    out, failed = [], False
     try:
         out += [tm_row(e, home, "comedy") for e in tm_events(key, dict(near, classificationName="Comedy"))]
         out += [tm_row(e, home, "music") for e in tm_events(key, dict(near, classificationName="Music"))]
@@ -186,7 +188,8 @@ def ticketmaster(taste, key, today, until):
             time.sleep(0.25)
     except Exception as e:
         print(f"::warning::Ticketmaster failed partway: {e}")
-    return out
+        failed = True
+    return out, failed
 
 
 def sg_row(e, home):
@@ -244,7 +247,8 @@ def seatgeek(taste, client, today, until):
             time.sleep(0.2)
     except Exception as e:
         print(f"::warning::SeatGeek failed partway: {e}")
-    return out
+        return out, True
+    return out, False
 
 
 # ------------------------------------------------------------------ build
@@ -323,12 +327,29 @@ def main():
                 e = dict(p, source=source)
                 e["id"] = e.get("id") or f"{p['date']}-{slug(p['title'], 32)}-{slug(p.get('venue', ''), 20)}"
                 events.append(e)
-    games = espn_games(taste, today, until)
+    games, espn_failed = espn_games(taste, today, until)
     events += games
     key = os.environ.get("TICKETMASTER_KEY", "").strip()
     sg_key = os.environ.get("SEATGEEK_CLIENT_ID", "").strip()
-    tm = ticketmaster(taste, key, today, until) if key else []
-    sg = seatgeek(taste, sg_key, today, until) if sg_key else []
+    tm, tm_failed = ticketmaster(taste, key, today, until) if key else ([], False)
+    sg, sg_failed = seatgeek(taste, sg_key, today, until) if sg_key else ([], False)
+
+    # A source that failed keeps its shows from the last good build, so one bad morning doesn't empty the calendar.
+    # They go in before the de-duplicate step below, so they merge with anything the source did return.
+    path = os.path.join(CAL, "events.json")
+    old = json.load(open(path, encoding="utf-8")) if os.path.exists(path) else {}
+    def failed_source(e):
+        src = e.get("source")
+        if src == "espn":
+            return any(e.get("title", "").startswith(f"{name} vs ") for name in espn_failed)
+        return (src == "ticketmaster" and tm_failed) or (src == "seatgeek" and sg_failed)
+    kept_over = [dict(e) for e in old.get("events", [])
+                 if today.isoformat() <= e.get("date", "") <= until.isoformat() and failed_source(e)]
+    if kept_over:
+        print(f"::warning::Kept {len(kept_over)} event(s) from the last build for the source(s) that failed.")
+    events += [e for e in kept_over if e["source"] == "espn"]
+    tm += [e for e in kept_over if e["source"] == "ticketmaster"]
+    sg += [e for e in kept_over if e["source"] == "seatgeek"]
     skip = [norm(x) for x in taste.get("skip", [])]
     for e in tm + sg:
         if not e.get("date") or JUNK.search(e["title"]) or any(x and x in norm(e["title"]) for x in skip):
@@ -404,9 +425,7 @@ def main():
                     "ticketmaster": sum(1 for e in final if e["source"] == "ticketmaster") if key else "no key yet",
                     "seatgeek": sum(1 for e in final if e["source"] == "seatgeek") if sg_key else "no key yet"},
     }
-    path = os.path.join(CAL, "events.json")
-    if os.path.exists(path):
-        old = json.load(open(path, encoding="utf-8"))
+    if old:
         if {k: v for k, v in old.items() if k != "updated"} == {k: v for k, v in out.items() if k != "updated"}:
             print("No change.")
             return

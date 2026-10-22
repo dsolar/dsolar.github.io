@@ -112,14 +112,28 @@ def main():
     except Exception as e:                          # standings are a bonus; stats still count
         notes.append(f"standings: {type(e).__name__}: {e}"[:200])
         standings = {}
-    for n in notes:
-        print(n)
-    games = sum(v["w"] + v["l"] for v in standings.values()) // 2
     if not players and not standings:
+        for n in notes:
+            print(n)
         print(f"No {name} data yet; leaving {OUT} alone.")
         return
+    # If only one half came back, keep the other half from the last good pull of this season rather than blanking it.
+    try:
+        old = json.load(open(OUT, encoding="utf-8"))
+    except (OSError, ValueError):
+        old = {}
+    if old.get("season") == name:
+        if not standings and old.get("standings"):
+            standings = old["standings"]
+            notes.append(f"standings: kept the last good copy from {old.get('updated')}")
+        if not players and old.get("players"):
+            players = old["players"]
+            notes.append(f"players: none returned; kept the last good copy from {old.get('updated')}")
+    games = sum(v["w"] + v["l"] for v in standings.values()) // 2
     data = {"updated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "season": name, "source": "ESPN",
             "games": games, "players": players, "standings": standings}
+    for n in notes:
+        print(n)
     if notes:
         data["notes"] = notes
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
