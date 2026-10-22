@@ -18,7 +18,7 @@
      spotlight true puts it first on the page in a full-width card (use on one project).
      status    "live" (default) or "building" (listed with no Play button).
      hidden    true hides it until the homepage app code is entered. Direct links still work.
-     section   "kids" puts it in the "Made for my daughter" section at the bottom of the page instead.
+     section   "kids" puts it in the "Made with my daughters" section at the bottom of the page instead.
      external  true for a project that lives on another site (url is then the full address).
      matchups  real games inside, shown on the card with both teams' logos: { you, opp, home or neutral, label },
                where you/opp are NFL abbreviations (Make the Call's famous calls, from its data.js).
@@ -197,7 +197,7 @@ window.PROJECTS = [
     url: "jellycat-battle/",
     action: "Start the adventure",
     question: "What if the plush on the shelf had to battle for its spot?",
-    summary: "A collect-and-battle game I designed for my daughter. Pick a starter, explore the Softlands, win battles, and grow your Jellycat collection. Unofficial and fan-made.",
+    summary: "Lucy’s game, designed by Lucy and built with her dad. Pick a starter, explore the Softlands, win battles, and grow your Jellycat collection. Unofficial and fan-made.",
     facts: [["150", "Jellycats to collect"], ["24", "routes across the Softlands"], ["6", "types, from Food to Adventure"]],
     stack: ["JavaScript"],
     cover: { image: "assets/covers/jellycat-battle.jpg", bg: "#F9F1E8", band: "#64398E" }
@@ -211,7 +211,7 @@ window.PROJECTS = [
     external: true,
     action: "Play on ChatGPT",
     question: "What happens the morning a little cow says her first words?",
-    summary: "A gentle island adventure I made for my daughter: name yourself, team up with Cow, explore the Bloom Isles and help the village grow. It lives on ChatGPT for now.",
+    summary: "Charlotte’s game, designed by Charlotte and built with her dad: name yourself, team up with Cow, explore the Bloom Isles and help the village grow. It lives on ChatGPT for now.",
     stack: ["ChatGPT"],
     cover: { image: "assets/covers/wild-bloom-isles.jpg", bg: "#171B35", band: "#B23A57" }
   }
