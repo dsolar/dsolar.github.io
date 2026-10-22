@@ -45,7 +45,16 @@
     var me = sides.filter(mine)[0], opp = sides.filter(function (c) { return c !== me; })[0];
     if (!me || !opp) return null;
     var status = comp.status || ev.status || {}, type = status.type || {};
-    var tv = (comp.broadcasts || []).map(function (b) { return (b.media && b.media.shortName) || (b.names || [])[0]; }).filter(Boolean);
+    // TV: national channels and our own side's (NESN, not the other team's local feed). Subscription packages
+    // like League Pass are skipped; streams (Prime Video, ESPN+) show only when nothing is on TV.
+    var side = me.homeAway === "home" ? "Home" : "Away";
+    var ours = (comp.broadcasts || []).filter(function (b) {
+      var market = (b.market || {}).type, kind = (b.type || {}).shortName;
+      return kind !== "Subscription Package" && (!market || market === "National" || market === side);
+    });
+    var onTV = ours.filter(function (b) { return (b.type || {}).shortName === "TV"; });
+    var tv = (onTV.length ? onTV : ours).map(function (b) { return (b.media && b.media.shortName) || (b.names || [])[0]; })
+      .filter(function (n, i, all) { return n && all.indexOf(n) === i; });
     var link = (ev.links || []).filter(function (l) { return (l.rel || []).indexOf("gamecast") >= 0 || (l.rel || []).indexOf("summary") >= 0; })[0];
     var o = opp.team || {};
     return {
@@ -87,7 +96,7 @@
     if (g.state === "post") return esc(g.detail || "Final");
     var time = g.timeKnown ? clock(g.date) : "Time TBD";
     if (today) return (g.timeKnown && hourET(g.date) >= 17 ? "Tonight " : "Today ") + esc(time);
-    return esc(weekday(g.date)) + (g.timeKnown ? " · " + esc(time) : "");
+    return esc(weekday(g.date)) + " · " + esc(time);
   }
 
   function row(r) {
