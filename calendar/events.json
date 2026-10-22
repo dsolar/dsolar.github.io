@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-21T15:37:11Z",
+ "updated": "2026-10-22T15:39:33Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,153 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-vv1AvZkozGkegyOOB",
-   "date": "2026-10-21",
-   "time": "19:00",
-   "title": "Cavetown - Running With Scissors Tour",
-   "cat": "music",
-   "venue": "Citizens House of Blues Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/cavetown-running-with-scissors-tour-boston-massachusetts-10-21-2026/event/01006478B5E6083A",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18186615",
-    "2026-10-21-cavetown-citizens-house-of-bl"
-   ],
-   "sub": "with Chloe Moriondo",
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_55PH0Pr",
-   "date": "2026-10-21",
-   "time": "19:00",
-   "title": "Ecca Vandal",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/ecca-vandal-boston-massachusetts-10-21-2026/event/010064B2E5F2495E",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18267298"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_GxTk_w2",
-   "date": "2026-10-21",
-   "time": "19:00",
-   "title": "HEY, NOTHING: THE HOUND TOUR",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/hey-nothing-the-hound-tour-boston-massachusetts-10-21-2026/event/010064C8BF199C8F",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18301731"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18288071",
-   "date": "2026-10-21",
-   "time": "19:00",
-   "title": "ROZ",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/roz-tickets/boston-massachusetts-big-night-live-2026-10-21-7-pm/concert/18288071",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_GCb1eOy",
-   "date": "2026-10-21",
-   "time": "19:00",
-   "title": "RØZ Presents: SE ESTÁ HACIENDO TARDE",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/rz-presents-se-esta-haciendo-tarde-boston-massachusetts-10-21-2026/event/010064C398282839",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "sg-18328343",
-   "date": "2026-10-21",
-   "time": "19:00",
-   "title": "Thorn",
-   "cat": "music",
-   "venue": "Boch Center Wang Theatre",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/thorn-tickets/boston-massachusetts-boch-center-wang-theatre-2026-10-21-7-pm/concert/18328343",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A7Pp4p",
-   "date": "2026-10-21",
-   "time": "19:30",
-   "title": "Hank Azaria and the EZ Street Band",
-   "cat": "music",
-   "venue": "The Sinclair Music Hall",
-   "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7Pp4p",
-   "source": "ticketmaster",
-   "times": [
-    "19:30",
-    "20:30"
-   ],
-   "aka": [
-    "sg-18297515",
-    "2026-10-21-hank-azaria-and-the-ez-street-ba-the-sinclair"
-   ],
-   "sub": "a Springsteen tribute",
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A707fp",
-   "date": "2026-10-21",
-   "time": "20:00",
-   "title": "Johnnyswim",
-   "cat": "music",
-   "venue": "The Cabot",
-   "city": "Beverly, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A707fp",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18649028"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18237568",
-   "date": "2026-10-21",
-   "time": "20:00",
-   "title": "Paris Paloma",
-   "cat": "music",
-   "venue": "Roadrunner - Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/paris-paloma-tickets/boston-massachusetts-roadrunner-boston-2026-10-21-8-pm/concert/18237568",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A70MJF",
-   "date": "2026-10-21",
-   "time": "20:00",
-   "title": "The Tallest Man on Earth",
-   "cat": "music",
-   "venue": "Royale Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A70MJF",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18663266",
-    "2026-10-21-the-tallest-man-on-earth-royale"
-   ],
-   "score": 0
-  },
   {
    "id": "tm-vv177Z_kGkw9nlvp",
    "date": "2026-10-22",
@@ -537,8 +390,8 @@
    "source": "ticketmaster",
    "aka": [
     "tm-Z7r9jZ1AAvVjY",
-    "sg-18349655",
-    "sg-18346734"
+    "sg-18346734",
+    "sg-18349655"
    ],
    "score": 0
   },
@@ -1582,6 +1435,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/rawayana-donde-es-el-after-world-boston-massachusetts-10-30-2026/event/0100646BB6AF2693",
    "source": "ticketmaster",
+   "times": [
+    "20:00",
+    "20:30"
+   ],
    "aka": [
     "sg-18127644",
     "2026-10-30-rawayana-mgm-music-hall-at-fe"
@@ -2056,17 +1913,17 @@
    "score": 0
   },
   {
-   "id": "sg-18663271",
+   "id": "sg-18237438",
    "date": "2026-11-02",
    "time": "20:00",
-   "title": "This is Lorelei",
+   "title": "This is Lorelei with @ (Moved to Royale)",
    "cat": "music",
    "venue": "Royale - Boston",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/this-is-lorelei-tickets/boston-massachusetts-royale-boston-2026-11-02-8-pm/concert/18663271",
+   "url": "https://seatgeek.com/this-is-lorelei-tickets/boston-massachusetts-royale-boston-2026-11-02-8-pm/concert/18237438",
    "source": "seatgeek",
    "aka": [
-    "sg-18237438"
+    "sg-18663271"
    ],
    "score": 0
   },
@@ -2968,7 +2825,6 @@
    "url": "https://www.ticketmaster.com/a-boogie-wit-da-hoodie-10-boston-massachusetts-11-07-2026/event/010065318DD99789",
    "source": "ticketmaster",
    "aka": [
-    "sg-18629299",
     "2026-11-07-a-boogie-wit-da-hoodie-agganis-arena"
    ],
    "score": 0
@@ -3061,6 +2917,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/a-boogie-wit-da-hoodie-dababy-boston-massachusetts-11-07-2026/event/01006553345D8679",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18705508"
+   ],
    "score": 0
   },
   {
@@ -8511,6 +8370,18 @@
    "score": 1
   },
   {
+   "id": "tm-vv177Z_fGkXIqiIp",
+   "date": "2027-01-15",
+   "time": "19:30",
+   "title": "Anthony Jeselnik: Wrath of Man",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/anthony-jeselnik-wrath-of-man-boston-massachusetts-01-15-2027/event/0100654FA876CA16",
+   "source": "ticketmaster",
+   "score": 1
+  },
+  {
    "id": "sg-18548275",
    "date": "2027-01-15",
    "time": "20:00",
@@ -8532,8 +8403,14 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/anthony-jeselnik-wrath-of-man-boston-massachusetts-01-16-2027/event/0100654FA86FCA06",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "21:45"
+   ],
    "aka": [
-    "sg-18699722"
+    "tm-vv177Z_fGkXIhGEM",
+    "sg-18699722",
+    "sg-18708151"
    ],
    "score": 1
   },
@@ -9493,6 +9370,18 @@
    "url": "https://www.espn.com/nhl/game/_/gameId/401893321/ducks-bruins",
    "source": "espn",
    "score": 1
+  },
+  {
+   "id": "tm-vv1A8vPfaGA11aU1",
+   "date": "2027-02-15",
+   "time": "20:00",
+   "title": "2hollis: The Pirouette Tour",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/2hollis-the-pirouette-tour-boston-massachusetts-02-15-2027/event/010065509A289D8A",
+   "source": "ticketmaster",
+   "score": 0
   },
   {
    "id": "tm-vv177Z_3Gkn-QLOu",
@@ -10634,6 +10523,18 @@
    "score": 0
   },
   {
+   "id": "sg-18706589",
+   "date": "2027-03-18",
+   "time": "19:00",
+   "title": "Emily Ann Roberts with Colton Dawson",
+   "cat": "music",
+   "venue": "Royale - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/emily-ann-roberts-tickets/boston-massachusetts-royale-boston-2027-03-18-7-pm/concert/18706589",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vv177Z_fGkSbJWBw",
    "date": "2027-03-18",
    "time": "19:00",
@@ -10685,6 +10586,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/jack-jack-boston-massachusetts-03-19-2027/event/0100654ED13A2D9D",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18703535"
    ],
@@ -11189,6 +11094,21 @@
    "score": 0
   },
   {
+   "id": "tm-vv1A8vP49GA5L0kW",
+   "date": "2027-04-04",
+   "time": "20:00",
+   "title": "Calvin Harris - North America Tour",
+   "cat": "music",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/calvin-harris-north-america-tour-boston-massachusetts-04-04-2027/event/010065557B7E41BD",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18708084"
+   ],
+   "score": 0
+  },
+  {
    "id": "tm-Z7r9jZ1AAv0uA",
    "date": "2027-04-05",
    "time": "19:00",
@@ -11461,6 +11381,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/deca-joins-18-boston-massachusetts-04-18-2027/event/0100654FD1FE48AC",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18708217"
+   ],
    "score": 0
   },
   {
@@ -11559,7 +11482,7 @@
   "picks": 5,
   "venues": 5,
   "espn": 83,
-  "ticketmaster": 559,
-  "seatgeek": 111
+  "ticketmaster": 555,
+  "seatgeek": 109
  }
 }
