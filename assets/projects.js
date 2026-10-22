@@ -104,6 +104,19 @@ window.PROJECTS = [
     cover: { image: "assets/covers/paint-the-corners.jpg", bg: "#0A1A33", band: "#C8102E" }
   },
   {
+    title: "Sunday Strategist",
+    type: "Games",
+    released: "2026-10",
+    url: "sunday-strategist/",
+    action: "Read the defense",
+    question: "The nickel's walked down and showing blitz. Is he coming, and where does the ball go if he is?",
+    summary: "A football coaching game: diagnose the defense, set the protection, call the play, then see who had to hold up and why it worked. Graded on the decision, not the result.",
+    facts: [["6", "grades on every snap"], ["400", "reps behind every call's odds"], ["2", "scenarios, one pre-snap picture"]],
+    stack: ["JavaScript", "SVG"],
+    cover: { image: "assets/covers/sunday-strategist.svg", bg: "#0D1821", band: "#F7D23E" },
+    hidden: true
+  },
+  {
     title: "The Degenerate Trail",
     type: "Games",
     released: "2026-10",

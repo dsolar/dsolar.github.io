@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 780">
+  <rect width="1040" height="780" fill="#0D1821"/>
+  <rect x="60" y="60" width="920" height="560" rx="10" fill="#123A2A"/>
+  <g stroke="rgba(241,244,236,.2)" stroke-width="3">
+    <line x1="60" x2="980" y1="160" y2="160"/><line x1="60" x2="980" y1="260" y2="260"/><line x1="60" x2="980" y1="460" y2="460"/><line x1="60" x2="980" y1="560" y2="560"/>
+  </g>
+  <line x1="60" x2="980" y1="380" y2="380" stroke="#5FA8FF" stroke-width="5"/>
+  <line x1="60" x2="980" y1="290" y2="290" stroke="#F7D23E" stroke-width="5"/>
+  <g fill="#FF7A6B" stroke="#0D1821" stroke-width="3">
+    <rect x="378" y="330" width="34" height="34" rx="5"/><rect x="438" y="330" width="34" height="34" rx="5"/><rect x="498" y="330" width="34" height="34" rx="5"/><rect x="568" y="330" width="34" height="34" rx="5"/>
+    <rect x="405" y="285" width="34" height="34" rx="5"/><rect x="520" y="250" width="34" height="34" rx="5"/>
+    <rect x="700" y="320" width="34" height="34" rx="5"/><rect x="330" y="130" width="34" height="34" rx="5"/><rect x="690" y="130" width="34" height="34" rx="5"/>
+    <rect x="130" y="230" width="34" height="34" rx="5"/><rect x="870" y="230" width="34" height="34" rx="5"/>
+  </g>
+  <circle cx="717" cy="337" r="32" fill="none" stroke="#F7D23E" stroke-width="5" stroke-dasharray="10 8"/>
+  <path d="M717 337 L620 420" stroke="#FF7A6B" stroke-width="6" fill="none"/>
+  <path d="M707 147 L760 250" stroke="#FF7A6B" stroke-width="4" stroke-dasharray="10 10" fill="none"/>
+  <g fill="#EEF2F5" stroke="#0D1821" stroke-width="3">
+    <circle cx="420" cy="402" r="18"/><circle cx="465" cy="402" r="18"/><circle cx="510" cy="402" r="18"/><circle cx="555" cy="402" r="18"/><circle cx="600" cy="402" r="18"/>
+    <circle cx="510" cy="480" r="18"/><circle cx="465" cy="480" r="18"/><circle cx="650" cy="410" r="18"/><circle cx="740" cy="405" r="18"/><circle cx="880" cy="402" r="18"/><circle cx="150" cy="402" r="18"/>
+  </g>
+  <g stroke="#F7D23E" stroke-width="6" fill="none" stroke-linejoin="round">
+    <path d="M740 387 L748 280 L730 290"/><path d="M650 392 L790 360 L850 355"/><path d="M880 384 L890 100"/>
+  </g>
+  <text x="80" y="720" fill="#EEF2F5" font-family="Impact, 'Arial Narrow', sans-serif" font-size="78" letter-spacing="1">SUNDAY <tspan fill="#F7D23E">STRATEGIST</tspan></text>
+</svg>
