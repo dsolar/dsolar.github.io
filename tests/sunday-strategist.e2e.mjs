@@ -53,14 +53,14 @@ try {
     // Adjust: motion shows what the defense did.
     await page.check('input[name="motion"][value="yoyo"]');
     await page.waitForSelector('.reveal-note');
-    assert.match(await page.textContent('.reveal-note'), /field safety crept/);
+    assert.match(await page.textContent('.reveal-note'), /strong safety crept/);
     await page.click('#next');
     await page.check('input[name="protection"][value="slide-nickel"]');
     await page.click('#next');
     await page.check('input[name="play"][value="stick"]');
     assert.ok(await page.$$eval('#f-routes path', p => p.length) >= 4, 'routes drawn for the call');
     assert.equal(await page.isDisabled('#next'), true, 'key defender required');
-    await page.check('input[name="key"][value="FSF"]');
+    await page.check('input[name="key"][value="SS"]');
     if (shots) await page.screenshot({ path: `${shots}/3-call.png`, fullPage: true });
     await page.click('#next');
     await page.check('input[name="contingency"][value="built-in"]');
