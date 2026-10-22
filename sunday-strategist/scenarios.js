@@ -222,7 +222,8 @@
     "coverage-id": "Reading the coverage shell",
     "situational": "Situational football",
     "dc-personnel": "Matching personnel (defense)",
-    "dc-coverage": "Calling pressure and coverage (defense)"
+    "dc-coverage": "Calling pressure and coverage (defense)",
+    "dc-situational": "Situational defense"
   },
 
   /* The film room grades real snaps with these tables. Coverage groups:
@@ -2554,6 +2555,276 @@
       next: "Hit play action over an eight-man box and they'll pull the strong safety back to two-high. Then the box is seven against your seven blockers, and the run is back on.",
       takeaway: "Count the box before you call a run. When they've put one more defender in it than you can block, use it against them: play action pulls those defenders forward and throws behind them.",
       learning: { objectives: ["Count box defenders against run blockers", "Use play action against a loaded box", "Match heavy personnel to the defense it invites"], tags: ["run-vs-box", "situational"], misconceptions: ["Heavy personnel means run"], difficulty: 2, transfer: ["11 personnel to 12 personnel"], revisitDays: 3 }
+    }
+  ],
+
+  /* Defense-side lessons: you're the defensive coordinator. Each one is a synthetic snap with
+     hand-written teaching for every option; the grades come from defense.js and the fitted model,
+     and a test checks that each lesson's best call agrees with the model. */
+  defenseLessons: [
+    {
+      id: "def-personnel",
+      title: "Match the Personnel",
+      order: 1,
+      provenance: { type: "synthetic", label: "Synthetic teaching scenario. Not a real NFL play: the game, teams and result are invented to teach one principle.", sources: [], fieldConfidence: { all: "synthetic" } },
+      snap: { down: 1, dist: 10, yl100: 65, situation: "first-ten", offPers: "12", wrs: 2, ol: 5, fb: 0, formation: "Under Center", kind: "run", runGap: "end", runLoc: "right", qtr: 1, clock: "13:05", offScore: 0, defScore: 0, box: 7,
+        desc: "Outside zone to the right, toward the second tight end. The back presses the edge and cuts up." },
+      context: { objective: "Win first down: hold them under 4 yards.", scouting: "Two tight ends, under center, back at 7 yards: from this look offenses run it about 60% of the time." },
+      read: {
+        pers: "One back, two tight ends: 12 personnel. Two tight ends means two more run blockers and two receivers who can block or release.",
+        likely: "From 12 personnel on first and 10, offenses run it about 6 times in 10. Under center makes the run even likelier."
+      },
+      why: {
+        pkg: {
+          heavy: "Goal-line bodies on first and 10: strong against the run, but a linebacker ends up on a receiver if they throw.",
+          base: "The textbook match: three linebackers for two tight ends, seven in the box against their seven blockers.",
+          nickel: "A defensive back in place of a linebacker: fine in coverage, but the box goes light against a run-heavy look.",
+          dime: "Two extra DBs against two tight ends: you're daring them to run, and from this look they will."
+        },
+        pressure: {
+          four: "Rush four and fit the run with everyone else. Sound on a down where they can do anything.",
+          sim: "Simulated pressure is a passing-down tool; against a likely run it just moves a run fitter out of his gap.",
+          fire: "A five-man zone pressure can blow up a run, or leave a gap open if the blitzer guesses wrong.",
+          man5: "Five-man man pressure adds a run fitter at the line, but gives up a free safety's help if they throw.",
+          zero: "Zero on first and 10 is a coin flip: a tackle for loss or a touchdown."
+        },
+        cov: {
+          zero: "Nobody deep: any run that gets past the line goes the distance.",
+          man: "Cover 1 rolls a safety into the box: an eighth run defender, with the free safety still deep.",
+          twoMan: "Two deep safeties take two run fitters out of the box.",
+          two: "Two deep halves: the safeties are 12 yards from the run.",
+          three: "Cover 3 rolls a safety down like Cover 1, but in zone: sound against both run and play action.",
+          quarters: "Quarters safeties fit the run fast from depth; a good answer if your safeties can tackle."
+        },
+        area: {
+          run: "They run it 6 times in 10 here. Take that away first.",
+          quick: "Quick throws are their second choice from this look.",
+          middle: "Play action to a tight end over the middle is their best counter to an eight-man front.",
+          deep: "A deep shot is rare from this look, but it's what play action is for."
+        }
+      },
+      best: { pkg: "base", pressure: "four", cov: "man", area: "run" },
+      clues: [
+        { text: "Two tight ends and a back at 7 yards, under center: a run look.", kind: "meaningful" },
+        { text: "First and 10: they can run or throw. Nothing about the down forces their hand.", kind: "uncertain" },
+        { text: "The second tight end lined up like a blocker. He can release on play action.", kind: "deceptive" }
+      ],
+      next: "Stop the run with base and they'll go to play action from the same look. Your strong safety and Sam linebacker have to read run before they fill.",
+      takeaway: "Match personnel first. Two tight ends get base: three linebackers for their blockers and a box that can fit the run without guessing. Every package grades close here, which is the point: matching is a small, steady edge.",
+      learning: { tags: ["dc-personnel", "dc-situational"] },
+      fit: { downs: [1], distance: [10, 10], offPers: ["12", "13"], pkg: ["heavy", "base", "nickel", "dime", "quarter"], kinds: ["run", "pass"] }
+    },
+
+    {
+      id: "def-sticks",
+      title: "Play the Sticks",
+      order: 2,
+      provenance: { type: "synthetic", label: "Synthetic teaching scenario. Not a real NFL play: the game, teams and result are invented to teach one principle.", sources: [], fieldConfidence: { all: "synthetic" } },
+      snap: { down: 3, dist: 9, yl100: 58, situation: "third-long", offPers: "11", wrs: 3, ol: 5, fb: 0, formation: "Shotgun", kind: "pass", route: "In/Dig", airYards: 7, qtr: 2, clock: "6:41", offScore: 10, defScore: 7, box: 6, rushers: 4,
+        desc: "A dig at 7 yards, two short of the sticks, and the receiver tries to turn it upfield." },
+      context: { objective: "Get off the field: stop them short of the line to gain.", scouting: "On third and long, 11 personnel throws it more than 9 times in 10, mostly quick and intermediate routes." },
+      read: {
+        pers: "One back, one tight end, three receivers: 11 personnel, in shotgun.",
+        likely: "Third and 9: they're throwing. Quick throws and intermediate routes are almost evenly split; runs and screens are rare."
+      },
+      why: {
+        pkg: {
+          heavy: "Goal-line bodies on third and 9: linebackers covering receivers. The worst match on the board.",
+          base: "Three linebackers against three receivers: someone slow is covering someone fast.",
+          nickel: "Five DBs for three receivers and a tight end: coverage without giving up the scramble lane.",
+          dime: "Six DBs is fine on paper, but you lose a linebacker to spy the quarterback and tackle the dig."
+        },
+        pressure: {
+          four: "Rush four, drop seven: sound, and nearly as good as the best call here.",
+          sim: "Four rush, but a linebacker comes and a lineman drops: the protection guesses wrong without you losing a coverage defender.",
+          fire: "Five rush with three deep: more pressure, one fewer defender where the throw goes.",
+          man5: "Five-man man pressure: more heat, but one-on-one routes break at the sticks.",
+          zero: "Zero on third and 9: one missed tackle and it's a touchdown. Expected points say it's one of the worst calls here."
+        },
+        cov: {
+          zero: "Nobody deep on third and long: a missed tackle is six points.",
+          man: "Cover 1: tight coverage at the sticks with a free safety on top. Close behind quarters.",
+          twoMan: "2-Man brackets deep routes, but trailing defenders can't rally to a short catch.",
+          two: "Cover 2 rallies well underneath, but the seams split the safeties.",
+          three: "Cover 3 sits at the sticks with four underneath. Solid.",
+          quarters: "Quarters keeps four deep and sits on routes at the sticks: everything in front, then rally and tackle."
+        },
+        area: {
+          run: "They run it less than 1 time in 10 here.",
+          quick: "Quick throws are their most common call: take away the short completion that can break a tackle to the sticks.",
+          middle: "Digs and crossers are nearly as likely. A close second choice.",
+          deep: "Deep shots are their third choice; quarters already protects you there."
+        }
+      },
+      best: { pkg: "nickel", pressure: "sim", cov: "quarters", area: "quick" },
+      clues: [
+        { text: "Third and 9: they need nine, so anything short of that is your win.", kind: "meaningful" },
+        { text: "Three receivers in shotgun: a passing look on a passing down.", kind: "meaningful" },
+        { text: "A dig breaking at 7 yards looks dangerous. Tackled where it's caught, it's a punt.", kind: "deceptive" }
+      ],
+      next: "When the dig short of the sticks stops working for them, they'll run it at 10 yards. Your hook defenders have to carry the depth of the sticks.",
+      takeaway: "On third and long you're playing the sticks, not the ball. Rush four (or simulate more), keep everything in front, and tackle the catch short of the line. A zero blitz trades a likely stop for a chance at a touchdown.",
+      learning: { tags: ["dc-coverage", "dc-situational"] },
+      fit: { downs: [3], distance: [8, 15], offPers: ["11"], pkg: ["heavy", "base", "nickel", "dime", "quarter"], kinds: ["pass", "run"] }
+    },
+
+    {
+      id: "def-empty",
+      title: "Empty Set",
+      order: 3,
+      provenance: { type: "synthetic", label: "Synthetic teaching scenario. Not a real NFL play: the game, teams and result are invented to teach one principle.", sources: [], fieldConfidence: { all: "synthetic" } },
+      snap: { down: 3, dist: 6, yl100: 45, situation: "third-medium", offPers: "01", wrs: 4, ol: 5, fb: 0, formation: "Shotgun", kind: "pass", route: "Slant", airYards: 4, qtr: 3, clock: "9:12", offScore: 14, defScore: 17, box: 5, rushers: 4,
+        desc: "Five receivers out, nobody in the backfield. A quick slant on the third step." },
+      context: { objective: "Get off the field on third and 6.", scouting: "Empty sets on third down throw quick more than 6 times in 10: the ball is out before pressure arrives." },
+      read: {
+        pers: "No backs, one tight end, four receivers: 01 personnel, an empty set.",
+        likely: "Empty on third and 6 is a quick-game look: about 6 in 10 are quick throws. With nobody in the backfield, a run is almost off the table."
+      },
+      why: {
+        pkg: {
+          heavy: "Goal-line bodies against five receivers: two or three of them get linebackers. The worst match on the board.",
+          base: "Four DBs for five receivers: at least one linebacker covers a receiver.",
+          nickel: "Five DBs for five receivers, but no help: a linebacker still covers somebody.",
+          dime: "Six DBs against five receivers: everyone is covered by a defensive back."
+        },
+        pressure: {
+          four: "Rush four. Empty means five blockers for four rushers and a quick throw; win in coverage, not the backfield.",
+          sim: "Simulated pressure can confuse an empty protection, but the ball is out in 1.5 seconds.",
+          fire: "Five rush against five blockers: even, and the quick throw beats it.",
+          man5: "Five-man man pressure: one-on-ones everywhere with a single free safety.",
+          zero: "Zero against empty: five receivers, five man defenders, nobody deep, and the ball is out before your sixth rusher arrives."
+        },
+        cov: {
+          zero: "Man with no help against five receivers: one missed tackle and it's six.",
+          man: "Cover 1 can work if your DBs win their matchups; the free safety only helps on the deep ball.",
+          twoMan: "2-Man: tight man underneath on every receiver, two safeties over the top. Built for quick throws on passing downs.",
+          two: "Cover 2 zones give the quick game soft spots between five underneath defenders.",
+          three: "Cover 3 sits underneath, but four receivers flood three underneath zones.",
+          quarters: "Quarters is soft underneath, exactly where empty attacks."
+        },
+        area: {
+          run: "No back: a run is a quarterback draw or nothing.",
+          quick: "Quick throws are what empty is for: take them away.",
+          middle: "Intermediate routes are their second choice.",
+          deep: "Deep shots happen, but your safeties are there."
+        }
+      },
+      best: { pkg: "dime", pressure: "four", cov: "twoMan", area: "quick" },
+      clues: [
+        { text: "Nobody in the backfield: the quarterback has five receivers and five blockers.", kind: "meaningful" },
+        { text: "Empty usually means the ball comes out fast.", kind: "meaningful" },
+        { text: "Five-man protection looks easy to beat with six. The ball is gone first.", kind: "deceptive" }
+      ],
+      next: "Take away the quick game against empty and they'll run a quarterback draw: every defender's back is turned in 2-Man. Keep a linebacker or the dime on the quarterback.",
+      takeaway: "Empty spreads five receivers and gets the ball out fast. Match it with DBs, cover tight underneath with help over the top, and don't blitz into a throw that's out in a second and a half.",
+      learning: { tags: ["dc-personnel", "dc-coverage"] },
+      fit: { downs: [3], distance: [3, 8], offPers: ["01", "02", "00"], pkg: ["heavy", "base", "nickel", "dime", "quarter"], kinds: ["pass", "run"] }
+    },
+
+    {
+      id: "def-goalline",
+      title: "Goal Line Stand",
+      order: 4,
+      provenance: { type: "synthetic", label: "Synthetic teaching scenario. Not a real NFL play: the game, teams and result are invented to teach one principle.", sources: [], fieldConfidence: { all: "synthetic" } },
+      snap: { down: 3, dist: 2, yl100: 2, situation: "goal-line", offPers: "22", wrs: 1, ol: 5, fb: 1, formation: "Under Center", kind: "pass", route: "Shallow Cross/Drag", airYards: 1, playAction: true, qtr: 4, clock: "7:30", offScore: 13, defScore: 17, box: 9, rushers: 4,
+        desc: "Play action: fake the dive, then the tight end leaks across the formation behind the linebackers." },
+      context: { objective: "Hold them out of the end zone. A field goal still leaves you ahead.", scouting: "From 22 personnel at the goal line, offenses run it about 3 times in 4. Their counter is play action to a tight end." },
+      read: {
+        pers: "Two backs, two tight ends, one receiver: 22 personnel, the heaviest look in football.",
+        likely: "At the 2 with 22 personnel, about 3 in 4 are runs. The quick throw off play action is the counter."
+      },
+      why: {
+        pkg: {
+          heavy: "Goal-line personnel: bodies in every gap against their extra blockers.",
+          base: "Base gives up a gap to their seven blockers and fullback.",
+          nickel: "A nickel at the goal line: a light box against the heaviest personnel there is.",
+          dime: "Dime at the 2 against 22 personnel: the worst match on the board."
+        },
+        pressure: {
+          four: "Rush four and fit the rest: sound, a step behind man pressure.",
+          sim: "Simulated pressure at the goal line moves a gap defender out of his gap.",
+          fire: "A zone pressure leaves zone defenders reading the tight end leak late.",
+          man5: "Five-man man pressure: attack the run with an extra fitter, and every receiver, including the leaking tight end, has a man on him.",
+          zero: "Zero at the goal line: if anyone slips, it's a walk-in."
+        },
+        cov: {
+          zero: "All-out man with nobody behind it.",
+          man: "Cover 1 man: the leaking tight end has a defender on him, with a free player in the middle.",
+          twoMan: "Two deep safeties at the 2 yard line take two defenders out of the fight.",
+          two: "Cover 2 zones: the leaking tight end runs between zones.",
+          three: "Cover 3 zones are compressed but leave the tight end to whoever's zone he enters.",
+          quarters: "Quarters at the goal line: safeties too deep to help."
+        },
+        area: {
+          run: "They run it 3 times in 4 here: stop it first.",
+          quick: "The quick throw off play action is their counter; man coverage handles it.",
+          middle: "The tight end leak across the middle: the one you have to remember after the fake.",
+          deep: "There is no deep at the 2 yard line."
+        }
+      },
+      best: { pkg: "heavy", pressure: "man5", cov: "man", area: "run" },
+      clues: [
+        { text: "Two backs and two tight ends at the 2: a run look with eight blockers.", kind: "meaningful" },
+        { text: "Third and 2 at the goal line: they can run it twice to score.", kind: "uncertain" },
+        { text: "The second tight end lined up to block. He leaked out on play action.", kind: "deceptive" }
+      ],
+      next: "Stuff the run at the goal line and the next call is play action to the tight end. In man, his defender can't bite on the fake.",
+      takeaway: "At the goal line, match bodies with bodies and play man: an extra run fitter for the run, and a defender on every receiver for the play-action leak.",
+      learning: { tags: ["dc-personnel", "dc-situational"] },
+      fit: { downs: [2, 3, 4], distance: [1, 3], yl: [1, 5], offPers: ["22", "13", "23", "12", "21"], pkg: ["heavy", "base", "nickel", "dime", "quarter"], kinds: ["run", "pass"] }
+    },
+
+    {
+      id: "def-twominute",
+      title: "Two-Minute Defense",
+      order: 5,
+      provenance: { type: "synthetic", label: "Synthetic teaching scenario. Not a real NFL play: the game, teams and result are invented to teach one principle.", sources: [], fieldConfidence: { all: "synthetic" } },
+      snap: { down: 2, dist: 10, yl100: 62, situation: "two-minute", offPers: "11", wrs: 3, ol: 5, fb: 0, formation: "Shotgun", kind: "pass", route: "Deep Out", airYards: 15, qtr: 4, clock: "1:42", offScore: 17, defScore: 20, box: 5, rushers: 4,
+        desc: "A deep out at 15 yards to the sideline: a chunk gain and the clock stops." },
+      context: { objective: "Protect the lead: keep them out of field goal range and keep the clock running.", scouting: "In the two-minute drill, 11 personnel throws quick and to the sidelines: completions that stop the clock." },
+      read: {
+        pers: "One back, one tight end, three receivers: 11 personnel, the standard hurry-up group.",
+        likely: "Down 3 with under two minutes, they're throwing: quick throws about 4 in 10, intermediate routes to the sideline about 3 in 10."
+      },
+      why: {
+        pkg: {
+          heavy: "Linebackers covering receivers in a hurry-up: the worst match on the board.",
+          base: "Three linebackers against three receivers: they'll find the linebacker.",
+          nickel: "Five DBs, two linebackers: coverage, plus tacklers in the middle to keep the clock moving.",
+          dime: "Six DBs is a close second; you give up a tackler in the middle if they run."
+        },
+        pressure: {
+          four: "Rush four and cover with seven: no free shots, no clock-stopping big plays.",
+          sim: "Simulated pressure is a close second: confusion without losing coverage.",
+          fire: "Five rush leaves soft spots at the sideline.",
+          man5: "Five-man man pressure: close, but a beaten man defender near the sideline means a chunk and a stopped clock.",
+          zero: "Zero in the two-minute drill: the one call that can lose the game on one snap."
+        },
+        cov: {
+          zero: "Nobody deep, with the game on the line.",
+          man: "Cover 1: tight man contests the quick outs that stop the clock, and the free safety keeps the deep ball in front.",
+          twoMan: "2-Man brackets deep but trailing defenders give up the sideline catch.",
+          two: "Cover 2 corners squat on the out, but the hole behind them is the deep out.",
+          three: "Cover 3 gives up the quick outs at the sideline.",
+          quarters: "Quarters: soft at the sideline, where two-minute offenses live."
+        },
+        area: {
+          run: "A run keeps the clock moving: you're happy to give it up.",
+          quick: "Quick throws to the sideline are their most common call: contest them.",
+          middle: "Intermediate sideline routes are their second choice.",
+          deep: "The deep ball is what loses the game, but it's their third choice; the free safety has it."
+        }
+      },
+      best: { pkg: "nickel", pressure: "four", cov: "man", area: "quick" },
+      clues: [
+        { text: "Under two minutes, down 3: they need about 30 yards for a field goal try.", kind: "meaningful" },
+        { text: "Sideline routes stop the clock; tackles in the middle don't.", kind: "meaningful" },
+        { text: "Soft zones look safe because nothing goes deep. They give up the sideline throws that win the drill.", kind: "deceptive" }
+      ],
+      next: "Contest the sideline and they'll throw underneath and run out of bounds after the catch. Rally, and tackle inbounds.",
+      takeaway: "In the two-minute drill, rush four, contest the sideline throws that stop the clock, and keep a safety over the top. The blitz that might end the game is more likely to lose it.",
+      learning: { tags: ["dc-coverage", "dc-situational"] },
+      fit: { downs: [1, 2, 3], distance: [5, 15], situation: ["two-minute"], offPers: ["11", "10"], pkg: ["heavy", "base", "nickel", "dime", "quarter"], kinds: ["pass", "run"] }
     }
   ]
 });

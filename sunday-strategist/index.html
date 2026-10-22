@@ -106,6 +106,7 @@ a { color: var(--yellow); }
 .real-btn .logos { display: flex; gap: 4px; flex-wrap: wrap; }
 .real-btn .logos img { width: 18px; height: 18px; }
 .film { border-left-color: var(--los); }
+.dmodule { border-left-color: var(--defense); }
 .side { display: flex; align-items: center; gap: 8px; margin: 26px 0 0; font-family: var(--display); font-weight: 700; font-size: 20px; color: var(--chalk-dim); }
 .side button { padding: 7px 18px 6px; background: var(--panel); color: var(--chalk); border: 1px solid var(--line-strong); border-radius: 5px; font: inherit; cursor: pointer; }
 .side button[aria-pressed="true"] { background: var(--yellow); color: var(--yellow-ink); border-color: var(--yellow); }
@@ -289,6 +290,7 @@ legend { padding: 0; margin: 0 0 6px; font-weight: 600; }
     </ol>
     <div class="side" id="side" role="group" aria-label="Which side you call"></div>
     <div class="module" id="module"></div>
+    <div class="module dmodule" id="dmodule" hidden></div>
     <section class="module film" id="film"></section>
     <section class="report" id="report" aria-labelledby="report-h"></section>
     <p class="credits">Every scenario says where its facts come from. Lessons start as synthetic teaching scenarios; everything else is a real NFL snap from 2023 to 2025. The game, players, personnel, box count, rush, coverage and result come from nflverse play-by-play and participation data and FTN charting (via nflverse). Exact alignments are drawn from those facts and labeled as such. Team logos via ESPN.</p>
@@ -320,13 +322,13 @@ legend { padding: 0; margin: 0 0 6px; font-weight: 600; }
   <p class="sr" aria-live="polite" id="live"></p>
 </main>
 
-<script src="scenarios.js?v=8"></script>
-<script src="real-plays.js?v=3"></script>
+<script src="scenarios.js?v=9"></script>
+<script src="real-plays.js?v=4"></script>
 <script src="model.js?v=2"></script>
 <script src="gen.js?v=4"></script>
 <script src="defense.js?v=1"></script>
-<script src="schema.js?v=1"></script>
-<script src="engine.js?v=5"></script>
-<script src="app.js?v=8"></script>
+<script src="schema.js?v=2"></script>
+<script src="engine.js?v=6"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>

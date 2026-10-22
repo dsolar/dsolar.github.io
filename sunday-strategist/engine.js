@@ -365,10 +365,12 @@
     var list = data.scenarios.slice(), seen = {};
     var gen = typeof module === "object" && module.exports ? require("./gen.js") : root.SS_GEN, film = 0;
     ((real && real.plays) || []).forEach(function (r) {
-      if (!r.lesson) {
+      var dl = r.lesson && /^def-/.test(r.lesson);
+      if (!r.lesson || dl) { // film snaps, and the real snaps of defense-side lessons (played like film, tagged with their lesson)
         if (!gen) return;
         var g = gen.build(data, real, r);
         g.order = 1000 + film++;
+        if (dl) g.dlesson = r.lesson;
         list.push(g);
         return;
       }

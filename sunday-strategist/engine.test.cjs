@@ -208,3 +208,21 @@ test('defense: personnel matching and coverage calls follow the data and the rul
   assert.equal(rv.alternatives.length, 4);
   for (const g of Object.values(rv.grades)) assert.ok(g >= 0 && g <= 100);
 });
+
+test('defense lessons: valid, and the hand-picked best call is what the model rates best', () => {
+  assert.deepEqual(S.validateDefense(D, F), []);
+  assert.ok(D.defenseLessons.length >= 5);
+  const all = E.catalog(D, R);
+  for (const L of D.defenseLessons) {
+    const best = F.bestOf(L.snap);
+    assert.ok(F.expectedAllowed(L.snap, L.best) - best.v <= 0.02, `${L.id}: lesson best allows ${F.expectedAllowed(L.snap, L.best)} vs model best ${best.v}`);
+    const rv = F.review(L.snap, { pers: L.snap.offPers, likely: 'run', confidence: 'some' }, L.best, 5);
+    assert.ok(rv.grades.personnel >= 90 && rv.grades.call >= 90, L.id + ' best call grades at the top');
+    const snaps = all.filter(s => s.dlesson === L.id);
+    assert.ok(snaps.length >= 6, `${L.id} has ${snaps.length} real snaps`);
+    for (const s of snaps) {
+      assert.ok(L.fit.downs.includes(s.real.down) && s.real.dist >= L.fit.distance[0] && s.real.dist <= L.fit.distance[1], s.id);
+      if (L.fit.offPers) assert.ok(L.fit.offPers.includes(s.real.offPers), s.id);
+    }
+  }
+});
