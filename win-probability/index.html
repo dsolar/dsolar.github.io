@@ -122,6 +122,8 @@ a { color: var(--yellow); }
 /* scorebug */
 .bug { display: grid; grid-template-columns: 1fr 1fr auto auto; align-items: stretch; background: #0B1F17; border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; }
 .bug-team { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 12px 4px; min-height: 56px; position: relative; }
+.bug-team .bug-logo { width: 34px; height: 34px; object-fit: contain; flex: none; filter: drop-shadow(0 1px 1px rgba(0,0,0,.25)); }
+.bug-team .bug-logo + div { margin-right: auto; }
 .bug-team .abbr { font-family: var(--display); font-weight: 800; font-size: 26px; line-height: 1; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.35); }
 .bug-team .tag { font-size: 11px; color: rgba(255,255,255,.82); display: block; margin-top: 2px; }
 .bug-team .pts { font-family: var(--display); font-weight: 800; font-size: 40px; line-height: 1; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.35); }
@@ -302,6 +304,6 @@ a { color: var(--yellow); }
 <script src="data.js"></script>
 <script src="scenario-adjustments.js"></script>
 <script src="engine.js?v=363b2fb"></script>
-<script src="app.js?v=363b2fb"></script>
+<script src="app.js?v=logos1"></script>
 </body>
 </html>
