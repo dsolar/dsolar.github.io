@@ -28,6 +28,9 @@
     "missing-answer": "Missing post-snap answer",
     "replacement-defender": "Threw into the replacement defender",
     "box-count": "Box-count error",
+    "dc-read": "Misread what the offense was likely to run",
+    "dc-personnel": "Personnel mismatch on defense",
+    "dc-call": "Pressure or coverage mismatch",
     overconfidence: "Coverage overconfidence"
   };
 

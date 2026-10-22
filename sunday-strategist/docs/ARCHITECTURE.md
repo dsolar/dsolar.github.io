@@ -9,6 +9,7 @@ It's a static page on davidsolar.dev (GitHub Pages): plain JavaScript, no build 
 | `engine.js` | Pure rules: diagnosis scoring, snap resolution, grades, expected value, mastery and scheduling | Data, no DOM |
 | `app.js` | Draws the field (SVG), runs the five steps, renders the review, and keeps progress in localStorage | Engine output |
 | `gen.js` | Film room: builds a full scenario from one real snap (field from personnel and box count, coverage from charting, options graded by rules) | Data tables in `scenarios.js` |
+| `defense.js` | Defensive coordinator mode: reads, personnel matching, pressure and coverage, graded on expected points allowed (EPA) | `gen.js`, `model.js` |
 | `real-plays.js` | Real snaps matched to lessons; generated, never edited by hand | Lesson ids |
 | `../tools/strategist_real.py` | Builds `real-plays.js` from nflverse play-by-play, participation and FTN charting (standard library only) | Lesson `fit`s |
 | `engine.test.cjs` | Unit tests: `node --test sunday-strategist/engine.test.cjs` | |
@@ -80,3 +81,16 @@ The process score is the average of the first four.
 The hand-written tables in `scenarios.js` (`matrix`) still supply the *reason* text, and they're the fallback if `model.js` is missing.
 
 **Caveat:** charting can't see the play that was called, only where the ball went. Concept rates are therefore a guide to how each kind of throw fares, not a controlled experiment.
+
+## Defensive coordinator mode (defense.js)
+
+**Steps.** You read the offense (their personnel and what they're likely to run), pick a package (goal line, base, nickel or dime), a pressure (four-man rush, simulated pressure, five-man zone, five-man man, zero), a coverage that fits that pressure, and what to take away (the run, quick game, the intermediate middle, or deep shots).
+
+**Grading** uses expected points allowed (EPA), so big plays and turnovers count:
+- **Passes:** called-pass EPA by coverage × rushers × down group, plus the concept's edge over all targeted throws.
+- **Runs:** run EPA by blockers minus your box.
+- **Package:** a shrunk package-vs-personnel effect from the data, plus a rule: each receiver beyond what your DBs can cover (receivers + 2 safeties − DBs) draws a linebacker, and that costs about 0.07 EPA on passes.
+- **Take-away:** taking away what they actually run helps.
+- **Process grades** compare your call's expected EPA, against what offenses actually call from this personnel in this situation (`model.offense`), with the best call. Within 0.015 EPA is a tie.
+
+**The rep:** the real offensive play from the snap runs against your call, using success rates.

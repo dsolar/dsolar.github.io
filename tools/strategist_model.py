@@ -84,20 +84,27 @@ def concept(r, p, f, air):
     return None
 
 
+def add(cell, ok, epa):
+    cell[0] += ok
+    cell[1] += 1
+    cell[2] += epa
+
+
 def main():
     years = [int(a) for a in sys.argv[1:]] or [2023, 2024, 2025]
-    passes = defaultdict(lambda: [0, 0])        # (concept, dg, group) -> [successes, n]
-    pass_all = defaultdict(lambda: [0, 0])      # (concept, dg)
-    dropback = defaultdict(lambda: [0, 0])      # (dg, group): every called pass, sacks, throwaways and scrambles included
-    targeted = defaultdict(lambda: [0, 0])      # (dg, group): passes that went to a charted route
-    dbox = defaultdict(lambda: [0, 0])          # (dg, box bucket): called passes by box count
-    pabox = defaultdict(lambda: [0, 0])         # (play action?, box bucket): early-down called passes
-    runs = defaultdict(lambda: [0, 0])          # (concept, rg, adv)
-    run_all = defaultdict(lambda: [0, 0])       # (concept, rg)
+    passes = defaultdict(lambda: [0, 0, 0.0])        # (concept, dg, group) -> [successes, n]
+    pass_all = defaultdict(lambda: [0, 0, 0.0])      # (concept, dg)
+    dropback = defaultdict(lambda: [0, 0, 0.0])      # (dg, group): every called pass, sacks, throwaways and scrambles included
+    targeted = defaultdict(lambda: [0, 0, 0.0])      # (dg, group): passes that went to a charted route
+    dbox = defaultdict(lambda: [0, 0, 0.0])          # (dg, box bucket): called passes by box count
+    covrush = defaultdict(lambda: [0, 0, 0.0])  # (dg, group, rushers 4/5/6+): called passes
+    pabox = defaultdict(lambda: [0, 0, 0.0])         # (play action?, box bucket): early-down called passes
+    runs = defaultdict(lambda: [0, 0, 0.0])          # (concept, rg, adv)
+    run_all = defaultdict(lambda: [0, 0, 0.0])       # (concept, rg)
     rush = defaultdict(Counter)                 # rushers -> n, pressure, sack
     prior = defaultdict(Counter)                # (pkg, box, situation) -> coverage group counts
     offense = defaultdict(Counter)              # (situation, personnel) -> call counts
-    allowed = defaultdict(lambda: [0, 0])       # (personnel, pkg, kind, situation group) -> [successes, n]
+    allowed = defaultdict(lambda: [0, 0, 0.0])       # (personnel, pkg, kind, situation group) -> [successes, n]
     total = 0
     for year in years:
         part = {(r["nflverse_game_id"], r["play_id"]): r for r in rows(f"pbp_participation/pbp_participation_{year}.csv")}
@@ -118,6 +125,7 @@ def main():
                 continue
             down, dist, yl = int(num(r["down"])), int(num(r["ydstogo"])), int(num(r["yardline_100"]))
             yards = int(num(r["yards_gained"], 0))
+            epa = num(r["epa"], 0.0) or 0.0
             ok = (r["touchdown"] == "1" or yards >= need_yards(down, dist, yl)) and r["interception"] != "1" and r.get("fumble_lost") != "1"
             sit = situation(down, dist, yl, int(num(r["qtr"], 1)), int(num(r["quarter_seconds_remaining"], 900)))
             pers = f"{count(o, {'RB', 'FB'})}{count(o, {'TE'})}"
@@ -126,14 +134,12 @@ def main():
             cov = GROUP.get(p["defense_coverage_type"])
             total += 1
             sit_group = sit or ("early" if down <= 2 else "late")
-            allowed[(pers, pkg, kind, sit_group)][0] += ok
-            allowed[(pers, pkg, kind, sit_group)][1] += 1
+            add(allowed[(pers, pkg, kind, sit_group)], ok, epa)
             if kind == "run":
                 if r["qb_scramble"] == "1":
                     if cov:  # a called pass that became a scramble
                         dg = down_group(down, dist, yl)
-                        dropback[(dg, cov)][0] += ok
-                        dropback[(dg, cov)][1] += 1
+                        add(dropback[(dg, cov)], ok, epa)
                     continue
                 qb_ids = {x for x, pos in zip((p["offense_players"] or "").split(";"), (p["offense_positions"] or "").split(";")) if pos == "QB"}
                 c = "sneak" if r["rusher_player_id"] in qb_ids and dist <= 1 else "outside-zone" if r["run_gap"] == "end" else "inside-zone"
@@ -142,26 +148,23 @@ def main():
                 blockers = 5 + max(0, count(o, {"C", "G", "T", "OL", "OG", "OT"}) - 5) + min(2, count(o, {"TE"})) + count(o, {"FB"})
                 adv = max(-3, min(2, blockers - box))
                 rg = run_group(down, dist)
-                for k in ((c, rg, adv),):
-                    runs[k][0] += ok
-                    runs[k][1] += 1
-                run_all[(c, rg)][0] += ok
-                run_all[(c, rg)][1] += 1
+                add(runs[(c, rg, adv)], ok, epa)
+                add(run_all[(c, rg)], ok, epa)
                 if sit:
                     offense[(sit, pers)]["run"] += 1
                 continue
             if r["qb_scramble"] == "1" or not cov:
                 continue
             dg = down_group(down, dist, yl)
-            dropback[(dg, cov)][0] += ok
-            dropback[(dg, cov)][1] += 1
+            add(dropback[(dg, cov)], ok, epa)
+            rn = int(num(p["number_of_pass_rushers"], 0))
+            if rn:
+                add(covrush[(dg, cov, "4" if rn <= 4 else "5" if rn == 5 else "6")], ok, epa)
             if box:
-                dbox[(dg, box_bucket(box))][0] += ok
-                dbox[(dg, box_bucket(box))][1] += 1
+                add(dbox[(dg, box_bucket(box))], ok, epa)
                 if dg == "early":
                     pa = f["is_play_action"] == "TRUE"
-                    pabox[(pa, box_bucket(box))][0] += ok
-                    pabox[(pa, box_bucket(box))][1] += 1
+                    add(pabox[(pa, box_bucket(box))], ok, epa)
             rushers = int(num(p["number_of_pass_rushers"], 0))
             if rushers:
                 t = rush[min(max(rushers, 3), 7)]
@@ -176,48 +179,52 @@ def main():
                 offense[(sit, pers)][c or "other"] += 1
             if not c or r["sack"] == "1":
                 continue
-            targeted[(dg, cov)][0] += ok
-            targeted[(dg, cov)][1] += 1
-            passes[(c, dg, cov)][0] += ok
-            passes[(c, dg, cov)][1] += 1
-            pass_all[(c, dg)][0] += ok
-            pass_all[(c, dg)][1] += 1
+            add(targeted[(dg, cov)], ok, epa)
+            add(passes[(c, dg, cov)], ok, epa)
+            add(pass_all[(c, dg)], ok, epa)
         print(f"{year}: {total} snaps so far")
 
     def shrink(s, n, base):  # noqa: E306
         return round((s + K * base) / (n + K), 3)
 
-    model = {"pass": {}, "run": {}, "rush": {}, "prior": {}, "offense": {}, "allowed": {}, "dropback": {}, "targeted": {}}
+    def cell(acc, base_rate, base_epa):
+        """[success rate, snaps, EPA per play], both shrunk toward the base when snaps are few."""
+        s, n, e = acc
+        return [shrink(s, n, base_rate), n, round((e + K * base_epa) / (n + K), 3)]
+
+    def pooled(items):
+        t = defaultdict(lambda: [0, 0, 0.0])
+        for k, v in items:
+            for i in range(3):
+                t[k][i] += v[i]
+        return {k: (v[0] / v[1], v[2] / v[1]) for k, v in t.items() if v[1]}
+
+    model = {"pass": {}, "run": {}, "rush": {}, "prior": {}, "offense": {}, "allowed": {}, "dropback": {}, "targeted": {}, "covRush": {}, "box": {}, "paBox": {}}
     # Targeted passes are the baseline each concept is compared with; a thin concept cell shrinks toward it.
-    tg_dg = defaultdict(lambda: [0, 0])
-    for (dg, g), (s, n) in targeted.items():
-        tg_dg[dg][0] += s
-        tg_dg[dg][1] += n
-    for (dg, g), (s, n) in targeted.items():
-        model["targeted"].setdefault(dg, {})[g] = [shrink(s, n, tg_dg[dg][0] / tg_dg[dg][1]), n]
-    db_dg = defaultdict(lambda: [0, 0])
-    for (dg, g), (s, n) in dropback.items():
-        db_dg[dg][0] += s
-        db_dg[dg][1] += n
-    for (dg, g), (s, n) in dropback.items():
-        model["dropback"].setdefault(dg, {})[g] = [shrink(s, n, db_dg[dg][0] / db_dg[dg][1]), n]
-    model["box"] = {}
-    for (dg, bx), (s, n) in dbox.items():
-        model["box"].setdefault(dg, {})[bx] = [shrink(s, n, db_dg[dg][0] / db_dg[dg][1]), n]
-    model["paBox"] = {}
-    for (pa, bx), (s, n) in pabox.items():
-        model["paBox"].setdefault("pa" if pa else "dropback", {})[bx] = [round(s / n, 3), n]
-    for (c, dg), (s, n) in pass_all.items():
-        base = shrink(s, n, tg_dg[dg][0] / tg_dg[dg][1])
-        model["pass"].setdefault(c, {})[dg] = {"all": [base, n]}
-    for (c, dg, g), (s, n) in passes.items():
-        base = model["pass"][c][dg]["all"][0]
-        model["pass"][c][dg][g] = [shrink(s, n, base), n]
-    for (c, rg), (s, n) in run_all.items():
-        model["run"].setdefault(c, {})[rg] = {"all": [round(s / n, 3), n]}
-    for (c, rg, adv), (s, n) in runs.items():
-        base = model["run"][c][rg]["all"][0]
-        model["run"][c][rg][str(adv)] = [shrink(s, n, base), n]
+    tg = pooled(((dg, v) for (dg, g), v in targeted.items()))
+    for (dg, g), v in targeted.items():
+        model["targeted"].setdefault(dg, {})[g] = cell(v, *tg[dg])
+    db = pooled(((dg, v) for (dg, g), v in dropback.items()))
+    for (dg, g), v in dropback.items():
+        model["dropback"].setdefault(dg, {})[g] = cell(v, *db[dg])
+    for (dg, g, rn), v in covrush.items():
+        base = model["dropback"][dg][g]
+        model["covRush"].setdefault(dg, {}).setdefault(g, {})[rn] = cell(v, base[0], base[2])
+    for (dg, bx), v in dbox.items():
+        model["box"].setdefault(dg, {})[bx] = cell(v, *db[dg])
+    for (pa, bx), v in pabox.items():
+        model["paBox"].setdefault("pa" if pa else "dropback", {})[bx] = cell(v, *db["early"])
+    for (c, dg), v in pass_all.items():
+        model["pass"].setdefault(c, {})[dg] = {"all": cell(v, *tg[dg])}
+    for (c, dg, g), v in passes.items():
+        base = model["pass"][c][dg]["all"]
+        model["pass"][c][dg][g] = cell(v, base[0], base[2])
+    ra = pooled((((rg), v) for (c, rg), v in run_all.items()))
+    for (c, rg), v in run_all.items():
+        model["run"].setdefault(c, {})[rg] = {"all": cell(v, *ra[rg])}
+    for (c, rg, adv), v in runs.items():
+        base = model["run"][c][rg]["all"]
+        model["run"][c][rg][str(adv)] = cell(v, base[0], base[2])
     for k, t in sorted(rush.items()):
         model["rush"][str(k)] = {"n": t["n"], "pressure": round(t["pressure"] / t["n"], 3), "sack": round(t["sack"] / t["n"], 3)}
     for (pkg, bx, sit), c in prior.items():
@@ -228,9 +235,9 @@ def main():
         n = sum(c.values())
         if n >= 20:
             model["offense"][f"{sit}|{pers}"] = dict({g: round(v / n, 3) for g, v in c.items()}, n=n)
-    for (pers, pkg, kind, sg), (s, n) in allowed.items():
+    for (pers, pkg, kind, sg), (s, n, e) in allowed.items():
         if n >= 20:
-            model["allowed"][f"{pers}|{pkg}|{kind}|{sg}"] = [round(s / n, 3), n]
+            model["allowed"][f"{pers}|{pkg}|{kind}|{sg}"] = [round(s / n, 3), n, round(e / n, 3)]
     data = {
         "updated": datetime.now(timezone.utc).strftime("%Y-%m-%d"), "seasons": years, "snaps": total, "k": K,
         "rule": "Success: 40% of the distance on 1st down, 60% on 2nd, all of it on 3rd and 4th, or a touchdown. Interceptions and lost fumbles fail.",
@@ -239,7 +246,7 @@ def main():
     }
     with open(OUT, "w", encoding="utf-8") as fh:
         fh.write("/* Sunday Strategist's grading tables, fitted to real NFL snaps by tools/strategist_model.py. Don't edit by hand.\n"
-                 "   Each cell is [success rate, snaps]; rates are shrunk toward the concept's overall rate when snaps are few. */\n")
+                 "   Each cell is [success rate, snaps, EPA per play]; rates are shrunk toward the concept's overall rate when snaps are few. */\n")
         fh.write("(function (root, data) {\n  if (typeof module === \"object\" && module.exports) module.exports = data;\n"
                  "  else root.SS_MODEL = data;\n})(this, ")
         json.dump(data, fh, separators=(",", ":"))

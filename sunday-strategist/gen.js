@@ -182,8 +182,8 @@
     var wide = offP.filter(function (p) { return /^[XZHSFW]/.test(p.id) || p.id === "Y" || p.id === "Y2"; }).sort(function (a, b) { return a.x - b.x; });
     var leftW = wide.length ? wide[0] : { x: BX - 16 }, rightW = wide.length ? wide[wide.length - 1] : { x: BX + 16 };
     var press = MANISH[g], corners = Math.min(d.cb, 2) || 2, extra = Math.max(0, dbs - corners - Math.min(d.s, 2)), safeties = dbs - corners - extra;
-    add("CBL", "CB", "Cornerback, left", leftW.x, press ? 1.5 : 6.5);
-    if (corners > 1 || dbs > 1) add("CBR", "CB", "Cornerback, right", rightW.x, press ? 1.5 : 6.5);
+    add("CBL", "LCB", "Left cornerback", leftW.x, press ? 1.5 : 6.5);
+    if (corners > 1 || dbs > 1) add("CBR", "RCB", "Right cornerback", rightW.x, press ? 1.5 : 6.5);
     var slots = offP.filter(function (p) { return /^[HSF]$/.test(p.id); });
     for (var n = 0; n < extra; n++) {
       var sl = slots[n] || { x: BX + (n % 2 ? -8 : 8) };
