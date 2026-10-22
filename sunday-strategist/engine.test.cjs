@@ -116,11 +116,18 @@ test('real snaps: each one validates, matches its lesson, and names its sources'
   const all = E.catalog(D, R);
   assert.ok(R.plays.length >= 24);
   assert.deepEqual(S.validate({ ...D, scenarios: all }), []);
-  const cov = { 'Cover 3': 'COVER_3', 'Cover 2': 'COVER_2', 'Cover 1': 'COVER_1', 'Cover 0': 'COVER_0' };
+  const cov = { 'Cover 0': 'COVER_0', 'Cover 1': 'COVER_1', '2-Man': '2_MAN', 'Cover 2': 'COVER_2', 'Cover 3': 'COVER_3', 'Cover 9': 'COVER_9', 'Cover 4 (quarters)': 'COVER_4', 'Cover 6': 'COVER_6' };
   for (const s of all.filter(s => s.real && s.lesson)) {
     const r = s.real, fit = D.scenarios.find(t => t.id === s.lesson).fit;
     assert.ok(fit.downs.includes(r.down) && r.dist >= fit.distance[0] && r.dist <= fit.distance[1], s.id + ' down and distance');
-    assert.ok(fit.coverage.includes(cov[r.coverage]) && r.rushers >= fit.rushers[0] && r.rushers <= fit.rushers[1] && (r.blitzers > 0) === fit.blitz, s.id + ' defense');
+    assert.ok((fit.kinds || ['pass']).includes(r.kind), s.id + ' run or pass');
+    assert.ok((fit.offPers || ['11']).includes(r.offPers) && (fit.pkg || ['nickel']).includes(r.pkg), s.id + ' personnel');
+    if (fit.box) assert.ok(r.box >= fit.box[0] && r.box <= fit.box[1], s.id + ' box');
+    if (r.kind === 'pass') {
+      if (fit.coverage) assert.ok(fit.coverage.includes(cov[r.coverage]), s.id + ' coverage');
+      if (fit.rushers) assert.ok((r.rushers || 0) >= fit.rushers[0] && (r.rushers || 0) <= fit.rushers[1], s.id + ' rush');
+      if ('blitz' in fit) assert.equal((r.blitzers || 0) > 0, fit.blitz, s.id + ' blitz');
+    }
     assert.equal(s.type, 'adapted');
     assert.ok(s.provenance.sources.length === 3 && s.provenance.fieldConfidence.alignment === 'inferred');
     assert.ok(R.teams[r.off] && R.teams[r.def] && r.passer && r.desc);

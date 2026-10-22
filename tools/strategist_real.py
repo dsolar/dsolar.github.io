@@ -117,6 +117,29 @@ def package(dp):
     return "heavy" if dbs <= 3 else "base" if dbs == 4 else "nickel" if dbs == 5 else "dime" if dbs == 6 else "quarter"
 
 
+def lesson_fits(fit, kind, down, dist, pers, pkg, box, cov, rush, blitz, wrs):
+    """A lesson's fit, from scenarios.js. Missing keys keep the original lessons' defaults:
+    a pass from 11 personnel (three receivers) against nickel."""
+    if kind not in fit.get("kinds", ["pass"]):
+        return False
+    if down not in fit["downs"] or not fit["distance"][0] <= dist <= fit["distance"][1]:
+        return False
+    if pers not in fit.get("offPers", ["11"]) or pkg not in fit.get("pkg", ["nickel"]):
+        return False
+    if fit.get("offPers", ["11"]) == ["11"] and wrs != 3:
+        return False
+    if "box" in fit and not fit["box"][0] <= box <= fit["box"][1]:
+        return False
+    if kind == "pass":
+        if "coverage" in fit and cov not in fit["coverage"]:
+            return False
+        if "rushers" in fit and not fit["rushers"][0] <= rush <= fit["rushers"][1]:
+            return False
+        if "blitz" in fit and (blitz > 0) != fit["blitz"]:
+            return False
+    return True
+
+
 def season(year, fits):
     part = {(r["nflverse_game_id"], r["play_id"]): r for r in rows(f"pbp_participation/pbp_participation_{year}.csv")}
     ftn = {(r["nflverse_game_id"], r["nflverse_play_id"]): r for r in rows(f"ftn_charting/ftn_charting_{year}.csv")}
@@ -152,13 +175,12 @@ def season(year, fits):
         wp = num(r["wp"], 0.5)
         if not 0.05 <= wp <= 0.95:
             continue
-        if kind == "pass" and 20 <= yl <= 80 and f["is_screen_pass"] != "TRUE" and p.get("route"):
-            if (count(o, {"RB", "FB"}) == 1 and count(o, {"TE"}) == 1 and count(o, {"WR"}) == 3
-                    and count(dp, {"CB", "FS", "SS", "S", "DB"}) == 5 and 0.12 <= wp <= 0.88):
-                for lid, fit in fits:
-                    if (down in fit["downs"] and fit["distance"][0] <= dist <= fit["distance"][1] and cov in fit["coverage"]
-                            and fit["rushers"][0] <= rush <= fit["rushers"][1] and (blitz > 0) == fit["blitz"]):
-                        found[lid].append(snap(year, r, p, f, rush, blitz, wp, sit))
+        if 20 <= yl <= 80 and 0.12 <= wp <= 0.88 and f["is_screen_pass"] != "TRUE" and (kind == "run" or p.get("route")):
+            pers = f"{count(o, {'RB', 'FB'})}{count(o, {'TE'})}"
+            box = int(num(p["defenders_in_box"], 0))
+            for lid, fit in fits:
+                if lesson_fits(fit, kind, down, dist, pers, package(dp), box, cov, rush, blitz, count(o, {"WR"})):
+                    found[lid].append(snap(year, r, p, f, rush, blitz, wp, sit))
         if sit:
             broad.append(snap(year, r, p, f, rush, blitz, wp, sit))
     return found, dropbacks, broad

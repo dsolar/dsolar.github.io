@@ -68,8 +68,8 @@
         (reals.length ? '<button type="button" class="real-btn" data-real="' + esc(s.id) + '"><span class="logos">' + reals.slice(0, 8).map(function (x) { return logo(x.real.off, 18); }).join("") +
           '</span><span>' + reals.length + " real snaps" + (played ? " · " + played + " played" : "") + " \u2192</span></button>" : "") + "</li>";
     }).join("");
-    $("module").innerHTML = '<h2>Nickel pressure and the answers to it</h2>' +
-      '<p>A slot defender walks down and shows blitz. Is he coming? Who replaces him if he does? What does your protection do about it, and where does the ball go? Learn each look, then call it on real NFL snaps from 2023 to 2025.</p>' +
+    $("module").innerHTML = '<h2>Lessons: pressure, coverage and the box</h2>' +
+      '<p>Nine looks every quarterback has to beat: nickel pressure and its bluff, man and zero pressure, quarters, the post-snap rotation, simulated pressure, 2-Man on third and long, and an eight-man box. Learn each one, then call it on real NFL snaps from 2023 to 2025.</p>' +
       '<ul class="scen-list">' + items + '</ul><button type="button" class="primary" id="go">' + (rec ? "Play your next rep" : "Start") + " →</button>";
     renderFilm(rec);
     var rep = E.report(rec, D);
@@ -323,7 +323,7 @@
   }
   // Rusher checklist: where each defender is, not what he is (that would answer question one).
   function spot(p) {
-    var d = p.y < 0.6 ? "on the line" : Math.round(p.y) + " yds deep", side = p.x < ballX() - 0.5 ? "left" : p.x > ballX() + 0.5 ? "right" : "middle";
+    var d = p.y <= 1.2 ? "on the line" : Math.round(p.y) + (Math.round(p.y) === 1 ? " yd deep" : " yds deep"), side = p.x < ballX() - 0.5 ? "left" : p.x > ballX() + 0.5 ? "right" : "middle";
     return d + ", " + side;
   }
 
