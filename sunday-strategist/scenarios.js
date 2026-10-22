@@ -57,6 +57,86 @@
       timing: "Handoff about 1.0 second; the run needs the linebackers to clear.",
       failure: ["An inside blitzer meets the back in the hole", "A dropping linebacker fills the lane"]
     },
+    quick: {
+      name: "Quick game (slant-flat)",
+      family: "Quick game",
+      plain: "Three-step drop. The outside receiver runs a slant, the slot runs to the flat. Ball out fast, high percentage, built to get the ball to a receiver in space.",
+      stresses: "The flat defender, horizontally, and the rush, by getting the ball out first.",
+      strongVs: ["Off coverage", "Cover 3", "Pressure"],
+      weakVs: ["Press man with help inside", "Cover 2 corners squatting in the flat"],
+      timing: "Ball out by about 1.4 seconds.",
+      failure: ["Slant thrown into a hook defender sliding underneath", "Flat route jumped by a squatting corner"]
+    },
+    dagger: {
+      name: "Dagger",
+      family: "Dropback",
+      plain: "The slot runs up the seam to clear the middle; the outside receiver runs a deep dig into the space the seam leaves behind the linebackers.",
+      stresses: "The hook defenders and the middle safety, vertically.",
+      strongVs: ["Cover 3", "Cover 1 with a linebacker on the slot"],
+      weakVs: ["Quarters, where the safety jumps the dig", "Pressure before 2.8 seconds"],
+      timing: "Needs about 2.8 seconds.",
+      failure: ["Seam doesn't clear the safety", "Protection breaks before the dig crosses"]
+    },
+    screen: {
+      name: "Running back screen",
+      family: "Screen",
+      plain: "Linemen let the rush go, then release in front of the back, who catches it behind the line with blockers ahead.",
+      stresses: "Aggressive rushers and blitzers who run themselves out of the play.",
+      strongVs: ["Pressure", "Long-yardage downs when the defense plays the sticks"],
+      weakVs: ["Defenses that drop linemen or keep a linebacker home", "Short yardage"],
+      timing: "Catch at about 1.5 seconds, then blockers have to get out in front.",
+      failure: ["A rusher reads it and stays home", "A dropping lineman sits right on the back"]
+    },
+    "pa-shot": {
+      name: "Play-action shot",
+      family: "Play action",
+      plain: "Fake the run, pull the linebackers and safeties forward, then throw deep behind them.",
+      stresses: "Safeties and linebackers who are reading run, vertically.",
+      strongVs: ["One-high defenses with eight in the box", "Run-heavy downs where the defense has to respect the run"],
+      weakVs: ["Two-high shells with safeties at depth", "Long yardage, when nobody believes the fake"],
+      timing: "Needs about 3 seconds. The fake buys some of it.",
+      failure: ["Nobody bites on the fake", "The rush gets home before the shot develops"]
+    },
+    "inside-zone": {
+      name: "Inside zone",
+      family: "Run",
+      plain: "The line steps playside together and double-teams up to the linebackers. The back reads the first down lineman and picks the hole: frontside, cutback or bend.",
+      stresses: "The front's gap discipline, and the linebackers' fits.",
+      strongVs: ["Light boxes", "Two-high shells", "Fast-flowing linebackers (cutback)"],
+      weakVs: ["Eight-man boxes", "Penetrating defensive tackles"],
+      timing: "Handoff about 0.8 seconds.",
+      failure: ["An unblocked box defender fills the hole", "Penetration in the backfield"]
+    },
+    "outside-zone": {
+      name: "Outside zone",
+      family: "Run",
+      plain: "Everyone reaches playside and runs laterally; the back aims for the edge and cuts up where the defense overflows.",
+      stresses: "The edge and the force defender, horizontally.",
+      strongVs: ["Light boxes", "Slow edges", "Defenses that over-pursue"],
+      weakVs: ["A set edge with a fast-flowing safety", "Penetration across the line"],
+      timing: "Handoff about 0.9 seconds; it develops wide.",
+      failure: ["The edge gets set and the back has nowhere to go", "Backside pursuit catches it from behind"]
+    },
+    power: {
+      name: "Power",
+      family: "Run",
+      plain: "A gap scheme: the playside line blocks down, a guard pulls around to kick out or lead through the hole. More bodies at the point of attack than the defense has there.",
+      stresses: "The point of attack, by numbers.",
+      strongVs: ["Short yardage", "Even fronts with a soft edge", "Defenses that don't spill the puller"],
+      weakVs: ["Fast backside pursuit", "Penetration that trips up the puller"],
+      timing: "Handoff about 1.0 second; the puller has to get there.",
+      failure: ["The puller gets tripped up", "A spill defender forces it wide into pursuit"]
+    },
+    sneak: {
+      name: "Quarterback sneak",
+      family: "Run",
+      plain: "The quarterback follows the center straight ahead. The fastest play in football to gain a yard.",
+      stresses: "The interior defensive line's leverage.",
+      strongVs: ["Short yardage of a yard or less"],
+      weakVs: ["Anything longer than a yard or two", "A low, penetrating nose tackle"],
+      timing: "Immediately.",
+      failure: ["The interior gets driven back", "The line to gain is more than a yard away"]
+    },
     mesh: {
       name: "Mesh",
       family: "Man beater",
@@ -108,6 +188,16 @@
       vulnerable: ["Any quick throw that wins leverage, with no safety to tackle behind it", "One-on-ones deep, if protection holds"],
       counters: ["Quick slants", "Max protection with a fade", "Sight adjusts"]
     },
+    "gen-cover-0": { name: "Cover 0", plain: "Man-to-man with nobody deep. Everyone not covering someone is rushing.", vulnerable: ["Any quick throw that wins leverage", "One-on-ones deep with no help"], counters: ["Quick game", "Fade", "Sight adjusts"] },
+    "gen-cover-1": { name: "Cover 1", plain: "Man-to-man across the board with one free safety deep in the middle, and often a robber underneath.", vulnerable: ["Crossers that rub man defenders", "Matchups outside, away from the free safety"], counters: ["Mesh", "Quick game", "Fade"] },
+    "gen-2-man": { name: "2-Man", plain: "Man-to-man underneath with two deep safeties splitting the field. Defenders trail receivers, knowing help is over the top.", vulnerable: ["Underneath crossers and option routes", "Quarterback runs: everyone's back is turned"], counters: ["Mesh", "Quick game", "Runs and scrambles"] },
+    "gen-cover-2": { name: "Cover 2", plain: "Five underneath zones, two deep halves. Corners squat in the flats.", vulnerable: ["The hole between the corner and the halves safety (smash)", "Seams down the middle"], counters: ["Smash", "Four verticals", "Runs against a light box"] },
+    "gen-cover-3": { name: "Cover 3", plain: "Three deep thirds, four underneath zones. A one-high shell, usually with a safety rolled down near the box.", vulnerable: ["Seams against three deep", "Flats and curl windows underneath"], counters: ["Dagger", "Four verticals", "Quick game"] },
+    "gen-cover-4": { name: "Quarters (Cover 4)", plain: "Four deep defenders reading the receivers in front of them; safeties fit the run aggressively.", vulnerable: ["Short throws underneath, especially to the flats", "Runs before the safeties can fit"], counters: ["Quick game", "Smash", "Mesh"] },
+    "gen-cover-6": { name: "Cover 6", plain: "Quarters to one side, Cover 2 to the other: a split-field coverage.", vulnerable: ["Smash to the Cover 2 side", "The seam on the quarters side"], counters: ["Smash", "Quick game", "Dagger"] },
+    "gen-cover-9": { name: "Cover 9 (match 3)", plain: "A three-deep match coverage: it plays like Cover 3 but carries vertical routes like man.", vulnerable: ["Quick throws underneath", "Crossers that stress the matching rules"], counters: ["Quick game", "Mesh", "Smash"] },
+    "gen-combo": { name: "Combination coverage", plain: "Different rules on each side of the formation, often man on one side and zone on the other.", vulnerable: ["Whichever side is playing the softer rule"], counters: ["Quick game", "Mesh"] },
+    "gen-run-fit": { name: "Run fits", plain: "On a run, every defender owns a gap. The coverage behind it matters less than whether the box has more defenders than you have blockers.", vulnerable: ["The extra gap when you have more blockers than they have defenders", "Cutback lanes against fast-flowing linebackers"], counters: ["Inside zone", "Power", "Play action"] },
     "cover-2-bluff": {
       name: "Nickel bluff, Cover 2",
       plain: "Four rush. The nickel shows blitz, then bails to the curl. Corners squat in the flats, two safeties split the deep halves.",
@@ -123,7 +213,94 @@
     "protection-count": "Counting rushers vs blockers",
     "pressure-disguise": "Seeing through disguised pressure",
     "man-vs-zone": "Telling man pressure from zone pressure",
-    "zero-pressure": "Beating all-out pressure"
+    "zero-pressure": "Beating all-out pressure",
+    "run-vs-box": "Run or pass by the box count",
+    "coverage-id": "Reading the coverage shell",
+    "situational": "Situational football"
+  },
+
+  /* The film room grades real snaps with these tables. Coverage groups:
+     zero (Cover 0), man (Cover 1), twoMan (2-Man), two (Cover 2), three (Cover 3, Cover 9),
+     quarters (Cover 4, Cover 6, combination). Each entry: [window 0-1, why]. */
+  matrix: {
+    quick: {
+      zero: [0.66, "Against zero the ball is out before the free rusher arrives, and nobody's behind the receiver to tackle him."],
+      man: [0.6, "Slants beat man if the receiver wins inside leverage; the free safety is too deep to help on a quick throw."],
+      twoMan: [0.5, "Defenders trail underneath with help over the top; the slant window is tight against inside leverage."],
+      two: [0.48, "Cover 2 corners squat in the flats, right on the quick game. The slant can work behind them, but it's tight."],
+      three: [0.66, "Cover 3 gives you the flats and the slant window: the corners bail deep and there are only four underneath."],
+      quarters: [0.68, "Quarters plays deep and reads; underneath is soft. The quick game is what it gives away."]
+    },
+    smash: {
+      zero: [0.42, "The corner route takes too long against zero; the hitch alone is a quick answer."],
+      man: [0.48, "Against man, smash is just two one-on-ones. Fine, but not built for it."],
+      twoMan: [0.5, "Trailing man defenders with halves help: the hitch is the throw, the corner gets squeezed by the safety."],
+      two: [0.76, "Smash is the Cover 2 beater: the corner can't take the hitch and the corner route at the same time."],
+      three: [0.5, "Against Cover 3 the corner is already deep, sitting on the corner route. Only the hitch is there."],
+      quarters: [0.6, "The quarters corner sinks; the hitch is open and the safety has to decide on the corner route."]
+    },
+    mesh: {
+      zero: [0.56, "Crossers rub man defenders, but six rushers may get home before they clear."],
+      man: [0.72, "Mesh is built for man: the crossers rub each other's defenders and someone comes open running away."],
+      twoMan: [0.68, "Underneath man with help over the top: crossers run away from trailing defenders. A good answer."],
+      two: [0.52, "Zone defenders sit in the crossing lanes; the crossers find holes, but not with momentum."],
+      three: [0.55, "Against Cover 3 the crossers settle in the hook-curl holes. Workable, not a beater."],
+      quarters: [0.62, "Underneath is soft in quarters; the crossers find space in front of the deep defenders."]
+    },
+    dagger: {
+      zero: [0.3, "Too slow against zero: the rush arrives before the dig crosses."],
+      man: [0.5, "The dig works if the receiver wins; the seam pulls the free safety, but the timing is long."],
+      twoMan: [0.4, "The halves safety sits on the dig; man defenders trail it underneath."],
+      two: [0.5, "The seam splits the halves safeties; the dig fits behind the linebackers if they carry the seam."],
+      three: [0.66, "Dagger is a Cover 3 beater: the seam holds the middle safety and the dig comes open behind the hook defenders."],
+      quarters: [0.44, "Quarters safeties read the slot vertical, then drive on the dig."]
+    },
+    verts: {
+      zero: [0.42, "No safety deep, but four verticals need almost three seconds, and six rushers rarely give you that."],
+      man: [0.42, "One-on-ones deep with a free safety helping on the inside routes."],
+      twoMan: [0.3, "Two deep safeties plus trailing man defenders: verticals are bracketed."],
+      two: [0.56, "The seams split the two halves safeties: the middle of Cover 2 is open."],
+      three: [0.6, "Four verticals against three deep: someone has two receivers to cover."],
+      quarters: [0.32, "Four deep defenders for four vertical routes. That's what quarters is built to stop."]
+    },
+    "pa-shot": {
+      zero: [0.4, "A play fake takes time you don't have against zero."],
+      man: [0.54, "If the fake freezes the linebackers and the free safety bites, the post is one-on-one."],
+      twoMan: [0.36, "Safeties at depth don't bite on the fake."],
+      two: [0.42, "Two-high safeties stay deep; the fake pulls linebackers, not safeties."],
+      three: [0.58, "The single high safety and the rolled-down safety have run responsibilities; the fake pulls them, and the post comes open."],
+      quarters: [0.46, "Quarters safeties read run hard; a good fake catches them, but they're deep to start."]
+    },
+    fade: {
+      zero: [0.5, "No safety to help: if the receiver wins the release, it's a completion and maybe a touchdown."],
+      man: [0.42, "One-on-one outside, away from the free safety's reach."],
+      twoMan: [0.28, "A halves safety is sitting over the top of every fade."],
+      two: [0.3, "The halves safety and the squatting corner bracket the fade."],
+      three: [0.35, "The corner bails into the deep third, right where the fade is going."],
+      quarters: [0.3, "The corner and the quarters safety both play deep."]
+    },
+    screen: {
+      zero: [0.62, "Six rushers run themselves past the back; the screen is behind them."],
+      man: [0.5, "The linebacker in man on the back follows him to the screen."],
+      twoMan: [0.46, "Man defenders underneath and safeties deep; the screen has to beat the back's defender."],
+      two: [0.46, "Five underneath zone defenders can rally to the screen."],
+      three: [0.48, "Four underneath; the screen needs blockers to beat the hook defender."],
+      quarters: [0.5, "Soft underneath, but the safeties fit fast."]
+    }
+  },
+  // The one principle each film-room situation teaches.
+  situations: {
+    "first-ten": "First and 10 is about staying on schedule: 4 yards is a win. Take what the shell gives you; save the shot for when they sell out to stop the run.",
+    "second-long": "Second and long: get half of it back. A call that reliably gains 5 sets up a third down you can actually convert.",
+    "second-medium": "Second and medium is the freest down in football: you can run, throw or take a shot, and a miss still leaves a makeable third.",
+    "second-short": "Second and short is a free shot: the defense has to respect the run, and a miss still leaves third and short.",
+    "third-short": "Third and short: count the box. If you have more blockers than they have defenders, run it. If they've loaded it, throw where they took the defenders from.",
+    "third-medium": "Third and medium: the call has to reach the sticks on time against the pressure they can send. Throws short of the sticks are punts.",
+    "third-long": "Third and long: the defense is playing the sticks. A completion short of them doesn't count; neither does a sack.",
+    "fourth-down": "Fourth down: the only thing that counts is the line to gain. Pick the call most likely to get there, not the one that looks best on film if it works.",
+    "red-zone": "In the red zone the field shrinks: deep routes have nowhere to go, windows get tighter, and the run game and quick throws get relatively better.",
+    "goal-line": "At the goal line every defender is in the box and every gap counts. Win the numbers, or throw where they've emptied out.",
+    "two-minute": "In the two-minute drill, time is a resource: throws that stop the clock or gain big chunks; avoid sacks and runs that let the clock bleed."
   },
 
   // Answer choices shared by every scenario's diagnosis step.

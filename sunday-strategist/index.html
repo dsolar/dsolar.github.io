@@ -105,6 +105,19 @@ a { color: var(--yellow); }
 .real-btn { display: flex !important; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 14px !important; background: var(--panel) !important; font-size: 14px; color: var(--chalk-dim); }
 .real-btn .logos { display: flex; gap: 4px; flex-wrap: wrap; }
 .real-btn .logos img { width: 18px; height: 18px; }
+.film { border-left-color: var(--los); }
+.flts { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px 12px; margin: 12px 0 0; }
+.flt span { display: block; font-size: 13px; color: var(--chalk-faint); margin-bottom: 3px; }
+.flt select { width: 100%; padding: 8px 10px; background: var(--board); color: var(--chalk); border: 1px solid var(--line-strong); border-radius: 5px; font: inherit; font-size: 15px; }
+.flt-count { color: var(--chalk-faint); font-size: 14px; margin: 10px 0 0 !important; }
+.film-list { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 6px; }
+.film-list button { width: 100%; display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; text-align: left; padding: 9px 12px; background: var(--board); border: 1px solid var(--line-strong); border-radius: 5px; cursor: pointer; }
+.film-list button:hover { border-color: var(--chalk-dim); }
+.fl-teams { display: flex; align-items: center; gap: 6px; font-family: var(--display); font-size: 20px; }
+.fl-teams span { color: var(--chalk-faint); font-size: 15px; }
+.fl-teams img { width: 20px; height: 20px; }
+.fl-sit { grid-column: 1; color: var(--chalk-faint); font-size: 13.5px; }
+.fl-grade { grid-row: 1 / span 2; grid-column: 2; align-self: center; font-family: var(--display); font-weight: 800; font-size: 22px; color: var(--mint); }
 .real-facts { list-style: none; margin: 0; padding: 0; }
 .real-facts li { display: grid; grid-template-columns: 7.5em 7.5em 1fr; gap: 10px; align-items: baseline; padding: 7px 0; border-top: 1px solid var(--line); font-size: 15px; }
 .real-facts li span:last-child { color: var(--chalk-dim); }
@@ -270,8 +283,9 @@ legend { padding: 0; margin: 0 0 6px; font-weight: 600; }
       <li>Diagnose</li><li>Adjust</li><li>Protect</li><li>Call</li><li>Answer</li><li>Review</li>
     </ol>
     <div class="module" id="module"></div>
+    <section class="module film" id="film"></section>
     <section class="report" id="report" aria-labelledby="report-h"></section>
-    <p class="credits">Every scenario says where its facts come from. Each lesson starts as a synthetic teaching scenario, then replays on real NFL snaps from 2023 to 2025: the game, players, rush, coverage and result are from nflverse play-by-play and participation data and FTN charting (via nflverse); the pre-snap alignment is drawn from the lesson. Team logos via ESPN.</p>
+    <p class="credits">Every scenario says where its facts come from. Lessons start as synthetic teaching scenarios; everything else is a real NFL snap from 2023 to 2025. The game, players, personnel, box count, rush, coverage and result come from nflverse play-by-play and participation data and FTN charting (via nflverse). Exact alignments are drawn from those facts and labeled as such. Team logos via ESPN.</p>
   </section>
 
   <section id="play" hidden>
@@ -300,10 +314,11 @@ legend { padding: 0; margin: 0 0 6px; font-weight: 600; }
   <p class="sr" aria-live="polite" id="live"></p>
 </main>
 
-<script src="scenarios.js?v=3"></script>
-<script src="real-plays.js?v=1"></script>
+<script src="scenarios.js?v=4"></script>
+<script src="real-plays.js?v=2"></script>
+<script src="gen.js?v=2"></script>
 <script src="schema.js?v=1"></script>
-<script src="engine.js?v=2"></script>
-<script src="app.js?v=2"></script>
+<script src="engine.js?v=3"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>

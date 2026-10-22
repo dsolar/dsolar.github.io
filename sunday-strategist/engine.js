@@ -10,7 +10,7 @@
 (function (root, api) {
   if (typeof module === "object" && module.exports) module.exports = api;
   else root.SS_ENGINE = api;
-})(this, (function () {
+})(this, (function (root) {
   var CONF = { guess: 0.25, some: 0.5, strong: 0.75, certain: 0.95 };
   var CATEGORY_ORDER = ["recommended", "high-floor", "aggressive", "conservative", "valid", "safe", "risky", "poor"];
   var CATEGORY_LABEL = {
@@ -27,6 +27,7 @@
     "concept-protection": "Concept-protection mismatch",
     "missing-answer": "Missing post-snap answer",
     "replacement-defender": "Threw into the replacement defender",
+    "box-count": "Box-count error",
     overconfidence: "Coverage overconfidence"
   };
 
@@ -352,7 +353,15 @@
   /* Every playable scenario: the lessons, then real snaps interleaved across lessons (spaced and mixed). */
   function catalog(data, real) {
     var list = data.scenarios.slice(), seen = {};
+    var gen = typeof module === "object" && module.exports ? require("./gen.js") : root.SS_GEN, film = 0;
     ((real && real.plays) || []).forEach(function (r) {
+      if (!r.lesson) {
+        if (!gen) return;
+        var g = gen.build(data, real, r);
+        g.order = 1000 + film++;
+        list.push(g);
+        return;
+      }
       var s = fromReal(data, real, r);
       if (!s) return;
       var k = seen[s.lesson] = (seen[s.lesson] || 0) + 1;
@@ -367,4 +376,4 @@
     expected: expected, review: review, emptyRecord: emptyRecord, record: record, report: report, next: next,
     ERRORS: ERRORS, CATEGORY_LABEL: CATEGORY_LABEL
   };
-})());
+})(this));

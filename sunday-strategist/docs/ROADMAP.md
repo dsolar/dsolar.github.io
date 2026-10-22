@@ -7,6 +7,11 @@
 
 **Next, in order:**
 
+- **Film room:** 408 more real snaps across 11 situations (1st & 10 through goal line and two-minute), with:
+  - personnel groups 10 through 22, and base, nickel, dime and goal-line packages;
+  - runs and passes about half and half;
+  - every snap built into a full scenario by `gen.js`, and graded by rules: concept vs coverage from `data.matrix`, blockers vs the box for runs, and protection vs rushers.
+
 1. **More lessons.** Add a Cover 3 rotation from the bluff picture, quarters and Cover 6 against four-man rushes, simulated pressure (creeper), and 2-Man on third and long. Each one adds a `fit`, and the importer fills it with real snaps automatically.
 2. **Fresher real snaps.** nflverse hasn't published 2026 participation (coverage) data yet. When it does, rerun `python tools/strategist_real.py 2024 2025 2026`, or schedule it weekly in a GitHub Action like the site's other data jobs, for "last Sunday" snaps.
 3. **Assistance levels.** Fade the help from all labels, to threats highlighted, to no labels, to a play clock, to motion and disguise.

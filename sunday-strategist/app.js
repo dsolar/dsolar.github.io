@@ -36,6 +36,7 @@
   var problems = V.validate({ concepts: D.concepts, defenses: D.defenses, tags: D.tags, confidence: D.confidence, scenarios: all });
   var scenarios = all.filter(function (s) { return s.status === "published"; }).sort(function (a, b) { return a.order - b.order; });
   var lessons = scenarios.filter(function (s) { return !s.real; });
+  var film = scenarios.filter(function (s) { return s.module === "film-room"; });
   var pool = { scenarios: scenarios };
   function realOf(id) { return scenarios.filter(function (s) { return s.lesson === id; }); }
   if (problems.length) {
@@ -65,6 +66,7 @@
     $("module").innerHTML = '<h2>Nickel pressure and the answers to it</h2>' +
       '<p>A slot defender walks down and shows blitz. Is he coming? Who replaces him if he does? What does your protection do about it, and where does the ball go? Learn each look, then call it on real NFL snaps from 2023 to 2025.</p>' +
       '<ul class="scen-list">' + items + '</ul><button type="button" class="primary" id="go">' + (rec ? "Play your next rep" : "Start") + " →</button>";
+    renderFilm(rec);
     var rep = E.report(rec, D);
     $("report").innerHTML = '<h2 id="report-h">Your read report</h2>' + (rec ? rep.tags.map(function (t) {
       return '<div class="meter"><span>' + esc(t.label) + '</span><span class="bar" role="img" aria-label="' + esc(t.label + ": " + (t.level == null ? "not practiced yet" : t.level + " out of 100")) + '"><i style="width:' + (t.level || 0) + '%"></i></span><b>' + (t.level == null ? "—" : t.level) + "</b></div>";
@@ -77,6 +79,52 @@
     });
   }
 
+  /* ---------- film room: every real snap, filterable ---------- */
+  var filters = load(PREFS, {}).film || {};
+  // A stable shuffle, so the list mixes situations, seasons and teams instead of following the file's order.
+  function mix(id) { var h = 2166136261; for (var i = 0; i < id.length; i++) h = Math.imul(h ^ id.charCodeAt(i), 16777619); return h >>> 0; }
+  film.sort(function (a, b) { return mix(a.id) - mix(b.id); });
+  function filmMatches() {
+    return film.filter(function (s) {
+      var r = s.real;
+      return (!filters.sit || r.situation === filters.sit) && (!filters.pers || r.offPers === filters.pers) && (!filters.pkg || (filters.pkg === "dime" ? /dime|quarter/.test(r.pkg) : r.pkg === filters.pkg)) &&
+        (!filters.kind || r.kind === filters.kind) && (!filters.team || r.off === filters.team || r.def === filters.team);
+    });
+  }
+  function renderFilm(rec) {
+    var box = $("film");
+    if (!film.length) { box.hidden = true; return; }
+    var count = function (f) { var m = {}; film.forEach(function (s) { var k = f(s.real); m[k] = (m[k] || 0) + 1; }); return m; };
+    function select(id, label, opts) {
+      return '<label class="flt"><span>' + label + '</span><select data-f="' + id + '"><option value="">All</option>' + opts.map(function (o) {
+        return '<option value="' + esc(o[0]) + '"' + (filters[id] === o[0] ? " selected" : "") + ">" + esc(o[1]) + "</option>";
+      }).join("") + "</select></label>";
+    }
+    var sits = Object.keys(window.SS_REAL.situations).map(function (k) { return [k, window.SS_REAL.situations[k]]; });
+    var pc = count(function (r) { return r.offPers; }), pers = Object.keys(pc).sort(function (a, b) { return pc[b] - pc[a]; }).map(function (k) { return [k, k + " personnel"]; });
+    var teams = Object.keys(window.SS_REAL.teams).sort(function (a, b) { return window.SS_REAL.teams[a].localeCompare(window.SS_REAL.teams[b]); }).map(function (k) { return [k, window.SS_REAL.teams[k]]; });
+    var list = filmMatches(), played = list.filter(function (s) { return rec && rec.scenarios[s.id]; }).length;
+    box.innerHTML = '<h2>Film room</h2><p>' + film.length + " real snaps from 2023 to 2025, every down and distance, every personnel group, runs and passes. Pick a situation or a team, or let it deal you one.</p>" +
+      '<div class="flts">' + select("sit", "Situation", sits) + select("pers", "Your personnel", pers) +
+      select("pkg", "Their package", [["heavy", "Goal line"], ["base", "Base"], ["nickel", "Nickel"], ["dime", "Dime"]]) + select("kind", "Real call", [["run", "Run"], ["pass", "Pass"]]) + select("team", "Team", teams) + "</div>" +
+      '<p class="flt-count">' + list.length + " snap" + (list.length === 1 ? "" : "s") + " match" + (played ? " · " + played + " played" : "") + "</p>" +
+      '<ul class="film-list">' + list.slice(0, 12).map(function (s) {
+        var r = s.real, done = rec && rec.scenarios[s.id];
+        return '<li><button type="button" data-start="' + esc(s.id) + '"><span class="fl-teams">' + logo(r.off, 20) + "<b>" + esc(r.off) + "</b><span>" + (r.home === r.off ? "vs" : "at") + "</span>" + logo(r.def, 20) + "<b>" + esc(r.def) + "</b></span>" +
+          '<span class="fl-sit">' + esc(["", "1st", "2nd", "3rd", "4th"][r.down] + " & " + (r.yl100 <= r.dist ? "goal" : r.dist) + " · " + r.offPers + " vs " + r.pkg + " · " + (r.round || "Wk " + r.week) + " " + r.season) + "</span>" +
+          '<span class="fl-grade' + (done ? " done" : "") + '">' + (done ? esc(E.letter(done.best)) : "") + "</span></button></li>";
+      }).join("") + "</ul>" + (list.length ? '<button type="button" class="primary" id="deal">Deal me one \u2192</button>' : "");
+    Array.prototype.forEach.call(box.querySelectorAll("select"), function (el) {
+      el.onchange = function () { filters[el.getAttribute("data-f")] = el.value; var p = load(PREFS, {}); p.film = filters; save(PREFS, p); renderFilm(load(STORE, null)); };
+    });
+    Array.prototype.forEach.call(box.querySelectorAll("[data-start]"), function (b) { b.onclick = function () { begin(b.getAttribute("data-start")); }; });
+    if ($("deal")) $("deal").onclick = function () {
+      var pool = filmMatches(), fresh = pool.filter(function (s) { var r = load(STORE, null); return !(r && r.scenarios[s.id]); });
+      var from = fresh.length ? fresh : pool;
+      begin(from[Math.floor(Math.random() * from.length)].id);
+    };
+  }
+
   /* ---------- a snap ---------- */
   function onField(r) {
     return ["QB " + r.qb, "RB " + r.rb, "TE " + r.te, "WR " + r.wr.join(", ")].filter(function (x) { return !/ (null|undefined)$/.test(x); }).join(" · ");
@@ -85,8 +133,8 @@
     var sc = by(scenarios, id) || scenarios[0];
     st = { sc: sc, step: 0, answers: { rushers: [] }, pick: { motion: "none" }, seed: (Date.now() % 100000) + 1, snapped: false, recorded: false };
     $("start").hidden = true; $("play").hidden = false; $("review").hidden = true; $("review").innerHTML = "";
-    var lesson = sc.real ? by(lessons, sc.lesson) : sc;
-    $("where").textContent = "Lesson " + (lessons.indexOf(lesson) + 1) + " of " + lessons.length + ": " + lesson.title + (sc.real ? " · real snap" : "");
+    var lesson = !sc.real ? sc : sc.lesson ? by(lessons, sc.lesson) : null;
+    $("where").textContent = lesson ? "Lesson " + (lessons.indexOf(lesson) + 1) + " of " + lessons.length + ": " + lesson.title + (sc.real ? " · real snap" : "") : "Film room · " + (window.SS_REAL.situations[sc.situation] || "") + " · real snap";
     $("scen-title").innerHTML = sc.real ? logo(sc.real.off, 40) + esc(sc.title) + logo(sc.real.def, 40) : esc(sc.title);
     $("scen-sub").textContent = sc.real ? sc.subtitle : "";
     $("scen-sub").hidden = !sc.real;
@@ -96,9 +144,6 @@
       ? '<div class="team">' + logo(sc.real.off, 26) + '<span><small>' + esc(sc.real.off) + '</small><b>' + c.score.you + '</b></span></div><div class="team">' + logo(sc.real.def, 26) + '<span><small>' + esc(sc.real.def) + '</small><b>' + c.score.opp + '</b></span></div>'
       : '<div><small>You</small><b>' + c.score.you + '</b></div><div><small>Opp</small><b>' + c.score.opp + '</b></div>') +
       '<div><small>' + (c.quarter > 4 ? "OT" : "Q" + c.quarter) + '</small><b>' + esc(c.clock) + '</b></div><div class="down"><small>' + (c.side === "opp" ? "Opp " : "Own ") + c.yardLine + '</small><b>' + ord(c.down) + " &amp; " + c.distance + "</b></div>";
-    $("sit").innerHTML = [["Your personnel", sc.offense.personnelText + ". " + sc.offense.formation + "."], ["Their personnel", sc.defense.personnelText + ". " + sc.defense.front + "."],
-      ["The job", c.objective], ["Scouting report", c.scouting]].concat(sc.real ? [["On the field for the " + sc.teams.offName, onField(sc.real)]] : [])
-      .map(function (x) { return "<div><dt>" + esc(x[0]) + "</dt><dd>" + esc(x[1]) + "</dd></div>"; }).join("");
     drawField();
     renderStep();
     window.scrollTo(0, 0);
@@ -147,8 +192,15 @@
     for (var y = -9; y <= 20; y++) [23.58, 29.73].forEach(function (hx) {
       el("line", { x1: sx(hx) - 3, x2: sx(hx) + 3, y1: sy(y), y2: sy(y), stroke: "rgba(241,244,236,.28)", "stroke-width": 1 }, svg);
     });
+    if (c.side === "opp" && c.yardLine <= 20) { // the end zone, when it's on screen
+      el("rect", { x: 0, y: 0, width: 533, height: Math.max(0, sy(c.yardLine)), fill: "rgba(95,168,255,.10)" }, svg);
+      el("line", { x1: 0, x2: 533, y1: sy(c.yardLine), y2: sy(c.yardLine), stroke: "rgba(241,244,236,.75)", "stroke-width": 3 }, svg);
+      if (c.yardLine + 10 <= 20) el("line", { x1: 0, x2: 533, y1: sy(c.yardLine + 10), y2: sy(c.yardLine + 10), stroke: "rgba(241,244,236,.5)", "stroke-width": 2 }, svg);
+      var ez = el("text", { x: 266, y: Math.max(14, sy(c.yardLine + 5) + 6), "text-anchor": "middle", "font-size": 18, fill: "rgba(241,244,236,.28)", "font-family": "Saira Extra Condensed, sans-serif", "font-weight": 800, "letter-spacing": "6" }, svg);
+      ez.textContent = "END ZONE";
+    }
     el("line", { x1: 0, x2: 533, y1: sy(0), y2: sy(0), stroke: "#5FA8FF", "stroke-width": 2 }, svg);
-    if (c.distance <= 20) el("line", { x1: 0, x2: 533, y1: sy(c.distance), y2: sy(c.distance), stroke: "#F7D23E", "stroke-width": 2 }, svg);
+    if (c.distance <= 20 && !(c.side === "opp" && c.distance >= c.yardLine)) el("line", { x1: 0, x2: 533, y1: sy(c.distance), y2: sy(c.distance), stroke: "#F7D23E", "stroke-width": 2 }, svg);
     el("g", { id: "f-zones", class: "over" }, svg);
     el("g", { id: "f-routes", class: "routes" }, svg);
     el("g", { id: "f-rush", class: "over" }, svg);
@@ -176,6 +228,7 @@
   }
 
   function setLabels(on) {
+    if (st) st.labels = on;
     Array.prototype.forEach.call($("field").querySelectorAll(".def .lab"), function (t) { t.style.display = on ? "" : "none"; });
   }
 
@@ -247,15 +300,30 @@
   }
   function detail(o) { return "<b>" + esc(o.label) + "</b>" + (o.detail ? "<small>" + esc(o.detail) + "</small>" : ""); }
 
+  // Their personnel stays hidden until you've read it yourself in step 1.
+  function renderSit() {
+    var sc = st.sc, c = sc.context, told = st.step > 0 || st.snapped;
+    $("sit").innerHTML = [["Your personnel", sc.offense.personnelText + ". " + sc.offense.formation + "."],
+      ["Their personnel", told ? sc.defense.personnelText + ". " + sc.defense.front + "." : "Count them yourself: that's question one."],
+      ["The job", c.objective], ["Scouting report", c.scouting]].concat(sc.real && sc.real.qb ? [["On the field for the " + sc.teams.offName, onField(sc.real)]] : [])
+      .map(function (x) { return "<div><dt>" + esc(x[0]) + "</dt><dd>" + esc(x[1]) + "</dd></div>"; }).join("");
+  }
+  // Rusher checklist: where each defender is, not what he is (that would answer question one).
+  function spot(p) {
+    var d = p.y < 0.6 ? "on the line" : Math.round(p.y) + " yds deep", side = p.x < ballX() - 0.5 ? "left" : p.x > ballX() + 0.5 ? "right" : "middle";
+    return d + ", " + side;
+  }
+
   function renderStep() {
     var sc = st.sc, s = STEPS[st.step], f = $("step"), html = "";
+    renderSit();
     $("steps").innerHTML = STEPS.map(function (x, i) { return "<li" + (i < st.step ? ' class="done"' : "") + (i === st.step ? ' aria-current="step"' : "") + ">" + x.label + "</li>"; }).join("");
     if (s.id === "diagnose") {
       html = "<h2>What are they showing you?</h2><p class=\"hint\">Read it before you call it. Nothing here is certain yet; answer with your best read of the evidence.</p>";
       sc.diagnosis.questions.forEach(function (q) {
         if (q.kind === "rushers") {
           html += '<fieldset><legend>' + esc(q.prompt) + ' <small class="hint">On the field or here.</small></legend><div class="opts chips">' + sc.defense.players.map(function (p) {
-            return '<label class="opt"><input type="checkbox" name="rushers" value="' + esc(p.id) + '"' + (st.answers.rushers.indexOf(p.id) >= 0 ? " checked" : "") + "><span><b>" + esc(p.label) + "</b><small>" + esc(p.role.split(",")[0]) + "</small></span></label>";
+            return '<label class="opt"><input type="checkbox" name="rushers" value="' + esc(p.id) + '"' + (st.answers.rushers.indexOf(p.id) >= 0 ? " checked" : "") + "><span><b>" + esc(st.labels === false ? "#" + (sc.defense.players.indexOf(p) + 1) : p.label) + "</b><small>" + esc(spot(p)) + "</small></span></label>";
           }).join("") + "</div></fieldset>";
         } else html += "<fieldset><legend>" + esc(q.prompt) + '</legend><div class="opts row">' + radio(q.id, q.options, st.answers[q.id]).replace('<div class="opts">', "").replace(/<\/div>$/, "") + "</div></fieldset>";
       });
@@ -318,7 +386,7 @@
       say(m.text);
       return;
     }
-    if (["personnel", "shell", "pressure", "confidence"].indexOf(n) >= 0) st.answers[n] = t.value;
+    if (n === "confidence" || sc.diagnosis.questions.some(function (q) { return q.id === n; })) st.answers[n] = t.value;
     else if (n === "play") { st.pick.play = t.value; st.pick.key = null; renderStep(); var q = $("step").querySelector('input[name="play"]:checked'); if (q) q.focus(); return; }
     else st.pick[n] = t.value;
     updateNav();
@@ -334,7 +402,7 @@
     }
     snap();
   });
-  $("labels").addEventListener("change", function () { var p = load(PREFS, {}); p.labels = this.checked; save(PREFS, p); setLabels(this.checked); });
+  $("labels").addEventListener("change", function () { var p = load(PREFS, {}); p.labels = this.checked; save(PREFS, p); setLabels(this.checked); if (st && st.step === 0 && !st.snapped) renderStep(); });
   $("quit").onclick = function () { $("play").hidden = true; $("start").hidden = false; renderStart(); window.scrollTo(0, 0); };
 
   /* ---------- the snap and the review ---------- */
@@ -366,7 +434,7 @@
       }
     });
     var cov = el("text", { x: 266, y: 16, "text-anchor": "middle", "font-size": 15, fill: "#F7D23E", "font-family": "Saira Extra Condensed, sans-serif", "font-weight": 800, "letter-spacing": ".5" }, rush);
-    cov.textContent = (sc.actual.pressure === "four" ? "4-man rush" : sc.actual.pressure === "five" ? "5-man pressure" : "6+ pressure") + " · " + sc.actual.coverage;
+    cov.textContent = sc.actual.pressure === "run" ? "Run · " + sc.actual.coverage : (sc.actual.pressure === "four" ? "4-man rush" : sc.actual.pressure === "five" ? "5-man pressure" : "6+ pressure") + " · " + sc.actual.coverage;
     requestAnimationFrame(function () { rush.classList.add("on"); zones.classList.add("on"); });
   }
 
@@ -446,13 +514,15 @@
     var rows = [
       ["Verified", "Result", res + ". Expected points added: " + (r.epa > 0 ? "+" : "") + r.epa.toFixed(2) + "."],
       ["Verified", "The play", r.desc],
+      r.kind === "run" ? ["Verified", "The run", (r.rusher || "The back") + " ran " + (r.runLoc === "middle" ? "up the middle" : "to the " + (r.runLoc || "line")) + (r.runGap ? ", through the " + r.runGap + " area" : "") + "."] :
       ["Charted", "The throw", (r.target ? r.passer + " targeted " + r.target + (r.route ? " on a " + r.route.toLowerCase() + " route" : "") : r.passer + " threw it") + (r.ttt ? ", " + r.ttt.toFixed(1) + "s after the snap" : "") + "." + (r.playAction ? " Play action." : "") + (r.motion ? " Motion before the snap." : "")],
-      ["Charted", "The defense", r.rushers + " rushers, " + r.blitzers + " of them blitzers, " + r.coverage + (r.manZone ? " (" + r.manZone + ")" : "") + (r.box ? ", " + r.box + " in the box" : "") + ". " + (r.pressure ? "The quarterback was pressured." : "No pressure on the quarterback.")],
-      ["Reconstructed", "The drawing", "Which defenders rushed and where everyone lined up come from the lesson, not from charting."]
+      r.kind === "run" ? ["Charted", "The defense", (r.box ? r.box + " in the box" : "Box not charted") + (r.coverage ? ", " + r.coverage + " behind it" : "; coverage isn't charted on runs") + ". Personnel: " + r.pkg + "."] :
+      ["Charted", "The defense", (r.rushers || 0) + " rushers, " + (r.blitzers || 0) + " of them blitzers, " + r.coverage + (r.manZone ? " (" + r.manZone + ")" : "") + (r.box ? ", " + r.box + " in the box" : "") + ". " + (r.pressure ? "The quarterback was pressured." : "No pressure on the quarterback.")],
+      ["Reconstructed", "The drawing", sc.lesson ? "Which defenders rushed and where everyone lined up come from the lesson, not from charting." : "Built from the charted personnel, formation, box count, rush and coverage. Exact spots and which defenders rushed aren't charted."]
     ];
     var yourOdds = Math.round(rv.expected.convert * 100);
     return sec("\u2605", "What really happened", '<ul class="real-facts">' + rows.map(function (x) { return "<li>" + chip(x[0]) + "<b>" + esc(x[1]) + "</b><span>" + esc(x[2]) + "</span></li>"; }).join("") + "</ul>" +
-      "<p>Your call converts " + yourOdds + "% of the time against this defense. The real call " + (r.first || r.td ? "worked" : "didn't work") + " once. One snap is evidence, not a verdict: a real call isn't right because it happened, and it isn't wrong because it failed.</p>");
+      "<p>Your call converts " + yourOdds + "% of the time against what this defense did. The real call " + (r.epa > 0 ? "worked (it added expected points)" : "didn't work (it lost expected points)") + ", once. One snap is evidence, not a verdict: a real call isn't right because it happened, and it isn't wrong because it failed.</p>");
   }
   function sec(n, title, body) { return '<section class="sec"><h3><span>' + n + "</span>" + esc(title) + "</h3>" + body + "</section>"; }
   function roleOf(id) { var p = by(st.sc.defense.players, id); return p ? p.role.split(",")[0].toLowerCase() : id; }

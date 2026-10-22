@@ -8,6 +8,7 @@ It's a static page on davidsolar.dev (GitHub Pages): plain JavaScript, no build 
 | `schema.js` | Validates content (references, ranges, provenance rules). The page refuses invalid data. | The data shape |
 | `engine.js` | Pure rules: diagnosis scoring, snap resolution, grades, expected value, mastery and scheduling | Data, no DOM |
 | `app.js` | Draws the field (SVG), runs the five steps, renders the review, and keeps progress in localStorage | Engine output |
+| `gen.js` | Film room: builds a full scenario from one real snap (field from personnel and box count, coverage from charting, options graded by rules) | Data tables in `scenarios.js` |
 | `real-plays.js` | Real snaps matched to lessons; generated, never edited by hand | Lesson ids |
 | `../tools/strategist_real.py` | Builds `real-plays.js` from nflverse play-by-play, participation and FTN charting (standard library only) | Lesson `fit`s |
 | `engine.test.cjs` | Unit tests: `node --test sunday-strategist/engine.test.cjs` | |
@@ -49,3 +50,12 @@ The process score is the average of the first four.
 - Shapes as well as colors separate the offense (circles) from the defense (squares).
 - Results are announced in a live region, and reduced motion is respected.
 - No team colors are used.
+
+## Film room grading (gen.js)
+
+Every film-room option gets a **process grade** from what was knowable before the snap:
+- **Passes:** the shell's usual coverages (two-high is roughly 40% quarters, 30% Cover 2 and so on), times the concept's window against each one (`data.matrix`, which also holds the reason), times protection timing against the rush the box can send.
+- **Runs:** the window grows or shrinks with run blockers minus box defenders.
+- **Success:** yards needed for the down: 40% of the distance on 1st down, 60% on 2nd, all of it on 3rd and 4th.
+
+The best option earns the top grade, and the others are graded by how far behind it they are. The **rep** then resolves against what the defense actually did: the charted coverage and rush.
