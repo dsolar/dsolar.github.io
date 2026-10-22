@@ -109,6 +109,31 @@ try {
     assert.match(real, /Cover 1/);
     await page.click('#home');
 
+    // Film room: filter to a situation, deal a snap, and play a run-or-pass decision through.
+    await page.selectOption('select[data-f="sit"]', 'third-short');
+    assert.match(await page.textContent('.flt-count'), /^\d+ snaps? match/);
+    await page.click('#deal');
+    assert.match(await page.textContent('#where'), /Film room · 3rd & short/);
+    assert.match(await page.textContent('#sit'), /Count them yourself/, 'their personnel stays hidden until step 1 is answered');
+    for (const q of ['personnel', 'shell', 'box', 'pressure', 'confidence']) await page.check(`input[name="${q}"] >> nth=0`);
+    await page.click('#field .def >> nth=3');
+    await page.click('#next');
+    assert.doesNotMatch(await page.textContent('#sit'), /Count them yourself/);
+    for (let i = 0; i < 3; i++) {
+      for (const n of ['protection', 'play', 'key', 'contingency']) {
+        const box = page.locator(`input[name="${n}"]`).first();
+        if (await box.count() && !(await page.locator(`input[name="${n}"]:checked`).count())) await box.check();
+      }
+      if (await page.locator('input[name="key"]').count() && !(await page.locator('input[name="key"]:checked').count())) await page.locator('input[name="key"]').first().check();
+      await page.click('#next');
+    }
+    await page.locator('input[name="contingency"]').first().check();
+    await page.click('#next');
+    await page.waitForSelector('#review:not([hidden]) .real-facts');
+    assert.match(await page.textContent('#review'), /What really happened/);
+    await page.click('#home');
+    await page.selectOption('select[data-f="sit"]', '');
+
     // Phone width: no sideways scrolling.
     await page.setViewportSize({ width: 390, height: 844 });
     await page.click('[data-start="nickel-bluff-2nd-7"]');
@@ -117,7 +142,7 @@ try {
     assert.deepEqual(errors, []);
     await ctx.close();
   }
-  console.log('Passed: real snap with team, roster and real result; full snap with keyboard-free and field input, motion reveal, routes, six grades, review sections, replays, saved progress, next scenario, phone layout (with and without reduced motion).');
+  console.log('Passed: film room filter, deal and play; real snap with team, roster and real result; full snap with keyboard-free and field input, motion reveal, routes, six grades, review sections, replays, saved progress, next scenario, phone layout (with and without reduced motion).');
 } finally {
   await browser.close();
   server.close();

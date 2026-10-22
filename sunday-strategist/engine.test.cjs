@@ -1,7 +1,7 @@
 // Sunday Strategist engine and content checks. Run: node --test sunday-strategist/engine.test.cjs
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const D = require('./scenarios.js'), S = require('./schema.js'), E = require('./engine.js'), R = require('./real-plays.js');
+const D = require('./scenarios.js'), S = require('./schema.js'), E = require('./engine.js'), R = require('./real-plays.js'), G = require('./gen.js');
 const clone = x => JSON.parse(JSON.stringify(x));
 const [fire, bluff] = D.scenarios;
 const best = sc => ({ ...sc.recommended, key: sc.plays.find(p => p.id === sc.recommended.play).key.answer });
@@ -117,7 +117,7 @@ test('real snaps: each one validates, matches its lesson, and names its sources'
   assert.ok(R.plays.length >= 24);
   assert.deepEqual(S.validate({ ...D, scenarios: all }), []);
   const cov = { 'Cover 3': 'COVER_3', 'Cover 2': 'COVER_2', 'Cover 1': 'COVER_1', 'Cover 0': 'COVER_0' };
-  for (const s of all.filter(s => s.real)) {
+  for (const s of all.filter(s => s.real && s.lesson)) {
     const r = s.real, fit = D.scenarios.find(t => t.id === s.lesson).fit;
     assert.ok(fit.downs.includes(r.down) && r.dist >= fit.distance[0] && r.dist <= fit.distance[1], s.id + ' down and distance');
     assert.ok(fit.coverage.includes(cov[r.coverage]) && r.rushers >= fit.rushers[0] && r.rushers <= fit.rushers[1] && (r.blitzers > 0) === fit.blitz, s.id + ' defense');
@@ -134,7 +134,35 @@ test('real snaps: each one validates, matches its lesson, and names its sources'
 test('real snaps resolve with their own down and distance', () => {
   const all = E.catalog(D, R);
   for (const s of all.filter(s => s.real)) {
-    const rv = E.review(s, best(s), read, 9);
+    const rv = E.review(s, best(s), { ...read, rushers: [] }, 9);
     assert.equal(rv.rep.firstDown, rv.rep.yards >= s.context.distance && rv.rep.kind !== 'sack' && !rv.rep.touchdown);
   }
+});
+
+test('film room: hundreds of real snaps across situations, personnel and packages', () => {
+  const film = E.catalog(D, R).filter(s => s.module === 'film-room');
+  assert.ok(film.length >= 350, `${film.length} film snaps`);
+  const by = f => film.reduce((m, s) => (m[f(s.real)] = (m[f(s.real)] || 0) + 1, m), {});
+  for (const k of Object.keys(R.situations)) assert.ok(by(r => r.situation)[k] >= 20, k);
+  assert.ok(Object.keys(by(r => r.offPers)).length >= 6, 'personnel groups');
+  for (const k of ['base', 'nickel', 'dime']) assert.ok(by(r => r.pkg)[k] >= 30, k);
+  assert.ok(by(r => r.kind).run >= 120 && by(r => r.kind).pass >= 120, 'runs and passes');
+  for (const s of film) {
+    assert.equal(s.offense.players.length, 11); assert.equal(s.defense.players.length, 11);
+    const top = Math.max(...s.plays.map(p => p.grade));
+    assert.equal(s.plays.find(p => p.id === s.recommended.play).grade, top, s.id);
+    assert.ok(s.plays.some(p => p.kind === 'run') && s.plays.some(p => p.kind !== 'run'), s.id + ' offers both run and pass');
+    assert.ok(s.provenance.fieldConfidence.alignment === 'inferred' && s.historical.gameId === s.real.gameId);
+  }
+});
+
+test('film room grades: count the box', () => {
+  const D1 = { down: 1, dist: 10, yl100: 65, offPers: '11', ol: 5, fb: 0, kind: 'run' };
+  const best = (box, shell) => ['inside-zone', 'outside-zone', 'pa-shot', 'quick', 'smash'].map(c => [c, G.processOdds(c, { ...D1, box }, shell, D, box)]).sort((a, b) => b[1] - a[1])[0][0];
+  assert.equal(best(5, 'one'), 'inside-zone', 'light box: run it');
+  assert.notEqual(best(8, 'one'), 'inside-zone', 'eight in the box: throw it');
+  assert.equal(best(7, 'two'), 'smash', 'two-high with seven in the box: smash');
+  // Short yardage: the sneak for a yard, not for five.
+  const sneak = d => G.processOdds('sneak', { ...D1, down: 3, dist: d, box: 8 }, 'one', D, 8);
+  assert.ok(sneak(1) > 0.5 && sneak(5) < 0.1);
 });

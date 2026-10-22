@@ -47,7 +47,15 @@ All content lives in `scenarios.js` and `schema.js` enforces it. Coordinates are
 - **Players (verified, participation):** `qb`, `rb`, `te`, `wr[]`, `defNames[]`.
 - **Scouting (derived):** `tendency{n, blitz, coverage}`, the defense's third-down habits that season.
 
-`engine.catalog()` turns each one into a playable scenario with `type: "adapted"`. It takes the real context, teams and provenance, and borrows the lesson's drawing and option grades. Every fact is labeled as verified, charted or reconstructed.
+Film-room snaps (`lesson` missing) also carry:
+- **Situation and personnel:** `situation`, `kind` (run or pass), `offPers` (such as "12"), `fb`, `wrs`, `ol`, `formation`.
+- **Defense:** `pkg` (heavy, base, nickel, dime, quarter) and `def7` (counts of DL, OLB, LB, CB and S).
+- **Run:** `rusher`, `runLoc`, `runGap`.
+- **Pass:** `passLoc`, `airYards`, `screen`, `rpo`.
+
+`gen.js` builds them.
+
+`engine.catalog()` turns each lesson snap into a playable scenario with `type: "adapted"`. It takes the real context, teams and provenance, and borrows the lesson's drawing and option grades. Every fact is labeled as verified, charted or reconstructed.
 
 ## Saved progress (localStorage `ss-record-v1`)
 `{ v: 1, tags: {tag: {seen, total, last}}, scenarios: {id: {plays, best, last}}, errors: {type: count} }`. Process scores only, never results.
