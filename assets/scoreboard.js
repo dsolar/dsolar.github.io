@@ -99,7 +99,7 @@
   }
 
   // The league scoreboard for the game's date: score, clock and period, records, odds.
-  function overlay(g, comp, status) {
+  function overlay(g, comp, status, path) {
     setStatus(g, comp.status || status);
     (comp.competitors || []).forEach(function (c) {
       var id = String((c.team || {}).id), s = id === g.us.id ? g.us : id === g.them.id ? g.them : null;
@@ -112,8 +112,18 @@
     // "Tickets as low as $46": Vivid Seats' lowest resale price, which ESPN carries on its scoreboard
     var tix = /\$\s*([\d,]+)/.exec(((comp.tickets || [])[0] || {}).summary || "");
     g.tix = tix && g.state === "pre" ? { low: +tix[1].replace(/,/g, "") } : null;
-    var o = (comp.odds || [])[0];
-    g.odds = o && g.state === "pre" ? [o.details, o.overUnder != null ? "O/U " + o.overUnder : ""].filter(Boolean).join(" · ") : "";
+    // Each team's own number sits on its line: the moneyline in hockey and baseball, the spread everywhere else.
+    var o = (comp.odds || [])[0] || {}, money = /hockey|baseball/.test(path || "");
+    var market = money ? o.moneyline : o.pointSpread;
+    [[g.us, g.home ? "home" : "away"], [g.them, g.home ? "away" : "home"]].forEach(function (pair) {
+      var m = market && market[pair[1]] || {}, v = m.close || m.open || {};
+      pair[0].line = g.state === "pre" ? String((money ? v.odds : v.line) || "") : "";
+    });
+    if (g.state === "pre" && !g.us.line && !g.them.line && o.details) {   // only the favorite's number came back
+      var fav = /^([A-Z]{2,5})\s+(\S+)$/.exec(o.details);
+      if (fav) [g.us, g.them].forEach(function (x) { if (x.abbr === fav[1]) x.line = fav[2]; });
+    }
+    g.odds = g.state === "pre" && o.overUnder != null ? "O/U " + o.overUnder : "";
     var sit = comp.situation;
     g.situation = g.state === "in" && sit && (sit.downDistanceText || sit.shortDownDistanceText) || "";
   }
@@ -156,8 +166,8 @@
       var lost = g.state === "post" && g.done && other.winner;
       return '<div class="tk-line' + (s === g.us ? " tk-us" : "") + (lost ? " tk-lost" : "") + '">' + logo(s)
         + '<span class="tk-name">' + (s.rank ? '<span class="tk-rank">' + s.rank + "</span>" : "") + esc(s.abbr || s.name)
-        + (s.record ? "<small>" + esc(s.record) + "</small>" : "") + "</span>"
-        + '<span class="tk-pts">' + (showScore ? esc(s.score) : "") + "</span></div>";
+        + (s.record ? "<small>" + esc(s.record) + (s === g.us && g.wp != null && g.state === "pre" ? " · " + g.wp + "%" : "") + "</small>" : "")
+        + "</span>" + (showScore ? '<span class="tk-pts">' + esc(s.score) + "</span>" : '<span class="tk-odds">' + esc(s.line || "") + "</span>") + "</div>";
     };
     var away = g.home ? g.them : g.us, home = g.home ? g.us : g.them;
     var status;
@@ -168,8 +178,7 @@
       status = isToday(g) ? (g.timeKnown && hourET(g.date) >= 17 ? "Tonight " : "Today ") + esc(time) : esc(weekday(g.date)) + " · " + esc(time);
     }
     var dot = ' <span aria-hidden="true">·</span> ';
-    var lines = g.state === "pre" ? [[g.tv, g.tix ? "Tix from $" + g.tix.low : ""],
-                                     [g.odds, g.wp != null ? "ESPN: " + (g.us.abbr || g.us.name) + " " + g.wp + "%" : ""]]
+    var lines = g.state === "pre" ? [[g.tv, g.tix ? "Tix $" + g.tix.low : "", g.odds]]
       : g.state === "in" ? [[g.situation, g.tv]] : [];
     var foot = lines.map(function (l) { return l.filter(Boolean).map(esc).join(dot); }).filter(Boolean)
       .map(function (l) { return '<div class="tk-foot">' + l + "</div>"; }).join("");
@@ -186,7 +195,8 @@
     if (g.state === "in" || g.state === "post" && g.done) parts.push(g.us.score + " to " + g.them.score);
     parts.push(g.state === "pre" ? (isToday(g) ? "today " : weekday(g.date) + " ") + (g.timeKnown ? clock(g.date) : "time TBD") : g.detail);
     if (g.tv && g.state !== "post") parts.push(g.tv);
-    if (g.state === "pre" && g.odds) parts.push("odds " + g.odds);
+    if (g.state === "pre" && (g.us.line || g.them.line)) parts.push("line " + [g.us, g.them].filter(function (x) { return x.line; }).map(function (x) { return x.abbr + " " + x.line; }).join(", "));
+    if (g.state === "pre" && g.odds) parts.push(g.odds.replace("O/U", "over-under"));
     if (g.state === "pre" && g.wp != null) parts.push("ESPN gives " + r.team.name + " a " + g.wp + " percent chance");
     if (g.tix) parts.push("tickets from $" + Math.round(g.tix.low));
     if (g.pick) parts.push("my pick " + g.pick + (g.graded ? ", " + g.graded : ""));
@@ -243,7 +253,7 @@
         var copy = Object.assign({}, r, { game: Object.assign({}, r.game, { us: Object.assign({}, r.game.us), them: Object.assign({}, r.game.them) }) });
         return board(r.team.path, dayET(r.game.date).replace(/-/g, "")).then(function (events) {
           var ev = (events || []).filter(function (e) { return String(e.id) === copy.game.id; })[0];
-          if (ev) overlay(copy.game, (ev.competitions || [])[0] || {}, ev.status);
+          if (ev) overlay(copy.game, (ev.competitions || [])[0] || {}, ev.status, r.team.path);
           return copy;
         });
       }));

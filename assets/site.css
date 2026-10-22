@@ -414,6 +414,7 @@ a:hover{color:var(--red)}
 .tk-us .tk-name{font-weight:800;color:#fff}
 .tk-lost{opacity:.55}
 .tk-pts{font-weight:800;font-size:1.05rem;font-variant-numeric:tabular-nums}
+.tk-odds{font-size:.78rem;font-weight:600;color:#9FB0C4;font-variant-numeric:tabular-nums}
 .tk-rank{font-size:.66rem;font-weight:700;color:#E2B84A;margin-right:4px}
 .tk-foot{font-size:.72rem;color:#9FB0C4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tk-quiet .tk-foot{color:#C3CEDB}
