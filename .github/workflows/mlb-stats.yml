@@ -24,6 +24,12 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Set the bot's git identity
+        # Set for the whole job: the rebase before pushing rewrites the commit and needs it too.
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
       - name: Pull season stats from MLB
         run: python3 tools/mlb_stats_pull.py
 
@@ -37,7 +43,6 @@ jobs:
             echo "Nothing changed."
             exit 0
           fi
-          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-            commit -m "Update MLB season stats for Wipe Yoenis awards"
+          git commit -m "Update MLB season stats for Wipe Yoenis awards"
           git pull --rebase -q
           git push
