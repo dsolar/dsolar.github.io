@@ -98,8 +98,18 @@ def pull(year):
                 r["qs"] = qs
         for r in pitching:
             r.setdefault("qs", 0)
+    # A season's player counts only grow, so an empty or much smaller answer is a bad pull: keep the file we have.
+    path = os.path.join(OUT, f"{year}.json")
+    try:
+        old = json.load(open(path, encoding="utf-8"))
+    except (OSError, ValueError):
+        old = {}
+    for group, rows in (("hitting", hitting), ("pitching", pitching)):
+        if not rows or len(rows) < len(old.get(group, [])) / 2:
+            print(f"::warning::{year}: MLB returned {len(rows)} {group} rows (had {len(old.get(group, []))}); keeping {path}.")
+            return
     os.makedirs(OUT, exist_ok=True)
-    with open(os.path.join(OUT, f"{year}.json"), "w", encoding="utf-8") as f:
+    with open(path, "w", encoding="utf-8") as f:
         json.dump({"season": year, "source": "MLB Stats API (statsapi.mlb.com)",
                    "qs_from_game_logs": "qualityStarts" not in pkeys,
                    "hitting": hitting, "pitching": pitching}, f, ensure_ascii=False, separators=(",", ":"))
