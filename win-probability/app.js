@@ -39,6 +39,12 @@
 
   // ---------- teams and words ----------
   function team(key) { return D.teams[key] || { abbr: key, name: key, nick: key, c1: "#334", c2: "#999" }; }
+  // The team's real logo from ESPN (64px copy), period-correct for old franchises (OAK, SD, STL). On a dark team
+  // color it takes ESPN's dark-background version so it doesn't disappear into its own color.
+  function logoUrl(key, onDark) {
+    const code = /^(WAS|WAS0|WFT)$/.test(key) ? "wsh" : String(key).toLowerCase();
+    return `https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/${onDark ? "500-dark" : "500"}/${code}.png&w=64&h=64`;
+  }
   function lightColor(hex) {
     const n = parseInt(hex.replace("#", ""), 16);
     const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
@@ -205,14 +211,15 @@
     const you = team(s.you), opp = team(s.opp);
     const youHasBall = s.ball !== "opp";
     const tag = s.famous ? `<div class="famous-tag"><b>Famous call</b><span>${esc(s.famous.title)}</span></div>` : "";
-    const cell = (t, pts, tos, poss, tagText) => `<div class="bug-team" style="background:${t.c1};${lightColor(t.c1) ? "color:#1b1b1b" : ""}">
+    const cell = (key, t, pts, tos, poss, tagText) => `<div class="bug-team" style="background:${t.c1};${lightColor(t.c1) ? "color:#1b1b1b" : ""}">
+        <img class="bug-logo" src="${esc(logoUrl(key, !lightColor(t.c1)))}" alt="" width="34" height="34" onerror="this.remove()">
         <div><span class="abbr" style="${lightColor(t.c1) ? "color:#1b1b1b;text-shadow:none" : ""}">${esc(t.abbr)}</span><span class="tag" style="${lightColor(t.c1) ? "color:#1b1b1b" : ""}">${tagText}</span></div>
         <span class="pts" style="${lightColor(t.c1) ? "color:#1b1b1b;text-shadow:none" : ""}">${pts}</span>
         ${poss ? '<span class="poss" aria-label="has the ball"></span>' : ""}
         <span class="tos" aria-label="${tos} timeouts">${[0, 1, 2].map((i) => `<i class="${i < tos ? "" : "used"}"></i>`).join("")}</span></div>`;
     const bug = `<div class="bug" role="group" aria-label="Scoreboard">
-      ${cell(you, s.score[0], s.to[0], youHasBall, "You")}
-      ${cell(opp, s.score[1], s.to[1], !youHasBall, "Opponent")}
+      ${cell(s.you, you, s.score[0], s.to[0], youHasBall, "You")}
+      ${cell(s.opp, opp, s.score[1], s.to[1], !youHasBall, "Opponent")}
       <div class="bug-clock"><span class="q">${s.qtr >= 5 ? "OT" : "Q" + s.qtr}</span><span class="t">${esc(s.clock.replace(/^0/, ""))}</span></div>
       <div class="bug-down">${esc(downText(s))}<small>${esc(bugSpot(s))}</small></div>
     </div>`;
