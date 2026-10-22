@@ -1,7 +1,7 @@
 // Sunday Strategist engine and content checks. Run: node --test sunday-strategist/engine.test.cjs
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const D = require('./scenarios.js'), S = require('./schema.js'), E = require('./engine.js');
+const D = require('./scenarios.js'), S = require('./schema.js'), E = require('./engine.js'), R = require('./real-plays.js');
 const clone = x => JSON.parse(JSON.stringify(x));
 const [fire, bluff] = D.scenarios;
 const best = sc => ({ ...sc.recommended, key: sc.plays.find(p => p.id === sc.recommended.play).key.answer });
@@ -100,13 +100,41 @@ test('the review explains every grade from structured facts', () => {
 });
 
 test('mastery: unseen scenarios first, then the weakest skill', () => {
+  const two = { scenarios: [fire, bluff] };
   let rec = E.emptyRecord();
-  assert.equal(E.next(D, rec, 0, null), fire.id);
+  assert.equal(E.next(two, rec, 0, null), fire.id);
   rec = E.record(rec, fire, E.review(fire, best(fire), read, 1), 0);
-  assert.equal(E.next(D, rec, 0, fire.id), bluff.id);
+  assert.equal(E.next(two, rec, 0, fire.id), bluff.id);
   rec = E.record(rec, bluff, E.review(bluff, { ...best(bluff), play: 'slant', key: 'NB' }, read, 1), 0);
-  assert.equal(E.next(D, rec, 86400000, null), bluff.id, 'the weaker scenario comes back');
+  assert.equal(E.next(two, rec, 86400000, null), bluff.id, 'the weaker scenario comes back');
   const rep = E.report(rec, D);
   assert.ok(rep.tags.find(t => t.id === 'pressure-disguise').level < rep.tags.find(t => t.id === 'replacement-defender').level);
   assert.ok(rep.errors.some(e => e.id === 'replacement-defender'));
+});
+
+test('real snaps: each one validates, matches its lesson, and names its sources', () => {
+  const all = E.catalog(D, R);
+  assert.ok(R.plays.length >= 24);
+  assert.deepEqual(S.validate({ ...D, scenarios: all }), []);
+  const cov = { 'Cover 3': 'COVER_3', 'Cover 2': 'COVER_2', 'Cover 1': 'COVER_1', 'Cover 0': 'COVER_0' };
+  for (const s of all.filter(s => s.real)) {
+    const r = s.real, fit = D.scenarios.find(t => t.id === s.lesson).fit;
+    assert.ok(fit.downs.includes(r.down) && r.dist >= fit.distance[0] && r.dist <= fit.distance[1], s.id + ' down and distance');
+    assert.ok(fit.coverage.includes(cov[r.coverage]) && r.rushers >= fit.rushers[0] && r.rushers <= fit.rushers[1] && (r.blitzers > 0) === fit.blitz, s.id + ' defense');
+    assert.equal(s.type, 'adapted');
+    assert.ok(s.provenance.sources.length === 3 && s.provenance.fieldConfidence.alignment === 'inferred');
+    assert.ok(R.teams[r.off] && R.teams[r.def] && r.passer && r.desc);
+    assert.equal(s.context.distance, r.dist);
+  }
+  // Every lesson has real snaps, and the Patriots show up.
+  for (const t of D.scenarios) assert.ok(all.some(s => s.lesson === t.id), t.id);
+  assert.ok(R.plays.some(r => r.off === 'NE' || r.def === 'NE'));
+});
+
+test('real snaps resolve with their own down and distance', () => {
+  const all = E.catalog(D, R);
+  for (const s of all.filter(s => s.real)) {
+    const rv = E.review(s, best(s), read, 9);
+    assert.equal(rv.rep.firstDown, rv.rep.yards >= s.context.distance && rv.rep.kind !== 'sack' && !rv.rep.touchdown);
+  }
 });

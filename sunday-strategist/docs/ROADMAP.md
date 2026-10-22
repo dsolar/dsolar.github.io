@@ -1,11 +1,14 @@
 # Sunday Strategist: roadmap
 
-**Done (phases 1 to 3, slice-sized).** The page, the data-driven scenario engine, schema validation, provenance, the explainable four-stage simulation, six grades, expected value over 400 reps, mastery tracking, the error taxonomy, revisit scheduling, unit tests and an end-to-end test. Two synthetic scenarios.
+**Done.**
+- Phases 1 to 3, slice-sized: the page, the data-driven scenario engine, schema validation, provenance, the explainable four-stage simulation, six grades, expected value over 400 reps, mastery tracking, the error taxonomy, revisit scheduling, unit tests and an end-to-end test.
+- Four lessons: a nickel fire zone, the bluff into Cover 2, Cover 1 man pressure, and Cover 0.
+- Phase 4: `tools/strategist_real.py` pulls real snaps that match each lesson from nflverse play-by-play, participation (NGS) and FTN charting for 2023 to 2025. There are 32 real snaps (8 per lesson, a spread of teams, seasons and outcomes, always one Patriots snap). They're shown with real teams, ESPN logos, the roster on the field, and a "What really happened" section with a confidence chip on every fact.
 
 **Next, in order:**
 
-1. **Finish the nickel-pressure module (30 scenarios).** The split is 5 recognition, 5 pressure-count, 5 motion-diagnostic, 5 protection, 5 concept-selection and 5 full snaps. Add the Cover 3 rotation from the bluff picture (named in scenario 2's "next" note), boundary-side pressure, a defensive-end drop, and Cover 0.
-2. **Real plays (phase 4).** Build an importer (Python, run locally or in a GitHub Action like the site's other data jobs) that pulls nflverse play-by-play and participation data for 2022 on, and FTN charting where the license allows. It would find candidate plays (11 personnel vs nickel, 2nd/3rd and medium, five rushers, charted coverage) and write draft scenarios with field-level confidence. Alignments get reconstructed and labeled; nothing is invented. At least 10 of the 30 should be traceable to real plays.
+1. **More lessons.** Add a Cover 3 rotation from the bluff picture, quarters and Cover 6 against four-man rushes, simulated pressure (creeper), and 2-Man on third and long. Each one adds a `fit`, and the importer fills it with real snaps automatically.
+2. **Fresher real snaps.** nflverse hasn't published 2026 participation (coverage) data yet. When it does, rerun `python tools/strategist_real.py 2024 2025 2026`, or schedule it weekly in a GitHub Action like the site's other data jobs, for "last Sunday" snaps.
 3. **Assistance levels.** Fade the help from all labels, to threats highlighted, to no labels, to a play clock, to motion and disguise.
 4. **Teach-back mode.** Pick the conflict defender, the numbers advantage and the time requirement before the result shows.
 5. **Coordinator mode (phase 7).** Connected drives, and an opposing coordinator archetype (Repeater, Counterpuncher, Disguiser, Pressure Gambler) that tracks your tendencies.

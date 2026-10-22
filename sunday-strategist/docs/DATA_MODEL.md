@@ -35,6 +35,20 @@ All content lives in `scenarios.js` and `schema.js` enforces it. Coordinates are
 | `next`, `takeaway` | The next-call implication and the one reusable principle |
 | `learning` | `objectives[]`, `tags[]` (keys of `data.tags`), `misconceptions[]`, `difficulty`, `transfer[]`, `revisitDays` |
 
+## Lesson fit (for real snaps)
+`fit: { downs[], distance: [min, max], coverage: [nflverse coverage codes], rushers: [min, max], blitz }`. This says which real snaps a lesson can stand in for.
+
+## Real snaps (`real-plays.js`, written by `tools/strategist_real.py`)
+`{ updated, seasons, source, teams{abbr: nickname}, plays[] }`. Each play has:
+- **Game:** `lesson`, `id`, `season`, `week`, `round`, `gameId`, `playId`, `off`, `def`, `home`, scores, `qtr`, `clock`, `down`, `dist`, `yl100`, `wp`.
+- **Result (verified, play-by-play):** `desc`, `yards`, `epa`, `first`, `td`, `result`.
+- **The throw (charted):** `passer`, `target`, `route`, `ttt`, `playAction`, `motion`.
+- **The defense (charted):** `coverage`, `manZone`, `rushers`, `blitzers`, `box`, `pressure`.
+- **Players (verified, participation):** `qb`, `rb`, `te`, `wr[]`, `defNames[]`.
+- **Scouting (derived):** `tendency{n, blitz, coverage}`, the defense's third-down habits that season.
+
+`engine.catalog()` turns each one into a playable scenario with `type: "adapted"`. It takes the real context, teams and provenance, and borrows the lesson's drawing and option grades. Every fact is labeled as verified, charted or reconstructed.
+
 ## Saved progress (localStorage `ss-record-v1`)
 `{ v: 1, tags: {tag: {seen, total, last}}, scenarios: {id: {plays, best, last}}, errors: {type: count} }`. Process scores only, never results.
 

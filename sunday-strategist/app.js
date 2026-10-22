@@ -32,48 +32,73 @@
   function sy(y) { return LOS - y * PX; }
 
   // Refuse content that fails the schema rather than render half a scenario.
-  var problems = V.validate(D);
-  var scenarios = D.scenarios.filter(function (s) { return s.status === "published"; }).sort(function (a, b) { return a.order - b.order; });
+  var all = E.catalog(D, window.SS_REAL);
+  var problems = V.validate({ concepts: D.concepts, defenses: D.defenses, tags: D.tags, confidence: D.confidence, scenarios: all });
+  var scenarios = all.filter(function (s) { return s.status === "published"; }).sort(function (a, b) { return a.order - b.order; });
+  var lessons = scenarios.filter(function (s) { return !s.real; });
+  var pool = { scenarios: scenarios };
+  function realOf(id) { return scenarios.filter(function (s) { return s.lesson === id; }); }
   if (problems.length) {
     $("module").innerHTML = '<div class="load-error"><b>The scenario data didn\'t pass validation.</b><br>' + problems.slice(0, 5).map(esc).join("<br>") + "</div>";
     if (window.console) console.error("Sunday Strategist data problems", problems);
     return;
   }
 
+  // Team logos come from ESPN's CDN, like Make the Call; a logo that fails to load leaves the abbreviation.
+  function logo(abbr, size) {
+    var a = abbr === "LA" ? "lar" : abbr === "WAS" ? "wsh" : String(abbr).toLowerCase();
+    return '<img class="logo" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500-dark/' + esc(a) + '.png&w=64&h=64" alt="" width="' + (size || 22) + '" height="' + (size || 22) + '" loading="lazy" onerror="this.remove()">';
+  }
+
   /* ---------- start screen ---------- */
   function renderStart() {
     var rec = load(STORE, null);
-    var items = scenarios.map(function (s, i) {
-      var r = rec && rec.scenarios[s.id];
+    var items = lessons.map(function (s, i) {
+      var r = rec && rec.scenarios[s.id], reals = realOf(s.id);
+      var played = reals.filter(function (x) { return rec && rec.scenarios[x.id]; }).length;
       return '<li><button type="button" data-start="' + esc(s.id) + '"><span class="n">' + (i + 1) + '</span><span class="t">' + esc(s.title) + '</span>' +
         '<span class="b' + (r ? " done" : "") + '">' + (r ? esc(E.letter(r.best)) : "New") + '</span><span class="s">' +
-        esc(ord(s.context.down) + " and " + s.context.distance + " · " + s.offense.formation.split(",")[0] + " · " + s.learning.objectives[0]) + "</span></button></li>";
+        esc(ord(s.context.down) + " and medium · " + s.defense.shell.replace("-", " ") + " · " + D.defenses[s.actual.call].name) + "</span></button>" +
+        (reals.length ? '<button type="button" class="real-btn" data-real="' + esc(s.id) + '"><span class="logos">' + reals.slice(0, 8).map(function (x) { return logo(x.real.off, 18); }).join("") +
+          '</span><span>' + reals.length + " real snaps" + (played ? " · " + played + " played" : "") + " \u2192</span></button>" : "") + "</li>";
     }).join("");
     $("module").innerHTML = '<h2>Nickel pressure and the answers to it</h2>' +
-      '<p>A slot defender walks down and shows blitz. Is he coming? Who replaces him if he does? What does your protection do about it, and where does the ball go?</p>' +
+      '<p>A slot defender walks down and shows blitz. Is he coming? Who replaces him if he does? What does your protection do about it, and where does the ball go? Learn each look, then call it on real NFL snaps from 2023 to 2025.</p>' +
       '<ul class="scen-list">' + items + '</ul><button type="button" class="primary" id="go">' + (rec ? "Play your next rep" : "Start") + " →</button>";
     var rep = E.report(rec, D);
     $("report").innerHTML = '<h2 id="report-h">Your read report</h2>' + (rec ? rep.tags.map(function (t) {
       return '<div class="meter"><span>' + esc(t.label) + '</span><span class="bar" role="img" aria-label="' + esc(t.label + ": " + (t.level == null ? "not practiced yet" : t.level + " out of 100")) + '"><i style="width:' + (t.level || 0) + '%"></i></span><b>' + (t.level == null ? "—" : t.level) + "</b></div>";
     }).join("") + (rep.errors.length ? '<p class="errs">Most common miss: ' + esc(rep.errors[0].label) + " (" + rep.errors[0].count + "×). The next scenario is picked to work on it.</p>" : "")
       : '<p class="empty">Play a scenario and this tracks how well you read each skill, process grades only, and what you miss most.</p>');
-    $("go").onclick = function () { begin(E.next(D, load(STORE, null), Date.now(), null)); };
+    $("go").onclick = function () { begin(E.next(pool, load(STORE, null), Date.now(), null)); };
     Array.prototype.forEach.call(document.querySelectorAll("[data-start]"), function (b) { b.onclick = function () { begin(b.getAttribute("data-start")); }; });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-real]"), function (b) {
+      b.onclick = function () { begin(E.next({ scenarios: realOf(b.getAttribute("data-real")) }, load(STORE, null), Date.now(), null)); };
+    });
   }
 
   /* ---------- a snap ---------- */
+  function onField(r) {
+    return ["QB " + r.qb, "RB " + r.rb, "TE " + r.te, "WR " + r.wr.join(", ")].filter(function (x) { return !/ (null|undefined)$/.test(x); }).join(" · ");
+  }
   function begin(id) {
     var sc = by(scenarios, id) || scenarios[0];
     st = { sc: sc, step: 0, answers: { rushers: [] }, pick: { motion: "none" }, seed: (Date.now() % 100000) + 1, snapped: false, recorded: false };
     $("start").hidden = true; $("play").hidden = false; $("review").hidden = true; $("review").innerHTML = "";
-    $("where").textContent = "Nickel pressure · Scenario " + (scenarios.indexOf(sc) + 1) + " of " + scenarios.length;
-    $("scen-title").textContent = sc.title;
-    $("prov").innerHTML = "<b>" + esc(sc.type === "synthetic" ? "Synthetic" : sc.type) + "</b><span>" + esc(sc.provenance.label) + "</span>";
+    var lesson = sc.real ? by(lessons, sc.lesson) : sc;
+    $("where").textContent = "Lesson " + (lessons.indexOf(lesson) + 1) + " of " + lessons.length + ": " + lesson.title + (sc.real ? " · real snap" : "");
+    $("scen-title").innerHTML = sc.real ? logo(sc.real.off, 40) + esc(sc.title) + logo(sc.real.def, 40) : esc(sc.title);
+    $("scen-sub").textContent = sc.real ? sc.subtitle : "";
+    $("scen-sub").hidden = !sc.real;
+    $("prov").innerHTML = "<b>" + esc(sc.type === "synthetic" ? "Synthetic" : "Real snap") + "</b><span>" + esc(sc.provenance.label) + "</span>";
     var c = sc.context;
-    $("bug").innerHTML = '<div><small>You</small><b>' + c.score.you + '</b></div><div><small>Opp</small><b>' + c.score.opp + '</b></div>' +
-      '<div><small>Q' + c.quarter + '</small><b>' + esc(c.clock) + '</b></div><div class="down"><small>' + (c.side === "opp" ? "Opp " : "Own ") + c.yardLine + '</small><b>' + ord(c.down) + " &amp; " + c.distance + "</b></div>";
+    $("bug").innerHTML = (sc.real
+      ? '<div class="team">' + logo(sc.real.off, 26) + '<span><small>' + esc(sc.real.off) + '</small><b>' + c.score.you + '</b></span></div><div class="team">' + logo(sc.real.def, 26) + '<span><small>' + esc(sc.real.def) + '</small><b>' + c.score.opp + '</b></span></div>'
+      : '<div><small>You</small><b>' + c.score.you + '</b></div><div><small>Opp</small><b>' + c.score.opp + '</b></div>') +
+      '<div><small>' + (c.quarter > 4 ? "OT" : "Q" + c.quarter) + '</small><b>' + esc(c.clock) + '</b></div><div class="down"><small>' + (c.side === "opp" ? "Opp " : "Own ") + c.yardLine + '</small><b>' + ord(c.down) + " &amp; " + c.distance + "</b></div>";
     $("sit").innerHTML = [["Your personnel", sc.offense.personnelText + ". " + sc.offense.formation + "."], ["Their personnel", sc.defense.personnelText + ". " + sc.defense.front + "."],
-      ["The job", c.objective], ["Scouting report", c.scouting]].map(function (x) { return "<div><dt>" + esc(x[0]) + "</dt><dd>" + esc(x[1]) + "</dd></div>"; }).join("");
+      ["The job", c.objective], ["Scouting report", c.scouting]].concat(sc.real ? [["On the field for the " + sc.teams.offName, onField(sc.real)]] : [])
+      .map(function (x) { return "<div><dt>" + esc(x[0]) + "</dt><dd>" + esc(x[1]) + "</dd></div>"; }).join("");
     drawField();
     renderStep();
     window.scrollTo(0, 0);
@@ -368,6 +393,7 @@
       (e.turnover >= 0.005 ? ", with an interception " + pct(e.turnover) + " of the time" : "") + (e.sack >= 0.005 ? " and a sack " + pct(e.sack) : "") + ".</p>" +
       '<button type="button" class="ghost" id="again">Run this rep again</button></div>' +
 
+      (sc.real ? reality(sc, rv) : "") +
       sec(1, "Your read", '<ul class="qlist">' + rv.diagnosis.items.map(function (i) {
         var cls = i.credit >= 90 ? "ok" : i.credit >= 50 ? "part" : "no";
         return '<li><div class="q"><span>' + esc(i.prompt) + '</span><span class="pill ' + cls + '">' + (cls === "ok" ? "Right" : cls === "part" ? "Partly" : "Missed") + '</span></div><div class="ans">You: ' + esc(i.yours) + (i.credit < 90 ? " · Best read: " + esc(i.correct) : "") + "</div>" +
@@ -406,13 +432,27 @@
     box.innerHTML = html;
     box.hidden = false;
     $("again").onclick = function () { st.seed = (st.seed * 48271) % 2147483647 || 7; renderReview(false); say("New rep. " + $("result-line").textContent); };
-    $("next-scen").onclick = function () { begin(E.next(D, load(STORE, null), Date.now(), sc.id)); };
+    $("next-scen").onclick = function () { begin(E.next(pool, load(STORE, null), Date.now(), sc.id)); };
     $("replay").onclick = function () { begin(sc.id); };
     $("home").onclick = function () { $("quit").click(); };
     if (first) {
       $("result-line").focus({ preventScroll: true });
       box.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
     }
+  }
+  function reality(sc, rv) {
+    var r = sc.real, chip = function (k) { return '<span class="pill ' + (k === "Verified" ? "ok" : k === "Charted" ? "uncertain" : "part") + '">' + k + "</span>"; };
+    var res = r.td ? "Touchdown" : r.result === "int" ? "Intercepted" : r.result === "sack" ? "Sacked" : r.result === "incomplete" ? "Incomplete" : r.yards + (r.yards === 1 ? " yard" : " yards") + (r.first ? ", first down" : "");
+    var rows = [
+      ["Verified", "Result", res + ". Expected points added: " + (r.epa > 0 ? "+" : "") + r.epa.toFixed(2) + "."],
+      ["Verified", "The play", r.desc],
+      ["Charted", "The throw", (r.target ? r.passer + " targeted " + r.target + (r.route ? " on a " + r.route.toLowerCase() + " route" : "") : r.passer + " threw it") + (r.ttt ? ", " + r.ttt.toFixed(1) + "s after the snap" : "") + "." + (r.playAction ? " Play action." : "") + (r.motion ? " Motion before the snap." : "")],
+      ["Charted", "The defense", r.rushers + " rushers, " + r.blitzers + " of them blitzers, " + r.coverage + (r.manZone ? " (" + r.manZone + ")" : "") + (r.box ? ", " + r.box + " in the box" : "") + ". " + (r.pressure ? "The quarterback was pressured." : "No pressure on the quarterback.")],
+      ["Reconstructed", "The drawing", "Which defenders rushed and where everyone lined up come from the lesson, not from charting."]
+    ];
+    var yourOdds = Math.round(rv.expected.convert * 100);
+    return sec("\u2605", "What really happened", '<ul class="real-facts">' + rows.map(function (x) { return "<li>" + chip(x[0]) + "<b>" + esc(x[1]) + "</b><span>" + esc(x[2]) + "</span></li>"; }).join("") + "</ul>" +
+      "<p>Your call converts " + yourOdds + "% of the time against this defense. The real call " + (r.first || r.td ? "worked" : "didn't work") + " once. One snap is evidence, not a verdict: a real call isn't right because it happened, and it isn't wrong because it failed.</p>");
   }
   function sec(n, title, body) { return '<section class="sec"><h3><span>' + n + "</span>" + esc(title) + "</h3>" + body + "</section>"; }
   function roleOf(id) { var p = by(st.sc.defense.players, id); return p ? p.role.split(",")[0].toLowerCase() : id; }

@@ -57,6 +57,26 @@
       timing: "Handoff about 1.0 second; the run needs the linebackers to clear.",
       failure: ["An inside blitzer meets the back in the hole", "A dropping linebacker fills the lane"]
     },
+    mesh: {
+      name: "Mesh",
+      family: "Man beater",
+      plain: "Two receivers cross underneath, close enough to rub each other's defenders. Man defenders get caught in the traffic.",
+      stresses: "Man defenders trailing receivers across the field.",
+      strongVs: ["Cover 1", "Cover 0", "Any man coverage without a low-hole defender"],
+      weakVs: ["Zone defenders who sit in the crossing lane", "A robber in the middle"],
+      timing: "First crosser at about 1.8 seconds, second at 2.3.",
+      failure: ["Crossers too far apart to rub anyone", "Protection breaks before the crossers clear"]
+    },
+    fade: {
+      name: "Fade",
+      family: "One-on-one shot",
+      plain: "A receiver runs straight up the field against his defender. No route trickery: a bet that he wins the release and the ball is placed away from the defender.",
+      stresses: "A single defender with no help over the top.",
+      strongVs: ["Cover 0", "Press man with the safety committed elsewhere"],
+      weakVs: ["Any deep safety in position to help"],
+      timing: "Ball out at about 1.8 to 2.0 seconds.",
+      failure: ["Receiver loses the release", "Underthrown ball lets the defender recover"]
+    },
     smash: {
       name: "Smash",
       family: "Quick game / high-low",
@@ -76,6 +96,18 @@
       vulnerable: ["Seams against three deep", "The hook-curl windows between three underneath defenders", "Quick game away from the rotating safety"],
       counters: ["Stick and spacing", "Max-protected seams", "Screens away from the pressure"]
     },
+    "cover-1-nickel": {
+      name: "Nickel pressure, Cover 1 behind it",
+      plain: "Five rush, the nickel among them. Everyone else is in man, with one free safety deep in the middle. Whoever covers the nickel's receiver has to come from farther away.",
+      vulnerable: ["Quick throws to the receiver the blitzer left", "Crossing routes that rub man defenders", "Anything outside the free safety's reach"],
+      counters: ["Hot slant", "Mesh", "Sight adjusts"]
+    },
+    "cover-0": {
+      name: "Cover 0 all-out pressure",
+      plain: "Six or more rush. Every other defender is in man, and nobody is deep.",
+      vulnerable: ["Any quick throw that wins leverage, with no safety to tackle behind it", "One-on-ones deep, if protection holds"],
+      counters: ["Quick slants", "Max protection with a fade", "Sight adjusts"]
+    },
     "cover-2-bluff": {
       name: "Nickel bluff, Cover 2",
       plain: "Four rush. The nickel shows blitz, then bails to the curl. Corners squat in the flats, two safeties split the deep halves.",
@@ -89,7 +121,9 @@
     "nickel-pressure": "Nickel pressure",
     "replacement-defender": "Finding the replacement defender",
     "protection-count": "Counting rushers vs blockers",
-    "pressure-disguise": "Seeing through disguised pressure"
+    "pressure-disguise": "Seeing through disguised pressure",
+    "man-vs-zone": "Telling man pressure from zone pressure",
+    "zero-pressure": "Beating all-out pressure"
   },
 
   // Answer choices shared by every scenario's diagnosis step.
@@ -200,7 +234,7 @@
             id: "shell", prompt: "What safety shell is the defense showing?", kind: "single",
             options: [{ id: "two", label: "Two-high" }, { id: "one", label: "One-high" }, { id: "zero", label: "Zero (no deep safety)" }],
             credit: { two: 100, one: 40, zero: 0 }, error: "shell",
-            explain: "Both safeties sit at 13 yards outside the hashes: two-high. That's what it shows, not what it promises. On third-and-6 with a nickel walked down, a rotation to one-high is a standard move."
+            explain: "Both safeties sit at 13 yards outside the hashes: two-high. That's what it shows, not what it promises. On a passing down with a nickel walked down, a rotation to one-high is a standard move."
           },
           {
             id: "rushers", prompt: "Tap every defender who could rush.", kind: "rushers",
@@ -265,7 +299,7 @@
           id: "max", label: "Max protection: tight end and back stay in",
           detail: "Seven blockers. Only three receivers go out.",
           hold: 3.5, grade: 60, category: "safe",
-          why: "Everyone is blocked, but three receivers against six droppers on third-and-6 is a math problem in the other direction.",
+          why: "Everyone is blocked, but three receivers against six droppers on third down is a math problem in the other direction.",
           assignments: [
             { player: "Y", assignment: "Stay in and take the field end", key: "DEF", win: "Walls off the end", fail: "Gets beat inside", p: 0.9 }
           ]
@@ -375,6 +409,7 @@
         { when: { play: "draw" }, note: "On a draw the protection is a sell job: the line's job is to invite the rush, so the protection call matters less." }
       ],
       recommended: { motion: "yoyo", protection: "slide-nickel", play: "stick", contingency: "built-in" },
+      fit: { downs: [3], distance: [4, 8], coverage: ["COVER_3"], rushers: [5, 5], blitz: true },
       clues: [
         { text: "The nickel is walked down to 2 yards, inside-shaded on the slot. That's a blitz alignment, not a coverage alignment.", kind: "meaningful" },
         { text: "The Will is mugged in the boundary B-gap: a second pressure threat on the other side of the formation.", kind: "meaningful" },
@@ -557,7 +592,7 @@
           id: "max", label: "Max protection: tight end and back stay in",
           detail: "Seven blockers. Three receivers go out.",
           hold: 3.8, grade: 60, category: "safe",
-          why: "Seven block four. Safe, but on second-and-7 against a bluff you've left four blockers with nobody to block.",
+          why: "Seven block four. Safe, but on second down against a bluff you've left four blockers with nobody to block.",
           assignments: [
             { player: "Y", assignment: "Stay in and take the boundary end", key: "DEB", win: "Walls off the end", fail: "Gets beat inside", p: 0.92 }
           ]
@@ -610,7 +645,7 @@
           kind: "run", need: 0, window: 0.38, yards: 8, spread: 3, failYards: 3, failSpread: 2, luck: 0.04,
           grade: 80, category: "high-floor",
           conflict: "MIKE",
-          why: "Against a four-man rush with both linebackers bailing, the box empties out. On second-and-7 a 4-yard draw sets up third-and-short. A real answer to the bluff, and still a reasonable call if the pressure is real.",
+          why: "Against a four-man rush with both linebackers bailing, the box empties out. On second-and-medium a 4-yard draw sets up third-and-short. A real answer to the bluff, and still a reasonable call if the pressure is real.",
           key: { answer: "MIKE", partial: { WILL: "The Will bails here, so he's gone. The Mike is the one who has to fill." } },
           routes: [{ from: "RB", path: [[29.7, -3], [29.2, 3], [29, 8]] }],
           assignments: [
@@ -648,7 +683,7 @@
         {
           id: "throwaway", label: "If the window closes, climb and throw it away", onPressure: "throwaway",
           grades: { smash: 75, verts: 75, draw: 60, slant: 70 },
-          why: "A sound floor: third-and-7 is better than a sack."
+          why: "A sound floor: third-and-medium is better than a sack."
         },
         {
           id: "none", label: "Hold it: trust the protection", onPressure: "none",
@@ -664,6 +699,7 @@
         { when: { play: "draw" }, note: "On a draw the protection is a sell job: the line invites the rush, so the protection call matters less." }
       ],
       recommended: { motion: "yoyo", protection: "slide-nickel", play: "smash", contingency: "built-in" },
+      fit: { downs: [2], distance: [5, 9], coverage: ["COVER_2"], rushers: [4, 4], blitz: false },
       clues: [
         { text: "The nickel is walked down to 2 yards over the slot: the same blitz alignment as last time.", kind: "uncertain" },
         { text: "The Will is mugged in the B-gap again, on the boundary side.", kind: "uncertain" },
@@ -679,6 +715,567 @@
         difficulty: 3,
         transfer: ["Formation 3x1 to 2x2", "Field side right to left", "Real pressure to bluff"],
         revisitDays: 3
+      }
+    },
+
+    {
+      id: "nickel-man-3rd-5",
+      title: "Man Behind It",
+      module: "nickel-pressure",
+      order: 3,
+      type: "synthetic",
+      status: "published",
+      version: 1,
+      provenance: {
+        type: "synthetic",
+        label: "Synthetic teaching scenario. Not a real NFL play: the game, teams and result are invented to teach one principle.",
+        sources: [],
+        fieldConfidence: { all: "synthetic" },
+        reviewer: "unreviewed",
+        notes: "The man-coverage version of the nickel pressure: the same slant that loses to a fire zone wins here."
+      },
+      context: {
+        quarter: 4, clock: "5:27", score: { you: 20, opp: 24 },
+        down: 3, distance: 5, yardLine: 45, side: "own", hash: "middle",
+        objective: "Convert. Down four with five minutes left, a punt here might be the game.",
+        scouting: "This defense plays man on about half its third downs, and its nickel blitzes out of it."
+      },
+      offense: {
+        personnel: "11",
+        personnelText: "11 personnel: 1 back, 1 tight end, 3 receivers",
+        formation: "Doubles (2x2), tight end attached right, back offset right",
+        players: [
+          { id: "X", label: "X", role: "Receiver (#1 left)", x: 8, y: -1 },
+          { id: "H", label: "H", role: "Slot receiver (#2 left)", x: 17, y: -1.8 },
+          { id: "LT", label: "LT", role: "Left tackle", x: 24.05, y: -1 },
+          { id: "LG", label: "LG", role: "Left guard", x: 25.35, y: -1 },
+          { id: "C", label: "C", role: "Center", x: 26.65, y: -1 },
+          { id: "RG", label: "RG", role: "Right guard", x: 27.95, y: -1 },
+          { id: "RT", label: "RT", role: "Right tackle", x: 29.25, y: -1 },
+          { id: "Y", label: "Y", role: "Tight end, attached right", x: 30.7, y: -1 },
+          { id: "QB", label: "QB", role: "Quarterback (shotgun)", x: 26.65, y: -5 },
+          { id: "RB", label: "RB", role: "Running back, offset right", x: 28.5, y: -5 },
+          { id: "Z", label: "Z", role: "Receiver (#1 right)", x: 45, y: -1.8 }
+        ]
+      },
+      defense: {
+        personnel: "nickel",
+        personnelText: "Nickel: 4 linemen, 2 linebackers, 5 defensive backs",
+        front: "Four-down even front",
+        shell: "one-high",
+        boxCount: 6,
+        disguise: "low",
+        players: [
+          { id: "CBL", label: "CB", role: "Left corner, pressed on X", x: 8, y: 1.5 },
+          { id: "NB", label: "NB", role: "Nickel, walked down over the slot", x: 18, y: 2 },
+          { id: "SS", label: "SS", role: "Strong safety, down at 8 yards", x: 22, y: 8.5 },
+          { id: "DEL", label: "E", role: "Left end", x: 23, y: 1 },
+          { id: "WILL", label: "W", role: "Will linebacker", x: 24.6, y: 4.5 },
+          { id: "DT", label: "T", role: "Defensive tackle", x: 25.2, y: 1 },
+          { id: "FS", label: "FS", role: "Free safety, deep middle", x: 26.65, y: 13 },
+          { id: "NT", label: "N", role: "Nose tackle", x: 27.5, y: 1 },
+          { id: "MIKE", label: "M", role: "Mike linebacker", x: 28.4, y: 4.5 },
+          { id: "DER", label: "E", role: "Right end", x: 30.6, y: 1 },
+          { id: "CBR", label: "CB", role: "Right corner, pressed on Z", x: 45, y: 1.5 }
+        ]
+      },
+      actual: {
+        call: "cover-1-nickel",
+        pressure: "five",
+        rushers: ["DEL", "DT", "NT", "DER", "NB"],
+        droppers: ["WILL", "MIKE"],
+        coverage: "Cover 1 (man-free)",
+        rotation: "No rotation. The free safety stays deep in the middle; everyone else is in man. With the nickel blitzing, the strong safety has to come from 8 yards deep to cover the slot.",
+        post: {
+          CBL: { x: 9, y: 8, zone: "Man: X" },
+          NB: { x: 22.5, y: -4 },
+          SS: { x: 19.5, y: 5, zone: "Man: slot (from depth)" },
+          DEL: { x: 24, y: -3 },
+          WILL: { x: 30, y: 3, zone: "Man: back" },
+          DT: { x: 25.3, y: -3 },
+          FS: { x: 26.65, y: 16, zone: "Deep middle" },
+          NT: { x: 27.5, y: -3 },
+          MIKE: { x: 32.5, y: 5, zone: "Man: tight end" },
+          DER: { x: 29.8, y: -3.5 },
+          CBR: { x: 44, y: 8, zone: "Man: Z" }
+        },
+        events: [
+          { t: 0.2, text: "Both corners turn and run with their receivers: man coverage across the board." },
+          { t: 0.3, text: "The nickel blitzes off the left edge. Five are coming." },
+          { t: 0.6, text: "The strong safety triggers from 8 yards to cover the slot the nickel left. He's late and has to come from outside-in." }
+        ]
+      },
+      diagnosis: {
+        questions: [
+          {
+            id: "personnel", prompt: "What defensive personnel is on the field?", kind: "single",
+            options: [{ id: "base", label: "Base (4 DBs)" }, { id: "nickel", label: "Nickel (5 DBs)" }, { id: "dime", label: "Dime (6 DBs)" }],
+            credit: { base: 20, nickel: 100, dime: 40 }, error: "personnel",
+            explain: "Two corners, a nickel, two safeties: five defensive backs. Nickel."
+          },
+          {
+            id: "shell", prompt: "What safety shell is the defense showing?", kind: "single",
+            options: [{ id: "two", label: "Two-high" }, { id: "one", label: "One-high" }, { id: "zero", label: "Zero (no deep safety)" }],
+            credit: { two: 30, one: 100, zero: 40 }, error: "shell",
+            explain: "One safety deep in the middle at 13 yards, the other down at 8: one-high. One-high means Cover 1 or Cover 3 is most likely. The pressed corners tilt it toward man."
+          },
+          {
+            id: "rushers", prompt: "Tap every defender who could rush.", kind: "rushers",
+            answer: ["DEL", "DT", "NT", "DER", "WILL", "MIKE", "NB"], critical: "NB", error: "pressure-count",
+            explain: "Seven can come: four linemen, both linebackers, the nickel. The strong safety at 8 yards could too, but late; the corners are pressed on receivers."
+          },
+          {
+            id: "pressure", prompt: "What's the most likely pressure?", kind: "single",
+            options: [{ id: "four", label: "Four-man rush" }, { id: "five", label: "Five-man pressure" }, { id: "six", label: "Six or more (Cover 0)" }],
+            credit: { four: 60, five: 100, six: 50 }, error: "pressure-count",
+            explain: "A walked-down nickel with a deep safety still in the middle: five-man pressure with man behind it is the classic version. Six would usually take the deep safety away too."
+          }
+        ]
+      },
+      motions: [
+        { id: "none", label: "No motion", text: "Snap it. You don't learn whether it's man until the ball is out." },
+        {
+          id: "yoyo", label: "Slot yo-yo motion", detail: "H motions in toward the line and back out.",
+          path: { from: "H", to: [22, -2], back: true },
+          moves: { NB: [18.4, 2.2], SS: [21.2, 8] },
+          text: "The nickel ran with the slot all the way in and back out. That's man coverage. If he blitzes, somebody else has to cover the slot, and the strong safety creeping down is the likely candidate.",
+          clue: "The nickel ran with the slot in and back out: man coverage, so the blitzer's receiver goes to someone farther away."
+        },
+        {
+          id: "rbshift", label: "Shift the back to the nickel's side", detail: "RB moves from the right to the left of the quarterback.",
+          path: { from: "RB", to: [24.8, -5] },
+          moves: { WILL: [25.2, 4.5], MIKE: [27.8, 4.5] },
+          text: "Both linebackers bumped with the back. They're keyed on the back and the tight end, man again. The nickel didn't move.",
+          clue: "The linebackers bumped with the back's shift: they're in man on the back and tight end."
+        }
+      ],
+      protections: [
+        {
+          id: "slide-nickel", label: "Slide to the nickel, back scans the Will",
+          detail: "The line slides left toward the nickel; the right side blocks man, with the back checking the Will.",
+          hold: 2.9, grade: 95, category: "recommended",
+          why: "All seven possible rushers have a plan. When the Will drops into man on the back, the back releases late as an outlet.",
+          assignments: [
+            { player: "LT", assignment: "Slide out to the nickel off the edge", key: "NB", win: "Meets the nickel before he turns the corner", fail: "Gets beat outside", p: 0.92 },
+            { player: "RB", assignment: "Scan the Will, then release", key: "WILL", win: "Sees the Will cover him and releases", fail: "Stays in to block nobody", p: 0.9 }
+          ]
+        },
+        {
+          id: "five", label: "Five-man protection, QB is hot off the nickel",
+          detail: "The back releases. If the nickel comes, the ball comes out.",
+          hold: 1.5, grade: 75, category: "valid", hotPlan: true,
+          why: "Better here than against a fire zone: against man, the hot throw goes to the receiver the blitzer left, and nobody is replacing him underneath.",
+          assignments: [
+            { player: "QB", assignment: "Treat the nickel as his: ball out the moment he declares", key: "NB", win: "Ball out before 1.5 seconds", fail: "Holds it a beat too long", p: 0.85 }
+          ]
+        },
+        {
+          id: "slide-away", label: "Slide away, back crosses to the nickel",
+          detail: "The line slides right; the back crosses the quarterback's face to block the nickel.",
+          hold: 1.9, grade: 55, category: "risky",
+          why: "The back starts on the wrong side and has to beat a nickel with a head start to the edge.",
+          assignments: [
+            { player: "RB", assignment: "Cross the formation and cut off the nickel", key: "NB", win: "Gets there in time", fail: "Arrives late; the nickel has a free run", p: 0.45 }
+          ]
+        },
+        {
+          id: "max", label: "Max protection: tight end and back stay in",
+          detail: "Seven blockers. Three receivers go out against man coverage.",
+          hold: 3.5, grade: 62, category: "safe",
+          why: "Everyone's blocked, but you've taken two receivers off a third down where the man-coverage matchups were the advantage.",
+          assignments: [
+            { player: "Y", assignment: "Stay in and take the right end", key: "DER", win: "Walls off the end", fail: "Gets beat inside", p: 0.9 }
+          ]
+        }
+      ],
+      plays: [
+        {
+          id: "slant", concept: "hot-slant", label: "Hot slant to the slot",
+          detail: "H runs a three-step slant through the spot the nickel left. X runs a slant behind it.",
+          need: 1.3, window: 0.72, yards: 8, spread: 3, intRisk: 0.05, luck: 0.03,
+          hot: { window: 0.68, yards: 7, spread: 3, text: "Ball out on the third step to the slant" },
+          grade: 95, category: "recommended",
+          conflict: "SS",
+          why: "Against man pressure the blitzer's receiver is covered by someone farther away: the strong safety has to come 8 yards, from outside-in, to a slot running inside. Nobody's replacing the nickel underneath. The same slant that died against the fire zone wins here.",
+          key: { answer: "SS", partial: { NB: "The nickel is gone. The question is who's covering his man, and from where.", FS: "The free safety stays deep; he's only a factor if the ball sails." } },
+          routes: [{ from: "H", path: [[17, 1], [21.5, 5]] }, { from: "X", path: [[8, 2], [11.5, 6]] }, { from: "Z", path: [[45, 18]] }],
+          assignments: [
+            { player: "QB", assignment: "Ball out on the third step, before the nickel arrives", key: "NB", win: "Throws on rhythm", fail: "Hitches and the nickel hits him", p: 0.9, critical: true },
+            { player: "H", assignment: "Win inside against the safety arriving from depth", key: "SS", win: "Catches it in front of the safety", fail: "The safety closes faster than expected", p: 0.82, keyBonus: 0.08, critical: true },
+            { player: "X", assignment: "Backside slant: second option against the press corner", key: "CBL", win: "Gets inside the press", fail: "Gets jammed", p: 0.7 }
+          ]
+        },
+        {
+          id: "mesh", concept: "mesh", label: "Mesh",
+          detail: "H and Y cross underneath, rubbing their defenders; Z runs a corner, X clears.",
+          need: 2.3, window: 0.66, yards: 7, spread: 3, intRisk: 0.03, luck: 0.04,
+          hot: { window: 0.5, yards: 4, spread: 2, text: "Ball out early to the first crosser" },
+          grade: 86, category: "high-floor",
+          conflict: "MIKE",
+          why: "Crossing routes are built for man coverage: the two crossers rub off each other's defenders. It takes a beat longer than the slant, so it needs the protection to account for the nickel.",
+          key: { answer: "MIKE", partial: { SS: "He's chasing the slot crosser, but the Mike, trailing the tight end through the rub, decides which crosser comes open." } },
+          routes: [{ from: "H", path: [[17, 1], [24, 2.5], [36, 3]] }, { from: "Y", path: [[30.7, 1], [24, 3.5], [14, 4]] }, { from: "Z", path: [[45, 10], [49, 17]] }, { from: "X", path: [[8, 18]] }],
+          assignments: [
+            { player: "QB", assignment: "Find the crosser who comes free of the rub", key: "MIKE", win: "Hits the crosser in stride", fail: "Waits for one to come open and gets hit", p: 0.84, keyBonus: 0.08, critical: true },
+            { player: "Y", assignment: "Cross at 5 yards, close enough to H to pick the Mike", key: "MIKE", win: "The Mike gets caught in traffic", fail: "Runs too deep and the rub never happens", p: 0.8, critical: true }
+          ]
+        },
+        {
+          id: "verts", concept: "verts", label: "Four verticals",
+          detail: "Everyone goes deep against one deep safety.",
+          need: 2.9, window: 0.4, yards: 24, spread: 8, intRisk: 0.12, luck: 0.12,
+          grade: 60, category: "aggressive",
+          conflict: "FS",
+          why: "One-on-ones outside are tempting, but the free safety sits in the middle to help on any seam, the corners are pressing, and five rushers want the ball out before three seconds.",
+          key: { answer: "FS", partial: {} },
+          routes: [{ from: "X", path: [[8, 18]] }, { from: "H", path: [[17, 6], [19, 18]] }, { from: "Y", path: [[30.7, 6], [33, 18]] }, { from: "Z", path: [[45, 18]] }],
+          assignments: [
+            { player: "QB", assignment: "Hold the free safety, throw the one-on-one away from him", key: "FS", win: "Moves the safety off a seam", fail: "Throws where the safety is helping", p: 0.68, keyBonus: 0.1, critical: true },
+            { player: "X", assignment: "Beat press coverage on the go", key: "CBL", win: "Wins off the line", fail: "Gets pressed to the sideline", p: 0.6, critical: true }
+          ]
+        },
+        {
+          id: "stick", concept: "stick", label: "Stick to the left",
+          detail: "H runs the 6-yard stick, X clears, the back checks and releases to the flat.",
+          need: 2.2, window: 0.38, yards: 6, spread: 2, intRisk: 0.06, luck: 0.03,
+          grade: 48, category: "poor",
+          conflict: "SS",
+          why: "Stick is a zone beater: it sits down in a hole. Against man there is no hole. The defender is on the receiver's hip and closes the moment he stops.",
+          key: { answer: "SS", partial: {} },
+          routes: [{ from: "H", path: [[17, 5.5], [17.8, 5]] }, { from: "X", path: [[8, 18]] }, { from: "RB", path: [[23, -2], [18, 1]] }],
+          assignments: [
+            { player: "QB", assignment: "Throw the stick as the receiver turns", key: "SS", win: "Fits it in before the safety closes", fail: "The safety drives on the sit route", p: 0.75, critical: true },
+            { player: "H", assignment: "Sit at 6 yards against man", key: "SS", win: "Creates space at the top", fail: "Sits right into the defender", p: 0.6, critical: true }
+          ]
+        }
+      ],
+      contingencies: [
+        {
+          id: "built-in", label: "Built-in hot: if the nickel comes clean, ball out to the quick route now", onPressure: "hot",
+          grades: { slant: 95, mesh: 88, verts: 40, stick: 65 },
+          why: "The slant and the first mesh crosser are both on time against the nickel. Four verticals has nothing quick."
+        },
+        {
+          id: "sight", label: "Sight adjust: the slot converts his route to a slant against pressure", onPressure: "sight",
+          throw: { window: 0.66, yards: 7, spread: 3, intRisk: 0.05, text: "Sight-adjusted slant" },
+          grades: { slant: 85, mesh: 80, verts: 75, stick: 80 },
+          why: "Against man pressure this is exactly the right conversion: the slot runs away from a defender who's coming from depth."
+        },
+        {
+          id: "throwaway", label: "If the window closes, climb and throw it away", onPressure: "throwaway",
+          grades: { slant: 70, mesh: 70, verts: 75, stick: 75 },
+          why: "Safe, but down four late, a throwaway on third down is a punt."
+        },
+        {
+          id: "none", label: "Hold it: trust the protection", onPressure: "none",
+          grades: { slant: 20, mesh: 20, verts: 20, stick: 20 },
+          why: "Seven can come and at most six block. Trusting it is a plan for a sack."
+        }
+      ],
+      interactions: [
+        { when: { protection: "slide-away", motion: "rbshift" }, hold: 0.8, protection: 20, note: "Shifting the back to the nickel's side shortens his trip to the edge." },
+        { when: { protection: "slide-nickel", motion: "rbshift" }, hold: -0.4, protection: -8, note: "The back moved away from the Will he's supposed to scan." },
+        { when: { protection: "max", play: "mesh" }, window: -0.4, play: -25, note: "Max protection keeps the tight end in, and he's one of the two crossers. Mesh needs both." },
+        { when: { protection: "max", play: "verts" }, window: -0.15, play: -5, note: "Three go deep against man with a deep safety: one fewer route for the safety to worry about." },
+        { when: { protection: "five", play: "verts" }, protection: -30, note: "Five-man protection on a three-second concept leaves the nickel unblocked with nothing quick to throw." }
+      ],
+      recommended: { motion: "yoyo", protection: "slide-nickel", play: "slant", contingency: "built-in" },
+      fit: { downs: [3], distance: [3, 7], coverage: ["COVER_1"], rushers: [5, 5], blitz: true },
+      clues: [
+        { text: "One-high shell: one safety deep in the middle, the other down at 8 yards.", kind: "meaningful" },
+        { text: "Both corners pressed, inside of nobody: a man-coverage look.", kind: "meaningful" },
+        { text: "The nickel walked down over the slot, inside-shaded.", kind: "meaningful" },
+        { text: "The strong safety at 8 yards could be a robber in a zone, or a man defender. You can't tell before the snap.", kind: "uncertain" },
+        { text: "The linebackers at normal depth looked like they'd drop into zones. They were in man on the back and the tight end.", kind: "deceptive" }
+      ],
+      next: "After a slant beats man pressure, expect the same picture with the strong safety sitting in the slant window as a robber: the fire-zone version of this call.",
+      takeaway: "Against man pressure, the blitzer's receiver is covered by someone who started farther away. Throw to him, fast. The slant that dies against a fire zone wins against man.",
+      learning: {
+        objectives: ["Tell man pressure from zone pressure", "Find the receiver the blitzer left", "Match a man beater to the coverage"],
+        tags: ["nickel-pressure", "man-vs-zone", "protection-count"],
+        misconceptions: ["A hot throw is either always right or always wrong"],
+        difficulty: 2,
+        transfer: ["Zone pressure to man pressure", "Two-high to one-high"],
+        revisitDays: 2
+      }
+    },
+
+    {
+      id: "zero-3rd-7",
+      title: "Zero Hour",
+      module: "nickel-pressure",
+      order: 4,
+      type: "synthetic",
+      status: "published",
+      version: 1,
+      provenance: {
+        type: "synthetic",
+        label: "Synthetic teaching scenario. Not a real NFL play: the game, teams and result are invented to teach one principle.",
+        sources: [],
+        fieldConfidence: { all: "synthetic" },
+        reviewer: "unreviewed",
+        notes: "All-out pressure: more rushers than blockers and nobody deep."
+      },
+      context: {
+        quarter: 2, clock: "1:48", score: { you: 7, opp: 10 },
+        down: 3, distance: 7, yardLine: 41, side: "opp", hash: "right",
+        objective: "Convert to stay in field goal range before the half.",
+        scouting: "On third-and-medium this defense sends everyone a few times a game, usually after showing two linebackers in the A-gaps."
+      },
+      offense: {
+        personnel: "11",
+        personnelText: "11 personnel: 1 back, 1 tight end, 3 receivers",
+        formation: "Trips left (3x1), tight end on the wing, back offset right",
+        players: [
+          { id: "Z", label: "Z", role: "Receiver (#1 to trips)", x: 7, y: -1 },
+          { id: "H", label: "H", role: "Slot receiver (#2)", x: 15, y: -1.8 },
+          { id: "Y", label: "Y", role: "Tight end, wing (#3)", x: 25.5, y: -2 },
+          { id: "LT", label: "LT", role: "Left tackle", x: 27.13, y: -1 },
+          { id: "LG", label: "LG", role: "Left guard", x: 28.43, y: -1 },
+          { id: "C", label: "C", role: "Center", x: 29.73, y: -1 },
+          { id: "RG", label: "RG", role: "Right guard", x: 31.03, y: -1 },
+          { id: "RT", label: "RT", role: "Right tackle", x: 32.33, y: -1 },
+          { id: "QB", label: "QB", role: "Quarterback (shotgun)", x: 29.73, y: -5 },
+          { id: "RB", label: "RB", role: "Running back, offset right", x: 31.6, y: -5 },
+          { id: "X", label: "X", role: "Receiver (backside, right)", x: 47, y: -1 }
+        ]
+      },
+      defense: {
+        personnel: "nickel",
+        personnelText: "Nickel: 4 linemen, 2 linebackers, 5 defensive backs",
+        front: "Four-down front with both linebackers mugged in the A-gaps",
+        shell: "zero",
+        boxCount: 8,
+        disguise: "low",
+        players: [
+          { id: "CBL", label: "CB", role: "Left corner, pressed on Z", x: 7, y: 1.5 },
+          { id: "NB", label: "NB", role: "Nickel, pressed on the slot", x: 15.5, y: 1.5 },
+          { id: "SS", label: "SS", role: "Strong safety, walked down over the tight end", x: 24.5, y: 5.5 },
+          { id: "DEL", label: "E", role: "Left end", x: 26.2, y: 1 },
+          { id: "DT", label: "T", role: "Defensive tackle", x: 27.7, y: 1 },
+          { id: "MIKE", label: "M", role: "Mike linebacker, mugged in the left A-gap", x: 29.08, y: 1.8 },
+          { id: "WILL", label: "W", role: "Will linebacker, mugged in the right A-gap", x: 30.4, y: 1.8 },
+          { id: "NT", label: "N", role: "Nose tackle", x: 31.7, y: 1 },
+          { id: "DER", label: "E", role: "Right end", x: 33.5, y: 1 },
+          { id: "FS", label: "FS", role: "Free safety, 9 yards over the back", x: 33, y: 9 },
+          { id: "CBR", label: "CB", role: "Right corner, pressed on X", x: 47, y: 1.5 }
+        ]
+      },
+      actual: {
+        call: "cover-0",
+        pressure: "six",
+        rushers: ["DEL", "DT", "MIKE", "WILL", "NT", "DER"],
+        droppers: [],
+        coverage: "Cover 0 (all-out man)",
+        rotation: "None, and nobody deep. Five defensive backs in man on five eligible receivers; the free safety takes the back.",
+        post: {
+          CBL: { x: 8, y: 8, zone: "Man: Z" },
+          NB: { x: 17, y: 7, zone: "Man: slot" },
+          SS: { x: 23, y: 6, zone: "Man: tight end" },
+          DEL: { x: 27, y: -3.5 },
+          DT: { x: 28.2, y: -3 },
+          MIKE: { x: 29.2, y: -3.5 },
+          WILL: { x: 30.3, y: -3.5 },
+          NT: { x: 31.4, y: -3 },
+          DER: { x: 32.6, y: -3.5 },
+          FS: { x: 34, y: 3, zone: "Man: back" },
+          CBR: { x: 46, y: 8, zone: "Man: X" }
+        },
+        events: [
+          { t: 0.1, text: "Both A-gap linebackers come. Six rushers against six possible blockers, at most." },
+          { t: 0.4, text: "Every defensive back is in man. Nobody is deeper than 9 yards." },
+          { t: 1.4, text: "If any rusher comes free, he arrives about now." }
+        ]
+      },
+      diagnosis: {
+        questions: [
+          {
+            id: "personnel", prompt: "What defensive personnel is on the field?", kind: "single",
+            options: [{ id: "base", label: "Base (4 DBs)" }, { id: "nickel", label: "Nickel (5 DBs)" }, { id: "dime", label: "Dime (6 DBs)" }],
+            credit: { base: 20, nickel: 100, dime: 40 }, error: "personnel",
+            explain: "Two corners, a nickel, two safeties: nickel. The linebackers lined up in the A-gaps are still linebackers."
+          },
+          {
+            id: "shell", prompt: "What safety shell is the defense showing?", kind: "single",
+            options: [{ id: "two", label: "Two-high" }, { id: "one", label: "One-high" }, { id: "zero", label: "Zero (no deep safety)" }],
+            credit: { two: 0, one: 40, zero: 100 }, error: "shell",
+            explain: "Nobody is deeper than 9 yards: zero. The free safety at 9 could still bail to the middle, which is why one-high earns partial credit."
+          },
+          {
+            id: "rushers", prompt: "Tap every defender who could rush.", kind: "rushers",
+            answer: ["DEL", "DT", "MIKE", "WILL", "NT", "DER", "NB", "SS"], critical: "MIKE", error: "pressure-count",
+            explain: "Eight can come: four linemen, both A-gap linebackers, the pressed nickel and the strong safety over the tight end. Six blockers, eight threats: the ball has to come out."
+          },
+          {
+            id: "pressure", prompt: "What's the most likely pressure?", kind: "single",
+            options: [{ id: "four", label: "Four-man rush" }, { id: "five", label: "Five-man pressure" }, { id: "six", label: "Six or more (Cover 0)" }],
+            credit: { four: 20, five: 60, six: 100 }, error: "pressure-count",
+            explain: "Double A-gap mugs with no deep safety is the zero look. Teams do bail out of it (simulated pressure), but with nobody deep the evidence says six or more."
+          }
+        ]
+      },
+      motions: [
+        { id: "none", label: "No motion", text: "Snap it fast. Against zero, every extra second pre-snap is time for the defense to adjust its blitz." },
+        {
+          id: "yoyo", label: "Slot yo-yo motion", detail: "H motions in and back out.",
+          path: { from: "H", to: [21, -2], back: true },
+          moves: { NB: [15.8, 1.6] },
+          text: "The nickel went with the slot every step: man. Nobody rotated deep to replace anyone, so there's still no safety in the middle.",
+          clue: "The nickel ran with the motion and no one rotated deep: man coverage with nobody in the middle."
+        },
+        {
+          id: "rbshift", label: "Shift the back to the left", detail: "RB moves to the trips side of the quarterback.",
+          path: { from: "RB", to: [27.9, -5] },
+          moves: { FS: [31, 7.5] },
+          text: "The free safety slid over with the back: he has the back in man. That confirms it. There's nobody deep.",
+          clue: "The free safety slid with the back's shift: he's in man on the back, so nobody is deep."
+        }
+      ],
+      protections: [
+        {
+          id: "six", label: "Six-man: line on the down linemen and backers, back takes the edge",
+          detail: "The line takes the four down linemen and the two A-gap linebackers; the back takes anyone who comes off the edge.",
+          hold: 2.1, grade: 90, category: "recommended",
+          why: "Six blockers for six rushers, every one with a name. It won't last long, so the call still has to be quick.",
+          assignments: [
+            { player: "C", assignment: "Take the Mike in the left A-gap", key: "MIKE", win: "Stones him at the line", fail: "Gets beat inside", p: 0.85 },
+            { player: "RB", assignment: "Take the first defender off the edge", key: "DER", win: "Squares up the end", fail: "Gets run over", p: 0.85 }
+          ]
+        },
+        {
+          id: "five", label: "Five-man protection, QB is hot off the A-gaps",
+          detail: "The back releases. The QB has the A-gap linebackers: if both come, the ball comes out.",
+          hold: 1.1, grade: 70, category: "valid", hotPlan: true,
+          why: "Legitimate against zero only if the ball is out in about a second. One rusher will be free.",
+          assignments: [
+            { player: "QB", assignment: "Ball out before the free A-gap rusher arrives", key: "WILL", win: "Ball out in 1.1 seconds", fail: "Holds it", p: 0.8 }
+          ]
+        },
+        {
+          id: "slide", label: "Full slide right, back blocks the left edge",
+          detail: "The line slides right as a unit; the back takes the left end.",
+          hold: 1.5, grade: 55, category: "risky",
+          why: "Sliding against two mugged A-gap linebackers lets one of them run straight through the middle. Against zero, the middle is the fastest path to the quarterback.",
+          assignments: [
+            { player: "LG", assignment: "Slide right and hope the Mike goes with him", key: "MIKE", win: "The Mike runs into the slide", fail: "The Mike comes through the vacated A-gap", p: 0.5 }
+          ]
+        },
+        {
+          id: "max", label: "Max protection: tight end and back stay in",
+          detail: "Seven block six. Three receivers go out against man with no help.",
+          hold: 2.8, grade: 80, category: "safe",
+          why: "A classic zero answer: block everyone, and take one-on-ones with no safety behind them.",
+          assignments: [
+            { player: "Y", assignment: "Stay in and take the left end", key: "DEL", win: "Walls him off", fail: "Gets beat inside", p: 0.9 }
+          ]
+        }
+      ],
+      plays: [
+        {
+          id: "slants", concept: "hot-slant", label: "Double slants to the trips side",
+          detail: "Z and H run three-step slants; Y runs to the flat. The ball comes out on the third step.",
+          need: 1.2, window: 0.64, yards: 9, spread: 5, intRisk: 0.06, luck: 0.1,
+          hot: { window: 0.6, yards: 8, spread: 5, text: "Ball out on the third step to a slant" },
+          grade: 95, category: "recommended",
+          conflict: "NB",
+          why: "The zero beater. The ball is out before six rushers get home, and with nobody deep a slant that wins its leverage can go the distance. The read is the nickel: if he's inside the slot, throw Z's slant; if he's outside, throw H's.",
+          key: { answer: "NB", partial: { CBL: "He's the read only if the nickel takes away H. Start with the nickel." } },
+          routes: [{ from: "Z", path: [[7, 1.5], [11, 5]] }, { from: "H", path: [[15, 1.5], [19, 5]] }, { from: "Y", path: [[24, 1], [19, 2]] }],
+          assignments: [
+            { player: "QB", assignment: "Read the nickel's leverage and throw on the third step", key: "NB", win: "Ball out in rhythm, away from leverage", fail: "Throws into the nickel's leverage", p: 0.86, keyBonus: 0.08, critical: true },
+            { player: "H", assignment: "Win inside on the slant against press man", key: "NB", win: "Gets inside the nickel", fail: "Gets jammed and the window closes", p: 0.78, critical: true }
+          ]
+        },
+        {
+          id: "fade", concept: "fade", label: "Slot fade",
+          detail: "H runs a fade up the seam with no safety behind his defender. Max-protect friendly.",
+          need: 1.9, window: 0.42, yards: 28, spread: 10, intRisk: 0.1, luck: 0.1,
+          grade: 74, category: "aggressive",
+          conflict: "NB",
+          why: "With nobody deep, any one-on-one that wins is a touchdown, and that's the bet. It needs almost two seconds, which six rushers rarely give you unless everyone stays in to block.",
+          key: { answer: "NB", partial: { FS: "He's in man on the back, not deep. That's why the fade is open if H wins." } },
+          routes: [{ from: "H", path: [[15.5, 6], [17, 18]] }, { from: "Z", path: [[7, 18]] }],
+          assignments: [
+            { player: "QB", assignment: "Throw it early and over the top: no safety to worry about", key: "NB", win: "Leads H away from the nickel", fail: "Underthrows it", p: 0.78, critical: true },
+            { player: "H", assignment: "Win the release against the pressed nickel", key: "NB", win: "Gets on top of him", fail: "Gets jammed into the boundary", p: 0.6, critical: true }
+          ]
+        },
+        {
+          id: "stick", concept: "stick", label: "Stick to the trips side",
+          detail: "H sits at 6 yards, Y to the flat, Z clears.",
+          need: 2.2, window: 0.42, yards: 6, spread: 2, intRisk: 0.06, luck: 0.03,
+          hot: { window: 0.35, yards: 5, spread: 2, text: "Ball out early to the flat" },
+          grade: 52, category: "risky",
+          conflict: "NB",
+          why: "Too slow and the wrong shape: stick sits down in zone holes, and against zero there are no holes, just a man defender on every hip and six rushers who get home in about two seconds.",
+          key: { answer: "NB", partial: { SS: "He has the tight end in the flat; the stick is the nickel's." } },
+          routes: [{ from: "H", path: [[15, 5.5], [15.8, 5]] }, { from: "Y", path: [[24, 1], [18, 2.5]] }, { from: "Z", path: [[7, 18]] }],
+          assignments: [
+            { player: "QB", assignment: "Throw the stick as he turns", key: "NB", win: "Fits it in", fail: "The nickel is on his hip", p: 0.75, critical: true },
+            { player: "H", assignment: "Sit at 6 against press man", key: "NB", win: "Creates space", fail: "Sits into the defender", p: 0.6, critical: true }
+          ]
+        },
+        {
+          id: "draw", concept: "draw", label: "Draw",
+          detail: "Show pass, let six rush upfield, hand off behind them.",
+          kind: "run", need: 0, window: 0.28, yards: 14, spread: 8, failYards: 1, failSpread: 2, luck: 0.05,
+          grade: 50, category: "conservative",
+          conflict: "MIKE",
+          why: "Tempting, since nobody is behind the rush. But both A-gap linebackers are running straight through the draw's lane, and the free safety has the back in man.",
+          key: { answer: "MIKE", partial: { FS: "He has the back in man; he's the last line if the draw gets through." } },
+          routes: [{ from: "RB", path: [[29.7, -3], [29.6, 3], [29.5, 10]] }],
+          assignments: [
+            { player: "C", assignment: "Let the Mike through, then seal him", key: "MIKE", win: "Opens the A-gap behind him", fail: "The Mike meets the back at the mesh", p: 0.55, critical: true },
+            { player: "RB", assignment: "Hit the lane and beat the free safety", key: "FS", win: "Gets past the man defender", fail: "The safety makes the tackle", p: 0.7, critical: true }
+          ]
+        }
+      ],
+      contingencies: [
+        {
+          id: "built-in", label: "Built-in hot: if a rusher comes free, ball out to the quick route now", onPressure: "hot",
+          grades: { slants: 95, fade: 55, stick: 75, draw: 50 },
+          why: "The slants are their own hot answer. The fade has nothing quick."
+        },
+        {
+          id: "sight", label: "Sight adjust: the slot converts his route to a slant against pressure", onPressure: "sight",
+          throw: { window: 0.6, yards: 8, spread: 5, intRisk: 0.06, text: "Sight-adjusted slant" },
+          grades: { slants: 85, fade: 80, stick: 85, draw: 40 },
+          why: "Against zero this is the textbook conversion: nobody is replacing anyone, and nobody's deep."
+        },
+        {
+          id: "throwaway", label: "If the window closes, climb and throw it away", onPressure: "throwaway",
+          grades: { slants: 65, fade: 70, stick: 70, draw: 60 },
+          why: "Against zero there's rarely room to climb. It beats a sack, barely."
+        },
+        {
+          id: "none", label: "Hold it: trust the protection", onPressure: "none",
+          grades: { slants: 10, fade: 10, stick: 10, draw: 50 },
+          why: "Eight can come, six can block. There's no trusting it."
+        }
+      ],
+      interactions: [
+        { when: { protection: "max", play: "fade" }, play: 12, note: "Max protection plus a slot fade is a classic zero answer: everyone's blocked and the one-on-one has no help behind it." },
+        { when: { protection: "max", play: "stick" }, window: -0.3, play: -15, note: "Max protection keeps the tight end in, and he was the flat route that makes stick work." },
+        { when: { protection: "five", play: "fade" }, protection: -30, note: "Five-man protection against six rushers on a two-second route: a free rusher with nothing quick to throw." },
+        { when: { protection: "slide", motion: "rbshift" }, hold: 0.3, note: "Moving the back to the left helps a little against the left end, but the middle is still open." }
+      ],
+      recommended: { motion: "none", protection: "six", play: "slants", contingency: "built-in" },
+      fit: { downs: [3], distance: [4, 9], coverage: ["COVER_0"], rushers: [6, 11], blitz: true },
+      clues: [
+        { text: "Both linebackers mugged in the A-gaps: the fastest path to the quarterback, and a protection problem before the snap.", kind: "meaningful" },
+        { text: "Nobody is deeper than 9 yards: zero shell.", kind: "meaningful" },
+        { text: "Everyone is pressed. Man coverage is likely, but press can also bail into zone.", kind: "uncertain" },
+        { text: "The nickel pressed on the slot looked like another blitzer. He was in man the whole way.", kind: "deceptive" }
+      ],
+      next: "After a quick throw beats zero, expect the same double-A look with the linebackers bailing into the slant windows: simulated pressure.",
+      takeaway: "Against zero, the ball has to beat the free rusher. Nobody's deep to help the defense, so a quick throw that wins its leverage can go a long way.",
+      learning: {
+        objectives: ["Recognize a zero look", "Count rushers against blockers when they outnumber you", "Get the ball out before the free rusher"],
+        tags: ["protection-count", "man-vs-zone", "zero-pressure"],
+        misconceptions: ["More time to throw always helps"],
+        difficulty: 2,
+        transfer: ["Five-man to six-man pressure", "Trips right to trips left"],
+        revisitDays: 2
       }
     }
   ]

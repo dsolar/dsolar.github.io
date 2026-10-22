@@ -8,6 +8,8 @@ It's a static page on davidsolar.dev (GitHub Pages): plain JavaScript, no build 
 | `schema.js` | Validates content (references, ranges, provenance rules). The page refuses invalid data. | The data shape |
 | `engine.js` | Pure rules: diagnosis scoring, snap resolution, grades, expected value, mastery and scheduling | Data, no DOM |
 | `app.js` | Draws the field (SVG), runs the five steps, renders the review, and keeps progress in localStorage | Engine output |
+| `real-plays.js` | Real snaps matched to lessons; generated, never edited by hand | Lesson ids |
+| `../tools/strategist_real.py` | Builds `real-plays.js` from nflverse play-by-play, participation and FTN charting (standard library only) | Lesson `fit`s |
 | `engine.test.cjs` | Unit tests: `node --test sunday-strategist/engine.test.cjs` | |
 | `../tests/sunday-strategist.e2e.mjs` | A Playwright end-to-end run of a full snap, a phone layout check and reduced motion: `node tests/sunday-strategist.e2e.mjs` | |
 

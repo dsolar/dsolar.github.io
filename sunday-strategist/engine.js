@@ -81,7 +81,7 @@
     var items = sc.diagnosis.questions.map(function (q) {
       var mine = answers[q.id], credit, correct, yours, note = "";
       if (q.kind === "rushers") {
-        mine = mine || [];
+        mine = (mine || []).filter(function (id) { return byId(sc.defense.players, id); });
         var hit = mine.filter(function (id) { return q.answer.indexOf(id) >= 0; });
         var extra = mine.filter(function (id) { return q.answer.indexOf(id) < 0; });
         credit = clamp(Math.round(100 * hit.length / q.answer.length - 15 * extra.length), 0, 100);
@@ -317,8 +317,53 @@
     return best || pool[0].id;
   }
 
+  /* Real snaps (real-plays.js, from tools/strategist_real.py) replay a lesson in a real game.
+     Facts come from the data; the drawing and the option grades come from the lesson. */
+  function pct0(x) { return Math.round(x * 100) + "%"; }
+  function fromReal(data, real, r) {
+    var t = byId(data.scenarios, r.lesson);
+    if (!t) return null;
+    var s = JSON.parse(JSON.stringify(t)), teams = real.teams || {};
+    var off = teams[r.off] || r.off, def = teams[r.def] || r.def;
+    s.id = r.id; s.lesson = t.id; s.type = "adapted"; s.status = "published";
+    s.title = off + (r.home === r.off ? " vs " : " at ") + def;
+    s.subtitle = (r.round ? r.round + ", " + r.season + " season" : "Week " + r.week + ", " + r.season) + " · " + t.title;
+    s.provenance = {
+      type: "adapted",
+      label: "A real snap. The situation, players, rush, coverage and result are NFL data. The pre-snap alignment on the field is drawn from the lesson, not charted.",
+      sources: ["nflverse play-by-play " + r.season, "nflverse participation (NGS) " + r.season, "FTN charting via nflverse " + r.season],
+      fieldConfidence: { situation: "verified", personnel: "verified", result: "verified", rush: "expert-charted", coverage: "expert-charted", alignment: "inferred", assignments: "inferred" },
+      reviewer: "generated", notes: "Matched to the lesson by down, distance, coverage, rush count and blitz."
+    };
+    s.historical = { season: r.season, week: r.week, gameId: r.gameId, playId: String(r.playId), offense: r.off, defense: r.def, description: r.desc, result: r.result };
+    s.real = r;
+    s.teams = { off: r.off, def: r.def, offName: off, defName: def };
+    var yl = r.yl100 <= 50 ? r.yl100 : 100 - r.yl100, diff = r.offScore - r.defScore;
+    var late = r.qtr >= 4 ? (diff < 0 ? " Down " + -diff + " in the " + (r.qtr > 4 ? "overtime" : "fourth quarter") + "." : diff === 0 ? " Tied in the " + (r.qtr > 4 ? "overtime" : "fourth quarter") + "." : "") : "";
+    s.context = {
+      quarter: r.qtr, clock: r.clock, score: { you: r.offScore, opp: r.defScore }, down: r.down, distance: r.dist,
+      yardLine: Math.max(1, yl), side: r.yl100 <= 50 ? "opp" : "own", hash: t.context.hash,
+      objective: (r.down === 3 ? "Convert, or it's fourth down." : "Stay ahead of the chains: a first down is great, and 4 yards sets up a manageable third.") + late,
+      scouting: r.tendency && r.tendency.n ? "The " + def + " blitzed on " + pct0(r.tendency.blitz) + " of third-down dropbacks in " + r.season +
+        (r.tendency.coverage != null ? " and played " + r.coverage + " on " + pct0(r.tendency.coverage) : "") + " (charting, " + r.tendency.n + " snaps)." : t.context.scouting
+    };
+    return s;
+  }
+  /* Every playable scenario: the lessons, then real snaps interleaved across lessons (spaced and mixed). */
+  function catalog(data, real) {
+    var list = data.scenarios.slice(), seen = {};
+    ((real && real.plays) || []).forEach(function (r) {
+      var s = fromReal(data, real, r);
+      if (!s) return;
+      var k = seen[s.lesson] = (seen[s.lesson] || 0) + 1;
+      s.order = byId(data.scenarios, s.lesson).order + 10 * k;
+      list.push(s);
+    });
+    return list;
+  }
+
   return {
-    rng: rng, letter: letter, interactions: interactions, scoreDiagnosis: scoreDiagnosis, resolve: resolve,
+    rng: rng, fromReal: fromReal, catalog: catalog, letter: letter, interactions: interactions, scoreDiagnosis: scoreDiagnosis, resolve: resolve,
     expected: expected, review: review, emptyRecord: emptyRecord, record: record, report: report, next: next,
     ERRORS: ERRORS, CATEGORY_LABEL: CATEGORY_LABEL
   };

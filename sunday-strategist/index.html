@@ -95,6 +95,20 @@ a { color: var(--yellow); }
 .topline { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; color: var(--chalk-dim); font-size: 14px; margin: 4px 0 10px; }
 .topline .quit { background: none; border: 0; color: var(--chalk-dim); cursor: pointer; padding: 4px 0; text-decoration: underline; text-underline-offset: 3px; }
 .scen-title { font-family: var(--display); font-weight: 800; font-size: clamp(32px, 6vw, 46px); line-height: 1; margin: 0; }
+.scen-title .logo { width: 40px; height: 40px; vertical-align: -6px; margin: 0 10px 0 0; }
+.scen-title .logo + .logo, .scen-title .logo:last-child { margin: 0 0 0 10px; }
+.scen-sub { margin: 4px 0 0; color: var(--chalk-dim); font-family: var(--display); font-weight: 700; font-size: 20px; letter-spacing: .3px; }
+.bug .team { flex-direction: row; align-items: center; gap: 8px; }
+.bug .team .logo { width: 26px; height: 26px; }
+.bug .team span { display: flex; flex-direction: column; }
+.scen-list li { display: grid; gap: 4px; }
+.real-btn { display: flex !important; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 14px !important; background: var(--panel) !important; font-size: 14px; color: var(--chalk-dim); }
+.real-btn .logos { display: flex; gap: 4px; flex-wrap: wrap; }
+.real-btn .logos img { width: 18px; height: 18px; }
+.real-facts { list-style: none; margin: 0; padding: 0; }
+.real-facts li { display: grid; grid-template-columns: 7.5em 7.5em 1fr; gap: 10px; align-items: baseline; padding: 7px 0; border-top: 1px solid var(--line); font-size: 15px; }
+.real-facts li span:last-child { color: var(--chalk-dim); }
+@media (max-width: 560px) { .real-facts li { grid-template-columns: auto 1fr; } .real-facts li span:last-child { grid-column: 1 / -1; } }
 .prov { display: flex; gap: 8px; align-items: flex-start; margin: 8px 0 12px; padding: 7px 10px; font-size: 13px; color: var(--chalk-dim); border: 1px dashed var(--line-strong); border-radius: 4px; }
 .prov b { color: var(--yellow); font-weight: 600; white-space: nowrap; }
 .bug { display: grid; grid-template-columns: repeat(4, auto); justify-content: start; background: #0A141B; border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; font-family: var(--display); line-height: 1; }
@@ -257,12 +271,13 @@ legend { padding: 0; margin: 0 0 6px; font-weight: 600; }
     </ol>
     <div class="module" id="module"></div>
     <section class="report" id="report" aria-labelledby="report-h"></section>
-    <p class="credits">Every scenario says where its facts come from. These are synthetic teaching scenarios built to teach one principle each: no real game, team or player. Real NFL situations will come from public play-by-play and charting data, labeled with their source and how sure that source is.</p>
+    <p class="credits">Every scenario says where its facts come from. Each lesson starts as a synthetic teaching scenario, then replays on real NFL snaps from 2023 to 2025: the game, players, rush, coverage and result are from nflverse play-by-play and participation data and FTN charting (via nflverse); the pre-snap alignment is drawn from the lesson. Team logos via ESPN.</p>
   </section>
 
   <section id="play" hidden>
     <div class="topline"><span id="where"></span><button type="button" class="quit" id="quit">Back to start</button></div>
     <h1 class="scen-title" id="scen-title" tabindex="-1"></h1>
+    <p class="scen-sub" id="scen-sub" hidden></p>
     <p class="prov" id="prov"></p>
     <div class="bug" id="bug"></div>
     <div class="stage">
@@ -285,9 +300,10 @@ legend { padding: 0; margin: 0 0 6px; font-weight: 600; }
   <p class="sr" aria-live="polite" id="live"></p>
 </main>
 
-<script src="scenarios.js?v=2"></script>
+<script src="scenarios.js?v=3"></script>
+<script src="real-plays.js?v=1"></script>
 <script src="schema.js?v=1"></script>
-<script src="engine.js?v=1"></script>
-<script src="app.js?v=1"></script>
+<script src="engine.js?v=2"></script>
+<script src="app.js?v=2"></script>
 </body>
 </html>
