@@ -20,9 +20,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Besley:ital,wght@0,500;0,600;0,700;0,800;1,500&family=Libre+Franklin:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="assets/site.css?v=20261019-spotlight">
+<link rel="stylesheet" href="assets/site.css?v=20261022-scoreboard">
 <script src="assets/site.js" defer></script>
 <script src="assets/analytics.js" defer></script>
+<script src="assets/scoreboard.js?v=20261022" defer></script>
 </head>
 <body>
 
@@ -70,6 +71,17 @@
       <g transform="translate(244 173)"><circle r="9" fill="#18334C" stroke="#F8F5ED" stroke-width="1.5"/><path d="M-4-5c4 3 4 7 0 10m8-10c-4 3-4 7 0 10" fill="none" stroke="#F8F5ED" stroke-width="1.2"/></g>
     </g>
   </svg>
+    </div>
+  </section>
+
+  <!-- Today's games and each team's next one. The teams are listed at the top of assets/scoreboard.js. -->
+  <section class="section scoreboard" id="scores" aria-labelledby="scores-title" hidden>
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="scores-title">Scoreboard</h2>
+        <span class="count" id="scoreboard-note"></span>
+      </div>
+      <ul class="sb-list" id="scoreboard-list" aria-label="Boston, BC and Penn State games, Boston time"></ul>
     </div>
   </section>
 

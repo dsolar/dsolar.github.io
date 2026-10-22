@@ -385,3 +385,25 @@ a:hover{color:var(--red)}
  .entry.spotlight .entry-meta{padding-top:28px}
  .entry.spotlight .entry-body h3{font-size:clamp(1.7rem,2.8vw,2.3rem)}
 }
+
+/* ---------- Scoreboard (assets/scoreboard.js fills it) ---------- */
+.scoreboard{padding-block:clamp(32px,4.5vw,52px) 0}
+.sb-list{list-style:none;margin:16px 0 0;padding:0;border-top:2px solid var(--ink)}
+.sb-row{display:grid;grid-template-columns:minmax(0,13rem) minmax(0,1fr) auto;align-items:baseline;gap:4px 24px;padding:12px 0;border-bottom:1px solid var(--rule);font-size:.98rem}
+.sb-team{font-weight:600;display:flex;align-items:center;gap:10px}
+.sb-chip{flex:none;width:10px;height:10px;border-radius:2px;box-shadow:0 0 0 1px var(--rule)}
+.sb-game a{text-decoration-thickness:1.5px}
+.sb-score{font-variant-numeric:tabular-nums;margin-left:4px}
+.sb-when{color:var(--muted);text-align:right;font-variant-numeric:tabular-nums;display:flex;gap:4px 12px;justify-content:flex-end;flex-wrap:wrap}
+.sb-tv{font-size:.85rem;border:1px solid var(--rule);border-radius:999px;padding:0 8px}
+.sb-today .sb-when{color:var(--ink);font-weight:600}
+.sb-quiet{color:var(--muted)}
+.sb-quiet .sb-team{font-weight:500}
+.sb-live{color:var(--red);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:.82rem}
+.sb-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:5px;vertical-align:.1em;animation:sb-pulse 1.6s ease-in-out infinite}
+@keyframes sb-pulse{50%{opacity:.3}}
+@media (prefers-reduced-motion: reduce){.sb-dot{animation:none}}
+@media (max-width: 640px){
+  .sb-row{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"team when" "game game"}
+  .sb-team{grid-area:team}.sb-when{grid-area:when}.sb-game{grid-area:game;padding-left:20px}
+}
