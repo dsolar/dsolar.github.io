@@ -60,6 +60,9 @@ def sg(params, client):
 
 
 FAILED = object()                  # find(): the search itself failed, as opposed to SeatGeek not having the show
+# Home games are found by the team's SeatGeek listing rather than a text search, which doesn't match
+# SeatGeek's sports titles ("Nashville Predators at Boston Bruins"). Keyed by the calendar's team name.
+TEAM_SLUGS = {"Celtics": "boston-celtics", "Bruins": "boston-bruins", "Patriots": "new-england-patriots"}
 
 
 def find(e, client):
@@ -68,12 +71,18 @@ def find(e, client):
     q = re.sub(r"\bvs\.?\b", " ", e["title"], flags=re.I)
     q = re.sub(r"[:(].*$", "", q).strip()
     nxt = (datetime.fromisoformat(e["date"]) + timedelta(days=1)).date().isoformat()
+    team = TEAM_SLUGS.get(e["title"].split(" vs ")[0]) if e.get("source") == "espn" else None
+    search = {"performers.slug": team} if team else {"q": q}
     try:
-        res = sg({"q": q, "datetime_local.gte": e["date"], "datetime_local.lt": nxt, "per_page": 10}, client)
+        res = sg(dict(search, **{"datetime_local.gte": e["date"], "datetime_local.lt": nxt, "per_page": 10}), client)
     except Exception as err:
         print(f"::warning::SeatGeek search for {e['title']} failed: {err}")
         return FAILED
-    best, best_score = None, 0
+    if team:
+        print(f"  {e['date']} {e['title']}: SeatGeek has {len(res.get('events', []))} {team} event(s) that day: "
+              + "; ".join(f"{c.get('title')} at {(c.get('venue') or {}).get('name')}" for c in res.get("events", [])))
+    # A team's own listing only holds its games, so any one that day will do; the venue then picks the home game.
+    best, best_score = None, -1 if team else 0
     city = norm((e.get("city") or "").split(",")[0])
     for c in res.get("events", []):
         v = c.get("venue") or {}
@@ -167,8 +176,8 @@ def main():
         if e["id"] in known:
             continue
         miss = misses.get(e["id"])
-        if miss and miss > (now - timedelta(days=RETRY_MISS_DAYS)).date().isoformat():
-            continue
+        if miss and not game_soon(e) and miss > (now - timedelta(days=RETRY_MISS_DAYS)).date().isoformat():
+            continue                # home games are looked for on every run: a new listing should show up fast
         c = find(e, client)
         time.sleep(0.2)
         if c is FAILED:             # try again next run, without counting it as a show SeatGeek doesn't have
