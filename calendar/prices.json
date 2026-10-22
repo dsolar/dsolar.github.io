@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-21T17:21:42Z",
+ "updated": "2026-10-22T05:01:48Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -485,6 +485,10 @@
     [
      "2026-10-21",
      56
+    ],
+    [
+     "2026-10-22",
+     56
     ]
    ],
    "sg": null,
@@ -528,6 +532,10 @@
     ],
     [
      "2026-10-21",
+     22
+    ],
+    [
+     "2026-10-22",
      22
     ]
    ],
@@ -635,6 +643,10 @@
     [
      "2026-10-21",
      28
+    ],
+    [
+     "2026-10-22",
+     28
     ]
    ],
    "sg": null,
@@ -666,6 +678,10 @@
     ],
     [
      "2026-10-21",
+     22
+    ],
+    [
+     "2026-10-22",
      22
     ]
    ],
@@ -800,29 +816,29 @@
   }
  },
  "misses": {
-  "tm-vv1k7Z_3OAG7I4tc": "2026-10-19",
-  "tm-G5vVZ_5R5G1f5": "2026-10-19",
-  "tm-vv1AeZkftGkdqDKq0": "2026-10-19",
-  "tm-G5vVZ_5RuGQjG": "2026-10-19",
-  "tm-vvG17Z_5wCylI9": "2026-10-19",
-  "tm-vv177Z_oGkXBnY-F": "2026-10-19",
-  "tm-vv177Z_oGkXBi8-I": "2026-10-19",
-  "tm-rZ7HnEZ1AfuNZ7": "2026-10-19",
-  "tm-rZ7HnEZ1AfuYF0": "2026-10-19",
-  "tm-Z7r9jZ1A7PIPk": "2026-10-19",
-  "tm-Z7r9jZ1A7PIP6": "2026-10-19",
-  "tm-vv177Z_8GkD4PKZI": "2026-10-19",
-  "tm-vv1AvZkf6Gkd94lLs": "2026-10-19",
-  "tm-Z7r9jZ1A7-VGp": "2026-10-19",
-  "tm-vv1AvZkoYGkdIsA4N": "2026-10-19",
-  "tm-vvG17Z_5wbduXe": "2026-10-19",
-  "tm-Z7r9jZ1A7PJaJ": "2026-10-19",
-  "tm-vvG17Z_u7Z_JCI": "2026-10-19",
-  "tm-Z7r9jZ1AAvx-I": "2026-10-19",
-  "tm-Z7r9jZ1AAvx-E": "2026-10-19",
-  "tm-Z7r9jZ1AA77-E": "2026-10-19",
-  "tm-rZ7HnEZ1Afugk7": "2026-10-19",
-  "tm-rZ7HnEZ1AfCA0f": "2026-10-19"
+  "tm-vv1k7Z_3OAG7I4tc": "2026-10-22",
+  "tm-G5vVZ_5R5G1f5": "2026-10-22",
+  "tm-vv1AeZkftGkdqDKq0": "2026-10-22",
+  "tm-G5vVZ_5RuGQjG": "2026-10-22",
+  "tm-vvG17Z_5wCylI9": "2026-10-22",
+  "tm-vv177Z_oGkXBnY-F": "2026-10-22",
+  "tm-vv177Z_oGkXBi8-I": "2026-10-22",
+  "tm-rZ7HnEZ1AfuNZ7": "2026-10-22",
+  "tm-rZ7HnEZ1AfuYF0": "2026-10-22",
+  "tm-Z7r9jZ1A7PIPk": "2026-10-22",
+  "tm-Z7r9jZ1A7PIP6": "2026-10-22",
+  "tm-vv177Z_8GkD4PKZI": "2026-10-22",
+  "tm-vv1AvZkf6Gkd94lLs": "2026-10-22",
+  "tm-Z7r9jZ1A7-VGp": "2026-10-22",
+  "tm-vv1AvZkoYGkdIsA4N": "2026-10-22",
+  "tm-vvG17Z_5wbduXe": "2026-10-22",
+  "tm-Z7r9jZ1A7PJaJ": "2026-10-22",
+  "tm-vvG17Z_u7Z_JCI": "2026-10-22",
+  "tm-Z7r9jZ1AAvx-I": "2026-10-22",
+  "tm-Z7r9jZ1AAvx-E": "2026-10-22",
+  "tm-Z7r9jZ1AA77-E": "2026-10-22",
+  "tm-rZ7HnEZ1Afugk7": "2026-10-22",
+  "tm-rZ7HnEZ1AfCA0f": "2026-10-22"
  },
  "drops": []
 }
