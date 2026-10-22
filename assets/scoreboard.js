@@ -5,7 +5,7 @@
      - each team's schedule: its next game, both teams' logos, AP ranks, TV and the Gamecast link
      - the league scoreboard for that game's date: score, clock and period, records, odds, finals
      - ESPN's Matchup Predictor (NFL, NBA, college football): our side's chance to win
-     - calendar/prices.json, which Night Out's price watcher keeps: lowest ticket price for home games
+     - the same scoreboard's ticket listing: the lowest resale price (Vivid Seats, via ESPN)
      - assets/picks.json: David's picks, graded when the game ends (how to add one is in that file)
    Times are Boston time. While a game is on, the ticker refreshes every 30 seconds. */
 (function () {
@@ -109,6 +109,9 @@
       var rec = (c.records || []).filter(function (r) { return r.type === "total" || r.name === "overall"; })[0] || (c.records || [])[0];
       s.record = rec && /[1-9]/.test(rec.summary || "") ? rec.summary : "";   // no "0-0" before a season starts
     });
+    // "Tickets as low as $46": Vivid Seats' lowest resale price, which ESPN carries on its scoreboard
+    var tix = /\$\s*([\d,]+)/.exec(((comp.tickets || [])[0] || {}).summary || "");
+    g.tix = tix && g.state === "pre" ? { low: +tix[1].replace(/,/g, "") } : null;
     var o = (comp.odds || [])[0];
     g.odds = o && g.state === "pre" ? [o.details, o.overUnder != null ? "O/U " + o.overUnder : ""].filter(Boolean).join(" · ") : "";
     var sit = comp.situation;
@@ -165,7 +168,7 @@
       status = isToday(g) ? (g.timeKnown && hourET(g.date) >= 17 ? "Tonight " : "Today ") + esc(time) : esc(weekday(g.date)) + " · " + esc(time);
     }
     var dot = ' <span aria-hidden="true">·</span> ';
-    var lines = g.state === "pre" ? [[g.tv, g.tix ? "Tix $" + Math.round(g.tix.low) + (g.tix.down ? " ↓" : "") : ""],
+    var lines = g.state === "pre" ? [[g.tv, g.tix ? "Tix from $" + g.tix.low : ""],
                                      [g.odds, g.wp != null ? "ESPN: " + (g.us.abbr || g.us.name) + " " + g.wp + "%" : ""]]
       : g.state === "in" ? [[g.situation, g.tv]] : [];
     var foot = lines.map(function (l) { return l.filter(Boolean).map(esc).join(dot); }).filter(Boolean)
@@ -247,15 +250,14 @@
     }).then(extras);
   }
 
-  // Ticket prices, picks and ESPN's win probability, layered on after the scores.
+  // Picks and ESPN's win probability, layered on after the scores.
   function sideFiles() {
     if (!files.at || Date.now() - files.at > CACHE_MS) {
       var v = "?v=" + Math.floor(Date.now() / CACHE_MS);
       files = { at: Date.now(),
-        prices: getJSON("calendar/prices.json" + v).then(function (d) { return d.events || {}; }, function () { return {}; }),
         picks: getJSON("assets/picks.json" + v).then(function (d) { return d.picks || {}; }, function () { return {}; }) };
     }
-    return Promise.all([files.prices, files.picks]);
+    return files.picks;
   }
   function predictor(r) {
     var g = r.game;
@@ -271,13 +273,10 @@
     return pct;
   }
   function extras(list) {
-    return sideFiles().then(function (f) {
-      var prices = f[0], picks = f[1];
+    return sideFiles().then(function (picks) {
       return Promise.all(list.map(function (r) {
         var g = r.game;
         if (!g) return r;
-        var rec = prices["espn-" + g.id], h = rec && rec.history || [];
-        if (rec && rec.low && g.state === "pre") g.tix = { low: rec.low, down: h.length > 1 && h[h.length - 1][1] < h[h.length - 2][1] };
         g.pick = picks[g.id] || picks[r.team.key + " " + dayET(g.date)] || "";
         g.graded = g.pick ? grade(g.pick, g) : "";
         return predictor(r).then(function (pct) { g.wp = pct; return r; });
