@@ -1462,7 +1462,7 @@ th.line{border-left:1px solid var(--rule)}
     return name.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[.'’`-]/g, "")
       .split(/\s+/).filter(function (w) { return w && !SUFFIX[w]; }).join(" ");
   };
-  var BASE = null, LEAGUE = {}, HIST = { weeks: {} }, YAHOO = null, liveTimer = null;
+  var BASE = null, LEAGUE = {}, HIST = { weeks: {} }, YAHOO = null, liveTimer = null, liveFails = 0;
   function dayOf(iso) {
     var d = new Date(iso + "T12:00:00Z");
     return isNaN(d) ? iso : d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
@@ -1553,6 +1553,7 @@ th.line{border-left:1px solid var(--rule)}
     clearTimeout(liveTimer);
     if (!BASE || document.visibilityState === "hidden") return;
     getLive(BASE).then(function (live) {
+      liveFails = 0;
       var d = applyLive(BASE, live);
       if (d.live) {
         render(d, LEAGUE);
@@ -1566,7 +1567,11 @@ th.line{border-left:1px solid var(--rule)}
       });
       var on = d.live && d.live.inProgress;
       if (on || soon) liveTimer = setTimeout(refreshLive, on ? 60e3 : 600e3);
-    }).catch(function () { /* no live feed reachable: the page keeps its last numbers */ });
+    }).catch(function () {
+      // No live feed reachable: the page keeps its last numbers and tries again in 1, 2, 4, 8, then every 10 minutes.
+      liveFails++;
+      liveTimer = setTimeout(refreshLive, Math.min(60e3 * Math.pow(2, liveFails - 1), 600e3));
+    });
   }
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") refreshLive(); });
 
