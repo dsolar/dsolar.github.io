@@ -182,7 +182,82 @@ try {
     assert.deepEqual(errors, []);
     await ctx.close();
   }
-  console.log('Passed: defense lesson and its real snaps; defensive coordinator flow; film room filter, deal and play; real snap with team, roster and real result; full snap with keyboard-free and field input, motion reveal, routes, six grades, review sections, replays, saved progress, next scenario, phone layout (with and without reduced motion).');
+  // Phones: the field stays locked at the top, questions come one at a time and advance as you answer.
+  {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+    const page = await ctx.newPage();
+    const errors = [];
+    page.on('pageerror', e => errors.push(e.message));
+    const visible = () => page.$$eval('#step fieldset', f => f.filter(x => x.offsetParent !== null).map(x => x.querySelector('legend').textContent));
+    const fieldInView = () => page.$eval('.field-wrap', el => { const r = el.getBoundingClientRect(); return r.top >= -1 && r.bottom <= innerHeight; });
+    await page.goto(base);
+    await page.click('[data-start="nickel-fire-3rd-6"]');
+    await page.waitForSelector('#step.cards');
+    assert.equal((await visible()).length, 1, 'one question at a time');
+    assert.match((await visible())[0], /personnel/);
+    assert.match(await page.textContent('.card-progress'), /Question 1 of 5/);
+    await page.check('input[name="personnel"][value="nickel"]');
+    await page.waitForFunction(() => /Question 2/.test(document.querySelector('.card-progress').textContent));
+    assert.match((await visible())[0], /shell/);
+    await page.click('#back');
+    assert.match((await visible())[0], /personnel/, 'Back goes to the previous question');
+    await page.check('input[name="personnel"][value="base"]');
+    await page.waitForFunction(() => /Question 2/.test(document.querySelector('.card-progress').textContent));
+    await page.check('input[name="shell"][value="two"]');
+    await page.waitForSelector('.card-done');
+    await page.mouse.wheel(0, 400); await page.waitForTimeout(150);
+    assert.ok(await fieldInView(), 'the field stays on screen while you answer');
+    await page.click('#field .def[data-id="NB"]');
+    await page.click('.card-done');
+    await page.check('input[name="pressure"][value="five"]');
+    await page.waitForFunction(() => /Question 5/.test(document.querySelector('.card-progress').textContent));
+    await page.check('input[name="confidence"][value="strong"]');
+    await page.waitForFunction(() => /declare/.test(document.querySelector('#step h2').textContent), null, { timeout: 3000 });
+    await page.check('input[name="motion"][value="yoyo"]');
+    await page.waitForTimeout(400);
+    assert.match(await page.textContent('#step h2'), /declare/, 'motion waits so you can read what it showed');
+    await page.click('#next');
+    await page.check('input[name="protection"][value="slide-nickel"]');
+    await page.waitForFunction(() => /Call the play/.test(document.querySelector('#step h2').textContent));
+    await page.check('input[name="play"][value="stick"]');
+    await page.waitForFunction(() => /Question 2 of 2/.test((document.querySelector('.card-progress') || {}).textContent || ''));
+    await page.check('input[name="key"][value="SS"]');
+    await page.waitForFunction(() => /goes wrong/.test(document.querySelector('#step h2').textContent));
+    await page.check('input[name="contingency"][value="built-in"]');
+    await page.waitForTimeout(400);
+    assert.match(await page.textContent('#step h2'), /goes wrong/, 'the snap waits for a tap');
+    await page.click('#next');
+    await page.waitForSelector('#review:not([hidden]) .grades');
+    const secs = await page.$$eval('#review details.sec', d => d.map(x => x.open));
+    assert.ok(secs.length >= 6 && secs.filter(Boolean).length <= 1, 'review sections fold up on phones');
+    assert.ok(await page.isVisible('.takeaway'));
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'no sideways scroll');
+
+    // The defense side, the same way.
+    await page.click('#home');
+    await page.click('[data-side="defense"]');
+    await page.click('#deal');
+    await page.waitForSelector('#step.cards');
+    await page.check('input[name="pers"] >> nth=1');
+    await page.waitForFunction(() => /Question 2 of 3/.test(document.querySelector('.card-progress').textContent));
+    await page.check('input[name="likely"] >> nth=1');
+    await page.waitForFunction(() => /Question 3 of 3/.test(document.querySelector('.card-progress').textContent));
+    await page.check('input[name="confidence"] >> nth=1');
+    await page.waitForSelector('input[name="pkg"]');
+    await page.check('input[name="pkg"][value="nickel"]');
+    await page.waitForSelector('input[name="pressure"]');
+    await page.check('input[name="pressure"][value="four"]');
+    await page.waitForSelector('input[name="cov"]');
+    await page.check('input[name="cov"] >> nth=0');
+    await page.waitForSelector('input[name="area"]');
+    await page.check('input[name="area"][value="quick"]');
+    await page.click('#next');
+    await page.waitForSelector('#review:not([hidden]) .grades-5');
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  }
+  console.log('Passed: phone card flow, offense and defense; defense lesson and its real snaps; defensive coordinator flow; film room filter, deal and play; real snap with team, roster and real result; full snap with keyboard-free and field input, motion reveal, routes, six grades, review sections, replays, saved progress, next scenario, phone layout (with and without reduced motion).');
 } finally {
   await browser.close();
   server.close();
