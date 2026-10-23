@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-22T16:12:35Z",
+ "updated": "2026-10-23T15:27:57Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,151 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-vv177Z_kGkw9nlvp",
-   "date": "2026-10-22",
-   "time": "18:00",
-   "title": "Hawthorne Heights - 20th anniversary of If Only You Were Lonely",
-   "cat": "music",
-   "venue": "Citizens House of Blues Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/hawthorne-heights-20th-anniversary-of-if-boston-massachusetts-10-22-2026/event/0100646C97AAB056",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18133198",
-    "2026-10-22-hawthorne-heights-citizens-house-of-bl"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18447597",
-   "date": "2026-10-22",
-   "time": "18:30",
-   "title": "Ian Fidance",
-   "cat": "comedy",
-   "venue": "Laugh Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/ian-fidance-tickets/comedy/2026-10-22-6-30-pm/18447597",
-   "source": "seatgeek",
-   "score": 1
-  },
-  {
-   "id": "tm-k7vGF_FCcIGqH",
-   "date": "2026-10-22",
-   "time": "19:00",
-   "title": "BECK: RIDE LONESOME TOUR",
-   "cat": "music",
-   "venue": "Brooklyn Paramount",
-   "city": "Brooklyn, NY",
-   "url": "https://www.ticketmaster.com/beck-ride-lonesome-tour-brooklyn-new-york-10-22-2026/event/00006483ADA0C77C",
-   "source": "ticketmaster",
-   "drive_hours": 4.5,
-   "act": "Beck",
-   "aka": [
-    "sg-18194389"
-   ],
-   "score": 2,
-   "why": "big"
-  },
-  {
-   "id": "espn-401892552",
-   "date": "2026-10-22",
-   "time": "19:00",
-   "title": "Bruins vs Predators",
-   "cat": "sports",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://www.espn.com/nhl/game/_/gameId/401892552/predators-bruins",
-   "source": "espn",
-   "score": 1
-  },
-  {
-   "id": "tm-vvG17Z_uBQN5TV",
-   "date": "2026-10-22",
-   "time": "19:00",
-   "title": "Sophie Truax: Can't Split a Worm Tour",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/sophie-truax-cant-split-a-worm-boston-massachusetts-10-22-2026/event/010064DE9A8CBFF4",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkfYGkec7fBP",
-   "date": "2026-10-22",
-   "time": "19:30",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-10-22-2026/event/01006530AD114EA5",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_aGkMVuWCw",
-   "date": "2026-10-22",
-   "time": "19:30",
-   "title": "Nate Jackson: BIG DOG",
-   "cat": "comedy",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/nate-jackson-big-dog-boston-massachusetts-10-22-2026/event/0100649DF437D3B2",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18225206",
-    "2026-10-22-nate-jackson-the-wilbur"
-   ],
-   "sub": "Big Dog",
-   "score": 1
-  },
-  {
-   "id": "tm-Z7r9jZ1A7PK40",
-   "date": "2026-10-22",
-   "time": "20:00",
-   "title": "Daniel Donato's Cosmic Country (18 and Over)",
-   "cat": "music",
-   "venue": "Royale Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PK40",
-   "source": "ticketmaster",
-   "act": "Daniel Donato",
-   "aka": [
-    "sg-18477786",
-    "2026-10-22-daniel-donato-s-cosmic-country-royale"
-   ],
-   "score": 2,
-   "why": "like"
-  },
-  {
-   "id": "tm-Z7r9jZ1A7xAFs",
-   "date": "2026-10-22",
-   "time": "20:00",
-   "title": "Friko",
-   "cat": "music",
-   "venue": "The Sinclair Music Hall",
-   "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7xAFs",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18166903",
-    "2026-10-22-friko-the-sinclair"
-   ],
-   "score": 0
-  },
-  {
-   "date": "2026-10-22",
-   "time": null,
-   "title": "Eros Ramazzotti",
-   "cat": "music",
-   "venue": "Wang Theatre",
-   "city": "Boston, MA",
-   "url": "https://labs.songkick.com/venues/886876-wang-theatre-boch-center/calendar",
-   "source": "venues",
-   "id": "2026-10-22-eros-ramazzotti-wang-theatre",
-   "score": 0
-  },
   {
    "id": "tm-vv1AvZkoKGkdq0WeV",
    "date": "2026-10-23",
@@ -390,8 +245,8 @@
    "source": "ticketmaster",
    "aka": [
     "tm-Z7r9jZ1AAvVjY",
-    "sg-18346734",
-    "sg-18349655"
+    "sg-18349655",
+    "sg-18346734"
    ],
    "score": 0
   },
@@ -1913,17 +1768,17 @@
    "score": 0
   },
   {
-   "id": "sg-18237438",
+   "id": "sg-18663271",
    "date": "2026-11-02",
    "time": "20:00",
-   "title": "This is Lorelei with @ (Moved to Royale)",
+   "title": "This is Lorelei",
    "cat": "music",
    "venue": "Royale - Boston",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/this-is-lorelei-tickets/boston-massachusetts-royale-boston-2026-11-02-8-pm/concert/18237438",
+   "url": "https://seatgeek.com/this-is-lorelei-tickets/boston-massachusetts-royale-boston-2026-11-02-8-pm/concert/18663271",
    "source": "seatgeek",
    "aka": [
-    "sg-18663271"
+    "sg-18237438"
    ],
    "score": 0
   },
@@ -2825,6 +2680,7 @@
    "url": "https://www.ticketmaster.com/a-boogie-wit-da-hoodie-10-boston-massachusetts-11-07-2026/event/010065318DD99789",
    "source": "ticketmaster",
    "aka": [
+    "sg-18629299",
     "2026-11-07-a-boogie-wit-da-hoodie-agganis-arena"
    ],
    "score": 0
@@ -6689,6 +6545,18 @@
    "why": "like"
   },
   {
+   "id": "tm-Z7r9jZ1AA704M",
+   "date": "2026-12-07",
+   "time": "20:00",
+   "title": "Country 102.5 Acoustic Christmas w/ Cole Swindell",
+   "cat": "music",
+   "venue": "Roadrunner-Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA704M",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv1AvZkfsGkeMNE2t",
    "date": "2026-12-08",
    "time": "18:30",
@@ -9225,6 +9093,18 @@
    "score": 1
   },
   {
+   "id": "sg-18710459",
+   "date": "2027-02-12",
+   "time": "20:00",
+   "title": "DJ D.O.D",
+   "cat": "music",
+   "venue": "Roadrunner - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/dj-d-o-d-tickets/boston-massachusetts-roadrunner-boston-2027-02-12-8-pm/concert/18710459",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vv177Z_KGkRSFi8R",
    "date": "2027-02-12",
    "time": "20:00",
@@ -9331,6 +9211,7 @@
    "url": "https://www.ticketmaster.com/state-radio-boston-massachusetts-02-13-2027/event/0100653EB99F6C97",
    "source": "ticketmaster",
    "aka": [
+    "sg-18657151",
     "2027-02-13-state-radio-mgm-music-hall-at-fe"
    ],
    "score": 0
@@ -9381,6 +9262,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/2hollis-the-pirouette-tour-boston-massachusetts-02-15-2027/event/010065509A289D8A",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18711107"
+   ],
    "score": 0
   },
   {
@@ -9395,6 +9279,21 @@
    "source": "ticketmaster",
    "aka": [
     "sg-18603799"
+   ],
+   "score": 0
+  },
+  {
+   "id": "tm-Z7r9jZ1AA7Pab",
+   "date": "2027-02-19",
+   "time": "19:00",
+   "title": "Babyfxce E",
+   "cat": "music",
+   "venue": "Royale Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7Pab",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18710365"
    ],
    "score": 0
   },
@@ -9794,6 +9693,18 @@
    "score": 0
   },
   {
+   "id": "tm-Z7r9jZ1AA70bv",
+   "date": "2027-03-04",
+   "time": "20:00",
+   "title": "Tate Butts",
+   "cat": "music",
+   "venue": "The Sinclair Music Hall",
+   "city": "Cambridge, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA70bv",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv177Z_KGkUjGbFV",
    "date": "2027-03-04",
    "time": "21:00",
@@ -9889,18 +9800,15 @@
    "score": 1
   },
   {
-   "id": "tm-vv1AvZk4FGkdfvg2M",
+   "id": "sg-18683919",
    "date": "2027-03-06",
    "time": "19:00",
-   "title": "Dusty Slay: The Neighborhood Guy",
+   "title": "Dusty Slay",
    "cat": "comedy",
    "venue": "Boch Center Shubert Theatre",
    "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/dusty-slay-the-neighborhood-guy-boston-massachusetts-03-06-2027/event/01006548D40753F7",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18683919"
-   ],
+   "url": "https://seatgeek.com/dusty-slay-tickets/comedy/2027-03-06-7-pm/18683919",
+   "source": "seatgeek",
    "score": 1
   },
   {
@@ -10045,18 +9953,15 @@
    "score": 0
   },
   {
-   "id": "tm-vv177Z_fGkzeD51Z",
+   "id": "sg-18699634",
    "date": "2027-03-07",
    "time": "20:00",
-   "title": "Darcy & Jer: Average At Best Tour",
+   "title": "Darcy & Jer",
    "cat": "comedy",
    "venue": "Boch Center Shubert Theatre",
    "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/darcy-jer-average-at-best-tour-boston-massachusetts-03-07-2027/event/0100654E02ECB280",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18699634"
-   ],
+   "url": "https://seatgeek.com/darcy-jer-tickets/comedy/2027-03-07-8-pm/18699634",
+   "source": "seatgeek",
    "score": 1
   },
   {
@@ -10453,6 +10358,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/ashe-the-girl-of-your-dreams-boston-massachusetts-03-16-2027/event/01006554DBA3669A",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18709470"
+   ],
    "score": 0
   },
   {
@@ -10815,15 +10723,18 @@
    "score": 1
   },
   {
-   "id": "sg-18692018",
+   "id": "tm-Z7r9jZ1AA74uY",
    "date": "2027-03-25",
    "time": "20:00",
-   "title": "Elderbrook with Arlo and Rules",
+   "title": "Elderbrook w/ Arlo",
    "cat": "music",
-   "venue": "Roadrunner - Boston",
+   "venue": "Roadrunner-Boston",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/elderbrook-tickets/boston-massachusetts-roadrunner-boston-2027-03-25-8-pm/concert/18692018",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA74uY",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18692018"
+   ],
    "score": 0
   },
   {
@@ -11320,6 +11231,18 @@
    "score": 0
   },
   {
+   "id": "tm-Z7r9jZ1AA7O-3",
+   "date": "2027-04-15",
+   "time": "20:00",
+   "title": "49 Winchester - 18+",
+   "cat": "music",
+   "venue": "Royale Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7O-3",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv1AvZk4aGkdo70dT",
    "date": "2027-04-16",
    "time": "19:00",
@@ -11492,9 +11415,9 @@
  ],
  "sources": {
   "picks": 5,
-  "venues": 5,
-  "espn": 83,
-  "ticketmaster": 556,
-  "seatgeek": 109
+  "venues": 4,
+  "espn": 82,
+  "ticketmaster": 552,
+  "seatgeek": 110
  }
 }
