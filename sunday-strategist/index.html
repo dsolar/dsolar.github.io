@@ -154,6 +154,57 @@ a { color: var(--yellow); }
 .field .over { opacity: 0; transition: opacity .5s .7s; }
 .field .over.on { opacity: 1; }
 .field .routes path { transition: opacity .25s; }
+/* Phones: the field locks at the top and the questions come one at a time below it. */
+.sit-wrap > summary { display: none; }
+.card-progress { display: none; }
+@media (max-width: 720px) {
+  .stage { gap: 10px; }
+  .board { display: contents; }
+  .field-wrap { order: 0; position: sticky; top: 0; z-index: 5; margin: 0 -16px; padding: 6px 16px; background: var(--board); box-shadow: 0 6px 12px -6px rgba(0, 0, 0, .6); }
+  .stage.snapped .field-wrap { position: static; box-shadow: none; }
+  .panel { order: 1; }
+  .field-bar, .as-text, .sit-wrap { order: 2; }
+  .field-bar { font-size: 12px; margin: 0; }
+  .legend span:nth-child(3) { display: none; }
+  .sit-wrap > summary { display: block; cursor: pointer; padding: 8px 0; color: var(--chalk-dim); font-weight: 600; border-top: 1px solid var(--line); }
+  .steps { margin-bottom: 8px; }
+  .steps li { font-size: 12px; }
+  .panel h2 { font-size: 24px; }
+  .panel .hint { font-size: 14px; margin-bottom: 8px; }
+  #step.cards fieldset { display: none; }
+  #step.cards fieldset.on { display: block; animation: cardin .25s ease-out; }
+  #step.cards:not(.last) #next { display: none; }
+  #step.cards .need { display: none; }
+  .card-progress { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; font-size: 13px; color: var(--chalk-faint); }
+  .card-progress span { margin-right: 4px; }
+  .card-progress i { width: 8px; height: 8px; border-radius: 50%; background: var(--line-strong); }
+  .card-progress i.done { background: var(--mint); }
+  .card-progress i.now { background: var(--yellow); }
+  .card-done { margin-top: 10px; width: 100%; }
+  .panel .hint { display: none; }
+  #step .opts.chips { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+  #step .opts.chips .opt span { padding: 6px 8px; font-size: 13px; }
+  #step .opts.chips .opt span small { font-size: 11.5px; line-height: 1.25; }
+  #step .opt span { padding: 8px 11px; }
+  .prov { cursor: pointer; }
+  .prov span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; min-width: 0; }
+  .prov.open span { white-space: normal; }
+  .bug > div { padding: 6px 10px 5px; }
+  .bug b { font-size: 22px; }
+  .scen-title { font-size: 30px; }
+  details.sec { border-top: 1px solid var(--line); margin: 0; padding: 4px 0; }
+  details.sec > summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; padding: 8px 0; }
+  details.sec > summary::-webkit-details-marker { display: none; }
+  details.sec > summary::after { content: "+"; font-family: var(--display); font-size: 24px; color: var(--chalk-faint); }
+  details.sec[open] > summary::after { content: "\2212"; }
+  details.sec > summary h3 { margin: 0; font-family: var(--display); font-weight: 800; font-size: 21px; }
+  details.sec > summary h3 span { color: var(--chalk-faint); margin-right: 8px; }
+  details.sec[open] { padding-bottom: 12px; }
+}
+@keyframes cardin { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  #step.cards fieldset.on { animation: none; }
+}
 @media (prefers-reduced-motion: reduce) {
   .field .pl, .field .over { transition: none; }
 }
@@ -302,7 +353,7 @@ legend { padding: 0; margin: 0 0 6px; font-weight: 600; }
     <p class="scen-sub" id="scen-sub" hidden></p>
     <p class="prov" id="prov"></p>
     <div class="bug" id="bug"></div>
-    <div class="stage">
+    <div class="stage" id="stage">
       <div class="board">
         <div class="field-wrap"><svg class="field" id="field" viewBox="0 0 533 300" role="group" aria-labelledby="field-title"><title id="field-title">The field</title></svg></div>
         <div class="field-bar">
@@ -310,7 +361,7 @@ legend { padding: 0; margin: 0 0 6px; font-weight: 600; }
           <label class="switch"><input type="checkbox" id="labels" checked> Labels</label>
         </div>
         <details class="as-text"><summary>Read the field as text</summary><div id="field-text"></div></details>
-        <dl class="sit" id="sit"></dl>
+        <details class="sit-wrap" id="sitwrap" open><summary>Situation and scouting</summary><dl class="sit" id="sit"></dl></details>
       </div>
       <div class="panel">
         <ol class="steps" id="steps"></ol>
@@ -329,6 +380,6 @@ legend { padding: 0; margin: 0 0 6px; font-weight: 600; }
 <script src="defense.js?v=1"></script>
 <script src="schema.js?v=2"></script>
 <script src="engine.js?v=6"></script>
-<script src="app.js?v=9"></script>
+<script src="app.js?v=10"></script>
 </body>
 </html>

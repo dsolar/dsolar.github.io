@@ -11,6 +11,7 @@
   ];
   var PX = 10, LOS = 200; // 10 px per yard; the line of scrimmage sits 200 px down the drawing
   var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var phone = window.matchMedia ? matchMedia("(max-width: 720px)") : { matches: false };
 
   var st = null; // the snap in progress
 
@@ -151,6 +152,9 @@
     $("scen-title").focus({ preventScroll: true });
   }
   function header(sc, where) {
+    $("stage").classList.remove("snapped");
+    if (st) st.card = null;
+    fitSit();
     $("start").hidden = true; $("play").hidden = false; $("review").hidden = true; $("review").innerHTML = "";
     $("where").textContent = where;
     $("scen-title").innerHTML = sc.real ? logo(sc.real.off, 40) + esc(sc.title) + logo(sc.real.def, 40) : esc(sc.title);
@@ -360,14 +364,70 @@
     } else if (s.id === "answer") {
       html = "<h2>If it goes wrong</h2><p class=\"hint\">Decide now what happens if a rusher comes free. After the snap there's no time.</p><fieldset><legend>Your answer</legend>" + radio("contingency", sc.contingencies, st.pick.contingency) + "</fieldset>";
     }
-    html += '<div class="nav">' + (st.step > 0 ? '<button type="button" class="ghost" id="back">← Back</button>' : "<span></span>") +
+    html += '<div class="nav">' + '<button type="button" class="ghost" id="back">← Back</button>' +
       '<span class="need" id="need"></span><button type="submit" class="primary" id="next">' + (st.step === STEPS.length - 1 ? "Snap it" : "Next →") + "</button></div>";
     f.innerHTML = html;
-    if ($("back")) $("back").onclick = function () { st.step--; renderStep(); place(); routeLayer(by(sc.plays, st.pick.play)); };
+    if ($("back")) $("back").onclick = function () {
+      if (cardBack() || !st.step) return;
+      st.step--; st.card = 99; renderStep(); place(); routeLayer(by(sc.plays, st.pick.play));
+    };
     routeLayer(st.step >= 3 ? by(sc.plays, st.pick.play) : null);
     place();
     updateNav();
+    cards();
   }
+
+  /* ---------- phones: one question at a time, the field locked above ---------- */
+  function sets() { return Array.prototype.slice.call($("step").querySelectorAll("fieldset")); }
+  function answered(set) { return !!set.querySelector("input:checked"); }
+  function lastStep() { return st.step === (st.side === "defense" ? DSTEPS : STEPS).length - 1; }
+  function cards() {
+    var f = $("step"), list = sets(), old = f.querySelector(".card-progress");
+    if (old) old.parentNode.removeChild(old);
+    var on = phone.matches && !st.snapped && list.length > 1;
+    f.classList.toggle("cards", on);
+    if ($("back")) $("back").style.visibility = st.step > 0 || (on && st.card > 0) ? "" : "hidden";
+    if (!on) { list.forEach(function (x) { x.classList.remove("on"); }); f.classList.remove("last"); return; }
+    if (st.card == null) { st.card = 0; while (st.card < list.length - 1 && answered(list[st.card])) st.card++; }
+    st.card = Math.max(0, Math.min(st.card, list.length - 1));
+    list.forEach(function (x, i) { x.classList.toggle("on", i === st.card); });
+    f.classList.toggle("last", st.card === list.length - 1);
+    var prog = document.createElement("p");
+    prog.className = "card-progress";
+    prog.innerHTML = "<span>Question " + (st.card + 1) + " of " + list.length + "</span>" + list.map(function (x, i) { return '<i class="' + (i === st.card ? "now" : answered(x) ? "done" : "") + '"></i>'; }).join("");
+    list[0].parentNode.insertBefore(prog, list[0]);
+    // The rusher question is multi-select: it moves on when you say so.
+    var cur = list[st.card];
+    if (cur.querySelector('input[type="checkbox"]') && !cur.querySelector(".card-done")) {
+      var done = document.createElement("button");
+      done.type = "button"; done.className = "ghost card-done"; done.textContent = "Done \u2192";
+      done.onclick = function () { if (answered(cur)) advance(); else say("Tap at least one defender."); };
+      cur.appendChild(done);
+    }
+  }
+  // After an answer on a phone: the next question, then the next step. The snap always waits for a tap.
+  function advance() {
+    if (!phone.matches || st.snapped) return;
+    var list = sets();
+    if ($("step").classList.contains("cards") && st.card < list.length - 1) {
+      st.card++;
+      cards();
+      var lg = list[st.card].querySelector("legend"); if (lg) { lg.tabIndex = -1; lg.focus({ preventScroll: true }); }
+      return;
+    }
+    if (!lastStep() && !missing()) $("step").requestSubmit ? $("step").requestSubmit() : $("next").click();
+  }
+  function afterAnswer(name) {
+    if (!phone.matches || name === "rushers" || name === "motion") return;
+    setTimeout(advance, reduce ? 0 : 260);
+  }
+  function cardBack() {
+    if (!$("step").classList.contains("cards") || !st.card) return false;
+    st.card--; cards();
+    return true;
+  }
+  if (phone.addEventListener) phone.addEventListener("change", function () { if (st && !st.snapped) { cards(); fitSit(); } });
+  function fitSit() { var w = $("sitwrap"); if (w) w.open = !phone.matches; }
 
   function missing() {
     if (st.side === "defense") return defMissing();
@@ -404,16 +464,17 @@
       return;
     }
     if (n === "confidence" || sc.diagnosis.questions.some(function (q) { return q.id === n; })) st.answers[n] = t.value;
-    else if (n === "play") { st.pick.play = t.value; st.pick.key = null; renderStep(); var q = $("step").querySelector('input[name="play"]:checked'); if (q) q.focus(); return; }
+    else if (n === "play") { st.pick.play = t.value; st.pick.key = null; renderStep(); var q = $("step").querySelector('input[name="play"]:checked'); if (q) q.focus({ preventScroll: true }); afterAnswer(n); return; }
     else st.pick[n] = t.value;
     updateNav();
+    afterAnswer(n);
   });
   $("step").addEventListener("submit", function (e) {
     e.preventDefault();
     if (st.side === "defense") return defSubmit();
     if (missing()) return;
     if (st.step < STEPS.length - 1) {
-      st.step++;
+      st.step++; st.card = null;
       renderStep();
       var h = $("step").querySelector("h2"); if (h) { h.tabIndex = -1; h.focus(); }
       return;
@@ -421,18 +482,25 @@
     snap();
   });
   $("labels").addEventListener("change", function () { var p = load(PREFS, {}); p.labels = this.checked; save(PREFS, p); setLabels(this.checked); if (st && st.step === 0 && !st.snapped && st.side !== "defense") renderStep(); });
+  $("prov").onclick = function () { this.classList.toggle("open"); };
   $("quit").onclick = function () { $("play").hidden = true; $("start").hidden = false; renderStart(); window.scrollTo(0, 0); };
 
   /* ---------- the snap and the review ---------- */
+  function unlock() {
+    $("stage").classList.add("snapped");
+    $("step").classList.remove("cards");
+    if (phone.matches) $("stage").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+  }
   function snap() {
     var sc = st.sc;
     st.snapped = true;
+    unlock();
     routeLayer(null);
     place();
     drawPost();
     Array.prototype.forEach.call($("step").querySelectorAll("input,button"), function (x) { x.disabled = true; });
     $("steps").innerHTML = STEPS.map(function (x) { return '<li class="done">' + x.label + "</li>"; }).join("");
-    setTimeout(function () { renderReview(true); }, reduce ? 0 : 900);
+    setTimeout(function () { renderReview(true); }, reduce ? 0 : phone.matches ? 1500 : 900);
   }
 
   function drawPost() {
@@ -540,7 +608,7 @@
     ];
     var yourOdds = Math.round(rate(rv.expected) * 100);
     return sec("\u2605", "What really happened", '<ul class="real-facts">' + rows.map(function (x) { return "<li>" + chip(x[0]) + "<b>" + esc(x[1]) + "</b><span>" + esc(x[2]) + "</span></li>"; }).join("") + "</ul>" +
-      "<p>Your call " + verb(rv.expected) + " " + yourOdds + "% of the time against what this defense did. The real call " + (r.epa > 0 ? "worked (it added expected points)" : "didn't work (it lost expected points)") + ", once. One snap is evidence, not a verdict: a real call isn't right because it happened, and it isn't wrong because it failed.</p>");
+      "<p>Your call " + verb(rv.expected) + " " + yourOdds + "% of the time against what this defense did. The real call " + (r.epa > 0 ? "worked (it added expected points)" : "didn't work (it lost expected points)") + ", once. One snap is evidence, not a verdict: a real call isn't right because it happened, and it isn't wrong because it failed.</p>", true);
   }
   // Third and fourth down count conversions; earlier downs count the game's success rule (4 yards on 1st and 10, and so on).
   function late() { return st.sc.context.down >= 3; }
@@ -554,7 +622,11 @@
     var r = { down: c.down, dist: c.distance, yl100: c.side === "opp" ? c.yardLine : 100 - c.yardLine, box: sc.defense.boxCount, offPers: sc.offense.personnel || "11", ol: 5, fb: 0 };
     return window.SS_GEN.dataLine(p.concept, r, def && def.group, sc.defense.boxCount);
   }
-  function sec(n, title, body) { return '<section class="sec"><h3><span>' + n + "</span>" + esc(title) + "</h3>" + body + "</section>"; }
+  // On phones the review sections fold up (headline, grades and takeaway stay out), so it fits in a couple of screens.
+  function sec(n, title, body, open) {
+    if (phone.matches) return '<details class="sec"' + (open ? " open" : "") + "><summary><h3><span>" + n + "</span>" + esc(title) + "</h3></summary>" + body + "</details>";
+    return '<section class="sec"><h3><span>' + n + "</span>" + esc(title) + "</h3>" + body + "</section>";
+  }
   function roleOf(id) { var p = by(st.sc.defense.players, id); return p ? p.role.split(",")[0].toLowerCase() : id; }
 
   /* ---------- defensive coordinator mode (defense.js does the football) ---------- */
@@ -653,11 +725,12 @@
     } else {
       html = "<h2>What do you take away?</h2><p class=\"hint\">Every call gives something up. Pick what you refuse to let them have.</p><fieldset><legend>Take away</legend>" + radio("area", why("area", F.AREAS), c.area, detail) + "</fieldset>";
     }
-    html += '<div class="nav">' + (st.step > 0 ? '<button type="button" class="ghost" id="back">\u2190 Back</button>' : "<span></span>") +
+    html += '<div class="nav">' + '<button type="button" class="ghost" id="back">\u2190 Back</button>' +
       '<span class="need" id="need"></span><button type="submit" class="primary" id="next">' + (st.step === DSTEPS.length - 1 ? "Snap it" : "Next \u2192") + "</button></div>";
     f.innerHTML = html;
-    if ($("back")) $("back").onclick = function () { st.step--; renderDefStep(); };
+    if ($("back")) $("back").onclick = function () { if (cardBack() || !st.step) return; st.step--; st.card = 99; renderDefStep(); };
     updateNav();
+    cards();
   }
   function defMissing() {
     var a = st.answers, c = st.call, s = DSTEPS[st.step].id;
@@ -682,22 +755,24 @@
       if (n === "pkg") renderSitDef();
     }
     updateNav();
+    afterAnswer(n);
   }
   function defSubmit() {
     if (defMissing()) return;
     if (st.step < DSTEPS.length - 1) {
-      st.step++;
+      st.step++; st.card = null;
       renderDefStep();
       var h = $("step").querySelector("h2"); if (h) { h.tabIndex = -1; h.focus(); }
       return;
     }
     st.snapped = true;
+    unlock();
     redrawDefense();
     place();
     drawPost();
     Array.prototype.forEach.call($("step").querySelectorAll("input,button"), function (x) { x.disabled = true; });
     $("steps").innerHTML = DSTEPS.map(function (x) { return '<li class="done">' + x.label + "</li>"; }).join("");
-    setTimeout(function () { renderDefReview(true); }, reduce ? 0 : 900);
+    setTimeout(function () { renderDefReview(true); }, reduce ? 0 : phone.matches ? 1500 : 900);
   }
   function callText(c) {
     var pk = F.PACKAGES.filter(function (p) { return p.id === c.pkg; })[0], pz = F.PRESSURES.filter(function (p) { return p.id === c.pressure; })[0];
