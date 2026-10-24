@@ -36,14 +36,42 @@
     }) + " ET";
   }
 
+  function detailRows(players) {
+    return players.map(function (p) {
+      var key = playerKey(p);
+      var proj = p[0] === "IR" ? '—' : (data.bye_next.indexOf(p[2]) !== -1 ? 'Bye' :
+        '<span class="player-proj" data-proj-player="' + esc(key) + '">…</span>');
+      return '<tr><td>' + esc(p[0]) + '</td><td><b>' + esc(p[1]) + '</b></td><td>' + proj + '</td>' +
+        '<td data-player="' + esc(key) + '"><strong class="player-live">0.0</strong></td></tr>';
+    }).join("");
+  }
+
+  function detailTeam(t) {
+    var starters = t.players.filter(isStarter);
+    var bench = t.players.filter(function (p) { return p[0] === "Bench"; });
+    var ir = t.players.filter(function (p) { return p[0] === "IR"; });
+    var html = '<div class="detail-team"><h4>' + esc(t.name) + '</h4><div class="roster-scroll"><table class="current-roster"><thead><tr><th>Slot</th><th>Player</th><th>Proj</th><th>Live</th></tr></thead><tbody>' +
+      detailRows(starters);
+    if (bench.length) html += '<tr class="roster-sep"><th colspan="4">Bench</th></tr>' + detailRows(bench);
+    if (ir.length) html += '<tr class="roster-sep"><th colspan="4">Injured reserve</th></tr>' + detailRows(ir);
+    return html + '</tbody></table></div></div>';
+  }
+
+  function matchupDetail(m, teams) {
+    return '<div class="matchup-detail" hidden>' + detailTeam(teams[m.away]) + detailTeam(teams[m.home]) +
+      '<p class="matchup-note">Projections from Sleeper, scored with Rohan rules. ESPN projections remain official.</p></div>';
+  }
+
   function matchupCard(m, teams, featured) {
     var a = teams[m.away], h = teams[m.home];
     var favorite = m.away_proj > m.home_proj ? m.away : m.home;
     var margin = Math.abs(m.away_proj - m.home_proj).toFixed(1);
-    return '<article class="matchup-card' + (featured ? ' featured' : '') + '">' +
+    return '<article class="matchup-card' + (featured ? ' featured' : '') + '" tabindex="0" role="button" aria-expanded="false">' +
       (featured ? '<div class="matchup-featured-tag">FEATURED MATCHUP</div>' : '') +
       side(a, m.away_proj) + '<div class="at">AT</div>' + side(h, m.home_proj) +
-      '<p class="matchup-note">ESPN favors ' + esc(shortTeam(favorite)) + ' by ' + margin + '</p></article>';
+      '<p class="matchup-note">ESPN favors ' + esc(shortTeam(favorite)) + ' by ' + margin + '</p>' +
+      '<p class="matchup-note expand-hint">Click for player projections ↓</p>' +
+      matchupDetail(m, teams) + '</article>';
   }
 
   function renderMatchups() {
@@ -58,6 +86,66 @@
     var rest = list.filter(function (m) { return m !== featured; });
     $("live-matchups").innerHTML = (featured ? matchupCard(featured, teams, true) : "") +
       rest.map(function (m) { return matchupCard(m, teams, false); }).join("");
+  }
+
+  var projPoints = null, projPromise = null;
+
+  function buildProj(proj) {
+    var points = {};
+    (proj || []).forEach(function (entry) {
+      var p = entry.player || {}, s = entry.stats || {}, pos = p.position || entry.position || "";
+      var isDef = (pos === "DEF" || pos === "D/ST");
+      if (!s || Object.keys(s).length === 0) return;
+      if (!isDef && !p.first_name && !p.last_name) return;
+      if (isDef && s.pts_allow == null) { points["DST|" + teamCode(entry.team || p.team || "")] = null; return; }
+      var key = isDef ? "DST|" + teamCode(entry.team || p.team || "") : norm((p.first_name || "") + " " + (p.last_name || "")) + "|" + pos;
+      points[key] = scoreStats(s, pos);
+    });
+    return points;
+  }
+
+  function getProjections() {
+    if (!projPromise) {
+      var url = "https://api.sleeper.com/projections/nfl/" + data.season + "/" + data.week + "?season_type=regular" +
+        "&position%5B%5D=QB&position%5B%5D=RB&position%5B%5D=WR&position%5B%5D=TE&position%5B%5D=K&position%5B%5D=DEF";
+      projPromise = getJSON(url).then(function (res) {
+        projPoints = buildProj(res);
+        return projPoints;
+      }).catch(function () { projPoints = {}; return projPoints; });
+    }
+    return projPromise;
+  }
+
+  function fillProj() {
+    if (!projPoints) return;
+    Array.prototype.forEach.call(document.querySelectorAll("[data-proj-player]"), function (el) {
+      var v = projPoints[el.getAttribute("data-proj-player")];
+      el.textContent = (v == null || isNaN(v)) ? "—" : v.toFixed(1);
+    });
+  }
+
+  function toggleMatchup(card) {
+    var detail = card.querySelector(".matchup-detail");
+    if (!detail) return;
+    var open = detail.hidden;
+    detail.hidden = !open;
+    card.setAttribute("aria-expanded", String(open));
+    var hint = card.querySelector(".expand-hint");
+    if (hint) hint.textContent = open ? "Hide player projections ↑" : "Click for player projections ↓";
+    if (open) getProjections().then(fillProj);
+  }
+
+  function setupMatchupToggle() {
+    var grid = $("live-matchups");
+    grid.addEventListener("click", function (e) {
+      var card = e.target.closest ? e.target.closest(".matchup-card") : null;
+      if (card) toggleMatchup(card);
+    });
+    grid.addEventListener("keydown", function (e) {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      var card = e.target.closest ? e.target.closest(".matchup-card") : null;
+      if (card) { e.preventDefault(); toggleMatchup(card); }
+    });
   }
 
   function side(team, projection) {
@@ -142,6 +230,23 @@
     }).catch(function () {
       nextEl.innerHTML = '<li><span>Next week\'s bye teams aren\'t on the ESPN board yet.</span></li>';
     });
+  }
+
+  var INJURY_STATUS = { Q: 1, O: 1, DTD: 1, D: 1 };
+
+  function renderInjuries() {
+    var groups = data.teams.map(function (t) {
+      var hit = t.players.filter(function (p) { return p[0] !== "IR" && INJURY_STATUS[p[4]]; });
+      hit.sort(function (a, b) { return (isStarter(a) ? 0 : 1) - (isStarter(b) ? 0 : 1); });
+      return { team: t, players: hit };
+    }).filter(function (g) { return g.players.length; });
+    $("injury-list").innerHTML = groups.length ? groups.map(function (g) {
+      var list = g.players.map(function (p) {
+        return '<b>' + esc(p[1]) + '</b> <small>' + esc(p[0]) + ' · ' + esc(p[2]) + '</small> <span class="status-dot">' + esc(p[4]) + '</span>';
+      }).join(', ');
+      return '<li><span class="bye-count">' + g.players.length + '<small>player' + (g.players.length === 1 ? '' : 's') + '</small></span>' +
+        '<div><h3>' + esc(g.team.name) + '</h3><div class="bye-names">' + list + '</div></div></li>';
+    }).join("") : '<li><span>No questionable, doubtful, or out designations on any roster this week.</span></li>';
   }
 
   function renderRosters() {
@@ -263,8 +368,10 @@
   getJSON("league.json?v=20261024b").then(function (league) {
     data = league;
     renderMatchups();
+    setupMatchupToggle();
     renderThursday();
     renderByes();
+    renderInjuries();
     renderRosters();
     $("week-dashboard").hidden = false;
     refreshLive();

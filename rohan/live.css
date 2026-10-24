@@ -30,6 +30,12 @@
 .scores small,.proj small{font-size:7px;letter-spacing:1px}
 .at{font-size:8px;letter-spacing:2px;color:#8c927f;border-block:1px solid #d6d7ce;padding:6px 0;margin:2px 0}
 .matchup-note{font-size:10px;color:#687263;margin-top:7px;text-align:right}
+.matchup-card{cursor:pointer}
+.matchup-detail{margin-top:12px;border-top:1px solid #d6d7ce;padding-top:10px}
+.matchup-detail[hidden]{display:none}
+.matchup-detail h4{margin:14px 0 6px}
+.matchup-detail h4:first-child{margin-top:2px}
+.matchup-detail td:nth-child(3),.matchup-detail th:nth-child(3){text-align:right}
 .thursday{background:var(--green);color:var(--paper);border:0;padding:34px;margin-top:58px}
 .thursday .live-title .eyebrow{color:var(--gold)}
 .thursday .live-title>p:last-child{color:#b8c4b4}
