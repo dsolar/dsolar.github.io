@@ -215,7 +215,7 @@
     });
   }
 
-  getJSON("league.json?v=20261024").then(function (league) {
+  getJSON("league.json?v=20261024b").then(function (league) {
     data = league;
     renderMatchups();
     renderThursday();
