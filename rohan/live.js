@@ -88,20 +88,49 @@
       '<strong class="player-live">0.0</strong></div>';
   }
 
-  function renderByes() {
-    var bye = data.bye_next;
-    var groups = data.teams.map(function (t) {
-      var hit = t.players.filter(function (p) { return bye.indexOf(p[2]) !== -1; });
-      return { team: t, starters: hit.filter(isStarter), reserves: hit.filter(function (p) { return !isStarter(p) && p[0] !== "IR"; }) };
-    }).filter(function (g) { return g.starters.length || g.reserves.length; }).sort(function (a, b) {
-      return b.starters.length - a.starters.length || a.team.rank - b.team.rank;
+  var ALL_TEAMS = ["ARI","ATL","BAL","BUF","CAR","CHI","CIN","CLE","DAL","DEN","DET","GB","HOU","IND","JAX","KC","LAC","LAR","LV","MIA","MIN","NE","NO","NYG","NYJ","PHI","PIT","SF","SEA","TB","TEN","WSH"];
+
+  function byeGroups(codes) {
+    return data.teams.map(function (t) {
+      var hit = t.players.filter(function (p) { return codes.indexOf(p[2]) !== -1 && p[0] !== "IR"; });
+      return { team: t, players: hit };
+    }).filter(function (g) { return g.players.length; }).sort(function (a, b) {
+      return b.players.length - a.players.length || a.team.rank - b.team.rank;
     });
-    $("bye-team-list").innerHTML = groups.map(function (g) {
-      var list = g.starters.map(function (p) { return '<b>' + esc(p[1]) + ' <small>' + esc(p[0]) + '</small></b>'; }).join(', ');
-      var reserves = g.reserves.length ? '<p>Also on bench: ' + g.reserves.map(function (p) { return esc(p[1]); }).join(', ') + '</p>' : '';
-      return '<li><span class="bye-count">' + g.starters.length + '<small>starter' + (g.starters.length === 1 ? '' : 's') + '</small></span>' +
-        '<div><h3>' + esc(g.team.name) + '</h3><div class="bye-names">' + (list || '<span>No current starters</span>') + '</div>' + reserves + '</div></li>';
+  }
+
+  function byeListHTML(groups) {
+    return groups.map(function (g) {
+      var list = g.players.map(function (p) {
+        return '<b>' + esc(p[1]) + ' <small>' + esc(p[0] === "Bench" ? "Bench" : p[0]) + '</small></b>';
+      }).join(', ');
+      return '<li><span class="bye-count">' + g.players.length + '<small>player' + (g.players.length === 1 ? '' : 's') + '</small></span>' +
+        '<div><h3>' + esc(g.team.name) + '</h3><div class="bye-names">' + list + '</div></div></li>';
     }).join("");
+  }
+
+  function renderByes() {
+    var groups = byeGroups(data.bye_next);
+    $("bye-team-list").innerHTML = groups.length ? byeListHTML(groups) :
+      '<li><span>No Rohan players on this week\'s bye teams.</span></li>';
+    var nextEl = $("bye-next-list");
+    if (!nextEl) return;
+    nextEl.innerHTML = '<li><span>Checking next week\'s board\u2026</span></li>';
+    getJSON("https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=" + data.season + "&seasontype=2&week=" + (data.week + 1)).then(function (board) {
+      var events = (board || {}).events || [];
+      var playing = {};
+      events.forEach(function (event) {
+        var comp = (event.competitions || [])[0] || {};
+        (comp.competitors || []).forEach(function (c) { playing[(c.team || {}).abbreviation] = true; });
+      });
+      var bye = ALL_TEAMS.filter(function (code) { return !playing[code]; });
+      if (events.length < 10 || bye.length < 1 || bye.length > 6) throw new Error("board incomplete");
+      var nextGroups = byeGroups(bye);
+      nextEl.innerHTML = nextGroups.length ? byeListHTML(nextGroups) :
+        '<li><span>No Rohan players on next week\'s bye teams.</span></li>';
+    }).catch(function () {
+      nextEl.innerHTML = '<li><span>Next week\'s bye teams aren\'t on the ESPN board yet.</span></li>';
+    });
   }
 
   function renderRosters() {
