@@ -73,6 +73,7 @@
       side(a, m.away_proj) + '<div class="at">AT</div>' + side(h, m.home_proj) +
       '<div class="matchup-bar" title="Projected points split"><i style="width:' + share + '%"></i></div>' +
       '<p class="matchup-note">ESPN favors ' + esc(shortTeam(favorite)) + ' by ' + margin + '</p>' +
+      '<p class="matchup-note winprob" data-winprob="' + esc(m.away) + '">Muse win probability: …</p>' +
       '<p class="matchup-note expand-hint">Click for player projections ↓</p>' +
       matchupDetail(m, teams) + '</article>';
   }
@@ -92,6 +93,10 @@
   }
 
   var projPoints = null, projPromise = null;
+  var lastLive = null, histSd = null, histMean = {}, histPromise = null;
+  var POS_FALLBACK_SD = { QB: 7, RB: 6, WR: 6, TE: 4.5, K: 3, DEF: 4.5, "D/ST": 4.5 };
+  var TEAM_SHIFT_SD = 12, SIMS = 10000;
+  var MISS = { Q: 0.20, DTD: 0.10, D: 0.75 };
 
   function buildProj(proj) {
     var points = {};
@@ -124,6 +129,127 @@
     Array.prototype.forEach.call(document.querySelectorAll("[data-proj-player]"), function (el) {
       var v = projPoints[el.getAttribute("data-proj-player")];
       el.textContent = (v == null || isNaN(v)) ? "—" : v.toFixed(1);
+    });
+  }
+
+  function sampleSd(values) {
+    if (values.length < 2) return null;
+    var mean = values.reduce(function (a, b) { return a + b; }, 0) / values.length;
+    var sq = values.reduce(function (a, x) { return a + (x - mean) * (x - mean); }, 0);
+    return Math.sqrt(sq / (values.length - 1));
+  }
+
+  function median(values) {
+    if (!values.length) return null;
+    var s = values.slice().sort(function (a, b) { return a - b; });
+    var mid = Math.floor(s.length / 2);
+    return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+  }
+
+  function statsUrlFor(w) {
+    return "https://api.sleeper.com/stats/nfl/" + data.season + "/" + w + "?season_type=regular" +
+      "&position%5B%5D=QB&position%5B%5D=RB&position%5B%5D=WR&position%5B%5D=TE&position%5B%5D=K&position%5B%5D=DEF";
+  }
+
+  function getHistory() {
+    if (!histPromise) {
+      var weeks = [];
+      for (var w = 1; w < data.week; w++) weeks.push(w);
+      histPromise = Promise.all(weeks.map(function (w) {
+        return getJSON(statsUrlFor(w)).catch(function () { return []; });
+      })).then(function (all) {
+        var perPlayer = {}, perPos = {};
+        all.forEach(function (stats) {
+          (stats || []).forEach(function (entry) {
+            var p = entry.player || {}, s = entry.stats || {}, pos = p.position || entry.position || "";
+            if (!s.gp) return;
+            var team = teamCode(entry.team || p.team || "");
+            var key = pos === "DEF" ? "DST|" + team : norm((p.first_name || "") + " " + (p.last_name || "")) + "|" + pos;
+            (perPlayer[key] = perPlayer[key] || []).push(scoreStats(s, pos));
+            perPos[key] = pos;
+          });
+        });
+        var sdsByPos = {};
+        Object.keys(perPlayer).forEach(function (key) {
+          var sd = sampleSd(perPlayer[key]);
+          if (sd != null && perPlayer[key].length >= 3) {
+            (sdsByPos[perPos[key]] = sdsByPos[perPos[key]] || []).push(sd);
+          }
+        });
+        histSd = {}; histMean = {};
+        Object.keys(perPlayer).forEach(function (key) {
+          var arr = perPlayer[key];
+          histMean[key] = Math.round(arr.reduce(function (a, b) { return a + b; }, 0) / arr.length * 100) / 100;
+          var sd = sampleSd(arr);
+          var posMed = median(sdsByPos[perPos[key]] || []);
+          histSd[key] = sd != null ? sd : (posMed != null ? posMed : (POS_FALLBACK_SD[perPos[key]] || 6));
+        });
+        return histSd;
+      }).catch(function () { histSd = {}; return histSd; });
+    }
+    return histPromise;
+  }
+
+  var randnSpare = null;
+  function randn() {
+    if (randnSpare != null) { var v = randnSpare; randnSpare = null; return v; }
+    var u = 0, v2 = 0, sq = 0;
+    do { u = Math.random() * 2 - 1; v2 = Math.random() * 2 - 1; sq = u * u + v2 * v2; } while (sq >= 1 || sq === 0);
+    var mul = Math.sqrt(-2 * Math.log(sq) / sq);
+    randnSpare = v2 * mul;
+    return u * mul;
+  }
+
+  function simPlayer(p) {
+    var key = playerKey(p);
+    var team = teamCode(p[2]);
+    var game = lastLive.games[team];
+    var banked = ((lastLive.points[key] || {}).pts || 0);
+    if (data.bye_next.indexOf(p[2]) !== -1) return 0;
+    if (game && game.state === "post") return banked;
+    var status = p[4];
+    if (status === "O" || status === "IR") return 0;
+    var proj = projPoints[key];
+    var mean = (proj != null && !isNaN(proj)) ? proj : (histMean[key] != null ? histMean[key] : 0);
+    var sd = (histSd && histSd[key]) || 6;
+    var isKick = (p[3] === "K" || p[3] === "DEF" || p[3] === "D/ST");
+    if (game && game.state === "in") {
+      var rem = Math.max(0, mean - banked) + randn() * sd * 0.6;
+      return banked + (isKick ? Math.max(-5, rem) : Math.max(0, rem));
+    }
+    var miss = MISS[status] || 0;
+    if (miss && Math.random() < miss) return 0;
+    var total = mean + randn() * sd;
+    return isKick ? Math.max(-5, total) : Math.max(0, total);
+  }
+
+  function simMatchup(m, teams) {
+    var aStarters = teams[m.away].players.filter(isStarter);
+    var hStarters = teams[m.home].players.filter(isStarter);
+    var wins = 0, ties = 0;
+    for (var i = 0; i < SIMS; i++) {
+      var a = randn() * TEAM_SHIFT_SD, h = randn() * TEAM_SHIFT_SD;
+      aStarters.forEach(function (p) { a += simPlayer(p); });
+      hStarters.forEach(function (p) { h += simPlayer(p); });
+      if (a > h) wins++;
+      else if (a === h) ties++;
+    }
+    return (wins + 0.5 * ties) / SIMS;
+  }
+
+  function maybeRenderWinProbs() {
+    if (!projPoints || !histSd || !lastLive) return;
+    var teams = {};
+    data.teams.forEach(function (t) { teams[t.name] = t; });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-winprob]"), function (el) {
+      var m = null;
+      data.matchups.forEach(function (x) { if (x.away === el.getAttribute("data-winprob")) m = x; });
+      if (!m) return;
+      var pa = simMatchup(m, teams), ph = 1 - pa;
+      var aTxt = esc(shortTeam(m.away)) + " " + Math.round(pa * 100) + "%";
+      var hTxt = esc(shortTeam(m.home)) + " " + Math.round(ph * 100) + "%";
+      el.innerHTML = "Muse win probability: " + (pa > 0.5 ? "<b>" + aTxt + "</b>" : aTxt) +
+        " · " + (ph > 0.5 ? "<b>" + hTxt + "</b>" : hTxt);
     });
   }
 
@@ -319,6 +445,7 @@
   }
 
   function applyLive(live) {
+    lastLive = live;
     data.teams.forEach(function (t) {
       var total = t.players.filter(isStarter).reduce(function (sum, p) {
         return sum + ((live.points[playerKey(p)] || {}).pts || 0);
@@ -362,6 +489,7 @@
     var boardUrl = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=" + data.season + "&seasontype=2&week=" + data.week;
     return Promise.all([getJSON(statsUrl), getJSON(boardUrl)]).then(function (res) {
       applyLive(buildLive(res[0], res[1]));
+      maybeRenderWinProbs();
       $("live-updated").textContent = "Live check " + formatStamp(new Date().toISOString()) + " · ESPN projections snapshot " + formatStamp(data.updated);
     }).catch(function () {
       $("live-updated").textContent = "ESPN projections and rosters updated " + formatStamp(data.updated) + " · live stat feed will retry";
@@ -378,6 +506,8 @@
     renderRosters();
     $("week-dashboard").hidden = false;
     refreshLive();
+    getProjections().then(function () { fillProj(); maybeRenderWinProbs(); });
+    getHistory().then(maybeRenderWinProbs);
     window.setInterval(refreshLive, 60000);
   }).catch(function () {
     $("dashboard-error").hidden = false;

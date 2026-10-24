@@ -1,0 +1,49 @@
+{
+  "week": 7,
+  "season": 2026,
+  "updated": "2026-10-24T14:14:28Z",
+  "source": "ESPN roster, standings and scoreboard paste, Oct 24, 2026 (rohan/league.json)",
+  "note": "Week 7 projections snapshot for win-probability calibration. Final scores to be added after Week 7 completes; later weeks append here before league.json is replaced.",
+  "matchups": [
+    {
+      "away": "Vaginette Butts",
+      "away_proj": 146.6,
+      "home": "The Championship Winnin Crunch*",
+      "home_proj": 123.0,
+      "away_final": null,
+      "home_final": null
+    },
+    {
+      "away": "Bristol CT Murder Squad",
+      "away_proj": 118.6,
+      "home": "The Price Is Bijan, B****",
+      "home_proj": 166.1,
+      "away_final": null,
+      "home_final": null
+    },
+    {
+      "away": "Walker Texas Nabers",
+      "away_proj": 127.3,
+      "home": "It's Gonna Be Maye",
+      "home_proj": 152.9,
+      "away_final": null,
+      "home_final": null
+    },
+    {
+      "away": "Ra's Al Ghul",
+      "away_proj": 168.3,
+      "home": "Belichick's UNC Bistro",
+      "home_proj": 169.0,
+      "away_final": null,
+      "home_final": null
+    },
+    {
+      "away": "Van Buren Boys",
+      "away_proj": 142.6,
+      "home": "Flowers Powers",
+      "home_proj": 136.7,
+      "away_final": null,
+      "home_final": null
+    }
+  ]
+}
