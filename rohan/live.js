@@ -72,7 +72,7 @@
     }).filter(function (g) { return g.starters.length || g.reserves.length; });
     var starterCount = groups.reduce(function (n, g) { return n + g.starters.length; }, 0);
     var activeTeams = groups.filter(function (g) { return g.starters.length; }).length;
-    $("tn-summary").textContent = starterCount + " starters across " + activeTeams + " Rohan teams are tied to Seahawks–Broncos tonight.";
+    $("tn-summary").textContent = starterCount + " starters across " + activeTeams + " Rohan teams played Thursday night.";
     $("tn-groups").innerHTML = groups.map(function (g) {
       return '<article class="tn-team"><div class="tn-team-head"><div><h3>' + esc(g.team.name) + '</h3><p>' + esc(g.team.owner) + '</p></div>' +
         '<span>' + g.starters.length + ' start' + (g.starters.length === 1 ? '' : 's') + '</span></div>' +
@@ -215,7 +215,7 @@
     });
   }
 
-  getJSON("league.json?v=20261015b").then(function (league) {
+  getJSON("league.json?v=20261024").then(function (league) {
     data = league;
     renderMatchups();
     renderThursday();
