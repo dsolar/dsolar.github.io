@@ -125,3 +125,12 @@ section[id]{scroll-margin-top:52px}
 .method-note{margin:18px 0 4px;font-size:13px;color:#687263}
 .method-note summary{cursor:pointer}
 .method-note p{margin:8px 0 0;line-height:1.5}
+
+/* Collapsible page sections: title row stays visible, body hides. */
+.collapse-title{position:relative}
+.collapse-toggle{display:inline-block;margin-top:10px;padding:6px 14px;border:1px solid #c9cbbf;border-radius:999px;background:transparent;color:inherit;font:inherit;font-size:13px;cursor:pointer}
+.collapse-toggle:hover{border-color:#122b24}
+.collapsible.is-collapsed>:not(.collapse-title){display:none !important}
+.section-toggles{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;padding:12px 4%;border-bottom:1px solid #c9cbbf;font-size:13px}
+.section-toggles button{padding:6px 14px;border:1px solid #c9cbbf;border-radius:999px;background:transparent;color:inherit;font:inherit;cursor:pointer}
+.section-toggles button:hover{border-color:#122b24}

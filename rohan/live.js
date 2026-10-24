@@ -513,3 +513,84 @@
     $("dashboard-error").hidden = false;
   });
 }());
+
+/* Collapsible page sections (Oct 2026): every live block and reference
+   section gets an Expand/Collapse toggle in its title row. This-week blocks
+   start open, reference blocks start collapsed, and each visitor's choices
+   persist in localStorage. Subnav links expand their target first. */
+(function () {
+  "use strict";
+  var STORE_KEY = "rohan-sections-v1";
+  var LIVE_OPEN = { matchups: 1, injuries: 1, "thursday-spotlight": 1, byes: 1, rosters: 1 };
+  function slug(text) {
+    return String(text || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "section";
+  }
+  function loadState() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch (e) { return {}; }
+  }
+  function saveState(state) {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* private mode */ }
+  }
+  var state = loadState();
+  var blocks = [];
+  function setCollapsed(block, collapsed) {
+    block.sec.classList.toggle("is-collapsed", collapsed);
+    block.btn.textContent = collapsed ? "\u25b8 Expand section" : "\u25be Collapse section";
+    block.btn.setAttribute("aria-expanded", String(!collapsed));
+    state[block.key] = collapsed;
+    saveState(state);
+  }
+  document.querySelectorAll(".live-block, section.section, section.champion").forEach(function (sec) {
+    var title = sec.querySelector(":scope > .live-title, :scope > .section-title, :scope > .champ-copy");
+    if (!title) return;
+    var heading = title.querySelector("h2, h3");
+    var key = sec.id || slug(heading ? heading.textContent : "");
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "collapse-toggle";
+    title.appendChild(btn);
+    title.classList.add("collapse-title");
+    sec.classList.add("collapsible");
+    var block = { sec: sec, title: title, btn: btn, key: key };
+    btn.addEventListener("click", function () { setCollapsed(block, !sec.classList.contains("is-collapsed")); });
+    blocks.push(block);
+  });
+  blocks.forEach(function (b) {
+    setCollapsed(b, Object.prototype.hasOwnProperty.call(state, b.key) ? state[b.key] : !LIVE_OPEN[b.key]);
+  });
+  function blockFor(el) {
+    for (var i = 0; i < blocks.length; i++) if (blocks[i].sec === el) return blocks[i];
+    return null;
+  }
+  function expandChain(target) {
+    var node = target;
+    while (node && node !== document.body) {
+      var b = blockFor(node);
+      if (b && b.sec.classList.contains("is-collapsed")) setCollapsed(b, false);
+      node = node.parentElement;
+    }
+  }
+  function goTo(hash, smooth) {
+    var target = document.querySelector(hash);
+    if (!target) return;
+    expandChain(target);
+    requestAnimationFrame(function () {
+      target.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" });
+    });
+  }
+  document.querySelectorAll(".page-nav a").forEach(function (a) {
+    a.addEventListener("click", function (e) {
+      var hash = a.getAttribute("href");
+      if (hash && hash.charAt(0) === "#") {
+        e.preventDefault();
+        history.replaceState(null, "", hash);
+        goTo(hash, true);
+      }
+    });
+  });
+  var expandAll = document.getElementById("expand-all-sections");
+  var collapseAll = document.getElementById("collapse-all-sections");
+  if (expandAll) expandAll.addEventListener("click", function () { blocks.forEach(function (b) { setCollapsed(b, false); }); });
+  if (collapseAll) collapseAll.addEventListener("click", function () { blocks.forEach(function (b) { setCollapsed(b, true); }); });
+  if (location.hash) goTo(location.hash, false);
+}());
