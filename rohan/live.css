@@ -18,6 +18,9 @@
 .matchup-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .matchup-card{background:var(--paper);border:1px solid #c9cbbf;padding:18px 20px;position:relative}
 .matchup-card:last-child{grid-column:1/-1}
+#live-matchups .matchup-card:last-child{grid-column:auto}
+#live-matchups .matchup-card.featured{grid-column:1/-1}
+.matchup-featured-tag{font-size:9px;letter-spacing:1.5px;color:#9b2c25;margin-bottom:4px}
 .matchup-side{display:grid;grid-template-columns:minmax(0,1fr) 48px 66px;gap:12px;align-items:center;padding:8px 0}
 .matchup-side b{font-family:'Libre Caslon Display',Georgia,serif;font-size:19px;font-weight:400;line-height:1.15;display:block}
 .matchup-side small{display:block;color:var(--muted);font-size:9px;letter-spacing:.7px;margin-top:3px}

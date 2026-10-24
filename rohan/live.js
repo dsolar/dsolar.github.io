@@ -36,17 +36,28 @@
     }) + " ET";
   }
 
+  function matchupCard(m, teams, featured) {
+    var a = teams[m.away], h = teams[m.home];
+    var favorite = m.away_proj > m.home_proj ? m.away : m.home;
+    var margin = Math.abs(m.away_proj - m.home_proj).toFixed(1);
+    return '<article class="matchup-card' + (featured ? ' featured' : '') + '">' +
+      (featured ? '<div class="matchup-featured-tag">FEATURED MATCHUP</div>' : '') +
+      side(a, m.away_proj) + '<div class="at">AT</div>' + side(h, m.home_proj) +
+      '<p class="matchup-note">ESPN favors ' + esc(shortTeam(favorite)) + ' by ' + margin + '</p></article>';
+  }
+
   function renderMatchups() {
     var teams = {};
     data.teams.forEach(function (t) { teams[t.name] = t; });
-    $("live-matchups").innerHTML = data.matchups.map(function (m) {
-      var a = teams[m.away], h = teams[m.home];
-      var favorite = m.away_proj > m.home_proj ? m.away : m.home;
-      var margin = Math.abs(m.away_proj - m.home_proj).toFixed(1);
-      return '<article class="matchup-card">' +
-        side(a, m.away_proj) + '<div class="at">AT</div>' + side(h, m.home_proj) +
-        '<p class="matchup-note">ESPN favors ' + esc(shortTeam(favorite)) + ' by ' + margin + '</p></article>';
-    }).join("");
+    var list = data.matchups.slice();
+    var featured = null, best = -Infinity;
+    list.forEach(function (m) {
+      var total = m.away_proj + m.home_proj;
+      if (total > best) { best = total; featured = m; }
+    });
+    var rest = list.filter(function (m) { return m !== featured; });
+    $("live-matchups").innerHTML = (featured ? matchupCard(featured, teams, true) : "") +
+      rest.map(function (m) { return matchupCard(m, teams, false); }).join("");
   }
 
   function side(team, projection) {
