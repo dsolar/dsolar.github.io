@@ -120,17 +120,8 @@
 .keeper-grid ul{list-style:none;margin:0;padding:0}
 .keeper-grid li{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-top:1px solid #d6d7ce;font-size:13px}
 .keeper-grid li span{font-variant-numeric:tabular-nums;color:#687263}
-body{padding-top:48px}
-.page-nav{position:fixed;top:0;left:0;right:0;z-index:30}
+.page-nav{position:sticky;top:0;z-index:30}
 section[id]{scroll-margin-top:52px}
 .method-note{margin:18px 0 4px;font-size:13px;color:#687263}
 .method-note summary{cursor:pointer}
 .method-note p{margin:8px 0 0;line-height:1.5}
-.site-header{background:#071628;color:#F5F4F0;border-bottom:1px solid rgba(255,255,255,.12)}
-.site-header .wrap{padding:20px 4%;display:flex;align-items:center;justify-content:space-between;gap:16px 24px;flex-wrap:wrap}
-.site-header .brand{display:flex;align-items:center;text-decoration:none}
-.site-header .brand-logo{display:block;width:clamp(220px,26vw,290px);height:auto;background:#F5F4F0;border-radius:3px}
-.site-header .site-nav{display:flex;gap:4px 24px;flex-wrap:wrap;font-size:.95rem;font-weight:500}
-.site-header .site-nav a{color:#F5F4F0;text-decoration-color:transparent}
-.site-header .site-nav a:hover{color:#fff;text-decoration-color:#9b2c25}
-@media(max-width:700px){.site-header .wrap{padding-block:15px}.site-header .brand-logo{width:min(210px,54vw)}.site-header .site-nav{gap:12px;font-size:.88rem}}
