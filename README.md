@@ -1,6 +1,6 @@
 # davidsolar.dev
 
-My personal site: a home page plus two games, **The 31st Franchise** (an NBA expansion draft game) and **The Degenerate Trail** (an Oregon Trail-style game). It's a static site, just files, hosted free on GitHub Pages at the custom domain davidsolar.dev.
+A personal passion project, built for fun and for learning: a home page of sports games, simulations, fantasy tools and a social calendar, plus an archive of my ESPN Chalk writing. It's a static site, just files, hosted free on GitHub Pages at the custom domain davidsolar.dev. It stays out of search engines on purpose: every page carries a noindex tag.
 
 ## What's in this repo
 
@@ -30,6 +30,7 @@ dsolar.github.io/
   nick-chat/                  Chat with Nick
   win-probability/            Win Probability: index.html (layout, styles), app.js (screens, play clock, crowd votes),
                               engine.js (grading, modes, style labels) and data.js (every scenario; generated, don't edit)
+  sunday-strategist/          Sunday Strategist: a football coaching game (diagnose the defense, set protection, call the play)
   paint-the-corners/          Paint the Corners: index.html (layout, styles, UI) and engine.js
                               (pitches, hitters, at-bat math). Plain files, edit directly.
   guillotine/                 Bastille Day Odds: index.html, sim.js (the simulation),
