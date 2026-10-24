@@ -189,6 +189,11 @@
     var gameList = Object.keys(live.games).map(function (k) { return live.games[k]; });
     var inProgress = gameList.filter(function (g) { return g.state === "in"; }).length / 2;
     var finished = gameList.filter(function (g) { return g.state === "post"; }).length / 2;
+    var spotlight = $("thursday-spotlight");
+    if (spotlight) {
+      var thursdayGame = live.games[teamCode(data.thursday.away)] || live.games[teamCode(data.thursday.home)];
+      spotlight.hidden = !!(thursdayGame && thursdayGame.state === "post");
+    }
     var tag = $("live-state");
     if (inProgress) { tag.textContent = "LIVE · " + inProgress + " GAME" + (inProgress === 1 ? "" : "S"); tag.className = "live-pill on"; }
     else if (finished) { tag.textContent = "RESULTS IN"; tag.className = "live-pill"; }
