@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-23T15:27:57Z",
+ "updated": "2026-10-24T14:07:52Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,243 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-vv1AvZkoKGkdq0WeV",
-   "date": "2026-10-23",
-   "time": "19:00",
-   "title": "An Evening With Assembly of Dust (18+)",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/an-evening-with-assembly-of-dust-boston-massachusetts-10-23-2026/event/01006453DD93D0B4",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18091259"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-k7vGF_FCcIHra",
-   "date": "2026-10-23",
-   "time": "19:00",
-   "title": "BECK: RIDE LONESOME TOUR",
-   "cat": "music",
-   "venue": "Brooklyn Paramount",
-   "city": "Brooklyn, NY",
-   "url": "https://www.ticketmaster.com/beck-ride-lonesome-tour-brooklyn-new-york-10-23-2026/event/00006483ADA3C789",
-   "source": "ticketmaster",
-   "drive_hours": 4.5,
-   "act": "Beck",
-   "aka": [
-    "sg-18194390"
-   ],
-   "score": 2,
-   "why": "big"
-  },
-  {
-   "id": "sg-18663096",
-   "date": "2026-10-23",
-   "time": "19:00",
-   "title": "Brian Simpson - Comedian",
-   "cat": "comedy",
-   "venue": "Scullers Jazz Club",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/brian-simpson-comedian-tickets/comedy/2026-10-23-7-pm/18663096",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "espn-401909095",
-   "date": "2026-10-23",
-   "time": "19:00",
-   "title": "Celtics vs Knicks",
-   "cat": "sports",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://www.espn.com/nba/game/_/gameId/401909095/knicks-celtics",
-   "source": "espn",
-   "score": 1
-  },
-  {
-   "id": "sg-18447596",
-   "date": "2026-10-23",
-   "time": "19:00",
-   "title": "Ian Fidance",
-   "cat": "comedy",
-   "venue": "Laugh Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/ian-fidance-tickets/comedy/2026-10-23-7-pm/18447596",
-   "source": "seatgeek",
-   "aka": [
-    "2026-10-23-ian-fidance-laugh-boston"
-   ],
-   "score": 1
-  },
-  {
-   "id": "tm-vvG17Z_2dcYkBH",
-   "date": "2026-10-23",
-   "time": "19:00",
-   "title": "Quadeca",
-   "cat": "music",
-   "venue": "Citizens House of Blues Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/quadeca-boston-massachusetts-10-23-2026/event/010064F0EDC06EBC",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18396813",
-    "2026-10-23-quadeca-citizens-house-of-bl"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_oGkWWRPJM",
-   "date": "2026-10-23",
-   "time": "19:00",
-   "title": "ROA: USA Tour",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/roa-usa-tour-boston-massachusetts-10-23-2026/event/0100651F7DBE59B7",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "sg-18259965",
-   "date": "2026-10-23",
-   "time": "19:00",
-   "title": "Waylon Wyatt",
-   "cat": "music",
-   "venue": "Royale - Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/waylon-wyatt-tickets/boston-massachusetts-royale-boston-2026-10-23-7-pm/concert/18259965",
-   "source": "seatgeek",
-   "aka": [
-    "2026-10-23-waylon-wyatt-royale"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkoPGkenxv3k",
-   "date": "2026-10-23",
-   "time": "19:30",
-   "title": "Jim Gaffigan: Everything is Wonderful!",
-   "cat": "comedy",
-   "venue": "Boch Center Wang Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/jim-gaffigan-everything-is-wonderful-boston-massachusetts-10-23-2026/event/01006465AA881486",
-   "source": "ticketmaster",
-   "act": "Jim Gaffigan",
-   "aka": [
-    "sg-18115555",
-    "2026-10-23-jim-gaffigan-wang-theatre"
-   ],
-   "score": 2,
-   "why": "fav"
-  },
-  {
-   "id": "sg-18664030",
-   "date": "2026-10-23",
-   "time": "19:30",
-   "title": "Juston McKinney",
-   "cat": "comedy",
-   "venue": "Isaac Harris Cary Memorial Hall",
-   "city": "Lexington, MA",
-   "url": "https://seatgeek.com/juston-mckinney-tickets/comedy/2026-10-23-7-30-pm/18664030",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkfYGkecA0D3",
-   "date": "2026-10-23",
-   "time": "19:30",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-10-23-2026/event/01006530AD164ED2",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_8GkMbdB83",
-   "date": "2026-10-23",
-   "time": "19:30",
-   "title": "Nate Jackson: BIG DOG",
-   "cat": "comedy",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/nate-jackson-big-dog-boston-massachusetts-10-23-2026/event/0100650DD80FA412",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18511793",
-    "2026-10-23-nate-jackson-the-wilbur"
-   ],
-   "sub": "Big Dog",
-   "score": 1
-  },
-  {
-   "id": "tm-Z7r9jZ1A7PNuP",
-   "date": "2026-10-23",
-   "time": "20:00",
-   "title": "Arrested Development",
-   "cat": "music",
-   "venue": "The Cabot",
-   "city": "Beverly, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PNuP",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18664291"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZko3GkdnX1G_",
-   "date": "2026-10-23",
-   "time": "20:00",
-   "title": "Bruce Cockburn with special guest Livingston Taylor",
-   "cat": "music",
-   "venue": "Chevalier Theatre",
-   "city": "Medford, MA",
-   "url": "https://www.ticketmaster.com/bruce-cockburn-with-special-guest-livingston-medford-massachusetts-10-23-2026/event/01006452EAF8A319",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18090179",
-    "2026-10-23-bruce-cockburn-and-livingston-ta-chevalier-theatre"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A7PKoP",
-   "date": "2026-10-23",
-   "time": "20:00",
-   "title": "Dana and Alden",
-   "cat": "music",
-   "venue": "The Sinclair Music Hall",
-   "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PKoP",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18663862"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-1AtZkfsGkd9co7x",
-   "date": "2026-10-23",
-   "time": "22:00",
-   "title": "Virtual Riot & Blanke - Far From Home",
-   "cat": "music",
-   "venue": "Royale Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketweb.com/event/virtual-riot-blanke-royale-boston-tickets/14328004?REFERRAL_ID=tmfeed",
-   "source": "ticketmaster",
-   "aka": [
-    "tm-Z7r9jZ1AAvVjY",
-    "sg-18349655",
-    "sg-18346734"
-   ],
-   "score": 0
-  },
   {
    "id": "tm-vv1AvZkfYGkecF7H_",
    "date": "2026-10-24",
@@ -1022,9 +785,6 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/eph-see-halloween-homecoming-show-pres-boston-massachusetts-10-29-2026/event/0100650DD10E8601",
    "source": "ticketmaster",
-   "aka": [
-    "sg-18640031"
-   ],
    "score": 0
   },
   {
@@ -1281,26 +1041,6 @@
    "score": 0
   },
   {
-   "id": "tm-vv177Z_kGkmUlwQK",
-   "date": "2026-10-30",
-   "time": "20:00",
-   "title": "RAWAYANA - ¿Dónde es el after? World Tour",
-   "cat": "music",
-   "venue": "MGM Music Hall at Fenway",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/rawayana-donde-es-el-after-world-boston-massachusetts-10-30-2026/event/0100646BB6AF2693",
-   "source": "ticketmaster",
-   "times": [
-    "20:00",
-    "20:30"
-   ],
-   "aka": [
-    "sg-18127644",
-    "2026-10-30-rawayana-mgm-music-hall-at-fe"
-   ],
-   "score": 0
-  },
-  {
    "id": "tm-Z7r9jZ1A7Pg-v",
    "date": "2026-10-30",
    "time": "20:00",
@@ -1356,6 +1096,22 @@
    ],
    "score": 3,
    "why": "love"
+  },
+  {
+   "id": "tm-vv177Z_kGkmUlwQK",
+   "date": "2026-10-30",
+   "time": "20:30",
+   "title": "RAWAYANA - ¿Dónde es el after? World Tour",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/rawayana-donde-es-el-after-world-boston-massachusetts-10-30-2026/event/0100646BB6AF2693",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18127644",
+    "2026-10-30-rawayana-mgm-music-hall-at-fe"
+   ],
+   "score": 0
   },
   {
    "id": "tm-vv1AvZkf_GkdZNKhb",
@@ -1768,17 +1524,17 @@
    "score": 0
   },
   {
-   "id": "sg-18663271",
+   "id": "sg-18237438",
    "date": "2026-11-02",
    "time": "20:00",
-   "title": "This is Lorelei",
+   "title": "This is Lorelei with @ (Moved to Royale)",
    "cat": "music",
    "venue": "Royale - Boston",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/this-is-lorelei-tickets/boston-massachusetts-royale-boston-2026-11-02-8-pm/concert/18663271",
+   "url": "https://seatgeek.com/this-is-lorelei-tickets/boston-massachusetts-royale-boston-2026-11-02-8-pm/concert/18237438",
    "source": "seatgeek",
    "aka": [
-    "sg-18237438"
+    "sg-18663271"
    ],
    "score": 0
   },
@@ -1792,10 +1548,6 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/sleeping-with-sirens-an-ending-in-boston-massachusetts-11-03-2026/event/010064CBBA017666",
    "source": "ticketmaster",
-   "times": [
-    "18:00",
-    "19:00"
-   ],
    "aka": [
     "sg-18311622",
     "2026-11-03-sleeping-with-sirens-citizens-house-of-bl"
@@ -4465,9 +4217,6 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/frost-children-boston-massachusetts-11-19-2026/event/01006519C83153E7",
    "source": "ticketmaster",
-   "aka": [
-    "sg-18537386"
-   ],
    "score": 0
   },
   {
@@ -4764,9 +4513,7 @@
    "drive_hours": 1.0,
    "act": "Trey Anastasio",
    "aka": [
-    "tm-vv177Z_oGkXBnY-F",
-    "sg-18571687",
-    "sg-18571687"
+    "tm-vv177Z_oGkXBnY-F"
    ],
    "score": 3,
    "why": "love"
@@ -6604,6 +6351,18 @@
    "score": 0
   },
   {
+   "id": "sg-18717274",
+   "date": "2026-12-08",
+   "time": "19:30",
+   "title": "Stone Cold and The Jackal",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/stone-cold-and-the-jackal-tickets/comedy/2026-12-08-7-30-pm/18717274",
+   "source": "seatgeek",
+   "score": 1
+  },
+  {
    "id": "sg-18603524",
    "date": "2026-12-08",
    "time": "20:00",
@@ -8247,6 +8006,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/anthony-jeselnik-wrath-of-man-boston-massachusetts-01-15-2027/event/0100654FA876CA16",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18716068"
+   ],
    "score": 1
   },
   {
@@ -9326,6 +9088,18 @@
     "sg-18636946"
    ],
    "score": 1
+  },
+  {
+   "id": "sg-18715617",
+   "date": "2027-02-20",
+   "time": "20:00",
+   "title": "The Buena Vista Orchestra",
+   "cat": "music",
+   "venue": "The Cabot",
+   "city": "Beverly, MA",
+   "url": "https://seatgeek.com/the-buena-vista-orchestra-tickets/beverly-massachusetts-the-cabot-2027-02-20-8-pm/concert/18715617",
+   "source": "seatgeek",
+   "score": 0
   },
   {
    "id": "tm-Z7r9jZ1A7P-Co",
@@ -11339,6 +11113,18 @@
     "sg-18266365"
    ],
    "score": 0
+  },
+  {
+   "id": "sg-18658875",
+   "date": "2027-04-22",
+   "time": "20:00",
+   "title": "Fontaines D.C. with Westside Cowboy",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/fontaines-d-c-tickets/boston-massachusetts-mgm-music-hall-at-fenway-2027-04-22-8-pm/concert/18658875",
+   "source": "seatgeek",
+   "score": 0
   }
  ],
  "movies": [
@@ -11416,8 +11202,8 @@
  "sources": {
   "picks": 5,
   "venues": 4,
-  "espn": 82,
-  "ticketmaster": 552,
-  "seatgeek": 110
+  "espn": 81,
+  "ticketmaster": 541,
+  "seatgeek": 109
  }
 }
