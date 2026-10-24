@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-23T05:02:29Z",
+ "updated": "2026-10-24T04:47:09Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -219,26 +219,6 @@
    "title": "Dark Star Orchestra",
    "date": "2027-01-02",
    "venue": "The Capitol Theatre",
-   "low": null,
-   "src": null
-  },
-  "tm-k7vGF_FCcIHra": {
-   "sg": 18194390,
-   "history": [],
-   "url": "https://www.ticketmaster.com/beck-ride-lonesome-tour-brooklyn-new-york-10-23-2026/event/00006483ADA3C789",
-   "title": "BECK: RIDE LONESOME TOUR",
-   "date": "2026-10-23",
-   "venue": "Brooklyn Paramount",
-   "low": null,
-   "src": null
-  },
-  "tm-vv1AvZkoPGkenxv3k": {
-   "sg": 18115555,
-   "history": [],
-   "url": "https://www.ticketmaster.com/jim-gaffigan-everything-is-wonderful-boston-massachusetts-10-23-2026/event/01006465AA881486",
-   "title": "Jim Gaffigan: Everything is Wonderful!",
-   "date": "2026-10-23",
-   "venue": "Boch Center Wang Theatre",
    "low": null,
    "src": null
   },
@@ -473,6 +453,10 @@
     [
      "2026-10-23",
      56
+    ],
+    [
+     "2026-10-24",
+     56
     ]
    ],
    "sg": null,
@@ -524,6 +508,10 @@
     ],
     [
      "2026-10-23",
+     22
+    ],
+    [
+     "2026-10-24",
      22
     ]
    ],
@@ -639,6 +627,10 @@
     [
      "2026-10-23",
      28
+    ],
+    [
+     "2026-10-24",
+     28
     ]
    ],
    "sg": null,
@@ -678,6 +670,10 @@
     ],
     [
      "2026-10-23",
+     22
+    ],
+    [
+     "2026-10-24",
      22
     ]
    ],
@@ -807,16 +803,6 @@
    "date": "2026-11-22",
    "venue": "Knockdown Center",
    "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-11-22-8-pm/concert/18634482",
-   "src": null,
-   "low": null
-  },
-  "espn-401909095": {
-   "history": [],
-   "sg": 18473221,
-   "title": "Celtics vs Knicks",
-   "date": "2026-10-23",
-   "venue": "TD Garden",
-   "url": "https://www.espn.com/nba/game/_/gameId/401909095/knicks-celtics",
    "src": null,
    "low": null
   },
