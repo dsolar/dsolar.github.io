@@ -66,9 +66,12 @@
     var a = teams[m.away], h = teams[m.home];
     var favorite = m.away_proj > m.home_proj ? m.away : m.home;
     var margin = Math.abs(m.away_proj - m.home_proj).toFixed(1);
+    var total = m.away_proj + m.home_proj;
+    var share = total ? Math.round(m.away_proj / total * 100) : 50;
     return '<article class="matchup-card' + (featured ? ' featured' : '') + '" tabindex="0" role="button" aria-expanded="false">' +
       (featured ? '<div class="matchup-featured-tag">FEATURED MATCHUP</div>' : '') +
       side(a, m.away_proj) + '<div class="at">AT</div>' + side(h, m.home_proj) +
+      '<div class="matchup-bar" title="Projected points split"><i style="width:' + share + '%"></i></div>' +
       '<p class="matchup-note">ESPN favors ' + esc(shortTeam(favorite)) + ' by ' + margin + '</p>' +
       '<p class="matchup-note expand-hint">Click for player projections ↓</p>' +
       matchupDetail(m, teams) + '</article>';
