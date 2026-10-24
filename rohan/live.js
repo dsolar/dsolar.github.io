@@ -467,7 +467,10 @@
     var spotlight = $("thursday-spotlight");
     if (spotlight) {
       var thursdayGame = live.games[teamCode(data.thursday.away)] || live.games[teamCode(data.thursday.home)];
-      spotlight.hidden = !!(thursdayGame && thursdayGame.state === "post");
+      var thursdayDone = !!(thursdayGame && thursdayGame.state === "post");
+      spotlight.hidden = thursdayDone;
+      var thursdayLink = document.querySelector('.page-nav a[href="#thursday-spotlight"]');
+      if (thursdayLink) thursdayLink.hidden = thursdayDone;
     }
     var tag = $("live-state");
     if (inProgress) { tag.textContent = "LIVE · " + inProgress + " GAME" + (inProgress === 1 ? "" : "S"); tag.className = "live-pill on"; }
