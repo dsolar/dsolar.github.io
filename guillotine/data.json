@@ -4,7 +4,7 @@
  "week": 7,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-10-24T17:25:26Z",
+ "updated": "2026-10-25T17:38:20Z",
  "source": "Yahoo league page, pasted",
  "teams": [
   {
@@ -48,7 +48,7 @@
      "date": "2026-10-22",
      "final": true,
      "actual": 28.44,
-     "next_proj": 22.34,
+     "next_proj": 22.47,
      "in_best": true
     },
     {
@@ -82,7 +82,7 @@
      "proj": 18.31,
      "rank": "RB4",
      "date": "2026-10-25",
-     "next_proj": 18.53,
+     "next_proj": 18.36,
      "in_best": true
     },
     {
@@ -118,7 +118,7 @@
      "date": "2026-10-22",
      "final": true,
      "actual": 20.0,
-     "next_proj": 9.41
+     "next_proj": 9.47
     },
     {
      "slot": "WR",
@@ -145,7 +145,7 @@
       }
      },
      "proj": 9.48,
-     "rank": "WR26",
+     "rank": "WR25",
      "date": "2026-10-26",
      "next_proj": 11.54,
      "in_best": true
@@ -181,7 +181,7 @@
      "proj": 18.49,
      "rank": "WR2",
      "date": "2026-10-25",
-     "next_proj": 18.2,
+     "next_proj": 18.12,
      "in_best": true
     },
     {
@@ -210,7 +210,7 @@
        "rec_td": 3
       }
      },
-     "proj": 14.52,
+     "proj": 14.45,
      "rank": "WR7",
      "date": "2026-10-25",
      "bye_next": true,
@@ -243,10 +243,10 @@
        "rec_td": 1
       }
      },
-     "proj": 9.39,
-     "rank": "TE7",
+     "proj": 9.52,
+     "rank": "TE8",
      "date": "2026-10-25",
-     "next_proj": 8.37
+     "next_proj": 8.6
     },
     {
      "slot": "W/R/T",
@@ -274,8 +274,8 @@
        "rush_td": 2
       }
      },
-     "proj": 13.96,
-     "rank": "RB14",
+     "proj": 13.84,
+     "rank": "RB15",
      "date": "2026-10-25",
      "bye_next": true,
      "next_proj": 0.0,
@@ -308,8 +308,8 @@
        "pass_int": 1
       }
      },
-     "proj": 18.38,
-     "rank": "QB10",
+     "proj": 18.22,
+     "rank": "QB9",
      "date": "2026-10-25",
      "bye_next": true,
      "next_proj": 0.0,
@@ -339,10 +339,10 @@
        "rec_td": 2
       }
      },
-     "proj": 9.76,
+     "proj": 9.68,
      "rank": "TE6",
      "date": "2026-10-25",
-     "next_proj": 9.51,
+     "next_proj": 9.46,
      "in_best": true
     },
     {
@@ -372,8 +372,8 @@
        "fum_lost": 1
       }
      },
-     "proj": 4.26,
-     "rank": "RB52",
+     "proj": 6.25,
+     "rank": "RB38",
      "date": "2026-10-25",
      "bye_next": true,
      "next_proj": 0.0
@@ -426,10 +426,10 @@
       ],
       "tot": {}
      },
-     "proj": 10.78,
+     "proj": 10.95,
      "rank": "RB21",
      "date": "2026-10-25",
-     "next_proj": 14.19,
+     "next_proj": 14.24,
      "in_best": true
     },
     {
@@ -457,14 +457,14 @@
       }
      },
      "proj": 4.25,
-     "rank": "WR68",
+     "rank": "WR67",
      "date": "2026-10-25",
-     "next_proj": 3.81
+     "next_proj": 3.8
     }
    ],
    "proj_pre": 133.49,
-   "best": 135.4,
-   "best_next": 115.9,
+   "best": 135.1,
+   "best_next": 116.1,
    "locked": 48.44,
    "locked_proj": 31.68,
    "games_final": 2
@@ -502,10 +502,10 @@
        "rush_td": 1
       }
      },
-     "proj": 18.54,
-     "rank": "QB9",
+     "proj": 18.58,
+     "rank": "QB8",
      "date": "2026-10-25",
-     "next_proj": 17.32,
+     "next_proj": 18.04,
      "in_best": true
     },
     {
@@ -535,10 +535,10 @@
        "fum_lost": 2
       }
      },
-     "proj": 16.46,
+     "proj": 16.32,
      "rank": "RB7",
      "date": "2026-10-25",
-     "next_proj": 17.81,
+     "next_proj": 17.66,
      "in_best": true
     },
     {
@@ -569,10 +569,10 @@
        "fum_lost": 1
       }
      },
-     "proj": 15.87,
+     "proj": 16.11,
      "rank": "RB8",
      "date": "2026-10-25",
-     "next_proj": 14.32,
+     "next_proj": 15.34,
      "in_best": true
     },
     {
@@ -601,8 +601,8 @@
        "rush_yd": -6
       }
      },
-     "proj": 14.19,
-     "rank": "WR9",
+     "proj": 14.27,
+     "rank": "WR8",
      "date": "2026-10-26",
      "next_proj": 16.97,
      "in_best": true
@@ -631,10 +631,10 @@
        "rec_td": 6
       }
      },
-     "proj": 15.32,
+     "proj": 15.65,
      "rank": "WR6",
      "date": "2026-10-25",
-     "next_proj": 13.86,
+     "next_proj": 14.25,
      "in_best": true
     },
     {
@@ -661,10 +661,10 @@
        "rec_td": 1
       }
      },
-     "proj": 12.77,
+     "proj": 12.61,
      "rank": "WR15",
      "date": "2026-10-25",
-     "next_proj": 13.22,
+     "next_proj": 13.49,
      "in_best": true
     },
     {
@@ -691,7 +691,7 @@
        "rec_td": 5
       }
      },
-     "proj": 14.02,
+     "proj": 14.08,
      "rank": "TE2",
      "date": "2026-10-25",
      "bye_next": true,
@@ -722,10 +722,10 @@
        "rec_td": 1
       }
      },
-     "proj": 9.06,
+     "proj": 8.86,
      "rank": "WR30",
      "date": "2026-10-25",
-     "next_proj": 7.56,
+     "next_proj": 7.53,
      "in_best": true
     },
     {
@@ -754,10 +754,10 @@
        "rush_td": 1
       }
      },
-     "proj": 16.42,
+     "proj": 16.28,
      "rank": "QB13",
      "date": "2026-10-25",
-     "next_proj": 17.43,
+     "next_proj": 17.39,
      "in_best": true
     },
     {
@@ -786,7 +786,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 11.18
+     "next_proj": 10.56
     },
     {
      "slot": "BN",
@@ -856,12 +856,12 @@
      "proj": 14.2,
      "rank": "QB24",
      "date": "2026-10-26",
-     "next_proj": 13.86
+     "next_proj": 13.81
     }
    ],
    "proj_pre": 131.24,
-   "best": 132.6,
-   "best_next": 118.5,
+   "best": 132.8,
+   "best_next": 120.7,
    "locked": 0,
    "locked_proj": 0,
    "games_final": 0
@@ -902,11 +902,11 @@
       }
      },
      "proj": 18.66,
-     "rank": "QB8",
+     "rank": "QB7",
      "date": "2026-10-22",
      "final": true,
      "actual": 22.12,
-     "next_proj": 15.6,
+     "next_proj": 15.82,
      "in_best": true
     },
     {
@@ -936,9 +936,9 @@
       }
      },
      "proj": 9.21,
-     "rank": "RB27",
+     "rank": "RB28",
      "date": "2026-10-25",
-     "next_proj": 8.09,
+     "next_proj": 8.45,
      "in_best": true
     },
     {
@@ -968,11 +968,8 @@
        "rec_yd": 102
       }
      },
-     "proj": 12.69,
-     "rank": "RB17",
-     "date": "2026-10-25",
-     "next_proj": 13.19,
-     "in_best": true
+     "proj": 0.0,
+     "next_proj": 12.88
     },
     {
      "slot": "WR",
@@ -1001,10 +998,10 @@
        "rush_yd": 16
       }
      },
-     "proj": 20.77,
+     "proj": 20.42,
      "rank": "WR1",
      "date": "2026-10-25",
-     "next_proj": 21.21,
+     "next_proj": 21.41,
      "in_best": true
     },
     {
@@ -1031,8 +1028,8 @@
        "rec_td": 2
       }
      },
-     "proj": 11.25,
-     "rank": "WR19",
+     "proj": 11.43,
+     "rank": "WR18",
      "date": "2026-10-25",
      "bye_next": true,
      "next_proj": 0.0,
@@ -1064,9 +1061,9 @@
       }
      },
      "proj": 13.85,
-     "rank": "WR12",
+     "rank": "WR11",
      "date": "2026-10-25",
-     "next_proj": 14.0,
+     "next_proj": 14.07,
      "in_best": true
     },
     {
@@ -1123,8 +1120,8 @@
        "rec_td": 2
       }
      },
-     "proj": 8.3,
-     "rank": "WR32",
+     "proj": 8.2,
+     "rank": "WR31",
      "date": "2026-10-25",
      "bye_next": true,
      "next_proj": 0.0
@@ -1157,11 +1154,8 @@
        "pass_int": 1
       }
      },
-     "proj": 18.79,
-     "rank": "QB7",
-     "date": "2026-10-25",
-     "next_proj": 21.91,
-     "in_best": true
+     "proj": 0.0,
+     "next_proj": 20.03
     },
     {
      "slot": "BN",
@@ -1184,7 +1178,7 @@
       "tot": {}
      },
      "proj": 0.0,
-     "next_proj": 8.53
+     "next_proj": 8.43
     },
     {
      "slot": "BN",
@@ -1212,10 +1206,11 @@
        "rec_yd": 45
       }
      },
-     "proj": 6.58,
-     "rank": "RB35",
+     "proj": 14.4,
+     "rank": "RB13",
      "date": "2026-10-25",
-     "next_proj": 6.81
+     "next_proj": 6.68,
+     "in_best": true
     },
     {
      "slot": "BN",
@@ -1241,7 +1236,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 9.76
+     "next_proj": 9.72
     },
     {
      "slot": "BN",
@@ -1271,10 +1266,11 @@
        "pass_int": 2
       }
      },
-     "proj": 15.41,
-     "rank": "QB19",
+     "proj": 15.3,
+     "rank": "QB18",
      "date": "2026-10-25",
-     "next_proj": 16.16
+     "next_proj": 15.94,
+     "in_best": true
     },
     {
      "slot": "BN",
@@ -1302,9 +1298,9 @@
       }
      },
      "proj": 9.08,
-     "rank": "WR29",
+     "rank": "WR28",
      "date": "2026-10-25",
-     "next_proj": 8.21,
+     "next_proj": 8.27,
      "in_best": true
     },
     {
@@ -1340,8 +1336,8 @@
     }
    ],
    "proj_pre": 128.98,
-   "best": 126.2,
-   "best_next": 127.7,
+   "best": 124.3,
+   "best_next": 126.0,
    "locked": 22.12,
    "locked_proj": 18.66,
    "games_final": 1
@@ -1379,7 +1375,7 @@
        "rush_td": 1
       }
      },
-     "proj": 20.29,
+     "proj": 20.33,
      "rank": "QB2",
      "date": "2026-10-25",
      "bye_next": true,
@@ -1447,10 +1443,10 @@
        "fum_lost": 1
       }
      },
-     "proj": 13.07,
-     "rank": "RB15",
+     "proj": 13.17,
+     "rank": "RB17",
      "date": "2026-10-25",
-     "next_proj": 15.39,
+     "next_proj": 15.66,
      "in_best": true
     },
     {
@@ -1479,10 +1475,10 @@
        "rush_yd": 34
       }
      },
-     "proj": 15.62,
-     "rank": "WR5",
+     "proj": 15.8,
+     "rank": "WR4",
      "date": "2026-10-25",
-     "next_proj": 15.5,
+     "next_proj": 15.19,
      "in_best": true
     },
     {
@@ -1510,10 +1506,10 @@
        "rec_td": 2
       }
      },
-     "proj": 11.72,
+     "proj": 11.71,
      "rank": "WR17",
      "date": "2026-10-25",
-     "next_proj": 10.95,
+     "next_proj": 11.83,
      "in_best": true
     },
     {
@@ -1540,10 +1536,10 @@
        "rec_td": 2
       }
      },
-     "proj": 12.94,
-     "rank": "WR13",
+     "proj": 12.99,
+     "rank": "WR14",
      "date": "2026-10-25",
-     "next_proj": 12.25,
+     "next_proj": 13.22,
      "in_best": true
     },
     {
@@ -1571,10 +1567,10 @@
        "fum_lost": 1
       }
      },
-     "proj": 7.31,
-     "rank": "TE17",
+     "proj": 7.41,
+     "rank": "TE16",
      "date": "2026-10-25",
-     "next_proj": 7.26,
+     "next_proj": 7.13,
      "in_best": true
     },
     {
@@ -1603,10 +1599,10 @@
        "rec_yd": 8
       }
      },
-     "proj": 12.89,
-     "rank": "RB16",
+     "proj": 13.13,
+     "rank": "RB18",
      "date": "2026-10-26",
-     "next_proj": 12.78,
+     "next_proj": 13.76,
      "in_best": true
     },
     {
@@ -1636,10 +1632,10 @@
        "rush_td": 1
       }
      },
-     "proj": 19.36,
+     "proj": 19.87,
      "rank": "QB4",
      "date": "2026-10-25",
-     "next_proj": 16.11,
+     "next_proj": 16.83,
      "in_best": true
     },
     {
@@ -1669,10 +1665,10 @@
        "fum_lost": 1
       }
      },
-     "proj": 11.77,
-     "rank": "RB19",
+     "proj": 11.85,
+     "rank": "RB20",
      "date": "2026-10-25",
-     "next_proj": 8.32
+     "next_proj": 9.63
     },
     {
      "slot": "BN",
@@ -1700,7 +1696,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 9.48
+     "next_proj": 9.41
     },
     {
      "slot": "BN",
@@ -1729,7 +1725,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 8.67
+     "next_proj": 9.27
     },
     {
      "slot": "BN",
@@ -1760,7 +1756,7 @@
      "proj": 7.63,
      "rank": "WR37",
      "date": "2026-10-25",
-     "next_proj": 7.82
+     "next_proj": 8.13
     },
     {
      "slot": "BN",
@@ -1787,15 +1783,13 @@
        "rec_td": 1
       }
      },
-     "proj": 5.64,
-     "rank": "WR51",
-     "date": "2026-10-26",
-     "next_proj": 5.06
+     "proj": 0.0,
+     "next_proj": 5.01
     }
    ],
    "proj_pre": 130.94,
-   "best": 131.6,
-   "best_next": 108.4,
+   "best": 132.8,
+   "best_next": 112.7,
    "locked": 0,
    "locked_proj": 0,
    "games_final": 0
@@ -1834,7 +1828,7 @@
        "rush_td": 2
       }
      },
-     "proj": 16.05,
+     "proj": 15.85,
      "rank": "QB16",
      "date": "2026-10-25",
      "bye_next": true,
@@ -1869,10 +1863,10 @@
        "rec_td": 1
       }
      },
-     "proj": 15.25,
+     "proj": 15.27,
      "rank": "RB9",
      "date": "2026-10-25",
-     "next_proj": 14.16,
+     "next_proj": 14.22,
      "in_best": true
     },
     {
@@ -1903,10 +1897,10 @@
        "rec_td": 2
       }
      },
-     "proj": 22.92,
+     "proj": 23.77,
      "rank": "RB1",
      "date": "2026-10-25",
-     "next_proj": 20.64,
+     "next_proj": 20.7,
      "in_best": true
     },
     {
@@ -1933,8 +1927,8 @@
        "rec_td": 2
       }
      },
-     "proj": 14.19,
-     "rank": "WR8",
+     "proj": 14.02,
+     "rank": "WR10",
      "date": "2026-10-25",
      "bye_next": true,
      "next_proj": 0.0,
@@ -1966,10 +1960,10 @@
        "rec_td": 1
       }
      },
-     "proj": 9.28,
-     "rank": "WR28",
+     "proj": 9.19,
+     "rank": "WR27",
      "date": "2026-10-25",
-     "next_proj": 7.17
+     "next_proj": 8.47
     },
     {
      "slot": "WR",
@@ -1995,10 +1989,10 @@
        "rec_td": 3
       }
      },
-     "proj": 9.39,
-     "rank": "WR27",
+     "proj": 9.35,
+     "rank": "WR26",
      "date": "2026-10-25",
-     "next_proj": 8.83
+     "next_proj": 8.75
     },
     {
      "slot": "TE",
@@ -2024,7 +2018,7 @@
        "rec_td": 5
       }
      },
-     "proj": 10.0,
+     "proj": 10.22,
      "rank": "TE5",
      "date": "2026-10-25",
      "bye_next": true,
@@ -2059,9 +2053,9 @@
       }
      },
      "proj": 14.14,
-     "rank": "RB13",
+     "rank": "RB14",
      "date": "2026-10-25",
-     "next_proj": 14.31,
+     "next_proj": 15.07,
      "in_best": true
     },
     {
@@ -2092,9 +2086,9 @@
       }
      },
      "proj": 19.2,
-     "rank": "QB5",
+     "rank": "QB6",
      "date": "2026-10-25",
-     "next_proj": 14.69,
+     "next_proj": 14.57,
      "in_best": true
     },
     {
@@ -2122,10 +2116,10 @@
        "rec_td": 1
       }
      },
-     "proj": 9.85,
-     "rank": "WR25",
+     "proj": 9.92,
+     "rank": "WR24",
      "date": "2026-10-25",
-     "next_proj": 10.96,
+     "next_proj": 10.97,
      "in_best": true
     },
     {
@@ -2153,10 +2147,10 @@
        "rec_td": 2
       }
      },
-     "proj": 9.1,
-     "rank": "TE8",
+     "proj": 9.64,
+     "rank": "TE7",
      "date": "2026-10-26",
-     "next_proj": 8.62
+     "next_proj": 8.58
     },
     {
      "slot": "BN",
@@ -2187,11 +2181,11 @@
       }
      },
      "proj": 10.26,
-     "rank": "WR22",
+     "rank": "WR21",
      "date": "2026-10-22",
      "final": true,
      "actual": 21.7,
-     "next_proj": 9.32,
+     "next_proj": 9.47,
      "in_best": true
     },
     {
@@ -2223,11 +2217,11 @@
       }
      },
      "proj": 6.29,
-     "rank": "RB38",
+     "rank": "RB37",
      "date": "2026-10-22",
      "final": true,
      "actual": 3.3,
-     "next_proj": 6.72
+     "next_proj": 6.8
     },
     {
      "slot": "BN",
@@ -2261,7 +2255,7 @@
      "proj": 13.95,
      "rank": "QB25",
      "date": "2026-10-25",
-     "next_proj": 18.35
+     "next_proj": 18.39
     },
     {
      "slot": "IR",
@@ -2287,15 +2281,15 @@
        "rush_td": 1
       }
      },
-     "proj": 9.16,
-     "rank": "RB28",
+     "proj": 9.58,
+     "rank": "RB25",
      "date": "2026-10-25",
-     "next_proj": 8.6
+     "next_proj": 8.02
     }
    ],
    "proj_pre": 129.57,
-   "best": 131.9,
-   "best_next": 119.9,
+   "best": 132.7,
+   "best_next": 120.7,
    "locked": 0,
    "locked_proj": 0,
    "games_final": 0
@@ -2334,10 +2328,10 @@
        "fum_lost": 1
       }
      },
-     "proj": 17.33,
-     "rank": "QB12",
+     "proj": 17.0,
+     "rank": "QB11",
      "date": "2026-10-25",
-     "next_proj": 16.09,
+     "next_proj": 15.9,
      "in_best": true
     },
     {
@@ -2373,7 +2367,7 @@
      "date": "2026-10-22",
      "final": true,
      "actual": 17.0,
-     "next_proj": 11.73,
+     "next_proj": 11.83,
      "in_best": true
     },
     {
@@ -2402,10 +2396,10 @@
        "rush_td": 1
       }
      },
-     "proj": 10.8,
-     "rank": "RB20",
+     "proj": 13.37,
+     "rank": "RB16",
      "date": "2026-10-25",
-     "next_proj": 9.94,
+     "next_proj": 9.86,
      "in_best": true
     },
     {
@@ -2437,7 +2431,7 @@
      "date": "2026-10-22",
      "final": true,
      "actual": 6.3,
-     "next_proj": 12.68,
+     "next_proj": 12.67,
      "in_best": true
     },
     {
@@ -2464,10 +2458,10 @@
        "rec_td": 4
       }
      },
-     "proj": 15.76,
-     "rank": "WR4",
+     "proj": 15.66,
+     "rank": "WR5",
      "date": "2026-10-25",
-     "next_proj": 16.4,
+     "next_proj": 16.67,
      "in_best": true
     },
     {
@@ -2496,10 +2490,10 @@
        "rush_yd": 11
       }
      },
-     "proj": 10.38,
-     "rank": "WR21",
+     "proj": 10.13,
+     "rank": "WR23",
      "date": "2026-10-25",
-     "next_proj": 9.61,
+     "next_proj": 9.48,
      "in_best": true
     },
     {
@@ -2530,7 +2524,7 @@
      "proj": 14.16,
      "rank": "TE1",
      "date": "2026-10-25",
-     "next_proj": 13.33,
+     "next_proj": 14.0,
      "in_best": true
     },
     {
@@ -2559,10 +2553,10 @@
        "rush_yd": 6
       }
      },
-     "proj": 12.85,
-     "rank": "WR14",
+     "proj": 13.14,
+     "rank": "WR13",
      "date": "2026-10-25",
-     "next_proj": 10.81,
+     "next_proj": 11.11,
      "in_best": true
     },
     {
@@ -2590,10 +2584,10 @@
        "pass_td": 2
       }
      },
-     "proj": 16.38,
-     "rank": "QB14",
+     "proj": 16.41,
+     "rank": "QB12",
      "date": "2026-10-25",
-     "next_proj": 18.3,
+     "next_proj": 18.4,
      "in_best": true
     },
     {
@@ -2626,7 +2620,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 24.13
+     "next_proj": 23.94
     },
     {
      "slot": "BN",
@@ -2655,7 +2649,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 8.2,
+     "proj": 8.15,
      "rank": "RB30",
      "date": "2026-10-25",
      "bye_next": true,
@@ -2687,10 +2681,10 @@
        "rush_td": 1
       }
      },
-     "proj": 10.19,
+     "proj": 10.12,
      "rank": "RB22",
      "date": "2026-10-25",
-     "next_proj": 8.81
+     "next_proj": 8.9
     },
     {
      "slot": "BN",
@@ -2719,7 +2713,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 13.71
+     "next_proj": 13.56
     },
     {
      "slot": "BN",
@@ -2751,7 +2745,7 @@
      "proj": 7.39,
      "rank": "RB32",
      "date": "2026-10-25",
-     "next_proj": 7.17
+     "next_proj": 7.12
     },
     {
      "slot": "IR",
@@ -2783,8 +2777,8 @@
     }
    ],
    "proj_pre": 128.31,
-   "best": 124.9,
-   "best_next": 126.9,
+   "best": 127.1,
+   "best_next": 128.0,
    "locked": 23.3,
    "locked_proj": 27.22,
    "games_final": 2
@@ -2823,9 +2817,9 @@
       }
      },
      "proj": 17.33,
-     "rank": "QB11",
+     "rank": "QB10",
      "date": "2026-10-25",
-     "next_proj": 16.3,
+     "next_proj": 16.16,
      "in_best": true
     },
     {
@@ -2855,10 +2849,10 @@
        "rec_td": 2
       }
      },
-     "proj": 17.42,
+     "proj": 17.37,
      "rank": "RB5",
      "date": "2026-10-25",
-     "next_proj": 19.21,
+     "next_proj": 19.32,
      "in_best": true
     },
     {
@@ -2888,10 +2882,10 @@
        "rec_td": 2
       }
      },
-     "proj": 14.8,
-     "rank": "RB11",
+     "proj": 15.15,
+     "rank": "RB10",
      "date": "2026-10-25",
-     "next_proj": 14.58,
+     "next_proj": 15.1,
      "in_best": true
     },
     {
@@ -2918,10 +2912,10 @@
        "rec_td": 3
       }
      },
-     "proj": 13.9,
-     "rank": "WR11",
+     "proj": 13.75,
+     "rank": "WR12",
      "date": "2026-10-25",
-     "next_proj": 13.38,
+     "next_proj": 13.1,
      "in_best": true
     },
     {
@@ -2950,11 +2944,11 @@
       }
      },
      "proj": 9.02,
-     "rank": "WR31",
+     "rank": "WR29",
      "date": "2026-10-22",
      "final": true,
      "actual": 8.9,
-     "next_proj": 8.22,
+     "next_proj": 8.37,
      "in_best": true
     },
     {
@@ -2981,8 +2975,8 @@
        "rec_td": 1
       }
      },
-     "proj": 3.04,
-     "rank": "WR76",
+     "proj": 3.02,
+     "rank": "WR78",
      "date": "2026-10-25",
      "bye_next": true,
      "next_proj": 0.0
@@ -3011,7 +3005,7 @@
        "rec_td": 3
       }
      },
-     "proj": 10.46,
+     "proj": 10.94,
      "rank": "TE4",
      "date": "2026-10-25",
      "next_proj": 9.21,
@@ -3043,11 +3037,11 @@
       }
      },
      "proj": 7.78,
-     "rank": "TE15",
+     "rank": "TE14",
      "date": "2026-10-22",
      "final": true,
      "actual": 10.6,
-     "next_proj": 7.8,
+     "next_proj": 7.81,
      "in_best": true
     },
     {
@@ -3077,10 +3071,10 @@
        "rush_td": 1
       }
      },
-     "proj": 19.82,
-     "rank": "QB3",
+     "proj": 19.77,
+     "rank": "QB5",
      "date": "2026-10-25",
-     "next_proj": 20.86,
+     "next_proj": 21.42,
      "in_best": true
     },
     {
@@ -3112,7 +3106,7 @@
      "proj": 10.51,
      "rank": "WR20",
      "date": "2026-10-25",
-     "next_proj": 9.31,
+     "next_proj": 9.2,
      "in_best": true
     },
     {
@@ -3141,10 +3135,10 @@
        "fum_lost": 1
       }
      },
-     "proj": 7.66,
+     "proj": 7.68,
      "rank": "WR36",
      "date": "2026-10-25",
-     "next_proj": 7.27
+     "next_proj": 7.21
     },
     {
      "slot": "BN",
@@ -3173,7 +3167,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 15.18
+     "next_proj": 15.23
     },
     {
      "slot": "BN",
@@ -3227,12 +3221,12 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 6.25
+     "next_proj": 6.21
     }
    ],
    "proj_pre": 121.02,
-   "best": 121.0,
-   "best_next": 126.6,
+   "best": 121.6,
+   "best_next": 127.3,
    "locked": 19.5,
    "locked_proj": 16.8,
    "games_final": 2
@@ -3270,8 +3264,8 @@
        "rush_yd": 73
       }
      },
-     "proj": 16.03,
-     "rank": "QB17",
+     "proj": 16.07,
+     "rank": "QB14",
      "date": "2026-10-26",
      "next_proj": 21.24,
      "in_best": true
@@ -3304,10 +3298,10 @@
        "rec_td": 1
       }
      },
-     "proj": 15.16,
-     "rank": "RB10",
+     "proj": 15.08,
+     "rank": "RB11",
      "date": "2026-10-25",
-     "next_proj": 14.07,
+     "next_proj": 14.13,
      "in_best": true
     },
     {
@@ -3336,10 +3330,10 @@
        "rec_yd": 14
       }
      },
-     "proj": 12.3,
-     "rank": "RB18",
+     "proj": 12.47,
+     "rank": "RB19",
      "date": "2026-10-25",
-     "next_proj": 12.02,
+     "next_proj": 11.89,
      "in_best": true
     },
     {
@@ -3366,7 +3360,7 @@
        "rec_td": 5
       }
      },
-     "proj": 16.18,
+     "proj": 16.95,
      "rank": "WR3",
      "date": "2026-10-25",
      "next_proj": 14.29,
@@ -3398,8 +3392,8 @@
        "rush_yd": -11
       }
      },
-     "proj": 14.06,
-     "rank": "WR10",
+     "proj": 14.1,
+     "rank": "WR9",
      "date": "2026-10-25",
      "next_proj": 15.3,
      "in_best": true
@@ -3431,11 +3425,11 @@
       }
      },
      "proj": 7.1,
-     "rank": "WR42",
+     "rank": "WR43",
      "date": "2026-10-22",
      "final": true,
      "actual": 3.8,
-     "next_proj": 7.2
+     "next_proj": 7.23
     },
     {
      "slot": "TE",
@@ -3469,9 +3463,9 @@
       }
      },
      "proj": 5.98,
-     "rank": "RB41",
+     "rank": "RB39",
      "date": "2026-10-26",
-     "next_proj": 4.0
+     "next_proj": 3.33
     },
     {
      "slot": "Q/W/R/T",
@@ -3498,8 +3492,8 @@
        "rush_td": 1
       }
      },
-     "proj": 18.87,
-     "rank": "QB6",
+     "proj": 19.91,
+     "rank": "QB3",
      "date": "2026-10-25",
      "next_proj": 16.13,
      "in_best": true
@@ -3561,9 +3555,9 @@
       }
      },
      "proj": 15.82,
-     "rank": "QB18",
+     "rank": "QB17",
      "date": "2026-10-25",
-     "next_proj": 16.1
+     "next_proj": 17.54
     },
     {
      "slot": "BN",
@@ -3591,7 +3585,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 13.55
+     "next_proj": 13.61
     },
     {
      "slot": "BN",
@@ -3619,10 +3613,10 @@
        "rush_yd": 30
       }
      },
-     "proj": 7.77,
-     "rank": "WR35",
+     "proj": 7.85,
+     "rank": "WR34",
      "date": "2026-10-25",
-     "next_proj": 7.4,
+     "next_proj": 7.36,
      "in_best": true
     },
     {
@@ -3651,11 +3645,11 @@
       }
      },
      "proj": 7.79,
-     "rank": "TE14",
+     "rank": "TE13",
      "date": "2026-10-22",
      "final": true,
      "actual": 16.4,
-     "next_proj": 6.97,
+     "next_proj": 7.12,
      "in_best": true
     },
     {
@@ -3684,9 +3678,9 @@
       }
      },
      "proj": 7.81,
-     "rank": "TE13",
+     "rank": "TE12",
      "date": "2026-10-25",
-     "next_proj": 6.85,
+     "next_proj": 6.84,
      "in_best": true,
      "assumed_slot": "TE"
     },
@@ -3719,12 +3713,12 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 6.99
+     "next_proj": 6.27
     }
    ],
    "proj_pre": 113.82,
-   "best": 116.0,
-   "best_next": 121.0,
+   "best": 118.0,
+   "best_next": 122.5,
    "fill": 7.81,
    "locked": 3.8,
    "locked_proj": 7.1,
@@ -3755,7 +3749,7 @@
     {
      "slot": "WR",
      "empty": true,
-     "assumed": "DeVonta Smith"
+     "assumed": "Jameson Williams"
     },
     {
      "slot": "WR",
@@ -3765,7 +3759,7 @@
     {
      "slot": "WR",
      "empty": true,
-     "assumed": "Jameson Williams"
+     "assumed": "Jordan Addison"
     },
     {
      "slot": "TE",
@@ -3833,7 +3827,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 12.11
+     "next_proj": 11.97
     },
     {
      "slot": "BN",
@@ -3861,10 +3855,10 @@
        "pass_int": 1
       }
      },
-     "proj": 16.36,
+     "proj": 16.05,
      "rank": "QB15",
      "date": "2026-10-25",
-     "next_proj": 16.43,
+     "next_proj": 15.83,
      "in_best": true,
      "assumed_slot": "QB"
     },
@@ -3895,9 +3889,9 @@
       }
      },
      "proj": 9.4,
-     "rank": "RB25",
+     "rank": "RB26",
      "date": "2026-10-25",
-     "next_proj": 8.59,
+     "next_proj": 8.75,
      "in_best": true
     },
     {
@@ -3925,7 +3919,7 @@
       }
      },
      "proj": 7.32,
-     "rank": "TE16",
+     "rank": "TE17",
      "date": "2026-10-25",
      "next_proj": 6.87,
      "in_best": true,
@@ -3957,10 +3951,12 @@
        "rush_yd": -1
       }
      },
-     "proj": 7.1,
-     "rank": "WR43",
+     "proj": 7.15,
+     "rank": "WR42",
      "date": "2026-10-25",
-     "next_proj": 7.73
+     "next_proj": 7.73,
+     "in_best": true,
+     "assumed_slot": "WR"
     },
     {
      "slot": "BN",
@@ -3986,8 +3982,8 @@
        "rec_td": 2
       }
      },
-     "proj": 10.03,
-     "rank": "WR24",
+     "proj": 10.55,
+     "rank": "WR19",
      "date": "2026-10-25",
      "next_proj": 8.52,
      "in_best": true,
@@ -4019,7 +4015,7 @@
       }
      },
      "proj": 10.25,
-     "rank": "WR23",
+     "rank": "WR22",
      "date": "2026-10-25",
      "next_proj": 12.79,
      "in_best": true,
@@ -4055,7 +4051,7 @@
      "proj": 21.81,
      "rank": "RB2",
      "date": "2026-10-25",
-     "next_proj": 20.09,
+     "next_proj": 19.29,
      "in_best": true,
      "assumed_slot": "RB"
     },
@@ -4086,7 +4082,7 @@
        "rec_td": 1
       }
      },
-     "proj": 16.49,
+     "proj": 16.61,
      "rank": "RB6",
      "date": "2026-10-26",
      "next_proj": 17.52,
@@ -4119,10 +4115,10 @@
        "fum_lost": 2
       }
      },
-     "proj": 14.35,
+     "proj": 14.25,
      "rank": "QB23",
      "date": "2026-10-25",
-     "next_proj": 13.31,
+     "next_proj": 13.22,
      "in_best": true,
      "assumed_slot": "Q/W/R/T"
     },
@@ -4151,12 +4147,8 @@
        "rec_td": 2
       }
      },
-     "proj": 11.59,
-     "rank": "WR18",
-     "date": "2026-10-26",
-     "next_proj": 10.33,
-     "in_best": true,
-     "assumed_slot": "WR"
+     "proj": 0.0,
+     "next_proj": 10.36
     },
     {
      "slot": "BN",
@@ -4183,7 +4175,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 21.37
+     "next_proj": 21.45
     },
     {
      "slot": "BN",
@@ -4210,7 +4202,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 17.84
+     "next_proj": 17.79
     },
     {
      "slot": "IR",
@@ -4244,9 +4236,9 @@
     }
    ],
    "proj_pre": 0,
-   "best": 117.6,
-   "best_next": 131.9,
-   "fill": 108.2,
+   "best": 113.4,
+   "best_next": 131.0,
+   "fill": 103.99,
    "locked": 0,
    "locked_proj": 0,
    "games_final": 0
@@ -4303,7 +4295,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-10-24T17:25:28Z",
+  "updated": "2026-10-25T17:38:21Z",
   "players": 3045,
   "unmatched": []
  }
