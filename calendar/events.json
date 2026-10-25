@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-24T14:07:52Z",
+ "updated": "2026-10-25T14:34:40Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,242 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-vv1AvZkfYGkecF7H_",
-   "date": "2026-10-24",
-   "time": "14:00",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-10-24-2026/event/01006530AD204F19",
-   "source": "ticketmaster",
-   "times": [
-    "14:00",
-    "19:30"
-   ],
-   "aka": [
-    "tm-vv1AvZkfYGkeckVDP"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_uIduBog",
-   "date": "2026-10-24",
-   "time": "18:00",
-   "title": "Have Heart",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/have-heart-boston-massachusetts-10-24-2026/event/010064DA0337A475",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18346637"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_GNv-n4F",
-   "date": "2026-10-24",
-   "time": "18:30",
-   "title": "Big D And The Kids Table: A Nightmare Before Halloween",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/big-d-and-the-kids-table-boston-massachusetts-10-24-2026/event/010064C8C186A548",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18300098",
-    "2026-10-24-big-d-and-the-kids-table-paradise-rock-club"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18447598",
-   "date": "2026-10-24",
-   "time": "18:30",
-   "title": "Ian Fidance",
-   "cat": "comedy",
-   "venue": "Laugh Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/ian-fidance-tickets/comedy/2026-10-24-9-pm/18447598",
-   "source": "seatgeek",
-   "times": [
-    "18:30",
-    "21:00"
-   ],
-   "aka": [
-    "2026-10-24-ian-fidance-laugh-boston",
-    "2026-10-24-ian-fidance-laugh-boston"
-   ],
-   "score": 1
-  },
-  {
-   "id": "tm-vv1AvZkoKGkdqtqdH",
-   "date": "2026-10-24",
-   "time": "19:00",
-   "title": "An Evening With Assembly of Dust (18+)",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/an-evening-with-assembly-of-dust-boston-massachusetts-10-24-2026/event/01006453DDA5D0FC",
-   "source": "ticketmaster",
-   "times": [
-    "19:00",
-    "20:00"
-   ],
-   "aka": [
-    "sg-18091258"
-   ],
-   "score": 0
-  },
-  {
-   "id": "espn-401892568",
-   "date": "2026-10-24",
-   "time": "19:00",
-   "title": "Bruins vs Sharks",
-   "cat": "sports",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://www.espn.com/nhl/game/_/gameId/401892568/sharks-bruins",
-   "source": "espn",
-   "score": 1
-  },
-  {
-   "id": "tm-vvG17Z_CJV-ecA",
-   "date": "2026-10-24",
-   "time": "19:00",
-   "title": "DRIVEWAYS with special guests The Spill Canvas & Have Mercy",
-   "cat": "music",
-   "venue": "Citizens House of Blues Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/driveways-with-special-guests-the-spill-boston-massachusetts-10-24-2026/event/010064E9B4842B45",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18371962",
-    "2026-10-24-the-driveways-the-spill-canvas-a-citizens-house-of-bl"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_aGkBLNCgQ",
-   "date": "2026-10-24",
-   "time": "19:00",
-   "title": "Nate Jackson: BIG DOG",
-   "cat": "comedy",
-   "venue": "Chevalier Theatre",
-   "city": "Medford, MA",
-   "url": "https://www.ticketmaster.com/nate-jackson-big-dog-medford-massachusetts-10-24-2026/event/0100649E9F8CED5A",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18225473",
-    "2026-10-24-nate-jackson-chevalier-theatre"
-   ],
-   "score": 1
-  },
-  {
-   "id": "tm-vv1A8v0PzGA5ti7k",
-   "date": "2026-10-24",
-   "time": "19:00",
-   "title": "Trae Crowder",
-   "cat": "comedy",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/trae-crowder-boston-massachusetts-10-24-2026/event/010064978BA6C106",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18206449",
-    "2026-10-24-trae-crowder-the-wilbur"
-   ],
-   "score": 1
-  },
-  {
-   "id": "tm-Z7r9jZ1A7-VjN",
-   "date": "2026-10-24",
-   "time": "20:00",
-   "title": "Jesse Welles",
-   "cat": "music",
-   "venue": "Roadrunner-Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7-VjN",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18134645"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkoPGkenNv3K",
-   "date": "2026-10-24",
-   "time": "20:00",
-   "title": "Jim Gaffigan: Everything is Wonderful!",
-   "cat": "comedy",
-   "venue": "Boch Center Wang Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/jim-gaffigan-everything-is-wonderful-boston-massachusetts-10-24-2026/event/01006465AA8C1493",
-   "source": "ticketmaster",
-   "act": "Jim Gaffigan",
-   "aka": [
-    "sg-18195850",
-    "2026-10-24-jim-gaffigan-wang-theatre"
-   ],
-   "score": 2,
-   "why": "fav"
-  },
-  {
-   "id": "tm-Z7r9jZ1AAvpfe",
-   "date": "2026-10-24",
-   "time": "20:00",
-   "title": "Lexi Jayde",
-   "cat": "music",
-   "venue": "The Sinclair Music Hall",
-   "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAvpfe",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18554222"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18299083",
-   "date": "2026-10-24",
-   "time": "20:00",
-   "title": "Rodrigo Y Gabriela",
-   "cat": "music",
-   "venue": "Lynn Memorial Auditorium",
-   "city": "Lynn, MA",
-   "url": "https://seatgeek.com/rodrigo-y-gabriela-tickets/lynn-massachusetts-lynn-memorial-auditorium-2026-10-24-8-pm/concert/18299083",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_u6I4XMM",
-   "date": "2026-10-24",
-   "time": "20:00",
-   "title": "The Jayhawks",
-   "cat": "music",
-   "venue": "Boch Center Shubert Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/the-jayhawks-boston-massachusetts-10-24-2026/event/010064D1E857EDF7",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18331545"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1AAv0_F",
-   "date": "2026-10-24",
-   "time": "20:00",
-   "title": "The Rocky Horror Picture Show",
-   "cat": "music",
-   "venue": "The Cabot",
-   "city": "Beverly, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAv0_F",
-   "source": "ticketmaster",
-   "score": 0
-  },
   {
    "id": "tm-vv1AvZkfYGkeca0HS",
    "date": "2026-10-25",
@@ -319,18 +83,15 @@
    "why": "fav"
   },
   {
-   "id": "tm-vvG17Z_GO7VQv9",
+   "id": "sg-18301466",
    "date": "2026-10-25",
    "time": "19:00",
-   "title": "Luke Kidgell - Live In The USA",
+   "title": "Luke Kidgell",
    "cat": "comedy",
    "venue": "Crystal Ballroom at Somerville Theatre",
    "city": "Somerville, MA",
-   "url": "https://www.ticketmaster.com/luke-kidgell-live-in-the-usa-somerville-massachusetts-10-25-2026/event/010064C804D1A057",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18301466"
-   ],
+   "url": "https://seatgeek.com/luke-kidgell-tickets/comedy/2026-10-25-7-pm/18301466",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -2525,9 +2286,6 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/a-boogie-wit-da-hoodie-dababy-boston-massachusetts-11-07-2026/event/01006553345D8679",
    "source": "ticketmaster",
-   "aka": [
-    "sg-18705508"
-   ],
    "score": 0
   },
   {
@@ -7217,6 +6975,22 @@
    "score": 0
   },
   {
+   "id": "tm-rZ7HnEZ1AfCa-f",
+   "date": "2026-12-18",
+   "time": "23:55",
+   "title": "Chris Beck Quartet",
+   "cat": "music",
+   "venue": "Smalls Jazz Club",
+   "city": "New York, NY",
+   "url": "https://www.ticketweb.com/event/chris-beck-quartet-smalls-jazz-club-tickets/14389854",
+   "source": "ticketmaster",
+   "drive_hours": 4.25,
+   "act": "Beck",
+   "from": 28,
+   "score": 2,
+   "why": "big"
+  },
+  {
    "id": "sg-18601269",
    "date": "2026-12-19",
    "time": "14:00",
@@ -7310,6 +7084,22 @@
     "sg-18399917"
    ],
    "score": 0
+  },
+  {
+   "id": "tm-rZ7HnEZ1AfCa0f",
+   "date": "2026-12-19",
+   "time": "23:55",
+   "title": "Chris Beck Quartet",
+   "cat": "music",
+   "venue": "Smalls Jazz Club",
+   "city": "New York, NY",
+   "url": "https://www.ticketweb.com/event/chris-beck-quartet-smalls-jazz-club-tickets/14389914",
+   "source": "ticketmaster",
+   "drive_hours": 4.25,
+   "act": "Beck",
+   "from": 28,
+   "score": 2,
+   "why": "big"
   },
   {
    "id": "espn-401892970",
@@ -11115,14 +10905,56 @@
    "score": 0
   },
   {
-   "id": "sg-18658875",
+   "id": "tm-vv1AvZkfgGkeDLoQr",
    "date": "2027-04-22",
+   "time": "20:00",
+   "title": "Fontaines D.C.",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/fontaines-dc-boston-massachusetts-04-22-2027/event/01006535BB7D169E",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18658875"
+   ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv177Z_3GklSY5Et",
+   "date": "2027-04-23",
+   "time": "19:00",
+   "title": "Chasing Abbey (18+)",
+   "cat": "music",
+   "venue": "Paradise Rock Club presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/chasing-abbey-18-boston-massachusetts-04-23-2027/event/0100652AF3C0B9E9",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18593769"
+   ],
+   "score": 0
+  },
+  {
+   "id": "sg-18642818",
+   "date": "2027-04-23",
    "time": "20:00",
    "title": "Fontaines D.C. with Westside Cowboy",
    "cat": "music",
    "venue": "MGM Music Hall at Fenway",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/fontaines-d-c-tickets/boston-massachusetts-mgm-music-hall-at-fenway-2027-04-22-8-pm/concert/18658875",
+   "url": "https://seatgeek.com/fontaines-d-c-tickets/boston-massachusetts-mgm-music-hall-at-fenway-2027-04-23-8-pm/concert/18642818",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
+   "id": "sg-18688827",
+   "date": "2027-04-23",
+   "time": "20:00",
+   "title": "cleopatrick",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/cleopatrick-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-04-23-8-pm/concert/18688827",
    "source": "seatgeek",
    "score": 0
   }
@@ -11202,8 +11034,8 @@
  "sources": {
   "picks": 5,
   "venues": 4,
-  "espn": 81,
-  "ticketmaster": 541,
+  "espn": 80,
+  "ticketmaster": 532,
   "seatgeek": 109
  }
 }
