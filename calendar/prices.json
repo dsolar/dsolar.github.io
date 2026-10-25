@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-24T04:47:09Z",
+ "updated": "2026-10-25T04:55:09Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -219,16 +219,6 @@
    "title": "Dark Star Orchestra",
    "date": "2027-01-02",
    "venue": "The Capitol Theatre",
-   "low": null,
-   "src": null
-  },
-  "tm-vv1AvZkoPGkenNv3K": {
-   "sg": 18195850,
-   "history": [],
-   "url": "https://www.ticketmaster.com/jim-gaffigan-everything-is-wonderful-boston-massachusetts-10-24-2026/event/01006465AA8C1493",
-   "title": "Jim Gaffigan: Everything is Wonderful!",
-   "date": "2026-10-24",
-   "venue": "Boch Center Wang Theatre",
    "low": null,
    "src": null
   },
@@ -457,6 +447,10 @@
     [
      "2026-10-24",
      56
+    ],
+    [
+     "2026-10-25",
+     56
     ]
    ],
    "sg": null,
@@ -512,6 +506,10 @@
     ],
     [
      "2026-10-24",
+     22
+    ],
+    [
+     "2026-10-25",
      22
     ]
    ],
@@ -631,6 +629,10 @@
     [
      "2026-10-24",
      28
+    ],
+    [
+     "2026-10-25",
+     28
     ]
    ],
    "sg": null,
@@ -674,6 +676,10 @@
     ],
     [
      "2026-10-24",
+     22
+    ],
+    [
+     "2026-10-25",
      22
     ]
    ],
@@ -806,16 +812,6 @@
    "src": null,
    "low": null
   },
-  "espn-401892568": {
-   "history": [],
-   "sg": 18378501,
-   "title": "Bruins vs Sharks",
-   "date": "2026-10-24",
-   "venue": "TD Garden",
-   "url": "https://www.espn.com/nhl/game/_/gameId/401892568/sharks-bruins",
-   "src": null,
-   "low": null
-  },
   "espn-401909870": {
    "history": [],
    "sg": 18495289,
@@ -875,31 +871,51 @@
    "url": "https://www.espn.com/nba/game/_/gameId/401909924/bucks-celtics",
    "src": null,
    "low": null
+  },
+  "espn-401892674": {
+   "history": [],
+   "sg": 18378505,
+   "title": "Bruins vs Panthers",
+   "date": "2026-11-08",
+   "venue": "TD Garden",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892674/panthers-bruins",
+   "src": null,
+   "low": null
+  },
+  "espn-401873049": {
+   "history": [],
+   "sg": 18013964,
+   "title": "Patriots vs Packers",
+   "date": "2026-11-08",
+   "venue": "Gillette Stadium",
+   "url": "https://www.espn.com/nfl/game/_/gameId/401873049/packers-patriots",
+   "src": null,
+   "low": null
   }
  },
  "misses": {
-  "tm-vv1k7Z_3OAG7I4tc": "2026-10-22",
-  "tm-G5vVZ_5R5G1f5": "2026-10-22",
-  "tm-vv1AeZkftGkdqDKq0": "2026-10-22",
-  "tm-G5vVZ_5RuGQjG": "2026-10-22",
-  "tm-vvG17Z_5wCylI9": "2026-10-22",
-  "tm-vv177Z_oGkXBnY-F": "2026-10-22",
-  "tm-vv177Z_oGkXBi8-I": "2026-10-22",
-  "tm-rZ7HnEZ1AfuNZ7": "2026-10-22",
-  "tm-rZ7HnEZ1AfuYF0": "2026-10-22",
-  "tm-Z7r9jZ1A7PIPk": "2026-10-22",
-  "tm-Z7r9jZ1A7PIP6": "2026-10-22",
-  "tm-vv177Z_8GkD4PKZI": "2026-10-22",
-  "tm-vv1AvZkf6Gkd94lLs": "2026-10-22",
-  "tm-Z7r9jZ1A7-VGp": "2026-10-22",
-  "tm-vv1AvZkoYGkdIsA4N": "2026-10-22",
-  "tm-vvG17Z_5wbduXe": "2026-10-22",
-  "tm-Z7r9jZ1A7PJaJ": "2026-10-22",
-  "tm-vvG17Z_u7Z_JCI": "2026-10-22",
-  "tm-Z7r9jZ1AAvx-I": "2026-10-22",
-  "tm-Z7r9jZ1AAvx-E": "2026-10-22",
-  "tm-rZ7HnEZ1Afugk7": "2026-10-22",
-  "tm-rZ7HnEZ1AfCA0f": "2026-10-22",
+  "tm-vv1k7Z_3OAG7I4tc": "2026-10-25",
+  "tm-G5vVZ_5R5G1f5": "2026-10-25",
+  "tm-vv1AeZkftGkdqDKq0": "2026-10-25",
+  "tm-G5vVZ_5RuGQjG": "2026-10-25",
+  "tm-vvG17Z_5wCylI9": "2026-10-25",
+  "tm-vv177Z_oGkXBnY-F": "2026-10-25",
+  "tm-vv177Z_oGkXBi8-I": "2026-10-25",
+  "tm-rZ7HnEZ1AfuNZ7": "2026-10-25",
+  "tm-rZ7HnEZ1AfuYF0": "2026-10-25",
+  "tm-Z7r9jZ1A7PIPk": "2026-10-25",
+  "tm-Z7r9jZ1A7PIP6": "2026-10-25",
+  "tm-vv177Z_8GkD4PKZI": "2026-10-25",
+  "tm-vv1AvZkf6Gkd94lLs": "2026-10-25",
+  "tm-Z7r9jZ1A7-VGp": "2026-10-25",
+  "tm-vv1AvZkoYGkdIsA4N": "2026-10-25",
+  "tm-vvG17Z_5wbduXe": "2026-10-25",
+  "tm-Z7r9jZ1A7PJaJ": "2026-10-25",
+  "tm-vvG17Z_u7Z_JCI": "2026-10-25",
+  "tm-Z7r9jZ1AAvx-I": "2026-10-25",
+  "tm-Z7r9jZ1AAvx-E": "2026-10-25",
+  "tm-rZ7HnEZ1Afugk7": "2026-10-25",
+  "tm-rZ7HnEZ1AfCA0f": "2026-10-25",
   "tm-Z7r9jZ1AA77-E": "2026-10-23"
  },
  "drops": []
