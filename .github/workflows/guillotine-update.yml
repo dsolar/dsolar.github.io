@@ -18,6 +18,7 @@ on:
       - tools/guillotine_paste.py
       - tools/guillotine_projections.py
       - tools/guillotine_snapshot.js
+      - tools/guillotine_check.js
       - .github/workflows/guillotine-update.yml
   schedule:
     - cron: "17 14 * 9-12,1 *"   # 10:17am ET daily (9:17 in winter), September through January
@@ -70,14 +71,18 @@ jobs:
             gh api "repos/${{ github.repository }}/compare/$BEFORE...${{ github.sha }}" --jq '.files[].filename' 2>/dev/null \
               | grep -qx guillotine/paste.txt && NEW_PASTE=1
           fi
-          if [ "$SOURCE" = "Yahoo Fantasy" ] && [ "$NEW_PASTE" = 0 ]; then
-            echo "Yahoo filled data.json, so the older paste is skipped."
+          STATUS=$(python3 -c "import json; print(json.load(open('guillotine/yahoo.json')).get('status', ''))")
+          if [ "$SOURCE" = "Yahoo Fantasy" ] && { [ "$NEW_PASTE" = 0 ] || [ "$STATUS" = connected ]; }; then
+            echo "Yahoo filled data.json; keep the API roster instead of replacing it with a paste."
           else
             python3 tools/guillotine_paste.py
           fi
 
       - name: Refresh player projections
         run: python3 tools/guillotine_projections.py
+
+      - name: Verify roster and scoring consistency
+        run: node tools/guillotine_check.js
 
       - name: Save this week's odds
         run: node tools/guillotine_snapshot.js

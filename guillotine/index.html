@@ -666,14 +666,18 @@ th.line{border-left:1px solid var(--rule)}
       " one week in ten. That's why a 10-point edge isn't safety: a team projected 110 outscores one projected 120 about " + Math.round(upset * 10) + " times in 10. " +
       "The " + Math.round(cv * 100) + "% is set from this season's real cuts: run on the teams alive in Weeks 3 to 6, the typical lowest score averaged 83, against 84 for the scores that actually got cut.";
 
-    var upd = data.updated ? "Updated " + etTime(data.updated) : "";
+    var upd = data.roster_snapshot_at ? "Full roster snapshot " + etTime(data.roster_snapshot_at) :
+      data.roster_imported_at ? "Roster import " + etTime(data.roster_imported_at) :
+      data.updated ? "Data processed " + etTime(data.updated) : "";
+    if (data.proj_source && data.proj_source.updated) upd += " · Projections refreshed " + etTime(data.proj_source.updated);
+    if (data.lineup_verified_teams && data.lineup_verified_teams.length) upd += " · " + data.lineup_verified_teams.length + " starting lineups corrected from Week " + data.week + " screenshots; remaining rosters retain the earlier snapshot";
     var lv = data.live;
     var liveHtml = lv ? (lv.inProgress ? '<span class="live-tag">Live</span> ' + esc(lv.inProgress + " game" + (lv.inProgress > 1 ? "s" : "") + " on · scores as of " + etTime(lv.fetched)) :
       lv.anyStarted ? esc("Results as of " + etTime(lv.fetched)) : "") : "";
     $("updated").innerHTML = (liveHtml ? liveHtml + " · " : "") + esc(upd) + (data.league_url ? (upd ? " · " : "") + '<a href="' + esc(data.league_url) + '" target="_blank" rel="noopener">League on Yahoo</a>' : "") +
       (YAHOO && YAHOO.status && YAHOO.status !== "connected"
         ? '<br><span class="yh">' + (YAHOO.status === "waiting"
-            ? "Rosters come from the pasted league page. Yahoo hasn't approved the direct connection yet (waiting since " + esc(dayOf(YAHOO.since)) + "; checked every morning)."
+            ? "Automatic roster imports are inactive: Yahoo rejected this app’s Fantasy API access (waiting since " + esc(dayOf(YAHOO.since)) + "; checked every morning)."
             : "Rosters come from the pasted league page. The Yahoo connection hit an error on " + esc(dayOf(YAHOO.since)) + ".") + "</span>"
         : "");
 
@@ -1530,6 +1534,9 @@ th.line{border-left:1px solid var(--rule)}
       t.roster.forEach(function (p) {
         if (p.empty || p.bye) return;
         var g = live.games[p.nfl], s = live.pts[norm(p.name) + "|" + p.pos];
+        if (p.yfinal && typeof p.yahoo_actual === "number") {
+          p.final = true; p.actual = p.yahoo_actual; delete p.live; delete p.frac; return;
+        }
         delete p.final; delete p.live; delete p.actual; delete p.frac;
         if (!g || g.state === "pre") return;
         p.actual = s ? s.pts : 0;
@@ -1549,10 +1556,18 @@ th.line{border-left:1px solid var(--rule)}
     d.live = { fetched: live.fetched, inProgress: Math.round(games / 2), anyStarted: anyStarted };
     return d;
   }
+  var rosterCheckedAt = 0;
+  function refreshRosterSnapshot() {
+    if (Date.now() - rosterCheckedAt < 120e3) return Promise.resolve();
+    rosterCheckedAt = Date.now();
+    return getJSON("data.json?roster=" + Math.floor(Date.now() / 120e3)).then(function (next) {
+      if (next && Array.isArray(next.teams) && next.teams.length) BASE = next;
+    }).catch(function () {}); // A failed refresh keeps the last successful roster.
+  }
   function refreshLive() {
     clearTimeout(liveTimer);
     if (!BASE || document.visibilityState === "hidden") return;
-    getLive(BASE).then(function (live) {
+    refreshRosterSnapshot().then(function () { return getLive(BASE); }).then(function (live) {
       liveFails = 0;
       var d = applyLive(BASE, live);
       if (d.live) {
@@ -1566,7 +1581,7 @@ th.line{border-left:1px solid var(--rule)}
         return g.state === "pre" && t - Date.now() < 3 * 3600e3 && t - Date.now() > -3600e3;
       });
       var on = d.live && d.live.inProgress;
-      if (on || soon) liveTimer = setTimeout(refreshLive, on ? 60e3 : 600e3);
+      liveTimer = setTimeout(refreshLive, on ? 60e3 : 600e3);
     }).catch(function () {
       // No live feed reachable: the page keeps its last numbers and tries again in 1, 2, 4, 8, then every 10 minutes.
       liveFails++;

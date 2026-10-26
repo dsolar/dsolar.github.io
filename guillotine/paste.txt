@@ -2,14 +2,14 @@ Bastille Day (ID# 157731)
 Week 7 Matchup
 Standings
 Rank	Team	Points	Projected Points	Season Points	FAB	Waiver	Moves	Pts Per Week
-9	Tai Streetz Lata?	0.00	0.00	680.20	$222	3	24	113.37
-8	Deviated Rectums	3.80	103.60	702.28	$207	7	13	116.41
-7	Liberté Égalité Henri	19.50	118.74	737.36	$316	1	10	119.64
+9	Tai Streetz Lata?	117.60	132.58	797.80	$222	3	24	113.37
+8	Deviated Rectums	90.62	113.75	789.10	$207	7	13	116.41
+7	Liberté Égalité Henri	95.28	95.28	813.14	$316	1	10	119.64
 6	Holofernes	23.30	125.01	741.42	$679	9	20	119.69
 5	Likely to Burden Tate w Penix	0.00	129.57	764.58	$415	4	15	127.43
 4	Love Purdy Flowers	0.00	130.94	727.26	$275	6	14	121.21
 3	Breece’s Pieces	22.12	131.02	725.70	$1	5	16	117.26
-2	Love a Kittle Lamb & WhiteRice	0.00	131.24	780.84	$416	8	7	130.14
+2	Love a Kittle Lamb & WhiteRice	0.00	131.24	780.84	$415	8	7	130.14
 1	Drake Mayezini	48.44	155.97	726.48	$473	2	12	113.01
 Eliminated
 Week	Team	Season Points	FAB	Moves	Pts Per Week
@@ -19,208 +19,290 @@ Week	Team	Season Points	FAB	Moves	Pts Per Week
 3	Filet-O-Fate	233.48	$898	5	77.83
 2	23 Richard	141.92	$990	3	70.96
 1	J Free FTW	78.36	$1000	0	78.36
-Last standings update: Sat Oct 24 02:41am EDT
 
-Yahoo Sports
-Yahoo Sports
-Search query
-Search
 
-News
-Finance
-Sports
-
-More
-
-D
- Fantasy Football
-Overview
-League
-My Team
-Matchups
-Players
-Research
-Draft
-Commissioner
-StatTracker
-
-Fantasy
-
-Network
-Fantasy Plus
-Bastille Day (ID# 157731)
-Yahoo Sports Fantasy Football
-Open chat
+Full roster snapshot: 2026-10-24T06:41:00Z
+Lineup screenshot corrections: Liberté Égalité Henri | Deviated Rectums | Tai Streetz Lata?
+Correction source: User-provided Yahoo Week 7 screenshots; exact capture time unavailable. Other starting lineups and unseen bench entries remain from the earlier paste.
 Starting Rosters
-Team
-
-Position
 Week 7
-Holofernes
+
+Drake Mayezini
 
 Pos	Player
 QB
-Aaron Rodgers
-Aaron RodgersPlayer Note
-Pit - QB
-Sun 9:30 am @ NO
+Drake Maye
+Drake MayePlayer Note
+NE - QB
+Final L 24-30 @ CHI
 RB
-D'Andre Swift
-D'Andre SwiftVideo ForecastPlayer Note
-Chi - RB
-Final W 30-24 vs NE
-RB
-Tony Pollard
-Tony PollardVideo ForecastPlayer Note
-Ten - RB
-Sun 1:00 pm vs Cle
-WR
-A.J. Brown
-A.J. BrownPlayer Note
-NE - WR
-Final L 24-30 @ Chi
-WR
-Ja'Marr Chase
-Ja'Marr ChaseNo new player Notes
-Cin - WR
-Sun 1:00 pm @ Bal
-WR
-DK Metcalf
-DK MetcalfVideo ForecastPlayer Note
-Pit - WR
-Sun 9:30 am @ NO
-TE
-Brock Bowers
-Brock BowersNew Player Note
-LV - TE
-Sun 4:25 pm vs LAR
-W/R/T
-Matthew Golden
-Matthew GoldenNew Player Note
-GB - WR
-Sun 4:25 pm @ Det
-Q/W/R/T
-Kyler Murray
-Kyler MurrayNo new player Notes
-Min - QB
-Sun 1:00 pm vs Ind
-BN
-Josh Allen
-Josh AllenPlayer Note
-Buf - QB
-Bye
-BN
-Kendre Miller
-Kendre MillerVideo ForecastPlayer Note
-NO - RB
-Sun 9:30 am vs Pit
-BN
-Quinshon Judkins
-Quinshon JudkinsVideo ForecastNew Player Note
-Cle - RB
-Sun 1:00 pm @ Ten
-BN
-Justin Herbert
-Justin HerbertPlayer Note
-LAC - QB
-Bye
-BN
-Blake Corum
-Blake CorumVideo ForecastPlayer Note
+Kyren Williams
+Kyren WilliamsPlayer Note
 LAR - RB
 Sun 4:25 pm @ LV
-IR
-Jacory Croskey-Merritt
-J. Croskey-MerrittIRVideo ForecastPlayer Note
-Was - RB
-Bye
-23 Richard
+RB
+Rhamondre Stevenson
+Rhamondre StevensonPlayer Note
+NE - RB
+Final L 24-30 @ CHI
+WR
+George Pickens
+George PickensPlayer Note
+DAL - WR
+Mon 8:15 pm @ PHI
+WR
+Puka Nacua
+Puka NacuaQPlayer Note
+LAR - WR
+Sun 4:25 pm @ LV
+WR
+Nico Collins
+Nico CollinsPlayer Note
+HOU - WR
+Sun 1:00 pm vs NYG
+TE
+Tucker Kraft
+Tucker KraftPlayer Note
+GB - TE
+Sun 4:25 pm @ DET
+W/R/T
+Woody Marks
+Woody MarksPlayer Note
+HOU - RB
+Sun 1:00 pm vs NYG
+Q/W/R/T
+C.J. Stroud
+C.J. StroudPlayer Note
+HOU - QB
+Sun 1:00 pm vs NYG
+BN
+Travis Kelce
+Travis KelcePlayer Note
+KC - TE
+Sun 8:20 pm @ SEA
+BN
+Cam Skattebo
+Cam SkatteboPlayer Note
+NYG - RB
+Sun 1:00 pm @ HOU
+BN
+Mike Evans
+Mike EvansOPlayer Note
+SF - WR
+Sun 1:00 pm @ ATL
+BN
+Josh Jacobs
+Josh JacobsPlayer Note
+GB - RB
+Sun 4:25 pm @ DET
+BN
+Konata Mumpfield
+Konata MumpfieldPlayer Note
+LAR - WR
+Sun 4:25 pm @ LV
+Love a Kittle Lamb & WhiteRice
 
 Pos	Player
 QB
---empty--
-(Empty)
+Bryce Young
+Bryce YoungPlayer Note
+CAR - QB
+Sun 1:00 pm vs TB
 RB
---empty--
-(Empty)
+Jonathan Taylor
+Jonathan TaylorPlayer Note
+IND - RB
+Sun 1:00 pm @ MIN
 RB
---empty--
-(Empty)
+Derrick Henry
+Derrick HenryPlayer Note
+BAL - RB
+Sun 1:00 pm vs CIN
 WR
---empty--
-(Empty)
+CeeDee Lamb
+CeeDee LambPlayer Note
+DAL - WR
+Mon 8:15 pm @ PHI
 WR
---empty--
-(Empty)
+Christian Watson
+Christian WatsonPlayer Note
+GB - WR
+Sun 4:25 pm @ DET
 WR
---empty--
-(Empty)
+Tee Higgins
+Tee HigginsPlayer Note
+CIN - WR
+Sun 1:00 pm @ BAL
 TE
---empty--
-(Empty)
+George Kittle
+George KittlePlayer Note
+SF - TE
+Sun 1:00 pm @ ATL
 W/R/T
---empty--
-(Empty)
+Xavier Worthy
+Xavier WorthyPlayer Note
+KC - WR
+Sun 8:20 pm @ SEA
 Q/W/R/T
---empty--
-(Empty)
+Patrick Mahomes
+Patrick MahomesPlayer Note
+KC - QB
+Sun 8:20 pm @ SEA
+BN
+Rashee Rice
+Rashee RiceOPlayer Note
+KC - WR
+Sun 8:20 pm @ SEA
+BN
+Tyreek Hill
+Tyreek HillNAPlayer Note
+MIA - WR
+Sun 1:00 pm @ NYJ
+BN
+Jeremiyah Love
+Jeremiyah LoveOPlayer Note
+ARI - RB
+Sun 4:05 pm vs DEN
+BN
+Tanner McKee
+Tanner McKeePlayer Note
+PHI - QB
+Mon 8:15 pm vs DAL
+Breece’s Pieces
+
+Pos	Player
+QB
+Caleb Williams
+Caleb WilliamsPlayer Note
+CHI - QB
+Final W 30-24 vs NE
+RB
+J.K. Dobbins
+J.K. DobbinsPlayer Note
+DEN - RB
+Sun 4:05 pm @ ARI
+RB
+Breece Hall
+Breece HallQPlayer Note
+NYJ - RB
+Sun 1:00 pm vs MIA
+WR
+Jaxon Smith-Njigba
+Jaxon Smith-NjigbaPlayer Note
+SEA - WR
+Sun 8:20 pm vs KC
+WR
+Malik Nabers
+Malik NabersPlayer Note
+NYG - WR
+Sun 1:00 pm @ HOU
+WR
+Drake London
+Drake LondonPlayer Note
+ATL - WR
+Sun 1:00 pm vs SF
+TE
+Trey McBride
+Trey McBridePlayer Note
+ARI - TE
+Sun 4:05 pm vs DEN
+W/R/T
+Devaughn Vele
+Devaughn VelePlayer Note
+NO - WR
+Sun 9:30 am vs PIT
+Q/W/R/T
+Lamar Jackson
+Lamar JacksonQPlayer Note
+BAL - QB
+Sun 1:00 pm vs CIN
+BN
+Zach Charbonnet
+Zach CharbonnetOPlayer Note
+SEA - RB
+Sun 8:20 pm vs KC
+BN
+Braelon Allen
+Braelon AllenPlayer Note
+NYJ - RB
+Sun 1:00 pm vs MIA
+BN
+Stefon Diggs
+Stefon DiggsPlayer Note
+WAS - WR
+Bye
+BN
+Baker Mayfield
+Baker MayfieldQPlayer Note
+TB - QB
+Sun 1:00 pm @ CAR
+BN
+Chris Godwin Jr.
+Chris Godwin Jr.Player Note
+TB - WR
+Sun 1:00 pm @ CAR
+IR
+Tyler Warren
+Tyler WarrenOPlayer Note
+IND - TE
+Sun 1:00 pm @ MIN
 Love Purdy Flowers
 
 Pos	Player
 QB
 Brock Purdy
-Brock PurdyVideo ForecastPlayer Note
+Brock PurdyPlayer Note
 SF - QB
-Sun 1:00 pm @ Atl
+Sun 1:00 pm @ ATL
 RB
 Christian McCaffrey
-Christian McCaffreyVideo ForecastPlayer Note
+Christian McCaffreyPlayer Note
 SF - RB
-Sun 1:00 pm @ Atl
+Sun 1:00 pm @ ATL
 RB
 Chase Brown
-Chase BrownVideo ForecastNo new player Notes
-Cin - RB
-Sun 1:00 pm @ Bal
+Chase BrownPlayer Note
+CIN - RB
+Sun 1:00 pm @ BAL
 WR
 Zay Flowers
-Zay FlowersVideo ForecastPlayer Note
-Bal - WR
-Sun 1:00 pm vs Cin
+Zay FlowersPlayer Note
+BAL - WR
+Sun 1:00 pm vs CIN
 WR
 Tetairoa McMillan
-Tetairoa McMillanVideo ForecastPlayer Note
-Car - WR
+Tetairoa McMillanPlayer Note
+CAR - WR
 Sun 1:00 pm vs TB
 WR
 Jalen Coker
-Jalen CokerVideo ForecastPlayer Note
-Car - WR
+Jalen CokerPlayer Note
+CAR - WR
 Sun 1:00 pm vs TB
 TE
 Mark Andrews
 Mark AndrewsPlayer Note
-Bal - TE
-Sun 1:00 pm vs Cin
+BAL - TE
+Sun 1:00 pm vs CIN
 W/R/T
 Saquon Barkley
-Saquon BarkleyQVideo ForecastNew Player Note
-Phi - RB
-Mon 8:15 pm vs Dal
+Saquon BarkleyQPlayer Note
+PHI - RB
+Mon 8:15 pm vs DAL
 Q/W/R/T
 Jordan Love
-Jordan LoveNew Player Note
+Jordan LovePlayer Note
 GB - QB
-Sun 4:25 pm @ Det
+Sun 4:25 pm @ DET
 BN
 Aaron Jones Sr.
-Aaron Jones Sr.Video ForecastNew Player Note
-Min - RB
-Sun 1:00 pm vs Ind
+Aaron Jones Sr.Player Note
+MIN - RB
+Sun 1:00 pm vs IND
 BN
 Rachaad White
 Rachaad WhitePlayer Note
-Was - RB
+WAS - RB
 Bye
 BN
 Omarion Hampton
@@ -229,263 +311,170 @@ LAC - RB
 Bye
 BN
 Tre Tucker
-Tre TuckerVideo ForecastPlayer Note
+Tre TuckerPlayer Note
 LV - WR
 Sun 4:25 pm vs LAR
 BN
 Dontayvion Wicks
-Dontayvion WicksQNew Player Note
-Phi - WR
-Mon 8:15 pm vs Dal
-Breece’s Pieces
+Dontayvion WicksQPlayer Note
+PHI - WR
+Mon 8:15 pm vs DAL
+Likely to Burden Tate w Penix
 
 Pos	Player
 QB
-Caleb Williams
-Caleb WilliamsVideo ForecastPlayer Note
-Chi - QB
-Final W 30-24 vs NE
+Tyler Shough
+Tyler ShoughPlayer Note
+NO - QB
+Sun 9:30 am vs PIT
 RB
-J.K. Dobbins
-J.K. DobbinsVideo ForecastPlayer Note
-Den - RB
-Sun 4:05 pm @ Ari
+Jaylen Warren
+Jaylen WarrenPlayer Note
+PIT - RB
+Sun 9:30 am @ NO
 RB
-Breece Hall
-Breece HallQVideo ForecastNew Player Note
-NYJ - RB
-Sun 1:00 pm vs Mia
+Jahmyr Gibbs
+Jahmyr GibbsPlayer Note
+DET - RB
+Sun 4:25 pm vs GB
 WR
-Jaxon Smith-Njigba
-Jaxon Smith-NjigbaVideo ForecastPlayer Note
-Sea - WR
-Sun 8:20 pm vs KC
-WR
-Malik Nabers
-Malik NabersVideo ForecastPlayer Note
-NYG - WR
-Sun 1:00 pm @ Hou
-WR
-Drake London
-Drake LondonVideo ForecastPlayer Note
-Atl - WR
-Sun 1:00 pm vs SF
-TE
-Trey McBride
-Trey McBridePlayer Note
-Ari - TE
-Sun 4:05 pm vs Den
-W/R/T
-Devaughn Vele
-Devaughn VeleVideo ForecastPlayer Note
+Chris Olave
+Chris OlavePlayer Note
 NO - WR
-Sun 9:30 am vs Pit
+Sun 9:30 am vs PIT
+WR
+Germie Bernard
+Germie BernardPlayer Note
+PIT - WR
+Sun 9:30 am @ NO
+WR
+Denzel Boston
+Denzel BostonPlayer Note
+CLE - WR
+Sun 1:00 pm @ TEN
+TE
+Isaiah Likely
+Isaiah LikelyPlayer Note
+NYG - TE
+Sun 1:00 pm @ HOU
+W/R/T
+Ashton Jeanty
+Ashton JeantyPlayer Note
+LV - RB
+Sun 4:25 pm vs LAR
 Q/W/R/T
-Lamar Jackson
-Lamar JacksonQVideo ForecastNew Player Note
-Bal - QB
-Sun 1:00 pm vs Cin
+Bo Nix
+Bo NixPlayer Note
+DEN - QB
+Sun 4:05 pm @ ARI
 BN
-Zach Charbonnet
-Zach CharbonnetONew Player Note
-Sea - RB
-Sun 8:20 pm vs KC
+Carnell Tate
+Carnell TatePlayer Note
+TEN - WR
+Sun 1:00 pm @ CLE
 BN
-Braelon Allen
-Braelon AllenVideo ForecastNew Player Note
-NYJ - RB
-Sun 1:00 pm vs Mia
+Dallas Goedert
+Dallas GoedertQPlayer Note
+PHI - TE
+Mon 8:15 pm vs DAL
 BN
-Stefon Diggs
-Stefon DiggsVideo ForecastPlayer Note
-Was - WR
-Bye
+Luther Burden III
+Luther Burden IIIPlayer Note
+CHI - WR
+Final W 30-24 vs NE
 BN
-Baker Mayfield
-Baker MayfieldQVideo ForecastNew Player Note
-TB - QB
-Sun 1:00 pm @ Car
+TreVeyon Henderson
+TreVeyon HendersonPlayer Note
+NE - RB
+Final L 24-30 @ CHI
 BN
-Chris Godwin Jr.
-Chris Godwin Jr.Video ForecastPlayer Note
-TB - WR
-Sun 1:00 pm @ Car
+Jacoby Brissett
+Jacoby BrissettPlayer Note
+ARI - QB
+Sun 4:05 pm vs DEN
 IR
-Tyler Warren
-Tyler WarrenOVideo ForecastNew Player Note
-Ind - TE
-Sun 1:00 pm @ Min
-Deviated Rectums
+Jordan Mason
+Jordan MasonIR-RPlayer Note
+MIN - RB
+Sun 1:00 pm vs IND
+Holofernes
 
 Pos	Player
 QB
-Dak Prescott
-Dak PrescottPlayer Note
-Dal - QB
-Mon 8:15 pm @ Phi
+Aaron Rodgers
+Aaron RodgersPlayer Note
+PIT - QB
+Sun 9:30 am @ NO
 RB
-Bucky Irving
-Bucky IrvingNew Player Note
-TB - RB
-Sun 1:00 pm @ Car
+D'Andre Swift
+D'Andre SwiftPlayer Note
+CHI - RB
+Final W 30-24 vs NE
 RB
-Ollie Gordon II
-Ollie Gordon IIVideo ForecastNo new player Notes
-Mia - RB
-Sun 1:00 pm @ NYJ
+Tony Pollard
+Tony PollardPlayer Note
+TEN - RB
+Sun 1:00 pm vs CLE
 WR
-Amon-Ra St. Brown
-Amon-Ra St. BrownVideo ForecastNo new player Notes
-Det - WR
-Sun 4:25 pm vs GB
-WR
-Justin Jefferson
-Justin JeffersonVideo ForecastNew Player Note
-Min - WR
-Sun 1:00 pm vs Ind
-WR
-DeMario Douglas
-DeMario DouglasVideo ForecastNew Player Note
+A.J. Brown
+A.J. BrownPlayer Note
 NE - WR
-Final L 24-30 @ Chi
+Final L 24-30 @ CHI
+WR
+Ja'Marr Chase
+Ja'Marr ChasePlayer Note
+CIN - WR
+Sun 1:00 pm @ BAL
+WR
+DK Metcalf
+DK MetcalfPlayer Note
+PIT - WR
+Sun 9:30 am @ NO
 TE
---empty--
-(Empty)
-W/R/T
-Dameon Pierce
-Dameon PierceVideo ForecastPlayer Note
-Phi - RB
-Mon 8:15 pm vs Dal
-Q/W/R/T
-Jared Goff
-Jared GoffNo new player Notes
-Det - QB
-Sun 4:25 pm vs GB
-BN
-Emeka Egbuka
-Emeka EgbukaOVideo ForecastNew Player Note
-TB - WR
-Sun 1:00 pm @ Car
-BN
-Kirk Cousins
-Kirk CousinsVideo ForecastPlayer Note
-LV - QB
+Brock Bowers
+Brock BowersPlayer Note
+LV - TE
 Sun 4:25 pm vs LAR
+W/R/T
+Matthew Golden
+Matthew GoldenPlayer Note
+GB - WR
+Sun 4:25 pm @ DET
+Q/W/R/T
+Kyler Murray
+Kyler MurrayPlayer Note
+MIN - QB
+Sun 1:00 pm vs IND
 BN
-Parker Washington
-Parker WashingtonVideo ForecastPlayer Note
-Jax - WR
+Josh Allen
+Josh AllenPlayer Note
+BUF - QB
 Bye
 BN
-Malik Washington
-Malik WashingtonVideo ForecastNo new player Notes
-Mia - WR
-Sun 1:00 pm @ NYJ
+Kendre Miller
+Kendre MillerPlayer Note
+NO - RB
+Sun 9:30 am vs PIT
 BN
-Colston Loveland
-Colston LovelandVideo ForecastPlayer Note
-Chi - TE
-Final W 30-24 vs NE
+Quinshon Judkins
+Quinshon JudkinsPlayer Note
+CLE - RB
+Sun 1:00 pm @ TEN
 BN
-Tyler Higbee
-Tyler HigbeeVideo ForecastPlayer Note
-LAR - TE
+Justin Herbert
+Justin HerbertPlayer Note
+LAC - QB
+Bye
+BN
+Blake Corum
+Blake CorumPlayer Note
+LAR - RB
 Sun 4:25 pm @ LV
 IR
-Kyle Monangai
-Kyle MonangaiOPlayer Note
-Chi - RB
-Final W 30-24 vs NE
-Fly Zone Kristi
-
-Pos	Player
-QB
---empty--
-(Empty)
-RB
---empty--
-(Empty)
-RB
---empty--
-(Empty)
-WR
---empty--
-(Empty)
-WR
---empty--
-(Empty)
-WR
---empty--
-(Empty)
-TE
---empty--
-(Empty)
-W/R/T
---empty--
-(Empty)
-Q/W/R/T
---empty--
-(Empty)
-Beast Mode Samuel
-
-Pos	Player
-QB
---empty--
-(Empty)
-RB
---empty--
-(Empty)
-RB
---empty--
-(Empty)
-WR
---empty--
-(Empty)
-WR
---empty--
-(Empty)
-WR
---empty--
-(Empty)
-TE
---empty--
-(Empty)
-W/R/T
---empty--
-(Empty)
-Q/W/R/T
---empty--
-(Empty)
-J Free FTW
-
-Pos	Player
-QB
---empty--
-(Empty)
-RB
---empty--
-(Empty)
-RB
---empty--
-(Empty)
-WR
---empty--
-(Empty)
-WR
---empty--
-(Empty)
-WR
---empty--
-(Empty)
-TE
---empty--
-(Empty)
-W/R/T
---empty--
-(Empty)
-Q/W/R/T
---empty--
-(Empty)
+Jacory Croskey-Merritt
+Jacory Croskey-MerrittPlayer Note
+WAS - RB
+Bye
 Liberté Égalité Henri
 
 Pos	Player
@@ -493,450 +482,254 @@ QB
 Matthew Stafford
 Matthew StaffordPlayer Note
 LAR - QB
-Sun 4:25 pm @ LV
+Final W 35-21 @ LV
+Yahoo snapshot points	18.50	projection	18.88
 RB
 Kenneth Walker III
-Kenneth Walker IIIVideo ForecastPlayer Note
+Kenneth Walker IIIPlayer Note
 KC - RB
-Sun 8:20 pm @ Sea
+Final L 3-20 @ SEA
+Yahoo snapshot points	7.70	projection	17.40
 RB
 Chuba Hubbard
-Chuba HubbardVideo ForecastPlayer Note
-Car - RB
-Sun 1:00 pm vs TB
+Chuba HubbardPlayer Note
+CAR - RB
+Final L 13-43 vs TB
+Yahoo snapshot points	8.00	projection	15.60
 WR
 Garrett Wilson
-Garrett WilsonVideo ForecastPlayer Note
+Garrett WilsonPlayer Note
 NYJ - WR
-Sun 1:00 pm vs Mia
+Final L 25-28 vs MIA
+Yahoo snapshot points	3.60	projection	13.48
 WR
 Rome Odunze
-Rome OdunzeVideo ForecastPlayer Note
-Chi - WR
+Rome OdunzePlayer Note
+CHI - WR
 Final W 30-24 vs NE
+Yahoo snapshot points	8.90	projection	8.96
 WR
-Marvin Harrison Jr.
-Marvin Harrison Jr.Video ForecastPlayer Note
-Hou - WR
-Sun 1:00 pm vs NYG
+Jaylen Waddle
+Jaylen WaddlePlayer Note
+DEN - WR
+Final W 28-25 @ ARI
+Yahoo snapshot points	6.80	projection	10.94
 TE
 Sam LaPorta
-Sam LaPortaNew Player Note
-Det - TE
-Sun 4:25 pm vs GB
+Sam LaPortaPlayer Note
+DET - TE
+Final W 20-17 vs GB
+Yahoo snapshot points	2.30	projection	10.47
 W/R/T
 Hunter Henry
 Hunter HenryPlayer Note
 NE - TE
-Final L 24-30 @ Chi
+Final L 24-30 @ CHI
+Yahoo snapshot points	10.60	projection	7.42
 Q/W/R/T
 Joe Burrow
-Joe BurrowNo new player Notes
-Cin - QB
-Sun 1:00 pm @ Bal
+Joe BurrowPlayer Note
+CIN - QB
+Final W 35-13 @ BAL
+Yahoo snapshot points	28.88	projection	18.86
 BN
-Jaylen Waddle
-Jaylen WaddleVideo ForecastNew Player Note
-Den - WR
-Sun 4:05 pm @ Ari
+Marvin Harrison Jr.
+Marvin Harrison Jr.Player Note
+HOU - WR
+Final (Yahoo screenshot)
+Yahoo snapshot points	7.10	projection	5.45
 BN
 KC Concepcion Jr.
-KC Concepcion Jr.Video ForecastNew Player Note
-Cle - WR
-Sun 1:00 pm @ Ten
+KC Concepcion Jr.Player Note
+CLE - WR
+Sun 1:00 pm @ TEN
 BN
 James Cook III
-James Cook IIIVideo ForecastPlayer Note
-Buf - RB
+James Cook IIIPlayer Note
+BUF - RB
 Bye
 BN
 Jakobi Meyers
 Jakobi MeyersPlayer Note
-Jax - WR
+JAX - WR
 Bye
 BN
 Keon Coleman
-Keon ColemanVideo ForecastPlayer Note
-Buf - WR
+Keon ColemanPlayer Note
+BUF - WR
 Bye
-Maye I see your TDs
+Deviated Rectums
 
 Pos	Player
 QB
---empty--
-(Empty)
+Dak Prescott
+Dak PrescottPlayer Note
+DAL - QB
+Mon 8:15 pm @ PHI
+Yahoo snapshot points	—	projection	17.79
 RB
---empty--
-(Empty)
+Bucky Irving
+Bucky IrvingPlayer Note
+TB - RB
+Final W 43-13 @ CAR
+Yahoo snapshot points	23.50	projection	14.70
 RB
---empty--
-(Empty)
+Ollie Gordon II
+Ollie Gordon IIPlayer Note
+MIA - RB
+Final W 28-25 @ NYJ
+Yahoo snapshot points	16.80	projection	11.02
 WR
---empty--
-(Empty)
+Amon-Ra St. Brown
+Amon-Ra St. BrownPlayer Note
+DET - WR
+Final W 20-17 vs GB
+Yahoo snapshot points	19.70	projection	17.09
 WR
---empty--
-(Empty)
+Justin Jefferson
+Justin JeffersonPlayer Note
+MIN - WR
+Final W 16-10 vs IND
+Yahoo snapshot points	6.40	projection	14.95
 WR
---empty--
-(Empty)
+DeMario Douglas
+DeMario DouglasPlayer Note
+NE - WR
+Final L 24-30 @ CHI
+Yahoo snapshot points	3.80	projection	8.06
 TE
---empty--
-(Empty)
+Tyler Higbee
+Tyler HigbeePlayer Note
+LAR - TE
+Final W 35-21 @ LV
+Yahoo snapshot points	2.40	projection	7.84
 W/R/T
---empty--
-(Empty)
+Dameon Pierce
+Dameon PiercePlayer Note
+PHI - RB
+Mon 8:15 pm vs DAL
+Yahoo snapshot points	—	projection	5.34
 Q/W/R/T
---empty--
-(Empty)
-Drake Mayezini
-
-Pos	Player
-QB
-Drake Maye
-Drake MayeVideo ForecastPlayer Note
-NE - QB
-Final L 24-30 @ Chi
-RB
-Kyren Williams
-Kyren WilliamsVideo ForecastPlayer Note
-LAR - RB
-Sun 4:25 pm @ LV
-RB
-Rhamondre Stevenson
-Rhamondre StevensonVideo ForecastPlayer Note
-NE - RB
-Final L 24-30 @ Chi
-WR
-George Pickens
-George PickensVideo ForecastNew Player Note
-Dal - WR
-Mon 8:15 pm @ Phi
-WR
-Puka Nacua
-Puka NacuaQVideo ForecastNew Player Note
-LAR - WR
-Sun 4:25 pm @ LV
-WR
-Nico Collins
-Nico CollinsPlayer Note
-Hou - WR
-Sun 1:00 pm vs NYG
-TE
-Tucker Kraft
-Tucker KraftPlayer Note
-GB - TE
-Sun 4:25 pm @ Det
-W/R/T
-Woody Marks
-Woody MarksVideo ForecastNew Player Note
-Hou - RB
-Sun 1:00 pm vs NYG
-Q/W/R/T
-C.J. Stroud
-C.J. StroudVideo ForecastPlayer Note
-Hou - QB
-Sun 1:00 pm vs NYG
+Jared Goff
+Jared GoffPlayer Note
+DET - QB
+Final W 20-17 vs GB
+Yahoo snapshot points	18.02	projection	19.94
 BN
-Travis Kelce
-Travis KelceNew Player Note
-KC - TE
-Sun 8:20 pm @ Sea
+Emeka Egbuka
+Emeka EgbukaOPlayer Note
+TB - WR
+Final W 43-13 @ CAR
+Yahoo snapshot points	0.00	projection	0.00
 BN
-Cam Skattebo
-Cam SkatteboNew Player Note
-NYG - RB
-Sun 1:00 pm @ Hou
+Kirk Cousins
+Kirk CousinsPlayer Note
+LV - QB
+Sun 4:25 pm vs LAR
 BN
-Mike Evans
-Mike EvansOVideo ForecastNew Player Note
-SF - WR
-Sun 1:00 pm @ Atl
+Parker Washington
+Parker WashingtonPlayer Note
+JAX - WR
+Bye
 BN
-Josh Jacobs
-Josh JacobsNew Player Note
-GB - RB
-Sun 4:25 pm @ Det
+Malik Washington
+Malik WashingtonPlayer Note
+MIA - WR
+Sun 1:00 pm @ NYJ
 BN
-Konata Mumpfield
-Konata MumpfieldNew Player Note
-LAR - WR
-Sun 4:25 pm @ LV
+Colston Loveland
+Colston LovelandPlayer Note
+CHI - TE
+Final W 30-24 vs NE
+IR
+Kyle Monangai
+Kyle MonangaiOPlayer Note
+CHI - RB
+Final W 30-24 vs NE
 Tai Streetz Lata?
 
 Pos	Player
 QB
---empty--
-(Empty)
+Deshaun Watson
+Deshaun WatsonPlayer Note
+CLE - QB
+Final W 27-24 @ TEN
+Yahoo snapshot points	19.22	projection	15.87
 RB
---empty--
-(Empty)
+RJ Harvey
+RJ HarveyPlayer Note
+DEN - RB
+Final W 30-16 @ ARI
+Yahoo snapshot points	13.00	projection	8.78
 RB
---empty--
-(Empty)
+Bijan Robinson
+Bijan RobinsonPlayer Note
+ATL - RB
+Final W 29-20 vs SF
+Yahoo snapshot points	14.70	projection	21.60
 WR
---empty--
-(Empty)
+Jordan Addison
+Jordan AddisonPlayer Note
+MIN - WR
+Final W 16-10 vs IND
+Yahoo snapshot points	3.30	projection	8.60
 WR
---empty--
-(Empty)
+Jameson Williams
+Jameson WilliamsPlayer Note
+DET - WR
+Final W 20-17 vs GB
+Yahoo snapshot points	23.60	projection	10.29
 WR
---empty--
-(Empty)
+Michael Wilson
+Michael WilsonPlayer Note
+ARI - WR
+Final L 16-30 vs DEN
+Yahoo snapshot points	8.60	projection	10.42
 TE
---empty--
-(Empty)
+Kyle Pitts Sr.
+Kyle Pitts Sr.Player Note
+ATL - TE
+Final W 29-20 vs SF
+Yahoo snapshot points	10.70	projection	7.38
 W/R/T
+Javonte Williams
+Javonte WilliamsPlayer Note
+DAL - RB
+Mon 8:15 pm @ PHI
+Yahoo snapshot points	—	projection	14.98
+Q/W/R/T
+Geno Smith
+Geno SmithPlayer Note
+NYJ - QB
+Final L 25-28 vs MIA
+Yahoo snapshot points	24.48	projection	16.46
+BN
 Bhayshul Tuten
 Bhayshul TutenPlayer Note
-Jax - RB
+JAX - RB
 Bye
-Q/W/R/T
---empty--
-(Empty)
 BN
 DJ Moore
 DJ MooreQPlayer Note
-Buf - WR
+BUF - WR
 Bye
 BN
-Geno Smith
-Geno SmithVideo ForecastPlayer Note
-NYJ - QB
-Sun 1:00 pm vs Mia
-BN
-RJ Harvey
-RJ HarveyPlayer Note
-Den - RB
-Sun 4:05 pm @ Ari
-BN
-Kyle Pitts Sr.
-Kyle Pitts Sr.Video ForecastPlayer Note
-Atl - TE
-Sun 1:00 pm vs SF
-BN
-Jordan Addison
-Jordan AddisonPlayer Note
-Min - WR
-Sun 1:00 pm vs Ind
-BN
-Jameson Williams
-Jameson WilliamsVideo ForecastNo new player Notes
-Det - WR
-Sun 4:25 pm vs GB
-BN
-Michael Wilson
-Michael WilsonVideo ForecastPlayer Note
-Ari - WR
-Sun 4:05 pm vs Den
-BN
-Bijan Robinson
-Bijan RobinsonVideo ForecastPlayer Note
-Atl - RB
-Sun 1:00 pm vs SF
-BN
-Javonte Williams
-Javonte WilliamsVideo ForecastPlayer Note
-Dal - RB
-Mon 8:15 pm vs Dal
-BN
-Deshaun Watson
-Deshaun WatsonPlayer Note
-Cle - QB
-Sun 1:00 pm @ Ten
-BN
 DeVonta Smith
-DeVonta SmithQNew Player Note
-Phi - WR
-Mon 8:15 pm vs Dal
+DeVonta SmithQPlayer Note
+PHI - WR
+Mon 8:15 pm vs DAL
 BN
 Trevor Lawrence
 Trevor LawrencePlayer Note
-Jax - QB
+JAX - QB
 Bye
 BN
 Jayden Daniels
-Jayden DanielsVideo ForecastPlayer Note
-Was - QB
+Jayden DanielsPlayer Note
+WAS - QB
 Bye
 IR
 Travis Etienne Jr.
-Travis Etienne Jr.IRNo new player Notes
+Travis Etienne Jr.IRPlayer Note
 NO - RB
-Sun 9:30 am vs Pit
-Love a Kittle Lamb & WhiteRice
-
-Pos	Player
-QB
-Bryce Young
-Bryce YoungPlayer Note
-Car - QB
-Sun 1:00 pm vs TB
-RB
-Jonathan Taylor
-Jonathan TaylorNew Player Note
-Ind - RB
-Sun 1:00 pm @ Min
-RB
-Derrick Henry
-Derrick HenryPlayer Note
-Bal - RB
-Sun 1:00 pm vs Cin
-WR
-CeeDee Lamb
-CeeDee LambVideo ForecastPlayer Note
-Dal - WR
-Mon 8:15 pm @ Phi
-WR
-Christian Watson
-Christian WatsonNew Player Note
-GB - WR
-Sun 4:25 pm @ Det
-WR
-Tee Higgins
-Tee HigginsVideo ForecastNo new player Notes
-Cin - WR
-Sun 1:00 pm @ Bal
-TE
-George Kittle
-George KittlePlayer Note
-SF - TE
-Sun 1:00 pm @ Atl
-W/R/T
-Xavier Worthy
-Xavier WorthyVideo ForecastNew Player Note
-KC - WR
-Sun 8:20 pm @ Sea
-Q/W/R/T
-Patrick Mahomes
-Patrick MahomesVideo ForecastPlayer Note
-KC - QB
-Sun 8:20 pm @ Sea
-BN
-Rashee Rice
-Rashee RiceONew Player Note
-KC - WR
-Sun 8:20 pm @ Sea
-BN
-Tyreek Hill
-Tyreek HillNAPlayer Note
-Mia - WR
-Sun 1:00 pm @ NYJ
-BN
-Jeremiyah Love
-Jeremiyah LoveOVideo ForecastNew Player Note
-Ari - RB
-Sun 4:05 pm vs Den
-BN
-Tanner McKee
-Tanner McKeeVideo ForecastPlayer Note
-Phi - QB
-Mon 8:15 pm vs Dal
-Likely to Burden Tate w Penix
-
-Pos	Player
-QB
-Tyler Shough
-Tyler ShoughVideo ForecastPlayer Note
-NO - QB
-Sun 9:30 am vs Pit
-RB
-Jaylen Warren
-Jaylen WarrenPlayer Note
-Pit - RB
-Sun 9:30 am @ NO
-RB
-Jahmyr Gibbs
-Jahmyr GibbsVideo ForecastNo new player Notes
-Det - RB
-Sun 4:25 pm vs GB
-WR
-Chris Olave
-Chris OlavePlayer Note
-NO - WR
-Sun 9:30 am vs Pit
-WR
-Germie Bernard
-Germie BernardVideo ForecastPlayer Note
-Pit - WR
-Sun 9:30 am @ NO
-WR
-Denzel Boston
-Denzel BostonVideo ForecastNew Player Note
-Cle - WR
-Sun 1:00 pm @ Ten
-TE
-Isaiah Likely
-Isaiah LikelyVideo ForecastPlayer Note
-NYG - TE
-Sun 1:00 pm @ Hou
-W/R/T
-Ashton Jeanty
-Ashton JeantyVideo ForecastPlayer Note
-LV - RB
-Sun 4:25 pm vs LAR
-Q/W/R/T
-Bo Nix
-Bo NixVideo ForecastPlayer Note
-Den - QB
-Sun 4:05 pm @ Ari
-BN
-Carnell Tate
-Carnell TateVideo ForecastPlayer Note
-Ten - WR
-Sun 1:00 pm @ Cle
-BN
-Dallas Goedert
-Dallas GoedertQVideo ForecastNew Player Note
-Phi - TE
-Mon 8:15 pm vs Dal
-BN
-Luther Burden III
-Luther Burden IIIVideo ForecastPlayer Note
-Chi - WR
-Final W 30-24 vs NE
-BN
-TreVeyon Henderson
-TreVeyon HendersonVideo ForecastPlayer Note
-NE - RB
-Final L 24-30 @ Chi
-BN
-Jacoby Brissett
-Jacoby BrissettPlayer Note
-Ari - QB
-Sun 4:05 pm vs Den
-IR
-Jordan Mason
-Jordan MasonIR-RVideo ForecastNew Player Note
-Min - RB
-Sun 1:00 pm vs Ind
-Filet-O-Fate
-
-Pos	Player
-QB
---empty--
-(Empty)
-RB
---empty--
-(Empty)
-RB
---empty--
-(Empty)
-WR
---empty--
-(Empty)
-WR
---empty--
-(Empty)
-WR
---empty--
-(Empty)
-TE
---empty--
-(Empty)
-W/R/T
---empty--
-(Empty)
-Q/W/R/T
---empty--
-(Empty)
+Sun 9:30 am vs PIT

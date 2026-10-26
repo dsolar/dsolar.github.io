@@ -286,6 +286,12 @@ def main():
                 p["final"] = True
                 r = res.find(p)
                 p["actual"] = r["pts"] if r and r["played"] else 0.0
+            # Exact final Yahoo observations outrank a differently scored public stats feed.
+            if isinstance(p.get("yahoo_proj"), (int, float)):
+                p["proj"] = p["yahoo_proj"]
+            if p.get("yfinal") and isinstance(p.get("yahoo_actual"), (int, float)):
+                p["actual"] = p["yahoo_actual"]
+                p["final"] = True
             n = nxt.find(p)
             if p["nfl"] in nxt.byes:
                 p["bye_next"] = True

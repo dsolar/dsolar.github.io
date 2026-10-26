@@ -12,6 +12,7 @@ workflow, which runs this script and then tools/guillotine_projections.py.
   python tools/guillotine_paste.py [paste file] [--out guillotine/data.json]
 """
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -84,6 +85,8 @@ def parse_rosters(lines):
             else:
                 gm = re.match(r"(\w{3}) (\d{1,2}:\d{2} [ap]m) (vs|@) (\w{2,3})", game)
                 fm = re.match(r"Final(?: ?/ ?OT)? ([WLT]) (\d+-\d+) (vs|@) (\w{2,3})", game)
+                if game == "Final (Yahoo screenshot)":
+                    p["yfinal"] = True
                 if gm:
                     p["game"] = f"{gm.group(1)} {gm.group(2)}"
                     p["opp"] = ("vs " if gm.group(3) == "vs" else "@ ") + gm.group(4).upper()
@@ -92,8 +95,18 @@ def parse_rosters(lines):
                     p["yfinal"] = True
                     p["result"] = f"{fm.group(1)} {fm.group(2)}"
                     p["opp"] = ("vs " if fm.group(3) == "vs" else "@ ") + fm.group(4).upper()
+            used = 5
+            if i + 5 < len(lines) and lines[i + 5].startswith("Yahoo snapshot points\t"):
+                snapshot = lines[i + 5].split("\t")
+                if len(snapshot) == 4:
+                    actual, projected = num(snapshot[1]), num(snapshot[3])
+                    if projected is not None:
+                        p["yahoo_proj"] = projected
+                    if actual is not None and p.get("yfinal"):
+                        p["yahoo_actual"] = actual
+                used += 1
             rosters[team].append(p)
-            i += 5
+            i += used
             continue
         if line.startswith("Yahoo Sports - NBC"):
             team = None
@@ -178,6 +191,15 @@ def parse(txt):
         "source": "Yahoo league page, pasted",
         "teams": teams,
     }
+    data["roster_import_id"] = hashlib.sha256(txt.encode("utf-8")).hexdigest()
+    data["roster_imported_at"] = data["updated"]
+    snapshot = re.search(r"^Full roster snapshot: (.+)$", txt, re.M)
+    if snapshot:
+        data["roster_snapshot_at"] = snapshot.group(1).strip()
+    verified = re.search(r"^Lineup screenshot corrections: (.+)$", txt, re.M)
+    if verified:
+        data["lineup_verified_teams"] = [n.strip() for n in verified.group(1).split("|")]
+        data["roster_note"] = "Three Week 7 starting lineups corrected from Yahoo screenshots. Other lineups and unseen bench entries retain the earlier snapshot."
     if league_id:
         data["league_url"] = f"https://football.fantasysports.yahoo.com/f1/{league_id}"
     return data
@@ -185,7 +207,7 @@ def parse(txt):
 
 def base_of(data):
     """The pasted league data without the projection layer or timestamp, for change checks."""
-    d = {k: v for k, v in data.items() if k not in PROJ_KEYS and k != "updated"}
+    d = {k: v for k, v in data.items() if k not in PROJ_KEYS and k not in ("updated", "roster_imported_at")}
     d["teams"] = []
     for t in data.get("teams", []):
         t = {k: v for k, v in t.items() if k not in PROJ_KEYS}
@@ -246,6 +268,8 @@ def main():
     if os.path.exists(out):
         with open(out, encoding="utf-8") as f:
             old = json.load(f)
+        if old.get("roster_import_id") == data.get("roster_import_id"):
+            data["roster_imported_at"] = old.get("roster_imported_at", old.get("updated"))
         carry_cuts(old, data)
     carry_pregame(old, data)
     if old is not None:

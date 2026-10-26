@@ -146,6 +146,8 @@ The sign-in setup (done in Oct 2026 for the first app, `davidsolar guillotine`, 
 
 If a run ever fails with "Yahoo sign-in failed", redo steps 2 to 4 for a fresh refresh token.
 
+**Roster freshness.** NFL live scoring does not update Yahoo ownership or lineup slots. The page labels the roster snapshot separately from projection and live-score timestamps, and checks for a newly published roster file while it stays open. Screenshot corrections verify only the named starting lineups; unseen benches and other teams retain their earlier snapshot. A successful scheduled run can still contain a rejected Yahoo import: check the Yahoo step for HTTP 403. Only a successful authorized Yahoo pull provides automatic roster and transaction updates.
+
 **Live scoring.** During games the page checks live scoring every minute and reruns the odds: each starter's points so far are banked and his projection counts only for the part of his game still to play. The scores come from a small relay, `tools/live-relay.js`, that runs free on Cloudflare at https://guillotine-live.dsolar.workers.dev/ (set up Oct 14, 2026). It reads the rosters from `guillotine/data.json`, pulls Sleeper's stats and ESPN's scoreboard (cached ~45 seconds), and returns just the league's players. One-time setup:
 
 1. Cloudflare dashboard > **Workers & Pages** > **Create** > **Create Worker**. Name it `guillotine-live` > **Deploy**.
