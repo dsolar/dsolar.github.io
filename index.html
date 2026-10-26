@@ -20,19 +20,26 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Besley:ital,wght@0,500;0,600;0,700;0,800;1,500&family=Libre+Franklin:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="assets/site.css?v=20261022-big">
+<link rel="stylesheet" href="assets/site.css?v=20261026-views">
 <script src="assets/site.js" defer></script>
 <script src="assets/analytics.js" defer></script>
-<script src="assets/scoreboard.js?v=20261022-big" defer></script>
+<script src="assets/scoreboard.js?v=20261026-views" defer></script>
 </head>
 <body>
 
 
 <a class="skip" href="#projects">Skip to projects</a>
 
-<!-- The scoreboard ticker: today's games and each team's next one. Teams are listed at the top of assets/scoreboard.js. -->
-<aside class="ticker" id="scores" aria-label="Scoreboard: Boston, BC and Penn State games, Boston time" hidden>
-  <div class="tk-label"><span>Scoreboard</span><small id="scoreboard-note"></small></div>
+<!-- The scoreboard ticker: tonight's games, last night's results, or the guillotine league live. Teams are listed at the top of assets/scoreboard.js. -->
+<aside class="ticker" id="scores" aria-label="Scoreboard: Boston, BC and Penn State games and the Bastille Day league, Boston time" hidden>
+  <div class="tk-label">
+    <div class="tk-views" role="group" aria-label="What the scoreboard shows">
+      <button type="button" data-view="tonight" aria-pressed="true">Tonight</button>
+      <button type="button" data-view="last" aria-pressed="false">Last night</button>
+      <button type="button" data-view="guillotine" aria-pressed="false">Guillotine</button>
+    </div>
+    <small id="scoreboard-note" aria-live="polite"></small>
+  </div>
   <button class="tk-btn tk-prev" type="button" aria-label="Earlier in the list">&#8249;</button>
   <div class="tk-viewport"><ul class="tk-track" id="scoreboard-list"></ul></div>
   <button class="tk-btn tk-next" type="button" aria-label="Later in the list">&#8250;</button>
