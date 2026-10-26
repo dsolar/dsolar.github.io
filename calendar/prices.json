@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-26T04:58:19Z",
+ "updated": "2026-10-26T20:35:43Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -922,7 +922,10 @@
   "tm-Z7r9jZ1AAvx-E": "2026-10-25",
   "tm-rZ7HnEZ1Afugk7": "2026-10-25",
   "tm-rZ7HnEZ1AfCA0f": "2026-10-25",
-  "tm-Z7r9jZ1AA77-E": "2026-10-26"
+  "tm-Z7r9jZ1AA77-E": "2026-10-26",
+  "tm-G5vVZ_4hZldpy": "2026-10-26",
+  "tm-G5vVZ_4hZiNpD": "2026-10-26",
+  "tm-G5vVZ_4hZcSpT": "2026-10-26"
  },
  "drops": []
 }
