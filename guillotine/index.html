@@ -397,6 +397,11 @@ th.line{border-left:1px solid var(--rule)}
 .need{height:8px;background:var(--track);border-radius:4px;overflow:hidden}
 .need i{display:block;height:100%;background:var(--safe);border-radius:4px}
 .mnf .clear{margin:0;font-size:.8rem;color:var(--muted);line-height:1.5}
+.mnf-tracker{border:1px solid var(--rule);border-left:3px solid var(--blade);border-radius:3px;padding:.8rem .85rem;display:grid;gap:.4rem;background:var(--bg)}
+.mnf-tracker p{margin:0;font-size:.84rem;line-height:1.45;font-variant-numeric:tabular-nums}
+.mnf-alert{border:1px solid var(--rule);border-left:3px solid var(--bubble);border-radius:3px;padding:.7rem .85rem;font-size:.84rem;line-height:1.45;background:var(--bg)}
+.mnf-alert.danger{border-left-color:var(--danger)}
+.mnf-alert p{margin:0}
 
 /* Player stat cards */
 [data-p]{text-decoration:underline dotted;text-decoration-color:var(--muted);text-underline-offset:2px;cursor:help}
@@ -440,6 +445,8 @@ th.line{border-left:1px solid var(--rule)}
 
   <section class="mnf" id="mnf" aria-labelledby="mnf-title" hidden>
     <div><p class="eyebrow">Monday night showcase</p><h2 id="mnf-title"></h2><p class="sub" id="mnf-sub"></p></div>
+    <div class="mnf-tracker" id="mnf-tracker" hidden></div>
+    <div class="mnf-alert" id="mnf-alert" hidden></div>
     <div class="mnf-cards" id="mnf-cards"></div>
     <p class="clear" id="mnf-clear" hidden></p>
   </section>
@@ -1135,7 +1142,7 @@ th.line{border-left:1px solid var(--rule)}
       var j = jeop[0];
       floorTxt = "Lowest final score this week. Needs " + who(j.name) + "'s " + list(j.left.map(short)) + " to finish under " + two(floor.locked - j.locked) + " combined.";
     } else if (jeop.length > 1) {
-      $("mnf-title").textContent = "Who catches " + who(floor.name) + "?";
+      $("mnf-title").textContent = "Can " + who(floor.name) + " survive?";
       floorTxt = "Lowest final score this week. Needs at least one of the teams below to fall short.";
     } else {
       $("mnf-title").textContent = who(floor.name) + " is waiting on nobody";
@@ -1156,13 +1163,58 @@ th.line{border-left:1px solid var(--rule)}
       cards.push('<div class="mnf-card t-' + tier + '"><span class="tag">Needs ' + two(need) + "</span>" +
         "<h3>" + teamButton(t.name, state.mgr(t.name)) + "</h3>" +
         '<div class="big">' + two(t.locked) + "<small>so far</small></div>" +
-        "<p>Needs " + two(need) + " from " + list(players.map(function (p) { return pname(p, rt); })) + " to catch " + esc(who(floor.name)) + ". Projected " + t.remMu.toFixed(1) + " from them.</p>" +
+        "<p>Needs " + two(need) + " from " + list(players.map(function (p) { return pname(p, rt); })) + " to survive. Projected " + t.remMu.toFixed(1) + " from them.</p>" +
         '<div class="need" role="img" aria-label="' + esc(two(Math.max(got, 0)) + " of " + two(goal) + " needed") + '"><i style="width:' + Math.max(0, Math.min(100, goal > 0 ? got / goal * 100 : 0)).toFixed(1) + '%"></i></div>' +
         "<ul>" + players.map(function (p) {
           return "<li><span>" + pname(p, rt, true) + " " + esc(p.pos) + "</span><span>" + (p.live || p.final ? (p.actual || 0).toFixed(1) + (p.live ? " live" : " final") : "proj " + (p.proj || 0).toFixed(1)) + "</span></li>";
         }).join("") + "</ul>" +
         "<p><b>Cut odds " + pct(t.pChop) + "</b>" + (american(t.pChop) ? " · " + american(t.pChop) : "") + "</p></div>");
     });
+    // Closest chase, as a small live tracker: the most endangered chaser's Monday
+    // players against the points they still need. Tonight that is CeeDee Lamb.
+    // Status alert: any chaser's Monday starter carrying an injury flag. A Q flag
+    // turns on the ruling, not the points; an O flag names the best bench swap
+    // still playing Monday night. Both read the latest paste, which the page
+    // re-checks every couple of minutes, so they flip when a new import lands.
+    $("mnf-tracker").hidden = true;
+    $("mnf-alert").hidden = true;
+    if (!allOver && jeop.length) {
+      var top = jeop[0], rtop = state.raw[top.name] || {};
+      var baseTop = typeof rtop.points === "number" ? rtop.points : top.locked;
+      var goalTop = floor.locked - baseTop, gotTop = top.locked - baseTop;
+      var topPlayers = stillToPlay(rtop, top);
+      if (topPlayers.length && goalTop > 0) {
+        $("mnf-tracker").innerHTML = "<p><b>" + esc(who(top.name)) + " needs " + two(Math.max(goalTop - gotTop, 0)) + " more to survive</b> · " +
+          topPlayers.map(function (p) {
+            return pname(p, rtop, true) + " " + (p.live || p.final ? (p.actual || 0).toFixed(1) + (p.live ? " live" : " final") : "proj " + (p.proj || 0).toFixed(1));
+          }).join(" · ") + "</p>" +
+          '<div class="need" role="img" aria-label="' + esc(two(Math.max(gotTop, 0)) + " of " + two(goalTop)) + '"><i style="width:' + Math.max(0, Math.min(100, gotTop / goalTop * 100)).toFixed(1) + '%"></i></div>';
+        $("mnf-tracker").hidden = false;
+      }
+      var alertLines = [];
+      jeop.forEach(function (t) {
+        var rt2 = state.raw[t.name] || {};
+        stillToPlay(rt2, t).forEach(function (p) {
+          if (!p.status) return;
+          var need2 = floor.locked - t.locked;
+          var label = p.status === "Q" ? "Questionable" : p.status === "O" ? "Out" : p.status;
+          var line = "<b>" + pname(p, rt2, true) + "</b> is " + label + ". " + esc(who(t.name)) + " needs " + two(need2) + " from him to survive.";
+          if (p.status === "O") {
+            var repl = (rt2.roster || []).filter(function (q) { return q.name !== p.name && !q.empty && q.slot === "BN" && /^Mon/.test(q.game || ""); })
+              .sort(function (a, b) { return (b.proj || 0) - (a.proj || 0); })[0];
+            line += repl ? " Best bench swap still playing Monday night: " + pname(repl, rt2, true) + " (proj " + (repl.proj || 0).toFixed(1) + ")." : " Needs a lineup fix to survive.";
+            alertLines.push({ danger: true, html: line });
+          } else {
+            alertLines.push({ danger: false, html: line + " This one turns on the ruling, not the points." });
+          }
+        });
+      });
+      if (alertLines.length) {
+        $("mnf-alert").innerHTML = alertLines.map(function (a) { return "<p>" + a.html + "</p>"; }).join("");
+        $("mnf-alert").classList.toggle("danger", alertLines.some(function (a) { return a.danger; }));
+        $("mnf-alert").hidden = false;
+      }
+    }
     $("mnf-cards").innerHTML = cards.join("");
 
     if (clear.length) {
