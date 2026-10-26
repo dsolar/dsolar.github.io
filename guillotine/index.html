@@ -397,11 +397,17 @@ th.line{border-left:1px solid var(--rule)}
 .need{height:8px;background:var(--track);border-radius:4px;overflow:hidden}
 .need i{display:block;height:100%;background:var(--safe);border-radius:4px}
 .mnf .clear{margin:0;font-size:.8rem;color:var(--muted);line-height:1.5}
-.mnf-tracker{border:1px solid var(--rule);border-left:3px solid var(--blade);border-radius:3px;padding:.8rem .85rem;display:grid;gap:.4rem;background:var(--bg)}
+.mnf-tracker{border:1px solid var(--rule);border-left:3px solid var(--blade);border-radius:3px;padding:.9rem .95rem;display:grid;gap:.5rem;background:var(--bg)}
 .mnf-tracker p{margin:0;font-size:.84rem;line-height:1.45;font-variant-numeric:tabular-nums}
+.mnf-tracker .tk-top{display:flex;align-items:baseline;gap:.55rem;flex-wrap:wrap}
+.mnf-tracker .tk-big{font:700 2.4rem/1 var(--f-display);font-variation-settings:"opsz" 72;font-variant-numeric:lining-nums tabular-nums}
+.mnf-tracker .tk-label{font-size:.9rem;color:var(--muted)}
+.mnf-tracker .need{height:12px}
 .mnf-alert{border:1px solid var(--rule);border-left:3px solid var(--bubble);border-radius:3px;padding:.7rem .85rem;font-size:.84rem;line-height:1.45;background:var(--bg)}
 .mnf-alert.danger{border-left-color:var(--danger)}
 .mnf-alert p{margin:0}
+.mnf-alert .eyebrow{color:var(--bubble);font:700 .62rem/1.2 var(--f-body);letter-spacing:.1em;text-transform:uppercase;margin:0 0 .25rem}
+.mnf-alert.danger .eyebrow{color:var(--danger)}
 
 /* Player stat cards */
 [data-p]{text-decoration:underline dotted;text-decoration-color:var(--muted);text-underline-offset:2px;cursor:help}
@@ -448,7 +454,6 @@ th.line{border-left:1px solid var(--rule)}
     <div class="mnf-tracker" id="mnf-tracker" hidden></div>
     <div class="mnf-alert" id="mnf-alert" hidden></div>
     <div class="mnf-cards" id="mnf-cards"></div>
-    <p class="clear" id="mnf-clear" hidden></p>
   </section>
 
   <section id="week" aria-labelledby="week-title" hidden>
@@ -1113,7 +1118,6 @@ th.line{border-left:1px solid var(--rule)}
     if (!done.length) { sec.hidden = true; return; }
     var floor = done[0];
     var jeop = pend.filter(function (t) { return t.locked < floor.locked; }).sort(function (a, b) { return b.pChop - a.pChop; });
-    var clear = pend.filter(function (t) { return t.locked >= floor.locked; });
     var list = function (xs) { return xs.length < 2 ? xs.join("") : xs.slice(0, -1).join(", ") + (xs.length > 2 ? "," : "") + " and " + xs[xs.length - 1]; };
 
     // The games: "WAS at SF, 8:15 pm ET", or the live clock once they're on
@@ -1184,8 +1188,8 @@ th.line{border-left:1px solid var(--rule)}
       var goalTop = floor.locked - baseTop, gotTop = top.locked - baseTop;
       var topPlayers = stillToPlay(rtop, top);
       if (topPlayers.length && goalTop > 0) {
-        $("mnf-tracker").innerHTML = "<p><b>" + esc(who(top.name)) + " needs " + two(Math.max(goalTop - gotTop, 0)) + " more to survive</b> · " +
-          topPlayers.map(function (p) {
+        $("mnf-tracker").innerHTML = "<div class=\"tk-top\"><span class=\"tk-big\">" + two(Math.max(goalTop - gotTop, 0)) + "</span><span class=\"tk-label\">more for " + esc(who(top.name)) + " to survive</span></div>" +
+          "<p>" + topPlayers.map(function (p) {
             return pname(p, rtop, true) + " " + (p.live || p.final ? (p.actual || 0).toFixed(1) + (p.live ? " live" : " final") : "proj " + (p.proj || 0).toFixed(1));
           }).join(" · ") + "</p>" +
           '<div class="need" role="img" aria-label="' + esc(two(Math.max(gotTop, 0)) + " of " + two(goalTop)) + '"><i style="width:' + Math.max(0, Math.min(100, gotTop / goalTop * 100)).toFixed(1) + '%"></i></div>';
@@ -1210,23 +1214,13 @@ th.line{border-left:1px solid var(--rule)}
         });
       });
       if (alertLines.length) {
-        $("mnf-alert").innerHTML = alertLines.map(function (a) { return "<p>" + a.html + "</p>"; }).join("");
+        $("mnf-alert").innerHTML = '<p class="eyebrow">Status alert</p>' + alertLines.map(function (a) { return "<p>" + a.html + "</p>"; }).join("");
         $("mnf-alert").classList.toggle("danger", alertLines.some(function (a) { return a.danger; }));
         $("mnf-alert").hidden = false;
       }
     }
     $("mnf-cards").innerHTML = cards.join("");
 
-    if (clear.length) {
-      $("mnf-clear").innerHTML = "Already past " + two(floor.locked) + " with players still to go: " + clear.map(function (t) {
-        var rt = state.raw[t.name] || {};
-        var left = stillToPlay(rt, t);
-        return "<b>" + esc(t.name) + "</b> (" + two(t.locked) + ", " + list(left.map(function (p) { return pname(p, rt); })) + ")";
-      }).join("; ") + ".";
-      $("mnf-clear").hidden = false;
-    } else {
-      $("mnf-clear").hidden = true;
-    }
     sec.hidden = false;
   }
 
