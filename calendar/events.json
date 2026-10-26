@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-25T14:34:40Z",
+ "updated": "2026-10-26T16:59:34Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,183 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-vv1AvZkfYGkeca0HS",
-   "date": "2026-10-25",
-   "time": "14:00",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-10-25-2026/event/01006530AD264F33",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "sg-18666682",
-   "date": "2026-10-25",
-   "time": "18:00",
-   "title": "Dale Elliot Jr",
-   "cat": "comedy",
-   "venue": "Laugh Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/dale-elliot-jr-tickets/comedy/2026-10-25-6-pm/18666682",
-   "source": "seatgeek",
-   "score": 1
-  },
-  {
-   "id": "tm-vv177ZbEGkRjn633",
-   "date": "2026-10-25",
-   "time": "19:00",
-   "title": "Frankie Valli & The Four Seasons: The Last Encores",
-   "cat": "music",
-   "venue": "Chevalier Theatre",
-   "city": "Medford, MA",
-   "url": "https://www.ticketmaster.com/frankie-valli-the-four-seasons-the-medford-massachusetts-10-25-2026/event/0100627BDCA87492",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_G29M9oz",
-   "date": "2026-10-25",
-   "time": "19:00",
-   "title": "Holywatr: Deo Gratias Tour",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/holywatr-deo-gratias-tour-boston-massachusetts-10-25-2026/event/010064C3D7DD7478",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18311627"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkoPGkenNs30",
-   "date": "2026-10-25",
-   "time": "19:00",
-   "title": "Jim Gaffigan: Everything is Wonderful!",
-   "cat": "comedy",
-   "venue": "Boch Center Wang Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/jim-gaffigan-everything-is-wonderful-boston-massachusetts-10-25-2026/event/01006465AA8F14A4",
-   "source": "ticketmaster",
-   "act": "Jim Gaffigan",
-   "aka": [
-    "sg-18424078",
-    "2026-10-25-jim-gaffigan-wang-theatre"
-   ],
-   "score": 2,
-   "why": "fav"
-  },
-  {
-   "id": "sg-18301466",
-   "date": "2026-10-25",
-   "time": "19:00",
-   "title": "Luke Kidgell",
-   "cat": "comedy",
-   "venue": "Crystal Ballroom at Somerville Theatre",
-   "city": "Somerville, MA",
-   "url": "https://seatgeek.com/luke-kidgell-tickets/comedy/2026-10-25-7-pm/18301466",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_5Rn-Ei4",
-   "date": "2026-10-25",
-   "time": "19:00",
-   "title": "MARIS",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/maris-boston-massachusetts-10-25-2026/event/010064BBEA867B15",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18272426"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A70bev",
-   "date": "2026-10-25",
-   "time": "19:00",
-   "title": "Movements w/ Balance & Composure",
-   "cat": "music",
-   "venue": "Roadrunner-Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A70bev",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18237178"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1avZkf7qMA_Ze28",
-   "date": "2026-10-25",
-   "time": "20:00",
-   "title": "Aria Vega",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/aria-vega-boston-massachusetts-10-25-2026/event/01006504777159EF",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18661959"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_ueRk22E",
-   "date": "2026-10-25",
-   "time": "20:00",
-   "title": "Rod Wave: Don't Look Down Tour",
-   "cat": "music",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/rod-wave-dont-look-down-tour-boston-massachusetts-10-25-2026/event/010064D0AF18F3E7",
-   "source": "ticketmaster",
-   "times": [
-    "20:00",
-    "20:30"
-   ],
-   "aka": [
-    "sg-18320058",
-    "2026-10-25-rod-wave-td-garden"
-   ],
-   "sub": "with Fridayy",
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZk3vGkdjsTq7",
-   "date": "2026-10-25",
-   "time": "20:00",
-   "title": "The Man in Black: A Tribute to Johnny Cash",
-   "cat": "music",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/the-man-in-black-a-tribute-boston-massachusetts-10-25-2026/event/01006481DCC7F744",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18516361"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A7Ptbp",
-   "date": "2026-10-25",
-   "time": "20:00",
-   "title": "ivri w/ Ally Nicholas",
-   "cat": "music",
-   "venue": "The Sinclair Music Hall",
-   "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7Ptbp",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18663865"
-   ],
-   "score": 0
-  },
   {
    "id": "sg-18283294",
    "date": "2026-10-26",
@@ -2000,6 +1823,18 @@
    "score": 0
   },
   {
+   "id": "sg-18722970",
+   "date": "2026-11-06",
+   "time": "20:00",
+   "title": "Willie Macc",
+   "cat": "comedy",
+   "venue": "Soundcheck Studios",
+   "city": "Pembroke, MA",
+   "url": "https://seatgeek.com/willie-macc-tickets/comedy/2026-11-06-8-pm/18722970",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-Z7r9jZ1A70go6",
    "date": "2026-11-06",
    "time": "20:30",
@@ -2286,6 +2121,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/a-boogie-wit-da-hoodie-dababy-boston-massachusetts-11-07-2026/event/01006553345D8679",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18705508"
+   ],
    "score": 0
   },
   {
@@ -2325,6 +2163,21 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-11-08-2026/event/01006530AD5B5049",
    "source": "ticketmaster",
+   "score": 0
+  },
+  {
+   "id": "tm-Z7r9jZ1AAe3je",
+   "date": "2026-11-08",
+   "time": "15:00",
+   "title": "Symphony by the Sea: The Heavenly Life",
+   "cat": "music",
+   "venue": "The Cabot",
+   "city": "Beverly, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAe3je",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18722912"
+   ],
    "score": 0
   },
   {
@@ -2479,6 +2332,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7Pk8S",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18721516"
+   ],
    "score": 0
   },
   {
@@ -2549,6 +2405,18 @@
    "why": "like"
   },
   {
+   "id": "sg-18721511",
+   "date": "2026-11-09",
+   "time": "20:00",
+   "title": "The Blasting Company",
+   "cat": "music",
+   "venue": "Royale - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/blasting-company-tickets/boston-massachusetts-royale-boston-2026-11-09-8-pm/concert/18721511",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vvG17Z_2DL1Ise",
    "date": "2026-11-10",
    "time": "19:00",
@@ -2574,6 +2442,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/michigander-boston-massachusetts-11-10-2026/event/010064A1C917CBDC",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:30"
+   ],
    "aka": [
     "sg-18225263"
    ],
@@ -3286,6 +3158,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketweb.com/event/indo-warehouse-royale-boston-tickets/14198314?REFERRAL_ID=tmfeed",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18721518"
+   ],
    "score": 0
   },
   {
@@ -3321,6 +3196,25 @@
     "sg-18270150"
    ],
    "score": 0
+  },
+  {
+   "id": "sg-18670570",
+   "date": "2026-11-14",
+   "time": "18:30",
+   "title": "Rocky Dale Davis",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/rocky-dale-davis-tickets/comedy/2026-11-14-6-30-pm/18670570",
+   "source": "seatgeek",
+   "times": [
+    "18:30",
+    "21:00"
+   ],
+   "aka": [
+    "sg-18666670"
+   ],
+   "score": 1
   },
   {
    "id": "tm-G5vVZ_5RuGQjG",
@@ -3388,6 +3282,18 @@
    ],
    "score": 3,
    "why": "love"
+  },
+  {
+   "id": "sg-18723039",
+   "date": "2026-11-14",
+   "time": "19:00",
+   "title": "Frank Santos - The R-Rated Hypnotist",
+   "cat": "comedy",
+   "venue": "Marilyn Rodman Performing Arts Center",
+   "city": "Foxborough, MA",
+   "url": "https://seatgeek.com/frank-santos-the-r-rated-hypnotist-tickets/comedy/2026-11-14-7-pm/18723039",
+   "source": "seatgeek",
+   "score": 0
   },
   {
    "id": "tm-vvG17Z_GkTIP4O",
@@ -3473,6 +3379,9 @@
    "city": "Somerville, MA",
    "url": "https://www.ticketmaster.com/boston-comedy-festival-comedy-contest-finals-somerville-massachusetts-11-14-2026/event/010065442F078DC4",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18721576"
+   ],
    "score": 0
   },
   {
@@ -3517,6 +3426,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/prateek-kuhad-full-moon-chamber-tour-boston-massachusetts-11-14-2026/event/01006522B982FD7C",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18721041"
+   ],
    "score": 0
   },
   {
@@ -3550,6 +3462,29 @@
    "score": 0
   },
   {
+   "id": "tm-Z7r9jZ1A7PJaJ",
+   "date": "2026-11-15",
+   "time": "12:00",
+   "title": "The Mountain Grass Unit (18 and Over)",
+   "cat": "music",
+   "venue": "Royale Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PJaJ",
+   "source": "ticketmaster",
+   "act": "Mountain Grass Unit",
+   "times": [
+    "12:00",
+    "20:00"
+   ],
+   "aka": [
+    "sg-18721512",
+    "sg-18321525",
+    "2026-11-15-mountain-grass-unit-royale"
+   ],
+   "score": 2,
+   "why": "like"
+  },
+  {
    "id": "tm-vv1AvZkfYGkecqP71",
    "date": "2026-11-15",
    "time": "14:00",
@@ -3559,6 +3494,25 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-11-15-2026/event/01006530AD76510A",
    "source": "ticketmaster",
+   "score": 0
+  },
+  {
+   "id": "sg-18722911",
+   "date": "2026-11-15",
+   "time": "17:00",
+   "title": "Gauri B",
+   "cat": "comedy",
+   "venue": "City Winery - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/gauri-b-tickets/comedy/2026-11-15-5-pm/18722911",
+   "source": "seatgeek",
+   "times": [
+    "17:00",
+    "20:30"
+   ],
+   "aka": [
+    "sg-18722917"
+   ],
    "score": 0
   },
   {
@@ -3637,6 +3591,18 @@
    "score": 0
   },
   {
+   "id": "sg-18722915",
+   "date": "2026-11-15",
+   "time": "19:30",
+   "title": "Ron Taylor",
+   "cat": "comedy",
+   "venue": "City Winery - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/ron-taylor-tickets/comedy/2026-11-15-7-30-pm/18722915",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-Z7r9jZ1A7JKAZ",
    "date": "2026-11-15",
    "time": "20:00",
@@ -3650,24 +3616,6 @@
     "sg-18373223"
    ],
    "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A7PJaJ",
-   "date": "2026-11-15",
-   "time": "20:00",
-   "title": "The Mountain Grass Unit (18 and Over)",
-   "cat": "music",
-   "venue": "Royale Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PJaJ",
-   "source": "ticketmaster",
-   "act": "Mountain Grass Unit",
-   "aka": [
-    "sg-18321525",
-    "2026-11-15-mountain-grass-unit-royale"
-   ],
-   "score": 2,
-   "why": "like"
   },
   {
    "id": "sg-18608936",
@@ -3975,6 +3923,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/frost-children-boston-massachusetts-11-19-2026/event/01006519C83153E7",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18537386"
+   ],
    "score": 0
   },
   {
@@ -3999,6 +3950,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/patrick-wolf-boston-massachusetts-11-19-2026/event/010064F5D9C272B1",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18721192"
+   ],
    "score": 0
   },
   {
@@ -4166,6 +4120,25 @@
    "why": "big"
   },
   {
+   "id": "sg-18670571",
+   "date": "2026-11-20",
+   "time": "19:00",
+   "title": "Deric Cahill",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/deric-cahill-tickets/comedy/2026-11-20-7-pm/18670571",
+   "source": "seatgeek",
+   "times": [
+    "19:00",
+    "21:30"
+   ],
+   "aka": [
+    "sg-18666679"
+   ],
+   "score": 1
+  },
+  {
    "id": "tm-vv1AvZkf_GkdaXg-T",
    "date": "2026-11-20",
    "time": "19:00",
@@ -4307,6 +4280,18 @@
    "why": "big"
   },
   {
+   "id": "sg-18722918",
+   "date": "2026-11-20",
+   "time": "20:00",
+   "title": "John Brown's Body",
+   "cat": "music",
+   "venue": "The Cabot",
+   "city": "Beverly, MA",
+   "url": "https://seatgeek.com/john-brown-s-body-tickets/beverly-massachusetts-the-cabot-2026-11-20-8-pm/concert/18722918",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vv1AvZkfUGkdYXVF6",
    "date": "2026-11-20",
    "time": "20:00",
@@ -4388,6 +4373,18 @@
    "score": 0
   },
   {
+   "id": "sg-18721514",
+   "date": "2026-11-21",
+   "time": "16:00",
+   "title": "Bed By 10PM",
+   "cat": "music",
+   "venue": "Royale - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/bed-by-10pm-tickets/boston-massachusetts-royale-boston-2026-11-21-4-pm/concert/18721514",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vvG17Z_2SFlCcT",
    "date": "2026-11-21",
    "time": "17:00",
@@ -4406,6 +4403,37 @@
     "sg-18413077",
     "sg-18328212"
    ],
+   "score": 1
+  },
+  {
+   "id": "sg-18666674",
+   "date": "2026-11-21",
+   "time": "18:30",
+   "title": "Deric Cahill",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/deric-cahill-tickets/comedy/2026-11-21-6-30-pm/18666674",
+   "source": "seatgeek",
+   "times": [
+    "18:30",
+    "21:00"
+   ],
+   "aka": [
+    "sg-18666680"
+   ],
+   "score": 1
+  },
+  {
+   "id": "sg-18723194",
+   "date": "2026-11-21",
+   "time": "18:30",
+   "title": "Joe Fenti",
+   "cat": "comedy",
+   "venue": "Off Cabot Comedy and Events",
+   "city": "Beverly, MA",
+   "url": "https://seatgeek.com/joe-fenti-tickets/comedy/2026-11-21-6-30-pm/18723194",
+   "source": "seatgeek",
    "score": 1
   },
   {
@@ -4510,6 +4538,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/emo-night-brooklyn-18-boston-massachusetts-11-21-2026/event/0100653EDAE6F4A9",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18655810"
+   ],
    "score": 0
   },
   {
@@ -4560,6 +4591,18 @@
     "2026-11-21-orville-peck-mgm-music-hall-at-fe"
    ],
    "sub": "with Abbie Callahan",
+   "score": 0
+  },
+  {
+   "id": "sg-18721521",
+   "date": "2026-11-21",
+   "time": "22:00",
+   "title": "Space Laces (21+)",
+   "cat": "music",
+   "venue": "Royale - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/space-laces-tickets/boston-massachusetts-royale-boston-2026-11-21-10-pm/concert/18721521",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -4798,11 +4841,11 @@
    "id": "tm-vv177Z_fGkyt93Tn",
    "date": "2026-11-26",
    "time": "21:00",
-   "title": "BVD BOSTON presents Kocaina ( 21+ )",
+   "title": "Kocaina ( 21+ )",
    "cat": "music",
    "venue": "Big Night Live",
    "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/bvd-boston-presents-kocaina-21-boston-massachusetts-11-26-2026/event/0100654E695D2FEA",
+   "url": "https://www.ticketmaster.com/kocaina-21-boston-massachusetts-11-26-2026/event/0100654E695D2FEA",
    "source": "ticketmaster",
    "aka": [
     "sg-18688581"
@@ -5278,6 +5321,18 @@
    "score": 0
   },
   {
+   "id": "tm-Z7r9jZ1AA7bqx",
+   "date": "2026-12-01",
+   "time": "20:00",
+   "title": "An Evening With Trevor Hall",
+   "cat": "music",
+   "venue": "The Cabot",
+   "city": "Beverly, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7bqx",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "espn-401892835",
    "date": "2026-12-01",
    "time": "20:00",
@@ -5558,6 +5613,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/hunxho-2night-only-tour-boston-massachusetts-12-04-2026/event/010065360E0DF125",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18618956"
+   ],
    "score": 0
   },
   {
@@ -7814,6 +7872,21 @@
    "score": 0
   },
   {
+   "id": "tm-G5vVZ_4hZldpy",
+   "date": "2027-01-15",
+   "time": "20:00",
+   "title": "Joe Russo's Almost Dead",
+   "cat": "music",
+   "venue": "The Capitol Theatre",
+   "city": "Port Chester, NY",
+   "url": "https://www.ticketmaster.com/joe-russos-almost-dead-port-chester-new-york-01-15-2027/event/1D006556C0AC35B9",
+   "source": "ticketmaster",
+   "drive_hours": 3.75,
+   "act": "Joe Russo's Almost Dead",
+   "score": 3,
+   "why": "love"
+  },
+  {
    "id": "tm-vv177Z_fGkXIhHIk",
    "date": "2027-01-16",
    "time": "19:00",
@@ -7845,6 +7918,36 @@
    "url": "https://www.espn.com/nba/game/_/gameId/401910352/nets-celtics",
    "source": "espn",
    "score": 1
+  },
+  {
+   "id": "tm-G5vVZ_4hZiNpD",
+   "date": "2027-01-16",
+   "time": "20:00",
+   "title": "Joe Russo's Almost Dead",
+   "cat": "music",
+   "venue": "The Capitol Theatre",
+   "city": "Port Chester, NY",
+   "url": "https://www.ticketmaster.com/joe-russos-almost-dead-port-chester-new-york-01-16-2027/event/1D006556C0B235BB",
+   "source": "ticketmaster",
+   "drive_hours": 3.75,
+   "act": "Joe Russo's Almost Dead",
+   "score": 3,
+   "why": "love"
+  },
+  {
+   "id": "tm-G5vVZ_4hZcSpT",
+   "date": "2027-01-17",
+   "time": "20:00",
+   "title": "Joe Russo's Almost Dead",
+   "cat": "music",
+   "venue": "The Capitol Theatre",
+   "city": "Port Chester, NY",
+   "url": "https://www.ticketmaster.com/joe-russos-almost-dead-port-chester-new-york-01-17-2027/event/1D006556C0B735BF",
+   "source": "ticketmaster",
+   "drive_hours": 3.75,
+   "act": "Joe Russo's Almost Dead",
+   "score": 3,
+   "why": "love"
   },
   {
    "id": "tm-vv168vP7y-kZ7ukua",
@@ -7984,6 +8087,18 @@
     "sg-18298890"
    ],
    "score": 0
+  },
+  {
+   "id": "sg-18447598",
+   "date": "2027-01-22",
+   "time": "21:30",
+   "title": "Ian Fidance",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/ian-fidance-tickets/comedy/2027-01-22-9-30-pm/18447598",
+   "source": "seatgeek",
+   "score": 1
   },
   {
    "id": "tm-1AtZkfsGkdq0-aE",
@@ -9587,6 +9702,18 @@
    "why": "big"
   },
   {
+   "id": "tm-vv1AvZk44GkdxXAai",
+   "date": "2027-03-08",
+   "time": "19:00",
+   "title": "Gus Dapperton: 4 Dear Life Tour",
+   "cat": "music",
+   "venue": "Paradise Rock Club presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/gus-dapperton-4-dear-life-tour-boston-massachusetts-03-08-2027/event/01006555E2F8526C",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv1AvZk4eGkdzjaYi",
    "date": "2027-03-10",
    "time": "18:30",
@@ -10738,6 +10865,18 @@
    "score": 1
   },
   {
+   "id": "tm-vv177Z_KGkBxWTiI",
+   "date": "2027-04-10",
+   "time": "20:00",
+   "title": "Monster Hunter Orchestra Concert",
+   "cat": "music",
+   "venue": "Boch Center Wang Theatre",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/monster-hunter-orchestra-concert-boston-massachusetts-04-10-2027/event/0100653EA2F7FB28",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "espn-401910937",
    "date": "2027-04-11",
    "time": "18:00",
@@ -10935,15 +11074,18 @@
    "score": 0
   },
   {
-   "id": "sg-18642818",
+   "id": "tm-vv1AvZkfgGkeDOsQI",
    "date": "2027-04-23",
    "time": "20:00",
-   "title": "Fontaines D.C. with Westside Cowboy",
+   "title": "Fontaines D.C.",
    "cat": "music",
    "venue": "MGM Music Hall at Fenway",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/fontaines-d-c-tickets/boston-massachusetts-mgm-music-hall-at-fenway-2027-04-23-8-pm/concert/18642818",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/fontaines-dc-boston-massachusetts-04-23-2027/event/01006535BB8316A8",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18642818"
+   ],
    "score": 0
   },
   {
@@ -10956,6 +11098,21 @@
    "city": "Cambridge, MA",
    "url": "https://seatgeek.com/cleopatrick-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-04-23-8-pm/concert/18688827",
    "source": "seatgeek",
+   "score": 0
+  },
+  {
+   "id": "tm-vv1AvZkfYGkegtMCp",
+   "date": "2027-04-24",
+   "time": "18:00",
+   "title": "Haiden Henderson: The Dumblond Tour",
+   "cat": "music",
+   "venue": "Big Night Live",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/haiden-henderson-the-dumblond-tour-boston-massachusetts-04-24-2027/event/01006530B5A77396",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18613146"
+   ],
    "score": 0
   }
  ],
@@ -11035,7 +11192,7 @@
   "picks": 5,
   "venues": 4,
   "espn": 80,
-  "ticketmaster": 532,
-  "seatgeek": 109
+  "ticketmaster": 531,
+  "seatgeek": 119
  }
 }
