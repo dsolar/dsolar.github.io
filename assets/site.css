@@ -430,10 +430,25 @@ a:hover{color:var(--red)}
 @keyframes tk-pulse{50%{opacity:.25}}
 .tk-wl{background:#EEF0F2;color:#04111F;border-radius:3px;padding:0 4px;font-weight:800;font-size:.68rem}
 @media (prefers-reduced-motion: reduce){.tk-dot{animation:none}}
+/* The view switch in the red label, and the guillotine league's tiles */
+.tk-views{display:flex;flex-direction:column;gap:3px}
+.tk-views button{appearance:none;border:1px solid rgba(255,255,255,.45);background:transparent;color:#fff;font:700 .64rem/1.2 var(--f-body);letter-spacing:.08em;text-transform:uppercase;padding:3px 7px;border-radius:3px;cursor:pointer;text-align:left;white-space:nowrap}
+.tk-views button:hover{background:rgba(255,255,255,.14)}
+.tk-views button[aria-pressed="true"]{background:#fff;color:#C60C30;border-color:#fff}
+.tk-views button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.tk-gline{grid-template-columns:minmax(0,1fr) auto}
+.tk-ghead{border-color:rgba(226,184,74,.45)}
+.tk-ghead .tk-tag{color:#E2B84A}
+.tk-chop{font-weight:700}
+.tk-block{border-color:#F0475E}
+.tk-block .tk-tag,.tk-block .tk-chop{color:#FF8A9A}
+.tk-mine .tk-tag{color:#E2B84A}
 @media (max-width: 640px){
   .ticker{grid-template-columns:minmax(0,1fr)}
   .tk-btn{display:none}
-  .tk-label{flex-direction:row;align-items:baseline;justify-content:space-between;padding:4px max(12px, env(safe-area-inset-left, 0px));font-size:.64rem}
+  .tk-label{flex-direction:row;align-items:center;justify-content:space-between;gap:8px;padding:5px max(12px, env(safe-area-inset-left, 0px));font-size:.64rem}
+  .tk-views{flex-direction:row}
+  .tk-views button{padding:4px 8px}
   .tk-item{flex-basis:212px}
 }
 

@@ -1,5 +1,11 @@
-/* The ticker across the top of the home page: today's games and each team's next one, ESPN BottomLine
-   style, straight from ESPN's free public feeds (no key needed). To add or drop a team, edit TEAMS below:
+/* The ticker across the top of the home page, ESPN BottomLine style, with three views to switch between:
+     Tonight      today's games and each team's next one, plus big games (below)
+     Last night   yesterday's finals: our teams' and the big games'
+     Guillotine   the Bastille Day league live: each team's points so far and its chance of being cut,
+                  from guillotine/data.json, guillotine/live.js and guillotine/sim.js
+   The choice is remembered on this device; ?ticker=last (or tonight, guillotine) opens a view directly.
+   Without a choice, it opens on Guillotine while NFL games are on, else Tonight.
+   Games come straight from ESPN's free public feeds (no key needed). To add or drop a team, edit TEAMS below:
    path is ESPN's sport/league, id the team's ESPN abbreviation or number, tag the short league label.
    Where the data comes from:
      - each team's schedule: its next game, both teams' logos, AP ranks, TV and the Gamecast link
@@ -34,11 +40,15 @@
   var TZ = "America/New_York";
   var CACHE_MS = 10 * 60e3;      // schedules and other days' scoreboards are reused this long; today's never are
   var STEP_MS = 5000;            // the ticker moves one game along this often
+  // The guillotine view. Its script versions should match the ones guillotine/index.html loads.
+  var LEAGUE = { dir: "guillotine/", scripts: ["sim.js?v=9", "live.js?v=1"], mine: "Holofernes", runs: 4000 };
+  var VIEWS = ["tonight", "last", "guillotine"], VIEW_KEY = "ticker-view";
 
   var bar = document.getElementById("scores"), list = document.getElementById("scoreboard-list");
   if (!bar || !list) return;
   var viewport = bar.querySelector(".tk-viewport"), note = document.getElementById("scoreboard-note");
-  var timer = null, fails = 0, last = null, schedules = {}, boards = {}, files = { at: 0 };
+  var timer = null, fails = 0, last = {}, schedules = {}, boards = {}, files = { at: 0 };
+  var view = "tonight", buttons = [].slice.call(bar.querySelectorAll(".tk-views button"));
 
   var esc = function (s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
@@ -50,6 +60,8 @@
   var clock = function (d) { return new Date(d).toLocaleTimeString("en-US", { timeZone: TZ, hour: "numeric", minute: "2-digit" }); };
   var weekday = function (d) { return new Date(d).toLocaleDateString("en-US", { timeZone: TZ, weekday: "short", month: "numeric", day: "numeric" }); };
   var hourET = function (d) { return +new Date(d).toLocaleTimeString("en-US", { timeZone: TZ, hour: "numeric", hourCycle: "h23" }); };
+  // "20261025": the day before today, in Boston time
+  var yesterday = function () { return new Date(new Date(dayET(Date.now()) + "T12:00:00Z") - 864e5).toISOString().slice(0, 10).replace(/-/g, ""); };
   var isToday = function (g) { return g.state === "in" || dayET(g.date) === dayET(Date.now()); };
   var scoreOf = function (c) { var s = c && c.score; return s == null ? "" : typeof s === "object" ? (s.displayValue != null ? s.displayValue : s.value) : s; };
 
@@ -170,7 +182,17 @@
     return '<img class="tk-logo" src="' + esc(small(s.logo)) + '" alt="" width="22" height="22" loading="lazy" data-abbr="' + esc(s.abbr) + '">';
   }
 
+  // A tile with no game on it: a message, or a league summary.
+  function noteItem(tag, title, foot, href) {
+    var inner = '<div class="tk-top"><span class="tk-tag">' + esc(tag) + "</span></div>"
+      + '<div class="tk-line tk-gline"><span class="tk-name">' + esc(title) + "</span></div>"
+      + '<div class="tk-foot">' + esc(foot) + "</div>";
+    return '<li class="tk-item tk-quiet">' + (href ? '<a href="' + esc(href) + '">' + inner + "</a>" : inner) + "</li>";
+  }
+
   function item(r) {
+    if (r.note) return noteItem(r.note[0], r.note[1], r.note[2], r.note[3]);
+    if (r.league) return gItem(r);
     var t = r.team, g = r.game;
     if (!g) {
       return '<li class="tk-item tk-quiet"><div class="tk-top"><span class="tk-tag">' + esc(t.tag) + "</span></div>"
@@ -188,7 +210,7 @@
     var away = g.home ? g.them : g.us, home = g.home ? g.us : g.them;
     var status;
     if (g.state === "in") status = '<span class="tk-live"><span class="tk-dot" aria-hidden="true"></span>Live</span> ' + esc(g.detail);
-    else if (g.state === "post") status = esc(g.detail || "Final") + (g.done && (g.us.winner || g.them.winner) ? ' <span class="tk-wl">' + (g.us.winner ? "W" : "L") + "</span>" : "");
+    else if (g.state === "post") status = esc(g.detail || "Final") + (g.done && !r.big && (g.us.winner || g.them.winner) ? ' <span class="tk-wl">' + (g.us.winner ? "W" : "L") + "</span>" : "");
     else {
       var time = g.timeKnown ? clock(g.date) : "TBD";
       status = isToday(g) ? (g.timeKnown && hourET(g.date) >= 17 ? "Tonight " : "Today ") + esc(time) : esc(weekday(g.date)) + " · " + esc(time);
@@ -231,14 +253,19 @@
   }
 
   function render(rows) {
-    rows = rows.slice().sort(function (a, b) { var x = rank(a), y = rank(b); return x[0] - y[0] || x[1] - y[1] || x[2] - y[2]; });
+    if (view === "tonight") rows = rows.slice().sort(function (a, b) { var x = rank(a), y = rank(b); return x[0] - y[0] || x[1] - y[1] || x[2] - y[2]; });
     var keep = viewport.scrollLeft;
+    // ESPN down: say so, and keep the bar up so the other views can still be picked.
+    if (rows.every(function (r) { return r.error; })) rows = [{ note: ["Scoreboard", "Scores unavailable", "Trying again shortly"] }];
     list.innerHTML = rows.map(item).join("");
     viewport.scrollLeft = keep;
     var today = rows.filter(function (r) { return r.game && !r.big && isToday(r.game); }).length;
     var live = rows.filter(function (r) { return r.game && r.game.state === "in"; }).length;
-    note.textContent = live ? live + " live" : today ? today + " today" : "Next up";
-    bar.hidden = rows.every(function (r) { return r.error; });
+    var finals = rows.filter(function (r) { return r.game && r.game.state === "post"; }).length;
+    note.textContent = view === "guillotine" ? rows.note || ""
+      : view === "last" ? (finals ? finals + (finals === 1 ? " final" : " finals") : "")
+      : live ? live + " live" : today ? today + " today" : "Next up";
+    bar.hidden = false;
   }
   // A logo that doesn't load gives way to the team's abbreviation.
   list.addEventListener("error", function (e) {
@@ -302,9 +329,11 @@
     }
     return "";
   }
-  function bigGames(ours) {
+  // Today's and the next days' big games, or (finals) one past day's finished ones.
+  function bigGames(ours, finals) {
     var days = [];
-    for (var n = 0; n < BIG_DAYS; n++) days.push(dayET(Date.now() + n * 864e5).replace(/-/g, ""));
+    if (finals) days.push(finals);
+    else for (var n = 0; n < BIG_DAYS; n++) days.push(dayET(Date.now() + n * 864e5).replace(/-/g, ""));
     var jobs = [];
     BIG.forEach(function (league) {
       days.forEach(function (d) {
@@ -321,7 +350,7 @@
         var g = away && game({ id: String((away.team || {}).id) }, ev);   // "us" is the away team, listed on top
         if (!g) return;
         overlay(g, comp, ev.status, x.league.path);
-        if (g.state === "post" && !isToday(g)) return;                    // yesterday's final is old news
+        if (finals ? !(g.state === "post" && g.done) : g.state === "post" && !isToday(g)) return;   // in Tonight, yesterday's final is old news
         var national = (comp.broadcasts || []).filter(function (b) { return b.market === "national"; })
           .map(function (b) { return (b.names || [])[0]; }).filter(Boolean);
         if (national.length) g.tv = national.slice(0, 2).join(", ");
@@ -388,14 +417,145 @@
   function refresh() {
     clearTimeout(timer);
     if (document.visibilityState === "hidden") return;
-    rows().then(function (list) {
-      if (list.every(function (r) { return r.error; }) && last) throw new Error("all failed");
-      fails = 0; last = list;
+    var v = view;
+    ({ tonight: rows, last: lastNight, guillotine: leagueRows })[v]().then(function (list) {
+      if (v !== view) return;                                            // switched views while this loaded
+      if (list.every(function (r) { return r.error; }) && last[v]) throw new Error("all failed");
+      fails = 0; last[v] = list;
       render(list);
-      schedule(list);
+      if (v === "tonight") schedule(list);
+      else if (list.wait) timer = setTimeout(refresh, list.wait);
     }).catch(function () {
+      if (v !== view) return;
       fails++;
-      if (last) timer = setTimeout(refresh, Math.min(60e3 * Math.pow(2, fails - 1), 600e3));
+      if (!last[v]) {
+        var msg = v === "guillotine" ? ["Bastille Day", "League unavailable", "Trying again shortly", "guillotine/"] : [v === "last" ? "Last night" : "Scoreboard", "Scores unavailable", "Trying again shortly"];
+        render([{ note: msg }]);
+      }
+      timer = setTimeout(refresh, Math.min(60e3 * Math.pow(2, fails - 1), 600e3));
+    });
+  }
+
+  // ---- Last night: our teams' games from yesterday's league scoreboards, then the big finals.
+  function lastNight() {
+    var ymd = yesterday();
+    return Promise.all(TEAMS.map(function (team) {
+      return board(team.path, ymd).then(function (events) {
+        var ours = (events || []).map(function (ev) { return { ev: ev, g: game(team, ev) }; }).filter(function (x) { return x.g; })[0];
+        if (!ours) return null;
+        overlay(ours.g, (ours.ev.competitions || [])[0] || {}, ours.ev.status, team.path);
+        return { team: team, game: ours.g };
+      });
+    })).then(function (list) {
+      return extras(list.filter(Boolean));
+    }).then(function (ours) {
+      var ids = {};
+      ours.forEach(function (r) { ids[r.game.id] = 1; });
+      return bigGames(ids, ymd).then(function (big) { return big; }, function () { return []; }).then(function (big) {
+        var out = ours.length ? ours : [{ note: ["Last night", "Our teams", "No games last night"] }];
+        return out.concat(big);
+      });
+    });
+  }
+
+  // ---- Guillotine: the Bastille Day league, live. Most likely to be cut first.
+  var leagueScripts = null;
+  function loadLeagueScripts() {
+    if (window.GuillotineSim && window.GuillotineLive) return Promise.resolve();
+    if (!leagueScripts) leagueScripts = Promise.all(LEAGUE.scripts.map(function (f) {
+      return new Promise(function (ok, fail) {
+        var s = document.createElement("script");
+        s.src = LEAGUE.dir + f; s.onload = ok;
+        s.onerror = function () { leagueScripts = null; s.remove(); fail(new Error(f)); };
+        document.head.appendChild(s);
+      });
+    }));
+    return leagueScripts;
+  }
+  function leagueRows() {
+    var fresh = "?v=" + Math.floor(Date.now() / 60e3);
+    return loadLeagueScripts().then(function () {
+      return Promise.all([getJSON(LEAGUE.dir + "data.json" + fresh), getJSON(LEAGUE.dir + "league.json" + fresh).catch(function () { return {}; })]);
+    }).then(function (res) {
+      var data = res[0];
+      return window.GuillotineLive.get(data, (res[1] || {}).live_url).catch(function () { return null; }).then(function (live) {
+        var d = window.GuillotineLive.apply(data, live);
+        var sim = window.GuillotineSim.simulate(d, { runs: LEAGUE.runs });
+        var byName = {};
+        d.teams.forEach(function (t) { byName[t.name] = t; });
+        var standing = sim.teams.slice().sort(function (a, b) { return b.now - a.now; }).map(function (t) { return t.name; });
+        var top = sim.teams.reduce(function (a, b) { return b.pChop > a.pChop ? b : a; }, sim.teams[0] || {});
+        var playing = 0, toPlay = 0;
+        var tiles = sim.teams.slice().sort(function (a, b) { return b.pChop - a.pChop || a.now - b.now; }).map(function (t) {
+          var on = window.GuillotineLive.startersOf(byName[t.name]).filter(function (p) { return p.live; }).length;
+          playing += on; toPlay += t.nRem;
+          return { league: true, t: t, rank: standing.indexOf(t.name) + 1, playing: on,
+            mine: t.mine || t.name === LEAGUE.mine, block: t === top && t.pChop > 0 && sim.weeksLeft > 0 };
+        });
+        var head = { league: true, head: true, week: d.week, league_name: d.league || "Bastille Day", cut: sim.cut.median,
+          alive: sim.teams.length, playing: playing, toPlay: toPlay, champ: sim.weeksLeft ? "" : (sim.teams[0] || {}).name };
+        var out = [head].concat(tiles);
+        out.note = playing ? playing + " playing" : "Week " + d.week;
+        // Every minute while a league player's game is on; every 10 minutes when a game starts within 3 hours.
+        var games = (live && live.games) || {}, soon = Object.keys(games).some(function (k) {
+          var t = Date.parse(games[k].start) - Date.now();
+          return games[k].state === "pre" && t < 3 * 3600e3 && t > -3600e3;
+        });
+        out.wait = d.live && d.live.inProgress ? 60e3 : soon ? 600e3 : null;
+        return out;
+      });
+    });
+  }
+  function gItem(r) {
+    var dot = ' <span aria-hidden="true">·</span> ';
+    if (r.head) {
+      var foot = r.playing ? r.playing + " players on the field" : r.toPlay ? r.toPlay + " starters still to play" : "All games final";
+      var body = r.champ
+        ? '<div class="tk-line tk-gline"><span class="tk-name">Champion</span><span class="tk-pts">' + esc(r.champ) + "</span></div>"
+        : '<div class="tk-line tk-gline"><span class="tk-name">Cut line</span><span class="tk-pts">' + (r.cut != null ? "~" + Math.round(r.cut) : "–") + "</span></div>";
+      return '<li class="tk-item tk-ghead"><a href="' + LEAGUE.dir + '" aria-label="' + esc(r.league_name + ", week " + r.week + ", cut line about " + Math.round(r.cut) + ". Full odds") + '">'
+        + '<div class="tk-top"><span class="tk-tag">' + esc(r.league_name) + '</span><span class="tk-status">Week ' + esc(r.week) + "</span></div>"
+        + body + '<div class="tk-foot">' + esc(r.alive + " alive") + dot + esc(foot) + "</div></a></li>";
+    }
+    var t = r.t, p = t.pChop;
+    var odds = t.done && p > 0.995 ? "Cut" : p < 0.005 ? "Safe" : Math.max(1, Math.round(p * 100)) + "% cut";
+    var left = t.nRem - r.playing;
+    var status = r.playing ? '<span class="tk-live"><span class="tk-dot" aria-hidden="true"></span>' + r.playing + " on</span>" + (left > 0 ? ", " + left + " to go" : "")
+      : t.done ? "Final" : t.nRem + " to play";
+    var inner = '<div class="tk-top"><span class="tk-tag">' + (r.block ? "On the block" : "#" + r.rank + (r.mine ? " · Mine" : "")) + "</span>"
+      + '<span class="tk-status tk-chop">' + odds + "</span></div>"
+      + '<div class="tk-line tk-gline' + (r.mine ? " tk-us" : "") + '"><span class="tk-name">' + esc(t.name) + '</span><span class="tk-pts">' + t.locked.toFixed(1) + "</span></div>"
+      + '<div class="tk-foot">' + status + (t.done ? "" : dot + "Proj " + t.now.toFixed(1)) + "</div>";
+    var label = t.name + ", " + t.locked.toFixed(1) + " points" + (t.done ? ", final" : ", projected " + t.now.toFixed(1)) + ", " + (odds === "Safe" ? "safe" : odds === "Cut" ? "cut" : odds.replace("cut", "chance of being cut"));
+    var cls = "tk-item tk-g" + (r.block ? " tk-block" : "") + (r.playing ? " tk-now" : "") + (r.mine ? " tk-mine" : "");
+    return '<li class="' + cls + '"><a href="' + LEAGUE.dir + '" aria-label="' + esc(label) + '">' + inner + "</a></li>";
+  }
+
+  // ---- The view switch
+  function setView(v, remember) {
+    if (VIEWS.indexOf(v) < 0) v = "tonight";
+    view = v; fails = 0;
+    clearTimeout(timer);
+    bar.setAttribute("data-show", v);
+    buttons.forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-view") === v)); });
+    if (remember) try { localStorage.setItem(VIEW_KEY, v); } catch (e) { /* private window: just this visit */ }
+    viewport.scrollLeft = 0;
+    if (last[v]) render(last[v]);
+    else if (v !== "tonight") { bar.hidden = false; list.innerHTML = noteItem(v === "last" ? "Last night" : "Bastille Day", "Loading…", "\u00a0"); note.textContent = ""; }
+    refresh();
+  }
+  buttons.forEach(function (b) {
+    b.addEventListener("click", function () { resumeAt = Date.now() + 15e3; setView(b.getAttribute("data-view"), true); });
+  });
+  function start() {
+    var asked = (/[?&]ticker=(\w+)/.exec(location.search) || [])[1], saved = null;
+    try { saved = localStorage.getItem(VIEW_KEY); } catch (e) { /* no storage */ }
+    if (VIEWS.indexOf(asked) >= 0) return setView(asked, true);
+    if (VIEWS.indexOf(saved) >= 0) return setView(saved, false);
+    // No choice yet: the league while NFL games are on, otherwise tonight's games.
+    board("football/nfl", dayET(Date.now()).replace(/-/g, "")).then(function (events) {
+      var on = (events || []).some(function (ev) { return ((ev.status || {}).type || {}).state === "in"; });
+      setView(on ? "guillotine" : "tonight", false);
     });
   }
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") refresh(); });
@@ -421,5 +581,5 @@
     if (!held && Date.now() > resumeAt && document.visibilityState === "visible" && !bar.hidden) move(1);
   }, STEP_MS);
 
-  refresh();
+  start();
 })();
