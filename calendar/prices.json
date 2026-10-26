@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-25T04:55:09Z",
+ "updated": "2026-10-26T04:58:19Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -222,16 +222,6 @@
    "low": null,
    "src": null
   },
-  "tm-vv1AvZkoPGkenNs30": {
-   "sg": 18424078,
-   "history": [],
-   "url": "https://www.ticketmaster.com/jim-gaffigan-everything-is-wonderful-boston-massachusetts-10-25-2026/event/01006465AA8F14A4",
-   "title": "Jim Gaffigan: Everything is Wonderful!",
-   "date": "2026-10-25",
-   "venue": "Boch Center Wang Theatre",
-   "low": null,
-   "src": null
-  },
   "sg-18582757": {
    "sg": 18582757,
    "history": [],
@@ -451,6 +441,10 @@
     [
      "2026-10-25",
      56
+    ],
+    [
+     "2026-10-26",
+     56
     ]
    ],
    "sg": null,
@@ -510,6 +504,10 @@
     ],
     [
      "2026-10-25",
+     22
+    ],
+    [
+     "2026-10-26",
      22
     ]
    ],
@@ -633,6 +631,10 @@
     [
      "2026-10-25",
      28
+    ],
+    [
+     "2026-10-26",
+     28
     ]
    ],
    "sg": null,
@@ -680,6 +682,10 @@
     ],
     [
      "2026-10-25",
+     22
+    ],
+    [
+     "2026-10-26",
      22
     ]
    ],
@@ -916,7 +922,7 @@
   "tm-Z7r9jZ1AAvx-E": "2026-10-25",
   "tm-rZ7HnEZ1Afugk7": "2026-10-25",
   "tm-rZ7HnEZ1AfCA0f": "2026-10-25",
-  "tm-Z7r9jZ1AA77-E": "2026-10-23"
+  "tm-Z7r9jZ1AA77-E": "2026-10-26"
  },
  "drops": []
 }
