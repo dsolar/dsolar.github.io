@@ -397,17 +397,19 @@ th.line{border-left:1px solid var(--rule)}
 .need{height:8px;background:var(--track);border-radius:4px;overflow:hidden}
 .need i{display:block;height:100%;background:var(--safe);border-radius:4px}
 .mnf .clear{margin:0;font-size:.8rem;color:var(--muted);line-height:1.5}
-.mnf-tracker{border:1px solid var(--rule);border-left:3px solid var(--blade);border-radius:3px;padding:.9rem .95rem;display:grid;gap:.5rem;background:var(--bg)}
+.mnf-q{font-size:1.15rem;font-weight:600;line-height:1.3;margin:0 0 .35rem}
+.mnf-tracker{border:1px solid #223049;border-left:3px solid var(--blade);border-radius:3px;padding:.9rem .95rem;display:grid;gap:.5rem;background:#0A1120;color:#E7EBF2}
 .mnf-tracker p{margin:0;font-size:.84rem;line-height:1.45;font-variant-numeric:tabular-nums}
 .mnf-tracker .tk-top{display:flex;align-items:baseline;gap:.55rem;flex-wrap:wrap}
-.mnf-tracker .tk-big{font:700 2.4rem/1 var(--f-display);font-variation-settings:"opsz" 72;font-variant-numeric:lining-nums tabular-nums}
-.mnf-tracker .tk-label{font-size:.9rem;color:var(--muted)}
-.mnf-tracker .need{height:12px}
-.mnf-alert{border:1px solid var(--rule);border-left:3px solid var(--bubble);border-radius:3px;padding:.7rem .85rem;font-size:.84rem;line-height:1.45;background:var(--bg)}
+.mnf-tracker .tk-big{font:700 2.4rem/1 var(--f-display);font-variation-settings:"opsz" 72;font-variant-numeric:lining-nums tabular-nums;color:#FFFFFF}
+.mnf-tracker .tk-label{font-size:.9rem;color:#98A3B7}
+.mnf-tracker .need{height:12px;background:#1B263B}
+.mnf-tracker .need i{background:var(--blade)}
+.mnf-tracker .tk-live{display:inline-block;font:700 .62rem/1.2 var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:#fff;background:var(--blade);padding:.25rem .45rem;border-radius:2px}
+.mnf-tracker .tk-live.tk-soon{background:transparent;color:#98A3B7;border:1px solid #223049}
+.mnf-alert{border:1px solid var(--rule);border-left:3px solid var(--bubble);border-radius:3px;padding:.55rem .85rem;font-size:.8rem;line-height:1.45;background:var(--bg)}
 .mnf-alert.danger{border-left-color:var(--danger)}
 .mnf-alert p{margin:0}
-.mnf-alert .eyebrow{color:var(--bubble);font:700 .62rem/1.2 var(--f-body);letter-spacing:.1em;text-transform:uppercase;margin:0 0 .25rem}
-.mnf-alert.danger .eyebrow{color:var(--danger)}
 
 /* Player stat cards */
 [data-p]{text-decoration:underline dotted;text-decoration-color:var(--muted);text-underline-offset:2px;cursor:help}
@@ -449,8 +451,8 @@ th.line{border-left:1px solid var(--rule)}
 
   <p class="notice" id="sample" hidden>These are sample numbers from the Week 6 notes, so the page has something to show. Live Yahoo numbers replace them automatically once the league connection is set up.</p>
 
-  <section class="mnf" id="mnf" aria-labelledby="mnf-title" hidden>
-    <div><p class="eyebrow">Monday night showcase</p><h2 id="mnf-title"></h2><p class="sub" id="mnf-sub"></p></div>
+  <section class="mnf" id="mnf" aria-labelledby="mnf-heading" hidden>
+    <div><p class="eyebrow">Monday night showcase</p><h2 id="mnf-heading">Big questions</h2><p class="mnf-q" id="mnf-title"></p><p class="sub" id="mnf-sub"></p></div>
     <div class="mnf-tracker" id="mnf-tracker" hidden></div>
     <div class="mnf-alert" id="mnf-alert" hidden></div>
     <div class="mnf-cards" id="mnf-cards"></div>
@@ -1174,12 +1176,13 @@ th.line{border-left:1px solid var(--rule)}
         }).join("") + "</ul>" +
         "<p><b>Cut odds " + pct(t.pChop) + "</b>" + (american(t.pChop) ? " · " + american(t.pChop) : "") + "</p></div>");
     });
-    // Closest chase, as a small live tracker: the most endangered chaser's Monday
-    // players against the points they still need. Tonight that is CeeDee Lamb.
-    // Status alert: any chaser's Monday starter carrying an injury flag. A Q flag
-    // turns on the ruling, not the points; an O flag names the best bench swap
-    // still playing Monday night. Both read the latest paste, which the page
-    // re-checks every couple of minutes, so they flip when a new import lands.
+    // Big questions: the closest chase as a live tracker hero (the most
+    // endangered chaser's Monday players against the points they still need;
+    // tonight that is CeeDee Lamb), plus a names-to-watch strip for any
+    // chaser's Monday starter carrying an injury flag. An O flag names the
+    // best bench swap still playing Monday night. Both read the latest paste,
+    // which the page re-checks every couple of minutes, so they flip when a
+    // new import lands.
     $("mnf-tracker").hidden = true;
     $("mnf-alert").hidden = true;
     if (!allOver && jeop.length) {
@@ -1188,7 +1191,13 @@ th.line{border-left:1px solid var(--rule)}
       var goalTop = floor.locked - baseTop, gotTop = top.locked - baseTop;
       var topPlayers = stillToPlay(rtop, top);
       if (topPlayers.length && goalTop > 0) {
-        $("mnf-tracker").innerHTML = "<div class=\"tk-top\"><span class=\"tk-big\">" + two(Math.max(goalTop - gotTop, 0)) + "</span><span class=\"tk-label\">more for " + esc(who(top.name)) + " to survive</span></div>" +
+        var tagPlayer = topPlayers.filter(function (p) { return p.live && p.clock; })[0] || topPlayers[0];
+        var tag = "";
+        if (tagPlayer) {
+          if (tagPlayer.live && tagPlayer.clock) tag = '<p><span class="tk-live">Live · ' + esc(tagPlayer.clock) + "</span></p>";
+          else if (tagPlayer.game) tag = '<p><span class="tk-live tk-soon">Kicks off ' + esc(tagPlayer.game.replace(/^Mon /, "")) + " ET</span></p>";
+        }
+        $("mnf-tracker").innerHTML = tag + "<div class=\"tk-top\"><span class=\"tk-big\">" + two(Math.max(goalTop - gotTop, 0)) + "</span><span class=\"tk-label\">more for " + esc(who(top.name)) + " to survive</span></div>" +
           "<p>" + topPlayers.map(function (p) {
             return pname(p, rtop, true) + " " + (p.live || p.final ? (p.actual || 0).toFixed(1) + (p.live ? " live" : " final") : "proj " + (p.proj || 0).toFixed(1));
           }).join(" · ") + "</p>" +
@@ -1202,19 +1211,19 @@ th.line{border-left:1px solid var(--rule)}
           if (!p.status) return;
           var need2 = floor.locked - t.locked;
           var label = p.status === "Q" ? "Questionable" : p.status === "O" ? "Out" : p.status;
-          var line = "<b>" + pname(p, rt2, true) + "</b> is " + label + ". " + esc(who(t.name)) + " needs " + two(need2) + " from him to survive.";
+          var line = pname(p, rt2, true) + " (" + label + ") · " + esc(who(t.name)) + " needs " + two(need2) + " from him.";
           if (p.status === "O") {
             var repl = (rt2.roster || []).filter(function (q) { return q.name !== p.name && !q.empty && q.slot === "BN" && /^Mon/.test(q.game || ""); })
               .sort(function (a, b) { return (b.proj || 0) - (a.proj || 0); })[0];
-            line += repl ? " Best bench swap still playing Monday night: " + pname(repl, rt2, true) + " (proj " + (repl.proj || 0).toFixed(1) + ")." : " Needs a lineup fix to survive.";
+            line += repl ? " Swap: " + pname(repl, rt2, true) + " (proj " + (repl.proj || 0).toFixed(1) + ")." : " Needs a lineup fix to survive.";
             alertLines.push({ danger: true, html: line });
           } else {
-            alertLines.push({ danger: false, html: line + " This one turns on the ruling, not the points." });
+            alertLines.push({ danger: false, html: line });
           }
         });
       });
       if (alertLines.length) {
-        $("mnf-alert").innerHTML = '<p class="eyebrow">Status alert</p>' + alertLines.map(function (a) { return "<p>" + a.html + "</p>"; }).join("");
+        $("mnf-alert").innerHTML = "<p><b>Names to watch:</b> " + alertLines.map(function (a) { return a.html; }).join("; ") + "</p>";
         $("mnf-alert").classList.toggle("danger", alertLines.some(function (a) { return a.danger; }));
         $("mnf-alert").hidden = false;
       }
