@@ -196,6 +196,11 @@ def parse(txt):
     snapshot = re.search(r"^Full roster snapshot: (.+)$", txt, re.M)
     if snapshot:
         data["roster_snapshot_at"] = snapshot.group(1).strip()
+    complete = re.search(r"^Complete roster teams: (.+)$", txt, re.M)
+    if complete:
+        data["roster_verified_teams"] = [n.strip() for n in complete.group(1).split("|")]
+        data["roster_only_import"] = True
+        data["roster_note"] = "All active starting lineups, benches and IR imported from the supplied Yahoo roster page."
     verified = re.search(r"^Lineup screenshot corrections: (.+)$", txt, re.M)
     if verified:
         data["lineup_verified_teams"] = [n.strip() for n in verified.group(1).split("|")]

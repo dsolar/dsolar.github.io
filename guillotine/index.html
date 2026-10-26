@@ -533,7 +533,7 @@ th.line{border-left:1px solid var(--rule)}
     <summary>How the odds work</summary>
     <div class="method" id="method">
       <p><b>This week</b>, managers are assumed to fix lineup holes before kickoff. Each team's expected score is the higher of Yahoo's projection for the lineup as set and the best legal lineup its roster can field (QB, 2 RB, 3 WR, TE, W/R/T and Q/W/R/T), leaving out players on a bye, ruled out or on IR. When the fixed lineup is worth 5 or more points more, the team is tagged <b>Assumes lineup fix</b>. Once a player's game starts, his spot counts as set in Yahoo. Without player projections, each hole is worth a ninth of the team's average; without any projection, a team gets its average.</p>
-      <p><b>During the week</b>, points already scored are banked exactly: Yahoo's own totals from the latest league paste, then live scoring for games since. Only starters still to play can move a team's score, each by an amount that fits his position (quarterbacks swing least, tight ends most), and nobody still to play is assumed to lose more than 2 points. A team that's done scoring is locked at its total, so the cut odds firm up as the week goes on. The page checks live scoring every minute while games are on.</p>
+      <p><b>During the week</b>, points already scored are banked exactly: the latest imported totals, or reconstructed final-player scores for a roster-only import, then live scoring for games since. Only starters still to play can move a team's score, each by an amount that fits his position (quarterbacks swing least, tight ends most), and nobody still to play is assumed to lose more than 2 points. A team that's done scoring is locked at its total, so the cut odds firm up as the week goes on. The page checks live scoring every minute while games are on.</p>
       <p><b>Later weeks</b> blend each team's <span id="m-avg">average over its last three weeks</span> with what its current roster projects to, then pull that a quarter of the way toward the league average. Rosters keep changing as cut teams' players go to waivers, so nobody's current form lasts all season.</p>
       <p id="m-check"></p>
       <p id="m-range"><b>The range of outcomes.</b> A projection is a midpoint, not a promise. Weekly scores swing about 17% either way, so a team projected 120 lands between about 94 and 146 in 8 of 10 weeks, and under 94 one week in ten. That's why a 10-point edge isn't safety: a team projected 110 outscores one projected 120 about 4 times in 10.</p>
@@ -670,6 +670,8 @@ th.line{border-left:1px solid var(--rule)}
       data.roster_imported_at ? "Roster import " + etTime(data.roster_imported_at) :
       data.updated ? "Data processed " + etTime(data.updated) : "";
     if (data.proj_source && data.proj_source.updated) upd += " · Projections refreshed " + etTime(data.proj_source.updated);
+    if (data.roster_verified_teams && data.roster_verified_teams.length) upd += " · All " + data.roster_verified_teams.length + " active rosters imported, including benches and IR";
+    if (data.roster_only_import) upd += " · Scores reconstructed from final player stats; exact Yahoo screenshot values retained where supplied";
     if (data.lineup_verified_teams && data.lineup_verified_teams.length) upd += " · " + data.lineup_verified_teams.length + " starting lineups corrected from Week " + data.week + " screenshots; remaining rosters retain the earlier snapshot";
     var lv = data.live;
     var liveHtml = lv ? (lv.inProgress ? '<span class="live-tag">Live</span> ' + esc(lv.inProgress + " game" + (lv.inProgress > 1 ? "s" : "") + " on · scores as of " + etTime(lv.fetched)) :
@@ -1310,7 +1312,7 @@ th.line{border-left:1px solid var(--rule)}
     }
     if (typeof t.proj_pre === "number" && t.proj_pre > 0 && t.points) chips.push('<span class="chip">Pregame proj ' + t.proj_pre.toFixed(1) + "</span>");
     if (simT && simT.assumesFix) chips.push('<span class="chip fix">' + fixTag(simT).replace("fixtag", "fixtag in-chip") + "proj " + simT.now.toFixed(1) + "</span>");
-    if (typeof t.proj === "number" && t.proj > 0) chips.push('<span class="chip">Yahoo proj ' + t.proj.toFixed(1) + (simT && simT.assumesFix ? " as set" : "") + "</span>");
+    if (typeof t.proj === "number" && t.proj > 0) chips.push('<span class="chip">' + (t.projection_source ? "As-set proj " : "Yahoo proj ") + t.proj.toFixed(1) + (simT && simT.assumesFix ? " as set" : "") + "</span>");
     if (typeof t.best === "number") chips.push('<span class="chip">Best lineup ' + t.best.toFixed(1) + "</span>");
     if (typeof t.faab === "number") chips.push('<span class="chip">$' + t.faab + " FAB</span>");
     $("dlg-chips").innerHTML = chips.join("");
@@ -1340,7 +1342,7 @@ th.line{border-left:1px solid var(--rule)}
     }
     var src = state.data.proj_source;
     $("dlg-note").textContent = src
-      ? "Player projections and points from Sleeper, scored with league settings (half PPR, 4-point passing TDs); team totals come from Yahoo. Final means Yahoo shows the game over. The rank after each player is his projected position rank this week. Hover or tap a name for his season stats. Best lineup is the highest-projected legal lineup from this roster; Start marks bench players who belong in it. Projections as of " + etTime(src.updated) + "."
+      ? "Player projections and points from Sleeper, scored with league settings (half PPR, 4-point passing TDs); team totals use the latest import, with player-score reconstruction for roster-only imports. Final means Yahoo shows the game over. The rank after each player is his projected position rank this week. Hover or tap a name for his season stats. Best lineup is the highest-projected legal lineup from this roster; Start marks bench players who belong in it. Projections as of " + etTime(src.updated) + "."
       : "Player projections arrive with the next update.";
     var dlg = $("team-dlg");
     if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");

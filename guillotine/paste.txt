@@ -20,289 +20,212 @@ Week	Team	Season Points	FAB	Moves	Pts Per Week
 2	23 Richard	141.92	$990	3	70.96
 1	J Free FTW	78.36	$1000	0	78.36
 
+Roster-only import: true
+Complete roster teams: Drake Mayezini | Tai Streetz Lata? | Love a Kittle Lamb & WhiteRice | Breece’s Pieces | Love Purdy Flowers | Likely to Burden Tate w Penix | Holofernes | Deviated Rectums | Liberté Égalité Henri
+Roster source note: Full Week 7 starting-roster page supplied by the user on 2026-10-26; includes benches and IR.
 
-Full roster snapshot: 2026-10-24T06:41:00Z
-Lineup screenshot corrections: Liberté Égalité Henri | Deviated Rectums | Tai Streetz Lata?
-Correction source: User-provided Yahoo Week 7 screenshots; exact capture time unavailable. Other starting lineups and unseen bench entries remain from the earlier paste.
+Yahoo Sports
+Yahoo Sports
+Search query
+Search
+
+News
+Finance
+Sports
+
+More
+3
+
+D
+ Fantasy Football
+Overview
+League
+My Team
+Matchups
+Players
+Research
+Draft
+Commissioner
+StatTracker
+
+Fantasy
+
+Network
+Fantasy Plus
+Bastille Day (ID# 157731)
+Yahoo Sports Fantasy Football
 Starting Rosters
+Team
+
+Position
+
 Week 7
 
-Drake Mayezini
+Holofernes
 
 Pos	Player
 QB
-Drake Maye
-Drake MayePlayer Note
-NE - QB
-Final L 24-30 @ CHI
+Aaron Rodgers
+Aaron RodgersNew Player Note
+Pit - QB
+Final W 16-10 @ NO
 RB
-Kyren Williams
-Kyren WilliamsPlayer Note
-LAR - RB
-Sun 4:25 pm @ LV
-RB
-Rhamondre Stevenson
-Rhamondre StevensonPlayer Note
-NE - RB
-Final L 24-30 @ CHI
-WR
-George Pickens
-George PickensPlayer Note
-DAL - WR
-Mon 8:15 pm @ PHI
-WR
-Puka Nacua
-Puka NacuaQPlayer Note
-LAR - WR
-Sun 4:25 pm @ LV
-WR
-Nico Collins
-Nico CollinsPlayer Note
-HOU - WR
-Sun 1:00 pm vs NYG
-TE
-Tucker Kraft
-Tucker KraftPlayer Note
-GB - TE
-Sun 4:25 pm @ DET
-W/R/T
-Woody Marks
-Woody MarksPlayer Note
-HOU - RB
-Sun 1:00 pm vs NYG
-Q/W/R/T
-C.J. Stroud
-C.J. StroudPlayer Note
-HOU - QB
-Sun 1:00 pm vs NYG
-BN
-Travis Kelce
-Travis KelcePlayer Note
-KC - TE
-Sun 8:20 pm @ SEA
-BN
-Cam Skattebo
-Cam SkatteboPlayer Note
-NYG - RB
-Sun 1:00 pm @ HOU
-BN
-Mike Evans
-Mike EvansOPlayer Note
-SF - WR
-Sun 1:00 pm @ ATL
-BN
-Josh Jacobs
-Josh JacobsPlayer Note
-GB - RB
-Sun 4:25 pm @ DET
-BN
-Konata Mumpfield
-Konata MumpfieldPlayer Note
-LAR - WR
-Sun 4:25 pm @ LV
-Love a Kittle Lamb & WhiteRice
-
-Pos	Player
-QB
-Bryce Young
-Bryce YoungPlayer Note
-CAR - QB
-Sun 1:00 pm vs TB
-RB
-Jonathan Taylor
-Jonathan TaylorPlayer Note
-IND - RB
-Sun 1:00 pm @ MIN
-RB
-Derrick Henry
-Derrick HenryPlayer Note
-BAL - RB
-Sun 1:00 pm vs CIN
-WR
-CeeDee Lamb
-CeeDee LambPlayer Note
-DAL - WR
-Mon 8:15 pm @ PHI
-WR
-Christian Watson
-Christian WatsonPlayer Note
-GB - WR
-Sun 4:25 pm @ DET
-WR
-Tee Higgins
-Tee HigginsPlayer Note
-CIN - WR
-Sun 1:00 pm @ BAL
-TE
-George Kittle
-George KittlePlayer Note
-SF - TE
-Sun 1:00 pm @ ATL
-W/R/T
-Xavier Worthy
-Xavier WorthyPlayer Note
-KC - WR
-Sun 8:20 pm @ SEA
-Q/W/R/T
-Patrick Mahomes
-Patrick MahomesPlayer Note
-KC - QB
-Sun 8:20 pm @ SEA
-BN
-Rashee Rice
-Rashee RiceOPlayer Note
-KC - WR
-Sun 8:20 pm @ SEA
-BN
-Tyreek Hill
-Tyreek HillNAPlayer Note
-MIA - WR
-Sun 1:00 pm @ NYJ
-BN
-Jeremiyah Love
-Jeremiyah LoveOPlayer Note
-ARI - RB
-Sun 4:05 pm vs DEN
-BN
-Tanner McKee
-Tanner McKeePlayer Note
-PHI - QB
-Mon 8:15 pm vs DAL
-Breece’s Pieces
-
-Pos	Player
-QB
-Caleb Williams
-Caleb WilliamsPlayer Note
-CHI - QB
+D'Andre Swift
+D'Andre SwiftVideo ForecastPlayer Note
+Chi - RB
 Final W 30-24 vs NE
 RB
-J.K. Dobbins
-J.K. DobbinsPlayer Note
-DEN - RB
-Sun 4:05 pm @ ARI
-RB
-Breece Hall
-Breece HallQPlayer Note
-NYJ - RB
-Sun 1:00 pm vs MIA
+Tony Pollard
+Tony PollardVideo ForecastNew Player Note
+Ten - RB
+Final L 24-27 vs Cle
 WR
-Jaxon Smith-Njigba
-Jaxon Smith-NjigbaPlayer Note
-SEA - WR
-Sun 8:20 pm vs KC
+A.J. Brown
+A.J. BrownPlayer Note
+NE - WR
+Final L 24-30 @ Chi
 WR
-Malik Nabers
-Malik NabersPlayer Note
-NYG - WR
-Sun 1:00 pm @ HOU
+Ja'Marr Chase
+Ja'Marr ChaseNew Player Note
+Cin - WR
+Final W 35-13 @ Bal
 WR
-Drake London
-Drake LondonPlayer Note
-ATL - WR
-Sun 1:00 pm vs SF
+DK Metcalf
+DK MetcalfVideo ForecastNew Player Note
+Pit - WR
+Final W 16-10 @ NO
 TE
-Trey McBride
-Trey McBridePlayer Note
-ARI - TE
-Sun 4:05 pm vs DEN
+Brock Bowers
+Brock BowersNew Player Note
+LV - TE
+Final L 21-35 vs LAR
 W/R/T
-Devaughn Vele
-Devaughn VelePlayer Note
-NO - WR
-Sun 9:30 am vs PIT
+Matthew Golden
+Matthew GoldenNew Player Note
+GB - WR
+Final L 17-20 @ Det
 Q/W/R/T
-Lamar Jackson
-Lamar JacksonQPlayer Note
-BAL - QB
-Sun 1:00 pm vs CIN
+Kyler Murray
+Kyler MurrayNew Player Note
+Min - QB
+Final W 16-10 vs Ind
 BN
-Zach Charbonnet
-Zach CharbonnetOPlayer Note
-SEA - RB
-Sun 8:20 pm vs KC
-BN
-Braelon Allen
-Braelon AllenPlayer Note
-NYJ - RB
-Sun 1:00 pm vs MIA
-BN
-Stefon Diggs
-Stefon DiggsPlayer Note
-WAS - WR
+Josh Allen
+Josh AllenPlayer Note
+Buf - QB
 Bye
 BN
-Baker Mayfield
-Baker MayfieldQPlayer Note
-TB - QB
-Sun 1:00 pm @ CAR
+Kendre Miller
+Kendre MillerVideo ForecastPlayer Note
+NO - RB
+Final L 10-16 vs Pit
 BN
-Chris Godwin Jr.
-Chris Godwin Jr.Player Note
-TB - WR
-Sun 1:00 pm @ CAR
+Quinshon Judkins
+Quinshon JudkinsVideo ForecastNew Player Note
+Cle - RB
+Final W 27-24 @ Ten
+BN
+Justin Herbert
+Justin HerbertPlayer Note
+LAC - QB
+Bye
+BN
+Blake Corum
+Blake CorumVideo ForecastNew Player Note
+LAR - RB
+Final W 35-21 @ LV
 IR
-Tyler Warren
-Tyler WarrenOPlayer Note
-IND - TE
-Sun 1:00 pm @ MIN
+Jacory Croskey-Merritt
+J. Croskey-MerrittIRPlayer Note
+Was - RB
+Bye
+23 Richard
+
+Pos	Player
+QB
+--empty--
+(Empty)
+RB
+--empty--
+(Empty)
+RB
+--empty--
+(Empty)
+WR
+--empty--
+(Empty)
+WR
+--empty--
+(Empty)
+WR
+--empty--
+(Empty)
+TE
+--empty--
+(Empty)
+W/R/T
+--empty--
+(Empty)
+Q/W/R/T
+--empty--
+(Empty)
 Love Purdy Flowers
 
 Pos	Player
 QB
 Brock Purdy
-Brock PurdyPlayer Note
+Brock PurdyVideo ForecastNew Player Note
 SF - QB
-Sun 1:00 pm @ ATL
+Final L 20-29 @ Atl
 RB
 Christian McCaffrey
-Christian McCaffreyPlayer Note
+Christian McCaffreyVideo ForecastNew Player Note
 SF - RB
-Sun 1:00 pm @ ATL
+Final L 20-29 @ Atl
 RB
 Chase Brown
-Chase BrownPlayer Note
-CIN - RB
-Sun 1:00 pm @ BAL
+Chase BrownVideo ForecastNew Player Note
+Cin - RB
+Final W 35-13 @ Bal
 WR
 Zay Flowers
-Zay FlowersPlayer Note
-BAL - WR
-Sun 1:00 pm vs CIN
+Zay FlowersVideo ForecastNew Player Note
+Bal - WR
+Final L 13-35 vs Cin
 WR
 Tetairoa McMillan
-Tetairoa McMillanPlayer Note
-CAR - WR
-Sun 1:00 pm vs TB
+Tetairoa McMillanVideo ForecastNew Player Note
+Car - WR
+Final L 13-43 vs TB
 WR
 Jalen Coker
-Jalen CokerPlayer Note
-CAR - WR
-Sun 1:00 pm vs TB
+Jalen CokerVideo ForecastNew Player Note
+Car - WR
+Final L 13-43 vs TB
 TE
 Mark Andrews
-Mark AndrewsPlayer Note
-BAL - TE
-Sun 1:00 pm vs CIN
+Mark AndrewsNew Player Note
+Bal - TE
+Final L 13-35 vs Cin
 W/R/T
 Saquon Barkley
-Saquon BarkleyQPlayer Note
-PHI - RB
-Mon 8:15 pm vs DAL
+Saquon BarkleyQVideo ForecastPlayer Note
+Phi - RB
+Mon 8:15 pm vs Dal
 Q/W/R/T
 Jordan Love
-Jordan LovePlayer Note
+Jordan LoveNew Player Note
 GB - QB
-Sun 4:25 pm @ DET
+Final L 17-20 @ Det
 BN
 Aaron Jones Sr.
-Aaron Jones Sr.Player Note
-MIN - RB
-Sun 1:00 pm vs IND
+Aaron Jones Sr.QVideo ForecastNew Player Note
+Min - RB
+Final W 16-10 vs Ind
 BN
 Rachaad White
 Rachaad WhitePlayer Note
-WAS - RB
+Was - RB
 Bye
 BN
 Omarion Hampton
@@ -311,425 +234,732 @@ LAC - RB
 Bye
 BN
 Tre Tucker
-Tre TuckerPlayer Note
+Tre TuckerVideo ForecastNew Player Note
 LV - WR
-Sun 4:25 pm vs LAR
+Final L 21-35 vs LAR
 BN
-Dontayvion Wicks
-Dontayvion WicksQPlayer Note
-PHI - WR
-Mon 8:15 pm vs DAL
-Likely to Burden Tate w Penix
+Makai Lemon
+Makai LemonVideo ForecastPlayer Note
+Phi - WR
+Mon 8:15 pm vs Dal
+Breece’s Pieces
 
 Pos	Player
 QB
-Tyler Shough
-Tyler ShoughPlayer Note
-NO - QB
-Sun 9:30 am vs PIT
+Caleb Williams
+Caleb WilliamsVideo ForecastPlayer Note
+Chi - QB
+Final W 30-24 vs NE
 RB
-Jaylen Warren
-Jaylen WarrenPlayer Note
-PIT - RB
-Sun 9:30 am @ NO
+J.K. Dobbins
+J.K. DobbinsVideo ForecastNew Player Note
+Den - RB
+Final W 30-16 @ Ari
 RB
-Jahmyr Gibbs
-Jahmyr GibbsPlayer Note
-DET - RB
-Sun 4:25 pm vs GB
+Braelon Allen
+Braelon AllenVideo ForecastNew Player Note
+NYJ - RB
+Final L 25-28 vs Mia
 WR
-Chris Olave
-Chris OlavePlayer Note
+Jaxon Smith-Njigba
+Jaxon Smith-NjigbaVideo ForecastNew Player Note
+Sea - WR
+Final W 20-3 vs KC
+WR
+Malik Nabers
+Malik NabersVideo ForecastNew Player Note
+NYG - WR
+Final W 27-21 @ Hou
+WR
+Drake London
+Drake LondonVideo ForecastNew Player Note
+Atl - WR
+Final W 29-20 vs SF
+TE
+Trey McBride
+Trey McBrideVideo ForecastNew Player Note
+Ari - TE
+Final L 16-30 vs Den
+W/R/T
+Chris Godwin Jr.
+Chris Godwin Jr.Video ForecastNew Player Note
+TB - WR
+Final W 43-13 @ Car
+Q/W/R/T
+Baker Mayfield
+Baker MayfieldVideo ForecastNew Player Note
+TB - QB
+Final W 43-13 @ Car
+BN
+Breece Hall
+Breece HallOVideo ForecastNew Player Note
+NYJ - RB
+Final L 25-28 vs Mia
+BN
+Devaughn Vele
+Devaughn VeleVideo ForecastNew Player Note
 NO - WR
-Sun 9:30 am vs PIT
-WR
-Germie Bernard
-Germie BernardPlayer Note
-PIT - WR
-Sun 9:30 am @ NO
-WR
-Denzel Boston
-Denzel BostonPlayer Note
-CLE - WR
-Sun 1:00 pm @ TEN
-TE
-Isaiah Likely
-Isaiah LikelyPlayer Note
-NYG - TE
-Sun 1:00 pm @ HOU
-W/R/T
-Ashton Jeanty
-Ashton JeantyPlayer Note
-LV - RB
-Sun 4:25 pm vs LAR
-Q/W/R/T
-Bo Nix
-Bo NixPlayer Note
-DEN - QB
-Sun 4:05 pm @ ARI
+Final L 10-16 vs Pit
 BN
-Carnell Tate
-Carnell TatePlayer Note
-TEN - WR
-Sun 1:00 pm @ CLE
+Lamar Jackson
+Lamar JacksonONew Player Note
+Bal - QB
+Final L 13-35 vs Cin
 BN
-Dallas Goedert
-Dallas GoedertQPlayer Note
-PHI - TE
-Mon 8:15 pm vs DAL
+Zach Charbonnet
+Zach CharbonnetONew Player Note
+Sea - RB
+Final W 20-3 vs KC
 BN
-Luther Burden III
-Luther Burden IIIPlayer Note
-CHI - WR
-Final W 30-24 vs NE
-BN
-TreVeyon Henderson
-TreVeyon HendersonPlayer Note
-NE - RB
-Final L 24-30 @ CHI
-BN
-Jacoby Brissett
-Jacoby BrissettPlayer Note
-ARI - QB
-Sun 4:05 pm vs DEN
+Stefon Diggs
+Stefon DiggsVideo ForecastPlayer Note
+Was - WR
+Bye
 IR
-Jordan Mason
-Jordan MasonIR-RPlayer Note
-MIN - RB
-Sun 1:00 pm vs IND
-Holofernes
-
-Pos	Player
-QB
-Aaron Rodgers
-Aaron RodgersPlayer Note
-PIT - QB
-Sun 9:30 am @ NO
-RB
-D'Andre Swift
-D'Andre SwiftPlayer Note
-CHI - RB
-Final W 30-24 vs NE
-RB
-Tony Pollard
-Tony PollardPlayer Note
-TEN - RB
-Sun 1:00 pm vs CLE
-WR
-A.J. Brown
-A.J. BrownPlayer Note
-NE - WR
-Final L 24-30 @ CHI
-WR
-Ja'Marr Chase
-Ja'Marr ChasePlayer Note
-CIN - WR
-Sun 1:00 pm @ BAL
-WR
-DK Metcalf
-DK MetcalfPlayer Note
-PIT - WR
-Sun 9:30 am @ NO
-TE
-Brock Bowers
-Brock BowersPlayer Note
-LV - TE
-Sun 4:25 pm vs LAR
-W/R/T
-Matthew Golden
-Matthew GoldenPlayer Note
-GB - WR
-Sun 4:25 pm @ DET
-Q/W/R/T
-Kyler Murray
-Kyler MurrayPlayer Note
-MIN - QB
-Sun 1:00 pm vs IND
-BN
-Josh Allen
-Josh AllenPlayer Note
-BUF - QB
-Bye
-BN
-Kendre Miller
-Kendre MillerPlayer Note
-NO - RB
-Sun 9:30 am vs PIT
-BN
-Quinshon Judkins
-Quinshon JudkinsPlayer Note
-CLE - RB
-Sun 1:00 pm @ TEN
-BN
-Justin Herbert
-Justin HerbertPlayer Note
-LAC - QB
-Bye
-BN
-Blake Corum
-Blake CorumPlayer Note
-LAR - RB
-Sun 4:25 pm @ LV
-IR
-Jacory Croskey-Merritt
-Jacory Croskey-MerrittPlayer Note
-WAS - RB
-Bye
-Liberté Égalité Henri
-
-Pos	Player
-QB
-Matthew Stafford
-Matthew StaffordPlayer Note
-LAR - QB
-Final W 35-21 @ LV
-Yahoo snapshot points	18.50	projection	18.88
-RB
-Kenneth Walker III
-Kenneth Walker IIIPlayer Note
-KC - RB
-Final L 3-20 @ SEA
-Yahoo snapshot points	7.70	projection	17.40
-RB
-Chuba Hubbard
-Chuba HubbardPlayer Note
-CAR - RB
-Final L 13-43 vs TB
-Yahoo snapshot points	8.00	projection	15.60
-WR
-Garrett Wilson
-Garrett WilsonPlayer Note
-NYJ - WR
-Final L 25-28 vs MIA
-Yahoo snapshot points	3.60	projection	13.48
-WR
-Rome Odunze
-Rome OdunzePlayer Note
-CHI - WR
-Final W 30-24 vs NE
-Yahoo snapshot points	8.90	projection	8.96
-WR
-Jaylen Waddle
-Jaylen WaddlePlayer Note
-DEN - WR
-Final W 28-25 @ ARI
-Yahoo snapshot points	6.80	projection	10.94
-TE
-Sam LaPorta
-Sam LaPortaPlayer Note
-DET - TE
-Final W 20-17 vs GB
-Yahoo snapshot points	2.30	projection	10.47
-W/R/T
-Hunter Henry
-Hunter HenryPlayer Note
-NE - TE
-Final L 24-30 @ CHI
-Yahoo snapshot points	10.60	projection	7.42
-Q/W/R/T
-Joe Burrow
-Joe BurrowPlayer Note
-CIN - QB
-Final W 35-13 @ BAL
-Yahoo snapshot points	28.88	projection	18.86
-BN
-Marvin Harrison Jr.
-Marvin Harrison Jr.Player Note
-HOU - WR
-Final (Yahoo screenshot)
-Yahoo snapshot points	7.10	projection	5.45
-BN
-KC Concepcion Jr.
-KC Concepcion Jr.Player Note
-CLE - WR
-Sun 1:00 pm @ TEN
-BN
-James Cook III
-James Cook IIIPlayer Note
-BUF - RB
-Bye
-BN
-Jakobi Meyers
-Jakobi MeyersPlayer Note
-JAX - WR
-Bye
-BN
-Keon Coleman
-Keon ColemanPlayer Note
-BUF - WR
-Bye
+Tyler Warren
+Tyler WarrenONew Player Note
+Ind - TE
+Final L 10-16 @ Min
 Deviated Rectums
 
 Pos	Player
 QB
 Dak Prescott
 Dak PrescottPlayer Note
-DAL - QB
-Mon 8:15 pm @ PHI
+Dal - QB
+Mon 8:15 pm @ Phi
 Yahoo snapshot points	—	projection	17.79
 RB
 Bucky Irving
-Bucky IrvingPlayer Note
+Bucky IrvingNew Player Note
 TB - RB
-Final W 43-13 @ CAR
-Yahoo snapshot points	23.50	projection	14.70
+Final W 43-13 @ Car
+Yahoo snapshot points	23.5	projection	14.7
 RB
 Ollie Gordon II
-Ollie Gordon IIPlayer Note
-MIA - RB
+Ollie Gordon IIVideo ForecastNew Player Note
+Mia - RB
 Final W 28-25 @ NYJ
-Yahoo snapshot points	16.80	projection	11.02
+Yahoo snapshot points	16.8	projection	11.02
 WR
 Amon-Ra St. Brown
-Amon-Ra St. BrownPlayer Note
-DET - WR
+Amon-Ra St. BrownVideo ForecastNew Player Note
+Det - WR
 Final W 20-17 vs GB
-Yahoo snapshot points	19.70	projection	17.09
+Yahoo snapshot points	19.7	projection	17.09
 WR
 Justin Jefferson
-Justin JeffersonPlayer Note
-MIN - WR
-Final W 16-10 vs IND
-Yahoo snapshot points	6.40	projection	14.95
+Justin JeffersonVideo ForecastNew Player Note
+Min - WR
+Final W 16-10 vs Ind
+Yahoo snapshot points	6.4	projection	14.95
 WR
 DeMario Douglas
-DeMario DouglasPlayer Note
+DeMario DouglasVideo ForecastPlayer Note
 NE - WR
-Final L 24-30 @ CHI
-Yahoo snapshot points	3.80	projection	8.06
+Final L 24-30 @ Chi
+Yahoo snapshot points	3.8	projection	8.06
 TE
 Tyler Higbee
-Tyler HigbeePlayer Note
+Tyler HigbeeVideo ForecastNew Player Note
 LAR - TE
 Final W 35-21 @ LV
-Yahoo snapshot points	2.40	projection	7.84
+Yahoo snapshot points	2.4	projection	7.84
 W/R/T
 Dameon Pierce
-Dameon PiercePlayer Note
-PHI - RB
-Mon 8:15 pm vs DAL
+Dameon PierceVideo ForecastPlayer Note
+Phi - RB
+Mon 8:15 pm vs Dal
 Yahoo snapshot points	—	projection	5.34
 Q/W/R/T
 Jared Goff
-Jared GoffPlayer Note
-DET - QB
+Jared GoffVideo ForecastNew Player Note
+Det - QB
 Final W 20-17 vs GB
 Yahoo snapshot points	18.02	projection	19.94
 BN
 Emeka Egbuka
-Emeka EgbukaOPlayer Note
+Emeka EgbukaOVideo ForecastPlayer Note
 TB - WR
-Final W 43-13 @ CAR
-Yahoo snapshot points	0.00	projection	0.00
+Final W 43-13 @ Car
+Yahoo snapshot points	0.0	projection	0.0
 BN
 Kirk Cousins
-Kirk CousinsPlayer Note
+Kirk CousinsVideo ForecastNew Player Note
 LV - QB
-Sun 4:25 pm vs LAR
+Final L 21-35 vs LAR
 BN
 Parker Washington
-Parker WashingtonPlayer Note
-JAX - WR
+Parker WashingtonVideo ForecastPlayer Note
+Jax - WR
 Bye
 BN
 Malik Washington
-Malik WashingtonPlayer Note
-MIA - WR
-Sun 1:00 pm @ NYJ
+Malik WashingtonVideo ForecastNew Player Note
+Mia - WR
+Final W 28-25 @ NYJ
 BN
 Colston Loveland
-Colston LovelandPlayer Note
-CHI - TE
+Colston LovelandVideo ForecastPlayer Note
+Chi - TE
 Final W 30-24 vs NE
 IR
 Kyle Monangai
 Kyle MonangaiOPlayer Note
-CHI - RB
+Chi - RB
 Final W 30-24 vs NE
+Fly Zone Kristi
+
+Pos	Player
+QB
+--empty--
+(Empty)
+RB
+--empty--
+(Empty)
+RB
+--empty--
+(Empty)
+WR
+--empty--
+(Empty)
+WR
+--empty--
+(Empty)
+WR
+--empty--
+(Empty)
+TE
+--empty--
+(Empty)
+W/R/T
+--empty--
+(Empty)
+Q/W/R/T
+--empty--
+(Empty)
+Beast Mode Samuel
+
+Pos	Player
+QB
+--empty--
+(Empty)
+RB
+--empty--
+(Empty)
+RB
+--empty--
+(Empty)
+WR
+--empty--
+(Empty)
+WR
+--empty--
+(Empty)
+WR
+--empty--
+(Empty)
+TE
+--empty--
+(Empty)
+W/R/T
+--empty--
+(Empty)
+Q/W/R/T
+--empty--
+(Empty)
+J Free FTW
+
+Pos	Player
+QB
+--empty--
+(Empty)
+RB
+--empty--
+(Empty)
+RB
+--empty--
+(Empty)
+WR
+--empty--
+(Empty)
+WR
+--empty--
+(Empty)
+WR
+--empty--
+(Empty)
+TE
+--empty--
+(Empty)
+W/R/T
+--empty--
+(Empty)
+Q/W/R/T
+--empty--
+(Empty)
+Liberté Égalité Henri
+
+Pos	Player
+QB
+Matthew Stafford
+Matthew StaffordNew Player Note
+LAR - QB
+Final W 35-21 @ LV
+Yahoo snapshot points	18.5	projection	18.88
+RB
+Kenneth Walker III
+Kenneth Walker IIIVideo ForecastNew Player Note
+KC - RB
+Final L 3-20 @ Sea
+Yahoo snapshot points	7.7	projection	17.4
+RB
+Chuba Hubbard
+Chuba HubbardNew Player Note
+Car - RB
+Final L 13-43 vs TB
+Yahoo snapshot points	8.0	projection	15.6
+WR
+Garrett Wilson
+Garrett WilsonVideo ForecastNew Player Note
+NYJ - WR
+Final L 25-28 vs Mia
+Yahoo snapshot points	3.6	projection	13.48
+WR
+Rome Odunze
+Rome OdunzeVideo ForecastPlayer Note
+Chi - WR
+Final W 30-24 vs NE
+Yahoo snapshot points	8.9	projection	8.96
+WR
+Jaylen Waddle
+Jaylen WaddleQVideo ForecastNew Player Note
+Den - WR
+Final W 30-16 @ Ari
+Yahoo snapshot points	6.8	projection	10.94
+TE
+Sam LaPorta
+Sam LaPortaNew Player Note
+Det - TE
+Final W 20-17 vs GB
+Yahoo snapshot points	2.3	projection	10.47
+W/R/T
+Hunter Henry
+Hunter HenryPlayer Note
+NE - TE
+Final L 24-30 @ Chi
+Yahoo snapshot points	10.6	projection	7.42
+Q/W/R/T
+Joe Burrow
+Joe BurrowVideo ForecastNew Player Note
+Cin - QB
+Final W 35-13 @ Bal
+Yahoo snapshot points	28.88	projection	18.86
+BN
+Marvin Harrison Jr.
+Marvin Harrison Jr.New Player Note
+Hou - WR
+Final L 21-27 vs NYG
+Yahoo snapshot points	7.1	projection	5.45
+BN
+KC Concepcion Jr.
+KC Concepcion Jr.Video ForecastNew Player Note
+Cle - WR
+Final W 27-24 @ Ten
+BN
+James Cook III
+James Cook IIIVideo ForecastPlayer Note
+Buf - RB
+Bye
+BN
+Jakobi Meyers
+Jakobi MeyersPlayer Note
+Jax - WR
+Bye
+BN
+Keon Coleman
+Keon ColemanVideo ForecastPlayer Note
+Buf - WR
+Bye
+Maye I see your TDs
+
+Pos	Player
+QB
+--empty--
+(Empty)
+RB
+--empty--
+(Empty)
+RB
+--empty--
+(Empty)
+WR
+--empty--
+(Empty)
+WR
+--empty--
+(Empty)
+WR
+--empty--
+(Empty)
+TE
+--empty--
+(Empty)
+W/R/T
+--empty--
+(Empty)
+Q/W/R/T
+--empty--
+(Empty)
+Drake Mayezini
+
+Pos	Player
+QB
+Drake Maye
+Drake MayeVideo ForecastPlayer Note
+NE - QB
+Final L 24-30 @ Chi
+RB
+Kyren Williams
+Kyren WilliamsVideo ForecastNew Player Note
+LAR - RB
+Final W 35-21 @ LV
+RB
+Rhamondre Stevenson
+Rhamondre StevensonVideo ForecastPlayer Note
+NE - RB
+Final L 24-30 @ Chi
+WR
+George Pickens
+George PickensVideo ForecastPlayer Note
+Dal - WR
+Mon 8:15 pm @ Phi
+WR
+Puka Nacua
+Puka NacuaVideo ForecastNew Player Note
+LAR - WR
+Final W 35-21 @ LV
+WR
+Nico Collins
+Nico CollinsVideo ForecastNew Player Note
+Hou - WR
+Final L 21-27 vs NYG
+TE
+Tucker Kraft
+Tucker KraftVideo ForecastNew Player Note
+GB - TE
+Final L 17-20 @ Det
+W/R/T
+Woody Marks
+Woody MarksVideo ForecastNew Player Note
+Hou - RB
+Final L 21-27 vs NYG
+Q/W/R/T
+C.J. Stroud
+C.J. StroudVideo ForecastNew Player Note
+Hou - QB
+Final L 21-27 vs NYG
+BN
+Travis Kelce
+Travis KelceNew Player Note
+KC - TE
+Final L 3-20 @ Sea
+BN
+Cam Skattebo
+Cam SkatteboQVideo ForecastNew Player Note
+NYG - RB
+Final W 27-21 @ Hou
+BN
+Mike Evans
+Mike EvansOVideo ForecastNew Player Note
+SF - WR
+Final L 20-29 @ Atl
+BN
+Josh Jacobs
+Josh JacobsNew Player Note
+GB - RB
+Final L 17-20 @ Det
+BN
+Konata Mumpfield
+Konata MumpfieldNew Player Note
+LAR - WR
+Final W 35-21 @ LV
 Tai Streetz Lata?
 
 Pos	Player
 QB
 Deshaun Watson
-Deshaun WatsonPlayer Note
-CLE - QB
-Final W 27-24 @ TEN
+Deshaun WatsonNew Player Note
+Cle - QB
+Final W 27-24 @ Ten
 Yahoo snapshot points	19.22	projection	15.87
 RB
 RJ Harvey
-RJ HarveyPlayer Note
-DEN - RB
-Final W 30-16 @ ARI
-Yahoo snapshot points	13.00	projection	8.78
+RJ HarveyVideo ForecastNew Player Note
+Den - RB
+Final W 30-16 @ Ari
+Yahoo snapshot points	13.0	projection	8.78
 RB
 Bijan Robinson
-Bijan RobinsonPlayer Note
-ATL - RB
+Bijan RobinsonVideo ForecastNew Player Note
+Atl - RB
 Final W 29-20 vs SF
-Yahoo snapshot points	14.70	projection	21.60
+Yahoo snapshot points	14.7	projection	21.6
 WR
 Jordan Addison
-Jordan AddisonPlayer Note
-MIN - WR
-Final W 16-10 vs IND
-Yahoo snapshot points	3.30	projection	8.60
+Jordan AddisonNew Player Note
+Min - WR
+Final W 16-10 vs Ind
+Yahoo snapshot points	3.3	projection	8.6
 WR
 Jameson Williams
-Jameson WilliamsPlayer Note
-DET - WR
+Jameson WilliamsVideo ForecastNew Player Note
+Det - WR
 Final W 20-17 vs GB
-Yahoo snapshot points	23.60	projection	10.29
+Yahoo snapshot points	23.6	projection	10.29
 WR
 Michael Wilson
-Michael WilsonPlayer Note
-ARI - WR
-Final L 16-30 vs DEN
-Yahoo snapshot points	8.60	projection	10.42
+Michael WilsonVideo ForecastNew Player Note
+Ari - WR
+Final L 16-30 vs Den
+Yahoo snapshot points	8.6	projection	10.42
 TE
 Kyle Pitts Sr.
-Kyle Pitts Sr.Player Note
-ATL - TE
+Kyle Pitts Sr.Video ForecastNew Player Note
+Atl - TE
 Final W 29-20 vs SF
-Yahoo snapshot points	10.70	projection	7.38
+Yahoo snapshot points	10.7	projection	7.38
 W/R/T
 Javonte Williams
-Javonte WilliamsPlayer Note
-DAL - RB
-Mon 8:15 pm @ PHI
+Javonte WilliamsVideo ForecastPlayer Note
+Dal - RB
+Mon 8:15 pm @ Phi
 Yahoo snapshot points	—	projection	14.98
 Q/W/R/T
 Geno Smith
-Geno SmithPlayer Note
+Geno SmithNew Player Note
 NYJ - QB
-Final L 25-28 vs MIA
+Final L 25-28 vs Mia
 Yahoo snapshot points	24.48	projection	16.46
 BN
 Bhayshul Tuten
 Bhayshul TutenPlayer Note
-JAX - RB
+Jax - RB
 Bye
 BN
 DJ Moore
 DJ MooreQPlayer Note
-BUF - WR
+Buf - WR
 Bye
 BN
 DeVonta Smith
-DeVonta SmithQPlayer Note
-PHI - WR
-Mon 8:15 pm vs DAL
+DeVonta SmithOPlayer Note
+Phi - WR
+Mon 8:15 pm vs Dal
 BN
 Trevor Lawrence
 Trevor LawrencePlayer Note
-JAX - QB
+Jax - QB
 Bye
 BN
 Jayden Daniels
-Jayden DanielsPlayer Note
-WAS - QB
+Jayden DanielsVideo ForecastPlayer Note
+Was - QB
 Bye
 IR
 Travis Etienne Jr.
-Travis Etienne Jr.IRPlayer Note
+Travis Etienne Jr.IRNo new player Notes
 NO - RB
-Sun 9:30 am vs PIT
+Final L 10-16 vs Pit
+Love a Kittle Lamb & WhiteRice
+
+Pos	Player
+QB
+Bryce Young
+Bryce YoungNew Player Note
+Car - QB
+Final L 13-43 vs TB
+RB
+Jonathan Taylor
+Jonathan TaylorNew Player Note
+Ind - RB
+Final L 10-16 @ Min
+RB
+Derrick Henry
+Derrick HenryNew Player Note
+Bal - RB
+Final L 13-35 vs Cin
+WR
+CeeDee Lamb
+CeeDee LambVideo ForecastPlayer Note
+Dal - WR
+Mon 8:15 pm @ Phi
+WR
+Christian Watson
+Christian WatsonNew Player Note
+GB - WR
+Final L 17-20 @ Det
+WR
+Tee Higgins
+Tee HigginsVideo ForecastNew Player Note
+Cin - WR
+Final W 35-13 @ Bal
+TE
+George Kittle
+George KittleNew Player Note
+SF - TE
+Final L 20-29 @ Atl
+W/R/T
+Xavier Worthy
+Xavier WorthyVideo ForecastNew Player Note
+KC - WR
+Final L 3-20 @ Sea
+Q/W/R/T
+Patrick Mahomes
+Patrick MahomesVideo ForecastNew Player Note
+KC - QB
+Final L 3-20 @ Sea
+BN
+Rashee Rice
+Rashee RiceONew Player Note
+KC - WR
+Final L 3-20 @ Sea
+BN
+Tyreek Hill
+Tyreek HillNANo new player Notes
+Mia - WR
+Final W 28-25 @ NYJ
+BN
+Tanner McKee
+Tanner McKeeVideo ForecastPlayer Note
+Phi - QB
+Mon 8:15 pm vs Dal
+BN
+Tyler Allgeier
+Tyler AllgeierVideo ForecastNew Player Note
+Ari - RB
+Final L 16-30 vs Den
+BN
+Emanuel Wilson
+Emanuel WilsonVideo ForecastNew Player Note
+Sea - RB
+Final W 20-3 vs KC
+IR
+Jeremiyah Love
+Jeremiyah LoveOVideo ForecastPlayer Note
+Ari - RB
+Final L 16-30 vs Den
+Likely to Burden Tate w Penix
+
+Pos	Player
+QB
+Tyler Shough
+Tyler ShoughNew Player Note
+NO - QB
+Final L 10-16 vs Pit
+RB
+Jaylen Warren
+Jaylen WarrenVideo ForecastNew Player Note
+Pit - RB
+Final W 16-10 @ NO
+RB
+Jahmyr Gibbs
+Jahmyr GibbsVideo ForecastNew Player Note
+Det - RB
+Final W 20-17 vs GB
+WR
+Chris Olave
+Chris OlaveNew Player Note
+NO - WR
+Final L 10-16 vs Pit
+WR
+Germie Bernard
+Germie BernardVideo ForecastNew Player Note
+Pit - WR
+Final W 16-10 @ NO
+WR
+Denzel Boston
+Denzel BostonVideo ForecastNew Player Note
+Cle - WR
+Final W 27-24 @ Ten
+TE
+Dallas Goedert
+Dallas GoedertPlayer Note
+Phi - TE
+Mon 8:15 pm vs Dal
+W/R/T
+Ashton Jeanty
+Ashton JeantyVideo ForecastNew Player Note
+LV - RB
+Final L 21-35 vs LAR
+Q/W/R/T
+Bo Nix
+Bo NixNew Player Note
+Den - QB
+Final W 30-16 @ Ari
+BN
+Isaiah Likely
+Isaiah LikelyVideo ForecastNew Player Note
+NYG - TE
+Final W 27-21 @ Hou
+BN
+Carnell Tate
+Carnell TateVideo ForecastNew Player Note
+Ten - WR
+Final L 24-27 vs Cle
+BN
+Luther Burden III
+Luther Burden IIIVideo ForecastPlayer Note
+Chi - WR
+Final W 30-24 vs NE
+BN
+TreVeyon Henderson
+TreVeyon HendersonVideo ForecastPlayer Note
+NE - RB
+Final L 24-30 @ Chi
+BN
+Jacoby Brissett
+Jacoby BrissettNew Player Note
+Ari - QB
+Final L 16-30 vs Den
+IR
+Jordan Mason
+Jordan MasonVideo ForecastNew Player Note
+Min - RB
+Final W 16-10 vs Ind
+Filet-O-Fate
+
+Pos	Player
+QB
+--empty--
+(Empty)
+RB
+--empty--
+(Empty)
+RB
+--empty--
+(Empty)
+WR
+--empty--
+(Empty)
+WR
+--empty--
+(Empty)
+WR
+--empty--
+(Empty)
+TE
+--empty--
+(Empty)
+W/R/T
+--empty--
+(Empty)
+Q/W/R/T
+--empty--
+(Empty)
+Yahoo Sports - NBC Sports Network - Paid Fantasy Terms - Feedback - Terms and Privacy Policy - Privacy Dashboard  - About Our Ads - Help
+Certain Data by Sportradar, Rotowire, FTN, BAKER Engine and THE BLITZ
+
+Guillotine trademarks are used with Fantasy Life's permission.
+
+© 2026 Yahoo Fantasy Sports LLC. All rights reserved.

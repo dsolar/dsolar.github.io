@@ -220,6 +220,22 @@ def fill_empty(team):
         team["fill"] = round(fill, 2)
 
 
+def reconcile_roster_only_scores(team):
+    """A newer roster-only paste cannot use totals banked against an older lineup.
+
+    Only finals already observed in the roster snapshot are included in the new base;
+    later games remain outside that base so the live overlay can add them once.
+    """
+    starters = [p for p in team["roster"] if p["slot"] not in ("BN", "IR") and not p.get("empty")]
+    if len(starters) != 9 or any("actual" not in p for p in starters if p.get("yfinal")):
+        return False
+    team["points"] = round(sum(p["actual"] for p in starters if p.get("yfinal")), 2)
+    team["proj"] = round(sum(p.get("actual", 0) if p.get("final") or p.get("yfinal") else p.get("proj", 0) for p in starters), 2)
+    team["score_source"] = "Yahoo screenshot finals where supplied; otherwise NFL statistics scored with league settings"
+    team["projection_source"] = "As-set lineup: final points plus remaining player projections"
+    return True
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--data", default=DATA)
@@ -299,6 +315,9 @@ def main():
             elif n:
                 p["next_proj"] = n["pts"]
 
+        if data.get("roster_only_import"):
+            if not reconcile_roster_only_scores(t):
+                raise ValueError("Cannot reconcile roster-only import: incomplete final scores for " + t["name"])
         t["best"] = best_lineup(roster, "proj", flag="in_best")
         t["best_next"] = best_lineup(roster, "next_proj") if nxt.by_name else None
         fill_empty(t)
