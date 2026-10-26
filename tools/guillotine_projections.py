@@ -187,12 +187,28 @@ def best_lineup(roster, key, flag=None, skip_bye_key=None):
     return round(total, 1)
 
 
-def fill_empty(team):
+def started(p, now=None):
+    """True once a player's game has kicked off: final in Yahoo or the stats feed, or past its start time.
+
+    A player sitting on the bench when his game kicks off can't be moved into the lineup any more."""
+    if p.get("final") or p.get("yfinal") or p.get("live"):
+        return True
+    m = re.search(r"(\d{1,2}):(\d{2}) ([ap]m)", p.get("game") or "")
+    if not p.get("date") or not m:
+        return False
+    hour = int(m.group(1)) % 12 + (12 if m.group(3) == "pm" else 0)
+    kick = datetime.fromisoformat(p["date"]).replace(hour=hour, minute=int(m.group(2)), tzinfo=ET)
+    return (now or datetime.now(timezone.utc)) >= kick
+
+
+def fill_empty(team, now=None):
     """Put a stand-in in every empty starting spot, the way a manager would before kickoff.
 
     With some starters set, each empty spot gets the best healthy bench player who can play it; the team's
     projection grows by their points (t["fill"]). With no lineup at all, the whole best lineup stands in.
-    The empty spot records who's assumed ("assumed"); that player records the spot ("assumed_slot").
+    Only players whose games haven't started count: once a bench player's game kicks off, his points
+    can't reach the lineup. The empty spot records who's assumed ("assumed"); that player records the
+    spot ("assumed_slot").
     """
     roster = team["roster"]
     empties = [p for p in roster if p.get("empty") and p["slot"] not in ("BN", "IR")]
@@ -201,10 +217,10 @@ def fill_empty(team):
         return
     none_set = all(p.get("empty") for p in roster if p["slot"] not in ("BN", "IR"))
     if none_set:
-        pool = [p for p in roster if p.get("in_best")]
+        pool = [p for p in roster if p.get("in_best") and not started(p, now)]
     else:
         pool = [p for p in roster if p["slot"] == "BN" and not p.get("empty") and not p.get("bye")
-                and p.get("status") not in UNAVAILABLE and (p.get("proj") or 0) > 0]
+                and p.get("status") not in UNAVAILABLE and (p.get("proj") or 0) > 0 and not started(p, now)]
     pool.sort(key=lambda p: -(p.get("proj") or 0))
     used, fill = set(), 0.0
     for slot in sorted(empties, key=lambda e: len(ELIGIBLE.get(e["slot"], {e["slot"]}))):
@@ -250,6 +266,7 @@ def main():
         return
     season, week = data["season"], data["week"]
     today = a.today or datetime.now(ET).strftime("%Y-%m-%d")
+    clock = datetime.fromisoformat(a.today).replace(tzinfo=ET) if a.today else None  # --today replays that morning
 
     try:
         now = Feed(load("proj", season, week, a.from_dir), rank=True)
@@ -320,7 +337,7 @@ def main():
                 raise ValueError("Cannot reconcile roster-only import: incomplete final scores for " + t["name"])
         t["best"] = best_lineup(roster, "proj", flag="in_best")
         t["best_next"] = best_lineup(roster, "next_proj") if nxt.by_name else None
-        fill_empty(t)
+        fill_empty(t, clock)
 
         # Points already banked by this week's starters, counting whoever stands in for an empty spot.
         starters = [p for p in roster if (p["slot"] not in ("BN", "IR") and not p.get("empty")) or p.get("assumed_slot")]
