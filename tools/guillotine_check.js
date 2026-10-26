@@ -22,7 +22,9 @@ assert not reconcile_roster_only_scores(t)
 `],{stdio:'inherit'});
 const html=fs.readFileSync('guillotine/index.html','utf8');
 const context={norm:n=>n.toLowerCase(),startersOf:t=>t.roster.filter(p=>!['BN','IR'].includes(p.slot)),Date,Promise};vm.createContext(context);
-vm.runInContext(html.slice(html.indexOf('  function applyLive('),html.indexOf('  function refreshLive(')),context);
+// The live overlay lives in guillotine/live.js (shared with the home-page ticker); the roster refresh stays inline.
+context.applyLive=require('../guillotine/live.js').apply;
+vm.runInContext(html.slice(html.indexOf('  var rosterCheckedAt'),html.indexOf('  function refreshLive(')),context);
 const data={week:7,teams:[{name:'Test',points:12,roster:[{name:'Test Player',slot:'QB',pos:'QB',nfl:'NE',proj:10,yfinal:true,yahoo_actual:12}]}]};
 const live={week:7,games:{NE:{state:'post'}},pts:{'test player|QB':{pts:99}}};
 const after=context.applyLive(data,live);assert.equal(after.teams[0].roster[0].actual,12);assert.equal(data.teams[0].roster[0].actual,undefined,'overlay must not mutate BASE');
