@@ -4,13 +4,13 @@
  "week": 7,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-10-26T12:16:03Z",
+ "updated": "2026-10-26T17:17:12Z",
  "source": "Yahoo league page, pasted",
  "teams": [
   {
    "name": "Drake Mayezini",
    "faab": 473,
-   "proj": 132.32,
+   "proj": 132.36,
    "points": 122.86,
    "avg": 113.01,
    "season_pts": 726.48,
@@ -147,7 +147,7 @@
        "rec_td": 1
       }
      },
-     "proj": 9.46,
+     "proj": 9.5,
      "rank": "WR25",
      "date": "2026-10-26",
      "next_proj": 11.54,
@@ -540,7 +540,7 @@
       }
      },
      "proj": 15.87,
-     "rank": "QB23",
+     "rank": "QB24",
      "date": "2026-10-25",
      "final": true,
      "actual": 19.22,
@@ -829,7 +829,7 @@
       }
      },
      "proj": 16.46,
-     "rank": "QB14",
+     "rank": "QB15",
      "date": "2026-10-25",
      "final": true,
      "actual": 24.48,
@@ -1020,7 +1020,7 @@
   {
    "name": "Love a Kittle Lamb & WhiteRice",
    "faab": 415,
-   "proj": 97.41,
+   "proj": 97.52,
    "avg": 130.14,
    "season_pts": 780.84,
    "roster": [
@@ -1158,7 +1158,7 @@
        "rush_yd": -6
       }
      },
-     "proj": 14.19,
+     "proj": 14.3,
      "rank": "WR8",
      "date": "2026-10-26",
      "next_proj": 16.97,
@@ -1395,8 +1395,8 @@
        "rush_att": 1
       }
      },
-     "proj": 14.11,
-     "rank": "QB24",
+     "proj": 14.26,
+     "rank": "QB23",
      "date": "2026-10-26",
      "next_proj": 15.41
     },
@@ -1508,7 +1508,7 @@
    "points": 83.22,
    "score_source": "Yahoo screenshot finals where supplied; otherwise NFL statistics scored with league settings",
    "projection_source": "As-set lineup: final points plus remaining player projections",
-   "best": 133.9,
+   "best": 134.0,
    "best_next": 120.3,
    "locked": 83.22,
    "locked_proj": 118.63,
@@ -2025,7 +2025,7 @@
   {
    "name": "Love Purdy Flowers",
    "faab": 275,
-   "proj": 106.82,
+   "proj": 106.86,
    "avg": 121.21,
    "season_pts": 727.26,
    "roster": [
@@ -2131,7 +2131,7 @@
       }
      },
      "proj": 13.17,
-     "rank": "RB17",
+     "rank": "RB18",
      "date": "2026-10-25",
      "final": true,
      "actual": 7.8,
@@ -2300,8 +2300,8 @@
        "rec_yd": 8
       }
      },
-     "proj": 13.14,
-     "rank": "RB18",
+     "proj": 13.18,
+     "rank": "RB17",
      "date": "2026-10-26",
      "next_proj": 14.17,
      "in_best": true
@@ -2494,7 +2494,7 @@
        "rush_yd": -5
       }
      },
-     "proj": 6.9,
+     "proj": 6.99,
      "rank": "WR44",
      "date": "2026-10-26",
      "next_proj": 4.64
@@ -2504,7 +2504,7 @@
    "points": 93.68,
    "score_source": "Yahoo screenshot finals where supplied; otherwise NFL statistics scored with league settings",
    "projection_source": "As-set lineup: final points plus remaining player projections",
-   "best": 132.7,
+   "best": 132.8,
    "best_next": 112.7,
    "locked": 93.68,
    "locked_proj": 119.57,
@@ -2513,7 +2513,7 @@
   {
    "name": "Likely to Burden Tate w Penix",
    "faab": 415,
-   "proj": 115.33,
+   "proj": 115.42,
    "avg": 127.43,
    "season_pts": 764.58,
    "roster": [
@@ -2752,7 +2752,7 @@
        "rec_td": 2
       }
      },
-     "proj": 9.63,
+     "proj": 9.72,
      "rank": "TE7",
      "date": "2026-10-26",
      "next_proj": 9.47
@@ -3603,7 +3603,7 @@
       }
      },
      "proj": 17.79,
-     "rank": "QB15",
+     "rank": "QB14",
      "date": "2026-10-26",
      "next_proj": 21.24,
      "in_best": true
@@ -4666,7 +4666,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-10-26T12:16:30Z",
+  "updated": "2026-10-26T17:17:13Z",
   "players": 3045,
   "unmatched": []
  }
