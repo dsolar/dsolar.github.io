@@ -4,7 +4,7 @@
  "week": 8,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-10-27T16:52:17Z",
+ "updated": "2026-10-27T17:07:32Z",
  "source": "Yahoo league page, pasted",
  "teams": [
   {
@@ -147,7 +147,7 @@
        "rush_yd": 6
       }
      },
-     "proj": 11.62,
+     "proj": 11.64,
      "rank": "WR19",
      "date": "2026-10-29",
      "next_proj": 11.23,
@@ -307,7 +307,7 @@
       }
      },
      "proj": 17.29,
-     "rank": "QB11",
+     "rank": "QB12",
      "date": "2026-11-01",
      "next_proj": 16.38,
      "in_best": true
@@ -657,8 +657,8 @@
        "rec_td": 2
       }
      },
-     "proj": 8.49,
-     "rank": "TE9",
+     "proj": 8.43,
+     "rank": "TE10",
      "date": "2026-11-01",
      "next_proj": 8.76,
      "in_best": true
@@ -725,8 +725,8 @@
        "rush_td": 2
       }
      },
-     "proj": 14.17,
-     "rank": "QB22",
+     "proj": 14.04,
+     "rank": "QB23",
      "date": "2026-11-01",
      "next_proj": 15.25,
      "in_best": true
@@ -878,7 +878,7 @@
     }
    ],
    "proj_pre": 120.85,
-   "best": 120.6,
+   "best": 120.4,
    "best_next": 122.9,
    "locked": 0,
    "locked_proj": 0,
@@ -950,7 +950,7 @@
        "rush_td": 3
       }
      },
-     "proj": 5.02,
+     "proj": 5.01,
      "rank": "RB51",
      "date": "2026-11-01",
      "next_proj": 9.48
@@ -1081,7 +1081,7 @@
        "rec_td": 4
       }
      },
-     "proj": 9.75,
+     "proj": 9.74,
      "rank": "WR23",
      "date": "2026-11-01",
      "next_proj": 9.17,
@@ -1368,7 +1368,7 @@
     }
    ],
    "proj_pre": 120.12,
-   "best": 124.0,
+   "best": 123.9,
    "best_next": 129.7,
    "locked": 0,
    "locked_proj": 0,
@@ -1477,8 +1477,8 @@
        "rec_td": 1
       }
      },
-     "proj": 14.84,
-     "rank": "RB13",
+     "proj": 14.89,
+     "rank": "RB12",
      "date": "2026-10-29",
      "next_proj": 12.41,
      "in_best": true
@@ -1606,8 +1606,8 @@
        "rec_td": 2
       }
      },
-     "proj": 8.63,
-     "rank": "TE6",
+     "proj": 8.71,
+     "rank": "TE5",
      "date": "2026-10-29",
      "next_proj": 8.73,
      "in_best": true
@@ -1672,7 +1672,7 @@
        "rec_td": 2
       }
      },
-     "proj": 9.38,
+     "proj": 9.44,
      "rank": "TE3",
      "date": "2026-11-01",
      "next_proj": 10.83,
@@ -1827,7 +1827,7 @@
     }
    ],
    "proj_pre": 119.68,
-   "best": 116.7,
+   "best": 116.9,
    "best_next": 139.2,
    "locked": 0,
    "locked_proj": 0,
@@ -1868,7 +1868,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 18.19,
+     "proj": 18.28,
      "rank": "QB8",
      "date": "2026-10-29",
      "next_proj": 17.42,
@@ -2001,7 +2001,7 @@
        "rec_td": 6
       }
      },
-     "proj": 14.05,
+     "proj": 14.13,
      "rank": "WR9",
      "date": "2026-10-29",
      "next_proj": 14.34,
@@ -2091,7 +2091,7 @@
        "rec_td": 1
       }
      },
-     "proj": 7.43,
+     "proj": 7.44,
      "rank": "WR41",
      "date": "2026-11-01",
      "next_proj": 8.68
@@ -2123,7 +2123,7 @@
        "rush_td": 1
       }
      },
-     "proj": 17.0,
+     "proj": 17.16,
      "rank": "QB13",
      "date": "2026-11-01",
      "next_proj": 20.08,
@@ -2155,7 +2155,7 @@
        "rec_td": 1
       }
      },
-     "proj": 10.48,
+     "proj": 10.54,
      "rank": "WR21",
      "date": "2026-11-01",
      "next_proj": 12.71,
@@ -2274,7 +2274,7 @@
     }
    ],
    "proj_pre": 117.62,
-   "best": 122.3,
+   "best": 122.7,
    "best_next": 140.0,
    "locked": 0,
    "locked_proj": 0,
@@ -2349,7 +2349,7 @@
       }
      },
      "proj": 14.87,
-     "rank": "RB12",
+     "rank": "RB13",
      "date": "2026-11-01",
      "next_proj": 15.01,
      "in_best": true
@@ -2544,7 +2544,7 @@
        "rush_td": 2
       }
      },
-     "proj": 4.53,
+     "proj": 4.52,
      "rank": "RB54",
      "date": "2026-11-01",
      "next_proj": 1.94
@@ -2945,7 +2945,7 @@
        "rec_td": 2
       }
      },
-     "proj": 12.33,
+     "proj": 12.35,
      "rank": "WR16",
      "date": "2026-10-29",
      "next_proj": 10.27,
@@ -2977,7 +2977,7 @@
        "rec_td": 2
       }
      },
-     "proj": 13.24,
+     "proj": 13.27,
      "rank": "WR12",
      "date": "2026-10-29",
      "next_proj": 11.91,
@@ -3043,7 +3043,7 @@
        "rush_td": 1
       }
      },
-     "proj": 10.53,
+     "proj": 10.52,
      "rank": "RB19",
      "date": "2026-11-01",
      "next_proj": 14.87,
@@ -3077,8 +3077,8 @@
        "rush_td": 1
       }
      },
-     "proj": 17.24,
-     "rank": "QB12",
+     "proj": 17.33,
+     "rank": "QB11",
      "date": "2026-10-29",
      "next_proj": 16.74,
      "in_best": true
@@ -3144,7 +3144,7 @@
        "rec_td": 2
       }
      },
-     "proj": 9.59,
+     "proj": 9.72,
      "rank": "RB22",
      "date": "2026-11-01",
      "next_proj": 8.82,
@@ -3250,7 +3250,7 @@
     }
    ],
    "proj_pre": 92.03,
-   "best": 110.2,
+   "best": 110.5,
    "best_next": 134.2,
    "locked": 0,
    "locked_proj": 0,
@@ -3635,7 +3635,7 @@
        "rec_td": 1
       }
      },
-     "proj": 6.69,
+     "proj": 6.68,
      "rank": "RB35",
      "date": "2026-11-01",
      "next_proj": 8.82
@@ -3701,7 +3701,7 @@
        "rec_td": 2
       }
      },
-     "proj": 9.45,
+     "proj": 9.41,
      "rank": "WR26",
      "date": "2026-11-01",
      "next_proj": 10.01,
@@ -3767,7 +3767,7 @@
        "rush_td": 2
       }
      },
-     "proj": 17.84,
+     "proj": 17.94,
      "rank": "QB9",
      "date": "2026-11-01",
      "next_proj": 15.6,
@@ -3804,7 +3804,7 @@
      "next_proj": 8.52
     }
    ],
-   "best": 130.4,
+   "best": 130.5,
    "best_next": 126.1,
    "locked": 0,
    "locked_proj": 0,
@@ -3863,13 +3863,172 @@
  "roster_import_id": "88a37873dd8205c8deb3de6e3d2f1865464d5e811088aac78126a4529e2c936b",
  "roster_imported_at": "2026-10-27T16:33:03Z",
  "league_url": "https://football.fantasysports.yahoo.com/f1/157731",
+ "waivers": {
+  "team": "Liberté Égalité Henri",
+  "week": 7,
+  "players": [
+   {
+    "name": "Kenneth Walker III",
+    "pos": "RB",
+    "nfl": "KC",
+    "proj": 18.97,
+    "rank": "RB3",
+    "next_proj": 19.79,
+    "avg": 23.1,
+    "g": 6,
+    "last": 7.7
+   },
+   {
+    "name": "Joe Burrow",
+    "pos": "QB",
+    "nfl": "CIN",
+    "proj": 21.06,
+    "rank": "QB4",
+    "next_proj": 17.39,
+    "avg": 22.2,
+    "g": 6,
+    "last": 28.88
+   },
+   {
+    "name": "Matthew Stafford",
+    "pos": "QB",
+    "nfl": "LAR",
+    "proj": 15.95,
+    "rank": "QB17",
+    "next_proj": 19.26,
+    "avg": 18.6,
+    "g": 7,
+    "last": 18.5
+   },
+   {
+    "name": "Chuba Hubbard",
+    "pos": "RB",
+    "nfl": "CAR",
+    "proj": 15.22,
+    "rank": "RB10",
+    "next_proj": 15.46,
+    "avg": 16.8,
+    "g": 6,
+    "last": 8
+   },
+   {
+    "name": "James Cook III",
+    "pos": "RB",
+    "nfl": "BUF",
+    "proj": 15.44,
+    "rank": "RB8",
+    "next_proj": 14.45,
+    "avg": 18.1,
+    "g": 6,
+    "last": 0
+   },
+   {
+    "name": "Garrett Wilson",
+    "pos": "WR",
+    "nfl": "NYJ",
+    "proj": 13.1,
+    "rank": "WR14",
+    "next_proj": 11.99,
+    "avg": 11.6,
+    "g": 7,
+    "last": 3.6
+   },
+   {
+    "name": "Sam LaPorta",
+    "pos": "TE",
+    "nfl": "DET",
+    "proj": 8.92,
+    "rank": "TE4",
+    "next_proj": 10.55,
+    "avg": 10.9,
+    "g": 6,
+    "last": 2.3
+   },
+   {
+    "name": "Jaylen Waddle",
+    "pos": "WR",
+    "nfl": "DEN",
+    "proj": 9.13,
+    "rank": "WR28",
+    "next_proj": 9.57,
+    "avg": 7.3,
+    "g": 7,
+    "last": 6.8
+   },
+   {
+    "name": "Rome Odunze",
+    "pos": "WR",
+    "nfl": "CHI",
+    "proj": 8.24,
+    "rank": "WR35",
+    "next_proj": 9.49,
+    "avg": 6.9,
+    "g": 7,
+    "last": 8.9
+   },
+   {
+    "name": "Jakobi Meyers",
+    "pos": "WR",
+    "nfl": "JAX",
+    "proj": 8.42,
+    "rank": "WR33",
+    "next_proj": 8.5,
+    "avg": 8.5,
+    "g": 6,
+    "last": 0
+   },
+   {
+    "name": "Hunter Henry",
+    "pos": "TE",
+    "nfl": "NE",
+    "proj": 7.8,
+    "rank": "TE13",
+    "next_proj": 7.42,
+    "avg": 7.8,
+    "g": 7,
+    "last": 10.6
+   },
+   {
+    "name": "KC Concepcion Jr.",
+    "pos": "WR",
+    "nfl": "CLE",
+    "proj": 7.31,
+    "rank": "WR43",
+    "next_proj": 7.42,
+    "avg": 6.8,
+    "g": 7,
+    "last": 19.2
+   },
+   {
+    "name": "Keon Coleman",
+    "pos": "WR",
+    "nfl": "BUF",
+    "proj": 6.24,
+    "rank": "WR48",
+    "next_proj": 5.7,
+    "avg": 9.3,
+    "g": 6,
+    "last": 0
+   },
+   {
+    "name": "Marvin Harrison Jr.",
+    "pos": "WR",
+    "nfl": "HOU",
+    "proj": 0.0,
+    "next_proj": 1.31,
+    "avg": 4.8,
+    "g": 6,
+    "last": 7.1
+   }
+  ]
+ },
  "next_byes": [
   "PIT",
   "TEN"
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-10-27T16:52:18Z",
+  "updated": "2026-10-27T17:07:33Z",
   "players": 3045,
   "unmatched": []
  }
