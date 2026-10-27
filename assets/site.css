@@ -112,7 +112,7 @@ a:hover{color:var(--red)}
 /* ---------- Section heads ---------- */
 .section{padding-block:clamp(48px,7vw,88px)}
 .section-head{display:grid;grid-template-columns:var(--meta-col) minmax(0,1fr) auto;align-items:baseline;gap:12px 40px;margin-bottom:8px}
-.section-head h2{font-size:clamp(1.9rem,3.4vw,2.6rem);font-weight:700;letter-spacing:-.015em;grid-column:2}
+.section-head h2,.section-head h1{font-size:clamp(1.9rem,3.4vw,2.6rem);font-weight:700;letter-spacing:-.015em;grid-column:2}
 .section-head .count{color:var(--muted);font-size:.95rem}
 
 /* Type filters only appear once there's more than one kind of project */
@@ -245,7 +245,7 @@ a:hover{color:var(--red)}
   .footer-brand,.foot-copy,.foot-nav{grid-column:1;grid-row:auto}
   .about-grid h2,.about-copy{grid-column:1}
   .section-head{grid-template-columns:minmax(0,1fr) auto}
-  .section-head h2{grid-column:1}
+  .section-head h2,.section-head h1{grid-column:1}
   .filters{grid-column:1 / -1}
   .entry{grid-template-columns:minmax(0,1fr);grid-template-areas:"meta" "cover" "body";gap:18px}
   .entry-meta{flex-direction:row;flex-wrap:wrap;gap:4px 14px;align-items:baseline;padding-top:0}
@@ -309,7 +309,7 @@ a:hover{color:var(--red)}
 .hero-sub{font-size:1.05rem;line-height:1.65}
 .hero-brand-art{max-width:19rem}
 .section-head{display:flex;align-items:baseline;gap:12px 22px;flex-wrap:wrap;margin-bottom:24px}
-.section-head h2{font-size:clamp(1.8rem,3vw,2.25rem)}
+.section-head h2,.section-head h1{font-size:clamp(1.8rem,3vw,2.25rem)}
 .section-head .filters{flex-basis:100%;margin-top:4px}
 .filters button{font-size:.84rem;padding:7px 14px}
 .catalog{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;align-items:stretch}
@@ -464,7 +464,7 @@ a:hover{color:var(--red)}
 .hero h1{color:var(--night-ink)}
 .hero-kicker{color:#E2B84A}
 .hero-sub{color:var(--night-muted)}
-.section-head h2::after{content:"";display:block;width:2.4rem;height:4px;margin-top:10px;background:var(--red);border-radius:2px}
+.section-head h2::after,.section-head h1::after{content:"";display:block;width:2.4rem;height:4px;margin-top:10px;background:var(--red);border-radius:2px}
 .entry,.entry:first-child{border-top:5px solid var(--cover-band,var(--ink))}
 @media (hover:hover) and (prefers-reduced-motion: no-preference){.entry{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}.entry:hover{transform:translateY(-3px)}}
 .writing{background:var(--paper-2)}
@@ -479,7 +479,7 @@ a:hover{color:var(--red)}
 
 /* "Made with my daughters": the last section, a little softer */
 .kids{border-top:1px solid var(--rule);background:linear-gradient(180deg,rgba(232,106,146,.07),transparent 60%)}
-.kids .section-head h2::after{background:linear-gradient(90deg,#E86A92,#7B4FB3)}
+.kids .section-head h2::after,.kids .section-head h1::after{background:linear-gradient(90deg,#E86A92,#7B4FB3)}
 
 /* Make the Call's famous calls, with the real teams' logos (featured card) */
 /* Its own row under the card body, full width on the spotlight card, so the cover keeps its size */

@@ -20,7 +20,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Besley:ital,wght@0,500;0,600;0,700;0,800;1,500&family=Libre+Franklin:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="assets/site.css?v=20261026-views">
+<link rel="stylesheet" href="assets/site.css?v=20261027-kids-page">
+<script>if (location.hash === "#kids") location.replace("kids/");  /* the kids section moved to its own page */</script>
 <script src="assets/site.js" defer></script>
 <script src="assets/analytics.js" defer></script>
 <script src="assets/scoreboard.js?v=20261026-views" defer></script>
@@ -54,7 +55,7 @@
       <a href="#projects">Projects</a>
       <a href="#writing">Writing</a>
       <a href="#about">About</a>
-      <a href="#kids">Kids</a>
+      <a href="kids/">Kids</a>
     </nav>
   </div>
 </header>
@@ -223,16 +224,6 @@
     </div>
   </section>
 
-  <!-- Projects with section: "kids" in assets/projects.js land here, last on the page. -->
-  <section class="section kids" id="kids" aria-labelledby="kids-title">
-    <div class="wrap">
-      <div class="section-head">
-        <h2 id="kids-title">Made with my daughters</h2>
-      </div>
-      <p class="portfolio-intro">Two games my daughters designed with me: Lucy’s shelf of Jellycats battling for their spot, and Charlotte’s island where a little cow just learned to talk.</p>
-      <div class="catalog" id="kids-catalog"></div>
-    </div>
-  </section>
 </main>
 
 <footer class="site-footer">
@@ -248,7 +239,7 @@
       <a href="#projects">Projects</a>
       <a href="#writing">Writing</a>
       <a href="#about">About</a>
-      <a href="#kids">Kids</a>
+      <a href="kids/">Kids</a>
       <a data-user="hello" data-domain="davidsolar.dev">Email</a>
     </nav>
     <details class="app-code">
@@ -263,79 +254,25 @@
   </div>
 </footer>
 
-<script src="assets/projects.js?v=20261022-daughters"></script>
+<script src="assets/projects.js?v=20261027-kids-page"></script>
+<script src="assets/project-cards.js?v=20261027-kids-page"></script>
 <script>
 /* Draws the project list from assets/projects.js. You shouldn't need to edit this. */
 (function () {
-  var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-  var esc = function (s) {
-    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
-    });
-  };
-  var when = function (ym) {
-    var p = String(ym || "").split("-");
-    return p.length === 2 ? MONTHS[+p[1] - 1] + " " + p[0] : esc(ym);
-  };
-  var slug = function (url) { return String(url || "").replace(/\/+$/, "").split("/").pop().replace(/\.html$/, "") || ""; };
-  var list = function (items) {
-    if (items.length < 2) return items.join("");
-    return items.slice(0, -1).join(", ") + " and " + items[items.length - 1];
-  };
-
+  var esc = window.ProjectCards.esc;
   var showHidden = false;
   try { showHidden = sessionStorage.getItem("dsolar-hidden-apps") === "shown"; } catch (e) {}
   var syncCategory = function () {};
   function renderProjects() {
   var all = (window.PROJECTS || []).filter(function (p) { return showHidden || !p.hidden; });
-  // The order of assets/projects.js, with the spotlight first; "kids" projects get their own section.
+  // The order of assets/projects.js, with the spotlight first; "kids" projects have their own page (kids/).
   var projects = all.filter(function (p) { return !p.section; }).map(function (p, i) { return [p, i]; })
     .sort(function (a, b) { return (!!b[0].spotlight - !!a[0].spotlight) || a[1] - b[1]; }).map(function (x) { return x[0]; });
-  var kids = all.filter(function (p) { return p.section === "kids"; });
 
   var catalog = document.getElementById("catalog");
   var categorySlugs = {"Fantasy Leagues":"fantasy","Simulations":"simulations","Games":"games","Social Tools":"social"};
   var slugCategories = {fantasy:"Fantasy Leagues",simulations:"Simulations",games:"Games",social:"Social Tools"};
-  // NFL logos from ESPN's image service: a 64px copy for a 22px spot, and the dark-background version in dark mode
-  var nflLogo = function (abbr) {
-    var a = (abbr === "WAS" ? "wsh" : String(abbr).toLowerCase());
-    var url = function (v) { return "https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/" + v + "/" + a + ".png&w=64&h=64"; };
-    return '<picture class="mu-logo"><source media="(prefers-color-scheme: dark)" srcset="' + esc(url("500-dark")) + '">'
-      + '<img src="' + esc(url("500")) + '" alt="" width="22" height="22" loading="lazy" data-abbr="' + esc(abbr) + '"></picture>';
-  };
-  var matchups = function (p) {
-    if (!p.matchups || !p.matchups.length) return "";
-    return '<div class="matchups"><p class="matchups-label">Famous calls inside</p><ul>' + p.matchups.map(function (m) {
-      return '<li><span class="mu-teams">' + nflLogo(m.you) + "<b>" + esc(m.you) + "</b><span>" + (m.home || m.neutral ? "vs" : "at") + "</span>"
-        + nflLogo(m.opp) + "<b>" + esc(m.opp) + "</b></span><span class=\"mu-label\">" + esc(m.label) + "</span></li>";
-    }).join("") + "</ul></div>";
-  };
-  function card(p) {
-    var building = p.status === "building";
-    var accessible = !building || (showHidden && p.hidden);
-    var cover = p.cover || {};
-    var style = (cover.bg ? "--cover-bg:" + cover.bg + ";" : "") + (cover.band ? "--cover-band:" + cover.band : "");
-    var art = cover.image
-      ? '<img src="' + esc(cover.image) + '" alt="" loading="lazy" width="1040" height="780">'
-      : '<span class="typeset">' + esc(p.title) + "</span>";
-    var facts = (p.facts || []).map(function (f) {
-      return "<div><dt>" + esc(f[1]) + "</dt><dd>" + esc(f[0]) + "</dd></div>";
-    }).join("");
-    var title = !accessible ? esc(p.title) : '<a href="' + esc(p.url) + '">' + esc(p.title) + "</a>";
-    var id = p.external ? slug(p.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")) : slug(p.url);
-    return '<article class="entry' + (p.spotlight ? ' spotlight' : '') + '" id="' + esc(id) + '" data-type="' + esc(p.type) + '" style="' + esc(style) + '">'
-      + '<div class="entry-meta"><span class="type">' + esc(p.type) + "</span>" + (p.featured ? '<span class="featured-tag">Featured</span>' : '')
-      + (building ? '<span class="state">In progress</span>' : "<span>" + when(p.released) + "</span>") + "</div>"
-      + (!accessible ? '<div class="entry-cover" aria-hidden="true">' + art + '<span class="band"></span></div>'
-                  : '<a class="entry-cover" href="' + esc(p.url) + '" tabindex="-1" aria-hidden="true">' + art + '<span class="band"></span></a>')
-      + '<div class="entry-body"><h3>' + title + "</h3>"
-      + (p.question ? '<p class="question">' + esc(p.question) + "</p>" : "")
-      + '<p class="summary">' + esc(p.summary) + "</p>"
-      + (facts ? '<dl class="facts">' + facts + "</dl>" : "")
-      + (!accessible ? "" : '<div class="actions"><a class="btn" href="' + esc(p.url) + '"><span class="dot" aria-hidden="true"></span>' + esc(p.action || ({"Fantasy Leagues":"View League","Simulations":"Run Simulation","Games":"Play Game","Social Tools":"Open Tool"}[p.type] || "Explore Project")) + (p.external ? " ↗" : "") + "</a></div>")
-      + (p.stack && p.stack.length ? '<p class="stack">Built with ' + esc(list(p.stack)) + "</p>" : "")
-      + "</div>" + matchups(p) + "</article>";
-  }
+  var card = function (p) { return window.ProjectCards.card(p, { showHidden: showHidden }); };
   catalog.innerHTML = projects.map(card).join("");
   // A team logo that doesn't load gives way to its abbreviation
   if (!catalog.dataset.logoFallback) {
@@ -345,8 +282,6 @@
       if (img.tagName === "IMG" && img.closest(".mu-logo")) img.closest(".mu-logo").replaceWith(document.createTextNode(""));
     }, true);
   }
-  document.getElementById("kids-catalog").innerHTML = kids.map(card).join("");
-  document.getElementById("kids").hidden = !kids.length;
 
   var live = projects.filter(function (p) { return p.status !== "building"; }).length;
   var inProgress = projects.length - live;
