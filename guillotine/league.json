@@ -19,6 +19,29 @@
     "Tai Streetz Lata?": "Jeff S"
   },
   "eulogies": {
+    "Liberté Égalité Henri": {
+      "week": 7,
+      "score": 95.28,
+      "image": "eulogies/2026-wk7-liberte-egalite-henri.jpg",
+      "alt": "Edited joke image: Henry's face on three fallen men in Delacroix's Liberty Leading the People, for his fantasy football elimination send-off.",
+      "haiku": [
+        "Five more weeks this time.",
+        "Progress, Henri. Same blade, though.",
+        "Same basket. Same head."
+      ]
+    },
+    "Maye I see your TDs": {
+      "week": 6,
+      "score": 86.12,
+      "image": "eulogies/2026-wk6-matt-epstein.jpg",
+      "alt": "Clearly labeled edited joke image of Matt, for his fantasy football elimination send-off. Not a real photograph of an encounter.",
+      "haiku": [
+        "Epstein didn't kill",
+        "himself, they say. This one did:",
+        "benched DeVonta Smith."
+      ],
+      "hide_odds": true
+    },
     "Beast Mode Samuel": {
       "image": "eulogies/2026-wk5-beast-mode-samuel.jpg",
       "alt": "A huge bald man in white robes and white gloves lounges on a canopied throne beside a small bearded man in a veiled hat",
@@ -63,18 +86,6 @@
         "Funny Man got fileted",
         "Pass the tartar sauce"
       ]
-    },
-    "Maye I see your TDs": {
-      "week": 6,
-      "score": 86.12,
-      "image": "eulogies/2026-wk6-matt-epstein.jpg",
-      "alt": "Clearly labeled edited joke image of Matt, for his fantasy football elimination send-off. Not a real photograph of an encounter.",
-      "haiku": [
-        "Epstein didn't kill",
-        "himself, they say. This one did:",
-        "benched DeVonta Smith."
-      ],
-      "hide_odds": true
     }
   },
   "history_2025": [
