@@ -12,8 +12,9 @@ assert p['yfinal'] and p['yahoo_actual']==0 and p['yahoo_proj']==12.5
 rows[-1]='Yahoo snapshot points\\t—\\tprojection\\t12.50'
 p=parse_rosters(rows)['Team'][0]
 assert 'yahoo_actual' not in p and p['yahoo_proj']==12.5
-t={'roster':[{'slot':'WR','yfinal':True,'final':True,'actual':2,'proj':3} for _ in range(8)]+[{'slot':'QB','proj':10}]}
-assert reconcile_roster_only_scores(t) and t['points']==16 and t['proj']==26
+t={'season_pts':100,'points':5,'roster':[{'slot':'WR','yfinal':True,'final':True,'actual':2,'proj':3} for _ in range(8)]+[{'slot':'QB','proj':10}]}
+# The season total moves with the rebuilt points, so season minus points stays the pre-week total.
+assert reconcile_roster_only_scores(t) and t['points']==16 and t['proj']==26 and t['season_pts']==111
 t['roster'][-1].update(final=True,actual=20)
 assert reconcile_roster_only_scores(t) and t['points']==16 and t['proj']==36
 # A newly completed game stays outside the old bank, so a live overlay adds it exactly once.

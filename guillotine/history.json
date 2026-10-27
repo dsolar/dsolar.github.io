@@ -362,14 +362,29 @@
    },
    "cut_line": 94.2,
    "taken": "2026-10-22T18:31:12Z",
-   "frozen": true
+   "frozen": true,
+   "cut_team": "Liberté Égalité Henri",
+   "cut_score": 95.28,
+   "scores": {
+    "Drake Mayezini": 136.56,
+    "Tai Streetz Lata?": 139.1,
+    "Love a Kittle Lamb & WhiteRice": 105.12,
+    "Breece’s Pieces": 137.78,
+    "Love Purdy Flowers": 107.78,
+    "Likely to Burden Tate w Penix": 113.0,
+    "Holofernes": 123.78,
+    "Deviated Rectums": 125.2,
+    "Liberté Égalité Henri": 95.28
+   },
+   "next_team": "Love a Kittle Lamb & WhiteRice",
+   "next_score": 105.12
   }
  },
  "last_seen": {
   "week": 7,
   "teams": {
    "Drake Mayezini": {
-    "season": 726.48,
+    "season": 800.9,
     "points": 122.86
    },
    "Tai Streetz Lata?": {
@@ -377,23 +392,23 @@
     "points": 117.6
    },
    "Love a Kittle Lamb & WhiteRice": {
-    "season": 780.84,
+    "season": 864.06,
     "points": 83.22
    },
    "Breece’s Pieces": {
-    "season": 725.7,
+    "season": 841.36,
     "points": 137.78
    },
    "Love Purdy Flowers": {
-    "season": 727.26,
+    "season": 820.94,
     "points": 93.68
    },
    "Likely to Burden Tate w Penix": {
-    "season": 764.58,
+    "season": 870.28,
     "points": 105.7
    },
    "Holofernes": {
-    "season": 741.42,
+    "season": 841.9,
     "points": 123.78
    },
    "Deviated Rectums": {

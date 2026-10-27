@@ -245,7 +245,12 @@ def reconcile_roster_only_scores(team):
     starters = [p for p in team["roster"] if p["slot"] not in ("BN", "IR") and not p.get("empty")]
     if len(starters) != 9 or any("actual" not in p for p in starters if p.get("yfinal")):
         return False
+    old = team.get("points") or 0
     team["points"] = round(sum(p["actual"] for p in starters if p.get("yfinal")), 2)
+    # Yahoo's season total already counts the points it showed; move it with the new points, so season minus
+    # points stays the total before this week (guillotine_snapshot.js works out weekly scores from that).
+    if isinstance(team.get("season_pts"), (int, float)):
+        team["season_pts"] = round(team["season_pts"] - old + team["points"], 2)
     team["proj"] = round(sum(p.get("actual", 0) if p.get("final") or p.get("yfinal") else p.get("proj", 0) for p in starters), 2)
     team["score_source"] = "Yahoo screenshot finals where supplied; otherwise NFL statistics scored with league settings"
     team["projection_source"] = "As-set lineup: final points plus remaining player projections"
