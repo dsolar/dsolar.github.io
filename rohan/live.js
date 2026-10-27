@@ -499,7 +499,7 @@
     });
   }
 
-  getJSON("league.json?v=20261024b").then(function (league) {
+  getJSON("league.json?v=20261027a").then(function (league) {
     data = league;
     renderMatchups();
     setupMatchupToggle();

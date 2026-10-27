@@ -1,9 +1,9 @@
 {
-  "week": 7,
+  "week": 8,
   "season": 2026,
-  "updated": "2026-10-24T14:14:28Z",
-  "source": "ESPN roster, standings and scoreboard paste, Oct 24, 2026 (rohan/league.json)",
-  "note": "Week 7 projections snapshot for win-probability calibration. Final scores to be added after Week 7 completes; later weeks append here before league.json is replaced.",
+  "updated": "2026-10-27T13:41:14Z",
+  "source": "ESPN roster, standings and scoreboard pastes, Oct 24 and Oct 27, 2026 (rohan/league.json)",
+  "note": "Projections snapshots for win-probability calibration. Week 7 final scores were not in the Week 8 paste and are still to be added; later weeks append here before league.json is replaced.",
   "matchups": [
     {
       "away": "Vaginette Butts",
@@ -11,7 +11,8 @@
       "home": "The Championship Winnin Crunch*",
       "home_proj": 123.0,
       "away_final": null,
-      "home_final": null
+      "home_final": null,
+      "week": 7
     },
     {
       "away": "Bristol CT Murder Squad",
@@ -19,7 +20,8 @@
       "home": "The Price Is Bijan, B****",
       "home_proj": 166.1,
       "away_final": null,
-      "home_final": null
+      "home_final": null,
+      "week": 7
     },
     {
       "away": "Walker Texas Nabers",
@@ -27,7 +29,8 @@
       "home": "It's Gonna Be Maye",
       "home_proj": 152.9,
       "away_final": null,
-      "home_final": null
+      "home_final": null,
+      "week": 7
     },
     {
       "away": "Ra's Al Ghul",
@@ -35,13 +38,60 @@
       "home": "Belichick's UNC Bistro",
       "home_proj": 169.0,
       "away_final": null,
-      "home_final": null
+      "home_final": null,
+      "week": 7
     },
     {
       "away": "Van Buren Boys",
       "away_proj": 142.6,
       "home": "Flowers Powers",
       "home_proj": 136.7,
+      "away_final": null,
+      "home_final": null,
+      "week": 7
+    },
+    {
+      "week": 8,
+      "away": "Vaginette Butts",
+      "away_proj": 134.9,
+      "home": "It's Gonna Be Maye",
+      "home_proj": 148.6,
+      "away_final": null,
+      "home_final": null
+    },
+    {
+      "week": 8,
+      "away": "Flowers Powers",
+      "away_proj": 98.5,
+      "home": "Ra's Al Ghul",
+      "home_proj": 106.6,
+      "away_final": null,
+      "home_final": null
+    },
+    {
+      "week": 8,
+      "away": "The Price Is Bijan, B****",
+      "away_proj": 156.1,
+      "home": "Walker Texas Nabers",
+      "home_proj": 143.8,
+      "away_final": null,
+      "home_final": null
+    },
+    {
+      "week": 8,
+      "away": "Van Buren Boys",
+      "away_proj": 139.1,
+      "home": "Belichick's UNC Bistro",
+      "home_proj": 159.8,
+      "away_final": null,
+      "home_final": null
+    },
+    {
+      "week": 8,
+      "away": "The Championship Winnin Crunch*",
+      "away_proj": 72.8,
+      "home": "Bristol CT Murder Squad",
+      "home_proj": 105.6,
       "away_final": null,
       "home_final": null
     }
