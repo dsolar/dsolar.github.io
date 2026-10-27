@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-26T16:59:34Z",
+ "updated": "2026-10-27T16:03:26Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,111 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "sg-18283294",
-   "date": "2026-10-26",
-   "time": "19:00",
-   "title": "LOLO",
-   "cat": "music",
-   "venue": "Brighton Music Hall",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/lolo-tickets/boston-massachusetts-brighton-music-hall-2026-10-26-7-pm/concert/18283294",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_1mYvLVB",
-   "date": "2026-10-26",
-   "time": "19:00",
-   "title": "LØLØ: God Forbid a Girl Goes on Tour",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/ll-god-forbid-a-girl-goes-boston-massachusetts-10-26-2026/event/010064ABB005FD3A",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "espn-401909870",
-   "date": "2026-10-26",
-   "time": "19:30",
-   "title": "Celtics vs Bulls",
-   "cat": "sports",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://www.espn.com/nba/game/_/gameId/401909870/bulls-celtics",
-   "source": "espn",
-   "score": 1
-  },
-  {
-   "id": "sg-18508236",
-   "date": "2026-10-26",
-   "time": "20:00",
-   "title": "Bassvictim with Thoom",
-   "cat": "music",
-   "venue": "Royale - Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/bassvictim-tickets/boston-massachusetts-royale-boston-2026-10-26-8-pm/concert/18508236",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1AAZg0-",
-   "date": "2026-10-26",
-   "time": "20:00",
-   "title": "Bassvictim with Thoom (18+ Event)",
-   "cat": "music",
-   "venue": "Roadrunner-Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZg0-",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "sg-18582757",
-   "date": "2026-10-26",
-   "time": "20:00",
-   "title": "Johnny Blue Skies",
-   "cat": "music",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/johnny-blue-skies-tickets/boston-massachusetts-td-garden-2026-10-26-8-pm/concert/18582757",
-   "source": "seatgeek",
-   "act": "Johnny Blue Skies",
-   "sub": "Sturgill Simpson",
-   "aka": [
-    "2026-10-26-johnny-blue-skies-td-garden"
-   ],
-   "score": 2,
-   "why": "like"
-  },
-  {
-   "id": "tm-vvG17Z_1pFpIzP",
-   "date": "2026-10-26",
-   "time": "20:00",
-   "title": "L7: The Last Hurrah Tour 2026",
-   "cat": "music",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/l7-the-last-hurrah-tour-2026-boston-massachusetts-10-26-2026/event/010064A5885A8E25",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18229408"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18225008",
-   "date": "2026-10-26",
-   "time": "20:00",
-   "title": "Lilyisthatyou",
-   "cat": "music",
-   "venue": "The Sinclair - Cambridge",
-   "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/lilyisthatyou-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-10-26-8-pm/concert/18225008",
-   "source": "seatgeek",
-   "score": 0
-  },
   {
    "id": "tm-vvG17Z_G1UpqA3",
    "date": "2026-10-27",
@@ -272,6 +167,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/arcangel-la-8va-maravilla-world-tour-boston-massachusetts-10-28-2026/event/010064ADC0FD59D3",
    "source": "ticketmaster",
+   "times": [
+    "20:00",
+    "20:30"
+   ],
    "aka": [
     "sg-18266319",
     "2026-10-28-arcangel-mgm-music-hall-at-fe"
@@ -2121,9 +2020,6 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/a-boogie-wit-da-hoodie-dababy-boston-massachusetts-11-07-2026/event/01006553345D8679",
    "source": "ticketmaster",
-   "aka": [
-    "sg-18705508"
-   ],
    "score": 0
   },
   {
@@ -3923,9 +3819,6 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/frost-children-boston-massachusetts-11-19-2026/event/01006519C83153E7",
    "source": "ticketmaster",
-   "aka": [
-    "sg-18537386"
-   ],
    "score": 0
   },
   {
@@ -4009,6 +3902,29 @@
    "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-11-19-2026/event/01006530AD7B511B",
    "source": "ticketmaster",
    "score": 0
+  },
+  {
+   "id": "tm-G5vVZ_6nrIgoT",
+   "date": "2026-11-19",
+   "time": "19:30",
+   "title": "Metallica",
+   "cat": "music",
+   "venue": "Mohegan Sun Arena",
+   "city": "Uncasville, CT",
+   "url": "https://www.ticketmaster.com/metallica-uncasville-connecticut-11-19-2026/event/1D00647A9EA3547F",
+   "source": "ticketmaster",
+   "drive_hours": 1.75,
+   "act": "Metallica",
+   "aka": [
+    "sg-18164314",
+    "sg-18164315"
+   ],
+   "times": [
+    "19:30",
+    "20:00"
+   ],
+   "score": 2,
+   "why": "big"
   },
   {
    "id": "sg-18702704",
@@ -4097,25 +4013,6 @@
    "source": "seatgeek",
    "drive_hours": 4.25,
    "act": "LCD Soundsystem",
-   "score": 2,
-   "why": "big"
-  },
-  {
-   "id": "tm-G5vVZ_6nrIgoT",
-   "date": "2026-11-19",
-   "time": "20:00",
-   "title": "Metallica",
-   "cat": "music",
-   "venue": "Mohegan Sun Arena",
-   "city": "Uncasville, CT",
-   "url": "https://www.ticketmaster.com/metallica-uncasville-connecticut-11-19-2026/event/1D00647A9EA3547F",
-   "source": "ticketmaster",
-   "drive_hours": 1.75,
-   "act": "Metallica",
-   "aka": [
-    "sg-18164314",
-    "sg-18164315"
-   ],
    "score": 2,
    "why": "big"
   },
@@ -4511,6 +4408,28 @@
    "score": 0
   },
   {
+   "id": "tm-G5vVZ_6n-zPJb",
+   "date": "2026-11-21",
+   "time": "19:30",
+   "title": "Metallica",
+   "cat": "music",
+   "venue": "Mohegan Sun Arena",
+   "city": "Uncasville, CT",
+   "url": "https://www.ticketmaster.com/metallica-uncasville-connecticut-11-21-2026/event/1D00647AA1E25998",
+   "source": "ticketmaster",
+   "drive_hours": 1.75,
+   "act": "Metallica",
+   "times": [
+    "19:30",
+    "20:00"
+   ],
+   "aka": [
+    "sg-18164313"
+   ],
+   "score": 2,
+   "why": "big"
+  },
+  {
    "id": "tm-vv177Z_oGkXBi8-I",
    "date": "2026-11-21",
    "time": "19:30",
@@ -4555,24 +4474,6 @@
    "source": "seatgeek",
    "drive_hours": 4.25,
    "act": "LCD Soundsystem",
-   "score": 2,
-   "why": "big"
-  },
-  {
-   "id": "tm-G5vVZ_6n-zPJb",
-   "date": "2026-11-21",
-   "time": "20:00",
-   "title": "Metallica",
-   "cat": "music",
-   "venue": "Mohegan Sun Arena",
-   "city": "Uncasville, CT",
-   "url": "https://www.ticketmaster.com/metallica-uncasville-connecticut-11-21-2026/event/1D00647AA1E25998",
-   "source": "ticketmaster",
-   "drive_hours": 1.75,
-   "act": "Metallica",
-   "aka": [
-    "sg-18164313"
-   ],
    "score": 2,
    "why": "big"
   },
@@ -5613,9 +5514,6 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/hunxho-2night-only-tour-boston-massachusetts-12-04-2026/event/010065360E0DF125",
    "source": "ticketmaster",
-   "aka": [
-    "sg-18618956"
-   ],
    "score": 0
   },
   {
@@ -5947,6 +5845,21 @@
    "aka": [
     "sg-18399303",
     "2026-12-05-brett-eldredge-wang-theatre"
+   ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv16vZk48PaZAuauuF",
+   "date": "2026-12-05",
+   "time": "20:00",
+   "title": "Meek Mill: Dream Chasers Nights",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/meek-mill-dream-chasers-nights-boston-massachusetts-12-05-2026/event/01006550949C8CC7",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18724757"
    ],
    "score": 0
   },
@@ -7854,7 +7767,12 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/anthony-jeselnik-wrath-of-man-boston-massachusetts-01-15-2027/event/0100654FA876CA16",
    "source": "ticketmaster",
+   "times": [
+    "19:30",
+    "22:00"
+   ],
    "aka": [
+    "tm-vv177Z_fGkXIjHIK",
     "sg-18716068"
    ],
    "score": 1
@@ -7883,6 +7801,9 @@
    "source": "ticketmaster",
    "drive_hours": 3.75,
    "act": "Joe Russo's Almost Dead",
+   "aka": [
+    "sg-18723995"
+   ],
    "score": 3,
    "why": "love"
   },
@@ -7920,6 +7841,18 @@
    "score": 1
   },
   {
+   "id": "tm-Z7r9jZ1AA7NZ3",
+   "date": "2027-01-16",
+   "time": "19:00",
+   "title": "Direct from Sweden: The Music of ABBA",
+   "cat": "music",
+   "venue": "The Cabot",
+   "city": "Beverly, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7NZ3",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-G5vVZ_4hZiNpD",
    "date": "2027-01-16",
    "time": "20:00",
@@ -7931,6 +7864,9 @@
    "source": "ticketmaster",
    "drive_hours": 3.75,
    "act": "Joe Russo's Almost Dead",
+   "aka": [
+    "sg-18723994"
+   ],
    "score": 3,
    "why": "love"
   },
@@ -7946,6 +7882,9 @@
    "source": "ticketmaster",
    "drive_hours": 3.75,
    "act": "Joe Russo's Almost Dead",
+   "aka": [
+    "sg-18723996"
+   ],
    "score": 3,
    "why": "love"
   },
@@ -8158,15 +8097,18 @@
    "score": 1
   },
   {
-   "id": "sg-18696869",
+   "id": "tm-Z7r9jZ1AA7v-x",
    "date": "2027-01-23",
    "time": "20:00",
    "title": "Yonder Mountain String Band",
    "cat": "music",
    "venue": "The Cabot",
    "city": "Beverly, MA",
-   "url": "https://seatgeek.com/yonder-mountain-string-band-tickets/beverly-massachusetts-the-cabot-2027-01-23-8-pm/concert/18696869",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7v-x",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18696869"
+   ],
    "score": 0
   },
   {
@@ -8332,6 +8274,18 @@
    "score": 1
   },
   {
+   "id": "tm-vv1AvZk4KGkeWiyzV",
+   "date": "2027-01-29",
+   "time": "19:30",
+   "title": "Leslie Jones: I'm Hot Tour",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/leslie-jones-im-hot-tour-boston-massachusetts-01-29-2027/event/01006553BDB39E34",
+   "source": "ticketmaster",
+   "score": 1
+  },
+  {
    "id": "espn-401893261",
    "date": "2027-01-30",
    "time": "19:00",
@@ -8452,6 +8406,18 @@
    "url": "https://www.espn.com/nba/game/_/gameId/401910477/lakers-celtics",
    "source": "espn",
    "score": 1
+  },
+  {
+   "id": "tm-Z7r9jZ1AA7P47",
+   "date": "2027-02-02",
+   "time": "20:00",
+   "title": "feeble little horse - bitknot tour",
+   "cat": "music",
+   "venue": "Royale Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7P47",
+   "source": "ticketmaster",
+   "score": 0
   },
   {
    "id": "tm-Z7r9jZ1AAvz_f",
@@ -8980,6 +8946,18 @@
    "score": 0
   },
   {
+   "id": "tm-vv1A8vP4yGA1XQuP",
+   "date": "2027-02-20",
+   "time": "19:00",
+   "title": "Greensky Bluegrass",
+   "cat": "music",
+   "venue": "Citizens House of Blues Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/greensky-bluegrass-boston-massachusetts-02-20-2027/event/010065579AF9A365",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv1AvZkftGkdf1q7e",
    "date": "2027-02-20",
    "time": "19:00",
@@ -9032,6 +9010,18 @@
    "url": "https://www.ticketmaster.com/watch-what-crappens-in-the-mix-boston-massachusetts-02-21-2027/event/01006524C1E6E530",
    "source": "ticketmaster",
    "score": 1
+  },
+  {
+   "id": "tm-vv177Z_fGkUYermu",
+   "date": "2027-02-21",
+   "time": "20:00",
+   "title": "Styx",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/styx-boston-massachusetts-02-21-2027/event/0100654DB009EB8D",
+   "source": "ticketmaster",
+   "score": 0
   },
   {
    "id": "sg-18699592",
@@ -9509,6 +9499,21 @@
    "why": "big"
   },
   {
+   "id": "tm-vv1A8vP4aGA5Ukxb",
+   "date": "2027-03-06",
+   "time": "19:00",
+   "title": "Meshuggah: The Forty-Year Anomaly w/ Testament & Blood Incantation",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/meshuggah-the-fortyyear-anomaly-w-testament-boston-massachusetts-03-06-2027/event/010065549BD86898",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18724664"
+   ],
+   "score": 0
+  },
+  {
    "id": "tm-Z7r9jZ1AAe_7d",
    "date": "2027-03-06",
    "time": "19:00",
@@ -9711,6 +9716,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/gus-dapperton-4-dear-life-tour-boston-massachusetts-03-08-2027/event/01006555E2F8526C",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18723962"
+   ],
    "score": 0
   },
   {
@@ -10134,15 +10142,22 @@
    "score": 0
   },
   {
-   "id": "sg-18706589",
+   "id": "tm-Z7r9jZ1AA70jF",
    "date": "2027-03-18",
    "time": "19:00",
-   "title": "Emily Ann Roberts with Colton Dawson",
+   "title": "Emily Ann Roberts w/ Colton Dawson",
    "cat": "music",
-   "venue": "Royale - Boston",
+   "venue": "Royale Boston",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/emily-ann-roberts-tickets/boston-massachusetts-royale-boston-2027-03-18-7-pm/concert/18706589",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA70jF",
+   "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
+   "aka": [
+    "sg-18706589"
+   ],
    "score": 0
   },
   {
@@ -10372,6 +10387,18 @@
    "aka": [
     "sg-18699679"
    ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv1A8vP4tGACq1fu",
+   "date": "2027-03-24",
+   "time": "19:00",
+   "title": "brakence: the marroW tour",
+   "cat": "music",
+   "venue": "Citizens House of Blues Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/brakence-the-marrow-tour-boston-massachusetts-03-24-2027/event/010065569E74A50D",
+   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -10696,6 +10723,18 @@
    "score": 1
   },
   {
+   "id": "sg-18724725",
+   "date": "2027-04-03",
+   "time": "19:00",
+   "title": "The Plot in You",
+   "cat": "music",
+   "venue": "Roadrunner - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/the-plot-in-you-tickets/boston-massachusetts-roadrunner-boston-2027-04-03-7-pm/concert/18724725",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "sg-18689170",
    "date": "2027-04-03",
    "time": "22:00",
@@ -10796,6 +10835,18 @@
    "aka": [
     "sg-18604107"
    ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv1AvZk4pGkd85EhP",
+   "date": "2027-04-08",
+   "time": "19:00",
+   "title": "Temper City: Self Aware Tour",
+   "cat": "music",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/temper-city-self-aware-tour-boston-massachusetts-04-08-2027/event/01006556D02E76E5",
+   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -11114,6 +11165,30 @@
     "sg-18613146"
    ],
    "score": 0
+  },
+  {
+   "id": "tm-Z7r9jZ1AAe3jd",
+   "date": "2027-04-25",
+   "time": "15:00",
+   "title": "Symphony by the Sea: Peter and the Wolf",
+   "cat": "music",
+   "venue": "The Cabot",
+   "city": "Beverly, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAe3jd",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
+   "id": "sg-18702721",
+   "date": "2027-04-25",
+   "time": "20:00",
+   "title": "Ken Yates",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/ken-yates-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-04-25-8-pm/concert/18702721",
+   "source": "seatgeek",
+   "score": 0
   }
  ],
  "movies": [
@@ -11191,8 +11266,8 @@
  "sources": {
   "picks": 5,
   "venues": 4,
-  "espn": 80,
-  "ticketmaster": 531,
-  "seatgeek": 119
+  "espn": 79,
+  "ticketmaster": 540,
+  "seatgeek": 115
  }
 }
