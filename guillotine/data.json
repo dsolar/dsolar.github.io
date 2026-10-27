@@ -4,7 +4,7 @@
  "week": 8,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-10-27T16:33:03Z",
+ "updated": "2026-10-27T16:52:17Z",
  "source": "Yahoo league page, pasted",
  "teams": [
   {
@@ -725,7 +725,7 @@
        "rush_td": 2
       }
      },
-     "proj": 14.22,
+     "proj": 14.17,
      "rank": "QB22",
      "date": "2026-11-01",
      "next_proj": 15.25,
@@ -878,7 +878,7 @@
     }
    ],
    "proj_pre": 120.85,
-   "best": 120.7,
+   "best": 120.6,
    "best_next": 122.9,
    "locked": 0,
    "locked_proj": 0,
@@ -950,7 +950,7 @@
        "rush_td": 3
       }
      },
-     "proj": 5.07,
+     "proj": 5.02,
      "rank": "RB51",
      "date": "2026-11-01",
      "next_proj": 9.48
@@ -1672,7 +1672,7 @@
        "rec_td": 2
       }
      },
-     "proj": 9.46,
+     "proj": 9.38,
      "rank": "TE3",
      "date": "2026-11-01",
      "next_proj": 10.83,
@@ -1827,7 +1827,7 @@
     }
    ],
    "proj_pre": 119.68,
-   "best": 116.8,
+   "best": 116.7,
    "best_next": 139.2,
    "locked": 0,
    "locked_proj": 0,
@@ -2091,7 +2091,7 @@
        "rec_td": 1
       }
      },
-     "proj": 7.45,
+     "proj": 7.43,
      "rank": "WR41",
      "date": "2026-11-01",
      "next_proj": 8.68
@@ -2123,7 +2123,7 @@
        "rush_td": 1
       }
      },
-     "proj": 17.17,
+     "proj": 17.0,
      "rank": "QB13",
      "date": "2026-11-01",
      "next_proj": 20.08,
@@ -2155,7 +2155,7 @@
        "rec_td": 1
       }
      },
-     "proj": 10.57,
+     "proj": 10.48,
      "rank": "WR21",
      "date": "2026-11-01",
      "next_proj": 12.71,
@@ -2274,7 +2274,7 @@
     }
    ],
    "proj_pre": 117.62,
-   "best": 122.6,
+   "best": 122.3,
    "best_next": 140.0,
    "locked": 0,
    "locked_proj": 0,
@@ -3244,7 +3244,7 @@
       }
      },
      "proj": 6.06,
-     "rank": "WR50",
+     "rank": "WR49",
      "date": "2026-11-01",
      "next_proj": 4.02
     }
@@ -3869,7 +3869,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-10-27T16:33:05Z",
+  "updated": "2026-10-27T16:52:18Z",
   "players": 3045,
   "unmatched": []
  }
