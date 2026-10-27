@@ -2,23 +2,696 @@
  "weeks": {
   "1": {
    "cut_team": "J Free FTW",
-   "cut_score": 78.36
+   "cut_score": 78.36,
+   "scores": {
+    "Holofernes": 137.26,
+    "23 Richard": 91.56,
+    "Love Purdy Flowers": 134.08,
+    "Breece’s Pieces": 134.5,
+    "Deviated Rectums": 143.54,
+    "Fly Zone Kristi": 112.4,
+    "Beast Mode Samuel": 99.2,
+    "J Free FTW": 78.36,
+    "Liberté Égalité Henri": 119.74,
+    "Maye I see your TDs": 82.52,
+    "Drake Mayezini": 95.18,
+    "Tai Streetz Lata?": 111.28,
+    "Love a Kittle Lamb & WhiteRice": 135.46,
+    "Likely to Burden Tate w Penix": 132.74,
+    "Filet-O-Fate": 96.76
+   },
+   "next_team": "Maye I see your TDs",
+   "next_score": 82.52,
+   "lineups": {
+    "J Free FTW": [
+     {
+      "n": "Drake Maye",
+      "pos": "QB",
+      "nfl": "NE",
+      "slot": "QB",
+      "proj": 18.52,
+      "pts": 12.82
+     },
+     {
+      "n": "Jadarian Price",
+      "pos": "RB",
+      "nfl": "SEA",
+      "slot": "RB",
+      "proj": 10.66,
+      "pts": 6.8
+     },
+     {
+      "n": "Quinshon Judkins",
+      "pos": "RB",
+      "nfl": "CLE",
+      "slot": "RB",
+      "proj": 10.58,
+      "pts": 6.0
+     },
+     {
+      "n": "A.J. Brown",
+      "pos": "WR",
+      "nfl": "NE",
+      "slot": "WR",
+      "proj": 0.0,
+      "pts": 4.1
+     },
+     {
+      "n": "DeVonta Smith",
+      "pos": "WR",
+      "nfl": "PHI",
+      "slot": "WR",
+      "proj": 11.94,
+      "pts": 6.8
+     },
+     {
+      "n": "Chris Godwin Jr.",
+      "pos": "WR",
+      "nfl": "TB",
+      "slot": "WR",
+      "proj": 9.38,
+      "pts": 6.3
+     },
+     {
+      "n": "Harold Fannin Jr.",
+      "pos": "TE",
+      "nfl": "CLE",
+      "slot": "TE",
+      "proj": 8.68,
+      "pts": 3.1
+     },
+     {
+      "n": "De'Zhaun Stribling",
+      "pos": "WR",
+      "nfl": "SF",
+      "slot": "W/R/T",
+      "proj": 6.01,
+      "pts": 0.0
+     },
+     {
+      "n": "Bryce Young",
+      "pos": "QB",
+      "nfl": "CAR",
+      "slot": "Q/W/R/T",
+      "proj": 17.03,
+      "pts": 32.44
+     },
+     {
+      "n": "Tua Tagovailoa",
+      "pos": "QB",
+      "nfl": "ATL",
+      "slot": "BN",
+      "proj": 0.0,
+      "pts": 0.0
+     },
+     {
+      "n": "Adonai Mitchell",
+      "pos": "WR",
+      "nfl": "NYJ",
+      "slot": "BN",
+      "proj": 6.65,
+      "pts": 7.5
+     },
+     {
+      "n": "Deshaun Watson",
+      "pos": "QB",
+      "nfl": "CLE",
+      "slot": "BN",
+      "proj": 13.17,
+      "pts": 15.0
+     },
+     {
+      "n": "Kirk Cousins",
+      "pos": "QB",
+      "nfl": "LV",
+      "slot": "BN",
+      "proj": 15.39,
+      "pts": 15.8
+     }
+    ]
+   }
   },
   "2": {
    "cut_team": "23 Richard",
-   "cut_score": 50.36
+   "cut_score": 50.36,
+   "scores": {
+    "Holofernes": 86.62,
+    "23 Richard": 50.36,
+    "Love Purdy Flowers": 101.78,
+    "Breece’s Pieces": 115.3,
+    "Deviated Rectums": 131.14,
+    "Fly Zone Kristi": 94.62,
+    "Beast Mode Samuel": 117.84,
+    "Liberté Égalité Henri": 125.28,
+    "Maye I see your TDs": 129.86,
+    "Drake Mayezini": 94.64,
+    "Tai Streetz Lata?": 66.9,
+    "Love a Kittle Lamb & WhiteRice": 161.16,
+    "Likely to Burden Tate w Penix": 120.2,
+    "Filet-O-Fate": 54.32
+   },
+   "next_team": "Filet-O-Fate",
+   "next_score": 54.32,
+   "lineups": {
+    "23 Richard": [
+     {
+      "n": "Lamar Jackson",
+      "pos": "QB",
+      "nfl": "BAL",
+      "slot": "QB",
+      "proj": 19.27,
+      "pts": 15.8
+     },
+     {
+      "n": "Rhamondre Stevenson",
+      "pos": "RB",
+      "nfl": "NE",
+      "slot": "RB",
+      "proj": 11.58,
+      "pts": 3.1
+     },
+     {
+      "n": "Aaron Jones Sr.",
+      "pos": "RB",
+      "nfl": "MIN",
+      "slot": "RB",
+      "proj": 12.19,
+      "pts": 10.5
+     },
+     {
+      "n": "George Pickens",
+      "pos": "WR",
+      "nfl": "DAL",
+      "slot": "WR",
+      "proj": 13.41,
+      "pts": 7.0
+     },
+     {
+      "n": "Alec Pierce",
+      "pos": "WR",
+      "nfl": "IND",
+      "slot": "WR",
+      "proj": 9.88,
+      "pts": 1.6
+     },
+     {
+      "n": "DeMario Douglas",
+      "pos": "WR",
+      "nfl": "NE",
+      "slot": "WR",
+      "proj": 6.78,
+      "pts": 1.4
+     },
+     {
+      "n": "Colston Loveland",
+      "pos": "TE",
+      "nfl": "CHI",
+      "slot": "TE",
+      "proj": 9.39,
+      "pts": 0.8
+     },
+     {
+      "n": "Kenny Gainwell",
+      "pos": "RB",
+      "nfl": "TB",
+      "slot": "W/R/T",
+      "proj": 7.73,
+      "pts": 3.0
+     },
+     {
+      "n": "Trevor Lawrence",
+      "pos": "QB",
+      "nfl": "JAX",
+      "slot": "Q/W/R/T",
+      "proj": 16.82,
+      "pts": 7.16
+     },
+     {
+      "n": "Marvin Harrison Jr.",
+      "pos": "WR",
+      "nfl": "HOU",
+      "slot": "BN",
+      "proj": 8.26,
+      "pts": 0.0
+     },
+     {
+      "n": "Geno Smith",
+      "pos": "QB",
+      "nfl": "NYJ",
+      "slot": "BN",
+      "proj": 14.15,
+      "pts": 15.58
+     },
+     {
+      "n": "Mike Gesicki",
+      "pos": "TE",
+      "nfl": "CIN",
+      "slot": "BN",
+      "proj": 4.79,
+      "pts": 0.0
+     },
+     {
+      "n": "Kalif Raymond",
+      "pos": "WR",
+      "nfl": "CHI",
+      "slot": "BN",
+      "proj": 3.55,
+      "pts": 6.5
+     },
+     {
+      "n": "Devin Singletary",
+      "pos": "RB",
+      "nfl": "NYG",
+      "slot": "BN",
+      "proj": 3.49,
+      "pts": 0.9
+     }
+    ]
+   }
   },
   "3": {
    "cut_team": "Filet-O-Fate",
-   "cut_score": 82.4
+   "cut_score": 82.4,
+   "scores": {
+    "Holofernes": 133.82,
+    "Love Purdy Flowers": 127.06,
+    "Breece’s Pieces": 101.88,
+    "Deviated Rectums": 91.8,
+    "Fly Zone Kristi": 124.14,
+    "Beast Mode Samuel": 148.96,
+    "Liberté Égalité Henri": 109.6,
+    "Maye I see your TDs": 109.02,
+    "Drake Mayezini": 90.74,
+    "Tai Streetz Lata?": 129.9,
+    "Love a Kittle Lamb & WhiteRice": 132.38,
+    "Likely to Burden Tate w Penix": 130.74,
+    "Filet-O-Fate": 82.4
+   },
+   "next_team": "Drake Mayezini",
+   "next_score": 90.74,
+   "lineups": {
+    "Filet-O-Fate": [
+     {
+      "n": "Aaron Rodgers",
+      "pos": "QB",
+      "nfl": "PIT",
+      "slot": "QB",
+      "proj": 15.61,
+      "pts": 23.68
+     },
+     {
+      "n": "Saquon Barkley",
+      "pos": "RB",
+      "nfl": "PHI",
+      "slot": "RB",
+      "proj": 13.78,
+      "pts": 8.5
+     },
+     {
+      "n": "Jaylen Warren",
+      "pos": "RB",
+      "nfl": "PIT",
+      "slot": "RB",
+      "proj": 14.74,
+      "pts": 19.1
+     },
+     {
+      "n": "Justin Jefferson",
+      "pos": "WR",
+      "nfl": "MIN",
+      "slot": "WR",
+      "proj": 13.49,
+      "pts": 4.2
+     },
+     {
+      "n": "Tetairoa McMillan",
+      "pos": "WR",
+      "nfl": "CAR",
+      "slot": "WR",
+      "proj": 12.07,
+      "pts": 2.7
+     },
+     {
+      "n": "Xavier Worthy",
+      "pos": "WR",
+      "nfl": "KC",
+      "slot": "WR",
+      "proj": 9.25,
+      "pts": 3.0
+     },
+     {
+      "n": "Dalton Schultz",
+      "pos": "TE",
+      "nfl": "HOU",
+      "slot": "TE",
+      "proj": 9.1,
+      "pts": 4.5
+     },
+     {
+      "n": "Rhamondre Stevenson",
+      "pos": "RB",
+      "nfl": "NE",
+      "slot": "W/R/T",
+      "proj": 9.48,
+      "pts": 5.3
+     },
+     {
+      "n": "Kyler Murray",
+      "pos": "QB",
+      "nfl": "MIN",
+      "slot": "Q/W/R/T",
+      "proj": 18.04,
+      "pts": 11.42
+     },
+     {
+      "n": "Michael Pittman Jr.",
+      "pos": "WR",
+      "nfl": "PIT",
+      "slot": "BN",
+      "proj": 7.96,
+      "pts": 2.6
+     },
+     {
+      "n": "Xavier Hutchinson",
+      "pos": "WR",
+      "nfl": "HOU",
+      "slot": "BN",
+      "proj": 7.0,
+      "pts": 7.0
+     },
+     {
+      "n": "Dallas Goedert",
+      "pos": "TE",
+      "nfl": "PHI",
+      "slot": "BN",
+      "proj": 0.0,
+      "pts": 0.0
+     },
+     {
+      "n": "Rico Dowdle",
+      "pos": "RB",
+      "nfl": "PIT",
+      "slot": "BN",
+      "proj": 0.0,
+      "pts": 0.0
+     },
+     {
+      "n": "Alvin Kamara",
+      "pos": "RB",
+      "nfl": "NO",
+      "slot": "BN",
+      "proj": 7.06,
+      "pts": 4.6
+     },
+     {
+      "n": "Zach Charbonnet",
+      "pos": "RB",
+      "nfl": "SEA",
+      "slot": "IR",
+      "proj": 0.0,
+      "pts": 0.0
+     }
+    ]
+   }
   },
   "4": {
    "cut_team": "Fly Zone Kristi",
-   "cut_score": 74.14
+   "cut_score": 74.14,
+   "scores": {
+    "Holofernes": 108.64,
+    "Love Purdy Flowers": 141.6,
+    "Breece’s Pieces": 114.0,
+    "Deviated Rectums": 123.38,
+    "Fly Zone Kristi": 74.14,
+    "Beast Mode Samuel": 108.38,
+    "Liberté Égalité Henri": 128.1,
+    "Maye I see your TDs": 117.58,
+    "Drake Mayezini": 154.6,
+    "Tai Streetz Lata?": 133.8,
+    "Love a Kittle Lamb & WhiteRice": 121.96,
+    "Likely to Burden Tate w Penix": 114.08
+   },
+   "next_team": "Beast Mode Samuel",
+   "next_score": 108.38,
+   "lineups": {
+    "Fly Zone Kristi": [
+     {
+      "n": "Kyler Murray",
+      "pos": "QB",
+      "nfl": "MIN",
+      "slot": "QB",
+      "proj": 19.06,
+      "pts": 11.48
+     },
+     {
+      "n": "Derrick Henry",
+      "pos": "RB",
+      "nfl": "BAL",
+      "slot": "RB",
+      "proj": 17.2,
+      "pts": 14.9
+     },
+     {
+      "n": "Ashton Jeanty",
+      "pos": "RB",
+      "nfl": "LV",
+      "slot": "RB",
+      "proj": 13.47,
+      "pts": 15.6
+     },
+     {
+      "n": "Ja'Marr Chase",
+      "pos": "WR",
+      "nfl": "CIN",
+      "slot": "WR",
+      "proj": 12.36,
+      "pts": 4.2
+     },
+     {
+      "n": "Josh Downs",
+      "pos": "WR",
+      "nfl": "IND",
+      "slot": "WR",
+      "proj": 12.93,
+      "pts": 3.1
+     },
+     {
+      "n": "Jaylen Waddle",
+      "pos": "WR",
+      "nfl": "DEN",
+      "slot": "WR",
+      "proj": 11.77,
+      "pts": 12.0
+     },
+     {
+      "n": "Dalton Schultz",
+      "pos": "TE",
+      "nfl": "HOU",
+      "slot": "TE",
+      "proj": 8.01,
+      "pts": 1.9
+     },
+     {
+      "n": "DJ Moore",
+      "pos": "WR",
+      "nfl": "BUF",
+      "slot": "W/R/T",
+      "proj": 11.08,
+      "pts": 2.2
+     },
+     {
+      "n": "Geno Smith",
+      "pos": "QB",
+      "nfl": "NYJ",
+      "slot": "Q/W/R/T",
+      "proj": 14.72,
+      "pts": 8.76
+     },
+     {
+      "n": "TreVeyon Henderson",
+      "pos": "RB",
+      "nfl": "NE",
+      "slot": "BN",
+      "proj": 9.11,
+      "pts": 4.2
+     },
+     {
+      "n": "Jacoby Brissett",
+      "pos": "QB",
+      "nfl": "ARI",
+      "slot": "BN",
+      "proj": 16.96,
+      "pts": 13.44
+     },
+     {
+      "n": "Pat Freiermuth",
+      "pos": "TE",
+      "nfl": "PIT",
+      "slot": "BN",
+      "proj": 6.03,
+      "pts": 9.2
+     },
+     {
+      "n": "Dontayvion Wicks",
+      "pos": "WR",
+      "nfl": "PHI",
+      "slot": "BN",
+      "proj": 9.84,
+      "pts": 3.3
+     },
+     {
+      "n": "Josh Jacobs",
+      "pos": "RB",
+      "nfl": "GB",
+      "slot": "BN",
+      "proj": 0.0,
+      "pts": 0.0
+     }
+    ]
+   }
   },
   "5": {
    "cut_team": "Beast Mode Samuel",
-   "cut_score": 94.12
+   "cut_score": 94.12,
+   "scores": {
+    "Holofernes": 137.26,
+    "Love Purdy Flowers": 108.44,
+    "Breece’s Pieces": 129.42,
+    "Deviated Rectums": 115.28,
+    "Beast Mode Samuel": 94.12,
+    "Liberté Égalité Henri": 99.8,
+    "Maye I see your TDs": 100.84,
+    "Drake Mayezini": 145.3,
+    "Tai Streetz Lata?": 124.38,
+    "Love a Kittle Lamb & WhiteRice": 116.16,
+    "Likely to Burden Tate w Penix": 129.46
+   },
+   "next_team": "Liberté Égalité Henri",
+   "next_score": 99.8,
+   "lineups": {
+    "Beast Mode Samuel": [
+     {
+      "n": "Cam Ward",
+      "pos": "QB",
+      "nfl": "TEN",
+      "slot": "QB",
+      "proj": 13.91,
+      "pts": 6.0
+     },
+     {
+      "n": "Bijan Robinson",
+      "pos": "RB",
+      "nfl": "ATL",
+      "slot": "RB",
+      "proj": 20.84,
+      "pts": 13.8
+     },
+     {
+      "n": "Omarion Hampton",
+      "pos": "RB",
+      "nfl": "LAC",
+      "slot": "RB",
+      "proj": 9.37,
+      "pts": 4.4
+     },
+     {
+      "n": "Drake London",
+      "pos": "WR",
+      "nfl": "ATL",
+      "slot": "WR",
+      "proj": 14.48,
+      "pts": 15.3
+     },
+     {
+      "n": "Garrett Wilson",
+      "pos": "WR",
+      "nfl": "NYJ",
+      "slot": "WR",
+      "proj": 11.98,
+      "pts": 19.9
+     },
+     {
+      "n": "Emeka Egbuka",
+      "pos": "WR",
+      "nfl": "TB",
+      "slot": "WR",
+      "proj": 9.02,
+      "pts": 14.2
+     },
+     {
+      "n": "Dalton Kincaid",
+      "pos": "TE",
+      "nfl": "BUF",
+      "slot": "TE",
+      "proj": 9.68,
+      "pts": 3.2
+     },
+     {
+      "n": "Juwan Johnson",
+      "pos": "TE",
+      "nfl": "NO",
+      "slot": "W/R/T",
+      "proj": 8.31,
+      "pts": 3.6
+     },
+     {
+      "n": "Kirk Cousins",
+      "pos": "QB",
+      "nfl": "LV",
+      "slot": "Q/W/R/T",
+      "proj": 14.65,
+      "pts": 13.72
+     },
+     {
+      "n": "Jonathon Brooks",
+      "pos": "RB",
+      "nfl": "CAR",
+      "slot": "BN",
+      "proj": 0.0,
+      "pts": 0.0
+     },
+     {
+      "n": "Brian Thomas Jr.",
+      "pos": "WR",
+      "nfl": "JAX",
+      "slot": "BN",
+      "proj": 6.09,
+      "pts": 0.0
+     },
+     {
+      "n": "Emmett Johnson",
+      "pos": "RB",
+      "nfl": "KC",
+      "slot": "BN",
+      "proj": 0.0,
+      "pts": 0.0
+     },
+     {
+      "n": "Ja'Kobi Lane",
+      "pos": "WR",
+      "nfl": "BAL",
+      "slot": "BN",
+      "proj": 0.0,
+      "pts": 0.0
+     },
+     {
+      "n": "Nicholas Singleton",
+      "pos": "RB",
+      "nfl": "TEN",
+      "slot": "BN",
+      "proj": 0.6,
+      "pts": 0.0
+     },
+     {
+      "n": "Jordyn Tyson",
+      "pos": "WR",
+      "nfl": "NO",
+      "slot": "IR",
+      "proj": 0.0,
+      "pts": 0.0
+     }
+    ]
+   }
   },
   "6": {
    "teams": {
