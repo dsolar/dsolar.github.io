@@ -4,7 +4,7 @@
  "week": 8,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-10-27T17:07:32Z",
+ "updated": "2026-10-27T19:25:33Z",
  "source": "Yahoo league page, pasted",
  "teams": [
   {
@@ -45,7 +45,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 24.39,
+     "proj": 24.4,
      "rank": "QB1",
      "date": "2026-11-01",
      "next_proj": 21.87,
@@ -79,7 +79,7 @@
        "fum_lost": 2
       }
      },
-     "proj": 11.84,
+     "proj": 11.81,
      "rank": "RB17",
      "date": "2026-11-02",
      "next_proj": 12.71,
@@ -112,7 +112,7 @@
        "rush_td": 4
       }
      },
-     "proj": 11.49,
+     "proj": 11.48,
      "rank": "RB18",
      "date": "2026-11-01",
      "bye_next": true,
@@ -147,7 +147,7 @@
        "rush_yd": 6
       }
      },
-     "proj": 11.64,
+     "proj": 11.62,
      "rank": "WR19",
      "date": "2026-10-29",
      "next_proj": 11.23,
@@ -177,7 +177,7 @@
        "rec_yd": 101
       }
      },
-     "proj": 12.68,
+     "proj": 12.7,
      "rank": "WR15",
      "date": "2026-11-01",
      "next_proj": 12.02,
@@ -208,7 +208,7 @@
        "rec_td": 5
       }
      },
-     "proj": 16.64,
+     "proj": 16.7,
      "rank": "WR4",
      "date": "2026-11-01",
      "next_proj": 14.75,
@@ -240,7 +240,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 14.39,
+     "proj": 13.88,
      "rank": "TE2",
      "date": "2026-11-01",
      "next_proj": 14.09,
@@ -306,8 +306,8 @@
        "pass_td": 3
       }
      },
-     "proj": 17.29,
-     "rank": "QB12",
+     "proj": 17.38,
+     "rank": "QB10",
      "date": "2026-11-01",
      "next_proj": 16.38,
      "in_best": true
@@ -340,7 +340,7 @@
       }
      },
      "proj": 8.73,
-     "rank": "RB26",
+     "rank": "RB27",
      "date": "2026-11-01",
      "next_proj": 10.59
     },
@@ -372,7 +372,7 @@
       }
      },
      "proj": 15.95,
-     "rank": "QB18",
+     "rank": "QB19",
      "date": "2026-11-01",
      "bye_next": true,
      "next_proj": 0.0
@@ -412,7 +412,7 @@
     }
    ],
    "proj_pre": 129.14,
-   "best": 129.9,
+   "best": 129.5,
    "best_next": 120.3,
    "locked": 0,
    "locked_proj": 0,
@@ -526,7 +526,7 @@
        "rec_td": 2
       }
      },
-     "proj": 20.79,
+     "proj": 20.9,
      "rank": "RB1",
      "date": "2026-11-01",
      "next_proj": 25.45,
@@ -559,7 +559,7 @@
        "rec_td": 1
       }
      },
-     "proj": 8.11,
+     "proj": 8.17,
      "rank": "WR36",
      "date": "2026-11-01",
      "bye_next": true,
@@ -626,7 +626,7 @@
        "rec_td": 2
       }
      },
-     "proj": 9.89,
+     "proj": 9.98,
      "rank": "WR22",
      "date": "2026-11-02",
      "next_proj": 10.68,
@@ -657,8 +657,8 @@
        "rec_td": 2
       }
      },
-     "proj": 8.43,
-     "rank": "TE10",
+     "proj": 8.28,
+     "rank": "TE11",
      "date": "2026-11-01",
      "next_proj": 8.76,
      "in_best": true
@@ -691,8 +691,8 @@
        "rush_td": 1
       }
      },
-     "proj": 15.07,
-     "rank": "RB11",
+     "proj": 14.55,
+     "rank": "RB13",
      "date": "2026-11-01",
      "next_proj": 14.03,
      "in_best": true
@@ -725,7 +725,7 @@
        "rush_td": 2
       }
      },
-     "proj": 14.04,
+     "proj": 13.98,
      "rank": "QB23",
      "date": "2026-11-01",
      "next_proj": 15.25,
@@ -756,7 +756,7 @@
        "rec_td": 3
       }
      },
-     "proj": 8.97,
+     "proj": 8.91,
      "rank": "WR29",
      "date": "2026-11-01",
      "next_proj": 9.18,
@@ -871,14 +871,14 @@
        "rec_tgt": 2
       }
      },
-     "proj": 10.36,
+     "proj": 10.35,
      "rank": "RB20",
      "date": "2026-11-01",
      "next_proj": 7.52
     }
    ],
    "proj_pre": 120.85,
-   "best": 120.4,
+   "best": 119.8,
    "best_next": 122.9,
    "locked": 0,
    "locked_proj": 0,
@@ -918,7 +918,7 @@
        "pass_int": 1
       }
      },
-     "proj": 15.73,
+     "proj": 15.83,
      "rank": "QB20",
      "date": "2026-11-02",
      "next_proj": 18.15
@@ -950,7 +950,7 @@
        "rush_td": 3
       }
      },
-     "proj": 5.01,
+     "proj": 5.03,
      "rank": "RB51",
      "date": "2026-11-01",
      "next_proj": 9.48
@@ -983,7 +983,7 @@
        "rec_yd": 102
       }
      },
-     "proj": 9.84,
+     "proj": 10.22,
      "rank": "RB21",
      "date": "2026-11-01",
      "next_proj": 10.9,
@@ -1017,7 +1017,7 @@
        "rush_yd": 29
       }
      },
-     "proj": 21.2,
+     "proj": 21.43,
      "rank": "WR1",
      "date": "2026-11-02",
      "next_proj": 22.67,
@@ -1081,8 +1081,8 @@
        "rec_td": 4
       }
      },
-     "proj": 9.74,
-     "rank": "WR23",
+     "proj": 9.71,
+     "rank": "WR24",
      "date": "2026-11-01",
      "next_proj": 9.17,
      "in_best": true
@@ -1139,8 +1139,8 @@
       ],
       "tot": {}
      },
-     "proj": 8.52,
-     "rank": "RB29",
+     "proj": 8.43,
+     "rank": "RB30",
      "date": "2026-11-02",
      "next_proj": 9.34,
      "in_best": true
@@ -1240,7 +1240,7 @@
       }
      },
      "proj": 16.35,
-     "rank": "QB14",
+     "rank": "QB15",
      "date": "2026-11-01",
      "next_proj": 16.75,
      "in_best": true
@@ -1299,8 +1299,8 @@
        "rec_yd": 75
       }
      },
-     "proj": 8.59,
-     "rank": "RB28",
+     "proj": 8.97,
+     "rank": "RB26",
      "date": "2026-11-01",
      "next_proj": 5.58,
      "in_best": true
@@ -1361,14 +1361,14 @@
        "rush_td": 1
       }
      },
-     "proj": 8.41,
-     "rank": "TE11",
+     "proj": 8.35,
+     "rank": "TE10",
      "date": "2026-11-01",
      "next_proj": 9.97
     }
    ],
    "proj_pre": 120.12,
-   "best": 123.9,
+   "best": 124.8,
    "best_next": 129.7,
    "locked": 0,
    "locked_proj": 0,
@@ -1409,8 +1409,8 @@
        "rush_td": 2
       }
      },
-     "proj": 22.34,
-     "rank": "QB2",
+     "proj": 22.24,
+     "rank": "QB3",
      "date": "2026-11-01",
      "next_proj": 20.89,
      "in_best": true
@@ -1477,7 +1477,7 @@
        "rec_td": 1
       }
      },
-     "proj": 14.89,
+     "proj": 14.84,
      "rank": "RB12",
      "date": "2026-10-29",
      "next_proj": 12.41,
@@ -1508,7 +1508,7 @@
        "rec_td": 2
       }
      },
-     "proj": 12.15,
+     "proj": 12.18,
      "rank": "WR18",
      "date": "2026-11-01",
      "next_proj": 10.6,
@@ -1543,7 +1543,7 @@
       }
      },
      "proj": 17.97,
-     "rank": "WR2",
+     "rank": "WR3",
      "date": "2026-11-01",
      "next_proj": 19.96,
      "in_best": true
@@ -1606,8 +1606,8 @@
        "rec_td": 2
       }
      },
-     "proj": 8.71,
-     "rank": "TE5",
+     "proj": 8.63,
+     "rank": "TE6",
      "date": "2026-10-29",
      "next_proj": 8.73,
      "in_best": true
@@ -1641,7 +1641,7 @@
        "rec_td": 1
       }
      },
-     "proj": 9.41,
+     "proj": 9.35,
      "rank": "RB23",
      "date": "2026-11-01",
      "next_proj": 9.47,
@@ -1672,7 +1672,7 @@
        "rec_td": 2
       }
      },
-     "proj": 9.44,
+     "proj": 9.29,
      "rank": "TE3",
      "date": "2026-11-01",
      "next_proj": 10.83,
@@ -1827,7 +1827,7 @@
     }
    ],
    "proj_pre": 119.68,
-   "best": 116.9,
+   "best": 116.5,
    "best_next": 139.2,
    "locked": 0,
    "locked_proj": 0,
@@ -1868,7 +1868,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 18.28,
+     "proj": 18.19,
      "rank": "QB8",
      "date": "2026-10-29",
      "next_proj": 17.42,
@@ -1902,7 +1902,7 @@
        "fum_lost": 2
       }
      },
-     "proj": 16.01,
+     "proj": 15.74,
      "rank": "RB6",
      "date": "2026-11-01",
      "next_proj": 20.09,
@@ -1937,7 +1937,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 15.26,
+     "proj": 15.24,
      "rank": "RB9",
      "date": "2026-11-01",
      "next_proj": 14.78,
@@ -1970,8 +1970,8 @@
        "rush_yd": -6
       }
      },
-     "proj": 17.86,
-     "rank": "WR3",
+     "proj": 18.71,
+     "rank": "WR2",
      "date": "2026-11-01",
      "next_proj": 15.88,
      "in_best": true
@@ -2001,7 +2001,7 @@
        "rec_td": 6
       }
      },
-     "proj": 14.13,
+     "proj": 14.05,
      "rank": "WR9",
      "date": "2026-10-29",
      "next_proj": 14.34,
@@ -2033,7 +2033,7 @@
       }
      },
      "proj": 13.46,
-     "rank": "WR10",
+     "rank": "WR11",
      "date": "2026-11-01",
      "next_proj": 12.07,
      "in_best": true
@@ -2092,7 +2092,7 @@
       }
      },
      "proj": 7.44,
-     "rank": "WR41",
+     "rank": "WR42",
      "date": "2026-11-01",
      "next_proj": 8.68
     },
@@ -2123,8 +2123,8 @@
        "rush_td": 1
       }
      },
-     "proj": 17.16,
-     "rank": "QB13",
+     "proj": 17.01,
+     "rank": "QB12",
      "date": "2026-11-01",
      "next_proj": 20.08,
      "in_best": true
@@ -2155,7 +2155,7 @@
        "rec_td": 1
       }
      },
-     "proj": 10.54,
+     "proj": 10.39,
      "rank": "WR21",
      "date": "2026-11-01",
      "next_proj": 12.71,
@@ -2200,7 +2200,7 @@
       }
      },
      "proj": 6.4,
-     "rank": "RB38",
+     "rank": "RB37",
      "date": "2026-11-01",
      "next_proj": 5.04
     },
@@ -2233,7 +2233,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 7.43,
+     "proj": 7.4,
      "rank": "RB32",
      "date": "2026-11-02",
      "next_proj": 3.11
@@ -2268,13 +2268,13 @@
       }
      },
      "proj": 8.43,
-     "rank": "RB30",
+     "rank": "RB29",
      "date": "2026-11-01",
      "next_proj": 8.23
     }
    ],
    "proj_pre": 117.62,
-   "best": 122.7,
+   "best": 122.8,
    "best_next": 140.0,
    "locked": 0,
    "locked_proj": 0,
@@ -2313,8 +2313,8 @@
        "rush_yd": 81
       }
      },
-     "proj": 22.29,
-     "rank": "QB3",
+     "proj": 22.3,
+     "rank": "QB2",
      "date": "2026-11-01",
      "next_proj": 18.48,
      "in_best": true
@@ -2349,7 +2349,7 @@
       }
      },
      "proj": 14.87,
-     "rank": "RB13",
+     "rank": "RB11",
      "date": "2026-11-01",
      "next_proj": 15.01,
      "in_best": true
@@ -2381,7 +2381,7 @@
        "rec_yd": 14
       }
      },
-     "proj": 12.02,
+     "proj": 12.15,
      "rank": "RB16",
      "date": "2026-11-01",
      "next_proj": 13.49,
@@ -2415,7 +2415,7 @@
        "rush_yd": -1
       }
      },
-     "proj": 14.3,
+     "proj": 14.38,
      "rank": "WR7",
      "date": "2026-11-01",
      "next_proj": 16.46,
@@ -2448,7 +2448,7 @@
        "rush_yd": -11
       }
      },
-     "proj": 15.02,
+     "proj": 15.1,
      "rank": "WR6",
      "date": "2026-11-01",
      "next_proj": 13.93,
@@ -2480,8 +2480,8 @@
        "fum_lost": 1
       }
      },
-     "proj": 7.2,
-     "rank": "WR45",
+     "proj": 6.73,
+     "rank": "WR47",
      "date": "2026-11-01",
      "next_proj": 5.44
     },
@@ -2512,7 +2512,7 @@
       }
      },
      "proj": 6.77,
-     "rank": "TE20",
+     "rank": "TE21",
      "date": "2026-11-01",
      "next_proj": 8.11
     },
@@ -2544,8 +2544,8 @@
        "rush_td": 2
       }
      },
-     "proj": 4.52,
-     "rank": "RB54",
+     "proj": 4.44,
+     "rank": "RB55",
      "date": "2026-11-01",
      "next_proj": 1.94
     },
@@ -2576,8 +2576,8 @@
        "fum_lost": 1
       }
      },
-     "proj": 16.14,
-     "rank": "QB16",
+     "proj": 16.24,
+     "rank": "QB17",
      "date": "2026-11-01",
      "next_proj": 20.3
     },
@@ -2611,7 +2611,7 @@
       }
      },
      "proj": 9.72,
-     "rank": "WR24",
+     "rank": "WR23",
      "date": "2026-11-01",
      "next_proj": 9.88,
      "in_best": true
@@ -2642,8 +2642,8 @@
        "rush_yd": 4
       }
      },
-     "proj": 17.54,
-     "rank": "QB10",
+     "proj": 16.63,
+     "rank": "QB14",
      "date": "2026-11-01",
      "next_proj": 16.31,
      "in_best": true
@@ -2675,8 +2675,8 @@
        "rush_yd": 3
       }
      },
-     "proj": 13.39,
-     "rank": "WR11",
+     "proj": 13.44,
+     "rank": "WR12",
      "date": "2026-11-01",
      "next_proj": 13.45,
      "in_best": true
@@ -2709,7 +2709,7 @@
       }
      },
      "proj": 7.4,
-     "rank": "WR42",
+     "rank": "WR43",
      "date": "2026-11-01",
      "next_proj": 8.97
     },
@@ -2738,7 +2738,7 @@
        "rec_td": 2
       }
      },
-     "proj": 7.65,
+     "proj": 7.72,
      "rank": "TE14",
      "date": "2026-11-02",
      "next_proj": 8.24,
@@ -2772,14 +2772,14 @@
        "rec_yd": 39
       }
      },
-     "proj": 5.73,
+     "proj": 5.7,
      "rank": "RB44",
      "date": "2026-11-02",
      "next_proj": 6.74
     }
    ],
    "proj_pre": 115.11,
-   "best": 126.8,
+   "best": 126.3,
    "best_next": 129.2,
    "locked": 0,
    "locked_proj": 0,
@@ -2880,7 +2880,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 15.66,
+     "proj": 15.72,
      "rank": "RB7",
      "date": "2026-11-01",
      "next_proj": 12.97,
@@ -2913,7 +2913,7 @@
        "rush_yd": 34
       }
      },
-     "proj": 15.26,
+     "proj": 15.27,
      "rank": "WR5",
      "date": "2026-11-01",
      "next_proj": 15.75,
@@ -2945,7 +2945,7 @@
        "rec_td": 2
       }
      },
-     "proj": 12.35,
+     "proj": 12.33,
      "rank": "WR16",
      "date": "2026-10-29",
      "next_proj": 10.27,
@@ -2977,8 +2977,8 @@
        "rec_td": 2
       }
      },
-     "proj": 13.27,
-     "rank": "WR12",
+     "proj": 13.24,
+     "rank": "WR13",
      "date": "2026-10-29",
      "next_proj": 11.91,
      "in_best": true
@@ -3043,7 +3043,7 @@
        "rush_td": 1
       }
      },
-     "proj": 10.52,
+     "proj": 10.41,
      "rank": "RB19",
      "date": "2026-11-01",
      "next_proj": 14.87,
@@ -3077,7 +3077,7 @@
        "rush_td": 1
       }
      },
-     "proj": 17.33,
+     "proj": 17.24,
      "rank": "QB11",
      "date": "2026-10-29",
      "next_proj": 16.74,
@@ -3113,7 +3113,7 @@
       }
      },
      "proj": 8.69,
-     "rank": "RB27",
+     "rank": "RB28",
      "date": "2026-11-01",
      "next_proj": 8.62
     },
@@ -3144,7 +3144,7 @@
        "rec_td": 2
       }
      },
-     "proj": 9.72,
+     "proj": 9.73,
      "rank": "RB22",
      "date": "2026-11-01",
      "next_proj": 8.82,
@@ -3211,8 +3211,8 @@
        "rush_yd": -6
       }
      },
-     "proj": 8.94,
-     "rank": "WR30",
+     "proj": 8.74,
+     "rank": "WR31",
      "date": "2026-11-01",
      "next_proj": 7.74
     },
@@ -3243,14 +3243,14 @@
        "rec_td": 1
       }
      },
-     "proj": 6.06,
-     "rank": "WR49",
+     "proj": 5.97,
+     "rank": "WR51",
      "date": "2026-11-01",
      "next_proj": 4.02
     }
    ],
    "proj_pre": 92.03,
-   "best": 110.5,
+   "best": 110.3,
    "best_next": 134.2,
    "locked": 0,
    "locked_proj": 0,
@@ -3371,7 +3371,7 @@
        "rec_td": 2
       }
      },
-     "proj": 13.41,
+     "proj": 13.48,
      "rank": "RB15",
      "date": "2026-11-01",
      "next_proj": 11.14,
@@ -3405,8 +3405,8 @@
        "rush_yd": 2
       }
      },
-     "proj": 7.58,
-     "rank": "WR40",
+     "proj": 7.66,
+     "rank": "WR41",
      "date": "2026-11-01",
      "next_proj": 6.86
     },
@@ -3435,7 +3435,7 @@
        "rec_td": 4
       }
      },
-     "proj": 8.49,
+     "proj": 8.5,
      "rank": "WR32",
      "date": "2026-11-01",
      "next_proj": 9.91
@@ -3469,7 +3469,7 @@
       }
      },
      "proj": 13.2,
-     "rank": "WR13",
+     "rank": "WR14",
      "date": "2026-11-01",
      "next_proj": 10.17,
      "in_best": true,
@@ -3500,8 +3500,8 @@
        "rec_td": 4
       }
      },
-     "proj": 7.05,
-     "rank": "TE18",
+     "proj": 7.06,
+     "rank": "TE19",
      "date": "2026-11-01",
      "next_proj": 6.8,
      "in_best": true,
@@ -3535,7 +3535,7 @@
        "rec_td": 1
       }
      },
-     "proj": 17.26,
+     "proj": 17.23,
      "rank": "RB5",
      "date": "2026-11-01",
      "next_proj": 18.6,
@@ -3569,8 +3569,8 @@
        "pass_int": 2
       }
      },
-     "proj": 15.83,
-     "rank": "QB19",
+     "proj": 16.69,
+     "rank": "QB13",
      "date": "2026-11-01",
      "next_proj": 12.91
     },
@@ -3602,7 +3602,7 @@
        "rush_td": 1
       }
      },
-     "proj": 13.67,
+     "proj": 13.63,
      "rank": "QB25",
      "date": "2026-11-01",
      "next_proj": 14.07
@@ -3635,7 +3635,7 @@
        "rec_td": 1
       }
      },
-     "proj": 6.68,
+     "proj": 6.66,
      "rank": "RB35",
      "date": "2026-11-01",
      "next_proj": 8.82
@@ -3701,7 +3701,7 @@
        "rec_td": 2
       }
      },
-     "proj": 9.41,
+     "proj": 9.31,
      "rank": "WR26",
      "date": "2026-11-01",
      "next_proj": 10.01,
@@ -3734,7 +3734,7 @@
        "pass_int": 4
       }
      },
-     "proj": 20.69,
+     "proj": 20.84,
      "rank": "QB5",
      "date": "2026-11-01",
      "next_proj": 20.58,
@@ -3767,7 +3767,7 @@
        "rush_td": 2
       }
      },
-     "proj": 17.94,
+     "proj": 18.0,
      "rank": "QB9",
      "date": "2026-11-01",
      "next_proj": 15.6,
@@ -3804,7 +3804,7 @@
      "next_proj": 8.52
     }
    ],
-   "best": 130.5,
+   "best": 130.7,
    "best_next": 126.1,
    "locked": 0,
    "locked_proj": 0,
@@ -3871,7 +3871,7 @@
     "name": "Kenneth Walker III",
     "pos": "RB",
     "nfl": "KC",
-    "proj": 18.97,
+    "proj": 19.11,
     "rank": "RB3",
     "next_proj": 19.79,
     "avg": 23.1,
@@ -3882,7 +3882,7 @@
     "name": "Joe Burrow",
     "pos": "QB",
     "nfl": "CIN",
-    "proj": 21.06,
+    "proj": 21.14,
     "rank": "QB4",
     "next_proj": 17.39,
     "avg": 22.2,
@@ -3894,7 +3894,7 @@
     "pos": "QB",
     "nfl": "LAR",
     "proj": 15.95,
-    "rank": "QB17",
+    "rank": "QB18",
     "next_proj": 19.26,
     "avg": 18.6,
     "g": 7,
@@ -3904,7 +3904,7 @@
     "name": "Chuba Hubbard",
     "pos": "RB",
     "nfl": "CAR",
-    "proj": 15.22,
+    "proj": 15.17,
     "rank": "RB10",
     "next_proj": 15.46,
     "avg": 16.8,
@@ -3926,8 +3926,8 @@
     "name": "Garrett Wilson",
     "pos": "WR",
     "nfl": "NYJ",
-    "proj": 13.1,
-    "rank": "WR14",
+    "proj": 13.47,
+    "rank": "WR10",
     "next_proj": 11.99,
     "avg": 11.6,
     "g": 7,
@@ -3937,7 +3937,7 @@
     "name": "Sam LaPorta",
     "pos": "TE",
     "nfl": "DET",
-    "proj": 8.92,
+    "proj": 8.99,
     "rank": "TE4",
     "next_proj": 10.55,
     "avg": 10.9,
@@ -3948,7 +3948,7 @@
     "name": "Jaylen Waddle",
     "pos": "WR",
     "nfl": "DEN",
-    "proj": 9.13,
+    "proj": 9.04,
     "rank": "WR28",
     "next_proj": 9.57,
     "avg": 7.3,
@@ -3959,7 +3959,7 @@
     "name": "Rome Odunze",
     "pos": "WR",
     "nfl": "CHI",
-    "proj": 8.24,
+    "proj": 8.38,
     "rank": "WR35",
     "next_proj": 9.49,
     "avg": 6.9,
@@ -3970,7 +3970,7 @@
     "name": "Jakobi Meyers",
     "pos": "WR",
     "nfl": "JAX",
-    "proj": 8.42,
+    "proj": 8.47,
     "rank": "WR33",
     "next_proj": 8.5,
     "avg": 8.5,
@@ -3978,10 +3978,21 @@
     "last": 0
    },
    {
+    "name": "KC Concepcion Jr.",
+    "pos": "WR",
+    "nfl": "CLE",
+    "proj": 7.86,
+    "rank": "WR39",
+    "next_proj": 7.42,
+    "avg": 6.8,
+    "g": 7,
+    "last": 19.2
+   },
+   {
     "name": "Hunter Henry",
     "pos": "TE",
     "nfl": "NE",
-    "proj": 7.8,
+    "proj": 7.81,
     "rank": "TE13",
     "next_proj": 7.42,
     "avg": 7.8,
@@ -3989,22 +4000,11 @@
     "last": 10.6
    },
    {
-    "name": "KC Concepcion Jr.",
-    "pos": "WR",
-    "nfl": "CLE",
-    "proj": 7.31,
-    "rank": "WR43",
-    "next_proj": 7.42,
-    "avg": 6.8,
-    "g": 7,
-    "last": 19.2
-   },
-   {
     "name": "Keon Coleman",
     "pos": "WR",
     "nfl": "BUF",
     "proj": 6.24,
-    "rank": "WR48",
+    "rank": "WR49",
     "next_proj": 5.7,
     "avg": 9.3,
     "g": 6,
@@ -4028,7 +4028,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-10-27T17:07:33Z",
+  "updated": "2026-10-27T19:25:35Z",
   "players": 3045,
   "unmatched": []
  }
