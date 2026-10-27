@@ -18,7 +18,7 @@
      spotlight true puts it first on the page in a full-width card (use on one project).
      status    "live" (default) or "building" (listed with no Play button).
      hidden    true hides it until the homepage app code is entered. Direct links still work.
-     section   "kids" puts it in the "Made with my daughters" section at the bottom of the page instead.
+     section   "kids" puts it on the "Made with my daughters" page (kids/) instead of the home page.
      external  true for a project that lives on another site (url is then the full address).
      matchups  real games inside, shown on the card with both teams' logos: { you, opp, home or neutral, label },
                where you/opp are NFL abbreviations (Make the Call's famous calls, from its data.js).

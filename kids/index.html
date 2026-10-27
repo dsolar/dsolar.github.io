@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Made with my daughters | David Solar</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="Two games David Solar's daughters designed with him: Lucy's Jellycat Battle Club and Charlotte's Wild Bloom Isles.">
+<link rel="canonical" href="https://davidsolar.dev/kids/">
+<!-- The header and footer match index.html: if you change one, change both.
+     The cards come from the section: "kids" entries in assets/projects.js. -->
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<meta name="theme-color" content="#F5F4F0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#071628" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://davidsolar.dev/kids/">
+<meta property="og:title" content="Made with my daughters | David Solar">
+<meta property="og:image" content="https://davidsolar.dev/assets/og.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Besley:ital,wght@0,500;0,600;0,700;0,800;1,500&family=Libre+Franklin:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/assets/site.css?v=20261027-kids-page">
+<script src="/assets/site.js" defer></script>
+<script src="/assets/analytics.js" defer></script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="David Solar, home">
+      <img class="brand-logo" src="/assets/david-solar-sports-data-nonsense-compact.svg" alt="">
+    </a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/#projects">Projects</a>
+      <a href="/#writing">Writing</a>
+      <a href="/#about">About</a>
+      <a href="/kids/" aria-current="page">Kids</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="section kids" id="kids" aria-labelledby="kids-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h1 id="kids-title" class="kids-title">Made with my daughters</h1>
+      </div>
+      <p class="portfolio-intro">Two games my daughters designed with me: Lucy’s shelf of Jellycats battling for their spot, and Charlotte’s island where a little cow just learned to talk.</p>
+      <div class="catalog" id="kids-catalog"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <a class="footer-brand" href="/" aria-label="David Solar, home">
+      <img class="brand-logo" src="/assets/david-solar-sports-data-nonsense.svg" alt="">
+    </a>
+    <div class="foot-copy">
+      <span>Built by hand outside Boston.</span>
+      <span>&copy; <span id="year">2026</span> David Solar</span>
+    </div>
+    <nav class="foot-nav" aria-label="Footer">
+      <a href="/#projects">Projects</a>
+      <a href="/#writing">Writing</a>
+      <a href="/#about">About</a>
+      <a href="/kids/">Kids</a>
+      <a data-user="hello" data-domain="davidsolar.dev">Email</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="/assets/projects.js?v=20261027-kids-page"></script>
+<script src="/assets/project-cards.js?v=20261027-kids-page"></script>
+<script>
+(function () {
+  var kids = (window.PROJECTS || []).filter(function (p) { return p.section === "kids" && !p.hidden; });
+  document.getElementById("kids-catalog").innerHTML = kids.map(function (p) { return window.ProjectCards.card(p, { base: "/" }); }).join("");
+  document.getElementById("year").textContent = new Date().getFullYear();
+})();
+</script>
+</body>
+</html>
