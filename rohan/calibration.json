@@ -1,17 +1,17 @@
 {
   "week": 8,
   "season": 2026,
-  "updated": "2026-10-27T13:41:14Z",
+  "updated": "2026-10-27T13:50:31Z",
   "source": "ESPN roster, standings and scoreboard pastes, Oct 24 and Oct 27, 2026 (rohan/league.json)",
-  "note": "Projections snapshots for win-probability calibration. Week 7 final scores were not in the Week 8 paste and are still to be added; later weeks append here before league.json is replaced.",
+  "note": "Projections snapshots for win-probability calibration. Week 7 finals added Oct 27, 2026 from the ESPN Week 7 scoreboard paste; later weeks append here before league.json is replaced.",
   "matchups": [
     {
       "away": "Vaginette Butts",
       "away_proj": 146.6,
       "home": "The Championship Winnin Crunch*",
       "home_proj": 123.0,
-      "away_final": null,
-      "home_final": null,
+      "away_final": 160.69,
+      "home_final": 105.04,
       "week": 7
     },
     {
@@ -19,8 +19,8 @@
       "away_proj": 118.6,
       "home": "The Price Is Bijan, B****",
       "home_proj": 166.1,
-      "away_final": null,
-      "home_final": null,
+      "away_final": 124.63,
+      "home_final": 102.2,
       "week": 7
     },
     {
@@ -28,8 +28,8 @@
       "away_proj": 127.3,
       "home": "It's Gonna Be Maye",
       "home_proj": 152.9,
-      "away_final": null,
-      "home_final": null,
+      "away_final": 134.21,
+      "home_final": 182.28,
       "week": 7
     },
     {
@@ -37,8 +37,8 @@
       "away_proj": 168.3,
       "home": "Belichick's UNC Bistro",
       "home_proj": 169.0,
-      "away_final": null,
-      "home_final": null,
+      "away_final": 153.24,
+      "home_final": 183.04,
       "week": 7
     },
     {
@@ -46,8 +46,8 @@
       "away_proj": 142.6,
       "home": "Flowers Powers",
       "home_proj": 136.7,
-      "away_final": null,
-      "home_final": null,
+      "away_final": 119.81,
+      "home_final": 94.73,
       "week": 7
     },
     {
