@@ -371,53 +371,175 @@
     "Love a Kittle Lamb & WhiteRice": 105.12,
     "Breece’s Pieces": 137.78,
     "Love Purdy Flowers": 107.78,
-    "Likely to Burden Tate w Penix": 113.0,
+    "Likely to Burden Tate w Penix": 113,
     "Holofernes": 123.78,
     "Deviated Rectums": 125.2,
     "Liberté Égalité Henri": 95.28
    },
    "next_team": "Love a Kittle Lamb & WhiteRice",
    "next_score": 105.12
+  },
+  "8": {
+   "teams": {
+    "Holofernes": {
+     "chop": 0.0715,
+     "win": 0.2219,
+     "expected": 129.9,
+     "surv": [
+      0.9286,
+      0.8144,
+      0.7153,
+      0.6225,
+      0.5141,
+      0.3848,
+      0.2219
+     ],
+     "faab": 679
+    },
+    "Likely to Burden Tate w Penix": {
+     "chop": 0.1346,
+     "win": 0.1151,
+     "expected": 120.9,
+     "surv": [
+      0.8655,
+      0.7352,
+      0.6137,
+      0.4975,
+      0.3751,
+      0.2455,
+      0.1151
+     ],
+     "faab": 415
+    },
+    "Breece’s Pieces": {
+     "chop": 0.1083,
+     "win": 0.0423,
+     "expected": 124,
+     "surv": [
+      0.8918,
+      0.7335,
+      0.5635,
+      0.3827,
+      0.2355,
+      0.1207,
+      0.0423
+     ],
+     "faab": 1
+    },
+    "Drake Mayezini": {
+     "chop": 0.1475,
+     "win": 0.17,
+     "expected": 119.7,
+     "surv": [
+      0.8525,
+      0.7492,
+      0.6521,
+      0.5545,
+      0.4437,
+      0.3191,
+      0.17
+     ],
+     "faab": 473
+    },
+    "Love a Kittle Lamb & WhiteRice": {
+     "chop": 0.1181,
+     "win": 0.2169,
+     "expected": 122.6,
+     "surv": [
+      0.882,
+      0.7977,
+      0.7078,
+      0.6122,
+      0.5058,
+      0.3783,
+      0.2169
+     ],
+     "faab": 415
+    },
+    "Deviated Rectums": {
+     "chop": 0.0892,
+     "win": 0.0709,
+     "expected": 126.8,
+     "surv": [
+      0.9108,
+      0.758,
+      0.5984,
+      0.4437,
+      0.3037,
+      0.1752,
+      0.0709
+     ],
+     "faab": 207
+    },
+    "Love Purdy Flowers": {
+     "chop": 0.2625,
+     "win": 0.0877,
+     "expected": 110.2,
+     "surv": [
+      0.7376,
+      0.6349,
+      0.5279,
+      0.4185,
+      0.3046,
+      0.1899,
+      0.0877
+     ],
+     "faab": 275
+    },
+    "Tai Streetz Lata?": {
+     "chop": 0.0686,
+     "win": 0.0753,
+     "expected": 130.4,
+     "surv": [
+      0.9315,
+      0.7773,
+      0.6215,
+      0.4685,
+      0.3176,
+      0.1866,
+      0.0753
+     ],
+     "faab": 222
+    }
+   },
+   "cut_line": 93,
+   "taken": "2026-10-27T16:33:06Z"
   }
  },
  "last_seen": {
-  "week": 7,
+  "week": 8,
   "teams": {
-   "Drake Mayezini": {
-    "season": 800.9,
-    "points": 122.86
+   "Holofernes": {
+    "season": 841.9,
+    "points": 0
    },
-   "Tai Streetz Lata?": {
-    "season": 797.8,
-    "points": 117.6
-   },
-   "Love a Kittle Lamb & WhiteRice": {
-    "season": 864.06,
-    "points": 83.22
+   "Likely to Burden Tate w Penix": {
+    "season": 877.58,
+    "points": 0
    },
    "Breece’s Pieces": {
     "season": 841.36,
-    "points": 137.78
+    "points": 0
    },
-   "Love Purdy Flowers": {
-    "season": 820.94,
-    "points": 93.68
+   "Drake Mayezini": {
+    "season": 814.6,
+    "points": 0
    },
-   "Likely to Burden Tate w Penix": {
-    "season": 870.28,
-    "points": 105.7
-   },
-   "Holofernes": {
-    "season": 841.9,
-    "points": 123.78
+   "Love a Kittle Lamb & WhiteRice": {
+    "season": 885.96,
+    "points": 0
    },
    "Deviated Rectums": {
-    "season": 789.1,
-    "points": 90.62
+    "season": 823.68,
+    "points": 0
    },
-   "Liberté Égalité Henri": {
-    "season": 813.14,
-    "points": 95.28
+   "Love Purdy Flowers": {
+    "season": 835.04,
+    "points": 0
+   },
+   "Tai Streetz Lata?": {
+    "season": 819.3,
+    "points": 0
    }
   }
  }
