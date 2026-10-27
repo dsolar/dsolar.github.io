@@ -14,6 +14,7 @@ Every rostered player gets:
   in_best    part of the team's best lineup this week
   season     weeks 1 to last week: games played, league points each week, and season totals
              (passing, rushing, receiving), for the stat card that opens on a player's name
+Last week's lineups in history.json (the recap) get any points still missing.
 Every team still alive gets:
   best       points its best lineup projects to this week
   best_next  the same for next week, byes included
@@ -36,6 +37,7 @@ from zoneinfo import ZoneInfo
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, "..", "guillotine", "data.json")
+HIST = os.path.join(HERE, "..", "guillotine", "history.json")
 POS_Q = "&position%5B%5D=QB&position%5B%5D=RB&position%5B%5D=WR&position%5B%5D=TE"
 URLS = {
     "proj": "https://api.sleeper.com/projections/nfl/{season}/{week}?season_type=regular" + POS_Q,
@@ -167,6 +169,39 @@ def season_for(lines, p):
             "tot": {k: round(v) for k, v in a["tot"].items()}}
 
 
+def fill_last_week(week, lines, path=HIST):
+    """Finish last week's box score in history.json (weeks[W].lineups, saved by guillotine_snapshot.js).
+
+    The final run of a week can land before its last games are scored. A team with one starter still
+    unscored gets the exact remainder of its Yahoo score; anyone else gets his Sleeper line, rescored
+    (0 if he didn't play). Returns how many players were filled in."""
+    if not lines or not os.path.exists(path):
+        return 0
+    with open(path, encoding="utf-8") as f:
+        hist = json.load(f)
+    w = (hist.get("weeks") or {}).get(str(week - 1)) or {}
+    lineups, scores, filled = w.get("lineups") or {}, w.get("scores") or {}, 0
+    for team, rows in lineups.items():
+        starters = [r for r in rows if r.get("slot") not in ("BN", "IR")]
+        miss = [r for r in starters if r.get("pts") is None]
+        if len(miss) == 1 and isinstance(scores.get(team), (int, float)):
+            miss[0]["pts"] = round(scores[team] - sum(r["pts"] for r in starters if r is not miss[0]), 2)
+            filled += 1
+        for r in rows:
+            if r.get("pts") is not None:
+                continue
+            sl = season_for(lines, {"name": r["n"], "pos": r["pos"], "nfl": r.get("nfl", "")})
+            if sl and len(sl["wk"]) >= week - 1:
+                v = sl["wk"][week - 2]
+                r["pts"] = v if isinstance(v, (int, float)) else 0.0
+                filled += 1
+    if filled:
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(hist, f, ensure_ascii=False, indent=1)
+            f.write("\n")
+    return filled
+
+
 def best_lineup(roster, key, flag=None, skip_bye_key=None):
     """Fill the most restrictive slots first; with nested flex slots this is optimal."""
     slots = [p["slot"] for p in roster if p["slot"] not in ("BN", "IR")]
@@ -294,6 +329,10 @@ def main():
     except Exception as e:
         print(f"::warning::Couldn't build season stats ({type(e).__name__}: {e}).")
         lines = None
+    if not a.from_dir:
+        n = fill_last_week(week, lines)
+        if n:
+            print(f"Filled in {n} players' Week {week - 1} points for the recap.")
 
     unmatched = []
     for t in teams:

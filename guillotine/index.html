@@ -213,6 +213,7 @@ td.chg{font-weight:700;border-left:1px solid var(--rule)}
 .tabs [role="tab"][aria-selected="true"]{color:var(--ink);border-bottom-color:var(--blade)}
 .tabs [role="tab"]:focus-visible{outline:2px solid var(--blade);outline-offset:2px}
 .tabs [role="tab"][hidden]{display:none}
+@media (max-width:400px){.tabs{gap:1rem}.tabs [role="tab"]{font-size:.82rem}}
 .panel.off{display:none}
 .panel-note{margin:0 0 1rem;color:var(--muted);font-size:.9rem}
 /* Closest chops */
@@ -227,6 +228,10 @@ td.chg{font-weight:700;border-left:1px solid var(--rule)}
 .close .cw small{display:block;color:var(--muted);font-size:.75rem;margin-top:.15rem;font-variant-numeric:tabular-nums}
 .close .yr{display:inline-block;margin-left:.35rem;padding:0 .3rem;border-radius:2px;font-size:.6rem;font-weight:700;letter-spacing:.05em;color:var(--bubble);border:1px solid currentColor;vertical-align:.1em}
 .close-more{margin-top:.2rem}
+.recap .cg{color:var(--ink)}
+.recap.over .cg{color:var(--safe)}
+.recap.under .cg{color:var(--blade)}
+.recap .cut-tag{display:inline-block;margin-left:.35rem;padding:0 .3rem;border-radius:2px;font-size:.6rem;font-weight:700;letter-spacing:.05em;color:var(--blade);border:1px solid currentColor;vertical-align:.1em}
 .close-more > summary{cursor:pointer;display:inline-block;padding:.6rem 0;font-size:.8rem;font-weight:600;color:var(--blade)}
 .close-more .close{border-top:0}
 #close-note small{display:block;margin-top:.3rem;font-size:.8rem}
@@ -433,6 +438,7 @@ th.line{border-left:1px solid var(--rule)}
   <a href="#week" data-sec="week">Odds</a>
   <a href="#spot" data-sec="spot" id="jump-spot">Thursday</a>
   <a href="#ahead" data-sec="ahead">Road ahead</a>
+  <a href="#recap" data-sec="recap">Last week</a>
   <a href="#fallen-sec" data-sec="fallen-sec">Fallen</a>
 </div></nav>
 
@@ -521,6 +527,18 @@ th.line{border-left:1px solid var(--rule)}
       </div>
       <ol class="byes" id="byes"></ol>
     </section>
+  </section>
+
+  <section id="recap" class="group" aria-labelledby="recap-title" hidden>
+    <div class="section-head"><h2 id="recap-title">Last week</h2></div>
+    <div class="tabs" role="tablist" aria-label="Last week">
+      <button type="button" role="tab" id="tab-top" aria-controls="recap-top">Top scorers</button>
+      <button type="button" role="tab" id="tab-over" aria-controls="recap-over">Overperformers</button>
+      <button type="button" role="tab" id="tab-under" aria-controls="recap-under">Underperformers</button>
+    </div>
+    <div id="recap-top" class="panel" role="tabpanel" aria-labelledby="tab-top" hidden></div>
+    <div id="recap-over" class="panel" role="tabpanel" aria-labelledby="tab-over" hidden></div>
+    <div id="recap-under" class="panel" role="tabpanel" aria-labelledby="tab-under" hidden></div>
   </section>
 
   <section id="fallen-sec" class="group" aria-labelledby="fallen-title" hidden>
@@ -859,6 +877,7 @@ th.line{border-left:1px solid var(--rule)}
     }
     renderPast(league);
     renderClose(league);
+    renderRecap();
     setupTabs();
   }
 
@@ -954,6 +973,55 @@ th.line{border-left:1px solid var(--rule)}
     $("close-note").innerHTML = "The smallest gaps between the team that got cut and the lowest team that survived, this season and last." +
       (span ? "<small>This season's " + esc(span) + " fill in once the Yahoo connection is live.</small>" : "");
     $("close-sec").hidden = false;
+  }
+
+  // Last week: the starters who scored the most, and who beat or missed their pregame projection by the
+  // most. Lineups come from history.json (saved each run by tools/guillotine_snapshot.js).
+  function renderRecap() {
+    var sec = $("recap"), cur = state.data.week, w = 0;
+    Object.keys(HIST.weeks || {}).forEach(function (k) { if (+k < cur && (HIST.weeks[k] || {}).lineups && +k > w) w = +k; });
+    if (!w) { sec.hidden = true; ["recap-top", "recap-over", "recap-under"].forEach(function (id) { $(id).hidden = true; }); return; }
+    var e = HIST.weeks[String(w)], rows = [], pending = 0;
+    Object.keys(e.lineups).forEach(function (team) {
+      e.lineups[team].forEach(function (p) {
+        if (p.slot === "BN" || p.slot === "IR") return;
+        if (typeof p.pts !== "number") { pending++; return; }
+        rows.push({ n: p.n, pos: p.pos, nfl: p.nfl, team: team, pts: p.pts, proj: typeof p.proj === "number" ? p.proj : null, cut: team === e.cut_team });
+      });
+    });
+    var one = function (x) { return (x < 0 ? "\u2212" : "+") + Math.abs(x).toFixed(1); };
+    var item = function (kind) {
+      return function (x, i) {
+        var big = kind === "top" ? two(x.pts) : one(x.pts - x.proj);
+        var lbl = kind === "top" ? "pts" : kind === "over" ? "over" : "under";
+        var m = state.mgr(x.team);
+        var line = kind === "top" ? (x.proj !== null ? "Projected " + x.proj.toFixed(1) : "")
+          : two(x.pts) + " pts on a " + x.proj.toFixed(1) + " projection";
+        return '<li><span class="cr">' + (i + 1) + '</span><span class="cg">' + big + "<small>" + lbl + "</small></span>" +
+          '<span class="cw"><b>' + esc(x.n) + '</b><span class="mg">' + esc(x.pos + ", " + x.nfl) + "</span>" +
+          "<small>" + esc(x.team) + (m ? " (" + esc(m) + ")" : "") + (x.cut ? '<span class="cut-tag">Cut</span>' : "") +
+          (line ? " · " + esc(line) : "") + "</small></span></li>";
+      };
+    };
+    var proj = rows.filter(function (x) { return x.proj !== null && x.proj > 0; });
+    var lists = {
+      top: rows.slice().sort(function (a, b) { return b.pts - a.pts; }),
+      over: proj.slice().sort(function (a, b) { return (b.pts - b.proj) - (a.pts - a.proj); }).filter(function (x) { return x.pts > x.proj; }),
+      under: proj.slice().sort(function (a, b) { return (a.pts - a.proj) - (b.pts - b.proj); }).filter(function (x) { return x.pts < x.proj; })
+    };
+    var notes = {
+      top: "The best scores from Week " + w + "'s starting lineups.",
+      over: "Starters who beat their pregame projection by the most.",
+      under: "Starters who fell furthest short of their pregame projection."
+    };
+    var wait = pending ? " Points for " + pending + " more starter" + (pending > 1 ? "s are" : " is") + " still coming in." : "";
+    ["top", "over", "under"].forEach(function (k) {
+      var host = $("recap-" + k), list = lists[k].slice(0, 5);
+      host.innerHTML = list.length ? '<p class="panel-note">' + esc(notes[k] + wait) + '</p><ol class="close recap ' + k + '">' + list.map(item(k)).join("") + "</ol>" : "";
+      host.hidden = !list.length;
+    });
+    $("recap-title").textContent = "Week " + w + " recap";
+    sec.hidden = false;
   }
 
   // Last season, under the fallen: who went out, by how much, what the bench could have done, and the

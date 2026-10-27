@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Save each week's opening odds to guillotine/history.json, plus every team's score once a week is over.
+// Save each week's opening odds to guillotine/history.json, plus every team's score and lineup once a week is over.
 //
 // Runs after the data pull. Until the week's first game kicks off, every run refreshes that week's
 // snapshot (rosters and projections settle as waivers clear); once a game has started the snapshot
@@ -53,6 +53,23 @@ if (!entry.frozen) {
   if (!same || !entry.taken) entry.taken = new Date().toISOString().replace(/\.\d+Z$/, "Z");
   if (started) entry.frozen = true;
   hist.weeks[wk] = entry;
+}
+
+// This week's lineups, starters and bench, with each player's projection and points once his game is final.
+// Refreshed every run while the week is current, so the last run before the next week's import holds the
+// lineups that counted. The page's recap reads last week's; guillotine_projections.py fills in any
+// points still missing after the week rolls over.
+{
+  const lineups = {};
+  for (const t of alive) {
+    const rows = (t.roster || []).filter((p) => !p.empty && p.name).map((p) => ({
+      n: p.name, pos: p.pos, nfl: p.nfl, slot: p.slot,
+      proj: typeof p.proj === "number" ? p.proj : null,
+      pts: p.final && typeof p.actual === "number" ? p.actual : null,
+    }));
+    if (rows.length) lineups[t.name] = rows;
+  }
+  if (Object.keys(lineups).length) (hist.weeks[wk] = hist.weeks[wk] || {}).lineups = lineups;
 }
 
 // Every team's score each finished week, and the closest chop: the gap between the team that got cut and
