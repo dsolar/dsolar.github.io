@@ -24,7 +24,8 @@
 <link rel="stylesheet" href="../assets/bar.css">
 <script src="../assets/analytics.js" defer></script>
 <style>
-/* Layout: one narrow column. The week's cut line runs as a red blade down through every
+/* Layout: one narrow column between two full-bleed navy bands (the hero with its guillotine, and the wall
+   of the fallen). Before kickoff, waivers and last week lead; then the week's cut line runs as a red blade down through every
    team's likely score range, then survival week by week, then the fallen.
    Tricolore by way of Foxborough: navy ink, steel paper, one red for the blade. Didone display
    type (the face of revolutionary France), Franklin for everything that gets read. */
@@ -63,7 +64,8 @@ body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.55 var(--f-b
 a{color:inherit;text-decoration-color:var(--blade);text-underline-offset:3px}
 a:focus-visible{outline:2px solid var(--blade);outline-offset:3px;border-radius:2px}
 
-.wrap{max-width:46rem;margin:0 auto;padding-block:2rem 3.5rem;
+html,body{overflow-x:clip}
+.wrap{max-width:46rem;margin:0 auto;padding-block:0 3.5rem;
   padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));
   display:grid;gap:2.75rem}
 .wrap > *{min-width:0}
@@ -362,6 +364,96 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
   .fig{padding-right:.4rem}
   .board{padding:.4rem .7rem .8rem}
 }
+/* Full-bleed bands: the hero and the fallen. Each redefines the color tokens, so everything inside
+   (tabs, lists, facts) reads on navy without its own rules. */
+:root{--band-bg:#0E1A30}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--band-bg:#050A14}}
+:root[data-theme="dark"]{--band-bg:#050A14}
+.band{position:relative;isolation:isolate;padding-block:2.4rem 2.6rem;color:var(--ink);
+  --bg:#0E1A30;--surface:#16233D;--ink:#EEF1F5;--muted:#A6B1C6;--rule:rgba(238,241,245,.16);--track:#22314F;
+  --blade:#FF4D63;--danger:#FF4D63;--bubble:#F2A23A;--safe:#5FC48A;--bleu-rgb:110,152,235;--hi-ink:#0A1120}
+.band::before{content:"";position:absolute;z-index:-1;top:0;bottom:0;left:calc(50% - 50vw);right:calc(50% - 50vw);background:var(--band-bg);
+  border-block:1px solid var(--rule)}
+.band a:focus-visible,.band summary:focus-visible{outline-color:var(--blade)}
+
+/* Hero */
+.hero{padding-block:2rem 1.6rem}
+.hero::after{content:"";position:absolute;left:calc(50% - 50vw);right:calc(50% - 50vw);bottom:0;height:6px;
+  background:linear-gradient(90deg,#2B54B8 0 33.33%,#EEF1F5 33.33% 66.66%,#E0213F 66.66%)}
+.hero-top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1rem 1.5rem;align-items:start}
+.hero .eyebrow{color:var(--muted)}
+.hero h1 .wk{color:var(--blade)}
+.hero .lede{color:var(--ink)}
+.gallows-fig{margin:0;display:grid;justify-items:center;gap:.6rem;width:clamp(76px,21vw,176px)}
+.gallows{display:block;width:100%;height:auto;overflow:visible}
+.gallows .wood rect{fill:rgba(238,241,245,.06);stroke:rgba(238,241,245,.62);stroke-width:1.4}
+.gallows .hole{fill:var(--band-bg);stroke:rgba(238,241,245,.62);stroke-width:1.4}
+.gallows .weight{fill:#2A3A5C;stroke:rgba(238,241,245,.62);stroke-width:1.4}
+.gallows .steel{fill:url(#steel)}
+.gallows .edge{stroke:var(--blade);stroke-width:2.5;stroke-linecap:round}
+.gallows .blade{transform:translateY(87px);animation:drop .5s cubic-bezier(.55,0,.9,.45) .7s both}
+@keyframes drop{0%{transform:translateY(0)}78%{transform:translateY(87px)}88%{transform:translateY(82px)}100%{transform:translateY(87px)}}
+.gallows-fig.thud{animation:thud .22s ease-out 1.1s both}
+@keyframes thud{40%{transform:translateY(2px)}100%{transform:none}}
+@media (prefers-reduced-motion:reduce){.gallows .blade,.gallows-fig.thud{animation:none}}
+.block{text-align:center;display:grid;gap:.1rem;font-size:.75rem;line-height:1.3;color:var(--muted)}
+.block b{font:700 1rem/1.15 var(--f-display);color:var(--ink);text-wrap:balance}
+.block .bl-p{color:var(--blade);font-weight:700}
+.hero .figures{margin-top:1.4rem;border-color:var(--rule)}
+.hero .fig + .fig{border-color:var(--rule)}
+.hero .updated{font-size:.75rem;margin-top:.9rem}
+@media (max-width:30rem){.block{display:none}.hero-top{gap:.75rem}}
+
+/* Up for grabs: the cut team's players on waivers, and everyone's money */
+.grabs-in{display:grid;gap:1.6rem}
+@media (min-width:44rem){.grabs-in{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);align-items:start}}
+.pool{border-top:1px solid var(--rule)}
+.pool li:first-child{border-top:none}
+.pool .pv{font:700 1.25rem/1 var(--f-display);font-variant-numeric:lining-nums tabular-nums}
+.pool .pv small{font:500 .66rem/1.3 var(--f-body);margin-top:.15rem}
+.pool .gone .pn,.pool .gone .pv{color:var(--muted)}
+.claim{display:inline-block;margin-left:.4rem;padding:0 .35rem;border-radius:2px;font-size:.62rem;font-weight:700;color:var(--safe);border:1px solid currentColor;vertical-align:.1em;white-space:nowrap}
+.chests h3{margin:0;font:700 1.15rem/1.2 var(--f-display)}
+.chest-note{margin:.2rem 0 .7rem;color:var(--muted);font-size:.78rem}
+.chest{list-style:none;margin:0;padding:0;display:grid;gap:.55rem}
+.chest li{display:grid;grid-template-columns:minmax(0,1fr) 3.2rem;gap:.2rem .6rem;align-items:center;font-size:.8rem}
+.chest .cn{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.chest .cv{grid-row:1 / span 2;grid-column:2;text-align:right;font:700 1.05rem/1 var(--f-display);font-variant-numeric:lining-nums tabular-nums}
+.chest .cb{grid-column:1;height:7px;background:var(--track);border-radius:4px;overflow:hidden}
+.chest .cb i{display:block;height:100%;background:rgb(var(--bleu-rgb));border-radius:4px}
+.chest li.broke .cv{color:var(--danger)}
+
+/* The fallen: a wall of send-offs, newest first, scrolling sideways past the column's right edge */
+#fallen-count{color:var(--muted)}
+.wall-wrap{position:relative}
+.wall{list-style:none;margin:0 calc(50% - 50vw) 0 0;padding:0 max(16px,calc(50vw - 50%)) 1rem 0;display:grid;grid-auto-flow:column;
+  grid-auto-columns:min(82vw,19rem);gap:1rem;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:0;scrollbar-width:thin;
+  scrollbar-color:var(--rule) transparent;border-radius:2px}
+.wall:focus-visible{outline:2px solid var(--blade);outline-offset:4px}
+.fcard{scroll-snap-align:start;background:var(--surface);border:1px solid var(--rule);border-radius:4px;overflow:hidden;display:grid;grid-template-rows:auto 1fr;align-content:start}
+.fimg{position:relative;aspect-ratio:4 / 3;background:var(--band-bg);margin:0;overflow:hidden}
+/* Send-off images come in every shape and some carry an "edited image" label, so none get cropped: each sits
+   whole in the frame over a blurred, darkened copy of itself. */
+.fimg img{position:relative;display:block;width:100%;height:100%;object-fit:contain}
+.fimg img.bg{position:absolute;inset:-24px;width:calc(100% + 48px);height:calc(100% + 48px);object-fit:cover;filter:blur(18px) brightness(.45);transform:scale(1.05)}
+.fimg .fwk{position:absolute;left:.6rem;top:.6rem;font:700 .8rem/1 var(--f-display);color:#fff;background:#C8102E;padding:.3rem .45rem .32rem;border-radius:2px}
+.fimg.empty{display:grid;place-items:center;color:var(--muted);font:italic 500 1rem var(--f-display)}
+.fbody{padding:.85rem .9rem 1rem;display:grid;gap:.55rem;align-content:start}
+.ft{margin:0;font:700 1.15rem/1.15 var(--f-display);text-decoration:line-through;text-decoration-color:var(--blade);text-decoration-thickness:2px;text-wrap:balance}
+.fm{margin:0;color:var(--muted);font-size:.78rem;font-variant-numeric:tabular-nums}
+.fm b{color:var(--ink);font-weight:700}
+.fcard .haiku{font-size:1.02rem;line-height:1.45}
+.fcard .facts{font-size:.76rem;gap:.25rem .7rem;border-top:1px solid var(--rule);padding-top:.6rem}
+.wall-nav{display:none}
+@media (hover:hover) and (min-width:44rem){
+  .wall-nav{display:flex;gap:.4rem;position:absolute;right:0;top:-3.4rem}
+  .wall-btn{all:unset;cursor:pointer;width:2.1rem;height:2.1rem;display:grid;place-items:center;border:1px solid var(--rule);border-radius:50%;color:var(--ink);font-size:1rem}
+  .wall-btn:hover{background:var(--surface)}
+  .wall-btn:focus-visible{outline:2px solid var(--blade);outline-offset:2px}
+  .wall-btn:disabled{opacity:.35;cursor:default}
+}
+#fallen-sec .tabs{position:relative}
+
 /* Book lines: cut and win chances as American odds */
 .row{grid-template-columns:minmax(0,1fr) 4.2rem 4.4rem}
 .axis{margin-right:8.4rem}
@@ -435,6 +527,7 @@ th.line{border-left:1px solid var(--rule)}
 
 <nav class="jump" id="jump" aria-label="On this page"><div class="jump-in">
   <a href="#mnf" data-sec="mnf">Monday</a>
+  <a href="#grabs" data-sec="grabs">Waivers</a>
   <a href="#week" data-sec="week">Odds</a>
   <a href="#spot" data-sec="spot" id="jump-spot">Thursday</a>
   <a href="#ahead" data-sec="ahead">Road ahead</a>
@@ -443,16 +536,39 @@ th.line{border-left:1px solid var(--rule)}
 </div></nav>
 
 <main class="wrap" id="app">
-  <header>
-    <p class="eyebrow" id="league">Guillotine league</p>
-    <h1><span id="h1-week" class="wk">This week</span>Survival odds</h1>
-    <p class="lede" id="lede">Running the numbers…</p>
-    <p class="updated" id="updated"></p>
+  <header class="band hero">
+    <div class="hero-top">
+      <div class="hero-text">
+        <p class="eyebrow" id="league">Guillotine league</p>
+        <h1><span id="h1-week" class="wk">This week</span>Survival odds</h1>
+        <p class="lede" id="lede">Running the numbers…</p>
+      </div>
+      <figure class="gallows-fig thud">
+        <svg class="gallows" viewBox="0 0 160 250" aria-hidden="true" focusable="false">
+          <defs><linearGradient id="steel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#EEF1F5"/><stop offset=".5" stop-color="#B4BFCF"/><stop offset="1" stop-color="#76839C"/></linearGradient></defs>
+          <g class="wood">
+            <rect x="18" y="6" width="124" height="16" rx="1.5"/>
+            <rect x="33" y="22" width="13" height="206"/>
+            <rect x="114" y="22" width="13" height="206"/>
+            <rect x="6" y="228" width="148" height="14" rx="1.5"/>
+            <rect x="46" y="172" width="68" height="32"/>
+          </g>
+          <circle class="hole" cx="80" cy="188" r="10"/>
+          <g class="blade">
+            <rect class="weight" x="47" y="24" width="66" height="15"/>
+            <path class="steel" d="M47 39h66v27L47 85z"/>
+            <path class="edge" d="M113 66 47 85"/>
+          </g>
+        </svg>
+        <figcaption class="block" id="block" hidden></figcaption>
+      </figure>
+    </div>
     <div class="figures" id="figures" hidden>
       <div class="fig"><span class="n" id="f-left"></span><span class="l">teams still standing</span></div>
       <div class="fig cut"><span class="n" id="f-cut"></span><span class="l">typical lowest score this week</span></div>
       <div class="fig"><span class="n" id="f-safe"></span><span class="l">survives 9 in 10 simulations</span></div>
     </div>
+    <p class="updated" id="updated"></p>
   </header>
 
   <p class="notice" id="sample" hidden>These are sample numbers from the Week 6 notes, so the page has something to show. Live Yahoo numbers replace them automatically once the league connection is set up.</p>
@@ -462,6 +578,16 @@ th.line{border-left:1px solid var(--rule)}
     <div class="mnf-tracker" id="mnf-tracker" hidden></div>
     <div class="mnf-alert" id="mnf-alert" hidden></div>
     <div class="mnf-cards" id="mnf-cards"></div>
+  </section>
+
+  <section id="grabs" aria-labelledby="grabs-title" hidden>
+    <div class="section-head"><h2 id="grabs-title">Up for grabs</h2><p id="grabs-sub"></p></div>
+    <div class="grabs-in">
+      <div class="grabs-pool"><ul class="plist pool" id="pool"></ul>
+        <details class="close-more" id="pool-more" hidden><summary></summary><ul class="plist pool" id="pool-rest"></ul></details>
+      </div>
+      <div class="chests"><h3>Money left</h3><p class="chest-note">Out of $1,000 for the season.</p><ol class="chest" id="chest"></ol></div>
+    </div>
   </section>
 
   <section id="week" aria-labelledby="week-title" hidden>
@@ -541,16 +667,21 @@ th.line{border-left:1px solid var(--rule)}
     <div id="recap-under" class="panel" role="tabpanel" aria-labelledby="tab-under" hidden></div>
   </section>
 
-  <section id="fallen-sec" class="group" aria-labelledby="fallen-title" hidden>
-    <div class="section-head"><h2 id="fallen-title">The fallen</h2></div>
+  <section id="fallen-sec" class="group band" aria-labelledby="fallen-title" hidden>
+    <div class="section-head"><h2 id="fallen-title">The fallen</h2><p id="fallen-count"></p></div>
     <div class="tabs" role="tablist" aria-label="The fallen">
       <button type="button" role="tab" id="tab-now" aria-controls="fallen-now">This season</button>
       <button type="button" role="tab" id="tab-past" aria-controls="past">Last season</button>
       <button type="button" role="tab" id="tab-close" aria-controls="close-sec">Closest chops</button>
     </div>
     <div id="fallen-now" class="panel" role="tabpanel" aria-labelledby="tab-now" hidden>
-      <p class="panel-note">Open a team for its send-off from the league email.</p>
-      <ol class="fallen" id="fallen"></ol>
+      <div class="wall-wrap">
+        <ol class="wall" id="fallen" tabindex="0" aria-label="This season's fallen, newest first. Scroll sideways for more."></ol>
+        <div class="wall-nav" aria-hidden="false">
+          <button type="button" class="wall-btn" id="wall-prev" aria-label="Earlier send-offs, scroll back">&#8592;</button>
+          <button type="button" class="wall-btn" id="wall-next" aria-label="More send-offs, scroll ahead">&#8594;</button>
+        </div>
+      </div>
       <p class="none" id="fallen-none" hidden></p>
     </div>
     <div id="past" class="panel" role="tabpanel" aria-labelledby="tab-past" hidden></div>
@@ -729,6 +860,8 @@ th.line{border-left:1px solid var(--rule)}
     $("lede").innerHTML = named(top) + (top.done && top.pChop >= 1 ? " is done at " + two(top.locked) + ", the lowest score this week, and gets cut. "
       : (top.done ? " is done at " + two(top.locked) + " and" : "") + " is the likeliest to be cut this week (" + pct(top.pChop) + "). ") +
       named(fav) + " has the best chance of being the last team standing (" + pct(fav.pWin) + ").";
+    $("block").innerHTML = '<span>On the block</span><b>' + esc(top.name) + '</b><span class="bl-p">' + pct(top.pChop) + " to be cut</span>";
+    $("block").hidden = false;
     $("f-left").innerHTML = n + " <small>of " + total + "</small>";
     $("f-cut").textContent = pts(r.cut.median);
     $("f-safe").textContent = pts(r.cut.p90) + "+";
@@ -845,28 +978,26 @@ th.line{border-left:1px solid var(--rule)}
       }
     });
     fallen.sort(function (a, b) { return b.week - a.week; });
-    // The fallen
+    // The fallen: one card per team, newest first, with its send-off and what its own bench could have done
     var missing = Math.max(0, total - n - fallen.length);
+    $("fallen-count").textContent = fallen.length ? fallen.length + " down, " + n + " still standing." : "";
     if (fallen.length || missing > 0) {
       $("fallen").innerHTML = fallen.map(function (f) {
-        var m = mgr(f.name), e = eulogies[f.name];
+        var m = mgr(f.name), e = eulogies[f.name] || {};
         var snap = (((HIST.weeks || {})[String(f.week)] || {}).teams || {})[f.name];
-        var given = snap && !(e && e.hide_odds) ? " · given " + pct(snap.chop) + " cut odds" : "";
-        var row = '<span class="w">Wk ' + f.week + '</span>' +
-          '<span class="who2"><span class="t">' + esc(f.name) + "</span>" + (m || given ? '<span class="mgr">' + esc((m || "") + given) + "</span>" : "") + "</span>";
         var known = cutHistory(r, league).filter(function (c) { return c.w === f.week; })[0];
-        var score = f.score !== null ? "<span>" + two(f.score) + " pts</span>"
-          : known && known.bound ? '<span title="Exact score unknown; at most ' + two(known.v) + '">≤' + two(known.v) + " pts</span>"
-          : known ? "<span>" + two(known.v) + " pts</span>" : "";
-        if (!e || (!e.image && !e.haiku)) {
-          return '<li><div class="frow">' + row + '<span class="end">' + score + '<span class="pending">No send-off yet</span></span></div></li>';
-        }
+        var score = f.score !== null ? two(f.score) : known ? (known.bound ? "at most " : "") + two(known.v) : null;
+        var meta = [m ? esc(m) : null, score ? "<b>" + score + "</b> pts" : null,
+          snap && !e.hide_odds ? "given " + pct(snap.chop) + " cut odds" : null].filter(Boolean).join(" · ");
         var haiku = Array.isArray(e.haiku) ? e.haiku.join("\n") : (e.haiku || "");
-        return '<li><details><summary>' + row + '<span class="end">' + score + '<span class="cue">Eulogy<i class="chev"></i></span></span></summary>' +
-          '<div class="eulogy-body">' +
-          (e.image ? '<img src="' + esc(e.image) + '" alt="' + esc(e.alt || ("Send-off image for " + f.name)) + '" loading="lazy">' : "") +
+        var facts = autopsy(f.week, f.name);
+        var img = e.image ? '<div class="fimg"><img class="bg" src="' + esc(e.image) + '" alt="" loading="lazy"><img src="' + esc(e.image) + '" alt="' + esc(e.alt || ("Send-off image for " + f.name)) + '" loading="lazy"><span class="fwk">Week ' + f.week + "</span></div>"
+          : '<div class="fimg empty"><span class="fwk">Week ' + f.week + "</span>Send-off coming</div>";
+        return '<li class="fcard">' + img + '<div class="fbody"><h3 class="ft">' + esc(f.name) + "</h3>" +
+          (meta ? '<p class="fm">' + meta + "</p>" : "") +
           (haiku ? '<p class="haiku">' + esc(haiku) + "</p>" : "") +
-          "</div></details></li>";
+          (facts.length ? '<dl class="facts">' + facts.map(function (x) { return "<dt>" + x[0] + "</dt><dd>" + x[1] + "</dd>"; }).join("") + "</dl>" : "") +
+          "</div></li>";
       }).join("");
       $("fallen").hidden = !fallen.length;
       if (missing > 0) {
@@ -874,10 +1005,23 @@ th.line{border-left:1px solid var(--rule)}
         $("fallen-none").hidden = false;
       }
       $("fallen-now").hidden = false;
+      wallButtons();
     }
     renderPast(league);
     renderClose(league);
     renderRecap();
+    // Before the week's first kickoff, last week is the news: waivers and the recap go above the odds.
+    // Once games start, the waivers panel goes and the recap drops below the road ahead.
+    var early = !started && !(data.live && data.live.anyStarted);
+    renderGrabs(early);
+    var app = $("app");
+    if (early) { app.insertBefore($("grabs"), $("week")); app.insertBefore($("recap"), $("week")); }
+    else app.insertBefore($("recap"), $("fallen-sec"));
+    var jin = document.querySelector("#jump .jump-in");
+    Array.prototype.slice.call(jin.querySelectorAll("a")).sort(function (a, b) {
+      var A = $(a.getAttribute("data-sec")), B = $(b.getAttribute("data-sec"));
+      return A && B && (A.compareDocumentPosition(B) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1;
+    }).forEach(function (a) { jin.appendChild(a); });
     setupTabs();
   }
 
@@ -973,6 +1117,89 @@ th.line{border-left:1px solid var(--rule)}
     $("close-note").innerHTML = "The smallest gaps between the team that got cut and the lowest team that survived, this season and last." +
       (span ? "<small>This season's " + esc(span) + " fill in once the Yahoo connection is live.</small>" : "");
     $("close-sec").hidden = false;
+  }
+
+  // What a fallen team's own roster could have done that week, from the lineup saved in history.json.
+  // Only when the saved starters add up to the score that got cut (so it's the lineup that played).
+  var SLOTS = [["QB"], ["RB"], ["RB"], ["WR"], ["WR"], ["WR"], ["TE"], ["WR", "RB", "TE"], ["QB", "WR", "RB", "TE"]];
+  function autopsy(w, name) {
+    var e = (HIST.weeks || {})[String(w)] || {}, out = [];
+    if (typeof e.cut_score === "number" && typeof e.next_score === "number" && e.cut_team === name) {
+      out.push(["Missed by", two(e.next_score - e.cut_score) + ". " + esc(e.next_team) + " survived at " + two(e.next_score) + "."]);
+    }
+    var rows = (e.lineups || {})[name];
+    if (!rows || typeof e.cut_score !== "number") return out;
+    var st = rows.filter(function (p) { return p.slot !== "BN" && p.slot !== "IR"; });
+    if (st.some(function (p) { return typeof p.pts !== "number"; })) return out;
+    if (Math.abs(st.reduce(function (a, p) { return a + p.pts; }, 0) - e.cut_score) > 1) return out;
+    var avail = rows.filter(function (p) { return p.slot !== "IR"; });
+    var unknown = avail.some(function (p) { return typeof p.pts !== "number"; });
+    var pool = avail.filter(function (p) { return typeof p.pts === "number"; }).sort(function (a, b) { return b.pts - a.pts; });
+    var used = [], best = 0;
+    SLOTS.forEach(function (ok) {
+      for (var i = 0; i < pool.length; i++) {
+        if (used.indexOf(pool[i]) < 0 && ok.indexOf(pool[i].pos) >= 0) { used.push(pool[i]); best += pool[i].pts; return; }
+      }
+    });
+    var bench = used.filter(function (p) { return p.slot === "BN"; }).map(function (p) { return esc(p.n) + " " + p.pts.toFixed(1); }).join(", ");
+    var saved = typeof e.next_score === "number" && best > e.next_score;
+    if (best <= e.cut_score + 0.005) { if (!unknown) out.push(["Bench", "Nothing better on it."]); }
+    else if (saved) out.push(["Bench", '<span class="save">Could have saved it.</span> The best lineup on the roster scored ' + two(best) + " with " + bench + "."]);
+    else if (!unknown) out.push(["Bench", "Not enough. The best lineup on the roster scored " + two(best) + (bench ? " with " + bench : "") + "."]);
+    return out;
+  }
+
+  // Up for grabs: last week's cut team's players, on waivers until they clear, and everyone's money.
+  function renderGrabs(early) {
+    var wv = state.data.waivers, sec = $("grabs");
+    var alive = (state.data.teams || []).filter(function (t) { return !t.out; });
+    if (!early || !wv || !wv.players || !wv.players.length) { sec.hidden = true; return; }
+    var claimed = wv.players.filter(function (p) { return p.claimed_by; }).length;
+    var m = state.mgr(wv.team);
+    $("grabs-sub").textContent = wv.team + (m ? " (" + m + ")" : "") + " went out in Week " + wv.week + ", and all " + wv.players.length +
+      " players went to waivers. " + (claimed ? claimed + " claimed so far. " : "") + "Sorted by what each projects for this week and next.";
+    var item = function (p) {
+      var bits = [p.pos + ", " + p.nfl];
+      if (typeof p.next_proj === "number") bits.push("next week " + p.next_proj.toFixed(1));
+      if (typeof p.avg === "number") bits.push(p.avg.toFixed(1) + " a game over " + p.g);
+      var big = p.proj === 0 ? "Bye" : typeof p.proj === "number" ? p.proj.toFixed(1) : "–";
+      return '<li class="' + (p.claimed_by ? "gone" : "") + '"><span class="pn">' + esc(p.name) +
+        (p.claimed_by ? '<span class="claim">Claimed by ' + esc(p.claimed_by) + "</span>" : "") + "</span>" +
+        '<span class="pv">' + big + "<small>" + (p.proj ? "Week " + state.data.week + (p.rank ? ", " + esc(p.rank) : "") : "") + "</small></span>" +
+        '<span class="pt">' + esc(bits.join(" · ")) + "</span></li>";
+    };
+    var TOP = 8;
+    $("pool").innerHTML = wv.players.slice(0, TOP).map(item).join("");
+    var rest = wv.players.slice(TOP);
+    $("pool-rest").innerHTML = rest.map(item).join("");
+    $("pool-more").querySelector("summary").textContent = "Show all " + wv.players.length;
+    $("pool-more").hidden = !rest.length;
+    $("chest").innerHTML = alive.filter(function (t) { return typeof t.faab === "number"; })
+      .sort(function (a, b) { return b.faab - a.faab; }).map(function (t) {
+        var mm = state.mgr(t.name);
+        return '<li class="' + (t.faab < 25 ? "broke" : "") + '"><span class="cn">' + esc(t.name) + "</span>" +
+          '<span class="cv">$' + t.faab + "</span>" +
+          '<span class="cb" role="img" aria-label="' + esc(t.name + (mm ? ", " + mm : "") + ": $" + t.faab + " of $1,000 left") + '"><i style="width:' + Math.max(0.5, t.faab / 10) + '%"></i></span></li>';
+      }).join("");
+    sec.hidden = false;
+  }
+
+  // The fallen wall scrolls sideways; on desktop, arrow buttons step one card at a time.
+  function wallButtons() {
+    var w = $("fallen"), prev = $("wall-prev"), next = $("wall-next");
+    var sync = function () {
+      prev.disabled = w.scrollLeft < 4;
+      next.disabled = w.scrollLeft + w.clientWidth >= w.scrollWidth - 4;
+    };
+    if (!w.dataset.bound) {
+      w.dataset.bound = "1";
+      var step = function (d) { var c = w.querySelector(".fcard"); w.scrollBy({ left: d * (c ? c.getBoundingClientRect().width + 16 : 300), behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); };
+      prev.addEventListener("click", function () { step(-1); });
+      next.addEventListener("click", function () { step(1); });
+      w.addEventListener("scroll", sync, { passive: true });
+      window.addEventListener("resize", sync);
+    }
+    requestAnimationFrame(sync);
   }
 
   // Last week: the starters who scored the most, and who beat or missed their pregame projection by the

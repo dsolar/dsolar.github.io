@@ -14,7 +14,8 @@ Every rostered player gets:
   in_best    part of the team's best lineup this week
   season     weeks 1 to last week: games played, league points each week, and season totals
              (passing, rushing, receiving), for the stat card that opens on a player's name
-Last week's lineups in history.json (the recap) get any points still missing.
+Past weeks' lineups in history.json (the recap and bench check) get any points still missing.
+waivers: last week's cut team's players (on waivers now), with projections and who claimed them.
 Every team still alive gets:
   best       points its best lineup projects to this week
   best_next  the same for next week, byes included
@@ -169,8 +170,8 @@ def season_for(lines, p):
             "tot": {k: round(v) for k, v in a["tot"].items()}}
 
 
-def fill_last_week(week, lines, path=HIST):
-    """Finish last week's box score in history.json (weeks[W].lineups, saved by guillotine_snapshot.js).
+def fill_past_weeks(week, lines, path=HIST):
+    """Finish past weeks' box scores in history.json (weeks[W].lineups, saved by guillotine_snapshot.js).
 
     The final run of a week can land before its last games are scored. A team with one starter still
     unscored gets the exact remainder of its Yahoo score; anyone else gets his Sleeper line, rescored
@@ -179,27 +180,73 @@ def fill_last_week(week, lines, path=HIST):
         return 0
     with open(path, encoding="utf-8") as f:
         hist = json.load(f)
-    w = (hist.get("weeks") or {}).get(str(week - 1)) or {}
-    lineups, scores, filled = w.get("lineups") or {}, w.get("scores") or {}, 0
-    for team, rows in lineups.items():
-        starters = [r for r in rows if r.get("slot") not in ("BN", "IR")]
-        miss = [r for r in starters if r.get("pts") is None]
-        if len(miss) == 1 and isinstance(scores.get(team), (int, float)):
-            miss[0]["pts"] = round(scores[team] - sum(r["pts"] for r in starters if r is not miss[0]), 2)
-            filled += 1
-        for r in rows:
-            if r.get("pts") is not None:
-                continue
-            sl = season_for(lines, {"name": r["n"], "pos": r["pos"], "nfl": r.get("nfl", "")})
-            if sl and len(sl["wk"]) >= week - 1:
-                v = sl["wk"][week - 2]
-                r["pts"] = v if isinstance(v, (int, float)) else 0.0
+    filled = 0
+    for wk, w in (hist.get("weeks") or {}).items():
+        wk = int(wk)
+        if wk >= week or not w.get("lineups"):
+            continue
+        scores = w.get("scores") or {}
+        for team, rows in w["lineups"].items():
+            starters = [r for r in rows if r.get("slot") not in ("BN", "IR")]
+            miss = [r for r in starters if r.get("pts") is None]
+            if len(miss) == 1 and isinstance(scores.get(team), (int, float)):
+                miss[0]["pts"] = round(scores[team] - sum(r["pts"] for r in starters if r is not miss[0]), 2)
                 filled += 1
+            for r in rows:
+                if r.get("pts") is not None:
+                    continue
+                sl = season_for(lines, {"name": r["n"], "pos": r["pos"], "nfl": r.get("nfl", "")})
+                if sl and len(sl["wk"]) >= wk:
+                    v = sl["wk"][wk - 1]
+                    r["pts"] = v if isinstance(v, (int, float)) else 0.0
+                    filled += 1
     if filled:
         with open(path, "w", encoding="utf-8") as f:
             json.dump(hist, f, ensure_ascii=False, indent=1)
             f.write("\n")
     return filled
+
+
+def waiver_pool(data, week, now, nxt, lines, path=HIST):
+    """Last week's cut team's players, now on waivers: this week's projection, next week's, the season
+    average, and who has claimed each so far (anyone back on a roster still alive)."""
+    cut = next((t for t in data["teams"] if t.get("out") == week - 1), None)
+    if not cut or not os.path.exists(path):
+        return None
+    with open(path, encoding="utf-8") as f:
+        hist = json.load(f)
+    rows = (((hist.get("weeks") or {}).get(str(week - 1)) or {}).get("lineups") or {}).get(cut["name"])
+    if not rows:
+        return None
+    owner = {}
+    for t in data["teams"]:
+        if not t.get("out"):
+            for p in t.get("roster") or []:
+                if p.get("name"):
+                    owner[(norm(p["name"]), p.get("pos"))] = t["name"]
+    players = []
+    for r in rows:
+        q = {"name": r["n"], "pos": r["pos"], "nfl": r.get("nfl", "")}
+        m = now.find(q)
+        if m and m.get("team"):
+            q["nfl"] = m["team"]
+        q["proj"] = 0.0 if q["nfl"] in now.byes else (m["pts"] if m else None)
+        if m and m.get("rank"):
+            q["rank"] = m["rank"]
+        n = nxt.find(q)
+        q["next_proj"] = 0.0 if q["nfl"] in nxt.byes else (n["pts"] if n else None)
+        sl = season_for(lines, q) if lines else None
+        played = [x for x in (sl or {}).get("wk", []) if isinstance(x, (int, float))]
+        if played:
+            q["avg"], q["g"] = round(sum(played) / len(played), 1), len(played)
+        if isinstance(r.get("pts"), (int, float)):
+            q["last"] = r["pts"]
+        who = owner.get((norm(r["n"]), r["pos"]))
+        if who:
+            q["claimed_by"] = who
+        players.append(q)
+    players.sort(key=lambda q: -(q.get("proj") or 0) - (q.get("next_proj") or 0))
+    return {"team": cut["name"], "week": week - 1, "players": players}
 
 
 def best_lineup(roster, key, flag=None, skip_bye_key=None):
@@ -330,9 +377,9 @@ def main():
         print(f"::warning::Couldn't build season stats ({type(e).__name__}: {e}).")
         lines = None
     if not a.from_dir:
-        n = fill_last_week(week, lines)
+        n = fill_past_weeks(week, lines)
         if n:
-            print(f"Filled in {n} players' Week {week - 1} points for the recap.")
+            print(f"Filled in {n} players' points in past weeks' lineups.")
 
     unmatched = []
     for t in teams:
@@ -390,6 +437,11 @@ def main():
         t["locked_proj"] = round(sum(p.get("proj") or 0 for p in done), 2)
         t["games_final"] = len(done)
 
+    pool = waiver_pool(data, week, now, nxt, lines)
+    if pool:
+        data["waivers"] = pool
+    else:
+        data.pop("waivers", None)
     data["next_byes"] = sorted(nxt.byes)
     data["proj_source"] = {
         "name": "Sleeper",
