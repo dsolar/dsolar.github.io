@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-26T20:35:43Z",
+ "updated": "2026-10-27T09:09:30Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -222,16 +222,6 @@
    "low": null,
    "src": null
   },
-  "sg-18582757": {
-   "sg": 18582757,
-   "history": [],
-   "url": "https://seatgeek.com/johnny-blue-skies-tickets/boston-massachusetts-td-garden-2026-10-26-8-pm/concert/18582757",
-   "title": "Johnny Blue Skies",
-   "date": "2026-10-26",
-   "venue": "TD Garden",
-   "low": null,
-   "src": null
-  },
   "tm-Z7r9jZ1AAZJxd": {
    "sg": 18500992,
    "history": [],
@@ -445,6 +435,10 @@
     [
      "2026-10-26",
      56
+    ],
+    [
+     "2026-10-27",
+     56
     ]
    ],
    "sg": null,
@@ -508,6 +502,10 @@
     ],
     [
      "2026-10-26",
+     22
+    ],
+    [
+     "2026-10-27",
      22
     ]
    ],
@@ -635,6 +633,10 @@
     [
      "2026-10-26",
      28
+    ],
+    [
+     "2026-10-27",
+     28
     ]
    ],
    "sg": null,
@@ -686,6 +688,10 @@
     ],
     [
      "2026-10-26",
+     22
+    ],
+    [
+     "2026-10-27",
      22
     ]
    ],
@@ -815,16 +821,6 @@
    "date": "2026-11-22",
    "venue": "Knockdown Center",
    "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-11-22-8-pm/concert/18634482",
-   "src": null,
-   "low": null
-  },
-  "espn-401909870": {
-   "history": [],
-   "sg": 18495289,
-   "title": "Celtics vs Bulls",
-   "date": "2026-10-26",
-   "venue": "TD Garden",
-   "url": "https://www.espn.com/nba/game/_/gameId/401909870/bulls-celtics",
    "src": null,
    "low": null
   },
