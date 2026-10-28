@@ -47,6 +47,7 @@ dsolar.github.io/
   tools/paint_the_corners_sim.js  balance check for Paint the Corners (node, see the top of the file)
   tools/guess_the_pick_build.py  rebuilds guess-the-pick/data.js from nflverse and basketball-reference data (see below)
   tools/guess_the_pick_check.js  checks Guess the Pick's data and rules (node tools/guess_the_pick_check.js)
+  tools/guess_the_pick_supabase.sql  the daily ten's group board (already set up; safe to run again)
   tools/win_probability_check.js  checks Win Probability's data and grading (node tools/win_probability_check.js)
   tools/win_probability_supabase.sql  one-time setup for Win Probability's crowd votes (see below)
   tools/calendar_update.py    builds calendar/events.json; calendar_prices.py watches ticket prices;

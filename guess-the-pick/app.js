@@ -60,6 +60,33 @@
     w.innerHTML = c && p.tl ? '<img src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/' + sport + "/500-dark/" + p.tl + '.png&w=400&h=400" alt="">' : "";
   }
 
+  // ---- The group board: daily scores in Supabase (tools/guess_the_pick_supabase.sql), same project as Make the Call
+  var SUPABASE_URL = "https://baxrczyufqbzrogftmyn.supabase.co";
+  var SUPABASE_KEY = "sb_publishable_brDXGevzcoI7mBaPO7Plow_yaUy4gk4";
+  function rpc(fn, body) {
+    var headers = { apikey: SUPABASE_KEY, "Content-Type": "application/json" };
+    var call = function (h) { return fetch(SUPABASE_URL + "/rest/v1/rpc/" + fn, { method: "POST", headers: h, body: JSON.stringify(body) }); };
+    return call(headers).then(function (res) {
+      return res.status === 401 ? call(Object.assign({ Authorization: "Bearer " + SUPABASE_KEY }, headers)) : res;
+    }).then(function (res) {
+      if (!res.ok) throw new Error(res.status);
+      return res.status === 204 ? null : res.json();
+    });
+  }
+  function deviceId() {
+    var id = store.get("gtp-device");
+    if (!id) {
+      id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now();
+      store.set("gtp-device", id);
+    }
+    return id;
+  }
+  // Monday of this week, Boston time, as "2026-10-26"
+  function weekStart(day) {
+    var d = new Date(day + "T12:00:00Z"), back = (d.getUTCDay() + 6) % 7;
+    return new Date(d - back * 864e5).toISOString().slice(0, 10);
+  }
+
   var sport = store.get("gtp-sport") || "nba";
   var asked = (/[?&]sport=(nba|nfl)/i.exec(location.search) || [])[1];
   if (asked) sport = asked.toLowerCase();
@@ -208,9 +235,27 @@
     $("answer").textContent = p.n;
     var where = p.to ? " Picked by the " + p.tn + ", " + (p.late ? "debuted with the " : "went to the ") + p.ton + "." : "";
     $("facts").innerHTML = "<b>" + esc([p.pos, p.col].filter(Boolean).join(" · ")) + "</b><br>" + esc(p.line) + "." + esc(where);
+    $("context").innerHTML = context(p);
     var last = mode === "daily" ? game.results.length >= G.DAILY : game.misses >= G.LIVES;
     $("next").textContent = last ? "See how you did" : "Next pick";
     $("next").focus({ preventScroll: true });
+  }
+  // The rest of that draft: who went right before and after him, and the best career taken after him.
+  function context(p) {
+    var draft = picks.filter(function (x) { return x.y === p.y; });
+    var at = function (n) { return draft.filter(function (x) { return x.p === n; })[0]; };
+    var slot = function (x) { return x.r === 1 ? "#" + x.p : "Round " + x.r + " #" + x.p; };
+    var rows = [], before = at(p.p - 1), after = at(p.p + 1);
+    if (before) rows.push([slot(before) + " " + before.n, "one pick before"]);
+    if (after) rows.push([slot(after) + " " + after.n, "one pick after"]);
+    var later = draft.filter(function (x) { return x.p > p.p; }).sort(function (a, b) { return b.f - a.f; })[0];
+    var top = draft.slice().sort(function (a, b) { return b.f - a.f; })[0];
+    if (later && later !== after && later.f >= Math.max(0.25, p.f + 0.05)) rows.push([slot(later) + " " + later.n, "best career taken after him"]);
+    else if (top === p && p.f >= 0.3) rows.push(["Best career in the " + p.y + " draft", ""]);
+    if (!rows.length) return "";
+    return '<p class="ctx-label">The ' + p.y + " " + LEAGUE[sport] + " draft</p><ul>" + rows.map(function (r) {
+      return "<li><b>" + esc(r[0]) + "</b>" + (r[1] ? "<span>" + esc(r[1]) + "</span>" : "") + "</li>";
+    }).join("") + "</ul>";
   }
   function save() {
     if (mode === "daily") { game.cur = cur; store.set(dailyKey(), game); }
@@ -239,6 +284,10 @@
       $("again").textContent = otherDone ? "Play endless" : "Play the " + LEAGUE[other] + " daily";
       $("again").onclick = function () { if (otherDone) startEndless(); else { load(other); startDaily(); } };
       tick();
+      $("board").hidden = false;
+      boardSquares = game.results.map(function (r) { return r.s; }).join("");
+      var name = store.get("gtp-name");
+      if (name && game.posted !== name) postScore(name); else loadBoard();
     } else {
       var prev = store.get("gtp-best-" + sport), best = prev || 0, isBest = prev == null || total > best;
       if (isBest) store.set("gtp-best-" + sport, total);
@@ -248,16 +297,104 @@
       $("again").textContent = "Run it back";
       $("again").onclick = startEndless;
       $("countdown").textContent = "";
+      $("board").hidden = true;
     }
     $("done-squares").textContent = squares.length > 40 ? squares.slice(-40 * 2) : squares;
-    $("recap").innerHTML = game.results.map(function (r) {
+    $("recap").innerHTML = game.results.map(function (r, k) {
       var p = picks[r.i];
       return '<li><i class="s' + r.s + '"></i><div><b>' + esc(p.n) + "</b><br><span>" + p.y + " · " + (p.r === 1 ? "Pick " + p.p : "Round " + p.r + ", pick " + p.rp)
-        + " · " + esc(p.t) + (p.to ? " → " + esc(p.to) : "") + "</span></div><span>+" + r.s + "</span></li>";
+        + " · " + esc(p.t) + (p.to ? " → " + esc(p.to) : "") + '</span><span class="hit" data-k="' + k + '"></span></div><span>+' + r.s + "</span></li>";
     }).join("");
     $("share").onclick = function () { share(total, squares); };
+    hits = null;
     homeStatus();
   }
+  // Post today's score under a name (once per device per day; posting again renames it), then show the board.
+  var boardSquares = "", boardTab = "today", boardRows = [], hits = null;
+  function postScore(name) {
+    $("board-note").textContent = "Posting\u2026";
+    rpc("gtp_post", { p_day: today, p_sport: sport, p_device: deviceId(), p_player: name, p_squares: boardSquares }).then(function () {
+      store.set("gtp-name", name);
+      game.posted = name; store.set(dailyKey(), game);
+      loadBoard();
+    }, function () { $("board-note").textContent = "Couldn't post right now. Try again in a minute."; drawBoard(); });
+  }
+  function loadBoard() {
+    var day = today, from = weekStart(today);
+    $("board-note").textContent = "Loading the board\u2026";
+    rpc("gtp_board", { p_sport: sport, p_from: from, p_to: day }).then(function (rows) {
+      if (day !== today) return;
+      boardRows = rows || [];
+      $("board-note").textContent = "";
+      drawBoard();
+    }, function () { $("board-note").textContent = "The board isn't loading right now."; drawBoard(); });
+  }
+  // One row per device per day (its latest name), so a rename doesn't count twice, and one per name,
+  // so playing on a phone and a laptop counts the first score only.
+  function todays() {
+    var by = {}, names = {};
+    boardRows.forEach(function (r) { if (r.day === today) by[r.device] = r; });
+    return Object.keys(by).map(function (k) { return by[k]; })
+      .sort(function (a, b) { return a.created_at < b.created_at ? -1 : 1; })
+      .filter(function (r) { var n = r.player.toLowerCase(); if (names[n]) return false; names[n] = true; return true; });
+  }
+  function drawBoard() {
+    var name = store.get("gtp-name"), me = (name || "").toLowerCase();
+    $("board-form").hidden = !!(name && game.posted === name);
+    $("board-me").hidden = !(name && game.posted === name);
+    if (name) { $("board-name").value = name; $("board-me-name").textContent = name; }
+    document.querySelectorAll("#board .tabs button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-tab") === boardTab)); });
+    var list = $("board-list"), html = "";
+    if (boardTab === "today") {
+      var rows = todays().sort(function (a, b) { return b.score - a.score || (a.created_at < b.created_at ? -1 : 1); });
+      html = rows.map(function (r, k) {
+        var sq = r.squares.split("").map(function (c) { return SQUARE[+c]; }).join("");
+        return '<li class="' + (r.player.toLowerCase() === me ? "me" : "") + '"><b class="rk">' + (k + 1) + "</b><span class=\"nm\">" + esc(r.player)
+          + '</span><span class="sq" aria-hidden="true">' + sq + "</span><b class=\"pt\">" + r.score + "</b></li>";
+      }).join("");
+      if (!rows.length && !$("board-note").textContent) html = '<li class="empty">Nobody on the board yet today. Be first.</li>';
+      // How the group did on each pick, for the recap
+      hits = rows.length ? boardSquares.split("").map(function (c, k) { return rows.filter(function (r) { return r.squares.charAt(k) !== "0"; }).length; }) : null;
+      drawHits(rows.length);
+    } else {
+      var seen = {}, tot = {};
+      boardRows.slice().reverse().forEach(function (r) {   // newest first, so each device's latest name wins
+        var key = r.day + "|" + r.device;
+        if (seen[key]) return; seen[key] = true;
+        var who = r.player.toLowerCase(), dayKey = who + "|" + r.day;
+        if (seen[dayKey]) return; seen[dayKey] = true;       // two devices, one name, one day: only one score counts
+        tot[who] = tot[who] || { player: r.player, score: 0, days: 0 };
+        tot[who].score += r.score; tot[who].days++;
+      });
+      var week = Object.keys(tot).map(function (k) { return tot[k]; }).sort(function (a, b) { return b.score - a.score || b.days - a.days; });
+      html = week.map(function (r, k) {
+        return '<li class="' + (r.player.toLowerCase() === me ? "me" : "") + '"><b class="rk">' + (k + 1) + "</b><span class=\"nm\">" + esc(r.player)
+          + '</span><span class="sq">' + r.days + " day" + (r.days === 1 ? "" : "s") + "</span><b class=\"pt\">" + r.score + "</b></li>";
+      }).join("");
+      if (!week.length && !$("board-note").textContent) html = '<li class="empty">No scores yet this week.</li>';
+    }
+    list.innerHTML = html;
+  }
+  function drawHits(n) {
+    document.querySelectorAll("#recap .hit").forEach(function (el) {
+      var k = +el.getAttribute("data-k");
+      el.textContent = hits && n > 1 ? " · " + hits[k] + " of " + n + " got it" : "";
+    });
+  }
+  $("board-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var name = $("board-name").value.replace(/\s+/g, " ").trim().slice(0, 24);
+    if (!name) return;
+    postScore(name);
+  });
+  $("board-change").addEventListener("click", function () {
+    $("board-form").hidden = false; $("board-me").hidden = true;
+    $("board-name").focus(); $("board-name").select();
+  });
+  document.querySelectorAll("#board .tabs button").forEach(function (b) {
+    b.addEventListener("click", function () { boardTab = b.getAttribute("data-tab"); drawBoard(); });
+  });
+
   function niceDate() {
     return new Date(today + "T12:00:00Z").toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
   }

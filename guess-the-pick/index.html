@@ -158,8 +158,10 @@ body:not([data-screen="home"]) .mast .kicker,body:not([data-screen="home"]) .mas
 .list li[aria-selected="true"],.list li:hover{background:var(--panel-hi)}
 .list li mark{background:none;color:var(--gold);font-weight:700}
 .msg{min-height:22px;margin:10px 2px 0;font-size:14.5px;color:var(--dim)}
+.msg:empty{min-height:0;margin:0}
 .msg.bad{color:#FF8A9A}
 .wrongs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.wrongs:empty{display:none}
 .wrongs span{font-size:13px;padding:4px 10px;border-radius:999px;background:rgba(232,67,92,.12);border:1px solid rgba(232,67,92,.35);text-decoration:line-through;color:#FFB3BF}
 .tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 .tool{padding:9px 14px;border-radius:999px;border:1px solid var(--line-strong);background:transparent;font-size:14px;font-weight:600;color:var(--dim)}
@@ -188,6 +190,40 @@ body:not([data-screen="home"]) .mast .kicker,body:not([data-screen="home"]) .mas
 .btn.primary{background:var(--red);border-color:var(--red)} .btn.primary:hover{background:var(--red-hi)}
 .btn:hover{border-color:var(--chalk)}
 .countdown{color:var(--faint);font-size:14px;margin:14px 0 0}
+/* Draft context on the reveal */
+.context:empty{display:none}
+.context{margin-top:14px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.ctx-label{margin:0 0 8px;font:700 11px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+.context ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.context li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 12px;font-size:15px}
+.context li b{font-weight:600}
+.context li span{color:var(--faint);font-size:13.5px}
+
+/* Group board */
+.board{margin:22px 0 0;padding:16px;border-radius:14px;background:rgba(0,0,0,.18);border:1px solid var(--line);text-align:left}
+.board-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.board h3{margin:0;white-space:nowrap;font:800 21px/1 var(--display);text-transform:uppercase;letter-spacing:.04em}
+.tabs{display:flex;border:1px solid var(--line-strong);border-radius:999px;padding:3px}
+.tabs button{border:0;background:none;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:600;color:var(--dim)}
+.tabs button[aria-pressed="true"]{background:var(--chalk);color:#0B1626}
+.board-form label{display:block;font-size:14px;color:var(--dim);margin-bottom:8px}
+.board-fields{display:flex;gap:8px}
+.board-fields input{flex:1;min-width:0;padding:12px 14px;border-radius:10px;border:1.5px solid var(--line-strong);background:#0A1626;font-size:16px}
+.board-fields input:focus{outline:none;border-color:var(--gold)}
+.board-me{margin:0;font-size:14px;color:var(--dim)}
+.board-me b{color:var(--chalk)}
+.board-me button{background:none;border:0;color:var(--gold);font-weight:600;padding:0 0 0 6px;text-decoration:underline;text-underline-offset:3px}
+.board-list{list-style:none;margin:12px 0 0;padding:0}
+.board-list li{display:grid;grid-template-columns:28px 1fr auto 34px;gap:10px;align-items:center;padding:9px 6px;border-top:1px solid var(--line)}
+.board-list li.me{background:rgba(242,193,78,.08);border-radius:8px}
+.board-list .rk{color:var(--faint);font-weight:600}
+.board-list .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.board-list .sq{font-size:13px;letter-spacing:1px;color:var(--faint)}
+.board-list .pt{text-align:right;font:800 20px/1 var(--display)}
+.board-list li.empty{display:block;color:var(--faint);font-size:14px}
+.board-note{margin:8px 0 0;font-size:13.5px;color:var(--faint)}
+.board-note:empty{display:none}
+@media(max-width:420px){.board-list .sq{font-size:10px;letter-spacing:0}}
 .recap{list-style:none;margin:22px 0 0;padding:0;text-align:left;border-top:1px solid var(--line)}
 .recap li{display:grid;grid-template-columns:14px 1fr auto;gap:12px;align-items:center;padding:11px 2px;border-bottom:1px solid var(--line)}
 .recap i{width:12px;height:12px;border-radius:3px}
@@ -283,6 +319,7 @@ body:not([data-screen="home"]) .mast .kicker,body:not([data-screen="home"]) .mas
         <p class="verdict" id="verdict"></p>
         <p class="answer" id="answer"></p>
         <p class="facts" id="facts"></p>
+        <div class="context" id="context"></div>
         <button type="button" class="next" id="next">Next pick</button>
       </div>
     </article>
@@ -301,6 +338,19 @@ body:not([data-screen="home"]) .mast .kicker,body:not([data-screen="home"]) .mas
         <button type="button" class="btn" id="menu">Menu</button>
       </div>
       <p class="countdown" id="countdown"></p>
+      <div class="board" id="board" hidden>
+        <div class="board-head">
+          <h3>Group board</h3>
+          <div class="tabs" role="group" aria-label="Board"><button type="button" data-tab="today" aria-pressed="true">Today</button><button type="button" data-tab="week" aria-pressed="false">This week</button></div>
+        </div>
+        <form class="board-form" id="board-form" autocomplete="off">
+          <label for="board-name">Put your score on the board</label>
+          <div class="board-fields"><input id="board-name" type="text" maxlength="24" placeholder="Your name" autocapitalize="words" spellcheck="false" required><button type="submit" class="btn primary">Post</button></div>
+        </form>
+        <p class="board-me" id="board-me" hidden>On the board as <b id="board-me-name"></b> <button type="button" id="board-change">Change</button></p>
+        <ol class="board-list" id="board-list"></ol>
+        <p class="board-note" id="board-note" aria-live="polite"></p>
+      </div>
       <ul class="recap" id="recap"></ul>
     </div>
   </section>
@@ -311,6 +361,6 @@ body:not([data-screen="home"]) .mast .kicker,body:not([data-screen="home"]) .mas
 
 <script src="data.js?v=1"></script>
 <script src="engine.js?v=1"></script>
-<script src="app.js?v=2"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>
