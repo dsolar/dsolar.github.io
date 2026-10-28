@@ -24,9 +24,11 @@
 <link rel="stylesheet" href="../assets/bar.css">
 <script src="../assets/analytics.js" defer></script>
 <style>
-/* One narrow column. The memorable thing is the keeper path: three hand-hung tiles like the
-   Green Monster's manual scoreboard, one per keeper year, with next season's tile lit in red.
-   Everything else stays quiet: concrete paper, navy ink, stadium-sign condensed headings. */
+/* One narrow column between ballpark set pieces. The top of the page is the Green Monster's manual
+   scoreboard: every champion hung as a tile, line-score style, and a countdown to Opening Night.
+   Hand-hung tiles carry through (the keeper path, trophies, draft picks); awards are trading cards,
+   seasons fly pennants, and the graveyard sits under a night game's lights. Concrete paper, navy ink,
+   stadium-sign condensed headings for everything in between. */
 :root{
   --bg:#EEF1EC;        /* concrete */
   --surface:#F8FAF7;
@@ -38,6 +40,9 @@
   --red:#BD3039;       /* next season's tile, nothing else */
   --red-ink:#FFFFFF;
   --red-text:#A8252E;  /* red for small text, a notch darker */
+  --deep:#173628;      /* the section bar under the scoreboard */
+  --night:#0C1524;     /* the graveyard's night game */
+  --gold:#B8892A;
   --f-sign:"Barlow Condensed","Arial Narrow","Helvetica Neue",Arial,sans-serif;
   --f-body:"Libre Franklin","Franklin Gothic Medium","Helvetica Neue",Arial,sans-serif;
   color-scheme:light;
@@ -61,24 +66,53 @@ a{color:inherit;text-decoration-color:var(--red);text-underline-offset:3px}
 a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--red);outline-offset:2px;border-radius:2px}
 .num{font-variant-numeric:tabular-nums}
 
-.wrap{max-width:46rem;margin:0 auto;padding-block:2.25rem 4rem;
+html,body{overflow-x:clip}
+.wrap{max-width:46rem;margin:0 auto;padding-block:0 4rem;
   padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));
   display:grid;grid-template-columns:minmax(0,1fr);gap:3.25rem}
 
-/* Header */
+/* Header: the scoreboard. A full-bleed green wall with panel seams, chalk lettering, and the
+   champions hung as tiles under each season like a line score. */
+.hero{position:relative;isolation:isolate;padding-block:2.1rem 1.9rem;color:var(--chalk);
+  --ink:var(--chalk);--muted:rgba(243,241,231,.72);--rule:rgba(243,241,231,.2)}
+.hero::before{content:"";position:absolute;z-index:-1;top:0;bottom:0;left:calc(50% - 50vw);right:calc(50% - 50vw);
+  background:repeating-linear-gradient(90deg,rgba(0,0,0,.09) 0 1px,transparent 1px 7.5rem),
+    repeating-linear-gradient(0deg,rgba(0,0,0,.07) 0 1px,transparent 1px 3.75rem),var(--monster)}
+.hero-k{margin:0 0 .5rem;font:600 1rem/1.2 var(--f-sign);letter-spacing:.04em;color:var(--muted)}
 h1{font:700 clamp(2.7rem, 10vw, 4.6rem)/.92 var(--f-sign);letter-spacing:-.005em;margin:0 0 .9rem}
+.hero h1{color:var(--chalk)}
 .lede{font-size:1.075rem;max-width:36rem;margin:0}
 .reigning{margin:1rem 0 0;color:var(--muted)}
 .reigning strong{color:var(--ink);font-weight:600}
 .ext{display:flex;flex-wrap:wrap;gap:.3rem 1.25rem;margin:.6rem 0 0;font-weight:600}
+.hero a{text-decoration-color:var(--chalk)}
+.ls{display:grid;grid-template-columns:auto repeat(var(--n,14),minmax(0,1fr));gap:3px;margin:1.5rem 0 0;padding:.6rem;background:rgba(0,0,0,.22);border-radius:3px;
+  box-shadow:inset 0 0 0 1px rgba(243,241,231,.12)}
+.ls-k{align-self:center;padding-right:.5rem;font:600 .95rem/1 var(--f-sign);color:var(--muted)}
+.ls-y{text-align:center;font:600 .82rem/1 var(--f-sign);color:var(--muted);padding:.1rem 0 .2rem}
+.ls .tile{width:auto;height:2.35rem;font-size:clamp(.78rem,2.6vw,1.2rem);background:#12291D;animation:hang .45s cubic-bezier(.3,1.5,.6,1) both;animation-delay:calc(var(--i) * 55ms + 150ms)}
+.ls .tile.now{background:var(--red)}
+.ls .tile.rpt{color:#F1D58A}
+@keyframes hang{0%{transform:translateY(-.6rem) rotate(-4deg);opacity:0}100%{transform:none;opacity:1}}
+@media (prefers-reduced-motion: reduce){.ls .tile{animation:none}}
+.ls-note{margin:.45rem 0 0;font-size:.8125rem;color:var(--muted)}
+.ls-note b{color:#F1D58A;font-weight:600}
+.hero-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.9rem 2rem;margin-top:1.2rem}
+.count{display:flex;align-items:center;gap:.7rem}
+.count .tile{background:#12291D;width:2.2rem;height:2.6rem;font-size:1.65rem}
+.count p{margin:0;font-size:.875rem;line-height:1.3;color:var(--muted);max-width:11rem}
+.count p b{display:block;color:var(--chalk);font:600 1.1rem/1.1 var(--f-sign)}
+@media (max-width:480px){.ls{padding:.4rem;gap:2px}.ls .tile{height:1.75rem;border-radius:1px}.ls-k{font-size:.8rem;padding-right:.3rem}.ls-y{font-size:.7rem}}
 /* Section links stay pinned under the site bar while you scroll; one swipeable row on phones */
-.jump{position:sticky;top:0;z-index:20;display:flex;gap:1.15rem;overflow-x:auto;scrollbar-width:none;white-space:nowrap;
-  margin-top:-2.4rem;padding:.65rem 0;background:var(--bg);border-block:1px solid var(--rule);
-  box-shadow:0 0 0 100vmax var(--bg);clip-path:inset(0 -100vmax)}
+.jump{position:sticky;top:0;z-index:20;display:flex;gap:.35rem;overflow-x:auto;scrollbar-width:none;white-space:nowrap;
+  margin-top:-3.25rem;padding:.5rem 0;background:var(--deep);
+  box-shadow:0 -100vmax 0 100vmax var(--deep),0 calc(3px - 100vmax) 0 100vmax var(--red);clip-path:inset(0 -100vmax -3px)}
 .jump::-webkit-scrollbar{display:none}
-.jump a{font:600 1.05rem/1.3 var(--f-sign);letter-spacing:.01em;text-decoration:none;color:var(--muted);padding:.2rem 0}
-.jump a:hover{color:var(--ink);text-decoration:underline}
-.jump a[aria-current="true"]{color:var(--ink);text-decoration:underline;text-decoration-color:var(--red);text-decoration-thickness:2px;text-underline-offset:5px}
+.jump a{font:600 1.05rem/1.3 var(--f-sign);letter-spacing:.01em;text-decoration:none;color:rgba(243,241,231,.8);padding:.18rem .5rem;border-radius:2px}
+.jump a:first-child{margin-left:-.5rem}
+.jump a:hover{color:var(--chalk);background:rgba(243,241,231,.1)}
+.jump a[aria-current="true"]{color:var(--deep);background:var(--chalk)}
+.jump a:focus-visible{outline:2px solid var(--chalk);outline-offset:2px}
 main > section{scroll-margin-top:3.75rem}
 
 /* Sections */
@@ -127,9 +161,15 @@ select{padding-right:2rem}
 /* Champions */
 .titles{list-style:none;margin:1.25rem 0 0;padding:0;border-top:1px solid var(--rule)}
 .titles>li{border-bottom:1px solid var(--rule)}
-.titles summary{display:grid;grid-template-columns:3.4rem 1fr auto;gap:.2rem 1rem;align-items:baseline;padding:.75rem 0;cursor:pointer;list-style:none}
+.titles summary{display:grid;grid-template-columns:6.4rem 1fr auto;gap:.2rem 1rem;align-items:start;padding:.75rem 0;cursor:pointer;list-style:none}
 .titles summary::-webkit-details-marker{display:none}
-.t-year{font:600 1.55rem/1 var(--f-sign)}
+/* Each season flies a felt pennant; the latest is red */
+.t-year{display:block;width:6.4rem;padding:.58rem 0 .58rem .62rem;background:var(--monster);color:var(--chalk);font:700 1.1rem/1 var(--f-sign);letter-spacing:.02em;
+  clip-path:polygon(0 0,100% 50%,0 100%);box-shadow:inset .32rem 0 0 rgba(0,0,0,.28)}
+.titles>li:first-child .t-year{background:#A8252E}
+.cards:focus-visible{outline:2px solid var(--red);outline-offset:4px}
+.t-champ{padding-top:.1rem}
+.t-open{padding-top:.25rem}
 .t-champ{font-weight:600;min-width:0;overflow-wrap:anywhere}
 .t-rest{display:block;font-size:.8125rem;color:var(--muted);font-weight:400}
 .t-rest+.t-rest{margin-top:.05rem}
@@ -182,12 +222,16 @@ input.who{width:9rem}
 .status{font-size:.8125rem;color:var(--muted);margin:.5rem 0 0}
 /* Draft order */
 .order{display:grid;grid-template-columns:1fr 1fr;gap:0 1.5rem;margin:.4rem 0 0}
-.order h4{font:600 1.08rem/1.2 var(--f-sign);margin:.2rem 0 .3rem;color:var(--muted)}
+.order h3{font:600 1.08rem/1.2 var(--f-sign);margin:.2rem 0 .3rem;color:var(--muted)}
 .order ol{list-style:none;margin:0;padding:0}
 .order li{display:grid;grid-template-columns:1.9rem minmax(0,1fr);gap:.5rem;padding:.32rem 0;border-bottom:1px solid var(--rule);font-size:.9375rem}
-.order li .n{font:600 1.05rem/1.3 var(--f-sign);color:var(--muted)}
+.order li .n{display:grid;place-items:center;width:1.7rem;height:1.95rem;border-radius:2px;background:var(--monster);color:var(--chalk);font:600 1.05rem/1 var(--f-sign);
+  box-shadow:inset 0 -2px 0 rgba(0,0,0,.28)}
+.order .lotto li .n{width:1.75rem;height:1.75rem;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff 0 30%,#E6E3D6 75%);color:var(--monster);
+  box-shadow:inset 0 0 0 1px rgba(16,32,51,.18)}
+.order li{align-items:center}
 .order li.me{font-weight:600}
-.order li.me .n{color:var(--red-text)}
+.order li.me .n{background:var(--red);color:#fff}
 .order .sub{display:block;font-size:.8125rem;color:var(--muted);font-weight:400}
 @media (max-width:560px){.order{grid-template-columns:1fr}}
 .mypicks{list-style:none;margin:.5rem 0 0;padding:0;columns:4 8rem;column-gap:1rem;font-size:.875rem}
@@ -222,14 +266,21 @@ input.who{width:9rem}
 .votes li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.2rem 1rem;align-items:center;padding:.3rem 0;border-bottom:1px solid var(--rule)}
 
 /* Team stats */
-.tbl-wrap{overflow-x:auto;margin:0 0 .5rem;border-top:2px solid var(--ink)}
+.tbl-wrap{overflow-x:auto;margin:0 0 .5rem;border-radius:3px}
 .stats{border-collapse:collapse;font-size:.875rem;width:100%}
 .stats.wide{min-width:36rem}
 .stats th{font-weight:600;color:var(--muted);text-align:right;padding:.4rem .5rem;border-bottom:1px solid var(--rule);white-space:nowrap}
 .stats td{text-align:right;padding:.38rem .5rem;border-bottom:1px solid color-mix(in srgb, var(--rule) 60%, transparent);white-space:nowrap}
 .stats th.tm,.stats td.tm{text-align:left;position:sticky;left:0;background:var(--bg);white-space:normal;min-width:9.5rem;max-width:13rem;overflow-wrap:anywhere;padding-left:0}
 .stats td.tm{font-weight:600}
-.stats td.lead{font-weight:700;box-shadow:inset 0 -2px 0 var(--monster)}
+.stats td.lead{font-weight:700;color:var(--chalk);background:var(--monster)}
+/* the scoreboard's header row, and roto points drawn as a bar behind each total */
+.stats thead th{background:var(--monster);color:var(--chalk);border-bottom:0;font:600 .95rem/1.2 var(--f-sign);letter-spacing:.02em;padding-block:.5rem}
+.stats thead th.tm{background:var(--monster);padding-left:.6rem}
+.stats td.tm{padding-left:.6rem}
+.stats abbr{text-decoration:none}
+.stats td.bar{background:linear-gradient(90deg,transparent calc(100% - var(--w)),color-mix(in srgb,var(--monster) 22%,transparent) calc(100% - var(--w)));font-weight:700}
+.stats tbody tr:first-child td{font-weight:700}
 .stats td.rk{color:var(--muted);text-align:left;padding-left:0}
 .sub-h{margin:2rem 0 .3rem}
 .records{width:100%;border-collapse:collapse;font-size:.875rem;margin-top:.6rem}
@@ -238,17 +289,26 @@ input.who{width:9rem}
 .records td.v{font:600 1.15rem/1.1 var(--f-sign);white-space:nowrap}
 .records .r{text-align:right}
 
-/* Awards */
-.awards{display:grid;grid-template-columns:11rem minmax(0,1fr);margin:1rem 0 0;border-top:1px solid var(--rule)}
-.awards dt,.awards dd{margin:0;padding:.75rem 0;border-bottom:1px solid var(--rule)}
-.awards dt{font:600 1.2rem/1.2 var(--f-sign);padding-right:1rem}
-.awards dd b{font-weight:600}
-.awards .aw-team{display:block;font-size:.875rem;color:var(--muted)}
-.awards .aw-line{display:block;font-size:.875rem;font-variant-numeric:tabular-nums;margin-top:.15rem}
-.awards .aw-why{display:block;font-size:.8125rem;color:var(--muted)}
-@media (max-width:480px){
-  .awards{grid-template-columns:1fr}
-  .awards dt{border-bottom:0;padding-bottom:0}
+/* Awards: a set of trading cards. Each honor gets its own frame color; the dubious ones are error cards. */
+.cards{list-style:none;margin:1rem 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(13.5rem,1fr));gap:.85rem}
+.card{--c:var(--monster);background:var(--stock,#FFFEFA);padding:.4rem;border-radius:7px;box-shadow:0 1px 0 rgba(16,32,51,.1),0 8px 18px -10px rgba(16,32,51,.35)}
+.card-in{position:relative;height:100%;display:grid;grid-template-rows:auto auto 1fr auto;border:2px solid var(--c);border-radius:4px;overflow:hidden}
+.card-a{margin:0;padding:.38rem .6rem .34rem;background:var(--c);color:#fff;font:700 1.2rem/1.1 var(--f-sign);letter-spacing:.02em}
+.card-p{margin:0;padding:.7rem .65rem .1rem;font:700 1.6rem/1 var(--f-sign);color:var(--ink);overflow-wrap:anywhere}
+.card-t{margin:0;padding:.25rem .65rem .7rem;font-size:.8125rem;color:var(--muted)}
+.card-b{padding:.5rem .65rem .6rem;background:color-mix(in srgb,var(--c) 11%,transparent);border-top:1px dashed color-mix(in srgb,var(--c) 45%,transparent)}
+.card-line{margin:0;font-size:.82rem;font-weight:600;font-variant-numeric:tabular-nums}
+.card-why{margin:.2rem 0 0;font-size:.75rem;color:var(--muted)}
+.card.mvp{--c:#B22D35} .card.cy{--c:#22407A} .card.val{--c:#1F6B45} .card.kpr{--c:#9A7220} .card.off{--c:#A9532C} .card.pit{--c:#1A6670}
+.card.dub{--c:#5D6670}
+.card.dub .card-in{border-style:dashed}
+.card.dub .card-a::after{content:"E";position:absolute;right:.5rem;top:.3rem;display:grid;place-items:center;width:1.45rem;height:1.45rem;border-radius:50%;background:#fff;color:var(--c);font:700 .95rem/1 var(--f-sign)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .card{--stock:#16231C;box-shadow:0 0 0 1px var(--rule)}}
+:root[data-theme="dark"] .card{--stock:#16231C;box-shadow:0 0 0 1px var(--rule)}
+@media (max-width:40rem){
+  .cards{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:min(78vw,17rem);overflow-x:auto;scroll-snap-type:x mandatory;
+    margin-inline:calc(-1 * max(16px, env(safe-area-inset-left, 0px)));padding:0 max(16px, env(safe-area-inset-left, 0px)) .9rem;scroll-padding-inline:16px;scrollbar-width:thin}
+  .card{scroll-snap-align:start}
 }
 
 /* Managers */
@@ -259,6 +319,14 @@ input.who{width:9rem}
 .m-name{font-weight:600;min-width:0}
 .m-sub{display:block;font-size:.8125rem;color:var(--muted);font-weight:400}
 .trophies{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:3px;max-width:12rem}
+/* Every season in the league as one square: red title, dark green top three, light green playoffs, gray missed */
+.strip{display:flex;gap:2px;margin-top:.4rem}
+.strip i{width:.62rem;height:.62rem;border-radius:1px;background:transparent;box-shadow:inset 0 0 0 1px var(--rule)}
+.strip i.w{background:var(--red);box-shadow:none}
+.strip i.p{background:var(--monster);box-shadow:none}
+.strip i.q{background:color-mix(in srgb,var(--monster) 45%,transparent);box-shadow:none}
+.strip i.x{background:color-mix(in srgb,var(--muted) 35%,transparent);box-shadow:none}
+.badge-key .strip{margin:0 .4rem 0 0;display:inline-flex}
 .trophies .tile{width:1.7rem;height:1.95rem;font-size:1.05rem}
 /* Tenure badges: a solid scoreboard plate for the 2013 originals, an outlined one for 10+ seasons */
 .badge{display:inline-block;margin-left:.45rem;padding:.14rem .42rem .1rem;border-radius:2px;border:1.5px solid var(--monster);
@@ -284,7 +352,16 @@ input.who{width:9rem}
 .aw-list .num{color:var(--muted)}
 .career tr.won td{font-weight:600}
 
-/* Graveyard: headstones */
+/* Graveyard: headstones on the outfield grass, under a night game's lights */
+#graveyard{position:relative;isolation:isolate;padding-block:2.4rem 2.8rem;color:#E7ECF2;
+  --ink:#E7ECF2;--muted:#9AA7B8;--rule:rgba(231,236,242,.16);--surface:#25303F}
+#graveyard::before{content:"";position:absolute;z-index:-1;top:0;bottom:0;left:calc(50% - 50vw);right:calc(50% - 50vw);
+  background:linear-gradient(transparent calc(100% - 3.2rem),#1D4430 calc(100% - 3.2rem)),
+    radial-gradient(ellipse 60% 55% at 12% -8%,rgba(255,244,214,.28),transparent 70%),
+    radial-gradient(ellipse 60% 55% at 88% -8%,rgba(255,244,214,.24),transparent 70%),var(--night)}
+#graveyard .stone{background:linear-gradient(#2E3A4B,#232D3B);border-color:rgba(231,236,242,.14);border-bottom-color:#2F6B4A}
+#graveyard .badge.orig{background:#2F6B4A;border-color:#2F6B4A;color:#F3F1E7}
+#graveyard .badge.vet{border-color:#2F6B4A;color:#E7ECF2}
 .stones{list-style:none;margin:1.5rem 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(13.5rem,calc(50% - .4rem)),1fr));gap:1.1rem .8rem}
 .stone{position:relative;text-align:center;padding:1.6rem 1rem 1.1rem;background:var(--surface);
   border:1px solid var(--rule);border-bottom:4px solid var(--monster);border-radius:7rem 7rem 3px 3px / 4.5rem 4.5rem 3px 3px}
@@ -331,7 +408,8 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
   .kp-right{justify-content:space-between}
   .kp-cost{text-align:left;min-width:0}
   .controls>.field:not(.grow), #k-team, #d-year, #d-team{width:100%}
-  .titles summary{grid-template-columns:3rem 1fr}
+  .titles summary{grid-template-columns:5.6rem 1fr}
+  .t-year{width:5.6rem;font-size:1rem;padding-left:.55rem}
   .t-open{grid-column:2}
   .stone{padding:1.3rem .6rem .9rem;border-radius:5rem 5rem 3px 3px / 3.5rem 3.5rem 3px 3px}
   .stone h3{font-size:1.25rem}
@@ -363,10 +441,16 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
 <nav class="ds-bar" aria-label="davidsolar.dev"><a href="../"><img src="../assets/ds-mark.svg" alt="" width="20" height="20"><span class="ds-bar-name">David Solar</span></a><a href="../#projects">All projects</a></nav>
 
 <main class="wrap">
-  <header>
+  <header class="hero">
+    <p class="hero-k">A Yahoo keeper league since 2013</p>
     <h1>Don't Forget to Wipe Yoenis</h1>
     <p class="lede">The record book for our 16-team Yahoo keeper league. Every champion, draft pick and award since 2013, plus what your players will cost to keep in 2027.</p>
-    <p class="reigning" id="reigning"></p>
+    <div class="ls" id="linescore" role="img" hidden></div>
+    <p class="ls-note" id="ls-note"></p>
+    <div class="hero-row">
+      <p class="reigning" id="reigning"></p>
+      <div class="count" id="count" hidden></div>
+    </div>
     <p class="ext"><a href="https://docs.google.com/spreadsheets/d/1hikrKHBKWI65A81MFbOQ1n2vezeBwmUfNVFymItL0ZY/edit?usp=sharing" rel="noopener">Keeper sheet</a><a href="https://baseball.fantasysports.yahoo.com/b1/30639" rel="noopener">Yahoo league</a></p>
   </header>
 
@@ -472,7 +556,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     <div class="controls">
       <label class="field">Year<select id="a-year"></select></label>
     </div>
-    <dl class="awards" id="awards-list"></dl>
+    <ol class="cards" id="awards-list" tabindex="0" aria-label="Award cards"></ol>
     <p class="note">A player's value adds up how far above or below a typical rostered player he was in each category, with average, OPS, ERA and WHIP weighted by playing time. Keepers are marked from 2022 on, when the keeper sheet starts. Stats from MLB.</p>
   </section>
 
@@ -480,7 +564,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     <div class="section-head">
       <h2 id="managers-title">Managers</h2>
       <p>Everyone in the league now. Open a manager for every team name and finish.</p>
-      <p class="badge-key"><span><span class="badge orig">Original</span>Here since the first season, 2013</span><span><span class="badge vet">10+ seasons</span>At least ten seasons in the league</span><span><span class="tiles"><span class="tile">26</span></span>Title</span><span><span class="tiles"><span class="tile reg">26</span></span>Best regular-season record</span></p>
+      <p class="badge-key"><span><span class="badge orig">Original</span>Here since the first season, 2013</span><span><span class="badge vet">10+ seasons</span>At least ten seasons in the league</span><span><span class="tiles"><span class="tile">26</span></span>Title</span><span><span class="tiles"><span class="tile reg">26</span></span>Best regular-season record</span><span><span class="strip"><i class="w"></i><i class="p"></i><i class="q"></i><i class="x"></i><i></i></span>Every season: title, top three, playoffs, missed, not in the league</span></p>
     </div>
     <ol class="mlist" id="mlist"></ol>
   </section>
@@ -572,9 +656,40 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     var last = d.seasons[d.seasons.length - 1], champ = last.teams[last.standings[0][1]];
     $("reigning").innerHTML = last.year + " champion: <strong>" + esc(champ) + "</strong>" + (MAN[champ] ? " (" + esc(MAN[champ]) + ")" : "");
     $("foot").textContent = "Updated " + new Date(d.updated + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) + ". Data from the league's Yahoo draft and standings pages, the keeper sheet and the commissioner's league emails.";
+    initHero();
     loadMine(); initKeepers(); initHistory(); initBest(); initOffseason(); initTitles(); initRegular(); initStats(); initAwards(); initManagers(); initDrafts();
     loadSheet();
     if (location.hash === "#drafts") { $("kt-draft").click(); $("keepers").scrollIntoView(); }
+  }
+
+  /* ---------- The scoreboard: champions hung under each season, and the days to Opening Night ---------- */
+  function initials(n) { var w = n.split(" "); return (w.length > 1 ? w[0][0] + w[1][0] : n.slice(0, 2)).toUpperCase(); }
+  function initHero() {
+    var champs = DATA.seasons.map(function (s) { var ti = s.standings[0][1]; return { y: s.year, t: s.teams[ti], m: who(s.o[ti]) || "" }; });
+    var count = {}; champs.forEach(function (c) { count[c.m] = (count[c.m] || 0) + 1; });
+    var ls = $("linescore");
+    ls.style.setProperty("--n", champs.length);
+    ls.innerHTML = '<span class="ls-k">Year</span>' + champs.map(function (c) { return '<span class="ls-y">' + String(c.y).slice(2) + "</span>"; }).join("") +
+      '<span class="ls-k">Champ</span>' + champs.map(function (c, i) {
+        return '<span class="tile' + (i === champs.length - 1 ? " now" : count[c.m] > 1 ? " rpt" : "") + '" style="--i:' + i + '" title="' + esc(c.y + ": " + c.t + (c.m ? " (" + c.m + ")" : "")) + '">' + esc(initials(c.m || c.t)) + "</span>";
+      }).join("");
+    ls.setAttribute("aria-label", "Champions by season: " + champs.map(function (c) { return c.y + " " + c.t + (c.m ? " (" + c.m + ")" : ""); }).join(", ") + ".");
+    ls.hidden = false;
+    var multi = Object.keys(count).filter(function (m) { return m && count[m] > 1; }).sort(function (a, b) { return count[b] - count[a]; });
+    var words = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+    $("ls-note").innerHTML = "Every champion, by season." + (multi.length ? " <b>Gold</b> marks a repeat winner: " +
+      multi.map(function (m) { return esc(m) + " has " + (words[count[m]] || count[m]); }).join(", ").replace(/, ([^,]*)$/, " and $1") + "." : "");
+    var dr = (DATA.offseason || {}).draft || {}, on = dr.openingNight || dr.opening;
+    if (on) {
+      var days = Math.ceil((new Date(on + "T19:00:00-04:00") - Date.now()) / 864e5);
+      if (days > 0) {
+        $("count").innerHTML = '<span class="tiles" aria-hidden="true">' + String(days).split("").map(function (d) { return '<span class="tile">' + d + "</span>"; }).join("") + "</span>" +
+          "<p><b>" + (days === 1 ? "day" : "days") + " to Opening Night</b>" + esc(longDate(on, true)) + "</p>";
+        $("count").setAttribute("aria-label", days + (days === 1 ? " day" : " days") + " to Opening Night, " + longDate(on, true));
+        $("count").setAttribute("role", "img");
+        $("count").hidden = false;
+      }
+    }
   }
 
   /* ---------- Pinned section links: mark the section in view ---------- */
@@ -630,12 +745,16 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     $("a-year").addEventListener("change", drawAwards);
     drawAwards();
   }
+  var CARD = { "MVP": "mvp", "Cy Young": "cy", "Best value pick": "val", "Best keeper": "kpr", "Best offense": "off", "Best pitching staff": "pit" };
   function drawAwards() {
     var y = $("a-year").value, s = SEASONS[y];
-    $("awards-list").innerHTML = DATA.awards[y].map(function (a) {
-      var head = a.p ? "<b>" + esc(a.p.replace(/ \((Batter|Pitcher)\)$/, "")) + '</b><span class="aw-team">' + esc(teamMan(s, a.ti)) + "</span>"
-                     : "<b>" + esc(teamMan(s, a.ti)) + "</b>";
-      return "<dt>" + esc(a.a) + "</dt><dd>" + head + '<span class="aw-line">' + esc(a.line) + '</span><span class="aw-why">' + esc(a.detail) + "</span></dd>";
+    var list = DATA.awards[y].slice().sort(function (a, b) { return (DUBIOUS[a.a] ? 1 : 0) - (DUBIOUS[b.a] ? 1 : 0); });
+    $("awards-list").innerHTML = list.map(function (a) {
+      var name = a.p ? a.p.replace(/ \((Batter|Pitcher)\)$/, "") : s.teams[a.ti];
+      var team = a.p ? teamMan(s, a.ti) : (man(s, a.ti) || "");
+      return '<li class="card ' + (DUBIOUS[a.a] ? "dub" : CARD[a.a] || "") + '"><div class="card-in"><h3 class="card-a">' + esc(a.a) + "</h3>" +
+        '<p class="card-p">' + esc(name) + "</p>" + (team ? '<p class="card-t">' + esc(team) + "</p>" : '<p class="card-t"></p>') +
+        '<div class="card-b"><p class="card-line">' + esc(a.line) + '</p><p class="card-why">' + esc(a.detail) + "</p></div></div></li>";
     }).join("");
   }
 
@@ -697,9 +816,10 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     if (sView === "roto") {
       if (!s.roto) { $("s-table").innerHTML = ""; return; }
       head = '<th scope="col" class="tm">Team</th><th scope="col">Points</th><th scope="col">Batting</th><th scope="col">Pitching</th><th scope="col">Finish</th>';
+      var topPts = s.roto[order[0]][0] || 1;
       rows = order.map(function (ti) {
         var r = s.roto[ti];
-        return '<tr><td class="tm">' + rank[ti] + ". " + esc(s.teams[ti]) + '<span class="m-sub">' + esc(man(s, ti)) + '</span></td><td class="num">' + fmtPts(r[0]) +
+        return '<tr><td class="tm">' + rank[ti] + ". " + esc(s.teams[ti]) + '<span class="m-sub">' + esc(man(s, ti)) + '</span></td><td class="num bar" style="--w:' + (r[0] / topPts * 100).toFixed(1) + '%">' + fmtPts(r[0]) +
           '</td><td class="num">' + fmtPts(r[1]) + '</td><td class="num">' + fmtPts(r[2]) + '</td><td class="num">' + ordinal(finish[ti]) + "</td></tr>";
       });
     } else {
@@ -925,9 +1045,9 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       return '<li' + (t === me ? ' class="me"' : "") + '><span class="n num">' + (k + 1) + "</span><span>" + esc(t) + '<span class="sub">' + esc(MAN[t] || "") + ", " + ordinal(r[0]) + " in 2026 (" + r[2] + ")</span></span></li>";
     };
     var lot = o.known ? o.order.slice(0, 8) : o.lottery;
-    var html = '<div class="slot"><div class="order"><div><h4>' + (o.official ? "Lottery: picks 1 to 8" : o.known ? "Simulated lottery: picks 1 to 8" : "In the lottery: picks 1 to 8") + "</h4><ol>" +
+    var html = '<div class="slot"><div class="order"><div><h3>' + (o.official ? "Lottery: picks 1 to 8" : o.known ? "Simulated lottery: picks 1 to 8" : "In the lottery: picks 1 to 8") + '</h3><ol class="lotto">' +
       lot.map(function (t, k) { return o.known ? li(t, k) : li(t, k).replace(/<span class="n num">\d+<\/span>/, '<span class="n num">?</span>'); }).join("") +
-      "</ol></div><div><h4>Playoff teams: picks 9 to 16</h4><ol>" + o.order.slice(8).map(function (t, k) { return li(t, k + 8); }).join("") + "</ol></div></div>";
+      "</ol></div><div><h3>Playoff teams: picks 9 to 16</h3><ol>" + o.order.slice(8).map(function (t, k) { return li(t, k + 8); }).join("") + "</ol></div></div>";
     if (!o.official) html += '<div class="row"><button class="btn" type="button" id="lot-run">' + (SIM ? "Run it again" : "Run a simulated lottery") + "</button>" + (SIM ? '<button class="btn ghost" type="button" id="lot-reset">Clear it</button>' : "") + "</div>" +
       '<p class="muted" style="margin-top:.6rem">' + (SIM ? "A simulation, not the real thing. " : "") + "The eight teams that missed the playoffs get equal odds here: 1 in 8 at every pick. Playoff teams pick in reverse order of finish, so the champion picks 16th. 25 rounds, snake order.</p>";
     else html += '<p class="muted" style="margin-top:.6rem">The official order. 25 rounds, snake order.</p>';
@@ -1276,7 +1396,12 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
           (got.length ? '<span class="m-sub">' + esc(got.join(", ")) + "</span>" : "") + '</td><td class="num r">' + (k ? (k.tied ? "T" : "") + ordinal(k.n) : "") +
           '</td><td class="num r">' + ordinal(x.r) + "</td></tr>";
       }).join("");
-      return '<li><details><summary><span class="m-name">' + esc(who(id)) + badge(id, ny) + '<span class="m-sub">' + esc(sub) + "</span></span>" + trophies +
+      var byY = {}; L.forEach(function (x) { byY[x.y] = x; });
+      var strip = '<span class="strip" aria-hidden="true">' + DATA.seasons.map(function (S) {
+        var x = byY[S.year];
+        return '<i class="' + (!x ? "" : x.r === 1 ? "w" : x.r <= 3 ? "p" : x.r <= 8 ? "q" : "x") + '" title="' + S.year + (x ? ": " + ordinal(x.r) : ": not in the league") + '"></i>';
+      }).join("") + "</span>";
+      return '<li><details><summary><span class="m-name">' + esc(who(id)) + badge(id, ny) + '<span class="m-sub">' + esc(sub) + "</span>" + strip + "</span>" + trophies +
         "</summary>" + trophyCase(L, aw, id) + '<table class="career"><caption hidden>' + esc(who(id)) + ' by season</caption>' +
         '<thead><tr><th scope="col">Year</th><th scope="col">Team</th><th scope="col" class="r">Roto</th><th scope="col" class="r">Finish</th></tr></thead><tbody>' + rows + "</tbody></table></details></li>";
     }).join("");
