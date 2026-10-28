@@ -94,7 +94,7 @@
   $("years").textContent = "last 20 drafts, " + DATA.years[0] + " to " + DATA.years[1];
 
   function load(s) {
-    sport = s; picks = DATA[s]; pool = G.pool(picks);
+    sport = s; picks = DATA[s]; pool = G.pool(picks, (window.GTP_NAMES || {})[s]);
     store.set("gtp-sport", s);
     document.querySelectorAll(".sport").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-sport") === s)); });
     homeStatus();
@@ -198,8 +198,12 @@
     closeList();
     var p = picks[cur.i], verdict = G.judge(text, p, pool);
     var msg = $("msg");
+    if (verdict === "ambiguous") {
+      msg.className = "msg"; msg.textContent = "A few players go by " + text.trim() + ". Type the full name.";
+      return;
+    }
     if (verdict === "unknown") {
-      msg.className = "msg"; msg.textContent = text.trim() ? "That name isn't in the game. Try one of the suggestions." : "";
+      msg.className = "msg"; msg.textContent = text.trim() ? "No player by that name. Check the spelling or pick a suggestion." : "";
       return;
     }
     if (verdict === "right") return finishPick(points(), false);
@@ -464,7 +468,8 @@
     e.preventDefault();
     var v = input.value;
     // One suggestion left and the box doesn't match a full name yet: that's the guess.
-    if (options.length === 1 && G.judge(v, picks[cur.i], pool) === "unknown") v = options[0];
+    var first = G.judge(v, picks[cur.i], pool);
+    if (options.length === 1 && (first === "unknown" || first === "ambiguous")) v = options[0];
     guess(v);
   });
 

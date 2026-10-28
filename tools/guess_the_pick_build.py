@@ -23,6 +23,11 @@ Who's in
   picked by Atlanta, went to Dallas). The NFL hasn't had a drafted player traded on draft night since 2004,
   so NFL picks only carry the drafting team.
 
+Names (names.js)
+  The guess box suggests and accepts every player drafted or playing since 1980, not just the ones in the game,
+  so a name missing from the suggestions never gives an answer away (Aaron Rodgers is in there, a wrong guess
+  for a 2009 Packers pick). Suggestions are ranked by career value alone, the same way for everyone.
+
 Fame (0 to 1) drives how often a pick comes up and the order of name suggestions. It's a blend of career
 value and honors, so the daily ten lean toward players people have heard of without being all stars.
 """
@@ -33,9 +38,12 @@ from datetime import datetime, timezone
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 OUT = os.path.join(ROOT, "guess-the-pick", "data.js")
+NAMES_OUT = os.path.join(ROOT, "guess-the-pick", "names.js")
+NAMES_SINCE = 1980   # the guess box knows everyone who played or was drafted since then, so it can't give an answer away
 FIRST, LAST = 2007, 2026
 
 NFL_URL = "https://github.com/nflverse/nflverse-data/releases/download/draft_picks/draft_picks.csv"
+NFL_PLAYERS_URL = "https://github.com/nflverse/nflverse-data/releases/download/players/players.csv"
 BBREF = "https://raw.githubusercontent.com/sumitrodatta/bball-reference-datasets/master/Data/"
 BBREF_FILES = ["Draft Pick History.csv", "Player Season Info.csv", "Player Career Info.csv", "Advanced.csv",
                "Player Totals.csv", "All-Star Selections.csv", "End of Season Teams.csv", "Player Award Shares.csv"]
@@ -115,9 +123,10 @@ def nba_pos(code):
 
 def norm(name):
     s = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode().lower()
+    s = re.sub(r"['`.]", "", s)   # same as the game: Ja'Marr is jamarr, T.J. is tj
     s = re.sub(r"[^a-z0-9 ]+", " ", s)
-    s = re.sub(r"\b(jr|sr|ii|iii|iv|v)\b", " ", s)
-    return re.sub(r"\s+", " ", s).strip()
+    s = re.sub(r"\s+", " ", s).strip()
+    return re.sub(r"( (jr|sr|ii|iii|iv|v))+$", "", s)   # a suffix only at the end: J.R. Smith stays "jr smith"
 
 
 def fetch(url, dest):
@@ -244,11 +253,40 @@ def build_nba(src):
                       "tl": NBA_ESPN.get(e["t"], ""), "to": to, "ton": NBA_TEAMS.get(to, ""), "tol": NBA_ESPN.get(to, ""),
                       "late": False, "n": e["n"], "pos": nba_pos(e["pos"]), "col": e["col"],
                       "line": "2026 rookie", "f": 0.12})
-    return picks, odd_moves
+    # Every NBA name since NAMES_SINCE, ranked by career win shares
+    known = {}
+    def add(name, score):
+        k = norm(name)
+        if k and (k not in known or known[k][1] < score):
+            known[k] = (name, score)
+    for pid, c in career.items():
+        if int(num(c.get("to"), 0)) >= NAMES_SINCE:
+            add(c["player"], ws[pid])
+    for r in read(os.path.join(src, "Draft Pick History.csv")):
+        if r["lg"] == "NBA" and int(r["season"]) >= NAMES_SINCE:
+            add(r["player"], ws.get(r["player_id"], 0))
+    for x in picks:
+        add(x["n"], 0)
+    return picks, odd_moves, known
 
 
 def build_nfl(src):
-    rows = [r for r in read(os.path.join(src, "nfl_draft_picks.csv")) if FIRST <= int(r["season"]) <= LAST]
+    every = read(os.path.join(src, "nfl_draft_picks.csv"))
+    rows = [r for r in every if FIRST <= int(r["season"]) <= LAST]
+    # Every NFL name since NAMES_SINCE, ranked by weighted approximate value (or years played, for undrafted players)
+    known = {}
+    def add(name, score):
+        k = norm(name)
+        if k and (k not in known or known[k][1] < score):
+            known[k] = (name, score)
+    for r in every:
+        if int(r["season"]) >= NAMES_SINCE:
+            add(r["pfr_player_name"], num(r["w_av"]) or num(r["car_av"]))
+    path = os.path.join(src, "nfl_players.csv")
+    if os.path.exists(path):
+        for r in read(path):
+            if int(num(r.get("last_season"), 0)) >= NAMES_SINCE and r.get("display_name") and norm(r["display_name"]) not in known:
+                add(r["display_name"], 2.5 * num(r.get("years_of_experience")))   # undrafted: rank by years played
     first_of_round = {}
     for r in rows:
         key = (int(r["season"]), int(r["round"]))
@@ -292,7 +330,9 @@ def build_nfl(src):
             "n": r["pfr_player_name"], "pos": NFL_POS.get(pos, pos), "col": r["college"] or "",
             "line": " · ".join(bits), "f": round(fame, 3),
         })
-    return picks
+    for x in picks:
+        add(x["n"], 0)
+    return picks, known
 
 
 def main():
@@ -303,10 +343,11 @@ def main():
     if not args.src:
         print("Downloading sources to", src)
         fetch(NFL_URL, os.path.join(src, "nfl_draft_picks.csv"))
+        fetch(NFL_PLAYERS_URL, os.path.join(src, "nfl_players.csv"))
         for f in BBREF_FILES:
             fetch(BBREF + urllib.parse.quote(f), os.path.join(src, f))
-    nba, odd = build_nba(src)
-    nfl = build_nfl(src)
+    nba, odd, nba_names = build_nba(src)
+    nfl, nfl_names = build_nfl(src)
     for league, picks in (("NBA", nba), ("NFL", nfl)):
         years = sorted({x["y"] for x in picks})
         assert years == list(range(FIRST, LAST + 1)), (league, years)
@@ -325,6 +366,14 @@ def main():
         f.write("/* Generated by tools/guess_the_pick_build.py. Don't edit by hand. */\n")
         f.write("window.GTP_DATA = " + json.dumps(data, ensure_ascii=False, separators=(",", ":")) + ";\n")
     print("Wrote", os.path.relpath(OUT, ROOT), f"({os.path.getsize(OUT) // 1024} KB)")
+    names = {}
+    for league, known in (("nba", nba_names), ("nfl", nfl_names)):
+        names[league] = [v[0] for v in sorted(known.values(), key=lambda v: (-v[1], v[0]))]
+        print(f"{league.upper()}: {len(names[league])} names in the guess box")
+    with open(NAMES_OUT, "w", encoding="utf-8") as f:
+        f.write("/* Generated by tools/guess_the_pick_build.py. Every name the guess box knows, best careers first. */\n")
+        f.write("window.GTP_NAMES = " + json.dumps(names, ensure_ascii=False, separators=(",", ":")) + ";\n")
+    print("Wrote", os.path.relpath(NAMES_OUT, ROOT), f"({os.path.getsize(NAMES_OUT) // 1024} KB)")
 
 
 if __name__ == "__main__":

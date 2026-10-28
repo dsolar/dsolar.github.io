@@ -1,6 +1,7 @@
 /* Checks Guess the Pick's data and rules. Run from the repo root: node tools/guess_the_pick_check.js */
 global.window = global;
 require("../guess-the-pick/data.js");
+require("../guess-the-pick/names.js");
 const G = require("../guess-the-pick/engine.js");
 const D = window.GTP_DATA;
 let fails = 0;
@@ -22,7 +23,9 @@ for (const sport of ["nba", "nfl"]) {
   });
 
   // The daily ten: ten different picks from ten different drafts, the same all day
-  const pool = G.pool(picks);
+  const pool = G.pool(picks, window.GTP_NAMES[sport]);
+  ok(picks.every(p => pool.byKey[G.norm(p.n)]), `${sport}: every answer is in the guess box`);
+  ok(pool.names.length > picks.length * 3, `${sport}: the guess box knows far more names than the game uses`);
   const a = G.daily(picks, sport, new Date("2026-10-28T14:00:00Z")), b = G.daily(picks, sport, new Date("2026-10-29T03:30:00Z"));
   ok(a.length === 10 && new Set(a).size === 10, `${sport}: daily has ten different picks`);
   ok(new Set(a.map(i => picks[i].y)).size === 10, `${sport}: daily picks come from ten drafts`);
@@ -47,14 +50,21 @@ ok(nfl[find("nfl", 2007, 1)].tn === "Oakland Raiders", "2007 Raiders were in Oak
 ok(nfl.find(p => p.y === 2015 && p.t === "WAS").tn === "Washington Redskins", "Washington's name by year");
 
 // Guessing
-const np = G.pool(nba);
+const np = G.pool(nba, window.GTP_NAMES.nba), fp = G.pool(nfl, window.GTP_NAMES.nfl);
 ok(G.norm("Luka Dončić") === "luka doncic" && G.norm("Jaren Jackson Jr.") === "jaren jackson", "names normalize");
 ok(G.judge("luka doncic", luka, np) === "right", "full name, no accents");
 ok(G.judge("Dončić", luka, np) === "right", "a last name nobody else has");
 ok(G.judge("Trae Young", luka, np) === "wrong", "a real player, just not this one");
 ok(G.judge("Lukaa Doncic", luka, np) === "unknown", "a typo isn't a wrong guess");
+const raji = nfl[find("nfl", 2009, 9)], chase = nfl.find(p => p.n === "Ja'Marr Chase"), watt = nfl.find(p => p.n === "T.J. Watt");
+ok(raji.t === "GNB" && G.judge("Aaron Rodgers", raji, fp) === "wrong", "Aaron Rodgers is a real (wrong) guess for a 2009 Packers pick");
+ok(G.suggest("aaron rod", fp, 6).includes("Aaron Rodgers"), "suggestions include players outside the game");
+ok(G.judge("Jamarr Chase", chase, fp) === "right" && G.judge("ja marr chase", chase, fp) === "right", "Ja'Marr Chase without the apostrophe");
+ok(G.suggest("jamarr", fp, 6).includes("Ja'Marr Chase"), "suggestions: jamarr finds Ja'Marr Chase");
+ok(G.judge("TJ Watt", watt, fp) === "right" && G.suggest("tj wa", fp, 6).includes("T.J. Watt"), "T.J. Watt as TJ Watt");
+ok(G.judge("Smith", nba[0], np) === "ambiguous", "a shared last name asks for the full name");
 const green = nba[find("nba", 2012, 35)];
-ok(G.judge("Green", green, np) === "unknown" || G.judge("Green", green, np) === "wrong", "a shared last name isn't enough");
+ok(G.judge("Green", green, np) === "ambiguous", "a shared last name isn't enough");
 ok(G.suggest("jok", np, 6)[0] === "Nikola Jokić", "suggestions: jok finds Jokic first");
 ok(G.suggest("ka le", np, 6).includes("Kawhi Leonard"), "suggestions match any word start");
 

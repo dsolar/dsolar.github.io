@@ -34,7 +34,8 @@ dsolar.github.io/
   paint-the-corners/          Paint the Corners: index.html (layout, styles, UI) and engine.js
                               (pitches, hitters, at-bat math). Plain files, edit directly.
   guess-the-pick/             Guess the Pick: index.html (layout, styles), app.js (screens, guess box, saved progress),
-                              engine.js (daily ten, scoring, name matching) and data.js (every pick; generated, don't edit)
+                              engine.js (daily ten, scoring, name matching), data.js (every pick) and names.js (every
+                              player since 1980, for the guess box); data.js and names.js are generated, don't edit
   guillotine/                 Bastille Day Odds: index.html, sim.js (the simulation),
                               data.json (league data, written by the workflow below)
   calendar/                   Night Out: index.html, taste.json, picks.json and places.json (edit these),
