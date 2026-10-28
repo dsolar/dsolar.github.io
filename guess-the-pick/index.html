@@ -114,13 +114,25 @@ body:not([data-screen="home"]) .mast .kicker,body:not([data-screen="home"]) .mas
 .who{min-width:0}
 .year{font:800 22px/1 var(--display);letter-spacing:.05em;text-transform:uppercase;color:var(--gold);margin:0 0 10px}
 .team{display:flex;align-items:center;gap:12px}
-.logo{width:52px;height:52px;flex:none;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.06);overflow:hidden}
-.logo img{width:46px;height:46px;object-fit:contain}
-.logo b{font:800 16px/1 var(--display);letter-spacing:.04em;color:var(--dim)}
+.logo{width:64px;height:64px;flex:none;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.07);overflow:hidden}
+.logo img{width:56px;height:56px;object-fit:contain}
+.logo b{width:100%;height:100%;display:grid;place-items:center;border-radius:50%;font:800 18px/1 var(--display);letter-spacing:.04em;color:var(--dim)}
 .team-name{font:800 clamp(24px,5.6vw,34px)/1 var(--display);text-transform:uppercase;letter-spacing:.02em}
 .team-sub{font-size:13px;color:var(--faint);font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
 .moved{display:flex;align-items:center;gap:10px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
-.moved .logo{width:34px;height:34px}.moved .logo img{width:30px;height:30px}.moved .logo b{font-size:12px}
+.moved .logo{width:40px;height:40px}.moved .logo img{width:34px;height:34px}.moved .logo b{font-size:13px}
+
+/* Team branding (NBA): the picking team's colors on the card, its logo as a watermark */
+.card .watermark{position:absolute;right:-40px;top:40px;width:300px;height:300px;pointer-events:none;opacity:.09}
+.card .watermark img{width:100%;height:100%;object-fit:contain}
+.card.branded{background:radial-gradient(120% 90% at 100% 0%,color-mix(in srgb,var(--t1) 55%,transparent) 0%,transparent 62%),linear-gradient(180deg,#152A45 0%,#0F1F35 100%)}
+.card.branded .card-top{background:var(--t1);border-bottom:4px solid var(--t2);color:rgba(255,255,255,.85)}
+.card.branded .card-top .live{color:#fff}
+.card.branded .card-top .live:before{background:#fff;box-shadow:none}
+.card.branded .plate{background:var(--t1);border-color:var(--t2);box-shadow:inset 0 0 0 2px rgba(255,255,255,.08),0 6px 16px rgba(0,0,0,.35)}
+.card.branded .team-name{text-shadow:0 2px 12px rgba(0,0,0,.35)}
+.card.branded .moved{border-top-color:rgba(255,255,255,.16)}
+.card.branded .card-body,.card.branded .clues,.card.branded .guess-area,.card.branded .reveal{position:relative}
 .moved p{margin:0;font-size:15px;color:var(--dim)} .moved p b{color:var(--chalk);font-weight:600}
 @media(max-width:480px){
   .card-body{grid-template-columns:1fr;gap:16px}
@@ -239,6 +251,7 @@ body:not([data-screen="home"]) .mast .kicker,body:not([data-screen="home"]) .mas
       <div id="hud-right"></div>
     </div>
     <article class="card" id="card">
+      <div class="watermark" id="watermark" aria-hidden="true"></div>
       <div class="card-top"><span class="live" id="card-league">NBA Draft</span><span id="card-count"></span></div>
       <div class="card-body">
         <div class="plate" id="plate"><small id="plate-round">Pick</small><strong id="plate-pick">3</strong><span id="plate-overall"></span></div>
@@ -298,6 +311,6 @@ body:not([data-screen="home"]) .mast .kicker,body:not([data-screen="home"]) .mas
 
 <script src="data.js?v=1"></script>
 <script src="engine.js?v=1"></script>
-<script src="app.js?v=1"></script>
+<script src="app.js?v=2"></script>
 </body>
 </html>

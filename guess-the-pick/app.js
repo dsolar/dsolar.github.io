@@ -22,15 +22,43 @@
   var initials = function (name) {
     return name.replace(/\b(Jr\.?|Sr\.?|II|III|IV)\b/g, "").trim().split(/\s+/).map(function (w) { return w.charAt(0).toUpperCase() + "."; }).join(" ");
   };
+  // NBA team colors (primary, accent). Teams that moved or renamed keep the colors they wore then; ESPN has no
+  // logo for them, so their badge is the abbreviation in those colors.
+  var NBA_COLORS = {
+    ATL: ["#E03A3E", "#C1D32F"], BOS: ["#007A33", "#BA9653"], BRK: ["#000000", "#FFFFFF"], NJN: ["#002A60", "#CD1041"],
+    CHA: ["#F26532", "#2C5697"], CHO: ["#1D1160", "#00788C"], CHI: ["#CE1141", "#000000"], CLE: ["#860038", "#FDBB30"],
+    DAL: ["#00538C", "#B8C4CA"], DEN: ["#0E2240", "#FEC524"], DET: ["#C8102E", "#1D42BA"], GSW: ["#1D428A", "#FFC72C"],
+    HOU: ["#CE1141", "#C4CED4"], IND: ["#002D62", "#FDBB30"], LAC: ["#C8102E", "#1D428A"], LAL: ["#552583", "#FDB927"],
+    MEM: ["#5D76A9", "#12173F"], MIA: ["#98002E", "#F9A01B"], MIL: ["#00471B", "#EEE1C6"], MIN: ["#0C2340", "#78BE20"],
+    NOH: ["#002B5C", "#00788C"], NOK: ["#002B5C", "#00788C"], NOP: ["#0C2340", "#85714D"], NYK: ["#006BB6", "#F58426"],
+    OKC: ["#007AC1", "#EF3B24"], SEA: ["#00653A", "#FFC200"], ORL: ["#0077C0", "#C4CED4"], PHI: ["#006BB6", "#ED174C"],
+    PHO: ["#1D1160", "#E56020"], POR: ["#E03A3E", "#000000"], SAC: ["#5A2D81", "#63727A"], SAS: ["#000000", "#C4CED4"],
+    TOR: ["#CE1141", "#000000"], UTA: ["#002B5C", "#F9A01B"], WAS: ["#002B5C", "#E31837"]
+  };
+  function colors(abbr) { return sport === "nba" ? NBA_COLORS[abbr] : null; }
+  // A badge for a team with no ESPN logo: its abbreviation, in its colors when the game knows them.
+  function badge(abbr) {
+    var c = colors(abbr);
+    return '<b' + (c ? ' style="background:' + c[0] + ";color:" + (c[1] === "#000000" ? "#FFFFFF" : c[1]) + '"' : "") + ">" + esc(abbr) + "</b>";
+  }
   function logo(sport, code, abbr, size) {
-    if (!code) return "<b>" + esc(abbr) + "</b>";
+    if (!code) return badge(abbr);
     var src = "https://a.espncdn.com/combiner/i?img=/i/teamlogos/" + sport + "/500-dark/" + code + ".png&w=" + size + "&h=" + size;
     return '<img src="' + esc(src) + '" alt="" data-abbr="' + esc(abbr) + '">';
   }
-  document.addEventListener("error", function (e) {   // a logo that won't load gives way to the abbreviation
+  document.addEventListener("error", function (e) {   // a logo that won't load gives way to the abbreviation badge
     var img = e.target;
-    if (img.tagName === "IMG" && img.closest(".logo")) img.outerHTML = "<b>" + esc(img.getAttribute("data-abbr")) + "</b>";
+    if (img.tagName === "IMG" && img.closest(".logo")) img.outerHTML = badge(img.getAttribute("data-abbr"));
+    if (img.tagName === "IMG" && img.closest(".watermark")) img.remove();
   }, true);
+  // Paint the card in the picking team's colors (NBA); NFL cards keep the house colors.
+  function brand(p) {
+    var card = $("card"), c = colors(p.t), w = $("watermark");
+    card.classList.toggle("branded", !!c);
+    card.style.setProperty("--t1", c ? c[0] : "");
+    card.style.setProperty("--t2", c ? c[1] : "");
+    w.innerHTML = c && p.tl ? '<img src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/' + sport + "/500-dark/" + p.tl + '.png&w=400&h=400" alt="">' : "";
+  }
 
   var sport = store.get("gtp-sport") || "nba";
   var asked = (/[?&]sport=(nba|nfl)/i.exec(location.search) || [])[1];
@@ -89,11 +117,12 @@
       $("plate-round").textContent = "Round " + p.r; $("plate-pick").textContent = p.rp; $("plate-overall").textContent = ordinal(p.p) + " overall";
     }
     $("plate").setAttribute("aria-label", p.r === 1 ? "Pick " + p.p : "Round " + p.r + ", pick " + p.rp + ", " + ordinal(p.p) + " overall");
-    $("team-logo").innerHTML = logo(sport, p.tl, p.t, 96);
+    brand(p);
+    $("team-logo").innerHTML = logo(sport, p.tl, p.t, 160);
     $("team-name").textContent = p.tn;
     $("moved").hidden = !p.to;
     if (p.to) {
-      $("moved-logo").innerHTML = logo(sport, p.tol, p.to, 64);
+      $("moved-logo").innerHTML = logo(sport, p.tol, p.to, 96);
       $("moved-text").innerHTML = (p.late ? "Debuted with " : "Went to ") + "<b>" + esc(p.ton) + "</b>";
     }
     $("guess").value = ""; closeList();
