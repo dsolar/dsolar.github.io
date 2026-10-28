@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-27T16:03:26Z",
+ "updated": "2026-10-28T16:50:24Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,82 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-vvG17Z_G1UpqA3",
-   "date": "2026-10-27",
-   "time": "19:00",
-   "title": "Maddie Zahm: Everything All The Time Tour",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/maddie-zahm-everything-all-the-time-boston-massachusetts-10-27-2026/event/010064C2B659D152",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18297993"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_GRO939x",
-   "date": "2026-10-27",
-   "time": "19:00",
-   "title": "THE ARMY, THE NAVY: THE FAKE BRAVE TOUR 2026",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/the-army-the-navy-the-fake-boston-massachusetts-10-27-2026/event/010064CBE05D25E2",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18311625"
-   ],
-   "score": 0
-  },
-  {
-   "id": "espn-401909877",
-   "date": "2026-10-27",
-   "time": "19:30",
-   "title": "Celtics vs Nets",
-   "cat": "sports",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://www.espn.com/nba/game/_/gameId/401909877/nets-celtics",
-   "source": "espn",
-   "score": 1
-  },
-  {
-   "id": "tm-vv177Z_aGkSCo6zr",
-   "date": "2026-10-27",
-   "time": "20:00",
-   "title": "Scott Bradlee's Postmodern Jukebox - The Future Is Vintage World Tour",
-   "cat": "music",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/scott-bradlees-postmodern-jukebox-the-future-boston-massachusetts-10-27-2026/event/0100649CCE447E1E",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18225205"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A7PIPk",
-   "date": "2026-10-27",
-   "time": "20:30",
-   "title": "Built To Spill w/ Quasi",
-   "cat": "music",
-   "venue": "The Sinclair Music Hall",
-   "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PIPk",
-   "source": "ticketmaster",
-   "act": "Built to Spill",
-   "aka": [
-    "sg-18316712",
-    "2026-10-27-built-to-spill-the-sinclair"
-   ],
-   "sub": "with Quasi",
-   "score": 2,
-   "why": "like"
-  },
   {
    "id": "tm-vvG17Z_uUEcXK_",
    "date": "2026-10-28",
@@ -845,8 +769,14 @@
    "city": "Boston, MA",
    "url": "https://www.universe.com/events/ana-castela-boston-all-ages-november-1st-big-night-live-tickets-Q21XJ4?ref=ticketmaster",
    "source": "ticketmaster",
+   "times": [
+    "18:00",
+    "21:00"
+   ],
    "aka": [
-    "sg-18641168"
+    "tm-LvZ18QErUwnWDxhHy3XLk",
+    "sg-18641168",
+    "sg-18726619"
    ],
    "score": 0
   },
@@ -1007,17 +937,17 @@
    "score": 0
   },
   {
-   "id": "sg-18237438",
+   "id": "sg-18663271",
    "date": "2026-11-02",
    "time": "20:00",
-   "title": "This is Lorelei with @ (Moved to Royale)",
+   "title": "This is Lorelei",
    "cat": "music",
    "venue": "Royale - Boston",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/this-is-lorelei-tickets/boston-massachusetts-royale-boston-2026-11-02-8-pm/concert/18237438",
+   "url": "https://seatgeek.com/this-is-lorelei-tickets/boston-massachusetts-royale-boston-2026-11-02-8-pm/concert/18663271",
    "source": "seatgeek",
    "aka": [
-    "sg-18663271"
+    "sg-18237438"
    ],
    "score": 0
   },
@@ -2301,18 +2231,6 @@
    "why": "like"
   },
   {
-   "id": "sg-18721511",
-   "date": "2026-11-09",
-   "time": "20:00",
-   "title": "The Blasting Company",
-   "cat": "music",
-   "venue": "Royale - Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/blasting-company-tickets/boston-massachusetts-royale-boston-2026-11-09-8-pm/concert/18721511",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
    "id": "tm-vvG17Z_2DL1Ise",
    "date": "2026-11-10",
    "time": "19:00",
@@ -3192,22 +3110,6 @@
    "score": 0
   },
   {
-   "id": "tm-vvG17Z_GkTIP4O",
-   "date": "2026-11-14",
-   "time": "19:00",
-   "title": "Jalen Ngonda: Doctorine of Love Tour (18+)",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/jalen-ngonda-doctorine-of-love-tour-boston-massachusetts-11-14-2026/event/010064C1BFA25560",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18294767",
-    "2026-11-14-jalen-ngonda-paradise-rock-club"
-   ],
-   "score": 0
-  },
-  {
    "id": "tm-vv1AvZkuyGkeD7hbY",
    "date": "2026-11-14",
    "time": "19:00",
@@ -3355,6 +3257,18 @@
    "aka": [
     "sg-18594675"
    ],
+   "score": 0
+  },
+  {
+   "date": "2026-11-14",
+   "time": null,
+   "title": "Jalen Ngonda",
+   "cat": "music",
+   "venue": "Paradise Rock Club",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar",
+   "source": "venues",
+   "id": "2026-11-14-jalen-ngonda-paradise-rock-club",
    "score": 0
   },
   {
@@ -3883,12 +3797,15 @@
    "id": "tm-vv1AvZkfsGkdwE_dJ",
    "date": "2026-11-19",
    "time": "19:30",
-   "title": "Criminal Presents: An Evening with Phoebe Judge",
+   "title": "Criminal Presents: Don't Worry with Phoebe Judge",
    "cat": "comedy",
    "venue": "The Wilbur",
    "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/criminal-presents-an-evening-with-phoebe-boston-massachusetts-11-19-2026/event/01006531F29D90E6",
+   "url": "https://www.ticketmaster.com/criminal-presents-dont-worry-with-phoebe-boston-massachusetts-11-19-2026/event/01006531F29D90E6",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18609620"
+   ],
    "score": 1
   },
   {
@@ -4141,7 +4058,9 @@
    "drive_hours": 1.0,
    "act": "Trey Anastasio",
    "aka": [
-    "tm-vv177Z_oGkXBnY-F"
+    "tm-vv177Z_oGkXBnY-F",
+    "sg-18571687",
+    "sg-18571687"
    ],
    "score": 3,
    "why": "love"
@@ -5956,6 +5875,18 @@
    "score": 0
   },
   {
+   "id": "tm-vvG17Z_GkTIP4O",
+   "date": "2026-12-06",
+   "time": "19:00",
+   "title": "Jalen Ngonda: Doctorine of Love Tour (18+)",
+   "cat": "music",
+   "venue": "Paradise Rock Club presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/jalen-ngonda-doctorine-of-love-tour-boston-massachusetts-12-06-2026/event/010064C1BFA25560",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-Z7r9jZ1AAvJZA",
    "date": "2026-12-06",
    "time": "19:00",
@@ -6450,6 +6381,18 @@
     "sg-18321647",
     "sg-18321646"
    ],
+   "score": 0
+  },
+  {
+   "id": "tm-Z7r9jZ1AA7Oa_",
+   "date": "2026-12-12",
+   "time": "18:00",
+   "title": "Earlybirds Club - Ages 21+",
+   "cat": "music",
+   "venue": "The Sinclair Music Hall",
+   "city": "Cambridge, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7Oa_",
+   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -7266,6 +7209,18 @@
    "score": 1
   },
   {
+   "id": "tm-vv177Z_4GkRj8Nc9",
+   "date": "2026-12-27",
+   "time": "22:00",
+   "title": "Chris Lake ( 21+ )",
+   "cat": "music",
+   "venue": "Big Night Live",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/chris-lake-21-boston-massachusetts-12-27-2026/event/0100655BDC423B57",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "espn-401910208",
    "date": "2026-12-28",
    "time": "20:00",
@@ -7674,15 +7629,18 @@
    "score": 1
   },
   {
-   "id": "sg-18698006",
+   "id": "tm-Z7r9jZ1AA7b7Y",
    "date": "2027-01-09",
    "time": "20:30",
-   "title": "There, There - Tribute To Radiohead",
+   "title": "There, There (A Tribute to Radiohead)",
    "cat": "music",
-   "venue": "The Sinclair - Cambridge",
+   "venue": "The Sinclair Music Hall",
    "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/there-there-tribute-to-radiohead-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-01-09-8-30-pm/concert/18698006",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7b7Y",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18698006"
+   ],
    "score": 0
   },
   {
@@ -7773,7 +7731,8 @@
    ],
    "aka": [
     "tm-vv177Z_fGkXIjHIK",
-    "sg-18716068"
+    "sg-18716068",
+    "sg-18725789"
    ],
    "score": 1
   },
@@ -7787,6 +7746,18 @@
    "city": "Lynn, MA",
    "url": "https://seatgeek.com/get-the-led-out-a-tribute-to-led-zeppelin-tickets/lynn-massachusetts-lynn-memorial-auditorium-2027-01-15-8-pm/concert/18548275",
    "source": "seatgeek",
+   "score": 0
+  },
+  {
+   "id": "tm-Z7r9jZ1AA7Z_b",
+   "date": "2027-01-15",
+   "time": "20:00",
+   "title": "Jess Williamson w/ Riley Downing",
+   "cat": "music",
+   "venue": "The Sinclair Music Hall",
+   "city": "Cambridge, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7Z_b",
+   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -7869,6 +7840,18 @@
    ],
    "score": 3,
    "why": "love"
+  },
+  {
+   "id": "tm-Z7r9jZ1AA7Iug",
+   "date": "2027-01-16",
+   "time": "20:00",
+   "title": "Neighbor",
+   "cat": "music",
+   "venue": "The Sinclair Music Hall",
+   "city": "Cambridge, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7Iug",
+   "source": "ticketmaster",
+   "score": 0
   },
   {
    "id": "tm-G5vVZ_4hZcSpT",
@@ -8262,6 +8245,18 @@
    "score": 1
   },
   {
+   "id": "tm-vv177Z_4Gkmow6a3",
+   "date": "2027-01-28",
+   "time": "19:00",
+   "title": "ALEXANDRA KAY - THE ONE WOMAN SHOW",
+   "cat": "music",
+   "venue": "Citizens House of Blues Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/alexandra-kay-the-one-woman-show-boston-massachusetts-01-28-2027/event/0100655B91C87252",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "espn-401910446",
    "date": "2027-01-29",
    "time": "19:30",
@@ -8283,6 +8278,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/leslie-jones-im-hot-tour-boston-massachusetts-01-29-2027/event/01006553BDB39E34",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18725788"
+   ],
    "score": 1
   },
   {
@@ -8614,6 +8612,18 @@
    "score": 1
   },
   {
+   "id": "tm-Z7r9jZ1AA7IPP",
+   "date": "2027-02-09",
+   "time": "20:00",
+   "title": "Silverada",
+   "cat": "music",
+   "venue": "The Sinclair Music Hall",
+   "city": "Cambridge, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7IPP",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv1A8vPFzGAuaajV",
    "date": "2027-02-10",
    "time": "19:00",
@@ -8654,6 +8664,18 @@
    "aka": [
     "sg-18593831"
    ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv1AvZk49GkdjzpuE",
+   "date": "2027-02-11",
+   "time": "19:00",
+   "title": "Penelope Road: Maybe In Time Tour",
+   "cat": "music",
+   "venue": "Paradise Rock Club presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/penelope-road-maybe-in-time-tour-boston-massachusetts-02-11-2027/event/01006557DCE16367",
+   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -8712,6 +8734,18 @@
     "sg-18299557"
    ],
    "score": 1
+  },
+  {
+   "id": "tm-Z7r9jZ1AA7E8A",
+   "date": "2027-02-12",
+   "time": "20:00",
+   "title": "CG5 Presents: The GAMER Tour",
+   "cat": "music",
+   "venue": "The Sinclair Music Hall",
+   "city": "Cambridge, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7E8A",
+   "source": "ticketmaster",
+   "score": 0
   },
   {
    "id": "espn-401910556",
@@ -8955,6 +8989,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/greensky-bluegrass-boston-massachusetts-02-20-2027/event/010065579AF9A365",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18725806"
+   ],
    "score": 0
   },
   {
@@ -9021,18 +9058,24 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/styx-boston-massachusetts-02-21-2027/event/0100654DB009EB8D",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18726693"
+   ],
    "score": 0
   },
   {
-   "id": "sg-18699592",
+   "id": "tm-Z7r9jZ1AA7bPo",
    "date": "2027-02-23",
    "time": "20:00",
-   "title": "Rare Americans with Naethan Apollo (18+)",
+   "title": "Rare Americans - ages 18+",
    "cat": "music",
-   "venue": "The Sinclair - Cambridge",
+   "venue": "The Sinclair Music Hall",
    "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/rare-americans-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-02-23-8-pm/concert/18699592",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7bPo",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18699592"
+   ],
    "score": 0
   },
   {
@@ -9193,6 +9236,18 @@
    "score": 0
   },
   {
+   "id": "tm-vv177Z_4GkRrR06R",
+   "date": "2027-02-27",
+   "time": "19:00",
+   "title": "The Push Stars (18+)",
+   "cat": "music",
+   "venue": "Paradise Rock Club presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/the-push-stars-18-boston-massachusetts-02-27-2027/event/0100655BDEBE41EF",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-Z7r9jZ1AAebAZ",
    "date": "2027-02-27",
    "time": "19:30",
@@ -9264,6 +9319,21 @@
     "2027-03-01-gracie-abrams-td-garden"
    ],
    "sub": "with Grace Ives",
+   "score": 0
+  },
+  {
+   "id": "tm-vv1AvZk4bGkdhixru",
+   "date": "2027-03-02",
+   "time": "19:00",
+   "title": "Katherine Li: I love you, or whatever Tour",
+   "cat": "music",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/katherine-li-i-love-you-or-boston-massachusetts-03-02-2027/event/01006558DBB2278D",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18725867"
+   ],
    "score": 0
   },
   {
@@ -9469,15 +9539,18 @@
    "score": 1
   },
   {
-   "id": "sg-18683919",
+   "id": "tm-vv1AvZk4FGkdfvg2M",
    "date": "2027-03-06",
    "time": "19:00",
-   "title": "Dusty Slay",
+   "title": "Dusty Slay: The Neighborhood Guy",
    "cat": "comedy",
    "venue": "Boch Center Shubert Theatre",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/dusty-slay-tickets/comedy/2027-03-06-7-pm/18683919",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/dusty-slay-the-neighborhood-guy-boston-massachusetts-03-06-2027/event/01006548D40753F7",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18683919"
+   ],
    "score": 1
   },
   {
@@ -9637,15 +9710,18 @@
    "score": 0
   },
   {
-   "id": "sg-18699634",
+   "id": "tm-vv177Z_fGkzeD51Z",
    "date": "2027-03-07",
    "time": "20:00",
-   "title": "Darcy & Jer",
+   "title": "Darcy & Jer: Average At Best Tour",
    "cat": "comedy",
    "venue": "Boch Center Shubert Theatre",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/darcy-jer-tickets/comedy/2027-03-07-8-pm/18699634",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/darcy-jer-average-at-best-tour-boston-massachusetts-03-07-2027/event/0100654E02ECB280",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18699634"
+   ],
    "score": 1
   },
   {
@@ -9878,15 +9954,18 @@
    "score": 1
   },
   {
-   "id": "sg-18675603",
+   "id": "tm-Z7r9jZ1AA7fC7",
    "date": "2027-03-12",
    "time": "20:00",
-   "title": "DeathByRomy",
+   "title": "DeathbyRomy w/ bodyimage",
    "cat": "music",
-   "venue": "The Sinclair - Cambridge",
+   "venue": "The Sinclair Music Hall",
    "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/deathbyromy-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-03-12-8-pm/concert/18675603",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7fC7",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18675603"
+   ],
    "score": 0
   },
   {
@@ -10399,6 +10478,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/brakence-the-marrow-tour-boston-massachusetts-03-24-2027/event/010065569E74A50D",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18725807"
+   ],
    "score": 0
   },
   {
@@ -10412,6 +10494,18 @@
    "url": "https://www.espn.com/nba/game/_/gameId/401910803/spurs-celtics",
    "source": "espn",
    "score": 1
+  },
+  {
+   "id": "tm-Z7r9jZ1AA7EFy",
+   "date": "2027-03-24",
+   "time": "20:00",
+   "title": "Caroline Rose",
+   "cat": "music",
+   "venue": "The Sinclair Music Hall",
+   "city": "Cambridge, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7EFy",
+   "source": "ticketmaster",
+   "score": 0
   },
   {
    "id": "tm-vv16vZk4Fq0ZAuA66a",
@@ -10439,6 +10533,18 @@
    "url": "https://www.espn.com/nhl/game/_/gameId/401893602/senators-bruins",
    "source": "espn",
    "score": 1
+  },
+  {
+   "id": "tm-Z7r9jZ1AA7Iu_",
+   "date": "2027-03-25",
+   "time": "19:30",
+   "title": "Haken w/ Thank You Scientist",
+   "cat": "music",
+   "venue": "The Sinclair Music Hall",
+   "city": "Cambridge, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7Iu_",
+   "source": "ticketmaster",
+   "score": 0
   },
   {
    "id": "tm-Z7r9jZ1AA74uY",
@@ -10847,6 +10953,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/temper-city-self-aware-tour-boston-massachusetts-04-08-2027/event/01006556D02E76E5",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18725868"
+   ],
    "score": 0
   },
   {
@@ -11125,6 +11234,25 @@
    "score": 0
   },
   {
+   "id": "tm-Z7r9jZ1AA79rk",
+   "date": "2027-04-23",
+   "time": "20:00",
+   "title": "Cleopatrick",
+   "cat": "music",
+   "venue": "The Sinclair Music Hall",
+   "city": "Cambridge, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA79rk",
+   "source": "ticketmaster",
+   "times": [
+    "20:00",
+    "20:01"
+   ],
+   "aka": [
+    "sg-18688827"
+   ],
+   "score": 0
+  },
+  {
    "id": "tm-vv1AvZkfgGkeDOsQI",
    "date": "2027-04-23",
    "time": "20:00",
@@ -11140,18 +11268,6 @@
    "score": 0
   },
   {
-   "id": "sg-18688827",
-   "date": "2027-04-23",
-   "time": "20:00",
-   "title": "cleopatrick",
-   "cat": "music",
-   "venue": "The Sinclair - Cambridge",
-   "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/cleopatrick-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-04-23-8-pm/concert/18688827",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
    "id": "tm-vv1AvZkfYGkegtMCp",
    "date": "2027-04-24",
    "time": "18:00",
@@ -11164,6 +11280,45 @@
    "aka": [
     "sg-18613146"
    ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv1A8vP48GA2tH8A",
+   "date": "2027-04-24",
+   "time": "19:00",
+   "title": "Killers of Kill Tony",
+   "cat": "comedy",
+   "venue": "Boch Center Wang Theatre",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/killers-of-kill-tony-boston-massachusetts-04-24-2027/event/010065550FA7C405",
+   "source": "ticketmaster",
+   "score": 1
+  },
+  {
+   "id": "tm-vv1AvZk4_GkdekcQu",
+   "date": "2027-04-24",
+   "time": "19:00",
+   "title": "The Neighbourhood WOURLD TOUR II",
+   "cat": "music",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/the-neighbourhood-wourld-tour-ii-boston-massachusetts-04-24-2027/event/01006559C21AD68D",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18726904"
+   ],
+   "score": 0
+  },
+  {
+   "id": "sg-18725052",
+   "date": "2027-04-24",
+   "time": "20:00",
+   "title": "The Sheepdogs",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/the-sheepdogs-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-04-24-8-pm/concert/18725052",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -11188,6 +11343,25 @@
    "city": "Cambridge, MA",
    "url": "https://seatgeek.com/ken-yates-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-04-25-8-pm/concert/18702721",
    "source": "seatgeek",
+   "score": 0
+  },
+  {
+   "id": "tm-vv177Z_KGkMkUx6g",
+   "date": "2027-04-26",
+   "time": "19:00",
+   "title": "Palaye Royale",
+   "cat": "music",
+   "venue": "Paradise Rock Club presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/palaye-royale-boston-massachusetts-04-26-2027/event/0100653DC6DA21F5",
+   "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
+   "aka": [
+    "sg-18642048"
+   ],
    "score": 0
   }
  ],
@@ -11265,9 +11439,9 @@
  ],
  "sources": {
   "picks": 5,
-  "venues": 4,
-  "espn": 79,
-  "ticketmaster": 540,
-  "seatgeek": 115
+  "venues": 5,
+  "espn": 78,
+  "ticketmaster": 557,
+  "seatgeek": 109
  }
 }
