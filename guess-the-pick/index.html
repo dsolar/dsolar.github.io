@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Guess the Pick | David Solar</title>
+<meta name="description" content="The year, the pick and the team. Name the player. Twenty years of NBA and NFL drafts, a daily ten and an endless mode.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://davidsolar.dev/guess-the-pick/">
+<meta property="og:title" content="Guess the Pick">
+<meta property="og:description" content="The year, the pick and the team. Name the player.">
+<meta property="og:image" content="https://davidsolar.dev/assets/covers/guess-the-pick.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://davidsolar.dev/guess-the-pick/">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0B1626">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Big+Shoulders+Display:wght@700;800;900&family=Besley:wght@700&family=Libre+Franklin:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/bar.css">
+<script src="../assets/analytics.js" defer></script>
+<style>
+:root{
+  --stage:#0B1626; --stage-deep:#060D18; --panel:#122238; --panel-hi:#1A2E4A;
+  --line:rgba(236,239,233,.13); --line-strong:rgba(236,239,233,.3);
+  --chalk:#ECEFE9; --dim:rgba(236,239,233,.66); --faint:rgba(236,239,233,.38);
+  --red:#C8102E; --red-hi:#E8435C; --gold:#F2C14E; --wall:#1D4A36; --wall-hi:#25603F;
+  --good:#3FB37F; --ok:#F2C14E; --meh:#E9873A; --miss:#55606F;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+html{background:var(--stage-deep)}
+body{
+  min-height:100vh;color:var(--chalk);font:16px/1.45 var(--body);-webkit-font-smoothing:antialiased;
+  background:
+    radial-gradient(70% 45% at 50% -5%,rgba(242,193,78,.13),transparent 70%),
+    radial-gradient(120% 70% at 50% 0%,#17304F 0%,rgba(23,48,79,0) 62%),
+    linear-gradient(180deg,var(--stage) 0,var(--stage-deep) 900px);
+  background-repeat:no-repeat;background-color:var(--stage-deep);
+}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.wrap{max-width:720px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-left)) 56px max(16px,env(safe-area-inset-right))}
+[hidden]{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Masthead */
+.mast{text-align:center;padding:34px 0 18px}
+.kicker{font:700 12px/1 var(--body);letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin:0 0 10px}
+.mast h1{font:900 clamp(46px,11vw,84px)/.88 var(--display);letter-spacing:.01em;text-transform:uppercase;margin:0}
+.mast h1 span{color:var(--red-hi)}
+.mast p{color:var(--dim);margin:12px auto 0;max-width:30rem}
+body:not([data-screen="home"]) .mast{padding:18px 0 0}
+body:not([data-screen="home"]) .mast h1{font-size:clamp(30px,6vw,40px)}
+body:not([data-screen="home"]) .mast h1 br{display:none}
+body:not([data-screen="home"]) .mast .kicker,body:not([data-screen="home"]) .mast p{display:none}
+
+/* Sport switch */
+.sports{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:22px 0 14px}
+.sport{display:flex;align-items:center;justify-content:center;gap:12px;padding:16px 10px;border-radius:12px;
+  background:var(--panel);border:1px solid var(--line);font:800 28px/1 var(--display);letter-spacing:.06em;text-transform:uppercase}
+.sport img{width:34px;height:34px}
+.sport[aria-pressed="true"]{background:linear-gradient(180deg,var(--panel-hi),var(--panel));border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
+.sport[aria-pressed="false"]{color:var(--dim)}
+.sport[aria-pressed="false"] img{opacity:.55;filter:grayscale(.6)}
+
+/* Mode cards */
+.modes{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+@media(max-width:560px){.modes{grid-template-columns:1fr}}
+.mode{text-align:left;padding:20px 18px 18px;border-radius:14px;background:var(--panel);border:1px solid var(--line);display:flex;flex-direction:column;gap:6px;min-height:168px}
+.mode:hover{border-color:var(--line-strong)}
+.mode h2{font:800 30px/1 var(--display);text-transform:uppercase;letter-spacing:.03em;margin:0}
+.mode .tagline{color:var(--dim);margin:0}
+.mode .status{margin-top:auto;font-weight:600;font-size:14px;color:var(--gold)}
+.mode.daily{border-top:3px solid var(--red)}
+.mode.endless{border-top:3px solid var(--wall-hi)}
+.rules{margin:20px 2px 0;color:var(--dim);font-size:14.5px}
+.rules b{color:var(--chalk);font-weight:600}
+.rules ul{margin:8px 0 0;padding-left:18px}
+.rules li{margin:3px 0}
+
+/* Play */
+.hud{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:22px 0 12px;font-weight:600;font-size:14px;color:var(--dim)}
+.hud .left{display:flex;align-items:center;gap:10px}
+.back{background:none;border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13px;color:var(--dim)}
+.back:hover{color:var(--chalk);border-color:var(--line-strong)}
+.track{display:flex;gap:4px}
+.track i{width:18px;height:6px;border-radius:3px;background:var(--line)}
+.track i.on{background:var(--chalk)}
+.track i.s3{background:var(--good)} .track i.s2{background:var(--ok)} .track i.s1{background:var(--meh)} .track i.s0{background:var(--miss)}
+.lives{display:flex;gap:5px;align-items:center}
+.lives i{width:11px;height:11px;border-radius:50%;background:var(--red-hi)}
+.lives i.gone{background:transparent;border:1.5px solid var(--faint)}
+.score b{color:var(--chalk);font-size:16px}
+
+.card{position:relative;border-radius:18px;overflow:hidden;background:linear-gradient(180deg,#152A45 0%,#0F1F35 100%);border:1px solid var(--line);
+  box-shadow:0 24px 60px rgba(0,0,0,.35)}
+.card-top{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);
+  font:700 12px/1 var(--body);letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+.card-top .live{color:var(--red-hi);display:flex;align-items:center;gap:7px}
+.card-top .live:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--red-hi);box-shadow:0 0 10px var(--red-hi)}
+.card-body{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center;padding:22px 18px 20px}
+.plate{width:118px;padding:12px 0 10px;border-radius:8px;background:var(--wall);border:3px solid #163A2A;text-align:center;
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.06),0 6px 16px rgba(0,0,0,.3)}
+.plate small{display:block;font:700 11px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;color:rgba(236,239,233,.7)}
+.plate strong{display:block;font:900 64px/.95 var(--display);color:#F7F5EE;margin:4px 0 2px;font-variant-numeric:tabular-nums}
+.plate span{display:block;font:600 12px/1.2 var(--body);color:rgba(236,239,233,.75)}
+.who{min-width:0}
+.year{font:800 22px/1 var(--display);letter-spacing:.05em;text-transform:uppercase;color:var(--gold);margin:0 0 10px}
+.team{display:flex;align-items:center;gap:12px}
+.logo{width:52px;height:52px;flex:none;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.06);overflow:hidden}
+.logo img{width:46px;height:46px;object-fit:contain}
+.logo b{font:800 16px/1 var(--display);letter-spacing:.04em;color:var(--dim)}
+.team-name{font:800 clamp(24px,5.6vw,34px)/1 var(--display);text-transform:uppercase;letter-spacing:.02em}
+.team-sub{font-size:13px;color:var(--faint);font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+.moved{display:flex;align-items:center;gap:10px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+.moved .logo{width:34px;height:34px}.moved .logo img{width:30px;height:30px}.moved .logo b{font-size:12px}
+.moved p{margin:0;font-size:15px;color:var(--dim)} .moved p b{color:var(--chalk);font-weight:600}
+@media(max-width:480px){
+  .card-body{grid-template-columns:1fr;gap:16px}
+  .plate{width:100%;display:flex;align-items:baseline;justify-content:center;gap:10px;padding:10px 0}
+  .plate strong{font-size:48px;margin:0}
+}
+
+.clues{padding:0 18px 4px;display:grid;gap:8px}
+.clue{display:flex;gap:10px;align-items:baseline;padding:10px 12px;border-radius:10px;background:rgba(242,193,78,.08);border:1px solid rgba(242,193,78,.25);font-size:15px}
+.clue span{font:700 11px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);flex:none;min-width:66px}
+
+.guess-area{padding:16px 18px 18px}
+.pts{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--dim);margin-bottom:10px;font-weight:600}
+.pts i{width:12px;height:12px;border-radius:3px;background:var(--gold)} .pts i.used{background:transparent;border:1.5px solid var(--faint)}
+.field{position:relative}
+.field input{width:100%;padding:15px 112px 15px 16px;border-radius:12px;border:1.5px solid var(--line-strong);background:#0A1626;font-size:18px;font-weight:500}
+.field input::placeholder{color:var(--faint)}
+.field input:focus{outline:none;border-color:var(--gold)}
+.go{position:absolute;right:6px;top:6px;bottom:6px;padding:0 18px;border-radius:9px;border:0;background:var(--red);font-weight:700;letter-spacing:.04em}
+.go:hover{background:var(--red-hi)}
+.list{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:5;margin:0;padding:6px;list-style:none;border-radius:12px;background:#0E1C30;border:1px solid var(--line-strong);box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.list li{padding:10px 12px;border-radius:8px;cursor:pointer;font-weight:500}
+.list li[aria-selected="true"],.list li:hover{background:var(--panel-hi)}
+.list li mark{background:none;color:var(--gold);font-weight:700}
+.msg{min-height:22px;margin:10px 2px 0;font-size:14.5px;color:var(--dim)}
+.msg.bad{color:#FF8A9A}
+.wrongs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.wrongs span{font-size:13px;padding:4px 10px;border-radius:999px;background:rgba(232,67,92,.12);border:1px solid rgba(232,67,92,.35);text-decoration:line-through;color:#FFB3BF}
+.tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.tool{padding:9px 14px;border-radius:999px;border:1px solid var(--line-strong);background:transparent;font-size:14px;font-weight:600;color:var(--dim)}
+.tool:hover:not(:disabled){color:var(--chalk);border-color:var(--chalk)}
+.tool:disabled{opacity:.4;cursor:default}
+.tool.quit{margin-left:auto}
+
+.reveal{padding:20px 18px 20px;border-top:1px solid var(--line);background:rgba(0,0,0,.14)}
+.verdict{font:800 14px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;margin:0 0 8px}
+.verdict.v3{color:var(--good)} .verdict.v2{color:var(--ok)} .verdict.v1{color:var(--meh)} .verdict.v0{color:#9AA6B6}
+.answer{font:900 clamp(34px,8vw,52px)/.95 var(--display);text-transform:uppercase;letter-spacing:.01em;margin:0}
+.facts{margin:8px 0 0;color:var(--dim)}
+.facts b{color:var(--chalk);font-weight:600}
+.next{margin-top:16px;width:100%;padding:15px;border-radius:12px;border:0;background:var(--chalk);color:#0B1626;font-weight:700;font-size:17px;letter-spacing:.02em}
+.next:hover{background:#fff}
+
+/* Done */
+.done{margin-top:22px;border-radius:18px;background:var(--panel);border:1px solid var(--line);padding:26px 20px;text-align:center}
+.done h2{font:900 26px/1 var(--display);text-transform:uppercase;letter-spacing:.04em;margin:0;color:var(--dim)}
+.big{font:900 92px/.9 var(--display);margin:10px 0 4px}
+.big small{font-size:38px;color:var(--faint)}
+.grade{font:700 18px/1.3 var(--body);color:var(--gold);margin:0 0 16px}
+.squares{font-size:26px;letter-spacing:4px;margin:0 0 16px}
+.done-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.btn{padding:13px 20px;border-radius:12px;border:1px solid var(--line-strong);background:transparent;font-weight:700}
+.btn.primary{background:var(--red);border-color:var(--red)} .btn.primary:hover{background:var(--red-hi)}
+.btn:hover{border-color:var(--chalk)}
+.countdown{color:var(--faint);font-size:14px;margin:14px 0 0}
+.recap{list-style:none;margin:22px 0 0;padding:0;text-align:left;border-top:1px solid var(--line)}
+.recap li{display:grid;grid-template-columns:14px 1fr auto;gap:12px;align-items:center;padding:11px 2px;border-bottom:1px solid var(--line)}
+.recap i{width:12px;height:12px;border-radius:3px}
+.recap .s3{background:var(--good)} .recap .s2{background:var(--ok)} .recap .s1{background:var(--meh)} .recap .s0{background:var(--miss)}
+.recap b{font-weight:600}
+.recap span{color:var(--faint);font-size:13px;text-align:right}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);padding:10px 16px;border-radius:10px;background:var(--chalk);color:#0B1626;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.foot{margin-top:28px;text-align:center;color:var(--faint);font-size:13px}
+.foot a{color:var(--dim)}
+@media(prefers-reduced-motion:no-preference){
+  .card.enter{animation:rise .35s ease both}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+}
+</style>
+</head>
+<body data-screen="home">
+<nav class="ds-bar" aria-label="davidsolar.dev">
+  <a href="../"><img src="../assets/ds-mark.svg" alt="" width="20" height="20"><span class="ds-bar-name">David Solar</span></a>
+  <a href="../#projects">All projects</a>
+</nav>
+
+<main class="wrap">
+  <header class="mast">
+    <p class="kicker">The pick is in</p>
+    <h1>Guess the <span>Pick</span></h1>
+    <p>The year, the pick and the team that made it. Name the player.</p>
+  </header>
+
+  <!-- Home: pick a sport, then a mode -->
+  <section id="home" aria-label="Choose a game">
+    <div class="sports" role="group" aria-label="Sport">
+      <button type="button" class="sport" data-sport="nba" aria-pressed="true"><img src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/nba.png&w=80&h=80" alt="" onerror="this.remove()">NBA</button>
+      <button type="button" class="sport" data-sport="nfl" aria-pressed="false"><img src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/nfl.png&w=80&h=80" alt="" onerror="this.remove()">NFL</button>
+    </div>
+    <div class="modes">
+      <button type="button" class="mode daily" id="start-daily">
+        <h2>Daily ten</h2>
+        <p class="tagline">Ten picks, the same ten for everyone today. Compare scores in the group chat.</p>
+        <span class="status" id="daily-status"></span>
+      </button>
+      <button type="button" class="mode endless" id="start-endless">
+        <h2>Endless</h2>
+        <p class="tagline">Keep going until you whiff three times.</p>
+        <span class="status" id="endless-status"></span>
+      </button>
+    </div>
+    <div class="rules">
+      <b>How it works.</b> Every pick is worth 3 points.
+      <ul>
+        <li>A hint (position and school, then initials) or a wrong guess costs a point.</li>
+        <li>Names that aren't in the game don't count against you, so typos are free.</li>
+        <li>Picks come from the <span id="years">last 20 drafts</span>: every first-rounder, plus later picks who made it big (Jokić, Kelce, Brock Purdy).</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Play -->
+  <section id="play" hidden aria-label="Guess the pick">
+    <div class="hud">
+      <div class="left"><button type="button" class="back" id="back">&larr; Menu</button><span id="hud-mode"></span></div>
+      <div id="hud-right"></div>
+    </div>
+    <article class="card" id="card">
+      <div class="card-top"><span class="live" id="card-league">NBA Draft</span><span id="card-count"></span></div>
+      <div class="card-body">
+        <div class="plate" id="plate"><small id="plate-round">Pick</small><strong id="plate-pick">3</strong><span id="plate-overall"></span></div>
+        <div class="who">
+          <p class="year" id="card-year">2018</p>
+          <div class="team-sub" id="team-sub">Picked by</div>
+          <div class="team"><span class="logo" id="team-logo"></span><span class="team-name" id="team-name"></span></div>
+          <div class="moved" id="moved" hidden><span class="logo" id="moved-logo"></span><p id="moved-text"></p></div>
+        </div>
+      </div>
+      <div class="clues" id="clues"></div>
+      <div class="guess-area" id="guess-area">
+        <div class="pts" id="pts" aria-live="polite"></div>
+        <form class="field" id="guess-form" autocomplete="off">
+          <label class="sr" for="guess">Player's name</label>
+          <input id="guess" type="text" placeholder="Who'd they take?" autocomplete="off" autocapitalize="words" spellcheck="false"
+                 role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="suggestions">
+          <button class="go" type="submit">Guess</button>
+          <ul class="list" id="suggestions" role="listbox" hidden></ul>
+        </form>
+        <p class="msg" id="msg" aria-live="polite"></p>
+        <div class="wrongs" id="wrongs"></div>
+        <div class="tools">
+          <button type="button" class="tool" id="hint">Hint: position &amp; school (&minus;1)</button>
+          <button type="button" class="tool quit" id="give-up">Show me</button>
+        </div>
+      </div>
+      <div class="reveal" id="reveal" hidden aria-live="polite">
+        <p class="verdict" id="verdict"></p>
+        <p class="answer" id="answer"></p>
+        <p class="facts" id="facts"></p>
+        <button type="button" class="next" id="next">Next pick</button>
+      </div>
+    </article>
+  </section>
+
+  <!-- Results -->
+  <section id="done" hidden aria-label="Results">
+    <div class="done">
+      <h2 id="done-title">Daily ten</h2>
+      <p class="big" id="done-score"></p>
+      <p class="grade" id="done-grade"></p>
+      <p class="squares" id="done-squares" aria-hidden="true"></p>
+      <div class="done-actions">
+        <button type="button" class="btn primary" id="share">Share</button>
+        <button type="button" class="btn" id="again"></button>
+        <button type="button" class="btn" id="menu">Menu</button>
+      </div>
+      <p class="countdown" id="countdown"></p>
+      <ul class="recap" id="recap"></ul>
+    </div>
+  </section>
+
+  <p class="foot">Draft data from basketball-reference and Pro Football Reference, via <a href="https://github.com/sumitrodatta/bball-reference-datasets">bball-reference-datasets</a> and <a href="https://github.com/nflverse/nflverse-data">nflverse</a>.</p>
+</main>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="data.js?v=1"></script>
+<script src="engine.js?v=1"></script>
+<script src="app.js?v=1"></script>
+</body>
+</html>

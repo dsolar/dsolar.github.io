@@ -33,6 +33,8 @@ dsolar.github.io/
   sunday-strategist/          Sunday Strategist: a football coaching game (diagnose the defense, set protection, call the play)
   paint-the-corners/          Paint the Corners: index.html (layout, styles, UI) and engine.js
                               (pitches, hitters, at-bat math). Plain files, edit directly.
+  guess-the-pick/             Guess the Pick: index.html (layout, styles), app.js (screens, guess box, saved progress),
+                              engine.js (daily ten, scoring, name matching) and data.js (every pick; generated, don't edit)
   guillotine/                 Bastille Day Odds: index.html, sim.js (the simulation),
                               data.json (league data, written by the workflow below)
   calendar/                   Night Out: index.html, taste.json, picks.json and places.json (edit these),
@@ -43,6 +45,8 @@ dsolar.github.io/
   robots.txt                  keeps send-off images and data files out of search engines
   tools/guillotine_update.py  pulls the league and every lineup from Yahoo into guillotine/data.json
   tools/paint_the_corners_sim.js  balance check for Paint the Corners (node, see the top of the file)
+  tools/guess_the_pick_build.py  rebuilds guess-the-pick/data.js from nflverse and basketball-reference data (see below)
+  tools/guess_the_pick_check.js  checks Guess the Pick's data and rules (node tools/guess_the_pick_check.js)
   tools/win_probability_check.js  checks Win Probability's data and grading (node tools/win_probability_check.js)
   tools/win_probability_supabase.sql  one-time setup for Win Probability's crowd votes (see below)
   tools/calendar_update.py    builds calendar/events.json; calendar_prices.py watches ticket prices;
@@ -342,3 +346,14 @@ Online head-to-head and the shared GM leaderboard run on claude.ai's shared data
 - Change the colors in `assets/site.css`. They're the variables at the top, with the dark mode versions right below.
 - Write a short "How I built it" page for one of the games and link it from its entry in `projects.js`.
 - Rebuild online mode and the leaderboard on Supabase.
+
+## Guess the Pick: updating the drafts
+
+The picks come from two free datasets on GitHub: nflverse for the NFL and sumitrodatta's bball-reference-datasets for the NBA. After a new draft (or once a season, so careers and All-Star counts stay current):
+
+1. In `tools/guess_the_pick_build.py`, move `FIRST` and `LAST` up a year so it stays the last 20 drafts.
+2. Run `python3 tools/guess_the_pick_build.py`, then `node tools/guess_the_pick_check.js`.
+3. If the build lists players "traded in their rookie season", add each one's first team to `NBA_WENT_TO` and run it again.
+4. Bump `data.js?v=` in `guess-the-pick/index.html` so phones load the new file.
+
+The NBA dataset doesn't have the 2026 draft yet, so the 2026 first round lives in `tools/guess_the_pick_2026_nba.json`, entered by hand. Once the dataset catches up, the build uses its picks and skips that file's. Later-round picks get in when they made it big (an All-Star, All-NBA, Rookie of the Year or 30+ win shares in the NBA; a Hall of Famer, All-Pro, 3+ Pro Bowls or 60+ approximate value in the NFL). To add someone those rules miss, put "SEASON-OVERALL" in `EXTRA_NBA` or `EXTRA_NFL`.

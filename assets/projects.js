@@ -47,6 +47,18 @@ window.PROJECTS = [
     cover: { image: "assets/covers/win-probability.jpg", bg: "#0E2A1F", band: "#F7D23E" }
   },
   {
+    title: "Guess the Pick",
+    type: "Games",
+    released: "2026-10",
+    url: "guess-the-pick/",
+    action: "Name the pick",
+    question: "2014, pick 41, Denver. Who'd they take?",
+    summary: "Draft trivia from the last 20 NBA and NFL drafts. You get the year, the pick and the team that made it, and you name the player. A daily ten for the group chat, or endless until you whiff three times.",
+    facts: [["1,400+", "picks, 2007 to 2026"], ["10", "picks in the daily, same for everyone"], ["3", "points a pick, minus hints"]],
+    stack: ["JavaScript", "Python"],
+    cover: { image: "assets/covers/guess-the-pick.jpg", bg: "#0B1626", band: "#C8102E" }
+  },
+  {
     title: "Sunday Strategist",
     type: "Games",
     released: "2026-10",
