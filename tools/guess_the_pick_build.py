@@ -44,6 +44,7 @@ FIRST, LAST = 2007, 2026
 
 NFL_URL = "https://github.com/nflverse/nflverse-data/releases/download/draft_picks/draft_picks.csv"
 NFL_PLAYERS_URL = "https://github.com/nflverse/nflverse-data/releases/download/players/players.csv"
+NFL_COMBINE_URL = "https://github.com/nflverse/nflverse-data/releases/download/combine/combine.csv"
 BBREF = "https://raw.githubusercontent.com/sumitrodatta/bball-reference-datasets/master/Data/"
 BBREF_FILES = ["Draft Pick History.csv", "Player Season Info.csv", "Player Career Info.csv", "Advanced.csv",
                "Player Totals.csv", "All-Star Selections.csv", "End of Season Teams.csv", "Player Award Shares.csv"]
@@ -335,6 +336,60 @@ def build_nfl(src):
     return picks, known
 
 
+def feet(inches):
+    i = int(num(inches))
+    return f"{i // 12}-{i % 12}" if i else ""
+
+
+def size_line(ht, wt, extra=()):
+    bits = []
+    if ht and wt:
+        bits.append(f"{ht}, {int(num(wt))} lbs")
+    elif ht:
+        bits.append(ht)
+    return " · ".join(bits + [x for x in extra if x])
+
+
+# Two hints the game sells separately: "size" (height and weight, plus combine numbers for the NFL) and
+# "pb", the player taken one pick earlier in the full draft (any round, whether or not he's in the game).
+def add_nba_hints(src, picks):
+    draft = {(int(r["season"]), int(r["overall_pick"])): r for r in read(os.path.join(src, "Draft Pick History.csv"))
+             if r["lg"] == "NBA" and r["overall_pick"].isdigit()}
+    career = {r["player_id"]: r for r in read(os.path.join(src, "Player Career Info.csv"))}
+    extra = {e["p"]: e for e in json.load(open(os.path.join(HERE, "guess_the_pick_2026_nba.json")))["picks"]}
+    for x in picks:
+        me = draft.get((x["y"], x["p"]))
+        c = career.get(me["player_id"], {}) if me else {}
+        x["size"] = size_line(feet(c.get("ht_in_in")), c.get("wt") if c.get("wt") not in ("", "NA") else "")
+        before = draft.get((x["y"], x["p"] - 1))
+        if before:
+            x["pb"] = f"#{x['p'] - 1} {before['player']}, {NBA_TEAMS.get(before['tm'], before['tm'])}"
+        elif x["y"] == 2026 and x["p"] - 1 in extra:
+            e = extra[x["p"] - 1]
+            x["pb"] = f"#{x['p'] - 1} {e['n']}, {NBA_TEAMS[e['t']]}"
+        else:
+            x["pb"] = ""
+
+
+def add_nfl_hints(src, picks):
+    draft = {(int(r["season"]), int(r["pick"])): r for r in read(os.path.join(src, "nfl_draft_picks.csv")) if r["pick"].isdigit()}
+    combine = {r["pfr_id"]: r for r in read(os.path.join(src, "nfl_combine.csv")) if r.get("pfr_id")}
+    players = {r["pfr_id"]: r for r in read(os.path.join(src, "nfl_players.csv")) if r.get("pfr_id")}
+    for x in picks:
+        me = draft.get((x["y"], x["p"]), {})
+        pid = me.get("pfr_player_id", "")
+        cb, pl = combine.get(pid), players.get(pid, {})
+        if cb:
+            extra = [f"{cb['forty']} forty" if cb.get("forty") else "",
+                     f"{cb['vertical']}-inch vertical" if cb.get("vertical") else "",
+                     f"{cb['bench']} bench reps" if cb.get("bench") else ""]
+            x["size"] = size_line(cb.get("ht") or feet(pl.get("height")), cb.get("wt") or pl.get("weight"), extra[:2] if extra[0] else extra[1:])
+        else:
+            x["size"] = size_line(feet(pl.get("height")), pl.get("weight"))
+        before = draft.get((x["y"], x["p"] - 1))
+        x["pb"] = f"#{x['p'] - 1} {before['pfr_player_name']}, {nfl_team_name(before['team'], x['y'])}" if before else ""
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--src", help="folder that already holds the source CSVs")
@@ -344,10 +399,15 @@ def main():
         print("Downloading sources to", src)
         fetch(NFL_URL, os.path.join(src, "nfl_draft_picks.csv"))
         fetch(NFL_PLAYERS_URL, os.path.join(src, "nfl_players.csv"))
+        fetch(NFL_COMBINE_URL, os.path.join(src, "nfl_combine.csv"))
         for f in BBREF_FILES:
             fetch(BBREF + urllib.parse.quote(f), os.path.join(src, f))
     nba, odd, nba_names = build_nba(src)
     nfl, nfl_names = build_nfl(src)
+    add_nba_hints(src, nba)
+    add_nfl_hints(src, nfl)
+    for league, picks in (("NBA", nba), ("NFL", nfl)):
+        print(f"{league}: size for {sum(1 for x in picks if x['size'])}, pick before for {sum(1 for x in picks if x['pb'])} of {len(picks)}")
     for league, picks in (("NBA", nba), ("NFL", nfl)):
         years = sorted({x["y"] for x in picks})
         assert years == list(range(FIRST, LAST + 1)), (league, years)
