@@ -240,20 +240,20 @@
     $("next").textContent = last ? "See how you did" : "Next pick";
     $("next").focus({ preventScroll: true });
   }
-  // The rest of that draft: who went right before and after him, and the best career taken after him.
+  // The picks around him: up to two before and two after, same round only. Nobody from further down the draft.
+  var NEAR = 2;
   function context(p) {
-    var draft = picks.filter(function (x) { return x.y === p.y; });
-    var at = function (n) { return draft.filter(function (x) { return x.p === n; })[0]; };
-    var slot = function (x) { return x.r === 1 ? "#" + x.p : "Round " + x.r + " #" + x.p; };
-    var rows = [], before = at(p.p - 1), after = at(p.p + 1);
-    if (before) rows.push([slot(before) + " " + before.n, "one pick before"]);
-    if (after) rows.push([slot(after) + " " + after.n, "one pick after"]);
-    var later = draft.filter(function (x) { return x.p > p.p; }).sort(function (a, b) { return b.f - a.f; })[0];
-    var top = draft.slice().sort(function (a, b) { return b.f - a.f; })[0];
-    if (later && later !== after && later.f >= Math.max(0.25, p.f + 0.05)) rows.push([slot(later) + " " + later.n, "best career taken after him"]);
-    else if (top === p && p.f >= 0.3) rows.push(["Best career in the " + p.y + " draft", ""]);
+    var near = picks.filter(function (x) { return x.y === p.y && x.r === p.r && x !== p && Math.abs(x.p - p.p) <= NEAR; })
+      .sort(function (a, b) { return a.p - b.p; });
+    var slot = function (x) { return x.r === 1 ? "#" + x.p : "Round " + x.r + ", #" + x.p; };
+    var rows = near.map(function (x) {
+      var d = x.p - p.p, n = Math.abs(d);
+      return [slot(x) + " " + x.n, (n === 1 ? "one pick " : n + " picks ") + (d < 0 ? "before" : "after")];
+    });
+    var top = picks.filter(function (x) { return x.y === p.y; }).sort(function (a, b) { return b.f - a.f; })[0];
+    if (top === p && p.f >= 0.3) rows.push(["Best career in the " + p.y + " draft", ""]);
     if (!rows.length) return "";
-    return '<p class="ctx-label">The ' + p.y + " " + LEAGUE[sport] + " draft</p><ul>" + rows.map(function (r) {
+    return '<p class="ctx-label">Around him in the ' + p.y + " " + LEAGUE[sport] + " draft</p><ul>" + rows.map(function (r) {
       return "<li><b>" + esc(r[0]) + "</b>" + (r[1] ? "<span>" + esc(r[1]) + "</span>" : "") + "</li>";
     }).join("") + "</ul>";
   }
