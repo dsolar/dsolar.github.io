@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>David Solar | Sports. Data. Nonsense.</title>
 <meta name="robots" content="noindex">
-<meta name="description" content="Marketing leadership, digital experiences, sports analytics, simulations and writing by David Solar.">
+<meta name="description" content="Sports games, fantasy league tools, simulations and a Boston night-out calendar, built for friends.">
 <link rel="canonical" href="https://davidsolar.dev/">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -14,17 +14,17 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://davidsolar.dev/">
 <meta property="og:title" content="David Solar | Sports. Data. Nonsense.">
-<meta property="og:description" content="Marketing leadership, sports analytics and original digital projects by David Solar.">
+<meta property="og:description" content="Sports games, fantasy league tools, simulations and a Boston night-out calendar, built for friends.">
 <meta property="og:image" content="https://davidsolar.dev/assets/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Besley:ital,wght@0,500;0,600;0,700;0,800;1,500&family=Libre+Franklin:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="assets/site.css?v=20261027-kids-page">
+<link rel="stylesheet" href="assets/site.css?v=20261028-friends">
 <script>if (location.hash === "#kids") location.replace("kids/");  /* the kids section moved to its own page */</script>
 <script src="assets/site.js" defer></script>
 <script src="assets/analytics.js" defer></script>
-<script src="assets/scoreboard.js?v=20261026-views" defer></script>
+<script src="assets/scoreboard.js?v=20261028-pregame" defer></script>
 </head>
 <body>
 
@@ -52,9 +52,9 @@
       <img class="brand-logo" src="assets/david-solar-sports-data-nonsense-compact.svg" alt="">
     </a>
     <nav class="site-nav" aria-label="Main">
-      <a href="#projects">Projects</a>
+      <a href="#projects">Games</a>
+      <a href="calendar/">Night Out</a>
       <a href="#writing">Writing</a>
-      <a href="#about">About</a>
       <a href="kids/">Kids</a>
     </nav>
   </div>
@@ -65,8 +65,8 @@
     <div class="wrap">
       <div class="hero-text">
         <p class="hero-kicker">Sports. Data. Nonsense.</p>
-        <h1 id="hero-title">Strategy, technology, and a healthy obsession with sports.</h1>
-        <p class="hero-sub">I lead marketing, build digital experiences, and use data to turn complicated questions into useful products. Here, I explore those ideas through sports analytics, simulations, and the occasional ridiculous experiment.</p>
+        <h1 id="hero-title">Make the call. Out&#8209;pitch Pedro. Survive the guillotine.</h1>
+        <p class="hero-sub">Games, league tools and simulations, built for the group chat. Most of them started as an argument about a fourth down, a keeper or a cut line. Pick one, play it, then come back and tell me the math is wrong.</p>
       </div>
       <svg class="hero-brand-art" viewBox="0 0 280 280" aria-hidden="true" focusable="false">
     <g transform="translate(22 18)" stroke-linecap="round" stroke-linejoin="round">
@@ -94,17 +94,20 @@
   <section class="section" id="projects" aria-labelledby="projects-title">
     <div class="wrap">
       <div class="section-head">
-        <h2 id="projects-title">Selected projects</h2>
+        <h2 id="projects-title">The lineup</h2>
         <span class="count" id="count"></span>
         <div class="filters" id="filters" role="group" aria-label="Show projects by type" hidden></div>
       </div>
       <!-- Projects are listed in assets/projects.js. Edit that file, not this one. -->
-      <p class="portfolio-intro">Sports analytics, simulations, games, and useful tools. Explore by category.</p>
+      <p class="portfolio-intro">Games, league houses, a calendar for nights out, and a few simulations. Filter by type, or just start at the top.</p>
       <div class="catalog" id="catalog">
         <noscript>
           <ul>
-            <li><a href="31st-franchise/">The 31st Franchise</a>, an NBA expansion draft game</li>
+            <li><a href="win-probability/">Make the Call</a>, an NFL decision game graded on win probability</li>
+            <li><a href="calendar/">Night Out</a>, Boston events, restaurants and road trips, with who's in</li>
             <li><a href="guillotine/">Bastille Day Odds</a>, survival odds for a guillotine fantasy football league</li>
+            <li><a href="rohan/">Lige de Rohan</a>, the house for a 10-team ESPN keeper league</li>
+            <li><a href="31st-franchise/">The 31st Franchise</a>, an NBA expansion draft game</li>
           </ul>
         </noscript>
       </div>
@@ -151,10 +154,10 @@
         </figure>
         <p class="writing-kicker">ESPN Chalk · 2014–16</p>
         <h3 id="espn-title">ESPN Chalk: weekly NFL analysis</h3>
-        <p>For three NFL seasons, I wrote weekly columns on contrarian betting value, using market trends and Sports Insights data to look for edges. Browse recovered regular-season and playoff columns by year.</p>
+        <p>Before any of this, I spent three NFL seasons writing a weekly ESPN column on contrarian betting value, using Sports Insights data to find spots where the public was leaning the wrong way. They live behind ESPN+ now, so you may hit a paywall.</p>
       </div>
       <div class="featured-writing" aria-label="Featured columns">
-        <p class="featured-label">Start with a column</p>
+        <p class="featured-label">Start here</p>
         <a class="featured-column" href="https://www.espn.com/chalk/insider/story/_/id/18275999/sports-insights-contrarian-betting-system-week-15-nfl-season-looks-how-often-nfl-teams-win-situations-actually-win-games-last-weeks-season"><span>2016 · Week 15</span><h3>Do “must-win” teams actually win?</h3><p>A late-season question from the contrarian betting archive.</p><b>Read on ESPN ↗</b></a>
         <a class="featured-column" href="https://www.espn.com/chalk/insider/story/_/id/14514523/finding-contrarian-betting-value-wild-card-round-nfl"><span>2015 · Wild Card Round</span><h3>Finding contrarian value in the playoffs</h3><p>Take the weekly betting analysis into Wild Card weekend.</p><b>Read on ESPN ↗</b></a>
       </div>
@@ -170,11 +173,11 @@
         <li><a href="https://www.espn.com/chalk/insider/story/_/id/17831992/sports-insights-contrarian-betting-values-week-7-nfl-season"><span>Week 7</span><span class="article-arrow" aria-hidden="true">↗</span></a></li>
         <li><a href="https://www.espn.com/sports-betting/insider/insider/story/_/id/17892380/sports-insights-contrarian-betting-values-week-8-nfl-season-looks-value-certain-road-teams-right-situations"><span>Week 8</span><span class="article-arrow" aria-hidden="true">↗</span></a></li>
         <li><a href="https://www.espn.com/sports-betting/insider/story/_/id/17951224/sports-insights-contrarian-betting-values-week-9-nfl-season-looks-value-going-ats-trend"><span>Week 9</span><span class="article-arrow" aria-hidden="true">↗</span></a></li>
-        <li><a href="https://www.espn.com/sports-betting/insider/story/_/id/18003593/utils"><span>Week 10</span><span class="article-arrow" aria-hidden="true">↗</span></a></li>
+        <li><a href="https://www.espn.com/sports-betting/insider/story/_/id/18003593/contrarian-betting-strategy-week-10-nfl"><span>Week 10</span><span class="article-arrow" aria-hidden="true">↗</span></a></li>
         <li><a href="https://www.espn.com/sports-betting/insider/story/_/id/18059743/sports-insights-contrarian-betting-values-week-11-nfl-season-looks-value-betting-underdogs-coming-loss"><span>Week 11</span><span class="article-arrow" aria-hidden="true">↗</span></a></li>
-        <li><a href="https://www.espn.com/sports-betting/insider/story/_/id/18226211/utils"><span>Week 14</span><span class="article-arrow" aria-hidden="true">↗</span></a></li>
+        <li><a href="https://www.espn.com/sports-betting/insider/story/_/id/18226211/week-14-contrarian-nfl-betting-strategy"><span>Week 14</span><span class="article-arrow" aria-hidden="true">↗</span></a></li>
         <li><a href="https://www.espn.com/chalk/insider/story/_/id/18275999/sports-insights-contrarian-betting-system-week-15-nfl-season-looks-how-often-nfl-teams-win-situations-actually-win-games-last-weeks-season"><span>Week 15</span><span class="article-arrow" aria-hidden="true">↗</span></a></li>
-        <li><a href="https://www.espn.com/sports-betting/insider/story/_/id/18323729/Message"><span>Week 16</span><span class="article-arrow" aria-hidden="true">↗</span></a></li>
+        <li><a href="https://www.espn.com/sports-betting/insider/story/_/id/18323729/week-16-contrarian-nfl-betting-system"><span>Week 16</span><span class="article-arrow" aria-hidden="true">↗</span></a></li>
         <li><a href="https://www.espn.com/sports-betting/insider/story/_/id/18402815/sports-insights-contrarian-betting-system-nfl-wild-card-round"><span>Wild Card Round</span><span class="article-arrow" aria-hidden="true">↗</span></a></li>
         <li><a href="https://www.espn.com/sports-betting/insider/story/_/id/18446783/chalk-sports-insights-contrarian-betting-system-nfl-divisional-round"><span>Divisional Round</span><span class="article-arrow" aria-hidden="true">↗</span></a></li>
         </ul>
@@ -217,9 +220,9 @@
     <div class="wrap about-grid">
       <h2 id="about-title">About</h2>
       <div class="about-copy">
-        <p class="lead">I'm David Solar, a Boston-area marketing leader focused on strategy, digital experiences, and the intersection of technology and storytelling.</p>
-        <p>My work spans marketing strategy, analytics, CRM, automation, and digital product development. I care about making complex systems useful, communicating clearly, and building things that solve real problems.</p><p>Outside of work, I apply the same curiosity to sports. These projects are hands-on experiments in modeling, design, and product thinking. I also wrote weekly NFL betting analysis for ESPN Chalk.</p>
-        <p>Say hello at <a data-user="hello" data-domain="davidsolar.dev" data-show>hello [at] davidsolar.dev</a>.</p>
+        <p class="lead">I'm David. I do marketing by day and build this stuff at night, usually because a group chat argument needed settling.</p>
+        <p>Everything here is made for the people I watch games with, draft with and go out with. Some of it is useful. Most of it is an excuse to put real numbers behind a bad take.</p>
+        <p>Found a bug, think a grade is wrong, or have an idea for the next game? Email <a data-user="hello" data-domain="davidsolar.dev" data-show>hello [at] davidsolar.dev</a>.</p>
       </div>
     </div>
   </section>
@@ -235,7 +238,8 @@
       <span>&copy; <span id="year">2026</span> David Solar</span>
     </div>
     <nav class="foot-nav" aria-label="Footer">
-      <a href="#projects">Projects</a>
+      <a href="#projects">Games</a>
+      <a href="calendar/">Night Out</a>
       <a href="#writing">Writing</a>
       <a href="#about">About</a>
       <a href="kids/">Kids</a>
@@ -253,8 +257,8 @@
   </div>
 </footer>
 
-<script src="assets/projects.js?v=20261027-kids-page"></script>
-<script src="assets/project-cards.js?v=20261027-kids-page"></script>
+<script src="assets/projects.js?v=20261028-friends"></script>
+<script src="assets/project-cards.js?v=20261028-friends"></script>
 <script>
 /* Draws the project list from assets/projects.js. You shouldn't need to edit this. */
 (function () {

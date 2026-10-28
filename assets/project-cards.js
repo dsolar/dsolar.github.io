@@ -2,15 +2,10 @@
    ProjectCards.card(project, { showHidden, base }): showHidden opens hidden apps (the home page's app code);
    base prefixes the project's relative links and cover (the kids page passes "/"). */
 (function () {
-  var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
   var esc = function (s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
-  };
-  var when = function (ym) {
-    var p = String(ym || "").split("-");
-    return p.length === 2 ? MONTHS[+p[1] - 1] + " " + p[0] : esc(ym);
   };
   var slug = function (url) { return String(url || "").replace(/\/+$/, "").split("/").pop().replace(/\.html$/, "") || ""; };
   var list = function (items) {
@@ -52,7 +47,7 @@
     var id = p.external ? slug(p.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")) : slug(p.url);
     return '<article class="entry' + (p.spotlight ? ' spotlight' : '') + '" id="' + esc(id) + '" data-type="' + esc(p.type) + '" style="' + esc(style) + '">'
       + '<div class="entry-meta"><span class="type">' + esc(p.type) + "</span>" + (p.featured ? '<span class="featured-tag">Featured</span>' : '')
-      + (building ? '<span class="state">In progress</span>' : "<span>" + when(p.released) + "</span>") + "</div>"
+      + (building ? '<span class="state">In progress</span>' : p.tag ? '<span class="tag">' + esc(p.tag) + "</span>" : "") + "</div>"
       + (!accessible ? '<div class="entry-cover" aria-hidden="true">' + art + '<span class="band"></span></div>'
                   : '<a class="entry-cover" href="' + esc(url) + '" tabindex="-1" aria-hidden="true">' + art + '<span class="band"></span></a>')
       + '<div class="entry-body"><h3>' + title + "</h3>"
