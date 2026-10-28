@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 780">
+  <defs>
+    <radialGradient id="spot" cx="50%" cy="0%" r="75%">
+      <stop offset="0" stop-color="#F2C14E" stop-opacity=".22"/>
+      <stop offset=".55" stop-color="#17304F" stop-opacity=".6"/>
+      <stop offset="1" stop-color="#0B1626" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#18304F"/><stop offset="1" stop-color="#0F1F35"/>
+    </linearGradient>
+  </defs>
+  <rect width="1040" height="780" fill="#0B1626"/>
+  <rect width="1040" height="780" fill="url(#spot)"/>
+  <!-- the podium card -->
+  <rect x="110" y="150" width="820" height="470" rx="26" fill="url(#card)" stroke="rgba(236,239,233,.16)" stroke-width="3"/>
+  <line x1="110" y1="224" x2="930" y2="224" stroke="rgba(236,239,233,.14)" stroke-width="3"/>
+  <circle cx="156" cy="187" r="8" fill="#E8435C"/>
+  <text x="178" y="198" fill="#E8435C" font-family="Arial,Helvetica,sans-serif" font-size="28" font-weight="700" letter-spacing="5">THE PICK IS IN</text>
+  <text x="890" y="198" text-anchor="end" fill="rgba(236,239,233,.6)" font-family="Arial,Helvetica,sans-serif" font-size="26" font-weight="700" letter-spacing="4">NBA · NFL</text>
+  <!-- Green Monster plate -->
+  <rect x="160" y="268" width="230" height="250" rx="14" fill="#1D4A36" stroke="#163A2A" stroke-width="7"/>
+  <text x="275" y="318" text-anchor="middle" fill="rgba(236,239,233,.75)" font-family="Arial,Helvetica,sans-serif" font-size="24" font-weight="700" letter-spacing="5">PICK</text>
+  <text x="275" y="460" text-anchor="middle" fill="#F7F5EE" font-family="Impact,'Arial Narrow',Arial,sans-serif" font-size="170" font-weight="900">3</text>
+  <text x="275" y="498" text-anchor="middle" fill="rgba(236,239,233,.75)" font-family="Arial,Helvetica,sans-serif" font-size="22" font-weight="600">Round 1</text>
+  <!-- the card's text -->
+  <text x="436" y="312" fill="#F2C14E" font-family="Impact,'Arial Narrow',Arial,sans-serif" font-size="44" letter-spacing="3">2018 DRAFT</text>
+  <text x="436" y="356" fill="rgba(236,239,233,.45)" font-family="Arial,Helvetica,sans-serif" font-size="22" font-weight="700" letter-spacing="3">PICKED BY</text>
+  <rect x="436" y="378" width="440" height="40" rx="8" fill="rgba(236,239,233,.12)"/>
+  <rect x="436" y="436" width="300" height="24" rx="6" fill="rgba(236,239,233,.08)"/>
+  <!-- the guess box -->
+  <rect x="436" y="480" width="452" height="64" rx="12" fill="#0A1626" stroke="#F2C14E" stroke-width="3"/>
+  <text x="462" y="523" fill="rgba(236,239,233,.85)" font-family="Arial,Helvetica,sans-serif" font-size="28" font-weight="600">Who'd they take?</text>
+  <rect x="770" y="489" width="108" height="46" rx="9" fill="#C8102E"/>
+  <text x="824" y="520" text-anchor="middle" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="22" font-weight="700">Guess</text>
+  <!-- title -->
+  <text x="520" y="102" text-anchor="middle" fill="#ECEFE9" font-family="Impact,'Arial Narrow',Arial,sans-serif" font-size="82" letter-spacing="4">GUESS THE <tspan fill="#E8435C">PICK</tspan></text>
+  <!-- score squares -->
+  <g transform="translate(330 668)">
+    <rect width="34" height="34" rx="6" fill="#3FB37F"/><rect x="40" width="34" height="34" rx="6" fill="#3FB37F"/>
+    <rect x="80" width="34" height="34" rx="6" fill="#F2C14E"/><rect x="120" width="34" height="34" rx="6" fill="#3FB37F"/>
+    <rect x="160" width="34" height="34" rx="6" fill="#55606F"/><rect x="200" width="34" height="34" rx="6" fill="#E9873A"/>
+    <rect x="240" width="34" height="34" rx="6" fill="#3FB37F"/><rect x="280" width="34" height="34" rx="6" fill="#F2C14E"/>
+    <rect x="320" width="34" height="34" rx="6" fill="#3FB37F"/><rect x="360" width="34" height="34" rx="6" fill="#3FB37F"/>
+  </g>
+</svg>
