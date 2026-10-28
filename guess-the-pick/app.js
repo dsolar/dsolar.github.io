@@ -1,15 +1,27 @@
 /* Guess the Pick: screens, the guess box and saved progress. The rules live in engine.js, the picks in data.js.
    Saved on this device (localStorage):
      gtp-sport                    the last sport picked
-     gtp-daily-SPORT-YYYY-MM-DD   today's daily ten so far, so a refresh picks up where you left off
-     gtp-best-SPORT               best endless score */
+     gtp-daily5-SPORT-YYYY-MM-DD  today's daily ten so far, so a refresh picks up where you left off
+     gtp-best5-SPORT              best endless score
+   (The "5" keys started when picks went from 3 points to 5; the older 3-point keys are simply ignored.) */
 (function () {
   var DATA = window.GTP_DATA, G = window.GTP;
   if (!DATA || !G) return;
   var $ = function (id) { return document.getElementById(id); };
   var LEAGUE = { nba: "NBA", nfl: "NFL" };
-  var SQUARE = ["⬛", "🟧", "🟨", "🟩"];   // 0 to 3 points
-  var VERDICT = ["Missed it", "Just made it", "Got it", "Nailed it"];
+  // 0 to 5 points: a tier for the colors (green 4-5, yellow 2-3, orange 1, black 0), a verdict for the reveal
+  var tier = function (s) { return s >= 4 ? 3 : s >= 2 ? 2 : s >= 1 ? 1 : 0; };
+  var SQUARE = ["⬛", "🟧", "🟨", "🟩"];
+  var square = function (s) { return SQUARE[tier(s)]; };
+  var VERDICT = ["Missed it", "Just made it", "Got there", "Got it", "Got it", "Nailed it"];
+  // The hint menu. Each costs points, can be bought in any order, and can't take a pick down to zero.
+  var HINTS = [
+    { id: "pos", label: "Position", cost: 1, text: function (p) { return p.pos; } },
+    { id: "col", label: "School", cost: 1, text: function (p) { return p.col; } },
+    { id: "size", label: "Size", cost: 1, text: function (p) { return p.size; } },
+    { id: "pb", label: "Pick before", cost: 1, text: function (p) { return p.pb; } },
+    { id: "init", label: "Initials", cost: 2, text: function (p) { return initials(p.n); } }
+  ];
 
   var store = {
     get: function (k) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } },
@@ -99,13 +111,13 @@
     document.querySelectorAll(".sport").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-sport") === s)); });
     homeStatus();
   }
-  function dailyKey() { return "gtp-daily-" + sport + "-" + today; }
+  function dailyKey() { return "gtp-daily5-" + sport + "-" + today; }
   function homeStatus() {
     var d = store.get(dailyKey());
     var total = d ? d.results.reduce(function (a, r) { return a + r.s; }, 0) : 0;
     $("daily-status").textContent = !d || !d.results.length ? "New today"
       : d.results.length >= G.DAILY ? "Done today: " + total + "/" + G.DAILY * G.POINTS : "In progress: " + d.results.length + " of " + G.DAILY;
-    var best = store.get("gtp-best-" + sport);
+    var best = store.get("gtp-best5-" + sport);
     $("endless-status").textContent = best != null ? "Best run: " + best + " point" + (best === 1 ? "" : "s") : "No runs yet";
   }
   function show(id) {
@@ -131,7 +143,7 @@
 
   // ---- One pick
   function newPick(i, resume) {
-    cur = resume && resume.i === i ? resume : { i: i, hints: 0, wrong: [], done: false };
+    cur = resume && resume.i === i ? resume : { i: i, used: [], wrong: [], done: false };
     if (mode === "daily") { game.cur = cur; store.set(dailyKey(), game); }
     var p = picks[i];
     show("play");
@@ -159,28 +171,34 @@
     if (cur.done) return reveal(cur.gaveUp);
     if (window.matchMedia("(hover: hover)").matches) $("guess").focus();
   }
-  function points() { return Math.max(0, G.POINTS - cur.hints - cur.wrong.length); }
+  function spent() {
+    return cur.used.reduce(function (a, id) { return a + HINTS.filter(function (h) { return h.id === id; })[0].cost; }, 0);
+  }
+  function points() { return Math.max(0, G.POINTS - spent() - cur.wrong.length); }
   function drawPoints() {
     var n = points(), h = "";
     for (var k = 0; k < G.POINTS; k++) h += '<i class="' + (k < n ? "" : "used") + '"></i>';
     $("pts").innerHTML = h + "<span>" + n + " point" + (n === 1 ? "" : "s") + " on the table</span>";
     $("wrongs").innerHTML = cur.wrong.map(function (w) { return "<span>" + esc(w) + "</span>"; }).join("");
-    var hint = $("hint");
-    hint.disabled = cur.hints >= 2 || n <= 1;
-    hint.textContent = cur.hints >= 2 ? "No hints left" : n <= 1 ? "Last point: no more hints"
-      : cur.hints === 0 ? "Hint: position & school (−1)" : "Hint: initials (−1)";
+    var p = picks[cur.i];
+    $("hints").innerHTML = HINTS.map(function (h) {
+      var has = !!h.text(p), used = cur.used.indexOf(h.id) >= 0, afford = n - h.cost >= 1;
+      var why = !has ? "n/a" : used ? "shown" : !afford ? "can't afford" : "\u2212" + h.cost;
+      return '<button type="button" class="tool hint" data-hint="' + h.id + '"' + (used || !has || !afford ? " disabled" : "")
+        + (used ? ' aria-pressed="true"' : "") + ">" + h.label + " <small>" + why + "</small></button>";
+    }).join("");
   }
   function drawClues() {
-    var p = picks[cur.i], h = "";
-    if (cur.hints >= 1) h += '<div class="clue"><span>Profile</span>' + esc([p.pos, p.col].filter(Boolean).join(" · ")) + "</div>";
-    if (cur.hints >= 2) h += '<div class="clue"><span>Initials</span>' + esc(initials(p.n)) + "</div>";
-    $("clues").innerHTML = h;
+    var p = picks[cur.i];
+    $("clues").innerHTML = HINTS.filter(function (h) { return cur.used.indexOf(h.id) >= 0; }).map(function (h) {
+      return '<div class="clue"><span>' + h.label + "</span>" + esc(h.text(p)) + "</div>";
+    }).join("");
   }
   function hud() {
     var total = game.results.reduce(function (a, r) { return a + r.s; }, 0);
     if (mode === "daily") {
       var n = game.results.length, track = "";
-      for (var k = 0; k < G.DAILY; k++) track += '<i class="' + (k < n ? "s" + game.results[k].s : k === n ? "on" : "") + '"></i>';
+      for (var k = 0; k < G.DAILY; k++) track += '<i class="' + (k < n ? "s" + tier(game.results[k].s) : k === n ? "on" : "") + '"></i>';
       $("hud-mode").innerHTML = '<span class="track" aria-hidden="true">' + track + "</span>";
       $("hud-right").innerHTML = '<span class="score"><b>' + total + "</b> / " + G.DAILY * G.POINTS + "</span>";
       $("card-count").textContent = (n + 1) + " of " + G.DAILY;
@@ -219,9 +237,10 @@
     msg.className = "msg bad"; msg.textContent = "Not " + shown + ".";
     drawPoints();
   }
-  function hint() {
-    if (cur.done || cur.hints >= 2 || points() <= 1) return;
-    cur.hints++;
+  function hint(id) {
+    var h = HINTS.filter(function (x) { return x.id === id; })[0];
+    if (!h || cur.done || cur.used.indexOf(id) >= 0 || !h.text(picks[cur.i]) || points() - h.cost < 1) return;
+    cur.used.push(id);
     save(); drawClues(); drawPoints();
     if (window.matchMedia("(hover: hover)").matches) input.focus();
   }
@@ -234,7 +253,7 @@
   function reveal(gaveUp) {
     var p = picks[cur.i], s = cur.s || 0;
     $("guess-area").hidden = true; $("reveal").hidden = false;
-    $("verdict").className = "verdict v" + s;
+    $("verdict").className = "verdict v" + tier(s);
     $("verdict").textContent = (gaveUp ? "Here's who it was" : VERDICT[s]) + (s ? " · +" + s : "");
     $("answer").textContent = p.n;
     var where = p.to ? " Picked by the " + p.tn + ", " + (p.late ? "debuted with the " : "went to the ") + p.ton + "." : "";
@@ -278,13 +297,13 @@
   function finish() {
     show("done");
     var total = game.results.reduce(function (a, r) { return a + r.s; }, 0);
-    var squares = game.results.map(function (r) { return SQUARE[r.s]; }).join("");
+    var squares = game.results.map(function (r) { return square(r.s); }).join("");
     if (mode === "daily") {
       var max = G.DAILY * G.POINTS;
       $("done-title").textContent = LEAGUE[sport] + " daily · " + niceDate();
       $("done-score").innerHTML = total + "<small>/" + max + "</small>";
-      $("done-grade").textContent = total >= 27 ? "War room material." : total >= 21 ? "You'd keep your GM job." : total >= 14 ? "Solid. A few reaches." : total >= 7 ? "The fans are booing." : "Traded for a second-rounder.";
-      var other = sport === "nba" ? "nfl" : "nba", otherDone = (store.get("gtp-daily-" + other + "-" + today) || { results: [] }).results.length >= G.DAILY;
+      $("done-grade").textContent = total >= 45 ? "War room material." : total >= 35 ? "You'd keep your GM job." : total >= 24 ? "Solid. A few reaches." : total >= 12 ? "The fans are booing." : "Traded for a second-rounder.";
+      var other = sport === "nba" ? "nfl" : "nba", otherDone = (store.get("gtp-daily5-" + other + "-" + today) || { results: [] }).results.length >= G.DAILY;
       $("again").textContent = otherDone ? "Play endless" : "Play the " + LEAGUE[other] + " daily";
       $("again").onclick = function () { if (otherDone) startEndless(); else { load(other); startDaily(); } };
       tick();
@@ -293,8 +312,8 @@
       var name = store.get("gtp-name");
       if (name && game.posted !== name) postScore(name); else loadBoard();
     } else {
-      var prev = store.get("gtp-best-" + sport), best = prev || 0, isBest = prev == null || total > best;
-      if (isBest) store.set("gtp-best-" + sport, total);
+      var prev = store.get("gtp-best5-" + sport), best = prev || 0, isBest = prev == null || total > best;
+      if (isBest) store.set("gtp-best5-" + sport, total);
       $("done-title").textContent = LEAGUE[sport] + " endless";
       $("done-score").innerHTML = total + "<small> pts</small>";
       $("done-grade").textContent = (prev == null ? "First run in the books. " : isBest ? "New best! " : "Best: " + best + ". ") + game.results.length + " picks, three strikes.";
@@ -306,7 +325,7 @@
     $("done-squares").textContent = squares.length > 40 ? squares.slice(-40 * 2) : squares;
     $("recap").innerHTML = game.results.map(function (r, k) {
       var p = picks[r.i];
-      return '<li><i class="s' + r.s + '"></i><div><b>' + esc(p.n) + "</b><br><span>" + p.y + " · " + (p.r === 1 ? "Pick " + p.p : "Round " + p.r + ", pick " + p.rp)
+      return '<li><i class="s' + tier(r.s) + '"></i><div><b>' + esc(p.n) + "</b><br><span>" + p.y + " · " + (p.r === 1 ? "Pick " + p.p : "Round " + p.r + ", pick " + p.rp)
         + " · " + esc(p.t) + (p.to ? " → " + esc(p.to) : "") + '</span><span class="hit" data-k="' + k + '"></span></div><span>+' + r.s + "</span></li>";
     }).join("");
     $("share").onclick = function () { share(total, squares); };
@@ -317,7 +336,7 @@
   var boardSquares = "", boardTab = "today", boardRows = [], hits = null;
   function postScore(name) {
     $("board-note").textContent = "Posting\u2026";
-    rpc("gtp_post", { p_day: today, p_sport: sport, p_device: deviceId(), p_player: name, p_squares: boardSquares }).then(function () {
+    rpc("gtp_post5", { p_day: today, p_sport: sport, p_device: deviceId(), p_player: name, p_squares: boardSquares }).then(function () {
       store.set("gtp-name", name);
       game.posted = name; store.set(dailyKey(), game);
       loadBoard();
@@ -326,7 +345,7 @@
   function loadBoard() {
     var day = today, from = weekStart(today);
     $("board-note").textContent = "Loading the board\u2026";
-    rpc("gtp_board", { p_sport: sport, p_from: from, p_to: day }).then(function (rows) {
+    rpc("gtp_board5", { p_sport: sport, p_from: from, p_to: day }).then(function (rows) {
       if (day !== today) return;
       boardRows = rows || [];
       $("board-note").textContent = "";
@@ -352,7 +371,7 @@
     if (boardTab === "today") {
       var rows = todays().sort(function (a, b) { return b.score - a.score || (a.created_at < b.created_at ? -1 : 1); });
       html = rows.map(function (r, k) {
-        var sq = r.squares.split("").map(function (c) { return SQUARE[+c]; }).join("");
+        var sq = r.squares.split("").map(function (c) { return square(+c); }).join("");
         return '<li class="' + (r.player.toLowerCase() === me ? "me" : "") + '"><b class="rk">' + (k + 1) + "</b><span class=\"nm\">" + esc(r.player)
           + '</span><span class="sq" aria-hidden="true">' + sq + "</span><b class=\"pt\">" + r.score + "</b></li>";
       }).join("");
@@ -477,7 +496,7 @@
   document.querySelectorAll(".sport").forEach(function (b) { b.addEventListener("click", function () { load(b.getAttribute("data-sport")); }); });
   $("start-daily").addEventListener("click", startDaily);
   $("start-endless").addEventListener("click", startEndless);
-  $("hint").addEventListener("click", hint);
+  $("hints").addEventListener("click", function (e) { var b = e.target.closest("button[data-hint]"); if (b) hint(b.getAttribute("data-hint")); });
   $("give-up").addEventListener("click", function () { if (!cur.done) finishPick(0, true); });
   $("next").addEventListener("click", next);
   $("back").addEventListener("click", function () { clearInterval(clock); homeStatus(); show("home"); });

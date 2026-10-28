@@ -5,9 +5,10 @@
      GTP.endless(picks, seen, r) one more random pick for endless mode, skipping the ones already seen
      GTP.judge(guess, pick, pool)  "right", "wrong", "ambiguous" (a shared last name) or "unknown" (a typo)
      GTP.suggest(text, pool, n)  name suggestions for the guess box, best known first
-   Scoring: every pick starts at 3 points. A hint or a wrong guess costs one; at zero the answer shows. */
+   Scoring: every pick starts at 5 points. Hints cost 1 or 2 (app.js has the menu), a wrong guess costs 1,
+   and at zero the answer shows. */
 (function (root) {
-  var POINTS = 3, DAILY = 10, LIVES = 3;
+  var POINTS = 5, DAILY = 10, LIVES = 3;
   var TZ = "America/New_York";
 
   // Apostrophes and periods vanish (Ja'Marr is "jamarr", T.J. is "tj"); hyphens and other marks become spaces.

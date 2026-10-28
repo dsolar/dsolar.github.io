@@ -168,6 +168,12 @@ body:not([data-screen="home"]) .mast .kicker,body:not([data-screen="home"]) .mas
 .tool:hover:not(:disabled){color:var(--chalk);border-color:var(--chalk)}
 .tool:disabled{opacity:.4;cursor:default}
 .tool.quit{margin-left:auto}
+.hints-label{margin:16px 0 8px;font:700 11px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+.hints{display:flex;flex-wrap:wrap;gap:8px}
+.tool.hint small{font-size:12px;font-weight:600;color:var(--gold);margin-left:4px}
+.tool.hint:disabled small{color:var(--faint)}
+.tool.hint[aria-pressed="true"]{border-color:rgba(242,193,78,.45)}
+.tools{justify-content:flex-end}
 
 .reveal{padding:20px 18px 20px;border-top:1px solid var(--line);background:rgba(0,0,0,.14)}
 .verdict{font:800 14px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;margin:0 0 8px}
@@ -271,9 +277,9 @@ body:not([data-screen="home"]) .mast .kicker,body:not([data-screen="home"]) .mas
       </button>
     </div>
     <div class="rules">
-      <b>How it works.</b> Every pick is worth 3 points.
+      <b>How it works.</b> Every pick is worth 5 points.
       <ul>
-        <li>A hint (position and school, then initials) or a wrong guess costs a point.</li>
+        <li>Buy hints in any order: position, school, size, the pick before him (1 point each) or his initials (2). A wrong guess costs 1.</li>
         <li>Typos are free, and so is a last name a few players share. Only a real player who isn't the answer costs you.</li>
         <li>Picks come from the <span id="years">last 20 drafts</span>: every first-rounder, plus later picks who made it big (Jokić, Kelce, Brock Purdy).</li>
       </ul>
@@ -310,8 +316,9 @@ body:not([data-screen="home"]) .mast .kicker,body:not([data-screen="home"]) .mas
         </form>
         <p class="msg" id="msg" aria-live="polite"></p>
         <div class="wrongs" id="wrongs"></div>
+        <p class="hints-label">Hints</p>
+        <div class="hints" id="hints" role="group" aria-label="Hints"></div>
         <div class="tools">
-          <button type="button" class="tool" id="hint">Hint: position &amp; school (&minus;1)</button>
           <button type="button" class="tool quit" id="give-up">Show me</button>
         </div>
       </div>
@@ -359,9 +366,9 @@ body:not([data-screen="home"]) .mast .kicker,body:not([data-screen="home"]) .mas
 </main>
 <div class="toast" id="toast" role="status" hidden></div>
 
-<script src="data.js?v=1"></script>
+<script src="data.js?v=2"></script>
 <script src="names.js?v=1"></script>
-<script src="engine.js?v=2"></script>
-<script src="app.js?v=5"></script>
+<script src="engine.js?v=3"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>

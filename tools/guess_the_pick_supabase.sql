@@ -66,3 +66,64 @@ revoke all on function public.gtp_post(date, text, text, text, text) from public
 revoke all on function public.gtp_board(text, date, date) from public;
 grant execute on function public.gtp_post(date, text, text, text, text) to anon, authenticated;
 grant execute on function public.gtp_board(text, date, date) to anon, authenticated;
+
+-- 5-point picks (from Oct 28, 2026). Picks went from 3 points to 5 when the hint menu arrived, so the game now
+-- posts to this second table, same rules, squares 0-5 and scores up to 50. The 3-point table above is kept
+-- as it was and no longer used.
+create table if not exists public.gtp_daily5 (
+  id bigint generated always as identity primary key,
+  day date not null,
+  sport text not null check (sport in ('nba', 'nfl')),
+  device text not null check (char_length(device) between 8 and 64),
+  player text not null check (char_length(player) between 1 and 24),
+  squares text not null check (squares ~ '^[0-5]{10}$'),
+  score smallint not null check (score between 0 and 50),
+  created_at timestamptz not null default now(),
+  unique (day, sport, device)
+);
+create index if not exists gtp_daily5_sport_day on public.gtp_daily5 (sport, day);
+alter table public.gtp_daily5 enable row level security;
+revoke all on public.gtp_daily5 from anon, authenticated;
+
+create or replace function public.gtp_post5(p_day date, p_sport text, p_device text, p_player text, p_squares text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  total smallint := 0;
+  i int;
+begin
+  if p_day < (now() at time zone 'America/New_York')::date - 1 or p_day > (now() at time zone 'America/New_York')::date + 1 then
+    raise exception 'not today''s daily';
+  end if;
+  if p_squares !~ '^[0-5]{10}$' then
+    raise exception 'bad squares';
+  end if;
+  for i in 1..10 loop
+    total := total + substr(p_squares, i, 1)::smallint;
+  end loop;
+  insert into public.gtp_daily5 (day, sport, device, player, squares, score)
+  values (p_day, p_sport, p_device, left(btrim(p_player), 24), p_squares, total)
+  on conflict (day, sport, device) do update set player = excluded.player;
+end;
+$$;
+
+create or replace function public.gtp_board5(p_sport text, p_from date, p_to date)
+returns table (day date, player text, squares text, score smallint, device text, created_at timestamptz)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select d.day, d.player, d.squares, d.score, left(md5(d.device), 10), d.created_at
+  from public.gtp_daily5 d
+  where d.sport = p_sport and d.day between p_from and p_to and p_to - p_from <= 14
+  order by d.created_at;
+$$;
+
+revoke all on function public.gtp_post5(date, text, text, text, text) from public;
+revoke all on function public.gtp_board5(text, date, date) from public;
+grant execute on function public.gtp_post5(date, text, text, text, text) to anon, authenticated;
+grant execute on function public.gtp_board5(text, date, date) to anon, authenticated;
