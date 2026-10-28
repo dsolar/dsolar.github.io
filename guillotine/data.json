@@ -4,7 +4,7 @@
  "week": 8,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-10-28T15:11:12Z",
+ "updated": "2026-10-28T15:28:16Z",
  "source": "Yahoo league page, pasted",
  "teams": [
   {
@@ -45,7 +45,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 24.55,
+     "proj": 24.56,
      "rank": "QB1",
      "date": "2026-11-01",
      "next_proj": 21.87,
@@ -113,7 +113,7 @@
        "rec_td": 2
       }
      },
-     "proj": 18.97,
+     "proj": 18.92,
      "rank": "RB3",
      "date": "2026-11-01",
      "next_proj": 19.79,
@@ -177,7 +177,7 @@
        "rec_yd": 101
       }
      },
-     "proj": 12.46,
+     "proj": 12.47,
      "rank": "WR15",
      "date": "2026-11-01",
      "next_proj": 12.02,
@@ -208,7 +208,7 @@
        "rec_td": 5
       }
      },
-     "proj": 16.71,
+     "proj": 16.88,
      "rank": "WR4",
      "date": "2026-11-01",
      "next_proj": 14.75,
@@ -372,7 +372,7 @@
        "rush_td": 4
       }
      },
-     "proj": 11.46,
+     "proj": 11.35,
      "rank": "RB18",
      "date": "2026-11-01",
      "bye_next": true,
@@ -405,8 +405,8 @@
        "rush_td": 3
       }
      },
-     "proj": 8.62,
-     "rank": "RB28",
+     "proj": 9.16,
+     "rank": "RB26",
      "date": "2026-11-01",
      "next_proj": 10.59
     },
@@ -437,7 +437,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 16.14,
+     "proj": 16.1,
      "rank": "QB18",
      "date": "2026-11-01",
      "bye_next": true,
@@ -509,7 +509,7 @@
     }
    ],
    "proj_pre": 140.98,
-   "best": 142.6,
+   "best": 142.7,
    "best_next": 137.3,
    "locked": 0,
    "locked_proj": 0,
@@ -877,7 +877,7 @@
        "rec_td": 2
       }
      },
-     "proj": 9.23,
+     "proj": 9.28,
      "rank": "TE3",
      "date": "2026-11-01",
      "next_proj": 10.83,
@@ -972,7 +972,7 @@
     }
    ],
    "proj_pre": 135.33,
-   "best": 133.8,
+   "best": 133.9,
    "best_next": 146.8,
    "locked": 0,
    "locked_proj": 0,
@@ -1047,7 +1047,7 @@
        "fum_lost": 2
       }
      },
-     "proj": 15.3,
+     "proj": 15.37,
      "rank": "RB7",
      "date": "2026-11-01",
      "next_proj": 20.09,
@@ -1082,7 +1082,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 15.16,
+     "proj": 15.15,
      "rank": "RB10",
      "date": "2026-11-01",
      "next_proj": 14.78,
@@ -1177,8 +1177,8 @@
        "rec_td": 2
       }
      },
-     "proj": 13.47,
-     "rank": "WR12",
+     "proj": 13.64,
+     "rank": "WR11",
      "date": "2026-11-01",
      "next_proj": 12.07,
      "in_best": true
@@ -1209,7 +1209,7 @@
       }
      },
      "proj": 8.74,
-     "rank": "TE6",
+     "rank": "TE7",
      "date": "2026-11-01",
      "next_proj": 7.9,
      "in_best": true
@@ -1240,7 +1240,7 @@
       }
      },
      "proj": 13.56,
-     "rank": "WR11",
+     "rank": "WR12",
      "date": "2026-11-01",
      "next_proj": 11.99,
      "in_best": true
@@ -1272,8 +1272,8 @@
        "rush_td": 1
       }
      },
-     "proj": 16.77,
-     "rank": "QB13",
+     "proj": 16.78,
+     "rank": "QB12",
      "date": "2026-11-01",
      "next_proj": 20.08,
      "in_best": true
@@ -1332,7 +1332,7 @@
        "rec_td": 1
       }
      },
-     "proj": 10.27,
+     "proj": 10.38,
      "rank": "WR21",
      "date": "2026-11-01",
      "next_proj": 12.71
@@ -1412,13 +1412,13 @@
       }
      },
      "proj": 8.43,
-     "rank": "RB29",
+     "rank": "RB30",
      "date": "2026-11-01",
      "next_proj": 8.23
     }
    ],
    "proj_pre": 130.44,
-   "best": 133.8,
+   "best": 134.1,
    "best_next": 140.0,
    "locked": 0,
    "locked_proj": 0,
@@ -1597,7 +1597,7 @@
        "rec_td": 1
       }
      },
-     "proj": 10.97,
+     "proj": 10.96,
      "rank": "WR20",
      "date": "2026-11-01",
      "bye_next": true,
@@ -1632,7 +1632,7 @@
        "rec_td": 2
       }
      },
-     "proj": 9.98,
+     "proj": 9.97,
      "rank": "WR22",
      "date": "2026-11-02",
      "next_proj": 10.68,
@@ -1663,7 +1663,7 @@
        "rec_td": 2
       }
      },
-     "proj": 8.43,
+     "proj": 8.44,
      "rank": "TE11",
      "date": "2026-11-01",
      "next_proj": 8.76,
@@ -1731,8 +1731,8 @@
        "rush_td": 1
       }
      },
-     "proj": 21.18,
-     "rank": "QB5",
+     "proj": 21.42,
+     "rank": "QB4",
      "date": "2026-11-01",
      "next_proj": 17.39,
      "in_best": true
@@ -1765,7 +1765,7 @@
        "rush_td": 2
       }
      },
-     "proj": 13.91,
+     "proj": 13.99,
      "rank": "QB23",
      "date": "2026-11-01",
      "next_proj": 15.25
@@ -1887,7 +1887,7 @@
     }
    ],
    "proj_pre": 128.67,
-   "best": 127.3,
+   "best": 127.5,
    "best_next": 125.1,
    "locked": 0,
    "locked_proj": 0,
@@ -1960,7 +1960,7 @@
        "rec_yd": 102
       }
      },
-     "proj": 10.27,
+     "proj": 10.28,
      "rank": "RB20",
      "date": "2026-11-01",
      "next_proj": 10.9,
@@ -1994,7 +1994,7 @@
       }
      },
      "proj": 8.96,
-     "rank": "RB26",
+     "rank": "RB27",
      "date": "2026-11-01",
      "next_proj": 5.58,
      "in_best": true
@@ -2027,7 +2027,7 @@
        "rush_yd": 29
       }
      },
-     "proj": 21.43,
+     "proj": 21.41,
      "rank": "WR1",
      "date": "2026-11-02",
      "next_proj": 22.67,
@@ -2060,7 +2060,7 @@
        "rec_td": 1
       }
      },
-     "proj": 14.07,
+     "proj": 14.04,
      "rank": "WR8",
      "date": "2026-11-01",
      "next_proj": 14.14,
@@ -2091,7 +2091,7 @@
        "rec_td": 4
       }
      },
-     "proj": 9.88,
+     "proj": 9.89,
      "rank": "WR23",
      "date": "2026-11-01",
      "next_proj": 9.17,
@@ -2155,7 +2155,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 7.96,
+     "proj": 8.02,
      "rank": "WR39",
      "date": "2026-11-01",
      "next_proj": 7.42
@@ -2216,8 +2216,8 @@
       ],
       "tot": {}
      },
-     "proj": 8.43,
-     "rank": "RB30",
+     "proj": 8.44,
+     "rank": "RB29",
      "date": "2026-11-02",
      "next_proj": 9.34
     },
@@ -2311,7 +2311,7 @@
        "rush_td": 1
       }
      },
-     "proj": 8.5,
+     "proj": 8.49,
      "rank": "TE10",
      "date": "2026-11-01",
      "next_proj": 9.97
@@ -2342,7 +2342,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 8.55,
+     "proj": 8.56,
      "rank": "TE9",
      "date": "2026-11-01",
      "next_proj": 7.64,
@@ -2425,7 +2425,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 15.7,
+     "proj": 15.88,
      "rank": "RB6",
      "date": "2026-11-01",
      "next_proj": 12.97,
@@ -2459,7 +2459,7 @@
        "rush_td": 1
       }
      },
-     "proj": 10.25,
+     "proj": 10.23,
      "rank": "RB21",
      "date": "2026-11-01",
      "next_proj": 14.87,
@@ -2619,7 +2619,7 @@
        "rec_td": 2
       }
      },
-     "proj": 9.7,
+     "proj": 9.69,
      "rank": "RB22",
      "date": "2026-11-01",
      "next_proj": 8.82,
@@ -2782,7 +2782,7 @@
       }
      },
      "proj": 8.69,
-     "rank": "RB27",
+     "rank": "RB28",
      "date": "2026-11-01",
      "next_proj": 8.62
     },
@@ -2820,7 +2820,7 @@
     }
    ],
    "proj_pre": 120.37,
-   "best": 116.5,
+   "best": 116.6,
    "best_next": 138.6,
    "locked": 0,
    "locked_proj": 0,
@@ -2894,7 +2894,7 @@
        "rec_td": 1
       }
      },
-     "proj": 14.93,
+     "proj": 14.92,
      "rank": "RB11",
      "date": "2026-11-01",
      "next_proj": 15.01,
@@ -3026,7 +3026,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 6.64,
+     "proj": 6.65,
      "rank": "WR47",
      "date": "2026-11-01",
      "next_proj": 5.44
@@ -3090,7 +3090,7 @@
        "rush_td": 2
       }
      },
-     "proj": 4.42,
+     "proj": 4.41,
      "rank": "RB55",
      "date": "2026-11-01",
      "next_proj": 1.94
@@ -3156,7 +3156,7 @@
        "rush_td": 1
       }
      },
-     "proj": 9.64,
+     "proj": 9.63,
      "rank": "WR25",
      "date": "2026-11-01",
      "next_proj": 9.88,
@@ -3221,7 +3221,7 @@
        "rush_yd": 3
       }
      },
-     "proj": 13.78,
+     "proj": 13.75,
      "rank": "WR10",
      "date": "2026-11-01",
      "next_proj": 13.45,
@@ -3413,7 +3413,7 @@
        "rush_td": 2
       }
      },
-     "proj": 18.04,
+     "proj": 18.05,
      "rank": "QB9",
      "date": "2026-11-01",
      "next_proj": 15.6,
@@ -3480,7 +3480,7 @@
        "rec_td": 4
       }
      },
-     "proj": 6.94,
+     "proj": 6.87,
      "rank": "TE18",
      "date": "2026-11-01",
      "next_proj": 6.8,
@@ -3545,7 +3545,7 @@
        "rec_td": 2
       }
      },
-     "proj": 13.44,
+     "proj": 13.45,
      "rank": "RB14",
      "date": "2026-11-01",
      "next_proj": 11.14,
@@ -3580,7 +3580,7 @@
        "rush_td": 4
       }
      },
-     "proj": 19.25,
+     "proj": 19.26,
      "rank": "RB2",
      "date": "2026-11-01",
      "next_proj": 22.21,
@@ -3613,8 +3613,8 @@
        "pass_int": 4
       }
      },
-     "proj": 21.3,
-     "rank": "QB4",
+     "proj": 21.28,
+     "rank": "QB5",
      "date": "2026-11-01",
      "next_proj": 20.58,
      "in_best": true,
@@ -3681,7 +3681,7 @@
        "rec_td": 2
       }
      },
-     "proj": 9.42,
+     "proj": 9.44,
      "rank": "WR26",
      "date": "2026-11-01",
      "next_proj": 10.01,
@@ -3713,7 +3713,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 8.38,
+     "proj": 8.37,
      "rank": "WR34",
      "date": "2026-11-02",
      "next_proj": 9.49
@@ -3776,7 +3776,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 14.82,
+     "proj": 14.8,
      "rank": "QB21",
      "date": "2026-11-01",
      "next_proj": 14.38
@@ -3809,7 +3809,7 @@
        "rec_td": 1
       }
      },
-     "proj": 9.0,
+     "proj": 9.04,
      "rank": "WR29",
      "date": "2026-11-01",
      "next_proj": 9.57
@@ -4118,349 +4118,6 @@
    "date": "Oct 21, 4:27 am"
   }
  ],
- "roster_import_id": "8f9ec7d768e40d73c92cde1bc5a38ec4436696505bf42ffafcbdf8a56c352f87",
- "roster_imported_at": "2026-10-28T15:11:12Z",
- "league_url": "https://football.fantasysports.yahoo.com/f1/157731",
- "waivers": {
-  "team": "Liberté Égalité Henri",
-  "week": 7,
-  "players": [
-   {
-    "name": "Kenneth Walker III",
-    "pos": "RB",
-    "nfl": "KC",
-    "proj": 18.97,
-    "rank": "RB3",
-    "next_proj": 19.79,
-    "last": 7.7,
-    "claimed_by": "Holofernes",
-    "bid": 227,
-    "bids": [
-     {
-      "team": "Drake Mayezini",
-      "bid": 161
-     },
-     {
-      "team": "Love a Kittle Lamb & WhiteRice",
-      "bid": 123
-     },
-     {
-      "team": "Deviated Rectums",
-      "bid": 121
-     },
-     {
-      "team": "Tai Streetz Lata?",
-      "bid": 102
-     }
-    ],
-    "bidders": 5,
-    "run": "2026-10-28",
-    "avg": 23.1,
-    "g": 6
-   },
-   {
-    "name": "Joe Burrow",
-    "pos": "QB",
-    "nfl": "CIN",
-    "proj": 21.18,
-    "rank": "QB5",
-    "next_proj": 17.39,
-    "last": 28.88,
-    "claimed_by": "Likely to Burden Tate w Penix",
-    "bid": 207,
-    "bids": [
-     {
-      "team": "Drake Mayezini",
-      "bid": 161
-     },
-     {
-      "team": "Love a Kittle Lamb & WhiteRice",
-      "bid": 87
-     },
-     {
-      "team": "Holofernes",
-      "bid": 76
-     },
-     {
-      "team": "Tai Streetz Lata?",
-      "bid": 24
-     },
-     {
-      "team": "Deviated Rectums",
-      "bid": 12
-     },
-     {
-      "team": "Love Purdy Flowers",
-      "bid": 11
-     }
-    ],
-    "bidders": 7,
-    "run": "2026-10-28",
-    "avg": 22.2,
-    "g": 6
-   },
-   {
-    "name": "Matthew Stafford",
-    "pos": "QB",
-    "nfl": "LAR",
-    "proj": 16.05,
-    "rank": "QB19",
-    "next_proj": 19.26,
-    "last": 18.5,
-    "claimed_by": "Drake Mayezini",
-    "bid": 31,
-    "bids": [
-     {
-      "team": "Love a Kittle Lamb & WhiteRice",
-      "bid": 12
-     },
-     {
-      "team": "Holofernes",
-      "bid": 11
-     },
-     {
-      "team": "Tai Streetz Lata?",
-      "bid": 1
-     },
-     {
-      "team": "Breece’s Pieces",
-      "bid": 0
-     }
-    ],
-    "bidders": 5,
-    "run": "2026-10-28",
-    "avg": 18.6,
-    "g": 7
-   },
-   {
-    "name": "Chuba Hubbard",
-    "pos": "RB",
-    "nfl": "CAR",
-    "proj": 15.18,
-    "rank": "RB9",
-    "next_proj": 15.46,
-    "last": 8,
-    "claimed_by": "Drake Mayezini",
-    "bid": 89,
-    "bids": [
-     {
-      "team": "Deviated Rectums",
-      "bid": 20
-     },
-     {
-      "team": "Holofernes",
-      "bid": 17
-     },
-     {
-      "team": "Love a Kittle Lamb & WhiteRice",
-      "bid": 13
-     },
-     {
-      "team": "Tai Streetz Lata?",
-      "bid": 1
-     }
-    ],
-    "bidders": 5,
-    "run": "2026-10-28",
-    "avg": 16.8,
-    "g": 6
-   },
-   {
-    "name": "James Cook III",
-    "pos": "RB",
-    "nfl": "BUF",
-    "proj": 15.27,
-    "rank": "RB8",
-    "next_proj": 14.45,
-    "last": 0,
-    "claimed_by": "Holofernes",
-    "bid": 217,
-    "bids": [
-     {
-      "team": "Drake Mayezini",
-      "bid": 133
-     },
-     {
-      "team": "Deviated Rectums",
-      "bid": 101
-     },
-     {
-      "team": "Love a Kittle Lamb & WhiteRice",
-      "bid": 69
-     },
-     {
-      "team": "Tai Streetz Lata?",
-      "bid": 28
-     },
-     {
-      "team": "Breece’s Pieces",
-      "bid": 1
-     }
-    ],
-    "bidders": 6,
-    "run": "2026-10-28",
-    "avg": 18.1,
-    "g": 6
-   },
-   {
-    "name": "Garrett Wilson",
-    "pos": "WR",
-    "nfl": "NYJ",
-    "proj": 13.56,
-    "rank": "WR11",
-    "next_proj": 11.99,
-    "last": 3.6,
-    "claimed_by": "Love a Kittle Lamb & WhiteRice",
-    "bid": 18,
-    "bids": [
-     {
-      "team": "Drake Mayezini",
-      "bid": 5
-     },
-     {
-      "team": "Tai Streetz Lata?",
-      "bid": 3
-     },
-     {
-      "team": "Deviated Rectums",
-      "bid": 0
-     }
-    ],
-    "bidders": 4,
-    "run": "2026-10-28",
-    "avg": 11.6,
-    "g": 7
-   },
-   {
-    "name": "Sam LaPorta",
-    "pos": "TE",
-    "nfl": "DET",
-    "proj": 8.99,
-    "rank": "TE4",
-    "next_proj": 10.55,
-    "last": 2.3,
-    "claimed_by": "Love Purdy Flowers",
-    "bid": 23,
-    "bids": [
-     {
-      "team": "Tai Streetz Lata?",
-      "bid": 4
-     },
-     {
-      "team": "Breece’s Pieces",
-      "bid": 0
-     },
-     {
-      "team": "Holofernes",
-      "bid": 0
-     }
-    ],
-    "bidders": 4,
-    "run": "2026-10-28",
-    "avg": 10.9,
-    "g": 6
-   },
-   {
-    "name": "Jaylen Waddle",
-    "pos": "WR",
-    "nfl": "DEN",
-    "proj": 9.0,
-    "rank": "WR29",
-    "next_proj": 9.57,
-    "last": 6.8,
-    "claimed_by": "Tai Streetz Lata?",
-    "avg": 7.3,
-    "g": 7
-   },
-   {
-    "name": "Rome Odunze",
-    "pos": "WR",
-    "nfl": "CHI",
-    "proj": 8.38,
-    "rank": "WR34",
-    "next_proj": 9.49,
-    "last": 8.9,
-    "claimed_by": "Tai Streetz Lata?",
-    "bid": 3,
-    "bids": [
-     {
-      "team": "Holofernes",
-      "bid": 0
-     }
-    ],
-    "bidders": 2,
-    "run": "2026-10-28",
-    "avg": 6.9,
-    "g": 7
-   },
-   {
-    "name": "Jakobi Meyers",
-    "pos": "WR",
-    "nfl": "JAX",
-    "proj": 8.68,
-    "rank": "WR32",
-    "next_proj": 8.5,
-    "last": 0,
-    "avg": 8.5,
-    "g": 6
-   },
-   {
-    "name": "KC Concepcion Jr.",
-    "pos": "WR",
-    "nfl": "CLE",
-    "proj": 7.96,
-    "rank": "WR39",
-    "next_proj": 7.42,
-    "last": 19.2,
-    "claimed_by": "Breece’s Pieces",
-    "bid": 0,
-    "avg": 6.8,
-    "g": 7
-   },
-   {
-    "name": "Hunter Henry",
-    "pos": "TE",
-    "nfl": "NE",
-    "proj": 7.64,
-    "rank": "TE14",
-    "next_proj": 7.42,
-    "last": 10.6,
-    "avg": 7.8,
-    "g": 7
-   },
-   {
-    "name": "Keon Coleman",
-    "pos": "WR",
-    "nfl": "BUF",
-    "proj": 6.38,
-    "rank": "WR49",
-    "next_proj": 5.7,
-    "last": 0,
-    "avg": 9.3,
-    "g": 6
-   },
-   {
-    "name": "Marvin Harrison Jr.",
-    "pos": "WR",
-    "nfl": "HOU",
-    "proj": 0.0,
-    "next_proj": 1.31,
-    "last": 7.1,
-    "avg": 4.8,
-    "g": 6
-   }
-  ]
- },
- "next_byes": [
-  "PIT",
-  "TEN"
- ],
- "proj_source": {
-  "name": "Sleeper",
-  "updated": "2026-10-28T15:11:15Z",
-  "players": 3045,
-  "unmatched": []
- },
  "offers": [
   {
    "player": "Kenneth Walker III",
@@ -5102,5 +4759,348 @@
     }
    ]
   }
- ]
+ ],
+ "roster_import_id": "8dd8ed13e57dfca3da806d7d46d39f3d002d67b30f67d9c688353c2f9264e645",
+ "roster_imported_at": "2026-10-28T15:28:16Z",
+ "league_url": "https://football.fantasysports.yahoo.com/f1/157731",
+ "waivers": {
+  "team": "Liberté Égalité Henri",
+  "week": 7,
+  "players": [
+   {
+    "name": "Joe Burrow",
+    "pos": "QB",
+    "nfl": "CIN",
+    "proj": 21.42,
+    "rank": "QB4",
+    "next_proj": 17.39,
+    "avg": 22.2,
+    "g": 6,
+    "last": 28.88,
+    "claimed_by": "Likely to Burden Tate w Penix",
+    "bid": 207,
+    "bids": [
+     {
+      "team": "Drake Mayezini",
+      "bid": 161
+     },
+     {
+      "team": "Love a Kittle Lamb & WhiteRice",
+      "bid": 87
+     },
+     {
+      "team": "Holofernes",
+      "bid": 76
+     },
+     {
+      "team": "Tai Streetz Lata?",
+      "bid": 24
+     },
+     {
+      "team": "Deviated Rectums",
+      "bid": 12
+     },
+     {
+      "team": "Love Purdy Flowers",
+      "bid": 11
+     }
+    ],
+    "bidders": 7,
+    "run": "2026-10-28"
+   },
+   {
+    "name": "Kenneth Walker III",
+    "pos": "RB",
+    "nfl": "KC",
+    "proj": 18.92,
+    "rank": "RB3",
+    "next_proj": 19.79,
+    "avg": 23.1,
+    "g": 6,
+    "last": 7.7,
+    "claimed_by": "Holofernes",
+    "bid": 227,
+    "bids": [
+     {
+      "team": "Drake Mayezini",
+      "bid": 161
+     },
+     {
+      "team": "Love a Kittle Lamb & WhiteRice",
+      "bid": 123
+     },
+     {
+      "team": "Deviated Rectums",
+      "bid": 121
+     },
+     {
+      "team": "Tai Streetz Lata?",
+      "bid": 102
+     }
+    ],
+    "bidders": 5,
+    "run": "2026-10-28"
+   },
+   {
+    "name": "Matthew Stafford",
+    "pos": "QB",
+    "nfl": "LAR",
+    "proj": 16.05,
+    "rank": "QB19",
+    "next_proj": 19.26,
+    "avg": 18.6,
+    "g": 7,
+    "last": 18.5,
+    "claimed_by": "Drake Mayezini",
+    "bid": 31,
+    "bids": [
+     {
+      "team": "Love a Kittle Lamb & WhiteRice",
+      "bid": 12
+     },
+     {
+      "team": "Holofernes",
+      "bid": 11
+     },
+     {
+      "team": "Tai Streetz Lata?",
+      "bid": 1
+     },
+     {
+      "team": "Breece’s Pieces",
+      "bid": 0
+     }
+    ],
+    "bidders": 5,
+    "run": "2026-10-28"
+   },
+   {
+    "name": "Chuba Hubbard",
+    "pos": "RB",
+    "nfl": "CAR",
+    "proj": 15.18,
+    "rank": "RB9",
+    "next_proj": 15.46,
+    "avg": 16.8,
+    "g": 6,
+    "last": 8,
+    "claimed_by": "Drake Mayezini",
+    "bid": 89,
+    "bids": [
+     {
+      "team": "Deviated Rectums",
+      "bid": 20
+     },
+     {
+      "team": "Holofernes",
+      "bid": 17
+     },
+     {
+      "team": "Love a Kittle Lamb & WhiteRice",
+      "bid": 13
+     },
+     {
+      "team": "Tai Streetz Lata?",
+      "bid": 1
+     }
+    ],
+    "bidders": 5,
+    "run": "2026-10-28"
+   },
+   {
+    "name": "James Cook III",
+    "pos": "RB",
+    "nfl": "BUF",
+    "proj": 15.27,
+    "rank": "RB8",
+    "next_proj": 14.45,
+    "avg": 18.1,
+    "g": 6,
+    "last": 0,
+    "claimed_by": "Holofernes",
+    "bid": 217,
+    "bids": [
+     {
+      "team": "Drake Mayezini",
+      "bid": 133
+     },
+     {
+      "team": "Deviated Rectums",
+      "bid": 101
+     },
+     {
+      "team": "Love a Kittle Lamb & WhiteRice",
+      "bid": 69
+     },
+     {
+      "team": "Tai Streetz Lata?",
+      "bid": 28
+     },
+     {
+      "team": "Breece’s Pieces",
+      "bid": 1
+     }
+    ],
+    "bidders": 6,
+    "run": "2026-10-28"
+   },
+   {
+    "name": "Garrett Wilson",
+    "pos": "WR",
+    "nfl": "NYJ",
+    "proj": 13.56,
+    "rank": "WR12",
+    "next_proj": 11.99,
+    "avg": 11.6,
+    "g": 7,
+    "last": 3.6,
+    "claimed_by": "Love a Kittle Lamb & WhiteRice",
+    "bid": 18,
+    "bids": [
+     {
+      "team": "Drake Mayezini",
+      "bid": 5
+     },
+     {
+      "team": "Tai Streetz Lata?",
+      "bid": 3
+     },
+     {
+      "team": "Deviated Rectums",
+      "bid": 0
+     }
+    ],
+    "bidders": 4,
+    "run": "2026-10-28"
+   },
+   {
+    "name": "Sam LaPorta",
+    "pos": "TE",
+    "nfl": "DET",
+    "proj": 8.99,
+    "rank": "TE4",
+    "next_proj": 10.55,
+    "avg": 10.9,
+    "g": 6,
+    "last": 2.3,
+    "claimed_by": "Love Purdy Flowers",
+    "bid": 23,
+    "bids": [
+     {
+      "team": "Tai Streetz Lata?",
+      "bid": 4
+     },
+     {
+      "team": "Breece’s Pieces",
+      "bid": 0
+     },
+     {
+      "team": "Holofernes",
+      "bid": 0
+     }
+    ],
+    "bidders": 4,
+    "run": "2026-10-28"
+   },
+   {
+    "name": "Jaylen Waddle",
+    "pos": "WR",
+    "nfl": "DEN",
+    "proj": 9.04,
+    "rank": "WR29",
+    "next_proj": 9.57,
+    "avg": 7.3,
+    "g": 7,
+    "last": 6.8,
+    "claimed_by": "Tai Streetz Lata?"
+   },
+   {
+    "name": "Rome Odunze",
+    "pos": "WR",
+    "nfl": "CHI",
+    "proj": 8.37,
+    "rank": "WR34",
+    "next_proj": 9.49,
+    "avg": 6.9,
+    "g": 7,
+    "last": 8.9,
+    "claimed_by": "Tai Streetz Lata?",
+    "bid": 3,
+    "bids": [
+     {
+      "team": "Holofernes",
+      "bid": 0
+     }
+    ],
+    "bidders": 2,
+    "run": "2026-10-28"
+   },
+   {
+    "name": "Jakobi Meyers",
+    "pos": "WR",
+    "nfl": "JAX",
+    "proj": 8.66,
+    "rank": "WR32",
+    "next_proj": 8.5,
+    "avg": 8.5,
+    "g": 6,
+    "last": 0
+   },
+   {
+    "name": "KC Concepcion Jr.",
+    "pos": "WR",
+    "nfl": "CLE",
+    "proj": 8.02,
+    "rank": "WR39",
+    "next_proj": 7.42,
+    "avg": 6.8,
+    "g": 7,
+    "last": 19.2,
+    "claimed_by": "Breece’s Pieces",
+    "bid": 0
+   },
+   {
+    "name": "Hunter Henry",
+    "pos": "TE",
+    "nfl": "NE",
+    "proj": 7.65,
+    "rank": "TE14",
+    "next_proj": 7.42,
+    "avg": 7.8,
+    "g": 7,
+    "last": 10.6
+   },
+   {
+    "name": "Keon Coleman",
+    "pos": "WR",
+    "nfl": "BUF",
+    "proj": 6.38,
+    "rank": "WR49",
+    "next_proj": 5.7,
+    "avg": 9.3,
+    "g": 6,
+    "last": 0
+   },
+   {
+    "name": "Marvin Harrison Jr.",
+    "pos": "WR",
+    "nfl": "HOU",
+    "proj": 0.0,
+    "next_proj": 1.31,
+    "avg": 4.8,
+    "g": 6,
+    "last": 7.1
+   }
+  ]
+ },
+ "next_byes": [
+  "PIT",
+  "TEN"
+ ],
+ "proj_source": {
+  "name": "Sleeper",
+  "updated": "2026-10-28T15:28:19Z",
+  "players": 3045,
+  "unmatched": []
+ }
 }
