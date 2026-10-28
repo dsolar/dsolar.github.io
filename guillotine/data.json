@@ -4,7 +4,7 @@
  "week": 8,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-10-28T15:28:16Z",
+ "updated": "2026-10-28T15:31:51Z",
  "source": "Yahoo league page, pasted",
  "teams": [
   {
@@ -3942,6 +3942,14 @@
    "date": "Oct 28, 4:31 am"
   },
   {
+   "player": "Jaylen Waddle",
+   "pos": "WR",
+   "nfl": "DEN",
+   "team": "Tai Streetz Lata?",
+   "bid": 1,
+   "date": "Oct 28, 4:31 am"
+  },
+  {
    "player": "Michael Penix Jr.",
    "pos": "QB",
    "nfl": "ATL",
@@ -4760,8 +4768,8 @@
    ]
   }
  ],
- "roster_import_id": "8dd8ed13e57dfca3da806d7d46d39f3d002d67b30f67d9c688353c2f9264e645",
- "roster_imported_at": "2026-10-28T15:28:16Z",
+ "roster_import_id": "576812c2b9d730fc0a6b4e2e7f307f24a19df07c857596a6e130188ad5a78371",
+ "roster_imported_at": "2026-10-28T15:31:51Z",
  "league_url": "https://football.fantasysports.yahoo.com/f1/157731",
  "waivers": {
   "team": "Liberté Égalité Henri",
@@ -5012,7 +5020,8 @@
     "avg": 7.3,
     "g": 7,
     "last": 6.8,
-    "claimed_by": "Tai Streetz Lata?"
+    "claimed_by": "Tai Streetz Lata?",
+    "bid": 1
    },
    {
     "name": "Rome Odunze",
@@ -5099,7 +5108,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-10-28T15:28:19Z",
+  "updated": "2026-10-28T15:31:53Z",
   "players": 3045,
   "unmatched": []
  }
