@@ -64,6 +64,7 @@ window.PROJECTS = [
   {
     title: "Night Out",
     tag: "Updated every morning",
+    hidden: true,
     type: "Social Tools",
     released: "2026-10",
     url: "calendar/",
@@ -88,6 +89,7 @@ window.PROJECTS = [
   {
     title: "Lige de Rohan",
     tag: "Live on game days",
+    hidden: true,
     type: "Fantasy Leagues",
     released: "2026-10",
     url: "rohan/",
