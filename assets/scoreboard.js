@@ -486,10 +486,12 @@
         var standing = sim.teams.slice().sort(function (a, b) { return b.now - a.now; }).map(function (t) { return t.name; });
         var top = sim.teams.reduce(function (a, b) { return b.pChop > a.pChop ? b : a; }, sim.teams[0] || {});
         var playing = 0, toPlay = 0;
+        // Before the week's first kickoff every team sits at 0.0, so the tiles lead with projections instead.
+        var pregame = sim.teams.every(function (t) { return !t.locked && !t.done; });
         var tiles = sim.teams.slice().sort(function (a, b) { return b.pChop - a.pChop || a.now - b.now; }).map(function (t) {
           var on = window.GuillotineLive.startersOf(byName[t.name]).filter(function (p) { return p.live; }).length;
           playing += on; toPlay += t.nRem;
-          return { league: true, t: t, rank: standing.indexOf(t.name) + 1, playing: on,
+          return { league: true, t: t, rank: standing.indexOf(t.name) + 1, playing: on, pregame: pregame && !on,
             mine: t.mine || t.name === LEAGUE.mine, block: t === top && t.pChop > 0 && sim.weeksLeft > 0 };
         });
         var head = { league: true, head: true, week: d.week, league_name: d.league || "Bastille Day", cut: sim.cut.median,
@@ -524,9 +526,9 @@
       : t.done ? "Final" : t.nRem + " to play";
     var inner = '<div class="tk-top"><span class="tk-tag">' + (r.block ? "On the block" : "#" + r.rank + (r.mine ? " · Mine" : "")) + "</span>"
       + '<span class="tk-status tk-chop">' + odds + "</span></div>"
-      + '<div class="tk-line tk-gline' + (r.mine ? " tk-us" : "") + '"><span class="tk-name">' + esc(t.name) + '</span><span class="tk-pts">' + t.locked.toFixed(1) + "</span></div>"
-      + '<div class="tk-foot">' + status + (t.done ? "" : dot + "Proj " + t.now.toFixed(1)) + "</div>";
-    var label = t.name + ", " + t.locked.toFixed(1) + " points" + (t.done ? ", final" : ", projected " + t.now.toFixed(1)) + ", " + (odds === "Safe" ? "safe" : odds === "Cut" ? "cut" : odds.replace("cut", "chance of being cut"));
+      + '<div class="tk-line tk-gline' + (r.mine ? " tk-us" : "") + '"><span class="tk-name">' + esc(t.name) + '</span><span class="tk-pts">' + (r.pregame ? t.now : t.locked).toFixed(1) + "</span></div>"
+      + '<div class="tk-foot">' + (r.pregame ? "Projected" + dot + status : status + (t.done ? "" : dot + "Proj " + t.now.toFixed(1))) + "</div>";
+    var label = t.name + ", " + (r.pregame ? "projected " + t.now.toFixed(1) + ", not started" : t.locked.toFixed(1) + " points" + (t.done ? ", final" : ", projected " + t.now.toFixed(1))) + ", " + (odds === "Safe" ? "safe" : odds === "Cut" ? "cut" : odds.replace("cut", "chance of being cut"));
     var cls = "tk-item tk-g" + (r.block ? " tk-block" : "") + (r.playing ? " tk-now" : "") + (r.mine ? " tk-mine" : "");
     return '<li class="' + cls + '"><a href="' + LEAGUE.dir + '" aria-label="' + esc(label) + '">' + inner + "</a></li>";
   }

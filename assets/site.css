@@ -359,6 +359,7 @@ a:hover{color:var(--red)}
 /* Executive portfolio finishing touches */
 .portfolio-intro{color:var(--muted);font-size:.94rem;max-width:48rem;margin:0 0 22px;line-height:1.6}
 .entry-meta .featured-tag{font-size:.69rem;font-weight:700;letter-spacing:.045em;text-transform:uppercase;border:1px solid var(--rule);padding:2px 7px;border-radius:3px;color:var(--muted)}
+.entry-meta .tag{color:var(--muted);font-weight:600}
 .entry{transition:border-color .18s ease,box-shadow .18s ease}
 @media(hover:hover){.entry:hover{box-shadow:0 8px 26px rgba(0,34,68,.07)}}
 .hero-sub{max-width:42rem}

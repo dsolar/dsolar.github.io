@@ -6,7 +6,8 @@
      title     Project name.
      type      Homepage category: "Fantasy Leagues", "Simulations", "Games", "Social Tools".
                Once there's more than one type, filter buttons appear on the home page.
-     released  Year and month it went live, "YYYY-MM". Newest shows first.
+     released  Year and month it went live, "YYYY-MM". For your records; it doesn't show on the card.
+     tag       Optional short note next to the type, e.g. "Updated every morning". Leave it out for none.
      url       Where it lives on this site, relative to the home page (folder name + /).
      question  The question that started it. Shows in italics.
      summary   One or two sentences on what it is.
@@ -28,6 +29,7 @@
 window.PROJECTS = [
   {
     title: "Make the Call",
+    tag: "New challenge every day",
     featured: true,
     spotlight: true,
     type: "Games",
@@ -48,6 +50,7 @@ window.PROJECTS = [
   },
   {
     title: "Guess the Pick",
+    tag: "New ten every day",
     type: "Games",
     released: "2026-10",
     url: "guess-the-pick/",
@@ -59,19 +62,20 @@ window.PROJECTS = [
     cover: { image: "assets/covers/guess-the-pick.jpg", bg: "#0B1626", band: "#C8102E" }
   },
   {
-    title: "Sunday Strategist",
-    type: "Games",
+    title: "Night Out",
+    tag: "Updated every morning",
+    type: "Social Tools",
     released: "2026-10",
-    url: "sunday-strategist/",
-    action: "Read the defense",
-    question: "The nickel's walked down and showing blitz. Is he coming, and where does the ball go if he is?",
-    summary: "A football coaching game: diagnose the defense, set the protection, call the play, then see who had to hold up and why it worked. Call it from either side of the ball on real NFL snaps. Graded on the decision, not the result.",
-    facts: [["480", "real NFL snaps from 2023 to 2025"], ["9", "lessons, from fire zones to 2-Man"], ["2", "sides of the ball to call"]],
-    stack: ["JavaScript", "SVG"],
-    cover: { image: "assets/covers/sunday-strategist.svg", bg: "#0D1821", band: "#F7D23E" }
+    url: "calendar/",
+    question: "What's worth leaving the couch for, and who's in?",
+    summary: "A shared calendar for Boston events, restaurants, and trips, with group planning and ticket tracking.",
+    facts: [["Daily", "refresh of shows and games"], ["62", "restaurants, rated 1 to 5 stars"], ["4½ hr", "longest road trip it looks for"]],
+    stack: ["JavaScript", "Python", "Cloudflare Workers", "GitHub Actions"],
+    cover: { image: "assets/covers/calendar.jpg", bg: "#17130E", band: "#FFC53D" }
   },
   {
     title: "Bastille Day Odds",
+    tag: "Live on game days",
     type: "Fantasy Leagues",
     released: "2026-10",
     url: "guillotine/",
@@ -80,6 +84,19 @@ window.PROJECTS = [
     facts: [["20,000", "simulated seasons per update"], ["15", "teams, one cut every week"], ["Daily", "refresh from Yahoo"]],
     stack: ["JavaScript", "Python", "Monte Carlo simulation", "GitHub Actions"],
     cover: { image: "assets/covers/guillotine.svg", bg: "#0E1A30", band: "#C8102E" }
+  },
+  {
+    title: "Lige de Rohan",
+    tag: "Live on game days",
+    type: "Fantasy Leagues",
+    released: "2026-10",
+    url: "rohan/",
+    action: "Enter the league",
+    question: "Twenty-one seasons in, who's actually running this league?",
+    summary: "The league house for a 10-team ESPN keeper league: live matchups and projections, league history, rules, and drafts.",
+    facts: [["21", "seasons since 2006"], ["$205", "auction budget per team"], ["3", "keepers per team"]],
+    stack: ["JavaScript", "ESPN and Sleeper data"],
+    cover: { image: "assets/covers/rohan.jpg", bg: "#122B24", band: "#D4C08A" }
   },
   {
     title: "Don't Forget to Wipe Yoenis",
@@ -92,6 +109,18 @@ window.PROJECTS = [
     facts: [["5,600", "draft picks since 2013"], ["14", "seasons of champions and standings"], ["3", "keeper years, then back in the draft"]],
     stack: ["JavaScript", "Python"],
     cover: { image: "assets/covers/yoenis.svg", bg: "#1F4532", band: "#BD3039" }
+  },
+  {
+    title: "Sunday Strategist",
+    type: "Games",
+    released: "2026-10",
+    url: "sunday-strategist/",
+    action: "Read the defense",
+    question: "The nickel's walked down and showing blitz. Is he coming, and where does the ball go if he is?",
+    summary: "A football coaching game: diagnose the defense, set the protection, call the play, then see who had to hold up and why it worked. Call it from either side of the ball on real NFL snaps. Graded on the decision, not the result.",
+    facts: [["480", "real NFL snaps from 2023 to 2025"], ["9", "lessons, from fire zones to 2-Man"], ["2", "sides of the ball to call"]],
+    stack: ["JavaScript", "SVG"],
+    cover: { image: "assets/covers/sunday-strategist.svg", bg: "#0D1821", band: "#F7D23E" }
   },
   {
   title: "The 31st Franchise",
@@ -162,31 +191,6 @@ window.PROJECTS = [
     stack: ["JavaScript"],
     cover: { image: "assets/covers/nick-chat.jpg", bg: "#e8ebf2", band: "#596579" },
     hidden: true
-  },
-  {
-    title: "Night Out",
-    hidden: true,
-    type: "Social Tools",
-    released: "2026-10",
-    url: "calendar/",
-    question: "What's worth leaving the couch for, and who's in?",
-    summary: "A shared calendar for Boston events, restaurants, and trips, with group planning and ticket tracking.",
-    facts: [["Daily", "refresh of shows and games"], ["62", "restaurants, rated 1 to 5 stars"], ["4½ hr", "longest road trip it looks for"]],
-    stack: ["JavaScript", "Python", "Cloudflare Workers", "GitHub Actions"],
-    cover: { image: "assets/covers/calendar.jpg", bg: "#17130E", band: "#FFC53D" }
-  },
-  {
-    title: "Lige de Rohan",
-    hidden: true,
-    type: "Fantasy Leagues",
-    released: "2026-10",
-    url: "rohan/",
-    action: "Enter the league",
-    question: "Twenty-one seasons in, who's actually running this league?",
-    summary: "The league house for a 10-team ESPN keeper league: live matchups and projections, league history, rules, and drafts.",
-    facts: [["21", "seasons since 2006"], ["$205", "auction budget per team"], ["3", "keepers per team"]],
-    stack: ["JavaScript", "ESPN and Sleeper data"],
-    cover: { image: "assets/covers/rohan.jpg", bg: "#122B24", band: "#D4C08A" }
   },
   {
     title: "Trade Analyzer",
