@@ -6,6 +6,12 @@ import sys
 sys.path.insert(0,'tools')
 from guillotine_paste import parse_rosters
 from guillotine_projections import reconcile_roster_only_scores
+from guillotine_paste import parse_offers, merge_offers
+# Transactions page: winning bid, every losing bid with its reason, the winner and the waiver run.
+rows=['Joe Burrow Cin - QB','$207 Winning Offer','Drake Mayezini $161 (Lower Offer)','','Holofernes $0 (Invalid claim due to previous transaction)','','Awarded To:\t','Likely to Burden Tate w Penix','Oct 28,4:31 am']
+o=parse_offers(rows,2026)[0]
+assert o['bid']==207 and o['team']=='Likely to Burden Tate w Penix' and o['run']=='2026-10-28' and [b['why'] for b in o['bids']]==['lower','invalid']
+assert len(merge_offers([o],[dict(o)]))==1
 rows=['Team','Pos\\tPlayer','QB','Test Player','Test PlayerNote','NE - QB','Final (Yahoo screenshot)','Yahoo snapshot points\\t0.00\\tprojection\\t12.50']
 p=parse_rosters(rows)['Team'][0]
 assert p['yfinal'] and p['yahoo_actual']==0 and p['yahoo_proj']==12.5

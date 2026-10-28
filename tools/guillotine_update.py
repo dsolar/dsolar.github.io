@@ -394,6 +394,9 @@ def write_if_changed(data, path):
         try:
             with open(path, encoding="utf-8") as f:
                 old = json.load(f)
+            # Every bid on each claim (winners and losers) only comes from a pasted Transactions page.
+            if old.get("offers") and "offers" not in data:
+                data["offers"] = old["offers"]
             if {k: v for k, v in old.items() if k != "updated"} == {k: v for k, v in data.items() if k != "updated"}:
                 print("No change in league data.")
                 return False

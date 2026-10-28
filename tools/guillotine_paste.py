@@ -4,7 +4,9 @@
 The no-API way to update davidsolar.dev/guillotine/. In guillotine/paste.txt, paste:
   1. the league's main page (League > Overview): standings, projections, FAB, eliminations
   2. optionally, League > Starting Rosters: every team's starters and bench
-  3. optionally, the Recent Transactions block from the Overview page: winning waiver bids
+  3. optionally, League > Transactions: every bid on each waiver claim, winners and losers (the
+     Overview's Recent Transactions block only has the last few winning bids). Claims from earlier
+     pastes are kept, since Yahoo shows 25 at a time.
 Select all, copy, paste one after the other. A paste taken mid-week is fine: each team's Points so far
 are kept, and every starter whose game Yahoo shows as Final is marked yfinal, so the page banks
 those points exactly and only the players still to play can move the odds. Committing the file runs the "Guillotine update"
@@ -117,7 +119,11 @@ def parse_rosters(lines):
 
 TX_PLAYER = re.compile(r"^(.+?)\s+([A-Za-z]{2,3}) - ([A-Z]{1,3})(?:\s+(IR|Q|D|O|NA|SUSP|PUP|PUP-R|IR-R))?\s*$")
 TX_AMOUNT = re.compile(r"^\$(\d+(?:\.\d+)?)\s*(Waiver|FAAB|FAB)?\s*$")
-TX_DATE = re.compile(r"^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{1,2}, \d{1,2}:\d{2} [ap]m$")
+TX_DATE = re.compile(r"^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{1,2}, ?\d{1,2}:\d{2} [ap]m$")
+OFFER_WIN = re.compile(r"^\$(\d+)\s+Winning Offer$")
+OFFER_LOSS = re.compile(r"^(.+?)\s+\$(\d+)\s+\((.+)\)$")
+OFFER_WHY = (("lower offer", "lower"), ("waiver priority", "priority"), ("invalid", "invalid"))
+MONTHS = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 TX_STOP = ("Yahoo Sports - NBC", "Commish Notes", "Commish Updates", "Fantasy News")
 TX_SKIP = ("View All", "All Transactions", "Added Players", "Dropped Players", "Trades", "FAB Offers")
 
@@ -130,20 +136,22 @@ def parse_transactions(lines):
     the claiming team (after an optional drop block: player line + "To Waivers")
     and the date. A player line followed by "To Waivers" is a drop: no bid.
     """
-    start = None
-    for i, line in enumerate(lines):
-        if line.strip() == "Recent Transactions":
-            start = i + 1
-            break
-    if start is None:
-        return []
-    txs, seen, i = [], set(), start
+    # The Transactions page has its own "Recent Transactions" heading; read every block in the paste.
+    starts = [i + 1 for i, line in enumerate(lines) if line.strip() == "Recent Transactions"]
+    txs, seen = [], set()
+    for start in starts:
+        read_tx_block(lines, start, txs, seen)
+    return txs
+
+
+def read_tx_block(lines, start, txs, seen):
+    i = start
     while i < len(lines):
         line = lines[i].strip()
         if not line or line in TX_SKIP:
             i += 1
             continue
-        if any(line.startswith(s) for s in TX_STOP):
+        if any(line.startswith(s) for s in TX_STOP) or line in ("Transactions", "Starting Rosters", "Standings"):
             break
         m = TX_PLAYER.match(line)
         if not m:
@@ -197,7 +205,85 @@ def parse_transactions(lines):
             seen.add(key)
             txs.append({"player": name, "pos": m.group(3), "nfl": m.group(2).upper(),
                         "team": team, "bid": bid, "date": date})
-    return txs
+
+
+def run_day(date, season):
+    """'Oct 28,4:31 am' -> '2026-10-28', the waiver run it belongs to. January belongs to the next year."""
+    m = re.match(r"^(\w{3}) (\d{1,2}),", date or "")
+    if not m or m.group(1) not in MONTHS:
+        return ""
+    mon = MONTHS.index(m.group(1)) + 1
+    return f"{season + (1 if mon < 8 else 0):04d}-{mon:02d}-{int(m.group(2)):02d}"
+
+
+def parse_offers(lines, season):
+    """League > Transactions page (FAB Offers or All Transactions) -> every waiver claim with all its bids:
+    [{player, pos, nfl, team, bid, date, run, bids: [{team, bid, why}]}], newest first, as Yahoo lists them.
+
+    Each claim is a player line, "$N Winning Offer", one line per losing bid ("Team $N (Lower Offer)",
+    "(Lower waiver priority)" or "(Invalid claim due to previous transaction)"), "Awarded To:", the
+    winning team and the date. why is lower, priority or invalid."""
+    out, i = [], 0
+    while i < len(lines):
+        win = OFFER_WIN.match(lines[i].strip())
+        if not win:
+            i += 1
+            continue
+        j = i - 1
+        while j >= 0 and not lines[j].strip():
+            j -= 1
+        pm = TX_PLAYER.match(lines[j].strip()) if j >= 0 else None
+        if not pm:
+            i += 1
+            continue
+        bids, team, date, k = [], "", "", i + 1
+        while k < len(lines):
+            s = lines[k].strip()
+            if not s:
+                k += 1
+                continue
+            if s.startswith("Awarded To"):
+                k += 1
+                while k < len(lines) and not lines[k].strip():
+                    k += 1
+                team = lines[k].strip() if k < len(lines) else ""
+                k += 1
+                while k < len(lines) and not lines[k].strip():
+                    k += 1
+                if k < len(lines) and TX_DATE.match(lines[k].strip()):
+                    date = re.sub(r",\s*", ", ", lines[k].strip())
+                break
+            lm = OFFER_LOSS.match(s)
+            if not lm:
+                break
+            note = lm.group(3).lower()
+            why = next((w for key, w in OFFER_WHY if key in note), "lower")
+            bids.append({"team": lm.group(1).strip(), "bid": int(lm.group(2)), "why": why})
+            k += 1
+        if team:
+            out.append({"player": pm.group(1).strip(), "pos": pm.group(3), "nfl": pm.group(2).upper(),
+                        "team": team, "bid": int(win.group(1)), "date": date, "run": run_day(date, season),
+                        "bids": bids})
+        i = k + 1
+    return out
+
+
+def offer_key(o):
+    return (re.sub(r"[^a-z0-9]+", "", o["player"].lower()), o.get("pos"), o.get("run") or o.get("date"))
+
+
+def merge_offers(new, old):
+    """Keep claims from earlier pastes that this one no longer shows (Yahoo pages 25 at a time).
+    Newest waiver run first, then the bigger bid first within a run."""
+    seen, out = set(), []
+    for o in list(new) + list(old or []):
+        key = offer_key(o)
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(o)
+    out.sort(key=lambda o: (o.get("run") or "", o.get("bid") or 0), reverse=True)
+    return out[:300]
 
 
 def parse(txt):
@@ -241,6 +327,15 @@ def parse(txt):
     week = int(m.group(1)) if m else (max([f["out"] for f in fallen], default=0) + 1)
     rosters = parse_rosters(lines) if "Starting Rosters" in txt else {}
     transactions = parse_transactions(lines)
+    season = datetime.now(timezone.utc).year
+    offers = parse_offers(lines, season)
+    # The Transactions page's winners fill in any claim the Overview's short list didn't reach.
+    have = {re.sub(r"[^a-z0-9]+", "", t["player"].lower()) for t in transactions}
+    for o in offers:
+        key = re.sub(r"[^a-z0-9]+", "", o["player"].lower())
+        if key not in have:
+            have.add(key)
+            transactions.append({k: o[k] for k in ("player", "pos", "nfl", "team", "bid", "date")})
 
     teams = []
     for t in sorted(alive, key=lambda t: -(t["proj"] or 0)):
@@ -279,6 +374,8 @@ def parse(txt):
         "teams": teams,
         "transactions": transactions,
     }
+    if offers:
+        data["offers"] = offers
     data["roster_import_id"] = hashlib.sha256(txt.encode("utf-8")).hexdigest()
     data["roster_imported_at"] = data["updated"]
     snapshot = re.search(r"^Full roster snapshot: (.+)$", txt, re.M)
@@ -364,6 +461,8 @@ def main():
         if old.get("roster_import_id") == data.get("roster_import_id"):
             data["roster_imported_at"] = old.get("roster_imported_at", old.get("updated"))
         carry_cuts(old, data)
+        if old.get("offers") or data.get("offers"):
+            data["offers"] = merge_offers(data.get("offers") or [], old.get("offers"))
     carry_pregame(old, data)
     if old is not None:
         if base_of(old) == base_of(data):

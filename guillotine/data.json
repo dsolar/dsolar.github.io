@@ -3940,6 +3940,182 @@
    "team": "Breece's Pieces",
    "bid": 0,
    "date": "Oct 28, 4:31 am"
+  },
+  {
+   "player": "Michael Penix Jr.",
+   "pos": "QB",
+   "nfl": "ATL",
+   "team": "Tai Streetz Lata?",
+   "bid": 1,
+   "date": "Oct 28, 4:31 am"
+  },
+  {
+   "player": "Ladd McConkey",
+   "pos": "WR",
+   "nfl": "LAC",
+   "team": "Tai Streetz Lata?",
+   "bid": 2,
+   "date": "Oct 28, 4:31 am"
+  },
+  {
+   "player": "Rome Odunze",
+   "pos": "WR",
+   "nfl": "CHI",
+   "team": "Tai Streetz Lata?",
+   "bid": 3,
+   "date": "Oct 28, 4:31 am"
+  },
+  {
+   "player": "Omar Cooper Jr.",
+   "pos": "WR",
+   "nfl": "NYJ",
+   "team": "Drake Mayezini",
+   "bid": 3,
+   "date": "Oct 28, 4:31 am"
+  },
+  {
+   "player": "Garrett Wilson",
+   "pos": "WR",
+   "nfl": "NYJ",
+   "team": "Love a Kittle Lamb & WhiteRice",
+   "bid": 18,
+   "date": "Oct 28, 4:31 am"
+  },
+  {
+   "player": "Sam LaPorta",
+   "pos": "TE",
+   "nfl": "DET",
+   "team": "Love Purdy Flowers",
+   "bid": 23,
+   "date": "Oct 28, 4:31 am"
+  },
+  {
+   "player": "Matthew Stafford",
+   "pos": "QB",
+   "nfl": "LAR",
+   "team": "Drake Mayezini",
+   "bid": 31,
+   "date": "Oct 28, 4:31 am"
+  },
+  {
+   "player": "Chuba Hubbard",
+   "pos": "RB",
+   "nfl": "CAR",
+   "team": "Drake Mayezini",
+   "bid": 89,
+   "date": "Oct 28, 4:31 am"
+  },
+  {
+   "player": "Joe Burrow",
+   "pos": "QB",
+   "nfl": "CIN",
+   "team": "Likely to Burden Tate w Penix",
+   "bid": 207,
+   "date": "Oct 28, 4:31 am"
+  },
+  {
+   "player": "James Cook III",
+   "pos": "RB",
+   "nfl": "BUF",
+   "team": "Holofernes",
+   "bid": 217,
+   "date": "Oct 28, 4:31 am"
+  },
+  {
+   "player": "Kenneth Walker III",
+   "pos": "RB",
+   "nfl": "KC",
+   "team": "Holofernes",
+   "bid": 227,
+   "date": "Oct 28, 4:31 am"
+  },
+  {
+   "player": "Tyler Allgeier",
+   "pos": "RB",
+   "nfl": "ARI",
+   "team": "Love a Kittle Lamb & WhiteRice",
+   "bid": 1,
+   "date": "Oct 25, 3:26 am"
+  },
+  {
+   "player": "Kyle Pitts Sr.",
+   "pos": "TE",
+   "nfl": "ATL",
+   "team": "Tai Streetz Lata?",
+   "bid": 2,
+   "date": "Oct 22, 4:01 am"
+  },
+  {
+   "player": "Quinshon Judkins",
+   "pos": "RB",
+   "nfl": "CLE",
+   "team": "Holofernes",
+   "bid": 2,
+   "date": "Oct 21, 4:27 am"
+  },
+  {
+   "player": "Tanner McKee",
+   "pos": "QB",
+   "nfl": "PHI",
+   "team": "Love a Kittle Lamb & WhiteRice",
+   "bid": 3,
+   "date": "Oct 21, 4:27 am"
+  },
+  {
+   "player": "RJ Harvey",
+   "pos": "RB",
+   "nfl": "DEN",
+   "team": "Tai Streetz Lata?",
+   "bid": 3,
+   "date": "Oct 21, 4:27 am"
+  },
+  {
+   "player": "Tucker Kraft",
+   "pos": "TE",
+   "nfl": "GB",
+   "team": "Drake Mayezini",
+   "bid": 7,
+   "date": "Oct 21, 4:27 am"
+  },
+  {
+   "player": "Germie Bernard",
+   "pos": "WR",
+   "nfl": "PIT",
+   "team": "Likely to Burden Tate w Penix",
+   "bid": 47,
+   "date": "Oct 21, 4:27 am"
+  },
+  {
+   "player": "Tee Higgins",
+   "pos": "WR",
+   "nfl": "CIN",
+   "team": "Love a Kittle Lamb & WhiteRice",
+   "bid": 66,
+   "date": "Oct 21, 4:27 am"
+  },
+  {
+   "player": "DeVonta Smith",
+   "pos": "WR",
+   "nfl": "PHI",
+   "team": "Tai Streetz Lata?",
+   "bid": 83,
+   "date": "Oct 21, 4:27 am"
+  },
+  {
+   "player": "Trey McBride",
+   "pos": "TE",
+   "nfl": "ARI",
+   "team": "Breece’s Pieces",
+   "bid": 114,
+   "date": "Oct 21, 4:27 am"
+  },
+  {
+   "player": "Bijan Robinson",
+   "pos": "RB",
+   "nfl": "ATL",
+   "team": "Tai Streetz Lata?",
+   "bid": 363,
+   "date": "Oct 21, 4:27 am"
   }
  ],
  "roster_import_id": "8f9ec7d768e40d73c92cde1bc5a38ec4436696505bf42ffafcbdf8a56c352f87",
@@ -3956,10 +4132,31 @@
     "proj": 18.97,
     "rank": "RB3",
     "next_proj": 19.79,
-    "avg": 23.1,
-    "g": 6,
     "last": 7.7,
-    "claimed_by": "Holofernes"
+    "claimed_by": "Holofernes",
+    "bid": 227,
+    "bids": [
+     {
+      "team": "Drake Mayezini",
+      "bid": 161
+     },
+     {
+      "team": "Love a Kittle Lamb & WhiteRice",
+      "bid": 123
+     },
+     {
+      "team": "Deviated Rectums",
+      "bid": 121
+     },
+     {
+      "team": "Tai Streetz Lata?",
+      "bid": 102
+     }
+    ],
+    "bidders": 5,
+    "run": "2026-10-28",
+    "avg": 23.1,
+    "g": 6
    },
    {
     "name": "Joe Burrow",
@@ -3968,10 +4165,39 @@
     "proj": 21.18,
     "rank": "QB5",
     "next_proj": 17.39,
-    "avg": 22.2,
-    "g": 6,
     "last": 28.88,
-    "claimed_by": "Likely to Burden Tate w Penix"
+    "claimed_by": "Likely to Burden Tate w Penix",
+    "bid": 207,
+    "bids": [
+     {
+      "team": "Drake Mayezini",
+      "bid": 161
+     },
+     {
+      "team": "Love a Kittle Lamb & WhiteRice",
+      "bid": 87
+     },
+     {
+      "team": "Holofernes",
+      "bid": 76
+     },
+     {
+      "team": "Tai Streetz Lata?",
+      "bid": 24
+     },
+     {
+      "team": "Deviated Rectums",
+      "bid": 12
+     },
+     {
+      "team": "Love Purdy Flowers",
+      "bid": 11
+     }
+    ],
+    "bidders": 7,
+    "run": "2026-10-28",
+    "avg": 22.2,
+    "g": 6
    },
    {
     "name": "Matthew Stafford",
@@ -3980,10 +4206,31 @@
     "proj": 16.05,
     "rank": "QB19",
     "next_proj": 19.26,
-    "avg": 18.6,
-    "g": 7,
     "last": 18.5,
-    "claimed_by": "Drake Mayezini"
+    "claimed_by": "Drake Mayezini",
+    "bid": 31,
+    "bids": [
+     {
+      "team": "Love a Kittle Lamb & WhiteRice",
+      "bid": 12
+     },
+     {
+      "team": "Holofernes",
+      "bid": 11
+     },
+     {
+      "team": "Tai Streetz Lata?",
+      "bid": 1
+     },
+     {
+      "team": "Breece’s Pieces",
+      "bid": 0
+     }
+    ],
+    "bidders": 5,
+    "run": "2026-10-28",
+    "avg": 18.6,
+    "g": 7
    },
    {
     "name": "Chuba Hubbard",
@@ -3992,10 +4239,31 @@
     "proj": 15.18,
     "rank": "RB9",
     "next_proj": 15.46,
-    "avg": 16.8,
-    "g": 6,
     "last": 8,
-    "claimed_by": "Drake Mayezini"
+    "claimed_by": "Drake Mayezini",
+    "bid": 89,
+    "bids": [
+     {
+      "team": "Deviated Rectums",
+      "bid": 20
+     },
+     {
+      "team": "Holofernes",
+      "bid": 17
+     },
+     {
+      "team": "Love a Kittle Lamb & WhiteRice",
+      "bid": 13
+     },
+     {
+      "team": "Tai Streetz Lata?",
+      "bid": 1
+     }
+    ],
+    "bidders": 5,
+    "run": "2026-10-28",
+    "avg": 16.8,
+    "g": 6
    },
    {
     "name": "James Cook III",
@@ -4004,10 +4272,35 @@
     "proj": 15.27,
     "rank": "RB8",
     "next_proj": 14.45,
-    "avg": 18.1,
-    "g": 6,
     "last": 0,
-    "claimed_by": "Holofernes"
+    "claimed_by": "Holofernes",
+    "bid": 217,
+    "bids": [
+     {
+      "team": "Drake Mayezini",
+      "bid": 133
+     },
+     {
+      "team": "Deviated Rectums",
+      "bid": 101
+     },
+     {
+      "team": "Love a Kittle Lamb & WhiteRice",
+      "bid": 69
+     },
+     {
+      "team": "Tai Streetz Lata?",
+      "bid": 28
+     },
+     {
+      "team": "Breece’s Pieces",
+      "bid": 1
+     }
+    ],
+    "bidders": 6,
+    "run": "2026-10-28",
+    "avg": 18.1,
+    "g": 6
    },
    {
     "name": "Garrett Wilson",
@@ -4016,10 +4309,27 @@
     "proj": 13.56,
     "rank": "WR11",
     "next_proj": 11.99,
-    "avg": 11.6,
-    "g": 7,
     "last": 3.6,
-    "claimed_by": "Love a Kittle Lamb & WhiteRice"
+    "claimed_by": "Love a Kittle Lamb & WhiteRice",
+    "bid": 18,
+    "bids": [
+     {
+      "team": "Drake Mayezini",
+      "bid": 5
+     },
+     {
+      "team": "Tai Streetz Lata?",
+      "bid": 3
+     },
+     {
+      "team": "Deviated Rectums",
+      "bid": 0
+     }
+    ],
+    "bidders": 4,
+    "run": "2026-10-28",
+    "avg": 11.6,
+    "g": 7
    },
    {
     "name": "Sam LaPorta",
@@ -4028,10 +4338,27 @@
     "proj": 8.99,
     "rank": "TE4",
     "next_proj": 10.55,
-    "avg": 10.9,
-    "g": 6,
     "last": 2.3,
-    "claimed_by": "Love Purdy Flowers"
+    "claimed_by": "Love Purdy Flowers",
+    "bid": 23,
+    "bids": [
+     {
+      "team": "Tai Streetz Lata?",
+      "bid": 4
+     },
+     {
+      "team": "Breece’s Pieces",
+      "bid": 0
+     },
+     {
+      "team": "Holofernes",
+      "bid": 0
+     }
+    ],
+    "bidders": 4,
+    "run": "2026-10-28",
+    "avg": 10.9,
+    "g": 6
    },
    {
     "name": "Jaylen Waddle",
@@ -4040,10 +4367,10 @@
     "proj": 9.0,
     "rank": "WR29",
     "next_proj": 9.57,
-    "avg": 7.3,
-    "g": 7,
     "last": 6.8,
-    "claimed_by": "Tai Streetz Lata?"
+    "claimed_by": "Tai Streetz Lata?",
+    "avg": 7.3,
+    "g": 7
    },
    {
     "name": "Rome Odunze",
@@ -4052,10 +4379,19 @@
     "proj": 8.38,
     "rank": "WR34",
     "next_proj": 9.49,
-    "avg": 6.9,
-    "g": 7,
     "last": 8.9,
-    "claimed_by": "Tai Streetz Lata?"
+    "claimed_by": "Tai Streetz Lata?",
+    "bid": 3,
+    "bids": [
+     {
+      "team": "Holofernes",
+      "bid": 0
+     }
+    ],
+    "bidders": 2,
+    "run": "2026-10-28",
+    "avg": 6.9,
+    "g": 7
    },
    {
     "name": "Jakobi Meyers",
@@ -4064,9 +4400,9 @@
     "proj": 8.68,
     "rank": "WR32",
     "next_proj": 8.5,
+    "last": 0,
     "avg": 8.5,
-    "g": 6,
-    "last": 0
+    "g": 6
    },
    {
     "name": "KC Concepcion Jr.",
@@ -4075,11 +4411,11 @@
     "proj": 7.96,
     "rank": "WR39",
     "next_proj": 7.42,
-    "avg": 6.8,
-    "g": 7,
     "last": 19.2,
     "claimed_by": "Breece’s Pieces",
-    "bid": 0
+    "bid": 0,
+    "avg": 6.8,
+    "g": 7
    },
    {
     "name": "Hunter Henry",
@@ -4088,9 +4424,9 @@
     "proj": 7.64,
     "rank": "TE14",
     "next_proj": 7.42,
+    "last": 10.6,
     "avg": 7.8,
-    "g": 7,
-    "last": 10.6
+    "g": 7
    },
    {
     "name": "Keon Coleman",
@@ -4099,9 +4435,9 @@
     "proj": 6.38,
     "rank": "WR49",
     "next_proj": 5.7,
+    "last": 0,
     "avg": 9.3,
-    "g": 6,
-    "last": 0
+    "g": 6
    },
    {
     "name": "Marvin Harrison Jr.",
@@ -4109,9 +4445,9 @@
     "nfl": "HOU",
     "proj": 0.0,
     "next_proj": 1.31,
+    "last": 7.1,
     "avg": 4.8,
-    "g": 6,
-    "last": 7.1
+    "g": 6
    }
   ]
  },
@@ -4124,5 +4460,647 @@
   "updated": "2026-10-28T15:11:15Z",
   "players": 3045,
   "unmatched": []
- }
+ },
+ "offers": [
+  {
+   "player": "Kenneth Walker III",
+   "pos": "RB",
+   "nfl": "KC",
+   "team": "Holofernes",
+   "bid": 227,
+   "date": "Oct 28, 4:31 am",
+   "run": "2026-10-28",
+   "bids": [
+    {
+     "team": "Drake Mayezini",
+     "bid": 161,
+     "why": "lower"
+    },
+    {
+     "team": "Love a Kittle Lamb & WhiteRice",
+     "bid": 123,
+     "why": "lower"
+    },
+    {
+     "team": "Deviated Rectums",
+     "bid": 121,
+     "why": "lower"
+    },
+    {
+     "team": "Tai Streetz Lata?",
+     "bid": 102,
+     "why": "lower"
+    }
+   ]
+  },
+  {
+   "player": "James Cook III",
+   "pos": "RB",
+   "nfl": "BUF",
+   "team": "Holofernes",
+   "bid": 217,
+   "date": "Oct 28, 4:31 am",
+   "run": "2026-10-28",
+   "bids": [
+    {
+     "team": "Drake Mayezini",
+     "bid": 133,
+     "why": "lower"
+    },
+    {
+     "team": "Deviated Rectums",
+     "bid": 101,
+     "why": "lower"
+    },
+    {
+     "team": "Love a Kittle Lamb & WhiteRice",
+     "bid": 69,
+     "why": "lower"
+    },
+    {
+     "team": "Tai Streetz Lata?",
+     "bid": 28,
+     "why": "lower"
+    },
+    {
+     "team": "Breece’s Pieces",
+     "bid": 1,
+     "why": "lower"
+    }
+   ]
+  },
+  {
+   "player": "Joe Burrow",
+   "pos": "QB",
+   "nfl": "CIN",
+   "team": "Likely to Burden Tate w Penix",
+   "bid": 207,
+   "date": "Oct 28, 4:31 am",
+   "run": "2026-10-28",
+   "bids": [
+    {
+     "team": "Drake Mayezini",
+     "bid": 161,
+     "why": "lower"
+    },
+    {
+     "team": "Love a Kittle Lamb & WhiteRice",
+     "bid": 87,
+     "why": "lower"
+    },
+    {
+     "team": "Holofernes",
+     "bid": 76,
+     "why": "lower"
+    },
+    {
+     "team": "Tai Streetz Lata?",
+     "bid": 24,
+     "why": "lower"
+    },
+    {
+     "team": "Deviated Rectums",
+     "bid": 12,
+     "why": "lower"
+    },
+    {
+     "team": "Love Purdy Flowers",
+     "bid": 11,
+     "why": "lower"
+    }
+   ]
+  },
+  {
+   "player": "Chuba Hubbard",
+   "pos": "RB",
+   "nfl": "CAR",
+   "team": "Drake Mayezini",
+   "bid": 89,
+   "date": "Oct 28, 4:31 am",
+   "run": "2026-10-28",
+   "bids": [
+    {
+     "team": "Deviated Rectums",
+     "bid": 20,
+     "why": "lower"
+    },
+    {
+     "team": "Holofernes",
+     "bid": 17,
+     "why": "lower"
+    },
+    {
+     "team": "Love a Kittle Lamb & WhiteRice",
+     "bid": 13,
+     "why": "lower"
+    },
+    {
+     "team": "Tai Streetz Lata?",
+     "bid": 1,
+     "why": "lower"
+    }
+   ]
+  },
+  {
+   "player": "Matthew Stafford",
+   "pos": "QB",
+   "nfl": "LAR",
+   "team": "Drake Mayezini",
+   "bid": 31,
+   "date": "Oct 28, 4:31 am",
+   "run": "2026-10-28",
+   "bids": [
+    {
+     "team": "Love a Kittle Lamb & WhiteRice",
+     "bid": 12,
+     "why": "lower"
+    },
+    {
+     "team": "Holofernes",
+     "bid": 11,
+     "why": "lower"
+    },
+    {
+     "team": "Tai Streetz Lata?",
+     "bid": 1,
+     "why": "lower"
+    },
+    {
+     "team": "Breece’s Pieces",
+     "bid": 0,
+     "why": "lower"
+    }
+   ]
+  },
+  {
+   "player": "Sam LaPorta",
+   "pos": "TE",
+   "nfl": "DET",
+   "team": "Love Purdy Flowers",
+   "bid": 23,
+   "date": "Oct 28, 4:31 am",
+   "run": "2026-10-28",
+   "bids": [
+    {
+     "team": "Tai Streetz Lata?",
+     "bid": 4,
+     "why": "lower"
+    },
+    {
+     "team": "Breece’s Pieces",
+     "bid": 0,
+     "why": "lower"
+    },
+    {
+     "team": "Holofernes",
+     "bid": 0,
+     "why": "lower"
+    }
+   ]
+  },
+  {
+   "player": "Garrett Wilson",
+   "pos": "WR",
+   "nfl": "NYJ",
+   "team": "Love a Kittle Lamb & WhiteRice",
+   "bid": 18,
+   "date": "Oct 28, 4:31 am",
+   "run": "2026-10-28",
+   "bids": [
+    {
+     "team": "Drake Mayezini",
+     "bid": 5,
+     "why": "lower"
+    },
+    {
+     "team": "Tai Streetz Lata?",
+     "bid": 3,
+     "why": "lower"
+    },
+    {
+     "team": "Deviated Rectums",
+     "bid": 0,
+     "why": "lower"
+    }
+   ]
+  },
+  {
+   "player": "Rome Odunze",
+   "pos": "WR",
+   "nfl": "CHI",
+   "team": "Tai Streetz Lata?",
+   "bid": 3,
+   "date": "Oct 28, 4:31 am",
+   "run": "2026-10-28",
+   "bids": [
+    {
+     "team": "Tai Streetz Lata?",
+     "bid": 3,
+     "why": "invalid"
+    },
+    {
+     "team": "Holofernes",
+     "bid": 0,
+     "why": "lower"
+    }
+   ]
+  },
+  {
+   "player": "Omar Cooper Jr.",
+   "pos": "WR",
+   "nfl": "NYJ",
+   "team": "Drake Mayezini",
+   "bid": 3,
+   "date": "Oct 28, 4:31 am",
+   "run": "2026-10-28",
+   "bids": [
+    {
+     "team": "Tai Streetz Lata?",
+     "bid": 1,
+     "why": "lower"
+    },
+    {
+     "team": "Breece’s Pieces",
+     "bid": 0,
+     "why": "lower"
+    }
+   ]
+  },
+  {
+   "player": "Ladd McConkey",
+   "pos": "WR",
+   "nfl": "LAC",
+   "team": "Tai Streetz Lata?",
+   "bid": 2,
+   "date": "Oct 28, 4:31 am",
+   "run": "2026-10-28",
+   "bids": [
+    {
+     "team": "Tai Streetz Lata?",
+     "bid": 2,
+     "why": "invalid"
+    }
+   ]
+  },
+  {
+   "player": "Michael Penix Jr.",
+   "pos": "QB",
+   "nfl": "ATL",
+   "team": "Tai Streetz Lata?",
+   "bid": 1,
+   "date": "Oct 28, 4:31 am",
+   "run": "2026-10-28",
+   "bids": [
+    {
+     "team": "Love Purdy Flowers",
+     "bid": 1,
+     "why": "priority"
+    }
+   ]
+  },
+  {
+   "player": "Malik Willis",
+   "pos": "QB",
+   "nfl": "MIA",
+   "team": "Love Purdy Flowers",
+   "bid": 0,
+   "date": "Oct 28, 4:31 am",
+   "run": "2026-10-28",
+   "bids": [
+    {
+     "team": "Love a Kittle Lamb & WhiteRice",
+     "bid": 0,
+     "why": "invalid"
+    }
+   ]
+  },
+  {
+   "player": "Dalton Kincaid",
+   "pos": "TE",
+   "nfl": "BUF",
+   "team": "Breece’s Pieces",
+   "bid": 0,
+   "date": "Oct 28, 4:31 am",
+   "run": "2026-10-28",
+   "bids": [
+    {
+     "team": "Holofernes",
+     "bid": 0,
+     "why": "invalid"
+    }
+   ]
+  },
+  {
+   "player": "Tyler Allgeier",
+   "pos": "RB",
+   "nfl": "ARI",
+   "team": "Love a Kittle Lamb & WhiteRice",
+   "bid": 1,
+   "date": "Oct 25, 3:26 am",
+   "run": "2026-10-25",
+   "bids": [
+    {
+     "team": "Holofernes",
+     "bid": 0,
+     "why": "lower"
+    }
+   ]
+  },
+  {
+   "player": "Kyle Pitts Sr.",
+   "pos": "TE",
+   "nfl": "ATL",
+   "team": "Tai Streetz Lata?",
+   "bid": 2,
+   "date": "Oct 22, 4:01 am",
+   "run": "2026-10-22",
+   "bids": [
+    {
+     "team": "Deviated Rectums",
+     "bid": 1,
+     "why": "lower"
+    }
+   ]
+  },
+  {
+   "player": "Bijan Robinson",
+   "pos": "RB",
+   "nfl": "ATL",
+   "team": "Tai Streetz Lata?",
+   "bid": 363,
+   "date": "Oct 21, 4:27 am",
+   "run": "2026-10-21",
+   "bids": [
+    {
+     "team": "Holofernes",
+     "bid": 317,
+     "why": "lower"
+    },
+    {
+     "team": "Love a Kittle Lamb & WhiteRice",
+     "bid": 222,
+     "why": "lower"
+    },
+    {
+     "team": "Liberté Égalité Henri",
+     "bid": 169,
+     "why": "lower"
+    },
+    {
+     "team": "Breece’s Pieces",
+     "bid": 115,
+     "why": "lower"
+    },
+    {
+     "team": "Drake Mayezini",
+     "bid": 100,
+     "why": "lower"
+    },
+    {
+     "team": "Deviated Rectums",
+     "bid": 51,
+     "why": "lower"
+    }
+   ]
+  },
+  {
+   "player": "Joe Burrow",
+   "pos": "QB",
+   "nfl": "CIN",
+   "team": "Liberté Égalité Henri",
+   "bid": 307,
+   "date": "Oct 21, 4:27 am",
+   "run": "2026-10-21",
+   "bids": [
+    {
+     "team": "Tai Streetz Lata?",
+     "bid": 83,
+     "why": "lower"
+    },
+    {
+     "team": "Holofernes",
+     "bid": 83,
+     "why": "lower"
+    },
+    {
+     "team": "Drake Mayezini",
+     "bid": 39,
+     "why": "lower"
+    },
+    {
+     "team": "Love a Kittle Lamb & WhiteRice",
+     "bid": 22,
+     "why": "lower"
+    },
+    {
+     "team": "Deviated Rectums",
+     "bid": 7,
+     "why": "lower"
+    }
+   ]
+  },
+  {
+   "player": "Trey McBride",
+   "pos": "TE",
+   "nfl": "ARI",
+   "team": "Breece’s Pieces",
+   "bid": 114,
+   "date": "Oct 21, 4:27 am",
+   "run": "2026-10-21",
+   "bids": [
+    {
+     "team": "Drake Mayezini",
+     "bid": 61,
+     "why": "lower"
+    },
+    {
+     "team": "Tai Streetz Lata?",
+     "bid": 61,
+     "why": "lower"
+    },
+    {
+     "team": "Holofernes",
+     "bid": 53,
+     "why": "lower"
+    },
+    {
+     "team": "Deviated Rectums",
+     "bid": 32,
+     "why": "lower"
+    },
+    {
+     "team": "Love Purdy Flowers",
+     "bid": 26,
+     "why": "lower"
+    },
+    {
+     "team": "Love a Kittle Lamb & WhiteRice",
+     "bid": 21,
+     "why": "lower"
+    }
+   ]
+  },
+  {
+   "player": "DeVonta Smith",
+   "pos": "WR",
+   "nfl": "PHI",
+   "team": "Tai Streetz Lata?",
+   "bid": 83,
+   "date": "Oct 21, 4:27 am",
+   "run": "2026-10-21",
+   "bids": [
+    {
+     "team": "Love Purdy Flowers",
+     "bid": 51,
+     "why": "lower"
+    },
+    {
+     "team": "Love a Kittle Lamb & WhiteRice",
+     "bid": 47,
+     "why": "lower"
+    },
+    {
+     "team": "Breece’s Pieces",
+     "bid": 38,
+     "why": "lower"
+    },
+    {
+     "team": "Drake Mayezini",
+     "bid": 31,
+     "why": "lower"
+    },
+    {
+     "team": "Holofernes",
+     "bid": 23,
+     "why": "lower"
+    }
+   ]
+  },
+  {
+   "player": "Tee Higgins",
+   "pos": "WR",
+   "nfl": "CIN",
+   "team": "Love a Kittle Lamb & WhiteRice",
+   "bid": 66,
+   "date": "Oct 21, 4:27 am",
+   "run": "2026-10-21",
+   "bids": [
+    {
+     "team": "Love Purdy Flowers",
+     "bid": 51,
+     "why": "lower"
+    },
+    {
+     "team": "Tai Streetz Lata?",
+     "bid": 41,
+     "why": "lower"
+    },
+    {
+     "team": "Drake Mayezini",
+     "bid": 29,
+     "why": "lower"
+    },
+    {
+     "team": "Holofernes",
+     "bid": 27,
+     "why": "lower"
+    },
+    {
+     "team": "Deviated Rectums",
+     "bid": 9,
+     "why": "lower"
+    }
+   ]
+  },
+  {
+   "player": "Germie Bernard",
+   "pos": "WR",
+   "nfl": "PIT",
+   "team": "Likely to Burden Tate w Penix",
+   "bid": 47,
+   "date": "Oct 21, 4:27 am",
+   "run": "2026-10-21",
+   "bids": [
+    {
+     "team": "Tai Streetz Lata?",
+     "bid": 11,
+     "why": "lower"
+    },
+    {
+     "team": "Breece’s Pieces",
+     "bid": 7,
+     "why": "lower"
+    },
+    {
+     "team": "Liberté Égalité Henri",
+     "bid": 5,
+     "why": "lower"
+    }
+   ]
+  },
+  {
+   "player": "Tucker Kraft",
+   "pos": "TE",
+   "nfl": "GB",
+   "team": "Drake Mayezini",
+   "bid": 7,
+   "date": "Oct 21, 4:27 am",
+   "run": "2026-10-21",
+   "bids": [
+    {
+     "team": "Tai Streetz Lata?",
+     "bid": 3,
+     "why": "lower"
+    }
+   ]
+  },
+  {
+   "player": "Tanner McKee",
+   "pos": "QB",
+   "nfl": "PHI",
+   "team": "Love a Kittle Lamb & WhiteRice",
+   "bid": 3,
+   "date": "Oct 21, 4:27 am",
+   "run": "2026-10-21",
+   "bids": [
+    {
+     "team": "Tai Streetz Lata?",
+     "bid": 0,
+     "why": "lower"
+    }
+   ]
+  },
+  {
+   "player": "RJ Harvey",
+   "pos": "RB",
+   "nfl": "DEN",
+   "team": "Tai Streetz Lata?",
+   "bid": 3,
+   "date": "Oct 21, 4:27 am",
+   "run": "2026-10-21",
+   "bids": [
+    {
+     "team": "Holofernes",
+     "bid": 0,
+     "why": "lower"
+    }
+   ]
+  },
+  {
+   "player": "Quinshon Judkins",
+   "pos": "RB",
+   "nfl": "CLE",
+   "team": "Holofernes",
+   "bid": 2,
+   "date": "Oct 21, 4:27 am",
+   "run": "2026-10-21",
+   "bids": [
+    {
+     "team": "Tai Streetz Lata?",
+     "bid": 1,
+     "why": "lower"
+    }
+   ]
+  }
+ ]
 }

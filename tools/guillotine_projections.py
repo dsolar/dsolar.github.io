@@ -230,6 +230,7 @@ def waiver_pool(data, week, now, nxt, lines, path=HIST):
         key = (norm(tx.get("player", "")), tx.get("pos"))
         if key not in bids and isinstance(tx.get("bid"), (int, float)):
             bids[key] = tx
+    entry = (hist.get("weeks") or {}).get(str(week - 1)) or {}
     players = []
     for r in rows:
         q = {"name": r["n"], "pos": r["pos"], "nfl": r.get("nfl", "")}
@@ -250,12 +251,91 @@ def waiver_pool(data, week, now, nxt, lines, path=HIST):
         who = owner.get((norm(r["n"]), r["pos"]))
         if who:
             q["claimed_by"] = who
-        tx = bids.get((norm(r["n"]), r["pos"]))
-        if tx and (not who or norm(tx.get("team", "")) == norm(who)):
-            q["bid"] = tx["bid"]
+        offer = estate_offer(r["n"], r["pos"], data.get("offers"), entry.get("taken"), cut["name"])
+        if offer and (not who or norm(offer["team"]) == norm(who)):
+            q["claimed_by"] = offer["team"]
+            add_bids(q, offer)
+        else:
+            tx = bids.get((norm(r["n"]), r["pos"]))
+            if tx and (not who or norm(tx.get("team", "")) == norm(who)):
+                q["bid"] = tx["bid"]
         players.append(q)
     players.sort(key=lambda q: -(q.get("proj") or 0) - (q.get("next_proj") or 0))
-    return {"team": cut["name"], "week": week - 1, "players": players}
+    pool = {"team": cut["name"], "week": week - 1, "players": players}
+    save_estates(hist, data, cut, pool, path)
+    return pool
+
+
+def estate_offer(name, pos, offers, after, cut_name):
+    """The waiver claim that took this player off the cut team: the first one awarded to someone else
+    after that week's odds were saved (that week's games came after, so its waiver run did too)."""
+    key, best = norm(name), None
+    for o in offers or []:
+        if norm(o.get("player", "")) != key or (pos and o.get("pos") and o["pos"] != pos):
+            continue
+        if norm(o.get("team", "")) == norm(cut_name) or not o.get("run"):
+            continue
+        if after and o["run"] <= after[:10]:
+            continue
+        if best is None or o["run"] < best["run"]:
+            best = o
+    return best
+
+
+def add_bids(q, offer):
+    """Winning bid, the best losing bid that counted, and how many teams bid. A claim Yahoo voided
+    ("invalid claim due to previous transaction") or the winner's own backup bid doesn't count."""
+    q["bid"] = offer["bid"]
+    losers = [b for b in offer.get("bids") or [] if b.get("why") != "invalid" and norm(b["team"]) != norm(offer["team"])]
+    losers.sort(key=lambda b: -b["bid"])
+    q["bids"] = [{"team": b["team"], "bid": b["bid"]} for b in losers]
+    q["bidders"] = 1 + len({norm(b["team"]) for b in losers})
+    if offer.get("run"):
+        q["run"] = offer["run"]
+
+
+def save_estates(hist, data, cut, pool, path):
+    """Keep where each cut team's players went in history.json, so the wall of the fallen can show it
+    after the waiver tab moves on. The latest cut is rewritten every run while claims come in; older
+    cuts with no record yet are filled from the pasted Transactions page alone."""
+    weeks, changed = hist.get("weeks") or {}, False
+    def rec(players):
+        out = []
+        for p in players:
+            row = {"n": p["name"], "pos": p["pos"], "nfl": p.get("nfl", "")}
+            for k in ("claimed_by", "bid", "bids", "bidders", "next_proj"):
+                if p.get(k) is not None:
+                    row[k] = p[k]
+            out.append(row)
+        out.sort(key=lambda r: ((0, -r["bid"]) if isinstance(r.get("bid"), (int, float))
+                                else (1 if r.get("claimed_by") else 2, 0), r["n"]))
+        return out
+    # from: "rosters" when every player's new team is known; "offers" when only the pasted bids are,
+    # so a player without one may have been claimed at $0 or picked up later.
+    latest = {"from": "rosters", "players": rec(pool["players"])}
+    e = weeks.get(str(pool["week"]))
+    if e is not None and e.get("estate") != latest:
+        e["estate"] = latest
+        changed = True
+    for wk, e in weeks.items():
+        if int(wk) >= pool["week"] or e.get("estate") or not e.get("cut_team") or not e.get("taken"):
+            continue
+        rows = (e.get("lineups") or {}).get(e["cut_team"]) or []
+        found = []
+        for r in rows:
+            q = {"name": r["n"], "pos": r["pos"], "nfl": r.get("nfl", "")}
+            o = estate_offer(r["n"], r["pos"], data.get("offers"), e["taken"], e["cut_team"])
+            if o:
+                q["claimed_by"] = o["team"]
+                add_bids(q, o)
+            found.append(q)
+        if any(q.get("claimed_by") for q in found):
+            e["estate"] = {"from": "offers", "players": rec(found)}
+            changed = True
+    if changed:
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(hist, f, ensure_ascii=False, indent=1)
+            f.write("\n")
 
 
 def best_lineup(roster, key, flag=None, skip_bye_key=None):

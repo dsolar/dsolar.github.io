@@ -464,13 +464,39 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
 @media (max-width:30rem){.block{display:none}.hero-top{gap:.75rem}}
 
 /* Claims: the winning waiver bids, one compact line each. */
+/* Waivers: one row per claim, biggest bid first. The bar is the winning bid against the run's biggest,
+   the tick is the best losing bid, so the gap between them is what the winner overpaid. */
 .claims{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
-.claims li{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:.15rem .75rem;align-items:baseline;padding:.55rem 0;border-bottom:1px solid var(--rule)}
-.claims .cl-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
-.claims .cl-name small{font-weight:600;color:var(--muted);font-size:.74rem}
-.claims .cl-team{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:.82rem;max-width:16rem}
-.claims .cl-bid{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;min-width:2.5rem}
+.claims li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.1rem .9rem;align-items:baseline;padding:.65rem 0;border-bottom:1px solid var(--rule)}
+.cl-main{display:block;min-width:0;font-size:.85rem}
+.cl-main b{font-weight:600}
+.cl-main .mg{color:var(--muted);font-size:.78rem;margin-left:.35rem;white-space:nowrap}
+.cl-main small{display:block;color:var(--muted);font-size:.75rem;margin-top:.1rem}
+.cl-bid{grid-row:1 / span 2;grid-column:2;align-self:center;text-align:right;font:700 1.35rem/1 var(--f-display);font-variant-numeric:lining-nums tabular-nums;min-width:3.2rem}
+.cl-bid.none{font:600 .72rem var(--f-body);color:var(--muted)}
+.cl-lane{display:block;position:relative;max-width:22rem;height:6px;margin:.35rem 0 0;background:var(--track);border-radius:2px}
+.cl-won{position:absolute;left:0;top:0;bottom:0;background:var(--ink);border-radius:2px}
+.cl-tick{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--blade)}
 .claims-none{margin:.8rem 0 0;color:var(--muted);font-size:.85rem}
+.spend{margin:1.4rem 0 0}
+.spend h4{margin:0 0 .4rem;font:700 .7rem/1.2 var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.spend table{width:100%;border-collapse:collapse;font-size:.82rem;font-variant-numeric:tabular-nums}
+.spend th,.spend td{position:static;background:none;padding:.45rem .4rem;border-bottom:1px solid var(--rule);text-align:right;white-space:nowrap}
+.spend th:first-child,.spend td:first-child{text-align:left;white-space:normal;padding-left:0}
+.spend thead th:first-child{position:static;background:none;padding-left:0}
+.spend thead th{font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.spend td small{display:block;color:var(--muted);font-size:.7rem}
+.spend td b{font-weight:600}
+@media (max-width:520px){.spend td:nth-child(3) small{display:none}}
+/* Scoreboard: every survivor's score last week against its projection */
+.dumb.sb li{grid-template-columns:4.6rem minmax(0,1fr)}
+.dumb.sb .db-v{font-size:1.2rem}
+.dumb.sb li.up .db-span{background:var(--safe)}
+.dumb.sb li.down .db-span{background:var(--blade)}
+.dumb.sb li.up,.dumb.sb li.down{color:var(--ink)}
+.dumb.sb li.cut .db-v{color:var(--blade)}
+.sb-tag{display:inline-block;margin-left:.4rem;padding:0 .3rem;border-radius:2px;font-size:.6rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border:1px solid currentColor;vertical-align:.1em}
+.sb-tag.cut{color:var(--blade)} .sb-tag.last{color:var(--bubble)} .sb-tag.top{color:var(--safe)}
 
 /* The fallen: a wall of send-offs, newest first, scrolling sideways past the column's right edge */
 #fallen-count{color:var(--muted)}
@@ -653,10 +679,9 @@ th.line{border-left:1px solid var(--rule)}
     <div class="section-head"><h2 id="ahead-title">The road ahead</h2></div>
     <div class="tabs" role="tablist" aria-label="The road ahead">
       <button type="button" role="tab" id="tab-spot" aria-controls="spot">Thursday night</button>
-      <button type="button" role="tab" id="tab-season" aria-controls="season">Still standing</button>
-      <button type="button" role="tab" id="tab-hist" aria-controls="hist-sec">Cut line</button>
       <button type="button" role="tab" id="tab-byes" aria-controls="byes-sec">Byes</button>
-      <button type="button" role="tab" id="tab-claims" aria-controls="claims-sec">Claims</button>
+      <button type="button" role="tab" id="tab-hist" aria-controls="hist-sec">Cut line</button>
+      <button type="button" role="tab" id="tab-season" aria-controls="season">Still standing</button>
     </div>
     <section id="spot" aria-labelledby="tab-spot" class="panel spot" role="tabpanel" hidden>
       <div class="section-head"><h3 class="sr" id="spot-title"></h3><p class="sub" id="spot-sub"></p></div>
@@ -692,24 +717,27 @@ th.line{border-left:1px solid var(--rule)}
       </div>
       <ol class="byes" id="byes"></ol>
     </section>
-    <section id="claims-sec" aria-labelledby="tab-claims" class="panel" role="tabpanel" hidden>
-      <div class="section-head">
-        <h3 class="sr" id="claims-title">Winning waiver bids</h3>
-        <p id="claims-sub"></p>
-      </div>
-      <ol class="claims" id="claims"></ol>
-      <p class="claims-none" id="claims-none" hidden></p>
-      <p class="claims-none" id="claims-foot" hidden></p>
-    </section>
   </section>
 
   <section id="recap" class="group" aria-labelledby="recap-title" hidden>
     <div class="section-head"><h2 id="recap-title">Last week</h2></div>
     <div class="tabs" role="tablist" aria-label="Last week">
+      <button type="button" role="tab" id="tab-board" aria-controls="recap-board">Scoreboard</button>
+      <button type="button" role="tab" id="tab-claims" aria-controls="claims-sec">Waivers</button>
       <button type="button" role="tab" id="tab-top" aria-controls="recap-top">Top scorers</button>
       <button type="button" role="tab" id="tab-over" aria-controls="recap-over">Overperformers</button>
       <button type="button" role="tab" id="tab-under" aria-controls="recap-under">Underperformers</button>
     </div>
+    <div id="recap-board" class="panel" role="tabpanel" aria-labelledby="tab-board" hidden></div>
+    <section id="claims-sec" aria-labelledby="tab-claims" class="panel" role="tabpanel" hidden>
+      <h3 class="sr" id="claims-title">Where the cut team's players went</h3>
+      <p class="panel-note" id="claims-sub"></p>
+      <ol class="claims" id="claims"></ol>
+      <p class="claims-none" id="claims-none" hidden></p>
+      <div id="claims-spend"></div>
+      <p class="claims-none" id="claims-other" hidden></p>
+      <p class="claims-none" id="claims-foot" hidden></p>
+    </section>
     <div id="recap-top" class="panel" role="tabpanel" aria-labelledby="tab-top" hidden></div>
     <div id="recap-over" class="panel" role="tabpanel" aria-labelledby="tab-over" hidden></div>
     <div id="recap-under" class="panel" role="tabpanel" aria-labelledby="tab-under" hidden></div>
@@ -1029,7 +1057,8 @@ th.line{border-left:1px solid var(--rule)}
         var meta = [m ? esc(m) : null, score ? "<b>" + score + "</b> pts" : null,
           snap && !e.hide_odds ? "given " + pct(snap.chop) + " cut odds" : null].filter(Boolean).join(" · ");
         var haiku = Array.isArray(e.haiku) ? e.haiku.join("\n") : (e.haiku || "");
-        var facts = autopsy(f.week, f.name);
+        var facts = autopsy(f.week, f.name), est = estateFact(f.week, f.name);
+        if (est) facts.push(est);
         var img = e.image ? '<div class="fimg"><img class="bg" src="' + esc(e.image) + '" alt="" loading="lazy"><img src="' + esc(e.image) + '" alt="' + esc(e.alt || ("Send-off image for " + f.name)) + '" loading="lazy"><span class="fwk">Week ' + f.week + "</span></div>"
           : '<div class="fimg empty"><span class="fwk">Week ' + f.week + "</span>Send-off coming</div>";
         return '<li class="fcard">' + img + '<div class="fbody"><h3 class="ft">' + esc(f.name) + "</h3>" +
@@ -1049,8 +1078,8 @@ th.line{border-left:1px solid var(--rule)}
     renderPast(league);
     renderClose(league);
     renderRecap();
-    // Before the week's first kickoff, last week is the news: the recap goes above the odds.
-    // Once games start, the recap drops below the road ahead. The claims tab stays put.
+    // Before the week's first kickoff, last week is the news: the recap (scoreboard, waivers) goes above
+    // the odds. Once games start, it drops below the road ahead.
     var early = !started && !(data.live && data.live.anyStarted);
     renderClaims();
     var app = $("app");
@@ -1188,35 +1217,118 @@ th.line{border-left:1px solid var(--rule)}
     return out;
   }
 
-  // Claims: what the cut team's players went for, one compact line each.
-  // Shows once any of them has been claimed, and stays up all week.
+  // The estate, on each fallen card: what the team's players went for once it was cut (history.json keeps
+  // it after the waivers tab moves on). The three biggest bids by name, then the total.
+  function estateFact(week, team) {
+    var e = (HIST.weeks || {})[String(week)] || {}, est = e.estate;
+    if (!est || e.cut_team !== team || !(est.players || []).length) return null;
+    var ps = est.players.filter(function (p) { return p.claimed_by; });
+    if (!ps.length) return null;
+    var bid = ps.filter(function (p) { return typeof p.bid === "number" && p.bid > 0; });
+    var total = bid.reduce(function (n, p) { return n + p.bid; }, 0);
+    var name = function (t) { return esc(state.mgr(t) || t); };
+    var left = est.from === "rosters" ? est.players.length - ps.length : 0;
+    var txt = (total ? "$" + total + " for " : "") + ps.length + " player" + (ps.length > 1 ? "s" : "") +
+      (bid.length ? ": " + bid.slice(0, 3).map(function (p) { return esc(short(p.n)) + " $" + p.bid + " to " + name(p.claimed_by); }).join(", ") +
+        (ps.length > 3 ? ", +" + (ps.length - 3) + " more" : "") : "") + "." +
+      (left ? " " + left + " went unclaimed." : "");
+    return ["Estate", txt];
+  }
+
+  // Waivers, under last week: where the cut team's players went, biggest bid first, with the best losing
+  // bid (what the winner had to beat) and how much the winner paid over it. Then what every team spent
+  // and missed in that waiver run, the other claims that ran with it, and who's still out there.
+  // Bids come from a pasted League > Transactions page (data.offers); stays up all week.
+  var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  var runLabel = function (run) { var d = run.split("-"); return MONTHS[+d[1] - 1] + " " + (+d[2]); };
+  var money = function (n) { return "$" + n; };
   function renderClaims() {
-    var wv = state.data.waivers, sec = $("claims-sec");
+    var nm = function (n) { return String(n || "").toLowerCase().replace(/[^a-z0-9]/g, ""); };
+    var wv = state.data.waivers, sec = $("claims-sec"), mg = state.mgr;
+    var who = function (t) { return esc(t) + (mg(t) ? " (" + esc(mg(t)) + ")" : ""); };
+    var nick = function (t) { return esc(mg(t) || t); };
     var claimed = (wv && wv.players ? wv.players : []).filter(function (p) { return p.claimed_by; });
     if (!claimed.length) { sec.hidden = true; return; }
     var unclaimed = wv.players.filter(function (p) { return !p.claimed_by; });
-    var m = state.mgr(wv.team);
-    $("claims-sub").textContent = wv.team + (m ? " (" + m + ")" : "") + "'s Week " + wv.week +
-      " roster: " + claimed.length + " claimed, " + unclaimed.length + " unclaimed.";
+    var isBid = function (p) { return typeof p.bid === "number"; };
     claimed.sort(function (a, b) {
-      var ab = typeof a.bid === "number", bb = typeof b.bid === "number";
-      if (ab !== bb) return ab ? -1 : 1;
-      if (ab && a.bid !== b.bid) return b.bid - a.bid;
-      return (b.proj || 0) - (a.proj || 0);
+      if (isBid(a) !== isBid(b)) return isBid(a) ? -1 : 1;
+      if (isBid(a) && a.bid !== b.bid) return b.bid - a.bid;
+      return (b.next_proj || 0) - (a.next_proj || 0);
     });
+    var run = (claimed.filter(function (p) { return p.run; })[0] || {}).run || null;
+    var total = claimed.reduce(function (n, p) { return n + (isBid(p) ? p.bid : 0); }, 0);
+    var m = mg(wv.team);
+    $("claims-sub").textContent = wv.team + (m ? " (" + m + ")" : "") + "'s Week " + wv.week + " roster" +
+      (total ? " went for $" + total + (run ? " in the " + runLabel(run) + " waiver run" : "") : "") + ": " +
+      claimed.length + " claimed, " + unclaimed.length + " still on waivers. The bar is the winning bid; the red tick is the best bid it beat.";
+    var top = Math.max.apply(null, claimed.map(function (p) { return isBid(p) ? p.bid : 0; }).concat([1]));
+    var at = function (v) { return (v / top * 100).toFixed(1) + "%"; };
     $("claims").innerHTML = claimed.map(function (p) {
-      return '<li><span class="cl-name">' + esc(p.name) + " <small>" + esc(p.pos + ", " + p.nfl) + "</small></span>" +
-        '<span class="cl-team">' + esc(p.claimed_by) + "</span>" +
-        '<span class="cl-bid">' + (typeof p.bid === "number" ? "$" + p.bid : "") + "</span></li>";
+      var bids = p.bids || [], next = bids[0], how = [];
+      if (isBid(p) && next) how.push("Beat " + nick(next.team) + "'s $" + next.bid + (p.bid > next.bid ? " by $" + (p.bid - next.bid) : " on waiver priority"));
+      else if (isBid(p) && p.bidders === 1) how.push("Only bid");
+      if (p.bidders > 1) how.push(p.bidders + " teams bid");
+      if (typeof p.next_proj === "number") how.push(p.next_proj.toFixed(1) + " projected next week");
+      var lane = isBid(p) && p.bid > 0 ? '<span class="cl-lane" aria-hidden="true"><span class="cl-won" style="width:' + at(p.bid) + '"></span>' +
+        (next ? '<span class="cl-tick" style="left:' + at(next.bid) + '"></span>' : "") + "</span>" : "";
+      return '<li><span class="cl-main"><b>' + esc(p.name) + '</b><span class="mg">' + esc(p.pos + ", " + p.nfl) + "</span>" +
+        "<small>To " + who(p.claimed_by) + "</small>" + (how.length ? "<small>" + how.join(" · ") + "</small>" : "") + lane + "</span>" +
+        (isBid(p) ? '<span class="cl-bid">' + money(p.bid) + "</span>" : '<span class="cl-bid none">Bid not<br>pasted</span>') + "</li>";
     }).join("");
     var none = $("claims-none");
     if (unclaimed.length) {
-      none.textContent = "Unclaimed: " + unclaimed.map(function (p) { return p.name; }).join(", ");
+      unclaimed.sort(function (a, b) { return (b.next_proj || 0) - (a.next_proj || 0); });
+      none.innerHTML = "<b>Still on waivers:</b> " + unclaimed.map(function (p) {
+        return esc(p.name) + (typeof p.next_proj === "number" && p.next_proj > 0 ? " (" + p.next_proj.toFixed(1) + " next week)" : "");
+      }).join(", ") + ".";
       none.hidden = false;
     } else none.hidden = true;
-    var foot = $("claims-foot");
-    if (claimed.some(function (p) { return typeof p.bid !== "number"; })) {
-      foot.textContent = "Bid amounts come from Yahoo's transactions list in the latest paste; claims missing there show the winning team only.";
+
+    // The whole run: every claim on that date, the cut team's players and everyone else's
+    var offers = (state.data.offers || []).filter(function (o) { return run && o.run === run; });
+    var spend = $("claims-spend"), other = $("claims-other");
+    if (offers.length) {
+      var by = {};
+      state.data.teams.filter(function (t) { return !t.out; }).forEach(function (t) { by[t.name] = { won: 0, n: 0, lost: 0, misses: [], faab: t.faab }; });
+      offers.forEach(function (o) {
+        if (by[o.team]) { by[o.team].won += o.bid; by[o.team].n++; }
+        (o.bids || []).forEach(function (b) {
+          if (b.why === "invalid" || b.team === o.team || !by[b.team]) return;
+          by[b.team].lost += b.bid;
+          by[b.team].misses.push({ n: short(o.player), bid: b.bid });
+        });
+      });
+      var rows = Object.keys(by).sort(function (a, b) { return by[b].won - by[a].won || by[b].lost - by[a].lost; });
+      spend.innerHTML = '<div class="spend"><h4>The ' + runLabel(run) + " run, team by team</h4><div class=\"scroll\" style=\"border:0;background:none\"><table>" +
+        "<thead><tr><th>Team</th><th>Spent</th><th>Bids that missed</th><th>Left</th></tr></thead><tbody>" +
+        rows.map(function (t) {
+          var r = by[t];
+          r.misses.sort(function (a, b) { return b.bid - a.bid; });
+          var miss = r.misses.filter(function (x) { return x.bid > 0; });
+          return "<tr><td>" + (mg(t) ? "<b>" + esc(mg(t)) + "</b><small>" + esc(t) + "</small>" : esc(t)) + "</td><td>" + (r.n ? money(r.won) + "<small>" + r.n + " player" + (r.n > 1 ? "s" : "") + "</small>" : "–") + "</td>" +
+            "<td>" + (miss.length ? money(r.lost) + "<small>" + miss.slice(0, 2).map(function (x) { return esc(x.n) + " $" + x.bid; }).join(", ") + (miss.length > 2 ? ", +" + (miss.length - 2) : "") + "</small>" : "–") + "</td>" +
+            "<td>" + (typeof r.faab === "number" ? money(r.faab) : "") + "</td></tr>";
+        }).join("") + "</tbody></table></div></div>";
+      // Claims in the same run that weren't the cut team's: earlier cuts' leftovers, drops, free pickups
+      var mine = {};
+      wv.players.forEach(function (p) { mine[nm(p.name)] = 1; });
+      var day = runLabel(run), seen = {};
+      var extra = offers.filter(function (o) { return !mine[nm(o.player)]; }).map(function (o) { seen[nm(o.player)] = 1; return o; });
+      (state.data.transactions || []).forEach(function (t) {
+        if (!mine[nm(t.player)] && !seen[nm(t.player)] && (t.date || "").indexOf(day + ",") === 0) { seen[nm(t.player)] = 1; extra.push(t); }
+      });
+      extra.sort(function (a, b) { return b.bid - a.bid; });
+      other.innerHTML = extra.length ? "<b>Also in this run:</b> " + extra.map(function (o) {
+        return esc(o.player) + " to " + nick(o.team) + " " + money(o.bid);
+      }).join(", ") + "." : "";
+      other.hidden = !extra.length;
+    } else { spend.innerHTML = ""; other.hidden = true; }
+
+    var foot = $("claims-foot"), gaps = claimed.filter(function (p) { return !isBid(p); });
+    if (gaps.length) {
+      foot.textContent = "No bid in the pasted Transactions page for " + gaps.map(function (p) { return p.name; }).join(", ") +
+        ". Paste League > Transactions again to fill " + (gaps.length > 1 ? "them" : "it") + " in.";
       foot.hidden = false;
     } else foot.hidden = true;
     sec.hidden = false;
@@ -1245,8 +1357,10 @@ th.line{border-left:1px solid var(--rule)}
   function renderRecap() {
     var sec = $("recap"), cur = state.data.week, w = 0;
     Object.keys(HIST.weeks || {}).forEach(function (k) { if (+k < cur && (HIST.weeks[k] || {}).lineups && +k > w) w = +k; });
-    if (!w) { sec.hidden = true; ["recap-top", "recap-over", "recap-under"].forEach(function (id) { $(id).hidden = true; }); return; }
+    // The group shows whenever one tab has something (the waivers can arrive before the lineups do).
+    if (!w) { ["recap-board", "recap-top", "recap-over", "recap-under"].forEach(function (id) { $(id).hidden = true; }); return; }
     var e = HIST.weeks[String(w)], rows = [], pending = 0;
+    renderBoard(w, e);
     Object.keys(e.lineups).forEach(function (team) {
       e.lineups[team].forEach(function (p) {
         if (p.slot === "BN" || p.slot === "IR") return;
@@ -1305,6 +1419,35 @@ th.line{border-left:1px solid var(--rule)}
     });
     $("recap-title").textContent = "Week " + w + " recap";
     sec.hidden = false;
+  }
+
+  // Scoreboard: every team's score last week, best first, against what the page projected for it going in
+  // (history.json saves each week's odds before kickoff). Ring at the projection, dot at the score.
+  function renderBoard(w, e) {
+    var host = $("recap-board"), sc = e.scores || {}, odds = e.teams || {};
+    var names = Object.keys(sc).filter(function (t) { return typeof sc[t] === "number"; });
+    if (names.length < 2) { host.innerHTML = ""; host.hidden = true; return; }
+    names.sort(function (a, b) { return sc[b] - sc[a]; });
+    var vals = names.map(function (t) { return sc[t]; }).concat(names.map(function (t) { return (odds[t] || {}).expected; }).filter(function (v) { return typeof v === "number"; }));
+    var lo = 10 * Math.floor(Math.min.apply(null, vals) / 10) - 10, hi = 10 * Math.ceil(Math.max.apply(null, vals) / 10);
+    var at = function (v) { return ((v - lo) / (hi - lo) * 100).toFixed(2) + "%"; };
+    var mg = state.mgr;
+    host.innerHTML = '<p class="panel-note">Every team\'s Week ' + w + " score, against the projection the page gave it before kickoff (the ring). " +
+      "Green means it beat the projection, red means it fell short.</p>" +
+      '<ol class="dumb sb">' + names.map(function (t, i) {
+        var o = odds[t] || {}, v = sc[t], pj = typeof o.expected === "number" ? o.expected : null;
+        var cut = t === e.cut_team, last = t === e.next_team;
+        var tag = cut ? '<span class="sb-tag cut">Cut</span>' : last ? '<span class="sb-tag last">Last one in</span>' : i === 0 ? '<span class="sb-tag top">Top score</span>' : "";
+        var note = [pj !== null ? "projected " + pj.toFixed(1) + " (" + (v >= pj ? "+" : "\u2212") + Math.abs(v - pj).toFixed(1) + ")" : null,
+          typeof o.chop === "number" ? "given " + pct(o.chop) + " cut odds" : null,
+          last && typeof e.cut_score === "number" ? "survived by " + two(v - e.cut_score) : null].filter(Boolean).join(" · ");
+        var lane = pj !== null ? '<span class="db-lane" aria-hidden="true"><span class="db-span" style="left:' + at(Math.min(v, pj)) + ";width:calc(" + at(Math.max(v, pj)) + " - " + at(Math.min(v, pj)) + ')"></span>' +
+          '<span class="db-proj" style="left:' + at(pj) + '"></span><span class="db-pts" style="left:' + at(v) + '"></span></span>' : "";
+        return '<li class="' + (cut ? "cut " : "") + (pj === null ? "" : v >= pj ? "up" : "down") + '"><span class="db-v">' + two(v) + "</span>" +
+          '<span class="db-n"><b>' + esc(t) + "</b>" + (mg(t) ? '<span class="mg">' + esc(mg(t)) + "</span>" : "") + tag +
+          (note ? "<small>" + note + "</small>" : "") + "</span>" + lane + "</li>";
+      }).join("") + "</ol>";
+    host.hidden = false;
   }
 
   // Last season, under the fallen: who went out, by how much, what the bench could have done, and the
