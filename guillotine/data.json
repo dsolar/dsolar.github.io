@@ -4,7 +4,7 @@
  "week": 8,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-10-28T13:44:43Z",
+ "updated": "2026-10-28T15:11:12Z",
  "source": "Yahoo league page, pasted",
  "teams": [
   {
@@ -113,7 +113,7 @@
        "rec_td": 2
       }
      },
-     "proj": 19.11,
+     "proj": 18.97,
      "rank": "RB3",
      "date": "2026-11-01",
      "next_proj": 19.79,
@@ -471,7 +471,7 @@
        "rec_td": 1
       }
      },
-     "proj": 7.06,
+     "proj": 7.12,
      "rank": "RB33",
      "date": "2026-11-01",
      "next_proj": 6.63
@@ -509,7 +509,7 @@
     }
    ],
    "proj_pre": 140.98,
-   "best": 142.7,
+   "best": 142.6,
    "best_next": 137.3,
    "locked": 0,
    "locked_proj": 0,
@@ -585,7 +585,7 @@
        "fum_lost": 2
       }
      },
-     "proj": 18.25,
+     "proj": 18.3,
      "rank": "RB4",
      "date": "2026-11-01",
      "next_proj": 17.6,
@@ -683,7 +683,7 @@
        "rec_td": 2
       }
      },
-     "proj": 17.97,
+     "proj": 18.06,
      "rank": "WR3",
      "date": "2026-11-01",
      "next_proj": 19.96,
@@ -812,7 +812,7 @@
        "pass_td": 14
       }
      },
-     "proj": 15.95,
+     "proj": 16.05,
      "rank": "QB19",
      "date": "2026-11-01",
      "next_proj": 19.26,
@@ -877,7 +877,7 @@
        "rec_td": 2
       }
      },
-     "proj": 9.26,
+     "proj": 9.23,
      "rank": "TE3",
      "date": "2026-11-01",
      "next_proj": 10.83,
@@ -972,7 +972,7 @@
     }
    ],
    "proj_pre": 135.33,
-   "best": 133.6,
+   "best": 133.8,
    "best_next": 146.8,
    "locked": 0,
    "locked_proj": 0,
@@ -1272,8 +1272,8 @@
        "rush_td": 1
       }
      },
-     "proj": 16.89,
-     "rank": "QB12",
+     "proj": 16.77,
+     "rank": "QB13",
      "date": "2026-11-01",
      "next_proj": 20.08,
      "in_best": true
@@ -1332,7 +1332,7 @@
        "rec_td": 1
       }
      },
-     "proj": 10.37,
+     "proj": 10.27,
      "rank": "WR21",
      "date": "2026-11-01",
      "next_proj": 12.71
@@ -1418,7 +1418,7 @@
     }
    ],
    "proj_pre": 130.44,
-   "best": 134.0,
+   "best": 133.8,
    "best_next": 140.0,
    "locked": 0,
    "locked_proj": 0,
@@ -1765,7 +1765,7 @@
        "rush_td": 2
       }
      },
-     "proj": 14.01,
+     "proj": 13.91,
      "rank": "QB23",
      "date": "2026-11-01",
      "next_proj": 15.25
@@ -2687,8 +2687,8 @@
        "rec_yd": 56
       }
      },
-     "proj": 9.24,
-     "rank": "RB25",
+     "proj": 9.29,
+     "rank": "RB24",
      "date": "2026-11-01",
      "next_proj": 9.34
     },
@@ -3255,7 +3255,7 @@
       }
      },
      "proj": 7.31,
-     "rank": "WR45",
+     "rank": "WR44",
      "date": "2026-11-01",
      "next_proj": 8.97
     },
@@ -3744,7 +3744,7 @@
        "rec_td": 1
       }
      },
-     "proj": 9.16,
+     "proj": 9.17,
      "rank": "WR27",
      "date": "2026-11-01",
      "next_proj": 10.54
@@ -3809,7 +3809,7 @@
        "rec_td": 1
       }
      },
-     "proj": 9.01,
+     "proj": 9.0,
      "rank": "WR29",
      "date": "2026-11-01",
      "next_proj": 9.57
@@ -3900,8 +3900,50 @@
    "season_pts": 78.36
   }
  ],
- "roster_import_id": "afc4c5e3b41ff82205d25d71c4a8e031609d8961318da8a43ecc175657d29c9b",
- "roster_imported_at": "2026-10-28T13:44:43Z",
+ "transactions": [
+  {
+   "player": "Jadarian Price",
+   "pos": "RB",
+   "nfl": "SEA",
+   "team": "Holofernes",
+   "bid": 0,
+   "date": "Oct 28, 4:31 am"
+  },
+  {
+   "player": "T.J. Hockenson",
+   "pos": "TE",
+   "nfl": "MIN",
+   "team": "Love a Kittle Lamb & WhiteRice",
+   "bid": 0,
+   "date": "Oct 28, 4:31 am"
+  },
+  {
+   "player": "Malik Willis",
+   "pos": "QB",
+   "nfl": "MIA",
+   "team": "Love Purdy Flowers",
+   "bid": 0,
+   "date": "Oct 28, 4:31 am"
+  },
+  {
+   "player": "KC Concepcion Jr.",
+   "pos": "WR",
+   "nfl": "CLE",
+   "team": "Breece's Pieces",
+   "bid": 0,
+   "date": "Oct 28, 4:31 am"
+  },
+  {
+   "player": "Dalton Kincaid",
+   "pos": "TE",
+   "nfl": "BUF",
+   "team": "Breece's Pieces",
+   "bid": 0,
+   "date": "Oct 28, 4:31 am"
+  }
+ ],
+ "roster_import_id": "8f9ec7d768e40d73c92cde1bc5a38ec4436696505bf42ffafcbdf8a56c352f87",
+ "roster_imported_at": "2026-10-28T15:11:12Z",
  "league_url": "https://football.fantasysports.yahoo.com/f1/157731",
  "waivers": {
   "team": "Liberté Égalité Henri",
@@ -3911,7 +3953,7 @@
     "name": "Kenneth Walker III",
     "pos": "RB",
     "nfl": "KC",
-    "proj": 19.11,
+    "proj": 18.97,
     "rank": "RB3",
     "next_proj": 19.79,
     "avg": 23.1,
@@ -3935,7 +3977,7 @@
     "name": "Matthew Stafford",
     "pos": "QB",
     "nfl": "LAR",
-    "proj": 15.95,
+    "proj": 16.05,
     "rank": "QB19",
     "next_proj": 19.26,
     "avg": 18.6,
@@ -3995,7 +4037,7 @@
     "name": "Jaylen Waddle",
     "pos": "WR",
     "nfl": "DEN",
-    "proj": 9.01,
+    "proj": 9.0,
     "rank": "WR29",
     "next_proj": 9.57,
     "avg": 7.3,
@@ -4036,7 +4078,8 @@
     "avg": 6.8,
     "g": 7,
     "last": 19.2,
-    "claimed_by": "Breece’s Pieces"
+    "claimed_by": "Breece’s Pieces",
+    "bid": 0
    },
    {
     "name": "Hunter Henry",
@@ -4078,7 +4121,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-10-28T13:44:44Z",
+  "updated": "2026-10-28T15:11:15Z",
   "players": 3045,
   "unmatched": []
  }
