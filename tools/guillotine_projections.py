@@ -209,7 +209,8 @@ def fill_past_weeks(week, lines, path=HIST):
 
 def waiver_pool(data, week, now, nxt, lines, path=HIST):
     """Last week's cut team's players, now on waivers: this week's projection, next week's, the season
-    average, and who has claimed each so far (anyone back on a roster still alive)."""
+    average, who has claimed each so far (anyone back on a roster still alive), and the winning bid
+    where the pasted transactions list it."""
     cut = next((t for t in data["teams"] if t.get("out") == week - 1), None)
     if not cut or not os.path.exists(path):
         return None
@@ -224,6 +225,11 @@ def waiver_pool(data, week, now, nxt, lines, path=HIST):
             for p in t.get("roster") or []:
                 if p.get("name"):
                     owner[(norm(p["name"]), p.get("pos"))] = t["name"]
+    bids = {}
+    for tx in data.get("transactions") or []:
+        key = (norm(tx.get("player", "")), tx.get("pos"))
+        if key not in bids and isinstance(tx.get("bid"), (int, float)):
+            bids[key] = tx
     players = []
     for r in rows:
         q = {"name": r["n"], "pos": r["pos"], "nfl": r.get("nfl", "")}
@@ -244,6 +250,9 @@ def waiver_pool(data, week, now, nxt, lines, path=HIST):
         who = owner.get((norm(r["n"]), r["pos"]))
         if who:
             q["claimed_by"] = who
+        tx = bids.get((norm(r["n"]), r["pos"]))
+        if tx and (not who or norm(tx.get("team", "")) == norm(who)):
+            q["bid"] = tx["bid"]
         players.append(q)
     players.sort(key=lambda q: -(q.get("proj") or 0) - (q.get("next_proj") or 0))
     return {"team": cut["name"], "week": week - 1, "players": players}

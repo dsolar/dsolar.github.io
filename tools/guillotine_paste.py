@@ -4,6 +4,7 @@
 The no-API way to update davidsolar.dev/guillotine/. In guillotine/paste.txt, paste:
   1. the league's main page (League > Overview): standings, projections, FAB, eliminations
   2. optionally, League > Starting Rosters: every team's starters and bench
+  3. optionally, the Recent Transactions block from the Overview page: winning waiver bids
 Select all, copy, paste one after the other. A paste taken mid-week is fine: each team's Points so far
 are kept, and every starter whose game Yahoo shows as Final is marked yfinal, so the page banks
 those points exactly and only the players still to play can move the odds. Committing the file runs the "Guillotine update"
@@ -114,6 +115,91 @@ def parse_rosters(lines):
     return {t: r for t, r in rosters.items() if any(not p.get("empty") for p in r)}
 
 
+TX_PLAYER = re.compile(r"^(.+?)\s+([A-Za-z]{2,3}) - ([A-Z]{1,3})(?:\s+(IR|Q|D|O|NA|SUSP|PUP|PUP-R|IR-R))?\s*$")
+TX_AMOUNT = re.compile(r"^\$(\d+(?:\.\d+)?)\s*(Waiver|FAAB|FAB)?\s*$")
+TX_DATE = re.compile(r"^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{1,2}, \d{1,2}:\d{2} [ap]m$")
+TX_STOP = ("Yahoo Sports - NBC", "Commish Notes", "Commish Updates", "Fantasy News")
+TX_SKIP = ("View All", "All Transactions", "Added Players", "Dropped Players", "Trades", "FAB Offers")
+
+
+def parse_transactions(lines):
+    """Recent Transactions (Overview page) -> [{player, pos, nfl, team, bid, date}].
+
+    Yahoo lists newest first; the first add seen for a player wins. Only adds
+    carry a bid: a player line followed by a "$N Waiver" / "$N FAAB" line, then
+    the claiming team (after an optional drop block: player line + "To Waivers")
+    and the date. A player line followed by "To Waivers" is a drop: no bid.
+    """
+    start = None
+    for i, line in enumerate(lines):
+        if line.strip() == "Recent Transactions":
+            start = i + 1
+            break
+    if start is None:
+        return []
+    txs, seen, i = [], set(), start
+    while i < len(lines):
+        line = lines[i].strip()
+        if not line or line in TX_SKIP:
+            i += 1
+            continue
+        if any(line.startswith(s) for s in TX_STOP):
+            break
+        m = TX_PLAYER.match(line)
+        if not m:
+            i += 1
+            continue
+        j = i + 1
+        while j < len(lines) and not lines[j].strip():
+            j += 1
+        nxt = lines[j].strip() if j < len(lines) else ""
+        am = TX_AMOUNT.match(nxt)
+        if not am:
+            i = j + 1 if nxt == "To Waivers" else i + 1
+            continue
+        bid = float(am.group(1))
+        if bid == int(bid):
+            bid = int(bid)
+        k = j + 1
+        while k < len(lines) and not lines[k].strip():
+            k += 1
+        team, date = "", ""
+        if k < len(lines):
+            dm = TX_PLAYER.match(lines[k].strip())
+            if dm:
+                k2 = k + 1
+                while k2 < len(lines) and not lines[k2].strip():
+                    k2 += 1
+                if k2 < len(lines) and lines[k2].strip() == "To Waivers":
+                    k = k2 + 1
+                    while k < len(lines) and not lines[k].strip():
+                        k += 1
+                    team = lines[k].strip() if k < len(lines) else ""
+                    i = k + 1
+                else:
+                    i = k
+            else:
+                team = lines[k].strip()
+                i = k + 1
+        else:
+            i = k
+        if TX_DATE.match(team):
+            team = ""
+        else:
+            d = i
+            while d < len(lines) and not lines[d].strip():
+                d += 1
+            if d < len(lines) and TX_DATE.match(lines[d].strip()):
+                date = lines[d].strip()
+        name = m.group(1).strip()
+        key = re.sub(r"[^a-z0-9]+", "", name.lower())
+        if key not in seen:
+            seen.add(key)
+            txs.append({"player": name, "pos": m.group(3), "nfl": m.group(2).upper(),
+                        "team": team, "bid": bid, "date": date})
+    return txs
+
+
 def parse(txt):
     txt = clean(txt)
     lines = txt.splitlines()
@@ -154,6 +240,7 @@ def parse(txt):
     m = re.search(r"Week (\d+) Matchup", txt) or re.search(r"Starting Rosters[\s\S]{0,80}?Week (\d+)", txt)
     week = int(m.group(1)) if m else (max([f["out"] for f in fallen], default=0) + 1)
     rosters = parse_rosters(lines) if "Starting Rosters" in txt else {}
+    transactions = parse_transactions(lines)
 
     teams = []
     for t in sorted(alive, key=lambda t: -(t["proj"] or 0)):
@@ -190,6 +277,7 @@ def parse(txt):
         "updated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "source": "Yahoo league page, pasted",
         "teams": teams,
+        "transactions": transactions,
     }
     data["roster_import_id"] = hashlib.sha256(txt.encode("utf-8")).hexdigest()
     data["roster_imported_at"] = data["updated"]

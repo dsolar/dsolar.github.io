@@ -25,7 +25,7 @@
 <script src="../assets/analytics.js" defer></script>
 <style>
 /* Layout: one narrow column between two full-bleed navy bands (the hero with its guillotine, and the wall
-   of the fallen). Before kickoff, waivers and last week lead; then the week's cut line runs as a red blade down through every
+   of the fallen). Before kickoff, last week leads; then the week's cut line runs as a red blade down through every
    team's likely score range, then survival week by week, then the fallen.
    Tricolore by way of Foxborough: navy ink, steel paper, one red for the blade. Didone display
    type (the face of revolutionary France), Franklin for everything that gets read. */
@@ -463,36 +463,14 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
 .hero .updated{font-size:.75rem;margin-top:.9rem}
 @media (max-width:30rem){.block{display:none}.hero-top{gap:.75rem}}
 
-/* Up for grabs: the cut team's players on waivers, and everyone's money */
-.grabs-in{display:grid;gap:1.6rem}
-@media (min-width:44rem){.grabs-in{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);align-items:start}}
-/* Each waiver player is an auction lot: a ticket with a torn-off stub for this week's projection.
-   Claimed lots get a red rubber stamp. */
-.lots{list-style:none;margin:0;padding:0;display:grid;gap:.5rem}
-.lot{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 5.2rem;background:var(--surface);border:1px solid var(--rule);border-radius:5px;overflow:hidden;
-  -webkit-mask:radial-gradient(circle 7px at calc(100% - 5.2rem) 0,#0000 98%,#000) top / 100% 51% no-repeat,radial-gradient(circle 7px at calc(100% - 5.2rem) 100%,#0000 98%,#000) bottom / 100% 51% no-repeat;
-  mask:radial-gradient(circle 7px at calc(100% - 5.2rem) 0,#0000 98%,#000) top / 100% 51% no-repeat,radial-gradient(circle 7px at calc(100% - 5.2rem) 100%,#0000 98%,#000) bottom / 100% 51% no-repeat}
-.lot-no{position:absolute;left:.75rem;top:.55rem;font-size:.62rem;font-weight:700;color:var(--blade)}
-.lot-main{padding:1.45rem .8rem .7rem .75rem;min-width:0;display:grid;gap:.12rem}
-.lot-main b{font:700 1.05rem/1.15 var(--f-display)}
-.lot-pos{font-size:.74rem;font-weight:600;color:var(--muted)}
-.lot-main small{font-size:.72rem;color:var(--muted)}
-.lot-stub{display:grid;align-content:center;justify-items:center;gap:.15rem;padding:.6rem .4rem;border-left:2px dashed var(--rule);background:rgba(var(--bleu-rgb),.06);text-align:center}
-.lot-v{font:800 1.5rem/1 var(--f-display);font-variant-numeric:lining-nums tabular-nums}
-.lot-stub small{font-size:.62rem;color:var(--muted);line-height:1.25}
-.lot.gone .lot-main,.lot.gone .lot-stub{opacity:.45}
-.stamp{position:absolute;right:6.2rem;top:50%;transform:translateY(-50%) rotate(-9deg);display:grid;justify-items:center;padding:.25rem .55rem .3rem;border:2.5px solid var(--blade);border-radius:4px;color:var(--blade);
-  font:800 .95rem/1 var(--f-body);letter-spacing:.14em;text-transform:uppercase;background:color-mix(in srgb,var(--surface) 80%,transparent);pointer-events:none}
-.stamp small{font:700 .58rem/1.3 var(--f-body);letter-spacing:.02em;text-transform:none;max-width:9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.chests h3{margin:0;font:700 1.15rem/1.2 var(--f-display)}
-.chest-note{margin:.2rem 0 .7rem;color:var(--muted);font-size:.78rem}
-.chest{list-style:none;margin:0;padding:0;display:grid;gap:.55rem}
-.chest li{display:grid;grid-template-columns:minmax(0,1fr) 3.2rem;gap:.2rem .6rem;align-items:center;font-size:.8rem}
-.chest .cn{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
-.chest .cv{grid-row:1 / span 2;grid-column:2;text-align:right;font:700 1.05rem/1 var(--f-display);font-variant-numeric:lining-nums tabular-nums}
-.chest .cb{grid-column:1;height:7px;background:var(--track);border-radius:4px;overflow:hidden}
-.chest .cb i{display:block;height:100%;background:rgb(var(--bleu-rgb));border-radius:4px}
-.chest li.broke .cv{color:var(--danger)}
+/* Claims: the winning waiver bids, one compact line each. */
+.claims{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
+.claims li{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:.15rem .75rem;align-items:baseline;padding:.55rem 0;border-bottom:1px solid var(--rule)}
+.claims .cl-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.claims .cl-name small{font-weight:600;color:var(--muted);font-size:.74rem}
+.claims .cl-team{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:.82rem;max-width:16rem}
+.claims .cl-bid{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;min-width:2.5rem}
+.claims-none{margin:.8rem 0 0;color:var(--muted);font-size:.85rem}
 
 /* The fallen: a wall of send-offs, newest first, scrolling sideways past the column's right edge */
 #fallen-count{color:var(--muted)}
@@ -598,7 +576,6 @@ th.line{border-left:1px solid var(--rule)}
 
 <nav class="jump" id="jump" aria-label="On this page"><div class="jump-in">
   <a href="#mnf" data-sec="mnf">Monday</a>
-  <a href="#grabs" data-sec="grabs">Waivers</a>
   <a href="#week" data-sec="week">Odds</a>
   <a href="#ahead" data-sec="ahead">Road ahead</a>
   <a href="#recap" data-sec="recap">Last week</a>
@@ -650,15 +627,6 @@ th.line{border-left:1px solid var(--rule)}
     <div class="mnf-cards" id="mnf-cards"></div>
   </section>
 
-  <section id="grabs" aria-labelledby="grabs-title" hidden>
-    <div class="section-head"><h2 id="grabs-title">Up for grabs</h2><p id="grabs-sub"></p></div>
-    <div class="grabs-in">
-      <div class="grabs-pool"><ol class="lots" id="pool"></ol>
-        <details class="close-more" id="pool-more" hidden><summary></summary><ol class="lots" id="pool-rest"></ol></details>
-      </div>
-      <div class="chests"><h3>Money left</h3><p class="chest-note">Out of $1,000 for the season.</p><ol class="chest" id="chest"></ol></div>
-    </div>
-  </section>
 
   <section id="week" aria-labelledby="week-title" hidden>
     <div class="section-head">
@@ -688,6 +656,7 @@ th.line{border-left:1px solid var(--rule)}
       <button type="button" role="tab" id="tab-season" aria-controls="season">Still standing</button>
       <button type="button" role="tab" id="tab-hist" aria-controls="hist-sec">Cut line</button>
       <button type="button" role="tab" id="tab-byes" aria-controls="byes-sec">Byes</button>
+      <button type="button" role="tab" id="tab-claims" aria-controls="claims-sec">Claims</button>
     </div>
     <section id="spot" aria-labelledby="tab-spot" class="panel spot" role="tabpanel" hidden>
       <div class="section-head"><h3 class="sr" id="spot-title"></h3><p class="sub" id="spot-sub"></p></div>
@@ -722,6 +691,15 @@ th.line{border-left:1px solid var(--rule)}
         <p id="byes-note"></p>
       </div>
       <ol class="byes" id="byes"></ol>
+    </section>
+    <section id="claims-sec" aria-labelledby="tab-claims" class="panel" role="tabpanel" hidden>
+      <div class="section-head">
+        <h3 class="sr" id="claims-title">Winning waiver bids</h3>
+        <p id="claims-sub"></p>
+      </div>
+      <ol class="claims" id="claims"></ol>
+      <p class="claims-none" id="claims-none" hidden></p>
+      <p class="claims-none" id="claims-foot" hidden></p>
     </section>
   </section>
 
@@ -1071,12 +1049,12 @@ th.line{border-left:1px solid var(--rule)}
     renderPast(league);
     renderClose(league);
     renderRecap();
-    // Before the week's first kickoff, last week is the news: waivers and the recap go above the odds.
-    // Once games start, the waivers panel goes and the recap drops below the road ahead.
+    // Before the week's first kickoff, last week is the news: the recap goes above the odds.
+    // Once games start, the recap drops below the road ahead. The claims tab stays put.
     var early = !started && !(data.live && data.live.anyStarted);
-    renderGrabs(early);
+    renderClaims();
     var app = $("app");
-    if (early) { app.insertBefore($("grabs"), $("week")); app.insertBefore($("recap"), $("week")); }
+    if (early) { app.insertBefore($("recap"), $("week")); }
     else app.insertBefore($("recap"), $("fallen-sec"));
     var jin = document.querySelector("#jump .jump-in");
     Array.prototype.slice.call(jin.querySelectorAll("a")).sort(function (a, b) {
@@ -1210,39 +1188,37 @@ th.line{border-left:1px solid var(--rule)}
     return out;
   }
 
-  // Up for grabs: last week's cut team's players, on waivers until they clear, and everyone's money.
-  function renderGrabs(early) {
-    var wv = state.data.waivers, sec = $("grabs");
-    var alive = (state.data.teams || []).filter(function (t) { return !t.out; });
-    if (!early || !wv || !wv.players || !wv.players.length) { sec.hidden = true; return; }
-    var claimed = wv.players.filter(function (p) { return p.claimed_by; }).length;
+  // Claims: what the cut team's players went for, one compact line each.
+  // Shows once any of them has been claimed, and stays up all week.
+  function renderClaims() {
+    var wv = state.data.waivers, sec = $("claims-sec");
+    var claimed = (wv && wv.players ? wv.players : []).filter(function (p) { return p.claimed_by; });
+    if (!claimed.length) { sec.hidden = true; return; }
+    var unclaimed = wv.players.filter(function (p) { return !p.claimed_by; });
     var m = state.mgr(wv.team);
-    $("grabs-sub").textContent = wv.team + (m ? " (" + m + ")" : "") + " went out in Week " + wv.week + ", and all " + wv.players.length +
-      " players went to waivers. " + (claimed ? claimed + " claimed so far. " : "") + "Sorted by what each projects for this week and next.";
-    var item = function (p, i) {
-      var bits = [];
-      if (typeof p.next_proj === "number") bits.push("next week " + p.next_proj.toFixed(1));
-      if (typeof p.avg === "number") bits.push(p.avg.toFixed(1) + " a game over " + p.g);
-      var big = p.proj === 0 ? "Bye" : typeof p.proj === "number" ? p.proj.toFixed(1) : "\u2013";
-      return '<li class="lot' + (p.claimed_by ? " gone" : "") + '"><span class="lot-no">Lot ' + (i + 1) + "</span>" +
-        '<span class="lot-main"><b>' + esc(p.name) + '</b><span class="lot-pos">' + esc(p.pos + ", " + p.nfl) + "</span>" +
-        (bits.length ? "<small>" + esc(bits.join(" · ")) + "</small>" : "") + "</span>" +
-        '<span class="lot-stub"><span class="lot-v">' + big + "</span><small>" + (p.proj ? "Week " + state.data.week + (p.rank ? ", " + esc(p.rank) : "") : "") + "</small></span>" +
-        (p.claimed_by ? '<span class="stamp">Claimed<small>' + esc(p.claimed_by) + "</small></span>" : "") + "</li>";
-    };
-    var TOP = 6;
-    $("pool").innerHTML = wv.players.slice(0, TOP).map(item).join("");
-    var rest = wv.players.slice(TOP);
-    $("pool-rest").innerHTML = rest.map(function (p, i) { return item(p, i + TOP); }).join("");
-    $("pool-more").querySelector("summary").textContent = "Show all " + wv.players.length;
-    $("pool-more").hidden = !rest.length;
-    $("chest").innerHTML = alive.filter(function (t) { return typeof t.faab === "number"; })
-      .sort(function (a, b) { return b.faab - a.faab; }).map(function (t) {
-        var mm = state.mgr(t.name);
-        return '<li class="' + (t.faab < 25 ? "broke" : "") + '"><span class="cn">' + esc(t.name) + "</span>" +
-          '<span class="cv">$' + t.faab + "</span>" +
-          '<span class="cb" role="img" aria-label="' + esc(t.name + (mm ? ", " + mm : "") + ": $" + t.faab + " of $1,000 left") + '"><i style="width:' + Math.max(0.5, t.faab / 10) + '%"></i></span></li>';
-      }).join("");
+    $("claims-sub").textContent = wv.team + (m ? " (" + m + ")" : "") + "'s Week " + wv.week +
+      " roster: " + claimed.length + " claimed, " + unclaimed.length + " unclaimed.";
+    claimed.sort(function (a, b) {
+      var ab = typeof a.bid === "number", bb = typeof b.bid === "number";
+      if (ab !== bb) return ab ? -1 : 1;
+      if (ab && a.bid !== b.bid) return b.bid - a.bid;
+      return (b.proj || 0) - (a.proj || 0);
+    });
+    $("claims").innerHTML = claimed.map(function (p) {
+      return '<li><span class="cl-name">' + esc(p.name) + " <small>" + esc(p.pos + ", " + p.nfl) + "</small></span>" +
+        '<span class="cl-team">' + esc(p.claimed_by) + "</span>" +
+        '<span class="cl-bid">' + (typeof p.bid === "number" ? "$" + p.bid : "") + "</span></li>";
+    }).join("");
+    var none = $("claims-none");
+    if (unclaimed.length) {
+      none.textContent = "Unclaimed: " + unclaimed.map(function (p) { return p.name; }).join(", ");
+      none.hidden = false;
+    } else none.hidden = true;
+    var foot = $("claims-foot");
+    if (claimed.some(function (p) { return typeof p.bid !== "number"; })) {
+      foot.textContent = "Bid amounts come from Yahoo's transactions list in the latest paste; claims missing there show the winning team only.";
+      foot.hidden = false;
+    } else foot.hidden = true;
     sec.hidden = false;
   }
 
