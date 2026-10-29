@@ -1,6 +1,7 @@
 # Pulls the Wipe Yoenis season from Yahoo into tools/yahoo_yoenis/<year>.json, then checks the 2027
 # keeper costs on davidsolar.dev/yoenis/ against it (tools/yoenis_keeper_check.py).
-# Runs Monday mornings in the offseason, when the scripts change, or by hand from the Actions tab.
+# Also pulls the category race into yoenis/race.json (tools/yoenis_race_pull.py).
+# Runs Monday mornings in the offseason, twice a day in season, when the scripts change, or by hand.
 name: Wipe Yoenis Yahoo pull
 
 on:
@@ -11,9 +12,12 @@ on:
       - tools/yoenis_keeper_check.py
       - tools/yoenis_trades_pull.py
       - tools/yoenis_trades_build.py
+      - tools/yoenis_race_pull.py
       - .github/workflows/yoenis-yahoo.yml
   schedule:
     - cron: "23 14 * 10-12,1-3 1"   # 10:23am ET Mondays, October through March
+    - cron: "43 14 * 4-9 *"           # in season: 10:43am ET every day, April through September
+    - cron: "43 3 * 4-10 *"           # and 11:43pm ET, after the night games
   workflow_dispatch:
 
 permissions:
@@ -43,6 +47,7 @@ jobs:
         run: |
           python3 tools/yoenis_yahoo_pull.py
           python3 tools/yoenis_trades_pull.py
+          python3 tools/yoenis_race_pull.py
 
       - name: Check the 2027 keeper costs
         run: |
@@ -54,7 +59,7 @@ jobs:
 
       - name: Commit
         run: |
-          git add tools/yahoo_yoenis yoenis/data.json
+          git add tools/yahoo_yoenis yoenis/data.json yoenis/race.json
           if git diff --cached --quiet; then echo "Nothing changed."; exit 0; fi
           git commit -m "Wipe Yoenis: Yahoo pull"
           git pull --rebase -q origin main
