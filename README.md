@@ -39,6 +39,9 @@ dsolar.github.io/
                               player since 1980, for the guess box); data.js and names.js are generated, don't edit
   journeyman/                 Journeyman: index.html, app.js and data.js (every player's teams; generated) plus
                               names-mlb.js; it borrows Guess the Pick's engine.js and names.js
+  boston-grid/                Boston Grid: index.html (layout, styles), app.js (screens, guess box, saved progress),
+                              engine.js (today's grid, judging, deep-cut points; borrows Guess the Pick's engine.js) and
+                              data-nba.js, data-nfl.js, data-mlb.js (every player since 1990 and his franchises; generated)
   guillotine/                 Bastille Day Odds: index.html, sim.js (the simulation),
                               data.json (league data, written by the workflow below)
   calendar/                   Night Out: index.html, taste.json, picks.json and places.json (edit these),
@@ -55,6 +58,10 @@ dsolar.github.io/
   tools/journeyman_check.js   checks Journeyman's data (node tools/journeyman_check.js)
   tools/journeyman_supabase.sql  Journeyman's group board (already set up; safe to run again)
   tools/guess_the_pick_supabase.sql  the daily ten's group board (already set up; safe to run again)
+  tools/boston_grid_build.py  rebuilds boston-grid/data-*.js from Journeyman's downloads (see below)
+  tools/boston_grid_check.js  checks Boston Grid's data and a year of grids (node tools/boston_grid_check.js)
+  tools/boston_grid_supabase.sql  Boston Grid's daily board (already set up; safe to run again)
+  tools/franchise_supabase.sql  The 31st Franchise's GM leaderboard (already set up; safe to run again)
   tools/win_probability_check.js  checks Win Probability's data and grading (node tools/win_probability_check.js)
   tools/win_probability_supabase.sql  one-time setup for Win Probability's crowd votes (see below)
   tools/calendar_update.py    builds calendar/events.json; calendar_prices.py watches ticket prices;
@@ -375,3 +382,13 @@ Once a season (after the World Series is a good time, when all three leagues hav
 3. Bump `data.js?v=` in `journeyman/index.html`.
 
 Who's in: careers that ended in 2000 or later, four or more franchises (a team that moved counts once), and enough games to be remembered. Each league keeps its best-known 400; `FLOOR` in the build sets how well known a player has to be, so raise it if names get too obscure. NFL paths start in 1990, so NFL careers that began before then are left out. The MLB data is the Lahman database, which runs a season behind.
+
+## Boston Grid: updating the players
+
+Same downloads as Journeyman, so do it at the same time (once a season, after the World Series):
+
+1. `python3 tools/journeyman_fetch.py /tmp/jm` (skip it if you just ran it for Journeyman).
+2. `python3 tools/boston_grid_build.py --src /tmp/jm`, then `node tools/boston_grid_check.js`.
+3. Bump `data-*.js?v=` in `boston-grid/app.js` (the `loadData` line) so phones load the new files.
+
+How a grid is made: three teams across, three down, Boston's team always first down the side. Every square needs at least 4 answers people would remember (the `NOTABLE` fame line per league in `boston-grid/engine.js`, careers that reached 2000), so no square is a trick question. The date picks the grid, so everyone gets the same one, and a new one arrives at midnight Boston time. Every player since 1990 counts as a right answer, however obscure, and a lesser-known player earns more deep-cut points.

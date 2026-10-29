@@ -75,6 +75,19 @@ window.PROJECTS = [
     cover: { image: "assets/covers/journeyman.jpg", bg: "#F1F2EE", band: "#FCCC0A" }
   },
   {
+    title: "Boston Grid",
+    tag: "New grid every day",
+    type: "Games",
+    released: "2026-10",
+    url: "boston-grid/",
+    action: "Fill the grid",
+    question: "Name a Patriot who also played for the Browns. Now a Steeler who was a Lion.",
+    summary: "Nine squares, nine guesses: name a player who played for both teams, with the Celtics, Patriots or Red Sox leading every grid. Lesser-known answers earn deep-cut points, and the group chat gets a daily board.",
+    facts: [["28,000+", "players since 1990"], ["3", "grids a day: NBA, NFL and MLB"], ["100", "deep-cut points for a real unknown"]],
+    stack: ["JavaScript", "Python", "Supabase"],
+    cover: { image: "assets/covers/boston-grid.jpg", bg: "#0E2318", band: "#F7D23E" }
+  },
+  {
     title: "Night Out",
     tag: "Updated every morning",
     hidden: true,

@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Boston Grid | David Solar</title>
+<meta name="description" content="Nine squares, nine guesses. Name a player who played for both teams, with Boston's team on every row's lead. NBA, NFL and MLB, a new grid every day.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://davidsolar.dev/boston-grid/">
+<meta property="og:title" content="Boston Grid">
+<meta property="og:description" content="Nine squares, nine guesses. Who played for both?">
+<meta property="og:image" content="https://davidsolar.dev/assets/covers/boston-grid.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://davidsolar.dev/boston-grid/">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#1D4A36">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Besley:wght@700;800&family=Libre+Franklin:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/bar.css">
+<script src="../assets/analytics.js" defer></script>
+<style>
+/* Boston Grid is hung on the Green Monster: the board is the wall's green, the team names sit on its plates,
+   and the squares are the cream slots you'd slide a number into. Paper outside, Fenway inside. */
+:root{
+  --paper:#F5F4F0; --ink:#0F1F17; --ink-2:#4B5A52; --rule:#D5D9D2;
+  --monster:#1D4A36; --monster-2:#163A2A; --plate:#0C1F16; --chalk:#F5F4F0; --chalk-2:#B5D2BF;
+  --slot:#F8F5ED; --slot-hover:#FFFDF6; --yellow:#F7D23E; --red:#C60C30; --right:#2F8F57; --wrong:#B23A3A;
+  --display:"Besley",Georgia,"Times New Roman",serif;
+  --body:"Libre Franklin","Franklin Gothic Medium","Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#0B1712; --ink:#EEF1EC; --ink-2:#A9B8AE; --rule:#24382D; --slot:#EFEBDF; --slot-hover:#FFFDF6; }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 16px/1.5 var(--body);-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+[hidden]{display:none!important}
+.wrap{max-width:42rem;margin:0 auto;padding:0 max(16px,env(safe-area-inset-left)) 48px max(16px,env(safe-area-inset-right))}
+
+/* ---- Masthead */
+.top{padding:26px 0 14px;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 20px}
+.kicker{margin:0 0 4px;font-weight:800;font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--red)}
+h1{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(2.2rem,7vw,3.1rem);line-height:1;letter-spacing:-.02em}
+.lede{margin:8px 0 0;color:var(--ink-2);max-width:32rem;font-size:.96rem}
+.sports{display:flex;gap:6px}
+.sports button{appearance:none;border:1.5px solid var(--rule);background:transparent;border-radius:999px;padding:7px 14px;font-weight:700;font-size:.84rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.sports button[aria-pressed="true"]{background:var(--monster);border-color:var(--monster);color:var(--chalk)}
+.sports button .tick{font-size:.72rem;color:var(--yellow)}
+.sports button:focus-visible,.cell:focus-visible,.btn:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+
+/* ---- The wall */
+.wall{position:relative;background:var(--monster);border:4px solid #10281D;border-radius:6px;padding:14px;color:var(--chalk);
+  background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.12) 0 1px,transparent 1px 58px),linear-gradient(180deg,rgba(255,255,255,.05),transparent 40%);
+  box-shadow:0 18px 40px rgba(0,0,0,.18),inset 0 0 0 1px rgba(255,255,255,.06)}
+.wall-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 12px;font-weight:800;font-size:.74rem;letter-spacing:.14em;text-transform:uppercase}
+.wall-head .date{background:var(--plate);color:var(--yellow);padding:4px 8px;border-radius:2px;font-variant-numeric:tabular-nums}
+.grid{display:grid;grid-template-columns:minmax(0,.9fr) repeat(3,minmax(0,1fr));gap:8px}
+.corner{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:var(--plate);border-radius:3px;padding:8px 4px;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.07),inset 0 -3px 0 rgba(0,0,0,.3)}
+.corner b{font-size:clamp(1.6rem,6vw,2.3rem);line-height:1;font-variant-numeric:tabular-nums}
+.corner span{font-size:.6rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--chalk-2);margin-top:4px}
+.team{display:flex;flex-direction:column;justify-content:center;gap:1px;min-height:4.4rem;padding:8px 9px;border-radius:3px;
+  background:var(--t1,#333);color:#fff;border-bottom:5px solid var(--t2,#999);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);overflow:hidden}
+.team.light{color:#111}
+.team small{font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.85;line-height:1.2}
+.team b{font-family:var(--display);font-weight:800;font-size:clamp(.72rem,3.1vw,1.2rem);line-height:1.08;letter-spacing:-.01em;hyphens:auto}
+.team.home{box-shadow:inset 0 0 0 2px var(--yellow)}   /* Boston's row, outlined in the scoreboard's lights */
+.cell{appearance:none;border:0;cursor:pointer;position:relative;aspect-ratio:1/1;min-height:0;border-radius:3px;background:var(--slot);color:#13261C;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6px;
+  box-shadow:inset 0 -4px 0 rgba(0,0,0,.12),0 1px 0 rgba(0,0,0,.25);transition:transform .12s ease,background .12s ease}
+.cell:hover:not(:disabled){background:var(--slot-hover);transform:translateY(-1px)}
+.cell .plus{font-size:1.6rem;font-weight:300;color:#9AA79F;line-height:1}
+.cell.sel{outline:3px solid var(--yellow);outline-offset:-3px}
+.cell.got{background:#E6F2E9;cursor:default}
+.cell.got .nm{font-family:var(--display);font-weight:800;font-size:clamp(.78rem,2.9vw,1.02rem);line-height:1.12;overflow-wrap:anywhere}
+.cell.got .pts{margin-top:5px;font-size:.66rem;font-weight:800;letter-spacing:.06em;color:var(--right)}
+.cell.miss{background:#EFE6E2}
+.cell.miss .nm{font-size:.7rem;font-weight:700;color:#7A4A43;text-transform:uppercase;letter-spacing:.08em}
+.cell:disabled{cursor:default}
+.cell.open-done{cursor:pointer}
+.cell.shake{animation:shake .32s ease}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@media (prefers-reduced-motion: reduce){.cell{transition:none}.cell.shake{animation:none}}
+.wall-foot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 14px;margin-top:12px;font-size:.8rem;color:var(--chalk-2)}
+.lights{display:flex;gap:5px}
+.lights i{width:11px;height:11px;border-radius:50%;background:var(--plate);box-shadow:inset 0 1px 2px rgba(0,0,0,.6)}
+.lights i.on{background:var(--yellow);box-shadow:0 0 8px rgba(247,210,62,.6)}
+.lights i.off{background:#6B2A2A}
+.linkish{appearance:none;background:none;border:0;padding:0;color:var(--chalk);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-weight:600}
+
+/* ---- The guess box: a sheet from the bottom on phones, under the wall on wider screens */
+.guess{margin-top:14px;background:var(--plate);color:var(--chalk);border-radius:6px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.guess h2{margin:0 0 10px;font:700 .95rem/1.35 var(--body)}
+.guess h2 b{color:var(--yellow)}
+.guess-row{display:flex;gap:8px}
+.guess input{flex:1;min-width:0;border:2px solid #355446;background:#0F2A1D;color:var(--chalk);border-radius:4px;padding:11px 12px;font-size:1rem}
+.guess input:focus{outline:none;border-color:var(--yellow)}
+.btn{appearance:none;border:0;border-radius:4px;padding:11px 16px;font-weight:700;cursor:pointer;background:var(--yellow);color:#1a1a1a}
+.btn.ghost{background:transparent;color:var(--chalk);box-shadow:inset 0 0 0 1.5px #4A6B5B}
+.sugg{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sugg button{appearance:none;width:100%;text-align:left;background:transparent;border:0;border-radius:3px;padding:8px 10px;color:var(--chalk);cursor:pointer;font-weight:600}
+.sugg button:hover,.sugg button.on{background:#183A2A}
+.note{margin:8px 0 0;min-height:1.3em;font-size:.86rem;color:#FFB4A8}
+.note.good{color:#9BE0B0}
+@media (min-width:641px){.cell{aspect-ratio:5/4}}
+@media (max-width:640px){
+  .guess{position:fixed;left:0;right:0;bottom:0;margin:0;border-radius:12px 12px 0 0;z-index:40;padding:16px max(16px,env(safe-area-inset-left)) calc(16px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-right))}
+  .grid{gap:6px}
+  .wall{padding:10px}
+  .team{min-height:3.9rem;padding:6px 7px}
+  .team small{font-size:.54rem;letter-spacing:.02em}
+}
+
+/* ---- Finished */
+.done{margin-top:18px;border-top:2px solid var(--ink);padding-top:18px}
+.done h2{margin:0;font-family:var(--display);font-size:1.7rem}
+.done .score{display:flex;gap:18px;flex-wrap:wrap;margin:10px 0 4px}
+.done .score div{display:flex;flex-direction:column}
+.done .score b{font-size:1.8rem;font-variant-numeric:tabular-nums;line-height:1.1}
+.done .score span{font-size:.78rem;color:var(--ink-2)}
+.done .line{color:var(--ink-2);margin:4px 0 12px}
+.done .acts{display:flex;gap:8px;flex-wrap:wrap}
+.done .acts .btn.ghost{color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--rule)}
+.who{margin:18px 0 0}
+.who h3,.board h3{margin:0 0 6px;font-size:.78rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+.who p{margin:0 0 10px;font-size:.9rem;color:var(--ink-2)}
+.who ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(13rem,1fr));gap:8px}
+.who li{border:1px solid var(--rule);border-radius:6px;padding:9px 11px;font-size:.86rem}
+.who li b{display:block;font-size:.74rem;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);margin-bottom:2px}
+.board{margin-top:22px}
+.board ol{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
+.board li{display:grid;grid-template-columns:1.8rem minmax(0,1fr) auto auto;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--rule);font-size:.92rem}
+.board li.me{background:color-mix(in srgb,var(--yellow) 22%,transparent)}
+.board .rk{color:var(--ink-2);font-variant-numeric:tabular-nums}
+.board .sq{font-size:.62rem;letter-spacing:-1px;white-space:nowrap}
+.board .pt{font-variant-numeric:tabular-nums;text-align:right;min-width:5.5rem}
+.board .pt small{color:var(--ink-2);font-weight:500}
+.board form{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.board input{flex:1 1 12rem;min-width:0;border:1.5px solid var(--rule);background:transparent;border-radius:4px;padding:9px 10px}
+.board .btn{background:var(--monster);color:var(--chalk)}
+.board .muted,.muted{color:var(--ink-2);font-size:.88rem}
+.how{margin-top:26px;color:var(--ink-2);font-size:.9rem}
+.how summary{cursor:pointer;font-weight:700;color:var(--ink)}
+.how ul{padding-left:1.1rem}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:6px;font-size:.88rem;z-index:60}
+</style>
+</head>
+<body>
+<nav class="ds-bar" aria-label="davidsolar.dev">
+  <a href="../"><img src="../assets/ds-mark.svg" alt="" width="20" height="20"><span class="ds-bar-name">David Solar</span></a>
+  <a href="../#projects">All projects</a>
+</nav>
+<main class="wrap">
+  <header class="top">
+    <div>
+      <p class="kicker">New grid every day</p>
+      <h1>Boston Grid</h1>
+      <p class="lede">Name a player who played for both teams. Boston leads every grid. Nine guesses, and a player only once.</p>
+    </div>
+    <div class="sports" role="group" aria-label="League">
+      <button type="button" data-sport="nba" aria-pressed="true">NBA<span class="tick" aria-hidden="true"></span></button>
+      <button type="button" data-sport="nfl" aria-pressed="false">NFL<span class="tick" aria-hidden="true"></span></button>
+      <button type="button" data-sport="mlb" aria-pressed="false">MLB<span class="tick" aria-hidden="true"></span></button>
+    </div>
+  </header>
+
+  <section class="wall" aria-labelledby="wall-title">
+    <div class="wall-head"><span id="wall-title">Today&rsquo;s grid</span><span class="date" id="date"></span></div>
+    <div class="grid" id="grid" aria-live="polite"><p class="muted" style="grid-column:1/-1;color:var(--chalk-2)">Loading the grid&hellip;</p></div>
+    <div class="wall-foot">
+      <span class="lights" id="lights" role="img"></span>
+      <span id="status"></span>
+      <button type="button" class="linkish" id="stop" hidden>I'm done</button>
+    </div>
+  </section>
+
+  <form class="guess" id="guess" hidden autocomplete="off">
+    <h2 id="guess-title"></h2>
+    <div class="guess-row">
+      <input id="guess-in" type="text" inputmode="text" placeholder="Player name" aria-label="Player name" aria-autocomplete="list" aria-controls="sugg" spellcheck="false" autocapitalize="words">
+      <button class="btn" type="submit">Guess</button>
+    </div>
+    <ul class="sugg" id="sugg" role="listbox" aria-label="Players"></ul>
+    <p class="note" id="note" aria-live="assertive"></p>
+    <button type="button" class="btn ghost" id="guess-cancel" style="margin-top:6px">Cancel</button>
+  </form>
+
+  <section class="done" id="done" hidden aria-labelledby="done-title">
+    <h2 id="done-title"></h2>
+    <div class="score"><div><b id="d-sq"></b><span>squares</span></div><div><b id="d-deep"></b><span>deep-cut points</span></div></div>
+    <p class="line" id="d-line"></p>
+    <div class="acts"><button class="btn" type="button" id="share">Copy for the group chat</button><button class="btn ghost" type="button" id="next-sport"></button></div>
+    <div class="board" id="board">
+      <h3>Today's board</h3>
+      <form id="board-form"><input id="board-name" maxlength="24" required autocomplete="nickname" placeholder="Your name" aria-label="Your name for the board"><button class="btn" type="submit">Post my grid</button></form>
+      <p class="muted" id="board-me" hidden>Posted as <b id="board-me-name"></b>.</p>
+      <p class="muted" id="board-note"></p>
+      <ol id="board-list"></ol>
+    </div>
+    <div class="who" id="who">
+      <h3>Who else fits</h3>
+      <p>The best-known answers for every square. Tap a square on the grid to see more.</p>
+      <ul id="who-list"></ul>
+    </div>
+  </section>
+
+  <details class="how">
+    <summary>How it works</summary>
+    <ul>
+      <li>Each square wants a player who played at least one regular-season game for both of its teams. Teams that moved count once: the Sonics are the Thunder, the Oilers are the Titans, the Expos are the Nationals.</li>
+      <li>Nine guesses in all. A wrong guess uses one up; a name the game doesn't know doesn't.</li>
+      <li>A right answer earns 10 to 100 deep-cut points: more for a lesser-known player. Squares decide the board, deep-cut points break the ties.</li>
+      <li>Players since 1990. The MLB data runs through the last complete season. A new grid in each league at midnight, Boston time.</li>
+    </ul>
+  </details>
+</main>
+<div class="toast" id="toast" hidden></div>
+<script src="../guess-the-pick/engine.js?v=4"></script>
+<script src="engine.js?v=1"></script>
+<script src="app.js?v=1"></script>
+</body>
+</html>
