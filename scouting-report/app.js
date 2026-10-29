@@ -62,16 +62,29 @@
   function total() { return game.results.reduce(function (a, r) { return a + r.s; }, 0); }
   function homeStatus() {
     today = G.dailyKey();
-    var d = store.get(dkey());
+    var d = restore(store.get(dkey()));
     $("daily-status").textContent = !d || !d.results.length ? "New today" : d.results.length >= DAILY ? "Done today: " + d.results.reduce(function (a, r) { return a + r.s; }, 0) + "/25" : "In progress: " + d.results.length + " of 5";
     var b = store.get("sr-best");
     $("endless-status").textContent = b != null ? "Best run: " + b + " point" + (b === 1 ? "" : "s") : "No runs yet";
   }
 
+  // A saved daily is kept by prospect id, so it still opens after the folder changes. One saved by an older
+  // version of the folder (positions, not ids) or naming a prospect who's gone starts today's five fresh.
+  var AT = {};
+  DATA.forEach(function (p, i) { AT[p.id] = i; });
+  function restore(saved) {
+    if (!saved || !Array.isArray(saved.ids) || !saved.ids.every(function (id) { return id in AT; })) return null;
+    saved.order = saved.ids.map(function (id) { return AT[id]; });
+    saved.results = (saved.results || []).filter(function (r) { return r.id in AT; }).map(function (r) { return { i: AT[r.id], id: r.id, s: r.s }; });
+    return saved;
+  }
   function startDaily() {
     today = G.dailyKey(); mode = "daily";
-    var saved = store.get(dkey());
-    game = saved && saved.order ? saved : { order: dailyFive(today), results: [] };
+    game = restore(store.get(dkey()));
+    if (!game) {
+      var order = dailyFive(today);
+      game = { order: order, ids: order.map(function (i) { return DATA[i].id; }), results: [] };
+    }
     if (game.results.length >= DAILY) return finish();
     show("play"); next();
   }
@@ -88,6 +101,7 @@
     var n = game.results.length;
     if (mode === "daily" && n >= DAILY) return finish();
     if (mode === "endless" && (game.misses >= LIVES || n >= game.order.length)) return finish();
+    if (!DATA[game.order[n]]) { store.set(dkey(), null); return mode === "daily" ? startDaily() : startEndless(); }
     cur = { i: game.order[n], used: [], wrong: [], done: false };
     drawFile(); hud();
     $("ask").hidden = false; $("went").hidden = true; $("note").textContent = "";
@@ -164,7 +178,7 @@
   function reveal(gaveUp) {
     var p = DATA[cur.i], s = gaveUp ? 0 : points();
     cur.done = true;
-    game.results.push({ i: cur.i, s: s });
+    game.results.push({ i: cur.i, id: p.id, s: s });
     if (mode === "endless") {
       if (!s) game.misses++;
       var seen = store.get("sr-seen") || []; seen.push(p.id); store.set("sr-seen", seen.slice(-120));
