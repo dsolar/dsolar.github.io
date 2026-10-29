@@ -83,7 +83,7 @@ window.PROJECTS = [
     action: "Open the file",
     question: "The draft experts were sure about him. Who were they talking about, and how did it go?",
     summary: "Real pre-draft quotes from Kiper, McShay, Mayock, Zierlein, DraftExpress and more, every one of them aged badly. Name the prospect, then see how his career actually went: busts sold as franchise saviors, future stars written off. NFL and NBA, five a day.",
-    facts: [["79", "real quotes, each linked to its source"], ["0", "quotes that aged well"], ["5", "points a file, minus the bars you lift"]],
+    facts: [["60", "real quotes, each linked to its source"], ["0", "quotes that aged well"], ["5", "points a file, minus the bars you lift"]],
     stack: ["JavaScript", "Python", "Supabase"],
     cover: { image: "assets/covers/scouting-report.jpg", bg: "#2A2420", band: "#E2B84A" }
   },
