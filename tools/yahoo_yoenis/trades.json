@@ -1,0 +1,8672 @@
+{
+ "2013": {
+  "key": "308.l.38227",
+  "start": "2013-03-31",
+  "end": "2013-09-22",
+  "teams": {
+   "308.l.38227.t.1": "DontBoegartThatJoint",
+   "308.l.38227.t.2": "SEQUESTRATION",
+   "308.l.38227.t.3": "Don't Ask Dotel",
+   "308.l.38227.t.4": "Team Veto",
+   "308.l.38227.t.5": "Los Pollos Giancarlo",
+   "308.l.38227.t.6": "saving_giant_squid",
+   "308.l.38227.t.7": "S.Marte Pants",
+   "308.l.38227.t.8": "Rally Beers",
+   "308.l.38227.t.9": "The Skiman",
+   "308.l.38227.t.10": "#DC",
+   "308.l.38227.t.11": "Mr. RoVotto",
+   "308.l.38227.t.12": "Robbers",
+   "308.l.38227.t.13": "Denorfia es mi Padre",
+   "308.l.38227.t.14": "Simuno",
+   "308.l.38227.t.15": "Team OC",
+   "308.l.38227.t.16": "Stings When I Peavy"
+  },
+  "trades": [
+   {
+    "id": "183",
+    "status": "successful",
+    "ts": 1365928120,
+    "a": "308.l.38227.t.2",
+    "b": "308.l.38227.t.9",
+    "players": [
+     {
+      "name": "Garrett Jones",
+      "pos": "1B,OF",
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.9"
+     },
+     {
+      "name": "Gordon Beckham",
+      "pos": "2B",
+      "from": "308.l.38227.t.9",
+      "to": "308.l.38227.t.2"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "207",
+    "status": "successful",
+    "ts": 1366101821,
+    "a": "308.l.38227.t.8",
+    "b": "308.l.38227.t.2",
+    "players": [
+     {
+      "name": "Nick Markakis",
+      "pos": "OF",
+      "from": "308.l.38227.t.8",
+      "to": "308.l.38227.t.2"
+     },
+     {
+      "name": "Marco Scutaro",
+      "pos": "2B,3B,SS",
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.8"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "244",
+    "status": "successful",
+    "ts": 1366531072,
+    "a": "308.l.38227.t.2",
+    "b": "308.l.38227.t.6",
+    "players": [
+     {
+      "name": "Andre Ethier",
+      "pos": "OF",
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.6"
+     },
+     {
+      "name": "Jaime García",
+      "pos": "SP",
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.6"
+     },
+     {
+      "name": "Aníbal Sánchez",
+      "pos": "SP",
+      "from": "308.l.38227.t.6",
+      "to": "308.l.38227.t.2"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "342",
+    "status": "successful",
+    "ts": 1367569069,
+    "a": "308.l.38227.t.4",
+    "b": "308.l.38227.t.1",
+    "players": [
+     {
+      "name": "Alfonso Soriano",
+      "pos": "OF",
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.1"
+     },
+     {
+      "name": "Michael Pineda",
+      "pos": "SP",
+      "from": "308.l.38227.t.1",
+      "to": "308.l.38227.t.4"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "353",
+    "status": "successful",
+    "ts": 1367657934,
+    "a": "308.l.38227.t.5",
+    "b": "308.l.38227.t.3",
+    "players": [
+     {
+      "name": "Salvador Perez",
+      "pos": "C",
+      "from": "308.l.38227.t.5",
+      "to": "308.l.38227.t.3"
+     },
+     {
+      "name": "Brian Matusz",
+      "pos": "SP,RP",
+      "from": "308.l.38227.t.3",
+      "to": "308.l.38227.t.5"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "352",
+    "status": "successful",
+    "ts": 1367657934,
+    "a": "308.l.38227.t.8",
+    "b": "308.l.38227.t.15",
+    "players": [
+     {
+      "name": "Jose Altuve",
+      "pos": "2B",
+      "from": "308.l.38227.t.8",
+      "to": "308.l.38227.t.15"
+     },
+     {
+      "name": "Melky Cabrera",
+      "pos": "OF",
+      "from": "308.l.38227.t.8",
+      "to": "308.l.38227.t.15"
+     },
+     {
+      "name": "Michael Bourn",
+      "pos": "OF",
+      "from": "308.l.38227.t.8",
+      "to": "308.l.38227.t.15"
+     },
+     {
+      "name": "Jason Grilli",
+      "pos": "RP",
+      "from": "308.l.38227.t.8",
+      "to": "308.l.38227.t.15"
+     },
+     {
+      "name": "Robinson Canó",
+      "pos": "2B",
+      "from": "308.l.38227.t.15",
+      "to": "308.l.38227.t.8"
+     },
+     {
+      "name": "Chris Nelson",
+      "pos": "2B,3B",
+      "from": "308.l.38227.t.15",
+      "to": "308.l.38227.t.8"
+     },
+     {
+      "name": "Jeff Francoeur",
+      "pos": "OF",
+      "from": "308.l.38227.t.15",
+      "to": "308.l.38227.t.8"
+     },
+     {
+      "name": "David DeJesus",
+      "pos": "OF",
+      "from": "308.l.38227.t.15",
+      "to": "308.l.38227.t.8"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "392",
+    "status": "successful",
+    "ts": 1368014824,
+    "a": "308.l.38227.t.4",
+    "b": "308.l.38227.t.2",
+    "players": [
+     {
+      "name": "Gerardo Parra",
+      "pos": "OF",
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.2"
+     },
+     {
+      "name": "Ben Revere",
+      "pos": "OF",
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.4"
+     }
+    ],
+    "picks": [
+     {
+      "round": 25,
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.2",
+      "orig": "308.l.38227.t.4"
+     },
+     {
+      "round": 11,
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.4",
+      "orig": "308.l.38227.t.2"
+     }
+    ]
+   },
+   {
+    "id": "390",
+    "status": "successful",
+    "ts": 1368014824,
+    "a": "308.l.38227.t.2",
+    "b": "308.l.38227.t.1",
+    "players": [
+     {
+      "name": "Ryan Braun",
+      "pos": "OF",
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.1"
+     },
+     {
+      "name": "Adrián Béltre",
+      "pos": "3B",
+      "from": "308.l.38227.t.1",
+      "to": "308.l.38227.t.2"
+     },
+     {
+      "name": "Sergio Romo",
+      "pos": "RP",
+      "from": "308.l.38227.t.1",
+      "to": "308.l.38227.t.2"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "434",
+    "status": "successful",
+    "ts": 1368522432,
+    "a": "308.l.38227.t.2",
+    "b": "308.l.38227.t.12",
+    "players": [
+     {
+      "name": "Michael Saunders",
+      "pos": "OF",
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.12"
+     },
+     {
+      "name": "Joel Peralta",
+      "pos": "RP",
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.12"
+     },
+     {
+      "name": "Daniel Murphy",
+      "pos": "1B,2B",
+      "from": "308.l.38227.t.12",
+      "to": "308.l.38227.t.2"
+     }
+    ],
+    "picks": [
+     {
+      "round": 19,
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.12",
+      "orig": "308.l.38227.t.2"
+     },
+     {
+      "round": 23,
+      "from": "308.l.38227.t.12",
+      "to": "308.l.38227.t.2",
+      "orig": "308.l.38227.t.12"
+     }
+    ]
+   },
+   {
+    "id": "516",
+    "status": "successful",
+    "ts": 1369381704,
+    "a": "308.l.38227.t.5",
+    "b": "308.l.38227.t.1",
+    "players": [
+     {
+      "name": "Tyler Clippard",
+      "pos": "RP",
+      "from": "308.l.38227.t.5",
+      "to": "308.l.38227.t.1"
+     },
+     {
+      "name": "Didi Gregorius",
+      "pos": "SS",
+      "from": "308.l.38227.t.1",
+      "to": "308.l.38227.t.5"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "558",
+    "status": "successful",
+    "ts": 1369818555,
+    "a": "308.l.38227.t.2",
+    "b": "308.l.38227.t.4",
+    "players": [
+     {
+      "name": "Robbie Ross",
+      "pos": "RP",
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.4"
+     },
+     {
+      "name": "Jeremy Hellickson",
+      "pos": "SP",
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.2"
+     },
+     {
+      "name": "Jason Vargas",
+      "pos": "SP",
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.2"
+     }
+    ],
+    "picks": [
+     {
+      "round": 3,
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.4",
+      "orig": "308.l.38227.t.2"
+     },
+     {
+      "round": 9,
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.4",
+      "orig": "308.l.38227.t.2"
+     },
+     {
+      "round": 23,
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.2",
+      "orig": "308.l.38227.t.4"
+     },
+     {
+      "round": 24,
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.2",
+      "orig": "308.l.38227.t.4"
+     }
+    ]
+   },
+   {
+    "id": "603",
+    "status": "successful",
+    "ts": 1370162422,
+    "a": "308.l.38227.t.16",
+    "b": "308.l.38227.t.1",
+    "players": [
+     {
+      "name": "David Freese",
+      "pos": "3B",
+      "from": "308.l.38227.t.16",
+      "to": "308.l.38227.t.1"
+     },
+     {
+      "name": "Alexei Ramirez",
+      "pos": "SS",
+      "from": "308.l.38227.t.1",
+      "to": "308.l.38227.t.16"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "635",
+    "status": "successful",
+    "ts": 1370423850,
+    "a": "308.l.38227.t.1",
+    "b": "308.l.38227.t.2",
+    "players": [
+     {
+      "name": "Alfonso Soriano",
+      "pos": "OF",
+      "from": "308.l.38227.t.1",
+      "to": "308.l.38227.t.2"
+     }
+    ],
+    "picks": [
+     {
+      "round": 25,
+      "from": "308.l.38227.t.1",
+      "to": "308.l.38227.t.2",
+      "orig": "308.l.38227.t.1"
+     },
+     {
+      "round": 8,
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.1",
+      "orig": "308.l.38227.t.2"
+     }
+    ]
+   },
+   {
+    "id": "685",
+    "status": "successful",
+    "ts": 1371030506,
+    "a": "308.l.38227.t.1",
+    "b": "308.l.38227.t.2",
+    "players": [
+     {
+      "name": "Torii Hunter",
+      "pos": "OF",
+      "from": "308.l.38227.t.1",
+      "to": "308.l.38227.t.2"
+     },
+     {
+      "name": "Julio Teheran",
+      "pos": "SP",
+      "from": "308.l.38227.t.1",
+      "to": "308.l.38227.t.2"
+     },
+     {
+      "name": "Matt Cain",
+      "pos": "SP",
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "714",
+    "status": "vetoed",
+    "ts": 1371225679,
+    "a": "308.l.38227.t.2",
+    "b": "308.l.38227.t.4",
+    "players": [
+     {
+      "name": "Troy Tulowitzki",
+      "pos": "SS",
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.2"
+     }
+    ],
+    "picks": [
+     {
+      "round": 1,
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.4",
+      "orig": "308.l.38227.t.2"
+     },
+     {
+      "round": 2,
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.4",
+      "orig": "308.l.38227.t.2"
+     },
+     {
+      "round": 16,
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.4",
+      "orig": "308.l.38227.t.2"
+     },
+     {
+      "round": 8,
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.2",
+      "orig": "308.l.38227.t.4"
+     },
+     {
+      "round": 21,
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.2",
+      "orig": "308.l.38227.t.4"
+     },
+     {
+      "round": 22,
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.2",
+      "orig": "308.l.38227.t.4"
+     }
+    ]
+   },
+   {
+    "id": "730",
+    "status": "successful",
+    "ts": 1371370793,
+    "a": "308.l.38227.t.9",
+    "b": "308.l.38227.t.3",
+    "players": [
+     {
+      "name": "Jay Bruce",
+      "pos": "OF",
+      "from": "308.l.38227.t.9",
+      "to": "308.l.38227.t.3"
+     },
+     {
+      "name": "Zack Greinke",
+      "pos": "SP",
+      "from": "308.l.38227.t.3",
+      "to": "308.l.38227.t.9"
+     }
+    ],
+    "picks": [
+     {
+      "round": 18,
+      "from": "308.l.38227.t.9",
+      "to": "308.l.38227.t.3",
+      "orig": "308.l.38227.t.9"
+     },
+     {
+      "round": 5,
+      "from": "308.l.38227.t.3",
+      "to": "308.l.38227.t.9",
+      "orig": "308.l.38227.t.3"
+     }
+    ]
+   },
+   {
+    "id": "758",
+    "status": "successful",
+    "ts": 1371633620,
+    "a": "308.l.38227.t.4",
+    "b": "308.l.38227.t.2",
+    "players": [
+     {
+      "name": "Robbie Ross",
+      "pos": "RP",
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.2"
+     },
+     {
+      "name": "Hiroki Kuroda",
+      "pos": "SP",
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.2"
+     },
+     {
+      "name": "Cole Hamels",
+      "pos": "SP",
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.4"
+     }
+    ],
+    "picks": [
+     {
+      "round": 22,
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.2",
+      "orig": "308.l.38227.t.4"
+     },
+     {
+      "round": 23,
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.4",
+      "orig": "308.l.38227.t.12"
+     }
+    ]
+   },
+   {
+    "id": "772",
+    "status": "successful",
+    "ts": 1371806606,
+    "a": "308.l.38227.t.6",
+    "b": "308.l.38227.t.8",
+    "players": [
+     {
+      "name": "Justin Upton",
+      "pos": "OF",
+      "from": "308.l.38227.t.6",
+      "to": "308.l.38227.t.8"
+     },
+     {
+      "name": "Adrián González",
+      "pos": "1B,OF",
+      "from": "308.l.38227.t.8",
+      "to": "308.l.38227.t.6"
+     },
+     {
+      "name": "Peter Bourjos",
+      "pos": "OF",
+      "from": "308.l.38227.t.8",
+      "to": "308.l.38227.t.6"
+     }
+    ],
+    "picks": [
+     {
+      "round": 4,
+      "from": "308.l.38227.t.6",
+      "to": "308.l.38227.t.8",
+      "orig": "308.l.38227.t.6"
+     },
+     {
+      "round": 1,
+      "from": "308.l.38227.t.8",
+      "to": "308.l.38227.t.6",
+      "orig": "308.l.38227.t.8"
+     }
+    ]
+   },
+   {
+    "id": "783",
+    "status": "successful",
+    "ts": 1371893743,
+    "a": "308.l.38227.t.7",
+    "b": "308.l.38227.t.15",
+    "players": [
+     {
+      "name": "Mike Leake",
+      "pos": "SP",
+      "from": "308.l.38227.t.7",
+      "to": "308.l.38227.t.15"
+     },
+     {
+      "name": "Tony Cingrani",
+      "pos": "SP,RP",
+      "from": "308.l.38227.t.7",
+      "to": "308.l.38227.t.15"
+     },
+     {
+      "name": "David Price",
+      "pos": "SP",
+      "from": "308.l.38227.t.15",
+      "to": "308.l.38227.t.7"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "782",
+    "status": "successful",
+    "ts": 1371893743,
+    "a": "308.l.38227.t.7",
+    "b": "308.l.38227.t.2",
+    "players": [
+     {
+      "name": "Justin Morneau",
+      "pos": "1B",
+      "from": "308.l.38227.t.7",
+      "to": "308.l.38227.t.2"
+     },
+     {
+      "name": "Anthony Rizzo",
+      "pos": "1B",
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.7"
+     }
+    ],
+    "picks": [
+     {
+      "round": 5,
+      "from": "308.l.38227.t.7",
+      "to": "308.l.38227.t.2",
+      "orig": "308.l.38227.t.7"
+     },
+     {
+      "round": 14,
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.7",
+      "orig": "308.l.38227.t.2"
+     }
+    ]
+   },
+   {
+    "id": "780",
+    "status": "successful",
+    "ts": 1371893743,
+    "a": "308.l.38227.t.2",
+    "b": "308.l.38227.t.14",
+    "players": [
+     {
+      "name": "Adrián Béltre",
+      "pos": "3B",
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.14"
+     }
+    ],
+    "picks": [
+     {
+      "round": 25,
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.14",
+      "orig": "308.l.38227.t.2"
+     },
+     {
+      "round": 2,
+      "from": "308.l.38227.t.14",
+      "to": "308.l.38227.t.2",
+      "orig": "308.l.38227.t.14"
+     }
+    ]
+   },
+   {
+    "id": "827",
+    "status": "successful",
+    "ts": 1372409670,
+    "a": "308.l.38227.t.4",
+    "b": "308.l.38227.t.2",
+    "players": [
+     {
+      "name": "Ben Revere",
+      "pos": "OF",
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.2"
+     }
+    ],
+    "picks": [
+     {
+      "round": 21,
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.2",
+      "orig": "308.l.38227.t.4"
+     },
+     {
+      "round": 7,
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.4",
+      "orig": "308.l.38227.t.2"
+     }
+    ]
+   },
+   {
+    "id": "870",
+    "status": "successful",
+    "ts": 1372843076,
+    "a": "308.l.38227.t.2",
+    "b": "308.l.38227.t.1",
+    "players": [
+     {
+      "name": "Eric Hosmer",
+      "pos": "1B",
+      "from": "308.l.38227.t.1",
+      "to": "308.l.38227.t.2"
+     }
+    ],
+    "picks": [
+     {
+      "round": 6,
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.1",
+      "orig": "308.l.38227.t.2"
+     },
+     {
+      "round": 24,
+      "from": "308.l.38227.t.1",
+      "to": "308.l.38227.t.2",
+      "orig": "308.l.38227.t.1"
+     }
+    ]
+   },
+   {
+    "id": "883",
+    "status": "successful",
+    "ts": 1372930375,
+    "a": "308.l.38227.t.2",
+    "b": "308.l.38227.t.6",
+    "players": [
+     {
+      "name": "Brandon Crawford",
+      "pos": "SS",
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.6"
+     },
+     {
+      "name": "Nick Markakis",
+      "pos": "OF",
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.6"
+     },
+     {
+      "name": "J.J. Hardy",
+      "pos": "SS",
+      "from": "308.l.38227.t.6",
+      "to": "308.l.38227.t.2"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "939",
+    "status": "successful",
+    "ts": 1373537457,
+    "a": "308.l.38227.t.14",
+    "b": "308.l.38227.t.1",
+    "players": [
+     {
+      "name": "Rex Brothers",
+      "pos": "RP",
+      "from": "308.l.38227.t.14",
+      "to": "308.l.38227.t.1"
+     },
+     {
+      "name": "Jacob Turner",
+      "pos": "SP",
+      "from": "308.l.38227.t.1",
+      "to": "308.l.38227.t.14"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "961",
+    "status": "successful",
+    "ts": 1374068188,
+    "a": "308.l.38227.t.1",
+    "b": "308.l.38227.t.2",
+    "players": [
+     {
+      "name": "Michael Brantley",
+      "pos": "OF",
+      "from": "308.l.38227.t.1",
+      "to": "308.l.38227.t.2"
+     }
+    ],
+    "picks": [
+     {
+      "round": 23,
+      "from": "308.l.38227.t.1",
+      "to": "308.l.38227.t.2",
+      "orig": "308.l.38227.t.1"
+     },
+     {
+      "round": 13,
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.1",
+      "orig": "308.l.38227.t.2"
+     }
+    ]
+   },
+   {
+    "id": "1013",
+    "status": "successful",
+    "ts": 1374828722,
+    "a": "308.l.38227.t.1",
+    "b": "308.l.38227.t.2",
+    "players": [],
+    "picks": [
+     {
+      "round": 1,
+      "from": "308.l.38227.t.1",
+      "to": "308.l.38227.t.2",
+      "orig": "308.l.38227.t.1"
+     },
+     {
+      "round": 13,
+      "from": "308.l.38227.t.1",
+      "to": "308.l.38227.t.2",
+      "orig": "308.l.38227.t.1"
+     },
+     {
+      "round": 2,
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.1",
+      "orig": "308.l.38227.t.2"
+     },
+     {
+      "round": 2,
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.1",
+      "orig": "308.l.38227.t.14"
+     }
+    ]
+   },
+   {
+    "id": "1011",
+    "status": "successful",
+    "ts": 1374828722,
+    "a": "308.l.38227.t.2",
+    "b": "308.l.38227.t.14",
+    "players": [
+     {
+      "name": "Clayton Kershaw",
+      "pos": "SP",
+      "from": "308.l.38227.t.14",
+      "to": "308.l.38227.t.2"
+     }
+    ],
+    "picks": [
+     {
+      "round": 1,
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.14",
+      "orig": "308.l.38227.t.2"
+     },
+     {
+      "round": 25,
+      "from": "308.l.38227.t.14",
+      "to": "308.l.38227.t.2",
+      "orig": "308.l.38227.t.14"
+     }
+    ]
+   },
+   {
+    "id": "1021",
+    "status": "vetoed",
+    "ts": 1374860294,
+    "a": "308.l.38227.t.4",
+    "b": "308.l.38227.t.16",
+    "players": [
+     {
+      "name": "Cole Hamels",
+      "pos": "SP",
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.16"
+     },
+     {
+      "name": "Jered Weaver",
+      "pos": "SP",
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.16"
+     }
+    ],
+    "picks": [
+     {
+      "round": 17,
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.16",
+      "orig": "308.l.38227.t.4"
+     },
+     {
+      "round": 18,
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.16",
+      "orig": "308.l.38227.t.4"
+     },
+     {
+      "round": 3,
+      "from": "308.l.38227.t.16",
+      "to": "308.l.38227.t.4",
+      "orig": "308.l.38227.t.16"
+     },
+     {
+      "round": 4,
+      "from": "308.l.38227.t.16",
+      "to": "308.l.38227.t.4",
+      "orig": "308.l.38227.t.16"
+     }
+    ]
+   },
+   {
+    "id": "1030",
+    "status": "successful",
+    "ts": 1374917407,
+    "a": "308.l.38227.t.8",
+    "b": "308.l.38227.t.15",
+    "players": [
+     {
+      "name": "Brad Miller",
+      "pos": "2B,SS",
+      "from": "308.l.38227.t.8",
+      "to": "308.l.38227.t.15"
+     },
+     {
+      "name": "Mark Teixeira",
+      "pos": "1B",
+      "from": "308.l.38227.t.8",
+      "to": "308.l.38227.t.15"
+     },
+     {
+      "name": "Ryan Dempster",
+      "pos": "SP",
+      "from": "308.l.38227.t.8",
+      "to": "308.l.38227.t.15"
+     },
+     {
+      "name": "Erasmo Ramírez",
+      "pos": "SP,RP",
+      "from": "308.l.38227.t.8",
+      "to": "308.l.38227.t.15"
+     },
+     {
+      "name": "Roy Halladay",
+      "pos": "SP",
+      "from": "308.l.38227.t.8",
+      "to": "308.l.38227.t.15"
+     },
+     {
+      "name": "Michael Cuddyer",
+      "pos": "1B,OF",
+      "from": "308.l.38227.t.15",
+      "to": "308.l.38227.t.8"
+     },
+     {
+      "name": "Ryan Zimmerman",
+      "pos": "3B",
+      "from": "308.l.38227.t.15",
+      "to": "308.l.38227.t.8"
+     },
+     {
+      "name": "CC Sabathia",
+      "pos": "SP",
+      "from": "308.l.38227.t.15",
+      "to": "308.l.38227.t.8"
+     },
+     {
+      "name": "Jason Grilli",
+      "pos": "RP",
+      "from": "308.l.38227.t.15",
+      "to": "308.l.38227.t.8"
+     },
+     {
+      "name": "Chris Perez",
+      "pos": "RP",
+      "from": "308.l.38227.t.15",
+      "to": "308.l.38227.t.8"
+     }
+    ],
+    "picks": [
+     {
+      "round": 4,
+      "from": "308.l.38227.t.8",
+      "to": "308.l.38227.t.15",
+      "orig": "308.l.38227.t.6"
+     },
+     {
+      "round": 5,
+      "from": "308.l.38227.t.8",
+      "to": "308.l.38227.t.15",
+      "orig": "308.l.38227.t.8"
+     },
+     {
+      "round": 6,
+      "from": "308.l.38227.t.8",
+      "to": "308.l.38227.t.15",
+      "orig": "308.l.38227.t.8"
+     },
+     {
+      "round": 8,
+      "from": "308.l.38227.t.8",
+      "to": "308.l.38227.t.15",
+      "orig": "308.l.38227.t.8"
+     },
+     {
+      "round": 15,
+      "from": "308.l.38227.t.15",
+      "to": "308.l.38227.t.8",
+      "orig": "308.l.38227.t.15"
+     },
+     {
+      "round": 16,
+      "from": "308.l.38227.t.15",
+      "to": "308.l.38227.t.8",
+      "orig": "308.l.38227.t.15"
+     },
+     {
+      "round": 17,
+      "from": "308.l.38227.t.15",
+      "to": "308.l.38227.t.8",
+      "orig": "308.l.38227.t.15"
+     },
+     {
+      "round": 18,
+      "from": "308.l.38227.t.15",
+      "to": "308.l.38227.t.8",
+      "orig": "308.l.38227.t.15"
+     }
+    ]
+   },
+   {
+    "id": "1038",
+    "status": "successful",
+    "ts": 1375001585,
+    "a": "308.l.38227.t.4",
+    "b": "308.l.38227.t.9",
+    "players": [
+     {
+      "name": "Ernesto Frieri",
+      "pos": "RP",
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.9"
+     },
+     {
+      "name": "Kevin Gregg",
+      "pos": "RP",
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.9"
+     }
+    ],
+    "picks": [
+     {
+      "round": 19,
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.9",
+      "orig": "308.l.38227.t.4"
+     },
+     {
+      "round": 20,
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.9",
+      "orig": "308.l.38227.t.4"
+     },
+     {
+      "round": 10,
+      "from": "308.l.38227.t.9",
+      "to": "308.l.38227.t.4",
+      "orig": "308.l.38227.t.9"
+     },
+     {
+      "round": 17,
+      "from": "308.l.38227.t.9",
+      "to": "308.l.38227.t.4",
+      "orig": "308.l.38227.t.9"
+     }
+    ]
+   },
+   {
+    "id": "1037",
+    "status": "successful",
+    "ts": 1375001585,
+    "a": "308.l.38227.t.16",
+    "b": "308.l.38227.t.14",
+    "players": [
+     {
+      "name": "Nolan Arenado",
+      "pos": "3B",
+      "from": "308.l.38227.t.16",
+      "to": "308.l.38227.t.14"
+     },
+     {
+      "name": "Derek Jeter",
+      "pos": "SS",
+      "from": "308.l.38227.t.16",
+      "to": "308.l.38227.t.14"
+     },
+     {
+      "name": "Adrián Béltre",
+      "pos": "3B",
+      "from": "308.l.38227.t.14",
+      "to": "308.l.38227.t.16"
+     },
+     {
+      "name": "Carlos Beltrán",
+      "pos": "OF",
+      "from": "308.l.38227.t.14",
+      "to": "308.l.38227.t.16"
+     }
+    ],
+    "picks": [
+     {
+      "round": 1,
+      "from": "308.l.38227.t.16",
+      "to": "308.l.38227.t.14",
+      "orig": "308.l.38227.t.16"
+     },
+     {
+      "round": 24,
+      "from": "308.l.38227.t.14",
+      "to": "308.l.38227.t.16",
+      "orig": "308.l.38227.t.14"
+     }
+    ]
+   },
+   {
+    "id": "1036",
+    "status": "successful",
+    "ts": 1375001585,
+    "a": "308.l.38227.t.2",
+    "b": "308.l.38227.t.4",
+    "players": [
+     {
+      "name": "Denard Span",
+      "pos": "OF",
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.4"
+     },
+     {
+      "name": "Michael Young",
+      "pos": "1B,2B,3B",
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.2"
+     }
+    ],
+    "picks": [
+     {
+      "round": 10,
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.4",
+      "orig": "308.l.38227.t.2"
+     },
+     {
+      "round": 23,
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.2",
+      "orig": "308.l.38227.t.12"
+     }
+    ]
+   },
+   {
+    "id": "1056",
+    "status": "successful",
+    "ts": 1375087823,
+    "a": "308.l.38227.t.7",
+    "b": "308.l.38227.t.6",
+    "players": [
+     {
+      "name": "Domonic Brown",
+      "pos": "OF",
+      "from": "308.l.38227.t.7",
+      "to": "308.l.38227.t.6"
+     },
+     {
+      "name": "Hanley Ramírez",
+      "pos": "3B,SS",
+      "from": "308.l.38227.t.6",
+      "to": "308.l.38227.t.7"
+     }
+    ],
+    "picks": [
+     {
+      "round": 12,
+      "from": "308.l.38227.t.7",
+      "to": "308.l.38227.t.6",
+      "orig": "308.l.38227.t.7"
+     },
+     {
+      "round": 14,
+      "from": "308.l.38227.t.6",
+      "to": "308.l.38227.t.7",
+      "orig": "308.l.38227.t.6"
+     }
+    ]
+   },
+   {
+    "id": "1054",
+    "status": "successful",
+    "ts": 1375087823,
+    "a": "308.l.38227.t.4",
+    "b": "308.l.38227.t.5",
+    "players": [
+     {
+      "name": "Cole Hamels",
+      "pos": "SP",
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.5"
+     },
+     {
+      "name": "Jered Weaver",
+      "pos": "SP",
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.5"
+     },
+     {
+      "name": "Shelby Miller",
+      "pos": "SP,RP",
+      "from": "308.l.38227.t.5",
+      "to": "308.l.38227.t.4"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1051",
+    "status": "successful",
+    "ts": 1375087823,
+    "a": "308.l.38227.t.5",
+    "b": "308.l.38227.t.1",
+    "players": [
+     {
+      "name": "Prince Fielder",
+      "pos": "1B",
+      "from": "308.l.38227.t.5",
+      "to": "308.l.38227.t.1"
+     },
+     {
+      "name": "Ben Zobrist",
+      "pos": "2B,SS,OF",
+      "from": "308.l.38227.t.1",
+      "to": "308.l.38227.t.5"
+     },
+     {
+      "name": "David Freese",
+      "pos": "3B",
+      "from": "308.l.38227.t.1",
+      "to": "308.l.38227.t.5"
+     },
+     {
+      "name": "Chris Archer",
+      "pos": "SP",
+      "from": "308.l.38227.t.1",
+      "to": "308.l.38227.t.5"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1106",
+    "status": "successful",
+    "ts": 1375604662,
+    "a": "308.l.38227.t.8",
+    "b": "308.l.38227.t.6",
+    "players": [
+     {
+      "name": "Marco Scutaro",
+      "pos": "2B,3B,SS",
+      "from": "308.l.38227.t.8",
+      "to": "308.l.38227.t.6"
+     },
+     {
+      "name": "Pedro Álvarez",
+      "pos": "3B",
+      "from": "308.l.38227.t.6",
+      "to": "308.l.38227.t.8"
+     }
+    ],
+    "picks": [
+     {
+      "round": 7,
+      "from": "308.l.38227.t.8",
+      "to": "308.l.38227.t.6",
+      "orig": "308.l.38227.t.8"
+     },
+     {
+      "round": 11,
+      "from": "308.l.38227.t.6",
+      "to": "308.l.38227.t.8",
+      "orig": "308.l.38227.t.6"
+     }
+    ]
+   },
+   {
+    "id": "1105",
+    "status": "successful",
+    "ts": 1375604662,
+    "a": "308.l.38227.t.8",
+    "b": "308.l.38227.t.6",
+    "players": [
+     {
+      "name": "Ryan Zimmerman",
+      "pos": "3B",
+      "from": "308.l.38227.t.8",
+      "to": "308.l.38227.t.6"
+     },
+     {
+      "name": "Adrián González",
+      "pos": "1B,OF",
+      "from": "308.l.38227.t.6",
+      "to": "308.l.38227.t.8"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1160",
+    "status": "successful",
+    "ts": 1376037586,
+    "a": "308.l.38227.t.1",
+    "b": "308.l.38227.t.6",
+    "players": [
+     {
+      "name": "Billy Hamilton",
+      "pos": "SS",
+      "from": "308.l.38227.t.1",
+      "to": "308.l.38227.t.6"
+     },
+     {
+      "name": "Andrew Cashner",
+      "pos": "SP,RP",
+      "from": "308.l.38227.t.1",
+      "to": "308.l.38227.t.6"
+     },
+     {
+      "name": "Nick Markakis",
+      "pos": "OF",
+      "from": "308.l.38227.t.6",
+      "to": "308.l.38227.t.1"
+     },
+     {
+      "name": "C.J. Wilson",
+      "pos": "SP",
+      "from": "308.l.38227.t.6",
+      "to": "308.l.38227.t.1"
+     }
+    ],
+    "picks": [
+     {
+      "round": 17,
+      "from": "308.l.38227.t.1",
+      "to": "308.l.38227.t.6",
+      "orig": "308.l.38227.t.1"
+     },
+     {
+      "round": 24,
+      "from": "308.l.38227.t.6",
+      "to": "308.l.38227.t.1",
+      "orig": "308.l.38227.t.6"
+     }
+    ]
+   },
+   {
+    "id": "1173",
+    "status": "successful",
+    "ts": 1376127601,
+    "a": "308.l.38227.t.2",
+    "b": "308.l.38227.t.8",
+    "players": [
+     {
+      "name": "Mike Napoli",
+      "pos": "C,1B",
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.8"
+     },
+     {
+      "name": "Matt Garza",
+      "pos": "SP",
+      "from": "308.l.38227.t.8",
+      "to": "308.l.38227.t.2"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1182",
+    "status": "successful",
+    "ts": 1376301036,
+    "a": "308.l.38227.t.4",
+    "b": "308.l.38227.t.2",
+    "players": [
+     {
+      "name": "Jason Castro",
+      "pos": "C",
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.2"
+     }
+    ],
+    "picks": [
+     {
+      "round": 17,
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.2",
+      "orig": "308.l.38227.t.4"
+     },
+     {
+      "round": 17,
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.2",
+      "orig": "308.l.38227.t.9"
+     },
+     {
+      "round": 15,
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.4",
+      "orig": "308.l.38227.t.2"
+     },
+     {
+      "round": 16,
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.4",
+      "orig": "308.l.38227.t.2"
+     }
+    ]
+   },
+   {
+    "id": "1209",
+    "status": "successful",
+    "ts": 1376560703,
+    "a": "308.l.38227.t.14",
+    "b": "308.l.38227.t.1",
+    "players": [
+     {
+      "name": "David Robertson",
+      "pos": "RP",
+      "from": "308.l.38227.t.14",
+      "to": "308.l.38227.t.1"
+     },
+     {
+      "name": "Danny Salazar",
+      "pos": "SP",
+      "from": "308.l.38227.t.1",
+      "to": "308.l.38227.t.14"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1247",
+    "status": "successful",
+    "ts": 1377082178,
+    "a": "308.l.38227.t.16",
+    "b": "308.l.38227.t.4",
+    "players": [
+     {
+      "name": "Chase Headley",
+      "pos": "3B",
+      "from": "308.l.38227.t.16",
+      "to": "308.l.38227.t.4"
+     },
+     {
+      "name": "Jake Peavy",
+      "pos": "SP",
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.16"
+     }
+    ],
+    "picks": [
+     {
+      "round": 10,
+      "from": "308.l.38227.t.16",
+      "to": "308.l.38227.t.4",
+      "orig": "308.l.38227.t.16"
+     },
+     {
+      "round": 18,
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.16",
+      "orig": "308.l.38227.t.4"
+     }
+    ]
+   },
+   {
+    "id": "1302",
+    "status": "successful",
+    "ts": 1377684972,
+    "a": "308.l.38227.t.11",
+    "b": "308.l.38227.t.12",
+    "players": [
+     {
+      "name": "Adam Dunn",
+      "pos": "1B,OF",
+      "from": "308.l.38227.t.11",
+      "to": "308.l.38227.t.12"
+     },
+     {
+      "name": "Homer Bailey",
+      "pos": "SP",
+      "from": "308.l.38227.t.11",
+      "to": "308.l.38227.t.12"
+     },
+     {
+      "name": "Gerardo Parra",
+      "pos": "OF",
+      "from": "308.l.38227.t.12",
+      "to": "308.l.38227.t.11"
+     }
+    ],
+    "picks": [
+     {
+      "round": 25,
+      "from": "308.l.38227.t.11",
+      "to": "308.l.38227.t.12",
+      "orig": "308.l.38227.t.11"
+     },
+     {
+      "round": 13,
+      "from": "308.l.38227.t.12",
+      "to": "308.l.38227.t.11",
+      "orig": "308.l.38227.t.12"
+     }
+    ]
+   },
+   {
+    "id": "1300",
+    "status": "successful",
+    "ts": 1377684972,
+    "a": "308.l.38227.t.4",
+    "b": "308.l.38227.t.2",
+    "players": [
+     {
+      "name": "Kelvin Herrera",
+      "pos": "RP",
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.2"
+     }
+    ],
+    "picks": [
+     {
+      "round": 14,
+      "from": "308.l.38227.t.4",
+      "to": "308.l.38227.t.2",
+      "orig": "308.l.38227.t.4"
+     },
+     {
+      "round": 13,
+      "from": "308.l.38227.t.2",
+      "to": "308.l.38227.t.4",
+      "orig": "308.l.38227.t.1"
+     }
+    ]
+   }
+  ]
+ },
+ "2014": {
+  "key": "328.l.6273",
+  "start": "2014-03-22",
+  "end": "2014-09-21",
+  "teams": {
+   "328.l.6273.t.1": "Asche Larry",
+   "328.l.6273.t.2": "The Skiman",
+   "328.l.6273.t.3": "dayman ahhhhhhh",
+   "328.l.6273.t.4": "Norf",
+   "328.l.6273.t.5": "THE TRAPMAN",
+   "328.l.6273.t.6": "I Profar Dos Equis",
+   "328.l.6273.t.7": "Marcin GorTAT",
+   "328.l.6273.t.8": "Bulba",
+   "328.l.6273.t.9": "Rally Beers",
+   "328.l.6273.t.10": "Los Pollos Giancarlo",
+   "328.l.6273.t.11": "Nasty Nate",
+   "328.l.6273.t.12": "Robbers",
+   "328.l.6273.t.13": "Simuno",
+   "328.l.6273.t.14": "#GTAT",
+   "328.l.6273.t.15": "Steve Nebraska",
+   "328.l.6273.t.16": "Biscuits"
+  },
+  "trades": [
+   {
+    "id": "100",
+    "status": "successful",
+    "ts": 1395215202,
+    "a": "328.l.6273.t.11",
+    "b": "328.l.6273.t.5",
+    "players": [
+     {
+      "name": "Alex Rios",
+      "pos": "OF",
+      "from": "328.l.6273.t.11",
+      "to": "328.l.6273.t.5"
+     },
+     {
+      "name": "Brett Gardner",
+      "pos": "OF",
+      "from": "328.l.6273.t.11",
+      "to": "328.l.6273.t.5"
+     },
+     {
+      "name": "Adam Jones",
+      "pos": "OF",
+      "from": "328.l.6273.t.5",
+      "to": "328.l.6273.t.11"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "358",
+    "status": "successful",
+    "ts": 1398502111,
+    "a": "328.l.6273.t.2",
+    "b": "328.l.6273.t.3",
+    "players": [
+     {
+      "name": "Albert Pujols",
+      "pos": "1B",
+      "from": "328.l.6273.t.2",
+      "to": "328.l.6273.t.3"
+     },
+     {
+      "name": "Tyson Ross",
+      "pos": "SP,RP",
+      "from": "328.l.6273.t.2",
+      "to": "328.l.6273.t.3"
+     },
+     {
+      "name": "Bryce Harper",
+      "pos": "OF",
+      "from": "328.l.6273.t.3",
+      "to": "328.l.6273.t.2"
+     },
+     {
+      "name": "Andrew Cashner",
+      "pos": "SP,RP",
+      "from": "328.l.6273.t.3",
+      "to": "328.l.6273.t.2"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "395",
+    "status": "successful",
+    "ts": 1398930466,
+    "a": "328.l.6273.t.7",
+    "b": "328.l.6273.t.3",
+    "players": [
+     {
+      "name": "Josh Beckett",
+      "pos": "SP",
+      "from": "328.l.6273.t.7",
+      "to": "328.l.6273.t.3"
+     },
+     {
+      "name": "David Carpenter",
+      "pos": "RP",
+      "from": "328.l.6273.t.3",
+      "to": "328.l.6273.t.7"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "585",
+    "status": "successful",
+    "ts": 1400832301,
+    "a": "328.l.6273.t.7",
+    "b": "328.l.6273.t.9",
+    "players": [
+     {
+      "name": "Brad Miller",
+      "pos": "2B,SS",
+      "from": "328.l.6273.t.7",
+      "to": "328.l.6273.t.9"
+     },
+     {
+      "name": "Dayan Viciedo",
+      "pos": "OF",
+      "from": "328.l.6273.t.9",
+      "to": "328.l.6273.t.7"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "607",
+    "status": "successful",
+    "ts": 1401177012,
+    "a": "328.l.6273.t.9",
+    "b": "328.l.6273.t.3",
+    "players": [
+     {
+      "name": "Angel Pagan",
+      "pos": "OF",
+      "from": "328.l.6273.t.9",
+      "to": "328.l.6273.t.3"
+     },
+     {
+      "name": "Kolten Wong",
+      "pos": "2B",
+      "from": "328.l.6273.t.9",
+      "to": "328.l.6273.t.3"
+     },
+     {
+      "name": "Anthony Rendon",
+      "pos": "2B,3B",
+      "from": "328.l.6273.t.3",
+      "to": "328.l.6273.t.9"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "652",
+    "status": "successful",
+    "ts": 1401699345,
+    "a": "328.l.6273.t.2",
+    "b": "328.l.6273.t.1",
+    "players": [
+     {
+      "name": "Mike Trout",
+      "pos": "OF",
+      "from": "328.l.6273.t.2",
+      "to": "328.l.6273.t.1"
+     },
+     {
+      "name": "Bryce Harper",
+      "pos": "OF",
+      "from": "328.l.6273.t.2",
+      "to": "328.l.6273.t.1"
+     },
+     {
+      "name": "Gerrit Cole",
+      "pos": "SP",
+      "from": "328.l.6273.t.2",
+      "to": "328.l.6273.t.1"
+     },
+     {
+      "name": "Sean Doolittle",
+      "pos": "RP",
+      "from": "328.l.6273.t.2",
+      "to": "328.l.6273.t.1"
+     },
+     {
+      "name": "Charlie Blackmon",
+      "pos": "OF",
+      "from": "328.l.6273.t.1",
+      "to": "328.l.6273.t.2"
+     },
+     {
+      "name": "Luke Gregerson",
+      "pos": "RP",
+      "from": "328.l.6273.t.1",
+      "to": "328.l.6273.t.2"
+     },
+     {
+      "name": "Jose Fernandez",
+      "pos": "SP",
+      "from": "328.l.6273.t.1",
+      "to": "328.l.6273.t.2"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "676",
+    "status": "successful",
+    "ts": 1401869407,
+    "a": "328.l.6273.t.5",
+    "b": "328.l.6273.t.2",
+    "players": [
+     {
+      "name": "Brian Dozier",
+      "pos": "2B",
+      "from": "328.l.6273.t.5",
+      "to": "328.l.6273.t.2"
+     },
+     {
+      "name": "Leonys Martin",
+      "pos": "OF",
+      "from": "328.l.6273.t.2",
+      "to": "328.l.6273.t.5"
+     },
+     {
+      "name": "R.A. Dickey",
+      "pos": "SP",
+      "from": "328.l.6273.t.2",
+      "to": "328.l.6273.t.5"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "750",
+    "status": "successful",
+    "ts": 1402646745,
+    "a": "328.l.6273.t.5",
+    "b": "328.l.6273.t.2",
+    "players": [
+     {
+      "name": "Julio Teheran",
+      "pos": "SP",
+      "from": "328.l.6273.t.5",
+      "to": "328.l.6273.t.2"
+     },
+     {
+      "name": "Pedro Álvarez",
+      "pos": "1B,3B",
+      "from": "328.l.6273.t.2",
+      "to": "328.l.6273.t.5"
+     },
+     {
+      "name": "Chris Sale",
+      "pos": "SP",
+      "from": "328.l.6273.t.2",
+      "to": "328.l.6273.t.5"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "816",
+    "status": "successful",
+    "ts": 1403513747,
+    "a": "328.l.6273.t.11",
+    "b": "328.l.6273.t.5",
+    "players": [
+     {
+      "name": "Brandon Phillips",
+      "pos": "2B",
+      "from": "328.l.6273.t.11",
+      "to": "328.l.6273.t.5"
+     },
+     {
+      "name": "Hiroki Kuroda",
+      "pos": "SP",
+      "from": "328.l.6273.t.11",
+      "to": "328.l.6273.t.5"
+     },
+     {
+      "name": "Chris Sale",
+      "pos": "SP",
+      "from": "328.l.6273.t.5",
+      "to": "328.l.6273.t.11"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "863",
+    "status": "successful",
+    "ts": 1404119303,
+    "a": "328.l.6273.t.10",
+    "b": "328.l.6273.t.1",
+    "players": [
+     {
+      "name": "Zack Greinke",
+      "pos": "SP",
+      "from": "328.l.6273.t.10",
+      "to": "328.l.6273.t.1"
+     },
+     {
+      "name": "Manny Machado",
+      "pos": "3B",
+      "from": "328.l.6273.t.1",
+      "to": "328.l.6273.t.10"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "893",
+    "status": "successful",
+    "ts": 1404375236,
+    "a": "328.l.6273.t.2",
+    "b": "328.l.6273.t.5",
+    "players": [
+     {
+      "name": "Miguel Montero",
+      "pos": "C",
+      "from": "328.l.6273.t.2",
+      "to": "328.l.6273.t.5"
+     },
+     {
+      "name": "Alcides Escobar",
+      "pos": "SS",
+      "from": "328.l.6273.t.5",
+      "to": "328.l.6273.t.2"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "934",
+    "status": "successful",
+    "ts": 1404811379,
+    "a": "328.l.6273.t.5",
+    "b": "328.l.6273.t.3",
+    "players": [
+     {
+      "name": "Alexei Ramirez",
+      "pos": "SS",
+      "from": "328.l.6273.t.5",
+      "to": "328.l.6273.t.3"
+     },
+     {
+      "name": "Yovani Gallardo",
+      "pos": "SP",
+      "from": "328.l.6273.t.3",
+      "to": "328.l.6273.t.5"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "952",
+    "status": "successful",
+    "ts": 1404999678,
+    "a": "328.l.6273.t.15",
+    "b": "328.l.6273.t.5",
+    "players": [
+     {
+      "name": "Lance Lynn",
+      "pos": "SP",
+      "from": "328.l.6273.t.15",
+      "to": "328.l.6273.t.5"
+     },
+     {
+      "name": "Pedro Álvarez",
+      "pos": "1B,3B",
+      "from": "328.l.6273.t.5",
+      "to": "328.l.6273.t.15"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "997",
+    "status": "successful",
+    "ts": 1406018149,
+    "a": "328.l.6273.t.1",
+    "b": "328.l.6273.t.5",
+    "players": [
+     {
+      "name": "Martín Prado",
+      "pos": "2B,3B,OF",
+      "from": "328.l.6273.t.1",
+      "to": "328.l.6273.t.5"
+     },
+     {
+      "name": "Sean Doolittle",
+      "pos": "RP",
+      "from": "328.l.6273.t.1",
+      "to": "328.l.6273.t.5"
+     },
+     {
+      "name": "Alex Rios",
+      "pos": "OF",
+      "from": "328.l.6273.t.5",
+      "to": "328.l.6273.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1161",
+    "status": "successful",
+    "ts": 1407749998,
+    "a": "328.l.6273.t.11",
+    "b": "328.l.6273.t.4",
+    "players": [
+     {
+      "name": "Shelby Miller",
+      "pos": "SP",
+      "from": "328.l.6273.t.11",
+      "to": "328.l.6273.t.4"
+     },
+     {
+      "name": "Ian Desmond",
+      "pos": "SS",
+      "from": "328.l.6273.t.4",
+      "to": "328.l.6273.t.11"
+     },
+     {
+      "name": "Huston Street",
+      "pos": "RP",
+      "from": "328.l.6273.t.4",
+      "to": "328.l.6273.t.11"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1174",
+    "status": "vetoed",
+    "ts": 1407896265,
+    "a": "328.l.6273.t.3",
+    "b": "328.l.6273.t.1",
+    "players": [
+     {
+      "name": "Clayton Kershaw",
+      "pos": "SP",
+      "from": "328.l.6273.t.3",
+      "to": "328.l.6273.t.1"
+     },
+     {
+      "name": "Mike Zunino",
+      "pos": "C",
+      "from": "328.l.6273.t.1",
+      "to": "328.l.6273.t.3"
+     },
+     {
+      "name": "Aaron Sanchez",
+      "pos": "SP,RP",
+      "from": "328.l.6273.t.1",
+      "to": "328.l.6273.t.3"
+     },
+     {
+      "name": "Kenley Jansen",
+      "pos": "RP",
+      "from": "328.l.6273.t.1",
+      "to": "328.l.6273.t.3"
+     },
+     {
+      "name": "Koji Uehara",
+      "pos": "RP",
+      "from": "328.l.6273.t.1",
+      "to": "328.l.6273.t.3"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1182",
+    "status": "successful",
+    "ts": 1407919625,
+    "a": "328.l.6273.t.3",
+    "b": "328.l.6273.t.15",
+    "players": [
+     {
+      "name": "Albert Pujols",
+      "pos": "1B",
+      "from": "328.l.6273.t.3",
+      "to": "328.l.6273.t.15"
+     },
+     {
+      "name": "Adrián Béltre",
+      "pos": "3B",
+      "from": "328.l.6273.t.3",
+      "to": "328.l.6273.t.15"
+     },
+     {
+      "name": "Danny Santana",
+      "pos": "2B,SS,OF",
+      "from": "328.l.6273.t.3",
+      "to": "328.l.6273.t.15"
+     },
+     {
+      "name": "Garrett Richards",
+      "pos": "SP,RP",
+      "from": "328.l.6273.t.15",
+      "to": "328.l.6273.t.3"
+     },
+     {
+      "name": "Matt Harvey",
+      "pos": "SP",
+      "from": "328.l.6273.t.15",
+      "to": "328.l.6273.t.3"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1177",
+    "status": "successful",
+    "ts": 1407919625,
+    "a": "328.l.6273.t.10",
+    "b": "328.l.6273.t.9",
+    "players": [
+     {
+      "name": "Jayson Werth",
+      "pos": "OF",
+      "from": "328.l.6273.t.10",
+      "to": "328.l.6273.t.9"
+     },
+     {
+      "name": "Derek Norris",
+      "pos": "C",
+      "from": "328.l.6273.t.9",
+      "to": "328.l.6273.t.10"
+     },
+     {
+      "name": "Brett Lawrie",
+      "pos": "2B,3B",
+      "from": "328.l.6273.t.9",
+      "to": "328.l.6273.t.10"
+     },
+     {
+      "name": "Jake Petricka",
+      "pos": "RP",
+      "from": "328.l.6273.t.9",
+      "to": "328.l.6273.t.10"
+     },
+     {
+      "name": "Héctor Rondón",
+      "pos": "RP",
+      "from": "328.l.6273.t.9",
+      "to": "328.l.6273.t.10"
+     },
+     {
+      "name": "Neftali Feliz",
+      "pos": "RP",
+      "from": "328.l.6273.t.9",
+      "to": "328.l.6273.t.10"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1190",
+    "status": "successful",
+    "ts": 1407919626,
+    "a": "328.l.6273.t.5",
+    "b": "328.l.6273.t.16",
+    "players": [
+     {
+      "name": "Jonathan Lucroy",
+      "pos": "C,1B",
+      "from": "328.l.6273.t.5",
+      "to": "328.l.6273.t.16"
+     },
+     {
+      "name": "Pablo Sandoval",
+      "pos": "3B",
+      "from": "328.l.6273.t.16",
+      "to": "328.l.6273.t.5"
+     },
+     {
+      "name": "Asdrúbal Cabrera",
+      "pos": "2B,SS",
+      "from": "328.l.6273.t.16",
+      "to": "328.l.6273.t.5"
+     },
+     {
+      "name": "Joe Mauer",
+      "pos": "C,1B",
+      "from": "328.l.6273.t.16",
+      "to": "328.l.6273.t.5"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1189",
+    "status": "successful",
+    "ts": 1407919626,
+    "a": "328.l.6273.t.15",
+    "b": "328.l.6273.t.16",
+    "players": [
+     {
+      "name": "Daniel Murphy",
+      "pos": "1B,2B,3B",
+      "from": "328.l.6273.t.15",
+      "to": "328.l.6273.t.16"
+     },
+     {
+      "name": "Dustin McGowan",
+      "pos": "SP,RP",
+      "from": "328.l.6273.t.15",
+      "to": "328.l.6273.t.16"
+     },
+     {
+      "name": "Jason Kipnis",
+      "pos": "2B",
+      "from": "328.l.6273.t.16",
+      "to": "328.l.6273.t.15"
+     },
+     {
+      "name": "Adam Wainwright",
+      "pos": "SP",
+      "from": "328.l.6273.t.16",
+      "to": "328.l.6273.t.15"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1188",
+    "status": "successful",
+    "ts": 1407919626,
+    "a": "328.l.6273.t.13",
+    "b": "328.l.6273.t.11",
+    "players": [
+     {
+      "name": "Aroldis Chapman",
+      "pos": "RP",
+      "from": "328.l.6273.t.13",
+      "to": "328.l.6273.t.11"
+     },
+     {
+      "name": "Everth Cabrera",
+      "pos": "SS",
+      "from": "328.l.6273.t.11",
+      "to": "328.l.6273.t.13"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1186",
+    "status": "successful",
+    "ts": 1407919626,
+    "a": "328.l.6273.t.11",
+    "b": "328.l.6273.t.13",
+    "players": [
+     {
+      "name": "Johnny Cueto",
+      "pos": "SP",
+      "from": "328.l.6273.t.11",
+      "to": "328.l.6273.t.13"
+     },
+     {
+      "name": "Brian Matusz",
+      "pos": "RP",
+      "from": "328.l.6273.t.11",
+      "to": "328.l.6273.t.13"
+     },
+     {
+      "name": "Dustin Pedroia",
+      "pos": "2B",
+      "from": "328.l.6273.t.13",
+      "to": "328.l.6273.t.11"
+     },
+     {
+      "name": "José Reyes",
+      "pos": "SS",
+      "from": "328.l.6273.t.13",
+      "to": "328.l.6273.t.11"
+     },
+     {
+      "name": "Joey Votto",
+      "pos": "1B",
+      "from": "328.l.6273.t.13",
+      "to": "328.l.6273.t.11"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1185",
+    "status": "successful",
+    "ts": 1407919626,
+    "a": "328.l.6273.t.7",
+    "b": "328.l.6273.t.11",
+    "players": [
+     {
+      "name": "Craig Kimbrel",
+      "pos": "RP",
+      "from": "328.l.6273.t.7",
+      "to": "328.l.6273.t.11"
+     },
+     {
+      "name": "Jordan Zimmermann",
+      "pos": "SP",
+      "from": "328.l.6273.t.11",
+      "to": "328.l.6273.t.7"
+     }
+    ],
+    "picks": []
+   }
+  ]
+ },
+ "2015": {
+  "key": "346.l.1405",
+  "start": "2015-04-05",
+  "end": "2015-09-27",
+  "teams": {
+   "346.l.1405.t.1": "Asche Larry",
+   "346.l.1405.t.2": "Bulba",
+   "346.l.1405.t.3": "10ThngsIHateAboutRyu",
+   "346.l.1405.t.4": "Tsuyoshi Shinjo",
+   "346.l.1405.t.5": "Taqueria Sucia",
+   "346.l.1405.t.6": "THE TRAPMAN",
+   "346.l.1405.t.7": "Enrico Pallazzo",
+   "346.l.1405.t.8": "Hakuna Moncada",
+   "346.l.1405.t.9": "Baby Fark McGee-zax",
+   "346.l.1405.t.10": "Robbers",
+   "346.l.1405.t.11": "Biscuits",
+   "346.l.1405.t.12": "Mario Mendoza",
+   "346.l.1405.t.13": "The Master Batters",
+   "346.l.1405.t.14": "Simuno",
+   "346.l.1405.t.15": "Steve Nebraska",
+   "346.l.1405.t.16": "The Skiman"
+  },
+  "trades": [
+   {
+    "id": "97",
+    "status": "successful",
+    "ts": 1428219999,
+    "a": "346.l.1405.t.16",
+    "b": "346.l.1405.t.5",
+    "players": [
+     {
+      "name": "Michael Pineda",
+      "pos": "SP",
+      "from": "346.l.1405.t.16",
+      "to": "346.l.1405.t.5"
+     },
+     {
+      "name": "Jose Quintana",
+      "pos": "SP",
+      "from": "346.l.1405.t.5",
+      "to": "346.l.1405.t.16"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "468",
+    "status": "successful",
+    "ts": 1432626408,
+    "a": "346.l.1405.t.6",
+    "b": "346.l.1405.t.1",
+    "players": [
+     {
+      "name": "Blake Swihart",
+      "pos": "C",
+      "from": "346.l.1405.t.6",
+      "to": "346.l.1405.t.1"
+     },
+     {
+      "name": "Tony Watson",
+      "pos": "RP",
+      "from": "346.l.1405.t.6",
+      "to": "346.l.1405.t.1"
+     },
+     {
+      "name": "Freddy Galvis",
+      "pos": "3B,SS",
+      "from": "346.l.1405.t.1",
+      "to": "346.l.1405.t.6"
+     },
+     {
+      "name": "Fernando Rodney",
+      "pos": "RP",
+      "from": "346.l.1405.t.1",
+      "to": "346.l.1405.t.6"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "866",
+    "status": "successful",
+    "ts": 1437641444,
+    "a": "346.l.1405.t.6",
+    "b": "346.l.1405.t.16",
+    "players": [
+     {
+      "name": "Kyle Schwarber",
+      "pos": "C,OF",
+      "from": "346.l.1405.t.6",
+      "to": "346.l.1405.t.16"
+     },
+     {
+      "name": "Chris Archer",
+      "pos": "SP",
+      "from": "346.l.1405.t.6",
+      "to": "346.l.1405.t.16"
+     },
+     {
+      "name": "Avisaíl García",
+      "pos": "OF",
+      "from": "346.l.1405.t.16",
+      "to": "346.l.1405.t.6"
+     },
+     {
+      "name": "Glen Perkins",
+      "pos": "RP",
+      "from": "346.l.1405.t.16",
+      "to": "346.l.1405.t.6"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "938",
+    "status": "successful",
+    "ts": 1438592453,
+    "a": "346.l.1405.t.6",
+    "b": "346.l.1405.t.15",
+    "players": [
+     {
+      "name": "Mookie Betts",
+      "pos": "2B,OF",
+      "from": "346.l.1405.t.6",
+      "to": "346.l.1405.t.15"
+     },
+     {
+      "name": "Carlos Santana",
+      "pos": "C,1B,3B",
+      "from": "346.l.1405.t.15",
+      "to": "346.l.1405.t.6"
+     },
+     {
+      "name": "Matt Harvey",
+      "pos": "SP",
+      "from": "346.l.1405.t.15",
+      "to": "346.l.1405.t.6"
+     },
+     {
+      "name": "Chris Heston",
+      "pos": "SP,RP",
+      "from": "346.l.1405.t.15",
+      "to": "346.l.1405.t.6"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "949",
+    "status": "successful",
+    "ts": 1438674414,
+    "a": "346.l.1405.t.9",
+    "b": "346.l.1405.t.16",
+    "players": [
+     {
+      "name": "Ken Giles",
+      "pos": "RP",
+      "from": "346.l.1405.t.9",
+      "to": "346.l.1405.t.16"
+     },
+     {
+      "name": "Joey Gallo",
+      "pos": "3B,OF",
+      "from": "346.l.1405.t.16",
+      "to": "346.l.1405.t.9"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "962",
+    "status": "successful",
+    "ts": 1438765318,
+    "a": "346.l.1405.t.6",
+    "b": "346.l.1405.t.1",
+    "players": [
+     {
+      "name": "Carlos Martínez",
+      "pos": "SP,RP",
+      "from": "346.l.1405.t.6",
+      "to": "346.l.1405.t.1"
+     },
+     {
+      "name": "Kole Calhoun",
+      "pos": "OF",
+      "from": "346.l.1405.t.1",
+      "to": "346.l.1405.t.6"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "970",
+    "status": "vetoed",
+    "ts": 1438830531,
+    "a": "346.l.1405.t.16",
+    "b": "346.l.1405.t.2",
+    "players": [
+     {
+      "name": "Kyle Schwarber",
+      "pos": "C,OF",
+      "from": "346.l.1405.t.16",
+      "to": "346.l.1405.t.2"
+     },
+     {
+      "name": "Aaron Nola",
+      "pos": "SP",
+      "from": "346.l.1405.t.16",
+      "to": "346.l.1405.t.2"
+     },
+     {
+      "name": "Travis d'Arnaud",
+      "pos": "C",
+      "from": "346.l.1405.t.2",
+      "to": "346.l.1405.t.16"
+     },
+     {
+      "name": "AJ Ramos",
+      "pos": "RP",
+      "from": "346.l.1405.t.2",
+      "to": "346.l.1405.t.16"
+     },
+     {
+      "name": "Mark Lowe",
+      "pos": "RP",
+      "from": "346.l.1405.t.2",
+      "to": "346.l.1405.t.16"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "982",
+    "status": "vetoed",
+    "ts": 1438956118,
+    "a": "346.l.1405.t.1",
+    "b": "346.l.1405.t.9",
+    "players": [
+     {
+      "name": "Dee Strange-Gordon",
+      "pos": "2B",
+      "from": "346.l.1405.t.1",
+      "to": "346.l.1405.t.9"
+     },
+     {
+      "name": "Stephen Piscotty",
+      "pos": "1B,OF",
+      "from": "346.l.1405.t.1",
+      "to": "346.l.1405.t.9"
+     },
+     {
+      "name": "Matthew Boyd",
+      "pos": "SP",
+      "from": "346.l.1405.t.1",
+      "to": "346.l.1405.t.9"
+     },
+     {
+      "name": "Ben Zobrist",
+      "pos": "2B,SS,OF",
+      "from": "346.l.1405.t.9",
+      "to": "346.l.1405.t.1"
+     },
+     {
+      "name": "Clayton Kershaw",
+      "pos": "SP",
+      "from": "346.l.1405.t.9",
+      "to": "346.l.1405.t.1"
+     },
+     {
+      "name": "Max Scherzer",
+      "pos": "SP",
+      "from": "346.l.1405.t.9",
+      "to": "346.l.1405.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "983",
+    "status": "vetoed",
+    "ts": 1438956763,
+    "a": "346.l.1405.t.16",
+    "b": "346.l.1405.t.9",
+    "players": [
+     {
+      "name": "Chris Archer",
+      "pos": "SP",
+      "from": "346.l.1405.t.16",
+      "to": "346.l.1405.t.9"
+     },
+     {
+      "name": "Luis Severino",
+      "pos": "SP,RP",
+      "from": "346.l.1405.t.16",
+      "to": "346.l.1405.t.9"
+     },
+     {
+      "name": "Ben Zobrist",
+      "pos": "2B,SS,OF",
+      "from": "346.l.1405.t.9",
+      "to": "346.l.1405.t.16"
+     },
+     {
+      "name": "Clayton Kershaw",
+      "pos": "SP",
+      "from": "346.l.1405.t.9",
+      "to": "346.l.1405.t.16"
+     },
+     {
+      "name": "Max Scherzer",
+      "pos": "SP",
+      "from": "346.l.1405.t.9",
+      "to": "346.l.1405.t.16"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "984",
+    "status": "vetoed",
+    "ts": 1438976447,
+    "a": "346.l.1405.t.1",
+    "b": "346.l.1405.t.9",
+    "players": [
+     {
+      "name": "Dee Strange-Gordon",
+      "pos": "2B",
+      "from": "346.l.1405.t.1",
+      "to": "346.l.1405.t.9"
+     },
+     {
+      "name": "Stephen Piscotty",
+      "pos": "1B,OF",
+      "from": "346.l.1405.t.1",
+      "to": "346.l.1405.t.9"
+     },
+     {
+      "name": "Daniel Norris",
+      "pos": "SP",
+      "from": "346.l.1405.t.1",
+      "to": "346.l.1405.t.9"
+     },
+     {
+      "name": "Ben Zobrist",
+      "pos": "2B,SS,OF",
+      "from": "346.l.1405.t.9",
+      "to": "346.l.1405.t.1"
+     },
+     {
+      "name": "Clayton Kershaw",
+      "pos": "SP",
+      "from": "346.l.1405.t.9",
+      "to": "346.l.1405.t.1"
+     },
+     {
+      "name": "Max Scherzer",
+      "pos": "SP",
+      "from": "346.l.1405.t.9",
+      "to": "346.l.1405.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "995",
+    "status": "successful",
+    "ts": 1439106464,
+    "a": "346.l.1405.t.8",
+    "b": "346.l.1405.t.14",
+    "players": [
+     {
+      "name": "Paul Goldschmidt",
+      "pos": "1B",
+      "from": "346.l.1405.t.8",
+      "to": "346.l.1405.t.14"
+     },
+     {
+      "name": "Ian Kinsler",
+      "pos": "2B",
+      "from": "346.l.1405.t.8",
+      "to": "346.l.1405.t.14"
+     },
+     {
+      "name": "Ryan Zimmerman",
+      "pos": "1B,3B,OF",
+      "from": "346.l.1405.t.8",
+      "to": "346.l.1405.t.14"
+     },
+     {
+      "name": "Jay Bruce",
+      "pos": "OF",
+      "from": "346.l.1405.t.8",
+      "to": "346.l.1405.t.14"
+     },
+     {
+      "name": "Jon Lester",
+      "pos": "SP",
+      "from": "346.l.1405.t.8",
+      "to": "346.l.1405.t.14"
+     },
+     {
+      "name": "Kendrys Morales",
+      "pos": "1B",
+      "from": "346.l.1405.t.14",
+      "to": "346.l.1405.t.8"
+     },
+     {
+      "name": "Miguel Sanó",
+      "pos": "3B,SS",
+      "from": "346.l.1405.t.14",
+      "to": "346.l.1405.t.8"
+     },
+     {
+      "name": "Christian Yelich",
+      "pos": "OF",
+      "from": "346.l.1405.t.14",
+      "to": "346.l.1405.t.8"
+     },
+     {
+      "name": "Iván Nova",
+      "pos": "SP",
+      "from": "346.l.1405.t.14",
+      "to": "346.l.1405.t.8"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1001",
+    "status": "successful",
+    "ts": 1439173840,
+    "a": "346.l.1405.t.16",
+    "b": "346.l.1405.t.2",
+    "players": [
+     {
+      "name": "Kyle Schwarber",
+      "pos": "C,OF",
+      "from": "346.l.1405.t.16",
+      "to": "346.l.1405.t.2"
+     },
+     {
+      "name": "Aaron Nola",
+      "pos": "SP",
+      "from": "346.l.1405.t.16",
+      "to": "346.l.1405.t.2"
+     },
+     {
+      "name": "Travis d'Arnaud",
+      "pos": "C",
+      "from": "346.l.1405.t.2",
+      "to": "346.l.1405.t.16"
+     },
+     {
+      "name": "Prince Fielder",
+      "pos": "1B",
+      "from": "346.l.1405.t.2",
+      "to": "346.l.1405.t.16"
+     },
+     {
+      "name": "AJ Ramos",
+      "pos": "RP",
+      "from": "346.l.1405.t.2",
+      "to": "346.l.1405.t.16"
+     },
+     {
+      "name": "Mark Lowe",
+      "pos": "RP",
+      "from": "346.l.1405.t.2",
+      "to": "346.l.1405.t.16"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1012",
+    "status": "successful",
+    "ts": 1439279446,
+    "a": "346.l.1405.t.9",
+    "b": "346.l.1405.t.16",
+    "players": [
+     {
+      "name": "Ben Zobrist",
+      "pos": "2B,SS,OF",
+      "from": "346.l.1405.t.9",
+      "to": "346.l.1405.t.16"
+     },
+     {
+      "name": "Clayton Kershaw",
+      "pos": "SP",
+      "from": "346.l.1405.t.9",
+      "to": "346.l.1405.t.16"
+     },
+     {
+      "name": "Max Scherzer",
+      "pos": "SP",
+      "from": "346.l.1405.t.9",
+      "to": "346.l.1405.t.16"
+     },
+     {
+      "name": "Xander Bogaerts",
+      "pos": "3B,SS",
+      "from": "346.l.1405.t.16",
+      "to": "346.l.1405.t.9"
+     },
+     {
+      "name": "Trevor Bauer",
+      "pos": "SP",
+      "from": "346.l.1405.t.16",
+      "to": "346.l.1405.t.9"
+     },
+     {
+      "name": "Luis Severino",
+      "pos": "SP,RP",
+      "from": "346.l.1405.t.16",
+      "to": "346.l.1405.t.9"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1011",
+    "status": "successful",
+    "ts": 1439279446,
+    "a": "346.l.1405.t.16",
+    "b": "346.l.1405.t.13",
+    "players": [
+     {
+      "name": "Josh Hamilton",
+      "pos": "OF",
+      "from": "346.l.1405.t.16",
+      "to": "346.l.1405.t.13"
+     },
+     {
+      "name": "Robbie Ray",
+      "pos": "SP",
+      "from": "346.l.1405.t.16",
+      "to": "346.l.1405.t.13"
+     },
+     {
+      "name": "Yunel Escobar",
+      "pos": "3B,SS",
+      "from": "346.l.1405.t.13",
+      "to": "346.l.1405.t.16"
+     },
+     {
+      "name": "Dellin Betances",
+      "pos": "RP",
+      "from": "346.l.1405.t.13",
+      "to": "346.l.1405.t.16"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1029",
+    "status": "successful",
+    "ts": 1439452851,
+    "a": "346.l.1405.t.10",
+    "b": "346.l.1405.t.15",
+    "players": [
+     {
+      "name": "Todd Frazier",
+      "pos": "1B,3B",
+      "from": "346.l.1405.t.10",
+      "to": "346.l.1405.t.15"
+     },
+     {
+      "name": "Matt Duffy",
+      "pos": "2B,3B,SS",
+      "from": "346.l.1405.t.15",
+      "to": "346.l.1405.t.10"
+     },
+     {
+      "name": "Miguel Cabrera",
+      "pos": "1B,3B",
+      "from": "346.l.1405.t.15",
+      "to": "346.l.1405.t.10"
+     },
+     {
+      "name": "Arodys Vizcaíno",
+      "pos": "RP",
+      "from": "346.l.1405.t.15",
+      "to": "346.l.1405.t.10"
+     },
+     {
+      "name": "Stephen Strasburg",
+      "pos": "SP",
+      "from": "346.l.1405.t.15",
+      "to": "346.l.1405.t.10"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1027",
+    "status": "successful",
+    "ts": 1439452851,
+    "a": "346.l.1405.t.9",
+    "b": "346.l.1405.t.10",
+    "players": [
+     {
+      "name": "David Ortiz",
+      "pos": "1B",
+      "from": "346.l.1405.t.9",
+      "to": "346.l.1405.t.10"
+     },
+     {
+      "name": "José Bautista",
+      "pos": "1B,OF",
+      "from": "346.l.1405.t.9",
+      "to": "346.l.1405.t.10"
+     },
+     {
+      "name": "Lucas Duda",
+      "pos": "1B",
+      "from": "346.l.1405.t.10",
+      "to": "346.l.1405.t.9"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1025",
+    "status": "successful",
+    "ts": 1439452851,
+    "a": "346.l.1405.t.8",
+    "b": "346.l.1405.t.3",
+    "players": [
+     {
+      "name": "Dexter Fowler",
+      "pos": "OF",
+      "from": "346.l.1405.t.8",
+      "to": "346.l.1405.t.3"
+     },
+     {
+      "name": "Cole Hamels",
+      "pos": "SP",
+      "from": "346.l.1405.t.8",
+      "to": "346.l.1405.t.3"
+     },
+     {
+      "name": "Kelvin Herrera",
+      "pos": "RP",
+      "from": "346.l.1405.t.8",
+      "to": "346.l.1405.t.3"
+     },
+     {
+      "name": "Andrew Heaney",
+      "pos": "SP",
+      "from": "346.l.1405.t.3",
+      "to": "346.l.1405.t.8"
+     },
+     {
+      "name": "Rubby De La Rosa",
+      "pos": "SP",
+      "from": "346.l.1405.t.3",
+      "to": "346.l.1405.t.8"
+     }
+    ],
+    "picks": []
+   }
+  ]
+ },
+ "2016": {
+  "key": "357.l.2288",
+  "start": "2016-04-03",
+  "end": "2016-09-25",
+  "teams": {
+   "357.l.2288.t.1": "Moses Buttfish",
+   "357.l.2288.t.2": "Hakuna Moncada",
+   "357.l.2288.t.3": "THE TRAPMAN",
+   "357.l.2288.t.4": "Enrico Pallazzo",
+   "357.l.2288.t.5": "The Skiman",
+   "357.l.2288.t.6": "Steve Nebraska",
+   "357.l.2288.t.7": "Biscuits",
+   "357.l.2288.t.8": "Bulba",
+   "357.l.2288.t.9": "Taqueria Sucia",
+   "357.l.2288.t.10": "Simuno",
+   "357.l.2288.t.11": "10ThngsIHateAboutRyu",
+   "357.l.2288.t.12": "Very Very Tremendous",
+   "357.l.2288.t.13": "Munenori Kawasaki",
+   "357.l.2288.t.14": "The Master Batters",
+   "357.l.2288.t.15": "Padilla Flotilla",
+   "357.l.2288.t.16": "Robbers"
+  },
+  "trades": [
+   {
+    "id": "43",
+    "status": "successful",
+    "ts": 1460101695,
+    "a": "357.l.2288.t.12",
+    "b": "357.l.2288.t.10",
+    "players": [
+     {
+      "name": "David Wright",
+      "pos": "3B",
+      "from": "357.l.2288.t.12",
+      "to": "357.l.2288.t.10"
+     },
+     {
+      "name": "Nate Karns",
+      "pos": "SP,RP",
+      "from": "357.l.2288.t.12",
+      "to": "357.l.2288.t.10"
+     },
+     {
+      "name": "Joe Ross",
+      "pos": "SP",
+      "from": "357.l.2288.t.10",
+      "to": "357.l.2288.t.12"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "221",
+    "status": "successful",
+    "ts": 1462179397,
+    "a": "357.l.2288.t.5",
+    "b": "357.l.2288.t.14",
+    "players": [
+     {
+      "name": "Colin Moran",
+      "pos": "3B",
+      "from": "357.l.2288.t.5",
+      "to": "357.l.2288.t.14"
+     },
+     {
+      "name": "Chris Sale",
+      "pos": "SP",
+      "from": "357.l.2288.t.5",
+      "to": "357.l.2288.t.14"
+     },
+     {
+      "name": "Héctor Rondón",
+      "pos": "RP",
+      "from": "357.l.2288.t.14",
+      "to": "357.l.2288.t.5"
+     },
+     {
+      "name": "Jose Altuve",
+      "pos": "2B",
+      "from": "357.l.2288.t.14",
+      "to": "357.l.2288.t.5"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "324",
+    "status": "successful",
+    "ts": 1463821785,
+    "a": "357.l.2288.t.6",
+    "b": "357.l.2288.t.8",
+    "players": [
+     {
+      "name": "Starlin Castro",
+      "pos": "2B,SS",
+      "from": "357.l.2288.t.6",
+      "to": "357.l.2288.t.8"
+     },
+     {
+      "name": "Gio González",
+      "pos": "SP",
+      "from": "357.l.2288.t.6",
+      "to": "357.l.2288.t.8"
+     },
+     {
+      "name": "Pedro Strop",
+      "pos": "RP",
+      "from": "357.l.2288.t.8",
+      "to": "357.l.2288.t.6"
+     },
+     {
+      "name": "Héctor Neris",
+      "pos": "RP",
+      "from": "357.l.2288.t.8",
+      "to": "357.l.2288.t.6"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "388",
+    "status": "successful",
+    "ts": 1464596767,
+    "a": "357.l.2288.t.3",
+    "b": "357.l.2288.t.1",
+    "players": [
+     {
+      "name": "Matt Harvey",
+      "pos": "SP",
+      "from": "357.l.2288.t.3",
+      "to": "357.l.2288.t.1"
+     },
+     {
+      "name": "Melky Cabrera",
+      "pos": "OF",
+      "from": "357.l.2288.t.1",
+      "to": "357.l.2288.t.3"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "697",
+    "status": "vetoed",
+    "ts": 1469041600,
+    "a": "357.l.2288.t.5",
+    "b": "357.l.2288.t.14",
+    "players": [
+     {
+      "name": "Trea Turner",
+      "pos": "2B,OF",
+      "from": "357.l.2288.t.5",
+      "to": "357.l.2288.t.14"
+     },
+     {
+      "name": "Kenta Maeda",
+      "pos": "SP",
+      "from": "357.l.2288.t.5",
+      "to": "357.l.2288.t.14"
+     },
+     {
+      "name": "Edwin Encarnación",
+      "pos": "1B",
+      "from": "357.l.2288.t.14",
+      "to": "357.l.2288.t.5"
+     },
+     {
+      "name": "Chris Sale",
+      "pos": "SP",
+      "from": "357.l.2288.t.14",
+      "to": "357.l.2288.t.5"
+     },
+     {
+      "name": "Adam Liberatore",
+      "pos": "RP",
+      "from": "357.l.2288.t.14",
+      "to": "357.l.2288.t.5"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "708",
+    "status": "vetoed",
+    "ts": 1469201156,
+    "a": "357.l.2288.t.1",
+    "b": "357.l.2288.t.14",
+    "players": [
+     {
+      "name": "Maikel Franco",
+      "pos": "3B",
+      "from": "357.l.2288.t.1",
+      "to": "357.l.2288.t.14"
+     },
+     {
+      "name": "Lucas Giolito",
+      "pos": "SP",
+      "from": "357.l.2288.t.1",
+      "to": "357.l.2288.t.14"
+     },
+     {
+      "name": "José Berríos",
+      "pos": "SP",
+      "from": "357.l.2288.t.1",
+      "to": "357.l.2288.t.14"
+     },
+     {
+      "name": "Edwin Encarnación",
+      "pos": "1B",
+      "from": "357.l.2288.t.14",
+      "to": "357.l.2288.t.1"
+     },
+     {
+      "name": "Chris Sale",
+      "pos": "SP",
+      "from": "357.l.2288.t.14",
+      "to": "357.l.2288.t.1"
+     },
+     {
+      "name": "Adam Liberatore",
+      "pos": "RP",
+      "from": "357.l.2288.t.14",
+      "to": "357.l.2288.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "717",
+    "status": "successful",
+    "ts": 1469363962,
+    "a": "357.l.2288.t.2",
+    "b": "357.l.2288.t.14",
+    "players": [
+     {
+      "name": "Miguel Sanó",
+      "pos": "3B,OF",
+      "from": "357.l.2288.t.2",
+      "to": "357.l.2288.t.14"
+     },
+     {
+      "name": "Tyler Glasnow",
+      "pos": "SP",
+      "from": "357.l.2288.t.2",
+      "to": "357.l.2288.t.14"
+     },
+     {
+      "name": "Edwin Encarnación",
+      "pos": "1B",
+      "from": "357.l.2288.t.14",
+      "to": "357.l.2288.t.2"
+     },
+     {
+      "name": "Chris Sale",
+      "pos": "SP",
+      "from": "357.l.2288.t.14",
+      "to": "357.l.2288.t.2"
+     },
+     {
+      "name": "Adam Liberatore",
+      "pos": "RP",
+      "from": "357.l.2288.t.14",
+      "to": "357.l.2288.t.2"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "726",
+    "status": "successful",
+    "ts": 1469440177,
+    "a": "357.l.2288.t.3",
+    "b": "357.l.2288.t.14",
+    "players": [
+     {
+      "name": "Yoán Moncada",
+      "pos": "2B",
+      "from": "357.l.2288.t.3",
+      "to": "357.l.2288.t.14"
+     },
+     {
+      "name": "Carlos Santana",
+      "pos": "1B",
+      "from": "357.l.2288.t.14",
+      "to": "357.l.2288.t.3"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "756",
+    "status": "successful",
+    "ts": 1469869387,
+    "a": "357.l.2288.t.5",
+    "b": "357.l.2288.t.2",
+    "players": [
+     {
+      "name": "Anthony Rendon",
+      "pos": "2B,3B",
+      "from": "357.l.2288.t.5",
+      "to": "357.l.2288.t.2"
+     },
+     {
+      "name": "Brandon Belt",
+      "pos": "1B,OF",
+      "from": "357.l.2288.t.2",
+      "to": "357.l.2288.t.5"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "802",
+    "status": "successful",
+    "ts": 1470387486,
+    "a": "357.l.2288.t.1",
+    "b": "357.l.2288.t.14",
+    "players": [
+     {
+      "name": "Jurickson Profar",
+      "pos": "1B,2B,3B,SS,OF",
+      "from": "357.l.2288.t.1",
+      "to": "357.l.2288.t.14"
+     },
+     {
+      "name": "José Berríos",
+      "pos": "SP",
+      "from": "357.l.2288.t.1",
+      "to": "357.l.2288.t.14"
+     },
+     {
+      "name": "Dylan Bundy",
+      "pos": "SP,RP",
+      "from": "357.l.2288.t.1",
+      "to": "357.l.2288.t.14"
+     },
+     {
+      "name": "Justin Turner",
+      "pos": "1B,3B",
+      "from": "357.l.2288.t.14",
+      "to": "357.l.2288.t.1"
+     },
+     {
+      "name": "Mark Melancon",
+      "pos": "RP",
+      "from": "357.l.2288.t.14",
+      "to": "357.l.2288.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "853",
+    "status": "successful",
+    "ts": 1470904986,
+    "a": "357.l.2288.t.15",
+    "b": "357.l.2288.t.3",
+    "players": [
+     {
+      "name": "Max Kepler",
+      "pos": "OF",
+      "from": "357.l.2288.t.15",
+      "to": "357.l.2288.t.3"
+     },
+     {
+      "name": "Robinson Canó",
+      "pos": "2B",
+      "from": "357.l.2288.t.3",
+      "to": "357.l.2288.t.15"
+     },
+     {
+      "name": "Craig Kimbrel",
+      "pos": "RP",
+      "from": "357.l.2288.t.3",
+      "to": "357.l.2288.t.15"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "851",
+    "status": "successful",
+    "ts": 1470904986,
+    "a": "357.l.2288.t.3",
+    "b": "357.l.2288.t.6",
+    "players": [
+     {
+      "name": "David Price",
+      "pos": "SP",
+      "from": "357.l.2288.t.3",
+      "to": "357.l.2288.t.6"
+     },
+     {
+      "name": "David Phelps",
+      "pos": "SP,RP",
+      "from": "357.l.2288.t.3",
+      "to": "357.l.2288.t.6"
+     },
+     {
+      "name": "Zack Britton",
+      "pos": "RP",
+      "from": "357.l.2288.t.3",
+      "to": "357.l.2288.t.6"
+     },
+     {
+      "name": "Addison Russell",
+      "pos": "2B,SS",
+      "from": "357.l.2288.t.6",
+      "to": "357.l.2288.t.3"
+     },
+     {
+      "name": "Michael Feliz",
+      "pos": "RP",
+      "from": "357.l.2288.t.6",
+      "to": "357.l.2288.t.3"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "849",
+    "status": "successful",
+    "ts": 1470904986,
+    "a": "357.l.2288.t.5",
+    "b": "357.l.2288.t.14",
+    "players": [
+     {
+      "name": "Nick Castellanos",
+      "pos": "3B",
+      "from": "357.l.2288.t.5",
+      "to": "357.l.2288.t.14"
+     },
+     {
+      "name": "Aledmys Díaz",
+      "pos": "2B,SS",
+      "from": "357.l.2288.t.5",
+      "to": "357.l.2288.t.14"
+     },
+     {
+      "name": "Jonathan Villar",
+      "pos": "2B,3B,SS",
+      "from": "357.l.2288.t.14",
+      "to": "357.l.2288.t.5"
+     },
+     {
+      "name": "Dallas Keuchel",
+      "pos": "SP",
+      "from": "357.l.2288.t.14",
+      "to": "357.l.2288.t.5"
+     }
+    ],
+    "picks": []
+   }
+  ]
+ },
+ "2017": {
+  "key": "370.l.6156",
+  "start": "2017-04-02",
+  "end": "2017-09-24",
+  "teams": {
+   "370.l.6156.t.1": "Syndergaarden Cop",
+   "370.l.6156.t.2": "10ThngsIHateAboutRyu",
+   "370.l.6156.t.3": "Dane Dombrowski",
+   "370.l.6156.t.4": "Bulba",
+   "370.l.6156.t.5": "Enrico Pallazzo",
+   "370.l.6156.t.6": "Whats The Sale Price",
+   "370.l.6156.t.7": "Munenori Kawasaki",
+   "370.l.6156.t.8": "Padilla Flotilla",
+   "370.l.6156.t.9": "Robbers",
+   "370.l.6156.t.10": "Simuno",
+   "370.l.6156.t.11": "Steve Nebraska",
+   "370.l.6156.t.12": "Taqueria Sucia",
+   "370.l.6156.t.13": "Dr. Strangeglove",
+   "370.l.6156.t.14": "The Skiman",
+   "370.l.6156.t.15": "THE TRAPMAN",
+   "370.l.6156.t.16": "Very Very Tremendous"
+  },
+  "trades": [
+   {
+    "id": "154",
+    "status": "successful",
+    "ts": 1491380386,
+    "a": "370.l.6156.t.13",
+    "b": "370.l.6156.t.1",
+    "players": [
+     {
+      "name": "Manuel Margot",
+      "pos": "OF",
+      "from": "370.l.6156.t.13",
+      "to": "370.l.6156.t.1"
+     },
+     {
+      "name": "AJ Ramos",
+      "pos": "RP",
+      "from": "370.l.6156.t.13",
+      "to": "370.l.6156.t.1"
+     },
+     {
+      "name": "Tommy Joseph",
+      "pos": "1B",
+      "from": "370.l.6156.t.1",
+      "to": "370.l.6156.t.13"
+     },
+     {
+      "name": "Daniel Hudson",
+      "pos": "RP",
+      "from": "370.l.6156.t.1",
+      "to": "370.l.6156.t.13"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "160",
+    "status": "vetoed",
+    "ts": 1491417819,
+    "a": "370.l.6156.t.7",
+    "b": "370.l.6156.t.4",
+    "players": [
+     {
+      "name": "Jacoby Ellsbury",
+      "pos": "OF",
+      "from": "370.l.6156.t.7",
+      "to": "370.l.6156.t.4"
+     },
+     {
+      "name": "Ryon Healy",
+      "pos": "1B,3B",
+      "from": "370.l.6156.t.7",
+      "to": "370.l.6156.t.4"
+     },
+     {
+      "name": "Andrew Miller",
+      "pos": "RP",
+      "from": "370.l.6156.t.7",
+      "to": "370.l.6156.t.4"
+     },
+     {
+      "name": "Joc Pederson",
+      "pos": "OF",
+      "from": "370.l.6156.t.4",
+      "to": "370.l.6156.t.7"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "171",
+    "status": "vetoed",
+    "ts": 1491580664,
+    "a": "370.l.6156.t.1",
+    "b": "370.l.6156.t.7",
+    "players": [
+     {
+      "name": "Maikel Franco",
+      "pos": "3B",
+      "from": "370.l.6156.t.1",
+      "to": "370.l.6156.t.7"
+     },
+     {
+      "name": "Michael Conforto",
+      "pos": "OF",
+      "from": "370.l.6156.t.1",
+      "to": "370.l.6156.t.7"
+     },
+     {
+      "name": "Jacoby Ellsbury",
+      "pos": "OF",
+      "from": "370.l.6156.t.7",
+      "to": "370.l.6156.t.1"
+     },
+     {
+      "name": "Ryon Healy",
+      "pos": "1B,3B",
+      "from": "370.l.6156.t.7",
+      "to": "370.l.6156.t.1"
+     },
+     {
+      "name": "Andrew Miller",
+      "pos": "RP",
+      "from": "370.l.6156.t.7",
+      "to": "370.l.6156.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "203",
+    "status": "successful",
+    "ts": 1491999292,
+    "a": "370.l.6156.t.4",
+    "b": "370.l.6156.t.7",
+    "players": [
+     {
+      "name": "Joc Pederson",
+      "pos": "OF",
+      "from": "370.l.6156.t.4",
+      "to": "370.l.6156.t.7"
+     },
+     {
+      "name": "Robbie Ray",
+      "pos": "SP",
+      "from": "370.l.6156.t.4",
+      "to": "370.l.6156.t.7"
+     },
+     {
+      "name": "Jacoby Ellsbury",
+      "pos": "OF",
+      "from": "370.l.6156.t.7",
+      "to": "370.l.6156.t.4"
+     },
+     {
+      "name": "Ryon Healy",
+      "pos": "1B,3B",
+      "from": "370.l.6156.t.7",
+      "to": "370.l.6156.t.4"
+     },
+     {
+      "name": "Andrew Miller",
+      "pos": "RP",
+      "from": "370.l.6156.t.7",
+      "to": "370.l.6156.t.4"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "207",
+    "status": "vetoed",
+    "ts": 1492006330,
+    "a": "370.l.6156.t.15",
+    "b": "370.l.6156.t.14",
+    "players": [
+     {
+      "name": "Greg Bird",
+      "pos": "1B",
+      "from": "370.l.6156.t.15",
+      "to": "370.l.6156.t.14"
+     },
+     {
+      "name": "Cam Bedrosian",
+      "pos": "RP",
+      "from": "370.l.6156.t.15",
+      "to": "370.l.6156.t.14"
+     },
+     {
+      "name": "Zack Britton",
+      "pos": "RP",
+      "from": "370.l.6156.t.14",
+      "to": "370.l.6156.t.15"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "209",
+    "status": "vetoed",
+    "ts": 1492016797,
+    "a": "370.l.6156.t.14",
+    "b": "370.l.6156.t.1",
+    "players": [
+     {
+      "name": "Zack Britton",
+      "pos": "RP",
+      "from": "370.l.6156.t.14",
+      "to": "370.l.6156.t.1"
+     },
+     {
+      "name": "Michael Conforto",
+      "pos": "OF",
+      "from": "370.l.6156.t.1",
+      "to": "370.l.6156.t.14"
+     },
+     {
+      "name": "Greg Holland",
+      "pos": "RP",
+      "from": "370.l.6156.t.1",
+      "to": "370.l.6156.t.14"
+     },
+     {
+      "name": "AJ Ramos",
+      "pos": "RP",
+      "from": "370.l.6156.t.1",
+      "to": "370.l.6156.t.14"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "237",
+    "status": "successful",
+    "ts": 1492329710,
+    "a": "370.l.6156.t.14",
+    "b": "370.l.6156.t.15",
+    "players": [
+     {
+      "name": "Zack Britton",
+      "pos": "RP",
+      "from": "370.l.6156.t.14",
+      "to": "370.l.6156.t.15"
+     },
+     {
+      "name": "Yadier Molina",
+      "pos": "C",
+      "from": "370.l.6156.t.15",
+      "to": "370.l.6156.t.14"
+     },
+     {
+      "name": "Kelvin Herrera",
+      "pos": "RP",
+      "from": "370.l.6156.t.15",
+      "to": "370.l.6156.t.14"
+     },
+     {
+      "name": "Cam Bedrosian",
+      "pos": "RP",
+      "from": "370.l.6156.t.15",
+      "to": "370.l.6156.t.14"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "289",
+    "status": "successful",
+    "ts": 1492858017,
+    "a": "370.l.6156.t.1",
+    "b": "370.l.6156.t.8",
+    "players": [
+     {
+      "name": "Yangervis Solarte",
+      "pos": "2B,3B,SS",
+      "from": "370.l.6156.t.1",
+      "to": "370.l.6156.t.8"
+     },
+     {
+      "name": "Manuel Margot",
+      "pos": "OF",
+      "from": "370.l.6156.t.1",
+      "to": "370.l.6156.t.8"
+     },
+     {
+      "name": "DJ LeMahieu",
+      "pos": "2B",
+      "from": "370.l.6156.t.8",
+      "to": "370.l.6156.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "312",
+    "status": "successful",
+    "ts": 1493107323,
+    "a": "370.l.6156.t.15",
+    "b": "370.l.6156.t.8",
+    "players": [
+     {
+      "name": "Greg Bird",
+      "pos": "1B",
+      "from": "370.l.6156.t.15",
+      "to": "370.l.6156.t.8"
+     },
+     {
+      "name": "Javier Báez",
+      "pos": "2B,3B,SS",
+      "from": "370.l.6156.t.15",
+      "to": "370.l.6156.t.8"
+     },
+     {
+      "name": "Eric Hosmer",
+      "pos": "1B",
+      "from": "370.l.6156.t.8",
+      "to": "370.l.6156.t.15"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "434",
+    "status": "successful",
+    "ts": 1494575364,
+    "a": "370.l.6156.t.11",
+    "b": "370.l.6156.t.13",
+    "players": [
+     {
+      "name": "Avisaíl García",
+      "pos": "OF",
+      "from": "370.l.6156.t.11",
+      "to": "370.l.6156.t.13"
+     },
+     {
+      "name": "Justin Wilson",
+      "pos": "RP",
+      "from": "370.l.6156.t.13",
+      "to": "370.l.6156.t.11"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "504",
+    "status": "successful",
+    "ts": 1495782705,
+    "a": "370.l.6156.t.14",
+    "b": "370.l.6156.t.2",
+    "players": [
+     {
+      "name": "Ian Happ",
+      "pos": "2B,OF",
+      "from": "370.l.6156.t.14",
+      "to": "370.l.6156.t.2"
+     },
+     {
+      "name": "Alex Wood",
+      "pos": "SP",
+      "from": "370.l.6156.t.2",
+      "to": "370.l.6156.t.14"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "670",
+    "status": "successful",
+    "ts": 1498378187,
+    "a": "370.l.6156.t.11",
+    "b": "370.l.6156.t.15",
+    "players": [
+     {
+      "name": "Alex Reyes",
+      "pos": "SP,RP",
+      "from": "370.l.6156.t.11",
+      "to": "370.l.6156.t.15"
+     },
+     {
+      "name": "Tanner Roark",
+      "pos": "SP",
+      "from": "370.l.6156.t.15",
+      "to": "370.l.6156.t.11"
+     }
+    ],
+    "picks": []
+   }
+  ]
+ },
+ "2018": {
+  "key": "378.l.20418",
+  "start": "2018-04-09",
+  "end": "2018-09-23",
+  "teams": {
+   "378.l.20418.t.1": "Syndergaarden Cop",
+   "378.l.20418.t.2": "RuthHaderGinsburg",
+   "378.l.20418.t.3": "Bulba",
+   "378.l.20418.t.4": "Dane Dombrowski",
+   "378.l.20418.t.5": "Dr. Strangeglove",
+   "378.l.20418.t.6": "Yid Army",
+   "378.l.20418.t.7": "I’m uno",
+   "378.l.20418.t.8": "Padilla Flotilla",
+   "378.l.20418.t.9": "Robbers",
+   "378.l.20418.t.10": "Simdos",
+   "378.l.20418.t.11": "Steve Nebraska",
+   "378.l.20418.t.12": "Hakuna Machado",
+   "378.l.20418.t.13": "The Skiman",
+   "378.l.20418.t.14": "Joe Buck Yourself",
+   "378.l.20418.t.15": "Very Very Tremendous",
+   "378.l.20418.t.16": "Kitty Autumn"
+  },
+  "trades": [
+   {
+    "id": "488",
+    "status": "successful",
+    "ts": 1527751907,
+    "a": "378.l.20418.t.12",
+    "b": "378.l.20418.t.8",
+    "players": [
+     {
+      "name": "Max Kepler",
+      "pos": "OF",
+      "from": "378.l.20418.t.12",
+      "to": "378.l.20418.t.8"
+     },
+     {
+      "name": "Joe Kelly",
+      "pos": "RP",
+      "from": "378.l.20418.t.8",
+      "to": "378.l.20418.t.12"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "684",
+    "status": "successful",
+    "ts": 1530170988,
+    "a": "378.l.20418.t.3",
+    "b": "378.l.20418.t.7",
+    "players": [
+     {
+      "name": "Edwin Encarnación",
+      "pos": "1B",
+      "from": "378.l.20418.t.3",
+      "to": "378.l.20418.t.7"
+     },
+     {
+      "name": "Max Scherzer",
+      "pos": "SP",
+      "from": "378.l.20418.t.3",
+      "to": "378.l.20418.t.7"
+     },
+     {
+      "name": "Jesús Aguilar",
+      "pos": "1B",
+      "from": "378.l.20418.t.7",
+      "to": "378.l.20418.t.3"
+     },
+     {
+      "name": "James Paxton",
+      "pos": "SP",
+      "from": "378.l.20418.t.7",
+      "to": "378.l.20418.t.3"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "705",
+    "status": "vetoed",
+    "ts": 1530567153,
+    "a": "378.l.20418.t.3",
+    "b": "378.l.20418.t.13",
+    "players": [
+     {
+      "name": "Nick Castellanos",
+      "pos": "3B,OF",
+      "from": "378.l.20418.t.3",
+      "to": "378.l.20418.t.13"
+     },
+     {
+      "name": "Brad Hand",
+      "pos": "RP",
+      "from": "378.l.20418.t.3",
+      "to": "378.l.20418.t.13"
+     },
+     {
+      "name": "Blake Snell",
+      "pos": "SP",
+      "from": "378.l.20418.t.13",
+      "to": "378.l.20418.t.3"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "735",
+    "status": "successful",
+    "ts": 1530866377,
+    "a": "378.l.20418.t.11",
+    "b": "378.l.20418.t.3",
+    "players": [
+     {
+      "name": "Mike Foltynewicz",
+      "pos": "SP",
+      "from": "378.l.20418.t.11",
+      "to": "378.l.20418.t.3"
+     },
+     {
+      "name": "Brad Hand",
+      "pos": "RP",
+      "from": "378.l.20418.t.3",
+      "to": "378.l.20418.t.11"
+     },
+     {
+      "name": "Nick Castellanos",
+      "pos": "3B,OF",
+      "from": "378.l.20418.t.3",
+      "to": "378.l.20418.t.11"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "789",
+    "status": "vetoed",
+    "ts": 1531623598,
+    "a": "378.l.20418.t.7",
+    "b": "378.l.20418.t.5",
+    "players": [
+     {
+      "name": "Daniel Murphy",
+      "pos": "1B,2B",
+      "from": "378.l.20418.t.7",
+      "to": "378.l.20418.t.5"
+     },
+     {
+      "name": "Shohei Ohtani (Batter)",
+      "pos": "Util",
+      "from": "378.l.20418.t.7",
+      "to": "378.l.20418.t.5"
+     },
+     {
+      "name": "Paul DeJong",
+      "pos": "2B,SS",
+      "from": "378.l.20418.t.7",
+      "to": "378.l.20418.t.5"
+     },
+     {
+      "name": "Xander Bogaerts",
+      "pos": "SS",
+      "from": "378.l.20418.t.5",
+      "to": "378.l.20418.t.7"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "791",
+    "status": "successful",
+    "ts": 1531641644,
+    "a": "378.l.20418.t.14",
+    "b": "378.l.20418.t.11",
+    "players": [
+     {
+      "name": "Jose Altuve",
+      "pos": "2B",
+      "from": "378.l.20418.t.14",
+      "to": "378.l.20418.t.11"
+     },
+     {
+      "name": "Zack Greinke",
+      "pos": "SP",
+      "from": "378.l.20418.t.14",
+      "to": "378.l.20418.t.11"
+     },
+     {
+      "name": "David Price",
+      "pos": "SP,RP",
+      "from": "378.l.20418.t.14",
+      "to": "378.l.20418.t.11"
+     },
+     {
+      "name": "Kyle Hendricks",
+      "pos": "SP",
+      "from": "378.l.20418.t.14",
+      "to": "378.l.20418.t.11"
+     },
+     {
+      "name": "Cody Bellinger",
+      "pos": "1B,OF",
+      "from": "378.l.20418.t.11",
+      "to": "378.l.20418.t.14"
+     },
+     {
+      "name": "Vladimir Guerrero Jr.",
+      "pos": "3B",
+      "from": "378.l.20418.t.11",
+      "to": "378.l.20418.t.14"
+     },
+     {
+      "name": "Luke Weaver",
+      "pos": "SP,RP",
+      "from": "378.l.20418.t.11",
+      "to": "378.l.20418.t.14"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "804",
+    "status": "vetoed",
+    "ts": 1531794965,
+    "a": "378.l.20418.t.7",
+    "b": "378.l.20418.t.8",
+    "players": [
+     {
+      "name": "Paul DeJong",
+      "pos": "2B,SS",
+      "from": "378.l.20418.t.7",
+      "to": "378.l.20418.t.8"
+     },
+     {
+      "name": "Daniel Murphy",
+      "pos": "1B,2B",
+      "from": "378.l.20418.t.7",
+      "to": "378.l.20418.t.8"
+     },
+     {
+      "name": "Shohei Ohtani (Batter)",
+      "pos": "Util",
+      "from": "378.l.20418.t.7",
+      "to": "378.l.20418.t.8"
+     },
+     {
+      "name": "Jean Segura",
+      "pos": "SS",
+      "from": "378.l.20418.t.8",
+      "to": "378.l.20418.t.7"
+     },
+     {
+      "name": "Ross Stripling",
+      "pos": "SP,RP",
+      "from": "378.l.20418.t.8",
+      "to": "378.l.20418.t.7"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "807",
+    "status": "successful",
+    "ts": 1531813832,
+    "a": "378.l.20418.t.14",
+    "b": "378.l.20418.t.10",
+    "players": [
+     {
+      "name": "Jeurys Familia",
+      "pos": "RP",
+      "from": "378.l.20418.t.14",
+      "to": "378.l.20418.t.10"
+     },
+     {
+      "name": "Chase Anderson",
+      "pos": "SP",
+      "from": "378.l.20418.t.14",
+      "to": "378.l.20418.t.10"
+     },
+     {
+      "name": "Vince Velasquez",
+      "pos": "SP",
+      "from": "378.l.20418.t.10",
+      "to": "378.l.20418.t.14"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "805",
+    "status": "successful",
+    "ts": 1531813832,
+    "a": "378.l.20418.t.10",
+    "b": "378.l.20418.t.14",
+    "players": [
+     {
+      "name": "Kyle Tucker",
+      "pos": "OF",
+      "from": "378.l.20418.t.10",
+      "to": "378.l.20418.t.14"
+     },
+     {
+      "name": "Steven Matz",
+      "pos": "SP",
+      "from": "378.l.20418.t.10",
+      "to": "378.l.20418.t.14"
+     },
+     {
+      "name": "Nelson Cruz",
+      "pos": "OF",
+      "from": "378.l.20418.t.14",
+      "to": "378.l.20418.t.10"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "820",
+    "status": "successful",
+    "ts": 1532078010,
+    "a": "378.l.20418.t.8",
+    "b": "378.l.20418.t.12",
+    "players": [
+     {
+      "name": "Clayton Kershaw",
+      "pos": "SP",
+      "from": "378.l.20418.t.8",
+      "to": "378.l.20418.t.12"
+     },
+     {
+      "name": "Lorenzo Cain",
+      "pos": "OF",
+      "from": "378.l.20418.t.12",
+      "to": "378.l.20418.t.8"
+     },
+     {
+      "name": "Andrew Heaney",
+      "pos": "SP",
+      "from": "378.l.20418.t.12",
+      "to": "378.l.20418.t.8"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "831",
+    "status": "successful",
+    "ts": 1532335066,
+    "a": "378.l.20418.t.7",
+    "b": "378.l.20418.t.5",
+    "players": [
+     {
+      "name": "Shohei Ohtani (Batter)",
+      "pos": "Util",
+      "from": "378.l.20418.t.7",
+      "to": "378.l.20418.t.5"
+     },
+     {
+      "name": "Daniel Murphy",
+      "pos": "1B,2B",
+      "from": "378.l.20418.t.7",
+      "to": "378.l.20418.t.5"
+     },
+     {
+      "name": "Paul DeJong",
+      "pos": "2B,SS",
+      "from": "378.l.20418.t.7",
+      "to": "378.l.20418.t.5"
+     },
+     {
+      "name": "Xander Bogaerts",
+      "pos": "SS",
+      "from": "378.l.20418.t.5",
+      "to": "378.l.20418.t.7"
+     },
+     {
+      "name": "Kenta Maeda",
+      "pos": "SP,RP",
+      "from": "378.l.20418.t.5",
+      "to": "378.l.20418.t.7"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "976",
+    "status": "vetoed",
+    "ts": 1534388424,
+    "a": "378.l.20418.t.11",
+    "b": "378.l.20418.t.1",
+    "players": [
+     {
+      "name": "Eloy Jiménez",
+      "pos": "OF",
+      "from": "378.l.20418.t.11",
+      "to": "378.l.20418.t.1"
+     },
+     {
+      "name": "Rougned Odor",
+      "pos": "2B",
+      "from": "378.l.20418.t.1",
+      "to": "378.l.20418.t.11"
+     },
+     {
+      "name": "Anthony Rendon",
+      "pos": "3B",
+      "from": "378.l.20418.t.1",
+      "to": "378.l.20418.t.11"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "979",
+    "status": "successful",
+    "ts": 1534407583,
+    "a": "378.l.20418.t.3",
+    "b": "378.l.20418.t.13",
+    "players": [
+     {
+      "name": "Yadier Molina",
+      "pos": "C",
+      "from": "378.l.20418.t.3",
+      "to": "378.l.20418.t.13"
+     },
+     {
+      "name": "James Paxton",
+      "pos": "SP",
+      "from": "378.l.20418.t.3",
+      "to": "378.l.20418.t.13"
+     },
+     {
+      "name": "Rich Hill",
+      "pos": "SP",
+      "from": "378.l.20418.t.3",
+      "to": "378.l.20418.t.13"
+     },
+     {
+      "name": "Blake Snell",
+      "pos": "SP",
+      "from": "378.l.20418.t.13",
+      "to": "378.l.20418.t.3"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "977",
+    "status": "successful",
+    "ts": 1534407583,
+    "a": "378.l.20418.t.11",
+    "b": "378.l.20418.t.14",
+    "players": [
+     {
+      "name": "Tommy Pham",
+      "pos": "OF",
+      "from": "378.l.20418.t.11",
+      "to": "378.l.20418.t.14"
+     },
+     {
+      "name": "Brandon Belt",
+      "pos": "1B,OF",
+      "from": "378.l.20418.t.11",
+      "to": "378.l.20418.t.14"
+     },
+     {
+      "name": "Ryan Zimmerman",
+      "pos": "1B",
+      "from": "378.l.20418.t.14",
+      "to": "378.l.20418.t.11"
+     },
+     {
+      "name": "Corey Dickerson",
+      "pos": "OF",
+      "from": "378.l.20418.t.14",
+      "to": "378.l.20418.t.11"
+     },
+     {
+      "name": "Héctor Rondón",
+      "pos": "RP",
+      "from": "378.l.20418.t.14",
+      "to": "378.l.20418.t.11"
+     }
+    ],
+    "picks": []
+   }
+  ]
+ },
+ "2019": {
+  "key": "388.l.9139",
+  "start": "2019-03-20",
+  "end": "2019-09-22",
+  "teams": {
+   "388.l.9139.t.1": "Syndergaarden Cop",
+   "388.l.9139.t.2": "Bulba",
+   "388.l.9139.t.3": "Dane Dombrowski",
+   "388.l.9139.t.4": "Newton South Loins",
+   "388.l.9139.t.5": "Basement Dwellers",
+   "388.l.9139.t.6": "Zac Gallenfenakis",
+   "388.l.9139.t.7": "Joe Buck Yourself",
+   "388.l.9139.t.8": "Kitty Autumn",
+   "388.l.9139.t.9": "Padilla Flotilla",
+   "388.l.9139.t.10": "Robbers",
+   "388.l.9139.t.11": "InCollegeGotAlbies",
+   "388.l.9139.t.12": "Simuno",
+   "388.l.9139.t.13": "Steve Nebraska",
+   "388.l.9139.t.14": "ElTerrible",
+   "388.l.9139.t.15": "So...Toe?",
+   "388.l.9139.t.16": "Nez Pearce"
+  },
+  "trades": [
+   {
+    "id": "97",
+    "status": "successful",
+    "ts": 1553173586,
+    "a": "388.l.9139.t.3",
+    "b": "388.l.9139.t.1",
+    "players": [
+     {
+      "name": "Rougned Odor",
+      "pos": "2B",
+      "from": "388.l.9139.t.3",
+      "to": "388.l.9139.t.1"
+     },
+     {
+      "name": "Carlos Santana",
+      "pos": "1B,3B",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.3"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "215",
+    "status": "successful",
+    "ts": 1555053200,
+    "a": "388.l.9139.t.6",
+    "b": "388.l.9139.t.1",
+    "players": [
+     {
+      "name": "Jonathan Schoop",
+      "pos": "2B,SS",
+      "from": "388.l.9139.t.6",
+      "to": "388.l.9139.t.1"
+     },
+     {
+      "name": "Niko Goodrum",
+      "pos": "1B,2B,3B,SS,OF",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.6"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "242",
+    "status": "successful",
+    "ts": 1555399709,
+    "a": "388.l.9139.t.6",
+    "b": "388.l.9139.t.12",
+    "players": [
+     {
+      "name": "Willy Adames",
+      "pos": "2B,SS",
+      "from": "388.l.9139.t.6",
+      "to": "388.l.9139.t.12"
+     },
+     {
+      "name": "Corbin Burnes",
+      "pos": "SP,RP",
+      "from": "388.l.9139.t.12",
+      "to": "388.l.9139.t.6"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "344",
+    "status": "successful",
+    "ts": 1556608408,
+    "a": "388.l.9139.t.3",
+    "b": "388.l.9139.t.1",
+    "players": [
+     {
+      "name": "Justin Smoak",
+      "pos": "1B",
+      "from": "388.l.9139.t.3",
+      "to": "388.l.9139.t.1"
+     },
+     {
+      "name": "Mitch Garver",
+      "pos": "C",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.3"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "377",
+    "status": "successful",
+    "ts": 1556867794,
+    "a": "388.l.9139.t.6",
+    "b": "388.l.9139.t.5",
+    "players": [
+     {
+      "name": "Max Muncy",
+      "pos": "1B,2B,3B",
+      "from": "388.l.9139.t.6",
+      "to": "388.l.9139.t.5"
+     },
+     {
+      "name": "Matt Strahm",
+      "pos": "SP,RP",
+      "from": "388.l.9139.t.6",
+      "to": "388.l.9139.t.5"
+     },
+     {
+      "name": "Vince Velasquez",
+      "pos": "SP,RP",
+      "from": "388.l.9139.t.6",
+      "to": "388.l.9139.t.5"
+     },
+     {
+      "name": "Chris Sale",
+      "pos": "SP",
+      "from": "388.l.9139.t.5",
+      "to": "388.l.9139.t.6"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "391",
+    "status": "successful",
+    "ts": 1557040398,
+    "a": "388.l.9139.t.9",
+    "b": "388.l.9139.t.1",
+    "players": [
+     {
+      "name": "Khris Davis",
+      "pos": "OF",
+      "from": "388.l.9139.t.9",
+      "to": "388.l.9139.t.1"
+     },
+     {
+      "name": "Josh James",
+      "pos": "SP,RP",
+      "from": "388.l.9139.t.9",
+      "to": "388.l.9139.t.1"
+     },
+     {
+      "name": "Yandy Díaz",
+      "pos": "1B,3B",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.9"
+     },
+     {
+      "name": "Trey Mancini",
+      "pos": "1B,OF",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.9"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "421",
+    "status": "successful",
+    "ts": 1557429251,
+    "a": "388.l.9139.t.6",
+    "b": "388.l.9139.t.14",
+    "players": [
+     {
+      "name": "Derek Dietrich",
+      "pos": "1B,2B,OF",
+      "from": "388.l.9139.t.6",
+      "to": "388.l.9139.t.14"
+     },
+     {
+      "name": "Rowdy Tellez",
+      "pos": "1B",
+      "from": "388.l.9139.t.6",
+      "to": "388.l.9139.t.14"
+     },
+     {
+      "name": "Hunter Renfroe",
+      "pos": "OF",
+      "from": "388.l.9139.t.14",
+      "to": "388.l.9139.t.6"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "513",
+    "status": "successful",
+    "ts": 1558597296,
+    "a": "388.l.9139.t.1",
+    "b": "388.l.9139.t.3",
+    "players": [
+     {
+      "name": "Dansby Swanson",
+      "pos": "SS",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.3"
+     },
+     {
+      "name": "Joey Votto",
+      "pos": "1B",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.3"
+     },
+     {
+      "name": "Forrest Whitley",
+      "pos": "SP",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.3"
+     },
+     {
+      "name": "Starling Marte",
+      "pos": "OF",
+      "from": "388.l.9139.t.3",
+      "to": "388.l.9139.t.1"
+     },
+     {
+      "name": "Will Smith",
+      "pos": "RP",
+      "from": "388.l.9139.t.3",
+      "to": "388.l.9139.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "567",
+    "status": "successful",
+    "ts": 1559317198,
+    "a": "388.l.9139.t.5",
+    "b": "388.l.9139.t.1",
+    "players": [
+     {
+      "name": "Ken Giles",
+      "pos": "RP",
+      "from": "388.l.9139.t.5",
+      "to": "388.l.9139.t.1"
+     },
+     {
+      "name": "Bryan Reynolds",
+      "pos": "OF",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.5"
+     },
+     {
+      "name": "Tony Watson",
+      "pos": "RP",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.5"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "569",
+    "status": "successful",
+    "ts": 1559317205,
+    "a": "388.l.9139.t.6",
+    "b": "388.l.9139.t.15",
+    "players": [
+     {
+      "name": "Miguel Cabrera",
+      "pos": "1B",
+      "from": "388.l.9139.t.6",
+      "to": "388.l.9139.t.15"
+     },
+     {
+      "name": "Ryan Brasier",
+      "pos": "RP",
+      "from": "388.l.9139.t.6",
+      "to": "388.l.9139.t.15"
+     },
+     {
+      "name": "Amir Garrett",
+      "pos": "RP",
+      "from": "388.l.9139.t.15",
+      "to": "388.l.9139.t.6"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "633",
+    "status": "successful",
+    "ts": 1560022198,
+    "a": "388.l.9139.t.6",
+    "b": "388.l.9139.t.9",
+    "players": [
+     {
+      "name": "Mitch Haniger",
+      "pos": "OF",
+      "from": "388.l.9139.t.6",
+      "to": "388.l.9139.t.9"
+     },
+     {
+      "name": "Hunter Renfroe",
+      "pos": "OF",
+      "from": "388.l.9139.t.6",
+      "to": "388.l.9139.t.9"
+     },
+     {
+      "name": "Spencer Turnbull",
+      "pos": "SP",
+      "from": "388.l.9139.t.6",
+      "to": "388.l.9139.t.9"
+     },
+     {
+      "name": "Giancarlo Stanton",
+      "pos": "OF",
+      "from": "388.l.9139.t.9",
+      "to": "388.l.9139.t.6"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "674",
+    "status": "successful",
+    "ts": 1560632989,
+    "a": "388.l.9139.t.1",
+    "b": "388.l.9139.t.9",
+    "players": [
+     {
+      "name": "Gregory Polanco",
+      "pos": "OF",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.9"
+     },
+     {
+      "name": "Willie Calhoun",
+      "pos": "OF",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.9"
+     },
+     {
+      "name": "Jeremy Jeffress",
+      "pos": "RP",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.9"
+     },
+     {
+      "name": "Rich Hill",
+      "pos": "SP",
+      "from": "388.l.9139.t.9",
+      "to": "388.l.9139.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "784",
+    "status": "successful",
+    "ts": 1561878842,
+    "a": "388.l.9139.t.16",
+    "b": "388.l.9139.t.7",
+    "players": [
+     {
+      "name": "Pete Alonso",
+      "pos": "1B",
+      "from": "388.l.9139.t.16",
+      "to": "388.l.9139.t.7"
+     },
+     {
+      "name": "Wade Miley",
+      "pos": "SP",
+      "from": "388.l.9139.t.16",
+      "to": "388.l.9139.t.7"
+     },
+     {
+      "name": "Tommy Pham",
+      "pos": "OF",
+      "from": "388.l.9139.t.7",
+      "to": "388.l.9139.t.16"
+     },
+     {
+      "name": "Clayton Kershaw",
+      "pos": "SP",
+      "from": "388.l.9139.t.7",
+      "to": "388.l.9139.t.16"
+     },
+     {
+      "name": "Jacob deGrom",
+      "pos": "SP",
+      "from": "388.l.9139.t.7",
+      "to": "388.l.9139.t.16"
+     },
+     {
+      "name": "Raisel Iglesias",
+      "pos": "RP",
+      "from": "388.l.9139.t.7",
+      "to": "388.l.9139.t.16"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "920",
+    "status": "successful",
+    "ts": 1564189242,
+    "a": "388.l.9139.t.5",
+    "b": "388.l.9139.t.1",
+    "players": [
+     {
+      "name": "Max Muncy",
+      "pos": "1B,2B,3B",
+      "from": "388.l.9139.t.5",
+      "to": "388.l.9139.t.1"
+     },
+     {
+      "name": "Justin Turner",
+      "pos": "3B",
+      "from": "388.l.9139.t.5",
+      "to": "388.l.9139.t.1"
+     },
+     {
+      "name": "Sean Newcomb",
+      "pos": "SP,RP",
+      "from": "388.l.9139.t.5",
+      "to": "388.l.9139.t.1"
+     },
+     {
+      "name": "José Abreu",
+      "pos": "1B",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.5"
+     },
+     {
+      "name": "Cavan Biggio",
+      "pos": "2B,OF",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.5"
+     },
+     {
+      "name": "Enrique Hernández",
+      "pos": "1B,2B,SS,OF",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.5"
+     },
+     {
+      "name": "Andrés Muñoz",
+      "pos": "RP",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.5"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "938",
+    "status": "successful",
+    "ts": 1564358374,
+    "a": "388.l.9139.t.6",
+    "b": "388.l.9139.t.8",
+    "players": [
+     {
+      "name": "Michael Chavis",
+      "pos": "1B,2B,3B",
+      "from": "388.l.9139.t.6",
+      "to": "388.l.9139.t.8"
+     },
+     {
+      "name": "Garrett Cooper",
+      "pos": "1B,OF",
+      "from": "388.l.9139.t.6",
+      "to": "388.l.9139.t.8"
+     },
+     {
+      "name": "Matt Olson",
+      "pos": "1B",
+      "from": "388.l.9139.t.8",
+      "to": "388.l.9139.t.6"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "963",
+    "status": "successful",
+    "ts": 1564623336,
+    "a": "388.l.9139.t.6",
+    "b": "388.l.9139.t.2",
+    "players": [
+     {
+      "name": "Chance Sisco",
+      "pos": "C",
+      "from": "388.l.9139.t.6",
+      "to": "388.l.9139.t.2"
+     },
+     {
+      "name": "Tyler Naquin",
+      "pos": "OF",
+      "from": "388.l.9139.t.6",
+      "to": "388.l.9139.t.2"
+     },
+     {
+      "name": "Teoscar Hernández",
+      "pos": "OF",
+      "from": "388.l.9139.t.6",
+      "to": "388.l.9139.t.2"
+     },
+     {
+      "name": "Brendan McKay (Pitcher)",
+      "pos": "SP",
+      "from": "388.l.9139.t.6",
+      "to": "388.l.9139.t.2"
+     },
+     {
+      "name": "Luis Severino",
+      "pos": "SP",
+      "from": "388.l.9139.t.6",
+      "to": "388.l.9139.t.2"
+     },
+     {
+      "name": "Omar Narváez",
+      "pos": "C",
+      "from": "388.l.9139.t.2",
+      "to": "388.l.9139.t.6"
+     },
+     {
+      "name": "Manny Machado",
+      "pos": "3B,SS",
+      "from": "388.l.9139.t.2",
+      "to": "388.l.9139.t.6"
+     },
+     {
+      "name": "Andrew Miller",
+      "pos": "RP",
+      "from": "388.l.9139.t.2",
+      "to": "388.l.9139.t.6"
+     },
+     {
+      "name": "Tommy Kahnle",
+      "pos": "RP",
+      "from": "388.l.9139.t.2",
+      "to": "388.l.9139.t.6"
+     },
+     {
+      "name": "Charlie Morton",
+      "pos": "SP",
+      "from": "388.l.9139.t.2",
+      "to": "388.l.9139.t.6"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "965",
+    "status": "successful",
+    "ts": 1564624062,
+    "a": "388.l.9139.t.2",
+    "b": "388.l.9139.t.13",
+    "players": [
+     {
+      "name": "Daniel Murphy",
+      "pos": "1B,2B",
+      "from": "388.l.9139.t.2",
+      "to": "388.l.9139.t.13"
+     },
+     {
+      "name": "Clint Frazier",
+      "pos": "OF",
+      "from": "388.l.9139.t.13",
+      "to": "388.l.9139.t.2"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "966",
+    "status": "successful",
+    "ts": 1564624407,
+    "a": "388.l.9139.t.3",
+    "b": "388.l.9139.t.1",
+    "players": [
+     {
+      "name": "Domingo Santana",
+      "pos": "OF",
+      "from": "388.l.9139.t.3",
+      "to": "388.l.9139.t.1"
+     },
+     {
+      "name": "Yu Darvish",
+      "pos": "SP",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.3"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "994",
+    "status": "successful",
+    "ts": 1564929705,
+    "a": "388.l.9139.t.1",
+    "b": "388.l.9139.t.2",
+    "players": [
+     {
+      "name": "Ryan McMahon",
+      "pos": "1B,2B,3B",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.2"
+     },
+     {
+      "name": "Sam Dyson",
+      "pos": "RP",
+      "from": "388.l.9139.t.2",
+      "to": "388.l.9139.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1008",
+    "status": "successful",
+    "ts": 1565036389,
+    "a": "388.l.9139.t.7",
+    "b": "388.l.9139.t.8",
+    "players": [
+     {
+      "name": "Pete Alonso",
+      "pos": "1B",
+      "from": "388.l.9139.t.7",
+      "to": "388.l.9139.t.8"
+     },
+     {
+      "name": "Victor Robles",
+      "pos": "OF",
+      "from": "388.l.9139.t.7",
+      "to": "388.l.9139.t.8"
+     },
+     {
+      "name": "Alex Verdugo",
+      "pos": "OF",
+      "from": "388.l.9139.t.7",
+      "to": "388.l.9139.t.8"
+     },
+     {
+      "name": "Carter Kieboom",
+      "pos": "SS",
+      "from": "388.l.9139.t.7",
+      "to": "388.l.9139.t.8"
+     },
+     {
+      "name": "Hyun Jin Ryu",
+      "pos": "SP",
+      "from": "388.l.9139.t.7",
+      "to": "388.l.9139.t.8"
+     },
+     {
+      "name": "Deivi García",
+      "pos": "SP",
+      "from": "388.l.9139.t.7",
+      "to": "388.l.9139.t.8"
+     },
+     {
+      "name": "Yuli Gurriel",
+      "pos": "1B,2B,3B",
+      "from": "388.l.9139.t.8",
+      "to": "388.l.9139.t.7"
+     },
+     {
+      "name": "Mookie Betts",
+      "pos": "OF",
+      "from": "388.l.9139.t.8",
+      "to": "388.l.9139.t.7"
+     },
+     {
+      "name": "Andrew Benintendi",
+      "pos": "OF",
+      "from": "388.l.9139.t.8",
+      "to": "388.l.9139.t.7"
+     },
+     {
+      "name": "Trevor Story",
+      "pos": "SS",
+      "from": "388.l.9139.t.8",
+      "to": "388.l.9139.t.7"
+     },
+     {
+      "name": "Noah Syndergaard",
+      "pos": "SP",
+      "from": "388.l.9139.t.8",
+      "to": "388.l.9139.t.7"
+     },
+     {
+      "name": "Craig Kimbrel",
+      "pos": "RP",
+      "from": "388.l.9139.t.8",
+      "to": "388.l.9139.t.7"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1034",
+    "status": "successful",
+    "ts": 1565317170,
+    "a": "388.l.9139.t.1",
+    "b": "388.l.9139.t.3",
+    "players": [
+     {
+      "name": "Eddie Rosario",
+      "pos": "OF",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.3"
+     },
+     {
+      "name": "Jonathan Schoop",
+      "pos": "2B,SS",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.3"
+     },
+     {
+      "name": "Luis Urías",
+      "pos": "2B,SS",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.3"
+     },
+     {
+      "name": "Daniel Vogelbach",
+      "pos": "1B",
+      "from": "388.l.9139.t.3",
+      "to": "388.l.9139.t.1"
+     },
+     {
+      "name": "Justin Verlander",
+      "pos": "SP",
+      "from": "388.l.9139.t.3",
+      "to": "388.l.9139.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1048",
+    "status": "vetoed",
+    "ts": 1565476373,
+    "a": "388.l.9139.t.14",
+    "b": "388.l.9139.t.1",
+    "players": [
+     {
+      "name": "Kris Bryant",
+      "pos": "3B,OF",
+      "from": "388.l.9139.t.14",
+      "to": "388.l.9139.t.1"
+     },
+     {
+      "name": "Aroldis Chapman",
+      "pos": "RP",
+      "from": "388.l.9139.t.14",
+      "to": "388.l.9139.t.1"
+     },
+     {
+      "name": "Domingo Santana",
+      "pos": "OF",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.14"
+     },
+     {
+      "name": "David Price",
+      "pos": "SP",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.14"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1052",
+    "status": "successful",
+    "ts": 1565528535,
+    "a": "388.l.9139.t.1",
+    "b": "388.l.9139.t.14",
+    "players": [
+     {
+      "name": "Domingo Santana",
+      "pos": "OF",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.14"
+     },
+     {
+      "name": "Aristides Aquino",
+      "pos": "OF",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.14"
+     },
+     {
+      "name": "David Price",
+      "pos": "SP",
+      "from": "388.l.9139.t.1",
+      "to": "388.l.9139.t.14"
+     },
+     {
+      "name": "Kris Bryant",
+      "pos": "3B,OF",
+      "from": "388.l.9139.t.14",
+      "to": "388.l.9139.t.1"
+     },
+     {
+      "name": "Aroldis Chapman",
+      "pos": "RP",
+      "from": "388.l.9139.t.14",
+      "to": "388.l.9139.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1066",
+    "status": "successful",
+    "ts": 1565653400,
+    "a": "388.l.9139.t.4",
+    "b": "388.l.9139.t.6",
+    "players": [
+     {
+      "name": "Buster Posey",
+      "pos": "C,1B",
+      "from": "388.l.9139.t.4",
+      "to": "388.l.9139.t.6"
+     },
+     {
+      "name": "Dellin Betances",
+      "pos": "RP",
+      "from": "388.l.9139.t.4",
+      "to": "388.l.9139.t.6"
+     },
+     {
+      "name": "Zack Greinke",
+      "pos": "SP",
+      "from": "388.l.9139.t.4",
+      "to": "388.l.9139.t.6"
+     },
+     {
+      "name": "Omar Narváez",
+      "pos": "C",
+      "from": "388.l.9139.t.6",
+      "to": "388.l.9139.t.4"
+     },
+     {
+      "name": "Chris Paddack",
+      "pos": "SP",
+      "from": "388.l.9139.t.6",
+      "to": "388.l.9139.t.4"
+     },
+     {
+      "name": "Cameron Maybin",
+      "pos": "OF",
+      "from": "388.l.9139.t.6",
+      "to": "388.l.9139.t.4"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1081",
+    "status": "vetoed",
+    "ts": 1565827568,
+    "a": "388.l.9139.t.13",
+    "b": "388.l.9139.t.8",
+    "players": [
+     {
+      "name": "Mitch Keller",
+      "pos": "SP",
+      "from": "388.l.9139.t.13",
+      "to": "388.l.9139.t.8"
+     },
+     {
+      "name": "Justin Upton",
+      "pos": "OF",
+      "from": "388.l.9139.t.8",
+      "to": "388.l.9139.t.13"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1083",
+    "status": "successful",
+    "ts": 1565853257,
+    "a": "388.l.9139.t.10",
+    "b": "388.l.9139.t.12",
+    "players": [
+     {
+      "name": "Wilson Ramos",
+      "pos": "C",
+      "from": "388.l.9139.t.10",
+      "to": "388.l.9139.t.12"
+     },
+     {
+      "name": "José Ramírez",
+      "pos": "2B,3B",
+      "from": "388.l.9139.t.10",
+      "to": "388.l.9139.t.12"
+     },
+     {
+      "name": "J.D. Martinez",
+      "pos": "OF",
+      "from": "388.l.9139.t.10",
+      "to": "388.l.9139.t.12"
+     },
+     {
+      "name": "Madison Bumgarner",
+      "pos": "SP",
+      "from": "388.l.9139.t.10",
+      "to": "388.l.9139.t.12"
+     },
+     {
+      "name": "Cole Hamels",
+      "pos": "SP",
+      "from": "388.l.9139.t.10",
+      "to": "388.l.9139.t.12"
+     },
+     {
+      "name": "Corey Kluber",
+      "pos": "SP",
+      "from": "388.l.9139.t.10",
+      "to": "388.l.9139.t.12"
+     },
+     {
+      "name": "Travis d'Arnaud",
+      "pos": "C,1B",
+      "from": "388.l.9139.t.12",
+      "to": "388.l.9139.t.10"
+     },
+     {
+      "name": "Danny Santana",
+      "pos": "1B,2B,3B,SS,OF",
+      "from": "388.l.9139.t.12",
+      "to": "388.l.9139.t.10"
+     },
+     {
+      "name": "Ketel Marte",
+      "pos": "2B,SS,OF",
+      "from": "388.l.9139.t.12",
+      "to": "388.l.9139.t.10"
+     },
+     {
+      "name": "Byron Buxton",
+      "pos": "OF",
+      "from": "388.l.9139.t.12",
+      "to": "388.l.9139.t.10"
+     },
+     {
+      "name": "Lucas Giolito",
+      "pos": "SP",
+      "from": "388.l.9139.t.12",
+      "to": "388.l.9139.t.10"
+     }
+    ],
+    "picks": []
+   }
+  ]
+ },
+ "2020": {
+  "key": "398.l.81006",
+  "start": "2020-07-23",
+  "end": "2020-09-27",
+  "teams": {
+   "398.l.81006.t.1": "Syndergaarden Cop",
+   "398.l.81006.t.2": "caROMO virus",
+   "398.l.81006.t.3": "Bulba",
+   "398.l.81006.t.4": "Dane Dombrowski",
+   "398.l.81006.t.5": "ElTerrible",
+   "398.l.81006.t.6": "InCollegeGotAlbies",
+   "398.l.81006.t.7": "Joe Buck Yourself",
+   "398.l.81006.t.8": "Kitty Autumn",
+   "398.l.81006.t.9": "Newton South Loins",
+   "398.l.81006.t.10": "Grandal Party",
+   "398.l.81006.t.11": "Padilla Flotilla",
+   "398.l.81006.t.12": "Robbers",
+   "398.l.81006.t.13": "Simuno",
+   "398.l.81006.t.14": "www.nextyear.com",
+   "398.l.81006.t.15": "Steve Nebraska",
+   "398.l.81006.t.16": "Zac Gallenfenakis"
+  },
+  "trades": [
+   {
+    "id": "387",
+    "status": "successful",
+    "ts": 1597910676,
+    "a": "398.l.81006.t.2",
+    "b": "398.l.81006.t.1",
+    "players": [
+     {
+      "name": "Walker Buehler",
+      "pos": "SP",
+      "from": "398.l.81006.t.2",
+      "to": "398.l.81006.t.1"
+     },
+     {
+      "name": "Jose Altuve",
+      "pos": "2B",
+      "from": "398.l.81006.t.1",
+      "to": "398.l.81006.t.2"
+     },
+     {
+      "name": "Casey Mize",
+      "pos": "SP",
+      "from": "398.l.81006.t.1",
+      "to": "398.l.81006.t.2"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "473",
+    "status": "successful",
+    "ts": 1598600917,
+    "a": "398.l.81006.t.11",
+    "b": "398.l.81006.t.15",
+    "players": [
+     {
+      "name": "Willy Adames",
+      "pos": "SS",
+      "from": "398.l.81006.t.11",
+      "to": "398.l.81006.t.15"
+     },
+     {
+      "name": "Ozzie Albies",
+      "pos": "2B",
+      "from": "398.l.81006.t.11",
+      "to": "398.l.81006.t.15"
+     },
+     {
+      "name": "Zach Plesac",
+      "pos": "SP",
+      "from": "398.l.81006.t.11",
+      "to": "398.l.81006.t.15"
+     },
+     {
+      "name": "Anthony Rendon",
+      "pos": "3B",
+      "from": "398.l.81006.t.15",
+      "to": "398.l.81006.t.11"
+     },
+     {
+      "name": "Dylan Moore",
+      "pos": "2B,3B,SS,OF",
+      "from": "398.l.81006.t.15",
+      "to": "398.l.81006.t.11"
+     },
+     {
+      "name": "Tyler Glasnow",
+      "pos": "SP",
+      "from": "398.l.81006.t.15",
+      "to": "398.l.81006.t.11"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "534",
+    "status": "successful",
+    "ts": 1599032217,
+    "a": "398.l.81006.t.16",
+    "b": "398.l.81006.t.3",
+    "players": [
+     {
+      "name": "Nick Madrigal",
+      "pos": "2B,SS",
+      "from": "398.l.81006.t.16",
+      "to": "398.l.81006.t.3"
+     },
+     {
+      "name": "Gio Urshela",
+      "pos": "3B",
+      "from": "398.l.81006.t.16",
+      "to": "398.l.81006.t.3"
+     },
+     {
+      "name": "Dylan Cease",
+      "pos": "SP",
+      "from": "398.l.81006.t.16",
+      "to": "398.l.81006.t.3"
+     },
+     {
+      "name": "Logan Gilbert",
+      "pos": "SP",
+      "from": "398.l.81006.t.16",
+      "to": "398.l.81006.t.3"
+     },
+     {
+      "name": "Nate Pearson",
+      "pos": "SP",
+      "from": "398.l.81006.t.16",
+      "to": "398.l.81006.t.3"
+     },
+     {
+      "name": "Christian Walker",
+      "pos": "1B",
+      "from": "398.l.81006.t.3",
+      "to": "398.l.81006.t.16"
+     },
+     {
+      "name": "J.D. Martinez",
+      "pos": "OF",
+      "from": "398.l.81006.t.3",
+      "to": "398.l.81006.t.16"
+     },
+     {
+      "name": "Luis Castillo",
+      "pos": "SP",
+      "from": "398.l.81006.t.3",
+      "to": "398.l.81006.t.16"
+     },
+     {
+      "name": "Trevor Rosenthal",
+      "pos": "RP",
+      "from": "398.l.81006.t.3",
+      "to": "398.l.81006.t.16"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "531",
+    "status": "successful",
+    "ts": 1599032217,
+    "a": "398.l.81006.t.9",
+    "b": "398.l.81006.t.15",
+    "players": [
+     {
+      "name": "Jean Segura",
+      "pos": "2B,3B,SS",
+      "from": "398.l.81006.t.9",
+      "to": "398.l.81006.t.15"
+     },
+     {
+      "name": "Chris Paddack",
+      "pos": "SP",
+      "from": "398.l.81006.t.9",
+      "to": "398.l.81006.t.15"
+     },
+     {
+      "name": "Masahiro Tanaka",
+      "pos": "SP",
+      "from": "398.l.81006.t.15",
+      "to": "398.l.81006.t.9"
+     },
+     {
+      "name": "Kris Bryant",
+      "pos": "3B,OF",
+      "from": "398.l.81006.t.15",
+      "to": "398.l.81006.t.9"
+     },
+     {
+      "name": "Kyle Hendricks",
+      "pos": "SP",
+      "from": "398.l.81006.t.15",
+      "to": "398.l.81006.t.9"
+     },
+     {
+      "name": "Jorge Polanco",
+      "pos": "SS",
+      "from": "398.l.81006.t.15",
+      "to": "398.l.81006.t.9"
+     }
+    ],
+    "picks": []
+   }
+  ]
+ },
+ "2021": {
+  "key": "404.l.46722",
+  "start": "2021-04-01",
+  "end": "2021-10-03",
+  "teams": {
+   "404.l.46722.t.1": "Syndergaarden Cop",
+   "404.l.46722.t.2": "Sad Bulba",
+   "404.l.46722.t.3": "caROMO virus",
+   "404.l.46722.t.4": "Dane Dombrowski",
+   "404.l.46722.t.5": "ElTerrible",
+   "404.l.46722.t.6": "Grandal Party",
+   "404.l.46722.t.7": "From5Top20overallonIL2Clinched",
+   "404.l.46722.t.8": "Joe Buck Yourself",
+   "404.l.46722.t.9": "Kitty Autumn",
+   "404.l.46722.t.10": "Newton South Loins",
+   "404.l.46722.t.11": "Padilla Flotilla",
+   "404.l.46722.t.12": "Robbers",
+   "404.l.46722.t.13": "Simuno",
+   "404.l.46722.t.14": "150MovesAndNo’Ship",
+   "404.l.46722.t.15": "MR. SOTO",
+   "404.l.46722.t.16": "Zac Gallenfenakis"
+  },
+  "trades": [
+   {
+    "id": "470",
+    "status": "successful",
+    "ts": 1620891247,
+    "a": "404.l.46722.t.14",
+    "b": "404.l.46722.t.3",
+    "players": [
+     {
+      "name": "Jean Segura",
+      "pos": "2B,3B,SS",
+      "from": "404.l.46722.t.14",
+      "to": "404.l.46722.t.3"
+     },
+     {
+      "name": "Willians Astudillo",
+      "pos": "C,1B,3B",
+      "from": "404.l.46722.t.14",
+      "to": "404.l.46722.t.3"
+     },
+     {
+      "name": "Zach Plesac",
+      "pos": "SP",
+      "from": "404.l.46722.t.3",
+      "to": "404.l.46722.t.14"
+     },
+     {
+      "name": "Gary Sánchez",
+      "pos": "C",
+      "from": "404.l.46722.t.3",
+      "to": "404.l.46722.t.14"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "532",
+    "status": "successful",
+    "ts": 1621583104,
+    "a": "404.l.46722.t.4",
+    "b": "404.l.46722.t.1",
+    "players": [
+     {
+      "name": "Cedric Mullins",
+      "pos": "OF",
+      "from": "404.l.46722.t.4",
+      "to": "404.l.46722.t.1"
+     },
+     {
+      "name": "Omar Narváez",
+      "pos": "C",
+      "from": "404.l.46722.t.1",
+      "to": "404.l.46722.t.4"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "537",
+    "status": "vetoed",
+    "ts": 1621602533,
+    "a": "404.l.46722.t.1",
+    "b": "404.l.46722.t.8",
+    "players": [
+     {
+      "name": "Pablo López",
+      "pos": "SP",
+      "from": "404.l.46722.t.1",
+      "to": "404.l.46722.t.8"
+     },
+     {
+      "name": "Dallas Keuchel",
+      "pos": "SP",
+      "from": "404.l.46722.t.1",
+      "to": "404.l.46722.t.8"
+     },
+     {
+      "name": "Luis Castillo",
+      "pos": "SP",
+      "from": "404.l.46722.t.8",
+      "to": "404.l.46722.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "545",
+    "status": "successful",
+    "ts": 1621687114,
+    "a": "404.l.46722.t.14",
+    "b": "404.l.46722.t.8",
+    "players": [
+     {
+      "name": "Sean Manaea",
+      "pos": "SP",
+      "from": "404.l.46722.t.14",
+      "to": "404.l.46722.t.8"
+     },
+     {
+      "name": "Zach Plesac",
+      "pos": "SP",
+      "from": "404.l.46722.t.14",
+      "to": "404.l.46722.t.8"
+     },
+     {
+      "name": "Luis Castillo",
+      "pos": "SP",
+      "from": "404.l.46722.t.8",
+      "to": "404.l.46722.t.14"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "561",
+    "status": "successful",
+    "ts": 1621859233,
+    "a": "404.l.46722.t.9",
+    "b": "404.l.46722.t.14",
+    "players": [
+     {
+      "name": "Gleyber Torres",
+      "pos": "2B,SS",
+      "from": "404.l.46722.t.9",
+      "to": "404.l.46722.t.14"
+     },
+     {
+      "name": "Eloy Jiménez",
+      "pos": "OF",
+      "from": "404.l.46722.t.9",
+      "to": "404.l.46722.t.14"
+     },
+     {
+      "name": "Michael Kopech",
+      "pos": "SP,RP",
+      "from": "404.l.46722.t.9",
+      "to": "404.l.46722.t.14"
+     },
+     {
+      "name": "Freddie Freeman",
+      "pos": "1B",
+      "from": "404.l.46722.t.14",
+      "to": "404.l.46722.t.9"
+     },
+     {
+      "name": "Ozzie Albies",
+      "pos": "2B",
+      "from": "404.l.46722.t.14",
+      "to": "404.l.46722.t.9"
+     },
+     {
+      "name": "Carlos Correa",
+      "pos": "SS",
+      "from": "404.l.46722.t.14",
+      "to": "404.l.46722.t.9"
+     },
+     {
+      "name": "George Springer",
+      "pos": "OF",
+      "from": "404.l.46722.t.14",
+      "to": "404.l.46722.t.9"
+     },
+     {
+      "name": "Lance McCullers Jr.",
+      "pos": "SP",
+      "from": "404.l.46722.t.14",
+      "to": "404.l.46722.t.9"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "581",
+    "status": "successful",
+    "ts": 1622015885,
+    "a": "404.l.46722.t.1",
+    "b": "404.l.46722.t.11",
+    "players": [
+     {
+      "name": "Cedric Mullins",
+      "pos": "OF",
+      "from": "404.l.46722.t.1",
+      "to": "404.l.46722.t.11"
+     },
+     {
+      "name": "Dallas Keuchel",
+      "pos": "SP",
+      "from": "404.l.46722.t.1",
+      "to": "404.l.46722.t.11"
+     },
+     {
+      "name": "Aaron Civale",
+      "pos": "SP",
+      "from": "404.l.46722.t.11",
+      "to": "404.l.46722.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "670",
+    "status": "successful",
+    "ts": 1622877226,
+    "a": "404.l.46722.t.10",
+    "b": "404.l.46722.t.14",
+    "players": [
+     {
+      "name": "Jorge Soler",
+      "pos": "OF",
+      "from": "404.l.46722.t.10",
+      "to": "404.l.46722.t.14"
+     },
+     {
+      "name": "Manuel Margot",
+      "pos": "OF",
+      "from": "404.l.46722.t.14",
+      "to": "404.l.46722.t.10"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "686",
+    "status": "successful",
+    "ts": 1623151884,
+    "a": "404.l.46722.t.15",
+    "b": "404.l.46722.t.16",
+    "players": [
+     {
+      "name": "Josh Donaldson",
+      "pos": "3B",
+      "from": "404.l.46722.t.15",
+      "to": "404.l.46722.t.16"
+     },
+     {
+      "name": "Paul Fry",
+      "pos": "RP",
+      "from": "404.l.46722.t.15",
+      "to": "404.l.46722.t.16"
+     },
+     {
+      "name": "Sixto Sánchez",
+      "pos": "SP",
+      "from": "404.l.46722.t.16",
+      "to": "404.l.46722.t.15"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "744",
+    "status": "successful",
+    "ts": 1623741185,
+    "a": "404.l.46722.t.11",
+    "b": "404.l.46722.t.1",
+    "players": [
+     {
+      "name": "DJ LeMahieu",
+      "pos": "1B,2B,3B",
+      "from": "404.l.46722.t.11",
+      "to": "404.l.46722.t.1"
+     },
+     {
+      "name": "Willie Calhoun",
+      "pos": "OF",
+      "from": "404.l.46722.t.11",
+      "to": "404.l.46722.t.1"
+     },
+     {
+      "name": "Matt Chapman",
+      "pos": "3B",
+      "from": "404.l.46722.t.1",
+      "to": "404.l.46722.t.11"
+     },
+     {
+      "name": "Nick Solak",
+      "pos": "2B,3B,OF",
+      "from": "404.l.46722.t.1",
+      "to": "404.l.46722.t.11"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "766",
+    "status": "successful",
+    "ts": 1624086815,
+    "a": "404.l.46722.t.14",
+    "b": "404.l.46722.t.3",
+    "players": [
+     {
+      "name": "Tarik Skubal",
+      "pos": "SP",
+      "from": "404.l.46722.t.14",
+      "to": "404.l.46722.t.3"
+     },
+     {
+      "name": "Andrew Chafin",
+      "pos": "RP",
+      "from": "404.l.46722.t.14",
+      "to": "404.l.46722.t.3"
+     },
+     {
+      "name": "Freddy Peralta",
+      "pos": "SP,RP",
+      "from": "404.l.46722.t.14",
+      "to": "404.l.46722.t.3"
+     },
+     {
+      "name": "Luis Robert Jr.",
+      "pos": "OF",
+      "from": "404.l.46722.t.3",
+      "to": "404.l.46722.t.14"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "862",
+    "status": "successful",
+    "ts": 1625469247,
+    "a": "404.l.46722.t.1",
+    "b": "404.l.46722.t.10",
+    "players": [
+     {
+      "name": "Rex Brothers",
+      "pos": "RP",
+      "from": "404.l.46722.t.1",
+      "to": "404.l.46722.t.10"
+     },
+     {
+      "name": "Kyle Lewis",
+      "pos": "OF",
+      "from": "404.l.46722.t.10",
+      "to": "404.l.46722.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "906",
+    "status": "successful",
+    "ts": 1626336301,
+    "a": "404.l.46722.t.1",
+    "b": "404.l.46722.t.4",
+    "players": [
+     {
+      "name": "Randy Arozarena",
+      "pos": "OF",
+      "from": "404.l.46722.t.1",
+      "to": "404.l.46722.t.4"
+     },
+     {
+      "name": "Andrew Vaughn",
+      "pos": "1B,OF",
+      "from": "404.l.46722.t.1",
+      "to": "404.l.46722.t.4"
+     },
+     {
+      "name": "Pablo López",
+      "pos": "SP",
+      "from": "404.l.46722.t.1",
+      "to": "404.l.46722.t.4"
+     },
+     {
+      "name": "Alek Manoah",
+      "pos": "SP",
+      "from": "404.l.46722.t.1",
+      "to": "404.l.46722.t.4"
+     },
+     {
+      "name": "Justin Verlander",
+      "pos": "SP",
+      "from": "404.l.46722.t.1",
+      "to": "404.l.46722.t.4"
+     },
+     {
+      "name": "Aaron Civale",
+      "pos": "SP",
+      "from": "404.l.46722.t.1",
+      "to": "404.l.46722.t.4"
+     },
+     {
+      "name": "Xander Bogaerts",
+      "pos": "SS",
+      "from": "404.l.46722.t.4",
+      "to": "404.l.46722.t.1"
+     },
+     {
+      "name": "Starling Marte",
+      "pos": "OF",
+      "from": "404.l.46722.t.4",
+      "to": "404.l.46722.t.1"
+     },
+     {
+      "name": "Yu Darvish",
+      "pos": "SP",
+      "from": "404.l.46722.t.4",
+      "to": "404.l.46722.t.1"
+     },
+     {
+      "name": "Jake McGee",
+      "pos": "RP",
+      "from": "404.l.46722.t.4",
+      "to": "404.l.46722.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "931",
+    "status": "successful",
+    "ts": 1626678750,
+    "a": "404.l.46722.t.14",
+    "b": "404.l.46722.t.2",
+    "players": [
+     {
+      "name": "Luis Castillo",
+      "pos": "SP",
+      "from": "404.l.46722.t.14",
+      "to": "404.l.46722.t.2"
+     },
+     {
+      "name": "Brandon Lowe",
+      "pos": "1B,2B,OF",
+      "from": "404.l.46722.t.14",
+      "to": "404.l.46722.t.2"
+     },
+     {
+      "name": "Gary Sánchez",
+      "pos": "C",
+      "from": "404.l.46722.t.14",
+      "to": "404.l.46722.t.2"
+     },
+     {
+      "name": "Dansby Swanson",
+      "pos": "SS",
+      "from": "404.l.46722.t.14",
+      "to": "404.l.46722.t.2"
+     },
+     {
+      "name": "Frankie Montas",
+      "pos": "SP",
+      "from": "404.l.46722.t.14",
+      "to": "404.l.46722.t.2"
+     },
+     {
+      "name": "Jared Walsh",
+      "pos": "1B,OF",
+      "from": "404.l.46722.t.2",
+      "to": "404.l.46722.t.14"
+     },
+     {
+      "name": "John Hicks",
+      "pos": "C,1B",
+      "from": "404.l.46722.t.2",
+      "to": "404.l.46722.t.14"
+     },
+     {
+      "name": "Merrill Kelly",
+      "pos": "SP",
+      "from": "404.l.46722.t.2",
+      "to": "404.l.46722.t.14"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "985",
+    "status": "successful",
+    "ts": 1627542764,
+    "a": "404.l.46722.t.14",
+    "b": "404.l.46722.t.8",
+    "players": [
+     {
+      "name": "AJ Pollock",
+      "pos": "OF",
+      "from": "404.l.46722.t.14",
+      "to": "404.l.46722.t.8"
+     },
+     {
+      "name": "Julio Rodríguez",
+      "pos": "OF",
+      "from": "404.l.46722.t.8",
+      "to": "404.l.46722.t.14"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "987",
+    "status": "vetoed",
+    "ts": 1627576120,
+    "a": "404.l.46722.t.16",
+    "b": "404.l.46722.t.11",
+    "players": [
+     {
+      "name": "Justin Upton",
+      "pos": "OF",
+      "from": "404.l.46722.t.16",
+      "to": "404.l.46722.t.11"
+     },
+     {
+      "name": "Keston Hiura",
+      "pos": "1B,2B",
+      "from": "404.l.46722.t.16",
+      "to": "404.l.46722.t.11"
+     },
+     {
+      "name": "Charlie Morton",
+      "pos": "SP",
+      "from": "404.l.46722.t.11",
+      "to": "404.l.46722.t.16"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1002",
+    "status": "successful",
+    "ts": 1627719232,
+    "a": "404.l.46722.t.3",
+    "b": "404.l.46722.t.16",
+    "players": [
+     {
+      "name": "Cole Irvin",
+      "pos": "SP,RP",
+      "from": "404.l.46722.t.3",
+      "to": "404.l.46722.t.16"
+     },
+     {
+      "name": "Bryce Harper",
+      "pos": "OF",
+      "from": "404.l.46722.t.3",
+      "to": "404.l.46722.t.16"
+     },
+     {
+      "name": "Zac Gallen",
+      "pos": "SP",
+      "from": "404.l.46722.t.16",
+      "to": "404.l.46722.t.3"
+     },
+     {
+      "name": "Whit Merrifield",
+      "pos": "2B,OF",
+      "from": "404.l.46722.t.16",
+      "to": "404.l.46722.t.3"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1000",
+    "status": "successful",
+    "ts": 1627719232,
+    "a": "404.l.46722.t.1",
+    "b": "404.l.46722.t.11",
+    "players": [
+     {
+      "name": "Alex Kirilloff",
+      "pos": "1B,OF",
+      "from": "404.l.46722.t.1",
+      "to": "404.l.46722.t.11"
+     },
+     {
+      "name": "Cole Sulser",
+      "pos": "RP",
+      "from": "404.l.46722.t.1",
+      "to": "404.l.46722.t.11"
+     },
+     {
+      "name": "Craig Stammen",
+      "pos": "SP,RP",
+      "from": "404.l.46722.t.11",
+      "to": "404.l.46722.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1003",
+    "status": "successful",
+    "ts": 1627736414,
+    "a": "404.l.46722.t.8",
+    "b": "404.l.46722.t.11",
+    "players": [
+     {
+      "name": "Adolis García",
+      "pos": "OF",
+      "from": "404.l.46722.t.8",
+      "to": "404.l.46722.t.11"
+     },
+     {
+      "name": "Chris Paddack",
+      "pos": "SP",
+      "from": "404.l.46722.t.8",
+      "to": "404.l.46722.t.11"
+     },
+     {
+      "name": "Charlie Morton",
+      "pos": "SP",
+      "from": "404.l.46722.t.11",
+      "to": "404.l.46722.t.8"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1106",
+    "status": "successful",
+    "ts": 1628944420,
+    "a": "404.l.46722.t.13",
+    "b": "404.l.46722.t.2",
+    "players": [
+     {
+      "name": "Gregory Soto",
+      "pos": "SP,RP",
+      "from": "404.l.46722.t.13",
+      "to": "404.l.46722.t.2"
+     },
+     {
+      "name": "Luis Gil",
+      "pos": "SP,RP",
+      "from": "404.l.46722.t.2",
+      "to": "404.l.46722.t.13"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1116",
+    "status": "successful",
+    "ts": 1629012223,
+    "a": "404.l.46722.t.15",
+    "b": "404.l.46722.t.16",
+    "players": [
+     {
+      "name": "Blake Snell",
+      "pos": "SP",
+      "from": "404.l.46722.t.15",
+      "to": "404.l.46722.t.16"
+     },
+     {
+      "name": "Brandon Crawford",
+      "pos": "SS",
+      "from": "404.l.46722.t.15",
+      "to": "404.l.46722.t.16"
+     },
+     {
+      "name": "Tyler Rogers",
+      "pos": "RP",
+      "from": "404.l.46722.t.15",
+      "to": "404.l.46722.t.16"
+     },
+     {
+      "name": "Max Stassi",
+      "pos": "C",
+      "from": "404.l.46722.t.16",
+      "to": "404.l.46722.t.15"
+     },
+     {
+      "name": "Adam Frazier",
+      "pos": "2B,OF",
+      "from": "404.l.46722.t.16",
+      "to": "404.l.46722.t.15"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1115",
+    "status": "successful",
+    "ts": 1629012223,
+    "a": "404.l.46722.t.3",
+    "b": "404.l.46722.t.1",
+    "players": [
+     {
+      "name": "Charlie Blackmon",
+      "pos": "OF",
+      "from": "404.l.46722.t.3",
+      "to": "404.l.46722.t.1"
+     },
+     {
+      "name": "Rafael Ortega",
+      "pos": "OF",
+      "from": "404.l.46722.t.1",
+      "to": "404.l.46722.t.3"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1114",
+    "status": "successful",
+    "ts": 1629012223,
+    "a": "404.l.46722.t.16",
+    "b": "404.l.46722.t.13",
+    "players": [
+     {
+      "name": "Justin Upton",
+      "pos": "OF",
+      "from": "404.l.46722.t.16",
+      "to": "404.l.46722.t.13"
+     },
+     {
+      "name": "Keston Hiura",
+      "pos": "1B,2B",
+      "from": "404.l.46722.t.16",
+      "to": "404.l.46722.t.13"
+     },
+     {
+      "name": "Héctor Neris",
+      "pos": "RP",
+      "from": "404.l.46722.t.13",
+      "to": "404.l.46722.t.16"
+     },
+     {
+      "name": "Kendall Graveman",
+      "pos": "RP",
+      "from": "404.l.46722.t.13",
+      "to": "404.l.46722.t.16"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1113",
+    "status": "successful",
+    "ts": 1629012223,
+    "a": "404.l.46722.t.1",
+    "b": "404.l.46722.t.4",
+    "players": [
+     {
+      "name": "Daulton Varsho",
+      "pos": "C,OF",
+      "from": "404.l.46722.t.1",
+      "to": "404.l.46722.t.4"
+     },
+     {
+      "name": "Andrew Kittredge",
+      "pos": "SP,RP",
+      "from": "404.l.46722.t.4",
+      "to": "404.l.46722.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1110",
+    "status": "successful",
+    "ts": 1629012223,
+    "a": "404.l.46722.t.1",
+    "b": "404.l.46722.t.11",
+    "players": [
+     {
+      "name": "Yoán Moncada",
+      "pos": "3B",
+      "from": "404.l.46722.t.1",
+      "to": "404.l.46722.t.11"
+     },
+     {
+      "name": "Vidal Bruján",
+      "pos": "2B",
+      "from": "404.l.46722.t.1",
+      "to": "404.l.46722.t.11"
+     },
+     {
+      "name": "Kyle Lewis",
+      "pos": "OF",
+      "from": "404.l.46722.t.1",
+      "to": "404.l.46722.t.11"
+     },
+     {
+      "name": "Nolan Arenado",
+      "pos": "3B",
+      "from": "404.l.46722.t.11",
+      "to": "404.l.46722.t.1"
+     }
+    ],
+    "picks": []
+   }
+  ]
+ },
+ "2022": {
+  "key": "412.l.22755",
+  "start": "2022-04-07",
+  "end": "2022-10-05",
+  "teams": {
+   "412.l.22755.t.1": "Syndergaarden Cop",
+   "412.l.22755.t.2": "Welcome 2 da fam nick madrigal",
+   "412.l.22755.t.3": "caROMO virus",
+   "412.l.22755.t.4": "Dane Dombrowski",
+   "412.l.22755.t.5": "ElTerrible",
+   "412.l.22755.t.6": "LoveGaretRchrdsThatsMy_Problem",
+   "412.l.22755.t.7": "Corbin My Man",
+   "412.l.22755.t.8": "Joe Buck Yourself",
+   "412.l.22755.t.9": "Kitty Autumn",
+   "412.l.22755.t.10": "Season Starts In July",
+   "412.l.22755.t.11": "Newton South Loins",
+   "412.l.22755.t.12": "Padilla Flotilla",
+   "412.l.22755.t.13": "Robbers",
+   "412.l.22755.t.14": "Bulba",
+   "412.l.22755.t.15": "Simuno",
+   "412.l.22755.t.16": "Down with D.cease"
+  },
+  "trades": [
+   {
+    "id": "371",
+    "status": "successful",
+    "ts": 1651907538,
+    "a": "412.l.22755.t.16",
+    "b": "412.l.22755.t.5",
+    "players": [
+     {
+      "name": "Steven Kwan",
+      "pos": "OF",
+      "from": "412.l.22755.t.16",
+      "to": "412.l.22755.t.5"
+     },
+     {
+      "name": "Luke Voit",
+      "pos": "1B",
+      "from": "412.l.22755.t.16",
+      "to": "412.l.22755.t.5"
+     },
+     {
+      "name": "Alex Cobb",
+      "pos": "SP",
+      "from": "412.l.22755.t.5",
+      "to": "412.l.22755.t.16"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "583",
+    "status": "successful",
+    "ts": 1654326753,
+    "a": "412.l.22755.t.8",
+    "b": "412.l.22755.t.15",
+    "players": [
+     {
+      "name": "Tylor Megill",
+      "pos": "SP,RP",
+      "from": "412.l.22755.t.8",
+      "to": "412.l.22755.t.15"
+     },
+     {
+      "name": "Thairo Estrada",
+      "pos": "2B,SS,OF",
+      "from": "412.l.22755.t.15",
+      "to": "412.l.22755.t.8"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "762",
+    "status": "successful",
+    "ts": 1656659541,
+    "a": "412.l.22755.t.3",
+    "b": "412.l.22755.t.12",
+    "players": [
+     {
+      "name": "Dean Kremer",
+      "pos": "SP",
+      "from": "412.l.22755.t.3",
+      "to": "412.l.22755.t.12"
+     },
+     {
+      "name": "Cavan Biggio",
+      "pos": "1B,2B,3B,OF",
+      "from": "412.l.22755.t.3",
+      "to": "412.l.22755.t.12"
+     },
+     {
+      "name": "Alex Verdugo",
+      "pos": "OF",
+      "from": "412.l.22755.t.12",
+      "to": "412.l.22755.t.3"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "811",
+    "status": "successful",
+    "ts": 1657523542,
+    "a": "412.l.22755.t.16",
+    "b": "412.l.22755.t.10",
+    "players": [
+     {
+      "name": "Josh Donaldson",
+      "pos": "3B",
+      "from": "412.l.22755.t.16",
+      "to": "412.l.22755.t.10"
+     },
+     {
+      "name": "Brandon Nimmo",
+      "pos": "OF",
+      "from": "412.l.22755.t.16",
+      "to": "412.l.22755.t.10"
+     },
+     {
+      "name": "Yu Darvish",
+      "pos": "SP",
+      "from": "412.l.22755.t.16",
+      "to": "412.l.22755.t.10"
+     },
+     {
+      "name": "Giovanny Gallegos",
+      "pos": "RP",
+      "from": "412.l.22755.t.16",
+      "to": "412.l.22755.t.10"
+     },
+     {
+      "name": "Rafael Devers",
+      "pos": "3B",
+      "from": "412.l.22755.t.10",
+      "to": "412.l.22755.t.16"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "856",
+    "status": "successful",
+    "ts": 1658041941,
+    "a": "412.l.22755.t.12",
+    "b": "412.l.22755.t.1",
+    "players": [
+     {
+      "name": "Cavan Biggio",
+      "pos": "1B,2B,3B,OF",
+      "from": "412.l.22755.t.12",
+      "to": "412.l.22755.t.1"
+     },
+     {
+      "name": "Taylor Rogers",
+      "pos": "RP",
+      "from": "412.l.22755.t.12",
+      "to": "412.l.22755.t.1"
+     },
+     {
+      "name": "Josh Naylor",
+      "pos": "1B,OF",
+      "from": "412.l.22755.t.1",
+      "to": "412.l.22755.t.12"
+     },
+     {
+      "name": "Alex Lange",
+      "pos": "RP",
+      "from": "412.l.22755.t.1",
+      "to": "412.l.22755.t.12"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "894",
+    "status": "successful",
+    "ts": 1658733141,
+    "a": "412.l.22755.t.3",
+    "b": "412.l.22755.t.8",
+    "players": [
+     {
+      "name": "Alex Bregman",
+      "pos": "3B",
+      "from": "412.l.22755.t.3",
+      "to": "412.l.22755.t.8"
+     },
+     {
+      "name": "Kris Bryant",
+      "pos": "1B,3B,OF",
+      "from": "412.l.22755.t.8",
+      "to": "412.l.22755.t.3"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "893",
+    "status": "successful",
+    "ts": 1658733141,
+    "a": "412.l.22755.t.2",
+    "b": "412.l.22755.t.12",
+    "players": [
+     {
+      "name": "Santiago Espinal",
+      "pos": "2B,3B,SS",
+      "from": "412.l.22755.t.2",
+      "to": "412.l.22755.t.12"
+     },
+     {
+      "name": "Ian Anderson",
+      "pos": "SP",
+      "from": "412.l.22755.t.12",
+      "to": "412.l.22755.t.2"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "898",
+    "status": "successful",
+    "ts": 1658819538,
+    "a": "412.l.22755.t.11",
+    "b": "412.l.22755.t.3",
+    "players": [
+     {
+      "name": "Anthony Rizzo",
+      "pos": "1B",
+      "from": "412.l.22755.t.11",
+      "to": "412.l.22755.t.3"
+     },
+     {
+      "name": "Génesis Cabrera",
+      "pos": "RP",
+      "from": "412.l.22755.t.11",
+      "to": "412.l.22755.t.3"
+     },
+     {
+      "name": "Gleyber Torres",
+      "pos": "2B,SS",
+      "from": "412.l.22755.t.3",
+      "to": "412.l.22755.t.11"
+     },
+     {
+      "name": "Ryan Pressly",
+      "pos": "RP",
+      "from": "412.l.22755.t.3",
+      "to": "412.l.22755.t.11"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "957",
+    "status": "successful",
+    "ts": 1659597142,
+    "a": "412.l.22755.t.12",
+    "b": "412.l.22755.t.1",
+    "players": [
+     {
+      "name": "Will Smith",
+      "pos": "C",
+      "from": "412.l.22755.t.12",
+      "to": "412.l.22755.t.1"
+     },
+     {
+      "name": "Yusei Kikuchi",
+      "pos": "SP,RP",
+      "from": "412.l.22755.t.12",
+      "to": "412.l.22755.t.1"
+     },
+     {
+      "name": "Francisco Alvarez",
+      "pos": "C",
+      "from": "412.l.22755.t.1",
+      "to": "412.l.22755.t.12"
+     },
+     {
+      "name": "Jarred Kelenic",
+      "pos": "OF",
+      "from": "412.l.22755.t.1",
+      "to": "412.l.22755.t.12"
+     },
+     {
+      "name": "George Kirby",
+      "pos": "SP",
+      "from": "412.l.22755.t.1",
+      "to": "412.l.22755.t.12"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "963",
+    "status": "successful",
+    "ts": 1659683543,
+    "a": "412.l.22755.t.8",
+    "b": "412.l.22755.t.12",
+    "players": [
+     {
+      "name": "Riley Greene",
+      "pos": "OF",
+      "from": "412.l.22755.t.8",
+      "to": "412.l.22755.t.12"
+     },
+     {
+      "name": "Esteury Ruiz",
+      "pos": "2B,OF",
+      "from": "412.l.22755.t.8",
+      "to": "412.l.22755.t.12"
+     },
+     {
+      "name": "Matt Chapman",
+      "pos": "3B",
+      "from": "412.l.22755.t.12",
+      "to": "412.l.22755.t.8"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "982",
+    "status": "successful",
+    "ts": 1659856341,
+    "a": "412.l.22755.t.16",
+    "b": "412.l.22755.t.12",
+    "players": [
+     {
+      "name": "William Contreras",
+      "pos": "C",
+      "from": "412.l.22755.t.16",
+      "to": "412.l.22755.t.12"
+     },
+     {
+      "name": "Rafael Devers",
+      "pos": "3B",
+      "from": "412.l.22755.t.16",
+      "to": "412.l.22755.t.12"
+     },
+     {
+      "name": "Kyle Muller",
+      "pos": "SP",
+      "from": "412.l.22755.t.16",
+      "to": "412.l.22755.t.12"
+     },
+     {
+      "name": "Ryan Helsley",
+      "pos": "RP",
+      "from": "412.l.22755.t.12",
+      "to": "412.l.22755.t.16"
+     },
+     {
+      "name": "Mike Clevinger",
+      "pos": "SP",
+      "from": "412.l.22755.t.12",
+      "to": "412.l.22755.t.16"
+     },
+     {
+      "name": "Nolan Arenado",
+      "pos": "3B",
+      "from": "412.l.22755.t.12",
+      "to": "412.l.22755.t.16"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "981",
+    "status": "successful",
+    "ts": 1659856341,
+    "a": "412.l.22755.t.4",
+    "b": "412.l.22755.t.1",
+    "players": [
+     {
+      "name": "Patrick Wisdom",
+      "pos": "1B,3B,OF",
+      "from": "412.l.22755.t.4",
+      "to": "412.l.22755.t.1"
+     },
+     {
+      "name": "Corey Knebel",
+      "pos": "SP,RP",
+      "from": "412.l.22755.t.1",
+      "to": "412.l.22755.t.4"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "977",
+    "status": "successful",
+    "ts": 1659856341,
+    "a": "412.l.22755.t.1",
+    "b": "412.l.22755.t.4",
+    "players": [
+     {
+      "name": "Lourdes Gurriel Jr.",
+      "pos": "1B,OF",
+      "from": "412.l.22755.t.1",
+      "to": "412.l.22755.t.4"
+     },
+     {
+      "name": "Gavin Lux",
+      "pos": "2B,SS,OF",
+      "from": "412.l.22755.t.1",
+      "to": "412.l.22755.t.4"
+     },
+     {
+      "name": "Giancarlo Stanton",
+      "pos": "OF",
+      "from": "412.l.22755.t.4",
+      "to": "412.l.22755.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "988",
+    "status": "successful",
+    "ts": 1659942743,
+    "a": "412.l.22755.t.3",
+    "b": "412.l.22755.t.1",
+    "players": [
+     {
+      "name": "Miles Mikolas",
+      "pos": "SP",
+      "from": "412.l.22755.t.3",
+      "to": "412.l.22755.t.1"
+     },
+     {
+      "name": "George Springer",
+      "pos": "OF",
+      "from": "412.l.22755.t.3",
+      "to": "412.l.22755.t.1"
+     },
+     {
+      "name": "Tyler O'Neill",
+      "pos": "OF",
+      "from": "412.l.22755.t.1",
+      "to": "412.l.22755.t.3"
+     },
+     {
+      "name": "José Berríos",
+      "pos": "SP",
+      "from": "412.l.22755.t.1",
+      "to": "412.l.22755.t.3"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1013",
+    "status": "successful",
+    "ts": 1660374745,
+    "a": "412.l.22755.t.2",
+    "b": "412.l.22755.t.7",
+    "players": [
+     {
+      "name": "Michael Kopech",
+      "pos": "SP,RP",
+      "from": "412.l.22755.t.2",
+      "to": "412.l.22755.t.7"
+     },
+     {
+      "name": "Kolten Wong",
+      "pos": "2B",
+      "from": "412.l.22755.t.2",
+      "to": "412.l.22755.t.7"
+     },
+     {
+      "name": "Domingo Acevedo",
+      "pos": "RP",
+      "from": "412.l.22755.t.2",
+      "to": "412.l.22755.t.7"
+     },
+     {
+      "name": "Luis Severino",
+      "pos": "SP,RP",
+      "from": "412.l.22755.t.2",
+      "to": "412.l.22755.t.7"
+     },
+     {
+      "name": "Jordan Romano",
+      "pos": "RP",
+      "from": "412.l.22755.t.7",
+      "to": "412.l.22755.t.2"
+     },
+     {
+      "name": "Luis Castillo",
+      "pos": "SP",
+      "from": "412.l.22755.t.7",
+      "to": "412.l.22755.t.2"
+     },
+     {
+      "name": "DJ LeMahieu",
+      "pos": "1B,2B,3B",
+      "from": "412.l.22755.t.7",
+      "to": "412.l.22755.t.2"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1011",
+    "status": "successful",
+    "ts": 1660374745,
+    "a": "412.l.22755.t.14",
+    "b": "412.l.22755.t.13",
+    "players": [
+     {
+      "name": "Kyle Wright",
+      "pos": "SP",
+      "from": "412.l.22755.t.14",
+      "to": "412.l.22755.t.13"
+     },
+     {
+      "name": "Justin Turner",
+      "pos": "3B",
+      "from": "412.l.22755.t.13",
+      "to": "412.l.22755.t.14"
+     },
+     {
+      "name": "Paul Goldschmidt",
+      "pos": "1B",
+      "from": "412.l.22755.t.13",
+      "to": "412.l.22755.t.14"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1010",
+    "status": "successful",
+    "ts": 1660374745,
+    "a": "412.l.22755.t.1",
+    "b": "412.l.22755.t.12",
+    "players": [
+     {
+      "name": "MacKenzie Gore",
+      "pos": "SP",
+      "from": "412.l.22755.t.1",
+      "to": "412.l.22755.t.12"
+     },
+     {
+      "name": "A.J. Minter",
+      "pos": "RP",
+      "from": "412.l.22755.t.12",
+      "to": "412.l.22755.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1008",
+    "status": "successful",
+    "ts": 1660374745,
+    "a": "412.l.22755.t.2",
+    "b": "412.l.22755.t.9",
+    "players": [
+     {
+      "name": "Yandy Díaz",
+      "pos": "1B,3B",
+      "from": "412.l.22755.t.2",
+      "to": "412.l.22755.t.9"
+     },
+     {
+      "name": "Brandon Belt",
+      "pos": "1B",
+      "from": "412.l.22755.t.2",
+      "to": "412.l.22755.t.9"
+     },
+     {
+      "name": "Jean Segura",
+      "pos": "2B",
+      "from": "412.l.22755.t.2",
+      "to": "412.l.22755.t.9"
+     },
+     {
+      "name": "Ian Anderson",
+      "pos": "SP",
+      "from": "412.l.22755.t.2",
+      "to": "412.l.22755.t.9"
+     },
+     {
+      "name": "Drew Rasmussen",
+      "pos": "SP,RP",
+      "from": "412.l.22755.t.2",
+      "to": "412.l.22755.t.9"
+     },
+     {
+      "name": "Marcell Ozuna",
+      "pos": "OF",
+      "from": "412.l.22755.t.2",
+      "to": "412.l.22755.t.9"
+     },
+     {
+      "name": "Julio Rodríguez",
+      "pos": "OF",
+      "from": "412.l.22755.t.2",
+      "to": "412.l.22755.t.9"
+     },
+     {
+      "name": "Michael Fulmer",
+      "pos": "SP,RP",
+      "from": "412.l.22755.t.9",
+      "to": "412.l.22755.t.2"
+     },
+     {
+      "name": "Taijuan Walker",
+      "pos": "SP",
+      "from": "412.l.22755.t.9",
+      "to": "412.l.22755.t.2"
+     },
+     {
+      "name": "Raisel Iglesias",
+      "pos": "RP",
+      "from": "412.l.22755.t.9",
+      "to": "412.l.22755.t.2"
+     },
+     {
+      "name": "Pete Alonso",
+      "pos": "1B",
+      "from": "412.l.22755.t.9",
+      "to": "412.l.22755.t.2"
+     },
+     {
+      "name": "Trea Turner",
+      "pos": "2B,SS",
+      "from": "412.l.22755.t.9",
+      "to": "412.l.22755.t.2"
+     },
+     {
+      "name": "Starling Marte",
+      "pos": "OF",
+      "from": "412.l.22755.t.9",
+      "to": "412.l.22755.t.2"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1021",
+    "status": "successful",
+    "ts": 1660461140,
+    "a": "412.l.22755.t.1",
+    "b": "412.l.22755.t.7",
+    "players": [
+     {
+      "name": "Alex Wood",
+      "pos": "SP",
+      "from": "412.l.22755.t.1",
+      "to": "412.l.22755.t.7"
+     },
+     {
+      "name": "Corbin Carroll",
+      "pos": "OF",
+      "from": "412.l.22755.t.1",
+      "to": "412.l.22755.t.7"
+     },
+     {
+      "name": "J.D. Martinez",
+      "pos": "OF",
+      "from": "412.l.22755.t.7",
+      "to": "412.l.22755.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "1020",
+    "status": "successful",
+    "ts": 1660461140,
+    "a": "412.l.22755.t.1",
+    "b": "412.l.22755.t.9",
+    "players": [
+     {
+      "name": "Gunnar Henderson",
+      "pos": "3B,SS",
+      "from": "412.l.22755.t.1",
+      "to": "412.l.22755.t.9"
+     },
+     {
+      "name": "Tyler Mahle",
+      "pos": "SP",
+      "from": "412.l.22755.t.9",
+      "to": "412.l.22755.t.1"
+     }
+    ],
+    "picks": []
+   }
+  ]
+ },
+ "2023": {
+  "key": "422.l.4580",
+  "start": "2023-03-30",
+  "end": "2023-10-01",
+  "teams": {
+   "422.l.4580.t.1": "Syndergaarden Cop",
+   "422.l.4580.t.2": "Bulba",
+   "422.l.4580.t.3": "Chaz Jizzem",
+   "422.l.4580.t.4": "Corbin My Man",
+   "422.l.4580.t.5": "Dane Dombrowski",
+   "422.l.4580.t.6": "Dylan Ceased to Amaze Me",
+   "422.l.4580.t.7": "ElTerrible",
+   "422.l.4580.t.8": "Joe Buck Yourself",
+   "422.l.4580.t.9": "Kitty Autumn",
+   "422.l.4580.t.10": "LoveGaretRchrdsThatsMy_Problem",
+   "422.l.4580.t.11": "Newton South Loins",
+   "422.l.4580.t.12": "Padilla Flotilla",
+   "422.l.4580.t.13": "Robbers",
+   "422.l.4580.t.14": "Mendoza Line Misfitzzz",
+   "422.l.4580.t.15": "Simuno",
+   "422.l.4580.t.16": "Welcome 2 da fam nick madrigal"
+  },
+  "trades": [
+   {
+    "id": "307",
+    "status": "successful",
+    "ts": 1682149600,
+    "a": "422.l.4580.t.12",
+    "b": "422.l.4580.t.3",
+    "players": [
+     {
+      "name": "Dansby Swanson",
+      "pos": "SS",
+      "from": "422.l.4580.t.12",
+      "to": "422.l.4580.t.3"
+     },
+     {
+      "name": "Logan Gilbert",
+      "pos": "SP",
+      "from": "422.l.4580.t.3",
+      "to": "422.l.4580.t.12"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "765",
+    "status": "successful",
+    "ts": 1688889930,
+    "a": "422.l.4580.t.15",
+    "b": "422.l.4580.t.8",
+    "players": [
+     {
+      "name": "William Contreras",
+      "pos": "C",
+      "from": "422.l.4580.t.15",
+      "to": "422.l.4580.t.8"
+     },
+     {
+      "name": "Yennier Cano",
+      "pos": "RP",
+      "from": "422.l.4580.t.8",
+      "to": "422.l.4580.t.15"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "873",
+    "status": "vetoed",
+    "ts": 1691017890,
+    "a": "422.l.4580.t.1",
+    "b": "422.l.4580.t.5",
+    "players": [
+     {
+      "name": "Edouard Julien",
+      "pos": "2B",
+      "from": "422.l.4580.t.1",
+      "to": "422.l.4580.t.5"
+     },
+     {
+      "name": "A.J. Puk",
+      "pos": "RP",
+      "from": "422.l.4580.t.1",
+      "to": "422.l.4580.t.5"
+     },
+     {
+      "name": "Pete Fairbanks",
+      "pos": "RP",
+      "from": "422.l.4580.t.5",
+      "to": "422.l.4580.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "875",
+    "status": "successful",
+    "ts": 1691050016,
+    "a": "422.l.4580.t.1",
+    "b": "422.l.4580.t.8",
+    "players": [
+     {
+      "name": "Rhys Hoskins",
+      "pos": "1B",
+      "from": "422.l.4580.t.1",
+      "to": "422.l.4580.t.8"
+     },
+     {
+      "name": "Bobby Miller",
+      "pos": "SP",
+      "from": "422.l.4580.t.1",
+      "to": "422.l.4580.t.8"
+     },
+     {
+      "name": "Shohei Ohtani (Pitcher)",
+      "pos": "SP",
+      "from": "422.l.4580.t.8",
+      "to": "422.l.4580.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "894",
+    "status": "successful",
+    "ts": 1691222860,
+    "a": "422.l.4580.t.8",
+    "b": "422.l.4580.t.16",
+    "players": [
+     {
+      "name": "Manny Machado",
+      "pos": "3B",
+      "from": "422.l.4580.t.8",
+      "to": "422.l.4580.t.16"
+     },
+     {
+      "name": "Aaron Nola",
+      "pos": "SP",
+      "from": "422.l.4580.t.8",
+      "to": "422.l.4580.t.16"
+     },
+     {
+      "name": "Yandy Díaz",
+      "pos": "1B,3B",
+      "from": "422.l.4580.t.16",
+      "to": "422.l.4580.t.8"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "941",
+    "status": "successful",
+    "ts": 1691654889,
+    "a": "422.l.4580.t.5",
+    "b": "422.l.4580.t.10",
+    "players": [
+     {
+      "name": "Randy Arozarena",
+      "pos": "OF",
+      "from": "422.l.4580.t.5",
+      "to": "422.l.4580.t.10"
+     },
+     {
+      "name": "Bryan De La Cruz",
+      "pos": "OF",
+      "from": "422.l.4580.t.10",
+      "to": "422.l.4580.t.5"
+     }
+    ],
+    "picks": []
+   }
+  ]
+ },
+ "2024": {
+  "key": "431.l.10202",
+  "start": "2024-03-20",
+  "end": "2024-09-30",
+  "teams": {
+   "431.l.10202.t.1": "Syndergaarden Cop",
+   "431.l.10202.t.2": "Bulba",
+   "431.l.10202.t.3": "Chaz Jizzem",
+   "431.l.10202.t.4": "Corbin My Man",
+   "431.l.10202.t.5": "Dane Dombrowski",
+   "431.l.10202.t.6": "Dylan Never Ceases to Amaze Me",
+   "431.l.10202.t.7": "Slider Inside",
+   "431.l.10202.t.8": "Joe Buck Yourself",
+   "431.l.10202.t.9": "Kitty Autumn",
+   "431.l.10202.t.10": "LoveGaretRchrdsThatsMy_Problem",
+   "431.l.10202.t.11": "Mendoza Line Misfitzzz",
+   "431.l.10202.t.12": "Newton South Loins",
+   "431.l.10202.t.13": "Padilla Flotilla",
+   "431.l.10202.t.14": "Robbers",
+   "431.l.10202.t.15": "SimDOS",
+   "431.l.10202.t.16": "Welcome 2 da fam nick madrigal"
+  },
+  "trades": [
+   {
+    "id": "303",
+    "status": "successful",
+    "ts": 1713168513,
+    "a": "431.l.10202.t.3",
+    "b": "431.l.10202.t.1",
+    "players": [
+     {
+      "name": "Daulton Varsho",
+      "pos": "OF",
+      "from": "431.l.10202.t.3",
+      "to": "431.l.10202.t.1"
+     },
+     {
+      "name": "Tyler Glasnow",
+      "pos": "SP",
+      "from": "431.l.10202.t.3",
+      "to": "431.l.10202.t.1"
+     },
+     {
+      "name": "Pete Alonso",
+      "pos": "1B",
+      "from": "431.l.10202.t.1",
+      "to": "431.l.10202.t.3"
+     },
+     {
+      "name": "Dylan Crews",
+      "pos": "OF",
+      "from": "431.l.10202.t.1",
+      "to": "431.l.10202.t.3"
+     },
+     {
+      "name": "Shohei Ohtani (Pitcher)",
+      "pos": "SP",
+      "from": "431.l.10202.t.1",
+      "to": "431.l.10202.t.3"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "330",
+    "status": "successful",
+    "ts": 1713427004,
+    "a": "431.l.10202.t.3",
+    "b": "431.l.10202.t.9",
+    "players": [
+     {
+      "name": "Shohei Ohtani (Pitcher)",
+      "pos": "SP",
+      "from": "431.l.10202.t.3",
+      "to": "431.l.10202.t.9"
+     },
+     {
+      "name": "Paul Goldschmidt",
+      "pos": "1B",
+      "from": "431.l.10202.t.3",
+      "to": "431.l.10202.t.9"
+     },
+     {
+      "name": "Max Meyer",
+      "pos": "SP",
+      "from": "431.l.10202.t.9",
+      "to": "431.l.10202.t.3"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "470",
+    "status": "vetoed",
+    "ts": 1715304311,
+    "a": "431.l.10202.t.16",
+    "b": "431.l.10202.t.7",
+    "players": [
+     {
+      "name": "Edward Cabrera",
+      "pos": "SP",
+      "from": "431.l.10202.t.16",
+      "to": "431.l.10202.t.7"
+     },
+     {
+      "name": "Alex Verdugo",
+      "pos": "OF",
+      "from": "431.l.10202.t.7",
+      "to": "431.l.10202.t.16"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "483",
+    "status": "successful",
+    "ts": 1715428864,
+    "a": "431.l.10202.t.7",
+    "b": "431.l.10202.t.8",
+    "players": [
+     {
+      "name": "Alex Verdugo",
+      "pos": "OF",
+      "from": "431.l.10202.t.7",
+      "to": "431.l.10202.t.8"
+     },
+     {
+      "name": "Kyle Gibson",
+      "pos": "SP",
+      "from": "431.l.10202.t.8",
+      "to": "431.l.10202.t.7"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "651",
+    "status": "successful",
+    "ts": 1717833523,
+    "a": "431.l.10202.t.13",
+    "b": "431.l.10202.t.1",
+    "players": [
+     {
+      "name": "Michael Harris II",
+      "pos": "OF",
+      "from": "431.l.10202.t.13",
+      "to": "431.l.10202.t.1"
+     },
+     {
+      "name": "Daulton Varsho",
+      "pos": "OF",
+      "from": "431.l.10202.t.1",
+      "to": "431.l.10202.t.13"
+     },
+     {
+      "name": "Nolan Arenado",
+      "pos": "3B",
+      "from": "431.l.10202.t.1",
+      "to": "431.l.10202.t.13"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "777",
+    "status": "successful",
+    "ts": 1719734444,
+    "a": "431.l.10202.t.12",
+    "b": "431.l.10202.t.8",
+    "players": [
+     {
+      "name": "Luis Robert Jr.",
+      "pos": "OF",
+      "from": "431.l.10202.t.12",
+      "to": "431.l.10202.t.8"
+     },
+     {
+      "name": "Jackson Holliday",
+      "pos": "2B,SS",
+      "from": "431.l.10202.t.8",
+      "to": "431.l.10202.t.12"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "783",
+    "status": "successful",
+    "ts": 1719821565,
+    "a": "431.l.10202.t.12",
+    "b": "431.l.10202.t.3",
+    "players": [
+     {
+      "name": "Matt Olson",
+      "pos": "1B",
+      "from": "431.l.10202.t.12",
+      "to": "431.l.10202.t.3"
+     },
+     {
+      "name": "Ben Lively",
+      "pos": "SP,RP",
+      "from": "431.l.10202.t.12",
+      "to": "431.l.10202.t.3"
+     },
+     {
+      "name": "LaMonte Wade Jr.",
+      "pos": "1B,OF",
+      "from": "431.l.10202.t.3",
+      "to": "431.l.10202.t.12"
+     },
+     {
+      "name": "Andy Pages",
+      "pos": "OF",
+      "from": "431.l.10202.t.3",
+      "to": "431.l.10202.t.12"
+     },
+     {
+      "name": "Jared Jones",
+      "pos": "SP",
+      "from": "431.l.10202.t.3",
+      "to": "431.l.10202.t.12"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "853",
+    "status": "successful",
+    "ts": 1720857697,
+    "a": "431.l.10202.t.13",
+    "b": "431.l.10202.t.1",
+    "players": [
+     {
+      "name": "Ryan Mountcastle",
+      "pos": "1B",
+      "from": "431.l.10202.t.13",
+      "to": "431.l.10202.t.1"
+     },
+     {
+      "name": "Zach Eflin",
+      "pos": "SP",
+      "from": "431.l.10202.t.13",
+      "to": "431.l.10202.t.1"
+     },
+     {
+      "name": "George Springer",
+      "pos": "OF",
+      "from": "431.l.10202.t.1",
+      "to": "431.l.10202.t.13"
+     },
+     {
+      "name": "A.J. Minter",
+      "pos": "RP",
+      "from": "431.l.10202.t.1",
+      "to": "431.l.10202.t.13"
+     },
+     {
+      "name": "Andrew Kittredge",
+      "pos": "RP",
+      "from": "431.l.10202.t.1",
+      "to": "431.l.10202.t.13"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "933",
+    "status": "vetoed",
+    "ts": 1722430095,
+    "a": "431.l.10202.t.8",
+    "b": "431.l.10202.t.13",
+    "players": [
+     {
+      "name": "David Hamilton",
+      "pos": "2B,SS",
+      "from": "431.l.10202.t.8",
+      "to": "431.l.10202.t.13"
+     },
+     {
+      "name": "Jasson Domínguez",
+      "pos": "OF",
+      "from": "431.l.10202.t.8",
+      "to": "431.l.10202.t.13"
+     },
+     {
+      "name": "Corey Seager",
+      "pos": "SS",
+      "from": "431.l.10202.t.13",
+      "to": "431.l.10202.t.8"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "950",
+    "status": "successful",
+    "ts": 1722672041,
+    "a": "431.l.10202.t.13",
+    "b": "431.l.10202.t.8",
+    "players": [
+     {
+      "name": "Kyle Harrison",
+      "pos": "SP",
+      "from": "431.l.10202.t.13",
+      "to": "431.l.10202.t.8"
+     },
+     {
+      "name": "Bobby Miller",
+      "pos": "SP",
+      "from": "431.l.10202.t.8",
+      "to": "431.l.10202.t.13"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "948",
+    "status": "successful",
+    "ts": 1722672041,
+    "a": "431.l.10202.t.1",
+    "b": "431.l.10202.t.13",
+    "players": [
+     {
+      "name": "Michael Harris II",
+      "pos": "OF",
+      "from": "431.l.10202.t.1",
+      "to": "431.l.10202.t.13"
+     },
+     {
+      "name": "Zach Eflin",
+      "pos": "SP",
+      "from": "431.l.10202.t.1",
+      "to": "431.l.10202.t.13"
+     },
+     {
+      "name": "Corey Seager",
+      "pos": "SS",
+      "from": "431.l.10202.t.13",
+      "to": "431.l.10202.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "946",
+    "status": "successful",
+    "ts": 1722672041,
+    "a": "431.l.10202.t.1",
+    "b": "431.l.10202.t.13",
+    "players": [
+     {
+      "name": "Noelvi Marte",
+      "pos": "3B",
+      "from": "431.l.10202.t.1",
+      "to": "431.l.10202.t.13"
+     },
+     {
+      "name": "Ben Rice",
+      "pos": "C,1B",
+      "from": "431.l.10202.t.1",
+      "to": "431.l.10202.t.13"
+     },
+     {
+      "name": "Byron Buxton",
+      "pos": "OF",
+      "from": "431.l.10202.t.13",
+      "to": "431.l.10202.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "961",
+    "status": "successful",
+    "ts": 1722846044,
+    "a": "431.l.10202.t.6",
+    "b": "431.l.10202.t.16",
+    "players": [
+     {
+      "name": "James Wood",
+      "pos": "OF",
+      "from": "431.l.10202.t.6",
+      "to": "431.l.10202.t.16"
+     },
+     {
+      "name": "Drew Rasmussen",
+      "pos": "SP,RP",
+      "from": "431.l.10202.t.6",
+      "to": "431.l.10202.t.16"
+     },
+     {
+      "name": "Kyle Schwarber",
+      "pos": "OF",
+      "from": "431.l.10202.t.16",
+      "to": "431.l.10202.t.6"
+     },
+     {
+      "name": "Andrés Muñoz",
+      "pos": "RP",
+      "from": "431.l.10202.t.16",
+      "to": "431.l.10202.t.6"
+     },
+     {
+      "name": "Edwin Díaz",
+      "pos": "RP",
+      "from": "431.l.10202.t.16",
+      "to": "431.l.10202.t.6"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "987",
+    "status": "successful",
+    "ts": 1723363244,
+    "a": "431.l.10202.t.1",
+    "b": "431.l.10202.t.7",
+    "players": [
+     {
+      "name": "Jazz Chisholm Jr.",
+      "pos": "3B,OF",
+      "from": "431.l.10202.t.1",
+      "to": "431.l.10202.t.7"
+     },
+     {
+      "name": "Aaron Nola",
+      "pos": "SP",
+      "from": "431.l.10202.t.7",
+      "to": "431.l.10202.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "985",
+    "status": "successful",
+    "ts": 1723363244,
+    "a": "431.l.10202.t.13",
+    "b": "431.l.10202.t.1",
+    "players": [
+     {
+      "name": "Bryan Woo",
+      "pos": "SP",
+      "from": "431.l.10202.t.13",
+      "to": "431.l.10202.t.1"
+     },
+     {
+      "name": "Pete Fairbanks",
+      "pos": "RP",
+      "from": "431.l.10202.t.13",
+      "to": "431.l.10202.t.1"
+     },
+     {
+      "name": "Dylan Crews",
+      "pos": "OF",
+      "from": "431.l.10202.t.1",
+      "to": "431.l.10202.t.13"
+     },
+     {
+      "name": "Spencer Strider",
+      "pos": "SP",
+      "from": "431.l.10202.t.1",
+      "to": "431.l.10202.t.13"
+     }
+    ],
+    "picks": []
+   }
+  ]
+ },
+ "2025": {
+  "key": "458.l.25132",
+  "start": "2025-03-18",
+  "end": "2025-09-28",
+  "teams": {
+   "458.l.25132.t.1": "Ippei's Book Club",
+   "458.l.25132.t.2": "Bulba",
+   "458.l.25132.t.3": "Chaz Jizzem",
+   "458.l.25132.t.4": "Corbin My Man",
+   "458.l.25132.t.5": "Dane Dombrowski",
+   "458.l.25132.t.6": "Dylan Never Ceases to Amaze Me",
+   "458.l.25132.t.7": "Slider Inside",
+   "458.l.25132.t.8": "Joe Buck Yourself",
+   "458.l.25132.t.9": "Kitty Autumn",
+   "458.l.25132.t.10": "LoveGaretRchrdsThatsMy_Problem",
+   "458.l.25132.t.11": "Mendoza Line Misfitzzz",
+   "458.l.25132.t.12": "Newton South Loins",
+   "458.l.25132.t.13": "Padilla Flotilla",
+   "458.l.25132.t.14": "Robbers",
+   "458.l.25132.t.15": "SimDOS",
+   "458.l.25132.t.16": "Welcome 2 da fam nick madrigal"
+  },
+  "trades": [
+   {
+    "id": "250",
+    "status": "successful",
+    "ts": 1743840198,
+    "a": "458.l.25132.t.11",
+    "b": "458.l.25132.t.1",
+    "players": [
+     {
+      "name": "Connor Wong",
+      "pos": "C,1B",
+      "from": "458.l.25132.t.11",
+      "to": "458.l.25132.t.1"
+     },
+     {
+      "name": "Justin Steele",
+      "pos": "SP",
+      "from": "458.l.25132.t.11",
+      "to": "458.l.25132.t.1"
+     },
+     {
+      "name": "Nico Hoerner",
+      "pos": "2B,SS",
+      "from": "458.l.25132.t.1",
+      "to": "458.l.25132.t.11"
+     },
+     {
+      "name": "Sean Murphy",
+      "pos": "C",
+      "from": "458.l.25132.t.1",
+      "to": "458.l.25132.t.11"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "287",
+    "status": "successful",
+    "ts": 1744272412,
+    "a": "458.l.25132.t.1",
+    "b": "458.l.25132.t.15",
+    "players": [
+     {
+      "name": "Justin Steele",
+      "pos": "SP",
+      "from": "458.l.25132.t.1",
+      "to": "458.l.25132.t.15"
+     },
+     {
+      "name": "Chase Dollander",
+      "pos": "SP",
+      "from": "458.l.25132.t.1",
+      "to": "458.l.25132.t.15"
+     },
+     {
+      "name": "Bryan Reynolds",
+      "pos": "OF",
+      "from": "458.l.25132.t.15",
+      "to": "458.l.25132.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "413",
+    "status": "successful",
+    "ts": 1746086825,
+    "a": "458.l.25132.t.1",
+    "b": "458.l.25132.t.13",
+    "players": [
+     {
+      "name": "Noelvi Marte",
+      "pos": "3B,OF",
+      "from": "458.l.25132.t.1",
+      "to": "458.l.25132.t.13"
+     },
+     {
+      "name": "Matt Chapman",
+      "pos": "3B",
+      "from": "458.l.25132.t.1",
+      "to": "458.l.25132.t.13"
+     },
+     {
+      "name": "Jose Altuve",
+      "pos": "2B,OF",
+      "from": "458.l.25132.t.13",
+      "to": "458.l.25132.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "471",
+    "status": "successful",
+    "ts": 1746778042,
+    "a": "458.l.25132.t.6",
+    "b": "458.l.25132.t.15",
+    "players": [
+     {
+      "name": "Lawrence Butler",
+      "pos": "OF",
+      "from": "458.l.25132.t.6",
+      "to": "458.l.25132.t.15"
+     },
+     {
+      "name": "Jordan Beck",
+      "pos": "OF",
+      "from": "458.l.25132.t.6",
+      "to": "458.l.25132.t.15"
+     },
+     {
+      "name": "Trevor Story",
+      "pos": "SS",
+      "from": "458.l.25132.t.6",
+      "to": "458.l.25132.t.15"
+     },
+     {
+      "name": "Drew Rasmussen",
+      "pos": "SP,RP",
+      "from": "458.l.25132.t.15",
+      "to": "458.l.25132.t.6"
+     },
+     {
+      "name": "Kevin Gausman",
+      "pos": "SP",
+      "from": "458.l.25132.t.15",
+      "to": "458.l.25132.t.6"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "535",
+    "status": "successful",
+    "ts": 1747469467,
+    "a": "458.l.25132.t.15",
+    "b": "458.l.25132.t.12",
+    "players": [
+     {
+      "name": "Tommy Kahnle",
+      "pos": "RP",
+      "from": "458.l.25132.t.15",
+      "to": "458.l.25132.t.12"
+     },
+     {
+      "name": "Jordan Romano",
+      "pos": "RP",
+      "from": "458.l.25132.t.15",
+      "to": "458.l.25132.t.12"
+     },
+     {
+      "name": "Roman Anthony",
+      "pos": "OF",
+      "from": "458.l.25132.t.12",
+      "to": "458.l.25132.t.15"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "574",
+    "status": "successful",
+    "ts": 1748073996,
+    "a": "458.l.25132.t.13",
+    "b": "458.l.25132.t.1",
+    "players": [
+     {
+      "name": "Camilo Doval",
+      "pos": "RP",
+      "from": "458.l.25132.t.13",
+      "to": "458.l.25132.t.1"
+     },
+     {
+      "name": "Wilmer Flores",
+      "pos": "1B",
+      "from": "458.l.25132.t.1",
+      "to": "458.l.25132.t.13"
+     },
+     {
+      "name": "Agustín Ramírez",
+      "pos": "C,1B",
+      "from": "458.l.25132.t.1",
+      "to": "458.l.25132.t.13"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "937",
+    "status": "successful",
+    "ts": 1754297504,
+    "a": "458.l.25132.t.11",
+    "b": "458.l.25132.t.5",
+    "players": [
+     {
+      "name": "Logan O'Hoppe",
+      "pos": "C",
+      "from": "458.l.25132.t.11",
+      "to": "458.l.25132.t.5"
+     },
+     {
+      "name": "Cole Ragans",
+      "pos": "SP",
+      "from": "458.l.25132.t.11",
+      "to": "458.l.25132.t.5"
+     },
+     {
+      "name": "Will Smith",
+      "pos": "C",
+      "from": "458.l.25132.t.5",
+      "to": "458.l.25132.t.11"
+     },
+     {
+      "name": "Noah Cameron",
+      "pos": "SP",
+      "from": "458.l.25132.t.5",
+      "to": "458.l.25132.t.11"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "944",
+    "status": "successful",
+    "ts": 1754381633,
+    "a": "458.l.25132.t.16",
+    "b": "458.l.25132.t.3",
+    "players": [
+     {
+      "name": "Fernando Tatis Jr.",
+      "pos": "OF",
+      "from": "458.l.25132.t.16",
+      "to": "458.l.25132.t.3"
+     },
+     {
+      "name": "Garrett Whitlock",
+      "pos": "SP,RP",
+      "from": "458.l.25132.t.16",
+      "to": "458.l.25132.t.3"
+     },
+     {
+      "name": "Félix Bautista",
+      "pos": "RP",
+      "from": "458.l.25132.t.3",
+      "to": "458.l.25132.t.16"
+     },
+     {
+      "name": "Tyler Soderstrom",
+      "pos": "1B,OF",
+      "from": "458.l.25132.t.3",
+      "to": "458.l.25132.t.16"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "962",
+    "status": "vetoed",
+    "ts": 1754606673,
+    "a": "458.l.25132.t.6",
+    "b": "458.l.25132.t.16",
+    "players": [
+     {
+      "name": "Mason Miller",
+      "pos": "RP",
+      "from": "458.l.25132.t.6",
+      "to": "458.l.25132.t.16"
+     },
+     {
+      "name": "Grayson Rodriguez",
+      "pos": "SP",
+      "from": "458.l.25132.t.6",
+      "to": "458.l.25132.t.16"
+     },
+     {
+      "name": "Andrés Muñoz",
+      "pos": "RP",
+      "from": "458.l.25132.t.16",
+      "to": "458.l.25132.t.6"
+     },
+     {
+      "name": "Edwin Díaz",
+      "pos": "RP",
+      "from": "458.l.25132.t.16",
+      "to": "458.l.25132.t.6"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "972",
+    "status": "successful",
+    "ts": 1754727412,
+    "a": "458.l.25132.t.7",
+    "b": "458.l.25132.t.10",
+    "players": [
+     {
+      "name": "Vinnie Pasquantino",
+      "pos": "1B",
+      "from": "458.l.25132.t.7",
+      "to": "458.l.25132.t.10"
+     },
+     {
+      "name": "Jason Adam",
+      "pos": "RP",
+      "from": "458.l.25132.t.7",
+      "to": "458.l.25132.t.10"
+     },
+     {
+      "name": "Louis Varland",
+      "pos": "SP,RP",
+      "from": "458.l.25132.t.10",
+      "to": "458.l.25132.t.7"
+     },
+     {
+      "name": "Matt Brash",
+      "pos": "RP",
+      "from": "458.l.25132.t.10",
+      "to": "458.l.25132.t.7"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "970",
+    "status": "successful",
+    "ts": 1754727412,
+    "a": "458.l.25132.t.1",
+    "b": "458.l.25132.t.10",
+    "players": [
+     {
+      "name": "Samuel Basallo",
+      "pos": "C,1B",
+      "from": "458.l.25132.t.1",
+      "to": "458.l.25132.t.10"
+     },
+     {
+      "name": "Bubba Chandler",
+      "pos": "SP",
+      "from": "458.l.25132.t.1",
+      "to": "458.l.25132.t.10"
+     },
+     {
+      "name": "Yordan Alvarez",
+      "pos": "OF",
+      "from": "458.l.25132.t.10",
+      "to": "458.l.25132.t.1"
+     },
+     {
+      "name": "Quinn Priester",
+      "pos": "SP,RP",
+      "from": "458.l.25132.t.10",
+      "to": "458.l.25132.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "968",
+    "status": "successful",
+    "ts": 1754727412,
+    "a": "458.l.25132.t.13",
+    "b": "458.l.25132.t.10",
+    "players": [
+     {
+      "name": "Michael Harris II",
+      "pos": "OF",
+      "from": "458.l.25132.t.13",
+      "to": "458.l.25132.t.10"
+     },
+     {
+      "name": "Dylan Crews",
+      "pos": "OF",
+      "from": "458.l.25132.t.13",
+      "to": "458.l.25132.t.10"
+     },
+     {
+      "name": "Adley Rutschman",
+      "pos": "C",
+      "from": "458.l.25132.t.10",
+      "to": "458.l.25132.t.13"
+     },
+     {
+      "name": "Luis Castillo",
+      "pos": "SP",
+      "from": "458.l.25132.t.10",
+      "to": "458.l.25132.t.13"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "966",
+    "status": "successful",
+    "ts": 1754727412,
+    "a": "458.l.25132.t.1",
+    "b": "458.l.25132.t.5",
+    "players": [
+     {
+      "name": "Alex Freeland",
+      "pos": "2B,3B,SS",
+      "from": "458.l.25132.t.1",
+      "to": "458.l.25132.t.5"
+     },
+     {
+      "name": "Gerrit Cole",
+      "pos": "SP",
+      "from": "458.l.25132.t.1",
+      "to": "458.l.25132.t.5"
+     },
+     {
+      "name": "Josh Naylor",
+      "pos": "1B",
+      "from": "458.l.25132.t.5",
+      "to": "458.l.25132.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "990",
+    "status": "successful",
+    "ts": 1754813779,
+    "a": "458.l.25132.t.2",
+    "b": "458.l.25132.t.14",
+    "players": [
+     {
+      "name": "Wilyer Abreu",
+      "pos": "OF",
+      "from": "458.l.25132.t.2",
+      "to": "458.l.25132.t.14"
+     },
+     {
+      "name": "Randy Rodríguez",
+      "pos": "RP",
+      "from": "458.l.25132.t.2",
+      "to": "458.l.25132.t.14"
+     },
+     {
+      "name": "Josh Hader",
+      "pos": "RP",
+      "from": "458.l.25132.t.14",
+      "to": "458.l.25132.t.2"
+     },
+     {
+      "name": "Logan Gilbert",
+      "pos": "SP",
+      "from": "458.l.25132.t.14",
+      "to": "458.l.25132.t.2"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "988",
+    "status": "successful",
+    "ts": 1754813779,
+    "a": "458.l.25132.t.15",
+    "b": "458.l.25132.t.14",
+    "players": [
+     {
+      "name": "Jonathan Aranda",
+      "pos": "1B,2B",
+      "from": "458.l.25132.t.15",
+      "to": "458.l.25132.t.14"
+     },
+     {
+      "name": "Nestor Cortes",
+      "pos": "SP",
+      "from": "458.l.25132.t.15",
+      "to": "458.l.25132.t.14"
+     },
+     {
+      "name": "Mookie Betts",
+      "pos": "2B,SS,OF",
+      "from": "458.l.25132.t.14",
+      "to": "458.l.25132.t.15"
+     },
+     {
+      "name": "Zack Wheeler",
+      "pos": "SP",
+      "from": "458.l.25132.t.14",
+      "to": "458.l.25132.t.15"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "986",
+    "status": "successful",
+    "ts": 1754813779,
+    "a": "458.l.25132.t.6",
+    "b": "458.l.25132.t.5",
+    "players": [
+     {
+      "name": "Spencer Torkelson",
+      "pos": "1B",
+      "from": "458.l.25132.t.6",
+      "to": "458.l.25132.t.5"
+     },
+     {
+      "name": "Grayson Rodriguez",
+      "pos": "SP",
+      "from": "458.l.25132.t.6",
+      "to": "458.l.25132.t.5"
+     },
+     {
+      "name": "Julio Rodríguez",
+      "pos": "OF",
+      "from": "458.l.25132.t.5",
+      "to": "458.l.25132.t.6"
+     },
+     {
+      "name": "Robert Suarez",
+      "pos": "RP",
+      "from": "458.l.25132.t.5",
+      "to": "458.l.25132.t.6"
+     }
+    ],
+    "picks": []
+   }
+  ]
+ },
+ "2026": {
+  "key": "469.l.30639",
+  "start": "2026-03-25",
+  "end": "2026-09-27",
+  "teams": {
+   "469.l.30639.t.1": "Ippei's Book Club",
+   "469.l.30639.t.2": "Bulba",
+   "469.l.30639.t.3": "Chaz Jizzem",
+   "469.l.30639.t.4": "Corbin My Man",
+   "469.l.30639.t.5": "Dane Dombrowski",
+   "469.l.30639.t.6": "Dylan Never Ceases to Amaze Me",
+   "469.l.30639.t.7": "Slider Inside",
+   "469.l.30639.t.8": "Joe Buck Yourself",
+   "469.l.30639.t.9": "Kitty Autumn",
+   "469.l.30639.t.10": "LoveGaretRchrdsThatsMy_Problem",
+   "469.l.30639.t.11": "Mendoza Line Misfitzzz",
+   "469.l.30639.t.12": "Newton South Loins",
+   "469.l.30639.t.13": "Padilla Flotilla",
+   "469.l.30639.t.14": "Robbers",
+   "469.l.30639.t.15": "SimDOS",
+   "469.l.30639.t.16": "Welcome 2 da fam nick madrigal"
+  },
+  "trades": [
+   {
+    "id": "789",
+    "status": "successful",
+    "ts": 1783586007,
+    "a": "469.l.30639.t.12",
+    "b": "469.l.30639.t.7",
+    "players": [
+     {
+      "name": "Brent Rooker",
+      "pos": "OF",
+      "from": "469.l.30639.t.12",
+      "to": "469.l.30639.t.7"
+     },
+     {
+      "name": "Pedro Ramirez",
+      "pos": "2B,3B",
+      "from": "469.l.30639.t.12",
+      "to": "469.l.30639.t.7"
+     },
+     {
+      "name": "Eduard Bazardo",
+      "pos": "RP",
+      "from": "469.l.30639.t.7",
+      "to": "469.l.30639.t.12"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "796",
+    "status": "successful",
+    "ts": 1783672103,
+    "a": "469.l.30639.t.15",
+    "b": "469.l.30639.t.3",
+    "players": [
+     {
+      "name": "Ceddanne Rafaela",
+      "pos": "2B,OF",
+      "from": "469.l.30639.t.15",
+      "to": "469.l.30639.t.3"
+     },
+     {
+      "name": "Joshua Báez",
+      "pos": "OF",
+      "from": "469.l.30639.t.15",
+      "to": "469.l.30639.t.3"
+     },
+     {
+      "name": "Fernando Tatis Jr.",
+      "pos": "2B,OF",
+      "from": "469.l.30639.t.3",
+      "to": "469.l.30639.t.15"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "885",
+    "status": "vetoed",
+    "ts": 1785355444,
+    "a": "469.l.30639.t.3",
+    "b": "469.l.30639.t.8",
+    "players": [
+     {
+      "name": "David Bednar",
+      "pos": "RP",
+      "from": "469.l.30639.t.3",
+      "to": "469.l.30639.t.8"
+     },
+     {
+      "name": "Bo Bichette",
+      "pos": "3B,SS",
+      "from": "469.l.30639.t.3",
+      "to": "469.l.30639.t.8"
+     },
+     {
+      "name": "Curtis Mead",
+      "pos": "1B,2B,3B",
+      "from": "469.l.30639.t.8",
+      "to": "469.l.30639.t.3"
+     },
+     {
+      "name": "Rico Garcia",
+      "pos": "RP",
+      "from": "469.l.30639.t.8",
+      "to": "469.l.30639.t.3"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "901",
+    "status": "successful",
+    "ts": 1785573195,
+    "a": "469.l.30639.t.12",
+    "b": "469.l.30639.t.4",
+    "players": [
+     {
+      "name": "Andy Pages",
+      "pos": "OF",
+      "from": "469.l.30639.t.12",
+      "to": "469.l.30639.t.4"
+     },
+     {
+      "name": "Josh Hader",
+      "pos": "RP",
+      "from": "469.l.30639.t.4",
+      "to": "469.l.30639.t.12"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "900",
+    "status": "successful",
+    "ts": 1785573195,
+    "a": "469.l.30639.t.1",
+    "b": "469.l.30639.t.3",
+    "players": [
+     {
+      "name": "Nick Gonzales",
+      "pos": "2B,3B,SS",
+      "from": "469.l.30639.t.1",
+      "to": "469.l.30639.t.3"
+     },
+     {
+      "name": "Brandyn Garcia",
+      "pos": "RP",
+      "from": "469.l.30639.t.1",
+      "to": "469.l.30639.t.3"
+     },
+     {
+      "name": "Bo Bichette",
+      "pos": "3B,SS",
+      "from": "469.l.30639.t.3",
+      "to": "469.l.30639.t.1"
+     },
+     {
+      "name": "David Bednar",
+      "pos": "RP",
+      "from": "469.l.30639.t.3",
+      "to": "469.l.30639.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "907",
+    "status": "successful",
+    "ts": 1785746991,
+    "a": "469.l.30639.t.3",
+    "b": "469.l.30639.t.13",
+    "players": [
+     {
+      "name": "Orion Kerkering",
+      "pos": "RP",
+      "from": "469.l.30639.t.3",
+      "to": "469.l.30639.t.13"
+     },
+     {
+      "name": "Nick Martinez",
+      "pos": "SP,RP",
+      "from": "469.l.30639.t.3",
+      "to": "469.l.30639.t.13"
+     },
+     {
+      "name": "Ty France",
+      "pos": "1B",
+      "from": "469.l.30639.t.13",
+      "to": "469.l.30639.t.3"
+     },
+     {
+      "name": "Logan Henderson",
+      "pos": "SP",
+      "from": "469.l.30639.t.13",
+      "to": "469.l.30639.t.3"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "958",
+    "status": "successful",
+    "ts": 1786264404,
+    "a": "469.l.30639.t.8",
+    "b": "469.l.30639.t.6",
+    "players": [
+     {
+      "name": "Garrett Cleavinger",
+      "pos": "RP",
+      "from": "469.l.30639.t.8",
+      "to": "469.l.30639.t.6"
+     },
+     {
+      "name": "Alex Vesia",
+      "pos": "RP",
+      "from": "469.l.30639.t.8",
+      "to": "469.l.30639.t.6"
+     },
+     {
+      "name": "Jackson Jobe",
+      "pos": "SP,RP",
+      "from": "469.l.30639.t.6",
+      "to": "469.l.30639.t.8"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "956",
+    "status": "successful",
+    "ts": 1786264404,
+    "a": "469.l.30639.t.8",
+    "b": "469.l.30639.t.11",
+    "players": [
+     {
+      "name": "Blake Snell",
+      "pos": "SP",
+      "from": "469.l.30639.t.8",
+      "to": "469.l.30639.t.11"
+     },
+     {
+      "name": "Edwin Díaz",
+      "pos": "RP",
+      "from": "469.l.30639.t.8",
+      "to": "469.l.30639.t.11"
+     },
+     {
+      "name": "Didier Fuentes",
+      "pos": "SP,RP",
+      "from": "469.l.30639.t.11",
+      "to": "469.l.30639.t.8"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "955",
+    "status": "successful",
+    "ts": 1786264404,
+    "a": "469.l.30639.t.11",
+    "b": "469.l.30639.t.5",
+    "players": [
+     {
+      "name": "Jake Bennett",
+      "pos": "SP",
+      "from": "469.l.30639.t.11",
+      "to": "469.l.30639.t.5"
+     },
+     {
+      "name": "Zac Thornton",
+      "pos": "SP",
+      "from": "469.l.30639.t.11",
+      "to": "469.l.30639.t.5"
+     },
+     {
+      "name": "Alec Burleson",
+      "pos": "1B,OF",
+      "from": "469.l.30639.t.5",
+      "to": "469.l.30639.t.11"
+     },
+     {
+      "name": "Chris Sale",
+      "pos": "SP",
+      "from": "469.l.30639.t.5",
+      "to": "469.l.30639.t.11"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "954",
+    "status": "successful",
+    "ts": 1786264404,
+    "a": "469.l.30639.t.15",
+    "b": "469.l.30639.t.8",
+    "players": [
+     {
+      "name": "Nick Kurtz",
+      "pos": "1B",
+      "from": "469.l.30639.t.15",
+      "to": "469.l.30639.t.8"
+     },
+     {
+      "name": "Yordan Alvarez",
+      "pos": "OF",
+      "from": "469.l.30639.t.8",
+      "to": "469.l.30639.t.15"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "952",
+    "status": "successful",
+    "ts": 1786264404,
+    "a": "469.l.30639.t.15",
+    "b": "469.l.30639.t.14",
+    "players": [
+     {
+      "name": "Roman Anthony",
+      "pos": "OF",
+      "from": "469.l.30639.t.15",
+      "to": "469.l.30639.t.14"
+     },
+     {
+      "name": "Kyle Tucker",
+      "pos": "OF",
+      "from": "469.l.30639.t.14",
+      "to": "469.l.30639.t.15"
+     },
+     {
+      "name": "Kevin Gausman",
+      "pos": "SP",
+      "from": "469.l.30639.t.14",
+      "to": "469.l.30639.t.15"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "951",
+    "status": "successful",
+    "ts": 1786264404,
+    "a": "469.l.30639.t.1",
+    "b": "469.l.30639.t.4",
+    "players": [
+     {
+      "name": "Jesús Made",
+      "pos": "2B,3B,SS",
+      "from": "469.l.30639.t.1",
+      "to": "469.l.30639.t.4"
+     },
+     {
+      "name": "Franklin Arias",
+      "pos": "SS",
+      "from": "469.l.30639.t.1",
+      "to": "469.l.30639.t.4"
+     },
+     {
+      "name": "Tyler Rogers",
+      "pos": "RP",
+      "from": "469.l.30639.t.4",
+      "to": "469.l.30639.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "949",
+    "status": "successful",
+    "ts": 1786264404,
+    "a": "469.l.30639.t.16",
+    "b": "469.l.30639.t.8",
+    "players": [
+     {
+      "name": "Bryce Eldridge",
+      "pos": "1B",
+      "from": "469.l.30639.t.16",
+      "to": "469.l.30639.t.8"
+     },
+     {
+      "name": "Spencer Schwellenbach",
+      "pos": "SP",
+      "from": "469.l.30639.t.16",
+      "to": "469.l.30639.t.8"
+     },
+     {
+      "name": "Manny Machado",
+      "pos": "3B",
+      "from": "469.l.30639.t.8",
+      "to": "469.l.30639.t.16"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "947",
+    "status": "successful",
+    "ts": 1786264404,
+    "a": "469.l.30639.t.16",
+    "b": "469.l.30639.t.8",
+    "players": [
+     {
+      "name": "James Wood",
+      "pos": "OF",
+      "from": "469.l.30639.t.16",
+      "to": "469.l.30639.t.8"
+     },
+     {
+      "name": "Kyle Schwarber",
+      "pos": "1B,OF",
+      "from": "469.l.30639.t.8",
+      "to": "469.l.30639.t.16"
+     },
+     {
+      "name": "Tarik Skubal",
+      "pos": "SP",
+      "from": "469.l.30639.t.8",
+      "to": "469.l.30639.t.16"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "963",
+    "status": "successful",
+    "ts": 1786264405,
+    "a": "469.l.30639.t.1",
+    "b": "469.l.30639.t.8",
+    "players": [
+     {
+      "name": "Carter Jensen",
+      "pos": "C",
+      "from": "469.l.30639.t.1",
+      "to": "469.l.30639.t.8"
+     },
+     {
+      "name": "George Springer",
+      "pos": "OF",
+      "from": "469.l.30639.t.8",
+      "to": "469.l.30639.t.1"
+     }
+    ],
+    "picks": []
+   },
+   {
+    "id": "961",
+    "status": "successful",
+    "ts": 1786264405,
+    "a": "469.l.30639.t.1",
+    "b": "469.l.30639.t.7",
+    "players": [
+     {
+      "name": "Maikel Garcia",
+      "pos": "2B,3B,SS,OF",
+      "from": "469.l.30639.t.1",
+      "to": "469.l.30639.t.7"
+     },
+     {
+      "name": "Jackson Merrill",
+      "pos": "OF",
+      "from": "469.l.30639.t.1",
+      "to": "469.l.30639.t.7"
+     },
+     {
+      "name": "Yoshinobu Yamamoto",
+      "pos": "SP",
+      "from": "469.l.30639.t.7",
+      "to": "469.l.30639.t.1"
+     }
+    ],
+    "picks": []
+   }
+  ]
+ }
+}
