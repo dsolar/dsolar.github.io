@@ -73,10 +73,21 @@ flowerbed:{name:'Flower bed',cat:'Garden',w:2,d:1,h:40,where:'out'},
 pond:{name:'Lily pond',cat:'Garden',w:3,d:2,h:20,where:'out'},
 birdbath:{name:'Bird bath',cat:'Garden',w:.75,d:.75,h:55,where:'out'},
 swing:{name:'Swing set',cat:'Play',w:3,d:1,h:125,where:'out'},
-pool:{name:'Kiddie pool',cat:'Play',w:2,d:2,h:30,where:'out'}
+pool:{name:'Kiddie pool',cat:'Play',w:2,d:2,h:30,where:'out'},
+palm:{name:'Palm tree',cat:'Beach',w:1,d:1,h:165,where:'out'},
+sandcastle:{name:'Sandcastle',cat:'Beach',w:1,d:1,h:60,where:'out'},
+campfire:{name:'Campfire',cat:'Beach',w:1,d:1,h:40,where:'out'},
+fountain:{name:'Fountain',cat:'Village',w:2,d:2,h:75,where:'out'},
+stall:{name:'Market stall',cat:'Village',w:2,d:1,h:105,where:'isle'},
+lighthouse:{name:'Lighthouse',cat:'Village',w:1.5,d:1.5,h:200,where:'isle'},
+dock:{name:'Wooden dock',cat:'Village',w:3,d:1.25,h:15,where:'isle',flat:true},
+gazebo:{name:'Gazebo',cat:'Village',w:2.5,d:2.5,h:135,where:'isle'},
+signpost:{name:'Signpost',cat:'Village',w:.5,d:.5,h:80,where:'isle'},
+sailboat:{name:'Sailboat',cat:'Beach',w:2,d:1,h:120,where:'isle'}
 };
 const IN_CATS=['Seating','Tables','Storage','Bedroom','Kitchen','Bath','Play','Closet','Beauty','Art','Decor','Friends'];
-const OUT_CATS=['Garden','Fences & paths','Patio','Play','Friends'];
+const OUT_CATS=['Garden','Fences & paths','Patio','Play','Beach','Friends'];
+const ISLE_CATS=['Village','Beach','Garden','Fences & paths','Patio','Play','Friends'];
 
 // Room types: their starting size, the pieces they start with, and their own shelf.
 // Starting pieces are [type, x, y, turned?]. Pieces that don't fit are skipped.
@@ -103,3 +114,25 @@ const PROMPTS=['A cozy reading nook for a rainy afternoon','A room where everyth
 
 const COW_LINES=['Moo! I only just learned to talk, and I already love this place.','Hi! It\'s me, Cow. Remember me from the island?','Moo-velous choice!','Is that pouf for me? Asking for a friend.','You have an eye for color, design boss.','This is the coziest barn I have ever seen.','Moo! Turn me around with the R key.','I think this needs more flowers. Cows love flowers.','Can we try the moonlit light? I like to stargaze.','Every room is better with a cow in it. That is science.','I would like to vote for more wallpaper.'];
 const CAT_LINES=['Zzz... the cat is dreaming about this rug.','The cat opened one eye. It approves.','Purrr. Do not disturb.','The cat stretched, yawned, and went back to sleep.'];
+
+// Cow, the island guide. keys are words a kid might type; act is what "Show me" does.
+const GUIDE=[
+{q:'How do I put furniture in a room?',keys:['furniture','put','place','add a piece','sofa','bed','shelf','chair','table','lamp','decorate'],views:['room'],a:'Pick something from the shelf, then tap an open spot on the floor. A green outline means it fits! Red means something is in the way.',act:'room'},
+{q:'How do I move or turn things?',keys:['move','drag','turn','rotate','spin','around','push'],views:['room','yard','isle'],a:'Tap a piece and drag it where you want. Press Turn, or the R key, to spin it around.'},
+{q:'How do I change a color?',keys:['color','colour','recolor','pink','purple','blue','green'],views:['room','yard','isle'],a:'Tap the piece, then tap any color dot under the picture. The rainbow dot lets you pick ANY color in the whole world.'},
+{q:'How do I change the wallpaper and floor?',keys:['wallpaper','wall','walls','paint the wall','wall color','floor','floors','floor color','pattern','carpet','tile','stripes','hearts','dots'],views:['room'],a:'Inside a room, look at Walls & Floors on the left. Pick a wallpaper, a pattern color, a floor and a floor color. Mix them however you like!',act:'finishes'},
+{q:'How do I paint my own picture?',keys:['paint','picture','art','draw','easel','drawing','painting'],views:['room'],a:'Press Paint wall art. Draw with the brushes and stamps, then press Hang it on the wall. Your painting shows up on every easel in that room too!',act:'art'},
+{q:'How do I add a new room?',keys:['room','kitchen','bathroom','bedroom','closet','beauty','parlor','game room','studio','add room','new room'],views:['house','room'],a:'Tap Whole house, pick a room from the shelf, then tap an empty spot next to your house. Moo-gic!',act:'house'},
+{q:'How do I make a room bigger?',keys:['bigger','smaller','size','resize','wider','longer','huge','tiny'],views:['house'],a:'In Whole house, tap a room. Then use the Width and Depth + and − buttons under the plan.',act:'house'},
+{q:'How do I go inside a room?',keys:['inside','enter','go in','walk in','open room'],views:['house'],a:'Double-tap a room in Whole house, or tap its name in the room list on the left.',act:'house'},
+{q:'How do I decorate outside?',keys:['outside','yard','garden','fence','patio','tree','pool','roof','door','house color','grass'],views:['yard','house'],a:'Tap Outside. Paint the house, roof and front door on the left, then add fences, trees, patios and a pool from the shelf.',act:'yard'},
+{q:'What is the island?',keys:['island','village','town','neighbor','neighbour','beach','ocean','sea','isle'],views:['isle','yard','house','room'],a:'Every home you build lives on our island village! Tap Island to see them all together, then add a lighthouse, a market stall or a sailboat.',act:'isle'},
+{q:'How do I build another house?',keys:['another house','new house','new home','build a house','second house','more houses'],views:['isle','yard','house'],a:'Press New home. Your new house gets its very own spot on the island, right next to the neighbors.',act:'newhome'},
+{q:'How do I move houses on the island?',keys:['move house','arrange','where the house','island layout','swap'],views:['isle'],a:'On the Island, drag a house by its yard to a new spot. Double-tap a house to go visit it.',act:'isle'},
+{q:'Can I make it nighttime?',keys:['light','night','dark','sunset','golden','moon','stars','evening','day'],views:['room','yard','isle'],a:'Yes! Use the Light menu on the left. Moonlit evening makes the lamps glow, and starry night lights up every window.'},
+{q:'Oops! How do I undo?',keys:['undo','oops','mistake','back','wrong','uh oh','accident'],views:['room','house','yard','isle'],a:'Press Undo at the top. You can undo lots and lots of steps, so don\'t worry.'},
+{q:'How do I delete something?',keys:['delete','remove','trash','get rid','throw away','erase'],views:['room','yard','isle'],a:'Tap it, then press Remove. Changed your mind? Press Undo and it comes right back.'},
+{q:'How do I save my design?',keys:['save','keep','photo','download','print','show','share'],views:['room','house','yard','isle'],a:'Everything saves on this device all by itself. To keep a picture to print or show someone, press Save picture at the top.'},
+{q:'Can you give me an idea?',keys:['idea','bored','what should','help me think','inspire','suggest'],views:['room','house','yard','isle'],a:'',act:'idea'},
+{q:'Who are you?',keys:['who','your name','cow','talk','friend','hello','hi '],views:['isle','room','house','yard'],a:'I\'m Cow! I only just learned to talk, so now I can\'t stop. I live on the island, I love flowers and cozy rugs, and I love helping you design.'}
+];

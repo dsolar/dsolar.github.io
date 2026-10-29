@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Wild Bloom Isles • Design Studio</title>
-<meta name="description" content="Charlotte's home-design studio: build a whole house room by room, decorate every corner, paint your own art and design the yard.">
+<meta name="description" content="Charlotte's home-design studio: build a whole house room by room, decorate every corner, paint your own art, design the yard and grow an island village.">
 <meta name="theme-color" content="#fffdf9">
 <meta property="og:image" content="https://davidsolar.dev/assets/covers/wild-bloom-isles-studio.jpg"><meta property="og:image:width" content="1040"><meta property="og:image:height" content="780"><meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%B8%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="../assets/bar.css">
-<link rel="stylesheet" href="studio.css?v=30">
+<link rel="stylesheet" href="studio.css?v=31">
 <script src="../assets/analytics.js" defer></script>
 </head>
 <body>
@@ -26,7 +26,7 @@
   <aside>
     <div class="eyebrow">MAKE YOURSELF AT HOME</div>
     <h1>A little house.<br>Endless possibilities.</h1>
-    <p class="intro">Build it room by room. Decorate every corner.<br>Then step outside and design the yard.</p>
+    <p class="intro">Build it room by room. Decorate every corner.<br>Then step outside, and add it to the island village.</p>
     <label class="field">Your homes<select id="homes"></select></label>
     <div class="row"><button id="new-home">＋ New home</button><button id="rename-home">Rename</button></div>
     <div id="side-view"></div>
@@ -38,6 +38,7 @@
         <button role="tab" data-view="room">🛋️ Inside</button>
         <button role="tab" data-view="house">🏠 Whole house</button>
         <button role="tab" data-view="yard">🌳 Outside</button>
+        <button role="tab" data-view="isle">🏝️ Island</button>
       </div>
     </div>
     <div class="room-tools row">
@@ -47,7 +48,14 @@
     </div>
     <div class="stage">
       <div class="scene-col">
-        <div class="scene-wrap" id="scene-wrap"><svg id="scene" viewBox="80 0 840 640" aria-label="Your design. Select a piece and drag to rearrange." tabindex="0"></svg><div id="hint" role="status"></div></div>
+        <div class="scene-wrap" id="scene-wrap"><svg id="scene" viewBox="80 0 840 640" aria-label="Your design. Select a piece and drag to rearrange." tabindex="0"></svg><div id="hint" role="status"></div>
+          <button id="ask-cow" class="ask-cow" aria-label="Ask Cow for help"></button>
+          <section id="guide" class="guide" aria-label="Cow, your island guide" hidden>
+            <div class="guide-head"><span id="guide-face"></span><div><b>Cow</b><small>Your island guide</small></div><button id="guide-close" aria-label="Close">✕</button></div>
+            <div id="guide-chat" class="guide-chat" aria-live="polite"></div>
+            <div id="guide-chips" class="guide-chips"></div>
+            <form id="guide-form"><input id="guide-q" autocomplete="off" maxlength="120" placeholder="Ask Cow anything…" aria-label="Ask Cow a question"><button class="primary">Ask</button></form>
+          </section></div>
         <div id="selection" class="selection"></div>
       </div>
       <section class="shelf" aria-labelledby="shelf-title">
@@ -74,8 +82,8 @@
   </div>
   <div class="row end"><button value="remove" formnovalidate>Take it down</button><button value="cancel" formnovalidate>Cancel</button><button value="hang" class="primary">🖼️ Hang it on the wall</button></div>
 </form></dialog>
-<script src="data.js?v=30"></script>
-<script src="art.js?v=30"></script>
-<script src="studio.js?v=30"></script>
+<script src="data.js?v=31"></script>
+<script src="art.js?v=31"></script>
+<script src="studio.js?v=31"></script>
 </body>
 </html>
