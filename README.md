@@ -36,6 +36,8 @@ dsolar.github.io/
   guess-the-pick/             Guess the Pick: index.html (layout, styles), app.js (screens, guess box, saved progress),
                               engine.js (daily ten, scoring, name matching), data.js (every pick) and names.js (every
                               player since 1980, for the guess box); data.js and names.js are generated, don't edit
+  journeyman/                 Journeyman: index.html, app.js and data.js (every player's teams; generated) plus
+                              names-mlb.js; it borrows Guess the Pick's engine.js and names.js
   guillotine/                 Bastille Day Odds: index.html, sim.js (the simulation),
                               data.json (league data, written by the workflow below)
   calendar/                   Night Out: index.html, taste.json, picks.json and places.json (edit these),
@@ -48,6 +50,9 @@ dsolar.github.io/
   tools/paint_the_corners_sim.js  balance check for Paint the Corners (node, see the top of the file)
   tools/guess_the_pick_build.py  rebuilds guess-the-pick/data.js from nflverse and basketball-reference data (see below)
   tools/guess_the_pick_check.js  checks Guess the Pick's data and rules (node tools/guess_the_pick_check.js)
+  tools/journeyman_fetch.py, journeyman_build.py  download the sources, then build journeyman/data.js (see below)
+  tools/journeyman_check.js   checks Journeyman's data (node tools/journeyman_check.js)
+  tools/journeyman_supabase.sql  Journeyman's group board (already set up; safe to run again)
   tools/guess_the_pick_supabase.sql  the daily ten's group board (already set up; safe to run again)
   tools/win_probability_check.js  checks Win Probability's data and grading (node tools/win_probability_check.js)
   tools/win_probability_supabase.sql  one-time setup for Win Probability's crowd votes (see below)
@@ -359,3 +364,13 @@ The picks come from two free datasets on GitHub: nflverse for the NFL and sumitr
 4. Bump `data.js?v=` in `guess-the-pick/index.html` so phones load the new file.
 
 The NBA dataset doesn't have the 2026 draft yet, so the 2026 first round lives in `tools/guess_the_pick_2026_nba.json`, entered by hand. Once the dataset catches up, the build uses its picks and skips that file's. Later-round picks get in when they made it big (an All-Star, All-NBA, Rookie of the Year or 30+ win shares in the NBA; a Hall of Famer, All-Pro, 3+ Pro Bowls or 60+ approximate value in the NFL). To add someone those rules miss, put "SEASON-OVERALL" in `EXTRA_NBA` or `EXTRA_NFL`.
+
+## Journeyman: updating the careers
+
+Once a season (after the World Series is a good time, when all three leagues have fresh data):
+
+1. `pip install --break-system-packages pyreadr` (once), then `python3 tools/journeyman_fetch.py /tmp/jm` downloads the NBA, NFL and MLB sources (a few minutes).
+2. `python3 tools/journeyman_build.py --src /tmp/jm`, then `node tools/journeyman_check.js`.
+3. Bump `data.js?v=` in `journeyman/index.html`.
+
+Who's in: careers that ended in 2000 or later, four or more franchises (a team that moved counts once), and enough games to be remembered. NFL paths start in 1990, so NFL careers that began before then are left out. The MLB data is the Lahman database, which runs a season behind.
