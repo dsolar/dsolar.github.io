@@ -74,7 +74,7 @@
     var art = cover.image
       ? '<img src="' + esc(at(cover.image)) + '" alt="" loading="lazy" width="1040" height="780">'
       : '<span class="tile-typeset">' + esc(p.title) + "</span>";
-    var badge = building ? "In progress" : p.hidden ? "Hidden" : p.tag || "";
+    var badge = building ? "In progress" : p.hidden ? "Hidden" : p.daily ? "Daily" : p.tag || "";
     var order = opts.order ? '<span class="tile-order" aria-hidden="true">' + esc(opts.order) + "</span>" : "";
     var id = p.external ? slug(p.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")) : slug(p.url);
     var tag = accessible ? "a" : "div";

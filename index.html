@@ -116,7 +116,7 @@
         <div class="filters" id="filters" role="group" aria-label="Show projects by type" hidden></div>
       </div>
       <!-- Projects are listed in assets/projects.js. Edit that file, not this one. -->
-      <p class="portfolio-intro">The daily games are up top in Today&rsquo;s slate. Here&rsquo;s everything else: league tools, front office sims and a few more games.</p>
+      <p class="portfolio-intro">Every game, league tool and sim. Filter by type, or just start at the top.</p>
       <div class="catalog" id="catalog">
         <noscript>
           <ul>
@@ -272,8 +272,8 @@
   </div>
 </footer>
 
-<script src="assets/projects.js?v=20261029-tiles"></script>
-<script src="assets/project-cards.js?v=20261029-tiles"></script>
+<script src="assets/projects.js?v=20261029-all"></script>
+<script src="assets/project-cards.js?v=20261029-all"></script>
 <script>
 /* Draws the project list from assets/projects.js. You shouldn't need to edit this. */
 (function () {
@@ -283,8 +283,8 @@
   var syncCategory = function () {};
   function renderProjects() {
   var all = (window.PROJECTS || []).filter(function (p) { return showHidden || !p.hidden; });
-  // The order of assets/projects.js. Daily games live in Today's slate and "kids" projects on their own page (kids/).
-  var projects = all.filter(function (p) { return !p.section && !p.daily; });
+  // The order of assets/projects.js; "kids" projects have their own page (kids/).
+  var projects = all.filter(function (p) { return !p.section; });
 
   var catalog = document.getElementById("catalog");
   var categorySlugs = {"Fantasy Leagues":"fantasy","Simulations":"simulations","Games":"games","Social Tools":"social"};

@@ -8,7 +8,7 @@
                Once there's more than one type, filter buttons appear on the home page.
      released  Year and month it went live, "YYYY-MM". For your records; it doesn't show on the card.
      line      One short line for its home page tile (about 35 characters).
-     daily     true for a daily game: it gets a row in Today's slate (assets/slate.js) instead of a tile.
+     daily     true for a daily game; it also gets a row in Today's slate (assets/slate.js).
      tag       Optional short note next to the type, e.g. "Updated every morning". Leave it out for none.
      url       Where it lives on this site, relative to the home page (folder name + /).
      question  The question that started it. Shows in italics.
