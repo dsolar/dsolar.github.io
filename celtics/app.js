@@ -171,6 +171,7 @@
       App.W = L.newWorld(App.DATA, App.LIVE, 19);
       if (saved) App.ui.flash = { ok: true, text: "The game data was updated (ratings, the market and real draft classes), so this is a fresh start from Oct. 15, 2026." };
     }
+    L.ensurePicks(App.W);                                            // older saves from 2028-29 on had no picks past 2033
     App.W.dataVersion = App.DATA.version;
     for (const p0 of App.DATA.players) { const p = App.W.P[p0.id]; if (p && p.o0 == null && p0.o != null) p.o0 = p0.o; }
     if (!App.W.boxFrom) App.W.boxFrom = App.W.date;                 // player box scores start now in older saves

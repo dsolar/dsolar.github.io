@@ -71,6 +71,7 @@ button,input,select{font:inherit;color:inherit}
 .banners{display:flex;gap:6px;justify-content:flex-end;padding:0 0 0 0;margin:0 0 6px;list-style:none;overflow:hidden}
 .banners li{flex:none}
 .banners svg{display:block;width:30px;height:60px}
+@media(max-width:640px){.banners{flex-wrap:wrap;justify-content:flex-start;row-gap:4px}.banners svg{width:24px;height:48px}}  /* every banner shows on a phone, 1957 included */
 .banners .b-txt{font:800 10.5px/1 var(--f-d);fill:var(--banner-ink);letter-spacing:.2px}
 .banners .b-mark{fill:var(--banner-ink)}
 .banners .next text{font:800 15px/1 var(--f-d)}
@@ -313,10 +314,10 @@ dialog .db{padding:16px 18px;max-height:min(70vh,700px);overflow:auto}
 <dialog id="dlg" aria-labelledby="dlg-title"><div class="dh"><h3 id="dlg-title"></h3><button class="icon-btn" type="button" data-act="close" aria-label="Close">✕</button></div><div class="db" id="dlg-body"></div></dialog>
 <script src="cba.js?v=1"></script>
 <script src="model.js?v=1"></script>
-<script src="league.js?v=1"></script>
+<script src="league.js?v=2"></script>
 <script src="season.js?v=1"></script>
-<script src="offseason.js?v=1"></script>
-<script src="app.js?v=1"></script>
+<script src="offseason.js?v=2"></script>
+<script src="app.js?v=2"></script>
 <script src="ui-books.js?v=1"></script>
 <script src="ui-moves.js?v=1"></script>
 <script src="ui-rot.js?v=1"></script>

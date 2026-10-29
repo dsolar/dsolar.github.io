@@ -563,6 +563,16 @@
     return v;
   };
 
+  // ---------- Future picks ----------
+  // Every team owns its own picks seven drafts out. The opening ledger stops at 2033, so each new league year
+  // (and every older save on load) adds the next year; without it the Stepien check fails every trade from 2028-29.
+  L.ensurePicks = W => {
+    const need = 2027 + (W.season || 0) + 7;
+    let last = 2026; for (const pk of W.picks) if (pk.y > last) last = pk.y;
+    for (let y = last + 1; y <= need; y++) for (const code of Object.keys(W.T)) for (const r of [1, 2])
+      W.picks.push({ id: `${y}-${r}-${code}`, y, r, from: code, owner: code });
+  };
+
   // ---------- Strength ----------
   L.rotationFor = (W, code, avail) => {
     const t = W.T[code];
@@ -570,8 +580,9 @@
     if (code === "BOS" && t.rot) {
       // the user's minutes; anyone missing gets his minutes spread over the others in the rotation
       const mins = {}; let tot = 0;
-      for (const p of ps) { const m = t.rot[p.id] || 0; if (m) { mins[p.id] = m; tot += m; } }
-      if (tot > 0 && tot < 240) {
+      for (const p of ps) { const m = Math.min(42, t.rot[p.id] || 0); if (m) { mins[p.id] = m; tot += m; } }
+      // a game has 240 minutes: scale the plan to fit whether it's short or over (over used to count as extra strength)
+      if (tot > 0 && Math.abs(tot - 240) > 0.01) {
         const k = 240 / tot; for (const id in mins) mins[id] = Math.min(42, mins[id] * k);
         let left = 240 - Object.values(mins).reduce((a, b) => a + b, 0);
         for (const p of ps.filter(p => !mins[p.id]).sort((a, b) => Mo.r(b) - Mo.r(a))) { if (left <= 0) break; const m = Math.min(left, 16); mins[p.id] = m; left -= m; }

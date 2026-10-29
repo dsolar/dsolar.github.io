@@ -576,6 +576,7 @@
     const prev = W.season, r = L.rng(W);
     for (const code of teamCodes(W)) { const t = W.T[code]; t.taxHist[prev] = L.payrollNow(W, code) > CBA.tax(prev); if (L.payrollNow(W, code) > CBA.a2(prev)) (t.overA2 || (t.overA2 = [])).push(prev); }
     W.season = prev + 1;
+    L.ensurePicks(W);
     const i = W.season, dec = L.decider(W);
     W.date = L.dates(prev).fa;
     for (const p of Object.values(W.P)) {
