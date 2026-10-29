@@ -122,6 +122,13 @@ def main():
     }
     os.makedirs(OUT_DIR, exist_ok=True)
     path = os.path.join(OUT_DIR, f"{year}.json")
+    try:
+        prev = json.load(open(path, encoding="utf-8"))
+        if {k: v for k, v in prev.items() if k != "pulled"} == {k: v for k, v in out.items() if k != "pulled"}:
+            print(f"{path}: no change since {prev['pulled']}.")
+            return
+    except (OSError, ValueError):
+        pass
     with open(path, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, indent=1)
         f.write("\n")
