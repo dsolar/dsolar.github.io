@@ -249,7 +249,11 @@ details[open] .t-open::after{transform:translateY(.05rem) rotate(-135deg)}
 .trade-sides .pl{display:flex;justify-content:space-between;gap:.6rem;font-size:.875rem}
 .trade-sides .pl i{font-style:normal;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
 .trade-sides .tot{display:flex;justify-content:space-between;gap:.6rem;margin-top:.2rem;padding-top:.2rem;border-top:1px dashed var(--rule);font-size:.8125rem;font-weight:600;font-variant-numeric:tabular-nums}
-.trade-sides .won b::after{content:"Won";margin-left:.45rem;padding:.08rem .38rem;border-radius:2px;background:var(--monster);color:var(--chalk);font-size:.7rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;vertical-align:.1em}
+.grade{display:inline-block;min-width:1.9rem;margin-left:.45rem;padding:.06rem .3rem;border-radius:2px;border:1px solid var(--monster);font-size:.75rem;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;vertical-align:.1em;cursor:help}
+.grade.g-a,.grade.g-b{background:var(--monster);color:var(--chalk)}
+.grade.g-c{color:var(--ink);border-color:var(--rule)}
+.grade.g-d,.grade.g-f{color:var(--red-text);border-color:var(--red-text)}
+.trade-top .gap.ww{color:var(--monster)}
 .trade-top{display:flex;justify-content:space-between;gap:1rem}
 .off-tag{display:inline-block;margin-left:.45rem;padding:.04rem .36rem;border:1px solid var(--rule);border-radius:2px;font-size:.68rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--ink);vertical-align:.1em}
 .trade-top .gap{font-size:.8125rem;font-weight:600;font-variant-numeric:tabular-nums}
@@ -665,7 +669,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
   <section id="trades" aria-labelledby="trades-title">
     <div class="section-head">
       <h2 id="trades-title">Trades and pickups</h2>
-      <p id="tr-lede">Every trade since 2013, and who came out ahead.</p>
+      <p id="tr-lede">Every trade since 2013, each side graded.</p>
     </div>
     <div class="seg tabs" role="tablist" aria-label="Trades" data-remember="yoenis-trtab"><button type="button" role="tab" id="trt-all" aria-controls="trp-all" aria-selected="true">Every trade</button><button type="button" role="tab" id="trt-led" aria-controls="trp-led" aria-selected="false" tabindex="-1">Ledger</button><button type="button" role="tab" id="trt-ww" aria-controls="trp-ww" aria-selected="false" tabindex="-1">Waiver wire</button></div>
     <div role="tabpanel" id="trp-all" aria-labelledby="trt-all">
@@ -690,7 +694,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       <div class="tbl-wrap" tabindex="0" role="region" aria-label="Waiver wire"><table class="standings" id="ww-t"></table></div>
       <p class="note">Every free-agent and waiver pickup from Opening Day on, valued like the trades: what he actually did for that team from the day after the pickup until he was dropped or traded (from his MLB game logs), plus, if he was still there at season's end, every later season that manager kept him, counted over what that keeper round was expected to produce. "By manager" adds up every pickup's value.</p>
     </div>
-    <p class="note">How it's scored: the same 16-category values as the awards, counted above a replacement-level player, so someone hurt or benched adds nothing. A player counts what he actually did for the team that got him, from the day after the trade until he was dropped, traded again or the season ended (from his MLB game logs). If he was still there at season's end, every later season that manager kept him adds his value over what that keeper round was expected to produce: what an average non-keeper pick in that round was worth across our drafts. Offseason deals count from Opening Day, and since a player who comes over in the winter comes over to be kept, his first season counts over the keeper round the new team spent on him. They come from the keeper sheet from 2023 on, and before that are pieced together from the draft board (a pick used by someone other than its slot's owner was traded) and the commissioner's roster moves before Opening Day, checked against the league emails. A pick passed along twice is credited to each deal it went through. Picks could also be traded during the season through 2016; those only show up on the next spring's draft board, so when the same two managers made a trade that summer, the picks are counted with it. Same-round pick swaps count as trades (they move a team up within the round) but score even, since values go by round. A draft pick that changed hands counts that same average. 10 is about an All-Star's full season, and an average 1st-round pick is worth about 12. It's a guide, not gospel: it can't see who a team dropped to make room, or what a trade did to the weekly matchups. Trades within 1.5 of each other count as even. Vetoed trades are left out.</p>
+    <p class="note">How it's scored: the same 16-category values as the awards, counted above a replacement-level player, so someone hurt or benched adds nothing. A player counts what he actually did for the team that got him, from the day after the trade until he was dropped, traded again or the season ended (from his MLB game logs). If he was still there at season's end, every later season that manager kept him adds his value over what that keeper round was expected to produce: what an average non-keeper pick in that round was worth across our drafts. Offseason deals count from Opening Day, and since a player who comes over in the winter comes over to be kept, his first season counts over the keeper round the new team spent on him. They come from the keeper sheet from 2023 on, and before that are pieced together from the draft board (a pick used by someone other than its slot's owner was traded) and the commissioner's roster moves before Opening Day, checked against the league emails. A pick passed along twice is credited to each deal it went through. Picks could also be traded during the season through 2016; those only show up on the next spring's draft board, so when the same two managers made a trade that summer, the picks are counted with it. Same-round pick swaps count as trades (they move a team up within the round) but score even, since values go by round. A draft pick that changed hands counts that same average. 10 is about an All-Star's full season, and an average 1st-round pick is worth about 12. Each side then gets a letter grade by its own goals: value that season counts double for a team that made the playoffs (2.5 times for the champion) and half for one that missed them, while keeper value counts the same for everyone. So a contender that rents a bat for the stretch run and a rebuilding team that gets a keeper for it can both grade well, a win-win (both a B- or better). Grades are damped, so a small deal lands near a C and only a big, lopsided one reaches an A+ or an F. The ledger's GPA averages them, A+ 4.3 down to F 0. It's a guide, not gospel: it can't see who a team dropped to make room, or what a trade did to the weekly matchups. Vetoed trades are left out. In the ledger, managers with fewer than five trades are listed after everyone else.</p>
   </section>
 
   <section id="managers" aria-labelledby="managers-title">
@@ -1520,9 +1524,15 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     return '<div class="case">' + lines + "</div>";
   }
   /* Every trade since 2013 (tools/yoenis_trades_build.py) and the all-time ledger */
-  var TR = { year: "", man: "", sort: "new", shown: 25 }, EVEN = 1.5;
+  var TR = { year: "", man: "", sort: "new", shown: 25 };
+  var GPA = { "A+": 4.3, A: 4, "A-": 3.7, "B+": 3.3, B: 3, "B-": 2.7, "C+": 2.3, C: 2, "C-": 1.7, "D+": 1.3, D: 1, "D-": 0.7, F: 0 };
   function trOwner(t, side) { return SEASONS[t.y].o[side === "a" ? t.a : t.b]; }
-  function trWinner(t) { return Math.abs(t.av - t.bv) < EVEN ? null : t.av > t.bv ? "a" : "b"; }
+  function winWin(t) { return GPA[t.ga] >= 2.7 && GPA[t.gb] >= 2.7; }
+  function gradePill(t, k) {
+    var g = t["g" + k], w = t["w" + k];
+    var how = w === 2.5 ? "Won the title that year, so value that season counts 2.5 times" : w === 2 ? "Made the playoffs that year, so value that season counts double" : "Missed the playoffs that year, so value that season counts half";
+    return '<span class="grade g-' + g[0].toLowerCase() + '" title="' + esc(how + "; keeper value counts the same for everyone.") + '">' + esc(g) + "</span>";
+  }
   function fmtV(v) { return (Math.round(v * 10) / 10).toFixed(1); }
   function initTrades() {
     var th = DATA.tradeHistory; if (!th || !th.trades.length) { $("trades").hidden = true; return; }
@@ -1533,7 +1543,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     $("tr-man").innerHTML = '<option value="">Everyone</option>' + ids.map(function (id) { return '<option value="' + esc(id) + '">' + esc(who(id)) + "</option>"; }).join("");
     var first = th.trades[th.trades.length - 1].y;
     var nOff = th.trades.filter(function (t) { return t.off; }).length;
-    $("tr-lede").textContent = "All " + th.trades.length + " trades since " + first + (nOff ? ", " + nOff + " of them in the offseason," : "") + " and who came out ahead.";
+    $("tr-lede").textContent = "All " + th.trades.length + " trades since " + first + (nOff ? ", " + nOff + " of them in the offseason" : "") + ", each side graded.";
     $("tr-year").addEventListener("change", function () { TR.year = this.value; TR.shown = 25; drawTrades(); });
     $("tr-man").addEventListener("change", function () { TR.man = this.value; TR.shown = 25; drawTrades(); });
     $("tr-sort").addEventListener("click", function (e) {
@@ -1553,7 +1563,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     var shown = list.slice(0, TR.shown);
     $("tr-count").textContent = list.length + (list.length === 1 ? " trade" : " trades") + (TR.man ? " involving " + who(TR.man) : "") + (TR.year ? " in " + TR.year : "") + ".";
     $("tr-list").innerHTML = pendingTrades() + shown.map(function (t) {
-      var s = SEASONS[t.y], win = trWinner(t);
+      var s = SEASONS[t.y];
       var side = function (k) {
         var ti = k === "a" ? t.a : t.b, gets = k === "a" ? t.ag : t.bg, picks = (k === "a" ? t.ap : t.bp) || [], tot = k === "a" ? t.av : t.bv;
         var rows = gets.map(function (g) {
@@ -1563,13 +1573,13 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
           var lab = typeof p === "string" ? p : p[0], v = typeof p === "string" ? null : p[1];
           return '<div class="pl"><span>' + esc(lab) + '</span><i title="What an average pick in that round was worth">' + (v != null ? fmtV(v) + " (pick)" : "pick") + "</i></div>";
         }));
-        return '<div class="' + (win === k ? "won" : "") + '"><b>' + esc(teamMan(s, ti)) + " got</b>" + rows.join("") +
+        return "<div><b>" + esc(teamMan(s, ti)) + " got" + gradePill(t, k) + "</b>" + rows.join("") +
           '<div class="tot"><span>Value</span><span>' + fmtV(tot) + "</span></div></div>";
       };
-      var gap = win ? "By " + fmtV(Math.abs(t.av - t.bv)) : "Even";
+      var ww = winWin(t), gap = ww ? "Win-win" : Math.abs(t.av - t.bv) < 1.5 ? "Even" : "By " + fmtV(Math.abs(t.av - t.bv));
       var when = t.d ? esc(longDate(t.d)) : "Before the " + t.y + " draft";
       if (t.off) when += '<span class="off-tag" title="' + (t.off === "board" ? "An offseason deal, pieced together from the draft board and the commissioner&#39;s roster moves" : "An offseason deal, from the keeper sheet") + '">Offseason</span>';
-      return '<li class="trade"><div class="trade-top"><span class="trade-d">' + when + '</span><span class="gap">' + gap + '</span></div><div class="trade-sides">' + side("a") + side("b") + "</div></li>";
+      return '<li class="trade"><div class="trade-top"><span class="trade-d">' + when + '</span><span class="gap' + (ww ? " ww" : "") + '"' + (ww ? ' title="Each side did well by its own goal: one got the stretch run it was after, the other the keeper value"' : "") + ">" + gap + '</span></div><div class="trade-sides">' + side("a") + side("b") + "</div></li>";
     }).join("");
     $("tr-more").hidden = list.length <= TR.shown;
   }
@@ -1585,28 +1595,30 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       var side = function (team, gets) {
         return "<div><b>" + esc(withMan(team)) + " got</b>" + (gets || []).map(function (g) { return '<div class="pl"><span>' + esc(g) + "</span><i></i></div>"; }).join("") + "</div>";
       };
-      return '<li class="trade"><div class="trade-top"><span class="trade-d">' + esc(longDate(t.d)) + '<span class="off-tag" title="Scored once the ' + year + ' season plays out">Offseason</span></span><span class="gap">Not scored yet</span></div>" +
+      return '<li class="trade"><div class="trade-top"><span class="trade-d">' + esc(longDate(t.d)) + '<span class="off-tag" title="Scored once the ' + year + ' season plays out">Offseason</span></span><span class="gap">Not scored yet</span></div>' +
         '<div class="trade-sides">' + side(t.a, t.aGets) + side(t.b, t.bGets) + "</div>" + (t.note ? '<p class="note" style="margin-top:.35rem">' + esc(t.note) + "</p>" : "") + "</li>";
     }).join("");
   }
   function drawLedger() {
     var L = {};
     DATA.tradeHistory.trades.forEach(function (t) {
-      var win = trWinner(t);
       ["a", "b"].forEach(function (k) {
-        var id = trOwner(t, k), r = L[id] || (L[id] = { id: id, n: 0, w: 0, l: 0, e: 0, net: 0, best: null });
-        var mine = k === "a" ? t.av : t.bv, theirs = k === "a" ? t.bv : t.av, d = mine - theirs;
-        r.n++; r.net += d;
-        if (!win) r.e++; else if (win === k) r.w++; else r.l++;
-        if (!r.best || d > r.best.d) r.best = { d: d, t: t, k: k };
+        var id = trOwner(t, k), r = L[id] || (L[id] = { id: id, n: 0, pts: 0, ww: 0, net: 0, best: null });
+        var mine = k === "a" ? t.av : t.bv, theirs = k === "a" ? t.bv : t.av, d = mine - theirs, p = GPA[t["g" + k]];
+        r.n++; r.net += d; r.pts += p;
+        if (winWin(t)) r.ww++;
+        if (!r.best || p > r.best.p || (p === r.best.p && d > r.best.d)) r.best = { p: p, d: d, t: t, k: k };
       });
     });
-    var rows = Object.keys(L).map(function (id) { return L[id]; }).filter(function (r) { return who(r.id); })
-      .sort(function (a, b) { return b.net - a.net; });
-    $("tr-ledger").innerHTML = '<thead><tr><th class="tm">Manager</th><th>Trades</th><th>W-L-E</th><th>Net</th></tr></thead><tbody>' +
+    var rows = Object.keys(L).map(function (id) { var r = L[id]; r.gpa = r.pts / r.n; return r; }).filter(function (r) { return who(r.id); })
+      .sort(function (a, b) { return (b.n >= 5) - (a.n >= 5) || b.gpa - a.gpa || b.net - a.net; });
+    $("tr-ledger").innerHTML = '<thead><tr><th class="tm">Manager</th><th>Trades</th><th title="Average trade grade, A+ 4.3 down to F 0">GPA</th><th title="Value got less value given, all trades">Net</th></tr></thead><tbody>' +
       rows.map(function (r) {
-        var b = r.best, bt = b && b.d >= EVEN ? "Best: the " + (b.k === "a" ? b.t.ag : b.t.bg).slice().sort(function (x, y) { return (y[1] + y[2]) - (x[1] + x[2]); })[0][0] + " trade (" + b.t.y + ", +" + fmtV(b.d) + ")" : "No wins yet";
-        return '<tr><td class="tm">' + esc(who(r.id)) + '<small class="tr-best">' + esc(bt) + "</small></td><td>" + r.n + "</td><td>" + r.w + "-" + r.l + "-" + r.e + "</td><td>" + (r.net > 0 ? "+" : r.net < 0 ? "−" : "") + fmtV(Math.abs(r.net)) + "</td></tr>";
+        var b = r.best, gets = b && (b.k === "a" ? b.t.ag : b.t.bg).slice().sort(function (x, y) { return (y[1] + y[2]) - (x[1] + x[2]); });
+        var lead = gets && gets.length ? gets[0][0] + " trade" : "pick trade";
+        var bt = b && b.p >= 2.7 ? "Best: the " + lead + " (" + b.t.y + ", " + b.t["g" + b.k] + ")" : "No winning grades yet";
+        if (r.ww) bt += " · " + r.ww + (r.ww === 1 ? " win-win" : " win-wins");
+        return '<tr><td class="tm">' + esc(who(r.id)) + '<small class="tr-best">' + esc(bt) + "</small></td><td>" + r.n + "</td><td>" + r.gpa.toFixed(2) + "</td><td>" + (r.net > 0 ? "+" : r.net < 0 ? "−" : "") + fmtV(Math.abs(r.net)) + "</td></tr>";
       }).join("") + "</tbody>";
   }
 

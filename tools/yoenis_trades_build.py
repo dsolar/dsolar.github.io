@@ -121,6 +121,45 @@ def offseason_rows(data, seasons, kept):
     return rows
 
 
+# Letter grades, from each side's share of the value as that side would count it
+BANDS = [(0.80, "A+"), (0.72, "A"), (0.66, "A-"), (0.61, "B+"), (0.56, "B"), (0.53, "B-"), (0.50, "C+"),
+         (0.47, "C"), (0.44, "C-"), (0.40, "D+"), (0.34, "D"), (0.30, "D-"), (0.0, "F")]
+WEIGHT_MISSED, WEIGHT_PLAYOFFS, WEIGHT_TITLE = 0.5, 2.0, 2.5  # this season's value: missed playoffs / made them / won it all
+DAMP = 3.0  # added to both sides before comparing, so a 3-to-0 deal is an edge, not a rout
+
+
+def letter(share):
+    return next(g for cut, g in BANDS if share >= cut)
+
+
+def add_grades(rows, seasons):
+    """Each side grades the trade by its own lights: value this season counts double for a team that made the
+    playoffs that year (2.5x for the champion) and half for a team that missed them (it wasn't playing for
+    this year); keeper value counts the same for everyone. So a contender
+    that paid future value for a stretch run, and made it, can win the same trade as the team that got the
+    future value: a win-win. Picks in an offseason deal are for that spring's draft, so they count now;
+    picks in an in-season deal are for next year, so they count later. The share is damped (DAMP added to
+    each side), so small deals land near a C and only big, one-sided ones reach an A+ or an F."""
+    for t in rows:
+        s = seasons[t["y"]]
+        finish = {r[1]: r[0] for r in s["standings"]}
+
+        def split(side):
+            gets, picks = t[side + "g"], t[side + "p"]
+            now = sum(g[1] for g in gets) + (sum(p[1] for p in picks) if t.get("off") else 0)
+            later = sum(g[2] for g in gets) + (0 if t.get("off") else sum(p[1] for p in picks))
+            return now, later
+
+        parts = {"a": split("a"), "b": split("b")}
+        for side, other in (("a", "b"), ("b", "a")):
+            f = finish.get(t[side])
+            w = WEIGHT_TITLE if f == 1 else WEIGHT_PLAYOFFS if f and f <= 8 else WEIGHT_MISSED
+            got = w * parts[side][0] + parts[side][1]
+            gave = w * parts[other][0] + parts[other][1]
+            t["g" + side] = letter((got + DAMP) / (got + gave + 2 * DAMP))
+            t["w" + side] = w
+
+
 def main():
     data = json.loads(DATA.read_text(encoding="utf-8"))
     pulled = json.loads(TRADES.read_text(encoding="utf-8"))
@@ -177,6 +216,7 @@ def main():
                 row["est"] = True
             out.append(row)
     out.extend(offseason_rows(data, seasons, kept))
+    add_grades(out, seasons)
     out.sort(key=lambda t: (t["d"] or f"{t['y']}-01-01", t["y"]), reverse=True)
     hist = {"trades": out, "vetoed": vetoed, "curve": pick_curve()}
     if data.get("tradeHistory") == hist:
