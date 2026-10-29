@@ -6,7 +6,8 @@
 #    starting rosters). It rebuilds guillotine/data.json only while Yahoo isn't filling it, or when a
 #    new paste is committed, so an old paste never overwrites fresher Yahoo data.
 #  - Then player projections from Sleeper and this week's saved odds.
-# Runs every morning, Sunday before kickoff, and whenever a paste or one of these scripts is committed.
+# Runs every morning, Sunday after inactives and before the late games, before each night game (Sun, Mon, Thu),
+# and whenever a paste or one of these scripts is committed.
 name: Guillotine update
 
 on:
@@ -23,6 +24,8 @@ on:
   schedule:
     - cron: "17 14 * 9-12,1 *"   # 10:17am ET daily (9:17 in winter), September through January
     - cron: "47 16 * 9-12,1 0"   # 12:47pm ET Sundays, after inactives
+    - cron: "57 19 * 9-12,1 0"   # 2:57pm ET Sundays (3:57 before Nov.), lineups for the late games
+    - cron: "47 23 * 9-12,1 0,1,4"   # 6:47pm ET Sun/Mon/Thu (7:47 before Nov.), lineups for the night games
   workflow_dispatch:
 
 permissions:
