@@ -39,6 +39,8 @@ dsolar.github.io/
                               player since 1980, for the guess box); data.js and names.js are generated, don't edit
   journeyman/                 Journeyman: index.html, app.js and data.js (every player's teams; generated) plus
                               names-mlb.js; it borrows Guess the Pick's engine.js and names.js
+  scouting-report/            Scouting Report: index.html (layout, styles), app.js (screens, clues, daily five, board) and
+                              data.js (every prospect, report and career; generated). Borrows Guess the Pick's engine and names
   guillotine/                 Bastille Day Odds: index.html, sim.js (the simulation),
                               data.json (league data, written by the workflow below)
   calendar/                   Night Out: index.html, taste.json, picks.json and places.json (edit these),
@@ -59,6 +61,9 @@ dsolar.github.io/
   tools/journeyman_supabase.sql  Journeyman's group board (already set up; safe to run again)
   tools/guess_the_pick_supabase.sql  the daily ten's group board (already set up; safe to run again)
   tools/franchise_supabase.sql  The 31st Franchise's GM leaderboard (already set up; safe to run again)
+  tools/scouting_reports.json  Scouting Report's reports, one per prospect (edit these; see below)
+  tools/scouting_report_build.py, scouting_report_check.js  rebuild and check scouting-report/data.js
+  tools/scouting_report_supabase.sql  Scouting Report's daily board (already set up; safe to run again)
   tools/win_probability_check.js  checks Win Probability's data and grading (node tools/win_probability_check.js)
   tools/win_probability_supabase.sql  one-time setup for Win Probability's crowd votes (see below)
   tools/calendar_update.py    builds calendar/events.json; calendar_prices.py watches ticket prices;
@@ -385,4 +390,14 @@ Who's in: careers that ended in 2000 or later, four or more franchises (a team t
 The "Wipe Yoenis Yahoo pull" workflow runs Monday mornings from October through March (or by hand from the Actions tab). It saves the 2026 draft, every final roster and every transaction to `tools/yahoo_yoenis/2026.json`, then `tools/yoenis_keeper_check.py` works out each rostered player's 2027 cost from the league rules and compares it with `keepers2027` in `yoenis/data.json`. The result goes in `keeperCheck`, and the 2027 keepers tab shows a line under the list: "all 442 players match", or the players that don't. The check never edits `keepers2027`; fix a flagged player there by hand. The keeper sheet's misspellings ("Junior Camirero", "Ohtani (P)") are matched to that team's keeper picks in the 2026 draft.
 
 A drafted player always costs his 2026 draft round (whoever drafted him, however he moved since), and anyone undrafted costs round 15; drops and waivers don't change that. Run `python3 tools/yoenis_keeper_check.py --dry` to print the report.
+
+## Scouting Report: adding prospects
+
+The reports live in `tools/scouting_reports.json`, one entry per prospect: his `id` (Pro Football Reference for the NFL, Basketball Reference for the NBA, the same ids Journeyman's downloads use), `lg`, `angle` (`pan` or `glow`), the `report` and a one-line `projection`. Everything else on the file (draft slot, team, school, size, career numbers) comes from the data, so it's always right.
+
+1. Add or edit entries in `tools/scouting_reports.json`. Keep reports 2 to 4 sentences, no names, schools or teams in them, and no em dashes.
+2. `python3 tools/journeyman_fetch.py /tmp/jm` (skip it if you have a recent download), then `python3 tools/scouting_report_build.py --src /tmp/jm` and `node tools/scouting_report_check.js`.
+3. Bump `data.js?v=` in `scouting-report/index.html`.
+
+The stamp works itself out: the scouts "whiffed" when they panned a player who turned into a steal or a star, or praised one who busted. Drafts from 2000 to 2021 only, so every career has had time to happen. The daily five walks the whole folder in a seeded order before anyone repeats.
 

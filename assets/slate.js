@@ -3,6 +3,7 @@
      Make the Call    mtc.v2.daily.YYYY-MM-DD and mtc.v2.speed.YYYY-MM-DD (this device's date, like the game)
      Guess the Pick   gtp-daily5-SPORT-YYYY-MM-DD (Boston date)
      Journeyman       jm-daily3-SPORT-YYYY-MM-DD (Boston date)
+     Scouting Report  sr-daily-YYYY-MM-DD (Boston date)
    Nothing leaves the device. If a game changes its save format, update the matching row below. */
 (function () {
   var board = document.getElementById("slate");
@@ -19,13 +20,14 @@
   }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
 
-  // A ten-question daily (Guess the Pick, Journeyman): done, in progress, or not started
-  function tenDaily(key) {
+  // A daily of ten questions (Guess the Pick, Journeyman) or five (Scouting Report): done, in progress, or not started
+  function tenDaily(key, n) {
+    n = n || 10;
     var d = read(key), res = d && Array.isArray(d.results) ? d.results : [];
     if (!res.length) return { state: "open" };
     var total = res.reduce(function (a, r) { return a + (+r.s || 0); }, 0);
-    if (res.length >= 10) return { state: "done", text: String(total), say: total + " of 50" };
-    return { state: "partial", text: res.length + "/10", say: res.length + " of 10 played" };
+    if (res.length >= n) return { state: "done", text: String(total), say: total + " of " + n * 5 };
+    return { state: "partial", text: res.length + "/" + n, say: res.length + " of " + n + " played" };
   }
 
   function rows() {
@@ -42,7 +44,10 @@
       }).concat([null]) },
       { name: "Journeyman", url: "journeyman/", cells: ["nba", "nfl", "mlb"].map(function (sp) {
         return { label: sp.toUpperCase(), url: "journeyman/?sport=" + sp, s: tenDaily("jm-daily3-" + sp + "-" + et) };
-      }) }
+      }) },
+      { name: "Scouting Report", url: "scouting-report/", cells: [
+        { label: "Daily", url: "scouting-report/", s: tenDaily("sr-daily-" + et, 5) }, null, null
+      ] }
     ];
   }
 

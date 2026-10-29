@@ -75,6 +75,19 @@ window.PROJECTS = [
     cover: { image: "assets/covers/journeyman.jpg", bg: "#F1F2EE", band: "#FCCC0A" }
   },
   {
+    title: "Scouting Report",
+    tag: "New five every day",
+    type: "Games",
+    released: "2026-10",
+    url: "scouting-report/",
+    action: "Open the file",
+    question: "The scouts called him a can't-miss franchise savior. Who is he, and how did that go?",
+    summary: "Read a pre-draft scouting report, name the prospect, then see how his career really went. Glowing reports on busts, brutal pans of future stars, and just often enough, scouts who got it right. NFL and NBA, five a day for the group chat.",
+    facts: [["240", "prospects, 2000 to 2021 drafts"], ["1 in 4", "files where the scouts got it right"], ["5", "points a file, minus the bars you lift"]],
+    stack: ["JavaScript", "Python", "Supabase"],
+    cover: { image: "assets/covers/scouting-report.jpg", bg: "#2A2420", band: "#E2B84A" }
+  },
+  {
     title: "Night Out",
     tag: "Updated every morning",
     hidden: true,

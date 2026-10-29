@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Scouting Report | David Solar</title>
+<meta name="description" content="Read the pre-draft scouting report, name the prospect, then see how wrong (or right) the scouts were. NFL and NBA, five a day.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://davidsolar.dev/scouting-report/">
+<meta property="og:title" content="Scouting Report">
+<meta property="og:description" content="Read the report. Name the prospect. Laugh at the scouts.">
+<meta property="og:image" content="https://davidsolar.dev/assets/covers/scouting-report.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://davidsolar.dev/scouting-report/">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#2A2420">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Besley:wght@700;800&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Libre+Franklin:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/bar.css">
+<script src="../assets/analytics.js" defer></script>
+<style>
+/* Scouting Report is a prospect file on a scout's desk: a manila folder, a typed report, black redaction bars
+   over everything that would give him away, and a rubber stamp for the verdict. */
+:root{
+  --desk:#2A2420; --desk-2:#3A322C; --folder:#D9C49A; --folder-edge:#B89F6E; --paper:#FBF7EC; --paper-line:#E8DFC9;
+  --ink:#201C18; --ink-2:#5B5248; --bar:#1D1A17; --red:#B3261E; --green:#2E6B3F; --gold:#E2B84A; --chalk:#F3EDE2; --chalk-2:#BDB2A3;
+  --type:"Courier Prime","Courier New",Courier,monospace;
+  --display:"Besley",Georgia,"Times New Roman",serif;
+  --body:"Libre Franklin","Franklin Gothic Medium","Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--desk);color:var(--chalk);font:400 16px/1.5 var(--body);-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(ellipse at 30% 0%,rgba(255,255,255,.06),transparent 60%)}
+button,input{font:inherit;color:inherit}
+[hidden]{display:none!important}
+.wrap{max-width:44rem;margin:0 auto;padding:0 max(16px,env(safe-area-inset-left)) 56px max(16px,env(safe-area-inset-right))}
+.top{padding:28px 0 18px}
+body[data-screen="play"] .lede,body[data-screen="done"] .lede{display:none}
+body[data-screen="play"] .top{padding:18px 0 8px}
+.kicker{margin:0 0 6px;font-weight:800;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+h1{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(2.2rem,7vw,3.2rem);line-height:1;letter-spacing:-.02em}
+.lede{margin:10px 0 0;color:var(--chalk-2);max-width:34rem}
+.btn{appearance:none;border:0;border-radius:4px;padding:11px 18px;font-weight:700;cursor:pointer;background:var(--gold);color:#1a1a1a}
+.btn.ghost{background:transparent;color:var(--chalk);box-shadow:inset 0 0 0 1.5px #6B5F53}
+.btn:focus-visible,.redact:focus-visible,.mode:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+/* ---- Home */
+.modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:10px 0 0}
+.mode{appearance:none;text-align:left;border:0;cursor:pointer;background:var(--folder);color:var(--ink);border-radius:4px 14px 4px 4px;padding:18px 18px 16px;
+  box-shadow:inset 0 -3px 0 var(--folder-edge),0 10px 24px rgba(0,0,0,.3);display:flex;flex-direction:column;gap:4px;position:relative}
+.mode::before{content:"";position:absolute;top:-10px;left:14px;width:38%;height:12px;background:var(--folder);border-radius:6px 6px 0 0}
+.mode b{font-family:var(--display);font-size:1.35rem;line-height:1.1}
+.mode span{font-size:.88rem;color:#4A4036}
+.mode small{margin-top:6px;font-weight:700;font-size:.78rem;color:var(--red);letter-spacing:.04em;text-transform:uppercase}
+.mode:hover{transform:translateY(-2px)}
+@media (max-width:520px){.modes{grid-template-columns:1fr}}
+
+/* ---- The file */
+.hud{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:6px 0 34px;font-size:.86rem;color:var(--chalk-2)}
+.track{display:flex;gap:4px}
+.track i{width:22px;height:8px;border-radius:2px;background:#4A4038}
+.track i.s3{background:#5DBE7D}.track i.s2{background:#E2B84A}.track i.s1{background:#E08A3C}.track i.s0{background:#6B2A2A}.track i.on{background:var(--chalk)}
+.lives i{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--red);margin-left:4px}
+.lives i.gone{background:#4A4038}
+.quit{appearance:none;background:none;border:0;color:var(--chalk-2);text-decoration:underline;cursor:pointer;font-size:.84rem;padding:0}
+.folder{position:relative;background:var(--folder);border-radius:4px 16px 4px 4px;padding:14px;box-shadow:inset 0 -4px 0 var(--folder-edge),0 18px 40px rgba(0,0,0,.4)}
+.folder::before{content:attr(data-tab);position:absolute;top:-22px;left:16px;padding:4px 14px 6px;background:var(--folder);border-radius:8px 8px 0 0;
+  font:700 .66rem/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:#5A4A30}
+.sheet{position:relative;background:var(--paper);color:var(--ink);border-radius:2px;padding:20px 20px 18px;font-family:var(--type);
+  background-image:repeating-linear-gradient(180deg,transparent 0 27px,var(--paper-line) 27px 28px);box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.sheet h2{margin:0 0 12px;font:700 .78rem/1.2 var(--type);letter-spacing:.18em;text-transform:uppercase;color:var(--ink-2);display:flex;justify-content:space-between;gap:10px}
+.fields{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 12px;margin:0 0 16px;font-size:.92rem;align-items:center}
+.fields dt{font-weight:700;text-transform:uppercase;font-size:.74rem;letter-spacing:.08em;color:var(--ink-2)}
+.fields dd{margin:0;min-width:0}
+.redact{appearance:none;border:0;cursor:pointer;background:var(--bar);color:#8C8279;border-radius:1px;padding:2px 10px;font:700 .7rem/1.6 var(--body);
+  letter-spacing:.08em;text-transform:uppercase;min-width:9rem;text-align:left}
+.redact:hover:not(:disabled){background:#000;color:var(--gold)}
+.redact:disabled{cursor:default;opacity:.55}
+.fields .shown{font-weight:700;animation:ink .4s ease}
+@keyframes ink{from{opacity:0;filter:blur(2px)}to{opacity:1;filter:none}}
+.name-bar{display:inline-block;background:var(--bar);width:min(15rem,60%);height:1.1em;vertical-align:-.15em}
+.report{margin:0;font-size:1.04rem;line-height:1.75}
+.proj{margin:12px 0 0;font-weight:700;font-size:1rem;line-height:1.6}
+.stamp{position:absolute;right:14px;top:56px;transform:rotate(-9deg);border:4px solid currentColor;border-radius:6px;padding:6px 12px;
+  font:800 1.25rem/1.05 var(--body);letter-spacing:.06em;text-transform:uppercase;text-align:center;opacity:.88;mix-blend-mode:multiply;animation:thunk .28s ease-out both}
+.stamp.wrong{color:var(--red)}.stamp.right{color:var(--green)}
+.stamp small{display:block;font-size:.58rem;letter-spacing:.14em;margin-top:3px}
+@keyframes thunk{from{transform:rotate(-9deg) scale(1.8);opacity:0}to{transform:rotate(-9deg) scale(1);opacity:.88}}
+@media (prefers-reduced-motion: reduce){.stamp,.fields .shown{animation:none}}
+
+/* ---- Guessing */
+.ask{margin-top:14px}
+.pips{display:flex;align-items:center;gap:6px;margin:0 0 8px;font-size:.84rem;color:var(--chalk-2)}
+.pips i{width:12px;height:12px;border-radius:50%;background:var(--gold)}
+.pips i.used{background:#4A4038}
+.row{display:flex;gap:8px}
+.row input{flex:1;min-width:0;border:2px solid #5A4E43;background:#1E1915;color:var(--chalk);border-radius:4px;padding:11px 12px;font-size:1rem}
+.row input:focus{outline:none;border-color:var(--gold)}
+.sugg{list-style:none;margin:6px 0 0;padding:0}
+.sugg button{appearance:none;width:100%;text-align:left;background:transparent;border:0;border-radius:3px;padding:8px 10px;color:var(--chalk);cursor:pointer;font-weight:600}
+.sugg button:hover,.sugg button.on{background:#3A322C}
+.note{min-height:1.3em;margin:8px 0 0;font-size:.88rem;color:#F3A99F}
+.ask-foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:6px;font-size:.84rem;color:var(--chalk-2)}
+
+/* ---- The reveal */
+.went{margin-top:16px;background:var(--desk-2);border-radius:6px;padding:16px 18px;border-left:4px solid var(--gold)}
+.went h3{margin:0 0 4px;font-family:var(--display);font-size:1.5rem;line-height:1.15}
+.went .drafted{margin:0 0 10px;color:var(--chalk-2);font-size:.9rem}
+.went dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:10px;margin:0}
+.went dl div{background:#2A2420;border-radius:4px;padding:8px 10px}
+.went dt{font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--chalk-2)}
+.went dd{margin:2px 0 0;font-weight:700;font-variant-numeric:tabular-nums}
+.went .pts{margin:12px 0 0;font-weight:700}
+.next-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+
+/* ---- Done */
+.done-card{background:var(--folder);color:var(--ink);border-radius:4px 16px 4px 4px;padding:20px;box-shadow:inset 0 -4px 0 var(--folder-edge),0 18px 40px rgba(0,0,0,.4)}
+.done-card h2{margin:0;font-family:var(--display);font-size:2.4rem;line-height:1}
+.done-card h2 small{font-size:1rem;color:#5A4A30}
+.done-card .grade{margin:6px 0 12px;font-weight:700}
+.recap{list-style:none;margin:0 0 14px;padding:0;border-top:1px solid #B89F6E}
+.recap li{display:grid;grid-template-columns:1.2rem minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #C8B385;font-size:.92rem}
+.recap i{width:12px;height:12px;border-radius:2px;display:block}
+.recap .tag{font:800 .62rem/1 var(--body);letter-spacing:.08em;text-transform:uppercase;padding:3px 5px;border:2px solid currentColor;border-radius:3px}
+.recap .tag.wrong{color:var(--red)}.recap .tag.right{color:var(--green)}
+.board{margin-top:18px}
+.board h3{margin:0 0 8px;font-size:.76rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--chalk-2)}
+.board ol{list-style:none;margin:0;padding:0;border-top:1px solid #4A4038}
+.board li{display:grid;grid-template-columns:1.6rem minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #4A4038}
+.board li.me{background:rgba(226,184,74,.12)}
+.board .sq{letter-spacing:1px;font-size:.7rem;white-space:nowrap}
+.board form{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}
+.board input{flex:1 1 12rem;min-width:0;border:1.5px solid #5A4E43;background:#1E1915;color:var(--chalk);border-radius:4px;padding:9px 10px}
+.muted{color:var(--chalk-2);font-size:.88rem}
+.how{margin-top:26px;color:var(--chalk-2);font-size:.9rem}
+.how summary{cursor:pointer;font-weight:700;color:var(--chalk)}
+.how ul{padding-left:1.1rem}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--chalk);color:var(--ink);padding:8px 14px;border-radius:6px;font-size:.88rem;z-index:60}
+@media (max-width:520px){
+  .sheet{padding:16px 14px 14px}
+  .stamp{position:static;display:inline-block;margin:14px 0 2px 4px;font-size:1rem}   /* under the report on a phone, not over it */
+  .report{font-size:.98rem}
+}
+</style>
+</head>
+<body data-screen="home">
+<nav class="ds-bar" aria-label="davidsolar.dev">
+  <a href="../"><img src="../assets/ds-mark.svg" alt="" width="20" height="20"><span class="ds-bar-name">David Solar</span></a>
+  <a href="../#projects">All projects</a>
+</nav>
+<main class="wrap">
+  <header class="top">
+    <p class="kicker">Pre-draft intel, graded in hindsight</p>
+    <h1>Scouting Report</h1>
+    <p class="lede">Read what the scouts said. Name the prospect. Then see how the career actually went. Sometimes they nailed it. Usually they didn't.</p>
+  </header>
+
+  <section id="home">
+    <div class="modes">
+      <button class="mode" type="button" id="start-daily"><b>Today&rsquo;s five</b><span>The same five files for everyone, NFL and NBA. Posts to the group board.</span><small id="daily-status"></small></button>
+      <button class="mode" type="button" id="start-endless"><b>Endless</b><span>File after file until you whiff on three.</span><small id="endless-status"></small></button>
+    </div>
+    <details class="how">
+      <summary>How it works</summary>
+      <ul>
+        <li>Every report is about a real NFL or NBA prospect drafted between 2000 and 2021. The career numbers at the reveal are real. The reports are ours, written in the spirit of the pre-draft takes, and very sure of themselves.</li>
+        <li>Each file is worth 5 points. Lifting a black bar (position, draft class, school, size) costs 1. A wrong guess costs 1. At zero, the file opens.</li>
+        <li>The stamp tells you whether the scouts got him right.</li>
+      </ul>
+    </details>
+  </section>
+
+  <section id="play" hidden>
+    <div class="hud"><span id="hud-left"></span><span id="hud-right"></span></div>
+    <article class="folder" id="folder" data-tab="Prospect file">
+      <div class="sheet">
+        <h2><span id="file-lg">NFL</span><span id="file-no"></span></h2>
+        <dl class="fields" id="fields"></dl>
+        <p class="report" id="report"></p>
+        <p class="proj" id="proj"></p>
+        <div id="stamp"></div>
+      </div>
+    </article>
+    <form class="ask" id="ask" autocomplete="off">
+      <div class="pips" id="pips"></div>
+      <div class="row">
+        <input id="guess" type="text" placeholder="Who is he?" aria-label="Your guess" aria-autocomplete="list" aria-controls="sugg" spellcheck="false" autocapitalize="words">
+        <button class="btn" type="submit">Guess</button>
+      </div>
+      <ul class="sugg" id="sugg" role="listbox" aria-label="Players"></ul>
+      <p class="note" id="note" aria-live="assertive"></p>
+      <div class="ask-foot"><span>Tap a black bar to lift it (1 point).</span><button type="button" class="quit" id="give-up">Open the file</button></div>
+    </form>
+    <section class="went" id="went" hidden aria-live="polite"></section>
+  </section>
+
+  <section id="done" hidden>
+    <div class="done-card">
+      <h2 id="done-score"></h2>
+      <p class="grade" id="done-grade"></p>
+      <ul class="recap" id="recap"></ul>
+      <div class="next-row"><button class="btn" type="button" id="share" style="background:var(--ink);color:var(--paper)">Copy for the group chat</button><button class="btn" type="button" id="again">Play endless</button><button class="btn ghost" type="button" id="home-btn" style="color:var(--ink);box-shadow:inset 0 0 0 1.5px #8C7650">Back</button></div>
+    </div>
+    <div class="board" id="board">
+      <h3>Today's board</h3>
+      <form id="board-form"><input id="board-name" maxlength="24" required autocomplete="nickname" placeholder="Your name" aria-label="Your name for the board"><button class="btn" type="submit">Post my score</button></form>
+      <p class="muted" id="board-me" hidden>Posted as <b id="board-me-name"></b>.</p>
+      <p class="muted" id="board-note"></p>
+      <ol id="board-list"></ol>
+    </div>
+  </section>
+</main>
+<div class="toast" id="toast" hidden></div>
+<script src="../guess-the-pick/engine.js?v=4"></script>
+<script src="../guess-the-pick/names.js?v=1"></script>
+<script src="data.js?v=1"></script>
+<script src="app.js?v=1"></script>
+</body>
+</html>
