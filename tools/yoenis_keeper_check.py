@@ -4,11 +4,9 @@
 Reads tools/yahoo_yoenis/2026.json (written by tools/yoenis_yahoo_pull.py) and works out, for every player
 on a final 2026 roster, what the league's rules say he costs to keep in 2027:
   - Added to his team on or after Sept. 1 (any add or trade): can't be kept.
-  - Kept in 2026 (the keeper sheet, data["keeperHistory"]["2026"]): his keeper clock goes on, whoever has him,
-    unless he was dropped and cleared waivers since.
-  - Drafted in 2026: his draft round, whoever drafted him. A trade or a waiver claim keeps it; clearing
-    waivers (picked up as a free agent after a drop) loses it.
-  - Anyone else: a 15th-round pick.
+  - Kept in 2026 (the keeper sheet, data["keeperHistory"]["2026"]): his keeper clock goes on, whoever has him.
+  - Drafted in 2026: his draft round, whoever drafted him and however he got to his team since.
+  - Never drafted in 2026: a 15th-round pick.
   - Year one costs the base round, year two two rounds earlier, year three six rounds earlier (never past 1);
     after three years he goes back in the pool.
 
@@ -83,7 +81,6 @@ def expected(yh, data):
 
     kept = sheet_keepers(data, season)
     draft_ts = int(yh["settings"].get("draft_time") or 0)
-    claim_days = int(yh["settings"].get("waiver_time") or 2) + 1.5  # drop waivers plus that night's run
 
     # Each player's moves after the draft, oldest first
     moves = {}
@@ -99,19 +96,8 @@ def expected(yh, data):
         for pl in roster:
             key, name = pl["key"], pl["name"]
             pick = drafted.get(key)
-            keeps_round = pick is not None
             joined = None  # when he last came to this team
-            dropped = None
-            slow = []  # pickups that came well after a drop: did he clear waivers?
             for ts, ttype, m in moves.get(key, []):
-                if m["type"] == "drop":
-                    dropped = ts
-                if m["type"] == "add":
-                    if m["from"] == "freeagents":
-                        keeps_round = False
-                    elif dropped and (ts - dropped) / 86400 > claim_days:
-                        slow.append(round((ts - dropped) / 86400))
-                    dropped = None
                 if m.get("to_team") == tk and m["type"] in ("add", "trade"):
                     joined = ts
             e = {"p": name, "team": team}
@@ -120,12 +106,12 @@ def expected(yh, data):
                 if pick["team"] != tk:
                     e["via"] = names.get(pick["team"])
             k = kept.get(nkey(name))
-            if k and keeps_round:
+            if k and pick:
                 base = k[0] + STEP[k[1]] if k[0] > 1 else 1
                 e["k"] = [k[0], k[1]]
                 e["path"] = path_from(base)
                 e["next"] = None if k[1] >= 3 else [e["path"][k[1]], k[1] + 1]
-            elif keeps_round:
+            elif pick:
                 e["path"] = path_from(pick["round"])
                 e["next"] = [pick["round"], 1]
             else:
@@ -137,8 +123,6 @@ def expected(yh, data):
                 if (when.month, when.day) >= (9, 1) and when.year == YEAR:
                     e["late"] = when.day
                     e["next"] = None
-            if slow and (pick or k):
-                e["slow"] = slow
             yk = pl.get("yk") or {}
             if yk.get("kept") == "1":
                 e["yahoo_kept"] = True
@@ -183,11 +167,7 @@ def compare(exp, data):
         if e.get("yahoo_kept") and key[1] not in sheet:
             issues.append({"team": key[0], "p": e["p"], "issue": "Yahoo marks him a 2026 keeper; the keeper sheet doesn't"})
     issues.sort(key=lambda i: (i["team"].lower(), i["p"]))
-    # The rules question: drafted players (or 2026 keepers) picked up well after a drop
-    question = sorted(({"team": k[0], "p": e["p"], "round": e["next"][0] if e.get("next") else None,
-                        "days": max(e["slow"])} for k, e in exp.items() if e.get("slow") and e.get("next")),
-                      key=lambda q: (-q["days"], q["p"]))
-    return issues, question
+    return issues
 
 
 def main():
@@ -196,16 +176,13 @@ def main():
     yh = json.load(open(yh_path, encoding="utf-8"))
     data = json.load(open(DATA, encoding="utf-8"))
     exp = expected(yh, data)
-    issues, question = compare(exp, data)
+    issues = compare(exp, data)
     for i in issues:
         print(f"{i['team']:32} {i['p']:26} {i['issue']}")
     print(f"{len(exp)} players checked, {len(issues)} to look at.")
-    print(f"{len(question)} eligible players keep a draft round after sitting unclaimed past the waiver period:")
-    for q in question:
-        print(f"  {q['team']:32} {q['p']:26} round {q['round']}, picked up {q['days']} days after a drop")
     if dry:
         return
-    check = {"yahoo": yh["pulled"][:10], "players": len(exp), "issues": issues, "slow": question}
+    check = {"yahoo": yh["pulled"][:10], "players": len(exp), "issues": issues}
     old = data.get("keeperCheck") or {}
     if {k: v for k, v in old.items() if k != "checked"} == check:
         return
