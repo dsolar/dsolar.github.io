@@ -241,8 +241,8 @@ window.PROJECTS = [
     url: "jellycat-battle/",
     action: "Start the adventure",
     question: "What if the plush on the shelf had to battle for its spot?",
-    summary: "Lucy’s game, designed by Lucy and built with her dad. Pick a starter, explore the Softlands, win battles, and grow your Jellycat collection. Unofficial and fan-made.",
-    facts: [["150", "Jellycats to collect"], ["24", "routes across the Softlands"], ["6", "types, from Food to Adventure"]],
+    summary: "Lucy’s game, designed by Lucy and built with her dad. Name your first Jellycat, explore a pixel-art village, and step into the tall grass to find a battle. Win to bring new friends home, help the neighbors with their stories, and fill your collector’s notebook. Unofficial and fan-made.",
+    facts: [["150", "Jellycats to collect"], ["15", "story quests"], ["6", "skill games to master"]],
     stack: ["JavaScript"],
     cover: { image: "assets/covers/jellycat-battle.jpg", bg: "#F9F1E8", band: "#64398E" }
   },
