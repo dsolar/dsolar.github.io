@@ -81,9 +81,9 @@ window.PROJECTS = [
     released: "2026-10",
     url: "scouting-report/",
     action: "Open the file",
-    question: "The scouts called him a can't-miss franchise savior. Who is he, and how did that go?",
-    summary: "Read a pre-draft scouting report, name the prospect, then see how his career really went. Glowing reports on busts, brutal pans of future stars, and just often enough, scouts who got it right. NFL and NBA, five a day for the group chat.",
-    facts: [["240", "prospects, 2000 to 2021 drafts"], ["1 in 4", "files where the scouts got it right"], ["5", "points a file, minus the bars you lift"]],
+    question: "The draft experts were sure about him. Who were they talking about, and how did it go?",
+    summary: "Real pre-draft quotes from Kiper, McShay, Mayock, Zierlein, DraftExpress and more. Name the prospect, then see how his career actually went. Glowing takes on busts, pans of future stars, and sometimes the experts get it right. NFL and NBA, five a day.",
+    facts: [["85", "real quotes, each linked to its source"], ["1 in 5", "files where the experts got it right"], ["5", "points a file, minus the bars you lift"]],
     stack: ["JavaScript", "Python", "Supabase"],
     cover: { image: "assets/covers/scouting-report.jpg", bg: "#2A2420", band: "#E2B84A" }
   },

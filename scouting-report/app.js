@@ -122,7 +122,9 @@
     $("quote").textContent = p.q + "\u201D";
     // Who said it shows from the start; when (which gives away the class) waits for the bar or the reveal
     var when = open || cur.used.indexOf("cls") >= 0 ? p.when : "";
-    $("cite").innerHTML = esc(p.who) + "<small>" + esc(p.outlet) + (when ? ", " + esc(when) : "") + "</small>";
+    // An outlet with no named writer (DraftExpress, NFL.com's profiles) shows once, not twice
+    var outlet = p.who.indexOf(p.outlet) === 0 ? "" : p.outlet;
+    $("cite").innerHTML = esc(p.who) + "<small>" + esc([outlet, when].filter(Boolean).join(", ")) + "</small>";
     var html = "<dt>Name</dt><dd>" + (open ? '<span class="shown">' + esc(p.n) + "</span>" : '<span class="name-bar" aria-label="Hidden"></span>') + "</dd>";
     CLUES.forEach(function (c) {
       var shown = open || cur.used.indexOf(c.id) >= 0, text = c.text(p) || "Unknown";
@@ -177,7 +179,7 @@
       + '<div class="card-body"><h3>' + esc(p.n) + "</h3>"
       + '<dl class="facts"><div><dt>Games</dt><dd>' + p.g.toLocaleString() + "</dd></div><div><dt>Career</dt><dd>" + esc(p.stat) + "</dd></div><div><dt>Honors</dt><dd>" + esc(hon) + "</dd></div></dl>"
       + (p.ctx ? '<p class="ctx">' + esc(p.ctx) + "</p>" : "")
-      + '<div class="foot"><span class="pts">' + (s ? "+" + s : "0") + " point" + (s === 1 ? "" : "s") + '</span><span class="src">Quote: <a href="' + esc(p.url) + '" target="_blank" rel="noopener">' + esc(p.who) + ", " + esc(p.outlet) + "</a></span></div>"
+      + '<div class="foot"><span class="pts">' + (s ? "+" + s : "0") + " point" + (s === 1 ? "" : "s") + '</span><span class="src">Quote: <a href="' + esc(p.url) + '" target="_blank" rel="noopener">' + esc(p.who) + (p.who.indexOf(p.outlet) === 0 ? "" : ", " + esc(p.outlet)) + "</a></span></div>"
       + '</div></article><div class="next-row"><button class="btn" type="button" id="next">' + (lastOne() ? "See how you did" : "Next file") + "</button></div>";
     $("next").onclick = next;
     $("next").focus({ preventScroll: true });
