@@ -1552,7 +1552,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     if (TR.sort === "gap") list = list.slice().sort(function (a, b) { return Math.abs(b.av - b.bv) - Math.abs(a.av - a.bv); });
     var shown = list.slice(0, TR.shown);
     $("tr-count").textContent = list.length + (list.length === 1 ? " trade" : " trades") + (TR.man ? " involving " + who(TR.man) : "") + (TR.year ? " in " + TR.year : "") + ".";
-    $("tr-list").innerHTML = shown.map(function (t) {
+    $("tr-list").innerHTML = pendingTrades() + shown.map(function (t) {
       var s = SEASONS[t.y], win = trWinner(t);
       var side = function (k) {
         var ti = k === "a" ? t.a : t.b, gets = k === "a" ? t.ag : t.bg, picks = (k === "a" ? t.ap : t.bp) || [], tot = k === "a" ? t.av : t.bv;
@@ -1572,6 +1572,22 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       return '<li class="trade"><div class="trade-top"><span class="trade-d">' + when + '</span><span class="gap">' + gap + '</span></div><div class="trade-sides">' + side("a") + side("b") + "</div></li>";
     }).join("");
     $("tr-more").hidden = list.length <= TR.shown;
+  }
+  // This winter's deals (data.offseason.trades), shown until the draft puts them in the history with a score
+  function pendingTrades() {
+    var off = OFF(), year = off.year, list = off.trades || [];
+    if (!list.length || TR.sort === "gap" || (TR.year && String(year) !== TR.year)) return "";
+    if (DATA.tradeHistory.trades.some(function (t) { return t.off && t.y === year; })) return "";
+    var last = lastSeason(), ownerOf = function (team) { var i = last.teams.indexOf(team); return i >= 0 ? last.o[i] : null; };
+    return list.slice().reverse().filter(function (t) {
+      return !TR.man || ownerOf(t.a) === TR.man || ownerOf(t.b) === TR.man;
+    }).map(function (t) {
+      var side = function (team, gets) {
+        return "<div><b>" + esc(withMan(team)) + " got</b>" + (gets || []).map(function (g) { return '<div class="pl"><span>' + esc(g) + "</span><i></i></div>"; }).join("") + "</div>";
+      };
+      return '<li class="trade"><div class="trade-top"><span class="trade-d">' + esc(longDate(t.d)) + '<span class="off-tag" title="Scored once the ' + year + ' season plays out">Offseason</span></span><span class="gap">Not scored yet</span></div>" +
+        '<div class="trade-sides">' + side(t.a, t.aGets) + side(t.b, t.bGets) + "</div>" + (t.note ? '<p class="note" style="margin-top:.35rem">' + esc(t.note) + "</p>" : "") + "</li>";
+    }).join("");
   }
   function drawLedger() {
     var L = {};
