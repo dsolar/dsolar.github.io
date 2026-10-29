@@ -413,6 +413,10 @@ body.battle-focus .battle-log{max-height:21dvh;overflow:auto;padding:9px;}
 body.pixel-world-active .world-parlor{visibility:hidden!important;}
 body.pixel-world-active .world-treasure{font-size:20px;filter:drop-shadow(0 0 5px #fff7c1);animation:treasure-glint 2.2s ease-in-out infinite;}
 @keyframes treasure-glint{0%,100%{opacity:.75;transform:scale(.9)}50%{opacity:1;transform:scale(1.13)}}
+/* Battle sprites scale with their fighter panel, so big screens get big plush instead of a small sprite in a large empty card. */
+body.battle-focus .fighter .avatar{container-type:size;max-height:none;}
+body.battle-focus .fighter .avatar .plush-pixel-art{height:min(90cqh,110cqw,300px);width:auto;max-width:none;max-height:none;}
+body.battle-focus .fighter .avatar .plush-svg{width:min(90cqh,90cqw,300px);height:min(90cqh,90cqw,300px);max-width:none;max-height:none;}
 </style>
 </head>
 <body>
@@ -1139,7 +1143,7 @@ const VILLAGE_FACADES=[
 ];
 function paintFacadeLettering(g,x,y,label,color){
  // Pixel glyphs, independent of web fonts and canvas scaling.
- const chars={A:['010','101','111','101','101'],B:['110','101','110','101','110'],D:['110','101','101','101','110'],E:['111','100','110','100','111'],G:['011','100','101','101','011'],H:['101','101','111','101','101'],K:['101','110','100','110','101'],L:['100','100','100','100','111'],M:['10101','11111','10101','10101','10101'],N:['101','111','111','111','101'],O:['111','101','101','101','111'],S:['011','100','010','001','110'],T:['111','010','010','010','010']};
+ const chars={A:['010','101','111','101','101'],B:['110','101','110','101','110'],D:['110','101','101','101','110'],E:['111','100','110','100','111'],G:['011','100','101','101','011'],H:['101','101','111','101','101'],K:['101','110','100','110','101'],L:['100','100','100','100','111'],M:['10101','11111','10101','10101','10101'],N:['101','111','111','111','101'],O:['111','101','101','101','111'],S:['011','100','010','001','110'],T:['111','010','010','010','010'],C:['011','100','100','100','011'],F:['111','100','110','100','100'],I:['111','010','010','010','111'],J:['001','001','001','101','010'],P:['110','101','110','100','100'],Q:['010','101','101','110','011'],R:['110','101','110','101','101'],U:['101','101','101','101','111'],V:['101','101','101','101','010'],W:['10101','10101','10101','11111','01010'],X:['101','101','010','101','101'],Y:['101','101','010','010','010'],Z:['111','001','010','100','111']};
  let pos=x;for(const c of label.toUpperCase()){const rows=chars[c]||[];for(let j=0;j<rows.length;j++)for(let k=0;k<rows[j].length;k++)if(rows[j][k]==='1')box(g,pos+k,y+j,1,1,color);pos+=(rows[0]?.length||3)+1;}
 }
 function drawVillageFacade(g,facade){
@@ -1165,9 +1169,10 @@ function drawVillageFacade(g,facade){
  box(g,left+40,top+54,16,34,trim);box(g,left+43,top+58,10,27,'#463b53');
  box(g,left+54,top+71,2,3,'#ffe9a7');box(g,left+36,top+87,24,3,'#c19b79');
  // Hanging readable signs and differentiated merchandise.
- box(g,left+33,top+32,30,18,'#f4dfaa');box(g,left+35,top+34,26,14,trim);
- box(g,left+36,top+36,24,10,'#fff0ce');
- paintFacadeLettering(g,left+(96-(title.length*4-1))/2,top+38,title,trim);
+ const tw=title.length*4-1,inner=Math.max(24,Math.ceil((tw+5)/2)*2),sx=left+48-inner/2;
+ box(g,sx-3,top+32,inner+6,18,'#f4dfaa');box(g,sx-1,top+34,inner+2,14,trim);
+ box(g,sx,top+36,inner,10,'#fff0ce');
+ paintFacadeLettering(g,left+Math.round(48-tw/2),top+38,title,trim);
  if(kind==='parlor'){
   box(g,left+5,top+83,9,7,'#8eb07b');box(g,left+7,top+79,5,7,'#d3abc9');
   box(g,left+82,top+83,9,7,'#8eb07b');box(g,left+83,top+80,7,5,'#e9d4b6');
@@ -2199,11 +2204,19 @@ function showMilestone(title,desc){const div=el('div','modal-backdrop');div.id='
 function showFound(t){showMilestone(`You found ${t.title}!`,`${t.text} You earned ${t.points} star.`);}
 function talkOrInspect(){ensureWorld(state);const npc=nearbyNpcs(state.world)[0],parlor=nearbyParlor(state.world);
  const place=state.world.area==='cuddlewick'?nearbySpecial(state.world):null;const distances=[[npc,()=>showTalk(npc)],[parlor,()=>showParlor(parlor)],[place,()=>showPlace(place)]].filter(([x])=>x).sort((a,b)=>Math.hypot(a[0].x-state.world.x,a[0].y-state.world.y)-Math.hypot(b[0].x-state.world.x,b[0].y-state.world.y));if(distances.length){distances[0][1]();return;}if(state.world.area!=='cuddlewick'){const near=areaLandmarks(state.world.area).find(l=>Math.hypot(l.x-state.world.x,l.y-state.world.y)<=1.8);if(near){showMilestone(near.name,near.name==='Whisperstone Grotto'?'Step onto the cave entrance to explore inside.':'A lovely landmark on your journey through the Softlands.');return;}}notify('Walk closer to a friend, landmark, or Parlor, or explore tall grass!');}
-function showKeyboardHelp(){if($('#keyboard-modal'))return;const div=el('div','modal-backdrop');div.id='keyboard-modal';div.innerHTML=`<section class="modal help-modal" role="dialog" aria-modal="true" aria-label="Keyboard controls"><span class="eyebrow">Play without your mouse</span><h2>Keyboard controls</h2><dl class="shortcut-grid"><dt><kbd>W A S D</kbd> / arrows</dt><dd>Walk. Hold to keep walking.</dd><dt><kbd>E</kbd> / <kbd>Space</kbd></dt><dd>Talk, explore shops, and inspect nearby landmarks.</dd><dt><kbd>P</kbd></dt><dd>Talk to a nearby Parlor Keeper.</dd><dt><kbd>G</kbd> <kbd>M</kbd> <kbd>Q</kbd> <kbd>T</kbd> <kbd>C</kbd> <kbd>H</kbd></dt><dd>Explore, Region map, Journal, Team, Collection, Clubhouse.</dd><dt><kbd>V</kbd></dt><dd>Resume an active battle.</dd><dt><kbd>1</kbd>–<kbd>3</kbd> in battle</dt><dd>Use a move. <kbd>4</kbd>–<kbd>6</kbd> switches friends.</dd><dt><kbd>Space</kbd> in activities</dt><dd>Time shots and baking, or begin/end a mini-game. Flowers and shells use number keys.</dd><dt><kbd>1</kbd>–<kbd>3</kbd> at rewards</dt><dd>Choose a gift-bag friend.</dd><dt><kbd>Shift</kbd> + <kbd>1</kbd>–<kbd>8</kbd></dt><dd>Walk to a district.</dd><dt><kbd>J</kbd></dt><dd>Open an earned mystery jar from Team.</dd><dt><kbd>/</kbd></dt><dd>Search your Collection.</dd><dt>🏄 Softboard</dt><dd>Defeat the Tidepool Parlor Keeper after earning two patches. Then walk directly onto open water; broken bridges remain blocked.</dd><dt><kbd>Tab</kbd>, <kbd>Enter</kbd></dt><dd>Reach and activate any button or form.</dd><dt><kbd>Esc</kbd></dt><dd>Close dialogs.</dd></dl><button class="btn" data-action="close-help">Got it! <kbd>Esc</kbd></button></section>`;document.body.append(div);div.querySelector('button')?.focus();}
+function showKeyboardHelp(){if($('#keyboard-modal'))return;const div=el('div','modal-backdrop');div.id='keyboard-modal';div.innerHTML=`<section class="modal help-modal" role="dialog" aria-modal="true" aria-label="Keyboard controls"><span class="eyebrow">Play without your mouse</span><h2>Keyboard controls</h2><dl class="shortcut-grid"><dt><kbd>W A S D</kbd> / arrows</dt><dd>Walk. Tap to step one tile, hold to keep walking.</dd><dt><kbd>E</kbd> / <kbd>Space</kbd></dt><dd>Talk, explore shops, and inspect nearby landmarks.</dd><dt><kbd>P</kbd></dt><dd>Talk to a nearby Parlor Keeper.</dd><dt><kbd>G</kbd> <kbd>M</kbd> <kbd>Q</kbd> <kbd>T</kbd> <kbd>C</kbd> <kbd>H</kbd></dt><dd>Explore, Region map, Journal, Team, Collection, Clubhouse.</dd><dt><kbd>V</kbd></dt><dd>Resume an active battle.</dd><dt><kbd>1</kbd>–<kbd>3</kbd> in battle</dt><dd>Use a move. <kbd>4</kbd>–<kbd>6</kbd> switches friends.</dd><dt><kbd>Space</kbd> in activities</dt><dd>Time shots and baking, or begin/end a mini-game. Flowers and shells use number keys.</dd><dt><kbd>1</kbd>–<kbd>3</kbd> at rewards</dt><dd>Choose a gift-bag friend.</dd><dt><kbd>Shift</kbd> + <kbd>1</kbd>–<kbd>8</kbd></dt><dd>Walk to a district.</dd><dt><kbd>J</kbd></dt><dd>Open an earned mystery jar from Team.</dd><dt><kbd>/</kbd></dt><dd>Search your Collection.</dd><dt>🏄 Softboard</dt><dd>Defeat the Tidepool Parlor Keeper after earning two patches. Then walk directly onto open water; broken bridges remain blocked.</dd><dt><kbd>Tab</kbd>, <kbd>Enter</kbd></dt><dd>Reach and activate any button or form.</dd><dt><kbd>Esc</kbd></dt><dd>Close dialogs.</dd></dl><button class="btn" data-action="close-help">Got it! <kbd>Esc</kbd></button></section>`;document.body.append(div);div.querySelector('button')?.focus();}
 
 // Keyboard controls work on every screen, including the modal questions and claim panels.
 const pressed=new Set();let walkHeldTimer=null,heldLastTime=0;
 function stopHeld(){if(walkHeldTimer)cancelAnimationFrame(walkHeldTimer);walkHeldTimer=null;heldLastTime=0;pressed.clear();}
+// A quick tap (released before ~220ms) finishes the move to the next tile, so tapping steps one tile at a time.
+let tapStart=null,tapGlideTimer=null;const TAP_MS=220;
+function stopTapGlide(){if(tapGlideTimer){clearInterval(tapGlideTimer);tapGlideTimer=null;}}
+function tapGlide(dir,start){stopTapGlide();const axis=dir[0]?'x':'y',sign=dir[0]||dir[1],target=sign>0?Math.floor(start[axis]+.001)+1:Math.ceil(start[axis]-.001)-1;
+ tapGlideTimer=setInterval(()=>{if(page!=='world'||document.querySelector('.modal-backdrop')){stopTapGlide();return;}
+  const left=(target-state.world[axis])*sign;if(left<=.01){stopTapGlide();finishWorldMotion();return;}
+  const d=Math.min(.19,left);if(!performStep(axis==='x'?sign*d:0,axis==='y'?sign*d:0,true)){stopTapGlide();finishWorldMotion();}
+ },16);}
 function walkKey(){const keys=[['arrowup',0,-1],['w',0,-1],['arrowdown',0,1],['s',0,1],['arrowleft',-1,0],['a',-1,0],['arrowright',1,0],['d',1,0]];for(const [k,dx,dy] of keys)if(pressed.has(k))return [dx,dy];return null;}
 function doHeldMove(now){const dir=walkKey();if(!dir||document.querySelector('.modal-backdrop')||page!=='world'){stopHeld();return;}stopWalking();const dt=heldLastTime?Math.min(.05,(now-heldLastTime)/1000):1/60;heldLastTime=now;const dx=dir[0]*Math.min(.19,dt*3.8),dy=dir[1]*Math.min(.19,dt*3.8);performStep(dx,dy,true);walkHeldTimer=requestAnimationFrame(doHeldMove);}
 document.addEventListener('keydown',e=>{
@@ -2221,7 +2234,7 @@ document.addEventListener('keydown',e=>{
  if(input)return;
  if(key==='?'||(key==='/'&&e.shiftKey)){e.preventDefault();showKeyboardHelp();return;}
  if(page==='world'&&state.onboarded&&['arrowup','arrowdown','arrowleft','arrowright','w','a','s','d'].includes(key)){
-  e.preventDefault();if(!pressed.has(key)){pressed.add(key);if(!walkHeldTimer)walkHeldTimer=requestAnimationFrame(doHeldMove);}return;
+  e.preventDefault();if(!pressed.has(key)){stopTapGlide();if(!pressed.size)tapStart={t:performance.now(),key,x:state.world.x,y:state.world.y};pressed.add(key);if(!walkHeldTimer)walkHeldTimer=requestAnimationFrame(doHeldMove);}return;
  }
  if(page==='world'&&e.shiftKey&&/^[1-8]$/.test(key)){e.preventDefault();const z=ZONES[Number(key)-1];walkToward(z.x,z.y);return;}
  if(page==='world'&&['e',' ','enter'].includes(key)&&document.activeElement?.tagName!=='BUTTON'){e.preventDefault();talkOrInspect();return;}
@@ -2237,7 +2250,8 @@ document.addEventListener('keydown',e=>{
  if(!e.shiftKey&&['g','m','q','t','c','h','v'].includes(key)){const p={g:'world',m:'atlas',q:'journal',t:'home',c:'collection',h:'clubhouse',v:'battle'}[key];if(p!=='battle'||state.battle){e.preventDefault();go(p);}return;}
  if(/^[1-5]$/.test(key)&&!e.shiftKey){const pages=['world','home','collection','clubhouse','battle'];const selected=pages[Number(key)-1];if(selected==='battle'&&!state.battle)return;e.preventDefault();go(selected);}
 });
-document.addEventListener('keyup',e=>{pressed.delete(e.key.toLowerCase());if(!walkKey())stopHeld();});window.addEventListener('blur',stopHeld);
+document.addEventListener('keyup',e=>{const k=e.key.toLowerCase(),tap=tapStart;pressed.delete(k);if(!walkKey()){const dir={arrowup:[0,-1],w:[0,-1],arrowdown:[0,1],s:[0,1],arrowleft:[-1,0],a:[-1,0],arrowright:[1,0],d:[1,0]}[k];stopHeld();tapStart=null;
+ if(tap&&tap.key===k&&dir&&page==='world'&&performance.now()-tap.t<TAP_MS)tapGlide(dir,tap);}});window.addEventListener('blur',()=>{stopHeld();stopTapGlide();tapStart=null;});
 document.addEventListener('pointerdown',e=>{const btn=e.target.closest('.dpad [data-action="step"]');if(!btn)return;const dx=Number(btn.dataset.dx),dy=Number(btn.dataset.dy);stopHeld();stopWalking();performStep(dx*WALK_INCREMENT,dy*WALK_INCREMENT);if(walkHeldTimer)clearInterval(walkHeldTimer);walkHeldTimer=setInterval(()=>performStep(dx*WALK_INCREMENT,dy*WALK_INCREMENT,true),70);btn.dataset.held='1';});
 document.addEventListener('pointerup',e=>{if(walkHeldTimer){clearInterval(walkHeldTimer);walkHeldTimer=null;}});
 document.addEventListener('click',e=>{const btn=e.target.closest('.dpad [data-action="step"]');if(btn&&btn.dataset.held==='1'){btn.dataset.held='0';e.stopImmediatePropagation();e.preventDefault();}},true);
