@@ -54,6 +54,7 @@ dsolar.github.io/
   tools/yoenis_keeper_check.py  checks every 2027 keeper cost in yoenis/data.json against that pull
   tools/yoenis_trades_pull.py, yoenis_trades_build.py  every trade since 2013 from Yahoo, scored for the Trades section
   tools/yoenis_race_pull.py   the weekly category race from Yahoo into yoenis/race.json
+  tools/yoenis_history_pull.py, yoenis_history_build.py  every week and pickup since 2013: 16-0s, rivalries, waiver wire
   tools/yahoo_check.py        confirms the Yahoo app can read both leagues (Actions > Yahoo check)
   tools/paint_the_corners_sim.js  balance check for Paint the Corners (node, see the top of the file)
   tools/guess_the_pick_build.py  rebuilds guess-the-pick/data.js from nflverse and basketball-reference data (see below)
@@ -410,4 +411,8 @@ The same Monday workflow pulls every trade since 2013 (`tools/yoenis_trades_pull
 ## Wipe Yoenis: the race
 
 `tools/yoenis_race_pull.py` writes `yoenis/race.json`: every week's head-to-head matchups with each side's 16 category stats and Yahoo's category winners, plus season totals by category. The page's Race section shows each week's matchups (who leads each category and by how much), the standings as they stood after any week (rebuilt from the category results; they match Yahoo's final standings), and every team's rank in each category with how much it needs to pass the team above. The "Wipe Yoenis Yahoo pull" workflow runs it twice a day from April through September. Once the commissioner renews the league and the 2027 draft is done, it switches to the new season by itself (through the old league's "renewed" link).
+
+## Wipe Yoenis: head to head and the waiver wire
+
+`tools/yoenis_history_pull.py` saves every season's weekly matchups (category stats and Yahoo's category winners) and every add and drop to `tools/yahoo_yoenis/history/<year>.json`. Finished seasons are pulled once; the latest is pulled each run. Yahoo refuses some seasons' full transaction list in one call (2023), so it pages through, 100 at a time. `tools/yoenis_history_build.py` turns that into `history` in `yoenis/data.json`: the 16-0 club (and 15-1 near misses), all-time rivalries by manager, and the waiver wire hall of fame, where a pickup counts his value over replacement for the time he stayed on that team plus any seasons that manager kept him. A 16-0 in progress also gets a "16-0 watch" tag on the Race section's matchups.
 

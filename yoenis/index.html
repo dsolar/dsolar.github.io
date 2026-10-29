@@ -158,6 +158,24 @@ select{padding-right:2rem}
 .fold .klist .kp:last-child{border-bottom:0}
 .empty{padding:1rem 0;color:var(--muted)}
 
+/* Head to head */
+.h-lede{margin:.6rem 0 .4rem;max-width:44rem}
+.sweeps{list-style:none;margin:.6rem 0 0;padding:0;border-top:1px solid var(--rule)}
+.sweeps li{display:grid;grid-template-columns:5.6rem minmax(0,1fr) auto;gap:.2rem .9rem;align-items:baseline;padding:.6rem 0;border-bottom:1px solid var(--rule)}
+.sweeps .when{font-size:.8125rem;color:var(--muted);white-space:nowrap}
+.sweeps .who{overflow-wrap:anywhere}
+.sweeps .who b{font-weight:600}
+.sweeps .sc{font:700 1.05rem/1 var(--f-sign);font-variant-numeric:tabular-nums;white-space:nowrap}
+.sweeps.near .sc{font-size:.9rem}
+.sweeps .po{display:inline-block;margin-left:.35rem;padding:.05rem .35rem;border-radius:2px;background:var(--monster);color:var(--chalk);font-size:.68rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;vertical-align:.1em}
+#h-riv td.r,#h-riv td.num,#ww-t td.r,#ww-t td.num{white-space:nowrap}
+#h-riv td:nth-child(1),#ww-t td.pl{overflow-wrap:break-word}
+#h-riv td:nth-child(1){min-width:5.5rem}
+@media (max-width:480px){#h-riv th:nth-child(4),#h-riv td:nth-child(4){display:none}}
+#h-riv tr.hl td{font-weight:700}
+.mu .watch{display:block;color:var(--red-text, var(--red));font:700 .7rem/1.2 var(--f-body);letter-spacing:.03em;text-transform:uppercase;margin-top:.2rem}
+@media (max-width:480px){.sweeps li{grid-template-columns:minmax(0,1fr) auto}.sweeps .when{grid-column:1/-1}}
+
 /* The race */
 .mus{list-style:none;margin:.4rem 0 0;padding:0;border-top:1px solid var(--rule)}
 .mus>li{border-bottom:1px solid var(--rule)}
@@ -497,6 +515,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     <a href="#race">Race</a>
     <a href="#stats">Stats</a>
     <a href="#awards">Awards</a>
+    <a href="#h2h">Head to head</a>
     <a href="#trades">Trades</a>
     <a href="#managers">Managers</a>
     <a href="#graveyard">Graveyard</a>
@@ -621,12 +640,31 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     <p class="note">A player's value adds up how far above or below a typical rostered player he was in each category, with average, OPS, ERA and WHIP weighted by playing time. Keepers are marked from 2022 on, when the keeper sheet starts. Stats from MLB.</p>
   </section>
 
+  <section id="h2h" aria-labelledby="h2h-title" hidden>
+    <div class="section-head">
+      <h2 id="h2h-title">Head to head</h2>
+      <p id="h2h-lede">Every manager's record against everyone else since 2013, and every 16-0.</p>
+    </div>
+    <div class="seg tabs" role="tablist" aria-label="Head to head" data-remember="yoenis-htab"><button type="button" role="tab" id="ht-riv" aria-controls="hp-riv" aria-selected="true">Rivalries</button><button type="button" role="tab" id="ht-sw" aria-controls="hp-sw" aria-selected="false" tabindex="-1">16-0 club</button></div>
+    <div role="tabpanel" id="hp-riv" aria-labelledby="ht-riv">
+      <div class="controls"><label class="field">Manager<select id="h-man"></select></label></div>
+      <p class="h-lede" id="h-riv-lede"></p>
+      <div class="tbl-wrap" tabindex="0" role="region" aria-label="Rivalries"><table class="standings" id="h-riv"></table></div>
+      <p class="note">By manager, so a rivalry carries across team renames. A matchup goes to whoever won more categories. Playoffs counts title-bracket games only; consolation games count with the rest. Cats are categories won, lost and tied.</p>
+    </div>
+    <div role="tabpanel" id="hp-sw" aria-labelledby="ht-sw" hidden>
+      <p class="h-lede" id="h-sw-lede"></p>
+      <ol class="sweeps" id="h-sw"></ol>
+      <details class="fold" id="h-near-f"><summary id="h-near-s">Near misses</summary><ol class="sweeps near" id="h-near"></ol></details>
+    </div>
+  </section>
+
   <section id="trades" aria-labelledby="trades-title">
     <div class="section-head">
-      <h2 id="trades-title">Trades</h2>
+      <h2 id="trades-title">Trades and pickups</h2>
       <p id="tr-lede">Every trade since 2013, and who came out ahead.</p>
     </div>
-    <div class="seg tabs" role="tablist" aria-label="Trades" data-remember="yoenis-trtab"><button type="button" role="tab" id="trt-all" aria-controls="trp-all" aria-selected="true">Every trade</button><button type="button" role="tab" id="trt-led" aria-controls="trp-led" aria-selected="false" tabindex="-1">Ledger</button></div>
+    <div class="seg tabs" role="tablist" aria-label="Trades" data-remember="yoenis-trtab"><button type="button" role="tab" id="trt-all" aria-controls="trp-all" aria-selected="true">Every trade</button><button type="button" role="tab" id="trt-led" aria-controls="trp-led" aria-selected="false" tabindex="-1">Ledger</button><button type="button" role="tab" id="trt-ww" aria-controls="trp-ww" aria-selected="false" tabindex="-1">Waiver wire</button></div>
     <div role="tabpanel" id="trp-all" aria-labelledby="trt-all">
       <div class="controls">
         <label class="field">Year<select id="tr-year"></select></label>
@@ -639,6 +677,15 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     </div>
     <div role="tabpanel" id="trp-led" aria-labelledby="trt-led" hidden>
       <div class="tbl-wrap" tabindex="0" role="region" aria-label="Trade ledger"><table class="stats" id="tr-ledger"></table></div>
+    </div>
+    <div role="tabpanel" id="trp-ww" aria-labelledby="trt-ww" hidden>
+      <p class="h-lede" id="ww-lede"></p>
+      <div class="controls">
+        <div class="field">Show<span class="seg" role="group" aria-label="Show" id="ww-view"><button type="button" data-v="best" aria-pressed="true">Best pickups</button><button type="button" data-v="man" aria-pressed="false">By manager</button></span></div>
+        <label class="field" id="ww-year-f">Year<select id="ww-year"></select></label>
+      </div>
+      <div class="tbl-wrap" tabindex="0" role="region" aria-label="Waiver wire"><table class="standings" id="ww-t"></table></div>
+      <p class="note">Every free-agent and waiver pickup from Opening Day on, valued like the trades: his value over a replacement-level player for the part of the season he stayed on that team, plus every later season that manager kept him. "By manager" adds up every pickup's value.</p>
     </div>
     <p class="note">From Yahoo's transactions, with the same player values as the awards, counted above a replacement-level player so someone hurt or benched adds nothing. A player counts for the part of the season left after the trade, plus every later season the manager who got him kept him. 10 is about an All-Star's full season. It's a guide, not gospel: it can't see who a team dropped to make room, or what a trade did to the standings. Trades within 1.5 of each other count as even. Vetoed trades are left out.</p>
   </section>
@@ -740,7 +787,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     $("reigning").innerHTML = last.year + " champion: <strong>" + esc(champ) + "</strong>" + (MAN[champ] ? " (" + esc(MAN[champ]) + ")" : "");
     $("foot").textContent = "Updated " + new Date(d.updated + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) + ". Data from the league's Yahoo draft and standings pages, the keeper sheet and the commissioner's league emails.";
     initHero();
-    loadMine(); initKeepers(); initHistory(); initBest(); initOffseason(); initTitles(); initRegular(); initStats(); initAwards(); initTrades(); initManagers(); initRace(); initDrafts();
+    loadMine(); initKeepers(); initHistory(); initBest(); initOffseason(); initTitles(); initRegular(); initStats(); initAwards(); initTrades(); initH2H(); initWaivers(); initManagers(); initRace(); initDrafts();
     loadSheet();
     if (location.hash === "#drafts") { $("kt-draft").click(); $("keepers").scrollIntoView(); }
   }
@@ -1605,6 +1652,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       var ip = function (tk) { var x = (mu.extra[tk] || {}).IP; return x != null ? x + " IP" : ""; };
       var hab = function (tk) { var x = (mu.extra[tk] || {})["H/AB"]; return x ? x + " H/AB" : ""; };
       var tag = mu.playoffs ? (mu.consolation ? "Consolation" : "Playoffs") : "";
+      if (mu.status === "midevent" && Math.max(wa, wb) >= RACE.cats.length - 1 && Math.min(wa, wb) === 0) tag = (tag ? tag + " \u00b7 " : "") + '<span class="watch">16-0 watch</span>';
       var mine = rMine(A) || rMine(B);
       return '<li><details class="mu' + (mine ? " mine" : "") + '"' + (k === 0 ? " open" : "") + '><summary>' +
         '<span class="side">' + esc(rName(A)) + "<small>" + esc(rMan(A)) + "</small></span>" +
@@ -1662,6 +1710,118 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
         var up = k ? rows[k - 1].v : null, gap = up != null ? Math.abs(up - x.v) : null;
         var need = gap == null ? "" : gap === 0 ? "Tied" : (catDigits(c) === 3 ? fmtCat(c, gap) : c.rate ? gap.toFixed(2) : String(Math.round(gap) + 1));
         return '<tr><td class="num">' + (k + 1) + "</td><td>" + esc(rName(x.tk)) + '<span class="m-sub">' + esc(rMan(x.tk)) + '</span></td><td class="r num">' + fmtCat(c, x.v) + '</td><td class="r num">' + need + "</td></tr>";
+      }).join("") + "</tbody>";
+  }
+
+  /* Head to head: rivalries and the 16-0 club (data.history, from tools/yoenis_history_build.py) */
+  function myOwner() {
+    var t = store.get("yoenis-team"), last = lastSeason(), i = t ? last.teams.indexOf(t) : -1;
+    return i >= 0 ? last.o[i] : null;
+  }
+  function recPct(m) { var n = m[0] + m[1] + m[2]; return n ? (m[0] + m[2] / 2) / n : 0; }
+  function initH2H() {
+    var H = DATA.history; if (!H || !H.rivals) { $("h2h").hidden = true; return; }
+    var ids = {};
+    Object.keys(H.rivals).forEach(function (k) { k.split("|").forEach(function (id) { ids[id] = 1; }); });
+    var list = Object.keys(ids).filter(function (id) { return who(id); }).sort(function (a, b) { return who(a).localeCompare(who(b)); });
+    $("h-man").innerHTML = list.map(function (id) { return '<option value="' + esc(id) + '">' + esc(who(id)) + "</option>"; }).join("");
+    var mine = myOwner(); if (mine && ids[mine]) $("h-man").value = mine;
+    $("h-man").addEventListener("change", drawRivals);
+    $("h2h-lede").textContent = "Every manager's record against everyone else in " + H.matchups.toLocaleString("en-US") + " matchups since 2013, and every 16-0.";
+    $("h2h").hidden = false;
+    drawRivals(); drawSweeps();
+  }
+  function drawRivals() {
+    var me = $("h-man").value, H = DATA.history, rows = [];
+    Object.keys(H.rivals).forEach(function (k) {
+      var ab = k.split("|"); if (ab.indexOf(me) < 0) return;
+      var r = H.rivals[k], flip = ab[0] !== me, opp = flip ? ab[0] : ab[1];
+      var f = function (x) { return flip ? [x[1], x[0], x[2]] : x.slice(); };
+      var m = f(r.m), po = f(r.po), c = f(r.c), all = [m[0] + po[0], m[1] + po[1], m[2] + po[2]];
+      var last = r.last ? { y: r.last[0], w: r.last[1], s: flip ? [r.last[3], r.last[2], r.last[4]] : [r.last[2], r.last[3], r.last[4]] } : null;
+      rows.push({ opp: opp, all: all, po: po, c: c, n: all[0] + all[1] + all[2], last: last });
+    });
+    rows.sort(function (a, b) { return b.n - a.n || recPct(b.all) - recPct(a.all); });
+    var MIN = 6, rated = rows.filter(function (r) { return r.n >= MIN && who(r.opp); });
+    var worst = rated.slice().sort(function (a, b) { return recPct(a.all) - recPct(b.all); })[0];
+    var best = rated.slice().sort(function (a, b) { return recPct(b.all) - recPct(a.all); })[0];
+    var tot = rows.reduce(function (a, r) { return [a[0] + r.all[0], a[1] + r.all[1], a[2] + r.all[2]]; }, [0, 0, 0]);
+    var rec = function (x) { return x[0] + "-" + x[1] + "-" + x[2]; };
+    $("h-riv-lede").innerHTML = "<b>" + esc(who(me)) + "</b> is " + rec(tot) + " all time." +
+      (best && recPct(best.all) > 0.5 ? " Owns <b>" + esc(who(best.opp)) + "</b> (" + rec(best.all) + ")." : "") +
+      (worst && recPct(worst.all) < 0.5 ? " Can't beat <b>" + esc(who(worst.opp)) + "</b> (" + rec(worst.all) + ")." : "");
+    $("h-riv").innerHTML = '<caption hidden>' + esc(who(me)) + ' rivalries</caption><thead><tr><th scope="col">Against</th><th scope="col" class="r">Record</th><th scope="col" class="r">Playoffs</th><th scope="col" class="r">Cats</th><th scope="col" class="r">Last</th></tr></thead><tbody>' +
+      rows.filter(function (r) { return who(r.opp); }).map(function (r) {
+        var hl = r === best || r === worst;
+        return "<tr" + (hl ? ' class="hl"' : "") + "><td>" + esc(who(r.opp)) + '</td><td class="r num">' + rec(r.all) + '</td><td class="r num">' + (r.po[0] + r.po[1] + r.po[2] ? r.po[0] + "-" + r.po[1] + (r.po[2] ? "-" + r.po[2] : "") : "") +
+          '</td><td class="r num">' + rec(r.c) + '</td><td class="r num">' + (r.last ? r.last.y + " " + (r.last.s[0] > r.last.s[1] ? "W" : r.last.s[0] < r.last.s[1] ? "L" : "T") : "") + "</td></tr>";
+      }).join("") + "</tbody>";
+  }
+  function swRow(r) {
+    var s = SEASONS[r.y];
+    return '<li><span class="when">' + r.y + ", Week " + r.w + (r.po === 1 ? '<span class="po">Playoffs</span>' : "") + '</span><span class="who"><b>' + esc(teamMan(s, r.a)) + "</b> over " + esc(teamMan(s, r.b)) +
+      '</span><span class="sc">' + r.s[0] + "-" + r.s[1] + (r.s[2] ? "-" + r.s[2] : "") + "</span></li>";
+  }
+  function drawSweeps() {
+    var H = DATA.history, sw = H.sweeps || [], near = H.near || [];
+    var cnt = function (f) { var o = {}; sw.forEach(function (r) { var id = SEASONS[r.y].o[f(r)]; o[id] = (o[id] || 0) + 1; }); return o; };
+    // Everyone tied for the most, named together ("Dan and Ivan T")
+    var top = function (o) {
+      var hi = Math.max.apply(null, Object.keys(o).map(function (k) { return o[k]; }).concat([0]));
+      var ks = Object.keys(o).filter(function (k) { return o[k] === hi && who(k); });
+      return hi > 1 && ks.length ? { n: hi, names: ks.map(who).join(" and ").replace(/ and (?=.* and )/g, ", ") } : null;
+    };
+    var by = cnt(function (r) { return r.a; }), of = cnt(function (r) { return r.b; }), mb = top(by), mo = top(of);
+    var seasons = {}; sw.forEach(function (r) { seasons[r.y] = 1; });
+    $("h-sw-lede").innerHTML = sw.length
+      ? "<b>" + sw.length + "</b> clean sweeps in " + H.matchups.toLocaleString("en-US") + " matchups since 2013, about one every " + Math.round(H.matchups / sw.length) + " matchups. " +
+        (mb ? esc(mb.names) + (/ and /.test(mb.names) ? " have" : " has") + " the most (" + mb.n + (/ and /.test(mb.names) ? " each" : "") + "). " : "") +
+        (mo ? esc(mo.names) + (/ and /.test(mo.names) ? " have" : " has") + " been swept the most (" + mo.n + (/ and /.test(mo.names) ? " times each" : " times") + "). " : "") +
+        (sw[0] ? "The latest: " + esc(teamMan(SEASONS[sw[0].y], sw[0].a)) + ", " + sw[0].y + "." : "")
+      : "No team has won all 16 categories in a week yet.";
+    $("h-sw").innerHTML = sw.map(swRow).join("");
+    $("h-near-s").textContent = near.length + " near misses: 15-1 or 15-0-1";
+    $("h-near").innerHTML = near.map(swRow).join("");
+    $("h-near-f").hidden = !near.length;
+  }
+
+  /* Waiver wire hall of fame (data.history.pickups and pickTeams) */
+  var WW = { view: "best", year: "" };
+  function initWaivers() {
+    var H = DATA.history; if (!H || !H.pickups) { $("trt-ww").hidden = true; return; }
+    var ys = {}; H.pickups.forEach(function (p) { ys[p.y] = 1; });
+    $("ww-year").innerHTML = '<option value="">All time</option>' + Object.keys(ys).sort().reverse().map(function (y) { return "<option>" + y + "</option>"; }).join("");
+    $("ww-year").addEventListener("change", function () { WW.year = this.value; drawWaivers(); });
+    $("ww-view").addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-v]"); if (!b) return;
+      WW.view = b.getAttribute("data-v");
+      [].forEach.call(this.querySelectorAll("button"), function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      drawWaivers();
+    });
+    var b = H.pickups[0];
+    if (b) $("ww-lede").innerHTML = "The best pickup ever: <b>" + esc(b.p) + "</b>, picked up by " + esc(teamMan(SEASONS[b.y], b.t)) + " on " + esc(longDate(b.d)) +
+      (b.k ? " and kept " + b.k + (b.k === 1 ? " more season" : " more seasons") : "") + ".";
+    drawWaivers();
+  }
+  function drawWaivers() {
+    var H = DATA.history;
+    $("ww-year-f").hidden = WW.view !== "best";
+    if (WW.view === "man") {
+      var rows = Object.keys(H.pickTeams).filter(function (id) { return who(id); }).map(function (id) { return { id: id, r: H.pickTeams[id] }; })
+        .sort(function (a, b) { return b.r[1] - a.r[1]; });
+      $("ww-t").innerHTML = '<caption hidden>Pickups by manager</caption><thead><tr><th scope="col">Rank</th><th scope="col">Manager</th><th scope="col" class="r">Pickups</th><th scope="col" class="r">Value</th></tr></thead><tbody>' +
+        rows.map(function (x, i) {
+          return '<tr><td class="num">' + (i + 1) + '</td><td class="pl">' + esc(who(x.id)) + '<span class="m-sub">Best: ' + esc(x.r[2][0]) + ", " + x.r[2][1] + " (" + fmtV(x.r[2][2]) + ')</span></td><td class="r num">' + x.r[0].toLocaleString("en-US") + '</td><td class="r num">' + fmtV(x.r[1]) + "</td></tr>";
+        }).join("") + "</tbody>";
+      return;
+    }
+    var list = H.pickups.filter(function (p) { return !WW.year || String(p.y) === WW.year; }).slice(0, WW.year ? 10 : 25);
+    $("ww-t").innerHTML = '<caption hidden>Best pickups</caption><thead><tr><th scope="col">Rank</th><th scope="col">Player</th><th scope="col" class="r">That year</th><th scope="col" class="r">Kept</th><th scope="col" class="r">Value</th></tr></thead><tbody>' +
+      list.map(function (p, i) {
+        var s = SEASONS[p.y];
+        return '<tr><td class="num">' + (i + 1) + '</td><td class="pl">' + esc(p.p) + '<span class="m-sub">' + esc(teamMan(s, p.t)) + ", " + esc(new Date(p.d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })) +
+          (p.via === "w" ? ", off waivers" : "") + '</span></td><td class="r num">' + fmtV(p.now) + '</td><td class="r num">' + (p.k ? fmtV(p.kept) + '<span class="m-sub">' + p.k + (p.k === 1 ? " yr" : " yrs") + "</span>" : "") +
+          '</td><td class="r num"><b>' + fmtV(p.now + p.kept) + "</b></td></tr>";
       }).join("") + "</tbody>";
   }
 
