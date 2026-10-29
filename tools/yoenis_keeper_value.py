@@ -45,9 +45,12 @@ def ip(x):            # 85.2 means 85 and 2/3 innings
     return whole + round((x - whole) * 10) / 3
 
 
-def season_values(y):
+def season_model(y):
+    """The season's scorers, (hitter, pitcher): each takes a stat row and a share of the season f
+    (1 for a full season) and returns his value. For part of a season, a typical rostered player's
+    totals are scaled by f, so a player producing at an average rate for f of a season scores 0 and
+    a full season scores exactly what season_values gives."""
     m = json.loads((MLB / f"{y}.json").read_text(encoding="utf-8"))
-    out = {}
     hit = sorted(m["hitting"], key=lambda h: -h["pa"])[:POOL_B]
     # rostered staffs carry closers and setup men too: the top starters by innings plus the top relievers by saves and holds
     starters = sorted(m["pitching"], key=lambda p: -ip(p["ip"]))[:POOL_P - POOL_RP]
@@ -69,9 +72,14 @@ def season_values(y):
     def scorer(pool, cats):
         fns = [(c if callable(c) else (lambda r, c=c: r[c]), s) for c, s in cats]
         ms = [(statistics.mean(f(r) for r in pool), statistics.pstdev(f(r) for r in pool) or 1, s) for f, s in fns]
-        return lambda r: sum(s * (f(r) - mu) / sd for (f, _), (mu, sd, s) in zip(fns, ms))
+        return lambda r, share=1: sum(s * (f(r) - mu * share) / sd for (f, _), (mu, sd, s) in zip(fns, ms))
 
-    vb, vp = scorer(hit, bcats), scorer(pit, pcats)
+    return scorer(hit, bcats), scorer(pit, pcats), m
+
+
+def season_values(y):
+    vb, vp, m = season_model(y)
+    out = {}
     for h in m["hitting"]:
         k = (fold(h["name"]), "b")
         if k not in out or h["pa"] > out[k]["row"]["pa"]:

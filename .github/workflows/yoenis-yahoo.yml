@@ -15,6 +15,8 @@ on:
       - tools/yoenis_race_pull.py
       - tools/yoenis_history_pull.py
       - tools/yoenis_history_build.py
+      - tools/yoenis_tenure.py
+      - tools/yoenis_slices_pull.py
       - .github/workflows/yoenis-yahoo.yml
   schedule:
     - cron: "23 14 * 10-12,1-3 1"   # 10:23am ET Mondays, October through March
@@ -51,6 +53,9 @@ jobs:
           python3 tools/yoenis_trades_pull.py
           python3 tools/yoenis_race_pull.py
           python3 tools/yoenis_history_pull.py
+
+      - name: Total each trade and pickup window from MLB game logs
+        run: python3 tools/yoenis_slices_pull.py
 
       - name: Check the 2027 keeper costs
         run: |
