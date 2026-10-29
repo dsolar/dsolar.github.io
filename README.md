@@ -64,7 +64,7 @@ dsolar.github.io/
   tools/journeyman_supabase.sql  Journeyman's group board (already set up; safe to run again)
   tools/guess_the_pick_supabase.sql  the daily ten's group board (already set up; safe to run again)
   tools/franchise_supabase.sql  The 31st Franchise's GM leaderboard (already set up; safe to run again)
-  tools/scouting_reports.json  Scouting Report's reports, one per prospect (edit these; see below)
+  tools/scouting_quotes.json   Scouting Report's real pre-draft quotes, one per prospect, with sources (see below)
   tools/scouting_report_build.py, scouting_report_check.js  rebuild and check scouting-report/data.js
   tools/scouting_report_supabase.sql  Scouting Report's daily board (already set up; safe to run again)
   tools/win_probability_check.js  checks Win Probability's data and grading (node tools/win_probability_check.js)
@@ -396,13 +396,13 @@ A drafted player always costs his 2026 draft round (whoever drafted him, however
 
 ## Scouting Report: adding prospects
 
-The reports live in `tools/scouting_reports.json`, one entry per prospect: his `id` (Pro Football Reference for the NFL, Basketball Reference for the NBA, the same ids Journeyman's downloads use), `lg`, `angle` (`pan` or `glow`), the `report` and a one-line `projection`. Everything else on the file (draft slot, team, school, size, career numbers) comes from the data, so it's always right.
+The quotes live in `tools/scouting_quotes.json`, one entry per prospect: his `id` (Pro Football Reference for the NFL, Basketball Reference for the NBA, the same ids Journeyman's downloads use), `lg`, the exact `quote`, `who` said it, the `outlet`, `when`, the source `url`, and `angle` (`pan` or `glow`). Every quote is real, said before his draft, 25 words or fewer, and checked word for word against the linked page. Never add one from memory. Everything else on the file (draft slot, team, school, size, career numbers, who went later at his position) comes from the data.
 
-1. Add or edit entries in `tools/scouting_reports.json`. Keep reports 2 to 4 sentences, no names, schools or teams in them, and no em dashes.
+1. Add an entry to `tools/scouting_quotes.json`. Trim the quote with "..." at the start or end if it names him or his school; never in the middle.
 2. `python3 tools/journeyman_fetch.py /tmp/jm` (skip it if you have a recent download), then `python3 tools/scouting_report_build.py --src /tmp/jm` and `node tools/scouting_report_check.js`.
 3. Bump `data.js?v=` in `scouting-report/index.html`.
 
-The stamp works itself out: the scouts "whiffed" when they panned a player who turned into a steal or a star, or praised one who busted. Drafts from 2000 to 2021 only, so every career has had time to happen. The daily five walks the whole folder in a seeded order before anyone repeats.
+The stamp works itself out: the experts "whiffed" when they panned a player who turned into a steal or a star, or praised one who busted. Drafts from 2000 to 2021 only, so every career has had time to happen. The daily five walks the whole folder in a seeded order before anyone repeats.
 
 ## Wipe Yoenis: trade history
 

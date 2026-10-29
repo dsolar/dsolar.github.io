@@ -1,4 +1,4 @@
-"""Builds scouting-report/data.js: every prospect in Scouting Report, his pre-draft report and how it really went.
+"""Builds scouting-report/data.js: every prospect in Scouting Report, a real pre-draft quote about him and how it went.
 
 Run it from the repo root, after downloading Journeyman's sources:
   python3 tools/journeyman_fetch.py DIR
@@ -6,9 +6,10 @@ Run it from the repo root, after downloading Journeyman's sources:
   node tools/scouting_report_check.js
 
 Two inputs:
-  tools/scouting_reports.json   the reports (written by hand, one per prospect): id, league, angle (pan or glow),
-                                the report and a one-line projection. Add a prospect by adding an entry; the id is
-                                his Pro Football Reference id (NFL) or Basketball Reference id (NBA).
+  tools/scouting_quotes.json    the quotes, one per prospect: id, league, the exact quote, who said it, the outlet,
+                                when, the source link, and angle (pan or glow). Every quote is real, short, from before
+                                his draft and checked against the linked page. Add a prospect by adding an entry; the id
+                                is his Pro Football Reference id (NFL) or Basketball Reference id (NBA).
   DIR                           the nflverse and basketball-reference downloads, for everything that's a fact:
                                 draft slot, team, college, size and the career numbers shown at the reveal.
 The kind (steal, bust or star) is worked out from the career, so the reveal always matches the numbers:
@@ -17,11 +18,19 @@ The kind (steal, bust or star) is worked out from the career, so the reveal alwa
   star   a top pick who did
 Careers must be at least five years old (drafted 2021 or before) so a verdict means something.
 """
-import argparse, csv, json, os, re
+import argparse, csv, json, os, re, sys
 from collections import Counter, defaultdict
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-REPORTS = os.path.join(ROOT, "tools", "scouting_reports.json")
+REPORTS = os.path.join(ROOT, "tools", "scouting_quotes.json")
+sys.path.insert(0, os.path.join(ROOT, "tools"))
+import journeyman_build as jb   # noqa: E402  team colors, shared with Journeyman
+PFR_TO_JB = {"GNB": "GB", "KAN": "KC", "NWE": "NE", "NOR": "NO", "SFO": "SF", "TAM": "TB", "LVR": "LV", "SDG": "SD", "LAR": "LA"}
+GROUP = {"QB": "quarterbacks", "RB": "running backs", "FB": "running backs", "WR": "receivers", "TE": "tight ends",
+         "T": "offensive linemen", "OT": "offensive linemen", "G": "offensive linemen", "OG": "offensive linemen", "C": "offensive linemen",
+         "OL": "offensive linemen", "DE": "pass rushers", "EDGE": "pass rushers", "OLB": "linebackers", "DT": "defensive tackles",
+         "NT": "defensive tackles", "DL": "defensive linemen", "LB": "linebackers", "ILB": "linebackers", "CB": "cornerbacks",
+         "DB": "defensive backs", "S": "safeties", "SAF": "safeties", "FS": "safeties", "SS": "safeties"}
 OUT = os.path.join(ROOT, "scouting-report", "data.js")
 
 NFL_TEAMS = {"ARI": "Arizona Cardinals", "PHO": "Arizona Cardinals", "ATL": "Atlanta Falcons", "BAL": "Baltimore Ravens", "BUF": "Buffalo Bills",
@@ -61,9 +70,29 @@ def feet(inches):
     return f"{inches // 12}-{inches % 12}" if inches else ""
 
 
+def nfl_context(me, picks, kind):
+    """What the rest of his draft says about the pick: who went later and did better, or how many went first."""
+    grp = GROUP.get(me["position"])
+    if not grp:
+        return ""
+    pk, val = int(me["pick"]), num(me["w_av"])
+    same = [r for r in picks if GROUP.get(r["position"]) == grp and r["pfr_player_id"] != me["pfr_player_id"]]
+    later = sorted([r for r in same if int(r["pick"]) > pk and num(r["w_av"]) > max(val, 30)], key=lambda r: -num(r["w_av"]))[:2]
+    earlier = sorted([r for r in same if int(r["pick"]) < pk], key=lambda r: int(r["pick"]))
+    if kind == "steal" and earlier:
+        return f"{len(earlier)} {grp} went before him, including {earlier[0]['pfr_player_name']} at pick {earlier[0]['pick']}."
+    if later:
+        return "Went later at his position: " + " and ".join(f"{r['pfr_player_name']} (pick {r['pick']})" for r in later) + "."
+    if kind == "star" and all(num(r["w_av"]) <= val for r in same):
+        return f"The best career of any of the {me['season']} draft's {grp}."
+    return ""
+
+
 def nfl(src, want):
     players = {p["pfr_id"]: p for p in read(os.path.join(src, "nfl_players.csv")) if p.get("pfr_id")}
-    out = {}
+    out, by_year = {}, defaultdict(list)
+    for r in read(os.path.join(src, "nfl_draft_picks.csv")):
+        by_year[int(r["season"])].append(r)
     for r in read(os.path.join(src, "nfl_draft_picks.csv")):
         pid = r["pfr_player_id"]
         if pid not in want:
@@ -95,15 +124,36 @@ def nfl(src, want):
             kind = "bust"
         else:
             kind = "star" if pb >= 3 or wav >= 70 else "bust" if pk <= 20 else "steal"
-        out[pid] = {"lg": "nfl", "n": r["pfr_player_name"], "y": y, "rd": int(r["round"]), "pk": pk,
+        jbc = jb.NFL.get(PFR_TO_JB.get(r["team"], r["team"]))
+        out[pid] = {"lg": "nfl", "n": r["pfr_player_name"], "y": y, "rd": int(r["round"]), "pk": pk, "tc": [jbc[2], jbc[3]] if jbc else ["#333", "#999"],
+                    "ctx": nfl_context(r, by_year[y], kind),
                     "tm": NFL_TEAMS.get(r["team"], r["team"]), "col": r["college"], "pos": NFL_POS.get(pos, pos),
                     "size": (f"{feet(h)}, {int(w)} lb" if h and w else ""), "g": g, "stat": stat, "hon": honors,
                     "kind": kind, "v": round(wav)}
     return out
 
 
+def nba_context(me, picks, ws, kind):
+    pk, val = int(me["overall_pick"]), ws[me["player_id"]]
+    others = [r for r in picks if r["player_id"] != me["player_id"]]
+    later = sorted([r for r in others if int(r["overall_pick"]) > pk and ws[r["player_id"]] > max(val, 25)], key=lambda r: -ws[r["player_id"]])[:2]
+    if kind == "steal":
+        first = min(others, key=lambda r: int(r["overall_pick"]))
+        return f"{pk - 1} players went before him, including {first['player']} at No. 1."
+    if later:
+        return "Went later in his draft: " + " and ".join(f"{r['player']} (pick {r['overall_pick']})" for r in later) + "."
+    if kind == "star" and all(ws[r["player_id"]] <= val for r in others):
+        return f"The best career in the {me['season']} draft."
+    return ""
+
+
 def nba(src, want):
-    draft = {r["player_id"]: r for r in read(os.path.join(src, "Draft Pick History.csv")) if r["lg"] == "NBA" and r["player_id"] in want}
+    every = [r for r in read(os.path.join(src, "Draft Pick History.csv")) if r["lg"] == "NBA" and r["overall_pick"].isdigit()]
+    draft = {r["player_id"]: r for r in every if r["player_id"] in want}
+    classes = defaultdict(list)
+    for r in every:
+        classes[int(r["season"])].append(r)
+    want_ws = {r["player_id"] for r in every if 2000 <= int(r["season"]) <= 2021}
     career = {r["player_id"]: r for r in read(os.path.join(src, "Player Career Info.csv"))}
     names = {}
     for r in read(os.path.join(src, "Team Abbrev.csv")):
@@ -111,7 +161,7 @@ def nba(src, want):
             names[(int(r["season"]), r["abbreviation"])] = r["team"]
     tot, ws = defaultdict(Counter), defaultdict(float)
     for fname in ("Player Totals.csv", "Advanced.csv"):
-        rows = [r for r in read(os.path.join(src, fname)) if r["lg"] == "NBA" and r["player_id"] in want]
+        rows = [r for r in read(os.path.join(src, fname)) if r["lg"] == "NBA" and r["player_id"] in want_ws]
         multi = {(r["player_id"], r["season"]) for r in rows if re.fullmatch(r"\dTM|TOT", r["team"])}
         for r in rows:
             if (r["player_id"], r["season"]) in multi and not re.fullmatch(r"\dTM|TOT", r["team"]):
@@ -134,7 +184,9 @@ def nba(src, want):
         kind = "steal" if pk >= 14 and (w >= 55 or a >= 2) else "bust" if pk <= 6 and w <= 14 else "star" if a >= 3 or w >= 60 else "bust" if pk <= 10 else "steal"
         pos = " / ".join(dict.fromkeys(NBA_POS.get(p, p) for p in re.split(r"[-/]", c.get("pos", "")) if p and p != "NA"))
         col = d.get("college") or ""
-        out[pid] = {"lg": "nba", "n": d["player"], "y": y, "rd": int(num(d["round"])), "pk": pk,
+        jbc = jb.NBA.get(d["tm"])
+        out[pid] = {"lg": "nba", "n": d["player"], "y": y, "rd": int(num(d["round"])), "pk": pk, "tc": [jbc[1], jbc[2]] if jbc else ["#333", "#999"],
+                    "ctx": nba_context(d, classes[y], ws, kind),
                     "tm": names.get((y + 1, d["tm"])) or names.get((y, d["tm"])) or d["tm"],
                     "col": col if col and col != "NA" else "No college (international)", "pos": pos,
                     "size": (f"{feet(num(c.get('ht_in_in')))}, {int(num(c.get('wt')))} lb" if num(c.get("ht_in_in")) else ""),
@@ -156,11 +208,12 @@ def main():
             missing.append(r["id"]); continue
         # The scouts were right when they panned a bust or praised a star or a steal
         right = (r["angle"] == "pan") == (f["kind"] == "bust")
-        rows.append({**f, "id": r["id"], "angle": r["angle"], "rep": r["report"], "proj": r["projection"], "right": right})
+        rows.append({**f, "id": r["id"], "angle": r["angle"], "q": r["quote"], "who": r["who"], "outlet": r["outlet"],
+                     "when": r["when"], "url": r["url"], "right": right})
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8") as fh:
-        fh.write("/* Scouting Report: every prospect, his report and his real career. Built by tools/scouting_report_build.py "
-                 "from tools/scouting_reports.json; don't edit by hand. */\nwindow.SR_DATA = ")
+        fh.write("/* Scouting Report: every prospect, a real pre-draft quote about him and his real career. Built by tools/scouting_report_build.py "
+                 "from tools/scouting_quotes.json; don't edit by hand. */\nwindow.SR_DATA = ")
         json.dump(rows, fh, separators=(",", ":"), ensure_ascii=False)
         fh.write(";\n")
     k = Counter((x["lg"], x["kind"], "right" if x["right"] else "wrong") for x in rows)

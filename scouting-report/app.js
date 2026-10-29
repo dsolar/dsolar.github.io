@@ -1,4 +1,4 @@
-/* Scouting Report: screens, the guess box and saved progress. The prospects and their reports are in data.js
+/* Scouting Report: screens, the guess box and saved progress. The prospects and their real pre-draft quotes are in data.js
    (built by tools/scouting_report_build.py). Name matching, the Boston date and seeded random numbers come from
    Guess the Pick's engine, and the guess box knows every player in Guess the Pick's names.js, so a suggestion
    never gives the answer away.
@@ -117,8 +117,12 @@
   function drawFile() {
     var p = DATA[cur.i], open = cur.done;
     $("folder").setAttribute("data-tab", "Prospect file · " + LEAGUE[p.lg]);
-    $("file-lg").textContent = LEAGUE[p.lg] + " draft";
-    $("file-no").textContent = "File " + String(1000 + (p.id.length * 37 + p.y) % 9000);
+    $("file-lg").textContent = LEAGUE[p.lg];
+    $("file-no").textContent = "file no. " + String(1000 + (p.id.length * 37 + p.y) % 9000);
+    $("quote").textContent = p.q + "\u201D";
+    // Who said it shows from the start; when (which gives away the class) waits for the bar or the reveal
+    var when = open || cur.used.indexOf("cls") >= 0 ? p.when : "";
+    $("cite").innerHTML = esc(p.who) + "<small>" + esc(p.outlet) + (when ? ", " + esc(when) : "") + "</small>";
     var html = "<dt>Name</dt><dd>" + (open ? '<span class="shown">' + esc(p.n) + "</span>" : '<span class="name-bar" aria-label="Hidden"></span>') + "</dd>";
     CLUES.forEach(function (c) {
       var shown = open || cur.used.indexOf(c.id) >= 0, text = c.text(p) || "Unknown";
@@ -127,12 +131,10 @@
     });
     html += "<dt>Drafted</dt><dd>" + (open ? '<span class="shown">' + esc(drafted(p)) + "</span>" : '<span class="name-bar" style="width:min(11rem,50%)"></span>') + "</dd>";
     $("fields").innerHTML = html;
-    $("report").textContent = p.rep;
-    $("proj").textContent = p.proj;
-    $("stamp").innerHTML = open ? '<div class="stamp ' + (p.right ? "right" : "wrong") + '">' + (p.right ? "Scouts nailed it" : "Scouts whiffed") + "<small>" + kindLine(p) + "</small></div>" : "";
+    $("stamp").innerHTML = open ? '<div class="stamp ' + (p.right ? "right" : "wrong") + '">' + (p.right ? "Nailed it" : "Whiffed") + "<small>" + kindLine(p) + "</small></div>" : "";
   }
   function drafted(p) { return p.y + ", " + (p.lg === "nfl" ? "round " + p.rd + ", " : "") + "pick " + p.pk + " by the " + p.tm; }
-  function kindLine(p) { return p.kind === "steal" ? "Steal" : p.kind === "bust" ? "Bust" : "As advertised"; }
+  function kindLine(p) { return p.kind === "steal" ? "He was a steal" : p.kind === "bust" ? "He was a bust" : p.angle === "glow" ? "Star, as advertised" : "He was a star"; }
 
   // ---- Guessing
   function showSugg(text) {
@@ -167,25 +169,25 @@
     } else store.set(dkey(), game);
     $("ask").hidden = true;
     drawFile(); hud();
-    var hon = p.hon && p.hon.length ? p.hon.join(" · ") : "None";
-    var w = $("went");
+    var hon = p.hon && p.hon.length ? p.hon.join(", ") : "None";
+    var w = $("went"), c1 = p.tc ? p.tc[0] : "#333", c2 = p.tc ? p.tc[1] : "#999";
     w.hidden = false;
-    w.innerHTML = "<h3>" + esc(p.n) + "</h3><p class=\"drafted\">" + esc(drafted(p)) + "</p>"
-      + "<dl><div><dt>Games</dt><dd>" + p.g.toLocaleString() + "</dd></div><div><dt>Career</dt><dd>" + esc(p.stat) + "</dd></div><div><dt>Honors</dt><dd>" + esc(hon) + "</dd></div></dl>"
-      + '<p class="pts">' + (gaveUp ? "The file's open. 0 points." : "+" + s + " point" + (s === 1 ? "" : "s") + ".") + " " + verdict(p) + "</p>"
-      + '<div class="next-row"><button class="btn" type="button" id="next">' + (lastOne() ? "See how you did" : "Next file") + "</button></div>";
+    w.innerHTML = '<article class="card"><div class="card-band' + (light(c1) ? " light" : "") + '" style="--t1:' + esc(c1) + ";--t2:" + esc(c2) + '">'
+      + esc(p.y + " draft" + (p.lg === "nfl" ? ", round " + p.rd : "") + ", pick " + p.pk) + "<b>" + esc(p.tm) + "</b></div>"
+      + '<div class="card-body"><h3>' + esc(p.n) + "</h3>"
+      + '<dl class="facts"><div><dt>Games</dt><dd>' + p.g.toLocaleString() + "</dd></div><div><dt>Career</dt><dd>" + esc(p.stat) + "</dd></div><div><dt>Honors</dt><dd>" + esc(hon) + "</dd></div></dl>"
+      + (p.ctx ? '<p class="ctx">' + esc(p.ctx) + "</p>" : "")
+      + '<div class="foot"><span class="pts">' + (s ? "+" + s : "0") + " point" + (s === 1 ? "" : "s") + '</span><span class="src">Quote: <a href="' + esc(p.url) + '" target="_blank" rel="noopener">' + esc(p.who) + ", " + esc(p.outlet) + "</a></span></div>"
+      + '</div></article><div class="next-row"><button class="btn" type="button" id="next">' + (lastOne() ? "See how you did" : "Next file") + "</button></div>";
     $("next").onclick = next;
     $("next").focus({ preventScroll: true });
     w.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }
-  function lastOne() { return mode === "daily" ? game.results.length >= DAILY : game.misses >= LIVES; }
-  function verdict(p) {
-    if (p.kind === "steal") return p.right ? "The scouts loved him and 31 teams still let him slide." : "Picked " + ordinalish(p.pk) + ". The scouts would like this one back.";
-    if (p.kind === "bust") return p.right ? "Every red flag on the file came true." : "The report was a love letter. The career was not.";
-    return p.right ? "Exactly as advertised." : "They doubted him. He did not care.";
+  function light(hex) {
+    var h = String(hex || "").replace("#", ""); if (h.length < 6) return false;
+    return 0.299 * parseInt(h.slice(0, 2), 16) + 0.587 * parseInt(h.slice(2, 4), 16) + 0.114 * parseInt(h.slice(4, 6), 16) > 170;
   }
-  function ordinalish(n) { return n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : ({ 1: "st", 2: "nd", 3: "rd" }[n % 10] || "th")); }
-
+  function lastOne() { return mode === "daily" ? game.results.length >= DAILY : game.misses >= LIVES; }
   // ---- Finished
   function finish() {
     show("done");
