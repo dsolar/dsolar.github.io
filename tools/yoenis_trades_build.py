@@ -223,6 +223,7 @@ def main():
         print("No change.")
         return
     data["tradeHistory"] = hist
+    data["updated"] = date.today().isoformat()  # the page footer's "Updated" date
     DATA.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"Wrote {len(out)} trades ({sum(1 for t in out if t.get('off'))} offseason, {vetoed} vetoed left out, "
           f"{sum(1 for t in out if t.get('est'))} estimated) to {DATA}.")

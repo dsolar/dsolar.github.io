@@ -135,6 +135,7 @@ def main():
         print("No change.")
         return
     data["history"] = hist
+    data["updated"] = date.today().isoformat()  # the page footer's "Updated" date
     DATA.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"{len(sweeps)} sweeps, {len(near)} near misses, {len(rivals)} rivalries, {len(pickups)} pickups with value "
           f"({len(top)} kept).")

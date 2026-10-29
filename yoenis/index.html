@@ -182,7 +182,8 @@ select{padding-right:2rem}
 .mus>li{border-bottom:1px solid var(--rule)}
 .mu summary{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:.6rem;align-items:center;padding:.7rem 0;cursor:pointer;list-style:none;min-height:44px}
 .mu summary::-webkit-details-marker{display:none}
-.mu .side{font-weight:600;overflow-wrap:anywhere}
+.mu .side{font-weight:600;overflow-wrap:break-word;min-width:0}
+@media (max-width:480px){.mu .side{font-size:.875rem}.mu .score{font-size:1rem}}
 .mu .side small{display:block;font-weight:400;font-size:.78rem;color:var(--muted)}
 .mu .side.b{text-align:right}
 .mu .score{font:700 1.15rem/1 var(--f-sign);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:center}
@@ -217,8 +218,11 @@ select{padding-right:2rem}
 .t-champ{padding-top:.1rem}
 .t-open{padding-top:.25rem}
 .t-champ{font-weight:600;min-width:0;overflow-wrap:anywhere}
-.t-rest{display:block;font-size:.8125rem;color:var(--muted);font-weight:400}
+.t-rest{display:grid;grid-template-columns:4.6rem minmax(0,1fr);font-size:.8125rem;color:var(--muted);font-weight:400}
+.t-rest>:last-child{overflow-wrap:anywhere}
 .t-rest+.t-rest{margin-top:.05rem}
+.titles.short>li:nth-child(n+7){display:none}
+.more-seasons{margin-top:.8rem}
 .t-k{display:inline-block;min-width:4.6rem}
 .t-open{font-size:.8125rem;color:var(--muted);white-space:nowrap}
 .t-open::after{content:"";display:inline-block;width:.45rem;height:.45rem;margin-left:.4rem;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:translateY(-.15rem) rotate(45deg);transition:transform .15s}
@@ -248,7 +252,11 @@ details[open] .t-open::after{transform:translateY(.05rem) rotate(-135deg)}
 @media (max-width:480px){.trade-sides{grid-template-columns:1fr}}
 .trade-sides .pl{display:flex;justify-content:space-between;gap:.6rem;font-size:.875rem}
 .trade-sides .pl i{font-style:normal;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
-.trade-sides .tot{display:flex;justify-content:space-between;gap:.6rem;margin-top:.2rem;padding-top:.2rem;border-top:1px dashed var(--rule);font-size:.8125rem;font-weight:600;font-variant-numeric:tabular-nums}
+.trade-sides .sh{display:flex;align-items:baseline;gap:.5rem;margin-bottom:.1rem}
+.trade-sides .sh b{flex:1;min-width:0}
+.trade-sides .sh .tot{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.trade-sides .grade{margin:0 .4rem 0 0}
+@media (max-width:480px){.trade-sides{gap:.55rem}}
 .grade{display:inline-block;min-width:1.9rem;margin-left:.45rem;padding:.06rem .3rem;border-radius:2px;border:1px solid var(--monster);font-size:.75rem;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;vertical-align:.1em;cursor:help}
 .grade.g-a,.grade.g-b{background:var(--monster);color:var(--chalk)}
 .grade.g-c{color:var(--ink);border-color:var(--rule)}
@@ -319,6 +327,7 @@ input.who{width:9rem}
 @media (max-width:640px){.best-grid{grid-template-columns:1fr;gap:1.25rem}}
 .koy{display:inline-block;margin-left:.35rem;padding:.05rem .35rem;border-radius:2px;background:var(--monster);color:var(--chalk);font-size:.6875rem;font-weight:600;vertical-align:.1rem;white-space:nowrap}
 .fine{font-size:.75rem;line-height:1.5;color:var(--muted);max-width:44rem;margin:2rem 0 .75rem}
+#news{margin-top:0}
 .kh-partial{margin:1rem 0 0;max-width:42rem;font-size:.875rem;color:var(--muted)}
 .yh-links{list-style:none;margin:.6rem 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));gap:.35rem 1.5rem}
 .yh-links a{color:var(--ink)}
@@ -518,13 +527,13 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     <a href="#keepers">Keepers</a>
     <a href="#offseason">Offseason</a>
     <a href="#champions">Standings</a>
-    <a href="#race">Race</a>
-    <a href="#stats">Stats</a>
-    <a href="#awards">Awards</a>
-    <a href="#h2h">Head to head</a>
     <a href="#trades">Trades</a>
+    <a href="#awards">Awards</a>
+    <a href="#stats">Stats</a>
     <a href="#managers">Managers</a>
     <a href="#graveyard">Graveyard</a>
+    <a href="#h2h">Head to head</a>
+    <a href="#race">Race</a>
     <a href="#rules">Rules</a>
   </nav>
 
@@ -595,77 +604,6 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       <p class="note">Ordered by winning percentage, with ties counting as half a win and equal percentages broken by wins; T marks a tie Yahoo settled some other way. The top eight make the playoffs (the line under eighth). GB is category games behind the leader. Under the current payouts, the best regular-season record wins $500 and second best $300.</p></div>
   </section>
 
-  <section id="race" aria-labelledby="race-title" hidden>
-    <div class="section-head">
-      <h2 id="race-title">The race</h2>
-      <p id="race-lede">Every week's matchups category by category, the standings as they stood each week, and where every team ranks in each category.</p>
-    </div>
-    <div class="seg tabs" role="tablist" aria-label="The race" data-remember="yoenis-rtab"><button type="button" role="tab" id="rt-mu" aria-controls="rp-mu" aria-selected="true">Matchups</button><button type="button" role="tab" id="rt-st" aria-controls="rp-st" aria-selected="false" tabindex="-1">Standings by week</button><button type="button" role="tab" id="rt-cat" aria-controls="rp-cat" aria-selected="false" tabindex="-1">By category</button></div>
-    <div class="controls">
-      <label class="field">Week<select id="r-week"></select></label>
-      <label class="field" id="r-cat-f" hidden>Category<select id="r-cat"></select></label>
-    </div>
-    <div role="tabpanel" id="rp-mu" aria-labelledby="rt-mu"><p class="note" id="r-mu-note"></p><ol class="mus" id="r-mus"></ol></div>
-    <div role="tabpanel" id="rp-st" aria-labelledby="rt-st" hidden>
-      <div class="tbl-wrap" tabindex="0" role="region" aria-label="Standings by week"><table class="standings" id="r-st"></table></div>
-      <p class="note" id="r-st-note"></p>
-    </div>
-    <div role="tabpanel" id="rp-cat" aria-labelledby="rt-cat" hidden>
-      <div class="tbl-wrap" tabindex="0" role="region" aria-label="Category ranks"><table class="standings" id="r-cat-t"></table></div>
-      <p class="note">Season totals through the latest Yahoo update. "To pass" is how much a team needs to catch the team just above it.</p>
-    </div>
-    <p class="note" id="r-upd"></p>
-  </section>
-
-  <section id="stats" aria-labelledby="stats-title">
-    <div class="section-head">
-      <h2 id="stats-title">Team stats</h2>
-      <p>Every team's season totals, how the year would have ended as a roto league (16 points for first in a category, down to 1 for last), and the best single seasons ever.</p>
-    </div>
-    <div class="controls">
-      <label class="field" id="s-year-field">Year<select id="s-year"></select></label>
-      <div class="field">Show<span class="seg" role="group" aria-label="Show" id="s-view"><button type="button" data-v="roto" aria-pressed="true">Roto</button><button type="button" data-v="b" aria-pressed="false">Batting</button><button type="button" data-v="p" aria-pressed="false">Pitching</button><button type="button" data-v="rec" aria-pressed="false">Records</button></span></div>
-    </div>
-    <p class="first-pick" id="s-sum"></p>
-    <div class="tbl-wrap" tabindex="0" role="region" aria-label="Team stats table"><table class="stats" id="s-table"></table></div>
-    <div id="s-rec" hidden>
-      <table class="records" id="records"></table>
-      <p class="note">The best season in each category, leaving out the 60-game 2020 season.</p>
-    </div>
-  </section>
-
-  <section id="awards" aria-labelledby="awards-title">
-    <div class="section-head">
-      <h2 id="awards-title">Awards</h2>
-      <p>Handed out after the fact from real MLB stats, scored with our 16 categories. A player award goes to the team that drafted or kept him that spring.</p>
-    </div>
-    <div class="controls">
-      <label class="field">Year<select id="a-year"></select></label>
-    </div>
-    <ol class="cards" id="awards-list" tabindex="0" aria-label="Award cards"></ol>
-    <p class="note">A player's value adds up how far above or below a typical rostered player he was in each category, with average, OPS, ERA and WHIP weighted by playing time. Keepers are marked from 2022 on, when the keeper sheet starts. Stats from MLB.</p>
-  </section>
-
-  <section id="h2h" aria-labelledby="h2h-title" hidden>
-    <div class="section-head">
-      <h2 id="h2h-title">Head to head</h2>
-      <p id="h2h-lede">Every manager's record against everyone else since 2013, and every 16-0.</p>
-    </div>
-    <div class="seg tabs" role="tablist" aria-label="Head to head" data-remember="yoenis-htab"><button type="button" role="tab" id="ht-riv" aria-controls="hp-riv" aria-selected="true">Rivalries</button><button type="button" role="tab" id="ht-sw" aria-controls="hp-sw" aria-selected="false" tabindex="-1">16-0 club</button></div>
-    <div role="tabpanel" id="hp-riv" aria-labelledby="ht-riv">
-      <div class="controls"><label class="field">Manager<select id="h-man"></select></label></div>
-      <p class="h-lede" id="h-riv-lede"></p>
-      <div class="tbl-wrap" tabindex="0" role="region" aria-label="Rivalries"><table class="standings" id="h-riv"></table></div>
-      <button type="button" class="btn ghost" id="h-riv-more" hidden></button>
-      <p class="note">By manager, so a rivalry carries across team renames. A matchup goes to whoever won more categories. Playoffs counts title-bracket games only; consolation games count with the rest. Cats are categories won, lost and tied.</p>
-    </div>
-    <div role="tabpanel" id="hp-sw" aria-labelledby="ht-sw" hidden>
-      <p class="h-lede" id="h-sw-lede"></p>
-      <ol class="sweeps" id="h-sw"></ol>
-      <details class="fold" id="h-near-f"><summary id="h-near-s">Near misses</summary><ol class="sweeps near" id="h-near"></ol></details>
-    </div>
-  </section>
-
   <section id="trades" aria-labelledby="trades-title">
     <div class="section-head">
       <h2 id="trades-title">Trades and pickups</h2>
@@ -694,7 +632,36 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       <div class="tbl-wrap" tabindex="0" role="region" aria-label="Waiver wire"><table class="standings" id="ww-t"></table></div>
       <p class="note">Every free-agent and waiver pickup from Opening Day on, valued like the trades: what he actually did for that team from the day after the pickup until he was dropped or traded (from his MLB game logs), plus, if he was still there at season's end, every later season that manager kept him, counted over what that keeper round was expected to produce. "By manager" adds up every pickup's value.</p>
     </div>
-    <p class="note">How it's scored: the same 16-category values as the awards, counted above a replacement-level player, so someone hurt or benched adds nothing. A player counts what he actually did for the team that got him, from the day after the trade until he was dropped, traded again or the season ended (from his MLB game logs). If he was still there at season's end, every later season that manager kept him adds his value over what that keeper round was expected to produce: what an average non-keeper pick in that round was worth across our drafts. Offseason deals count from Opening Day, and since a player who comes over in the winter comes over to be kept, his first season counts over the keeper round the new team spent on him. They come from the keeper sheet from 2023 on, and before that are pieced together from the draft board (a pick used by someone other than its slot's owner was traded) and the commissioner's roster moves before Opening Day, checked against the league emails. A pick passed along twice is credited to each deal it went through. Picks could also be traded during the season through 2016; those only show up on the next spring's draft board, so when the same two managers made a trade that summer, the picks are counted with it. Same-round pick swaps count as trades (they move a team up within the round) but score even, since values go by round. A draft pick that changed hands counts that same average. 10 is about an All-Star's full season, and an average 1st-round pick is worth about 12. Each side then gets a letter grade by its own goals: value that season counts double for a team that made the playoffs (2.5 times for the champion) and half for one that missed them, while keeper value counts the same for everyone. So a contender that rents a bat for the stretch run and a rebuilding team that gets a keeper for it can both grade well, a win-win (both a B- or better). Grades are damped, so a small deal lands near a C and only a big, lopsided one reaches an A+ or an F. The ledger's GPA averages them, A+ 4.3 down to F 0. It's a guide, not gospel: it can't see who a team dropped to make room, or what a trade did to the weekly matchups. Vetoed trades are left out. In the ledger, managers with fewer than five trades are listed after everyone else.</p>
+    <details class="fold"><summary>How trades are scored and graded</summary><p class="note">The same 16-category values as the awards, counted above a replacement-level player, so someone hurt or benched adds nothing. A player counts what he actually did for the team that got him, from the day after the trade until he was dropped, traded again or the season ended (from his MLB game logs). If he was still there at season's end, every later season that manager kept him adds his value over what that keeper round was expected to produce: what an average non-keeper pick in that round was worth across our drafts. Offseason deals count from Opening Day, and since a player who comes over in the winter comes over to be kept, his first season counts over the keeper round the new team spent on him. They come from the keeper sheet from 2023 on, and before that are pieced together from the draft board (a pick used by someone other than its slot's owner was traded) and the commissioner's roster moves before Opening Day, checked against the league emails. A pick passed along twice is credited to each deal it went through. Picks could also be traded during the season through 2016; those only show up on the next spring's draft board, so when the same two managers made a trade that summer, the picks are counted with it. Same-round pick swaps count as trades (they move a team up within the round) but score even, since values go by round. A draft pick that changed hands counts that same average. 10 is about an All-Star's full season, and an average 1st-round pick is worth about 12. Each side then gets a letter grade by its own goals: value that season counts double for a team that made the playoffs (2.5 times for the champion) and half for one that missed them, while keeper value counts the same for everyone. So a contender that rents a bat for the stretch run and a rebuilding team that gets a keeper for it can both grade well, a win-win (both a B- or better). Grades are damped, so a small deal lands near a C and only a big, lopsided one reaches an A+ or an F. The ledger's GPA averages them, A+ 4.3 down to F 0. It's a guide, not gospel: it can't see who a team dropped to make room, or what a trade did to the weekly matchups. Vetoed trades are left out. In the ledger, managers with fewer than five trades are listed after everyone else.</p></details>
+  </section>
+
+  <section id="awards" aria-labelledby="awards-title">
+    <div class="section-head">
+      <h2 id="awards-title">Awards</h2>
+      <p>Handed out after the fact from real MLB stats, scored with our 16 categories. A player award goes to the team that drafted or kept him that spring.</p>
+    </div>
+    <div class="controls">
+      <label class="field">Year<select id="a-year"></select></label>
+    </div>
+    <ol class="cards" id="awards-list" tabindex="0" aria-label="Award cards"></ol>
+    <p class="note">A player's value adds up how far above or below a typical rostered player he was in each category, with average, OPS, ERA and WHIP weighted by playing time. Keepers are marked from 2022 on, when the keeper sheet starts. Stats from MLB.</p>
+  </section>
+
+  <section id="stats" aria-labelledby="stats-title">
+    <div class="section-head">
+      <h2 id="stats-title">Team stats</h2>
+      <p>Every team's season totals, how the year would have ended as a roto league (16 points for first in a category, down to 1 for last), and the best single seasons ever.</p>
+    </div>
+    <div class="controls">
+      <label class="field" id="s-year-field">Year<select id="s-year"></select></label>
+      <div class="field">Show<span class="seg" role="group" aria-label="Show" id="s-view"><button type="button" data-v="roto" aria-pressed="true">Roto</button><button type="button" data-v="b" aria-pressed="false">Batting</button><button type="button" data-v="p" aria-pressed="false">Pitching</button><button type="button" data-v="rec" aria-pressed="false">Records</button></span></div>
+    </div>
+    <p class="first-pick" id="s-sum"></p>
+    <div class="tbl-wrap" tabindex="0" role="region" aria-label="Team stats table"><table class="stats" id="s-table"></table></div>
+    <div id="s-rec" hidden>
+      <table class="records" id="records"></table>
+      <p class="note">The best season in each category, leaving out the 60-game 2020 season.</p>
+    </div>
   </section>
 
   <section id="managers" aria-labelledby="managers-title">
@@ -712,6 +679,48 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       <p>Managers who left the league, most recent first.</p>
     </div>
     <ol class="stones" id="stones"></ol>
+  </section>
+
+  <section id="h2h" aria-labelledby="h2h-title" hidden>
+    <div class="section-head">
+      <h2 id="h2h-title">Head to head</h2>
+      <p id="h2h-lede">Every manager's record against everyone else since 2013, and every 16-0.</p>
+    </div>
+    <div class="seg tabs" role="tablist" aria-label="Head to head" data-remember="yoenis-htab"><button type="button" role="tab" id="ht-riv" aria-controls="hp-riv" aria-selected="true">Rivalries</button><button type="button" role="tab" id="ht-sw" aria-controls="hp-sw" aria-selected="false" tabindex="-1">16-0 club</button></div>
+    <div role="tabpanel" id="hp-riv" aria-labelledby="ht-riv">
+      <div class="controls"><label class="field">Manager<select id="h-man"></select></label></div>
+      <p class="h-lede" id="h-riv-lede"></p>
+      <div class="tbl-wrap" tabindex="0" role="region" aria-label="Rivalries"><table class="standings" id="h-riv"></table></div>
+      <button type="button" class="btn ghost" id="h-riv-more" hidden></button>
+      <p class="note">By manager, so a rivalry carries across team renames. A matchup goes to whoever won more categories. Playoffs counts title-bracket games only; consolation games count with the rest. Cats are categories won, lost and tied.</p>
+    </div>
+    <div role="tabpanel" id="hp-sw" aria-labelledby="ht-sw" hidden>
+      <p class="h-lede" id="h-sw-lede"></p>
+      <ol class="sweeps" id="h-sw"></ol>
+      <details class="fold" id="h-near-f"><summary id="h-near-s">Near misses</summary><ol class="sweeps near" id="h-near"></ol></details>
+    </div>
+  </section>
+
+  <section id="race" aria-labelledby="race-title" hidden>
+    <div class="section-head">
+      <h2 id="race-title">The race</h2>
+      <p id="race-lede">Every week's matchups category by category, the standings as they stood each week, and where every team ranks in each category.</p>
+    </div>
+    <div class="seg tabs" role="tablist" aria-label="The race" data-remember="yoenis-rtab"><button type="button" role="tab" id="rt-mu" aria-controls="rp-mu" aria-selected="true">Matchups</button><button type="button" role="tab" id="rt-st" aria-controls="rp-st" aria-selected="false" tabindex="-1">Standings by week</button><button type="button" role="tab" id="rt-cat" aria-controls="rp-cat" aria-selected="false" tabindex="-1">By category</button></div>
+    <div class="controls">
+      <label class="field">Week<select id="r-week"></select></label>
+      <label class="field" id="r-cat-f" hidden>Category<select id="r-cat"></select></label>
+    </div>
+    <div role="tabpanel" id="rp-mu" aria-labelledby="rt-mu"><p class="note" id="r-mu-note"></p><ol class="mus" id="r-mus"></ol></div>
+    <div role="tabpanel" id="rp-st" aria-labelledby="rt-st" hidden>
+      <div class="tbl-wrap" tabindex="0" role="region" aria-label="Standings by week"><table class="standings" id="r-st"></table></div>
+      <p class="note" id="r-st-note"></p>
+    </div>
+    <div role="tabpanel" id="rp-cat" aria-labelledby="rt-cat" hidden>
+      <div class="tbl-wrap" tabindex="0" role="region" aria-label="Category ranks"><table class="standings" id="r-cat-t"></table></div>
+      <p class="note">Season totals through the latest Yahoo update. "To pass" is how much a team needs to catch the team just above it.</p>
+    </div>
+    <p class="note" id="r-upd"></p>
   </section>
 
   <section id="rules" aria-labelledby="rules-title">
@@ -1104,10 +1113,21 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
         return '<tr' + (r[0] <= 3 ? ' class="podium"' : "") + '><td class="num">' + r[0] + "</td><td>" + esc(T[r[1]]) + '<span class="m-sub">' + esc(man(s, r[1])) + '</span></td><td class="r num">' + r[2] + '</td><td class="r num">' + pct(r[2]) + "</td></tr>";
       }).join("");
       return '<li><details><summary><span class="t-year num">' + s.year + '</span><span class="t-champ">' + esc(teamMan(s, st[0][1])) +
-        '<span class="t-rest"><span class="t-k">Runner-up</span>' + esc(teamMan(s, st[1][1])) + '</span><span class="t-rest"><span class="t-k">Third</span>' + esc(teamMan(s, st[2][1])) + '</span></span><span class="t-open">Standings</span></summary>' +
+        '<span class="t-rest"><span class="t-k">Runner-up</span><span>' + esc(teamMan(s, st[1][1])) + '</span></span><span class="t-rest"><span class="t-k">Third</span><span>' + esc(teamMan(s, st[2][1])) + '</span></span></span><span class="t-open">Standings</span></summary>' +
         (s.note ? '<p class="season-note">' + esc(s.note) + "</p>" : "") +
         '<table class="standings"><caption hidden>' + s.year + ' final standings</caption><thead><tr><th scope="col">Finish</th><th scope="col">Team</th><th scope="col" class="r">Record</th><th scope="col" class="r">Pct</th></tr></thead><tbody>' + rows + "</tbody></table></details></li>";
     }).join("");
+    shortList("titles");
+  }
+  // Six most recent seasons, then a button for the rest
+  function shortList(id) {
+    var ol = $(id), n = ol.children.length;
+    if (n <= 6) return;
+    ol.classList.add("short");
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "btn ghost more-seasons"; b.textContent = "Show all " + n + " seasons";
+    b.addEventListener("click", function () { ol.classList.remove("short"); b.remove(); });
+    ol.after(b);
   }
 
   /* ---------- Regular season: every year's table, sorted by record ---------- */
@@ -1134,9 +1154,10 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       }).join("");
       var champ = s.standings[0][1];
       return '<li><details><summary><span class="t-year num">' + s.year + '</span><span class="t-champ">' + esc(teamMan(s, a.ti)) + ", " + a.rec +
-        '<span class="t-rest"><span class="t-k">Second</span>' + esc(teamMan(s, b.ti)) + ", " + b.rec + '</span><span class="t-rest"><span class="t-k">Playoffs</span>' + (a.ti === champ ? "Won the title too" : "Finished " + ordinal(a.fin)) + '</span></span><span class="t-open">Standings</span></summary>' +
+        '<span class="t-rest"><span class="t-k">Second</span><span>' + esc(teamMan(s, b.ti)) + ", " + b.rec + '</span></span><span class="t-rest"><span class="t-k">Playoffs</span><span>' + (a.ti === champ ? "Won the title too" : "Finished " + ordinal(a.fin)) + '</span></span></span><span class="t-open">Standings</span></summary>' +
         '<table class="standings"><caption hidden>' + s.year + ' regular-season standings</caption><thead><tr><th scope="col">Rank</th><th scope="col">Team</th><th scope="col" class="r">Record</th><th scope="col" class="r">Pct</th><th scope="col" class="r"><abbr title="Games behind">GB</abbr></th><th scope="col" class="r">Final</th></tr></thead><tbody>' + body + "</tbody></table></details></li>";
     }).join("");
+    shortList("regular");
   }
 
   /* ---------- Offseason ---------- */
@@ -1524,7 +1545,8 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     return '<div class="case">' + lines + "</div>";
   }
   /* Every trade since 2013 (tools/yoenis_trades_build.py) and the all-time ledger */
-  var TR = { year: "", man: "", sort: "new", shown: 25 };
+  var PAGE = window.matchMedia && matchMedia("(max-width:480px)").matches ? 12 : 25;
+  var TR = { year: "", man: "", sort: "new", shown: PAGE };
   var GPA = { "A+": 4.3, A: 4, "A-": 3.7, "B+": 3.3, B: 3, "B-": 2.7, "C+": 2.3, C: 2, "C-": 1.7, "D+": 1.3, D: 1, "D-": 0.7, F: 0 };
   function trOwner(t, side) { return SEASONS[t.y].o[side === "a" ? t.a : t.b]; }
   function winWin(t) { return GPA[t.ga] >= 2.7 && GPA[t.gb] >= 2.7; }
@@ -1544,15 +1566,15 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     var first = th.trades[th.trades.length - 1].y;
     var nOff = th.trades.filter(function (t) { return t.off; }).length;
     $("tr-lede").textContent = "All " + th.trades.length + " trades since " + first + (nOff ? ", " + nOff + " of them in the offseason" : "") + ", each side graded.";
-    $("tr-year").addEventListener("change", function () { TR.year = this.value; TR.shown = 25; drawTrades(); });
-    $("tr-man").addEventListener("change", function () { TR.man = this.value; TR.shown = 25; drawTrades(); });
+    $("tr-year").addEventListener("change", function () { TR.year = this.value; TR.shown = PAGE; drawTrades(); });
+    $("tr-man").addEventListener("change", function () { TR.man = this.value; TR.shown = PAGE; drawTrades(); });
     $("tr-sort").addEventListener("click", function (e) {
       var b = e.target.closest("button[data-v]"); if (!b) return;
-      TR.sort = b.getAttribute("data-v"); TR.shown = 25;
+      TR.sort = b.getAttribute("data-v"); TR.shown = PAGE;
       [].forEach.call(this.querySelectorAll("button"), function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
       drawTrades();
     });
-    $("tr-more").addEventListener("click", function () { TR.shown += 50; drawTrades(); });
+    $("tr-more").addEventListener("click", function () { TR.shown += PAGE * 2; drawTrades(); });
     drawTrades(); drawLedger();
   }
   function drawTrades() {
@@ -1573,8 +1595,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
           var lab = typeof p === "string" ? p : p[0], v = typeof p === "string" ? null : p[1];
           return '<div class="pl"><span>' + esc(lab) + '</span><i title="What an average pick in that round was worth">' + (v != null ? fmtV(v) + " (pick)" : "pick") + "</i></div>";
         }));
-        return "<div><b>" + esc(teamMan(s, ti)) + " got" + gradePill(t, k) + "</b>" + rows.join("") +
-          '<div class="tot"><span>Value</span><span>' + fmtV(tot) + "</span></div></div>";
+        return '<div><div class="sh"><b>' + gradePill(t, k) + esc(teamMan(s, ti)) + ' got</b><span class="tot" title="Value">' + fmtV(tot) + "</span></div>" + rows.join("") + "</div>";
       };
       var ww = winWin(t), gap = ww ? "Win-win" : Math.abs(t.av - t.bv) < 1.5 ? "Even" : "By " + fmtV(Math.abs(t.av - t.bv));
       var when = t.d ? esc(longDate(t.d)) : "Before the " + t.y + " draft";
@@ -1761,8 +1782,11 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     var H = DATA.history; if (!H || !H.rivals) { $("h2h").hidden = true; return; }
     var ids = {};
     Object.keys(H.rivals).forEach(function (k) { k.split("|").forEach(function (id) { ids[id] = 1; }); });
+    var cur = {}; lastSeason().o.forEach(function (id) { cur[id] = 1; });
     var list = Object.keys(ids).filter(function (id) { return who(id); }).sort(function (a, b) { return who(a).localeCompare(who(b)); });
-    $("h-man").innerHTML = list.map(function (id) { return '<option value="' + esc(id) + '">' + esc(who(id)) + "</option>"; }).join("");
+    var opt = function (id) { return '<option value="' + esc(id) + '">' + esc(who(id)) + "</option>"; };
+    $("h-man").innerHTML = '<optgroup label="In the league">' + list.filter(function (id) { return cur[id]; }).map(opt).join("") + "</optgroup>" +
+      '<optgroup label="Past managers">' + list.filter(function (id) { return !cur[id]; }).map(opt).join("") + "</optgroup>";
     var mine = myOwner(); if (mine && ids[mine]) $("h-man").value = mine;
     $("h-man").addEventListener("change", function () { H2H_ALL = false; drawRivals(); });
     $("h-riv-more").addEventListener("click", function () { H2H_ALL = !H2H_ALL; drawRivals(); });
