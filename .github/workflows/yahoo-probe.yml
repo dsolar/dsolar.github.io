@@ -1,0 +1,45 @@
+# Tries the calls in tools/yahoo_probe.py and saves what Yahoo returns to tools/yahoo_probe.json.
+# Run it by hand from the Actions tab, or it runs when the script or this file changes.
+name: Yahoo probe
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - tools/yahoo_probe.py
+      - .github/workflows/yahoo-probe.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: yahoo-probe
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set the bot's git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Ask Yahoo
+        env:
+          YAHOO_CLIENT_ID: ${{ secrets.YAHOO_CLIENT_ID }}
+          YAHOO_CLIENT_SECRET: ${{ secrets.YAHOO_CLIENT_SECRET }}
+          YAHOO_REFRESH_TOKEN: ${{ secrets.YAHOO_REFRESH_TOKEN }}
+        run: python3 tools/yahoo_probe.py
+
+      - name: Save the result
+        run: |
+          git add tools/yahoo_probe.json
+          if git diff --cached --quiet; then echo "Nothing changed."; exit 0; fi
+          git commit -m "Yahoo probe results"
+          git pull --rebase -q origin main
+          git push
