@@ -373,4 +373,4 @@ Once a season (after the World Series is a good time, when all three leagues hav
 2. `python3 tools/journeyman_build.py --src /tmp/jm`, then `node tools/journeyman_check.js`.
 3. Bump `data.js?v=` in `journeyman/index.html`.
 
-Who's in: careers that ended in 2000 or later, four or more franchises (a team that moved counts once), and enough games to be remembered. NFL paths start in 1990, so NFL careers that began before then are left out. The MLB data is the Lahman database, which runs a season behind.
+Who's in: careers that ended in 2000 or later, four or more franchises (a team that moved counts once), and enough games to be remembered. Each league keeps its best-known 400; `FLOOR` in the build sets how well known a player has to be, so raise it if names get too obscure. NFL paths start in 1990, so NFL careers that began before then are left out. The MLB data is the Lahman database, which runs a season behind.

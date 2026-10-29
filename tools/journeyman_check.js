@@ -13,7 +13,7 @@ const path = (sport, name) => {
 };
 for (const sport of ["nba", "nfl", "mlb"]) {
   const players = D[sport], teams = D[sport + "_teams"];
-  ok(players.length >= 500, `${sport}: at least 500 players (has ${players.length})`);
+  ok(players.length >= 300, `${sport}: at least 300 players (has ${players.length})`);
   players.forEach(p => {
     ok(p.n && p.line && p.h.length === 3 && p.s.length >= 4 && p.fr >= 4, `${sport} ${p.n}: complete, 4+ franchises`);
     ok(p.s.every((s, k) => teams[s[0]] && s[1] <= s[2] && (k === 0 || p.s[k - 1][1] <= s[1])), `${sport} ${p.n}: stops in order`);

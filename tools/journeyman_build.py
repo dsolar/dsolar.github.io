@@ -12,7 +12,8 @@ Who's in
   Anyone whose career ended in 2000 or later, who played for at least four franchises (a team that moved
   counts once: the Sonics and Thunder are one franchise) and who played enough to be remembered:
     NBA 300+ games, NFL 50+ games, MLB 400+ games (or 250+ pitching appearances).
-  The best-known 900 per league make the cut, ranked by career value and honors.
+  The best-known 400 per league make the cut: career value and honors, a bonus for more franchises and for a
+  recent career, and a floor so a long list of teams alone doesn't get anyone in.
 
 The path
   Each stop is a team and its years. NFL weekly rosters and MLB stints are in order within a season. The NBA
@@ -31,7 +32,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 OUT = os.path.join(ROOT, "journeyman", "data.js")
 NAMES_OUT = os.path.join(ROOT, "journeyman", "names-mlb.js")
-MIN_LAST, MIN_FRANCHISES, KEEP = 2000, 4, 900
+MIN_LAST, MIN_FRANCHISES, KEEP = 2000, 4, 400
+# How well known someone has to be, on each league's own 0-1 career scale, before the journeyman bonus counts:
+# keeps out the Timothé Luwawu-Cabarrots, who had plenty of teams but not much of a career.
+FLOOR = {"nba": 0.2, "nfl": 0.34, "mlb": 0.22}
 
 
 def read(path):
@@ -147,9 +151,18 @@ def compress(seq):
     return out
 
 
-def keep(players):
-    players.sort(key=lambda x: -x["f"])
-    return players[:KEEP]
+def keep(players, league):
+    """The best-known KEEP. Career value first, then a bonus for being a real journeyman (more franchises) and for
+    a recent career (the group grew up on the 2000s and 2010s). Below the league's floor, nobody gets in."""
+    out = []
+    for p in players:
+        if p["f"] < FLOOR[league]:
+            continue
+        last = p["s"][-1]["b"]
+        p["f"] = round(min(1, p["f"] + min(0.3, 0.04 * (p["fr"] - 4)) + (0.08 if last >= 2008 else 0)), 3)
+        out.append(p)
+    out.sort(key=lambda x: -x["f"])
+    return out[:KEEP]
 
 
 def nba_seasons_label(a, b):
@@ -216,7 +229,7 @@ def build_nba(src):
         out.append({"n": name, "y": yrs[0] - 1, "s": path, "fr": len(franchises), "f": round(fame, 3), "line": line,
                     "h": [["Position", pos], ["College", college if college and college != "NA" else "No college"],
                           ["Draft", draft_txt], ["Career", line]]})
-    return keep(out)
+    return keep(out, "nba")
 
 
 # ---- NFL
@@ -284,7 +297,7 @@ def build_nfl(src):
         out.append({"n": i["name"], "y": stops[0][1], "s": path, "fr": len(franchises), "f": round(fame, 3), "line": line,
                     "h": [["Position", NFL_POS.get(pos_code, pos_code)], ["College", (d or {}).get("college") or i["college"] or "Unknown"],
                           ["Draft", draft_txt], ["Career", line]]})
-    return keep(out)
+    return keep(out, "nfl")
 
 
 # ---- MLB
@@ -364,7 +377,7 @@ def build_mlb(src):
             if nm and (nm not in known or known[nm] < score):
                 known[nm] = score
     names = [n for n, _ in sorted(known.items(), key=lambda kv: (-kv[1], kv[0]))]
-    return keep(out), names
+    return keep(out, "mlb"), names
 
 
 def main():

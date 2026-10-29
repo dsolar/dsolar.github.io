@@ -2,7 +2,7 @@
    name matching come from Guess the Pick's engine (../guess-the-pick/engine.js), shared on purpose.
    Saved on this device (localStorage):
      jm-sport                    the last sport picked
-     jm-daily-SPORT-YYYY-MM-DD   today's daily ten so far, so a refresh picks up where you left off
+     jm-daily2-SPORT-YYYY-MM-DD  today's daily ten so far, so a refresh picks up where you left off
      jm-best-SPORT               best endless score
      gtp-name, gtp-device        the board name and device id, shared with Guess the Pick */
 (function () {
@@ -100,7 +100,7 @@
     document.querySelectorAll(".sport").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-sport") === s)); });
     homeStatus();
   }
-  function dailyKey(s) { return "jm-daily-" + (s || sport) + "-" + today; }
+  function dailyKey(s) { return "jm-daily2-" + (s || sport) + "-" + today; }   // "2": the smaller, better-known pool from Oct 28
   function homeStatus() {
     var d = store.get(dailyKey());
     var total = d ? d.results.reduce(function (a, r) { return a + r.s; }, 0) : 0;
