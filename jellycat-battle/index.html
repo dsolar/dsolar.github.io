@@ -417,6 +417,13 @@ body.pixel-world-active .world-treasure{font-size:20px;filter:drop-shadow(0 0 5p
 body.battle-focus .fighter .avatar{container-type:size;max-height:none;}
 body.battle-focus .fighter .avatar .plush-pixel-art{height:min(90cqh,110cqw,300px);width:auto;max-width:none;max-height:none;}
 body.battle-focus .fighter .avatar .plush-svg{width:min(90cqh,90cqw,300px);height:min(90cqh,90cqw,300px);max-width:none;max-height:none;}
+/* Cloud save panel in the Clubhouse */
+.cloud-panel{margin-top:18px;padding:14px 16px;border:2px dashed #8c79a0;border-radius:16px;background:#fbf6ff}
+.cloud-panel h3{margin:0 0 6px}
+.cloud-code{display:inline-block;margin:4px 0 8px;padding:10px 14px;font:800 clamp(1.05rem,3.6vw,1.45rem)/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.05em;color:#3d2e4d;background:#f1e6f8;border:2px solid #4a3e54;border-radius:12px;user-select:all;overflow-wrap:anywhere}
+.cloud-load-row .input{flex:1 1 200px;min-width:0;text-transform:uppercase;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.cloud-ahead{margin:8px 0 10px;padding:10px 12px;border-radius:12px;background:#fff1e0;border:2px solid #d8a15c}
+.cloud-ahead .row{margin-top:8px}
 </style>
 </head>
 <body>
@@ -1830,9 +1837,75 @@ function saveMiniScore(s,id,score,grantXp,completeChallenge){if(!Number.isIntege
 
 const $=s=>document.querySelector(s);
 const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// Cloud save: a kid-friendly save code (like BUNNY-PEAR-MOON-42) carries progress between devices.
+// Backend and lockdown: tools/jellycat_saves_supabase.sql (same Supabase project as the other davidsolar.dev games).
+const CLOUD_URL='https://baxrczyufqbzrogftmyn.supabase.co',CLOUD_KEY='sb_publishable_brDXGevzcoI7mBaPO7Plow_yaUy4gk4',CLOUD_STORE='jbc-cloud';
+const CODE_RE=/^[A-Z]{3,8}-[A-Z]{3,8}-[A-Z]{3,8}-[0-9]{2}$/;
+const normCode=c=>String(c||'').toUpperCase().replace(/[^A-Z0-9]+/g,'-').replace(/^-|-$/g,'');
+let cloud=(()=>{const d={code:null,savedAt:0,syncedAt:0,ahead:null};try{const c=JSON.parse(localStorage.getItem(CLOUD_STORE)||'null');if(c&&typeof c==='object')return {...d,code:CODE_RE.test(c.code||'')?c.code:null,savedAt:Number(c.savedAt)||0,syncedAt:Number(c.syncedAt)||0};}catch(e){}return d;})();
+let cloudTimer=null,cloudBusy=false,cloudPendingCode=null,cloudAheadNoticed=false;
+function cloudStore(){try{localStorage.setItem(CLOUD_STORE,JSON.stringify({code:cloud.code,savedAt:cloud.savedAt,syncedAt:cloud.syncedAt}));}catch(e){}}
+async function cloudRpc(fn,body,keepalive=false){
+ const h={apikey:CLOUD_KEY,'Content-Type':'application/json'},call=x=>fetch(`${CLOUD_URL}/rest/v1/rpc/${fn}`,{method:'POST',headers:x,body:JSON.stringify(body),keepalive});
+ let r=await call(h);if(r.status===401)r=await call({...h,Authorization:'Bearer '+CLOUD_KEY});
+ const t=await r.text();let j=null;try{j=t?JSON.parse(t):null;}catch(e){}
+ if(!r.ok)throw Error(/not found/i.test(j?.message||'')?'That save code was not found. Check the spelling and try again.':'The cloud save is not reachable right now. Your progress is still saved on this device.');
+ return j;
+}
+function cloudTouch(){cloud.savedAt=Date.now();cloudStore();if(cloud.code){clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>cloudPush(),4000);}}
+async function cloudPush(keepalive=false){
+ if(!cloud.code||cloudBusy)return false;clearTimeout(cloudTimer);cloudTimer=null;cloudBusy=true;const at=cloud.savedAt||Date.now();let ok=false;
+ try{const held=Date.parse(await cloudRpc('jbc_put',{p_code:cloud.code,p_data:state,p_saved_at:new Date(at).toISOString()},keepalive));
+  if(held>at+1000){cloud.ahead=held;if(!cloudAheadNoticed){cloudAheadNoticed=true;notify('Another device has newer progress for your save code. Open the Clubhouse to choose.');}}
+  else{cloud.syncedAt=Date.now();cloud.ahead=null;}
+  cloudStore();ok=true;
+ }catch(e){console.warn('Cloud save:',e);}finally{cloudBusy=false;}
+ refreshCloudPanel();return ok;
+}
+function applyCloud(data,at){
+ if(!data||typeof data!=='object'||data.version!==3)throw Error('That save is not a Jellycat Battle Club game file.');
+ stopWalking();document.querySelectorAll('.modal-backdrop').forEach(m=>m.remove());
+ state=ensureWorld(validateSave(data));try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch(e){}
+ cloud.savedAt=at;cloud.syncedAt=Date.now();cloud.ahead=null;cloudStore();
+}
+async function cloudPull(){
+ if(!cloud.code||cloudBusy)return;
+ try{const rows=await cloudRpc('jbc_get',{p_code:cloud.code}),row=Array.isArray(rows)?rows[0]:null;if(!row)return;
+  const remoteAt=Date.parse(row.saved_at);
+  if(remoteAt>cloud.savedAt+1000){applyCloud(row.data,remoteAt);if(page==='battle'&&!state.battle)page='world';render();notify('Loaded your newest progress from your save code.');}
+  else if(cloud.savedAt>remoteAt+1000)cloudPush();
+  else{cloud.syncedAt=Date.now();cloudStore();refreshCloudPanel();}
+ }catch(e){console.warn('Cloud load:',e);}
+}
+function timeAgo(ms){const m=Math.round((Date.now()-ms)/60000);if(m<1)return 'just now';if(m<60)return `${m} minute${m===1?'':'s'} ago`;const h=Math.round(m/60);if(h<24)return `${h} hour${h===1?'':'s'} ago`;const d=Math.round(h/24);return `${d} day${d===1?'':'s'} ago`;}
+function cloudPanelHtml(){
+ if(!cloud.code)return `<div id="cloud-panel" class="cloud-panel"><h3>☁️ Play on another device</h3><p class="small">Get a save code, then type it on the iPad or another computer. Your Jellycats and progress follow you there.</p><div class="row"><button class="btn" data-action="cloud-new">Get my save code</button></div><label class="label mt-20" for="cloud-code-input">Have a save code already?</label><div class="row cloud-load-row"><input id="cloud-code-input" class="input" placeholder="BUNNY-PEAR-MOON-42" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="32"><button class="btn cream" data-action="cloud-load">Load my save</button></div></div>`;
+ const status=cloud.syncedAt?`Last saved to the cloud ${timeAgo(cloud.syncedAt)}.`:'Not saved to the cloud yet.';
+ const ahead=cloud.ahead?`<div class="cloud-ahead"><strong>Another device has newer progress</strong> (saved ${timeAgo(cloud.ahead)}). Which one do you want to keep?<div class="row"><button class="btn pink" data-action="cloud-take-newer">Load the newer progress</button><button class="btn cream" data-action="cloud-keep-here">Keep this device's progress</button></div></div>`:'';
+ return `<div id="cloud-panel" class="cloud-panel"><h3>☁️ Your save code</h3><div class="cloud-code">${safe(cloud.code)}</div><p class="small">Type this code on another device to keep playing there. Progress saves to the cloud automatically. ${cloud.ahead?'':`<span class="muted">${status}</span>`}</p>${ahead}<div class="row"><button class="btn cream" data-action="cloud-save">Save now</button><button class="btn cream" data-action="cloud-unlink">Stop using this code here</button></div></div>`;
+}
+function refreshCloudPanel(){const p=document.getElementById('cloud-panel');if(p&&cloud.code)p.outerHTML=cloudPanelHtml();}
+function confirmCloudLoad(code){cloudPendingCode=code;const bg=el('div','modal-backdrop');bg.id='cloud-modal';bg.innerHTML=`<div class="modal" role="dialog" aria-modal="true" aria-label="Load save code"><h2>Load ${safe(code)}?</h2><p>The progress on this device will be replaced with the save from this code. Export a save first if you want to keep a copy of this device's progress.</p><div class="row"><button class="btn cream" data-action="cloud-cancel">Keep this device's progress</button><button class="btn pink" data-action="cloud-load-confirm">Yes, load it</button></div></div>`;document.body.append(bg);bg.querySelector('button')?.focus();}
+async function cloudLoadCode(code){
+ const rows=await cloudRpc('jbc_get',{p_code:code}),row=Array.isArray(rows)?rows[0]:null;
+ if(!row)throw Error('That save code was not found. Check the spelling and try again.');
+ applyCloud(row.data,Date.parse(row.saved_at));cloud.code=code;cloudAheadNoticed=false;cloudStore();go('clubhouse');notify(`Welcome back! Loaded ${code}.`);
+}
+async function cloudAction(type){
+ try{
+  if(type==='cloud-new'){const at=cloud.savedAt||Date.now();const code=await cloudRpc('jbc_new',{p_data:state,p_saved_at:new Date(at).toISOString()});if(!CODE_RE.test(code||''))throw Error('Could not make a save code. Please try again.');cloud.code=code;cloud.savedAt=at;cloud.syncedAt=Date.now();cloud.ahead=null;cloudStore();render();notify('Your save code is ready. Write it down!');return;}
+  if(type==='cloud-load'){const code=normCode($('#cloud-code-input')?.value);if(!CODE_RE.test(code)){notify('Save codes look like BUNNY-PEAR-MOON-42.');$('#cloud-code-input')?.focus();return;}if(state.onboarded&&(state.wins||state.owned.length>1||state.world?.steps>20))confirmCloudLoad(code);else await cloudLoadCode(code);return;}
+  if(type==='cloud-load-confirm'){const code=cloudPendingCode;$('#cloud-modal')?.remove();cloudPendingCode=null;if(code)await cloudLoadCode(code);return;}
+  if(type==='cloud-cancel'){$('#cloud-modal')?.remove();cloudPendingCode=null;return;}
+  if(type==='cloud-save'){const ok=await cloudPush();notify(!ok?'Could not reach the cloud right now. Your progress is still saved on this device.':cloud.ahead?'Another device has newer progress. Choose which one to keep.':'Saved to the cloud.');return;}
+  if(type==='cloud-take-newer'){const rows=await cloudRpc('jbc_get',{p_code:cloud.code}),row=rows?.[0];if(row){applyCloud(row.data,Date.parse(row.saved_at));render();notify('Loaded the newer progress.');}return;}
+  if(type==='cloud-keep-here'){cloud.savedAt=Date.now();cloud.ahead=null;cloudStore();const ok=await cloudPush();notify(ok?'Kept this device\'s progress and saved it to the cloud.':'Could not reach the cloud right now. Try again in a moment.');return;}
+  if(type==='cloud-unlink'){cloud.code=null;cloud.ahead=null;cloud.syncedAt=0;cloudStore();render();notify('This device stopped using the save code. The cloud copy is still there.');return;}
+ }catch(e){console.warn(e);notify(e.message||'Something went wrong. Please try again.');}
+}
 let state=ensureWorld(loadSave()),page='world',category='All',query='',ownership='All',detail=null,toastTimer=null;
 function loadSave(){try{const v=localStorage.getItem(SAVE_KEY);if(v)return validateSave(JSON.parse(v));const old=JSON.parse(localStorage.getItem('jbc-v2')||'null');if(old){const d=freshSave();d.nicknames[STARTER_ID]=String(old.names?.croissant||'').slice(0,24);d.onboarded=!!old.onboarded;d.wins=Math.max(0,old.wins|0);d.losses=Math.max(0,old.losses|0);d.streak=Math.max(0,old.streak|0);d.bestStreak=d.streak;d.points=Math.max(0,old.points|0);d.jars=Math.max(0,old.jars|0);d.levels[STARTER_ID]=Math.max(1,old.levels?.croissant||1);d.xp[STARTER_ID]=Math.max(0,old.xp?.croissant||0);return validateSave(d);}}catch(e){console.warn('Save recovery:',e)}return freshSave();}
-function persist(){state=ensureWorld(validateSave(state));try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch(e){notify('Could not save progress in this browser. Check storage permissions.');}}
+function persist(){state=ensureWorld(validateSave(state));try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));cloudTouch();}catch(e){notify('Could not save progress in this browser. Check storage permissions.');}}
 function update(fn){state=fn(state);persist();render();}
 function el(tag,cl,text){const x=document.createElement(tag);if(cl)x.className=cl;if(text)x.textContent=text;return x;}
 function notify(message){let t=$('.toast');if(!t){t=el('div','toast');t.setAttribute('role','status');document.body.append(t);}t.textContent=message;t.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.add('hidden'),3600);}
@@ -1922,7 +1995,7 @@ function journal(){ensureWorld(state);const claimed=state.world.claimedQuests.le
  </aside></div>`;
 }
 function clubhouse(){return `${statBar()}<div class="grid-2">
-${panel(`<div class="eyebrow">Collection milestones</div><h1>Your clubhouse.</h1><div class="patch-case"><div class="patch-case-title">✦ THE EMBROIDERED PATCH CASE ✦</div><div class="patch-case-grid">${[...PARLORS,...REGION_PARLORS].map(p=>`<div class="patch-slot">${patchArtwork(p,state.world.parlorBadges.includes(p.id))}<small>${safe(p.patch)}</small></div>`).join('')}</div></div><div class="story-item"><strong>🏆 Best winning streak</strong><span style="float:right">${state.bestStreak}</span></div><div class="story-item"><strong>✿ Parlor patches</strong><span style="float:right">${state.world.parlorBadges.length} / ${PARLORS.length+REGION_PARLORS.length}</span></div><div class="story-item"><strong>📖 Adventures completed</strong><span style="float:right">${state.world.claimedQuests.length} / ${QUESTS.length}</span></div><div class="story-item"><strong>🎀 Best activity ribbons</strong><span style="float:right">${Object.values(state.world.miniBests||{}).reduce((a,b)=>a+b,0)} / 18</span></div><div class="story-item"><strong>🏄 Water travel</strong><span style="float:right">${hasSoftboard(state)?'Softboard earned':'Locked · Shell Patch boss'}</span></div><div class="story-item"><strong>✨ Boss victories</strong><span style="float:right">${state.bossWins}</span></div><div class="story-item"><strong>🧸 Jellycats collected</strong><span style="float:right">${state.owned.length}</span></div><div class="story-item"><strong>🎯 Win / loss record</strong><span style="float:right">${state.wins} / ${state.losses}</span></div><p class="source-note mt-20">Your progress is stored only in this browser. Export a save file to move it to another computer or protect it from browser resets.</p><div class="row"><button class="btn pink" data-action="export">Export save</button><button class="btn cream" data-action="import">Import save</button><input type="file" id="import-file" class="hidden" accept="application/json,.json"></div>`)}
+${panel(`<div class="eyebrow">Collection milestones</div><h1>Your clubhouse.</h1><div class="patch-case"><div class="patch-case-title">✦ THE EMBROIDERED PATCH CASE ✦</div><div class="patch-case-grid">${[...PARLORS,...REGION_PARLORS].map(p=>`<div class="patch-slot">${patchArtwork(p,state.world.parlorBadges.includes(p.id))}<small>${safe(p.patch)}</small></div>`).join('')}</div></div><div class="story-item"><strong>🏆 Best winning streak</strong><span style="float:right">${state.bestStreak}</span></div><div class="story-item"><strong>✿ Parlor patches</strong><span style="float:right">${state.world.parlorBadges.length} / ${PARLORS.length+REGION_PARLORS.length}</span></div><div class="story-item"><strong>📖 Adventures completed</strong><span style="float:right">${state.world.claimedQuests.length} / ${QUESTS.length}</span></div><div class="story-item"><strong>🎀 Best activity ribbons</strong><span style="float:right">${Object.values(state.world.miniBests||{}).reduce((a,b)=>a+b,0)} / 18</span></div><div class="story-item"><strong>🏄 Water travel</strong><span style="float:right">${hasSoftboard(state)?'Softboard earned':'Locked · Shell Patch boss'}</span></div><div class="story-item"><strong>✨ Boss victories</strong><span style="float:right">${state.bossWins}</span></div><div class="story-item"><strong>🧸 Jellycats collected</strong><span style="float:right">${state.owned.length}</span></div><div class="story-item"><strong>🎯 Win / loss record</strong><span style="float:right">${state.wins} / ${state.losses}</span></div>${cloudPanelHtml()}<p class="source-note mt-20">Prefer a file? Export a save to keep a backup copy, or import one.</p><div class="row"><button class="btn pink" data-action="export">Export save</button><button class="btn cream" data-action="import">Import save</button><input type="file" id="import-file" class="hidden" accept="application/json,.json"></div>`)}
 ${panel(`<div class="eyebrow">Little keepsakes</div><h2>Your souvenir shelf.</h2><p>Souvenirs stay with you, even after a tough battle.</p><div class="souvenir-shelf">${[['ribbon','🎀','Velvet Ribbon'],['postcards','💌','Postcards'],['seedling','🪴','Tiny Seedling']].map(([id,icon,label])=>`<div class="souvenir ${state.world.souvenirs.includes(id)?'found':''}"><span>${icon}</span><small>${state.world.souvenirs.includes(id)?label:'Not discovered'}</small></div>`).join('')}</div><p class="small muted mt-12">💫 ${state.world.wishes} wishes granted · 🏕️ ${state.world.campVisited?'Campfire story told':'Campfire story waiting'}</p>`,'soft')}
  ${panel(`<div class="eyebrow">Behind the game</div><h2>Real Jellycats. Original rules.</h2><p>All ${CATALOG.length} playable entries use names researched from the Jellycat catalog. Portraits are original soft-toy-style illustrations, not official photographs or exact recreations.</p><p>Battle moves, strengths, levels, and rarity assignments are fan-game inventions, not official Jellycat characteristics.</p><p><strong>Six types:</strong> ${TYPES.map((x,i)=>TYPE_EMOJI[i]+' '+x).join(' · ')}</p><p><strong>Ten legendary characters</strong> have been selected for this fan-made game. Legendary status is invented for gameplay.</p><p class="small muted">Independent fan game, not affiliated with Jellycat. Catalog references are maintained separately from gameplay.</p>`)}
 </div>${panel(`<div class="row between"><h2 class="mb-0">Game settings</h2>${badge('Saved locally')}</div><p class="small muted mt-12">Only reset if you're sure. You can export your save first.</p><button class="btn ghost" data-action="reset">Reset game progress</button><div class="story-item"></div><h3 class="mt-20">Recent activity</h3>${state.history.length?state.history.slice(-8).reverse().map(x=>`<div class="story-item">✳ ${safe(x)}</div>`).join(''):'<p class="muted small">Your wins and discoveries will appear here.</p>'}`)}`;}
@@ -1934,8 +2007,9 @@ function showDetail(){const p=BY_ID.get(detail);if(!p||!owned(state,p.id))return
 <div class="row mt-20"><button class="btn ${state.team.includes(p.id)?'pink':'mint'}" data-action="team" data-id="${safe(p.id)}">${state.team.includes(p.id)?'Remove from team':'Add to team'}</button></div></section>`;
  document.body.append(bg);$('#rename-input')?.focus();}
 function closeDetail(){detail=null;$('#detail-modal')?.remove();}
-function confirmReset(){const bg=el('div','modal-backdrop');bg.id='confirm-modal';bg.innerHTML=`<div class="modal" role="dialog" aria-modal="true" aria-label="Confirm reset"><h2>Start everything over?</h2><p>This permanently clears your Jellycats, levels, wins, and nicknames from this browser. Export your save first if you want to keep a copy.</p><div class="row"><button class="btn cream" data-action="cancel-reset">Keep my collection</button><button class="btn pink" data-action="confirm-reset">Yes, reset</button></div></div>`;document.body.append(bg);}
+function confirmReset(){const bg=el('div','modal-backdrop');bg.id='confirm-modal';bg.innerHTML=`<div class="modal" role="dialog" aria-modal="true" aria-label="Confirm reset"><h2>Start everything over?</h2><p>This permanently clears your Jellycats, levels, wins, and nicknames from this browser. Export your save first if you want to keep a copy.${cloud.code?` Your save code ${safe(cloud.code)} keeps its cloud copy, so you can load it again later.`:''}</p><div class="row"><button class="btn cream" data-action="cancel-reset">Keep my collection</button><button class="btn pink" data-action="confirm-reset">Yes, reset</button></div></div>`;document.body.append(bg);}
 function action(el){const type=el.dataset.action,id=el.dataset.id;
+ if(type.startsWith('cloud-')){cloudAction(type);return;}
  try{
  if(type==='nav'){go(id);return;}
  if(type==='battle-pane'){battlePane=id;document.querySelectorAll('.battle-pane').forEach(p=>{p.hidden=p.dataset.pane!==id;});document.querySelectorAll('.battle-pane-tabs button').forEach(b=>{const selected=b.dataset.id===id;b.classList.toggle('active',selected);b.setAttribute('aria-selected',String(selected));});return;}
@@ -1995,7 +2069,7 @@ function action(el){const type=el.dataset.action,id=el.dataset.id;
  if(type==='close-milestone'){$('#milestone-modal')?.remove();return;}
  if(type==='reset'){confirmReset();return;}
  if(type==='cancel-reset'){$('#confirm-modal')?.remove();return;}
- if(type==='confirm-reset'){state=ensureWorld(freshSave());persist();$('#confirm-modal')?.remove();go('world');return;}
+ if(type==='confirm-reset'){cloud.code=null;cloud.ahead=null;cloud.syncedAt=0;cloudStore();state=ensureWorld(freshSave());persist();$('#confirm-modal')?.remove();go('world');return;}
  if(type==='export'){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='jellycat-battle-club-save.json';document.body.append(a);a.click();a.remove();URL.revokeObjectURL(url);notify('Save downloaded.');return;}
  if(type==='import'){$('#import-file')?.click();return;}
  }catch(e){console.error(e);notify(e.message||'Something went wrong. Please try again.');}
@@ -2008,7 +2082,7 @@ document.addEventListener('change',async e=>{
  if(e.target.id==='import-file'&&e.target.files?.[0]){try{const f=e.target.files[0];if(f.size>1e6)throw Error('Save file too large.');const txt=await f.text(),raw=JSON.parse(txt);if(raw.version!==3)throw Error('This save is not a version 3 game file.');state=ensureWorld(validateSave(raw));persist();go('world');notify('Save imported successfully.');}catch(err){notify(err.message||'Could not read this save.');}}
 });
 document.addEventListener('input',e=>{if(e.target.id==='filter-query'){query=e.target.value;const i=e.target.selectionStart;render();const x=$('#filter-query');if(x){x.focus();x.setSelectionRange(i,i);}}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDetail();$('#confirm-modal')?.remove();$('#talk-modal')?.remove();$('#milestone-modal')?.remove();$('#encounter-modal')?.remove();$('#parlor-modal')?.remove();$('#keyboard-modal')?.remove();$('#place-modal')?.remove();miniClose();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDetail();$('#confirm-modal')?.remove();$('#talk-modal')?.remove();$('#milestone-modal')?.remove();$('#encounter-modal')?.remove();$('#parlor-modal')?.remove();$('#keyboard-modal')?.remove();$('#place-modal')?.remove();$('#cloud-modal')?.remove();miniClose();}});
 // World screen, conversations, discoveries, and walking controls.
 let walkingTimer=null,challengeState=null,bagOpen=false,recentClaim=null,animating=false;
 function scenery(x,y,zone){
@@ -2396,6 +2470,11 @@ function finishMini(){const m=challengeState;if(!m)return;const {id,score}=m;min
 // Initialize the interface after all keyboard handlers are registered.
 render();
 
+
+// Cloud save sync: check for newer progress on open and when the tab comes back; flush a pending save on leave.
+if(cloud.code)setTimeout(()=>cloudPull(),500);
+document.addEventListener('visibilitychange',()=>{if(!cloud.code)return;if(document.visibilityState==='hidden'){if(cloudTimer)cloudPush(true);}else cloudPull();});
+document.addEventListener('keydown',e=>{if(e.target?.id==='cloud-code-input'&&e.key==='Enter'){e.preventDefault();cloudAction('cloud-load');}});
 </script>
 </body>
 </html>
