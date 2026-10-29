@@ -3,8 +3,8 @@
 
 Uses the same three YAHOO_ secrets as tools/guillotine_update.py. Lists every NFL and MLB league on the
 signed-in account, every season, then tries the calls the site's pages would use on the two leagues
-that matter: Bastille Day (guillotine) and Don't Forget to Wipe Yoenis (keeper baseball). Only league
-names, keys, settings and pass/fail results are written: no manager names, emails or Yahoo IDs.
+that matter: Bastille Day (guillotine) and Don't Forget to Wipe Yoenis (keeper baseball). Only those two
+leagues' names, keys and pass/fail results are written: no other leagues, manager names, emails or Yahoo IDs.
 
 Run by the "Yahoo check" workflow (Actions tab > Yahoo check > Run workflow).
   python3 tools/yahoo_check.py
@@ -62,6 +62,9 @@ def main():
                     seen.add(row["key"])
                     leagues.append(row)
     leagues.sort(key=lambda r: (r["code"], r["season"] or "", r["name"] or ""))
+    # The repo is public: keep only the two leagues the site uses, not the account's whole history.
+    leagues = [r for r in leagues
+               if any(r["code"] == c and n.lower() in (r["name"] or "").lower() for c, n in WATCH.items())]
 
     checks = {}
     for code, needle in WATCH.items():
@@ -78,7 +81,6 @@ def main():
             "draft results": f"league/{key}/draftresults",
             "transactions": f"league/{key}/transactions",
             "trades": f"league/{key}/transactions;types=trade",
-            "keepers (team 1)": f"team/{key}.t.1/roster/players;status=K",
         }
         checks[needle] = {
             "found": True,
