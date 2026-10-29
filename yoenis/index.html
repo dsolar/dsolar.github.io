@@ -200,6 +200,15 @@ details[open] .t-open::after{transform:translateY(.05rem) rotate(-135deg)}
 .trade-sides b{display:block;font-weight:600;overflow-wrap:anywhere}
 .trade-sides span{font-size:.875rem}
 @media (max-width:480px){.trade-sides{grid-template-columns:1fr}}
+.trade-sides .pl{display:flex;justify-content:space-between;gap:.6rem;font-size:.875rem}
+.trade-sides .pl i{font-style:normal;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.trade-sides .tot{display:flex;justify-content:space-between;gap:.6rem;margin-top:.2rem;padding-top:.2rem;border-top:1px dashed var(--rule);font-size:.8125rem;font-weight:600;font-variant-numeric:tabular-nums}
+.trade-sides .won b::after{content:"Won";margin-left:.45rem;padding:.08rem .38rem;border-radius:2px;background:var(--monster);color:var(--chalk);font-size:.7rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;vertical-align:.1em}
+.trade-top{display:flex;justify-content:space-between;gap:1rem}
+.trade-top .gap{font-size:.8125rem;font-weight:600;font-variant-numeric:tabular-nums}
+#tr-more{margin-top:.8rem}
+.tr-best{display:block;font-weight:400;font-size:.78rem;color:var(--muted);margin-top:.1rem}
+#tr-ledger td.tm{min-width:0;max-width:none}
 .badge-key .tiles .tile{width:1.5rem;height:1.75rem;font-size:1rem;margin-right:.4rem}
 .tile.reg{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 2px var(--monster)}
 /* Keeper picks */
@@ -460,6 +469,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     <a href="#champions">Standings</a>
     <a href="#stats">Stats</a>
     <a href="#awards">Awards</a>
+    <a href="#trades">Trades</a>
     <a href="#managers">Managers</a>
     <a href="#graveyard">Graveyard</a>
     <a href="#rules">Rules</a>
@@ -561,6 +571,28 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     <p class="note">A player's value adds up how far above or below a typical rostered player he was in each category, with average, OPS, ERA and WHIP weighted by playing time. Keepers are marked from 2022 on, when the keeper sheet starts. Stats from MLB.</p>
   </section>
 
+  <section id="trades" aria-labelledby="trades-title">
+    <div class="section-head">
+      <h2 id="trades-title">Trades</h2>
+      <p id="tr-lede">Every trade since 2013, and who came out ahead.</p>
+    </div>
+    <div class="seg tabs" role="tablist" aria-label="Trades" data-remember="yoenis-trtab"><button type="button" role="tab" id="trt-all" aria-controls="trp-all" aria-selected="true">Every trade</button><button type="button" role="tab" id="trt-led" aria-controls="trp-led" aria-selected="false" tabindex="-1">Ledger</button></div>
+    <div role="tabpanel" id="trp-all" aria-labelledby="trt-all">
+      <div class="controls">
+        <label class="field">Year<select id="tr-year"></select></label>
+        <label class="field">Manager<select id="tr-man"></select></label>
+        <div class="field">Sort<span class="seg" role="group" aria-label="Sort" id="tr-sort"><button type="button" data-v="new" aria-pressed="true">Newest</button><button type="button" data-v="gap" aria-pressed="false">Most lopsided</button></span></div>
+      </div>
+      <p class="note" id="tr-count" aria-live="polite"></p>
+      <ol class="trades" id="tr-list"></ol>
+      <button type="button" class="btn ghost" id="tr-more" hidden>Show more</button>
+    </div>
+    <div role="tabpanel" id="trp-led" aria-labelledby="trt-led" hidden>
+      <div class="tbl-wrap" tabindex="0" role="region" aria-label="Trade ledger"><table class="stats" id="tr-ledger"></table></div>
+    </div>
+    <p class="note">From Yahoo's transactions, with the same player values as the awards, counted above a replacement-level player so someone hurt or benched adds nothing. A player counts for the part of the season left after the trade, plus every later season the manager who got him kept him. 10 is about an All-Star's full season. It's a guide, not gospel: it can't see who a team dropped to make room, or what a trade did to the standings. Trades within 1.5 of each other count as even. Vetoed trades are left out.</p>
+  </section>
+
   <section id="managers" aria-labelledby="managers-title">
     <div class="section-head">
       <h2 id="managers-title">Managers</h2>
@@ -658,7 +690,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     $("reigning").innerHTML = last.year + " champion: <strong>" + esc(champ) + "</strong>" + (MAN[champ] ? " (" + esc(MAN[champ]) + ")" : "");
     $("foot").textContent = "Updated " + new Date(d.updated + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) + ". Data from the league's Yahoo draft and standings pages, the keeper sheet and the commissioner's league emails.";
     initHero();
-    loadMine(); initKeepers(); initHistory(); initBest(); initOffseason(); initTitles(); initRegular(); initStats(); initAwards(); initManagers(); initDrafts();
+    loadMine(); initKeepers(); initHistory(); initBest(); initOffseason(); initTitles(); initRegular(); initStats(); initAwards(); initTrades(); initManagers(); initDrafts();
     loadSheet();
     if (location.hash === "#drafts") { $("kt-draft").click(); $("keepers").scrollIntoView(); }
   }
@@ -1387,6 +1419,75 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     if (bad.length) lines += '<p><span class="case-k">Dubious honors</span>' + bad.length + "</p>" + list(bad);
     return '<div class="case">' + lines + "</div>";
   }
+  /* Every trade since 2013 (tools/yoenis_trades_build.py) and the all-time ledger */
+  var TR = { year: "", man: "", sort: "new", shown: 25 }, EVEN = 1.5;
+  function trOwner(t, side) { return SEASONS[t.y].o[side === "a" ? t.a : t.b]; }
+  function trWinner(t) { return Math.abs(t.av - t.bv) < EVEN ? null : t.av > t.bv ? "a" : "b"; }
+  function fmtV(v) { return (Math.round(v * 10) / 10).toFixed(1); }
+  function initTrades() {
+    var th = DATA.tradeHistory; if (!th || !th.trades.length) { $("trades").hidden = true; return; }
+    var years = {}, owners = {};
+    th.trades.forEach(function (t) { years[t.y] = 1; owners[trOwner(t, "a")] = 1; owners[trOwner(t, "b")] = 1; });
+    $("tr-year").innerHTML = '<option value="">All years</option>' + Object.keys(years).sort().reverse().map(function (y) { return "<option>" + y + "</option>"; }).join("");
+    var ids = Object.keys(owners).filter(function (id) { return who(id); }).sort(function (a, b) { return who(a).localeCompare(who(b)); });
+    $("tr-man").innerHTML = '<option value="">Everyone</option>' + ids.map(function (id) { return '<option value="' + esc(id) + '">' + esc(who(id)) + "</option>"; }).join("");
+    var first = th.trades[th.trades.length - 1].y;
+    $("tr-lede").textContent = "All " + th.trades.length + " trades since " + first + ", and who came out ahead.";
+    $("tr-year").addEventListener("change", function () { TR.year = this.value; TR.shown = 25; drawTrades(); });
+    $("tr-man").addEventListener("change", function () { TR.man = this.value; TR.shown = 25; drawTrades(); });
+    $("tr-sort").addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-v]"); if (!b) return;
+      TR.sort = b.getAttribute("data-v"); TR.shown = 25;
+      [].forEach.call(this.querySelectorAll("button"), function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      drawTrades();
+    });
+    $("tr-more").addEventListener("click", function () { TR.shown += 50; drawTrades(); });
+    drawTrades(); drawLedger();
+  }
+  function drawTrades() {
+    var list = DATA.tradeHistory.trades.filter(function (t) {
+      return (!TR.year || String(t.y) === TR.year) && (!TR.man || trOwner(t, "a") === TR.man || trOwner(t, "b") === TR.man);
+    });
+    if (TR.sort === "gap") list = list.slice().sort(function (a, b) { return Math.abs(b.av - b.bv) - Math.abs(a.av - a.bv); });
+    var shown = list.slice(0, TR.shown);
+    $("tr-count").textContent = list.length + (list.length === 1 ? " trade" : " trades") + (TR.man ? " involving " + who(TR.man) : "") + (TR.year ? " in " + TR.year : "") + ".";
+    $("tr-list").innerHTML = shown.map(function (t) {
+      var s = SEASONS[t.y], win = trWinner(t);
+      var side = function (k) {
+        var ti = k === "a" ? t.a : t.b, gets = k === "a" ? t.ag : t.bg, picks = (k === "a" ? t.ap : t.bp) || [], tot = k === "a" ? t.av : t.bv;
+        var rows = gets.map(function (g) {
+          var v = g[1] + g[2], tip = fmtV(g[1]) + " in " + t.y + (g[2] ? " + " + fmtV(g[2]) + " kept later" : "");
+          return '<div class="pl"><span>' + esc(g[0]) + '</span><i title="' + esc(tip) + '">' + fmtV(v) + (g[2] ? " (kept)" : "") + "</i></div>";
+        }).concat(picks.map(function (p) { return '<div class="pl"><span>' + esc(p) + "</span><i>pick</i></div>"; }));
+        return '<div class="' + (win === k ? "won" : "") + '"><b>' + esc(teamMan(s, ti)) + " got</b>" + rows.join("") +
+          '<div class="tot"><span>Value</span><span>' + fmtV(tot) + "</span></div></div>";
+      };
+      var gap = win ? "By " + fmtV(Math.abs(t.av - t.bv)) : "Even";
+      return '<li class="trade"><div class="trade-top"><span class="trade-d">' + esc(longDate(t.d)) + '</span><span class="gap">' + gap + '</span></div><div class="trade-sides">' + side("a") + side("b") + "</div></li>";
+    }).join("");
+    $("tr-more").hidden = list.length <= TR.shown;
+  }
+  function drawLedger() {
+    var L = {};
+    DATA.tradeHistory.trades.forEach(function (t) {
+      var win = trWinner(t);
+      ["a", "b"].forEach(function (k) {
+        var id = trOwner(t, k), r = L[id] || (L[id] = { id: id, n: 0, w: 0, l: 0, e: 0, net: 0, best: null });
+        var mine = k === "a" ? t.av : t.bv, theirs = k === "a" ? t.bv : t.av, d = mine - theirs;
+        r.n++; r.net += d;
+        if (!win) r.e++; else if (win === k) r.w++; else r.l++;
+        if (!r.best || d > r.best.d) r.best = { d: d, t: t, k: k };
+      });
+    });
+    var rows = Object.keys(L).map(function (id) { return L[id]; }).filter(function (r) { return who(r.id); })
+      .sort(function (a, b) { return b.net - a.net; });
+    $("tr-ledger").innerHTML = '<thead><tr><th class="tm">Manager</th><th>Trades</th><th>W-L-E</th><th>Net</th></tr></thead><tbody>' +
+      rows.map(function (r) {
+        var b = r.best, bt = b && b.d >= EVEN ? "Best: the " + (b.k === "a" ? b.t.ag : b.t.bg).slice().sort(function (x, y) { return (y[1] + y[2]) - (x[1] + x[2]); })[0][0] + " trade (" + b.t.y + ", +" + fmtV(b.d) + ")" : "No wins yet";
+        return '<tr><td class="tm">' + esc(who(r.id)) + '<small class="tr-best">' + esc(bt) + "</small></td><td>" + r.n + "</td><td>" + r.w + "-" + r.l + "-" + r.e + "</td><td>" + (r.net > 0 ? "+" : r.net < 0 ? "−" : "") + fmtV(Math.abs(r.net)) + "</td></tr>";
+      }).join("") + "</tbody>";
+  }
+
   function initManagers() {
     var C = careers(), last = DATA.seasons[DATA.seasons.length - 1], now = last.o;
     var cur = now.slice().sort(function (a, b) {

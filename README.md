@@ -52,6 +52,7 @@ dsolar.github.io/
   tools/guillotine_update.py  pulls the league and every lineup from Yahoo into guillotine/data.json
   tools/yoenis_yahoo_pull.py  pulls the Wipe Yoenis season (draft, final rosters, transactions) from Yahoo
   tools/yoenis_keeper_check.py  checks every 2027 keeper cost in yoenis/data.json against that pull
+  tools/yoenis_trades_pull.py, yoenis_trades_build.py  every trade since 2013 from Yahoo, scored for the Trades section
   tools/yahoo_check.py        confirms the Yahoo app can read both leagues (Actions > Yahoo check)
   tools/paint_the_corners_sim.js  balance check for Paint the Corners (node, see the top of the file)
   tools/guess_the_pick_build.py  rebuilds guess-the-pick/data.js from nflverse and basketball-reference data (see below)
@@ -400,4 +401,8 @@ The reports live in `tools/scouting_reports.json`, one entry per prospect: his `
 3. Bump `data.js?v=` in `scouting-report/index.html`.
 
 The stamp works itself out: the scouts "whiffed" when they panned a player who turned into a steal or a star, or praised one who busted. Drafts from 2000 to 2021 only, so every career has had time to happen. The daily five walks the whole folder in a seeded order before anyone repeats.
+
+## Wipe Yoenis: trade history
+
+The same Monday workflow pulls every trade since 2013 (`tools/yoenis_trades_pull.py` into `tools/yahoo_yoenis/trades.json`) and `tools/yoenis_trades_build.py` scores them into `tradeHistory` in `yoenis/data.json` for the page's Trades section. Each player counts his season value over replacement (the awards' values, less the 208th hitter's or 160th pitcher's) for the share of the season left after the trade, plus every later season the manager who got him kept him. Within 1.5 is even; vetoed trades are left out. New trades show up after the next Monday run; next season's values fill in once `tools/mlb/<year>.json` has that year.
 
