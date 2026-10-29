@@ -4,7 +4,7 @@
  "week": 8,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-10-29T19:20:33Z",
+ "updated": "2026-10-29T19:36:54Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -1834,7 +1834,7 @@
        "rush_td": 2
       }
      },
-     "proj": 13.99,
+     "proj": 13.98,
      "rank": "QB23",
      "date": "2026-11-01",
      "next_proj": 15.25
@@ -2006,7 +2006,7 @@
        "rec_td": 1
       }
      },
-     "proj": 14.92,
+     "proj": 14.91,
      "rank": "RB11",
      "date": "2026-11-01",
      "next_proj": 15.01,
@@ -2139,7 +2139,7 @@
        "rush_yd": 3
       }
      },
-     "proj": 13.85,
+     "proj": 13.84,
      "rank": "WR9",
      "date": "2026-11-01",
      "next_proj": 13.45,
@@ -2414,7 +2414,7 @@
    "name": "Breece’s Pieces",
    "manager": "Garhett",
    "faab": 1,
-   "proj": 127.26,
+   "proj": 127.27,
    "scores": [
     134.5,
     115.3,
@@ -2553,7 +2553,7 @@
        "rush_yd": 29
       }
      },
-     "proj": 21.42,
+     "proj": 21.43,
      "rank": "WR1",
      "date": "2026-11-02",
      "next_proj": 22.67,
@@ -2586,7 +2586,7 @@
        "rec_td": 1
       }
      },
-     "proj": 13.8,
+     "proj": 13.81,
      "rank": "WR10",
      "date": "2026-11-01",
      "next_proj": 14.14,
@@ -2776,7 +2776,7 @@
        "pass_int": 2
       }
      },
-     "proj": 15.98,
+     "proj": 15.99,
      "rank": "QB19",
      "date": "2026-11-01",
      "next_proj": 16.75,
@@ -2838,7 +2838,7 @@
        "rush_td": 1
       }
      },
-     "proj": 8.52,
+     "proj": 8.51,
      "rank": "TE10",
      "date": "2026-11-01",
      "next_proj": 9.97
@@ -3614,7 +3614,7 @@
        "rec_td": 2
       }
      },
-     "proj": 13.43,
+     "proj": 13.49,
      "rank": "RB14",
      "date": "2026-11-01",
      "next_proj": 11.14,
@@ -3845,7 +3845,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 14.53,
+     "proj": 14.54,
      "rank": "QB21",
      "date": "2026-11-01",
      "next_proj": 14.38
@@ -3913,7 +3913,7 @@
      "next_proj": 8.52
     }
    ],
-   "best": 131.8,
+   "best": 131.9,
    "best_next": 126.6,
    "locked": 0,
    "locked_proj": 0,
@@ -5003,7 +5003,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-10-29T19:20:36Z",
+  "updated": "2026-10-29T19:36:56Z",
   "players": 3045,
   "unmatched": []
  }
