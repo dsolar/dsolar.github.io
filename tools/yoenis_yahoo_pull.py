@@ -53,6 +53,15 @@ def main():
     meta = y.get(f"league/{key}/metadata")
     end = text(meta.find(".//league"), "end_date")
     name = text(meta.find(".//league"), "name")
+    start = text(meta.find(".//league"), "start_date")
+
+    # League rules that bear on keepers: waivers, draft time, trade deadline, Yahoo's keeper setting
+    st_root = y.get(f"league/{key}/settings")
+    sn = st_root.find(".//settings")
+    settings = {tag: text(sn, tag) for tag in (
+        "draft_type", "draft_time", "waiver_type", "waiver_rule", "waiver_time", "uses_faab",
+        "trade_end_date", "trade_reject_time", "uses_playoff", "max_teams", "post_draft_players",
+        "max_adds", "uses_keeper", "num_keepers", "keeper_deadline_date") if sn is not None}
 
     teams = {}
     st = y.get(f"league/{key}/standings")
@@ -107,7 +116,7 @@ def main():
     tx.sort(key=lambda t: (t["ts"], int(t["id"] or 0)))
 
     out = {
-        "league": name, "key": key, "season": year, "end": end,
+        "league": name, "key": key, "season": year, "start": start, "end": end, "settings": settings,
         "pulled": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "teams": teams, "draft": picks, "rosters": rosters, "transactions": tx,
     }
