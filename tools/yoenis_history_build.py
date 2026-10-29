@@ -5,9 +5,10 @@ Reads tools/yahoo_yoenis/history/<year>.json (tools/yoenis_history_pull.py) and 
   sweeps     every matchup one side won in every category (16-0), plus the 15-1 and 15-0-1 near misses
   rivals     every pair of managers' all-time head-to-head: matchups won, lost and tied, and categories,
              with playoff meetings counted separately. By manager, so team renames don't split a rivalry.
-  pickups    every free-agent or waiver pickup from Opening Day on, valued like the trade history: his season
-             value over replacement for the share of the season he stayed on that team (until he was dropped,
-             traded or the season ended), plus every later season that manager kept him.
+  pickups    every free-agent or waiver pickup from Opening Day on, valued like the trade history: what he
+             actually did for that team from the day after the pickup until he was dropped or traded (his MLB
+             game logs, tools/yahoo_yoenis/slices), plus, if he was still there at season's end, each later
+             season that manager kept him, less what that keeper round was expected to produce.
 Writes data["history"] = {"sweeps": [...], "near": [...], "rivals": {...}, "pickups": [...top...], "pickTeams": {...}}.
 
   python3 tools/yoenis_history_build.py
@@ -20,8 +21,9 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from yoenis_trades_build import vor_table, pkey  # noqa: E402
-from yoenis_yahoo_keepers import fold, side  # noqa: E402
+from yoenis_tenure import windows  # noqa: E402
+from yoenis_trades_build import window_now, slices  # noqa: E402
+from yoenis_value import kept_map, kept_surplus  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "yoenis" / "data.json"
@@ -38,14 +40,7 @@ def day(ts):
 def main():
     data = json.loads(DATA.read_text(encoding="utf-8"))
     seasons = {s["year"]: s for s in data["seasons"]}
-    trades = json.loads(TRADES.read_text(encoding="utf-8")) if TRADES.exists() else {}
-
-    kept = {}
-    for y, rows in data["keeperHistory"].items():
-        s = seasons.get(int(y))
-        for ti, ks in (rows if s else []):
-            kept.setdefault(int(y), {}).setdefault(s["o"][ti], set()).update(fold(k[0]) + ":" + side(k[0]) for k in ks)
-
+    kept2 = kept_map(data)
     sweeps, near, rivals, pickups = [], [], {}, []
     for f in sorted(glob.glob(str(HIST / "*.json"))):
         h = json.load(open(f, encoding="utf-8"))
@@ -93,46 +88,26 @@ def main():
                 r["c"][2] += t
                 r["last"] = [y, w["week"], mine, theirs, t]
 
-        # Pickups from Opening Day on, and how long each stayed
-        start = date.fromisoformat(h["start"]) if h.get("start") else None
-        end = date.fromisoformat(h["end"]) if h.get("end") else None
-        if not (start and end):
+        # Pickups from Opening Day on: what each did while he stayed, and any keeper surplus after
+        if not (h.get("start") and h.get("end")):
             continue
-        span = max((end - start).days, 1)
-        leaves = {}  # (player key, team) -> sorted dates he left that team
-        for m in h["moves"]:
-            if m["type"] == "drop":
-                leaves.setdefault((pkey(m["name"], m["pos"]), m["team"]), []).append(day(m["ts"]))
-        for t in (trades.get(str(y), {}) or {}).get("trades", []):
-            if t["status"] != "successful":
+        season_days = (date.fromisoformat(h["end"]) - date.fromisoformat(h["start"])).days + 1
+        sl = slices(y)
+        for w in windows(y):
+            if w["kind"] != "add" or w["team"] not in idx:
                 continue
-            for p in t["players"]:
-                leaves.setdefault((pkey(p["name"], p["pos"]), p["from"]), []).append(day(t["ts"]))
-        for v in leaves.values():
-            v.sort()
-        vt = vor_table(y)
-        for m in h["moves"]:
-            if m["type"] != "add" or m["team"] not in idx:
-                continue
-            got = day(m["ts"])
-            if got < start or got > end:
-                continue
-            pk = pkey(m["name"], m["pos"])
-            left = next((d for d in leaves.get((pk, m["team"]), []) if d >= got), end)
-            share = max(0.0, min(left, end).toordinal() - got.toordinal()) / span
-            now = vt.get(pk, 0.0) * share
-            owner = s["o"][idx[m["team"]]]
-            later, yy = 0.0, y + 1
-            if left >= end:  # still his at the end of the season
-                while pk[0] + ":" + side(m["name"]) in kept.get(yy, {}).get(owner, set()):
-                    later += vor_table(yy).get(pk, 0.0)
-                    yy += 1
+            m = h["moves"][w["ref"]]
+            now, est = window_now(y, w, sl, season_days)
+            owner = s["o"][idx[w["team"]]]
+            later, n = kept_surplus(y, owner, m["name"], m["pos"], kept2) if w["stays"] else (0.0, 0)
             if now + later <= 0:
                 continue
-            pickups.append({"y": y, "d": got.isoformat(), "t": idx[m["team"]], "p": m["name"],
-                            "via": "w" if m["from"] == "waivers" else "fa",
-                            "days": (min(left, end) - got).days, "now": round(now, 1), "kept": round(later, 1),
-                            "k": yy - y - 1})
+            row = {"y": y, "d": day(m["ts"]).isoformat(), "t": idx[w["team"]], "p": m["name"],
+                   "via": "w" if m["from"] == "waivers" else "fa",
+                   "days": max((w["end"] - w["start"]).days + 1, 0), "now": round(now, 1), "kept": round(later, 1), "k": n}
+            if est:
+                row["est"] = True
+            pickups.append(row)
 
     # By manager: every pickup's value, and his best one
     by = {}

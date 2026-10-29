@@ -687,9 +687,9 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
         <label class="field" id="ww-year-f">Year<select id="ww-year"></select></label>
       </div>
       <div class="tbl-wrap" tabindex="0" role="region" aria-label="Waiver wire"><table class="standings" id="ww-t"></table></div>
-      <p class="note">Every free-agent and waiver pickup from Opening Day on, valued like the trades: his value over a replacement-level player for the part of the season he stayed on that team, plus every later season that manager kept him. "By manager" adds up every pickup's value.</p>
+      <p class="note">Every free-agent and waiver pickup from Opening Day on, valued like the trades: what he actually did for that team from the day after the pickup until he was dropped or traded (from his MLB game logs), plus, if he was still there at season's end, every later season that manager kept him, counted over what that keeper round was expected to produce. "By manager" adds up every pickup's value.</p>
     </div>
-    <p class="note">From Yahoo's transactions, with the same player values as the awards, counted above a replacement-level player so someone hurt or benched adds nothing. A player counts for the part of the season left after the trade, plus every later season the manager who got him kept him. 10 is about an All-Star's full season. It's a guide, not gospel: it can't see who a team dropped to make room, or what a trade did to the standings. Trades within 1.5 of each other count as even. Vetoed trades are left out.</p>
+    <p class="note">How it's scored: the same 16-category values as the awards, counted above a replacement-level player, so someone hurt or benched adds nothing. A player counts what he actually did for the team that got him, from the day after the trade until he was dropped, traded again or the season ended (from his MLB game logs). If he was still there at season's end, every later season that manager kept him adds his value over what that keeper round was expected to produce: what an average non-keeper pick in that round was worth across our drafts. A draft pick that changed hands counts that same average. 10 is about an All-Star's full season, and an average 1st-round pick is worth about 12. It's a guide, not gospel: it can't see who a team dropped to make room, or what a trade did to the weekly matchups. Trades within 1.5 of each other count as even. Vetoed trades are left out.</p>
   </section>
 
   <section id="managers" aria-labelledby="managers-title">
@@ -1555,9 +1555,12 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       var side = function (k) {
         var ti = k === "a" ? t.a : t.b, gets = k === "a" ? t.ag : t.bg, picks = (k === "a" ? t.ap : t.bp) || [], tot = k === "a" ? t.av : t.bv;
         var rows = gets.map(function (g) {
-          var v = g[1] + g[2], tip = fmtV(g[1]) + " in " + t.y + (g[2] ? " + " + fmtV(g[2]) + " kept later" : "");
+          var v = g[1] + g[2], tip = fmtV(g[1]) + " for his new team in " + t.y + (g[3] ? ", then kept " + g[3] + (g[3] === 1 ? " season" : " seasons") + " (" + fmtV(g[2]) + " over his keeper round)" : "");
           return '<div class="pl"><span>' + esc(g[0]) + '</span><i title="' + esc(tip) + '">' + fmtV(v) + (g[2] ? " (kept)" : "") + "</i></div>";
-        }).concat(picks.map(function (p) { return '<div class="pl"><span>' + esc(p) + "</span><i>pick</i></div>"; }));
+        }).concat(picks.map(function (p) {
+          var lab = typeof p === "string" ? p : p[0], v = typeof p === "string" ? null : p[1];
+          return '<div class="pl"><span>' + esc(lab) + '</span><i title="What an average pick in that round was worth">' + (v != null ? fmtV(v) + " (pick)" : "pick") + "</i></div>";
+        }));
         return '<div class="' + (win === k ? "won" : "") + '"><b>' + esc(teamMan(s, ti)) + " got</b>" + rows.join("") +
           '<div class="tot"><span>Value</span><span>' + fmtV(tot) + "</span></div></div>";
       };
