@@ -188,16 +188,32 @@
       // their games lock. So a team gets the higher of (a) Yahoo's projection of the lineup as set and
       // (b) the best lineup it can still field. Starters whose games have begun count as they are.
       var yProj = o.pregame && typeof t.proj_pre === "number" && t.proj_pre > 0 ? t.proj_pre : t.proj;
-      var hasProj = typeof yProj === "number" && yProj > 0;
       var hasBest = typeof t.best === "number" && t.best > 0;
       var base0 = o.pregame ? 0 : (typeof t.points === "number" ? t.points : 0);
       var setScale = !o.pregame && typeof t.proj_pre === "number" && t.proj_pre > 0 ? t.proj_pre : yProj;
+      // Sleeper's projection of the lineup as set (points banked so far, plus Sleeper for starters still to
+      // play), to set against Yahoo's. Yahoo's API projects whole lineups, not players, so this is the one
+      // number the two can be compared on.
+      var setP = (t.roster || []).filter(isSet);
+      var sleeperSet = setP.length && setP.some(function (p) { return (p.proj || 0) > 0; })
+        ? base0 + setP.reduce(function (a, p) { return a + (o.pregame || !p.yfinal ? projOf(p) : 0); }, 0) : null;
+      var yahooSet = typeof yProj === "number" && yProj > 0 ? yProj : null;
+      // opts.proj picks one source for the lineup as set: "sleeper" uses Sleeper's number, "yahoo" Yahoo's
+      // (and moves the fixed lineup by the same gap). Left out, the odds take the higher of the two.
+      var shift = 0;
+      if (o.proj === "sleeper" && sleeperSet != null) {
+        yProj = sleeperSet;
+        setScale = setP.reduce(function (a, p) { return a + projOf(p); }, 0);
+      } else if (o.proj === "yahoo" && yahooSet != null && sleeperSet != null) {
+        shift = yahooSet - sleeperSet;
+      }
+      var hasProj = typeof yProj === "number" && yProj > 0;
       var A = hasProj ? thisWeek(t, yProj, o, null, setScale) : null;
       var B = null, fixFull = null;
       var lineup = fixedLineup(t, o.pregame);
       if (lineup && lineup.length) {
         var lineupPre = lineup.reduce(function (a, p) { return a + projOf(p); }, 0);
-        fixFull = base0 + lineup.reduce(function (a, p) { return a + (o.pregame || !p.yfinal ? projOf(p) : 0); }, 0);
+        fixFull = base0 + shift + lineup.reduce(function (a, p) { return a + (o.pregame || !p.yfinal ? projOf(p) : 0); }, 0);
         B = thisWeek(t, fixFull, o, lineup, lineupPre);
       } else if (hasProj && typeof t.avg === "number" && (t.roster || []).length) {
         // No player projections: each hole in the lineup as set is worth a ninth of the team's average.
@@ -223,6 +239,8 @@
         mine: !!t.mine,
         basis: basis,                                   // yahoo: lineup as set; fix: holes filled; avg: no projection
         proj: hasProj ? yProj : null,                   // Yahoo's projection of the lineup as set
+        yahooSet: yahooSet,                             // Yahoo's projection of the lineup as set
+        sleeperSet: sleeperSet,                         // Sleeper's, for the same lineup
         projPre: typeof t.proj_pre === "number" && t.proj_pre > 0 ? t.proj_pre : (hasProj ? yProj : null),
         setNow: nowA,                                   // expected score if the lineup stays as set
         fixGain: fixGain,                               // points the fixed lineup adds over the lineup as set

@@ -338,6 +338,9 @@ td.chg{font-weight:700;border-left:1px solid var(--rule)}
 .moves th,.moves td{text-align:left;white-space:normal;padding:.4rem .35rem}
 .moves thead th{position:static}
 .moves .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.moves tr.split td{font-weight:700}
+#src-note{font-size:.82rem;color:var(--muted);margin-top:.75rem}
+#src-table th small{font-weight:400;text-transform:none;letter-spacing:0}
 .byes{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
 .byes li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.15rem .75rem;padding:.65rem 0;border-bottom:1px solid var(--rule)}
 .byes .bt{display:flex;gap:.45rem;align-items:baseline;min-width:0}
@@ -682,6 +685,7 @@ th.line{border-left:1px solid var(--rule)}
       <button type="button" role="tab" id="tab-byes" aria-controls="byes-sec">Byes</button>
       <button type="button" role="tab" id="tab-hist" aria-controls="hist-sec">Cut line</button>
       <button type="button" role="tab" id="tab-season" aria-controls="season">Still standing</button>
+      <button type="button" role="tab" id="tab-src" aria-controls="src-sec">Yahoo vs. Sleeper</button>
     </div>
     <section id="spot" aria-labelledby="tab-spot" class="panel spot" role="tabpanel" hidden>
       <div class="section-head"><h3 class="sr" id="spot-title"></h3><p class="sub" id="spot-sub"></p></div>
@@ -694,6 +698,14 @@ th.line{border-left:1px solid var(--rule)}
       </div>
       <button class="grid-all" id="grid-all" type="button" aria-controls="grid" aria-expanded="false">Show every week</button>
       <div class="scroll" id="grid-wrap"><table id="grid"></table></div>
+    </section>
+    <section id="src-sec" aria-labelledby="tab-src" class="panel" role="tabpanel" hidden>
+      <div class="section-head">
+        <h3 class="sr" id="src-title">Yahoo vs. Sleeper</h3>
+        <p id="src-lede"></p>
+      </div>
+      <div class="scroll" style="border:0"><table class="moves" id="src-table"></table></div>
+      <p id="src-note">Yahoo projects whole lineups, not players, so the two are compared on each lineup as it's set right now. Both runs assume holes get filled before kickoff, using Sleeper's player projections for the fix. The main odds take the higher of the two projections for each team.</p>
     </section>
     <section id="hist-sec" aria-labelledby="tab-hist" class="panel" role="tabpanel" hidden>
       <div class="section-head">
@@ -974,6 +986,7 @@ th.line{border-left:1px solid var(--rule)}
     renderShowcase(r);
     renderSpotlight(r, before);
     renderByes(r);
+    renderSources(data, r);
     renderHistory(r, league);
     var cutList = cutHistory(r, league);
     if (cutList.length && r.cut.median != null) {
@@ -1737,6 +1750,40 @@ th.line{border-left:1px solid var(--rule)}
     }
     $("mnf-cards").innerHTML = cards.join("");
 
+    sec.hidden = false;
+  }
+
+  // The same odds run twice: once on Yahoo's projection of each lineup as set, once on Sleeper's.
+  function renderSources(data, r) {
+    var sec = $("src-sec");
+    var rows = r.teams.filter(function (t) { return t.yahooSet != null && t.sleeperSet != null && !t.done; });
+    if (rows.length < 2) { sec.hidden = true; return; }
+    var by = function (res) { var o = {}; res.teams.forEach(function (t) { o[t.name] = t; }); return o; };
+    var Y = by(GuillotineSim.simulate(data, { proj: "yahoo" })), S = by(GuillotineSim.simulate(data, { proj: "sleeper" }));
+    var list = rows.map(function (t) {
+      var y = Y[t.name], s = S[t.name];
+      return { name: t.name, ys: t.yahooSet, ss: t.sleeperSet, yc: y ? y.pChop : null, sc: s ? s.pChop : null };
+    }).filter(function (x) { return x.yc != null && x.sc != null; });
+    list.sort(function (a, b) { return Math.abs(b.yc - b.sc) - Math.abs(a.yc - a.sc) || Math.abs(b.ys - b.ss) - Math.abs(a.ys - a.ss); });
+    var SPLIT = 0.05;
+    var split = list.filter(function (x) { return Math.abs(x.yc - x.sc) >= SPLIT; });
+    var mgr = state.mgr;
+    var who = function (n) { return "<b>" + esc(n) + "</b>" + (mgr(n) ? " (" + esc(mgr(n)) + ")" : ""); };
+    if (split.length) {
+      var t = split[0], hiY = t.ys > t.ss;
+      $("src-lede").innerHTML = "The two disagree most on " + who(t.name) + ": " + (hiY ? "Yahoo" : "Sleeper") + " projects the lineup " +
+        Math.abs(t.ys - t.ss).toFixed(1) + " points higher (" + t.ys.toFixed(1) + " to " + t.ss.toFixed(1) + "), which moves the cut odds from " +
+        pct(Math.max(t.yc, t.sc)) + " on " + (hiY ? "Sleeper's" : "Yahoo's") + " numbers to " + pct(Math.min(t.yc, t.sc)) + " on " + (hiY ? "Yahoo's" : "Sleeper's") + "." +
+        (split.length > 1 ? " " + (split.length - 1) + " other team" + (split.length > 2 ? "s split" : " splits") + " by 5 points or more." : "");
+    } else {
+      $("src-lede").textContent = "Yahoo and Sleeper see this week about the same way: no team's cut odds move 5 points or more between them.";
+    }
+    $("src-table").innerHTML = '<thead><tr><th>Team</th><th class="num">Projection<br><small>Yahoo / Sleeper</small></th><th class="num">Cut odds<br><small>Yahoo / Sleeper</small></th></tr></thead><tbody>' +
+      list.map(function (x) {
+        var big = Math.abs(x.yc - x.sc) >= SPLIT;
+        return "<tr" + (big ? ' class="split"' : "") + "><td>" + esc(x.name) + '</td><td class="num">' + x.ys.toFixed(1) + " / " + x.ss.toFixed(1) +
+          '</td><td class="num">' + pct(x.yc) + " / " + pct(x.sc) + "</td></tr>";
+      }).join("") + "</tbody>";
     sec.hidden = false;
   }
 
