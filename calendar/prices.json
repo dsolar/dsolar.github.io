@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-28T05:55:14Z",
+ "updated": "2026-10-29T01:02:49Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -899,6 +899,36 @@
    "url": "https://www.espn.com/nfl/game/_/gameId/401873049/packers-patriots",
    "src": null,
    "low": null
+  },
+  "tm-G5vVZ_4hZldpy": {
+   "history": [],
+   "sg": 18723995,
+   "title": "Joe Russo's Almost Dead",
+   "date": "2027-01-15",
+   "venue": "The Capitol Theatre",
+   "url": "https://www.ticketmaster.com/joe-russos-almost-dead-port-chester-new-york-01-15-2027/event/1D006556C0AC35B9",
+   "src": null,
+   "low": null
+  },
+  "tm-G5vVZ_4hZiNpD": {
+   "history": [],
+   "sg": 18723994,
+   "title": "Joe Russo's Almost Dead",
+   "date": "2027-01-16",
+   "venue": "The Capitol Theatre",
+   "url": "https://www.ticketmaster.com/joe-russos-almost-dead-port-chester-new-york-01-16-2027/event/1D006556C0B235BB",
+   "src": null,
+   "low": null
+  },
+  "tm-G5vVZ_4hZcSpT": {
+   "history": [],
+   "sg": 18723996,
+   "title": "Joe Russo's Almost Dead",
+   "date": "2027-01-17",
+   "venue": "The Capitol Theatre",
+   "url": "https://www.ticketmaster.com/joe-russos-almost-dead-port-chester-new-york-01-17-2027/event/1D006556C0B735BF",
+   "src": null,
+   "low": null
   }
  },
  "misses": {
@@ -923,10 +953,7 @@
   "tm-Z7r9jZ1AAvx-E": "2026-10-28",
   "tm-rZ7HnEZ1Afugk7": "2026-10-28",
   "tm-rZ7HnEZ1AfCA0f": "2026-10-28",
-  "tm-Z7r9jZ1AA77-E": "2026-10-26",
-  "tm-G5vVZ_4hZldpy": "2026-10-26",
-  "tm-G5vVZ_4hZiNpD": "2026-10-26",
-  "tm-G5vVZ_4hZcSpT": "2026-10-26"
+  "tm-Z7r9jZ1AA77-E": "2026-10-28"
  },
  "drops": []
 }
