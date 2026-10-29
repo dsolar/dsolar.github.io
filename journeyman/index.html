@@ -14,332 +14,248 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://davidsolar.dev/journeyman/">
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<meta name="theme-color" content="#0C0D0F">
+<meta name="theme-color" content="#F1F2EE">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Big+Shoulders+Display:wght@700;800;900&family=Besley:wght@700&family=Libre+Franklin:wght@500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Besley:wght@700&family=Libre+Franklin:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/bar.css">
 <script src="../assets/analytics.js" defer></script>
 <style>
+/* Journeyman is drawn like a transit map: a career is a line, every team is a station.
+   Paper and ink, transit-line colors, one typeface (Archivo, wide for display). */
 :root{
-  --stage:#0B1626; --stage-deep:#060D18; --panel:#122238; --panel-hi:#1A2E4A;
-  --line:rgba(236,239,233,.13); --line-strong:rgba(236,239,233,.3);
-  --chalk:#ECEFE9; --dim:rgba(236,239,233,.66); --faint:rgba(236,239,233,.38);
-  --red:#C8102E; --red-hi:#E8435C; --gold:#F2C14E; --wall:#1D4A36; --wall-hi:#25603F;
-  --good:#3FB37F; --ok:#F2C14E; --meh:#E9873A; --miss:#55606F;
-  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
-  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
-  color-scheme:dark;
+  --paper:#F1F2EE; --sheet:#FFFFFF; --ink:#17191D; --ink-2:#4F555D; --ink-3:#8A9097;
+  --rule:#D8DBD3; --rule-2:#C2C6BD;
+  --yellow:#FCCC0A; --orange:#FF6319; --green:#00933C; --blue:#0039A6; --red:#EE352E; --purple:#B933AD; --gray:#A7A9AC;
+  --league:var(--orange);
+  --font:"Archivo","Helvetica Neue",Arial,sans-serif;
+  color-scheme:light;
 }
+body[data-sport="nfl"]{--league:var(--green)}
+body[data-sport="mlb"]{--league:var(--blue)}
 *{box-sizing:border-box}
 html,body{margin:0}
-html{background:var(--stage-deep)}
-body{
-  min-height:100vh;color:var(--chalk);font:16px/1.45 var(--body);-webkit-font-smoothing:antialiased;
-  background:
-    radial-gradient(70% 45% at 50% -5%,rgba(242,193,78,.13),transparent 70%),
-    radial-gradient(120% 70% at 50% 0%,#17304F 0%,rgba(23,48,79,0) 62%),
-    linear-gradient(180deg,var(--stage) 0,var(--stage-deep) 900px);
-  background-repeat:no-repeat;background-color:var(--stage-deep);
-}
+html{background:var(--paper)}
+body{min-height:100vh;background:var(--paper);color:var(--ink);font:400 16px/1.5 var(--font);-webkit-font-smoothing:antialiased}
 button,input{font:inherit;color:inherit}
 button{cursor:pointer}
-:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
-.wrap{max-width:720px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-left)) 56px max(16px,env(safe-area-inset-right))}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
 [hidden]{display:none!important}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.wrap{max-width:680px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-left)) 56px max(16px,env(safe-area-inset-right))}
+body[data-screen="play"] .wrap{max-width:1040px}
 
-/* Masthead */
-.mast{text-align:center;padding:34px 0 18px}
-.kicker{font:700 12px/1 var(--body);letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin:0 0 20px}
-.mast h1{font:900 clamp(46px,11vw,84px)/.92 var(--display);letter-spacing:.01em;text-transform:uppercase;margin:0}
-.mast h1 span{color:var(--red-hi)}
-.mast p{color:var(--dim);margin:12px auto 0;max-width:30rem}
-.mast .kicker{margin:0 0 16px;max-width:none}
-body:not([data-screen="home"]) .mast{padding:18px 0 0}
-body:not([data-screen="home"]) .mast h1{font-size:clamp(30px,6vw,40px)}
-body:not([data-screen="home"]) .mast h1 br{display:none}
-body:not([data-screen="home"]) .mast .kicker,body:not([data-screen="home"]) .mast p{display:none}
+/* The mark: the word, riding a line */
+.mast{padding:44px 0 6px}
+.mast-mark{display:inline-block;max-width:100%}
+.word{margin:0;font:860 clamp(38px,12vw,84px)/.9 var(--font);font-stretch:125%;letter-spacing:-.035em}
+.line-mark{display:flex;align-items:center;margin:14px 0 0;width:100%}
+.line-mark i{flex:1;height:10px;background:var(--c)}
+.line-mark b{flex:none;width:22px;height:22px;border-radius:50%;background:var(--sheet);border:5px solid var(--ink);margin:0 -3px;position:relative;z-index:1}
+.line-mark b.end{width:28px;height:28px;border-width:7px}
+.mast p{margin:18px 0 0;font-size:19px;color:var(--ink-2);max-width:30rem}
+body:not([data-screen="home"]) .mast{padding:22px 0 0}
+body:not([data-screen="home"]) .mast-mark{display:flex;align-items:center;gap:16px}
+body:not([data-screen="home"]) .word{font-size:28px;letter-spacing:-.02em}
+body:not([data-screen="home"]) .line-mark{width:120px;margin:0}
+body:not([data-screen="home"]) .line-mark i{height:5px}
+body:not([data-screen="home"]) .line-mark b{width:12px;height:12px;border-width:3px}
+body:not([data-screen="home"]) .line-mark b.end{width:15px;height:15px;border-width:4px}
+body:not([data-screen="home"]) .mast p{display:none}
 
-/* Sport switch */
-.sports{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:22px 0 14px}
-.sport{display:flex;align-items:center;justify-content:center;gap:12px;padding:16px 10px;border-radius:12px;
-  background:var(--panel);border:1px solid var(--line);font:800 28px/1 var(--display);letter-spacing:.06em;text-transform:uppercase}
-.sport img{width:34px;height:34px}
-.sport[aria-pressed="true"]{background:linear-gradient(180deg,var(--panel-hi),var(--panel));border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
-.sport[aria-pressed="false"]{color:var(--dim)}
-.sport[aria-pressed="false"] img{opacity:.55;filter:grayscale(.6)}
+/* League */
+.pick-label{margin:40px 0 12px;font-weight:600;color:var(--ink-2)}
+.sports{display:flex;flex-wrap:wrap;gap:10px}
+.sport{display:flex;align-items:center;gap:10px;padding:8px 20px 8px 8px;border-radius:999px;background:var(--sheet);border:2px solid var(--rule-2);
+  font:780 20px/1 var(--font);font-stretch:112%;letter-spacing:.01em}
+.sport i{width:30px;height:30px;border-radius:50%;background:var(--c)}
+.sport[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.sport[aria-pressed="false"]:hover{border-color:var(--ink)}
 
-/* Mode cards */
-.modes{display:grid;gap:12px;grid-template-columns:1fr 1fr}
-@media(max-width:560px){.modes{grid-template-columns:1fr}}
-.mode{text-align:left;padding:20px 18px 18px;border-radius:14px;background:var(--panel);border:1px solid var(--line);display:flex;flex-direction:column;gap:6px;min-height:168px}
-.mode:hover{border-color:var(--line-strong)}
-.mode h2{font:800 30px/1 var(--display);text-transform:uppercase;letter-spacing:.03em;margin:0}
-.mode .tagline{color:var(--dim);margin:0}
-.mode .status{margin-top:auto;font-weight:600;font-size:14px;color:var(--gold)}
-.mode.daily{border-top:3px solid var(--red)}
-.mode.endless{border-top:3px solid var(--wall-hi)}
-.rules{margin:20px 2px 0;color:var(--dim);font-size:14.5px}
-.rules b{color:var(--chalk);font-weight:600}
-.rules ul{margin:8px 0 0;padding-left:18px}
-.rules li{margin:3px 0}
+/* Modes: two stations on the league's line */
+.modes{list-style:none;margin:30px 0 0;padding:0}
+.modes li{position:relative}
+.modes li:not(:last-child):after{content:"";position:absolute;left:19px;top:31px;height:100%;width:10px;background:var(--league)}
+.mode{position:relative;width:100%;display:grid;grid-template-columns:48px 1fr auto;gap:18px;align-items:start;text-align:left;
+  padding:16px 18px 16px 0;margin:0;background:none;border:0;border-radius:14px}
+.mode:before{content:"";justify-self:center;width:30px;height:30px;border-radius:50%;background:var(--sheet);border:7px solid var(--ink);position:relative;z-index:1}
+.mode:hover{background:rgba(23,25,29,.045)}
+.mode .mode-name{display:block;margin:0;font:820 30px/1.05 var(--font);font-stretch:118%;letter-spacing:-.02em}
+.mode .tagline{display:block;margin-top:4px;color:var(--ink-2)}
+.mode .status{align-self:center;font-weight:650;font-size:14px;padding:6px 12px;border-radius:999px;background:var(--sheet);border:1.5px solid var(--rule-2);white-space:nowrap}
+.mode .status.fresh{background:var(--yellow);border-color:var(--yellow)}
+@media(max-width:560px){
+  .mode{grid-template-columns:48px 1fr;gap:6px 14px}
+  .mode .status{grid-column:2;justify-self:start;align-self:start}
+  .sports{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .sport{padding:6px 10px 6px 6px;gap:8px;font-size:17px}
+  .sport i{width:24px;height:24px}
+  .mode .mode-name{font-size:26px}
+}
+.rules{margin:34px 0 0;padding:20px 0 0;border-top:2px solid var(--ink);color:var(--ink-2);font-size:15.5px}
+.rules h3{margin:0 0 6px;font:760 17px/1.3 var(--font);color:var(--ink)}
+.rules ul{margin:0;padding-left:20px}
+.rules li{margin:5px 0}
 
 /* Play */
-.hud{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:22px 0 12px;font-weight:600;font-size:14px;color:var(--dim)}
-.hud .left{display:flex;align-items:center;gap:10px}
-.back{background:none;border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13px;color:var(--dim)}
-.back:hover{color:var(--chalk);border-color:var(--line-strong)}
-.track{display:flex;gap:4px}
-.track i{width:18px;height:6px;border-radius:3px;background:var(--line)}
-.track i.on{background:var(--chalk)}
-.track i.s3{background:var(--good)} .track i.s2{background:var(--ok)} .track i.s1{background:var(--meh)} .track i.s0{background:var(--miss)}
-.lives{display:flex;gap:5px;align-items:center}
-.lives i{width:11px;height:11px;border-radius:50%;background:var(--red-hi)}
-.lives i.gone{background:transparent;border:1.5px solid var(--faint)}
-.score b{color:var(--chalk);font-size:16px}
+.hud{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:20px 0 14px;font-weight:600;font-size:14px;color:var(--ink-2)}
+.hud .left{display:flex;align-items:center;gap:14px;min-width:0}
+.back{background:var(--sheet);border:1.5px solid var(--rule-2);border-radius:999px;padding:6px 14px;font-size:14px;font-weight:600}
+.back:hover{border-color:var(--ink)}
+.track{display:flex;align-items:center}
+.track i{width:13px;height:13px;border-radius:50%;background:var(--sheet);border:2.5px solid var(--rule-2);position:relative;z-index:1}
+.track s{width:12px;height:3px;background:var(--rule-2)}
+.track i.on{border-color:var(--ink);width:17px;height:17px;border-width:4px}
+.track i.s3{background:var(--green);border-color:var(--green)} .track i.s2{background:var(--yellow);border-color:#D9AE00}
+.track i.s1{background:var(--orange);border-color:var(--orange)} .track i.s0{background:var(--gray);border-color:var(--gray)}
+@media(max-width:420px){.track s{width:5px}.track i{width:11px;height:11px}}
+.lives{display:flex;gap:6px;align-items:center}
+.lives i{width:13px;height:13px;border-radius:50%;background:var(--red)}
+.lives i.gone{background:transparent;border:2px solid var(--rule-2)}
+.score{white-space:nowrap}
+.score b{color:var(--ink);font-size:18px;font-weight:800}
 
-.card{position:relative;border-radius:18px;overflow:hidden;background:linear-gradient(180deg,#152A45 0%,#0F1F35 100%);border:1px solid var(--line);
-  box-shadow:0 24px 60px rgba(0,0,0,.35)}
-.card-top{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);
-  font:700 12px/1 var(--body);letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
-.card-top .live{color:var(--red-hi);display:flex;align-items:center;gap:7px}
-.card-top .live:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--red-hi);box-shadow:0 0 10px var(--red-hi)}
-.card-body{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center;padding:22px 18px 20px}
-.plate{width:118px;padding:12px 0 10px;border-radius:8px;background:var(--wall);border:3px solid #163A2A;text-align:center;
-  box-shadow:inset 0 0 0 2px rgba(255,255,255,.06),0 6px 16px rgba(0,0,0,.3)}
-.plate small{display:block;font:700 11px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;color:rgba(236,239,233,.7)}
-.plate strong{display:block;font:900 64px/.95 var(--display);color:#F7F5EE;margin:4px 0 2px;font-variant-numeric:tabular-nums}
-.plate span{display:block;font:600 12px/1.2 var(--body);color:rgba(236,239,233,.75)}
-.who{min-width:0}
-.year{font:800 22px/1 var(--display);letter-spacing:.05em;text-transform:uppercase;color:var(--gold);margin:0 0 10px}
-.team{display:flex;align-items:center;gap:12px}
-.logo{width:64px;height:64px;flex:none;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.07);overflow:hidden}
-.logo img{width:56px;height:56px;object-fit:contain}
-.logo b{width:100%;height:100%;display:grid;place-items:center;border-radius:50%;font:800 18px/1 var(--display);letter-spacing:.04em;color:var(--dim)}
-.team-name{font:800 clamp(24px,5.6vw,34px)/1 var(--display);text-transform:uppercase;letter-spacing:.02em}
-.team-sub{font-size:13px;color:var(--faint);font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
-.moved{display:flex;align-items:center;gap:10px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
-.moved .logo{width:40px;height:40px}.moved .logo img{width:34px;height:34px}.moved .logo b{font-size:13px}
+.play-grid{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:20px;align-items:start}
+@media(max-width:860px){.play-grid{grid-template-columns:1fr}}
+.sheet{background:var(--sheet);border-radius:18px;border:1.5px solid var(--rule)}
+.route-card{padding:20px 22px 22px}
+.route-head{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.bullet{display:inline-grid;place-items:center;height:30px;padding:0 12px;border-radius:999px;background:var(--league);color:#fff;
+  font:800 14px/1 var(--font);font-stretch:115%;letter-spacing:.03em}
+body[data-sport="nba"] .bullet{color:var(--ink)}
+.route-head h2{margin:0;font:780 19px/1.2 var(--font);font-stretch:110%}
+.route-head .meta{margin-left:auto;font-size:14px;color:var(--ink-3);font-weight:600}
 
-/* Team branding (NBA): the picking team's colors on the card, its logo as a watermark */
-.card .watermark{position:absolute;right:-40px;top:40px;width:300px;height:300px;pointer-events:none;opacity:.09}
-.card .watermark img{width:100%;height:100%;object-fit:contain}
-.card.branded{background:radial-gradient(120% 90% at 100% 0%,color-mix(in srgb,var(--t1) 55%,transparent) 0%,transparent 62%),linear-gradient(180deg,#152A45 0%,#0F1F35 100%)}
-.card.branded .card-top{background:var(--t1);border-bottom:4px solid var(--t2);color:rgba(255,255,255,.85)}
-.card.branded .card-top .live{color:#fff}
-.card.branded .card-top .live:before{background:#fff;box-shadow:none}
-.card.branded .plate{background:var(--t1);border-color:var(--t2);box-shadow:inset 0 0 0 2px rgba(255,255,255,.08),0 6px 16px rgba(0,0,0,.35)}
-.card.branded .team-name{text-shadow:0 2px 12px rgba(0,0,0,.35)}
-.card.branded .moved{border-top-color:rgba(255,255,255,.16)}
-.card.branded .card-body,.card.branded .clues,.card.branded .guess-area,.card.branded .reveal{position:relative}
-.moved p{margin:0;font-size:15px;color:var(--dim)} .moved p b{color:var(--chalk);font-weight:600}
-@media(max-width:480px){
-  .card-body{grid-template-columns:1fr;gap:16px}
-  .plate{width:100%;display:flex;align-items:baseline;justify-content:center;gap:10px;padding:10px 0}
-  .plate strong{font-size:48px;margin:0}
+/* The career: one station per stop, the line in that team's color running to the next one */
+.route{list-style:none;margin:0;padding:0}
+.stop{--size:46px;position:relative;display:grid;grid-template-columns:var(--size) minmax(0,1fr) auto;gap:16px;align-items:center;min-height:calc(var(--size) + 12px)}
+.stop:not(:last-child):after{content:"";position:absolute;left:calc(var(--size)/2 - 5px);top:calc(50% + 4px);height:calc(100% + 2px);width:10px;background:var(--c);z-index:0}
+.node{position:relative;z-index:1;width:var(--size);height:var(--size);border-radius:50%;background:#fff;border:4px solid var(--c);display:grid;place-items:center;overflow:hidden}
+.node img{width:calc(var(--size) - 14px);height:calc(var(--size) - 14px);object-fit:contain}
+.node b{width:100%;height:100%;display:grid;place-items:center;font:800 11px/1 var(--font);font-stretch:90%;letter-spacing:.02em}
+.stop .tn{min-width:0;font:700 17.5px/1.2 var(--font)}
+.stop .tn small{display:block;font-weight:500;font-size:13.5px;color:var(--ink-3);margin-top:1px}
+.stop .yr{font:650 15px/1 var(--font);font-variant-numeric:tabular-nums;color:var(--ink-2);white-space:nowrap}
+.stop.last .node{border-width:6px;box-shadow:0 0 0 3px var(--sheet),0 0 0 5px var(--ink)}
+.route.tight .stop{--size:38px;min-height:46px}
+.route.tight .stop .tn{font-size:16px}
+@media(max-width:560px){
+  .route-card{padding:16px 14px 18px}
+  .stop{--size:40px;gap:12px;min-height:50px}
+  .stop .tn{font-size:16px}
+  .stop .yr{font-size:14px}
+  .route.tight .stop{--size:34px;min-height:42px}
+  .route.tight .stop .tn{font-size:15px}
 }
 
-.clues{padding:0 18px 4px;display:grid;gap:8px}
-.clue{display:flex;gap:10px;align-items:baseline;padding:10px 12px;border-radius:10px;background:rgba(242,193,78,.08);border:1px solid rgba(242,193,78,.25);font-size:15px}
-.clue span{font:700 11px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);flex:none;min-width:66px}
-
-.guess-area{padding:16px 18px 18px}
-.pts{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--dim);margin-bottom:10px;font-weight:600}
-.pts i{width:12px;height:12px;border-radius:3px;background:var(--gold)} .pts i.used{background:transparent;border:1.5px solid var(--faint)}
+/* The desk: clues, the guess box, the reveal */
+.desk{padding:20px 20px 20px;position:sticky;top:16px}
+@media(max-width:860px){.desk{position:static}}
+.clues{display:grid;gap:8px}
+.clues:not(:empty){margin-bottom:16px}
+.clue{padding:10px 12px;border-radius:10px;background:#FFF6CC;border:1.5px solid #F2D45C;font-size:15px;line-height:1.35}
+.clue span{display:block;font-weight:700;font-size:13px;color:#6B5800;margin-bottom:1px}
+.pts{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--ink-2);margin-bottom:10px;font-weight:600}
+.pts i{width:14px;height:14px;border-radius:50%;background:var(--ink)}
+.pts i.used{background:transparent;border:2px solid var(--rule-2)}
+.pts span{margin-left:4px}
 .field{position:relative}
-.field input{width:100%;padding:15px 112px 15px 16px;border-radius:12px;border:1.5px solid var(--line-strong);background:#0A1626;font-size:18px;font-weight:500}
-.field input::placeholder{color:var(--faint)}
-.field input:focus{outline:none;border-color:var(--gold)}
-.go{position:absolute;right:6px;top:6px;bottom:6px;padding:0 18px;border-radius:9px;border:0;background:var(--red);font-weight:700;letter-spacing:.04em}
-.go:hover{background:var(--red-hi)}
-.list{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:5;margin:0;padding:6px;list-style:none;border-radius:12px;background:#0E1C30;border:1px solid var(--line-strong);box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.field input{width:100%;padding:14px 100px 14px 14px;border-radius:12px;border:2px solid var(--ink);background:#fff;font-size:18px;font-weight:500}
+.field input::placeholder{color:var(--ink-3)}
+.field input:focus{outline:none;box-shadow:0 0 0 4px rgba(0,57,166,.18);border-color:var(--blue)}
+.go{position:absolute;right:6px;top:6px;bottom:6px;padding:0 18px;border-radius:8px;border:0;background:var(--yellow);font-weight:750;color:var(--ink)}
+.go:hover{background:#FFD83D}
+.list{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:5;margin:0;padding:6px;list-style:none;border-radius:12px;background:#fff;border:1.5px solid var(--ink);box-shadow:0 14px 30px rgba(23,25,29,.16)}
 .list li{padding:10px 12px;border-radius:8px;cursor:pointer;font-weight:500}
-.list li[aria-selected="true"],.list li:hover{background:var(--panel-hi)}
-.list li mark{background:none;color:var(--gold);font-weight:700}
-.msg{min-height:22px;margin:10px 2px 0;font-size:14.5px;color:var(--dim)}
+.list li[aria-selected="true"],.list li:hover{background:var(--paper)}
+.list li mark{background:none;color:var(--blue);font-weight:750}
+.msg{min-height:22px;margin:10px 2px 0;font-size:14.5px;color:var(--ink-2)}
 .msg:empty{min-height:0;margin:0}
-.msg.bad{color:#FF8A9A}
+.msg.bad{color:#C41E16;font-weight:600}
 .wrongs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .wrongs:empty{display:none}
-.wrongs span{font-size:13px;padding:4px 10px;border-radius:999px;background:rgba(232,67,92,.12);border:1px solid rgba(232,67,92,.35);text-decoration:line-through;color:#FFB3BF}
-.tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
-.tool{padding:9px 14px;border-radius:999px;border:1px solid var(--line-strong);background:transparent;font-size:14px;font-weight:600;color:var(--dim)}
-.tool:hover:not(:disabled){color:var(--chalk);border-color:var(--chalk)}
-.tool:disabled{opacity:.4;cursor:default}
-.tool.quit{margin-left:auto}
-.hints-label{margin:16px 0 8px;font:700 11px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+.wrongs span{font-size:13px;padding:4px 10px;border-radius:999px;background:#FDECEB;border:1.5px solid #F4B4B0;text-decoration:line-through;color:#A1150F}
+.hints-label{margin:18px 0 8px;font-weight:650;font-size:14px;color:var(--ink-2)}
 .hints{display:flex;flex-wrap:wrap;gap:8px}
-.tool.hint small{font-size:12px;font-weight:600;color:var(--gold);margin-left:4px}
-.tool.hint:disabled small{color:var(--faint)}
-.tool.hint[aria-pressed="true"]{border-color:rgba(242,193,78,.45)}
-.tools{justify-content:flex-end}
+.tool{padding:8px 14px;border-radius:999px;border:1.5px solid var(--rule-2);background:#fff;font-size:14px;font-weight:600}
+.tool:hover:not(:disabled){border-color:var(--ink)}
+.tool:disabled{opacity:.45;cursor:default}
+.tool small{font-size:12.5px;font-weight:700;color:var(--ink-3);margin-left:4px}
+.tool[aria-pressed="true"]{background:var(--paper)}
+.tools{display:flex;justify-content:flex-end;margin-top:16px}
 
-.reveal{padding:20px 18px 20px;border-top:1px solid var(--line);background:rgba(0,0,0,.14)}
-.verdict{font:800 14px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;margin:0 0 8px}
-.verdict.v3{color:var(--good)} .verdict.v2{color:var(--ok)} .verdict.v1{color:var(--meh)} .verdict.v0{color:#9AA6B6}
-.answer{font:900 clamp(34px,8vw,52px)/.95 var(--display);text-transform:uppercase;letter-spacing:.01em;margin:0}
-.facts{margin:8px 0 0;color:var(--dim)}
-.facts b{color:var(--chalk);font-weight:600}
-.next{margin-top:16px;width:100%;padding:15px;border-radius:12px;border:0;background:var(--chalk);color:#0B1626;font-weight:700;font-size:17px;letter-spacing:.02em}
-.next:hover{background:#fff}
+.verdict{font:800 15px/1.2 var(--font);margin:0 0 6px;display:flex;align-items:center;gap:8px}
+.verdict:before{content:"";width:14px;height:14px;border-radius:50%;background:var(--gray)}
+.verdict.v3:before{background:var(--green)} .verdict.v2:before{background:var(--yellow)} .verdict.v1:before{background:var(--orange)}
+.answer{font:860 clamp(32px,5vw,42px)/.98 var(--font);font-stretch:112%;letter-spacing:-.025em;margin:0}
+.facts{margin:10px 0 0;color:var(--ink-2);font-size:15px}
+.facts b{color:var(--ink);font-weight:650}
+.next{margin-top:18px;width:100%;padding:15px;border-radius:12px;border:0;background:var(--ink);color:#fff;font-weight:750;font-size:17px}
+.next:hover{background:#000}
 
-/* Done */
-.done{margin-top:22px;border-radius:18px;background:var(--panel);border:1px solid var(--line);padding:26px 20px;text-align:center}
-.done h2{font:900 26px/1 var(--display);text-transform:uppercase;letter-spacing:.04em;margin:0;color:var(--dim)}
-.big{font:900 92px/.9 var(--display);margin:10px 0 4px}
-.big small{font-size:38px;color:var(--faint)}
-.grade{font:700 18px/1.3 var(--body);color:var(--gold);margin:0 0 16px}
-.squares{font-size:26px;letter-spacing:4px;margin:0 0 16px}
-.done-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
-.btn{padding:13px 20px;border-radius:12px;border:1px solid var(--line-strong);background:transparent;font-weight:700}
-.btn.primary{background:var(--red);border-color:var(--red)} .btn.primary:hover{background:var(--red-hi)}
-.btn:hover{border-color:var(--chalk)}
-.countdown{color:var(--faint);font-size:14px;margin:14px 0 0}
-/* The career path */
-.path-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:18px 18px 10px}
-.path-head p{margin:0;font:800 22px/1 var(--display);letter-spacing:.05em;text-transform:uppercase;color:var(--gold)}
-.path-head span{font-size:13px;color:var(--faint);font-weight:600}
-.path{list-style:none;margin:0;padding:0 18px 14px;display:grid;gap:6px;counter-reset:stop}
-.stop{position:relative;display:grid;grid-template-columns:22px 40px 1fr auto;gap:10px;align-items:center;padding:8px 12px 8px 8px;border-radius:10px;
-  background:linear-gradient(90deg,color-mix(in srgb,var(--c1) 42%,transparent),color-mix(in srgb,var(--c1) 12%,transparent));
-  border-left:5px solid var(--c2)}
-.stop:before{counter-increment:stop;content:counter(stop);font:800 15px/1 var(--display);color:rgba(255,255,255,.55);text-align:center}
-.stop .logo{width:40px;height:40px}
-.stop .logo img{width:34px;height:34px}
-.stop .logo b{font-size:12px}
-.stop .tn{font-weight:700;font-size:15.5px;line-height:1.15;min-width:0}
-.stop .yr{font:700 14px/1 var(--body);color:rgba(255,255,255,.8);font-variant-numeric:tabular-nums;white-space:nowrap}
-.path.tight{gap:4px}
-.path.tight .stop{padding:5px 10px 5px 6px;grid-template-columns:20px 30px 1fr auto}
-.path.tight .stop .logo{width:30px;height:30px}
-.path.tight .stop .logo img{width:26px;height:26px}
-.path.tight .stop .tn{font-size:14.5px}
+/* Results */
+.done{margin-top:26px}
+.done-top{padding:26px 22px 24px}
+.done h2{margin:0;font:760 18px/1.2 var(--font);color:var(--ink-2)}
+.big{margin:6px 0 4px;font:880 clamp(72px,18vw,112px)/.9 var(--font);font-stretch:118%;letter-spacing:-.04em}
+.big small{font-size:.38em;color:var(--ink-3);letter-spacing:-.01em}
+.grade{margin:0 0 16px;font-weight:650;font-size:18px}
+.squares{font-size:24px;letter-spacing:3px;margin:0 0 18px}
+.done-actions{display:flex;flex-wrap:wrap;gap:10px}
+.btn{padding:12px 20px;border-radius:12px;border:1.5px solid var(--rule-2);background:#fff;font-weight:700}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--yellow);border-color:var(--yellow)} .btn.primary:hover{background:#FFD83D}
+.countdown{color:var(--ink-3);font-size:14px;margin:14px 0 0}
 
-/* Draft context on the reveal */
-.context:empty{display:none}
-.context{margin-top:14px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
-.ctx-label{margin:0 0 8px;font:700 11px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
-.context ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
-.context li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 12px;font-size:15px}
-.context li b{font-weight:600}
-.context li span{color:var(--faint);font-size:13.5px}
-
-/* Group board */
-.board{margin:22px 0 0;padding:16px;border-radius:14px;background:rgba(0,0,0,.18);border:1px solid var(--line);text-align:left}
+.board{margin-top:16px;padding:18px 20px}
 .board-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
-.board h3{margin:0;white-space:nowrap;font:800 21px/1 var(--display);text-transform:uppercase;letter-spacing:.04em}
-.tabs{display:flex;border:1px solid var(--line-strong);border-radius:999px;padding:3px}
-.tabs button{border:0;background:none;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:600;color:var(--dim)}
-.tabs button[aria-pressed="true"]{background:var(--chalk);color:#0B1626}
-.board-form label{display:block;font-size:14px;color:var(--dim);margin-bottom:8px}
+.board h3{margin:0;font:800 21px/1 var(--font);font-stretch:112%}
+.tabs{display:flex;border:1.5px solid var(--rule-2);border-radius:999px;padding:3px}
+.tabs button{border:0;background:none;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:650;color:var(--ink-2)}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.board-form label{display:block;font-size:14px;color:var(--ink-2);margin-bottom:8px}
 .board-fields{display:flex;gap:8px}
-.board-fields input{flex:1;min-width:0;padding:12px 14px;border-radius:10px;border:1.5px solid var(--line-strong);background:#0A1626;font-size:16px}
-.board-fields input:focus{outline:none;border-color:var(--gold)}
-.board-me{margin:0;font-size:14px;color:var(--dim)}
-.board-me b{color:var(--chalk)}
-.board-me button{background:none;border:0;color:var(--gold);font-weight:600;padding:0 0 0 6px;text-decoration:underline;text-underline-offset:3px}
+.board-fields input{flex:1;min-width:0;padding:11px 14px;border-radius:10px;border:2px solid var(--ink);background:#fff;font-size:16px}
+.board-fields input:focus{outline:none;border-color:var(--blue)}
+.board-me{margin:0;font-size:14px;color:var(--ink-2)}
+.board-me b{color:var(--ink)}
+.board-me button{background:none;border:0;color:var(--blue);font-weight:650;padding:0 0 0 6px;text-decoration:underline;text-underline-offset:3px}
 .board-list{list-style:none;margin:12px 0 0;padding:0}
-.board-list li{display:grid;grid-template-columns:28px 1fr auto 34px;gap:10px;align-items:center;padding:9px 6px;border-top:1px solid var(--line)}
-.board-list li.me{background:rgba(242,193,78,.08);border-radius:8px}
-.board-list .rk{color:var(--faint);font-weight:600}
-.board-list .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.board-list .sq{font-size:13px;letter-spacing:1px;color:var(--faint)}
-.board-list .pt{text-align:right;font:800 20px/1 var(--display)}
-.board-list li.empty{display:block;color:var(--faint);font-size:14px}
-.board-note{margin:8px 0 0;font-size:13.5px;color:var(--faint)}
+.board-list li{display:grid;grid-template-columns:28px 1fr auto 34px;gap:10px;align-items:center;padding:9px 6px;border-top:1.5px solid var(--rule)}
+.board-list li.me{background:#FFF6CC;border-radius:8px}
+.board-list .rk{color:var(--ink-3);font-weight:650}
+.board-list .nm{font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.board-list .sq{font-size:13px;letter-spacing:1px;color:var(--ink-3)}
+.board-list .pt{text-align:right;font:850 20px/1 var(--font)}
+.board-list li.empty{display:block;color:var(--ink-3);font-size:14px}
+.board-note{margin:8px 0 0;font-size:13.5px;color:var(--ink-3)}
 .board-note:empty{display:none}
 @media(max-width:420px){.board-list .sq{font-size:10px;letter-spacing:0}}
-.recap{list-style:none;margin:22px 0 0;padding:0;text-align:left;border-top:1px solid var(--line)}
-.recap li{display:grid;grid-template-columns:14px 1fr auto;gap:12px;align-items:center;padding:11px 2px;border-bottom:1px solid var(--line)}
-.recap i{width:12px;height:12px;border-radius:3px}
-.recap .s3{background:var(--good)} .recap .s2{background:var(--ok)} .recap .s1{background:var(--meh)} .recap .s0{background:var(--miss)}
-.recap b{font-weight:600}
-.recap span{color:var(--faint);font-size:13px;text-align:right}
-.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);padding:10px 16px;border-radius:10px;background:var(--chalk);color:#0B1626;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.4)}
-.foot{margin-top:28px;text-align:center;color:var(--faint);font-size:13px}
-.foot a{color:var(--dim)}
+
+/* The recap: the day's ten as a line of its own */
+.recap{list-style:none;margin:16px 0 0;padding:14px 20px}
+.recap li{position:relative;display:grid;grid-template-columns:22px 1fr auto;gap:14px;align-items:center;padding:9px 0}
+.recap li:not(:last-child):after{content:"";position:absolute;left:8px;top:calc(50% + 6px);height:100%;width:6px;background:var(--ink)}
+.recap i{position:relative;z-index:1;width:22px;height:22px;border-radius:50%;border:4px solid var(--ink);background:var(--gray)}
+.recap .s3{background:var(--green)} .recap .s2{background:var(--yellow)} .recap .s1{background:var(--orange)}
+.recap b{font-weight:700}
+.recap span{color:var(--ink-3);font-size:13.5px}
+.recap .pt{font-weight:800;color:var(--ink);font-size:15px}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);padding:11px 16px;border-radius:10px;background:var(--ink);color:#fff;font-weight:600;box-shadow:0 10px 30px rgba(23,25,29,.25)}
+.foot{margin-top:30px;color:var(--ink-3);font-size:13px}
+.foot a{color:var(--ink-2)}
+
+/* One moment of motion: the line draws itself, station by station, when a player comes up */
 @media(prefers-reduced-motion:no-preference){
-  .card.enter{animation:rise .35s ease both}
-  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .route.enter .stop{animation:arrive .32s ease-out both;animation-delay:calc(var(--k) * 45ms)}
+  .route.enter .stop:after{animation:run .32s ease-out both;animation-delay:calc(var(--k) * 45ms + 120ms);transform-origin:top}
+  @keyframes arrive{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+  @keyframes run{from{transform:scaleY(0)}to{transform:none}}
 }
-
-/* ===== Departures board theme: an airport board instead of Guess the Pick's draft podium ===== */
-:root{
-  --stage:#0C0D0F; --stage-deep:#070809; --panel:#16181B; --panel-hi:#1F2226;
-  --gold:#FFB81C; --amber:#FFC21A; --flap:#1A1B1E; --flap-hi:#232528;
-  --mono:"Space Mono","SFMono-Regular",Menlo,Consolas,monospace;
-}
-body{background:
-    radial-gradient(80% 40% at 50% -6%,rgba(255,184,28,.10),transparent 70%),
-    linear-gradient(180deg,#121417 0,var(--stage-deep) 900px);background-repeat:no-repeat;background-color:var(--stage-deep)}
-/* the title, in flaps */
-.mast h1{display:flex;justify-content:center;flex-wrap:wrap;gap:4px;font:700 clamp(30px,7.4vw,58px)/1 var(--mono);letter-spacing:0}
-.mast h1 .t{display:inline-grid;place-items:center;width:1.02em;height:1.34em;background:linear-gradient(180deg,var(--flap-hi) 0 49.5%,#000 49.5% 50.5%,var(--flap) 50.5%);
-  color:var(--amber);border-radius:5px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.04),0 3px 8px rgba(0,0,0,.5)}
-.mast h1 .t.m{color:#fff}
-.mast h1 span{color:inherit}
-body:not([data-screen="home"]) .mast h1{font-size:clamp(18px,4.2vw,26px)}
-.kicker{color:var(--amber);font-family:var(--mono);letter-spacing:.14em}
-.sport[aria-pressed="true"],.mode:hover{border-color:var(--amber)}
-.sport[aria-pressed="true"]{box-shadow:0 0 0 1px var(--amber) inset}
-.mode.daily{border-top-color:var(--amber)} .mode.endless{border-top-color:#5B6470}
-.mode .status{color:var(--amber)}
-.go,.btn.primary{background:var(--amber);border-color:var(--amber);color:#111}
-.go:hover,.btn.primary:hover{background:#FFD24D}
-.field input:focus,.board-fields input:focus{border-color:var(--amber)}
-.pts i{background:var(--amber)}
-.card{background:#111214;border-color:#26292E}
-.card-top{background:#08090A;border-bottom-color:#26292E;font-family:var(--mono);letter-spacing:.12em}
-.card-top .live{color:var(--amber)}
-.card-top .live:before{background:var(--amber);box-shadow:0 0 10px var(--amber);animation:blink 1.6s steps(2,start) infinite}
-@keyframes blink{to{visibility:hidden}}
-.clue{background:rgba(255,184,28,.07);border-color:rgba(255,184,28,.28)}
-.clue span{color:var(--amber)}
-
-/* the board */
-.dep-head{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 8px;font:700 15px/1 var(--mono);letter-spacing:.16em;color:var(--amber)}
-.dep-head svg{width:20px;height:20px;vertical-align:-4px;margin-right:8px;fill:var(--amber)}
-.dep-head #dep-clock{color:#fff;letter-spacing:.08em}
-.dep-cols,.dep li{display:grid;grid-template-columns:30px 34px minmax(0,1fr) 92px 98px;gap:10px;align-items:center}
-.dep-cols{padding:6px 16px;font:700 10.5px/1 var(--mono);letter-spacing:.14em;color:#7B828C;border-top:1px solid #26292E;border-bottom:1px solid #26292E}
-.dep{list-style:none;margin:0;padding:6px 10px 12px}
-.dep li{padding:7px 6px;border-bottom:1px dashed #23262A;position:relative}
-.dep li:after{content:"";position:absolute;left:-4px;top:8px;bottom:8px;width:4px;border-radius:2px;background:var(--c1)}
-.dep .no{font:700 14px/1 var(--mono);color:#7B828C;text-align:center}
-.dep .logo{width:34px;height:34px;background:#0A0B0C}
-.dep .logo img{width:28px;height:28px}
-.dep .logo b{font-size:11px}
-.dep .dest{min-width:0}
-.flaps{--w:440px;display:flex;flex-wrap:nowrap;gap:2px;overflow:hidden}
-.flap{flex:none;display:inline-grid;place-items:center;width:1.18em;height:1.55em;font:700 min(15px,calc(var(--w) / (var(--n) * 1.42)))/1 var(--mono);color:var(--amber);
-  background:linear-gradient(180deg,var(--flap-hi) 0 49%,#000 49% 51%,var(--flap) 51%);border-radius:3px;text-transform:uppercase}
-.flap.sp{background:none;width:.5em}
-.dep .nick{display:block;margin-top:3px;font:600 12px/1.1 var(--body);color:#9AA2AD;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.dep .yrs{font:700 14px/1 var(--mono);color:#fff;white-space:nowrap}
-.dep .st{font:700 12px/1 var(--mono);letter-spacing:.06em;color:#7BD88F}
-.dep li.held .st{color:var(--amber);animation:blink 1.4s steps(2,start) infinite}
-.dep li.held .yrs{color:#4A5058}
-.dep li.held .logo{opacity:.25}
-.dep li.held .flap{color:transparent}
-.dep li.held .nick{visibility:hidden}
-.dep.tight li{padding:4px 6px}
-.dep.tight .flap{height:1.35em}
-.dep.tight .logo{width:28px;height:28px}.dep.tight .logo img{width:23px;height:23px}
-@media(max-width:560px){
-  .dep-cols,.dep li{grid-template-columns:24px 28px minmax(0,1fr) 70px}
-  .dep-cols .st,.dep .st{display:none}
-  .dep .logo{width:28px;height:28px}.dep .logo img{width:23px;height:23px}
-  .flaps{--w:calc(100vw - 222px)}
-  .dep .yrs{font-size:12px}
-}
-.hint.stop-hint{border-color:rgba(255,184,28,.5);color:#fff}
-.hint.stop-hint small{color:var(--amber)}
-.verdict .stops{color:#9AA2AD;font-weight:600;letter-spacing:.08em}
-@media(prefers-reduced-motion:reduce){.card-top .live:before,.dep li.held .st{animation:none}}
 </style>
 </head>
-<body data-screen="home">
+<body data-screen="home" data-sport="nba">
 <nav class="ds-bar" aria-label="davidsolar.dev">
   <a href="../"><img src="../assets/ds-mark.svg" alt="" width="20" height="20"><span class="ds-bar-name">David Solar</span></a>
   <a href="../#projects">All projects</a>
@@ -347,35 +263,34 @@ body:not([data-screen="home"]) .mast h1{font-size:clamp(18px,4.2vw,26px)}
 
 <main class="wrap">
   <header class="mast">
-    <p class="kicker">Have bag, will travel</p>
-    <h1 aria-label="Journeyman"><span class="t">J</span><span class="t">O</span><span class="t">U</span><span class="t">R</span><span class="t">N</span><span class="t">E</span><span class="t">Y</span><span class="t m">M</span><span class="t m">A</span><span class="t m">N</span></h1>
+    <div class="mast-mark"><h1 class="word">Journeyman</h1>
+    <div class="line-mark" aria-hidden="true"><b></b><i style="--c:#0039A6"></i><b></b><i style="--c:#FF6319"></i><b></b><i style="--c:#00933C"></i><b></b><i style="--c:#B933AD"></i><b></b><i style="--c:#FCCC0A"></i><b class="end"></b></div></div>
     <p>Every team he played for, in order. Name the player.</p>
   </header>
 
-  <!-- Home: pick a sport, then a mode -->
+  <!-- Home: pick a league, then a mode -->
   <section id="home" aria-label="Choose a game">
-    <div class="sports" role="group" aria-label="Sport">
-      <button type="button" class="sport" data-sport="nba" aria-pressed="true"><img src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/nba.png&w=80&h=80" alt="" onerror="this.remove()">NBA</button>
-      <button type="button" class="sport" data-sport="nfl" aria-pressed="false"><img src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/nfl.png&w=80&h=80" alt="" onerror="this.remove()">NFL</button>
-      <button type="button" class="sport" data-sport="mlb" aria-pressed="false"><img src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/mlb.png&w=80&h=80" alt="" onerror="this.remove()">MLB</button>
+    <p class="pick-label" id="league-label">League</p>
+    <div class="sports" role="group" aria-labelledby="league-label">
+      <button type="button" class="sport" data-sport="nba" aria-pressed="true"><i style="--c:#FF6319"></i>NBA</button>
+      <button type="button" class="sport" data-sport="nfl" aria-pressed="false"><i style="--c:#00933C"></i>NFL</button>
+      <button type="button" class="sport" data-sport="mlb" aria-pressed="false"><i style="--c:#0039A6"></i>MLB</button>
     </div>
-    <div class="modes">
-      <button type="button" class="mode daily" id="start-daily">
-        <h2>Daily ten</h2>
-        <p class="tagline">Ten careers, the same ten for everyone today. Compare scores in the group chat.</p>
+    <ul class="modes">
+      <li><button type="button" class="mode" id="start-daily">
+        <span><span class="mode-name">Daily ten</span><span class="tagline">Ten careers, the same ten for everyone today.</span></span>
         <span class="status" id="daily-status"></span>
-      </button>
-      <button type="button" class="mode endless" id="start-endless">
-        <h2>Endless</h2>
-        <p class="tagline">Keep going until you whiff three times.</p>
+      </button></li>
+      <li><button type="button" class="mode" id="start-endless">
+        <span><span class="mode-name">Endless</span><span class="tagline">Keep going until you miss three.</span></span>
         <span class="status" id="endless-status"></span>
-      </button>
-    </div>
+      </button></li>
+    </ul>
     <div class="rules">
-      <b>How it works.</b> Every player is worth 5 points.
+      <h3>How it works</h3>
       <ul>
-        <li>The board shows his first two stops. Guess any time, or flip the next stop for a point (or the whole board for 2). A team he came back to shows up again.</li>
-        <li>Other clues cost a point each: position, college or birthplace, draft or debut, and his career numbers. Initials cost 2. A wrong guess costs 1.</li>
+        <li>You get every team he played for, in order, with the years. A team he went back to shows up again. Each player is worth 5 points.</li>
+        <li>Stuck? Clues cost a point each: position, college or birthplace, draft or debut, and his career numbers. Initials cost 2. A wrong guess costs 1.</li>
         <li>Typos are free, and so is a last name a few players share. Only a real player who isn't the answer costs you.</li>
         <li>Everyone here played for at least four franchises and finished his career in 2000 or later.</li>
       </ul>
@@ -383,58 +298,61 @@ body:not([data-screen="home"]) .mast h1{font-size:clamp(18px,4.2vw,26px)}
   </section>
 
   <!-- Play -->
-  <section id="play" hidden aria-label="Guess the pick">
+  <section id="play" hidden aria-label="Name the player">
     <div class="hud">
-      <div class="left"><button type="button" class="back" id="back">&larr; Menu</button><span id="hud-mode"></span></div>
+      <div class="left"><button type="button" class="back" id="back">Menu</button><span id="hud-mode"></span></div>
       <div id="hud-right"></div>
     </div>
-    <article class="card" id="card">
-      <div class="watermark" id="watermark" aria-hidden="true"></div>
-      <div class="card-top"><span class="live" id="card-league">NBA</span><span id="card-count"></span></div>
-      <div class="dep-head"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>Departures</span><span id="dep-clock"></span></div>
-      <div class="dep-cols" aria-hidden="true"><span>#</span><span></span><span>Destination</span><span>Years</span><span class="st">Status</span></div>
-      <ol class="dep" id="path"></ol>
-      <div class="clues" id="clues"></div>
-      <div class="guess-area" id="guess-area">
-        <div class="pts" id="pts" aria-live="polite"></div>
-        <form class="field" id="guess-form" autocomplete="off">
-          <label class="sr" for="guess">Player's name</label>
-          <input id="guess" type="text" placeholder="Who is he?" autocomplete="off" autocapitalize="words" spellcheck="false"
-                 role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="suggestions">
-          <button class="go" type="submit">Guess</button>
-          <ul class="list" id="suggestions" role="listbox" hidden></ul>
-        </form>
-        <p class="msg" id="msg" aria-live="polite"></p>
-        <div class="wrongs" id="wrongs"></div>
-        <p class="hints-label">Flip a stop or buy a clue</p>
-        <div class="hints" id="hints" role="group" aria-label="Hints"></div>
-        <div class="tools">
-          <button type="button" class="tool quit" id="give-up">Show me</button>
+    <div class="play-grid">
+      <article class="sheet route-card" id="card">
+        <header class="route-head"><span class="bullet" id="card-league">NBA</span><h2 id="card-count"></h2><span class="meta" id="route-meta"></span></header>
+        <ol class="route" id="path"></ol>
+      </article>
+      <aside class="sheet desk">
+        <div class="clues" id="clues"></div>
+        <div class="guess-area" id="guess-area">
+          <div class="pts" id="pts" aria-live="polite"></div>
+          <form class="field" id="guess-form" autocomplete="off">
+            <label class="sr" for="guess">Player's name</label>
+            <input id="guess" type="text" placeholder="Who is he?" autocomplete="off" autocapitalize="words" spellcheck="false"
+                   role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="suggestions">
+            <button class="go" type="submit">Guess</button>
+            <ul class="list" id="suggestions" role="listbox" hidden></ul>
+          </form>
+          <p class="msg" id="msg" aria-live="polite"></p>
+          <div class="wrongs" id="wrongs"></div>
+          <p class="hints-label">Buy a clue</p>
+          <div class="hints" id="hints" role="group" aria-label="Clues"></div>
+          <div class="tools">
+            <button type="button" class="tool" id="give-up">Show me who it is</button>
+          </div>
         </div>
-      </div>
-      <div class="reveal" id="reveal" hidden aria-live="polite">
-        <p class="verdict" id="verdict"></p>
-        <p class="answer" id="answer"></p>
-        <p class="facts" id="facts"></p>
-        <button type="button" class="next" id="next">Next pick</button>
-      </div>
-    </article>
+        <div class="reveal" id="reveal" hidden aria-live="polite">
+          <p class="verdict" id="verdict"></p>
+          <p class="answer" id="answer"></p>
+          <p class="facts" id="facts"></p>
+          <button type="button" class="next" id="next">Next player</button>
+        </div>
+      </aside>
+    </div>
   </section>
 
   <!-- Results -->
   <section id="done" hidden aria-label="Results">
     <div class="done">
-      <h2 id="done-title">Daily ten</h2>
-      <p class="big" id="done-score"></p>
-      <p class="grade" id="done-grade"></p>
-      <p class="squares" id="done-squares" aria-hidden="true"></p>
-      <div class="done-actions">
-        <button type="button" class="btn primary" id="share">Share</button>
-        <button type="button" class="btn" id="again"></button>
-        <button type="button" class="btn" id="menu">Menu</button>
+      <div class="sheet done-top">
+        <h2 id="done-title">Daily ten</h2>
+        <p class="big" id="done-score"></p>
+        <p class="grade" id="done-grade"></p>
+        <p class="squares" id="done-squares" aria-hidden="true"></p>
+        <div class="done-actions">
+          <button type="button" class="btn primary" id="share">Share</button>
+          <button type="button" class="btn" id="again"></button>
+          <button type="button" class="btn" id="menu">Menu</button>
+        </div>
+        <p class="countdown" id="countdown"></p>
       </div>
-      <p class="countdown" id="countdown"></p>
-      <div class="board" id="board" hidden>
+      <div class="sheet board" id="board" hidden>
         <div class="board-head">
           <h3>Group board</h3>
           <div class="tabs" role="group" aria-label="Board"><button type="button" data-tab="today" aria-pressed="true">Today</button><button type="button" data-tab="week" aria-pressed="false">This week</button></div>
@@ -447,7 +365,7 @@ body:not([data-screen="home"]) .mast h1{font-size:clamp(18px,4.2vw,26px)}
         <ol class="board-list" id="board-list"></ol>
         <p class="board-note" id="board-note" aria-live="polite"></p>
       </div>
-      <ul class="recap" id="recap"></ul>
+      <ol class="sheet recap" id="recap"></ol>
     </div>
   </section>
 
@@ -459,6 +377,6 @@ body:not([data-screen="home"]) .mast h1{font-size:clamp(18px,4.2vw,26px)}
 <script src="../guess-the-pick/names.js?v=1"></script>
 <script src="names-mlb.js?v=1"></script>
 <script src="../guess-the-pick/engine.js?v=3"></script>
-<script src="app.js?v=5"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>
