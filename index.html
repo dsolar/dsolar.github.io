@@ -20,12 +20,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Besley:ital,wght@0,500;0,600;0,700;0,800;1,500&family=Libre+Franklin:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="assets/site.css?v=20261029-tiles">
+<link rel="stylesheet" href="assets/site.css?v=20261029-leaders">
 <script>if (location.hash === "#kids") location.replace("kids/");  /* the kids section moved to its own page */</script>
 <script src="assets/site.js" defer></script>
 <script src="assets/analytics.js" defer></script>
 <script src="assets/scoreboard.js?v=20261028-pregame" defer></script>
 <script src="assets/slate.js?v=20261029-tiles" defer></script>
+<script src="assets/leaders.js?v=20261029-leaders" defer></script>
 </head>
 <body>
 
@@ -93,6 +94,17 @@
           <span class="slate-reset"></span>
         </div>
       </aside>
+    </div>
+  </section>
+
+  <!-- Who's winning today: each daily game's group board leader. assets/leaders.js fills it from Supabase; it stays hidden if the boards can't be reached. -->
+  <section class="leaders" id="leaders" aria-labelledby="leaders-title" hidden>
+    <div class="wrap">
+      <div class="ld-head">
+        <h2 id="leaders-title">Who&rsquo;s winning today</h2>
+        <p class="ld-note" aria-live="polite"></p>
+      </div>
+      <div class="ld-grid"></div>
     </div>
   </section>
 
