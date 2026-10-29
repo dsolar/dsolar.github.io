@@ -136,3 +136,29 @@ const GUIDE=[
 {q:'Can you give me an idea?',keys:['idea','bored','what should','help me think','inspire','suggest'],views:['room','house','yard','isle'],a:'',act:'idea'},
 {q:'Who are you?',keys:['who','your name','cow','talk','friend','hello','hi '],views:['isle','room','house','yard'],a:'I\'m Cow! I only just learned to talk, so now I can\'t stop. I live on the island, I love flowers and cozy rugs, and I love helping you design.'}
 ];
+
+// Cow's sticker book. Each mission checks the whole studio; add or change them freely.
+const allRooms=st=>st.homes.flatMap(h=>h.rooms),yardItems=st=>st.homes.flatMap(h=>h.yard.items),count=(list,types)=>list.filter(i=>types.includes(i.type)).length;
+const MISSIONS=[
+{id:'art',icon:'🖼️',title:'Hang your own painting on a wall',check:st=>allRooms(st).some(r=>r.art)},
+{id:'rooms3',icon:'🏡',title:'Build a house with 3 rooms',check:st=>st.homes.some(h=>h.rooms.length>=3)},
+{id:'kitchen',icon:'🍳',title:'Make a kitchen',check:st=>allRooms(st).some(r=>r.type==='kitchen')},
+{id:'beauty',icon:'💅',title:'Open a beauty parlor',check:st=>allRooms(st).some(r=>r.type==='beauty')},
+{id:'paper',icon:'🌸',title:'Try a wallpaper pattern',check:st=>allRooms(st).some(r=>r.paper&&!['style','plain'].includes(r.paper))},
+{id:'ten',icon:'🛋️',title:'Fill a room with 10 pieces',check:st=>allRooms(st).some(r=>r.items.length>=10)},
+{id:'mix',icon:'🎨',title:'Mix two collections in one room',check:st=>allRooms(st).some(r=>new Set(r.items.map(i=>i.style)).size>=2)},
+{id:'night',icon:'🌙',title:'Make a room moonlit',check:st=>allRooms(st).some(r=>r.light==='night')},
+{id:'big',icon:'📐',title:'Make a room 10 squares wide',check:st=>allRooms(st).some(r=>r.w>=10||r.d>=10)},
+{id:'cow',icon:'🐮',title:'Invite Cow into a room',check:st=>allRooms(st).some(r=>count(r.items,['cow'])>0)},
+{id:'cat',icon:'🐱',title:'Find a cozy spot for a sleepy cat',check:st=>count([...allRooms(st).flatMap(r=>r.items),...yardItems(st)],['cat'])>0},
+{id:'door',icon:'🚪',title:'Paint a front door a new color',check:st=>st.homes.some(h=>h.ext.door!=='#4c8580')},
+{id:'trees',icon:'🌳',title:'Plant 3 trees in one yard',check:st=>st.homes.some(h=>count(h.yard.items,['tree','blossomtree','palm'])>=3)},
+{id:'fence',icon:'🪵',title:'Build a fence with 4 pieces',check:st=>st.homes.some(h=>count(h.yard.items,['fence'])>=4)},
+{id:'water',icon:'💧',title:'Add a pond, pool or fountain to a yard',check:st=>count(yardItems(st),['pond','pool','fountain'])>0},
+{id:'neighbors',icon:'🏘️',title:'Build a second home on the island',check:st=>st.homes.length>=2},
+{id:'lighthouse',icon:'🗼',title:'Light the lighthouse at night',check:st=>st.isle.light==='night'&&count(st.isle.items,['lighthouse'])>0},
+{id:'market',icon:'🍎',title:'Open a market stall on the island',check:st=>count(st.isle.items,['stall'])>0},
+{id:'name',icon:'🏝️',title:'Give your island a name',check:st=>st.isle.name!=='Wild Bloom Isle'},
+{id:'picture',icon:'📷',title:'Save a picture of your design',check:st=>!!st.flags?.picture}
+];
+GUIDE.unshift({q:'What should I do next?',keys:['what should i do','what do i do','bored','mission','sticker','stickers','next','challenge','game','play'],views:['room','house','yard','isle'],a:'',act:'mission'});

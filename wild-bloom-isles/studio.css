@@ -110,6 +110,22 @@ dialog::backdrop{background:#273f3666}
 .guide-chips button{font-size:11.5px;padding:6px 10px;border-radius:16px;background:#fff;border-color:#ecd3dc;text-align:left;color:#4f3742}
 .guide-chips .more{background:#f4f1ea;border-color:var(--line);color:#5f6d62}
 #guide-form{display:flex;gap:6px;padding:10px 12px;border-top:1px solid #f0e3e7}#guide-form input{flex:1;min-width:0;border:1px solid var(--line);border-radius:20px;padding:9px 12px}#guide-form button{border-radius:20px}
+.sticker-btn{font-weight:700;color:#8a6a1f;background:#fff8e1;border-color:#f0dfa8}.sticker-btn:hover{background:#fdf0c4}
+.sticker-btn.bump{animation:bump .6s ease-out}@keyframes bump{30%{transform:scale(1.25) rotate(-6deg)}60%{transform:scale(.95)}}
+.icon-btn{padding:8px 10px}
+.sticker-dialog{width:min(860px,96vw)}
+.sticker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:14px 0 18px;max-height:62vh;overflow:auto;padding:2px}
+.sticker{border:1px dashed #d9dccd;border-radius:14px;padding:12px;text-align:center;background:#fafaf6}
+.sticker .badge{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 8px;border-radius:50%;font-size:30px;background:#eceee6;filter:grayscale(1);opacity:.45}
+.sticker b{display:block;font:13px/1.35 Georgia,serif;color:#5f6d62}.sticker small{display:block;margin-top:6px;font-size:10px;letter-spacing:1px;color:#98a094;text-transform:uppercase}
+.sticker.got{border:1px solid #f0dfa8;background:#fffbea}.sticker.got .badge{filter:none;opacity:1;background:radial-gradient(circle,#fff,#fde7a6);box-shadow:0 0 0 3px #fff,0 0 0 5px #f2cf63,0 4px 10px #c9a2302e;transform:rotate(-6deg)}
+.sticker.got b{color:#4f3742}.sticker.got small{color:#b08a1e}
+.sparkles{position:absolute;width:0;height:0;pointer-events:none;z-index:4}
+.sparkles i{position:absolute;width:7px;height:7px;margin:-3.5px;border-radius:50%;background:var(--c);animation:burst .6s ease-out forwards;transform:rotate(var(--a)) translateY(0)}
+@keyframes burst{to{transform:rotate(var(--a)) translateY(-34px) scale(.3);opacity:0}}
+.confetti{position:absolute;inset:0;pointer-events:none;z-index:7;overflow:hidden}
+.confetti i{position:absolute;top:-12px;width:9px;height:14px;border-radius:2px;animation:fall var(--d) ease-in forwards;transform:rotate(var(--r))}
+@keyframes fall{to{transform:translate(var(--x),620px) rotate(calc(var(--r) + 300deg));opacity:.2}}
 @media(max-width:1180px){.stage{grid-template-columns:1fr}.shelf{position:static;max-height:none}
  #pieces{display:flex;overflow-x:auto;gap:8px;padding-bottom:6px;scroll-snap-type:x proximity}.piece{flex:0 0 128px;scroll-snap-align:start}.room-card{flex-basis:190px}}
 @media(max-width:1000px){main{grid-template-columns:230px minmax(0,1fr)}.workspace{padding:18px 14px}aside{padding:22px 14px}.art-layout{grid-template-columns:1fr}}
@@ -118,4 +134,4 @@ dialog::backdrop{background:#273f3666}
  #styles{grid-template-columns:repeat(3,1fr)}.workspace{padding:14px 10px}#scene{height:min(92vw,440px)}.views{width:100%}.views button{flex:1;padding:9px 3px;font-size:11px}
  .guide{position:fixed;left:8px;right:8px;bottom:8px;top:auto;width:auto;height:min(80vh,560px);z-index:60}.ask-cow{top:8px;right:8px;padding:4px 10px 4px 4px;font-size:12px}.ask-cow svg{width:28px;height:28px}
  .room-tools .spacer{display:none}#room-pick{max-width:100%;flex:1}.piece svg{height:86px}}
-@media(prefers-reduced-motion:reduce){.piece,.scene-wrap{transition:none}#hint.talk,.guide{animation:none}}
+@media(prefers-reduced-motion:reduce){.piece,.scene-wrap{transition:none}#hint.talk,.guide,.sticker-btn.bump{animation:none}}

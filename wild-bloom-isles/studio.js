@@ -39,10 +39,10 @@ function cleanHome(h){if(!h||!Array.isArray(h.rooms))return null;let rooms=[];fo
  if(Number.isInteger(h.at?.x)&&Number.isInteger(h.at?.y)&&num(h.at.x,-500,500)&&num(h.at.y,-500,500))o.at={x:h.at.x,y:h.at.y};
  return o;}
 function cleanState(s){if(!s||!Array.isArray(s.homes))return null;let homes=s.homes.slice(0,MAX_HOMES).map(cleanHome).filter(Boolean);if(!homes.length)return null;
- return finalize({v:2,homes,active:Number.isInteger(s.active)&&s.active>=0&&s.active<homes.length?s.active:0,view:Object.hasOwn(VIEWS,s.view)?s.view:'room',isle:s.isle});}
+ return finalize({v:2,homes,active:Number.isInteger(s.active)&&s.active>=0&&s.active<homes.length?s.active:0,view:Object.hasOwn(VIEWS,s.view)?s.view:'room',isle:s.isle,stickers:s.stickers,flags:s.flags});}
 function cleanIsle(i){i=i||{};let o={name:typeof i.name==='string'&&i.name.trim()?i.name.slice(0,40):'Wild Bloom Isle',items:[],size:[3,6,10].includes(i.size)?i.size:6,light:['day','golden','night'].includes(i.light)?i.light:'day'};
  for(let it of (Array.isArray(i.items)?i.items:[]).slice(0,MAX_YARD)){let c=cleanItem(it,'isle');if(c)o.items.push(c);}return o;}
-function finalize(s){s.isle=cleanIsle(s.isle);layoutHomes(s);return s;}
+function finalize(s){s.isle=cleanIsle(s.isle);layoutHomes(s);let st={};for(let m of MISSIONS)if(Number.isFinite(s.stickers?.[m.id]))st[m.id]=s.stickers[m.id];s.stickers=st;s.flags={picture:!!s.flags?.picture};return s;}
 // Give every home its own lot on the island, keeping spots that already work and finding new ones next to the neighbors.
 const lotsTouch=(a,b,gap=1)=>a.x0<b.x1+gap&&a.x1+gap>b.x0&&a.y0<b.y1+gap&&a.y1+gap>b.y0;
 function lotAt(h,at){let b=yardBounds(h);return {x0:at.x+b.x0,y0:at.y+b.y0,x1:at.x+b.x1,y1:at.y+b.y1};}
@@ -75,13 +75,13 @@ function roomFree(h,k,px,py,w,d){return px>=0&&py>=0&&!h.rooms.some((q,j)=>j!==k
 function normalize(h){let b=houseBounds(h),dx=-b.x0,dy=-b.y0;if(!dx&&!dy)return;for(let r of h.rooms){r.px+=dx;r.py+=dy;}for(let i of h.yard.items){i.x+=dx;i.y+=dy;}}
 
 // ---------- saving and undo ----------
-function save(){try{localStorage.setItem(KEY,JSON.stringify(state));$('saved').textContent='Saved on this device';}catch{$('saved').textContent='Storage is full. Export your design to keep it.';}}
+function save(){awardStickers();try{localStorage.setItem(KEY,JSON.stringify(state));$('saved').textContent='Saved on this device';}catch{$('saved').textContent='Storage is full. Export your design to keep it.';}}
 function checkpoint(){undo.push(JSON.stringify(state));if(undo.length>40)undo.shift();redo=[];}
 function change(fn){checkpoint();fn();save();render();}
-function history(from,to){if(!from.length)return;to.push(JSON.stringify(state));state=JSON.parse(from.pop());selected=null;pending=null;save();render();}
+function history(from,to){if(!from.length)return;to.push(JSON.stringify(state));let keep=state.stickers,flags=state.flags;state=JSON.parse(from.pop());state.stickers={...state.stickers,...keep};state.flags=flags;selected=null;pending=null;save();render();}
 
 // ---------- hints ----------
-function hint(msg,ms=3200){flash=msg;$('hint').textContent=msg;$('hint').classList.toggle('talk',/^🐮|^🐱/.test(msg));clearTimeout(flashTimer);flashTimer=setTimeout(()=>{flash=null;refreshHint();},ms);}
+function hint(msg,ms=3200){flash=msg;$('hint').textContent=msg;$('hint').classList.toggle('talk',/^🐮|^🐱|^⭐/.test(msg));clearTimeout(flashTimer);flashTimer=setTimeout(()=>{flash=null;refreshHint();},ms);}
 function baseHint(){let v=view();if(pending?.room)return `Tap an open spot on the plan to add your ${ROOM_TYPES[pending.type].name.toLowerCase()}.`;
  if(pending)return `Tap an open spot to place your ${TYPES[pending.type].name.toLowerCase()}.`;
  if(v==='isle'&&!pending){if(selHome!=null)return 'Drag the home to move it around the island. Double-tap to visit.';if(!selected)return 'Drag a home to arrange the village, or add village pieces from the shelf.';}
@@ -182,7 +182,7 @@ $('scene').addEventListener('pointerdown',e=>{let v=view(),h=home();
    if(h.rooms.some(q=>overlap(x,y,pending.w,pending.d,q.px,q.py,q.w,q.d,0))){hint('That spot overlaps another room. Try an open space.');return;}
    change(()=>{let t=ROOM_TYPES[pending.type],r=makeRoom(pending.type,uniqueName(t.name,h.rooms.map(q=>q.name)),style,pending.w,pending.d);r.px=x;r.py=y;
     if(x<0||y<0){let dx=Math.max(0,-x),dy=Math.max(0,-y);for(let q of h.rooms){q.px+=dx;q.py+=dy;}for(let i of h.yard.items){i.x+=dx;i.y+=dy;}r.px+=dx;r.py+=dy;}
-    h.rooms.push(r);normalize(h);selected=h.rooms.length-1;pending=null;ghost=null;});hint(`Your new ${ROOM_TYPES[h.rooms[selected].type].name.toLowerCase()} is ready. Double-tap it to go inside!`,4500);return;}
+    h.rooms.push(r);normalize(h);selected=h.rooms.length-1;pending=null;ghost=null;});Sound.play('pop');sparkle(e);hint(`Your new ${ROOM_TYPES[h.rooms[selected].type].name.toLowerCase()} is ready. Double-tap it to go inside!`,4500);return;}
   let k=e.target.closest('[data-room]')?.dataset.room;if(k!=null){k=Number(k);let now=Date.now();if(lastTap.k===k&&now-lastTap.t<420){lastTap={};enterRoom(k);return;}lastTap={k,t:now};selected=k;freeze();drag={room:k,start:{x:h.rooms[k].px,y:h.rooms[k].py},p:floorPoint(e),before:JSON.stringify(state),moved:false};$('scene').setPointerCapture(e.pointerId);renderScene();renderSelection();refreshHint();}
   else{selected=null;renderScene();renderSelection();refreshHint();}return;}
  if(v==='isle'){if(e.target.closest('[data-guide]')){openGuide();return;}
@@ -191,8 +191,8 @@ $('scene').addEventListener('pointerdown',e=>{let v=view(),h=home();
  let id=e.target.closest('[data-item]')?.dataset.item,sp=space();
  if(pending){if(sp.items.length>=sp.max){hint(`That's ${sp.max} pieces, the most this space can hold.`);return;}let at=itemAt(floorPoint(e)),i=makeItem(pending.type,pending.style,at.x,at.y,pending.rot||0);if(pending.fabric)i.fabric=pending.fabric;
   if(!fits(i)){hint(v==='isle'?'Keep it on the island and out of the yards. Try open grass or sand.':v==='yard'?'That spot is taken, or it is part of the house. Try open grass.':'That spot is taken or outside the room. Try an open floor space.');return;}
-  change(()=>{sp.items.push(i);selected=i.id;pending=null;ghost=null;});hint(['cow','cat'].includes(i.type)?cowLine(i):'Placed! Drag it to fine-tune, or turn it below.');return;}
- if(id){selected=id;let i=sp.items.find(i=>i.id===id);if(v==='yard'||v==='isle')freeze();drag={id,start:clone(i),p:floorPoint(e),before:JSON.stringify(state),moved:false};$('scene').setPointerCapture(e.pointerId);renderScene();renderSelection();refreshHint();}
+  change(()=>{sp.items.push(i);selected=i.id;pending=null;ghost=null;});Sound.play('pop');sparkle(e);if(['cow','cat'].includes(i.type))speak(i);else hint('Placed! Drag it to fine-tune, or turn it below.');return;}
+ if(id){selected=id;Sound.play('pick');let i=sp.items.find(i=>i.id===id);if(v==='yard'||v==='isle')freeze();drag={id,start:clone(i),p:floorPoint(e),before:JSON.stringify(state),moved:false};$('scene').setPointerCapture(e.pointerId);renderScene();renderSelection();refreshHint();}
  else{selected=null;renderScene();renderSelection();refreshHint();}});
 $('scene').addEventListener('pointermove',e=>{let v=view();
  if(pending&&!drag){let p=floorPoint(e);ghost=pending.room?{x:Math.round(p.x-pending.w/2),y:Math.round(p.y-pending.d/2)}:itemAt(p);renderScene();return;}
@@ -203,7 +203,7 @@ $('scene').addEventListener('pointermove',e=>{let v=view();
  if(c.x===i.x&&c.y===i.y)return;if(fits(c,sp)){i.x=c.x;i.y=c.y;drag.moved=true;renderScene();}else if(!flash)hint(v==='isle'?'Keep it on the island and out of the yards.':v==='yard'?'Keep it on the grass and off the house.':'Keep it inside the room and clear of other pieces.',1400);});
 function finishDrag(cancel=false){if(!drag)return;let d=drag;drag=null;
  if(cancel)state=JSON.parse(d.before);else if(d.moved){if(d.room!=null)normalize(home());if(JSON.stringify(state)!==d.before){undo.push(d.before);if(undo.length>40)undo.shift();redo=[];save();}}
- frozen=null;render();if(!d.moved&&d.id){let i=space().items.find(i=>i.id===d.id);if(i&&['cow','cat'].includes(i.type))hint(cowLine(i),5200);}}
+ frozen=null;render();if(!d.moved&&d.id){let i=space().items.find(i=>i.id===d.id);if(i&&['cow','cat'].includes(i.type))speak(i);}}
 $('scene').addEventListener('pointerup',()=>finishDrag());$('scene').addEventListener('pointercancel',()=>finishDrag(true));
 $('scene').addEventListener('pointerleave',()=>{if(pending&&!drag){ghost=null;renderScene();}});
 $('scene').addEventListener('dblclick',e=>{if(view()!=='house')return;let k=e.target.closest('[data-room]')?.dataset.room;if(k!=null)enterRoom(Number(k));});
@@ -239,9 +239,9 @@ function act(a){let v=view(),h=home();
   return;}
  if(a==='rotate'&&pending){pending.rot=1-(pending.rot||0);renderScene();return;}
  let sp=space(),i=sp.items.find(i=>i.id===selected);if(!i)return;
- if(a==='talk'){hint(cowLine(i),5200);return;}
+ if(a==='talk'){speak(i);return;}
  if(a==='original')change(()=>delete i.fabric);
- if(a==='remove')change(()=>{let k=sp.items.findIndex(j=>j.id===selected);sp.items.splice(k,1);selected=null;});
+ if(a==='remove'){Sound.play('remove');}if(a==='remove')change(()=>{let k=sp.items.findIndex(j=>j.id===selected);sp.items.splice(k,1);selected=null;});
  if(a==='rotate'){let c={...i,rot:1-i.rot};if(fits(c))change(()=>i.rot=c.rot);else hint('Move it into a bigger open space before turning it.');}
  if(a==='duplicate'){pending={type:i.type,style:i.style,rot:i.rot,...(i.fabric?{fabric:i.fabric}:{})};ghost=null;selected=null;render();hint('Tap an open spot for the copy.');}}
 function setPaint(target,color){let v=view(),h=home();
@@ -328,7 +328,7 @@ $('art-dialog').addEventListener('click',e=>{let b=e.target.closest('button');if
  if(d.art==='clear'){artSnapshot();actx().clearRect(0,0,c.width,c.height);}});
 $('art-dialog').addEventListener('input',e=>{if(e.target.id==='art-any'){art.color=e.target.value;e.target.parentElement.style.setProperty('--c',art.color);if(art.tool==='eraser'||art.tool==='rainbow')art.tool='brush';}});
 $('art-dialog').addEventListener('close',()=>{let v=$('art-dialog').returnValue,r=room();
- if(v==='hang'){let url=$('art-canvas').toDataURL('image/png');if(url.length>700000){hint('That painting is too detailed to save. Try clearing a little.');return;}change(()=>{r.art=url;r.artBg=art.bg;});hint('Your painting is hanging on the wall. Beautiful!',4000);}
+ if(v==='hang'){let url=$('art-canvas').toDataURL('image/png');if(url.length>700000){hint('That painting is too detailed to save. Try clearing a little.');return;}change(()=>{r.art=url;r.artBg=art.bg;});Sound.play('chime');hint('Your painting is hanging on the wall. Beautiful!',4000);}
  if(v==='remove'&&r.art){change(()=>{delete r.art;delete r.artBg;});hint('The painting is down. Paint a new one any time.');}});
 
 // ---------- export, import and pictures ----------
@@ -340,7 +340,7 @@ async function savePicture(){let vb=viewBoxFor().split(' ').map(Number),v=view()
  let bg=v==='isle'?`<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${state.isle.light==='night'?'#1f2d4a':'#bfe3ea'}"/><stop offset="1" stop-color="${state.isle.light==='night'?'#2c4a66':'#7fc3d3'}"/></linearGradient>`:v==='yard'?`<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${h.ext.light==='night'?'#2f3b5c':'#d6ebf3'}"/><stop offset="1" stop-color="${h.ext.light==='night'?'#5a6380':'#f4f7ea'}"/></linearGradient>`:`<radialGradient id="bg" cx="50%" cy="42%" r="75%"><stop offset="0" stop-color="#fffdf8"/><stop offset="1" stop-color="#eaece1"/></radialGradient>`;
  let svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb[0]} ${vb[1]} ${vb[2]} ${vb[3]+cap}" width="${vb[2]}" height="${vb[3]+cap}"><defs>${bg}</defs><rect x="${vb[0]}" y="${vb[1]}" width="${vb[2]}" height="${vb[3]+cap}" fill="url(#bg)"/>${sceneArt(true)}<text x="${vb[0]+vb[2]/2}" y="${vb[1]+vb[3]+cap*.42}" text-anchor="middle" font-family="Georgia,serif" font-size="${r1(cap*.36)}" fill="${(v==='yard'&&h.ext.light==='night')||(v==='isle'&&state.isle.light==='night')?'#fffaf0':'#37483f'}">${esc(title)}</text><text x="${vb[0]+vb[2]/2}" y="${vb[1]+vb[3]+cap*.74}" text-anchor="middle" font-family="Arial" letter-spacing="${r1(cap*.03)}" font-size="${r1(cap*.13)}" fill="${(v==='yard'&&h.ext.light==='night')||(v==='isle'&&state.isle.light==='night')?'#e6e9ef':'#4f6b62'}">✿ DESIGNED IN WILD BLOOM ISLES</text></svg>`;
  try{let img=new Image(),url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));img.src=url;await img.decode();let scale=Math.min(2.4,3200/vb[2]),c=document.createElement('canvas');c.width=Math.round(vb[2]*scale);c.height=Math.round((vb[3]+cap)*scale);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);
-  c.toBlob(b=>{let a=document.createElement('a'),u=URL.createObjectURL(b);a.href=u;a.download=(title.replace(/[^\w ]+/g,'').trim()||'wild-bloom')+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(u),2000);hint('Picture saved! Look for it in your downloads.');},'image/png');}
+  state.flags.picture=true;save();c.toBlob(b=>{let a=document.createElement('a'),u=URL.createObjectURL(b);a.href=u;a.download=(title.replace(/[^\w ]+/g,'').trim()||'wild-bloom')+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(u),2000);hint('Picture saved! Look for it in your downloads.');},'image/png');}
  catch{hint('The picture could not be made in this browser. Try a screenshot instead.');}}
 $('picture').onclick=savePicture;
 
@@ -351,17 +351,19 @@ let guideLog=[],guideView='',guideAll=false;
 function greeting(){let v=view(),h=home();return v==='room'?`Moo! We're inside ${room().name}. Want to add furniture, change the wallpaper or paint a picture?`:v==='house'?`This is all of ${h.name}! You can add rooms here and make them any size you like.`:v==='yard'?`Ahh, fresh air! Let's make the outside of ${h.name} beautiful.`:`Welcome to ${state.isle.name}! Every home you build lives here with me. What should we make?`;}
 function cowSay(text,act){guideLog.push({who:'cow',text,act});if(guideLog.length>10)guideLog.splice(0,guideLog.length-10);}
 function openGuide(){let first=!guideLog.length;if(first){let seen=false;try{seen=!!localStorage.getItem(GUIDE_KEY);localStorage.setItem(GUIDE_KEY,'1');}catch{}if(!seen)cowSay(`Hi! It's me, Cow. I only just learned to talk, and now I get to be your guide! We live on an island, and every home you build gets its own spot.`,'isle');}
- if(guideView!==view()){cowSay(greeting());guideView=view();}$('guide').hidden=false;$('ask-cow').hidden=true;renderGuide();if(matchMedia('(pointer:fine)').matches)$('guide-q').focus();}
+ if(guideView!==view()){cowSay(greeting());guideView=view();}if($('guide').hidden)Sound.play('moo');$('guide').hidden=false;$('ask-cow').hidden=true;renderGuide();if(matchMedia('(pointer:fine)').matches)$('guide-q').focus();}
 function closeGuide(){$('guide').hidden=true;$('ask-cow').hidden=false;}
 function matchGuide(q){let t=' '+q.toLowerCase().replace(/[^a-z0-9 ']/g,' ').replace(/\s+/g,' ')+' ',best=null,top=0;for(let f of GUIDE){if(f.q.toLowerCase()===q.toLowerCase())return f;let score=0;for(let k of f.keys)if(t.includes(k.includes(' ')?k:' '+k))score+=k.length>5||k.includes(' ')?2:1;if(f.views.includes(view()))score+=score?.5:0;if(score>top){top=score;best=f;}}return best;}
-function answer(f){if(f.act==='idea'){idea=PROMPTS[Math.floor(Math.random()*PROMPTS.length)];cowSay(`Ooh, how about this: ${idea.charAt(0).toLowerCase()+idea.slice(1)}! I put it on the left too, under Need an idea.`);renderSide();return;}cowSay(f.a,f.act&&!(f.act===view())?f.act:null);}
+function answer(f){Sound.play('pick');if(f.act==='mission'){let left=MISSIONS.filter(m=>!state.stickers[m.id]);if(!left.length)cowSay(`You earned every single sticker! You are the best designer on the whole island. Moo!`);else{let m=left[Math.floor(Math.random()*Math.min(3,left.length))];cowSay(`Here's a mission: ${m.icon} ${m.title}! You have ${MISSIONS.length-left.length} of ${MISSIONS.length} stickers so far.`,'stickers');}return;}
+ if(f.act==='idea'){idea=PROMPTS[Math.floor(Math.random()*PROMPTS.length)];cowSay(`Ooh, how about this: ${idea.charAt(0).toLowerCase()+idea.slice(1)}! I put it on the left too, under Need an idea.`);renderSide();return;}cowSay(f.a,f.act&&!(f.act===view())?f.act:null);}
 function ask(q){q=q.trim();if(!q)return;guideLog.push({who:'kid',text:q});let f=matchGuide(q);if(f)answer(f);else cowSay(`Moo... I'm not sure about that one yet. Try asking a different way, or tap one of the questions below!`);renderGuide();}
-const ACT_LABEL={room:'Take me inside',house:'Show me the whole house',yard:'Take me outside',isle:'Show me the island',finishes:'Show me',art:'Open the easel',newhome:'Build a new home'};
+const ACT_LABEL={stickers:'Open my sticker book',room:'Take me inside',house:'Show me the whole house',yard:'Take me outside',isle:'Show me the island',finishes:'Show me',art:'Open the easel',newhome:'Build a new home'};
 function doGuide(a){let small=window.innerWidth<700;
  if(['room','house','yard','isle'].includes(a))setView(a);
  if(a==='finishes'){setView('room');setTimeout(()=>$('walls-section')?.scrollIntoView({behavior:'smooth',block:'start'}),50);}
  if(a==='art'){setView('room');closeGuide();openArt();return;}
  if(a==='newhome'){closeGuide();openName('new-home');return;}
+ if(a==='stickers'){closeGuide();openStickers();return;}
  if(small)closeGuide();else{cowSay(greeting());guideView=view();renderGuide();}}
 function renderGuide(){$('guide-chat').innerHTML=guideLog.map(m=>`<div class="bubble ${m.who}">${esc(m.text)}${m.act?`<button class="show" data-guide-act="${m.act}">${ACT_LABEL[m.act]} →</button>`:''}</div>`).join('');$('guide-chat').scrollTop=1e6;
  let list=guideAll?GUIDE:GUIDE.filter(f=>f.views.includes(view())).slice(0,6);$('guide-chips').innerHTML=list.map(f=>`<button data-guide-q="${esc(f.q)}">${esc(f.q)}</button>`).join('')+`<button class="more" data-guide-more="1">${guideAll?'Fewer questions':'More questions…'}</button>`;}
@@ -370,7 +372,41 @@ $('ask-cow').onclick=()=>openGuide();$('guide-close').onclick=closeGuide;
 $('guide-form').onsubmit=e=>{e.preventDefault();ask($('guide-q').value);$('guide-q').value='';};
 $('guide').addEventListener('click',e=>{let b=e.target.closest('button');if(!b)return;if(b.dataset.guideQ){ask(b.dataset.guideQ);}if(b.dataset.guideAct)doGuide(b.dataset.guideAct);if(b.dataset.guideMore){guideAll=!guideAll;renderGuide();}});
 
+
+// ---------- sounds ----------
+// Little synthesized sounds, no files to load. Off switch is in the header and remembered.
+const Sound={on:true,ctx:null,
+ init(){if(!this.ctx){try{this.ctx=new (window.AudioContext||window.webkitAudioContext)();}catch{return;}}if(this.ctx.state==='suspended')this.ctx.resume();},
+ tone(f,dur,{type='sine',vol=.1,at=0,to=null,filter=null}={}){let c=this.ctx,t=c.currentTime+at,o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(to)o.frequency.exponentialRampToValueAtTime(to,t+dur);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  let out=g;if(filter){let fl=c.createBiquadFilter();fl.type='lowpass';fl.frequency.value=filter;g.connect(fl);out=fl;}o.connect(g);out.connect(c.destination);o.start(t);o.stop(t+dur+.05);return o;},
+ play(name){if(!this.on)return;this.init();if(!this.ctx)return;
+  if(name==='pop'){this.tone(520,.12,{to:980,vol:.12});this.tone(1400,.06,{at:.05,vol:.04});}
+  if(name==='pick')this.tone(880,.05,{type:'triangle',vol:.05});
+  if(name==='remove')this.tone(520,.18,{type:'triangle',to:200,vol:.08});
+  if(name==='chime')[1047,1319,1568,2093].forEach((f,k)=>this.tone(f,.35,{at:k*.08,vol:.07}));
+  if(name==='mew')this.tone(950,.28,{type:'triangle',to:620,vol:.05});
+  if(name==='moo'){let o=this.tone(205,.7,{type:'sawtooth',to:150,vol:.09,filter:700}),c=this.ctx,l=c.createOscillator(),lg=c.createGain();l.frequency.value=6;lg.gain.value=6;l.connect(lg);lg.connect(o.frequency);l.start();l.stop(c.currentTime+.75);}}};
+try{Sound.on=localStorage.getItem('wild-bloom-sound')!=='0';}catch{}
+function renderSoundBtn(){$('sound').textContent=Sound.on?'🔊':'🔇';$('sound').setAttribute('aria-pressed',Sound.on);$('sound').title=Sound.on?'Sounds on':'Sounds off';}
+$('sound').onclick=()=>{Sound.on=!Sound.on;try{localStorage.setItem('wild-bloom-sound',Sound.on?'1':'0');}catch{}renderSoundBtn();if(Sound.on)Sound.play('pop');};
+function speak(i){hint(cowLine(i),5200);Sound.play(i.type==='cat'?'mew':'moo');}
+
+// ---------- sparkles and confetti ----------
+const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+function sparkle(e){if(reduced()||!e)return;let w=$('scene-wrap'),b=w.getBoundingClientRect(),d=document.createElement('div');d.className='sparkles';d.style.left=(e.clientX-b.left)+'px';d.style.top=(e.clientY-b.top)+'px';
+ d.innerHTML=Array.from({length:8},(_,k)=>`<i style="--a:${k*45}deg;--c:${['#f2cf63','#f7d8dd','#a8d5ba','#8fb6d8'][k%4]}"></i>`).join('');w.appendChild(d);setTimeout(()=>d.remove(),700);}
+function confetti(){if(reduced())return;let w=$('scene-wrap'),d=document.createElement('div');d.className='confetti';d.innerHTML=Array.from({length:34},(_,k)=>`<i style="left:${(k*29)%100}%;--d:${.9+(k%5)*.18}s;--x:${(k%7-3)*18}px;--r:${k*47}deg;background:${['#c2456b','#f2cf63','#8fb6d8','#a8d5ba','#b9a3d6','#ef8f7d'][k%6]}"></i>`).join('');w.appendChild(d);setTimeout(()=>d.remove(),2200);}
+
+// ---------- the sticker book ----------
+let booting=true;
+function awardStickers(){if(!state.stickers)return;let fresh=MISSIONS.filter(m=>!state.stickers[m.id]&&m.check(state));if(!fresh.length)return;let now=Date.now();for(let m of fresh)state.stickers[m.id]=now;renderStickerCount();
+ if(booting)return;Sound.play('chime');confetti();let m=fresh[0];setTimeout(()=>hint(`⭐ New sticker! ${m.icon} ${m.title}${fresh.length>1?` (and ${fresh.length-1} more)`:''}`,5200),30);$('stickers').classList.remove('bump');void $('stickers').offsetWidth;$('stickers').classList.add('bump');}
+function renderStickerCount(){let n=MISSIONS.filter(m=>state.stickers?.[m.id]).length;$('sticker-count').textContent=`${n}/${MISSIONS.length}`;}
+function openStickers(){let n=MISSIONS.filter(m=>state.stickers[m.id]).length;$('sticker-progress').textContent=n===MISSIONS.length?'You earned every sticker! Moo-nificent!':`${n} of ${MISSIONS.length} stickers earned. Keep designing to earn the rest!`;
+ $('sticker-grid').innerHTML=MISSIONS.map(m=>{let got=state.stickers[m.id];return `<div class="sticker ${got?'got':''}"><span class="badge">${m.icon}</span><b>${esc(m.title)}</b><small>${got?'Earned!':'Not yet'}</small></div>`;}).join('');$('sticker-dialog').showModal();}
+$('stickers').onclick=openStickers;
+
 // ---------- start ----------
 state=load();style=room().wall;if(state.view==='room')category='room';
-render();save();
+render();save();renderSoundBtn();renderStickerCount();booting=false;
 try{if(!localStorage.getItem(GUIDE_KEY))setTimeout(openGuide,600);}catch{}

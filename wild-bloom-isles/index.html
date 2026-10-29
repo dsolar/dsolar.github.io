@@ -10,7 +10,7 @@
 <meta property="og:image" content="https://davidsolar.dev/assets/covers/wild-bloom-isles-studio.jpg"><meta property="og:image:width" content="1040"><meta property="og:image:height" content="780"><meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%B8%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="../assets/bar.css">
-<link rel="stylesheet" href="studio.css?v=31">
+<link rel="stylesheet" href="studio.css?v=32">
 <script src="../assets/analytics.js" defer></script>
 </head>
 <body>
@@ -20,7 +20,7 @@
 </nav>
 <header class="top">
   <div class="brand"><span class="flower">✿</span><div>Wild Bloom Isles<small>THE DESIGN STUDIO</small></div></div>
-  <div class="header-right"><span id="saved" role="status">Saved on this device</span><button id="picture" class="primary">📷 Save picture</button><button id="export">Export</button><label class="button">Import<input id="import" type="file" accept="application/json" hidden></label></div>
+  <div class="header-right"><span id="saved" role="status">Saved on this device</span><button id="stickers" class="sticker-btn" title="Cow's sticker book">⭐ <span id="sticker-count">0/20</span></button><button id="sound" class="icon-btn" aria-pressed="true" aria-label="Sounds">🔊</button><button id="picture" class="primary">📷 Save picture</button><button id="export">Export</button><label class="button">Import<input id="import" type="file" accept="application/json" hidden></label></div>
 </header>
 <main>
   <aside>
@@ -69,6 +69,11 @@
   </section>
 </main>
 <dialog id="name-dialog"><form method="dialog"><h2 id="dialog-title">Name your room</h2><input aria-label="Name" id="room-name" maxlength="40" required autocomplete="off"><div class="row end"><button value="cancel" formnovalidate>Cancel</button><button value="save" class="primary">Save</button></div></form></dialog>
+<dialog id="sticker-dialog" class="sticker-dialog"><form method="dialog">
+  <div class="art-head"><div><div class="eyebrow">COW'S STICKER BOOK</div><h2>Design missions</h2><p id="sticker-progress" class="note"></p></div><button value="close" aria-label="Close">✕</button></div>
+  <div id="sticker-grid" class="sticker-grid"></div>
+  <div class="row end"><button value="close" class="primary">Keep designing</button></div>
+</form></dialog>
 <dialog id="art-dialog" class="art-dialog"><form method="dialog">
   <div class="art-head"><div><div class="eyebrow">YOUR ART</div><h2>Paint a picture for your wall</h2></div><button value="cancel" formnovalidate aria-label="Close">✕</button></div>
   <div class="art-layout">
@@ -82,8 +87,8 @@
   </div>
   <div class="row end"><button value="remove" formnovalidate>Take it down</button><button value="cancel" formnovalidate>Cancel</button><button value="hang" class="primary">🖼️ Hang it on the wall</button></div>
 </form></dialog>
-<script src="data.js?v=31"></script>
-<script src="art.js?v=31"></script>
-<script src="studio.js?v=31"></script>
+<script src="data.js?v=32"></script>
+<script src="art.js?v=32"></script>
+<script src="studio.js?v=32"></script>
 </body>
 </html>
