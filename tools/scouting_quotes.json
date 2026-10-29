@@ -20,46 +20,6 @@
   "angle": "pan"
  },
  {
-  "id": "PeppJu99",
-  "lg": "nfl",
-  "quote": "He is big and explosive, with a quick first step and closing speed.",
-  "who": "Mel Kiper Jr.",
-  "outlet": "ESPN",
-  "when": "June 2001 college preview (2002 draft prospect)",
-  "url": "https://www.espn.com/melkiper/s/2001/0607/1210741.html",
-  "angle": "glow"
- },
- {
-  "id": "WillTr21",
-  "lg": "nfl",
-  "quote": "As a pass blocker he shows good technique but lacks the top lateral range to stay with premier pass rushers coming off the edge.",
-  "who": "NFL.com draft profile",
-  "outlet": "NFL.com",
-  "when": "2010 pre-draft prospect profile",
-  "url": "https://www.nfl.com/draft/tracker/2010/rounds/1",
-  "angle": "pan"
- },
- {
-  "id": "MillVo00",
-  "lg": "nfl",
-  "quote": "He is at his best as a pass rusher in a 3-4 defense.",
-  "who": "NFL.com draft profile",
-  "outlet": "NFL.com",
-  "when": "2011 pre-draft prospect profile",
-  "url": "https://www.nfl.com/draft/tracker/2011/prospects/all_all",
-  "angle": "glow"
- },
- {
-  "id": "MackKh00",
-  "lg": "nfl",
-  "quote": "I'm going to tell you right now, I'd take him with the first pick.",
-  "who": "Mike Mayock",
-  "outlet": "NFL Network",
-  "when": "February 2014, pre-combine",
-  "url": "https://bleacherreport.com/articles/1969346-mike-mayock-claims-hed-take-khalil-mack-no-1-overall-in-2014-nfl-draft",
-  "angle": "glow"
- },
- {
   "id": "PresDa01",
   "lg": "nfl",
   "quote": "...he's built like Donovan McNabb, but lacks McNabb's ability and polish.",
@@ -70,26 +30,6 @@
   "angle": "pan"
  },
  {
-  "id": "GarrMy00",
-  "lg": "nfl",
-  "quote": "Elite edge rusher who possesses rare explosiveness and the fluid-movement skills and agility of an NBA shooting guard.",
-  "who": "Lance Zierlein",
-  "outlet": "NFL.com",
-  "when": "2017 pre-draft prospect profile",
-  "url": "https://www.nfl.com/draft/tracker/2017/prospects/all_texas-a-m",
-  "angle": "glow"
- },
- {
-  "id": "PetePa00",
-  "lg": "nfl",
-  "quote": "He has elite ball skills and is a shifty runner that is a nightmare to take down in the open field.",
-  "who": "NFL.com draft profile",
-  "outlet": "NFL.com",
-  "when": "2011 pre-draft prospect profile",
-  "url": "https://www.nfl.com/draft/tracker/2011/prospects/all_all",
-  "angle": "glow"
- },
- {
   "id": "KelcJa00",
   "lg": "nfl",
   "quote": "However, does not have the size or power to project as a starter.",
@@ -97,16 +37,6 @@
   "outlet": "NFL.com",
   "when": "2011 pre-draft prospect profile",
   "url": "https://www.nfl.com/draft/tracker/2011/rounds/6",
-  "angle": "pan"
- },
- {
-  "id": "CousKi00",
-  "lg": "nfl",
-  "quote": "He is a self-made guy, a tireless worker who has deficiencies that could hurt his pro potential.",
-  "who": "NFL.com draft profile",
-  "outlet": "NFL.com",
-  "when": "2012 pre-draft prospect profile",
-  "url": "https://www.nfl.com/draft/tracker/2012/prospects/qb_all",
   "angle": "pan"
  },
  {
@@ -120,16 +50,6 @@
   "angle": "pan"
  },
  {
-  "id": "KelcTr00",
-  "lg": "nfl",
-  "quote": "He isn't a tremendous athlete, but he does a lot of things very well.",
-  "who": "NFL.com draft profile",
-  "outlet": "NFL.com",
-  "when": "2013 pre-draft prospect profile",
-  "url": "https://www.nfl.com/draft/tracker/2013/rounds/3",
-  "angle": "pan"
- },
- {
   "id": "BrowAn04",
   "lg": "nfl",
   "quote": "He is undersized and will initially struggle with the physical aspects of the game at the next level.",
@@ -140,46 +60,6 @@
   "angle": "pan"
  },
  {
-  "id": "AtkiGe99",
-  "lg": "nfl",
-  "quote": "He should contribute at the next level in the right system (4-3 scheme) but may struggle due to lack of size.",
-  "who": "NFL.com draft profile",
-  "outlet": "NFL.com",
-  "when": "2010 pre-draft prospect profile",
-  "url": "https://www.nfl.com/draft/tracker/2010/rounds/4",
-  "angle": "pan"
- },
- {
-  "id": "EvanMi00",
-  "lg": "nfl",
-  "quote": "He's a big, physical, strong-handed, West Coast possession receiver with playmaking ability who projects as a No. 2...",
-  "who": "NFL.com draft profile",
-  "outlet": "NFL.com",
-  "when": "2014 pre-draft prospect profile",
-  "url": "https://www.nfl.com/draft/tracker/2014/prospects/wr_all",
-  "angle": "pan"
- },
- {
-  "id": "HousJu00",
-  "lg": "nfl",
-  "quote": "Has the athleticism to drop into coverage but may struggle in man.",
-  "who": "NFL.com draft profile",
-  "outlet": "NFL.com",
-  "when": "2011 pre-draft prospect profile",
-  "url": "https://www.nfl.com/draft/tracker/2011/prospects/all_all?page=7",
-  "angle": "pan"
- },
- {
-  "id": "GrifEv99",
-  "lg": "nfl",
-  "quote": "He is a powerful tackler in a confined area but lacks agility and balance in the open field.",
-  "who": "NFL.com draft profile",
-  "outlet": "NFL.com",
-  "when": "2010 pre-draft prospect profile",
-  "url": "https://www.nfl.com/draft/tracker/2010/rounds/4",
-  "angle": "pan"
- },
- {
   "id": "GrahJi00",
   "lg": "nfl",
   "quote": "He still needs to shed the basketball work ethic he came with.",
@@ -187,36 +67,6 @@
   "outlet": "NFL.com",
   "when": "2010 pre-draft prospect profile",
   "url": "https://www.nfl.com/draft/tracker/2010/prospects/all_all?page=4",
-  "angle": "pan"
- },
- {
-  "id": "KittGe00",
-  "lg": "nfl",
-  "quote": "H-back type who lacks the desired size for in-line blocking but certainly has the technique and willingness to do it.",
-  "who": "Lance Zierlein",
-  "outlet": "NFL.com",
-  "when": "2017 pre-draft prospect profile",
-  "url": "https://www.nfl.com/draft/tracker/2017/prospects/all_iowa",
-  "angle": "pan"
- },
- {
-  "id": "LandJa00",
-  "lg": "nfl",
-  "quote": "Could be an effective No. 3 option...",
-  "who": "NFL.com draft profile",
-  "outlet": "NFL.com",
-  "when": "2014 pre-draft prospect profile",
-  "url": "https://www.nfl.com/draft/tracker/2014/prospects/all_all?page=2",
-  "angle": "pan"
- },
- {
-  "id": "ChanKa99",
-  "lg": "nfl",
-  "quote": "...could be effective in combination zone schemes but may be a liability in pure man coverage schemes.",
-  "who": "NFL.com draft profile",
-  "outlet": "NFL.com",
-  "when": "2010 pre-draft prospect profile",
-  "url": "https://www.nfl.com/draft/tracker/2010/rounds/5",
   "angle": "pan"
  },
  {
@@ -270,16 +120,6 @@
   "angle": "glow"
  },
  {
-  "id": "ManuEJ00",
-  "lg": "nfl",
-  "quote": "He has slow eyes on the football field as a passer",
-  "who": "Todd McShay",
-  "outlet": "ESPN SportsCenter",
-  "when": "2013 draft night",
-  "url": "https://www.espn.com/blog/afceast/post/_/id/58081/mcshay-bills-made-mistake-with-manuel",
-  "angle": "pan"
- },
- {
   "id": "ManzJo00",
   "lg": "nfl",
   "quote": "I think he's a better thrower than either (Colin) Kaepernick or Russell Wilson were when they came out (of college)",
@@ -288,16 +128,6 @@
   "when": "2014 pre-draft position rankings",
   "url": "https://nfl.com/news/mayock-manziel-better-out-of-college-than-kaepernick-wilson-0ap2000000338538",
   "angle": "glow"
- },
- {
-  "id": "TeboTi00",
-  "lg": "nfl",
-  "quote": "He's not going to be a first-round pick.",
-  "who": "Mel Kiper Jr.",
-  "outlet": "ESPN (via Orlando Sentinel)",
-  "when": "December 2008",
-  "url": "https://sports.yahoo.com/blogs/ncaaf-dr-saturday/mel-kiper-tim-tebow-one-more-reason-never.html",
-  "angle": "pan"
  },
  {
   "id": "LyncPa00",
@@ -390,16 +220,6 @@
   "angle": "glow"
  },
  {
-  "id": "HeywDa00",
-  "lg": "nfl",
-  "quote": "To me this has bust written all over it",
-  "who": "Todd McShay",
-  "outlet": "ESPN",
-  "when": "2009 draft night",
-  "url": "https://www.pressdemocrat.com/article/news/team-draft-wr-heyward-bey-s-mitchell-ahead-of-their-projected-spots/",
-  "angle": "pan"
- },
- {
   "id": "WhitKe00",
   "lg": "nfl",
   "quote": "...clear-cut No. 1 wide receiver in this draft class.",
@@ -408,26 +228,6 @@
   "when": "2015 combine",
   "url": "https://fantasy-www.nfl.com/news/jeremiah-kevin-white-clear-cut-no-1-wide-receiver-in-draft-0ap3000000473098",
   "angle": "glow"
- },
- {
-  "id": "McClRo00",
-  "lg": "nfl",
-  "quote": "The fifteenth-best player on the board, and you take him at this particular (No. 8 overall) spot?",
-  "who": "Mel Kiper Jr.",
-  "outlet": "ESPN",
-  "when": "2010 draft night",
-  "url": "https://www.nbcbayarea.com/news/sports/Kiper-Admits-He-Was-Wrong-on-Raiders-Draft-95646074.html",
-  "angle": "pan"
- },
- {
-  "id": "MillDe00",
-  "lg": "nfl",
-  "quote": "I happen to think number four is a little high for...",
-  "who": "Mike Mayock",
-  "outlet": "NFL Network",
-  "when": "2013 pre-combine conference call",
-  "url": "https://www.phillymag.com/eagles/2013/02/26/alabama-cb-milliner-answers-speed-question",
-  "angle": "pan"
  },
  {
   "id": "WarmCh00",
@@ -477,16 +277,6 @@
   "outlet": "Bleacher Report",
   "when": "June 18, 2014 pre-draft scouting report",
   "url": "https://bleacherreport.com/articles/2096255-nikola-jokic-nba-draft-2014-highlights-scouting-report-and-more",
-  "angle": "pan"
- },
- {
-  "id": "davisan02",
-  "lg": "nba",
-  "quote": "While he isn't lacking toughness, he simply doesn't have the strength to avoid being pushed around by older players.",
-  "who": "Jonathan Givony",
-  "outlet": "DraftExpress",
-  "when": "Feb. 16, 2012 scouting report",
-  "url": "https://www.draftexpress.com/profile/Anthony-Davis-6236/",
   "angle": "pan"
  },
  {
@@ -580,16 +370,6 @@
   "angle": "pan"
  },
  {
-  "id": "holidjr01",
-  "lg": "nba",
-  "quote": "...is a blossoming talent with an intriguing skill set to go along with good size for his position.",
-  "who": "DraftExpress",
-  "outlet": "DraftExpress",
-  "when": "May 28, 2009 pre-draft feature",
-  "url": "https://www.draftexpress.com/article/Jrue-Holiday-Im-a-Floor-General--3234/",
-  "angle": "glow"
- },
- {
   "id": "hibbero01",
   "lg": "nba",
   "quote": "...his below-average athleticism leaves doubts about how some of his offense will translate",
@@ -600,36 +380,6 @@
   "angle": "pan"
  },
  {
-  "id": "harrito02",
-  "lg": "nba",
-  "quote": "He'll impress in interviews and workouts with his uncommon maturity and skill level.",
-  "who": "DraftExpress",
-  "outlet": "DraftExpress",
-  "when": "May 29, 2011 pre-draft analysis",
-  "url": "https://www.draftexpress.com/article/Finding-a-Niche-For-Tobias-Harris-3723/",
-  "angle": "glow"
- },
- {
-  "id": "dragigo01",
-  "lg": "nba",
-  "quote": "His first step is excellent and he can get by most defenders at his current level with ease.",
-  "who": "Kristian Hohnjec",
-  "outlet": "DraftExpress",
-  "when": "Pre-draft international scouting report",
-  "url": "https://www.draftexpress.com/article/International-Scene-Dreaming-About-the-First-Round/",
-  "angle": "glow"
- },
- {
-  "id": "batumni01",
-  "lg": "nba",
-  "quote": "He is already wiry strong and will grow into his body gradually and eventually have the ideal body for an NBA wing.",
-  "who": "Christopher Reina",
-  "outlet": "RealGM",
-  "when": "2008 draft prospect report",
-  "url": "https://basketball.realgm.com/analysis/208913/Draft-Report-Nicolas-Batum-Of-Le-Mans",
-  "angle": "glow"
- },
- {
   "id": "jordade01",
   "lg": "nba",
   "quote": "...his drive to become great is in serious question.",
@@ -638,16 +388,6 @@
   "when": "2008 draft prospect report",
   "url": "https://basketball.realgm.com/analysis/208880/Draft-Report-DeAndre-Jordan-Of-Texas-AM",
   "angle": "pan"
- },
- {
-  "id": "embiijo01",
-  "lg": "nba",
-  "quote": "...a strong defender with high-level physical tools and the form and footwork to develop into an elite two-way center.",
-  "who": "Ben Golliver",
-  "outlet": "Sports Illustrated",
-  "when": "April 9, 2014, on his declaring for the draft",
-  "url": "https://www.si.com/nba/point-forward/2014/04/09/joel-embiid-declares-draft-kansas",
-  "angle": "glow"
  },
  {
   "id": "fultzma01",
@@ -730,16 +470,6 @@
   "angle": "glow"
  },
  {
-  "id": "milesda01",
-  "lg": "nba",
-  "quote": "What he's missing is maturity, both mentally and physically.",
-  "who": "Andy Katz",
-  "outlet": "ESPN.com",
-  "when": "2000 draft-day profile",
-  "url": "https://www.espn.com.br/nba/draft00/s/katz/0628miles.html",
-  "angle": "pan"
- },
- {
   "id": "jacksjo02",
   "lg": "nba",
   "quote": "...has the ability to become a high level two-way standout.",
@@ -748,16 +478,6 @@
   "when": "2017 pre-draft scouting report",
   "url": "https://www.si.com/nba/2017/06/22/josh-jackson-nba-draft-2017-scouting-report-analysis",
   "angle": "glow"
- },
- {
-  "id": "waitedi01",
-  "lg": "nba",
-  "quote": "...he is far from an elite athlete, lacking the explosiveness to stand out in transition.",
-  "who": "Kyle Nelson",
-  "outlet": "DraftExpress",
-  "when": "October 2011 Big East prospect rankings",
-  "url": "https://www.draftexpress.com/profile/Dion-Waiters-5738/",
-  "angle": "pan"
  },
  {
   "id": "johnswe01",

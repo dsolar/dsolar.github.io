@@ -183,8 +183,8 @@ h1{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(2.2rem,7v
       <summary>How it works</summary>
       <ul>
         <li>Every quote is real: something a well-known analyst or outlet said about an NFL or NBA prospect before his draft (2000 to 2021), linked to its source at the reveal. The career numbers are real too.</li>
-        <li>Each file is worth 5 points. Lifting a black bar (position, draft class, school, size) costs 1. A wrong guess costs 1. At zero, the file opens.</li>
-        <li>The stamp tells you whether the scouts got him right.</li>
+        <li>Each file is worth 5 points. The position and draft class are on the file. Lifting a black bar costs points: school or size 1, the pick itself 2. A wrong guess costs 1. At zero, the file opens.</li>
+        <li>Every quote aged badly: a future star getting panned, or a bust getting the full sales pitch.</li>
       </ul>
     </details>
   </section>
@@ -209,7 +209,7 @@ h1{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(2.2rem,7v
       </div>
       <ul class="sugg" id="sugg" role="listbox" aria-label="Players"></ul>
       <p class="note" id="note" aria-live="assertive"></p>
-      <div class="ask-foot"><span>Tap a black bar to lift it (1 point).</span><button type="button" class="quit" id="give-up">Open the file</button></div>
+      <div class="ask-foot"><span>Stuck? Lift a black bar for a hint.</span><button type="button" class="quit" id="give-up">Open the file</button></div>
     </form>
     <section id="went" hidden aria-live="polite"></section>
   </section>
@@ -234,6 +234,6 @@ h1{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(2.2rem,7v
 <script src="../guess-the-pick/engine.js?v=4"></script>
 <script src="../guess-the-pick/names.js?v=1"></script>
 <script src="data.js?v=2"></script>
-<script src="app.js?v=3"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>

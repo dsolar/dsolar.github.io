@@ -28,13 +28,16 @@
     return pools[lg];
   }
 
-  // The clues, in the order they sit on the file
+  // The file's lines, in order. Position and draft class are on the file from the start (free); the rest sit
+  // under black bars that cost points to lift. The pick itself costs 2: the team and slot narrow it right down.
   var CLUES = [
-    { id: "pos", label: "Position", text: function (p) { return p.pos; } },
-    { id: "cls", label: "Draft class", text: function (p) { return String(p.y); } },
-    { id: "col", label: "School", text: function (p) { return p.col; } },
-    { id: "size", label: "Size", text: function (p) { return p.size; } }
+    { id: "pos", label: "Position", free: true, text: function (p) { return p.pos; } },
+    { id: "cls", label: "Draft class", free: true, text: function (p) { return String(p.y); } },
+    { id: "col", label: "School", cost: 1, text: function (p) { return p.col; } },
+    { id: "size", label: "Size", cost: 1, text: function (p) { return p.size; } },
+    { id: "drft", label: "Drafted", cost: 2, text: function (p) { return drafted(p); } }
   ];
+  function cost(id) { var c = CLUES.filter(function (x) { return x.id === id; })[0]; return c ? c.cost || 0 : 0; }
 
   // ---- Today's five: walk the whole list in a seeded order, so nobody repeats until everyone's been used
   var today = G.dailyKey();
@@ -108,7 +111,7 @@
     $("guess").value = ""; showSugg("");
     $("guess").focus({ preventScroll: true });
   }
-  function points() { return Math.max(0, POINTS - cur.used.length - cur.wrong.length); }
+  function points() { return Math.max(0, POINTS - cur.used.reduce(function (a, id) { return a + cost(id); }, 0) - cur.wrong.length); }
   function hud() {
     var n = game.results.length, at = n + (cur && !cur.done ? 1 : 0);
     if (mode === "daily") {
@@ -135,17 +138,16 @@
     $("file-no").textContent = "file no. " + String(1000 + (p.id.length * 37 + p.y) % 9000);
     $("quote").textContent = p.q + "\u201D";
     // Who said it shows from the start; when (which gives away the class) waits for the bar or the reveal
-    var when = open || cur.used.indexOf("cls") >= 0 ? p.when : "";
+    var when = p.when;
     // An outlet with no named writer (DraftExpress, NFL.com's profiles) shows once, not twice
     var outlet = p.who.indexOf(p.outlet) === 0 ? "" : p.outlet;
     $("cite").innerHTML = esc(p.who) + "<small>" + esc([outlet, when].filter(Boolean).join(", ")) + "</small>";
     var html = "<dt>Name</dt><dd>" + (open ? '<span class="shown">' + esc(p.n) + "</span>" : '<span class="name-bar" aria-label="Hidden"></span>') + "</dd>";
     CLUES.forEach(function (c) {
-      var shown = open || cur.used.indexOf(c.id) >= 0, text = c.text(p) || "Unknown";
+      var shown = c.free || open || cur.used.indexOf(c.id) >= 0, text = c.text(p) || "Unknown";
       html += "<dt>" + c.label + "</dt><dd>" + (shown ? '<span class="shown">' + esc(text) + "</span>"
-        : '<button type="button" class="redact" data-clue="' + c.id + '"' + (points() <= 1 ? " disabled" : "") + ">Lift for 1 point</button>") + "</dd>";
+        : '<button type="button" class="redact" data-clue="' + c.id + '"' + (points() - c.cost < 1 ? " disabled" : "") + ">Lift for " + c.cost + " point" + (c.cost === 1 ? "" : "s") + "</button>") + "</dd>";
     });
-    html += "<dt>Drafted</dt><dd>" + (open ? '<span class="shown">' + esc(drafted(p)) + "</span>" : '<span class="name-bar" style="width:min(11rem,50%)"></span>') + "</dd>";
     $("fields").innerHTML = html;
     $("stamp").innerHTML = open ? '<div class="stamp ' + (p.right ? "right" : "wrong") + '">' + (p.right ? "Nailed it" : "Whiffed") + "<small>" + kindLine(p) + "</small></div>" : "";
   }
@@ -172,7 +174,7 @@
     $("guess").select(); hud(); drawFile();
   }
   function lift(id) {
-    if (cur.done || cur.used.indexOf(id) >= 0 || points() <= 1) return;
+    if (cur.done || cur.used.indexOf(id) >= 0 || points() - cost(id) < 1) return;
     cur.used.push(id); hud(); drawFile();
   }
   function reveal(gaveUp) {
