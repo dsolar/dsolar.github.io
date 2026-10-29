@@ -380,6 +380,23 @@ def build_mlb(src):
     return keep(out, "mlb"), names
 
 
+# The board shows the city as the destination and the nickname under it
+MULTI_WORD = ("Red Sox", "White Sox", "Blue Jays", "Trail Blazers", "Devil Rays", "Football Team")
+CITY_SHORT = {"New Orleans/Oklahoma City": "New Orleans"}
+
+
+def city_nick(name):
+    if name.endswith(" of Anaheim"):
+        name = name[: -len(" of Anaheim")]
+    for m in MULTI_WORD:
+        if name.endswith(" " + m):
+            return CITY_SHORT.get(name[: -len(m) - 1], name[: -len(m) - 1]), m
+    if " " not in name:
+        return name, ""
+    city, nick = name.rsplit(" ", 1)
+    return CITY_SHORT.get(city, city), nick
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--src", required=True)
@@ -397,7 +414,7 @@ def main():
                 tk = (st["t"], st["n"])
                 if tk not in index:
                     index[tk] = len(table)
-                    table.append([st["t"], st["n"], st["c"][0], st["c"][1], st["l"]])
+                    table.append([st["t"], st["n"], st["c"][0], st["c"][1], st["l"]] + list(city_nick(st["n"])))
                 stops.append([index[tk], st["a"], st["b"]])
             p["s"] = stops
         data[k + "_teams"] = table

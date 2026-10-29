@@ -69,7 +69,7 @@ window.PROJECTS = [
     url: "journeyman/",
     action: "Name the journeyman",
     question: "Chicago, New York, Golden State, Atlanta, Portland, LA. Who is he?",
-    summary: "Every team he played for, in order, with the years. Name the player. NBA, NFL and MLB journeymen, a daily ten for the group chat or endless until you whiff three times.",
+    summary: "A departures board of every team he played for, two stops at a time. Name the player before you need the whole board. NBA, NFL and MLB journeymen, a daily ten for the group chat or endless until you whiff three times.",
     facts: [["1,200", "players with 4+ franchises"], ["3", "leagues: NBA, NFL and MLB"], ["14", "teams for Edwin Jackson, the MLB record"]],
     stack: ["JavaScript", "Python"],
     cover: { image: "assets/covers/journeyman.jpg", bg: "#0B1626", band: "#F2C14E" }

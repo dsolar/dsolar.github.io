@@ -14,10 +14,10 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://davidsolar.dev/journeyman/">
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<meta name="theme-color" content="#0B1626">
+<meta name="theme-color" content="#0C0D0F">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Big+Shoulders+Display:wght@700;800;900&family=Besley:wght@700&family=Libre+Franklin:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Big+Shoulders+Display:wght@700;800;900&family=Besley:wght@700&family=Libre+Franklin:wght@500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/bar.css">
 <script src="../assets/analytics.js" defer></script>
 <style>
@@ -263,6 +263,80 @@ body:not([data-screen="home"]) .mast .kicker,body:not([data-screen="home"]) .mas
   .card.enter{animation:rise .35s ease both}
   @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 }
+
+/* ===== Departures board theme: an airport board instead of Guess the Pick's draft podium ===== */
+:root{
+  --stage:#0C0D0F; --stage-deep:#070809; --panel:#16181B; --panel-hi:#1F2226;
+  --gold:#FFB81C; --amber:#FFC21A; --flap:#1A1B1E; --flap-hi:#232528;
+  --mono:"Space Mono","SFMono-Regular",Menlo,Consolas,monospace;
+}
+body{background:
+    radial-gradient(80% 40% at 50% -6%,rgba(255,184,28,.10),transparent 70%),
+    linear-gradient(180deg,#121417 0,var(--stage-deep) 900px);background-repeat:no-repeat;background-color:var(--stage-deep)}
+/* the title, in flaps */
+.mast h1{display:flex;justify-content:center;flex-wrap:wrap;gap:4px;font:700 clamp(30px,7.4vw,58px)/1 var(--mono);letter-spacing:0}
+.mast h1 .t{display:inline-grid;place-items:center;width:1.02em;height:1.34em;background:linear-gradient(180deg,var(--flap-hi) 0 49.5%,#000 49.5% 50.5%,var(--flap) 50.5%);
+  color:var(--amber);border-radius:5px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.04),0 3px 8px rgba(0,0,0,.5)}
+.mast h1 .t.m{color:#fff}
+.mast h1 span{color:inherit}
+body:not([data-screen="home"]) .mast h1{font-size:clamp(18px,4.2vw,26px)}
+.kicker{color:var(--amber);font-family:var(--mono);letter-spacing:.14em}
+.sport[aria-pressed="true"],.mode:hover{border-color:var(--amber)}
+.sport[aria-pressed="true"]{box-shadow:0 0 0 1px var(--amber) inset}
+.mode.daily{border-top-color:var(--amber)} .mode.endless{border-top-color:#5B6470}
+.mode .status{color:var(--amber)}
+.go,.btn.primary{background:var(--amber);border-color:var(--amber);color:#111}
+.go:hover,.btn.primary:hover{background:#FFD24D}
+.field input:focus,.board-fields input:focus{border-color:var(--amber)}
+.pts i{background:var(--amber)}
+.card{background:#111214;border-color:#26292E}
+.card-top{background:#08090A;border-bottom-color:#26292E;font-family:var(--mono);letter-spacing:.12em}
+.card-top .live{color:var(--amber)}
+.card-top .live:before{background:var(--amber);box-shadow:0 0 10px var(--amber);animation:blink 1.6s steps(2,start) infinite}
+@keyframes blink{to{visibility:hidden}}
+.clue{background:rgba(255,184,28,.07);border-color:rgba(255,184,28,.28)}
+.clue span{color:var(--amber)}
+
+/* the board */
+.dep-head{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 8px;font:700 15px/1 var(--mono);letter-spacing:.16em;color:var(--amber)}
+.dep-head svg{width:20px;height:20px;vertical-align:-4px;margin-right:8px;fill:var(--amber)}
+.dep-head #dep-clock{color:#fff;letter-spacing:.08em}
+.dep-cols,.dep li{display:grid;grid-template-columns:30px 34px minmax(0,1fr) 92px 98px;gap:10px;align-items:center}
+.dep-cols{padding:6px 16px;font:700 10.5px/1 var(--mono);letter-spacing:.14em;color:#7B828C;border-top:1px solid #26292E;border-bottom:1px solid #26292E}
+.dep{list-style:none;margin:0;padding:6px 10px 12px}
+.dep li{padding:7px 6px;border-bottom:1px dashed #23262A;position:relative}
+.dep li:after{content:"";position:absolute;left:-4px;top:8px;bottom:8px;width:4px;border-radius:2px;background:var(--c1)}
+.dep .no{font:700 14px/1 var(--mono);color:#7B828C;text-align:center}
+.dep .logo{width:34px;height:34px;background:#0A0B0C}
+.dep .logo img{width:28px;height:28px}
+.dep .logo b{font-size:11px}
+.dep .dest{min-width:0}
+.flaps{--w:440px;display:flex;flex-wrap:nowrap;gap:2px;overflow:hidden}
+.flap{flex:none;display:inline-grid;place-items:center;width:1.18em;height:1.55em;font:700 min(15px,calc(var(--w) / (var(--n) * 1.42)))/1 var(--mono);color:var(--amber);
+  background:linear-gradient(180deg,var(--flap-hi) 0 49%,#000 49% 51%,var(--flap) 51%);border-radius:3px;text-transform:uppercase}
+.flap.sp{background:none;width:.5em}
+.dep .nick{display:block;margin-top:3px;font:600 12px/1.1 var(--body);color:#9AA2AD;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dep .yrs{font:700 14px/1 var(--mono);color:#fff;white-space:nowrap}
+.dep .st{font:700 12px/1 var(--mono);letter-spacing:.06em;color:#7BD88F}
+.dep li.held .st{color:var(--amber);animation:blink 1.4s steps(2,start) infinite}
+.dep li.held .yrs{color:#4A5058}
+.dep li.held .logo{opacity:.25}
+.dep li.held .flap{color:transparent}
+.dep li.held .nick{visibility:hidden}
+.dep.tight li{padding:4px 6px}
+.dep.tight .flap{height:1.35em}
+.dep.tight .logo{width:28px;height:28px}.dep.tight .logo img{width:23px;height:23px}
+@media(max-width:560px){
+  .dep-cols,.dep li{grid-template-columns:24px 28px minmax(0,1fr) 70px}
+  .dep-cols .st,.dep .st{display:none}
+  .dep .logo{width:28px;height:28px}.dep .logo img{width:23px;height:23px}
+  .flaps{--w:calc(100vw - 222px)}
+  .dep .yrs{font-size:12px}
+}
+.hint.stop-hint{border-color:rgba(255,184,28,.5);color:#fff}
+.hint.stop-hint small{color:var(--amber)}
+.verdict .stops{color:#9AA2AD;font-weight:600;letter-spacing:.08em}
+@media(prefers-reduced-motion:reduce){.card-top .live:before,.dep li.held .st{animation:none}}
 </style>
 </head>
 <body data-screen="home">
@@ -274,7 +348,7 @@ body:not([data-screen="home"]) .mast .kicker,body:not([data-screen="home"]) .mas
 <main class="wrap">
   <header class="mast">
     <p class="kicker">Have bag, will travel</p>
-    <h1>Journey<span>man</span></h1>
+    <h1 aria-label="Journeyman"><span class="t">J</span><span class="t">O</span><span class="t">U</span><span class="t">R</span><span class="t">N</span><span class="t">E</span><span class="t">Y</span><span class="t m">M</span><span class="t m">A</span><span class="t m">N</span></h1>
     <p>Every team he played for, in order. Name the player.</p>
   </header>
 
@@ -300,8 +374,8 @@ body:not([data-screen="home"]) .mast .kicker,body:not([data-screen="home"]) .mas
     <div class="rules">
       <b>How it works.</b> Every player is worth 5 points.
       <ul>
-        <li>You see every team he played for, in order, with the years. A team he came back to shows up again.</li>
-        <li>Buy hints in any order (1 point each): position, college or birthplace, draft or debut, and his career numbers. Initials cost 2. A wrong guess costs 1.</li>
+        <li>The board shows his first two stops. Guess any time, or flip the next stop for a point (or the whole board for 2). A team he came back to shows up again.</li>
+        <li>Other clues cost a point each: position, college or birthplace, draft or debut, and his career numbers. Initials cost 2. A wrong guess costs 1.</li>
         <li>Typos are free, and so is a last name a few players share. Only a real player who isn't the answer costs you.</li>
         <li>Everyone here played for at least four franchises and finished his career in 2000 or later.</li>
       </ul>
@@ -317,8 +391,9 @@ body:not([data-screen="home"]) .mast .kicker,body:not([data-screen="home"]) .mas
     <article class="card" id="card">
       <div class="watermark" id="watermark" aria-hidden="true"></div>
       <div class="card-top"><span class="live" id="card-league">NBA</span><span id="card-count"></span></div>
-      <div class="path-head"><p id="path-title">Career path</p><span id="path-meta"></span></div>
-      <ol class="path" id="path"></ol>
+      <div class="dep-head"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>Departures</span><span id="dep-clock"></span></div>
+      <div class="dep-cols" aria-hidden="true"><span>#</span><span></span><span>Destination</span><span>Years</span><span class="st">Status</span></div>
+      <ol class="dep" id="path"></ol>
       <div class="clues" id="clues"></div>
       <div class="guess-area" id="guess-area">
         <div class="pts" id="pts" aria-live="polite"></div>
@@ -331,7 +406,7 @@ body:not([data-screen="home"]) .mast .kicker,body:not([data-screen="home"]) .mas
         </form>
         <p class="msg" id="msg" aria-live="polite"></p>
         <div class="wrongs" id="wrongs"></div>
-        <p class="hints-label">Hints</p>
+        <p class="hints-label">Flip a stop or buy a clue</p>
         <div class="hints" id="hints" role="group" aria-label="Hints"></div>
         <div class="tools">
           <button type="button" class="tool quit" id="give-up">Show me</button>
@@ -380,10 +455,10 @@ body:not([data-screen="home"]) .mast .kicker,body:not([data-screen="home"]) .mas
 </main>
 <div class="toast" id="toast" role="status" hidden></div>
 
-<script src="data.js?v=2"></script>
+<script src="data.js?v=3"></script>
 <script src="../guess-the-pick/names.js?v=1"></script>
 <script src="names-mlb.js?v=1"></script>
 <script src="../guess-the-pick/engine.js?v=3"></script>
-<script src="app.js?v=2"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>

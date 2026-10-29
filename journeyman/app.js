@@ -2,7 +2,7 @@
    name matching come from Guess the Pick's engine (../guess-the-pick/engine.js), shared on purpose.
    Saved on this device (localStorage):
      jm-sport                    the last sport picked
-     jm-daily2-SPORT-YYYY-MM-DD  today's daily ten so far, so a refresh picks up where you left off
+     jm-daily3-SPORT-YYYY-MM-DD  today's daily ten so far, so a refresh picks up where you left off
      jm-best-SPORT               best endless score
      gtp-name, gtp-device        the board name and device id, shared with Guess the Pick */
 (function () {
@@ -100,7 +100,7 @@
     document.querySelectorAll(".sport").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-sport") === s)); });
     homeStatus();
   }
-  function dailyKey(s) { return "jm-daily2-" + (s || sport) + "-" + today; }   // "2": the smaller, better-known pool from Oct 28
+  function dailyKey(s) { return "jm-daily3-" + (s || sport) + "-" + today; }   // "3": the departures board (flips) from Oct 28
   function homeStatus() {
     var d = store.get(dailyKey());
     var total = d ? d.results.reduce(function (a, r) { return a + r.s; }, 0) : 0;
@@ -132,19 +132,14 @@
 
   // ---- One player
   function newPick(i, resume) {
-    cur = resume && resume.i === i ? resume : { i: i, used: [], wrong: [], done: false };
+    cur = resume && resume.i === i ? resume : { i: i, used: [], wrong: [], flips: 0, all: false, done: false };
     if (mode === "daily") { game.cur = cur; store.set(dailyKey(), game); }
     var p = picks[i];
     show("play");
     var card = $("card"); card.classList.remove("enter"); void card.offsetWidth; card.classList.add("enter");
     $("card-league").textContent = LEAGUE[sport];
-    $("path-meta").textContent = p.s.length + " stops \u00B7 " + p.s[0][1] + "-" + p.s[p.s.length - 1][2];
     $("path").classList.toggle("tight", p.s.length > 8);
-    $("path").innerHTML = p.s.map(function (s) {
-      var t = team(s[0]);
-      return '<li class="stop" style="--c1:' + t[2] + ";--c2:" + t[3] + '"><span class="logo">' + logo(t) + '</span><span class="tn">'
-        + esc(t[1]) + '</span><span class="yr">' + years(s) + "</span></li>";
-    }).join("");
+    drawBoardRows(false);
     $("guess").value = ""; closeList();
     $("msg").textContent = ""; $("msg").className = "msg";
     $("reveal").hidden = true; $("guess-area").hidden = false;
@@ -152,8 +147,56 @@
     if (cur.done) return reveal(cur.gaveUp);
     if (window.matchMedia("(hover: hover)").matches) $("guess").focus();
   }
+  // ---- The departures board. The first START stops show; each flip costs a point, the whole board 2.
+  var START = 2, FLIP = 1, ALL = 2;
+  function shown() { var n = picks[cur.i].s.length; return cur.done || cur.all ? n : Math.min(n, START + cur.flips); }
+  var flapN = 8;   // the longest city on this board, so every row's tiles are the same size
+  function flapsFor(text) {
+    return '<span class="flaps" style="--n:' + flapN + '">' + text.toUpperCase().split("").map(function (c) {
+      return c === " " ? '<span class="flap sp"></span>' : '<span class="flap">' + esc(c) + "</span>";
+    }).join("") + "</span>";
+  }
+  function drawBoardRows(animateFrom) {
+    var p = picks[cur.i], n = shown();
+    flapN = Math.max(8, Math.max.apply(null, p.s.map(function (s) { return (team(s[0])[5] || team(s[0])[1]).length; })));
+    $("path").innerHTML = p.s.map(function (s, k) {
+      var t = team(s[0]), open = k < n, no = (k + 1 < 10 ? "0" : "") + (k + 1);
+      if (!open) {
+        return '<li class="held" style="--c1:#2A2D31"><span class="no">' + no + '</span><span class="logo"></span><span class="dest">'
+          + flapsFor("XXXXXXXX") + '<span class="nick">.</span></span><span class="yrs">----</span><span class="st">ON HOLD</span></li>';
+      }
+      var last = k === p.s.length - 1 && (cur.done || cur.all || n === p.s.length);
+      return '<li style="--c1:' + t[2] + '" data-k="' + k + '"><span class="no">' + no + '</span><span class="logo">' + logo(t) + '</span><span class="dest">'
+        + flapsFor(t[5] || t[1]) + '<span class="nick">' + esc(t[6] || "") + '</span></span><span class="yrs">' + years(s) + '</span><span class="st">'
+        + (last ? "FINAL" : "DEPARTED") + "</span></li>";
+    }).join("");
+    if (animateFrom !== false && animateFrom != null) {
+      $("path").querySelectorAll("li[data-k]").forEach(function (li) { if (+li.getAttribute("data-k") >= animateFrom) spin(li); });
+    }
+  }
+  // The split-flap shuffle: each letter cycles through a few random ones before it lands.
+  var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function spin(li) {
+    if (still) return;
+    var flaps = [].slice.call(li.querySelectorAll(".flap:not(.sp)")), ABC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    flaps.forEach(function (f, k) {
+      var real = f.textContent, turns = 4 + k + Math.floor(Math.random() * 4);
+      var timer = setInterval(function () {
+        if (--turns <= 0) { f.textContent = real; clearInterval(timer); return; }
+        f.textContent = ABC.charAt(Math.floor(Math.random() * 26));
+      }, 55);
+    });
+  }
+  function flip(all) {
+    var p = picks[cur.i], before = shown(), left = p.s.length - before;
+    if (cur.done || left <= 0) return;
+    if (all ? left < 2 || points() - ALL < 1 : points() - FLIP < 1) return;
+    if (all) cur.all = true; else cur.flips++;
+    save(); drawBoardRows(before); drawPoints();
+  }
   function spent() {
-    return cur.used.reduce(function (a, id) { return a + HINTS.filter(function (h) { return h.id === id; })[0].cost; }, 0);
+    return cur.used.reduce(function (a, id) { return a + HINTS.filter(function (h) { return h.id === id; })[0].cost; }, 0)
+      + (cur.flips || 0) * FLIP + (cur.all ? ALL : 0);
   }
   function points() { return Math.max(0, G.POINTS - spent() - cur.wrong.length); }
   function drawPoints() {
@@ -162,7 +205,14 @@
     $("pts").innerHTML = h + "<span>" + n + " point" + (n === 1 ? "" : "s") + " on the table</span>";
     $("wrongs").innerHTML = cur.wrong.map(function (w) { return "<span>" + esc(w) + "</span>"; }).join("");
     var p = picks[cur.i];
-    $("hints").innerHTML = HINTS.map(function (h) {
+    var left = p.s.length - shown();
+    var stopBtn = function (id, label, cost, ok) {
+      var why = !left ? "all showing" : !ok ? "can't afford" : "\u2212" + cost;
+      return '<button type="button" class="tool hint stop-hint" data-flip="' + id + '"' + (!left || !ok ? " disabled" : "") + ">" + label + " <small>" + why + "</small></button>";
+    };
+    $("hints").innerHTML = stopBtn("next", "Next stop", FLIP, n - FLIP >= 1)
+      + (left >= 2 ? stopBtn("all", "Whole board", ALL, n - ALL >= 1) : "")
+      + HINTS.map(function (h) {
       var has = !!h.text(p), used = cur.used.indexOf(h.id) >= 0, afford = n - h.cost >= 1;
       var why = !has ? "n/a" : used ? "shown" : !afford ? "can't afford" : "−" + h.cost;
       return '<button type="button" class="tool hint" data-hint="' + h.id + '"' + (used || !has || !afford ? " disabled" : "")
@@ -226,8 +276,9 @@
     if (window.matchMedia("(hover: hover)").matches) input.focus();
   }
   function finishPick(s, gaveUp) {
+    cur.seen = shown();   // before marking it done, which opens the whole board
     cur.done = true; cur.s = s; cur.gaveUp = gaveUp;
-    game.results.push({ i: cur.i, s: s });
+    game.results.push({ i: cur.i, s: s, st: cur.seen });
     if (mode === "endless") { game.seen.push(cur.i); if (!s) game.misses++; }
     save(); hud(); reveal(gaveUp);
   }
@@ -235,7 +286,10 @@
     var p = picks[cur.i], s = cur.s || 0;
     $("guess-area").hidden = true; $("reveal").hidden = false;
     $("verdict").className = "verdict v" + tier(s);
-    $("verdict").textContent = (gaveUp ? "Here's who it was" : VERDICT[s]) + (s ? " · +" + s : "");
+    var total = p.s.length, seen = cur.seen || total;
+    $("verdict").innerHTML = esc((gaveUp ? "Here's who it was" : VERDICT[s]) + (s ? " \u00B7 +" + s : ""))
+      + (s && seen < total ? ' <span class="stops">\u00B7 with ' + seen + " of " + total + " stops</span>" : "");
+    if (seen < total) drawBoardRows(seen); else drawBoardRows(false);
     $("answer").textContent = p.n;
     $("facts").innerHTML = "<b>" + esc(p.h.map(function (h) { return h[1]; }).filter(Boolean).join(" · ")) + "</b><br>"
       + esc(p.line) + ". " + p.s.length + " stops with " + p.fr + " different franchises.";
@@ -287,8 +341,8 @@
     $("done-squares").textContent = squares.length > 40 ? squares.slice(-40 * 2) : squares;
     $("recap").innerHTML = game.results.map(function (r, k) {
       var p = picks[r.i];
-      return '<li><i class="s' + tier(r.s) + '"></i><div><b>' + esc(p.n) + "</b><br><span>" + p.s.length + " stops, "
-        + p.s[0][1] + "-" + p.s[p.s.length - 1][2] + '</span><span class="hit" data-k="' + k + '"></span></div><span>+' + r.s + "</span></li>";
+      return '<li><i class="s' + tier(r.s) + '"></i><div><b>' + esc(p.n) + "</b><br><span>" + (r.s && r.st ? "Got him with " + r.st + " of " + p.s.length + " stops" : p.s.length + " stops")
+        + ", " + p.s[0][1] + "-" + p.s[p.s.length - 1][2] + '</span><span class="hit" data-k="' + k + '"></span></div><span>+' + r.s + "</span></li>";
     }).join("");
     $("share").onclick = function () { share(total, squares); };
     hits = null;
@@ -450,7 +504,17 @@
   document.querySelectorAll(".sport").forEach(function (b) { b.addEventListener("click", function () { load(b.getAttribute("data-sport")); }); });
   $("start-daily").addEventListener("click", startDaily);
   $("start-endless").addEventListener("click", startEndless);
-  $("hints").addEventListener("click", function (e) { var b = e.target.closest("button[data-hint]"); if (b) hint(b.getAttribute("data-hint")); });
+  $("hints").addEventListener("click", function (e) {
+    var f = e.target.closest("button[data-flip]");
+    if (f) return flip(f.getAttribute("data-flip") === "all");
+    var b = e.target.closest("button[data-hint]"); if (b) hint(b.getAttribute("data-hint"));
+  });
+  // The board's clock: Boston time, like the one over the gate
+  (function clockTick() {
+    var el = $("dep-clock");
+    if (el) el.textContent = new Date().toLocaleTimeString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" });
+    setTimeout(clockTick, 20e3);
+  })();
   $("give-up").addEventListener("click", function () { if (!cur.done) finishPick(0, true); });
   $("next").addEventListener("click", next);
   $("back").addEventListener("click", function () { clearInterval(clock); homeStatus(); show("home"); });
