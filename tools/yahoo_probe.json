@@ -1,1217 +1,22 @@
 {
- "checked": "2026-10-29T19:24:23Z",
- "nfl roster stats week": {
-  "path": "team/470.l.157731.t.1/roster;week=8/players/stats;type=week;week=8",
-  "ok": true,
-  "tags": {
-   "/fantasy_content": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/team_key": {
-    "n": 1,
-    "sample": [
-     "470.l.157731.t.1"
-    ]
-   },
-   "/fantasy_content/team/team_id": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/team/name": {
-    "n": 1,
-    "sample": [
-     "Holofernes"
-    ]
-   },
-   "/fantasy_content/team/is_owned_by_current_login": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/team/url": {
-    "n": 1,
-    "sample": [
-     "https://football.fantasysports.yahoo.com"
-    ]
-   },
-   "/fantasy_content/team/team_logos": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/team_logos/team_logo": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/team_logos/team_logo/size": {
-    "n": 1,
-    "sample": [
-     "large"
-    ]
-   },
-   "/fantasy_content/team/team_logos/team_logo/url": {
-    "n": 1,
-    "sample": [
-     "https://s.yimg.com/ep/cx/blendr/v2/image"
-    ]
-   },
-   "/fantasy_content/team/previous_season_team_rank": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/team/waiver_priority": {
-    "n": 1,
-    "sample": [
-     "7"
-    ]
-   },
-   "/fantasy_content/team/faab_balance": {
-    "n": 1,
-    "sample": [
-     "235"
-    ]
-   },
-   "/fantasy_content/team/number_of_moves": {
-    "n": 1,
-    "sample": [
-     "23"
-    ]
-   },
-   "/fantasy_content/team/number_of_trades": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/team/roster_adds": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/roster_adds/coverage_type": {
-    "n": 1,
-    "sample": [
-     "week"
-    ]
-   },
-   "/fantasy_content/team/roster_adds/coverage_value": {
-    "n": 1,
-    "sample": [
-     "8"
-    ]
-   },
-   "/fantasy_content/team/roster_adds/value": {
-    "n": 1,
-    "sample": [
-     "3"
-    ]
-   },
-   "/fantasy_content/team/league_scoring_type": {
-    "n": 1,
-    "sample": [
-     "head"
-    ]
-   },
-   "/fantasy_content/team/draft_position": {
-    "n": 1,
-    "sample": [
-     "3"
-    ]
-   },
-   "/fantasy_content/team/has_draft_grade": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/team/draft_grade": {
-    "n": 1,
-    "sample": [
-     "C-"
-    ]
-   },
-   "/fantasy_content/team/draft_recap_url": {
-    "n": 1,
-    "sample": [
-     "https://football.fantasysports.yahoo.com"
-    ]
-   },
-   "/fantasy_content/team/is_chopped": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/team/guillotine_risk_status": {
-    "n": 1,
-    "sample": [
-     "SAFE"
-    ]
-   },
-   "/fantasy_content/team/chopped_week": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/team/roster": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/coverage_type": {
-    "n": 1,
-    "sample": [
-     "week"
-    ]
-   },
-   "/fantasy_content/team/roster/week": {
-    "n": 1,
-    "sample": [
-     "8"
-    ]
-   },
-   "/fantasy_content/team/roster/is_prescoring": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/team/roster/is_editable": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/team/roster/bye_week_sponsor": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/bye_week_sponsor/sponsor_name": {
-    "n": 1,
-    "sample": [
-     "fox_one_2026"
-    ]
-   },
-   "/fantasy_content/team/roster/bye_week_sponsor/bye_week_copy": {
-    "n": 1,
-    "sample": [
-     "Your roster rests. FOX One doesn\u2019t."
-    ]
-   },
-   "/fantasy_content/team/roster/players": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/player_key": {
-    "n": 15,
-    "sample": [
-     "470.p.30977",
-     "470.p.34019",
-     "470.p.33996"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/player_id": {
-    "n": 15,
-    "sample": [
-     "30977",
-     "34019",
-     "33996"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/name": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/name/full": {
-    "n": 15,
-    "sample": [
-     "Josh Allen",
-     "James Cook III",
-     "Kenneth Walker III"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/name/first": {
-    "n": 15,
-    "sample": [
-     "Josh",
-     "James",
-     "Kenneth"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/name/last": {
-    "n": 15,
-    "sample": [
-     "Allen",
-     "Cook III",
-     "Walker III"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/name/ascii_first": {
-    "n": 15,
-    "sample": [
-     "Josh",
-     "James",
-     "Kenneth"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/name/ascii_last": {
-    "n": 15,
-    "sample": [
-     "Allen",
-     "Cook III",
-     "Walker III"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/url": {
-    "n": 15,
-    "sample": [
-     "https://sports.yahoo.com/nfl/players/309",
-     "https://sports.yahoo.com/nfl/players/340",
-     "https://sports.yahoo.com/nfl/players/339"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/editorial_player_key": {
-    "n": 15,
-    "sample": [
-     "nfl.p.30977",
-     "nfl.p.34019",
-     "nfl.p.33996"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/editorial_team_key": {
-    "n": 15,
-    "sample": [
-     "nfl.t.2",
-     "nfl.t.2",
-     "nfl.t.12"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/editorial_team_full_name": {
-    "n": 15,
-    "sample": [
-     "Buffalo Bills",
-     "Buffalo Bills",
-     "Kansas City Chiefs"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/editorial_team_abbr": {
-    "n": 15,
-    "sample": [
-     "Buf",
-     "Buf",
-     "KC"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/editorial_team_url": {
-    "n": 15,
-    "sample": [
-     "https://sports.yahoo.com/nfl/teams/buffa",
-     "https://sports.yahoo.com/nfl/teams/buffa",
-     "https://sports.yahoo.com/nfl/teams/kansa"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/bye_weeks": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/bye_weeks/week": {
-    "n": 15,
-    "sample": [
-     "7",
-     "7",
-     "5"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/is_keeper": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/is_keeper/status": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/is_keeper/cost": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/is_keeper/kept": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/uniform_number": {
-    "n": 15,
-    "sample": [
-     "17",
-     "4",
-     "9"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/display_position": {
-    "n": 15,
-    "sample": [
-     "QB",
-     "RB",
-     "RB"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/headshot": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/headshot/url": {
-    "n": 15,
-    "sample": [
-     "https://s.yimg.com/iu/api/res/1.2/z4qe7s",
-     "https://s.yimg.com/iu/api/res/1.2/phPvtl",
-     "https://s.yimg.com/iu/api/res/1.2/J19j1x"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/headshot/size": {
-    "n": 15,
-    "sample": [
-     "small",
-     "small",
-     "small"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/is_undroppable": {
-    "n": 15,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/position_type": {
-    "n": 15,
-    "sample": [
-     "O",
-     "O",
-     "O"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/primary_position": {
-    "n": 15,
-    "sample": [
-     "QB",
-     "RB",
-     "RB"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/eligible_positions": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/eligible_positions/position": {
-    "n": 43,
-    "sample": [
-     "QB",
-     "Q/W/R/T",
-     "RB"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/eligible_positions_to_add": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/eligible_positions_to_add/position": {
-    "n": 45,
-    "sample": [
-     "WR",
-     "RB",
-     "TE"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/selected_position": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/selected_position/coverage_type": {
-    "n": 15,
-    "sample": [
-     "week",
-     "week",
-     "week"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/selected_position/week": {
-    "n": 15,
-    "sample": [
-     "8",
-     "8",
-     "8"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/selected_position/position": {
-    "n": 15,
-    "sample": [
-     "QB",
-     "RB",
-     "RB"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/selected_position/is_flex": {
-    "n": 15,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/is_editable": {
-    "n": 15,
-    "sample": [
-     "1",
-     "1",
-     "1"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/player_stats": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/player_stats/coverage_type": {
-    "n": 15,
-    "sample": [
-     "week",
-     "week",
-     "week"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/player_stats/week": {
-    "n": 15,
-    "sample": [
-     "8",
-     "8",
-     "8"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/player_stats/stats": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/player_stats/stats/stat": {
-    "n": 210,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/player_stats/stats/stat/stat_id": {
-    "n": 210,
-    "sample": [
-     "4",
-     "5",
-     "6"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/player_stats/stats/stat/value": {
-    "n": 210,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/player_points": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/player_points/coverage_type": {
-    "n": 15,
-    "sample": [
-     "week",
-     "week",
-     "week"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/player_points/week": {
-    "n": 15,
-    "sample": [
-     "8",
-     "8",
-     "8"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/player_points/total": {
-    "n": 15,
-    "sample": [
-     "0.00",
-     "0.00",
-     "0.00"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/has_player_notes": {
-    "n": 13,
-    "sample": [
-     "1",
-     "1",
-     "1"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/player_notes_last_timestamp": {
-    "n": 13,
-    "sample": [
-     "1792985892",
-     "1793283010",
-     "1793300140"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/status": {
-    "n": 5,
-    "sample": [
-     "Q",
-     "Q",
-     "Q"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/status_full": {
-    "n": 5,
-    "sample": [
-     "Questionable",
-     "Questionable",
-     "Questionable"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/injury_note": {
-    "n": 5,
-    "sample": [
-     "Shoulder",
-     "Knee",
-     "Ankle"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/has_recent_player_notes": {
-    "n": 5,
-    "sample": [
-     "1",
-     "1",
-     "1"
-    ]
-   }
-  }
- },
- "nfl roster projected_week": {
-  "path": "team/470.l.157731.t.1/roster;week=8/players/stats;type=projected_week;week=8",
+ "checked": "2026-10-29T19:52:02Z",
+ "2023 transactions": {
+  "path": "league/422.l.4580/transactions",
   "ok": false,
-  "error": "HTTP 400 on team/470.l.157731.t.1/roster;week=8/players/stats;type=projected_week;week=8: <?xml version=\"1.0\" encoding=\"UTF-8\"?> <error xml:lang=\"en-us\" yahoo:uri=\"http://fantasysports.yahooapis.com/f"
+  "error": "HTTP 400 on league/422.l.4580/transactions: <?xml version=\"1.0\" encoding=\"UTF-8\"?> <error xml:lang=\"en-us\" yahoo:uri=\"http://fantasysports.yahooapis.com/fantasy/v2/league/422.l.4580/transactions\" xmln"
  },
- "nfl roster week is_projected": {
-  "path": "team/470.l.157731.t.1/roster;week=8/players/stats;type=week;week=8;is_projected=1",
-  "ok": true,
-  "tags": {
-   "/fantasy_content": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/team_key": {
-    "n": 1,
-    "sample": [
-     "470.l.157731.t.1"
-    ]
-   },
-   "/fantasy_content/team/team_id": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/team/name": {
-    "n": 1,
-    "sample": [
-     "Holofernes"
-    ]
-   },
-   "/fantasy_content/team/is_owned_by_current_login": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/team/url": {
-    "n": 1,
-    "sample": [
-     "https://football.fantasysports.yahoo.com"
-    ]
-   },
-   "/fantasy_content/team/team_logos": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/team_logos/team_logo": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/team_logos/team_logo/size": {
-    "n": 1,
-    "sample": [
-     "large"
-    ]
-   },
-   "/fantasy_content/team/team_logos/team_logo/url": {
-    "n": 1,
-    "sample": [
-     "https://s.yimg.com/ep/cx/blendr/v2/image"
-    ]
-   },
-   "/fantasy_content/team/previous_season_team_rank": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/team/waiver_priority": {
-    "n": 1,
-    "sample": [
-     "7"
-    ]
-   },
-   "/fantasy_content/team/faab_balance": {
-    "n": 1,
-    "sample": [
-     "235"
-    ]
-   },
-   "/fantasy_content/team/number_of_moves": {
-    "n": 1,
-    "sample": [
-     "23"
-    ]
-   },
-   "/fantasy_content/team/number_of_trades": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/team/roster_adds": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/roster_adds/coverage_type": {
-    "n": 1,
-    "sample": [
-     "week"
-    ]
-   },
-   "/fantasy_content/team/roster_adds/coverage_value": {
-    "n": 1,
-    "sample": [
-     "8"
-    ]
-   },
-   "/fantasy_content/team/roster_adds/value": {
-    "n": 1,
-    "sample": [
-     "3"
-    ]
-   },
-   "/fantasy_content/team/league_scoring_type": {
-    "n": 1,
-    "sample": [
-     "head"
-    ]
-   },
-   "/fantasy_content/team/draft_position": {
-    "n": 1,
-    "sample": [
-     "3"
-    ]
-   },
-   "/fantasy_content/team/has_draft_grade": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/team/draft_grade": {
-    "n": 1,
-    "sample": [
-     "C-"
-    ]
-   },
-   "/fantasy_content/team/draft_recap_url": {
-    "n": 1,
-    "sample": [
-     "https://football.fantasysports.yahoo.com"
-    ]
-   },
-   "/fantasy_content/team/is_chopped": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/team/guillotine_risk_status": {
-    "n": 1,
-    "sample": [
-     "SAFE"
-    ]
-   },
-   "/fantasy_content/team/chopped_week": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/team/roster": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/coverage_type": {
-    "n": 1,
-    "sample": [
-     "week"
-    ]
-   },
-   "/fantasy_content/team/roster/week": {
-    "n": 1,
-    "sample": [
-     "8"
-    ]
-   },
-   "/fantasy_content/team/roster/is_prescoring": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/team/roster/is_editable": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/team/roster/bye_week_sponsor": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/bye_week_sponsor/sponsor_name": {
-    "n": 1,
-    "sample": [
-     "fox_one_2026"
-    ]
-   },
-   "/fantasy_content/team/roster/bye_week_sponsor/bye_week_copy": {
-    "n": 1,
-    "sample": [
-     "Your roster rests. FOX One doesn\u2019t."
-    ]
-   },
-   "/fantasy_content/team/roster/players": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/player_key": {
-    "n": 15,
-    "sample": [
-     "470.p.30977",
-     "470.p.34019",
-     "470.p.33996"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/player_id": {
-    "n": 15,
-    "sample": [
-     "30977",
-     "34019",
-     "33996"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/name": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/name/full": {
-    "n": 15,
-    "sample": [
-     "Josh Allen",
-     "James Cook III",
-     "Kenneth Walker III"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/name/first": {
-    "n": 15,
-    "sample": [
-     "Josh",
-     "James",
-     "Kenneth"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/name/last": {
-    "n": 15,
-    "sample": [
-     "Allen",
-     "Cook III",
-     "Walker III"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/name/ascii_first": {
-    "n": 15,
-    "sample": [
-     "Josh",
-     "James",
-     "Kenneth"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/name/ascii_last": {
-    "n": 15,
-    "sample": [
-     "Allen",
-     "Cook III",
-     "Walker III"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/url": {
-    "n": 15,
-    "sample": [
-     "https://sports.yahoo.com/nfl/players/309",
-     "https://sports.yahoo.com/nfl/players/340",
-     "https://sports.yahoo.com/nfl/players/339"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/editorial_player_key": {
-    "n": 15,
-    "sample": [
-     "nfl.p.30977",
-     "nfl.p.34019",
-     "nfl.p.33996"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/editorial_team_key": {
-    "n": 15,
-    "sample": [
-     "nfl.t.2",
-     "nfl.t.2",
-     "nfl.t.12"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/editorial_team_full_name": {
-    "n": 15,
-    "sample": [
-     "Buffalo Bills",
-     "Buffalo Bills",
-     "Kansas City Chiefs"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/editorial_team_abbr": {
-    "n": 15,
-    "sample": [
-     "Buf",
-     "Buf",
-     "KC"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/editorial_team_url": {
-    "n": 15,
-    "sample": [
-     "https://sports.yahoo.com/nfl/teams/buffa",
-     "https://sports.yahoo.com/nfl/teams/buffa",
-     "https://sports.yahoo.com/nfl/teams/kansa"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/bye_weeks": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/bye_weeks/week": {
-    "n": 15,
-    "sample": [
-     "7",
-     "7",
-     "5"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/is_keeper": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/is_keeper/status": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/is_keeper/cost": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/is_keeper/kept": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/uniform_number": {
-    "n": 15,
-    "sample": [
-     "17",
-     "4",
-     "9"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/display_position": {
-    "n": 15,
-    "sample": [
-     "QB",
-     "RB",
-     "RB"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/headshot": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/headshot/url": {
-    "n": 15,
-    "sample": [
-     "https://s.yimg.com/iu/api/res/1.2/z4qe7s",
-     "https://s.yimg.com/iu/api/res/1.2/phPvtl",
-     "https://s.yimg.com/iu/api/res/1.2/J19j1x"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/headshot/size": {
-    "n": 15,
-    "sample": [
-     "small",
-     "small",
-     "small"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/is_undroppable": {
-    "n": 15,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/position_type": {
-    "n": 15,
-    "sample": [
-     "O",
-     "O",
-     "O"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/primary_position": {
-    "n": 15,
-    "sample": [
-     "QB",
-     "RB",
-     "RB"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/eligible_positions": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/eligible_positions/position": {
-    "n": 43,
-    "sample": [
-     "QB",
-     "Q/W/R/T",
-     "RB"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/eligible_positions_to_add": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/eligible_positions_to_add/position": {
-    "n": 45,
-    "sample": [
-     "WR",
-     "RB",
-     "TE"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/selected_position": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/selected_position/coverage_type": {
-    "n": 15,
-    "sample": [
-     "week",
-     "week",
-     "week"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/selected_position/week": {
-    "n": 15,
-    "sample": [
-     "8",
-     "8",
-     "8"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/selected_position/position": {
-    "n": 15,
-    "sample": [
-     "QB",
-     "RB",
-     "RB"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/selected_position/is_flex": {
-    "n": 15,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/is_editable": {
-    "n": 15,
-    "sample": [
-     "1",
-     "1",
-     "1"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/player_stats": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/player_stats/coverage_type": {
-    "n": 15,
-    "sample": [
-     "week",
-     "week",
-     "week"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/player_stats/week": {
-    "n": 15,
-    "sample": [
-     "8",
-     "8",
-     "8"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/player_stats/stats": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/player_stats/stats/stat": {
-    "n": 210,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/player_stats/stats/stat/stat_id": {
-    "n": 210,
-    "sample": [
-     "4",
-     "5",
-     "6"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/player_stats/stats/stat/value": {
-    "n": 210,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/player_points": {
-    "n": 15,
-    "sample": []
-   },
-   "/fantasy_content/team/roster/players/player/player_points/coverage_type": {
-    "n": 15,
-    "sample": [
-     "week",
-     "week",
-     "week"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/player_points/week": {
-    "n": 15,
-    "sample": [
-     "8",
-     "8",
-     "8"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/player_points/total": {
-    "n": 15,
-    "sample": [
-     "0.00",
-     "0.00",
-     "0.00"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/has_player_notes": {
-    "n": 13,
-    "sample": [
-     "1",
-     "1",
-     "1"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/player_notes_last_timestamp": {
-    "n": 13,
-    "sample": [
-     "1792985892",
-     "1793283010",
-     "1793300140"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/status": {
-    "n": 5,
-    "sample": [
-     "Q",
-     "Q",
-     "Q"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/status_full": {
-    "n": 5,
-    "sample": [
-     "Questionable",
-     "Questionable",
-     "Questionable"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/injury_note": {
-    "n": 5,
-    "sample": [
-     "Shoulder",
-     "Knee",
-     "Ankle"
-    ]
-   },
-   "/fantasy_content/team/roster/players/player/has_recent_player_notes": {
-    "n": 5,
-    "sample": [
-     "1",
-     "1",
-     "1"
-    ]
-   }
-  }
- },
- "nfl players projected_week": {
-  "path": "league/470.l.157731/players;player_keys=470.p.30977/stats;type=projected_week;week=8",
+ "2023 transactions add": {
+  "path": "league/422.l.4580/transactions;types=add",
   "ok": false,
-  "error": "HTTP 400 on league/470.l.157731/players;player_keys=470.p.30977/stats;type=projected_week;week=8: <?xml version=\"1.0\" encoding=\"UTF-8\"?> <error xml:lang=\"en-us\" yahoo:uri=\"http://fantasysports.yahooap"
+  "error": "HTTP 400 on league/422.l.4580/transactions;types=add: <?xml version=\"1.0\" encoding=\"UTF-8\"?> <error xml:lang=\"en-us\" yahoo:uri=\"http://fantasysports.yahooapis.com/fantasy/v2/league/422.l.4580/transact"
  },
- "nfl players week stats": {
-  "path": "league/470.l.157731/players;player_keys=470.p.30977/stats;type=week;week=8",
+ "2023 transactions add,drop": {
+  "path": "league/422.l.4580/transactions;types=add,drop",
+  "ok": false,
+  "error": "HTTP 400 on league/422.l.4580/transactions;types=add,drop: <?xml version=\"1.0\" encoding=\"UTF-8\"?> <error xml:lang=\"en-us\" yahoo:uri=\"http://fantasysports.yahooapis.com/fantasy/v2/league/422.l.4580/tra"
+ },
+ "2023 transactions count 100": {
+  "path": "league/422.l.4580/transactions;count=100",
   "ok": true,
   "tags": {
    "/fantasy_content": {
@@ -1225,1041 +30,13 @@
    "/fantasy_content/league/league_key": {
     "n": 1,
     "sample": [
-     "470.l.157731"
+     "422.l.4580"
     ]
    },
    "/fantasy_content/league/league_id": {
     "n": 1,
     "sample": [
-     "157731"
-    ]
-   },
-   "/fantasy_content/league/name": {
-    "n": 1,
-    "sample": [
-     "Bastille Day"
-    ]
-   },
-   "/fantasy_content/league/url": {
-    "n": 1,
-    "sample": [
-     "https://football.fantasysports.yahoo.com"
-    ]
-   },
-   "/fantasy_content/league/logo_url": {
-    "n": 1,
-    "sample": [
-     "https://yahoofantasysports-res.cloudinar"
-    ]
-   },
-   "/fantasy_content/league/password": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/draft_status": {
-    "n": 1,
-    "sample": [
-     "postdraft"
-    ]
-   },
-   "/fantasy_content/league/num_teams": {
-    "n": 1,
-    "sample": [
-     "15"
-    ]
-   },
-   "/fantasy_content/league/max_teams": {
-    "n": 1,
-    "sample": [
-     "18"
-    ]
-   },
-   "/fantasy_content/league/edit_key": {
-    "n": 1,
-    "sample": [
-     "8"
-    ]
-   },
-   "/fantasy_content/league/weekly_deadline": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/roster_type": {
-    "n": 1,
-    "sample": [
-     "week"
-    ]
-   },
-   "/fantasy_content/league/league_update_timestamp": {
-    "n": 1,
-    "sample": [
-     "1793256732"
-    ]
-   },
-   "/fantasy_content/league/scoring_type": {
-    "n": 1,
-    "sample": [
-     "head"
-    ]
-   },
-   "/fantasy_content/league/scoring_label": {
-    "n": 1,
-    "sample": [
-     "Death"
-    ]
-   },
-   "/fantasy_content/league/league_type": {
-    "n": 1,
-    "sample": [
-     "private"
-    ]
-   },
-   "/fantasy_content/league/renew": {
-    "n": 1,
-    "sample": [
-     "461_1118984"
-    ]
-   },
-   "/fantasy_content/league/renewed": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/felo_tier": {
-    "n": 1,
-    "sample": [
-     "silver"
-    ]
-   },
-   "/fantasy_content/league/is_highscore": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/is_guillotine": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/matchup_week": {
-    "n": 1,
-    "sample": [
-     "8"
-    ]
-   },
-   "/fantasy_content/league/iris_group_chat_id": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/short_invitation_url": {
-    "n": 1,
-    "sample": [
-     "https://football.fantasysports.yahoo.com"
-    ]
-   },
-   "/fantasy_content/league/allow_add_to_dl_extra_pos": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/is_pro_league": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/league/is_cash_league": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/league/current_week": {
-    "n": 1,
-    "sample": [
-     "8"
-    ]
-   },
-   "/fantasy_content/league/start_week": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/start_date": {
-    "n": 1,
-    "sample": [
-     "2026-09-09"
-    ]
-   },
-   "/fantasy_content/league/end_week": {
-    "n": 1,
-    "sample": [
-     "14"
-    ]
-   },
-   "/fantasy_content/league/end_date": {
-    "n": 1,
-    "sample": [
-     "2026-12-14"
-    ]
-   },
-   "/fantasy_content/league/is_plus_league": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/league/game_code": {
-    "n": 1,
-    "sample": [
-     "nfl"
-    ]
-   },
-   "/fantasy_content/league/season": {
-    "n": 1,
-    "sample": [
-     "2026"
-    ]
-   },
-   "/fantasy_content/league/players": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/players/player": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/players/player/player_key": {
-    "n": 1,
-    "sample": [
-     "470.p.30977"
-    ]
-   },
-   "/fantasy_content/league/players/player/player_id": {
-    "n": 1,
-    "sample": [
-     "30977"
-    ]
-   },
-   "/fantasy_content/league/players/player/name": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/players/player/name/full": {
-    "n": 1,
-    "sample": [
-     "Josh Allen"
-    ]
-   },
-   "/fantasy_content/league/players/player/name/first": {
-    "n": 1,
-    "sample": [
-     "Josh"
-    ]
-   },
-   "/fantasy_content/league/players/player/name/last": {
-    "n": 1,
-    "sample": [
-     "Allen"
-    ]
-   },
-   "/fantasy_content/league/players/player/name/ascii_first": {
-    "n": 1,
-    "sample": [
-     "Josh"
-    ]
-   },
-   "/fantasy_content/league/players/player/name/ascii_last": {
-    "n": 1,
-    "sample": [
-     "Allen"
-    ]
-   },
-   "/fantasy_content/league/players/player/url": {
-    "n": 1,
-    "sample": [
-     "https://sports.yahoo.com/nfl/players/309"
-    ]
-   },
-   "/fantasy_content/league/players/player/editorial_player_key": {
-    "n": 1,
-    "sample": [
-     "nfl.p.30977"
-    ]
-   },
-   "/fantasy_content/league/players/player/editorial_team_key": {
-    "n": 1,
-    "sample": [
-     "nfl.t.2"
-    ]
-   },
-   "/fantasy_content/league/players/player/editorial_team_full_name": {
-    "n": 1,
-    "sample": [
-     "Buffalo Bills"
-    ]
-   },
-   "/fantasy_content/league/players/player/editorial_team_abbr": {
-    "n": 1,
-    "sample": [
-     "Buf"
-    ]
-   },
-   "/fantasy_content/league/players/player/editorial_team_url": {
-    "n": 1,
-    "sample": [
-     "https://sports.yahoo.com/nfl/teams/buffa"
-    ]
-   },
-   "/fantasy_content/league/players/player/bye_weeks": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/players/player/bye_weeks/week": {
-    "n": 1,
-    "sample": [
-     "7"
-    ]
-   },
-   "/fantasy_content/league/players/player/is_keeper": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/players/player/is_keeper/status": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/players/player/is_keeper/cost": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/players/player/is_keeper/kept": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/players/player/uniform_number": {
-    "n": 1,
-    "sample": [
-     "17"
-    ]
-   },
-   "/fantasy_content/league/players/player/display_position": {
-    "n": 1,
-    "sample": [
-     "QB"
-    ]
-   },
-   "/fantasy_content/league/players/player/headshot": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/players/player/headshot/url": {
-    "n": 1,
-    "sample": [
-     "https://s.yimg.com/iu/api/res/1.2/z4qe7s"
-    ]
-   },
-   "/fantasy_content/league/players/player/headshot/size": {
-    "n": 1,
-    "sample": [
-     "small"
-    ]
-   },
-   "/fantasy_content/league/players/player/is_undroppable": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/league/players/player/position_type": {
-    "n": 1,
-    "sample": [
-     "O"
-    ]
-   },
-   "/fantasy_content/league/players/player/primary_position": {
-    "n": 1,
-    "sample": [
-     "QB"
-    ]
-   },
-   "/fantasy_content/league/players/player/eligible_positions": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/players/player/eligible_positions/position": {
-    "n": 2,
-    "sample": [
-     "QB",
-     "Q/W/R/T"
-    ]
-   },
-   "/fantasy_content/league/players/player/eligible_positions_to_add": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/players/player/eligible_positions_to_add/position": {
-    "n": 3,
-    "sample": [
-     "WR",
-     "RB",
-     "TE"
-    ]
-   },
-   "/fantasy_content/league/players/player/player_stats": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/players/player/player_stats/coverage_type": {
-    "n": 1,
-    "sample": [
-     "week"
-    ]
-   },
-   "/fantasy_content/league/players/player/player_stats/week": {
-    "n": 1,
-    "sample": [
-     "8"
-    ]
-   },
-   "/fantasy_content/league/players/player/player_stats/stats": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/players/player/player_stats/stats/stat": {
-    "n": 14,
-    "sample": []
-   },
-   "/fantasy_content/league/players/player/player_stats/stats/stat/stat_id": {
-    "n": 14,
-    "sample": [
-     "4",
-     "5",
-     "6"
-    ]
-   },
-   "/fantasy_content/league/players/player/player_stats/stats/stat/value": {
-    "n": 14,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/league/players/player/player_points": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/players/player/player_points/coverage_type": {
-    "n": 1,
-    "sample": [
-     "week"
-    ]
-   },
-   "/fantasy_content/league/players/player/player_points/week": {
-    "n": 1,
-    "sample": [
-     "8"
-    ]
-   },
-   "/fantasy_content/league/players/player/player_points/total": {
-    "n": 1,
-    "sample": [
-     "0.00"
-    ]
-   }
-  }
- },
- "nfl team players projected": {
-  "path": "team/470.l.157731.t.1/players/stats;type=projected_week;week=8",
-  "ok": false,
-  "error": "HTTP 400 on team/470.l.157731.t.1/players/stats;type=projected_week;week=8: <?xml version=\"1.0\" encoding=\"UTF-8\"?> <error xml:lang=\"en-us\" yahoo:uri=\"http://fantasysports.yahooapis.com/fantasy/v2/team"
- },
- "nfl scoreboard": {
-  "path": "league/470.l.157731/scoreboard;week=8",
-  "ok": true,
-  "tags": {
-   "/fantasy_content": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/league_key": {
-    "n": 1,
-    "sample": [
-     "470.l.157731"
-    ]
-   },
-   "/fantasy_content/league/league_id": {
-    "n": 1,
-    "sample": [
-     "157731"
-    ]
-   },
-   "/fantasy_content/league/name": {
-    "n": 1,
-    "sample": [
-     "Bastille Day"
-    ]
-   },
-   "/fantasy_content/league/url": {
-    "n": 1,
-    "sample": [
-     "https://football.fantasysports.yahoo.com"
-    ]
-   },
-   "/fantasy_content/league/logo_url": {
-    "n": 1,
-    "sample": [
-     "https://yahoofantasysports-res.cloudinar"
-    ]
-   },
-   "/fantasy_content/league/password": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/draft_status": {
-    "n": 1,
-    "sample": [
-     "postdraft"
-    ]
-   },
-   "/fantasy_content/league/num_teams": {
-    "n": 1,
-    "sample": [
-     "15"
-    ]
-   },
-   "/fantasy_content/league/max_teams": {
-    "n": 1,
-    "sample": [
-     "18"
-    ]
-   },
-   "/fantasy_content/league/edit_key": {
-    "n": 1,
-    "sample": [
-     "8"
-    ]
-   },
-   "/fantasy_content/league/weekly_deadline": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/roster_type": {
-    "n": 1,
-    "sample": [
-     "week"
-    ]
-   },
-   "/fantasy_content/league/league_update_timestamp": {
-    "n": 1,
-    "sample": [
-     "1793256732"
-    ]
-   },
-   "/fantasy_content/league/scoring_type": {
-    "n": 1,
-    "sample": [
-     "head"
-    ]
-   },
-   "/fantasy_content/league/scoring_label": {
-    "n": 1,
-    "sample": [
-     "Death"
-    ]
-   },
-   "/fantasy_content/league/league_type": {
-    "n": 1,
-    "sample": [
-     "private"
-    ]
-   },
-   "/fantasy_content/league/renew": {
-    "n": 1,
-    "sample": [
-     "461_1118984"
-    ]
-   },
-   "/fantasy_content/league/renewed": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/felo_tier": {
-    "n": 1,
-    "sample": [
-     "silver"
-    ]
-   },
-   "/fantasy_content/league/is_highscore": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/is_guillotine": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/matchup_week": {
-    "n": 1,
-    "sample": [
-     "8"
-    ]
-   },
-   "/fantasy_content/league/iris_group_chat_id": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/short_invitation_url": {
-    "n": 1,
-    "sample": [
-     "https://football.fantasysports.yahoo.com"
-    ]
-   },
-   "/fantasy_content/league/allow_add_to_dl_extra_pos": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/is_pro_league": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/league/is_cash_league": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/league/current_week": {
-    "n": 1,
-    "sample": [
-     "8"
-    ]
-   },
-   "/fantasy_content/league/start_week": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/start_date": {
-    "n": 1,
-    "sample": [
-     "2026-09-09"
-    ]
-   },
-   "/fantasy_content/league/end_week": {
-    "n": 1,
-    "sample": [
-     "14"
-    ]
-   },
-   "/fantasy_content/league/end_date": {
-    "n": 1,
-    "sample": [
-     "2026-12-14"
-    ]
-   },
-   "/fantasy_content/league/is_plus_league": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/league/game_code": {
-    "n": 1,
-    "sample": [
-     "nfl"
-    ]
-   },
-   "/fantasy_content/league/season": {
-    "n": 1,
-    "sample": [
-     "2026"
-    ]
-   },
-   "/fantasy_content/league/scoreboard": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/scoreboard/week": {
-    "n": 1,
-    "sample": [
-     "8"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup": {
-    "n": 8,
-    "sample": []
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/week": {
-    "n": 8,
-    "sample": [
-     "8",
-     "8",
-     "8"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/week_start": {
-    "n": 8,
-    "sample": [
-     "2026-10-27",
-     "2026-10-27",
-     "2026-10-27"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/week_end": {
-    "n": 8,
-    "sample": [
-     "2026-11-02",
-     "2026-11-02",
-     "2026-11-02"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/status": {
-    "n": 8,
-    "sample": [
-     "midevent",
-     "midevent",
-     "midevent"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/is_playoffs": {
-    "n": 8,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/is_consolation": {
-    "n": 8,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/is_matchup_of_the_week": {
-    "n": 8,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/is_matchup_recap_available": {
-    "n": 8,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams": {
-    "n": 8,
-    "sample": []
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_key": {
-    "n": 16,
-    "sample": [
-     "470.l.157731.t.1",
-     "470.l.157731.t.13",
-     "470.l.157731.t.3"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_id": {
-    "n": 16,
-    "sample": [
-     "1",
-     "13",
-     "3"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/name": {
-    "n": 16,
-    "sample": [
-     "Holofernes",
-     "Tai Streetz Lata?",
-     "Love Purdy Flowers"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/is_owned_by_current_login": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/url": {
-    "n": 16,
-    "sample": [
-     "https://football.fantasysports.yahoo.com",
-     "https://football.fantasysports.yahoo.com",
-     "https://football.fantasysports.yahoo.com"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_logos": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_logos/team_logo": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_logos/team_logo/size": {
-    "n": 16,
-    "sample": [
-     "large",
-     "large",
-     "large"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_logos/team_logo/url": {
-    "n": 16,
-    "sample": [
-     "https://s.yimg.com/ep/cx/blendr/v2/image",
-     "https://yahoofantasysports-res.cloudinar",
-     "https://s.yimg.com/ep/cx/blendr/v2/image"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/previous_season_team_rank": {
-    "n": 14,
-    "sample": [
-     "1",
-     "11",
-     "4"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/waiver_priority": {
-    "n": 16,
-    "sample": [
-     "7",
-     "8",
-     "4"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/faab_balance": {
-    "n": 16,
-    "sample": [
-     "235",
-     "215",
-     "252"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/number_of_moves": {
-    "n": 16,
-    "sample": [
-     "23",
-     "28",
-     "18"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/number_of_trades": {
-    "n": 16,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/roster_adds": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/roster_adds/coverage_type": {
-    "n": 16,
-    "sample": [
-     "week",
-     "week",
-     "week"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/roster_adds/coverage_value": {
-    "n": 16,
-    "sample": [
-     "8",
-     "8",
-     "8"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/roster_adds/value": {
-    "n": 16,
-    "sample": [
-     "3",
-     "4",
-     "3"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/league_scoring_type": {
-    "n": 16,
-    "sample": [
-     "head",
-     "head",
-     "head"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/draft_position": {
-    "n": 16,
-    "sample": [
-     "3",
-     "12",
-     "10"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/has_draft_grade": {
-    "n": 16,
-    "sample": [
-     "1",
-     "1",
-     "1"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/draft_grade": {
-    "n": 16,
-    "sample": [
-     "C-",
-     "D",
-     "A"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/draft_recap_url": {
-    "n": 16,
-    "sample": [
-     "https://football.fantasysports.yahoo.com",
-     "https://football.fantasysports.yahoo.com",
-     "https://football.fantasysports.yahoo.com"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/is_chopped": {
-    "n": 16,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/guillotine_risk_status": {
-    "n": 16,
-    "sample": [
-     "SAFE",
-     "ON_THE_BLOCK",
-     "SAFE"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/chopped_week": {
-    "n": 16,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/win_probability": {
-    "n": 16,
-    "sample": [
-     "0.99",
-     "0.01",
-     "0.99"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_points": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_points/coverage_type": {
-    "n": 16,
-    "sample": [
-     "week",
-     "week",
-     "week"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_points/week": {
-    "n": 16,
-    "sample": [
-     "8",
-     "8",
-     "8"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_points/total": {
-    "n": 16,
-    "sample": [
-     "0.00",
-     "0.00",
-     "0.00"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_projected_points": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_projected_points/coverage_type": {
-    "n": 16,
-    "sample": [
-     "week",
-     "week",
-     "week"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_projected_points/week": {
-    "n": 16,
-    "sample": [
-     "8",
-     "8",
-     "8"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_projected_points/total": {
-    "n": 16,
-    "sample": [
-     "141.56",
-     "0.00",
-     "122.33"
-    ]
-   }
-  }
- },
- "mlb settings": {
-  "path": "league/469.l.30639/settings",
-  "ok": true,
-  "tags": {
-   "/fantasy_content": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/league_key": {
-    "n": 1,
-    "sample": [
-     "469.l.30639"
-    ]
-   },
-   "/fantasy_content/league/league_id": {
-    "n": 1,
-    "sample": [
-     "30639"
+     "4580"
     ]
    },
    "/fantasy_content/league/name": {
@@ -2283,7 +60,7 @@
    "/fantasy_content/league/logo_url": {
     "n": 1,
     "sample": [
-     "https://s.yimg.com/ep/cx/blendr/v2/image"
+     "https://yahoofantasysports-res.cloudinar"
     ]
    },
    "/fantasy_content/league/password": {
@@ -2311,7 +88,7 @@
    "/fantasy_content/league/edit_key": {
     "n": 1,
     "sample": [
-     "2026-09-27"
+     "2023-10-01"
     ]
    },
    "/fantasy_content/league/weekly_deadline": {
@@ -2329,7 +106,7 @@
    "/fantasy_content/league/league_update_timestamp": {
     "n": 1,
     "sample": [
-     "1790582302"
+     "1696234240"
     ]
    },
    "/fantasy_content/league/scoring_type": {
@@ -2353,12 +130,14 @@
    "/fantasy_content/league/renew": {
     "n": 1,
     "sample": [
-     "458_25132"
+     "412_22755"
     ]
    },
    "/fantasy_content/league/renewed": {
     "n": 1,
-    "sample": []
+    "sample": [
+     "431_10202"
+    ]
    },
    "/fantasy_content/league/felo_tier": {
     "n": 1,
@@ -2379,7 +158,7 @@
    "/fantasy_content/league/matchup_week": {
     "n": 1,
     "sample": [
-     "26"
+     "25"
     ]
    },
    "/fantasy_content/league/iris_group_chat_id": {
@@ -2413,7 +192,7 @@
    "/fantasy_content/league/current_week": {
     "n": 1,
     "sample": [
-     "26"
+     "25"
     ]
    },
    "/fantasy_content/league/start_week": {
@@ -2425,19 +204,19 @@
    "/fantasy_content/league/start_date": {
     "n": 1,
     "sample": [
-     "2026-03-25"
+     "2023-03-30"
     ]
    },
    "/fantasy_content/league/end_week": {
     "n": 1,
     "sample": [
-     "26"
+     "25"
     ]
    },
    "/fantasy_content/league/end_date": {
     "n": 1,
     "sample": [
-     "2026-09-27"
+     "2023-10-01"
     ]
    },
    "/fantasy_content/league/is_finished": {
@@ -2449,7 +228,7 @@
    "/fantasy_content/league/current_date": {
     "n": 1,
     "sample": [
-     "2026-09-27"
+     "2023-10-01"
     ]
    },
    "/fantasy_content/league/is_plus_league": {
@@ -2467,588 +246,221 @@
    "/fantasy_content/league/season": {
     "n": 1,
     "sample": [
-     "2026"
+     "2023"
     ]
    },
-   "/fantasy_content/league/settings": {
+   "/fantasy_content/league/transactions": {
     "n": 1,
     "sample": []
    },
-   "/fantasy_content/league/settings/draft_type": {
-    "n": 1,
-    "sample": [
-     "live"
-    ]
-   },
-   "/fantasy_content/league/settings/is_auction_draft": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/league/settings/scoring_type": {
-    "n": 1,
-    "sample": [
-     "head"
-    ]
-   },
-   "/fantasy_content/league/settings/scoring_label": {
-    "n": 1,
-    "sample": [
-     "H2H Cat"
-    ]
-   },
-   "/fantasy_content/league/settings/custom_scoring_preset_name": {
-    "n": 1,
+   "/fantasy_content/league/transactions/transaction": {
+    "n": 100,
     "sample": []
    },
-   "/fantasy_content/league/settings/custom_scoring_preset_logo": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/settings/is_highscore": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/settings/invite_permission": {
-    "n": 1,
+   "/fantasy_content/league/transactions/transaction/transaction_key": {
+    "n": 100,
     "sample": [
-     "commissioner"
+     "422.l.4580.tr.1246",
+     "422.l.4580.tr.1245",
+     "422.l.4580.tr.1244"
     ]
    },
-   "/fantasy_content/league/settings/persistent_url": {
-    "n": 1,
+   "/fantasy_content/league/transactions/transaction/transaction_id": {
+    "n": 100,
     "sample": [
-     "https://baseball.fantasysports.yahoo.com"
+     "1246",
+     "1245",
+     "1244"
     ]
    },
-   "/fantasy_content/league/settings/uses_playoff": {
-    "n": 1,
+   "/fantasy_content/league/transactions/transaction/type": {
+    "n": 100,
     "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/has_playoff_consolation_games": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/playoff_start_week": {
-    "n": 1,
-    "sample": [
-     "24"
-    ]
-   },
-   "/fantasy_content/league/settings/uses_playoff_reseeding": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/uses_lock_eliminated_teams": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/league/settings/num_playoff_teams": {
-    "n": 1,
-    "sample": [
-     "8"
-    ]
-   },
-   "/fantasy_content/league/settings/num_playoff_consolation_teams": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/league/settings/has_multiweek_championship": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/league/settings/uses_roster_import": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/roster_import_deadline": {
-    "n": 1,
-    "sample": [
-     "2026-03-17"
-    ]
-   },
-   "/fantasy_content/league/settings/waiver_type": {
-    "n": 1,
-    "sample": [
-     "FR"
-    ]
-   },
-   "/fantasy_content/league/settings/waiver_rule": {
-    "n": 1,
-    "sample": [
-     "continuous"
-    ]
-   },
-   "/fantasy_content/league/settings/waiver_days": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/settings/waiver_days/day": {
-    "n": 7,
-    "sample": [
-     "0",
-     "1",
-     "2"
-    ]
-   },
-   "/fantasy_content/league/settings/uses_faab": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/draft_time": {
-    "n": 1,
-    "sample": [
-     "1774484100"
-    ]
-   },
-   "/fantasy_content/league/settings/draft_pick_time": {
-    "n": 1,
-    "sample": [
-     "60"
-    ]
-   },
-   "/fantasy_content/league/settings/post_draft_players": {
-    "n": 1,
-    "sample": [
-     "W"
-    ]
-   },
-   "/fantasy_content/league/settings/max_teams": {
-    "n": 1,
-    "sample": [
-     "16"
-    ]
-   },
-   "/fantasy_content/league/settings/waiver_time": {
-    "n": 1,
-    "sample": [
-     "2"
-    ]
-   },
-   "/fantasy_content/league/settings/trade_end_date": {
-    "n": 1,
-    "sample": [
-     "2026-08-06"
-    ]
-   },
-   "/fantasy_content/league/settings/trade_ratify_type": {
-    "n": 1,
-    "sample": [
+     "commish",
+     "commish",
      "commish"
     ]
    },
-   "/fantasy_content/league/settings/trade_reject_time": {
-    "n": 1,
+   "/fantasy_content/league/transactions/transaction/status": {
+    "n": 100,
     "sample": [
-     "2"
+     "successful",
+     "successful",
+     "successful"
     ]
    },
-   "/fantasy_content/league/settings/player_pool": {
-    "n": 1,
+   "/fantasy_content/league/transactions/transaction/timestamp": {
+    "n": 100,
     "sample": [
-     "ALL"
+     "1697550077",
+     "1697550077",
+     "1697550077"
     ]
    },
-   "/fantasy_content/league/settings/cant_cut_list": {
-    "n": 1,
-    "sample": [
-     "none"
-    ]
-   },
-   "/fantasy_content/league/settings/draft_together": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/league/settings/sendbird_channel_url": {
-    "n": 1,
-    "sample": [
-     "faea036dd05bdff680e5bdad1aa84d10"
-    ]
-   },
-   "/fantasy_content/league/settings/roster_positions": {
-    "n": 1,
+   "/fantasy_content/league/transactions/transaction/players": {
+    "n": 93,
     "sample": []
    },
-   "/fantasy_content/league/settings/roster_positions/roster_position": {
-    "n": 12,
+   "/fantasy_content/league/transactions/transaction/players/player": {
+    "n": 167,
     "sample": []
    },
-   "/fantasy_content/league/settings/roster_positions/roster_position/position": {
-    "n": 12,
+   "/fantasy_content/league/transactions/transaction/players/player/player_key": {
+    "n": 167,
     "sample": [
-     "C",
-     "1B",
-     "2B"
+     "422.p.11064",
+     "422.p.8621",
+     "422.p.12768"
     ]
    },
-   "/fantasy_content/league/settings/roster_positions/roster_position/position_type": {
-    "n": 10,
+   "/fantasy_content/league/transactions/transaction/players/player/player_id": {
+    "n": 167,
     "sample": [
+     "11064",
+     "8621",
+     "12768"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/name": {
+    "n": 167,
+    "sample": []
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/name/full": {
+    "n": 167,
+    "sample": [
+     "Enyel De Los Santos",
+     "Jason Heyward",
+     "Kevin Kelly"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/name/first": {
+    "n": 167,
+    "sample": [
+     "Enyel",
+     "Jason",
+     "Kevin"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/name/last": {
+    "n": 167,
+    "sample": [
+     "De Los Santos",
+     "Heyward",
+     "Kelly"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/name/ascii_first": {
+    "n": 167,
+    "sample": [
+     "Enyel",
+     "Jason",
+     "Kevin"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/name/ascii_last": {
+    "n": 167,
+    "sample": [
+     "De Los Santos",
+     "Heyward",
+     "Kelly"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/editorial_team_abbr": {
+    "n": 167,
+    "sample": [
+     "HOU",
+     "SD",
+     "TB"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/display_position": {
+    "n": 167,
+    "sample": [
+     "RP",
+     "OF",
+     "RP"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/position_type": {
+    "n": 167,
+    "sample": [
+     "P",
      "B",
-     "B",
-     "B"
+     "P"
     ]
    },
-   "/fantasy_content/league/settings/roster_positions/roster_position/count": {
-    "n": 12,
+   "/fantasy_content/league/transactions/transaction/players/player/transaction_data": {
+    "n": 167,
+    "sample": []
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/transaction_data/type": {
+    "n": 167,
+    "sample": [
+     "add",
+     "drop",
+     "add"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/transaction_data/source_type": {
+    "n": 167,
+    "sample": [
+     "waivers",
+     "team",
+     "waivers"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/transaction_data/destination_type": {
+    "n": 167,
+    "sample": [
+     "team",
+     "waivers",
+     "team"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/transaction_data/destination_team_key": {
+    "n": 82,
+    "sample": [
+     "422.l.4580.t.1",
+     "422.l.4580.t.1",
+     "422.l.4580.t.12"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/transaction_data/destination_team_name": {
+    "n": 82,
+    "sample": [
+     "Syndergaarden Cop",
+     "Syndergaarden Cop",
+     "Padilla Flotilla"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/transaction_data/source_team_key": {
+    "n": 85,
+    "sample": [
+     "422.l.4580.t.1",
+     "422.l.4580.t.1",
+     "422.l.4580.t.12"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/transaction_data/source_team_name": {
+    "n": 85,
+    "sample": [
+     "Syndergaarden Cop",
+     "Syndergaarden Cop",
+     "Padilla Flotilla"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/faab_bid": {
+    "n": 47,
     "sample": [
      "1",
      "1",
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/roster_positions/roster_position/is_starting_position": {
-    "n": 12,
-    "sample": [
-     "1",
-     "1",
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/stat_categories": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/settings/stat_categories/stats": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/settings/stat_categories/stats/stat": {
-    "n": 18,
-    "sample": []
-   },
-   "/fantasy_content/league/settings/stat_categories/stats/stat/stat_id": {
-    "n": 18,
-    "sample": [
-     "60",
-     "7",
-     "8"
-    ]
-   },
-   "/fantasy_content/league/settings/stat_categories/stats/stat/enabled": {
-    "n": 18,
-    "sample": [
-     "1",
-     "1",
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/stat_categories/stats/stat/name": {
-    "n": 18,
-    "sample": [
-     "Hits / At Bats",
-     "Runs",
-     "Hits"
-    ]
-   },
-   "/fantasy_content/league/settings/stat_categories/stats/stat/display_name": {
-    "n": 18,
-    "sample": [
-     "H/AB",
-     "R",
-     "H"
-    ]
-   },
-   "/fantasy_content/league/settings/stat_categories/stats/stat/group": {
-    "n": 18,
-    "sample": [
-     "batting",
-     "batting",
-     "batting"
-    ]
-   },
-   "/fantasy_content/league/settings/stat_categories/stats/stat/abbr": {
-    "n": 18,
-    "sample": [
-     "H/AB",
-     "R",
-     "H"
-    ]
-   },
-   "/fantasy_content/league/settings/stat_categories/stats/stat/sort_order": {
-    "n": 18,
-    "sample": [
-     "1",
-     "1",
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/stat_categories/stats/stat/position_type": {
-    "n": 18,
-    "sample": [
-     "B",
-     "B",
-     "B"
-    ]
-   },
-   "/fantasy_content/league/settings/stat_categories/stats/stat/stat_position_types": {
-    "n": 18,
-    "sample": []
-   },
-   "/fantasy_content/league/settings/stat_categories/stats/stat/stat_position_types/stat_position_type": {
-    "n": 18,
-    "sample": []
-   },
-   "/fantasy_content/league/settings/stat_categories/stats/stat/stat_position_types/stat_position_type/position_type": {
-    "n": 18,
-    "sample": [
-     "B",
-     "B",
-     "B"
-    ]
-   },
-   "/fantasy_content/league/settings/stat_categories/stats/stat/stat_position_types/stat_position_type/is_only_display_stat": {
-    "n": 2,
-    "sample": [
-     "1",
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/stat_categories/stats/stat/is_only_display_stat": {
-    "n": 2,
-    "sample": [
-     "1",
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/stat_categories/groups": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/settings/stat_categories/groups/group": {
-    "n": 2,
-    "sample": []
-   },
-   "/fantasy_content/league/settings/stat_categories/groups/group/group_name": {
-    "n": 2,
-    "sample": [
-     "batting",
-     "pitching"
-    ]
-   },
-   "/fantasy_content/league/settings/stat_categories/groups/group/group_display_name": {
-    "n": 2,
-    "sample": [
-     "Batting",
-     "Pitching"
-    ]
-   },
-   "/fantasy_content/league/settings/stat_categories/groups/group/group_abbr": {
-    "n": 2,
-    "sample": [
-     "Batting",
-     "Pitching"
-    ]
-   },
-   "/fantasy_content/league/settings/max_weekly_adds": {
-    "n": 1,
-    "sample": [
-     "7"
-    ]
-   },
-   "/fantasy_content/league/settings/uses_median_score": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/settings/league_premium_features": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/settings/season_type": {
-    "n": 1,
-    "sample": [
-     "full"
-    ]
-   },
-   "/fantasy_content/league/settings/min_innings_pitched": {
-    "n": 1,
-    "sample": [
-     "30"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-1": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-2": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-3": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-4": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-5": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-6": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-7": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-8": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-9": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-10": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-11": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-12": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-13": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-14": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-15": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-16": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-17": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-18": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-19": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-20": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-21": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-22": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-23": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-24": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-25": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/settings/week_has_enough_qualifying_days/index-26": {
-    "n": 1,
-    "sample": [
-     "1"
+     "3"
     ]
    }
   }
  },
- "mlb standings": {
-  "path": "league/469.l.30639/standings",
+ "2023 transactions start 100": {
+  "path": "league/422.l.4580/transactions;start=100;count=100",
   "ok": true,
   "tags": {
    "/fantasy_content": {
@@ -3062,13 +474,13 @@
    "/fantasy_content/league/league_key": {
     "n": 1,
     "sample": [
-     "469.l.30639"
+     "422.l.4580"
     ]
    },
    "/fantasy_content/league/league_id": {
     "n": 1,
     "sample": [
-     "30639"
+     "4580"
     ]
    },
    "/fantasy_content/league/name": {
@@ -3092,7 +504,7 @@
    "/fantasy_content/league/logo_url": {
     "n": 1,
     "sample": [
-     "https://s.yimg.com/ep/cx/blendr/v2/image"
+     "https://yahoofantasysports-res.cloudinar"
     ]
    },
    "/fantasy_content/league/password": {
@@ -3120,7 +532,7 @@
    "/fantasy_content/league/edit_key": {
     "n": 1,
     "sample": [
-     "2026-09-27"
+     "2023-10-01"
     ]
    },
    "/fantasy_content/league/weekly_deadline": {
@@ -3138,7 +550,7 @@
    "/fantasy_content/league/league_update_timestamp": {
     "n": 1,
     "sample": [
-     "1790582302"
+     "1696234240"
     ]
    },
    "/fantasy_content/league/scoring_type": {
@@ -3162,12 +574,14 @@
    "/fantasy_content/league/renew": {
     "n": 1,
     "sample": [
-     "458_25132"
+     "412_22755"
     ]
    },
    "/fantasy_content/league/renewed": {
     "n": 1,
-    "sample": []
+    "sample": [
+     "431_10202"
+    ]
    },
    "/fantasy_content/league/felo_tier": {
     "n": 1,
@@ -3188,7 +602,7 @@
    "/fantasy_content/league/matchup_week": {
     "n": 1,
     "sample": [
-     "26"
+     "25"
     ]
    },
    "/fantasy_content/league/iris_group_chat_id": {
@@ -3222,7 +636,7 @@
    "/fantasy_content/league/current_week": {
     "n": 1,
     "sample": [
-     "26"
+     "25"
     ]
    },
    "/fantasy_content/league/start_week": {
@@ -3234,19 +648,19 @@
    "/fantasy_content/league/start_date": {
     "n": 1,
     "sample": [
-     "2026-03-25"
+     "2023-03-30"
     ]
    },
    "/fantasy_content/league/end_week": {
     "n": 1,
     "sample": [
-     "26"
+     "25"
     ]
    },
    "/fantasy_content/league/end_date": {
     "n": 1,
     "sample": [
-     "2026-09-27"
+     "2023-10-01"
     ]
    },
    "/fantasy_content/league/is_finished": {
@@ -3258,7 +672,7 @@
    "/fantasy_content/league/current_date": {
     "n": 1,
     "sample": [
-     "2026-09-27"
+     "2023-10-01"
     ]
    },
    "/fantasy_content/league/is_plus_league": {
@@ -3276,1239 +690,221 @@
    "/fantasy_content/league/season": {
     "n": 1,
     "sample": [
-     "2026"
+     "2023"
     ]
    },
-   "/fantasy_content/league/standings": {
+   "/fantasy_content/league/transactions": {
     "n": 1,
     "sample": []
    },
-   "/fantasy_content/league/standings/teams": {
-    "n": 1,
+   "/fantasy_content/league/transactions/transaction": {
+    "n": 100,
     "sample": []
    },
-   "/fantasy_content/league/standings/teams/team": {
-    "n": 16,
+   "/fantasy_content/league/transactions/transaction/transaction_key": {
+    "n": 100,
+    "sample": [
+     "422.l.4580.tr.1132",
+     "422.l.4580.tr.1131",
+     "422.l.4580.tr.1130"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/transaction_id": {
+    "n": 100,
+    "sample": [
+     "1132",
+     "1131",
+     "1130"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/type": {
+    "n": 100,
+    "sample": [
+     "add",
+     "add",
+     "add/drop"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/status": {
+    "n": 100,
+    "sample": [
+     "successful",
+     "successful",
+     "successful"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/timestamp": {
+    "n": 100,
+    "sample": [
+     "1694333410",
+     "1694333410",
+     "1694333410"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players": {
+    "n": 100,
     "sample": []
    },
-   "/fantasy_content/league/standings/teams/team/team_key": {
-    "n": 16,
-    "sample": [
-     "469.l.30639.t.12",
-     "469.l.30639.t.15",
-     "469.l.30639.t.10"
-    ]
-   },
-   "/fantasy_content/league/standings/teams/team/team_id": {
-    "n": 16,
-    "sample": [
-     "12",
-     "15",
-     "10"
-    ]
-   },
-   "/fantasy_content/league/standings/teams/team/name": {
-    "n": 16,
-    "sample": [
-     "Newton South Loins",
-     "SimDOS",
-     "LoveGaretRchrdsThatsMy_Problem"
-    ]
-   },
-   "/fantasy_content/league/standings/teams/team/url": {
-    "n": 16,
-    "sample": [
-     "https://baseball.fantasysports.yahoo.com",
-     "https://baseball.fantasysports.yahoo.com",
-     "https://baseball.fantasysports.yahoo.com"
-    ]
-   },
-   "/fantasy_content/league/standings/teams/team/team_logos": {
-    "n": 16,
+   "/fantasy_content/league/transactions/transaction/players/player": {
+    "n": 161,
     "sample": []
    },
-   "/fantasy_content/league/standings/teams/team/team_logos/team_logo": {
-    "n": 16,
+   "/fantasy_content/league/transactions/transaction/players/player/player_key": {
+    "n": 161,
+    "sample": [
+     "422.p.11323",
+     "422.p.9173",
+     "422.p.60056"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/player_id": {
+    "n": 161,
+    "sample": [
+     "11323",
+     "9173",
+     "60056"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/name": {
+    "n": 161,
     "sample": []
    },
-   "/fantasy_content/league/standings/teams/team/team_logos/team_logo/size": {
-    "n": 16,
+   "/fantasy_content/league/transactions/transaction/players/player/name/full": {
+    "n": 161,
     "sample": [
-     "large",
-     "large",
-     "large"
+     "Brady Singer",
+     "Miles Mikolas",
+     "Brandon Pfaadt"
     ]
    },
-   "/fantasy_content/league/standings/teams/team/team_logos/team_logo/url": {
-    "n": 16,
+   "/fantasy_content/league/transactions/transaction/players/player/name/first": {
+    "n": 161,
     "sample": [
-     "https://s.yimg.com/cv/apiv2/default/mlb/",
-     "https://s.yimg.com/cv/apiv2/default/mlb/",
-     "https://s.yimg.com/ba/images/0314a56154c"
+     "Brady",
+     "Miles",
+     "Brandon"
     ]
    },
-   "/fantasy_content/league/standings/teams/team/previous_season_team_rank": {
-    "n": 16,
+   "/fantasy_content/league/transactions/transaction/players/player/name/last": {
+    "n": 161,
     "sample": [
-     "9",
-     "5",
-     "12"
+     "Singer",
+     "Mikolas",
+     "Pfaadt"
     ]
    },
-   "/fantasy_content/league/standings/teams/team/waiver_priority": {
-    "n": 16,
+   "/fantasy_content/league/transactions/transaction/players/player/name/ascii_first": {
+    "n": 161,
     "sample": [
-     "13",
-     "12",
-     "2"
+     "Brady",
+     "Miles",
+     "Brandon"
     ]
    },
-   "/fantasy_content/league/standings/teams/team/faab_balance": {
-    "n": 16,
+   "/fantasy_content/league/transactions/transaction/players/player/name/ascii_last": {
+    "n": 161,
     "sample": [
-     "0",
-     "8",
-     "0"
+     "Singer",
+     "Mikolas",
+     "Pfaadt"
     ]
    },
-   "/fantasy_content/league/standings/teams/team/number_of_moves": {
-    "n": 16,
+   "/fantasy_content/league/transactions/transaction/players/player/editorial_team_abbr": {
+    "n": 161,
     "sample": [
-     "67",
-     "89",
-     "83"
+     "CIN",
+     "WSH",
+     "AZ"
     ]
    },
-   "/fantasy_content/league/standings/teams/team/number_of_trades": {
-    "n": 16,
+   "/fantasy_content/league/transactions/transaction/players/player/display_position": {
+    "n": 161,
     "sample": [
-     "2",
-     "3",
-     "0"
+     "SP",
+     "SP",
+     "SP"
     ]
    },
-   "/fantasy_content/league/standings/teams/team/roster_adds": {
-    "n": 16,
+   "/fantasy_content/league/transactions/transaction/players/player/position_type": {
+    "n": 161,
+    "sample": [
+     "P",
+     "P",
+     "P"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/transaction_data": {
+    "n": 161,
     "sample": []
    },
-   "/fantasy_content/league/standings/teams/team/roster_adds/coverage_type": {
-    "n": 16,
+   "/fantasy_content/league/transactions/transaction/players/player/transaction_data/type": {
+    "n": 161,
     "sample": [
-     "week",
-     "week",
-     "week"
+     "add",
+     "add",
+     "add"
     ]
    },
-   "/fantasy_content/league/standings/teams/team/roster_adds/coverage_value": {
-    "n": 16,
+   "/fantasy_content/league/transactions/transaction/players/player/transaction_data/source_type": {
+    "n": 161,
     "sample": [
-     "26",
-     "26",
-     "26"
+     "waivers",
+     "waivers",
+     "waivers"
     ]
    },
-   "/fantasy_content/league/standings/teams/team/roster_adds/value": {
-    "n": 16,
+   "/fantasy_content/league/transactions/transaction/players/player/transaction_data/destination_type": {
+    "n": 161,
     "sample": [
-     "7",
-     "6",
-     "1"
+     "team",
+     "team",
+     "team"
     ]
    },
-   "/fantasy_content/league/standings/teams/team/clinched_playoffs": {
-    "n": 8,
+   "/fantasy_content/league/transactions/transaction/players/player/transaction_data/destination_team_key": {
+    "n": 80,
     "sample": [
-     "1",
-     "1",
-     "1"
+     "422.l.4580.t.14",
+     "422.l.4580.t.2",
+     "422.l.4580.t.15"
     ]
    },
-   "/fantasy_content/league/standings/teams/team/league_scoring_type": {
-    "n": 16,
+   "/fantasy_content/league/transactions/transaction/players/player/transaction_data/destination_team_name": {
+    "n": 80,
     "sample": [
-     "head",
-     "head",
-     "head"
-    ]
-   },
-   "/fantasy_content/league/standings/teams/team/has_draft_grade": {
-    "n": 16,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/league/standings/teams/team/team_stats": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/standings/teams/team/team_stats/coverage_type": {
-    "n": 16,
-    "sample": [
-     "season",
-     "season",
-     "season"
-    ]
-   },
-   "/fantasy_content/league/standings/teams/team/team_stats/season": {
-    "n": 16,
-    "sample": [
-     "2026",
-     "2026",
-     "2026"
-    ]
-   },
-   "/fantasy_content/league/standings/teams/team/team_stats/stats": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/standings/teams/team/team_stats/stats/stat": {
-    "n": 288,
-    "sample": []
-   },
-   "/fantasy_content/league/standings/teams/team/team_stats/stats/stat/stat_id": {
-    "n": 288,
-    "sample": [
-     "60",
-     "7",
-     "8"
-    ]
-   },
-   "/fantasy_content/league/standings/teams/team/team_stats/stats/stat/value": {
-    "n": 288,
-    "sample": [
-     "889",
-     "1652",
-     "257"
-    ]
-   },
-   "/fantasy_content/league/standings/teams/team/team_points": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/standings/teams/team/team_points/coverage_type": {
-    "n": 16,
-    "sample": [
-     "season",
-     "season",
-     "season"
-    ]
-   },
-   "/fantasy_content/league/standings/teams/team/team_points/season": {
-    "n": 16,
-    "sample": [
-     "2026",
-     "2026",
-     "2026"
-    ]
-   },
-   "/fantasy_content/league/standings/teams/team/team_points/total": {
-    "n": 16,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/league/standings/teams/team/team_standings": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/standings/teams/team/team_standings/rank": {
-    "n": 16,
-    "sample": [
-     "1",
-     "2",
-     "3"
-    ]
-   },
-   "/fantasy_content/league/standings/teams/team/team_standings/playoff_seed": {
-    "n": 8,
-    "sample": [
-     "1",
-     "2",
-     "6"
-    ]
-   },
-   "/fantasy_content/league/standings/teams/team/team_standings/outcome_totals": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/standings/teams/team/team_standings/outcome_totals/wins": {
-    "n": 16,
-    "sample": [
-     "214",
-     "207",
-     "190"
-    ]
-   },
-   "/fantasy_content/league/standings/teams/team/team_standings/outcome_totals/losses": {
-    "n": 16,
-    "sample": [
-     "127",
-     "131",
-     "150"
-    ]
-   },
-   "/fantasy_content/league/standings/teams/team/team_standings/outcome_totals/ties": {
-    "n": 16,
-    "sample": [
-     "27",
-     "30",
-     "28"
-    ]
-   },
-   "/fantasy_content/league/standings/teams/team/team_standings/outcome_totals/percentage": {
-    "n": 16,
-    "sample": [
-     ".618",
-     ".603",
-     ".554"
-    ]
-   },
-   "/fantasy_content/league/standings/teams/team/team_standings/games_back": {
-    "n": 16,
-    "sample": [
-     "-",
-     "5.5",
-     "23.5"
-    ]
-   },
-   "/fantasy_content/league/standings/teams/team/is_owned_by_current_login": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   }
-  }
- },
- "mlb team stats week 10": {
-  "path": "team/469.l.30639.t.1/stats;type=week;week=10",
-  "ok": true,
-  "tags": {
-   "/fantasy_content": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/team_key": {
-    "n": 1,
-    "sample": [
-     "469.l.30639.t.1"
-    ]
-   },
-   "/fantasy_content/team/team_id": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/team/name": {
-    "n": 1,
-    "sample": [
-     "Ippei's Book Club"
-    ]
-   },
-   "/fantasy_content/team/is_owned_by_current_login": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/team/url": {
-    "n": 1,
-    "sample": [
-     "https://baseball.fantasysports.yahoo.com"
-    ]
-   },
-   "/fantasy_content/team/team_logos": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/team_logos/team_logo": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/team_logos/team_logo/size": {
-    "n": 1,
-    "sample": [
-     "large"
-    ]
-   },
-   "/fantasy_content/team/team_logos/team_logo/url": {
-    "n": 1,
-    "sample": [
-     "https://yahoofantasysports-res.cloudinar"
-    ]
-   },
-   "/fantasy_content/team/previous_season_team_rank": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/team/waiver_priority": {
-    "n": 1,
-    "sample": [
-     "7"
-    ]
-   },
-   "/fantasy_content/team/faab_balance": {
-    "n": 1,
-    "sample": [
-     "14"
-    ]
-   },
-   "/fantasy_content/team/number_of_moves": {
-    "n": 1,
-    "sample": [
-     "59"
-    ]
-   },
-   "/fantasy_content/team/number_of_trades": {
-    "n": 1,
-    "sample": [
-     "4"
-    ]
-   },
-   "/fantasy_content/team/roster_adds": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/roster_adds/coverage_type": {
-    "n": 1,
-    "sample": [
-     "week"
-    ]
-   },
-   "/fantasy_content/team/roster_adds/coverage_value": {
-    "n": 1,
-    "sample": [
-     "26"
-    ]
-   },
-   "/fantasy_content/team/roster_adds/value": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/team/clinched_playoffs": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/team/league_scoring_type": {
-    "n": 1,
-    "sample": [
-     "head"
-    ]
-   },
-   "/fantasy_content/team/has_draft_grade": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/team/team_stats": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/team_stats/coverage_type": {
-    "n": 1,
-    "sample": [
-     "week"
-    ]
-   },
-   "/fantasy_content/team/team_stats/week": {
-    "n": 1,
-    "sample": [
-     "10"
-    ]
-   },
-   "/fantasy_content/team/team_stats/stats": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/team_stats/stats/stat": {
-    "n": 18,
-    "sample": []
-   },
-   "/fantasy_content/team/team_stats/stats/stat/stat_id": {
-    "n": 18,
-    "sample": [
-     "60",
-     "7",
-     "8"
-    ]
-   },
-   "/fantasy_content/team/team_stats/stats/stat/value": {
-    "n": 18,
-    "sample": [
-     "47/213",
-     "23",
-     "47"
-    ]
-   },
-   "/fantasy_content/team/team_points": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/team_points/coverage_type": {
-    "n": 1,
-    "sample": [
-     "week"
-    ]
-   },
-   "/fantasy_content/team/team_points/week": {
-    "n": 1,
-    "sample": [
-     "10"
-    ]
-   },
-   "/fantasy_content/team/team_points/total": {
-    "n": 1,
-    "sample": [
-     "2"
-    ]
-   },
-   "/fantasy_content/team/team_remaining_games": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/team_remaining_games/coverage_type": {
-    "n": 1,
-    "sample": [
-     "week"
-    ]
-   },
-   "/fantasy_content/team/team_remaining_games/week": {
-    "n": 1,
-    "sample": [
-     "10"
-    ]
-   },
-   "/fantasy_content/team/team_remaining_games/total": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/team_remaining_games/total/remaining_games": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/team/team_remaining_games/total/live_games": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/team/team_remaining_games/total/completed_games": {
-    "n": 1,
-    "sample": [
-     "127"
-    ]
-   }
-  }
- },
- "mlb team stats date": {
-  "path": "team/469.l.30639.t.1/stats;type=date;date=2026-06-15",
-  "ok": true,
-  "tags": {
-   "/fantasy_content": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/team_key": {
-    "n": 1,
-    "sample": [
-     "469.l.30639.t.1"
-    ]
-   },
-   "/fantasy_content/team/team_id": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/team/name": {
-    "n": 1,
-    "sample": [
-     "Ippei's Book Club"
-    ]
-   },
-   "/fantasy_content/team/is_owned_by_current_login": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/team/url": {
-    "n": 1,
-    "sample": [
-     "https://baseball.fantasysports.yahoo.com"
-    ]
-   },
-   "/fantasy_content/team/team_logos": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/team_logos/team_logo": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/team_logos/team_logo/size": {
-    "n": 1,
-    "sample": [
-     "large"
-    ]
-   },
-   "/fantasy_content/team/team_logos/team_logo/url": {
-    "n": 1,
-    "sample": [
-     "https://yahoofantasysports-res.cloudinar"
-    ]
-   },
-   "/fantasy_content/team/previous_season_team_rank": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/team/waiver_priority": {
-    "n": 1,
-    "sample": [
-     "7"
-    ]
-   },
-   "/fantasy_content/team/faab_balance": {
-    "n": 1,
-    "sample": [
-     "14"
-    ]
-   },
-   "/fantasy_content/team/number_of_moves": {
-    "n": 1,
-    "sample": [
-     "59"
-    ]
-   },
-   "/fantasy_content/team/number_of_trades": {
-    "n": 1,
-    "sample": [
-     "4"
-    ]
-   },
-   "/fantasy_content/team/roster_adds": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/roster_adds/coverage_type": {
-    "n": 1,
-    "sample": [
-     "week"
-    ]
-   },
-   "/fantasy_content/team/roster_adds/coverage_value": {
-    "n": 1,
-    "sample": [
-     "26"
-    ]
-   },
-   "/fantasy_content/team/roster_adds/value": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/team/clinched_playoffs": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/team/league_scoring_type": {
-    "n": 1,
-    "sample": [
-     "head"
-    ]
-   },
-   "/fantasy_content/team/has_draft_grade": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/team/team_stats": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/team_stats/coverage_type": {
-    "n": 1,
-    "sample": [
-     "date"
-    ]
-   },
-   "/fantasy_content/team/team_stats/date": {
-    "n": 1,
-    "sample": [
-     "2026-06-15"
-    ]
-   },
-   "/fantasy_content/team/team_stats/stats": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/team/team_stats/stats/stat": {
-    "n": 18,
-    "sample": []
-   },
-   "/fantasy_content/team/team_stats/stats/stat/stat_id": {
-    "n": 18,
-    "sample": [
-     "60",
-     "7",
-     "8"
-    ]
-   },
-   "/fantasy_content/team/team_stats/stats/stat/value": {
-    "n": 18,
-    "sample": [
-     "6/27",
-     "3",
-     "6"
-    ]
-   }
-  }
- },
- "mlb league teams stats week 10": {
-  "path": "league/469.l.30639/teams/stats;type=week;week=10",
-  "ok": true,
-  "tags": {
-   "/fantasy_content": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/league_key": {
-    "n": 1,
-    "sample": [
-     "469.l.30639"
-    ]
-   },
-   "/fantasy_content/league/league_id": {
-    "n": 1,
-    "sample": [
-     "30639"
-    ]
-   },
-   "/fantasy_content/league/name": {
-    "n": 1,
-    "sample": [
-     "Don't Forget to Wipe Yoenis"
-    ]
-   },
-   "/fantasy_content/league/url": {
-    "n": 1,
-    "sample": [
-     "https://baseball.fantasysports.yahoo.com"
-    ]
-   },
-   "/fantasy_content/league/recordbook_url": {
-    "n": 1,
-    "sample": [
-     "https://baseball.fantasysports.yahoo.com"
-    ]
-   },
-   "/fantasy_content/league/logo_url": {
-    "n": 1,
-    "sample": [
-     "https://s.yimg.com/ep/cx/blendr/v2/image"
-    ]
-   },
-   "/fantasy_content/league/password": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/draft_status": {
-    "n": 1,
-    "sample": [
-     "postdraft"
-    ]
-   },
-   "/fantasy_content/league/num_teams": {
-    "n": 1,
-    "sample": [
-     "16"
-    ]
-   },
-   "/fantasy_content/league/max_teams": {
-    "n": 1,
-    "sample": [
-     "16"
-    ]
-   },
-   "/fantasy_content/league/edit_key": {
-    "n": 1,
-    "sample": [
-     "2026-09-27"
-    ]
-   },
-   "/fantasy_content/league/weekly_deadline": {
-    "n": 1,
-    "sample": [
-     "intraday"
-    ]
-   },
-   "/fantasy_content/league/roster_type": {
-    "n": 1,
-    "sample": [
-     "date"
-    ]
-   },
-   "/fantasy_content/league/league_update_timestamp": {
-    "n": 1,
-    "sample": [
-     "1790582302"
-    ]
-   },
-   "/fantasy_content/league/scoring_type": {
-    "n": 1,
-    "sample": [
-     "head"
-    ]
-   },
-   "/fantasy_content/league/scoring_label": {
-    "n": 1,
-    "sample": [
-     "H2H Cat"
-    ]
-   },
-   "/fantasy_content/league/league_type": {
-    "n": 1,
-    "sample": [
-     "private"
-    ]
-   },
-   "/fantasy_content/league/renew": {
-    "n": 1,
-    "sample": [
-     "458_25132"
-    ]
-   },
-   "/fantasy_content/league/renewed": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/felo_tier": {
-    "n": 1,
-    "sample": [
-     "gold"
-    ]
-   },
-   "/fantasy_content/league/is_highscore": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/is_guillotine": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/league/matchup_week": {
-    "n": 1,
-    "sample": [
-     "26"
-    ]
-   },
-   "/fantasy_content/league/iris_group_chat_id": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/short_invitation_url": {
-    "n": 1,
-    "sample": [
-     "https://baseball.fantasysports.yahoo.com"
-    ]
-   },
-   "/fantasy_content/league/allow_add_to_dl_extra_pos": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/league/is_pro_league": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/league/is_cash_league": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/league/current_week": {
-    "n": 1,
-    "sample": [
-     "26"
-    ]
-   },
-   "/fantasy_content/league/start_week": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/start_date": {
-    "n": 1,
-    "sample": [
-     "2026-03-25"
-    ]
-   },
-   "/fantasy_content/league/end_week": {
-    "n": 1,
-    "sample": [
-     "26"
-    ]
-   },
-   "/fantasy_content/league/end_date": {
-    "n": 1,
-    "sample": [
-     "2026-09-27"
-    ]
-   },
-   "/fantasy_content/league/is_finished": {
-    "n": 1,
-    "sample": [
-     "1"
-    ]
-   },
-   "/fantasy_content/league/current_date": {
-    "n": 1,
-    "sample": [
-     "2026-09-27"
-    ]
-   },
-   "/fantasy_content/league/is_plus_league": {
-    "n": 1,
-    "sample": [
-     "0"
-    ]
-   },
-   "/fantasy_content/league/game_code": {
-    "n": 1,
-    "sample": [
-     "mlb"
-    ]
-   },
-   "/fantasy_content/league/season": {
-    "n": 1,
-    "sample": [
-     "2026"
-    ]
-   },
-   "/fantasy_content/league/teams": {
-    "n": 1,
-    "sample": []
-   },
-   "/fantasy_content/league/teams/team": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/teams/team/team_key": {
-    "n": 16,
-    "sample": [
-     "469.l.30639.t.1",
-     "469.l.30639.t.2",
-     "469.l.30639.t.3"
-    ]
-   },
-   "/fantasy_content/league/teams/team/team_id": {
-    "n": 16,
-    "sample": [
-     "1",
-     "2",
-     "3"
-    ]
-   },
-   "/fantasy_content/league/teams/team/name": {
-    "n": 16,
-    "sample": [
-     "Ippei's Book Club",
+     "Mendoza Line Misfitzzz",
      "Bulba",
-     "Chaz Jizzem"
+     "Simuno"
     ]
    },
-   "/fantasy_content/league/teams/team/is_owned_by_current_login": {
-    "n": 1,
+   "/fantasy_content/league/transactions/transaction/faab_bid": {
+    "n": 24,
     "sample": [
-     "1"
+     "3",
+     "5",
+     "67"
     ]
    },
-   "/fantasy_content/league/teams/team/url": {
-    "n": 16,
+   "/fantasy_content/league/transactions/transaction/players/player/transaction_data/source_team_key": {
+    "n": 81,
     "sample": [
-     "https://baseball.fantasysports.yahoo.com",
-     "https://baseball.fantasysports.yahoo.com",
-     "https://baseball.fantasysports.yahoo.com"
+     "422.l.4580.t.15",
+     "422.l.4580.t.13",
+     "422.l.4580.t.6"
     ]
    },
-   "/fantasy_content/league/teams/team/team_logos": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/teams/team/team_logos/team_logo": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/teams/team/team_logos/team_logo/size": {
-    "n": 16,
+   "/fantasy_content/league/transactions/transaction/players/player/transaction_data/source_team_name": {
+    "n": 81,
     "sample": [
-     "large",
-     "large",
-     "large"
-    ]
-   },
-   "/fantasy_content/league/teams/team/team_logos/team_logo/url": {
-    "n": 16,
-    "sample": [
-     "https://yahoofantasysports-res.cloudinar",
-     "https://yahoofantasysports-res.cloudinar",
-     "https://s.yimg.com/cv/apiv2/default/mlb/"
-    ]
-   },
-   "/fantasy_content/league/teams/team/previous_season_team_rank": {
-    "n": 16,
-    "sample": [
-     "1",
-     "2",
-     "13"
-    ]
-   },
-   "/fantasy_content/league/teams/team/waiver_priority": {
-    "n": 16,
-    "sample": [
-     "7",
-     "9",
-     "15"
-    ]
-   },
-   "/fantasy_content/league/teams/team/faab_balance": {
-    "n": 16,
-    "sample": [
-     "14",
-     "22",
-     "15"
-    ]
-   },
-   "/fantasy_content/league/teams/team/number_of_moves": {
-    "n": 16,
-    "sample": [
-     "59",
-     "85",
-     "46"
-    ]
-   },
-   "/fantasy_content/league/teams/team/number_of_trades": {
-    "n": 16,
-    "sample": [
-     "4",
-     "0",
-     "3"
-    ]
-   },
-   "/fantasy_content/league/teams/team/roster_adds": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/teams/team/roster_adds/coverage_type": {
-    "n": 16,
-    "sample": [
-     "week",
-     "week",
-     "week"
-    ]
-   },
-   "/fantasy_content/league/teams/team/roster_adds/coverage_value": {
-    "n": 16,
-    "sample": [
-     "26",
-     "26",
-     "26"
-    ]
-   },
-   "/fantasy_content/league/teams/team/roster_adds/value": {
-    "n": 16,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/league/teams/team/clinched_playoffs": {
-    "n": 8,
-    "sample": [
-     "1",
-     "1",
-     "1"
-    ]
-   },
-   "/fantasy_content/league/teams/team/league_scoring_type": {
-    "n": 16,
-    "sample": [
-     "head",
-     "head",
-     "head"
-    ]
-   },
-   "/fantasy_content/league/teams/team/has_draft_grade": {
-    "n": 16,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/league/teams/team/team_stats": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/teams/team/team_stats/coverage_type": {
-    "n": 16,
-    "sample": [
-     "week",
-     "week",
-     "week"
-    ]
-   },
-   "/fantasy_content/league/teams/team/team_stats/week": {
-    "n": 16,
-    "sample": [
-     "10",
-     "10",
-     "10"
-    ]
-   },
-   "/fantasy_content/league/teams/team/team_stats/stats": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/teams/team/team_stats/stats/stat": {
-    "n": 288,
-    "sample": []
-   },
-   "/fantasy_content/league/teams/team/team_stats/stats/stat/stat_id": {
-    "n": 288,
-    "sample": [
-     "60",
-     "7",
-     "8"
-    ]
-   },
-   "/fantasy_content/league/teams/team/team_stats/stats/stat/value": {
-    "n": 288,
-    "sample": [
-     "47/213",
-     "23",
-     "47"
-    ]
-   },
-   "/fantasy_content/league/teams/team/team_points": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/teams/team/team_points/coverage_type": {
-    "n": 16,
-    "sample": [
-     "week",
-     "week",
-     "week"
-    ]
-   },
-   "/fantasy_content/league/teams/team/team_points/week": {
-    "n": 16,
-    "sample": [
-     "10",
-     "10",
-     "10"
-    ]
-   },
-   "/fantasy_content/league/teams/team/team_points/total": {
-    "n": 16,
-    "sample": [
-     "2",
-     "7",
-     "3"
-    ]
-   },
-   "/fantasy_content/league/teams/team/team_remaining_games": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/teams/team/team_remaining_games/coverage_type": {
-    "n": 16,
-    "sample": [
-     "week",
-     "week",
-     "week"
-    ]
-   },
-   "/fantasy_content/league/teams/team/team_remaining_games/week": {
-    "n": 16,
-    "sample": [
-     "10",
-     "10",
-     "10"
-    ]
-   },
-   "/fantasy_content/league/teams/team/team_remaining_games/total": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/teams/team/team_remaining_games/total/remaining_games": {
-    "n": 16,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/league/teams/team/team_remaining_games/total/live_games": {
-    "n": 16,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/league/teams/team/team_remaining_games/total/completed_games": {
-    "n": 16,
-    "sample": [
-     "127",
-     "126",
-     "131"
+     "Simuno",
+     "Robbers",
+     "Dylan Ceased to Amaze Me"
     ]
    }
   }
  },
- "mlb scoreboard week 10": {
-  "path": "league/469.l.30639/scoreboard;week=10",
+ "2026 transactions add,drop": {
+  "path": "league/469.l.30639/transactions;types=add,drop",
   "ok": true,
   "tags": {
    "/fantasy_content": {
@@ -4739,408 +1135,212 @@
      "2026"
     ]
    },
-   "/fantasy_content/league/scoreboard": {
+   "/fantasy_content/league/transactions": {
     "n": 1,
     "sample": []
    },
-   "/fantasy_content/league/scoreboard/week": {
-    "n": 1,
-    "sample": [
-     "10"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups": {
-    "n": 1,
+   "/fantasy_content/league/transactions/transaction": {
+    "n": 1023,
     "sample": []
    },
-   "/fantasy_content/league/scoreboard/matchups/matchup": {
-    "n": 8,
-    "sample": []
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/week": {
-    "n": 8,
+   "/fantasy_content/league/transactions/transaction/transaction_key": {
+    "n": 1023,
     "sample": [
-     "10",
-     "10",
-     "10"
+     "469.l.30639.tr.1237",
+     "469.l.30639.tr.1236",
+     "469.l.30639.tr.1235"
     ]
    },
-   "/fantasy_content/league/scoreboard/matchups/matchup/week_start": {
-    "n": 8,
+   "/fantasy_content/league/transactions/transaction/transaction_id": {
+    "n": 1023,
     "sample": [
-     "2026-05-25",
-     "2026-05-25",
-     "2026-05-25"
+     "1237",
+     "1236",
+     "1235"
     ]
    },
-   "/fantasy_content/league/scoreboard/matchups/matchup/week_end": {
-    "n": 8,
+   "/fantasy_content/league/transactions/transaction/type": {
+    "n": 1023,
     "sample": [
-     "2026-05-31",
-     "2026-05-31",
-     "2026-05-31"
+     "add/drop",
+     "add/drop",
+     "add/drop"
     ]
    },
-   "/fantasy_content/league/scoreboard/matchups/matchup/status": {
-    "n": 8,
+   "/fantasy_content/league/transactions/transaction/status": {
+    "n": 1023,
     "sample": [
-     "postevent",
-     "postevent",
-     "postevent"
+     "successful",
+     "successful",
+     "successful"
     ]
    },
-   "/fantasy_content/league/scoreboard/matchups/matchup/is_playoffs": {
-    "n": 8,
+   "/fantasy_content/league/transactions/transaction/timestamp": {
+    "n": 1023,
     "sample": [
-     "0",
-     "0",
+     "1790497434",
+     "1790497434",
+     "1790411002"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/faab_bid": {
+    "n": 364,
+    "sample": [
+     "6",
+     "15",
      "0"
     ]
    },
-   "/fantasy_content/league/scoreboard/matchups/matchup/is_consolation": {
-    "n": 8,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/is_matchup_of_the_week": {
-    "n": 8,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/is_tied": {
-    "n": 8,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/winner_team_key": {
-    "n": 8,
-    "sample": [
-     "469.l.30639.t.16",
-     "469.l.30639.t.9",
-     "469.l.30639.t.8"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/stat_winners": {
-    "n": 8,
+   "/fantasy_content/league/transactions/transaction/players": {
+    "n": 1023,
     "sample": []
    },
-   "/fantasy_content/league/scoreboard/matchups/matchup/stat_winners/stat_winner": {
-    "n": 128,
+   "/fantasy_content/league/transactions/transaction/players/player": {
+    "n": 1605,
     "sample": []
    },
-   "/fantasy_content/league/scoreboard/matchups/matchup/stat_winners/stat_winner/stat_id": {
-    "n": 128,
+   "/fantasy_content/league/transactions/transaction/players/player/player_key": {
+    "n": 1605,
     "sample": [
-     "7",
-     "8",
-     "12"
+     "469.p.61577",
+     "469.p.12516",
+     "469.p.11428"
     ]
    },
-   "/fantasy_content/league/scoreboard/matchups/matchup/stat_winners/stat_winner/winner_team_key": {
-    "n": 120,
+   "/fantasy_content/league/transactions/transaction/players/player/player_id": {
+    "n": 1605,
     "sample": [
-     "469.l.30639.t.16",
-     "469.l.30639.t.16",
-     "469.l.30639.t.16"
+     "61577",
+     "12516",
+     "11428"
     ]
    },
-   "/fantasy_content/league/scoreboard/matchups/matchup/stat_winners/stat_winner/is_tied": {
-    "n": 8,
-    "sample": [
-     "1",
-     "1",
-     "1"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams": {
-    "n": 8,
+   "/fantasy_content/league/transactions/transaction/players/player/name": {
+    "n": 1605,
     "sample": []
    },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team": {
-    "n": 16,
+   "/fantasy_content/league/transactions/transaction/players/player/name/full": {
+    "n": 1605,
+    "sample": [
+     "Cam Booser",
+     "Bubba Chandler",
+     "Dean Kremer"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/name/first": {
+    "n": 1605,
+    "sample": [
+     "Cam",
+     "Bubba",
+     "Dean"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/name/last": {
+    "n": 1605,
+    "sample": [
+     "Booser",
+     "Chandler",
+     "Kremer"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/name/ascii_first": {
+    "n": 1605,
+    "sample": [
+     "Cam",
+     "Bubba",
+     "Dean"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/name/ascii_last": {
+    "n": 1605,
+    "sample": [
+     "Booser",
+     "Chandler",
+     "Kremer"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/editorial_team_abbr": {
+    "n": 1605,
+    "sample": [
+     "TB",
+     "PIT",
+     "MIN"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/display_position": {
+    "n": 1605,
+    "sample": [
+     "RP",
+     "SP",
+     "SP"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/position_type": {
+    "n": 1605,
+    "sample": [
+     "P",
+     "P",
+     "P"
+    ]
+   },
+   "/fantasy_content/league/transactions/transaction/players/player/transaction_data": {
+    "n": 1605,
     "sample": []
    },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_key": {
-    "n": 16,
+   "/fantasy_content/league/transactions/transaction/players/player/transaction_data/type": {
+    "n": 1605,
     "sample": [
-     "469.l.30639.t.1",
-     "469.l.30639.t.16",
-     "469.l.30639.t.2"
+     "add",
+     "drop",
+     "add"
     ]
    },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_id": {
-    "n": 16,
+   "/fantasy_content/league/transactions/transaction/players/player/transaction_data/source_type": {
+    "n": 1605,
     "sample": [
-     "1",
-     "16",
-     "2"
+     "waivers",
+     "team",
+     "waivers"
     ]
    },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/name": {
-    "n": 16,
+   "/fantasy_content/league/transactions/transaction/players/player/transaction_data/destination_type": {
+    "n": 1605,
     "sample": [
-     "Ippei's Book Club",
-     "Welcome 2 da fam nick madrigal",
-     "Bulba"
+     "team",
+     "waivers",
+     "team"
     ]
    },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/is_owned_by_current_login": {
-    "n": 1,
+   "/fantasy_content/league/transactions/transaction/players/player/transaction_data/destination_team_key": {
+    "n": 796,
     "sample": [
-     "1"
+     "469.l.30639.t.10",
+     "469.l.30639.t.15",
+     "469.l.30639.t.13"
     ]
    },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/url": {
-    "n": 16,
+   "/fantasy_content/league/transactions/transaction/players/player/transaction_data/destination_team_name": {
+    "n": 796,
     "sample": [
-     "https://baseball.fantasysports.yahoo.com",
-     "https://baseball.fantasysports.yahoo.com",
-     "https://baseball.fantasysports.yahoo.com"
+     "LoveGaretRchrdsThatsMy_Problem",
+     "SimDOS",
+     "Padilla Flotilla"
     ]
    },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_logos": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_logos/team_logo": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_logos/team_logo/size": {
-    "n": 16,
+   "/fantasy_content/league/transactions/transaction/players/player/transaction_data/source_team_key": {
+    "n": 809,
     "sample": [
-     "large",
-     "large",
-     "large"
+     "469.l.30639.t.10",
+     "469.l.30639.t.15",
+     "469.l.30639.t.13"
     ]
    },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_logos/team_logo/url": {
-    "n": 16,
+   "/fantasy_content/league/transactions/transaction/players/player/transaction_data/source_team_name": {
+    "n": 809,
     "sample": [
-     "https://yahoofantasysports-res.cloudinar",
-     "https://yahoofantasysports-res.cloudinar",
-     "https://yahoofantasysports-res.cloudinar"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/previous_season_team_rank": {
-    "n": 16,
-    "sample": [
-     "1",
-     "14",
-     "2"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/waiver_priority": {
-    "n": 16,
-    "sample": [
-     "7",
-     "8",
-     "9"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/faab_balance": {
-    "n": 16,
-    "sample": [
-     "14",
-     "17",
-     "22"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/number_of_moves": {
-    "n": 16,
-    "sample": [
-     "59",
-     "41",
-     "85"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/number_of_trades": {
-    "n": 16,
-    "sample": [
-     "4",
-     "2",
-     "0"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/roster_adds": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/roster_adds/coverage_type": {
-    "n": 16,
-    "sample": [
-     "week",
-     "week",
-     "week"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/roster_adds/coverage_value": {
-    "n": 16,
-    "sample": [
-     "26",
-     "26",
-     "26"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/roster_adds/value": {
-    "n": 16,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/clinched_playoffs": {
-    "n": 8,
-    "sample": [
-     "1",
-     "1",
-     "1"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/league_scoring_type": {
-    "n": 16,
-    "sample": [
-     "head",
-     "head",
-     "head"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/has_draft_grade": {
-    "n": 16,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_stats": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_stats/coverage_type": {
-    "n": 16,
-    "sample": [
-     "week",
-     "week",
-     "week"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_stats/week": {
-    "n": 16,
-    "sample": [
-     "10",
-     "10",
-     "10"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_stats/stats": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_stats/stats/stat": {
-    "n": 288,
-    "sample": []
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_stats/stats/stat/stat_id": {
-    "n": 288,
-    "sample": [
-     "60",
-     "7",
-     "8"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_stats/stats/stat/value": {
-    "n": 288,
-    "sample": [
-     "47/213",
-     "23",
-     "47"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_points": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_points/coverage_type": {
-    "n": 16,
-    "sample": [
-     "week",
-     "week",
-     "week"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_points/week": {
-    "n": 16,
-    "sample": [
-     "10",
-     "10",
-     "10"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_points/total": {
-    "n": 16,
-    "sample": [
-     "2",
-     "13",
-     "7"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_remaining_games": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_remaining_games/coverage_type": {
-    "n": 16,
-    "sample": [
-     "week",
-     "week",
-     "week"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_remaining_games/week": {
-    "n": 16,
-    "sample": [
-     "10",
-     "10",
-     "10"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_remaining_games/total": {
-    "n": 16,
-    "sample": []
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_remaining_games/total/remaining_games": {
-    "n": 16,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_remaining_games/total/live_games": {
-    "n": 16,
-    "sample": [
-     "0",
-     "0",
-     "0"
-    ]
-   },
-   "/fantasy_content/league/scoreboard/matchups/matchup/teams/team/team_remaining_games/total/completed_games": {
-    "n": 16,
-    "sample": [
-     "127",
-     "127",
-     "126"
+     "LoveGaretRchrdsThatsMy_Problem",
+     "SimDOS",
+     "Padilla Flotilla"
     ]
    }
   }
