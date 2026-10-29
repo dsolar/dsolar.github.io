@@ -175,7 +175,34 @@ select{padding-right:2rem}
 #h-riv tr.hl td{font-weight:700}
 #h-riv-more{margin-top:.6rem}
 .mu .watch{display:block;color:var(--red-text, var(--red));font:700 .7rem/1.2 var(--f-body);letter-spacing:.03em;text-transform:uppercase;margin-top:.2rem}
-@media (max-width:480px){.sweeps li{grid-template-columns:minmax(0,1fr) auto}.sweeps .when{grid-column:1/-1}}
+.sweeps li{display:block;padding:0}
+.sweeps summary{display:grid;grid-template-columns:5.6rem minmax(0,1fr) auto;gap:.2rem .9rem;align-items:baseline;padding:.6rem 0;cursor:pointer;list-style:none;min-height:44px}
+.sweeps summary::-webkit-details-marker{display:none}
+.sweeps .sc::after{content:"";display:inline-block;width:.4rem;height:.4rem;margin-left:.5rem;border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);transform:translateY(-.2rem) rotate(45deg)}
+.sweeps details[open] .sc::after{transform:translateY(0) rotate(-135deg)}
+@media (max-width:480px){.sweeps summary{grid-template-columns:minmax(0,1fr) auto}.sweeps .when{grid-column:1/-1}}
+.swt{width:100%;border-collapse:collapse;font-size:.875rem;margin:0 0 .8rem;font-variant-numeric:tabular-nums}
+.swt td,.swt th{padding:.26rem .35rem;border-bottom:1px solid color-mix(in srgb, var(--rule) 60%, transparent)}
+.swt th{font-weight:600;color:var(--muted);font-size:.8125rem;overflow-wrap:anywhere}
+.swt th.v,.swt td.v{text-align:right;width:40%}
+.swt th.v.b,.swt td.v.b{text-align:left}
+.swt td.c{text-align:center;font-weight:600;width:20%}
+.swt td.won{font-weight:700;color:var(--ink)}
+.swt td.won::after{content:" \25C0";font-size:.6rem;color:var(--red);vertical-align:.15em}
+.swt td.v.b.won::after{content:none}
+.swt td.v.b.won::before{content:"\25B6  ";font-size:.6rem;color:var(--red);vertical-align:.15em}
+.swt tr.sep td{border-top:2px solid var(--rule)}
+.sw-note{font-size:.8125rem;color:var(--muted);margin:-.4rem 0 .8rem}
+.bwt{width:100%;border-collapse:collapse;font-size:.9375rem;font-variant-numeric:tabular-nums}
+.bwt th{font-weight:600;color:var(--muted);font-size:.8125rem;text-align:left;padding:.4rem .5rem .4rem 0;border-bottom:1px solid var(--rule)}
+.bwt td{padding:.5rem .5rem .5rem 0;border-bottom:1px solid color-mix(in srgb, var(--rule) 60%, transparent);vertical-align:baseline}
+.bwt .r{text-align:right;white-space:nowrap}
+.bwt td.v{font-weight:700;font-size:1.05rem;padding-right:.9rem}
+.bwt td.t{overflow-wrap:anywhere;width:100%}
+.bwt td.t small{display:block;font-size:.8125rem;color:var(--muted)}
+.bwt td.k{white-space:nowrap;padding-right:.9rem}
+#h-best tr.bw{cursor:pointer}
+#h-best .ast{color:var(--red-text);font-weight:700;text-decoration:none;cursor:help}
 
 /* The race */
 .mus{list-style:none;margin:.4rem 0 0;padding:0;border-top:1px solid var(--rule)}
@@ -686,7 +713,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       <h2 id="h2h-title">Head to head</h2>
       <p id="h2h-lede">Every manager's record against everyone else since 2013, and every 16-0.</p>
     </div>
-    <div class="seg tabs" role="tablist" aria-label="Head to head" data-remember="yoenis-htab"><button type="button" role="tab" id="ht-riv" aria-controls="hp-riv" aria-selected="true">Rivalries</button><button type="button" role="tab" id="ht-sw" aria-controls="hp-sw" aria-selected="false" tabindex="-1">16-0 club</button></div>
+    <div class="seg tabs" role="tablist" aria-label="Head to head" data-remember="yoenis-htab"><button type="button" role="tab" id="ht-riv" aria-controls="hp-riv" aria-selected="true">Rivalries</button><button type="button" role="tab" id="ht-sw" aria-controls="hp-sw" aria-selected="false" tabindex="-1">16-0 club</button><button type="button" role="tab" id="ht-best" aria-controls="hp-best" aria-selected="false" tabindex="-1">Best weeks</button></div>
     <div role="tabpanel" id="hp-riv" aria-labelledby="ht-riv">
       <div class="controls"><label class="field">Manager<select id="h-man"></select></label></div>
       <p class="h-lede" id="h-riv-lede"></p>
@@ -698,6 +725,13 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       <p class="h-lede" id="h-sw-lede"></p>
       <ol class="sweeps" id="h-sw"></ol>
       <details class="fold" id="h-near-f"><summary id="h-near-s">Near misses</summary><ol class="sweeps near" id="h-near"></ol></details>
+      <p class="note">Open one to see every category.</p>
+    </div>
+    <div role="tabpanel" id="hp-best" aria-labelledby="ht-best" hidden>
+      <div class="controls"><label class="field">Category<select id="h-best-cat"></select></label>
+        <div class="field">Weeks<span class="seg" role="group" aria-label="Weeks" id="h-best-len"><button type="button" data-v="all" aria-pressed="true">All</button><button type="button" data-v="7" aria-pressed="false">7-day only</button></span></div></div>
+      <div class="tbl-wrap" tabindex="0" role="region" aria-label="Best single weeks"><table class="bwt" id="h-best"></table></div>
+      <p class="note" id="h-best-note"></p>
     </div>
   </section>
 
@@ -1794,9 +1828,9 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     var mine = myOwner(); if (mine && ids[mine]) $("h-man").value = mine;
     $("h-man").addEventListener("change", function () { H2H_ALL = false; drawRivals(); });
     $("h-riv-more").addEventListener("click", function () { H2H_ALL = !H2H_ALL; drawRivals(); });
-    $("h2h-lede").textContent = "Every manager's record against everyone else in " + H.matchups.toLocaleString("en-US") + " matchups since 2013, and every 16-0.";
+    $("h2h-lede").textContent = "Every manager's record against everyone else in " + H.matchups.toLocaleString("en-US") + " matchups since 2013, every 16-0, and the best single weeks.";
     $("h2h").hidden = false;
-    drawRivals(); drawSweeps();
+    drawRivals(); drawSweeps(); initBest();
   }
   function drawRivals() {
     var me = $("h-man").value, H = DATA.history, rows = [];
@@ -1832,10 +1866,77 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
           '</td><td class="r num">' + rec(r.c) + '</td><td class="r num">' + (r.last ? r.last.y + " " + (r.last.s[0] > r.last.s[1] ? "W" : r.last.s[0] < r.last.s[1] ? "L" : "T") : "") + "</td></tr>";
       }).join("") + "</tbody>";
   }
+  var CAT_NAME = { R: "Runs", H: "Hits", HR: "Home runs", RBI: "RBI", SB: "Steals", TB: "Total bases", AVG: "Average", OPS: "OPS",
+    W: "Wins", L: "Losses", SV: "Saves", K: "Strikeouts", HLD: "Holds", ERA: "ERA", WHIP: "WHIP", QS: "Quality starts" };
+  function fmtStat(ab, v) {
+    if (typeof v !== "number") return "–";
+    if (ab === "AVG" || ab === "OPS") return v.toFixed(3).replace(/^0\./, ".");
+    if (ab === "ERA" || ab === "WHIP") return v.toFixed(2);
+    return String(Math.round(v));
+  }
+  function fmtIP(ip) { var w = Math.floor(ip + 1e-6), f = Math.round((ip - w) * 3); return w + "." + f; }
+  function weekDates(dt) {
+    if (!dt) return "";
+    var f = function (d) { return new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }); };
+    return f(dt[0]) + " to " + f(dt[1]);
+  }
   function swRow(r) {
-    var s = SEASONS[r.y];
-    return '<li><span class="when">' + r.y + ", Week " + r.w + (r.po === 1 ? '<span class="po">Playoffs</span>' : "") + '</span><span class="who"><b>' + esc(teamMan(s, r.a)) + "</b> over " + esc(teamMan(s, r.b)) +
-      '</span><span class="sc">' + r.s[0] + "-" + r.s[1] + (r.s[2] ? "-" + r.s[2] : "") + "</span></li>";
+    var s = SEASONS[r.y], cats = DATA.history.cats || [];
+    var forfeit = r.ip && r.ip[1] < 30;
+    var head = '<summary><span class="when">' + r.y + ", Week " + r.w + (r.po === 1 ? '<span class="po">Playoffs</span>' : "") + (forfeit ? '<span class="off-tag" title="The other team pitched under the 30-inning minimum, so it forfeited the pitching categories">Innings forfeit</span>' : "") + '</span><span class="who"><b>' + esc(teamMan(s, r.a)) + "</b> over " + esc(teamMan(s, r.b)) +
+      '</span><span class="sc">' + r.s[0] + "-" + r.s[1] + (r.s[2] ? "-" + r.s[2] : "") + "</span></summary>";
+    if (!r.st) return "<li>" + head.replace("<summary>", '<summary style="cursor:default">') + "</li>";
+    var rows = cats.map(function (ab, i) {
+      var w = (r.wn || "")[i] || "a";
+      return "<tr" + (ab === "W" ? ' class="sep"' : "") + '><td class="v' + (w === "a" ? " won" : "") + '">' + fmtStat(ab, r.st[0][i]) + '</td><td class="c">' + esc(ab) +
+        '</td><td class="v b' + (w === "b" ? " won" : "") + '">' + fmtStat(ab, r.st[1][i]) + "</td></tr>";
+    }).join("");
+    if (r.ip) rows += '<tr class="sep"><td class="v">' + fmtIP(r.ip[0]) + '</td><td class="c">IP</td><td class="v b">' + fmtIP(r.ip[1]) + "</td></tr>";
+    // Under the weekly innings minimum, Yahoo hands the other side every pitching category
+    var short = forfeit ? '<p class="sw-note">' + esc(teamMan(s, r.b)) + " pitched under the 30-inning minimum, so Yahoo gave away the pitching categories.</p>" : "";
+    var thName = function (ti) { return esc(s.teams[ti]); };
+    return "<li><details>" + head + (r.dt ? '<p class="sw-note">' + weekDates(r.dt) + "</p>" : "") +
+      '<table class="swt"><thead><tr><th class="v">' + thName(r.a) + '</th><th></th><th class="v b">' + thName(r.b) + "</th></tr></thead><tbody>" + rows + "</tbody></table>" + short + "</details></li>";
+  }
+  /* Best single weeks (data.history.best) */
+  function initBest() {
+    var B = DATA.history.best || {}, cats = (DATA.history.cats || []).filter(function (c) { return B[c]; });
+    if (!cats.length) { $("ht-best").hidden = true; return; }
+    $("h-best-cat").innerHTML = '<option value="">Every category\'s record</option>' + cats.map(function (c) { return '<option value="' + c + '">' + esc(CAT_NAME[c] || c) + "</option>"; }).join("");
+    $("h-best-cat").addEventListener("change", drawBest);
+    $("h-best-len").addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-v]"); if (!b) return;
+      [].forEach.call(this.querySelectorAll("button"), function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      drawBest();
+    });
+    $("h-best").addEventListener("click", function (e) {
+      var tr = e.target.closest("tr[data-c]"); if (!tr) return;
+      $("h-best-cat").value = tr.getAttribute("data-c"); drawBest();
+    });
+    $("h-best-note").innerHTML = '<a class="ast" title="Longer than seven days">*</a> A week longer than seven days: the opening week and the All-Star break week run two to three weeks, so they hold most of the counting records. "7-day only" leaves them out. Average and OPS need 150 at-bats in the week, ERA and WHIP 40 innings. Losses are left out. Tap a category for its top ten.';
+    drawBest();
+  }
+  function bestWhen(r) {
+    var long = r[4] && r[4] > 7;
+    return r[0] + ", Week " + r[1] + (long ? '<a class="ast" title="A ' + r[4] + '-day week">*</a>' : "") + (r[5] ? ", playoffs" : "");
+  }
+  function drawBest() {
+    var seven = (document.querySelector("#h-best-len [aria-pressed=true]") || {}).getAttribute && document.querySelector("#h-best-len [aria-pressed=true]").getAttribute("data-v") === "7";
+    var B = seven && DATA.history.best7 ? DATA.history.best7 : DATA.history.best, c = $("h-best-cat").value, cats = DATA.history.cats.filter(function (k) { return B[k] && B[k].length; });
+    var team = function (r) { var s = SEASONS[r[0]]; return esc(s.teams[r[2]]) + "<small>" + esc(man(s, r[2])) + ", " + bestWhen(r) + "</small>"; };
+    if (!c) {
+      $("h-best").innerHTML = '<caption hidden>Best single week in every category</caption><thead><tr><th scope="col">Category</th><th scope="col" class="r">Best</th><th scope="col">Team and week</th></tr></thead><tbody>' +
+        cats.map(function (k) {
+          var r = B[k][0];
+          return '<tr class="bw" data-c="' + k + '"><td class="k">' + esc(CAT_NAME[k] || k) + '</td><td class="r v">' + fmtStat(k, r[3]) + '</td><td class="t">' + team(r) + "</td></tr>";
+        }).join("") + "</tbody>";
+      return;
+    }
+    $("h-best").innerHTML = '<caption hidden>Best single weeks: ' + esc(CAT_NAME[c] || c) + '</caption><thead><tr><th scope="col" class="r">#</th><th scope="col" class="r">' + esc(c) + '</th><th scope="col">Team and week</th></tr></thead><tbody>' +
+      B[c].map(function (r, i) {
+        var rank = i && B[c][i - 1][3] === r[3] ? "" : i + 1;
+        return '<tr><td class="r k">' + rank + '</td><td class="r v">' + fmtStat(c, r[3]) + '</td><td class="t">' + team(r) + "</td></tr>";
+      }).join("") + "</tbody>";
   }
   function drawSweeps() {
     var H = DATA.history, sw = H.sweeps || [], near = H.near || [];
@@ -1849,7 +1950,8 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     var by = cnt(function (r) { return r.a; }), of = cnt(function (r) { return r.b; }), mb = top(by), mo = top(of);
     var seasons = {}; sw.forEach(function (r) { seasons[r.y] = 1; });
     $("h-sw-lede").innerHTML = sw.length
-      ? "<b>" + sw.length + "</b> clean sweeps in " + H.matchups.toLocaleString("en-US") + " matchups since 2013, about one every " + Math.round(H.matchups / sw.length) + " matchups. " +
+      ? "<b>" + sw.length + "</b> clean sweeps in " + H.matchups.toLocaleString("en-US") + " matchups since 2013, about one every " + Math.round(H.matchups / sw.length) + " matchups" +
+        (function () { var f = sw.filter(function (r) { return r.ip && r.ip[1] < 30; }).length; return f ? ", though " + f + " came against a team under the 30-inning minimum, which forfeits the pitching categories. " : ". "; })() +
         (mb ? esc(mb.names) + (/ and /.test(mb.names) ? " have" : " has") + " the most (" + mb.n + (/ and /.test(mb.names) ? " each" : "") + "). " : "") +
         (mo ? esc(mo.names) + (/ and /.test(mo.names) ? " have" : " has") + " been swept the most (" + mo.n + (/ and /.test(mo.names) ? " times each" : " times") + "). " : "") +
         (sw[0] ? "The latest: " + esc(teamMan(SEASONS[sw[0].y], sw[0].a)) + ", " + sw[0].y + "." : "")

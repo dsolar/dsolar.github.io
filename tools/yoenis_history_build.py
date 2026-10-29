@@ -2,14 +2,20 @@
 """Build sweeps, rivalries and the waiver wire hall of fame for yoenis/data.json.
 
 Reads tools/yahoo_yoenis/history/<year>.json (tools/yoenis_history_pull.py) and tools/yahoo_yoenis/trades.json.
-  sweeps     every matchup one side won in every category (16-0), plus the 15-1 and 15-0-1 near misses
+  sweeps     every matchup one side won in every category (16-0), plus the 15-1 and 15-0-1 near misses, with
+             both sides' category totals and the week's dates
+  best       the best single weeks in each category: the top ten team-weeks ever, with how many days the
+             week ran (Yahoo's first week and the All-Star week run long). Averages need 150 at-bats and ERA
+             and WHIP 40 innings; losses are left out.
   rivals     every pair of managers' all-time head-to-head: matchups won, lost and tied, and categories,
              with playoff meetings counted separately. By manager, so team renames don't split a rivalry.
   pickups    every free-agent or waiver pickup from Opening Day on, valued like the trade history: what he
              actually did for that team from the day after the pickup until he was dropped or traded (his MLB
              game logs, tools/yahoo_yoenis/slices), plus, if he was still there at season's end, each later
              season that manager kept him, less what that keeper round was expected to produce.
-Writes data["history"] = {"sweeps": [...], "near": [...], "rivals": {...}, "pickups": [...top...], "pickTeams": {...}}.
+Writes data["history"] = {"sweeps": [...], "near": [...], "rivals": {...}, "pickups": [...top...], "pickTeams": {...},
+                          "cats": [abbr, ...], "best": {abbr: [[year, week, team index, value, days, playoffs], ...]},
+                          "best7": the same, counting only regular seven-day weeks}.
 
   python3 tools/yoenis_history_build.py
 """
@@ -31,6 +37,25 @@ HIST = ROOT / "tools" / "yahoo_yoenis" / "history"
 TRADES = ROOT / "tools" / "yahoo_yoenis" / "trades.json"
 EASTERN = ZoneInfo("America/New_York")
 TOP = 60  # pickups kept on the page: the best ever, plus each season's best
+BEST = 10  # team-weeks kept per category
+MIN_AB, MIN_IP = 150, 40  # to count for a best week in average/OPS, and in ERA/WHIP
+RATE_B, RATE_P = ("AVG", "OPS"), ("ERA", "WHIP")
+
+
+def innings(ip):
+    """Yahoo's 59.1 means 59 and a third"""
+    try:
+        whole, _, frac = str(ip).partition(".")
+        return int(whole) + int(frac or 0) / 3
+    except ValueError:
+        return 0.0
+
+
+def at_bats(hab):
+    try:
+        return int(str(hab).split("/")[1])
+    except (IndexError, ValueError):
+        return 0
 
 
 def day(ts):
@@ -42,6 +67,7 @@ def main():
     seasons = {s["year"]: s for s in data["seasons"]}
     kept2 = kept_map(data)
     sweeps, near, rivals, pickups = [], [], {}, []
+    cats, weekly = [], []
     for f in sorted(glob.glob(str(HIST / "*.json"))):
         h = json.load(open(f, encoding="utf-8"))
         y = h["season"]
@@ -50,9 +76,12 @@ def main():
             continue
         idx = {k: s["teams"].index(n) for k, n in h["teams"].items() if n in s["teams"]}
         n = len(h["cats"])
+        abbrs = [c["abbr"] for c in h["cats"]]
+        cats = cats or abbrs
 
         # Matchups: sweeps, near misses, rivalries
         for w in h["weeks"]:
+            days = (date.fromisoformat(w["e"]) - date.fromisoformat(w["s"])).days + 1 if w.get("s") and w.get("e") else None
             for mu in w["matchups"]:
                 if len(mu["teams"]) != 2 or any(x == "" for x in mu["won"]):
                     continue  # not decided yet
@@ -67,6 +96,31 @@ def main():
                 row = {"y": y, "w": w["week"], "a": idx[hi], "b": idx[lo], "s": [whi, wlo, t]}
                 if mu["playoffs"]:
                     row["po"] = 1 if not mu["consolation"] else 2
+                st = mu.get("stats") or {}
+                if hi in st and lo in st:
+                    row["st"] = [st[hi], st[lo]]
+                if w.get("s"):
+                    row["dt"] = [w["s"], w["e"]]
+                row["wn"] = "".join("a" if x == hi else "b" if x == lo else "t" for x in mu["won"])  # each category's winner
+                xs = mu.get("x") or {}
+                if hi in xs and lo in xs:
+                    row["ip"] = [innings(xs[hi].get("IP")), innings(xs[lo].get("IP"))]
+                # Every team-week, for the best single weeks
+                for tk in (A, B):
+                    vals, x = st.get(tk), (mu.get("x") or {}).get(tk) or {}
+                    if not vals:
+                        continue
+                    ab, ip = at_bats(x.get("H/AB")), innings(x.get("IP"))
+                    if not ab and "H" in abbrs and "AVG" in abbrs:  # no H/AB from Yahoo: hits over average
+                        hh, avg = vals[abbrs.index("H")], vals[abbrs.index("AVG")]
+                        ab = round(hh / avg) if isinstance(hh, (int, float)) and isinstance(avg, (int, float)) and avg > 0 else 0
+                    for ci, ab_ in enumerate(abbrs):
+                        v = vals[ci]
+                        if not isinstance(v, (int, float)) or ab_ == "L":
+                            continue
+                        if (ab_ in RATE_B and ab < MIN_AB) or (ab_ in RATE_P and ip < MIN_IP):
+                            continue
+                        weekly.append((ab_, v, y, w["week"], idx[tk], days, 1 if mu["playoffs"] and not mu["consolation"] else 0))
                 if whi == n:
                     sweeps.append(row)
                 elif whi == n - 1:
@@ -129,9 +183,19 @@ def main():
             keep.add(id(p))
     top = [p for p in allp if id(p) in keep]
 
+    best, best7 = {}, {}
+    low = {c["abbr"]: c["low"] for c in json.load(open(sorted(glob.glob(str(HIST / "*.json")))[-1], encoding="utf-8"))["cats"]}
+    for ab_ in cats:
+        rows = [r for r in weekly if r[0] == ab_]
+        if not rows:
+            continue
+        rows.sort(key=lambda r: (r[1] if low.get(ab_) else -r[1], r[2], r[3]))
+        best[ab_] = [[r[2], r[3], r[4], r[1], r[5], r[6]] for r in rows[:BEST]]
+        best7[ab_] = [[r[2], r[3], r[4], r[1], r[5], r[6]] for r in rows if r[5] and r[5] <= 7][:BEST]
+
     hist = {"sweeps": sorted(sweeps, key=lambda r: (r["y"], r["w"]), reverse=True),
             "near": sorted(near, key=lambda r: (r["y"], r["w"]), reverse=True),
-            "rivals": rivals, "pickups": top, "pickTeams": pick_teams,
+            "rivals": rivals, "pickups": top, "pickTeams": pick_teams, "cats": cats, "best": best, "best7": best7,
             "matchups": sum(sum(r["m"]) + sum(r["po"]) for r in rivals.values())}
     if data.get("history") == hist:
         print("No change.")
