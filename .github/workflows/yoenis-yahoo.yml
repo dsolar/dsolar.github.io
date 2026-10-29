@@ -9,6 +9,8 @@ on:
     paths:
       - tools/yoenis_yahoo_pull.py
       - tools/yoenis_keeper_check.py
+      - tools/yoenis_trades_pull.py
+      - tools/yoenis_trades_build.py
       - .github/workflows/yoenis-yahoo.yml
   schedule:
     - cron: "23 14 * 10-12,1-3 1"   # 10:23am ET Mondays, October through March
@@ -38,11 +40,17 @@ jobs:
           YAHOO_CLIENT_ID: ${{ secrets.YAHOO_CLIENT_ID }}
           YAHOO_CLIENT_SECRET: ${{ secrets.YAHOO_CLIENT_SECRET }}
           YAHOO_REFRESH_TOKEN: ${{ secrets.YAHOO_REFRESH_TOKEN }}
-        run: python3 tools/yoenis_yahoo_pull.py
+        run: |
+          python3 tools/yoenis_yahoo_pull.py
+          python3 tools/yoenis_trades_pull.py
 
       - name: Check the 2027 keeper costs
         run: |
           if [ -f tools/yoenis_keeper_check.py ]; then python3 tools/yoenis_keeper_check.py; fi
+
+      - name: Build the trade history
+        run: |
+          if [ -f tools/yoenis_trades_build.py ]; then python3 tools/yoenis_trades_build.py; fi
 
       - name: Commit
         run: |
