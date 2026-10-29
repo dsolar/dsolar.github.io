@@ -333,7 +333,10 @@ dialog.card-dlg::backdrop{background:rgba(0,0,0,.55)}
 
 @media (max-width:1060px){
   .draft-grid{grid-template-columns:minmax(0,1fr)}
-  .side{position:static;order:-1}
+  /* the depth chart stays above the pool; offers, free agency and the draft board drop below it, so the pool isn't 7,000px down a phone */
+  .side{display:contents}
+  .side>#sheet{order:-1}
+  .side>.panel:not(#sheet){order:1}
   .filters{grid-template-columns:repeat(3,minmax(0,1fr))}
   .filters .q,.filters .posf{grid-column:1 / -1}
   .grid3{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}

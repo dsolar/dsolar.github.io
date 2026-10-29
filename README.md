@@ -12,6 +12,7 @@ dsolar.github.io/
     projects.js               THE LIST OF PROJECTS. Edit this to add or change one.
     site.css                  the site's colors, fonts and layout (colors are at the top)
     site.js                   email links and the footer year, shared by every page
+    slate.js                  Today's slate, the hero scoreboard of the daily games (reads each game's saved progress)
     analytics.js              Cloudflare Web Analytics (paste the token here to turn it on)
     bar.css                   the slim "David Solar / All projects" bar on top of each game
     ds-mark.svg, favicon.svg  the DS logo
