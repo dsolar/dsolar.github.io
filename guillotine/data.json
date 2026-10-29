@@ -4,7 +4,7 @@
  "week": 8,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-10-29T18:59:03Z",
+ "updated": "2026-10-29T19:20:33Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -484,7 +484,7 @@
       }
      },
      "proj": 7.12,
-     "rank": "RB33",
+     "rank": "RB32",
      "date": "2026-11-01",
      "next_proj": 6.63
     },
@@ -516,7 +516,9 @@
        "fum_lost": 2
       }
      },
-     "proj": 0.0,
+     "proj": 4.08,
+     "rank": "RB55",
+     "date": "2026-11-02",
      "next_proj": 5.07
     }
    ],
@@ -1404,8 +1406,8 @@
        "fum_lost": 1
       }
      },
-     "proj": 7.41,
-     "rank": "RB32",
+     "proj": 6.11,
+     "rank": "RB40",
      "date": "2026-11-02",
      "next_proj": 3.11
     },
@@ -1439,7 +1441,7 @@
       }
      },
      "proj": 8.42,
-     "rank": "RB30",
+     "rank": "RB29",
      "date": "2026-11-01",
      "next_proj": 8.23
     }
@@ -2366,7 +2368,7 @@
       }
      },
      "proj": 5.7,
-     "rank": "RB44",
+     "rank": "RB43",
      "date": "2026-11-02",
      "next_proj": 6.74
     },
@@ -2741,8 +2743,8 @@
       ],
       "tot": {}
      },
-     "proj": 8.43,
-     "rank": "RB29",
+     "proj": 8.01,
+     "rank": "RB30",
      "date": "2026-11-02",
      "next_proj": 9.34
     },
@@ -3347,7 +3349,7 @@
       }
      },
      "proj": 1.84,
-     "rank": "RB63",
+     "rank": "RB64",
      "date": "2026-11-01",
      "next_proj": 0.59
     }
@@ -5001,7 +5003,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-10-29T18:59:06Z",
+  "updated": "2026-10-29T19:20:36Z",
   "players": 3045,
   "unmatched": []
  }
