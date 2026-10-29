@@ -7,6 +7,8 @@
      type      Homepage category: "Fantasy Leagues", "Simulations", "Games", "Social Tools".
                Once there's more than one type, filter buttons appear on the home page.
      released  Year and month it went live, "YYYY-MM". For your records; it doesn't show on the card.
+     line      One short line for its home page tile (about 35 characters).
+     daily     true for a daily game: it gets a row in Today's slate (assets/slate.js) instead of a tile.
      tag       Optional short note next to the type, e.g. "Updated every morning". Leave it out for none.
      url       Where it lives on this site, relative to the home page (folder name + /).
      question  The question that started it. Shows in italics.
@@ -29,6 +31,8 @@
 window.PROJECTS = [
   {
     title: "Make the Call",
+    line: "NFL calls, graded on win probability",
+    daily: true,
     tag: "New challenge every day",
     featured: true,
     spotlight: true,
@@ -50,6 +54,8 @@ window.PROJECTS = [
   },
   {
     title: "Guess the Pick",
+    line: "Name the draft pick from the slot",
+    daily: true,
     tag: "New ten every day",
     type: "Games",
     released: "2026-10",
@@ -63,6 +69,8 @@ window.PROJECTS = [
   },
   {
     title: "Journeyman",
+    line: "Name the player from his teams",
+    daily: true,
     tag: "New ten every day",
     type: "Games",
     released: "2026-10",
@@ -76,6 +84,8 @@ window.PROJECTS = [
   },
   {
     title: "Scouting Report",
+    line: "Draft takes that aged badly",
+    daily: true,
     tag: "New five every day",
     type: "Games",
     released: "2026-10",
@@ -89,6 +99,7 @@ window.PROJECTS = [
   },
   {
     title: "Night Out",
+    line: "Boston plans for the group",
     tag: "Updated every morning",
     hidden: true,
     type: "Social Tools",
@@ -102,6 +113,7 @@ window.PROJECTS = [
   },
   {
     title: "Bastille Day Odds",
+    line: "Who gets cut next in the guillotine",
     tag: "Live on game days",
     type: "Fantasy Leagues",
     released: "2026-10",
@@ -114,6 +126,7 @@ window.PROJECTS = [
   },
   {
     title: "Lige de Rohan",
+    line: "The football league's home base",
     tag: "Live on game days",
     hidden: true,
     type: "Fantasy Leagues",
@@ -128,6 +141,7 @@ window.PROJECTS = [
   },
   {
     title: "Don't Forget to Wipe Yoenis",
+    line: "The keeper league record book",
     type: "Fantasy Leagues",
     released: "2026-10",
     url: "yoenis/",
@@ -140,6 +154,7 @@ window.PROJECTS = [
   },
   {
     title: "Sunday Strategist",
+    line: "Read the defense, call the play",
     type: "Games",
     released: "2026-10",
     url: "sunday-strategist/",
@@ -152,6 +167,7 @@ window.PROJECTS = [
   },
   {
   title: "The 31st Franchise",
+  line: "Build Seattle an NBA team",
     type: "Simulations",
     released: "2026-10",
     url: "31st-franchise/",
@@ -163,6 +179,7 @@ window.PROJECTS = [
   },
   {
     title: "Banner 19",
+    line: "Run the Celtics front office",
     type: "Simulations",
     released: "2026-10",
     url: "celtics/",
@@ -175,6 +192,7 @@ window.PROJECTS = [
   },
   {
     title: "Paint the Corners",
+    line: "Out-pitch Pedro vs. the Yankees",
     type: "Games",
     released: "2026-10",
     url: "paint-the-corners/",
@@ -186,6 +204,7 @@ window.PROJECTS = [
   },
   {
     title: "The Degenerate Trail",
+    line: "Get Nick home through Montreal",
     type: "Games",
     released: "2026-10",
     url: "degenerate-trail/",
@@ -198,6 +217,7 @@ window.PROJECTS = [
   },
   {
     title: "Dynasty Mode",
+    line: "Seattle, season after season",
     hidden: true,
     action: "Open beta",
     type: "Simulations",
@@ -210,6 +230,7 @@ window.PROJECTS = [
   },
   {
     title: "Chat with Nick",
+    line: "An on-demand Nick",
     type: "Social Tools",
     released: "2026-10",
     url: "nick-chat/",
@@ -222,6 +243,7 @@ window.PROJECTS = [
   },
   {
     title: "Trade Analyzer",
+    line: "Who actually wins this trade",
     hidden: true,
     type: "Fantasy Leagues",
     released: "2026-10",
@@ -235,6 +257,7 @@ window.PROJECTS = [
   },
   {
     title: "Jellycat Battle Club",
+    line: "Lucy's Jellycat adventure",
     section: "kids",
     type: "Games",
     released: "2026-10",
@@ -248,6 +271,7 @@ window.PROJECTS = [
   },
   {
     title: "Wild Bloom Isles",
+    line: "Charlotte's design studio",
     section: "kids",
     type: "Games",
     released: "2026-10",

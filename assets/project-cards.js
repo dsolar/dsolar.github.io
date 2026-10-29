@@ -62,5 +62,29 @@
       + "</div>" + matchups(p) + "</article>";
   }
 
-  window.ProjectCards = { card: card, esc: esc };
+  // A compact home page tile: cover, type, name and one line. The whole tile is the link.
+  // ProjectCards.tile(project, { showHidden, base, order }) takes the same options as card().
+  function tile(p, opts) {
+    opts = opts || {};
+    var at = function (u) { return u && opts.base && !/^([a-z]+:|\/|#)/i.test(u) ? opts.base + u : u; };
+    var building = p.status === "building";
+    var accessible = !building || (!!opts.showHidden && p.hidden);
+    var cover = p.cover || {};
+    var style = (cover.bg ? "--cover-bg:" + cover.bg + ";" : "") + (cover.band ? "--cover-band:" + cover.band : "");
+    var art = cover.image
+      ? '<img src="' + esc(at(cover.image)) + '" alt="" loading="lazy" width="1040" height="780">'
+      : '<span class="tile-typeset">' + esc(p.title) + "</span>";
+    var badge = building ? "In progress" : p.hidden ? "Hidden" : p.tag || "";
+    var order = opts.order ? '<span class="tile-order" aria-hidden="true">' + esc(opts.order) + "</span>" : "";
+    var id = p.external ? slug(p.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")) : slug(p.url);
+    var tag = accessible ? "a" : "div";
+    return '<li class="tile-item" id="' + esc(id) + '" data-type="' + esc(p.type) + '">'
+      + "<" + tag + ' class="tile' + (accessible ? "" : " is-off") + '"' + (accessible ? ' href="' + esc(at(p.url)) + '"' : "") + ' style="' + esc(style) + '">'
+      + '<span class="tile-cover">' + art + order + (badge ? '<span class="tile-badge">' + esc(badge) + "</span>" : "") + "</span>"
+      + '<span class="tile-body"><span class="tile-type">' + esc(p.type) + '</span><h3 class="tile-title">' + esc(p.title) + (p.external ? " ↗" : "") + "</h3>"
+      + (p.line ? '<span class="tile-line">' + esc(p.line) + "</span>" : "") + "</span>"
+      + "</" + tag + "></li>";
+  }
+
+  window.ProjectCards = { card: card, tile: tile, esc: esc };
 })();

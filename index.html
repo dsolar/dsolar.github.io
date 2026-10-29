@@ -20,12 +20,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Besley:ital,wght@0,500;0,600;0,700;0,800;1,500&family=Libre+Franklin:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="assets/site.css?v=20261029-header">
+<link rel="stylesheet" href="assets/site.css?v=20261029-tiles">
 <script>if (location.hash === "#kids") location.replace("kids/");  /* the kids section moved to its own page */</script>
 <script src="assets/site.js" defer></script>
 <script src="assets/analytics.js" defer></script>
 <script src="assets/scoreboard.js?v=20261028-pregame" defer></script>
-<script src="assets/slate.js?v=20261029-scout" defer></script>
+<script src="assets/slate.js?v=20261029-tiles" defer></script>
 </head>
 <body>
 
@@ -104,7 +104,7 @@
         <div class="filters" id="filters" role="group" aria-label="Show projects by type" hidden></div>
       </div>
       <!-- Projects are listed in assets/projects.js. Edit that file, not this one. -->
-      <p class="portfolio-intro">Games, league tools and a few simulations. Filter by type, or just start at the top.</p>
+      <p class="portfolio-intro">The daily games are up top in Today&rsquo;s slate. Here&rsquo;s everything else: league tools, front office sims and a few more games.</p>
       <div class="catalog" id="catalog">
         <noscript>
           <ul>
@@ -260,8 +260,8 @@
   </div>
 </footer>
 
-<script src="assets/projects.js?v=20261029-stick"></script>
-<script src="assets/project-cards.js?v=20261029-order"></script>
+<script src="assets/projects.js?v=20261029-tiles"></script>
+<script src="assets/project-cards.js?v=20261029-tiles"></script>
 <script>
 /* Draws the project list from assets/projects.js. You shouldn't need to edit this. */
 (function () {
@@ -271,15 +271,14 @@
   var syncCategory = function () {};
   function renderProjects() {
   var all = (window.PROJECTS || []).filter(function (p) { return showHidden || !p.hidden; });
-  // The order of assets/projects.js, with the spotlight first; "kids" projects have their own page (kids/).
-  var projects = all.filter(function (p) { return !p.section; }).map(function (p, i) { return [p, i]; })
-    .sort(function (a, b) { return (!!b[0].spotlight - !!a[0].spotlight) || a[1] - b[1]; }).map(function (x) { return x[0]; });
+  // The order of assets/projects.js. Daily games live in Today's slate and "kids" projects on their own page (kids/).
+  var projects = all.filter(function (p) { return !p.section && !p.daily; });
 
   var catalog = document.getElementById("catalog");
   var categorySlugs = {"Fantasy Leagues":"fantasy","Simulations":"simulations","Games":"games","Social Tools":"social"};
   var slugCategories = {fantasy:"Fantasy Leagues",simulations:"Simulations",games:"Games",social:"Social Tools"};
-  var card = function (p, i) { return window.ProjectCards.card(p, { showHidden: showHidden, order: i + 1 }); };
-  catalog.innerHTML = projects.map(card).join("");
+  var tile = function (p, i) { return window.ProjectCards.tile(p, { showHidden: showHidden, order: i + 1 }); };
+  catalog.innerHTML = '<ul class="tiles">' + projects.map(tile).join("") + "</ul>";
   // A team logo that doesn't load gives way to its abbreviation
   if (!catalog.dataset.logoFallback) {
     catalog.dataset.logoFallback = "1";
@@ -308,7 +307,7 @@
       filters.querySelectorAll("button").forEach(function (button) {
         button.setAttribute("aria-pressed", String(button.getAttribute("data-type") === selected));
       });
-      catalog.querySelectorAll(".entry").forEach(function (entry) {
+      catalog.querySelectorAll(".tile-item").forEach(function (entry) {
         entry.hidden = selected !== "All" && entry.getAttribute("data-type") !== selected;
       });
       document.getElementById("count").textContent = selected === "All"

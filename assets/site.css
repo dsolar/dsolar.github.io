@@ -562,3 +562,45 @@ a:hover{color:var(--red)}
   .site-header .brand-logo{width:clamp(136px,40vw,172px)}
   .site-nav{margin-left:auto;flex-wrap:nowrap;gap:16px;font-size:.95rem}
 }
+
+/* ---------- The lineup as tiles: cover, type, name and one line; the whole tile is the link ---------- */
+.catalog:has(.tiles){display:block}
+.tiles{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(14.5rem,1fr));gap:20px}
+.tile-item[hidden]{display:none}
+.tile{display:flex;flex-direction:column;height:100%;background:var(--paper);color:var(--ink);text-decoration:none;
+  border:1px solid var(--rule);border-top:4px solid var(--cover-band,var(--ink));border-radius:8px;overflow:hidden}
+.tile:hover{color:var(--ink)}
+.tile:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+.tile-cover{position:relative;display:block;aspect-ratio:4/3;overflow:hidden;background:var(--cover-bg,var(--paper-2))}
+.tile-cover img{display:block;width:100%;height:100%;object-fit:cover;object-position:center top;transition:transform .35s ease}
+.tile-typeset{display:flex;align-items:flex-end;height:100%;padding:14px;color:#fff;font-family:var(--f-display);font-weight:800;font-size:1.35rem;line-height:1.05}
+.tile-order{position:absolute;top:8px;left:8px;display:inline-flex;align-items:center;justify-content:center;min-width:1.6rem;height:1.6rem;padding:0 5px;border-radius:2px;
+  background:var(--monster);color:var(--plate-ink);font-weight:800;font-size:.8rem;font-variant-numeric:tabular-nums lining-nums;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),inset 0 -2px 0 rgba(0,0,0,.25),0 1px 4px rgba(0,0,0,.3)}
+.tile-badge{position:absolute;right:8px;top:8px;max-width:calc(100% - 52px);padding:3px 7px;border-radius:3px;background:rgba(4,17,31,.86);color:#F5F4F0;
+  font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile-body{display:flex;flex-direction:column;gap:4px;padding:14px 16px 16px}
+.tile-type{font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--red)}
+.tile-title{font-family:var(--f-display);font-size:1.28rem;font-weight:700;line-height:1.12;letter-spacing:-.01em;margin:0}
+.tile-line{font-size:.9rem;line-height:1.4;color:var(--muted)}
+.tile.is-off{opacity:.72}
+@media (hover:hover) and (prefers-reduced-motion: no-preference){
+  .tile{transition:transform .18s ease,box-shadow .18s ease}
+  .tile:not(.is-off):hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(0,34,68,.12)}
+  .tile:not(.is-off):hover .tile-cover img{transform:scale(1.04)}
+}
+@media (prefers-reduced-motion: reduce){.tile-cover img{transition:none}}
+@media (max-width: 640px){
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .tile{border-radius:6px}
+  .tile-body{padding:10px 11px 12px;gap:3px}
+  .tile-type{font-size:.6rem}
+  .tile-title{font-size:1.02rem}
+  .tile-line{font-size:.8rem;line-height:1.35}
+  .tile-badge{font-size:.55rem;padding:3px 5px;right:6px;top:7px;max-width:calc(100% - 42px)}
+  .tile-order{top:6px;left:6px;min-width:1.4rem;height:1.4rem;font-size:.72rem}
+}
+
+/* Today's slate: a one-line description under each daily game */
+.slate-name small{display:block;margin-top:3px;font-size:.68rem;font-weight:500;letter-spacing:0;text-transform:none;color:#B5D2BF;line-height:1.25}
+.slate-name{margin-top:-14px}

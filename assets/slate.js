@@ -34,18 +34,18 @@
     var et = bostonDate(), local = localDate();
     var daily = read("mtc.v2.daily." + local), speed = read("mtc.v2.speed." + local);
     return [
-      { name: "Make the Call", url: "win-probability/", cells: [
+      { name: "Make the Call", line: "4th downs, graded", url: "win-probability/", cells: [
         { label: "Daily", url: "win-probability/", s: daily && daily.grade ? { state: "done", text: daily.grade, say: "grade " + daily.grade } : { state: "open" } },
         { label: "Speed", url: "win-probability/", s: speed && speed.speed ? { state: "done", text: String(speed.speed.score), say: speed.speed.score + " of 1000" } : { state: "open" } },
         null
       ] },
-      { name: "Guess the Pick", url: "guess-the-pick/", cells: ["nba", "nfl"].map(function (sp) {
+      { name: "Guess the Pick", line: "Name the draft pick", url: "guess-the-pick/", cells: ["nba", "nfl"].map(function (sp) {
         return { label: sp.toUpperCase(), url: "guess-the-pick/?sport=" + sp, s: tenDaily("gtp-daily5-" + sp + "-" + et) };
       }).concat([null]) },
-      { name: "Journeyman", url: "journeyman/", cells: ["nba", "nfl", "mlb"].map(function (sp) {
+      { name: "Journeyman", line: "Name him by his teams", url: "journeyman/", cells: ["nba", "nfl", "mlb"].map(function (sp) {
         return { label: sp.toUpperCase(), url: "journeyman/?sport=" + sp, s: tenDaily("jm-daily3-" + sp + "-" + et) };
       }) },
-      { name: "Scouting Report", url: "scouting-report/", cells: [
+      { name: "Scouting Report", line: "Takes that aged badly", url: "scouting-report/", cells: [
         { label: "Daily", url: "scouting-report/", s: tenDaily("sr-daily-" + et, 5) }, null, null
       ] }
     ];
@@ -74,7 +74,7 @@
         return '<a class="slate-cell is-' + c.s.state + '" href="' + esc(c.url) + '" aria-label="' + esc(say) + '">'
           + '<span class="slate-plate">' + esc(text) + '</span><span class="slate-lab">' + esc(c.label) + "</span></a>";
       }).join("");
-      return '<li class="slate-row"><a class="slate-name" href="' + esc(r.url) + '">' + esc(r.name) + "</a>" + cells + "</li>";
+      return '<li class="slate-row"><a class="slate-name" href="' + esc(r.url) + '">' + esc(r.name) + (r.line ? "<small>" + esc(r.line) + "</small>" : "") + "</a>" + cells + "</li>";
     }).join("");
 
     var lights = "";
