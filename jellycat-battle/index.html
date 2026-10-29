@@ -466,6 +466,46 @@ body.battle-focus .fighter .avatar .plush-svg{width:min(90cqh,90cqw,300px);heigh
 .pop-cell.oops::after{content:"Oops!";font-size:.8rem;color:#ffe0d0}
 @keyframes pop-fade{from{opacity:1;transform:none}to{opacity:0;transform:translateY(-16px)}}
 @media (prefers-reduced-motion:reduce){.pop-art,.pop-cell.hit::after,.pop-cell.oops::after{animation:none!important}}
+/* Battle v2: four moves, statuses, wind-up warnings, choose who goes in */
+.status-chips{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 2px}
+.status-chip{font-size:.62rem;font-weight:850;padding:2px 7px;border-radius:999px;background:#f1e6f8;color:#4a3448;border:1.5px solid #b9a3c9;white-space:nowrap}
+.status-chip.charge{background:#fff1d6;border-color:#e0a03c}
+.status-chip.drowsy{background:#e8eefc;border-color:#8ea3d6}
+.status-chip.pumped{background:#ffe8e3;border-color:#e48b7b}
+.status-chip.guard{background:#e7f3eb;border-color:#7fb08d}
+.battle-board{position:relative}
+.battle-warn{position:absolute;left:50%;top:8px;transform:translateX(-50%);z-index:5;max-width:min(92%,520px);padding:7px 12px;border-radius:12px;background:#fff1d6;border:2px solid #d8963a;color:#5a3a14;font-weight:850;font-size:.78rem;text-align:center;box-shadow:0 3px 0 #a9712a55;animation:warn-pulse 1.2s ease-in-out infinite}
+@keyframes warn-pulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.03)}}
+.move-grid.moves-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+body.battle-focus .move-grid.moves-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.move.k-flurry{background:#eef6ff}.move.k-drain{background:#eef9ef}.move.k-windup{background:#fff3e3}.move.k-sleepy{background:#eef0fb}.move.k-cheer{background:#ffeef0}
+.move.release{width:100%;min-height:76px;background:linear-gradient(90deg,#ffe2a8,#ffd07a);border:2.5px solid #4a3448;border-radius:12px;box-shadow:3px 3px 0 #302b37;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:1rem}
+.guard-btn{margin-top:10px;width:100%}
+.guard-btn.suggest{background:#fff1d6!important;border-color:#d8963a!important;box-shadow:0 0 0 3px #ffd99a88;font-weight:900}
+.send-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.send-card{display:grid;grid-template-columns:52px 1fr;grid-template-rows:auto auto auto;column-gap:8px;align-items:center;text-align:left;padding:8px 10px;border:2.5px solid #4a3448;border-radius:12px;background:#fffdf8;box-shadow:2px 2px 0 #302b37;cursor:pointer;min-width:0}
+.send-card .send-art{grid-row:1/4;width:52px;height:52px;display:grid;place-items:center;overflow:hidden}
+.send-card .send-art>*{max-width:100%;max-height:100%}
+.send-card strong{font-size:.85rem;overflow-wrap:anywhere}
+.send-tag{font-size:.62rem;font-weight:850}.send-tag.good{color:#2f7a45}.send-tag.bad{color:#b0442f}
+@media (max-width:700px){.move-grid.moves-4,body.battle-focus .move-grid.moves-4{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body.battle-focus .move-grid.moves-4 .move{min-height:58px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;text-align:left}
+ body.battle-focus .move-grid.moves-4 .move .small{white-space:normal}
+ .battle-warn{top:4px;font-size:.66rem;padding:5px 8px}
+ .send-grid{grid-template-columns:1fr}
+ .status-chip{font-size:.56rem;padding:1px 5px}}
+@media (prefers-reduced-motion:reduce){.battle-warn{animation:none}}
+/* Move manager and learn prompt */
+.move-manager{padding:10px 12px;border:2px solid #d9cbd6;border-radius:14px;background:#fffdf8}
+.mm-list{display:grid;gap:6px;margin-top:8px}
+.mm-move{display:flex;align-items:center;gap:10px;text-align:left;padding:7px 10px;border:2px solid #d9cbd6;border-radius:11px;background:#fff;cursor:pointer}
+.mm-move.on{border-color:#69448c;background:#f4ecfa}
+.mm-check{flex:0 0 26px;height:26px;border-radius:50%;display:grid;place-items:center;font-weight:900;background:#efe8f3;color:#69448c}
+.mm-move.on .mm-check{background:#69448c;color:#fff}
+.mm-text{display:flex;flex-direction:column;min-width:0}.mm-text strong{font-size:.85rem}.mm-text small{font-size:.7rem;color:#7d6f7b}
+.learn-modal .learn-art{width:110px;height:110px;margin:14px auto 4px;display:grid;place-items:center}
+.learn-modal .learn-art>*{max-width:100%;max-height:100%}
+.learn-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px}
 </style>
 </head>
 <body>
@@ -673,6 +713,28 @@ const CATALOG=raw.map(([officialName,typeIdx,page,emoji,legendary],i)=>{
 });
 function moveName(n,t,i){const p=n.replace(/^Amuseables /,'').split(/[ ‘']/)[0];const words=[['Crumb Toss','Golden Crunch','Cozy Snack'],['Soft Tackle','Fluff Flurry','Cuddle Break'],['Petal Pop','Garden Gust','Sunshine Snooze'],['Bubble Bounce','Tidal Twirl','Sea Breeze'],['Silly Scare','Moonlight Mischief','Dreamy Nap'],['Quick Dash','Victory Spin','Rest Stop']];return (i===0?p+' '+words[t][0]:i===1?words[t][1]:words[t][2]);}
 const BY_ID=new Map(CATALOG.map(x=>[x.id,x]));
+// Battle moves v2. Every Jellycat starts with three moves, learns a role move at level 3 and a type move at
+// level 6, and can equip four. Moves are stored by kind, so each kind appears once per Jellycat.
+const MOVE_KINDS={quick:{power:40,accuracy:1},signature:{power:65,accuracy:.83},heal:{power:0,accuracy:1},
+ flurry:{power:26,accuracy:.95,hits:2},drain:{power:45,accuracy:1},windup:{power:105,accuracy:.95},sleepy:{power:0,accuracy:.8},cheer:{power:0,accuracy:1}};
+const NEW_MOVE_WORDS=[
+ {flurry:'Sprinkle Shower',drain:'Nibble Snack',windup:'Oven Blast',sleepy:'Warm Milk',cheer:'Sugar Rush'},
+ {flurry:'Paw Patter',drain:'Snuggle Squeeze',windup:'Big Bear Hug',sleepy:'Lullaby Purr',cheer:'Happy Wiggle'},
+ {flurry:'Pollen Puff',drain:'Nectar Sip',windup:'Sunflower Slam',sleepy:'Dandelion Drift',cheer:'Bloom Boost'},
+ {flurry:'Splish Splash',drain:'Seaweed Wrap',windup:'Big Wave',sleepy:'Ocean Hush',cheer:'Shell Shine'},
+ {flurry:'Giggle Fit',drain:'Sneaky Snack',windup:'Boo Bonanza',sleepy:'Moonbeam Yawn',cheer:'Silly Dance'},
+ {flurry:'Zip Zoom',drain:'Trail Mix',windup:'Mountain Leap',sleepy:'Campfire Story',cheer:'Brave Cheer'}];
+const ROLE_MOVE={Striker:'windup',Guardian:'drain',Swift:'flurry'};
+const TYPE_MOVE=['cheer','sleepy','cheer','sleepy','sleepy','cheer'];
+const LEARN_LEVELS={role:3,type:6};
+// Opponent difficulty curve and base damage. Tuned with simulated battles so tall-grass matches stay
+// winnable as the win count grows, instead of outscaling the team (old curve: ~9% wins by 20 wins).
+const TUNE={lvlRate:40,lvlCap:1,boostRate:25,boostCap:2,scaleBase:.55,scaleRate:.01,scaleCap:.82,dmg:.7,lvlDmg:.03};
+const MOVE_HELP={quick:'Always hits · steady',signature:'Strong · type bonus',heal:'Heal 34% · once',flurry:'Hits twice · type bonus',drain:'Hit and heal half',windup:'Wind up, then a huge hit',sleepy:'Drowsy · may skip a turn',cheer:'Next 2 hits +30%'};
+function moveOf(id,kind){const p=BY_ID.get(id),base=MOVE_KINDS[kind];if(!p||!base)return null;const i=['quick','signature','heal'].indexOf(kind);return {kind,...base,name:i>=0?moveName(p.officialName,p.typeIndex,i):NEW_MOVE_WORDS[p.typeIndex][kind]};}
+function learnedMoves(id,level){const p=BY_ID.get(id);if(!p)return [];const k=['quick','signature','heal'];if(level>=LEARN_LEVELS.role)k.push(ROLE_MOVE[battleRole(id)]||'flurry');if(level>=LEARN_LEVELS.type)k.push(TYPE_MOVE[p.typeIndex]);return k;}
+function defaultLoadout(id,level,cpu=false){const k=learnedMoves(id,level);if(k.length<=4)return k;return cpu?k.filter(x=>x!=='heal'):k.filter(x=>x!==TYPE_MOVE[BY_ID.get(id).typeIndex]);}
+function loadoutOf(s,id){const level=s.levels?.[id]||1,known=learnedMoves(id,level),saved=s.loadouts?.[id];const l=Array.isArray(saved)?[...new Set(saved.filter(k=>known.includes(k)))]:[];return (l.length?l:defaultLoadout(id,level)).slice(0,4);}
 const STARTER_ID='amuseables-croissant';
 const COLLECTION_GOAL=150;
 const LEGENDARIES=CATALOG.filter(x=>x.rarity==='Legendary');
@@ -687,7 +749,7 @@ const shuffle=(xs,rng=Math.random)=>{const a=[...xs];for(let i=a.length-1;i>0;i-
 const owned=(s,id)=>s.owned.includes(id);
 const label=(s,id)=>s.nicknames[id]||BY_ID.get(id)?.officialName||'Unknown Jellycat';
 const fighterStats=(id,level=1,boost=0)=>{const x=BY_ID.get(id);if(!x)throw Error('Unknown character '+id);return {hp:x.base.hp+(level-1)*5+boost*4,attack:x.base.attack+(level-1)*2+boost,defense:x.base.defense+(level-1)*2+boost,speed:x.base.speed+Math.floor((level-1)/3)};};
-function freshSave(){return {version:3,onboarded:false,owned:[STARTER_ID],team:[STARTER_ID],nicknames:{},levels:{[STARTER_ID]:1},xp:{[STARTER_ID]:0},wins:0,losses:0,streak:0,bestStreak:0,points:0,jars:0,bossWins:0,snacks:1,pending:null,battle:null,history:[]};}
+function freshSave(){return {version:3,onboarded:false,owned:[STARTER_ID],team:[STARTER_ID],nicknames:{},levels:{[STARTER_ID]:1},xp:{[STARTER_ID]:0},loadouts:{},movesSeen:{},newMovesNotice:false,wins:0,losses:0,streak:0,bestStreak:0,points:0,jars:0,bossWins:0,snacks:1,pending:null,battle:null,history:[]};}
 function validateSave(input){const d=freshSave();if(!input||typeof input!=='object')return d;
  const ids=(a)=>Array.isArray(a)?[...new Set(a.filter(x=>typeof x==='string'&&BY_ID.has(x)))]:[];
  const out={...d,...input};out.owned=ids(input.owned);if(!out.owned.includes(STARTER_ID))out.owned.unshift(STARTER_ID);
@@ -701,18 +763,24 @@ function validateSave(input){const d=freshSave();if(!input||typeof input!=='obje
  out.snacks=Math.max(0,Math.min(5,Math.floor(Number(input.snacks??1)||0)));
  out.onboarded=Boolean(input.onboarded);
  out.pending=input.pending&&typeof input.pending==='object'?sanitizePending(input.pending,out):null;
- out.battle=input.battle&&typeof input.battle==='object'?sanitizeBattle(input.battle,out):null;
+ out.loadouts=values(input.loadouts,x=>Array.isArray(x)?[...new Set(x.filter(k=>typeof k==='string'&&MOVE_KINDS[k]))].slice(0,4):[]);
+ out.movesSeen=values(input.movesSeen,x=>Array.isArray(x)?[...new Set(x.filter(k=>typeof k==='string'&&MOVE_KINDS[k]))]:[]);
+ out.newMovesNotice=input.movesSeen===undefined?out.owned.some(id=>(out.levels[id]||1)>=LEARN_LEVELS.role):Boolean(input.newMovesNotice);
+ out.battle=input.battle&&typeof input.battle==='object'?fixSend(sanitizeBattle(input.battle,out)):null;
  out.history=Array.isArray(input.history)?input.history.filter(x=>typeof x==='string').slice(-30):[];
  out.version=3;return out;
 }
 function sanitizePending(p,s){const choices=[...new Set((p.choices||[]).filter(x=>BY_ID.has(x)&&!s.owned.includes(x)))].slice(0,3);return choices.length?{choices,boss:Boolean(p.boss),patchId:typeof p.patchId==='string'?p.patchId.slice(0,40):null}:null;}
 function sanitizeBattle(b,s){if(!Array.isArray(b.mine)||!Array.isArray(b.theirs))return null;
- const clean=(list,player)=>list.slice(0,3).filter(f=>BY_ID.has(f.id)&&(!player||s.owned.includes(f.id))).map(f=>({id:f.id,level:Math.max(1,Math.min(50,Math.floor(f.level)||1)),hp:Math.max(0,Math.min(999,Math.floor(f.hp)||0)),maxHp:Math.max(1,Math.min(999,Math.floor(f.maxHp)||100)),heals:Math.max(0,Math.min(1,Math.floor(f.heals)||0)),boost:Math.max(0,Math.min(25,Math.floor(f.boost)||0)),guard:Math.max(0,Math.min(1,Math.floor(f.guard)||0))}));
+ const clean=(list,player)=>list.slice(0,3).filter(f=>BY_ID.has(f.id)&&(!player||s.owned.includes(f.id))).map(f=>{const level=Math.max(1,Math.min(50,Math.floor(f.level)||1)),known=learnedMoves(f.id,level);let moves=Array.isArray(f.moves)?[...new Set(f.moves.filter(k=>known.includes(k)))].slice(0,4):[];if(!moves.length)moves=player?loadoutOf(s,f.id).filter(k=>known.includes(k)):defaultLoadout(f.id,level,true);if(!moves.length)moves=['quick','signature','heal'];
+  return {id:f.id,level,hp:Math.max(0,Math.min(999,Math.floor(f.hp)||0)),maxHp:Math.max(1,Math.min(999,Math.floor(f.maxHp)||100)),heals:Math.max(0,Math.min(1,Math.floor(f.heals)||0)),boost:Math.max(0,Math.min(25,Math.floor(f.boost)||0)),guard:Math.max(0,Math.min(1,Math.floor(f.guard)||0)),moves,drowsy:f.drowsy?1:0,pumped:Math.max(0,Math.min(2,Math.floor(f.pumped)||0)),charging:f.charging==='windup'&&moves.includes('windup')?'windup':null};});
  const mine=clean(b.mine,true),theirs=clean(b.theirs,false);if(!mine.length||!theirs.length)return null;
- return {...b,parlorId:typeof b.parlorId==='string'?b.parlorId:null,mine,theirs,mi:Math.max(0,Math.min(mine.length-1,Math.floor(b.mi)||0)),ei:Math.max(0,Math.min(theirs.length-1,Math.floor(b.ei)||0)),log:Array.isArray(b.log)?b.log.filter(x=>typeof x==='string').slice(-35):[],kind:['boss','parlor','wild'].includes(b.kind)?b.kind:'normal',cpuScale:Math.max(.45,Math.min(1.2,Number(b.cpuScale)||1)),round:Math.max(1,Math.floor(b.round)||1)};
+ return {...b,parlorId:typeof b.parlorId==='string'?b.parlorId:null,mine,theirs,mi:Math.max(0,Math.min(mine.length-1,Math.floor(b.mi)||0)),ei:Math.max(0,Math.min(theirs.length-1,Math.floor(b.ei)||0)),log:Array.isArray(b.log)?b.log.filter(x=>typeof x==='string').slice(-35):[],kind:['boss','parlor','wild'].includes(b.kind)?b.kind:'normal',cpuScale:Math.max(.45,Math.min(1.2,Number(b.cpuScale)||1)),round:Math.max(1,Math.floor(b.round)||1),warn:typeof b.warn==='string'?b.warn.slice(0,140):null,needSend:false};
+}
+function fixSend(b){if(!b)return b;const me=b.mine[b.mi];b.needSend=!!(me&&me.hp<=0&&b.mine.some(f=>f.hp>0));if(!b.needSend&&me&&me.hp<=0){const n=nextAlive(b.mine);if(n>=0)b.mi=n;}return b;
 }
 function typeMultiplier(a,b){const ai=TYPES.indexOf(a),bi=TYPES.indexOf(b);if(ai<0||bi<0)return 1;if((ai+1)%TYPES.length===bi)return 1.35;if((bi+1)%TYPES.length===ai)return .75;return 1;}
-function participant(id,level,boost=0){const {hp}=fighterStats(id,level,boost);return {id,level,hp,maxHp:hp,heals:0,boost};}
+function participant(id,level,boost=0,moves=null){const {hp}=fighterStats(id,level,boost);return {id,level,hp,maxHp:hp,heals:0,boost,moves:moves||defaultLoadout(id,level,true),drowsy:0,pumped:0,charging:null};}
 function nextAlive(team){return team.findIndex(x=>x.hp>0)};
 const allOut=(team)=>team.every(x=>x.hp<=0);
 const REGION_ENCOUNTER_TYPES={cuddlewick:['Food','Furry Animals'],orchard:['Food','Bugs & Garden'],grotto:['Silly & Spooky','Adventure'],willowmere:['Ocean','Furry Animals'],'reed-keys':['Ocean','Adventure'],'cloudstep-pass':['Adventure','Furry Animals']};
@@ -743,9 +811,9 @@ function makeBattle(save,rng=Math.random,opts={}){if(save.pending)throw Error('C
  if(!enemy.length)throw Error('No opponents available');
  // Start CPU slightly weaker, ramp up slowly. Never scale unboundedly.
  const average=save.team.reduce((sum,id)=>sum+(save.levels[id]||1),0)/n;
- const enemyLevel=Math.max(1,Math.min(50,Math.round(average-1+save.wins/9)));
- const boost=Math.min(16,Math.floor(save.wins/5))+(opts.parlorId?1:0);
- const b={kind:opts.parlorId?'parlor':boss?'boss':opts.source==='wild'?'wild':'normal',parlorId:opts.parlorId||null,mine:save.team.slice(0,3).map(id=>participant(id,save.levels[id]||1)),theirs:enemy.map(x=>participant(x.id,enemyLevel,boss?boost+1:boost)),mi:0,ei:0,round:1,cpuScale:Math.min(1.08,.36+save.wins*.024),log:[boss?'A legendary challenger appears!':'A new match begins. Choose your move!']};
+ const enemyLevel=Math.max(1,Math.min(50,Math.round(average-1+Math.min(TUNE.lvlCap,save.wins/TUNE.lvlRate))));
+ const boost=Math.min(TUNE.boostCap,Math.floor(save.wins/TUNE.boostRate))+(opts.parlorId?1:0);
+ const b={kind:opts.parlorId?'parlor':boss?'boss':opts.source==='wild'?'wild':'normal',parlorId:opts.parlorId||null,mine:save.team.slice(0,3).map(id=>participant(id,save.levels[id]||1,0,loadoutOf(save,id))),theirs:enemy.map(x=>participant(x.id,enemyLevel,boss?boost+1:boost)),mi:0,ei:0,round:1,cpuScale:Math.min(TUNE.scaleCap,TUNE.scaleBase+save.wins*TUNE.scaleRate),log:[boss?'A legendary challenger appears!':'A new match begins. Choose your move!']};
  save.battle=b;return b;
 }
 function active(b,side){return b[side][b[side==='mine'?'mi':'ei']];}
@@ -765,67 +833,91 @@ function teamMatchupHint(b){
  const best=ranked[0],activeScore=ranked.find(x=>x.i===b.mi)?.score||0;
  return best.i!==b.mi&&best.score>activeScore?'Consider switching to '+BY_ID.get(best.f.id).officialName+' for a type advantage.':'Try Guard when expecting a strong hit, or use a healing snack to recover.';
 }
-function calculateHit(from,to,move,rng,cpuScale=1){const attacker=BY_ID.get(from.id),defender=BY_ID.get(to.id);
- if(move.kind==='heal'){if(from.heals>=1)return {text:`${attacker.officialName} already used its cuddle break.`,done:false};const amt=Math.min(Math.round(from.maxHp*.34),from.maxHp-from.hp);from.hp+=amt;from.heals++;return {text:`${attacker.officialName} used ${move.name} and recovered ${amt} HP.`,done:true,heal:amt};}
- if(rand(rng)>=move.accuracy)return {text:`${attacker.officialName} used ${move.name}, but missed!`,done:true,miss:true};
+function calculateHit(from,to,move,rng,cpuScale=1){const attacker=BY_ID.get(from.id),defender=BY_ID.get(to.id),A=attacker.officialName,D=defender.officialName;
+ if(move.kind==='heal'){if(from.heals>=1)return {text:`${A} already used its cuddle break.`,done:false};const amt=Math.min(Math.round(from.maxHp*.34),from.maxHp-from.hp);from.hp+=amt;from.heals++;return {text:`${A} used ${move.name} and recovered ${amt} HP.`,done:true,heal:amt};}
+ if(move.kind==='cheer'){from.pumped=2;return {text:`${A} used ${move.name}! Its next two hits will be extra strong.`,done:true,buff:true};}
+ if(move.kind==='windup'&&from.charging!=='windup'){from.charging='windup';return {text:`${A} is winding up ${move.name}!`,done:true,charge:true};}
+ if(move.kind==='windup')from.charging=null;
+ if(rand(rng)>=move.accuracy)return {text:`${A} used ${move.name}, but missed!`,done:true,miss:true};
+ if(move.kind==='sleepy'){if(to.drowsy)return {text:`${A} used ${move.name}, but ${D} is already drowsy.`,done:true};to.drowsy=1;return {text:`${A} used ${move.name}. ${D} is getting drowsy… 💤`,done:true,status:true};}
  const a=fighterStats(from.id,from.level,from.boost),d=fighterStats(to.id,to.level,to.boost);
- const mult=move.kind==='signature'?typeMultiplier(attacker.type,defender.type):1;
- const crit=rand(rng)<(.07+(battleRole(from.id)==='Swift'?.03:0))?1.35:1;
- const rolePower=battleRole(from.id)==='Striker'?1.07:1,roleDefense=battleRole(to.id)==='Guardian'?.93:1;
- const baseDamage=Math.max(3,Math.round((move.power*.55)*(a.attack/d.defense)*mult*(.90+rand(rng)*.2)*crit*cpuScale*rolePower*roleDefense));
- const guarded=to.guard>0,dmg=guarded?Math.max(1,Math.ceil(baseDamage*.45)):baseDamage;
- if(guarded)to.guard=0;
- to.hp=Math.max(0,to.hp-dmg);
- const suffix=(mult>1?' Super effective!':mult<1?' Not very effective.':'')+(guarded?' Guard softened the blow!':'');
- return {text:`${attacker.officialName} used ${move.name}: ${dmg} damage.${suffix}${crit>1?' Critical hit!':''}`,done:true,damage:dmg,mult};
+ const mult=['signature','flurry','windup'].includes(move.kind)?typeMultiplier(attacker.type,defender.type):1;
+ const rolePower=battleRole(from.id)==='Striker'?1.07:1,roleDefense=battleRole(to.id)==='Guardian'?.93:1,pump=from.pumped>0?1.3:1;
+ const hits=move.hits||1;let total=0,crits=0,guardedAny=false;
+ for(let h=0;h<hits&&to.hp>0;h++){const crit=rand(rng)<(.07+(battleRole(from.id)==='Swift'?.03:0))?1.35:1;if(crit>1)crits++;
+  const base=Math.max(3,Math.round((move.power*TUNE.dmg*(1+(from.level-1)*TUNE.lvlDmg))*(a.attack/d.defense)*mult*(.90+rand(rng)*.2)*crit*cpuScale*rolePower*roleDefense*pump));
+  const guarded=to.guard>0,dmg=guarded?Math.max(1,Math.ceil(base*.45)):base;if(guarded){to.guard=0;guardedAny=true;}
+  to.hp=Math.max(0,to.hp-dmg);total+=dmg;}
+ if(from.pumped>0)from.pumped--;
+ let healed=0;if(move.kind==='drain'&&total>0){healed=Math.min(from.maxHp-from.hp,Math.round(total*.5));from.hp+=healed;}
+ const suffix=(mult>1?' Super effective!':mult<1?' Not very effective.':'')+(guardedAny?' Guard softened the blow!':'')+(crits?' Critical hit!':'');
+ return {text:`${A} used ${move.name}${hits>1?` (${hits} hits)`:''}: ${total} damage${healed?`, healed ${healed}`:''}.${suffix}`,done:true,damage:total,mult,healed};
 }
 function chooseCpuMove(b,rng=Math.random){
  const cpu=active(b,'theirs'),you=active(b,'mine'),card=BY_ID.get(cpu.id),target=BY_ID.get(you.id);
- const moves=card.moves,stats=fighterStats(cpu.id,cpu.level,cpu.boost),def=fighterStats(you.id,you.level,you.boost);
- const expected=move=>move&&move.kind!=='heal'?move.power*.55*(stats.attack/def.defense)*(move.kind==='signature'?typeMultiplier(card.type,target.type):1)*(move.accuracy??1)*(b.cpuScale??1):0;
- const recover=moves[2]?.kind==='heal'&&cpu.heals<1?Math.min(Math.round(cpu.maxHp*.34),cpu.maxHp-cpu.hp):0;
- const incoming=Math.max(3,...target.moves.filter(m=>m.kind!=='heal').map(m=>m.power*.55*(def.attack/stats.defense)*(m.kind==='signature'?typeMultiplier(target.type,card.type):1)));
- if(recover>=Math.max(10,cpu.maxHp*.20)&&cpu.hp/cpu.maxHp<.46&&cpu.hp>incoming*.75&&rand(rng)<.82)return 2;
- const quick=expected(moves[0]),signature=expected(moves[1]);
- if(signature>quick*1.12)return 1;
- if(quick>signature*1.12)return 0;
- return rand(rng)<.5?0:1;
+ const kinds=cpu.moves||['quick','signature','heal'];if(cpu.charging&&kinds.includes('windup'))return kinds.indexOf('windup');
+ const stats=fighterStats(cpu.id,cpu.level,cpu.boost),def=fighterStats(you.id,you.level,you.boost),mult=typeMultiplier(card.type,target.type);
+ const unit=.55*(stats.attack/def.defense)*(b.cpuScale??1)*(cpu.pumped?1.3:1);
+ const value={quick:40*unit,signature:65*.83*mult*unit,flurry:2*26*.95*mult*unit,drain:45*unit*(cpu.hp<cpu.maxHp*.7?1.25:1),windup:105*.95*mult*unit*(you.guard?.3:.55)};
+ const hurt=cpu.hp/cpu.maxHp;
+ if(kinds.includes('heal')&&cpu.heals<1&&hurt<.46&&rand(rng)<.8){const amt=Math.min(Math.round(cpu.maxHp*.34),cpu.maxHp-cpu.hp);if(amt>=Math.max(10,cpu.maxHp*.2))return kinds.indexOf('heal');}
+ if(kinds.includes('sleepy')&&!you.drowsy&&hurt>.5&&rand(rng)<.22)return kinds.indexOf('sleepy');
+ if(kinds.includes('cheer')&&!cpu.pumped&&hurt>.6&&rand(rng)<.22)return kinds.indexOf('cheer');
+ const attacks=kinds.map((k,i)=>[i,value[k]]).filter(([,v])=>v!==undefined).sort((x,y)=>y[1]-x[1]);
+ if(!attacks.length)return 0;
+ // If the best attack is a KO anyway, take it; otherwise mix in the second best sometimes so the CPU isn't predictable.
+ if(attacks[1]&&attacks[1][1]>attacks[0][1]*.85&&rand(rng)<.35)return attacks[1][0];
+ return attacks[0][0];
 }
-function combatAction(b,side,index,rng){const from=active(b,side),to=active(b,side==='mine'?'theirs':'mine'),move=BY_ID.get(from.id).moves[index];
- const outcome=calculateHit(from,to,move,rng,side==='theirs'?(b.cpuScale??1):1);b.log.push((side==='theirs'?'CPU: ':'')+outcome.text);return outcome;
+function combatAction(b,side,index,rng){const from=active(b,side),to=active(b,side==='mine'?'theirs':'mine'),pre=side==='theirs'?'CPU: ':'',name=BY_ID.get(from.id).officialName;
+ const kind=(from.moves||['quick','signature','heal'])[index]||'quick',move=moveOf(from.id,kind);
+ if(from.drowsy){from.drowsy=0;if(rand(rng)<.6){if(from.charging)from.charging=null;if(side==='theirs')b.warn=null;b.log.push(`${pre}${name} dozed off and missed a turn! 💤`);return {done:true,slept:true};}}
+ const outcome=calculateHit(from,to,move,rng,side==='theirs'?(b.cpuScale??1):1);
+ if(side==='theirs')b.warn=outcome.charge?`${name} is winding up ${move.name}! Guard now to soften it.`:null;
+ b.log.push(pre+outcome.text);return outcome;
 }
 function takeTurn(b,action,rng=Math.random){if(!b||allOut(b.mine)||allOut(b.theirs))throw Error('Battle finished');
  const next=structuredClone(b);
+ if(action.type==='send'){if(!next.needSend)throw Error('Your Jellycat is still on the field');if(!Number.isInteger(action.index)||!next.mine[action.index]||next.mine[action.index].hp<=0)throw Error('Choose a Jellycat who can still play');
+  next.mi=action.index;next.needSend=false;next.log.push(`${BY_ID.get(active(next,'mine').id).officialName} takes the field!`);return {battle:next,result:null};}
+ if(next.needSend)throw Error('Choose who goes in next');
  const player=active(next,'mine'),cpu=active(next,'theirs');if(player.hp<=0||cpu.hp<=0)throw Error('Select a healthy fighter');
+ if(player.charging&&action.type==='guard')throw Error('Release your big move first!');
  if(action.type==='guard'){
   player.guard=1;next.log.push(`${BY_ID.get(player.id).officialName} curled up and guarded against the next hit!`);
   combatAction(next,'theirs',chooseCpuMove(next,rng),rng);
  }else if(action.type==='switch'){
   if(!Number.isInteger(action.index)||action.index<0||action.index>=next.mine.length||next.mi===action.index||next.mine[action.index].hp<=0)throw Error('Invalid switch');
-  next.mi=action.index;next.log.push(`${BY_ID.get(active(next,'mine').id).officialName} switched in!`);
+  player.charging=null;next.mi=action.index;next.log.push(`${BY_ID.get(active(next,'mine').id).officialName} switched in!`);
   combatAction(next,'theirs',chooseCpuMove(next,rng),rng);
  }else{
-  if(action.type!=='move'||![0,1,2].includes(action.index))throw Error('Invalid move');
-  if(action.index===2&&player.heals>=1)throw Error('Cuddle break already used');
+  const moves=player.moves||['quick','signature','heal'];
+  if(action.type!=='move'||!Number.isInteger(action.index)||action.index<0||action.index>=moves.length)throw Error('Invalid move');
+  if(player.charging)action={...action,index:moves.indexOf('windup')};
+  if(moves[action.index]==='heal'&&player.heals>=1)throw Error('Cuddle break already used');
   const speedP=fighterStats(player.id,player.level).speed,speedC=fighterStats(cpu.id,cpu.level,cpu.boost).speed;
   const order=speedP>=speedC?['mine','theirs']:['theirs','mine'];
   for(const side of order){if(active(next,'mine').hp<=0||active(next,'theirs').hp<=0)break;combatAction(next,side,side==='mine'?action.index:chooseCpuMove(next,rng),rng);}
  }
- if(active(next,'mine').hp<=0&&!allOut(next.mine)){next.mi=nextAlive(next.mine);next.log.push(`${BY_ID.get(active(next,'mine').id).officialName} takes the field!`);}
- if(active(next,'theirs').hp<=0&&!allOut(next.theirs)){next.ei=nextAlive(next.theirs);next.log.push(`CPU sends in ${BY_ID.get(active(next,'theirs').id).officialName}!`);}
+ afterTurn(next);
  next.round++;next.log=next.log.slice(-35);
  const result=allOut(next.theirs)?'win':allOut(next.mine)?'loss':null;
  return {battle:next,result};
 }
+function afterTurn(b){
+ for(const f of [...b.mine,...b.theirs])if(f.hp<=0){f.drowsy=0;f.pumped=0;f.charging=null;f.guard=0;}
+ if(active(b,'theirs').hp<=0&&!allOut(b.theirs)){b.ei=nextAlive(b.theirs);b.warn=null;b.log.push(`CPU sends in ${BY_ID.get(active(b,'theirs').id).officialName}!`);}
+ if(active(b,'mine').hp<=0&&!allOut(b.mine)){b.needSend=true;b.log.push(`${BY_ID.get(active(b,'mine').id).officialName} needs a rest. Who goes in next?`);}
+}
+
 function useBattleSnack(save,rng=Math.random){
  if(!save.battle||save.snacks<=0)throw Error('No healing snacks in your satchel.');
- const s=structuredClone(save),b=structuredClone(s.battle),friend=active(b,'mine');
+ const s=structuredClone(save),b=structuredClone(s.battle),friend=active(b,'mine');if(b.needSend)throw Error('Choose who goes in next first.');if(friend.charging)throw Error('Release your big move first!');
  if(friend.hp<=0||friend.hp>=friend.maxHp)throw Error('Choose a hurt Jellycat before using a healing snack.');
  const healed=Math.min(friend.maxHp-friend.hp,Math.max(12,Math.round(friend.maxHp*.3)));
  friend.hp+=healed;s.snacks--;b.log.push(`${BY_ID.get(friend.id).officialName} enjoyed a cozy snack and recovered ${healed} HP!`);
  combatAction(b,'theirs',chooseCpuMove(b,rng),rng);
- if(active(b,'mine').hp<=0&&!allOut(b.mine)){b.mi=nextAlive(b.mine);b.log.push(`${BY_ID.get(active(b,'mine').id).officialName} takes the field!`);}
- if(active(b,'theirs').hp<=0&&!allOut(b.theirs)){b.ei=nextAlive(b.theirs);}
+ afterTurn(b);
  b.round++;b.log=b.log.slice(-35);s.battle=b;
  return {save:s,result:allOut(b.theirs)?'win':allOut(b.mine)?'loss':null};
 }
@@ -2100,17 +2192,24 @@ ${panel(`<div class="meter"><span>Collection progress</span><span>${Math.round(1
 <div class="grid-collection">${list.map(p=>card(p,!owned(state,p.id))).join('')}${category==='All'&&ownership!=='Owned'&&!query?Array.from({length:COLLECTION_GOAL-CATALOG.length},(_,i)=>`<div class="plush locked" aria-label="Catalog spot not yet researched"><div class="avatar mystery" style="background:#d9d4da"><span>?</span></div><span class="plush-title">Future entry ${CATALOG.length+i+1}</span><span class="plush-detail">Catalog research pending</span></div>`).join(''):''}</div>
 ${!list.length?'<div class="empty">No matching collected Jellycats.</div>':''}`)}`;}
 let battlePane='moves';
-function battle(){const b=state.battle;if(!b)return `${statBar()}${panel(`<div class="eyebrow">Ready, set, cuddle!</div><h1>A challenge has found you.</h1><p>Explore the world and encounter a Parlor Keeper or tall-grass challenger. Early battles are easier. As your winning record grows, opponents become stronger.</p>
+function statusChips(f){const c=[];if(f.charging)c.push('<span class="status-chip charge">🌀 Winding up</span>');if(f.drowsy)c.push('<span class="status-chip drowsy">💤 Drowsy</span>');if(f.pumped)c.push(`<span class="status-chip pumped">💪 Pumped ×${f.pumped}</span>`);if(f.guard)c.push('<span class="status-chip guard">🛡 Guarding</span>');return c.length?`<div class="status-chips">${c.join('')}</div>`:'';}
+function moveButton(me,kind,i){const m=moveOf(me.id,kind);if(!m)return '';const used=kind==='heal'&&me.heals;const help=used?'Already used':kind==='signature'?`Strong · ${Math.round(m.accuracy*100)}% · type bonus`:MOVE_HELP[kind];
+ return `<button class="move k-${kind} ${kind==='signature'?'signature':kind==='heal'?'heal':''}" data-action="move" data-index="${i}" aria-keyshortcuts="${i+1}" ${used?'disabled':''}><strong><kbd>${i+1}</kbd> ${safe(m.name)}</strong><span class="small">${safe(help)}</span></button>`;}
+function movesPane(b,me,mp,mult){
+ if(b.needSend){const out=b.mine[b.mi],ep=BY_ID.get(active(b,'theirs').id);
+  return `<div class="row between mb-18"><h2 class="mb-0">Who goes in next?</h2>${badge('Free choice')}</div><p class="small muted">${safe(label(state,out.id))} needs a rest. Pick a teammate. This doesn't use a turn.</p><div class="send-grid">${b.mine.map((f,i)=>{if(f.hp<=0)return '';const fp=BY_ID.get(f.id),m=typeMultiplier(fp.type,ep.type);return `<button class="send-card" data-action="send" data-index="${i}" aria-keyshortcuts="${i+1}"><span class="send-art">${plushArt(fp)}</span><strong><kbd>${i+1}</kbd> ${safe(label(state,f.id))}</strong><span class="small">${safe(fp.type)} · ${f.hp}/${f.maxHp} HP</span>${m>1?'<span class="send-tag good">▲ Type advantage</span>':m<1?'<span class="send-tag bad">▼ Type disadvantage</span>':''}</button>`;}).join('')}</div>`;}
+ if(me.charging){const m=moveOf(me.id,'windup');return `<div class="row between mb-18"><h2 class="mb-0">Your big move is ready!</h2>${badge(mult>1?'Type advantage ▲':mult<1?'Type disadvantage ▼':'Even matchup')}</div><button class="move release" data-action="move" data-index="${me.moves.indexOf('windup')}"><strong><kbd>1</kbd> 💥 Release ${safe(m.name)}!</strong><span class="small">Huge hit · ${Math.round(m.accuracy*100)}% accurate</span></button><p class="small muted mt-12">Switching teammates from Team cancels it.</p>`;}
+ return `<div class="row between mb-18"><h2 class="mb-0">Choose your move</h2>${badge(mult>1?'Type advantage ▲':mult<1?'Type disadvantage ▼':'Even matchup')}</div><p class="small muted battle-hint">${safe(b.warn?'Guard now to soften the big hit, or switch to a teammate.':teamMatchupHint(b))}</p><div class="move-grid moves-${(me.moves||[]).length}">${(me.moves||[]).map((k,i)=>moveButton(me,k,i)).join('')}</div><button class="btn micro cream guard-btn ${b.warn?'suggest':''}" data-action="guard">🛡 Guard · soften the next hit by 55%</button>`;}
+function battle(){const b=state.battle;if(b&&b.needSend)battlePane='moves';if(!b)return `${statBar()}${panel(`<div class="eyebrow">Ready, set, cuddle!</div><h1>A challenge has found you.</h1><p>Explore the world and encounter a Parlor Keeper or tall-grass challenger. Early battles are easier. As your winning record grows, opponents become stronger.</p>
 <div class="grid-3 mb-18">${state.team.map(id=>card(BY_ID.get(id))).join('')}</div><div class="notice"><strong>Your lineup has ${state.team.length} Jellycat${state.team.length===1?'':'s'}.</strong> The opponent's team will match your team size. Collect three to unlock full three-versus-three battles.</div>
 <button class="btn" data-action="nav" data-id="world">Return to the Softlands →</button><button class="btn cream" data-action="nav" data-id="home" style="margin-left:10px">Change my team</button>
 <p class="source-note mt-20">Legendary boss matches appear every seventh victory once available. You keep your collection if you lose.</p>`)}`;
  const me=b.mine[b.mi],enemy=b.theirs[b.ei],mp=BY_ID.get(me.id),ep=BY_ID.get(enemy.id);const mult=typeMultiplier(mp.type,ep.type);
  const badgeText=(b.kind==='boss'?'✦ LEGENDARY BOSS':b.kind==='parlor'?'✿ PARLOR CHALLENGE':b.kind==='wild'?'🌿 TALL-GRASS ENCOUNTER':'⚔ TEAM MATCH');
  return `<div class="battle-heading row between mb-18"><div><span class="eyebrow">${badgeText} · Round ${b.round}</span><h1>${b.kind==='boss'?'The boss is here.':'Your move.'}</h1></div><div>${badge(`${b.mine.length} vs ${b.theirs.length} team`)}</div></div>
-${panel(`<div class="battle-board" id="battle-board"><div class="move-fx" aria-hidden="true">✦ ✿ ✦</div><div class="fighter you"><div class="eyebrow">Your Jellycat</div><div class="avatar art-fighter">${plushArt(mp)}</div><h3>${safe(label(state,me.id))}</h3><div class="sub">${safe(mp.type)} · LV ${me.level}</div><div class="small">${safe(roleDescription(me.id))}</div><div class="hp-meta"><span>HP</span><span>${me.hp} / ${me.maxHp}</span></div>${progressBar(me.hp,me.maxHp)}</div><div class="vs">VS.</div><div class="fighter enemy"><div class="eyebrow">Computer</div><div class="avatar art-fighter">${plushArt(ep)}</div><h3>${safe(ep.officialName)}</h3><div class="sub">${safe(ep.type)} · LV ${enemy.level}</div><div class="small">${safe(roleDescription(enemy.id))}</div><div class="hp-meta"><span>HP</span><span>${enemy.hp} / ${enemy.maxHp}</span></div>${progressBar(enemy.hp,enemy.maxHp)}</div></div>
+${panel(`<div class="battle-board" id="battle-board"><div class="move-fx" aria-hidden="true">✦ ✿ ✦</div>${b.warn&&!b.needSend?`<div class="battle-warn" role="alert">⚠ ${safe(b.warn)}</div>`:''}<div class="fighter you"><div class="eyebrow">Your Jellycat</div><div class="avatar art-fighter">${plushArt(mp)}</div><h3>${safe(label(state,me.id))}</h3><div class="sub">${safe(mp.type)} · LV ${me.level}</div><div class="small">${safe(roleDescription(me.id))}</div>${statusChips(me)}<div class="hp-meta"><span>HP</span><span>${me.hp} / ${me.maxHp}</span></div>${progressBar(me.hp,me.maxHp)}</div><div class="vs">VS.</div><div class="fighter enemy"><div class="eyebrow">Computer</div><div class="avatar art-fighter">${plushArt(ep)}</div><h3>${safe(ep.officialName)}</h3><div class="sub">${safe(ep.type)} · LV ${enemy.level}</div><div class="small">${safe(roleDescription(enemy.id))}</div>${statusChips(enemy)}<div class="hp-meta"><span>HP</span><span>${enemy.hp} / ${enemy.maxHp}</span></div>${progressBar(enemy.hp,enemy.maxHp)}</div></div>
 <div class="row between mt-20"><div><span class="tag">Your team</span><div class="party">${b.mine.map((f,i)=>`<span class="${f.hp===0?'fainted':''}">${i===b.mi?'◆ ':''}${safe(label(state,f.id))} · ${f.hp} HP</span>`).join('')}</div></div><div><span class="tag">Computer team</span><div class="party">${b.theirs.map((f,i)=>`<span class="${f.hp===0?'fainted':''}">${i===b.ei?'◆ ':''}${safe(BY_ID.get(f.id).officialName)} · ${f.hp} HP</span>`).join('')}</div></div></div>`)}
-<div class="battle-panes"><div class="battle-pane-tabs" role="tablist" aria-label="Battle options"><button type="button" data-action="battle-pane" data-id="moves" role="tab" aria-selected="${battlePane==='moves'}" class="${battlePane==='moves'?'active':''}">⚔ Moves</button><button type="button" data-action="battle-pane" data-id="items" role="tab" aria-selected="${battlePane==='items'}" class="${battlePane==='items'?'active':''}">🍪 Items</button><button type="button" data-action="battle-pane" data-id="team" role="tab" aria-selected="${battlePane==='team'}" class="${battlePane==='team'?'active':''}">♡ Team</button><button type="button" data-action="battle-pane" data-id="diary" role="tab" aria-selected="${battlePane==='diary'}" class="${battlePane==='diary'?'active':''}">☰ Diary</button></div><div class="battle-pane-content"><section class="panel battle-pane" data-pane="moves" ${battlePane!=='moves'?'hidden':''}><div class="row between mb-18"><h2 class="mb-0">Choose your move</h2>${badge(mult>1?'Type advantage ▲':mult<1?'Type disadvantage ▼':'Even matchup')}</div>
-<p class="small muted">${safe(teamMatchupHint(b))}</p><div class="move-grid">${mp.moves.map((m,i)=>`<button class="move ${m.kind==='signature'?'signature':m.kind==='heal'?'heal':''}" data-action="move" data-index="${i}" aria-keyshortcuts="${i+1}" ${m.kind==='heal'&&me.heals?'disabled':''}><strong><kbd>${i+1}</kbd> ${safe(m.name)}</strong><span class="small">${m.kind==='heal'?(me.heals?'Already used':'Heal 34% · once per match'):m.kind==='quick'?'Always hits · steady damage':`Strong · ${Math.round(m.accuracy*100)}% accurate`}</span></button>`).join('')}</div><button class="btn micro cream" data-action="guard" style="margin-top:10px;width:100%">🛡 Guard · reduce the next hit by 55% (uses your turn)</button></section><section class="panel battle-pane" data-pane="items" ${battlePane!=='items'?'hidden':''}><h3>Healing snacks · ${state.snacks}/5</h3><p>Restore 30% of your active Jellycat’s maximum HP. The opponent gets a turn too.</p><button class="btn pink" data-action="battle-snack" ${state.snacks<=0||me.hp>=me.maxHp?'disabled':''}>🍪 Use cozy healing snack</button><p class="source-note mt-12">Buy more from the General Store in Cuddlewick for 3 stars each.</p></section><section class="panel battle-pane" data-pane="team" ${battlePane!=='team'?'hidden':''}><h3 class="mt-20">Switch teammate</h3><div class="row">${b.mine.map((f,i)=>`<button class="btn micro pink" data-action="switch" data-index="${i}" aria-keyshortcuts="${i+4}" ${f.hp===0||b.mi===i?'disabled':''}><kbd>${i+4}</kbd> ${safe(label(state,f.id))} · ${safe(battleRole(f.id))} · ${f.hp} HP</button>`).join('')}</div><p class="source-note mt-12">Switching uses your turn. Cuddle Break can only be used once per Jellycat per battle.</p></section>
+<div class="battle-panes"><div class="battle-pane-tabs" role="tablist" aria-label="Battle options"><button type="button" data-action="battle-pane" data-id="moves" role="tab" aria-selected="${battlePane==='moves'}" class="${battlePane==='moves'?'active':''}">⚔ Moves</button><button type="button" data-action="battle-pane" data-id="items" role="tab" aria-selected="${battlePane==='items'}" class="${battlePane==='items'?'active':''}">🍪 Items</button><button type="button" data-action="battle-pane" data-id="team" role="tab" aria-selected="${battlePane==='team'}" class="${battlePane==='team'?'active':''}">♡ Team</button><button type="button" data-action="battle-pane" data-id="diary" role="tab" aria-selected="${battlePane==='diary'}" class="${battlePane==='diary'?'active':''}">☰ Diary</button></div><div class="battle-pane-content"><section class="panel battle-pane" data-pane="moves" ${battlePane!=='moves'?'hidden':''}>${movesPane(b,me,mp,mult)}</section><section class="panel battle-pane" data-pane="items" ${battlePane!=='items'?'hidden':''}><h3>Healing snacks · ${state.snacks}/5</h3><p>Restore 30% of your active Jellycat’s maximum HP. The opponent gets a turn too.</p><button class="btn pink" data-action="battle-snack" ${state.snacks<=0||me.hp>=me.maxHp||b.needSend||me.charging?'disabled':''}>🍪 Use cozy healing snack</button><p class="source-note mt-12">Buy more from the General Store in Cuddlewick for 3 stars each.</p></section><section class="panel battle-pane" data-pane="team" ${battlePane!=='team'?'hidden':''}><h3 class="mt-20">Switch teammate</h3><div class="row">${b.mine.map((f,i)=>`<button class="btn micro pink" data-action="switch" data-index="${i}" aria-keyshortcuts="${i+5}" ${f.hp===0||b.mi===i||b.needSend?'disabled':''}><kbd>${i+5}</kbd> ${safe(label(state,f.id))} · ${safe(battleRole(f.id))} · ${f.hp} HP</button>`).join('')}</div><p class="source-note mt-12">Switching uses your turn and cancels a wind-up. Each Jellycat can heal once per battle.</p></section>
 <section class="panel soft battle-pane" data-pane="diary" ${battlePane!=='diary'?'hidden':''}><h2>Battle diary</h2><div role="log" aria-live="polite" class="battle-log">${b.log.slice(-10).map(line=>`<p>${safe(line)}</p>`).join('')}</div><p class="source-note mt-12">Type wheel: Food → Furry → Bugs & Garden → Ocean → Silly & Spooky → Adventure → Food.</p></section></div></div>`;
 }
 function giftBag(large=false){return `<div class="gift-bag ${large?'big-bag':''}" aria-hidden="true"><span class="bag-handle left"></span><span class="bag-handle right"></span><div class="bag-tissue">✧</div><div class="bag-front"><span class="bag-star">✦</span></div><span class="bag-shadow"></span></div>`;}
@@ -2137,10 +2236,27 @@ ${treasureBoxPanel()}
 ${panel(`<div class="eyebrow">Little keepsakes</div><h2>Your souvenir shelf.</h2><p>Souvenirs stay with you, even after a tough battle.</p><div class="souvenir-shelf">${[['ribbon','🎀','Velvet Ribbon'],['postcards','💌','Postcards'],['seedling','🪴','Tiny Seedling']].map(([id,icon,label])=>`<div class="souvenir ${state.world.souvenirs.includes(id)?'found':''}"><span>${icon}</span><small>${state.world.souvenirs.includes(id)?label:'Not discovered'}</small></div>`).join('')}</div><p class="small muted mt-12">💫 ${state.world.wishes} wishes granted · 🏕️ ${state.world.campVisited?'Campfire story told':'Campfire story waiting'}</p>`,'soft')}
  ${panel(`<div class="eyebrow">Behind the game</div><h2>Real Jellycats. Original rules.</h2><p>All ${CATALOG.length} playable entries use names researched from the Jellycat catalog. Portraits are original soft-toy-style illustrations, not official photographs or exact recreations.</p><p>Battle moves, strengths, levels, and rarity assignments are fan-game inventions, not official Jellycat characteristics.</p><p><strong>Six types:</strong> ${TYPES.map((x,i)=>TYPE_EMOJI[i]+' '+x).join(' · ')}</p><p><strong>Ten legendary characters</strong> have been selected for this fan-made game. Legendary status is invented for gameplay.</p><p class="small muted">Independent fan game, not affiliated with Jellycat. Catalog references are maintained separately from gameplay.</p>`)}
 </div>${panel(`<div class="row between"><h2 class="mb-0">Game settings</h2>${badge('Saved locally')}</div><p class="small muted mt-12">Only reset if you're sure. You can export your save first.</p><button class="btn ghost" data-action="reset">Reset game progress</button><div class="story-item"></div><h3 class="mt-20">Recent activity</h3>${state.history.length?state.history.slice(-8).reverse().map(x=>`<div class="story-item">✳ ${safe(x)}</div>`).join(''):'<p class="muted small">Your wins and discoveries will appear here.</p>'}`)}`;}
+function moveManager(id){const l=state.levels[id]||1,known=learnedMoves(id,l),eq=loadoutOf(state,id);
+ const next=l<LEARN_LEVELS.role?`Learns a new move at level ${LEARN_LEVELS.role}`:l<LEARN_LEVELS.type?`Learns another new move at level ${LEARN_LEVELS.type}`:'';
+ return `<div class="move-manager mt-12"><div class="row between"><strong>Battle moves</strong><span class="small muted">${eq.length} of 4 in use</span></div><div class="mm-list">${known.map(k=>{const m=moveOf(id,k),on=eq.includes(k);return `<button type="button" class="mm-move ${on?'on':''}" data-action="toggle-move" data-id="${safe(id)}" data-kind="${k}" aria-pressed="${on}"><span class="mm-check" aria-hidden="true">${on?'✓':'+'}</span><span class="mm-text"><strong>${safe(m.name)}</strong><small>${safe(MOVE_HELP[k])}</small></span></button>`;}).join('')}</div>${known.length>4?'<p class="tiny muted mt-12">Tap moves to choose which four to use.</p>':''}${next?`<p class="tiny muted mt-12">${next}.</p>`:''}</div>`;}
+function setLoadout(id,list){const known=learnedMoves(id,state.levels[id]||1);state.loadouts={...(state.loadouts||{}),[id]:known.filter(k=>list.includes(k)).slice(0,4)};}
+function showLearnPrompt(id,k){const m=moveOf(id,k),cur=loadoutOf(state,id),who=label(state,id);const bg=el('div','modal-backdrop');bg.id='learn-modal';
+ bg.innerHTML=`<section class="modal center learn-modal" role="dialog" aria-modal="true" aria-label="New move"><div class="discovery-ribbon">✦ A NEW MOVE ✦</div><div class="learn-art" aria-hidden="true">${plushArt(BY_ID.get(id))}</div><h2>${safe(who)} wants to learn ${safe(m.name)}!</h2><p>${safe(MOVE_HELP[k])}. ${safe(who)} can use four moves. Pick one to swap out, or keep the moves you have.</p><div class="learn-list">${cur.map(c=>`<button class="btn cream" data-action="learn-swap" data-id="${safe(id)}" data-kind="${k}" data-out="${c}">Swap out ${safe(moveOf(id,c).name)}</button>`).join('')}</div><button class="btn mt-12" data-action="learn-skip" data-id="${safe(id)}" data-kind="${k}">Keep my moves</button><p class="tiny muted mt-12">You can change moves anytime from My Team.</p></section>`;document.body.append(bg);bg.querySelector('button')?.focus();}
+function markSeen(id,k){state.movesSeen={...(state.movesSeen||{})};state.movesSeen[id]=[...new Set([...(state.movesSeen[id]||[]),k])];}
+function checkMoveLessons(){if(!state?.onboarded||state.battle||state.pending||document.querySelector('.modal-backdrop')||!['world','home','collection','clubhouse','journal','atlas'].includes(page))return;
+ state.movesSeen??={};let changed=false;
+ if(state.newMovesNotice){state.newMovesNotice=false;for(const id of state.owned)state.movesSeen[id]=learnedMoves(id,state.levels[id]||1);persist();notify('Your Jellycats learned new battle moves! Tap one in My Team to see them.');return;}
+ for(const id of [...state.team,...state.owned.filter(x=>!state.team.includes(x))]){const known=learnedMoves(id,state.levels[id]||1);
+  if(!state.movesSeen[id]){state.movesSeen[id]=known;changed=true;continue;}
+  const k=known.find(x=>!state.movesSeen[id].includes(x));if(!k)continue;const cur=loadoutOf(state,id);
+  if(cur.includes(k)){markSeen(id,k);setLoadout(id,cur);persist();showMilestone(`${label(state,id)} learned ${moveOf(id,k).name}!`,`${MOVE_HELP[k]}. It's ready for your next battle.`);return;}
+  if(cur.length<4){setLoadout(id,[...cur,k]);markSeen(id,k);persist();showMilestone(`${label(state,id)} learned ${moveOf(id,k).name}!`,`${MOVE_HELP[k]}. It's ready for your next battle.`);return;}
+  if(changed)persist();showLearnPrompt(id,k);return;}
+ if(changed)persist();}
 function showDetail(){const p=BY_ID.get(detail);if(!p||!owned(state,p.id))return;let l=state.levels[p.id]||1,xp=state.xp[p.id]||0,required=XP_TO_LEVEL(l),stats=fighterStats(p.id,l);
  const bg=el('div','modal-backdrop');bg.id='detail-modal';bg.innerHTML=`<section class="modal" role="dialog" aria-modal="true" aria-label="Jellycat details"><div class="row between"><div class="eyebrow">Member profile</div><button type="button" data-action="close" class="btn micro cream">✕ Close</button></div><div class="center mt-20">${bigAvatar(p)}<h2 class="mt-12">${safe(label(state,p.id))}</h2><p class="small">Official name: <strong>${safe(p.officialName)}</strong></p><div class="row" style="justify-content:center">${rarityTag(p)}${badge(p.type)}${badge('LV '+l)}</div></div>
 <div class="mt-20 meter"><span>Experience</span><span>${l>=MAX_LEVEL?'MAX LEVEL':xp+' / '+required}</span></div><div class="progress"><div style="width:${l>=MAX_LEVEL?100:100*xp/required}%"></div></div>
-<div class="grid-2 mt-12"><div><b>❤️ ${stats.hp} HP</b></div><div><b>⚡ ${stats.speed} speed</b></div><div><b>💥 ${stats.attack} attack</b></div><div><b>🛡️ ${stats.defense} defense</b></div></div><p class="source-note mt-12">Moves: ${p.moves.map(m=>safe(m.name)).join(' · ')}</p>
+<div class="grid-2 mt-12"><div><b>❤️ ${stats.hp} HP</b></div><div><b>⚡ ${stats.speed} speed</b></div><div><b>💥 ${stats.attack} attack</b></div><div><b>🛡️ ${stats.defense} defense</b></div></div>${moveManager(p.id)}
 <div class="mt-20"><label class="label" for="rename-input">Nickname</label><input class="input" id="rename-input" maxlength="24" value="${safe(label(state,p.id))}"><button class="btn mt-12" data-action="rename" data-id="${safe(p.id)}">Save nickname</button></div>
 <div class="row mt-20"><button class="btn ${state.team.includes(p.id)?'pink':'mint'}" data-action="team" data-id="${safe(p.id)}">${state.team.includes(p.id)?'Remove from team':'Add to team'}</button></div></section>`;
  document.body.append(bg);$('#rename-input')?.focus();}
@@ -2174,16 +2290,19 @@ function action(el){const type=el.dataset.action,id=el.dataset.id;
   const step=useBattleSnack(state);state=step.result?concludeBattle(step.save,step.result):step.save;
   persist();render();if(step.result==='loss')notify('Your streak resets, but your little friends stay safe.');return;
  }
- if(type==='move'||type==='switch'||type==='guard'){
-  if(!state.battle||animating)return;animating=true;const action={type:type==='guard'?'guard':type==='move'?'move':'switch',index:Number(el.dataset.index)};
-  const board=$('#battle-board');board?.classList.add(action.type==='move'?(action.index===2?'is-healing':'is-attacking'):action.type==='guard'?'is-healing':'is-switching');
-  document.querySelectorAll('.move,[data-action="switch"],[data-action="guard"],[data-action="battle-snack"]').forEach(b=>b.disabled=true);
-  setTimeout(()=>{try{const step=takeTurn(state.battle,action);let n=structuredClone(state);n.battle=step.battle;if(step.result)n=concludeBattle(n,step.result);state=n;persist();if(step.result==='win')bagOpen=false;render();if(step.result==='loss')notify('Your streak resets, but your little friends stay safe.');}catch(err){notify(err.message||'Could not make that move.');}finally{animating=false;}},720);
+ if(type==='move'||type==='switch'||type==='guard'||type==='send'){
+  if(!state.battle||animating)return;animating=true;const action={type,index:Number(el.dataset.index)};
+  const cur=state.battle.mine[state.battle.mi],kind=action.type==='move'?(cur.charging?'windup':cur.moves?.[action.index]):null;
+  const board=$('#battle-board');board?.classList.add(action.type==='move'?(['heal','cheer'].includes(kind)?'is-healing':'is-attacking'):action.type==='guard'?'is-healing':'is-switching');
+  document.querySelectorAll('.move,.send-card,[data-action="switch"],[data-action="guard"],[data-action="battle-snack"]').forEach(b=>b.disabled=true);
+  setTimeout(()=>{try{const step=takeTurn(state.battle,action);let n=structuredClone(state);n.battle=step.battle;if(step.result)n=concludeBattle(n,step.result);state=n;persist();if(step.result==='win')bagOpen=false;render();if(step.result==='loss')notify('Your streak resets, but your little friends stay safe.');}catch(err){notify(err.message||'Could not make that move.');render();}finally{animating=false;}},action.type==='send'?260:720);
   return;
  }
  if(type==='claim'){update(s=>claimReward(s,id));bagOpen=false;page='world';render();showClaimReveal(id);return;}
  if(type==='jar'){const result=jarDrop(state);state=result.save;persist();render();if(result.found){showClaimReveal(result.found,true);}return;}
  if(type==='detail'){if(owned(state,id)){detail=id;showDetail();}else notify('Keep battling to discover this Jellycat!');return;}
+ if(type==='toggle-move'){const kind=el.dataset.kind,cur=loadoutOf(state,id);if(cur.includes(kind)){if(cur.length<=1){notify('Keep at least one move.');return;}setLoadout(id,cur.filter(k=>k!==kind));}else{if(cur.length>=4){notify('Four moves at a time. Tap one to take it off first.');return;}setLoadout(id,[...cur,kind]);}persist();const box=document.querySelector('#detail-modal .move-manager');if(box)box.outerHTML=moveManager(id);return;}
+ if(type==='learn-swap'||type==='learn-skip'){const kind=el.dataset.kind;markSeen(id,kind);if(type==='learn-swap'){const cur=loadoutOf(state,id).filter(k=>k!==el.dataset.out);setLoadout(id,[...cur,kind]);notify(`${label(state,id)} learned ${moveOf(id,kind).name}!`);}else notify('Kept the same moves.');persist();$('#learn-modal')?.remove();setTimeout(checkMoveLessons,400);return;}
  if(type==='team'){update(s=>changeTeam(s,id));closeDetail();notify('Team updated.');return;}
  if(type==='close'){closeDetail();return;}
  if(type==='rename'){const field=$('#rename-input');update(s=>saveNickname(s,id,field?.value));closeDetail();notify('Nickname saved!');return;}
@@ -2416,7 +2535,7 @@ function showMilestone(title,desc,art='',tier=''){const div=el('div','modal-back
 function showFound(t){const all=ALL_TREASURES(),n=all.filter(x=>state.world.found.includes(x.id)).length;showMilestone(`You found ${t.title.replace(/^(A|An|The) /,m=>m.toLowerCase())}!`,`${t.text} You earned ${t.points} star${t.points===1?'':'s'}. That's ${n} of ${all.length} treasures in your treasure box.`,treasureArt(t.id,'discovery-art'),treasureTier(t));}
 function talkOrInspect(){ensureWorld(state);const npc=nearbyNpcs(state.world)[0],parlor=nearbyParlor(state.world);
  const place=state.world.area==='cuddlewick'?nearbySpecial(state.world):null;const distances=[[npc,()=>showTalk(npc)],[parlor,()=>showParlor(parlor)],[place,()=>showPlace(place)]].filter(([x])=>x).sort((a,b)=>Math.hypot(a[0].x-state.world.x,a[0].y-state.world.y)-Math.hypot(b[0].x-state.world.x,b[0].y-state.world.y));if(distances.length){distances[0][1]();return;}if(state.world.area!=='cuddlewick'){const near=areaLandmarks(state.world.area).find(l=>Math.hypot(l.x-state.world.x,l.y-state.world.y)<=1.8);if(near){showMilestone(near.name,near.name==='Whisperstone Grotto'?'Step onto the cave entrance to explore inside.':'A lovely landmark on your journey through the Softlands.');return;}}notify('Walk closer to a friend, landmark, or Parlor, or explore tall grass!');}
-function showKeyboardHelp(){if($('#keyboard-modal'))return;const div=el('div','modal-backdrop');div.id='keyboard-modal';div.innerHTML=`<section class="modal help-modal" role="dialog" aria-modal="true" aria-label="Keyboard controls"><span class="eyebrow">Play without your mouse</span><h2>Keyboard controls</h2><dl class="shortcut-grid"><dt><kbd>W A S D</kbd> / arrows</dt><dd>Walk. Tap to step one tile, hold to keep walking.</dd><dt><kbd>E</kbd> / <kbd>Space</kbd></dt><dd>Talk, explore shops, and inspect nearby landmarks.</dd><dt><kbd>P</kbd></dt><dd>Talk to a nearby Parlor Keeper.</dd><dt><kbd>G</kbd> <kbd>M</kbd> <kbd>Q</kbd> <kbd>T</kbd> <kbd>C</kbd> <kbd>H</kbd></dt><dd>Explore, Region map, Journal, Team, Collection, Clubhouse.</dd><dt><kbd>V</kbd></dt><dd>Resume an active battle.</dd><dt><kbd>1</kbd>–<kbd>3</kbd> in battle</dt><dd>Use a move. <kbd>4</kbd>–<kbd>6</kbd> switches friends.</dd><dt><kbd>Space</kbd> in activities</dt><dd>Time shots and baking, or begin/end a mini-game. Flowers and shells use number keys.</dd><dt><kbd>1</kbd>–<kbd>3</kbd> at rewards</dt><dd>Choose a gift-bag friend.</dd><dt><kbd>Shift</kbd> + <kbd>1</kbd>–<kbd>8</kbd></dt><dd>Walk to a district.</dd><dt><kbd>J</kbd></dt><dd>Open an earned mystery jar from Team.</dd><dt><kbd>/</kbd></dt><dd>Search your Collection.</dd><dt>🏄 Softboard</dt><dd>Defeat the Tidepool Parlor Keeper after earning two patches. Then walk directly onto open water; broken bridges remain blocked.</dd><dt><kbd>Tab</kbd>, <kbd>Enter</kbd></dt><dd>Reach and activate any button or form.</dd><dt><kbd>Esc</kbd></dt><dd>Close dialogs.</dd></dl><button class="btn" data-action="close-help">Got it! <kbd>Esc</kbd></button></section>`;document.body.append(div);div.querySelector('button')?.focus();}
+function showKeyboardHelp(){if($('#keyboard-modal'))return;const div=el('div','modal-backdrop');div.id='keyboard-modal';div.innerHTML=`<section class="modal help-modal" role="dialog" aria-modal="true" aria-label="Keyboard controls"><span class="eyebrow">Play without your mouse</span><h2>Keyboard controls</h2><dl class="shortcut-grid"><dt><kbd>W A S D</kbd> / arrows</dt><dd>Walk. Tap to step one tile, hold to keep walking.</dd><dt><kbd>E</kbd> / <kbd>Space</kbd></dt><dd>Talk, explore shops, and inspect nearby landmarks.</dd><dt><kbd>P</kbd></dt><dd>Talk to a nearby Parlor Keeper.</dd><dt><kbd>G</kbd> <kbd>M</kbd> <kbd>Q</kbd> <kbd>T</kbd> <kbd>C</kbd> <kbd>H</kbd></dt><dd>Explore, Region map, Journal, Team, Collection, Clubhouse.</dd><dt><kbd>V</kbd></dt><dd>Resume an active battle.</dd><dt><kbd>1</kbd>–<kbd>4</kbd> in battle</dt><dd>Use a move. <kbd>5</kbd>–<kbd>7</kbd> switches friends.</dd><dt><kbd>Space</kbd> in activities</dt><dd>Time shots and baking, or begin/end a mini-game. Flowers and shells use number keys.</dd><dt><kbd>1</kbd>–<kbd>3</kbd> at rewards</dt><dd>Choose a gift-bag friend.</dd><dt><kbd>Shift</kbd> + <kbd>1</kbd>–<kbd>8</kbd></dt><dd>Walk to a district.</dd><dt><kbd>J</kbd></dt><dd>Open an earned mystery jar from Team.</dd><dt><kbd>/</kbd></dt><dd>Search your Collection.</dd><dt>🏄 Softboard</dt><dd>Defeat the Tidepool Parlor Keeper after earning two patches. Then walk directly onto open water; broken bridges remain blocked.</dd><dt><kbd>Tab</kbd>, <kbd>Enter</kbd></dt><dd>Reach and activate any button or form.</dd><dt><kbd>Esc</kbd></dt><dd>Close dialogs.</dd></dl><button class="btn" data-action="close-help">Got it! <kbd>Esc</kbd></button></section>`;document.body.append(div);div.querySelector('button')?.focus();}
 
 // Keyboard controls work on every screen, including the modal questions and claim panels.
 const pressed=new Set();let walkHeldTimer=null,heldLastTime=0;
@@ -2451,8 +2570,12 @@ document.addEventListener('keydown',e=>{
  if(page==='world'&&e.shiftKey&&/^[1-8]$/.test(key)){e.preventDefault();const z=ZONES[Number(key)-1];walkToward(z.x,z.y);return;}
  if(page==='world'&&['e',' ','enter'].includes(key)&&document.activeElement?.tagName!=='BUTTON'){e.preventDefault();talkOrInspect();return;}
  if(page==='world'&&key==='p'){e.preventDefault();const pl=nearbyParlor(state.world);if(pl)showParlor(pl);else notify('No Parlor nearby. Follow the ✿ signs!');return;}
- if(page==='battle'&&state.battle&&/^[1-6]$/.test(key)){
-  e.preventDefault();const n=Number(key);const btn=document.querySelector(n<=3?`[data-action="move"][data-index="${n-1}"]`:`[data-action="switch"][data-index="${n-4}"]`);if(btn&&!btn.disabled)btn.click();return;
+ if(page==='battle'&&state.battle&&/^[1-7]$/.test(key)){
+  e.preventDefault();const n=Number(key),b=state.battle;let btn=null;
+  if(b.needSend)btn=document.querySelector(`[data-action="send"][data-index="${n-1}"]`);
+  else if(n<=4)btn=document.querySelector('.move.release')||document.querySelector(`[data-action="move"][data-index="${n-1}"]`);
+  else btn=document.querySelector(`[data-action="switch"][data-index="${n-5}"]`);
+  if(btn&&!btn.disabled)btn.click();return;
  }
  if(state.pending){if(!bagOpen&&key==='enter'){$('[data-action="open-bag"]')?.click();e.preventDefault();return;}if(bagOpen&&/^[1-3]$/.test(key)){e.preventDefault();document.querySelectorAll('[data-action="claim"]')[Number(key)-1]?.click();return;}}
  if(page==='home'&&key==='j'&&state.jars){e.preventDefault();$('[data-action="jar"]')?.click();return;}
@@ -2640,7 +2763,9 @@ document.addEventListener('visibilitychange',()=>{if(!cloud.code)return;if(docum
 document.addEventListener('keydown',e=>{if(e.target?.id==='cloud-code-input'&&e.key==='Enter'){e.preventDefault();cloudAction('cloud-load');}});
 
 // Keep the next-goal guide current after talks, rewards and pop-ups, not only while walking.
-setInterval(()=>{if(page==='world'&&!document.hidden)updateParlorCompass();},700);
+setInterval(()=>{if(document.hidden)return;if(page==='world')updateParlorCompass();checkMoveLessons();},700);
+
+if(new URLSearchParams(location.search).has('jbctest'))window.__jbc={makeBattle,takeTurn,chooseCpuMove,freshSave,validateSave,learnedMoves,loadoutOf,moveOf,CATALOG,BY_ID,typeMultiplier,fighterStats,TUNE};
 </script>
 </body>
 </html>
