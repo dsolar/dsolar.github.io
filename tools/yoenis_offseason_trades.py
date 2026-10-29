@@ -10,8 +10,11 @@ Those deals happen on the league thread, not in Yahoo, so they're pieced togethe
     traded. And a player dropped by one team and picked up by another before Opening Day was moved by
     hand. Picks and players that moved between the same two managers that spring make one deal.
     2013 to 2015 are left out: those drafts don't follow a clean snake order, so the slots can't be read.
-    Pairs that only moved one way (usually one leg of a three-team deal, a pick passed along twice, or a
-    team changing hands) and pure same-round pick swaps are left out of the scores; unclear(data) lists them.
+    A pick passed along twice (A's pick to B, then on to C) shows up on the board as A's pick in C's hands.
+    Since there are no three-team trades, it's routed through the one manager who dealt with both A and C
+    that winter. Same-round pick swaps count: they move a team up within a round. Anything still one-sided
+    is left out of the scores; unclear(data) lists it. tools/yahoo_yoenis/offseason_fixes.json holds
+    corrections from the league emails (2018's expansion rosters, for one).
 
 trades(data) -> [{"y": season, "d": "YYYY-MM-DD" or None, "a": owner, "b": owner,
                   "ag": [player, ...], "bg": [...], "ap": [round, ...], "bp": [...], "src": "sheet"|"board"}]
@@ -31,6 +34,7 @@ from yoenis_yahoo_keepers import fold  # noqa: E402
 ROOT = Path(__file__).resolve().parent.parent
 HIST = ROOT / "tools" / "yahoo_yoenis" / "history"
 SHEET = ROOT / "tools" / "yahoo_yoenis" / "sheet_trades.json"
+FIXES = ROOT / "tools" / "yahoo_yoenis" / "offseason_fixes.json"  # corrections from the league emails
 EASTERN = ZoneInfo("America/New_York")
 BOARD_FROM = 2016
 
@@ -117,27 +121,64 @@ def moved_players(season):
     h = json.loads(path.read_text(encoding="utf-8"))
     idx = {k: season["teams"].index(n) for k, n in h["teams"].items() if n in season["teams"]}
     start = date.fromisoformat(h["start"])
-    drops, out = {}, []
+    drops, added, out = {}, set(), []
     for m in h["moves"]:
         dt = datetime.fromtimestamp(m["ts"], EASTERN)
         if dt.date() >= start:
             break
         if m["type"] == "drop" and m["team"] in idx:
-            drops[fold(m["name"])] = (idx[m["team"]], dt)
+            # A team dropping someone it only just picked up is churning the wire, not trading him
+            if (fold(m["name"]), m["team"]) not in added:
+                drops[fold(m["name"])] = (idx[m["team"]], dt)
         elif m["type"] == "add" and m["team"] in idx:
             dr = drops.get(fold(m["name"]))
-            if dr and dr[0] != idx[m["team"]] and (dt - dr[1]).days <= 3:
+            # The commissioner moves a traded player within a day or so (up to 31 hours in the sheet's trades)
+            if dr and dr[0] != idx[m["team"]] and (dt - dr[1]).total_seconds() <= 48 * 3600:
                 out.append((dt.date().isoformat(), m["name"], season["o"][dr[0]], season["o"][idx[m["team"]]]))
-    return out
+                drops.pop(fold(m["name"]), None)
+            else:
+                added.add((fold(m["name"]), m["team"]))  # a pickup: dropping him again isn't a trade
+    fix = fixes().get(str(season["year"]), {})
+    ignore = {fold(n) for n in fix.get("ignore", [])}
+    frm = {fold(k): v for k, v in fix.get("from", {}).items()}
+    return [(d, n, frm.get(fold(n), a), b) for d, n, a, b in out if fold(n) not in ignore]
+
+
+def fixes():
+    return json.loads(FIXES.read_text(encoding="utf-8")) if FIXES.exists() else {}
+
+
+def route_chains(picks, players):
+    """Send each pick that only went one way between two managers through the one manager both of them
+    dealt with that winter (A's pick to B, then B to C), until nothing more can be routed."""
+    picks = list(picks)
+    while True:
+        dealt = collections.defaultdict(set)  # pair -> directions seen
+        for _, a, b in picks + [(None, p[2], p[3]) for p in players]:
+            dealt[frozenset((a, b))].add((a, b))
+        both = {k for k, v in dealt.items() if len(v) == 2}
+        changed = False
+        for i, (r, a, c) in enumerate(picks):
+            if frozenset((a, c)) in both:
+                continue
+            mids = {m for k in both if a in k for m in k if m != a} & {m for k in both if c in k for m in k if m != c}
+            if len(mids) == 1:
+                b = mids.pop()
+                picks[i:i + 1] = [(r, a, b), (r, b, c)]
+                changed = True
+                break
+        if not changed:
+            return picks
 
 
 def board_trades(season):
     pairs = {}
-    for r, frm, to in board_picks(season):
+    players = moved_players(season)
+    for r, frm, to in route_chains(board_picks(season), players):
         a, b = sorted((frm, to))
         t = pairs.setdefault((a, b), {"y": season["year"], "d": None, "a": a, "b": b, "ag": [], "bg": [], "ap": [], "bp": [], "src": "board"})
         t["ap" if to == a else "bp"].append(r)
-    for d, name, frm, to in moved_players(season):
+    for d, name, frm, to in players:
         a, b = sorted((frm, to))
         t = pairs.setdefault((a, b), {"y": season["year"], "d": None, "a": a, "b": b, "ag": [], "bg": [], "ap": [], "bp": [], "src": "board"})
         t["ag" if to == a else "bg"].append(name)
@@ -186,10 +227,8 @@ def trades(data, check=False):
 
 
 def clear(t):
-    """A pair worth scoring: something went each way, and it wasn't just picks swapped round for round"""
-    both = (t["ag"] or t["ap"]) and (t["bg"] or t["bp"])
-    swap = not t["ag"] and not t["bg"] and sorted(t["ap"]) == sorted(t["bp"])
-    return bool(both) and not swap
+    """A pair worth scoring: something went each way"""
+    return bool((t["ag"] or t["ap"]) and (t["bg"] or t["bp"]))
 
 
 def unclear(data):

@@ -1,0 +1,8 @@
+{
+ "2018": {
+  "note": "2018 was an expansion year: Ken G, Steve and Gabriel W joined and took over orphaned rosters (league emails, Mar 18-24, 2018). The commissioner's Mar 29 moves among their teams set up those rosters; they weren't trades. Josh Reddick came from Ken G in his pick-swap deal with David S (email thread 'Trades', Mar 23-24, 2018), before Ken's roster moved to its final Yahoo team.",
+  "ignore": ["Didi Gregorius", "Manny Machado", "Zack Greinke", "Chris Taylor", "Bryce Harper", "Jake Lamb",
+             "Mark Reynolds", "Kyle Hendricks", "Ryan Zimmerman"],
+  "from": {"Josh Reddick": "keng"}
+ }
+}
