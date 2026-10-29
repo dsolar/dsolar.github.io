@@ -284,6 +284,10 @@ td.r,th.r{text-align:right}
 td .sub{display:block;font-size:12px;color:var(--muted)}
 tr.bench-start td{border-top:2px solid var(--ink)}
 .board-me td{background:color-mix(in srgb,var(--sea-2) 22%,transparent)}
+.board-form{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-top:12px}
+.board-form .field{flex:1 1 180px}
+.board-who{margin-top:10px;font-size:13px}
+.linkish{appearance:none;background:none;border:0;padding:0;font:inherit;color:inherit;text-decoration:underline;cursor:pointer}
 .you-chip{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;background:var(--sea-2);color:var(--sea-2-ink);border-radius:3px;padding:1px 5px;margin-left:6px;vertical-align:1px}
 .share{width:100%;min-height:150px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);padding:10px;font-family:var(--f-mono);font-size:13px;color:var(--ink)}
 .toast{font-size:14px;color:var(--good);min-height:1.4em}
@@ -1603,12 +1607,55 @@ function histogram(hist,W){
 $("coachRes").addEventListener("change",e=>{ if(NET.on){ if(canAct(S.resView)){ netAct({t:"coach",c:S.resView,v:e.target.value}); netAct({t:"again",c:NET.my}); } return; } D().teams[S.resView].coach=e.target.value;playSeasonNow();});
 function playSeasonNow(){S.seed=(Math.random()*2**31)|0;simulate();if(!R.res[S.resView])S.resView=D().codes[0];renderScoreboard(true);renderTeamResults(true);postResults();}
 
-/* ---------- leaderboard ---------- */
+/* ---------- leaderboard ----------
+   On claude.ai it lives in the shared database there. On davidsolar.dev it's Supabase (tools/franchise_supabase.sql),
+   the same project as the other games: each device posts its best season under a name, shared with Guess the Pick. */
 let DB=null, USER=null, MYID=null, BOARD=[], MYDOC=null, boardState="loading", writeQ=Promise.resolve();
+const SB_URL="https://baxrczyufqbzrogftmyn.supabase.co", SB_KEY="sb_publishable_brDXGevzcoI7mBaPO7Plow_yaUy4gk4";
+let SB=false, SBROWS=[], sbPending=[], sbEditing=false;
+function ls(k,v){try{if(v===undefined){const x=localStorage.getItem(k);return x?JSON.parse(x):null;}localStorage.setItem(k,JSON.stringify(v));}catch(e){return null;}}
+async function sbRpc(fn,body){
+  const h={apikey:SB_KEY,"Content-Type":"application/json"};
+  let r=await fetch(SB_URL+"/rest/v1/rpc/"+fn,{method:"POST",headers:h,body:JSON.stringify(body)});
+  if(r.status===401) r=await fetch(SB_URL+"/rest/v1/rpc/"+fn,{method:"POST",headers:{...h,Authorization:"Bearer "+SB_KEY},body:JSON.stringify(body)});
+  if(!r.ok) throw new Error(r.status);
+  return r.status===204?null:r.json();
+}
+function sbDevice(){let id=ls("gtp-device");if(!id){id=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Math.random()).slice(2)+Date.now();ls("gtp-device",id);}return id;}
+function sbName(){const n=ls("gtp-name");return typeof n==="string"&&n.trim()?n.trim():"";}
+async function sbLoad(){
+  try{SBROWS=await sbRpc("franchise_top",{p_device:sbDevice()})||[];SB=true;boardState="live";}
+  catch(e){SB=false;boardState="off";}
+  renderBoard();
+}
+async function sbPostAll(){
+  const name=sbName(); if(!name||!sbPending.length) return;
+  const list=sbPending.splice(0);
+  for(const s of list){
+    try{await sbRpc("franchise_post",{p_device:sbDevice(),p_player:name,p_team:s.code,p_w:s.w,p_l:s.l,p_result:s.result,p_value:+(+s.value||0).toFixed(2),p_grade:s.grade,p_core:s.core,p_firsts:s.picks,p_champ:s.champ});}
+    catch(e){$("toast").textContent="Your season couldn't be posted to the leaderboard right now.";}
+  }
+  sbLoad();
+}
+// The name box under the board: shown until this device has a name, and again from "Change"
+function sbForm(){
+  const name=sbName(), ask=!name||sbEditing, waiting=sbPending.length;
+  if(!ask) return `<p class="muted board-who">Posting as <b></b>. <button type="button" class="linkish" data-sb="edit">Change</button></p>`;
+  return `<form class="board-form" data-sb="form"><label class="field"><span class="muted">${waiting?"Post your season as":"Your name on the board"}</span><input name="nm" maxlength="24" required autocomplete="nickname"></label><button class="btn" type="submit">${waiting?"Post it":"Save"}</button></form>`;
+}
+document.addEventListener("click",e=>{const b=e.target.closest('[data-sb="edit"]');if(b){sbEditing=true;renderBoard();}});
+document.addEventListener("submit",async e=>{
+  const f=e.target.closest('[data-sb="form"]'); if(!f) return; e.preventDefault();
+  const nm=f.nm.value.trim().slice(0,24); if(!nm) return;
+  const had=sbName(); ls("gtp-name",nm); sbEditing=false;
+  if(had&&had!==nm) { try{await sbRpc("franchise_rename",{p_device:sbDevice(),p_player:nm});}catch(err){} }
+  if(sbPending.length) await sbPostAll(); else sbLoad();
+});
 function localBest(){try{return JSON.parse(localStorage.getItem("expansion-best")||"null");}catch(e){return null;}}
 function saveLocalBest(s){try{const b=localBest();if(!b||s.w>b.w)localStorage.setItem("expansion-best",JSON.stringify(s));}catch(e){}}
 async function renderBoard(){
   const targets=[$("boardIntro"),$("boardRes")];
+  if(SB&&boardState==="live"){ renderSbBoard(targets); return; }
   if(boardState!=="live"){
     const b=localBest(); const msg=boardState==="loading"?"Loading the leaderboard.":RT()?"The shared leaderboard isn't available in this view.":(b?"":"Finish a season and your best record on this device shows up here.");
     targets.forEach(t=>{t.innerHTML=`<p class="muted">${msg}${b?` Your best on this device: <b class="num">${b.w}-${b.l}</b> (${esc(EXP[b.code]?EXP[b.code].nick:"SuperSonics")}).`:""}</p>`;}); return;
@@ -1629,9 +1676,31 @@ async function renderBoard(){
     t.replaceChildren(wrap);
   });
 }
+function renderSbBoard(targets){
+  const rows=SBROWS, form=sbForm();
+  targets.forEach(t=>{
+    t.replaceChildren();
+    if(!rows.length){ t.insertAdjacentHTML("beforeend",`<p class="muted">No seasons posted yet. Finish a draft and your record lands here for the group.</p>`); }
+    else{
+      const wrap=document.createElement("div"); wrap.className="tbl-wrap";
+      wrap.innerHTML=`<table><thead><tr><th>#</th><th>GM</th><th>Team</th><th class="r">Best</th><th>Result</th><th class="r">Titles</th><th class="r col-hide">1sts</th><th class="r col-hide">Value</th><th class="r col-hide">Seasons</th></tr></thead><tbody></tbody></table>`;
+      const tb=wrap.querySelector("tbody");
+      rows.forEach((b,i)=>{ const tr=document.createElement("tr"); if(b.me) tr.className="board-me";
+        const tc=EXP[b.team]?b.team:"SEA";
+        tr.innerHTML=`<td class="num">${i+1}</td><td><span class="nm"></span>${b.me?'<span class="you-chip">You</span>':""}<span class="sub"></span></td><td><span class="chip" data-team="${tc}">${EXP[tc].abbr}</span></td><td class="r num">${+b.w||0}-${+b.l||0}</td><td>${esc(b.result||"")}</td><td class="r num">${+b.titles||0}</td><td class="r num col-hide">${+b.firsts||0}</td><td class="r num col-hide">$${(+b.value||0).toFixed(2)}B</td><td class="r num col-hide">${+b.seasons||0}</td>`;
+        tr.querySelector(".nm").textContent=b.player||"A GM";
+        tr.querySelector(".sub").textContent=Array.isArray(b.core)?b.core.slice(0,3).join(", "):"";
+        tb.appendChild(tr); });
+      t.appendChild(wrap);
+    }
+    t.insertAdjacentHTML("beforeend",form);
+    const who=t.querySelector(".board-who b"); if(who) who.textContent=sbName();
+    const inp=t.querySelector('[data-sb="form"] input'); if(inp) inp.value=sbName();
+  });
+}
 async function initBoard(){
   try{
-    if(!window.claude||typeof window.claude.use!=="function"){boardState="off";renderBoard();return;}
+    if(!window.claude||typeof window.claude.use!=="function"){await sbLoad();return;}
     const [db,user]=await Promise.all([window.claude.use("db"),window.claude.use("user")]);
     DB=db; USER=user; if(USER) MYID=await USER.id();
     if(!DB){boardState="off";renderBoard();return;}
@@ -1645,6 +1714,7 @@ async function initBoard(){
 function postResults(){
   const sums=myCodes().map(summaryFor); if(!sums.length) return;
   sums.forEach(saveLocalBest);
+  if(!RT()){ sbPending.push(...sums); if(sbName()) sbPostAll(); else renderBoard(); return; }
   if(!DB||!MYID){renderBoard();return;}
   writeQ=writeQ.then(async()=>{
     const old=MYDOC||{}; let doc={...old};
@@ -1910,7 +1980,6 @@ function RT(){ return !!(window.claude&&typeof window.claude.use==="function"); 
 function offHost(){
   const r=document.querySelector('input[name="mode"][value="online"]');
   if(r){ r.closest("label").style.display="none"; if(S.mode==="online"){ S.mode="solo"; document.querySelector('input[name="mode"][value="solo"]').checked=true; } }
-  ["boardIntro","boardRes"].forEach(id=>{ const h=$(id).closest("section").querySelector("h3"); if(h) h.textContent="Your best season"; });
 }
 function boot(data){
   if(data&&data.S){S=Object.assign(S,data.S);}

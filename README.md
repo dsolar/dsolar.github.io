@@ -340,7 +340,7 @@ py src\31st-franchise\build_site.py --data
 
 ## Differences from the claude.ai version
 
-Online head-to-head and the shared GM leaderboard run on claude.ai's shared database and sign-in, so they're hidden on this site. Everything else works the same, and each visitor's best season is saved in their own browser. Bringing those features back with a free backend like Supabase is a good next project.
+Online head-to-head runs on claude.ai's shared database and sign-in, so it's hidden on this site. The GM leaderboard works here through Supabase (`tools/franchise_supabase.sql`, already set up): each device posts its best season under the name it uses on the other games' boards, plus a running count of titles and seasons. Everything else works the same.
 
 ## If something goes wrong
 
@@ -353,7 +353,7 @@ Online head-to-head and the shared GM leaderboard run on claude.ai's shared data
 
 - Change the colors in `assets/site.css`. They're the variables at the top, with the dark mode versions right below.
 - Write a short "How I built it" page for one of the games and link it from its entry in `projects.js`.
-- Rebuild online mode and the leaderboard on Supabase.
+- Rebuild online head-to-head on Supabase.
 
 ## Guess the Pick: updating the drafts
 
