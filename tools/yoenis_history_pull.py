@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Pull every Wipe Yoenis week and pickup since 2013 from Yahoo into tools/yahoo_yoenis/history/<year>.json.
 
-Per season: the scoring categories, playoff start, every week's matchups (each side's category stats and
-Yahoo's category winners) and every add and drop with its date. Team and player names only.
+Per season: the scoring categories, playoff start, every week's dates and matchups (each side's category
+stats, its H/AB and IP, and Yahoo's category winners) and every add and drop with its date. Team and player names only.
 Finished seasons never change, so they're pulled once; the latest season is pulled again each run.
 Feeds tools/yoenis_history_build.py (16-0s, rivalries, the waiver wire hall of fame).
 
@@ -74,6 +74,7 @@ def season(y, year, lid):
                      "side": "b" if text(st, "position_type") == "B" else "p",
                      "low": text(st, "sort_order") == "0", "display": text(st, "is_only_display_stat") == "1"})
     scoring = [c["id"] for c in cats if not c["display"]]
+    shown = {c["id"]: c["abbr"] for c in cats if c["display"]}  # H/AB and IP: not scored, but they size a week
     teams = {}
     for t in y.get(f"league/{key}/teams").findall(".//team"):
         teams[text(t, "team_key")] = text(t, "name")
@@ -85,19 +86,21 @@ def season(y, year, lid):
         sb = y.get(f"league/{key}/scoreboard;week={w}", soft=True)
         if sb is None:
             continue
-        mus = []
+        mus, ws, we = [], None, None
         for mu in sb.findall(".//matchups/matchup"):
-            tks, stats = [], {}
+            ws, we = ws or text(mu, "week_start"), we or text(mu, "week_end")
+            tks, stats, extra = [], {}, {}
             for t in mu.findall("teams/team"):
                 tk = text(t, "team_key")
                 tks.append(tk)
                 m = {text(s, "stat_id"): val(text(s, "value")) for s in t.findall("team_stats/stats/stat")}
                 stats[tk] = [m.get(i) for i in scoring]
+                extra[tk] = {shown[i]: text(s, "value") for s in t.findall("team_stats/stats/stat") for i in [text(s, "stat_id")] if i in shown}
             won = {text(sw, "stat_id"): (None if text(sw, "is_tied") == "1" else text(sw, "winner_team_key"))
                    for sw in mu.findall("stat_winners/stat_winner")}
-            mus.append({"teams": tks, "stats": stats, "won": [won.get(i, "") for i in scoring],
+            mus.append({"teams": tks, "stats": stats, "x": extra, "won": [won.get(i, "") for i in scoring],
                         "playoffs": text(mu, "is_playoffs") == "1", "consolation": text(mu, "is_consolation") == "1"})
-        weeks.append({"week": w, "matchups": mus})
+        weeks.append({"week": w, "s": ws, "e": we, "matchups": mus})
     moves = []
     for t in transactions(y, key):
         if t is None or text(t, "status") != "successful" or text(t, "type") not in ("add", "drop", "add/drop"):
@@ -114,6 +117,12 @@ def season(y, year, lid):
             "cats": [c for c in cats if not c["display"]], "teams": teams, "weeks": weeks, "moves": moves}
 
 
+def _complete(path):
+    """A finished season's file is kept unless it's missing something newer pulls add (moves, week dates)"""
+    h = json.load(open(path, encoding="utf-8"))
+    return bool(h.get("moves")) and all(w.get("s") for w in h.get("weeks", []))
+
+
 def main():
     data = json.load(open(DATA, encoding="utf-8"))
     y = Yahoo(token=access_token())
@@ -121,7 +130,7 @@ def main():
     last = data["seasons"][-1]["year"]
     for s in data["seasons"]:
         path = os.path.join(OUT, f"{s['year']}.json")
-        if os.path.exists(path) and s["year"] != last and "--all" not in sys.argv and json.load(open(path, encoding="utf-8")).get("moves"):
+        if os.path.exists(path) and s["year"] != last and "--all" not in sys.argv and _complete(path):
             continue
         got = season(y, s["year"], s["lid"])
         if not got:
