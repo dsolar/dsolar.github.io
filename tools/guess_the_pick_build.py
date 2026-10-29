@@ -107,10 +107,21 @@ def nfl_team_name(abbr, year):
     return NFL_TEAMS[abbr]
 
 
+# Teams that moved or renamed show the franchise's current logo as a stand-in: imperfect, but closer than a
+# blank. Oakland gets the Raiders shield (unchanged), San Diego today's Chargers bolt, St. Louis today's Rams
+# logo, and Washington before 2022 the Commanders logo, never the retired Redskins one. In the NBA, New Jersey
+# gets the Nets logo, the New Orleans Hornets the Pelicans and the Bobcats today's Hornets. Seattle keeps its
+# green-and-gold SEA badge, since a Thunder logo on a SuperSonics pick would be wrong rather than close.
+NFL_STAND_IN = {"OAK": "lv", "SDG": "lac", "STL": "lar"}
+NBA_STAND_IN = {"NJN": "bkn", "NOH": "no", "NOK": "no", "CHA": "cha"}
+
+
 def nfl_logo(abbr, year):
-    if abbr == "WAS" and year < 2022:
-        return ""
-    return NFL_ESPN.get(abbr, "")
+    return NFL_ESPN.get(abbr) or NFL_STAND_IN.get(abbr, "")
+
+
+def nba_logo(abbr):
+    return NBA_ESPN.get(abbr) or NBA_STAND_IN.get(abbr, "")
 
 
 def nba_pos(code):
@@ -237,8 +248,8 @@ def build_nba(src):
         college = r["college"] if r["college"] not in ("", "NA") else "No college (international or pro)"
         picks.append({
             "y": y, "p": p, "r": rnd, "rp": p if rnd == 1 else p - 30,
-            "t": r["tm"], "tn": NBA_TEAMS[r["tm"]], "tl": NBA_ESPN.get(r["tm"], ""),
-            "to": to, "ton": NBA_TEAMS.get(to, ""), "tol": NBA_ESPN.get(to, ""),
+            "t": r["tm"], "tn": NBA_TEAMS[r["tm"]], "tl": nba_logo(r["tm"]),
+            "to": to, "ton": NBA_TEAMS.get(to, ""), "tol": nba_logo(to),
             "late": bool(to and debut and debut > y + 1),
             "n": r["player"], "pos": nba_pos(c.get("pos", "")), "col": college,
             "line": " · ".join(bits), "f": round(fame, 3),
@@ -251,7 +262,7 @@ def build_nba(src):
             continue
         to = e.get("to", "")
         picks.append({"y": 2026, "p": e["p"], "r": 1, "rp": e["p"], "t": e["t"], "tn": NBA_TEAMS[e["t"]],
-                      "tl": NBA_ESPN.get(e["t"], ""), "to": to, "ton": NBA_TEAMS.get(to, ""), "tol": NBA_ESPN.get(to, ""),
+                      "tl": NBA_ESPN.get(e["t"], ""), "to": to, "ton": NBA_TEAMS.get(to, ""), "tol": nba_logo(to),
                       "late": False, "n": e["n"], "pos": nba_pos(e["pos"]), "col": e["col"],
                       "line": "2026 rookie", "f": 0.12})
     # Every NBA name since NAMES_SINCE, ranked by career win shares
