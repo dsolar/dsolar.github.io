@@ -51,7 +51,7 @@ ORD = {1: "1st", 2: "2nd", 3: "3rd"}
 
 
 def ordinal(n):
-    return ORD.get(n if n < 20 else n % 10, f"{n}th") if not 10 < n % 100 < 14 else f"{n}th"
+    return f"{n}th" if 10 < n % 100 < 14 else f"{n}{ORD.get(n % 10, 'th')[-2:]}"
 
 
 def slices(year):
@@ -92,6 +92,8 @@ def offseason_rows(data, seasons, kept):
                 wins.setdefault((w["ref"], w["team"]), []).append(w)
         names = {v: k for k, v in h["teams"].items()}
         for i, t in enumerate([t for t in offseason_trades(data) if t["y"] == year]):
+            if t.get("summer"):
+                continue  # scored with the summer trade it came from
             sides, est = {}, False
             for side in ("a", "b"):
                 owner = t[side]
@@ -125,6 +127,12 @@ def main():
     seasons = {s["year"]: s for s in data["seasons"]}
     kept = kept_map(data)
 
+    # Picks traded during the season (allowed through 2016) that only show up on next spring's board
+    summer = {}
+    for ot in offseason_trades(data):
+        if ot.get("summer"):
+            summer[(ot["y"] - 1, ot["summer"])] = ot
+
     out, vetoed = [], 0
     for ys, v in pulled.items():
         year = int(ys)
@@ -156,6 +164,12 @@ def main():
                 if pk["to"] in picks:
                     orig = v["teams"].get(pk.get("orig") or pk["from"], "")
                     picks[pk["to"]].append([f"{orig}'s {ordinal(pk['round'])}".strip(), expected(pk["round"])])
+            ot = summer.get((year, t["id"]))
+            if ot:  # next spring's picks that came with this trade
+                owner = {s["o"][idx[a]]: a, s["o"][idx[b]]: b}
+                for side_owner, rounds in ((ot["a"], ot["ap"]), (ot["b"], ot["bp"])):
+                    for r in rounds:
+                        picks[owner[side_owner]].append([f"{year + 1} {ordinal(r)}-round pick", expected(r)])
             tot = lambda k: round(sum(x[1] + x[2] for x in sides[k]) + sum(x[1] for x in picks[k]), 1)  # noqa: E731
             row = {"y": year, "d": day(t["ts"]).isoformat(), "a": idx[a], "b": idx[b],
                    "ag": sides[a], "bg": sides[b], "ap": picks[a], "bp": picks[b], "av": tot(a), "bv": tot(b)}

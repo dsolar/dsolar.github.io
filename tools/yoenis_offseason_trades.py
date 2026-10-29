@@ -37,6 +37,10 @@ SHEET = ROOT / "tools" / "yahoo_yoenis" / "sheet_trades.json"
 FIXES = ROOT / "tools" / "yahoo_yoenis" / "offseason_fixes.json"  # corrections from the league emails
 EASTERN = ZoneInfo("America/New_York")
 BOARD_FROM = 2016
+# Picks could be traded during the season through 2016, so a picks-only deal on the 2016 or 2017 board
+# between two managers who made a Yahoo trade the summer before is that trade's picks, not a winter deal.
+INSEASON_PICKS_THROUGH = 2016
+TRADES = ROOT / "tools" / "yahoo_yoenis" / "trades.json"
 
 # How the sheet names managers: first names, nicknames, team names at the time
 ALIAS = {
@@ -222,8 +226,29 @@ def trades(data, check=False):
                 compare(s["year"], sheet, board)
             out.extend(sheet)
         else:
-            out.extend(t for t in board if clear(t))
+            for t in board:
+                if not clear(t):
+                    continue
+                link = summer_trade(t, data) if not t["ag"] and not t["bg"] else None
+                if link:
+                    t["summer"] = link  # tools/yoenis_trades_build.py adds these picks to that trade
+                out.append(t)
     return out
+
+
+def summer_trade(t, data):
+    """The Yahoo trade id from last season these picks belong to, when in-season pick trades were allowed"""
+    year = t["y"] - 1
+    if year > INSEASON_PICKS_THROUGH or not TRADES.exists():
+        return None
+    pulled = json.loads(TRADES.read_text(encoding="utf-8")).get(str(year))
+    s = next((s for s in data["seasons"] if s["year"] == year), None)
+    if not pulled or not s:
+        return None
+    idx = {k: s["teams"].index(n) for k, n in pulled["teams"].items() if n in s["teams"]}
+    hits = [x for x in pulled["trades"] if x["status"] == "successful" and x["a"] in idx and x["b"] in idx
+            and {s["o"][idx[x["a"]]], s["o"][idx[x["b"]]]} == {t["a"], t["b"]}]
+    return max(hits, key=lambda x: x["ts"])["id"] if hits else None
 
 
 def clear(t):
