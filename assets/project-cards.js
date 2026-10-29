@@ -1,6 +1,7 @@
 /* Draws one project card from an entry in assets/projects.js. Used by the home page and the kids page.
-   ProjectCards.card(project, { showHidden, base }): showHidden opens hidden apps (the home page's app code);
-   base prefixes the project's relative links and cover (the kids page passes "/"). */
+   ProjectCards.card(project, { showHidden, base, order }): showHidden opens hidden apps (the home page's app code);
+   base prefixes the project's relative links and cover (the kids page passes "/");
+   order is its spot in the home page's batting order, shown before its type. */
 (function () {
   var esc = function (s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
@@ -43,10 +44,12 @@
       return "<div><dt>" + esc(f[1]) + "</dt><dd>" + esc(f[0]) + "</dd></div>";
     }).join("");
     var url = at(p.url);
+    // Its spot in the batting order ("The lineup"), when the page passes one
+    var order = opts.order ? '<span class="order" aria-hidden="true">' + esc(opts.order) + "</span>" : "";
     var title = !accessible ? esc(p.title) : '<a href="' + esc(url) + '">' + esc(p.title) + "</a>";
     var id = p.external ? slug(p.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")) : slug(p.url);
     return '<article class="entry' + (p.spotlight ? ' spotlight' : '') + '" id="' + esc(id) + '" data-type="' + esc(p.type) + '" style="' + esc(style) + '">'
-      + '<div class="entry-meta"><span class="type">' + esc(p.type) + "</span>" + (p.featured ? '<span class="featured-tag">Featured</span>' : '')
+      + '<div class="entry-meta">' + order + '<span class="type">' + esc(p.type) + "</span>" + (p.featured ? '<span class="featured-tag">Featured</span>' : '')
       + (building ? '<span class="state">In progress</span>' : p.tag ? '<span class="tag">' + esc(p.tag) + "</span>" : "") + "</div>"
       + (!accessible ? '<div class="entry-cover" aria-hidden="true">' + art + '<span class="band"></span></div>'
                   : '<a class="entry-cover" href="' + esc(url) + '" tabindex="-1" aria-hidden="true">' + art + '<span class="band"></span></a>')
