@@ -66,7 +66,7 @@
       var played = reals.filter(function (x) { return rec && rec.scenarios[x.id]; }).length;
       return '<li><button type="button" data-start="' + esc(s.id) + '"><span class="n">' + (i + 1) + '</span><span class="t">' + esc(s.title) + '</span>' +
         '<span class="b' + (r ? " done" : "") + '">' + (r ? esc(E.letter(r.best)) : "New") + '</span><span class="s">' +
-        esc(ord(s.context.down) + " and medium · " + s.defense.shell.replace("-", " ") + " · " + D.defenses[s.actual.call].name) + "</span></button>" +
+        esc(ord(s.context.down) + " and " + (s.context.distance <= 3 ? "short" : s.context.distance >= 8 ? "long" : "medium") + " · " + s.defense.shell.replace("-", " ") + " · " + D.defenses[s.actual.call].name) + "</span></button>" +
         (reals.length ? '<button type="button" class="real-btn" data-real="' + esc(s.id) + '"><span class="logos">' + reals.slice(0, 8).map(function (x) { return logo(x.real.off, 18); }).join("") +
           '</span><span>' + reals.length + " real snaps" + (played ? " · " + played + " played" : "") + " \u2192</span></button>" : "") + "</li>";
     }).join("");
@@ -476,14 +476,14 @@
     if (st.step < STEPS.length - 1) {
       st.step++; st.card = null;
       renderStep();
-      var h = $("step").querySelector("h2"); if (h) { h.tabIndex = -1; h.focus(); }
+      focusStep();
       return;
     }
     snap();
   });
   $("labels").addEventListener("change", function () { var p = load(PREFS, {}); p.labels = this.checked; save(PREFS, p); setLabels(this.checked); if (st && st.step === 0 && !st.snapped && st.side !== "defense") renderStep(); });
   $("prov").onclick = function () { this.classList.toggle("open"); };
-  $("quit").onclick = function () { $("play").hidden = true; $("start").hidden = false; renderStart(); window.scrollTo(0, 0); };
+  $("quit").onclick = function () { clearTimeout(reviewTimer); reviewTimer = null; $("play").hidden = true; $("start").hidden = false; renderStart(); window.scrollTo(0, 0); };
 
   /* ---------- the snap and the review ---------- */
   function unlock() {
@@ -500,7 +500,7 @@
     drawPost();
     Array.prototype.forEach.call($("step").querySelectorAll("input,button"), function (x) { x.disabled = true; });
     $("steps").innerHTML = STEPS.map(function (x) { return '<li class="done">' + x.label + "</li>"; }).join("");
-    setTimeout(function () { renderReview(true); }, reduce ? 0 : phone.matches ? 1500 : 900);
+    later(function () { renderReview(true); });
   }
 
   function drawPost() {
@@ -757,12 +757,30 @@
     updateNav();
     afterAnswer(n);
   }
+  // Moves focus to the new step's heading. On phones the field sticks to the top of the screen, so scroll the
+  // step to just below it instead of letting focus() park the first options underneath the field.
+  function focusStep() {
+    var h = $("step").querySelector("h2"); if (!h) return;
+    h.tabIndex = -1; h.focus({ preventScroll: true });
+    var fw = document.querySelector(".field-wrap"), stuck = 0;
+    if (fw && getComputedStyle(fw).position === "sticky") stuck = fw.getBoundingClientRect().height;
+    var top = $("step").getBoundingClientRect().top + window.scrollY - stuck - 10;
+    if (stuck || $("step").getBoundingClientRect().top < 0) window.scrollTo({ top: Math.max(0, top), behavior: reduce ? "auto" : "smooth" });
+  }
+  // The pause between the snap and the review; cancelled on Quit so it can't land on the next play
+  var reviewTimer = null;
+  function later(fn) {
+    clearTimeout(reviewTimer);
+    var cur = st;
+    reviewTimer = setTimeout(function () { reviewTimer = null; if (st === cur && !$("play").hidden) fn(); }, reduce ? 0 : phone.matches ? 1500 : 900);
+  }
+
   function defSubmit() {
     if (defMissing()) return;
     if (st.step < DSTEPS.length - 1) {
       st.step++; st.card = null;
       renderDefStep();
-      var h = $("step").querySelector("h2"); if (h) { h.tabIndex = -1; h.focus(); }
+      focusStep();
       return;
     }
     st.snapped = true;
@@ -772,7 +790,7 @@
     drawPost();
     Array.prototype.forEach.call($("step").querySelectorAll("input,button"), function (x) { x.disabled = true; });
     $("steps").innerHTML = DSTEPS.map(function (x) { return '<li class="done">' + x.label + "</li>"; }).join("");
-    setTimeout(function () { renderDefReview(true); }, reduce ? 0 : phone.matches ? 1500 : 900);
+    later(function () { renderDefReview(true); });
   }
   function callText(c) {
     var pk = F.PACKAGES.filter(function (p) { return p.id === c.pkg; })[0], pz = F.PRESSURES.filter(function (p) { return p.id === c.pressure; })[0];

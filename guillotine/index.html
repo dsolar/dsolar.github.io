@@ -1913,7 +1913,7 @@ th.line{border-left:1px solid var(--rule)}
 
   // ---- Player stat cards: hover on a name (or tap one in a roster window)
   var STAT_NAMES = { O: "Out", Q: "Questionable", D: "Doubtful", IR: "Injured reserve", "IR-R": "Injured reserve", "PUP-R": "PUP list", PUP: "PUP list", NA: "Not active", SUSP: "Suspended" };
-  var cardFor = null;
+  var cardFor = null, cardShownAt = 0;
   function num0(x) { return Math.round(x).toLocaleString("en-US"); }
   function statLine(pos, s) {
     var parts = [];
@@ -1962,7 +1962,7 @@ th.line{border-left:1px solid var(--rule)}
     var top = b.bottom + 6;
     if (top + h > window.innerHeight - 8) top = Math.max(8, b.top - h - 6);
     card.style.left = left + "px"; card.style.top = top + "px";
-    cardFor = el;
+    cardFor = el; cardShownAt = Date.now();
   }
   function hideCard() { $("pcard").hidden = true; cardFor = null; }
   var hoverable = window.matchMedia && window.matchMedia("(hover: hover)").matches;
@@ -1978,7 +1978,7 @@ th.line{border-left:1px solid var(--rule)}
   document.addEventListener("click", function (e) {
     var pl = e.target.closest("[data-p]");
     if (pl && (pl.closest("dialog") || !hoverable) && !pl.closest(".row")) {
-      if (cardFor === pl) hideCard(); else showCard(pl);
+      if (cardFor === pl && Date.now() - cardShownAt > 350) hideCard(); else showCard(pl);  // a tap's focus opens it first
       return;
     }
     if (cardFor) hideCard();
@@ -2022,7 +2022,7 @@ th.line{border-left:1px solid var(--rule)}
 
   // ---- Live scoring: banked points, the share of each game left, odds rerun every minute
   // Live scoring lives in live.js, shared with the home-page ticker.
-  var BASE = null, LEAGUE = {}, HIST = { weeks: {} }, YAHOO = null, liveTimer = null, liveFails = 0;
+  var BASE = null, LEAGUE = {}, HIST = { weeks: {} }, YAHOO = null, liveTimer = null, liveFails = 0, liveBusy = false;
   function dayOf(iso) {
     var d = new Date(iso + "T12:00:00Z");
     return isNaN(d) ? iso : d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
@@ -2040,8 +2040,10 @@ th.line{border-left:1px solid var(--rule)}
   }
   function refreshLive() {
     clearTimeout(liveTimer);
-    if (!BASE || document.visibilityState === "hidden") return;
+    if (!BASE || document.visibilityState === "hidden" || liveBusy) return;   // one request at a time, so tab switches can't start a second loop
+    liveBusy = true;
     refreshRosterSnapshot().then(function () { return getLive(BASE); }).then(function (live) {
+      liveBusy = false;
       liveFails = 0;
       var d = applyLive(BASE, live);
       if (d.live) {
@@ -2058,6 +2060,7 @@ th.line{border-left:1px solid var(--rule)}
       liveTimer = setTimeout(refreshLive, on ? 60e3 : 600e3);
     }).catch(function () {
       // No live feed reachable: the page keeps its last numbers and tries again in 1, 2, 4, 8, then every 10 minutes.
+      liveBusy = false;
       liveFails++;
       liveTimer = setTimeout(refreshLive, Math.min(60e3 * Math.pow(2, liveFails - 1), 600e3));
     });

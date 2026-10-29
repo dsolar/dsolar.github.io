@@ -116,7 +116,7 @@
         <ellipse cx="${bx}" cy="64" rx="15" ry="9" fill="var(--ball)" stroke="#2b1408" stroke-width="1.5"/>
         <line x1="${bx - 6}" y1="64" x2="${bx + 6}" y2="64" stroke="#fff" stroke-width="1.6"/>
       </g>
-      </g><text x="110" y="347" fill="#F1F4EC" font-family="Arial,sans-serif" font-size="22">Possession: ${esc(off.abbr)} →</text><text x="1090" y="347" text-anchor="end" fill="#F7D23E" font-family="Arial,sans-serif" font-size="20">Blue: ball · Yellow: line to gain</text>
+      </g><text x="110" y="347" fill="#F1F4EC" font-family="Arial,sans-serif" font-size="22">Possession: ${esc(off.abbr)} →</text><text x="1090" y="347" text-anchor="end" fill="#F7D23E" font-family="Arial,sans-serif" font-size="20">Blue: line of scrimmage · Yellow: line to gain</text>
     </svg>`;
   }
   // ---------- state ----------
@@ -157,7 +157,7 @@
     loadLeaderboard();
     $("clock-toggle").checked = clockOn();
     const best = store.get("best", {});
-    const bits = Object.entries(best).filter(([m]) => MODES.some(x => x.id === m)).map(([m, v]) => `${(MODES.find((x) => x.id === m) || {}).name || m}: ${v.grade}`);
+    const bits = Object.entries(best).filter(([m]) => MODES.some(x => x.id === m)).map(([m, v]) => `${(MODES.find((x) => x.id === m) || {}).name || m}: ${m === "survival" ? v.n + " calls" : v.grade}`);
     $("record").textContent = bits.length ? "Your best so far. " + bits.join(", ") : "";
     $("hero-field").innerHTML = fieldSVG({ kind: "4th", you: "NE", opp: "IND", yl: 72, ytg: 2, down: 4 });
   }
@@ -178,6 +178,12 @@
     const game = E.buildGame(D, mode, opts);
     state = { mode, game, idx: 0, results: [], strikes: 0, date, simRand: E.mulberry32((game.seed ^ 0x9e3779b9) >>> 0) };
     if (mode === "survival") game.list.push(E.nextSurvival(D, game, 0));
+    const saved = (mode === "daily" || mode === "speed") ? store.get("inprog." + mode + "." + date, null) : null;
+    if (Array.isArray(saved) && saved.length) {
+      state.results = saved.slice(0, game.list.length).map((r, i) => Object.assign({ s: game.list[i] }, r));
+      if (state.results.length >= game.list.length) { state.idx = game.list.length - 1; return finish(); }
+      state.idx = state.results.length;
+    }
     $("start").hidden = true; $("end").hidden = true; $("play").hidden = false;
     renderScenario();
   }
@@ -248,7 +254,7 @@
       <p class="situation">${sit}</p>
       <p class="model-context">${s.model === "nfl4th" ? "QB and weather are game context. Grades use a league-average model, not player-specific matchup ratings." : "Published estimates and assumptions are explained after your call."}</p><dl class="facts">${facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>`;
 
-    const keys = E.optionOrder(s);
+    const keys = shuffledKeys(s);
     $("choices").innerHTML = keys.map((k, i) => `<button class="choice" data-k="${k}"><span class="key">${i + 1}</span>${esc(E.optionLabel(s, k))}</button>`).join("");
     $("choices").querySelectorAll(".choice").forEach((b) => b.addEventListener("click", () => choose(b.dataset.k, false)));
     $("bonus").innerHTML = ""; $("reveal").innerHTML = "";
@@ -281,6 +287,22 @@
     if (s.kind === "4th" && choice === "go" && s.ytg <= 1) return s.yl <= 1 ? "goal" : "short";
     if (s.kind === "pat" && choice === "two") return "two";
     return null;
+  }
+
+  // The choices in a shuffled order, the same for everyone on a given scenario and day, so pressing 1 every time
+  // isn't a strategy ("go" is the best call in most fourth downs, and it used to always be first)
+  function shuffledKeys(s) {
+    const keys = E.optionOrder(s);
+    const rand = E.mulberry32(E.hashString("order-" + s.id + "-" + (state.date || today())));
+    for (let i = keys.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [keys[i], keys[j]] = [keys[j], keys[i]]; }
+    return keys;
+  }
+
+  // The Daily and Speed Round save after every call, so quitting can't buy a second look at today's set
+  function saveProgress() {
+    if (state.mode !== "daily" && state.mode !== "speed") return;
+    store.set("inprog." + state.mode + "." + state.date, state.results.map((r) => ({
+      g: r.g, bonus: r.bonus, badges: r.badges, outcome: r.outcome, timedOut: r.timedOut, elapsedMs: r.elapsedMs, speedPoints: r.speedPoints })));
   }
 
   function choose(key, timedOut) {
@@ -340,6 +362,7 @@
     const result = { s, g, bonus, badges, outcome, timedOut: state.timedOut, elapsedMs,
       speedPoints: state.mode === "speed" ? speedPoints(g.points, elapsedMs) : null };
     state.results.push(result);
+    saveProgress();
     if (state.mode !== "daily") { const seen = store.get("seen", []); seen.push(s.id); store.set("seen", seen.slice(-500)); }
     if (state.mode === "survival" && E.SURVIVAL_STRIKE(g)) state.strikes++;
     renderProgress();
@@ -524,7 +547,9 @@
     if (state.mode === "speed") state.speed = speedSummary(state.results);
     const best = store.get("best", {});
     const prev = best[state.mode];
-    if (!prev || summary.points / summary.n > prev.points / prev.n) { best[state.mode] = { grade: summary.grade, points: summary.points, n: summary.n }; store.set("best", best); }
+    // Survival keeps its longest run; the others keep the best points per call
+    const better = state.mode === "survival" ? !prev || summary.n > (prev.n || 0) : !prev || summary.points / summary.n > prev.points / prev.n;
+    if (better) { best[state.mode] = { grade: summary.grade, points: summary.points, n: summary.n }; store.set("best", best); }
     if (state.mode === "daily") {
       const lite = state.results.map((r) => ({ s: { id: r.s.id, kind: r.s.kind, you: r.s.you, opp: r.s.opp, season: r.s.season, famous: r.s.famous ? { title: r.s.famous.title } : null, opts: r.s.opts, ytg: r.s.ytg, yl: r.s.yl, score: r.s.score }, g: r.g, bonus: r.bonus, badges: r.badges }));
       store.set("daily." + state.date, { grade: summary.grade, summary, results: lite });
@@ -563,11 +588,11 @@
       ${summary.delays ? `<p>${summary.delays} delay of game: zero points for each missed decision.</p>` : ""}${coach}${sw}
       ${allBadges.length ? `<div class="block"><h3>Badges</h3><div class="badges">${allBadges.map((b) => `<span class="badge">${esc(b.label)}</span>`).join("")}</div></div>` : ""}
       <div class="block"><h3>Every call</h3><p class="muted">Best call = no win probability left on the table. Negative numbers show percentage points lost versus the model’s best option, not the change from before the snap.</p><ul class="recap">${recap}</ul></div>
-      <div class="actions"><button class="next" id="share">Share graphic</button><button class="ghost" id="copy-result">Copy result text</button><button class="ghost" id="again">${state.mode === "daily" ? "Play a Quick Game" : "Play again"}</button></div>
+      <div class="actions"><button class="next" id="share">Share graphic</button><button class="ghost" id="copy-result">Copy result text</button><button class="ghost" id="again">${state.mode === "daily" || state.mode === "speed" ? "Play a Quick Game" : "Play again"}</button></div>
       <p><button class="quit ghost" id="home" style="margin-top:10px">All modes</button></p>`;
     $("share").addEventListener("click", () => shareGraphic(summary, results, modeName, share));
     $("copy-result").addEventListener("click", () => doShare(share));
-    $("again").addEventListener("click", () => startGame(state.mode === "daily" ? "quick" : state.mode));
+    $("again").addEventListener("click", () => startGame(state.mode === "daily" || state.mode === "speed" ? "quick" : state.mode));
     $("home").addEventListener("click", renderStart);
     if (speed) loadLeaderboard("end-leaderboard-list");
     if (speed && !submittedToday) bindSpeedEntry(summary, speed);

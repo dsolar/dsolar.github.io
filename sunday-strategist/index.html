@@ -137,7 +137,7 @@ a { color: var(--yellow); }
 .bug .down { background: var(--yellow); color: var(--yellow-ink); border-right: 0; }
 .bug .down small { color: rgba(42, 35, 6, .72); }
 
-.stage { display: grid; gap: 18px; margin-top: 14px; }
+.stage { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; margin-top: 14px; }
 @media (min-width: 920px) {
   .stage { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: start; }
   .board { position: sticky; top: 10px; }
@@ -380,6 +380,6 @@ legend { padding: 0; margin: 0 0 6px; font-weight: 600; }
 <script src="defense.js?v=1"></script>
 <script src="schema.js?v=2"></script>
 <script src="engine.js?v=6"></script>
-<script src="app.js?v=10"></script>
+<script src="app.js?v=11"></script>
 </body>
 </html>
