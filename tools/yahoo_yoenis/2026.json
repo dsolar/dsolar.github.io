@@ -2,8 +2,26 @@
  "league": "Don't Forget to Wipe Yoenis",
  "key": "469.l.30639",
  "season": 2026,
+ "start": "2026-03-25",
  "end": "2026-09-27",
- "pulled": "2026-10-29T19:06:07Z",
+ "settings": {
+  "draft_type": "live",
+  "draft_time": "1774484100",
+  "waiver_type": "FR",
+  "waiver_rule": "continuous",
+  "waiver_time": "2",
+  "uses_faab": "1",
+  "trade_end_date": "2026-08-06",
+  "trade_reject_time": "2",
+  "uses_playoff": "1",
+  "max_teams": "16",
+  "post_draft_players": "W",
+  "max_adds": null,
+  "uses_keeper": null,
+  "num_keepers": null,
+  "keeper_deadline_date": null
+ },
+ "pulled": "2026-10-29T19:08:53Z",
  "teams": {
   "469.l.30639.t.12": {
    "name": "Newton South Loins",
