@@ -26,7 +26,7 @@
     var d = read(key), res = d && Array.isArray(d.results) ? d.results : [];
     if (!res.length) return { state: "open" };
     var total = res.reduce(function (a, r) { return a + (+r.s || 0); }, 0);
-    if (res.length >= n) return { state: "done", text: String(total), say: total + " of " + n * 5 };
+    if (res.length >= n) return { state: "done", text: String(total), say: total + " of " + n * 5, share: total + "/" + n * 5 };
     return { state: "partial", text: res.length + "/" + n, say: res.length + " of " + n + " played" };
   }
 
@@ -61,10 +61,13 @@
   }
 
   function render() {
-    var list = rows(), done = 0, total = 0;
+    var list = rows(), done = 0, total = 0, shareLines = [];
     var dateLabel = new Date().toLocaleDateString("en-US", { timeZone: TZ, weekday: "short", month: "numeric", day: "numeric" })
       .replace(",", "").replace("/", "·").toUpperCase();
     var html = list.map(function (r) {
+      var played = r.cells.filter(function (c) { return c && c.s.state === "done"; })
+        .map(function (c) { return c.label + " " + (c.s.share || c.s.text); });
+      if (played.length) shareLines.push(r.name + ": " + played.join(" · "));
       var cells = r.cells.map(function (c) {
         if (!c) return '<span class="slate-cell slate-blank" aria-hidden="true"><span class="slate-plate"></span><span class="slate-lab">&nbsp;</span></span>';
         total++;
@@ -89,7 +92,33 @@
     board.querySelector(".slate-lights").setAttribute("aria-label", done + " of " + total + " daily challenges done");
     board.querySelector(".slate-note").textContent = note;
     board.querySelector(".slate-reset").textContent = "New slate in " + untilMidnight();
+    // Share: a plain-text recap of what's done today, for the group chat
+    shareText = shareLines.length ? ["Today's slate, " + new Date().toLocaleDateString("en-US", { timeZone: TZ, weekday: "short", month: "numeric", day: "numeric" })]
+      .concat(shareLines, [done + " of " + total + " done. Beat me: https://davidsolar.dev"]).join("\n") : "";
+    if (shareBtn) shareBtn.hidden = !shareText;
   }
+
+  var shareText = "", shareBtn = board.querySelector(".slate-share");
+  if (shareBtn) shareBtn.addEventListener("click", function () {
+    if (!shareText) return;
+    var noteEl = board.querySelector(".slate-note");
+    var said = function (msg) { noteEl.textContent = msg; };
+    if (navigator.share) {
+      navigator.share({ text: shareText }).catch(function (e) { if (e && e.name !== "AbortError") copy(); });
+    } else copy();
+    function copy() {
+      var fallback = function () {
+        var t = document.createElement("textarea"); t.value = shareText; t.setAttribute("readonly", "");
+        t.style.position = "fixed"; t.style.opacity = "0"; document.body.appendChild(t); t.select();
+        var ok = false; try { ok = document.execCommand("copy"); } catch (e) {}
+        document.body.removeChild(t);
+        said(ok ? "Copied. Paste it in the group chat." : "Couldn't copy on this browser.");
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareText).then(function () { said("Copied. Paste it in the group chat."); }, fallback);
+      } else fallback();
+    }
+  });
 
   render();
   setInterval(render, 30000);

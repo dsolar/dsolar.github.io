@@ -20,12 +20,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Besley:ital,wght@0,500;0,600;0,700;0,800;1,500&family=Libre+Franklin:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="assets/site.css?v=20261029-leaders">
+<link rel="stylesheet" href="assets/site.css?v=20261029-writing">
 <script>if (location.hash === "#kids") location.replace("kids/");  /* the kids section moved to its own page */</script>
 <script src="assets/site.js" defer></script>
 <script src="assets/analytics.js" defer></script>
 <script src="assets/scoreboard.js?v=20261028-pregame" defer></script>
-<script src="assets/slate.js?v=20261029-tiles" defer></script>
+<script src="assets/slate.js?v=20261029-share" defer></script>
 <script src="assets/leaders.js?v=20261029-leaders" defer></script>
 </head>
 <body>
@@ -67,7 +67,7 @@
       <div class="hero-text">
         <p class="hero-kicker">Sports. Data. Nonsense.</p>
         <h1 id="hero-title">Bad takes, real numbers.</h1>
-        <p class="hero-sub">Games, league tools and simulations for the group chat, each one built to settle a fourth down, a keeper or a cut line. Play one, then come back and tell me the math is wrong.</p>
+        <p class="hero-sub">Games, league tools and sims for the group chat, built to settle a fourth down, a keeper or a cut line.<span class="hero-sub-more"> Play one, then come back and tell me the math is wrong.</span></p>
       </div>
       <!-- Today's slate: the daily games as a hand-turned scoreboard. assets/slate.js fills it from what each game saved on this device. -->
       <aside class="slate" id="slate" aria-labelledby="slate-title">
@@ -92,6 +92,7 @@
           <span class="slate-lights" role="img" aria-label="Daily challenges done"></span>
           <span class="slate-note" aria-live="polite"></span>
           <span class="slate-reset"></span>
+          <button type="button" class="slate-share" hidden>Share my slate</button>
         </div>
       </aside>
     </div>
@@ -170,15 +171,17 @@
         </figure>
         <p class="writing-kicker">ESPN Chalk · 2014–16</p>
         <h3 id="espn-title">ESPN Chalk: weekly NFL analysis</h3>
-        <p>Before any of this, I spent three NFL seasons writing a weekly ESPN column on contrarian betting value, using Sports Insights data to find spots where the public was leaning the wrong way. They live behind ESPN+ now, so you may hit a paywall.</p>
+        <p>Before any of this, I spent three NFL seasons writing a weekly ESPN column on contrarian betting value, using Sports Insights data to find where the public was leaning the wrong way. They're behind ESPN+ now, so you may hit a paywall.</p>
       </div>
       <div class="featured-writing" aria-label="Featured columns">
         <p class="featured-label">Start here</p>
         <a class="featured-column" href="https://www.espn.com/chalk/insider/story/_/id/18275999/sports-insights-contrarian-betting-system-week-15-nfl-season-looks-how-often-nfl-teams-win-situations-actually-win-games-last-weeks-season"><span>2016 · Week 15</span><h3>Do “must-win” teams actually win?</h3><p>A late-season question from the contrarian betting archive.</p><b>Read on ESPN ↗</b></a>
         <a class="featured-column" href="https://www.espn.com/chalk/insider/story/_/id/14514523/finding-contrarian-betting-value-wild-card-round-nfl"><span>2015 · Wild Card Round</span><h3>Finding contrarian value in the playoffs</h3><p>Take the weekly betting analysis into Wild Card weekend.</p><b>Read on ESPN ↗</b></a>
       </div>
+      <details class="writing-all">
+      <summary><span>All 35 columns</span><span class="writing-all-hint">2014 to 2016, by season</span></summary>
       <div class="writing-years">
-        <details class="writing-season">
+        <details class="writing-season" open>
         <summary><h3 id="season-2016">2016 NFL season<span>15 articles</span></h3></summary>
         <ul class="article-list">
         <li><a href="https://www.espn.com/sports-betting/insider/story/_/id/17489380/sports-insights-contrarian-betting-values-week-1-nfl-season-espn-chalk"><span>Week 1</span><span class="article-arrow" aria-hidden="true">↗</span></a></li>
@@ -198,7 +201,7 @@
         <li><a href="https://www.espn.com/sports-betting/insider/story/_/id/18446783/chalk-sports-insights-contrarian-betting-system-nfl-divisional-round"><span>Divisional Round</span><span class="article-arrow" aria-hidden="true">↗</span></a></li>
         </ul>
         </details>
-        <details class="writing-season">
+        <details class="writing-season" open>
         <summary><h3 id="season-2015">2015 NFL season<span>16 articles</span></h3></summary>
         <ul class="article-list">
         <li><a href="https://www.espn.com/sports-betting/insider/story/_/id/13609663/finding-contrarian-betting-value-nfl-week-1-espn-chalk"><span>Week 1</span><span class="article-arrow" aria-hidden="true">↗</span></a></li>
@@ -219,7 +222,7 @@
         <li><a href="https://www.espn.com/sports-betting/insider/story/_/id/14609475/finding-contrarian-betting-value-conference-championships-nfl"><span>Conference Championships</span><span class="article-arrow" aria-hidden="true">↗</span></a></li>
         </ul>
         </details>
-        <details class="writing-season">
+        <details class="writing-season" open>
         <summary><h3 id="season-2014">2014 NFL season<span>4 articles</span></h3></summary>
         <ul class="article-list">
         <li><a href="https://www.espn.com/espn/chalk/insider/story/_/id/11744209/finding-best-underdog-betting-value-week-8-nfl-season-espn-chalk"><span>Week 8</span><span class="article-arrow" aria-hidden="true">↗</span></a></li>
@@ -229,6 +232,7 @@
         </ul>
         </details>
       </div>
+      </details>
     </div>
   </section>
 

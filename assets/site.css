@@ -641,3 +641,53 @@ a:hover{color:var(--red)}
   .ld-score{font-size:.82rem;padding:1px 4px}
   .ld-open{font-size:.72rem}
 }
+
+/* Phones: the slate on the first screen. A tighter ticker, a shorter intro, a smaller Citgo sign. */
+@media (max-width: 640px){
+  .tk-label{padding-block:4px}
+  .tk-views button{padding:3px 7px}
+  .tk-track{gap:8px;padding:6px 8px}
+  .tk-item{flex-basis:196px;gap:1px;padding:5px 8px}
+  .tk-top{font-size:.6rem}
+  .tk-line{grid-template-columns:18px minmax(0,1fr) auto;gap:6px;font-size:.84rem}
+  .tk-logo,.tk-mono{width:18px;height:18px}
+  .tk-pts{font-size:.95rem}
+  .tk-foot,.tk-pick{font-size:.66rem}
+  .site-header .wrap{padding-block:10px}
+  .hero .wrap{padding-block:20px 28px;gap:14px}
+  .hero-text{gap:10px}
+  .hero-kicker{font-size:.72rem}
+  .hero-sub{font-size:1rem;line-height:1.5}
+  .hero-sub-more{display:none}
+  .slate{margin-top:40px}
+  .slate-citgo{width:42px;right:16px}
+}
+
+/* Today's slate: share what's done today with the group chat */
+.slate-share{margin-left:auto;appearance:none;cursor:pointer;background:#F7D23E;color:#0C1F16;border:0;border-radius:3px;padding:6px 11px;
+  font:800 .7rem/1.1 var(--f-body);letter-spacing:.1em;text-transform:uppercase;box-shadow:inset 0 -2px 0 rgba(0,0,0,.2)}
+.slate-share[hidden]{display:none}
+.slate-share:hover{background:#FFE27A}
+.slate-share:focus-visible{outline:2px solid #F5F4F0;outline-offset:2px}
+
+/* Writing: the season lists fold behind one "All 35 columns" toggle */
+.writing-all{border-top:1px solid var(--ink);border-bottom:1px solid var(--rule)}
+.writing-all>summary{display:flex;align-items:baseline;gap:6px 14px;flex-wrap:wrap;padding:16px 0;cursor:pointer;list-style:none}
+.writing-all>summary::-webkit-details-marker{display:none}
+.writing-all>summary>span:first-child{font-family:var(--f-display);font-size:1.3rem;font-weight:700;color:var(--ink)}
+.writing-all>summary>span:first-child::after{content:"+";display:inline-block;margin-left:10px;font-family:var(--f-body);font-weight:700;color:var(--red);transition:transform .2s ease}
+.writing-all[open]>summary>span:first-child::after{transform:rotate(45deg)}
+.writing-all-hint{font-size:.82rem;color:var(--muted)}
+.writing-all>summary:hover>span:first-child{text-decoration:underline;text-decoration-color:var(--red);text-underline-offset:.2em}
+.writing-all>summary:focus-visible{outline:2px solid var(--red);outline-offset:4px}
+.writing-all .writing-years{padding-bottom:28px}
+@media (prefers-reduced-motion: reduce){.writing-all>summary>span:first-child::after{transition:none}}
+@media (max-width: 640px){
+  .writing-intro .archive-visual{display:none}
+  .writing-intro{padding-top:20px;margin-bottom:18px}
+  .featured-writing{gap:10px;margin-bottom:22px}
+  .featured-column{padding:14px 16px;gap:6px}
+  .featured-column h3{font-size:1.1rem}
+  .featured-column p{display:none}
+  .featured-column b{padding-top:2px}
+}
