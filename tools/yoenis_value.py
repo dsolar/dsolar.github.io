@@ -15,7 +15,11 @@ the 208th hitter or 160th pitcher, so a hurt or benched player counts zero, not 
   kept_surplus(year, owner, name, pos, kept)
                           what keeping him was worth after the season he arrived: each later season the
                           same manager kept him, his value less what that keeper round was expected to
-                          produce (never below zero: keeping him was a choice, not a cost of the trade)
+                          produce (never below zero: keeping him was a choice, not a cost of the trade).
+                          Seasons whose keepers aren't set yet (next spring's) are projected instead: what he'd
+                          be worth in a redraft (a weighted average of his last three seasons) over what his
+                          keeper round is expected to produce, for each year he has left on the keeper clock,
+                          if he'd be one of that team's five best keepers. Returns (value, seasons, projected).
 """
 import json
 from pathlib import Path
@@ -128,8 +132,63 @@ def kept_map(data):
     return out
 
 
+MARCEL = (5, 4, 3)  # weights for the last three seasons, newest first
+FADE = 0.85         # each further projected season counts a little less: more can go wrong
+KEEPERS = 5
+
+
+def redraft(year, pk):
+    """What he'd be worth in a redraft before `year`: his last three seasons, newest weighted most. A season
+    he didn't play is skipped, but if that's the latest one he's marked down a fifth (hurt, or not up yet)."""
+    num = den = 0.0
+    for w, y in zip(MARCEL, range(year - 1, year - 4, -1)):
+        t = vor_table(y)
+        if pk in t:
+            num += w * t[pk]
+            den += w
+    if not den:
+        return 0.0
+    v = num / den
+    return v * 0.8 if pk not in vor_table(year - 1) else v
+
+
+_proj = {}
+
+
+def _projections(year):
+    """{(owner, tag): (value, seasons)} for next spring's keepers, from data['keepers2027'] (the final rosters,
+    each player's next keeper round and the rounds after it), counting only each team's five best."""
+    if year in _proj:
+        return _proj[year]
+    data = json.loads(DATA.read_text(encoding="utf-8"))
+    last = data["seasons"][-1]
+    out = {}
+    if last["year"] + 1 == year:
+        owner_of = {t: last["o"][i] for i, t in enumerate(last["teams"])}
+        for team, rows in (data.get("keepers2027") or {}).items():
+            owner = owner_of.get(team)
+            cands = []
+            for e in rows:
+                if not e.get("next"):
+                    continue  # can't be kept
+                nm = e["p"]
+                sd = side(nm) or ("b" if (fold(nm), "b") in vor_table(year - 1) else "p" if (fold(nm), "p") in vor_table(year - 1) else "b")
+                pk = (fold(nm), sd)
+                base = redraft(year, pk)
+                path, at = e.get("path") or [e["next"][0]], e["next"][1]
+                rounds = path[at - 1:] or [e["next"][0]]
+                vals = [max(base * FADE ** i - expected(r), 0.0) for i, r in enumerate(rounds)]
+                cands.append((vals[0], sum(vals), len([v for v in vals if v > 0]), fold(nm) + ":" + side(nm)))
+            for first, total, n, tag in sorted(cands, reverse=True)[:KEEPERS]:
+                if first > 0:
+                    out[(owner, tag)] = (total, n)
+    _proj[year] = out
+    return out
+
+
 def kept_surplus(year, owner, name, pos, kept):
-    """(surplus, seasons kept) for the seasons after `year` that `owner` kept him, back to back."""
+    """(surplus, seasons, projected seasons) for the seasons after `year` that `owner` kept him, back to back,
+    then, if the run reaches a spring whose keepers aren't set yet, his projected keeper value from there."""
     pk = pkey(name, pos)
     tag = pk[0] + ":" + side(name)
     total, n, y = 0.0, 0, year + 1
@@ -138,4 +197,7 @@ def kept_surplus(year, owner, name, pos, kept):
         total += max(vor_table(y).get(pk, 0.0) - expected(rnd or 15), 0.0)
         n += 1
         y += 1
-    return total, n
+    if y not in kept:  # next spring: not kept yet, so project it
+        v, m = _projections(y).get((owner, tag), (0.0, 0))
+        return total + v, n + m, m
+    return total, n, 0

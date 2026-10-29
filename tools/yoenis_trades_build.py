@@ -17,7 +17,7 @@ full-season value prorated by the days left, and are marked "est".
 
 Writes data["tradeHistory"] = {
   "trades": [{"y": year, "d": "YYYY-MM-DD", "a": team index, "b": team index,
-              "ag": [[player, that season, kept after, seasons kept], ...], "bg": [...],
+              "ag": [[player, that season, kept after, seasons kept, projected seasons (if any)], ...], "bg": [...],
               "ap": [[pick label, value], ...], "bp": [...], "av": side a total, "bv": side b total,
               "est": true when prorated, "off": "sheet"|"board" for offseason trades}, ...],   newest first
   "vetoed": number of trades left out, "curve": {round: expected value}
@@ -108,8 +108,8 @@ def offseason_rows(data, seasons, kept):
                     now, e = window_now(year, w, sl, season_days)
                     est = est or e
                     now = max(now - expected(rnd), 0.0)
-                    later, n = kept_surplus(year, owner, w["name"], w["pos"], kept) if w["stays"] else (0.0, 0)
-                    got.append([w["name"], round(now, 1), round(later, 1), n])
+                    later, n, pr = kept_surplus(year, owner, w["name"], w["pos"], kept) if w["stays"] else (0.0, 0, 0)
+                    got.append([w["name"], round(now, 1), round(later, 1), n] + ([pr] if pr else []))
                 sides[side] = (ti, got, [[f"{ordinal(r)}-round pick", expected(r)] for r in t["ap" if side == "a" else "bp"]])
             tot = lambda k: round(sum(x[1] + x[2] for x in sides[k][1]) + sum(x[1] for x in sides[k][2]), 1)  # noqa: E731
             row = {"y": year, "d": t["d"], "a": sides["a"][0], "b": sides["b"][0],
@@ -196,8 +196,8 @@ def main():
                 w = wins.get((t["id"], to, pkey(p["name"], p["pos"])))
                 now, e = window_now(year, w, sl, season_days) if w else (0.0, False)
                 est = est or e
-                later, n = kept_surplus(year, s["o"][idx[to]], p["name"], p["pos"], kept) if (w and w["stays"]) else (0.0, 0)
-                sides[to].append([p["name"], round(now, 1), round(later, 1), n])
+                later, n, pr = kept_surplus(year, s["o"][idx[to]], p["name"], p["pos"], kept) if (w and w["stays"]) else (0.0, 0, 0)
+                sides[to].append([p["name"], round(now, 1), round(later, 1), n] + ([pr] if pr else []))
             picks = {a: [], b: []}
             for pk in t.get("picks") or []:
                 if pk["to"] in picks:
