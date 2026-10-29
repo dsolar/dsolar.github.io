@@ -192,6 +192,9 @@ select{padding-right:2rem}
 .swt td.v.b.won::after{content:none}
 .swt td.v.b.won::before{content:"\25B6  ";font-size:.6rem;color:var(--red);vertical-align:.15em}
 .swt tr.sep td{border-top:2px solid var(--rule)}
+.sw-tier{font:600 1.05rem/1.3 var(--f-sign);margin:1.6rem 0 .2rem}
+.bwt td.t small.b7{margin-top:.25rem;color:var(--ink);font-size:.78rem}
+.bwt td.t small.b7 b{font-weight:700}
 .sw-note{font-size:.8125rem;color:var(--muted);margin:-.4rem 0 .8rem}
 .bwt{width:100%;border-collapse:collapse;font-size:.9375rem;font-variant-numeric:tabular-nums}
 .bwt th{font-weight:600;color:var(--muted);font-size:.8125rem;text-align:left;padding:.4rem .5rem .4rem 0;border-bottom:1px solid var(--rule)}
@@ -724,6 +727,9 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     <div role="tabpanel" id="hp-sw" aria-labelledby="ht-sw" hidden>
       <p class="h-lede" id="h-sw-lede"></p>
       <ol class="sweeps" id="h-sw"></ol>
+      <div id="h-swf-wrap" hidden><h3 class="sw-tier">Won on an innings forfeit</h3>
+        <p class="note">The other team pitched under the 30-inning minimum, and Yahoo hands the opponent every pitching category when that happens, so these needed only the eight hitting categories.</p>
+        <ol class="sweeps" id="h-swf"></ol></div>
       <details class="fold" id="h-near-f"><summary id="h-near-s">Near misses</summary><ol class="sweeps near" id="h-near"></ol></details>
       <p class="note">Open one to see every category.</p>
     </div>
@@ -1927,8 +1933,10 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     if (!c) {
       $("h-best").innerHTML = '<caption hidden>Best single week in every category</caption><thead><tr><th scope="col">Category</th><th scope="col" class="r">Best</th><th scope="col">Team and week</th></tr></thead><tbody>' +
         cats.map(function (k) {
-          var r = B[k][0];
-          return '<tr class="bw" data-c="' + k + '"><td class="k">' + esc(CAT_NAME[k] || k) + '</td><td class="r v">' + fmtStat(k, r[3]) + '</td><td class="t">' + team(r) + "</td></tr>";
+          var r = B[k][0], r7 = !seven && r[4] > 7 && DATA.history.best7 && (DATA.history.best7[k] || [])[0];
+          var s7 = r7 ? SEASONS[r7[0]] : null;
+          var alt = r7 ? '<small class="b7">7-day record: <b>' + fmtStat(k, r7[3]) + "</b>, " + esc(s7.teams[r7[2]]) + " (" + esc(man(s7, r7[2])) + "), " + r7[0] + ", Week " + r7[1] + "</small>" : "";
+          return '<tr class="bw" data-c="' + k + '"><td class="k">' + esc(CAT_NAME[k] || k) + '</td><td class="r v">' + fmtStat(k, r[3]) + '</td><td class="t">' + team(r) + alt + "</td></tr>";
         }).join("") + "</tbody>";
       return;
     }
@@ -1939,7 +1947,9 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       }).join("") + "</tbody>";
   }
   function drawSweeps() {
-    var H = DATA.history, sw = H.sweeps || [], near = H.near || [];
+    var H = DATA.history, all = H.sweeps || [], near = H.near || [];
+    var isF = function (r) { return r.ip && r.ip[1] < 30; };
+    var sw = all.filter(function (r) { return !isF(r); }), ff = all.filter(isF);
     var cnt = function (f) { var o = {}; sw.forEach(function (r) { var id = SEASONS[r.y].o[f(r)]; o[id] = (o[id] || 0) + 1; }); return o; };
     // Everyone tied for the most, named together ("Dan and Ivan T")
     var top = function (o) {
@@ -1949,14 +1959,17 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     };
     var by = cnt(function (r) { return r.a; }), of = cnt(function (r) { return r.b; }), mb = top(by), mo = top(of);
     var seasons = {}; sw.forEach(function (r) { seasons[r.y] = 1; });
+    var words = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
     $("h-sw-lede").innerHTML = sw.length
-      ? "<b>" + sw.length + "</b> clean sweeps in " + H.matchups.toLocaleString("en-US") + " matchups since 2013, about one every " + Math.round(H.matchups / sw.length) + " matchups" +
-        (function () { var f = sw.filter(function (r) { return r.ip && r.ip[1] < 30; }).length; return f ? ", though " + f + " came against a team under the 30-inning minimum, which forfeits the pitching categories. " : ". "; })() +
+      ? "<b>" + sw.length + "</b> straight-up sweeps, all 16 categories won outright, in " + H.matchups.toLocaleString("en-US") + " matchups since 2013. " +
+        (ff.length ? (words[ff.length] || ff.length).replace(/^./, function (c) { return c.toUpperCase(); }) + " more 16-0" + (ff.length === 1 ? " came" : "s came") + " against a team under the 30-inning minimum; " + (ff.length === 1 ? "it's" : "they're") + " listed below. " : "") +
         (mb ? esc(mb.names) + (/ and /.test(mb.names) ? " have" : " has") + " the most (" + mb.n + (/ and /.test(mb.names) ? " each" : "") + "). " : "") +
         (mo ? esc(mo.names) + (/ and /.test(mo.names) ? " have" : " has") + " been swept the most (" + mo.n + (/ and /.test(mo.names) ? " times each" : " times") + "). " : "") +
         (sw[0] ? "The latest: " + esc(teamMan(SEASONS[sw[0].y], sw[0].a)) + ", " + sw[0].y + "." : "")
       : "No team has won all 16 categories in a week yet.";
     $("h-sw").innerHTML = sw.map(swRow).join("");
+    $("h-swf").innerHTML = ff.map(swRow).join("");
+    $("h-swf-wrap").hidden = !ff.length;
     $("h-near-s").textContent = near.length + " near misses: 15-1 or 15-0-1";
     $("h-near").innerHTML = near.map(swRow).join("");
     $("h-near-f").hidden = !near.length;
