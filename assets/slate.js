@@ -3,7 +3,6 @@
      Make the Call    mtc.v2.daily.YYYY-MM-DD and mtc.v2.speed.YYYY-MM-DD (this device's date, like the game)
      Guess the Pick   gtp-daily5-SPORT-YYYY-MM-DD (Boston date)
      Journeyman       jm-daily3-SPORT-YYYY-MM-DD (Boston date)
-     Boston Grid      bg-daily-SPORT-YYYY-MM-DD (Boston date)
    Nothing leaves the device. If a game changes its save format, update the matching row below. */
 (function () {
   var board = document.getElementById("slate");
@@ -29,15 +28,6 @@
     return { state: "partial", text: res.length + "/10", say: res.length + " of 10 played" };
   }
 
-  // A Boston Grid: squares filled once it's done, how many so far while it isn't
-  function gridDaily(key) {
-    var d = read(key);
-    if (!d || !Array.isArray(d.cells)) return { state: "open" };
-    var n = d.cells.filter(Boolean).length;
-    if (d.done) return { state: "done", text: n + "/9", say: n + " of 9 squares" };
-    return 9 - (d.left == null ? 9 : d.left) ? { state: "partial", text: n + "/9", say: n + " squares so far" } : { state: "open" };
-  }
-
   function rows() {
     var et = bostonDate(), local = localDate();
     var daily = read("mtc.v2.daily." + local), speed = read("mtc.v2.speed." + local);
@@ -52,9 +42,6 @@
       }).concat([null]) },
       { name: "Journeyman", url: "journeyman/", cells: ["nba", "nfl", "mlb"].map(function (sp) {
         return { label: sp.toUpperCase(), url: "journeyman/?sport=" + sp, s: tenDaily("jm-daily3-" + sp + "-" + et) };
-      }) },
-      { name: "Boston Grid", url: "boston-grid/", cells: ["nba", "nfl", "mlb"].map(function (sp) {
-        return { label: sp.toUpperCase(), url: "boston-grid/?sport=" + sp, s: gridDaily("bg-daily-" + sp + "-" + et) };
       }) }
     ];
   }
