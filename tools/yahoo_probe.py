@@ -15,19 +15,12 @@ from guillotine_update import Yahoo, access_token  # noqa: E402
 NFL = "470.l.157731"
 MLB = "469.l.30639"
 PROBES = {
-    "nfl roster stats week": f"team/{NFL}.t.1/roster;week=8/players/stats;type=week;week=8",
-    "nfl roster projected_week": f"team/{NFL}.t.1/roster;week=8/players/stats;type=projected_week;week=8",
-    "nfl roster week is_projected": f"team/{NFL}.t.1/roster;week=8/players/stats;type=week;week=8;is_projected=1",
-    "nfl players projected_week": f"league/{NFL}/players;player_keys=470.p.33987/stats;type=projected_week;week=8",
-    "nfl players week stats": f"league/{NFL}/players;player_keys=470.p.33987/stats;type=week;week=8",
-    "nfl team players projected": f"team/{NFL}.t.1/players/stats;type=projected_week;week=8",
-    "nfl scoreboard": f"league/{NFL}/scoreboard;week=8",
-    "mlb settings": f"league/{MLB}/settings",
-    "mlb standings": f"league/{MLB}/standings",
-    "mlb team stats week 10": f"team/{MLB}.t.1/stats;type=week;week=10",
-    "mlb team stats date": f"team/{MLB}.t.1/stats;type=date;date=2026-06-15",
-    "mlb league teams stats week 10": f"league/{MLB}/teams/stats;type=week;week=10",
-    "mlb scoreboard week 10": f"league/{MLB}/scoreboard;week=10",
+    "2023 transactions": "league/422.l.4580/transactions",
+    "2023 transactions add": "league/422.l.4580/transactions;types=add",
+    "2023 transactions add,drop": "league/422.l.4580/transactions;types=add,drop",
+    "2023 transactions count 100": "league/422.l.4580/transactions;count=100",
+    "2023 transactions start 100": "league/422.l.4580/transactions;start=100;count=100",
+    "2026 transactions add,drop": "league/469.l.30639/transactions;types=add,drop",
 }
 
 
@@ -44,10 +37,6 @@ def walk(el, path, out, depth=0):
 
 def main():
     y = Yahoo(token=access_token())
-    r = y.get(f"team/{NFL}.t.1/roster;week=8")
-    pk = r.find(".//player/player_key").text
-    for name in list(PROBES):
-        PROBES[name] = PROBES[name].replace("470.p.33987", pk)
     res = {"checked": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
     for name, path in PROBES.items():
         y.last_error = None
