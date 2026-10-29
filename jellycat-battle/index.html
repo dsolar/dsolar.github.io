@@ -1711,18 +1711,76 @@ const PARLORS=[
 ];
 const parlorById=id=>[...PARLORS,...REGION_PARLORS].find(p=>p.id===id);
 function nextParlor(){ensureWorld(state);const list=[...PARLORS,...REGION_PARLORS];return list.find(p=>!state.world.parlorBadges.includes(p.id)&&state.world.parlorBadges.length>=p.required)||null;}
-function parlorCompass(){const next=nextParlor();return `<div class="quest-compass" id="quest-compass" role="status" aria-live="off"><span class="quest-arrow" id="quest-arrow" aria-hidden="true">✿</span><div class="quest-copy"><strong>${next?`Next: ${safe(next.name)}`:'All available patches earned!'}</strong><small id="quest-distance">${next?'Find the Keeper and earn your next patch':'New routes are being prepared'}</small></div>${next?'<button class="quest-guide-btn" data-action="guide-parlor" title="Walk toward your next Parlor">Guide me →</button>':''}</div>`;}
-function updateParlorCompass(){const guide=document.getElementById('quest-compass');if(!guide||!state?.world)return;const p=nextParlor(),arrow=document.getElementById('quest-arrow'),distance=document.getElementById('quest-distance');if(!p){guide.classList.add('complete');return;}
- const w=state.world,here=w.area||'cuddlewick';if(p.area&&p.area!==here||(!p.area&&here!=='cuddlewick')){arrow.textContent='◈';arrow.style.transform='none';distance.textContent=p.area==='reed-keys'?(hasSoftboard(state)?'Cross east from Willowmere to the Reed Keys':'Win the Shell Patch to earn the Softboard'):here==='cuddlewick'?'Follow the eastern gate to Orchard Way':'Check the Region Map for directions';return;}
- const dx=p.x-w.x,dy=p.y-w.y,steps=Math.round(Math.hypot(dx,dy));arrow.textContent=steps<2?'✿':'↑';arrow.style.transform=steps<2?'none':`rotate(${Math.atan2(dx,-dy)*180/Math.PI}deg)`;distance.textContent=steps<2?'You found the Keeper! Press E or Talk.':`${steps} steps away · ${dx>1?'east':dx< -1?'west':'straight ahead'}${Math.abs(dy)>1?(dy>0?' and south':' and north'):''}`;
-}
-function guideNextParlor(){const p=nextParlor();if(!p){notify('You have earned every available patch!');return;}
- if((p.area||'cuddlewick')!==(state.world.area||'cuddlewick')){notify(p.area==='reed-keys'?'Cross east from Willowmere using the Softboard to reach Shellkeeper Parlor.':'Follow the Region Map routes to reach '+p.name+'.');go('atlas');return;}
- const candidates=[[p.x,p.y-1],[p.x-1,p.y],[p.x+1,p.y],[p.x,p.y+1],[p.x-1,p.y-1],[p.x+1,p.y-1]];
- const dest=candidates.find(([x,y])=>x>=0&&y>=0&&x<areaSize(state.world.area).width&&y<areaSize(state.world.area).height&&!(state.world.area==='cuddlewick'?villageBlockedAt(x,y):areaTile(state.world.area,x,y).solid));
- if(!dest){notify('Look for the ✿ PARLOR sign near the village square.');return;}
- walkToward(dest[0],dest[1]);notify('Following the path to '+p.name+'…');
-}
+// Next-goal guide: points at the next step of the first unfinished Adventure, in any area,
+// routing through area exits she can already use. Falls back to the next Parlor, then to exploring.
+const AREA_EXITS={
+ cuddlewick:{orchard:[55,20]},
+ orchard:{cuddlewick:[1,19],willowmere:[57,'road'],grotto:[35,7],'cloudstep-pass':[39,6]},
+ grotto:{orchard:[2,21]},
+ willowmere:{orchard:[1,18],'reed-keys':[47,18]},
+ 'reed-keys':{willowmere:[2,17],'cloudstep-pass':[42,17]},
+ 'cloudstep-pass':{'reed-keys':[2,17],orchard:[23,2]},
+ cottage:{cuddlewick:[8,11]},'bakery-room':{cuddlewick:[8,12]},'store-room':{cuddlewick:[8,12]},'greenhouse-room':{cuddlewick:[10,13]}
+};
+const GUIDE_ZONE_SPOTS={wood:[10,10],garden:[25,7],moon:[46,10],bakery:[12,20],square:[27,20],cove:[46,20],sports:[10,33],hill:[27,33]};
+const MINI_HOSTS=()=>Object.fromEntries(NPCS.filter(n=>n.challenge).map(n=>[n.challenge,n]));
+function areaLabel(a){return a==='cuddlewick'?'Cuddlewick':(REGION_AREAS[a]?.name||'the Softlands');}
+function exitOpen(s,from,to){if(from==='willowmere'&&to==='reed-keys')return hasSoftboard(s);if(to==='cloudstep-pass'&&(from==='reed-keys'||from==='orchard'))return hasClimbingMittens(s);return true;}
+function exitPoint(from,to){const e=AREA_EXITS[from]?.[to];if(!e)return null;return [e[0],e[1]==='road'?windingRoad(e[0]):e[1]];}
+function routeHop(s,from,to){if(from===to)return null;const prev=new Map([[from,null]]),q=[from];
+ while(q.length){const a=q.shift();if(a===to)break;for(const b of Object.keys(AREA_EXITS[a]||{}))if(!prev.has(b)&&exitOpen(s,a,b)){prev.set(b,a);q.push(b);}}
+ if(!prev.has(to))return undefined;let cur=to;while(prev.get(cur)!==from)cur=prev.get(cur);return cur;}
+function nearestGrass(w){let best=null;for(let r=0;r<=14&&!best;r++)for(let dx=-r;dx<=r;dx++)for(let dy=-r;dy<=r;dy++){if(Math.max(Math.abs(dx),Math.abs(dy))!==r)continue;const x=Math.round(w.x)+dx,y=Math.round(w.y)+dy;if(x>=0&&y>=0&&x<WORLD_W&&isTallGrass(x,y)&&!villageBlockedAt(x,y)){if(!best||Math.hypot(dx,dy)<best.d)best={x,y,d:Math.hypot(dx,dy)};}}return best;}
+function npcSpot(id){const n=NPCS.find(x=>x.id===id);if(n)return {area:'cuddlewick',x:n.x,y:n.y,kind:'npc',npc:n};const r=REGION_NPCS.find(x=>x.id===id);return r?{area:r.area,x:r.x,y:r.y,kind:'npc',npc:r}:null;}
+function parlorSpot(p){return p?{area:p.area||'cuddlewick',x:p.x,y:p.y,kind:'parlor',parlor:p}:null;}
+// Where the next unfinished step of an objective is, or null when there is no place to point to.
+function objectiveSpot(s,obj){const [kind,value]=obj,w=s.world;
+ if(kind==='talk'||kind==='flag')return npcSpot(kind==='flag'&&value==='returned-orchard-key'?'orchard-farmer':value);
+ if(kind==='mini'){const n=MINI_HOSTS()[value];return n?npcSpot(n.id):null;}
+ if(kind==='activities'){const left=['baker','garden','wood','sea','sports','moon'].find(id=>!w.completed.includes(id));const n=left&&MINI_HOSTS()[left];return n?{...npcSpot(n.id),label:`Play ${MINI_INFO[left]?.title||'a little game'}`}:null;}
+ if(kind==='find'){const t=ALL_TREASURES().find(x=>x.id===value);return t?{area:t.area,x:t.x,y:t.y,kind:'treasure'}:null;}
+ if(kind==='visit'){if(GUIDE_ZONE_SPOTS[value]){const [x,y]=GUIDE_ZONE_SPOTS[value];return {area:'cuddlewick',x,y,kind:'zone'};}return REGION_AREAS[value]?{area:value,kind:'arrive'}:null;}
+ if(kind==='visits'){const z=ZONES.find(z=>HOME_ZONES.has(z.id)&&!w.visited.includes(z.id));if(!z)return null;const [x,y]=GUIDE_ZONE_SPOTS[z.id];return {area:'cuddlewick',x,y,kind:'zone',label:`Explore ${z.name}`};}
+ if(kind==='patches'||kind==='badge')return parlorSpot(nextParlor());
+ if(kind==='wish'){if(!canWish(s))return {area:'cuddlewick',kind:'grass',label:'Win battles to recharge the fountain'};const f=SPECIAL_PLACES.find(p=>p.id==='fountain');return {area:'cuddlewick',x:f.x,y:f.y,kind:'place'};}
+ if(kind==='souvenir'){const shop=SPECIAL_PLACES.find(p=>p.id==='shop');return {area:'cuddlewick',x:shop.x,y:shop.y+1,kind:'place'};}
+ if(kind==='camp'){const c=SPECIAL_PLACES.find(p=>p.id==='camp');return {area:'cuddlewick',x:c.x,y:c.y,kind:'place'};}
+ if(kind==='wins')return {area:w.area==='cuddlewick'||!REGION_AREAS[w.area]||REGION_AREAS[w.area].interior?'cuddlewick':w.area,kind:'grass'};
+ return null;}
+function nextGoal(s=state){ensureWorld(s);const w=s.world,here=w.area||'cuddlewick';
+ for(const q of QUESTS){const st=questProgress(s,q);if(st.claimed)continue;
+  if(st.done)return {quest:q,claim:true,label:'Adventure complete!',sub:`Collect your reward for ${q.title}`};
+  for(let i=0;i<q.objectives.length;i++){if(st.completed[i]>=st.total[i])continue;const obj=q.objectives[i];
+   const spot=objectiveSpot(s,obj);if(!spot)break;
+   if(spot.area!==here&&routeHop(s,here,spot.area)===undefined)break;
+   const count=st.total[i]>1?` (${st.completed[i]}/${st.total[i]})`:'';
+   return {quest:q,obj,spot,label:(spot.label||obj[2])+count};}}
+ const p=nextParlor();if(p){const spot=parlorSpot(p);if(spot.area===here||routeHop(s,here,spot.area)!==undefined)return {spot,label:`Next: ${p.name}`};}
+ return {label:'Explore the Softlands!',sub:'Battle in the tall grass and find new friends',explore:true};}
+function goalDirections(s,g){const w=s.world,here=w.area||'cuddlewick';
+ if(g.claim||g.explore)return {text:g.sub,dx:0,dy:0,steps:0};
+ const sp=g.spot;let tx=sp.x,ty=sp.y,lead='';
+ if(sp.area!==here){const hop=routeHop(s,here,sp.area);const e=hop&&exitPoint(here,hop);if(!e)return {text:'Check the Region Map for the way',steps:0};[tx,ty]=e;lead=REGION_AREAS[here]?.interior?'Head outside':`Head to ${areaLabel(hop)}`;}
+ else if(sp.kind==='arrive')return {text:`Welcome to ${areaLabel(here)}!`,steps:0};
+ else if(sp.kind==='grass'){if(here!=='cuddlewick')return {text:'Explore this area to find surprise battles',steps:0};const g2=nearestGrass(w);if(!g2)return {text:'Look for tall grass ♣ to find a battle',steps:0};[tx,ty]=[g2.x,g2.y];if(g2.d<1.2)return {text:'You are in the tall grass. Keep walking!',steps:0,target:[tx,ty]};}
+ const dx=tx-w.x,dy=ty-w.y,steps=Math.round(Math.hypot(dx,dy));
+ const dir=`${dx>1?'east':dx< -1?'west':''}${Math.abs(dy)>1?(dx>1||dx< -1?' and ':'')+(dy>0?'south':'north'):''}`||'right here';
+ if(!lead&&steps<2)return {text:sp.kind==='treasure'?'It is right here! Step onto the sparkle.':sp.kind==='zone'?'You made it!':'Right here! Press E or tap Talk.',steps,dx,dy,target:[tx,ty]};
+ return {text:`${lead?lead+' · ':''}${steps} step${steps===1?'':'s'} ${dir}`,steps,dx,dy,target:[tx,ty]};}
+function parlorCompass(){const g=nextGoal(),d=goalDirections(state,g);const btn=g.claim?'<button class="quest-guide-btn" data-action="nav" data-id="journal" title="Open your Adventures">Open →</button>':g.explore?'':'<button class="quest-guide-btn" data-action="guide-parlor" title="Walk toward your next goal">Guide me →</button>';
+ return `<div class="quest-compass ${g.claim?'complete':''}" id="quest-compass" role="status" aria-live="off" title="${safe(g.quest?.title||'')}"><span class="quest-arrow" id="quest-arrow" aria-hidden="true">${g.claim?'🎉':'✿'}</span><div class="quest-copy"><strong id="quest-label">${safe(g.label)}</strong><small id="quest-distance">${safe(d.text)}</small></div>${btn}</div>`;}
+function updateParlorCompass(){const guide=document.getElementById('quest-compass');if(!guide||!state?.world)return;const g=nextGoal(),d=goalDirections(state,g);
+ const label=document.getElementById('quest-label'),arrow=document.getElementById('quest-arrow'),distance=document.getElementById('quest-distance');
+ const wantBtn=g.claim?'claim':g.explore?'none':'guide';if(guide.dataset.mode&&guide.dataset.mode!==wantBtn){guide.outerHTML=parlorCompass();document.getElementById('quest-compass').dataset.mode=wantBtn;return;}guide.dataset.mode=wantBtn;
+ if(label&&label.textContent!==g.label)label.textContent=g.label;if(distance)distance.textContent=d.text;
+ if(arrow){if(g.claim){arrow.textContent='🎉';arrow.style.transform='none';}else if(!d.steps||d.steps<2){arrow.textContent='✿';arrow.style.transform='none';}else{arrow.textContent='↑';arrow.style.transform=`rotate(${Math.atan2(d.dx,-d.dy)*180/Math.PI}deg)`;}}}
+function guideNextParlor(){const g=nextGoal();if(g.claim){go('journal');return;}if(g.explore){notify('Explore the tall grass to find new friends!');return;}
+ const d=goalDirections(state,g);if(!d.target){notify(d.text);return;}
+ const area=state.world.area||'cuddlewick',[tx,ty]=d.target,sp=g.spot,sameArea=sp.area===area;
+ const free=(x,y)=>x>=0&&y>=0&&x<areaSize(area).width&&y<areaSize(area).height&&!(area==='cuddlewick'?villageBlockedAt(x,y):!walkableRegion(state,area,x,y))&&!(area==='cuddlewick'?NPCS:areaNpcs(area)).some(n=>n.x===x&&n.y===y);
+ let dest=[tx,ty];if(sameArea&&['npc','parlor','place'].includes(sp.kind)){dest=[[tx,ty+1],[tx,ty-1],[tx-1,ty],[tx+1,ty],[tx-1,ty+1],[tx+1,ty+1],[tx,ty]].find(([x,y])=>free(x,y))||null;}
+ if(!dest){notify('Walk toward the arrow to find it!');return;}
+ walkToward(dest[0],dest[1],sameArea&&sp.kind==='npc'?sp.npc:null);notify(sameArea?`Heading to ${g.label.replace(/ \(\d+\/\d+\)$/,'')}…`:`${d.text.split(' · ')[0]}…`);}
 function nearbyParlor(w,radius=1.7){return (w.area&&w.area!=='cuddlewick'?areaParlors(w.area):PARLORS).find(p=>Math.hypot(p.x-w.x,p.y-w.y)<=radius)||null;}
 // Deterministic tall-grass pockets. No invisible random battles on paths or inside town.
 function isTallGrass(x,y){const z=zoneAt(x,y),u=Math.floor(x),v=Math.floor(y);
@@ -2580,6 +2638,9 @@ render();
 if(cloud.code)setTimeout(()=>cloudPull(),500);
 document.addEventListener('visibilitychange',()=>{if(!cloud.code)return;if(document.visibilityState==='hidden'){if(cloudTimer)cloudPush(true);}else cloudPull();});
 document.addEventListener('keydown',e=>{if(e.target?.id==='cloud-code-input'&&e.key==='Enter'){e.preventDefault();cloudAction('cloud-load');}});
+
+// Keep the next-goal guide current after talks, rewards and pop-ups, not only while walking.
+setInterval(()=>{if(page==='world'&&!document.hidden)updateParlorCompass();},700);
 </script>
 </body>
 </html>
