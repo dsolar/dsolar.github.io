@@ -1,1 +1,81 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Wild Bloom Isles • Design Studio</title><meta name="description" content="A little home, a whole world of style. Create illustrated rooms across eras in Wild Bloom Isles."><link rel="stylesheet" href="studio.css?v=23"></head><body><header><div class="brand"><span class="flower">✿</span><div>Wild Bloom Isles<small>THE DESIGN STUDIO</small></div></div><div class="header-right"><span id="saved" role="status">Saved on this device</span><button id="export">Export design</button><label class="button">Import<input id="import" type="file" accept="application/json" hidden></label></div></header><main><aside><div class="eyebrow">MAKE YOURSELF AT HOME</div><h1>A little room.<br>Endless possibilities.</h1><p class="intro">Find your era. Mix your favorites.<br>Make something entirely yours.</p><label class="field">Your rooms<select id="rooms"></select></label><div class="row"><button id="new">＋ New room</button><button id="rename">Rename</button></div><div class="section-label">01 / COLLECTIONS</div><div id="styles"></div><div class="collection-story" id="story"></div><div class="section-label">02 / ROOM FINISHES</div><label class="field">Walls<select aria-label="Walls" id="wall"></select></label><label class="field">Floor<select aria-label="Floor" id="floor"></select></label><label class="field">Light<select aria-label="Light" id="light"><option value="day">Soft daylight</option><option value="golden">Golden hour</option><option value="night">Moonlit evening</option></select></label></aside><section class="workspace"><div class="room-head"><div><div class="eyebrow">YOUR OPEN STUDIO</div><h2 id="room-title"></h2></div><div class="row"><button id="undo" title="Undo (Ctrl Z)">↶ Undo</button><button id="redo" title="Redo (Ctrl Shift Z)">↷ Redo</button><button id="grid" aria-pressed="false">Grid</button></div></div><div class="scene-wrap"><svg id="scene" viewBox="80 0 840 640" aria-label="Your room. Select furniture and drag to rearrange." tabindex="0"></svg><div id="hint" role="status">Select a piece below, then tap an open space in your room.</div></div><div id="selection" class="selection"></div><section class="catalog"><div class="catalog-heading"><div><div class="eyebrow">THE PIECES THAT MAKE A PLACE</div><h2 id="collection-title"></h2></div><span>Everything is yours to use</span></div><div id="categories" class="row"></div><div id="pieces"></div></section><footer>Drag to arrange · R to rotate · Arrow keys to nudge · Delete to remove · Your rooms save on this device</footer></section></main><dialog id="name-dialog"><form method="dialog"><h2 id="dialog-title">Name your room</h2><input aria-label="Room name" id="room-name" maxlength="40" required autocomplete="off"><div class="row"><button value="cancel" formnovalidate>Cancel</button><button value="save" class="primary">Save</button></div></form></dialog><script src="studio.js?v=23"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Wild Bloom Isles • Design Studio</title>
+<meta name="description" content="Charlotte's home-design studio: build a whole house room by room, decorate every corner, paint your own art and design the yard.">
+<meta name="theme-color" content="#fffdf9">
+<meta property="og:image" content="https://davidsolar.dev/assets/covers/wild-bloom-isles-studio.jpg"><meta property="og:image:width" content="1040"><meta property="og:image:height" content="780"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%B8%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/bar.css">
+<link rel="stylesheet" href="studio.css?v=30">
+<script src="../assets/analytics.js" defer></script>
+</head>
+<body>
+<nav class="ds-bar" aria-label="davidsolar.dev">
+  <a href="../"><img src="../assets/ds-mark.svg" alt="" width="20" height="20"><span class="ds-bar-name">David Solar</span></a>
+  <a href="../kids/">More kids games</a>
+</nav>
+<header class="top">
+  <div class="brand"><span class="flower">✿</span><div>Wild Bloom Isles<small>THE DESIGN STUDIO</small></div></div>
+  <div class="header-right"><span id="saved" role="status">Saved on this device</span><button id="picture" class="primary">📷 Save picture</button><button id="export">Export</button><label class="button">Import<input id="import" type="file" accept="application/json" hidden></label></div>
+</header>
+<main>
+  <aside>
+    <div class="eyebrow">MAKE YOURSELF AT HOME</div>
+    <h1>A little house.<br>Endless possibilities.</h1>
+    <p class="intro">Build it room by room. Decorate every corner.<br>Then step outside and design the yard.</p>
+    <label class="field">Your homes<select id="homes"></select></label>
+    <div class="row"><button id="new-home">＋ New home</button><button id="rename-home">Rename</button></div>
+    <div id="side-view"></div>
+  </aside>
+  <section class="workspace">
+    <div class="room-head">
+      <div><div class="eyebrow" id="view-eyebrow"></div><h2 id="room-title"></h2></div>
+      <div class="views" role="tablist" aria-label="Where you are">
+        <button role="tab" data-view="room">🛋️ Inside</button>
+        <button role="tab" data-view="house">🏠 Whole house</button>
+        <button role="tab" data-view="yard">🌳 Outside</button>
+      </div>
+    </div>
+    <div class="room-tools row">
+      <select id="room-pick" aria-label="Choose a room"></select><button id="rename-room">Rename room</button>
+      <span class="spacer"></span>
+      <button id="undo" title="Undo (Ctrl Z)">↶ Undo</button><button id="redo" title="Redo (Ctrl Shift Z)">↷ Redo</button><button id="grid" aria-pressed="false">Grid</button>
+    </div>
+    <div class="stage">
+      <div class="scene-col">
+        <div class="scene-wrap" id="scene-wrap"><svg id="scene" viewBox="80 0 840 640" aria-label="Your design. Select a piece and drag to rearrange." tabindex="0"></svg><div id="hint" role="status"></div></div>
+        <div id="selection" class="selection"></div>
+      </div>
+      <section class="shelf" aria-labelledby="shelf-title">
+        <div class="eyebrow" id="shelf-eyebrow">THE SHELF</div>
+        <h3 id="shelf-title"></h3>
+        <div id="categories"></div>
+        <div id="pieces"></div>
+      </section>
+    </div>
+    <footer id="tips"></footer>
+  </section>
+</main>
+<dialog id="name-dialog"><form method="dialog"><h2 id="dialog-title">Name your room</h2><input aria-label="Name" id="room-name" maxlength="40" required autocomplete="off"><div class="row end"><button value="cancel" formnovalidate>Cancel</button><button value="save" class="primary">Save</button></div></form></dialog>
+<dialog id="art-dialog" class="art-dialog"><form method="dialog">
+  <div class="art-head"><div><div class="eyebrow">YOUR ART</div><h2>Paint a picture for your wall</h2></div><button value="cancel" formnovalidate aria-label="Close">✕</button></div>
+  <div class="art-layout">
+    <div class="canvas-frame"><canvas id="art-canvas" width="516" height="300" aria-label="Your painting. Draw here."></canvas></div>
+    <div class="art-tools">
+      <div class="tool-label">Tools</div><div class="tool-row" id="art-tools"></div>
+      <div class="tool-label">Size</div><div class="tool-row sizes" id="art-sizes"></div>
+      <div class="tool-label">Colors</div><div class="paints" id="art-colors"></div>
+      <div class="tool-row"><button type="button" data-art="bg">🪣 Fill background</button><button type="button" data-art="undo">↶ Undo</button><button type="button" data-art="clear">Clear</button></div>
+    </div>
+  </div>
+  <div class="row end"><button value="remove" formnovalidate>Take it down</button><button value="cancel" formnovalidate>Cancel</button><button value="hang" class="primary">🖼️ Hang it on the wall</button></div>
+</form></dialog>
+<script src="data.js?v=30"></script>
+<script src="art.js?v=30"></script>
+<script src="studio.js?v=30"></script>
+</body>
+</html>

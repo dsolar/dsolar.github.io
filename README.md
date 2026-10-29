@@ -34,6 +34,10 @@ dsolar.github.io/
   sunday-strategist/          Sunday Strategist: a football coaching game (diagnose the defense, set protection, call the play)
   paint-the-corners/          Paint the Corners: index.html (layout, styles, UI) and engine.js
                               (pitches, hitters, at-bat math). Plain files, edit directly.
+  wild-bloom-isles/           Wild Bloom Isles, Charlotte's design studio: index.html (layout), studio.css, data.js
+                              (collections, paints, room types and every piece; edit freely), art.js (all the drawing)
+                              and studio.js (saving, the three views and every control). Plain files, edit directly.
+                              Saves live in each browser; old single-room saves move into the first house on their own.
   guess-the-pick/             Guess the Pick: index.html (layout, styles), app.js (screens, guess box, saved progress),
                               engine.js (daily ten, scoring, name matching), data.js (every pick) and names.js (every
                               player since 1980, for the guess box); data.js and names.js are generated, don't edit

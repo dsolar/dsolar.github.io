@@ -255,8 +255,8 @@ window.PROJECTS = [
     external: false,
     action: "Open the design studio",
     question: "What would a home that is entirely yours look like?",
-    summary: "Charlotte’s game, designed by Charlotte and built with her dad. Create illustrated rooms, mix six collections from Sakura to Art Deco, and arrange every piece. A home-design studio with everything unlocked.",
+    summary: "Charlotte’s game, designed by Charlotte and built with her dad. Build a whole house room by room, from a kitchen to a beauty parlor, decorate every corner with wallpaper, paint and her own art, then step outside to design the yard. Cow comes along.",
     stack: ["JavaScript", "SVG"],
-    cover: { image: "assets/covers/wild-bloom-isles.jpg", bg: "#171B35", band: "#B23A57" }
+    cover: { image: "assets/covers/wild-bloom-isles-studio.jpg", bg: "#F4F1E8", band: "#B8788B" }
   }
 ];

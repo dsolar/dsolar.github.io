@@ -1,131 +1,313 @@
 'use strict';
-const STYLES=[
-{id:'sakura',name:'Sakura House',era:'Japanese inspired',wall:'#f4e7dc',floor:'#d9bd92',wood:'#976d54',fabric:'#d9a5b5',accent:'#829a7b',trim:'#f8edd4',story:'Quiet timber, blossom pink, paper lanterns. A gentle place to begin.'},
-{id:'victorian',name:'Rose Manor',era:'Victorian inspired',wall:'#ccd1ba',floor:'#956e51',wood:'#604936',fabric:'#9b6079',accent:'#c5a465',trim:'#eee0b9',story:'Tufted upholstery, carved posts and deep rose. A little storybook grandeur.'},
-{id:'deco',name:'Golden Hour',era:'1920s Art Deco',wall:'#426761',floor:'#c9b89c',wood:'#263e3b',fabric:'#4c8580',accent:'#d5ae58',trim:'#eedeb1',story:'Stepped silhouettes, jewel tones and brass details. Dress the room for a golden evening.'},
-{id:'mid',name:'Sunday Modern',era:'1950s–60s',wall:'#e9ddc4',floor:'#bc956d',wood:'#875438',fabric:'#bd714e',accent:'#b6af65',trim:'#f5e6c5',story:'Long low furniture, warm walnut and optimistic color. Put a record on.'},
-{id:'boho',name:'Sunwoven',era:'1970s bohemian',wall:'#ecd4b9',floor:'#c5a77e',wood:'#af7d4f',fabric:'#d49163',accent:'#7c956a',trim:'#f7e5c1',story:'Woven details, terracotta and leafy corners. A sunlit room with a collected soul.'},
-{id:'nordic',name:'Cloud & Oak',era:'Contemporary Nordic',wall:'#e6ebe5',floor:'#d9cbb3',wood:'#b9a17c',fabric:'#c7d0ca',accent:'#859bad',trim:'#fff6e6',story:'Pale oak, soft cushions and thoughtful simplicity. Leave space to breathe.'}
-];
-const TYPES={sofa:{name:'Sofa',cat:'Seating',w:3,d:1.5},chair:{name:'Armchair',cat:'Seating',w:1.5,d:1.5},table:{name:'Coffee table',cat:'Tables',w:2,d:1.25},console:{name:'Sideboard',cat:'Storage',w:2.5,d:1},bed:{name:'Bed',cat:'Bedroom',w:2.5,d:3.5},rug:{name:'Woven rug',cat:'Decor',w:3.5,d:3},lamp:{name:'Floor lamp',cat:'Decor',w:.75,d:.75},plant:{name:'Leafy planter',cat:'Decor',w:.75,d:.75}};
-const $=id=>document.getElementById(id), esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const clone=o=>JSON.parse(JSON.stringify(o)), key='wild-bloom-studio-v1';
-let nextId=()=>globalThis.crypto?.randomUUID?.()||String(Date.now()+Math.random());
-function makeItem(type,style,x,y){return {id:nextId(),type,style,x,y,rot:0};}
-function fresh(name='Blossom sitting room',style='sakura'){return {id:nextId(),name,wall:style,floor:style,light:'day',items:[makeItem('rug',style,2,2.5),makeItem('sofa',style,2,.5),makeItem('table',style,2.5,3),makeItem('chair',style,.25,3),makeItem('console',style,5,.25),makeItem('plant',style,6.75,1.5),makeItem('lamp',style,5.75,2.25)]};}
-let state={rooms:[fresh()],active:0};try{let s=JSON.parse(localStorage.getItem(key));if(s&&validState(s))state=s;}catch{}
-let ghost=null;
-let style='sakura',category='All',selected=null,pending=null,grid=false,undo=[],redo=[],drag=null;
-const room=()=>state.rooms[state.active], palette=id=>STYLES.find(s=>s.id===id)||STYLES[0];
-function validState(s){return s&&Array.isArray(s.rooms)&&s.rooms.length>0&&s.rooms.length<=30&&Number.isInteger(s.active)&&s.active>=0&&s.active<s.rooms.length&&s.rooms.every(r=>typeof r.name==='string'&&r.name.length<=80&&STYLES.some(p=>p.id===r.wall)&&STYLES.some(p=>p.id===r.floor)&&['day','golden','night'].includes(r.light)&&Array.isArray(r.items)&&r.items.length<=200&&r.items.every(i=>Object.hasOwn(TYPES,i.type)&&STYLES.some(p=>p.id===i.style)&&Number.isFinite(i.x)&&Number.isFinite(i.y)&&i.x>=0&&i.y>=0&&i.x<=8&&i.y<=8&&[0,1].includes(i.rot)&&typeof i.id==='string'&&(!i.fabric||/^#[0-9a-fA-F]{6}$/.test(i.fabric))&&i.x+dims(i)[0]<=8&&i.y+dims(i)[1]<=8));}
-function save(){try{localStorage.setItem(key,JSON.stringify(state));$('saved').textContent='Saved on this device';}catch{$('saved').textContent='Storage full. Export your design.';}}
-function checkpoint(){undo.push(JSON.stringify(state));if(undo.length>60)undo.shift();redo=[];}
+// Wild Bloom Isles: the studio. State, saving, the three views (inside, whole house, outside) and every control.
+const $=id=>document.getElementById(id),clone=o=>JSON.parse(JSON.stringify(o));
+const KEY='wild-bloom-house-v2',OLD_KEY='wild-bloom-studio-v1',HEX=/^#[0-9a-fA-F]{6}$/,ART_RE=/^data:image\/png;base64,[A-Za-z0-9+/=]+$/;
+const MAX_HOMES=10,MAX_ROOMS=16,MAX_ITEMS=200,MAX_YARD=300,MIN_SIZE=3,MAX_SIZE=12;
+const uid=()=>globalThis.crypto?.randomUUID?.()||String(Date.now())+Math.random().toString(36).slice(2);
+const VIEWS={room:'Inside',house:'Whole house',yard:'Outside'};
+
+let lastTap={},state,style='sakura',category='room',selected=null,pending=null,ghost=null,grid=false,undo=[],redo=[],drag=null,frozen=null,flash=null,flashTimer=0,shelfKey='',idea='';
+
+// ---------- making things ----------
+function makeItem(type,st,x,y,rot=0){return {id:uid(),type,style:st,x,y,rot};}
+function makeRoom(type,name,st,w,d,withPieces=true){let T=ROOM_TYPES[type];let r={id:uid(),name:name||T.name,type,w:w||T.w,d:d||T.d,px:0,py:0,wall:st,floor:st,light:'day',items:[]};
+ if(withPieces)for(let [t,x,y,rot] of T.start){let i=makeItem(t,st,x,y,rot?1:0);if(fitsIn(i,r.items,{x0:0,y0:0,x1:r.w,y1:r.d},[]))r.items.push(i);}
+ if(type==='living'&&!name)r.name='Blossom sitting room';return r;}
+function freshHome(name='My house',st='sakura'){let r=makeRoom('living',st==='sakura'?'Blossom sitting room':'Living room',st);
+ let h={id:uid(),name,rooms:[r],current:0,yard:{items:[]},ext:{siding:'#f3e6d4',roof:'#b8788b',door:'#4c8580',trim:'#fffaf0',grass:'#a9cf8e',yard:8,light:'day'}};
+ for(let [t,x,y] of [['path',3.5,8.8],['path',3.5,10.1],['path',3.5,11.4],['flowerbed',5.2,8.4],['flowerbed',.8,8.4],['blossomtree',10,9.5],['tree',-4,2],['bush',9,3],['mailbox',5.2,12.3]]){let i=makeItem(t,st,x,y);if(fitsIn(i,h.yard.items,yardBounds(h),blocksOf(h)))h.yard.items.push(i);}
+ return h;}
+function uniqueName(base,taken){if(!taken.includes(base))return base;for(let k=2;;k++)if(!taken.includes(base+' '+k))return base+' '+k;}
+
+// ---------- checking saved data ----------
+const num=(n,lo,hi)=>Number.isFinite(n)&&n>=lo&&n<=hi;
+function cleanItem(i,where){if(!i||!Object.hasOwn(TYPES,i.type))return null;let t=TYPES[i.type];if(where==='in'&&t.where==='out')return null;if(where==='out'&&t.where==='in')return null;
+ if(!num(i.x,-200,200)||!num(i.y,-200,200))return null;let o={id:typeof i.id==='string'&&i.id.length<80?i.id:uid(),type:i.type,style:STYLES.some(s=>s.id===i.style)?i.style:'sakura',x:i.x,y:i.y,rot:i.rot?1:0};if(HEX.test(i.fabric||''))o.fabric=i.fabric;return o;}
+function cleanRoom(r){if(!r||typeof r.name!=='string')return null;let o={id:typeof r.id==='string'?r.id:uid(),name:r.name.slice(0,40)||'Room',type:Object.hasOwn(ROOM_TYPES,r.type)?r.type:'living',
+ w:Number.isInteger(r.w)&&num(r.w,MIN_SIZE,MAX_SIZE)?r.w:8,d:Number.isInteger(r.d)&&num(r.d,MIN_SIZE,MAX_SIZE)?r.d:8,px:Number.isInteger(r.px)&&num(r.px,0,200)?r.px:0,py:Number.isInteger(r.py)&&num(r.py,0,200)?r.py:0,
+ wall:STYLES.some(s=>s.id===r.wall)?r.wall:'sakura',floor:STYLES.some(s=>s.id===r.floor)?r.floor:'sakura',light:['day','golden','night'].includes(r.light)?r.light:'day',items:[]};
+ for(let k of ['wallPaint','floorPaint','paperInk','artBg'])if(HEX.test(r[k]||''))o[k]=r[k];
+ if(WALLPAPERS.some(p=>p[0]===r.paper))o.paper=r.paper;if(FLOORS.some(p=>p[0]===r.floorPattern))o.floorPattern=r.floorPattern;
+ if(typeof r.art==='string'&&r.art.length<700000&&ART_RE.test(r.art))o.art=r.art;
+ for(let i of (Array.isArray(r.items)?r.items:[]).slice(0,MAX_ITEMS)){let c=cleanItem(i,'in');if(c&&fitsIn(c,o.items,{x0:0,y0:0,x1:o.w,y1:o.d},[]))o.items.push(c);}
+ return o;}
+function cleanHome(h){if(!h||!Array.isArray(h.rooms))return null;let rooms=[];for(let r of h.rooms.slice(0,MAX_ROOMS)){let c=cleanRoom(r);if(c&&!rooms.some(q=>overlap(c.px,c.py,c.w,c.d,q.px,q.py,q.w,q.d)))rooms.push(c);}if(!rooms.length)return null;
+ let e=h.ext||{},o={id:typeof h.id==='string'?h.id:uid(),name:typeof h.name==='string'&&h.name.trim()?h.name.slice(0,40):'My house',rooms,current:Number.isInteger(h.current)&&h.current>=0&&h.current<rooms.length?h.current:0,yard:{items:[]},
+ ext:{siding:HEX.test(e.siding||'')?e.siding:'#f3e6d4',roof:HEX.test(e.roof||'')?e.roof:'#b8788b',door:HEX.test(e.door||'')?e.door:'#4c8580',trim:HEX.test(e.trim||'')?e.trim:'#fffaf0',grass:HEX.test(e.grass||'')?e.grass:'#a9cf8e',yard:[5,8,11].includes(e.yard)?e.yard:8,light:['day','golden','night'].includes(e.light)?e.light:'day'}};
+ for(let i of (Array.isArray(h.yard?.items)?h.yard.items:[]).slice(0,MAX_YARD)){let c=cleanItem(i,'out');if(c)o.yard.items.push(c);}
+ return o;}
+function cleanState(s){if(!s||!Array.isArray(s.homes))return null;let homes=s.homes.slice(0,MAX_HOMES).map(cleanHome).filter(Boolean);if(!homes.length)return null;
+ return {v:2,homes,active:Number.isInteger(s.active)&&s.active>=0&&s.active<homes.length?s.active:0,view:Object.hasOwn(VIEWS,s.view)?s.view:'room'};}
+// Rooms saved before houses existed become the first house (or houses), side by side.
+function migrateV1(old){if(!old||!Array.isArray(old.rooms)||!old.rooms.length)return null;let homes=[];
+ for(let k=0;k<old.rooms.length;k+=MAX_ROOMS){let rooms=old.rooms.slice(k,k+MAX_ROOMS).map((r,j)=>({...r,type:(r.items||[]).some(i=>i.type==='bed')?'bedroom':'living',w:8,d:8,px:(j%3)*8,py:Math.floor(j/3)*8}));
+  let h=cleanHome({name:homes.length?'My house '+(homes.length+1):'My house',rooms});if(!h)continue;let starter=freshHome('x');h.yard=starter.yard;h.yard.items=h.yard.items.filter(i=>fitsIn(i,[],yardBounds(h),blocksOf(h)));
+  if(homes.length===0&&Number.isInteger(old.active)&&old.active<MAX_ROOMS&&old.active<h.rooms.length)h.current=old.active;homes.push(h);}
+ return homes.length?{v:2,homes,active:0,view:'room'}:null;}
+function load(){try{let s=cleanState(JSON.parse(localStorage.getItem(KEY)));if(s)return s;}catch{}try{let s=migrateV1(JSON.parse(localStorage.getItem(OLD_KEY)));if(s)return s;}catch{}return {v:2,homes:[freshHome()],active:0,view:'room'};}
+
+// ---------- where things can go ----------
+function overlap(ax,ay,aw,ad,bx,by,bw,bd,e=.04){return ax<bx+bw-e&&ax+aw>bx+e&&ay<by+bd-e&&ay+ad>by+e;}
+function blocksOf(h){return h.rooms.map(r=>({x:r.px,y:r.py,w:r.w,d:r.d}));}
+function fitsIn(i,items,b,blocks){let [w,d]=dims(i);if(i.x<b.x0-1e-9||i.y<b.y0-1e-9||i.x+w>b.x1+1e-9||i.y+d>b.y1+1e-9)return false;
+ if(blocks.some(k=>overlap(i.x,i.y,w,d,k.x,k.y,k.w,k.d)))return false;if(TYPES[i.type].flat)return true;
+ return !items.some(j=>{if(j.id===i.id||TYPES[j.type].flat)return false;let [a,c]=dims(j);return overlap(i.x,i.y,w,d,j.x,j.y,a,c);});}
+const home=()=>state.homes[state.active],room=()=>home().rooms[home().current],view=()=>state.view;
+function space(){let h=home();if(view()==='yard'){let b=frozen?.yard||yardPlaceBounds(h);return {items:h.yard.items,b,blocks:blocksOf(h),max:MAX_YARD};}let r=room();return {items:r.items,b:{x0:0,y0:0,x1:r.w,y1:r.d},blocks:[],max:MAX_ITEMS};}
+// You can place things a little past the current edge of the yard; the yard grows to hold them.
+function yardPlaceBounds(h){let b=houseBounds(h),m=(h.ext.yard||8)+2;return {x0:b.x0-m,y0:b.y0-m,x1:b.x1+m,y1:b.y1+m};}
+const fits=(i,sp=space())=>fitsIn(i,sp.items,sp.b,sp.blocks);
+function roomFree(h,k,px,py,w,d){return px>=0&&py>=0&&!h.rooms.some((q,j)=>j!==k&&overlap(px,py,w,d,q.px,q.py,q.w,q.d,0));}
+// Keep the floor plan anchored at the top corner, moving the yard with it.
+function normalize(h){let b=houseBounds(h),dx=-b.x0,dy=-b.y0;if(!dx&&!dy)return;for(let r of h.rooms){r.px+=dx;r.py+=dy;}for(let i of h.yard.items){i.x+=dx;i.y+=dy;}}
+
+// ---------- saving and undo ----------
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));$('saved').textContent='Saved on this device';}catch{$('saved').textContent='Storage is full. Export your design to keep it.';}}
+function checkpoint(){undo.push(JSON.stringify(state));if(undo.length>40)undo.shift();redo=[];}
 function change(fn){checkpoint();fn();save();render();}
 function history(from,to){if(!from.length)return;to.push(JSON.stringify(state));state=JSON.parse(from.pop());selected=null;pending=null;save();render();}
-function dims(i){let t=TYPES[i.type];return i.rot?[t.d,t.w]:[t.w,t.d];}
-function fits(i,items=room().items){let [w,d]=dims(i);if(i.x<0||i.y<0||i.x+w>8||i.y+d>8)return false;return i.type==='rug'||!items.some(j=>{if(j.id===i.id||j.type==='rug')return false;let [a,b]=dims(j);return i.x<j.x+a-.04&&i.x+w>j.x+.04&&i.y<j.y+b-.04&&i.y+d>j.y+.04;});}
-function P(x,y,z=0){return [500+(x-y)*42,220+(x+y)*22-z];}
-function poly(points,fill,stroke='#6e665338',extra=''){return `<polygon points="${points.map(p=>p.join(',')).join(' ')}" fill="${fill}" stroke="${stroke}" ${extra.includes("stroke-width")?"":"stroke-width=\"1\""} stroke-linejoin="round" ${extra}/>`;}
-function line(a,b,color,width=1){return `<path d="M${a.join(',')}L${b.join(',')}" fill="none" stroke="${color}" stroke-width="${width}"/>`;}
-function tint(c,n){return '#'+c.slice(1).match(/../g).map(h=>Math.max(0,Math.min(255,parseInt(h,16)+n)).toString(16).padStart(2,'0')).join('');}
-function rounded(points,fill,stroke='#6e665350',radius=6){
- const near=(a,b)=>{let d=Math.hypot(b[0]-a[0],b[1]-a[1]),t=Math.min(.35,radius/(d||1));return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];};
- let path='';for(let j=0;j<points.length;j++){let v=points[j],a=near(v,points[(j+points.length-1)%points.length]),b=near(v,points[(j+1)%points.length]);path+=(j?'L':'M')+a+'Q'+v+' '+b;}return `<path d="${path}Z" fill="${fill}" stroke="${stroke}" stroke-width="1"/>`;
-}
-function blossom(p,r,color){let out='';for(let a=0;a<5;a++){let angle=a*Math.PI*2/5, x=p[0]+Math.cos(angle)*r*.6,y=p[1]+Math.sin(angle)*r*.6;out+=`<ellipse cx="${x}" cy="${y}" rx="${r*.63}" ry="${r*.4}" transform="rotate(${a*72} ${x} ${y})" fill="${color}"/>`;}return out+`<circle cx="${p[0]}" cy="${p[1]}" r="${r*.18}" fill="#ddbd78"/>`;}
-function furniture(i,selection=false){let s={...palette(i.style),...(i.fabric?{fabric:i.fabric}:{})},t=TYPES[i.type],out='',w=t.w,d=t.d;
-const point=(x,y,z=0)=>i.rot?P(i.x+y,i.y+w-x,z):P(i.x+x,i.y+y,z);
-const box=(x,y,a,b,z,h,c)=>{out+=poly([point(x+a,y,z),point(x+a,y+b,z),point(x+a,y+b,z+h),point(x+a,y,z+h)],tint(c,-24));out+=poly([point(x,y+b,z),point(x+a,y+b,z),point(x+a,y+b,z+h),point(x,y+b,z+h)],tint(c,-10));out+=poly([point(x,y,z+h),point(x+a,y,z+h),point(x+a,y+b,z+h),point(x,y+b,z+h)],tint(c,14));};
-const soft=(x,y,a,b,z,h,c,rad=6)=>{
- out+=rounded([point(x+a,y,z),point(x+a,y+b,z),point(x+a,y+b,z+h),point(x+a,y,z+h)],tint(c,-22),tint(c,-30),rad);
- out+=rounded([point(x,y+b,z),point(x+a,y+b,z),point(x+a,y+b,z+h),point(x,y+b,z+h)],tint(c,-8),tint(c,-28),rad);
- out+=rounded([point(x,y,z+h),point(x+a,y,z+h),point(x+a,y+b,z+h),point(x,y+b,z+h)],tint(c,14),tint(c,-10),rad);
-};
-const pillow=(x,y,z,c)=>{let p1=point(x,y,z),p2=point(x+.5,y,z+2),p3=point(x+.55,y,z+24),p4=point(x-.04,y,z+23);out+=rounded([p1,p2,p3,p4],c,tint(c,-25),8);out+=line(point(x+.07,y+.01,z+5),point(x+.43,y+.01,z+7),tint(c,24),1);};
-const dot=(x,y,z,r,c)=>{let p=point(x,y,z);out+=`<circle cx="${p[0]}" cy="${p[1]}" r="${r}" fill="${c}" stroke="#66564244"/>`;};
-const leg=(x,y,h=16)=>box(x,y,.12,.12,0,h,s.wood);
-let [a,b]=dims(i);out+=poly([P(i.x+.1,i.y+.1),P(i.x+a+.15,i.y+.1),P(i.x+a+.15,i.y+b+.15),P(i.x+.1,i.y+b+.15)],'#44443813','none');
-if(i.type==='rug'){box(0,0,w,d,0,2,s.fabric);out+=poly([point(.15,.15,3),point(w-.15,.15,3),point(w-.15,d-.15,3),point(.15,d-.15,3)],'none',s.trim,'stroke-width="3"');for(let k=.3;k<w;k+=.3){out+=line(point(k,0,3),point(k,-.12,3),s.trim,2);out+=line(point(k,d,3),point(k,d+.12,3),s.trim,2);}for(let k=.6;k<w;k+=.65){out+=poly([point(k,1,3),point(k+.25,1.5,3),point(k,2,3),point(k-.25,1.5,3)],s.accent);}}
-if(i.type==='sofa'||i.type==='chair'){
- let low=s.id==='sakura',h=low?10:19,bh=s.id==='victorian'?55:s.id==='deco'?48:40;
- leg(.15,.15,h);leg(w-.25,.15,h);leg(.15,d-.25,h);leg(w-.25,d-.25,h);soft(0,0,w,d,h,11,s.wood,3);
- soft(.06,0,w-.12,.32,h+9,bh,s.fabric,12);
- if(s.id==='victorian'){
-  for(let x=.35;x<w-.15;x+=.35)for(let z=h+25;z<h+bh;z+=13){out+=line(point(x-.17,.33,z-6),point(x+.17,.33,z+6),tint(s.fabric,-23),.8);out+=line(point(x+.17,.33,z-6),point(x-.17,.33,z+6),tint(s.fabric,-23),.8);dot(x,.34,z,1.7,s.accent);}
- }
- if(s.id==='deco')for(let x=.25;x<w-.1;x+=.25)out+=line(point(x,.33,h+19),point(x,.33,h+bh+3),s.accent,1.2);
- if(s.id==='boho')for(let x=.2;x<w;x+=.14)out+=line(point(x,.33,h+15),point(x,.33,h+bh),s.trim,.7);
- for(let x=.29;x<w-.29;x+=.81)soft(x,.35,Math.min(.77,w-.29-x),d-.42,h+12,14,s.fabric,7);
- pillow(.4,.48,h+24,s.accent);if(w>2)pillow(w-.95,.46,h+25,s.trim);
- soft(0,.12,.25,d-.12,h+9,s.id==='victorian'?34:27,s.fabric,9);soft(w-.25,.12,.25,d-.12,h+9,s.id==='victorian'?34:27,s.fabric,9);
- if(s.id==='sakura'||s.id==='mid')for(let y=.2;y<d;y+=.22){out+=line(point(w,.0+y,h+12),point(w,.0+y,h+31),s.wood,2);}
-}
-if(i.type==='table'){let h=s.id==='sakura'?18:30;leg(.15,.15,h);leg(w-.25,.15,h);leg(.15,d-.25,h);leg(w-.25,d-.25,h);soft(0,0,w,d,h,6,i.fabric||(s.id==='deco'?s.trim:s.wood),s.id==='mid'||s.id==='nordic'?22:7);box(.35,.3,.55,.5,h+6,4,s.accent);box(.4,.32,.55,.5,h+10,3,s.trim);dot(1.45,.65,h+10,7,s.fabric);dot(1.45,.65,h+13,5,s.trim);}
-if(i.type==='console'){let h=s.id==='mid'?42:60;leg(.1,.1,14);leg(w-.2,.1,14);leg(.1,d-.2,14);leg(w-.2,d-.2,14);box(0,0,w,d,14,h,s.wood);box(-.05,-.03,w+.1,d+.06,h+14,4,s.id==='deco'?s.trim:s.wood);for(let x=.1;x<w-.1;x+=.8){box(x,d-.025,.7,.04,20,h-10,i.fabric||(s.id==='boho'?s.trim:s.wood));dot(x+.35,d+.035,h/2+15,2,s.accent);}box(.3,.2,.6,.4,h+18,5,s.fabric);box(.35,.2,.6,.4,h+23,4,s.trim);dot(1.9,.5,h+30,9,s.accent);}
-if(i.type==='bed'){leg(.1,.1);leg(w-.2,.1);leg(.1,d-.2);leg(w-.2,d-.2);box(0,0,w,d,14,12,s.wood);box(0,0,w,.2,22,65,s.wood);soft(.1,.25,w-.2,d-.35,26,14,s.trim,8);soft(.1,1,w-.2,d-1.1,40,6,s.fabric,6);soft(.25,.4,.85,.6,40,9,s.trim,9);soft(1.4,.4,.85,.6,40,9,s.trim,9);box(.1,d-.7,w-.2,.45,46,2,s.accent);if(s.id==='victorian'){for(let x of [0,w-.12])for(let y of [0,d-.12]){box(x,y,.12,.12,0,140,s.wood);dot(x+.06,y+.06,143,4,s.accent);}box(0,0,w,.15,138,5,s.wood);box(0,0,.15,d,138,5,s.wood);box(w-.15,0,.15,d,138,5,s.wood);}}
-if(i.type==='lamp'){
- let p=point(.375,.375,0);out+=`<ellipse cx="${p[0]}" cy="${p[1]}" rx="16" ry="7" fill="${s.wood}"/>`;
- out+=line(point(.375,.375,3),point(.375,.375,93),s.accent,3);
- let c=point(.375,.375,88);
- if(s.id==='sakura'||s.id==='boho'){
- out+=`<ellipse cx="${c[0]}" cy="${c[1]}" rx="21" ry="27" fill="${(i.fabric||s.trim)}" stroke="${s.wood}" stroke-width="1.2"/>`;
- for(let y=-18;y<=18;y+=6){let rx=21*Math.sqrt(1-y*y/729);out+=`<path d="M${c[0]-rx},${c[1]+y}q${rx},6 ${rx*2},0" fill="none" stroke="${s.wood}" stroke-opacity=".4" stroke-width=".8"/>`;}
- }else{
- out+=rounded([[c[0]-14,c[1]-22],[c[0]+14,c[1]-22],[c[0]+24,c[1]+13],[c[0]-24,c[1]+13]],(i.fabric||s.trim),s.wood,3);
- out+=`<ellipse cx="${c[0]}" cy="${c[1]+13}" rx="24" ry="5" fill="${tint((i.fabric||s.trim),-18)}"/>`;
- if(s.id==='deco')for(let k=-12;k<=12;k+=6)out+=line([c[0]+k,c[1]-19],[c[0]+k*1.5,c[1]+11],s.accent,1);
- }
-}
-if(i.type==='plant'){
- let p=point(.38,.38,0);out+=`<path d="M${p[0]-15},${p[1]-24}q15,-7 30,0l-4,22q-11,8 -22,0Z" fill="${s.fabric}" stroke="${tint(s.fabric,-28)}"/><ellipse cx="${p[0]}" cy="${p[1]-24}" rx="15" ry="5" fill="${s.wood}"/>`;
- out+=line(point(.38,.38,20),point(.38,.38,88),s.wood,2);
- for(let k=0;k<9;k++){let p=point(.38,.38,31+k*6),side=k%2?1:-1,dy=k%3*4;out+=`<path d="M${p}q${side*11},-${22+dy} ${side*31},-${17+dy}q${side*4},22 ${-side*31},${17+dy}" fill="${k%2?s.accent:tint(s.accent,16)}" stroke="#627c5966"/>`;out+=line(p,[p[0]+side*23,p[1]-12-dy],tint(s.accent,-20),.7);}
-}
-if(selection){out+=poly([P(i.x,i.y,3),P(i.x+a,i.y,3),P(i.x+a,i.y+b,3),P(i.x,i.y+b,3)],'none','#b3668a','stroke-width="3" stroke-dasharray="5 3"');}
-return out;}
-function roomArt(){let r=room(),s=palette(r.wall),f=palette(r.floor),out='';out+=poly([P(0,0),P(8,0),P(8,8),P(0,8)],f.floor);out+=poly([P(0,8),P(8,8),P(8,8,-16),P(0,8,-16)],tint(f.wood,5));out+=poly([P(8,0),P(8,8),P(8,8,-16),P(8,0,-16)],f.wood);
-out+=poly([P(0,0),P(0,8),P(0,8,190),P(0,0,190)],tint(s.wall,-8));out+=poly([P(0,0),P(8,0),P(8,0,190),P(0,0,190)],s.wall);
-for(let k=0;k<=8;k+=.5)out+=line(P(k,0),P(k,8),tint(f.floor,-24),.7);for(let x=0;x<8;x+=.5)for(let y=(x%1)*2;y<8;y+=2)out+=line(P(x,y),P(x+.5,y),tint(f.floor,-18),.6);
-if(f.id==='deco')for(let x=0;x<8;x++)for(let y=0;y<8;y++)out+=poly([P(x,y,1),P(x+1,y,1),P(x+1,y+1,1),P(x,y+1,1)],(x+y)%2?f.wood:f.trim,'#8c897655');
-if(f.id==='sakura')for(let x=0;x<8;x+=2)for(let y=0;y<8;y+=4){out+=poly([P(x+.04,y+.04,1),P(x+1.96,y+.04,1),P(x+1.96,y+3.96,1),P(x+.04,y+3.96,1)],'#d5c49c',f.wood);for(let z=.15;z<2;z+=.14)out+=line(P(x+z,y+.1,2),P(x+z,y+3.9,2),'#9b9c7440',.5);}
-if(s.id==='deco')for(let x=.5;x<8;x+=.7){out+=poly([P(x-.28,0,100),P(x,0,156),P(x+.28,0,100)],'none',s.accent);}
-if(s.id==='victorian')for(let x=.3;x<8;x+=.65)for(let z=95;z<175;z+=22){out+=poly([P(x,0,z-7),P(x+.1,0,z),P(x,0,z+7),P(x-.1,0,z)],s.trim,'none');}
-for(let k=0;k<8;k+=1){out+=poly([P(k+.1,0,18),P(k+.9,0,18),P(k+.9,0,65),P(k+.1,0,65)],'none',s.trim);out+=poly([P(0,k+.1,18),P(0,k+.9,18),P(0,k+.9,65),P(0,k+.1,65)],'none',s.trim);}
-for(let z of [8,72,180,190]){out+=line(P(0,8,z),P(0,0,z),s.trim,z===8?8:4);out+=line(P(0,0,z),P(8,0,z),s.trim,z===8?8:4);}
-// A drawn window with blossom branches, fitted to the wall plane.
-out+=poly([P(0,1.4,85),P(0,4.5,85),P(0,4.5,165),P(0,1.4,165)],r.light==='night'?'#7483a4':'#d4e6d9',s.wood,'stroke-width="5"');out+=line(P(0,1.6,87),P(0,4.1,154),'#977764',3);for(let k=0;k<15;k++){let p=P(0,1.6+(k*.19)%2.7,100+(k*19)%60);out+=blossom(p,7+k%4,k%2?'#e9b8c5':'#f7d8dd');}
-for(let y of [2.4,3.5])out+=line(P(0,y,85),P(0,y,165),s.wood,3);out+=line(P(0,1.4,125),P(0,4.5,125),s.wood,3);
-// Framed geometric art on the opposite wall.
-out+=poly([P(4.5,0,100),P(6.5,0,100),P(6.5,0,155),P(4.5,0,155)],s.trim,s.wood,'stroke-width="4"');out+=poly([P(4.7,0,105),P(6.3,0,105),P(5.5,0,145)],s.fabric);out+=poly([P(5.6,0,105),P(6.3,0,105),P(6,0,132)],s.accent);
-if(r.light!=='night')out+=poly([P(.1,1.5,3),P(.1,4.4,3),P(4.8,6.2,3),P(4.8,3.3,3)],r.light==='golden'?'#ffe5a745':'#fffbe62d','none');
-if(grid)for(let k=0;k<=8;k+=.5){out+=line(P(k,0,2),P(k,8,2),'#fff8');out+=line(P(0,k,2),P(8,k,2),'#fff8');}
-let list=[...r.items].sort((a,b)=>(a.type==='rug'?-100: a.x+a.y+dims(a)[0]+dims(a)[1])-(b.type==='rug'?-100:b.x+b.y+dims(b)[0]+dims(b)[1]));
-for(let i of list)out+=`<g data-item="${esc(i.id)}" tabindex="0" role="button" aria-label="${palette(i.style).name} ${TYPES[i.type].name}">${furniture(i,i.id===selected)}</g>`;
-return `<g ${r.light==='golden'?'style="filter:sepia(.22) saturate(1.1)"':r.light==='night'?'style="filter:brightness(.75) saturate(.75)"':''}>${out}</g>`;}
-function renderScene(){
- let art=roomArt();if(pending&&ghost){let i={...pending,id:'preview',x:ghost.x,y:ghost.y,rot:pending.rot||0},[w,d]=dims(i),ok=fits(i);art+=`<g pointer-events="none" opacity=".66">${furniture(i)}${poly([P(i.x,i.y,4),P(i.x+w,i.y,4),P(i.x+w,i.y+d,4),P(i.x,i.y+d,4)],ok?'#79ab8733':'#d5777733',ok?'#477b58':'#b54444','stroke-width="3"')}</g>`;}$('scene').innerHTML=art;
-}
-function render(){let r=room();$('rooms').innerHTML=state.rooms.map((r,i)=>`<option value="${i}">${esc(r.name)}</option>`).join('');$('rooms').value=state.active;$('room-title').textContent=r.name;$('styles').innerHTML=STYLES.map(s=>`<button class="style ${s.id===style?'active':''}" data-style="${s.id}" aria-pressed="${s.id===style}"><span class="swatches">${[s.fabric,s.wood,s.accent].map(c=>`<i style="background:${c}"></i>`).join('')}</span>${s.name}<small>${s.era}</small></button>`).join('');$('story').textContent=palette(style).story;for(let field of ['wall','floor']){$(field).innerHTML=STYLES.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');$(field).value=r[field];}$('light').value=r.light;$('undo').disabled=!undo.length;$('redo').disabled=!redo.length;$('grid').setAttribute('aria-pressed',grid);$('collection-title').textContent=palette(style).name;$('categories').innerHTML=['All',...new Set(Object.values(TYPES).map(t=>t.cat))].map(c=>`<button data-cat="${c}" class="${c===category?'active':''}">${c}</button>`).join('');$('pieces').innerHTML=Object.entries(TYPES).filter(([k,t])=>category==='All'||t.cat===category).map(([type,t])=>`<button class="piece ${pending?.type===type?'pending':''}" data-type="${type}"><svg viewBox="330 50 340 330" aria-hidden="true">${furniture({type,style,x:0,y:0,rot:0})}</svg><strong>${t.name}</strong><small>${palette(style).name} · Place ＋</small></button>`).join('');renderScene();renderSelection();}
-function renderSelection(){let i=room().items.find(i=>i.id===selected);$('selection').innerHTML=i?`<strong>${palette(i.style).name} ${TYPES[i.type].name}</strong><button data-action="rotate">↻ Rotate</button><button data-action="duplicate">Duplicate</button><button data-action="remove">Remove</button><button data-action="done">Done</button><div class="fabric-options" role="group" aria-label="Piece color"><span>Color</span>${['#d9a5b5','#9b6079','#4c8580','#bd714e','#b6af65','#c7d0ca'].map(c=>`<button data-fabric="${c}" aria-label="${({'#d9a5b5':'Blossom','#9b6079':'Plum','#4c8580':'Jade','#bd714e':'Terracotta','#b6af65':'Olive','#c7d0ca':'Cloud'})[c]} color" aria-pressed="${(i.fabric||palette(i.style).fabric)===c}" style="background:${c}"></button>`).join('')}<button data-action="original">Reset color</button></div>`:pending?'<strong>Preview on the floor, then tap to place.</strong><button data-action="rotate">↻ Rotate</button><button data-action="cancel">Cancel</button>':'Choose a piece to move, rotate or duplicate it.';}
-function hint(s){$('hint').textContent=s;}
-function floorPoint(e){let p=$('scene').createSVGPoint();p.x=e.clientX;p.y=e.clientY;p=p.matrixTransform($('scene').getScreenCTM().inverse());let a=(p.x-500)/42,b=(p.y-220)/22;return {x:(a+b)/2,y:(b-a)/2};}
+
+// ---------- hints ----------
+function hint(msg,ms=3200){flash=msg;$('hint').textContent=msg;$('hint').classList.toggle('talk',/^🐮|^🐱/.test(msg));clearTimeout(flashTimer);flashTimer=setTimeout(()=>{flash=null;refreshHint();},ms);}
+function baseHint(){let v=view();if(pending?.room)return `Tap an open spot on the plan to add your ${ROOM_TYPES[pending.type].name.toLowerCase()}.`;
+ if(pending)return `Tap an open spot to place your ${TYPES[pending.type].name.toLowerCase()}.`;
+ if(v==='house')return selected!=null?'Drag the room to move it. Double-tap to go inside.':'Tap a room to move or resize it. Add rooms from the shelf.';
+ if(selected)return 'Drag it anywhere. Spin, copy or recolor it below.';
+ return v==='yard'?'Pick something from the shelf, then tap the yard to place it.':'Pick a piece from the shelf, then tap the floor to place it.';}
+function refreshHint(){if(flash)return;$('hint').textContent=baseHint();$('hint').classList.remove('talk');}
+function cowLine(i){let r=view()==='room'?room():null,pool=[...COW_LINES];
+ if(i.type==='cat')return '🐱 '+CAT_LINES[Math.floor(Math.random()*CAT_LINES.length)];
+ if(view()==='yard')pool.push('Moo! Grass for days. This is the best yard ever.','Can we get a pond? I would like to look at my reflection.','I could stand in this yard all day. I mean, I do.');
+ if(r){let byType={kitchen:'Is there a snack in that fridge?',bathroom:'A cow in the bathroom? Moo-ve over, I want a bubble bath.',beauty:'Can I get my hooves painted? Something sparkly.',game:'I call next on the arcade game.',closet:'Do you have a hat in my size?',studio:'Will you paint my portrait? I have a good side.',bedroom:'This bed looks very napable.'};if(byType[r.type])pool.push(byType[r.type],byType[r.type]);
+  if(!r.items.some(j=>['plant','flowers'].includes(j.type)))pool.push('Moo... a cow needs something green to look at.');if(r.light==='night')pool.push('The moon looks so pretty from here.');if(r.art)pool.push('Did you paint that picture? It is moo-tiful.');}
+ pool=pool.filter(Boolean);return '🐮 '+pool[Math.floor(Math.random()*pool.length)];}
+
+// ---------- drawing the scene ----------
+function fitBox(x0,y0,x1,y1,pad=30){return `${r1(x0-pad)} ${r1(y0-pad)} ${r1(x1-x0+pad*2)} ${r1(y1-y0+pad*2)}`;}
+function viewBoxFor(){let h=home(),v=view();
+ if(v==='room'){let r=room(),span=Math.max(r.w+r.d,12),cx=500+(r.w-r.d)*21,W=span*42+170,top=220-200,bottom=220+(r.w+r.d)*22+24,H=Math.max(bottom-top+40,W*.76),cy=(top+bottom)/2;return `${r1(cx-W/2)} ${r1(cy-H/2)} ${r1(W)} ${r1(H)}`;}
+ if(v==='house'){if(frozen?.house)return frozen.house;let b=houseBounds(h);return fitBox(P(b.x0-1.2,b.y1+1.2)[0],P(b.x0,b.y0)[1]-130,P(b.x1+1.2,b.y0-1.2)[0],P(b.x1+1.2,b.y1+1.2)[1],50);}
+ if(frozen?.yardBox)return frozen.yardBox;let b=yardBounds(h);return fitBox(P(b.x0,b.y1)[0],P(b.x0,b.y0)[1]-260,P(b.x1,b.y0)[0],P(b.x1,b.y1)[1]+20,30);}
+function ghostItem(){if(!pending||pending.room||!ghost)return '';let i={...pending,id:'preview',x:ghost.x,y:ghost.y,rot:pending.rot||0},[w,d]=dims(i),ok=fits(i);return `<g pointer-events="none" opacity=".66">${furniture(i)}${poly([P(i.x,i.y,4),P(i.x+w,i.y,4),P(i.x+w,i.y+d,4),P(i.x,i.y+d,4)],ok?'#79ab8733':'#d5777733',ok?'#477b58':'#b54444','stroke-width="3"')}</g>`;}
+function sceneArt(clean=false){let h=home(),v=view(),sel=clean?null:selected;
+ if(v==='room')return roomArt(room(),{selected:sel,grid:grid&&!clean,ghost:clean?null:ghostItem});
+ if(v==='yard')return yardArt(h,{selected:sel,grid:grid&&!clean,ghost:clean?null:ghostItem});
+ let g='';if(!clean&&pending?.room&&ghost){let ok=roomFree(h,-1,ghost.x,ghost.y,pending.w,pending.d),c=ok?'#477b58':'#b54444',p=[P(ghost.x,ghost.y,2),P(ghost.x+pending.w,ghost.y,2),P(ghost.x+pending.w,ghost.y+pending.d,2),P(ghost.x,ghost.y+pending.d,2)];g=`<g pointer-events="none">${poly(p,ok?'#79ab8740':'#d5777740',c,'stroke-width="3" stroke-dasharray="8 4"')}<text x="${P(ghost.x+pending.w/2,ghost.y+pending.d/2)[0]}" y="${P(ghost.x+pending.w/2,ghost.y+pending.d/2)[1]+5}" text-anchor="middle" font-family="Georgia" font-size="16" fill="${c}">${ROOM_TYPES[pending.type].icon} ${pending.w} × ${pending.d}</text></g>`;}
+ return houseArt(h,{selected:clean?null:selected,ghost:g});}
+function renderScene(){$('scene').setAttribute('viewBox',viewBoxFor());$('scene').innerHTML=sceneArt();let ext=home().ext,v=view();$('scene-wrap').className='scene-wrap view-'+v+(v==='yard'?' sky-'+ext.light:'');}
+
+// ---------- the side panel ----------
+function swatches(target,current,{reset=true,label=''}={}){return `<div class="paints" role="group" aria-label="${esc(label||'Colors')}">${PAINTS.map(([n,c])=>`<button class="paint" data-paint="${target}" data-color="${c}" style="--c:${c}" aria-label="${n}" title="${n}" aria-pressed="${current===c}"></button>`).join('')}<label class="paint any" title="Any color" style="--c:${current&&!PAINTS.some(p=>p[1]===current)?current:'#ffffff'}"><input type="color" data-paint="${target}" value="${current||'#ffffff'}" aria-label="Any color"></label>${reset?`<button class="mini" data-paint-reset="${target}">Reset</button>`:''}</div>`;}
+function collectionsHtml(){return `<div class="section-label">01 / COLLECTIONS</div><div id="styles">${STYLES.map(s=>`<button class="style ${s.id===style?'active':''}" data-style="${s.id}" aria-pressed="${s.id===style}"><span class="swatches">${[s.fabric,s.wood,s.accent].map(c=>`<i style="background:${c}"></i>`).join('')}</span>${s.name}<small>${s.era}</small></button>`).join('')}</div><div class="collection-story">${palette(style).story}</div>`;}
+function ideaHtml(n){return `<div class="section-label">${n} / NEED AN IDEA?</div><div class="idea">${idea?`<p>${esc(idea)}</p>`:''}<button data-act="idea">${idea?'Another idea':'Give me an idea'}</button></div>`;}
+function sel(id,opts,cur,label){return `<label class="field">${label}<select id="${id}" aria-label="${label}">${opts.map(([v,n])=>`<option value="${v}" ${v===cur?'selected':''}>${n}</option>`).join('')}</select></label>`;}
+function renderSide(){let v=view(),h=home(),out='';
+ if(v==='room'){let r=room(),wall=r.wallPaint||palette(r.wall).wall;
+  out+=collectionsHtml()+`<button class="wide" data-act="restyle">Make this whole room ${esc(palette(style).name)}</button>`;
+  out+=`<div class="section-label">02 / WALLS &amp; FLOORS</div>`+sel('wall',STYLES.map(s=>[s.id,s.name]),r.wall,'Walls')+swatches('wallPaint',r.wallPaint,{label:'Wall color'});
+  out+=sel('paper',WALLPAPERS,r.paper||'style','Wallpaper');if(!['style','plain'].includes(r.paper||'style'))out+=`<div class="sub">Pattern color</div>`+swatches('paperInk',r.paperInk||wallInk(r,wall),{label:'Pattern color'});
+  out+=sel('floor',STYLES.map(s=>[s.id,s.name]),r.floor,'Floor')+sel('floorPattern',FLOORS,r.floorPattern||'style','Floor pattern')+swatches('floorPaint',r.floorPaint,{label:'Floor color'});
+  out+=sel('light',[['day','Soft daylight'],['golden','Golden hour'],['night','Moonlit evening']],r.light,'Light');
+  out+=`<div class="section-label">03 / YOUR ART</div><p class="note">${r.art?'Your painting is hanging on the wall and on every easel in this room.':'Paint your own picture. It hangs on the wall and on any easel.'}</p><button class="wide primary" data-act="art">🎨 ${r.art?'Paint a new picture':'Paint wall art'}</button>`+ideaHtml('04');}
+ if(v==='house'){out+=`<div class="section-label">01 / YOUR ROOMS</div><div class="room-list">${h.rooms.map((r,k)=>`<button class="room-row ${k===h.current?'active':''}" data-enter="${k}"><span>${ROOM_TYPES[r.type].icon}</span><b>${esc(r.name)}</b><small>${r.w} × ${r.d}</small></button>`).join('')}</div><p class="note">Add more rooms from the shelf. Rooms can be any size from ${MIN_SIZE} to ${MAX_SIZE} squares on a side.</p>`+collectionsHtml().replace('01 /','02 /')+ideaHtml('03');}
+ if(v==='yard'){let e=h.ext;out+=`<div class="section-label">01 / THE HOUSE OUTSIDE</div><div class="sub">Walls</div>`+swatches('siding',e.siding,{reset:false,label:'House color'})+`<div class="sub">Roof</div>`+swatches('roof',e.roof,{reset:false,label:'Roof color'})+`<div class="sub">Front door and window boxes</div>`+swatches('door',e.door,{reset:false,label:'Door color'})+`<div class="sub">Window trim</div>`+swatches('trim',e.trim,{reset:false,label:'Trim color'})+`<div class="sub">Grass</div>`+swatches('grass',e.grass,{reset:false,label:'Grass color'});
+  out+=sel('yardsize',[['5','Cozy yard'],['8','Roomy yard'],['11','Huge yard']],String(e.yard),'Yard size')+sel('light',[['day','Sunny day'],['golden','Golden hour'],['night','Starry night']],e.light,'Light');
+  out+=collectionsHtml().replace('01 /','02 /')+ideaHtml('03');}
+ $('side-view').innerHTML=out;
+ $('homes').innerHTML=state.homes.map((x,k)=>`<option value="${k}">${esc(x.name)}</option>`).join('');$('homes').value=state.active;}
+function renderHead(){let v=view(),h=home();$('view-eyebrow').textContent=v==='room'?`INSIDE ${h.name.toUpperCase()}`:v==='house'?'THE WHOLE HOUSE':'THE GREAT OUTDOORS';
+ $('room-title').textContent=v==='room'?room().name:v==='house'?h.name:`Outside ${h.name}`;
+ for(let b of document.querySelectorAll('[data-view]')){b.setAttribute('aria-selected',b.dataset.view===v);b.classList.toggle('active',b.dataset.view===v);}
+ $('room-pick').hidden=v!=='room';$('rename-room').hidden=v!=='room';$('room-pick').innerHTML=h.rooms.map((r,k)=>`<option value="${k}">${ROOM_TYPES[r.type].icon} ${esc(r.name)}</option>`).join('');$('room-pick').value=h.current;
+ $('undo').disabled=!undo.length;$('redo').disabled=!redo.length;$('grid').setAttribute('aria-pressed',grid);$('grid').hidden=v==='house';
+ $('tips').textContent=v==='house'?'Drag rooms to arrange · Double-tap a room to go inside · Arrow keys move the selected room':'Drag to arrange · R to turn · Arrow keys to nudge · Delete to remove · Ctrl Z to undo · Everything saves on this device';}
+
+// ---------- the shelf ----------
+const thumbCache={};
+function thumb(type){let k=type+style;if(thumbCache[k])return thumbCache[k];ART_CTX={art:null,bg:'#fffaf0',night:false};let t=TYPES[type],l=P(0,t.d)[0]-8,r=P(t.w,0)[0]+8,top=P(0,0)[1]-t.h-6,bot=P(t.w,t.d)[1]+12,side=Math.max(r-l,bot-top),cx=(l+r)/2,cy=(top+bot)/2;
+ return thumbCache[k]=`<svg viewBox="${r1(cx-side/2)} ${r1(cy-side/2)} ${r1(side)} ${r1(side)}" aria-hidden="true">${furniture({type,style,x:0,y:0,rot:0})}</svg>`;}
+function roomThumb(type){let k='room-'+type+style;if(thumbCache[k])return thumbCache[k];let r=makeRoom(type,'',style);r.id='thumb';let l=P(0,r.d)[0],rr=P(r.w,0)[0],top=P(0,0)[1]-70,bot=P(r.w,r.d)[1]+8,side=Math.max(rr-l,bot-top)+10,cx=(l+rr)/2,cy=(top+bot)/2;
+ return thumbCache[k]=`<svg viewBox="${r1(cx-side/2)} ${r1(cy-side/2)} ${r1(side)} ${r1(side)}" aria-hidden="true">${roomArt(r,{simple:true})}</svg>`;}
+function renderShelf(){let v=view(),key=[v,style,category,pending?.type||'',view()==='room'?room().type:''].join('|');
+ if(v==='house'){$('shelf-eyebrow').textContent='ROOMS TO ADD';$('shelf-title').textContent='Build your house';$('categories').innerHTML='';
+  if(shelfKey!==key)$('pieces').innerHTML=Object.entries(ROOM_TYPES).map(([k,t])=>`<button class="piece room-card ${pending?.type===k?'pending':''}" data-room-type="${k}">${roomThumb(k)}<strong>${t.icon} ${t.name}</strong><small>${t.w} × ${t.d} · Add ＋</small></button>`).join('');shelfKey=key;return;}
+ let where=v==='yard'?'out':'in',cats=v==='yard'?OUT_CATS:IN_CATS,chips=v==='room'?[['room','This room'],['All','All'],...cats.map(c=>[c,c])]:[['All','All'],...cats.map(c=>[c,c])];
+ if(!chips.some(c=>c[0]===category))category=chips[0][0];
+ $('shelf-eyebrow').textContent=v==='yard'?'FOR THE YARD':'THE SHELF';$('shelf-title').textContent=palette(style).name;
+ $('categories').innerHTML=chips.map(([c,n])=>`<button data-cat="${c}" class="${c===category?'active':''}">${n}</button>`).join('');
+ if(shelfKey===key)return;shelfKey=key;
+ let list=Object.entries(TYPES).filter(([k,t])=>(t.where===where||t.where==='both'));
+ if(category==='room'){let want=[...ROOM_TYPES[room().type].pieces,'cow','cat'];list=want.map(k=>[k,TYPES[k]]);}else if(category!=='All')list=list.filter(([k,t])=>t.cat===category);
+ $('pieces').innerHTML=list.map(([type,t])=>`<button class="piece ${pending?.type===type?'pending':''}" data-type="${type}">${thumb(type)}<strong>${t.name}</strong><small>Place ＋</small></button>`).join('');}
+
+// ---------- the bar under the scene ----------
+function sizer(label,axis,val){return `<span class="sizer"><span>${label}</span><button data-size="${axis}" data-delta="-1" aria-label="Smaller ${label}">−</button><b>${val}</b><button data-size="${axis}" data-delta="1" aria-label="Bigger ${label}">＋</button></span>`;}
+function renderSelection(){let v=view(),h=home(),out='';
+ if(pending?.room)out=`<strong>${ROOM_TYPES[pending.type].icon} New ${ROOM_TYPES[pending.type].name.toLowerCase()}</strong>${sizer('Width','w',pending.w)}${sizer('Depth','d',pending.d)}<button data-act="rotate">↻ Turn</button><button data-act="cancel">Cancel</button>`;
+ else if(v==='house'&&selected!=null&&h.rooms[selected]){let r=h.rooms[selected];out=`<strong>${ROOM_TYPES[r.type].icon} ${esc(r.name)}</strong><button class="primary" data-act="enter">Go inside →</button>${sizer('Width','w',r.w)}${sizer('Depth','d',r.d)}<label class="inline">Room type<select id="room-type">${Object.entries(ROOM_TYPES).map(([k,t])=>`<option value="${k}" ${k===r.type?'selected':''}>${t.icon} ${t.name}</option>`).join('')}</select></label><button data-act="rename-room">Rename</button><button data-act="remove-room">Remove</button><button data-act="done">Done</button>`;}
+ else if(pending)out=`<strong>Placing: ${TYPES[pending.type].name}</strong><button data-act="rotate">↻ Turn</button><button data-act="cancel">Cancel</button>`;
+ else if(v!=='house'&&selected){let i=space().items.find(i=>i.id===selected);if(i){out=`<strong>${TYPES[i.type].name}</strong><button data-act="rotate">↻ Turn</button><button data-act="duplicate">Copy</button><button data-act="remove">Remove</button>${['cow','cat'].includes(i.type)?'<button data-act="talk">💬 Say hi</button>':''}<button data-act="done">Done</button><div class="color-row"><span>Color</span>${swatches('fabric',i.fabric||'',{label:'Piece color'}).replace('data-paint-reset="fabric"','data-act="original"')}</div>`;}}
+ if(!out)out=`<span class="quiet">${v==='house'?`${h.rooms.length} ${h.rooms.length===1?'room':'rooms'} · Tap a room to arrange it, or pick a new one from the shelf.`:v==='yard'?'Tap anything in the yard to move it, turn it or give it a new color.':'Tap any piece in your room to move it, turn it or give it a new color.'}</span>`;
+ $('selection').innerHTML=out;}
+function render(){renderSide();renderHead();renderShelf();renderScene();renderSelection();refreshHint();}
+
+// ---------- pointer work ----------
+function floorPoint(e){let s=$('scene'),p=s.createSVGPoint();p.x=e.clientX;p.y=e.clientY;p=p.matrixTransform(s.getScreenCTM().inverse());let a=(p.x-500)/42,b=(p.y-220)/22;return {x:(a+b)/2,y:(b-a)/2};}
 const snap=n=>Math.round(n*4)/4;
-$('scene').addEventListener('pointerdown',e=>{let id=e.target.closest('[data-item]')?.dataset.item;if(pending){if(room().items.length>=200){hint('This room has 200 pieces. Start a new room to keep designing.');return;}let p=floorPoint(e),i=makeItem(pending.type,pending.style,snap(p.x),snap(p.y));i.rot=pending.rot||0;if(pending.fabric)i.fabric=pending.fabric;if(!fits(i)){hint('That spot is occupied or outside the room. Try an open floor space.');return;}change(()=>{room().items.push(i);selected=i.id;pending=null;});hint('Placed. Drag to arrange, or rotate below.');return;}if(id){selected=id;let i=room().items.find(i=>i.id===id);drag={id,start:clone(i),p:floorPoint(e),before:JSON.stringify(state),moved:false};$('scene').setPointerCapture(e.pointerId);renderScene();renderSelection();}else{selected=null;renderScene();renderSelection();}});
-$('scene').addEventListener('pointermove',e=>{if(pending){let p=floorPoint(e);ghost={x:snap(p.x),y:snap(p.y)};renderScene();return;}if(!drag)return;let p=floorPoint(e),i=room().items.find(i=>i.id===drag.id),candidate={...i,x:snap(drag.start.x+p.x-drag.p.x),y:snap(drag.start.y+p.y-drag.p.y)};if(fits(candidate)){i.x=candidate.x;i.y=candidate.y;drag.moved=true;renderScene();hint('Release to save this position.');}else hint('Keep this piece inside the room and clear of other furniture.');});
-function finishDrag(cancel=false){if(!drag)return;if(cancel)state=JSON.parse(drag.before);else if(drag.moved&&JSON.stringify(state)!==drag.before){undo.push(drag.before);redo=[];save();}drag=null;render();hint('Select a piece below, then tap an open space in your room.');}
-$('scene').addEventListener('pointerleave',()=>{if(pending){ghost=null;renderScene();}});
+function itemAt(p){if(!pending||pending.room)return null;let i={...pending,x:0,y:0,rot:pending.rot||0},[w,d]=dims(i);return {x:snap(p.x-w/2),y:snap(p.y-d/2)};}
+function freeze(){frozen={house:viewBoxFor(),yardBox:view()==='yard'?viewBoxFor():null,yard:view()==='yard'?yardPlaceBounds(home()):null};}
+$('scene').addEventListener('pointerdown',e=>{let v=view(),h=home();
+ if(v==='house'){
+  if(pending?.room){if(h.rooms.length>=MAX_ROOMS){hint(`A house can hold ${MAX_ROOMS} rooms. Start a new home to keep building.`);return;}let p=floorPoint(e),x=Math.round(p.x-pending.w/2),y=Math.round(p.y-pending.d/2);
+   if(h.rooms.some(q=>overlap(x,y,pending.w,pending.d,q.px,q.py,q.w,q.d,0))){hint('That spot overlaps another room. Try an open space.');return;}
+   change(()=>{let t=ROOM_TYPES[pending.type],r=makeRoom(pending.type,uniqueName(t.name,h.rooms.map(q=>q.name)),style,pending.w,pending.d);r.px=x;r.py=y;
+    if(x<0||y<0){let dx=Math.max(0,-x),dy=Math.max(0,-y);for(let q of h.rooms){q.px+=dx;q.py+=dy;}for(let i of h.yard.items){i.x+=dx;i.y+=dy;}r.px+=dx;r.py+=dy;}
+    h.rooms.push(r);normalize(h);selected=h.rooms.length-1;pending=null;ghost=null;});hint(`Your new ${ROOM_TYPES[h.rooms[selected].type].name.toLowerCase()} is ready. Double-tap it to go inside!`,4500);return;}
+  let k=e.target.closest('[data-room]')?.dataset.room;if(k!=null){k=Number(k);let now=Date.now();if(lastTap.k===k&&now-lastTap.t<420){lastTap={};enterRoom(k);return;}lastTap={k,t:now};selected=k;freeze();drag={room:k,start:{x:h.rooms[k].px,y:h.rooms[k].py},p:floorPoint(e),before:JSON.stringify(state),moved:false};$('scene').setPointerCapture(e.pointerId);renderScene();renderSelection();refreshHint();}
+  else{selected=null;renderScene();renderSelection();refreshHint();}return;}
+ let id=e.target.closest('[data-item]')?.dataset.item,sp=space();
+ if(pending){if(sp.items.length>=sp.max){hint(`That's ${sp.max} pieces, the most this space can hold.`);return;}let at=itemAt(floorPoint(e)),i=makeItem(pending.type,pending.style,at.x,at.y,pending.rot||0);if(pending.fabric)i.fabric=pending.fabric;
+  if(!fits(i)){hint(v==='yard'?'That spot is taken, or it is part of the house. Try open grass.':'That spot is taken or outside the room. Try an open floor space.');return;}
+  change(()=>{sp.items.push(i);selected=i.id;pending=null;ghost=null;});hint(['cow','cat'].includes(i.type)?cowLine(i):'Placed! Drag it to fine-tune, or turn it below.');return;}
+ if(id){selected=id;let i=sp.items.find(i=>i.id===id);if(v==='yard')freeze();drag={id,start:clone(i),p:floorPoint(e),before:JSON.stringify(state),moved:false};$('scene').setPointerCapture(e.pointerId);renderScene();renderSelection();refreshHint();}
+ else{selected=null;renderScene();renderSelection();refreshHint();}});
+$('scene').addEventListener('pointermove',e=>{let v=view();
+ if(pending&&!drag){let p=floorPoint(e);ghost=pending.room?{x:Math.round(p.x-pending.w/2),y:Math.round(p.y-pending.d/2)}:itemAt(p);renderScene();return;}
+ if(!drag)return;let p=floorPoint(e),h=home();
+ if(drag.room!=null){let r=h.rooms[drag.room],x=drag.start.x+Math.round(p.x-drag.p.x),y=drag.start.y+Math.round(p.y-drag.p.y);if((x!==r.px||y!==r.py)&&x>=-20&&y>=-20&&!h.rooms.some((q,j)=>j!==drag.room&&overlap(x,y,r.w,r.d,q.px,q.py,q.w,q.d,0))){r.px=x;r.py=y;drag.moved=true;renderScene();}return;}
+ let sp=space(),i=sp.items.find(i=>i.id===drag.id),c={...i,x:snap(drag.start.x+p.x-drag.p.x),y:snap(drag.start.y+p.y-drag.p.y)};
+ if(c.x===i.x&&c.y===i.y)return;if(fits(c,sp)){i.x=c.x;i.y=c.y;drag.moved=true;renderScene();}else if(!flash)hint(v==='yard'?'Keep it on the grass and off the house.':'Keep it inside the room and clear of other pieces.',1400);});
+function finishDrag(cancel=false){if(!drag)return;let d=drag;drag=null;
+ if(cancel)state=JSON.parse(d.before);else if(d.moved){if(d.room!=null)normalize(home());if(JSON.stringify(state)!==d.before){undo.push(d.before);if(undo.length>40)undo.shift();redo=[];save();}}
+ frozen=null;render();if(!d.moved&&d.id){let i=space().items.find(i=>i.id===d.id);if(i&&['cow','cat'].includes(i.type))hint(cowLine(i),5200);}}
 $('scene').addEventListener('pointerup',()=>finishDrag());$('scene').addEventListener('pointercancel',()=>finishDrag(true));
-function act(action){let i=room().items.find(i=>i.id===selected);if(action==='cancel'||action==='done'){pending=null;ghost=null;selected=null;render();return;}if(action==='rotate'&&pending){pending.rot=1-(pending.rot||0);renderScene();return;}if(!i)return;if(action==='original')change(()=>delete i.fabric);if(action==='remove')change(()=>{room().items=room().items.filter(j=>j.id!==selected);selected=null;});if(action==='rotate'){let c={...i,rot:1-i.rot};if(fits(c))change(()=>i.rot=c.rot);else hint('Move this piece into a larger open space before rotating.');}if(action==='duplicate'){pending={type:i.type,style:i.style,rot:i.rot,...(i.fabric?{fabric:i.fabric}:{})};ghost=null;selected=null;render();hint('Tap an open floor space for the copy.');}}
-$('selection').onclick=e=>{let color=e.target.closest('[data-fabric]')?.dataset.fabric;if(color){let i=room().items.find(i=>i.id===selected);if(i)change(()=>i.fabric=color);return;}let a=e.target.closest('[data-action]')?.dataset.action;if(a)act(a);};
-$('styles').onclick=e=>{let s=e.target.closest('[data-style]')?.dataset.style;if(s){style=s;pending=null;render();}};
-$('categories').onclick=e=>{let c=e.target.closest('[data-cat]')?.dataset.cat;if(c){category=c;render();}};
-$('pieces').onclick=e=>{let type=e.target.closest('[data-type]')?.dataset.type;if(type){pending={type,style,rot:0};ghost=null;selected=null;render();hint('Tap an open floor space to place your '+TYPES[type].name.toLowerCase()+'.');$('scene').scrollIntoView({behavior:'smooth',block:'center'});}};
-for(let f of ['wall','floor','light'])$(f).onchange=e=>change(()=>room()[f]=e.target.value);
-$('rooms').onchange=e=>{state.active=Number(e.target.value);selected=null;pending=null;undo=[];redo=[];save();render();};
-$('grid').onclick=()=>{grid=!grid;render();};$('undo').onclick=()=>history(undo,redo);$('redo').onclick=()=>history(redo,undo);
-let naming='new';for(let a of ['new','rename'])$(a).onclick=()=>{naming=a;$('dialog-title').textContent=a==='new'?'A new room, a new possibility':'Name your room';$('room-name').value=a==='new'?'My '+palette(style).name:room().name;$('name-dialog').showModal();$('room-name').focus();};
-$('name-dialog').addEventListener('close',()=>{if($('name-dialog').returnValue!=='save')return;let name=$('room-name').value.trim()||'My room';if(naming==='new'&&state.rooms.length>=30){hint('Your studio holds 30 rooms. Export your collection to keep a backup.');return;}change(()=>{if(naming==='new'){state.rooms.push({...fresh(name,style),items:[]});state.active=state.rooms.length-1;}else room().name=name;selected=null;pending=null;});});
-document.addEventListener('keydown',e=>{if(/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)||$('name-dialog').open)return;if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?history(redo,undo):history(undo,redo);return;}if(e.key==='Escape'){act('cancel');return;}if(e.key==='Enter'&&e.target.dataset.item){selected=e.target.dataset.item;renderSelection();renderScene();return;}if(e.key.toLowerCase()==='r'&&(selected||pending)){act('rotate');return;}if(!selected)return;if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();act('remove');}let moves={ArrowLeft:[-.25,0],ArrowRight:[.25,0],ArrowUp:[0,-.25],ArrowDown:[0,.25]};if(moves[e.key]){e.preventDefault();let i=room().items.find(i=>i.id===selected),[x,y]=moves[e.key],c={...i,x:i.x+x,y:i.y+y};if(fits(c))change(()=>Object.assign(i,c));}});
-$('export').onclick=()=>{let url=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='wild-bloom-rooms.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
-$('import').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{if(file.size>2000000)throw Error();let incoming=JSON.parse(await file.text());if(!validState(incoming)||state.rooms.length+incoming.rooms.length>30)throw Error();change(()=>{state.rooms.push(...incoming.rooms.map(r=>({...r,id:nextId(),items:r.items.map(i=>({...i,id:nextId()}))})));state.active=state.rooms.length-incoming.rooms.length;selected=null;});hint('Imported rooms added to your studio.');}catch{hint('Choose a Wild Bloom room export. Your studio can hold up to 30 rooms.');}e.target.value='';};
+$('scene').addEventListener('pointerleave',()=>{if(pending&&!drag){ghost=null;renderScene();}});
+$('scene').addEventListener('dblclick',e=>{if(view()!=='house')return;let k=e.target.closest('[data-room]')?.dataset.room;if(k!=null)enterRoom(Number(k));});
+function enterRoom(k){let h=home();h.current=k;state.view='room';selected=null;pending=null;ghost=null;category='room';shelfKey='';save();render();}
+function setView(v){if(v===view())return;state.view=v;selected=null;pending=null;ghost=null;drag=null;frozen=null;category=v==='room'?'room':'All';shelfKey='';save();render();}
+
+// ---------- actions ----------
+function resize(axis,delta){let h=home();
+ if(pending?.room){let n=pending[axis]+delta;if(n<MIN_SIZE||n>MAX_SIZE)return;pending[axis]=n;renderSelection();renderScene();refreshHint();return;}
+ let r=h.rooms[selected];if(!r)return;let w=axis==='w'?r.w+delta:r.w,d=axis==='d'?r.d+delta:r.d;
+ if(w<MIN_SIZE||d<MIN_SIZE){hint(`Rooms are at least ${MIN_SIZE} squares on a side.`);return;}if(w>MAX_SIZE||d>MAX_SIZE){hint(`Rooms can be up to ${MAX_SIZE} squares on a side.`);return;}
+ if(!roomFree(h,selected,r.px,r.py,w,d)){hint('Another room is in the way. Move this room first.');return;}
+ if(r.items.some(i=>{let [a,b]=dims(i);return i.x+a>w+1e-9||i.y+b>d+1e-9;})){hint('Some furniture is in the way. Move it toward the back corner first.');return;}
+ change(()=>{r.w=w;r.d=d;});}
+function act(a){let v=view(),h=home();
+ if(a==='cancel'||a==='done'){pending=null;ghost=null;selected=null;render();return;}
+ if(a==='idea'){let next;do next=PROMPTS[Math.floor(Math.random()*PROMPTS.length)];while(next===idea&&PROMPTS.length>1);idea=next;renderSide();return;}
+ if(a==='art'){openArt();return;}
+ if(a==='restyle'){let r=room();change(()=>{r.wall=style;r.floor=style;delete r.wallPaint;delete r.floorPaint;delete r.paper;delete r.paperInk;delete r.floorPattern;for(let i of r.items){i.style=style;delete i.fabric;}});hint(`Ta-da! Your whole room is ${palette(style).name} now.`);return;}
+ if(a==='rotate'&&pending?.room){[pending.w,pending.d]=[pending.d,pending.w];renderSelection();renderScene();return;}
+ if(v==='house'){let r=h.rooms[selected];if(!r)return;
+  if(a==='enter')enterRoom(selected);
+  if(a==='rename-room')openName('room');
+  if(a==='remove-room'){if(h.rooms.length===1){hint('A house needs at least one room.');return;}let name=r.name;change(()=>{h.rooms.splice(selected,1);if(h.current>=h.rooms.length)h.current=h.rooms.length-1;else if(h.current>selected)h.current--;normalize(h);selected=null;});hint(`${name} was removed. Undo brings it back.`,4000);}
+  return;}
+ if(a==='rotate'&&pending){pending.rot=1-(pending.rot||0);renderScene();return;}
+ let sp=space(),i=sp.items.find(i=>i.id===selected);if(!i)return;
+ if(a==='talk'){hint(cowLine(i),5200);return;}
+ if(a==='original')change(()=>delete i.fabric);
+ if(a==='remove')change(()=>{let k=sp.items.findIndex(j=>j.id===selected);sp.items.splice(k,1);selected=null;});
+ if(a==='rotate'){let c={...i,rot:1-i.rot};if(fits(c))change(()=>i.rot=c.rot);else hint('Move it into a bigger open space before turning it.');}
+ if(a==='duplicate'){pending={type:i.type,style:i.style,rot:i.rot,...(i.fabric?{fabric:i.fabric}:{})};ghost=null;selected=null;render();hint('Tap an open spot for the copy.');}}
+function setPaint(target,color){let v=view(),h=home();
+ if(target==='fabric'){let i=space().items.find(i=>i.id===selected);if(i)change(()=>i.fabric=color);return;}
+ if(['siding','roof','door','trim','grass'].includes(target)){change(()=>h.ext[target]=color);return;}
+ let r=room();change(()=>{if(color)r[target]=color;else delete r[target];if(target==='paperInk'&&!color)delete r.paperInk;});}
+document.addEventListener('click',e=>{let el=e.target.closest('[data-paint],[data-paint-reset],[data-act],[data-style],[data-cat],[data-type],[data-room-type],[data-enter],[data-view],[data-size]');if(!el||el.tagName==='INPUT')return;let d=el.dataset;
+ if(d.paintReset){setPaint(d.paintReset,'');return;}
+ if(d.paint&&d.color){setPaint(d.paint,d.color);return;}
+ if(d.size){resize(d.size,Number(d.delta));return;}
+ if(d.act){act(d.act);return;}
+ if(d.view){setView(d.view);return;}
+ if(d.enter!=null){enterRoom(Number(d.enter));return;}
+ if(d.style){style=d.style;if(pending&&!pending.room)pending.style=style;render();return;}
+ if(d.cat){category=d.cat;render();return;}
+ if(d.type){if(pending?.type===d.type){pending=null;render();return;}pending={type:d.type,style,rot:0};ghost=null;selected=null;render();if(window.innerWidth<1100)$('scene').scrollIntoView({behavior:'smooth',block:'center'});return;}
+ if(d.roomType){let t=ROOM_TYPES[d.roomType];pending={room:true,type:d.roomType,w:t.w,d:t.d};ghost=null;selected=null;render();if(window.innerWidth<1100)$('scene').scrollIntoView({behavior:'smooth',block:'center'});}});
+document.addEventListener('change',e=>{let t=e.target,h=home();
+ if(t.matches('input[type=color][data-paint]')){setPaint(t.dataset.paint,t.value);return;}
+ if(t.id==='homes'){state.active=Number(t.value);selected=null;pending=null;undo=[];redo=[];shelfKey='';save();render();return;}
+ if(t.id==='room-pick'){h.current=Number(t.value);selected=null;pending=null;category='room';shelfKey='';save();render();return;}
+ if(t.id==='room-type'){let r=h.rooms[selected];if(r)change(()=>r.type=t.value);return;}
+ if(t.id==='yardsize'){change(()=>h.ext.yard=Number(t.value));return;}
+ if(t.id==='light'){if(view()==='yard')change(()=>h.ext.light=t.value);else change(()=>room().light=t.value);return;}
+ if(t.id==='wall'){change(()=>{room().wall=t.value;delete room().wallPaint;});return;}
+ if(t.id==='floor'){change(()=>{room().floor=t.value;delete room().floorPaint;});return;}
+ if(t.id==='paper'){change(()=>{if(t.value==='style')delete room().paper;else room().paper=t.value;});return;}
+ if(t.id==='floorPattern'){change(()=>{if(t.value==='style')delete room().floorPattern;else room().floorPattern=t.value;});return;}});
+$('undo').onclick=()=>history(undo,redo);$('redo').onclick=()=>history(redo,undo);$('grid').onclick=()=>{grid=!grid;render();};
+document.addEventListener('keydown',e=>{if(/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)||document.querySelector('dialog[open]'))return;
+ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?history(redo,undo):history(undo,redo);return;}
+ if(e.key==='Escape'){act('cancel');return;}
+ let v=view(),h=home();
+ if(e.key==='Enter'&&e.target.dataset?.item){selected=e.target.dataset.item;renderSelection();renderScene();return;}
+ if(e.key==='Enter'&&e.target.dataset?.room!=null){enterRoom(Number(e.target.dataset.room));return;}
+ let moves={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};
+ if(v==='house'){if(selected==null||!moves[e.key])return;e.preventDefault();let r=h.rooms[selected],[x,y]=moves[e.key];if(h.rooms.some((q,j)=>j!==selected&&overlap(r.px+x,r.py+y,r.w,r.d,q.px,q.py,q.w,q.d,0)))return;change(()=>{r.px+=x;r.py+=y;if(r.px<0||r.py<0){let dx=Math.max(0,-r.px),dy=Math.max(0,-r.py);for(let q of h.rooms){q.px+=dx;q.py+=dy;}for(let i of h.yard.items){i.x+=dx;i.y+=dy;}}normalize(h);});return;}
+ if(e.key.toLowerCase()==='r'&&(selected||pending)){act('rotate');return;}if(!selected)return;
+ if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();act('remove');return;}
+ if(moves[e.key]){e.preventDefault();let sp=space(),i=sp.items.find(i=>i.id===selected),[x,y]=moves[e.key],c={...i,x:i.x+x*.25,y:i.y+y*.25};if(fits(c,sp))change(()=>Object.assign(i,c));}});
+for(let b of document.querySelectorAll('[data-view]'))b.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;let k=Object.keys(VIEWS),n=k[(k.indexOf(view())+(e.key==='ArrowRight'?1:2))%3];setView(n);document.querySelector(`[data-view="${n}"]`).focus();});
+
+// ---------- names ----------
+let naming='';
+function openName(kind){naming=kind;let h=home();$('dialog-title').textContent=kind==='new-home'?'A new home, a new possibility':kind==='home'?'Name your home':'Name this room';$('room-name').value=kind==='new-home'?uniqueName('My new house',state.homes.map(x=>x.name)):kind==='home'?h.name:h.rooms[view()==='house'?selected:h.current].name;$('name-dialog').showModal();$('room-name').select();}
+$('new-home').onclick=()=>{if(state.homes.length>=MAX_HOMES){hint(`The studio holds ${MAX_HOMES} homes. Export them to keep a backup.`);return;}openName('new-home');};
+$('rename-home').onclick=()=>openName('home');$('rename-room').onclick=()=>openName('room');
+$('name-dialog').addEventListener('close',()=>{if($('name-dialog').returnValue!=='save')return;let name=$('room-name').value.trim().slice(0,40)||'My house',h=home();
+ change(()=>{if(naming==='new-home'){state.homes.push(freshHome(name,style));state.active=state.homes.length-1;state.view='room';selected=null;pending=null;}else if(naming==='home')h.name=name;else{let k=view()==='house'?selected:h.current;if(h.rooms[k])h.rooms[k].name=name;}});
+ if(naming==='new-home'){undo=[];redo=[];shelfKey='';}});
+
+// ---------- painting wall art ----------
+const art={tool:'brush',size:10,color:'#c2456b',bg:'#fffaf0',hue:0,undo:[],last:null};
+const TOOLS=[['brush','🖌️ Brush'],['rainbow','🌈 Rainbow'],['blossom','🌸 Blossom'],['heart','💗 Heart'],['star','⭐ Star'],['eraser','🧽 Eraser']];
+const actx=()=>$('art-canvas').getContext('2d');
+function renderArtTools(){$('art-tools').innerHTML=TOOLS.map(([k,n])=>`<button type="button" data-tool="${k}" aria-pressed="${art.tool===k}">${n}</button>`).join('');
+ $('art-sizes').innerHTML=[[5,'Thin'],[10,'Medium'],[20,'Thick']].map(([s,n])=>`<button type="button" data-brush="${s}" aria-pressed="${art.size===s}"><i style="width:${s/1.6+4}px;height:${s/1.6+4}px"></i>${n}</button>`).join('');
+ $('art-colors').innerHTML=[...PAINTS,['Ink','#2d2a28'],['Grass','#6f9a5c']].map(([n,c])=>`<button type="button" class="paint" data-ink="${c}" style="--c:${c}" title="${n}" aria-label="${n}" aria-pressed="${art.color===c}"></button>`).join('')+`<label class="paint any" title="Any color" style="--c:${art.color}"><input type="color" id="art-any" value="${art.color}" aria-label="Any color"></label>`;}
+function openArt(){let c=$('art-canvas'),ctx=actx(),r=room();ctx.clearRect(0,0,c.width,c.height);art.bg=r.artBg||'#fffaf0';c.style.background=art.bg;art.undo=[];
+ if(r.art){let img=new Image();img.onload=()=>ctx.drawImage(img,0,0,c.width,c.height);img.src=r.art;}renderArtTools();$('art-dialog').showModal();}
+function artPoint(e){let c=$('art-canvas'),b=c.getBoundingClientRect();return [(e.clientX-b.left)*c.width/b.width,(e.clientY-b.top)*c.height/b.height];}
+function artSnapshot(){let c=$('art-canvas');art.undo.push({img:actx().getImageData(0,0,c.width,c.height),bg:art.bg});if(art.undo.length>30)art.undo.shift();}
+function stamp(ctx,[x,y],kind,size,color){ctx.save();ctx.translate(x,y);ctx.fillStyle=color;let r=size*1.4+8;
+ if(kind==='blossom'){for(let k=0;k<5;k++){ctx.save();ctx.rotate(k*Math.PI*2/5);ctx.beginPath();ctx.ellipse(0,-r*.55,r*.38,r*.55,0,0,Math.PI*2);ctx.fill();ctx.restore();}ctx.fillStyle='#f2cf63';ctx.beginPath();ctx.arc(0,0,r*.22,0,Math.PI*2);ctx.fill();}
+ if(kind==='heart'){ctx.beginPath();ctx.moveTo(0,r*.9);ctx.bezierCurveTo(-r*1.3,0,-r*.9,-r*.9,0,-r*.35);ctx.bezierCurveTo(r*.9,-r*.9,r*1.3,0,0,r*.9);ctx.fill();}
+ if(kind==='star'){ctx.beginPath();for(let k=0;k<10;k++){let a=-Math.PI/2+k*Math.PI/5,rr=k%2?r*.45:r;ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);}ctx.closePath();ctx.fill();}
+ ctx.restore();}
+function strokeTo(p){let ctx=actx();ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=art.size;
+ if(art.tool==='eraser'){ctx.globalCompositeOperation='destination-out';ctx.lineWidth=art.size*2;}ctx.strokeStyle=art.tool==='rainbow'?`hsl(${art.hue},80%,62%)`:art.color;art.hue=(art.hue+7)%360;
+ ctx.beginPath();ctx.moveTo(...art.last);ctx.lineTo(...p);ctx.stroke();ctx.restore();art.last=p;}
+$('art-canvas').addEventListener('pointerdown',e=>{e.preventDefault();artSnapshot();let p=artPoint(e);
+ if(['blossom','heart','star'].includes(art.tool)){stamp(actx(),p,art.tool,art.size,art.color);return;}
+ $('art-canvas').setPointerCapture(e.pointerId);art.last=[p[0]-.1,p[1]];strokeTo(p);});
+$('art-canvas').addEventListener('pointermove',e=>{if(!art.last)return;for(let ev of (e.getCoalescedEvents?.()||[e]))strokeTo(artPoint(ev));});
+for(let ev of ['pointerup','pointercancel'])$('art-canvas').addEventListener(ev,()=>art.last=null);
+$('art-dialog').addEventListener('click',e=>{let b=e.target.closest('button');if(!b)return;let d=b.dataset,c=$('art-canvas');
+ if(d.tool){art.tool=d.tool;renderArtTools();}if(d.brush){art.size=Number(d.brush);renderArtTools();}if(d.ink){art.color=d.ink;if(art.tool==='eraser'||art.tool==='rainbow')art.tool='brush';renderArtTools();}
+ if(d.art==='bg'){artSnapshot();art.bg=art.color;c.style.background=art.bg;}
+ if(d.art==='undo'){let s=art.undo.pop();if(s){actx().putImageData(s.img,0,0);art.bg=s.bg;c.style.background=art.bg;}}
+ if(d.art==='clear'){artSnapshot();actx().clearRect(0,0,c.width,c.height);}});
+$('art-dialog').addEventListener('input',e=>{if(e.target.id==='art-any'){art.color=e.target.value;e.target.parentElement.style.setProperty('--c',art.color);if(art.tool==='eraser'||art.tool==='rainbow')art.tool='brush';}});
+$('art-dialog').addEventListener('close',()=>{let v=$('art-dialog').returnValue,r=room();
+ if(v==='hang'){let url=$('art-canvas').toDataURL('image/png');if(url.length>700000){hint('That painting is too detailed to save. Try clearing a little.');return;}change(()=>{r.art=url;r.artBg=art.bg;});hint('Your painting is hanging on the wall. Beautiful!',4000);}
+ if(v==='remove'&&r.art){change(()=>{delete r.art;delete r.artBg;});hint('The painting is down. Paint a new one any time.');}});
+
+// ---------- export, import and pictures ----------
+$('export').onclick=()=>{let url=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='wild-bloom-homes.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+$('import').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{if(file.size>12000000)throw Error();let raw=JSON.parse(await file.text()),incoming=cleanState(raw)||migrateV1(raw);if(!incoming)throw Error();
+ if(state.homes.length+incoming.homes.length>MAX_HOMES)throw Error('full');change(()=>{state.homes.push(...incoming.homes.map(h=>({...h,id:uid()})));state.active=state.homes.length-incoming.homes.length;state.view='house';selected=null;});hint('Imported homes added to your studio.');}
+ catch(err){hint(err.message==='full'?`The studio holds ${MAX_HOMES} homes. Remove one or start fresh to import more.`:'Choose a Wild Bloom export file.');}e.target.value='';};
+async function savePicture(){let vb=viewBoxFor().split(' ').map(Number),v=view(),h=home(),title=v==='room'?room().name:v==='house'?h.name:`Outside ${h.name}`,cap=Math.max(70,vb[2]/9);
+ let bg=v==='yard'?`<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${h.ext.light==='night'?'#2f3b5c':'#d6ebf3'}"/><stop offset="1" stop-color="${h.ext.light==='night'?'#5a6380':'#f4f7ea'}"/></linearGradient>`:`<radialGradient id="bg" cx="50%" cy="42%" r="75%"><stop offset="0" stop-color="#fffdf8"/><stop offset="1" stop-color="#eaece1"/></radialGradient>`;
+ let svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb[0]} ${vb[1]} ${vb[2]} ${vb[3]+cap}" width="${vb[2]}" height="${vb[3]+cap}"><defs>${bg}</defs><rect x="${vb[0]}" y="${vb[1]}" width="${vb[2]}" height="${vb[3]+cap}" fill="url(#bg)"/>${sceneArt(true)}<text x="${vb[0]+vb[2]/2}" y="${vb[1]+vb[3]+cap*.42}" text-anchor="middle" font-family="Georgia,serif" font-size="${r1(cap*.36)}" fill="${v==='yard'&&h.ext.light==='night'?'#fffaf0':'#37483f'}">${esc(title)}</text><text x="${vb[0]+vb[2]/2}" y="${vb[1]+vb[3]+cap*.74}" text-anchor="middle" font-family="Arial" letter-spacing="${r1(cap*.03)}" font-size="${r1(cap*.13)}" fill="${v==='yard'&&h.ext.light==='night'?'#e6e9ef':'#768576'}">✿ DESIGNED IN WILD BLOOM ISLES</text></svg>`;
+ try{let img=new Image(),url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));img.src=url;await img.decode();let scale=Math.min(2.4,3200/vb[2]),c=document.createElement('canvas');c.width=Math.round(vb[2]*scale);c.height=Math.round((vb[3]+cap)*scale);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);
+  c.toBlob(b=>{let a=document.createElement('a'),u=URL.createObjectURL(b);a.href=u;a.download=(title.replace(/[^\w ]+/g,'').trim()||'wild-bloom')+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(u),2000);hint('Picture saved! Look for it in your downloads.');},'image/png');}
+ catch{hint('The picture could not be made in this browser. Try a screenshot instead.');}}
+$('picture').onclick=savePicture;
+
+// ---------- start ----------
+state=load();style=room().wall;if(state.view==='room')category='room';
 render();save();
