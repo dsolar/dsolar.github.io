@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-29T01:02:49Z",
+ "updated": "2026-10-29T10:10:50Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -443,6 +443,10 @@
     [
      "2026-10-28",
      56
+    ],
+    [
+     "2026-10-29",
+     56
     ]
    ],
    "sg": null,
@@ -514,6 +518,10 @@
     ],
     [
      "2026-10-28",
+     22
+    ],
+    [
+     "2026-10-29",
      22
     ]
    ],
@@ -649,6 +657,10 @@
     [
      "2026-10-28",
      28
+    ],
+    [
+     "2026-10-29",
+     28
     ]
    ],
    "sg": null,
@@ -708,6 +720,10 @@
     ],
     [
      "2026-10-28",
+     22
+    ],
+    [
+     "2026-10-29",
      22
     ]
    ],
@@ -929,6 +945,16 @@
    "url": "https://www.ticketmaster.com/joe-russos-almost-dead-port-chester-new-york-01-17-2027/event/1D006556C0B735BF",
    "src": null,
    "low": null
+  },
+  "espn-401892696": {
+   "history": [],
+   "sg": 18378506,
+   "title": "Bruins vs Canadiens",
+   "date": "2026-11-12",
+   "venue": "TD Garden",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892696/canadiens-bruins",
+   "src": null,
+   "low": null
   }
  },
  "misses": {
@@ -941,7 +967,6 @@
   "tm-vv177Z_oGkXBi8-I": "2026-10-28",
   "tm-rZ7HnEZ1AfuNZ7": "2026-10-28",
   "tm-rZ7HnEZ1AfuYF0": "2026-10-28",
-  "tm-Z7r9jZ1A7PIP6": "2026-10-28",
   "tm-vv177Z_8GkD4PKZI": "2026-10-28",
   "tm-vv1AvZkf6Gkd94lLs": "2026-10-28",
   "tm-Z7r9jZ1A7-VGp": "2026-10-28",
