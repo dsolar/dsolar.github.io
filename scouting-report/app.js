@@ -152,7 +152,7 @@
     $("stamp").innerHTML = open ? '<div class="stamp ' + (p.right ? "right" : "wrong") + '">' + (p.right ? "Nailed it" : "Whiffed") + "<small>" + kindLine(p) + "</small></div>" : "";
   }
   function drafted(p) { return p.y + ", " + (p.lg === "nfl" ? "round " + p.rd + ", " : "") + "pick " + p.pk + " by the " + p.tm; }
-  function kindLine(p) { return p.kind === "steal" ? "He was a steal" : p.kind === "bust" ? "He was a bust" : p.angle === "glow" ? "Star, as advertised" : "He was a star"; }
+  function kindLine(p) { if (p.topic === "character") return p.angle === "glow" ? "Character, not as advertised" : "Character, better than advertised"; return p.kind === "steal" ? "He was a steal" : p.kind === "bust" ? "He was a bust" : p.angle === "glow" ? "Star, as advertised" : "He was a star"; }
 
   // ---- Guessing
   function showSugg(text) {
@@ -194,7 +194,7 @@
       + esc(p.y + " draft" + (p.lg === "nfl" ? ", round " + p.rd : "") + ", pick " + p.pk) + "<b>" + esc(p.tm) + "</b></div>"
       + '<div class="card-body"><h3>' + esc(p.n) + "</h3>"
       + '<dl class="facts"><div><dt>Games</dt><dd>' + p.g.toLocaleString() + "</dd></div><div><dt>Career</dt><dd>" + esc(p.stat) + "</dd></div><div><dt>Honors</dt><dd>" + esc(hon) + "</dd></div></dl>"
-      + (p.ctx ? '<p class="ctx">' + esc(p.ctx) + "</p>" : "")
+      + (p.ctx ? '<p class="ctx">' + esc(p.ctx) + (p.offu ? ' <a href="' + esc(p.offu) + '" target="_blank" rel="noopener">Source</a>' : "") + "</p>" : "")
       + '<div class="foot"><span class="pts">' + (s ? "+" + s : "0") + " point" + (s === 1 ? "" : "s") + '</span><span class="src">Quote: <a href="' + esc(p.url) + '" target="_blank" rel="noopener">' + esc(p.who) + (p.who.indexOf(p.outlet) === 0 ? "" : ", " + esc(p.outlet)) + "</a></span></div>"
       + '</div></article><div class="next-row"><button class="btn" type="button" id="next">' + (lastOne() ? "See how you did" : "Next file") + "</button></div>";
     $("next").onclick = next;

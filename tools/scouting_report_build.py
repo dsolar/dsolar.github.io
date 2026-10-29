@@ -208,8 +208,13 @@ def main():
             missing.append(r["id"]); continue
         # The scouts were right when they panned a bust or praised a star or a steal
         right = (r["angle"] == "pan") == (f["kind"] == "bust")
+        extra = {}
+        if r.get("topic") == "character":
+            # A read on his character: judged by what he did off the field, which the card shows in place of the draft context
+            right = False
+            extra = {"topic": "character", "ctx": r["off"], "offu": r["off_url"]}
         rows.append({**f, "id": r["id"], "angle": r["angle"], "q": r["quote"], "who": r["who"], "outlet": r["outlet"],
-                     "when": r["when"], "url": r["url"], "right": right})
+                     "when": r["when"], "url": r["url"], "right": right, **extra})
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8") as fh:
         fh.write("/* Scouting Report: every prospect, a real pre-draft quote about him and his real career. Built by tools/scouting_report_build.py "

@@ -17,6 +17,7 @@ for (const p of D) {
   assert.ok(p.y >= 2000 && p.y <= 2021, p.n + ": drafted 2000 to 2021");
   assert.ok(["pan", "glow"].includes(p.angle) && ["steal", "bust", "star"].includes(p.kind), p.n + ": angle and kind");
   for (const part of p.n.split(/[ .\-']+/)) if (part.length >= 4) assert.ok(!new RegExp("\\b" + part + "\\b", "i").test(p.q), `${p.n}: the quote says "${part}"`);
+  if (p.topic === "character") assert.ok(p.ctx && /^https?:\/\//.test(p.offu || ""), p.n + ": a character file says what happened, with a source");
   const pool = G.pool(D.filter((x) => x.lg === p.lg).map((x) => ({ n: x.n, f: 0 })), window.GTP_NAMES[p.lg]);
   assert.strictEqual(G.judge(p.n, p, pool), "right", p.n + ": his own name is a right answer");
 }
