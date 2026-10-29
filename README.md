@@ -53,6 +53,7 @@ dsolar.github.io/
   tools/yoenis_yahoo_pull.py  pulls the Wipe Yoenis season (draft, final rosters, transactions) from Yahoo
   tools/yoenis_keeper_check.py  checks every 2027 keeper cost in yoenis/data.json against that pull
   tools/yoenis_trades_pull.py, yoenis_trades_build.py  every trade since 2013 from Yahoo, scored for the Trades section
+  tools/yoenis_race_pull.py   the weekly category race from Yahoo into yoenis/race.json
   tools/yahoo_check.py        confirms the Yahoo app can read both leagues (Actions > Yahoo check)
   tools/paint_the_corners_sim.js  balance check for Paint the Corners (node, see the top of the file)
   tools/guess_the_pick_build.py  rebuilds guess-the-pick/data.js from nflverse and basketball-reference data (see below)
@@ -405,4 +406,8 @@ The stamp works itself out: the scouts "whiffed" when they panned a player who t
 ## Wipe Yoenis: trade history
 
 The same Monday workflow pulls every trade since 2013 (`tools/yoenis_trades_pull.py` into `tools/yahoo_yoenis/trades.json`) and `tools/yoenis_trades_build.py` scores them into `tradeHistory` in `yoenis/data.json` for the page's Trades section. Each player counts his season value over replacement (the awards' values, less the 208th hitter's or 160th pitcher's) for the share of the season left after the trade, plus every later season the manager who got him kept him. Within 1.5 is even; vetoed trades are left out. New trades show up after the next Monday run; next season's values fill in once `tools/mlb/<year>.json` has that year.
+
+## Wipe Yoenis: the race
+
+`tools/yoenis_race_pull.py` writes `yoenis/race.json`: every week's head-to-head matchups with each side's 16 category stats and Yahoo's category winners, plus season totals by category. The page's Race section shows each week's matchups (who leads each category and by how much), the standings as they stood after any week (rebuilt from the category results; they match Yahoo's final standings), and every team's rank in each category with how much it needs to pass the team above. The "Wipe Yoenis Yahoo pull" workflow runs it twice a day from April through September. Once the commissioner renews the league and the 2027 draft is done, it switches to the new season by itself (through the old league's "renewed" link).
 

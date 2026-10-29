@@ -158,6 +158,33 @@ select{padding-right:2rem}
 .fold .klist .kp:last-child{border-bottom:0}
 .empty{padding:1rem 0;color:var(--muted)}
 
+/* The race */
+.mus{list-style:none;margin:.4rem 0 0;padding:0;border-top:1px solid var(--rule)}
+.mus>li{border-bottom:1px solid var(--rule)}
+.mu summary{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:.6rem;align-items:center;padding:.7rem 0;cursor:pointer;list-style:none;min-height:44px}
+.mu summary::-webkit-details-marker{display:none}
+.mu .side{font-weight:600;overflow-wrap:anywhere}
+.mu .side small{display:block;font-weight:400;font-size:.78rem;color:var(--muted)}
+.mu .side.b{text-align:right}
+.mu .score{font:700 1.15rem/1 var(--f-sign);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:center}
+.mu .score small{display:block;font:400 .72rem/1.2 var(--f-body);color:var(--muted);margin-top:.2rem}
+.mu.mine summary .side{color:var(--red-text, var(--red))}
+.mu table{width:100%;border-collapse:collapse;font-size:.875rem;margin:0 0 .8rem;font-variant-numeric:tabular-nums}
+.mu td,.mu th{padding:.28rem .35rem;border-bottom:1px solid color-mix(in srgb, var(--rule) 60%, transparent)}
+.mu th{font-weight:600;color:var(--muted);text-align:center}
+.mu td.v{text-align:right;width:30%}
+.mu td.v.b{text-align:left}
+.mu td.c{text-align:center;font-weight:600;width:12%}
+.mu td.e{text-align:center;color:var(--muted);font-size:.78rem;width:28%}
+.mu td.lead{font-weight:700;color:var(--ink)}
+.mu td.lead::after{content:" \25C0";font-size:.6rem;color:var(--red);vertical-align:.15em}
+.mu td.v.b.lead::after{content:none}
+.mu td.v.b.lead::before{content:"\25B6 ";font-size:.6rem;color:var(--red);vertical-align:.15em}
+.mu tr.split td{border-top:2px solid var(--rule)}
+.standings td.mv,.standings .mv{font-size:.75rem;color:var(--muted);white-space:nowrap}
+#race .standings td.num,#race .standings td.r{white-space:nowrap}
+#race .standings td:nth-child(2){overflow-wrap:anywhere}
+
 /* Champions */
 .titles{list-style:none;margin:1.25rem 0 0;padding:0;border-top:1px solid var(--rule)}
 .titles>li{border-bottom:1px solid var(--rule)}
@@ -467,6 +494,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     <a href="#keepers">Keepers</a>
     <a href="#offseason">Offseason</a>
     <a href="#champions">Standings</a>
+    <a href="#race">Race</a>
     <a href="#stats">Stats</a>
     <a href="#awards">Awards</a>
     <a href="#trades">Trades</a>
@@ -540,6 +568,28 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     <div role="tabpanel" id="sp-final" aria-labelledby="st-final"><ol class="titles" id="titles"></ol></div>
     <div role="tabpanel" id="sp-reg" aria-labelledby="st-reg" hidden><ol class="titles" id="regular"></ol>
       <p class="note">Ordered by winning percentage, with ties counting as half a win and equal percentages broken by wins; T marks a tie Yahoo settled some other way. The top eight make the playoffs (the line under eighth). GB is category games behind the leader. Under the current payouts, the best regular-season record wins $500 and second best $300.</p></div>
+  </section>
+
+  <section id="race" aria-labelledby="race-title" hidden>
+    <div class="section-head">
+      <h2 id="race-title">The race</h2>
+      <p id="race-lede">Every week's matchups category by category, the standings as they stood each week, and where every team ranks in each category.</p>
+    </div>
+    <div class="seg tabs" role="tablist" aria-label="The race" data-remember="yoenis-rtab"><button type="button" role="tab" id="rt-mu" aria-controls="rp-mu" aria-selected="true">Matchups</button><button type="button" role="tab" id="rt-st" aria-controls="rp-st" aria-selected="false" tabindex="-1">Standings by week</button><button type="button" role="tab" id="rt-cat" aria-controls="rp-cat" aria-selected="false" tabindex="-1">By category</button></div>
+    <div class="controls">
+      <label class="field">Week<select id="r-week"></select></label>
+      <label class="field" id="r-cat-f" hidden>Category<select id="r-cat"></select></label>
+    </div>
+    <div role="tabpanel" id="rp-mu" aria-labelledby="rt-mu"><p class="note" id="r-mu-note"></p><ol class="mus" id="r-mus"></ol></div>
+    <div role="tabpanel" id="rp-st" aria-labelledby="rt-st" hidden>
+      <div class="tbl-wrap" tabindex="0" role="region" aria-label="Standings by week"><table class="standings" id="r-st"></table></div>
+      <p class="note" id="r-st-note"></p>
+    </div>
+    <div role="tabpanel" id="rp-cat" aria-labelledby="rt-cat" hidden>
+      <div class="tbl-wrap" tabindex="0" role="region" aria-label="Category ranks"><table class="standings" id="r-cat-t"></table></div>
+      <p class="note">Season totals through the latest Yahoo update. "To pass" is how much a team needs to catch the team just above it.</p>
+    </div>
+    <p class="note" id="r-upd"></p>
   </section>
 
   <section id="stats" aria-labelledby="stats-title">
@@ -690,7 +740,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     $("reigning").innerHTML = last.year + " champion: <strong>" + esc(champ) + "</strong>" + (MAN[champ] ? " (" + esc(MAN[champ]) + ")" : "");
     $("foot").textContent = "Updated " + new Date(d.updated + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) + ". Data from the league's Yahoo draft and standings pages, the keeper sheet and the commissioner's league emails.";
     initHero();
-    loadMine(); initKeepers(); initHistory(); initBest(); initOffseason(); initTitles(); initRegular(); initStats(); initAwards(); initTrades(); initManagers(); initDrafts();
+    loadMine(); initKeepers(); initHistory(); initBest(); initOffseason(); initTitles(); initRegular(); initStats(); initAwards(); initTrades(); initManagers(); initRace(); initDrafts();
     loadSheet();
     if (location.hash === "#drafts") { $("kt-draft").click(); $("keepers").scrollIntoView(); }
   }
@@ -1485,6 +1535,133 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       rows.map(function (r) {
         var b = r.best, bt = b && b.d >= EVEN ? "Best: the " + (b.k === "a" ? b.t.ag : b.t.bg).slice().sort(function (x, y) { return (y[1] + y[2]) - (x[1] + x[2]); })[0][0] + " trade (" + b.t.y + ", +" + fmtV(b.d) + ")" : "No wins yet";
         return '<tr><td class="tm">' + esc(who(r.id)) + '<small class="tr-best">' + esc(bt) + "</small></td><td>" + r.n + "</td><td>" + r.w + "-" + r.l + "-" + r.e + "</td><td>" + (r.net > 0 ? "+" : r.net < 0 ? "−" : "") + fmtV(Math.abs(r.net)) + "</td></tr>";
+      }).join("") + "</tbody>";
+  }
+
+  /* The race: head-to-head categories week by week (yoenis/race.json, from tools/yoenis_race_pull.py) */
+  var RACE = null, RV = { week: null, cat: 0 };
+  function initRace() {
+    fetch("race.json", { cache: "no-cache" }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (r) {
+      RACE = r;
+      var ws = r.weeks.map(function (w) { return w.week; });
+      $("r-week").innerHTML = ws.slice().reverse().map(function (w) {
+        return '<option value="' + w + '">Week ' + w + (w >= r.playoff_week ? " (playoffs)" : "") + "</option>";
+      }).join("");
+      RV.week = r.finished ? r.playoff_week - 1 : r.current_week;
+      $("r-week").value = String(RV.week);
+      $("r-cat").innerHTML = r.cats.map(function (c, i) { return '<option value="' + i + '">' + esc(c.name) + "</option>"; }).join("");
+      $("r-week").addEventListener("change", function () { RV.week = +this.value; drawRace(); });
+      $("r-cat").addEventListener("change", function () { RV.cat = +this.value; drawCatRank(); });
+      [].forEach.call(document.querySelectorAll("#race [role=tab]"), function (b) { b.addEventListener("click", raceControls); });
+      $("race-title").textContent = r.season + (r.finished ? " category race" : " category race, Week " + r.current_week);
+      $("r-upd").textContent = "From Yahoo, updated " + new Date(r.updated).toLocaleString("en-US", { month: "long", day: "numeric", hour: "numeric", minute: "2-digit" }) +
+        (r.finished ? ". The season is over; the 2027 race fills in here once the new league drafts." : ". In season it refreshes twice a day.");
+      $("race").hidden = false;
+      raceControls(); drawRace(); drawCatRank();
+    }).catch(function () { $("race").hidden = true; });
+  }
+  function raceControls() {
+    var tab = (document.querySelector("#race [role=tab][aria-selected=true]") || {}).id;
+    $("r-cat-f").hidden = tab !== "rt-cat";
+    $("r-week").parentNode.hidden = tab === "rt-cat";
+  }
+  function rName(tk) { return (RACE.teams[tk] || {}).name || tk; }
+  function rMan(tk) { return MAN[rName(tk)] || ""; }
+  function rMine(tk) { var t = store.get("yoenis-team"); return t && t === rName(tk); }
+  function catDigits(c) { return c.abbr === "AVG" || c.abbr === "OPS" ? 3 : c.rate ? 2 : 0; }
+  function fmtCat(c, v) {
+    if (v == null || typeof v !== "number") return "–";
+    var d = catDigits(c), s2 = v.toFixed(d);
+    return d === 3 ? s2.replace(/^0\./, ".") : s2;
+  }
+  // Who leads a category this week: Yahoo's call once it's made, else the numbers so far
+  function leader(c, i, mu) {
+    var w = mu.won[i];
+    if (w === null) return null;
+    if (w) return w;
+    var a = mu.stats[mu.teams[0]][i], b = mu.stats[mu.teams[1]][i];
+    if (typeof a !== "number" || typeof b !== "number" || a === b) return null;
+    return (c.low ? a < b : a > b) ? mu.teams[0] : mu.teams[1];
+  }
+  function drawRace() { drawMatchups(); drawWeekStandings(); }
+  function drawMatchups() {
+    var w = RACE.weeks.filter(function (x) { return x.week === RV.week; })[0];
+    if (!w) { $("r-mus").innerHTML = ""; return; }
+    var live = w.matchups.some(function (m) { return m.status === "midevent"; });
+    $("r-mu-note").textContent = (w.start ? new Date(w.start + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }) + " to " +
+      new Date(w.end + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }) + ". " : "") +
+      (live ? "In progress: the arrow marks who's ahead, and the middle column what the other side needs to catch up." : "Final. The middle column is how much each category was won by.");
+    var mus = w.matchups.slice().sort(function (a, b) { return (rMine(b.teams[0]) || rMine(b.teams[1]) ? 1 : 0) - (rMine(a.teams[0]) || rMine(a.teams[1]) ? 1 : 0); });
+    $("r-mus").innerHTML = mus.map(function (mu, k) {
+      var A = mu.teams[0], B = mu.teams[1], wa = 0, wb = 0, tt = 0;
+      var rows = RACE.cats.map(function (c, i) {
+        var L = leader(c, i, mu), a = mu.stats[A][i], b = mu.stats[B][i];
+        if (L === A) wa++; else if (L === B) wb++; else tt++;
+        var gap = typeof a === "number" && typeof b === "number" ? Math.abs(a - b) : null;
+        var e = L ? (gap != null ? (catDigits(c) === 3 ? fmtCat(c, gap) : gap.toFixed(catDigits(c))) : "") : "Tied";
+        return "<tr" + (i === 8 ? ' class="split"' : "") + '><td class="v' + (L === A ? " lead" : "") + '">' + fmtCat(c, a) + '</td><td class="c">' + esc(c.abbr) +
+          '</td><td class="e">' + e + '</td><td class="v b' + (L === B ? " lead" : "") + '">' + fmtCat(c, b) + "</td></tr>";
+      }).join("");
+      var ip = function (tk) { var x = (mu.extra[tk] || {}).IP; return x != null ? x + " IP" : ""; };
+      var hab = function (tk) { var x = (mu.extra[tk] || {})["H/AB"]; return x ? x + " H/AB" : ""; };
+      var tag = mu.playoffs ? (mu.consolation ? "Consolation" : "Playoffs") : "";
+      var mine = rMine(A) || rMine(B);
+      return '<li><details class="mu' + (mine ? " mine" : "") + '"' + (k === 0 ? " open" : "") + '><summary>' +
+        '<span class="side">' + esc(rName(A)) + "<small>" + esc(rMan(A)) + "</small></span>" +
+        '<span class="score">' + wa + "-" + wb + "-" + tt + (tag ? "<small>" + tag + "</small>" : "") + "</span>" +
+        '<span class="side b">' + esc(rName(B)) + "<small>" + esc(rMan(B)) + "</small></span></summary>" +
+        '<table><caption hidden>' + esc(rName(A) + " vs. " + rName(B)) + '</caption><tbody>' + rows +
+        '<tr class="split"><td class="v">' + [hab(A), ip(A)].filter(Boolean).join(", ") + '</td><td class="c"></td><td class="e"></td><td class="v b">' + [hab(B), ip(B)].filter(Boolean).join(", ") + "</td></tr>" +
+        "</tbody></table></details></li>";
+    }).join("");
+  }
+  // Category wins, losses and ties added up through a week (regular season only)
+  function recordThrough(week) {
+    var rec = {};
+    Object.keys(RACE.teams).forEach(function (tk) { rec[tk] = { w: 0, l: 0, t: 0, last: null }; });
+    RACE.weeks.forEach(function (w) {
+      if (w.week > week || w.week >= RACE.playoff_week) return;
+      w.matchups.forEach(function (mu) {
+        var A = mu.teams[0], B = mu.teams[1], r = { w: 0, l: 0, t: 0 };
+        RACE.cats.forEach(function (c, i) {
+          var L = leader(c, i, mu);
+          if (L === A) { rec[A].w++; rec[B].l++; r.w++; } else if (L === B) { rec[B].w++; rec[A].l++; r.l++; } else { rec[A].t++; rec[B].t++; r.t++; }
+        });
+        if (w.week === week) { rec[A].last = [r.w, r.l, r.t, B]; rec[B].last = [r.l, r.w, r.t, A]; }
+      });
+    });
+    return rec;
+  }
+  function rankOf(rec) {
+    var pc = function (x) { var n = x.w + x.l + x.t; return n ? (x.w + x.t / 2) / n : 0; };
+    return Object.keys(rec).sort(function (a, b) { return pc(rec[b]) - pc(rec[a]) || rec[b].w - rec[a].w; }).map(function (tk) { return { tk: tk, r: rec[tk], p: pc(rec[tk]) }; });
+  }
+  function drawWeekStandings() {
+    var wk = Math.min(RV.week, RACE.playoff_week - 1);
+    var now = rankOf(recordThrough(wk)), before = wk > RACE.start_week ? rankOf(recordThrough(wk - 1)) : null;
+    var prev = {}; (before || []).forEach(function (x, i) { prev[x.tk] = i; });
+    var top = now[0].r, cut = RACE.playoff_teams || 8;
+    $("r-st").innerHTML = '<caption hidden>Standings through Week ' + wk + '</caption><thead><tr><th scope="col">Rank</th><th scope="col">Team</th><th scope="col" class="r">Record</th><th scope="col" class="r">Pct</th><th scope="col" class="r"><abbr title="Games behind">GB</abbr></th><th scope="col" class="r">Wk ' + wk + "</th></tr></thead><tbody>" +
+      now.map(function (x, i) {
+        var gb = ((top.w - x.r.w) + (x.r.l - top.l)) / 2, mv = before && prev[x.tk] != null ? prev[x.tk] - i : 0;
+        var last = x.r.last ? x.r.last[0] + "-" + x.r.last[1] + "-" + x.r.last[2] : "";
+        return "<tr" + (i === cut - 1 ? ' class="cut"' : "") + '><td class="num">' + (i + 1) + (mv ? ' <span class="mv">' + (mv > 0 ? "▲" + mv : "▼" + (-mv)) + "</span>" : "") +
+          "</td><td>" + esc(rName(x.tk)) + '<span class="m-sub">' + esc(rMan(x.tk)) + '</span></td><td class="r num">' + x.r.w + "-" + x.r.l + "-" + x.r.t +
+          '</td><td class="r num">' + x.p.toFixed(3).replace(/^0/, "") + '</td><td class="r num gb">' + (gb ? gb.toFixed(1) : "") + '</td><td class="r mv">' + esc(last) + "</td></tr>";
+      }).join("") + "</tbody>";
+    $("r-st-note").textContent = (RV.week >= RACE.playoff_week ? "The playoffs start in Week " + RACE.playoff_week + ", so this is the final regular-season table. " : "Through Week " + wk + ". ") +
+      "The top " + cut + " make the playoffs (the line under " + ordinal(cut) + "). Arrows are moves since the week before. GB is category games behind the leader.";
+  }
+  function drawCatRank() {
+    var c = RACE.cats[RV.cat], i = RV.cat;
+    var rows = Object.keys(RACE.season_stats).map(function (tk) { return { tk: tk, v: RACE.season_stats[tk][i] }; })
+      .filter(function (x) { return typeof x.v === "number"; })
+      .sort(function (a, b) { return c.low ? a.v - b.v : b.v - a.v; });
+    $("r-cat-t").innerHTML = '<caption hidden>' + esc(c.name) + ' ranks</caption><thead><tr><th scope="col">Rank</th><th scope="col">Team</th><th scope="col" class="r">' + esc(c.abbr) + '</th><th scope="col" class="r">To pass</th></tr></thead><tbody>' +
+      rows.map(function (x, k) {
+        var up = k ? rows[k - 1].v : null, gap = up != null ? Math.abs(up - x.v) : null;
+        var need = gap == null ? "" : gap === 0 ? "Tied" : (catDigits(c) === 3 ? fmtCat(c, gap) : c.rate ? gap.toFixed(2) : String(Math.round(gap) + 1));
+        return '<tr><td class="num">' + (k + 1) + "</td><td>" + esc(rName(x.tk)) + '<span class="m-sub">' + esc(rMan(x.tk)) + '</span></td><td class="r num">' + fmtCat(c, x.v) + '</td><td class="r num">' + need + "</td></tr>";
       }).join("") + "</tbody>";
   }
 
