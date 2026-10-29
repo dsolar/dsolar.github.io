@@ -429,11 +429,11 @@ body.pixel-world-active .world-treasure{font-size:20px;filter:drop-shadow(0 0 5p
   <header class="site-head">
     <div class="head-wrap">
       <div class="wordmark"><span class="mark">✳</span><div><small>THE LITTLE PLUSH LEAGUE</small><strong>Jellycat<br>Battle Club<span class="period">.</span></strong></div></div>
-      <div class="head-meta"><span class="test-chip">● UNLISTED PLAYTEST</span><span>Collect. Cuddle. Compete.</span></div>
+      <div class="head-meta"><span class="test-chip">✿ DESIGNED BY LUCY</span><span>Collect. Cuddle. Compete.</span></div>
     </div>
   </header>
   <div id="app"></div>
-  <footer class="site-foot">Unofficial fan-made playtest with original plush illustrations. Not affiliated with Jellycat. No official product photos. Progress is stored in this browser.</footer>
+  <footer class="site-foot">Unofficial fan-made game with original plush illustrations. Not affiliated with Jellycat. No official product photos. Progress is stored in this browser.</footer>
   <script type="module">
 /**
  * Research-backed playable catalog. Every entry appears on the indicated official
@@ -2042,7 +2042,7 @@ function regionalAtlas(){const nodes=new Map(ATLAS_TOWNS.map(t=>[t.id,t]));
  ${linePaths}${markers}
  </svg></div><div class="atlas-legend"><span><b class="legend-solid"></b> Playable road</span><span><b class="legend-dash"></b> Planned routes</span><span>✦ ${visited.length} areas discovered</span></div></section>
  <div class="atlas-bottom"><section class="panel"><span class="eyebrow">Available right now</span><h2>Start with the Orchard Road</h2><p>Leave Cuddlewick heading east through the village gate. Route 01 splits into an orchard loop and a riverside trail, with an optional grotto hidden off the main road. Cross through to Willowmere, meet its residents and challenge a new Parlor Keeper.</p><div class="row">${badge(state.world.area==='cuddlewick'?'In Cuddlewick now':'Exploring '+(REGION_AREAS[state.world.area]?.name||'Softlands'))}<button class="btn mint" data-action="nav" data-id="world">Return to the path →</button></div></section>
- <section class="panel"><span class="eyebrow">Regional travel ledger</span><h2>24 designed routes</h2><div class="atlas-route-list">${ATLAS_ROUTES.map(r=>`<div class="atlas-route"><span class="atlas-route-num">${r.id}</span><span><strong>${safe(r.name)}</strong><small>${safe(r.detail)}</small></span><span class="${r.playable?'atlas-open':'atlas-locked'}">${r.playable?'Explore':'Future'}</span></div>`).join('')}</div></section></div></div>`;}
+ <section class="panel"><span class="eyebrow">Regional travel ledger</span><h2>${ATLAS_ROUTES.length} designed routes</h2><div class="atlas-route-list">${ATLAS_ROUTES.map(r=>`<div class="atlas-route"><span class="atlas-route-num">${r.id}</span><span><strong>${safe(r.name)}</strong><small>${safe(r.detail)}</small></span><span class="${r.playable?'atlas-open':'atlas-locked'}">${r.playable?'Explore':'Future'}</span></div>`).join('')}</div></section></div></div>`;}
 
 function regionalWorldScreen(){const w=state.world,info=areaInfo(w.area),aNpcs=areaNpcs(w.area),aParlors=areaParlors(w.area),aTreasures=areaTreasures(w.area),aLandmarks=areaLandmarks(w.area);
  if(!info)return panel('<h2>Unknown location</h2><button class="btn" data-action="nav" data-id="atlas">See the region map</button>');
