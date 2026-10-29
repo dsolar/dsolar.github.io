@@ -56,7 +56,11 @@ def ordinal(n):
 
 def slices(year):
     p = SLICES / f"{year}.json"
-    return json.loads(p.read_text(encoding="utf-8"))["s"] if p.exists() else None
+    if not p.exists():
+        return None
+    d = json.loads(p.read_text(encoding="utf-8"))
+    # Windows the pull saw but couldn't match to an MLB player never played that year: zero, not unknown
+    return {**{k: {} for k in d.get("keys", [])}, **d["s"]}
 
 
 def window_now(year, w, sl, season_days):
