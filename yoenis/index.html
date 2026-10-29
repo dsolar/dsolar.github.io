@@ -481,6 +481,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     <p class="tiles-key" aria-hidden="true"><span class="tiles"><span class="tile">16</span><span class="tile">14</span><span class="tile now">10</span></span>Rounds for keeper years one, two and three. Red is 2027.</p>
     <ol class="klist" id="k-list" aria-live="polite"></ol>
     <p class="note">From the final 2026 rosters, the 2026 draft, the keeper sheet and the September transactions. Anyone added on or after Sept. 1 can't be kept. Anyone else not drafted in 2026 costs a 15th-round pick. A player drafted by another team keeps his draft round, which holds after a trade or a waiver claim. If he cleared waivers first, he's a 15th-rounder.</p>
+    <p class="note" id="k-check" hidden></p>
     </div>
     <div role="tabpanel" id="kp-hist" aria-labelledby="kt-hist" hidden>
       <div class="controls"><label class="field">Year<select id="kh-year"></select></label></div>
@@ -929,7 +930,18 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       setMine(team, cur); drawKeepers(); drawOrder();
       var again = document.querySelector('#k-list input[data-keep="' + n.replace(/"/g, '\\"') + '"]'); if (again) again.focus();
     });
-    drawKeepers(); initPlayerCards();
+    drawKeepers(); initPlayerCards(); drawCheck();
+  }
+  // Yahoo cross-check of every cost above (tools/yoenis_keeper_check.py)
+  function drawCheck() {
+    var c = DATA.keeperCheck, el = $("k-check"); if (!c || !el) return;
+    var when = new Date(c.checked + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric" });
+    var n = (c.issues || []).length;
+    el.textContent = "Checked against Yahoo's 2026 draft, final rosters and transactions on " + when + ": " +
+      (n ? n + (n === 1 ? " player doesn't" : " players don't") + " match yet (" +
+        c.issues.map(function (i) { return i.p + ", " + withMan(i.team); }).join("; ") + ")."
+         : "all " + c.players + " players match.");
+    el.hidden = false;
   }
   function drawKeepers() {
     drawMine();

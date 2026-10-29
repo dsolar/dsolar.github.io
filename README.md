@@ -51,6 +51,9 @@ dsolar.github.io/
                               index.html (page) and data.json (every draft, standing, manager and 2027 keeper cost)
   robots.txt                  keeps send-off images and data files out of search engines
   tools/guillotine_update.py  pulls the league and every lineup from Yahoo into guillotine/data.json
+  tools/yoenis_yahoo_pull.py  pulls the Wipe Yoenis season (draft, final rosters, transactions) from Yahoo
+  tools/yoenis_keeper_check.py  checks every 2027 keeper cost in yoenis/data.json against that pull
+  tools/yahoo_check.py        confirms the Yahoo app can read both leagues (Actions > Yahoo check)
   tools/paint_the_corners_sim.js  balance check for Paint the Corners (node, see the top of the file)
   tools/guess_the_pick_build.py  rebuilds guess-the-pick/data.js from nflverse and basketball-reference data (see below)
   tools/guess_the_pick_check.js  checks Guess the Pick's data and rules (node tools/guess_the_pick_check.js)
@@ -392,3 +395,10 @@ Same downloads as Journeyman, so do it at the same time (once a season, after th
 3. Bump `data-*.js?v=` in `boston-grid/app.js` (the `loadData` line) so phones load the new files.
 
 How a grid is made: three teams across, three down, Boston's team always first down the side. Every square needs at least 4 answers people would remember (the `NOTABLE` fame line per league in `boston-grid/engine.js`, careers that reached 2000), so no square is a trick question. The date picks the grid, so everyone gets the same one, and a new one arrives at midnight Boston time. Every player since 1990 counts as a right answer, however obscure, and a lesser-known player earns more deep-cut points.
+
+## Wipe Yoenis: Yahoo keeper check
+
+The "Wipe Yoenis Yahoo pull" workflow runs Monday mornings from October through March (or by hand from the Actions tab). It saves the 2026 draft, every final roster and every transaction to `tools/yahoo_yoenis/2026.json`, then `tools/yoenis_keeper_check.py` works out each rostered player's 2027 cost from the league rules and compares it with `keepers2027` in `yoenis/data.json`. The result goes in `keeperCheck`, and the 2027 keepers tab shows a line under the list: "all 442 players match", or the players that don't. The check never edits `keepers2027`; fix a flagged player there by hand. The keeper sheet's misspellings ("Junior Camirero", "Ohtani (P)") are matched to that team's keeper picks in the 2026 draft.
+
+The league runs continuous waivers (2-day drop period, FAAB), so Yahoo records every pickup as a waiver claim and no one ever "clears" to free agency. The page keeps a drafted player's round however long he sat unclaimed. `keeperCheck.slow` lists the eligible players who were picked up more than about three days after a drop, in case the commissioner ever reads "cleared waivers" as "unclaimed past the 2-day period". Run `python3 tools/yoenis_keeper_check.py --dry` to print both lists.
+
