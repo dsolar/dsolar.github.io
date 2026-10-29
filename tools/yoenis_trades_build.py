@@ -9,6 +9,9 @@ or 160th pitcher), so a hurt or benched player counts zero, not less (tools/yoen
     value less what that keeper round was expected to produce (an average non-keeper pick in that round
     over 14 drafts), never below zero.
   - Draft picks that changed hands count what an average pick in that round was worth.
+Offseason trades (keepers and picks swapped on the league thread, tools/yoenis_offseason_trades.py) count
+the same way from Opening Day, except the first season is his value over the keeper round the new team
+spent on him (he came over to be kept), and a player the new team didn't keep counts zero.
 Vetoed trades are left out. If a season's game logs haven't been pulled yet, its trades fall back to his
 full-season value prorated by the days left, and are marked "est".
 
@@ -16,7 +19,7 @@ Writes data["tradeHistory"] = {
   "trades": [{"y": year, "d": "YYYY-MM-DD", "a": team index, "b": team index,
               "ag": [[player, that season, kept after, seasons kept], ...], "bg": [...],
               "ap": [[pick label, value], ...], "bp": [...], "av": side a total, "bv": side b total,
-              "est": true when prorated}, ...],   newest first
+              "est": true when prorated, "off": "sheet"|"board" for offseason trades}, ...],   newest first
   "vetoed": number of trades left out, "curve": {round: expected value}
 }
   python3 tools/yoenis_trades_build.py
@@ -29,6 +32,16 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from yoenis_tenure import windows, key, pkey, day  # noqa: E402,F401
 from yoenis_value import vor_table, window_value, pick_curve, expected, kept_map, kept_surplus  # noqa: E402,F401
+from yoenis_offseason_trades import trades as _offseason  # noqa: E402
+from yoenis_yahoo_keepers import side as side_of  # noqa: E402
+
+_off = []
+
+
+def offseason_trades(data):
+    if not _off:
+        _off.extend(_offseason(data))
+    return _off
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "yoenis" / "data.json"
@@ -52,10 +65,54 @@ def window_now(year, w, sl, season_days):
     if days <= 0:
         return 0.0, False
     share = days / season_days
-    if sl is not None:
-        t = sl.get(key(w))
+    k = key(w)
+    if sl is not None and k in sl:
+        t = sl[k]
         return (window_value(year, t, w["pk"][1], share) if t else 0.0), False
-    return vor_table(year).get(w["pk"], 0.0) * share, True
+    return vor_table(year).get(w["pk"], 0.0) * share, True  # not pulled yet: prorate his season
+
+
+def offseason_rows(data, seasons, kept):
+    """Score every offseason trade: the season he arrived over his keeper round, then later kept seasons"""
+    rows = []
+    hist = ROOT / "tools" / "yahoo_yoenis" / "history"
+    for year in sorted({t["y"] for t in offseason_trades(data)}):
+        s = seasons[year]
+        h = json.loads((hist / f"{year}.json").read_text(encoding="utf-8"))
+        start, end = date.fromisoformat(h["start"]), date.fromisoformat(h["end"])
+        season_days = (end - start).days + 1
+        sl = slices(year)
+        wins = {}
+        for w in windows(year):
+            if w["kind"] == "off":
+                wins.setdefault((w["ref"], w["team"]), []).append(w)
+        names = {v: k for k, v in h["teams"].items()}
+        for i, t in enumerate([t for t in offseason_trades(data) if t["y"] == year]):
+            sides, est = {}, False
+            for side in ("a", "b"):
+                owner = t[side]
+                ti = s["o"].index(owner)
+                got = []
+                for w in wins.get((i, names.get(s["teams"][ti])), []):
+                    tag = w["pk"][0] + ":" + side_of(w["name"])
+                    rnd = kept.get(year, {}).get(owner, {}).get(tag)
+                    if rnd is None:  # not kept: he never played for them
+                        got.append([w["name"], 0.0, 0.0, 0])
+                        continue
+                    now, e = window_now(year, w, sl, season_days)
+                    est = est or e
+                    now = max(now - expected(rnd), 0.0)
+                    later, n = kept_surplus(year, owner, w["name"], w["pos"], kept) if w["stays"] else (0.0, 0)
+                    got.append([w["name"], round(now, 1), round(later, 1), n])
+                sides[side] = (ti, got, [[f"{ordinal(r)}-round pick", expected(r)] for r in t["ap" if side == "a" else "bp"]])
+            tot = lambda k: round(sum(x[1] + x[2] for x in sides[k][1]) + sum(x[1] for x in sides[k][2]), 1)  # noqa: E731
+            row = {"y": year, "d": t["d"], "a": sides["a"][0], "b": sides["b"][0],
+                   "ag": sides["a"][1], "bg": sides["b"][1], "ap": sides["a"][2], "bp": sides["b"][2],
+                   "av": tot("a"), "bv": tot("b"), "off": t["src"]}
+            if est:
+                row["est"] = True
+            rows.append(row)
+    return rows
 
 
 def main():
@@ -101,14 +158,16 @@ def main():
             if est:
                 row["est"] = True
             out.append(row)
-    out.sort(key=lambda t: t["d"], reverse=True)
+    out.extend(offseason_rows(data, seasons, kept))
+    out.sort(key=lambda t: (t["d"] or f"{t['y']}-01-01", t["y"]), reverse=True)
     hist = {"trades": out, "vetoed": vetoed, "curve": pick_curve()}
     if data.get("tradeHistory") == hist:
         print("No change.")
         return
     data["tradeHistory"] = hist
     DATA.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-    print(f"Wrote {len(out)} trades ({vetoed} vetoed left out, {sum(1 for t in out if t.get('est'))} estimated) to {DATA}.")
+    print(f"Wrote {len(out)} trades ({sum(1 for t in out if t.get('off'))} offseason, {vetoed} vetoed left out, "
+          f"{sum(1 for t in out if t.get('est'))} estimated) to {DATA}.")
 
 
 if __name__ == "__main__":

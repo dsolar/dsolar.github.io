@@ -251,6 +251,7 @@ details[open] .t-open::after{transform:translateY(.05rem) rotate(-135deg)}
 .trade-sides .tot{display:flex;justify-content:space-between;gap:.6rem;margin-top:.2rem;padding-top:.2rem;border-top:1px dashed var(--rule);font-size:.8125rem;font-weight:600;font-variant-numeric:tabular-nums}
 .trade-sides .won b::after{content:"Won";margin-left:.45rem;padding:.08rem .38rem;border-radius:2px;background:var(--monster);color:var(--chalk);font-size:.7rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;vertical-align:.1em}
 .trade-top{display:flex;justify-content:space-between;gap:1rem}
+.off-tag{display:inline-block;margin-left:.45rem;padding:.04rem .36rem;border:1px solid var(--rule);border-radius:2px;font-size:.68rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--ink);vertical-align:.1em}
 .trade-top .gap{font-size:.8125rem;font-weight:600;font-variant-numeric:tabular-nums}
 #tr-more{margin-top:.8rem}
 .tr-best{display:block;font-weight:400;font-size:.78rem;color:var(--muted);margin-top:.1rem}
@@ -689,7 +690,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       <div class="tbl-wrap" tabindex="0" role="region" aria-label="Waiver wire"><table class="standings" id="ww-t"></table></div>
       <p class="note">Every free-agent and waiver pickup from Opening Day on, valued like the trades: what he actually did for that team from the day after the pickup until he was dropped or traded (from his MLB game logs), plus, if he was still there at season's end, every later season that manager kept him, counted over what that keeper round was expected to produce. "By manager" adds up every pickup's value.</p>
     </div>
-    <p class="note">How it's scored: the same 16-category values as the awards, counted above a replacement-level player, so someone hurt or benched adds nothing. A player counts what he actually did for the team that got him, from the day after the trade until he was dropped, traded again or the season ended (from his MLB game logs). If he was still there at season's end, every later season that manager kept him adds his value over what that keeper round was expected to produce: what an average non-keeper pick in that round was worth across our drafts. A draft pick that changed hands counts that same average. 10 is about an All-Star's full season, and an average 1st-round pick is worth about 12. It's a guide, not gospel: it can't see who a team dropped to make room, or what a trade did to the weekly matchups. Trades within 1.5 of each other count as even. Vetoed trades are left out.</p>
+    <p class="note">How it's scored: the same 16-category values as the awards, counted above a replacement-level player, so someone hurt or benched adds nothing. A player counts what he actually did for the team that got him, from the day after the trade until he was dropped, traded again or the season ended (from his MLB game logs). If he was still there at season's end, every later season that manager kept him adds his value over what that keeper round was expected to produce: what an average non-keeper pick in that round was worth across our drafts. Offseason deals count from Opening Day, and since a player who comes over in the winter comes over to be kept, his first season counts over the keeper round the new team spent on him. They come from the keeper sheet from 2023 on, and before that are pieced together from the draft board (a pick used by someone other than its slot's owner was traded) and the commissioner's roster moves before Opening Day. Deals that only show one side, like part of a three-team trade, are left out. A draft pick that changed hands counts that same average. 10 is about an All-Star's full season, and an average 1st-round pick is worth about 12. It's a guide, not gospel: it can't see who a team dropped to make room, or what a trade did to the weekly matchups. Trades within 1.5 of each other count as even. Vetoed trades are left out.</p>
   </section>
 
   <section id="managers" aria-labelledby="managers-title">
@@ -1531,7 +1532,8 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     var ids = Object.keys(owners).filter(function (id) { return who(id); }).sort(function (a, b) { return who(a).localeCompare(who(b)); });
     $("tr-man").innerHTML = '<option value="">Everyone</option>' + ids.map(function (id) { return '<option value="' + esc(id) + '">' + esc(who(id)) + "</option>"; }).join("");
     var first = th.trades[th.trades.length - 1].y;
-    $("tr-lede").textContent = "All " + th.trades.length + " trades since " + first + ", and who came out ahead.";
+    var nOff = th.trades.filter(function (t) { return t.off; }).length;
+    $("tr-lede").textContent = "All " + th.trades.length + " trades since " + first + (nOff ? ", " + nOff + " of them in the offseason," : "") + " and who came out ahead.";
     $("tr-year").addEventListener("change", function () { TR.year = this.value; TR.shown = 25; drawTrades(); });
     $("tr-man").addEventListener("change", function () { TR.man = this.value; TR.shown = 25; drawTrades(); });
     $("tr-sort").addEventListener("click", function (e) {
@@ -1565,7 +1567,9 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
           '<div class="tot"><span>Value</span><span>' + fmtV(tot) + "</span></div></div>";
       };
       var gap = win ? "By " + fmtV(Math.abs(t.av - t.bv)) : "Even";
-      return '<li class="trade"><div class="trade-top"><span class="trade-d">' + esc(longDate(t.d)) + '</span><span class="gap">' + gap + '</span></div><div class="trade-sides">' + side("a") + side("b") + "</div></li>";
+      var when = t.d ? esc(longDate(t.d)) : "Before the " + t.y + " draft";
+      if (t.off) when += '<span class="off-tag" title="' + (t.off === "board" ? "An offseason deal, pieced together from the draft board and the commissioner&#39;s roster moves" : "An offseason deal, from the keeper sheet") + '">Offseason</span>';
+      return '<li class="trade"><div class="trade-top"><span class="trade-d">' + when + '</span><span class="gap">' + gap + '</span></div><div class="trade-sides">' + side("a") + side("b") + "</div></li>";
     }).join("");
     $("tr-more").hidden = list.length <= TR.shown;
   }

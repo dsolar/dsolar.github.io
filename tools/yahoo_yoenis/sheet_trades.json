@@ -1,0 +1,373 @@
+[
+ {
+  "y": 2026,
+  "a": "davids",
+  "b": "dane",
+  "ag": [
+   "Maikel Garcia"
+  ],
+  "bg": [
+   "Cade Smith",
+   "Jacob Wilson"
+  ]
+ },
+ {
+  "y": 2026,
+  "a": "davidb",
+  "b": "jeffs",
+  "ag": [
+   "14th round",
+   "18th round"
+  ],
+  "bg": [
+   "Mason Miller",
+   "19th round",
+   "25th round"
+  ]
+ },
+ {
+  "y": 2026,
+  "a": "jon",
+  "b": "keng",
+  "ag": [
+   "Brice Turang",
+   "25th round"
+  ],
+  "bg": [
+   "15th round"
+  ]
+ },
+ {
+  "y": 2025,
+  "a": "josh",
+  "b": "nickd",
+  "ag": [
+   "14th round pick"
+  ],
+  "bg": [
+   "Grayson Rodriguez",
+   "25th round pick"
+  ]
+ },
+ {
+  "y": 2025,
+  "a": "dane",
+  "b": "nate",
+  "ag": [
+   "Ketel Marte",
+   "Royce Lewis",
+   "25th round pick"
+  ],
+  "bg": [
+   "Michael King",
+   "6th round pick"
+  ]
+ },
+ {
+  "y": 2025,
+  "a": "dane",
+  "b": "nate",
+  "ag": [
+   "Pablo Lopez",
+   "22nd round pick"
+  ],
+  "bg": [
+   "9th round pick"
+  ]
+ },
+ {
+  "y": 2025,
+  "a": "davids",
+  "b": "keng",
+  "ag": [
+   "Jose Ramirez",
+   "Garrett Crochet",
+   "1st round pick",
+   "5th round pick",
+   "15th round pick",
+   "24th round pick",
+   "25th round pick"
+  ],
+  "bg": [
+   "Tyler Glasnow",
+   "1st round pick",
+   "5th round pick",
+   "15th round pick",
+   "16th round pick",
+   "17th round pick"
+  ]
+ },
+ {
+  "y": 2025,
+  "a": "dane",
+  "b": "keng",
+  "ag": [
+   "Gerrit Cole",
+   "5th round pick (via Dave)",
+   "6th round pick",
+   "15th round pick (via Dave)"
+  ],
+  "bg": [
+   "3rd round pick",
+   "5th round pick",
+   "15th round pick"
+  ]
+ },
+ {
+  "y": 2025,
+  "a": "josh",
+  "b": "nate",
+  "ag": [
+   "9th round pick",
+   "17th round pick"
+  ],
+  "bg": [
+   "Cole Ragans",
+   "11th round pick",
+   "19th round pick"
+  ]
+ },
+ {
+  "y": 2025,
+  "a": "jon",
+  "b": "davidb",
+  "ag": [
+   "Max Scherzer",
+   "25th round pick"
+  ],
+  "bg": [
+   "15th round pick"
+  ]
+ },
+ {
+  "y": 2025,
+  "a": "jeffs",
+  "b": null,
+  "ag": [
+   "Edwin Diaz",
+   "Andres Munoz",
+   "21st rounder"
+  ],
+  "bg": [
+   "13th rounder"
+  ]
+ },
+ {
+  "y": 2024,
+  "a": "henry",
+  "b": "nickd",
+  "ag": [
+   "Josh Lowe",
+   "21st round pick"
+  ],
+  "bg": [
+   "7th round pick"
+  ]
+ },
+ {
+  "y": 2024,
+  "a": "davids",
+  "b": "keng",
+  "ag": [
+   "Christian Encarnacion-Strand",
+   "Yandy Diaz",
+   "24th round pick",
+   "25th round pick"
+  ],
+  "bg": [
+   "17th round pick",
+   "19th round pick"
+  ]
+ },
+ {
+  "y": 2024,
+  "a": "dane",
+  "b": "keng",
+  "ag": [
+   "Rhys Hoskins",
+   "TJ Friedl",
+   "23rd round pick"
+  ],
+  "bg": [
+   "15th round pick"
+  ]
+ },
+ {
+  "y": 2024,
+  "a": "dane",
+  "b": "davids",
+  "ag": [
+   "Chris Bassitt",
+   "25th round pick"
+  ],
+  "bg": [
+   "17th round pick"
+  ]
+ },
+ {
+  "y": 2024,
+  "a": "davids",
+  "b": "steve",
+  "ag": [
+   "Jazz Chisholm",
+   "5th round pick"
+  ],
+  "bg": [
+   "Josh Jung",
+   "8th round pick"
+  ]
+ },
+ {
+  "y": 2024,
+  "a": "davids",
+  "b": "henry",
+  "ag": [
+   "17th round pick"
+  ],
+  "bg": [
+   "Vinnie Pasquatino",
+   "25th round pick"
+  ]
+ },
+ {
+  "y": 2024,
+  "a": "henry",
+  "b": "nickd",
+  "ag": [
+   "Luis Arraez",
+   "17th round pick"
+  ],
+  "bg": [
+   "6th round pick"
+  ]
+ },
+ {
+  "y": 2024,
+  "a": "davids",
+  "b": "dan",
+  "ag": [
+   "Nico Hoerner",
+   "10th round pick"
+  ],
+  "bg": [
+   "Christian Encarnacion-Strand",
+   "12th round pick"
+  ]
+ },
+ {
+  "y": 2024,
+  "a": "jeffs",
+  "b": "josh",
+  "ag": [
+   "Edwin Diaz",
+   "Ha-seong Kim",
+   "Kodai Senga",
+   "14th round pick"
+  ],
+  "bg": [
+   "4th round pick"
+  ]
+ },
+ {
+  "y": 2024,
+  "a": "steve",
+  "b": "nickd",
+  "ag": [
+   "10th round pick",
+   "19th round pick"
+  ],
+  "bg": [
+   "17th round pick",
+   "21st round pick",
+   "Brayan Bello"
+  ]
+ },
+ {
+  "y": 2024,
+  "a": "jeffs",
+  "b": "keng",
+  "ag": [
+   "William Contreras",
+   "7th round pick",
+   "16th round pick"
+  ],
+  "bg": [
+   "6th round pick",
+   "9th round pick"
+  ]
+ },
+ {
+  "y": 2024,
+  "a": "davids",
+  "b": "jon",
+  "ag": [
+   "5th round Pick"
+  ],
+  "bg": [
+   "7th round pick",
+   "Nico Hoerner"
+  ]
+ },
+ {
+  "y": 2024,
+  "a": "brian",
+  "b": "tom",
+  "ag": [
+   "Nathan Eovaldi",
+   "13th round pick"
+  ],
+  "bg": [
+   "12th round pick"
+  ]
+ },
+ {
+  "y": 2023,
+  "a": "davids",
+  "b": "keng",
+  "ag": [
+   "Fernando Tatis"
+  ],
+  "bg": [
+   "Manny Machado",
+   "Triston McKenzie"
+  ]
+ },
+ {
+  "y": 2023,
+  "a": "nate",
+  "b": "dan",
+  "ag": [
+   "Cedric Mullins",
+   "24th round pick",
+   "25th round pick"
+  ],
+  "bg": [
+   "9th round pick",
+   "22nd round pick"
+  ]
+ },
+ {
+  "y": 2023,
+  "a": "nate",
+  "b": "nickd",
+  "ag": [
+   "Nick Lodolo",
+   "16th round pick"
+  ],
+  "bg": [
+   "12th round pick"
+  ]
+ },
+ {
+  "y": 2023,
+  "a": "nate",
+  "b": "dane",
+  "ag": [
+   "8th round pick"
+  ],
+  "bg": [
+   "Robbie Ray",
+   "10th round pick"
+  ]
+ }
+]
