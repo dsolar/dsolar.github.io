@@ -41,7 +41,7 @@
 
   const MODES = {
     hold: { key: 'hold', label: 'Close It Out', pitcher: 'papelbon', innings: 2, startInning: 8, fatigueAt: 30, fatigueSpan: 25, lead: 1 },
-    cg: { key: 'cg', label: 'Complete Game', pitcher: 'pedro', innings: 9, startInning: 1, fatigueAt: 90, fatigueSpan: 45, lead: null, hookPitches: 140, hookRuns: 7 },
+    cg: { key: 'cg', label: 'Complete Game', pitcher: 'pedro', innings: 9, startInning: 1, fatigueAt: 80, fatigueSpan: 45, lead: null, hookPitches: 140, hookRuns: 7 },
   };
 
   // ---- the Yankees: the lineups Pedro faced at Fenway in the 2003 and 2004 ALCS, with that season's stats ----
@@ -338,7 +338,7 @@
     s.strikesThrown += 1;
     if (zone && revealCell(b, zIdx(ar, ac))) ev.reveal.push(zIdx(ar, ac));
 
-    let pc = b.contact + 0.09 + (zone ? heat * 0.06 : -0.12) + (ev.painted ? -0.03 : 0) + (mm ? 0.05 : 0) - P.stuff + vs * 0.07 - le * 0.7 + seq.contact + tto * 0.035 + fat * 0.06 + (s.strikes === 2 ? 0.04 : 0);
+    let pc = b.contact + 0.09 + (zone ? heat * 0.06 : -0.12) + (ev.painted ? -0.03 : 0) + (mm ? 0.05 : 0) - P.stuff + vs * 0.07 - le * 0.7 + seq.contact + tto * 0.05 + fat * 0.06 + (s.strikes === 2 ? 0.04 : 0);
     pc = clamp(pc, 0.15, 0.97);
     if (rng() >= pc) {
       ev.call = 'whiff';
@@ -422,9 +422,11 @@
         } else {
           s.outs += 1;
           if (s.outs < 3) {
-            if (B[2] && rng() < 0.4) { score(); B[2] = null; }
-            if (B[1] && !B[2] && rng() < 0.5) { B[2] = B[1]; B[1] = null; }
-            if (B[0]) { if (!B[1]) { B[1] = B[0]; } B[0] = null; }
+            // An unforced runner on third tries to score; then forced runners move up (a runner on first
+            // always goes, pushing anyone ahead of him), and an unforced runner on second may take third
+            if (B[2] && !(B[0] && B[1]) && rng() < 0.4) { score(); B[2] = null; }
+            if (B[0]) { if (B[1]) { if (B[2]) score(); B[2] = B[1]; } B[1] = B[0]; B[0] = null; }
+            else if (B[1] && !B[2] && rng() < 0.5) { B[2] = B[1]; B[1] = null; }
           }
         }
         break;

@@ -21,6 +21,17 @@
   // The same name with no spaces at all, so "amonra" finds Amon-Ra and "dk metcalf" finds D.K. Metcalf
   function squash(name) { return norm(name).replace(/ /g, ""); }
   function lastName(name) { var w = norm(name).split(" "); return w[w.length - 1] || ""; }
+  // Last names a guess can stand for: the final word, plus the last two for three-word names, so
+  // "Gilgeous-Alexander" and "St. Brown" count the same as "Alexander" and "Brown" would
+  function surnames(name) {
+    var w = norm(name).split(" "), out = [w[w.length - 1] || ""];
+    if (w.length >= 3) out.push(w.slice(-2).join(" "));
+    return out;
+  }
+  // Nicknames people actually type, to the name the game knows
+  var ALIAS = { "steph curry": "stephen curry", "pat mahomes": "patrick mahomes", "sga": "shai gilgeous alexander",
+    "obj": "odell beckham", "cmc": "christian mccaffrey", "kat": "karl anthony towns", "jjj": "jaren jackson",
+    "giannis": "giannis antetokounmpo", "wemby": "victor wembanyama", "ja": "ja morant" };
 
   function dailyKey(date) {
     return new Date(date || Date.now()).toLocaleDateString("en-CA", { timeZone: TZ });
@@ -88,7 +99,7 @@
       if (!k || by[k]) return;
       var x = { n: n, k: k, sq: k.replace(/ /g, ""), parts: k.split(" ") };
       by[k] = x; sq[x.sq] = sq[x.sq] || x; names.push(x);
-      var l = x.parts[x.parts.length - 1]; last[l] = (last[l] || 0) + 1;
+      surnames(n).forEach(function (l) { last[l] = (last[l] || 0) + 1; });
     };
     (known || []).forEach(add);
     picks.slice().sort(function (a, b) { return (b.f || 0) - (a.f || 0); }).forEach(function (p) { add(p.n); });
@@ -100,10 +111,11 @@
   function judge(guess, pick, pl) {
     var g = norm(guess);
     if (!g) return "unknown";
+    g = ALIAS[g] || g;
     if (g === norm(pick.n) || squash(g) === squash(pick.n)) return "right";
     if (pl.byKey[g] || pl.bySquash[squash(g)]) return "wrong";
     var n = pl.lastCount[g];
-    if (n === 1) return g === lastName(pick.n) ? "right" : "wrong";
+    if (n === 1) return surnames(pick.n).indexOf(g) >= 0 ? "right" : "wrong";
     if (n > 1) return "ambiguous";
     return "unknown";
   }

@@ -103,6 +103,7 @@
   }
   function dailyKey(s) { return "jm-daily3-" + (s || sport) + "-" + today; }   // "3": rescored Oct 28
   function homeStatus() {
+    today = G.dailyKey();
     var d = store.get(dailyKey());
     var total = d ? d.results.reduce(function (a, r) { return a + r.s; }, 0) : 0;
     $("daily-status").classList.toggle("fresh", !d || !d.results.length);
@@ -119,6 +120,7 @@
 
   // ---- Starting a game
   function startDaily() {
+    today = G.dailyKey();
     mode = "daily";
     var saved = store.get(dailyKey());
     game = saved && saved.order ? saved : { order: G.daily(picks, "jm-" + sport), results: [] };
@@ -191,13 +193,13 @@
       for (var k = 0; k < G.DAILY; k++) track += (k ? "<s></s>" : "") + '<i class="' + (k < n ? "s" + tier(game.results[k].s) : k === n ? "on" : "") + '"></i>';
       $("hud-mode").innerHTML = '<span class="track" aria-hidden="true">' + track + "</span>";
       $("hud-right").innerHTML = '<span class="score"><b>' + total + "</b> / " + G.DAILY * G.POINTS + "</span>";
-      $("card-count").textContent = "Player " + Math.min(n + 1, G.DAILY) + " of " + G.DAILY;
+      $("card-count").textContent = "Player " + Math.min(n + (cur && cur.done ? 0 : 1), G.DAILY) + " of " + G.DAILY;
     } else {
       var lives = "";
       for (var j = 0; j < G.LIVES; j++) lives += '<i class="' + (j < G.LIVES - game.misses ? "" : "gone") + '"></i>';
       $("hud-mode").innerHTML = '<span class="lives" aria-label="' + (G.LIVES - game.misses) + ' misses left">' + lives + "</span>";
       $("hud-right").innerHTML = '<span class="score"><b>' + total + "</b> points</span>";
-      $("card-count").textContent = "Player " + (game.results.length + 1);
+      $("card-count").textContent = "Player " + (game.results.length + (cur && cur.done ? 0 : 1));
     }
   }
 
@@ -294,7 +296,7 @@
       $("countdown").textContent = "";
       $("board").hidden = true;
     }
-    $("done-squares").textContent = squares.length > 40 ? squares.slice(-40 * 2) : squares;
+    $("done-squares").textContent = Array.from(squares).slice(-40).join("");
     $("recap").innerHTML = game.results.map(function (r, k) {
       var p = picks[r.i];
       return '<li><i class="s' + tier(r.s) + '"></i><div><b>' + esc(p.n) + "</b><br><span>" + p.s.length + " stops, " + p.s[0][1] + "-" + p.s[p.s.length - 1][2]
