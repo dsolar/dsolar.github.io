@@ -173,6 +173,7 @@ select{padding-right:2rem}
 #h-riv td:nth-child(1){min-width:5.5rem}
 @media (max-width:480px){#h-riv th:nth-child(4),#h-riv td:nth-child(4){display:none}}
 #h-riv tr.hl td{font-weight:700}
+#h-riv-more{margin-top:.6rem}
 .mu .watch{display:block;color:var(--red-text, var(--red));font:700 .7rem/1.2 var(--f-body);letter-spacing:.03em;text-transform:uppercase;margin-top:.2rem}
 @media (max-width:480px){.sweeps li{grid-template-columns:minmax(0,1fr) auto}.sweeps .when{grid-column:1/-1}}
 
@@ -650,6 +651,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       <div class="controls"><label class="field">Manager<select id="h-man"></select></label></div>
       <p class="h-lede" id="h-riv-lede"></p>
       <div class="tbl-wrap" tabindex="0" role="region" aria-label="Rivalries"><table class="standings" id="h-riv"></table></div>
+      <button type="button" class="btn ghost" id="h-riv-more" hidden></button>
       <p class="note">By manager, so a rivalry carries across team renames. A matchup goes to whoever won more categories. Playoffs counts title-bracket games only; consolation games count with the rest. Cats are categories won, lost and tied.</p>
     </div>
     <div role="tabpanel" id="hp-sw" aria-labelledby="ht-sw" hidden>
@@ -1718,6 +1720,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     var t = store.get("yoenis-team"), last = lastSeason(), i = t ? last.teams.indexOf(t) : -1;
     return i >= 0 ? last.o[i] : null;
   }
+  var H2H_ALL = false, H2H_SHOW = 6;
   function recPct(m) { var n = m[0] + m[1] + m[2]; return n ? (m[0] + m[2] / 2) / n : 0; }
   function initH2H() {
     var H = DATA.history; if (!H || !H.rivals) { $("h2h").hidden = true; return; }
@@ -1726,7 +1729,8 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     var list = Object.keys(ids).filter(function (id) { return who(id); }).sort(function (a, b) { return who(a).localeCompare(who(b)); });
     $("h-man").innerHTML = list.map(function (id) { return '<option value="' + esc(id) + '">' + esc(who(id)) + "</option>"; }).join("");
     var mine = myOwner(); if (mine && ids[mine]) $("h-man").value = mine;
-    $("h-man").addEventListener("change", drawRivals);
+    $("h-man").addEventListener("change", function () { H2H_ALL = false; drawRivals(); });
+    $("h-riv-more").addEventListener("click", function () { H2H_ALL = !H2H_ALL; drawRivals(); });
     $("h2h-lede").textContent = "Every manager's record against everyone else in " + H.matchups.toLocaleString("en-US") + " matchups since 2013, and every 16-0.";
     $("h2h").hidden = false;
     drawRivals(); drawSweeps();
@@ -1750,8 +1754,16 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     $("h-riv-lede").innerHTML = "<b>" + esc(who(me)) + "</b> is " + rec(tot) + " all time." +
       (best && recPct(best.all) > 0.5 ? " Owns <b>" + esc(who(best.opp)) + "</b> (" + rec(best.all) + ")." : "") +
       (worst && recPct(worst.all) < 0.5 ? " Can't beat <b>" + esc(who(worst.opp)) + "</b> (" + rec(worst.all) + ")." : "");
+    // Short by default: the rivals he's played most who are still in the league, plus his nemesis and victim
+    var current = {}; lastSeason().o.forEach(function (id) { current[id] = 1; });
+    var named = rows.filter(function (r) { return who(r.opp); });
+    var short = named.filter(function (r) { return current[r.opp]; }).slice(0, H2H_SHOW);
+    [best, worst].forEach(function (r) { if (r && short.indexOf(r) < 0) short.push(r); });
+    var shown = H2H_ALL ? named : named.filter(function (r) { return short.indexOf(r) >= 0; });
+    $("h-riv-more").hidden = shown.length >= named.length && !H2H_ALL;
+    $("h-riv-more").textContent = H2H_ALL ? "Show fewer" : "Show all " + named.length + ", past managers too";
     $("h-riv").innerHTML = '<caption hidden>' + esc(who(me)) + ' rivalries</caption><thead><tr><th scope="col">Against</th><th scope="col" class="r">Record</th><th scope="col" class="r">Playoffs</th><th scope="col" class="r">Cats</th><th scope="col" class="r">Last</th></tr></thead><tbody>' +
-      rows.filter(function (r) { return who(r.opp); }).map(function (r) {
+      shown.map(function (r) {
         var hl = r === best || r === worst;
         return "<tr" + (hl ? ' class="hl"' : "") + "><td>" + esc(who(r.opp)) + '</td><td class="r num">' + rec(r.all) + '</td><td class="r num">' + (r.po[0] + r.po[1] + r.po[2] ? r.po[0] + "-" + r.po[1] + (r.po[2] ? "-" + r.po[2] : "") : "") +
           '</td><td class="r num">' + rec(r.c) + '</td><td class="r num">' + (r.last ? r.last.y + " " + (r.last.s[0] > r.last.s[1] ? "W" : r.last.s[0] < r.last.s[1] ? "L" : "T") : "") + "</td></tr>";
