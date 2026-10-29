@@ -238,12 +238,12 @@ window.PROJECTS = [
     section: "kids",
     type: "Games",
     released: "2026-10",
-    url: "https://claire-hidden-isles.davidbsolar.chatgpt.site/",
-    external: true,
-    action: "Play on ChatGPT",
-    question: "What happens the morning a little cow says her first words?",
-    summary: "Charlotte’s game, designed by Charlotte and built with her dad: name yourself, team up with Cow, explore the Bloom Isles and help the village grow. It lives on ChatGPT for now.",
-    stack: ["ChatGPT"],
+    url: "wild-bloom-isles/",
+    external: false,
+    action: "Open the design studio",
+    question: "What would a home that is entirely yours look like?",
+    summary: "Charlotte’s game, designed by Charlotte and built with her dad. Create illustrated rooms, mix six collections from Sakura to Art Deco, and arrange every piece. A home-design studio with everything unlocked.",
+    stack: ["JavaScript", "SVG"],
     cover: { image: "assets/covers/wild-bloom-isles.jpg", bg: "#171B35", band: "#B23A57" }
   }
 ];
