@@ -30,6 +30,36 @@ def val(s):
         return s
 
 
+def transactions(y, key):
+    """Every transaction, a page at a time. Yahoo refuses some seasons' full list in one call (2023),
+    so pages go 100 at a time, and a page Yahoo refuses is retried 25, then 5, then 1 at a time
+    so one bad entry doesn't lose the rest."""
+    out, start = [], 0
+    while True:
+        got = page(y, key, start, 100)
+        out.extend(got)
+        if len(got) < 100:
+            return out
+        start += 100
+
+
+def page(y, key, start, count):
+    root = y.get(f"league/{key}/transactions;start={start};count={count}", soft=True)
+    if root is not None:
+        return root.findall(".//transactions/transaction")
+    if count == 1:
+        print(f"::warning::Yahoo refused transaction {start} in {key}; skipped.")
+        return [None]
+    smaller = {100: 25, 25: 5, 5: 1}[count]
+    out = []
+    for s in range(start, start + count, smaller):
+        got = page(y, key, s, smaller)
+        out.extend(got)
+        if len(got) < smaller:
+            break
+    return out
+
+
 def season(y, year, lid):
     g = y.get(f"games;game_codes=mlb;seasons={year}", soft=True)
     gk = text(g.find(".//game"), "game_key") if g is not None and g.find(".//game") is not None else None
@@ -69,9 +99,8 @@ def season(y, year, lid):
                         "playoffs": text(mu, "is_playoffs") == "1", "consolation": text(mu, "is_consolation") == "1"})
         weeks.append({"week": w, "matchups": mus})
     moves = []
-    root = y.get(f"league/{key}/transactions", soft=True)
-    for t in (root.findall(".//transactions/transaction") if root is not None else []):
-        if text(t, "status") != "successful" or text(t, "type") not in ("add", "drop", "add/drop"):
+    for t in transactions(y, key):
+        if t is None or text(t, "status") != "successful" or text(t, "type") not in ("add", "drop", "add/drop"):
             continue
         for pl in t.findall(".//players/player"):
             td = pl.find("transaction_data")
@@ -92,7 +121,7 @@ def main():
     last = data["seasons"][-1]["year"]
     for s in data["seasons"]:
         path = os.path.join(OUT, f"{s['year']}.json")
-        if os.path.exists(path) and s["year"] != last and "--all" not in sys.argv:
+        if os.path.exists(path) and s["year"] != last and "--all" not in sys.argv and json.load(open(path, encoding="utf-8")).get("moves"):
             continue
         got = season(y, s["year"], s["lid"])
         if not got:
