@@ -417,6 +417,8 @@ The stamp works itself out: the experts "whiffed" when they panned a player who 
 
 ## Wipe Yoenis: luck, drafts and manager profiles
 
+Player lookup (the Players section) builds its index in the browser from data the page already has: every draft board, the keeper lists, every trade, `history.picked` (every pickup worth at least a point, from `tools/yoenis_history_build.py`) and the awards.
+
 `tools/yoenis_analysis_build.py` (in the Monday workflow) writes `analysis` to `yoenis/data.json`: every regular-season week's categories against all 15 other teams (the all-play record), so luck is actual matchup wins less expected; each manager's category profile (the share of the league his teams beat in each category in a typical week); every keeper-era draft class against what each slot usually produces (`slot_curve`), with the biggest steals and busts; and pickups per team-season. The page shows them under Luck and drafts, and every manager's card adds a profile built from them plus the trade, waiver wire and rivalry data.
 
 Namesakes (Will Smith the catcher and the reliever, two Max Muncys, the 2018 José Ramírez taken in round 21) are told apart with Yahoo's draft results (`tools/yoenis_draft_pull.py` into `tools/yahoo_yoenis/drafts/`: each pick's position and MLB team) and the MLB player IDs and teams in `tools/mlb/`, through `ident()` and `draft_value()` in `tools/yoenis_value.py`.

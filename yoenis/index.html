@@ -197,6 +197,22 @@ select{padding-right:2rem}
 .bwt td.t small.b7{margin-top:.25rem;color:var(--ink);font-size:.78rem}
 .bwt td.t small.b7 b{font-weight:700}
 .sw-note{font-size:.8125rem;color:var(--muted);margin:-.4rem 0 .8rem}
+.pl-find{flex:1 1 18rem}
+.pl-find input{width:100%;font:500 1rem/1.3 var(--f-body);color:var(--ink);background:var(--bg);border:1px solid var(--rule);border-radius:4px;padding:.55rem .65rem;min-height:44px}
+.pl-sug{list-style:none;margin:.3rem 0 0;padding:0;border:1px solid var(--rule);border-radius:4px;max-width:28rem}
+.pl-sug li button{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--rule);padding:.6rem .7rem;font:500 .9375rem/1.3 var(--f-body);color:var(--ink);cursor:pointer;min-height:44px}
+.pl-sug li:last-child button{border-bottom:0}
+.pl-sug li button small{color:var(--muted);font-weight:400;margin-left:.4rem}
+.pl-sug li button:hover,.pl-sug li button:focus-visible{background:color-mix(in srgb,var(--monster) 10%,transparent)}
+.pl-card{margin-top:1rem}
+.pl-card h3{font:600 1.35rem/1.2 var(--f-sign);margin:0 0 .2rem}
+.pl-card .pl-sum{color:var(--muted);margin:0 0 .6rem}
+.pl-yr{display:grid;grid-template-columns:3.2rem minmax(0,1fr);gap:.2rem .8rem;padding:.55rem 0;border-top:1px solid var(--rule)}
+.pl-yr>b{font-variant-numeric:tabular-nums}
+.pl-yr ul{list-style:none;margin:0;padding:0}
+.pl-yr li{margin:.1rem 0;overflow-wrap:break-word}
+.pl-yr .k{display:inline-block;min-width:4.6rem;margin-right:.4rem;font-size:.75rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
+.pl-yr .k.aw{color:var(--monster)}
 .lt{width:100%;border-collapse:collapse;font-size:.9375rem;font-variant-numeric:tabular-nums}
 .lt th{font-weight:600;color:var(--muted);font-size:.8125rem;text-align:left;padding:.4rem .5rem .4rem 0;border-bottom:1px solid var(--rule)}
 .lt td{padding:.5rem .5rem .5rem 0;border-bottom:1px solid color-mix(in srgb, var(--rule) 60%, transparent);vertical-align:baseline}
@@ -572,6 +588,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     <a href="#managers">Managers</a>
     <a href="#graveyard">Graveyard</a>
     <a href="#awards">Awards</a>
+    <a href="#players">Players</a>
     <span class="jg" aria-hidden="true"></span>
     <a href="#trades">Trades</a>
     <a href="#analysis">Luck and drafts</a>
@@ -678,6 +695,17 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     </div>
     <ol class="cards" id="awards-list" tabindex="0" aria-label="Award cards"></ol>
     <p class="note">A player's value adds up how far above or below a typical rostered player he was in each category, with average, OPS, ERA and WHIP weighted by playing time. Keepers are marked from 2022 on, when the keeper sheet starts. Stats from MLB.</p>
+  </section>
+
+  <section id="players" aria-labelledby="players-title">
+    <div class="section-head">
+      <h2 id="players-title">Player lookup</h2>
+      <p>Any player's whole life in the league: every time he was drafted, kept, traded or picked up, and every award.</p>
+    </div>
+    <div class="controls"><label class="field pl-find">Player<input type="search" id="pl-q" placeholder="e.g. Aaron Judge" autocomplete="off" spellcheck="false" aria-controls="pl-sug"></label></div>
+    <ul class="pl-sug" id="pl-sug" role="listbox" aria-label="Matching players" hidden></ul>
+    <div id="pl-out" aria-live="polite"></div>
+    <p class="note">From every draft since 2013, the keeper lists, every trade, every pickup that produced at least a point of value, and the awards. Values are the same units as the trades: 10 is about an All-Star season.</p>
   </section>
 
   <section id="trades" aria-labelledby="trades-title">
@@ -882,7 +910,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     $("reigning").innerHTML = last.year + " champion: <strong>" + esc(champ) + "</strong>" + (MAN[champ] ? " (" + esc(MAN[champ]) + ")" : "");
     $("foot").textContent = "Updated " + new Date(d.updated + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) + ". Data from the league's Yahoo draft and standings pages, the keeper sheet and the commissioner's league emails.";
     initHero();
-    loadMine(); initKeepers(); initHistory(); initBest(); initOffseason(); initTitles(); initRegular(); initStats(); initAwards(); initTrades(); initH2H(); initWaivers(); initAnalysis(); initManagers(); initRace(); initDrafts();
+    loadMine(); initKeepers(); initHistory(); initBest(); initOffseason(); initTitles(); initRegular(); initStats(); initAwards(); initTrades(); initH2H(); initWaivers(); initAnalysis(); initPlayers(); initManagers(); initRace(); initDrafts();
     loadSheet();
     if (location.hash === "#drafts") { $("kt-draft").click(); $("keepers").scrollIntoView(); }
   }
@@ -2035,6 +2063,98 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     $("h-near-f").hidden = !near.length;
   }
 
+  /* Player lookup: one player's every draft, keep, trade, pickup and award */
+  var PL = null;
+  function plKey(n) { return fold(String(n).replace(/\s*\((Batter|Pitcher)\)$/i, "").replace(/\s*\[[BP]\]$/, "")); }
+  function plIndex() {
+    if (PL) return PL;
+    PL = {};
+    var add = function (name, y, order, html) {
+      var k = plKey(name); if (!k) return;
+      var x = PL[k] || (PL[k] = { n: String(name).replace(/\s*\((Batter|Pitcher)\)$/i, ""), ev: [], c: { d: 0, k: 0, t: 0, p: 0, a: 0 }, mgr: {} });
+      var role = /\(Pitcher\)$/i.test(name) ? " (as a pitcher)" : /\(Batter\)$/i.test(name) ? " (as a hitter)" : "";
+      x.ev.push({ y: y, o: order, h: html + role });
+      return x;
+    };
+    var flagged = {};
+    DATA.seasons.forEach(function (s) {
+      s.draft.forEach(function (e, i) {
+        var kept = e.length > 3 && e[3];
+        if (kept) flagged[s.year] = 1;
+        var x = add(e[2], s.year, kept ? 0 : 1, kept ? '<span class="k">Kept</span>by ' + esc(teamMan(s, e[1])) + ", round " + e[0]
+          : '<span class="k">Drafted</span>by ' + esc(teamMan(s, e[1])) + ", round " + e[0] + " (No. " + (i + 1) + ")");
+        if (x) { x.c[kept ? "k" : "d"]++; if (kept) x.mgr[s.o[e[1]]] = 1; }
+      });
+    });
+    Object.keys(DATA.keeperHistory || {}).forEach(function (y) {   // years whose board doesn't mark keepers
+      if (flagged[y] || !SEASONS[y]) return;
+      DATA.keeperHistory[y].forEach(function (row) {
+        row[1].forEach(function (k) {
+          var x = add(k[0], +y, 0, '<span class="k">Kept</span>by ' + esc(teamMan(SEASONS[y], row[0])) + (k[1] ? ", round " + k[1] : ""));
+          if (x) { x.c.k++; x.mgr[SEASONS[y].o[row[0]]] = 1; }
+        });
+      });
+    });
+    ((DATA.tradeHistory || {}).trades || []).forEach(function (t) {
+      var s = SEASONS[t.y];
+      [["a", "b"], ["b", "a"]].forEach(function (p) {
+        (t[p[0] + "g"] || []).forEach(function (g) {
+          var when = t.d ? longDate(t.d) : "before the draft";
+          var x = add(g[0], t.y, 2, '<span class="k">Traded</span>to ' + esc(teamMan(s, t[p[0]])) + " by " + esc(man(s, t[p[1]]) || s.teams[t[p[1]]]) + ", " + esc(when) +
+            ". Worth " + fmtV(g[1] + g[2]) + " to them; they graded " + esc(t["g" + p[0]] || "") + ".");
+          if (x) x.c.t++;
+        });
+      });
+    });
+    ((DATA.history || {}).picked || []).forEach(function (r) {
+      var s = SEASONS[r[0]];
+      var x = add(r[2], r[0], 3, '<span class="k">Picked up</span>by ' + esc(teamMan(s, r[1])) + ", worth " + fmtV(r[3]));
+      if (x) x.c.p++;
+    });
+    Object.keys(DATA.awards || {}).forEach(function (y) {
+      DATA.awards[y].forEach(function (a) {
+        if (!a.p) return;
+        var x = add(a.p, +y, 4, '<span class="k aw">' + esc(a.a) + "</span>" + esc(a.line) + " for " + esc(teamMan(SEASONS[y], a.ti)));
+        if (x) x.c.a++;
+      });
+    });
+    return PL;
+  }
+  function initPlayers() {
+    var q = $("pl-q"), sug = $("pl-sug");
+    var show = function () {
+      var v = fold(q.value);
+      if (v.length < 2) { sug.hidden = true; return; }
+      var I = plIndex(), parts = v.split(" ");
+      var hits = Object.keys(I).filter(function (k) { return parts.every(function (p) { return k.indexOf(p) > -1; }); })
+        .sort(function (a, b) { return (b.indexOf(v) === 0) - (a.indexOf(v) === 0) || I[b].ev.length - I[a].ev.length; }).slice(0, 8);
+      sug.innerHTML = hits.length ? hits.map(function (k) {
+        var x = I[k], ys = x.ev.map(function (e) { return e.y; });
+        return '<li role="option"><button type="button" data-k="' + esc(k) + '">' + esc(x.n) + "<small>" + Math.min.apply(null, ys) + (Math.max.apply(null, ys) > Math.min.apply(null, ys) ? "\u2013" + Math.max.apply(null, ys) : "") + "</small></button></li>";
+      }).join("") : '<li><button type="button" disabled>No one by that name</button></li>';
+      sug.hidden = false;
+    };
+    q.addEventListener("input", show);
+    q.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { var b = sug.querySelector("button[data-k]"); if (b) { e.preventDefault(); pick(b.getAttribute("data-k")); } }
+    });
+    sug.addEventListener("click", function (e) { var b = e.target.closest("button[data-k]"); if (b) pick(b.getAttribute("data-k")); });
+    function pick(k) {
+      var x = plIndex()[k]; sug.hidden = true; q.value = x.n;
+      var by = {}; x.ev.forEach(function (e) { (by[e.y] || (by[e.y] = [])).push(e); });
+      var c = x.c, bits = [];
+      if (c.d) bits.push("drafted " + (c.d === 1 ? "once" : c.d + " times"));
+      if (c.k) { var nm = Object.keys(x.mgr).length; bits.push("kept " + (c.k === 1 ? "once" : c.k + " times") + (nm > 1 ? " by " + nm + " managers" : "")); }
+      if (c.t) bits.push("traded " + (c.t === 1 ? "once" : c.t + " times"));
+      if (c.p) bits.push("picked up " + (c.p === 1 ? "once" : c.p + " times") + " for real value");
+      if (c.a) bits.push(c.a + (c.a === 1 ? " award" : " awards"));
+      var sum = bits.join(", "); sum = sum.charAt(0).toUpperCase() + sum.slice(1) + ".";
+      $("pl-out").innerHTML = '<div class="pl-card"><h3>' + esc(x.n) + '</h3><p class="pl-sum">' + esc(sum) + "</p>" +
+        Object.keys(by).sort().reverse().map(function (y) {
+          return '<div class="pl-yr"><b>' + y + "</b><ul>" + by[y].sort(function (a, b) { return a.o - b.o; }).map(function (e) { return "<li>" + e.h + "</li>"; }).join("") + "</ul></div>";
+        }).join("") + "</div>";
+    }
+  }
   /* Luck and drafts (data.analysis, from tools/yoenis_analysis_build.py) */
   function sgn(v, d) { var t = Math.abs(v).toFixed(d == null ? 1 : d); return (v > 0.05 ? "+" : v < -0.05 ? "\u2212" : "") + t; }
   function cls(v) { return v > 0.05 ? "pos" : v < -0.05 ? "neg" : ""; }

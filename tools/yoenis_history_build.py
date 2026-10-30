@@ -15,7 +15,8 @@ Reads tools/yahoo_yoenis/history/<year>.json (tools/yoenis_history_pull.py) and 
              season that manager kept him, less what that keeper round was expected to produce.
 Writes data["history"] = {"sweeps": [...], "near": [...], "rivals": {...}, "pickups": [...top...], "pickTeams": {...},
                           "cats": [abbr, ...], "best": {abbr: [[year, week, team index, value, days, playoffs], ...]},
-                          "best7": the same, counting only regular seven-day weeks}.
+                          "best7": the same, counting only regular seven-day weeks,
+                          "picked": [[year, team index, player, value], ...] every pickup worth 1 or more}.
 
   python3 tools/yoenis_history_build.py
 """
@@ -196,6 +197,8 @@ def main():
     hist = {"sweeps": sorted(sweeps, key=lambda r: (r["y"], r["w"]), reverse=True),
             "near": sorted(near, key=lambda r: (r["y"], r["w"]), reverse=True),
             "rivals": rivals, "pickups": top, "pickTeams": pick_teams, "cats": cats, "best": best, "best7": best7,
+            # every pickup worth at least one point, for the player search: [year, team index, player, value]
+            "picked": [[p["y"], p["t"], p["p"], round(p["now"] + p["kept"], 1)] for p in pickups if p["now"] + p["kept"] >= 1],
             "matchups": sum(sum(r["m"]) + sum(r["po"]) for r in rivals.values())}
     if data.get("history") == hist:
         print("No change.")
