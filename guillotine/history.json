@@ -3589,7 +3589,7 @@
        }
       ],
       "bidders": 5,
-      "next_proj": 19.79
+      "next_proj": 20.78
      },
      {
       "n": "James Cook III",
@@ -3655,7 +3655,7 @@
        }
       ],
       "bidders": 7,
-      "next_proj": 17.39
+      "next_proj": 19.14
      },
      {
       "n": "Chuba Hubbard",
@@ -3682,7 +3682,7 @@
        }
       ],
       "bidders": 5,
-      "next_proj": 15.46
+      "next_proj": 15.58
      },
      {
       "n": "Matthew Stafford",
@@ -3709,7 +3709,7 @@
        }
       ],
       "bidders": 5,
-      "next_proj": 19.26
+      "next_proj": 18.8
      },
      {
       "n": "Sam LaPorta",
@@ -3732,7 +3732,7 @@
        }
       ],
       "bidders": 4,
-      "next_proj": 10.55
+      "next_proj": 9.8
      },
      {
       "n": "Garrett Wilson",
@@ -3755,7 +3755,7 @@
        }
       ],
       "bidders": 4,
-      "next_proj": 11.99
+      "next_proj": 11.68
      },
      {
       "n": "Rome Odunze",
@@ -3770,45 +3770,45 @@
        }
       ],
       "bidders": 2,
-      "next_proj": 9.49
+      "next_proj": 9.69
      },
      {
       "n": "Jaylen Waddle",
       "pos": "WR",
       "nfl": "DEN",
       "claimed_by": "Tai Streetz Lata?",
-      "next_proj": 9.57
+      "next_proj": 9.16
      },
      {
       "n": "KC Concepcion Jr.",
       "pos": "WR",
       "nfl": "CLE",
       "claimed_by": "Breece’s Pieces",
-      "next_proj": 7.42
+      "next_proj": 7.95
      },
      {
       "n": "Hunter Henry",
       "pos": "TE",
       "nfl": "NE",
-      "next_proj": 7.42
+      "next_proj": 7.28
      },
      {
       "n": "Jakobi Meyers",
       "pos": "WR",
       "nfl": "JAX",
-      "next_proj": 8.5
+      "next_proj": 8.31
      },
      {
       "n": "Keon Coleman",
       "pos": "WR",
       "nfl": "BUF",
-      "next_proj": 5.7
+      "next_proj": 5.71
      },
      {
       "n": "Marvin Harrison Jr.",
       "pos": "WR",
       "nfl": "HOU",
-      "next_proj": 1.31
+      "next_proj": 4.2
      }
     ]
    }
@@ -3973,19 +3973,19 @@
       "pts": null
      },
      {
-      "n": "A.J. Brown",
-      "pos": "WR",
-      "nfl": "NE",
-      "slot": "WR",
-      "proj": 12.38,
-      "pts": null
-     },
-     {
       "n": "Ja'Marr Chase",
       "pos": "WR",
       "nfl": "CIN",
       "slot": "WR",
       "proj": 17,
+      "pts": null
+     },
+     {
+      "n": "DK Metcalf",
+      "pos": "WR",
+      "nfl": "PIT",
+      "slot": "WR",
+      "proj": 9.71,
       "pts": null
      },
      {
@@ -4001,7 +4001,7 @@
       "pos": "RB",
       "nfl": "CHI",
       "slot": "W/R/T",
-      "proj": 11.81,
+      "proj": 11.8,
       "pts": null
      },
      {
@@ -4013,11 +4013,11 @@
       "pts": null
      },
      {
-      "n": "DK Metcalf",
+      "n": "A.J. Brown",
       "pos": "WR",
-      "nfl": "PIT",
+      "nfl": "NE",
       "slot": "BN",
-      "proj": 9.72,
+      "proj": 10.82,
       "pts": null
      },
      {
@@ -4067,7 +4067,7 @@
       "pos": "QB",
       "nfl": "NE",
       "slot": "QB",
-      "proj": 21.86,
+      "proj": 21.81,
       "pts": null
      },
      {
@@ -4115,7 +4115,7 @@
       "pos": "TE",
       "nfl": "GB",
       "slot": "TE",
-      "proj": 8.6,
+      "proj": 8.71,
       "pts": null
      },
      {
@@ -4189,7 +4189,7 @@
       "pos": "RB",
       "nfl": "IND",
       "slot": "RB",
-      "proj": 15.19,
+      "proj": 15.21,
       "pts": null
      },
      {
@@ -4375,7 +4375,7 @@
       "pos": "QB",
       "nfl": "DEN",
       "slot": "BN",
-      "proj": 13.98,
+      "proj": 13.99,
       "pts": null
      },
      {
@@ -4417,7 +4417,7 @@
       "pos": "RB",
       "nfl": "TB",
       "slot": "RB",
-      "proj": 14.91,
+      "proj": 14.73,
       "pts": null
      },
      {
@@ -4425,7 +4425,7 @@
       "pos": "RB",
       "nfl": "MIA",
       "slot": "RB",
-      "proj": 12.11,
+      "proj": 12.12,
       "pts": null
      },
      {
@@ -4449,7 +4449,7 @@
       "pos": "WR",
       "nfl": "JAX",
       "slot": "WR",
-      "proj": 13.84,
+      "proj": 13.86,
       "pts": null
      },
      {
@@ -4465,7 +4465,7 @@
       "pos": "WR",
       "nfl": "TB",
       "slot": "W/R/T",
-      "proj": 9.45,
+      "proj": 9.69,
       "pts": null
      },
      {
@@ -4481,7 +4481,7 @@
       "pos": "WR",
       "nfl": "NE",
       "slot": "BN",
-      "proj": 6.63,
+      "proj": 7.52,
       "pts": null
      },
      {
@@ -4497,7 +4497,7 @@
       "pos": "WR",
       "nfl": "MIA",
       "slot": "BN",
-      "proj": 7.29,
+      "proj": 7.22,
       "pts": null
      },
      {
@@ -4555,7 +4555,7 @@
       "pos": "WR",
       "nfl": "ATL",
       "slot": "WR",
-      "proj": 13.81,
+      "proj": 14.2,
       "pts": null
      },
      {
@@ -4603,7 +4603,7 @@
       "pos": "QB",
       "nfl": "TB",
       "slot": "BN",
-      "proj": 15.99,
+      "proj": 16.19,
       "pts": null
      },
      {
@@ -4619,7 +4619,7 @@
       "pos": "TE",
       "nfl": "IND",
       "slot": "BN",
-      "proj": 8.51,
+      "proj": 8.52,
       "pts": null
      },
      {
@@ -4637,7 +4637,7 @@
       "pos": "QB",
       "nfl": "GB",
       "slot": "QB",
-      "proj": 17.02,
+      "proj": 17.12,
       "pts": null
      },
      {
@@ -4661,7 +4661,7 @@
       "pos": "WR",
       "nfl": "BAL",
       "slot": "WR",
-      "proj": 15.58,
+      "proj": 15.59,
       "pts": null
      },
      {
@@ -4701,7 +4701,7 @@
       "pos": "QB",
       "nfl": "MIA",
       "slot": "Q/W/R/T",
-      "proj": 13.76,
+      "proj": 13.75,
       "pts": null
      },
      {
@@ -4747,6 +4747,22 @@
     ],
     "Tai Streetz Lata?": [
      {
+      "n": "Jameson Williams",
+      "pos": "WR",
+      "nfl": "DET",
+      "slot": "BN",
+      "proj": 8.5,
+      "pts": null
+     },
+     {
+      "n": "Rome Odunze",
+      "pos": "WR",
+      "nfl": "CHI",
+      "slot": "BN",
+      "proj": 8.38,
+      "pts": null
+     },
+     {
       "n": "Michael Wilson",
       "pos": "WR",
       "nfl": "ARI",
@@ -4775,15 +4791,7 @@
       "pos": "TE",
       "nfl": "ATL",
       "slot": "BN",
-      "proj": 6.76,
-      "pts": null
-     },
-     {
-      "n": "Jameson Williams",
-      "pos": "WR",
-      "nfl": "DET",
-      "slot": "BN",
-      "proj": 8.5,
+      "proj": 6.95,
       "pts": null
      },
      {
@@ -4791,7 +4799,7 @@
       "pos": "RB",
       "nfl": "JAX",
       "slot": "BN",
-      "proj": 13.49,
+      "proj": 13.43,
       "pts": null
      },
      {
@@ -4799,7 +4807,7 @@
       "pos": "RB",
       "nfl": "ATL",
       "slot": "BN",
-      "proj": 19.18,
+      "proj": 18.99,
       "pts": null
      },
      {
@@ -4807,7 +4815,7 @@
       "pos": "QB",
       "nfl": "JAX",
       "slot": "BN",
-      "proj": 21.39,
+      "proj": 21.43,
       "pts": null
      },
      {
@@ -4815,7 +4823,7 @@
       "pos": "WR",
       "nfl": "BUF",
       "slot": "BN",
-      "proj": 12.41,
+      "proj": 12.42,
       "pts": null
      },
      {
@@ -4824,14 +4832,6 @@
       "nfl": "PHI",
       "slot": "BN",
       "proj": 9.91,
-      "pts": null
-     },
-     {
-      "n": "Rome Odunze",
-      "pos": "WR",
-      "nfl": "CHI",
-      "slot": "BN",
-      "proj": 8.38,
       "pts": null
      },
      {
@@ -4847,7 +4847,7 @@
       "pos": "QB",
       "nfl": "ATL",
       "slot": "BN",
-      "proj": 14.54,
+      "proj": 14.79,
       "pts": null
      },
      {
