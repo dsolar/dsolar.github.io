@@ -109,7 +109,7 @@ def keeper_values(data, year, owner, kept):
     for ti, name, rnd in keepers_resolved(data, year):
         if s["o"][ti] != owner:
             continue
-        first = max(_vor_named(year, name) - keeper_cost(rnd or 15), 0.0)
+        first = max(_vor_named(year, name, ti) - keeper_cost(rnd or 15), 0.0)
         later = kept_surplus(year, owner, name, guess_pos(year, name), kept)[0]
         out.append(first + later)
     return out

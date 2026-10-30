@@ -15,6 +15,8 @@ on:
       - tools/yoenis_race_pull.py
       - tools/yoenis_history_pull.py
       - tools/yoenis_draft_pull.py
+      - tools/yoenis_analysis_build.py
+      - tools/yoenis_value.py
       - tools/yoenis_history_build.py
       - tools/yoenis_tenure.py
       - tools/yoenis_slices_pull.py
@@ -67,6 +69,7 @@ jobs:
         run: |
           if [ -f tools/yoenis_trades_build.py ]; then python3 tools/yoenis_trades_build.py; fi
           if [ -f tools/yoenis_history_build.py ]; then python3 tools/yoenis_history_build.py; fi
+          if [ -f tools/yoenis_analysis_build.py ]; then python3 tools/yoenis_analysis_build.py; fi
 
       - name: Commit
         run: |

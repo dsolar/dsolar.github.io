@@ -10,8 +10,8 @@ the 208th hitter or 160th pitcher, so a hurt or benched player counts zero, not 
                           value over replacement of the real stats a player put up in one tenure window
                           (totals from tools/yahoo_yoenis/slices), share = the window's part of the season
   pick_curve()            {round: what an average non-keeper pick in that round was worth in its first
-                          season}, from every draft whose keepers are known (2017 on) plus 2013 (no keepers
-                          yet), smoothed so a later round is never worth more than an earlier one
+                          season}, from every draft whose keepers are known (2017 on), smoothed so a later
+                          round is never worth more than an earlier one
   slot_curve()            the same by how many players had actually been drafted before the pick: every
                           keeper (about 80) is off the board before the first pick, and keepers fill some
                           early slots, so No. 16 overall is usually only the 11th player drafted. Keeper years
@@ -43,7 +43,7 @@ from yoenis_yahoo_keepers import fold, side
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "yoenis" / "data.json"
-_vor, _model, _repl = {}, {}, {}
+_vor, _model, _repl, _rows = {}, {}, {}, {}
 
 
 def _load(year):
@@ -62,7 +62,16 @@ def _load(year):
             if k[1] == sd:
                 out[k] = max(r["v"] - repl[sd], 0.0)
     _vor[year], _repl[year] = out, repl
-    _model[year] = season_model(year)[:2]
+    vb, vp, m = season_model(year)
+    _model[year] = (vb, vp)
+    rows = []  # every player row, so namesakes stay apart: (folded name, side, MLB id, team, value over replacement, playing time)
+    for h in m["hitting"]:
+        rows.append((fold(h["name"]), "b", h.get("id"), h.get("team") or "", max(vb(h) - repl["b"], 0.0), h.get("pa", 0)))
+    for q in m["pitching"]:
+        ip_ = str(q.get("ip", 0)).partition(".")
+        rows.append((fold(q["name"]), "p", q.get("id"), q.get("team") or "", max(vp(q) - repl["p"], 0.0),
+                     3 * (int(ip_[0] or 0) * 3 + int(ip_[2] or 0))))
+    _rows[year] = rows
 
 
 def vor_table(year):
@@ -102,15 +111,12 @@ def pick_curve():
     data = json.loads(DATA.read_text(encoding="utf-8"))
     by = {}
     for s in data["seasons"]:
-        if not s.get("keepers_known") and s["year"] != 2013:
+        if not s.get("keepers_known"):  # keeper-era drafts only: 2013, with no keepers, isn't the same draft
             continue
-        vt = vor_table(s["year"])
-        for e in s["draft"]:
+        for i, e in enumerate(s["draft"]):
             if len(e) > 3 and e[3]:
                 continue
-            f, sd = fold(e[2]), side(e[2])
-            v = vt.get((f, sd)) if sd else max(vt.get((f, "b"), 0), vt.get((f, "p"), 0))
-            by.setdefault(e[0], []).append(v or 0.0)
+            by.setdefault(e[0], []).append(draft_value(s["year"], i, e[2]))
     # Pool adjacent violators: a weighted, never-rising fit of the round averages
     blocks = []
     for r in sorted(by):
@@ -155,7 +161,80 @@ def _seasons():
 _cache2 = {}
 
 
-def _vor_named(year, name):
+# MLB team abbreviations as Yahoo writes them, to a word in MLB's full team name
+TEAM_WORD = {"ARI": "Diamondbacks", "AZ": "Diamondbacks", "ATL": "Braves", "BAL": "Orioles", "BOS": "Red Sox",
+             "CHC": "Cubs", "CWS": "White Sox", "CHW": "White Sox", "CIN": "Reds", "CLE": "Cleveland", "COL": "Rockies",
+             "DET": "Tigers", "HOU": "Astros", "KC": "Royals", "KCR": "Royals", "LAA": "Angels", "LAD": "Dodgers",
+             "MIA": "Marlins", "MIL": "Brewers", "MIN": "Twins", "NYM": "Mets", "NYY": "Yankees", "OAK": "Athletics",
+             "ATH": "Athletics", "PHI": "Phillies", "PIT": "Pirates", "SD": "Padres", "SDP": "Padres", "SF": "Giants",
+             "SFG": "Giants", "SEA": "Mariners", "STL": "Cardinals", "TB": "Rays", "TBR": "Rays", "TEX": "Rangers",
+             "TOR": "Blue Jays", "WSH": "Nationals", "WAS": "Nationals", "WSN": "Nationals"}
+
+
+def pos_side(pos):
+    """'p' for a Yahoo pitcher position (SP, RP, P), 'b' for anything else, None if unknown"""
+    if not pos:
+        return None
+    parts = set(str(pos).replace(" ", "").split(","))
+    return "p" if parts and parts <= {"SP", "RP", "P"} else "b"
+
+
+def ident(year, name, sd=None, team=None):
+    """Value over replacement for the right player when two share a name: his side (hitter or pitcher, from his
+    listing or Yahoo's position) first, then his MLB team, then whoever played most."""
+    _load(year)
+    f = fold(name)
+    sd = side(name) or sd
+    cands = [r for r in _rows.get(year, []) if r[0] == f]
+    if sd:
+        cands = [r for r in cands if r[1] == sd] or ([] if cands else [])
+    if len(cands) > 1 and team:
+        word = TEAM_WORD.get(str(team).upper(), str(team))
+        hit = [r for r in cands if word.lower() in r[3].lower()]
+        cands = hit or cands
+    return max(cands, key=lambda r: r[5])[4] if cands else 0.0
+
+
+_drafts = {}
+
+
+def yahoo_draft(year):
+    """[[pick, round, team key, name, position, MLB team], ...] from tools/yahoo_yoenis/drafts, or []"""
+    if year not in _drafts:
+        p = ROOT / "tools" / "yahoo_yoenis" / "drafts" / f"{year}.json"
+        _drafts[year] = json.loads(p.read_text(encoding="utf-8"))["picks"] if p.exists() else []
+    return _drafts[year]
+
+
+def pick_ident(year, i, name):
+    """(side, MLB team) for the i-th pick (0-based) of `year`'s draft, from Yahoo's results: the same slot when
+    the names agree, else the only Yahoo pick by that name. (None, None) if Yahoo can't say."""
+    yd = yahoo_draft(year)
+    if i is not None and i < len(yd) and fold(yd[i][3]) == fold(name):
+        return pos_side(yd[i][4]), yd[i][5]
+    same = [p for p in yd if fold(p[3]) == fold(name)]
+    if len(same) == 1:
+        return pos_side(same[0][4]), same[0][5]
+    return None, None
+
+
+def draft_value(year, i, name):
+    """Value over replacement of the player taken with `year`'s i-th pick (0-based)"""
+    sd, team = pick_ident(year, i, name)
+    return ident(year, name, sd, team)
+
+
+def _vor_named(year, name, ti=None):
+    """Value over replacement for a player named in a draft or keeper list. With `ti`, the team that took or
+    kept him, which tells namesakes apart (the 2018 José Ramírez kept in round 5 versus the one taken in round 21)."""
+    s = next((x for x in _seasons()["seasons"] if x["year"] == year), None)
+    if s and ti is not None:
+        for i, e in enumerate(s.get("draft") or []):
+            if e[1] == ti and fold(e[2]) == fold(name):
+                return draft_value(year, i, name)
+    sd, team = pick_ident(year, None, name)
+    if sd:
+        return ident(year, name, sd, team)
     f, sd = fold(name), side(name)
     t = vor_table(year)
     return t.get((f, sd), 0.0) if sd else max(t.get((f, "b"), 0.0), t.get((f, "p"), 0.0))
@@ -170,11 +249,11 @@ def slot_curve():
         if not s.get("keepers_known"):
             continue
         n = 0
-        for e in s["draft"]:
+        for i, e in enumerate(s["draft"]):
             if len(e) > 3 and e[3]:
                 continue
             n += 1
-            by.setdefault(n, []).append(_vor_named(s["year"], e[2]))
+            by.setdefault(n, []).append(draft_value(s["year"], i, e[2]))
     # pool neighbors four picks at a time before fitting: one draft's luck shouldn't set a slot
     pooled = []
     for p in sorted(by):
