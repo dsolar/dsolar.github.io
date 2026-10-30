@@ -14,6 +14,7 @@ on:
       - tools/yoenis_trades_build.py
       - tools/yoenis_race_pull.py
       - tools/yoenis_history_pull.py
+      - tools/yoenis_draft_pull.py
       - tools/yoenis_history_build.py
       - tools/yoenis_tenure.py
       - tools/yoenis_slices_pull.py
@@ -53,6 +54,7 @@ jobs:
           python3 tools/yoenis_trades_pull.py
           python3 tools/yoenis_race_pull.py
           python3 tools/yoenis_history_pull.py
+          python3 tools/yoenis_draft_pull.py
 
       - name: Total each trade and pickup window from MLB game logs
         run: python3 tools/yoenis_slices_pull.py
