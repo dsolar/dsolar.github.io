@@ -38,6 +38,14 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "schedule" ]; then python3 tools/mlb_stats_pull.py "$(date +%Y)"; else python3 tools/mlb_stats_pull.py; fi
 
+      - name: Catch up with main before touching the page data
+        # The full pull takes a while; anything pushed meanwhile is picked up here, so the rebuild below starts
+        # from it and the commit doesn't collide with it
+        run: |
+          git stash -q
+          git pull --rebase -q origin main
+          git stash pop -q
+
       - name: Refresh the player stat cards
         run: python3 tools/yoenis_stat_cards.py
 
