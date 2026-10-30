@@ -171,6 +171,12 @@ select{padding-right:2rem}
 .sweeps .po{display:inline-block;margin-left:.35rem;padding:.05rem .35rem;border-radius:2px;background:var(--monster);color:var(--chalk);font-size:.68rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;vertical-align:.1em}
 #h-riv td.r,#h-riv td.num,#ww-t td.r,#ww-t td.num{white-space:nowrap}
 #h-riv td:nth-child(1),#ww-t td.pl{overflow-wrap:break-word}
+.titles .standings td.num{white-space:nowrap}
+@media (max-width:480px){
+  .titles .standings th:nth-child(4),.titles .standings td:nth-child(4){display:none}
+  #ww-t th:first-child,#ww-t td:first-child{display:none}
+  #ww-t td,#ww-t th{padding-left:.3rem;padding-right:.3rem}
+}
 #h-riv td:nth-child(1){min-width:5.5rem}
 @media (max-width:480px){#h-riv th:nth-child(4),#h-riv td:nth-child(4){display:none}}
 #h-riv tr.hl td{font-weight:700}
@@ -213,6 +219,7 @@ select{padding-right:2rem}
 .pl-yr li{margin:.1rem 0;overflow-wrap:break-word}
 .pl-yr .k{display:inline-block;min-width:4.6rem;margin-right:.4rem;font-size:.75rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
 .pl-yr .k.aw{color:var(--monster)}
+.pl-yr .rl{display:inline-block;margin-right:.4rem;padding:0 .3rem;border:1px solid var(--rule);border-radius:2px;font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
 .lt{width:100%;border-collapse:collapse;font-size:.9375rem;font-variant-numeric:tabular-nums}
 .lt th{font-weight:600;color:var(--muted);font-size:.8125rem;text-align:left;padding:.4rem .5rem .4rem 0;border-bottom:1px solid var(--rule)}
 .lt td{padding:.5rem .5rem .5rem 0;border-bottom:1px solid color-mix(in srgb, var(--rule) 60%, transparent);vertical-align:baseline}
@@ -459,7 +466,8 @@ input.who{width:9rem}
   font:600 .875rem/1 var(--f-sign);letter-spacing:.02em;vertical-align:.1rem;white-space:nowrap}
 .badge.orig{background:var(--monster);color:var(--chalk)}
 .badge.vet{color:var(--ink)}
-.badge-key{display:flex;flex-wrap:wrap;gap:.4rem 1.2rem;font-size:.8125rem;color:var(--muted);margin:.8rem 0 0}
+.badge-key{display:grid;grid-template-columns:repeat(auto-fill,minmax(20rem,1fr));gap:.45rem 1.2rem;font-size:.8125rem;color:var(--muted);margin:.8rem 0 0;max-width:46rem}
+.badge-key>span:last-child{grid-column:1/-1}
 .badge-key .badge{margin:0 .4rem 0 0}
 .badge-key>span{display:inline-flex;align-items:center}
 .badge-key .tiles{display:inline-flex}
@@ -1977,7 +1985,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
   function swRow(r) {
     var s = SEASONS[r.y], cats = DATA.history.cats || [];
     var forfeit = r.ip && r.ip[1] < 30;
-    var head = '<summary><span class="when">' + r.y + ", Week " + r.w + (r.po === 1 ? '<span class="po">Playoffs</span>' : "") + (forfeit ? '<span class="off-tag" title="The other team pitched under the 30-inning minimum, so it forfeited the pitching categories">Innings forfeit</span>' : "") + '</span><span class="who"><b>' + esc(teamMan(s, r.a)) + "</b> over " + esc(teamMan(s, r.b)) +
+    var head = '<summary><span class="when">' + r.y + ", Week " + r.w + (r.po === 1 ? '<span class="po">Playoffs</span>' : "") + '</span><span class="who"><b>' + esc(teamMan(s, r.a)) + "</b> over " + esc(teamMan(s, r.b)) +
       '</span><span class="sc">' + r.s[0] + "-" + r.s[1] + (r.s[2] ? "-" + r.s[2] : "") + "</span></summary>";
     if (!r.st) return "<li>" + head.replace("<summary>", '<summary style="cursor:default">') + "</li>";
     var rows = cats.map(function (ab, i) {
@@ -1996,7 +2004,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
   function initBestWeeks() {
     var B = DATA.history.best || {}, cats = (DATA.history.cats || []).filter(function (c) { return B[c]; });
     if (!cats.length) { $("ht-best").hidden = true; return; }
-    $("h-best-cat").innerHTML = '<option value="">Every category\'s record</option>' + cats.map(function (c) { return '<option value="' + c + '">' + esc(CAT_NAME[c] || c) + "</option>"; }).join("");
+    $("h-best-cat").innerHTML = '<option value="">All</option>' + cats.map(function (c) { return '<option value="' + c + '">' + esc(CAT_NAME[c] || c) + "</option>"; }).join("");
     $("h-best-cat").addEventListener("change", drawBest);
     $("h-best-len").addEventListener("click", function (e) {
       var b = e.target.closest("button[data-v]"); if (!b) return;
@@ -2072,8 +2080,8 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     var add = function (name, y, order, html) {
       var k = plKey(name); if (!k) return;
       var x = PL[k] || (PL[k] = { n: String(name).replace(/\s*\((Batter|Pitcher)\)$/i, ""), ev: [], c: { d: 0, k: 0, t: 0, p: 0, a: 0 }, mgr: {} });
-      var role = /\(Pitcher\)$/i.test(name) ? " (as a pitcher)" : /\(Batter\)$/i.test(name) ? " (as a hitter)" : "";
-      x.ev.push({ y: y, o: order, h: html + role });
+      var role = /\(Pitcher\)$/i.test(name) ? "Pitcher" : /\(Batter\)$/i.test(name) ? "Hitter" : "";
+      x.ev.push({ y: y, o: order, h: role ? html.replace("</span>", '</span><span class="rl">' + role + "</span>") : html });
       return x;
     };
     var flagged = {};
@@ -2280,7 +2288,8 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       list.map(function (p, i) {
         var s = SEASONS[p.y];
         return '<tr><td class="num">' + (i + 1) + '</td><td class="pl">' + esc(p.p) + '<span class="m-sub">' + esc(teamMan(s, p.t)) + ", " + esc(new Date(p.d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })) +
-          (p.via === "w" ? ", off waivers" : "") + '</span></td><td class="r num">' + fmtV(p.now) + '</td><td class="r num">' + (p.k ? fmtV(p.kept) + '<span class="m-sub">' + p.k + (p.k === 1 ? " yr" : " yrs") + (p.pk ? (p.pk === p.k ? ", projected" : ", " + p.pk + " projected") : "") + "</span>" : "") +
+          (p.via === "w" ? ", off waivers" : "") + (p.k ? ". Kept " + p.k + (p.k === 1 ? " season" : " seasons") + (p.pk ? (p.pk === p.k ? ", projected" : ", " + p.pk + " projected") : "") : "") +
+          '</span></td><td class="r num">' + fmtV(p.now) + '</td><td class="r num">' + (p.k ? fmtV(p.kept) : "") +
           '</td><td class="r num"><b>' + fmtV(p.now + p.kept) + "</b></td></tr>";
       }).join("") + "</tbody>";
   }
