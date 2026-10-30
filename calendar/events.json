@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-29T17:05:02Z",
+ "updated": "2026-10-30T16:50:08Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,128 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-vv177Z_8GkModIbv",
-   "date": "2026-10-29",
-   "time": "19:00",
-   "title": "Eph See: Halloween Homecoming Show pres. by Blair B*tch Project (18+)",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/eph-see-halloween-homecoming-show-pres-boston-massachusetts-10-29-2026/event/0100650DD10E8601",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_8GkD4PKZI",
-   "date": "2026-10-29",
-   "time": "19:00",
-   "title": "Grahame Lesh & Friends (18+)",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/grahame-lesh-friends-18-boston-massachusetts-10-29-2026/event/0100650ED5953028",
-   "source": "ticketmaster",
-   "act": "Grahame Lesh",
-   "aka": [
-    "sg-18514461",
-    "2026-10-29-grahame-lesh-paradise-rock-club"
-   ],
-   "score": 2,
-   "why": "like"
-  },
-  {
-   "id": "tm-vvG17Z_51ivlNd",
-   "date": "2026-10-29",
-   "time": "19:00",
-   "title": "JOHN SUMMIT - CTRL ESCAPE ARENA TOUR",
-   "cat": "music",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/john-summit-ctrl-escape-arena-tour-boston-massachusetts-10-29-2026/event/010064B2AC06B8C3",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18257236",
-    "2026-10-29-john-summit-td-garden"
-   ],
-   "sub": "with Alok and Jackie Hollander",
-   "score": 0
-  },
-  {
-   "id": "sg-18666673",
-   "date": "2026-10-29",
-   "time": "19:00",
-   "title": "Jessimae Peluso",
-   "cat": "comedy",
-   "venue": "Laugh Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/jessimae-peluso-tickets/comedy/2026-10-29-7-pm/18666673",
-   "source": "seatgeek",
-   "aka": [
-    "2026-10-29-jessimae-peluso-laugh-boston"
-   ],
-   "score": 1
-  },
-  {
-   "id": "tm-vv1AvZkfYGkec1VWd",
-   "date": "2026-10-29",
-   "time": "19:30",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-10-29-2026/event/01006530AD2B4F43",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkf6Gkd94lLs",
-   "date": "2026-10-29",
-   "time": "20:00",
-   "title": "Third Eye Blind - Halloween 2026",
-   "cat": "music",
-   "venue": "State Theatre",
-   "city": "Portland, ME",
-   "url": "https://www.ticketmaster.com/third-eye-blind-halloween-2026-portland-maine-10-29-2026/event/01006507D756B7F1",
-   "source": "ticketmaster",
-   "drive_hours": 2.25,
-   "act": "Third Eye Blind",
-   "aka": [
-    "sg-18484697"
-   ],
-   "score": 2,
-   "why": "big"
-  },
-  {
-   "id": "tm-Z7r9jZ1A70o7Y",
-   "date": "2026-10-29",
-   "time": "20:30",
-   "title": "Blake Whiten w/ Slater Nalley",
-   "cat": "music",
-   "venue": "The Sinclair Music Hall",
-   "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A70o7Y",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18301897"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkf7Gkd5tB3w",
-   "date": "2026-10-29",
-   "time": "22:00",
-   "title": "Mochakk ( 21+ )",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/mochakk-21-boston-massachusetts-10-29-2026/event/01006504CBA7A4B2",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18485551"
-   ],
-   "score": 0
-  },
   {
    "id": "tm-vvG17Z_G62fyUn",
    "date": "2026-10-30",
@@ -410,15 +288,23 @@
    "score": 0
   },
   {
+   "id": "sg-18730560",
    "date": "2026-10-31",
-   "time": "18:30",
+   "time": "16:00",
    "title": "Jeff Allen",
    "cat": "comedy",
    "venue": "Laugh Boston",
    "city": "Boston, MA",
-   "url": "https://comedy.tickets/city/boston/",
-   "source": "venues",
-   "id": "2026-10-31-jeff-allen-laugh-boston",
+   "url": "https://seatgeek.com/jeff-allen-tickets/comedy/2026-10-31-4-pm/18730560",
+   "source": "seatgeek",
+   "times": [
+    "16:00",
+    "18:30"
+   ],
+   "aka": [
+    "sg-18730561",
+    "2026-10-31-jeff-allen-laugh-boston"
+   ],
    "score": 1
   },
   {
@@ -1754,6 +1640,18 @@
    "score": 0
   },
   {
+   "id": "tm-LvZ18QcYfkzX6__V71mXS",
+   "date": "2026-11-07",
+   "time": "21:00",
+   "title": "Favela Encantada Wig Party (18+) | Nov 7 @ Play Boston Big Night Live",
+   "cat": "music",
+   "venue": "Big Night Live",
+   "city": "Boston, MA",
+   "url": "https://www.universe.com/events/favela-encantada-wig-party-18-nov-7-play-boston-big-night-live-tickets-GB9654?ref=ticketmaster",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv177Z_3GkB_IahD",
    "date": "2026-11-07",
    "time": "21:45",
@@ -2282,11 +2180,11 @@
    "id": "tm-vv177Z_oGkSO2pLq",
    "date": "2026-11-12",
    "time": "19:00",
-   "title": "Alyssa Grace",
+   "title": "An Evening With Alyssa Grace",
    "cat": "music",
    "venue": "Brighton Music Hall presented by Citizens",
    "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/alyssa-grace-boston-massachusetts-11-12-2026/event/0100651CE03D67DD",
+   "url": "https://www.ticketmaster.com/an-evening-with-alyssa-grace-boston-massachusetts-11-12-2026/event/0100651CE03D67DD",
    "source": "ticketmaster",
    "aka": [
     "sg-18571957"
@@ -3567,6 +3465,13 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/frost-children-boston-massachusetts-11-19-2026/event/01006519C83153E7",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
+   "aka": [
+    "sg-18537386"
+   ],
    "score": 0
   },
   {
@@ -4119,7 +4024,6 @@
    "url": "https://www.ticketmaster.com/letters-to-cleo-18-boston-massachusetts-11-21-2026/event/0100650BE7F0A1BD",
    "source": "ticketmaster",
    "aka": [
-    "sg-18511822",
     "2026-11-21-letters-to-cleo-and-the-sheila-d-paradise-rock-club"
    ],
    "score": 0
@@ -4152,6 +4056,7 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A70b-_",
    "source": "ticketmaster",
    "aka": [
+    "sg-18224672",
     "sg-18224672",
     "2026-11-21-the-menzingers-roadrunner"
    ],
@@ -7277,6 +7182,18 @@
    "why": "like"
   },
   {
+   "id": "tm-vv177Z_4GkS2qhho",
+   "date": "2026-12-31",
+   "time": "22:00",
+   "title": "Gimme Gimme Disco (21+)",
+   "cat": "music",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/gimme-gimme-disco-21-boston-massachusetts-12-31-2026/event/0100655CCF75B6D1",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-G5diZ_KV3yvXL",
    "date": "2027-01-01",
    "time": "19:30",
@@ -7449,6 +7366,18 @@
     "sg-18659703",
     "2027-01-08-tesseract-paradise-rock-club"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18729821",
+   "date": "2027-01-08",
+   "time": "19:30",
+   "title": "Portugal. The Man with Anthony Green (18+)",
+   "cat": "music",
+   "venue": "Royale - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/portugal-the-man-tickets/boston-massachusetts-royale-boston-2027-01-08-7-30-pm/concert/18729821",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -8601,6 +8530,9 @@
    "city": "Cambridge, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7E8A",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18729279"
+   ],
    "score": 0
   },
   {
@@ -9116,6 +9048,18 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAebAZ",
    "source": "ticketmaster",
+   "score": 0
+  },
+  {
+   "id": "sg-18730494",
+   "date": "2027-02-27",
+   "time": "20:00",
+   "title": "Fernandinho",
+   "cat": "music",
+   "venue": "Lynn Memorial Auditorium",
+   "city": "Lynn, MA",
+   "url": "https://seatgeek.com/fernandinho-tickets/lynn-massachusetts-lynn-memorial-auditorium-2027-02-27-8-pm/concert/18730494",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -9938,6 +9882,18 @@
    "score": 0
   },
   {
+   "id": "tm-Z7r9jZ1AA7E4N",
+   "date": "2027-03-13",
+   "time": "20:00",
+   "title": "Zingara (18+ Event)",
+   "cat": "music",
+   "venue": "Roadrunner-Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7E4N",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv1AvZkfMGkeTdy2C",
    "date": "2027-03-14",
    "time": "16:00",
@@ -9986,15 +9942,22 @@
    "score": 1
   },
   {
-   "id": "sg-18709470",
+   "id": "tm-vv177Z_4GkwzWPL7",
    "date": "2027-03-16",
    "time": "19:00",
-   "title": "Ashe with Claire Rosinkranz",
+   "title": "Ashe: The Girl of Your Dreams Tour",
    "cat": "music",
-   "venue": "Citizens House of Blues Boston",
+   "venue": "MGM Music Hall at Fenway",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/ashe-tickets/boston-massachusetts-citizens-house-of-blues-boston-2027-03-16-7-pm/concert/18709470",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/ashe-the-girl-of-your-dreams-boston-massachusetts-03-16-2027/event/0100655CB8F657C4",
+   "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
+   "aka": [
+    "sg-18709470"
+   ],
    "score": 0
   },
   {
@@ -10008,18 +9971,6 @@
    "url": "https://www.espn.com/nba/game/_/gameId/401910740/kings-celtics",
    "source": "espn",
    "score": 1
-  },
-  {
-   "id": "tm-vv177Z_4GkwzWPL7",
-   "date": "2027-03-16",
-   "time": "20:00",
-   "title": "Ashe: The Girl of Your Dreams Tour",
-   "cat": "music",
-   "venue": "MGM Music Hall at Fenway",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/ashe-the-girl-of-your-dreams-boston-massachusetts-03-16-2027/event/0100655CB8F657C4",
-   "source": "ticketmaster",
-   "score": 0
   },
   {
    "id": "tm-vv1AvZkfyGkdOmyJZ",
@@ -10700,15 +10651,18 @@
    "score": 1
   },
   {
-   "id": "sg-18724725",
+   "id": "tm-Z7r9jZ1AA7YCe",
    "date": "2027-04-03",
    "time": "19:00",
-   "title": "The Plot in You",
+   "title": "The Plot in You - World Tour: Part 1",
    "cat": "music",
-   "venue": "Roadrunner - Boston",
+   "venue": "Roadrunner-Boston",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/the-plot-in-you-tickets/boston-massachusetts-roadrunner-boston-2027-04-03-7-pm/concert/18724725",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7YCe",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18724725"
+   ],
    "score": 0
   },
   {
@@ -11266,14 +11220,44 @@
    "score": 0
   },
   {
-   "id": "sg-18632517",
+   "id": "tm-vv1k7Z_Kr_G7Rccc",
    "date": "2027-04-27",
    "time": "20:00",
-   "title": "A Perfect Circle with The Cult",
+   "title": "A Perfect Circle with special guest The Cult",
    "cat": "music",
    "venue": "MGM Music Hall at Fenway",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/a-perfect-circle-tickets/boston-massachusetts-mgm-music-hall-at-fenway-2027-04-27-8-pm/concert/18632517",
+   "url": "https://www.ticketmaster.com/a-perfect-circle-with-special-guest-boston-massachusetts-04-27-2027/event/0100653799BEDB6D",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18632517"
+   ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv177Z_fGkTa9xx0",
+   "date": "2027-04-28",
+   "time": "19:00",
+   "title": "THE WOMBATS - A Guide to Love Loss And Desperation 20th Anniversary",
+   "cat": "music",
+   "venue": "Citizens House of Blues Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/the-wombats-a-guide-to-love-boston-massachusetts-04-28-2027/event/0100654FC95E28A4",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18700454"
+   ],
+   "score": 0
+  },
+  {
+   "id": "sg-18696854",
+   "date": "2027-04-28",
+   "time": "19:00",
+   "title": "Tinashe",
+   "cat": "music",
+   "venue": "Roadrunner - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/tinashe-tickets/boston-massachusetts-roadrunner-boston-2027-04-28-7-pm/concert/18696854",
    "source": "seatgeek",
    "score": 0
   }
@@ -11352,9 +11336,9 @@
  ],
  "sources": {
   "picks": 5,
-  "venues": 4,
+  "venues": 3,
   "espn": 78,
-  "ticketmaster": 548,
+  "ticketmaster": 547,
   "seatgeek": 113
  }
 }
