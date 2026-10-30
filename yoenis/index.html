@@ -673,7 +673,8 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       <p>Handed out after the fact from real MLB stats, scored with our 16 categories. A player award goes to the team that drafted or kept him that spring.</p>
     </div>
     <div class="controls">
-      <label class="field">Year<select id="a-year"></select></label>
+      <label class="field">Award<select id="a-award"></select></label>
+      <label class="field" id="a-year-f">Year<select id="a-year"></select></label>
     </div>
     <ol class="cards" id="awards-list" tabindex="0" aria-label="Award cards"></ol>
     <p class="note">A player's value adds up how far above or below a typical rostered player he was in each category, with average, OPS, ERA and WHIP weighted by playing time. Keepers are marked from 2022 on, when the keeper sheet starts. Stats from MLB.</p>
@@ -966,20 +967,39 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     var years = Object.keys(DATA.awards || {}).sort().reverse();
     if (!years.length) { $("awards").hidden = true; return; }
     $("a-year").innerHTML = years.map(function (y) { return "<option>" + y + "</option>"; }).join("");
+    // every award ever given, the regular ones in card order, the dubious honors last
+    var names = {}; years.forEach(function (y) { DATA.awards[y].forEach(function (a) { names[a.a] = 1; }); });
+    var order = Object.keys(CARD);
+    var list = Object.keys(names).sort(function (a, b) {
+      var ka = DUBIOUS[a] ? 2 : order.indexOf(a) > -1 ? 0 : 1, kb = DUBIOUS[b] ? 2 : order.indexOf(b) > -1 ? 0 : 1;
+      return ka - kb || (order.indexOf(a) - order.indexOf(b)) || a.localeCompare(b);
+    });
+    $("a-award").innerHTML = '<option value="">Every award, one year</option>' + list.map(function (a) { return '<option value="' + esc(a) + '">' + esc(a) + ", every year</option>"; }).join("");
     $("a-year").addEventListener("change", drawAwards);
+    $("a-award").addEventListener("change", drawAwards);
     drawAwards();
+  }
+  function awardCard(a, y, head) {
+    var s = SEASONS[y];
+    var name = a.p ? a.p.replace(/ \((Batter|Pitcher)\)$/, "") : s.teams[a.ti];
+    var team = a.p ? teamMan(s, a.ti) : (man(s, a.ti) || "");
+    return '<li class="card ' + (DUBIOUS[a.a] ? "dub" : CARD[a.a] || "") + '"><div class="card-in"><h3 class="card-a">' + esc(head) + "</h3>" +
+      '<p class="card-p">' + esc(name) + "</p>" + (team ? '<p class="card-t">' + esc(team) + "</p>" : '<p class="card-t"></p>') +
+      '<div class="card-b"><p class="card-line">' + esc(a.line) + '</p><p class="card-why">' + esc(a.detail) + "</p></div></div></li>";
   }
   var CARD = { "MVP": "mvp", "Cy Young": "cy", "Best value pick": "val", "Best keeper": "kpr", "Best offense": "off", "Best pitching staff": "pit" };
   function drawAwards() {
-    var y = $("a-year").value, s = SEASONS[y];
+    var aw = $("a-award").value;
+    $("a-year-f").hidden = !!aw;
+    if (aw) {  // one award, every year, newest first
+      $("awards-list").innerHTML = Object.keys(DATA.awards).sort().reverse().map(function (y) {
+        return DATA.awards[y].filter(function (a) { return a.a === aw; }).map(function (a) { return awardCard(a, y, y + " " + a.a); }).join("");
+      }).join("");
+      return;
+    }
+    var y = $("a-year").value;
     var list = DATA.awards[y].slice().sort(function (a, b) { return (DUBIOUS[a.a] ? 1 : 0) - (DUBIOUS[b.a] ? 1 : 0); });
-    $("awards-list").innerHTML = list.map(function (a) {
-      var name = a.p ? a.p.replace(/ \((Batter|Pitcher)\)$/, "") : s.teams[a.ti];
-      var team = a.p ? teamMan(s, a.ti) : (man(s, a.ti) || "");
-      return '<li class="card ' + (DUBIOUS[a.a] ? "dub" : CARD[a.a] || "") + '"><div class="card-in"><h3 class="card-a">' + esc(a.a) + "</h3>" +
-        '<p class="card-p">' + esc(name) + "</p>" + (team ? '<p class="card-t">' + esc(team) + "</p>" : '<p class="card-t"></p>') +
-        '<div class="card-b"><p class="card-line">' + esc(a.line) + '</p><p class="card-why">' + esc(a.detail) + "</p></div></div></li>";
-    }).join("");
+    $("awards-list").innerHTML = list.map(function (a) { return awardCard(a, y, a.a); }).join("");
   }
 
   /* ---------- Team stats ---------- */
