@@ -221,7 +221,8 @@ function gradeMove(o) {
   /* the first few moves rarely decide anything; shallow search overstates them */
   if (o.moveNo && o.moveNo <= 3 && g === 'mistake' && povCp(o.evA) > -150) g = 'inaccuracy';
   if (o.evA.mate != null && o.evA.mate < 0 && !(o.evB.mate != null && o.evB.mate < 0)) g = 'blunder';
-  if (o.evB.mate != null && o.evB.mate > 0 && !(o.evA.mate != null && o.evA.mate > 0)) {
+  /* a missed forced mate only counts against you when it actually costs the win (not when you are still crushing) */
+  if (o.evB.mate != null && o.evB.mate > 0 && !(o.evA.mate != null && o.evA.mate > 0) && povCp(o.evA) < 600) {
     var floor = o.evB.mate <= 2 ? 'mistake' : 'inaccuracy';
     if (GRADE_ORDER.indexOf(g) < GRADE_ORDER.indexOf(floor)) g = floor;
   }
@@ -230,6 +231,38 @@ function gradeMove(o) {
 function moveAccuracy(evB, evA) {
   var loss = Math.max(0, winPct(povCp(evB)) - winPct(povCp(evA)));
   return Math.max(0, Math.min(100, 103.1668 * Math.exp(-0.04354 * loss) - 3.1669));
+}
+
+
+/* ---- whole-game grading ---- */
+function clampCp(p) { return Math.max(-1000, Math.min(1000, povCp(p))); }
+/* average centipawn loss over graded moves (book moves count as 0) */
+function acplOf(revs) {
+  if (!revs.length) return null;
+  var tot = 0;
+  revs.forEach(function (r) { if (r.grade !== 'book') tot += Math.max(0, clampCp(r.evB) - clampCp(r.evA)); });
+  return tot / revs.length;
+}
+/* rough playing strength from average centipawn loss; a guide, not a rating */
+function ratingFromAcpl(acpl) { return Math.max(100, Math.min(2800, Math.round(3100 * Math.exp(-0.01 * acpl) / 50) * 50)); }
+/* accuracy -> rough rating (piecewise), blended with the centipawn-loss estimate so one blunder counts but doesn't dominate */
+function ratingFromAcc(acc) {
+  var pts = [[0, 100], [50, 400], [60, 700], [70, 1000], [80, 1400], [85, 1700], [90, 2000], [95, 2400], [100, 2800]];
+  for (var i = 1; i < pts.length; i++) if (acc <= pts[i][0]) { var a = pts[i - 1], b = pts[i]; return a[1] + (b[1] - a[1]) * (acc - a[0]) / (b[0] - a[0]); }
+  return 2800;
+}
+function ratingEstimate(acc, acpl) { return Math.round((ratingFromAcc(acc) + ratingFromAcpl(acpl)) / 2 / 50) * 50; }
+function letterGrade(acc) {
+  if (acc >= 95) return 'A+'; if (acc >= 90) return 'A'; if (acc >= 85) return 'B+'; if (acc >= 80) return 'B';
+  if (acc >= 75) return 'C+'; if (acc >= 70) return 'C'; if (acc >= 60) return 'D'; return 'F';
+}
+/* opening (book or first 10 moves), endgame (little material left), middlegame between */
+function phaseOf(fen) {
+  var b = new Chess(fen).board(), pieces = 0, queens = 0;
+  b.forEach(function (row) { row.forEach(function (p) { if (p && p.type !== 'p' && p.type !== 'k') { pieces += VAL[p.type]; if (p.type === 'q') queens++; } }); });
+  if (moveNoOf(fen) <= 10 || bookName(fen)) return 'opening';
+  if (pieces <= 13 || (queens === 0 && pieces <= 20)) return 'endgame';
+  return 'middlegame';
 }
 
 /* ---- describing moves in words ---- */

@@ -154,7 +154,7 @@ function analyze(fen) {
     p = Promise.resolve(r); done.set(fen, r);
   } else {
     p = coachEng.go(fen, ANALYSIS).then(function (r) {
-      if (!r) { cache.delete(fen); return null; }
+      if (!r) { if (cache.get(fen) === p) cache.delete(fen); return null; }
       if (!r.score) r.score = { cp: 0 };
       done.set(fen, r); renderEval(); if (S && S.over) renderTally();
       return r;
@@ -207,12 +207,16 @@ function flag(color) {
 setInterval(function () { if (S && S.clock && !S.over) updateClocks(); }, 100);
 
 /* ---------- game flow ---------- */
+function cancelAnalysis() {
+  coachEng.cancelAll();
+  cache.forEach(function (v, k) { if (!done.has(k)) cache.delete(k); });
+}
 function newGame(settings) {
   gen++;
-  coachEng.cancelAll(); botEng.cancelAll();
+  cancelAnalysis(); botEng.cancelAll();
   if (aiCtl) aiCtl.abort();
   var me = settings.color === 'r' ? (Math.random() < 0.5 ? 'w' : 'b') : settings.color;
-  S = { v: 2, settings: settings, me: me, startFen: START_FEN, plies: [], over: null, turnStart: Date.now(), clock: null };
+  S = { v: 3, settings: settings, me: me, startFen: START_FEN, plies: [], over: null, turnStart: Date.now(), clock: null, undos: [], aiReview: null };
   var cd = clockDef();
   if (cd.base) S.clock = { base: cd.base * 60000, inc: (cd.inc || 0) * 1000, w: cd.base * 60000, b: cd.base * 60000 };
   chess = new Chess(S.startFen);
@@ -223,6 +227,7 @@ function newGame(settings) {
 
 function applyMove(mv, by, legalCount) {
   var fenBefore = chess.fen(), mover = chess.turn();
+  var hinted = by === 'you' && hint.fen === fenBefore && hint.stage ? hint.stage : 0;
   var now = Date.now(), spent = S.turnStart ? now - S.turnStart : null;
   var m = chess.move(mv);
   if (!m) return null;
@@ -232,7 +237,7 @@ function applyMove(mv, by, legalCount) {
     san: m.san, uci: moveUci(m), from: m.from, to: m.to, color: m.color, piece: m.piece, captured: m.captured || null,
     flags: m.flags, promotion: m.promotion || null, fenBefore: fenBefore, fenAfter: chess.fen(), by: by,
     legalCount: legalCount, review: by === 'you' ? { status: 'pending' } : null,
-    timeMs: spent, clock: S.clock ? { w: S.clock.w, b: S.clock.b } : null
+    timeMs: spent, clock: S.clock ? { w: S.clock.w, b: S.clock.b } : null, hinted: hinted
   };
   S.plies.push(ply);
   checkOver();
@@ -274,7 +279,12 @@ function reviewPly(ply) {
   return Promise.all([analyze(ply.fenBefore), analyze(ply.fenAfter)]).then(function (res) {
     if (S.plies.indexOf(ply) < 0) return;
     var b = res[0], a = res[1];
-    if (!b || !a) { ply.review = { status: coachEng.state === 'failed' ? 'error' : 'pending' }; render(); return; }
+    if (!b || !a) {
+      if (coachEng.state === 'failed') { ply.review = { status: 'error' }; render(); return; }
+      ply.retries = (ply.retries || 0) + 1;
+      if (ply.retries <= 3) setTimeout(function () { if (S.plies.indexOf(ply) >= 0) reviewPly(ply); }, 300);
+      return;
+    }
     var me = S.me;
     var played = tryMove(ply.fenBefore, ply.uci).move;
     var evB = pov(b.score, ply.fenBefore, me), evA = pov(a.score, ply.fenAfter, me);
@@ -332,11 +342,17 @@ function botTurn() {
   });
 }
 
-function truncateTo(k) {
+function truncateTo(k, why) {
   gen++;
   botEng.cancelAll();
   if (aiCtl) aiCtl.abort();
+  S.plies.slice(k).forEach(function (p) {
+    if (p.by !== 'you') return;
+    var r = p.review && p.review.status === 'done' ? p.review : null;
+    S.undos.push({ san: p.san, moveNo: moveNoOf(p.fenBefore), color: p.color, why: why || 'takeback', grade: r ? r.grade : null, acc: r ? r.acc : null, evB: r ? r.evB : null, evA: r ? r.evA : null });
+  });
   S.plies = S.plies.slice(0, k);
+  S.aiReview = null;
   chess = new Chess(S.startFen);
   S.plies.forEach(function (p) { chess.move(uciObj(p.uci)); });
   if (S.clock) {
@@ -351,7 +367,7 @@ function truncateTo(k) {
   save(); render();
   if (!S.over) { if (chess.turn() !== S.me) botTurn(); else analyze(chess.fen()); }
 }
-function takeBack() { var k = lastUserIdx(); if (k >= 0) truncateTo(k); }
+function takeBack() { var k = lastUserIdx(); if (k >= 0) truncateTo(k, 'takeback'); }
 function resign() {
   if (S.over) return;
   if (Date.now() - resignArmed > 3000) { resignArmed = Date.now(); renderHeader(); setTimeout(renderHeader, 3100); return; }
@@ -619,6 +635,13 @@ function backToGame() { view = { mode: 'live' }; coachIdx = null; sel = null; re
 function gchip(g, count) {
   return '<span class="gchip tone-' + g + '"><i>' + GRADES[g].glyph + '</i>' + GRADES[g].label + (count != null ? ' <b>' + count + '</b>' : '') + '</span>';
 }
+function renderModebar() {
+  var el = document.getElementById('modebar'), cur = S.settings.coach;
+  var opts = [['every', 'Every move'], ['mistakes', 'Mistakes'], ['after', 'After game']];
+  el.innerHTML = '<span class="lbl">Coaching</span><div class="modes">' + opts.map(function (o) {
+    return '<button type="button" data-mode="' + o[0] + '" aria-pressed="' + (cur === o[0]) + '"' + (S.over && o[0] === 'after' ? ' disabled' : '') + '>' + o[1] + '</button>';
+  }).join('') + '</div>';
+}
 function renderHeader() {
   var r = document.getElementById('resignBtn');
   r.hidden = !S || !!S.over || !S.plies.length;
@@ -715,7 +738,12 @@ function renderTally() {
   el.innerHTML = '<div class="tallytop"><div class="accwrap"><div class="acc">' + (hide || acc == null ? '<small>' + (hide ? 'hidden' : 'no moves yet') + '</small>' : acc.toFixed(1) + '<small>%</small>') + '</div>' +
     '<div class="acclbl">Your accuracy</div></div>' +
     '<div class="legend">' + LEGEND.map(function (g) { return gchip(g, hide ? '–' : counts[g]); }).join('') + '</div></div>' +
-    (hide ? '' : graphSvg());
+    (hide ? '' : graphSvg()) + assistLine();
+}
+function assistLine() {
+  var u = S.undos.length, hn = S.plies.filter(function (p) { return p.by === 'you' && p.hinted; }).length;
+  if (!u && !hn) return '';
+  return '<div class="assistline"><span>Take-backs <b>' + u + '</b></span><span>Hints <b>' + hn + '</b></span></div>';
 }
 
 function renderSheet() {
@@ -748,7 +776,7 @@ function renderSheet() {
 
 function evalRow(r) {
   var a = winPct(povCp(r.evB)), b = winPct(povCp(r.evA));
-  return '<div class="evalrow">Evaluation for you <b>' + fmtEval(r.evB) + '</b> → <b>' + fmtEval(r.evA) + '</b><span>Win chance ' + Math.round(a) + '% → ' + Math.round(b) + '%</span></div>';
+  return '<div class="evalrow"><span>Your eval <b>' + fmtEval(r.evB) + '</b> \u2192 <b>' + fmtEval(r.evA) + '</b></span><span>Win chance <b>' + Math.round(a) + '%</b> \u2192 <b>' + Math.round(b) + '%</b></span></div>';
 }
 
 function renderCoach() {
@@ -767,7 +795,12 @@ function renderCoach() {
   var k = coachIdx != null ? coachIdx : (live ? lastUserIdx() : -1);
   if (view.mode === 'line') k = view.plyIdx;
 
-  if (live && S.over && coachIdx == null) { h += gameOverCard(); el.innerHTML = h; return; }
+  if (live && S.over && coachIdx == null) {
+    h += gameOverCard(); el.innerHTML = h;
+    var rv = document.getElementById('aiReview');
+    if (rv && S.aiReview) rv.textContent = S.aiReview.text || 'Thinking\u2026';
+    return;
+  }
 
   if (k < 0 || !S.plies[k]) {
     if (view.mode === 'ply' && view.n === 0) h += '<div><div class="kicker">Start</div><h2>Starting position</h2></div><p>Step forward with the arrows, or tap any move on the scoresheet.</p>';
@@ -810,7 +843,8 @@ function kickerFor(p, r) {
   var parts = ['Move ' + moveNoOf(p.fenBefore)];
   if (r && GRADES[r.grade]) parts.push(GRADES[r.grade].label);
   if (p.timeMs != null && (S.clock || S.over)) parts.push(fmtSecs(p.timeMs));
-  return parts.join(' · ');
+  if (p.hinted) parts.push(p.hinted === 2 ? 'Hint used' : 'Nudge used');
+  return parts.join(' \u00b7 ');
 }
 
 function userCard(k) {
@@ -902,6 +936,42 @@ function drillCard() {
   return h;
 }
 
+function gameGrade() {
+  var revs = S.plies.filter(function (p) { return p.by === 'you' && p.review && p.review.status === 'done' && p.review.grade !== 'forced'; }).map(function (p) { return p.review; });
+  if (revs.length < 5) return null;
+  var accOf = function (list) { var a = list.filter(function (r) { return r.acc != null; }); return a.length ? a.reduce(function (t, r) { return t + r.acc; }, 0) / a.length : null; };
+  var acc = accOf(revs);
+  var phases = { opening: [], middlegame: [], endgame: [] };
+  S.plies.forEach(function (p) { if (p.by === 'you' && p.review && p.review.status === 'done' && p.review.grade !== 'forced') phases[phaseOf(p.fenBefore)].push(p.review); });
+  var undone = S.undos.filter(function (u) { return u.acc != null; });
+  var withUndos = undone.length ? accOf(revs.concat(undone)) : null;
+  return { acc: acc, letter: letterGrade(acc), rating: ratingEstimate(acc, acplOf(revs)), n: revs.length,
+    phases: { opening: accOf(phases.opening), middlegame: accOf(phases.middlegame), endgame: accOf(phases.endgame) },
+    withUndos: withUndos, hints: S.plies.filter(function (p) { return p.by === 'you' && p.hinted; }).length };
+}
+function gradeTone(letter) { return /^A/.test(letter) ? 'best' : /^B/.test(letter) ? 'good' : /^C/.test(letter) ? 'inaccuracy' : /^D/.test(letter) ? 'mistake' : 'blunder'; }
+function assistText(gg) {
+  var u = S.undos.length, parts = [];
+  var hints = S.plies.filter(function (p) { return p.by === 'you' && p.hinted; }).length;
+  if (u) {
+    var bad = S.undos.filter(function (x) { return x.grade && isBad(x.grade); });
+    parts.push('you took back ' + (u === 1 ? 'one move' : u + ' moves') + (bad.length ? ' (' + (bad.length === 1 ? (u === 1 ? 'it was' : 'one was') + (/^[aeiou]/i.test(GRADES[bad[0].grade].label) ? ' an ' : ' a ') + GRADES[bad[0].grade].label.toLowerCase() : bad.length + ' were mistakes or worse') + ')' : ''));
+  }
+  if (hints) parts.push('used ' + (hints === 1 ? 'one hint' : hints + ' hints'));
+  if (!parts.length) return 'No take-backs and no hints. That grade is all you.';
+  var t = parts.join(' and ') + '.';
+  if (gg && gg.withUndos != null) t += ' Counting the moves you took back, your accuracy was ' + gg.withUndos.toFixed(1) + '%.';
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+function gradeBlock(gg) {
+  function ph(name, v) { return '<div><span>' + name + '</span><b>' + (v == null ? '–' : Math.round(v) + '%') + '</b></div>'; }
+  return '<div class="gradebox"><div class="letter tone-' + gradeTone(gg.letter) + '">' + gg.letter + '</div><div class="gradeinfo"><div class="kicker">Game grade</div>' +
+    '<div class="gline1"><b>' + gg.acc.toFixed(1) + '%</b> accuracy · played like a <b>~' + gg.rating + '</b></div>' +
+    '<div class="phases">' + ph('Opening', gg.phases.opening) + ph('Middlegame', gg.phases.middlegame) + ph('Endgame', gg.phases.endgame) + '</div></div></div>' +
+    '<p class="assist">' + esc(assistText(gg)) + '</p>' +
+    '<p class="fine">The rating is a rough estimate from how much evaluation your moves gave away, not an official rating. Short games swing a lot.</p>';
+}
+
 function insights() {
   var mine = S.plies.filter(function (p) { return p.by === 'you' && p.timeMs != null && p.review && p.review.status === 'done'; });
   if (mine.length < 3) return '';
@@ -928,6 +998,9 @@ function gameOverCard() {
   var opening = openingOf([S.startFen].concat(S.plies.map(function (p) { return p.fenAfter; })));
   var h = '<div><div class="kicker">Game over' + (opening ? ' · ' + esc(opening) : '') + '</div><h2>' + title + '</h2></div>';
   if (pending) h += '<div class="pending"><span class="spin"></span><span>Finishing the review…</span></div>';
+  var gg = gameGrade();
+  if (gg && !pending) h += gradeBlock(gg);
+  else if (!gg && !pending) h += '<p class="assist">' + esc(assistText(null)) + '</p>';
   h += '<p>' + (bad.length ? 'Here are the moments that mattered most. Tap one to see what went wrong, or practice finding the right move in each.' : 'No inaccuracies, mistakes or blunders. Tap any move on the scoresheet to review it.') + '</p>';
   if (ordered.length) {
     h += '<div class="actions">' + ordered.slice(0, 6).map(function (i) {
@@ -936,6 +1009,16 @@ function gameOverCard() {
     }).join('') + '</div>';
   }
   h += insights();
+  if (sampleFn && !aiHidden && gg && !pending) {
+    var ar = S.aiReview;
+    h += '<div class="ask">';
+    if (!ar) h += '<button class="btn sm" type="button" data-act="aireview">Ask Claude to review this game</button>';
+    else {
+      h += '<div class="who">Claude\'s review</div><div class="ans' + (ar.text ? '' : ' dim') + '" id="aiReview"></div>';
+      if (ar.status === 'error') h += '<p class="engine-error">' + esc(ar.msg) + '</p>';
+    }
+    h += '</div>';
+  }
   h += '<div class="actions">';
   if (bad.length) h += '<button class="btn sm primary" type="button" data-act="drill">Practice mistakes (' + bad.length + ')</button>';
   h += '<button class="btn sm" type="button" data-act="review0">Review from the start</button><button class="btn sm' + (bad.length ? '' : ' primary') + '" type="button" data-act="new">New game</button></div>';
@@ -944,7 +1027,7 @@ function gameOverCard() {
 
 function render() {
   if (!S) return;
-  renderHeader(); renderBoard(); renderStrips(); renderControls(); renderCoach(); renderSheet(); renderTally(); renderEval();
+  renderHeader(); renderModebar(); renderBoard(); renderStrips(); renderControls(); renderCoach(); renderSheet(); renderTally(); renderEval();
 }
 
 /* ---------- Claude ---------- */
@@ -997,6 +1080,42 @@ function askClaude(k, q) {
     var msg = code === 'rate_limited' ? 'Too many questions at once. Try again in a minute.' : code === 'session_expired' ? 'Sign in to Claude again to ask questions.' : 'Claude could not answer right now. Try again.';
     p.ai = { status: 'error', text: code === 'refused' ? '' : (e && e.text) || '', q: q || null, msg: msg }; render();
   });
+}
+function reviewPrompt() {
+  var gg = gameGrade(), me = S.me, o = S.over;
+  var lines = S.plies.map(function (p, i) {
+    var s = plyLabel(i);
+    if (p.by === 'you' && p.review && p.review.status === 'done') {
+      s += ' [you: ' + GRADES[p.review.grade].label + ', eval ' + fmtEval(p.review.evB) + ' to ' + fmtEval(p.review.evA) + (p.review.bestSan && isBad(p.review.grade) ? ', best was ' + p.review.bestSan : '') + (p.timeMs != null && S.clock ? ', ' + fmtSecs(p.timeMs) : '') + (p.hinted ? ', used a hint' : '') + ']';
+    } else s += ' [bot]';
+    return s;
+  });
+  var result = o.reason === 'resignation' ? 'the student resigned' : o.winner ? (o.winner === me ? 'the student won' : 'the student lost') + ' by ' + (o.reason === 'time' ? 'time' : o.reason) : 'draw by ' + o.reason;
+  return [
+    'You are a friendly chess coach reviewing a finished game with an improving player. Base every concrete claim on the move-by-move engine grades below; do not invent lines.',
+    'The student played ' + cname(me) + ' against a ' + LEVELS[S.settings.level].name + ' level bot (' + LEVELS[S.settings.level].rating + '). Clock: ' + clockDef().label + '. Result: ' + result + '.',
+    gg ? 'Game grade ' + gg.letter + ', accuracy ' + gg.acc.toFixed(1) + '%, estimated strength about ' + gg.rating + '. Phase accuracy: opening ' + (gg.phases.opening == null ? 'n/a' : Math.round(gg.phases.opening)) + ', middlegame ' + (gg.phases.middlegame == null ? 'n/a' : Math.round(gg.phases.middlegame)) + ', endgame ' + (gg.phases.endgame == null ? 'n/a' : Math.round(gg.phases.endgame)) + '.' : '',
+    'Assistance: ' + assistText(gg),
+    'Moves:', lines.join('\n'),
+    'Write a short review in plain text, two short paragraphs at most: what went well, the one pattern behind the mistakes (name the moves), and one concrete habit to practice next game. Speak to the student as "you". No headings, lists, markdown, or em dashes.'
+  ].filter(Boolean).join('\n');
+}
+function askReview() {
+  if (!sampleFn || !S.over) return;
+  if (aiCtl) aiCtl.abort();
+  var ctl = aiCtl = new AbortController();
+  S.aiReview = { status: 'thinking', text: '' };
+  render();
+  sampleFn(reviewPrompt(), {
+    signal: ctl.signal,
+    onText: function (u) { S.aiReview.text = u.text; var el = document.getElementById('aiReview'); if (el) { el.textContent = u.text; el.classList.remove('dim'); } }
+  }).then(function (res) { S.aiReview = { status: 'done', text: res.text }; save(); render(); })
+    .catch(function (e) {
+      var code = e && e.code;
+      if (['not_granted', 'sampling_disabled', 'not_declared', 'capability_disabled', 'capability_removed'].indexOf(code) >= 0) { aiHidden = true; S.aiReview = null; render(); return; }
+      if (code === 'cancelled') { S.aiReview = S.aiReview && S.aiReview.text ? { status: 'done', text: S.aiReview.text } : null; render(); return; }
+      S.aiReview = { status: 'error', text: (e && e.text) || '', msg: code === 'rate_limited' ? 'Too many requests at once. Try again in a minute.' : 'Claude could not answer right now. Try again.' }; render();
+    });
 }
 function coachShowing(k) {
   var cur = coachIdx != null ? coachIdx : (view.mode === 'live' ? lastUserIdx() : -1);
@@ -1067,6 +1186,10 @@ function wire() {
     if (S.plies[i].by !== 'you' && S.plies[i - 1] && S.plies[i - 1].by === 'you') i = i - 1;
     openPly(i);
   });
+  document.getElementById('modebar').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-mode]'); if (!b || b.disabled) return;
+    S.settings.coach = b.getAttribute('data-mode'); save(); render();
+  });
   var coach = document.getElementById('coach');
   coach.addEventListener('click', function (e) {
     var st = e.target.closest('[data-step]');
@@ -1078,10 +1201,11 @@ function wire() {
     else if (act === 'showbest') setView({ mode: 'ply', n: k, arrows: [{ from: p.from, to: p.to, kind: 'bad' }, { from: p.review.bestFrom, to: p.review.bestTo, kind: 'best' }], note: 'This is the position before your move. The green arrow is ' + p.review.bestSan + ', the red one is your ' + p.san + '.' }, k);
     else if (act === 'bestline') setView({ mode: 'line', baseFen: p.fenBefore, pv: p.review.bestPv, step: 1, label: 'Engine line instead of ' + p.san, plyIdx: k }, k);
     else if (act === 'reply') setView({ mode: 'line', baseFen: p.fenAfter, pv: p.review.replyPv, step: 1, label: 'Best play after ' + p.san, plyIdx: k }, k);
-    else if (act === 'retry') truncateTo(k);
+    else if (act === 'retry') truncateTo(k, 'retry');
     else if (act === 'linenext') nav(1);
     else if (act === 'lineexit') openPly(view.plyIdx);
     else if (act === 'ai') askClaude(k, null);
+    else if (act === 'aireview') askReview();
     else if (act === 'review0') goPly(1);
     else if (act === 'new') openSetup();
     else if (act === 'summary') backToGame();
@@ -1113,6 +1237,8 @@ function restore(saved) {
     S = saved.S; chess = c; orient = saved.orient || S.me;
     if (!S.settings.clock) S.settings.clock = 'none';
     if (S.clock === undefined) S.clock = null;
+    if (!S.undos) S.undos = [];
+    if (S.aiReview && S.aiReview.status !== 'done') S.aiReview = null;
     S.plies.forEach(function (p) { if (p.ai && p.ai.status !== 'done') p.ai = null; });
     checkOver();
     return true;
