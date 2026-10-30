@@ -691,3 +691,15 @@ a:hover{color:var(--red)}
   .featured-column p{display:none}
   .featured-column b{padding-top:2px}
 }
+
+/* Who's winning today: the week's champ under each card; the slate's streak */
+.ld-card{display:flex;flex-direction:column}
+.ld-card ul{flex:1}
+.ld-week{margin:6px 0 0;padding-top:7px;border-top:1px solid rgba(0,0,0,.28);font-size:.74rem;color:#CFE0D4;line-height:1.35}
+.ld-week b{color:#F7D23E}
+.ld-week-pts{color:#9DB8A6;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ld-week.is-empty{color:#9DB8A6}
+.slate-streak{flex-basis:100%;order:-1;font-weight:800;font-size:.78rem;letter-spacing:.02em;color:#F7D23E}
+.slate-streak[hidden]{display:none}
+.slate-streak.is-cold{color:#F2A94A;font-weight:700}
+@media (max-width: 640px){.ld-week{font-size:.66rem}}

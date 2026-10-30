@@ -51,6 +51,27 @@
     ];
   }
 
+  // The streak: days in a row with at least one daily finished on this device, counting back from today
+  // (or from yesterday while today is still open). Old saves stay on the device, so this reads them back.
+  function playedOn(day) {
+    var d = read("mtc.v2.daily." + day), sp = read("mtc.v2.speed." + day);
+    if (d && d.grade || sp && sp.speed) return true;
+    var full = function (key, n) { var x = read(key); return !!(x && Array.isArray(x.results) && x.results.length >= n); };
+    return ["nba", "nfl"].some(function (s) { return full("gtp-daily5-" + s + "-" + day, 10); })
+      || ["nba", "nfl", "mlb"].some(function (s) { return full("jm-daily3-" + s + "-" + day, 10); })
+      || full("sr-daily-" + day, 5);
+  }
+  function dayBefore(day) {
+    var d = new Date(day + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() - 1);
+    return d.toISOString().slice(0, 10);
+  }
+  function streak() {
+    var day = bostonDate(), today = playedOn(day) || playedOn(localDate()), n = 0;
+    if (!today) day = dayBefore(day);
+    while (n < 400 && playedOn(day)) { n++; day = dayBefore(day); }
+    return { n: n, today: today };
+  }
+
   function untilMidnight() {
     var now = new Date();
     var et = new Date(now.toLocaleString("en-US", { timeZone: TZ }));
@@ -92,9 +113,15 @@
     board.querySelector(".slate-lights").setAttribute("aria-label", done + " of " + total + " daily challenges done");
     board.querySelector(".slate-note").textContent = note;
     board.querySelector(".slate-reset").textContent = "New slate in " + untilMidnight();
+    var st = streak(), stEl = board.querySelector(".slate-streak");
+    if (stEl) {
+      stEl.hidden = !st.n;
+      stEl.textContent = st.n ? "\uD83D\uDD25 " + st.n + "-day streak" + (st.today ? "" : ". Play today to keep it.") : "";
+      stEl.classList.toggle("is-cold", !st.today);
+    }
     // Share: a plain-text recap of what's done today, for the group chat
     shareText = shareLines.length ? ["Today's slate, " + new Date().toLocaleDateString("en-US", { timeZone: TZ, weekday: "short", month: "numeric", day: "numeric" })]
-      .concat(shareLines, [done + " of " + total + " done. Beat me: https://davidsolar.dev"]).join("\n") : "";
+      .concat(shareLines, [done + " of " + total + " done" + (st.n > 1 ? ", " + st.n + "-day streak" : "") + ". Beat me: https://davidsolar.dev"]).join("\n") : "";
     if (shareBtn) shareBtn.hidden = !shareText;
   }
 
