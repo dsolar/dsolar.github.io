@@ -1839,7 +1839,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     $("h-riv-more").addEventListener("click", function () { H2H_ALL = !H2H_ALL; drawRivals(); });
     $("h2h-lede").textContent = "Every manager's record against everyone else in " + H.matchups.toLocaleString("en-US") + " matchups since 2013, every 16-0, and the best single weeks.";
     $("h2h").hidden = false;
-    drawRivals(); drawSweeps(); initBest();
+    drawRivals(); drawSweeps(); initBestWeeks();
   }
   function drawRivals() {
     var me = $("h-man").value, H = DATA.history, rows = [];
@@ -1877,7 +1877,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
   }
   var CAT_NAME = { R: "Runs", H: "Hits", HR: "Home runs", RBI: "RBI", SB: "Steals", TB: "Total bases", AVG: "Average", OPS: "OPS",
     W: "Wins", L: "Losses", SV: "Saves", K: "Strikeouts", HLD: "Holds", ERA: "ERA", WHIP: "WHIP", QS: "Quality starts" };
-  function fmtStat(ab, v) {
+  function fmtWeekStat(ab, v) {
     if (typeof v !== "number") return "–";
     if (ab === "AVG" || ab === "OPS") return v.toFixed(3).replace(/^0\./, ".");
     if (ab === "ERA" || ab === "WHIP") return v.toFixed(2);
@@ -1897,8 +1897,8 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     if (!r.st) return "<li>" + head.replace("<summary>", '<summary style="cursor:default">') + "</li>";
     var rows = cats.map(function (ab, i) {
       var w = (r.wn || "")[i] || "a";
-      return "<tr" + (ab === "W" ? ' class="sep"' : "") + '><td class="v' + (w === "a" ? " won" : "") + '">' + fmtStat(ab, r.st[0][i]) + '</td><td class="c">' + esc(ab) +
-        '</td><td class="v b' + (w === "b" ? " won" : "") + '">' + fmtStat(ab, r.st[1][i]) + "</td></tr>";
+      return "<tr" + (ab === "W" ? ' class="sep"' : "") + '><td class="v' + (w === "a" ? " won" : "") + '">' + fmtWeekStat(ab, r.st[0][i]) + '</td><td class="c">' + esc(ab) +
+        '</td><td class="v b' + (w === "b" ? " won" : "") + '">' + fmtWeekStat(ab, r.st[1][i]) + "</td></tr>";
     }).join("");
     if (r.ip) rows += '<tr class="sep"><td class="v">' + fmtIP(r.ip[0]) + '</td><td class="c">IP</td><td class="v b">' + fmtIP(r.ip[1]) + "</td></tr>";
     // Under the weekly innings minimum, Yahoo hands the other side every pitching category
@@ -1908,7 +1908,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       '<table class="swt"><thead><tr><th class="v">' + thName(r.a) + '</th><th></th><th class="v b">' + thName(r.b) + "</th></tr></thead><tbody>" + rows + "</tbody></table>" + short + "</details></li>";
   }
   /* Best single weeks (data.history.best) */
-  function initBest() {
+  function initBestWeeks() {
     var B = DATA.history.best || {}, cats = (DATA.history.cats || []).filter(function (c) { return B[c]; });
     if (!cats.length) { $("ht-best").hidden = true; return; }
     $("h-best-cat").innerHTML = '<option value="">Every category\'s record</option>' + cats.map(function (c) { return '<option value="' + c + '">' + esc(CAT_NAME[c] || c) + "</option>"; }).join("");
@@ -1938,15 +1938,15 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
         cats.map(function (k) {
           var r = B[k][0], r7 = !seven && r[4] > 7 && DATA.history.best7 && (DATA.history.best7[k] || [])[0];
           var s7 = r7 ? SEASONS[r7[0]] : null;
-          var alt = r7 ? '<small class="b7">7-day record: <b>' + fmtStat(k, r7[3]) + "</b>, " + esc(s7.teams[r7[2]]) + " (" + esc(man(s7, r7[2])) + "), " + r7[0] + ", Week " + r7[1] + "</small>" : "";
-          return '<tr class="bw" data-c="' + k + '"><td class="k">' + esc(CAT_NAME[k] || k) + '</td><td class="r v">' + fmtStat(k, r[3]) + '</td><td class="t">' + team(r) + alt + "</td></tr>";
+          var alt = r7 ? '<small class="b7">7-day record: <b>' + fmtWeekStat(k, r7[3]) + "</b>, " + esc(s7.teams[r7[2]]) + " (" + esc(man(s7, r7[2])) + "), " + r7[0] + ", Week " + r7[1] + "</small>" : "";
+          return '<tr class="bw" data-c="' + k + '"><td class="k">' + esc(CAT_NAME[k] || k) + '</td><td class="r v">' + fmtWeekStat(k, r[3]) + '</td><td class="t">' + team(r) + alt + "</td></tr>";
         }).join("") + "</tbody>";
       return;
     }
     $("h-best").innerHTML = '<caption hidden>Best single weeks: ' + esc(CAT_NAME[c] || c) + '</caption><thead><tr><th scope="col" class="r">#</th><th scope="col" class="r">' + esc(c) + '</th><th scope="col">Team and week</th></tr></thead><tbody>' +
       B[c].map(function (r, i) {
         var rank = i && B[c][i - 1][3] === r[3] ? "" : i + 1;
-        return '<tr><td class="r k">' + rank + '</td><td class="r v">' + fmtStat(c, r[3]) + '</td><td class="t">' + team(r) + "</td></tr>";
+        return '<tr><td class="r k">' + rank + '</td><td class="r v">' + fmtWeekStat(c, r[3]) + '</td><td class="t">' + team(r) + "</td></tr>";
       }).join("") + "</tbody>";
   }
   function drawSweeps() {

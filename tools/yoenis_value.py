@@ -289,6 +289,35 @@ def _alike(a, b):
     return SequenceMatcher(None, a, b).ratio()
 
 
+def keeper_names(data, year):
+    """{(team index, name as the sheet spells it): name as the board spells it, or None if the board shows
+    another team drafting him (not actually kept)}"""
+    s = next((x for x in data["seasons"] if x["year"] == year), None)
+    out = {}
+    if not s:
+        return out
+    for ti, ks in data["keeperHistory"].get(str(year), []):
+        left = [e for e in s.get("draft") or [] if len(e) > 3 and e[3] and e[1] == ti]
+        pending = []
+        for k in ks:
+            hit = next((e for e in left if fold(e[2]) == fold(k[0])), None)
+            if hit:
+                left.remove(hit)
+                out[(ti, k[0])] = hit[2]
+            else:
+                pending.append(k)
+        for k in pending:
+            best = max(left, key=lambda e: _alike(e[2], k[0]), default=None)
+            if best is not None and _alike(best[2], k[0]) >= 0.8:
+                left.remove(best)
+                out[(ti, k[0])] = best[2]
+            elif any(fold(e[2]) == fold(k[0]) and e[1] != ti for e in s.get("draft") or []):
+                out[(ti, k[0])] = None
+            else:
+                out[(ti, k[0])] = k[0]
+    return out
+
+
 def keepers_resolved(data, year):
     """[(team index, name as the board spells it, round it used)] for `year`'s keepers. The draft results win:
     a sheet name misspelled ('Vinnie Pasquatino') is matched to that team's keeper on the board, and a sheet

@@ -148,11 +148,17 @@ def main():
     vals = {y: season_values(y) for y in S if (MLB / f"{y}.json").exists()}
 
     # keeper windows: a run of kept seasons with rising keeper years (2020 and 2021 can share one), plus the season before
+    # The board's spelling for each keeper, so a sheet slip ('Junior Camirero') doesn't split a player's years
+    from yoenis_value import keeper_names
     kept = {}
     for y in sorted(int(y) for y in hist):
+        names = keeper_names(d, y)
         for ti, ks in hist[str(y)]:
             for k in ks:
-                kept.setdefault(key(k[0]), []).append((y, ti, k))
+                nm = names.get((ti, k[0]), k[0])
+                if nm is None:
+                    continue  # the board shows someone else drafting him: not actually kept
+                kept.setdefault(key(nm), []).append((y, ti, [nm] + list(k[1:])))
     windows = []
     for kk, seasons in kept.items():
         cur = []
