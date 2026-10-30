@@ -204,19 +204,20 @@ function flag(color) {
   view = { mode: 'live' }; coachIdx = null;
   save(); render();
 }
-setInterval(function () { if (S && S.clock && !S.over) updateClocks(); }, 100);
+setInterval(function () { if (TAB === 'play' && S && S.clock && !S.over) updateClocks(); }, 100);
 
 /* ---------- game flow ---------- */
 function cancelAnalysis() {
   coachEng.cancelAll();
   cache.forEach(function (v, k) { if (!done.has(k)) cache.delete(k); });
 }
-function newGame(settings) {
+function newGame(settings, opts) {
+  opts = opts || {};
   gen++;
   cancelAnalysis(); botEng.cancelAll();
   if (aiCtl) aiCtl.abort();
   var me = settings.color === 'r' ? (Math.random() < 0.5 ? 'w' : 'b') : settings.color;
-  S = { v: 3, settings: settings, me: me, startFen: START_FEN, plies: [], over: null, turnStart: Date.now(), clock: null, undos: [], aiReview: null };
+  S = { v: 3, settings: settings, me: me, startFen: opts.startFen || START_FEN, plies: [], over: null, turnStart: Date.now(), clock: null, undos: [], aiReview: null, scenario: opts.scenario || null };
   var cd = clockDef();
   if (cd.base) S.clock = { base: cd.base * 60000, inc: (cd.inc || 0) * 1000, w: cd.base * 60000, b: cd.base * 60000 };
   chess = new Chess(S.startFen);
@@ -241,6 +242,7 @@ function applyMove(mv, by, legalCount) {
   };
   S.plies.push(ply);
   checkOver();
+  scenarioCheck();
   view = { mode: 'live' }; sel = null; hint = { fen: null, stage: 0, move: null };
   if (by === 'you') coachIdx = S.plies.length - 1;
   if (S.over) coachIdx = null;
@@ -250,7 +252,7 @@ function applyMove(mv, by, legalCount) {
 }
 
 function checkOver() {
-  if (S.over && (S.over.reason === 'time' || S.over.reason === 'resignation' || /^timeout/.test(S.over.reason))) return;
+  if (S.over && (S.over.manual || S.over.reason === 'time' || S.over.reason === 'resignation' || /^timeout/.test(S.over.reason))) return;
   if (!chess.game_over()) { S.over = null; return; }
   var r;
   if (chess.in_checkmate()) { var loser = chess.turn(); r = { winner: other(loser), reason: 'checkmate' }; }
@@ -361,6 +363,7 @@ function truncateTo(k, why) {
     S.clock.b = last && last.clock ? last.clock.b : S.clock.base;
   }
   S.turnStart = Date.now();
+  if (S.scenario) S.scenario.result = null;
   S.over = null; checkOver();
   botThinking = false; view = { mode: 'live' }; sel = null; hint = { fen: null, stage: 0, move: null };
   coachIdx = null;
@@ -449,7 +452,9 @@ function sqAtXY(x, y) {
 }
 function tf(pos) { return 'translate(' + pos.c * 100 + '%,' + pos.r * 100 + '%)'; }
 
+function myColor() { return TAB === 'train' ? puzzleColor() : S.me; }
 function displayed() {
+  if (TAB === 'train') return trainDisplayed();
   var o = { fen: null, last: null, arrows: [], badge: null, interactive: false };
   if (view.mode === 'live') {
     o.fen = chess.fen();
@@ -493,7 +498,7 @@ function renderBoard() {
   boardChess = c;
   var legalTargets = {};
   if (d.interactive && sel) c.moves({ square: sel, verbose: true }).forEach(function (m) { legalTargets[m.to] = m.captured ? 'ring' : 'dot'; });
-  var hintSq = view.mode === 'live' && d.interactive && hint.fen === d.fen && hint.stage >= 1 && hint.move ? hint.move.from : null;
+  var hintSq = d.hintSq || (view.mode === 'live' && d.interactive && hint.fen === d.fen && hint.stage >= 1 && hint.move ? hint.move.from : null);
   var checkSq = null;
   if (c.in_check()) { var t = c.turn(); for (var r = 0; r < 8; r++) for (var f = 0; f < 8; f++) { var p = b[r][f]; if (p && p.type === 'k' && p.color === t) checkSq = rfSq(r, f); } }
   var html = '';
@@ -503,7 +508,7 @@ function renderBoard() {
     var cls = 'sq ' + (light ? 'l' : 'd');
     if (d.last && (d.last.from === sq || d.last.to === sq)) cls += ' last';
     if (sel === sq && d.interactive) cls += ' sel';
-    if (hintSq === sq && hint.stage === 1) cls += ' hintsq';
+    if (hintSq === sq && (d.hintSq || hint.stage === 1)) cls += ' hintsq';
     if (checkSq === sq) cls += ' chk';
     html += '<div class="' + cls + '" data-sq="' + sq + '">';
     if (col === 0) html += '<span class="co r">' + sq[1] + '</span>';
@@ -521,7 +526,7 @@ function renderBoard() {
   }
   piecesEl.innerHTML = ph;
 
-  if (animNext && view.mode === 'live' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  if (animNext && (view.mode === 'live' || TAB === 'train') && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     var a = animNext, moves = [[a.from, a.to]];
     if (a.flags.indexOf('k') >= 0) moves.push(a.color === 'w' ? ['h1', 'f1'] : ['h8', 'f8']);
     if (a.flags.indexOf('q') >= 0) moves.push(a.color === 'w' ? ['a1', 'd1'] : ['a8', 'd8']);
@@ -562,7 +567,7 @@ function arrowSvg(from, to, kind) {
 
 /* ---------- pointer input ---------- */
 var drag = null;
-function tryBoardMove(from, to, promo) { return view.mode === 'drill' ? drillMove(from, to, promo) : userMove(from, to, promo); }
+function tryBoardMove(from, to, promo) { if (TAB === 'train') return trainMove(from, to, promo); return view.mode === 'drill' ? drillMove(from, to, promo) : userMove(from, to, promo); }
 function onDown(e) {
   if (e.button && e.button !== 0) return;
   var d = displayed();
@@ -570,10 +575,10 @@ function onDown(e) {
   var sq = sqAtXY(e.clientX, e.clientY);
   if (!sq) return;
   var p = boardChess.get(sq);
-  if (sel && sel !== sq && (!p || p.color !== S.me)) {
+  if (sel && sel !== sq && (!p || p.color !== myColor())) {
     if (tryBoardMove(sel, sq)) return;
   }
-  if (p && p.color === S.me) {
+  if (p && p.color === myColor()) {
     var justSelected = sel !== sq;
     sel = sq; renderBoard();
     var el = piecesEl.querySelector('.pc[data-sq="' + sq + '"]');
@@ -606,7 +611,7 @@ function showPromo(from, to) {
   var box = document.getElementById('promo');
   pendingPromo = { from: from, to: to };
   box.firstChild.innerHTML = ['q', 'r', 'b', 'n'].map(function (t) {
-    return '<button type="button" data-promo="' + t + '" aria-label="Promote to ' + PNAME[t] + '" style="background-image:url(' + PIECE_URL[S.me + t.toUpperCase()] + ')"></button>';
+    return '<button type="button" data-promo="' + t + '" aria-label="Promote to ' + PNAME[t] + '" style="background-image:url(' + PIECE_URL[myColor() + t.toUpperCase()] + ')"></button>';
   }).join('');
   box.hidden = false;
 }
@@ -651,12 +656,16 @@ function renderHeader() {
 }
 function renderStrips() {
   var d = displayed(), b = new Chess(d.fen).board();
-  var cnt = { w: { p: 0, n: 0, b: 0, r: 0, q: 0 }, b: { p: 0, n: 0, b: 0, r: 0, q: 0 } }, init = { p: 8, n: 2, b: 2, r: 2, q: 1 };
-  b.forEach(function (row) { row.forEach(function (p) { if (p && p.type !== 'k') cnt[p.color][p.type]++; }); });
+  var countOf = function (board) {
+    var c = { w: { p: 0, n: 0, b: 0, r: 0, q: 0 }, b: { p: 0, n: 0, b: 0, r: 0, q: 0 } };
+    board.forEach(function (row) { row.forEach(function (p) { if (p && p.type !== 'k') c[p.color][p.type]++; }); });
+    return c;
+  };
+  var cnt = countOf(b), start = countOf(new Chess(S.startFen).board());
   var matW = 0; ['p', 'n', 'b', 'r', 'q'].forEach(function (t) { matW += (cnt.w[t] - cnt.b[t]) * VAL[t]; });
   function capsOf(color) {
     var h = '';
-    ['q', 'r', 'b', 'n', 'p'].forEach(function (t) { for (var i = 0; i < Math.max(0, init[t] - cnt[color][t]); i++) h += '<i style="background-image:url(' + PIECE_URL[color + t.toUpperCase()] + ')"></i>'; });
+    ['q', 'r', 'b', 'n', 'p'].forEach(function (t) { for (var i = 0; i < Math.max(0, start[color][t] - cnt[color][t]); i++) h += '<i style="background-image:url(' + PIECE_URL[color + t.toUpperCase()] + ')"></i>'; });
     return h;
   }
   var me = S.me, opp = other(me), L = LEVELS[S.settings.level];
@@ -673,6 +682,7 @@ function renderStrips() {
 }
 function renderEval() {
   if (!S) return;
+  if (TAB === 'train') return;
   var d = displayed(), r = done.get(d.fen), bar = document.getElementById('evalbar');
   bar.classList.toggle('flip', orient === 'b');
   if (quietMode()) { bar.firstChild.style.height = '50%'; bar.title = 'Evaluation hidden until the game ends'; return; }
@@ -816,7 +826,15 @@ function renderCoach() {
   if (ans && p.ai) { ans.textContent = p.ai.text || (p.ai.status === 'thinking' ? 'Thinking…' : ''); ans.classList.toggle('dim', !p.ai.text); }
 }
 
+function scenarioIntro(sd) {
+  var lim = sd.limit ? (sd.goal === 'draw' ? 'Hold for ' + sd.limit + ' moves' : 'Within ' + sd.limit + ' moves') : 'No move limit';
+  return '<div><div class="kicker">Play it out · ' + esc(sd.tag) + '</div><h2>' + esc(sd.title) + '</h2></div><p>' + esc(sd.blurb) + '</p>' +
+    '<ul class="insights">' + sd.tips.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
+    '<div class="evalrow"><span>' + lim + '</span><span>Opponent: ' + LEVELS[S.settings.level].name + ' bot</span></div>';
+}
 function introCard() {
+  var sd = scenarioDef();
+  if (sd) return scenarioIntro(sd);
   var waiting = botThinking || (chess.turn() !== S.me && !S.over);
   var cd = clockDef();
   return '<div><div class="kicker">Coach' + (cd.base ? ' · ' + cd.label + ' ' + cd.sub.toLowerCase() : '') + '</div><h2>' + (waiting ? 'The bot moves first' : 'Your move') + '</h2></div>' +
@@ -996,11 +1014,15 @@ function gameOverCard() {
   var ordered = bad.slice().sort(function (a, b) { return GRADE_ORDER.indexOf(S.plies[b].review.grade) - GRADE_ORDER.indexOf(S.plies[a].review.grade); });
   var pending = S.plies.some(function (p) { return p.by === 'you' && p.review && p.review.status === 'pending'; });
   var opening = openingOf([S.startFen].concat(S.plies.map(function (p) { return p.fenAfter; })));
-  var h = '<div><div class="kicker">Game over' + (opening ? ' · ' + esc(opening) : '') + '</div><h2>' + title + '</h2></div>';
+  var sd = scenarioDef(), scr = S.scenario && S.scenario.result;
+  if (sd && scr) title = scr.ok ? 'Goal reached' : 'Not this time';
+  var h = '<div><div class="kicker">' + (sd ? 'Play it out · ' + esc(sd.title) : 'Game over' + (opening ? ' · ' + esc(opening) : '')) + '</div><h2>' + title + '</h2></div>';
+  if (sd && scr) h += '<p class="assist">' + esc(scr.text) + '</p><div class="actions"><button class="btn sm' + (scr.ok ? '' : ' primary') + '" type="button" data-act="scretry">Try again</button><button class="btn sm' + (scr.ok ? ' primary' : '') + '" type="button" data-act="totrain">Back to training</button></div>';
   if (pending) h += '<div class="pending"><span class="spin"></span><span>Finishing the review…</span></div>';
   var gg = gameGrade();
+  if (S.scenario && S.scenario.goal !== 'win') gg = null;
   if (gg && !pending) h += gradeBlock(gg);
-  else if (!gg && !pending) h += '<p class="assist">' + esc(assistText(null)) + '</p>';
+  else if (!gg && !pending && !S.scenario) h += '<p class="assist">' + esc(assistText(null)) + '</p>';
   h += '<p>' + (bad.length ? 'Here are the moments that mattered most. Tap one to see what went wrong, or practice finding the right move in each.' : 'No inaccuracies, mistakes or blunders. Tap any move on the scoresheet to review it.') + '</p>';
   if (ordered.length) {
     h += '<div class="actions">' + ordered.slice(0, 6).map(function (i) {
@@ -1027,6 +1049,8 @@ function gameOverCard() {
 
 function render() {
   if (!S) return;
+  if (TAB === 'train') { renderTrainAll(); return; }
+  renderTabs();
   renderHeader(); renderModebar(); renderBoard(); renderStrips(); renderControls(); renderCoach(); renderSheet(); renderTally(); renderEval();
 }
 
@@ -1206,6 +1230,8 @@ function wire() {
     else if (act === 'lineexit') openPly(view.plyIdx);
     else if (act === 'ai') askClaude(k, null);
     else if (act === 'aireview') askReview();
+    else if (act === 'scretry') launchScenario(S.scenario.id);
+    else if (act === 'totrain') switchTab('train');
     else if (act === 'review0') goPly(1);
     else if (act === 'new') openSetup();
     else if (act === 'summary') backToGame();
@@ -1223,12 +1249,25 @@ function wire() {
   document.addEventListener('keydown', function (e) {
     if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
     if (!document.getElementById('setup').hidden) { if (e.key === 'Escape') closeSetup(); return; }
+    if (TAB === 'train') return;
     if (e.key === 'ArrowLeft') { nav(-1); e.preventDefault(); }
     else if (e.key === 'ArrowRight') { nav(1); e.preventDefault(); }
     else if (e.key === 'Escape' && view.mode !== 'live') backToGame();
   });
 }
 
+/* iOS can still zoom on a quick second tap; swallow it and pass the tap through as a click */
+function noDoubleTapZoom() {
+  var last = 0;
+  document.addEventListener('touchend', function (e) {
+    var now = Date.now(), quick = now - last < 350;
+    last = now;
+    if (!quick || e.touches.length || (e.target.closest && e.target.closest('input, textarea, select, .board'))) return;
+    e.preventDefault();
+    var t = e.target.closest && e.target.closest('button, label, a[href]');
+    if (t && !t.disabled) t.click();
+  }, { passive: false });
+}
 function restore(saved) {
   if (!saved || !saved.S || !saved.S.plies) return false;
   try {
@@ -1249,6 +1288,8 @@ function start(data) {
   PIECE_URL = PIECES;
   buildBook();
   wire();
+  wireTrain();
+  noDoubleTapZoom();
   var hotState = data && data.S ? data : null;
   coachEng.start().then(render); botEng.start().then(render);
   if (!restore(hotState) && !restore(loadSaved())) { newGame(defaultSettings()); }
@@ -1257,6 +1298,7 @@ function start(data) {
     S.plies.forEach(function (p) { if (p.by === 'you' && (!p.review || p.review.status !== 'done')) reviewPly(p); });
     if (!S.over) { if (chess.turn() !== S.me) botTurn(); else analyze(chess.fen()); }
   }
+  try { if (/^#(train|daily)$/.test(location.hash)) switchTab('train'); } catch (e) {}
   if (S.over) { analyze(S.startFen); S.plies.forEach(function (p) { if (p.by === 'bot') analyze(p.fenAfter); }); }
   if (window.claude && typeof window.claude.use === 'function') {
     window.claude.use('sample').then(function (f) { sampleFn = f || null; render(); }).catch(function () {});

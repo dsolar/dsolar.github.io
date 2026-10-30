@@ -220,6 +220,11 @@ function gradeMove(o) {
   else g = 'blunder';
   /* the first few moves rarely decide anything; shallow search overstates them */
   if (o.moveNo && o.moveNo <= 3 && g === 'mistake' && povCp(o.evA) > -150) g = 'inaccuracy';
+  /* both sides of the move are forced mates: grade by how much longer the mate got */
+  if (o.evB.mate != null && o.evB.mate > 0 && o.evA.mate != null && o.evA.mate > 0 && o.playedUci !== o.bestUci) {
+    var slip = o.evA.mate - (o.evB.mate - 1);
+    g = slip <= 0 ? 'best' : slip === 1 ? 'excellent' : slip <= 3 ? 'good' : slip <= 6 ? 'inaccuracy' : 'mistake';
+  }
   if (o.evA.mate != null && o.evA.mate < 0 && !(o.evB.mate != null && o.evB.mate < 0)) g = 'blunder';
   /* a missed forced mate only counts against you when it actually costs the win (not when you are still crushing) */
   if (o.evB.mate != null && o.evB.mate > 0 && !(o.evA.mate != null && o.evA.mate > 0) && povCp(o.evA) < 600) {
@@ -260,8 +265,8 @@ function letterGrade(acc) {
 function phaseOf(fen) {
   var b = new Chess(fen).board(), pieces = 0, queens = 0;
   b.forEach(function (row) { row.forEach(function (p) { if (p && p.type !== 'p' && p.type !== 'k') { pieces += VAL[p.type]; if (p.type === 'q') queens++; } }); });
-  if (moveNoOf(fen) <= 10 || bookName(fen)) return 'opening';
   if (pieces <= 13 || (queens === 0 && pieces <= 20)) return 'endgame';
+  if (moveNoOf(fen) <= 10 || bookName(fen)) return 'opening';
   return 'middlegame';
 }
 
@@ -345,7 +350,8 @@ function explainMove(d) {
       var bt = describeMove(d.fenBefore, bestMove, me);
       body.push('The engine slightly preferred ' + bestMove.san + (bt.length ? ', which ' + joinTags(bt.slice(0, 2)) : '') + '.');
     }
-    body.push('You are ' + evalWords(d.evA) + '.');
+    if (d.evA.mate != null && d.evA.mate > 0) body.push(d.evB.mate != null && d.evB.mate > 0 ? 'It was mate in ' + d.evB.mate + ' before this move; now it is mate in ' + d.evA.mate + '.' : 'You now have a forced mate in ' + d.evA.mate + '.');
+    else body.push('You are ' + evalWords(d.evA) + '.');
     return { headline: HEAD[d.grade], body: body, tip: '' };
   }
 

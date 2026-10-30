@@ -204,13 +204,15 @@ window.PROJECTS = [
   },
   {
     title: "Tempo",
-    line: "Learn chess with a move-by-move coach",
+    line: "Chess coach, daily puzzles, lessons",
+    daily: true,
+    tag: "New puzzles every day",
     type: "Games",
     released: "2026-10",
     url: "tempo/",
     question: "Could I get a chess coach like the paid apps have, without the subscription?",
-    summary: "Play Stockfish at six levels while a coach grades every move, shows the move it would have played and explains why.",
-    facts: [["6", "bot levels, Rookie to Master"], ["6", "clock settings, bullet to rapid"], ["200+", "named opening positions"]],
+    summary: "Play Stockfish at six levels while a coach grades every move and explains the better one, then train with a daily five, Puzzle Rush, lessons and endgames to play out.",
+    facts: [["5,000", "real puzzles, rated 600 to 2400"], ["16", "lessons, forks to rook endgames"], ["6", "bot levels, Rookie to Master"]],
     stack: ["JavaScript", "Stockfish (WebAssembly)", "chess.js"],
     cover: { image: "assets/covers/tempo.jpg", bg: "#16201C", band: "#87A097" }
   },

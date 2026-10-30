@@ -48,7 +48,9 @@ dsolar.github.io/
                               data.js (every prospect, report and career; generated). Borrows Guess the Pick's engine and names
   tempo/                      Tempo, the chess coach: index.html (layout), style.css, app.js (board, bot, coach card,
                               scoresheet), core.js (move grading and the written explanations), openings.js (opening names; add lines
-                              there), pieces.js (piece art),
+                              there), lessons.js (lesson text, theme notes and play-it-out positions; edit freely),
+                              train.js (daily five, Puzzle Rush, lessons), puzzles.js (5,000 Lichess puzzles, CC0),
+                              pieces.js (piece art),
                               chess.js (rules) and stockfish.* (the engine, runs in the visitor's browser). Plain files.
   guillotine/                 Bastille Day Odds: index.html, sim.js (the simulation),
                               data.json (league data, written by the workflow below)

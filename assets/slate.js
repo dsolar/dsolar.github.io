@@ -4,6 +4,7 @@
      Guess the Pick   gtp-daily5-SPORT-YYYY-MM-DD (Boston date)
      Journeyman       jm-daily3-SPORT-YYYY-MM-DD (Boston date)
      Scouting Report  sr-daily-YYYY-MM-DD (Boston date)
+     Tempo            tempo-daily-YYYY-MM-DD (Boston date)
    Nothing leaves the device. If a game changes its save format, update the matching row below. */
 (function () {
   var board = document.getElementById("slate");
@@ -47,6 +48,9 @@
       }) },
       { name: "Scouting Report", line: "Takes that aged badly", url: "scouting-report/", cells: [
         { label: "Daily", url: "scouting-report/", s: tenDaily("sr-daily-" + et, 5) }, null, null
+      ] },
+      { name: "Tempo", line: "Five chess puzzles", url: "tempo/#train", cells: [
+        { label: "Daily", url: "tempo/#train", s: tenDaily("tempo-daily-" + et, 5) }, null, null
       ] }
     ];
   }
@@ -59,7 +63,8 @@
     var full = function (key, n) { var x = read(key); return !!(x && Array.isArray(x.results) && x.results.length >= n); };
     return ["nba", "nfl"].some(function (s) { return full("gtp-daily5-" + s + "-" + day, 10); })
       || ["nba", "nfl", "mlb"].some(function (s) { return full("jm-daily3-" + s + "-" + day, 10); })
-      || full("sr-daily-" + day, 5);
+      || full("sr-daily-" + day, 5)
+      || full("tempo-daily-" + day, 5);
   }
   function dayBefore(day) {
     var d = new Date(day + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() - 1);
