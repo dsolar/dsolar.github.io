@@ -1,5 +1,6 @@
 # Pulls MLB season stats (2013 on) from MLB's public Stats API into tools/mlb/ for the
-# Wipe Yoenis awards and player stat cards. Runs when the script or this file changes, or by hand from the Actions tab.
+# Wipe Yoenis awards, player stat cards and Best keepers. Runs when the script or this file changes, by hand
+# from the Actions tab, and Monday mornings (just this year's stats then, which is all that changes).
 name: MLB season stats
 
 on:
@@ -7,7 +8,10 @@ on:
     branches: [main]
     paths:
       - tools/mlb_stats_pull.py
+      - tools/yoenis_keeper_value.py
       - .github/workflows/mlb-stats.yml
+  schedule:
+    - cron: "37 13 * * 1"   # 9:37am ET Mondays
   workflow_dispatch:
 
 permissions:
@@ -31,10 +35,14 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Pull season stats from MLB
-        run: python3 tools/mlb_stats_pull.py
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then python3 tools/mlb_stats_pull.py "$(date +%Y)"; else python3 tools/mlb_stats_pull.py; fi
 
       - name: Refresh the player stat cards
         run: python3 tools/yoenis_stat_cards.py
+
+      - name: Refresh keeper years, Best keepers and the keeper of the year
+        run: python3 tools/yoenis_keeper_value.py
 
       - name: Commit the stats
         run: |
