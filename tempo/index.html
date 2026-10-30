@@ -21,7 +21,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@500;600&family=Public+Sans:wght@400;500;600;700&family=Besley:wght@700&family=Libre+Franklin:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/bar.css">
-<link rel="stylesheet" href="style.css?v=1">
+<link rel="stylesheet" href="style.css?v=2">
 <script src="../assets/analytics.js" defer></script>
 </head>
 <body>
@@ -32,7 +32,7 @@
 <div class="app">
   <header class="top">
     <div class="brand"><h1>Tempo</h1><span>a chess coach that grades every move</span></div>
-    <button class="btn primary" id="newBtn" type="button">New game</button>
+    <div class="topbtns"><button class="btn ghost" id="resignBtn" type="button" hidden>Resign</button><button class="btn primary" id="newBtn" type="button">New game</button></div>
   </header>
 
   <main class="layout">
@@ -88,6 +88,10 @@
       </div>
     </fieldset>
     <fieldset>
+      <legend>Clock</legend>
+      <div class="seg clocks" id="clockOpts"></div>
+    </fieldset>
+    <fieldset>
       <legend>Coaching</legend>
       <div class="seg">
         <label class="opt"><input type="radio" name="coach" value="every" id="coEvery"><strong>Every move</strong></label>
@@ -102,9 +106,10 @@
   </form>
 </div>
 
-<script src="chess.js?v=1"></script>
-<script src="pieces.js?v=1"></script>
-<script src="core.js?v=1"></script>
-<script src="app.js?v=1"></script>
+<script src="chess.js?v=2"></script>
+<script src="pieces.js?v=2"></script>
+<script src="openings.js?v=2"></script>
+<script src="core.js?v=2"></script>
+<script src="app.js?v=2"></script>
 </body>
 </html>

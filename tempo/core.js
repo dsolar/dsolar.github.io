@@ -41,6 +41,26 @@ function lineSans(fen, pv, max) {
   return out;
 }
 
+
+/* ---- opening book ---- */
+var BOOK = null;
+function posKey(fen) { var f = fen.split(' '); return f[0] + ' ' + f[1] + ' ' + f[2]; }
+function buildBook() {
+  BOOK = {};
+  var bad = [];
+  (typeof OPENINGS !== 'undefined' ? OPENINGS : []).forEach(function (o) {
+    var c = new Chess(), ok = true;
+    o[1].split(' ').forEach(function (san) { if (ok && !c.move(san, { sloppy: true })) ok = false; });
+    if (!ok) { bad.push(o[0]); return; }
+    var k = posKey(c.fen());
+    if (!BOOK[k] || o[0].length > BOOK[k].length) BOOK[k] = o[0];
+  });
+  return bad;
+}
+function bookName(fen) { if (!BOOK) buildBook(); return BOOK[posKey(fen)] || null; }
+/* Latest named opening reached in a list of fens */
+function openingOf(fens) { var n = null; fens.forEach(function (f) { var b = bookName(f); if (b) n = b; }); return n; }
+
 /* ---- attacks ---- */
 function attackedSquares(board, r, f) {
   var p = board[r][f]; if (!p) return [];
@@ -91,6 +111,25 @@ function forkTargets(fen, sq) {
     if (t.type === 'k' || VAL[t.type] > VAL[p.type] || (undefended && VAL[t.type] >= 1)) out.push({ type: t.type, sq: rfSq(s[0], s[1]) });
   });
   return out;
+}
+
+/* A checkmate `byColor` would deliver if it were their move (null-move threat check) */
+function mateThreat(fen, byColor) {
+  var f = fen.split(' ');
+  if (f[1] !== byColor) {
+    if (new Chess(fen).in_check()) return null;
+    f[1] = byColor; f[3] = '-';
+  }
+  var c = new Chess(f.join(' '));
+  if (!c.fen || c.fen().split(' ')[1] !== byColor) return null;
+  var ms = c.moves({ verbose: true });
+  for (var i = 0; i < ms.length; i++) {
+    c.move(ms[i]);
+    var mate = c.in_checkmate();
+    c.undo();
+    if (mate) return ms[i].san;
+  }
+  return null;
 }
 function material(chessOrFen, color) {
   var b = (typeof chessOrFen === 'string' ? new Chess(chessOrFen) : chessOrFen).board(), s = 0;
@@ -166,7 +205,7 @@ function evalWords(p) {
   return side ? 'winning' : 'losing';
 }
 
-var GRADE_ORDER = ['best', 'excellent', 'good', 'forced', 'inaccuracy', 'mistake', 'blunder'];
+var GRADE_ORDER = ['best', 'book', 'excellent', 'good', 'forced', 'inaccuracy', 'mistake', 'blunder'];
 function isBad(g) { return g === 'inaccuracy' || g === 'mistake' || g === 'blunder'; }
 
 function gradeMove(o) {
@@ -176,9 +215,11 @@ function gradeMove(o) {
   if (o.playedUci === o.bestUci || loss <= 1) g = 'best';
   else if (loss < 2.5) g = 'excellent';
   else if (loss < 5.5) g = 'good';
-  else if (loss < 11) g = 'inaccuracy';
-  else if (loss < 20) g = 'mistake';
+  else if (loss < 14) g = 'inaccuracy';
+  else if (loss < 22) g = 'mistake';
   else g = 'blunder';
+  /* the first few moves rarely decide anything; shallow search overstates them */
+  if (o.moveNo && o.moveNo <= 3 && g === 'mistake' && povCp(o.evA) > -150) g = 'inaccuracy';
   if (o.evA.mate != null && o.evA.mate < 0 && !(o.evB.mate != null && o.evB.mate < 0)) g = 'blunder';
   if (o.evB.mate != null && o.evB.mate > 0 && !(o.evA.mate != null && o.evA.mate > 0)) {
     var floor = o.evB.mate <= 2 ? 'mistake' : 'inaccuracy';
@@ -212,6 +253,8 @@ function describeMove(fenBefore, move, me) {
   if ((move.piece === 'n' || move.piece === 'b') && move.from[1] === homeRank && moveNo <= 15 && !move.captured) tags.push('develops your ' + PNAME[move.piece]);
   if (move.piece === 'p' && ['d4', 'e4', 'd5', 'e5', 'c4', 'c5'].indexOf(move.to) >= 0 && moveNo <= 12 && !move.captured) tags.push('claims space in the center');
   if (after.in_check() && !after.in_checkmate()) tags.push('gives check');
+  var mt = mateThreat(fenAfter, me);
+  if (mt) tags.unshift('threatens checkmate with ' + mt);
   var targets = forkTargets(fenAfter, move.to).filter(function (t) { return t.type !== 'k'; });
   if (targets.length >= 2) tags.push('attacks the ' + PNAME[targets[0].type] + ' on ' + targets[0].sq + ' and the ' + PNAME[targets[1].type] + ' on ' + targets[1].sq + ' at once');
   else if (targets.length === 1 && !move.captured) tags.push('attacks the ' + PNAME[targets[0].type] + ' on ' + targets[0].sq);
@@ -237,6 +280,7 @@ function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 function explainMove(d) {
   var me = d.me, opp = other(me), OPP = cname(opp), san = d.played.san;
   var HEAD = {
+    book: san + ' is a book move',
     best: san + ' is the best move', excellent: san + ' is an excellent move', good: san + ' is a good move',
     forced: san + ' was your only legal move', inaccuracy: san + ' is an inaccuracy',
     mistake: san + ' is a mistake', blunder: san + ' is a blunder'
@@ -253,6 +297,13 @@ function explainMove(d) {
   if (d.grade === 'forced') {
     body.push('Nothing else was legal here, so there is nothing to grade.');
     return { headline: HEAD.forced, body: body, tip: '' };
+  }
+
+  if (d.grade === 'book') {
+    body.push('It is standard opening theory' + (d.opening ? ', part of the ' + d.opening : '') + '. Strong players have played this position for decades.');
+    if (playedTags.length) body.push('It ' + joinTags(playedTags.slice(0, 2)) + '.');
+    body.push('You are ' + evalWords(d.evA) + '.');
+    return { headline: HEAD.book, body: body, tip: '' };
   }
 
   if (!isBad(d.grade)) {
@@ -317,7 +368,9 @@ function explainMove(d) {
     }
   }
   if (!said && replyMove && !(d.evB.mate > 0)) {
-    body.push('No material is lost right away, but after ' + OPP + '\'s best reply ' + replyMove.san + ' your position gets worse.');
+    var threat = mateThreat(replyRes.chess.fen(), opp);
+    if (threat) body.push('After ' + OPP + '\'s reply ' + replyMove.san + ', ' + OPP + ' threatens ' + threat + ', and you have to spend your next moves defending.');
+    else body.push('No material is lost right away, but after ' + OPP + '\'s best reply ' + replyMove.san + ' your position gets worse.');
   }
   var wB = evalWords(d.evB), wA = evalWords(d.evA);
   body.push('The evaluation went from ' + fmtEval(d.evB) + ' to ' + fmtEval(d.evA) + ' for you: ' + (wB === wA ? 'you are still ' + wA + ', but your edge shrank.' : 'you went from ' + wB + ' to ' + wA + '.'));
@@ -332,4 +385,4 @@ function explainMove(d) {
   return { headline: HEAD[d.grade], body: body, tip: tip };
 }
 
-if (typeof module !== 'undefined') module.exports = { explainMove: explainMove, gradeMove: gradeMove, pov: pov, fmtEval: fmtEval, lineText: lineText, hangingPieces: hangingPieces, moveAccuracy: moveAccuracy };
+if (typeof module !== 'undefined') module.exports = { buildBook: buildBook, bookName: bookName, explainMove: explainMove, gradeMove: gradeMove, pov: pov, fmtEval: fmtEval, lineText: lineText, hangingPieces: hangingPieces, moveAccuracy: moveAccuracy };

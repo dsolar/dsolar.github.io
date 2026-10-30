@@ -7,24 +7,34 @@ var LEVELS = [
   { name: 'Strong', rating: '~1800', desc: 'Rarely blunders. You will need a plan.', skill: 14, depth: 11, time: 1000, random: 0 },
   { name: 'Master', rating: '2400+', desc: 'Full-strength search. Good luck.', skill: 20, depth: 15, time: 1600, random: 0 }
 ];
+var CLOCKS = [
+  { id: 'none', label: 'No clock', sub: 'Take your time' },
+  { id: '15+10', base: 15, inc: 10, label: '15 | 10', sub: 'Rapid' },
+  { id: '10+0', base: 10, inc: 0, label: '10 min', sub: 'Rapid' },
+  { id: '5+3', base: 5, inc: 3, label: '5 | 3', sub: 'Blitz' },
+  { id: '3+2', base: 3, inc: 2, label: '3 | 2', sub: 'Blitz' },
+  { id: '1+0', base: 1, inc: 0, label: '1 min', sub: 'Bullet' }
+];
+var BOOK_SVG = '<svg viewBox="0 0 16 16" width="1.05em" height="1.05em" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M8 4.2C6.4 3.1 4.4 2.8 1.8 3v9.6c2.6-.2 4.6.1 6.2 1.2 1.6-1.1 3.6-1.4 6.2-1.2V3C11.6 2.8 9.6 3.1 8 4.2Zm0 0v9.6"/></svg>';
 var GRADES = {
+  book: { label: 'Book', glyph: BOOK_SVG },
   best: { label: 'Best', glyph: '★' }, excellent: { label: 'Excellent', glyph: '!' }, good: { label: 'Good', glyph: '✓' },
   forced: { label: 'Only move', glyph: '□' }, inaccuracy: { label: 'Inaccuracy', glyph: '?!' },
   mistake: { label: 'Mistake', glyph: '?' }, blunder: { label: 'Blunder', glyph: '??' }
 };
-var LEGEND = ['best', 'excellent', 'good', 'inaccuracy', 'mistake', 'blunder'];
+var LEGEND = ['book', 'best', 'excellent', 'good', 'inaccuracy', 'mistake', 'blunder'];
 var ANALYSIS = { skill: 20, depth: 13, movetime: 2500 };
 var LS_KEY = 'tempo-chess-v1';
 
 /* ---------- engine ---------- */
 function bootWorker(url, ms) {
   return new Promise(function (resolve, reject) {
-    var w, done = false;
+    var w, fin = false;
     try { w = new Worker(url); } catch (e) { reject(e); return; }
-    var t = setTimeout(function () { if (!done) { done = true; try { w.terminate(); } catch (e) {} reject(new Error('timeout')); } }, ms);
-    w.onerror = function (e) { if (!done) { done = true; clearTimeout(t); try { w.terminate(); } catch (x) {} reject(e); } };
+    var t = setTimeout(function () { if (!fin) { fin = true; try { w.terminate(); } catch (e) {} reject(new Error('timeout')); } }, ms);
+    w.onerror = function (e) { if (!fin) { fin = true; clearTimeout(t); try { w.terminate(); } catch (x) {} reject(e); } };
     w.onmessage = function (e) {
-      if (!done && String(e.data).indexOf('uciok') >= 0) { done = true; clearTimeout(t); w.onerror = null; resolve(w); }
+      if (!fin && String(e.data).indexOf('uciok') >= 0) { fin = true; clearTimeout(t); w.onerror = null; resolve(w); }
     };
     w.postMessage('uci');
   });
@@ -63,7 +73,7 @@ Engine.prototype.pump = function () {
   j.last = { score: null, pv: [], depth: 0 };
   this.w.postMessage('setoption name Skill Level value ' + (j.o.skill == null ? 20 : j.o.skill));
   this.w.postMessage('position fen ' + j.fen);
-  this.w.postMessage('go depth ' + j.o.depth + (j.o.movetime ? ' movetime ' + j.o.movetime : ''));
+  this.w.postMessage('go depth ' + j.o.depth + (j.o.movetime ? ' movetime ' + Math.round(j.o.movetime) : ''));
 };
 Engine.prototype.onLine = function (l) {
   var j = this.cur;
@@ -105,13 +115,15 @@ var gen = 0;
 var cache = new Map();      // fen -> Promise(analysis)
 var done = new Map();       // fen -> analysis (resolved)
 var sampleFn = null, aiCtl = null, aiHidden = false;
-var expanded = {};          // ply idx -> show details in "mistakes only" mode
+var expanded = {};
 var pendingPromo = null;
 var animNext = null;
+var boardChess = null;      // the position currently drawn
+var resignArmed = 0;
 
 function save() { try { localStorage.setItem(LS_KEY, JSON.stringify({ S: S, orient: orient })); } catch (e) {} }
 function loadSaved() { try { var raw = localStorage.getItem(LS_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } }
-function defaultSettings() { return { level: 2, color: 'w', coach: 'every' }; }
+function defaultSettings() { return { level: 2, color: 'w', coach: 'every', clock: 'none' }; }
 function fenAt(n) { return n === 0 ? S.startFen : S.plies[n - 1].fenAfter; }
 function lastUserIdx() { for (var i = S.plies.length - 1; i >= 0; i--) if (S.plies[i].by === 'you') return i; return -1; }
 function myTurnLive() { return !S.over && chess.turn() === S.me && !botThinking; }
@@ -122,6 +134,16 @@ function coachVisible(p) {
   if (!p || !p.review || p.review.status !== 'done') return false;
   if (S.settings.coach === 'after' && !S.over) return false;
   return true;
+}
+function quietMode() { return S.settings.coach === 'after' && !S.over; }
+function fmtSecs(ms) {
+  if (ms == null) return '';
+  var s = ms / 1000;
+  if (s < 10) return s.toFixed(1) + 's';
+  if (s < 60) return Math.round(s) + 's';
+  var m = Math.floor(s / 60), r = Math.round(s % 60);
+  if (r === 60) { m++; r = 0; }
+  return m + 'm ' + (r < 10 ? '0' : '') + r + 's';
 }
 
 function analyze(fen) {
@@ -134,7 +156,7 @@ function analyze(fen) {
     p = coachEng.go(fen, ANALYSIS).then(function (r) {
       if (!r) { cache.delete(fen); return null; }
       if (!r.score) r.score = { cp: 0 };
-      done.set(fen, r); renderEval();
+      done.set(fen, r); renderEval(); if (S && S.over) renderTally();
       return r;
     });
   }
@@ -142,13 +164,57 @@ function analyze(fen) {
   return p;
 }
 
+/* ---------- clock ---------- */
+function clockDef() { return CLOCKS.filter(function (c) { return c.id === (S.settings.clock || 'none'); })[0] || CLOCKS[0]; }
+function clockLeft(color) {
+  if (!S.clock) return null;
+  var left = S.clock[color];
+  if (!S.over && chess.turn() === color && S.turnStart) left -= Date.now() - S.turnStart;
+  return left;
+}
+function clockStr(ms) {
+  ms = Math.max(0, ms);
+  if (ms < 10000) return (Math.floor(ms / 100) / 10).toFixed(1);
+  var s = Math.ceil(ms / 1000), m = Math.floor(s / 60);
+  s = s % 60;
+  return m + ':' + (s < 10 ? '0' : '') + s;
+}
+function updateClocks() {
+  if (!S || !S.clock) return;
+  ['w', 'b'].forEach(function (c) {
+    var el = document.querySelector('.clk[data-c="' + c + '"]');
+    if (!el) return;
+    var left = clockLeft(c);
+    el.textContent = clockStr(left);
+    el.classList.toggle('on', !S.over && chess.turn() === c);
+    el.classList.toggle('low', left < Math.min(20000, S.clock.base * 0.1 + 5000));
+  });
+  if (!S.over) {
+    var t = chess.turn(), left = clockLeft(t);
+    if (left <= 0) flag(t);
+  }
+}
+function flag(color) {
+  S.clock[color] = 0;
+  var winner = other(color);
+  var b = new Chess(chess.fen()).board(), canMate = false;
+  b.forEach(function (row) { row.forEach(function (p) { if (p && p.color === winner && p.type !== 'k') canMate = true; }); });
+  S.over = canMate ? { winner: winner, reason: 'time' } : { winner: null, reason: 'timeout with insufficient material' };
+  gen++; botEng.cancelAll(); botThinking = false;
+  view = { mode: 'live' }; coachIdx = null;
+  save(); render();
+}
+setInterval(function () { if (S && S.clock && !S.over) updateClocks(); }, 100);
+
 /* ---------- game flow ---------- */
 function newGame(settings) {
   gen++;
   coachEng.cancelAll(); botEng.cancelAll();
   if (aiCtl) aiCtl.abort();
   var me = settings.color === 'r' ? (Math.random() < 0.5 ? 'w' : 'b') : settings.color;
-  S = { v: 1, settings: settings, me: me, startFen: START_FEN, plies: [], over: null };
+  S = { v: 2, settings: settings, me: me, startFen: START_FEN, plies: [], over: null, turnStart: Date.now(), clock: null };
+  var cd = clockDef();
+  if (cd.base) S.clock = { base: cd.base * 60000, inc: (cd.inc || 0) * 1000, w: cd.base * 60000, b: cd.base * 60000 };
   chess = new Chess(S.startFen);
   orient = me; view = { mode: 'live' }; sel = null; coachIdx = null; hint = { fen: null, stage: 0, move: null }; botThinking = false; expanded = {};
   save(); render();
@@ -156,24 +222,30 @@ function newGame(settings) {
 }
 
 function applyMove(mv, by, legalCount) {
-  var fenBefore = chess.fen();
+  var fenBefore = chess.fen(), mover = chess.turn();
+  var now = Date.now(), spent = S.turnStart ? now - S.turnStart : null;
   var m = chess.move(mv);
   if (!m) return null;
+  if (S.clock) S.clock[mover] = Math.max(0, S.clock[mover] - (spent || 0)) + S.clock.inc;
+  S.turnStart = now;
   var ply = {
     san: m.san, uci: moveUci(m), from: m.from, to: m.to, color: m.color, piece: m.piece, captured: m.captured || null,
     flags: m.flags, promotion: m.promotion || null, fenBefore: fenBefore, fenAfter: chess.fen(), by: by,
-    legalCount: legalCount, review: by === 'you' ? { status: 'pending' } : null
+    legalCount: legalCount, review: by === 'you' ? { status: 'pending' } : null,
+    timeMs: spent, clock: S.clock ? { w: S.clock.w, b: S.clock.b } : null
   };
   S.plies.push(ply);
   checkOver();
   view = { mode: 'live' }; sel = null; hint = { fen: null, stage: 0, move: null };
   if (by === 'you') coachIdx = S.plies.length - 1;
+  if (S.over) coachIdx = null;
   animNext = { from: m.from, to: m.to, flags: m.flags, color: m.color };
   save();
   return ply;
 }
 
 function checkOver() {
+  if (S.over && (S.over.reason === 'time' || S.over.reason === 'resignation' || /^timeout/.test(S.over.reason))) return;
   if (!chess.game_over()) { S.over = null; return; }
   var r;
   if (chess.in_checkmate()) { var loser = chess.turn(); r = { winner: other(loser), reason: 'checkmate' }; }
@@ -207,11 +279,14 @@ function reviewPly(ply) {
     var played = tryMove(ply.fenBefore, ply.uci).move;
     var evB = pov(b.score, ply.fenBefore, me), evA = pov(a.score, ply.fenAfter, me);
     var mateDelivered = new Chess(ply.fenAfter).in_checkmate();
-    var grade = gradeMove({ legalCount: ply.legalCount, playedUci: ply.uci, bestUci: b.bestmove, evB: evB, evA: evA, mateDelivered: mateDelivered });
-    var ex = explainMove({ fenBefore: ply.fenBefore, fenAfter: ply.fenAfter, played: played, me: me, grade: grade, before: b, after: a, evB: evB, evA: evA });
+    var grade = gradeMove({ moveNo: moveNoOf(ply.fenBefore), legalCount: ply.legalCount, playedUci: ply.uci, bestUci: b.bestmove, evB: evB, evA: evA, mateDelivered: mateDelivered });
+    var opening = bookName(ply.fenAfter);
+    var trusted = opening && (typeof DUBIOUS_OPENINGS === 'undefined' || DUBIOUS_OPENINGS.indexOf(opening) < 0);
+    if (trusted && (grade !== 'mistake' && grade !== 'blunder') && grade !== 'forced' && !mateDelivered) grade = 'book';
+    var ex = explainMove({ fenBefore: ply.fenBefore, fenAfter: ply.fenAfter, played: played, me: me, grade: grade, before: b, after: a, evB: evB, evA: evA, opening: opening });
     var best = b.bestmove ? tryMove(ply.fenBefore, b.bestmove) : null;
     ply.review = {
-      status: 'done', grade: grade, evB: evB, evA: evA,
+      status: 'done', grade: grade, evB: evB, evA: evA, opening: opening,
       bestUci: b.bestmove, bestSan: best ? best.move.san : null, bestFrom: best ? best.move.from : null, bestTo: best ? best.move.to : null,
       bestPv: (b.pv || []).slice(0, 12), replyPv: (a.pv || []).slice(0, 12),
       headline: ex.headline, body: ex.body, tip: ex.tip,
@@ -226,24 +301,28 @@ function botTurn() {
   botThinking = true; render();
   var g = gen, t0 = Date.now(), fen = chess.fen(), L = LEVELS[S.settings.level];
   var legal = chess.moves({ verbose: true });
+  var movetime = L.time, minDelay = 650;
+  if (S.clock) {
+    var left = clockLeft(other(S.me));
+    movetime = Math.max(60, Math.min(L.time, left / 40 + S.clock.inc * 0.5));
+    minDelay = Math.min(650, Math.max(120, left / 80));
+  }
   var pick;
   if (Math.random() < L.random || botEng.state === 'failed') {
     var caps = legal.filter(function (m) { return m.captured; });
     var pool = botEng.state === 'failed' && caps.length && Math.random() < 0.6 ? caps : legal;
-    var m = pool[Math.floor(Math.random() * pool.length)];
-    pick = Promise.resolve(moveUci(m));
+    pick = Promise.resolve(moveUci(pool[Math.floor(Math.random() * pool.length)]));
   } else {
-    pick = botEng.go(fen, { skill: L.skill, depth: L.depth, movetime: L.time }).then(function (r) {
+    pick = botEng.go(fen, { skill: L.skill, depth: L.depth, movetime: movetime }).then(function (r) {
       if (r && r.bestmove) return r.bestmove;
-      if (botEng.state === 'failed') { var m2 = legal[Math.floor(Math.random() * legal.length)]; return moveUci(m2); }
+      if (botEng.state === 'failed') return moveUci(legal[Math.floor(Math.random() * legal.length)]);
       return null;
     });
   }
   pick.then(function (uci) {
     if (g !== gen || !uci) return;
-    var wait = Math.max(0, 650 - (Date.now() - t0));
-    return sleep(wait).then(function () {
-      if (g !== gen) return;
+    return sleep(Math.max(0, minDelay - (Date.now() - t0))).then(function () {
+      if (g !== gen || S.over) return;
       botThinking = false;
       if (chess.fen() !== fen) { render(); return; }
       applyMove(uciObj(uci), 'bot', legal.length);
@@ -260,6 +339,12 @@ function truncateTo(k) {
   S.plies = S.plies.slice(0, k);
   chess = new Chess(S.startFen);
   S.plies.forEach(function (p) { chess.move(uciObj(p.uci)); });
+  if (S.clock) {
+    var last = S.plies[S.plies.length - 1];
+    S.clock.w = last && last.clock ? last.clock.w : S.clock.base;
+    S.clock.b = last && last.clock ? last.clock.b : S.clock.base;
+  }
+  S.turnStart = Date.now();
   S.over = null; checkOver();
   botThinking = false; view = { mode: 'live' }; sel = null; hint = { fen: null, stage: 0, move: null };
   coachIdx = null;
@@ -267,6 +352,15 @@ function truncateTo(k) {
   if (!S.over) { if (chess.turn() !== S.me) botTurn(); else analyze(chess.fen()); }
 }
 function takeBack() { var k = lastUserIdx(); if (k >= 0) truncateTo(k); }
+function resign() {
+  if (S.over) return;
+  if (Date.now() - resignArmed > 3000) { resignArmed = Date.now(); renderHeader(); setTimeout(renderHeader, 3100); return; }
+  resignArmed = 0;
+  if (S.clock && S.turnStart) S.clock[chess.turn()] = Math.max(0, clockLeft(chess.turn()));
+  S.over = { winner: other(S.me), reason: 'resignation' };
+  gen++; botEng.cancelAll(); botThinking = false; view = { mode: 'live' }; coachIdx = null;
+  save(); render();
+}
 
 /* ---------- hint ---------- */
 function useHint() {
@@ -281,6 +375,47 @@ function useHint() {
     hint.move = t ? t.move : null;
     render();
   });
+}
+
+/* ---------- mistake drill ---------- */
+function mistakeList() {
+  var out = [];
+  S.plies.forEach(function (p, i) { if (p.by === 'you' && p.review && p.review.status === 'done' && isBad(p.review.grade) && p.review.bestUci) out.push(i); });
+  return out;
+}
+function startDrill() {
+  var list = mistakeList();
+  if (!list.length) return;
+  view = { mode: 'drill', list: list, i: 0, status: 'try', attempt: null, solved: 0, revealed: false };
+  orient = S.me; sel = null; render();
+}
+function drillPly() { return S.plies[view.list[view.i]]; }
+function drillMove(from, to, promo) {
+  if (view.mode !== 'drill' || view.status === 'checking' || view.status === 'right') return false;
+  var p = drillPly(), c = new Chess(p.fenBefore);
+  var legal = c.moves({ verbose: true }).filter(function (m) { return m.from === from && m.to === to; });
+  if (!legal.length) return false;
+  if (legal.length > 1 && !promo) { showPromo(from, to); return true; }
+  var mv = c.move({ from: from, to: to, promotion: promo || legal[0].promotion });
+  var uci = moveUci(mv), r = p.review;
+  view.attempt = { uci: uci, san: mv.san, from: from, to: to };
+  sel = null;
+  if (uci === r.bestUci) { view.status = 'right'; view.alsoGood = false; if (!view.revealed) view.solved++; render(); return true; }
+  view.status = 'checking'; render();
+  var v = view;
+  analyze(c.fen()).then(function (a) {
+    if (view !== v) return;
+    if (!a) { v.status = 'try'; render(); return; }
+    var evA = pov(a.score, c.fen(), S.me), loss = winPct(povCp(r.evB)) - winPct(povCp(evA));
+    if (loss <= 3 || c.in_checkmate()) { v.status = 'right'; v.alsoGood = true; if (!v.revealed) v.solved++; }
+    else { v.status = 'wrong'; v.wrongEval = evA; v.wrongReply = a.pv && a.pv[0] ? tryMove(c.fen(), a.pv[0]) : null; }
+    render();
+  });
+  return true;
+}
+function drillNext() {
+  if (view.i + 1 >= view.list.length) { view.status = 'finished'; render(); return; }
+  view.i++; view.status = 'try'; view.attempt = null; view.alsoGood = false; view.revealed = false; sel = null; render();
 }
 
 /* ---------- board rendering ---------- */
@@ -299,7 +434,7 @@ function sqAtXY(x, y) {
 function tf(pos) { return 'translate(' + pos.c * 100 + '%,' + pos.r * 100 + '%)'; }
 
 function displayed() {
-  var o = { fen: null, last: null, arrows: [], badge: null, note: '', interactive: false };
+  var o = { fen: null, last: null, arrows: [], badge: null, interactive: false };
   if (view.mode === 'live') {
     o.fen = chess.fen();
     var lp = S.plies[S.plies.length - 1];
@@ -316,7 +451,7 @@ function displayed() {
     o.fen = fenAt(view.n);
     o.last = view.n > 0 ? S.plies[view.n - 1] : null;
     o.arrows = view.arrows || [];
-    if (view.arrows && view.arrows.length) { o.last = null; o.note = view.note || ''; }
+    if (view.arrows && view.arrows.length) o.last = null;
     var pp = view.n > 0 ? S.plies[view.n - 1] : null;
     if (pp && pp.by === 'you' && coachVisible(pp) && !(view.arrows && view.arrows.length)) o.badge = { sq: pp.to, grade: pp.review.grade };
   } else if (view.mode === 'line') {
@@ -324,16 +459,25 @@ function displayed() {
     o.fen = view.step > 0 && steps[view.step - 1] ? steps[view.step - 1].fen : view.baseFen;
     o.last = view.step > 0 ? steps[view.step - 1] : null;
     if (steps[view.step]) o.arrows.push({ from: steps[view.step].from, to: steps[view.step].to, kind: 'move' });
-    o.note = view.label;
+  } else if (view.mode === 'drill') {
+    var dp = drillPly();
+    o.fen = dp.fenBefore;
+    o.last = S.plies[view.list[view.i] - 1] || null;
+    o.interactive = view.status === 'try' || view.status === 'wrong';
+    if (view.attempt && view.status === 'wrong') o.arrows.push({ from: view.attempt.from, to: view.attempt.to, kind: 'bad' });
+    if (view.attempt && view.status === 'right') o.arrows.push({ from: view.attempt.from, to: view.attempt.to, kind: 'best' });
+    if (view.attempt && view.status === 'checking') o.arrows.push({ from: view.attempt.from, to: view.attempt.to, kind: 'move' });
+    if (view.revealed && view.status !== 'right') o.arrows.push({ from: dp.review.bestFrom, to: dp.review.bestTo, kind: 'best' });
   }
   return o;
 }
 
 function renderBoard() {
   var d = displayed(), c = new Chess(d.fen), b = c.board();
+  boardChess = c;
   var legalTargets = {};
   if (d.interactive && sel) c.moves({ square: sel, verbose: true }).forEach(function (m) { legalTargets[m.to] = m.captured ? 'ring' : 'dot'; });
-  var hintSq = d.interactive && hint.fen === d.fen && hint.stage >= 1 && hint.move ? hint.move.from : null;
+  var hintSq = view.mode === 'live' && d.interactive && hint.fen === d.fen && hint.stage >= 1 && hint.move ? hint.move.from : null;
   var checkSq = null;
   if (c.in_check()) { var t = c.turn(); for (var r = 0; r < 8; r++) for (var f = 0; f < 8; f++) { var p = b[r][f]; if (p && p.type === 'k' && p.color === t) checkSq = rfSq(r, f); } }
   var html = '';
@@ -376,18 +520,14 @@ function renderBoard() {
   }
   animNext = null;
 
-  /* arrows */
   var ah = '';
   d.arrows.forEach(function (ar) { ah += arrowSvg(ar.from, ar.to, ar.kind); });
   arrowsEl.innerHTML = ah;
 
-  /* badge */
   if (d.badge) {
     var bp = sqPos(d.badge.sq), g = GRADES[d.badge.grade];
     badgesEl.innerHTML = '<div class="badge-on-board tone-' + d.badge.grade + '" style="left:' + bp.c * 12.5 + '%;top:' + bp.r * 12.5 + '%"><span>' + g.glyph + '</span></div>';
   } else badgesEl.innerHTML = '';
-
-
 }
 function arrowSvg(from, to, kind) {
   var a = sqPos(from), b = sqPos(to);
@@ -401,20 +541,21 @@ function arrowSvg(from, to, kind) {
     [sx + px * w / 2, sy + py * w / 2], [ex + px * w / 2, ey + py * w / 2], [ex + px * hw, ey + py * hw], [x2, y2],
     [ex - px * hw, ey - py * hw], [ex - px * w / 2, ey - py * w / 2], [sx - px * w / 2, sy - py * w / 2]
   ].map(function (p) { return p[0].toFixed(3) + ',' + p[1].toFixed(3); }).join(' ');
-  return '<polygon points="' + pts + '" style="fill:' + color + '"' + (kind === 'move' ? ' opacity="0.9"' : '') + '/>';
+  return '<polygon points="' + pts + '" style="fill:' + color + '"/>';
 }
 
 /* ---------- pointer input ---------- */
 var drag = null;
+function tryBoardMove(from, to, promo) { return view.mode === 'drill' ? drillMove(from, to, promo) : userMove(from, to, promo); }
 function onDown(e) {
   if (e.button && e.button !== 0) return;
   var d = displayed();
   if (!d.interactive) return;
   var sq = sqAtXY(e.clientX, e.clientY);
   if (!sq) return;
-  var p = chess.get(sq);
+  var p = boardChess.get(sq);
   if (sel && sel !== sq && (!p || p.color !== S.me)) {
-    if (userMove(sel, sq)) return;
+    if (tryBoardMove(sel, sq)) return;
   }
   if (p && p.color === S.me) {
     var justSelected = sel !== sq;
@@ -440,7 +581,7 @@ function onUp(e) {
   var dr = drag; drag = null;
   var to = sqAtXY(e.clientX, e.clientY);
   if (dr.moved) {
-    if (to && to !== dr.sq && userMove(dr.sq, to)) return;
+    if (to && to !== dr.sq && tryBoardMove(dr.sq, to)) return;
     renderBoard();
   } else if (!dr.justSelected && to === dr.sq) { sel = null; renderBoard(); }
 }
@@ -462,26 +603,35 @@ function goPly(n) {
   else { view = { mode: 'ply', n: n }; coachIdx = n > 0 ? n - 1 : null; }
   sel = null; render();
 }
+function openPly(k) { view = k === S.plies.length - 1 ? { mode: 'live' } : { mode: 'ply', n: k + 1 }; coachIdx = k; sel = null; render(); }
 function nav(delta) {
   if (view.mode === 'line') {
     var len = lineSans(view.baseFen, view.pv).length;
     view.step = Math.max(0, Math.min(len, view.step + delta)); render(); return;
   }
+  if (view.mode === 'drill') return;
   var cur = view.mode === 'ply' ? view.n : S.plies.length;
   goPly(cur + delta);
 }
-function backToGame() { view = { mode: 'live' }; coachIdx = null; render(); }
+function backToGame() { view = { mode: 'live' }; coachIdx = null; sel = null; render(); }
 
 /* ---------- side panel rendering ---------- */
 function gchip(g, count) {
   return '<span class="gchip tone-' + g + '"><i>' + GRADES[g].glyph + '</i>' + GRADES[g].label + (count != null ? ' <b>' + count + '</b>' : '') + '</span>';
+}
+function renderHeader() {
+  var r = document.getElementById('resignBtn');
+  r.hidden = !S || !!S.over || !S.plies.length;
+  var armed = Date.now() - resignArmed < 3000;
+  r.textContent = armed ? 'Confirm resign' : 'Resign';
+  r.classList.toggle('danger', armed);
 }
 function renderStrips() {
   var d = displayed(), b = new Chess(d.fen).board();
   var cnt = { w: { p: 0, n: 0, b: 0, r: 0, q: 0 }, b: { p: 0, n: 0, b: 0, r: 0, q: 0 } }, init = { p: 8, n: 2, b: 2, r: 2, q: 1 };
   b.forEach(function (row) { row.forEach(function (p) { if (p && p.type !== 'k') cnt[p.color][p.type]++; }); });
   var matW = 0; ['p', 'n', 'b', 'r', 'q'].forEach(function (t) { matW += (cnt.w[t] - cnt.b[t]) * VAL[t]; });
-  function capsOf(color) { // pieces of `color` that are missing
+  function capsOf(color) {
     var h = '';
     ['q', 'r', 'b', 'n', 'p'].forEach(function (t) { for (var i = 0; i < Math.max(0, init[t] - cnt[color][t]); i++) h += '<i style="background-image:url(' + PIECE_URL[color + t.toUpperCase()] + ')"></i>'; });
     return h;
@@ -489,19 +639,20 @@ function renderStrips() {
   var me = S.me, opp = other(me), L = LEVELS[S.settings.level];
   var myAdv = me === 'w' ? matW : -matW;
   var liveTurn = view.mode === 'live' && !S.over;
-  var oppRight = botThinking ? '<span class="clockdot thinking">Thinking<i></i><i></i><i></i></span>' : (liveTurn && chess.turn() === opp ? '<span class="clockdot"><span class="turnpip"></span>To move</span>' : '');
-  var youRight = liveTurn && chess.turn() === me && !botThinking ? '<span class="clockdot"><span class="turnpip"></span>Your move</span>' : '';
-  var oppHtml = '<span class="who">' + L.name + ' bot<small>' + L.rating + '</small></span><span class="caps">' + capsOf(me) + (myAdv < 0 ? '<b>+' + -myAdv + '</b>' : '') + '</span>' + oppRight;
-  var youHtml = '<span class="who">You<small>' + cname(me) + '</small></span><span class="caps">' + capsOf(opp) + (myAdv > 0 ? '<b>+' + myAdv + '</b>' : '') + '</span>' + youRight;
-  var top = orient === me ? oppHtml : youHtml, bot = orient === me ? youHtml : oppHtml;
-  document.getElementById('oppStrip').innerHTML = top;
-  document.getElementById('youStrip').innerHTML = bot;
+  function clk(c) { return S.clock ? '<span class="clk" data-c="' + c + '"></span>' : ''; }
+  var oppStatus = botThinking ? '<span class="clockdot thinking">Thinking<i></i><i></i><i></i></span>' : (liveTurn && chess.turn() === opp && !S.clock ? '<span class="clockdot"><span class="turnpip"></span>To move</span>' : '');
+  var youStatus = liveTurn && chess.turn() === me && !botThinking && !S.clock ? '<span class="clockdot"><span class="turnpip"></span>Your move</span>' : '';
+  var oppHtml = '<span class="who">' + L.name + ' bot<small>' + L.rating + '</small></span><span class="caps">' + capsOf(me) + (myAdv < 0 ? '<b>+' + -myAdv + '</b>' : '') + '</span><span class="right">' + oppStatus + clk(opp) + '</span>';
+  var youHtml = '<span class="who">You<small>' + cname(me) + '</small></span><span class="caps">' + capsOf(opp) + (myAdv > 0 ? '<b>+' + myAdv + '</b>' : '') + '</span><span class="right">' + youStatus + clk(me) + '</span>';
+  document.getElementById('oppStrip').innerHTML = orient === me ? oppHtml : youHtml;
+  document.getElementById('youStrip').innerHTML = orient === me ? youHtml : oppHtml;
+  updateClocks();
 }
 function renderEval() {
   if (!S) return;
   var d = displayed(), r = done.get(d.fen), bar = document.getElementById('evalbar');
   bar.classList.toggle('flip', orient === 'b');
-  if (S.settings.coach === 'after' && !S.over) { bar.firstChild.style.height = '50%'; bar.title = 'Evaluation hidden until the game ends'; return; }
+  if (quietMode()) { bar.firstChild.style.height = '50%'; bar.title = 'Evaluation hidden until the game ends'; return; }
   if (!r) return;
   var w = pov(r.score, d.fen, 'w');
   bar.firstChild.style.height = winPct(povCp(w)).toFixed(1) + '%';
@@ -513,31 +664,66 @@ function renderControls() {
   if (view.mode === 'line') {
     var len = lineSans(view.baseFen, view.pv).length;
     prev.disabled = view.step <= 0; next.disabled = view.step >= len;
-  } else { prev.disabled = cur <= 0; next.disabled = view.mode === 'live'; }
+  } else if (view.mode === 'drill') { prev.disabled = true; next.disabled = true; }
+  else { prev.disabled = cur <= 0; next.disabled = view.mode === 'live'; }
   document.getElementById('liveBtn').hidden = view.mode === 'live';
   document.getElementById('hintBtn').disabled = !(view.mode === 'live' && myTurnLive()) || coachEng.state === 'failed';
   document.getElementById('hintBtn').textContent = hint.fen === chess.fen() && hint.stage >= 1 ? (hint.stage === 1 ? 'Show move' : 'Hint shown') : 'Hint';
-  document.getElementById('undoBtn').disabled = lastUserIdx() < 0;
+  document.getElementById('undoBtn').disabled = lastUserIdx() < 0 || view.mode === 'drill';
+}
+
+/* evaluation points for the graph: [{i (ply idx), wp (your win %)}] */
+function evalSeries() {
+  var pts = [], startR = done.get(S.startFen);
+  pts.push({ i: -1, wp: startR ? winPct(povCp(pov(startR.score, S.startFen, S.me))) : 50 });
+  S.plies.forEach(function (p, i) {
+    var wp = null;
+    if (p.by === 'you' && p.review && p.review.status === 'done') wp = winPct(povCp(p.review.evA));
+    else { var r = done.get(p.fenAfter); if (r) wp = winPct(povCp(pov(r.score, p.fenAfter, S.me))); }
+    if (wp != null) pts.push({ i: i, wp: wp });
+  });
+  return pts;
+}
+function graphSvg() {
+  var pts = evalSeries();
+  if (pts.length < 3) return '';
+  var W = 320, H = 84, n = Math.max(S.plies.length, 2);
+  function x(i) { return ((i + 1) / n) * W; }
+  function y(wp) { return H - (wp / 100) * H; }
+  var line = pts.map(function (p, k) { return (k ? 'L' : 'M') + x(p.i).toFixed(1) + ' ' + y(p.wp).toFixed(1); }).join(' ');
+  var area = line + ' L' + x(pts[pts.length - 1].i).toFixed(1) + ' ' + H + ' L' + x(pts[0].i).toFixed(1) + ' ' + H + ' Z';
+  var dots = '';
+  S.plies.forEach(function (p, i) {
+    if (p.by !== 'you' || !p.review || p.review.status !== 'done' || !isBad(p.review.grade)) return;
+    dots += '<span class="gdot tone-' + p.review.grade + '" style="left:' + (x(i) / W * 100).toFixed(2) + '%;top:' + (y(winPct(povCp(p.review.evA))) / H * 100).toFixed(2) + '%" title="' + esc(plyLabel(i)) + ' ' + GRADES[p.review.grade].label + '"></span>';
+  });
+  var curI = view.mode === 'ply' ? view.n - 1 : (coachIdx != null ? coachIdx : null);
+  var cur = curI != null && curI >= 0 ? '<line class="gcur" x1="' + x(curI).toFixed(1) + '" x2="' + x(curI).toFixed(1) + '" y1="0" y2="' + H + '" vector-effect="non-scaling-stroke"/>' : '';
+  return '<div class="graph" id="evalGraph" role="img" aria-label="Your winning chances over the game"><div class="gplot"><svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' +
+    '<path class="garea" d="' + area + '"/><line class="gmid" x1="0" x2="' + W + '" y1="' + H / 2 + '" y2="' + H / 2 + '" vector-effect="non-scaling-stroke"/>' + cur +
+    '<path class="gline" d="' + line + '" vector-effect="non-scaling-stroke"/></svg>' + dots + '</div><div class="glabels"><span>Your winning chances, move by move</span><span>Tap to jump</span></div></div>';
 }
 
 function renderTally() {
   var el = document.getElementById('tally');
   var revs = S.plies.filter(function (p) { return p.by === 'you' && p.review && p.review.status === 'done'; });
-  var hide = S.settings.coach === 'after' && !S.over;
+  var hide = quietMode();
   var counts = {}; LEGEND.forEach(function (g) { counts[g] = 0; });
   var accs = [];
   revs.forEach(function (p) { if (counts[p.review.grade] != null) counts[p.review.grade]++; if (p.review.acc != null) accs.push(p.review.acc); });
   var acc = accs.length ? accs.reduce(function (a, b) { return a + b; }, 0) / accs.length : null;
-  el.innerHTML = '<div class="acc">' + (hide || acc == null ? '<small>' + (hide ? 'hidden' : 'no moves yet') + '</small>' : acc.toFixed(1) + '<small>%</small>') + '</div>' +
-    '<div class="legend">' + LEGEND.map(function (g) { return gchip(g, hide ? '–' : counts[g]); }).join('') + '</div>' +
-    '<div class="acclbl">Your accuracy</div>';
+  el.innerHTML = '<div class="tallytop"><div class="accwrap"><div class="acc">' + (hide || acc == null ? '<small>' + (hide ? 'hidden' : 'no moves yet') + '</small>' : acc.toFixed(1) + '<small>%</small>') + '</div>' +
+    '<div class="acclbl">Your accuracy</div></div>' +
+    '<div class="legend">' + LEGEND.map(function (g) { return gchip(g, hide ? '–' : counts[g]); }).join('') + '</div></div>' +
+    (hide ? '' : graphSvg());
 }
 
 function renderSheet() {
   var grid = document.getElementById('sheetGrid');
-  document.getElementById('sheetMeta').textContent = S.plies.length ? 'Tap a move to review it' : '';
+  var opening = openingOf([S.startFen].concat(S.plies.map(function (p) { return p.fenAfter; })));
+  document.getElementById('sheetMeta').textContent = opening || (S.plies.length ? 'Tap a move to review it' : '');
   if (!S.plies.length) { grid.innerHTML = '<div class="empty">Moves will be recorded here as you play.</div>'; return; }
-  var curPly = view.mode === 'ply' ? view.n - 1 : (view.mode === 'line' ? view.plyIdx : (coachIdx != null ? coachIdx : -1));
+  var curPly = view.mode === 'ply' ? view.n - 1 : (view.mode === 'line' ? view.plyIdx : (view.mode === 'drill' ? view.list[view.i] : (coachIdx != null ? coachIdx : -1)));
   var rows = {}, order = [];
   S.plies.forEach(function (p, i) {
     var n = moveNoOf(p.fenBefore);
@@ -549,13 +735,14 @@ function renderSheet() {
     var p = S.plies[i], ann = '';
     if (p.by === 'you' && coachVisible(p)) ann = '<span class="ann tone-' + p.review.grade + '">' + GRADES[p.review.grade].glyph + '</span>';
     else if (p.by === 'you' && p.review && p.review.status === 'pending') ann = '<span class="ann" style="color:var(--muted)">…</span>';
-    return '<button class="mvb' + (i === curPly ? ' cur' : '') + '" type="button" data-ply="' + i + '"><span class="' + (p.by === 'bot' ? 'bot' : '') + '">' + esc(p.san) + '</span>' + ann + '</button>';
+    var tm = S.clock && p.timeMs != null ? '<span class="tm">' + fmtSecs(p.timeMs) + '</span>' : '';
+    return '<button class="mvb' + (i === curPly ? ' cur' : '') + '" type="button" data-ply="' + i + '"><span class="' + (p.by === 'bot' ? 'bot' : '') + '">' + esc(p.san) + '</span><span class="mvr">' + tm + ann + '</span></button>';
   }
   grid.innerHTML = '<div class="colhead"><div>No.</div><div>White</div><div>Black</div></div>' + order.map(function (n) {
     return '<div class="rowm"><div class="no">' + n + '</div>' + cell(rows[n].w) + cell(rows[n].b) + '</div>';
   }).join('');
   var cur = grid.querySelector('.mvb.cur');
-  if (cur && view.mode === 'live') grid.scrollTop = grid.scrollHeight;
+  if (view.mode === 'live' && (coachIdx == null || coachIdx >= S.plies.length - 2)) grid.scrollTop = grid.scrollHeight;
   else if (cur) { var gr = grid.getBoundingClientRect(), cr = cur.getBoundingClientRect(); if (cr.top < gr.top + 24 || cr.bottom > gr.bottom) grid.scrollTop += cr.top - gr.top - gr.height / 2; }
 }
 
@@ -567,22 +754,20 @@ function evalRow(r) {
 function renderCoach() {
   var el = document.getElementById('coach'), h = '';
   if (coachEng.state === 'failed') h += '<p class="engine-error">The analysis engine could not start in this browser, so moves cannot be graded. You can still play against a simplified bot.</p>';
-
+  if (view.mode === 'drill') { el.innerHTML = h + drillCard(); return; }
   if (view.mode === 'line') h += lineBox();
+  if (view.mode === 'ply' && view.arrows && view.arrows.length && view.note) h += '<p class="tip"><strong>On the board.</strong> ' + esc(view.note) + '</p>';
 
   var live = view.mode === 'live';
-  /* hint panel */
   if (live && hint.fen === chess.fen() && hint.stage >= 1) {
     var hm = hint.move;
     h += '<p class="tip"><strong>Hint.</strong> ' + (!hm ? 'Thinking about it…' : hint.stage === 1 ? 'Look at your ' + PNAME[hm.piece] + ' on ' + hm.from + '. It has a strong move.' : 'Try ' + esc(hm.san) + '.') + '</p>';
   }
 
-  if (view.mode === 'ply' && view.arrows && view.arrows.length && view.note) h += '<p class="tip"><strong>On the board.</strong> ' + esc(view.note) + '</p>';
-
   var k = coachIdx != null ? coachIdx : (live ? lastUserIdx() : -1);
   if (view.mode === 'line') k = view.plyIdx;
 
-  if (live && S.over) { h += gameOverCard(); el.innerHTML = h; return; }
+  if (live && S.over && coachIdx == null) { h += gameOverCard(); el.innerHTML = h; return; }
 
   if (k < 0 || !S.plies[k]) {
     if (view.mode === 'ply' && view.n === 0) h += '<div><div class="kicker">Start</div><h2>Starting position</h2></div><p>Step forward with the arrows, or tap any move on the scoresheet.</p>';
@@ -590,8 +775,9 @@ function renderCoach() {
     el.innerHTML = h; return;
   }
   var p = S.plies[k];
-  if (p.by === 'bot') { h += botCard(k); el.innerHTML = h; return; }
-  h += userCard(k);
+  if (p.by === 'bot') h += botCard(k);
+  else h += userCard(k);
+  if (S.over && view.mode !== 'line') h += '<div class="actions one"><button class="btn sm" type="button" data-act="summary">Back to the game summary</button></div>';
   el.innerHTML = h;
   var ans = document.getElementById('aiAns');
   if (ans && p.ai) { ans.textContent = p.ai.text || (p.ai.status === 'thinking' ? 'Thinking…' : ''); ans.classList.toggle('dim', !p.ai.text); }
@@ -599,39 +785,48 @@ function renderCoach() {
 
 function introCard() {
   var waiting = botThinking || (chess.turn() !== S.me && !S.over);
-  return '<div><div class="kicker">Coach</div><h2>' + (waiting ? 'The bot moves first' : 'Your move') + '</h2></div>' +
-    '<p>Play a move and Stockfish will grade it, show you what it would have played, and explain why. Stuck? Tap Hint for a nudge. You can tap any move on the scoresheet later to review it.</p>' +
+  var cd = clockDef();
+  return '<div><div class="kicker">Coach' + (cd.base ? ' · ' + cd.label + ' ' + cd.sub.toLowerCase() : '') + '</div><h2>' + (waiting ? 'The bot moves first' : 'Your move') + '</h2></div>' +
+    '<p>Play a move and Stockfish will grade it, show you what it would have played, and explain why. Stuck? Tap Hint for a nudge. You can tap any move on the scoresheet later to review it.' + (cd.base ? ' Your clock is running while you read, so glance and keep moving.' : '') + '</p>' +
     '<div class="legend">' + LEGEND.map(function (g) { return gchip(g); }).join('') + '</div>';
 }
 
 function botCard(k) {
   var p = S.plies[k], L = LEVELS[S.settings.level], r = done.get(p.fenAfter);
   var h = '<div><div class="kicker">Move ' + moveNoOf(p.fenBefore) + ' · ' + L.name + ' bot</div><h2>The bot played ' + esc(p.san) + '</h2></div>';
-  if (r && !(S.settings.coach === 'after' && !S.over)) {
+  var bk = bookName(p.fenAfter);
+  if (bk && !quietMode()) h += '<p>A book move in the ' + esc(bk) + '.</p>';
+  if (r && !quietMode()) {
     var ev = pov(r.score, p.fenAfter, S.me);
-    h += '<p>After this move you are ' + evalWords(ev) + ' (' + fmtEval(ev) + ').' + (r.bestmove ? ' Your best reply was ' + esc(tryMove(p.fenAfter, r.bestmove).move.san) + '.' : '') + '</p>';
+    var rb = r.bestmove ? tryMove(p.fenAfter, r.bestmove) : null;
+    h += '<p>After this move you are ' + evalWords(ev) + ' (' + fmtEval(ev) + ').' + (rb ? ' Your best reply was ' + esc(rb.move.san) + '.' : '') + '</p>';
   }
   var nx = S.plies[k + 1];
   if (nx && nx.by === 'you') h += '<div class="actions"><button class="btn sm" type="button" data-act="open" data-k="' + (k + 1) + '">See your reply</button></div>';
   return h;
 }
 
+function kickerFor(p, r) {
+  var parts = ['Move ' + moveNoOf(p.fenBefore)];
+  if (r && GRADES[r.grade]) parts.push(GRADES[r.grade].label);
+  if (p.timeMs != null && (S.clock || S.over)) parts.push(fmtSecs(p.timeMs));
+  return parts.join(' · ');
+}
+
 function userCard(k) {
   var p = S.plies[k], r = p.review, live = view.mode === 'live', n = moveNoOf(p.fenBefore);
-  var kick = 'Move ' + n;
   if (!r || r.status === 'pending') return '<div class="pending"><span class="spin"></span><span>Checking ' + esc(p.san) + '…</span></div>';
-  if (r.status === 'error') return '<div><div class="kicker">' + kick + '</div><h2>' + esc(p.san) + '</h2></div><p>This move could not be analyzed.</p>';
-  if (S.settings.coach === 'after' && !S.over) return '<div><div class="kicker">' + kick + '</div><h2>You played ' + esc(p.san) + '</h2></div><p>Coaching is set to after the game. Every move is being graded quietly, and the full review opens when the game ends.</p>';
+  if (r.status === 'error') return '<div><div class="kicker">Move ' + n + '</div><h2>' + esc(p.san) + '</h2></div><p>This move could not be analyzed.</p>';
+  if (quietMode()) return '<div><div class="kicker">Move ' + n + '</div><h2>You played ' + esc(p.san) + '</h2></div><p>Coaching is set to after the game. Every move is being graded quietly, and the full review opens when the game ends.</p>';
   var g = GRADES[r.grade];
+  var verdict = '<div class="verdict tone-' + r.grade + '"><div class="glyph">' + g.glyph + '</div><div><div class="kicker">' + esc(kickerFor(p, r)) + '</div><h2>' + esc(r.headline) + '</h2></div></div>';
   if (S.settings.coach === 'mistakes' && !S.over && live && !isBad(r.grade) && !expanded[k]) {
-    return '<div class="verdict tone-' + r.grade + '"><div class="glyph">' + g.glyph + '</div><div><div class="kicker">' + kick + ' · ' + g.label + '</div><h2>' + esc(r.headline) + '</h2></div></div>' +
-      '<div class="actions"><button class="btn sm" type="button" data-act="expand" data-k="' + k + '">Show details</button></div>';
+    return verdict + '<div class="actions"><button class="btn sm" type="button" data-act="expand" data-k="' + k + '">Show details</button></div>';
   }
-  var h = '<div class="verdict tone-' + r.grade + '"><div class="glyph">' + g.glyph + '</div><div><div class="kicker">' + kick + ' · ' + g.label + '</div><h2>' + esc(r.headline) + '</h2></div></div>';
-  h += '<p>' + esc(r.body.join(' ')) + '</p>';
+  var h = verdict + '<p>' + esc(r.body.join(' ')) + '</p>';
   if (r.grade !== 'forced') h += evalRow(r);
   if (r.tip) h += '<p class="tip"><strong>Principle.</strong> ' + esc(r.tip) + '</p>';
-  var showBetter = r.bestSan && r.bestUci !== p.uci && r.grade !== 'forced';
+  var showBetter = r.bestSan && r.bestUci !== p.uci && ['forced', 'book', 'best'].indexOf(r.grade) < 0;
   if (showBetter) {
     h += '<div class="better"><span class="lbl">Engine\'s choice</span><span class="mv">' + esc((p.color === 'w' ? n + '. ' : n + '... ') + r.bestSan) + '</span><span class="ln">' + esc(lineText(p.fenBefore, r.bestPv, 8)) + '</span></div>';
   }
@@ -641,7 +836,7 @@ function userCard(k) {
     h += '<button class="btn sm" type="button" data-act="bestline" data-k="' + k + '">Play best line</button>';
   }
   if (r.replyPv && r.replyPv.length) h += '<button class="btn sm" type="button" data-act="reply" data-k="' + k + '">' + (isBad(r.grade) ? 'See the punishment' : 'What happens next') + '</button>';
-  h += '<button class="btn sm" type="button" data-act="retry" data-k="' + k + '">' + (k === lastUserIdx() ? 'Retry this move' : 'Retry from here') + '</button>';
+  h += '<button class="btn sm" type="button" data-act="retry" data-k="' + k + '">' + (k === lastUserIdx() && !S.over ? 'Retry this move' : 'Retry from here') + '</button>';
   h += '</div>';
   if (sampleFn && !aiHidden) {
     var ai = p.ai || null, busy = ai && (ai.status === 'thinking' || ai.status === 'stream');
@@ -672,28 +867,84 @@ function lineBox() {
     '<div class="actions"><button class="btn sm" type="button" data-act="linenext">' + (view.step >= steps.length ? 'End of line' : 'Next move') + '</button><button class="btn sm" type="button" data-act="lineexit">Exit line</button></div></div>';
 }
 
+function drillCard() {
+  var total = view.list.length;
+  if (view.status === 'finished') {
+    return '<div><div class="kicker">Practice</div><h2>' + view.solved + ' of ' + total + ' solved</h2></div>' +
+      '<p>' + (view.solved === total ? 'Every one. Those are the moments that cost you this game, and now you have found the fix for each.' : 'The ones you missed are worth another look. Run it again and they will come faster.') + '</p>' +
+      '<div class="actions"><button class="btn sm" type="button" data-act="drillagain">Practice again</button><button class="btn sm primary" type="button" data-act="drillexit">Back to the game</button></div>';
+  }
+  var p = drillPly(), r = p.review, n = moveNoOf(p.fenBefore);
+  var h = '<div><div class="kicker">Practice · ' + (view.i + 1) + ' of ' + total + ' · Move ' + n + '</div><h2>';
+  if (view.status === 'right') h += view.alsoGood ? esc(view.attempt.san) + ' works too' : esc(view.attempt.san) + ' is it';
+  else if (view.status === 'wrong' && view.attempt) h += esc(view.attempt.san) + ' is not it';
+  else if (view.status === 'checking') h += 'Checking ' + esc(view.attempt.san) + '…';
+  else h += 'Find a better move than ' + esc(p.san);
+  h += '</h2></div>';
+  if (view.status === 'try') h += '<p>In the game you played ' + esc(p.san) + ' here (' + GRADES[r.grade].label.toLowerCase() + '). Find the move that keeps your position together. Look at checks, captures and threats first.</p>';
+  if (view.status === 'checking') h += '<div class="pending"><span class="spin"></span><span>Asking the engine…</span></div>';
+  if (view.status === 'wrong' && view.attempt) {
+    var rep = view.wrongReply ? view.wrongReply.move.san : null;
+    h += '<p>' + (rep ? 'Your opponent answers ' + esc(rep) + ', and you would be ' + evalWords(view.wrongEval) + ' (' + fmtEval(view.wrongEval) + ').' : 'That leaves you ' + evalWords(view.wrongEval) + '.') + ' Try again.</p>';
+  }
+  if (view.revealed && view.status !== 'right') h += '<p class="tip"><strong>Answer.</strong> ' + esc(r.bestSan) + ', the green arrow. Play it on the board to continue.</p>';
+  if (view.status === 'right') {
+    var bestBody = r.body.filter(function (s) { return /^Better was|^Instead|^You had a forced/.test(s); }).join(' ');
+    h += '<p>' + (view.alsoGood ? 'The engine\'s top choice was ' + esc(r.bestSan) + ', but yours keeps the position just as healthy.' : (bestBody ? esc(bestBody) : 'That is the engine\'s choice.')) + '</p>';
+  }
+  h += '<div class="actions">';
+  if (view.status === 'right') h += '<button class="btn sm primary" type="button" data-act="drillnext">' + (view.i + 1 >= total ? 'Finish' : 'Next position') + '</button>';
+  else {
+    if (!view.revealed) h += '<button class="btn sm" type="button" data-act="drillreveal">Show the answer</button>';
+    h += '<button class="btn sm" type="button" data-act="drillskip">' + (view.i + 1 >= total ? 'Finish' : 'Skip') + '</button>';
+  }
+  h += '<button class="btn sm" type="button" data-act="drillexit">Stop practicing</button></div>';
+  return h;
+}
+
+function insights() {
+  var mine = S.plies.filter(function (p) { return p.by === 'you' && p.timeMs != null && p.review && p.review.status === 'done'; });
+  if (mine.length < 3) return '';
+  var avg = mine.reduce(function (a, p) { return a + p.timeMs; }, 0) / mine.length;
+  var bad = mine.filter(function (p) { return p.review.grade === 'mistake' || p.review.grade === 'blunder'; });
+  var fast = bad.filter(function (p) { return p.timeMs < 6000; });
+  var slowest = mine.reduce(function (a, p) { return p.timeMs > a.timeMs ? p : a; }, mine[0]);
+  var out = '<li>You took ' + fmtSecs(avg) + ' per move on average.</li>';
+  if (bad.length && fast.length * 2 >= bad.length) out += '<li>' + (bad.length === 1 ? 'Your one big mistake' : fast.length + ' of your ' + bad.length + ' mistakes and blunders') + ' came in under 6 seconds. A quick scan for captures, checks and threats before those moves would have caught ' + (fast.length === 1 ? 'it' : 'most of them') + '.</li>';
+  else if (bad.length) out += '<li>Your mistakes were not rushed (about ' + fmtSecs(bad.reduce(function (a, p) { return a + p.timeMs; }, 0) / bad.length) + ' each), so the fix is what you look for, not how fast you move.</li>';
+  out += '<li>Your longest think was ' + esc(plyLabel(S.plies.indexOf(slowest))) + ' at ' + fmtSecs(slowest.timeMs) + ' (' + GRADES[slowest.review.grade].label.toLowerCase() + ').</li>';
+  return '<ul class="insights">' + out + '</ul>';
+}
+
 function gameOverCard() {
   var o = S.over, me = S.me, title;
-  if (o.winner) title = o.winner === me ? 'You won by checkmate' : 'You lost by checkmate';
+  if (o.reason === 'resignation') title = 'You resigned';
+  else if (o.reason === 'time') title = o.winner === me ? 'You won on time' : 'You lost on time';
+  else if (o.winner) title = o.winner === me ? 'You won by checkmate' : 'You lost by checkmate';
   else title = 'Draw by ' + o.reason;
-  var bad = [];
-  S.plies.forEach(function (p, i) { if (p.by === 'you' && p.review && p.review.status === 'done' && isBad(p.review.grade)) bad.push(i); });
-  bad.sort(function (a, b) { return GRADE_ORDER.indexOf(S.plies[b].review.grade) - GRADE_ORDER.indexOf(S.plies[a].review.grade); });
-  var h = '<div><div class="kicker">Game over</div><h2>' + title + '</h2></div>';
-  h += '<p>' + (bad.length ? 'Here are the moments that mattered most. Tap one to see what went wrong and what to play instead.' : 'No inaccuracies, mistakes or blunders. Tap any move on the scoresheet to review it.') + '</p>';
-  if (bad.length) {
-    h += '<div class="actions">' + bad.slice(0, 6).map(function (i) {
+  var bad = mistakeList();
+  var ordered = bad.slice().sort(function (a, b) { return GRADE_ORDER.indexOf(S.plies[b].review.grade) - GRADE_ORDER.indexOf(S.plies[a].review.grade); });
+  var pending = S.plies.some(function (p) { return p.by === 'you' && p.review && p.review.status === 'pending'; });
+  var opening = openingOf([S.startFen].concat(S.plies.map(function (p) { return p.fenAfter; })));
+  var h = '<div><div class="kicker">Game over' + (opening ? ' · ' + esc(opening) : '') + '</div><h2>' + title + '</h2></div>';
+  if (pending) h += '<div class="pending"><span class="spin"></span><span>Finishing the review…</span></div>';
+  h += '<p>' + (bad.length ? 'Here are the moments that mattered most. Tap one to see what went wrong, or practice finding the right move in each.' : 'No inaccuracies, mistakes or blunders. Tap any move on the scoresheet to review it.') + '</p>';
+  if (ordered.length) {
+    h += '<div class="actions">' + ordered.slice(0, 6).map(function (i) {
       var p = S.plies[i];
-      return '<button class="btn sm tone-' + p.review.grade + '" type="button" data-act="open" data-k="' + i + '"><span class="gchip tone-' + p.review.grade + '"><i>' + GRADES[p.review.grade].glyph + '</i></span>' + esc(plyLabel(i)) + '</button>';
+      return '<button class="btn sm" type="button" data-act="open" data-k="' + i + '"><span class="gchip tone-' + p.review.grade + '"><i>' + GRADES[p.review.grade].glyph + '</i></span>' + esc(plyLabel(i)) + '</button>';
     }).join('') + '</div>';
   }
-  h += '<div class="actions"><button class="btn sm" type="button" data-act="review0">Review from the start</button><button class="btn sm primary" type="button" data-act="new">New game</button></div>';
+  h += insights();
+  h += '<div class="actions">';
+  if (bad.length) h += '<button class="btn sm primary" type="button" data-act="drill">Practice mistakes (' + bad.length + ')</button>';
+  h += '<button class="btn sm" type="button" data-act="review0">Review from the start</button><button class="btn sm' + (bad.length ? '' : ' primary') + '" type="button" data-act="new">New game</button></div>';
   return h;
 }
 
 function render() {
   if (!S) return;
-  renderBoard(); renderStrips(); renderControls(); renderCoach(); renderSheet(); renderTally(); renderEval();
+  renderHeader(); renderBoard(); renderStrips(); renderControls(); renderCoach(); renderSheet(); renderTally(); renderEval();
 }
 
 /* ---------- Claude ---------- */
@@ -709,9 +960,11 @@ function coachPrompt(k, q) {
     'You are a patient chess coach talking to an improving player. Use only the engine facts below for concrete claims about tactics or lines; do not invent variations they do not support.',
     'The student plays ' + cname(me) + '.',
     'Game so far: ' + hist,
+    r.opening ? 'Opening: ' + r.opening + '.' : '',
     'Position before the student\'s move (FEN): ' + p.fenBefore,
     'Pieces before the move: ' + pieceList(p.fenBefore),
     'Student played: ' + p.san + '. Grade: ' + GRADES[r.grade].label + '. Evaluation for the student went from ' + fmtEval(r.evB) + ' to ' + fmtEval(r.evA) + ' (in pawns; positive is good for the student).',
+    p.timeMs != null && S.clock ? 'The student spent ' + fmtSecs(p.timeMs) + ' on this move in a timed game.' : '',
     r.bestSan ? 'Engine\'s best move instead: ' + r.bestSan + '. Engine line from the position before the move: ' + lineText(p.fenBefore, r.bestPv, 8) + '.' : '',
     r.replyPv && r.replyPv.length ? 'Opponent\'s best reply to the student\'s move, with the line that follows: ' + lineText(p.fenAfter, r.replyPv, 8) + '.' : '',
     'Automatic notes: ' + r.headline + '. ' + r.body.join(' ') + (r.tip ? ' ' + r.tip : ''),
@@ -757,6 +1010,9 @@ function openSetup() {
   document.getElementById('levelOpts').innerHTML = LEVELS.map(function (L, i) {
     return '<label class="opt"><input type="radio" name="level" value="' + i + '" id="lvl' + i + '"' + (i === st.level ? ' checked' : '') + '><strong>' + L.name + '</strong><span class="rt">' + L.rating + '</span><span class="d">' + L.desc + '</span></label>';
   }).join('');
+  document.getElementById('clockOpts').innerHTML = CLOCKS.map(function (c, i) {
+    return '<label class="opt"><input type="radio" name="clock" value="' + c.id + '" id="clk' + i + '"' + (c.id === (st.clock || 'none') ? ' checked' : '') + '><strong>' + c.label + '</strong><span class="d">' + c.sub + '</span></label>';
+  }).join('');
   document.querySelector('input[name=color][value="' + st.color + '"]').checked = true;
   document.querySelector('input[name=coach][value="' + st.coach + '"]').checked = true;
   document.getElementById('setup').hidden = false;
@@ -775,8 +1031,9 @@ function wire() {
   boardEl.addEventListener('contextmenu', function (e) { e.preventDefault(); });
   document.getElementById('promo').addEventListener('click', function (e) {
     var b = e.target.closest('[data-promo]');
-    var box = document.getElementById('promo'); box.hidden = true;
-    if (b && pendingPromo) userMove(pendingPromo.from, pendingPromo.to, b.getAttribute('data-promo'));
+    document.getElementById('promo').hidden = true;
+    if (b && pendingPromo) tryBoardMove(pendingPromo.from, pendingPromo.to, b.getAttribute('data-promo'));
+    else renderBoard();
     pendingPromo = null;
   });
   document.getElementById('prevBtn').onclick = function () { nav(-1); };
@@ -786,19 +1043,29 @@ function wire() {
   document.getElementById('undoBtn').onclick = takeBack;
   document.getElementById('flipBtn').onclick = function () { orient = other(orient); save(); render(); };
   document.getElementById('newBtn').onclick = openSetup;
+  document.getElementById('resignBtn').onclick = resign;
   document.getElementById('setupCancel').onclick = closeSetup;
   document.getElementById('setup').addEventListener('click', function (e) { if (e.target.id === 'setup') closeSetup(); });
   document.getElementById('setupForm').addEventListener('submit', function (e) {
     e.preventDefault();
     var f = e.target;
-    var st = { level: +f.querySelector('input[name=level]:checked').value, color: f.querySelector('input[name=color]:checked').value, coach: f.querySelector('input[name=coach]:checked').value };
+    var st = {
+      level: +f.querySelector('input[name=level]:checked').value, color: f.querySelector('input[name=color]:checked').value,
+      coach: f.querySelector('input[name=coach]:checked').value, clock: f.querySelector('input[name=clock]:checked').value
+    };
     closeSetup(); newGame(st);
   });
   document.getElementById('sheetGrid').addEventListener('click', function (e) {
     var b = e.target.closest('[data-ply]'); if (!b) return;
-    var i = +b.getAttribute('data-ply');
-    view = i === S.plies.length - 1 ? { mode: 'live' } : { mode: 'ply', n: i + 1 };
-    coachIdx = i; sel = null; render();
+    openPly(+b.getAttribute('data-ply'));
+  });
+  document.getElementById('tally').addEventListener('click', function (e) {
+    var g = e.target.closest('.gplot'); if (!g || !S.plies.length) return;
+    var rc = g.getBoundingClientRect(), n = Math.max(S.plies.length, 2);
+    var i = Math.round(((e.clientX - rc.left) / rc.width) * n) - 1;
+    i = Math.max(0, Math.min(S.plies.length - 1, i));
+    if (S.plies[i].by !== 'you' && S.plies[i - 1] && S.plies[i - 1].by === 'you') i = i - 1;
+    openPly(i);
   });
   var coach = document.getElementById('coach');
   coach.addEventListener('click', function (e) {
@@ -807,23 +1074,27 @@ function wire() {
     var b = e.target.closest('[data-act]'); if (!b) return;
     var act = b.getAttribute('data-act'), k = +b.getAttribute('data-k'), p = S.plies[k];
     if (act === 'expand') { expanded[k] = true; render(); }
-    else if (act === 'open') { view = k === S.plies.length - 1 ? { mode: 'live' } : { mode: 'ply', n: k + 1 }; coachIdx = k; render(); }
+    else if (act === 'open') openPly(k);
     else if (act === 'showbest') setView({ mode: 'ply', n: k, arrows: [{ from: p.from, to: p.to, kind: 'bad' }, { from: p.review.bestFrom, to: p.review.bestTo, kind: 'best' }], note: 'This is the position before your move. The green arrow is ' + p.review.bestSan + ', the red one is your ' + p.san + '.' }, k);
     else if (act === 'bestline') setView({ mode: 'line', baseFen: p.fenBefore, pv: p.review.bestPv, step: 1, label: 'Engine line instead of ' + p.san, plyIdx: k }, k);
     else if (act === 'reply') setView({ mode: 'line', baseFen: p.fenAfter, pv: p.review.replyPv, step: 1, label: 'Best play after ' + p.san, plyIdx: k }, k);
     else if (act === 'retry') truncateTo(k);
     else if (act === 'linenext') nav(1);
-    else if (act === 'lineexit') { var pk = view.plyIdx; view = pk === S.plies.length - 1 ? { mode: 'live' } : { mode: 'ply', n: pk + 1 }; coachIdx = pk; render(); }
+    else if (act === 'lineexit') openPly(view.plyIdx);
     else if (act === 'ai') askClaude(k, null);
-    else if (act === 'review0') { goPly(1); }
+    else if (act === 'review0') goPly(1);
     else if (act === 'new') openSetup();
+    else if (act === 'summary') backToGame();
+    else if (act === 'drill' || act === 'drillagain') startDrill();
+    else if (act === 'drillnext' || act === 'drillskip') drillNext();
+    else if (act === 'drillreveal') { view.revealed = true; if (view.status !== 'wrong') view.status = 'try'; render(); }
+    else if (act === 'drillexit') backToGame();
   });
   coach.addEventListener('submit', function (e) {
     var f = e.target.closest('[data-askform]'); if (!f) return;
     e.preventDefault();
-    var input = f.querySelector('input'), q = input.value.trim();
-    if (!q) return;
-    askClaude(+f.getAttribute('data-askform'), q);
+    var q = f.querySelector('input').value.trim();
+    if (q) askClaude(+f.getAttribute('data-askform'), q);
   });
   document.addEventListener('keydown', function (e) {
     if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
@@ -840,6 +1111,8 @@ function restore(saved) {
     var c = new Chess(saved.S.startFen || START_FEN);
     for (var i = 0; i < saved.S.plies.length; i++) if (!c.move(uciObj(saved.S.plies[i].uci))) return false;
     S = saved.S; chess = c; orient = saved.orient || S.me;
+    if (!S.settings.clock) S.settings.clock = 'none';
+    if (S.clock === undefined) S.clock = null;
     S.plies.forEach(function (p) { if (p.ai && p.ai.status !== 'done') p.ai = null; });
     checkOver();
     return true;
@@ -848,6 +1121,7 @@ function restore(saved) {
 
 function start(data) {
   PIECE_URL = PIECES;
+  buildBook();
   wire();
   var hotState = data && data.S ? data : null;
   coachEng.start().then(render); botEng.start().then(render);
@@ -857,6 +1131,7 @@ function start(data) {
     S.plies.forEach(function (p) { if (p.by === 'you' && (!p.review || p.review.status !== 'done')) reviewPly(p); });
     if (!S.over) { if (chess.turn() !== S.me) botTurn(); else analyze(chess.fen()); }
   }
+  if (S.over) { analyze(S.startFen); S.plies.forEach(function (p) { if (p.by === 'bot') analyze(p.fenAfter); }); }
   if (window.claude && typeof window.claude.use === 'function') {
     window.claude.use('sample').then(function (f) { sampleFn = f || null; render(); }).catch(function () {});
   }

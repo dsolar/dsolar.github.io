@@ -210,7 +210,7 @@ window.PROJECTS = [
     url: "tempo/",
     question: "Could I get a chess coach like the paid apps have, without the subscription?",
     summary: "Play Stockfish at six levels while a coach grades every move, shows the move it would have played and explains why.",
-    facts: [["6", "bot levels, Rookie to Master"], ["6", "grades, from Best to Blunder"], ["13", "moves deep, on every move you play"]],
+    facts: [["6", "bot levels, Rookie to Master"], ["6", "clock settings, bullet to rapid"], ["200+", "named opening positions"]],
     stack: ["JavaScript", "Stockfish (WebAssembly)", "chess.js"],
     cover: { image: "assets/covers/tempo.jpg", bg: "#16201C", band: "#87A097" }
   },
