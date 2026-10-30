@@ -153,7 +153,7 @@ def main():
             m = h["moves"][w["ref"]]
             now, est = window_now(y, w, sl, season_days)
             owner = s["o"][idx[w["team"]]]
-            later, n, pr = kept_surplus(y, owner, m["name"], m["pos"], kept2) if w["stays"] else (0.0, 0, 0)
+            later, n, pr, _ = kept_surplus(y, owner, m["name"], m["pos"], kept2) if w["stays"] else (0.0, 0, 0, [])
             if now + later <= 0:
                 continue
             row = {"y": y, "d": day(m["ts"]).isoformat(), "t": idx[w["team"]], "p": m["name"],

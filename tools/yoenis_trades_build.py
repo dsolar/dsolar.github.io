@@ -8,7 +8,9 @@ or 160th pitcher), so a hurt or benched player counts zero, not less (tools/yoen
   - Kept after: if he was still there at season's end, each later season that manager kept him counts his
     value less what that keeper round was expected to produce (an average non-keeper pick in that round
     over 14 drafts), never below zero.
-  - Draft picks that changed hands count what an average pick in that round was worth.
+  - Draft picks that changed hands count what a pick in that slot was worth its first season (from that year's
+    draft order, once the draft has happened; otherwise the round's average), plus the keeper value a drafted
+    player goes on to add on average. Keeping someone costs the same: that round's pick.
 Offseason trades (keepers and picks swapped on the league thread, tools/yoenis_offseason_trades.py) count
 the same way from Opening Day, except the first season is his value over the keeper round the new team
 spent on him (he came over to be kept), and a player the new team didn't keep counts zero.
@@ -17,7 +19,8 @@ full-season value prorated by the days left, and are marked "est".
 
 Writes data["tradeHistory"] = {
   "trades": [{"y": year, "d": "YYYY-MM-DD", "a": team index, "b": team index,
-              "ag": [[player, that season, kept after, seasons kept, projected seasons (if any)], ...], "bg": [...],
+              "ag": [[player, that season, kept after, seasons kept, projected seasons,
+                      [[year, keeper round, 1 if projected], ...]], ...], "bg": [...],
               "ap": [[pick label, value], ...], "bp": [...], "av": side a total, "bv": side b total,
               "est": true when prorated, "off": "sheet"|"board" for offseason trades}, ...],   newest first
   "vetoed": number of trades left out, "curve": {round: expected value}
@@ -31,7 +34,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from yoenis_tenure import windows, key, pkey, day  # noqa: E402,F401
-from yoenis_value import vor_table, window_value, pick_curve, expected, kept_map, kept_surplus  # noqa: E402,F401
+from yoenis_value import vor_table, window_value, pick_curve, expected, kept_map, kept_surplus, keeper_cost, pick_value, option  # noqa: E402,F401
 from yoenis_offseason_trades import trades as _offseason  # noqa: E402
 from yoenis_yahoo_keepers import side as side_of  # noqa: E402
 
@@ -107,10 +110,15 @@ def offseason_rows(data, seasons, kept):
                         continue
                     now, e = window_now(year, w, sl, season_days)
                     est = est or e
-                    now = max(now - expected(rnd), 0.0)
-                    later, n, pr = kept_surplus(year, owner, w["name"], w["pos"], kept) if w["stays"] else (0.0, 0, 0)
-                    got.append([w["name"], round(now, 1), round(later, 1), n] + ([pr] if pr else []))
-                sides[side] = (ti, got, [[f"{ordinal(r)}-round pick", expected(r)] for r in t["ap" if side == "a" else "bp"]])
+                    now = max(now - keeper_cost(rnd), 0.0)
+                    later, n, pr, rr = kept_surplus(year, owner, w["name"], w["pos"], kept) if w["stays"] else (0.0, 0, 0, [])
+                    got.append([w["name"], round(now, 1), round(later, 1), n, pr, [[year, rnd]] + rr])
+                giver = t["b" if side == "a" else "a"]
+                picks = []
+                for r in t["ap" if side == "a" else "bp"]:
+                    v, overall = pick_value(year, r, giver)
+                    picks.append([f"{ordinal(r)}-round pick" + (f" (No. {overall})" if overall else ""), v])
+                sides[side] = (ti, got, picks)
             tot = lambda k: round(sum(x[1] + x[2] for x in sides[k][1]) + sum(x[1] for x in sides[k][2]), 1)  # noqa: E731
             row = {"y": year, "d": t["d"], "a": sides["a"][0], "b": sides["b"][0],
                    "ag": sides["a"][1], "bg": sides["b"][1], "ap": sides["a"][2], "bp": sides["b"][2],
@@ -196,19 +204,24 @@ def main():
                 w = wins.get((t["id"], to, pkey(p["name"], p["pos"])))
                 now, e = window_now(year, w, sl, season_days) if w else (0.0, False)
                 est = est or e
-                later, n, pr = kept_surplus(year, s["o"][idx[to]], p["name"], p["pos"], kept) if (w and w["stays"]) else (0.0, 0, 0)
-                sides[to].append([p["name"], round(now, 1), round(later, 1), n] + ([pr] if pr else []))
+                later, n, pr, rr = kept_surplus(year, s["o"][idx[to]], p["name"], p["pos"], kept) if (w and w["stays"]) else (0.0, 0, 0, [])
+                sides[to].append([p["name"], round(now, 1), round(later, 1), n, pr, rr])
             picks = {a: [], b: []}
             for pk in t.get("picks") or []:
                 if pk["to"] in picks:
-                    orig = v["teams"].get(pk.get("orig") or pk["from"], "")
-                    picks[pk["to"]].append([f"{orig}'s {ordinal(pk['round'])}".strip(), expected(pk["round"])])
+                    ok = pk.get("orig") or pk["from"]
+                    orig = v["teams"].get(ok, "")
+                    owner = s["o"][idx[ok]] if ok in idx else None
+                    val, overall = pick_value(year + 1, pk["round"], owner)  # in-season deals trade next spring's picks
+                    picks[pk["to"]].append([f"{orig}'s {year + 1} {ordinal(pk['round'])}".strip() + (f" (No. {overall})" if overall else ""), val])
             ot = summer.get((year, t["id"]))
             if ot:  # next spring's picks that came with this trade
                 owner = {s["o"][idx[a]]: a, s["o"][idx[b]]: b}
                 for side_owner, rounds in ((ot["a"], ot["ap"]), (ot["b"], ot["bp"])):
+                    giver = ot["b"] if side_owner == ot["a"] else ot["a"]
                     for r in rounds:
-                        picks[owner[side_owner]].append([f"{year + 1} {ordinal(r)}-round pick", expected(r)])
+                        val, overall = pick_value(year + 1, r, giver)
+                        picks[owner[side_owner]].append([f"{year + 1} {ordinal(r)}-round pick" + (f" (No. {overall})" if overall else ""), val])
             tot = lambda k: round(sum(x[1] + x[2] for x in sides[k]) + sum(x[1] for x in picks[k]), 1)  # noqa: E731
             row = {"y": year, "d": day(t["ts"]).isoformat(), "a": idx[a], "b": idx[b],
                    "ag": sides[a], "bg": sides[b], "ap": picks[a], "bp": picks[b], "av": tot(a), "bv": tot(b)}
@@ -218,7 +231,7 @@ def main():
     out.extend(offseason_rows(data, seasons, kept))
     add_grades(out, seasons)
     out.sort(key=lambda t: (t["d"] or f"{t['y']}-01-01", t["y"]), reverse=True)
-    hist = {"trades": out, "vetoed": vetoed, "curve": pick_curve()}
+    hist = {"trades": out, "vetoed": vetoed, "curve": pick_curve(), "option": option(1)}
     if data.get("tradeHistory") == hist:
         print("No change.")
         return
