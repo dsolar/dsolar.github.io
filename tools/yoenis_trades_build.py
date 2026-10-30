@@ -36,7 +36,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from yoenis_tenure import windows, key, pkey, day  # noqa: E402,F401
-from yoenis_value import vor_table, window_value, pick_curve, expected, kept_map, kept_surplus, keeper_cost, pick_value, option, _vor_named, KEEPERS  # noqa: E402,F401
+from yoenis_value import vor_table, window_value, pick_curve, expected, kept_map, kept_surplus, keeper_cost, pick_value, option, _vor_named, KEEPERS, keepers_resolved  # noqa: E402,F401
 from yoenis_yahoo_keepers import fold  # noqa: E402
 from yoenis_offseason_trades import trades as _offseason  # noqa: E402
 from yoenis_yahoo_keepers import side as side_of  # noqa: E402
@@ -106,13 +106,12 @@ def keeper_values(data, year, owner, kept):
     cost, plus every later season he kept him, never below zero"""
     s = next(x for x in data["seasons"] if x["year"] == year)
     out = []
-    for ti, ks in data["keeperHistory"].get(str(year), []):
+    for ti, name, rnd in keepers_resolved(data, year):
         if s["o"][ti] != owner:
             continue
-        for k in ks:
-            first = max(_vor_named(year, k[0]) - keeper_cost(k[1] or 15), 0.0)
-            later = kept_surplus(year, owner, k[0], guess_pos(year, k[0]), kept)[0]
-            out.append(first + later)
+        first = max(_vor_named(year, name) - keeper_cost(rnd or 15), 0.0)
+        later = kept_surplus(year, owner, name, guess_pos(year, name), kept)[0]
+        out.append(first + later)
     return out
 
 

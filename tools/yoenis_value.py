@@ -270,16 +270,68 @@ def pick_value(year, round_, owner=None):
     return round(first + option(round_), 2), overall, nth
 
 
+def board_round(season, ti, name):
+    """The round a keeper actually took on that year's draft board, or None. Usually his keeper round, but a
+    second keeper in a round where the team has one pick (or a keeper in a round it has no pick in) moves up
+    to its next open pick, and that's the pick keeping him really cost."""
+    f = fold(name)
+    for e in season.get("draft") or []:
+        if len(e) > 3 and e[3] and e[1] == ti and fold(e[2]) == f:
+            return e[0]
+    return None
+
+
+def _alike(a, b):
+    from difflib import SequenceMatcher
+    a, b = fold(a), fold(b)
+    if "ohtani" in a and "ohtani" in b:
+        return 1.0 if (side(a) or "b") == (side(b) or "b") or ("p" in a.replace("ohtani", "").replace("shohei", "")) == (side(b) == "p") else 0.0
+    return SequenceMatcher(None, a, b).ratio()
+
+
+def keepers_resolved(data, year):
+    """[(team index, name as the board spells it, round it used)] for `year`'s keepers. The draft results win:
+    a sheet name misspelled ('Vinnie Pasquatino') is matched to that team's keeper on the board, and a sheet
+    keeper the board shows another team drafting is dropped."""
+    s = next((x for x in data["seasons"] if x["year"] == year), None)
+    rows = data["keeperHistory"].get(str(year), [])
+    if not s:
+        return []
+    out = []
+    for ti, ks in rows:
+        board = [e for e in s.get("draft") or [] if len(e) > 3 and e[3] and e[1] == ti]
+        left = list(board)
+        pending = []
+        for k in ks:
+            hit = next((e for e in left if fold(e[2]) == fold(k[0])), None)
+            if hit:
+                left.remove(hit)
+                out.append((ti, hit[2], hit[0]))
+            else:
+                pending.append(k)
+        for k in pending:
+            best = max(left, key=lambda e: _alike(e[2], k[0]), default=None)
+            if best is not None and _alike(best[2], k[0]) >= 0.8:
+                left.remove(best)
+                out.append((ti, best[2], best[0]))
+            elif any(fold(e[2]) == fold(k[0]) and e[1] != ti for e in s.get("draft") or []):
+                continue  # someone else drafted him that year: not actually kept
+            else:
+                out.append((ti, k[0], k[1]))
+    return out
+
+
 def kept_map(data):
-    """{year: {owner: {folded name:side: keeper round}}}"""
+    """{year: {owner: {folded name:side: round}}}: each keeper as the board has him (spelling and the pick he
+    actually used), else as the sheet has him"""
     seasons = {s["year"]: s for s in data["seasons"]}
     out = {}
-    for y, rows in data["keeperHistory"].items():
+    for y in data["keeperHistory"]:
         s = seasons.get(int(y))
-        for ti, ks in (rows if s else []):
-            d = out.setdefault(int(y), {}).setdefault(s["o"][ti], {})
-            for k in ks:
-                d[fold(k[0]) + ":" + side(k[0])] = k[1]
+        if not s:
+            continue
+        for ti, name, rnd in keepers_resolved(data, int(y)):
+            out.setdefault(int(y), {}).setdefault(s["o"][ti], {})[fold(name) + ":" + side(name)] = rnd
     return out
 
 
