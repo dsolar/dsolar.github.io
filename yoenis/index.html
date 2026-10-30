@@ -974,7 +974,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
       var ka = DUBIOUS[a] ? 2 : order.indexOf(a) > -1 ? 0 : 1, kb = DUBIOUS[b] ? 2 : order.indexOf(b) > -1 ? 0 : 1;
       return ka - kb || (order.indexOf(a) - order.indexOf(b)) || a.localeCompare(b);
     });
-    $("a-award").innerHTML = '<option value="">Every award, one year</option>' + list.map(function (a) { return '<option value="' + esc(a) + '">' + esc(a) + ", every year</option>"; }).join("");
+    $("a-award").innerHTML = '<option value="">All</option>' + list.map(function (a) { return '<option value="' + esc(a) + '">' + esc(a) + "</option>"; }).join("");
     $("a-year").addEventListener("change", drawAwards);
     $("a-award").addEventListener("change", drawAwards);
     drawAwards();
