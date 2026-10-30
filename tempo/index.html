@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="description" content="Play Stockfish at six levels while a coach grades every move, shows the better one and explains why.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://davidsolar.dev/tempo/">
+<meta property="og:title" content="Tempo">
+<meta property="og:description" content="A chess coach that grades every move you make.">
+<meta property="og:image" content="https://davidsolar.dev/assets/covers/tempo.jpg">
+<meta property="og:image:width" content="1040">
+<meta property="og:image:height" content="780">
+<meta name="twitter:card" content="summary_large_image">
+<title>Tempo | David Solar</title>
+<link rel="canonical" href="https://davidsolar.dev/tempo/">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#16201C">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@500;600&family=Public+Sans:wght@400;500;600;700&family=Besley:wght@700&family=Libre+Franklin:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/bar.css">
+<link rel="stylesheet" href="style.css?v=1">
+<script src="../assets/analytics.js" defer></script>
+</head>
+<body>
+<nav class="ds-bar" aria-label="davidsolar.dev">
+  <a href="../"><img src="../assets/ds-mark.svg" alt="" width="20" height="20"><span class="ds-bar-name">David Solar</span></a>
+  <a href="../#projects">All projects</a>
+</nav>
+<div class="app">
+  <header class="top">
+    <div class="brand"><h1>Tempo</h1><span>a chess coach that grades every move</span></div>
+    <button class="btn primary" id="newBtn" type="button">New game</button>
+  </header>
+
+  <main class="layout">
+    <section class="play" aria-label="Board">
+      <div class="strip" id="oppStrip"></div>
+      <div class="board-frame">
+        <div class="evalbar" id="evalbar" title="Evaluation"><div class="fill"></div></div>
+        <div class="board" id="board" role="application" aria-label="Chess board">
+          <div class="squares" id="squares"></div>
+          <div class="pieces" id="pieces"></div>
+          <svg class="arrows" id="arrows" viewBox="0 0 8 8" aria-hidden="true"></svg>
+          <div id="boardBadges"></div>
+          <div class="promo" id="promo" hidden><div></div></div>
+        </div>
+      </div>
+      <div class="strip" id="youStrip"></div>
+      <div class="controls">
+        <button class="btn iconbtn" id="prevBtn" type="button" aria-label="Previous move"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3 5 8l5 5"/></svg></button>
+        <button class="btn iconbtn" id="nextBtn" type="button" aria-label="Next move"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 3 5 5-5 5"/></svg></button>
+        <button class="btn" id="liveBtn" type="button" hidden>Back to game</button>
+        <span class="grow"></span>
+        <button class="btn" id="hintBtn" type="button">Hint</button>
+        <button class="btn" id="undoBtn" type="button">Take back</button>
+        <button class="btn iconbtn" id="flipBtn" type="button" aria-label="Flip board"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v11M1.5 10.5 4 13l2.5-2.5M12 14V3M9.5 5.5 12 3l2.5 2.5"/></svg></button>
+      </div>
+    </section>
+
+    <aside class="side">
+      <section class="coach" id="coach" aria-live="polite"></section>
+      <section class="tally" id="tally"></section>
+      <section class="sheet">
+        <header><h3>Scoresheet</h3><span id="sheetMeta"></span></header>
+        <div class="grid" id="sheetGrid"></div>
+      </section>
+    </aside>
+  </main>
+  <p class="foot-note">Analysis by Stockfish 10 running on your device. Piece set by Colin M.L. Burnett (GPLv2+).</p>
+</div>
+
+<div class="setup" id="setup" hidden>
+  <form class="panel" id="setupForm">
+    <h2>New game</h2>
+    <fieldset>
+      <legend>Opponent</legend>
+      <div class="levels" id="levelOpts"></div>
+    </fieldset>
+    <fieldset>
+      <legend>Play as</legend>
+      <div class="seg">
+        <label class="opt"><input type="radio" name="color" value="w" id="colW"><strong>White</strong></label>
+        <label class="opt"><input type="radio" name="color" value="b" id="colB"><strong>Black</strong></label>
+        <label class="opt"><input type="radio" name="color" value="r" id="colR"><strong>Random</strong></label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Coaching</legend>
+      <div class="seg">
+        <label class="opt"><input type="radio" name="coach" value="every" id="coEvery"><strong>Every move</strong></label>
+        <label class="opt"><input type="radio" name="coach" value="mistakes" id="coMist"><strong>Mistakes only</strong></label>
+        <label class="opt"><input type="radio" name="coach" value="after" id="coAfter"><strong>After the game</strong></label>
+      </div>
+    </fieldset>
+    <div class="foot">
+      <button class="btn ghost" type="button" id="setupCancel">Cancel</button>
+      <button class="btn primary" type="submit" id="setupStart">Start game</button>
+    </div>
+  </form>
+</div>
+
+<script src="chess.js?v=1"></script>
+<script src="pieces.js?v=1"></script>
+<script src="core.js?v=1"></script>
+<script src="app.js?v=1"></script>
+</body>
+</html>
