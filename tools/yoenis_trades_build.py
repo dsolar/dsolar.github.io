@@ -8,8 +8,10 @@ or 160th pitcher), so a hurt or benched player counts zero, not less (tools/yoen
   - Kept after: if he was still there at season's end, each later season that manager kept him counts his
     value less what that keeper round was expected to produce (an average non-keeper pick in that round
     over 14 drafts), never below zero.
-  - Draft picks that changed hands count what a pick in that slot was worth its first season (from that year's
-    draft order, once the draft has happened; otherwise the round's average), plus the keeper value a drafted
+  - Draft picks that changed hands count what the nth player drafted was worth his first season (keepers don't
+    count: they're all off the board before the first pick, and they fill some early slots, so No. 16 is often
+    the 11th player drafted), read from that year's draft once it's happened (otherwise the round's average),
+    plus the keeper value a drafted
     player goes on to add on average. Keeping someone costs the same: that round's pick.
 Offseason trades (keepers and picks swapped on the league thread, tools/yoenis_offseason_trades.py) count
 the same way from Opening Day, except the first season is his value over the keeper round the new team
@@ -55,6 +57,13 @@ ORD = {1: "1st", 2: "2nd", 3: "3rd"}
 
 def ordinal(n):
     return f"{n}th" if 10 < n % 100 < 14 else f"{n}{ORD.get(n % 10, 'th')[-2:]}"
+
+
+def slot_label(overall, nth):
+    """' (No. 16, 11th drafted)': the overall slot, and how many players had actually been drafted by then"""
+    if not overall:
+        return ""
+    return f" (No. {overall}" + (f", {ordinal(nth)} drafted" if nth and nth != overall else "") + ")"
 
 
 def slices(year):
@@ -116,8 +125,8 @@ def offseason_rows(data, seasons, kept):
                 giver = t["b" if side == "a" else "a"]
                 picks = []
                 for r in t["ap" if side == "a" else "bp"]:
-                    v, overall = pick_value(year, r, giver)
-                    picks.append([f"{ordinal(r)}-round pick" + (f" (No. {overall})" if overall else ""), v])
+                    v, overall, nth = pick_value(year, r, giver)
+                    picks.append([f"{ordinal(r)}-round pick" + slot_label(overall, nth), v])
                 sides[side] = (ti, got, picks)
             tot = lambda k: round(sum(x[1] + x[2] for x in sides[k][1]) + sum(x[1] for x in sides[k][2]), 1)  # noqa: E731
             row = {"y": year, "d": t["d"], "a": sides["a"][0], "b": sides["b"][0],
@@ -212,16 +221,16 @@ def main():
                     ok = pk.get("orig") or pk["from"]
                     orig = v["teams"].get(ok, "")
                     owner = s["o"][idx[ok]] if ok in idx else None
-                    val, overall = pick_value(year + 1, pk["round"], owner)  # in-season deals trade next spring's picks
-                    picks[pk["to"]].append([f"{orig}'s {year + 1} {ordinal(pk['round'])}".strip() + (f" (No. {overall})" if overall else ""), val])
+                    val, overall, nth = pick_value(year + 1, pk["round"], owner)  # in-season deals trade next spring's picks
+                    picks[pk["to"]].append([f"{orig}'s {year + 1} {ordinal(pk['round'])}".strip() + slot_label(overall, nth), val])
             ot = summer.get((year, t["id"]))
             if ot:  # next spring's picks that came with this trade
                 owner = {s["o"][idx[a]]: a, s["o"][idx[b]]: b}
                 for side_owner, rounds in ((ot["a"], ot["ap"]), (ot["b"], ot["bp"])):
                     giver = ot["b"] if side_owner == ot["a"] else ot["a"]
                     for r in rounds:
-                        val, overall = pick_value(year + 1, r, giver)
-                        picks[owner[side_owner]].append([f"{year + 1} {ordinal(r)}-round pick" + (f" (No. {overall})" if overall else ""), val])
+                        val, overall, nth = pick_value(year + 1, r, giver)
+                        picks[owner[side_owner]].append([f"{year + 1} {ordinal(r)}-round pick" + slot_label(overall, nth), val])
             tot = lambda k: round(sum(x[1] + x[2] for x in sides[k]) + sum(x[1] for x in picks[k]), 1)  # noqa: E731
             row = {"y": year, "d": day(t["ts"]).isoformat(), "a": idx[a], "b": idx[b],
                    "ag": sides[a], "bg": sides[b], "ap": picks[a], "bp": picks[b], "av": tot(a), "bv": tot(b)}

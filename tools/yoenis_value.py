@@ -12,7 +12,10 @@ the 208th hitter or 160th pitcher, so a hurt or benched player counts zero, not 
   pick_curve()            {round: what an average non-keeper pick in that round was worth in its first
                           season}, from every draft whose keepers are known (2017 on) plus 2013 (no keepers
                           yet), smoothed so a later round is never worth more than an earlier one
-  slot_curve()            the same by overall pick (1 to 400): 1.01 is worth more than 1.16
+  slot_curve()            the same by how many players had actually been drafted before the pick: every
+                          keeper (about 80) is off the board before the first pick, and keepers fill some
+                          early slots, so No. 16 overall is usually only the 11th player drafted. Keeper years
+                          only (2017 on); 2013, with no keepers, isn't the same draft.
   option_curve()          {round: the keeper value a drafted player went on to add}: for picks in the 2017 to
                           2022 drafts (their whole keeper clock has played out), each later season someone kept
                           him, his value over his keeper round's, averaged over every pick (about 0.6; by round
@@ -159,17 +162,19 @@ def _vor_named(year, name):
 
 
 def slot_curve():
-    """{overall pick: first-season value}, never rising, from every non-keeper pick in the known drafts"""
+    """{nth player drafted (keepers not counted): first-season value}, never rising, from the keeper-era drafts"""
     if "slot" in _cache2:
         return _cache2["slot"]
     by = {}
     for s in _seasons()["seasons"]:
-        if not s.get("keepers_known") and s["year"] != 2013:
+        if not s.get("keepers_known"):
             continue
-        for i, e in enumerate(s["draft"]):
+        n = 0
+        for e in s["draft"]:
             if len(e) > 3 and e[3]:
                 continue
-            by.setdefault(i + 1, []).append(_vor_named(s["year"], e[2]))
+            n += 1
+            by.setdefault(n, []).append(_vor_named(s["year"], e[2]))
     # pool neighbors four picks at a time before fitting: one draft's luck shouldn't set a slot
     pooled = []
     for p in sorted(by):
@@ -243,15 +248,26 @@ def draft_slot(year, owner):
     return None, n
 
 
+def live_index(year, overall):
+    """How many players were drafted (keepers not counted) up to and including slot `overall` in `year`:
+    the pick at that slot is that many-th player drafted. If the slot held a keeper, the next player drafted."""
+    s = next((x for x in _seasons()["seasons"] if x["year"] == year), None)
+    if not s or not s.get("keepers_known") or overall > len(s["draft"]):
+        return None
+    return sum(1 for e in s["draft"][:overall - 1] if not (len(e) > 3 and e[3])) + 1
+
+
 def pick_value(year, round_, owner=None):
-    """(value, overall pick or None) for a traded pick in `year`'s draft that originally belonged to `owner`"""
+    """(value, overall pick or None, nth player drafted or None) for a traded pick in `year`'s draft that
+    originally belonged to `owner`"""
     p, n = draft_slot(year, owner) if owner else (None, 0)
     if p is None:
-        return round(expected(round_) + option(round_), 2), None
+        return round(expected(round_) + option(round_), 2), None, None
     overall = (round_ - 1) * n + (p + 1 if round_ % 2 else n - p)
+    nth = live_index(year, overall)
     sc = slot_curve()
-    first = sc.get(overall, expected(round_))
-    return round(first + option(round_), 2), overall
+    first = sc.get(nth, expected(round_)) if nth else expected(round_)
+    return round(first + option(round_), 2), overall, nth
 
 
 def kept_map(data):
