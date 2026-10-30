@@ -36,7 +36,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from yoenis_tenure import windows, key, pkey, day  # noqa: E402,F401
-from yoenis_value import vor_table, window_value, pick_curve, expected, kept_map, kept_surplus, keeper_cost, pick_value, option  # noqa: E402,F401
+from yoenis_value import vor_table, window_value, pick_curve, expected, kept_map, kept_surplus, keeper_cost, pick_value, option, _vor_named, KEEPERS  # noqa: E402,F401
+from yoenis_yahoo_keepers import fold  # noqa: E402
 from yoenis_offseason_trades import trades as _offseason  # noqa: E402
 from yoenis_yahoo_keepers import side as side_of  # noqa: E402
 
@@ -88,6 +89,44 @@ def window_now(year, w, sl, season_days):
     return vor_table(year).get(w["pk"], 0.0) * share, True  # not pulled yet: prorate his season
 
 
+def guess_pos(year, name):
+    """'SP' if he only shows up as a pitcher in the values around that year, else None (a hitter)"""
+    f = fold(name)
+    for y in (year, year - 1, year + 1):
+        t = vor_table(y)
+        if (f, "p") in t and (f, "b") not in t:
+            return "SP"
+        if (f, "b") in t:
+            return None
+    return None
+
+
+def keeper_values(data, year, owner, kept):
+    """What each of `owner`'s actual keepers that spring was worth to him: his season over his keeper round's
+    cost, plus every later season he kept him, never below zero"""
+    s = next(x for x in data["seasons"] if x["year"] == year)
+    out = []
+    for ti, ks in data["keeperHistory"].get(str(year), []):
+        if s["o"][ti] != owner:
+            continue
+        for k in ks:
+            first = max(_vor_named(year, k[0]) - keeper_cost(k[1] or 15), 0.0)
+            later = kept_surplus(year, owner, k[0], guess_pos(year, k[0]), kept)[0]
+            out.append(first + later)
+    return out
+
+
+def crunch(keepers, sent):
+    """The share of what a team traded away in the winter that it actually gave up: keeping those players
+    would only have bumped its weakest keepers, so the cost is its best five out of keepers plus traded
+    players, less its actual best five, over the traded players' value"""
+    total = sum(sent)
+    if total <= 0:
+        return 1.0
+    top = lambda vs: sum(sorted(vs, reverse=True)[:KEEPERS])  # noqa: E731
+    return max(0.0, min(1.0, (top(keepers + sent) - top(keepers)) / total))
+
+
 def offseason_rows(data, seasons, kept):
     """Score every offseason trade: the season he arrived over his keeper round, then later kept seasons"""
     rows = []
@@ -132,6 +171,13 @@ def offseason_rows(data, seasons, kept):
             row = {"y": year, "d": t["d"], "a": sides["a"][0], "b": sides["b"][0],
                    "ag": sides["a"][1], "bg": sides["b"][1], "ap": sides["a"][2], "bp": sides["b"][2],
                    "av": tot("a"), "bv": tot("b"), "off": t["src"]}
+            # Keeper crunch: what each side's traded players would have been worth to it, given its other keepers
+            for side, other in (("a", "b"), ("b", "a")):
+                sent = [g[1] + g[2] for g in sides[other][1]]
+                if sum(sent) > 0:
+                    k = crunch(keeper_values(data, year, t[side], kept), sent)
+                    if k < 0.995:
+                        row["k" + side] = round(k, 2)
             if est:
                 row["est"] = True
             rows.append(row)
@@ -156,23 +202,27 @@ def add_grades(rows, seasons):
     that paid future value for a stretch run, and made it, can win the same trade as the team that got the
     future value: a win-win. Picks in an offseason deal are for that spring's draft, so they count now;
     picks in an in-season deal are for next year, so they count later. The share is damped (DAMP added to
-    each side), so small deals land near a C and only big, one-sided ones reach an A+ or an F."""
+    each side), so small deals land near a C and only big, one-sided ones reach an A+ or an F. In a winter
+    deal, players a team sent away count only what keeping them would have added over its weakest keepers
+    ("k" + side, from crunch()): a sixth keeper it had no room for costs it little."""
     for t in rows:
         s = seasons[t["y"]]
         finish = {r[1]: r[0] for r in s["standings"]}
 
-        def split(side):
+        def split(side, k=1.0):
+            """(this season, later) for what `side` got, its players scaled by k"""
             gets, picks = t[side + "g"], t[side + "p"]
-            now = sum(g[1] for g in gets) + (sum(p[1] for p in picks) if t.get("off") else 0)
-            later = sum(g[2] for g in gets) + (0 if t.get("off") else sum(p[1] for p in picks))
+            now = k * sum(g[1] for g in gets) + (sum(p[1] for p in picks) if t.get("off") else 0)
+            later = k * sum(g[2] for g in gets) + (0 if t.get("off") else sum(p[1] for p in picks))
             return now, later
 
         parts = {"a": split("a"), "b": split("b")}
         for side, other in (("a", "b"), ("b", "a")):
             f = finish.get(t[side])
             w = WEIGHT_TITLE if f == 1 else WEIGHT_PLAYOFFS if f and f <= 8 else WEIGHT_MISSED
+            cost = split(other, t.get("k" + side, 1.0))  # what it gave up: players it couldn't have kept anyway count less
             got = w * parts[side][0] + parts[side][1]
-            gave = w * parts[other][0] + parts[other][1]
+            gave = w * cost[0] + cost[1]
             t["g" + side] = letter((got + DAMP) / (got + gave + 2 * DAMP))
             t["w" + side] = w
 
