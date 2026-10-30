@@ -85,7 +85,7 @@ def window_now(year, w, sl, season_days):
     k = key(w)
     if sl is not None and k in sl:
         t = sl[k]
-        return (window_value(year, t, w["pk"][1], share) if t else 0.0), False
+        return (window_value(year, t, w["pk"][1], share, w.get("pos")) if t else 0.0), False
     return vor_table(year).get(w["pk"], 0.0) * share, True  # not pulled yet: prorate his season
 
 

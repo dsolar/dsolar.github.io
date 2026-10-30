@@ -3,10 +3,10 @@
 tools/yoenis_history_build.py).
 
 All values are the awards' 16-category model (tools/yoenis_keeper_value.py), counted above replacement:
-the 208th hitter or 160th pitcher, so a hurt or benched player counts zero, not less.
+the 208th hitter, 20th catcher or 160th pitcher, so a hurt or benched player counts zero, not less.
 
   vor_table(year)         {(folded name, 'b'|'p'): full-season value over replacement}
-  window_value(year, totals, side, share)
+  window_value(year, totals, side, share, pos)
                           value over replacement of the real stats a player put up in one tenure window
                           (totals from tools/yahoo_yoenis/slices), share = the window's part of the season
   pick_curve()            {round: what an average non-keeper pick in that round was worth in its first
@@ -44,6 +44,7 @@ from yoenis_yahoo_keepers import fold, side
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "yoenis" / "data.json"
 _vor, _model, _repl, _rows = {}, {}, {}, {}
+POOL_C = 20  # catchers rostered league-wide: 16 starters plus a few backups
 
 
 def _load(year):
@@ -52,21 +53,26 @@ def _load(year):
     try:
         sv = season_values(year)
     except FileNotFoundError:
-        _vor[year], _repl[year] = {}, {"b": 0, "p": 0}
+        _vor[year], _repl[year] = {}, {"b": 0, "p": 0, "c": 0}
         return
     repl, out = {}, {}
     for sd, pool in (("b", POOL_B), ("p", POOL_P)):
         vals = sorted((r["v"] for k, r in sv.items() if k[1] == sd), reverse=True)
         repl[sd] = vals[pool - 1] if len(vals) >= pool else (vals[-1] if vals else 0)
-        for k, r in sv.items():
-            if k[1] == sd:
-                out[k] = max(r["v"] - repl[sd], 0.0)
+    # Catchers: every team starts one, so a catcher is measured against a replacement catcher (the 20th best:
+    # 16 starters plus a few backups), not the 208th-best hitter
+    cv = sorted((r["v"] for k, r in sv.items() if k[1] == "b" and r["row"].get("pos") == "C"), reverse=True)
+    repl["c"] = min(repl["b"], cv[POOL_C - 1] if len(cv) >= POOL_C else (cv[-1] if cv else repl["b"]))
+    for k, r in sv.items():
+        base = repl["c"] if k[1] == "b" and r["row"].get("pos") == "C" else repl[k[1]]
+        out[k] = max(r["v"] - base, 0.0)
     _vor[year], _repl[year] = out, repl
     vb, vp, m = season_model(year)
     _model[year] = (vb, vp)
     rows = []  # every player row, so namesakes stay apart: (folded name, side, MLB id, team, value over replacement, playing time)
     for h in m["hitting"]:
-        rows.append((fold(h["name"]), "b", h.get("id"), h.get("team") or "", max(vb(h) - repl["b"], 0.0), h.get("pa", 0)))
+        base = repl["c"] if h.get("pos") == "C" else repl["b"]
+        rows.append((fold(h["name"]), "b", h.get("id"), h.get("team") or "", max(vb(h) - base, 0.0), h.get("pa", 0)))
     for q in m["pitching"]:
         ip_ = str(q.get("ip", 0)).partition(".")
         rows.append((fold(q["name"]), "p", q.get("id"), q.get("team") or "", max(vp(q) - repl["p"], 0.0),
@@ -79,8 +85,9 @@ def vor_table(year):
     return _vor[year]
 
 
-def window_value(year, t, sd, share):
-    """t: a window's totals; sd: 'b' or 'p'; share: the window's part of the season (0 to 1)."""
+def window_value(year, t, sd, share, pos=None):
+    """t: a window's totals; sd: 'b' or 'p'; share: the window's part of the season (0 to 1); pos: his Yahoo
+    positions, so a catcher is measured against a replacement catcher."""
     _load(year)
     if year not in _model or share <= 0:
         return 0.0
@@ -99,7 +106,8 @@ def window_value(year, t, sd, share):
         row.update(ip=outs // 3 + (outs % 3) / 10, era=(9 * t.get("er", 0) / inn) if inn else None,
                    whip=((t.get("bb", 0) + t.get("h", 0)) / inn) if inn else None)
         v = vp(row, share)
-    return max(v - _repl[year][sd] * share, 0.0)
+    base = _repl[year]["c"] if sd == "b" and pos and "C" in str(pos).replace(" ", "").split(",") else _repl[year][sd]
+    return max(v - base * share, 0.0)
 
 
 _curve = {}
