@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-30T10:12:47Z",
+ "updated": "2026-10-31T05:55:34Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -41,16 +41,6 @@
    "date": "2026-12-19",
    "venue": "Great Cedar Showroom at Foxwoods",
    "low": null
-  },
-  "tm-vvG17Z_ClEs-f5": {
-   "sg": 18371747,
-   "history": [],
-   "url": "https://www.ticketmaster.com/moe-boston-massachusetts-10-30-2026/event/010064EAE7C6150B",
-   "title": "moe.",
-   "date": "2026-10-30",
-   "venue": "The Wilbur",
-   "low": null,
-   "src": null
   },
   "tm-vvG17Z_ClEw-fE": {
    "sg": 18371751,
@@ -219,16 +209,6 @@
    "title": "Dark Star Orchestra",
    "date": "2027-01-02",
    "venue": "The Capitol Theatre",
-   "low": null,
-   "src": null
-  },
-  "tm-Z7r9jZ1AAZJxd": {
-   "sg": 18500992,
-   "history": [],
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZJxd",
-   "title": "Third Eye Blind: Halloween 2026",
-   "date": "2026-10-30",
-   "venue": "Basilica Hudson",
    "low": null,
    "src": null
   },
@@ -451,6 +431,10 @@
     [
      "2026-10-30",
      56
+    ],
+    [
+     "2026-10-31",
+     56
     ]
    ],
    "sg": null,
@@ -530,6 +514,10 @@
     ],
     [
      "2026-10-30",
+     22
+    ],
+    [
+     "2026-10-31",
      22
     ]
    ],
@@ -673,6 +661,10 @@
     [
      "2026-10-30",
      28
+    ],
+    [
+     "2026-10-31",
+     28
     ]
    ],
    "sg": null,
@@ -740,6 +732,10 @@
     ],
     [
      "2026-10-30",
+     22
+    ],
+    [
+     "2026-10-31",
      22
     ]
    ],
@@ -872,16 +868,6 @@
    "src": null,
    "low": null
   },
-  "espn-401909278": {
-   "history": [],
-   "sg": 18485901,
-   "title": "Celtics vs Bulls",
-   "date": "2026-10-30",
-   "venue": "TD Garden",
-   "url": "https://www.espn.com/nba/game/_/gameId/401909278/bulls-celtics",
-   "src": null,
-   "low": null
-  },
   "espn-401892614": {
    "history": [],
    "sg": 18378503,
@@ -971,28 +957,39 @@
    "url": "https://www.espn.com/nhl/game/_/gameId/401892696/canadiens-bruins",
    "src": null,
    "low": null
+  },
+  "espn-401892709": {
+   "history": [],
+   "sg": 18378511,
+   "title": "Bruins vs Wild",
+   "date": "2026-11-14",
+   "venue": "TD Garden",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892709/wild-bruins",
+   "src": null,
+   "low": null
   }
  },
  "misses": {
-  "tm-vv1k7Z_3OAG7I4tc": "2026-10-28",
-  "tm-G5vVZ_5R5G1f5": "2026-10-28",
-  "tm-vv1AeZkftGkdqDKq0": "2026-10-28",
-  "tm-G5vVZ_5RuGQjG": "2026-10-28",
-  "tm-vvG17Z_5wCylI9": "2026-10-28",
-  "tm-vv177Z_oGkXBnY-F": "2026-10-28",
-  "tm-vv177Z_oGkXBi8-I": "2026-10-28",
-  "tm-rZ7HnEZ1AfuNZ7": "2026-10-28",
-  "tm-rZ7HnEZ1AfuYF0": "2026-10-28",
-  "tm-Z7r9jZ1A7-VGp": "2026-10-28",
-  "tm-vv1AvZkoYGkdIsA4N": "2026-10-28",
-  "tm-vvG17Z_5wbduXe": "2026-10-28",
-  "tm-Z7r9jZ1A7PJaJ": "2026-10-28",
-  "tm-vvG17Z_u7Z_JCI": "2026-10-28",
-  "tm-Z7r9jZ1AAvx-I": "2026-10-28",
-  "tm-Z7r9jZ1AAvx-E": "2026-10-28",
-  "tm-rZ7HnEZ1Afugk7": "2026-10-28",
-  "tm-rZ7HnEZ1AfCA0f": "2026-10-28",
-  "tm-Z7r9jZ1AA77-E": "2026-10-28"
+  "tm-vv1k7Z_3OAG7I4tc": "2026-10-31",
+  "tm-G5vVZ_5R5G1f5": "2026-10-31",
+  "tm-vv1AeZkftGkdqDKq0": "2026-10-31",
+  "tm-G5vVZ_5RuGQjG": "2026-10-31",
+  "tm-vvG17Z_5wCylI9": "2026-10-31",
+  "tm-vv177Z_oGkXBnY-F": "2026-10-31",
+  "tm-vv177Z_oGkXBi8-I": "2026-10-31",
+  "tm-rZ7HnEZ1AfuNZ7": "2026-10-31",
+  "tm-rZ7HnEZ1AfuYF0": "2026-10-31",
+  "tm-Z7r9jZ1A7-VGp": "2026-10-31",
+  "tm-vv1AvZkoYGkdIsA4N": "2026-10-31",
+  "tm-vvG17Z_5wbduXe": "2026-10-31",
+  "tm-Z7r9jZ1A7PJaJ": "2026-10-31",
+  "tm-vvG17Z_u7Z_JCI": "2026-10-31",
+  "tm-Z7r9jZ1AAvx-I": "2026-10-31",
+  "tm-Z7r9jZ1AAvx-E": "2026-10-31",
+  "tm-rZ7HnEZ1Afugk7": "2026-10-31",
+  "tm-rZ7HnEZ1AfCA0f": "2026-10-31",
+  "tm-Z7r9jZ1AA77-E": "2026-10-31",
+  "tm-vv1AvZkf7GkdbzXaM": "2026-10-31"
  },
  "drops": []
 }
