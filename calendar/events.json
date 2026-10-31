@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-30T16:50:08Z",
+ "updated": "2026-10-31T15:52:31Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -14,247 +14,21 @@
  },
  "events": [
   {
-   "id": "tm-vvG17Z_G62fyUn",
+   "id": "tm-vvG17Z_ClEVv4g",
    "date": "2026-10-30",
-   "time": "18:00",
-   "title": "20 Years of Nekrogoblikon with Special Guests Aborted",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/20-years-of-nekrogoblikon-with-special-boston-massachusetts-10-30-2026/event/010064C1CF539DAA",
-   "source": "ticketmaster",
-   "times": [
-    "18:00",
-    "19:00"
-   ],
-   "aka": [
-    "sg-18297078"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18344336",
-   "date": "2026-10-30",
-   "time": "19:00",
-   "title": "Jeff Allen",
-   "cat": "comedy",
-   "venue": "Showcase Live",
-   "city": "Foxborough, MA",
-   "url": "https://seatgeek.com/jeff-allen-tickets/comedy/2026-10-30-7-pm/18344336",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_G2lTCZO",
-   "date": "2026-10-30",
-   "time": "19:00",
-   "title": "Jenna Davis",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/jenna-davis-boston-massachusetts-10-30-2026/event/010064C3EBFCE020",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18294822"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18620614",
-   "date": "2026-10-30",
-   "time": "19:00",
-   "title": "Meredith Marks (18+)",
-   "cat": "music",
-   "venue": "Royale - Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/meredith-marks-tickets/boston-massachusetts-royale-boston-2026-10-30-7-pm/concert/18620614",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "espn-401909278",
-   "date": "2026-10-30",
-   "time": "19:30",
-   "title": "Celtics vs Bulls",
-   "cat": "sports",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://www.espn.com/nba/game/_/gameId/401909278/bulls-celtics",
-   "source": "espn",
-   "score": 1
-  },
-  {
-   "id": "tm-vv1AvZkfYGkecG7WE",
-   "date": "2026-10-30",
-   "time": "19:30",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-10-30-2026/event/01006530AD304F67",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_5l1KPZ5",
-   "date": "2026-10-30",
-   "time": "19:30",
-   "title": "Raphael Ghanem",
-   "cat": "comedy",
-   "venue": "Lynn Auditorium",
-   "city": "Lynn, MA",
-   "url": "https://www.ticketmaster.com/raphael-ghanem-lynn-massachusetts-10-30-2026/event/010064BACA4E500B",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18539608"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A70z39",
-   "date": "2026-10-30",
-   "time": "20:00",
-   "title": "Micky Dolenz",
-   "cat": "music",
-   "venue": "The Cabot",
-   "city": "Beverly, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A70z39",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18605089"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_26ormTo",
-   "date": "2026-10-30",
-   "time": "20:00",
-   "title": "Paul Anka",
-   "cat": "music",
-   "venue": "Chevalier Theatre",
-   "city": "Medford, MA",
-   "url": "https://www.ticketmaster.com/paul-anka-medford-massachusetts-10-30-2026/event/010064F1D17AEFD1",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18390761",
-    "2026-10-30-paul-anka-chevalier-theatre"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_oGkYvQfab",
-   "date": "2026-10-30",
-   "time": "20:00",
-   "title": "Punchis Punchis: Banda Rave Experience (18+)",
-   "cat": "music",
-   "venue": "Citizens House of Blues Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/punchis-punchis-banda-rave-experience-18-boston-massachusetts-10-30-2026/event/0100651C01694258",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18663074"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A7Pg-v",
-   "date": "2026-10-30",
-   "time": "20:00",
-   "title": "The Hails",
-   "cat": "music",
-   "venue": "The Sinclair Music Hall",
-   "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7Pg-v",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18663866"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1AAZJxd",
-   "date": "2026-10-30",
-   "time": "20:00",
-   "title": "Third Eye Blind: Halloween 2026",
-   "cat": "music",
-   "venue": "Basilica Hudson",
-   "city": "Hudson, NY",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZJxd",
-   "source": "ticketmaster",
-   "drive_hours": 3.25,
-   "act": "Third Eye Blind",
-   "aka": [
-    "sg-18500992"
-   ],
-   "score": 2,
-   "why": "big"
-  },
-  {
-   "id": "tm-vvG17Z_ClEs-f5",
-   "date": "2026-10-30",
-   "time": "20:00",
-   "title": "moe.",
+   "time": null,
+   "title": "moe. 2-Day Pass",
    "cat": "music",
    "venue": "The Wilbur",
    "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/moe-boston-massachusetts-10-30-2026/event/010064EAE7C6150B",
+   "url": "https://www.ticketmaster.com/moe-2day-pass-boston-massachusetts-10-30-2026/event/010064EAE7D01575",
    "source": "ticketmaster",
    "act": "moe.",
    "aka": [
-    "tm-vvG17Z_ClEVv4g",
-    "tm-vvG17Z_ClEs-f5",
-    "tm-vvG17Z_ClEVv4g",
-    "sg-18371747",
-    "sg-18371749",
-    "sg-18371747",
-    "sg-18371749",
-    "2026-10-30-moe-the-wilbur"
+    "tm-vvG17Z_ClEVv4g"
    ],
    "score": 3,
    "why": "love"
-  },
-  {
-   "id": "tm-vv177Z_kGkmUlwQK",
-   "date": "2026-10-30",
-   "time": "20:30",
-   "title": "RAWAYANA - ¿Dónde es el after? World Tour",
-   "cat": "music",
-   "venue": "MGM Music Hall at Fenway",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/rawayana-donde-es-el-after-world-boston-massachusetts-10-30-2026/event/0100646BB6AF2693",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18127644",
-    "2026-10-30-rawayana-mgm-music-hall-at-fe"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkf_GkdZNKhb",
-   "date": "2026-10-30",
-   "time": "21:30",
-   "title": "Y.Q.B presents: Perreoween Eve ( 21+ )",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/yqb-presents-perreoween-eve-21-boston-massachusetts-10-30-2026/event/01006519C08D36D8",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18534972"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18663268",
-   "date": "2026-10-30",
-   "time": "22:00",
-   "title": "Perreoland",
-   "cat": "music",
-   "venue": "Royale - Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/perreoland-tickets/boston-massachusetts-royale-boston-2026-10-30-10-pm/concert/18663268",
-   "source": "seatgeek",
-   "score": 0
   },
   {
    "id": "espn-401892614",
@@ -492,6 +266,7 @@
    ],
    "aka": [
     "tm-LvZ18QErUwnWDxhHy3XLk",
+    "tm-LvZ18Qm7pQOJBclLPsSwC",
     "sg-18641168",
     "sg-18726619"
    ],
@@ -965,21 +740,6 @@
    "aka": [
     "sg-18197171",
     "2026-11-05-palace-citizens-house-of-bl"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_3GknArbzq",
-   "date": "2026-11-05",
-   "time": "19:00",
-   "title": "The Knocks",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/the-knocks-boston-massachusetts-11-05-2026/event/0100652A85798E1D",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18601503"
    ],
    "score": 0
   },
@@ -4024,6 +3784,7 @@
    "url": "https://www.ticketmaster.com/letters-to-cleo-18-boston-massachusetts-11-21-2026/event/0100650BE7F0A1BD",
    "source": "ticketmaster",
    "aka": [
+    "sg-18511822",
     "2026-11-21-letters-to-cleo-and-the-sheila-d-paradise-rock-club"
    ],
    "score": 0
@@ -4056,7 +3817,6 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A70b-_",
    "source": "ticketmaster",
    "aka": [
-    "sg-18224672",
     "sg-18224672",
     "2026-11-21-the-menzingers-roadrunner"
    ],
@@ -4148,6 +3908,18 @@
     "2026-11-21-orville-peck-mgm-music-hall-at-fe"
    ],
    "sub": "with Abbie Callahan",
+   "score": 0
+  },
+  {
+   "id": "tm-LvZ18Qcje8uBXb3NIEhxW",
+   "date": "2026-11-21",
+   "time": "21:00",
+   "title": "MC Koringa Boston (18+) | Nov 21 @ Studio B Big Night Live",
+   "cat": "music",
+   "venue": "Big Night Live",
+   "city": "Boston, MA",
+   "url": "https://www.universe.com/events/mc-koringa-boston-18-nov-21-studio-b-big-night-live-tickets-16S95C?ref=ticketmaster",
+   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -4703,11 +4475,11 @@
    "id": "tm-rZ7HnEZ1Afugk7",
    "date": "2026-11-28",
    "time": "23:55",
-   "title": "Chris Beck",
+   "title": "Chris Beck Quartet",
    "cat": "music",
    "venue": "Smalls Jazz Club",
    "city": "New York, NY",
-   "url": "https://www.ticketweb.com/event/chris-beck-smalls-jazz-club-tickets/14375184",
+   "url": "https://www.ticketweb.com/event/chris-beck-quartet-smalls-jazz-club-tickets/14375184",
    "source": "ticketmaster",
    "drive_hours": 4.25,
    "act": "Beck",
@@ -7369,15 +7141,18 @@
    "score": 0
   },
   {
-   "id": "sg-18729821",
+   "id": "tm-Z7r9jZ1AA7YZK",
    "date": "2027-01-08",
    "time": "19:30",
-   "title": "Portugal. The Man with Anthony Green (18+)",
+   "title": "Portugal the Man (18 and Over)",
    "cat": "music",
-   "venue": "Royale - Boston",
+   "venue": "Royale Boston",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/portugal-the-man-tickets/boston-massachusetts-royale-boston-2027-01-08-7-30-pm/concert/18729821",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7YZK",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18729821"
+   ],
    "score": 0
   },
   {
@@ -8261,6 +8036,18 @@
    "score": 0
   },
   {
+   "id": "tm-Z7r9jZ1AA7ICF",
+   "date": "2027-02-06",
+   "time": "18:30",
+   "title": "Dogpark",
+   "cat": "music",
+   "venue": "Royale Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7ICF",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-Z7r9jZ1AAeZ_6",
    "date": "2027-02-06",
    "time": "18:30",
@@ -8546,6 +8333,18 @@
    "url": "https://www.espn.com/nba/game/_/gameId/401910556/timberwolves-celtics",
    "source": "espn",
    "score": 1
+  },
+  {
+   "id": "sg-18733266",
+   "date": "2027-02-12",
+   "time": "20:00",
+   "title": "Charlie Green",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/charlie-green-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-02-12-8-pm/concert/18733266",
+   "source": "seatgeek",
+   "score": 0
   },
   {
    "id": "sg-18710459",
@@ -9682,11 +9481,11 @@
    "id": "sg-18328339",
    "date": "2027-03-11",
    "time": "19:30",
-   "title": "Sonic Symphony",
+   "title": "Sonic Live in Concert",
    "cat": "music",
    "venue": "Boch Center Wang Theatre",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/sonic-symphony-tickets/boston-massachusetts-boch-center-wang-theatre-2027-03-11-7-30-pm/music-festival/18328339",
+   "url": "https://seatgeek.com/sonic-live-in-concert-tickets/boston-massachusetts-boch-center-wang-theatre-2027-03-11-7-30-pm/concert/18328339",
    "source": "seatgeek",
    "aka": [
     "2027-03-11-sonic-symphony-wang-theatre"
@@ -10919,6 +10718,18 @@
    "score": 0
   },
   {
+   "id": "tm-vv177Z_3GknArbzq",
+   "date": "2027-04-15",
+   "time": "19:00",
+   "title": "The Knocks",
+   "cat": "music",
+   "venue": "Big Night Live",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/the-knocks-boston-massachusetts-04-15-2027/event/0100652A85798E1D",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-Z7r9jZ1AA7O-3",
    "date": "2027-04-15",
    "time": "20:00",
@@ -11044,15 +10855,18 @@
    "score": 0
   },
   {
-   "id": "sg-18727608",
+   "id": "tm-Z7r9jZ1AA7t7p",
    "date": "2027-04-20",
    "time": "20:00",
-   "title": "The Growlers (18+)",
+   "title": "The Growlers (18 and Over)",
    "cat": "music",
-   "venue": "Royale - Boston",
+   "venue": "Royale Boston",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/the-growlers-tickets/boston-massachusetts-royale-boston-2027-04-20-8-pm/concert/18727608",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7t7p",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18727608"
+   ],
    "score": 0
   },
   {
@@ -11250,14 +11064,45 @@
    "score": 0
   },
   {
-   "id": "sg-18696854",
+   "id": "tm-Z7r9jZ1AA7b7y",
    "date": "2027-04-28",
    "time": "19:00",
    "title": "Tinashe",
    "cat": "music",
-   "venue": "Roadrunner - Boston",
+   "venue": "Roadrunner-Boston",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/tinashe-tickets/boston-massachusetts-roadrunner-boston-2027-04-28-7-pm/concert/18696854",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7b7y",
+   "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
+   "aka": [
+    "sg-18696854"
+   ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv1AvZk4bGkdN7N-f",
+   "date": "2027-04-29",
+   "time": "19:00",
+   "title": "Broken by the Scream",
+   "cat": "music",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/broken-by-the-scream-boston-massachusetts-04-29-2027/event/01006558E3123854",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
+   "id": "sg-18702340",
+   "date": "2027-04-29",
+   "time": "20:00",
+   "title": "Gregory Porter",
+   "cat": "music",
+   "venue": "Chevalier Theatre",
+   "city": "Medford, MA",
+   "url": "https://seatgeek.com/gregory-porter-tickets/medford-massachusetts-chevalier-theatre-2027-04-29-8-pm/concert/18702340",
    "source": "seatgeek",
    "score": 0
   }
@@ -11337,8 +11182,8 @@
  "sources": {
   "picks": 5,
   "venues": 3,
-  "espn": 78,
-  "ticketmaster": 547,
-  "seatgeek": 113
+  "espn": 77,
+  "ticketmaster": 542,
+  "seatgeek": 109
  }
 }
