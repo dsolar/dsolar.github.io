@@ -813,8 +813,8 @@ th.line{border-left:1px solid var(--rule)}
   </div>
 </dialog>
 
-<script src="sim.js?v=9"></script>
-<script src="live.js?v=1"></script>
+<script src="sim.js?v=10"></script>
+<script src="live.js?v=2"></script>
 <script>
 (function () {
   "use strict";
@@ -918,7 +918,10 @@ th.line{border-left:1px solid var(--rule)}
       " one week in ten. That's why a 10-point edge isn't safety: a team projected 110 outscores one projected 120 about " + Math.round(upset * 10) + " times in 10. " +
       "The " + Math.round(cv * 100) + "% is set from this season's real cuts: run on the teams alive in Weeks 3 to 6, the typical lowest score averaged 83, against 84 for the scores that actually got cut.";
 
-    var upd = (data.roster_snapshot_at || data.roster_imported_at || data.updated) ? "Rosters as of " + etTime(data.roster_snapshot_at || data.roster_imported_at || data.updated) : "";
+    var checked = data.source === "Yahoo Fantasy" && YAHOO && YAHOO.last_success;
+    var rosterAt = checked || data.roster_snapshot_at || data.roster_imported_at || data.updated;
+    var upd = rosterAt ? (checked ? "Yahoo rosters checked " : "Rosters as of ") + etTime(rosterAt) : "";
+    if (YAHOO && YAHOO.status && YAHOO.status !== "connected") upd += " · Yahoo roster sync " + (YAHOO.status === "error" ? "failed; keeping the last roster" : "waiting for connection");
     if (data.proj_source && data.proj_source.updated) upd += " · Projections updated " + etTime(data.proj_source.updated);
     var lv = data.live;
     var liveHtml = lv ? (lv.inProgress ? '<span class="live-tag">Live</span> ' + esc(lv.inProgress + " game" + (lv.inProgress > 1 ? "s" : "") + " on · scores as of " + etTime(lv.fetched)) :
@@ -2081,15 +2084,28 @@ th.line{border-left:1px solid var(--rule)}
   function refreshRosterSnapshot() {
     if (Date.now() - rosterCheckedAt < 120e3) return Promise.resolve();
     rosterCheckedAt = Date.now();
-    return getJSON("data.json?roster=" + Math.floor(Date.now() / 120e3)).then(function (next) {
-      if (next && Array.isArray(next.teams) && next.teams.length) BASE = next;
-    }).catch(function () {}); // A failed refresh keeps the last successful roster.
+    var stamp = "?roster=" + Math.floor(Date.now() / 120e3);
+    return Promise.all([
+      getJSON("data.json" + stamp),
+      getJSON("league.json" + stamp).catch(function () { return LEAGUE; }),
+      getJSON("history.json" + stamp).catch(function () { return HIST; }),
+      getJSON("yahoo.json" + stamp).catch(function () { return YAHOO; })
+    ]).then(function (next) {
+      if (!next[0] || !Array.isArray(next[0].teams) || !next[0].teams.length) return false;
+      var changed = JSON.stringify(next[0]) !== JSON.stringify(BASE) || JSON.stringify(next[3]) !== JSON.stringify(YAHOO);
+      BASE = next[0]; LEAGUE = next[1]; HIST = next[2]; YAHOO = next[3];
+      return changed;
+    }).catch(function () { return false; }); // Keep the last successful roster when a refresh fails.
   }
   function refreshLive() {
     clearTimeout(liveTimer);
     if (!BASE || document.visibilityState === "hidden" || liveBusy) return;   // one request at a time, so tab switches can't start a second loop
     liveBusy = true;
-    refreshRosterSnapshot().then(function () { return getLive(BASE); }).then(function (live) {
+    return refreshRosterSnapshot().then(function (changed) {
+      // Published rosters must still appear when the separate live-score feed is down.
+      if (changed) { render(BASE, LEAGUE); updateJumpLabels(); }
+      return getLive(BASE);
+    }).then(function (live) {
       liveBusy = false;
       liveFails = 0;
       var d = applyLive(BASE, live);
@@ -2128,3 +2144,4 @@ th.line{border-left:1px solid var(--rule)}
 </script>
 </body>
 </html>
+

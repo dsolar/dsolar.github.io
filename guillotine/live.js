@@ -69,11 +69,17 @@
   }
   function get(data, relay) {
     var fallback = function () { return direct(data); };
-    return relay ? getJSON(relay).then(function (b) { if (b.error || !b.games) throw new Error(b.error); return b; }).catch(fallback) : fallback();
+    return relay ? getJSON(relay).then(function (b) {
+      if (b.error || !b.games || b.week !== data.week || b.season !== data.season ||
+          !Number.isFinite(Date.parse(b.fetched)) || Date.now() - Date.parse(b.fetched) > 300e3) {
+        throw new Error("Live relay is unavailable or out of date");
+      }
+      return b;
+    }).catch(fallback) : fallback();
   }
   function apply(data, live) {
     var d = JSON.parse(JSON.stringify(data));
-    if (!live || live.week !== d.week || !live.games) return d;
+    if (!live || live.week !== d.week || (live.season != null && live.season !== d.season) || !live.games) return d;
     var anyStarted = false, games = 0;
     Object.keys(live.games).forEach(function (k) {
       var g = live.games[k];
@@ -112,3 +118,4 @@
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.GuillotineLive = api;
 })(this);
+

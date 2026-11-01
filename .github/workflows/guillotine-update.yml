@@ -6,8 +6,8 @@
 #    starting rosters). It rebuilds guillotine/data.json only while Yahoo isn't filling it, or when a
 #    new paste is committed, so an old paste never overwrites fresher Yahoo data.
 #  - Then player projections from Sleeper and this week's saved odds.
-# Runs every morning, Sunday after inactives and before the late games, before each night game (Sun, Mon, Thu),
-# and whenever a paste or one of these scripts is committed.
+# Checks Yahoo every 15 minutes around Sunday games and the Sun/Mon/Thu night games,
+# every morning, and whenever the import or scoring code changes. Live scores still poll every minute.
 name: Guillotine update
 
 on:
@@ -20,12 +20,15 @@ on:
       - tools/guillotine_projections.py
       - tools/guillotine_snapshot.js
       - tools/guillotine_check.js
+      - guillotine/sim.js
+      - guillotine/live.js
       - .github/workflows/guillotine-update.yml
   schedule:
     - cron: "17 14 * 9-12,1 *"   # 10:17am ET daily (9:17 in winter), September through January
-    - cron: "47 16 * 9-12,1 0"   # 12:47pm ET Sundays, after inactives
-    - cron: "57 19 * 9-12,1 0"   # 2:57pm ET Sundays (3:57 before Nov.), lineups for the late games
-    - cron: "47 23 * 9-12,1 0,1,4"   # 6:47pm ET Sun/Mon/Thu (7:47 before Nov.), lineups for the night games
+    - cron: "7,22,37,52 14-23 * 9-12,1 0" # Sunday: morning lineups through the evening (UTC)
+    - cron: "7,22,37,52 0-5 * 9-12,1 1"   # Sunday night, including after midnight UTC
+    - cron: "7,22,37,52 22-23 * 9-12,1 1,4" # Before Monday/Thursday night games
+    - cron: "7,22,37,52 0-5 * 9-12,1 2,5"   # Monday/Thursday night, after midnight UTC
   workflow_dispatch:
 
 permissions:
@@ -55,12 +58,7 @@ jobs:
           YAHOO_CLIENT_ID: ${{ secrets.YAHOO_CLIENT_ID }}
           YAHOO_CLIENT_SECRET: ${{ secrets.YAHOO_CLIENT_SECRET }}
           YAHOO_REFRESH_TOKEN: ${{ secrets.YAHOO_REFRESH_TOKEN }}
-        run: |
-          if [ -z "$YAHOO_REFRESH_TOKEN" ]; then
-            echo "::notice::Yahoo isn't connected. Add the three YAHOO_ secrets to turn it on."
-            exit 0
-          fi
-          python3 tools/guillotine_update.py
+        run: python3 tools/guillotine_update.py
 
       - name: Read the pasted league pages
         env:
@@ -124,3 +122,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh api -X POST "repos/${{ github.repository }}/pages/builds"
+

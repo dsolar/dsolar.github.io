@@ -80,7 +80,7 @@
     var starters = lineup || roster.filter(isSet);
     if (!starters.length) starters = roster.filter(isStarter);
     if (!starters.length) starters = roster.filter(function (p) { return p.in_best; });
-    var base = pregame ? 0 : (typeof t.points === "number" ? t.points : 0);
+    var base = pregame ? 0 : (typeof t.points_final === "number" ? t.points_final : (typeof t.points === "number" ? t.points : 0));
     if (!starters.length) {
       var rem0 = Math.max(full - base, 0);
       return { banked: base, remMu: rem0, sd: o.cv * full, nRem: rem0 > 0 ? 9 : 0, left: [], done: rem0 === 0 && base > 0, played: 0 };
@@ -189,7 +189,7 @@
       // (b) the best lineup it can still field. Starters whose games have begun count as they are.
       var yProj = o.pregame && typeof t.proj_pre === "number" && t.proj_pre > 0 ? t.proj_pre : t.proj;
       var hasBest = typeof t.best === "number" && t.best > 0;
-      var base0 = o.pregame ? 0 : (typeof t.points === "number" ? t.points : 0);
+      var base0 = o.pregame ? 0 : (typeof t.points_final === "number" ? t.points_final : (typeof t.points === "number" ? t.points : 0));
       var setScale = !o.pregame && typeof t.proj_pre === "number" && t.proj_pre > 0 ? t.proj_pre : yProj;
       // Sleeper's projection of the lineup as set (points banked so far, plus Sleeper for starters still to
       // play), to set against Yahoo's. Yahoo's API projects whole lineups, not players, so this is the one
@@ -340,3 +340,4 @@
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.GuillotineSim = api;
 })(this);
+

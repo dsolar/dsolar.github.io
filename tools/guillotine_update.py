@@ -186,7 +186,11 @@ def team_roster(y, team_key, week, slots):
     """One team's lineup for the week, in the shape tools/guillotine_paste.py reads off Yahoo's
     Starting Rosters page, so tools/guillotine_projections.py, the page and the live relay
     can't tell the two sources apart. None if Yahoo won't return it."""
-    root = y.get(f"team/{team_key}/roster;week={week}", soft=True)
+    # Team totals include ongoing games. Read individual league-scored points too,
+    # so the simulation can bank finals and add live scoring exactly once.
+    root = y.get(f"team/{team_key}/roster;week={week}/players/stats;type=week;week={week}", soft=True)
+    if root is None:
+        root = y.get(f"team/{team_key}/roster;week={week}", soft=True)
     if root is None:
         return None
     players = []
@@ -203,6 +207,9 @@ def team_roster(y, team_key, week, slots):
         status = text(p, "status")
         if status:
             row["status"] = status
+        actual = num(p, "player_points/total")
+        if actual is not None:
+            row["yahoo_actual"] = round(actual, 2)
         if str(week) in [b.text.strip() for b in p.findall("bye_weeks/week") if b.text]:
             row["bye"] = True
         players.append(row)
@@ -367,6 +374,12 @@ def build(y, league_id):
         row["scores"] = scores[k]
         if k in rosters:
             row["roster"] = rosters[k]
+            finals = [p for p in rosters[k] if p.get("yfinal") and p["slot"] not in ("BN", "IR")]
+            if any("yahoo_actual" not in p for p in finals):
+                fail(f"Yahoo omitted individual final scores for {t['name']}; keeping the previous snapshot.")
+            # The raw Yahoo total remains in points. Only this finals-only bank is
+            # excluded from the live overlay, which supplies games in progress.
+            row["points_final"] = round(sum(p["yahoo_actual"] for p in finals), 2)
         rows.append(row)
     # Same order as the pasted data: teams alive by projection, then the fallen, latest first.
     rows.sort(key=lambda r: (1, -r["out"]) if r.get("out") else (0, -(r.get("proj") or 0)))
@@ -412,17 +425,21 @@ def write_if_changed(data, path):
 
 def note_status(status, detail=""):
     """Record the Yahoo connection's state in guillotine/yahoo.json for the page's footer.
-    Rewritten only when the state changes, so a quiet day makes no commit."""
+    Keep a successful-check timestamp even when the league data hasn't changed."""
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "guillotine", "yahoo.json")
     try:
         old = json.load(open(path, encoding="utf-8"))
     except (OSError, ValueError):
         old = {}
-    if old.get("status") == status and old.get("detail", "") == detail:
-        return
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    since = old.get("since", now[:10]) if old.get("status") == status else now[:10]
+    state = {"status": status, "since": since, "detail": detail, "checked_at": now}
+    if status == "connected":
+        state["last_success"] = now
+    elif old.get("last_success"):
+        state["last_success"] = old["last_success"]
     with open(path, "w", encoding="utf-8") as f:
-        json.dump({"status": status, "since": today, "detail": detail}, f, indent=1)
+        json.dump(state, f, indent=1)
         f.write("\n")
 
 
@@ -456,3 +473,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
