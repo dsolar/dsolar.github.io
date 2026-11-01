@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-31T15:52:31Z",
+ "updated": "2026-11-01T16:55:22Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,231 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-vvG17Z_ClEVv4g",
-   "date": "2026-10-30",
-   "time": null,
-   "title": "moe. 2-Day Pass",
-   "cat": "music",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/moe-2day-pass-boston-massachusetts-10-30-2026/event/010064EAE7D01575",
-   "source": "ticketmaster",
-   "act": "moe.",
-   "aka": [
-    "tm-vvG17Z_ClEVv4g"
-   ],
-   "score": 3,
-   "why": "love"
-  },
-  {
-   "id": "espn-401892614",
-   "date": "2026-10-31",
-   "time": "13:00",
-   "title": "Bruins vs Blackhawks",
-   "cat": "sports",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://www.espn.com/nhl/game/_/gameId/401892614/blackhawks-bruins",
-   "source": "espn",
-   "score": 1
-  },
-  {
-   "id": "tm-vv1AvZkfYGkecCVX2",
-   "date": "2026-10-31",
-   "time": "14:00",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-10-31-2026/event/01006530AD3B4F8F",
-   "source": "ticketmaster",
-   "times": [
-    "14:00",
-    "19:30"
-   ],
-   "aka": [
-    "tm-vv1AvZkfYGkecu0Xe"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18730560",
-   "date": "2026-10-31",
-   "time": "16:00",
-   "title": "Jeff Allen",
-   "cat": "comedy",
-   "venue": "Laugh Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/jeff-allen-tickets/comedy/2026-10-31-4-pm/18730560",
-   "source": "seatgeek",
-   "times": [
-    "16:00",
-    "18:30"
-   ],
-   "aka": [
-    "sg-18730561",
-    "2026-10-31-jeff-allen-laugh-boston"
-   ],
-   "score": 1
-  },
-  {
-   "id": "tm-vv1AvZkfAGkdi83p_",
-   "date": "2026-10-31",
-   "time": "19:00",
-   "title": "LIL PEEP 30TH BIRTHDAY CELEBRATION",
-   "cat": "music",
-   "venue": "Citizens House of Blues Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/lil-peep-30th-birthday-celebration-boston-massachusetts-10-31-2026/event/01006505EC412599",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18501012"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_CEmamlR",
-   "date": "2026-10-31",
-   "time": "19:00",
-   "title": "Sueco",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/sueco-boston-massachusetts-10-31-2026/event/010064E9EE26EAEF",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18371965",
-    "2026-10-31-sueco-paradise-rock-club"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkf7GkdG3QrN",
-   "date": "2026-10-31",
-   "time": "20:00",
-   "title": "Broadway Rave (18+)",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/broadway-rave-18-boston-massachusetts-10-31-2026/event/01006504CC49A7A3",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "sg-18620616",
-   "date": "2026-10-31",
-   "time": "20:00",
-   "title": "Meredith Marks",
-   "cat": "music",
-   "venue": "Royale - Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/meredith-marks-tickets/boston-massachusetts-royale-boston-2026-10-31-8-pm/concert/18620616",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_ClEw-fE",
-   "date": "2026-10-31",
-   "time": "20:00",
-   "title": "moe.",
-   "cat": "music",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/moe-boston-massachusetts-10-31-2026/event/010064EAE7CA1527",
-   "source": "ticketmaster",
-   "act": "moe.",
-   "aka": [
-    "tm-vvG17Z_ClEw-fE",
-    "sg-18371751",
-    "sg-18371751",
-    "2026-10-31-moe-the-wilbur"
-   ],
-   "sub": "Halloween",
-   "score": 3,
-   "why": "love"
-  },
-  {
-   "date": "2026-10-31",
-   "time": "21:00",
-   "title": "Demetrius Hullum",
-   "cat": "comedy",
-   "venue": "Laugh Boston",
-   "city": "Boston, MA",
-   "url": "https://comedy.tickets/city/boston/",
-   "source": "venues",
-   "id": "2026-10-31-demetrius-hullum-laugh-boston",
-   "score": 1
-  },
-  {
-   "id": "sg-18702687",
-   "date": "2026-10-31",
-   "time": "21:00",
-   "title": "Divaland of the Dead",
-   "cat": "music",
-   "venue": "The Sinclair - Cambridge",
-   "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/divaland-of-the-dead-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-10-31-9-pm/concert/18702687",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-LvZ18Qnxhqv1gd8Kv2xCg",
-   "date": "2026-10-31",
-   "time": "21:00",
-   "title": "Halloween Favela Encantada Boston (18+) | Oct 31 @ Studio B Big Night Live",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.universe.com/events/halloween-favela-encantada-boston-18-oct-31-studio-b-big-night-live-tickets-F7CTS1?ref=ticketmaster",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18641169"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1AAv-F0",
-   "date": "2026-10-31",
-   "time": "21:00",
-   "title": "Trixie and Katya's Halloween Dance Party (18 and Over)",
-   "cat": "music",
-   "venue": "Royale Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAv-F0",
-   "source": "ticketmaster",
-   "aka": [
-    "2026-10-31-trixie-mattel-and-katya-royale"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_oGkcnhVo_",
-   "date": "2026-10-31",
-   "time": "22:00",
-   "title": "DJ Pauly D ( 21+ )",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/dj-pauly-d-21-boston-massachusetts-10-31-2026/event/0100651B6A6F4459",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18539730"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18226906",
-   "date": "2026-10-31",
-   "time": "22:00",
-   "title": "horsegiirL (18+)",
-   "cat": "music",
-   "venue": "Roadrunner - Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/horsegiirl-tickets/boston-massachusetts-roadrunner-boston-2026-10-31-10-pm/concert/18226906",
-   "source": "seatgeek",
-   "score": 0
-  },
   {
    "id": "tm-vv1AvZkfYGkec8fXB",
    "date": "2026-11-01",
@@ -741,6 +516,18 @@
     "sg-18197171",
     "2026-11-05-palace-citizens-house-of-bl"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18601503",
+   "date": "2026-11-05",
+   "time": "19:00",
+   "title": "The Knocks",
+   "cat": "music",
+   "venue": "Big Night Live",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/the-knocks-tickets/boston-massachusetts-big-night-live-2026-11-05-7-pm/concert/18601503",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -1718,6 +1505,18 @@
    ],
    "score": 2,
    "why": "like"
+  },
+  {
+   "id": "sg-18721511",
+   "date": "2026-11-09",
+   "time": "20:00",
+   "title": "The Blasting Company",
+   "cat": "music",
+   "venue": "Royale - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/blasting-company-tickets/boston-massachusetts-royale-boston-2026-11-09-8-pm/concert/18721511",
+   "source": "seatgeek",
+   "score": 0
   },
   {
    "id": "tm-vvG17Z_2DL1Ise",
@@ -6963,6 +6762,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/gimme-gimme-disco-21-boston-massachusetts-12-31-2026/event/0100655CCF75B6D1",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18734188"
+   ],
    "score": 0
   },
   {
@@ -10727,6 +10529,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/the-knocks-boston-massachusetts-04-15-2027/event/0100652A85798E1D",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18734783"
+   ],
    "score": 0
   },
   {
@@ -11105,6 +10910,36 @@
    "url": "https://seatgeek.com/gregory-porter-tickets/medford-massachusetts-chevalier-theatre-2027-04-29-8-pm/concert/18702340",
    "source": "seatgeek",
    "score": 0
+  },
+  {
+   "id": "tm-vv177Z_fGkTUNl92",
+   "date": "2027-04-30",
+   "time": "18:00",
+   "title": "Four Year Strong: Rise or Die Trying 25 Year Anniversary Tour",
+   "cat": "music",
+   "venue": "Citizens House of Blues Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/four-year-strong-rise-or-die-boston-massachusetts-04-30-2027/event/0100654FF68EB5CF",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18701760"
+   ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv1AvZkfoGkeN-Wv0",
+   "date": "2027-04-30",
+   "time": "19:30",
+   "title": "Jessica Kirson",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/jessica-kirson-boston-massachusetts-04-30-2027/event/01006511A387D064",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18507337"
+   ],
+   "score": 1
   }
  ],
  "movies": [
@@ -11181,9 +11016,9 @@
  ],
  "sources": {
   "picks": 5,
-  "venues": 3,
-  "espn": 77,
-  "ticketmaster": 542,
-  "seatgeek": 109
+  "venues": 2,
+  "espn": 76,
+  "ticketmaster": 535,
+  "seatgeek": 107
  }
 }
