@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-31T19:22:07Z",
+ "updated": "2026-11-01T06:23:19Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -41,16 +41,6 @@
    "date": "2026-12-19",
    "venue": "Great Cedar Showroom at Foxwoods",
    "low": null
-  },
-  "tm-vvG17Z_ClEw-fE": {
-   "sg": 18371751,
-   "history": [],
-   "url": "https://www.ticketmaster.com/moe-boston-massachusetts-10-31-2026/event/010064EAE7CA1527",
-   "title": "moe.",
-   "date": "2026-10-31",
-   "venue": "The Wilbur",
-   "low": null,
-   "src": null
   },
   "tm-k7vGF_3ljUWng": {
    "sg": 18593196,
@@ -435,6 +425,10 @@
     [
      "2026-10-31",
      56
+    ],
+    [
+     "2026-11-01",
+     56
     ]
    ],
    "sg": null,
@@ -518,6 +512,10 @@
     ],
     [
      "2026-10-31",
+     22
+    ],
+    [
+     "2026-11-01",
      22
     ]
    ],
@@ -665,6 +663,10 @@
     [
      "2026-10-31",
      28
+    ],
+    [
+     "2026-11-01",
+     28
     ]
    ],
    "sg": null,
@@ -736,6 +738,10 @@
     ],
     [
      "2026-10-31",
+     22
+    ],
+    [
+     "2026-11-01",
      22
     ]
    ],
@@ -868,16 +874,6 @@
    "src": null,
    "low": null
   },
-  "espn-401892614": {
-   "history": [],
-   "sg": 18378503,
-   "title": "Bruins vs Blackhawks",
-   "date": "2026-10-31",
-   "venue": "TD Garden",
-   "url": "https://www.espn.com/nhl/game/_/gameId/401892614/blackhawks-bruins",
-   "src": null,
-   "low": null
-  },
   "espn-401892629": {
    "history": [],
    "sg": 18378504,
@@ -965,6 +961,16 @@
    "date": "2026-11-14",
    "venue": "TD Garden",
    "url": "https://www.espn.com/nhl/game/_/gameId/401892709/wild-bruins",
+   "src": null,
+   "low": null
+  },
+  "espn-401909989": {
+   "history": [],
+   "sg": 18495290,
+   "title": "Celtics vs Mavericks",
+   "date": "2026-11-15",
+   "venue": "TD Garden",
+   "url": "https://www.espn.com/nba/game/_/gameId/401909989/mavericks-celtics",
    "src": null,
    "low": null
   }
