@@ -19,16 +19,20 @@
     { k: "blk", label: "BLK" },
     { k: "tov", label: "TO", low: true },
   ];
+  const VORP_CAT = { k: "vorp", label: "VORP", dec: 1 };
+  const catsFor = (L) => (L && L.settings && L.settings.vorpCat === false ? CATS : [...CATS, VORP_CAT]);
   // Column order of stats.json lines (weekly totals and per-game averages).
   const COLS = ["gp", "min", "fgm", "fga", "ftm", "fta", "tpm", "pts", "reb", "oreb", "ast", "stl", "blk", "tov", "pf"];
   const C = Object.fromEntries(COLS.map((k, i) => [k, i]));
   const HOUR = 3600e3;
 
   const DEFAULTS = {
-    roster: 12, prospects: 2, faab: 50, minBid: 1,
+    roster: 12, prospects: 2, faab: 100, minBid: 1,
     draftMode: "live", clock: 60, slowHours: 8, botDelay: 1500, auctionHours: 24,
     regWeeks: 21, playoffTeams: 4, startWeek: 1, tierDeadline: 21, tradeDeadline: 18, buyIn: 100,
-    irSlots: 2, irRule: "out",
+    irSlots: 2, irRule: "out", vorpCat: true,
+    tradeReview: "vote", reviewHours: 48, vetoShare: 0.5,   // "vote": the league can veto; "commish": the commissioner can; "none"
+    lineGraceHours: 72,                                     // time to get back under the line after a real-world salary change
     vetoHours: 24, payout: [60, 25, 15],
     summerMin: 50, summerMax: 100, compDollars: 10,   // summer draft budgets: best team gets the min, worst the max                 // "out": only players ESPN lists as Out; "any": commissioner trusts everyone
   };
@@ -108,9 +112,75 @@
     for (const [id, c] of Object.entries(extra)) {
       const base = nba.players.find((p) => p.id === id) || {};
       players.push(Object.assign({}, base, { id, n: c.n || base.n, t: c.t || base.t, pos: c.pos || base.pos || "W", ps: c.ps || base.ps || [],
-        age: c.age || base.age || 25, yos: base.yos || 1, two: false, c: { sal: c.sal, opt: {}, signed: 0 } }));
+        age: c.age || base.age || 25, yos: base.yos || 1, two: false, c: Object.assign({}, base.c || {}, { sal: c.sal, opt: c.opt || {}, signed: (base.c && base.c.signed) || 0 }) }));
     }
     return Object.assign({}, nba, { players });
+  }
+
+  const ESPN_POS = { PG: ["PG"], SG: ["SG"], G: ["PG", "SG"], SF: ["SF"], PF: ["PF"], F: ["SF", "PF"], C: ["C"] };
+  const posLetter = (ps) => (ps.includes("C") ? "B" : ps.some((x) => x.includes("G")) ? "G" : "W");
+
+  /* The latest contracts, layered over the cap sheet in celtics/data.json:
+     1. stats.contracts: every standard NBA contract from Basketball-Reference, refreshed with the box scores. When it's
+        there it's the truth for salaries and option years (it already includes real trade kickers and extensions), a
+        player on the cap sheet who isn't on it is no longer on a standard deal, and a signing the cap sheet hasn't
+        caught up with is added.
+     2. fixes (hardcap/contracts.json): hand-checked additions and changes, players on two-way or 10-day deals, and
+        players no longer under contract. They fill in until Basketball-Reference has the player (or always, with
+        force: true), so a two-way who converts or a waived player who re-signs comes back on his own.
+     A player with no standard contract never enters the pool; he shows up on waivers once he signs one. */
+  function latestContracts(nba, stats, fixes) {
+    const bb = stats && stats.contracts;
+    const rosters = (stats && stats.rosters) || {};
+    let players = nba.players.slice();
+    const report = { updated: 0, added: 0, off: 0 };
+    const onBB = new Set();
+    if (bb && Object.keys(bb).length >= 350) {
+      const short = {};
+      for (const id of Object.keys(bb)) { const k = nameKeys(id)[1]; short[k] = short[k] ? "?" : id; }
+      const full = {};
+      for (const id of Object.keys(bb)) full[nameKeys(id)[0]] = id;
+      const find = (id) => (bb[id] ? id : full[nameKeys(id)[0]] || (short[nameKeys(id)[1]] !== "?" && short[nameKeys(id)[1]]) || null);
+      const seen = new Set();
+      const unmatched = [];
+      players = players.map((p) => {
+        if (p.two) return p;
+        const k = find(p.id);
+        if (!k) { if (p.c && p.c.sal && p.c.sal[0]) unmatched.push(p.id); return p; }
+        seen.add(k); onBB.add(p.id);
+        const [t, sal, opt] = bb[k];
+        const s5 = sal.slice(0, 5);
+        const old = (p.c && p.c.sal) || [];
+        if (s5.join() === old.join() && JSON.stringify(opt) === JSON.stringify((p.c && p.c.opt) || {})) return p;
+        report.updated++;
+        const o = Object.fromEntries(Object.entries(opt).filter(([i]) => +i < 5));
+        // Basketball-Reference doesn't mark non-guaranteed years; keep the cap sheet's where the year still exists.
+        for (const [i, v] of Object.entries((p.c && p.c.opt) || {})) if (v === "NG" && s5[+i] && !o[i]) o[i] = v;
+        return Object.assign({}, p, { t: t && t.length === 3 ? p.t : p.t, c: Object.assign({}, p.c || {}, { sal: s5, opt: o }) });
+      });
+      // Only trust "not on the list" when matching worked for nearly everyone; a parsing hiccup shouldn't empty rosters.
+      if (unmatched.length <= 40) {
+        const off = new Set(unmatched);
+        players = players.map((p) => (off.has(p.id) ? Object.assign({}, p, { noDeal: true }) : p));
+        report.off = off.size;
+      }
+      const have = new Set(players.map((p) => p.id));
+      for (const [id, [t, sal, opt]] of Object.entries(bb)) {
+        if (seen.has(id) || have.has(id)) continue;
+        const r = rosters[id] || rosters[full[nameKeys(id)[0]]];
+        const ps = (r && ESPN_POS[r[2]]) || ["SF"];
+        players.push({ id, n: (r && r[1]) || id.replace(/-/g, " ").replace(/\b\w/g, (x) => x.toUpperCase()), t: (r && r[0]) || t, pos: posLetter(ps), ps,
+          age: 25, yos: 1, c: { sal: sal.slice(0, 5), opt: Object.fromEntries(Object.entries(opt).filter(([i]) => +i < 5)), signed: 0 }, fresh: true });
+        onBB.add(id); report.added++;
+      }
+    }
+    if (fixes) {
+      const applies = ([id, f]) => f.force || !onBB.has(id);
+      const drop = new Set([...Object.entries(fixes.nonCap || {}), ...Object.entries(fixes.gone || {})].filter(applies).map(([id]) => id));
+      players = players.map((p) => (drop.has(p.id) ? Object.assign({}, p, { noDeal: true }) : p));
+      players = mergeContracts({ players }, Object.fromEntries(Object.entries(fixes.add || {}).filter(applies))).players;
+    }
+    return Object.assign({}, nba, { players, contractReport: report });
   }
 
   function buildPool(nba, stats) {
@@ -122,7 +192,9 @@
     const players = [];
     for (const p of nba.players) {
       const sal = (p.c && p.c.sal) || [];
-      if (!sal[0] || p.two) continue;          // two-way deals aren't eligible until they're standard contracts
+      // Two-way and 10-day deals aren't eligible until they're standard contracts. A player who just lost his standard
+      // deal stays in the list only so a team holding him can be cleared; he's never available.
+      if (!sal[0] || p.two) continue;
       players.push({
         id: p.id, n: p.n, t: p.t, pos: p.pos, ps: p.ps || [], age: p.age, yos: p.yos,
         sal: sal[0], future: sal.slice(1).filter((x) => x > 0), opt: (p.c && p.c.opt) || {},
@@ -135,7 +207,12 @@
       if (now && now !== p.t) { q.was = p.t; q.t = now; }        // traded for real: same contract, new team
       // A player with box scores in the last two weeks is on a roster, whatever the roster pull says.
       const recent = stats && stats.wk ? Object.keys(stats.wk).map(Number).sort((x, y) => y - x).slice(0, 2).some((w) => stats.wk[w][p.id]) : false;
-      q.gone = now === null && !recent;
+      q.gone = (now === null && !recent) || !!p.noDeal;
+      if (p.noDeal) q.noDeal = true;
+      const v = stats && stats.vorp && (stats.vorp[p.id] || stats.vorp[nameKeys(p.id)[0]]);
+      q.bbv = v ? v[0] : null; q.bpm = v ? v[1] : null;
+      q.vps = q.bbv != null ? q.bbv / (q.sal / 1e7) : null;          // VORP per $10M of salary
+      q.ctype = contractType(p, sal[0], nba.cba);
     }
     rankNineCat(players);
     return players;
@@ -148,6 +225,15 @@
     const c = p.c || {};
     const rookie = (c.rk && c.rk[1] > 0 && c.rk[1] <= 30) || c.rfa;
     return { year: 2026 + n, kind: rookie && (p.yos || 0) + n - 1 <= 4 ? "RFA" : "UFA" };
+  }
+
+  // What kind of deal it is, in plain words.
+  function contractType(p, sal, cba) {
+    const c = p.c || {};
+    if (c.rk && c.rk[1] > 0) return c.rk[1] <= 30 ? "Rookie scale" : "Second-round";
+    if (cba && sal >= cba.cap * 0.245) return "Max";
+    if (cba && cba.min_scale && sal <= Math.max(...cba.min_scale) * 1.02) return "Minimum";
+    return "Veteran";
   }
 
   // Nine-category value: z-scores per game across the regular rotation, percentages weighted by volume.
@@ -183,7 +269,7 @@
     sorted.forEach((p, i) => (p.rank = i + 1));
     // HC Score: value over a replacement player (the 120th best) per $10M of salary.
     const repl = sorted[Math.min(sorted.length - 1, 119)].z;
-    for (const p of players) { p.vorp = p.z - repl; p.hc = p.vorp / (p.sal / 1e7); }
+    for (const p of players) { p.zvor = p.z - repl; p.hc = p.zvor / (p.sal / 1e7); }
     // Dynasty value: this season's production, leaned toward upside and youth.
     const pots = players.map((p) => p.pot);
     const pm = sum(pots) / pots.length, psd = Math.sqrt(sum(pots.map((x) => (x - pm) ** 2)) / pots.length) || 1;
@@ -201,14 +287,16 @@
     ["Wellesley Wingspan", "WEL"], ["Fenway Faders", "FEN"], ["Southie Splash", "STH"], ["Back Bay Bigs", "BAY"],
     ["Brookline Bucketeers", "BKL"], ["Quincy Quicksilver", "QCY"], ["Somerville Swing", "SOM"], ["Dorchester Dimes", "DOT"],
     ["Medford Mavens", "MED"], ["Newton Nets", "NWT"], ["Worcester Wolves", "WOR"], ["Revere Rebounders", "REV"],
+    ["Waltham Wizards", "WAL"], ["Natick Knights", "NAT"], ["Lowell Lumberjacks", "LOW"], ["Salem Spellcasters", "SAL"],
   ];
-  const BOT_STYLES = ["value", "stars", "balanced", "youth", "value", "balanced", "stars", "youth", "balanced", "value", "stars", "balanced"];
+  const BOT_STYLES = ["value", "stars", "balanced", "youth", "value", "balanced", "stars", "youth", "balanced", "value", "stars", "balanced", "youth", "value", "stars", "balanced"];
 
   function newLeague(opts) {
     const s = Object.assign({}, DEFAULTS, opts.settings || {});
     s.tiers = s.tiers || defaultTiers(opts.cba);
     const seed = opts.seed || Math.floor(Math.random() * 2 ** 31);
-    const n = opts.teams || 10;
+    const n = Math.max(4, Math.min(16, Math.round((opts.teams || 10) / 2) * 2));   // even, 4 to 16
+    s.playoffTeams = Math.min(s.playoffTeams, n);
     const teams = TEAM_NAMES.slice(0, n).map(([name, abbr], i) => ({
       id: i, name, abbr, owner: null, style: BOT_STYLES[i % BOT_STYLES.length],
       faab: s.faab, tier: 0, tierLog: [], hist: [], prospects: [], queue: [], ir: [], lineups: {},
@@ -326,7 +414,9 @@
         if (!p || !p.gone) continue;
         dropPlayer(L, pool, t.id, pid, week, now);
         delete L.waived[pid];
-        L.log[L.log.length - 1].text = `${p.n} is off every NBA roster (waived or released), so ${money(p.sal)} came off ${t.name}'s books`;
+        L.log[L.log.length - 1].text = p.noDeal
+          ? `${p.n} is no longer on a standard NBA contract, so ${money(p.sal)} came off ${t.name}'s books`
+          : `${p.n} is off every NBA roster (waived or released), so ${money(p.sal)} came off ${t.name}'s books`;
         L.log[L.log.length - 1].kind = "nba";
         n++;
       }
@@ -672,6 +762,21 @@
       + l[C.stl] + 0.7 * l[C.ast] + 0.7 * l[C.blk] - 0.4 * l[C.pf] - l[C.tov];
   }
 
+  // Stats lines with each player's VORP gained that week appended (index 15), from the weekly season-VORP readings.
+  function withVorp(stats) {
+    const wk = (stats && stats.wk) || {}, snaps = (stats && stats.vorpWk) || {};
+    const out = {};
+    for (const [w, lines] of Object.entries(wk)) {
+      const cur = snaps[w], prev = snaps[String(+w - 1)];
+      if (!cur || !prev) { out[w] = lines; continue; }
+      const o = {};
+      for (const [pid, l] of Object.entries(lines)) o[pid] = cur[pid] != null ? [...l, Math.round((cur[pid] - (prev[pid] || 0)) * 10) / 10] : l;
+      o.__vorp = true;
+      out[w] = o;
+    }
+    return out;
+  }
+
   function teamWeek(L, team, w, wk, byId) {
     const lines = (wk && wk[String(w)]) || {};
     const t = Object.fromEntries(COLS.map((k) => [k, 0]));
@@ -683,7 +788,7 @@
     for (const { pid, slot } of rows) {
       const starter = slot !== "BN" && slot !== "IR";
       if (!pid) { per.push({ pid: null, slot, gp: 0, gmsc: 0, starter }); continue; }
-      const l = lines[pid];
+      const l = pid === "__vorp" ? null : lines[pid];
       if (!l) { per.push({ pid, slot, gp: 0, gmsc: 0, starter }); continue; }
       const g = gameScore(l);
       if (starter) { COLS.forEach((k, i) => (t[k] += l[i])); t.gmsc += g; }
@@ -691,14 +796,16 @@
     }
     t.fg = t.fga ? t.fgm / t.fga : null;
     t.ft = t.fta ? t.ftm / t.fta : null;
+    t.vorp = lines.__vorp ? Math.round(per.filter((x) => x.starter && x.line && x.line[15] != null).reduce((a, x) => a + x.line[15], 0) * 10) / 10 : null;
     return { t, per };
   }
 
-  function compare(a, b) {
+  function compare(a, b, cats) {
     const res = [];
     let w = 0, l = 0, t = 0;
-    for (const c of CATS) {
+    for (const c of cats || CATS) {
       const x = a[c.k], y = b[c.k];
+      if (c.k === "vorp" && x == null && y == null) continue;   // no VORP readings for that week yet
       let out = "t";
       if (x == null && y == null) out = "t";
       else if (x == null) out = "l";
@@ -722,7 +829,7 @@
     }
     return (L.schedule[w - 1] || []).map(([i, j]) => {
       const A = teamWeek(L, L.teams[i], w, wk, byId), B = teamWeek(L, L.teams[j], w, wk, byId);
-      return { a: i, b: j, A, B, cmp: compare(A.t, B.t) };
+      return { a: i, b: j, A, B, cmp: compare(A.t, B.t, catsFor(L)) };
     });
   }
 
@@ -756,7 +863,7 @@
   function bracket(L, wk, byId) {
     const R = L.settings.regWeeks;
     const seeds = standings(L, R, wk, byId).slice(0, 4).map((r) => r.id);
-    const one = (a, b, w) => { const A = teamWeek(L, L.teams[a], w, wk, byId), B = teamWeek(L, L.teams[b], w, wk, byId); return { a, b, A, B, cmp: compare(A.t, B.t), w }; };
+    const one = (a, b, w) => { const A = teamWeek(L, L.teams[a], w, wk, byId), B = teamWeek(L, L.teams[b], w, wk, byId); return { a, b, A, B, cmp: compare(A.t, B.t, catsFor(L)), w }; };
     const done = (w) => !!(wk && wk[String(w)]);
     const semis = [one(seeds[0], seeds[3], R + 1), one(seeds[1], seeds[2], R + 1)];
     let final = null, third = null, champ = null, place = null;
@@ -891,12 +998,14 @@
     const pr = (ids) => ids.filter(isProspect);
     const side = (team, out, inn) => {
       const act = active(team), outAct = nb(out).filter((x) => act.includes(x));      // IR players leaving free nothing
+      const before = payroll(team, ctx.byId);
       const count = act.length - outAct.length + nb(inn).length;
       if (count > L.settings.roster) return `${team.name} would have ${count} active players`;
       const pc = team.prospects.length - pr(out).length + pr(inn).length;
       if (pc > L.settings.prospects) return `${team.name} would have ${pc} prospects`;
       const pay = payroll(team, ctx.byId) - sum(outAct.map((x) => ctx.byId[x].sal)) + sum(nb(inn).map((x) => ctx.byId[x].sal));
-      if (pay > ceilingOf(L, team)) return `${team.name} would be ${money(pay - ceilingOf(L, team))} over its ${money(ceilingOf(L, team))} line`;
+      // A team already over its line (a real-world raise) may make any deal that cuts its payroll.
+      if (pay > ceilingOf(L, team) && !(before > ceilingOf(L, team) && pay < before)) return `${team.name} would be ${money(pay - ceilingOf(L, team))} over its ${money(ceilingOf(L, team))} line`;
       return null;
     };
     const fg = t.faabGive || 0, ft = t.faabGet || 0;
@@ -911,7 +1020,7 @@
     if (L.phase !== "league") return { ok: false, why: "Trades open after the draft" };
     if (week > L.settings.tradeDeadline) return { ok: false, why: `The trade deadline was the end of week ${L.settings.tradeDeadline}` };
     if (from === to || (!give.length && !get.length && !faabGive && !faabGet)) return { ok: false, why: "Pick something on both sides" };
-    const t = { id: `${now.toString(36)}${from}${to}`, from, to, give, get, faabGive: Math.floor(faabGive) || 0, faabGet: Math.floor(faabGet) || 0, at: now, status: "pending" };
+    const t = { id: `${now.toString(36)}${from}${to}${L.trades.length.toString(36)}`, from, to, give, get, faabGive: Math.floor(faabGive) || 0, faabGet: Math.floor(faabGet) || 0, at: now, status: "pending" };
     const c = tradeCheck(L, pool, t);
     if (!c.ok) return c;
     L.trades.push(t);
@@ -924,6 +1033,45 @@
     if (!accept) { t.status = "declined"; t.closed = now; return { ok: true }; }
     const c = tradeCheck(L, pool, t);
     if (!c.ok) { t.status = "failed"; t.closed = now; t.why = c.why; return c; }
+    // With a league vote, an accepted deal waits out the review window before anything moves.
+    if (L.settings.tradeReview === "vote" && voters(L, t).length) {
+      t.status = "review"; t.accepted = now; t.reviewEnds = now + L.settings.reviewHours * HOUR; t.votes = {};
+      log(L, now, "trade", t.from, `${L.teams[t.from].name} and ${L.teams[t.to].name} agreed to a trade; the league has ${L.settings.reviewHours} hours to review it`);
+      return { ok: true, review: true };
+    }
+    return applyTrade(L, pool, t, week, now);
+  }
+
+  // Managers outside the deal; bots don't vote.
+  const voters = (L, t) => L.teams.filter((x) => x.owner && x.id !== t.from && x.id !== t.to).map((x) => x.id);
+  const vetoesNeeded = (L, t) => Math.max(1, Math.ceil(voters(L, t).length * L.settings.vetoShare));
+
+  function voteTrade(L, id, teamId, veto, now) {
+    const t = L.trades.find((x) => x.id === id);
+    if (!t || t.status !== "review") return { ok: false, why: "That trade isn't up for review" };
+    if (!voters(L, t).includes(teamId)) return { ok: false, why: "Only managers outside the deal can vote" };
+    t.votes = t.votes || {};
+    if (veto) t.votes[teamId] = now; else delete t.votes[teamId];
+    if (Object.keys(t.votes).length >= vetoesNeeded(L, t)) {
+      t.status = "vetoed"; t.vetoed = now;
+      log(L, now, "trade", -1, `The league vetoed the ${L.teams[t.from].name} and ${L.teams[t.to].name} trade`);
+    }
+    return { ok: true };
+  }
+
+  // Deals whose review window has closed go through, if they still work.
+  function finalizeTrades(L, pool, now, week) {
+    let n = 0;
+    for (const t of L.trades) {
+      if (t.status !== "review" || now < t.reviewEnds) continue;
+      const c = tradeCheck(L, pool, t);
+      if (!c.ok) { t.status = "failed"; t.closed = now; t.why = c.why; n++; continue; }
+      applyTrade(L, pool, t, week, now); n++;
+    }
+    return n;
+  }
+
+  function applyTrade(L, pool, t, week, now) {
     const move = (fromT, toT, ids) => {
       for (const id2 of ids) {
         if (isProspect(id2)) { fromT.prospects = fromT.prospects.filter((x) => x !== id2); toT.prospects.push(id2); continue; }
@@ -941,8 +1089,42 @@
     const nm = (ids, f) => [...ids.map((x) => (pool.find((p) => p.id === x) || { n: x.replace(/^c-/, "") }).n), ...(f ? [`$${f} FAAB`] : [])].join(", ") || "nothing";
     log(L, now, "trade", t.from, `${A.name} traded ${nm(t.give, t.faabGive)} to ${B.name} for ${nm(t.get, t.faabGet)}`);
     // Anything else pending that this deal broke is no longer possible.
-    for (const o of L.trades) if (o.status === "pending" && !tradeCheck(L, pool, o).ok) { o.status = "failed"; o.closed = now; o.why = "A player moved in another deal"; }
+    for (const o of L.trades) if ((o.status === "pending" || o.status === "review") && !tradeCheck(L, pool, o).ok) { o.status = "failed"; o.closed = now; o.why = "A player moved in another deal"; }
     return { ok: true };
+  }
+
+  /* ---------- over the line after a real-world change ----------
+     A real trade kicker, an option or a corrected salary can push a team over its line. It can't add salary while it's
+     over, and it has until the first lineup lock at least lineGraceHours away to get back under: release someone,
+     make a trade that cuts payroll, or move up a tier. If it's still over then, the clock releases its lowest-ranked
+     players until it fits. */
+  function enforceLine(L, pool, now, week, opener) {
+    const byId = Object.fromEntries(pool.map((p) => [p.id, p]));
+    let changed = 0;
+    for (const t of L.teams) {
+      const over = payroll(t, byId) - ceilingOf(L, t);
+      if (over <= 0) { if (t.overSince) { delete t.overSince; delete t.overDeadline; changed++; } continue; }
+      if (!t.overSince) {
+        t.overSince = now;
+        let w = week, dl = lockTime(opener, w);
+        while (dl < now + L.settings.lineGraceHours * HOUR) dl = lockTime(opener, ++w);
+        t.overDeadline = dl;
+        log(L, now, "line", t.id, `${t.name} is ${money(over)} over its ${money(ceilingOf(L, t))} line after a real salary change. It has until ${new Date(dl).toISOString().slice(0, 10)} to get back under`);
+        changed++;
+        continue;
+      }
+      if (now < t.overDeadline) continue;
+      const cut = active(t).map((id) => byId[id]).filter(Boolean).sort((a, b) => a.z - b.z);
+      while (payroll(t, byId) > ceilingOf(L, t) && cut.length) {
+        const p = cut.shift();
+        dropPlayer(L, pool, t.id, p.id, week, now);
+        L.log[L.log.length - 1].text = `${t.name} was still over its line at the deadline, so ${p.n} (${money(p.sal)}) was released`;
+        L.log[L.log.length - 1].kind = "line";
+      }
+      delete t.overSince; delete t.overDeadline;
+      changed++;
+    }
+    return changed;
   }
 
   // The commissioner can undo an accepted trade within the veto window, as long as nobody in it has moved since.
@@ -986,11 +1168,12 @@
   }
 
   const E = {
-    CATS, COLS, C, DEFAULTS, HOUR, totalWeeks, rosterIndex, onNbaRoster, mergeContracts, releaseGone, SLOTS, ELIG, positions, eligible, isOut, rostered, irProblem, moveToIR, activateIR,
+    latestContracts, CATS, VORP_CAT, catsFor, withVorp, voteTrade, finalizeTrades, applyTrade, voters, vetoesNeeded, enforceLine, contractType,
+    COLS, C, DEFAULTS, HOUR, totalWeeks, rosterIndex, onNbaRoster, mergeContracts, releaseGone, SLOTS, ELIG, positions, eligible, isOut, rostered, irProblem, moveToIR, activateIR,
     autoLineup, lockTime, lineupFor, setLineup, lockLineups, defaultTiers, rng, money, isProspect, buildPool, buildProspects, rankNineCat, newLeague,
     snake, snakeFrom, setOrder, roundRobin, tierOf, ceilingOf, owed, pot, upgradeTier, active, payroll, owners, context, reserve,
     check, clockLen, onClock, nextPickOf, startDraft, pauseDraft, draftPick, botScore, autoChoice, catchUp, undoPick,
-    botAuctionBids, resolveAuction, bracket, winnerOf, summerBudgets, vetoTrade, weekStart, weekDates, weekOf, nextWaiverRun, rosterInWeek, gameScore, teamWeek, compare,
+    botAuctionBids, resolveAuction, bracket, winnerOf, summerBudgets, vetoTrade, TEAM_NAMES, weekStart, weekDates, weekOf, nextWaiverRun, rosterInWeek, gameScore, teamWeek, compare,
     matchups, standings, bidCheck, dropPlayer, botWaiverBids, runWaivers, tradeCheck, proposeTrade, respondTrade, botWantsTrade,
   };
   if (typeof module !== "undefined" && module.exports) module.exports = E;

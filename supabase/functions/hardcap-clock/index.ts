@@ -30,14 +30,17 @@ let cache: { at: number; H: any; nba: any; stats: any } | null = null;
 async function load() {
   if (cache && Date.now() - cache.at < 5 * 60e3) return cache;
   const bust = `?t=${Math.floor(Date.now() / 300e3)}`;
-  const [src, nba, stats] = await Promise.all([
+  const [src, sheet, stats, fixes] = await Promise.all([
     fetch(`${SITE}/hardcap/engine.js${bust}`).then((r) => r.text()),
     fetch(`${SITE}/celtics/data.json${bust}`).then((r) => r.json()),
     fetch(`${SITE}/hardcap/stats.json${bust}`).then((r) => r.json()).catch(() => ({})),
+    fetch(`${SITE}/hardcap/contracts.json${bust}`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
   ]);
   const module = { exports: {} as any };
   new Function("module", src)(module);
-  cache = { at: Date.now(), H: module.exports, nba, stats };
+  const H = module.exports;
+  const nba = H.latestContracts ? H.latestContracts(sheet, stats, fixes) : sheet;
+  cache = { at: Date.now(), H, nba, stats };
   return cache;
 }
 
@@ -78,11 +81,13 @@ Deno.serve(async (req) => {
         H.resolveAuction(L, PROS, await sealed("auction"), now); clear = "auction"; notes.push("auction");
       } else if (L.phase === "league") {
         if (L.due.waiver && now >= Date.parse(L.due.waiver)) {
-          const order = H.standings(L, cw - 1, stats.wk, byId).map((x: any) => x.id);
+          const order = H.standings(L, cw - 1, H.withVorp ? H.withVorp(stats) : stats.wk, byId).map((x: any) => x.id);
           H.runWaivers(L, pool, PROS, await sealed("waiver"), cw - 1, order, now, inj); clear = "waiver"; notes.push("waivers");
         }
         if (H.lockLineups(L, pool, now, opener)) notes.push("lineups");
         if (H.releaseGone(L, pool, cw, now)) notes.push("NBA releases");
+        if (H.finalizeTrades && H.finalizeTrades(L, pool, now, cw)) notes.push("trade reviews");
+        if (H.enforceLine && H.enforceLine(L, pool, now, cw, opener)) notes.push("cap line");
       }
       let S = row.state;
       if (notes.length) {
@@ -115,9 +120,13 @@ async function notify(H: any, id: string, L: any, now: number, cw: number, byId:
   if (L.phase === "prospects" && fresh(L.nba.done)) for (const t of L.teams) if (t.owner) msgs.push([t.id, `draftdone`, { title: "The draft is done", body: `Prospect Board bids are open until ${new Date(L.due.auction).toLocaleString("en-US", { timeZone: "America/New_York", weekday: "short", hour: "numeric", minute: "2-digit" })}.`, url: link("#draft/prospects") }]);
   for (const t of L.trades || []) {
     if (t.status === "pending" && fresh(t.at) && owned(t.to)) msgs.push([t.to, `trade:${t.id}:offer`, { title: "Trade offer", body: `${L.teams[t.from].name} wants to make a deal. Open Transactions to accept or decline.`, url: link("#tx") }]);
-    if (t.status !== "pending" && fresh(t.closed || t.vetoed)) {
-      const word = { accepted: "accepted", declined: "declined", failed: "fell through", withdrawn: "was withdrawn", vetoed: "was vetoed by the commissioner" }[t.status as string] || t.status;
-      const to = t.status === "vetoed" ? [t.from, t.to] : t.status === "withdrawn" ? [t.to] : [t.from];
+    if (t.status === "review" && fresh(t.accepted)) {
+      for (const v of H.voters(L, t)) msgs.push([v, `trade:${t.id}:review`, { title: "Trade up for review", body: `${L.teams[t.from].name} and ${L.teams[t.to].name} agreed to a deal. You have ${L.settings.reviewHours} hours to vote to veto it.`, url: link("#team/trades") }]);
+      for (const team of [t.from, t.to]) if (owned(team)) msgs.push([team, `trade:${t.id}:accepted-review`, { title: "Trade accepted", body: `Your deal is in league review until ${new Date(t.reviewEnds).toLocaleString("en-US", { timeZone: "America/New_York", weekday: "short", hour: "numeric", minute: "2-digit" })}.`, url: link("#team/trades") }]);
+    }
+    if (t.status !== "pending" && t.status !== "review" && fresh(t.closed || t.vetoed)) {
+      const word = { accepted: "went through", declined: "declined", failed: "fell through", withdrawn: "was withdrawn", vetoed: "was vetoed" }[t.status as string] || t.status;
+      const to = t.status === "vetoed" || (t.status === "accepted" && t.accepted) ? [t.from, t.to] : t.status === "withdrawn" ? [t.to] : [t.from];
       for (const team of to) if (owned(team)) msgs.push([team, `trade:${t.id}:${t.status}:${team}`, { title: `Trade ${word}`, body: `Your deal with ${L.teams[team === t.from ? t.to : t.from].name} ${word}.`, url: link("#tx") }]);
     }
   }
@@ -137,6 +146,7 @@ async function notify(H: any, id: string, L: any, now: number, cw: number, byId:
     msgs.push([t.id, `auction:${L.auction.closed}`, { title: "Prospect Board results", body: won.length ? `You won ${won.map((r: any) => `${nm(r.pid)} ($${r.amt})`).join(" and ")}.` : "No prospects this time. Unclaimed ones stay available on waivers.", url: link("#draft/prospects") }]);
   }
   for (const x of (L.log || []).slice(-40)) if (x.kind === "nba" && fresh(x.at) && owned(x.team)) msgs.push([x.team, `nba:${x.at}:${x.text.slice(0, 40)}`, { title: "Real NBA move", body: x.text, url: link("#team") }]);
+  for (const x of (L.log || []).slice(-40)) if (x.kind === "line" && fresh(x.at) && owned(x.team)) msgs.push([x.team, `line:${x.at}`, { title: "Over your line", body: x.text, url: link("#team") }]);
   // A lineup warning six hours before the lock when someone starting is listed Out.
   if (L.phase === "league") {
     const lock = H.lockTime(opener, cw);

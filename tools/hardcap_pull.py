@@ -250,6 +250,51 @@ def pull_vorp(season, notes):
     return out or None
 
 
+CONTRACTS = "https://www.basketball-reference.com/contracts/players.html"
+OPT_CLASS = {"pl": "PO", "tm": "TO", "et": "PO", "ng": "NG", "mu": "MO"}
+
+
+def pull_contracts(notes):
+    """{slug: [team, [salary by season, current first], {season index: option}]} for every standard NBA contract, from
+    Basketball-Reference's league contracts page. Two-way and 10-day deals aren't on it, which is how Hard Cap tells
+    them apart. Option years are marked with salary-pl / salary-tm style classes on the cell."""
+    import html as H
+    req = urllib.request.Request(CONTRACTS, headers={"User-Agent": UA, "Accept": "text/html"})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            page = r.read().decode("utf-8", "replace")
+    except Exception as e:
+        notes.append(f"contracts: {type(e).__name__}: {e}"[:200])
+        return None
+    out = {}
+    for row in re.findall(r"<tr[^>]*>(.*?)</tr>", page, re.S):
+        cells = {k: (a, v) for a, k, v in [(m[0], re.search(r'data-stat="([a-z_0-9]+)"', m[0]).group(1), m[1])
+                 for m in re.findall(r"<t[dh]([^>]*)>(.*?)</t[dh]>", row, re.S) if 'data-stat="' in m[0]]}
+        if "player" not in cells or "y1" not in cells:
+            continue
+        name = H.unescape(re.sub(r"<[^>]+>", "", cells["player"][1])).strip()
+        if not name or name == "Player":
+            continue
+        team = re.sub(r"<[^>]+>", "", cells.get("team_id", ("", ""))[1]).strip()
+        sal, opt = [], {}
+        for i in range(6):
+            a, v = cells.get(f"y{i + 1}", ("", ""))
+            num = re.sub(r"[^0-9]", "", re.sub(r"<[^>]+>", "", v))
+            sal.append(int(num) if num else 0)
+            m = re.search(r"salary-([a-z]+)", a + v)
+            if num and m:
+                opt[str(i)] = OPT_CLASS.get(m.group(1), m.group(1).upper())
+        if not sal[0]:
+            continue
+        pid = slug(name)
+        if pid not in out:                       # a player with two rows (waived money elsewhere) keeps his first
+            out[pid] = [team, sal, opt]
+    if len(out) < 350:
+        notes.append(f"contracts: only {len(out)} rows parsed ({len(page)} bytes); kept the last good pull")
+        return None
+    return out
+
+
 def main():
     today = et_today()
     end = season_end_year(today)
@@ -282,6 +327,11 @@ def main():
             # A morning reading covers games through yesterday, so it belongs to yesterday's week.
             wk_now = str(week_of(today - timedelta(days=1), date.fromisoformat(data["opener"])))
             data.setdefault("vorpWk", {})[wk_now] = {k: v[0] for k, v in vorp.items()}
+
+    contracts = pull_contracts(notes)
+    if contracts:
+        data["contracts"] = contracts
+        data["contractsUpdated"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
     rosters, teams = pull_rosters(notes)
     if teams:

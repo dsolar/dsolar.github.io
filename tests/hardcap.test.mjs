@@ -114,7 +114,8 @@ test('tiers only go up, raise the line, and add to the pot', () => {
 test('prospect auction: blind bids out of season FAAB, two spots, ties to the later first-round pick', () => {
   const { L, now } = drafted(10, 9, { claim: [0, 1, 2] });
   const [a, b, c] = prospects.slice(0, 3).map(p => p.id);
-  const sealed = { 0: [{ add: a, amt: 20 }, { add: b, amt: 10 }, { add: c, amt: 5 }], 1: [{ add: a, amt: 20 }], 2: [{ add: b, amt: 60 }] };
+  const top = L.settings.faab - 1;
+  const sealed = { 0: [{ add: a, amt: top }, { add: b, amt: 1 }, { add: c, amt: 1 }], 1: [{ add: a, amt: top }], 2: [{ add: b, amt: L.settings.faab + 10 }] };
   const tie = L.nba.round1.indexOf(0) > L.nba.round1.indexOf(1) ? 0 : 1;
   H.resolveAuction(L, prospects, sealed, now);
   assert.equal(L.phase, 'league');
@@ -122,7 +123,7 @@ test('prospect auction: blind bids out of season FAAB, two spots, ties to the la
   assert.ok(!L.teams[2].prospects.includes(b), 'a bid over the budget loses');
   const t0 = L.teams[0];
   assert.ok(t0.prospects.length <= 2);
-  assert.equal(t0.faab, 50 - L.auction.results.filter(r => r.team === 0 && r.won).reduce((s, r) => s + r.amt, 0));
+  assert.equal(t0.faab, L.settings.faab - L.auction.results.filter(r => r.team === 0 && r.won).reduce((s, r) => s + r.amt, 0));
   assert.ok(L.due.waiver);
 });
 
@@ -133,7 +134,7 @@ test('waivers: high bid wins, salary must fit, FAAB is spent, adds count next we
   const fa = ctx.available.filter(p => !p.gone).sort((a, b) => a.sal - b.sal)[0];
   const d1 = H.active(L.teams[1])[11], d2 = H.active(L.teams[2])[11];
   assert.equal(H.bidCheck(L, pool, prospects, 1, { add: fa.id, drop: d1, amt: 0 }).ok, false);
-  assert.equal(H.bidCheck(L, pool, prospects, 1, { add: fa.id, drop: d1, amt: 80 }).ok, false);
+  assert.equal(H.bidCheck(L, pool, prospects, 1, { add: fa.id, drop: d1, amt: L.settings.faab + 1 }).ok, false);
   const res = H.runWaivers(L, pool, prospects, { 1: [{ add: fa.id, drop: d1, amt: 7 }], 2: [{ add: fa.id, drop: d2, amt: 9 }] }, 3, null, now);
   const mine = res.filter(r => r.add === fa.id);
   assert.equal(mine.find(r => r.ok).team, 2);
@@ -173,7 +174,7 @@ test('weekly matchups and standings run on the real box scores', () => {
   const weeks = Object.keys(stats.wk || {}).map(Number);
   if (!weeks.length) return;
   const ms = H.matchups(L, weeks[0], stats.wk, byId);
-  assert.ok(ms.every(m => m.A.t.gp > 0 && m.cmp.w + m.cmp.l + m.cmp.t === 9));
+  assert.ok(ms.every(m => m.A.t.gp > 0 && m.cmp.w + m.cmp.l + m.cmp.t === m.cmp.cats.length && m.cmp.cats.length >= 9));
   assert.ok(ms.every(m => m.A.per.filter(x => x.starter).length === 9));
   const st = H.standings(L, Math.max(...weeks), stats.wk, byId);
   assert.equal(st.reduce((s, r) => s + r.w, 0), st.reduce((s, r) => s + r.l, 0));
@@ -301,4 +302,94 @@ test('real roster moves: traded players keep their deal, waived ones come off th
   assert.ok(H.buildPool(nba, Object.assign({}, st, { rosterTeams: 29 })).every(p => !p.gone), 'a partial pull releases nobody');
   const extra = H.mergeContracts(nba, { 'new-guy': { n: 'New Guy', t: 'BOS', pos: 'G', ps: ['PG'], age: 24, sal: [2e6, 0, 0, 0, 0] } });
   assert.ok(H.buildPool(extra, stats).some(p => p.id === 'new-guy' && p.sal === 2e6));
+});
+
+test('4 to 16 teams, even counts, every roster fills', () => {
+  for (const n of [4, 16]) {
+    const { L } = drafted(n, 41 + n);
+    assert.equal(L.teams.length, n);
+    assert.equal(new Set(L.teams.map(t => t.abbr)).size, n);
+    assert.ok(L.teams.every(t => H.active(t).length === 12));
+  }
+  assert.equal(H.newLeague({ cba: nba.cba, teams: 7, seed: 1, now: T0 }).teams.length, 8);
+});
+
+test('league vote: an accepted trade waits out review; half the other managers can veto', () => {
+  const { L, now } = drafted(8, 51, { claim: [0, 1, 2, 3, 4, 5] });
+  H.resolveAuction(L, prospects, {}, now);
+  const r = H.proposeTrade(L, pool, 0, 1, [], [], now, 2, 0, 3);
+  assert.equal(r.ok, true);
+  const a = H.respondTrade(L, pool, r.trade.id, true, 3, now);
+  assert.equal(a.review, true);
+  assert.equal(r.trade.status, 'review');
+  assert.equal(H.voters(L, r.trade).length, 4);
+  assert.equal(H.vetoesNeeded(L, r.trade), 2);
+  assert.equal(H.voteTrade(L, r.trade.id, 0, true, now).ok, false);       // can't vote on your own deal
+  H.voteTrade(L, r.trade.id, 2, true, now);
+  assert.equal(r.trade.status, 'review');
+  H.voteTrade(L, r.trade.id, 3, true, now);
+  assert.equal(r.trade.status, 'vetoed');
+  // A second deal nobody objects to goes through when the window closes.
+  const f0 = L.teams[0].faab;
+  const s = H.proposeTrade(L, pool, 0, 1, [], [], now, 3, 0, 3);
+  H.respondTrade(L, pool, s.trade.id, true, 3, now);
+  assert.equal(H.finalizeTrades(L, pool, now + 47 * H.HOUR, 3), 0);
+  assert.equal(H.finalizeTrades(L, pool, now + 48 * H.HOUR, 3), 1);
+  assert.equal(s.trade.status, 'accepted');
+  assert.equal(L.teams[0].faab, f0 - 3);
+});
+
+test('over the line after a real raise: flagged, can only cut payroll, cleared by the clock at the deadline', () => {
+  const { L, now } = drafted(8, 61);
+  H.resolveAuction(L, prospects, {}, now);
+  const t = L.teams[0];
+  const raise = H.ceilingOf(L, t) - H.payroll(t, byId) + 3e6;          // a kicker that puts the team $3M over
+  const top = H.active(t).map(id => byId[id]).sort((a, b) => b.sal - a.sal)[0];
+  const p2 = pool.map(p => (p.id === top.id ? { ...p, sal: p.sal + raise } : p));
+  const by2 = Object.fromEntries(p2.map(p => [p.id, p]));
+  assert.equal(H.enforceLine(L, p2, now, 3, '2026-10-20'), 1);
+  assert.ok(t.overDeadline - now >= 72 * H.HOUR);
+  assert.ok(L.log.at(-1).text.includes('over its'));
+  // Taking on salary is still blocked; a trade that lowers payroll is allowed even though it stays over.
+  const own = H.owners(L);
+  const cheapFA = p2.filter(p => own[p.id] == null && !p.gone).sort((a, b) => a.sal - b.sal)[0];
+  assert.equal(H.check(L, t, cheapFA, H.context(L, p2)).ok, false);
+  // Nothing done by the deadline: the lowest-ranked players go until it fits.
+  H.enforceLine(L, p2, t.overDeadline + 1, 4, '2026-10-20');
+  assert.ok(H.payroll(t, by2) <= H.ceilingOf(L, t));
+  assert.equal(t.overDeadline, undefined);
+  assert.ok(L.log.some(x => x.kind === 'line' && x.text.includes('released')));
+});
+
+test('VORP: weekly gains from the season readings become a tenth category', () => {
+  const wk = { 2: { a: [1, 30, 5, 10, 2, 2, 1, 13, 5, 1, 3, 1, 0, 2, 2] }, 3: { a: [1, 30, 5, 10, 2, 2, 1, 13, 5, 1, 3, 1, 0, 2, 2] } };
+  const out = H.withVorp({ wk, vorpWk: { 2: { a: 0.4 }, 3: { a: 0.7 } } });
+  assert.equal(out[3].a[15], 0.3);
+  assert.equal(out[2].a.length, 15);                                      // no reading before week 2
+  assert.equal(H.catsFor({ settings: {} }).length, 10);
+  assert.equal(H.catsFor({ settings: { vorpCat: false } }).length, 9);
+  const c = H.compare({ vorp: 1.2 }, { vorp: 0.4 }, [H.VORP_CAT]);
+  assert.equal(c.w, 1);
+  assert.equal(H.compare({}, {}, [H.VORP_CAT]).cats.length, 0);
+  assert.ok(pool.filter(p => p.bbv != null).length > 300 || !stats.vorp);
+  assert.ok(pool.every(p => ['Rookie scale', 'Second-round', 'Max', 'Minimum', 'Veteran'].includes(p.ctype)));
+});
+
+test('latest contracts: Basketball-Reference wins, the fixes file fills gaps, no standard deal means never available', () => {
+  const fixes = read('hardcap/contracts.json');
+  const real = nba.players.filter(p => p.c && p.c.sal && p.c.sal[0] && !p.two);
+  const bb = Object.fromEntries(real.slice(0, -1).map(p => [p.id, [p.t, [...p.c.sal, 0], {}]]));   // the last player lost his deal
+  bb['jayson-tatum'][1] = [60000000, 62786682, 67116798, 71446914, 0, 0];                      // a kicker
+  delete bb['dalton-knecht'];                                                                    // now on a two-way, so not on the list
+  bb['new-signing'] = ['BOS', [2000000, 0, 0, 0, 0, 0], {}];
+  bb['aj-green'] = ['MIL', [10044644, 10848215, 0, 0, 0, 0], {}];                                // BBRef beats the fixes file
+  const st2 = { ...stats, contracts: bb, rosters: { ...(stats.rosters || {}), 'new-signing': ['BOS', 'New Signing', 'G'] } };
+  const m = H.latestContracts(nba, st2, fixes);
+  const p2 = H.buildPool(m, st2), by2 = Object.fromEntries(p2.map(p => [p.id, p]));
+  assert.equal(by2['jayson-tatum'].sal, 60000000);
+  assert.ok(by2['new-signing'] && !by2['new-signing'].gone);
+  assert.equal(by2['new-signing'].n, 'New Signing');
+  assert.equal(by2['aj-green'].future.length, 1);
+  assert.ok(by2[real.at(-1).id].gone && by2[real.at(-1).id].noDeal);
+  assert.ok(by2['dalton-knecht'] ? by2['dalton-knecht'].gone : true);
 });

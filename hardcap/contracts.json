@@ -1,0 +1,914 @@
+{
+ "updated": "2026-11-02",
+ "about": "Contracts the main data file is missing or has out of date. Hard Cap merges these over celtics/data.json everywhere (pages and server clock). add: standard deals; nonCap: on an NBA roster but not on a cap-counting deal (two-way, 10-day), kept out of the pool until they sign one; gone: no longer under contract.",
+ "add": {
+  "alpha-diallo": {
+   "n": "Alpha Diallo",
+   "t": "DEN",
+   "pos": "G",
+   "ps": [
+    "SF",
+    "SG"
+   ],
+   "age": 29,
+   "sal": [
+    1357763,
+    0,
+    0,
+    0,
+    0
+   ],
+   "opt": {},
+   "note": "1-year minimum (signed summer 2026). Salary Swish and RotoBaller say fully guaranteed; Basketball-Reference italicizes the $1,357,763 as not fully guaranteed. A",
+   "src": "https://www.salaryswish.com/players/alpha-diallo"
+  },
+  "quenton-jackson": {
+   "n": "Quenton Jackson",
+   "t": "IND",
+   "pos": "G",
+   "ps": [
+    "SG",
+    "PG"
+   ],
+   "age": 28,
+   "sal": [
+    2584539,
+    2934742,
+    0,
+    0,
+    0
+   ],
+   "opt": {
+    "1": "NG"
+   },
+   "note": "3-year deal converted from two-way Feb 27, 2026. 2026-27 became fully guaranteed (Pacers kept him past Jul 15, 2026 date). 2027-28 $2,934,742 non-guaranteed per",
+   "src": "https://www.shamsports.com/salaries/indiana-pacers/"
+  },
+  "olivier-maxence-prosper": {
+   "n": "Olivier-Maxence Prosper",
+   "t": "MEM",
+   "pos": "W",
+   "ps": [
+    "SF",
+    "PF"
+   ],
+   "age": 24,
+   "sal": [
+    2497812,
+    0,
+    0,
+    0,
+    0
+   ],
+   "opt": {},
+   "note": "Converted from two-way Mar 2026; 2026-27 was a club option (Spotrac), now fully guaranteed per BBRef/ShamSports; UFA 2027",
+   "src": "https://www.basketball-reference.com/contracts/MEM.html"
+  },
+  "aj-green": {
+   "n": "AJ Green",
+   "t": "MIL",
+   "pos": "G",
+   "ps": [
+    "SG",
+    "SF"
+   ],
+   "age": 27,
+   "sal": [
+    10044644,
+    10848215,
+    11651786,
+    12455355,
+    0
+   ],
+   "opt": {},
+   "note": "4yr/$45M fully guaranteed; no options per Spotrac and ShamSports",
+   "src": "https://www.basketball-reference.com/contracts/MIL.html"
+  },
+  "dylan-cardwell": {
+   "n": "Dylan Cardwell",
+   "t": "SAC",
+   "pos": "B",
+   "ps": [
+    "C"
+   ],
+   "age": 25,
+   "sal": [
+    2150917,
+    2525901,
+    2735698,
+    0,
+    0
+   ],
+   "opt": {
+    "1": "NG",
+    "2": "TO"
+   },
+   "note": "Converted from two-way to 4-yr standard deal 2026-02-05 (undrafted, not rookie scale); 2026-27 fully guaranteed; 2027-28 non-guaranteed; 2028-29 team option. Ma",
+   "src": "https://www.salaryswish.com/players/dylan-cardwell"
+  },
+  "tony-bradley": {
+   "n": "Tony Bradley",
+   "t": "UTA",
+   "pos": "B",
+   "ps": [
+    "C"
+   ],
+   "age": 28,
+   "sal": [
+    2449421,
+    0,
+    0,
+    0,
+    0
+   ],
+   "opt": {
+    "0": "NG"
+   },
+   "note": "1-yr vet minimum (Exhibit 9) signed by NYK 2026-09-30, waived 10-15, claimed by UTA 10-17. Base salary $3,506,659; cap hit $2,449,421 (2-yr vet min) used here. ",
+   "src": "https://www.salaryswish.com/players/tony-bradley"
+  },
+  "tristan-vukcevic": {
+   "n": "Tristan Vukcevic",
+   "t": "WAS",
+   "pos": "B",
+   "ps": [
+    "C",
+    "PF"
+   ],
+   "age": 23,
+   "sal": [
+    3000000,
+    3000000,
+    0,
+    0,
+    0
+   ],
+   "opt": {
+    "1": "TO"
+   },
+   "note": "Signed 2026-02-21 (converted from two-way); 2026-27 guaranteed; 2027-28 team option. Matches ShamSports",
+   "src": "https://salaryswish.com/players/tristan-vukcevic"
+  },
+  "aj-johnson": {
+   "n": "AJ Johnson",
+   "t": "NOP",
+   "sal": [
+    3200000,
+    0,
+    0,
+    0,
+    0
+   ],
+   "opt": {},
+   "note": "2027-28 rookie-scale team option declined, so the contract now ends after 2026-27.",
+   "src": "https://www.salaryswish.com/transactions"
+  },
+  "cody-williams": {
+   "n": "Cody Williams",
+   "t": "MIN",
+   "sal": [
+    6000000,
+    0,
+    0,
+    0,
+    0
+   ],
+   "opt": {},
+   "note": "2027-28 rookie-scale team option declined, so the contract now ends after 2026-27.",
+   "src": "https://www.salaryswish.com/transactions"
+  },
+  "pacome-dadiet": {
+   "n": "Pacome Dadiet",
+   "t": "NYK",
+   "sal": [
+    3000000,
+    0,
+    0,
+    0,
+    0
+   ],
+   "opt": {},
+   "note": "2027-28 rookie-scale team option declined, so the contract now ends after 2026-27.",
+   "src": "https://www.salaryswish.com/transactions"
+  },
+  "daron-holmes-ii": {
+   "n": "DaRon Holmes II",
+   "t": "DEN",
+   "sal": [
+    3400000,
+    0,
+    0,
+    0,
+    0
+   ],
+   "opt": {},
+   "note": "2027-28 rookie-scale team option declined, so the contract now ends after 2026-27.",
+   "src": "https://www.salaryswish.com/transactions"
+  },
+  "nikola-topic": {
+   "n": "Nikola Topic",
+   "t": "OKC",
+   "sal": [
+    5400000,
+    0,
+    0,
+    0,
+    0
+   ],
+   "opt": {},
+   "note": "2027-28 rookie-scale team option declined, so the contract now ends after 2026-27.",
+   "src": "https://www.salaryswish.com/transactions"
+  },
+  "isaiah-collier": {
+   "n": "Isaiah Collier",
+   "t": "UTA",
+   "sal": [
+    2800000,
+    0,
+    0,
+    0,
+    0
+   ],
+   "opt": {},
+   "note": "2027-28 rookie-scale team option declined, so the contract now ends after 2026-27.",
+   "src": "https://www.salaryswish.com/transactions"
+  },
+  "brandin-podziemski": {
+   "n": "Brandin Podziemski",
+   "t": "GSW",
+   "sal": [
+    5700000,
+    18965518,
+    20482759,
+    22000000,
+    23517241
+   ],
+   "opt": {},
+   "note": "5-year, $110M rookie extension (Oct 10); 2031-32 mutual option",
+   "src": "https://www.hoopsrumors.com/2026/10/2026-nba-rookie-scale-extension-recap.html"
+  },
+  "cason-wallace": {
+   "n": "Cason Wallace",
+   "t": "OKC",
+   "sal": [
+    7400000,
+    23900000,
+    25300000,
+    26700000,
+    28200000
+   ],
+   "opt": {},
+   "note": "5-year, $135M base rookie extension (Oct 19). Yearly split estimated until it is reported",
+   "src": "https://www.hoopsrumors.com/2026/10/2026-nba-rookie-scale-extension-recap.html"
+  },
+  "brandon-miller": {
+   "n": "Brandon Miller",
+   "t": "CHO",
+   "sal": [
+    15100000,
+    44000000,
+    41000000,
+    38500000,
+    41500000
+   ],
+   "opt": {},
+   "note": "5-year, $209M rookie extension (Oct 19). Starts near the max and dips two years per ESPN; yearly split estimated",
+   "src": "https://www.hoopsrumors.com/2026/10/2026-nba-rookie-scale-extension-recap.html"
+  },
+  "jaden-mcdaniels": {
+   "n": "Jaden McDaniels",
+   "t": "MIN",
+   "sal": [
+    26200000,
+    28000000,
+    29800000,
+    40000000,
+    0
+   ],
+   "opt": {},
+   "note": "1-year, $40M extension for 2029-30 (Oct 19)",
+   "src": "https://www.hoopsrumors.com/2026/10/timberwolves-jaden-mcdaniels-agree-to-one-year-extension.html"
+  },
+  "oso-ighodaro": {
+   "n": "Oso Ighodaro",
+   "t": "PHO",
+   "sal": [
+    2300000,
+    2486995,
+    8950617,
+    9666667,
+    10382716
+   ],
+   "opt": {
+    "0": "NG"
+   },
+   "note": "2027-28 team option exercised; 3-year, $29M extension from 2028-29 (Oct 19)",
+   "src": ""
+  }
+ },
+ "nonCap": {
+  "jalen-wilson": {
+   "n": "Jalen Wilson",
+   "t": "ATL",
+   "kind": "two-way",
+   "note": "Signed two-way Jul 20, 2026; ShamSports ATL sheet also lists as two-way"
+  },
+  "keshon-gilbert": {
+   "n": "Keshon Gilbert",
+   "t": "ATL",
+   "kind": "two-way",
+   "note": "2-year two-way signed Mar 4, 2026; runs through 2026-27"
+  },
+  "rayj-dennis": {
+   "n": "RayJ Dennis",
+   "t": "ATL",
+   "kind": "two-way",
+   "note": ""
+  },
+  "devin-carter": {
+   "n": "Devin Carter",
+   "t": "BOS",
+   "kind": "two-way",
+   "note": "Signed Exhibit 10 Sep 14, 2026; converted to two-way Oct 17, 2026"
+  },
+  "chaney-johnson": {
+   "n": "Chaney Johnson",
+   "t": "BRK",
+   "kind": "two-way",
+   "note": ""
+  },
+  "grant-nelson": {
+   "n": "Grant Nelson",
+   "t": "BRK",
+   "kind": "two-way",
+   "note": "Re-signed two-way Sep 4, 2026"
+  },
+  "tyler-bilodeau": {
+   "n": "Tyler Bilodeau",
+   "t": "BRK",
+   "kind": "two-way",
+   "note": "2026 2nd-round pick (No. 43); two-way announced Jul 3, 2026"
+  },
+  "jaylin-sellers": {
+   "n": "Jaylin Sellers",
+   "t": "CHI",
+   "kind": "two-way",
+   "note": "Undrafted rookie"
+  },
+  "jordan-hawkins": {
+   "n": "Jordan Hawkins",
+   "t": "CHI",
+   "kind": "two-way",
+   "note": "Agreed to two-way Oct 5, 2026"
+  },
+  "tobe-awaka": {
+   "n": "Tobe Awaka",
+   "t": "CHI",
+   "kind": "two-way",
+   "note": ""
+  },
+  "kylan-boswell": {
+   "n": "Kylan Boswell",
+   "t": "CHO",
+   "kind": "two-way",
+   "note": "Signed two-way Jul 6, 2026"
+  },
+  "pj-hall": {
+   "n": "PJ Hall",
+   "t": "CHO",
+   "kind": "two-way",
+   "note": "Two-way signed Dec 24, 2025, carries into 2026-27"
+  },
+  "ernest-udeh-jr": {
+   "n": "Ernest Udeh Jr.",
+   "t": "CLE",
+   "kind": "two-way",
+   "note": ""
+  },
+  "riley-minix": {
+   "n": "Riley Minix",
+   "t": "CLE",
+   "kind": "two-way",
+   "note": ""
+  },
+  "tristan-enaruna": {
+   "n": "Tristan Enaruna",
+   "t": "CLE",
+   "kind": "two-way",
+   "note": "Two-way signed Jan 2026; listed as CLE two-way for 2026-27 in Hoops Rumors tracker"
+  },
+  "jett-howard": {
+   "n": "Jett Howard",
+   "t": "DAL",
+   "kind": "two-way",
+   "note": "Signed two-way Jul 20, 2026"
+  },
+  "tobi-lawal": {
+   "n": "Tobi Lawal",
+   "t": "DAL",
+   "kind": "two-way",
+   "note": "2026 2nd-round pick on two-way"
+  },
+  "bryce-hopkins": {
+   "n": "Bryce Hopkins",
+   "t": "DEN",
+   "kind": "two-way",
+   "note": "Signed two-way Aug 27, 2026"
+  },
+  "cam-whitmore": {
+   "n": "Cam Whitmore",
+   "t": "DEN",
+   "kind": "two-way",
+   "note": "Former 2023 first-rounder, signed two-way Sep 18, 2026"
+  },
+  "elijah-harkless": {
+   "n": "Elijah Harkless",
+   "t": "DET",
+   "kind": "two-way",
+   "note": ""
+  },
+  "isaac-jones": {
+   "n": "Isaac Jones",
+   "t": "DET",
+   "kind": "two-way",
+   "note": ""
+  },
+  "ugonna-onyenso": {
+   "n": "Ugonna Onyenso",
+   "t": "DET",
+   "kind": "two-way",
+   "note": "Second year of a 2-year two-way"
+  },
+  "graham-ike": {
+   "n": "Graham Ike",
+   "t": "GSW",
+   "kind": "two-way",
+   "note": "Exhibit 10 in June 2026, then final two-way spot ~Sep 22, 2026"
+  },
+  "lj-cryer": {
+   "n": "LJ Cryer",
+   "t": "GSW",
+   "kind": "two-way",
+   "note": ""
+  },
+  "malevy-leons": {
+   "n": "Malevy Leons",
+   "t": "GSW",
+   "kind": "two-way",
+   "note": ""
+  },
+  "quadir-copeland": {
+   "n": "Quadir Copeland",
+   "t": "HOU",
+   "kind": "two-way",
+   "note": ""
+  },
+  "braden-smith": {
+   "n": "Braden Smith",
+   "t": "IND",
+   "kind": "two-way",
+   "note": ""
+  },
+  "jalen-slawson": {
+   "n": "Jalen Slawson",
+   "t": "IND",
+   "kind": "two-way",
+   "note": "Re-signed two-way Jul 23, 2026"
+  },
+  "kobe-brown": {
+   "n": "Kobe Brown",
+   "t": "IND",
+   "kind": "two-way",
+   "note": "Signed two-way Jul 10, 2026"
+  },
+  "blake-wesley": {
+   "n": "Blake Wesley",
+   "t": "LAC",
+   "kind": "10-day",
+   "note": "Exhibit 10 Sep 27, waived Oct 17, then 10-day hardship contract reported Oct 29, 2026"
+  },
+  "jalen-pickett": {
+   "n": "Jalen Pickett",
+   "t": "LAC",
+   "kind": "two-way",
+   "note": ""
+  },
+  "nick-martinelli": {
+   "n": "Nick Martinelli",
+   "t": "LAC",
+   "kind": "two-way",
+   "note": "Second year of a 2-year two-way"
+  },
+  "arthur-kaluma": {
+   "n": "Arthur Kaluma",
+   "t": "LAL",
+   "kind": "two-way",
+   "note": ""
+  },
+  "chris-manon": {
+   "n": "Chris Manon",
+   "t": "LAL",
+   "kind": "two-way",
+   "note": ""
+  },
+  "lawson-lovering": {
+   "n": "Lawson Lovering",
+   "t": "LAL",
+   "kind": "two-way",
+   "note": "Signed two-way Oct 28, 2026 (replaced Okereke)"
+  },
+  "carson-cooper": {
+   "n": "Carson Cooper",
+   "t": "MEM",
+   "kind": "two-way",
+   "note": "2-yr two-way signed 2026-09-28 (2026-27, 2027-28)"
+  },
+  "jahmai-mashack": {
+   "n": "Jahmai Mashack",
+   "t": "MEM",
+   "kind": "two-way",
+   "note": ""
+  },
+  "javon-small": {
+   "n": "Javon Small",
+   "t": "MEM",
+   "kind": "two-way",
+   "note": "Also two-way on Spotrac MEM table"
+  },
+  "keshad-johnson": {
+   "n": "Keshad Johnson",
+   "t": "MIA",
+   "kind": "two-way",
+   "note": "1-yr two-way signed 2026-08-27"
+  },
+  "tre-donaldson": {
+   "n": "Tre Donaldson",
+   "t": "MIA",
+   "kind": "two-way",
+   "note": "1-yr two-way signed 2026-07-03"
+  },
+  "vladislav-goldin": {
+   "n": "Vladislav Goldin",
+   "t": "MIA",
+   "kind": "two-way",
+   "note": ""
+  },
+  "cormac-ryan": {
+   "n": "Cormac Ryan",
+   "t": "MIL",
+   "kind": "two-way",
+   "note": ""
+  },
+  "kam-jones": {
+   "n": "Kam Jones",
+   "t": "MIL",
+   "kind": "two-way",
+   "note": "Signed two-way July 2026 after leaving IND"
+  },
+  "enrique-freeman": {
+   "n": "Enrique Freeman",
+   "t": "MIN",
+   "kind": "two-way",
+   "note": ""
+  },
+  "rocco-zikarsky": {
+   "n": "Rocco Zikarsky",
+   "t": "MIN",
+   "kind": "two-way",
+   "note": ""
+  },
+  "zyon-pullin": {
+   "n": "Zyon Pullin",
+   "t": "MIN",
+   "kind": "two-way",
+   "note": ""
+  },
+  "jaron-pierre-jr": {
+   "n": "Jaron Pierre Jr.",
+   "t": "NOP",
+   "kind": "two-way",
+   "note": "2026 2nd-round pick (#58) signed to two-way"
+  },
+  "julian-reese": {
+   "n": "Julian Reese",
+   "t": "NOP",
+   "kind": "two-way",
+   "note": "Signed two-way 2026-09-24 after being waived by DEN"
+  },
+  "malik-dia": {
+   "n": "Malik Dia",
+   "t": "NOP",
+   "kind": "two-way",
+   "note": ""
+  },
+  "jaden-akins": {
+   "n": "Jaden Akins",
+   "t": "NYK",
+   "kind": "two-way",
+   "note": ""
+  },
+  "tyler-nickel": {
+   "n": "Tyler Nickel",
+   "t": "NYK",
+   "kind": "two-way",
+   "note": "2026 #47 pick signed to two-way"
+  },
+  "brooks-barnhizer": {
+   "n": "Brooks Barnhizer",
+   "t": "OKC",
+   "kind": "two-way",
+   "note": ""
+  },
+  "josh-dix": {
+   "n": "Josh Dix",
+   "t": "OKC",
+   "kind": "two-way",
+   "note": ""
+  },
+  "alex-morales": {
+   "n": "Alex Morales",
+   "t": "ORL",
+   "kind": "two-way",
+   "note": "2-yr two-way signed 2026-02-17 covering 2026-27"
+  },
+  "colin-castleton": {
+   "n": "Colin Castleton",
+   "t": "ORL",
+   "kind": "two-way",
+   "note": ""
+  },
+  "izaiyah-nelson": {
+   "n": "Izaiyah Nelson",
+   "t": "ORL",
+   "kind": "two-way",
+   "note": ""
+  },
+  "caleb-love": {
+   "n": "Caleb Love",
+   "t": "PHI",
+   "kind": "two-way",
+   "note": ""
+  },
+  "rayan-rupert": {
+   "n": "Rayan Rupert",
+   "t": "PHI",
+   "kind": "two-way",
+   "note": ""
+  },
+  "tacko-fall": {
+   "n": "Tacko Fall",
+   "t": "PHI",
+   "kind": "two-way",
+   "note": "Exhibit 10 converted to two-way ~2026-10-17 (third two-way slot)"
+  },
+  "drew-timme": {
+   "n": "Drew Timme",
+   "t": "PHO",
+   "kind": "two-way",
+   "note": "Claimed off waivers and converted to two-way 2026-10-19"
+  },
+  "duop-reath": {
+   "n": "Duop Reath",
+   "t": "PHO",
+   "kind": "two-way",
+   "note": "Exhibit 10 converted to two-way ~2026-10-18"
+  },
+  "pat-spencer": {
+   "n": "Pat Spencer",
+   "t": "PHO",
+   "kind": "two-way",
+   "note": ""
+  },
+  "chris-youngblood": {
+   "n": "Chris Youngblood",
+   "t": "POR",
+   "kind": "two-way",
+   "note": "Spotrac POR table lists 2026-27 two-way; original Mar 2026 deal was 1 yr, no 2026-27 transaction found elsewhere, so moderate confidence"
+  },
+  "jayson-kent": {
+   "n": "Jayson Kent",
+   "t": "POR",
+   "kind": "two-way",
+   "note": "2-yr two-way signed 2026-03-03 covering 2026-27"
+  },
+  "john-tonje": {
+   "n": "John Tonje",
+   "t": "POR",
+   "kind": "two-way",
+   "note": ""
+  },
+  "jonathan-mogbo": {
+   "n": "Jonathan Mogbo",
+   "t": "SAC",
+   "kind": "two-way",
+   "note": ""
+  },
+  "leaky-black": {
+   "n": "Leaky Black",
+   "t": "SAC",
+   "kind": "two-way",
+   "note": "Exhibit 10 converted to two-way 2026-10-15"
+  },
+  "sean-pedulla": {
+   "n": "Sean Pedulla",
+   "t": "SAC",
+   "kind": "two-way",
+   "note": "Signed two-way 2026-10-23"
+  },
+  "david-jones-garcia": {
+   "n": "David Jones Garcia",
+   "t": "SAS",
+   "kind": "two-way",
+   "note": ""
+  },
+  "ja-kobi-gillespie": {
+   "n": "Ja'Kobi Gillespie",
+   "t": "SAS",
+   "kind": "two-way",
+   "note": "2026 #42 pick on 1-yr two-way"
+  },
+  "maliq-brown": {
+   "n": "Maliq Brown",
+   "t": "SAS",
+   "kind": "two-way",
+   "note": "2026 #44 pick on 1-yr two-way"
+  },
+  "malachi-smith": {
+   "n": "Malachi Smith",
+   "t": "TOR",
+   "kind": "two-way",
+   "note": "Training camp deal Aug 2026, then two-way"
+  },
+  "trey-alexander": {
+   "n": "Trey Alexander",
+   "t": "UTA",
+   "kind": "two-way",
+   "note": ""
+  },
+  "felix-okpara": {
+   "n": "Felix Okpara",
+   "t": "WAS",
+   "kind": "two-way",
+   "note": "1-yr two-way signed 2026-07-07"
+  },
+  "jamir-watkins": {
+   "n": "Jamir Watkins",
+   "t": "WAS",
+   "kind": "two-way",
+   "note": ""
+  },
+  "reece-beekman": {
+   "n": "Reece Beekman",
+   "t": "WAS",
+   "kind": "two-way",
+   "note": "Converted to two-way ~2026-10-17"
+  },
+  "cam-christie": {
+   "n": "Cam Christie",
+   "t": "LAC",
+   "kind": "two-way",
+   "note": "Re-signed by LAC on a two-way Oct 17."
+  },
+  "kobe-bufkin": {
+   "n": "Kobe Bufkin",
+   "t": "UTA",
+   "kind": "two-way",
+   "note": "Signed a two-way with UTA Oct 21-23."
+  },
+  "pete-nance": {
+   "n": "Pete Nance",
+   "t": "MIL",
+   "kind": "two-way",
+   "note": "Re-signed by MIL on a two-way Oct 19-20."
+  },
+  "micah-peavy": {
+   "n": "Micah Peavy",
+   "t": "OKC",
+   "kind": "two-way",
+   "note": "Signed a two-way with OKC Oct 24."
+  },
+  "dalton-knecht": {
+   "n": "Dalton Knecht",
+   "t": "NYK",
+   "kind": "two-way",
+   "note": "Signed a two-way with NYK Oct 23."
+  }
+ },
+ "gone": {
+  "ak-okereke": {
+   "n": "AK Okereke",
+   "t": "LAL",
+   "note": "Was a LAL two-way, but waived Oct 28, 2026 to make room for Lawson Lovering; no longer under contract, so probably shouldn't be on the roster"
+  },
+  "christian-koloko": {
+   "n": "Christian Koloko",
+   "t": "NOP",
+   "note": "Waived 2026-10-10. "
+  },
+  "yuki-kawamura": {
+   "n": "Yuki Kawamura",
+   "t": "LAC",
+   "note": "Waived 2026-10-12. "
+  },
+  "caleb-houstan": {
+   "n": "Caleb Houstan",
+   "t": "NOP",
+   "note": "Waived 2026-10-12. Signed by POR on an Exhibit 10 Oct 15, waived again Oct 16."
+  },
+  "lonnie-walker-iv": {
+   "n": "Lonnie Walker IV",
+   "t": "DEN",
+   "note": "Waived 2026-10-12. "
+  },
+  "taelon-peter": {
+   "n": "Taelon Peter",
+   "t": "SAS",
+   "note": "Waived 2026-10-14. "
+  },
+  "drew-eubanks": {
+   "n": "Drew Eubanks",
+   "t": "NYK",
+   "note": "Waived 2026-10-15. "
+  },
+  "ochai-agbaji": {
+   "n": "Ochai Agbaji",
+   "t": "NYK",
+   "note": "Waived 2026-10-15. Reported Thunder signing fell through."
+  },
+  "dillon-jones": {
+   "n": "Dillon Jones",
+   "t": "PHI",
+   "note": "Waived 2026-10-16. "
+  },
+  "jd-davison": {
+   "n": "JD Davison",
+   "t": "ORL",
+   "note": "Waived 2026-10-16. "
+  },
+  "malaki-branham": {
+   "n": "Malaki Branham",
+   "t": "ORL",
+   "note": "Waived 2026-10-16. "
+  },
+  "pat-connaughton": {
+   "n": "Pat Connaughton",
+   "t": "CHO",
+   "note": "Waived 2026-10-16. "
+  },
+  "jeremy-sochan": {
+   "n": "Jeremy Sochan",
+   "t": "POR",
+   "note": "Waived 2026-10-17. Was on a one-year deal signed in August."
+  },
+  "haywood-highsmith": {
+   "n": "Haywood Highsmith",
+   "t": "PHO",
+   "note": "Waived 2026-10-17. "
+  },
+  "christoph-tilly": {
+   "n": "Christoph Tilly",
+   "t": "OKC",
+   "note": "Waived 2026-10-17. "
+  },
+  "bruce-brown": {
+   "n": "Bruce Brown",
+   "t": "NYK",
+   "note": "Waived 2026-10-17. "
+  },
+  "bez-mbeng": {
+   "n": "Bez Mbeng",
+   "t": "MIA",
+   "note": "Waived 2026-10-17. "
+  },
+  "rienk-mast": {
+   "n": "Rienk Mast",
+   "t": "IND",
+   "note": "Waived 2026-10-17. "
+  },
+  "keba-keita": {
+   "n": "Keba Keita",
+   "t": "IND",
+   "note": "Waived 2026-10-17. "
+  },
+  "alex-toohey": {
+   "n": "Alex Toohey",
+   "t": "GSW",
+   "note": "Waived 2026-10-17. "
+  },
+  "dalen-terry": {
+   "n": "Dalen Terry",
+   "t": "GSW",
+   "note": "Waived 2026-10-17. "
+  },
+  "kevin-porter-jr": {
+   "n": "Kevin Porter Jr.",
+   "t": "MIL",
+   "note": "Waived 2026-10-19. "
+  },
+  "walter-clayton": {
+   "n": "Walter Clayton",
+   "t": "MEM",
+   "note": "Waived 2026-10-19. Signed a two-way with DAL Oct 21."
+  }
+ }
+}
