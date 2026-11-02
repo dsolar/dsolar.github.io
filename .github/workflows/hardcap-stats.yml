@@ -12,6 +12,7 @@ on:
     paths:
       - tools/hardcap_pull.py
       - tools/hardcap_yahoo.py
+      - tools/hardcap_prospects.py
       - .github/workflows/hardcap-stats.yml
   workflow_dispatch:
 
@@ -47,10 +48,17 @@ jobs:
           YAHOO_REFRESH_TOKEN: ${{ secrets.YAHOO_REFRESH_TOKEN }}
         run: python3 tools/hardcap_yahoo.py
 
+      - name: Pull Tankathon's big board for the Prospect Board
+        continue-on-error: true
+        env:
+          HC_DEBUG: "1"
+        run: python3 tools/hardcap_prospects.py
+
       - name: Commit the stats
         run: |
           git add hardcap/stats.json
           if [ -f hardcap/yahoo.json ]; then git add hardcap/yahoo.json; fi
+          if [ -f hardcap/prospects.json ]; then git add hardcap/prospects.json; fi
           if git diff --cached --quiet; then
             echo "Nothing changed."
             exit 0
