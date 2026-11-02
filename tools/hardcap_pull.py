@@ -290,8 +290,12 @@ def pull_contracts(notes):
         if not sal[0]:
             continue
         pid = slug(name)
-        if pid not in out:                       # a player with two rows (waived money elsewhere) keeps his first
+        # A player can have two rows: dead money from a team that waived him, and his current deal. The first row
+        # stays in front; any other rides along after it, and Hard Cap uses the one for his current NBA team.
+        if pid not in out:
             out[pid] = [team, sal, opt]
+        else:
+            out[pid].append([team, sal, opt])
     if len(out) < 350:
         notes.append(f"contracts: only {len(out)} rows parsed ({len(page)} bytes); kept the last good pull")
         return None

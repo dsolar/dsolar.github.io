@@ -140,7 +140,24 @@
       for (const id of Object.keys(bb)) { const k = nameKeys(id)[1]; short[k] = short[k] ? "?" : id; }
       const full = {};
       for (const id of Object.keys(bb)) full[nameKeys(id)[0]] = id;
-      const find = (id) => (bb[id] ? id : full[nameKeys(id)[0]] || (short[nameKeys(id)[1]] !== "?" && short[nameKeys(id)[1]]) || null);
+      const find0 = (id) => (bb[id] ? id : full[nameKeys(id)[0]] || (short[nameKeys(id)[1]] !== "?" && short[nameKeys(id)[1]]) || null);
+      // The row for the team he's on now. Basketball-Reference also lists dead money owed by teams that waived a
+      // player; when the ESPN rosters put him somewhere else, that row isn't a contract he holds.
+      const rowFor = (k, id) => {
+        const rows = [bb[k].slice(0, 3), ...bb[k].slice(3)];
+        const r = rosters[id] || rosters[k];
+        if (!r) return rows[0];
+        const hit = rows.find((x) => x[0] === r[0]);
+        if (hit) return hit;
+        // One row under another team: either a real trade one feed hasn't caught yet, or dead money while he plays
+        // on a two-way somewhere. Keep the contract (never release someone over feed lag) unless the fixes file
+        // says he's off a standard deal.
+        mismatch.add(id);
+        return rows.length === 1 ? rows[0] : rows[rows.length - 1];
+      };
+      const mismatch = new Set();
+      const pick = {};
+      const find = (id) => { const k = find0(id); if (!k) return null; const row = rowFor(k, id); if (!row) return null; pick[id] = row; return k; };
       const seen = new Set();
       const unmatched = [];
       players = players.map((p) => {
@@ -148,7 +165,8 @@
         const k = find(p.id);
         if (!k) { if (p.c && p.c.sal && p.c.sal[0]) unmatched.push(p.id); return p; }
         seen.add(k); onBB.add(p.id);
-        const [t, sal, opt] = bb[k];
+        const [t, sal, opt0] = pick[p.id];
+        const opt = Object.fromEntries(Object.entries(opt0).filter(([i]) => +i > 0));   // this season's option is already decided
         const s5 = sal.slice(0, 5);
         const old = (p.c && p.c.sal) || [];
         if (s5.join() === old.join() && JSON.stringify(opt) === JSON.stringify((p.c && p.c.opt) || {})) return p;
@@ -158,6 +176,7 @@
         for (const [i, v] of Object.entries((p.c && p.c.opt) || {})) if (v === "NG" && s5[+i] && !o[i]) o[i] = v;
         return Object.assign({}, p, { t: t && t.length === 3 ? p.t : p.t, c: Object.assign({}, p.c || {}, { sal: s5, opt: o }) });
       });
+      report.mismatch = [...mismatch];
       // Only trust "not on the list" when matching worked for nearly everyone; a parsing hiccup shouldn't empty rosters.
       if (unmatched.length <= 40) {
         const off = new Set(unmatched);
@@ -165,17 +184,21 @@
         report.off = off.size;
       }
       const have = new Set(players.map((p) => p.id));
-      for (const [id, [t, sal, opt]] of Object.entries(bb)) {
+      for (const [id, row0] of Object.entries(bb)) {
         if (seen.has(id) || have.has(id)) continue;
         const r = rosters[id] || rosters[full[nameKeys(id)[0]]];
+        if (!r) continue;                                  // on no NBA roster: dead money, not a player to sign
+        const row = rowFor(id, id) || (rosters[id] ? null : row0);
+        if (!row) continue;
+        const [t, sal, opt] = row;
         const ps = (r && ESPN_POS[r[2]]) || ["SF"];
         players.push({ id, n: (r && r[1]) || id.replace(/-/g, " ").replace(/\b\w/g, (x) => x.toUpperCase()), t: (r && r[0]) || t, pos: posLetter(ps), ps,
-          age: 25, yos: 1, c: { sal: sal.slice(0, 5), opt: Object.fromEntries(Object.entries(opt).filter(([i]) => +i < 5)), signed: 0 }, fresh: true });
+          age: 25, yos: 1, c: { sal: sal.slice(0, 5), opt: Object.fromEntries(Object.entries(opt).filter(([i]) => +i > 0 && +i < 5)), signed: 0 }, fresh: true });
         onBB.add(id); report.added++;
       }
     }
     if (fixes) {
-      const applies = ([id, f]) => f.force || !onBB.has(id);
+      const applies = ([id, f]) => f.force || !onBB.has(id) || (report.mismatch || []).includes(id);
       const drop = new Set([...Object.entries(fixes.nonCap || {}), ...Object.entries(fixes.gone || {})].filter(applies).map(([id]) => id));
       players = players.map((p) => (drop.has(p.id) ? Object.assign({}, p, { noDeal: true }) : p));
       players = mergeContracts({ players }, Object.fromEntries(Object.entries(fixes.add || {}).filter(applies))).players;
