@@ -645,6 +645,7 @@ th.line{border-left:1px solid var(--rule)}
       <div class="fig"><span class="n" id="f-safe"></span><span class="l">survives 9 in 10 simulations</span></div>
     </div>
     <p class="updated" id="updated"></p>
+    <p class="updated" id="score-status" role="status">Loading league snapshot…</p>
   </header>
 
   <p class="notice" id="sample" hidden>These are sample numbers from the Week 6 notes, so the page has something to show.</p>
@@ -2101,9 +2102,10 @@ th.line{border-left:1px solid var(--rule)}
     clearTimeout(liveTimer);
     if (!BASE || document.visibilityState === "hidden" || liveBusy) return;   // one request at a time, so tab switches can't start a second loop
     liveBusy = true;
+    $("score-status").textContent = state.data && state.data.live ? "Checking for updated scores…" : "Showing the published snapshot. Checking live scores…";
     return refreshRosterSnapshot().then(function (changed) {
       // Published rosters must still appear when the separate live-score feed is down.
-      if (changed) { render(BASE, LEAGUE); updateJumpLabels(); }
+      if (changed) { render(BASE, LEAGUE); updateJumpLabels(); $("score-status").textContent = "Showing the latest published snapshot. Checking live scores…"; }
       return getLive(BASE);
     }).then(function (live) {
       liveBusy = false;
@@ -2114,6 +2116,7 @@ th.line{border-left:1px solid var(--rule)}
         updateJumpLabels();
         if (openName && $("team-dlg").open) openTeam(openName);
       }
+      $("score-status").textContent = d.live ? "" : "Showing the published snapshot; live scores are not available yet.";
       // Every minute while a game is on; every 10 minutes when one starts within 3 hours; otherwise stop.
       var soon = Object.keys(live.games || {}).some(function (k) {
         var g = live.games[k], t = Date.parse(g.start);
@@ -2125,6 +2128,7 @@ th.line{border-left:1px solid var(--rule)}
       // No live feed reachable: the page keeps its last numbers and tries again in 1, 2, 4, 8, then every 10 minutes.
       liveBusy = false;
       liveFails++;
+      $("score-status").textContent = "Live score check failed. Showing the last available numbers; retrying automatically.";
       liveTimer = setTimeout(refreshLive, Math.min(60e3 * Math.pow(2, liveFails - 1), 600e3));
     });
   }
@@ -2138,6 +2142,7 @@ th.line{border-left:1px solid var(--rule)}
       setTimeout(function () { render(BASE, LEAGUE); wireJump(); openFromHash(); refreshLive(); }, 0);
     })
     .catch(function () {
+      $("score-status").textContent = "";
       $("lede").textContent = "The league data didn't load. Refresh to try again.";
     });
 })();

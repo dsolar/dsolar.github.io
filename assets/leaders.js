@@ -67,7 +67,7 @@
 
   var games = [
     { name: "Make the Call", url: "win-probability/", of: 1000, boards: [
-      { label: "Speed", load: function () { return dayBoard("wp_speed_leaderboard", function (d) { return { p_challenge_date: d }; },
+      { label: "Speed", url: "win-probability/?mode=speed", load: function () { return dayBoard("wp_speed_leaderboard", function (d) { return { p_challenge_date: d }; },
         function (r) { return { name: r.nickname, score: +r.score || 0, at: r.submitted_at }; }); } }
     ] },
     { name: "Guess the Pick", url: "guess-the-pick/", of: 50, boards: ["nba", "nfl"].map(function (sp) {

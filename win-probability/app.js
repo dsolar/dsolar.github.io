@@ -656,5 +656,8 @@
   });
 
   $("clock-toggle").addEventListener("change", (e) => store.set("clock", e.target.checked));
-  renderStart();
+  // Mode links use the same path as the menu, preserving saved runs and results.
+  const requestedMode = new URLSearchParams(window.location.search).get("mode");
+  if (requestedMode === "daily" || requestedMode === "speed") startGame(requestedMode);
+  else renderStart();
 })();

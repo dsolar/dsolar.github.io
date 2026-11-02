@@ -36,8 +36,8 @@
     var daily = read("mtc.v2.daily." + local), speed = read("mtc.v2.speed." + local);
     return [
       { name: "Make the Call", line: "4th downs, graded", url: "win-probability/", cells: [
-        { label: "Daily", url: "win-probability/", s: daily && daily.grade ? { state: "done", text: daily.grade, say: "grade " + daily.grade } : { state: "open" } },
-        { label: "Speed", url: "win-probability/", s: speed && speed.speed ? { state: "done", text: String(speed.speed.score), say: speed.speed.score + " of 1000" } : { state: "open" } },
+        { label: "Daily", url: "win-probability/?mode=daily", s: daily && daily.grade ? { state: "done", text: daily.grade, say: "grade " + daily.grade } : { state: "open" } },
+        { label: "Speed", url: "win-probability/?mode=speed", s: speed && speed.speed ? { state: "done", text: String(speed.speed.score), say: speed.speed.score + " of 1000" } : { state: "open" } },
         null
       ] },
       { name: "Guess the Pick", line: "Name the draft pick", url: "guess-the-pick/", cells: ["nba", "nfl"].map(function (sp) {
