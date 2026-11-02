@@ -4,7 +4,7 @@
  "week": 8,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-02T01:32:32Z",
+ "updated": "2026-11-02T04:01:11Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -1605,7 +1605,7 @@
    "manager": "JeffS",
    "faab": 215,
    "proj": 129.25,
-   "points": 116.26,
+   "points": 129.48,
    "scores": [
     111.28,
     66.9,
@@ -1917,7 +1917,7 @@
      "name": "Jayden Daniels",
      "nfl": "WAS",
      "pos": "QB",
-     "yahoo_actual": 0.16,
+     "yahoo_actual": 13.38,
      "game": "Sun 8:20 pm",
      "opp": "vs PHI",
      "season": {
@@ -2156,7 +2156,7 @@
    "manager": "Noah M",
    "faab": 204,
    "proj": 128.66,
-   "points": 107.04,
+   "points": 112.24,
    "scores": [
     132.74,
     120.2,
@@ -2398,7 +2398,7 @@
      "name": "Dallas Goedert",
      "nfl": "PHI",
      "pos": "TE",
-     "yahoo_actual": 0.0,
+     "yahoo_actual": 5.2,
      "game": "Sun 8:20 pm",
      "opp": "@ WAS",
      "season": {
@@ -3231,7 +3231,7 @@
    "manager": "Nate",
    "faab": 252,
    "proj": 121.5,
-   "points": 73.56,
+   "points": 87.86,
    "scores": [
     134.08,
     101.78,
@@ -3323,7 +3323,7 @@
      "name": "Saquon Barkley",
      "nfl": "PHI",
      "pos": "RB",
-     "yahoo_actual": 0.0,
+     "yahoo_actual": 11.9,
      "game": "Sun 8:20 pm",
      "opp": "@ WAS",
      "season": {
@@ -3500,7 +3500,7 @@
      "name": "Rachaad White",
      "nfl": "WAS",
      "pos": "RB",
-     "yahoo_actual": 0.9,
+     "yahoo_actual": 3.3,
      "game": "Sun 8:20 pm",
      "opp": "vs PHI",
      "season": {
@@ -3708,7 +3708,7 @@
      "name": "Elijah Mitchell",
      "nfl": "PHI",
      "pos": "RB",
-     "yahoo_actual": 0.0,
+     "yahoo_actual": 5.6,
      "game": "Sun 8:20 pm",
      "opp": "@ WAS",
      "season": {
@@ -3748,7 +3748,7 @@
    "manager": "Garhett",
    "faab": 1,
    "proj": 112.32,
-   "points": 45.5,
+   "points": 55.3,
    "scores": [
     134.5,
     115.3,
@@ -3934,7 +3934,7 @@
      "name": "Stefon Diggs",
      "nfl": "WAS",
      "pos": "WR",
-     "yahoo_actual": 0.0,
+     "yahoo_actual": 9.8,
      "game": "Sun 8:20 pm",
      "opp": "vs PHI",
      "season": {
@@ -5307,7 +5307,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-02T01:32:36Z",
+  "updated": "2026-11-02T04:01:15Z",
   "players": 3045,
   "unmatched": []
  }
