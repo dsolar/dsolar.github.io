@@ -358,11 +358,12 @@
           <div><button class="btn go" type="submit">Create the league</button></div>
         </form>
         <div class="stack">
-          ${mine.length ? `<div class="card"><h3>Your leagues</h3><ul class="list">${mine.map((x) => `<li><a href="?l=${esc(x.id)}">${esc(x.name)}</a><span class="grow"></span><span class="ps">${esc(x.id)}</span></li>`).join("")}</ul></div>` : ""}
+          ${mine.length ? `<div class="card"><h3>Your leagues</h3><ul class="list">${mine.map((x) => `<li><a href="?l=${esc(x.id)}">${esc(x.name)}</a><span class="grow"></span><span class="ps">${esc(x.id)}</span><button class="btn sm" data-forget="${esc(x.id)}" aria-label="Remove ${esc(x.name)} from this list">Remove</button></li>`).join("")}</ul><p class="ps" style="margin-bottom:0">Removing a league here only takes it off this device's list.</p></div>` : ""}
           <div class="card"><h3>Got an invite?</h3><p class="muted small" style="margin:0">Open the link your commissioner sent. It looks like davidsolar.dev/hardcap/?l=abc1234.</p></div>
           <div class="card"><h2 class="disp">The rules</h2>${rulesList(null)}</div>
         </div>
       </section></div>`;
+    $$("[data-forget]", app).forEach((b) => (b.onclick = () => { store.set("hc:leagues", store.get("hc:leagues", []).filter((x) => x.id !== b.dataset.forget)); if (store.get("hc:last", null) === b.dataset.forget) store.set("hc:last", null); render(); }));
     let n = 10, mode = "live";
     const f = $("#create");
     $$("[data-n]", f).forEach((b) => (b.onclick = () => { n = +b.dataset.n; $$("[data-n]", f).forEach((x) => x.setAttribute("aria-pressed", x === b)); }));
@@ -1239,7 +1240,14 @@
   }
   store.set("hc:last", LID);
   try { await load(true); }
-  catch (e) { app.innerHTML = `<div class="wrap loading">${esc(e.message)}. Check the link, or <a href="./">start a new league</a>.</div>`; return; }
+  catch (e) {
+    // A deleted league comes off this device's list so it doesn't keep showing up.
+    if (/No league/.test(e.message)) {
+      store.set("hc:leagues", store.get("hc:leagues", []).filter((x) => x.id !== LID));
+      if (store.get("hc:last", null) === LID) store.set("hc:last", null);
+    }
+    app.innerHTML = `<div class="wrap loading">${esc(e.message)}. It may have been deleted. <a href="./">Back to your leagues</a>.</div>`; return;
+  }
   const list = store.get("hc:leagues", []);
   if (!list.some((x) => x.id === LID)) store.set("hc:leagues", [{ id: LID, name: LG.name }, ...list].slice(0, 12));
   render();
