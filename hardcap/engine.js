@@ -165,6 +165,11 @@
         const k = find(p.id);
         if (!k) { if (p.c && p.c.sal && p.c.sal[0]) unmatched.push(p.id); return p; }
         seen.add(k); onBB.add(p.id);
+        // Two rows means one is dead money, and the page repeats the same figures on both, so the cap sheet's
+        // numbers stand. A lone row under another team is dead money too, or a trade one feed hasn't caught yet:
+        // he can't be signed until it clears, but nobody loses him over it.
+        if (bb[k].length > 3) return p;
+        if (mismatch.has(p.id)) return Object.assign({}, p, { limbo: true });
         const [t, sal, opt0] = pick[p.id];
         const opt = Object.fromEntries(Object.entries(opt0).filter(([i]) => +i > 0));   // this season's option is already decided
         const s5 = sal.slice(0, 5);
@@ -230,8 +235,9 @@
       if (now && now !== p.t) { q.was = p.t; q.t = now; }        // traded for real: same contract, new team
       // A player with box scores in the last two weeks is on a roster, whatever the roster pull says.
       const recent = stats && stats.wk ? Object.keys(stats.wk).map(Number).sort((x, y) => y - x).slice(0, 2).some((w) => stats.wk[w][p.id]) : false;
-      q.gone = (now === null && !recent) || !!p.noDeal;
+      q.gone = (now === null && !recent) || !!p.noDeal || !!p.limbo;
       if (p.noDeal) q.noDeal = true;
+      if (p.limbo) q.limbo = true;
       const v = stats && stats.vorp && (stats.vorp[p.id] || stats.vorp[nameKeys(p.id)[0]]);
       q.bbv = v ? v[0] : null; q.bpm = v ? v[1] : null;
       q.vps = q.bbv != null ? q.bbv / (q.sal / 1e7) : null;          // VORP per $10M of salary
@@ -434,7 +440,7 @@
     for (const t of L.teams) {
       for (const pid of rostered(t)) {
         const p = pool.find((x) => x.id === pid);
-        if (!p || !p.gone) continue;
+        if (!p || !p.gone || (p.limbo && !p.noDeal)) continue;
         dropPlayer(L, pool, t.id, pid, week, now);
         delete L.waived[pid];
         L.log[L.log.length - 1].text = p.noDeal
