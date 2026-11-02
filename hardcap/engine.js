@@ -31,7 +31,10 @@
     draftMode: "live", clock: 60, slowHours: 8, botDelay: 1500, auctionHours: 24,
     regWeeks: 21, playoffTeams: 4, startWeek: 1, tierDeadline: 21, tradeDeadline: 18, buyIn: 100,
     irSlots: 2, irRule: "out", vorpCat: true, twoWayMax: 3,
-    lineScale: 1.75,                                                  // the line, in real NBA caps
+    lineScale: 1.75,                                                  // hard-cap leagues: the line, in real NBA caps
+    // Soft cap: everyone gets the real second apron free and can go over, up to two real caps, by paying luxury tax
+    // in real money into the pot ($ per $1M over, by bracket). Over in 2 of the last 3 seasons adds the repeater rate.
+    capMode: "soft", taxBrackets: [[10, 2], [10, 3], [null, 5]], repeaterAdd: 2,
     prospectAuction: "live", auctionClock: 30, slowAuctionHours: 4,   // live nominate-and-bid auction after the draft; or "sealed" or "skip"   // two-way and 10-day players a team can carry, like the NBA
     tradeReview: "vote", reviewHours: 48, vetoShare: 0.5,   // "vote": the league can veto; "commish": the commissioner can; "none"
     lineGraceHours: 72,                                     // time to get back under the line after a real-world salary change
@@ -383,7 +386,11 @@
 
   function newLeague(opts) {
     const s = Object.assign({}, DEFAULTS, opts.settings || {});
-    s.tiers = s.tiers || defaultTiers(opts.cba, s.lineScale || 1);
+    if (s.capMode === "soft") {
+      s.freeLine = s.freeLine || opts.cba.a2;
+      s.hardLine = s.hardLine || 2 * opts.cba.cap;
+      s.tiers = [{ k: "soft", label: "Soft cap", line: s.hardLine, add: 0 }];
+    } else s.tiers = s.tiers || defaultTiers(opts.cba, s.lineScale || 1);
     const seed = opts.seed || Math.floor(Math.random() * 2 ** 31);
     const n = Math.max(4, Math.min(opts.maxTeams || 16, Math.round((opts.teams || 10) / 2) * 2));   // even, 4 to 16
     s.playoffTeams = Math.min(s.playoffTeams, n);
@@ -433,8 +440,29 @@
   const totalWeeks = (L) => L.settings.regWeeks + 2;
   const tierOf = (L, team) => L.settings.tiers[team.tier || 0];
   const ceilingOf = (L, team) => tierOf(L, team).line;
-  const owed = (L, team) => L.settings.buyIn + tierOf(L, team).add;
+  const isSoft = (L) => L.settings.capMode === "soft";
+  const freeLine = (L, team) => (isSoft(L) ? L.settings.freeLine : ceilingOf(L, team));
+  // Luxury tax on a payroll, in whole dollars.
+  function taxFor(L, pay, repeater) {
+    if (!isSoft(L)) return 0;
+    let over = (pay - L.settings.freeLine) / 1e6, tax = 0;
+    for (const [width, rate] of L.settings.taxBrackets) {
+      if (over <= 0) break;
+      const part = width == null ? over : Math.min(over, width);
+      tax += part * (rate + (repeater ? L.settings.repeaterAdd : 0));
+      over -= part;
+    }
+    return tax > 0 ? Math.ceil(tax - 1e-9) : 0;
+  }
+  // Over in 2 of the last 3 assessed seasons.
+  const isRepeater = (L, team) => ((L.taxHist && L.taxHist[team.id]) || []).slice(-3).filter(Boolean).length >= 2;
+  const taxPaid = (L, team) => (L.tax && L.tax.assessed && L.tax.assessed[team.id] ? L.tax.assessed[team.id].tax : 0);
+  const owed = (L, team) => L.settings.buyIn + tierOf(L, team).add + taxPaid(L, team);
   const pot = (L) => sum(L.teams.map((t) => owed(L, t)));
+  // How far a team will spend on its own: bots in a soft-cap league go a little over by temperament; an autopick
+  // never puts a manager into the tax, since that's real money.
+  const BOT_TAX = { stars: 25e6, balanced: 12e6, youth: 6e6, value: 0 };
+  const spendLimit = (L, team) => (!isSoft(L) ? ceilingOf(L, team) : Math.min(ceilingOf(L, team), L.settings.freeLine + (team.owner ? 0 : BOT_TAX[team.style] || 0)));
 
   // Upgrades are one way: once a team agrees to pay for a tier, it stays there for the season.
   function upgradeTier(L, teamId, to, now, week) {
@@ -618,7 +646,7 @@
   // Can this team add this player (optionally releasing someone) and stay under its ceiling?
   // During the draft it must also be able to fill every open spot at the cheapest salaries left.
   function check(L, team, player, ctx, opts = {}) {
-    const ceiling = ceilingOf(L, team);
+    const ceiling = opts.limit != null ? Math.min(opts.limit, ceilingOf(L, team)) : ceilingOf(L, team);
     const ros = active(team);
     const drops = (opts.drops || (opts.drop ? [opts.drop] : [])).filter((d) => ros.includes(d));
     const dropSal = sum(drops.map((d) => ctx.byId[d].sal));
@@ -714,7 +742,7 @@
   function botScore(L, team, p, ctx, r) {
     const ros = active(team);
     const left = L.settings.roster - ros.length;
-    const room = ceilingOf(L, team) - payroll(team, ctx.byId);
+    const room = spendLimit(L, team) - payroll(team, ctx.byId);
     const pace = room / Math.max(1, left);
     let s = p.z;
     const over = p.sal - pace * 1.35;
@@ -734,20 +762,20 @@
     const team = L.teams[teamId];
     for (const id of team.queue || []) {
       const p = ctx.byId[id];
-      if (p && ctx.own[id] == null && check(L, team, p, ctx, { reserve: true }).ok) return p;
+      if (p && ctx.own[id] == null && check(L, team, p, ctx, { reserve: true, limit: spendLimit(L, team) }).ok) return p;
     }
     let best = null, bestS = -Infinity;
     const saved = team.style;
     if (team.owner) team.style = "balanced";
     for (const p of ctx.available) {
-      if (!check(L, team, p, ctx, { reserve: true }).ok) continue;
+      if (!check(L, team, p, ctx, { reserve: true, limit: spendLimit(L, team) }).ok) continue;
       const s = botScore(L, team, p, ctx, r);
       if (s > bestS) { bestS = s; best = p; }
     }
     team.style = saved;
     if (best) return best;
     // Nothing fits with the reserve: take the cheapest player who fits at all, or leave the spot open.
-    const fits = ctx.available.filter((p) => check(L, team, p, ctx).ok).sort((a, b) => a.sal - b.sal || b.z - a.z);
+    const fits = ctx.available.filter((p) => check(L, team, p, ctx, { limit: spendLimit(L, team) }).ok || check(L, team, p, ctx).ok).sort((a, b) => a.sal - b.sal || b.z - a.z);
     return fits.length ? Object.assign({ relaxed: true }, fits[0]) : { id: null, relaxed: true };
   }
 
@@ -1231,7 +1259,7 @@
       for (const p of free) {
         if (p.z < worst.z + 0.6) break;
         const amt = Math.max(1, Math.min(team.faab, Math.round((p.z - worst.z) * (2 + r() * 3))));
-        if (check(L, team, p, ctx, { drop: worst.id }).ok) { out[team.id] = [{ add: p.id, drop: worst.id, amt }]; break; }
+        if (check(L, team, p, ctx, { drop: worst.id, limit: spendLimit(L, team) }).ok) { out[team.id] = [{ add: p.id, drop: worst.id, amt }]; break; }
       }
     }
     return out;
@@ -1384,9 +1412,31 @@
      over, and it has until the first lineup lock at least lineGraceHours away to get back under: release someone,
      make a trade that cuts payroll, or move up a tier. If it's still over then, the clock releases its lowest-ranked
      players until it fits. */
+  // Luxury tax: payroll is snapshotted when the trade deadline passes and again when the regular season ends; each team
+  // pays on the higher of the two, so dumping salary on the last day doesn't dodge it.
+  function assessTax(L, byId, now, opener) {
+    if (!isSoft(L) || L.phase !== "league") return 0;
+    L.tax = L.tax || { season: L.settings.season || "2026-27", deadline: null, assessed: null };
+    let n = 0;
+    if (!L.tax.deadline && now >= lockTime(opener, L.settings.tradeDeadline + 1)) {
+      L.tax.deadline = Object.fromEntries(L.teams.map((t) => [t.id, payroll(t, byId)])); n++;
+    }
+    if (!L.tax.assessed && now >= lockTime(opener, L.settings.regWeeks + 1)) {
+      L.tax.assessed = {}; L.taxHist = L.taxHist || {};
+      for (const t of L.teams) {
+        const pay = Math.max(payroll(t, byId), (L.tax.deadline || {})[t.id] || 0), rep = isRepeater(L, t), tax = taxFor(L, pay, rep);
+        L.tax.assessed[t.id] = { payroll: pay, over: Math.max(0, pay - L.settings.freeLine), tax, repeater: rep };
+        (L.taxHist[t.id] = L.taxHist[t.id] || []).push(tax > 0);
+        if (tax) log(L, now, "tax", t.id, `${t.name} owes $${tax} in luxury tax${rep ? " at the repeater rate" : ""}: ${money(pay - L.settings.freeLine)} over the ${money(L.settings.freeLine)} line`);
+      }
+      n++;
+    }
+    return n;
+  }
+
   function enforceLine(L, pool, now, week, opener) {
     const byId = Object.fromEntries(pool.map((p) => [p.id, p]));
-    let changed = 0;
+    let changed = assessTax(L, byId, now, opener);
     for (const t of L.teams) {
       const over = payroll(t, byId) - ceilingOf(L, t);
       if (over <= 0) { if (t.overSince) { delete t.overSince; delete t.overDeadline; changed++; } continue; }
@@ -1454,7 +1504,7 @@
   }
 
   const E = {
-    latestContracts, gamesInWeek, endAuction, reopenAuction, startLiveAuction, auctionNominator, auctionLeft, nominate, auctionBid, passNomination, pauseAuction, beginAuction, auctionTick, botValue, isTwoWay, twoWaysOn, CATS, VORP_CAT, catsFor, withVorp, voteTrade, finalizeTrades, applyTrade, voters, vetoesNeeded, enforceLine, contractType,
+    latestContracts, gamesInWeek, isSoft, freeLine, taxFor, isRepeater, taxPaid, spendLimit, assessTax, endAuction, reopenAuction, startLiveAuction, auctionNominator, auctionLeft, nominate, auctionBid, passNomination, pauseAuction, beginAuction, auctionTick, botValue, isTwoWay, twoWaysOn, CATS, VORP_CAT, catsFor, withVorp, voteTrade, finalizeTrades, applyTrade, voters, vetoesNeeded, enforceLine, contractType,
     COLS, C, DEFAULTS, HOUR, totalWeeks, rosterIndex, onNbaRoster, mergeContracts, releaseGone, SLOTS, ELIG, positions, eligible, isOut, rostered, irProblem, moveToIR, activateIR,
     autoLineup, lockTime, lineupFor, setLineup, lockLineups, defaultTiers, rng, money, isProspect, buildPool, buildProspects, rankNineCat, newLeague,
     snake, snakeFrom, setOrder, roundRobin, tierOf, ceilingOf, owed, pot, upgradeTier, active, payroll, owners, context, reserve,

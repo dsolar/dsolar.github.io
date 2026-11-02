@@ -53,12 +53,14 @@ dsolar.github.io/
                               pieces.js (piece art),
                               chess.js (rules) and stockfish.* (the engine, runs in the visitor's browser). Plain files.
   hardcap/                    Hard Cap, the salary-cap dynasty basketball league (unlisted while it's in testing):
-                              index.html (layout, styles), app.js (League Office, Cap Sheet, Player Market, Matchup
-                              Center, Transactions, Draft Room, Commissioner), engine.js (every rule: tiers, the line,
-                              drafts, lineups, IR, FAAB, trades, scoring), mark.svg (the HC logo), stats.json (ESPN box
-                              scores, season lines and injuries) and yahoo.json (Yahoo's NBA ranks), both written by the
-                              Hard Cap stats workflow; don't edit them. Leagues live in Supabase (tools/hardcap_supabase.sql).
-                              Players and salaries come from Banner 19's celtics/data.json. Tests: node --test tests/hardcap.test.mjs
+                              index.html (layout, styles), app.js (League, My Team, Players, Matchups, Draft and
+                              Commissioner sections, the live prospect auction, the message board), engine.js (every rule:
+                              the soft cap and luxury tax or hard-cap tiers, drafts, auctions, lineups, IR, FAAB, trades and
+                              votes, scoring), mark.svg (the HC logo), contracts.json (hand-checked contract fixes), and
+                              stats.json, yahoo.json and prospects.json, written by the Hard Cap stats workflow from ESPN,
+                              Basketball-Reference, Yahoo and Tankathon; don't edit those three. Leagues live in Supabase
+                              (tools/hardcap_supabase.sql); the server clock is supabase/functions/hardcap-clock.
+                              Tests: node --test tests/hardcap.test.mjs
   prospect/                   old address of Hard Cap; forwards to hardcap/
   guillotine/                 Bastille Day Odds: index.html, sim.js (the simulation),
                               data.json (league data, written by the workflow below)

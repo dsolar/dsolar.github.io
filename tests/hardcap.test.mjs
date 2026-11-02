@@ -15,7 +15,7 @@ const byId = Object.fromEntries(pool.map(p => [p.id, p]));
 const T0 = Date.UTC(2026, 10, 2, 15, 0, 0);
 
 function drafted(teams = 10, seed = 3, opts = {}) {
-  const L = H.newLeague({ cba: nba.cba, teams, seed, now: T0, settings: { prospectAuction: 'sealed', ...(opts.settings || {}) } });
+  const L = H.newLeague({ cba: nba.cba, teams, seed, now: T0, settings: { prospectAuction: 'sealed', capMode: 'tiers', lineScale: 1, ...(opts.settings || {}) } });
   if (opts.claim) for (const i of opts.claim) L.teams[i].owner = 'Manager ' + i;
   if (opts.tiers) opts.tiers.forEach((k, i) => (L.teams[i].tier = k));
   H.startDraft(L, T0);
@@ -86,7 +86,7 @@ test('slow drafts use hours, and a manager can pick on time', () => {
 });
 
 test('the reserve blocks a pick that would strand open spots', () => {
-  const L = H.newLeague({ cba: nba.cba, teams: 10, seed: 5, now: T0, settings: { lineScale: 1 } });
+  const L = H.newLeague({ cba: nba.cba, teams: 10, seed: 5, now: T0, settings: { capMode: 'tiers', lineScale: 1 } });
   L.teams[0].tier = 2;
   const pricey = pool.slice().sort((a, b) => b.sal - a.sal);
   for (const p of pricey.slice(0, 3)) L.teams[0].hist.push({ pid: p.id, from: 1, to: null });
@@ -100,9 +100,9 @@ test('the reserve blocks a pick that would strand open spots', () => {
 });
 
 test('tiers only go up, raise the line, and add to the pot', () => {
-  const L = H.newLeague({ cba: nba.cba, teams: 10, seed: 6, now: T0, settings: { lineScale: 1 } });
+  const L = H.newLeague({ cba: nba.cba, teams: 10, seed: 6, now: T0, settings: { capMode: 'tiers', lineScale: 1 } });
   assert.equal(H.ceilingOf(L, L.teams[3]), nba.cba.cap);
-  const big = H.newLeague({ cba: nba.cba, teams: 10, seed: 6, now: T0 });
+  const big = H.newLeague({ cba: nba.cba, teams: 10, seed: 6, now: T0, settings: { capMode: 'tiers' } });
   assert.ok(Math.abs(H.ceilingOf(big, big.teams[0]) - nba.cba.cap * 1.75) < 1e5, 'new leagues default to 1.75 real caps');
   assert.equal(H.pot(L), 1000);
   assert.equal(H.upgradeTier(L, 3, 2, T0, 1).ok, true);
@@ -313,7 +313,7 @@ test('4 to 16 teams, even counts, every roster fills', () => {
     assert.equal(new Set(L.teams.map(t => t.abbr)).size, n);
     assert.ok(L.teams.every(t => H.active(t).length === 12));
   }
-  assert.equal(H.newLeague({ cba: nba.cba, teams: 7, seed: 1, now: T0 }).teams.length, 8);
+  assert.equal(H.newLeague({ cba: nba.cba, teams: 7, seed: 1, now: T0, settings: { capMode: 'tiers' } }).teams.length, 8);
 });
 
 test('league vote: an accepted trade waits out review; half the other managers can veto', () => {
@@ -454,4 +454,34 @@ test('live auction pauses, and a commissioner can hold the start', () => {
   assert.equal(H.auctionTick(L, prospects, now + 9e9), 0);
   H.pauseAuction(L, prospects, now + 2000, false);
   assert.ok(H.auctionTick(L, prospects, now + 2000 + 60000) > 0);
+});
+
+test('soft cap: free second-apron line, taxed brackets, repeaters, two-cap ceiling, assessed at season end', () => {
+  const L = H.newLeague({ cba: nba.cba, teams: 10, seed: 121, now: T0, settings: { prospectAuction: 'sealed' } });
+  assert.equal(L.settings.capMode, 'soft');
+  assert.equal(L.settings.freeLine, nba.cba.a2);
+  assert.equal(H.ceilingOf(L, L.teams[0]), 2 * nba.cba.cap);
+  const line = L.settings.freeLine;
+  assert.equal(H.taxFor(L, line - 1, false), 0);
+  assert.equal(H.taxFor(L, line + 20e6, false), 50);          // 10 x $2 + 10 x $3
+  assert.equal(H.taxFor(L, line + 20e6, true), 90);           // repeater adds $2 a $1M
+  assert.equal(H.taxFor(L, line + 40e6, false), 150);         // + 20 x $5
+  // Bots spend only a little past the free line; nobody passes the ceiling.
+  H.startDraft(L, T0); let now = T0;
+  while (L.phase === 'nba') { now += 61000; H.catchUp(L, pool, now); }
+  for (const t of L.teams) {
+    const pay = H.payroll(t, byId);
+    assert.ok(pay <= H.ceilingOf(L, t));
+    assert.ok(pay <= line + 25e6 + 1, `${t.name} ${t.style} ${pay}`);
+  }
+  // Assessment: higher of deadline and final payroll; repeaters after two taxed seasons of three.
+  H.resolveAuction(L, prospects, {}, now);
+  const t = L.teams.find(x => H.payroll(x, byId) > line) || L.teams[0];
+  const end = H.lockTime('2026-10-20', L.settings.regWeeks + 1) + 1000;
+  H.enforceLine(L, pool, end, L.settings.regWeeks + 1, '2026-10-20');
+  assert.ok(L.tax.assessed && L.tax.deadline);
+  assert.equal(L.tax.assessed[t.id].tax, H.taxFor(L, Math.max(H.payroll(t, byId), L.tax.deadline[t.id]), false));
+  assert.equal(H.owed(L, t), L.settings.buyIn + L.tax.assessed[t.id].tax);
+  L.taxHist[t.id] = [true, false, true];
+  assert.equal(H.isRepeater(L, t), true);
 });

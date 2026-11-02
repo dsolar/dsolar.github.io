@@ -136,6 +136,10 @@
   const last = (n) => { const parts = String(n).split(" "); const s = parts.pop(); return /^(jr\.?|sr\.?|ii|iii|iv)$/i.test(s) ? parts.pop() + " " + s : s; };
   const pct = (m, a) => (a ? (m / a).toFixed(3).replace(/^0/, "") : "-");
   const ordinal = (n) => n + (["th", "st", "nd", "rd"][(n % 100 > 10 && n % 100 < 14) || n % 10 > 3 ? 0 : n % 10]);
+  // Soft cap: what a payroll costs in luxury tax this season.
+  const soft = () => LG && H.isSoft(LG);
+  const taxNow = (t, extra = 0) => (soft() ? H.taxFor(LG, H.payroll(t, BY) + extra, H.isRepeater(LG, t)) : 0);
+  const taxTag = (t) => { if (!soft()) return ""; const x = taxNow(t); return x ? `<span class="tag t3" title="Projected luxury tax">$${x} tax</span>` : ""; };
   const tierTag = (t) => { const k = t.tier || 0; return k ? `<span class="tag t${k}">${esc(LG.settings.tiers[k].label)}</span>` : ""; };
   const ownerTag = (t) => (isMine(t) ? `<span class="tag you">You</span>` : t.owner ? "" : `<span class="tag bot">Open</span>`);
   function contract(p) {
@@ -187,9 +191,13 @@
     if (hold > 0) html += `<div class="blk hold" style="flex:0 0 ${scale(hold)}%" title="Held for ${open} open spots">${scale(hold) > 8 ? `${open} open<span>${money(hold)}</span>` : ""}</div>`;
     const room = ceiling - after - hold;
     // Every tier's line is marked; only this team's line is labeled, so the labels never pile up.
-    const ticks = LG.settings.tiers.map((t, i) => `<div class="tick${i === (team.tier || 0) ? " on" : ""}" style="left:${scale(t.line)}%" title="${esc(t.label)}: ${money(t.line)}">${i === (team.tier || 0) ? `<label>${esc(t.label)} line ${money(t.line)}</label>` : ""}</div>`).join("");
+    const ticks = H.isSoft(LG)
+      ? `<div class="tick on" style="left:${scale(LG.settings.freeLine)}%" title="Tax line: ${money(LG.settings.freeLine)}"><label>Tax line ${money(LG.settings.freeLine)}</label></div><div class="tick" style="left:${scale(LG.settings.hardLine) - 0.3}%" title="Ceiling: ${money(LG.settings.hardLine)}"></div>`
+      : LG.settings.tiers.map((t, i) => `<div class="tick${i === (team.tier || 0) ? " on" : ""}" style="left:${scale(t.line)}%" title="${esc(t.label)}: ${money(t.line)}">${i === (team.tier || 0) ? `<label>${esc(t.label)} line ${money(t.line)}</label>` : ""}</div>`).join("");
     const head = opts.mini ? "" : `<div class="capbar-top"><div><span class="disp big num">${money(after)}</span> <span class="ps">on the books, ${ids.length + (opts.ghost ? 1 : 0)} of ${LG.settings.roster} players</span></div>
-      <div class="num"><b class="${room >= 0 ? "ok" : "bad"}">${room >= 0 ? `${money(room)} usable room` : `${money(-room)} over the line`}</b>${hold > 0 ? ` <span class="ps">after ${money(hold)} held for ${open} spot${open === 1 ? "" : "s"}</span>` : ""}</div></div>`;
+      <div class="num">${H.isSoft(LG) ? (() => { const free = LG.settings.freeLine - after - hold, tx = H.taxFor(LG, after + hold, H.isRepeater(LG, team));
+        return free >= 0 ? `<b class="ok">${money(free)} under the tax line</b>` : `<b class="bad">${money(-free)} over the tax line, $${tx} tax</b>`; })()
+        : `<b class="${room >= 0 ? "ok" : "bad"}">${room >= 0 ? `${money(room)} usable room` : `${money(-room)} over the line`}</b>`}${hold > 0 ? ` <span class="ps">after ${money(hold)} held for ${open} spot${open === 1 ? "" : "s"}</span>` : ""}</div></div>`;
     return `<div class="capbar${opts.mini ? " mini" : ""}">${head}<div class="track" role="img" aria-label="${money(after)} on the books against a ${money(ceiling)} line"><div class="blocks">${html}</div>${ticks}</div><div class="capbar-foot"></div></div>`;
   }
 
@@ -403,7 +411,8 @@
     const faab = L ? L.settings.faab : H.DEFAULTS.faab, buy = L ? L.settings.buyIn : 100;
     return [
       ["Real salaries", "Every player costs his actual NBA salary, and it moves each offseason with his real contract. Two-way and 10-day players count too, at their real (small) salaries."],
-      ["The line", `Everyone starts as a cap team: ${L ? L.settings.roster : 12} NBA players under ${money(tiers[0].line)}${scale !== 1 ? `, ${scale} times the real NBA cap, so a team can afford the stars ten fantasy teams compete for` : ""}. Any team can move up a tier for a cash add-on: ${tiers.slice(1).map((t) => `${t.label} (${money(t.line)}, +$${t.add})`).join(", ")}. Moving up is permanent for the season. Buy-in is $${buy}.`],
+      ...(L ? H.isSoft(L) : H.DEFAULTS.capMode === "soft") ? [["The line", `A soft cap. Everyone gets ${money(L ? L.settings.freeLine : NBA.cba.a2)} free, the real NBA second apron, for ${L ? L.settings.roster : 12} NBA players. You can go over, up to a hard ceiling of ${money(L ? L.settings.hardLine : 2 * NBA.cba.cap)} (two real caps), by paying luxury tax in real money into the pot.`],
+        ["Luxury tax", `Per $1M over the line: $2 on the first $10M, $3 on the next $10M, $5 beyond that. Over in 2 of the last 3 seasons and you pay the repeater rate, $2 more per $1M in every bracket. It's charged on the higher of your payroll at the trade deadline and at the end of the regular season. Going $20M over costs $50, or $90 as a repeater. Buy-in is $${buy}.`]] : [["The line", `Everyone starts as a cap team: ${L ? L.settings.roster : 12} NBA players under ${money(tiers[0].line)}${scale !== 1 ? `, ${scale} times the real NBA cap, so a team can afford the stars ten fantasy teams compete for` : ""}. Any team can move up a tier for a cash add-on: ${tiers.slice(1).map((t) => `${t.label} (${money(t.line)}, +$${t.add})`).join(", ")}. Moving up is permanent for the season. Buy-in is $${buy}.`]],
       ["The draft", "Live or slow. A pick only counts if you can still fill every open spot at the cheapest salaries left; the hatched part of your cap bar is that reserve. Miss your clock and your queue picks for you."],
       ["Prospect Board", `After the draft, a blind FAAB auction for ${L ? L.settings.prospects : 2} prospect spots. Bids come out of your $${faab} season budget, so a big prospect bid means fewer pickups later.`],
       ["Waivers", `Every add is a blind FAAB bid, $${L ? L.settings.minBid : 1} minimum, so there's no first-come rush. Highest bid wins, ties go to the team lower in the standings. Bids run every Monday at 3 a.m. Eastern; signings count that week. Drops are free and unlimited.`],
@@ -443,7 +452,9 @@
           <div class="field"><span class="lbl">Managers</span><div class="seg" role="group" aria-label="Managers">${SIZES.map((n) => `<button type="button" data-n="${n}" aria-pressed="${n === 10}">${n}</button>`).join("")}</div></div>
           <div class="row2"><div class="field"><span class="lbl">NBA roster spots</span><div class="seg" role="group" aria-label="Roster spots">${ROSTERS.map((n) => `<button type="button" data-ro="${n}" aria-pressed="${n === 12}">${n}</button>`).join("")}</div></div>
           <div class="field"><span class="lbl">Draft</span><div class="seg" role="group" aria-label="Draft type"><button type="button" data-m="live" aria-pressed="true">Live</button><button type="button" data-m="slow" aria-pressed="false">Slow</button></div></div></div>
-          <div class="field"><span class="lbl">The line, in real NBA caps</span><div class="seg" role="group" aria-label="Line size">${[1, 1.25, 1.5, 1.75, 2].map((x) => `<button type="button" data-ls="${x}" aria-pressed="${x === H.DEFAULTS.lineScale}">${x}x</button>`).join("")}</div>
+          <div class="field"><span class="lbl">Cap rules</span><div class="seg" role="group" aria-label="Cap rules"><button type="button" data-cm="soft" aria-pressed="true">Soft cap with luxury tax</button><button type="button" data-cm="tiers" aria-pressed="false">Hard cap with tiers</button></div>
+            <span class="ps" id="cmnote">Everyone gets the real second apron (${money(NBA.cba.a2)}) free and can go over, up to ${money(2 * NBA.cba.cap)}, by paying luxury tax into the pot.</span></div>
+          <div class="field" id="lsfield" hidden><span class="lbl">The line, in real NBA caps</span><div class="seg" role="group" aria-label="Line size">${[1, 1.25, 1.5, 1.75, 2].map((x) => `<button type="button" data-ls="${x}" aria-pressed="${x === H.DEFAULTS.lineScale}">${x}x</button>`).join("")}</div>
             <span class="ps" id="lsnote">${money(H.defaultTiers(NBA.cba, H.DEFAULTS.lineScale)[0].line)} cap line. At 1x about a third of the top 30 go undrafted; 1.75x gets them all rostered and leaves the overpaid ones on the board.</span></div>
           <div class="row2"><div class="field"><label for="cp">Commissioner PIN, 4 to 8 digits</label><input type="password" id="cp" name="pin" inputmode="numeric" pattern="\\d{4,8}" required autocomplete="new-password"></div>
           <div class="field"><label for="tn">Your team name</label><input type="text" id="tn" name="tname" maxlength="28" value="Needham Nightshift"></div></div>
@@ -478,14 +489,16 @@
     const f = $("#create");
     $$("[data-n]", f).forEach((b) => (b.onclick = () => { n = +b.dataset.n; $$("[data-n]", f).forEach((x) => x.setAttribute("aria-pressed", x === b)); }));
     $$("[data-m]", f).forEach((b) => (b.onclick = () => { mode = b.dataset.m; $$("[data-m]", f).forEach((x) => x.setAttribute("aria-pressed", x === b)); }));
-    let ls = H.DEFAULTS.lineScale;
+    let ls = H.DEFAULTS.lineScale, cm = "soft";
+    $$("[data-cm]", f).forEach((b) => (b.onclick = () => { cm = b.dataset.cm; $$("[data-cm]", f).forEach((x) => x.setAttribute("aria-pressed", x === b)); $("#lsfield").hidden = cm !== "tiers";
+      $("#cmnote").textContent = cm === "soft" ? `Everyone gets the real second apron (${money(NBA.cba.a2)}) free and can go over, up to ${money(2 * NBA.cba.cap)}, by paying luxury tax into the pot.` : "A hard line; teams buy tier upgrades for more room."; }));
     $$("[data-ls]", f).forEach((b) => (b.onclick = () => { ls = +b.dataset.ls; $$("[data-ls]", f).forEach((x) => x.setAttribute("aria-pressed", x === b)); $("#lsnote").textContent = `${money(H.defaultTiers(NBA.cba, ls)[0].line)} cap line, ${money(H.defaultTiers(NBA.cba, ls)[3].line)} second apron.`; }));
     $$("[data-ro]", f).forEach((b) => (b.onclick = () => { ro = +b.dataset.ro; $$("[data-ro]", f).forEach((x) => x.setAttribute("aria-pressed", x === b)); }));
     f.onsubmit = async (e) => {
       e.preventDefault();
       const fd = new FormData(f), pin = String(fd.get("pin"));
       const btn = $("button[type=submit]", f); btn.disabled = true;
-      const L = H.newLeague({ cba: NBA.cba, teams: n, name: fd.get("name"), now: Date.now(), opener, settings: { draftMode: mode, roster: ro, lineScale: ls } });
+      const L = H.newLeague({ cba: NBA.cba, teams: n, name: fd.get("name"), now: Date.now(), opener, settings: { draftMode: mode, roster: ro, lineScale: ls, capMode: cm } });
       const tname = String(fd.get("tname") || "").trim();
       if (tname) renameTeam(L, 0, tname);
       try {
@@ -533,18 +546,18 @@
   }
   function standingsRows(st) {
     return st.map((r, i) => {
-      const t = LG.teams[r.id], pay = H.payroll(t, BY), line = H.ceilingOf(LG, t), room = line - pay;
+      const t = LG.teams[r.id], pay = H.payroll(t, BY), line = H.freeLine(LG, t), room = line - pay, tx = taxNow(t), paid = H.taxPaid(LG, t);
       return `<tr class="${isMine(t) ? "me" : ""}${i === LG.settings.playoffTeams - 1 && LG.phase === "league" ? " cut" : ""}">
         <td class="r num">${i + 1}</td>
-        <td><a class="btn link" href="#team/roster/${t.id}">${esc(t.name)}</a> ${ownerTag(t)} ${tierTag(t)}${t.overDeadline ? ` <span class="tag t3">Over line</span>` : ""}<div class="ps">${t.owner ? esc(t.owner) : "Bot until claimed"}</div></td>
+        <td><a class="btn link" href="#team/roster/${t.id}">${esc(t.name)}</a> ${ownerTag(t)} ${tierTag(t)}${soft() && !paid ? taxTag(t) : ""}${t.overDeadline ? ` <span class="tag t3">Over line</span>` : ""}<div class="ps">${t.owner ? esc(t.owner) : "Bot until claimed"}</div></td>
         <td class="r num">${r.w}-${r.l}-${r.t}</td><td class="r num hide-s">${r.pct.toFixed(3).replace(/^0/, "")}</td>
         <td class="r num hide-m">${r.gmsc.toFixed(0)}</td>
         <td class="r num hide-s">${money(pay)}</td><td class="r num hide-s">${money(line)}</td>
-        <td class="r num"><b class="${room >= 0 ? "ok" : "bad"}">${money(room)}</b></td>
-        <td class="r num">$${t.faab}</td><td class="r num hide-s">${t.prospects.length}/${LG.settings.prospects}</td><td class="r num hide-m">$${H.owed(LG, t)}</td></tr>`;
+        <td class="r num"><b class="${room >= 0 ? "ok" : "bad"}">${room >= 0 ? money(room) : "-" + money(-room)}</b></td>
+        <td class="r num">$${t.faab}</td><td class="r num hide-s">${t.prospects.length}/${LG.settings.prospects}</td><td class="r num hide-m">$${H.owed(LG, t)}${soft() && !paid && tx ? `<div class="ps">+$${tx} if it ends today</div>` : ""}</td></tr>`;
     }).join("");
   }
-  const STAND_HEAD = `<thead><tr><th class="r">#</th><th>Team</th><th class="r">Cats</th><th class="r hide-s">Pct</th><th class="r hide-m">GmSc</th><th class="r hide-s">On books</th><th class="r hide-s">Line</th><th class="r">Room</th><th class="r">FAAB</th><th class="r hide-s">Prosp</th><th class="r hide-m">Owes</th></tr></thead>`;
+  const STAND_HEAD = `<thead><tr><th class="r">#</th><th>Team</th><th class="r">Cats</th><th class="r hide-s">Pct</th><th class="r hide-m">GmSc</th><th class="r hide-s">On books</th><th class="r hide-s">${LG && H.isSoft(LG) ? "Tax line" : "Line"}</th><th class="r">Room</th><th class="r">FAAB</th><th class="r hide-s">Prosp</th><th class="r hide-m">Owes</th></tr></thead>`;
   const standingsNow = () => (LG.phase === "league" ? H.standings(LG, curWeek() - 1, WK, BY) : LG.teams.map((t) => ({ id: t.id, w: 0, l: 0, t: 0, pct: 0, mw: 0, ml: 0, mt: 0, gmsc: 0, pf: [] })));
   /* ---------- message board ---------- */
   let CHAT = [], chatLast = 0, chatBusy = false;
@@ -597,7 +610,7 @@
     return `<div class="head"><h1 class="disp">League settings</h1>${me.commish ? `<a class="btn sm" href="#commish">Change settings</a>` : ""}</div>
       <div class="cols2"><section class="card"><h3>Rosters and money</h3><dl class="kv">
         ${row("Teams", LG.teams.length)}${row("NBA roster spots", s.roster)}${row("Prospect spots", s.prospects)}${row("IR spots", `${s.irSlots}, Out players only`)}
-        ${row("Lines", `${s.tiers.map((t) => `${esc(t.label)} ${money(t.line)}${t.add ? ` (+$${t.add})` : ""}`).join("<br>")}${(s.lineScale || 1) !== 1 ? `<br><span class="ps">${s.lineScale} times the real NBA lines</span>` : ""}`)}${row("Buy-in", "$" + s.buyIn)}${row("Payout", s.payout.join(" / "))}
+        ${H.isSoft(LG) ? row("Cap", `Soft cap: ${money(s.freeLine)} tax line (the real second apron), ${money(s.hardLine)} ceiling<br><span class="ps">Tax per $1M over: ${s.taxBrackets.map(([w, r]) => (w == null ? `$${r} beyond` : `$${r} on the next $${w}M`)).join(", ")}; repeaters +$${s.repeaterAdd}</span>`) : row("Lines", `${s.tiers.map((t) => `${esc(t.label)} ${money(t.line)}${t.add ? ` (+$${t.add})` : ""}`).join("<br>")}${(s.lineScale || 1) !== 1 ? `<br><span class="ps">${s.lineScale} times the real NBA lines</span>` : ""}`)}${row("Buy-in", "$" + s.buyIn)}${row("Payout", s.payout.join(" / "))}
         ${row("Season FAAB", `$${s.faab}, $${s.minBid} minimum`)}</dl></section>
       <section class="card"><h3>Season</h3><dl class="kv">
         ${row("Draft", s.draftMode === "slow" ? `Slow, ${s.slowHours} hours a pick` : `Live, ${s.clock} seconds a pick`)}${row("Scoring", `Head-to-head: ${H.catsFor(LG).map((c) => c.label).join(", ")}`)}
@@ -621,9 +634,11 @@
       </section>
       <aside class="stack">
         <div class="card"><h3>The pot</h3><div class="disp" style="font-size:44px">$${H.pot(LG)}</div>
-          <dl class="kv" style="margin-top:8px">${counts.map((c) => `<dt>${esc(c.tier.label)} ($${LG.settings.buyIn + c.tier.add})</dt><dd>${c.n} team${c.n === 1 ? "" : "s"}</dd>`).join("")}</dl>
+          ${soft() ? (() => { const proj = LG.teams.reduce((a, t) => a + (H.taxPaid(LG, t) ? 0 : taxNow(t)), 0), paid = LG.teams.reduce((a, t) => a + H.taxPaid(LG, t), 0);
+            return `<dl class="kv" style="margin-top:8px"><dt>Buy-ins (${LG.teams.length} x $${LG.settings.buyIn})</dt><dd>$${LG.teams.length * LG.settings.buyIn}</dd><dt>Luxury tax paid</dt><dd>$${paid}</dd>${proj ? `<dt>Tax if the season ended today</dt><dd>+$${proj}</dd>` : ""}</dl>`; })()
+          : `<dl class="kv" style="margin-top:8px">${counts.map((c) => `<dt>${esc(c.tier.label)} ($${LG.settings.buyIn + c.tier.add})</dt><dd>${c.n} team${c.n === 1 ? "" : "s"}</dd>`).join("")}</dl>`}
           <dl class="kv" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">${LG.settings.payout.map((pc, k) => `<dt>${["Champion", "Runner-up", "Third place"][k] || ordinal(k + 1)} (${pc}%)</dt><dd>$${Math.round((H.pot(LG) * pc) / 100)}</dd>`).join("")}</dl>
-          <p class="ps" style="margin-bottom:0">Tier upgrades are tagged on every team and can't be undone this season.</p></div>
+          <p class="ps" style="margin-bottom:0">${soft() ? "Teams over the tax line pay into the pot at the end of the regular season." : "Tier upgrades are tagged on every team and can't be undone this season."}</p></div>
         ${LG.phase === "league" ? officeBracket() : ""}
         <div class="card"><h3>Latest moves</h3>${recent.length ? `<ul class="list">${recent.map((x) => `<li><span>${esc(x.text)}</span></li>`).join("")}</ul>` : `<p class="empty">Nothing yet.</p>`}<a class="btn sm" href="#league/tx">All transactions</a></div>
       </aside></div>`;
@@ -664,7 +679,7 @@
     const body = sub === "trades" ? tradesCard(myTeam(), t) : ({ roster: teamLineup, contracts: teamContracts, fits: teamFits }[sub] || teamLineup)(t, mine);
     const tiers = LG.settings.tiers;
     const sick = H.irProblem(LG, t, INJ);
-    const tierCard = `<div class="card"><h3>Spending tier</h3><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="disp" style="font-size:26px">${esc(H.tierOf(LG, t).label)}</span><span class="muted">${money(H.ceilingOf(LG, t))} line, owes $${H.owed(LG, t)}</span></div>
+    const tierCard = H.isSoft(LG) ? taxCard(t) : `<div class="card"><h3>Spending tier</h3><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="disp" style="font-size:26px">${esc(H.tierOf(LG, t).label)}</span><span class="muted">${money(H.ceilingOf(LG, t))} line, owes $${H.owed(LG, t)}</span></div>
       ${mine ? `<div class="tools" style="margin-top:10px">${tiers.map((x, k) => (k > (t.tier || 0) ? `<button class="btn sm" data-tier="${k}">Move up to ${esc(x.label)} (+$${x.add - H.tierOf(LG, t).add})</button>` : "")).join("") || `<span class="muted small">Top tier. Nowhere left to climb.</span>`}</div>
         <p class="ps" style="margin-bottom:0">Upgrades are permanent for the season and open through week ${LG.settings.tierDeadline}.</p>` : ""}
       ${t.tierLog.length ? `<ul class="list" style="margin-top:8px">${t.tierLog.map((x) => `<li><time>${fmtDate(x.at)}</time><span>Moved up to ${esc(tiers[x.tier].label)}</span></li>`).join("")}</ul>` : ""}</div>`;
@@ -678,6 +693,14 @@
         <div class="card"><h3>Prospect rights</h3>${t.prospects.length ? `<ul class="list">${t.prospects.map((id) => `<li><span>${pl(id)} <span class="ps">${esc(PBY[id] ? `${PBY[id].school}, ${PBY[id].pos}, big board ${PBY[id].rank}` : "")}</span></span><span class="grow"></span>${mine && LG.phase === "league" ? `<button class="btn sm" data-drop="${id}">Release</button>` : ""}</li>`).join("")}</ul>` : `<p class="empty">${LG.phase === "league" ? "None. Unclaimed prospects are under Players, Prospect Board." : "The Prospect Board auction follows the draft."}</p>`}</div>
         ${mine && (LG.phase === "lobby" || LG.phase === "nba") ? `<div class="card"><h3>Draft queue</h3>${t.queue.length ? `<ol class="list">${t.queue.map((id, i) => `<li><span>${i + 1}. ${pl(id)}</span><span class="grow"></span><button class="btn sm" data-unqueue="${id}">Remove</button></li>`).join("")}</ol>` : `<p class="empty">Add players from the Draft tab or Players. If your clock runs out, the first one who fits is your pick.</p>`}</div>` : ""}
       </aside></div>`;
+  }
+  function taxCard(t) {
+    const pay = H.payroll(t, BY), line = LG.settings.freeLine, rep = H.isRepeater(LG, t), tx = H.taxFor(LG, pay, rep);
+    const br = LG.settings.taxBrackets.map(([w, r], i, a) => `<li><span>${i === 0 ? `First $${w}M over` : w == null ? "Beyond that" : `Next $${w}M`}</span><span class="grow"></span><b>$${r + (rep ? LG.settings.repeaterAdd : 0)} per $1M</b></li>`).join("");
+    const done = LG.tax && LG.tax.assessed && LG.tax.assessed[t.id];
+    return `<div class="card"><h3>Luxury tax</h3><div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap"><span class="disp" style="font-size:28px">${done ? `$${done.tax}` : tx ? `$${tx}` : "$0"}</span><span class="muted">${done ? "owed this season" : pay > line ? `projected: ${money(pay - line)} over the ${money(line)} tax line` : `${money(line - pay)} under the ${money(line)} tax line`}</span></div>
+      <ul class="list" style="margin-top:8px">${br}</ul>
+      <p class="ps" style="margin-bottom:0">${rep ? "<b>Repeater rate:</b> over in 2 of the last 3 seasons. " : ""}Paid in real money into the pot, on the higher of your payroll at the trade deadline and at the end of the regular season. Nobody can pass the ${money(LG.settings.hardLine)} ceiling.</p></div>`;
   }
   // The week a lineup edit applies to: this week until its first tip, then next week.
   const editWeek = () => { const cw = curWeek(); return now() < H.lockTime(opener, cw) ? cw : Math.min(cw + 1, H.totalWeeks(LG)); };
@@ -943,7 +966,7 @@
     const pend = (myBids.waiver || []).reduce((s, b) => s + b.amt, 0);
     const opts = prospect ? t.prospects.map((id) => ({ id, n: nameOf(id), z: 0 })) : H.active(t).map((id) => BY[id]).sort((a, b) => a.z - b.z);
     const full = prospect ? t.prospects.length >= LG.settings.prospects : H.active(t).length >= LG.settings.roster;
-    dlg(`<h3 class="disp">Bid on ${esc(p.n)}</h3><p class="muted small" style="margin:0">${prospect ? `Prospect rights, ${esc(p.school)}. No salary until he signs his NBA deal.` : `${money(p.sal)} salary, ${contract(p)}`}</p>
+    dlg(`<h3 class="disp">Bid on ${esc(p.n)}</h3><p class="muted small" style="margin:0">${prospect ? `Prospect rights, ${esc(p.school)}. No salary until he signs his NBA deal.` : `${money(p.sal)} salary, ${contract(p)}`}</p>${!prospect && soft() && myTeam() && taxNow(myTeam(), p.sal - (preDrop && BY[preDrop] ? BY[preDrop].sal : 0)) > taxNow(myTeam()) ? `<p class="why" style="margin:6px 0 0">If he signs, you're over the tax line: about $${taxNow(myTeam(), p.sal - (preDrop && BY[preDrop] ? BY[preDrop].sal : 0)) - taxNow(myTeam())} more in luxury tax, real money.</p>` : ""}
       <form class="form" style="margin-top:12px"><div class="field"><label for="amt">Sealed FAAB bid ($${t.faab} budget, $${pend} already bid)</label><input type="number" id="amt" name="amt" min="${LG.settings.minBid}" max="${t.faab}" value="${LG.settings.minBid}" required></div>
       <div class="field"><label for="drop">Release${full ? "" : " (optional)"}</label><select id="drop" name="drop">${full ? "" : `<option value="">Nobody, I have an open spot</option>`}${opts.map((x) => `<option value="${x.id}">${esc(x.n)}${x.sal ? `, ${money(x.sal)}` : ""}</option>`).join("")}</select></div>
       <p class="ps" id="fitMsg" style="margin:0"></p>
@@ -1041,7 +1064,8 @@
     } else if (t && own == null && (LG.phase === "lobby" || LG.phase === "nba")) {
       const c = LG.phase === "nba" ? H.onClock(LG, now()) : null;
       const chk = H.check(LG, t, p, H.context(LG, POOL), { reserve: true });
-      if (c && c.team === t.id && !LG.nba.paused) act = chk.ok ? `<button class="btn go" type="button" data-cpick="${id}">Draft ${esc(last(p.n))}</button>` : `<span class="why">${esc(chk.why)}</span>`;
+      const addTax = soft() ? taxNow(t, p.sal) - taxNow(t) : 0;
+      if (c && c.team === t.id && !LG.nba.paused) act = chk.ok ? `<button class="btn go" type="button" data-cpick="${id}">Draft ${esc(last(p.n))}${addTax ? ` (+$${addTax} tax)` : ""}</button>` : `<span class="why">${esc(chk.why)}</span>`;
       act += t.queue.includes(id) ? "" : ` <button class="btn" type="button" data-cqueue="${id}">Add to my queue</button>`;
     }
     dlg(`<div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><h3 class="disp" style="margin:0">${esc(p.n)}</h3>${injTag(id)}</div>
@@ -1056,10 +1080,21 @@
     D.style.maxWidth = "760px";
     wireCard();
   }
+  // Luxury tax is real money, so a pick that adds to it asks first.
+  function draftWithTaxCheck(id) {
+    const t = myTeam(), p = BY[id];
+    const go = () => mutate(`Picked ${nameOf(id)}`, (L) => H.draftPick(L, POOL, me.team, id, now(), false)).then((ok) => ok && toast(`You drafted ${nameOf(id)} for ${money(p.sal)}.`));
+    const add = t && soft() ? taxNow(t, p.sal) - taxNow(t) : 0;
+    if (!add) return go();
+    const total = taxNow(t, p.sal), over = H.payroll(t, BY) + p.sal - LG.settings.freeLine;
+    dlg(`<h3 class="disp">Draft ${esc(p.n)} into the tax?</h3><p class="muted">He puts you ${money(over)} over the ${money(LG.settings.freeLine)} tax line. That's <b>$${add} more</b> in luxury tax, <b>$${total}</b> in all if your payroll stays here, paid in real money into the pot.</p>
+      <p class="ps">You can get back under before the trade deadline and the end of the season by trading or releasing salary.</p>
+      <form><div class="acts"><button type="button" class="btn" data-close>Pick someone else</button><button class="btn go" type="submit">Draft him, pay the tax</button></div></form>`, () => { go(); });
+  }
   function wireCard() {
     $$("[data-cbid]", D).forEach((b) => (b.onclick = () => { D.close(); fetchMyBids("waiver").then(() => bidDialog(b.dataset.cbid)); }));
     $$("[data-ctrade]", D).forEach((b) => (b.onclick = () => { D.close(); tradeDialog(+b.dataset.ctrade, b.dataset.pid); }));
-    $$("[data-cpick]", D).forEach((b) => (b.onclick = () => { D.close(); const id = b.dataset.cpick; mutate(`Picked ${nameOf(id)}`, (L) => H.draftPick(L, POOL, me.team, id, now(), false)).then((ok) => ok && toast(`You drafted ${nameOf(id)}.`)); }));
+    $$("[data-cpick]", D).forEach((b) => (b.onclick = () => { D.close(); setTimeout(() => draftWithTaxCheck(b.dataset.cpick), 0); }));
     $$("[data-cqueue]", D).forEach((b) => (b.onclick = () => { D.close(); const id = b.dataset.cqueue; mutate("Queue", (L) => { const q = L.teams[me.team].queue; if (!q.includes(id)) q.push(id); return { ok: true }; }, { quiet: true }).then((ok) => ok && toast("Added to your queue.")); }));
   }
   D.addEventListener("close", () => (D.style.maxWidth = ""));
@@ -1105,7 +1140,7 @@
         ${t ? `<label class="small muted" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="dfit"${ui.fit ? " checked" : ""}> Only players I can fit</label>` : ""}</div>${filterBox()}
       <div class="table-wrap" id="pool"><table class="t dense"><thead><tr>${sortTh("rank", "Rk", "r", "Nine-category rank")}${sortTh("dyn", "Dyn", "r", "Dynasty rank")}${sortTh("name", "Player", "")}${sortTh("team", "Team", "")}${sortTh("pos", "Pos", "hide-s")}${sortTh("age", "Age")}${sortTh("sal", "Salary")}${sortTh("yrs", "Yrs", "r hide-s")}${sortTh("gw", "G", "r hide-s", "NBA games this fantasy week")}${sortTh("hc", "HC", "r", "HC Score: value over replacement per $10M")}${sortTh("vorp", "VORP", "r hide-s", "Value over replacement player, season to date")}${lineHeadS()}<th></th></tr></thead><tbody>
         ${shown.map(({ p, c: k }) => `<tr data-pid="${p.id}" class="${k.ok ? "" : "dim"}"${k.ok ? "" : ` title="${esc(k.why)}"`}><td class="r num">${p.rank}</td><td class="r num ps">${p.dynRank}</td><td class="nm">${pl(p.id)}${p.deal ? " " + typeTag(p) : ""}</td><td class="ps">${p.t}</td><td class="ps hide-s">${H.positions(p).join("/")}</td><td class="r num">${p.age}</td>
-          <td class="r"><span class="sal num">${money(p.sal)}</span></td><td class="r num ps hide-s">${p.future.length ? p.future.length + 1 : "Exp"}</td>${gCell(p).replace('class="r num', 'class="r num hide-s')}${hcCell(p)}<td class="r num hide-s">${p.bbv == null ? "-" : p.bbv.toFixed(1)}</td>${lineCells(p)}
+          <td class="r"><span class="sal num">${money(p.sal)}</span>${t && soft() && k.ok ? (() => { const add = taxNow(t, p.sal) - taxNow(t); return add ? `<div class="ps bad">+$${add} tax</div>` : ""; })() : ""}</td><td class="r num ps hide-s">${p.future.length ? p.future.length + 1 : "Exp"}</td>${gCell(p).replace('class="r num', 'class="r num hide-s')}${hcCell(p)}<td class="r num hide-s">${p.bbv == null ? "-" : p.bbv.toFixed(1)}</td>${lineCells(p)}
           <td class="r" style="white-space:nowrap">${myTurn && k.ok && LG.phase === "nba" ? `<button class="btn sm go" data-pick="${p.id}">Draft</button> ` : ""}${t ? (t.queue.includes(p.id) ? `<button class="btn sm" data-unqueue="${p.id}">Queued</button>` : `<button class="btn sm" data-queue="${p.id}">Queue</button>`) : ""}</td></tr>`).join("") || `<tr><td colspan="20" class="empty">No one matches.</td></tr>`}
         </tbody></table></div>`;
   }
@@ -1115,10 +1150,10 @@
     const others = LG.phase === "nba" ? LG.teams.filter((x) => x.id !== t.id).reduce((a, x) => a + Math.max(0, LG.settings.roster - H.active(x).length), 0) : 0;
     const twLeft = (LG.settings.twoWayMax == null ? 3 : LG.settings.twoWayMax) - H.twoWaysOn(t, BY);
     const hold = open > 0 ? H.reserve(open, ctx.available, null, others, twLeft) : 0;
-    const pay = H.payroll(t, BY), room = H.ceilingOf(LG, t) - pay - hold;
+    const pay = H.payroll(t, BY), room = (soft() ? LG.settings.freeLine : H.ceilingOf(LG, t)) - pay - hold;
     return `<div class="capline"><span><b class="num">${money(pay)}</b> on the books</span><span><b class="num">${H.active(t).length}</b> of ${LG.settings.roster} signed</span>
-      <span><b class="num ${room >= 0 ? "ok" : "bad"}">${money(room)}</b> usable room${hold ? ` <span class="ps">after ${money(hold)} held for ${open} spot${open === 1 ? "" : "s"}</span>` : ""}</span>
-      <span class="ps">${esc(H.tierOf(LG, t).label)} line ${money(H.ceilingOf(LG, t))}, two-ways ${H.twoWaysOn(t, BY)} of ${LG.settings.twoWayMax == null ? 3 : LG.settings.twoWayMax}</span><span class="grow"></span><a class="btn sm" href="#draft/mine">My team and cap bar</a></div>`;
+      <span><b class="num ${room >= 0 ? "ok" : "bad"}">${money(Math.abs(room))}</b> ${soft() ? (room >= 0 ? "under the tax line" : `over the tax line ($${H.taxFor(LG, pay + hold, false)} tax)`) : "usable room"}${hold ? ` <span class="ps">after ${money(hold)} held for ${open} spot${open === 1 ? "" : "s"}</span>` : ""}</span>
+      <span class="ps">${soft() ? `Tax line ${money(LG.settings.freeLine)}, ceiling ${money(LG.settings.hardLine)}` : `${esc(H.tierOf(LG, t).label)} line ${money(H.ceilingOf(LG, t))}`}, two-ways ${H.twoWaysOn(t, BY)} of ${LG.settings.twoWayMax == null ? 3 : LG.settings.twoWayMax}</span><span class="grow"></span><a class="btn sm" href="#draft/mine">My team and cap bar</a></div>`;
   }
   function recentPicksList(n) {
     const picks = LG.nba.picks.slice(-n).reverse();
@@ -1247,7 +1282,7 @@
           <div class="field"><label for="sname">League name</label><input type="text" id="sname" name="name" maxlength="40" value="${esc(LG.name)}"></div>
           <div class="row2"><div class="field"><label for="sbuy">Buy-in ($)</label><input type="number" id="sbuy" name="buyIn" min="0" value="${s.buyIn}"></div>
           <div class="field"><label for="sfaab">Season FAAB ($)</label><input type="number" id="sfaab" name="faab" min="1" value="${s.faab}" ${p === "lobby" ? "" : "disabled"}></div></div>
-          <div class="field"><label for="sls">The line, in real NBA caps</label><select id="sls" name="lineScale" ${p === "lobby" ? "" : "disabled"}>${[1, 1.25, 1.5, 1.75, 2].map((x) => `<option value="${x}"${(s.lineScale || 1) === x ? " selected" : ""}>${x}x: ${money(H.defaultTiers(NBA.cba, x)[0].line)} cap line</option>`).join("")}</select></div>
+${H.isSoft(LG) ? "" : `          <div class="field"><label for="sls">The line, in real NBA caps</label><select id="sls" name="lineScale" ${p === "lobby" ? "" : "disabled"}>${[1, 1.25, 1.5, 1.75, 2].map((x) => `<option value="${x}"${(s.lineScale || 1) === x ? " selected" : ""}>${x}x: ${money(H.defaultTiers(NBA.cba, x)[0].line)} cap line</option>`).join("")}</select></div>`}
           <div class="row2">${tiersEditable}</div>
           <div class="row2"><div class="field"><label for="sdead">Tier upgrades close after week</label><input type="number" id="sdead" name="tierDeadline" min="1" max="${s.regWeeks}" value="${s.tierDeadline}"></div>
           <div class="field"><label for="sstart">Scoring starts in week</label><input type="number" id="sstart" name="startWeek" min="1" max="${s.regWeeks}" value="${s.startWeek}" ${p === "lobby" ? "" : "disabled"}></div></div>
@@ -1402,7 +1437,7 @@
     on("[data-queue]", "click", (e) => { const id = e.currentTarget.dataset.queue; mutate("Queue", (L) => { const t = L.teams[me.team]; if (!t.queue.includes(id)) t.queue.push(id); return { ok: true }; }, { quiet: true }); });
     on("[data-unqueue]", "click", (e) => { const id = e.currentTarget.dataset.unqueue; mutate("Queue", (L) => { const t = L.teams[me.team]; t.queue = t.queue.filter((x) => x !== id); return { ok: true }; }, { quiet: true }); });
     on("[data-qup]", "click", (e) => { const id = e.currentTarget.dataset.qup; mutate("Queue", (L) => { const q = L.teams[me.team].queue, i = q.indexOf(id); if (i > 0) [q[i - 1], q[i]] = [q[i], q[i - 1]]; return { ok: true }; }, { quiet: true }); });
-    on("[data-pick]", "click", (e) => { const id = e.currentTarget.dataset.pick; mutate(`Picked ${nameOf(id)}`, (L) => H.draftPick(L, POOL, me.team, id, now(), false)).then((ok) => ok && toast(`You drafted ${nameOf(id)} for ${money(BY[id].sal)}.`)); });
+    on("[data-pick]", "click", (e) => draftWithTaxCheck(e.currentTarget.dataset.pick));
     on("[data-autome]", "click", () => mutate("Autopick", (L) => { const p = H.autoChoice(L, POOL, me.team, H.rng(Date.now() % 1e6)); return H.draftPick(L, POOL, me.team, p.id, now(), p.relaxed ? { relaxed: true } : true); }));
     on("[data-abid]", "input", (e) => { ui.abids[e.target.dataset.abid] = e.target.value; });
     on("[data-savebids]", "click", async () => {

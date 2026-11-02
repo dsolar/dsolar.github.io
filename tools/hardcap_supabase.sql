@@ -282,3 +282,8 @@ grant execute on function public.hc_create(text, text, jsonb), public.hc_view(te
 -- hc_delete(p_id, p_pin, p_confirm): commissioner PIN and the league name typed exactly; moves the league to the trash.
 -- hc_restore(p_id, p_pin): league code and commissioner PIN (5 wrong tries locks it for 15 minutes); puts everything back.
 -- cron 'hardcap-trash' (daily, 9:17 UTC) empties anything past purge_at.
+
+-- ---------- message board (migration hardcap_chat) ----------
+-- hc_chat(league, team, author, body, at): the last 500 posts per league. Anyone with the league code reads
+-- (hc_chat_list); posting takes a team or commissioner PIN (hc_chat_post, 600 characters, one post per 2 seconds).
+-- Deleted leagues keep their board in hc_trash.chat and get it back on restore.
