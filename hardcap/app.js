@@ -510,6 +510,7 @@
         <button class="btn" data-act="copy" data-text="${esc(link)}">Copy invite link</button>${myTeam() ? "" : `<button class="btn go" data-act="claim">Claim a team</button>`}</div>`;
     }
     if (p === "nba") { const c = H.onClock(LG, now()); return `<div class="banner gold"><div><div class="disp">The draft is on</div><div class="muted small">Pick ${c.pick} of ${c.total}: ${esc(LG.teams[c.team].name)} is on the clock.</div></div><span class="grow"></span><a class="btn go" href="#draft">Go to the Draft Room</a></div>`; }
+    if (p === "prospects" && LG.pauction) return `<div class="banner gold"><div><div class="disp">Live Prospect Board auction</div><div class="muted small">${LG.pauction.started == null ? "Starts when the commissioner says go." : `${LG.pauction.results.length} prospects sold so far.`} Teams nominate in first-round order and bid from season FAAB.</div></div><span class="grow"></span><a class="btn go" href="#draft/prospects">Go to the auction</a></div>`;
     if (p === "prospects") return `<div class="banner gold"><div><div class="disp">Prospect Board auction</div><div class="muted small">Blind FAAB bids for two prospect spots. Closes ${fmtWhen(LG.due.auction)}.</div></div><span class="grow"></span><a class="btn go" href="#draft/prospects">Place bids</a></div>`;
     const cw = curWeek();
     return `<div class="banner"><div><div class="disp">Week ${cw}</div><div class="muted small">${weekLabel(cw)}. Waivers run ${fmtWhen(LG.due.waiver || H.nextWaiverRun(now()))}.</div></div></div>`;
@@ -648,7 +649,8 @@
   // The week a lineup edit applies to: this week until its first tip, then next week.
   const editWeek = () => { const cw = curWeek(); return now() < H.lockTime(opener, cw) ? cw : Math.min(cw + 1, H.totalWeeks(LG)); };
   function teamLineup(t, mine) {
-    if (LG.phase !== "league") {
+    // Lineups open once the NBA draft is done, so a long prospect auction doesn't cost anyone a week.
+    if (LG.phase !== "league" && LG.phase !== "prospects") {
       const ids = H.active(t).map((id) => BY[id]).filter(Boolean).sort((a, b) => b.sal - a.sal);
       return `<div class="table-wrap"><table class="t"><thead><tr><th>Player</th><th>Pos</th><th class="r">2026-27</th><th class="r">HC</th>${LINE_HEAD}</tr></thead><tbody>${ids.map((p) => `<tr><td>${pl(p.id, true)}</td><td class="ps">${H.positions(p).join("/")}</td><td class="r"><span class="sal num">${money(p.sal)}</span></td>${hcCell(p)}${lineCells(p)}</tr>`).join("") || `<tr><td colspan="14" class="empty">No players yet.</td></tr>`}</tbody></table></div>`;
     }
@@ -1021,7 +1023,7 @@
     const phase = LG.phase;
     return phase === "lobby" ? [["players", "Players"], ["board", "Board"], ["queue", "My queue"], ["details", "Draft details"]]
       : phase === "nba" ? [["players", "Players"], ["board", "Board"], ["picks", "Picks"], ["mine", "My team"], ["queue", "My queue"], ["details", "Draft details"]]
-        : [["prospects", "Prospect Board"], ["board", "Draft results"], ["picks", "Every pick"], ["mine", "My team"], ["details", "Draft details"]];
+        : [["prospects", LG.pauction && phase === "prospects" ? "Prospect auction" : "Prospect Board"], ["board", "Draft results"], ["picks", "Every pick"], ["mine", "My team"], ["details", "Draft details"]];
   }
   function viewDraft(arg) {
     const phase = LG.phase;
@@ -1036,6 +1038,7 @@
         <span class="grow"></span><span class="disp timer" id="timer"></span>
         ${mineOnClock ? `<button class="btn go" data-autome>Autopick</button>` : ""}</div></div>`
       : phase === "lobby" ? `<div class="clock"><div class="wrap"><div><div class="disp on">Draft day prep</div><div class="ps">${LG.settings.draftMode === "slow" ? `Slow draft: ${LG.settings.slowHours} hours a pick.` : `Live draft: ${LG.settings.clock} seconds a pick.`} Build your queue now; it picks for you if your clock runs out.</div></div></div></div>`
+        : phase === "prospects" && LG.pauction ? auctionBand()
         : `<div class="clock"><div class="wrap"><div><div class="disp on">${phase === "prospects" ? "Prospect Board auction" : "Draft results"}</div><div class="ps">${phase === "prospects" ? `Sealed bids from your season FAAB. Closes ${fmtWhen(LG.due.auction)}.` : `Completed ${fmtDate(LG.nba.done || now())}.`}</div></div></div></div>`;
     const body = { players: draftPlayers, board: draftBoard, picks: draftPicks, mine: draftMine, queue: draftQueue, prospects: draftProspects, details: () => `<div style="overflow:auto;max-width:760px">${draftInfoCard()}</div>` }[ui.sub]();
     return `${clock}<div class="wrap room-shell" id="room"><div class="pane">${body}</div></div>`;
@@ -1113,7 +1116,58 @@
       ${t.queue.map((id, i) => { const p = BY[id]; const taken = ctx.own[id] != null; return `<tr class="${taken ? "dim" : ""}"><td class="r num">${i + 1}</td><td><div class="pn">${esc(p.n)}</div><div class="ps">${p.t}, rank ${p.rank}</div></td><td class="r"><span class="sal num">${money(p.sal)}</span></td><td>${taken ? "Taken" : H.check(LG, t, p, ctx, { reserve: true }).ok ? `<span class="ok">Fits</span>` : `<span class="bad">Won't fit now</span>`}</td>
         <td class="r" style="white-space:nowrap"><button class="btn sm" data-qup="${id}" ${i ? "" : "disabled"} aria-label="Move up">Up</button> <button class="btn sm" data-unqueue="${id}">Remove</button></td></tr>`; }).join("") || `<tr><td colspan="5" class="empty">Your queue is empty.</td></tr>`}</tbody></table></div>`;
   }
+  // ---------- the live Prospect Board auction ----------
+  const A_ = () => LG.pauction;
+  const fmtLeft = (ms) => { const left = Math.max(0, Math.ceil(ms / 1000)), h = Math.floor(left / 3600), m = Math.floor((left % 3600) / 60), x = left % 60; return h ? `${h}:${String(m).padStart(2, "0")}:${String(x).padStart(2, "0")}` : `${m}:${String(x).padStart(2, "0")}`; };
+  function auctionState() {
+    const A = A_(), t = now();
+    if (A.started == null) return { kind: "wait", text: "Waiting for the commissioner to start the auction" };
+    if (A.paused) return { kind: "paused", text: "Paused by the commissioner" };
+    if (t < A.started) return { kind: "soon", text: "The auction starts soon", end: A.started };
+    if (A.lot) return { kind: "lot", end: A.lot.ends };
+    const nom = H.auctionNominator(LG);
+    if (nom == null) return { kind: "done", text: "Wrapping up" };
+    return { kind: "nom", nom, end: LG.teams[nom].owner ? A.nomEnds : null, text: isMine(LG.teams[nom]) ? "Your nomination" : `${LG.teams[nom].name} is nominating` };
+  }
+  function auctionBand() {
+    const A = A_(), st = auctionState(), lot = A.lot, p = lot && PBY[lot.pid];
+    const head = st.kind === "lot" ? `${esc(p ? p.n : lot.pid)}: $${lot.bid}, ${isMine(LG.teams[lot.team]) ? "you" : esc(LG.teams[lot.team].abbr)}` : st.text;
+    return `<div class="clock"><div class="wrap"><div><div class="disp on${st.kind === "nom" && isMine(LG.teams[st.nom]) ? " me" : ""}">${head}</div>
+      <div class="ps">Live Prospect Board auction, ${A.results.length} sold. ${LG.settings.draftMode === "slow" ? `${LG.settings.slowAuctionHours} hours` : `${LG.settings.auctionClock} seconds`} on the clock; every bid resets it.</div></div>
+      <span class="grow"></span>${st.end ? `<span class="disp timer" data-end="${st.end}"></span>` : ""}</div></div>`;
+  }
+  function auctionRoom() {
+    const A = A_(), st = auctionState(), t = myTeam(), lot = A.lot;
+    const left = H.auctionLeft(LG, PROS);
+    const canBidMe = t && t.prospects.length < LG.settings.prospects && t.faab >= LG.settings.minBid;
+    const myNom = st.kind === "nom" && t && st.nom === t.id;
+    let stage = "";
+    if (lot) {
+      const p = PBY[lot.pid], high = LG.teams[lot.team], mine = t && lot.team === t.id;
+      const quick = [1, 2, 5, 10].map((d) => lot.bid + d).filter((v) => t && v <= t.faab);
+      stage = `<section class="card lot"><div class="lot-p"><span class="ps">Board ${p ? p.rank : ""} ${p ? moveTagP(p) : ""}${lot.auto ? ", nominated automatically" : `, nominated by ${esc(LG.teams[lot.nominator].abbr)}`}</span>
+          <b class="disp">${esc(p ? p.n : lot.pid)}</b><span class="muted">${p ? `${esc(p.posFull || p.pos)}, ${esc(p.school)}${p.age ? `, ${p.age.toFixed(1)}` : ""}` : ""}</span>
+          ${p && p.stats && Object.keys(p.stats).length ? `<span class="ps">${PROS_STATS.map(([k, l]) => `${l} ${pstat(p, k)}`).join(", ")}</span>` : ""}</div>
+        <div class="lot-b"><span class="lbl">High bid</span><b class="disp num">$${lot.bid}</b><span class="${mine ? "ok" : "muted"}">${mine ? "You" : esc(high.name)}</span></div>
+        <div class="lot-t"><span class="disp timer" data-end="${lot.ends}"></span></div>
+        <div class="lot-a">${!t ? `<p class="ps">Sign in to your team to bid.</p>` : mine ? `<p class="ok"><b>You're the high bidder.</b></p>` : !canBidMe ? `<p class="ps">${t.prospects.length >= LG.settings.prospects ? "Your prospect spots are full." : "You're out of FAAB."}</p>`
+          : `<div class="tools">${quick.map((v) => `<button class="btn go" data-abid-q="${v}">$${v}</button>`).join("")}<form class="tools" id="abidform"><label class="sr" for="abamt">Your bid</label><input type="number" id="abamt" min="${lot.bid + 1}" max="${t.faab}" value="${Math.min(t.faab, Math.max(lot.bid + 1, ui.abamt || 0))}" style="width:90px"><button class="btn" type="submit">Bid</button></form></div><p class="ps" style="margin:4px 0 0">You have $${t.faab}. Bids are final.</p>`}</div></section>`;
+    } else {
+      stage = `<section class="card lot"><div class="lot-p"><b class="disp">${esc(st.text)}</b>${myNom ? `<span class="muted">Pick anyone below and set the opening bid. If the clock runs out, the top prospect left goes up at $${LG.settings.minBid}.</span>` : st.kind === "wait" ? `<span class="muted">The commissioner starts it from Commissioner, Tools.</span>` : ""}</div>
+        ${st.end ? `<div class="lot-t"><span class="disp timer" data-end="${st.end}"></span></div>` : ""}
+        ${myNom ? `<div class="lot-a"><div class="tools"><label for="nomamt" class="ps">Opening bid $</label><input type="number" id="nomamt" min="${LG.settings.minBid}" max="${t.faab}" value="${Math.min(t.faab, Math.max(LG.settings.minBid, ui.nomamt || 0))}" style="width:80px"><button class="btn sm" data-anompass>I'm done nominating</button></div></div>` : ""}</section>`;
+    }
+    const order = A.order.map((id) => LG.teams[id]);
+    const nomId = st.kind === "nom" ? st.nom : null;
+    const teams = `<section class="card"><h3>Budgets</h3><table class="t dense"><thead><tr><th>Team</th><th class="r">FAAB</th><th class="r">Spots</th></tr></thead><tbody>${order.map((x) => `<tr class="${isMine(x) ? "me" : ""}${x.prospects.length >= LG.settings.prospects ? " dim" : ""}"><td>${x.id === nomId ? "&#9654; " : ""}${esc(x.abbr)} <span class="ps">${esc(x.owner || "bot")}${A.passed.includes(x.id) ? ", done" : ""}</span></td><td class="r num">$${x.faab}</td><td class="r num">${LG.settings.prospects - x.prospects.length}</td></tr>`).join("")}</tbody></table></section>`;
+    const sold = A.results.slice().reverse();
+    const results = `<section class="card"><h3>Sold</h3>${sold.length ? `<ul class="list">${sold.map((r) => `<li><span><b>$${r.amt}</b> ${esc(nameOf(r.pid))}</span><span class="grow"></span><span class="ps">${esc(LG.teams[r.team].abbr)}</span></li>`).join("")}</ul>` : `<p class="empty">Nothing yet.</p>`}</section>`;
+    const board = `<div class="table-wrap"><table class="t dense"><thead><tr><th class="r">Board</th><th class="r">Move</th><th>Prospect</th><th>School</th><th class="r hide-s">Age</th>${PROS_STATS.map(([, l], i) => `<th class="r${i > 2 ? " hide-s" : ""}">${l}</th>`).join("")}<th></th></tr></thead><tbody>
+      ${left.slice(0, 120).map((p) => `<tr class="${lot && lot.pid === p.id ? "me" : ""}"><td class="r num">${p.rank}</td><td class="r">${moveTagP(p)}</td><td class="nm">${pl(p.id)} <span class="ps">${esc(p.posFull || p.pos)}</span></td><td class="ps">${esc(p.school)}</td><td class="r num hide-s">${ageOf(p)}</td>${PROS_STATS.map(([k], i) => `<td class="r num${i > 2 ? " hide-s" : ""}">${pstat(p, k)}</td>`).join("")}<td class="r">${myNom ? `<button class="btn sm go" data-nominate="${p.id}">Nominate</button>` : ""}</td></tr>`).join("")}</tbody></table></div>`;
+    return `<div class="auction">${stage}<div class="auction-body"><div class="auction-main">${board}</div><aside class="stack">${teams}${results}</aside></div></div>`;
+  }
   function draftProspects() {
+    if (LG.phase === "prospects" && LG.pauction) return auctionRoom();
     if (LG.phase === "league") {
       const res = LG.auction.results;
       return `<div class="table-wrap"><table class="t"><thead><tr><th>Prospect</th><th>Team</th><th class="r">Winning bid</th></tr></thead><tbody>${res.filter((x) => x.won).map((x) => `<tr class="${isMine(LG.teams[x.team]) ? "me" : ""}"><td><div class="pn">${esc(nameOf(x.pid))}</div><div class="ps">${esc(PBY[x.pid] ? `${PBY[x.pid].school}, big board ${PBY[x.pid].rank}` : "")}</div></td><td>${esc(LG.teams[x.team].name)}</td><td class="r num">$${x.amt}</td></tr>`).join("") || `<tr><td colspan="3" class="empty">No prospects were signed.</td></tr>`}</tbody></table></div>`;
@@ -1171,7 +1225,10 @@
           <div class="row2"><div class="field"><label for="dclock">Live clock (seconds)</label><input type="number" id="dclock" name="clock" min="15" max="600" value="${s.clock}"></div>
           <div class="field"><label for="dslow">Slow clock (hours)</label><input type="number" id="dslow" name="slowHours" min="1" max="72" value="${s.slowHours}"></div></div>
           <div class="row2"><div class="field"><label for="dbot">Bot pick delay, live (seconds)</label><input type="number" id="dbot" name="botDelay" min="0" max="30" step="0.5" value="${s.botDelay / 1000}"></div>
-          <div class="field"><label for="dauc">Prospect auction length (hours)</label><input type="number" id="dauc" name="auctionHours" min="1" max="168" value="${s.auctionHours}"></div></div>
+          <div class="field"><label for="dauc">Sealed auction length (hours)</label><input type="number" id="dauc" name="auctionHours" min="1" max="168" value="${s.auctionHours}"></div></div>
+          <div class="field"><label for="dpa">After the draft: Prospect Board</label><select id="dpa" name="prospectAuction">${[["live", "Live auction draft (nominate and bid)"], ["sealed", "Sealed bids"], ["skip", "Skip it: all prospects to waivers"]].map(([k, n]) => `<option value="${k}"${(s.prospectAuction || "sealed") === k ? " selected" : ""}>${n}</option>`).join("")}</select></div>
+          <div class="row2"><div class="field"><label for="dacl">Live auction bid clock (seconds)</label><input type="number" id="dacl" name="auctionClock" min="10" max="300" value="${s.auctionClock || 30}"></div>
+          <div class="field"><label for="dash">Slow league bid clock (hours)</label><input type="number" id="dash" name="slowAuctionHours" min="1" max="48" value="${s.slowAuctionHours || 4}"></div></div>
           <div class="tools"><button class="btn" type="submit">Save draft settings</button>
             ${p === "lobby" ? `<button class="btn" type="button" data-shuffle>Shuffle the order</button><button class="btn go" type="button" data-start>Start the draft</button>` : ""}
             ${p === "nba" ? `<button class="btn" type="button" data-pause="${LG.nba.paused ? 0 : 1}">${LG.nba.paused ? "Resume" : "Pause"}</button><button class="btn warn" type="button" data-undo>Undo last pick</button>` : ""}
@@ -1193,7 +1250,10 @@
     sec.tools = () => `${head("Tools")}<div class="cols2">
       <section class="card"><h3>Invite managers</h3><p class="ps" style="margin-top:0">Send this link. Each manager picks an open team and sets a PIN; ${LG.teams.filter((t) => !t.owner).length} of ${LG.teams.length} teams are still open.</p><div class="tools"><input type="text" readonly value="${esc(link)}" aria-label="Invite link"><button class="btn go" data-act="copy" data-text="${esc(link)}">Copy</button></div></section>
       ${p === "league" ? `<section class="card"><h3>Waivers</h3><p class="ps" style="margin-top:0">Next automatic run: ${fmtWhen(LG.due.waiver || H.nextWaiverRun(now()))}. Running now opens every sealed bid; signings count next week.</p><button class="btn" data-runwaivers>Run waivers now</button></section>` : ""}
-      ${p === "prospects" ? `<section class="card"><h3>Prospect Board auction</h3><p class="ps" style="margin-top:0">Closes on its own ${fmtWhen(LG.due.auction)}.</p><button class="btn go" type="button" data-closeauction>Close the auction now</button> <button class="btn warn" type="button" data-skipauction>Skip it: no one gets prospects</button>
+      ${p === "prospects" && LG.pauction ? `<section class="card"><h3>Live Prospect Board auction</h3><p class="ps" style="margin-top:0">${LG.pauction.started == null ? "Ready when everyone is." : LG.pauction.paused ? "Paused." : "Running."} ${LG.pauction.results.length} sold so far.</p>
+        <div class="tools">${LG.pauction.started == null ? `<button class="btn go" data-astart>Start the auction</button>` : `<button class="btn" data-apause="${LG.pauction.paused ? 0 : 1}">${LG.pauction.paused ? "Resume" : "Pause"}</button>`}<a class="btn" href="#draft/prospects">Go to the auction</a><button class="btn warn" type="button" data-skipauction>End it: the rest go to waivers</button></div></section>` : ""}
+      ${p === "league" && !(LG.auction && LG.auction.results && LG.auction.results.length) && !LG.teams.some((x) => x.prospects.length) ? `<section class="card"><h3>Prospect Board auction</h3><p class="ps" style="margin-top:0">No prospects have been signed yet. Hold a live auction draft now: teams nominate in first-round order and bid from season FAAB. You start it when everyone's ready, and lineups and waivers keep running.</p><button class="btn go" data-areopen>Set up a live auction</button></section>` : ""}
+      ${p === "prospects" && !LG.pauction ? `<section class="card"><h3>Prospect Board auction</h3><p class="ps" style="margin-top:0">Closes on its own ${fmtWhen(LG.due.auction)}.</p><button class="btn go" type="button" data-closeauction>Close the auction now</button> <button class="btn warn" type="button" data-skipauction>Skip it: no one gets prospects</button>
         <p class="ps">Skipping ignores every bid, bots included, and puts all prospects on Monday waivers.</p>
         <form class="tools" id="startwk"><label for="swk" class="ps">Scoring starts in week</label><input type="number" id="swk" min="1" max="${s.regWeeks}" value="${Math.max(s.startWeek, H.weekOf(opener, new Date(now())))}" style="width:80px"><button class="btn sm" type="submit">Set</button></form></section>` : ""}
       <section class="card"><h3>Delete this league</h3><p class="ps" style="margin-top:0">It goes to the trash for 30 days with every roster, claim and sealed bid. You can bring it back from the Hard Cap home page with code <b>${esc(LID)}</b> and your commissioner PIN. After 30 days it's gone for good.</p>
@@ -1372,6 +1432,9 @@
           L.settings.slowHours = Math.min(72, Math.max(1, +fd.get("slowHours") || 8));
           L.settings.botDelay = Math.min(30000, Math.max(0, (+fd.get("botDelay") || 0) * 1000));
           L.settings.auctionHours = Math.min(168, Math.max(1, +fd.get("auctionHours") || 24));
+          const pa = String(fd.get("prospectAuction") || ""); if (["live", "sealed", "skip"].includes(pa)) L.settings.prospectAuction = pa;
+          L.settings.auctionClock = Math.min(300, Math.max(10, Math.floor(+fd.get("auctionClock") || 30)));
+          L.settings.slowAuctionHours = Math.min(48, Math.max(1, Math.floor(+fd.get("slowAuctionHours") || 4)));
           return { ok: true };
         }, { as: "commish" }).then((ok) => ok && toast("Draft settings saved."));
       };
@@ -1397,7 +1460,19 @@
     on("[data-pause]", "click", (e) => { const p2 = e.currentTarget.dataset.pause === "1"; mutate(p2 ? "Paused the draft" : "Resumed the draft", (L) => H.pauseDraft(L, now(), p2), { as: "commish" }); });
     on("[data-undo]", "click", () => mutate("Undid a pick", (L) => H.undoPick(L, now()), { as: "commish" }).then((ok) => ok && toast("Last pick taken back.")));
     on("[data-closeauction]", "click", () => closeAuction(true));
-    on("[data-skipauction]", "click", () => mutate("Skipped the Prospect Board auction", (L) => H.resolveAuction(L, PROS, {}, now(), { skip: true }), { as: "commish", clear: "auction" }).then((ok) => ok && toast("Auction skipped. Every prospect is on waivers.")));
+    on("#abamt", "input", (e) => (ui.abamt = +e.target.value));
+    on("#nomamt", "input", (e) => (ui.nomamt = +e.target.value));
+    const bidAt = (amt) => mutate(`Bid $${amt}`, (L) => H.auctionBid(L, PROS, me.team, amt, now()), { quiet: false }).then((ok) => ok && toast(`You bid $${amt}.`));
+    on("[data-abid-q]", "click", (e) => bidAt(+e.currentTarget.dataset.abidQ));
+    const abf = $("#abidform", app);
+    if (abf) abf.onsubmit = (e) => { e.preventDefault(); bidAt(Math.floor(+$("#abamt", app).value || 0)); };
+    on("[data-nominate]", "click", (e) => { const id = e.currentTarget.dataset.nominate, amt = Math.floor(+(($("#nomamt", app) || {}).value) || LG.settings.minBid);
+      mutate(`Nominated ${nameOf(id)}`, (L) => H.nominate(L, PROS, me.team, id, amt, now())).then((ok) => ok && toast(`${nameOf(id)} is up at $${amt}.`)); });
+    on("[data-anompass]", "click", () => mutate("Done nominating", (L) => H.passNomination(L, PROS, me.team, now())).then((ok) => ok && toast("You're out of the nomination order. You can still bid.")));
+    on("[data-astart]", "click", () => mutate("Started the live auction", (L) => H.beginAuction(L, PROS, now(), 10000), { as: "commish" }).then((ok) => ok && toast("The auction starts in 10 seconds.")));
+    on("[data-apause]", "click", (e) => { const pz = e.currentTarget.dataset.apause === "1"; mutate(pz ? "Paused the auction" : "Resumed the auction", (L) => H.pauseAuction(L, PROS, now(), pz), { as: "commish" }); });
+    on("[data-areopen]", "click", () => mutate("Opened a live prospect auction", (L) => H.reopenAuction(L, PROS, now()), { as: "commish" }).then((ok) => ok && (location.hash = "#draft/prospects")));
+    on("[data-skipauction]", "click", () => mutate("Ended the Prospect Board auction", (L) => (L.pauction ? H.endAuction(L, now()) : H.resolveAuction(L, PROS, {}, now(), { skip: true })), { as: "commish", clear: "auction" }).then((ok) => ok && toast("Auction over. Everyone left is on waivers.")));
     const swf = $("#startwk", app);
     if (swf) swf.onsubmit = (e) => { e.preventDefault(); const w = Math.max(1, Math.floor(+$("#swk", app).value || 1)); mutate("Scoring start", (L) => { L.settings.startWeek = w; return { ok: true }; }, { as: "commish" }).then((ok) => ok && toast(`Scoring starts in week ${w}.`)); };
     on("[data-runwaivers]", "click", () => processWaivers(true));
@@ -1458,7 +1533,8 @@
       if (LG.phase === "nba" && !LG.nba.paused) {
         const copy = JSON.parse(JSON.stringify(LG));
         if (H.catchUp(copy, POOL, t, 1)) await mutate("Clock", (L) => (H.catchUp(L, POOL, now(), 24) ? { ok: true } : { ok: false, why: "" }), { as: "any", quiet: true });
-      } else if (LG.phase === "prospects" && LG.due.auction && t >= Date.parse(LG.due.auction)) await closeAuction(false);
+      } else if (LG.phase === "prospects" && LG.pauction && LG.due.auction && t >= Date.parse(LG.due.auction)) await mutate("Auction clock", (L) => (H.auctionTick(L, PROS, now()) ? { ok: true } : { ok: false, why: "" }), { as: "any", quiet: true });
+      else if (LG.phase === "prospects" && LG.due.auction && t >= Date.parse(LG.due.auction)) await closeAuction(false);
       else if (LG.phase === "league" && LG.due.waiver && t >= Date.parse(LG.due.waiver)) await processWaivers(false);
       else if (LG.phase === "league" && H.lockLineups(JSON.parse(JSON.stringify(LG)), POOL, t, opener)) await mutate("Locked lineups", (L) => (H.lockLineups(L, POOL, now(), opener) ? { ok: true } : { ok: false, why: "" }), { as: "any", quiet: true });
       else if (LG.phase === "league" && LG.trades.some((x) => x.status === "review" && t >= x.reviewEnds)) await mutate("Trade review ended", (L) => (H.finalizeTrades(L, POOL, now(), curWeek()) ? { ok: true } : { ok: false, why: "" }), { as: "any", quiet: true });
@@ -1500,6 +1576,7 @@
     drawTimer();
   }
   function drawTimer() {
+    $$("[data-end]").forEach((el) => { const ms = +el.dataset.end - now(); el.textContent = fmtLeft(ms); el.classList.toggle("hot", ms <= 10000 && LG.settings.draftMode !== "slow"); });
     const el = $("#timer");
     if (!el || LG.phase !== "nba") return;
     const c = H.onClock(LG, now());
@@ -1539,7 +1616,8 @@
     try { if (await load(false)) render(); } catch (e) { /* offline for a moment; the next poll catches up */ }
     finally { polling = false; }
   };
-  setInterval(() => { if (LG && LG.phase === "nba") poll(); }, 2000);
-  setInterval(() => { if (LG && LG.phase !== "nba") poll(); }, 20000);
+  const live = () => LG && (LG.phase === "nba" || (LG.phase === "prospects" && LG.pauction));
+  setInterval(() => { if (live()) poll(); }, 2000);
+  setInterval(() => { if (LG && !live()) poll(); }, 20000);
   document.addEventListener("visibilitychange", () => !document.hidden && poll());
 })();

@@ -337,6 +337,17 @@ body.room .wrap{max-width:none}
 .cell[data-player]:hover{border-color:var(--accent)}
 .cell .sal{font-size:12px;font-style:italic;font-weight:900}
 .cell i{font-style:normal;font-size:10px;font-weight:800;color:var(--dim);margin-left:2px}
+/* live prospect auction */
+.auction{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px}
+.lot{display:grid;grid-template-columns:minmax(0,1.6fr) auto auto minmax(0,1.4fr);gap:18px;align-items:center;border-left:4px solid var(--accent)}
+.lot-p{display:grid;gap:2px}.lot-p b{font-size:30px}
+.lot-b{display:grid;justify-items:center}.lot-b b{font-size:46px;line-height:1}
+.lot-t .timer{font-size:46px}
+.auction-body{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:12px}
+.auction-main{min-height:0;display:flex;flex-direction:column}.auction-main .table-wrap{flex:1;min-height:0}
+.auction-body>aside{min-height:0;overflow:auto}
+.timer.hot{color:var(--red)}
+@media (max-width:980px){.lot{grid-template-columns:1fr auto}.lot-a{grid-column:1/-1}.auction-body{grid-template-columns:1fr}.auction-body>aside{display:none}}
 /* prospect movement */
 .mv{display:inline-block;font-size:11.5px;font-weight:800;min-width:26px;text-align:right;color:var(--dim)}
 .mv.up{color:var(--pos)} .mv.dn{color:var(--red)} .mv.new{color:var(--gold)}

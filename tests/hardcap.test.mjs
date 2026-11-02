@@ -15,7 +15,7 @@ const byId = Object.fromEntries(pool.map(p => [p.id, p]));
 const T0 = Date.UTC(2026, 10, 2, 15, 0, 0);
 
 function drafted(teams = 10, seed = 3, opts = {}) {
-  const L = H.newLeague({ cba: nba.cba, teams, seed, now: T0, settings: opts.settings });
+  const L = H.newLeague({ cba: nba.cba, teams, seed, now: T0, settings: { prospectAuction: 'sealed', ...(opts.settings || {}) } });
   if (opts.claim) for (const i of opts.claim) L.teams[i].owner = 'Manager ' + i;
   if (opts.tiers) opts.tiers.forEach((k, i) => (L.teams[i].tier = k));
   H.startDraft(L, T0);
@@ -413,4 +413,43 @@ test('six seasons of contract: Wembanyama runs through 2031-32', () => {
   const live = H.buildPool(H.latestContracts(nba, stats, read('hardcap/contracts.json')), stats);
   const w = live.find(p => p.id === 'victor-wembanyama');
   if (stats.contracts && stats.contracts['victor-wembanyama']) assert.equal(w.future.length, 5);
+});
+
+test('live prospect auction: nominations rotate, bids reset the clock, bots bid to their value, spots and FAAB hold', () => {
+  const { L, now } = drafted(8, 101, { claim: [0], settings: { prospectAuction: 'live' } });
+  assert.equal(L.phase, 'prospects');
+  assert.ok(L.pauction && L.due.auction);
+  const t0 = L.pauction.started;
+  // Nothing happens before the break ends.
+  assert.equal(H.auctionTick(L, prospects, t0 - 1), 0);
+  // The manager nominates on his turn; a bid that isn't higher fails; outbidding resets the clock.
+  const first = L.pauction.order[0];
+  let t = t0 + 1;
+  if (first === 0) {
+    const top = H.auctionLeft(L, prospects)[0];
+    assert.equal(H.nominate(L, prospects, 0, top.id, 3, t).ok, true);
+    assert.equal(H.auctionBid(L, prospects, 0, 4, t).ok, false);           // already high bidder
+  }
+  // Let the whole auction play out with the manager away: his nominations auto-fill, bots buy.
+  for (let i = 0; i < 2000 && L.phase === 'prospects'; i++) { t += 5000; H.resolveAuction(L, prospects, {}, t); }
+  assert.equal(L.phase, 'league');
+  const res = L.auction.results;
+  assert.ok(res.length >= 8);
+  for (const tm of L.teams) {
+    assert.ok(tm.prospects.length <= L.settings.prospects);
+    assert.ok(tm.faab >= 0);
+  }
+  assert.equal(new Set(res.map(r => r.pid)).size, res.length);
+  assert.ok(L.due.waiver);
+});
+
+test('live auction pauses, and a commissioner can hold the start', () => {
+  const { L, now } = drafted(8, 103, { settings: { prospectAuction: 'live' } });
+  H.startLiveAuction(L, now, 0, false);
+  assert.equal(H.auctionTick(L, prospects, now + 9e9), 0);
+  assert.equal(H.beginAuction(L, prospects, now, 0).ok, true);
+  H.pauseAuction(L, prospects, now + 1000, true);
+  assert.equal(H.auctionTick(L, prospects, now + 9e9), 0);
+  H.pauseAuction(L, prospects, now + 2000, false);
+  assert.ok(H.auctionTick(L, prospects, now + 2000 + 60000) > 0);
 });

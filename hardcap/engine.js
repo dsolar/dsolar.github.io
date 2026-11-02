@@ -30,7 +30,8 @@
     roster: 12, prospects: 2, faab: 100, minBid: 1,
     draftMode: "live", clock: 60, slowHours: 8, botDelay: 1500, auctionHours: 24,
     regWeeks: 21, playoffTeams: 4, startWeek: 1, tierDeadline: 21, tradeDeadline: 18, buyIn: 100,
-    irSlots: 2, irRule: "out", vorpCat: true, twoWayMax: 3,   // two-way and 10-day players a team can carry, like the NBA
+    irSlots: 2, irRule: "out", vorpCat: true, twoWayMax: 3,
+    prospectAuction: "live", auctionClock: 30, slowAuctionHours: 4,   // live nominate-and-bid auction after the draft; or "sealed" or "skip"   // two-way and 10-day players a team can carry, like the NBA
     tradeReview: "vote", reviewHours: 48, vetoShare: 0.5,   // "vote": the league can veto; "commish": the commissioner can; "none"
     lineGraceHours: 72,                                     // time to get back under the line after a real-world salary change
     vetoHours: 24, payout: [60, 25, 15],
@@ -689,8 +690,16 @@
     if (L.nba.picks.length >= L.nba.order.length) {
       L.phase = "prospects";
       L.nba.done = now;
-      L.due.auction = new Date(now + L.settings.auctionHours * HOUR).toISOString();
-      log(L, now, "draft", -1, "The draft is complete. The Prospect Board auction is open.");
+      const mode = L.settings.prospectAuction || "sealed";
+      if (mode === "live") {
+        // A short break, then the live auction: two minutes for a live draft, right away for a slow one.
+        startLiveAuction(L, now, L.settings.draftMode === "slow" ? 0 : 2 * 60000);
+        log(L, now, "draft", -1, "The draft is complete. The live Prospect Board auction starts in two minutes.");
+      } else {
+        L.due.auction = new Date(now + L.settings.auctionHours * HOUR).toISOString();
+        log(L, now, "draft", -1, "The draft is complete. The Prospect Board auction is open.");
+        if (mode === "skip") L.skipAuction = true;
+      }
     }
     return { ok: true };
   }
@@ -784,9 +793,175 @@
     return out;
   }
 
+  /* ---------- the live Prospect Board auction ----------
+     Teams nominate in first-round order. A nomination opens at the nominator's bid; every new bid resets the clock
+     (30 seconds live, hours in a slow league). When it runs out, the high bidder wins and pays from season FAAB.
+     A team with its prospect spots full drops out; a manager can pass on nominating for the rest of the auction.
+     It ends when no one is left to nominate. Bots nominate the best prospect left and bid up to their own value. */
+  const auctionLen = (L) => (L.settings.draftMode === "slow" ? (L.settings.slowAuctionHours || 4) * HOUR : (L.settings.auctionClock || 30) * 1000);
+  const nominateLen = (L) => (L.settings.draftMode === "slow" ? (L.settings.slowAuctionHours || 4) * HOUR : 60000);
+  function hash01(str) { let h = 2166136261; for (const c of str) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return ((h >>> 0) % 100000) / 100000; }
+  function botValue(L, prospects, teamId, pid) {
+    const p = prospects.find((x) => x.id === pid);
+    if (!p) return 0;
+    if (hash01(`${pid}:${teamId}:${L.seed}`) < 0.3) return L.settings.minBid;          // not interested past the opener
+    const u = hash01(`${L.seed}:${teamId}:${pid}`);
+    return Math.max(L.settings.minBid, Math.round(L.settings.faab * 0.24 * Math.max(0.12, 1 - (p.rank - 1) / 35) * (0.6 + 0.8 * u)));
+  }
+  const spotsLeft = (L, t) => L.settings.prospects - t.prospects.length;
+  const canBid = (L, t) => spotsLeft(L, t) > 0 && t.faab >= L.settings.minBid;
+  function startLiveAuction(L, now, delay = 0, started = true) {
+    L.pauction = { order: L.nba.round1.slice(), turn: 0, lot: null, passed: [], results: [], started: started ? now + delay : null, nomEnds: null, last: now + delay, paused: null };
+    if (started) { L.pauction.nomEnds = now + delay + nominateLen(L); L.due.auction = new Date(now + delay).toISOString(); }
+    else delete L.due.auction;
+  }
+  function auctionNominator(L) {
+    const A = L.pauction, n = A.order.length;
+    for (let k = 0; k < n; k++) { const id = A.order[(A.turn + k) % n], t = L.teams[id]; if (canBid(L, t) && !A.passed.includes(id)) return id; }
+    return null;
+  }
+  const auctionLeft = (L, prospects) => { const own = owners(L); return prospects.filter((p) => own[p.id] == null && !p.off && p.rank <= 300).sort((a, b) => a.rank - b.rank); };
+  function auctionDue(L, prospects) {
+    const A = L.pauction;
+    if (!A || A.paused || A.started == null) return null;
+    if (A.lot) {
+      const interested = L.teams.some((t) => !t.owner && t.id !== A.lot.team && canBid(L, t) && Math.min(t.faab, botValue(L, prospects, t.id, A.lot.pid)) > A.lot.bid);
+      return Math.min(A.lot.ends, interested ? A.lot.at + L.settings.botDelay : Infinity);
+    }
+    const nom = auctionNominator(L);
+    if (nom == null) return A.last;
+    return L.teams[nom].owner ? Math.max(A.started, A.nomEnds) : Math.max(A.started, A.last + L.settings.botDelay);
+  }
+  const setDue = (L, prospects) => { const d = auctionDue(L, prospects); if (d == null || !Number.isFinite(d)) delete L.due.auction; else L.due.auction = new Date(d).toISOString(); };
+  function nominate(L, prospects, teamId, pid, amt, now) {
+    const A = L.pauction;
+    if (!A || L.phase !== "prospects") return { ok: false, why: "There's no live auction" };
+    if (A.started == null || now < A.started) return { ok: false, why: "The auction hasn't started" };
+    if (A.paused) return { ok: false, why: "The commissioner paused the auction" };
+    if (A.lot) return { ok: false, why: "A prospect is already up" };
+    if (auctionNominator(L) !== teamId) return { ok: false, why: "It isn't your nomination" };
+    if (!auctionLeft(L, prospects).some((p) => p.id === pid)) return { ok: false, why: "He's already taken" };
+    const t = L.teams[teamId], bid = Math.floor(+amt || L.settings.minBid);
+    if (bid < L.settings.minBid) return { ok: false, why: `The opening bid is at least $${L.settings.minBid}` };
+    if (bid > t.faab) return { ok: false, why: `You have $${t.faab} of FAAB` };
+    A.lot = { pid, bid, team: teamId, nominator: teamId, at: now, ends: now + auctionLen(L), bids: 1 };
+    A.turn = (A.order.indexOf(teamId) + 1) % A.order.length;
+    setDue(L, prospects);
+    return { ok: true };
+  }
+  function auctionBid(L, prospects, teamId, amt, now) {
+    const A = L.pauction, lot = A && A.lot;
+    if (!lot) return { ok: false, why: "Nobody is up for bid" };
+    if (A.paused) return { ok: false, why: "The commissioner paused the auction" };
+    if (now >= lot.ends) return { ok: false, why: "Time ran out on that one" };
+    const t = L.teams[teamId], bid = Math.floor(+amt);
+    if (lot.team === teamId) return { ok: false, why: "You're already the high bidder" };
+    if (!canBid(L, t)) return { ok: false, why: "Your prospect spots are full" };
+    if (!(bid > lot.bid)) return { ok: false, why: `The bid is already $${lot.bid}` };
+    if (bid > t.faab) return { ok: false, why: `You have $${t.faab} of FAAB` };
+    lot.bid = bid; lot.team = teamId; lot.at = now; lot.ends = Math.max(lot.ends, now + auctionLen(L)); lot.bids++;
+    setDue(L, prospects);
+    return { ok: true };
+  }
+  function passNomination(L, prospects, teamId, now) {
+    const A = L.pauction;
+    if (!A || A.lot || auctionNominator(L) !== teamId) return { ok: false, why: "It isn't your nomination" };
+    A.passed.push(teamId); A.last = now; A.nomEnds = now + nominateLen(L);
+    log(L, now, "auction", teamId, `${L.teams[teamId].name} is done nominating`);
+    setDue(L, prospects);
+    return { ok: true };
+  }
+  function pauseAuction(L, prospects, now, pause) {
+    const A = L.pauction;
+    if (!A) return { ok: false, why: "There's no live auction" };
+    if (pause && !A.paused) { A.paused = now; delete L.due.auction; }
+    else if (!pause && A.paused) {
+      const gap = now - A.paused; A.paused = null;
+      if (A.lot) { A.lot.ends += gap; A.lot.at += gap; }
+      if (A.nomEnds) A.nomEnds += gap; A.last += gap;
+      setDue(L, prospects);
+    }
+    return { ok: true };
+  }
+  function beginAuction(L, prospects, now, delay = 10000) {
+    const A = L.pauction;
+    if (!A) return { ok: false, why: "There's no live auction" };
+    if (A.started != null && A.started <= now) return { ok: false, why: "It's already running" };
+    A.started = now + delay; A.last = now + delay; A.nomEnds = now + delay + nominateLen(L);
+    log(L, now, "auction", -1, "The live Prospect Board auction is starting");
+    setDue(L, prospects);
+    return { ok: true };
+  }
+  function sellLot(L, prospects, at) {
+    const A = L.pauction, lot = A.lot, t = L.teams[lot.team];
+    t.prospects.push(lot.pid); t.faab -= lot.bid;
+    A.results.push({ team: lot.team, pid: lot.pid, amt: lot.bid, won: true, nominator: lot.nominator, at });
+    const p = prospects.find((q) => q.id === lot.pid);
+    log(L, at, "auction", lot.team, `${t.name} won ${p ? p.n : lot.pid} for $${lot.bid} FAAB`);
+    A.lot = null; A.last = at; A.nomEnds = at + nominateLen(L);
+  }
+  function finishLive(L, at) {
+    const A = L.pauction;
+    L.auction = { results: A.results, closed: at, live: true };
+    L.phase = "league";
+    delete L.due.auction;
+    L.due.waiver = nextWaiverRun(at);
+    log(L, at, "auction", -1, `The live Prospect Board auction is over: ${A.results.length} prospect${A.results.length === 1 ? "" : "s"} signed. The rest are on waivers.`);
+  }
+  // Moves the auction forward to now: sells expired lots, lets bots bid and nominate, nominates for a manager whose
+  // nomination clock ran out. Every step is stamped with the moment it was due, so a late catch-up plays it straight.
+  function auctionTick(L, prospects, now) {
+    const A = L.pauction;
+    if (!A || L.phase !== "prospects" || A.paused || A.started == null) return 0;
+    let n = 0;
+    for (let guard = 0; guard < 400; guard++) {
+      const due = auctionDue(L, prospects);
+      if (due == null || now < due) break;
+      if (A.lot) {
+        const lot = A.lot;
+        if (due >= lot.ends) { sellLot(L, prospects, lot.ends); n++; continue; }
+        const bidders = L.teams.filter((t) => !t.owner && t.id !== lot.team && canBid(L, t))
+          .map((t) => ({ t, v: Math.min(t.faab, botValue(L, prospects, t.id, lot.pid)) })).filter((x) => x.v > lot.bid);
+        if (!bidders.length) { lot.at = lot.ends; continue; }
+        const b = bidders[lot.bids % bidders.length];
+        const amt = Math.min(b.v, lot.bid + 1 + Math.floor(hash01(lot.pid + ":" + lot.bids) * 3));
+        lot.bid = amt; lot.team = b.t.id; lot.at = due; lot.ends = Math.max(lot.ends, due + auctionLen(L)); lot.bids++; n++;
+        continue;
+      }
+      const nom = auctionNominator(L), left = auctionLeft(L, prospects);
+      if (nom == null || !left.length) { finishLive(L, due); n++; break; }
+      const t = L.teams[nom];
+      const pick = t.owner ? left[0] : left.slice(0, 6).sort((a, b) => botValue(L, prospects, nom, b.id) - botValue(L, prospects, nom, a.id))[0];
+      A.lot = { pid: pick.id, bid: L.settings.minBid, team: nom, nominator: nom, at: due, ends: due + auctionLen(L), bids: 1, auto: !!t.owner };
+      A.turn = (A.order.indexOf(nom) + 1) % A.order.length;
+      n++;
+    }
+    if (L.phase === "prospects") setDue(L, prospects);
+    return n;
+  }
+
+  // The commissioner ends a live auction early (what's sold stays sold) or sets one up after the season started.
+  function endAuction(L, now) {
+    if (!L.pauction || L.phase !== "prospects") return { ok: false, why: "There's no live auction" };
+    if (L.pauction.lot) L.pauction.lot = null;
+    finishLive(L, now);
+    return { ok: true };
+  }
+  function reopenAuction(L, prospects, now) {
+    if (L.phase !== "league") return { ok: false, why: "Only once the draft is done" };
+    if (L.teams.some((t) => t.prospects.length) || (L.auction && L.auction.results && L.auction.results.length)) return { ok: false, why: "Prospects have already been signed" };
+    L.phase = "prospects";
+    startLiveAuction(L, now, 0, false);
+    log(L, now, "auction", -1, "The commissioner set up a live Prospect Board auction");
+    return { ok: true };
+  }
+
   // opts.skip: close it with no bids at all, bots included; every prospect goes to waivers.
   function resolveAuction(L, prospects, sealed, now, opts = {}) {
     if (L.phase !== "prospects") return { ok: false, why: "The auction isn't open" };
+    // A live auction moves on its own clock; the server and the pages both call in here when something is due.
+    if (L.pauction && !opts.skip) { const n = auctionTick(L, prospects, now); return n ? { ok: true, live: true } : { ok: false, why: "" }; }
+    if (L.skipAuction) opts = Object.assign({}, opts, { skip: true });
     const r = rng(L.seed + 991);
     const all = [];
     const tieRank = Object.fromEntries(L.nba.round1.map((id, i) => [id, i]));
@@ -1273,7 +1448,7 @@
   }
 
   const E = {
-    latestContracts, gamesInWeek, isTwoWay, twoWaysOn, CATS, VORP_CAT, catsFor, withVorp, voteTrade, finalizeTrades, applyTrade, voters, vetoesNeeded, enforceLine, contractType,
+    latestContracts, gamesInWeek, endAuction, reopenAuction, startLiveAuction, auctionNominator, auctionLeft, nominate, auctionBid, passNomination, pauseAuction, beginAuction, auctionTick, botValue, isTwoWay, twoWaysOn, CATS, VORP_CAT, catsFor, withVorp, voteTrade, finalizeTrades, applyTrade, voters, vetoesNeeded, enforceLine, contractType,
     COLS, C, DEFAULTS, HOUR, totalWeeks, rosterIndex, onNbaRoster, mergeContracts, releaseGone, SLOTS, ELIG, positions, eligible, isOut, rostered, irProblem, moveToIR, activateIR,
     autoLineup, lockTime, lineupFor, setLineup, lockLineups, defaultTiers, rng, money, isProspect, buildPool, buildProspects, rankNineCat, newLeague,
     snake, snakeFrom, setOrder, roundRobin, tierOf, ceilingOf, owed, pot, upgradeTier, active, payroll, owners, context, reserve,
