@@ -38,6 +38,8 @@ STATS = ("https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/sta
 INJURIES = ["https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/injuries?region=us&lang=en&contentorigin=espn",
             "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/injuries",
             "https://cdn.espn.com/core/nba/injuries?xhr=1"]
+ROSTER = ["https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/teams/{id}/roster?region=us&lang=en&contentorigin=espn",
+          "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/{id}/roster"]
 TEAM = {"GS": "GSW", "NY": "NYK", "SA": "SAS", "NO": "NOP", "UTAH": "UTA", "WSH": "WAS", "BKN": "BRK", "CHA": "CHO",
         "PHX": "PHO"}
 # Order of the numbers in every weekly line and every per-game line.
@@ -195,6 +197,28 @@ def pull_injuries(notes):
     return out
 
 
+def pull_rosters(notes):
+    """{slug: [team, name, position]} for everyone on an NBA roster right now, plus how many of the 30 teams answered.
+    Hard Cap releases a fantasy player who is on no roster (waived, bought out, retired) once all 30 come back."""
+    out, teams = {}, 0
+    for tid in range(1, 31):
+        d = get_any(ROSTER, notes, f"roster {tid}", id=tid)
+        if not d:
+            continue
+        ab = (d.get("team") or {}).get("abbreviation", "")
+        ab = TEAM.get(ab, ab)
+        athletes = d.get("athletes") or []
+        if athletes and isinstance(athletes[0], dict) and "items" in athletes[0]:     # older grouped shape
+            athletes = [a for g in athletes for a in g.get("items", [])]
+        if not athletes:
+            continue
+        teams += 1
+        for a in athletes:
+            pos = (a.get("position") or {}).get("abbreviation", "")
+            out[slug(a.get("displayName"))] = [ab, a.get("displayName"), pos]
+    return out, teams
+
+
 def main():
     today = et_today()
     end = season_end_year(today)
@@ -217,6 +241,12 @@ def main():
                 data["avg"][str(yr)] = lines
         except Exception as e:
             notes.append(f"avg {yr}: {type(e).__name__}: {e}"[:200])
+
+    rosters, teams = pull_rosters(notes)
+    if teams:
+        data["rosters"] = rosters
+        data["rosterTeams"] = teams
+        data["rostersUpdated"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     inj = pull_injuries(notes)
     if inj is not None:
