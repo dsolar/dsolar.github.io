@@ -261,3 +261,18 @@ grant execute on function public.hc_create(text, text, jsonb), public.hc_view(te
   public.hc_auth(text, int, text), public.hc_save(text, int, text, int, jsonb, text, text), public.hc_unclaim(text, text, int),
   public.hc_bids_put(text, int, text, text, jsonb), public.hc_bids_mine(text, int, text, text),
   public.hc_bids_open(text, int, text, text) to anon, authenticated;
+
+-- ---------- Alerts and the server clock (migration hardcap_push_and_clock) ----------
+-- hc_config       VAPID keys for web push and the clock's scheduler token (with its SHA-256 hash). Never public.
+-- hc_push         one row per device that turned on alerts: its push subscription, league and team.
+-- hc_sent         every notification already sent, so each one goes out once.
+-- hc_push_subscribe(p_id, p_team, p_pin, p_sub) / hc_push_unsubscribe(p_endpoint): called by the page.
+-- hc_mark_sent(p_id, p_key) and hc_system_save(p_id, p_version, p_state, p_note, p_clear): service role only, used by
+-- the hardcap-clock edge function (supabase/functions/hardcap-clock), which pg_cron calls every minute:
+--   select cron.schedule('hardcap-clock', '* * * * *', $job$ select net.http_post(
+--     url := 'https://baxrczyufqbzrogftmyn.supabase.co/functions/v1/hardcap-clock',
+--     headers := jsonb_build_object('Content-Type','application/json','X-HC-Clock',
+--       (select value from public.hc_config where name='scheduler_token')),
+--     body := '{}'::jsonb, timeout_milliseconds := 55000); $job$);
+-- To pause the clock:   select cron.unschedule('hardcap-clock');
+-- The full definitions live in the migration; the shapes match the functions above (PIN checked by hc_pin_ok).

@@ -27,11 +27,21 @@
   }
   let YAHOO = {};
   try { const r = await fetch("yahoo.json"); if (r.ok) YAHOO = await r.json(); } catch (e) { /* Yahoo ranks are a bonus */ }
-  const POOL = H.buildPool(NBA, STATS), PROS = H.buildProspects(NBA);
-  const BY = Object.fromEntries(POOL.map((p) => [p.id, p])), PBY = Object.fromEntries(PROS.map((p) => [p.id, p]));
+  let POOL = H.buildPool(NBA, STATS), BY = Object.fromEntries(POOL.map((p) => [p.id, p]));
+  const PROS = H.buildProspects(NBA), PBY = Object.fromEntries(PROS.map((p) => [p.id, p]));
+  let poolKey = "";
+  // A league can carry its own contracts (new signings the commissioner added before the cap sheet catches up).
+  function syncPool() {
+    const k = LG && LG.contracts ? JSON.stringify(LG.contracts) : "";
+    if (k === poolKey) return;
+    poolKey = k;
+    POOL = H.buildPool(k ? H.mergeContracts(NBA, LG.contracts) : NBA, STATS);
+    BY = Object.fromEntries(POOL.map((p) => [p.id, p]));
+  }
   const opener = STATS.opener || "2026-10-20";
   const INJ = STATS.inj || {};
-  const injTag = (id) => { const i = INJ[id]; if (!i) return ""; const out = H.isOut(i); return ` <span class="tag ${out ? "t3" : "t1"}" title="${esc(i[1] || "")}">${esc(out ? "Out" : i[0] === "Day-To-Day" ? "DTD" : i[0])}</span>`; };
+  const moveTag = (id) => { const p = BY[id]; return !p ? "" : p.gone ? ` <span class="tag t3" title="On no NBA roster right now">Released</span>` : p.was ? ` <span class="tag" title="Traded from ${esc(p.was)}; same contract">From ${esc(p.was)}</span>` : ""; };
+  const injTag = (id) => { const i = INJ[id]; if (!i) return moveTag(id); const out = H.isOut(i); return ` <span class="tag ${out ? "t3" : "t1"}" title="${esc(i[1] || "")}">${esc(out ? "Out" : i[0] === "Day-To-Day" ? "DTD" : i[0])}</span>` + moveTag(id); };
   // A player's name, clickable for his card.
   const pl = (id, sub) => {
     const p = BY[id], q = PBY[id];
@@ -68,7 +78,7 @@
     if (r.error) throw new Error(r.error);
     skew = new Date(r.now).getTime() - Date.now();
     CLAIMS = r.claims || {};
-    if (r.state) { LG = r.state; VER = r.version; return true; }
+    if (r.state) { LG = r.state; VER = r.version; syncPool(); return true; }
     return false;
   }
 
@@ -88,8 +98,8 @@
       try { r = await rpc("hc_save", { p_id: LID, p_team: team, p_pin: String(pin), p_version: VER, p_state: copy, p_note: note, p_clear: opts.clear || null }); }
       catch (e) { busy = false; toast(e.message, true); return false; }
       busy = false;
-      if (r.ok) { LG = copy; VER = r.version; render(); return res || { ok: true }; }
-      if (r.error === "stale") { LG = r.state; VER = r.version; CLAIMS = r.claims || CLAIMS; continue; }
+      if (r.ok) { LG = copy; VER = r.version; syncPool(); render(); return res || { ok: true }; }
+      if (r.error === "stale") { LG = r.state; VER = r.version; CLAIMS = r.claims || CLAIMS; syncPool(); continue; }
       toast(r.error, true);
       if (/PIN/.test(r.error) && as !== "commish") { /* keep the saved PIN; the commissioner can reset it */ }
       return false;
@@ -157,6 +167,57 @@
     return `<div class="capbar${opts.mini ? " mini" : ""}">${head}<div class="track" role="img" aria-label="${money(after)} on the books against a ${money(ceiling)} line"><div class="blocks">${html}</div>${ticks}</div><div class="capbar-foot"></div></div>`;
   }
 
+  /* ---------- alerts and installing ---------- */
+  const VAPID = "BC2enuoc9sCrEblbL6HFNkhQ74jHeGVKnu3p7ELbKq27Md89TokJ3Y8Pgkfe1Y_sp0ED8-JNjNNlWMTVQpa938o";
+  const standalone = () => window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const canPush = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+  let swReg = null;
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").then((r) => (swReg = r)).catch(() => {});
+  const alertsOn = () => !!store.get("hc:alerts:" + LID, false) && canPush() && Notification.permission === "granted";
+  function b64url(s) { const p = "=".repeat((4 - (s.length % 4)) % 4); const raw = atob((s + p).replace(/-/g, "+").replace(/_/g, "/")); return Uint8Array.from([...raw].map((c) => c.charCodeAt(0))); }
+  async function turnOnAlerts() {
+    if (!myTeam()) { toast("Claim or sign in to your team first, so alerts know who you are.", true); return; }
+    if (!canPush()) {
+      if (isIOS() && !standalone()) return installHelp(true);
+      toast("This browser can't show alerts. Try Chrome, Edge, Firefox or Safari on a computer, or install the app on your phone.", true); return;
+    }
+    const perm = await Notification.requestPermission();
+    if (perm !== "granted") { toast("Alerts are blocked for this site. Allow notifications in your browser settings to turn them on.", true); return; }
+    const reg = swReg || (await navigator.serviceWorker.ready);
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64url(VAPID) });
+    const r = await rpc("hc_push_subscribe", { p_id: LID, p_team: me.team, p_pin: String(me.pin), p_sub: sub.toJSON() });
+    if (r.error) { toast(r.error, true); return; }
+    store.set("hc:alerts:" + LID, true);
+    toast("Alerts are on for this device.");
+    render();
+  }
+  async function turnOffAlerts() {
+    try { const reg = swReg || (await navigator.serviceWorker.ready); const sub = await reg.pushManager.getSubscription(); if (sub) { await rpc("hc_push_unsubscribe", { p_endpoint: sub.endpoint }); await sub.unsubscribe(); } } catch (e) { /* already off */ }
+    store.set("hc:alerts:" + LID, false); toast("Alerts are off for this device."); render();
+  }
+  function alertsDialog() {
+    const on = alertsOn();
+    dlg(`<h3 class="disp">Alerts</h3><p class="muted" style="margin-top:0">${on ? "This device gets alerts for" : "Get a notification on this device for"} ${myTeam() ? esc(myTeam().name) : "your team"}:</p>
+      <ul class="list"><li>You're on the clock in the draft</li><li>A trade offer, and the answer to yours</li><li>Waiver and Prospect Board results</li><li>A starter listed Out before lineups lock</li><li>A real NBA team waives one of your players</li></ul>
+      ${isIOS() && !standalone() ? `<p class="ps">On iPhone, alerts only work once Hard Cap is on your home screen: tap Share, then Add to Home Screen, then open it from there.</p>` : ""}
+      <div class="acts"><button class="btn" type="button" data-close>Close</button>${on ? `<button class="btn warn" type="button" id="aoff">Turn off on this device</button>` : `<button class="btn go" type="button" id="aon">Turn on alerts</button>`}</div>`);
+    const a = $("#aon", D), b = $("#aoff", D);
+    if (a) a.onclick = () => { D.close(); turnOnAlerts(); };
+    if (b) b.onclick = () => { D.close(); turnOffAlerts(); };
+  }
+  let installEvt = null;
+  window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installEvt = e; });
+  function installHelp(forAlerts) {
+    if (installEvt) { installEvt.prompt(); installEvt = null; return; }
+    dlg(`<h3 class="disp">Put Hard Cap on your home screen</h3>
+      ${isIOS() ? `<ol class="list"><li>Tap the Share button in Safari.</li><li>Tap Add to Home Screen, then Add.</li><li>Open Hard Cap from your home screen${forAlerts ? " and turn on alerts there" : ""}.</li></ol>`
+        : `<ol class="list"><li>Open your browser's menu.</li><li>Choose Install app or Add to Home screen.</li></ol>`}
+      <p class="ps">It opens full screen like an app and goes straight to your league.</p>
+      <div class="acts"><button class="btn go" type="button" data-close>Got it</button></div>`);
+  }
+
   /* ---------- chrome ---------- */
   const TABS = [["office", "League Office"], ["team", "Cap Sheet"], ["market", "Player Market"], ["matchups", "Matchup Center"], ["tx", "Transactions"], ["draft", "Draft Room"], ["commish", "Commissioner"]];
   const route = () => { const h = location.hash.replace("#", "").split("/"); return { tab: TABS.some((t) => t[0] === h[0]) ? h[0] : "office", arg: h[1] }; };
@@ -168,7 +229,9 @@
     tabs.innerHTML = TABS.map(([k, n]) => `<a href="#${k}"${r.tab === k ? ' aria-current="page"' : ""}>${n}</a>`).join("");
     const t = myTeam();
     const theme = `<button class="btn sm" data-act="theme" aria-label="Switch to ${document.documentElement.dataset.theme === "dark" ? "light" : "dark"} colors">${document.documentElement.dataset.theme === "dark" ? "Light" : "Dark"}</button>`;
-    who.innerHTML = theme + (t
+    const bell = t ? `<button class="btn sm${alertsOn() ? " go" : ""}" data-act="alerts" aria-label="Alerts">${alertsOn() ? "Alerts on" : "Alerts"}</button>` : "";
+    const inst = !standalone() && (installEvt || isIOS()) ? `<button class="btn sm hide-wide" data-act="install">Install</button>` : "";
+    who.innerHTML = theme + inst + bell + (t
       ? `<span class="chip"><b>${esc(t.abbr)}</b> ${esc(t.owner || "")}${me.commish ? " (commish)" : ""}</span><button class="btn sm" data-act="signout">Sign out</button>`
       : `${me.commish ? `<span class="chip">Commissioner</span>` : ""}<button class="btn sm" data-act="signin">Sign in</button>${LG.teams.some((x) => !x.owner) ? `<button class="btn sm go" data-act="claim">Claim a team</button>` : ""}`);
   }
@@ -179,6 +242,8 @@
     if (a === "claim") claimDialog(b.dataset.team != null ? +b.dataset.team : null);
     else if (a === "signin") signInDialog();
     else if (a === "signout") { me = {}; store.set(meKey(), me); toast("Signed out on this device."); render(); }
+    else if (a === "alerts") alertsDialog();
+    else if (a === "install") installHelp(false);
     else if (a === "theme") { const d = document.documentElement.dataset.theme === "dark" ? "" : "dark"; if (d) document.documentElement.dataset.theme = d; else delete document.documentElement.dataset.theme; store.set("hc:theme", d || "light"); render(); }
     else if (a === "copy") { navigator.clipboard && navigator.clipboard.writeText(b.dataset.text).then(() => toast("Invite link copied.")); }
   });
@@ -260,6 +325,7 @@
       ["IR", `${L ? L.settings.irSlots : 2} IR spots for players listed Out on the injury report. A player on IR doesn't count against your line, so you can sign a real replacement. Bring him back only if he fits.`],
       ["Releases", "Drop a player and his salary comes off right away. His stats count through the end of that week, and you can't claim him straight back."],
       ["Trades", `Players, prospects and FAAB dollars. Both teams have to fit under their own line afterward, and moves count from the next week. The commissioner can veto within ${L ? L.settings.vetoHours : 24} hours. The deadline is the end of week ${L ? L.settings.tradeDeadline : 18}, about ten days after the NBA's (Feb. 11, 2027).`],
+      ["NBA moves", "A player traded for real stays on your team on the same contract. One who is waived, bought out or retires comes off your books automatically, and you can't sign him until a real team does. New NBA deals reach free agency at the real salary."],
       ["Expiring deals", `When a contract runs out, keep him at his new real salary or let him go for $${L ? L.settings.compDollars : 10} of extra summer draft budget. You can always trade him before it gets that far.`],
       ["Summer draft", `Every summer, one blind FAAB auction for incoming rookies and unsigned free agents. Budgets run from $${L ? L.settings.summerMax : 100} for the last-place team down to $${L ? L.settings.summerMin : 50} for the champion. Prospect rights you already hold carry over.`],
       ["Playoffs", `Top ${L ? L.settings.playoffTeams : 4} after week ${L ? L.settings.regWeeks : 21}: semifinals, then a final and a third-place game. A tied matchup goes to Game Score, then the higher seed. The pot pays ${(L ? L.settings.payout : [60, 25, 15]).join("/")}.`],
@@ -472,7 +538,7 @@
     const pay = H.payroll(t, BY) - drops.reduce((s, id) => s + BY[id].sal, 0);
     const open = LG.settings.roster - (act.length - drops.length);
     const room = H.ceilingOf(LG, t) - pay;
-    const fits = open > 0 ? ctx.available.filter((p) => p.sal <= room).sort((a, b) => a.rank - b.rank).slice(0, 40) : [];
+    const fits = open > 0 ? ctx.available.filter((p) => !p.gone && p.sal <= room).sort((a, b) => a.rank - b.rank).slice(0, 40) : [];
     return `<div class="card"><h3>Release someone, see who fits</h3><p class="ps" style="margin-top:0">Check the players you'd let go. Nothing changes until you place a bid.</p>
       <div class="tools">${act.map((p) => `<label class="chip" style="cursor:pointer"><input type="checkbox" data-fdrop="${p.id}"${drops.includes(p.id) ? " checked" : ""}> ${esc(last(p.n))} ${money(p.sal)}</label>`).join("")}</div>
       <p style="margin:12px 0 0"><b class="${room >= 0 ? "ok" : "bad"}">${money(room)} of room</b> <span class="muted">with ${open} open spot${open === 1 ? "" : "s"}.</span></p></div>
@@ -493,7 +559,7 @@
           <td>${o != null ? `<a class="btn link" href="#team/${o}">${esc(LG.teams[o].abbr)}</a>` : `<span class="muted">Available</span>`}</td>
           <td class="r">${o == null && t ? (LG.phase === "league" ? `<button class="btn sm go" data-bid="${p.id}">Bid</button>` : LG.phase === "prospects" ? `<a class="btn sm go" href="#draft/prospects">Auction</a>` : "") : ""}</td></tr>`; }).join("")}</tbody></table></div>`;
     }
-    let rows = POOL.filter((p) => (ui.status === "all" || (ui.status === "fa" ? ctx.own[p.id] == null : ctx.own[p.id] != null)) && (!q || p.n.toLowerCase().includes(q)) && passFilters(p));
+    let rows = POOL.filter((p) => (ui.status === "all" || (ui.status === "fa" ? ctx.own[p.id] == null && !p.gone : ctx.own[p.id] != null)) && (!q || p.n.toLowerCase().includes(q)) && passFilters(p));
     rows.sort(SORTS[ui.sort] || SORTS.rank);
     const total = rows.length;
     rows = rows.slice(0, 200);
@@ -502,7 +568,7 @@
         const o = ctx.own[p.id];
         let act = "";
         if (t && o == null && (LG.phase === "lobby" || LG.phase === "nba")) act = t.queue.includes(p.id) ? `<button class="btn sm" data-unqueue="${p.id}">Queued</button>` : `<button class="btn sm" data-queue="${p.id}">Queue</button>`;
-        else if (t && o == null && LG.phase === "league") act = `<button class="btn sm go" data-bid="${p.id}">Bid</button>`;
+        else if (t && o == null && LG.phase === "league" && !p.gone) act = `<button class="btn sm go" data-bid="${p.id}">Bid</button>`;
         else if (t && o != null && o !== t.id && LG.phase === "league") act = `<button class="btn sm" data-trade="${o}" data-pid="${p.id}">Trade</button>`;
         const g = perGame(p);
         return `<tr class="${o === me.team && me.team != null ? "me" : ""}"><td class="r num ps">${p.rank}</td><td class="r num ps hide-s">${p.dynRank}</td>${YAHOO.players ? `<td class="r num ps hide-m">${(YAHOO.players[p.id] || {}).ar || (YAHOO.players[p.id] || {}).or || "-"}</td>` : ""}<td>${pl(p.id)}<div class="ps">${p.t}, ${H.positions(p).join("/")}, ${p.age}${g && g.prev ? ", 2025-26 line" : ""}</div></td>
@@ -533,6 +599,12 @@
     if (f.inj === "out" && !H.isOut(INJ[p.id])) return false;
     return true;
   }
+  // On phones the filters fold behind one button; on wider screens they're always out.
+  function filterBox() {
+    const n = Object.values(ui.f).filter(Boolean).length + (ui.sort !== "rank" ? 1 : 0);
+    return `<div class="fbox${ui.fopen ? " open" : ""}"><button type="button" class="btn sm ftoggle" data-ftoggle>Filters and sort${n ? ` (${n})` : ""}</button>
+      <div class="tools fbody" style="margin-top:6px">${filterBar()}${n ? `<button class="btn sm" data-fclear>Clear</button>` : ""}</div></div>`;
+  }
   function filterBar() {
     const teams = [...new Set(POOL.map((p) => p.t))].sort();
     const sel = (key, label, opts) => `<label class="sr" for="f-${key}">${label}</label><select id="f-${key}" data-f="${key}">${opts.map(([v, n]) => `<option value="${v}"${(ui.f[key] || "") === v ? " selected" : ""}>${n}</option>`).join("")}</select>`;
@@ -549,7 +621,7 @@
       <div class="seg" role="group" aria-label="Pool">${[["nba", "NBA players"], ["prospects", "Prospect Board"]].map(([k, n]) => `<button type="button" data-kind="${k}" aria-pressed="${ui.kind === k}">${n}</button>`).join("")}</div>
       <div class="seg" role="group" aria-label="Status">${[["fa", "Available"], ["own", "On rosters"], ["all", "All"]].map(([k, n]) => `<button type="button" data-status="${k}" aria-pressed="${ui.status === k}">${n}</button>`).join("")}</div>
       <label class="sr" for="mq">Search</label><input type="search" id="mq" placeholder="Search players or schools" value="${esc(ui.q)}"></div>
-      ${ui.kind === "nba" ? `<div class="tools">${filterBar()}${Object.values(ui.f).some(Boolean) ? `<button class="btn sm" data-fclear>Clear filters</button>` : ""}</div>
+      ${ui.kind === "nba" ? filterBox() + `
       <p class="ps" style="margin:0">Rk is nine-category value (z-scores, the way Yahoo ranks), Dyn adds age and upside, HC Score is value over a replacement player per $10M of salary.</p>` : ""}`;
   }
 
@@ -777,14 +849,13 @@
     const t = myTeam(), c = H.onClock(LG, now());
     const myTurn = c && t && c.team === t.id;
     const q = ui.q.trim().toLowerCase();
-    let rows = ctx.available.filter((p) => (!q || p.n.toLowerCase().includes(q)) && passFilters(p));
+    let rows = ctx.available.filter((p) => !p.gone && (!q || p.n.toLowerCase().includes(q)) && passFilters(p));
     rows.sort(SORTS[ui.sort] || SORTS.rank);
     const checked = rows.map((p) => ({ p, c: t ? H.check(LG, t, p, ctx, { reserve: true }) : { ok: true } }));
     const shown = (ui.fit ? checked.filter((x) => x.c.ok) : checked).slice(0, 180);
     return `${t ? `<div id="mycap">${capBar(t, { ghost, ctx, reserve: true })}</div>` : ""}
       <div class="tools"><label class="sr" for="dq">Search</label><input type="search" id="dq" placeholder="Search players or teams" value="${esc(ui.q)}">
-        ${filterBar()}
-        ${t ? `<label class="small muted" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="dfit"${ui.fit ? " checked" : ""}> Only players I can fit</label>` : ""}</div>
+        ${t ? `<label class="small muted" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="dfit"${ui.fit ? " checked" : ""}> Only players I can fit</label>` : ""}</div>${filterBox()}
       <div class="split"><div class="table-wrap" id="pool"><table class="t"><thead><tr><th class="r">Rk</th><th>Player</th><th class="r">Salary</th><th class="r" title="HC Score">HC</th>${LINE_HEAD}<th></th></tr></thead><tbody>
         ${shown.map(({ p, c: k }) => `<tr data-pid="${p.id}" class="${k.ok ? "" : "dim"}"><td class="r num ps">${p.rank}</td><td>${pl(p.id)}<div class="ps">${p.t}, ${H.positions(p).join("/")}, ${p.age}, dyn ${p.dynRank}</div>${k.ok ? "" : `<div class="why">${esc(k.why)}</div>`}</td>
           <td class="r"><div class="sal num">${money(p.sal)}</div><div class="ps">${p.future.length ? `+${p.future.length} yr` : "expiring"}</div></td>${hcCell(p)}${lineCells(p)}
@@ -895,7 +966,22 @@
           <td class="r"><input type="number" data-tfaab="${t.id}" value="${t.faab}" min="0" style="width:80px;text-align:right" aria-label="FAAB"></td>
           <td class="r" style="white-space:nowrap"><button class="btn sm" data-tsave="${t.id}">Save</button> ${t.owner ? `<button class="btn sm warn" data-unclaim="${t.id}">Open team</button>` : ""}</td></tr>`).join("")}</tbody></table></div>
         <p class="ps" style="margin-bottom:0">Opening a team removes its manager and PIN so someone else can claim it; the roster stays. The tier menu is for corrections; managers can only move themselves up.</p></section>
+      <section class="card"><h3>Contracts the cap sheet doesn't have yet</h3>
+        <p class="ps" style="margin-top:0">Players on a real NBA roster with no salary on file: new signings, waived players who caught on, two-way deals (leave those alone; two-ways aren't eligible). Add a contract and he joins this league's free agent pool at that salary.</p>
+        ${missingContracts()}
+        ${Object.keys(LG.contracts || {}).length ? `<h3 style="margin-top:12px">Added by you</h3><ul class="list">${Object.entries(LG.contracts).map(([id, c]) => `<li><span>${esc(c.n)}, ${esc(c.t)}: ${c.sal.filter(Boolean).map(money).join(", ")}</span><span class="grow"></span><button class="btn sm" data-uncontract="${esc(id)}">Remove</button></li>`).join("")}</ul>` : ""}</section>
       ${p === "league" ? `<section class="card"><h3>Waivers</h3><p class="ps" style="margin-top:0">Next automatic run: ${fmtWhen(LG.due.waiver || H.nextWaiverRun(now()))}. Running now opens every sealed bid; signings count next week.</p><button class="btn" data-runwaivers>Run waivers now</button></section>` : ""}`;
+  }
+
+  function missingContracts() {
+    const r = STATS.rosters || {};
+    const have = new Set(NBA.players.map((p) => p.id));
+    const rows = Object.entries(r).filter(([id]) => !have.has(id) && !(LG.contracts || {})[id]).sort((a, b) => a[1][0].localeCompare(b[1][0]) || a[0].localeCompare(b[0]));
+    if (!rows.length) return `<p class="empty">Everyone on an NBA roster has a contract on file.</p>`;
+    return `<details><summary class="btn sm" style="display:inline-flex">${rows.length} players without a contract on file</summary>
+      <div class="table-wrap" style="margin-top:8px;max-height:50vh"><table class="t"><thead><tr><th>Player</th><th>Team</th><th class="r">2026-27 salary ($M)</th><th class="r">Years</th><th></th></tr></thead><tbody>
+      ${rows.map(([id, v]) => `<tr><td class="pn">${esc(v[1])}</td><td>${esc(v[0])} <span class="ps">${esc(v[2] || "")}</span></td><td class="r"><input type="number" step="0.01" min="0.5" style="width:90px;text-align:right" data-csal="${esc(id)}" aria-label="Salary for ${esc(v[1])}"></td><td class="r"><input type="number" min="1" max="5" value="1" style="width:60px;text-align:right" data-cyrs="${esc(id)}" aria-label="Years"></td><td class="r"><button class="btn sm" data-addcontract="${esc(id)}">Add</button></td></tr>`).join("")}
+      </tbody></table></div></details>`;
   }
 
   /* ---------- wiring ---------- */
@@ -908,6 +994,7 @@
     on("[data-status]", "click", (e) => { ui.status = e.currentTarget.dataset.status; render(); });
     on("#mq,#dq", "input", (e) => { ui.q = e.target.value; render(); });
     on("[data-f]", "change", (e) => { ui.f[e.target.dataset.f] = e.target.value; render(); });
+    on("[data-ftoggle]", "click", () => { ui.fopen = !ui.fopen; render(); });
     on("[data-tv]", "click", (e) => { ui.tv = e.currentTarget.dataset.tv; render(); });
     on("[data-lw]", "click", (e) => { ui.lw = +e.currentTarget.dataset.lw; ui.draftLineup = null; render(); });
     on("[data-slot]", "change", (e) => {
@@ -1015,6 +1102,19 @@
         }, { as: "commish" }).then((ok) => ok && toast("Draft settings saved."));
       };
     }
+    on("[data-addcontract]", "click", (e) => {
+      const id = e.currentTarget.dataset.addcontract, v = (STATS.rosters || {})[id];
+      const sal = Math.round((+$(`[data-csal="${id}"]`, app).value || 0) * 1e6), yrs = Math.max(1, Math.min(5, Math.floor(+$(`[data-cyrs="${id}"]`, app).value || 1)));
+      if (sal < 5e5) return toast("Enter his salary in millions, like 2.4.", true);
+      const pos = { PG: ["PG"], SG: ["SG"], G: ["PG", "SG"], SF: ["SF"], PF: ["PF"], F: ["SF", "PF"], C: ["C"] }[v[2]] || ["SF"];
+      mutate(`Added a contract for ${v[1]}`, (L) => {
+        L.contracts = L.contracts || {};
+        L.contracts[id] = { n: v[1], t: v[0], pos: pos.includes("C") ? "B" : pos.some((x) => x.includes("G")) ? "G" : "W", ps: pos, sal: [...Array(5)].map((_, i) => (i < yrs ? Math.round(sal * Math.pow(1.05, i)) : 0)) };
+        L.log.push({ at: now(), kind: "commish", team: -1, text: `Commissioner added ${v[1]} (${v[0]}) at ${money(sal)} for ${yrs} year${yrs === 1 ? "" : "s"}` });
+        return { ok: true };
+      }, { as: "commish" }).then((ok) => ok && toast(`${v[1]} is in the free agent pool.`));
+    });
+    on("[data-uncontract]", "click", (e) => { const id = e.currentTarget.dataset.uncontract; mutate("Removed a contract", (L) => { if (Object.values(H.owners(L)).length && H.owners(L)[id] != null) return { ok: false, why: "He's on a roster. Have that team release him first." }; delete L.contracts[id]; return { ok: true }; }, { as: "commish" }); });
     on("[data-shuffle]", "click", () => mutate("Shuffled the order", (L) => { const o = L.nba.round1.slice(); for (let i = o.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [o[i], o[j]] = [o[j], o[i]]; } H.setOrder(L, o); return { ok: true }; }, { as: "commish" }));
     on("[data-ordup]", "click", (e) => { const i = +e.currentTarget.dataset.ordup; mutate("Draft order", (L) => { const o = L.nba.round1.slice(); [o[i - 1], o[i]] = [o[i], o[i - 1]]; H.setOrder(L, o); return { ok: true }; }, { as: "commish" }); });
     on("[data-start]", "click", () => dlg(`<h3 class="disp">Start the draft?</h3><p class="muted">${LG.teams.filter((t) => !t.owner).length} open team${LG.teams.filter((t) => !t.owner).length === 1 ? "" : "s"} will be drafted by bots. Settings lock once it starts.</p><form><div class="acts"><button type="button" class="btn" data-close>Not yet</button><button class="btn go" type="submit">Start the draft</button></div></form>`, async () => {
@@ -1065,6 +1165,7 @@
     if (r.error) { if (byCommish) toast(r.error, true); return; }
     const week = byCommish ? curWeek() : curWeek() - 1;
     const ok = await mutate("Ran waivers", (L) => {
+      if (!byCommish && !(L.due.waiver && now() >= Date.parse(L.due.waiver))) return { ok: false, why: "" };   // someone already ran them
       const order = H.standings(L, curWeek() - 1, STATS.wk, BY).map((x) => x.id);
       H.runWaivers(L, POOL, PROS, r.bids || {}, week, order, now(), INJ);
       return { ok: true };
@@ -1131,7 +1232,12 @@
   window.addEventListener("resize", () => route().tab === "draft" && render());
 
   /* ---------- boot ---------- */
-  if (!LID) { render(); return; }
+  if (!LID) {
+    const lastL = store.get("hc:last", null);
+    if (lastL && standalone()) { location.replace("?l=" + lastL + "#office"); return; }
+    render(); return;
+  }
+  store.set("hc:last", LID);
   try { await load(true); }
   catch (e) { app.innerHTML = `<div class="wrap loading">${esc(e.message)}. Check the link, or <a href="./">start a new league</a>.</div>`; return; }
   const list = store.get("hc:leagues", []);
