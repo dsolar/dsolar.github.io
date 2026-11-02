@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-01T06:23:19Z",
+ "updated": "2026-11-02T06:24:30Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -429,6 +429,10 @@
     [
      "2026-11-01",
      56
+    ],
+    [
+     "2026-11-02",
+     56
     ]
    ],
    "sg": null,
@@ -516,6 +520,10 @@
     ],
     [
      "2026-11-01",
+     22
+    ],
+    [
+     "2026-11-02",
      22
     ]
    ],
@@ -667,6 +675,10 @@
     [
      "2026-11-01",
      28
+    ],
+    [
+     "2026-11-02",
+     28
     ]
    ],
    "sg": null,
@@ -742,6 +754,10 @@
     ],
     [
      "2026-11-01",
+     22
+    ],
+    [
+     "2026-11-02",
      22
     ]
    ],
@@ -971,6 +987,16 @@
    "date": "2026-11-15",
    "venue": "TD Garden",
    "url": "https://www.espn.com/nba/game/_/gameId/401909989/mavericks-celtics",
+   "src": null,
+   "low": null
+  },
+  "espn-401909994": {
+   "history": [],
+   "sg": 18495288,
+   "title": "Celtics vs Magic",
+   "date": "2026-11-16",
+   "venue": "TD Garden",
+   "url": "https://www.espn.com/nba/game/_/gameId/401909994/magic-celtics",
    "src": null,
    "low": null
   }
