@@ -1193,7 +1193,9 @@
     sec.tools = () => `${head("Tools")}<div class="cols2">
       <section class="card"><h3>Invite managers</h3><p class="ps" style="margin-top:0">Send this link. Each manager picks an open team and sets a PIN; ${LG.teams.filter((t) => !t.owner).length} of ${LG.teams.length} teams are still open.</p><div class="tools"><input type="text" readonly value="${esc(link)}" aria-label="Invite link"><button class="btn go" data-act="copy" data-text="${esc(link)}">Copy</button></div></section>
       ${p === "league" ? `<section class="card"><h3>Waivers</h3><p class="ps" style="margin-top:0">Next automatic run: ${fmtWhen(LG.due.waiver || H.nextWaiverRun(now()))}. Running now opens every sealed bid; signings count next week.</p><button class="btn" data-runwaivers>Run waivers now</button></section>` : ""}
-      ${p === "prospects" ? `<section class="card"><h3>Prospect Board auction</h3><p class="ps" style="margin-top:0">Closes on its own ${fmtWhen(LG.due.auction)}.</p><button class="btn go" type="button" data-closeauction>Close the auction now</button></section>` : ""}
+      ${p === "prospects" ? `<section class="card"><h3>Prospect Board auction</h3><p class="ps" style="margin-top:0">Closes on its own ${fmtWhen(LG.due.auction)}.</p><button class="btn go" type="button" data-closeauction>Close the auction now</button> <button class="btn warn" type="button" data-skipauction>Skip it: no one gets prospects</button>
+        <p class="ps">Skipping ignores every bid, bots included, and puts all prospects on Monday waivers.</p>
+        <form class="tools" id="startwk"><label for="swk" class="ps">Scoring starts in week</label><input type="number" id="swk" min="1" max="${s.regWeeks}" value="${Math.max(s.startWeek, H.weekOf(opener, new Date(now())))}" style="width:80px"><button class="btn sm" type="submit">Set</button></form></section>` : ""}
       <section class="card"><h3>Delete this league</h3><p class="ps" style="margin-top:0">It goes to the trash for 30 days with every roster, claim and sealed bid. You can bring it back from the Hard Cap home page with code <b>${esc(LID)}</b> and your commissioner PIN. After 30 days it's gone for good.</p>
         <form class="tools" id="delform"><label class="sr" for="delname">League name</label><input type="text" id="delname" placeholder="Type ${esc(LG.name)} to confirm" autocomplete="off"><button class="btn warn" type="submit">Delete league</button></form></section>
       <section class="card"><h3>Server clock</h3><p class="ps" style="margin:0">Draft clocks, autopicks, the auction, waivers, lineup locks, trade reviews and the line check all run on the server every minute, whether or not anyone has the site open.</p></section></div>`;
@@ -1395,6 +1397,9 @@
     on("[data-pause]", "click", (e) => { const p2 = e.currentTarget.dataset.pause === "1"; mutate(p2 ? "Paused the draft" : "Resumed the draft", (L) => H.pauseDraft(L, now(), p2), { as: "commish" }); });
     on("[data-undo]", "click", () => mutate("Undid a pick", (L) => H.undoPick(L, now()), { as: "commish" }).then((ok) => ok && toast("Last pick taken back.")));
     on("[data-closeauction]", "click", () => closeAuction(true));
+    on("[data-skipauction]", "click", () => mutate("Skipped the Prospect Board auction", (L) => H.resolveAuction(L, PROS, {}, now(), { skip: true }), { as: "commish", clear: "auction" }).then((ok) => ok && toast("Auction skipped. Every prospect is on waivers.")));
+    const swf = $("#startwk", app);
+    if (swf) swf.onsubmit = (e) => { e.preventDefault(); const w = Math.max(1, Math.floor(+$("#swk", app).value || 1)); mutate("Scoring start", (L) => { L.settings.startWeek = w; return { ok: true }; }, { as: "commish" }).then((ok) => ok && toast(`Scoring starts in week ${w}.`)); };
     on("[data-runwaivers]", "click", () => processWaivers(true));
     on("[data-tsave]", "click", (e) => {
       const id = +e.currentTarget.dataset.tsave;

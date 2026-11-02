@@ -784,12 +784,13 @@
     return out;
   }
 
-  function resolveAuction(L, prospects, sealed, now) {
+  // opts.skip: close it with no bids at all, bots included; every prospect goes to waivers.
+  function resolveAuction(L, prospects, sealed, now, opts = {}) {
     if (L.phase !== "prospects") return { ok: false, why: "The auction isn't open" };
     const r = rng(L.seed + 991);
     const all = [];
     const tieRank = Object.fromEntries(L.nba.round1.map((id, i) => [id, i]));
-    for (const t of L.teams) {
+    for (const t of opts.skip ? [] : L.teams) {
       const bids = t.owner ? (sealed[t.id] || sealed[String(t.id)] || []) : botAuctionBids(L, prospects, t.id, r);
       bids.forEach((b, i) => {
         const amt = Math.floor(+b.amt);
@@ -817,7 +818,7 @@
       const p = prospects.find((q) => q.id === x.pid);
       log(L, now, "auction", x.team, `${L.teams[x.team].name} won ${p ? p.n : x.pid} for $${x.amt} FAAB`);
     }
-    log(L, now, "auction", -1, `The Prospect Board auction closed: ${won.length} prospect${won.length === 1 ? "" : "s"} signed`);
+    log(L, now, "auction", -1, opts.skip ? "The commissioner skipped the Prospect Board auction; every prospect is on waivers" : `The Prospect Board auction closed: ${won.length} prospect${won.length === 1 ? "" : "s"} signed`);
     return { ok: true, results };
   }
 
