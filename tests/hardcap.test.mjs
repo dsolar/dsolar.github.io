@@ -239,3 +239,44 @@ test('free agency years and restricted status', () => {
   if (murray) assert.equal(murray.fa.kind, 'UFA');
   assert.ok(pool.every(p => p.dynRank >= 1));
 });
+
+test('playoffs: top four, semis then a final and a third-place game', () => {
+  const { L, now } = drafted(10, 29);
+  H.resolveAuction(L, prospects, {}, now);
+  // Fake a full season: every team's real week 1 line repeated, so the bracket can resolve.
+  const wk = {};
+  for (let w = 1; w <= 23; w++) wk[w] = stats.wk ? stats.wk['1'] : {};
+  if (!stats.wk) return;
+  const b = H.bracket(L, wk, byId);
+  assert.equal(b.seeds.length, 4);
+  assert.deepEqual(new Set([b.semis[0].a, b.semis[0].b, b.semis[1].a, b.semis[1].b]), new Set(b.seeds));
+  assert.ok(b.final && b.third && b.place.length === 3);
+  assert.equal(new Set(b.place).size, 3);
+  assert.equal(H.matchups(L, 22, wk, byId).length, 2);
+  assert.equal(H.matchups(L, 23, wk, byId)[0].label, 'Final');
+});
+
+test('summer budgets: worst team gets the most, walk-away bonuses add on', () => {
+  const L = H.newLeague({ cba: nba.cba, teams: 10, seed: 1, now: T0 });
+  const order = [...Array(10).keys()];              // best to worst
+  const b = H.summerBudgets(L, order, { 9: 1, 0: 2 });
+  assert.equal(b[0], 50 + 20);
+  assert.equal(b[9], 100 + 10);
+  assert.ok(b[4] > b[3]);
+});
+
+test('commissioner veto puts everyone back within the window', () => {
+  const { L, now } = drafted(10, 31);
+  H.resolveAuction(L, prospects, {}, now);
+  const A = L.teams[0], B = L.teams[1];
+  const a = H.active(A)[5], b = H.active(B)[5];
+  const r = H.proposeTrade(L, pool, 0, 1, [a], [b], now, 2, 0, 3);
+  if (!r.ok) return;
+  H.respondTrade(L, pool, r.trade.id, true, 3, now);
+  const fa = A.faab;
+  assert.equal(H.vetoTrade(L, pool, r.trade.id, now + 25 * H.HOUR).ok, false, 'too late');
+  assert.equal(H.vetoTrade(L, pool, r.trade.id, now + H.HOUR).ok, true);
+  assert.ok(H.active(A).includes(a) && H.active(B).includes(b));
+  assert.ok(H.rosterInWeek(A, 4).includes(a) && !H.rosterInWeek(B, 4).includes(a));
+  assert.equal(A.faab, fa + 2);
+});

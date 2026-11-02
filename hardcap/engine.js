@@ -28,7 +28,9 @@
     roster: 12, prospects: 2, faab: 50, minBid: 1,
     draftMode: "live", clock: 60, slowHours: 8, botDelay: 1500, auctionHours: 24,
     regWeeks: 21, playoffTeams: 4, startWeek: 1, tierDeadline: 21, tradeDeadline: 18, buyIn: 100,
-    irSlots: 2, irRule: "out",                 // "out": only players ESPN lists as Out; "any": commissioner trusts everyone
+    irSlots: 2, irRule: "out",
+    vetoHours: 24, payout: [60, 25, 15],
+    summerMin: 50, summerMax: 100, compDollars: 10,   // summer draft budgets: best team gets the min, worst the max                 // "out": only players ESPN lists as Out; "any": commissioner trusts everyone
   };
   // Starting lineup: nine starters, three on the bench. Only starters score. Lineups are weekly.
   const SLOTS = ["PG", "SG", "G", "SF", "PF", "F", "C", "UTIL", "UTIL"];
@@ -201,6 +203,7 @@
   }
 
   /* ---------- tiers ---------- */
+  const totalWeeks = (L) => L.settings.regWeeks + 2;
   const tierOf = (L, team) => L.settings.tiers[team.tier || 0];
   const ceilingOf = (L, team) => tierOf(L, team).line;
   const owed = (L, team) => L.settings.buyIn + tierOf(L, team).add;
@@ -332,7 +335,7 @@
   function lockLineups(L, pool, now, opener) {
     const byId = Object.fromEntries(pool.map((p) => [p.id, p]));
     let changed = 0;
-    for (let w = L.settings.startWeek; w <= L.schedule.length && lockTime(opener, w) <= now; w++) {
+    for (let w = L.settings.startWeek; w <= totalWeeks(L) && lockTime(opener, w) <= now; w++) {
       for (const t of L.teams) {
         t.lineups = t.lineups || {};
         if (!t.lineups[w]) { t.lineups[w] = lineupFor(L, t, w, byId); changed++; }
@@ -644,6 +647,12 @@
   }
 
   function matchups(L, w, wk, byId) {
+    if (w > L.settings.regWeeks) {
+      const b = bracket(L, wk, byId);
+      if (w === L.settings.regWeeks + 1) return b.semis.map((m, i) => ({ ...m, label: i ? "Semifinal: 2 vs 3" : "Semifinal: 1 vs 4" }));
+      if (w === L.settings.regWeeks + 2 && b.final) return [{ ...b.final, label: "Final" }, { ...b.third, label: "Third place" }];
+      return [];
+    }
     return (L.schedule[w - 1] || []).map(([i, j]) => {
       const A = teamWeek(L, L.teams[i], w, wk, byId), B = teamWeek(L, L.teams[j], w, wk, byId);
       return { a: i, b: j, A, B, cmp: compare(A.t, B.t) };
@@ -653,7 +662,7 @@
   // Standings count every category: a 6-3 week is six wins and three losses. Game Score breaks ties.
   function standings(L, upTo, wk, byId) {
     const rows = L.teams.map((t) => ({ id: t.id, w: 0, l: 0, t: 0, mw: 0, ml: 0, mt: 0, gmsc: 0, pf: [] }));
-    for (let w = L.settings.startWeek; w <= Math.min(upTo, L.schedule.length); w++) {
+    for (let w = L.settings.startWeek; w <= Math.min(upTo, L.settings.regWeeks, L.schedule.length); w++) {
       if (!wk || !wk[String(w)]) continue;
       for (const m of matchups(L, w, wk, byId)) {
         const A = rows[m.a], B = rows[m.b], c = m.cmp;
@@ -666,6 +675,48 @@
     }
     for (const r of rows) r.pct = r.w + r.l + r.t ? (r.w + r.t / 2) / (r.w + r.l + r.t) : 0;
     return rows.sort((a, b) => b.pct - a.pct || b.gmsc - a.gmsc || a.id - b.id);
+  }
+
+  /* ---------- playoffs ---------- */
+  // Top four after the regular season. Week regWeeks+1: 1 vs 4 and 2 vs 3. Week regWeeks+2: the final and a third-place
+  // game. A tied matchup goes to Game Score, then the higher seed.
+  function winnerOf(m, seedA, seedB) {
+    const c = m.cmp;
+    if (c.w !== c.l) return c.w > c.l ? m.a : m.b;
+    if (Math.abs(m.A.t.gmsc - m.B.t.gmsc) > 1e-9) return m.A.t.gmsc > m.B.t.gmsc ? m.a : m.b;
+    return seedA < seedB ? m.a : m.b;
+  }
+  function bracket(L, wk, byId) {
+    const R = L.settings.regWeeks;
+    const seeds = standings(L, R, wk, byId).slice(0, 4).map((r) => r.id);
+    const one = (a, b, w) => { const A = teamWeek(L, L.teams[a], w, wk, byId), B = teamWeek(L, L.teams[b], w, wk, byId); return { a, b, A, B, cmp: compare(A.t, B.t), w }; };
+    const done = (w) => !!(wk && wk[String(w)]);
+    const semis = [one(seeds[0], seeds[3], R + 1), one(seeds[1], seeds[2], R + 1)];
+    let final = null, third = null, champ = null, place = null;
+    if (done(R + 1)) {
+      const w1 = winnerOf(semis[0], 1, 4), w2 = winnerOf(semis[1], 2, 3);
+      const l1 = w1 === semis[0].a ? semis[0].b : semis[0].a, l2 = w2 === semis[1].a ? semis[1].b : semis[1].a;
+      final = one(w1, w2, R + 2); third = one(l1, l2, R + 2);
+      if (done(R + 2)) {
+        const sd = (id) => seeds.indexOf(id) + 1;
+        const c = winnerOf(final, sd(w1), sd(w2)), t = winnerOf(third, sd(l1), sd(l2));
+        champ = c; place = [c, c === final.a ? final.b : final.a, t];
+      }
+    }
+    return { seeds, semis, final, third, champ, place };
+  }
+
+  /* ---------- the summer draft ---------- */
+  // One FAAB auction for incoming rookies and unsigned free agents. Worse teams get bigger budgets, scaled evenly from
+  // the champion's floor to the last-place ceiling, plus a bonus for each expiring player they let walk.
+  function summerBudgets(L, order, walked) {
+    const n = order.length, s = L.settings;
+    const out = {};
+    order.forEach((id, i) => {
+      const base = n > 1 ? Math.round(s.summerMin + ((s.summerMax - s.summerMin) * i) / (n - 1)) : s.summerMax;
+      out[id] = base + ((walked && walked[id]) || 0) * s.compDollars;
+    });
+    return out;
   }
 
   /* ---------- free agency ---------- */
@@ -827,6 +878,39 @@
     return { ok: true };
   }
 
+  // The commissioner can undo an accepted trade within the veto window, as long as nobody in it has moved since.
+  function vetoTrade(L, pool, id, now) {
+    const t = L.trades.find((x) => x.id === id);
+    if (!t || t.status !== "accepted") return { ok: false, why: "Only an accepted trade can be vetoed" };
+    if (now - t.closed > L.settings.vetoHours * HOUR) return { ok: false, why: `The ${L.settings.vetoHours}-hour veto window has closed` };
+    const A = L.teams[t.from], B = L.teams[t.to];
+    const back = (fromT, toT, ids) => {                       // pieces that went fromT -> toT come back
+      for (const x of ids) {
+        if (isProspect(x)) { if (!toT.prospects.includes(x)) return `${x} has moved again`; continue; }
+        if (!toT.hist.some((h) => h.pid === x && h.to == null)) return "A player in the deal has moved again";
+      }
+      return null;
+    };
+    const why = back(A, B, t.give) || back(B, A, t.get);
+    if (why) return { ok: false, why };
+    const undo = (fromT, toT, ids) => {
+      for (const x of ids) {
+        if (isProspect(x)) { toT.prospects = toT.prospects.filter((y) => y !== x); fromT.prospects.push(x); continue; }
+        const nh = toT.hist.filter((h) => h.pid === x && h.to == null).pop();
+        toT.hist.splice(toT.hist.indexOf(nh), 1);
+        toT.ir = (toT.ir || []).filter((y) => y !== x);
+        const oh = fromT.hist.filter((h) => h.pid === x).pop();
+        if (oh && oh.to != null && oh.to + 1 >= nh.from) oh.to = null; else fromT.hist.push({ pid: x, from: nh.from, to: null });
+        for (const tm of [fromT, toT]) for (const [w, sl] of Object.entries(tm.lineups || {})) if (+w >= nh.from) tm.lineups[w] = sl.map((y) => (y === x ? null : y));
+      }
+    };
+    undo(A, B, t.give); undo(B, A, t.get);
+    A.faab += (t.faabGive || 0) - (t.faabGet || 0); B.faab += (t.faabGet || 0) - (t.faabGive || 0);
+    t.status = "vetoed"; t.vetoed = now;
+    log(L, now, "trade", -1, `The commissioner vetoed the ${A.name} and ${B.name} trade; everyone went back`);
+    return { ok: true };
+  }
+
   // Bots take a deal that improves them by a clear margin and fits.
   function botWantsTrade(L, pool, t) {
     const byId = Object.fromEntries(pool.map((p) => [p.id, p]));
@@ -835,11 +919,11 @@
   }
 
   const E = {
-    CATS, COLS, C, DEFAULTS, HOUR, SLOTS, ELIG, positions, eligible, isOut, rostered, irProblem, moveToIR, activateIR,
+    CATS, COLS, C, DEFAULTS, HOUR, totalWeeks, SLOTS, ELIG, positions, eligible, isOut, rostered, irProblem, moveToIR, activateIR,
     autoLineup, lockTime, lineupFor, setLineup, lockLineups, defaultTiers, rng, money, isProspect, buildPool, buildProspects, rankNineCat, newLeague,
     snake, snakeFrom, setOrder, roundRobin, tierOf, ceilingOf, owed, pot, upgradeTier, active, payroll, owners, context, reserve,
     check, clockLen, onClock, nextPickOf, startDraft, pauseDraft, draftPick, botScore, autoChoice, catchUp, undoPick,
-    botAuctionBids, resolveAuction, weekStart, weekDates, weekOf, nextWaiverRun, rosterInWeek, gameScore, teamWeek, compare,
+    botAuctionBids, resolveAuction, bracket, winnerOf, summerBudgets, vetoTrade, weekStart, weekDates, weekOf, nextWaiverRun, rosterInWeek, gameScore, teamWeek, compare,
     matchups, standings, bidCheck, dropPlayer, botWaiverBids, runWaivers, tradeCheck, proposeTrade, respondTrade, botWantsTrade,
   };
   if (typeof module !== "undefined" && module.exports) module.exports = E;

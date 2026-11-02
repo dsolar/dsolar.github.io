@@ -60,7 +60,7 @@
   const now = () => Date.now() + skew;
   const myTeam = () => (LG && me.team != null && LG.teams[me.team] ? LG.teams[me.team] : null);
   const isMine = (t) => me.team != null && t && t.id === me.team;
-  const curWeek = () => Math.min(LG ? LG.schedule.length : 21, H.weekOf(opener, new Date(now())));
+  const curWeek = () => Math.min(LG ? H.totalWeeks(LG) : 23, H.weekOf(opener, new Date(now())));
   const ui = { tv: "lineup", lw: null, drops: [], f: { pos: "", team: "", sal: "", con: "", age: "" }, abids: {}, sub: "players", q: "", pos: "", sort: "rank", fit: false, status: "fa", kind: "nba", week: null, pair: null, team: null, logKind: "", tradeWith: null, give: [], get: [] };
 
   async function load(full) {
@@ -259,8 +259,10 @@
       ["Lineups", "Nine starters (PG, SG, G, SF, PF, F, C, UTIL, UTIL) and three on the bench. Only starters score. Lineups are weekly and lock at each week's first tip; forget, and your best lineup is set for you."],
       ["IR", `${L ? L.settings.irSlots : 2} IR spots for players listed Out on the injury report. A player on IR doesn't count against your line, so you can sign a real replacement. Bring him back only if he fits.`],
       ["Releases", "Drop a player and his salary comes off right away. His stats count through the end of that week, and you can't claim him straight back."],
-      ["Trades", `Players, prospects and FAAB dollars. Both teams have to fit under their own line afterward, and moves count from the next week. The deadline is the end of week ${L ? L.settings.tradeDeadline : 18}, about ten days after the NBA's (Feb. 11, 2027).`],
-      ["Expiring deals", "When a contract runs out, keep him at his new real salary or let him go and get a pick in next year's draft. You can always trade him before it gets that far."],
+      ["Trades", `Players, prospects and FAAB dollars. Both teams have to fit under their own line afterward, and moves count from the next week. The commissioner can veto within ${L ? L.settings.vetoHours : 24} hours. The deadline is the end of week ${L ? L.settings.tradeDeadline : 18}, about ten days after the NBA's (Feb. 11, 2027).`],
+      ["Expiring deals", `When a contract runs out, keep him at his new real salary or let him go for $${L ? L.settings.compDollars : 10} of extra summer draft budget. You can always trade him before it gets that far.`],
+      ["Summer draft", `Every summer, one blind FAAB auction for incoming rookies and unsigned free agents. Budgets run from $${L ? L.settings.summerMax : 100} for the last-place team down to $${L ? L.settings.summerMin : 50} for the champion. Prospect rights you already hold carry over.`],
+      ["Playoffs", `Top ${L ? L.settings.playoffTeams : 4} after week ${L ? L.settings.regWeeks : 21}: semifinals, then a final and a third-place game. A tied matchup goes to Game Score, then the higher seed. The pot pays ${(L ? L.settings.payout : [60, 25, 15]).join("/")}.`],
       ["Scoring", "Weekly head-to-head on FG%, FT%, 3PM, PTS, REB, AST, STL, BLK and TO. Each category is a win, loss or tie. Game Score breaks ties."],
       ["HC Score", "Value over a replacement player per $10M of salary. A rookie deal that produces scores high; a max contract has to be great to clear 1."],
     ];
@@ -365,13 +367,31 @@
       <aside class="stack">
         <div class="card"><h3>The pot</h3><div class="disp" style="font-size:44px">$${H.pot(LG)}</div>
           <dl class="kv" style="margin-top:8px">${counts.map((c) => `<dt>${esc(c.tier.label)} ($${LG.settings.buyIn + c.tier.add})</dt><dd>${c.n} team${c.n === 1 ? "" : "s"}</dd>`).join("")}</dl>
+          <dl class="kv" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">${LG.settings.payout.map((pc, k) => `<dt>${["Champion", "Runner-up", "Third place"][k] || ordinal(k + 1)} (${pc}%)</dt><dd>$${Math.round((H.pot(LG) * pc) / 100)}</dd>`).join("")}</dl>
           <p class="ps" style="margin-bottom:0">Tier upgrades are tagged on every team and can't be undone this season.</p></div>
+        ${LG.phase === "league" ? officeBracket() : ""}
+        ${LG.phase === "league" ? summerCard(st) : ""}
         <div class="card"><h3>Latest moves</h3>${recent.length ? `<ul class="list">${recent.map((x) => `<li><span>${esc(x.text)}</span></li>`).join("")}</ul>` : `<p class="empty">Nothing yet.</p>`}<a class="btn sm" href="#tx">All transactions</a></div>
       </aside></div>`;
   }
+  function officeBracket() {
+    const b = H.bracket(LG, STATS.wk, BY);
+    const nm = (id) => esc(LG.teams[id].name);
+    const R = LG.settings.regWeeks, cw = curWeek();
+    const title = b.champ != null ? "Champion" : cw > R ? "Playoffs" : "If the season ended today";
+    return `<div class="card"><h3>${title}</h3>${b.champ != null ? `<div class="disp" style="font-size:26px">${nm(b.champ)}</div><dl class="kv" style="margin-top:8px"><dt>Runner-up</dt><dd>${nm(b.place[1])}</dd><dt>Third</dt><dd>${nm(b.place[2])}</dd></dl>` : ""}
+      <ul class="list">${b.semis.map((m, k) => `<li><span class="lbl" style="min-width:56px">${k ? "2 v 3" : "1 v 4"}</span><span>${nm(m.a)} vs ${nm(m.b)}</span></li>`).join("")}${b.final ? `<li><span class="lbl" style="min-width:56px">Final</span><span>${nm(b.final.a)} vs ${nm(b.final.b)}</span></li>` : ""}</ul>
+      <p class="ps" style="margin-bottom:0">Top ${LG.settings.playoffTeams}: semifinals in week ${R + 1}, final and third-place game in week ${R + 2}.</p></div>`;
+  }
+  function summerCard(st) {
+    const order = st.map((r) => r.id);
+    const b = H.summerBudgets(LG, order, {});
+    return `<div class="card"><h3>Summer draft budgets</h3><p class="ps" style="margin-top:0">One FAAB auction next summer for incoming rookies and unsigned free agents. Worse teams get more to spend; letting an expiring player walk adds $${LG.settings.compDollars}. If the season ended today:</p>
+      <ul class="list">${order.slice().reverse().map((id) => `<li><span>${esc(LG.teams[id].name)}</span><span class="grow"></span><b class="num">$${b[id]}</b></li>`).join("")}</ul></div>`;
+  }
   function gameCard(m, i) {
     const A = LG.teams[m.a], B = LG.teams[m.b], c = m.cmp;
-    return `<button class="game${isMine(A) || isMine(B) ? " on" : ""}" data-pair="${i}"><span class="ln ${c.w >= c.l ? "" : "trail"}"><span>${esc(A.name)}</span><span class="num">${c.w}</span></span><span class="ln ${c.l >= c.w ? "" : "trail"}"><span>${esc(B.name)}</span><span class="num">${c.l}</span></span><span class="ps">Game Score ${m.A.t.gmsc.toFixed(0)} to ${m.B.t.gmsc.toFixed(0)}${c.t ? `, ${c.t} tied` : ""}</span></button>`;
+    return `<button class="game${isMine(A) || isMine(B) ? " on" : ""}" data-pair="${i}">${m.label ? `<span class="lbl">${m.label}</span>` : ""}<span class="ln ${c.w >= c.l ? "" : "trail"}"><span>${esc(A.name)}</span><span class="num">${c.w}</span></span><span class="ln ${c.l >= c.w ? "" : "trail"}"><span>${esc(B.name)}</span><span class="num">${c.l}</span></span><span class="ps">Game Score ${m.A.t.gmsc.toFixed(0)} to ${m.B.t.gmsc.toFixed(0)}${c.t ? `, ${c.t} tied` : ""}</span></button>`;
   }
 
   /* ---------- Cap Sheet ---------- */
@@ -398,7 +418,7 @@
       </aside></div>`;
   }
   // The week a lineup edit applies to: this week until its first tip, then next week.
-  const editWeek = () => { const cw = curWeek(); return now() < H.lockTime(opener, cw) ? cw : Math.min(cw + 1, LG.schedule.length); };
+  const editWeek = () => { const cw = curWeek(); return now() < H.lockTime(opener, cw) ? cw : Math.min(cw + 1, H.totalWeeks(LG)); };
   function teamLineup(t, mine) {
     if (LG.phase !== "league") {
       const ids = H.active(t).map((id) => BY[id]).filter(Boolean).sort((a, b) => b.sal - a.sal);
@@ -419,7 +439,7 @@
         <td class="r" style="white-space:nowrap">${mine && p ? `${out && (t.ir || []).length < LG.settings.irSlots ? `<button class="btn sm" data-ir="${id}">To IR</button> ` : ""}<button class="btn sm" data-drop="${id}">Release</button>` : !mine && p && myTeam() ? `<button class="btn sm" data-trade="${t.id}" data-pid="${id}">Trade</button>` : ""}</td></tr>`;
     };
     return `<div class="tools"><b>Week ${w} lineup</b><span class="muted small">${weekLabel(w)}, ${locked ? "locked" : `locks ${fmtWhen(H.lockTime(opener, w))}`}</span><span class="grow"></span>
-        ${w > curWeek() ? `<button class="btn sm" data-lw="${w - 1}">This week</button>` : w < LG.schedule.length ? `<button class="btn sm" data-lw="${w + 1}">Next week</button>` : ""}
+        ${w > curWeek() ? `<button class="btn sm" data-lw="${w - 1}">This week</button>` : w < H.totalWeeks(LG) ? `<button class="btn sm" data-lw="${w + 1}">Next week</button>` : ""}
         ${mine && !locked ? `<button class="btn sm" data-lauto>Best lineup</button><button class="btn sm go" data-lsave="${w}">Save lineup</button>` : ""}</div>
       <div class="table-wrap"><table class="t"><thead><tr><th>Slot</th><th>Player</th><th class="r">Salary</th><th class="r">HC</th><th class="r">GP</th><th class="r">PTS</th><th class="r hide-s">REB</th><th class="r hide-s">AST</th><th></th></tr></thead><tbody>
         ${lu.map((id, i) => row(H.SLOTS[i], id, i)).join("")}${bench.map((id) => row("BN", id, null)).join("")}
@@ -536,15 +556,16 @@
   /* ---------- Matchup Center ---------- */
   function viewMatchups() {
     if (LG.phase !== "league") return `<div class="head"><h1 class="disp">Matchup Center</h1></div><p class="empty">Matchups start once the draft and the Prospect Board auction are done.</p>`;
-    const cw = curWeek(), w = Math.min(ui.week || defaultWeek(), LG.schedule.length);
+    const cw = curWeek(), w = Math.min(ui.week || defaultWeek(), H.totalWeeks(LG));
     const ms = H.matchups(LG, w, STATS.wk, BY);
+    const nav = `<button class="btn sm" data-wk="${w - 1}" ${w <= 1 ? "disabled" : ""}>Previous week</button><b>Week ${w}${w > LG.settings.regWeeks ? (w === LG.settings.regWeeks + 1 ? ", semifinals" : ", finals") : ""}</b><span class="muted small">${weekLabel(w)}</span><button class="btn sm" data-wk="${w + 1}" ${w >= H.totalWeeks(LG) ? "disabled" : ""}>Next week</button>`;
+    if (!ms.length) return `<div class="head"><h1 class="disp">Matchup Center</h1><span class="grow"></span>${nav}</div><p class="empty">The final and the third-place game are set once the semifinals are done.</p>`;
     let i = ui.pair != null ? ui.pair : ms.findIndex((x) => isMine(LG.teams[x.a]) || isMine(LG.teams[x.b]));
     if (i < 0) i = 0;
     const m = ms[i], A = LG.teams[m.a], B = LG.teams[m.b], c = m.cmp;
     const scored = w >= LG.settings.startWeek && STATS.wk && STATS.wk[String(w)];
     const status = w < cw ? "Final" : w === cw ? "In progress" : "Not started";
-    return `<div class="head"><h1 class="disp">Matchup Center</h1><span class="grow"></span>
-        <button class="btn sm" data-wk="${w - 1}" ${w <= 1 ? "disabled" : ""}>Previous week</button><b>Week ${w}</b><span class="muted small">${weekLabel(w)}</span><button class="btn sm" data-wk="${w + 1}" ${w >= LG.schedule.length ? "disabled" : ""}>Next week</button></div>
+    return `<div class="head"><h1 class="disp">Matchup Center</h1><span class="grow"></span>${nav}</div>
       <div class="slate">${ms.map((x, k) => gameCard(x, k).replace('class="game', `class="game${k === i ? " on" : ""}`)).join("")}</div>
       <section class="card"><div class="versus"><div><div class="disp nm">${esc(A.name)}</div><div class="ps">${A.owner ? esc(A.owner) : "Bot"}, Game Score ${m.A.t.gmsc.toFixed(1)}</div></div>
         <div class="disp score">${scored ? `${c.w}-${c.l}${c.t ? "-" + c.t : ""}` : "0-0"}<small>${status}</small></div>
@@ -590,7 +611,9 @@
         <div class="card"><h3>Trades</h3>
           ${mineT.length ? `<ul class="list">${mineT.map((x) => tradeLine(x, t)).join("")}</ul>` : `<p class="empty">No open offers.</p>`}
           ${t && LG.phase === "league" ? `<button class="btn go" data-act-trade>Propose a trade</button>` : ""}
-          ${trades.filter((x) => x.status !== "pending").slice(0, 8).length ? `<h3 style="margin-top:14px">Recent</h3><ul class="list">${trades.filter((x) => x.status !== "pending").slice(0, 8).map((x) => `<li><span>${esc(LG.teams[x.from].abbr)} and ${esc(LG.teams[x.to].abbr)}: ${x.status}${x.why ? ` (${esc(x.why)})` : ""}</span></li>`).join("")}</ul>` : ""}</div>
+          ${trades.filter((x) => x.status !== "pending").slice(0, 8).length ? `<h3 style="margin-top:14px">Recent</h3><ul class="list">${trades.filter((x) => x.status !== "pending").slice(0, 8).map((x) => {
+            const open = x.status === "accepted" && now() - x.closed < LG.settings.vetoHours * H.HOUR;
+            return `<li><span>${esc(LG.teams[x.from].abbr)} and ${esc(LG.teams[x.to].abbr)}: ${x.status}${x.why ? ` (${esc(x.why)})` : ""}${open ? `. Commissioner can veto until ${fmtWhen(x.closed + LG.settings.vetoHours * H.HOUR)}` : ""}</span><span class="grow"></span>${open && me.commish ? `<button class="btn sm warn" data-veto="${x.id}">Veto</button>` : ""}</li>`; }).join("")}</ul>` : ""}</div>
         <div class="card"><h3>League log</h3><div class="tools" style="margin-bottom:8px">${kinds.map(([k, n]) => `<button class="btn sm${ui.logKind === k ? " go" : ""}" data-logkind="${k}">${n}</button>`).join("")}</div>
           ${items.length ? `<ul class="list">${items.slice(0, 120).map((x) => `<li><time>${fmtDate(x.at)}</time><span>${esc(x.text)}</span></li>`).join("")}</ul>` : `<p class="empty">Nothing here yet.</p>`}</div>
       </section>
@@ -846,6 +869,11 @@
           <div class="field"><label for="sstart">Scoring starts in week</label><input type="number" id="sstart" name="startWeek" min="1" max="${s.regWeeks}" value="${s.startWeek}" ${p === "lobby" ? "" : "disabled"}></div></div>
           <div class="row2"><div class="field"><label for="stdl">Trade deadline: end of week</label><input type="number" id="stdl" name="tradeDeadline" min="1" max="${s.regWeeks}" value="${s.tradeDeadline}"></div>
           <div class="field"><label for="sirs">IR spots</label><input type="number" id="sirs" name="irSlots" min="0" max="4" value="${s.irSlots}"></div></div>
+          <div class="row2"><div class="field"><label for="spay">Payout split, %</label><input type="text" id="spay" name="payout" value="${s.payout.join(" / ")}"></div>
+          <div class="field"><label for="sveto">Veto window (hours)</label><input type="number" id="sveto" name="vetoHours" min="0" max="168" value="${s.vetoHours}"></div></div>
+          <div class="row2"><div class="field"><label for="smin">Summer budget, best team ($)</label><input type="number" id="smin" name="summerMin" min="1" value="${s.summerMin}"></div>
+          <div class="field"><label for="smax">Summer budget, worst team ($)</label><input type="number" id="smax" name="summerMax" min="1" value="${s.summerMax}"></div></div>
+          <div class="field"><label for="scomp">Bonus for letting an expiring player walk ($)</label><input type="number" id="scomp" name="compDollars" min="0" value="${s.compDollars}"></div>
           <div class="field"><label for="sirr">Who can go on IR</label><select id="sirr" name="irRule"><option value="out"${s.irRule === "out" ? " selected" : ""}>Only players ESPN lists as Out</option><option value="any"${s.irRule === "any" ? " selected" : ""}>Anyone (commissioner polices it)</option></select></div>
           <p class="ps" style="margin:0">The real NBA deadline is Feb. 11, 2027; week ${H.weekOf(opener, new Date("2027-02-21T12:00:00"))} ends Feb. 21, ten days later. Week 1 backfills every week already played from real box scores, which is handy for testing. A real league should start the week after the draft.</p>
           <div><button class="btn go" type="submit">Save settings</button></div></form>
@@ -935,6 +963,7 @@
     on("[data-unbid]", "click", async (e) => { const b = (myBids.waiver || []).slice(); b.splice(+e.currentTarget.dataset.unbid, 1); if (await putBids("waiver", b)) render(); });
     on("[data-accept]", "click", (e) => mutate("Accepted a trade", (L) => H.respondTrade(L, POOL, e.currentTarget.dataset.accept, true, curWeek(), now())).then((ok) => ok && toast("Trade accepted.")));
     on("[data-decline]", "click", (e) => mutate("Declined a trade", (L) => H.respondTrade(L, POOL, e.currentTarget.dataset.decline, false, curWeek(), now())));
+    on("[data-veto]", "click", (e) => { const id = e.currentTarget.dataset.veto; dlg(`<h3 class="disp">Veto this trade?</h3><p class="muted">Every player, prospect and FAAB dollar goes back to where it started, and the league log says you vetoed it.</p><form><div class="acts"><button type="button" class="btn" data-close>Keep the trade</button><button class="btn warn" type="submit">Veto</button></div></form>`, async () => { await mutate("Vetoed a trade", (L) => H.vetoTrade(L, POOL, id, now()), { as: "commish" }); }); });
     on("[data-withdraw]", "click", (e) => mutate("Withdrew a trade", (L) => { const t = L.trades.find((x) => x.id === e.currentTarget.dataset.withdraw); if (t) { t.status = "withdrawn"; t.closed = now(); } return { ok: true }; }));
     // commissioner
     const cf = $("#cform", app);
@@ -955,6 +984,13 @@
         L.settings.tradeDeadline = Math.max(1, Math.floor(+fd.get("tradeDeadline") || 18));
         L.settings.irSlots = Math.max(0, Math.min(4, Math.floor(+fd.get("irSlots") || 0)));
         L.settings.irRule = fd.get("irRule") === "any" ? "any" : "out";
+        const pay = String(fd.get("payout") || "").split(/[^0-9]+/).filter(Boolean).map(Number);
+        if (pay.length && pay.reduce((a, b) => a + b, 0) !== 100) return { ok: false, why: "The payout split has to add up to 100%" };
+        if (pay.length) L.settings.payout = pay;
+        L.settings.vetoHours = Math.max(0, Math.min(168, Math.floor(+fd.get("vetoHours") || 0)));
+        L.settings.summerMin = Math.max(1, Math.floor(+fd.get("summerMin") || 50));
+        L.settings.summerMax = Math.max(L.settings.summerMin, Math.floor(+fd.get("summerMax") || 100));
+        L.settings.compDollars = Math.max(0, Math.floor(+fd.get("compDollars") || 0));
         if (L.phase === "lobby") {
           const f = Math.max(1, Math.floor(+fd.get("faab") || 50)); if (f !== L.settings.faab) { L.settings.faab = f; L.teams.forEach((t) => (t.faab = f)); }
           L.settings.startWeek = Math.max(1, Math.floor(+fd.get("startWeek") || 1));
