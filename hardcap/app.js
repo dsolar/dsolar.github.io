@@ -579,7 +579,7 @@
     const ms = LG.phase === "league" ? H.matchups(LG, defaultWeek(), WK, BY) : [];
     const mine = ms.find((m) => isMine(LG.teams[m.a]) || isMine(LG.teams[m.b]));
     const recent = LG.log.slice(-6).reverse();
-    return `${phaseBanner()}${mine ? myMatchupCard(mine) : ""}
+    return `${mine && LG.phase === "league" ? myMatchupCard(mine) : phaseBanner()}
       <div class="cols"><section class="stack"><div class="head"><h1 class="disp">${esc(LG.name)}</h1></div>
         <div class="table-wrap"><table class="t stand">${STAND_HEAD}<tbody>${rows}</tbody></table></div>
         <p class="ps">Room is what each team can still add under its own line: the number to check before you call about a trade. ${LG.phase === "league" ? `Top ${LG.settings.playoffTeams} make the playoffs after week ${LG.settings.regWeeks}.` : ""}</p>
@@ -600,7 +600,7 @@
     const meA = isMine(A), us = meA ? A : B, them = meA ? B : A, uw = meA ? c.w : c.l, tw = meA ? c.l : c.w;
     const cats = c.cats.map((x) => { const win = meA ? x.out === "w" : x.out === "l", loss = meA ? x.out === "l" : x.out === "w";
       return `<span class="mc ${win ? "w" : loss ? "l" : ""}" title="${x.cat.label}: ${fmtCat(x.cat, meA ? x.a : x.b)} to ${fmtCat(x.cat, meA ? x.b : x.a)}">${x.cat.label}</span>`; }).join("");
-    return `<a class="card mymatch" href="#matchups" data-wk="${w}"><div class="mm-l"><span class="ps">Week ${w}${w === curWeek() ? ", in progress" : ", final"}</span><b class="disp">${esc(us.name)}</b><span class="ps">vs ${esc(them.name)}</span></div>
+    return `<a class="card mymatch" href="#matchups" data-wk="${w}"><div class="mm-l"><span class="ps">Week ${w}${w === curWeek() ? ", in progress" : ", final"}</span><b class="disp">${esc(us.name)}</b><span class="ps">vs ${esc(them.name)}. Now: week ${curWeek()}, ${weekLabel(curWeek())}; waivers ${fmtWhen(LG.due.waiver || H.nextWaiverRun(now()))}</span></div>
       <div class="disp mm-s ${uw > tw ? "ok" : uw < tw ? "bad" : ""}">${uw}-${tw}${c.t ? "-" + c.t : ""}</div><div class="mm-c">${cats}</div></a>`;
   }
   function officeBracket() {
