@@ -86,7 +86,7 @@ test('slow drafts use hours, and a manager can pick on time', () => {
 });
 
 test('the reserve blocks a pick that would strand open spots', () => {
-  const L = H.newLeague({ cba: nba.cba, teams: 10, seed: 5, now: T0 });
+  const L = H.newLeague({ cba: nba.cba, teams: 10, seed: 5, now: T0, settings: { lineScale: 1 } });
   L.teams[0].tier = 2;
   const pricey = pool.slice().sort((a, b) => b.sal - a.sal);
   for (const p of pricey.slice(0, 3)) L.teams[0].hist.push({ pid: p.id, from: 1, to: null });
@@ -100,8 +100,10 @@ test('the reserve blocks a pick that would strand open spots', () => {
 });
 
 test('tiers only go up, raise the line, and add to the pot', () => {
-  const L = H.newLeague({ cba: nba.cba, teams: 10, seed: 6, now: T0 });
+  const L = H.newLeague({ cba: nba.cba, teams: 10, seed: 6, now: T0, settings: { lineScale: 1 } });
   assert.equal(H.ceilingOf(L, L.teams[3]), nba.cba.cap);
+  const big = H.newLeague({ cba: nba.cba, teams: 10, seed: 6, now: T0 });
+  assert.ok(Math.abs(H.ceilingOf(big, big.teams[0]) - nba.cba.cap * 1.75) < 1e5, 'new leagues default to 1.75 real caps');
   assert.equal(H.pot(L), 1000);
   assert.equal(H.upgradeTier(L, 3, 2, T0, 1).ok, true);
   assert.equal(H.ceilingOf(L, L.teams[3]), nba.cba.a1);

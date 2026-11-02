@@ -398,11 +398,12 @@
 
   /* ---------- landing: create a league ---------- */
   const RULES = (L) => {
-    const tiers = L ? L.settings.tiers : H.defaultTiers(NBA.cba);
+    const tiers = L ? L.settings.tiers : H.defaultTiers(NBA.cba, H.DEFAULTS.lineScale);
+    const scale = L ? L.settings.lineScale || 1 : H.DEFAULTS.lineScale;
     const faab = L ? L.settings.faab : H.DEFAULTS.faab, buy = L ? L.settings.buyIn : 100;
     return [
       ["Real salaries", "Every player costs his actual NBA salary, and it moves each offseason with his real contract. Two-way and 10-day players count too, at their real (small) salaries."],
-      ["The line", `Everyone starts as a cap team: 12 NBA players under ${money(tiers[0].line)}. Any team can move up a tier for a cash add-on: ${tiers.slice(1).map((t) => `${t.label} (${money(t.line)}, +$${t.add})`).join(", ")}. Moving up is permanent for the season. Buy-in is $${buy}.`],
+      ["The line", `Everyone starts as a cap team: ${L ? L.settings.roster : 12} NBA players under ${money(tiers[0].line)}${scale !== 1 ? `, ${scale} times the real NBA cap, so a team can afford the stars ten fantasy teams compete for` : ""}. Any team can move up a tier for a cash add-on: ${tiers.slice(1).map((t) => `${t.label} (${money(t.line)}, +$${t.add})`).join(", ")}. Moving up is permanent for the season. Buy-in is $${buy}.`],
       ["The draft", "Live or slow. A pick only counts if you can still fill every open spot at the cheapest salaries left; the hatched part of your cap bar is that reserve. Miss your clock and your queue picks for you."],
       ["Prospect Board", `After the draft, a blind FAAB auction for ${L ? L.settings.prospects : 2} prospect spots. Bids come out of your $${faab} season budget, so a big prospect bid means fewer pickups later.`],
       ["Waivers", `Every add is a blind FAAB bid, $${L ? L.settings.minBid : 1} minimum, so there's no first-come rush. Highest bid wins, ties go to the team lower in the standings. Bids run every Monday at 3 a.m. Eastern; signings count that week. Drops are free and unlimited.`],
@@ -424,7 +425,7 @@
   const rulesList = (L) => `<ul class="rules grid">${RULES(L).map(([a, b]) => `<li><b>${a}</b><span>${b}</span></li>`).join("")}</ul>`;
 
   function renderLanding() {
-    const fake = { settings: { roster: 12, tiers: H.defaultTiers(NBA.cba) }, teams: [], phase: "lobby" };
+    const fake = { settings: { roster: 12, tiers: H.defaultTiers(NBA.cba, H.DEFAULTS.lineScale) }, teams: [], phase: "lobby" };
     const keepLG = LG; LG = fake;
     const sample = { tier: 0, hist: ["nikola-jokic", "cooper-flagg", "derrick-white", "jalen-johnson", "payton-pritchard"].filter((id) => BY[id]).map((pid) => ({ pid, from: 1, to: null })) };
     const bar = capBar(sample, { reserve: true });
@@ -442,6 +443,8 @@
           <div class="field"><span class="lbl">Managers</span><div class="seg" role="group" aria-label="Managers">${SIZES.map((n) => `<button type="button" data-n="${n}" aria-pressed="${n === 10}">${n}</button>`).join("")}</div></div>
           <div class="row2"><div class="field"><span class="lbl">NBA roster spots</span><div class="seg" role="group" aria-label="Roster spots">${ROSTERS.map((n) => `<button type="button" data-ro="${n}" aria-pressed="${n === 12}">${n}</button>`).join("")}</div></div>
           <div class="field"><span class="lbl">Draft</span><div class="seg" role="group" aria-label="Draft type"><button type="button" data-m="live" aria-pressed="true">Live</button><button type="button" data-m="slow" aria-pressed="false">Slow</button></div></div></div>
+          <div class="field"><span class="lbl">The line, in real NBA caps</span><div class="seg" role="group" aria-label="Line size">${[1, 1.25, 1.5, 1.75, 2].map((x) => `<button type="button" data-ls="${x}" aria-pressed="${x === H.DEFAULTS.lineScale}">${x}x</button>`).join("")}</div>
+            <span class="ps" id="lsnote">${money(H.defaultTiers(NBA.cba, H.DEFAULTS.lineScale)[0].line)} cap line. At 1x about a third of the top 30 go undrafted; 1.75x gets them all rostered and leaves the overpaid ones on the board.</span></div>
           <div class="row2"><div class="field"><label for="cp">Commissioner PIN, 4 to 8 digits</label><input type="password" id="cp" name="pin" inputmode="numeric" pattern="\\d{4,8}" required autocomplete="new-password"></div>
           <div class="field"><label for="tn">Your team name</label><input type="text" id="tn" name="tname" maxlength="28" value="Needham Nightshift"></div></div>
           <p class="muted small" style="margin:0">Your PIN also signs you in to your own team. Everything else (clock, tiers, buy-in, order) is in Commissioner tools.</p>
@@ -475,12 +478,14 @@
     const f = $("#create");
     $$("[data-n]", f).forEach((b) => (b.onclick = () => { n = +b.dataset.n; $$("[data-n]", f).forEach((x) => x.setAttribute("aria-pressed", x === b)); }));
     $$("[data-m]", f).forEach((b) => (b.onclick = () => { mode = b.dataset.m; $$("[data-m]", f).forEach((x) => x.setAttribute("aria-pressed", x === b)); }));
+    let ls = H.DEFAULTS.lineScale;
+    $$("[data-ls]", f).forEach((b) => (b.onclick = () => { ls = +b.dataset.ls; $$("[data-ls]", f).forEach((x) => x.setAttribute("aria-pressed", x === b)); $("#lsnote").textContent = `${money(H.defaultTiers(NBA.cba, ls)[0].line)} cap line, ${money(H.defaultTiers(NBA.cba, ls)[3].line)} second apron.`; }));
     $$("[data-ro]", f).forEach((b) => (b.onclick = () => { ro = +b.dataset.ro; $$("[data-ro]", f).forEach((x) => x.setAttribute("aria-pressed", x === b)); }));
     f.onsubmit = async (e) => {
       e.preventDefault();
       const fd = new FormData(f), pin = String(fd.get("pin"));
       const btn = $("button[type=submit]", f); btn.disabled = true;
-      const L = H.newLeague({ cba: NBA.cba, teams: n, name: fd.get("name"), now: Date.now(), opener, settings: { draftMode: mode, roster: ro } });
+      const L = H.newLeague({ cba: NBA.cba, teams: n, name: fd.get("name"), now: Date.now(), opener, settings: { draftMode: mode, roster: ro, lineScale: ls } });
       const tname = String(fd.get("tname") || "").trim();
       if (tname) renameTeam(L, 0, tname);
       try {
@@ -592,7 +597,7 @@
     return `<div class="head"><h1 class="disp">League settings</h1>${me.commish ? `<a class="btn sm" href="#commish">Change settings</a>` : ""}</div>
       <div class="cols2"><section class="card"><h3>Rosters and money</h3><dl class="kv">
         ${row("Teams", LG.teams.length)}${row("NBA roster spots", s.roster)}${row("Prospect spots", s.prospects)}${row("IR spots", `${s.irSlots}, Out players only`)}
-        ${row("Lines", s.tiers.map((t) => `${esc(t.label)} ${money(t.line)}${t.add ? ` (+$${t.add})` : ""}`).join("<br>"))}${row("Buy-in", "$" + s.buyIn)}${row("Payout", s.payout.join(" / "))}
+        ${row("Lines", `${s.tiers.map((t) => `${esc(t.label)} ${money(t.line)}${t.add ? ` (+$${t.add})` : ""}`).join("<br>")}${(s.lineScale || 1) !== 1 ? `<br><span class="ps">${s.lineScale} times the real NBA lines</span>` : ""}`)}${row("Buy-in", "$" + s.buyIn)}${row("Payout", s.payout.join(" / "))}
         ${row("Season FAAB", `$${s.faab}, $${s.minBid} minimum`)}</dl></section>
       <section class="card"><h3>Season</h3><dl class="kv">
         ${row("Draft", s.draftMode === "slow" ? `Slow, ${s.slowHours} hours a pick` : `Live, ${s.clock} seconds a pick`)}${row("Scoring", `Head-to-head: ${H.catsFor(LG).map((c) => c.label).join(", ")}`)}
@@ -1242,6 +1247,7 @@
           <div class="field"><label for="sname">League name</label><input type="text" id="sname" name="name" maxlength="40" value="${esc(LG.name)}"></div>
           <div class="row2"><div class="field"><label for="sbuy">Buy-in ($)</label><input type="number" id="sbuy" name="buyIn" min="0" value="${s.buyIn}"></div>
           <div class="field"><label for="sfaab">Season FAAB ($)</label><input type="number" id="sfaab" name="faab" min="1" value="${s.faab}" ${p === "lobby" ? "" : "disabled"}></div></div>
+          <div class="field"><label for="sls">The line, in real NBA caps</label><select id="sls" name="lineScale" ${p === "lobby" ? "" : "disabled"}>${[1, 1.25, 1.5, 1.75, 2].map((x) => `<option value="${x}"${(s.lineScale || 1) === x ? " selected" : ""}>${x}x: ${money(H.defaultTiers(NBA.cba, x)[0].line)} cap line</option>`).join("")}</select></div>
           <div class="row2">${tiersEditable}</div>
           <div class="row2"><div class="field"><label for="sdead">Tier upgrades close after week</label><input type="number" id="sdead" name="tierDeadline" min="1" max="${s.regWeeks}" value="${s.tierDeadline}"></div>
           <div class="field"><label for="sstart">Scoring starts in week</label><input type="number" id="sstart" name="startWeek" min="1" max="${s.regWeeks}" value="${s.startWeek}" ${p === "lobby" ? "" : "disabled"}></div></div>
@@ -1450,6 +1456,8 @@
       mutate("Settings", (L) => {
         const nm = String(fd.get("name") || "").trim(); if (nm) L.name = nm.slice(0, 40);
         L.settings.buyIn = Math.max(0, Math.floor(+fd.get("buyIn") || 0));
+        const lsv = +fd.get("lineScale");
+        if (L.phase === "lobby" && lsv && lsv !== (L.settings.lineScale || 1)) { const fresh = H.defaultTiers(NBA.cba, lsv); L.settings.lineScale = lsv; L.settings.tiers.forEach((t, k) => (t.line = fresh[k].line)); }
         L.settings.tiers.forEach((t, k) => { if (k) t.add = Math.max(0, Math.floor(+fd.get("tier" + k) || 0)); });
         L.settings.tierDeadline = Math.max(1, Math.floor(+fd.get("tierDeadline") || 1));
         L.settings.tradeDeadline = Math.max(1, Math.floor(+fd.get("tradeDeadline") || 18));

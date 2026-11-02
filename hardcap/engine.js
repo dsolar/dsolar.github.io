@@ -31,6 +31,7 @@
     draftMode: "live", clock: 60, slowHours: 8, botDelay: 1500, auctionHours: 24,
     regWeeks: 21, playoffTeams: 4, startWeek: 1, tierDeadline: 21, tradeDeadline: 18, buyIn: 100,
     irSlots: 2, irRule: "out", vorpCat: true, twoWayMax: 3,
+    lineScale: 1.75,                                                  // the line, in real NBA caps
     prospectAuction: "live", auctionClock: 30, slowAuctionHours: 4,   // live nominate-and-bid auction after the draft; or "sealed" or "skip"   // two-way and 10-day players a team can carry, like the NBA
     tradeReview: "vote", reviewHours: 48, vetoShare: 0.5,   // "vote": the league can veto; "commish": the commissioner can; "none"
     lineGraceHours: 72,                                     // time to get back under the line after a real-world salary change
@@ -43,12 +44,16 @@
   const positions = (p) => (p.ps && p.ps.length ? p.ps : { G: ["PG", "SG"], W: ["SF", "SG"], B: ["PF", "C"] }[p.pos] || ["SF"]);
   const eligible = (p, slot) => !ELIG[slot] || positions(p).some((x) => ELIG[slot].includes(x));
   const isOut = (inj) => !!(inj && /^out/i.test(inj[0] || ""));
-  function defaultTiers(cba) {
+  // Each line is a multiple of the real NBA line. Ten fantasy teams each need 12 of the league's best players, but
+  // one real cap only pays for about half of them; 1.75 real caps lets the good players get rostered and leaves the
+  // overpaid ones on the board.
+  function defaultTiers(cba, scale = 1) {
+    const x = (v) => (scale === 1 ? v : Math.round((v * scale) / 1e4) * 1e4);
     return [
-      { k: "cap", label: "Cap team", line: cba.cap, add: 0 },
-      { k: "tax", label: "Tax team", line: cba.tax, add: 25 },
-      { k: "apron1", label: "First apron", line: cba.a1, add: 50 },
-      { k: "apron2", label: "Second apron", line: cba.a2, add: 100 },
+      { k: "cap", label: "Cap team", line: x(cba.cap), add: 0 },
+      { k: "tax", label: "Tax team", line: x(cba.tax), add: 25 },
+      { k: "apron1", label: "First apron", line: x(cba.a1), add: 50 },
+      { k: "apron2", label: "Second apron", line: x(cba.a2), add: 100 },
     ];
   }
 
@@ -378,7 +383,7 @@
 
   function newLeague(opts) {
     const s = Object.assign({}, DEFAULTS, opts.settings || {});
-    s.tiers = s.tiers || defaultTiers(opts.cba);
+    s.tiers = s.tiers || defaultTiers(opts.cba, s.lineScale || 1);
     const seed = opts.seed || Math.floor(Math.random() * 2 ** 31);
     const n = Math.max(4, Math.min(opts.maxTeams || 16, Math.round((opts.teams || 10) / 2) * 2));   // even, 4 to 16
     s.playoffTeams = Math.min(s.playoffTeams, n);
