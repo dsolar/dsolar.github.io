@@ -268,8 +268,11 @@ def pull_contracts(notes):
         return None
     out = {}
     for row in re.findall(r"<tr[^>]*>(.*?)</tr>", page, re.S):
-        cells = {k: (a, v) for a, k, v in [(m[0], re.search(r'data-stat="([a-z_0-9]+)"', m[0]).group(1), m[1])
-                 for m in re.findall(r"<t[dh]([^>]*)>(.*?)</t[dh]>", row, re.S) if 'data-stat="' in m[0]]}
+        cells = {}
+        for attrs, val in re.findall(r"<t[dh]([^>]*)>(.*?)</t[dh]>", row, re.S):
+            m = re.search(r'data-stat="([^"]+)"', attrs)
+            if m:
+                cells[m.group(1)] = (attrs, val)
         if "player" not in cells or "y1" not in cells:
             continue
         name = H.unescape(re.sub(r"<[^>]+>", "", cells["player"][1])).strip()
@@ -328,7 +331,11 @@ def main():
             wk_now = str(week_of(today - timedelta(days=1), date.fromisoformat(data["opener"])))
             data.setdefault("vorpWk", {})[wk_now] = {k: v[0] for k, v in vorp.items()}
 
-    contracts = pull_contracts(notes)
+    try:
+        contracts = pull_contracts(notes)
+    except Exception as e:                    # never let the contracts page break the box scores
+        notes.append(f"contracts: {type(e).__name__}: {e}"[:200])
+        contracts = None
     if contracts:
         data["contracts"] = contracts
         data["contractsUpdated"] = datetime.now(timezone.utc).isoformat(timespec="seconds")

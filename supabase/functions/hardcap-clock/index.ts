@@ -1,8 +1,9 @@
 // Hard Cap's server clock. pg_cron calls this once a minute (tools/hardcap_supabase.sql). For every active league it
 // runs the same rules the pages run (hardcap/engine.js, fetched from the live site): draft clocks and bot picks,
-// the Prospect Board auction and Monday waivers when they come due, lineup locks, and releasing anyone a real NBA
-// team has waived. Then it sends web push notifications: on the clock, trade offers and answers, waiver and auction
-// results, and a lineup warning when a starter is listed Out.
+// the Prospect Board auction and Monday waivers when they come due, lineup locks, releasing anyone a real NBA
+// team has waived, closing trade reviews and holding teams to their line. Then it sends web push notifications:
+// on the clock, trade offers, reviews and answers, waiver and auction results, and a lineup warning when a starter
+// is listed Out.
 //
 // Saves go through hc_system_save with the version the clock started from, so a manager's save in the same moment
 // wins and the clock simply tries again next minute. Each notification is claimed once in hc_sent.
@@ -109,6 +110,7 @@ async function notify(H: any, id: string, L: any, now: number, cw: number, byId:
   const owned = (t: number) => L.teams[t] && L.teams[t].owner;
   const msgs: [number, string, Push][] = [];                           // [team, once-key, message]
   const nm = (pid: string) => (byId[pid] ? byId[pid].n : String(pid).replace(/^c-/, "").replace(/-/g, " "));
+  const when = (t: number) => new Date(t).toLocaleString("en-US", { timeZone: "America/New_York", weekday: "short", hour: "numeric", minute: "2-digit" });
 
   if (L.phase === "nba") {
     const c = H.onClock(L, now);
@@ -117,17 +119,17 @@ async function notify(H: any, id: string, L: any, now: number, cw: number, byId:
       msgs.push([c.team, `clock:${c.pick}`, { title: "You're on the clock", body: `${L.name}: pick ${c.pick}, round ${c.round}. You have ${hrs}; your queue picks if time runs out.`, url: link("#draft/players"), tag: "clock" }]);
     }
   }
-  if (L.phase === "prospects" && fresh(L.nba.done)) for (const t of L.teams) if (t.owner) msgs.push([t.id, `draftdone`, { title: "The draft is done", body: `Prospect Board bids are open until ${new Date(L.due.auction).toLocaleString("en-US", { timeZone: "America/New_York", weekday: "short", hour: "numeric", minute: "2-digit" })}.`, url: link("#draft/prospects") }]);
+  if (L.phase === "prospects" && fresh(L.nba.done)) for (const t of L.teams) if (t.owner) msgs.push([t.id, `draftdone`, { title: "The draft is done", body: `Prospect Board bids are open until ${when(Date.parse(L.due.auction))}.`, url: link("#draft/prospects") }]);
   for (const t of L.trades || []) {
-    if (t.status === "pending" && fresh(t.at) && owned(t.to)) msgs.push([t.to, `trade:${t.id}:offer`, { title: "Trade offer", body: `${L.teams[t.from].name} wants to make a deal. Open Transactions to accept or decline.`, url: link("#tx") }]);
+    if (t.status === "pending" && fresh(t.at) && owned(t.to)) msgs.push([t.to, `trade:${t.id}:offer`, { title: "Trade offer", body: `${L.teams[t.from].name} wants to make a deal. Open Trades to accept or decline.`, url: link("#team/trades") }]);
     if (t.status === "review" && fresh(t.accepted)) {
       for (const v of H.voters(L, t)) msgs.push([v, `trade:${t.id}:review`, { title: "Trade up for review", body: `${L.teams[t.from].name} and ${L.teams[t.to].name} agreed to a deal. You have ${L.settings.reviewHours} hours to vote to veto it.`, url: link("#team/trades") }]);
-      for (const team of [t.from, t.to]) if (owned(team)) msgs.push([team, `trade:${t.id}:accepted-review`, { title: "Trade accepted", body: `Your deal is in league review until ${new Date(t.reviewEnds).toLocaleString("en-US", { timeZone: "America/New_York", weekday: "short", hour: "numeric", minute: "2-digit" })}.`, url: link("#team/trades") }]);
+      for (const team of [t.from, t.to]) if (owned(team)) msgs.push([team, `trade:${t.id}:accepted-review`, { title: "Trade accepted", body: `Your deal is in league review until ${when(t.reviewEnds)}.`, url: link("#team/trades") }]);
     }
     if (t.status !== "pending" && t.status !== "review" && fresh(t.closed || t.vetoed)) {
       const word = { accepted: "went through", declined: "declined", failed: "fell through", withdrawn: "was withdrawn", vetoed: "was vetoed" }[t.status as string] || t.status;
       const to = t.status === "vetoed" || (t.status === "accepted" && t.accepted) ? [t.from, t.to] : t.status === "withdrawn" ? [t.to] : [t.from];
-      for (const team of to) if (owned(team)) msgs.push([team, `trade:${t.id}:${t.status}:${team}`, { title: `Trade ${word}`, body: `Your deal with ${L.teams[team === t.from ? t.to : t.from].name} ${word}.`, url: link("#tx") }]);
+      for (const team of to) if (owned(team)) msgs.push([team, `trade:${t.id}:${t.status}:${team}`, { title: `Trade ${word}`, body: `Your deal with ${L.teams[team === t.from ? t.to : t.from].name} ${word}.`, url: link("#team/trades") }]);
     }
   }
   const run = L.lastWaiverRun;
@@ -137,7 +139,7 @@ async function notify(H: any, id: string, L: any, now: number, cw: number, byId:
     for (const [team, rs] of Object.entries(by)) {
       if (!owned(+team)) continue;
       const won = rs.filter((r: any) => r.ok);
-      msgs.push([+team, `waiver:${run.at}`, { title: "Waivers ran", body: won.length ? `You signed ${won.map((r: any) => `${nm(r.add)} ($${r.amt})`).join(", ")}.` : `None of your ${rs.length} bid${rs.length === 1 ? "" : "s"} won this week.`, url: link("#tx") }]);
+      msgs.push([+team, `waiver:${run.at}`, { title: "Waivers ran", body: won.length ? `You signed ${won.map((r: any) => `${nm(r.add)} ($${r.amt})`).join(", ")}.` : `None of your ${rs.length} bid${rs.length === 1 ? "" : "s"} won this week.`, url: link("#league/tx") }]);
     }
   }
   if (L.auction && fresh(L.auction.closed)) for (const t of L.teams) {
