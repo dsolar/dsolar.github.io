@@ -40,6 +40,7 @@ INJURIES = ["https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/in
             "https://cdn.espn.com/core/nba/injuries?xhr=1"]
 ROSTER = ["https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/teams/{id}/roster?region=us&lang=en&contentorigin=espn",
           "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/{id}/roster"]
+BBREF = "https://www.basketball-reference.com/leagues/NBA_{season}_advanced.html"
 TEAM = {"GS": "GSW", "NY": "NYK", "SA": "SAS", "NO": "NOP", "UTAH": "UTA", "WSH": "WAS", "BKN": "BRK", "CHA": "CHO",
         "PHX": "PHO"}
 # Order of the numbers in every weekly line and every per-game line.
@@ -219,6 +220,36 @@ def pull_rosters(notes):
     return out, teams
 
 
+def pull_vorp(season, notes):
+    """{slug: [vorp, bpm, games]} from Basketball-Reference's advanced table. One page a day, well inside its limits.
+    A traded player's season total row comes first, so the first row per player wins."""
+    import html as H
+    req = urllib.request.Request(BBREF.format(season=season), headers={"User-Agent": UA, "Accept": "text/html"})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            page = r.read().decode("utf-8", "replace")
+    except Exception as e:
+        notes.append(f"vorp: {type(e).__name__}: {e}"[:200])
+        return None
+    out = {}
+    for row in re.findall(r"<tr[^>]*>(.*?)</tr>", page, re.S):
+        cells = dict(re.findall(r'data-stat="([a-z_]+)"[^>]*>(.*?)</t[dh]>', row, re.S))
+        name = re.sub(r"<[^>]+>", "", cells.get("name_display") or cells.get("player") or "").strip()
+        if not name or name == "Player" or "vorp" not in cells:
+            continue
+        pid = slug(H.unescape(name))
+        if pid in out:
+            continue
+        try:
+            out[pid] = [float(re.sub(r"<[^>]+>", "", cells["vorp"]) or 0), float(re.sub(r"<[^>]+>", "", cells.get("bpm", "0")) or 0),
+                        int(re.sub(r"<[^>]+>", "", cells.get("games", cells.get("g", "0"))) or 0)]
+        except ValueError:
+            continue
+    if not out:
+        notes.append(f"vorp: no rows parsed ({len(page)} bytes)")
+    return out or None
+
+
 def main():
     today = et_today()
     end = season_end_year(today)
@@ -241,6 +272,15 @@ def main():
                 data["avg"][str(yr)] = lines
         except Exception as e:
             notes.append(f"avg {yr}: {type(e).__name__}: {e}"[:200])
+
+    vorp = pull_vorp(end, notes)
+    if vorp:
+        data["vorp"] = vorp
+        # Season VORP is cumulative, so each fantasy week keeps the last reading taken during it; a week's VORP is
+        # its reading minus the week before's.
+        if data.get("opener"):
+            wk_now = str(week_of(today, date.fromisoformat(data["opener"])))
+            data.setdefault("vorpWk", {})[wk_now] = {k: v[0] for k, v in vorp.items()}
 
     rosters, teams = pull_rosters(notes)
     if teams:
