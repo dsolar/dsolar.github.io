@@ -390,6 +390,9 @@ test('latest contracts: Basketball-Reference wins, the fixes file fills gaps, no
   assert.ok(by2['new-signing'] && !by2['new-signing'].gone);
   assert.equal(by2['new-signing'].n, 'New Signing');
   assert.equal(by2['aj-green'].future.length, 1);
-  assert.ok(by2[real.at(-1).id].gone && by2[real.at(-1).id].noDeal);
-  assert.ok(by2['dalton-knecht'] ? by2['dalton-knecht'].gone : true);
+  const lost = by2[real.at(-1).id];
+  if ((st2.rosters || {})[real.at(-1).id]) assert.equal(lost.ctype, 'Two-way');                  // still on a roster: a two-way
+  else assert.ok(lost.gone && lost.noDeal);
+  if (by2['dalton-knecht']) assert.equal(by2['dalton-knecht'].ctype, 'Two-way');
+  assert.ok(p2.filter(p => p.ctype === 'Two-way').every(p => p.sal < 1e6 && !p.gone));
 });

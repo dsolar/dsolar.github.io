@@ -50,8 +50,6 @@ jobs:
 
       - name: Pull Tankathon's big board for the Prospect Board
         continue-on-error: true
-        env:
-          HC_DEBUG: "1"
         run: python3 tools/hardcap_prospects.py
 
       - name: Commit the stats

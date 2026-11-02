@@ -72,6 +72,8 @@ def parse(page):
             if k and k not in stats:
                 stats[k] = float(val.rstrip("%"))
         n = text(name.group(1))
+        if any(x["id"] == slug(n) for x in rows):
+            continue                          # the page carries each row twice (wide and narrow layouts)
         r = re.sub(r"[^0-9]", "", text(rank.group(1))) if rank else ""
         rows.append({"id": slug(n), "n": n, "rank": int(r) if r else len(rows) + 1, "school": school, "pos": pos, "stats": stats})
     return rows
@@ -105,6 +107,16 @@ def main():
     data["hist"] = dict(sorted(hist.items())[-200:])
     with open(OUT, "w", encoding="utf-8") as f:
         json.dump(data, f, separators=(",", ":"))
+    # The server clock reads stats.json, so the board and its first reading ride along there too.
+    stats_path = os.path.join(ROOT, "hardcap", "stats.json")
+    try:
+        st = json.load(open(stats_path, encoding="utf-8"))
+        first = sorted(data["hist"])[0]
+        st["prospects"] = {"board": rows, "updated": data["updated"], "hist": {first: data["hist"][first]}}
+        with open(stats_path, "w", encoding="utf-8") as f:
+            json.dump(st, f, ensure_ascii=False, separators=(",", ":"))
+    except (OSError, ValueError) as e:
+        print(f"Couldn't add the board to stats.json: {e}")
     with_stats = sum(1 for r in rows if r["stats"])
     print(f"Wrote {OUT}: {len(rows)} prospects, {with_stats} with a stat line, {len(data['hist'])} daily readings.")
     return 0

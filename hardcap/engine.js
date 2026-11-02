@@ -208,7 +208,30 @@
       players = players.map((p) => (drop.has(p.id) ? Object.assign({}, p, { noDeal: true }) : p));
       players = mergeContracts({ players }, Object.fromEntries(Object.entries(fixes.add || {}).filter(applies))).players;
     }
-    return Object.assign({}, nba, { players, contractReport: report });
+    // Two-way and 10-day players are in the pool too, at their real salaries: a two-way earns half the rookie
+    // minimum, a 10-day deal ten days of his minimum. Anyone on an NBA roster without a standard deal is one of
+    // the two (rosters carry 15 standard spots and 3 two-ways), so this stays current on its own.
+    if (stats && stats.rosters && (stats.rosterTeams || 0) >= 30) {
+      const minS = (nba.cba && nba.cba.min_scale) || [1357762];
+      const twoWay = Math.round(minS[0] / 2);
+      const tenDay = (yos) => Math.round((minS[Math.min(yos || 0, minS.length - 1)] * 10) / 174);
+      const byId = new Map(players.map((p) => [p.id, p]));
+      const byFull = new Map(players.map((p) => [nameKeys(p.id)[0], p]));
+      const kindOf = (id) => (fixes && fixes.nonCap && fixes.nonCap[id] && fixes.nonCap[id].kind === "10-day" ? "10-day" : "two-way");
+      for (const [id, r] of Object.entries(stats.rosters)) {
+        const p = byId.get(id) || byFull.get(nameKeys(id)[0]);
+        if (p && !p.two && !p.noDeal && p.c && p.c.sal && p.c.sal[0]) continue;   // standard deal
+        if (p && p.limbo && !p.noDeal) continue;
+        const kind = kindOf(p ? p.id : id);
+        const ps = p && p.ps && p.ps.length ? p.ps : ESPN_POS[r[2]] || ["SF"];
+        const sal = kind === "10-day" ? tenDay(p && p.yos) : twoWay;
+        const q = Object.assign({}, p || { id, n: r[1], pos: posLetter(ps), ps, age: 25, yos: 0 }, {
+          t: r[0], two: false, noDeal: false, limbo: false, deal: kind, c: Object.assign({}, (p && p.c) || {}, { sal: [sal, 0, 0, 0, 0], opt: {}, signed: 0 }) });
+        if (p) players[players.indexOf(p)] = q; else players.push(q);
+        report.twoWay = (report.twoWay || 0) + 1;
+      }
+    }
+    return Object.assign({}, nba, { players, contractReport: report, liveBoard: (stats && stats.prospects) || nba.liveBoard });
   }
 
   function buildPool(nba, stats) {
@@ -240,8 +263,9 @@
       if (p.limbo) q.limbo = true;
       const v = stats && stats.vorp && (stats.vorp[p.id] || stats.vorp[nameKeys(p.id)[0]]);
       q.bbv = v ? v[0] : null; q.bpm = v ? v[1] : null;
-      q.vps = q.bbv != null ? q.bbv / (q.sal / 1e7) : null;          // VORP per $10M of salary
-      q.ctype = contractType(p, sal[0], nba.cba);
+      q.vpm = q.bbv != null ? (q.bbv / (q.sal / 1e6)) * 10 : null;   // V/M: season VORP per $1M of salary, x10
+      q.ctype = p.deal === "10-day" ? "10-day" : p.deal ? "Two-way" : contractType(p, sal[0], nba.cba);
+      if (p.deal) q.deal = p.deal;
     }
     rankNineCat(players);
     return players;
@@ -307,8 +331,31 @@
     players.slice().sort((a, b) => b.dyn - a.dyn).forEach((p, i) => (p.dynRank = i + 1));
   }
 
-  function buildProspects(nba) {
-    return ((nba.draft && nba.draft["2027"]) || []).map((p) => ({ id: "c-" + p.id, n: p.n, pos: p.pos, school: p.school, age: p.age, rank: p.rank, cls: 2027 }));
+  // The preseason board from the cap sheet, moved along by Tankathon's live big board when it's there (prospects.json):
+  // current rank, this season's line, and spots moved since the preseason board. Prospects who join the live board
+  // later are added, so they can be bid on.
+  function buildProspects(nba, live) {
+    live = live || nba.liveBoard;
+    const out = ((nba.draft && nba.draft["2027"]) || []).map((p) => ({ id: "c-" + p.id, n: p.n, pos: p.pos, school: p.school, age: p.age, rank: p.rank, pre: p.rank, cls: 2027 }));
+    const board = live && live.board;
+    if (!board || board.length < 30) return out;
+    const key = (id) => nameKeys(id.replace(/^c-/, ""))[0];
+    const by = new Map(out.map((p) => [key(p.id), p]));
+    const days = Object.keys(live.hist || {}).sort();
+    const first = days.length ? live.hist[days[0]] : {};
+    const seen = new Set();
+    for (const r of board) {
+      let p = by.get(key(r.id));
+      if (!p) {
+        p = { id: "c-" + r.id, n: r.n, pos: String(r.pos || "SF").split("/")[0], school: r.school, age: null, pre: first[r.id] || null, cls: 2027, late: true };
+        out.push(p); by.set(key(r.id), p);
+      }
+      seen.add(p);
+      p.rank = r.rank; p.stats = r.stats || {}; p.posFull = r.pos || p.pos; if (r.school) p.school = r.school;
+      p.move = p.pre != null ? p.pre - r.rank : null;
+    }
+    for (const p of out) if (!seen.has(p)) { p.rank = 900 + p.pre; p.off = true; p.move = null; }
+    return out.sort((a, b) => a.rank - b.rank);
   }
 
   /* ---------- the league document ---------- */

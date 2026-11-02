@@ -32,7 +32,15 @@
   try { const r = await fetch("contracts.json"); if (r.ok) FIXES = await r.json(); } catch (e) { /* the cap sheet alone still works */ }
   NBA = H.latestContracts(NBA, STATS, FIXES);
   let POOL = H.buildPool(NBA, STATS), BY = Object.fromEntries(POOL.map((p) => [p.id, p]));
-  const PROS = H.buildProspects(NBA), PBY = Object.fromEntries(PROS.map((p) => [p.id, p]));
+  // The Prospect Board moves in season: Tankathon's current big board and stat lines (prospects.json).
+  let LIVE = null;
+  try { const r = await fetch("prospects.json"); if (r.ok) LIVE = await r.json(); } catch (e) { /* the preseason board still works */ }
+  if (!LIVE && STATS.prospects) LIVE = STATS.prospects;
+  const PROS = H.buildProspects(NBA, LIVE), PBY = Object.fromEntries(PROS.map((p) => [p.id, p]));
+  const ageOf = (p) => (p.age ? p.age.toFixed(1) : "-");
+  const moveTagP = (p) => (p.move == null ? (p.pre == null && LIVE ? `<span class="mv new" title="Not on the preseason board">New</span>` : "") : p.move > 0 ? `<span class="mv up" title="Up ${p.move} since the preseason board">&#9650;${p.move}</span>` : p.move < 0 ? `<span class="mv dn" title="Down ${-p.move} since the preseason board">&#9660;${-p.move}</span>` : `<span class="mv">0</span>`);
+  const pstat = (p, k, d = 1) => (p.stats && p.stats[k] != null ? (k === "ts" ? p.stats[k].toFixed(3).replace(/^0/, "") : p.stats[k].toFixed(d)) : "-");
+  const PROS_STATS = [["pts", "PTS"], ["reb", "REB"], ["ast", "AST"], ["stl", "STL"], ["blk", "BLK"], ["ts", "TS%"]];
   let poolKey = "";
   // A league can carry its own contracts (new signings the commissioner added before the cap sheet catches up).
   function syncPool() {
@@ -76,7 +84,7 @@
   const myTeam = () => (LG && me.team != null && LG.teams[me.team] ? LG.teams[me.team] : null);
   const isMine = (t) => me.team != null && t && t.id === me.team;
   const curWeek = () => Math.min(LG ? H.totalWeeks(LG) : 23, H.weekOf(opener, new Date(now())));
-  const ui = { tv: "lineup", lw: null, drops: [], f: { pos: "", team: "", sal: "", con: "", age: "" }, abids: {}, sub: "players", q: "", pos: "", sort: "rank", fit: false, status: "fa", kind: "nba", week: null, pair: null, team: null, logKind: "", tradeWith: null, give: [], get: [] };
+  const ui = { sortDir: 1, tv: "lineup", lw: null, drops: [], f: { pos: "", team: "", sal: "", con: "", age: "" }, abids: {}, sub: "players", q: "", pos: "", sort: "rank", fit: false, status: "fa", kind: "nba", week: null, pair: null, team: null, logKind: "", tradeWith: null, give: [], get: [] };
 
   async function load(full) {
     const r = await rpc("hc_view", { p_id: LID, p_since: full ? 0 : VER });
@@ -135,6 +143,11 @@
     const l = p.cur && p.cur[0] >= 3 ? p.cur : p.prev || p.cur;
     return l ? { l, prev: l === p.prev } : null;
   }
+  // Click a column to sort by it; click again to flip the order.
+  const sortTh = (k, label, cls = "r", title = "") => `<th class="${cls} sortable${ui.sort === k ? " on" : ""}" data-sortk="${k}"${title ? ` title="${title}"` : ""} aria-sort="${ui.sort === k ? (ui.sortDir < 0 ? "ascending" : "descending") : "none"}" tabindex="0">${label}</th>`;
+  const lineHeadS = () => sortTh("pts", "PTS") + sortTh("reb", "REB") + sortTh("ast", "AST") + sortTh("tpm", "3PM", "r hide-s") + sortTh("stl", "STL", "r hide-s") + sortTh("blk", "BLK", "r hide-s") + sortTh("fg", "FG%", "r hide-m") + sortTh("ft", "FT%", "r hide-m") + sortTh("tov", "TO", "r hide-m");
+  const vorpHeadS = () => sortTh("vorp", "VORP", "r hide-s", "Value over replacement player, season to date") + sortTh("vpm", "V/M", "r hide-m", "V/M: season VORP per $1M of salary, x10");
+  const sortRows = (rows) => { const f = SORTS[ui.sort] || SORTS.rank; return rows.sort((a, b) => f(a, b) * (ui.sortDir || 1)); };
   const LINE_HEAD = `<th class="r">PTS</th><th class="r">REB</th><th class="r">AST</th><th class="r hide-s">3PM</th><th class="r hide-s">STL</th><th class="r hide-s">BLK</th><th class="r hide-m">FG%</th><th class="r hide-m">FT%</th><th class="r hide-m">TO</th>`;
   function lineCells(p) {
     const g = perGame(p);
@@ -142,8 +155,8 @@
     const l = g.l, v = (k) => l[C[k]].toFixed(1);
     return `<td class="r num">${v("pts")}</td><td class="r num">${v("reb")}</td><td class="r num">${v("ast")}</td><td class="r num hide-s">${v("tpm")}</td><td class="r num hide-s">${v("stl")}</td><td class="r num hide-s">${v("blk")}</td><td class="r num hide-m">${pct(l[C.fgm], l[C.fga])}</td><td class="r num hide-m">${pct(l[C.ftm], l[C.fta])}</td><td class="r num hide-m">${v("tov")}</td>`;
   }
-  const vorpCells = (p) => `<td class="r num hide-s" title="Season VORP (Basketball-Reference)">${p.bbv == null ? "-" : p.bbv.toFixed(1)}</td><td class="r num hide-m ${p.vps >= 0.5 ? "ok" : p.vps < 0 ? "bad" : ""}" title="VORP per $10M of salary">${p.vps == null ? "-" : p.vps.toFixed(2)}</td>`;
-  const VORP_HEAD = `<th class="r hide-s" title="Value over replacement player, season to date">VORP</th><th class="r hide-m" title="VORP per $10M of salary">V/$10M</th>`;
+  const vorpCells = (p) => `<td class="r num hide-s" title="Season VORP (Basketball-Reference)">${p.bbv == null ? "-" : p.bbv.toFixed(1)}</td><td class="r num hide-m ${p.vpm >= 1 ? "ok" : p.vpm < 0 ? "bad" : ""}" title="V/M: season VORP per $1M of salary, x10">${p.vpm == null ? "-" : p.vpm.toFixed(1)}</td>`;
+  const VORP_HEAD = `<th class="r hide-s" title="Value over replacement player, season to date">VORP</th><th class="r hide-m" title="V/M: season VORP per $1M of salary, x10">V/M</th>`;
   const typeTag = (p) => (p && p.ctype ? `<span class="tag ct">${esc(p.ctype)}</span>` : "");
   const hcCell = (p) => `<td class="r num ${p.hc >= 1 ? "ok" : p.hc < 0 ? "bad" : ""}" title="Value over a replacement player per $10M of salary">${p.hc.toFixed(1)}</td>`;
   function seasonLine(pid) {
@@ -306,7 +319,7 @@
   /* ---------- dialogs ---------- */
   const D = $("#dlg");
   function dlg(html, onSubmit) {
-    D.innerHTML = html;
+    D.innerHTML = `<button type="button" class="dlg-x" data-close aria-label="Close">&times;</button>` + html;
     $$("[data-close]", D).forEach((b) => b.addEventListener("click", () => D.close()));
     const f = $("form", D);
     if (f && onSubmit) f.addEventListener("submit", async (e) => {
@@ -661,16 +674,16 @@
     const q = ui.q.trim().toLowerCase();
     if (ui.kind === "prospects") {
       const rows = PROS.filter((p) => (ui.status === "all" || (ui.status === "fa" ? ctx.own[p.id] == null : ctx.own[p.id] != null)) && (!q || p.n.toLowerCase().includes(q) || p.school.toLowerCase().includes(q)));
-      return marketTools() + `<div class="table-wrap"><table class="t"><thead><tr><th class="r">Board</th><th>Prospect</th><th>School</th><th class="r">Age</th><th>Rights</th><th></th></tr></thead><tbody>
-        ${rows.map((p) => { const o = ctx.own[p.id]; return `<tr><td class="r num ps">${p.rank}</td><td>${pl(p.id)}<div class="ps">${p.pos}</div></td><td>${esc(p.school)}</td><td class="r num">${p.age.toFixed(1)}</td>
+      return marketTools() + `<div class="table-wrap"><table class="t dense"><thead><tr><th class="r">Board</th><th class="r" title="Spots moved since the preseason board">Move</th><th>Prospect</th><th>School</th><th class="r hide-s">Age</th>${PROS_STATS.map(([, l], i) => `<th class="r${i > 2 ? " hide-s" : ""}">${l}</th>`).join("")}<th>Rights</th><th></th></tr></thead><tbody>
+        ${rows.map((p) => { const o = ctx.own[p.id]; return `<tr><td class="r num">${p.rank}</td><td class="r">${moveTagP(p)}</td><td class="nm">${pl(p.id)} <span class="ps">${esc(p.posFull || p.pos)}</span></td><td>${esc(p.school)}</td><td class="r num hide-s">${ageOf(p)}</td>${PROS_STATS.map(([k], i) => `<td class="r num${i > 2 ? " hide-s" : ""}">${pstat(p, k)}</td>`).join("")}
           <td>${o != null ? `<a class="btn link" href="#team/roster/${o}">${esc(LG.teams[o].abbr)}</a>` : `<span class="muted">Available</span>`}</td>
           <td class="r">${o == null && t ? (LG.phase === "league" ? `<button class="btn sm go" data-bid="${p.id}">Bid</button>` : LG.phase === "prospects" ? `<a class="btn sm go" href="#draft/prospects">Auction</a>` : "") : ""}</td></tr>`; }).join("")}</tbody></table></div>`;
     }
     let rows = POOL.filter((p) => (ui.status === "all" || (ui.status === "fa" ? ctx.own[p.id] == null && !p.gone : ctx.own[p.id] != null)) && (!q || p.n.toLowerCase().includes(q)) && passFilters(p));
-    rows.sort(SORTS[ui.sort] || SORTS.rank);
+    sortRows(rows);
     const total = rows.length;
     rows = rows.slice(0, 200);
-    return marketTools(total) + `<div class="table-wrap"><table class="t"><thead><tr><th class="r" title="Nine-category rank">Rk</th><th class="r hide-s" title="Dynasty rank">Dyn</th>${YAHOO.players ? `<th class="r hide-m" title="Yahoo rank this season">Y!</th>` : ""}<th>Player</th><th>Status</th><th class="r">Salary</th><th class="r" title="HC Score: value over replacement per $10M">HC</th>${VORP_HEAD}${LINE_HEAD}<th></th></tr></thead><tbody>
+    return marketTools(total) + `<div class="table-wrap"><table class="t"><thead><tr>${sortTh("rank", "Rk", "r", "Nine-category rank")}${sortTh("dyn", "Dyn", "r hide-s", "Dynasty rank")}${YAHOO.players ? sortTh("yahoo", "Y!", "r hide-m", "Yahoo rank this season") : ""}${sortTh("name", "Player", "")}${sortTh("age", "Age", "r hide-s")}<th>Status</th>${sortTh("sal", "Salary")}${sortTh("hc", "HC", "r", "HC Score: value over replacement per $10M")}${vorpHeadS()}${lineHeadS()}<th></th></tr></thead><tbody>
       ${rows.map((p) => {
         const o = ctx.own[p.id];
         let act = "";
@@ -678,7 +691,7 @@
         else if (t && o == null && LG.phase === "league" && !p.gone) act = `<button class="btn sm go" data-bid="${p.id}">Bid</button>`;
         else if (t && o != null && o !== t.id && LG.phase === "league") act = `<button class="btn sm" data-trade="${o}" data-pid="${p.id}">Trade</button>`;
         const g = perGame(p);
-        return `<tr class="${o === me.team && me.team != null ? "me" : ""}"><td class="r num ps">${p.rank}</td><td class="r num ps hide-s">${p.dynRank}</td>${YAHOO.players ? `<td class="r num ps hide-m">${(YAHOO.players[p.id] || {}).ar || (YAHOO.players[p.id] || {}).or || "-"}</td>` : ""}<td>${pl(p.id)}<div class="ps">${p.t}, ${H.positions(p).join("/")}, ${p.age}${g && g.prev ? ", 2025-26 line" : ""}</div></td>
+        return `<tr class="${o === me.team && me.team != null ? "me" : ""}"><td class="r num ps">${p.rank}</td><td class="r num ps hide-s">${p.dynRank}</td>${YAHOO.players ? `<td class="r num ps hide-m">${(YAHOO.players[p.id] || {}).ar || (YAHOO.players[p.id] || {}).or || "-"}</td>` : ""}<td>${pl(p.id)} ${p.deal ? typeTag(p) : ""}<div class="ps">${p.t}, ${H.positions(p).join("/")}${g && g.prev ? ", 2025-26 line" : ""}</div></td><td class="r num hide-s">${p.age}</td>
           <td>${o != null ? `<a class="btn link" href="#team/roster/${o}">${esc(LG.teams[o].abbr)}</a>` : `<span class="muted">FA</span>`}</td>
           <td class="r"><div class="sal num">${money(p.sal)}</div><div class="ps">${p.future.length ? `thru ${season(p.future.length).slice(2)}` : "expiring"}, ${p.fa.kind}</div></td>${hcCell(p)}${vorpCells(p)}${lineCells(p)}<td class="r">${act}</td></tr>`;
       }).join("") || `<tr><td colspan="18" class="empty">No one matches. Clear the search or filters.</td></tr>`}</tbody></table></div>`;
@@ -686,10 +699,14 @@
   const SORTS = { rank: (a, b) => a.rank - b.rank, dyn: (a, b) => a.dynRank - b.dynRank, hc: (a, b) => b.hc - a.hc, sal: (a, b) => b.sal - a.sal, cheap: (a, b) => a.sal - b.sal,
     pts: (a, b) => stat(b, "pts") - stat(a, "pts"), reb: (a, b) => stat(b, "reb") - stat(a, "reb"), ast: (a, b) => stat(b, "ast") - stat(a, "ast"), tpm: (a, b) => stat(b, "tpm") - stat(a, "tpm"),
     stl: (a, b) => stat(b, "stl") - stat(a, "stl"), blk: (a, b) => stat(b, "blk") - stat(a, "blk"), young: (a, b) => a.age - b.age,
-    yahoo: (a, b) => yrank(a) - yrank(b),
-    vorp: (a, b) => (b.bbv == null ? -99 : b.bbv) - (a.bbv == null ? -99 : a.bbv), vps: (a, b) => (b.vps == null ? -99 : b.vps) - (a.vps == null ? -99 : a.vps) };
+    yahoo: (a, b) => yrank(a) - yrank(b), name: (a, b) => last(a.n).localeCompare(last(b.n)), team: (a, b) => a.t.localeCompare(b.t) || a.rank - b.rank,
+    pos: (a, b) => H.positions(a).join().localeCompare(H.positions(b).join()) || a.rank - b.rank, age: (a, b) => a.age - b.age || a.rank - b.rank,
+    yrs: (a, b) => b.future.length - a.future.length || a.rank - b.rank, tov: (a, b) => stat(a, "tov") - stat(b, "tov"),
+    fg: (a, b) => shoot(b, "fgm", "fga") - shoot(a, "fgm", "fga"), ft: (a, b) => shoot(b, "ftm", "fta") - shoot(a, "ftm", "fta"),
+    vorp: (a, b) => (b.bbv == null ? -99 : b.bbv) - (a.bbv == null ? -99 : a.bbv), vpm: (a, b) => (b.vpm == null ? -99 : b.vpm) - (a.vpm == null ? -99 : a.vpm) };
   const yrank = (p) => { const y = YAHOO.players && YAHOO.players[p.id]; return y ? y.ar || y.or || 999 : 999; };
-  function stat(p, k) { const g = perGame(p); return g ? g.l[C[k]] : -1; }
+  function stat(p, k) { const g = perGame(p); return g ? g.l[C[k]] : k === "tov" ? 99 : -1; }
+  function shoot(p, m, a) { const g = perGame(p); return g && g.l[C[a]] ? g.l[C[m]] / g.l[C[a]] : -1; }
   const SAL = { "": [0, Infinity], a: [0, 5e6], b: [5e6, 15e6], c: [15e6, 30e6], d: [30e6, Infinity] };
   function passFilters(p) {
     const f = ui.f;
@@ -722,15 +739,15 @@
       + sel("con", "Contract", [["", "Any contract"], ["exp", "Expiring"], ["multi", "Signed 2+ more years"], ["rfa", "Heading to RFA"], ...(myTeam() ? [["fit", "Fits my room now"]] : [])])
       + sel("age", "Age", [["", "Any age"], ["y", "24 and under"], ["p", "25 to 29"], ["v", "30 and over"]])
       + sel("inj", "Health", [["", "Any health"], ["out", "Listed Out"]])
-      + `<label class="sr" for="msort">Sort</label><select id="msort"${ui.sort !== "rank" ? ' class="set"' : ""}>${[["rank", "Sort: nine-cat rank"], ["dyn", "Sort: dynasty rank"], ["hc", "Sort: HC Score (value per $)"], ["vorp", "Sort: VORP"], ["vps", "Sort: VORP per $10M"], ["sal", "Sort: salary, high to low"], ["cheap", "Sort: salary, low to high"], ["pts", "Sort: points"], ["reb", "Sort: rebounds"], ["ast", "Sort: assists"], ["tpm", "Sort: threes"], ["stl", "Sort: steals"], ["blk", "Sort: blocks"], ["young", "Sort: youngest"], ...(YAHOO.players ? [["yahoo", "Sort: Yahoo rank"]] : [])].map(([k, n]) => `<option value="${k}"${ui.sort === k ? " selected" : ""}>${n}</option>`).join("")}</select>`;
+      + `<label class="sr" for="msort">Sort</label><select id="msort"${ui.sort !== "rank" ? ' class="set"' : ""}>${[["rank", "Sort: nine-cat rank"], ["dyn", "Sort: dynasty rank"], ["hc", "Sort: HC Score (value per $)"], ["vorp", "Sort: VORP"], ["vpm", "Sort: V/M (VORP per salary)"], ["sal", "Sort: salary, high to low"], ["cheap", "Sort: salary, low to high"], ["pts", "Sort: points"], ["reb", "Sort: rebounds"], ["ast", "Sort: assists"], ["tpm", "Sort: threes"], ["stl", "Sort: steals"], ["blk", "Sort: blocks"], ["young", "Sort: youngest"], ...(YAHOO.players ? [["yahoo", "Sort: Yahoo rank"]] : [])].map(([k, n]) => `<option value="${k}"${ui.sort === k ? " selected" : ""}>${n}</option>`).join("")}</select>`;
   }
   function marketTools(total) {
     const title = ui.kind === "prospects" ? "Prospect Board" : { fa: "Free agents", own: "On rosters", all: "All players" }[ui.status];
-    return `<div class="head"><h1 class="disp">${title}</h1>${total != null ? `<span class="muted">${total} player${total === 1 ? "" : "s"}</span>` : ""}</div><div class="tools">
+    return `<div class="head"><h1 class="disp">${title}</h1>${total != null ? `<span class="muted">${total} player${total === 1 ? "" : "s"}</span>` : ""}</div>${ui.kind === "prospects" && LIVE ? `<p class="ps" style="margin:0">Board rank and stats from Tankathon's big board, updated ${fmtDate(LIVE.updated)}. Move is spots gained or lost since the preseason board.</p>` : ""}<div class="tools">
       ${ui.kind === "prospects" ? `<div class="seg" role="group" aria-label="Status">${[["fa", "Available"], ["all", "All"]].map(([k, n]) => `<button type="button" data-status="${k}" aria-pressed="${ui.status === k}">${n}</button>`).join("")}</div>` : ""}
       <label class="sr" for="mq">Search</label><input type="search" id="mq" placeholder="Search players or schools" value="${esc(ui.q)}"></div>
       ${ui.kind === "nba" ? filterBox() + `
-      <p class="ps" style="margin:0">Rk is nine-category value (z-scores, the way Yahoo ranks), Dyn adds age and upside, HC is that value per $10M of salary. VORP is Basketball-Reference's season total; V/$10M is VORP per $10M of salary.</p>` : ""}`;
+      <p class="ps" style="margin:0">Rk is nine-category value (z-scores, the way Yahoo ranks), Dyn adds age and upside, HC is that value per $10M of salary. VORP is Basketball-Reference's season total; V/M is that VORP per $1M of salary, times 10.</p>` : ""}`;
   }
 
   /* ---------- Matchup Center ---------- */
@@ -905,7 +922,8 @@
     const t = LG && myTeam();
     const q = PBY[id];
     if (q) {
-      dlg(`<h3 class="disp">${esc(q.n)}</h3><p class="muted" style="margin:0">${esc(q.pos)}, ${esc(q.school)}, age ${q.age.toFixed(1)}. Big board ${q.rank} for the 2027 NBA draft.</p>
+      dlg(`<h3 class="disp">${esc(q.n)}</h3><p class="muted" style="margin:0">${esc(q.posFull || q.pos)}, ${esc(q.school)}${q.age ? `, age ${q.age.toFixed(1)}` : ""}. Big board ${q.rank} for the 2027 NBA draft ${moveTagP(q)}${q.pre ? ` <span class="ps">(preseason ${q.pre})</span>` : ""}.</p>
+        ${q.stats && Object.keys(q.stats).length ? `<div class="table-wrap" style="margin-top:10px"><table class="t"><thead><tr>${PROS_STATS.map(([, l]) => `<th class="r">${l}</th>`).join("")}</tr></thead><tbody><tr>${PROS_STATS.map(([k]) => `<td class="r num">${pstat(q, k)}</td>`).join("")}</tr></tbody></table></div><p class="ps">Per game, latest line on Tankathon's big board.</p>` : ""}
         <dl class="kv" style="margin:12px 0"><dt>Rights</dt><dd>${owner ? esc(owner.name) : "Available"}</dd><dt>Cost</dt><dd>Nothing until he signs his NBA deal</dd></dl>
         <div class="acts">${t && !owner && LG.phase === "league" ? `<button class="btn go" type="button" data-cbid="${id}">Bid</button>` : ""}<button class="btn" type="button" data-close>Close</button></div>`);
       wireCard(); return;
@@ -924,10 +942,15 @@
     if (t && LG.phase === "league") {
       if (own == null) act = `<button class="btn go" type="button" data-cbid="${id}">Bid</button>`;
       else if (own !== t.id) act = `<button class="btn" type="button" data-ctrade="${own}" data-pid="${id}">Trade for him</button>`;
-    } else if (t && own == null && (LG.phase === "lobby" || LG.phase === "nba")) act = t.queue.includes(id) ? "" : `<button class="btn" type="button" data-cqueue="${id}">Add to my queue</button>`;
+    } else if (t && own == null && (LG.phase === "lobby" || LG.phase === "nba")) {
+      const c = LG.phase === "nba" ? H.onClock(LG, now()) : null;
+      const chk = H.check(LG, t, p, H.context(LG, POOL), { reserve: true });
+      if (c && c.team === t.id && !LG.nba.paused) act = chk.ok ? `<button class="btn go" type="button" data-cpick="${id}">Draft ${esc(last(p.n))}</button>` : `<span class="why">${esc(chk.why)}</span>`;
+      act += t.queue.includes(id) ? "" : ` <button class="btn" type="button" data-cqueue="${id}">Add to my queue</button>`;
+    }
     dlg(`<div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><h3 class="disp" style="margin:0">${esc(p.n)}</h3>${injTag(id)}</div>
-      <p class="muted" style="margin:2px 0 0">${esc(p.t)}, ${H.positions(p).join("/")}, age ${p.age}, ${p.yos} NBA season${p.yos === 1 ? "" : "s"}${owner ? `. On ${esc(owner.name)}` : LG ? ". Free agent" : ""}${inj ? `. ${esc(inj[0])}: ${esc(inj[1])}` : ""}</p>
-      <div class="tools" style="margin:12px 0">${[["Nine-cat rank", p.rank], ["Dynasty rank", p.dynRank], ["HC Score", p.hc.toFixed(1)], ...(yr2 ? [["Yahoo rank", yr2.ar || yr2.or]] : [])].map(([k, v]) => `<div class="card" style="padding:8px 12px"><div class="lbl">${k}</div><div class="disp" style="font-size:26px">${v}</div></div>`).join("")}</div>
+      <p class="muted" style="margin:2px 0 0">${esc(p.t)}, ${H.positions(p).join("/")}, age ${p.age}, ${p.yos} NBA season${p.yos === 1 ? "" : "s"}, ${esc(p.ctype || "")} contract${owner ? `. On ${esc(owner.name)}` : LG ? ". Free agent" : ""}${inj ? `. ${esc(inj[0])}: ${esc(inj[1])}` : ""}</p>
+      <div class="tools" style="margin:12px 0">${[["Nine-cat rank", p.rank], ["Dynasty rank", p.dynRank], ["HC Score", p.hc.toFixed(1)], ...(p.bbv != null ? [["VORP", p.bbv.toFixed(1)], ["V/M", p.vpm.toFixed(1)]] : []), ...(yr2 ? [["Yahoo rank", yr2.ar || yr2.or]] : [])].map(([k, v]) => `<div class="card" style="padding:8px 12px"><div class="lbl">${k}</div><div class="disp" style="font-size:26px">${v}</div></div>`).join("")}</div>
       <div class="table-wrap" style="margin-bottom:10px"><table class="t"><thead><tr>${years.map((i) => `<th class="r">${season(i)}</th>`).join("")}</tr></thead><tbody><tr>${years.map((i) => yr(i) ? `<td class="r num"><b>${money(yr(i))}</b>${p.opt[i] ? ` <span class="pill">${esc(p.opt[i])}</span>` : ""}</td>` : `<td class="r"><span class="tag ${p.fa.kind === "RFA" ? "t1" : "w"}">${p.fa.kind}</span></td>`).join("")}</tr></tbody></table></div>
       <div class="table-wrap" style="margin-bottom:10px"><table class="t"><thead><tr><th>Per game</th><th class="r">GP</th><th class="r">MIN</th><th class="r">PTS</th><th class="r">REB</th><th class="r">AST</th><th class="r">3PM</th><th class="r">STL</th><th class="r">BLK</th><th class="r">FG%</th><th class="r">FT%</th><th class="r">TO</th></tr></thead><tbody>${line(p.cur, "2026-27")}${line(p.prev, "2025-26")}</tbody></table></div>
       ${zc ? `<div class="card" style="margin-bottom:10px"><div class="lbl" style="margin-bottom:6px">Category value (z-score per game)</div><div style="display:grid;gap:4px">${zc}</div></div>` : ""}
@@ -940,6 +963,7 @@
   function wireCard() {
     $$("[data-cbid]", D).forEach((b) => (b.onclick = () => { D.close(); fetchMyBids("waiver").then(() => bidDialog(b.dataset.cbid)); }));
     $$("[data-ctrade]", D).forEach((b) => (b.onclick = () => { D.close(); tradeDialog(+b.dataset.ctrade, b.dataset.pid); }));
+    $$("[data-cpick]", D).forEach((b) => (b.onclick = () => { D.close(); const id = b.dataset.cpick; mutate(`Picked ${nameOf(id)}`, (L) => H.draftPick(L, POOL, me.team, id, now(), false)).then((ok) => ok && toast(`You drafted ${nameOf(id)}.`)); }));
     $$("[data-cqueue]", D).forEach((b) => (b.onclick = () => { D.close(); const id = b.dataset.cqueue; mutate("Queue", (L) => { const q = L.teams[me.team].queue; if (!q.includes(id)) q.push(id); return { ok: true }; }, { quiet: true }).then((ok) => ok && toast("Added to your queue.")); }));
   }
   D.addEventListener("close", () => (D.style.maxWidth = ""));
@@ -976,18 +1000,27 @@
     const myTurn = c && t && c.team === t.id;
     const q = ui.q.trim().toLowerCase();
     let rows = ctx.available.filter((p) => !p.gone && (!q || p.n.toLowerCase().includes(q)) && passFilters(p));
-    rows.sort(SORTS[ui.sort] || SORTS.rank);
+    sortRows(rows);
     const checked = rows.map((p) => ({ p, c: t ? H.check(LG, t, p, ctx, { reserve: true }) : { ok: true } }));
     const shown = (ui.fit ? checked.filter((x) => x.c.ok) : checked).slice(0, 180);
-    return `${t ? `<div id="mycap">${capBar(t, { ghost, ctx, reserve: true, compact: true })}</div>` : ""}
+    return `${t ? `<div id="mycap">${capLine(t, ctx)}</div>` : ""}
       <div class="tools"><label class="sr" for="dq">Search</label><input type="search" id="dq" placeholder="Search players or teams" value="${esc(ui.q)}">
         ${t ? `<label class="small muted" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="dfit"${ui.fit ? " checked" : ""}> Only players I can fit</label>` : ""}</div>${filterBox()}
-      <div class="split"><div class="table-wrap" id="pool"><table class="t dense"><thead><tr><th class="r">Rk</th><th>Player</th><th class="hide-s">Pos</th><th class="r">Salary</th><th class="r hide-s">Yrs</th><th class="r" title="HC Score">HC</th>${VORP_HEAD}${LINE_HEAD}<th></th></tr></thead><tbody>
-        ${shown.map(({ p, c: k }) => `<tr data-pid="${p.id}" class="${k.ok ? "" : "dim"}"${k.ok ? "" : ` title="${esc(k.why)}"`}><td class="r num ps">${p.rank}</td><td class="nm">${pl(p.id)} <span class="ps">${p.t}</span></td><td class="ps hide-s">${H.positions(p).join("/")}</td>
+      <div class="table-wrap" id="pool"><table class="t dense"><thead><tr>${sortTh("rank", "Rk")}${sortTh("name", "Player", "")}${sortTh("pos", "Pos", "hide-s")}${sortTh("age", "Age")}${sortTh("sal", "Salary")}${sortTh("yrs", "Yrs", "r hide-s")}${sortTh("hc", "HC", "r", "HC Score: value over replacement per $10M")}${vorpHeadS()}${lineHeadS()}<th></th></tr></thead><tbody>
+        ${shown.map(({ p, c: k }) => `<tr data-pid="${p.id}" class="${k.ok ? "" : "dim"}"${k.ok ? "" : ` title="${esc(k.why)}"`}><td class="r num ps">${p.rank}</td><td class="nm">${pl(p.id)} <span class="ps">${p.t}</span></td><td class="ps hide-s">${H.positions(p).join("/")}</td><td class="r num">${p.age}</td>
           <td class="r"><span class="sal num">${money(p.sal)}</span></td><td class="r num ps hide-s">${p.future.length ? p.future.length + 1 : "Exp"}</td>${hcCell(p)}${vorpCells(p)}${lineCells(p)}
-          <td class="r" style="white-space:nowrap">${myTurn && k.ok && LG.phase === "nba" ? `<button class="btn sm go" data-pick="${p.id}">Sign</button> ` : ""}${t ? (t.queue.includes(p.id) ? `<button class="btn sm" data-unqueue="${p.id}">Queued</button>` : `<button class="btn sm" data-queue="${p.id}">Queue</button>`) : ""}</td></tr>`).join("") || `<tr><td colspan="18" class="empty">No one matches.</td></tr>`}
-        </tbody></table></div>
-        <aside>${recentPicksList(14)}</aside></div>`;
+          <td class="r" style="white-space:nowrap">${myTurn && k.ok && LG.phase === "nba" ? `<button class="btn sm go" data-pick="${p.id}">Sign</button> ` : ""}${t ? (t.queue.includes(p.id) ? `<button class="btn sm" data-unqueue="${p.id}">Queued</button>` : `<button class="btn sm" data-queue="${p.id}">Queue</button>`) : ""}</td></tr>`).join("") || `<tr><td colspan="19" class="empty">No one matches.</td></tr>`}
+        </tbody></table></div>`;
+  }
+  // One line of cap math above the player list; the full cap bar lives on the My team tab.
+  function capLine(t, ctx) {
+    const open = LG.settings.roster - H.active(t).length;
+    const others = LG.phase === "nba" ? LG.teams.filter((x) => x.id !== t.id).reduce((a, x) => a + Math.max(0, LG.settings.roster - H.active(x).length), 0) : 0;
+    const hold = open > 0 ? H.reserve(open, ctx.available, null, others) : 0;
+    const pay = H.payroll(t, BY), room = H.ceilingOf(LG, t) - pay - hold;
+    return `<div class="capline"><span><b class="num">${money(pay)}</b> on the books</span><span><b class="num">${H.active(t).length}</b> of ${LG.settings.roster} signed</span>
+      <span><b class="num ${room >= 0 ? "ok" : "bad"}">${money(room)}</b> usable room${hold ? ` <span class="ps">after ${money(hold)} held for ${open} spot${open === 1 ? "" : "s"}</span>` : ""}</span>
+      <span class="ps">${esc(H.tierOf(LG, t).label)} line ${money(H.ceilingOf(LG, t))}</span><span class="grow"></span><a class="btn sm" href="#draft/mine">My team and cap bar</a></div>`;
   }
   function recentPicksList(n) {
     const picks = LG.nba.picks.slice(-n).reverse();
@@ -996,17 +1029,20 @@
   function draftBoard() {
     const n = LG.teams.length, rounds = LG.settings.roster;
     const order = LG.nba.round1;
-    let cells = `<div></div>${order.map((ti) => `<div class="h${isMine(LG.teams[ti]) ? " me" : ""}" title="${esc(LG.teams[ti].name)}">${esc(LG.teams[ti].abbr)}</div>`).join("")}`;
+    let cells = `<div></div>${order.map((ti) => { const t = LG.teams[ti], room = H.ceilingOf(LG, t) - H.payroll(t, BY), left = LG.settings.roster - H.active(t).length;
+      return `<div class="h${isMine(t) ? " me" : ""}" title="${esc(t.name)}${t.owner ? ", " + esc(t.owner) : ", bot"}"><b>${esc(t.abbr)}</b><small class="num ${room < 0 ? "bad" : ""}">${money(room)}</small><small>${left} open</small></div>`; }).join("")}`;
     for (let r = 0; r < rounds; r++) {
       cells += `<div class="rn">${r + 1}</div>`;
       for (let col = 0; col < n; col++) {
         const k = r * n + (r % 2 ? n - 1 - col : col);
         const pk = LG.nba.picks[k], ti = order[col], t = LG.teams[ti];
         const cls = ["cell", pk ? "f" : "", isMine(t) ? "me" : "", LG.phase === "nba" && k === LG.nba.picks.length ? "now" : "", pk && !pk.pid ? "skip" : ""].join(" ");
-        cells += `<div class="${cls}">${pk ? (pk.pid ? `<b>${esc(last(BY[pk.pid].n))}</b><small>${money(BY[pk.pid].sal)}</small>` : `<b>Passed</b>`) : `<small>${k + 1}</small>`}</div>`;
+        const p = pk && pk.pid && BY[pk.pid];
+        cells += `<div class="${cls}"${p ? ` data-player="${p.id}" role="button" tabindex="0" title="${esc(p.n)}, ${money(p.sal)}${pk.auto ? ", autopick" : ""}"` : ""}>${pk ? (p ? `<b>${esc(last(p.n))}</b><small>${H.positions(p).join("/")} ${esc(p.t)}</small><small class="sal num">${money(p.sal)}${pk.auto ? ' <i title="Autopick">A</i>' : ""}</small>` : `<b>Passed</b>`) : `<small>${r + 1}.${col + 1}</small><small class="ps">#${k + 1}</small>`}</div>`;
       }
     }
-    return `<div class="board"><div class="bgrid" style="--n:${n};grid-template-columns:30px repeat(${n},minmax(0,1fr));grid-template-rows:auto repeat(${rounds},minmax(34px,1fr))">${cells}</div></div>`;
+    const nowPick = LG.phase === "nba" ? H.onClock(LG, now()) : null;
+    return `<div class="tools"><span class="ps">Each column is a team in first-round order, with its room under the line and open spots. ${nowPick ? `Pick ${nowPick.pick} of ${nowPick.total} is on the clock.` : ""} Click a pick for the player's card.</span></div><div class="board"><div class="bgrid" style="--n:${n};grid-template-columns:30px repeat(${n},minmax(0,1fr));grid-template-rows:auto repeat(${rounds},minmax(52px,1fr))">${cells}</div></div>`;
   }
   function draftPicks() {
     const picks = LG.nba.picks.slice().reverse();
@@ -1042,7 +1078,7 @@
     return `<div class="tools"><p class="muted small" style="margin:0;flex:1">${t ? `Enter a sealed bid on anyone you want. You can win up to ${LG.settings.prospects}; bids come out of your $${t.faab} season FAAB. Your bids total $${total}.` : "Claim a team to bid."}</p>
       ${t ? `<button class="btn go" data-savebids>Save my bids</button>` : ""}</div>
       <div class="table-wrap"><table class="t"><thead><tr><th class="r">Board</th><th>Prospect</th><th>School</th><th class="r">Age</th><th class="r">Your bid</th></tr></thead><tbody>
-      ${PROS.map((p) => `<tr><td class="r num ps">${p.rank}</td><td><div class="pn">${esc(p.n)}</div><div class="ps">${p.pos}</div></td><td>${esc(p.school)}</td><td class="r num">${p.age.toFixed(1)}</td>
+      ${PROS.slice(0, 80).map((p) => `<tr><td class="r num ps">${p.rank}</td><td><div class="pn">${esc(p.n)} ${moveTagP(p)}</div><div class="ps">${esc(p.posFull || p.pos)}</div></td><td>${esc(p.school)}</td><td class="r num">${ageOf(p)}</td>
         <td class="r">${t ? `<input type="number" min="0" max="${t.faab}" step="1" data-abid="${p.id}" value="${bidOf(p.id)}" style="width:86px;text-align:right" aria-label="Bid on ${esc(p.n)}">` : ""}</td></tr>`).join("")}</tbody></table></div>`;
   }
 
@@ -1145,7 +1181,10 @@
     });
     on("[data-fdrop]", "change", (e) => { const id = e.target.dataset.fdrop; ui.drops = e.target.checked ? [...ui.drops, id] : ui.drops.filter((x) => x !== id); render(); });
     on("[data-fclear]", "click", () => { ui.f = { pos: "", team: "", sal: "", con: "", age: "", inj: "" }; render(); });
-    on("#msort,#dsort", "change", (e) => { ui.sort = e.target.value; render(); });
+    on("#msort,#dsort", "change", (e) => { ui.sort = e.target.value; ui.sortDir = 1; render(); });
+    const sortBy = (k) => { if (ui.sort === k) ui.sortDir = -(ui.sortDir || 1); else { ui.sort = k; ui.sortDir = 1; } render(); };
+    on("[data-sortk]", "click", (e) => sortBy(e.currentTarget.dataset.sortk));
+    on("[data-sortk]", "keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); sortBy(e.currentTarget.dataset.sortk); } });
     on("#dfit", "change", (e) => { ui.fit = e.target.checked; render(); });
     on("[data-sub]", "click", (e) => { ui.sub = e.currentTarget.dataset.sub; history.replaceState(null, "", "#draft/" + ui.sub); render(); });
     on("[data-logkind]", "click", (e) => { ui.logKind = e.currentTarget.dataset.logkind; render(); });
@@ -1346,8 +1385,8 @@
     }
     wire();
     if (room && $("#pool")) {
-      $$("#pool tr[data-pid]").forEach((tr) => tr.addEventListener("mouseenter", () => { ghost = BY[tr.dataset.pid]; const el = $("#mycap"); if (el && myTeam()) el.innerHTML = capBar(myTeam(), { ghost, reserve: true }); }));
-      $("#pool").addEventListener("mouseleave", () => { ghost = null; const el = $("#mycap"); if (el && myTeam()) el.innerHTML = capBar(myTeam(), { reserve: true }); });
+      // Clicking anywhere on a row (not a button) opens the player's card, where you can draft him.
+      $$("#pool tr[data-pid]").forEach((tr) => tr.addEventListener("click", (e) => { if (!e.target.closest("button,a,input")) playerCard(tr.dataset.pid); }));
     }
     drawTimer();
   }
