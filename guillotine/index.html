@@ -641,7 +641,7 @@ th.line{border-left:1px solid var(--rule)}
     </div>
     <div class="figures" id="figures" hidden>
       <div class="fig"><span class="n" id="f-left"></span><span class="l">teams still standing</span></div>
-      <div class="fig cut"><span class="n" id="f-cut"></span><span class="l">typical lowest score this week</span></div>
+      <div class="fig cut"><span class="n" id="f-cut"></span><span class="l">projected cut line this week</span></div>
       <div class="fig"><span class="n" id="f-safe"></span><span class="l">survives 9 in 10 simulations</span></div>
     </div>
     <p class="updated" id="updated"></p>
@@ -660,7 +660,7 @@ th.line{border-left:1px solid var(--rule)}
   <section id="week" aria-labelledby="week-title" hidden>
     <div class="section-head">
       <h2 id="week-title">Under the blade</h2>
-      <p>Each bar is a team's likely score this week: it lands inside the bar in 8 of 10 simulated weeks. The dot is the projection. The red line is where the week's lowest score usually lands, so the more of a bar sitting left of it, the bigger the danger. Tap a team for its roster.</p>
+      <p>Each bar is a team's likely score this week: it lands inside the bar in 8 of 10 simulated weeks. The dot is the projection. The red line is the model’s projected cut line for this week (the median lowest score across the simulations), so the more of a bar sitting left of it, the bigger the danger. Tap a team for its roster.</p>
     </div>
     <div class="board">
       <span class="pct-head" aria-hidden="true">Cut odds</span>
@@ -672,7 +672,7 @@ th.line{border-left:1px solid var(--rule)}
       <span><i class="k-range"></i>Likely score (8 in 10 weeks)</span>
       <span><i class="k-dot"></i>Projection</span>
       <span><i class="k-est"></i>Team average (no projection)</span>
-      <span><i class="k-blade"></i>Typical lowest score</span>
+      <span><i class="k-blade"></i>Projected cut line</span>
     </div>
     <div class="tiers" id="tiers"></div>
     <p class="book"><b>Bastille Book</b><span>Lines are the cut odds as American odds with a 4.5% house edge. OFF means the board is closed: it can't happen. Just for fun, no real wagers.</span></p>
@@ -710,13 +710,13 @@ th.line{border-left:1px solid var(--rule)}
     <section id="hist-sec" aria-labelledby="tab-hist" class="panel" role="tabpanel" hidden>
       <div class="section-head">
         <h3 class="sr" id="hist-title">The blade over time</h3>
-        <p>The solid red line is the score that actually got cut each week this season, and the gray line is last season's. The dashed line is the typical lowest score for each week ahead, counting only the teams still alive in each simulation, with the shaded band covering 8 in 10 simulations. It climbs because the weakest teams keep leaving and rosters keep improving.</p>
+        <p>The solid red line is the score that actually got cut each week this season, and the gray line is last season's. The dashed line is the model’s projected lowest score for each week ahead, counting only the teams still alive in each simulation, with the shaded band covering 8 in 10 simulations. It climbs because the weakest teams keep leaving and rosters keep improving.</p>
       </div>
       <div class="chart"><div id="hist"></div>
         <div class="legend" aria-hidden="true">
           <span><i class="lg-act"></i>Actual cut score</span>
           <span id="lg-bound-wrap"><i class="lg-bound"></i>At most (exact score unknown)</span>
-          <span><i class="lg-med"></i>Typical lowest score, teams still alive</span>
+          <span><i class="lg-med"></i>Projected lowest score, teams still alive</span>
           <span><i class="lg-band"></i>8 in 10 simulations</span>
           <span id="lg-prior-wrap" hidden><i class="lg-prior"></i>2025 cut scores</span>
         </div>
@@ -949,7 +949,7 @@ th.line{border-left:1px solid var(--rule)}
     $("f-safe").textContent = pts(r.cut.p90) + "+";
     $("figures").hidden = false;
 
-    // This week: ranges on one shared scale, with the blade at the typical lowest score
+    // This week: ranges on one shared scale, with the blade at the projected cut line
     var lo = Infinity, hi = -Infinity;
     teams.forEach(function (t) { var g = rangeOf(t); lo = Math.min(lo, g[0]); hi = Math.max(hi, g[1]); });
     lo = Math.max(0, Math.floor(lo / 20) * 20); hi = Math.ceil(hi / 20) * 20;
@@ -1828,7 +1828,7 @@ th.line{border-left:1px solid var(--rule)}
 
   function renderHistory(r, league) {
     var actual = cutHistory(r, league);
-    // The typical lowest score each week ahead, among the teams still alive in each simulation
+    // The projected lowest score each week ahead, among the teams still alive in each simulation
     var proj = (r.cuts || []).filter(function (c) { return c.median != null; });
     if (!actual.length && !proj.length) { $("hist-sec").hidden = true; return; }
     var prior = cutHistory(r, league, state.data.season - 1);
@@ -1849,7 +1849,7 @@ th.line{border-left:1px solid var(--rule)}
       var band = proj.map(function (c) { return X(c.week) + "," + Y(c.p90); }).concat(proj.slice().reverse().map(function (c) { return X(c.week) + "," + Y(c.p10); }));
       g += '<polygon class="band" points="' + band.join(" ") + '"/>';
       g += '<polyline class="med" points="' + proj.map(function (c) { return X(c.week) + "," + Y(c.median); }).join(" ") + '"/>';
-      g += proj.map(function (c) { return '<circle class="medpt" cx="' + X(c.week) + '" cy="' + Y(c.median) + '" r="3.5"><title>Week ' + c.week + ": typical lowest score " + pts(c.median) + "</title></circle>"; }).join("");
+      g += proj.map(function (c) { return '<circle class="medpt" cx="' + X(c.week) + '" cy="' + Y(c.median) + '" r="3.5"><title>Week ' + c.week + ": projected lowest score " + pts(c.median) + "</title></circle>"; }).join("");
       // Label this week's typical lowest score (left of the now line) and the last week's
       var c0 = proj[0], cN = proj.length > 1 ? proj[proj.length - 1] : null;
       g += '<text class="actl" style="fill:rgb(var(--bleu-rgb))" x="' + (X(c0.week) - 7) + '" y="' + (Y(c0.median) + 4) + '" text-anchor="end">' + pts(c0.median) + "</text>";
@@ -1874,7 +1874,7 @@ th.line{border-left:1px solid var(--rule)}
       return '<circle class="act" cx="' + x + '" cy="' + y + '" r="4.5">' + tip + '</circle><text class="actl" x="' + x + '" y="' + (y - 9) + '" text-anchor="middle">' + pts(a.v) + "</text>";
     }).join("");
     var desc = "Cut scores by week: " + actual.map(function (a) { return "Week " + a.w + " " + (a.bound ? "at most " : "") + f1(a.v); }).join(", ") +
-      (proj.length ? ". Typical lowest score ahead, teams still alive: " + proj.map(function (c) { return "Week " + c.week + " " + pts(c.median); }).join(", ") : "") + ".";
+      (proj.length ? ". Projected lowest score ahead, teams still alive: " + proj.map(function (c) { return "Week " + c.week + " " + pts(c.median); }).join(", ") : "") + ".";
     $("hist").innerHTML = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(desc) + '">' + g + "</svg>";
     $("hist-sec").hidden = false;
   }
