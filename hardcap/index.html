@@ -339,6 +339,17 @@ body.room .wrap{max-width:none}
 .cell i{font-style:normal;font-size:10px;font-weight:800;color:var(--dim);margin-left:2px}
 table.t tr.target td{background:var(--lime-soft)}
 table.t tr.bench td{color:var(--muted)} table.t tr.bench .pn{color:var(--muted)}
+/* message board */
+.board-card{display:flex;flex-direction:column;gap:10px;max-width:860px}
+.chat{list-style:none;margin:0;padding:0;max-height:62vh;overflow:auto;display:flex;flex-direction:column;gap:8px}
+.chat .day{align-self:center;font-size:11px;font-weight:800;color:var(--dim);padding:6px 0 2px}
+.msg{max-width:78%;background:var(--ledger);border-radius:12px 12px 12px 4px;padding:7px 11px}
+.msg.mine{align-self:flex-end;background:var(--lime-soft);border-radius:12px 12px 4px 12px}
+.msg.cm{border:1px solid var(--gold)}
+.msg .who{font-size:12px;font-weight:800;color:var(--muted)} .msg time{font-weight:500;color:var(--dim);margin-left:4px}
+.msg .body{white-space:pre-wrap;overflow-wrap:anywhere}
+.chat-form{display:flex;gap:8px;align-items:flex-end}
+.chat-form textarea{flex:1;min-height:44px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--field);padding:8px 11px;font:inherit;color:inherit;resize:vertical}
 /* live prospect auction */
 .auction{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px}
 .lot{display:grid;grid-template-columns:minmax(0,1.6fr) auto auto minmax(0,1.4fr);gap:18px;align-items:center;border-left:4px solid var(--accent)}

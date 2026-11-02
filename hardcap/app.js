@@ -249,7 +249,7 @@
   const TABS = [["league", "League"], ["team", "My Team"], ["players", "Players"], ["matchups", "Matchups"], ["draft", "Draft"], ["commish", "Commissioner"]];
   const ALIAS = { office: ["league", "overview"], tx: ["league", "tx"], market: ["players", "fa"] };
   function subsOf(tab, arg) {
-    if (tab === "league") return [["overview", "Overview"], ["standings", "Standings"], ["schedule", "Schedule"], ["tx", "Transactions"], ["settings", "Settings"], ["rules", "Rules"]];
+    if (tab === "league") return [["overview", "Overview"], ["standings", "Standings"], ["schedule", "Schedule"], ["tx", "Transactions"], ["board", "Message board"], ["settings", "Settings"], ["rules", "Rules"]];
     if (tab === "team") {
       const t = teamFor(arg), mine = isMine(t);
       return [["roster", mine ? "Roster and lineup" : "Roster"], ["contracts", "Contracts"], ...(mine && LG.phase === "league" ? [["fits", "What fits"]] : []), ["trades", "Trades"]];
@@ -296,11 +296,11 @@
     const r = route();
     const todo = todoCounts();
     const badge = (n, what) => (n ? ` <span class="badge" aria-label="${n} ${what}">${n}</span>` : "");
-    tabs.innerHTML = TABS.map(([k, n]) => `<a href="#${k}"${r.tab === k ? ' aria-current="page"' : ""}>${n}${k === "team" ? badge(todo.trades, "trades waiting on you") : k === "draft" ? badge(todo.clock, "you're on the clock") : ""}</a>`).join("");
+    tabs.innerHTML = TABS.map(([k, n]) => `<a href="#${k}"${r.tab === k ? ' aria-current="page"' : ""}>${n}${k === "team" ? badge(todo.trades, "trades waiting on you") : k === "draft" ? badge(todo.clock, "you're on the clock") : k === "league" ? badge(unread(), "new messages") : ""}</a>`).join("");
     const subs = subsOf(r.tab, r.arg);
     sub.hidden = !subs.length;
     const tail = r.tab === "team" && r.arg != null ? "/" + r.arg : "";
-    sub.innerHTML = `<div class="wrap">${subs.map(([k, n]) => `<a href="#${r.tab}/${k}${tail}"${r.sub === k ? ' aria-current="page"' : ""}>${n}${r.tab === "team" && k === "trades" ? badge(todo.trades, "trades waiting on you") : ""}</a>`).join("")}</div>`;
+    sub.innerHTML = `<div class="wrap">${subs.map(([k, n]) => `<a href="#${r.tab}/${k}${tail}"${r.sub === k ? ' aria-current="page"' : ""}>${n}${r.tab === "team" && k === "trades" ? badge(todo.trades, "trades waiting on you") : r.tab === "league" && k === "board" ? badge(unread(), "new messages") : ""}</a>`).join("")}</div>`;
     const t = myTeam();
     const theme = `<button class="btn sm ghost" data-act="theme" aria-label="Switch to ${document.documentElement.dataset.theme === "dark" ? "light" : "dark"} colors">${document.documentElement.dataset.theme === "dark" ? "Light" : "Dark"}</button>`;
     const bell = t ? `<button class="btn sm ghost${alertsOn() ? " go" : ""}" data-act="alerts" aria-label="Alerts">${alertsOn() ? "Alerts on" : "Alerts"}</button>` : "";
@@ -522,6 +522,7 @@
     if (sub === "schedule") return viewSchedule();
     if (sub === "tx") return viewTx();
     if (sub === "settings") return viewSettings();
+    if (sub === "board") return viewBoard();
     if (sub === "rules") return `<div class="head"><h1 class="disp">Rules</h1></div><section class="card rules-mod">${rulesList(LG)}</section>`;
     return viewOffice();
   }
@@ -540,6 +541,33 @@
   }
   const STAND_HEAD = `<thead><tr><th class="r">#</th><th>Team</th><th class="r">Cats</th><th class="r hide-s">Pct</th><th class="r hide-m">GmSc</th><th class="r hide-s">On books</th><th class="r hide-s">Line</th><th class="r">Room</th><th class="r">FAAB</th><th class="r hide-s">Prosp</th><th class="r hide-m">Owes</th></tr></thead>`;
   const standingsNow = () => (LG.phase === "league" ? H.standings(LG, curWeek() - 1, WK, BY) : LG.teams.map((t) => ({ id: t.id, w: 0, l: 0, t: 0, pct: 0, mw: 0, ml: 0, mt: 0, gmsc: 0, pf: [] })));
+  /* ---------- message board ---------- */
+  let CHAT = [], chatLast = 0, chatBusy = false;
+  const seenKey = () => "hc:chatseen:" + LID;
+  async function loadChat() {
+    if (!LID || chatBusy) return false;
+    chatBusy = true;
+    try {
+      const rows = await rpc("hc_chat_list", { p_id: LID, p_after: chatLast });
+      if (Array.isArray(rows) && rows.length) { CHAT = CHAT.concat(rows).slice(-300); chatLast = rows[rows.length - 1].id; return true; }
+    } catch (e) { /* the board can wait for the next poll */ } finally { chatBusy = false; }
+    return false;
+  }
+  const unread = () => { const seen = store.get(seenKey(), 0); return CHAT.filter((m) => m.id > seen && !(me.team != null && m.team === me.team)).length; };
+  function viewBoard() {
+    if (CHAT.length) store.set(seenKey(), chatLast);
+    const canPost = me.team != null || me.commish;
+    const day = (d) => new Date(d).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+    let lastDay = "";
+    const items = CHAT.map((m) => {
+      const d = day(m.at), head = d !== lastDay ? `<li class="day">${d}</li>` : ""; lastDay = d;
+      const mine = me.team != null && m.team === me.team;
+      return `${head}<li class="msg${mine ? " mine" : ""}${m.team === -1 ? " cm" : ""}"><div class="who">${esc(m.author)} <time>${new Date(m.at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</time></div><div class="body">${esc(m.body)}</div></li>`;
+    }).join("");
+    return `<div class="head"><h1 class="disp">Message board</h1><span class="muted">Trash talk, trade talk, league business</span></div>
+      <section class="card board-card"><ul class="chat" id="chatlist">${items || `<li class="empty">Nothing here yet. Start it off.</li>`}</ul>
+      ${canPost ? `<form class="chat-form" id="chatform"><label class="sr" for="chatbody">Message</label><textarea id="chatbody" maxlength="600" rows="2" placeholder="Say something to the league">${esc(ui.chatDraft || "")}</textarea><button class="btn go" type="submit">Post</button></form>` : `<p class="ps">Claim or sign in to your team to post.</p>`}</section>`;
+  }
   function viewStandings() {
     const st = standingsNow();
     return `<div class="head"><h1 class="disp">Standings</h1><span class="muted">Category record through week ${Math.max(0, curWeek() - 1)}</span></div>
@@ -1489,6 +1517,22 @@
     on("[data-closeauction]", "click", () => closeAuction(true));
     on("#abamt", "input", (e) => (ui.abamt = +e.target.value));
     on("#nomamt", "input", (e) => (ui.nomamt = +e.target.value));
+    const chf = $("#chatform", app);
+    if (chf) {
+      const ta = $("#chatbody", app);
+      ta.addEventListener("input", () => (ui.chatDraft = ta.value));
+      ta.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); chf.requestSubmit(); } });
+      chf.onsubmit = async (e) => {
+        e.preventDefault();
+        const body = ta.value.trim(); if (!body) return;
+        const team = me.team != null ? me.team : -1, pin = team === -1 ? me.commish : me.pin;
+        let r; try { r = await rpc("hc_chat_post", { p_id: LID, p_team: team, p_pin: String(pin), p_body: body }); } catch (err) { return toast(err.message, true); }
+        if (r.error) return toast(r.error, true);
+        ui.chatDraft = ""; await loadChat(); render();
+        const el = $("#chatlist"); if (el) el.scrollTop = el.scrollHeight;
+      };
+      const el = $("#chatlist"); if (el) el.scrollTop = el.scrollHeight;
+    }
     const bidAt = (amt) => mutate(`Bid $${amt}`, (L) => H.auctionBid(L, PROS, me.team, amt, now()), { quiet: false }).then((ok) => ok && toast(`You bid $${amt}.`));
     on("[data-abid-q]", "click", (e) => bidAt(+e.currentTarget.dataset.abidQ));
     const abf = $("#abidform", app);
@@ -1572,7 +1616,7 @@
   /* ---------- render ---------- */
   function render() {
     if (D.open) return;
-    const a = document.activeElement, id = a && a.id && a.tagName === "INPUT" ? a.id : null;
+    const a = document.activeElement, id = a && a.id && (a.tagName === "INPUT" || a.tagName === "TEXTAREA") ? a.id : null;
     const sel = id && a.type !== "number" ? [a.selectionStart, a.selectionEnd] : null;
     const scroller = $("#pool .t") ? $("#pool").scrollTop : null;
     draw();
@@ -1631,6 +1675,7 @@
     }
     app.innerHTML = `<div class="wrap loading">${esc(e.message)}. It may have been deleted. <a href="./">Back to your leagues</a>.</div>`; return;
   }
+  await loadChat();
   const list = store.get("hc:leagues", []);
   if (!list.some((x) => x.id === LID)) store.set("hc:leagues", [{ id: LID, name: LG.name }, ...list].slice(0, 12));
   render();
@@ -1640,7 +1685,7 @@
   const poll = async () => {
     if (polling || busy || document.hidden) return;
     polling = true;
-    try { if (await load(false)) render(); } catch (e) { /* offline for a moment; the next poll catches up */ }
+    try { const a = await load(false), b = await loadChat(); if (a || b) render(); } catch (e) { /* offline for a moment; the next poll catches up */ }
     finally { polling = false; }
   };
   const live = () => LG && (LG.phase === "nba" || (LG.phase === "prospects" && LG.pauction));
