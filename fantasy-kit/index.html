@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Draft Lab | David Solar</title>
+<meta name="description" content="Mock drafts for basketball, football and baseball against bots: snake, third-round reversal or auction, with real player data. Built on the Fantasy Kit that runs David's league pages.">
+<meta name="theme-color" content="#13233A">
+<script>try{var t=localStorage.getItem("fk-lab:theme");if(t==='"dark"'||t==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+<link rel="icon" href="mark.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,400..900;1,62..125,700..900&display=swap">
+<link rel="stylesheet" href="../assets/bar.css">
+<link rel="stylesheet" href="kit.css">
+<script src="../assets/analytics.js" defer></script>
+<style>
+/* Draft Lab is the Fantasy Kit with its default brand: stadium navy and scoreboard amber. */
+.setup{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);gap:18px;align-items:start}
+.setup .form{display:grid;gap:16px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.hero{padding:26px 0 6px}
+.hero h1{margin:0;font-size:clamp(40px,7vw,84px)}
+.hero p{max-width:60ch;color:var(--muted);font-size:17px;margin:12px 0 0}
+.sports{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.sports label{position:relative;cursor:pointer}
+.sports input{position:absolute;opacity:0;pointer-events:none}
+.sports span{display:grid;gap:2px;border:1px solid var(--line-2);border-radius:10px;padding:12px 14px;background:var(--field)}
+.sports b{font-size:22px}
+.sports small{color:var(--muted);font-size:12.5px}
+.sports input:checked+span{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent);background:var(--brand-soft)}
+.sports input:focus-visible+span{outline:2px solid var(--brand);outline-offset:2px}
+.slots{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.code{font:600 13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--ledger);border-radius:6px;padding:10px 12px;overflow:auto;white-space:pre}
+.doc h2{font-size:22px;margin:4px 0 8px}
+.doc p,.doc li{max-width:72ch}
+.doc ul{padding-left:20px}
+body.fk-room .ds-bar{display:none}
+@media (max-width:980px){.setup{grid-template-columns:1fr}}
+@media (max-width:600px){.row2,.row3{grid-template-columns:1fr 1fr}.sports b{font-size:16px}.sports span{padding:10px}.sports small{display:none}}
+</style>
+</head>
+<body>
+<nav class="ds-bar" aria-label="davidsolar.dev"><a href="../"><img src="../assets/ds-mark.svg" alt="" width="20" height="20"><span class="ds-bar-name">David Solar</span></a><a href="../#projects">All projects</a></nav>
+<header class="fk-top" id="top"></header>
+<main id="app"><div class="wrap" style="padding:80px 16px;color:var(--muted)">Loading…</div></main>
+<script src="sports.js"></script>
+<script src="value.js"></script>
+<script src="draft.js"></script>
+<script src="ui.js"></script>
+<script src="lab.js"></script>
+</body>
+</html>

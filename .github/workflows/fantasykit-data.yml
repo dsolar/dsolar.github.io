@@ -1,0 +1,50 @@
+# Rebuilds the Fantasy Kit's player pools (fantasy-kit/data/nba.json, nfl.json, mlb.json) for Draft Lab and the
+# league pages: basketball from Hard Cap's ESPN lines, baseball from MLB's Stats API files in tools/mlb, football
+# from Sleeper. Runs after each Hard Cap stats pull, when the script or this file changes, or by hand.
+name: Fantasy Kit data
+
+on:
+  schedule:
+    - cron: "47 11 * * *"
+    - cron: "17 22 * * *"
+  push:
+    branches: [main]
+    paths:
+      - tools/fantasykit_data.py
+      - .github/workflows/fantasykit-data.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fantasykit-data
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+
+      - name: Set the bot's git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Build the player pools
+        run: python3 tools/fantasykit_data.py
+
+      - name: Commit the pools
+        run: |
+          git add fantasy-kit/data
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+            exit 0
+          fi
+          git commit -m "Update Fantasy Kit player pools"
+          git pull --rebase -X theirs -q
+          git push

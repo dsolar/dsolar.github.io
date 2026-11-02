@@ -1,0 +1,200 @@
+/* Fantasy Kit: player value. No DOM and no network.
+
+   evaluate(sport, players, league) sets on every player:
+     v      raw value: summed category z-scores, or projected fantasy points for the season
+     zc     per-category z-scores (category leagues)
+     fpts   season fantasy points so far, fpg per game (points leagues)
+     vor    value over the replacement player at his best position, given how many teams start how many slots
+     rank   overall rank by vor; prank like "RB12"
+     $      auction value from the league's budgets (always set, so a snake draft can show it too)
+   league: { teams, lineup: [slots], bench, scoring: key in sport.scorings, budget (default 200), minBid (default 1) } */
+(function (root, factory) {
+  const m = factory(root.FK ? root.FK.sports : typeof require !== "undefined" ? require("./sports.js") : null);
+  if (typeof module !== "undefined" && module.exports) module.exports = m;
+  else (root.FK = root.FK || {}).value = m;
+})(this, function (S) {
+  "use strict";
+
+  const sum = (a) => a.reduce((s, x) => s + x, 0);
+  const meanSd = (xs) => {
+    const m = sum(xs) / Math.max(1, xs.length);
+    const sd = Math.sqrt(sum(xs.map((x) => (x - m) ** 2)) / Math.max(1, xs.length)) || 1;
+    return [m, sd];
+  };
+
+  function scoringOf(sport, league) {
+    const k = (league && league.scoring) || Object.keys(sport.scorings)[0];
+    return sport.scorings[k] || sport.scorings[Object.keys(sport.scorings)[0]];
+  }
+
+  // A category's raw number for a player: the counting stat, or how far a rate stat moves a team's rate
+  // (hits above the league average over his at-bats, for example), so volume counts.
+  function catRaw(sport, p, c, lg, sc) {
+    const line = c.line || "pg";
+    if (!p.l[line]) return null;
+    const f = pace(sport, p, line, sc);
+    if (c.num) {
+      const n = S.stat(sport, p, line, c.num) || 0, d = S.stat(sport, p, line, c.den) || 0;
+      return (n - lg[c.k] * d) * f;
+    }
+    if (c.rate) {
+      const x = S.stat(sport, p, line, c.rate), w = S.stat(sport, p, line, c.w) || 0;
+      return x == null ? null : (x - lg[c.k]) * w * f;
+    }
+    return (S.stat(sport, p, line, c.col) || 0) * f;
+  }
+
+  // Full-season pace for season-total sports: a player who missed time is scaled toward a full workload, more
+  // the more he played (285 plate appearances paces to about 470, not 600), so an injury year still costs him.
+  function pace(sport, p, line, sc) {
+    const pc = sc && sc.pace && sc.pace[line];
+    if (!pc) return 1;
+    const vol = S.stat(sport, p, line, pc.col) || 0;
+    const full = typeof pc.full === "function" ? pc.full(sport, p) : pc.full;
+    if (!vol || vol >= full) return 1;
+    return (vol + (full - vol) * (vol / (vol + pc.k))) / vol;
+  }
+
+  function leagueRates(sport, base, cats) {
+    const lg = {};
+    for (const c of cats) {
+      const line = c.line || "pg";
+      const rows = base.filter((p) => p.l[line]);
+      if (c.num) lg[c.k] = sum(rows.map((p) => S.stat(sport, p, line, c.num) || 0)) / Math.max(1e-9, sum(rows.map((p) => S.stat(sport, p, line, c.den) || 0)));
+      else if (c.rate) {
+        const w = sum(rows.map((p) => S.stat(sport, p, line, c.w) || 0));
+        lg[c.k] = sum(rows.map((p) => (S.stat(sport, p, line, c.rate) || 0) * (S.stat(sport, p, line, c.w) || 0))) / Math.max(1e-9, w);
+      }
+    }
+    return lg;
+  }
+
+  function catValues(sport, players, sc) {
+    const lines = [...new Set(sc.cats.map((c) => c.line || "pg"))];
+    for (const p of players) { p.zc = {}; p.v = 0; }
+    for (const line of lines) {
+      const cats = sc.cats.filter((c) => (c.line || "pg") === line);
+      const has = players.filter((p) => p.l[line]);
+      let base = has.filter((p) => (sc.base ? sc.base(sport, p, line) : true));
+      if (base.length < 60) base = has.slice().sort((a, b) => volume(sport, b, line) - volume(sport, a, line)).slice(0, Math.min(has.length, 150));
+      const lg = leagueRates(sport, base, cats);
+      for (const c of cats) {
+        const [m, sd] = meanSd(base.map((p) => catRaw(sport, p, c, lg, sc)).filter((x) => x != null));
+        for (const p of has) {
+          const x = catRaw(sport, p, c, lg, sc);
+          if (x == null) continue;
+          p.zc[c.k] = ((x - m) / sd) * (c.low ? -1 : 1);
+        }
+      }
+      for (const p of has) p.v += sum(cats.map((c) => p.zc[c.k] || 0));
+    }
+    for (const p of players) if (!Object.keys(p.zc).length) p.v = -6;
+  }
+  const volume = (sport, p, line) => (line === "bat" ? S.stat(sport, p, "bat", "pa") : line === "pit" ? S.stat(sport, p, "pit", "ip") : S.stat(sport, p, line, "min") || S.stat(sport, p, line, "gp")) || 0;
+
+  function pointValues(sport, players, sc) {
+    for (const p of players) {
+      const line = sc.line;
+      let tot = 0;
+      if (sc.weights) tot = sum(Object.entries(sc.weights).map(([k, w]) => (S.stat(sport, p, line, k) || 0) * w));
+      else tot = S.stat(sport, p, line, sc.col) || 0;
+      const g = S.stat(sport, p, line, sport.sample ? sport.sample.col : "g") || 0;
+      if (sc.per === "game") { p.fpg = tot; p.fpts = tot * g; } else { p.fpts = tot; p.fpg = g ? tot / g : 0; }
+      p.g = g;
+      const proj = sc.proj != null && p.l.proj ? p.l.proj[sc.proj] : null;
+      p.proj = proj;
+    }
+  }
+
+  // Pulls small samples toward a below-replacement line: g / (g + k) of a player's own rate.
+  function shrink(sport, players, key) {
+    const smp = sport.sample;
+    if (!smp) return;
+    const live = players.filter((p) => p.g == null ? (S.stat(sport, p, smp.line, smp.col) || 0) >= smp.k : p.g >= smp.k);
+    const xs = (live.length > 40 ? live : players).map((p) => p[key]).sort((a, b) => b - a);
+    const floor = xs[Math.min(xs.length - 1, Math.floor(xs.length * 0.6))];
+    for (const p of players) {
+      const g = p.g != null ? p.g : S.stat(sport, p, smp.line, smp.col) || 0;
+      const w = g / (g + smp.k);
+      p[key] = w * p[key] + (1 - w) * floor;
+    }
+  }
+
+  // Fills every team's starting slots with the best players, most specific slots first. Replacement at a position
+  // is the best player left over who can play it.
+  function replacement(sport, players, league) {
+    const lineup = league.lineup || sport.lineup;
+    const cap = {};
+    for (const s of lineup) cap[s] = (cap[s] || 0) + (league.teams || 10);
+    const order = Object.keys(cap).sort((a, b) => width(sport, a) - width(sport, b));
+    const sorted = players.slice().sort((a, b) => b.v - a.v);
+    const used = new Set();
+    for (const p of sorted) {
+      for (const s of order) if (cap[s] > 0 && S.fits(sport, p, s)) { cap[s]--; used.add(p); break; }
+      if (Object.values(cap).every((x) => x <= 0)) break;
+    }
+    const repl = {};
+    for (const pos of sport.positions) {
+      const best = sorted.find((p) => !used.has(p) && S.positions(p).includes(pos));
+      repl[pos] = best ? best.v : sorted.length ? sorted[sorted.length - 1].v : 0;
+    }
+    return repl;
+  }
+  const width = (sport, slot) => (sport.slots[slot] === "*" ? 99 : sport.slots[slot].length);
+
+  function evaluate(sport, players, league = {}) {
+    const sc = scoringOf(sport, league);
+    if (sc.type === "cats") {
+      catValues(sport, players, sc);
+      if (sport.sample) {
+        for (const p of players) p.g = S.stat(sport, p, sport.sample.line, sport.sample.col) || 0;
+        shrink(sport, players, "v");
+      }
+    } else {
+      pointValues(sport, players, sc);
+      // Per game, shrunk toward replacement for small samples, then over a full season; a projection wins when there is one.
+      for (const p of players) p.v = p.fpg;
+      shrink(sport, players, "v");
+      for (const p of players) p.v = p.proj > 0 ? p.proj : p.v * (sc.games || 17);
+    }
+    const repl = replacement(sport, players, league);
+    for (const p of players) {
+      const ps = S.positions(p).filter((x) => repl[x] != null);
+      p.vor = p.v - (ps.length ? Math.min(...ps.map((x) => repl[x])) : Math.max(...Object.values(repl)));
+    }
+    const sorted = players.slice().sort((a, b) => b.vor - a.vor || b.v - a.v);
+    const posN = {};
+    sorted.forEach((p, i) => {
+      p.rank = i + 1;
+      const pos = mainPos(sport, p);
+      posN[pos] = (posN[pos] || 0) + 1;
+      p.prank = pos + posN[pos];
+    });
+    dollars(sport, sorted, league);
+    return { scoring: sc, repl };
+  }
+
+  // The position a player is ranked at: his scarcest one (a C/1B ranks at C).
+  const mainPos = (sport, p) => {
+    const ps = S.positions(p);
+    if (ps.length <= 1) return ps[0] || "?";
+    const sp = ps.filter((x) => x !== "UT");
+    return (sp.length ? sp : ps).slice().sort((a, b) => sport.positions.indexOf(a) - sport.positions.indexOf(b))[0];
+  };
+
+  // Auction dollars: $1 for every roster spot, and the rest of the league's money split by value over the last
+  // player who would be drafted.
+  function dollars(sport, sorted, league) {
+    const teams = league.teams || 10, budget = league.budget || 200, minBid = league.minBid == null ? 1 : league.minBid;
+    const spots = teams * ((league.lineup || sport.lineup).length + (league.bench == null ? sport.bench : league.bench));
+    const pool = sorted.slice(0, spots);
+    const floor = pool.length ? pool[pool.length - 1].vor : 0;
+    const surplus = pool.map((p) => Math.max(0, p.vor - floor));
+    const total = sum(surplus) || 1;
+    const money = teams * budget - spots * minBid;
+    for (const p of sorted) p.$ = 0;
+    pool.forEach((p, i) => (p.$ = Math.max(minBid, Math.round(minBid + (surplus[i] / total) * money))));
+  }
+
+  return { evaluate, scoringOf, mainPos, replacement, dollars };
+});
