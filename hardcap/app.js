@@ -557,7 +557,7 @@
         <td class="r num">$${t.faab}</td><td class="r num hide-s">${t.prospects.length}/${LG.settings.prospects}</td><td class="r num hide-m">$${H.owed(LG, t)}${soft() && !paid && tx ? `<div class="ps">+$${tx} if it ends today</div>` : ""}</td></tr>`;
     }).join("");
   }
-  const STAND_HEAD = `<thead><tr><th class="r">#</th><th>Team</th><th class="r">Cats</th><th class="r hide-s">Pct</th><th class="r hide-m">GmSc</th><th class="r hide-s">On books</th><th class="r hide-s">${LG && H.isSoft(LG) ? "Tax line" : "Line"}</th><th class="r">Room</th><th class="r">FAAB</th><th class="r hide-s">Prosp</th><th class="r hide-m">Owes</th></tr></thead>`;
+  const standHead = () => `<thead><tr><th class="r">#</th><th>Team</th><th class="r">Cats</th><th class="r hide-s">Pct</th><th class="r hide-m">GmSc</th><th class="r hide-s">On books</th><th class="r hide-s">${LG && H.isSoft(LG) ? "Tax line" : "Line"}</th><th class="r">Room</th><th class="r">FAAB</th><th class="r hide-s">Prosp</th><th class="r hide-m">Owes</th></tr></thead>`;
   const standingsNow = () => (LG.phase === "league" ? H.standings(LG, curWeek() - 1, WK, BY) : LG.teams.map((t) => ({ id: t.id, w: 0, l: 0, t: 0, pct: 0, mw: 0, ml: 0, mt: 0, gmsc: 0, pf: [] })));
   /* ---------- message board ---------- */
   let CHAT = [], chatLast = 0, chatBusy = false;
@@ -589,7 +589,7 @@
   function viewStandings() {
     const st = standingsNow();
     return `<div class="head"><h1 class="disp">Standings</h1><span class="muted">Category record through week ${Math.max(0, curWeek() - 1)}</span></div>
-      <div class="table-wrap"><table class="t stand">${STAND_HEAD}<tbody>${standingsRows(st)}</tbody></table></div>
+      <div class="table-wrap"><table class="t stand">${standHead()}<tbody>${standingsRows(st)}</tbody></table></div>
       <p class="ps">Room is what each team can still add under its own line. Top ${LG.settings.playoffTeams} make the playoffs after week ${LG.settings.regWeeks}; the line under ${ordinal(LG.settings.playoffTeams)} marks the cut.</p>
       ${LG.phase === "league" ? `<div class="cols2">${officeBracket()}${summerCard(st)}</div>` : ""}`;
   }
@@ -628,8 +628,8 @@
     const recent = LG.log.slice(-6).reverse();
     return `${mine && LG.phase === "league" ? myMatchupCard(mine) : phaseBanner()}
       <div class="cols"><section class="stack"><div class="head"><h1 class="disp">${esc(LG.name)}</h1></div>
-        <div class="table-wrap"><table class="t stand">${STAND_HEAD}<tbody>${rows}</tbody></table></div>
-        <p class="ps">Room is what each team can still add under its own line: the number to check before you call about a trade. ${LG.phase === "league" ? `Top ${LG.settings.playoffTeams} make the playoffs after week ${LG.settings.regWeeks}.` : ""}</p>
+        <div class="table-wrap"><table class="t stand">${standHead()}<tbody>${rows}</tbody></table></div>
+        <p class="ps">Room is what each team can still add ${LG && H.isSoft(LG) ? "before it pays luxury tax" : "under its own line"}: the number to check before you call about a trade. ${LG.phase === "league" ? `Top ${LG.settings.playoffTeams} make the playoffs after week ${LG.settings.regWeeks}.` : ""}</p>
         ${ms.length ? `<div class="head"><h2 class="disp" style="font-size:26px;margin:0">Week ${defaultWeek()}</h2><a class="btn sm" href="#matchups">All matchups</a></div><div class="slate">${ms.map((m, i) => gameCard(m, i)).join("")}</div>` : ""}
       </section>
       <aside class="stack">
