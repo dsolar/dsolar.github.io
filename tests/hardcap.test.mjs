@@ -396,3 +396,21 @@ test('latest contracts: Basketball-Reference wins, the fixes file fills gaps, no
   if (by2['dalton-knecht']) assert.equal(by2['dalton-knecht'].ctype, 'Two-way');
   assert.ok(p2.filter(p => p.ctype === 'Two-way').every(p => p.sal < 1e6 && !p.gone));
 });
+
+test('two-way limit: three per team, enforced on adds and in the draft', () => {
+  const { L } = drafted(10, 91);
+  for (const t of L.teams) assert.ok(H.twoWaysOn(t, byId) <= 3, `${t.name} has ${H.twoWaysOn(t, byId)}`);
+  const t = L.teams[0], ctx = H.context(L, pool);
+  const tws = ctx.available.filter(p => p.deal && !p.gone);
+  if (tws.length < 4) return;
+  const lg = { ...L, settings: { ...L.settings, twoWayMax: H.twoWaysOn(t, byId) } };
+  const drop = H.active(t).find(id => !byId[id].deal);
+  assert.equal(H.check(lg, t, tws[0], ctx, { drop }).ok, false);
+  assert.match(H.check(lg, t, tws[0], ctx, { drop }).why, /two-way/);
+});
+
+test('six seasons of contract: Wembanyama runs through 2031-32', () => {
+  const live = H.buildPool(H.latestContracts(nba, stats, read('hardcap/contracts.json')), stats);
+  const w = live.find(p => p.id === 'victor-wembanyama');
+  if (stats.contracts && stats.contracts['victor-wembanyama']) assert.equal(w.future.length, 5);
+});

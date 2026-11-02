@@ -30,7 +30,7 @@
     roster: 12, prospects: 2, faab: 100, minBid: 1,
     draftMode: "live", clock: 60, slowHours: 8, botDelay: 1500, auctionHours: 24,
     regWeeks: 21, playoffTeams: 4, startWeek: 1, tierDeadline: 21, tradeDeadline: 18, buyIn: 100,
-    irSlots: 2, irRule: "out", vorpCat: true,
+    irSlots: 2, irRule: "out", vorpCat: true, twoWayMax: 3,   // two-way and 10-day players a team can carry, like the NBA
     tradeReview: "vote", reviewHours: 48, vetoShare: 0.5,   // "vote": the league can veto; "commish": the commissioner can; "none"
     lineGraceHours: 72,                                     // time to get back under the line after a real-world salary change
     vetoHours: 24, payout: [60, 25, 15],
@@ -172,11 +172,11 @@
         if (mismatch.has(p.id)) return Object.assign({}, p, { limbo: true });
         const [t, sal, opt0] = pick[p.id];
         const opt = Object.fromEntries(Object.entries(opt0).filter(([i]) => +i > 0));   // this season's option is already decided
-        const s5 = sal.slice(0, 5);
+        const s5 = sal.slice(0, 6);                     // every season Basketball-Reference lists, up to six
         const old = (p.c && p.c.sal) || [];
         if (s5.join() === old.join() && JSON.stringify(opt) === JSON.stringify((p.c && p.c.opt) || {})) return p;
         report.updated++;
-        const o = Object.fromEntries(Object.entries(opt).filter(([i]) => +i < 5));
+        const o = Object.fromEntries(Object.entries(opt).filter(([i]) => +i < 6));
         // Basketball-Reference doesn't mark non-guaranteed years; keep the cap sheet's where the year still exists.
         for (const [i, v] of Object.entries((p.c && p.c.opt) || {})) if (v === "NG" && s5[+i] && !o[i]) o[i] = v;
         return Object.assign({}, p, { t: t && t.length === 3 ? p.t : p.t, c: Object.assign({}, p.c || {}, { sal: s5, opt: o }) });
@@ -198,7 +198,7 @@
         const [t, sal, opt] = row;
         const ps = (r && ESPN_POS[r[2]]) || ["SF"];
         players.push({ id, n: (r && r[1]) || id.replace(/-/g, " ").replace(/\b\w/g, (x) => x.toUpperCase()), t: (r && r[0]) || t, pos: posLetter(ps), ps,
-          age: 25, yos: 1, c: { sal: sal.slice(0, 5), opt: Object.fromEntries(Object.entries(opt).filter(([i]) => +i > 0 && +i < 5)), signed: 0 }, fresh: true });
+          age: 25, yos: 1, c: { sal: sal.slice(0, 6), opt: Object.fromEntries(Object.entries(opt).filter(([i]) => +i > 0 && +i < 6)), signed: 0 }, fresh: true });
         onBB.add(id); report.added++;
       }
     }
@@ -318,6 +318,12 @@
       p.zc = zc;
       p.z = sum(Object.values(zc)) * (0.55 + 0.45 * Math.min(1, p.line[C.min] / 24));
     }
+    // Small samples get pulled toward a below-replacement player: 11 good games last season shouldn't rank a
+    // two-way ahead of a full-time starter. Each player keeps gp / (gp + 20) of his own line, so 6 games keeps
+    // under a quarter, 41 keeps two-thirds and a full season keeps 80%.
+    const raw = players.slice().sort((a, b) => b.z - a.z);
+    const floor = raw[Math.min(raw.length - 1, 119)].z - 1;
+    for (const p of players) if (p.line) { const g = p.line[C.gp] || 0, w = g / (g + 20); p.z = w * p.z + (1 - w) * floor; }
     const sorted = players.slice().sort((a, b) => b.z - a.z);
     sorted.forEach((p, i) => (p.rank = i + 1));
     // HC Score: value over a replacement player (the 120th best) per $10M of salary.
@@ -584,15 +590,22 @@
 
   // What a team must hold back to fill its open spots. Pessimistic on purpose: it assumes every other team's open
   // spots go to the very cheapest players first, so a legal pick can never strand a roster later in the draft.
-  function reserve(k, available, skip, othersOpen = 0) {
+  // twLeft: how many more two-ways this team may sign, so the reserve can't count on a bench full of them.
+  function reserve(k, available, skip, othersOpen = 0, twLeft = Infinity) {
     if (k <= 0) return 0;
-    const sals = [];
-    for (const p of available) if (p.id !== skip) sals.push(p.sal);
-    sals.sort((a, b) => a - b);
-    let total = 0;
-    for (let i = 0; i < k; i++) total += sals[Math.min(sals.length - 1, othersOpen + i)] || 0;
+    const rows = [];
+    for (const p of available) if (p.id !== skip && !p.gone) rows.push([p.sal, !!p.deal]);
+    rows.sort((a, b) => a[0] - b[0]);
+    let total = 0, n = 0, tw = 0;
+    for (let i = othersOpen; i < rows.length && n < k; i++) {
+      if (rows[i][1]) { if (tw >= twLeft) continue; tw++; }
+      total += rows[i][0]; n++;
+    }
+    if (n < k && rows.length) total += (k - n) * rows[rows.length - 1][0];
     return total;
   }
+  const isTwoWay = (p) => !!(p && p.deal);
+  const twoWaysOn = (team, byId, except = []) => active(team).filter((id) => !except.includes(id) && isTwoWay(byId[id])).length;
   const openSpots = (L, except) => sum(L.teams.filter((t) => t.id !== except).map((t) => Math.max(0, L.settings.roster - active(t).length)));
 
   // Can this team add this player (optionally releasing someone) and stay under its ceiling?
@@ -605,9 +618,12 @@
     const count = ros.length - drops.length;
     if (count >= L.settings.roster) return { ok: false, why: "Roster is full" };
     if (player.gone) return { ok: false, why: `${player.n} isn't on an NBA roster` };
+    const twMax = L.settings.twoWayMax == null ? 3 : L.settings.twoWayMax;
+    const twHave = twoWaysOn(team, ctx.byId, drops) + (isTwoWay(player) ? 1 : 0);
+    if (isTwoWay(player) && twHave > twMax) return { ok: false, why: `Already carrying ${twMax} two-way players, the limit` };
     const pay = payroll(team, ctx.byId) - dropSal;
     const open = L.settings.roster - count - 1;
-    const hold = opts.reserve ? reserve(open, ctx.available, player.id, L.phase === "nba" ? openSpots(L, team.id) : 0) : 0;
+    const hold = opts.reserve ? reserve(open, ctx.available, player.id, L.phase === "nba" ? openSpots(L, team.id) : 0, twMax - twHave) : 0;
     const after = pay + player.sal;
     if (after + hold > ceiling) {
       return { ok: false, after, hold, room: ceiling - pay - hold,
@@ -1078,6 +1094,9 @@
       const before = payroll(team, ctx.byId);
       const count = act.length - outAct.length + nb(inn).length;
       if (count > L.settings.roster) return `${team.name} would have ${count} active players`;
+      const twMax = L.settings.twoWayMax == null ? 3 : L.settings.twoWayMax;
+      const tw = twoWaysOn(team, ctx.byId, nb(out)) + nb(inn).filter((x) => isTwoWay(ctx.byId[x])).length;
+      if (tw > twMax && tw > twoWaysOn(team, ctx.byId)) return `${team.name} would have ${tw} two-way players (limit ${twMax})`;
       const pc = team.prospects.length - pr(out).length + pr(inn).length;
       if (pc > L.settings.prospects) return `${team.name} would have ${pc} prospects`;
       const pay = payroll(team, ctx.byId) - sum(outAct.map((x) => ctx.byId[x].sal)) + sum(nb(inn).map((x) => ctx.byId[x].sal));
@@ -1245,7 +1264,7 @@
   }
 
   const E = {
-    latestContracts, CATS, VORP_CAT, catsFor, withVorp, voteTrade, finalizeTrades, applyTrade, voters, vetoesNeeded, enforceLine, contractType,
+    latestContracts, isTwoWay, twoWaysOn, CATS, VORP_CAT, catsFor, withVorp, voteTrade, finalizeTrades, applyTrade, voters, vetoesNeeded, enforceLine, contractType,
     COLS, C, DEFAULTS, HOUR, totalWeeks, rosterIndex, onNbaRoster, mergeContracts, releaseGone, SLOTS, ELIG, positions, eligible, isOut, rostered, irProblem, moveToIR, activateIR,
     autoLineup, lockTime, lineupFor, setLineup, lockLineups, defaultTiers, rng, money, isProspect, buildPool, buildProspects, rankNineCat, newLeague,
     snake, snakeFrom, setOrder, roundRobin, tierOf, ceilingOf, owed, pot, upgradeTier, active, payroll, owners, context, reserve,

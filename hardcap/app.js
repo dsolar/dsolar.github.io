@@ -173,7 +173,7 @@
     const pay = H.payroll(team, BY);
     const ctx = opts.ctx || H.context(LG, POOL);
     const open = LG.settings.roster - ids.length - (opts.ghost ? 1 : 0);
-    const hold = opts.reserve && open > 0 ? H.reserve(open, ctx.available, opts.ghost && opts.ghost.id, LG.phase === "nba" ? LG.teams.filter((t) => t.id !== team.id).reduce((s, t) => s + Math.max(0, LG.settings.roster - H.active(t).length), 0) : 0) : 0;
+    const hold = opts.reserve && open > 0 ? H.reserve(open, ctx.available, opts.ghost && opts.ghost.id, LG.phase === "nba" ? LG.teams.filter((t) => t.id !== team.id).reduce((s, t) => s + Math.max(0, LG.settings.roster - H.active(t).length), 0) : 0, (LG.settings.twoWayMax == null ? 3 : LG.settings.twoWayMax) - H.twoWaysOn(team, BY)) : 0;
     const top = LG.settings.tiers[LG.settings.tiers.length - 1].line;
     const scale = (v) => (v / top) * 100;
     let html = ids.map((id) => BY[id]).filter(Boolean).sort((a, b) => b.sal - a.sal)
@@ -272,6 +272,7 @@
     return `<details class="switch" id="switch"><summary><span class="sw-name">${LG ? esc(LG.name) : "Your leagues"}</span><span class="chev" aria-hidden="true"></span></summary>
       <div class="menu" role="menu">${mine.length ? mine.map((x) => `<div class="mi${x.id === LID ? " on" : ""}"><a role="menuitem" href="?l=${esc(x.id)}">${esc(x.name)}<small>${esc(x.id)}</small></a><button class="x" data-forget="${esc(x.id)}" aria-label="Remove ${esc(x.name)} from this device's list" title="Remove from this list">&times;</button></div>`).join("") : `<p class="ps" style="margin:6px 10px">Leagues you open on this device show up here.</p>`}
         <a class="mi new" role="menuitem" href="./?new=1">Start a new league</a>
+        <a class="mi new" role="menuitem" href="./?new=1#restore" style="border-top:0;margin-top:0;font-weight:700">Restore a deleted league</a>
         <button class="mi theme" type="button" data-act="theme">${document.documentElement.dataset.theme === "dark" ? "Light mode" : "Dark mode"}</button></div></details>`;
   }
   function chrome() {
@@ -390,6 +391,7 @@
       ["The draft", "Live or slow. A pick only counts if you can still fill every open spot at the cheapest salaries left; the hatched part of your cap bar is that reserve. Miss your clock and your queue picks for you."],
       ["Prospect Board", `After the draft, a blind FAAB auction for ${L ? L.settings.prospects : 2} prospect spots. Bids come out of your $${faab} season budget, so a big prospect bid means fewer pickups later.`],
       ["Waivers", `Every add is a blind FAAB bid, $${L ? L.settings.minBid : 1} minimum, so there's no first-come rush. Highest bid wins, ties go to the team lower in the standings. Bids run every Monday at 3 a.m. Eastern; signings count that week. Drops are free and unlimited.`],
+      ["Two-ways", `Each team can carry up to ${L ? (L.settings.twoWayMax == null ? 3 : L.settings.twoWayMax) : 3} two-way or 10-day players, like the NBA.`],
       ["Contracts", "Contracts update daily from Basketball-Reference, so extensions, declined options and real trade kickers flow through. A two-way earns half the rookie minimum, a 10-day deal ten days of his minimum. A player with no NBA contract at all isn't in the pool; he shows up on waivers the day he signs."],
       ["Over the line", "If a real-world change (a trade kicker, an option, a corrected salary) pushes you over your line, you can't add salary until you're back under. You have until the first lineup lock at least 72 hours out: release someone, trade salary away or move up a tier. Still over then, and your lowest-ranked players are released until you fit."],
       ["Lineups", "Nine starters (PG, SG, G, SF, PF, F, C, UTIL, UTIL) and three on the bench. Only starters score. Lineups are weekly and lock at each week's first tip; forget, and your best lineup is set for you."],
@@ -432,11 +434,28 @@
         </form>
         <div class="stack">
           ${mine.length ? `<div class="card"><h3>Your leagues</h3><p class="muted small" style="margin:0">Jump back in from the league menu at the top of every page.</p><ul class="list" style="margin-top:8px">${mine.slice(0, 4).map((x) => `<li><a href="?l=${esc(x.id)}">${esc(x.name)}</a></li>`).join("")}</ul></div>` : ""}
+          ${params.get("deleted") ? `<div class="banner gold"><div><b>${esc((store.get("hc:deleted", {}) || {}).name || "The league")} is in the trash.</b> <span class="muted">Restore it below with code ${esc(params.get("deleted"))} any time before ${fmtDate((store.get("hc:deleted", {}) || {}).until || Date.now() + 30 * 864e5)}.</span></div></div>` : ""}
+          <form class="card form" id="restore"><h3>Restore a deleted league</h3><p class="muted small" style="margin:0">Deleted leagues stay in the trash for 30 days. Enter the league code and the commissioner PIN to bring one back with every team, claim and bid.</p>
+            <div class="row2"><div class="field"><label for="rcode">League code</label><input type="text" id="rcode" name="code" value="${esc(params.get("deleted") || "")}" maxlength="12" required autocomplete="off"></div>
+            <div class="field"><label for="rpin">Commissioner PIN</label><input type="password" id="rpin" name="pin" inputmode="numeric" pattern="\\d{4,8}" required autocomplete="current-password"></div></div>
+            <div><button class="btn" type="submit">Restore league</button></div></form>
           <div class="card"><h3>Got an invite?</h3><p class="muted small" style="margin:0">Open the link your commissioner sent. It looks like davidsolar.dev/hardcap/?l=abc1234.</p></div>
           <div class="card"><h3>The defaults</h3><dl class="kv"><dt>Buy-in</dt><dd>$${H.DEFAULTS.buyIn}, plus any tier upgrade</dd><dt>Season FAAB</dt><dd>$${H.DEFAULTS.faab}, $${H.DEFAULTS.minBid} minimum bid</dd><dt>Scoring</dt><dd>9 categories plus VORP, weekly</dd><dt>Playoffs</dt><dd>Top ${H.DEFAULTS.playoffTeams}, weeks ${H.DEFAULTS.regWeeks + 1} and ${H.DEFAULTS.regWeeks + 2}</dd><dt>Payout</dt><dd>${H.DEFAULTS.payout.join(" / ")}</dd></dl></div>
         </div>
       </section>
       <section class="card rules-mod"><div class="head"><h2 class="disp">The rules</h2><span class="muted small">The commissioner can change any of these numbers before the draft.</span></div>${rulesList(null)}</section></div>`;
+    const rf = $("#restore");
+    rf.onsubmit = async (e) => {
+      e.preventDefault();
+      const fd = new FormData(rf), pin = String(fd.get("pin"));
+      let r;
+      try { r = await rpc("hc_restore", { p_id: String(fd.get("code")), p_pin: pin }); } catch (err) { return toast(err.message, true); }
+      if (r.error) return toast(r.error, true);
+      store.set("hc:me:" + r.id, Object.assign({}, store.get("hc:me:" + r.id, {}), { commish: pin }));
+      store.set("hc:leagues", [{ id: r.id, name: r.name }, ...store.get("hc:leagues", []).filter((x) => x.id !== r.id)].slice(0, 12));
+      location.href = `?l=${r.id}#league`;
+    };
+    if (location.hash === "#restore") rf.scrollIntoView({ block: "center" });
     let n = 10, mode = "live", ro = 12;
     const f = $("#create");
     $$("[data-n]", f).forEach((b) => (b.onclick = () => { n = +b.dataset.n; $$("[data-n]", f).forEach((x) => x.setAttribute("aria-pressed", x === b)); }));
@@ -633,7 +652,7 @@
   }
   function teamContracts(t) {
     const ids = [...H.rostered(t)].map((id) => BY[id]).filter(Boolean).sort((a, b) => b.sal - a.sal);
-    const yrs = [0, 1, 2, 3, 4];
+    const yrs = [0, 1, 2, 3, 4, 5];
     const cell = (p, i) => {
       const v = i === 0 ? p.sal : p.future[i - 1];
       if (v) return `<td class="r num">${money(v)}${p.opt[i] ? ` <span class="pill">${esc(p.opt[i])}</span>` : ""}</td>`;
@@ -935,7 +954,7 @@
     if (!p) return;
     const inj = INJ[id];
     const yr = (i) => (i === 0 ? p.sal : p.future[i - 1]);
-    const years = [0, 1, 2, 3, 4].filter((i) => yr(i) || p.fa.year === 2026 + i);
+    const years = [0, 1, 2, 3, 4, 5].filter((i) => yr(i) || p.fa.year === 2026 + i);
     const line = (l, label) => l ? `<tr><td>${label}</td><td class="r num">${l[C.gp]}</td><td class="r num">${l[C.min].toFixed(1)}</td><td class="r num">${l[C.pts].toFixed(1)}</td><td class="r num">${l[C.reb].toFixed(1)}</td><td class="r num">${l[C.ast].toFixed(1)}</td><td class="r num">${l[C.tpm].toFixed(1)}</td><td class="r num">${l[C.stl].toFixed(1)}</td><td class="r num">${l[C.blk].toFixed(1)}</td><td class="r num">${pct(l[C.fgm], l[C.fga])}</td><td class="r num">${pct(l[C.ftm], l[C.fta])}</td><td class="r num">${l[C.tov].toFixed(1)}</td></tr>` : "";
     const weeks = Object.entries(STATS.wk || {}).map(([w, x]) => [+w, x[id]]).filter((x) => x[1]).sort((a, b) => b[0] - a[0]);
     const zc = p.zc ? CATS.map((c) => { const z = Math.max(-3, Math.min(3, p.zc[c.k])); return `<div style="display:grid;grid-template-columns:38px 1fr 40px;gap:8px;align-items:center;font-size:12px"><span class="lbl">${c.label}</span>
@@ -1009,21 +1028,22 @@
     return `${t ? `<div id="mycap">${capLine(t, ctx)}</div>` : ""}
       <div class="tools"><label class="sr" for="dq">Search</label><input type="search" id="dq" placeholder="Search players or teams" value="${esc(ui.q)}">
         ${t ? `<label class="small muted" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="dfit"${ui.fit ? " checked" : ""}> Only players I can fit</label>` : ""}</div>${filterBox()}
-      <div class="table-wrap" id="pool"><table class="t dense"><thead><tr>${sortTh("rank", "Rk")}${sortTh("name", "Player", "")}${sortTh("pos", "Pos", "hide-s")}${sortTh("age", "Age")}${sortTh("sal", "Salary")}${sortTh("yrs", "Yrs", "r hide-s")}${sortTh("hc", "HC", "r", "HC Score: value over replacement per $10M")}${vorpHeadS()}${lineHeadS()}<th></th></tr></thead><tbody>
-        ${shown.map(({ p, c: k }) => `<tr data-pid="${p.id}" class="${k.ok ? "" : "dim"}"${k.ok ? "" : ` title="${esc(k.why)}"`}><td class="r num ps">${p.rank}</td><td class="nm">${pl(p.id)} <span class="ps">${p.t}</span></td><td class="ps hide-s">${H.positions(p).join("/")}</td><td class="r num">${p.age}</td>
-          <td class="r"><span class="sal num">${money(p.sal)}</span></td><td class="r num ps hide-s">${p.future.length ? p.future.length + 1 : "Exp"}</td>${hcCell(p)}${vorpCells(p)}${lineCells(p)}
-          <td class="r" style="white-space:nowrap">${myTurn && k.ok && LG.phase === "nba" ? `<button class="btn sm go" data-pick="${p.id}">Sign</button> ` : ""}${t ? (t.queue.includes(p.id) ? `<button class="btn sm" data-unqueue="${p.id}">Queued</button>` : `<button class="btn sm" data-queue="${p.id}">Queue</button>`) : ""}</td></tr>`).join("") || `<tr><td colspan="19" class="empty">No one matches.</td></tr>`}
+      <div class="table-wrap" id="pool"><table class="t dense"><thead><tr>${sortTh("rank", "Rk", "r", "Nine-category rank")}${sortTh("dyn", "Dyn", "r", "Dynasty rank")}${sortTh("name", "Player", "")}${sortTh("team", "Team", "")}${sortTh("pos", "Pos", "hide-s")}${sortTh("age", "Age")}${sortTh("sal", "Salary")}${sortTh("yrs", "Yrs", "r hide-s")}${sortTh("hc", "HC", "r", "HC Score: value over replacement per $10M")}${sortTh("vorp", "VORP", "r hide-s", "Value over replacement player, season to date")}${lineHeadS()}<th></th></tr></thead><tbody>
+        ${shown.map(({ p, c: k }) => `<tr data-pid="${p.id}" class="${k.ok ? "" : "dim"}"${k.ok ? "" : ` title="${esc(k.why)}"`}><td class="r num">${p.rank}</td><td class="r num ps">${p.dynRank}</td><td class="nm">${pl(p.id)}${p.deal ? " " + typeTag(p) : ""}</td><td class="ps">${p.t}</td><td class="ps hide-s">${H.positions(p).join("/")}</td><td class="r num">${p.age}</td>
+          <td class="r"><span class="sal num">${money(p.sal)}</span></td><td class="r num ps hide-s">${p.future.length ? p.future.length + 1 : "Exp"}</td>${hcCell(p)}<td class="r num hide-s">${p.bbv == null ? "-" : p.bbv.toFixed(1)}</td>${lineCells(p)}
+          <td class="r" style="white-space:nowrap">${myTurn && k.ok && LG.phase === "nba" ? `<button class="btn sm go" data-pick="${p.id}">Sign</button> ` : ""}${t ? (t.queue.includes(p.id) ? `<button class="btn sm" data-unqueue="${p.id}">Queued</button>` : `<button class="btn sm" data-queue="${p.id}">Queue</button>`) : ""}</td></tr>`).join("") || `<tr><td colspan="20" class="empty">No one matches.</td></tr>`}
         </tbody></table></div>`;
   }
   // One line of cap math above the player list; the full cap bar lives on the My team tab.
   function capLine(t, ctx) {
     const open = LG.settings.roster - H.active(t).length;
     const others = LG.phase === "nba" ? LG.teams.filter((x) => x.id !== t.id).reduce((a, x) => a + Math.max(0, LG.settings.roster - H.active(x).length), 0) : 0;
-    const hold = open > 0 ? H.reserve(open, ctx.available, null, others) : 0;
+    const twLeft = (LG.settings.twoWayMax == null ? 3 : LG.settings.twoWayMax) - H.twoWaysOn(t, BY);
+    const hold = open > 0 ? H.reserve(open, ctx.available, null, others, twLeft) : 0;
     const pay = H.payroll(t, BY), room = H.ceilingOf(LG, t) - pay - hold;
     return `<div class="capline"><span><b class="num">${money(pay)}</b> on the books</span><span><b class="num">${H.active(t).length}</b> of ${LG.settings.roster} signed</span>
       <span><b class="num ${room >= 0 ? "ok" : "bad"}">${money(room)}</b> usable room${hold ? ` <span class="ps">after ${money(hold)} held for ${open} spot${open === 1 ? "" : "s"}</span>` : ""}</span>
-      <span class="ps">${esc(H.tierOf(LG, t).label)} line ${money(H.ceilingOf(LG, t))}</span><span class="grow"></span><a class="btn sm" href="#draft/mine">My team and cap bar</a></div>`;
+      <span class="ps">${esc(H.tierOf(LG, t).label)} line ${money(H.ceilingOf(LG, t))}, two-ways ${H.twoWaysOn(t, BY)} of ${LG.settings.twoWayMax == null ? 3 : LG.settings.twoWayMax}</span><span class="grow"></span><a class="btn sm" href="#draft/mine">My team and cap bar</a></div>`;
   }
   function recentPicksList(n) {
     const picks = LG.nba.picks.slice(-n).reverse();
@@ -1149,6 +1169,8 @@
       <section class="card"><h3>Invite managers</h3><p class="ps" style="margin-top:0">Send this link. Each manager picks an open team and sets a PIN; ${LG.teams.filter((t) => !t.owner).length} of ${LG.teams.length} teams are still open.</p><div class="tools"><input type="text" readonly value="${esc(link)}" aria-label="Invite link"><button class="btn go" data-act="copy" data-text="${esc(link)}">Copy</button></div></section>
       ${p === "league" ? `<section class="card"><h3>Waivers</h3><p class="ps" style="margin-top:0">Next automatic run: ${fmtWhen(LG.due.waiver || H.nextWaiverRun(now()))}. Running now opens every sealed bid; signings count next week.</p><button class="btn" data-runwaivers>Run waivers now</button></section>` : ""}
       ${p === "prospects" ? `<section class="card"><h3>Prospect Board auction</h3><p class="ps" style="margin-top:0">Closes on its own ${fmtWhen(LG.due.auction)}.</p><button class="btn go" type="button" data-closeauction>Close the auction now</button></section>` : ""}
+      <section class="card"><h3>Delete this league</h3><p class="ps" style="margin-top:0">It goes to the trash for 30 days with every roster, claim and sealed bid. You can bring it back from the Hard Cap home page with code <b>${esc(LID)}</b> and your commissioner PIN. After 30 days it's gone for good.</p>
+        <form class="tools" id="delform"><label class="sr" for="delname">League name</label><input type="text" id="delname" placeholder="Type ${esc(LG.name)} to confirm" autocomplete="off"><button class="btn warn" type="submit">Delete league</button></form></section>
       <section class="card"><h3>Server clock</h3><p class="ps" style="margin:0">Draft clocks, autopicks, the auction, waivers, lineup locks, trade reviews and the line check all run on the server every minute, whether or not anyone has the site open.</p></section></div>`;
     return (sec[sub] || sec.settings)();
   }
@@ -1266,6 +1288,19 @@
       const r2 = await rpc("hc_auth", { p_id: LID, p_team: -1, p_pin: pin });
       if (r2.error) return toast(r2.error, true);
       me = Object.assign({}, me, { commish: pin }); store.set(meKey(), me); render();
+    };
+    const delf = $("#delform", app);
+    if (delf) delf.onsubmit = async (e) => {
+      e.preventDefault();
+      const nm = $("#delname", app).value;
+      if (nm.trim().toLowerCase() !== LG.name.trim().toLowerCase()) return toast(`Type the league name, ${LG.name}, to confirm.`, true);
+      let r;
+      try { r = await rpc("hc_delete", { p_id: LID, p_pin: String(me.commish), p_confirm: nm }); } catch (err) { return toast(err.message, true); }
+      if (r.error) return toast(r.error, true);
+      store.set("hc:leagues", store.get("hc:leagues", []).filter((x) => x.id !== LID));
+      if (store.get("hc:last", null) === LID) store.set("hc:last", null);
+      store.set("hc:deleted", { id: LID, name: LG.name, until: r.purge_at });
+      location.href = "./?deleted=" + LID;
     };
     const sf = $("#settings", app);
     if (sf) sf.onsubmit = (e) => {

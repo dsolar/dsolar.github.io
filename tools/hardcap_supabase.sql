@@ -276,3 +276,9 @@ grant execute on function public.hc_create(text, text, jsonb), public.hc_view(te
 --     body := '{}'::jsonb, timeout_milliseconds := 55000); $job$);
 -- To pause the clock:   select cron.unschedule('hardcap-clock');
 -- The full definitions live in the migration; the shapes match the functions above (PIN checked by hc_pin_ok).
+
+-- ---------- trash: deleted leagues can be restored for 30 days (migration hardcap_trash) ----------
+-- hc_trash keeps the league row plus its seats, sealed bids and push subscriptions as JSON.
+-- hc_delete(p_id, p_pin, p_confirm): commissioner PIN and the league name typed exactly; moves the league to the trash.
+-- hc_restore(p_id, p_pin): league code and commissioner PIN (5 wrong tries locks it for 15 minutes); puts everything back.
+-- cron 'hardcap-trash' (daily, 9:17 UTC) empties anything past purge_at.
