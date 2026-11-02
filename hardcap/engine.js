@@ -345,6 +345,7 @@
     const first = days.length ? live.hist[days[0]] : {};
     const seen = new Set();
     for (const r of board) {
+      if (!(r.rank > 0 && r.rank <= 300)) continue;             // later draft classes sit below the board
       let p = by.get(key(r.id));
       if (!p) {
         p = { id: "c-" + r.id, n: r.n, pos: String(r.pos || "SF").split("/")[0], school: r.school, age: null, pre: first[r.id] || null, cls: 2027, late: true };

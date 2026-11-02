@@ -38,7 +38,7 @@
   if (!LIVE && STATS.prospects) LIVE = STATS.prospects;
   const PROS = H.buildProspects(NBA, LIVE), PBY = Object.fromEntries(PROS.map((p) => [p.id, p]));
   const ageOf = (p) => (p.age ? p.age.toFixed(1) : "-");
-  const moveTagP = (p) => (p.move == null ? (p.pre == null && LIVE ? `<span class="mv new" title="Not on the preseason board">New</span>` : "") : p.move > 0 ? `<span class="mv up" title="Up ${p.move} since the preseason board">&#9650;${p.move}</span>` : p.move < 0 ? `<span class="mv dn" title="Down ${-p.move} since the preseason board">&#9660;${-p.move}</span>` : `<span class="mv">0</span>`);
+  const moveTagP = (p) => (p.off ? `<span class="mv dn" title="Off Tankathon's board">Off</span>` : p.late ? `<span class="mv new" title="Joined the board this season${p.move ? `; ${p.move > 0 ? "up" : "down"} ${Math.abs(p.move)} since` : ""}">New${p.move ? (p.move > 0 ? " &#9650;" : " &#9660;") + Math.abs(p.move) : ""}</span>` : p.move == null ? (p.pre == null && LIVE ? `<span class="mv new" title="Not on the preseason board">New</span>` : "") : p.move > 0 ? `<span class="mv up" title="Up ${p.move} since the preseason board">&#9650;${p.move}</span>` : p.move < 0 ? `<span class="mv dn" title="Down ${-p.move} since the preseason board">&#9660;${-p.move}</span>` : `<span class="mv">0</span>`);
   const pstat = (p, k, d = 1) => (p.stats && p.stats[k] != null ? (k === "ts" ? p.stats[k].toFixed(3).replace(/^0/, "") : p.stats[k].toFixed(d)) : "-");
   const PROS_STATS = [["pts", "PTS"], ["reb", "REB"], ["ast", "AST"], ["stl", "STL"], ["blk", "BLK"], ["ts", "TS%"]];
   let poolKey = "";
@@ -253,6 +253,7 @@
     if (tab === "players") return [["fa", "Free agents"], ["all", "All players"], ["owned", "On rosters"], ["prospects", "Prospect Board"]];
     if (tab === "matchups") return [["week", "Matchups"], ["playoffs", "Playoffs"]];
     if (tab === "draft") return draftSubs();
+    if (tab === "commish") return me.commish ? [["settings", "League settings"], ["draft", "Draft"], ["teams", "Teams and managers"], ["contracts", "Contracts"], ["tools", "Tools"]] : [];
     return [];
   }
   const route = () => {
@@ -384,12 +385,12 @@
     const tiers = L ? L.settings.tiers : H.defaultTiers(NBA.cba);
     const faab = L ? L.settings.faab : H.DEFAULTS.faab, buy = L ? L.settings.buyIn : 100;
     return [
-      ["Real salaries", "Every player costs his actual NBA salary, and it moves each offseason with his real contract. Two-way deals aren't eligible until they become standard contracts."],
+      ["Real salaries", "Every player costs his actual NBA salary, and it moves each offseason with his real contract. Two-way and 10-day players count too, at their real (small) salaries."],
       ["The line", `Everyone starts as a cap team: 12 NBA players under ${money(tiers[0].line)}. Any team can move up a tier for a cash add-on: ${tiers.slice(1).map((t) => `${t.label} (${money(t.line)}, +$${t.add})`).join(", ")}. Moving up is permanent for the season. Buy-in is $${buy}.`],
       ["The draft", "Live or slow. A pick only counts if you can still fill every open spot at the cheapest salaries left; the hatched part of your cap bar is that reserve. Miss your clock and your queue picks for you."],
       ["Prospect Board", `After the draft, a blind FAAB auction for ${L ? L.settings.prospects : 2} prospect spots. Bids come out of your $${faab} season budget, so a big prospect bid means fewer pickups later.`],
       ["Waivers", `Every add is a blind FAAB bid, $${L ? L.settings.minBid : 1} minimum, so there's no first-come rush. Highest bid wins, ties go to the team lower in the standings. Bids run every Monday at 3 a.m. Eastern; signings count that week. Drops are free and unlimited.`],
-      ["Contracts", "Only standard NBA contracts count. Two-way and 10-day players aren't in the pool at all; they appear on waivers once they sign a standard deal. Contracts update daily from Basketball-Reference, so extensions, declined options and real trade kickers flow through."],
+      ["Contracts", "Contracts update daily from Basketball-Reference, so extensions, declined options and real trade kickers flow through. A two-way earns half the rookie minimum, a 10-day deal ten days of his minimum. A player with no NBA contract at all isn't in the pool; he shows up on waivers the day he signs."],
       ["Over the line", "If a real-world change (a trade kicker, an option, a corrected salary) pushes you over your line, you can't add salary until you're back under. You have until the first lineup lock at least 72 hours out: release someone, trade salary away or move up a tier. Still over then, and your lowest-ranked players are released until you fit."],
       ["Lineups", "Nine starters (PG, SG, G, SF, PF, F, C, UTIL, UTIL) and three on the bench. Only starters score. Lineups are weekly and lock at each week's first tip; forget, and your best lineup is set for you."],
       ["IR", `${L ? L.settings.irSlots : 2} IR spots for players listed Out on the injury report. A player on IR doesn't count against your line, so you can sign a real replacement. Bring him back only if he fits.`],
@@ -455,7 +456,7 @@
         if (c.error) throw new Error(c.error);
         store.set("hc:me:" + r.id, { team: 0, pin, commish: pin });
         store.set("hc:leagues", [{ id: r.id, name: String(fd.get("name")) }, ...mine.filter((x) => x.id !== r.id)].slice(0, 12));
-        location.href = `?l=${r.id}#commish`;
+        location.href = `?l=${r.id}#commish/draft`;
       } catch (err) { btn.disabled = false; toast(err.message, true); }
     };
   }
@@ -675,7 +676,7 @@
     if (ui.kind === "prospects") {
       const rows = PROS.filter((p) => (ui.status === "all" || (ui.status === "fa" ? ctx.own[p.id] == null : ctx.own[p.id] != null)) && (!q || p.n.toLowerCase().includes(q) || p.school.toLowerCase().includes(q)));
       return marketTools() + `<div class="table-wrap"><table class="t dense"><thead><tr><th class="r">Board</th><th class="r" title="Spots moved since the preseason board">Move</th><th>Prospect</th><th>School</th><th class="r hide-s">Age</th>${PROS_STATS.map(([, l], i) => `<th class="r${i > 2 ? " hide-s" : ""}">${l}</th>`).join("")}<th>Rights</th><th></th></tr></thead><tbody>
-        ${rows.map((p) => { const o = ctx.own[p.id]; return `<tr><td class="r num">${p.rank}</td><td class="r">${moveTagP(p)}</td><td class="nm">${pl(p.id)} <span class="ps">${esc(p.posFull || p.pos)}</span></td><td>${esc(p.school)}</td><td class="r num hide-s">${ageOf(p)}</td>${PROS_STATS.map(([k], i) => `<td class="r num${i > 2 ? " hide-s" : ""}">${pstat(p, k)}</td>`).join("")}
+        ${rows.map((p) => { const o = ctx.own[p.id]; return `<tr class="${p.off ? "dim" : ""}"><td class="r num">${p.off ? "-" : p.rank}</td><td class="r">${moveTagP(p)}</td><td class="nm">${pl(p.id)} <span class="ps">${esc(p.posFull || p.pos)}</span></td><td>${esc(p.school)}</td><td class="r num hide-s">${ageOf(p)}</td>${PROS_STATS.map(([k], i) => `<td class="r num${i > 2 ? " hide-s" : ""}">${pstat(p, k)}</td>`).join("")}
           <td>${o != null ? `<a class="btn link" href="#team/roster/${o}">${esc(LG.teams[o].abbr)}</a>` : `<span class="muted">Available</span>`}</td>
           <td class="r">${o == null && t ? (LG.phase === "league" ? `<button class="btn sm go" data-bid="${p.id}">Bid</button>` : LG.phase === "prospects" ? `<a class="btn sm go" href="#draft/prospects">Auction</a>` : "") : ""}</td></tr>`; }).join("")}</tbody></table></div>`;
     }
@@ -707,6 +708,8 @@
   const yrank = (p) => { const y = YAHOO.players && YAHOO.players[p.id]; return y ? y.ar || y.or || 999 : 999; };
   function stat(p, k) { const g = perGame(p); return g ? g.l[C[k]] : k === "tov" ? 99 : -1; }
   function shoot(p, m, a) { const g = perGame(p); return g && g.l[C[a]] ? g.l[C[m]] / g.l[C[a]] : -1; }
+  // Columns you can sort by from a header but that the sort menu doesn't list.
+  const SORT_NAMES = { name: "player name", team: "NBA team", pos: "position", age: "age", yrs: "years left", tov: "fewest turnovers", fg: "FG%", ft: "FT%" };
   const SAL = { "": [0, Infinity], a: [0, 5e6], b: [5e6, 15e6], c: [15e6, 30e6], d: [30e6, Infinity] };
   function passFilters(p) {
     const f = ui.f;
@@ -739,7 +742,7 @@
       + sel("con", "Contract", [["", "Any contract"], ["exp", "Expiring"], ["multi", "Signed 2+ more years"], ["rfa", "Heading to RFA"], ...(myTeam() ? [["fit", "Fits my room now"]] : [])])
       + sel("age", "Age", [["", "Any age"], ["y", "24 and under"], ["p", "25 to 29"], ["v", "30 and over"]])
       + sel("inj", "Health", [["", "Any health"], ["out", "Listed Out"]])
-      + `<label class="sr" for="msort">Sort</label><select id="msort"${ui.sort !== "rank" ? ' class="set"' : ""}>${[["rank", "Sort: nine-cat rank"], ["dyn", "Sort: dynasty rank"], ["hc", "Sort: HC Score (value per $)"], ["vorp", "Sort: VORP"], ["vpm", "Sort: V/M (VORP per salary)"], ["sal", "Sort: salary, high to low"], ["cheap", "Sort: salary, low to high"], ["pts", "Sort: points"], ["reb", "Sort: rebounds"], ["ast", "Sort: assists"], ["tpm", "Sort: threes"], ["stl", "Sort: steals"], ["blk", "Sort: blocks"], ["young", "Sort: youngest"], ...(YAHOO.players ? [["yahoo", "Sort: Yahoo rank"]] : [])].map(([k, n]) => `<option value="${k}"${ui.sort === k ? " selected" : ""}>${n}</option>`).join("")}</select>`;
+      + `<label class="sr" for="msort">Sort</label><select id="msort"${ui.sort !== "rank" ? ' class="set"' : ""}>${[...(SORT_NAMES[ui.sort] ? [[ui.sort, "Sort: " + SORT_NAMES[ui.sort]]] : []), ["rank", "Sort: nine-cat rank"], ["dyn", "Sort: dynasty rank"], ["hc", "Sort: HC Score (value per $)"], ["vorp", "Sort: VORP"], ["vpm", "Sort: V/M (VORP per salary)"], ["sal", "Sort: salary, high to low"], ["cheap", "Sort: salary, low to high"], ["pts", "Sort: points"], ["reb", "Sort: rebounds"], ["ast", "Sort: assists"], ["tpm", "Sort: threes"], ["stl", "Sort: steals"], ["blk", "Sort: blocks"], ["young", "Sort: youngest"], ...(YAHOO.players ? [["yahoo", "Sort: Yahoo rank"]] : [])].map(([k, n]) => `<option value="${k}"${ui.sort === k ? " selected" : ""}>${n}</option>`).join("")}</select>`;
   }
   function marketTools(total) {
     const title = ui.kind === "prospects" ? "Prospect Board" : { fa: "Free agents", own: "On rosters", all: "All players" }[ui.status];
@@ -972,9 +975,9 @@
   /* ---------- Draft Room ---------- */
   function draftSubs() {
     const phase = LG.phase;
-    return phase === "lobby" ? [["players", "Players"], ["board", "Board"], ["queue", "My queue"]]
-      : phase === "nba" ? [["players", "Players"], ["board", "Board"], ["picks", "Picks"], ["mine", "My team"], ["queue", "My queue"]]
-        : [["prospects", "Prospect Board"], ["board", "Draft results"], ["picks", "Every pick"], ["mine", "My team"]];
+    return phase === "lobby" ? [["players", "Players"], ["board", "Board"], ["queue", "My queue"], ["details", "Draft details"]]
+      : phase === "nba" ? [["players", "Players"], ["board", "Board"], ["picks", "Picks"], ["mine", "My team"], ["queue", "My queue"], ["details", "Draft details"]]
+        : [["prospects", "Prospect Board"], ["board", "Draft results"], ["picks", "Every pick"], ["mine", "My team"], ["details", "Draft details"]];
   }
   function viewDraft(arg) {
     const phase = LG.phase;
@@ -990,7 +993,7 @@
         ${mineOnClock ? `<button class="btn go" data-autome>Autopick</button>` : ""}</div></div>`
       : phase === "lobby" ? `<div class="clock"><div class="wrap"><div><div class="disp on">Draft day prep</div><div class="ps">${LG.settings.draftMode === "slow" ? `Slow draft: ${LG.settings.slowHours} hours a pick.` : `Live draft: ${LG.settings.clock} seconds a pick.`} Build your queue now; it picks for you if your clock runs out.</div></div></div></div>`
         : `<div class="clock"><div class="wrap"><div><div class="disp on">${phase === "prospects" ? "Prospect Board auction" : "Draft results"}</div><div class="ps">${phase === "prospects" ? `Sealed bids from your season FAAB. Closes ${fmtWhen(LG.due.auction)}.` : `Completed ${fmtDate(LG.nba.done || now())}.`}</div></div></div></div>`;
-    const body = { players: draftPlayers, board: draftBoard, picks: draftPicks, mine: draftMine, queue: draftQueue, prospects: draftProspects }[ui.sub]();
+    const body = { players: draftPlayers, board: draftBoard, picks: draftPicks, mine: draftMine, queue: draftQueue, prospects: draftProspects, details: () => `<div style="overflow:auto;max-width:760px">${draftInfoCard()}</div>` }[ui.sub]();
     return `${clock}<div class="wrap room-shell" id="room"><div class="pane">${body}</div></div>`;
   }
   let ghost = null;
@@ -1078,12 +1081,12 @@
     return `<div class="tools"><p class="muted small" style="margin:0;flex:1">${t ? `Enter a sealed bid on anyone you want. You can win up to ${LG.settings.prospects}; bids come out of your $${t.faab} season FAAB. Your bids total $${total}.` : "Claim a team to bid."}</p>
       ${t ? `<button class="btn go" data-savebids>Save my bids</button>` : ""}</div>
       <div class="table-wrap"><table class="t"><thead><tr><th class="r">Board</th><th>Prospect</th><th>School</th><th class="r">Age</th><th class="r">Your bid</th></tr></thead><tbody>
-      ${PROS.slice(0, 80).map((p) => `<tr><td class="r num ps">${p.rank}</td><td><div class="pn">${esc(p.n)} ${moveTagP(p)}</div><div class="ps">${esc(p.posFull || p.pos)}</div></td><td>${esc(p.school)}</td><td class="r num">${ageOf(p)}</td>
+      ${PROS.slice(0, 80).map((p) => `<tr><td class="r num ps">${p.off ? "-" : p.rank}</td><td><div class="pn">${esc(p.n)} ${moveTagP(p)}</div><div class="ps">${esc(p.posFull || p.pos)}</div></td><td>${esc(p.school)}</td><td class="r num">${ageOf(p)}</td>
         <td class="r">${t ? `<input type="number" min="0" max="${t.faab}" step="1" data-abid="${p.id}" value="${bidOf(p.id)}" style="width:86px;text-align:right" aria-label="Bid on ${esc(p.n)}">` : ""}</td></tr>`).join("")}</tbody></table></div>`;
   }
 
   /* ---------- Commissioner ---------- */
-  function viewCommish() {
+  function viewCommish(sub) {
     if (!me.commish) {
       return `<div class="head"><h1 class="disp">Commissioner</h1></div><form class="card form" id="cform" style="max-width:420px"><p class="muted small" style="margin:0">Enter the commissioner PIN to manage the league.</p>
         <div class="field"><label for="cpin">Commissioner PIN</label><input type="password" id="cpin" name="pin" inputmode="numeric" required></div><div><button class="btn go" type="submit">Unlock tools</button></div></form>`;
@@ -1091,9 +1094,10 @@
     const s = LG.settings, p = LG.phase;
     const link = location.origin + location.pathname + "?l=" + LID;
     const tiersEditable = s.tiers.map((t, k) => `<div class="field"><label for="tier${k}">${esc(t.label)} add-on ($)</label><input type="number" id="tier${k}" name="tier${k}" min="0" value="${t.add}" ${k === 0 ? "disabled" : ""}></div>`).join("");
-    return `<div class="head"><h1 class="disp">Commissioner</h1><span class="grow"></span><button class="btn" data-act="copy" data-text="${esc(link)}">Copy invite link</button></div>
-      <div class="cols2">
-        <form class="card form" id="settings"><h3>League settings</h3>
+    const head = (t) => `<div class="head"><h1 class="disp">${t}</h1><span class="grow"></span><button class="btn" data-act="copy" data-text="${esc(link)}">Copy invite link</button></div>`;
+    const sec = {};
+    sec.settings = () => `${head("League settings")}<div class="cols2">
+        <form class="card form" id="settings"><h3>Money, rosters and the season</h3>
           <div class="field"><label for="sname">League name</label><input type="text" id="sname" name="name" maxlength="40" value="${esc(LG.name)}"></div>
           <div class="row2"><div class="field"><label for="sbuy">Buy-in ($)</label><input type="number" id="sbuy" name="buyIn" min="0" value="${s.buyIn}"></div>
           <div class="field"><label for="sfaab">Season FAAB ($)</label><input type="number" id="sfaab" name="faab" min="1" value="${s.faab}" ${p === "lobby" ? "" : "disabled"}></div></div>
@@ -1103,13 +1107,20 @@
           <div class="row2"><div class="field"><label for="stdl">Trade deadline: end of week</label><input type="number" id="stdl" name="tradeDeadline" min="1" max="${s.regWeeks}" value="${s.tradeDeadline}"></div>
           <div class="field"><label for="sirs">IR spots</label><input type="number" id="sirs" name="irSlots" min="0" max="4" value="${s.irSlots}"></div></div>
           <div class="row2"><div class="field"><label for="spay">Payout split, %</label><input type="text" id="spay" name="payout" value="${s.payout.join(" / ")}"></div>
-          <div class="field"><label for="sveto">Veto window (hours)</label><input type="number" id="sveto" name="vetoHours" min="0" max="168" value="${s.vetoHours}"></div></div>
+          <div class="field"><label for="sveto">Commissioner veto window (hours)</label><input type="number" id="sveto" name="vetoHours" min="0" max="168" value="${s.vetoHours}"></div></div>
           <div class="row2"><div class="field"><label for="smin">Summer budget, best team ($)</label><input type="number" id="smin" name="summerMin" min="1" value="${s.summerMin}"></div>
           <div class="field"><label for="smax">Summer budget, worst team ($)</label><input type="number" id="smax" name="summerMax" min="1" value="${s.summerMax}"></div></div>
           <div class="field"><label for="scomp">Bonus for letting an expiring player walk ($)</label><input type="number" id="scomp" name="compDollars" min="0" value="${s.compDollars}"></div>
+          <div class="row2"><div class="field"><label for="srev">Trade review</label><select id="srev" name="tradeReview">${[["vote", "League vote"], ["commish", "Commissioner veto"], ["none", "No review"]].map(([k, n]) => `<option value="${k}"${(s.tradeReview || "commish") === k ? " selected" : ""}>${n}</option>`).join("")}</select></div>
+          <div class="field"><label for="srevh">League review window (hours)</label><input type="number" id="srevh" name="reviewHours" min="1" max="168" value="${s.reviewHours || 48}"></div></div>
+          <div class="row2"><div class="field"><label for="sshare">Vetoes needed, share of other managers (%)</label><input type="number" id="sshare" name="vetoShare" min="1" max="100" value="${Math.round((s.vetoShare || 0.5) * 100)}"></div>
+          <div class="field"><label for="sgrace">Time to get back under the line (hours, at least)</label><input type="number" id="sgrace" name="lineGraceHours" min="0" max="336" value="${s.lineGraceHours || 72}"></div></div>
+          <div class="field"><label for="svorp">VORP as a scoring category</label><select id="svorp" name="vorpCat"><option value="1"${s.vorpCat !== false ? " selected" : ""}>Yes, ten categories</option><option value="0"${s.vorpCat === false ? " selected" : ""}>No, the classic nine</option></select></div>
           <div class="field"><label for="sirr">Who can go on IR</label><select id="sirr" name="irRule"><option value="out"${s.irRule === "out" ? " selected" : ""}>Only players ESPN lists as Out</option><option value="any"${s.irRule === "any" ? " selected" : ""}>Anyone (commissioner polices it)</option></select></div>
           <p class="ps" style="margin:0">The real NBA deadline is Feb. 11, 2027; week ${H.weekOf(opener, new Date("2027-02-21T12:00:00"))} ends Feb. 21, ten days later. Week 1 backfills every week already played from real box scores, which is handy for testing. A real league should start the week after the draft.</p>
           <div><button class="btn go" type="submit">Save settings</button></div></form>
+        <section class="card"><h3>What each setting does</h3><div style="max-height:70vh;overflow:auto">${rulesList(LG)}</div></section></div>`;
+    sec.draft = () => `${head("Draft")}<div class="cols2">
         <form class="card form" id="draftset"><h3>Draft</h3>
           <div class="field"><span class="lbl">Type</span><div class="seg" role="group">${[["live", "Live"], ["slow", "Slow"]].map(([k, n]) => `<button type="button" data-dmode="${k}" aria-pressed="${s.draftMode === k}">${n}</button>`).join("")}</div></div>
           <div class="row2"><div class="field"><label for="dclock">Live clock (seconds)</label><input type="number" id="dclock" name="clock" min="15" max="600" value="${s.clock}"></div>
@@ -1121,18 +1132,45 @@
             ${p === "nba" ? `<button class="btn" type="button" data-pause="${LG.nba.paused ? 0 : 1}">${LG.nba.paused ? "Resume" : "Pause"}</button><button class="btn warn" type="button" data-undo>Undo last pick</button>` : ""}
             ${p === "prospects" ? `<button class="btn warn" type="button" data-undo>Undo last pick</button><button class="btn go" type="button" data-closeauction>Close the auction now</button>` : ""}</div>
           <div><div class="lbl" style="margin:6px 0">First-round order</div><ol style="margin:0;padding-left:22px">${LG.nba.round1.map((id, i) => `<li>${esc(LG.teams[id].name)}${p === "lobby" && i ? ` <button class="btn sm" type="button" data-ordup="${i}">Up</button>` : ""}</li>`).join("")}</ol></div></form>
-      </div>
+        ${draftInfoCard()}</div>`;
+    sec.teams = () => `${head("Teams and managers")}
       <section class="card"><h3>Teams and managers</h3><div class="table-wrap" style="border:0"><table class="t"><thead><tr><th>Team</th><th>Manager</th><th>Tier</th><th class="r">FAAB</th><th></th></tr></thead><tbody>
         ${LG.teams.map((t) => `<tr><td><input type="text" data-tname="${t.id}" value="${esc(t.name)}" maxlength="28" aria-label="Team name"></td><td>${t.owner ? esc(t.owner) : `<span class="muted">Open (bot)</span>`}</td>
           <td><select data-ttier="${t.id}" aria-label="Tier">${s.tiers.map((x, k) => `<option value="${k}"${(t.tier || 0) === k ? " selected" : ""}>${esc(x.label)}</option>`).join("")}</select></td>
           <td class="r"><input type="number" data-tfaab="${t.id}" value="${t.faab}" min="0" style="width:80px;text-align:right" aria-label="FAAB"></td>
           <td class="r" style="white-space:nowrap"><button class="btn sm" data-tsave="${t.id}">Save</button> ${t.owner ? `<button class="btn sm warn" data-unclaim="${t.id}">Open team</button>` : ""}</td></tr>`).join("")}</tbody></table></div>
-        <p class="ps" style="margin-bottom:0">Opening a team removes its manager and PIN so someone else can claim it; the roster stays. The tier menu is for corrections; managers can only move themselves up.</p></section>
-      <section class="card"><h3>Contracts the cap sheet doesn't have yet</h3>
-        <p class="ps" style="margin-top:0">Players on a real NBA roster with no salary on file: new signings, waived players who caught on, two-way deals (leave those alone; two-ways aren't eligible). Add a contract and he joins this league's free agent pool at that salary.</p>
+        <p class="ps" style="margin-bottom:0">Opening a team removes its manager and PIN so someone else can claim it; the roster stays. The tier menu is for corrections; managers can only move themselves up.</p></section>`;
+    sec.contracts = () => `${head("Contracts")}${contractStatus()}
+      <section class="card"><h3>Override a contract for this league</h3>
+        <p class="ps" style="margin-top:0">Contracts update every day from Basketball-Reference, and two-way and 10-day players come in at their real salaries, so this list should stay short. Use it for a signing neither feed has yet: add a contract and he joins this league's free agent pool at that salary.</p>
         ${missingContracts()}
-        ${Object.keys(LG.contracts || {}).length ? `<h3 style="margin-top:12px">Added by you</h3><ul class="list">${Object.entries(LG.contracts).map(([id, c]) => `<li><span>${esc(c.n)}, ${esc(c.t)}: ${c.sal.filter(Boolean).map(money).join(", ")}</span><span class="grow"></span><button class="btn sm" data-uncontract="${esc(id)}">Remove</button></li>`).join("")}</ul>` : ""}</section>
-      ${p === "league" ? `<section class="card"><h3>Waivers</h3><p class="ps" style="margin-top:0">Next automatic run: ${fmtWhen(LG.due.waiver || H.nextWaiverRun(now()))}. Running now opens every sealed bid; signings count next week.</p><button class="btn" data-runwaivers>Run waivers now</button></section>` : ""}`;
+        ${Object.keys(LG.contracts || {}).length ? `<h3 style="margin-top:12px">Added by you</h3><ul class="list">${Object.entries(LG.contracts).map(([id, c]) => `<li><span>${esc(c.n)}, ${esc(c.t)}: ${c.sal.filter(Boolean).map(money).join(", ")}</span><span class="grow"></span><button class="btn sm" data-uncontract="${esc(id)}">Remove</button></li>`).join("")}</ul>` : ""}</section>`;
+    sec.tools = () => `${head("Tools")}<div class="cols2">
+      <section class="card"><h3>Invite managers</h3><p class="ps" style="margin-top:0">Send this link. Each manager picks an open team and sets a PIN; ${LG.teams.filter((t) => !t.owner).length} of ${LG.teams.length} teams are still open.</p><div class="tools"><input type="text" readonly value="${esc(link)}" aria-label="Invite link"><button class="btn go" data-act="copy" data-text="${esc(link)}">Copy</button></div></section>
+      ${p === "league" ? `<section class="card"><h3>Waivers</h3><p class="ps" style="margin-top:0">Next automatic run: ${fmtWhen(LG.due.waiver || H.nextWaiverRun(now()))}. Running now opens every sealed bid; signings count next week.</p><button class="btn" data-runwaivers>Run waivers now</button></section>` : ""}
+      ${p === "prospects" ? `<section class="card"><h3>Prospect Board auction</h3><p class="ps" style="margin-top:0">Closes on its own ${fmtWhen(LG.due.auction)}.</p><button class="btn go" type="button" data-closeauction>Close the auction now</button></section>` : ""}
+      <section class="card"><h3>Server clock</h3><p class="ps" style="margin:0">Draft clocks, autopicks, the auction, waivers, lineup locks, trade reviews and the line check all run on the server every minute, whether or not anyone has the site open.</p></section></div>`;
+    return (sec[sub] || sec.settings)();
+  }
+  // How the feeds landed: standard contracts, two-ways and anyone held for a mismatch.
+  function contractStatus() {
+    const r = NBA.contractReport || {};
+    const tw = POOL.filter((p) => p.deal), held = POOL.filter((p) => p.limbo);
+    return `<section class="card"><h3>Where contracts come from</h3><dl class="kv">
+      <dt>Standard contracts</dt><dd>${STATS.contractsUpdated ? `Basketball-Reference, updated ${fmtWhen(STATS.contractsUpdated)}` : "The cap sheet"}${r.updated ? `, ${r.updated} changed from the cap sheet` : ""}</dd>
+      <dt>Two-way and 10-day</dt><dd>${tw.length} players at their real salaries</dd>
+      <dt>Held</dt><dd>${held.length ? held.map((p) => esc(p.n)).join(", ") + ": listed under another team, so they can't be signed until the feeds agree" : "Nobody"}</dd></dl></section>`;
+  }
+  // The draft's shape at a glance, on the Draft tab for everyone and in the commissioner's draft settings.
+  function draftInfoCard() {
+    const s = LG.settings, n = LG.teams.length;
+    const st = LG.phase === "lobby" ? "Not started" : LG.phase === "nba" ? (LG.nba.paused ? "Paused" : "In progress") : `Done ${fmtDate(LG.nba.done || now())}`;
+    return `<section class="card"><h3>Draft details</h3><dl class="kv">
+      <dt>Status</dt><dd>${st}</dd><dt>Format</dt><dd>Snake, ${s.roster} rounds, ${n * s.roster} picks</dd>
+      <dt>Clock</dt><dd>${s.draftMode === "slow" ? `Slow, ${s.slowHours} hours a pick` : `Live, ${s.clock} seconds a pick`}; your queue picks if it runs out</dd>
+      <dt>Rule</dt><dd>A pick only counts if you can still fill every open spot at the cheapest salaries left</dd>
+      <dt>Then</dt><dd>Prospect Board auction for ${s.prospects} spots, ${s.auctionHours} hours, out of your $${s.faab} season FAAB</dd></dl>
+      <div class="lbl" style="margin:10px 0 4px">First-round order</div><ol style="margin:0;padding-left:22px;columns:2">${LG.nba.round1.map((id) => `<li${isMine(LG.teams[id]) ? ' style="font-weight:800"' : ""}>${esc(LG.teams[id].name)}</li>`).join("")}</ol></section>`;
   }
 
   function missingContracts() {
@@ -1244,6 +1282,11 @@
         if (pay.length && pay.reduce((a, b) => a + b, 0) !== 100) return { ok: false, why: "The payout split has to add up to 100%" };
         if (pay.length) L.settings.payout = pay;
         L.settings.vetoHours = Math.max(0, Math.min(168, Math.floor(+fd.get("vetoHours") || 0)));
+        const rv = String(fd.get("tradeReview") || ""); if (["vote", "commish", "none"].includes(rv)) L.settings.tradeReview = rv;
+        L.settings.reviewHours = Math.max(1, Math.min(168, Math.floor(+fd.get("reviewHours") || 48)));
+        L.settings.vetoShare = Math.max(0.01, Math.min(1, (+fd.get("vetoShare") || 50) / 100));
+        L.settings.lineGraceHours = Math.max(0, Math.min(336, Math.floor(+fd.get("lineGraceHours") || 72)));
+        L.settings.vorpCat = fd.get("vorpCat") !== "0";
         L.settings.summerMin = Math.max(1, Math.floor(+fd.get("summerMin") || 50));
         L.settings.summerMax = Math.max(L.settings.summerMin, Math.floor(+fd.get("summerMax") || 100));
         L.settings.compDollars = Math.max(0, Math.floor(+fd.get("compDollars") || 0));
@@ -1376,7 +1419,7 @@
     const room = r.tab === "draft";
     document.body.classList.toggle("room", room);
     if (room) document.documentElement.style.setProperty("--top", ($("#mast").getBoundingClientRect().bottom + 2 + (LG.phase !== "league" ? 0 : 0)) + "px");
-    const views = { league: () => viewLeague(r.sub), team: () => viewTeam(r.sub, r.arg), players: () => viewMarket(r.sub), matchups: () => viewMatchups(r.sub), draft: () => viewDraft(r.sub), commish: viewCommish };
+    const views = { league: () => viewLeague(r.sub), team: () => viewTeam(r.sub, r.arg), players: () => viewMarket(r.sub), matchups: () => viewMatchups(r.sub), draft: () => viewDraft(r.sub), commish: () => viewCommish(r.sub) };
     const html = views[r.tab]();
     app.innerHTML = room ? html : `<div class="wrap page">${html}</div><div class="wrap foot">Hard Cap. Draft the player. Carry the contract. Salaries from the 2026-27 cap sheet; box scores from ESPN${STATS.updated ? `, updated ${fmtDate(STATS.updated)}` : ""}. League code ${esc(LID)}.</div>`;
     if (room) {
