@@ -206,6 +206,14 @@
         setScale = setP.reduce(function (a, p) { return a + projOf(p); }, 0);
       } else if (o.proj === "yahoo" && yahooSet != null && sleeperSet != null) {
         shift = yahooSet - sleeperSet;
+      } else if (!o.pregame && sleeperSet != null) {
+        // During live scoring, Yahoo's team projection can stay close to its pregame total even after
+        // most starters are final. Using it as the remaining expectation can wildly inflate the one or
+        // two players left (for example, turning a TE projection into 40+ points). Default to banked
+        // Yahoo actuals plus Sleeper projections for only the starters still to play. The explicit
+        // "yahoo" projection-source option above still lets the user force Yahoo if desired.
+        yProj = sleeperSet;
+        setScale = setP.reduce(function (a, p) { return a + projOf(p); }, 0);
       }
       var hasProj = typeof yProj === "number" && yProj > 0;
       var A = hasProj ? thisWeek(t, yProj, o, null, setScale) : null;
