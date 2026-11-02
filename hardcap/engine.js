@@ -1319,7 +1319,7 @@
       if (pc > L.settings.prospects) return `${team.name} would have ${pc} prospects`;
       const pay = payroll(team, ctx.byId) - sum(outAct.map((x) => ctx.byId[x].sal)) + sum(nb(inn).map((x) => ctx.byId[x].sal));
       // A team already over its line (a real-world raise) may make any deal that cuts its payroll.
-      if (pay > ceilingOf(L, team) && !(before > ceilingOf(L, team) && pay < before)) return `${team.name} would be ${money(pay - ceilingOf(L, team))} over its ${money(ceilingOf(L, team))} line`;
+      if (pay > ceilingOf(L, team) && !(before > ceilingOf(L, team) && pay < before)) return `${team.name} would be ${money(pay - ceilingOf(L, team))} over its ${money(ceilingOf(L, team))} ${isSoft(L) ? "ceiling" : "line"}`;
       return null;
     };
     const fg = t.faabGive || 0, ft = t.faabGet || 0;
@@ -1445,7 +1445,7 @@
         let w = week, dl = lockTime(opener, w);
         while (dl < now + L.settings.lineGraceHours * HOUR) dl = lockTime(opener, ++w);
         t.overDeadline = dl;
-        log(L, now, "line", t.id, `${t.name} is ${money(over)} over its ${money(ceilingOf(L, t))} line after a real salary change. It has until ${new Date(dl).toISOString().slice(0, 10)} to get back under`);
+        log(L, now, "line", t.id, `${t.name} is ${money(over)} over its ${money(ceilingOf(L, t))} ${isSoft(L) ? "ceiling" : "line"} after a real salary change. It has until ${new Date(dl).toISOString().slice(0, 10)} to get back under`);
         changed++;
         continue;
       }
@@ -1454,7 +1454,7 @@
       while (payroll(t, byId) > ceilingOf(L, t) && cut.length) {
         const p = cut.shift();
         dropPlayer(L, pool, t.id, p.id, week, now);
-        L.log[L.log.length - 1].text = `${t.name} was still over its line at the deadline, so ${p.n} (${money(p.sal)}) was released`;
+        L.log[L.log.length - 1].text = `${t.name} was still over its ${isSoft(L) ? "ceiling" : "line"} at the deadline, so ${p.n} (${money(p.sal)}) was released`;
         L.log[L.log.length - 1].kind = "line";
       }
       delete t.overSince; delete t.overDeadline;
