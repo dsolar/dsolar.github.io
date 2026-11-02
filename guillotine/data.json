@@ -4,7 +4,7 @@
  "week": 8,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-02T05:51:11Z",
+ "updated": "2026-11-02T13:57:41Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -12,7 +12,7 @@
    "mine": true,
    "manager": "David S",
    "faab": 235,
-   "proj": 144.91,
+   "proj": 144.79,
    "points": 144.56,
    "scores": [
     137.26,
@@ -582,7 +582,7 @@
    "name": "Drake Mayezini",
    "manager": "Scott",
    "faab": 349,
-   "proj": 139.3,
+   "proj": 138.52,
    "points": 125.34,
    "scores": [
     95.18,
@@ -1101,7 +1101,7 @@
    "name": "Love a Kittle Lamb & WhiteRice",
    "manager": "Daid B",
    "faab": 397,
-   "proj": 133.69,
+   "proj": 133.78,
    "points": 134.7,
    "scores": [
     135.46,
@@ -1604,7 +1604,7 @@
    "name": "Tai Streetz Lata?",
    "manager": "JeffS",
    "faab": 215,
-   "proj": 129.25,
+   "proj": 129.18,
    "points": 131.08,
    "scores": [
     111.28,
@@ -2161,7 +2161,7 @@
    "name": "A Warren Boston",
    "manager": "Noah M",
    "faab": 204,
-   "proj": 128.66,
+   "proj": 128.75,
    "points": 112.24,
    "scores": [
     132.74,
@@ -2717,7 +2717,7 @@
    "name": "Deviated Rectums",
    "manager": "-- hidden --",
    "faab": 207,
-   "proj": 127.6,
+   "proj": 127.5,
    "points": 83.74,
    "scores": [
     143.54,
@@ -3242,7 +3242,7 @@
    "name": "Love Purdy Flowers",
    "manager": "Nate",
    "faab": 252,
-   "proj": 121.5,
+   "proj": 121.54,
    "points": 97.56,
    "scores": [
     134.08,
@@ -3768,7 +3768,7 @@
    "name": "Braelon’s Pieces",
    "manager": "Garhett",
    "faab": 1,
-   "proj": 112.32,
+   "proj": 112.48,
    "points": 56.8,
    "scores": [
     134.5,
@@ -5331,7 +5331,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-02T05:51:12Z",
+  "updated": "2026-11-02T13:57:43Z",
   "players": 3045,
   "unmatched": []
  }
