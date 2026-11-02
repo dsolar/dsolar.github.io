@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Pull NBA box scores and season lines from ESPN's public API into prospect/stats.json for Prospect.
+"""Pull NBA box scores and season lines from ESPN's public API into hardcap/stats.json for Hard Cap.
 
-Prospect (prospect/) is the salary-cap dynasty league. It needs two things the Banner 19 feed doesn't carry:
+Hard Cap (hardcap/) is the salary-cap dynasty league. It needs two things the Banner 19 feed doesn't carry:
   wk    every player's totals for each fantasy week (nine categories plus Game Score inputs),
         built game by game from ESPN box scores. Each final game is added once and remembered by id.
   avg   per-game lines with field goals and free throws made, for 2025-26 (fetched once) and this season,
@@ -9,8 +9,8 @@ Prospect (prospect/) is the salary-cap dynasty league. It needs two things the B
 
 Weeks: week 1 runs from opening night through the first Sunday; every week after is Monday to Sunday.
 
-Run by .github/workflows/prospect-stats.yml every morning during the season, or locally:
-  python tools/prospect_pull.py
+Run by .github/workflows/hardcap-stats.yml every morning during the season, or locally:
+  python tools/hardcap_pull.py
 
 Standard library only. If ESPN returns nothing usable, the existing file is left as it was.
 """
@@ -23,8 +23,8 @@ import urllib.request
 from datetime import date, datetime, timedelta, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(ROOT, "prospect", "stats.json")
-UA = "davidsolar-prospect/1.0 (+https://davidsolar.dev/prospect/)"
+OUT = os.path.join(ROOT, "hardcap", "stats.json")
+UA = "davidsolar-hardcap/1.0 (+https://davidsolar.dev/hardcap/)"
 # ESPN refuses some hosts from some networks, so each call tries these in order and sticks with the first that answers.
 BOARD = ["https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?region=us&lang=en&contentorigin=espn&dates={d}&limit=40",
          "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates={d}&limit=40",
@@ -35,6 +35,9 @@ SUMMARY = ["https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/sum
 STATS = ("https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/statistics/byathlete"
          "?region=us&lang=en&contentorigin=espn&isqualified=false&limit=250&page={page}"
          "&sort=general.avgMinutes:desc&season={season}&seasontype=2")
+INJURIES = ["https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/injuries?region=us&lang=en&contentorigin=espn",
+            "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/injuries",
+            "https://cdn.espn.com/core/nba/injuries?xhr=1"]
 TEAM = {"GS": "GSW", "NY": "NYK", "SA": "SAS", "NO": "NOP", "UTAH": "UTA", "WSH": "WAS", "BKN": "BRK", "CHA": "CHO",
         "PHX": "PHO"}
 # Order of the numbers in every weekly line and every per-game line.
@@ -172,6 +175,26 @@ def pull_avg(season, notes):
     return out
 
 
+def pull_injuries(notes):
+    """{slug: [status, short note, date]} from ESPN's league injury report. Hard Cap's IR takes players listed Out."""
+    d = get_any(INJURIES, notes, "injuries")
+    if d is None:
+        return None
+    teams = d.get("injuries") or (d.get("content") or {}).get("injuries") or []
+    out = {}
+    for team in teams:
+        for row in team.get("injuries", []):
+            a = row.get("athlete", {})
+            pid = slug(a.get("displayName"))
+            if not pid:
+                continue
+            note = row.get("shortComment") or ((row.get("details") or {}).get("type") or "")
+            out[pid] = [row.get("status") or (row.get("type") or {}).get("description") or "", str(note)[:140], (row.get("date") or "")[:10]]
+    if not out:
+        notes.append(f"injuries: no rows; top-level keys {sorted(d.keys())[:12]}")
+    return out
+
+
 def main():
     today = et_today()
     end = season_end_year(today)
@@ -194,6 +217,11 @@ def main():
                 data["avg"][str(yr)] = lines
         except Exception as e:
             notes.append(f"avg {yr}: {type(e).__name__}: {e}"[:200])
+
+    inj = pull_injuries(notes)
+    if inj is not None:
+        data["inj"] = inj
+        data["injUpdated"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     # Box scores, day by day: from the opener (or two days before the last day already counted) to today.
     start = date(end - 1, 10, 14)

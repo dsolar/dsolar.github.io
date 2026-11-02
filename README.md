@@ -52,11 +52,14 @@ dsolar.github.io/
                               train.js (daily five, Puzzle Rush, lessons), puzzles.js (5,000 Lichess puzzles, CC0),
                               pieces.js (piece art),
                               chess.js (rules) and stockfish.* (the engine, runs in the visitor's browser). Plain files.
-  prospect/                   Prospect, the salary-cap dynasty league (unlisted while it's in testing): index.html
-                              (layout, styles), app.js (setup, draft rooms, league home), engine.js (cap ceiling,
-                              drafts, bots, FAAB waivers, nine-category weeks, Game Score) and stats.json (ESPN box
-                              scores by week, written by the Prospect stats workflow; don't edit). Players and salaries
-                              come from Banner 19's celtics/data.json. Tests: node --test tests/prospect.test.mjs
+  hardcap/                    Hard Cap, the salary-cap dynasty basketball league (unlisted while it's in testing):
+                              index.html (layout, styles), app.js (League Office, Cap Sheet, Player Market, Matchup
+                              Center, Transactions, Draft Room, Commissioner), engine.js (every rule: tiers, the line,
+                              drafts, lineups, IR, FAAB, trades, scoring), mark.svg (the HC logo), stats.json (ESPN box
+                              scores, season lines and injuries) and yahoo.json (Yahoo's NBA ranks), both written by the
+                              Hard Cap stats workflow; don't edit them. Leagues live in Supabase (tools/hardcap_supabase.sql).
+                              Players and salaries come from Banner 19's celtics/data.json. Tests: node --test tests/hardcap.test.mjs
+  prospect/                   old address of Hard Cap; forwards to hardcap/
   guillotine/                 Bastille Day Odds: index.html, sim.js (the simulation),
                               data.json (league data, written by the workflow below)
   calendar/                   Night Out: index.html, taste.json, picks.json and places.json (edit these),

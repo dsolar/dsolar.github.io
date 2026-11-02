@@ -1,0 +1,58 @@
+# Pulls NBA box scores and season lines from ESPN into hardcap/stats.json for Hard Cap, the dynasty league.
+# Runs every morning and late afternoon from October through June (box scores, then a fresh injury report),
+# when the script or this file changes, or by hand.
+name: Hard Cap stats
+
+on:
+  schedule:
+    - cron: "41 10 * 10-12,1-6 *"
+    - cron: "11 21 * 10-12,1-6 *"
+  push:
+    branches: [main]
+    paths:
+      - tools/hardcap_pull.py
+      - tools/hardcap_yahoo.py
+      - .github/workflows/hardcap-stats.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: hardcap-stats
+  cancel-in-progress: false
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set the bot's git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Pull box scores and season lines from ESPN
+        run: python3 tools/hardcap_pull.py
+
+      - name: Pull Yahoo's NBA rankings
+        continue-on-error: true
+        env:
+          YAHOO_CLIENT_ID: ${{ secrets.YAHOO_CLIENT_ID }}
+          YAHOO_CLIENT_SECRET: ${{ secrets.YAHOO_CLIENT_SECRET }}
+          YAHOO_REFRESH_TOKEN: ${{ secrets.YAHOO_REFRESH_TOKEN }}
+        run: python3 tools/hardcap_yahoo.py
+
+      - name: Commit the stats
+        run: |
+          git add hardcap/stats.json
+          if [ -f hardcap/yahoo.json ]; then git add hardcap/yahoo.json; fi
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+            exit 0
+          fi
+          git commit -m "Update Hard Cap stats"
+          git pull --rebase -q
+          git push
