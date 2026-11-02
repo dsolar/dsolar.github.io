@@ -40,6 +40,8 @@ INJURIES = ["https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/in
             "https://cdn.espn.com/core/nba/injuries?xhr=1"]
 ROSTER = ["https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/teams/{id}/roster?region=us&lang=en&contentorigin=espn",
           "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/{id}/roster"]
+SCHEDULE = ["https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/teams/{id}/schedule?season={season}&seasontype=2&region=us&lang=en&contentorigin=espn",
+            "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/{id}/schedule?season={season}&seasontype=2"]
 BBREF = "https://www.basketball-reference.com/leagues/NBA_{season}_advanced.html"
 TEAM = {"GS": "GSW", "NY": "NYK", "SA": "SAS", "NO": "NOP", "UTAH": "UTA", "WSH": "WAS", "BKN": "BRK", "CHA": "CHO",
         "PHX": "PHO"}
@@ -220,6 +222,29 @@ def pull_rosters(notes):
     return out, teams
 
 
+def pull_schedule(season, notes):
+    """{team: [game dates, Eastern]} for the regular season, so lineups can show games this week."""
+    from zoneinfo import ZoneInfo
+    et = ZoneInfo("America/New_York")
+    out = {}
+    for tid in range(1, 31):
+        d = get_any(SCHEDULE, notes, f"schedule {tid}", id=tid, season=season)
+        if not d:
+            continue
+        ab = (d.get("team") or {}).get("abbreviation", "")
+        ab = TEAM.get(ab, ab)
+        days = set()
+        for ev in d.get("events") or []:
+            try:
+                t = datetime.fromisoformat(ev["date"].replace("Z", "+00:00")).astimezone(et)
+            except (KeyError, ValueError):
+                continue
+            days.add(t.date().isoformat())
+        if ab and days:
+            out[ab] = sorted(days)
+    return out
+
+
 def pull_vorp(season, notes):
     """{slug: [vorp, bpm, games]} from Basketball-Reference's advanced table. One page a day, well inside its limits.
     A traded player's season total row comes first, so the first row per player wins."""
@@ -343,6 +368,13 @@ def main():
     if contracts:
         data["contracts"] = contracts
         data["contractsUpdated"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+    # The schedule changes rarely (postponements); once a day is plenty.
+    if data.get("schedDay") != today.isoformat() or len(data.get("sched") or {}) < 30:
+        sched = pull_schedule(end, notes)
+        if len(sched) >= 25:
+            data["sched"] = {**(data.get("sched") or {}), **sched}
+            data["schedDay"] = today.isoformat()
 
     rosters, teams = pull_rosters(notes)
     if teams:

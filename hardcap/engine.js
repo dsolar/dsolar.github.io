@@ -832,6 +832,14 @@
     const mon = new Date(o); mon.setDate(o.getDate() - ((o.getDay() + 6) % 7));
     return [weekStart(opener, w), new Date(mon.getTime() + ((w - 1) * 7 + 6) * 864e5)];
   }
+  // NBA games a team plays in a fantasy week (stats.sched: team -> Eastern game dates).
+  const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  function gamesInWeek(stats, team, opener, w) {
+    const days = stats && stats.sched && stats.sched[team];
+    if (!days) return null;
+    const [a, b] = weekDates(opener, w), lo = ymd(a), hi = ymd(b);
+    return days.filter((d) => d >= lo && d <= hi).length;
+  }
   function weekOf(opener, day) {
     const o = new Date(opener + "T12:00:00");
     const mon = new Date(o); mon.setDate(o.getDate() - ((o.getDay() + 6) % 7));
@@ -1264,7 +1272,7 @@
   }
 
   const E = {
-    latestContracts, isTwoWay, twoWaysOn, CATS, VORP_CAT, catsFor, withVorp, voteTrade, finalizeTrades, applyTrade, voters, vetoesNeeded, enforceLine, contractType,
+    latestContracts, gamesInWeek, isTwoWay, twoWaysOn, CATS, VORP_CAT, catsFor, withVorp, voteTrade, finalizeTrades, applyTrade, voters, vetoesNeeded, enforceLine, contractType,
     COLS, C, DEFAULTS, HOUR, totalWeeks, rosterIndex, onNbaRoster, mergeContracts, releaseGone, SLOTS, ELIG, positions, eligible, isOut, rostered, irProblem, moveToIR, activateIR,
     autoLineup, lockTime, lineupFor, setLineup, lockLineups, defaultTiers, rng, money, isProspect, buildPool, buildProspects, rankNineCat, newLeague,
     snake, snakeFrom, setOrder, roundRobin, tierOf, ceilingOf, owed, pot, upgradeTier, active, payroll, owners, context, reserve,

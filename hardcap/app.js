@@ -51,7 +51,11 @@
     BY = Object.fromEntries(POOL.map((p) => [p.id, p]));
   }
   const opener = STATS.opener || "2026-10-20";
-  const WK = H.withVorp(STATS);                     // weekly lines, with each player's VORP gained that week
+  const WK = H.withVorp(STATS);
+  // Games this week for a player's NBA team (the week a lineup edit applies to, or the current week).
+  const gw = (p, w) => { if (!p || !STATS.sched) return null; const n = H.gamesInWeek(STATS, p.t, opener, w || gwWeek()); return n; };
+  const gwWeek = () => (LG && LG.phase === "league" ? (now() < H.lockTime(opener, curWeek()) ? curWeek() : Math.min(curWeek() + 1, H.totalWeeks(LG))) : curWeek());
+  const gCell = (p, w) => { const n = gw(p, w); return `<td class="r num${n >= 4 ? " ok" : n != null && n <= 2 ? " bad" : ""}" title="NBA games in week ${w || gwWeek()}">${n == null ? "-" : n}</td>`; };                     // weekly lines, with each player's VORP gained that week
   const INJ = STATS.inj || {};
   const moveTag = (id) => { const p = BY[id]; return !p ? "" : p.gone ? ` <span class="tag t3" title="On no NBA roster right now">Released</span>` : p.was ? ` <span class="tag" title="Traded from ${esc(p.was)}; same contract">From ${esc(p.was)}</span>` : ""; };
   const injTag = (id) => { const i = INJ[id]; if (!i) return moveTag(id); const out = H.isOut(i); return ` <span class="tag ${out ? "t3" : "t1"}" title="${esc(i[1] || "")}">${esc(out ? "Out" : i[0] === "Day-To-Day" ? "DTD" : i[0])}</span>` + moveTag(id); };
@@ -267,6 +271,15 @@
     return { tab, sub, arg };
   };
   const teamFor = (arg) => LG.teams[arg != null && LG.teams[+arg] ? +arg : me.team != null ? me.team : 0];
+  // What's waiting on you: offers to answer, trades to review, your pick.
+  function todoCounts() {
+    const t = myTeam();
+    if (!LG || !t) return { trades: 0, clock: 0 };
+    const offers = LG.trades.filter((x) => x.status === "pending" && x.to === t.id).length;
+    const reviews = LG.trades.filter((x) => x.status === "review" && H.voters(LG, x).includes(t.id) && !(x.votes || {})[t.id]).length;
+    const c = LG.phase === "nba" ? H.onClock(LG, now()) : null;
+    return { trades: offers + reviews, clock: c && c.team === t.id ? 1 : 0 };
+  }
   function leagueMenu() {
     const mine = store.get("hc:leagues", []);
     return `<details class="switch" id="switch"><summary><span class="sw-name">${LG ? esc(LG.name) : "Your leagues"}</span><span class="chev" aria-hidden="true"></span></summary>
@@ -281,11 +294,13 @@
     $(".navbar").hidden = !LG;
     if (!LG) { tabs.innerHTML = ""; sub.innerHTML = ""; sub.hidden = true; who.innerHTML = `<button class="btn sm ghost" data-act="theme">${document.documentElement.dataset.theme === "dark" ? "Light" : "Dark"}</button>`; return; }
     const r = route();
-    tabs.innerHTML = TABS.map(([k, n]) => `<a href="#${k}"${r.tab === k ? ' aria-current="page"' : ""}>${n}</a>`).join("");
+    const todo = todoCounts();
+    const badge = (n, what) => (n ? ` <span class="badge" aria-label="${n} ${what}">${n}</span>` : "");
+    tabs.innerHTML = TABS.map(([k, n]) => `<a href="#${k}"${r.tab === k ? ' aria-current="page"' : ""}>${n}${k === "team" ? badge(todo.trades, "trades waiting on you") : k === "draft" ? badge(todo.clock, "you're on the clock") : ""}</a>`).join("");
     const subs = subsOf(r.tab, r.arg);
     sub.hidden = !subs.length;
     const tail = r.tab === "team" && r.arg != null ? "/" + r.arg : "";
-    sub.innerHTML = `<div class="wrap">${subs.map(([k, n]) => `<a href="#${r.tab}/${k}${tail}"${r.sub === k ? ' aria-current="page"' : ""}>${n}</a>`).join("")}</div>`;
+    sub.innerHTML = `<div class="wrap">${subs.map(([k, n]) => `<a href="#${r.tab}/${k}${tail}"${r.sub === k ? ' aria-current="page"' : ""}>${n}${r.tab === "team" && k === "trades" ? badge(todo.trades, "trades waiting on you") : ""}</a>`).join("")}</div>`;
     const t = myTeam();
     const theme = `<button class="btn sm ghost" data-act="theme" aria-label="Switch to ${document.documentElement.dataset.theme === "dark" ? "light" : "dark"} colors">${document.documentElement.dataset.theme === "dark" ? "Light" : "Dark"}</button>`;
     const bell = t ? `<button class="btn sm ghost${alertsOn() ? " go" : ""}" data-act="alerts" aria-label="Alerts">${alertsOn() ? "Alerts on" : "Alerts"}</button>` : "";
@@ -517,17 +532,17 @@
         <td><a class="btn link" href="#team/roster/${t.id}">${esc(t.name)}</a> ${ownerTag(t)} ${tierTag(t)}${t.overDeadline ? ` <span class="tag t3">Over line</span>` : ""}<div class="ps">${t.owner ? esc(t.owner) : "Bot until claimed"}</div></td>
         <td class="r num">${r.w}-${r.l}-${r.t}</td><td class="r num hide-s">${r.pct.toFixed(3).replace(/^0/, "")}</td>
         <td class="r num hide-m">${r.gmsc.toFixed(0)}</td>
-        <td class="r num">${money(pay)}</td><td class="r num hide-s">${money(line)}</td>
+        <td class="r num hide-s">${money(pay)}</td><td class="r num hide-s">${money(line)}</td>
         <td class="r num"><b class="${room >= 0 ? "ok" : "bad"}">${money(room)}</b></td>
         <td class="r num">$${t.faab}</td><td class="r num hide-s">${t.prospects.length}/${LG.settings.prospects}</td><td class="r num hide-m">$${H.owed(LG, t)}</td></tr>`;
     }).join("");
   }
-  const STAND_HEAD = `<thead><tr><th class="r">#</th><th>Team</th><th class="r">Cats</th><th class="r hide-s">Pct</th><th class="r hide-m">GmSc</th><th class="r">On books</th><th class="r hide-s">Line</th><th class="r">Room</th><th class="r">FAAB</th><th class="r hide-s">Prosp</th><th class="r hide-m">Owes</th></tr></thead>`;
+  const STAND_HEAD = `<thead><tr><th class="r">#</th><th>Team</th><th class="r">Cats</th><th class="r hide-s">Pct</th><th class="r hide-m">GmSc</th><th class="r hide-s">On books</th><th class="r hide-s">Line</th><th class="r">Room</th><th class="r">FAAB</th><th class="r hide-s">Prosp</th><th class="r hide-m">Owes</th></tr></thead>`;
   const standingsNow = () => (LG.phase === "league" ? H.standings(LG, curWeek() - 1, WK, BY) : LG.teams.map((t) => ({ id: t.id, w: 0, l: 0, t: 0, pct: 0, mw: 0, ml: 0, mt: 0, gmsc: 0, pf: [] })));
   function viewStandings() {
     const st = standingsNow();
     return `<div class="head"><h1 class="disp">Standings</h1><span class="muted">Category record through week ${Math.max(0, curWeek() - 1)}</span></div>
-      <div class="table-wrap"><table class="t">${STAND_HEAD}<tbody>${standingsRows(st)}</tbody></table></div>
+      <div class="table-wrap"><table class="t stand">${STAND_HEAD}<tbody>${standingsRows(st)}</tbody></table></div>
       <p class="ps">Room is what each team can still add under its own line. Top ${LG.settings.playoffTeams} make the playoffs after week ${LG.settings.regWeeks}; the line under ${ordinal(LG.settings.playoffTeams)} marks the cut.</p>
       ${LG.phase === "league" ? `<div class="cols2">${officeBracket()}${summerCard(st)}</div>` : ""}`;
   }
@@ -562,10 +577,11 @@
     const rows = standingsRows(st);
     const counts = LG.settings.tiers.map((tier, k) => ({ tier, n: LG.teams.filter((t) => (t.tier || 0) === k).length }));
     const ms = LG.phase === "league" ? H.matchups(LG, defaultWeek(), WK, BY) : [];
+    const mine = ms.find((m) => isMine(LG.teams[m.a]) || isMine(LG.teams[m.b]));
     const recent = LG.log.slice(-6).reverse();
-    return `${phaseBanner()}
+    return `${phaseBanner()}${mine ? myMatchupCard(mine) : ""}
       <div class="cols"><section class="stack"><div class="head"><h1 class="disp">${esc(LG.name)}</h1></div>
-        <div class="table-wrap"><table class="t">${STAND_HEAD}<tbody>${rows}</tbody></table></div>
+        <div class="table-wrap"><table class="t stand">${STAND_HEAD}<tbody>${rows}</tbody></table></div>
         <p class="ps">Room is what each team can still add under its own line: the number to check before you call about a trade. ${LG.phase === "league" ? `Top ${LG.settings.playoffTeams} make the playoffs after week ${LG.settings.regWeeks}.` : ""}</p>
         ${ms.length ? `<div class="head"><h2 class="disp" style="font-size:26px;margin:0">Week ${defaultWeek()}</h2><a class="btn sm" href="#matchups">All matchups</a></div><div class="slate">${ms.map((m, i) => gameCard(m, i)).join("")}</div>` : ""}
       </section>
@@ -577,6 +593,15 @@
         ${LG.phase === "league" ? officeBracket() : ""}
         <div class="card"><h3>Latest moves</h3>${recent.length ? `<ul class="list">${recent.map((x) => `<li><span>${esc(x.text)}</span></li>`).join("")}</ul>` : `<p class="empty">Nothing yet.</p>`}<a class="btn sm" href="#league/tx">All transactions</a></div>
       </aside></div>`;
+  }
+  // Your matchup at the top of the overview, the way Yahoo leads with it.
+  function myMatchupCard(m) {
+    const A = LG.teams[m.a], B = LG.teams[m.b], c = m.cmp, w = defaultWeek();
+    const meA = isMine(A), us = meA ? A : B, them = meA ? B : A, uw = meA ? c.w : c.l, tw = meA ? c.l : c.w;
+    const cats = c.cats.map((x) => { const win = meA ? x.out === "w" : x.out === "l", loss = meA ? x.out === "l" : x.out === "w";
+      return `<span class="mc ${win ? "w" : loss ? "l" : ""}" title="${x.cat.label}: ${fmtCat(x.cat, meA ? x.a : x.b)} to ${fmtCat(x.cat, meA ? x.b : x.a)}">${x.cat.label}</span>`; }).join("");
+    return `<a class="card mymatch" href="#matchups" data-wk="${w}"><div class="mm-l"><span class="ps">Week ${w}${w === curWeek() ? ", in progress" : ", final"}</span><b class="disp">${esc(us.name)}</b><span class="ps">vs ${esc(them.name)}</span></div>
+      <div class="disp mm-s ${uw > tw ? "ok" : uw < tw ? "bad" : ""}">${uw}-${tw}${c.t ? "-" + c.t : ""}</div><div class="mm-c">${cats}</div></a>`;
   }
   function officeBracket() {
     const b = H.bracket(LG, WK, BY);
@@ -637,14 +662,14 @@
       const p = id && BY[id], l = id && s(id), g = l ? l[0] : 0, pg = (k) => (g ? (l[C[k]] / g).toFixed(1) : "-");
       const choose = mine && !locked && i != null ? `<select class="slot" data-slot="${i}" aria-label="Who plays ${slot}"><option value="">Empty</option>${ros.filter((x) => H.eligible(BY[x], slot)).map((x) => `<option value="${x}"${x === id ? " selected" : ""}>${esc(BY[x].n)}${lu.includes(x) && x !== id ? " (starting)" : ""}</option>`).join("")}</select>` : "";
       const out = id && H.isOut(INJ[id]);
-      return `<tr class="${slot === "BN" ? "dim" : ""}"><td><b class="tag${slot === "BN" ? "" : " w"}">${slot}</b></td><td>${choose ? `${choose}${p ? `<div class="ps">${p.t}, ${H.positions(p).join("/")}, ${p.age}${injTag(id)} <button type="button" class="btn link ps" data-player="${id}">Card</button></div>` : ""}` : p ? pl(id, true) : `<span class="muted">Empty</span>`}</td>
-        <td class="r"><span class="sal num">${p ? money(p.sal) : ""}</span></td>${p ? hcCell(p) : "<td></td>"}<td class="r num">${g || "-"}</td><td class="r num">${pg("pts")}</td><td class="r num hide-s">${pg("reb")}</td><td class="r num hide-s">${pg("ast")}</td>
+      return `<tr class="${slot === "BN" ? "dim" : ""}"><td><b class="tag${slot === "BN" ? "" : " w"}">${slot}</b></td><td>${choose ? `${choose}${p ? `<div class="ps"><button type="button" class="btn link ps" data-player="${id}" title="Open ${esc(p.n)}'s card">${p.t}, ${H.positions(p).join("/")}, ${p.age}</button>${injTag(id)}</div>` : ""}` : p ? pl(id, true) : `<span class="muted">Empty</span>`}</td>
+        <td class="r"><span class="sal num">${p ? money(p.sal) : ""}</span></td>${p ? gCell(p, w) : "<td></td>"}${p ? hcCell(p) : "<td></td>"}<td class="r num">${g || "-"}</td><td class="r num">${pg("pts")}</td><td class="r num hide-s">${pg("reb")}</td><td class="r num hide-s">${pg("ast")}</td>
         <td class="r" style="white-space:nowrap">${mine && p ? `${out && (t.ir || []).length < LG.settings.irSlots ? `<button class="btn sm" data-ir="${id}">To IR</button> ` : ""}<button class="btn sm" data-drop="${id}">Release</button>` : !mine && p && myTeam() ? `<button class="btn sm" data-trade="${t.id}" data-pid="${id}">Trade</button>` : ""}</td></tr>`;
     };
     return `<div class="tools"><b>Week ${w} lineup</b><span class="muted small">${weekLabel(w)}, ${locked ? "locked" : `locks ${fmtWhen(H.lockTime(opener, w))}`}</span><span class="grow"></span>
         ${w > curWeek() ? `<button class="btn sm" data-lw="${w - 1}">This week</button>` : w < H.totalWeeks(LG) ? `<button class="btn sm" data-lw="${w + 1}">Next week</button>` : ""}
         ${mine && !locked ? `<button class="btn sm" data-lauto>Best lineup</button><button class="btn sm go" data-lsave="${w}">Save lineup</button>` : ""}</div>
-      <div class="table-wrap"><table class="t"><thead><tr><th>Slot</th><th>Player</th><th class="r">Salary</th><th class="r">HC</th><th class="r">GP</th><th class="r">PTS</th><th class="r hide-s">REB</th><th class="r hide-s">AST</th><th></th></tr></thead><tbody>
+      <div class="table-wrap"><table class="t"><thead><tr><th>Slot</th><th>Player</th><th class="r">Salary</th><th class="r" title="NBA games this fantasy week">G</th><th class="r">HC</th><th class="r" title="Games played this season">GP</th><th class="r">PTS</th><th class="r hide-s">REB</th><th class="r hide-s">AST</th><th></th></tr></thead><tbody>
         ${lu.map((id, i) => row(H.SLOTS[i], id, i)).join("")}${bench.map((id) => row("BN", id, null)).join("")}
         ${(t.ir || []).map((id) => { const p = BY[id]; return `<tr><td><b class="tag t3">IR</b></td><td>${pl(id, true)}</td><td class="r"><span class="sal num muted">${money(p.sal)}</span><div class="ps">off the books</div></td><td colspan="5" class="ps">${esc((INJ[id] || [])[1] || (INJ[id] ? INJ[id][0] : "Healthy: activate him"))}</td><td class="r">${mine ? `<button class="btn sm go" data-activate="${id}">Activate</button>` : ""}</td></tr>`; }).join("")}
       </tbody></table></div>
@@ -703,7 +728,7 @@
     sortRows(rows);
     const total = rows.length;
     rows = rows.slice(0, 200);
-    return marketTools(total) + `<div class="table-wrap"><table class="t"><thead><tr>${sortTh("rank", "Rk", "r", "Nine-category rank")}${sortTh("dyn", "Dyn", "r hide-s", "Dynasty rank")}${YAHOO.players ? sortTh("yahoo", "Y!", "r hide-m", "Yahoo rank this season") : ""}${sortTh("name", "Player", "")}${sortTh("age", "Age", "r hide-s")}<th>Status</th>${sortTh("sal", "Salary")}${sortTh("hc", "HC", "r", "HC Score: value over replacement per $10M")}${vorpHeadS()}${lineHeadS()}<th></th></tr></thead><tbody>
+    return marketTools(total) + `<div class="table-wrap"><table class="t"><thead><tr>${sortTh("rank", "Rk", "r", "Nine-category rank")}${sortTh("dyn", "Dyn", "r hide-s", "Dynasty rank")}${YAHOO.players ? sortTh("yahoo", "Y!", "r hide-m", "Yahoo rank this season") : ""}${sortTh("name", "Player", "")}${sortTh("age", "Age", "r hide-s")}<th>Status</th>${sortTh("sal", "Salary")}${sortTh("gw", "G", "r", "NBA games this fantasy week")}${sortTh("hc", "HC", "r", "HC Score: value over replacement per $10M")}${vorpHeadS()}${lineHeadS()}<th></th></tr></thead><tbody>
       ${rows.map((p) => {
         const o = ctx.own[p.id];
         let act = "";
@@ -713,13 +738,13 @@
         const g = perGame(p);
         return `<tr class="${o === me.team && me.team != null ? "me" : ""}"><td class="r num ps">${p.rank}</td><td class="r num ps hide-s">${p.dynRank}</td>${YAHOO.players ? `<td class="r num ps hide-m">${(YAHOO.players[p.id] || {}).ar || (YAHOO.players[p.id] || {}).or || "-"}</td>` : ""}<td>${pl(p.id)} ${p.deal ? typeTag(p) : ""}<div class="ps">${p.t}, ${H.positions(p).join("/")}${g && g.prev ? ", 2025-26 line" : ""}</div></td><td class="r num hide-s">${p.age}</td>
           <td>${o != null ? `<a class="btn link" href="#team/roster/${o}">${esc(LG.teams[o].abbr)}</a>` : `<span class="muted">FA</span>`}</td>
-          <td class="r"><div class="sal num">${money(p.sal)}</div><div class="ps">${p.future.length ? `thru ${season(p.future.length).slice(2)}` : "expiring"}, ${p.fa.kind}</div></td>${hcCell(p)}${vorpCells(p)}${lineCells(p)}<td class="r">${act}</td></tr>`;
+          <td class="r"><div class="sal num">${money(p.sal)}</div><div class="ps">${p.future.length ? `thru ${season(p.future.length).slice(2)}` : "expiring"}, ${p.fa.kind}</div></td>${gCell(p)}${hcCell(p)}${vorpCells(p)}${lineCells(p)}<td class="r">${act}</td></tr>`;
       }).join("") || `<tr><td colspan="18" class="empty">No one matches. Clear the search or filters.</td></tr>`}</tbody></table></div>`;
   }
   const SORTS = { rank: (a, b) => a.rank - b.rank, dyn: (a, b) => a.dynRank - b.dynRank, hc: (a, b) => b.hc - a.hc, sal: (a, b) => b.sal - a.sal, cheap: (a, b) => a.sal - b.sal,
     pts: (a, b) => stat(b, "pts") - stat(a, "pts"), reb: (a, b) => stat(b, "reb") - stat(a, "reb"), ast: (a, b) => stat(b, "ast") - stat(a, "ast"), tpm: (a, b) => stat(b, "tpm") - stat(a, "tpm"),
     stl: (a, b) => stat(b, "stl") - stat(a, "stl"), blk: (a, b) => stat(b, "blk") - stat(a, "blk"), young: (a, b) => a.age - b.age,
-    yahoo: (a, b) => yrank(a) - yrank(b), name: (a, b) => last(a.n).localeCompare(last(b.n)), team: (a, b) => a.t.localeCompare(b.t) || a.rank - b.rank,
+    yahoo: (a, b) => yrank(a) - yrank(b), gw: (a, b) => (gw(b) || 0) - (gw(a) || 0) || a.rank - b.rank, name: (a, b) => last(a.n).localeCompare(last(b.n)), team: (a, b) => a.t.localeCompare(b.t) || a.rank - b.rank,
     pos: (a, b) => H.positions(a).join().localeCompare(H.positions(b).join()) || a.rank - b.rank, age: (a, b) => a.age - b.age || a.rank - b.rank,
     yrs: (a, b) => b.future.length - a.future.length || a.rank - b.rank, tov: (a, b) => stat(a, "tov") - stat(b, "tov"),
     fg: (a, b) => shoot(b, "fgm", "fga") - shoot(a, "fgm", "fga"), ft: (a, b) => shoot(b, "ftm", "fta") - shoot(a, "ftm", "fta"),
@@ -728,7 +753,7 @@
   function stat(p, k) { const g = perGame(p); return g ? g.l[C[k]] : k === "tov" ? 99 : -1; }
   function shoot(p, m, a) { const g = perGame(p); return g && g.l[C[a]] ? g.l[C[m]] / g.l[C[a]] : -1; }
   // Columns you can sort by from a header but that the sort menu doesn't list.
-  const SORT_NAMES = { name: "player name", team: "NBA team", pos: "position", age: "age", yrs: "years left", tov: "fewest turnovers", fg: "FG%", ft: "FT%" };
+  const SORT_NAMES = { gw: "games this week", name: "player name", team: "NBA team", pos: "position", age: "age", yrs: "years left", tov: "fewest turnovers", fg: "FG%", ft: "FT%" };
   const SAL = { "": [0, Infinity], a: [0, 5e6], b: [5e6, 15e6], c: [15e6, 30e6], d: [30e6, Infinity] };
   function passFilters(p) {
     const f = ui.f;
@@ -1028,10 +1053,10 @@
     return `${t ? `<div id="mycap">${capLine(t, ctx)}</div>` : ""}
       <div class="tools"><label class="sr" for="dq">Search</label><input type="search" id="dq" placeholder="Search players or teams" value="${esc(ui.q)}">
         ${t ? `<label class="small muted" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="dfit"${ui.fit ? " checked" : ""}> Only players I can fit</label>` : ""}</div>${filterBox()}
-      <div class="table-wrap" id="pool"><table class="t dense"><thead><tr>${sortTh("rank", "Rk", "r", "Nine-category rank")}${sortTh("dyn", "Dyn", "r", "Dynasty rank")}${sortTh("name", "Player", "")}${sortTh("team", "Team", "")}${sortTh("pos", "Pos", "hide-s")}${sortTh("age", "Age")}${sortTh("sal", "Salary")}${sortTh("yrs", "Yrs", "r hide-s")}${sortTh("hc", "HC", "r", "HC Score: value over replacement per $10M")}${sortTh("vorp", "VORP", "r hide-s", "Value over replacement player, season to date")}${lineHeadS()}<th></th></tr></thead><tbody>
+      <div class="table-wrap" id="pool"><table class="t dense"><thead><tr>${sortTh("rank", "Rk", "r", "Nine-category rank")}${sortTh("dyn", "Dyn", "r", "Dynasty rank")}${sortTh("name", "Player", "")}${sortTh("team", "Team", "")}${sortTh("pos", "Pos", "hide-s")}${sortTh("age", "Age")}${sortTh("sal", "Salary")}${sortTh("yrs", "Yrs", "r hide-s")}${sortTh("gw", "G", "r hide-s", "NBA games this fantasy week")}${sortTh("hc", "HC", "r", "HC Score: value over replacement per $10M")}${sortTh("vorp", "VORP", "r hide-s", "Value over replacement player, season to date")}${lineHeadS()}<th></th></tr></thead><tbody>
         ${shown.map(({ p, c: k }) => `<tr data-pid="${p.id}" class="${k.ok ? "" : "dim"}"${k.ok ? "" : ` title="${esc(k.why)}"`}><td class="r num">${p.rank}</td><td class="r num ps">${p.dynRank}</td><td class="nm">${pl(p.id)}${p.deal ? " " + typeTag(p) : ""}</td><td class="ps">${p.t}</td><td class="ps hide-s">${H.positions(p).join("/")}</td><td class="r num">${p.age}</td>
-          <td class="r"><span class="sal num">${money(p.sal)}</span></td><td class="r num ps hide-s">${p.future.length ? p.future.length + 1 : "Exp"}</td>${hcCell(p)}<td class="r num hide-s">${p.bbv == null ? "-" : p.bbv.toFixed(1)}</td>${lineCells(p)}
-          <td class="r" style="white-space:nowrap">${myTurn && k.ok && LG.phase === "nba" ? `<button class="btn sm go" data-pick="${p.id}">Sign</button> ` : ""}${t ? (t.queue.includes(p.id) ? `<button class="btn sm" data-unqueue="${p.id}">Queued</button>` : `<button class="btn sm" data-queue="${p.id}">Queue</button>`) : ""}</td></tr>`).join("") || `<tr><td colspan="20" class="empty">No one matches.</td></tr>`}
+          <td class="r"><span class="sal num">${money(p.sal)}</span></td><td class="r num ps hide-s">${p.future.length ? p.future.length + 1 : "Exp"}</td>${gCell(p).replace('class="r num', 'class="r num hide-s')}${hcCell(p)}<td class="r num hide-s">${p.bbv == null ? "-" : p.bbv.toFixed(1)}</td>${lineCells(p)}
+          <td class="r" style="white-space:nowrap">${myTurn && k.ok && LG.phase === "nba" ? `<button class="btn sm go" data-pick="${p.id}">Draft</button> ` : ""}${t ? (t.queue.includes(p.id) ? `<button class="btn sm" data-unqueue="${p.id}">Queued</button>` : `<button class="btn sm" data-queue="${p.id}">Queue</button>`) : ""}</td></tr>`).join("") || `<tr><td colspan="20" class="empty">No one matches.</td></tr>`}
         </tbody></table></div>`;
   }
   // One line of cap math above the player list; the full cap bar lives on the My team tab.
@@ -1254,7 +1279,7 @@
     on("[data-queue]", "click", (e) => { const id = e.currentTarget.dataset.queue; mutate("Queue", (L) => { const t = L.teams[me.team]; if (!t.queue.includes(id)) t.queue.push(id); return { ok: true }; }, { quiet: true }); });
     on("[data-unqueue]", "click", (e) => { const id = e.currentTarget.dataset.unqueue; mutate("Queue", (L) => { const t = L.teams[me.team]; t.queue = t.queue.filter((x) => x !== id); return { ok: true }; }, { quiet: true }); });
     on("[data-qup]", "click", (e) => { const id = e.currentTarget.dataset.qup; mutate("Queue", (L) => { const q = L.teams[me.team].queue, i = q.indexOf(id); if (i > 0) [q[i - 1], q[i]] = [q[i], q[i - 1]]; return { ok: true }; }, { quiet: true }); });
-    on("[data-pick]", "click", (e) => { const id = e.currentTarget.dataset.pick; mutate(`Picked ${nameOf(id)}`, (L) => H.draftPick(L, POOL, me.team, id, now(), false)).then((ok) => ok && toast(`You signed ${nameOf(id)} for ${money(BY[id].sal)}.`)); });
+    on("[data-pick]", "click", (e) => { const id = e.currentTarget.dataset.pick; mutate(`Picked ${nameOf(id)}`, (L) => H.draftPick(L, POOL, me.team, id, now(), false)).then((ok) => ok && toast(`You drafted ${nameOf(id)} for ${money(BY[id].sal)}.`)); });
     on("[data-autome]", "click", () => mutate("Autopick", (L) => { const p = H.autoChoice(L, POOL, me.team, H.rng(Date.now() % 1e6)); return H.draftPick(L, POOL, me.team, p.id, now(), p.relaxed ? { relaxed: true } : true); }));
     on("[data-abid]", "input", (e) => { ui.abids[e.target.dataset.abid] = e.target.value; });
     on("[data-savebids]", "click", async () => {
@@ -1448,6 +1473,7 @@
   }
   function draw() {
     chrome();
+    document.body.classList.toggle("inleague", !!LID);
     if (!LID) { document.body.classList.remove("room"); return renderLanding(); }
     if (!LG) return;
     const r = route();
@@ -1456,7 +1482,7 @@
     if (room) document.documentElement.style.setProperty("--top", ($("#mast").getBoundingClientRect().bottom + 2 + (LG.phase !== "league" ? 0 : 0)) + "px");
     const views = { league: () => viewLeague(r.sub), team: () => viewTeam(r.sub, r.arg), players: () => viewMarket(r.sub), matchups: () => viewMatchups(r.sub), draft: () => viewDraft(r.sub), commish: () => viewCommish(r.sub) };
     const html = views[r.tab]();
-    app.innerHTML = room ? html : `<div class="wrap page">${html}</div><div class="wrap foot">Hard Cap. Draft the player. Carry the contract. Salaries from the 2026-27 cap sheet; box scores from ESPN${STATS.updated ? `, updated ${fmtDate(STATS.updated)}` : ""}. League code ${esc(LID)}.</div>`;
+    app.innerHTML = room ? html : `<div class="wrap page">${html}</div><div class="wrap foot">Hard Cap. Draft the player. Carry the contract. Contracts from Basketball-Reference${STATS.contractsUpdated ? `, updated ${fmtDate(STATS.contractsUpdated)}` : ""}; box scores, injuries and schedules from ESPN${STATS.updated ? `, updated ${fmtDate(STATS.updated)}` : ""}; prospects from Tankathon. <a href="../">More projects by David Solar</a>. League code ${esc(LID)}.</div>`;
     if (room) {
       const clockH = $(".clock") ? $(".clock").getBoundingClientRect().height : 0;
       document.documentElement.style.setProperty("--top", ($("#mast").getBoundingClientRect().bottom + clockH) + "px");

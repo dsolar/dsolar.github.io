@@ -220,8 +220,8 @@ select.slot{min-height:32px;padding:3px 8px;font-size:13px;width:auto;max-width:
 .capbar.mini .tick label,.capbar.mini .capbar-foot{display:none}
 
 /* landing */
-.hero{padding:46px 0 22px}
-.hero h1{margin:0;font-size:clamp(52px,11vw,128px)}
+.hero{padding:28px 0 16px}
+.hero h1{margin:0;font-size:clamp(44px,7.5vw,92px)}
 .hero h1 span{display:block}
 .hero h1 span+span{color:var(--pos)}
 .hero p{max-width:62ch;color:var(--muted);font-size:17px;margin:16px 0 0}
@@ -245,6 +245,17 @@ select.slot{min-height:32px;padding:3px 8px;font-size:13px;width:auto;max-width:
 .wk-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px}
 .wk .list li{padding:4px 0;font-size:13px}
 .list li.me{font-weight:800}
+.badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--red);color:#fff;font-size:11px;font-weight:800;margin-left:4px;vertical-align:2px}
+.subtabs a[aria-current="page"] .badge{background:var(--red)}
+.mymatch{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1.3fr);gap:16px;align-items:center;text-decoration:none;color:var(--ink);border-left:4px solid var(--accent)}
+.mymatch:hover{border-color:var(--accent)}
+.mm-l{display:grid;gap:2px}.mm-l b{font-size:26px}
+.mm-s{font-size:52px;text-align:center}
+.mm-c{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
+.mc{font-size:11px;font-weight:800;padding:3px 7px;border-radius:5px;background:var(--ledger);color:var(--muted)}
+.mc.w{background:var(--lime-soft);color:var(--pos)} .mc.l{background:var(--red-soft);color:var(--red)}
+/* inside a league the site bar steps aside, so there's one dark band, not two */
+body.inleague .ds-bar{display:none}
 .rules li{display:grid;grid-template-columns:110px 1fr;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
 .rules li:last-child{border-bottom:0;padding-bottom:0}
 .rules b{font-weight:900;font-style:italic;font-variation-settings:"wdth" 70;font-size:18px;line-height:1.1}
@@ -370,6 +381,7 @@ body{padding-bottom:env(safe-area-inset-bottom,0px)}
   .track{height:38px}
   .clock .wrap{gap:8px}
   .rules.grid{grid-template-columns:1fr}
+  .mymatch{grid-template-columns:1fr auto}.mm-c{grid-column:1/-1;justify-content:flex-start}.mm-s{font-size:40px}
   dialog{padding:16px;max-height:92dvh;overflow:auto}
 }
 @media (max-width:440px){.brand b{display:none}}
@@ -381,6 +393,9 @@ body{padding-bottom:env(safe-area-inset-bottom,0px)}
   .versus .nm{font-size:19px}
   table.t td,table.t th{padding:7px 6px}
   .hide-s{display:none}
+  table.stand td{white-space:nowrap}
+  table.stand td .ps,table.stand td .tag{display:none}
+  table.stand td:nth-child(2){max-width:150px;overflow:hidden;text-overflow:ellipsis}
   .timer{font-size:30px}
   .clock .on{font-size:22px}
   .tick label{display:none}
