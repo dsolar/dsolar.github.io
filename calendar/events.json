@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-01T16:55:22Z",
+ "updated": "2026-11-02T20:30:38Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,124 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-vv1AvZkfYGkec8fXB",
-   "date": "2026-11-01",
-   "time": "14:00",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-11-01-2026/event/01006530AD414FBA",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-LvZ18QErSVuzU4JvpXhQV",
-   "date": "2026-11-01",
-   "time": "18:00",
-   "title": "Ana Castela Boston | ALL AGES | November 1st @ Big Night Live",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.universe.com/events/ana-castela-boston-all-ages-november-1st-big-night-live-tickets-Q21XJ4?ref=ticketmaster",
-   "source": "ticketmaster",
-   "times": [
-    "18:00",
-    "21:00"
-   ],
-   "aka": [
-    "tm-LvZ18QErUwnWDxhHy3XLk",
-    "tm-LvZ18Qm7pQOJBclLPsSwC",
-    "sg-18641168",
-    "sg-18726619"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_8GkSrM54F",
-   "date": "2026-11-01",
-   "time": "19:00",
-   "title": "Blu DeTiger: The Want You Baby Tonight Tour",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/blu-detiger-the-want-you-baby-boston-massachusetts-11-01-2026/event/0100650CDEDCB548",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18507389"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZk39Gkd-K8yP",
-   "date": "2026-11-01",
-   "time": "19:00",
-   "title": "Eivør (18+)",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/eivr-18-boston-massachusetts-11-01-2026/event/01006497E14D0E65",
-   "source": "ticketmaster",
-   "times": [
-    "19:00",
-    "20:00"
-   ],
-   "aka": [
-    "sg-18209210",
-    "2026-11-01-eivr-paradise-rock-club"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A7PE8w",
-   "date": "2026-11-01",
-   "time": "19:00",
-   "title": "Vince Staples",
-   "cat": "music",
-   "venue": "Roadrunner-Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PE8w",
-   "source": "ticketmaster",
-   "times": [
-    "19:00",
-    "20:00"
-   ],
-   "aka": [
-    "sg-18314040"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_uQ-r1Vs",
-   "date": "2026-11-01",
-   "time": "19:30",
-   "title": "Patrick Droney",
-   "cat": "music",
-   "venue": "Boch Center Shubert Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/patrick-droney-boston-massachusetts-11-01-2026/event/010064D6A178AD31",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18328215"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1AAZp74",
-   "date": "2026-11-01",
-   "time": "20:00",
-   "title": "The Gringos",
-   "cat": "music",
-   "venue": "The Sinclair Music Hall",
-   "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZp74",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18663868"
-   ],
-   "score": 0
-  },
   {
    "id": "espn-401892629",
    "date": "2026-11-02",
@@ -1440,6 +1322,21 @@
    "score": 0
   },
   {
+   "id": "tm-rZ7HnEZ1Af83_V",
+   "date": "2026-11-08",
+   "time": "20:30",
+   "title": "(Grateful) DEAD Night: Never Miss a Sunday Show",
+   "cat": "music",
+   "venue": "Wild Horses",
+   "city": "New York, NY",
+   "url": "https://www.ticketweb.com/event/grateful-dead-night-never-miss-wild-horses-tickets/14412674",
+   "source": "ticketmaster",
+   "drive_hours": 4.25,
+   "act": "Grateful Dead",
+   "score": 3,
+   "why": "love"
+  },
+  {
    "id": "tm-vvG17Z_2YhcSO9",
    "date": "2026-11-09",
    "time": "19:00",
@@ -1505,18 +1402,6 @@
    ],
    "score": 2,
    "why": "like"
-  },
-  {
-   "id": "sg-18721511",
-   "date": "2026-11-09",
-   "time": "20:00",
-   "title": "The Blasting Company",
-   "cat": "music",
-   "venue": "Royale - Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/blasting-company-tickets/boston-massachusetts-royale-boston-2026-11-09-8-pm/concert/18721511",
-   "source": "seatgeek",
-   "score": 0
   },
   {
    "id": "tm-vvG17Z_2DL1Ise",
@@ -2669,11 +2554,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/gnarls-barkley-to-whom-it-still-boston-massachusetts-11-15-2026/event/01006530A7B6327C",
    "source": "ticketmaster",
+   "sub": "with Duckwrth",
    "aka": [
-    "sg-18604537",
     "2026-11-15-gnarls-barkley-citizens-house-of-bl"
    ],
-   "sub": "with Duckwrth",
    "score": 0
   },
   {
@@ -2747,6 +2631,21 @@
    "url": "https://www.ticketmaster.com/zayn-the-konnakol-tour-boston-massachusetts-11-15-2026/event/01006439C069D341",
    "source": "ticketmaster",
    "score": 0
+  },
+  {
+   "id": "tm-rZ7HnEZ1Af83q7",
+   "date": "2026-11-15",
+   "time": "20:30",
+   "title": "(Grateful) DEAD Night: Never Miss a Sunday Show",
+   "cat": "music",
+   "venue": "Wild Horses",
+   "city": "New York, NY",
+   "url": "https://www.ticketweb.com/event/grateful-dead-night-never-miss-wild-horses-tickets/14412744",
+   "source": "ticketmaster",
+   "drive_hours": 4.25,
+   "act": "Grateful Dead",
+   "score": 3,
+   "why": "love"
   },
   {
    "id": "sg-18321068",
@@ -3853,6 +3752,21 @@
    "score": 0
   },
   {
+   "id": "tm-rZ7HnEZ1Af83Q7",
+   "date": "2026-11-22",
+   "time": "20:30",
+   "title": "(Grateful) DEAD Night: Never Miss a Sunday Show",
+   "cat": "music",
+   "venue": "Wild Horses",
+   "city": "New York, NY",
+   "url": "https://www.ticketweb.com/event/grateful-dead-night-never-miss-wild-horses-tickets/14412684",
+   "source": "ticketmaster",
+   "drive_hours": 4.25,
+   "act": "Grateful Dead",
+   "score": 3,
+   "why": "love"
+  },
+  {
    "id": "tm-vv1F7ZbS09vyZd227",
    "date": "2026-11-23",
    "time": "19:30",
@@ -4259,6 +4173,21 @@
    "score": 0
   },
   {
+   "id": "tm-vv177Z_4GkwqCCdo",
+   "date": "2026-11-28",
+   "time": "21:00",
+   "title": "All The Feels R&B with DJ TGIF ( 21+ )",
+   "cat": "music",
+   "venue": "Big Night Live",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/all-the-feels-rb-with-dj-boston-massachusetts-11-28-2026/event/0100655C9D38E0D1",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18737743"
+   ],
+   "score": 0
+  },
+  {
    "id": "tm-vv177Z_8GkD9uNOB",
    "date": "2026-11-28",
    "time": "22:00",
@@ -4364,6 +4293,21 @@
    "score": 0
   },
   {
+   "id": "tm-rZ7HnEZ1Af83jf",
+   "date": "2026-11-29",
+   "time": "20:30",
+   "title": "(Grateful) DEAD Night: Never Miss a Sunday Show",
+   "cat": "music",
+   "venue": "Wild Horses",
+   "city": "New York, NY",
+   "url": "https://www.ticketweb.com/event/grateful-dead-night-never-miss-wild-horses-tickets/14412714",
+   "source": "ticketmaster",
+   "drive_hours": 4.25,
+   "act": "Grateful Dead",
+   "score": 3,
+   "why": "love"
+  },
+  {
    "id": "tm-Z7r9jZ1AA7ZFp",
    "date": "2026-11-30",
    "time": "19:00",
@@ -4410,6 +4354,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/10-years-of-6lack-tour-boston-massachusetts-12-01-2026/event/010064B6A2D3D9EC",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18736510"
+   ],
    "score": 0
   },
   {
@@ -4753,6 +4700,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/hunxho-2night-only-tour-boston-massachusetts-12-04-2026/event/010065360E0DF125",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18618956"
+   ],
    "score": 0
   },
   {
@@ -5273,6 +5223,21 @@
    "sub": "Solo acoustic, Wowed Out Tour",
    "score": 2,
    "why": "like"
+  },
+  {
+   "id": "tm-rZ7HnEZ1Af83jV",
+   "date": "2026-12-06",
+   "time": "20:30",
+   "title": "(Grateful) DEAD Night: Never Miss a Sunday Show",
+   "cat": "music",
+   "venue": "Wild Horses",
+   "city": "New York, NY",
+   "url": "https://www.ticketweb.com/event/grateful-dead-night-never-miss-wild-horses-tickets/14412734",
+   "source": "ticketmaster",
+   "drive_hours": 4.25,
+   "act": "Grateful Dead",
+   "score": 3,
+   "why": "love"
   },
   {
    "id": "tm-Z7r9jZ1AA704M",
@@ -5955,6 +5920,21 @@
    "score": 1
   },
   {
+   "id": "tm-rZ7HnEZ1Af83j7",
+   "date": "2026-12-13",
+   "time": "20:30",
+   "title": "(Grateful) DEAD Night: Never Miss a Sunday Show",
+   "cat": "music",
+   "venue": "Wild Horses",
+   "city": "New York, NY",
+   "url": "https://www.ticketweb.com/event/grateful-dead-night-never-miss-wild-horses-tickets/14412704",
+   "source": "ticketmaster",
+   "drive_hours": 4.25,
+   "act": "Grateful Dead",
+   "score": 3,
+   "why": "love"
+  },
+  {
    "id": "espn-401910107",
    "date": "2026-12-14",
    "time": "19:30",
@@ -6387,6 +6367,21 @@
    "score": 0
   },
   {
+   "id": "tm-rZ7HnEZ1Af83Qf",
+   "date": "2026-12-20",
+   "time": "20:30",
+   "title": "(Grateful) DEAD Night: Never Miss a Sunday Show",
+   "cat": "music",
+   "venue": "Wild Horses",
+   "city": "New York, NY",
+   "url": "https://www.ticketweb.com/event/grateful-dead-night-never-miss-wild-horses-tickets/14412694",
+   "source": "ticketmaster",
+   "drive_hours": 4.25,
+   "act": "Grateful Dead",
+   "score": 3,
+   "why": "love"
+  },
+  {
    "id": "espn-401910175",
    "date": "2026-12-23",
    "time": "19:30",
@@ -6530,6 +6525,21 @@
    ],
    "sub": "Wrap It Up!",
    "score": 1
+  },
+  {
+   "id": "tm-rZ7HnEZ1Af83j0",
+   "date": "2026-12-27",
+   "time": "20:30",
+   "title": "(Grateful) DEAD Night: Never Miss a Sunday Show",
+   "cat": "music",
+   "venue": "Wild Horses",
+   "city": "New York, NY",
+   "url": "https://www.ticketweb.com/event/grateful-dead-night-never-miss-wild-horses-tickets/14412724",
+   "source": "ticketmaster",
+   "drive_hours": 4.25,
+   "act": "Grateful Dead",
+   "score": 3,
+   "why": "love"
   },
   {
    "id": "tm-vv177Z_4GkRj8Nc9",
@@ -6901,6 +6911,21 @@
    "url": "https://seatgeek.com/sisters-christmas-catechism-tickets/comedy/2027-01-03-2-pm/18601257",
    "source": "seatgeek",
    "score": 0
+  },
+  {
+   "id": "tm-rZ7HnEZ1Af83qf",
+   "date": "2027-01-03",
+   "time": "20:30",
+   "title": "(Grateful) DEAD Night: Never Miss a Sunday Show",
+   "cat": "music",
+   "venue": "Wild Horses",
+   "city": "New York, NY",
+   "url": "https://www.ticketweb.com/event/grateful-dead-night-never-miss-wild-horses-tickets/14412754",
+   "source": "ticketmaster",
+   "drive_hours": 4.25,
+   "act": "Grateful Dead",
+   "score": 3,
+   "why": "love"
   },
   {
    "id": "espn-401873157",
@@ -7823,6 +7848,18 @@
    "score": 0
   },
   {
+   "id": "tm-vv177Z_4GkBGY9oV",
+   "date": "2027-02-05",
+   "time": "19:30",
+   "title": "Jiaoying Summers",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/jiaoying-summers-boston-massachusetts-02-05-2027/event/0100655E8CC17474",
+   "source": "ticketmaster",
+   "score": 1
+  },
+  {
    "id": "tm-vv1AvZk4eGkdP6Cdw",
    "date": "2027-02-05",
    "time": "20:00",
@@ -8741,6 +8778,18 @@
    "score": 0
   },
   {
+   "id": "tm-vv177Z_4GkSdl9E6",
+   "date": "2027-03-02",
+   "time": "19:00",
+   "title": "Pepper (18+)",
+   "cat": "music",
+   "venue": "Paradise Rock Club presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/pepper-18-boston-massachusetts-03-02-2027/event/0100655CC3AD79C7",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vvG17Z_5RuG2CB",
    "date": "2027-03-02",
    "time": "20:00",
@@ -9016,6 +9065,18 @@
     "sg-18571869"
    ],
    "score": 1
+  },
+  {
+   "id": "tm-vv177Z_4GkM3b_fE",
+   "date": "2027-03-06",
+   "time": "19:00",
+   "title": "THE CASTELLOWS: ON THE HIGHWAY TOUR",
+   "cat": "music",
+   "venue": "Paradise Rock Club presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/the-castellows-on-the-highway-tour-boston-massachusetts-03-06-2027/event/0100655DD2619527",
+   "source": "ticketmaster",
+   "score": 0
   },
   {
    "id": "tm-vv1AvZkfeGkdi5z_i",
@@ -10754,6 +10815,18 @@
    "score": 0
   },
   {
+   "id": "tm-vv177Z_4GkRG_vCD",
+   "date": "2027-04-24",
+   "time": "18:30",
+   "title": "Panchiko",
+   "cat": "music",
+   "venue": "Citizens House of Blues Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/panchiko-boston-massachusetts-04-24-2027/event/0100655BCC6413BB",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv1A8vP48GA2tH8A",
    "date": "2027-04-24",
    "time": "19:00",
@@ -10940,6 +11013,55 @@
     "sg-18507337"
    ],
    "score": 1
+  },
+  {
+   "id": "tm-vv177Z_8GkINn93w",
+   "date": "2027-05-01",
+   "time": "17:20",
+   "title": "Luke Combs - My Kinda Saturday Night Tour 2027",
+   "cat": "music",
+   "venue": "Gillette Stadium",
+   "city": "Foxborough, MA",
+   "url": "https://www.ticketmaster.com/luke-combs-my-kinda-saturday-night-foxborough-massachusetts-05-01-2027/event/0100650A23A974B2",
+   "source": "ticketmaster",
+   "times": [
+    "17:20",
+    "17:45"
+   ],
+   "aka": [
+    "sg-18493402"
+   ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv177Z_7GkSjYNiw",
+   "date": "2027-05-01",
+   "time": "19:00",
+   "title": "Foy Vance World Tour | 2026 & 2027: Celebrating \"The Wake\" and \"If\"",
+   "cat": "music",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/foy-vance-world-tour-2026-2027-boston-massachusetts-05-01-2027/event/0100644CDCC23B32",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18084126"
+   ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv177Z_KGkwWWTjK",
+   "date": "2027-05-01",
+   "time": "19:00",
+   "title": "Keo - As Part of The Fenway Recordings Sessions",
+   "cat": "music",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/keo-as-part-of-the-fenway-boston-massachusetts-05-01-2027/event/0100653CBDF7F713",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18652921"
+   ],
+   "score": 0
   }
  ],
  "movies": [
@@ -11018,7 +11140,7 @@
   "picks": 5,
   "venues": 2,
   "espn": 76,
-  "ticketmaster": 535,
-  "seatgeek": 107
+  "ticketmaster": 545,
+  "seatgeek": 106
  }
 }
