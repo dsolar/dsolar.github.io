@@ -71,7 +71,38 @@
     return prev.map((v, i) => (i === 0 ? prev[0] + cur[0] : v * (1 - w) + cur[i] * w));
   }
 
+  /* ---------- real NBA roster moves ----------
+     Traded: he stays on your team at the same salary; only his NBA team changes.
+     Waived, bought out, released or retired (on no NBA roster): his contract comes off your books automatically and
+     he can't be signed until a real team signs him again.
+     New deals (a waived player catching on, a two-way converted, a new signing) enter free agency at the real salary
+     once the cap sheet has them; the commissioner can add one by hand in the meantime. */
+  function rosterIndex(stats) {
+    const r = stats && stats.rosters;
+    if (!r || (stats.rosterTeams || 0) < 30) return null;          // only trust a complete pull
+    const lastTeam = new Set();
+    for (const [id, v] of Object.entries(r)) lastTeam.add(id.split("-").slice(-1)[0] + "|" + v[0]);
+    return { r, lastTeam };
+  }
+  function onNbaRoster(p, idx) {
+    if (!idx) return true;
+    if (idx.r[p.id]) return true;
+    return idx.lastTeam.has(p.id.split("-").slice(-1)[0] + "|" + p.t);   // names spelled differently, same team
+  }
+  // League-level contract fixes from the commissioner: new signings, corrected salaries.
+  function mergeContracts(nba, extra) {
+    if (!extra || !Object.keys(extra).length) return nba;
+    const players = nba.players.filter((p) => !extra[p.id]);
+    for (const [id, c] of Object.entries(extra)) {
+      const base = nba.players.find((p) => p.id === id) || {};
+      players.push(Object.assign({}, base, { id, n: c.n || base.n, t: c.t || base.t, pos: c.pos || base.pos || "W", ps: c.ps || base.ps || [],
+        age: c.age || base.age || 25, yos: base.yos || 1, two: false, c: { sal: c.sal, opt: {}, signed: 0 } }));
+    }
+    return Object.assign({}, nba, { players });
+  }
+
   function buildPool(nba, stats) {
+    const idx = rosterIndex(stats);
     const avg = (stats && stats.avg) || {};
     const yrs = Object.keys(avg).sort();
     const cur = yrs.length ? avg[yrs[yrs.length - 1]] : {};
@@ -87,6 +118,9 @@
         fa: freeAgency(p, sal),
         line: blendLine(prev[p.id], cur[p.id]), cur: cur[p.id] || null, prev: prev[p.id] || null,
       });
+      const q = players[players.length - 1];
+      if (idx && idx.r[p.id] && idx.r[p.id][0] && idx.r[p.id][0] !== p.t) { q.was = p.t; q.t = idx.r[p.id][0]; }   // traded for real
+      q.gone = !onNbaRoster(q, idx);
     }
     rankNineCat(players);
     return players;
@@ -268,6 +302,23 @@
     return { ok: true };
   }
 
+  // Anyone rostered who is on no NBA roster comes off the books. Runs on every server tick.
+  function releaseGone(L, pool, week, now) {
+    let n = 0;
+    for (const t of L.teams) {
+      for (const pid of rostered(t)) {
+        const p = pool.find((x) => x.id === pid);
+        if (!p || !p.gone) continue;
+        dropPlayer(L, pool, t.id, pid, week, now);
+        delete L.waived[pid];
+        L.log[L.log.length - 1].text = `${p.n} is off every NBA roster (waived or released), so ${money(p.sal)} came off ${t.name}'s books`;
+        L.log[L.log.length - 1].kind = "nba";
+        n++;
+      }
+    }
+    return n;
+  }
+
   /* ---------- lineups ---------- */
   // Fill the nine slots with the best players who can play them: most specific slots first, then bump a starter
   // to a more flexible slot when that opens room for a better player.
@@ -371,6 +422,7 @@
     const dropSal = sum(drops.map((d) => ctx.byId[d].sal));
     const count = ros.length - drops.length;
     if (count >= L.settings.roster) return { ok: false, why: "Roster is full" };
+    if (player.gone) return { ok: false, why: `${player.n} isn't on an NBA roster` };
     const pay = payroll(team, ctx.byId) - dropSal;
     const open = L.settings.roster - count - 1;
     const hold = opts.reserve ? reserve(open, ctx.available, player.id, L.phase === "nba" ? openSpots(L, team.id) : 0) : 0;
@@ -919,7 +971,7 @@
   }
 
   const E = {
-    CATS, COLS, C, DEFAULTS, HOUR, totalWeeks, SLOTS, ELIG, positions, eligible, isOut, rostered, irProblem, moveToIR, activateIR,
+    CATS, COLS, C, DEFAULTS, HOUR, totalWeeks, rosterIndex, onNbaRoster, mergeContracts, releaseGone, SLOTS, ELIG, positions, eligible, isOut, rostered, irProblem, moveToIR, activateIR,
     autoLineup, lockTime, lineupFor, setLineup, lockLineups, defaultTiers, rng, money, isProspect, buildPool, buildProspects, rankNineCat, newLeague,
     snake, snakeFrom, setOrder, roundRobin, tierOf, ceilingOf, owed, pot, upgradeTier, active, payroll, owners, context, reserve,
     check, clockLen, onClock, nextPickOf, startDraft, pauseDraft, draftPick, botScore, autoChoice, catchUp, undoPick,

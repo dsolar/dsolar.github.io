@@ -280,3 +280,24 @@ test('commissioner veto puts everyone back within the window', () => {
   assert.ok(H.rosterInWeek(A, 4).includes(a) && !H.rosterInWeek(B, 4).includes(a));
   assert.equal(A.faab, fa + 2);
 });
+
+test('real roster moves: traded players keep their deal, waived ones come off the books', () => {
+  const rosters = {};
+  for (const p of pool) rosters[p.id] = [p.t, p.n, p.pos];
+  const victim = pool.find(p => p.rank === 30), moved = pool.find(p => p.rank === 31);
+  delete rosters[victim.id];
+  rosters[moved.id] = [moved.t === 'BOS' ? 'NYK' : 'BOS', moved.n, moved.pos];
+  const st = Object.assign({}, stats, { rosters, rosterTeams: 30 });
+  const pool2 = H.buildPool(nba, st);
+  const v = pool2.find(p => p.id === victim.id), m = pool2.find(p => p.id === moved.id);
+  assert.equal(v.gone, true); assert.equal(m.gone, false); assert.equal(m.was, moved.t);
+  const L = H.newLeague({ cba: nba.cba, teams: 10, seed: 3, now: T0 });
+  L.teams[2].hist.push({ pid: v.id, from: 1, to: null });
+  L.phase = 'league';
+  assert.equal(H.releaseGone(L, pool2, 3, T0), 1);
+  assert.equal(H.rostered(L.teams[2]).length, 0);
+  assert.equal(H.check(L, L.teams[3], v, H.context(L, pool2)).ok, false);
+  assert.ok(H.buildPool(nba, Object.assign({}, st, { rosterTeams: 29 })).every(p => !p.gone), 'a partial pull releases nobody');
+  const extra = H.mergeContracts(nba, { 'new-guy': { n: 'New Guy', t: 'BOS', pos: 'G', ps: ['PG'], age: 24, sal: [2e6, 0, 0, 0, 0] } });
+  assert.ok(H.buildPool(extra, stats).some(p => p.id === 'new-guy' && p.sal === 2e6));
+});
