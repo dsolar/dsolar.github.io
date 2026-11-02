@@ -25,8 +25,13 @@ from datetime import date, datetime, timedelta, timezone
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "prospect", "stats.json")
 UA = "davidsolar-prospect/1.0 (+https://davidsolar.dev/prospect/)"
-BOARD = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates={d}&limit=40"
-SUMMARY = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event={id}"
+# ESPN refuses some hosts from some networks, so each call tries these in order and sticks with the first that answers.
+BOARD = ["https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?region=us&lang=en&contentorigin=espn&dates={d}&limit=40",
+         "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates={d}&limit=40",
+         "https://cdn.espn.com/core/nba/scoreboard?xhr=1&dates={d}"]
+SUMMARY = ["https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/summary?region=us&lang=en&contentorigin=espn&event={id}",
+           "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event={id}",
+           "https://cdn.espn.com/core/nba/boxscore?xhr=1&gameId={id}"]
 STATS = ("https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/statistics/byathlete"
          "?region=us&lang=en&contentorigin=espn&isqualified=false&limit=250&page={page}"
          "&sort=general.avgMinutes:desc&season={season}&seasontype=2")
@@ -46,6 +51,26 @@ def get(url):
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json"})
     with urllib.request.urlopen(req, timeout=30) as r:
         return json.loads(r.read().decode("utf-8"))
+
+
+def get_any(urls, notes, tag, **kw):
+    """First answer from a list of mirror URLs. The cdn.espn.com ones wrap the payload in gamepackageJSON or content."""
+    errs = []
+    for i, u in enumerate(urls):
+        try:
+            d = get(u.format(**kw))
+        except Exception as e:
+            errs.append(f"{u.split('/')[2]} {type(e).__name__}: {e}"[:120])
+            continue
+        if "gamepackageJSON" in d:
+            d = d["gamepackageJSON"]
+        elif "content" in d and isinstance(d["content"], dict) and "sbData" in d["content"]:
+            d = d["content"]["sbData"]
+        if i:                                   # remember the mirror that worked so later calls go there first
+            urls.insert(0, urls.pop(i))
+        return d
+    notes.append(f"{tag}: " + " | ".join(errs))
+    return None
 
 
 def et_today():
@@ -177,10 +202,8 @@ def main():
     opener = date.fromisoformat(data["opener"]) if data.get("opener") else None
     added, d = 0, start
     while d <= today and added < MAX_GAMES_PER_RUN:
-        try:
-            board = get(BOARD.format(d=d.strftime("%Y%m%d")))
-        except Exception as e:
-            notes.append(f"board {d}: {type(e).__name__}: {e}"[:200])
+        board = get_any(BOARD, notes, f"board {d}", d=d.strftime("%Y%m%d"))
+        if board is None:
             d += timedelta(days=1)
             continue
         for ev in board.get("events", []):
@@ -194,11 +217,10 @@ def main():
             if opener is None:
                 opener = d
                 data["opener"] = d.isoformat()
-            try:
-                lines = box_lines(get(SUMMARY.format(id=gid)), notes)
-            except Exception as e:
-                notes.append(f"game {gid}: {type(e).__name__}: {e}"[:200])
+            summary = get_any(SUMMARY, notes, f"game {gid}", id=gid)
+            if summary is None:
                 continue
+            lines = box_lines(summary, notes)
             if not lines:
                 continue
             wk = data["wk"].setdefault(str(week_of(d, opener)), {})
