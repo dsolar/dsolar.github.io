@@ -163,13 +163,14 @@
   function chrome() {
     const tabs = $("#tabs"), who = $("#who");
     $("#lgName").textContent = LG ? LG.name : "";
-    if (!LG) { tabs.innerHTML = ""; who.innerHTML = ""; return; }
+    if (!LG) { tabs.innerHTML = ""; who.innerHTML = `<button class="btn sm" data-act="theme">${document.documentElement.dataset.theme === "dark" ? "Light" : "Dark"}</button>`; return; }
     const r = route();
     tabs.innerHTML = TABS.map(([k, n]) => `<a href="#${k}"${r.tab === k ? ' aria-current="page"' : ""}>${n}</a>`).join("");
     const t = myTeam();
-    who.innerHTML = t
+    const theme = `<button class="btn sm" data-act="theme" aria-label="Switch to ${document.documentElement.dataset.theme === "dark" ? "light" : "dark"} colors">${document.documentElement.dataset.theme === "dark" ? "Light" : "Dark"}</button>`;
+    who.innerHTML = theme + (t
       ? `<span class="chip"><b>${esc(t.abbr)}</b> ${esc(t.owner || "")}${me.commish ? " (commish)" : ""}</span><button class="btn sm" data-act="signout">Sign out</button>`
-      : `${me.commish ? `<span class="chip">Commissioner</span>` : ""}<button class="btn sm" data-act="signin">Sign in</button>${LG.teams.some((x) => !x.owner) ? `<button class="btn sm go" data-act="claim">Claim a team</button>` : ""}`;
+      : `${me.commish ? `<span class="chip">Commissioner</span>` : ""}<button class="btn sm" data-act="signin">Sign in</button>${LG.teams.some((x) => !x.owner) ? `<button class="btn sm go" data-act="claim">Claim a team</button>` : ""}`);
   }
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-act]");
@@ -178,6 +179,7 @@
     if (a === "claim") claimDialog(b.dataset.team != null ? +b.dataset.team : null);
     else if (a === "signin") signInDialog();
     else if (a === "signout") { me = {}; store.set(meKey(), me); toast("Signed out on this device."); render(); }
+    else if (a === "theme") { const d = document.documentElement.dataset.theme === "dark" ? "" : "dark"; if (d) document.documentElement.dataset.theme = d; else delete document.documentElement.dataset.theme; store.set("hc:theme", d || "light"); render(); }
     else if (a === "copy") { navigator.clipboard && navigator.clipboard.writeText(b.dataset.text).then(() => toast("Invite link copied.")); }
   });
 
