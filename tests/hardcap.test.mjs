@@ -130,7 +130,7 @@ test('waivers: high bid wins, salary must fit, FAAB is spent, adds count next we
   const { L, now } = drafted(10, 77, { claim: [1, 2] });
   H.resolveAuction(L, prospects, {}, now);
   const ctx = H.context(L, pool);
-  const fa = ctx.available.slice().sort((a, b) => a.sal - b.sal)[0];
+  const fa = ctx.available.filter(p => !p.gone).sort((a, b) => a.sal - b.sal)[0];
   const d1 = H.active(L.teams[1])[11], d2 = H.active(L.teams[2])[11];
   assert.equal(H.bidCheck(L, pool, prospects, 1, { add: fa.id, drop: d1, amt: 0 }).ok, false);
   assert.equal(H.bidCheck(L, pool, prospects, 1, { add: fa.id, drop: d1, amt: 80 }).ok, false);
@@ -213,7 +213,7 @@ test('IR: only Out players, off the books, healthy IR blocks moves, activation n
   assert.equal(H.moveToIR(L, pool, 0, star.id, inj, now, 3).ok, true);
   assert.equal(H.payroll(t, byId), before - star.sal);
   assert.equal(H.active(t).length, 11);
-  const fa = H.context(L, pool).available.sort((a, b) => b.z - a.z).find(p => p.sal < star.sal);
+  const fa = H.context(L, pool).available.filter(p => !p.gone).sort((a, b) => b.z - a.z).find(p => p.sal < star.sal);
   assert.equal(H.bidCheck(L, pool, prospects, 0, { add: fa.id, amt: 1 }, inj).ok, true);
   assert.equal(H.bidCheck(L, pool, prospects, 0, { add: fa.id, amt: 1 }, {}).ok, false, 'he got healthy');
   t.hist.push({ pid: fa.id, from: 4, to: null });
@@ -284,7 +284,8 @@ test('commissioner veto puts everyone back within the window', () => {
 test('real roster moves: traded players keep their deal, waived ones come off the books', () => {
   const rosters = {};
   for (const p of pool) rosters[p.id] = [p.t, p.n, p.pos];
-  const victim = pool.find(p => p.rank === 30), moved = pool.find(p => p.rank === 31);
+  const recent = new Set(Object.values(stats.wk || {}).flatMap(w => Object.keys(w)));
+  const victim = pool.find(p => p.rank >= 30 && !recent.has(p.id) && !p.gone) || pool.find(p => p.rank === 30), moved = pool.find(p => p.rank === 31);
   delete rosters[victim.id];
   rosters[moved.id] = [moved.t === 'BOS' ? 'NYK' : 'BOS', moved.n, moved.pos];
   const st = Object.assign({}, stats, { rosters, rosterTeams: 30 });

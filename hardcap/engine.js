@@ -77,18 +77,30 @@
      he can't be signed until a real team signs him again.
      New deals (a waived player catching on, a two-way converted, a new signing) enter free agency at the real salary
      once the cap sheet has them; the commissioner can add one by hand in the meantime. */
+  // Names differ between sources ("Ron Holland" and "Ronald Holland II"), so match on the name without suffixes,
+  // then on first initial plus last name.
+  const SUFFIX = /^(jr|sr|ii|iii|iv|v)$/;
+  const nameKeys = (slug) => {
+    const parts = slug.split("-").filter((x) => !SUFFIX.test(x));
+    return [parts.join("-"), parts.length > 1 ? parts[0][0] + "-" + parts[parts.length - 1] : parts.join("-")];
+  };
   function rosterIndex(stats) {
     const r = stats && stats.rosters;
     if (!r || (stats.rosterTeams || 0) < 30) return null;          // only trust a complete pull
-    const lastTeam = new Set();
-    for (const [id, v] of Object.entries(r)) lastTeam.add(id.split("-").slice(-1)[0] + "|" + v[0]);
-    return { r, lastTeam };
+    const full = {}, short = {};
+    for (const [id, v] of Object.entries(r)) { const [f, s2] = nameKeys(id); full[f] = v[0]; short[s2] = short[s2] ? "?" : v[0]; }
+    return { r, full, short };
   }
-  function onNbaRoster(p, idx) {
-    if (!idx) return true;
-    if (idx.r[p.id]) return true;
-    return idx.lastTeam.has(p.id.split("-").slice(-1)[0] + "|" + p.t);   // names spelled differently, same team
+  // His current NBA team, or null when he's on no roster. undefined when there's no complete roster pull.
+  function nbaTeam(p, idx) {
+    if (!idx) return undefined;
+    if (idx.r[p.id]) return idx.r[p.id][0];
+    const [f, s2] = nameKeys(p.id);
+    if (idx.full[f]) return idx.full[f];
+    if (idx.short[s2]) return idx.short[s2] === "?" ? p.t : idx.short[s2];
+    return null;
   }
+  const onNbaRoster = (p, idx) => nbaTeam(p, idx) !== null;
   // League-level contract fixes from the commissioner: new signings, corrected salaries.
   function mergeContracts(nba, extra) {
     if (!extra || !Object.keys(extra).length) return nba;
@@ -119,8 +131,11 @@
         line: blendLine(prev[p.id], cur[p.id]), cur: cur[p.id] || null, prev: prev[p.id] || null,
       });
       const q = players[players.length - 1];
-      if (idx && idx.r[p.id] && idx.r[p.id][0] && idx.r[p.id][0] !== p.t) { q.was = p.t; q.t = idx.r[p.id][0]; }   // traded for real
-      q.gone = !onNbaRoster(q, idx);
+      const now = nbaTeam(q, idx);
+      if (now && now !== p.t) { q.was = p.t; q.t = now; }        // traded for real: same contract, new team
+      // A player with box scores in the last two weeks is on a roster, whatever the roster pull says.
+      const recent = stats && stats.wk ? Object.keys(stats.wk).map(Number).sort((x, y) => y - x).slice(0, 2).some((w) => stats.wk[w][p.id]) : false;
+      q.gone = now === null && !recent;
     }
     rankNineCat(players);
     return players;
