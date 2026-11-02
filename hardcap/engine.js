@@ -372,14 +372,15 @@
     ["Brookline Bucketeers", "BKL"], ["Quincy Quicksilver", "QCY"], ["Somerville Swing", "SOM"], ["Dorchester Dimes", "DOT"],
     ["Medford Mavens", "MED"], ["Newton Nets", "NWT"], ["Worcester Wolves", "WOR"], ["Revere Rebounders", "REV"],
     ["Waltham Wizards", "WAL"], ["Natick Knights", "NAT"], ["Lowell Lumberjacks", "LOW"], ["Salem Spellcasters", "SAL"],
+    ["Dedham Dunkers", "DED"], ["Wellfleet Whalers", "WFT"], ["Malden Marksmen", "MAL"], ["Framingham Flyers", "FRA"],
   ];
-  const BOT_STYLES = ["value", "stars", "balanced", "youth", "value", "balanced", "stars", "youth", "balanced", "value", "stars", "balanced", "youth", "value", "stars", "balanced"];
+  const BOT_STYLES = ["value", "stars", "balanced", "youth", "value", "balanced", "stars", "youth", "balanced", "value", "stars", "balanced", "youth", "value", "stars", "balanced", "youth", "value", "stars", "balanced"];
 
   function newLeague(opts) {
     const s = Object.assign({}, DEFAULTS, opts.settings || {});
     s.tiers = s.tiers || defaultTiers(opts.cba);
     const seed = opts.seed || Math.floor(Math.random() * 2 ** 31);
-    const n = Math.max(4, Math.min(16, Math.round((opts.teams || 10) / 2) * 2));   // even, 4 to 16
+    const n = Math.max(4, Math.min(opts.maxTeams || 16, Math.round((opts.teams || 10) / 2) * 2));   // even, 4 to 16
     s.playoffTeams = Math.min(s.playoffTeams, n);
     const teams = TEAM_NAMES.slice(0, n).map(([name, abbr], i) => ({
       id: i, name, abbr, owner: null, style: BOT_STYLES[i % BOT_STYLES.length],
