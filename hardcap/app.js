@@ -660,17 +660,31 @@
     const ros = H.rosterInWeek(t, w).filter((id) => !(t.ir || []).includes(id));
     const bench = ros.filter((id) => !lu.includes(id));
     const s = (id) => seasonLine(id);
+    // Yahoo-style moves: tap Move on a player, then Here on the slot or bench spot he goes to.
+    const mv = mine && !locked && ui.lmove && ui.lmove.w === w ? ui.lmove : null;
+    const srcP = mv && BY[mv.pid];
+    const canHere = (slot, id, i) => {
+      if (!mv || id === mv.pid) return false;
+      if (i != null) {                                                    // a starting slot
+        if (!H.eligible(srcP, H.SLOTS[i])) return false;
+        if (!id) return true;
+        return mv.i == null || H.eligible(BY[id], H.SLOTS[mv.i]);         // from the bench he just sits; from a slot he swaps
+      }
+      return mv.i != null && H.eligible(BY[id], H.SLOTS[mv.i]);           // a bench player swaps into the starter's slot
+    };
     const row = (slot, id, i) => {
       const p = id && BY[id], l = id && s(id), g = l ? l[0] : 0, pg = (k) => (g ? (l[C[k]] / g).toFixed(1) : "-");
-      const choose = mine && !locked && i != null ? `<select class="slot" data-slot="${i}" aria-label="Who plays ${slot}"><option value="">Empty</option>${ros.filter((x) => H.eligible(BY[x], slot)).map((x) => `<option value="${x}"${x === id ? " selected" : ""}>${esc(BY[x].n)}${lu.includes(x) && x !== id ? " (starting)" : ""}</option>`).join("")}</select>` : "";
+      const here = canHere(slot, id, i), isSrc = mv && id && id === mv.pid;
+      const moveBtn = mine && !locked ? (isSrc ? `<button class="btn sm" data-lcancel>Cancel</button>` : here ? `<button class="btn sm go" data-lhere="${i == null ? "bn:" + id : i}">Here</button>` : !mv && p ? `<button class="btn sm" data-lmove="${id}" data-lfrom="${i == null ? "" : i}" aria-label="Move ${esc(p.n)}">Move</button>` : "") : "";
       const out = id && H.isOut(INJ[id]);
-      return `<tr class="${slot === "BN" ? "dim" : ""}"><td><b class="tag${slot === "BN" ? "" : " w"}">${slot}</b></td><td>${choose ? `${choose}${p ? `<div class="ps"><button type="button" class="btn link ps" data-player="${id}" title="Open ${esc(p.n)}'s card">${p.t}, ${H.positions(p).join("/")}, ${p.age}</button>${injTag(id)}</div>` : ""}` : p ? pl(id, true) : `<span class="muted">Empty</span>`}</td>
+      return `<tr class="${slot === "BN" ? "bench" : ""}${isSrc ? " me" : ""}${here ? " target" : ""}"><td style="white-space:nowrap"><b class="tag${slot === "BN" ? "" : " w"}">${slot}</b> ${moveBtn}</td><td>${p ? pl(id, true) : `<span class="muted">Empty</span>`}</td>
         <td class="r"><span class="sal num">${p ? money(p.sal) : ""}</span></td>${p ? gCell(p, w) : "<td></td>"}${p ? hcCell(p) : "<td></td>"}<td class="r num">${g || "-"}</td><td class="r num">${pg("pts")}</td><td class="r num hide-s">${pg("reb")}</td><td class="r num hide-s">${pg("ast")}</td>
         <td class="r" style="white-space:nowrap">${mine && p ? `${out && (t.ir || []).length < LG.settings.irSlots ? `<button class="btn sm" data-ir="${id}">To IR</button> ` : ""}<button class="btn sm" data-drop="${id}">Release</button>` : !mine && p && myTeam() ? `<button class="btn sm" data-trade="${t.id}" data-pid="${id}">Trade</button>` : ""}</td></tr>`;
     };
     return `<div class="tools"><b>Week ${w} lineup</b><span class="muted small">${weekLabel(w)}, ${locked ? "locked" : `locks ${fmtWhen(H.lockTime(opener, w))}`}</span><span class="grow"></span>
         ${w > curWeek() ? `<button class="btn sm" data-lw="${w - 1}">This week</button>` : w < H.totalWeeks(LG) ? `<button class="btn sm" data-lw="${w + 1}">Next week</button>` : ""}
-        ${mine && !locked ? `<button class="btn sm" data-lauto>Best lineup</button><button class="btn sm go" data-lsave="${w}">Save lineup</button>` : ""}</div>
+        ${mine && !locked ? `${mv && mv.i != null ? `<button class="btn sm go" data-lbench>Move to bench</button>` : ""}<button class="btn sm" data-lauto>Best lineup</button><button class="btn sm${ui.draftLineup && ui.draftLineup.w === w ? " go" : ""}" data-lsave="${w}">${ui.draftLineup && ui.draftLineup.w === w ? "Save best lineup" : "Save lineup"}</button>` : ""}</div>
+      ${mv ? `<p class="ps" style="margin:0">Moving ${esc(srcP.n)}: tap Here on a highlighted spot.</p>` : ""}
       <div class="table-wrap"><table class="t"><thead><tr><th>Slot</th><th>Player</th><th class="r">Salary</th><th class="r" title="NBA games this fantasy week">G</th><th class="r">HC</th><th class="r" title="Games played this season">GP</th><th class="r">PTS</th><th class="r hide-s">REB</th><th class="r hide-s">AST</th><th></th></tr></thead><tbody>
         ${lu.map((id, i) => row(H.SLOTS[i], id, i)).join("")}${bench.map((id) => row("BN", id, null)).join("")}
         ${(t.ir || []).map((id) => { const p = BY[id]; return `<tr><td><b class="tag t3">IR</b></td><td>${pl(id, true)}</td><td class="r"><span class="sal num muted">${money(p.sal)}</span><div class="ps">off the books</div></td><td colspan="5" class="ps">${esc((INJ[id] || [])[1] || (INJ[id] ? INJ[id][0] : "Healthy: activate him"))}</td><td class="r">${mine ? `<button class="btn sm go" data-activate="${id}">Activate</button>` : ""}</td></tr>`; }).join("")}
@@ -1313,6 +1327,19 @@
       const was = cur.indexOf(id); if (id && was >= 0) cur[was] = null;   // moving a starter empties his old slot
       cur[i] = id; ui.draftLineup = { w, t: t.id, slots: cur }; render();
     });
+    // Moves save right away, the way Yahoo does it.
+    const saveSlots = (w, slots, msg) => mutate(`Set week ${w} lineup`, (L) => H.setLineup(L, POOL, me.team, w, slots, now(), opener)).then((ok) => { ui.lmove = null; ui.draftLineup = null; if (ok) toast(msg); render(); });
+    const curSlots = (w) => (ui.draftLineup && ui.draftLineup.w === w ? ui.draftLineup.slots : H.lineupFor(LG, myTeam(), w, BY)).slice();
+    const lwNow = () => (ui.lw && ui.lw >= curWeek() ? ui.lw : editWeek());
+    on("[data-lmove]", "click", (e) => { const b = e.currentTarget; ui.lmove = { pid: b.dataset.lmove, i: b.dataset.lfrom === "" ? null : +b.dataset.lfrom, w: lwNow() }; render(); });
+    on("[data-lcancel]", "click", () => { ui.lmove = null; render(); });
+    on("[data-lhere]", "click", (e) => {
+      const m = ui.lmove, w = m.w, t = myTeam(), slots = curSlots(w), tgt = e.currentTarget.dataset.lhere;
+      if (tgt.startsWith("bn:")) { slots[m.i] = tgt.slice(3); }                         // bench player in, starter to the bench
+      else { const j = +tgt, other = slots[j]; slots[j] = m.pid; if (m.i != null) slots[m.i] = other || null; }
+      saveSlots(w, slots, `${nameOf(m.pid)} moved.`);
+    });
+    on("[data-lbench]", "click", () => { const m = ui.lmove, slots = curSlots(m.w); slots[m.i] = null; saveSlots(m.w, slots, `${nameOf(m.pid)} is on the bench.`); });
     on("[data-lauto]", "click", () => { const t = myTeam(), w = ui.lw && ui.lw >= curWeek() ? ui.lw : editWeek(); ui.draftLineup = { w, t: t.id, slots: H.autoLineup(H.rosterInWeek(t, w).filter((x) => !(t.ir || []).includes(x)).map((x) => BY[x])) }; render(); });
     on("[data-lsave]", "click", (e) => { const w = +e.currentTarget.dataset.lsave; const slots = ui.draftLineup && ui.draftLineup.w === w ? ui.draftLineup.slots : H.lineupFor(LG, myTeam(), w, BY); mutate(`Set week ${w} lineup`, (L) => H.setLineup(L, POOL, me.team, w, slots, now(), opener)).then((ok) => { if (ok) { ui.draftLineup = null; toast(`Week ${w} lineup saved.`); render(); } }); });
     on("[data-ir]", "click", (e) => { const id = e.currentTarget.dataset.ir; mutate(`Moved ${nameOf(id)} to IR`, (L) => H.moveToIR(L, POOL, me.team, id, INJ, now(), curWeek())).then((ok) => ok && toast(`${nameOf(id)} is on IR. ${money(BY[id].sal)} is off your books.`)); });
