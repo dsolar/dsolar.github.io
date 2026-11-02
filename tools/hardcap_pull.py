@@ -279,7 +279,8 @@ def main():
         # Season VORP is cumulative, so each fantasy week keeps the last reading taken during it; a week's VORP is
         # its reading minus the week before's.
         if data.get("opener"):
-            wk_now = str(week_of(today, date.fromisoformat(data["opener"])))
+            # A morning reading covers games through yesterday, so it belongs to yesterday's week.
+            wk_now = str(week_of(today - timedelta(days=1), date.fromisoformat(data["opener"])))
             data.setdefault("vorpWk", {})[wk_now] = {k: v[0] for k, v in vorp.items()}
 
     rosters, teams = pull_rosters(notes)
