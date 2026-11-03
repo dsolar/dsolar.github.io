@@ -349,6 +349,54 @@ body[data-screen] .tmsg.ok{color:var(--up)}
 body[data-screen] .modal{background:rgba(23,25,30,.45)}
 body[data-screen] .trade-pick select{background:var(--panel);color:var(--chalk)}
 
+
+/* Draft recap */
+.res-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:8px 24px}
+.res-top .go-row{margin:12px 0}
+.recap{margin-top:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel);overflow:hidden}
+.rc-head{display:flex;align-items:center;gap:16px;padding:16px 20px;background:var(--t1);color:#fff}
+.rc-title{flex:1;min-width:0}
+.rc-title .kick{display:block;font:700 11px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.82)}
+.rc-title b{display:block;font:400 clamp(28px,4.4vw,42px)/1 "Anton",Impact,sans-serif;text-transform:uppercase;letter-spacing:.02em;margin:6px 0 4px}
+.rc-meta{font-size:14px;color:rgba(255,255,255,.88)}
+.rc-grade{text-align:center;background:rgba(0,0,0,.25);border-radius:8px;padding:8px 14px;min-width:84px}
+.rc-grade b{display:block;font:400 46px/1 "Anton",Impact,sans-serif}
+.rc-grade span{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.82)}
+.rc-body{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) minmax(0,.9fr);gap:0}
+.rc-body>section{padding:16px 20px;border-right:1px solid var(--line);min-width:0}
+.rc-body>section:last-child{border-right:0}
+.rc-body h4{margin:0 0 10px;font:700 12px/1.2 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+.rc-body h4 .faint{letter-spacing:.04em;text-transform:none;font-weight:600}
+.rc-class{list-style:none;margin:0;padding:0}
+.rc-class li{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.rc-class li:last-child{border-bottom:0}
+.rc-class .rn{font:700 22px/1.1 var(--display);width:34px}
+.rc-class .rt b{font-size:16px}
+.rc-class .st{color:var(--dim)}
+.rc-trade{border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin-bottom:10px}
+.rc-trade-head{display:flex;align-items:center;gap:8px;font-size:14px}
+.rc-trade-head b{flex:1}
+.rc-trade-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;font-size:14px}
+.rc-trade-cols .lab{margin-bottom:4px}
+.rc-verdict{margin-top:8px;font-size:13px;font-weight:700;color:var(--dim)}
+.rc-verdict.up{color:var(--up)}.rc-verdict.down{color:var(--down)}
+.rc-fut{margin-bottom:12px}
+.fut{font-size:14px;padding:5px 0 5px 12px;border-left:3px solid var(--line-strong);margin-bottom:4px}
+.fut.in{border-left-color:var(--up)}
+.fut.out{border-left-color:var(--down)}
+.rc-cap table{border-collapse:collapse;width:100%;font-size:14px}
+.rc-cap th,.rc-cap td{padding:5px 4px;border-bottom:1px solid var(--line);text-align:center;position:static;background:none;font-size:13px;letter-spacing:0;text-transform:none}
+.rc-cap thead th{color:var(--faint);font-weight:600}
+.rc-cap tbody th{text-align:left;color:var(--faint);font-weight:600}
+.rc-cap em{font-style:normal;font-size:11px;font-weight:700;margin-left:3px}
+.rc-cap em.up{color:var(--up)}.rc-cap em.down{color:var(--down)}
+.rnd{margin-bottom:12px}
+.all-picks.two{columns:2;column-gap:0}
+.all-picks.two li{break-inside:avoid}
+.other-trades{list-style:none;margin:0;padding:0;font-size:14px}
+.other-trades li{padding:8px 0;border-bottom:1px solid var(--line)}
+@media (max-width:980px){.rc-body{grid-template-columns:1fr}.rc-body>section{border-right:0;border-bottom:1px solid var(--line)}.all-picks.two{columns:1}}
+
 /* The pick is in */
 .reveal{position:fixed;inset:0;z-index:90;background:#0A0A0B;color:#fff;display:grid;grid-template-columns:minmax(0,36%) minmax(0,1fr);font-family:"IBM Plex Sans Condensed","Arial Narrow",sans-serif;cursor:pointer;animation:rv-in .18s ease-out}
 @keyframes rv-in{from{opacity:0}to{opacity:1}}
@@ -437,10 +485,10 @@ body[data-screen] .trade-pick select{background:var(--panel);color:var(--chalk)}
   <div id="mock-view" hidden></div>
 </main>
 
-<script src="common.js?v=9"></script>
-<script src="engine.js?v=9"></script>
-<script src="board.js?v=9"></script>
-<script src="mock.js?v=9"></script>
+<script src="common.js?v=10"></script>
+<script src="engine.js?v=10"></script>
+<script src="board.js?v=10"></script>
+<script src="mock.js?v=10"></script>
 <script>
 (() => {
   // #nba, #nfl, #nba/mock, #nfl/mock

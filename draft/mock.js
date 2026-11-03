@@ -81,6 +81,7 @@
     M.taken = {};
     D.chart = M.chart;
     M.ledger = E.ledger(D);
+    M.ledger0 = M.ledger.map((a) => ({ ...a }));
     M.trades = [];
     M.offers = {};
     M.trade = null;
@@ -243,7 +244,7 @@
     };
     aGives.forEach((x) => apply(x, a, b));
     bGives.forEach((x) => apply(x, b, a));
-    M.trades.push({ at: onClock() ? onClock().n : null, a, b, aGives: aGives.map(label), bGives: bGives.map(label) });
+    M.trades.push({ at: onClock() ? onClock().n : null, a, b, aGives: aGives.map(label), bGives: bGives.map(label), aVal: sum(aGives), bVal: sum(bGives) });
   }
 
   function tradeModal() {
@@ -307,26 +308,87 @@
     const m = rel.reduce((s, x) => s + x, 0) / rel.length;
     return m >= 1 ? "A+" : m >= 0.5 ? "A" : m >= 0.2 ? "A-" : m >= -0.2 ? "B+" : m >= -0.5 ? "B" : m >= -0.8 ? "B-" : m >= -1.2 ? "C+" : m >= -1.6 ? "C" : "D";
   }
+  // ---------- the recap ----------
+  const rdName = (r) => (r === 1 ? "1st" : r === 2 ? "2nd" : r === 3 ? "3rd" : `${r}th`);
+  const futLabel = (a) => `${a.year} ${rdName(a.rd)}${a.orig !== a._for ? ` (${a.orig})` : ""}${a.prot ? `, protected ${a.prot}` : ""}`;
+
+  function futureMoves(t) {
+    const before = Object.fromEntries((M.ledger0 || []).map((a) => [a.id, a]));
+    const added = [], sent = [];
+    for (const a of M.ledger || []) {
+      const b = before[a.id];
+      if (!b) continue;
+      if (a.owner === t && b.owner !== t) added.push({ ...a, _for: t });
+      if (b.owner === t && a.owner !== t) sent.push({ ...b, prot: a.prot || b.prot, _for: t, to: a.owner });
+    }
+    const sort = (x, y) => x.year - y.year || x.rd - y.rd;
+    return { added: added.sort(sort), sent: sent.sort(sort) };
+  }
+
+  function capital(t) {
+    const years = (D.future || {}).years || [];
+    const count = (L, y, rd) => (L || []).filter((a) => a.year === y && a.rd === rd && a.owner === t).length;
+    return years.map((y) => ({ y, f: count(M.ledger, y, 1), f0: count(M.ledger0, y, 1), s: count(M.ledger, y, 2), s0: count(M.ledger0, y, 2) }));
+  }
+
+  function recapCard(t) {
+    const tm = D.teams[t], list = M.picks.filter((p) => p.owner === t && p.player);
+    const trades = (M.trades || []).filter((x) => x.a === t || x.b === t);
+    const fm = futureMoves(t), cap = capital(t);
+    const g = grade(list);
+    const tradeNet = trades.reduce((s2, x) => s2 + (x.a === t ? x.bVal - x.aVal : x.aVal - x.bVal), 0);
+    const fmt = (v) => (D.league === "nba" ? v.toFixed(1) : Math.round(v).toLocaleString("en-US"));
+    const delta = (n, n0) => (n > n0 ? `<em class="up">+${n - n0}</em>` : n < n0 ? `<em class="down">${n - n0}</em>` : "");
+    const trCard = (x) => {
+      const mineA = x.a === t, other = mineA ? x.b : x.a;
+      const got = mineA ? x.bGives : x.aGives, gave = mineA ? x.aGives : x.bGives;
+      const gv = mineA ? x.bVal : x.aVal, sv = mineA ? x.aVal : x.bVal;
+      const pct = sv ? Math.round((gv / sv - 1) * 100) : 0;
+      return `<div class="rc-trade"><div class="rc-trade-head">${BB.logo(D, other, 22)}<b>With ${esc(D.teams[other].city)} ${esc(D.teams[other].name)}</b>${x.at ? `<span class="faint">at No. ${x.at}</span>` : ""}</div>
+        <div class="rc-trade-cols"><div><span class="lab">Got</span>${got.map((l) => `<div>${esc(l)}</div>`).join("") || "<div class=\"faint\">Nothing</div>"}</div>
+        <div><span class="lab">Gave</span>${gave.map((l) => `<div>${esc(l)}</div>`).join("") || "<div class=\"faint\">Nothing</div>"}</div></div>
+        <div class="rc-verdict ${pct >= 3 ? "up" : pct <= -3 ? "down" : ""}">${pct >= 3 ? `Won it by ${pct}% on the chart` : pct <= -3 ? `Paid ${-pct}% over the chart` : "About even on the chart"}</div></div>`;
+    };
+    return `<article class="recap" style="--t1:${tm.c[0]};--t2:${tm.c[1]}">
+      <header class="rc-head">${BB.logo(D, t, 56, "tl", true)}
+        <div class="rc-title"><span class="kick">${D.year} ${D.league.toUpperCase()} draft recap</span><b>${esc(tm.city)} ${esc(tm.name)}</b>
+          <span class="rc-meta">${list.length} pick${list.length === 1 ? "" : "s"} &middot; ${trades.length} trade${trades.length === 1 ? "" : "s"}${fm.added.length || fm.sent.length ? ` &middot; ${fm.added.length} future pick${fm.added.length === 1 ? "" : "s"} in, ${fm.sent.length} out` : ""}</span></div>
+        ${g ? `<div class="rc-grade"><b>${g}</b><span>class grade</span></div>` : ""}</header>
+      <div class="rc-body">
+        <section><h4>Draft class</h4>${list.length ? `<ol class="rc-class">${list.map((x) => `<li><span class="rn">${x.n}</span>${BB.school(x.player, 26)}
+          <span class="rt"><b>${esc(x.player.n)}</b><small>${esc([x.player.pos, x.player.school, x.player.ht].filter(Boolean).join(", "))} &middot; consensus ${x.player.rank}</small>${BB.statLine(x.player) ? `<small class="st">${BB.statLine(x.player)}</small>` : ""}</span>${valueTag(x)}</li>`).join("")}</ol>` : `<p class="note">Traded out of this draft.</p>`}</section>
+        <section><h4>Trades${trades.length ? ` <span class="faint">net ${tradeNet >= 0 ? "+" : ""}${fmt(tradeNet)} on the chart</span>` : ""}</h4>${trades.length ? trades.map(trCard).join("") : `<p class="note">No trades this time. Hit Trade or take a call on the clock next run.</p>`}</section>
+        <section><h4>Future picks</h4>
+          ${fm.added.length ? `<div class="rc-fut"><span class="lab">Added</span>${fm.added.map((a) => `<div class="fut in">${esc(futLabel(a))}</div>`).join("")}</div>` : ""}
+          ${fm.sent.length ? `<div class="rc-fut"><span class="lab">Traded away</span>${fm.sent.map((a) => `<div class="fut out">${esc(futLabel(a))} <span class="faint">to ${esc(a.to)}</span></div>`).join("")}</div>` : ""}
+          ${!fm.added.length && !fm.sent.length ? `<p class="note">No future picks moved.</p>` : ""}
+          <div class="rc-cap"><span class="lab">Picks on hand</span><table><thead><tr><th></th>${cap.map((c) => `<th>${c.y}</th>`).join("")}</tr></thead><tbody>
+            <tr><th>1st</th>${cap.map((c) => `<td>${c.f}${delta(c.f, c.f0)}</td>`).join("")}</tr>
+            <tr><th>2nd</th>${cap.map((c) => `<td>${c.s}${delta(c.s, c.s0)}</td>`).join("")}</tr></tbody></table></div>
+        </section>
+      </div>
+    </article>`;
+  }
+
   function done() {
     clearTimeout(timer);
-    const mine = [...M.mine].filter((t) => M.picks.some((p) => p.owner === t));
+    const mine = [...M.mine].filter((t) => M.picks.some((p) => p.owner === t) || (M.trades || []).some((x) => x.a === t || x.b === t));
     const steals = M.picks.filter((p) => p.player).map((p) => ({ p, v: E.value(p.n, p.player) / Math.max(4, p.n * 0.25) })).sort((a, b) => b.v - a.v);
-    const card = (t) => {
-      const tm = D.teams[t], list = M.picks.filter((p) => p.owner === t);
-      return `<div class="res-card" style="--t1:${tm.c[0]};--t2:${tm.c[1]}"><div class="res-head">${BB.logo(D, t, 44, "tl", true)}<b class="disp">${esc(tm.city)} ${esc(tm.name)}</b><span class="grade">${grade(list)}</span></div>
-        <ul>${list.map((x) => `<li><span class="rn">${x.n}</span>${BB.school(x.player, 22)}<span class="rt"><b>${esc(x.player.n)}</b><small>${esc([x.player.pos, x.player.school].filter(Boolean).join(", "))} &middot; consensus ${x.player.rank}</small></span>${valueTag(x)}</li>`).join("")}</ul></div>`;
-    };
+    const rounds = [...new Set(M.picks.map((x) => x.rnd))];
+    const row = (x) => `<li class="${M.mine.has(x.owner) ? "mine" : ""}"><span class="rn">${x.n}</span>${BB.logo(D, x.owner, 24)}<span class="rt"><b>${esc(x.player.n)}</b><small>${esc(x.owner)}${x.owner !== x.orig ? ` via ${esc(x.orig)}` : ""} &middot; ${esc([x.player.pos, x.player.school].filter(Boolean).join(", "))}</small></span>${valueTag(x)}</li>`;
+    const mini = (list) => `<ol class="all-picks">${list.map(({ p }) => `<li><span class="rn">${p.n}</span>${BB.logo(D, p.owner, 24)}<span class="rt"><b>${esc(p.player.n)}</b><small>${esc(p.owner)} &middot; consensus ${p.player.rank}</small></span>${valueTag(p)}</li>`).join("")}</ol>`;
+    const others = (M.trades || []).filter((x) => !M.mine.has(x.a) && !M.mine.has(x.b));
     $("#mock-view").innerHTML = `<section class="results">
-      <div class="setup-head"><h2 class="disp">The draft</h2><p class="sub">${mine.length ? "Grades are against the consensus: taking a player later than his rank is value, earlier is a reach." : "You watched this one. Here's how it went."}</p></div>
-      ${mine.length ? `<div class="res-grid">${mine.map(card).join("")}</div>` : ""}
-      ${M.trades && M.trades.length ? `<div class="trades"><h3 class="disp">Trades</h3><ul>${M.trades.map((t) => `<li>${BB.logo(D, t.a, 22)}<span><b>${esc(t.a)}</b> sent ${esc(t.aGives.join(" + ") || "nothing")} to <b>${esc(t.b)}</b> for ${esc(t.bGives.join(" + ") || "nothing")}</span>${BB.logo(D, t.b, 22)}</li>`).join("")}</ul></div>` : ""}
-      <div class="go-row"><button type="button" class="btn go" data-act="again">Run it again</button><button type="button" class="btn" data-act="card">Share card</button><button type="button" class="btn" data-act="copy">Copy the results</button><button type="button" class="link" data-act="back">Change teams</button><span class="note" id="copied"></span></div>
+      <div class="res-top"><div class="setup-head"><h2 class="disp">Draft recap</h2><p class="sub">${mine.length ? "Grades are against the consensus: a player taken later than his rank is value, earlier is a reach. Trades are judged on the pick value chart." : "You watched this one. Here's how it went."}</p></div>
+        <div class="go-row"><button type="button" class="btn go" data-act="again">Run it again</button><button type="button" class="btn" data-act="card">Share card</button><button type="button" class="btn" data-act="copy">Copy the results</button><button type="button" class="link" data-act="back">Change teams</button><span class="note" id="copied"></span></div></div>
+      ${mine.map(recapCard).join("")}
       <div class="res-split">
-        <div><h3 class="disp">Every pick</h3><ol class="all-picks">${M.picks.map((x) => `<li class="${M.mine.has(x.owner) ? "mine" : ""}"><span class="rn">${x.n}</span>${BB.logo(D, x.owner, 24)}<span class="rt"><b>${esc(x.player.n)}</b><small>${esc(x.owner)}${x.owner !== x.orig ? ` via ${esc(x.orig)}` : ""} &middot; ${esc([x.player.pos, x.player.school].filter(Boolean).join(", "))}</small></span>${valueTag(x)}</li>`).join("")}</ol></div>
-        <div><h3 class="disp">Best values</h3><ol class="all-picks">${steals.slice(0, 5).map(({ p }) => `<li><span class="rn">${p.n}</span>${BB.logo(D, p.owner, 24)}<span class="rt"><b>${esc(p.player.n)}</b><small>consensus ${p.player.rank}</small></span>${valueTag(p)}</li>`).join("")}</ol>
-          <h3 class="disp">Biggest reaches</h3><ol class="all-picks">${steals.slice(-5).reverse().map(({ p }) => `<li><span class="rn">${p.n}</span>${BB.logo(D, p.owner, 24)}<span class="rt"><b>${esc(p.player.n)}</b><small>consensus ${p.player.rank}</small></span>${valueTag(p)}</li>`).join("")}</ol></div>
+        <div><h3 class="disp">The whole draft</h3>${rounds.map((r) => `<div class="rnd"><span class="lab">Round ${r}</span><ol class="all-picks two">${M.picks.filter((x) => x.rnd === r).map(row).join("")}</ol></div>`).join("")}</div>
+        <aside><h3 class="disp">Best values</h3>${mini(steals.slice(0, 5))}<h3 class="disp">Biggest reaches</h3>${mini(steals.slice(-5).reverse())}
+          ${others.length ? `<h3 class="disp">Other trades</h3><ul class="other-trades">${others.map((x) => `<li><b>${esc(x.a)}</b> sent ${esc(x.aGives.join(" + "))} to <b>${esc(x.b)}</b> for ${esc(x.bGives.join(" + "))}</li>`).join("")}</ul>` : ""}</aside>
       </div>
     </section>`;
+    window.scrollTo({ top: document.getElementById("mock-view").offsetTop - 12, behavior: "smooth" });
   }
   function copyText() {
     const lines = [`${D.year} ${D.league.toUpperCase()} mock draft (davidsolar.dev/draft)`];
