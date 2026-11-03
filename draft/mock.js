@@ -14,10 +14,10 @@
   function fresh(lg) {
     const p = prefs[lg] || {};
     return { lg, phase: "setup", mine: new Set(p.mine || []), rounds: p.rounds || 1, style: p.style || "balanced",
-      speed: p.speed || "fast", chart: p.chart || "jj", basis: p.basis || "projected", draw: p.draw !== false, reveal: p.reveal || "mine", seed: null, picks: [], i: 0, q: "", pos: "all", paused: false, preview: null };
+      speed: p.speed || "fast", chart: p.chart || "jj", basis: p.basis || "projected", draw: p.draw !== false, reveal: p.reveal || "mine", deals: p.deals || "all", seed: null, picks: [], i: 0, q: "", pos: "all", paused: false, preview: null };
   }
   function savePrefs() {
-    prefs[M.lg] = { mine: [...M.mine], rounds: M.rounds, style: M.style, speed: M.speed, chart: M.chart, basis: M.basis, draw: M.draw, reveal: M.reveal };
+    prefs[M.lg] = { mine: [...M.mine], rounds: M.rounds, style: M.style, speed: M.speed, chart: M.chart, basis: M.basis, draw: M.draw, reveal: M.reveal, deals: M.deals };
     BB.store.set("bigboard-mock", prefs);
   }
   // NFL mocks go as deep as the boards do: three rounds now, up to seven as the boards grow toward the draft.
@@ -44,6 +44,7 @@
         <div><span class="lab">Rounds</span>${seg("rounds", Array.from({ length: maxRounds() }, (_, i) => [i + 1, String(i + 1)]), M.rounds)}</div>
         <div><span class="lab">The other ${D.league === "nba" ? "29" : "31"}</span>${seg("style", [["chalk", "Chalk"], ["balanced", "Balanced"], ["chaos", "Chaos"]], M.style)}</div>
         <div><span class="lab">Speed</span>${seg("speed", [["slow", "Slow"], ["fast", "Fast"], ["instant", "Instant"]], M.speed)}</div>
+        <div><span class="lab">Trades</span>${seg("deals", [["all", "League-wide"], ["mine", "Only on my clock"], ["off", "Off"]], M.deals)}</div>
         <div><span class="lab">Full-screen pick card</span>${seg("reveal", [["all", "Every pick"], ["mine", "My picks"], ["off", "Off"]], M.reveal)}</div>
       </div>
       <div class="teams-head"><span class="lab">Your team${mine.length === 1 ? "" : "s"}</span><span class="note">${mine.length ? `${mine.map((t) => `${D.teams[t].city} ${D.teams[t].name}`).join(", ")}: ${mine.reduce((s, t) => s + count(t), 0)} pick${mine.reduce((s, t) => s + count(t), 0) === 1 ? "" : "s"} as it stands` : "None picked: you'll just watch."}</span>
@@ -87,6 +88,7 @@
     M.ledger = E.ledger(D);
     M.ledger0 = M.ledger.map((a) => ({ ...a }));
     M.trades = [];
+    M.ticker = []; M.shop = null; M.lastShop = null;
     M.offers = {};
     M.trade = null;
     room();
@@ -102,12 +104,71 @@
     const p = onClock();
     if (!p) { M.phase = "done"; done(); return; }
     if (isMine(p) || M.paused || M.trade) { room(); return; }
+    if (M.deals === "all" && !p.tried) {
+      p.tried = true;
+      if (shopToUser(p)) { room(); return; }
+      botTrade(p);
+    }
     const delay = M.skip ? 0 : SPEED[M.speed];
     timer = setTimeout(() => { botPick(); }, delay);
     if (delay) room();
   }
+  /* Other teams deal too: now and then a team down the board calls the team on the clock, priced the same way
+     as the offers you get. About two trades in a first round, a few more on Chaos. */
+  function botTrade(p) {
+    const rate = (D.league === "nba" ? 0.06 : 0.07) * (p.rnd === 1 ? 1 : 0.6) * (0.6 + STYLE[M.style]);
+    if (M.rand() > rate) return false;
+    const o = E.offersFor(D, { picks: M.picks, i: M.i, available: available(), mine: M.mine, ledger: M.ledger, chaos: STYLE[M.style] }, M.rand)[0];
+    if (!o) return false;
+    const seller = p.owner;
+    doTrade(seller, o.team, [{ kind: "pick", n: p.n }], o.give);
+    p.want = o.target;
+    M.ticker.unshift({ buyer: o.team, seller, n: p.n, give: o.give.map(label) });
+    return true;
+  }
+  /* The team on the clock shops its pick to you when someone it figures you'd want is still there and won't
+     last to your next pick. Rare, and never twice in six picks. */
+  function shopToUser(p) {
+    if (!M.mine.size || M.skip || M.speed === "instant") return false;
+    if (M.lastShop != null && M.i - M.lastShop < 6) return false;
+    const later = M.picks.slice(M.i + 1);
+    const next = later.find(isMine);
+    const av = available();
+    if (!next || !av[0] || av[0].score > next.n - 4 || M.rand() > 0.3) return false;
+    const buyers = [...M.mine].filter((t) => later.some((q) => q.owner === t));
+    const o = E.offersFor(D, { picks: M.picks, i: M.i, available: av, mine: new Set(), buyers, force: true, ledger: M.ledger, chaos: STYLE[M.style] }, M.rand)[0];
+    if (!o) return false;
+    M.lastShop = M.i;
+    M.shop = { ...o, seller: p.owner, n: p.n, best: av[0] };
+    M.paused = true;
+    return true;
+  }
+  function shopPanel() {
+    const o = M.shop, tm = BB.team(D, o.seller);
+    return `<div class="offers shop"><span class="lab">${esc(tm.city)} is shopping No. ${o.n}</span><div class="offer-row"><div class="offer" style="--t1:${tm.c[0]}">${BB.logo(D, o.seller, 34)}<div class="ot"><b>No. ${o.n} is yours for ${o.give.map((x) => esc(label(x))).join(" + ")}</b>
+      <span>${esc(o.best.n)} (consensus No. ${o.best.rank}) is still on the board.</span>${o.note ? `<small class="qbtag">${esc(o.note)}</small>` : ""}</div>
+      <div class="oa"><button type="button" class="btn sm go" data-shop="yes">Move up</button><button type="button" class="link" data-shop="no">Pass</button></div></div></div></div>`;
+  }
+  // NFL.com's needs for the team on the clock, most pressing first; struck through once it has taken one there.
+  function needsView(team) {
+    const needs = (D.needs || {})[team];
+    if (!needs || !needs.length) return "";
+    const got = (M.taken[team] || []).slice();
+    return `<span class="needs"><span class="lab">Needs</span>${needs.map((n) => {
+      const k = got.indexOf(n);
+      if (k >= 0) got.splice(k, 1);
+      return k >= 0 ? `<s title="Drafted">${esc(n)}</s>` : `<b>${esc(n)}</b>`;
+    }).join("")}</span>`;
+  }
+  function tickerView() {
+    const t = (M.ticker || []).slice(0, 2);
+    if (!t.length) return "";
+    return `<div class="ticker">${t.map((x) => `<p>${BB.logo(D, x.buyer, 22)}<span><b>Trade:</b> ${esc(D.teams[x.buyer].city)} moves up to No. ${x.n}, sending ${esc(x.give.join(" + "))} to ${esc(D.teams[x.seller].city)}.</span></p>`).join("")}</div>`;
+  }
   function botPick() {
     const p = onClock();
+    const want = p.want && available().find((x) => x.id === p.want);
+    if (want) { take(want); return; }
     const pick = E.botPick(available(), { rand: M.rand, chaos: STYLE[M.style], league: D.league, taken: M.taken[p.owner] || [],
       needs: (D.needs || {})[p.owner] || [], pick: p.n });
     take(pick);
@@ -176,7 +237,7 @@
         <div class="clock-logo">${BB.logo(D, p.owner, 64, "tl big", true)}</div>
         <div class="clock-txt"><span class="kick">${mineNow ? "You're on the clock" : "On the clock"} &middot; Round ${p.rnd}, pick ${p.n}</span>
           <b class="disp">${esc(tm.city)} ${esc(tm.name)}</b>
-          <span class="sub2">${esc((D.records || {})[p.owner] || "")}${p.owner !== p.orig ? ` &middot; via ${esc(BB.team(D, p.orig).city)}${p.note ? ` (${esc(p.note)})` : ""}` : ""}</span></div>
+          <span class="sub2">${esc((D.records || {})[p.owner] || "")}${p.owner !== p.orig ? ` &middot; via ${esc(BB.team(D, p.orig).city)}${p.note ? ` (${esc(p.note)})` : ""}` : ""}</span>${needsView(p.owner)}</div>
         <div class="clock-act">
           ${mineNow ? `<span class="note on">Pick from the board</span>` : `<button type="button" class="btn sm" data-act="pause">${M.paused ? "Resume" : "Pause"}</button>`}
           ${M.mine.size ? `<button type="button" class="btn sm" data-act="trade">Trade</button>` : ""}
@@ -185,7 +246,8 @@
           <button type="button" class="link" data-act="reveal" title="The full-screen card when a pick comes in">Pick card: ${M.reveal === "all" ? "every pick" : M.reveal === "mine" ? "my picks" : "off"}</button>
           <button type="button" class="link" data-act="restart">Restart</button></div>
       </div>` : ""}
-      ${mineNow ? offersPanel() : ""}
+      ${M.shop ? shopPanel() : mineNow && M.deals !== "off" ? offersPanel() : ""}
+      ${tickerView()}
       ${M.trade ? tradeModal() : ""}
       <div class="room-grid">
         <aside class="rail" aria-label="Picks">${rounds.map((r) => `<div class="rail-round">Round ${r}</div>${M.picks.filter((x) => x.rnd === r).map((x) => {
@@ -512,6 +574,13 @@
       else if (o) { o.status = "passed"; room(); }
       return;
     }
+    const sh = e.target.closest("[data-shop]");
+    if (sh && M.shop) {
+      const o = M.shop;
+      M.shop = null; M.paused = false;
+      if (sh.dataset.ans === "yes" || sh.dataset.shop === "yes") doTrade(o.seller, o.team, [{ kind: "pick", n: o.n }], o.give);
+      step(); room(); return;
+    }
     const dr = e.target.closest("[data-draft]");
     if (dr && isMine(onClock())) { take(M.pool.find((x) => x.id === dr.dataset.draft)); return; }
     const a = e.target.closest("[data-act]");
@@ -523,7 +592,7 @@
     else if (act === "draft") start();
     else if (act === "back") { clearTimeout(timer); M.phase = "setup"; setup(); }
     else if (act === "reveal") { M.reveal = { all: "mine", mine: "off", off: "all" }[M.reveal] || "mine"; savePrefs(); room(); }
-    else if (act === "pause") { M.paused = !M.paused; step(); room(); }
+    else if (act === "pause") { M.paused = !M.paused; if (!M.paused) M.shop = null; step(); room(); }
     else if (act === "skip") { M.paused = false; M.skip = true; step(); }
     else if (act === "restart") { clearTimeout(timer); if (M.revealing) { M.revealing.close(); M.revealing = null; } M.phase = "setup"; M.skip = false; setup(); }
     else if (act === "again") { M.seed = (Math.random() * 2 ** 31) | 0; if (D.league === "nba" && M.draw) { M.phase = "lottery"; lotteryView(); } else start(); }

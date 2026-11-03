@@ -256,7 +256,10 @@
   function pickValue(D, n) {
     if (D.league === "nfl") { const c = chartOf(D); return c[Math.max(1, Math.min(n, c.length)) - 1] || 1; }
     const k = Math.max(1, Math.min(n, 60));
-    return k <= 30 ? 100 * Math.exp(-0.08 * (k - 1)) : 9.8 * Math.exp(-0.07 * (k - 30));
+    // Steep through the top 10, flatter after (fit to the real trade-ups in tools/draft_trades_test.js).
+    if (k <= 10) return 100 * Math.exp(-0.11 * (k - 1));
+    if (k <= 30) return 37.15 * Math.exp(-0.067 * (k - 10));
+    return 9.8 * Math.exp(-0.07 * (k - 30));
   }
 
   // Every future pick in the trade window, with who holds it now and whether it can move.
@@ -291,9 +294,12 @@
     return p ? p[0] : Math.ceil(Object.keys(D.teams).length / 2);
   }
 
-  /* A future pick's value, the way front offices count it: a round lower for every year out (next year's 1st is
-     worth a pick in the middle of this year's 2nd, two years out a 3rd), at a slot pulled toward the middle of
-     the round, halfway for next year and three quarters for the year after, from where the team stands now.
+  /* A future pick's value, the way front offices count it: half a round lower for every year out (an average
+     team's 1st next year is worth about the top of this year's 2nd, two years out the middle of the 2nd), at a
+     slot pulled toward the middle of the round, halfway for next year and three quarters for the year after,
+     from where the team stands now. Half a round is what the big trade-ups actually paid: the Rams (15 to 1),
+     Eagles (8 to 2), Chiefs (27 to 10) and 49ers (12 to 3) all land within 10% of even at that rate, and a full
+     round would make every one of them look like a steal (tools/draft_trades_test.js).
      A protected pick only counts for the share of likely landing spots where it actually conveys. */
   function futureValue(D, a) {
     const N = Object.keys(D.teams).length, mid = (N + 1) / 2, k = Math.max(1, a.year - (D.year || 2027));
@@ -304,8 +310,10 @@
       // NBA future firsts are the scarcest currency there is (the Stepien rule caps how many a team can move),
       // so they barely discount; seconds are the change teams make deals with.
       v = pickValue(D, Math.round((a.rd - 1) * N + proj)) * Math.pow(a.rd === 1 ? 0.95 : 0.85, k);
-    } else if (a.rd - 1 + k >= rounds) v = pickValue(D, rounds * N) * Math.pow(0.5, a.rd - 1 + k - rounds + 1);
-    else v = pickValue(D, Math.round((a.rd - 1 + k) * N + proj));
+    } else {
+      const slot = Math.round((a.rd - 1 + k / 2) * N + proj);
+      v = slot > rounds * N ? pickValue(D, rounds * N) * Math.pow(0.5, (slot - rounds * N) / N + 1) : pickValue(D, slot);
+    }
     if (a.prot) {
       const [lo, hi] = a.prot.split("-").map(Number);
       let conv = 0, tot = 0;
@@ -371,7 +379,9 @@
     const cur = st.picks[st.i], V = pickValue(D, cur.n);
     const avail = st.available;
     const offers = [];
-    const teams = Object.keys(D.teams).filter((t) => !st.mine.has(t) && t !== cur.owner);
+    // st.buyers: only these teams (the user, when the team on the clock shops its pick); st.force skips the
+    // check on whether the buyer is keen, since there the user decides.
+    const teams = st.buyers ? st.buyers.slice() : Object.keys(D.teams).filter((t) => !st.mine.has(t) && t !== cur.owner);
     for (const t of teams.sort(() => rand() - 0.5)) {
       if (offers.length >= 3) break;
       const theirs = st.picks.filter((p, j) => j > st.i && p.owner === t && !p.player);
@@ -385,7 +395,7 @@
       const qb = qbNeed >= 0 && qbNeed <= 1 ? avail.find((p) => nflPos(p.pos) === "QB" && p.score <= qbReach(cur.n) && p.score < next.n - 3) : null;
       if (qb) target = qb;
       const gone = avail.slice(0, Math.max(1, Math.round((next.n - cur.n) * 0.9))).length;
-      const keen = target.score < next.n - 3 && gone > 2 && rand() < (qb ? 0.85 : 0.55 + 0.15 * (st.chaos || 0.5));
+      const keen = st.force || (target.score < next.n - 3 && gone > 2 && rand() < (qb ? 0.85 : 0.55 + 0.15 * (st.chaos || 0.5)));
       if (!keen) continue;
       /* What they can put in. NBA: these deals run on second-rounders and this year's picks. A future first comes in
          when the gap between their pick and this one is too big for seconds, and how much protection it keeps
