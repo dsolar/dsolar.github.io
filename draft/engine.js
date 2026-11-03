@@ -149,11 +149,17 @@
 
   // ---------- pick values and trades ----------
 
-  // A pick in this draft. NFL: the Fitzgerald-Spielberger chart. NBA: no standard chart exists, so a curve:
-  // 100 at No. 1, about 10 at No. 30, falling to about 1 at No. 60 (second-rounders are cheap, unguaranteed).
+  // A pick in this draft. NFL: the chart picked for the mock, Jimmy Johnson (what draft-day trades still track)
+  // or Fitzgerald-Spielberger (contract surplus value). NBA: no standard chart exists, so a curve: 100 at No. 1,
+  // about 10 at No. 30, falling to about 1 at No. 60 (second-rounders are cheap, unguaranteed).
+  function chartOf(D) {
+    const v = D.values || {};
+    return Array.isArray(v) ? v : v[D.chart || "jj"] || v.jj || [];
+  }
   function pickValue(D, n) {
-    if (D.league === "nfl") return (D.values && D.values[Math.min(n, D.values.length) - 1]) || 150;
-    return n <= 30 ? 100 * Math.exp(-0.08 * (n - 1)) : 9.8 * Math.exp(-0.07 * (n - 30));
+    if (D.league === "nfl") { const c = chartOf(D); return c[Math.max(1, Math.min(n, c.length)) - 1] || 1; }
+    const k = Math.max(1, Math.min(n, 60));
+    return k <= 30 ? 100 * Math.exp(-0.08 * (k - 1)) : 9.8 * Math.exp(-0.07 * (k - 30));
   }
 
   // Every future pick in the trade window, with who holds it now and whether it can move.
@@ -187,14 +193,21 @@
     return p ? p[0] : Math.ceil(Object.keys(D.teams).length / 2);
   }
 
-  // A future pick's value: projected slot pulled toward the middle the further out it is, a discount per year,
-  // and for a protected pick only the share of likely landing spots where it actually conveys.
+  /* A future pick's value, the way front offices count it: a round lower for every year out (next year's 1st is
+     worth a pick in the middle of this year's 2nd, two years out a 3rd), at a slot pulled toward the middle of
+     the round, halfway for next year and three quarters for the year after, from where the team stands now.
+     A protected pick only counts for the share of likely landing spots where it actually conveys. */
   function futureValue(D, a) {
     const N = Object.keys(D.teams).length, mid = (N + 1) / 2, k = Math.max(1, a.year - (D.year || 2027));
-    const proj = mid + (slotNow(D, a.orig) - mid) * Math.pow(D.league === "nba" ? 0.5 : 0.4, k);
+    const proj = mid + (slotNow(D, a.orig) - mid) * Math.pow(0.5, k);
+    const rounds = D.league === "nba" ? 2 : 7;
     let v;
-    if (D.league === "nfl") v = pickValue(D, Math.round((a.rd - 1) * 32 + proj)) * Math.pow(0.75, k);
-    else v = pickValue(D, Math.round((a.rd - 1) * 30 + proj)) * Math.pow(0.85, k);
+    if (D.league === "nba") {
+      // NBA future firsts are the scarcest currency there is (the Stepien rule caps how many a team can move),
+      // so they barely discount; seconds are the change teams make deals with.
+      v = pickValue(D, Math.round((a.rd - 1) * N + proj)) * Math.pow(a.rd === 1 ? 0.95 : 0.85, k);
+    } else if (a.rd - 1 + k >= rounds) v = pickValue(D, rounds * N) * Math.pow(0.5, a.rd - 1 + k - rounds + 1);
+    else v = pickValue(D, Math.round((a.rd - 1 + k) * N + proj));
     if (a.prot) {
       const [lo, hi] = a.prot.split("-").map(Number);
       let conv = 0, tot = 0;
@@ -239,9 +252,9 @@
   }
 
   // Does a bot take this? It wants a little more than it gives, plus noise; desperate teams less so.
-  function botAccepts(give, get, rand, eager) {
+  function botAccepts(give, get, rand, eager, premium) {
     if (!give || give <= 0) return get > 0;
-    const need = 1.04 - (eager ? 0.05 : 0) + (rand() - 0.5) * 0.06;
+    const need = 1.04 + (premium || 0) - (eager ? 0.05 : 0) + (rand() - 0.5) * 0.06;
     return get / give >= need;
   }
 
@@ -263,20 +276,52 @@
       const gone = avail.slice(0, Math.max(1, Math.round((next.n - cur.n) * 0.9))).length;
       const keen = target.score < next.n - 3 && gone > 2 && rand() < 0.55 + 0.15 * (st.chaos || 0.5);
       if (!keen) continue;
-      const pool = theirs.map((p) => ({ kind: "pick", n: p.n }))
-        .concat(st.ledger.filter((a) => a.owner === t && a.ok).sort((a, b) => a.year - b.year || a.rd - b.rd).map((a) => ({ kind: "future", a })));
-      const pkg = [pool[0]];
-      let sum = assetValue(D, pool[0]);
-      const want = V * (1.02 + rand() * 0.12);
-      const rest = pool.slice(1).map((x) => ({ x, v: assetValue(D, x) })).sort((a, b) => a.v - b.v);
-      while (sum < want && rest.length) {
-        const gap = want - sum;
-        let pickI = rest.findIndex((r) => r.v >= gap);
-        if (pickI < 0) pickI = rest.length - 1;
-        const r = rest.splice(pickI, 1)[0];
-        pkg.push(r.x); sum += r.v;
+      // What they can put in. NBA: these deals run on second-rounders and this year's picks; a future first
+      // only goes to climb into the lottery, and it comes protected (top 10, or the whole lottery for a smaller
+      // climb) unless the prize is a top-three pick. NFL: this year's picks first, future firsts last.
+      const nba = D.league === "nba";
+      const yearNow = D.year || 2027;
+      const cands = theirs.slice(1, 5).map((p) => ({ kind: "pick", n: p.n }));
+      const futs = st.ledger.filter((a) => a.owner === t && a.ok && !a.prot).sort((a, b) => a.year - b.year || a.rd - b.rd);
+      futs.filter((a) => a.rd === 1).slice(0, 2).forEach((a) => {
+        if (nba && cur.n > 14) return;
+        const prot = nba && cur.n > 3 ? (cur.n <= 8 ? "1-10" : "1-14") : "";
+        cands.push({ kind: "future", a: prot ? { ...a, prot, note: `Protected ${prot}` } : a });
+      });
+      futs.filter((a) => a.rd === 2 || (!nba && a.rd === 3)).slice(0, 4).forEach((a) => cands.push({ kind: "future", a }));
+      const lead = { kind: "pick", n: next.n };
+      const leadV = assetValue(D, lead);
+      if (leadV < V * 0.4) continue;
+      // Moving up costs a premium, more near the top.
+      const want = V * (1.03 + (cur.n <= 10 ? 0.05 : 0) + rand() * 0.07);
+      const maxExtra = nba ? 3 : (cur.n <= 5 ? 3 : 2);
+      // The cheapest-looking package that clears it: least overpay, with a cost on each future first (teams
+      // hate giving them) and a little on every extra piece.
+      const firstCost = (x) => (x.kind === "future" && x.a.rd === 1 ? V * (nba ? 0.18 : 0.15) : 0);
+      let best = null, bestScore = Infinity;
+      const vals = cands.map((x) => assetValue(D, x));
+      const n = cands.length;
+      const tryCombo = (idx) => {
+        const sumV = leadV + idx.reduce((s2, i) => s2 + vals[i], 0);
+        if (sumV < want || sumV > V * 1.3) return;
+        const firsts = idx.filter((i) => cands[i].kind === "future" && cands[i].a.rd === 1).length;
+        if (firsts > 1 && cur.n > 3) return;
+        const score = (sumV - want) + idx.reduce((s2, i) => s2 + firstCost(cands[i]), 0) + idx.length * V * 0.02;
+        if (score < bestScore) { bestScore = score; best = idx; }
+      };
+      tryCombo([]);
+      for (let i = 0; i < n; i++) {
+        tryCombo([i]);
+        if (maxExtra < 2) continue;
+        for (let j = i + 1; j < n; j++) {
+          tryCombo([i, j]);
+          if (maxExtra < 3) continue;
+          for (let k = j + 1; k < n; k++) tryCombo([i, j, k]);
+        }
       }
-      if (sum < V || sum > V * 1.45) continue;
+      if (!best) continue;
+      const pkg = [lead].concat(best.map((i) => cands[i]));
+      const sum = leadV + best.reduce((s2, i) => s2 + vals[i], 0);
       const moves = pkg.filter((x) => x.kind === "future").map((x) => ({ id: x.a.id, from: t, to: cur.owner }));
       if (!stepienOK(D, st.ledger, moves).ok) continue;
       offers.push({ team: t, give: pkg, value: sum, ratio: sum / V, target: target.id });
