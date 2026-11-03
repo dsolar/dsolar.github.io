@@ -173,9 +173,11 @@ async function sendMail(token: string) {
     const roster = e.data && e.data.roster && Array.isArray(e.data.roster.rows) ? rosterText(e.data.roster) : "";
     const body = roster ? String(e.body).replace(/\n\nOpen the league: /, `${roster}\n\nOpen the league: `) : e.body;
     const text = `Hi ${e.manager || "there"},\n\n${body}\n\nYou get these because email alerts are on for your team in ${e.league_name}. To turn them off, open the league and choose League, then uncheck email alerts.\n\nDraft Lab, davidsolar.dev`;
+    let html: string | undefined;
+    try { html = emailHtml(e, FK); } catch (_) { html = undefined; } // the plain text still goes out
     const r = await fetch("https://api.resend.com/emails", {
       method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from, to: [e.email], subject: e.subject, text, html: emailHtml(e, FK) }),
+      body: JSON.stringify({ from, to: [e.email], subject: e.subject, text, ...(html ? { html } : {}) }),
     });
     if (!r.ok) errors[e.id] = `${r.status} ${(await r.text()).slice(0, 200)}`;
     await new Promise((ok) => setTimeout(ok, 550)); // Resend allows two a second
