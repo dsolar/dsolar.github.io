@@ -26,7 +26,11 @@
   function take(v) {
     info = { me: v.me, commish: !!v.commish, seats: v.seats || {}, invite: v.invite, notify: v.notify, name: v.name, sport: v.sport };
     if (v.version != null) version = v.version;
-    if ("draft" in v) { D = v.draft; L = v.league; base = clone({ draft: D, league: L }); lastChange = Date.now(); }
+    if ("draft" in v) {
+      D = v.draft; L = v.league;
+      if (D && D.teams) D.teams.forEach((t, i) => { if (t.color == null) t.color = (i * 5) % 12; });
+      base = clone({ draft: D, league: L }); lastChange = Date.now();
+    }
   }
 
   async function boot() {
@@ -67,7 +71,7 @@
       el: $("#room"), sport, players, draft: () => D, save: () => push(), me: () => info.me, now,
       get commish() { return info.commish; }, get drive() { return driveOk(); },
       brand: { name: "Draft Lab", mark: `<img src="mark.svg" alt="">` }, exit: { href: "leagues.html", label: "Your leagues" },
-      tools: () => `<button class="btn sm${info.commish && D.phase === "setup" ? " go" : ""}" data-live="league">${info.commish ? "Invite" : "League"}</button>`,
+      tools: () => `<button class="btn sm" data-live="league">${info.commish ? "Invite" : "League"}</button>`,
       extra: () => (L ? "" : `<span class="ps">Setting up the season…</span>`),
     });
   }
@@ -196,8 +200,7 @@
         <div class="row"><input type="text" readonly value="${esc(inviteUrl())}" id="lv-link" style="flex:1;min-width:0" aria-label="Invite link"><button type="button" class="btn go" data-lv="copy">Copy</button></div>` : ""}
       ${seatList()}
       ${info.me != null ? `<label class="check" style="margin-top:10px"><input type="checkbox" id="lv-mail"${info.notify !== false ? " checked" : ""}> Email me about trade offers, waiver results${D && D.clock >= 3600 ? ", my turn in the draft" : ""} and weekly results</label>` : ""}
-      <p class="ps" style="margin:10px 0 0">${u ? `Signed in as ${esc(u.email)}. <button type="button" class="btn link" data-lv="out">Sign out</button>` : `<a href="leagues.html">Sign in</a> to make moves.`}
-        <button type="button" class="btn link" data-lv="theme">${theme.dark() ? "Light mode" : "Dark mode"}</button></p>`, null, { wide: true });
+      <div class="row ps" style="margin:12px 0 0;gap:6px 16px;flex-wrap:wrap"><span>${u ? `Signed in as ${esc(u.email)}` : `<a href="leagues.html">Sign in</a> to make moves`}</span><span class="grow"></span>${u ? `<button type="button" class="btn sm ghost" data-lv="out">Sign out</button>` : ""}<button type="button" class="btn sm ghost" data-lv="theme">${theme.dark() ? "Light mode" : "Dark mode"}</button></div>`, null, { wide: true });
     const dlg = $("#fk-dlg");
     dlg.onclick = async (e) => {
       const b = e.target.closest("[data-lv],[data-free]");
@@ -229,7 +232,7 @@
       <div class="card"><div class="mod-h"><h2>Managers</h2></div><div class="bd">${seatList()}</div></div></div>`;
   }
   document.addEventListener("click", (e) => {
-    const lv = e.target.closest("[data-live]"), th = e.target.closest("[data-theme]");
+    const lv = e.target.closest("[data-live]"), th = e.target.closest("button[data-theme]");
     if (th) { theme.toggle(); if (app) app.render(); return; }
     if (lv && lv.dataset.live === "league") { e.preventDefault(); leagueDialog(); }
     const fr = e.target.closest("#app [data-free]");

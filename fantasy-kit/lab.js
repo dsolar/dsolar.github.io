@@ -97,10 +97,10 @@
           <div class="acts" style="justify-content:flex-start"><button class="btn go">Take your seat</button>${mock ? `<a class="btn" href="#draft">Back to your mock</a>` : ""}</div>
         </form>
         <aside class="stack">
-          <div class="card"><h3>How the bots draft</h3><p class="small muted" style="margin:0">Bots value players by points or category z-scores over the replacement player at each position, so a scarce catcher or tight end goes earlier than his raw numbers say. They fill starters before the bench, leave kickers and defenses for the last rounds, and in an auction bid by proxy up to a price set by their budget and needs.</p></div>
-          <div class="card"><h3>Trades</h3><p class="small muted" style="margin:0">Trade picks, and players you've drafted, with any team while the draft runs. Bots answer right away, and sometimes call you to move up when you're on the clock.</p></div>
-          <div class="card"><h3>Demo leagues</h3><p class="small muted" style="margin:0 0 10px">Seasons with bots that play out in real time.</p><div class="row" style="flex-wrap:wrap"><a class="btn sm" href="league.html?s=${esc(cfg.sport)}&f=h">Head to head</a><a class="btn sm" href="league.html?s=${esc(cfg.sport)}&f=g">Best ball guillotine</a></div></div>
-          <div class="card"><h3>Your seat</h3><p class="small muted" style="margin:0">Queue players before you start. If your clock runs out, the first queued player who still fits is your pick, then the best fit. The draft saves on this device, so you can close the tab and come back.</p></div>
+          <div class="card pad"><h3>How the bots draft</h3><p class="small muted" style="margin:0">Bots value players by points or category z-scores over the replacement player at each position, so a scarce catcher or tight end goes earlier than his raw numbers say. They fill starters before the bench, leave kickers and defenses for the last rounds, and in an auction bid by proxy up to a price set by their budget and needs.</p></div>
+          <div class="card pad"><h3>Trades</h3><p class="small muted" style="margin:0">Trade picks, and players you've drafted, with any team while the draft runs. Bots answer right away, and sometimes call you to move up when you're on the clock.</p></div>
+          <div class="card pad"><h3>Demo leagues</h3><p class="small muted" style="margin:0 0 10px">Seasons with bots that play out in real time.</p><div class="row" style="flex-wrap:wrap"><a class="btn sm" href="league.html?s=${esc(cfg.sport)}&f=h">Head to head</a><a class="btn sm" href="league.html?s=${esc(cfg.sport)}&f=g">Best ball guillotine</a></div></div>
+          <div class="card pad"><h3>Your seat</h3><p class="small muted" style="margin:0">Queue players before you start. If your clock runs out, the first queued player who still fits is your pick, then the best fit. The draft saves on this device, so you can close the tab and come back.</p></div>
         </aside>
       </div></div>`;
     const f = $("#setup");
@@ -238,14 +238,14 @@
     app.innerHTML = `<div class="wrap page doc">
       <div class="head"><h1 class="disp">The Fantasy Kit</h1></div>
       <div class="cols"><div class="stack">
-        <div class="card"><h2>What it is</h2><p>The shared parts of every league page on this site: player data for three sports, player values, a draft engine and the screens that sit on top of them. Draft Lab is the kit with nothing added. A league page adds its own rules (a salary cap, keepers, a scoring quirk) through hooks and its own colors through four tokens.</p></div>
-        <div class="card"><h2>Files</h2><ul>
+        <div class="card pad"><h2>What it is</h2><p>The shared parts of every league page on this site: player data for three sports, player values, a draft engine and the screens that sit on top of them. Draft Lab is the kit with nothing added. A league page adds its own rules (a salary cap, keepers, a scoring quirk) through hooks and its own colors through four tokens.</p></div>
+        <div class="card pad"><h2>Files</h2><ul>
           <li><b>sports.js</b>: positions, lineup slots, position limits, stat columns and scoring for basketball, football and baseball.</li>
           <li><b>value.js</b>: category z-scores or fantasy points, value over replacement by position, auction dollars.</li>
           <li><b>draft.js</b>: snake, linear, third-round reversal, mystery packages, white elephant and auction drafts with clocks, queues, keepers, bots, pause, undo and trades during the draft. No screen code, so a server can run it.</li>
           <li><b>ui.js</b> and <b>kit.css</b>: masthead and tabs, sortable player tables, filters, the player card and the full draft room.</li>
           <li><b>data/</b>: nba.json, nfl.json and mlb.json, rebuilt by tools/fantasykit_data.py.</li></ul></div>
-        <div class="card"><h2>A league page in a few lines</h2><div class="code">&lt;link rel="stylesheet" href="/fantasy-kit/kit.css"&gt;
+        <div class="card pad"><h2>A league page in a few lines</h2><div class="code">&lt;link rel="stylesheet" href="/fantasy-kit/kit.css"&gt;
 &lt;script src="/fantasy-kit/sports.js"&gt;&lt;/script&gt; &lt;!-- then value.js, draft.js, ui.js --&gt;
 
 const data = await (await fetch("/fantasy-kit/data/mlb.json")).json();
@@ -255,12 +255,12 @@ const D = FK.draft.create({ sport, teams: 12, type: "snake", keepers });
 FK.ui.room({ el, sport, players: data.players, draft: () =&gt; D,
   save: (D) =&gt; saveSomewhere(D), me: () =&gt; myTeamId, drive: true });</div></div>
       </div><aside class="stack">
-        <div class="card"><h2>Brand it</h2><p class="small">Set these on :root after kit.css:</p><div class="code">--band: #13233A;   /* masthead, clock */
+        <div class="card pad"><h2>Brand it</h2><p class="small">Set these on :root after kit.css:</p><div class="code">--band: #13233A;   /* masthead, clock */
 --brand: #F6C445;  /* fills */
 --brand-ink: #1F1600;
 --accent: #9A6A00; /* brand as text */</div></div>
-        <div class="card"><h2>Custom rules</h2><p class="small">hooks.check(D, team, player) can refuse a pick (Hard Cap's salary line). hooks.worth(D, team, player, w) changes what bots want.</p></div>
-        <div class="card"><h2>Data</h2><p class="small" style="margin:0">${["nba", "nfl", "mlb"].map((k) => `<b>${S[k].name}</b>: ${cache[k] ? `${cache[k].players.length} players, ${esc(cache[k].source)}` : "loads on first use"}`).join("<br>")}</p></div>
+        <div class="card pad"><h2>Custom rules</h2><p class="small">hooks.check(D, team, player) can refuse a pick (Hard Cap's salary line). hooks.worth(D, team, player, w) changes what bots want.</p></div>
+        <div class="card pad"><h2>Data</h2><p class="small" style="margin:0">${["nba", "nfl", "mlb"].map((k) => `<b>${S[k].name}</b>: ${cache[k] ? `${cache[k].players.length} players, ${esc(cache[k].source)}` : "loads on first use"}`).join("<br>")}</p></div>
       </aside></div></div>`;
   }
 

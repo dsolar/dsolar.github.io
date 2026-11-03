@@ -168,7 +168,7 @@
     }
   }
   document.addEventListener("click", (e) => {
-    const c = e.target.closest("[data-c]"), th = e.target.closest("[data-theme]");
+    const c = e.target.closest("[data-c]"), th = e.target.closest("button[data-theme]");
     if (th) { theme.toggle(); app.render(); return; }
     if (!c) return;
     const a = c.dataset.c;

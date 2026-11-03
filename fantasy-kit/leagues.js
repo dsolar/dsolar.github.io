@@ -40,6 +40,8 @@
     if (!u) return page(`${err}${invite}${signInCard()}`);
     if (view === "new") return page(newForm());
     const mine = await C.rpc("fk_mine", {}).catch((e) => ({ error: e.message }));
+    // on an invite, the join form is the page; your other leagues, if any, follow it quietly
+    if (joinId) return page(`${err}${invite}${Array.isArray(mine) && mine.length ? `<div class="head" style="margin-top:8px"><h2 style="margin:0">Your other leagues</h2></div><div class="lgl">${mine.map(card).join("")}</div>` : ""}`);
     page(`${err}${invite}
       <div class="head"><h1 class="disp">Your leagues</h1><span class="ps">Signed in as ${esc(u.email)}</span><span class="grow"></span><button class="btn go" data-a="new">Start a league</button></div>
       ${mine.error ? fail(mine.error) : mine.length ? `<div class="lgl">${mine.map(card).join("")}</div>` : joinId ? "" : `<div class="card"><div class="bd stack"><p style="margin:0"><b>No leagues yet.</b></p><p class="ps" style="margin:0">Start one and send your friends the invite link, or open the invite link your commissioner sent you.</p><div><button class="btn go" data-a="new">Start a league</button></div></div></div>`}`);
@@ -49,10 +51,10 @@
     <span class="grow"><b>${esc(l.name)}</b><small>${esc(S[l.sport].name)}, ${esc(PHASE[l.phase] || l.phase)}${l.commish ? ", you're the commissioner" : ""}</small></span><span class="btn sm">Open</span></a>`;
 
   function signInCard() {
-    if (sent) return `<div class="card narrow"><div class="bd stack"><h1 class="disp" style="margin:0;font-size:32px">Check your email</h1>
-      <p style="margin:0">We sent a sign-in link to <b>${esc(sent)}</b>. Open it on the phone or computer you want to play on. It works once and expires in an hour.</p>
+    if (sent) return `<div class="card narrow"><div class="bd stack"><h1 class="disp" style="margin:0;font-size:clamp(26px,7vw,32px)">Check your email</h1>
+      <p style="margin:0">We sent a sign-in link to <b style="overflow-wrap:anywhere">${esc(sent)}</b>. Open it on the phone or computer you want to play on. It works once and expires in an hour.</p>
       <p class="ps" style="margin:0">Nothing there after a minute? Check spam, or send it again.</p>
-      <div class="row"><button class="btn" data-a="again">Use a different email</button><button class="btn ghost" data-a="resend">Send it again</button></div></div></div>`;
+      <div class="row" style="flex-wrap:wrap"><button class="btn" data-a="again">Use a different email</button><button class="btn ghost" data-a="resend">Send it again</button></div></div></div>`;
     return `<div class="hero"><h1 class="disp">Draft with<br>your friends.</h1><p>Start a league, send the invite link and draft live. Every move saves for the whole league, and you can get an email when a trade offer or a waiver result needs you.</p></div>
       <form class="card narrow" id="signin"><div class="bd stack">
         <div class="field"><label for="si-email">Email</label><input id="si-email" type="email" autocomplete="email" required value="${esc(C.lastEmail())}" placeholder="you@example.com"></div>
@@ -162,6 +164,7 @@
       const D = F.create({ sport, type: form.type, teams: n, seed: Math.floor(Math.random() * 2 ** 31), now: Date.now(), lineup, bench, scoring,
         botDelay: 3000, clock: auction ? 0 : form.clock, bidClock: auction ? form.clock : 15, nomClock: 30, budget: 200, name: form.name.trim(),
         trades: form.trades !== 0, curve: form.type === "mystery" ? F.pickCurve(players, total) : null, reveal: form.type === "mystery" ? "own" : undefined });
+      D.teams.forEach((t, i) => (t.color = (i * 5) % 12));        // each team its own color, the same ones the league pages use
       const tn = form.team.trim() || `${form.me.trim().split(" ")[0]}'s team`;
       D.teams[0].name = tn.slice(0, 28);
       D.teams[0].abbr = tn.replace(/[^A-Za-z0-9 ]/g, "").split(/\s+/).filter(Boolean).map((w) => w[0]).join("").slice(0, 3).toUpperCase() || "YOU";
@@ -209,7 +212,7 @@
     render();
   });
   document.addEventListener("click", async (e) => {
-    const a = e.target.closest("[data-a]"), th = e.target.closest("[data-theme]");
+    const a = e.target.closest("[data-a]"), th = e.target.closest("button[data-theme]");
     if (th) { theme.toggle(); header(); return; }
     if (!a) return;
     const k = a.dataset.a;
