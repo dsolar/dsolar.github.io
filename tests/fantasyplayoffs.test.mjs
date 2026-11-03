@@ -53,7 +53,15 @@ test('six playoff teams: the top two get byes, and the bracket still ends in one
   assert.equal(L.results[7][1].kind, 'third');
   const sf = L.results[6].map((g) => (g.w === 'b' ? g.b : g.a));
   assert.deepEqual([L.results[7][0].a, L.results[7][0].b].sort(), sf.sort(), 'the semifinal winners meet in the final');
-  assert.equal(Z.summary(L).champion.team, fin.champion);
+  const sum = Z.summary(L);
+  assert.equal(sum.champion.team, fin.champion);
+  // the history page's summary: finishing places from the playoffs, then the standings; records with who and when
+  assert.equal(sum.runnerUp.team, fin.runnerUp); assert.equal(sum.third.team, fin.third);
+  assert.deepEqual(sum.standings.map((r) => r.place).sort((a, b) => a - b), sum.standings.map((_, i) => i + 1));
+  assert.equal(sum.standings.find((r) => r.team === fin.champion).place, 1);
+  const rec = sum.records;
+  if (rec.high) { assert.ok(rec.high.v >= rec.low.v); assert.ok(rec.blowout.v >= rec.closest.v); assert.ok(rec.high.week >= 1); }
+  else assert.ok(rec.blowout && rec.blowout.cats, 'a category league keeps its most lopsided week');
 });
 
 test('a two-week final adds both weeks up', () => {

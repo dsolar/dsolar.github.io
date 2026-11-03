@@ -736,6 +736,10 @@
             top("blowout", m, x, hi); top("closest", m, x, lo);
           }
         }
+        else if (g.w === "a" || g.w === "b") {                  // a category week: the most lopsided count of categories
+          const [win, lose] = g.w === "a" ? [g.a, g.b] : [g.b, g.a], sc = g.w === "a" ? [g.sa, g.sb] : [g.sb, g.sa];
+          top("blowout", sc[0] - sc[1], { win, lose, winName: name(win), loseName: name(lose), week: w, po, score: sc, cats: true }, hi);
+        }
         if (po) continue;                                      // streaks are regular season only
         for (const [t, r] of [[g.a, "a"], [g.b, "b"]]) {
           run[t] = g.w === r ? (run[t] || 0) + 1 : 0;

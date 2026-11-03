@@ -88,10 +88,19 @@
       get commishTools() { return info.commish ? commishTools : null; },
       notice: () => guestNote() + startNote() + keeperNote(),
       chat,
+      history: () => past,
     });
     loadPosts();
+    loadPast();
     if (catchUp()) push();
     app.refresh();
+  }
+  // past seasons for the History page, loaded once (a first-season league has none)
+  let past = null, pastAsked = false;
+  function loadPast() {
+    if (pastAsked || !(L && L.draft && L.draft.year > 1)) return;
+    pastAsked = true;
+    C.rpc("fk_history", { p_id: id }).then((h) => { if (Array.isArray(h)) { past = h; if (app && !U.dialogOpen()) app.refresh(); } }).catch(() => { pastAsked = false; });
   }
   /* ---------- live box scores: every minute while the page is open and the league plays on real games ---------- */
   let liveT = null;

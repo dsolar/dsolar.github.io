@@ -65,7 +65,7 @@
     /* ---------- routing ---------- */
     const TABS = () => [["league", "League"], ["team", "My Team"], ["matchup", gl() ? "The block" : roto() ? "Categories" : "Matchup"], ["players", "Players"], ["draft", "Draft"]].concat(opts.commishTools ? [["commish", "Commissioner"]] : []);
     function subsOf(tab) {
-      if (tab === "league") return [["overview", "Overview"]].concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []).concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : roto() ? "By week" : "Scoreboard"], ["tx", "Transactions"], ["settings", "Settings"]]);
+      if (tab === "league") return [["overview", "Overview"]].concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []).concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : roto() ? "By week" : "Scoreboard"], ["tx", "Transactions"], ["history", "History"], ["settings", "Settings"]]);
       if (tab === "team") return [["roster", "Roster"]].concat(roto() ? [] : [["schedule", gl() ? "History" : "Schedule"]]).concat(L().settings.trades === false ? [] : [["trades", "Trades", pendingTrades()]]);
       if (tab === "players") return [["fa", "Free agents"], ["all", "All players"], ["watch", "Watchlist"], ["claims", "Waiver claims", L().claims.filter((c) => c.team === me() && c.status === "open").length]];
       return [];
@@ -320,6 +320,57 @@
       return `<div class="wrap page"><div class="head"><h1 class="disp">Transactions</h1><span class="ps">${L().tx.length} moves this season</span></div>
         <div class="chips" role="group" aria-label="Type">${[["", "All"], ["add", "Adds"], ["drop", "Drops"], ["waiver", "Waivers"], ["trade", "Trades"]].map(([k, n]) => `<button type="button" data-txf="${k}" aria-pressed="${k === f}">${n}</button>`).join("")}</div>
         <div class="card" style="max-width:980px">${U.feed(items.slice(0, 120).map(txVM), "Nothing here yet.")}</div></div>`;
+    }
+    /* ---------- league history: past seasons (shared leagues pass opts.history()) plus this one ---------- */
+    function seasonsAll() {
+      const cur = G.summary(L()), past = ((opts.history && opts.history()) || []).filter((x) => x && x.year !== cur.year);
+      cur.live = !over();
+      return past.concat(cur).sort((a, b) => a.year - b.year);
+    }
+    const yearName = (x) => (x.season ? esc(x.season) : `Year ${esc(x.year)}`);
+    function pastPage() {
+      const all = seasonsAll(), done = all.filter((x) => !x.live), many = all.length > 1;
+      const rec = (x) => `${x.w != null ? `${x.w}-${x.l}${x.t ? "-" + x.t : ""}` : "-"}`;
+      const champRows = all.slice().reverse().map((x) => {
+        const c = x.champion, row = c && (x.standings || []).find((r) => r.team === c.team), lead = x.live ? (x.standings || [])[0] : null;
+        return `<tr><td class="nm"><b>${yearName(x)}</b>${x.live ? ` <span class="pill sm">Now</span>` : ""}</td>
+          <td>${x.live ? (lead ? `<span class="ps">Leading:</span> ${esc(lead.name)}` : "") : c ? `<b>${esc(c.name)}</b>${c.owner ? ` <span class="ps">${esc(c.owner)}</span>` : ""}` : `<span class="ps">No champion</span>`}</td>
+          <td class="hide-s">${!x.live && x.runnerUp ? esc(x.runnerUp.name) : ""}</td><td class="r num">${x.live ? (lead ? rec(lead) : "") : row ? rec(row) : ""}</td></tr>`;
+      }).join("");
+      // records across every season that kept them (seasons saved before records were kept are skipped)
+      const best = {};
+      for (const x of all) for (const [k, v] of Object.entries(x.records || {})) {
+        const lower = k === "low" || k === "closest";
+        if (!best[k] || (lower ? v.v < best[k].v : v.v > best[k].v)) best[k] = Object.assign({ year: x }, v);
+      }
+      const when = (r) => `${many ? `${yearName(r.year)}, ` : ""}week ${r.week || r.through}${r.po ? ", playoffs" : ""}`;
+      const recRows = [
+        best.high && ["Highest score", `<b>${fmtS(best.high.v)}</b> ${esc(best.high.name)}`, when(best.high)],
+        best.low && ["Lowest score", `<b>${fmtS(best.low.v)}</b> ${esc(best.low.name)}`, when(best.low)],
+        best.blowout && ["Biggest win", best.blowout.cats ? `<b>${best.blowout.score[0]}-${best.blowout.score[1]}</b> ${esc(best.blowout.winName)} over ${esc(best.blowout.loseName)}` : `<b>${fmtS(best.blowout.v)}</b> ${esc(best.blowout.winName)} over ${esc(best.blowout.loseName)}, ${fmtS(best.blowout.score[0])} to ${fmtS(best.blowout.score[1])}`, when(best.blowout)],
+        best.closest && ["Closest win", `<b>${fmtS(best.closest.v)}</b> ${esc(best.closest.winName)} over ${esc(best.closest.loseName)}, ${fmtS(best.closest.score[0])} to ${fmtS(best.closest.score[1])}`, when(best.closest)],
+        best.streak && ["Longest win streak", `<b>${best.streak.v} straight</b> ${esc(best.streak.name)}`, `${many ? `${yearName(best.streak.year)}, ` : ""}through week ${best.streak.through}`],
+      ].filter(Boolean);
+      // all-time standings: by team, across every season including this one
+      const tot = {};
+      for (const x of all) for (const r of x.standings || []) {
+        const a = (tot[r.team] = tot[r.team] || { team: r.team, seasons: 0, w: 0, l: 0, t: 0, pts: 0, titles: 0, finals: 0, places: [] });
+        a.seasons++; a.w += r.w || 0; a.l += r.l || 0; a.t += r.t || 0; a.pts += r.pts || 0;
+        if (!x.live) { if (x.champion && x.champion.team === r.team) a.titles++; if ((x.champion && x.champion.team === r.team) || (x.runnerUp && x.runnerUp.team === r.team)) a.finals++; a.places.push(r.place || r.rank); }
+      }
+      const hasWL = !gl() && !roto();
+      const rows = Object.values(tot).filter((a) => L().teams[a.team]).sort((a, b) => b.titles - a.titles || (hasWL ? (b.w + b.t / 2) / Math.max(1, b.w + b.l + b.t) - (a.w + a.t / 2) / Math.max(1, a.w + a.l + a.t) : b.pts - a.pts));
+      const pct3 = (a) => { const g = a.w + a.l + a.t; return g ? ((a.w + a.t / 2) / g).toFixed(3).replace(/^0/, "") : "-"; };
+      const avg = (a) => (a.places.length ? (a.places.reduce((s, x) => s + x, 0) / a.places.length).toFixed(1) : "-");
+      return `<div class="wrap page"><div class="head"><h1 class="disp">League history</h1><span class="ps">${done.length ? `${done.length} finished season${done.length > 1 ? "s" : ""}` : "The first season"}${all.some((x) => x.live) ? ", one under way" : ""}</span></div>
+        <div class="cols2"><div class="stack">
+          <div class="card"><div class="mod-h"><h2>Champions</h2></div><div class="table-wrap"><table class="t"><thead><tr><th>Season</th><th>Champion</th><th class="hide-s">Runner-up</th><th class="r">Record</th></tr></thead><tbody>${champRows}</tbody></table></div>
+            ${many ? "" : `<p class="ps" style="margin:10px 16px 14px">Each finished season is added here when the commissioner starts the next one.</p>`}</div>
+          <div class="card"><div class="mod-h"><h2>Records</h2>${many ? `<span class="ps">All seasons</span>` : ""}</div>${recRows.length ? `<div class="bd"><dl class="kv rec">${recRows.map(([k, v, w]) => `<dt>${k}</dt><dd>${v}<small>${w}</small></dd>`).join("")}</dl></div>` : `<p class="empty">${pts() || gl() ? "Records start once a week is final." : "Score records are for points leagues; win streaks start once a week is final."}</p>`}</div>
+        </div>
+        <div class="card"><div class="mod-h"><h2>All-time standings</h2></div><div class="table-wrap"><table class="t"><thead><tr><th>Team</th>${many ? `<th class="r hide-s">Seasons</th>` : ""}${hasWL ? `<th class="r">Record</th><th class="r hide-s">Pct</th>` : ""}<th class="r">Titles</th>${many ? `<th class="r hide-s">Avg finish</th>` : ""}${pts() ? `<th class="r hide-s">Points</th>` : ""}</tr></thead><tbody>
+          ${rows.map((a) => `<tr${isMe(a.team) ? ` class="me"` : ""}><td class="nm"><a class="row" style="gap:8px;text-decoration:none;color:inherit" href="${teamHref(a.team)}">${teamAv(T(a.team), "sm")}<span class="ell">${esc(T(a.team).name)}</span></a></td>${many ? `<td class="r num hide-s">${a.seasons}</td>` : ""}${hasWL ? `<td class="r num">${rec(a)}</td><td class="r num hide-s">${pct3(a)}</td>` : ""}<td class="r num">${a.titles ? `<b>${a.titles}</b>` : "0"}</td>${many ? `<td class="r num hide-s">${avg(a)}</td>` : ""}${pts() ? `<td class="r num hide-s">${Math.round(a.pts).toLocaleString()}</td>` : ""}</tr>`).join("")}
+        </tbody></table></div></div></div></div>`;
     }
     function settingsPage() {
       const s = L().settings;
@@ -949,7 +1000,7 @@
       const keep = $("#fk-players") ? $("#fk-players").scrollTop : 0;
       const focus = U.focusKey(opts.el) || U.focusKey(opts.top);
       let html = "";
-      if (r.tab === "league") html = { overview, chat: chatPage, standings: standingsPage, scoreboard: () => scoreboardPage(r.arg), tx: txPage, settings: settingsPage }[r.sub]();
+      if (r.tab === "league") html = { overview, chat: chatPage, standings: standingsPage, scoreboard: () => scoreboardPage(r.arg), tx: txPage, history: pastPage, settings: settingsPage }[r.sub]();
       else if (r.tab === "team") html = { roster: () => rosterPage(r.arg), schedule: () => schedulePage(r.arg), trades: tradesPage }[r.sub]();
       else if (r.tab === "matchup") html = matchupPage(r.sub, r.arg);
       else if (r.tab === "players") html = playersPage(r.sub);
