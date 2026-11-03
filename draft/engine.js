@@ -407,9 +407,15 @@
       const lead = { kind: "pick", n: next.n };
       const leadV = assetValue(D, lead);
       if (leadV < V * 0.4) continue;
-      // Moving up costs a premium, more near the top.
-      const want = V * (1.03 + (cur.n <= 10 ? 0.05 : 0) + (qb ? 0.06 : 0) + rand() * 0.07);
-      const maxExtra = nba ? 3 : (cur.n <= 5 ? 3 : 2);
+      /* NFL precedent for big climbs: a jump of six or more spots into the top 10 has always cost a future first
+         (Philadelphia 8 to 2 in 2016, the Rams 15 to 1, Kansas City 27 to 10 in 2017, Carolina 9 to 1 in 2023,
+         Jacksonville 5 to 2 in 2025), and the biggest ones into the top five cost two (San Francisco 12 to 3 in
+         2021: two future firsts and a third). Short hops run on this year's picks (the Jets 6 to 3 in 2018 with
+         three seconds, Buffalo 12 to 7 with two). A quarterback chase pays more on top of that. */
+      const jump = next.n - cur.n, N1 = Object.keys(D.teams).length;
+      const needFirsts = nba ? 0 : cur.n <= 10 && jump >= 6 ? (cur.n <= 5 && jump >= 9 ? 2 : 1) : 0;
+      const want = V * (1.03 + (cur.n <= 10 ? 0.05 : 0) + (qb ? (cur.n <= 5 ? 0.15 : 0.08) : 0) + rand() * 0.07);
+      const maxExtra = nba ? 3 : needFirsts ? 4 : (cur.n <= 5 ? 3 : 2);
       // The cheapest-looking package that clears it: least overpay, with a cost on each future first (teams
       // hate giving them) and a little on every extra piece.
       // In the NBA the lighter the protection, the harder a team swallows: unprotected costs most.
@@ -424,11 +430,13 @@
       const n = cands.length;
       const tryCombo = (idx) => {
         const sumV = leadV + idx.reduce((s2, i) => s2 + vals[i], 0);
-        if (sumV < want || sumV > V * (qb ? 1.4 : 1.3)) return;
+        if (sumV < want || sumV > V * (qb || needFirsts ? 1.45 : 1.3)) return;
         const ids = idx.map((i) => cands[i].kind === "future" ? cands[i].a.id : "n" + cands[i].n);
         if (new Set(ids).size < ids.length) return;   // two versions of the same pick
         const firsts = idx.filter((i) => cands[i].kind === "future" && cands[i].a.rd === 1).length;
-        if (firsts > 1 && cur.n > 3) return;
+        const firstsNow = idx.filter((i) => cands[i].kind === "pick" && cands[i].n <= N1).length;
+        if (firsts + firstsNow < needFirsts) return;
+        if (firsts > Math.max(1, needFirsts) && cur.n > 3) return;
         const score = (sumV - want) + idx.reduce((s2, i) => s2 + firstCost(cands[i]), 0) + idx.length * V * 0.02;
         if (score < bestScore) { bestScore = score; best = idx; }
       };
@@ -439,7 +447,11 @@
         for (let j = i + 1; j < n; j++) {
           tryCombo([i, j]);
           if (maxExtra < 3) continue;
-          for (let k = j + 1; k < n; k++) tryCombo([i, j, k]);
+          for (let k = j + 1; k < n; k++) {
+            tryCombo([i, j, k]);
+            if (maxExtra < 4) continue;
+            for (let m = k + 1; m < n; m++) tryCombo([i, j, k, m]);
+          }
         }
       }
       if (!best) continue;

@@ -45,7 +45,6 @@
         <div><span class="lab">The other ${D.league === "nba" ? "29" : "31"}</span>${seg("style", [["chalk", "Chalk"], ["balanced", "Balanced"], ["chaos", "Chaos"]], M.style)}</div>
         <div><span class="lab">Speed</span>${seg("speed", [["slow", "Slow"], ["fast", "Fast"], ["instant", "Instant"]], M.speed)}</div>
         <div><span class="lab">Full-screen pick card</span>${seg("reveal", [["all", "Every pick"], ["mine", "My picks"], ["off", "Off"]], M.reveal)}</div>
-        ${D.league === "nfl" ? `<div><span class="lab">Trade chart</span>${seg("chart", [["jj", "Jimmy Johnson"], ["fs", "Fitzgerald-Spielberger"]], M.chart)}</div>` : ""}
       </div>
       <div class="teams-head"><span class="lab">Your team${mine.length === 1 ? "" : "s"}</span><span class="note">${mine.length ? `${mine.map((t) => `${D.teams[t].city} ${D.teams[t].name}`).join(", ")}: ${mine.reduce((s, t) => s + count(t), 0)} pick${mine.reduce((s, t) => s + count(t), 0) === 1 ? "" : "s"} as it stands` : "None picked: you'll just watch."}</span>
         ${mine.length ? `<button type="button" class="link" data-act="clear">Clear</button>` : ""}</div>
@@ -84,7 +83,7 @@
     M.pool = D.players.slice().sort((a, b) => a.score - b.score);
     M.rand = E.rng((M.seed || Date.now()) ^ 0x9e3779b9);
     M.taken = {};
-    D.chart = M.chart;
+    D.chart = "jj";   // teams still price draft-day trades on Jimmy Johnson; Fitzgerald-Spielberger makes late picks look too rich
     M.ledger = E.ledger(D);
     M.ledger0 = M.ledger.map((a) => ({ ...a }));
     M.trades = [];
@@ -273,7 +272,7 @@
         <div><span class="lab">${T.with ? `${esc(T.with)} sends` : "Their picks"}</span>${T.with ? theirs.map((x) => row(x, "get")).join("") || `<p class="note">They're out of picks.</p>` : `<p class="note">Choose a team to see their picks, this year's and future ones.</p>`}</div>
       </div>
       <div class="trade-foot"><div class="tv"><span>You send <b>${gv.toFixed(D.league === "nba" ? 1 : 0)}</b></span><span>You get <b>${rv.toFixed(D.league === "nba" ? 1 : 0)}</b></span>
-        <span class="note">${D.league === "nfl" ? `Values: the ${M.chart === "fs" ? "Fitzgerald-Spielberger" : "Jimmy Johnson"} chart. A future pick counts a round lower per year out.` : "Future firsts are valued at a projected slot, protected ones only where they convey. Teams don't give up an unprotected first cheaply."}</span></div>
+        <span class="note">${D.league === "nfl" ? "Values: the Jimmy Johnson chart, still how draft-day trades get priced. A future pick counts a round lower per year out. Jumping into the top 10 from far back takes a future first, the way it has in every big move up." : "Future firsts are valued at a projected slot, protected ones only where they convey. Teams don't give up an unprotected first cheaply."}</span></div>
         <div class="oa">${T.msg ? `<span class="tmsg ${T.ok ? "ok" : ""}">${esc(T.msg)}</span>` : ""}<button type="button" class="btn go" data-act="propose"${T.with && (give.length || get.length) ? "" : " disabled"}>Propose</button></div></div>
     </div></div>`;
   }
