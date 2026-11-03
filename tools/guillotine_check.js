@@ -81,7 +81,9 @@ for(const n of current.lineup_verified_teams||[]){const t=current.teams.find(t=>
   Object.assign(context,{liveTimer:null,liveBusy:false,liveFails:0,document:{visibilityState:'visible'},
     clearTimeout:()=>{},setTimeout:(_f,ms)=>{delays.push(ms);return 1;},
     refreshRosterSnapshot:async()=>true,getLive:async()=>{throw Error('feed offline');},
-    render:d=>rendered.push(d.teams[0].name),updateJumpLabels:()=>{}});
+    render:d=>rendered.push(d.teams[0].name),updateJumpLabels:()=>{},
+    // refreshLive writes its status line through the page's $() helper and reads the page state
+    $:()=>({textContent:'',open:false}),state:{data:null},openName:null});
   vm.runInContext(html.slice(html.indexOf('  function refreshLive('),html.indexOf('  document.addEventListener("visibilitychange"')),context);
   await context.refreshLive();
   assert.deepEqual(rendered,['New roster']);assert.equal(delays[0],60000);assert.equal(context.liveBusy,false);
