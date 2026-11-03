@@ -674,7 +674,7 @@
         rowAttr: (p) => `data-player="${esc(p.id)}" class="${mine != null && ctx.own[p.id] == null && !F.canAdd(d, ctx, mine, p).ok ? "dim" : ""}"` });
     }
     function board() {
-      const d = D(), n = d.teams.length, cols = d.round1;
+      const d = D(), cols = d.round1, n = cols.length;
       const slots = auction() ? null : cols.map(slotsOf);
       const rounds = auction() ? d.rounds : Math.max(d.rounds, ...slots.map((x) => x.length));
       const cellOf = (r, col) => {

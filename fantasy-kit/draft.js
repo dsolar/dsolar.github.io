@@ -68,14 +68,18 @@
     }));
     let first = opts.order ? opts.order.slice() : [...Array(n).keys()];
     if (!opts.order) for (let i = n - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [first[i], first[j]] = [first[j], first[i]]; }
+    // teams that skip the draft (a vampire league's vampire) aren't in the order at all
+    const sit = (opts.sit || []).filter((t) => t >= 0 && t < n);
+    if (sit.length) first = first.filter((t) => !sit.includes(t));
+    const m = first.length;
     const type = FORMATS[opts.type] ? opts.type : "snake";
     const D = {
       v: 1, kind: "fk-draft", sport: sport.key, type, seed, created: opts.now || Date.now(), name: opts.name || "Mock draft",
       scoring: opts.scoring || Object.keys(sport.scorings)[0],
       lineup, bench, rounds, posMax: opts.posMax || sport.posMax || {},
       clock: opts.clock == null ? 60 : opts.clock, botDelay: opts.botDelay == null ? 1500 : opts.botDelay,
-      teams, round1: first, order: type === "auction" ? [] : type === "mystery" ? Array(n * rounds).fill(0) : makeOrder(type === "elephant" ? "snake" : type, first, rounds),
-      board: type === "auction" ? [] : Array(n * rounds).fill(null), sales: [],
+      teams, round1: first, order: type === "auction" ? [] : type === "mystery" ? Array(m * rounds).fill(0) : makeOrder(type === "elephant" ? "snake" : type, first, rounds),
+      board: type === "auction" ? [] : Array(m * rounds).fill(null), sales: [], sit: sit.length ? sit : undefined,
       phase: "setup", clockStart: null, paused: false, left: null, log: [],
       auction: type === "auction" ? { budget: opts.budget || 200, minBid: opts.minBid == null ? 1 : opts.minBid, nomClock: opts.nomClock || 30, bidClock: opts.bidClock || 15, nom: 0, lot: null } : null,
       bank: type !== "auction" && opts.bank ? { perRound: opts.bank.perRound || 30, floor: opts.bank.floor == null ? 10 : opts.bank.floor } : null,
@@ -85,7 +89,7 @@
     };
     if (D.bank) for (const t of D.teams) t.bank = D.bank.perRound * rounds * 1000;
     if (type === "mystery") {
-      const curve = (opts.curve || defaultCurve(n * rounds)).slice(0, n * rounds).map((v) => Math.round(v * 100) / 100);
+      const curve = (opts.curve || defaultCurve(m * rounds)).slice(0, m * rounds).map((v) => Math.round(v * 100) / 100);
       D.mystery = { reveal: REVEALS[opts.reveal] ? opts.reveal : "start", curve, tolerance: opts.tolerance == null ? 0.01 : opts.tolerance };
       applyDeal(D, dealPackages(n, rounds, curve, seed, { tolerance: D.mystery.tolerance }));
     }
@@ -221,7 +225,7 @@
   }
   // A pick's round and place in the round, counting only scheduled picks (make-up picks after a steal sit between them).
   function slotInfo(D, k) {
-    const n = D.teams.length, ex = D.extra || {};
+    const n = D.round1.length, ex = D.extra || {};
     let sched = 0;
     if (Object.keys(ex).length) { for (let i = 0; i < k; i++) if (!ex[i]) sched++; } else sched = k;
     if (ex[k]) return { round: Math.floor(Math.max(0, sched - 1) / n) + 1, inRound: null, makeup: ex[k] };

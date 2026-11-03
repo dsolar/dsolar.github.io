@@ -45,6 +45,8 @@
     if (s.median) settings.median = true;
     if (s.bestBall && s.format !== "guillotine") settings.bestBall = true;
     if (s.divisions) settings.divisions = s.divisions;
+    // a vampire league (football, head to head): which team is the vampire, and its swap rules
+    if (s.vampire && s.format !== "guillotine" && s.format !== "roto") settings.vampire = { team: s.vampire.team, samePos: !!s.vampire.samePos, double: !!s.vampire.double };
     if (s.dynasty) settings.dynasty = { rounds: s.dynasty.rounds || 3, picks: s.dynasty.picks !== false };
     if (s.dynasty && s.taxi) settings.taxi = Math.max(0, Math.min(6, s.taxi | 0));
     // keepers: how many each team carries into next season, and what each one costs
@@ -81,6 +83,8 @@
     const before = JSON.stringify(L);
     // a dynasty's long rosters after the rookie draft: bots cut now, everyone else by the start of week 1
     if (L.week === 1) G.cutDown(L, ctx, Math.min(now, L.start), now >= L.start);
+    // a bot vampire builds its roster from free agents before week 1
+    if (L.week === 1 && G.vampireOf(L) != null) G.vampireFill(L, ctx, Math.min(now, L.start));
     // guillotine bots bid on the chopped roster early in the week, before the midweek waiver run
     const bids = () => {
       L.botBid = L.botBid || {};

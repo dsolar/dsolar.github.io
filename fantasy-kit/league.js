@@ -73,6 +73,8 @@
     if (D && D.rookie) { L.taxiOk = {}; for (const pk of D.board || []) if (pk && pk.pid && !pk.keeper) L.taxiOk[pk.pid] = true; }
     if (D && D.promoted) L.promoted = Object.assign({}, D.promoted);
     if (D && D.futurePicks && Object.keys(D.futurePicks).length) L.picks = Object.assign({}, D.futurePicks);
+    // a vampire league: the vampire's claim is always first
+    if (s.vampire && teams[s.vampire.team] && !guillotine && s.format !== "roto") { L.bites = []; vampireFirst(L); } else delete s.vampire;
     if (D) log(L, D.done || L.created, { type: "draft", team: -1, text: `Draft complete: ${F.made(D).length} picks` });
     return L;
   }
@@ -484,9 +486,114 @@
     if (L.settings.bestBall) for (const g of games) { if (g.ta && g.ta.lineup) best[g.a] = g.ta.lineup; if (g.tb && g.tb.lineup) best[g.b] = g.tb.lineup; }
     for (const t of L.teams) L.lineups[w][t.id] = best[t.id] || lineupFor(L, ctx, t.id, w);
     L.week = w + 1;
+    if (w <= L.settings.weeks) openBites(L, w, games, now);
     if (L.week > totalWeeks(L)) { closeSeason(L, now); return { ok: true, over: true }; }
     runWaivers(L, ctx, now);
     return { ok: true };
+  }
+
+  /* ---------- vampire leagues ---------- */
+  // settings.vampire = { team, samePos, double }: one team (the vampire) skips the draft and builds from free agents.
+  // Each regular-season week it wins, it may take any player from the team it beat and give back one of its own
+  // (samePos: of the same position). double: it also bites the week's lowest scorer. No bites in the playoffs. The
+  // vampire has the first waiver claim every week. A bite stays open two days into the next week, then it's made for
+  // the vampire: the best player it can take, for its least valuable player.
+  const vampireOf = (L) => (L.settings.vampire && L.teams[L.settings.vampire.team] ? L.settings.vampire.team : null);
+  const BITE_HOURS = 48;
+  function openBites(L, w, games, now) {
+    const v = vampireOf(L);
+    if (v == null) return;
+    const g = games.find((x) => x.a === v || x.b === v);
+    if (!g || g.w === "t" || !g.w) return;
+    const won = (g.w === "a" && g.a === v) || (g.w === "b" && g.b === v);
+    if (!won) return;
+    const due = weekStart(L, w + 1) + BITE_HOURS * HOUR;
+    L.bites = L.bites || [];
+    const loser = g.a === v ? g.b : g.a;
+    L.bites.push({ id: L.nextId++, week: w, victim: loser, why: "beat", status: "open", at: now, due });
+    if (L.settings.vampire.double) {
+      const low = games.flatMap((x) => [[x.a, x.sa], [x.b, x.sb]]).filter(([t]) => t !== v && t !== loser).sort((a, b) => a[1] - b[1])[0];
+      if (low) L.bites.push({ id: L.nextId++, week: w, victim: low[0], why: "lowest", status: "open", at: now, due });
+    }
+  }
+  const openBite = (L) => (L.bites || []).find((b) => b.status === "open") || null;
+  function biteCheck(L, ctx, b, take, give) {
+    const v = vampireOf(L), p = ctx.byId[take], q = give ? ctx.byId[give] : null;
+    if (!b || b.status !== "open") return { ok: false, why: "That bite is no longer open" };
+    if (!p || !L.rosters[b.victim].includes(take)) return { ok: false, why: `${p ? p.n : "He"} isn't on ${L.teams[b.victim].name}` };
+    const room = L.rosters[v].length - held(L, v).length < maxRoster(L);
+    if (!give && !room) return { ok: false, why: "Pick one of your players to give back" };
+    if (give && (!q || !L.rosters[v].includes(give))) return { ok: false, why: "That player isn't on your roster" };
+    if (give && L.settings.vampire.samePos && S.positions(p)[0] !== S.positions(q)[0]) return { ok: false, why: `This league swaps like for like: give back a ${S.positions(p)[0]}` };
+    return { ok: true };
+  }
+  function bite(L, ctx, id, take, give, now, auto) {
+    const b = (L.bites || []).find((x) => x.id === id), v = vampireOf(L);
+    const c = biteCheck(L, ctx, b, take, give);
+    if (!c.ok) return c;
+    bank(L, ctx, b.victim, take, now);
+    if (give) bank(L, ctx, v, give, now);
+    L.rosters[b.victim] = L.rosters[b.victim].filter((x) => x !== take).concat(give ? [give] : []);
+    L.rosters[v] = L.rosters[v].filter((x) => x !== give).concat(take);
+    for (const t of [b.victim, v]) { L.ir[t] = (L.ir[t] || []).filter((x) => x !== take && x !== give); if (L.taxi && L.taxi[t]) L.taxi[t] = L.taxi[t].filter((x) => x !== take && x !== give); }
+    for (const w of Object.keys(L.lineups)) if (+w >= L.week) for (const t of [b.victim, v]) { const lu = L.lineups[w][t]; if (lu) L.lineups[w][t] = lu.map((x) => (x === take || x === give ? null : x)); }
+    joined(L, v, take, now); if (give) joined(L, b.victim, give, now);
+    Object.assign(b, { status: "done", take, give: give || null, done: now, auto: !!auto });
+    log(L, now, { type: "bite", team: v, other: b.victim, adds: [take], drops: give ? [give] : [], text: `${ctx.byId[take].n} taken from ${L.teams[b.victim].name}${give ? `, ${ctx.byId[give].n} given back` : ""}${auto ? " (made for the vampire)" : ""}` });
+    refresh(L, ctx);
+    return { ok: true };
+  }
+  // The bite a bot vampire makes (and the one made for a human vampire who runs out of time): the most valuable
+  // player it can take that its roster has a use for, for its own least valuable player (of his position, if swaps
+  // are like for like).
+  function autoBite(L, ctx, b) {
+    const v = vampireOf(L), like = L.settings.vampire.samePos;
+    const mine = L.rosters[v].filter((x) => !held(L, v).includes(x)).map((x) => ctx.byId[x]).filter(Boolean);
+    const room = L.rosters[v].length - held(L, v).length < maxRoster(L);
+    const val = (p) => (p.$ || 0) + Math.max(0, p.vor || 0) * 0.01;
+    for (const p of L.rosters[b.victim].map((x) => ctx.byId[x]).filter(Boolean).sort((a, b2) => val(b2) - val(a))) {
+      const pool = like ? mine.filter((q) => S.positions(q)[0] === S.positions(p)[0]) : mine;
+      const give = room ? null : pool.sort((a, b2) => val(a) - val(b2))[0];
+      if (!room && !give) continue;
+      if (give && val(give) >= val(p)) continue;
+      return { take: p.id, give: give ? give.id : null };
+    }
+    return null;
+  }
+  function runBites(L, ctx, now) {
+    const v = vampireOf(L);
+    if (v == null) return 0;
+    let n = 0;
+    for (const b of (L.bites || []).filter((x) => x.status === "open")) {
+      const bot = !L.teams[v].owner;
+      if (!bot && now < b.due) continue;
+      const pick = autoBite(L, ctx, b);
+      if (pick) { if (bite(L, ctx, b.id, pick.take, pick.give, bot ? Math.max(b.at, Math.min(now, b.due)) : b.due, !bot).ok) n++; }
+      else { b.status = "skipped"; b.done = now; }
+    }
+    return n;
+  }
+  // A bot vampire's first roster, before week 1: the best free agent for each starting slot, then the best left for
+  // the bench.
+  function vampireFill(L, ctx, now) {
+    const v = vampireOf(L);
+    if (v == null || L.teams[v].owner || L.rosters[v].length) return 0;
+    const slots = L.settings.lineup, n0 = maxRoster(L), picked = [];
+    const pool = ctx.free.filter((p) => !/^(out|ir|o)$/i.test(p.inj || "")).slice(0, 400);
+    for (const sl of slots) { const p = pool.find((x) => !picked.includes(x) && S.fits(ctx.sport, x, sl)); if (p) picked.push(p); }
+    for (const p of pool) { if (picked.length >= n0) break; if (!picked.includes(p) && !(ctx.sport.late && S.isLate(ctx.sport, p))) picked.push(p); }
+    let k = 0;
+    for (const p of picked.slice(0, n0)) if (addDrop(L, ctx, v, p.id, null, now).ok) k++;
+    return k;
+  }
+  const skipBite = (L, id, now) => { const b = (L.bites || []).find((x) => x.id === id && x.status === "open"); if (!b) return { ok: false, why: "No open bite" }; b.status = "skipped"; b.done = now; return { ok: true }; };
+  // the vampire's waiver claim always comes first
+  function vampireFirst(L) {
+    const v = vampireOf(L);
+    if (v == null) return;
+    const others = L.teams.filter((t) => t.id !== v).sort((a, b) => a.priority - b.priority);
+    others.forEach((t, i) => (t.priority = i + 1));
+    L.teams[v].priority = 0;
   }
 
   /* ---------- standings and playoffs ---------- */
@@ -938,7 +1045,8 @@
   const onWaivers = (L, pid, now) => L.waivers[pid] != null && L.waivers[pid] > now;
   // Pickups this week: adds and won claims (trades don't count). settings.maxAdds caps them, if set.
   const pickups = (L, teamId) => L.tx.filter((x) => x.team === teamId && x.week === L.week && (x.type === "add" || x.type === "add/drop" || x.type === "waiver")).length;
-  const pickupsLeft = (L, teamId) => (L.settings.maxAdds ? Math.max(0, L.settings.maxAdds - pickups(L, teamId)) : Infinity);
+  // (a vampire filling its first roster isn't held to the weekly limit)
+  const pickupsLeft = (L, teamId) => (L.settings.maxAdds && !(vampireOf(L) === teamId && L.week === 1) ? Math.max(0, L.settings.maxAdds - pickups(L, teamId)) : Infinity);
   function canRoster(L, ctx, teamId, add, drops, pickup) {
     if (L.week > totalWeeks(L)) return { ok: false, why: "The season is over" };
     if (!isAlive(L, teamId)) return { ok: false, why: "That team has been chopped" };
@@ -1008,6 +1116,7 @@
       const mx = Math.max(...L.teams.map((x) => x.priority));
       for (const x of L.teams) if (x.priority > t.priority) x.priority--;
       t.priority = mx;
+      vampireFirst(L);
       log(L, now, { type: "waiver", team: c.team, adds: [c.add], drops: c.drop ? [c.drop] : [], faab: L.settings.waivers === "faab" ? c.bid : null, bids: rivals.length });
       refresh(L, ctx);
       won.push(c);
@@ -1396,6 +1505,7 @@
     for (const t of L.trades) if (t.status === "pending" && (now >= offerEnds(L, t) || pastDeadline)) { t.status = "expired"; t.done = pastDeadline ? now : offerEnds(L, t); }
     let n = finalize(L, ctx, now);
     n += botsAnswer(L, ctx, now, 0);
+    n += runBites(L, ctx, now);
     L.waiverRuns = L.waiverRuns || {};
     if (L.settings.waiverAt != null && L.week <= totalWeeks(L) && !L.waiverRuns[L.week] && now >= waiverRunAt(L)) {
       const at = waiverRunAt(L);
@@ -1405,7 +1515,7 @@
     return n;
   }
 
-  return { summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
+  return { vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
     finishWeek, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };

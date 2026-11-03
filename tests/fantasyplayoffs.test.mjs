@@ -195,3 +195,70 @@ test('best ball works in a head-to-head league too', () => {
   playTo(s, 2);
   assert.ok(L.results[1].every((g) => g.sa > 0 && g.sb > 0));
 });
+
+test('vampire league: the vampire skips the draft, bites the teams it beats, and claims first', () => {
+  const data = JSON.parse(readFileSync(new URL('../fantasy-kit/data/nfl.json', import.meta.url), 'utf8'));
+  const sport = S.attach(Object.assign({}, S.nfl), data);
+  const have = new Set(data.players.flatMap((p) => p.pos));
+  const lineup = sport.lineup.filter((s) => sport.slots[s] === '*' || sport.slots[s].some((x) => have.has(x)));
+  const players = data.players.map((p) => ({ ...p }));
+  V.evaluate(sport, players, { teams: 8, lineup, scoring: 'half' });
+  const T0 = Date.UTC(2026, 8, 1), VAMP = 3;
+  const D = F.create({ sport, teams: 8, seed: 11, now: T0, lineup, scoring: 'half', botDelay: 0, sit: [VAMP] });
+  assert.ok(!D.round1.includes(VAMP) && !D.order.includes(VAMP), 'the vampire has no picks');
+  assert.equal(D.board.length, 7 * D.rounds);
+  assert.equal(F.pickLabel(D, 7), '2.1', 'rounds count the seven drafting teams');
+  D.season = { format: 'h2h', weeks: 6, playoffTeams: 4, vampire: { team: VAMP, samePos: true, double: false } };
+  let t = T0; F.start(D, t); const c0 = F.context(D, players, sport);
+  for (let i = 0; i < 20000 && D.phase === 'live'; i++) { t += 3000; F.tick(D, c0, t); }
+  assert.equal(D.phase, 'done');
+  assert.equal(F.rosters(D)[VAMP].length, 0);
+  const L = Z.begin(D, sport, { now: t });
+  assert.deepEqual(L.settings.vampire, { team: VAMP, samePos: true, double: false });
+  assert.equal(G.vampireOf(L), VAMP);
+  assert.equal(L.teams[VAMP].priority, 0, 'the vampire claims first');
+  const ctx = G.context(L, players, sport);
+  Z.catchUp(L, ctx, L.start + 1);
+  assert.ok(L.rosters[VAMP].length >= lineup.length, 'a bot vampire fills its roster from free agents');
+  Z.catchUp(L, ctx, L.start + (G.totalWeeks(L) + 1) * 7 * 864e5 + 1);
+  const wins = Object.entries(L.results).filter(([w]) => +w <= L.settings.weeks).map(([, gs]) => gs.find((g) => g.a === VAMP || g.b === VAMP)).filter((g) => g && ((g.w === 'a' && g.a === VAMP) || (g.w === 'b' && g.b === VAMP))).length;
+  assert.equal(L.bites.length, wins, 'one bite per regular-season win, none in the playoffs');
+  const done = L.bites.filter((b) => b.status === 'done');
+  assert.ok(done.length >= Math.min(1, wins), 'the bot vampire bites');
+  for (const b of done) {
+    if (b.give) assert.equal(S.positions(ctx.byId[b.take])[0], S.positions(ctx.byId[b.give])[0], 'like for like');
+    assert.ok(L.tx.some((x) => x.type === 'bite' && x.adds[0] === b.take));
+  }
+  assert.equal(L.teams[VAMP].priority, 0, 'still first after waivers ran');
+});
+
+test('vampire bites by hand: checks, the deadline, and the double bite', () => {
+  const data = JSON.parse(readFileSync(new URL('../fantasy-kit/data/nfl.json', import.meta.url), 'utf8'));
+  const sport = S.attach(Object.assign({}, S.nfl), data), players = data.players.map((p) => ({ ...p }));
+  V.evaluate(sport, players, { teams: 6, scoring: 'half' });
+  const D = F.create({ sport, teams: 6, seed: 4, now: 0, scoring: 'half', botDelay: 0, sit: [0] });
+  D.teams[0].owner = 'Vlad';
+  D.season = { format: 'h2h', weeks: 4, playoffTeams: 2, vampire: { team: 0, samePos: false, double: true } };
+  let t = 0; F.start(D, t); const c0 = F.context(D, players, sport);
+  for (let i = 0; i < 20000 && D.phase === 'live'; i++) { t += 3000; F.tick(D, c0, t); }
+  const L = Z.begin(D, sport, { now: t }), ctx = G.context(L, players, sport);
+  // the human vampire fills his roster; no weekly pickup limit in week 1
+  L.settings.maxAdds = 2;
+  for (const p of ctx.free.slice(0, G.maxRoster(L))) G.addDrop(L, ctx, 0, p.id, null, L.start - 1);
+  assert.equal(L.rosters[0].length, G.maxRoster(L));
+  // force a vampire win in week 1 by benching everyone else's lineup
+  const g = G.matchups(L, ctx, 1, 1).find((x) => x.a === 0 || x.b === 0), opp = g.a === 0 ? g.b : g.a;
+  L.lineups[1] = { [opp]: L.settings.lineup.map(() => null) };
+  G.finishWeek(L, ctx, G.weekStart(L, 2));
+  const open = L.bites.filter((b) => b.status === 'open');
+  assert.equal(open.length, 2, 'the team it beat, and the lowest scorer');
+  const b = open.find((x) => x.victim === opp);
+  const take = L.rosters[opp][0], give = L.rosters[0][L.rosters[0].length - 1];
+  assert.match(G.biteCheck(L, ctx, b, take, null).why, /give back/);
+  assert.ok(G.bite(L, ctx, b.id, take, give, G.weekStart(L, 2) + 1).ok);
+  assert.ok(L.rosters[0].includes(take) && L.rosters[opp].includes(give));
+  // the other bite times out and is made for him
+  G.runBites(L, ctx, G.weekStart(L, 2) + 49 * 3600e3);
+  assert.ok(L.bites.every((x) => x.status !== 'open'));
+  assert.ok(L.bites.some((x) => x.auto));
+});
