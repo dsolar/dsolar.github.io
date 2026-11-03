@@ -730,7 +730,9 @@
     const c = tradeCheck(D, ctx, t);
     if (!c.ok) return c;
     const T = { id: (D.trades.length ? D.trades[D.trades.length - 1].id : 0) + 1, from: t.from, to: t.to, give: t.give.slice(), get: t.get.slice(),
-      note: t.note || "", at: now, status: "pending", by: t.by || null, added: (t.added || []).map((x) => x.id) };
+      note: t.note || "", at: now, status: "pending", by: t.by || null, added: (t.added || []).map((x) => x.id),
+      // what each piece was worth when the offer went out, so the record doesn't drift as the draft goes on
+      vals: Object.fromEntries(t.give.concat(t.get).map((id) => [id, Math.round(assetValue(D, ctx, id))])) };
     D.trades.push(T);
     if (isBot(D.teams[t.to])) {
       const a = botAnswer(D, ctx, T);

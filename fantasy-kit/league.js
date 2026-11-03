@@ -98,14 +98,40 @@
   const weekStart = (L, w) => L.start + (w - 1) * 7 * DAY;
   const log = (L, at, e) => { const x = Object.assign({ id: L.nextId++, at, week: L.week }, e); L.tx.push(x); return x; };
 
+  /* ---------- moves during a week ---------- */
+  // How far into the current week `now` is, 0 to 1.
+  const weekFrac = (L, now) => Math.max(0, Math.min(1, (now - weekStart(L, L.week)) / (7 * DAY)));
+  // A player who joins a team mid-week only scores the rest of that week for it.
+  function joined(L, teamId, pid, now) { (L.joined = L.joined || {})[pid] = { team: teamId, week: L.week, f: weekFrac(L, now) }; }
+  function effFrac(L, teamId, pid, w, frac) {
+    const j = L.joined && L.joined[pid];
+    const gone = L.left && L.left[w] && L.left[w][teamId] && L.left[w][teamId][pid];
+    const upTo = gone != null && !(j && j.team === teamId && j.week === w && j.f >= gone) ? Math.min(frac, gone) : frac;
+    return j && j.team === teamId && j.week === w ? Math.max(0, upTo - j.f) : upTo;
+  }
+  // A player who leaves a lineup mid-week (dropped, traded, put on IR) keeps the points he'd already scored for it.
+  function bank(L, ctx, teamId, pid, now) {
+    if (L.week > totalWeeks(L) || !ctx.byId[pid] || scoring(L, ctx).type !== "points") return;
+    const w = L.week, f = weekFrac(L, now);
+    if (f <= 0) return;
+    if (L.settings.bestBall) {                              // best ball picks the lineup at the end, so he stays a candidate
+      ((((L.left = L.left || {})[w] = L.left[w] || {})[teamId] = L.left[w][teamId] || {}))[pid] = f;
+      return;
+    }
+    const counting = lineupFor(L, ctx, teamId, w);
+    if (!counting.includes(pid)) return;
+    const pts = playerWeek(L, ctx, ctx.byId[pid], w, effFrac(L, teamId, pid, w, f)).pts;
+    const b = (((L.banked = L.banked || {})[w] = L.banked[w] || {})[teamId] = L.banked[w][teamId] || {});
+    b[pid] = (b[pid] || 0) + pts;
+  }
+
   /* ---------- lineups ---------- */
   function lineupFor(L, ctx, teamId, w) {
     const saved = L.lineups[w] && L.lineups[w][teamId];
     if (L.settings.bestBall && w >= L.week) return projectedBest(L, ctx, teamId);
     const ros = L.rosters[teamId], ir = L.ir[teamId] || [];
     if (saved) return saved.map((id) => (id && ros.includes(id) && !ir.includes(id) ? id : null));
-    const ps = ros.filter((id) => !ir.includes(id)).map((id) => ctx.byId[id]).filter((p) => p && !/^(out|ir|o)$/i.test(p.inj || ""));
-    return F.assign(ctx.sport, ps, L.settings.lineup).map((p) => (p ? p.id : null));
+    return fillLineup(L, ctx, teamId).map((p) => (p ? p.id : null));
   }
   function setLineup(L, ctx, teamId, w, slots) {
     if (L.settings.bestBall) return { ok: false, why: "Best ball sets your lineup for you" };
@@ -136,12 +162,26 @@
 
   const healthy = (L, ctx, teamId) => L.rosters[teamId].filter((id) => !(L.ir[teamId] || []).includes(id)).map((id) => ctx.byId[id]).filter((p) => p && !/^(out|ir|o)$/i.test(p.inj || ""));
   function projectedBest(L, ctx, teamId) { return F.assign(ctx.sport, healthy(L, ctx, teamId), L.settings.lineup).map((p) => (p ? p.id : null)); }
+  // The best lineup of healthy players, with any slot still open filled by a hurt player who fits (better than empty).
+  function fillLineup(L, ctx, teamId) {
+    const slots = L.settings.lineup, ir = L.ir[teamId] || [];
+    const first = F.assign(ctx.sport, healthy(L, ctx, teamId), slots);
+    const used = new Set(first.filter(Boolean).map((p) => p.id));
+    const hurt = L.rosters[teamId].filter((id) => !ir.includes(id) && !used.has(id)).map((id) => ctx.byId[id]).filter(Boolean).sort((a, b) => (b.v || 0) - (a.v || 0));
+    for (let i = 0; i < slots.length; i++) {
+      if (first[i]) continue;
+      const k = hurt.findIndex((p) => S.fits(ctx.sport, p, slots[i]));
+      if (k >= 0) first[i] = hurt.splice(k, 1)[0];
+    }
+    return first;
+  }
   // Best ball: the best lineup this roster could have started, by what each player actually scored this week. In a
   // category league a player's week counts as his value moved by his form.
   function bestBallIds(L, ctx, teamId, w, frac) {
     const sc = scoring(L, ctx);
-    const ps = healthy(L, ctx, teamId).map((p) => {
-      const v = sc.type === "points" ? playerWeek(L, ctx, p, w, frac).pts : (p.v || 0) + 0.5 * (formOf(L, p, w) - 1) * Math.max(1, Math.abs(p.v || 0));
+    const leavers = Object.keys((L.left && L.left[w] && L.left[w][teamId]) || {}).filter((id) => !L.rosters[teamId].includes(id) || (L.ir[teamId] || []).includes(id)).map((id) => ctx.byId[id]).filter(Boolean);
+    const ps = healthy(L, ctx, teamId).concat(leavers).map((p) => {
+      const v = sc.type === "points" ? playerWeek(L, ctx, p, w, effFrac(L, teamId, p.id, w, frac)).pts : (p.v || 0) + 0.5 * (formOf(L, p, w) - 1) * Math.max(1, Math.abs(p.v || 0));
       return Object.assign({}, p, { v, _id: p.id });
     });
     return F.assign(ctx.sport, ps, L.settings.lineup).map((p) => (p ? p._id : null));
@@ -173,10 +213,12 @@
     const sc = scoring(L, ctx);
     const best = L.settings.bestBall && w >= L.week ? bestBallIds(L, ctx, teamId, w, frac) : null;
     const ids = (best || lineupFor(L, ctx, teamId, w)).filter(Boolean);
-    const lines = ids.map((id) => [ctx.byId[id], playerWeek(L, ctx, ctx.byId[id], w, frac)]).filter((x) => x[0]);
+    const lines = ids.map((id) => [ctx.byId[id], ctx.byId[id] && playerWeek(L, ctx, ctx.byId[id], w, effFrac(L, teamId, id, w, frac))]).filter((x) => x[0]);
     if (sc.type === "points") {
       const players = Object.fromEntries(lines.map(([p, s]) => [p.id, s.pts]));
-      return { total: sum(Object.values(players)), players, lineup: best };
+      const banked = (L.banked && L.banked[w] && L.banked[w][teamId]) || {};
+      for (const [id, v] of Object.entries(banked)) players[id] = (players[id] || 0) + v;
+      return { total: sum(Object.values(players)), players, lineup: best, banked: Object.keys(banked) };
     }
     const cats = {};
     for (const c of sc.cats) {
@@ -203,7 +245,7 @@
     let wa = 0, wb = 0, t = 0;
     const cats = {};
     // compare what the page shows: counting stats to a tenth, rates to three places, so 0.0 vs 0.0 is a tie
-    const shown = (c, v) => (c.num || c.rate ? Math.round(v * 1000) / 1000 : Math.round(v * 10) / 10);
+    const shown = (c, v) => (c.fmt ? +String(c.fmt(v)).replace(/[^0-9.-]/g, "") : c.num || c.rate ? Math.round(v * 1000) / 1000 : Math.round(v * 10) / 10);
     for (const c of sc.cats) {
       const x = a.cats[c.k], y = b.cats[c.k];
       const sx = shown(c, x), sy = shown(c, y);
@@ -253,6 +295,7 @@
         sorted.forEach((r, i) => { r.score += i + 1; r.cats[c.k] = r.wk.cats[c.k]; });
       }
     }
+    if (frac <= 0) rows.forEach((r) => (r.score = 0));          // nobody has played: rank by projection
     chopOdds(L, ctx, rows, w, frac, sc.type === "points");
     rows.sort((a, b) => b.score - a.score || b.proj - a.proj);
     rows.forEach((r, i) => { r.rank = i + 1; r.final = false; r.live = frac > 0 && frac < 1; r.frac = frac; delete r.wk; });
@@ -412,9 +455,11 @@
   /* ---------- free agency and waivers ---------- */
   const onWaivers = (L, pid, now) => L.waivers[pid] != null && L.waivers[pid] > now;
   function canRoster(L, ctx, teamId, add, drops) {
+    if (L.week > totalWeeks(L)) return { ok: false, why: "The season is over" };
     if (!isAlive(L, teamId)) return { ok: false, why: "That team has been chopped" };
     const ros = L.rosters[teamId].filter((id) => !(drops || []).includes(id));
-    if (ros.length + (add ? 1 : 0) > maxRoster(L) + (L.ir[teamId] || []).length) return { ok: false, why: "Roster is full: pick someone to drop" };
+    const irKept = (L.ir[teamId] || []).filter((x) => !(drops || []).includes(x)).length;
+    if (ros.length + (add ? 1 : 0) > maxRoster(L) + irKept) return { ok: false, why: "Roster is full: pick someone to drop" };
     if (ctx.hooks.check) { const c = ctx.hooks.check(L, teamId, add ? ctx.byId[add] : null, drops, ctx); if (c && !c.ok) return c; }
     return { ok: true };
   }
@@ -426,13 +471,14 @@
   }
   // A free agent who isn't on waivers: added right away.
   function addDrop(L, ctx, teamId, add, drop, now) {
+    if (L.week > totalWeeks(L)) return { ok: false, why: "The season is over" };
     if (add && ctx.own[add] != null) return { ok: false, why: `${ctx.byId[add].n} is on a roster` };
     if (add && onWaivers(L, add, now)) return { ok: false, why: `${ctx.byId[add].n} is on waivers: put in a claim` };
     if (drop && !L.rosters[teamId].includes(drop)) return { ok: false, why: "That player isn't on your roster" };
     const ok = canRoster(L, ctx, teamId, add, drop ? [drop] : []);
     if (!ok.ok) return ok;
-    if (drop) dropOne(L, teamId, drop, now);
-    if (add) { L.rosters[teamId].push(add); delete L.waivers[add]; }
+    if (drop) { bank(L, ctx, teamId, drop, now); dropOne(L, teamId, drop, now); }
+    if (add) { L.rosters[teamId].push(add); delete L.waivers[add]; joined(L, teamId, add, now); }
     log(L, now, { type: add && drop ? "add/drop" : add ? "add" : "drop", team: teamId, adds: add ? [add] : [], drops: drop ? [drop] : [] });
     refresh(L, ctx);
     return { ok: true };
@@ -457,9 +503,13 @@
       const t = L.teams[c.team];
       const rivals = open.filter((x) => x.add === c.add && x.status === "open");
       c.done = now; c.week = L.week;
-      if (ctx.own[c.add] != null || (L.settings.waivers === "faab" && c.bid > t.faab) || (c.drop && !L.rosters[c.team].includes(c.drop)) || !canRoster(L, ctx, c.team, c.add, c.drop ? [c.drop] : []).ok) { c.status = "failed"; continue; }
-      if (c.drop) dropOne(L, c.team, c.drop, now);
-      L.rosters[c.team].push(c.add); delete L.waivers[c.add];
+      const why = ctx.own[c.add] != null ? `${(ctx.byId[c.add] || {}).n || "He"} was already taken`
+        : L.settings.waivers === "faab" && c.bid > t.faab ? `Only $${t.faab} left by then`
+        : c.drop && !L.rosters[c.team].includes(c.drop) ? `${(ctx.byId[c.drop] || {}).n || "Your drop"} was already gone`
+        : !canRoster(L, ctx, c.team, c.add, c.drop ? [c.drop] : []).ok ? "No roster spot open" : null;
+      if (why) { c.status = "failed"; c.why = why; continue; }
+      if (c.drop) { bank(L, ctx, c.team, c.drop, now); dropOne(L, c.team, c.drop, now); }
+      L.rosters[c.team].push(c.add); delete L.waivers[c.add]; joined(L, c.team, c.add, now);
       if (L.settings.waivers === "faab") t.faab -= c.bid;
       c.status = "won";
       for (const x of rivals) if (x !== c) { x.status = "lost"; x.lostTo = c.team; x.done = now; x.week = L.week; }
@@ -484,6 +534,7 @@
   // An IR spot doesn't count against the roster, so putting a hurt player there frees a spot for a pickup.
   function toIR(L, ctx, teamId, pid, now) {
     const p = ctx.byId[pid];
+    if (L.week > totalWeeks(L)) return { ok: false, why: "The season is over" };
     if (!isAlive(L, teamId)) return { ok: false, why: "That team has been chopped" };
     if (!L.rosters[teamId].includes(pid)) return { ok: false, why: "He isn't on your roster" };
     const ir = (L.ir[teamId] = L.ir[teamId] || []);
@@ -491,6 +542,7 @@
     if (!irSlots(L)) return { ok: false, why: "This league has no IR spots" };
     if (ir.length >= irSlots(L)) return { ok: false, why: `Your IR ${irSlots(L) === 1 ? "spot is" : "spots are"} full` };
     if (!irEligible(p)) return { ok: false, why: `${p.n} isn't out or on IR, so he can't go there` };
+    bank(L, ctx, teamId, pid, now);
     ir.push(pid);
     for (const w of Object.keys(L.lineups)) if (+w >= L.week && L.lineups[w][teamId]) L.lineups[w][teamId] = L.lineups[w][teamId].map((x) => (x === pid ? null : x));
     log(L, now, { type: "ir", team: teamId, adds: [], drops: [], text: `${p.n} to IR` });
@@ -500,12 +552,14 @@
   function activate(L, ctx, teamId, pid, drop, now) {
     const ir = L.ir[teamId] || [];
     const p = ctx.byId[pid];
+    if (L.week > totalWeeks(L)) return { ok: false, why: "The season is over" };
     if (!ir.includes(pid)) return { ok: false, why: `${p ? p.n : "He"} isn't on IR` };
     const active = L.rosters[teamId].length - ir.length;
     if (active + 1 > maxRoster(L) && !drop) return { ok: false, why: "Your roster is full: drop someone to activate him", needDrop: true };
     if (drop && (drop === pid || !L.rosters[teamId].includes(drop))) return { ok: false, why: "Pick someone on your roster to drop" };
     L.ir[teamId] = ir.filter((x) => x !== pid);
-    if (drop) { dropOne(L, teamId, drop, now); log(L, now, { type: "drop", team: teamId, adds: [], drops: [drop] }); }
+    joined(L, teamId, pid, now);
+    if (drop) { bank(L, ctx, teamId, drop, now); dropOne(L, teamId, drop, now); log(L, now, { type: "drop", team: teamId, adds: [], drops: [drop] }); }
     log(L, now, { type: "ir", team: teamId, adds: [], drops: [], text: `${p.n} back from IR` });
     refresh(L, ctx);
     return { ok: true };
@@ -573,13 +627,19 @@
   function execute(L, ctx, t, now) {
     const c = tradeCheck(L, ctx, t);
     if (!c.ok) return c;
-    for (const id of t.dropsFrom || []) dropOne(L, t.from, id, now);
+    for (const id of t.give) bank(L, ctx, t.from, id, now);
+    for (const id of t.get) bank(L, ctx, t.to, id, now);
+    for (const id of t.dropsFrom || []) { bank(L, ctx, t.from, id, now); dropOne(L, t.from, id, now); }
     L.rosters[t.from] = L.rosters[t.from].filter((x) => !t.give.includes(x)).concat(t.get);
     L.rosters[t.to] = L.rosters[t.to].filter((x) => !t.get.includes(x)).concat(t.give);
     // a player traded off IR arrives active; his old team's IR spot opens
     L.ir[t.from] = (L.ir[t.from] || []).filter((x) => !t.give.includes(x));
     L.ir[t.to] = (L.ir[t.to] || []).filter((x) => !t.get.includes(x));
-    for (const w of Object.keys(L.lineups)) if (+w >= L.week) { delete (L.lineups[w] || {})[t.from]; delete (L.lineups[w] || {})[t.to]; }
+    // the players who left come out of the set lineups; everyone else stays where the manager put them
+    const moved = new Set(t.give.concat(t.get));
+    for (const w of Object.keys(L.lineups)) if (+w >= L.week) for (const team of [t.from, t.to]) { const lu = L.lineups[w][team]; if (lu) L.lineups[w][team] = lu.map((x) => (moved.has(x) ? null : x)); }
+    for (const id of t.get) joined(L, t.from, id, now);
+    for (const id of t.give) joined(L, t.to, id, now);
     L.teams[t.from].faab += (t.faabGet || 0) - (t.faabGive || 0);
     L.teams[t.to].faab += (t.faabGive || 0) - (t.faabGet || 0);
     t.status = "accepted"; t.done = now;
@@ -679,7 +739,8 @@
   const offerEnds = (L, t) => t.at + (L.settings.offerHours || 48) * HOUR;
   function tick(L, ctx, now) {
     // offers nobody answered close after offerHours
-    for (const t of L.trades) if (t.status === "pending" && now >= offerEnds(L, t)) { t.status = "expired"; t.done = offerEnds(L, t); }
+    const pastDeadline = L.settings.deadline && L.week > L.settings.deadline;
+    for (const t of L.trades) if (t.status === "pending" && (now >= offerEnds(L, t) || pastDeadline)) { t.status = "expired"; t.done = pastDeadline ? now : offerEnds(L, t); }
     let n = finalize(L, ctx, now);
     n += botsAnswer(L, ctx, now, 0);
     L.waiverRuns = L.waiverRuns || {};
@@ -694,5 +755,5 @@
   return { DEFAULTS, WEEK, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
     finishWeek, formOf, hot, standings, playoffGames, bracket, power, onWaivers, canRoster, addDrop, claim, cancelClaim, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
-    offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
+    weekFrac, joined, effFrac, bank, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
 });

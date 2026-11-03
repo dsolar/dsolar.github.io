@@ -140,13 +140,21 @@
           <div class="row" style="flex-wrap:wrap"><button class="btn warn" data-c="reset">New demo league</button>${mockDone() ? `<button class="btn" data-c="mock">Use my Draft Lab mock</button>` : ""}</div></div></div>
       </div>`;
   }
+  // Start a league from the finished Draft Lab mock, after asking: it replaces this demo league.
+  function useMock() {
+    U.confirm("Play a season with your mock?", `Your finished Draft Lab mock becomes a new league here. It replaces ${esc(L.name)} on this device.`, "Start the season", () => {
+      const m = U.store("fk-lab").get("mock", null); const D = m.D; D.teams[0].owner = "You";
+      L = build(D.lineup, D.scoring, D); catchUp(); location.hash = "#league/overview"; app.refresh();
+    });
+  }
   const mockDone = () => { const m = U.store("fk-lab").get("mock", null); return m && m.D && m.D.phase === "done" && m.D.sport === sportKey && m.D.teams.length >= 4; };
   // Jump ahead: shift the calendar back so the current week has already ended, then catch up.
   function skip(weeks) {
     for (let i = 0; i < weeks && L.week <= G.totalWeeks(L); i++) {
       const shift = Math.max(0, G.weekStart(L, L.week + 1) - Date.now()) + 1000;
       L.start -= shift;
-      for (const t of L.trades) { if (t.reviewEnds) t.reviewEnds -= shift; }
+      for (const t of L.trades) { if (t.reviewEnds) t.reviewEnds -= shift; if (t.status === "pending") t.at -= shift; }
+      for (const c of L.claims) if (c.status === "open") c.at -= shift;
       for (const k of Object.keys(L.waivers)) L.waivers[k] -= shift;
       catchUp();
     }
@@ -159,7 +167,7 @@
     if (a === "week") { const w = L.week; skip(1); U.toast(recap(w)); app.refresh(); }
     else if (a === "season") U.confirm("Play out the whole season?", "Every week left is played right now, through the final. You can't undo it, but you can start a new demo league.", "Play it out", () => { skip(30); U.toast("The season is over."); location.hash = "#league/overview"; app.refresh(); });
     else if (a === "reset") U.confirm("Start a new demo league?", "This clears the current league on this device.", "Start over", () => { L = build(lineupNow(), Object.keys(sport.scorings)[0]); catchUp(); location.hash = "#league/overview"; app.refresh(); });
-    else if (a === "mock") { const m = U.store("fk-lab").get("mock", null); const D = m.D; D.teams[0].owner = "You"; L = build(D.lineup, D.scoring, D); catchUp(); location.hash = "#league/overview"; app.refresh(); }
+    else if (a === "mock") useMock();
   });
   // One line on how your week went, for the toast after "Finish this week now".
   function recap(w) {
@@ -193,5 +201,8 @@
     else if (L.week !== before.week) U.toast(`On to week ${Math.min(L.week, G.totalWeeks(L))}.`);
   }, 15000);
 
-  load().then(mount).catch((e) => { $("#app").innerHTML = `<div class="wrap page"><div class="banner loss"><b>Couldn't load the league.</b> <span class="muted">${esc(e.message)}</span></div></div>`; console.error(e); });
+  load().then(mount).then(() => {
+    // Draft Lab's "Play a season with it" lands here with ?mock=1
+    if (params.get("mock") === "1") { history.replaceState(null, "", location.pathname + `?s=${sportKey}&f=${fmt}` + location.hash); if (mockDone()) useMock(); }
+  }).catch((e) => { $("#app").innerHTML = `<div class="wrap page"><div class="banner loss"><b>Couldn't load the league.</b> <span class="muted">${esc(e.message)}</span></div></div>`; console.error(e); });
 })();

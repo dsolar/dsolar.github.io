@@ -338,7 +338,9 @@
       const verdict = !picked ? (opts.empty || "Pick players on either side") : Math.abs(swing) < 0.08 ? "About even" : swing > 0 ? (swing > 0.35 ? "Lopsided your way" : "Leans your way") : swing < -0.35 ? "Lopsided their way" : "Leans their way";
       const list = (ps, set, kind) => ps.map((p) => `<label class="${set.has(p.id) ? "on" : ""}${kind === "drop" ? " drop" : ""}"><input type="checkbox" data-tw="${kind}" value="${esc(p.id)}"${set.has(p.id) ? " checked" : ""}>${pname(sport, p)}<span class="dollar">${p.price != null ? esc(p.price) : p.$ ? money(p.$) : ""}</span></label>`).join("");
       const dropList = need > 0 ? `<div class="sec">Drop ${need} to make room</div>${list(mine.filter((p) => !st.give.has(p.id)), st.drops, "drop")}` : "";
-      const chk = opts.check ? opts.check(trade()) : { ok: true };
+      let chk = opts.check ? opts.check(trade()) : { ok: true };
+      const same = (a, b) => a.length === b.length && a.every((x) => b.includes(x));
+      if (pf.counterOf && same([...st.give], pf.give || []) && same([...st.get], pf.get || []) && st.faabGive === (pf.faabGive || 0) && st.faabGet === (pf.faabGet || 0)) chk = { ok: false, why: "Change something to counter, or accept their offer as it is" };
       const ready = chk.ok && picked && st.drops.size >= need;
       const scroll = $$(".tw-list", D).map((x) => x.scrollTop);
       $(".tw", D).innerHTML = `
@@ -448,7 +450,7 @@
       } else {
         const c = F.onClock(d, n), t = team(c.team), mine = isMe(t);
         const next = me() != null ? F.nextPickOf(d, me()) : null;
-        mid = `<div class="otc${mine ? " me" : ""}">${teamAv(t, "md")}<span class="who"><small>${mine ? (c.makeup ? "You were robbed. Pick again" : "You're on the clock") : c.makeup ? "Make-up pick" : "On the clock"}</small><b>${esc(t.name)}</b><span>${c.makeup ? `Make-up pick: ${esc(team(c.makeup.from).abbr)} stole ${esc((ctx.byId[c.makeup.forbid] || {}).n || "a player")}` : mystery() ? `Pick ${c.pick} of ${c.total}` : `Round ${c.round}, pick ${c.inRound} (${ord(c.pick)} overall)`}${elephant() && mine ? `. ${F.stealsLeft(d, me())} steal${F.stealsLeft(d, me()) === 1 ? "" : "s"} left${F.stealsOpen(d, c.index) ? "" : ", but steals are over"}` : ""}${viaOf(c.index) ? `, from ${isMe(viaOf(c.index)) ? "you" : esc(viaOf(c.index).name)}` : ""}${!mine && next ? `. You pick in ${next - c.pick}` : ""}${d.paused ? ", paused" : ""}${d.bank && t.bank <= 0 ? `. Bank empty: ${d.bank.floor} seconds a pick` : ""}</span></span><span class="ring" id="fk-ring" title="${d.bank ? "Time left in the bank" : "Time left on the pick"}"><span id="fk-timer"></span></span></div>`;
+        mid = `<div class="otc${mine ? " me" : ""}">${teamAv(t, "md")}<span class="who"><small>${mine ? (c.makeup ? "You were robbed. Pick again" : "You're on the clock") : c.makeup ? "Make-up pick" : "On the clock"}</small><b>${esc(t.name)}</b><span>${c.makeup ? `Make-up pick: ${esc(team(c.makeup.from).abbr)} stole ${esc((ctx.byId[c.makeup.forbid] || {}).n || "a player")}` : mystery() ? `Pick ${c.pick} of ${c.total}` : `Round ${c.round}, pick ${c.inRound} (${ord(c.pick)} overall)`}${elephant() && mine ? (F.stealsOpen(d, c.index) ? `. ${F.stealsLeft(d, me())} steal${F.stealsLeft(d, me()) === 1 ? "" : "s"} left` : ". Steals are over") : ""}${viaOf(c.index) ? `, from ${isMe(viaOf(c.index)) ? "you" : esc(viaOf(c.index).name)}` : ""}${!mine && next ? `. You pick in ${next - c.pick}` : ""}${d.paused ? ", paused" : ""}${d.bank && t.bank <= 0 ? `. Bank empty: ${d.bank.floor} seconds a pick` : ""}</span></span><span class="ring" id="fk-ring" title="${d.bank ? "Time left in the bank" : "Time left on the pick"}"><span id="fk-timer"></span></span></div>`;
       }
       return `<div class="dr-top">${lg}${mid}<div class="acts">${ctl.join("")}</div></div>`;
     }
@@ -547,7 +549,7 @@
       const d = D(), st = F.standings(d, ctx).sort((a, b) => a.rank - b.rank);
       return `<div style="overflow:auto;flex:1;min-height:0"><div class="teams">${st.map((r) => { const t = team(r.team);
         return `<div class="card"${isMe(t) ? ` style="border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)"` : ""}><div class="mod-h">${teamAv(t, "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(t.name)}${isMe(t) ? ` <span class="tag you">You</span>` : ""}</b><span class="ps">${ord(r.rank)}, ${pts() ? `${Math.round(r.score)} projected` : `${r.score.toFixed(1)} value`}${r.spent != null ? `, spent ${money(r.spent)}` : ""}${d.bank ? `, ${fmtLeft(t.bank)} banked for ${bankFaab(t)} FAAB` : ""}</span></div><b class="grade disp">${r.grade}</b></div>
-          <ol>${r.starters.filter(Boolean).map((p) => `<li>${posChip(sport, FK.value.mainPos(sport, p))}<button class="btn link ell" data-player="${esc(p.id)}">${esc(p.n)}</button><span class="grow"></span><span class="ps">${p.rank}</span></li>`).join("")}</ol></div>`; }).join("")}</div></div>`;
+          <ol>${d.lineup.map((sl, i) => { const p = r.starters[i]; return `<li><span class="slot">${esc(sl)}</span>${p ? `<button class="btn link ell" data-player="${esc(p.id)}">${esc(p.n)}</button><span class="grow"></span><span class="ps">#${p.rank}</span>` : `<span class="ps">Empty</span>`}</li>`; }).join("")}${r.bench.map((p) => `<li class="bn"><span class="slot">BN</span><button class="btn link ell" data-player="${esc(p.id)}">${esc(p.n)}</button><span class="grow"></span><span class="ps">#${p.rank}</span></li>`).join("")}</ol></div>`; }).join("")}</div></div>`;
     }
     // Mystery packages: every team's picks side by side, with what each package is worth on the pick curve.
     function packages() {
@@ -574,7 +576,7 @@
       const left = m != null ? F.stealsLeft(d, m) : 0;
       const why = (id) => (m == null || !c ? null : F.canSteal(d, ctx, m, id, now()));
       return `<div style="overflow:auto;flex:1;min-height:0"><div class="pk-h"><b>Steal a player</b><span class="ps">On your turn, take someone already drafted instead of a new player. The team you take him from picks again right away and can't take him straight back. A player is frozen after ${d.steals.freeze} steals, every team gets ${d.steals.perTeam}, and steals end with ${d.steals.lastRounds} rounds to go.${m != null ? ` You have ${left} left.` : ""}</span></div>
-        ${rows.length ? `<ul class="rslots">${rows.map(({ p, t }) => { const r = why(p.id), n = F.stealsOf(d, p.id), frozen = n >= d.steals.freeze; return `<li style="grid-template-columns:minmax(0,1fr) auto auto"><span data-player="${esc(p.id)}" style="cursor:pointer;min-width:0">${pname(sport, p, `#${p.rank}, ${money(p.$)}`, { size: "sm" })}</span><span class="row" style="gap:6px">${frozen ? `<span class="tag">Frozen</span>` : n ? `<span class="tag gold">Stolen ${n}x</span>` : ""}${teamAv(team(t), "sm")}</span>${r && r.ok ? `<button class="btn xs warn" data-steal="${esc(p.id)}">Steal</button>` : `<span class="ps" style="font-size:11px;max-width:150px;text-align:right">${r && c && c.team === m && !frozen ? esc(r.why) : ""}</span>`}</li>`; }).join("")}</ul>` : `<p class="empty">Nobody has drafted anyone yet.</p>`}</div>`;
+        ${rows.length ? `<ul class="rslots">${rows.map(({ p, t }) => { const r = why(p.id), n = F.stealsOf(d, p.id), frozen = n >= d.steals.freeze; return `<li style="grid-template-columns:minmax(0,1fr) auto auto"><span data-player="${esc(p.id)}" style="cursor:pointer;min-width:0">${pname(sport, p, `#${p.rank}, ${money(p.$)}`, { size: "sm" })}</span><span class="row" style="gap:6px">${frozen ? `<span class="tag">Frozen</span>` : n ? `<span class="tag gold">Stolen ${n}x</span>` : ""}${teamAv(team(t), "sm")}<b class="ps">${esc(team(t).abbr)}</b></span>${r && r.ok ? `<button class="btn xs warn" data-steal="${esc(p.id)}">Steal</button>` : `<span class="ps" style="font-size:11px;max-width:150px;text-align:right">${r && c && c.team === m && !frozen ? esc(r.why) : ""}</span>`}</li>`; }).join("")}</ul>` : `<p class="empty">Nobody has drafted anyone yet.</p>`}</div>`;
     }
     function upcoming(id) {
       const d = D();
@@ -588,8 +590,14 @@
       const LBL = { pending: "Pending", accepted: "Accepted", declined: "Declined", expired: "Expired", canceled: "Canceled" };
       const CLS = { pending: "pending", accepted: "accepted", declined: "rejected", expired: "cancelled", canceled: "cancelled" };
       // picks in a card read as they were offered: the pick and its value, without where it has gone since
-      const cardVM = (id) => { const x = assetVM(id); return x && x.pick && !x.sealed ? Object.assign({}, x, { sub: `${ord(x.k + 1)} overall, about ${money(F.pickValue(d, ctx, x.k))}` }) : x; };
-      const vm = (T, acts) => ({ id: T.id, status: CLS[T.status], statusLabel: LBL[T.status], from: team(T.from), to: team(T.to), give: T.give.map(cardVM).filter(Boolean), get: T.get.map(cardVM).filter(Boolean),
+      const cardVM = (id, T) => {
+        const x = assetVM(id);
+        if (!x || !x.pick || x.sealed) return x;
+        const pk = d.board[x.k], who = pk && pk.pid && ctx.byId[pk.pid];
+        const val = T && T.vals && T.vals[id] != null ? T.vals[id] : F.pickValue(d, ctx, x.k);
+        return Object.assign({}, x, { sub: `${ord(x.k + 1)} overall, worth ${money(val)} then${who ? `, became ${who.n}` : ""}` });
+      };
+      const vm = (T, acts) => ({ id: T.id, status: CLS[T.status], statusLabel: LBL[T.status], from: team(T.from), to: team(T.to), give: T.give.map((id) => cardVM(id, T)).filter(Boolean), get: T.get.map((id) => cardVM(id, T)).filter(Boolean),
         note: T.status === "declined" && T.why ? T.why : T.note, when: ago(T.done || T.at, now()), acts, sub: T.added && T.added.length ? "Evened out with a late pick" : "" });
       const list = d.trades.slice().reverse();
       const toMe = list.filter((T) => T.status === "pending" && T.to === m);
@@ -715,7 +723,7 @@
       $$("[data-card]", Dl).forEach((b) => b.addEventListener("click", () => {
         const a = b.dataset.card;
         if (a === "pick") { if (act(() => F.pick(D(), ctx, mine, pid, now()))) Dl.close(); }
-        else if (a === "steal") { if (act(() => F.steal(D(), ctx, mine, pid, now()))) { Dl.close(); toast(`You stole ${p.n}.`); } }
+        else if (a === "steal") { Dl.close(); const from = team(ctx.own[pid]); confirm(`Steal ${p.n}?`, `${esc(from.name)} picks again right away and can't take him straight back.`, "Steal him", () => { if (act(() => F.steal(D(), ctx, mine, pid, now()))) { ui.left = "players"; render(); toast(`You stole ${p.n} from ${from.abbr}.`); } }); }
         else if (a === "nominate") { Dl.close(); nominateDialog(pid); }
         else { toggleQueue(pid); Dl.close(); }
       }));
@@ -749,13 +757,19 @@
         if (ds.tradeWith) { openTrade(+ds.tradeWith); return; }
         if (ds.trCancel) { act(() => F.cancel(D(), +ds.trCancel, me(), now())); return; }
         const yes = !!ds.trYes, id = +(ds.trYes || ds.trNo);
-        if (act(() => F.respond(D(), ctx, id, me(), yes, now()))) toast(yes ? "Trade accepted." : "Offer declined.");
+        if (yes) confirm("Accept this trade?", "The picks and players change hands right away.", "Accept trade", () => { if (act(() => F.respond(D(), ctx, id, me(), true, now()))) toast("Trade accepted."); });
+        else if (act(() => F.respond(D(), ctx, id, me(), false, now()))) toast("Offer declined.");
         return;
       }
       const mb = e.target.closest("button[data-more]");
       if (mb) { ui.limit = (ui.limit || 250) + 250; render(); return; }
       const sb = e.target.closest("button[data-steal]");
-      if (sb) { e.stopPropagation(); const p = ctx.byId[sb.dataset.steal]; if (act(() => F.steal(D(), ctx, me(), sb.dataset.steal, now()))) toast(`You stole ${p.n}.`); return; }
+      if (sb) {
+        e.stopPropagation();
+        const pid = sb.dataset.steal, p = ctx.byId[pid], from = team(ctx.own[pid]);
+        confirm(`Steal ${p.n}?`, `${esc(from.name)} picks again right away and can't take him straight back. You have ${F.stealsLeft(D(), me())} steal${F.stealsLeft(D(), me()) === 1 ? "" : "s"} left.`, "Steal him", () => { if (act(() => F.steal(D(), ctx, me(), pid, now()))) { ui.left = "players"; render(); toast(`You stole ${p.n} from ${from.abbr}.`); } });
+        return;
+      }
       const b = e.target.closest("button[data-pick],button[data-queue],button[data-nominate],button[data-bid],button[data-qup],button[data-act]");
       if (b) {
         e.stopPropagation();
@@ -818,9 +832,15 @@
       }
     };
     timer = setInterval(() => {
-      if (opts.drive && D().phase === "live" && !dialogOpen()) {
+      if (opts.drive && D().phase === "live") {
+        const before = F.made(D()).length;
         const moved = F.tick(D(), ctx, now(), 3);
-        if (moved) save();
+        if (moved) {
+          save();
+          const mineAuto = F.made(D()).slice(before).find((pk) => pk.team === me() && pk.auto);
+          if (mineAuto && dialogOpen()) { const dl = $("#fk-dlg"); if (dl) dl.close(); }
+          if (mineAuto) { const p = ctx.byId[mineAuto.pid]; toast(p ? `Time ran out. You took ${p.n}.` : "Time ran out on your pick.", true); }
+        }
       }
       const s = sig();
       if (s !== lastSig) { newOffers(); newSteals(); }

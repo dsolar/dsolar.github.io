@@ -132,3 +132,32 @@ test('best ball: the lineup picks itself from what players scored', () => {
   const mine = g.a === 0 ? g.sa : g.sb;
   assert.ok(Math.abs(mine - wk.total) < 1e-6, 'the stored result is the best-ball score');
 });
+
+test('mid-week moves: a late pickup scores only the rest of the week, a drop keeps what he scored', () => {
+  const s = league('nfl', { format: 'guillotine', bestBall: true });
+  const L = s.L, ctx = s.ctx, w = L.week;
+  const late = G.weekStart(L, w) + 6.9 * DAY;          // 99% of the week gone
+  const before = G.teamWeek(L, ctx, 0, w, 0.99).total;
+  const fa = ctx.free.filter((p) => !G.onWaivers(L, p.id, late)).sort((a, b) => b.v - a.v)[0];
+  const worst = L.rosters[0].map((id) => ctx.byId[id]).sort((a, b) => a.v - b.v)[0];
+  assert.ok(G.addDrop(L, ctx, 0, fa.id, worst.id, late).ok);
+  const after = G.teamWeek(L, ctx, 0, w, 0.99).total;
+  assert.ok(after - before < 1, `a pickup at 99% added ${(after - before).toFixed(2)} points`);
+  // dropping a starter late keeps the points he'd already put up
+  const lu = G.teamWeek(L, ctx, 0, w, 0.99).lineup.filter(Boolean);
+  const star = lu.map((id) => ctx.byId[id]).sort((a, b) => b.v - a.v)[0];
+  const had = G.teamWeek(L, ctx, 0, w, 0.99).players[star.id];
+  const repl = ctx.free.filter((p) => !G.onWaivers(L, p.id, late + 1)).find((p) => S.positions(p).some((x) => S.positions(star).includes(x)));
+  assert.ok(G.addDrop(L, ctx, 0, repl.id, star.id, late + 1).ok);
+  const keep = G.teamWeek(L, ctx, 0, w, 0.99).players[star.id];
+  assert.ok(keep > had * 0.97 && keep <= had + 1e-9, `kept ${keep} of ${had} (he left at 98.6% of the week)`);
+});
+
+test('season over: no more roster moves', () => {
+  const s = league('nba', { format: 'guillotine' }, { scoring: 'cats9' });
+  const r = F.rng(3);
+  while (s.L.week <= G.totalWeeks(s.L)) playWeek(s, r);
+  const champ = G.champion(s.L), fa = s.ctx.free[0];
+  assert.match(G.addDrop(s.L, s.ctx, champ, fa.id, null, Date.now()).why, /over/);
+  assert.match(G.claim(s.L, s.ctx, champ, fa.id, null, 1, Date.now()).why, /over/);
+});

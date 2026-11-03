@@ -33,6 +33,9 @@
     const frac = (w) => { if (w < L().week) return 1; const f = opts.frac ? opts.frac(w) : 0; return f < 0.01 ? 0 : f; };
     const standings = () => G.standings(L());
     const gl = () => G.isGuillotine(L());
+    // moves are open while the season runs and your team is alive; trades also stop at the deadline
+    const canMove = () => me() != null && !over() && G.isAlive(L(), me());
+    const canTrade = () => canMove() && L().settings.trades !== false && !(L().settings.deadline && L().week > L().settings.deadline);
     const bb = () => !!L().settings.bestBall;
     const recOf = (id) => {
       const r = standings().find((x) => x.team === id);
@@ -82,7 +85,7 @@
       return ms.map((m) => ({
         href: matchHref(w, m.i), me: isMe(m.a) || isMe(m.b), status: m.final ? "final" : m.live ? "live" : "proj",
         label: m.final ? "Final" : m.live ? "Live" : `Week ${w}`, sub: w > L().settings.weeks ? "Playoffs" : "",
-        a: { team: T(m.a), score: m.final || m.live ? m.sa : m.pa, rec: recOf(m.a) }, b: { team: T(m.b), score: m.final || m.live ? m.sb : m.pb, rec: recOf(m.b) }, m,
+        a: { team: T(m.a), score: m.final || m.live ? m.sa : pts() ? m.pa : null, rec: recOf(m.a) }, b: { team: T(m.b), score: m.final || m.live ? m.sb : pts() ? m.pb : null, rec: recOf(m.b) }, m,
         wp: m.final ? null : m.winProb,
       })).sort((x, y) => (y.me ? 1 : 0) - (x.me ? 1 : 0));   // your game first
     }
@@ -124,7 +127,7 @@
         </div><aside class="stack">
           ${myRow ? `<div class="card"><div class="mod-h">${teamAv(myRow.team, "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(myRow.team.name)}</b><span class="ps">${ord(myRow.rank)} place, ${myRow.w}-${myRow.l}${myRow.t ? "-" + myRow.t : ""}</span></div></div>
             <div class="bd"><div class="stat-row"><div><small>FAAB</small><b>$${T(mid).faab}</b></div><div><small>Waiver priority</small><b>${ord(T(mid).priority + 1)}</b></div><div><small>Streak</small><b>${esc(myRow.streak || "-")}</b></div></div>
-            ${over() ? "" : `<div class="row" style="margin-top:12px;flex-wrap:wrap"><a class="btn sm" href="#team/roster">Set lineup</a>${L().settings.trades !== false ? `<button class="btn sm" data-trade>Propose a trade</button>` : ""}<a class="btn sm" href="#players/fa">Free agents</a></div>`}</div></div>` : ""}
+            ${over() ? "" : `<div class="row" style="margin-top:12px;flex-wrap:wrap"><a class="btn sm" href="#team/roster">Set lineup</a>${canTrade() ? `<button class="btn sm" data-trade>Propose a trade</button>` : ""}<a class="btn sm" href="#players/fa">Free agents</a></div>`}</div></div>` : ""}
           ${mid != null && L().claims.some((c) => c.team === mid && c.status === "open") ? `<div class="card"><div class="mod-h"><h2>Your waiver claims</h2><a href="#players/claims">All claims</a></div><div class="bd" style="padding-bottom:0"><span class="ps">${esc(claimsRun())}</span></div>${claimList(L().claims.filter((c) => c.team === mid && c.status === "open"))}</div>` : ""}
           ${offers.length ? `<div class="card"><div class="mod-h"><h2>Trade offers for you</h2><span class="badge">${offers.length}</span><a href="#team/trades">Review</a></div>${U.feed(offers.map((t) => ({ team: T(t.from), when: U.ago(t.at, now()), lines: t.get.map((id) => U.txLine(sport, "drop", playerVM(id), "you send")).concat(t.give.map((id) => U.txLine(sport, "add", playerVM(id), "you get"))) })))}</div>` : ""}
           <div class="card"><div class="mod-h"><h2>Power rankings</h2><a href="#league/standings">More</a></div><ol class="feed">${pw.map((r) => `<li style="grid-template-columns:24px auto minmax(0,1fr) auto;align-items:center;padding:8px 16px"><b class="ps num">${r.rank}</b>${teamAv(T(r.team), "sm")}<span class="ell"><b>${esc(T(r.team).name)}</b></span>${moveTag(r.move)}</li>`).join("")}</ol></div>
@@ -175,7 +178,7 @@
       if (x.type === "draft" || x.text) lines.push(`<span class="ps">${esc(x.text || "")}</span>`);
       if (x.type === "chop") { lines.length = 0; lines.push(`<span class="ps">${esc(x.text)}</span>`); }
       const badge = x.type === "chop" ? `<span class="tag loss">Chopped</span>` : x.type === "champion" ? `<span class="tag win">Champion</span>` : x.type === "trade" ? `<span class="tag info">Trade</span>` : x.type === "waiver" ? `<span class="tag gold">Waiver</span>` : x.type === "veto" ? `<span class="tag loss">Veto</span>` : "";
-      return { team: T(Math.max(0, x.team)), with: x.type === "trade" ? T(x.other) : null, when: `Week ${x.week}, ${U.ago(x.at, now())}`, lines, badge };
+      return { team: T(Math.max(0, x.team)), with: x.type === "trade" ? T(x.other) : null, when: now() - x.at < 2 * 864e5 && x.at <= now() ? `Week ${x.week}, ${U.ago(x.at, now())}` : `Week ${x.week}`, lines, badge };
     }
     function txPage() {
       const f = ui.txf;
@@ -226,10 +229,10 @@
       return `<ol class="blk${opts.compact ? " compact" : ""}">${rows.map((r, i) => {
         const t = T(r.team), out = final ? r.out : false;
         const danger = !final && r.chop != null && r.chop >= 0.25;
-        return `${i === cut ? `<li class="cutline" aria-hidden="true"><span>${final ? "Chopped" : "The cut line"}</span></li>` : ""}<li class="${isMe(r.team) ? "me " : ""}${out ? "out " : ""}${danger ? "hot" : ""}">
+        return `${i === cut ? `<li class="cutline" aria-hidden="true"><span>${final ? "" : "The cut line"}</span></li>` : ""}<li class="${isMe(r.team) ? "me " : ""}${out ? "out " : ""}${danger ? "hot" : ""}">
           <span class="rk">${r.rank}</span>${teamAv(t, "sm")}<a class="ell nm" href="${teamHref(r.team)}"><b>${esc(t.name)}</b>${isMe(r.team) ? ` <span class="tag you">You</span>` : ""}</a>
-          <span class="sc"><b>${fmtS(r.score)}</b>${pts() && !final ? `<small>proj ${fmtS(r.score + r.proj * (1 - (r.frac || 0)))}</small>` : !pts() ? `<small>${final ? "roto pts" : "roto pts so far"}</small>` : ""}</span>
-          ${final ? `<span class="odds">${out ? `<span class="tag loss">Chopped</span>` : ""}</span>` : `<span class="odds" title="Chance of being chopped this week"><i style="width:${Math.round((r.chop || 0) * 100)}%"></i><span>${pct(r.chop)}</span></span>`}
+          <span class="sc"><b>${!final && !(r.frac > 0) ? (pts() ? fmtS(r.proj) : "-") : fmtS(r.score)}</b>${pts() && !final ? `<small>${r.frac > 0 ? `proj ${fmtS(r.score + r.proj * (1 - (r.frac || 0)))}` : "projected"}</small>` : !pts() ? `<small>${final ? "roto pts" : "roto pts so far"}</small>` : ""}</span>
+          ${final ? `<span class="odds bare">${out ? `<span class="tag loss">Chopped</span>` : over() && G.champion(L()) === r.team ? `<span class="tag gold">Champion</span>` : ""}</span>` : `<span class="odds" title="Chance of being chopped this week"><i style="width:${Math.round((r.chop || 0) * 100)}%"></i><span>${pct(r.chop)}</span></span>`}
           <span class="bar" aria-hidden="true"><i style="width:${Math.max(0, (r.score / max) * 100).toFixed(1)}%"></i></span></li>`;
       }).join("")}</ol>${live && !opts.compact ? `<p class="ps" style="margin:10px 16px 14px">${Math.round(frac(w) * 100)}% of the week played. Chop odds play out the rest of each team's projection a few hundred times.</p>` : ""}`;
     }
@@ -340,7 +343,7 @@
       const t = T(id), r = standings().find((x) => x.team === id);
       return `<div class="team-h">${teamAv(t, "xl")}<div style="min-width:0"><h1 class="disp">${esc(t.name)}${isMe(id) ? ` <span class="tag you" style="font-size:13px;vertical-align:6px">You</span>` : ""}</h1>
         <div class="meta">${gl() ? `<span><b>${esc(recOf(id))}</b>${r.alive ? `, ${ord(r.rank)} in points` : ""}</span>` : `<span><b>${r.w}-${r.l}${r.t ? "-" + r.t : ""}</b>, ${ord(r.rank)} place</span>`}<span>${pts() ? `<b>${fmtS(r.pf)}</b> points for` : `<b>${r.pf}</b> categories won`}</span><span>FAAB <b>$${t.faab}</b></span><span>Waiver priority <b>${ord(t.priority + 1)}</b></span>${t.owner ? `<span>Manager <b>${esc(t.owner)}</b></span>` : `<span>Bot</span>`}</div></div>
-        <span class="grow"></span>${isMe(id) ? `<button class="btn" data-editteam>Edit team</button>` : ""}${!isMe(id) && me() != null && L().settings.trades !== false ? `<button class="btn go" data-trade="${id}">Propose a trade</button>` : ""}
+        <span class="grow"></span>${isMe(id) ? `<button class="btn" data-editteam>Edit team</button>` : ""}${!isMe(id) && canTrade() ? `<button class="btn go" data-trade="${id}">Propose a trade</button>` : ""}
         <label class="sr" for="team-pick">Team</label><select id="team-pick" style="width:auto;border-radius:999px">${L().teams.map((x) => `<option value="${x.id}"${x.id === id ? " selected" : ""}>${esc(x.name)}${isMe(x.id) ? " (you)" : ""}</option>`).join("")}</select></div>`;
     }
     function rosterPage(arg) {
@@ -373,8 +376,8 @@
       };
       const actsFor = (p, onIR) => {
         if (!p) return "";
-        if (!mine) return me() != null && L().settings.trades !== false ? `<button class="btn icon trade" data-trade="${id}" data-want="${esc(p.id)}" aria-label="Trade for ${esc(p.n)}" title="Trade for">&#8644;</button>` : "";
-        if (!alive) return "";
+        if (!mine) return canTrade() ? `<button class="btn icon trade" data-trade="${id}" data-want="${esc(p.id)}" aria-label="Trade for ${esc(p.n)}" title="Trade for">&#8644;</button>` : "";
+        if (!alive || over()) return "";
         if (onIR) return `<button class="btn xs${G.irEligible(p) ? "" : " go"}" data-activate="${esc(p.id)}">Activate</button>`;
         if (moving) return "";
         const irBtn = G.irEligible(p) && ir.length < irMax ? `<button class="btn xs" data-toir="${esc(p.id)}" title="Move to injured reserve">IR</button> ` : "";
@@ -399,7 +402,7 @@
       const claims = mine ? L().claims.filter((c) => c.team === id && c.status === "open") : [];
       return `<div class="wrap page">${teamHead(id)}
         <div class="row" style="flex-wrap:wrap">${weeks.length > 1 ? `<div class="seg" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-week="${x}" aria-pressed="${x === w}">Week ${x}${x === L().week ? ", now" : ""}</button>`).join("")}</div>` : ""}
-          ${game ? `<a class="pill" href="${matchHref(w, game.i)}" style="text-decoration:none">vs ${esc(T(game.a === id ? game.b : game.a).name)}: ${fmtS(game.a === id ? game.sa : game.sb)} to ${fmtS(game.a === id ? game.sb : game.sa)}</a>` : ""}
+          ${game ? `<a class="pill" href="${matchHref(w, game.i)}" style="text-decoration:none">vs ${esc(T(game.a === id ? game.b : game.a).name)}${w === L().week && frac(w) > 0 ? `: ${fmtS(game.a === id ? game.sa : game.sb)} to ${fmtS(game.a === id ? game.sb : game.sa)}` : ""}</a>` : ""}
           ${brow ? `<a class="pill" href="#matchup/${w}" style="text-decoration:none">${fmtS(brow.score)}, ${ord(brow.rank)} of ${L().alive.length}, ${pct(brow.chop)} to be chopped</a>` : ""}
           <span class="grow"></span>${mine && !locked && !moving ? `<button class="btn sm" data-optimize>Start my best lineup</button>` : ""}</div>
         ${moving ? `<div class="movebar" role="status"><span>Moving <b>${esc(moving.n)}</b>. Pick a highlighted spot${movingSlot >= 0 ? ", or swap with a bench player" : ""}.</span><span class="grow"></span>${movingSlot >= 0 ? `<button class="btn sm" data-here="BN">To bench</button>` : ""}<button class="btn sm" data-move="">Cancel</button></div>` : ""}
@@ -437,6 +440,8 @@
         (fd) => {
           const name = String(fd.get("name") || "").trim(), abbr = String(fd.get("abbr") || "").trim().toUpperCase();
           if (!name) { U.toast("Give your team a name", true); return false; }
+          const clash = L().teams.find((x) => x.id !== mid && (x.abbr || "").toUpperCase() === abbr);
+          if (abbr && clash) { U.toast(`${clash.name} already uses ${abbr}`, true); return false; }
           Object.assign(T(mid), { name, abbr: abbr || name.split(/\s+/).map((x) => x[0]).join("").slice(0, 3).toUpperCase(), color: st.color, shape: st.shape, glyph: st.glyph === "abbr" ? false : st.glyph });
           if (st.img) T(mid).img = st.img; else delete T(mid).img;
           save(); U.toast("Team saved."); render();
@@ -483,7 +488,8 @@
         const lu = G.lineupFor(L(), ctx, mid, curWeek()), ir = L().ir[mid] || [];
         const bench = L().rosters[mid].filter((x) => !lu.includes(x) && !ir.includes(x)).map((x) => ctx.byId[x]).filter(Boolean);
         const open = L().settings.lineup.filter((sl, i) => !lu[i] && bench.some((p) => S.fits(sport, p, sl)));
-        if (open.length) items.push(`<a class="alert" href="#team/roster"><span>Your ${esc(open.join(", "))} ${open.length === 1 ? "spot is" : "spots are"} empty this week</span><b class="go">Fix lineup</b></a>`);
+        const named = Object.entries(open.reduce((m, x) => ((m[x] = (m[x] || 0) + 1), m), {})).map(([k, n]) => (n > 1 ? `${n} ${k}` : k));
+        if (open.length) items.push(`<a class="alert" href="#team/roster"><span>Your ${esc(named.join(", "))} ${open.length === 1 ? "spot is" : "spots are"} empty this week</span><b class="go">Fix lineup</b></a>`);
       }
       for (const id of G.irBlocked(L(), ctx, mid)) items.push(`<a class="alert" href="#team/roster"><span><b>${esc(ctx.byId[id].n)}</b> is healthy and still on IR</span><b class="go">Activate</b></a>`);
       return items.length ? `<div class="wrap alerts" role="status">${items.join("")}</div>` : "";
@@ -524,13 +530,14 @@
       const toMe = all.filter((t) => t.status === "pending" && t.to === mid), fromMe = all.filter((t) => t.status === "pending" && t.from === mid);
       const review = all.filter((t) => t.status === "review"), done = all.filter((t) => !["pending", "review"].includes(t.status) && (t.from === mid || t.to === mid || t.status === "accepted")).slice(0, 20);
       const sec = (title, list, empty) => `<div class="stack"><h2 style="margin:0;font-size:16px">${title}</h2>${list.length ? list.map((t) => U.tradeCard(sport, tradeVM(t))).join("") : `<p class="ps" style="margin:0">${empty}</p>`}</div>`;
-      return `<div class="wrap page"><div class="head"><h1 class="disp">Trades</h1><span class="grow"></span>${mid != null ? `<button class="btn go" data-trade>Propose a trade</button>` : ""}</div>
+      return `<div class="wrap page"><div class="head"><h1 class="disp">Trades</h1><span class="grow"></span>${canTrade() ? `<button class="btn go" data-trade>Propose a trade</button>` : mid != null && L().settings.deadline && L().week > L().settings.deadline && !over() ? `<span class="ps">The trade deadline was week ${L().settings.deadline}.</span>` : ""}</div>
         <div class="cols"><div class="stack">${sec("Offers for you", toMe, "No offers waiting.")}${sec("Your offers", fromMe, "You haven't sent any open offers.")}${sec("League review", review, "No trades under review.")}</div>
         <aside class="stack">${sec("Recent trades", done, "No trades yet.")}</aside></div></div>`;
     }
     function openTrade(other, want, prefill) {
       const mid = me();
       if (mid == null) return;
+      if (!canTrade()) { U.toast(over() ? "The season is over" : `The trade deadline was week ${L().settings.deadline}`, true); return; }
       const teams = L().teams;
       const roster = (id) => L().rosters[id].map((x) => ctx.byId[x]).filter(Boolean).sort((a, b) => b.$ - a.$ || a.rank - b.rank);
       const t0 = other != null ? other : teams.find((t) => t.id !== mid).id;
@@ -583,7 +590,7 @@
       const actions = (p) => {
         const own = ctx.own[p.id];
         const star = mid != null ? `<button class="star${w.includes(p.id) ? " on" : ""}" data-watch="${esc(p.id)}" aria-label="Watch">${w.includes(p.id) ? "&#9733;" : "&#9734;"}</button>` : "";
-        if (mid == null) return star;
+        if (mid == null || !canMove()) return star;
         const myClaim = own == null ? L().claims.find((c) => c.team === mid && c.add === p.id && c.status === "open") : null;
         if (myClaim) return `${star}<a class="tag gold" href="#players/claims" title="Your pending claim">Bid $${myClaim.bid}</a>`;
         if (own == null) return `${star}<button class="btn icon add" data-add="${esc(p.id)}" aria-label="${G.onWaivers(L(), p.id, now()) ? "Claim" : "Add"} ${esc(p.n)}" title="${G.onWaivers(L(), p.id, now()) ? "Put in a claim" : "Add"}">+</button>`;
@@ -600,7 +607,7 @@
       const mid = me();
       const mine = L().claims.filter((c) => c.team === mid).slice().reverse();
       const open = mine.filter((c) => c.status === "open"), past = mine.filter((c) => c.status !== "open").slice(0, 20);
-      const row = (c) => `<li style="grid-template-columns:minmax(0,1fr) auto auto;align-items:center"><div class="what">${U.txLine(sport, "add", ctx.byId[c.add])}${c.drop ? U.txLine(sport, "drop", ctx.byId[c.drop]) : ""}</div><b class="dollar">$${c.bid}</b>${c.status === "open" ? `<button class="btn sm" data-unclaim="${c.id}">Cancel</button>` : `<span class="status ${c.status === "won" ? "accepted" : "rejected"}">${c.status === "won" ? "Won" : c.status === "lost" ? `Lost to ${esc(T(c.lostTo).abbr)}` : c.status === "cancelled" ? "Cancelled" : "Failed"}${c.week ? `, week ${c.week}` : ""}</span>`}</li>`;
+      const row = (c) => `<li style="grid-template-columns:minmax(0,1fr) auto auto;align-items:center"><div class="what">${U.txLine(sport, "add", ctx.byId[c.add])}${c.drop ? U.txLine(sport, "drop", ctx.byId[c.drop]) : ""}</div><b class="dollar">$${c.bid}</b>${c.status === "open" ? `<button class="btn sm" data-unclaim="${c.id}">Cancel</button>` : `<span class="status ${c.status === "won" ? "accepted" : "rejected"}">${c.status === "won" ? "Won" : c.status === "lost" ? `Lost to ${esc(T(c.lostTo).abbr)}` : c.status === "cancelled" ? "Cancelled" : "Failed"}${c.week ? `, week ${c.week}` : ""}</span>`}${c.why ? `<span class="ps" style="grid-column:1/-1">${esc(c.why)}</span>` : ""}</li>`;
       return `<div class="wrap page"><div class="head"><h1 class="disp">Waiver claims</h1><span class="ps">${esc(claimsRun())} Highest bid wins; ties go to waiver priority (you're ${ord(T(mid).priority + 1)}). You have $${T(mid).faab}.</span></div>
         <div class="cols2"><div class="card"><div class="mod-h"><h2>Pending</h2></div>${open.length ? `<ul class="feed">${open.map(row).join("")}</ul>` : `<p class="empty">No pending claims. Players on waivers have a W on the Players page.</p>`}</div>
         <div class="card"><div class="mod-h"><h2>Results</h2></div>${past.length ? `<ul class="feed">${past.map(row).join("")}</ul>` : `<p class="empty">Nothing yet.</p>`}</div></div></div>`;
@@ -635,9 +642,9 @@
       if (mid != null) {
         const w = watch();
         actions += `<button class="btn" data-card="watch">${w.includes(pid) ? "Unwatch" : "Watch"}</button>`;
-        if (own == null) actions += `<button class="btn go" data-card="add">${G.onWaivers(L(), pid, now()) ? "Put in a claim" : "Add"}</button>`;
-        else if (own === mid) actions += `<button class="btn warn" data-card="drop">Drop</button>`;
-        else if (L().settings.trades !== false) actions += `<button class="btn go" data-card="trade">Trade for him</button>`;
+        if (own == null && canMove()) actions += `<button class="btn go" data-card="add">${G.onWaivers(L(), pid, now()) ? "Put in a claim" : "Add"}</button>`;
+        else if (own === mid && canMove()) actions += `<button class="btn warn" data-card="drop">Drop</button>`;
+        else if (own != null && own !== mid && canTrade()) actions += `<button class="btn go" data-card="trade">Trade for him</button>`;
       }
       const status = own != null ? `${teamAv(T(own), "sm")} On ${esc(T(own).name)}` : G.onWaivers(L(), pid, now()) ? `<span class="tag gold">On waivers</span>` : `<span class="tag win">Free agent</span>`;
       const Dl = U.dialog(U.playerCard(sport, p, { scoring: L().scoring, actions, status }), null, { wide: true });

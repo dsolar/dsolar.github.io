@@ -611,3 +611,6 @@ td.more{text-align:center;padding:12px}
   table.t.vs td{padding-left:6px;padding-right:6px}
 }
 .game.solo .ln small{display:inline !important;color:var(--muted)}
+.blk .odds.bare{background:none}
+@media (max-width:600px){table.t.roster td.num,table.t.roster th.r{min-width:50px;padding-right:8px}}
+.teams .card li.bn{opacity:.75}

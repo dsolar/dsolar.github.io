@@ -139,6 +139,9 @@
       if (!next.length) { U.toast("A lineup needs at least one starter", true); return; }
       cfg.name = new FormData(f).get("name"); cfg.lineup = next.join(" ");
       store.set("cfg", cfg); setupPage();
+      // keep keyboard focus on the button that was pressed
+      const back = lb ? $(`[data-lb="${lb.dataset.lb}"][data-d="${lb.dataset.d}"]`) : $(`[data-preset="${pr.dataset.preset}"]`);
+      if (back && !back.disabled) back.focus(); else if (lb) { const other = $(`[data-lb="${lb.dataset.lb}"]:not([disabled])`); if (other) other.focus(); }
     });
     f.addEventListener("change", (e) => {
       const n = e.target.name;
@@ -161,7 +164,8 @@
       store.set("cfg", cfg);
       const go = $("button.go", f); go.disabled = true; go.textContent = cfg.type === "mystery" && cfg.test ? "Dealing and testing packages..." : "Setting up...";
       await new Promise((r) => setTimeout(r, 30));
-      await newMock(cfg);
+      try { await newMock(cfg); }
+      catch (err) { go.disabled = false; go.textContent = "Take your seat"; const w = $("#s-why"); w.hidden = false; w.textContent = err.message; w.scrollIntoView({ block: "center" }); return; }
       location.hash = "#draft"; route();
     });
   }
@@ -169,6 +173,16 @@
   async function newMock(c) {
     const P = await pool(c);
     const n = c.teams;
+    // can the pool fill this league? every one-position slot needs that many players at the position, and every
+    // roster spot needs a player
+    const sp = P.sport, need = {};
+    for (const sl of P.lineup) { const v = sp.slots[sl]; if (v !== "*" && v.length === 1) need[v[0]] = (need[v[0]] || 0) + n; }
+    for (const [pos, k] of Object.entries(need)) {
+      const have = P.players.filter((p) => S.positions(p).includes(pos)).length;
+      if (have < k) throw new Error(`There aren't enough ${pos} for this lineup: ${n} teams need ${k}, and the pool has ${have}. Take out some ${pos} spots or use fewer teams.`);
+    }
+    const spots = n * (P.lineup.length + P.bench);
+    if (spots > P.players.length) throw new Error(`${n} teams with ${P.lineup.length + P.bench} roster spots need ${spots} players, and the pool has ${P.players.length}.`);
     const seed = Math.floor(Math.random() * 2 ** 31);
     const r = F.rng(seed);
     const others = [...Array(n).keys()].filter((x) => x !== 0);
@@ -196,7 +210,7 @@
     app.innerHTML = `<div id="room"></div>`;
     roomCtl = U.room({ el: $("#room"), sport: P.sport, players: P.players, draft: () => mock.D, save: () => store.set("mock", mock), me: () => 0, commish: true, drive: true,
       brand: { name: "Draft Lab", mark: `<img src="mark.svg" alt="">` }, exit: { href: "#home", label: "Exit" },
-      extra: () => `<a class="btn sm go" href="league.html?s=${mock.D.sport}#commish">Play a season with it</a><button class="btn sm" data-new>New mock</button>` });
+      extra: () => `<a class="btn sm go" href="league.html?s=${mock.D.sport}&f=h&mock=1">Play a season with it</a><button class="btn sm" data-new>New mock</button>` });
     $("#room").addEventListener("click", (e) => { if (e.target.closest("[data-new]")) { mock = null; store.set("mock", null); route(); } });
   }
 
