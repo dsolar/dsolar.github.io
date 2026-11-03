@@ -27,6 +27,21 @@
 <script src="assets/scoreboard.js?v=20261028-pregame" defer></script>
 <script src="assets/slate.js?v=20261102-modes" defer></script>
 <script src="assets/leaders.js?v=20261102-modes" defer></script>
+<style>
+/* Homepage destinations: shared site and project styles remain unchanged. */
+.hero .wrap{align-items:center;padding-block:48px}.hero-text{padding-bottom:0}.hero h1{font-size:clamp(2.5rem,5.1vw,4.1rem)}
+.world-nav{display:flex;flex-wrap:wrap;gap:12px 22px;font-size:.85rem;font-weight:700}.world-nav a{padding-block:5px}
+.world-label{text-transform:uppercase;letter-spacing:.13em;font-size:.7rem;font-weight:700;margin-bottom:15px}
+.fantasy-door{margin-block:48px;display:grid;grid-template-columns:1.1fr 1fr;background:#13233a;color:#f7f4eb;padding:0;border-top:5px solid #f6c445}
+.fantasy-main{padding:40px}.fantasy-main .world-label{color:#f6c445}.fantasy-main h2{font-size:clamp(2.1rem,4vw,3.4rem);line-height:1.1;margin-bottom:22px}.fantasy-main>p:not(.world-label){color:#cbd4df;max-width:42ch}
+.world-button{display:inline-flex;gap:35px;align-items:center;background:#f6c445;color:#13233a;padding:12px 20px;text-decoration:none;font-weight:700;margin-top:26px}.world-button:hover{background:#ffe08a;color:#13233a}
+.fantasy-shortcuts{display:flex;flex-wrap:wrap;gap:10px 20px;margin-top:22px;font-size:.78rem}.fantasy-shortcuts a{color:#e4e9f0;text-decoration-color:#647185}
+.fantasy-sports{display:grid;border-left:1px solid #425066}.fantasy-sports>a{position:relative;display:flex;flex-direction:column;justify-content:center;padding:25px 52px 25px 30px;text-decoration:none;border-bottom:1px solid #425066;color:#f7f4eb;gap:5px}.fantasy-sports>a:last-child{border:0}.fantasy-sports>a:hover{background:#20344e}.sport-label{font-size:.67rem;text-transform:uppercase;letter-spacing:.09em;color:#f6c445}.fantasy-sports strong{font-family:var(--f-display);font-size:1.35rem}.fantasy-sports a>span:last-of-type{font-size:.82rem;color:#cbd4df}.fantasy-sports b{position:absolute;right:25px;top:40%}
+#projects{padding-top:0}.world-group{scroll-margin-top:24px;margin-bottom:55px}.world-heading{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:end;border-top:2px solid var(--ink);padding-top:22px;margin-bottom:25px}.world-heading h2{font-size:clamp(1.7rem,3vw,2.5rem);line-height:1.2}.world-heading>p{color:var(--muted);font-size:.9rem;max-width:48ch;justify-self:end}.world-group .tiles{grid-template-columns:repeat(4,minmax(0,1fr))}#simulations .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}#simulations .tile-cover{aspect-ratio:2/1}
+.family-world{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:24px;border-block:1px solid var(--rule);padding-block:32px;margin-bottom:24px}.family-world h2{font-size:1.9rem;line-height:1.2;margin-bottom:16px}.family-world p:not(.world-label){color:var(--muted);font-size:.9rem;margin-bottom:20px}.family-feature{text-decoration:none;background:var(--paper-2)}.family-feature img{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover}.family-feature>span{display:block;padding:15px;font-size:.72rem}.family-feature strong{display:block;font-family:var(--f-display);font-size:1.08rem;margin-top:4px}
+@media(max-width:900px){.world-group .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.family-world{grid-template-columns:1fr 1fr}.family-world>div{grid-column:1/-1}.fantasy-main{padding:28px}.fantasy-door{margin-inline:16px}.world-heading{grid-template-columns:1fr;gap:12px}.world-heading>p{justify-self:start}}
+@media(max-width:600px){.hero .wrap{padding-block:30px}.fantasy-door{grid-template-columns:1fr;margin-block:28px}.fantasy-sports{border-left:0;border-top:1px solid #425066}.fantasy-main h2{font-size:2.4rem}.fantasy-sports>a{padding:20px 45px 20px 28px}.site-nav{font-size:.8rem;gap:10px 17px}.family-world{gap:12px}.family-feature>span{padding:10px}#simulations .tiles{grid-template-columns:1fr}.world-nav{font-size:.78rem}.world-group{margin-bottom:36px}}
+</style>
 </head>
 <body>
 
@@ -54,7 +69,9 @@
       <img class="brand-logo" src="assets/david-solar-sports-data-nonsense-compact.svg" alt="">
     </a>
     <nav class="site-nav" aria-label="Main">
-      <a href="#projects">Games</a>
+      <a href="fantasy/">Fantasy</a>
+      <a href="#games">Games</a>
+      <a href="#simulations">Simulations</a>
       <a href="#writing">Writing</a>
       <a href="kids/">Kids</a>
     </nav>
@@ -66,8 +83,9 @@
     <div class="wrap">
       <div class="hero-text">
         <p class="hero-kicker">Sports. Data. Nonsense.</p>
-        <h1 id="hero-title">Bad takes, real numbers.</h1>
-        <p class="hero-sub">Games, league tools and sims for the group chat, built to settle a fourth down, a keeper or a cut line.<span class="hero-sub-more"> Play one, then come back and tell me the math is wrong.</span></p>
+        <h1 id="hero-title">A little competition.<br>A whole lot to explore.</h1>
+        <p class="hero-sub">Daily challenges. Season-long rivalries. Worlds built from scratch. A growing collection of things I make, play, and share with friends and family.</p>
+      <nav class="world-nav" aria-label="Explore the site"><a href="fantasy/">Run your league ↗</a><a href="#games">Find a game ↓</a><a href="kids/">Explore the kids’ worlds ↗</a></nav>
       </div>
       <!-- Today's slate: the daily games as a hand-turned scoreboard. assets/slate.js fills it from what each game saved on this device. -->
       <aside class="slate" id="slate" aria-labelledby="slate-title">
@@ -110,26 +128,31 @@
     </div>
   </section>
 
-  <section class="section" id="projects" aria-labelledby="projects-title">
-    <div class="wrap">
-      <div class="section-head">
-        <h2 id="projects-title">The lineup</h2>
-        <span class="count" id="count"></span>
-        <div class="filters" id="filters" role="group" aria-label="Show projects by type" hidden></div>
-      </div>
-      <!-- Projects are listed in assets/projects.js. Edit that file, not this one. -->
-      <p class="portfolio-intro">Every game, league tool and sim. Filter by type, or just start at the top.</p>
-      <div class="catalog" id="catalog">
-        <noscript>
-          <ul>
-            <li><a href="win-probability/">Make the Call</a>, an NFL decision game graded on win probability</li>
-            <li><a href="guillotine/">Bastille Day Odds</a>, survival odds for a guillotine fantasy football league</li>
-            <li><a href="31st-franchise/">The 31st Franchise</a>, an NBA expansion draft game</li>
-            <li><a href="scouting-report/">Scouting Report</a>, name the draft prospect from his pre-draft report</li>
-          </ul>
-        </noscript>
-      </div>
+  <section class="fantasy-door wrap" id="fantasy" aria-labelledby="fantasy-title">
+    <div class="fantasy-main">
+      <p class="world-label">01 / Fantasy sports</p>
+      <h2 id="fantasy-title">Your season.<br>Your obsession.</h2>
+      <p>The league doesn’t end when Sunday does. Draft a team, work the numbers, chase a title—and keep the receipts.</p>
+      <a class="world-button" href="fantasy/">Enter the Fantasy hub <span aria-hidden="true">↗</span></a>
+      <div class="fantasy-shortcuts"><a href="fantasy-kit/">Draft Lab</a><a href="fantasy-kit/leagues.html">Your leagues</a><a href="fantasy/#nba">Rankings &amp; tools</a></div>
     </div>
+    <div class="fantasy-sports" aria-label="Featured fantasy destinations">
+      <a href="hardcap/"><span class="sport-label">Basketball / Salary-cap dynasty</span><strong>Hard Cap</strong><span>Draft the player. Carry the contract.</span><b aria-hidden="true">↗</b></a>
+      <a href="guillotine/"><span class="sport-label">Football / Survival</span><strong>Bastille Day Odds</strong><span>One cut every week. Know where you stand.</span><b aria-hidden="true">↗</b></a>
+      <a href="yoenis/"><span class="sport-label">Baseball / The record book</span><strong>Don’t Forget to Wipe Yoenis</strong><span>The keepers, the champions, the history.</span><b aria-hidden="true">↗</b></a>
+    </div>
+  </section>
+
+  <section class="section" id="projects" aria-label="Games and simulations">
+    <div class="wrap"><div class="catalog" id="catalog">
+      <noscript><h2>Games &amp; simulations</h2><p><a href="win-probability/">Make the Call</a> · <a href="guess-the-pick/">Guess the Pick</a> · <a href="celtics/">Banner 19</a> · <a href="31st-franchise/">The 31st Franchise</a></p></noscript>
+    </div></div>
+  </section>
+
+  <section class="family-world wrap" aria-labelledby="family-title">
+    <div><p class="world-label">04 / Made with my daughters</p><h2 id="family-title">Their imagination.<br>Our next adventure.</h2><p>Plush companions, magical islands, and a home that’s entirely yours. Designed by Lucy and Charlotte, built together.</p><a class="btn" href="kids/">Explore their worlds ↗</a></div>
+    <a class="family-feature" href="wild-bloom-isles/"><img src="assets/covers/wild-bloom-isles-studio.jpg" alt="Wild Bloom Isles design studio" loading="lazy" width="1040" height="780"><span>Charlotte’s world <strong>Wild Bloom Isles ↗</strong></span></a>
+    <a class="family-feature" href="jellycat-battle/"><img src="assets/covers/jellycat-battle.jpg" alt="Jellycat Battle Club adventure" loading="lazy" width="1040" height="780"><span>Lucy’s world <strong>Jellycat Battle Club ↗</strong></span></a>
   </section>
 
   <section class="section writing" id="writing" aria-labelledby="writing-title">
@@ -259,7 +282,9 @@
       <span>&copy; <span id="year">2026</span> David Solar</span>
     </div>
     <nav class="foot-nav" aria-label="Footer">
-      <a href="#projects">Games</a>
+      <a href="fantasy/">Fantasy</a>
+      <a href="#games">Games</a>
+      <a href="#simulations">Simulations</a>
       <a href="#writing">Writing</a>
       <a href="#about">About</a>
       <a href="kids/">Kids</a>
@@ -285,17 +310,24 @@
   var esc = window.ProjectCards.esc;
   var showHidden = false;
   try { showHidden = sessionStorage.getItem("dsolar-hidden-apps") === "shown"; } catch (e) {}
-  var syncCategory = function () {};
   function renderProjects() {
   var all = (window.PROJECTS || []).filter(function (p) { return showHidden || !p.hidden; });
   // The order of assets/projects.js; "kids" projects have their own page (kids/).
   var projects = all.filter(function (p) { return !p.section; });
 
   var catalog = document.getElementById("catalog");
-  var categorySlugs = {"Fantasy Leagues":"fantasy","Simulations":"simulations","Games":"games","Social Tools":"social"};
-  var slugCategories = {fantasy:"Fantasy Leagues",simulations:"Simulations",games:"Games",social:"Social Tools"};
   var tile = function (p, i) { return window.ProjectCards.tile(p, { showHidden: showHidden, order: i + 1 }); };
-  catalog.innerHTML = '<ul class="tiles">' + projects.map(tile).join("") + "</ul>";
+  var groups = [
+    {type:"Games", id:"games", label:"02 / Games", title:"Got a few minutes?", intro:"Make the call, name the player, or outthink your friends. Pick a daily challenge or settle in for another round."},
+    {type:"Simulations", id:"simulations", label:"03 / Simulations", title:"You’re running the front office.", intro:"Build a roster. Work the cap. Find out whether your big idea survives a season."},
+    {type:"Social Tools", id:"social", label:"Unlocked / Social tools", title:"For the group chat.", intro:"The extra projects behind the app code."},
+    {type:"Fantasy Leagues", id:"unlocked-fantasy", label:"Unlocked / Fantasy", title:"More league tools.", intro:"Your additional fantasy projects."}
+  ];
+  catalog.innerHTML = groups.map(function (g) {
+    var entries = projects.filter(function (p) { return p.type === g.type && (g.type !== "Fantasy Leagues" || p.hidden); });
+    if (!entries.length) return "";
+    return '<section class="world-group" id="' + g.id + '" aria-labelledby="' + g.id + '-title"><div class="world-heading"><div><p class="world-label">' + esc(g.label) + '</p><h2 id="' + g.id + '-title">' + esc(g.title) + '</h2></div><p>' + esc(g.intro) + '</p></div><ul class="tiles">' + entries.map(tile).join("") + '</ul></section>';
+  }).join("");
   // A team logo that doesn't load gives way to its abbreviation
   if (!catalog.dataset.logoFallback) {
     catalog.dataset.logoFallback = "1";
@@ -303,50 +335,6 @@
       var img = e.target;
       if (img.tagName === "IMG" && img.closest(".mu-logo")) img.closest(".mu-logo").replaceWith(document.createTextNode(""));
     }, true);
-  }
-
-  var live = projects.filter(function (p) { return p.status !== "building"; }).length;
-  var inProgress = projects.length - live;
-  document.getElementById("count").textContent =
-    live + " live" + (inProgress ? ", " + inProgress + " in progress" : "");
-
-  // Filter buttons appear once there's more than one type of project
-  var types = [];
-  projects.forEach(function (p) { if (types.indexOf(p.type) < 0) types.push(p.type); });
-  if (types.length > 1) {
-    var filters = document.getElementById("filters");
-    filters.innerHTML = ["All"].concat(types).map(function (t, i) {
-      return '<button type="button" data-type="' + esc(t) + '" aria-pressed="' + (i === 0) + '">' + esc(t) + "</button>";
-    }).join("");
-    filters.hidden = false;
-    function applyCategory(type) {
-      var selected = types.indexOf(type) >= 0 ? type : "All";
-      filters.querySelectorAll("button").forEach(function (button) {
-        button.setAttribute("aria-pressed", String(button.getAttribute("data-type") === selected));
-      });
-      catalog.querySelectorAll(".tile-item").forEach(function (entry) {
-        entry.hidden = selected !== "All" && entry.getAttribute("data-type") !== selected;
-      });
-      document.getElementById("count").textContent = selected === "All"
-        ? live + " live" + (inProgress ? ", " + inProgress + " in progress" : "")
-        : projects.filter(function (p) { return p.type === selected; }).length + " projects";
-    }
-    function syncFromHash() {
-      var hash = window.location.hash.slice(1).toLowerCase();
-      if (hash === "projects" || hash === "" || slugCategories[hash]) {
-        applyCategory(slugCategories[hash] || "All");
-      }
-    }
-    filters.onclick = function (event) {
-      var button = event.target.closest("button");
-      if (!button) return;
-      var type = button.getAttribute("data-type");
-      var hash = type === "All" ? "#projects" : "#" + categorySlugs[type];
-      if (window.location.hash === hash) applyCategory(type);
-      else window.location.hash = hash;
-    };
-    syncCategory = syncFromHash;
-    syncFromHash();
   }
 
   }
@@ -376,7 +364,6 @@
     updateAccess();
     document.querySelector(".app-code summary").focus();
   };
-  window.addEventListener("hashchange", function () { syncCategory(); });
   updateAccess();
   document.getElementById("year").textContent = new Date().getFullYear();
 })();
