@@ -10,6 +10,7 @@
 <meta property="og:url" content="https://davidsolar.dev/draft/">
 <meta property="og:title" content="Big Board">
 <meta property="og:description" content="Every board worth reading, one consensus.">
+<meta property="og:image" content="https://davidsolar.dev/assets/covers/draft.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://davidsolar.dev/draft/">
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
@@ -58,7 +59,7 @@ a{color:var(--gold)}
 .seg button[aria-pressed="true"]{background:var(--chalk);color:var(--stage-deep)}
 .big .seg button{font:800 18px/1 var(--display);letter-spacing:.08em;padding:9px 22px}
 
-.sources{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;padding:18px 0 4px}
+.sources{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;padding:18px 0 4px}
 .src{min-width:0;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px;text-decoration:none;color:inherit}
 .src:hover{border-color:var(--line-strong)}
 .src b{display:block;font:800 17px/1 var(--display);letter-spacing:.05em}
@@ -350,6 +351,7 @@ body[data-screen] .modal{background:rgba(23,25,30,.45)}
 body[data-screen] .trade-pick select{background:var(--panel);color:var(--chalk)}
 
 
+.qbtag{display:inline-block;margin-top:3px;font-weight:700;color:var(--down)!important}
 /* Draft recap */
 .res-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:8px 24px}
 .res-top .go-row{margin:12px 0}
@@ -485,10 +487,10 @@ body[data-screen] .trade-pick select{background:var(--panel);color:var(--chalk)}
   <div id="mock-view" hidden></div>
 </main>
 
-<script src="common.js?v=10"></script>
-<script src="engine.js?v=10"></script>
-<script src="board.js?v=10"></script>
-<script src="mock.js?v=10"></script>
+<script src="common.js?v=12"></script>
+<script src="engine.js?v=12"></script>
+<script src="board.js?v=12"></script>
+<script src="mock.js?v=12"></script>
 <script>
 (() => {
   // #nba, #nfl, #nba/mock, #nfl/mock

@@ -5,6 +5,7 @@
   {"id": "bleacher-report", "name": "Bleacher Report", "analyst": "Jonathan Wasserman", "abbr": "B/R", "kind": "board", "weight": 1, "how": "paste", "url": "https://bleacherreport.com/nba"},
   {"id": "fansided", "name": "FanSided", "abbr": "FS", "kind": "board", "weight": 1, "how": "paste", "url": "https://fansided.com/nba/"},
   {"id": "si", "name": "Sports Illustrated", "abbr": "SI", "kind": "board", "weight": 1, "how": "paste", "url": "https://www.si.com/nba/nba-draft"},
+  {"id": "espn", "name": "ESPN", "analyst": "Jeremy Woo", "abbr": "ESPN", "kind": "board", "weight": 1.25, "how": "paste", "url": "https://www.espn.com/nba/draft/", "note": "June 25 watch list of 60: the top 10 by title odds, the rest a big board. Givony and Woo's in-season Top 100 replaces it when it's out."},
   {"id": "no-ceilings", "name": "No Ceilings", "abbr": "NC", "kind": "board", "weight": 1.25, "how": "paste", "status": "pending", "url": "https://www.noceilingsnba.com/", "note": "Staff composite Top 60; posts as <year>-nba-draft-big-board-v<N>. Composite only, not the paid personal boards."},
   {"id": "koc-yahoo", "name": "Yahoo Sports", "analyst": "Kevin O'Connor", "abbr": "KOC", "kind": "board", "weight": 1.25, "how": "paste", "status": "pending", "url": "https://sports.yahoo.com/nba/"},
   {"id": "ringer", "name": "The Ringer", "abbr": "RING", "kind": "board", "weight": 1, "how": "paste", "status": "pending", "url": "https://www.theringer.com/nba-draft"},

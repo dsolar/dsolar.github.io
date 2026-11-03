@@ -20,7 +20,8 @@
     prefs[M.lg] = { mine: [...M.mine], rounds: M.rounds, style: M.style, speed: M.speed, chart: M.chart };
     BB.store.set("bigboard-mock", prefs);
   }
-  const maxRounds = () => (D.league === "nba" ? 2 : 3);
+  // NFL mocks go as deep as the boards do: three rounds now, up to seven as the boards grow toward the draft.
+  const maxRounds = () => (D.league === "nba" ? 2 : Math.max(3, Math.min(7, Math.floor(D.players.length / 70))));
   const sortedTeams = () => Object.keys(D.teams).sort((a, b) => (D.teams[a].city + D.teams[a].name).localeCompare(D.teams[b].city + D.teams[b].name));
   const clockOf = (p) => BB.team(D, p.owner);
 
@@ -226,7 +227,7 @@
     return `<div class="offers"><span class="lab">The phone's ringing</span><div class="offer-row">${list.map((o, k) => {
       const tm = BB.team(D, o.team), pct = Math.round(o.ratio * 100);
       return `<div class="offer" style="--t1:${tm.c[0]}">${BB.logo(D, o.team, 34)}<div class="ot"><b>${esc(tm.city)} ${esc(tm.name)}</b>
-        <span>want No. ${cur.n} for ${o.give.map((x) => esc(label(x))).join(" + ")}</span><span class="meter"><i style="width:${Math.min(100, pct - 50)}%"></i></span><small>${pct}% of the pick's value</small></div>
+        <span>want No. ${cur.n} for ${o.give.map((x) => esc(label(x))).join(" + ")}</span>${o.qb ? `<small class="qbtag">Chasing a quarterback</small>` : ""}<span class="meter"><i style="width:${Math.min(100, pct - 50)}%"></i></span><small>${pct}% of the pick's value</small></div>
         <div class="oa"><button type="button" class="btn sm go" data-offer="${k}" data-ans="yes">Accept</button><button type="button" class="link" data-offer="${k}" data-ans="no">Pass</button></div></div>`;
     }).join("")}</div></div>`;
   }

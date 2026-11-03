@@ -107,6 +107,8 @@
      moves a player who'd be a big reach at this pick. Lowest value goes. */
   const NFL_POS = { QB: -2.5, EDGE: -1.5, OT: -1, CB: -0.5, WR: 0, DL: 0, IOL: 1.5, LB: 2, S: 2, TE: 2.5, RB: 3 };
   const NEED_W = [3, 2.2, 1.5, 1, 0.6];
+  const QB_W = [1, 0.7, 0.45, 0.3, 0.2];
+  const qbReach = (pickNo) => pickNo + Math.max(9, pickNo * 0.6);
   function botPick(available, ctx) {
     const rand = ctx.rand, chaos = ctx.chaos == null ? 0.5 : ctx.chaos;
     const taken = ctx.taken || [], needs = ctx.needs || [], pickNo = ctx.pick || 1;
@@ -120,7 +122,12 @@
         v += (NFL_POS[pos] || 0) * (p.score > 12 ? 1 : 0.4);
         if (taken.includes(pos)) v += 6 + p.score * 0.1;
         const ni = needs.indexOf(pos);
-        if (ni >= 0 && !taken.includes(pos) && p.score <= pickNo * 1.35 + 8) {
+        if (pos === "QB" && ni < 0) v += 4 + p.score * 0.15;   // a team with its quarterback rarely spends a high pick on another
+        else if (pos === "QB" && ni >= 0 && !taken.includes("QB")) {
+          // QB premium, within reason: a team that needs a quarterback will reach for one, but only so far
+          // (No. 17 at No. 9 happens; a third-rounder at No. 9 doesn't), and less the lower QB sits on its list.
+          if (p.score <= qbReach(pickNo)) v -= QB_W[ni] * Math.min(Math.max(0, p.score - pickNo) * 0.75 + 2, pickNo * 0.8 + 2);
+        } else if (ni >= 0 && !taken.includes(pos) && p.score <= pickNo * 1.35 + 8) {
           v -= NEED_W[ni] * Math.min(1, 0.35 + pickNo / 40) * (1 + p.score / 60);
         }
       } else {
@@ -176,7 +183,8 @@
           const a = { id, orig: t, year: y, rd, owner: t, prot: "", ok: true, note: "" };
           if (o) {
             const to = o[3], kind = o[4];
-            if (kind === "swap") { a.ok = false; a.note = `Swap rights: ${to.replace(/\//g, " or ")}`; }
+            if (kind === "forfeit") { a.owner = null; a.ok = false; a.note = "Forfeited (league penalty)"; }
+            else if (kind === "swap") { a.ok = false; a.note = `Swap rights: ${to.replace(/\//g, " or ")}`; }
             else if (to.includes("/") || kind === "fav" || kind === "cond" || to === "?") { a.owner = null; a.ok = false; a.note = to === "?" ? "Owed, terms vary" : `Owed to ${to.replace(/\//g, " or ")}`; }
             else { a.owner = to; if (/^\d+-\d+$/.test(kind)) { a.prot = kind; a.note = `Protected ${kind}`; } }
           }
@@ -271,10 +279,15 @@
       const theirs = st.picks.filter((p, j) => j > st.i && p.owner === t && !p.player);
       if (!theirs.length) continue;
       const next = theirs[0];
-      const target = avail[0];
+      let target = avail[0];
       if (!target) break;
+      // A QB-needy team calls harder when a quarterback it would reach for is here and won't last to its pick.
+      const needs = (D.needs || {})[t] || [];
+      const qbNeed = D.league === "nfl" ? needs.indexOf("QB") : -1;
+      const qb = qbNeed >= 0 && qbNeed <= 1 ? avail.find((p) => nflPos(p.pos) === "QB" && p.score <= qbReach(cur.n) && p.score < next.n - 3) : null;
+      if (qb) target = qb;
       const gone = avail.slice(0, Math.max(1, Math.round((next.n - cur.n) * 0.9))).length;
-      const keen = target.score < next.n - 3 && gone > 2 && rand() < 0.55 + 0.15 * (st.chaos || 0.5);
+      const keen = target.score < next.n - 3 && gone > 2 && rand() < (qb ? 0.85 : 0.55 + 0.15 * (st.chaos || 0.5));
       if (!keen) continue;
       // What they can put in. NBA: these deals run on second-rounders and this year's picks; a future first
       // only goes to climb into the lottery, and it comes protected (top 10, or the whole lottery for a smaller
@@ -293,7 +306,7 @@
       const leadV = assetValue(D, lead);
       if (leadV < V * 0.4) continue;
       // Moving up costs a premium, more near the top.
-      const want = V * (1.03 + (cur.n <= 10 ? 0.05 : 0) + rand() * 0.07);
+      const want = V * (1.03 + (cur.n <= 10 ? 0.05 : 0) + (qb ? 0.06 : 0) + rand() * 0.07);
       const maxExtra = nba ? 3 : (cur.n <= 5 ? 3 : 2);
       // The cheapest-looking package that clears it: least overpay, with a cost on each future first (teams
       // hate giving them) and a little on every extra piece.
@@ -303,7 +316,7 @@
       const n = cands.length;
       const tryCombo = (idx) => {
         const sumV = leadV + idx.reduce((s2, i) => s2 + vals[i], 0);
-        if (sumV < want || sumV > V * 1.3) return;
+        if (sumV < want || sumV > V * (qb ? 1.4 : 1.3)) return;
         const firsts = idx.filter((i) => cands[i].kind === "future" && cands[i].a.rd === 1).length;
         if (firsts > 1 && cur.n > 3) return;
         const score = (sumV - want) + idx.reduce((s2, i) => s2 + firstCost(cands[i]), 0) + idx.length * V * 0.02;
@@ -324,7 +337,7 @@
       const sum = leadV + best.reduce((s2, i) => s2 + vals[i], 0);
       const moves = pkg.filter((x) => x.kind === "future").map((x) => ({ id: x.a.id, from: t, to: cur.owner }));
       if (!stepienOK(D, st.ledger, moves).ok) continue;
-      offers.push({ team: t, give: pkg, value: sum, ratio: sum / V, target: target.id });
+      offers.push({ team: t, give: pkg, value: sum, ratio: sum / V, target: target.id, qb: !!qb });
     }
     return offers;
   }
