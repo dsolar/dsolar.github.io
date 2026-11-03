@@ -1,0 +1,262 @@
+-- Shared leagues for the Fantasy Kit (davidsolar.dev/fantasy-kit/play.html).
+-- Lives in the Supabase project "dsolar's Project" (baxrczyufqbzrogftmyn) as migration fantasykit_leagues.
+--
+-- How it works, like Hard Cap: a league is one draft document and, once the draft is done, one league document,
+-- with a version number. The page runs the rules (fantasy-kit/draft.js and league.js) and saves the new documents
+-- with the version it started from; if someone saved in between, the save is refused and the page takes the newer
+-- documents. The server's jobs are the ones the page can't be trusted with: who is signed in (Supabase Auth, an
+-- emailed sign-in link), who owns which team, the invite code, the save order, and the email outbox.
+--
+-- The page calls these with the project's publishable key and the signed-in user's access token:
+--   fk_create(p_name, p_sport, p_manager, p_draft)        -> {id, invite, version}   the creator is commissioner and team 0
+--   fk_view(p_id, p_since)                                 -> {version, now, me, commish, seats, invite?, draft?, league?}
+--                                                             documents only when newer than p_since; anyone with the id can view
+--   fk_join(p_id, p_invite, p_team, p_manager)             -> {ok, version} or {error}   claims an open team
+--   fk_save(p_id, p_version, p_draft, p_league, p_events)  -> {ok, version} or {error, version, draft, league}
+--                                                             p_events: [{team, kind, subject, body}] queue emails
+--   fk_mine()                                              -> [{id, name, sport, team, commish, phase, updated}]
+--   fk_notify(p_id, p_on)                                  -> {ok}       email alerts on or off for your seat
+--   fk_leave(p_id, p_team)                                 -> {ok}       give up your team (or the commissioner frees one)
+-- The mailer (supabase/functions/fk-mailer, called by pg_cron) uses:
+--   fk_outbox_take(p_token, p_limit) and fk_outbox_done(p_token, p_ids, p_errors)
+--
+-- Every table is closed to the public (row level security with no policies); only these functions touch them.
+
+create extension if not exists pgcrypto with schema extensions;
+
+create table if not exists public.fk_leagues (
+  id text primary key,
+  name text not null,
+  sport text not null check (sport in ('nba', 'nfl', 'mlb')),
+  commish uuid not null,
+  invite text not null,
+  draft jsonb not null,
+  league jsonb,
+  version int not null default 1,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create table if not exists public.fk_seats (
+  league text not null references public.fk_leagues(id) on delete cascade,
+  team int not null,
+  user_id uuid not null,
+  email text,
+  manager text not null,
+  notify boolean not null default true,
+  joined_at timestamptz not null default now(),
+  primary key (league, team),
+  unique (league, user_id)
+);
+create table if not exists public.fk_outbox (
+  id bigserial primary key,
+  league text not null references public.fk_leagues(id) on delete cascade,
+  team int not null,
+  kind text not null,
+  subject text not null,
+  body text not null,
+  created_at timestamptz not null default now(),
+  sent_at timestamptz,
+  tries int not null default 0,
+  error text
+);
+create index if not exists fk_outbox_unsent on public.fk_outbox (created_at) where sent_at is null;
+create table if not exists public.fk_config (name text primary key, value text not null);
+
+alter table public.fk_leagues enable row level security;
+alter table public.fk_seats enable row level security;
+alter table public.fk_outbox enable row level security;
+alter table public.fk_config enable row level security;
+revoke all on public.fk_leagues, public.fk_seats, public.fk_outbox, public.fk_config from anon, authenticated;
+
+-- Plain text only, trimmed and capped.
+create or replace function public.fk_clean(s text, n int) returns text
+language sql immutable set search_path = public as $$
+  select left(btrim(regexp_replace(regexp_replace(coalesce(s, ''), '[[:cntrl:]<>]', '', 'g'), '\s+', ' ', 'g')), n);
+$$;
+
+create or replace function public.fk_rand(n int) returns text
+language sql volatile set search_path = public, extensions as $$
+  select lower(substr(translate(encode(gen_random_bytes(16), 'base64'), '+/=lIO0o1', ''), 1, n));
+$$;
+
+-- Owners in the stored documents always come from the seats table, never from what a page sends.
+create or replace function public.fk_stamp(p_id text, p_doc jsonb) returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+declare i int; n int; out jsonb := p_doc; m text;
+begin
+  if p_doc is null then return null; end if;
+  n := coalesce(jsonb_array_length(p_doc->'teams'), 0);
+  for i in 0 .. n - 1 loop
+    select manager into m from fk_seats where league = p_id and team = i;
+    out := jsonb_set(out, array['teams', i::text, 'owner'], coalesce(to_jsonb(m), 'null'::jsonb), true);
+  end loop;
+  return out;
+end $$;
+
+create or replace function public.fk_seat_map(p_id text) returns jsonb
+language sql stable security definer set search_path = public as $$
+  select coalesce(jsonb_object_agg(team::text, manager), '{}'::jsonb) from fk_seats where league = p_id;
+$$;
+
+create or replace function public.fk_create(p_name text, p_sport text, p_manager text, p_draft jsonb) returns jsonb
+language plpgsql security definer set search_path = public, extensions as $$
+declare uid uuid := auth.uid(); new_id text; nm text := fk_clean(p_name, 40); mg text := fk_clean(p_manager, 24); inv text := fk_rand(6);
+begin
+  if uid is null then return jsonb_build_object('error', 'Sign in first.'); end if;
+  if nm = '' then return jsonb_build_object('error', 'Give the league a name.'); end if;
+  if mg = '' then mg := 'Commissioner'; end if;
+  if p_sport not in ('nba', 'nfl', 'mlb') then return jsonb_build_object('error', 'Pick a sport.'); end if;
+  if jsonb_typeof(p_draft->'teams') is distinct from 'array' or jsonb_array_length(p_draft->'teams') < 2 then return jsonb_build_object('error', 'A league needs at least two teams.'); end if;
+  if octet_length(p_draft::text) > 1500000 then return jsonb_build_object('error', 'That league is too big to save.'); end if;
+  if (select count(*) from fk_leagues where commish = uid and created_at > now() - interval '1 day') >= 10 then
+    return jsonb_build_object('error', 'You''ve made 10 leagues today. Try again tomorrow.');
+  end if;
+  loop
+    new_id := fk_rand(8);
+    exit when not exists (select 1 from fk_leagues where id = new_id);
+  end loop;
+  insert into fk_leagues (id, name, sport, commish, invite, draft) values (new_id, nm, p_sport, uid, inv, p_draft);
+  insert into fk_seats (league, team, user_id, email, manager) values (new_id, 0, uid, auth.jwt()->>'email', mg);
+  update fk_leagues set draft = fk_stamp(new_id, draft) where id = new_id;
+  return jsonb_build_object('id', new_id, 'invite', inv, 'version', 1);
+end $$;
+
+create or replace function public.fk_view(p_id text, p_since int) returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+declare l fk_leagues; uid uuid := auth.uid(); mine int; out jsonb;
+begin
+  select * into l from fk_leagues where id = p_id;
+  if not found then return jsonb_build_object('error', 'No league with that link.'); end if;
+  select team into mine from fk_seats where league = p_id and user_id = uid;
+  out := jsonb_build_object('version', l.version, 'now', (extract(epoch from now()) * 1000)::bigint, 'name', l.name, 'sport', l.sport,
+    'me', mine, 'commish', uid is not null and uid = l.commish, 'seats', fk_seat_map(p_id),
+    'notify', (select notify from fk_seats where league = p_id and user_id = uid));
+  if uid is not null and uid = l.commish then out := out || jsonb_build_object('invite', l.invite); end if;
+  if p_since is null or l.version > p_since then out := out || jsonb_build_object('draft', l.draft, 'league', l.league); end if;
+  return out;
+end $$;
+
+create or replace function public.fk_join(p_id text, p_invite text, p_team int, p_manager text) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare uid uuid := auth.uid(); l fk_leagues; mg text := fk_clean(p_manager, 24); n int;
+begin
+  if uid is null then return jsonb_build_object('error', 'Sign in first.'); end if;
+  select * into l from fk_leagues where id = p_id for update;
+  if not found then return jsonb_build_object('error', 'No league with that link.'); end if;
+  if l.invite <> coalesce(p_invite, '') then return jsonb_build_object('error', 'That invite code doesn''t match. Ask the commissioner for a new link.'); end if;
+  if exists (select 1 from fk_seats where league = p_id and user_id = uid) then return jsonb_build_object('error', 'You already have a team in this league.'); end if;
+  n := jsonb_array_length(l.draft->'teams');
+  if p_team is null or p_team < 0 or p_team >= n then return jsonb_build_object('error', 'Pick a team.'); end if;
+  if exists (select 1 from fk_seats where league = p_id and team = p_team) then return jsonb_build_object('error', 'Someone already took that team.'); end if;
+  if mg = '' then return jsonb_build_object('error', 'Add your name.'); end if;
+  insert into fk_seats (league, team, user_id, email, manager) values (p_id, p_team, uid, auth.jwt()->>'email', mg);
+  update fk_leagues set draft = fk_stamp(p_id, draft), league = fk_stamp(p_id, league), version = version + 1, updated_at = now() where id = p_id;
+  return jsonb_build_object('ok', true, 'version', l.version + 1);
+end $$;
+
+create or replace function public.fk_save(p_id text, p_version int, p_draft jsonb, p_league jsonb, p_events jsonb) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare uid uuid := auth.uid(); l fk_leagues; e jsonb; k int := 0;
+begin
+  if uid is null then return jsonb_build_object('error', 'Sign in first.'); end if;
+  select * into l from fk_leagues where id = p_id for update;
+  if not found then return jsonb_build_object('error', 'No league with that link.'); end if;
+  if not exists (select 1 from fk_seats where league = p_id and user_id = uid) and uid <> l.commish then
+    return jsonb_build_object('error', 'Only managers in this league can make moves.');
+  end if;
+  if l.version <> p_version then
+    return jsonb_build_object('error', 'stale', 'version', l.version, 'draft', l.draft, 'league', l.league);
+  end if;
+  if octet_length(coalesce(p_draft::text, '')) + octet_length(coalesce(p_league::text, '')) > 3000000 then
+    return jsonb_build_object('error', 'That league is too big to save.');
+  end if;
+  update fk_leagues set draft = fk_stamp(p_id, coalesce(p_draft, draft)), league = fk_stamp(p_id, coalesce(p_league, league)),
+    version = version + 1, updated_at = now() where id = p_id;
+  if jsonb_typeof(p_events) = 'array' then
+    for e in select * from jsonb_array_elements(p_events) loop
+      exit when k >= 40;
+      if (e->>'team') ~ '^\d+$' and exists (select 1 from fk_seats where league = p_id and team = (e->>'team')::int and notify) then
+        insert into fk_outbox (league, team, kind, subject, body)
+          values (p_id, (e->>'team')::int, fk_clean(e->>'kind', 20), fk_clean(e->>'subject', 120), left(coalesce(e->>'body', ''), 2000));
+        k := k + 1;
+      end if;
+    end loop;
+  end if;
+  return jsonb_build_object('ok', true, 'version', l.version + 1);
+end $$;
+
+create or replace function public.fk_mine() returns jsonb
+language sql stable security definer set search_path = public as $$
+  select coalesce(jsonb_agg(jsonb_build_object('id', l.id, 'name', l.name, 'sport', l.sport, 'team', s.team, 'commish', l.commish = auth.uid(),
+    'phase', case when l.league is not null then 'season' else coalesce(l.draft->>'phase', 'setup') end, 'updated', l.updated_at) order by l.updated_at desc), '[]'::jsonb)
+  from fk_leagues l left join fk_seats s on s.league = l.id and s.user_id = auth.uid()
+  where auth.uid() is not null and (s.user_id is not null or l.commish = auth.uid());
+$$;
+
+create or replace function public.fk_notify(p_id text, p_on boolean) returns jsonb
+language plpgsql security definer set search_path = public as $$
+begin
+  update fk_seats set notify = coalesce(p_on, true) where league = p_id and user_id = auth.uid();
+  if not found then return jsonb_build_object('error', 'You don''t have a team in this league.'); end if;
+  return jsonb_build_object('ok', true);
+end $$;
+
+create or replace function public.fk_leave(p_id text, p_team int) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare l fk_leagues; s fk_seats;
+begin
+  select * into l from fk_leagues where id = p_id for update;
+  if not found then return jsonb_build_object('error', 'No league with that link.'); end if;
+  select * into s from fk_seats where league = p_id and team = p_team;
+  if not found then return jsonb_build_object('error', 'Nobody has that team.'); end if;
+  if s.user_id <> auth.uid() and l.commish <> auth.uid() then return jsonb_build_object('error', 'Only that manager or the commissioner can do that.'); end if;
+  if s.user_id = l.commish then return jsonb_build_object('error', 'The commissioner keeps a team.'); end if;
+  delete from fk_seats where league = p_id and team = p_team;
+  update fk_leagues set draft = fk_stamp(p_id, draft), league = fk_stamp(p_id, league), version = version + 1, updated_at = now() where id = p_id;
+  return jsonb_build_object('ok', true, 'version', l.version + 1);
+end $$;
+
+-- The mailer: unsent emails with where they go, a few at a time, then marks them sent or failed.
+create or replace function public.fk_token_ok(p_token text) returns boolean
+language sql stable security definer set search_path = public, extensions as $$
+  select exists (select 1 from fk_config where name = 'mailer_token_sha256' and value = encode(digest(coalesce(p_token, ''), 'sha256'), 'hex'));
+$$;
+create or replace function public.fk_outbox_take(p_token text, p_limit int) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare out jsonb;
+begin
+  if not fk_token_ok(p_token) then return jsonb_build_object('error', 'no'); end if;
+  with picked as (
+    select o.id from fk_outbox o where o.sent_at is null and o.tries < 4 order by o.created_at limit least(coalesce(p_limit, 20), 50) for update skip locked
+  ), bumped as (
+    update fk_outbox o set tries = o.tries + 1 from picked where o.id = picked.id returning o.*
+  )
+  select coalesce(jsonb_agg(jsonb_build_object('id', b.id, 'league', b.league, 'league_name', l.name, 'team', b.team, 'kind', b.kind,
+    'subject', b.subject, 'body', b.body, 'email', s.email, 'manager', s.manager)), '[]'::jsonb) into out
+  from bumped b join fk_leagues l on l.id = b.league left join fk_seats s on s.league = b.league and s.team = b.team;
+  return jsonb_build_object('emails', out);
+end $$;
+create or replace function public.fk_outbox_done(p_token text, p_ids bigint[], p_errors jsonb) returns jsonb
+language plpgsql security definer set search_path = public as $$
+begin
+  if not fk_token_ok(p_token) then return jsonb_build_object('error', 'no'); end if;
+  update fk_outbox set sent_at = now(), error = null where id = any(p_ids) and not (coalesce(p_errors, '{}'::jsonb) ? id::text);
+  update fk_outbox set error = left(p_errors->>(id::text), 300) where id = any(p_ids) and coalesce(p_errors, '{}'::jsonb) ? id::text;
+  delete from fk_outbox where sent_at < now() - interval '30 days';
+  return jsonb_build_object('ok', true);
+end $$;
+
+revoke all on function public.fk_stamp(text, jsonb), public.fk_seat_map(text), public.fk_token_ok(text), public.fk_rand(int) from public, anon, authenticated;
+grant execute on function public.fk_create(text, text, text, jsonb), public.fk_view(text, int), public.fk_join(text, text, int, text),
+  public.fk_save(text, int, jsonb, jsonb, jsonb), public.fk_mine(), public.fk_notify(text, boolean), public.fk_leave(text, int) to anon, authenticated;
+grant execute on function public.fk_outbox_take(text, int), public.fk_outbox_done(text, bigint[], jsonb) to anon;
+
+-- After deploying fk-mailer, give it a token and schedule it (run once, with a long random token):
+--   insert into fk_config values ('mailer_token_sha256', encode(extensions.digest('<token>', 'sha256'), 'hex'))
+--     on conflict (name) do update set value = excluded.value;
+--   insert into fk_config values ('mailer_token', '<token>') on conflict (name) do update set value = excluded.value;
+--   select cron.schedule('fk-mailer', '*/2 * * * *', $job$ select net.http_post(
+--     url := 'https://baxrczyufqbzrogftmyn.supabase.co/functions/v1/fk-mailer',
+--     headers := jsonb_build_object('Content-Type', 'application/json', 'x-fk-token', (select value from public.fk_config where name = 'mailer_token')),
+--     body := '{}'::jsonb) $job$);
+-- The function sends with Resend when the secrets RESEND_API_KEY and FK_MAIL_FROM are set, and does nothing until then.
