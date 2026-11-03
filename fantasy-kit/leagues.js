@@ -135,27 +135,34 @@
   const noLimit = (x) => (x ? `${x}` : "No limit");
 
   // the league's style: one card that sets the few choices that define it
-  const STYLES = [["redraft", "Redraft", "A fresh draft every season"], ["keeper", "Keeper", "Keep a few players a year"], ["dynasty", "Dynasty", "Keep everyone, draft rookies"],
-    ["bestball", "Best ball", "Draft, then lineups set themselves"], ["guillotine", "Guillotine", "The lowest score is cut every week"], ["vampire", "Vampire", "One team skips the draft and steals"]];
+  // two choices define a league: what carries over to next season, and how a season is played
+  const KINDS = [["redraft", "Redraft", "A fresh draft every season"], ["keeper", "Keeper", "Keep a few players a year"], ["dynasty", "Dynasty", "Keep everyone, draft rookies"]];
+  const FORMATS = { h2h: ["Head to head", "Play one team a week"], h2hcats: ["Head to head, each category", "Every category is its own win or loss"], roto: ["Rotisserie", "Season totals, ranked category by category"],
+    allplay: ["All-play", "Your score against every team, every week"], guillotine: ["Guillotine", "The lowest score is cut every week"], vampire: ["Vampire", "One team skips the draft and steals"] };
   const STYLE_ART = {
     redraft: `<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v4.5h-4.5"/>`,
     keeper: `<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/><circle cx="12" cy="15.5" r="1.3"/>`,
     dynasty: `<path d="M4 18h16l1-10-5 4-4-7-4 7-5-4z"/><path d="M4 21h16"/>`,
-    bestball: `<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>`,
+    h2h: `<circle cx="8" cy="12" r="5"/><circle cx="16" cy="12" r="5"/>`,
+    h2hcats: `<path d="M4 6h3M4 12h3M4 18h3M10 6h10M10 12h10M10 18h10"/>`,
+    roto: `<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>`,
+    allplay: `<circle cx="12" cy="12" r="2.2"/><circle cx="4.5" cy="6" r="1.6"/><circle cx="19.5" cy="6" r="1.6"/><circle cx="4.5" cy="18" r="1.6"/><circle cx="19.5" cy="18" r="1.6"/><path d="M6 7l4.2 3.6M18 7l-4.2 3.6M6 17l4.2-3.6M18 17l-4.2-3.6"/>`,
     guillotine: `<path d="M5 3v18M19 3v18M5 3h14"/><path d="M7 7h10l-10 5z"/><path d="M9 18h6"/>`,
     vampire: `<path d="M12 9.5c-.8-1.4-1.6-2-2.4-2l.6-1.8-1.6 1.2C6.4 6.6 4 7.4 2 9.6c1.6-.2 2.8.4 3.4 1.6 1-.8 2.2-.7 2.8.4.9-.6 2.1-.2 2.6.9L12 16l1.2-3.5c.5-1.1 1.7-1.5 2.6-.9.6-1.1 1.8-1.2 2.8-.4.6-1.2 1.8-1.8 3.4-1.6-2-2.2-4.4-3-6.6-2.7l-1.6-1.2.6 1.8c-.8 0-1.6.6-2.4 2z"/>` };
   const art = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${STYLE_ART[k]}</svg>`;
-  const styleOf = () => (form.season === "guillotine" ? "guillotine" : vampOk() && form.vampOn ? "vampire" : form.kind === "dynasty" ? "dynasty" : form.kind === "keeper" ? "keeper" : form.bestball ? "bestball" : "redraft");
-  function applyStyle(k) {
-    if (form.season === "guillotine") form.season = "h2h";
-    form.vampOn = 0; form.bestball = 0; form.kind = "redraft";
-    if (k === "keeper") form.kind = "keeper";
-    if (k === "dynasty") { form.kind = "dynasty"; if (!form.taxi) form.taxi = 3; }
-    if (k === "bestball") form.bestball = 1;
-    if (k === "guillotine") { form.season = "guillotine"; form.faab = null; }
+  const formatOf = () => (vampOk() && form.vampOn ? "vampire" : form.season);
+  const formatsFor = (sp) => seasonsFor(sp).map(([k]) => k).concat(sp.key === "nfl" && scoringType(sp) === "points" ? ["vampire"] : []);
+  function pickFormat(k) {
+    form.vampOn = 0;
     if (k === "vampire") { form.vampOn = 1; form.season = "h2h"; if (!["snake", "linear", "3rr"].includes(form.type)) form.type = "snake"; }
-    form.faab = k === "guillotine" || form.faab === 1000 ? null : form.faab;
+    else form.season = k;
+    if (k === "guillotine" && form.kind === "dynasty") form.kind = "redraft";
+    form.faab = null;
   }
+  const pickCards = (attr, list, cur, label, disabled) => `<div class="sty-g" role="radiogroup" aria-label="${esc(label)}" style="--n:${list.length}">${list.map(([k, l, sub]) => {
+    const off = disabled && disabled(k);
+    return `<button type="button" role="radio" class="sty${k === cur ? " on" : ""}" data-${attr}="${k}" aria-checked="${k === cur}"${off ? ` disabled title="${esc(off)}"` : ""}>${art(k)}<b>${esc(l)}</b><small>${esc(off || sub)}</small></button>`;
+  }).join("")}</div>`;
   const SC_SUB = { half: "Half a point a catch", ppr: "A point a catch", std: "No points for catches", cats9: "FG%, FT%, 3PM, PTS, REB, AST, STL, BLK, TO", points: "Points for every stat", roto5: "R, HR, RBI, SB, AVG, W, SV, K, ERA, WHIP", yoenis: "Adds H, TB, OPS, L, HLD and QS", cp: "Set a value for every stat", cc: "Pick your own categories" };
   const DRAFT_SHORT = { snake: "Snake", auction: "Auction", linear: "Linear", "3rr": "Third-round reversal", mystery: "Mystery packages", elephant: "White elephant" };
   // a field drawn behind the header, one for each sport
@@ -172,10 +179,11 @@
     if (!seasons.some(([k]) => k === form.season)) form.season = "h2h";
     if (form.season === "guillotine" && form.kind === "dynasty") form.kind = "redraft";
     if (!form.clocks || form.clocks !== auction) { form.clocks = auction; const ok = auction ? [15, 30, 60] : [30, 60, 90, 120, 3600, 14400, 28800]; if (!ok.includes(form.clock)) form.clock = auction ? 15 : 90; }
-    const st = styleOf(), V = values(sp);
-    const styles = STYLES.filter(([k]) => k !== "vampire" || sp.key === "nfl").map(([k, l, sub]) => {
-      return `<button type="button" class="sty${k === st ? " on" : ""}" data-style="${k}" aria-pressed="${k === st}">${art(k)}<b>${esc(l)}</b><small>${esc(sub)}</small></button>`;
-    }).join("");
+    const V = values(sp), fmt = formatOf(), gl = form.season === "guillotine";
+    const kinds = pickCards("kind", KINDS, form.kind, "League type", (k) => (k === "dynasty" && gl ? "Not with a guillotine" : ""));
+    const cats = scoringType(sp) === "cats";
+    const label = (k) => (cats && k === "h2h" ? ["Most categories", "Head to head: win more categories, win the week"] : cats && k === "h2hcats" ? ["Each category", "Head to head: a 6-4 week counts as 6 wins"] : FORMATS[k]);
+    const formats = pickCards("format", formatsFor(sp).map((k) => [k, label(k)[0], label(k)[1]]), fmt, "Format");
     const presets = Object.entries(sp.scorings).map(([k, x]) => [k, x.label.replace(/ \(.*\)$/, ""), SC_SUB[k] || ""]).concat([["cp", "Custom points", SC_SUB.cp]], sp.key !== "nfl" ? [["cc", "Custom categories", SC_SUB.cc]] : []);
     const live = auction ? [[15, "15 sec"], [30, "30 sec"], [60, "1 min"]] : [[30, "30 sec"], [60, "1 min"], [90, "90 sec"], [120, "2 min"], [3600, "1 hr"], [14400, "4 hr"], [28800, "8 hr"]];
     const rows = ROWS(sp).map(([k, title, sub, value, body]) => {
@@ -186,10 +194,12 @@
       <div class="nl-band">${FIELD[sp.key]}<div class="nl-bi">
         <div class="nl-sports" role="radiogroup" aria-label="Sport">${Object.values(S.ALL).map((s) => `<label class="nl-sp"><input type="radio" name="sport" value="${s.key}"${s.key === form.sport ? " checked" : ""}>${icon(s.key)}<span>${esc(s.name)}</span></label>`).join("")}</div>
         <h1 class="disp">Start a ${esc(sp.name.toLowerCase())} league</h1>
-        <p>Pick a style, give it a name, and you can send the invite link in a minute. Every rule has a default, and most can change after the draft.</p>
+        <p>Pick a league type and a format, give it a name, and you can send the invite link in a minute. Every rule has a default, and most can change after the draft.</p>
       </div></div>
       <form class="nl-body" id="new" novalidate>
-        <section class="nl-sec"><h2 class="nl-h">Style</h2><div class="sty-g" style="--n:${sp.key === "nfl" ? 6 : 5}">${styles}</div></section>
+        <section class="nl-sec"><h2 class="nl-h">League type</h2>${kinds}</section>
+        <section class="nl-sec"><h2 class="nl-h">Format</h2>${formats}
+          ${gl ? "" : `<div class="nl-bb">${toggle("bestball", "Best ball", "Lineups set themselves: your best scores count each week", form.bestball)}${form.season === "h2h" && !form.vampOn && scoringType(sp) === "points" ? toggle("median", "Median game", "Also play the league median, for a second win or loss each week", form.median) : ""}</div>`}</section>
         <section class="nl-sec nl-ess">
           <div class="nl-name"><label for="n-name">League name</label><input id="n-name" type="text" maxlength="40" required value="${esc(form.name || "")}" placeholder="Name your league" autocomplete="off"></div>
           <div class="g2">${fld("Your name", `<input id="n-me" type="text" maxlength="24" required value="${esc(form.me || "")}" autocomplete="name">`, "", "n-me")}${fld("Your team's name", `<input id="n-team" type="text" maxlength="28" value="${esc(form.team || "")}" placeholder="Optional">`, "", "n-team")}</div>
@@ -217,13 +227,13 @@
     const faab = form.faab == null ? (gl ? 1000 : 100) : form.faab;
     const dl = form.deadline == null ? Math.max(1, form.weeks - 3) : form.deadline;
     const seasonName = (seasonsFor(sp).find(([x]) => x === form.season) || [, ""])[1].split(":")[0];
-    const style = (STYLES.find(([k]) => k === styleOf()) || [, "Redraft"])[1];
+    const style = `${(KINDS.find(([k]) => k === form.kind) || [, "Redraft"])[1]}, ${scoringType(sp) === "cats" && formatOf() === "h2h" ? "head to head, most categories" : scoringType(sp) === "cats" && formatOf() === "h2hcats" ? "head to head, each category" : FORMATS[formatOf()] ? FORMATS[formatOf()][0].toLowerCase() : ""}${form.bestball && !gl ? ", best ball" : ""}`;
     return {
-      line: `${sp.name}, ${n} teams, ${sc}, ${DRAFT_SHORT[form.type]} draft, ${style}`,
+      line: `${sp.name}, ${n} teams, ${sc}, ${DRAFT_SHORT[form.type]} draft. ${style}`,
       scoring: bon.length ? bon.join(", ") : form.scoring === "cp" ? "Custom points" : "No bonuses",
       draft: `${clock} a ${auction() ? "bid" : "pick"}${!auction() && form.type !== "mystery" && form.type !== "elephant" ? (form.trades ? ", trades on" : ", no trades") : ""}`,
       roster: `${lu.length} starters, ${form.bench == null ? sp.bench : form.bench} bench${form.ir ? `, ${form.ir} IR` : ""}`,
-      season: `${seasonName}, ${gl ? `${n - 1} weeks` : `${form.weeks} weeks`}${form.median && form.season === "h2h" ? ", median" : ""}${form.bestball && !gl ? ", best ball" : ""}`,
+      season: `${gl ? `${n - 1} weeks` : `${form.weeks} weeks`}${form.divs && !gl && form.season !== "roto" ? `, ${form.divs} divisions` : ""}`,
       playoffs: po ? `${po} teams, ${playoffWeeks(po)} weeks` : "None",
       waivers: gl ? `$${faab} FAAB` : form.waivers === "faab" ? `$${faab} FAAB, ${form.waiverHours}h` : `Rolling, ${form.waiverHours}h`,
       trades: `${dl ? `Deadline week ${dl}` : "No deadline"}, ${form.review === "vote" ? "league vote" : form.review === "commish" ? "commissioner" : "no review"}`,
@@ -241,7 +251,7 @@
     rows.push(["scoring", "Scoring details", sp.key === "nfl" ? "Bonuses, TE premium, custom points" : form.scoring === "cp" ? "Points for each stat" : "Categories and custom scoring", V.scoring, () => scoringBody(sp)]);
     rows.push(["roster", "Roster", "Starting lineup, bench, IR, position limits", V.roster, () => rosterStep(sp)]);
     rows.push(["draft", "Draft room", "Trades during the draft", V.draft, () => draftBody()]);
-    rows.push(["season", "Season", "Format, length, best ball, median, divisions", V.season, () => seasonBody(sp)]);
+    rows.push(["season", "Season", form.season === "guillotine" ? "Length" : "Length and divisions", V.season, () => seasonBody(sp)]);
     if (h2hLike()) rows.push(["playoffs", "Playoffs", "Teams, rounds, consolation", V.playoffs, () => playoffsBody()]);
     rows.push(["waivers", "Waivers", "FAAB, clear times, pickup limits", V.waivers, () => waiversBody()]);
     if (!gl) rows.push(["trades", "Trades", "Deadline and review", V.trades, () => tradesBody()]);
@@ -317,13 +327,9 @@
   }
   function seasonBody(sp) {
     const gl = form.season === "guillotine", n = form.teams, po = Math.min(form.playoffs, n);
-    const fmt = cards("season", seasonsFor(sp).map(([key, l]) => [key, l.split(":")[0], SEASON_SUB[key] || l.split(": ")[1] || ""]), form.season, "Season format", 3);
     const length = gl ? `<p class="fl-h">${n - 1} weeks: one team is cut each week until one is left.</p>` : range("weeks", 8, 16, form.weeks, (x) => `${x} weeks`, h2hLike() && po ? "Weeks before the playoffs" : "Season length");
-    const weekly = gl ? "" : `<div class="bl">${toggle("bestball", "Best ball", "Your best lineup is set for you after the games", form.bestball)}
-        ${form.season === "h2h" ? toggle("median", "Median game", "Also play the league median, for a second win or loss", form.median) : ""}
-        ${vampOk() ? toggle("vampOn", "Vampire", "One team skips the draft and steals a player from each team it beats", form.vampOn) : ""}</div>
-        ${form.season !== "roto" && n >= 4 ? fld("Divisions", seg("divs", [0, 2, 3, 4].filter((d) => !d || n >= 2 * d).map((d) => [d, d ? `${d}` : "None"]), form.divs, "Divisions")) : ""}`;
-    return group("Format", fmt) + group("Length", length) + (weekly ? group("Each week", weekly) : "");
+    const divs = !gl && form.season !== "roto" && n >= 4 ? fld("Divisions", seg("divs", [0, 2, 3, 4].filter((d) => !d || n >= 2 * d).map((d) => [d, d ? `${d}` : "None"]), form.divs, "Divisions"), form.divs ? "Division winners make the playoffs, and the schedule plays your division more." : "") : "";
+    return length + divs;
   }
   function playoffsBody() {
     const n = form.teams, po = Math.min(form.playoffs, n);
@@ -428,7 +434,7 @@
       if (form.keepers > 0) Object.assign(D.season, { keepers: form.keepers, keeperCost: kc() });
       if (form.keepers === -1 && !gl) { D.season.dynasty = { rounds: form.rookie || 3, picks: form.fpicks !== 0 }; if (form.taxi) D.season.taxi = form.taxi; }
       if (!gl && form.bestball) D.season.bestBall = true;
-      if (form.season === "h2h" && form.median) D.season.median = true;
+      if (form.season === "h2h" && form.median && scoringType(sport) === "points") D.season.median = true;
       if (vampire != null) D.season.vampire = { team: vampire, samePos: form.vlike === 1, double: form.vdouble === 1 };
       if (fmt !== "roto" && !gl && form.divs && n >= 2 * form.divs) D.season.divisions = form.divs;
       if (!gl) Object.assign(D.season, { waivers: form.waivers, deadline: form.deadline == null ? Math.max(1, form.weeks - 3) : form.deadline, review: form.review, waiverHours: form.waiverHours, reviewHours: form.reviewHours, vetoShare: form.vetoShare, waiverOrder: form.waiverOrder,
@@ -457,13 +463,15 @@
     } else if (f.id === "new") makeLeague();
   });
   // redraw the form and put focus back where it was
-  const redraw = (focusId) => render().then(() => { const el = focusId && (document.getElementById(focusId) || (focusId.startsWith("n-style-") && $(`.su [data-style="${focusId.slice(8)}"]`))); if (el && !el.disabled) el.focus({ preventScroll: true }); });
+  const redraw = (focusId) => render().then(() => { const el = focusId && (document.getElementById(focusId) || (focusId.startsWith("n-pick-") && $(`.su [data-${focusId.split("-")[2]}="${focusId.split("-").slice(3).join("-")}"]`))); if (el && !el.disabled) el.focus({ preventScroll: true }); });
   app.addEventListener("click", (e) => {
     if (!e.target.closest(".su")) return;
     const row = e.target.closest("[data-row]");
     if (row) { grab(); const k = row.dataset.row; form.open = form.open[k] ? {} : { [k]: 1 }; render().then(() => { const h = $(`.su [data-row="${k}"]`); if (h) { h.focus({ preventScroll: true }); const r = h.getBoundingClientRect(); if (r.top < 70 || r.top > innerHeight - 160) h.scrollIntoView({ block: "start", behavior: "smooth" }); } }); return; }
-    const sty = e.target.closest("[data-style]");
-    if (sty) { grab(); applyStyle(sty.dataset.style); derive(); if (sty.dataset.style === "keeper" || sty.dataset.style === "dynasty" || sty.dataset.style === "vampire") form.open = { [sty.dataset.style === "vampire" ? "vampire" : "carry"]: 1 }; redraw(`n-style-${sty.dataset.style}`); return; }
+    const kd = e.target.closest("[data-kind]");
+    if (kd) { grab(); form.kind = kd.dataset.kind; derive(); form.open = form.kind === "redraft" ? {} : { carry: 1 }; redraw(`n-pick-kind-${form.kind}`); return; }
+    const fm = e.target.closest("[data-format]");
+    if (fm) { grab(); pickFormat(fm.dataset.format); derive(); if (fm.dataset.format === "vampire") form.open = { vampire: 1 }; redraw(`n-pick-format-${fm.dataset.format}`); return; }
     const st = e.target.closest("[data-stp]");
     if (st) {
       grab();
