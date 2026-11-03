@@ -32,7 +32,8 @@
     const weeks = s.weeks || 14, n = D.teams.length;
     const settings = s.format === "guillotine" ? { format: "guillotine", bestBall: true, waiverAt: 60 }
       : { weeks, playoffTeams: Math.min(4, n - (n % 2)), deadline: Math.max(1, weeks - 3), tradeReview: "vote", reviewHours: 24, waiverHours: 36 };
-    const at = D.done || o.now || Date.now();
+    // a draft that ran out on the clock while nobody was around is "done" in the past; start after now, not then
+    const at = Math.max(D.done || 0, o.now || Date.now());
     return G.create({ sport, draft: D, name: o.name || D.name, season: o.season || "", now: at, start: startAfter(at, sport.key), scoring: D.scoring, settings });
   }
 
