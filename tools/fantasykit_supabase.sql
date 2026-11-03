@@ -384,3 +384,9 @@ grant execute on function fk_post(text, text), fk_posts(text, bigint) to anon, a
 -- record, whether you're alive in a guillotine league, and the draft's pick count. See the migration for the body.
 -- fantasykit_league_cards_median: fk_card's record also counts each week's game against the league median when
 -- settings.median is on.
+
+-- ---------- commissioner tools (migration fantasykit_commish_tools) ----------
+-- fk_resize(p_id, p_version, p_draft, p_map): before the draft, the commissioner adds or removes teams; p_map moves
+--   each claimed seat to its new team number, and a claimed team can't be removed.
+-- fk_delete(p_id, p_name): the commissioner deletes the league (seats, chat and queued emails go with it); the name
+--   has to match. Rule, roster, trade and team edits save through fk_save like any other move.

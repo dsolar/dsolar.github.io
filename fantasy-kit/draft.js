@@ -95,6 +95,23 @@
     return D;
   }
 
+  // Before the draft starts: the same draft with a different set of teams (the commissioner added or removed some).
+  // teams: [{ name, abbr, owner, color }] in the new order. Keepers and a dynasty's carried rosters can't resize.
+  function resize(D, sport, teams, players) {
+    if (D.phase !== "setup") return { ok: false, why: "The draft has started" };
+    if (teams.length < 2 || teams.length > 20) return { ok: false, why: "A league has 2 to 20 teams" };
+    if (D.carry || (D.board || []).some((pk) => pk && pk.keeper) || (D.sales || []).some((x) => x.keeper)) return { ok: false, why: "Teams can't change once keepers or rosters are in place" };
+    const n = teams.length, total = n * D.rounds;
+    const N = create({ sport, type: D.type, teams: teams.map((t) => ({ name: t.name, abbr: t.abbr, owner: t.owner })), seed: D.seed, now: D.created,
+      lineup: D.lineup, bench: D.bench, scoring: D.scoring, botDelay: D.botDelay, clock: D.clock, name: D.name, trades: D.trading, posMax: D.posMax,
+      bidClock: D.auction ? D.auction.bidClock : undefined, nomClock: D.auction ? D.auction.nomClock : undefined, budget: D.auction ? D.auction.budget : (D.teams[0] || {}).budget,
+      minBid: D.auction ? D.auction.minBid : undefined, bank: D.bank, steals: D.steals, botOffers: D.botOffers,
+      curve: D.type === "mystery" && players ? pickCurve(players, total) : undefined, reveal: D.mystery ? D.mystery.reveal : undefined });
+    N.teams.forEach((t, i) => { if (teams[i].color != null) t.color = teams[i].color; });
+    for (const k of ["season", "scoringSpec", "year", "commishNote"]) if (D[k] !== undefined) N[k] = D[k];
+    return { ok: true, draft: N };
+  }
+
   // A keeper takes the team's pick in that round (or, in an auction, its price comes out of the budget).
   function keep(D, teamId, pid, round, price) {
     if (D.type === "auction") {
@@ -834,7 +851,7 @@
   }
 
   return { FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
-    start, pause, pick, worth, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, botMax, standings, sizeOf,
+    start, pause, pick, worth, resize, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, botMax, standings, sizeOf,
     clockLen, thinkTime, bankShare, slotInfo, fitsRoster, canSteal, steal, stealsOf, stealsLeft, stealsOpen, botSteal, pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
     tradeCheck, balance, propose, respond, cancel, botAnswer, botOffer };
 });

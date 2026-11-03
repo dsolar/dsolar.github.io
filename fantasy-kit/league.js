@@ -710,6 +710,99 @@
     return n;
   }
 
+  /* ---------- commissioner tools ---------- */
+  // Rules the commissioner can change mid-season, and when. Anything that would rewrite games already played
+  // (the regular season's length, scoring) only changes before week 1; playoff rules only before the playoffs.
+  const RULES = {
+    waivers: (v) => (v === "faab" || v === "rolling" ? v : null), waiverHours: (v) => clampInt(v, 0, 168), maxAdds: (v) => clampInt(v, 0, 50),
+    ir: (v) => clampInt(v, 0, 6), bench: (v) => clampInt(v, 0, 20), deadline: (v) => clampInt(v, 0, 52), tradeReview: (v) => (v === "vote" || v === "none" ? v : null),
+    reviewHours: (v) => clampInt(v, 1, 168), vetoShare: (v) => (Number.isFinite(+v) && +v > 0 && +v <= 1 ? +v : null), offerHours: (v) => clampInt(v, 1, 336),
+    trades: (v) => !!v, median: (v) => !!v, bestBall: (v) => !!v, posMax: (v) => (v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, clampInt(x, 0, 30)]).filter(([, x]) => x)) : null),
+    playoffTeams: (v) => clampInt(v, 0, 32), playoffLegs: (v) => (["1", "final2", "all2"].includes(String(v)) ? String(v) : null), consolation: (v) => (["none", "third", "bracket"].includes(v) ? v : null),
+    weeks: (v) => clampInt(v, 1, 30),
+  };
+  const clampInt = (v, lo, hi) => (Number.isFinite(+v) ? Math.max(lo, Math.min(hi, Math.round(+v))) : null);
+  const PLAYOFF_RULES = ["playoffTeams", "playoffLegs", "consolation"];
+  function setRules(L, patch, now) {
+    if (isGuillotine(L) && Object.keys(patch).some((k) => ["playoffTeams", "playoffLegs", "consolation", "median", "weeks"].includes(k))) return { ok: false, why: "A guillotine league has no playoffs or schedule to change" };
+    const s = L.settings, changed = [];
+    for (const [k, raw] of Object.entries(patch)) {
+      if (!RULES[k]) return { ok: false, why: `${k} can't be changed` };
+      const v = RULES[k](raw);
+      if (v == null) return { ok: false, why: `That isn't a valid value for ${k}` };
+      if (JSON.stringify(s[k]) === JSON.stringify(v)) continue;
+      if (k === "weeks" && L.week > 1) return { ok: false, why: "The season's length can only change before week 1" };
+      if (k === "weeks" && (s.format === "roto" || isGuillotine(L))) return { ok: false, why: "This league's length is set by its format" };
+      if (PLAYOFF_RULES.includes(k) && L.week > s.weeks) return { ok: false, why: "The playoffs have started" };
+      if (k === "median" && (s.format !== "h2h" || s.tally === "allplay" || s.tally === "cats")) return { ok: false, why: "The median game is for head-to-head leagues with one win a week" };
+      changed.push(k); s[k] = v;
+    }
+    if (changed.includes("weeks")) L.schedule = roundRobin(L.teams.length, s.weeks, rng(L.seed + 7));
+    if (changed.some((k) => PLAYOFF_RULES.includes(k) || k === "weeks")) {
+      s.playoffTeams = Math.min(s.playoffTeams, L.teams.length); if (s.playoffTeams < 2) s.playoffTeams = 0;
+      s.playoffWeeks = planOf(s).reduce((a, rd) => a + rd.weeks.length, 0);
+    }
+    if (changed.length) log(L, now, { type: "commish", team: -1, text: `Rules changed: ${changed.join(", ")}` });
+    return { ok: true, changed };
+  }
+  // Move any player: to another team, or to free agency (to: null). The commissioner's word goes, so roster limits
+  // don't block it; a team left over the limit has to cut.
+  function commishMove(L, ctx, pid, to, now) {
+    const from = L.rosters.findIndex((r) => r.includes(pid));
+    if (!ctx.byId[pid]) return { ok: false, why: "No such player" };
+    if (from === to) return { ok: false, why: "He's already there" };
+    if (to != null && !L.teams[to]) return { ok: false, why: "No such team" };
+    if (from >= 0) dropOne(L, from, pid, now);
+    delete L.waivers[pid];
+    if (to != null) { L.rosters[to].push(pid); joined(L, to, pid, now); }
+    log(L, now, { type: "commish", team: to != null ? to : from, adds: to != null ? [pid] : [], drops: to == null ? [pid] : [], text: `${ctx.byId[pid].n} moved ${from >= 0 ? `from ${L.teams[from].name} ` : ""}${to != null ? `to ${L.teams[to].name}` : "to free agency"} by the commissioner` });
+    refresh(L, ctx);
+    return { ok: true };
+  }
+  // Undo an accepted trade, if every player is still where it sent him.
+  function reverseTrade(L, ctx, id, now) {
+    const t = L.trades.find((x) => x.id === id);
+    if (!t || t.status !== "accepted") return { ok: false, why: "Only an accepted trade can be reversed" };
+    for (const pid of t.give) if (!L.rosters[t.to].includes(pid)) return { ok: false, why: `${ctx.byId[pid] ? ctx.byId[pid].n : "A player"} isn't on ${L.teams[t.to].name} anymore` };
+    for (const pid of t.get) if (!L.rosters[t.from].includes(pid)) return { ok: false, why: `${ctx.byId[pid] ? ctx.byId[pid].n : "A player"} isn't on ${L.teams[t.from].name} anymore` };
+    for (const k of t.pickGive || []) if (pickOwner(L, k) !== t.to) return { ok: false, why: "A pick in the trade has moved again" };
+    for (const k of t.pickGet || []) if (pickOwner(L, k) !== t.from) return { ok: false, why: "A pick in the trade has moved again" };
+    for (const pid of t.give) { dropOne(L, t.to, pid, now); delete L.waivers[pid]; L.rosters[t.from].push(pid); }
+    for (const pid of t.get) { dropOne(L, t.from, pid, now); delete L.waivers[pid]; L.rosters[t.to].push(pid); }
+    L.teams[t.from].faab += (t.faabGive || 0) - (t.faabGet || 0);
+    L.teams[t.to].faab += (t.faabGet || 0) - (t.faabGive || 0);
+    for (const k of t.pickGive || []) L.picks[k] = t.from;
+    for (const k of t.pickGet || []) L.picks[k] = t.to;
+    t.status = "reversed"; t.reversed = now;
+    log(L, now, { type: "commish", team: t.from, other: t.to, adds: t.give, drops: t.get, text: "Trade reversed by the commissioner" });
+    refresh(L, ctx);
+    return { ok: true };
+  }
+  // Team details: name, abbreviation, FAAB left, and the waiver order (an array of team ids, first in line first).
+  function editTeam(L, id, patch, now) {
+    const t = L.teams[id];
+    if (!t) return { ok: false, why: "No such team" };
+    if (patch.name != null) { const n = String(patch.name).replace(/[\x00-\x1f<>]/g, "").trim().slice(0, 28); if (!n) return { ok: false, why: "Give the team a name" }; t.name = n; }
+    if (patch.abbr != null) { const a = String(patch.abbr).replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 4); if (a) t.abbr = a; }
+    if (patch.faab != null) { const f = clampInt(patch.faab, 0, 100000); if (f == null) return { ok: false, why: "FAAB must be a number" }; t.faab = f; }
+    if (patch.div != null && L.divs) { const d = clampInt(patch.div, 0, L.settings.divisions - 1); if (d == null) return { ok: false, why: "No such division" }; L.divs[id] = d; }
+    log(L, now, { type: "commish", team: id, text: `Team details changed by the commissioner` });
+    return { ok: true };
+  }
+  function setWaiverOrder(L, order, now) {
+    if (!Array.isArray(order) || order.length !== L.teams.length || new Set(order).size !== order.length || order.some((x) => !L.teams[x])) return { ok: false, why: "Put every team in the order once" };
+    order.forEach((id, i) => (L.teams[id].priority = i));
+    log(L, now, { type: "commish", team: -1, text: "Waiver order changed by the commissioner" });
+    return { ok: true };
+  }
+  function setDivisions(L, names, now) {
+    if (!L.divs) return { ok: false, why: "This league has no divisions" };
+    const ns = (names || []).map((x) => String(x || "").replace(/[\x00-\x1f<>]/g, "").trim().slice(0, 24));
+    if (ns.length !== L.settings.divisions || ns.some((x) => !x)) return { ok: false, why: "Name every division" };
+    L.divNames = ns;
+    return { ok: true };
+  }
+
   /* ---------- the trading block ---------- */
   // Players a team says it would move. A manager lists his own (L.block). A bot lists the bench players it can
   // spare most: its best two off the bench, leaving kickers and defenses out.
@@ -1120,7 +1213,7 @@
   }
 
   return { DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
-    finishWeek, formOf, hot, standings, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
+    finishWeek, formOf, hot, standings, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
 });

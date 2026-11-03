@@ -221,7 +221,7 @@
   function inviteUrl() { return `${location.origin}${location.pathname.replace(/play\.html$/, "leagues.html")}?join=${encodeURIComponent(id)}&code=${encodeURIComponent(info.invite || "")}`; }
   function seatList() {
     const doc = L || D;
-    return `<ul class="seatl">${doc.teams.map((t, i) => `<li>${U.teamAv(t, "sm")}<span class="grow"><b>${esc(t.name)}</b><small>${info.seats[i] != null ? esc(info.seats[i]) : "Open, drafted by a bot"}</small></span>${info.commish && info.seats[i] != null && i !== 0 && i !== info.me ? `<button type="button" class="btn sm ghost" data-free="${i}">Free this team</button>` : ""}</li>`).join("")}</ul>`;
+    return `<ul class="seatl">${doc.teams.map((t, i) => `<li>${U.teamAv(t, "sm")}<span class="grow"><b>${esc(t.name)}</b><small>${info.seats[i] != null ? esc(info.seats[i]) : "Open, drafted by a bot"}</small></span>${info.commish && info.seats[i] != null && i !== 0 && i !== info.me ? `<button type="button" class="btn sm ghost" data-free="${i}">Free this team</button>` : ""}${info.commish && info.seats[i] == null && !L && D && D.phase === "setup" && doc.teams.length > 2 ? `<button type="button" class="btn sm ghost" data-lv="rmteam" data-team="${i}">Remove</button>` : ""}</li>`).join("")}</ul>`;
   }
   function leagueDialog() {
     const u = C.user();
@@ -229,9 +229,10 @@
       ${info.commish ? `<p class="muted" style="margin:0 0 8px">Send this link to your league. Anyone who opens it signs in with their email and picks an open team.</p>
         <div class="row"><input type="text" readonly value="${esc(inviteUrl())}" id="lv-link" style="flex:1;min-width:0" aria-label="Invite link"><button type="button" class="btn go" data-lv="copy">Copy</button></div>` : ""}
       ${seatList()}
+      ${info.commish && D && !L && D.phase === "setup" ? `<div class="row" style="margin-top:8px;flex-wrap:wrap;gap:8px"><span class="ps">${D.teams.length} teams. Teams can change until the draft starts.</span><span class="grow"></span>${D.teams.length < 20 ? `<button type="button" class="btn sm" data-lv="addteam">Add a team</button>` : ""}</div>` : ""}
       <div id="lv-past"></div>
       ${info.me != null ? `<label class="check" style="margin-top:10px"><input type="checkbox" id="lv-mail"${info.notify !== false ? " checked" : ""}> Email me about trade offers, waiver results${D && D.clock >= 3600 ? ", my turn in the draft" : ""} and weekly results</label>` : ""}
-      <div class="row ps" style="margin:12px 0 0;gap:6px 16px;flex-wrap:wrap"><span>${u ? `Signed in as ${esc(u.email)}` : `<a href="leagues.html">Sign in</a> to make moves`}</span><span class="grow"></span>${u ? `<button type="button" class="btn sm ghost" data-lv="out">Sign out</button>` : ""}<button type="button" class="btn sm ghost" data-lv="theme">${theme.dark() ? "Light mode" : "Dark mode"}</button></div>`, null, { wide: true });
+      <div class="row ps" style="margin:12px 0 0;gap:6px 16px;flex-wrap:wrap"><span>${u ? `Signed in as ${esc(u.email)}` : `<a href="leagues.html">Sign in</a> to make moves`}</span><span class="grow"></span>${info.commish && !L ? `<button type="button" class="btn sm ghost warn" data-lv="delete">Delete league</button>` : ""}${u ? `<button type="button" class="btn sm ghost" data-lv="out">Sign out</button>` : ""}<button type="button" class="btn sm ghost" data-lv="theme">${theme.dark() ? "Light mode" : "Dark mode"}</button></div>`, null, { wide: true });
     const dlg = $("#fk-dlg");
     // past seasons, newest first; most leagues have none yet, so this stays empty until there are
     if ((D && D.year > 1) || (L && L.draft && L.draft.year > 1)) C.rpc("fk_history", { p_id: id }).then((h) => {
@@ -244,6 +245,9 @@
       if (b.dataset.lv === "copy") { const el = $("#lv-link"); el.select(); try { await navigator.clipboard.writeText(el.value); U.toast("Invite link copied"); } catch (err) { document.execCommand("copy"); U.toast("Invite link copied"); } }
       else if (b.dataset.lv === "out") { await C.signOut(); location.reload(); }
       else if (b.dataset.lv === "theme") { theme.toggle(); b.textContent = theme.dark() ? "Light mode" : "Dark mode"; if (app) app.render(); }
+      else if (b.dataset.lv === "addteam") { dlg.close(); resizeTeams(null); }
+      else if (b.dataset.lv === "rmteam") { const t = Number(b.dataset.team); dlg.close(); U.confirm(`Remove ${teamName(t)}?`, "The league drops to one fewer team. You can add one back until the draft starts.", "Remove the team", () => resizeTeams(t)); }
+      else if (b.dataset.lv === "delete") { dlg.close(); deleteDialog(); }
       else if (b.dataset.free != null) {
         const t = Number(b.dataset.free);
         dlg.close();
@@ -301,13 +305,144 @@
     app = null; mount();
     U.toast("Next season's draft room is open.");
   }
+  /* ---------- commissioner tools ---------- */
+  const opt = (v, l, cur) => `<option value="${esc(v)}"${String(v) === String(cur) ? " selected" : ""}>${esc(l)}</option>`;
   function commishTools() {
-    return `<div class="head"><h1 class="disp">Commissioner</h1><span class="ps">Invite managers and manage teams. Changes save for everyone.</span></div>
+    const card = (title, body, btn) => `<div class="card"><div class="mod-h"><h2>${title}</h2></div><div class="bd stack">${body}${btn ? `<div class="row" style="flex-wrap:wrap">${btn}</div>` : ""}</div></div>`;
+    const s = L ? L.settings : {};
+    const trades = L ? L.trades.filter((t) => t.status === "accepted").slice(-12).reverse() : [];
+    return `<div class="head"><h1 class="disp">Commissioner</h1><span class="ps">Every change here saves for the whole league and shows up in its transactions.</span></div>
       ${nextSeasonCard()}
-      <div class="cols2"><div class="card"><div class="mod-h"><h2>Invite link</h2></div><div class="bd stack">
-        <p class="small" style="margin:0">Anyone with this link can sign in and take an open team, even mid-season.</p>
-        <button class="btn go" data-live="league">Show the invite link</button></div></div>
-      <div class="card"><div class="mod-h"><h2>Managers</h2></div><div class="bd">${seatList()}</div></div></div>`;
+      <div class="cols2">
+        ${card("Invite link", `<p class="small" style="margin:0">Anyone with this link can sign in and take an open team, even mid-season.</p>`, `<button class="btn go" data-live="league">Show the invite link</button>`)}
+        <div class="card"><div class="mod-h"><h2>Managers</h2></div><div class="bd">${seatList()}</div></div>
+      </div>
+      ${L ? `<div class="cols2">
+        ${card("League rules", `<dl class="kv"><dt>Waivers</dt><dd>${s.waivers === "rolling" ? "Rolling priority" : `FAAB, $${s.faab}`}, ${s.waiverHours} hours</dd><dt>Trades</dt><dd>${s.trades === false ? "Off" : `${s.deadline ? `Deadline after week ${s.deadline}` : "No deadline"}, ${s.tradeReview === "none" ? "no review" : "league review"}`}</dd><dt>Playoffs</dt><dd>${s.playoffTeams ? `${s.playoffTeams} teams` : "None"}</dd><dt>Rosters</dt><dd>${s.bench} bench, ${s.ir || 0} IR${s.maxAdds ? `, ${s.maxAdds} pickups a week` : ""}</dd></dl>`, `<button class="btn" data-cm="rules">Edit rules</button>`)}
+        ${card("Teams", `<p class="small" style="margin:0">Rename teams, set FAAB and the waiver order${L.divs ? ", and rename or rearrange the divisions" : ""}.</p>`, `<button class="btn" data-cm="teams">Edit teams</button>`)}
+      </div>
+      <div class="cols2">
+        ${card("Rosters", `<p class="small" style="margin:0">Move any player to another team or to free agency. Roster limits don't stop you; a team left over the limit has to cut.</p>`, `<button class="btn" data-cm="move">Move a player</button>`)}
+        ${card("Trades", trades.length ? `<ul class="seatl">${trades.map((t) => `<li><span class="grow"><b>${esc(teamName(t.from))} &#8644; ${esc(teamName(t.to))}</b><small>${esc([].concat(t.get, t.give).map((x) => (byId[x] ? byId[x].n : "?")).join(", "))}${(t.pickGive || []).length + (t.pickGet || []).length ? ", plus picks" : ""}, ${esc(U.ago(t.done || t.at, now()))}</small></span><button type="button" class="btn sm ghost" data-cm-rev="${t.id}">Reverse</button></li>`).join("")}</ul>` : `<p class="small" style="margin:0">No trades yet. When one goes through, you can reverse it here if every player is still where it sent him.</p>`)}
+      </div>` : ""}
+      <div class="card danger"><div class="mod-h"><h2>Delete the league</h2></div><div class="bd stack"><p class="small" style="margin:0">Deletes the league for everyone: teams, history and chat. You can't undo it.</p><div><button class="btn warn" data-cm="delete">Delete the league</button></div></div></div>`;
+  }
+  // commissioner changes save like any other move, as the commissioner
+  const commishSave = (r, msg) => { if (!r || r.ok === false) { U.toast((r && r.why) || "That didn't work", true); return false; } push(); if (app) app.refresh(); if (msg) U.toast(msg); return true; };
+  function rulesDialog() {
+    const s = L.settings, started = now() >= L.start || L.week > 1, inPlayoffs = L.week > s.weeks, gl = G.isGuillotine(L);
+    const medianOk = s.format === "h2h" && (s.tally || "game") === "game";
+    const sel = (id, label, opts, cur) => `<div class="field"><label for="${id}">${label}</label><select id="${id}" name="${id}">${opts.map(([v, l]) => opt(v, l, cur)).join("")}</select></div>`;
+    const n = L.teams.length;
+    U.dialog(`<h3>League rules</h3><form class="stack">
+      <div class="row3">
+        ${gl ? "" : sel("waivers", "Waivers", [["faab", "FAAB bids"], ["rolling", "Rolling priority"]], s.waivers)}
+        ${sel("waiverHours", "Dropped players clear in", [12, 24, 36, 48, 72].map((x) => [x, `${x} hours`]), s.waiverHours)}
+        ${sel("maxAdds", "Pickups a week", [0, 1, 2, 3, 4, 5, 7, 10].map((x) => [x, x ? `Up to ${x}` : "No limit"]), s.maxAdds || 0)}
+      </div>
+      <div class="row3">
+        ${sel("bench", "Bench spots", [2, 3, 4, 5, 6, 7, 8, 10, 12].map((x) => [x, x]), s.bench)}
+        ${sel("ir", "IR spots", [0, 1, 2, 3, 4].map((x) => [x, x || "None"]), s.ir || 0)}
+        ${gl ? "" : sel("trades", "Trades", [[1, "On"], [0, "Off"]], s.trades === false ? 0 : 1)}
+      </div>
+      ${gl ? "" : `<div class="row3">
+        ${sel("deadline", "Trade deadline", [[0, "None"]].concat(Array.from({ length: Math.max(0, s.weeks - 1) }, (_, i) => [i + 1, `After week ${i + 1}`])), s.deadline || 0)}
+        ${sel("tradeReview", "Trade review", [["vote", "League can veto"], ["none", "None: trades go through"]], s.tradeReview)}
+        ${sel("reviewHours", "Review lasts", [12, 24, 48].map((x) => [x, `${x} hours`]), s.reviewHours || 24)}
+      </div>
+      <div class="row3">
+        ${medianOk ? sel("median", "Median game", [[0, "Off"], [1, "On"]], s.median ? 1 : 0) : ""}
+        ${sel("bestBall", "Lineups", [[0, "Set each week"], [1, "Best ball"]], s.bestBall ? 1 : 0)}
+        ${started || s.format === "roto" ? "" : sel("weeks", "Regular season", [6, 8, 10, 12, 13, 14, 15, 16, 17].map((x) => [x, `${x} weeks`]), s.weeks)}
+      </div>
+      ${inPlayoffs || s.format === "roto" ? `<p class="ps" style="margin:0">${s.format === "roto" ? "" : "The playoffs have started, so their rules are set."}</p>` : `<div class="row3">
+        ${sel("playoffTeams", "Playoff teams", [0, 2, 3, 4, 6, 8, 10, 12].filter((x) => x <= n).map((x) => [x, x ? `${x} teams` : "No playoffs"]), s.playoffTeams)}
+        ${sel("playoffLegs", "Playoff rounds", [["1", "One week each"], ["final2", "Two-week final"], ["all2", "Two weeks each"]], s.playoffLegs || "1")}
+        ${sel("consolation", "Also play", [["none", "Nothing else"], ["third", "A third-place game"], ["bracket", "A consolation bracket"]], s.consolation || "none")}
+      </div>`}`}
+      <p class="ps" style="margin:0">${started ? "The season has started, so its length and schedule are set. " : ""}Changes apply from now on; finished weeks keep their results${medianOk ? ", except that turning the median game on or off recounts every record" : ""}.</p>
+      <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">Save rules</button></div></form>`, (fd) => {
+      const patch = {};
+      for (const [k, v] of fd.entries()) patch[k] = ["trades", "median", "bestBall"].includes(k) ? v === "1" : ["waivers", "tradeReview", "playoffLegs", "consolation"].includes(k) ? v : Number(v);
+      for (const k of Object.keys(patch)) if (JSON.stringify(patch[k]) === JSON.stringify(k === "trades" ? s.trades !== false : k === "median" || k === "bestBall" ? !!s[k] : s[k])) delete patch[k];
+      if (!Object.keys(patch).length) return;
+      const r = G.setRules(L, patch, now());
+      if (!commishSave(r, "Rules saved.")) return false;
+    }, { wide: true });
+  }
+  function teamsDialog() {
+    const order = L.teams.slice().sort((a, b) => a.priority - b.priority).map((t) => t.id), n = L.teams.length;
+    U.dialog(`<h3>Teams</h3><form class="stack">
+      <div class="cm-teams">${L.teams.map((t) => `<div class="cm-team">${U.teamAv(t, "sm")}
+        <label class="cm-l nm"><span>Team name</span><input type="text" name="n${t.id}" value="${esc(t.name)}" maxlength="28"></label>
+        <label class="cm-l"><span>Short</span><input type="text" name="a${t.id}" value="${esc(t.abbr)}" maxlength="4" class="ab"></label>
+        <label class="cm-l"><span>FAAB</span><input type="number" name="f${t.id}" value="${t.faab}" min="0" max="100000"></label>
+        <label class="cm-l"><span>Waiver #</span><select name="w${t.id}">${Array.from({ length: n }, (_, i) => opt(i + 1, i + 1, order.indexOf(t.id) + 1)).join("")}</select></label>
+        ${L.divs ? `<label class="cm-l"><span>Division</span><select name="d${t.id}">${L.divNames.map((nm, k) => opt(k, nm, L.divs[t.id])).join("")}</select></label>` : ""}</div>`).join("")}</div>
+      ${L.divs ? `<div class="row" style="flex-wrap:wrap;gap:8px">${L.divNames.map((nm, k) => `<label class="cm-l"><span>Division ${k + 1}</span><input type="text" name="dn${k}" value="${esc(nm)}" maxlength="24"></label>`).join("")}</div>` : ""}
+      <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">Save teams</button></div></form>`, (fd) => {
+      const at = now();
+      for (const t of L.teams) {
+        const patch = {};
+        if (fd.get("n" + t.id) !== t.name) patch.name = fd.get("n" + t.id);
+        if (fd.get("a" + t.id) !== t.abbr) patch.abbr = fd.get("a" + t.id);
+        if (Number(fd.get("f" + t.id)) !== t.faab) patch.faab = Number(fd.get("f" + t.id));
+        if (L.divs && Number(fd.get("d" + t.id)) !== L.divs[t.id]) patch.div = Number(fd.get("d" + t.id));
+        if (Object.keys(patch).length) { const r = G.editTeam(L, t.id, patch, at); if (!r.ok) { U.toast(`${t.name}: ${r.why}`, true); return false; } }
+      }
+      const wo = L.teams.map((t) => [Number(fd.get("w" + t.id)), t.id]).sort((a, b) => a[0] - b[0]).map((x) => x[1]);
+      if (wo.join() !== order.join()) { const r = G.setWaiverOrder(L, wo, at); if (!r.ok) { U.toast(r.why, true); return false; } }
+      if (L.divs) { const names = L.divNames.map((_, k) => fd.get("dn" + k)); if (names.join("|") !== L.divNames.join("|")) { const r = G.setDivisions(L, names, at); if (!r.ok) { U.toast(r.why, true); return false; } } }
+      commishSave({ ok: true }, "Teams saved.");
+    }, { wide: true });
+  }
+  function moveDialog() {
+    const ctx = lctx();
+    U.dialog(`<h3>Move a player</h3><div class="stack"><label class="sr" for="cm-q">Find a player</label><input type="search" id="cm-q" placeholder="Find a player" autocomplete="off"><ul class="seatl" id="cm-res"></ul>
+      <div class="acts"><button type="button" class="btn" data-close>Done</button></div></div>`, null, { wide: true });
+    const dlg = $("#fk-dlg"), box = $("#cm-res", dlg);
+    const draw = (q) => {
+      q = q.trim().toLowerCase();
+      const hits = q.length < 2 ? [] : players.filter((p) => p.n.toLowerCase().includes(q)).sort((a, b) => a.rank - b.rank).slice(0, 8);
+      box.innerHTML = hits.length ? hits.map((p) => { const own = ctx.own[p.id]; return `<li><span class="grow"><b>${esc(p.n)}</b><small>${esc(S.positions(p).join(", "))} ${esc(p.t)}, ${own != null ? `on ${esc(teamName(own))}` : "free agent"}</small></span>
+        <label class="sr" for="cm-to-${esc(p.id)}">Move to</label><select id="cm-to-${esc(p.id)}" data-cm-to="${esc(p.id)}">${L.teams.map((t) => opt(t.id, t.name, own)).join("")}${opt("", "Free agents", own == null ? "" : "x")}</select><button type="button" class="btn sm" data-cm-move="${esc(p.id)}">Move</button></li>`; }).join("")
+        : `<li class="ps" style="padding:8px 0">${q.length < 2 ? "Type at least two letters of a name." : "Nobody by that name."}</li>`;
+    };
+    draw("");
+    $("#cm-q", dlg).addEventListener("input", (e) => draw(e.target.value));
+    $("#cm-q", dlg).focus();
+    box.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-cm-move]"); if (!b) return;
+      const pid = b.dataset.cmMove, v = $(`[data-cm-to="${CSS.escape(pid)}"]`, box).value, to = v === "" ? null : Number(v);
+      if (commishSave(G.commishMove(L, lctx(), pid, to, now()), `${byId[pid].n} moved ${to == null ? "to free agency" : `to ${teamName(to)}`}.`)) draw($("#cm-q", dlg).value);
+    });
+  }
+  function deleteDialog() {
+    const name = info.name;
+    U.dialog(`<h3>Delete ${esc(name)}?</h3><form class="stack"><p class="muted" style="margin:0">This deletes the league for everyone: every team, the season, its history and the chat. You can't undo it.</p>
+      <div class="field"><label for="cm-del">Type the league's name to confirm</label><input id="cm-del" name="name" autocomplete="off" placeholder="${esc(name)}"></div>
+      <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn warn">Delete the league</button></div></form>`, async (fd) => {
+      if (String(fd.get("name") || "").trim() !== name) { U.toast("Type the name exactly as it is.", true); return false; }
+      const r = await C.rpc("fk_delete", { p_id: id, p_name: name }).catch((e) => ({ error: e.message }));
+      if (r.error) { U.toast(r.error, true); return false; }
+      location.href = "leagues.html";
+    });
+  }
+  // before the draft: add a team, or remove one nobody has claimed
+  async function resizeTeams(remove) {
+    const keep = D.teams.filter((t) => t.id !== remove);
+    const list = keep.map((t) => ({ name: t.name, abbr: t.abbr, owner: t.owner, color: t.color }));
+    if (remove == null) { const used = new Set(D.teams.map((t) => t.name)); const nm = ["Night Shift", "Bench Mob", "Waiver Wire", "Late Scratch", "Deep Sleepers", "Box Score", "Hot Corner", "Full Count", "Red Zone", "Fast Break", "Two Minute", "Garbage Time", "Pick Six", "Rain Delay", "Shot Clock", "Trade Deadline", "Home Stand", "Overtime", "Sixth Man", "Bye Week"].find((x) => !used.has(x)) || `Team ${D.teams.length + 1}`; list.push({ name: nm, abbr: nm.split(" ").map((w) => w[0]).join("").slice(0, 3).toUpperCase(), color: (D.teams.length * 5) % 12 }); }
+    const r = F.resize(D, sport, list, players);
+    if (!r.ok) { U.toast(r.why, true); return; }
+    const map = {}; keep.forEach((t, i) => (map[t.id] = i));
+    const res = await C.rpc("fk_resize", { p_id: id, p_version: version, p_draft: r.draft, p_map: map }).catch((e) => ({ error: e.message }));
+    if (res.error === "stale") { U.toast("Someone else saved first. Try again.", true); version = -1; pull(); return; }
+    if (res.error) { U.toast(res.error, true); return; }
+    D = r.draft; version = res.version; base = clone({ draft: D, league: null });
+    const s2 = {}; for (const [old, nw] of Object.entries(map)) if (info.seats[old] != null) s2[nw] = info.seats[old];
+    info.seats = s2; if (info.me != null) info.me = map[info.me];
+    mount(); U.toast(remove == null ? "Added a team." : "Removed the team.");
   }
   document.addEventListener("click", (e) => {
     const lv = e.target.closest("[data-live]"), th = e.target.closest("button[data-theme]");
@@ -315,6 +450,10 @@
     if (lv && lv.dataset.live === "league") { e.preventDefault(); leagueDialog(); }
     if (lv && lv.dataset.live === "keepers") keeperDialog();
     if (lv && lv.dataset.live === "open-keepers") { L.next = { opened: now(), due: now() + 3 * 864e5, picks: {} }; push(); app.refresh(); U.toast("Keeper picks are open. Everyone gets an email."); }
+    const cm = e.target.closest("[data-cm]");
+    if (cm && info.commish) { const k = cm.dataset.cm; if (k === "rules") rulesDialog(); else if (k === "teams") teamsDialog(); else if (k === "move") moveDialog(); else if (k === "delete") deleteDialog(); }
+    const rv = e.target.closest("[data-cm-rev]");
+    if (rv && info.commish) { const tid = Number(rv.dataset.cmRev); U.confirm("Reverse this trade?", "Every player, pick and FAAB dollar goes back to the team that sent it.", "Reverse the trade", () => commishSave(G.reverseTrade(L, lctx(), tid, now()), "Trade reversed.")); }
     if (lv && lv.dataset.live === "new-season") U.confirm("Start next season?", "This season goes into the league's history, and the league opens a new draft room. You can't undo it.", "Start next season", newSeason);
     const fr = e.target.closest("#app [data-free]");
     if (fr) { const t = Number(fr.dataset.free); U.confirm(`Free ${teamName(t)}?`, `${esc(info.seats[t])} loses the team, and a bot runs it until someone else claims it with the invite link.`, "Free the team", async () => {

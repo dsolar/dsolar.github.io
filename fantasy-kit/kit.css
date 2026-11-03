@@ -576,6 +576,20 @@ dialog.fk-dlg h3{margin:0 0 6px;font-size:22px;padding-right:40px}
 .medline b{color:var(--ink)}
 /* standings tables line up with each other (two divisions, one above the other) */
 @media (min-width:701px){table.stand th:nth-child(1){width:52px}table.stand th:nth-child(3){width:110px}table.stand th:nth-child(4){width:90px}table.stand th:nth-child(5){width:70px}table.stand th:nth-child(6),table.stand th:nth-child(7){width:110px}table.stand th:nth-child(8){width:80px}table.stand th:nth-child(9){width:120px}}
+/* a rookie, next to his positions */
+.rkt{display:inline-block;font-size:9.5px;font-weight:900;line-height:1;padding:2px 4px;border-radius:4px;background:var(--info-soft);color:var(--info);vertical-align:1px}
+/* three fields to a row in forms, two on a phone */
+.row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:700px){.row3{grid-template-columns:1fr 1fr}}
+/* commissioner tools */
+.cm-teams{display:grid;gap:8px}
+.cm-team{display:grid;grid-template-columns:auto minmax(0,1fr) 72px 96px 84px auto;gap:8px 10px;align-items:end;border:1px solid var(--line);border-radius:var(--r);padding:8px 10px;background:var(--surface-2)}
+.cm-team>.av{align-self:center;margin-top:16px}
+.cm-team input.ab{text-transform:uppercase}
+.cm-l{display:grid;gap:3px;font-size:11.5px;font-weight:700;color:var(--muted);min-width:0}
+.cm-l input,.cm-l select{min-width:0;width:100%}
+.card.danger{border-color:color-mix(in srgb,var(--loss) 35%,var(--line))}
+@media (max-width:700px){.cm-team{grid-template-columns:auto minmax(0,1fr) 76px}.cm-team>.cm-l:nth-of-type(3){grid-column:2}.cm-team>.cm-l:nth-of-type(5){grid-column:2/-1}}
 /* league chat */
 .chat{list-style:none;margin:0;padding:6px 0}
 .chat>li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;padding:8px 16px}

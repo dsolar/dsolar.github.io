@@ -187,7 +187,7 @@
   // Avatar, name and a small line (positions and team) for any player.
   // A draft pick as a tradeable item: { id, n: "Pick 2.5", pick: true, sub, price }.
   const pickItem = (p, extra = "") => `<span class="pname"><span class="pav pk" aria-hidden="true">#</span><span><span class="pn">${esc(p.n)}</span><span class="sub">${esc(p.sub || "Draft pick")}${extra ? ", " + extra : ""}</span></span></span>`;
-  const pname = (sport, p, extra = "", opts = {}) => p && p.pick ? pickItem(p, extra) : p ? `<span class="pname${opts.b ? " b" : ""}">${opts.noAv ? "" : playerAv(sport, p, opts.size || "")}<span><span class="pn">${esc(p.n)}</span><span class="sub">${injTag(p).trim()}${p.inj ? " " : ""}${S.positions(p).join(", ")} ${esc(p.t === "FA" ? "Unsigned" : p.t)}${extra ? ", " + extra : ""}</span></span></span>` : `<span class="ps">Empty</span>`;
+  const pname = (sport, p, extra = "", opts = {}) => p && p.pick ? pickItem(p, extra) : p ? `<span class="pname${opts.b ? " b" : ""}">${opts.noAv ? "" : playerAv(sport, p, opts.size || "")}<span><span class="pn">${esc(p.n)}</span><span class="sub">${injTag(p).trim()}${p.inj ? " " : ""}${p.rk ? `<span class="rkt" title="Rookie">R</span> ` : ""}${S.positions(p).join(", ")} ${esc(p.t === "FA" ? "Unsigned" : p.t)}${extra ? ", " + extra : ""}</span></span></span>` : `<span class="ps">Empty</span>`;
   const teamName = (t, opts = {}) => `<span class="row" style="gap:9px">${teamAv(t, opts.size || "sm")}<span class="ell"><b>${esc(t.name)}</b>${opts.you ? ` <span class="tag you">You</span>` : ""}${opts.owner !== false && t.owner && !(opts.you && /^you$/i.test(t.owner)) ? ` <span class="ps">${esc(t.owner)}</span>` : ""}${opts.badge || ""}</span></span>`;
 
   /* ---------- shell ---------- */
@@ -272,13 +272,16 @@
   // Position chips across the top of a player list; groups (Hitters, Pitchers) when the sport has them.
   function posFilter(sport, cur, extra = []) {
     const groups = sport.groups ? [["g:bat", "Hitters"], ["g:pit", "Pitchers"]] : [];
-    const all = [["", "All"]].concat(groups, sport.positions.filter((x) => x !== "UT").map((x) => [x, x]), extra);
+    // rookies get their own chip when the pool flags them (a dynasty's rookie draft starts on it)
+    const rk = sport.data && (sport.data.players || []).some((p) => p.rk) ? [["rk", "Rookies"]] : [];
+    const all = [["", "All"]].concat(groups, sport.positions.filter((x) => x !== "UT").map((x) => [x, x]), rk, extra);
     return `<div class="chips" role="group" aria-label="Positions">${all.map(([v, l]) => `<button type="button" data-fpos="${esc(v)}" aria-pressed="${v === (cur || "")}">${esc(l)}</button>`).join("")}</div>`;
   }
   const search = (st, ph = "Search players") => `<label class="sr" for="fk-q">${esc(ph)}</label><input type="search" id="fk-q" placeholder="${esc(ph)}" value="${esc(st.q || "")}" autocomplete="off">`;
   function passes(sport, p, st) {
     if (st.q) { const q = st.q.trim().toLowerCase(); if (q && !p.n.toLowerCase().includes(q) && String(p.t).toLowerCase() !== q) return false; }
-    if (st.pos) {
+    if (st.pos === "rk") { if (!p.rk) return false; }
+    else if (st.pos) {
       if (st.pos.startsWith("g:")) { const g = sport.groups[st.pos.slice(2)]; if (!S.positions(p).some((x) => g.includes(x))) return false; }
       else if (!S.positions(p).includes(st.pos)) return false;
     }
@@ -456,6 +459,8 @@
   function room(opts) {
     const { el, sport } = opts;
     const ui = { left: "players", right: "team", sort: { k: "rank", dir: 1 }, f: { q: "", pos: "" }, show: "avail", view: null, bidAmt: null, mobileRight: false };
+    // a dynasty's rookie draft opens on the rookies
+    try { if (opts.draft().rookie && (opts.players || []).some((p) => p.rk)) ui.f.pos = "rk"; } catch (e) { /* no draft yet */ }
     let ctx = null, timer = null;
     const D = () => opts.draft();
     const me = () => (opts.me ? opts.me() : null);
