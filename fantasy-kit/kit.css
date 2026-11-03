@@ -187,6 +187,7 @@ table.t td{padding:7px 10px;border-top:1px solid var(--line);vertical-align:midd
 table.t tbody tr:first-child td{border-top:0}
 table.t tbody tr:hover td{background:var(--surface-2)}
 table.t .r{text-align:right} table.t .c{text-align:center}
+table.t td.num,table.t td.r.num{white-space:nowrap}
 table.t.dense td{padding:4px 9px;font-size:13px;white-space:nowrap}
 table.t.dense th{padding:6px 9px}
 table.t tr.me td{background:var(--brand-soft)}

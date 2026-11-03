@@ -8,6 +8,8 @@
   "use strict";
   const H = window.HardCap;
   const { C, CATS, money } = H;
+  // The Fantasy Kit draws the shell, avatars, matchup hero, feeds, trade cards, the trade window and the draft room.
+  const U = window.FK.ui, FS = window.FK.sports.nba;
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
   const app = $("#app");
@@ -62,10 +64,23 @@
   // A player's name, clickable for his card.
   const pl = (id, sub) => {
     const p = BY[id], q = PBY[id];
+    if (sub && (p || q)) return `<span data-player="${esc(id)}" style="cursor:pointer;display:block;min-width:0">${U.pname(FS, pvm(id), p ? String(p.age) : "")}</span>${moveTag(id)}`;
     const nm = p ? p.n : q ? q.n : id;
     return `<button type="button" class="pn btn link" data-player="${esc(id)}">${esc(nm)}</button>${injTag(id)}${sub && p ? `<div class="ps">${p.t}, ${H.positions(p).join("/")}, ${p.age}</div>` : sub && q ? `<div class="ps">${esc(q.school)}, ${q.pos}</div>` : ""}`;
   };
   const nameOf = (id) => (BY[id] ? BY[id].n : PBY[id] ? PBY[id].n : id);
+  // Kit view models: a team's avatar color and a player's name line.
+  const tcol = (t) => (t && t.color != null ? t.color : (((t && t.id) || 0) * 5) % 12);
+  const tvm = (t) => ({ id: t.id, name: t.name, abbr: t.abbr, color: tcol(t), owner: t.owner });
+  const tav = (t, size = "sm") => U.teamAv(tvm(t), size);
+  const LEAGUE_T = { name: "League", abbr: "HC", color: 2 };
+  const pvm = (id) => {
+    const p = BY[id], q = PBY[id];
+    if (p) { const i = INJ[id]; return { id, n: p.n, t: p.t, pos: H.positions(p), inj: i ? (H.isOut(i) ? "Out" : i[0] === "Day-To-Day" ? "DTD" : i[0]) : null, price: money(p.sal), z: p.z }; }
+    if (q) return { id, n: q.n, t: q.school || "", pos: [String(q.pos || "SF").split("/")[0]], price: "Prospect", z: 0 };
+    return { id, n: String(id), t: "", pos: [] };
+  };
+  const pcell = (id, extra) => `<span data-player="${esc(id)}" style="cursor:pointer;min-width:0;display:block">${U.pname(FS, pvm(id), extra || "")}</span>`;
 
   /* ---------- server ---------- */
   const SB = "https://baxrczyufqbzrogftmyn.supabase.co/rest/v1/rpc/", KEY = "sb_publishable_brDXGevzcoI7mBaPO7Plow_yaUy4gk4";
@@ -290,32 +305,33 @@
   }
   function leagueMenu() {
     const mine = store.get("hc:leagues", []);
-    return `<details class="switch" id="switch"><summary><span class="sw-name">${LG ? esc(LG.name) : "Your leagues"}</span><span class="chev" aria-hidden="true"></span></summary>
-      <div class="menu" role="menu">${mine.length ? mine.map((x) => `<div class="mi${x.id === LID ? " on" : ""}"><a role="menuitem" href="?l=${esc(x.id)}">${esc(x.name)}<small>${esc(x.id)}</small></a><button class="x" data-forget="${esc(x.id)}" aria-label="Remove ${esc(x.name)} from this device's list" title="Remove from this list">&times;</button></div>`).join("") : `<p class="ps" style="margin:6px 10px">Leagues you open on this device show up here.</p>`}
-        <a class="mi new" role="menuitem" href="./?new=1">Start a new league</a>
-        <a class="mi new" role="menuitem" href="./?new=1#restore" style="border-top:0;margin-top:0;font-weight:700">Restore a deleted league</a>
+    return `<details class="switch" id="switch"><summary>${U.teamAv(LEAGUE_T, "sm")}<span class="ell">${LG ? esc(LG.name) : "Your leagues"}</span><span class="chev" aria-hidden="true"></span></summary>
+      <div class="menu" role="menu">${mine.length ? mine.map((x) => `<div class="mi${x.id === LID ? " on" : ""}"><a role="menuitem" href="?l=${esc(x.id)}">${esc(x.name)}<small>${esc(x.id)}${x.id === LID ? ", open now" : ""}</small></a><button class="x" data-forget="${esc(x.id)}" aria-label="Remove ${esc(x.name)} from this device's list" title="Remove from this list">&times;</button></div>`).join("") : `<p class="ps" style="margin:6px 10px">Leagues you open on this device show up here.</p>`}
+        <hr><a class="mi new" role="menuitem" href="./?new=1">Start a new league</a>
+        <a class="mi new" role="menuitem" href="./?new=1#restore">Restore a deleted league</a>
+        <a class="mi new" role="menuitem" href="../fantasy-kit/">Draft Lab: mock drafts</a>
         <button class="mi theme" type="button" data-act="theme">${document.documentElement.dataset.theme === "dark" ? "Light mode" : "Dark mode"}</button></div></details>`;
   }
+  // The kit's masthead: brand, league menu and your seat; League, My Team, Players, Matchups, Draft, Commissioner;
+  // the pages of the section underneath.
   function chrome() {
-    const tabs = $("#tabs"), who = $("#who"), sub = $("#subtabs");
-    $("#lgName").innerHTML = leagueMenu();
-    $(".navbar").hidden = !LG;
-    if (!LG) { tabs.innerHTML = ""; sub.innerHTML = ""; sub.hidden = true; who.innerHTML = `<button class="btn sm ghost" data-act="theme">${document.documentElement.dataset.theme === "dark" ? "Light" : "Dark"}</button>`; return; }
+    const mast = $("#mast");
+    const dark = document.documentElement.dataset.theme === "dark";
+    const theme = `<button class="btn sm ghost" data-act="theme" aria-label="Switch to ${dark ? "light" : "dark"} colors">${dark ? "Light" : "Dark"}</button>`;
+    const brand = { name: "Hard Cap", href: "./", mark: `<img src="mark.svg" alt="">` };
+    if (!LG) { mast.innerHTML = U.shell({ brand, title: leagueMenu(), right: theme }); return; }
     const r = route();
     const todo = todoCounts();
-    const badge = (n, what) => (n ? ` <span class="badge" aria-label="${n} ${what}">${n}</span>` : "");
-    tabs.innerHTML = TABS.map(([k, n]) => `<a href="#${k}"${r.tab === k ? ' aria-current="page"' : ""}>${n}${k === "team" ? badge(todo.trades, "trades waiting on you") : k === "draft" ? badge(todo.clock, "you're on the clock") : k === "league" ? badge(unread(), "new messages") : ""}</a>`).join("");
-    const subs = subsOf(r.tab, r.arg);
-    sub.hidden = !subs.length;
+    const tabs = TABS.map(([k, n]) => [k, n, k === "team" ? todo.trades : k === "draft" ? todo.clock : k === "league" ? unread() : 0]);
+    const subs = subsOf(r.tab, r.arg).map(([k, n]) => [k, n, r.tab === "team" && k === "trades" ? todo.trades : r.tab === "league" && k === "board" ? unread() : 0]);
     const tail = r.tab === "team" && r.arg != null ? "/" + r.arg : "";
-    sub.innerHTML = `<div class="wrap">${subs.map(([k, n]) => `<a href="#${r.tab}/${k}${tail}"${r.sub === k ? ' aria-current="page"' : ""}>${n}${r.tab === "team" && k === "trades" ? badge(todo.trades, "trades waiting on you") : r.tab === "league" && k === "board" ? badge(unread(), "new messages") : ""}</a>`).join("")}</div>`;
     const t = myTeam();
-    const theme = `<button class="btn sm ghost" data-act="theme" aria-label="Switch to ${document.documentElement.dataset.theme === "dark" ? "light" : "dark"} colors">${document.documentElement.dataset.theme === "dark" ? "Light" : "Dark"}</button>`;
     const bell = t ? `<button class="btn sm ghost${alertsOn() ? " go" : ""}" data-act="alerts" aria-label="Alerts">${alertsOn() ? "Alerts on" : "Alerts"}</button>` : "";
     const inst = !standalone() && (installEvt || isIOS()) ? `<button class="btn sm hide-wide" data-act="install">Install</button>` : "";
-    who.innerHTML = theme + inst + bell + (t
-      ? `<span class="chip"><b>${esc(t.abbr)}</b> ${esc(t.owner || "")}${me.commish ? " (commish)" : ""}</span><button class="btn sm" data-act="signout">Sign out</button>`
+    const right = theme + inst + bell + (t
+      ? `<span class="chip">${tav(t)} ${esc(t.owner || "")}${me.commish ? " (commish)" : ""}</span><button class="btn sm" data-act="signout">Sign out</button>`
       : `${me.commish ? `<span class="chip">Commissioner</span>` : ""}<button class="btn sm" data-act="signin">Sign in</button>${LG.teams.some((x) => !x.owner) ? `<button class="btn sm go" data-act="claim">Claim a team</button>` : ""}`);
+    mast.innerHTML = U.shell({ brand, title: leagueMenu(), tabs, tab: r.tab, subs, sub: r.sub, right, hrefOf: (tb, sb) => "#" + tb + (sb ? "/" + sb + (tb === "team" ? tail : "") : "") });
   }
   document.addEventListener("click", (e) => {
     const f = e.target.closest("[data-forget]");
@@ -549,7 +565,7 @@
       const t = LG.teams[r.id], pay = H.payroll(t, BY), line = H.freeLine(LG, t), room = line - pay, tx = taxNow(t), paid = H.taxPaid(LG, t);
       return `<tr class="${isMine(t) ? "me" : ""}${i === LG.settings.playoffTeams - 1 && LG.phase === "league" ? " cut" : ""}">
         <td class="r num">${i + 1}</td>
-        <td><a class="btn link" href="#team/roster/${t.id}">${esc(t.name)}</a> ${ownerTag(t)} ${tierTag(t)}${soft() && !paid ? taxTag(t) : ""}${t.overDeadline ? ` <span class="tag t3">Over line</span>` : ""}<div class="ps">${t.owner ? esc(t.owner) : "Bot until claimed"}</div></td>
+        <td class="nm"><a class="row" href="#team/roster/${t.id}" style="gap:10px;color:inherit;text-decoration:none">${tav(t, "md")}<span style="min-width:0"><b>${esc(t.name)}</b> ${ownerTag(t)} ${tierTag(t)}${soft() && !paid ? taxTag(t) : ""}${t.overDeadline ? ` <span class="tag t3">Over line</span>` : ""}<span class="ps" style="display:block">${t.owner ? esc(t.owner) : "Bot until claimed"}</span></span></a></td>
         <td class="r num">${r.w}-${r.l}-${r.t}</td><td class="r num hide-s">${r.pct.toFixed(3).replace(/^0/, "")}</td>
         <td class="r num hide-m">${r.gmsc.toFixed(0)}</td>
         <td class="r num hide-s">${money(pay)}</td><td class="r num hide-s">${money(line)}</td>
@@ -626,11 +642,12 @@
     const ms = LG.phase === "league" ? H.matchups(LG, defaultWeek(), WK, BY) : [];
     const mine = ms.find((m) => isMine(LG.teams[m.a]) || isMine(LG.teams[m.b]));
     const recent = LG.log.slice(-6).reverse();
-    return `${mine && LG.phase === "league" ? myMatchupCard(mine) : phaseBanner()}
+    return `${ms.length ? `<div class="stack" style="gap:8px"><div class="row"><b>Week ${defaultWeek()} scoreboard</b><a href="#matchups" class="small" style="margin-left:auto">All matchups</a></div>${scoreStrip(ms)}</div>` : ""}
+      ${mine && LG.phase === "league" ? myMatchupCard(mine) : phaseBanner()}
       <div class="cols"><section class="stack"><div class="head"><h1 class="disp">${esc(LG.name)}</h1></div>
         <div class="table-wrap"><table class="t stand">${standHead()}<tbody>${rows}</tbody></table></div>
         <p class="ps">Room is what each team can still add ${LG && H.isSoft(LG) ? "before it pays luxury tax" : "under its own line"}: the number to check before you call about a trade. ${LG.phase === "league" ? `Top ${LG.settings.playoffTeams} make the playoffs after week ${LG.settings.regWeeks}.` : ""}</p>
-        ${ms.length ? `<div class="head"><h2 class="disp" style="font-size:26px;margin:0">Week ${defaultWeek()}</h2><a class="btn sm" href="#matchups">All matchups</a></div><div class="slate">${ms.map((m, i) => gameCard(m, i)).join("")}</div>` : ""}
+        <div class="card"><div class="mod-h"><h2>Latest moves</h2><a href="#league/tx">All transactions</a></div>${U.feed(recent.map(logVM), "Nothing yet.")}</div>
       </section>
       <aside class="stack">
         <div class="card"><h3>The pot</h3><div class="disp" style="font-size:44px">$${H.pot(LG)}</div>
@@ -640,17 +657,38 @@
           <dl class="kv" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">${LG.settings.payout.map((pc, k) => `<dt>${["Champion", "Runner-up", "Third place"][k] || ordinal(k + 1)} (${pc}%)</dt><dd>$${Math.round((H.pot(LG) * pc) / 100)}</dd>`).join("")}</dl>
           <p class="ps" style="margin-bottom:0">${soft() ? "Teams over the tax line pay into the pot at the end of the regular season." : "Tier upgrades are tagged on every team and can't be undone this season."}</p></div>
         ${LG.phase === "league" ? officeBracket() : ""}
-        <div class="card"><h3>Latest moves</h3>${recent.length ? `<ul class="list">${recent.map((x) => `<li><span>${esc(x.text)}</span></li>`).join("")}</ul>` : `<p class="empty">Nothing yet.</p>`}<a class="btn sm" href="#league/tx">All transactions</a></div>
       </aside></div>`;
   }
-  // Your matchup at the top of the overview, the way Yahoo leads with it.
-  function myMatchupCard(m) {
+  // Your matchup at the top of the overview, the way Yahoo and Sleeper lead with it.
+  function versusVM(m, flip) {
     const A = LG.teams[m.a], B = LG.teams[m.b], c = m.cmp, w = defaultWeek();
-    const meA = isMine(A), us = meA ? A : B, them = meA ? B : A, uw = meA ? c.w : c.l, tw = meA ? c.l : c.w;
-    const cats = c.cats.map((x) => { const win = meA ? x.out === "w" : x.out === "l", loss = meA ? x.out === "l" : x.out === "w";
-      return `<span class="mc ${win ? "w" : loss ? "l" : ""}" title="${x.cat.label}: ${fmtCat(x.cat, meA ? x.a : x.b)} to ${fmtCat(x.cat, meA ? x.b : x.a)}">${x.cat.label}</span>`; }).join("");
-    return `<a class="card mymatch" href="#matchups" data-wk="${w}"><div class="mm-l"><span class="ps">Week ${w}${w === curWeek() ? ", in progress" : ", final"}</span><b class="disp">${esc(us.name)}</b><span class="ps">vs ${esc(them.name)}. Now: week ${curWeek()}, ${weekLabel(curWeek())}; waivers ${fmtWhen(LG.due.waiver || H.nextWaiverRun(now()))}</span></div>
-      <div class="disp mm-s ${uw > tw ? "ok" : uw < tw ? "bad" : ""}">${uw}-${tw}${c.t ? "-" + c.t : ""}</div><div class="mm-c">${cats}</div></a>`;
+    const st = standingsNow(), rec = (id) => { const r = st.find((x) => x.id === id); return r ? `${r.w}-${r.l}-${r.t}` : ""; };
+    const scored = w >= LG.settings.startWeek && STATS.wk && STATS.wk[String(w)];
+    const sa = { team: tvm(A), rec: rec(A.id), score: scored ? c.w : 0 }, sb = { team: tvm(B), rec: rec(B.id), score: scored ? c.l : 0 };
+    const cats = c.cats.map((x) => ({ label: x.cat.label, fa: fmtCat(x.cat, flip ? x.b : x.a), fb: fmtCat(x.cat, flip ? x.a : x.b), d: (x.out === "w" ? 1 : x.out === "l" ? -1 : 0) * (flip ? -1 : 1) }));
+    return { a: flip ? sb : sa, b: flip ? sa : sb, status: w < curWeek() ? "Final" : w === curWeek() ? `Week ${w}, live` : "Not started", live: w === curWeek(), cats };
+  }
+  function myMatchupCard(m) {
+    const flip = !isMine(LG.teams[m.a]);
+    const i = H.matchups(LG, defaultWeek(), WK, BY).findIndex((x) => x.a === m.a && x.b === m.b);
+    return `<div class="card"><div class="mod-h"><h2>Your matchup</h2><span class="ps">Week ${defaultWeek()}, ${weekLabel(defaultWeek())}. Waivers ${fmtWhen(LG.due.waiver || H.nextWaiverRun(now()))}</span><a href="#matchups" data-pair="${i}">Full matchup</a></div>${U.versus(versusVM(m, flip))}</div>`;
+  }
+  // The scoreboard strip: every game this week, yours outlined.
+  function scoreStrip(ms, on) {
+    const st = standingsNow(), rec = (id) => { const r = st.find((x) => x.id === id); return r ? `${r.w}-${r.l}-${r.t}` : ""; };
+    const w = defaultWeek();
+    const html = U.scoreboard(ms.map((m, i) => ({ href: "#matchups", me: on != null ? i === on : isMine(LG.teams[m.a]) || isMine(LG.teams[m.b]), status: w < curWeek() ? "final" : "live", label: m.label || (w < curWeek() ? "Final" : "Live"),
+      a: { team: tvm(LG.teams[m.a]), score: m.cmp.w, rec: rec(m.a) }, b: { team: tvm(LG.teams[m.b]), score: m.cmp.l, rec: rec(m.b) } })));
+    let k = 0;
+    return html.replace(/<a class="game/g, () => `<a data-pair="${k++}" class="game`);
+  }
+  // A league log entry as a feed row.
+  const LOG_ICON = { add: "add", drop: "drop", trade: "trade", auction: "waiver", tier: "misc", draft: "misc", commish: "misc", line: "drop" };
+  function logVM(x) {
+    const t = x.team >= 0 && LG.teams[x.team] ? tvm(LG.teams[x.team]) : LEAGUE_T;
+    const k = LOG_ICON[x.kind] || "misc";
+    const badge = x.kind === "trade" ? `<span class="tag info">Trade</span>` : x.kind === "auction" ? `<span class="tag gold">Prospects</span>` : x.kind === "tier" ? `<span class="tag t1">Tier</span>` : x.kind === "commish" ? `<span class="tag">Commissioner</span>` : x.kind === "line" ? `<span class="tag t3">Over the line</span>` : "";
+    return { team: t, when: fmtDate(x.at), badge, lines: [`<div class="row" style="align-items:flex-start"><span class="txi ${k}" aria-hidden="true">${k === "add" ? "+" : k === "drop" ? "&minus;" : k === "trade" ? "&#8644;" : k === "waiver" ? "$" : "&bull;"}</span><span class="small">${esc(x.text)}</span></div>`] };
   }
   function officeBracket() {
     const b = H.bracket(LG, WK, BY);
@@ -667,11 +705,6 @@
     return `<div class="card"><h3>Summer draft budgets</h3><p class="ps" style="margin-top:0">One FAAB auction next summer for incoming rookies and unsigned free agents. Worse teams get more to spend; letting an expiring player walk adds $${LG.settings.compDollars}. If the season ended today:</p>
       <ul class="list">${order.slice().reverse().map((id) => `<li><span>${esc(LG.teams[id].name)}</span><span class="grow"></span><b class="num">$${b[id]}</b></li>`).join("")}</ul></div>`;
   }
-  function gameCard(m, i) {
-    const A = LG.teams[m.a], B = LG.teams[m.b], c = m.cmp;
-    return `<button class="game${isMine(A) || isMine(B) ? " on" : ""}" data-pair="${i}">${m.label ? `<span class="lbl">${m.label}</span>` : ""}<span class="ln ${c.w >= c.l ? "" : "trail"}"><span>${esc(A.name)}</span><span class="num">${c.w}</span></span><span class="ln ${c.l >= c.w ? "" : "trail"}"><span>${esc(B.name)}</span><span class="num">${c.l}</span></span><span class="ps">Game Score ${m.A.t.gmsc.toFixed(0)} to ${m.B.t.gmsc.toFixed(0)}${c.t ? `, ${c.t} tied` : ""}</span></button>`;
-  }
-
   /* ---------- Cap Sheet ---------- */
   function viewTeam(sub, arg) {
     const t = teamFor(arg);
@@ -685,7 +718,7 @@
       ${t.tierLog.length ? `<ul class="list" style="margin-top:8px">${t.tierLog.map((x) => `<li><time>${fmtDate(x.at)}</time><span>Moved up to ${esc(tiers[x.tier].label)}</span></li>`).join("")}</ul>` : ""}</div>`;
     const over = t.overDeadline ? `<div class="banner red"><div><b>${esc(t.name)} is ${money(H.payroll(t, BY) - H.ceilingOf(LG, t))} over its ${H.isSoft(LG) ? "ceiling" : "line"}</b> after a real salary change. <span class="muted">No adds until it's back under. Release someone${H.isSoft(LG) ? " or trade salary away" : ", trade salary away or move up a tier"} by ${fmtWhen(t.overDeadline)}; after that the lowest-ranked players are released until it fits.</span></div></div>` : "";
     return `<div class="teampick"><label class="sr" for="tpick">Team</label><select id="tpick" class="brand-sel">${LG.teams.map((x) => `<option value="${x.id}"${x.id === t.id ? " selected" : ""}>${esc(x.name)}${isMine(x) ? " (you)" : ""}</option>`).join("")}</select></div>
-      <div class="head"><h1 class="disp">${esc(t.name)}</h1><span>${ownerTag(t)} ${tierTag(t)}</span><span class="muted">${t.owner ? esc(t.owner) : "Open team, run by a bot"}, $${t.faab} FAAB</span></div>
+      <div class="team-h">${tav(t, "xl")}<div style="min-width:0"><h1 class="disp">${esc(t.name)} <span style="font-size:14px;vertical-align:8px">${ownerTag(t)} ${tierTag(t)}</span></h1><div class="meta"><span>${t.owner ? `Manager <b>${esc(t.owner)}</b>` : "Open team, run by a bot"}</span><span>FAAB <b>$${t.faab}</b></span><span>On the books <b>${money(H.payroll(t, BY))}</b></span>${LG.phase === "league" ? (() => { const r = standingsNow().findIndex((x) => x.id === t.id); const x = standingsNow()[r]; return x ? `<span><b>${x.w}-${x.l}-${x.t}</b>, ${ordinal(r + 1)}</span>` : ""; })() : ""}</div></div></div>
       ${over}${sick ? `<div class="banner gold"><div><b>${esc(nameOf(sick))} is healthy on IR.</b> <span class="muted">Activate or release him before any adds or trades.</span></div></div>` : ""}
       <div class="card">${capBar(t)}${(t.ir || []).length ? `<p class="ps" style="margin:0">${t.ir.map((id) => `${esc(nameOf(id))} (${money(BY[id].sal)})`).join(", ")} on IR, off the books.</p>` : ""}</div>
       <div class="cols"><section class="stack">${body}</section>
@@ -883,11 +916,9 @@
     const scored = w >= LG.settings.startWeek && STATS.wk && STATS.wk[String(w)];
     const status = w < cw ? "Final" : w === cw ? "In progress" : "Not started";
     return `<div class="head"><h1 class="disp">Matchups</h1><span class="grow"></span>${nav}</div>
-      <div class="slate">${ms.map((x, k) => gameCard(x, k).replace('class="game', `class="game${k === i ? " on" : ""}`)).join("")}</div>
-      <section class="card"><div class="versus"><div><div class="disp nm">${esc(A.name)}</div><div class="ps">${A.owner ? esc(A.owner) : "Bot"}, Game Score ${m.A.t.gmsc.toFixed(1)}</div></div>
-        <div class="disp score">${scored ? `${c.w}-${c.l}${c.t ? "-" + c.t : ""}` : "0-0"}<small>${status}</small></div>
-        <div class="b"><div class="disp nm">${esc(B.name)}</div><div class="ps">${B.owner ? esc(B.owner) : "Bot"}, Game Score ${m.B.t.gmsc.toFixed(1)}</div></div></div>
-        <div class="cats" style="--nc:${c.cats.length}">${c.cats.map((x) => `<div class="cat ${x.out === "w" ? "wa" : x.out === "l" ? "wb" : ""}"><span class="lbl">${x.cat.label}</span><span class="v ${x.out === "w" ? "w" : x.out === "l" ? "l" : ""}">${fmtCat(x.cat, x.a)}</span><span class="v ${x.out === "l" ? "w" : x.out === "w" ? "l" : ""}">${fmtCat(x.cat, x.b)}</span></div>`).join("")}</div>
+      ${scoreStrip(ms, i)}
+      <section class="card">${U.versus(Object.assign(versusVM(m, false), { status, live: status === "In progress" }))}
+        <div class="row ps" style="padding:8px 16px;border-top:1px solid var(--line);justify-content:space-between"><span>Game Score ${m.A.t.gmsc.toFixed(1)}</span><span>${c.t ? `${c.t} tied` : "Ties break on Game Score"}</span><span>Game Score ${m.B.t.gmsc.toFixed(1)}</span></div>
         ${!scored ? `<p class="empty">${w < LG.settings.startWeek ? "This league starts scoring in week " + LG.settings.startWeek + "." : "No games final yet this week. Scores fill in each morning."}</p>` : ""}</section>
       ${boxTable(A, m.A)}${boxTable(B, m.B)}`;
   }
@@ -924,40 +955,39 @@
         ${t && LG.phase === "league" ? `<div class="card"><h3>Your sealed waiver bids</h3><p class="ps" style="margin-top:0">Nobody else sees these. They run ${fmtWhen(LG.due.waiver || H.nextWaiverRun(now()))}; highest bid wins. You have $${t.faab} FAAB.</p>
           ${bids == null ? `<p class="empty">Loading…</p>` : bids.length ? `<ul class="list">${bids.map((b, i) => `<li><span><b>$${b.amt}</b> on ${esc(nameOf(b.add))}${BY[b.add] ? ` (${money(BY[b.add].sal)})` : ""}${b.drop ? `, releasing ${esc(nameOf(b.drop))}` : ""}</span><span class="grow"></span><button class="btn sm" data-unbid="${i}">Withdraw</button></li>`).join("")}</ul>` : `<p class="empty">No bids. Find someone in the Player Market.</p>`}</div>` : ""}
         ${tradesCard(t)}
-        <div class="card"><h3>League log</h3><div class="tools" style="margin-bottom:8px">${kinds.map(([k, n]) => `<button class="btn sm${ui.logKind === k ? " go" : ""}" data-logkind="${k}">${n}</button>`).join("")}</div>
-          ${items.length ? `<ul class="list">${items.slice(0, 120).map((x) => `<li><time>${fmtDate(x.at)}</time><span>${esc(x.text)}</span></li>`).join("")}</ul>` : `<p class="empty">Nothing here yet.</p>`}</div>
+        <div class="card"><div class="mod-h"><h2>League log</h2><span class="ps">${LG.log.length} entries</span></div><div style="padding:10px 16px 4px"><div class="chips" role="group" aria-label="Kind">${kinds.map(([k, n]) => `<button type="button" data-logkind="${k}" aria-pressed="${ui.logKind === k}">${n}</button>`).join("")}</div></div>
+          ${U.feed(items.slice(0, 120).map(logVM), "Nothing here yet.")}</div>
       </section>
       <aside class="stack">${lr ? `<div class="card"><h3>Last waiver run</h3><p class="ps" style="margin-top:0">${fmtWhen(lr.at)}</p><ul class="list">${lr.results.filter((x) => x.ok).map((x) => `<li><span>${esc(LG.teams[x.team].abbr)} signed ${esc(nameOf(x.add))} for $${x.amt}</span></li>`).join("") || `<li>No signings.</li>`}</ul></div>` : ""}
         ${LG.auction && LG.auction.results.length ? `<div class="card"><h3>Prospect Board results</h3><ul class="list">${LG.auction.results.filter((x) => x.won).map((x) => `<li><span>${esc(LG.teams[x.team].abbr)}: ${esc(nameOf(x.pid))}, $${x.amt}</span></li>`).join("")}</ul></div>` : ""}</aside></div>`;
   }
-  // Offers you're part of, deals the league is reviewing (with your vote), and the latest results.
+  // Offers you're part of, deals the league is reviewing (with your vote), and the latest results, as kit trade cards.
+  function tradeVM(x, t) {
+    const word = { pending: "Pending", review: "Under review", accepted: "Accepted", declined: "Declined", failed: "Fell through", withdrawn: "Withdrawn", vetoed: "Vetoed" };
+    const cls = { pending: "pending", review: "review", accepted: "accepted", declined: "rejected", failed: "failed", withdrawn: "cancelled", vetoed: "vetoed" };
+    let acts = "";
+    if (x.status === "pending" && t && x.to === t.id) acts = `<button class="btn sm win" data-accept="${x.id}">Accept</button><button class="btn sm warn" data-decline="${x.id}">Decline</button><button class="btn sm" data-counter="${x.id}">Counter</button>`;
+    else if (x.status === "pending" && t && x.from === t.id) acts = `<span class="ps">Waiting on ${esc(LG.teams[x.to].name)}</span><span class="grow"></span><button class="btn sm" data-withdraw="${x.id}">Withdraw</button>`;
+    else if (x.status === "review") {
+      const voters = H.voters(LG, x), need = H.vetoesNeeded(LG, x), n = Object.keys(x.votes || {}).length;
+      const can = t && voters.includes(t.id), mineV = can && (x.votes || {})[t.id];
+      acts = `<span class="ps">${n} of ${need} veto vote${need === 1 ? "" : "s"}. Goes through ${fmtWhen(x.reviewEnds)} unless vetoed.</span><span class="grow"></span>${can ? `<button class="btn sm${mineV ? "" : " warn"}" data-vote="${x.id}" aria-pressed="${!!mineV}">${mineV ? "Take back my veto vote" : "Vote to veto"}</button>` : ""}${me.commish ? `<button class="btn sm warn" data-veto="${x.id}">Commissioner veto</button>` : ""}`;
+    } else {
+      const open = x.status === "accepted" && LG.settings.tradeReview !== "vote" && now() - x.closed < LG.settings.vetoHours * H.HOUR;
+      if (x.why) acts = `<span class="ps">${esc(x.why)}</span>`;
+      if (open) acts += `<span class="ps">Commissioner can veto until ${fmtWhen(x.closed + LG.settings.vetoHours * H.HOUR)}</span>${me.commish ? `<span class="grow"></span><button class="btn sm warn" data-veto="${x.id}">Veto</button>` : ""}`;
+    }
+    return { id: x.id, status: cls[x.status] || "pending", statusLabel: word[x.status] || x.status, from: tvm(LG.teams[x.from]), to: tvm(LG.teams[x.to]), give: x.give.map(pvm), get: x.get.map(pvm), faab: [x.faabGive, x.faabGet], when: fmtDate(x.closed || x.at || now()), acts };
+  }
   function tradesCard(t, other) {
     const trades = LG.trades.slice().reverse();
     const mineT = t ? trades.filter((x) => x.status === "pending" && (x.from === t.id || x.to === t.id)) : [];
     const review = trades.filter((x) => x.status === "review");
     const done = trades.filter((x) => !["pending", "review"].includes(x.status)).slice(0, 8);
     const sendTo = other && t && other.id !== t.id ? other.id : null;
-    const word = { accepted: "went through", declined: "declined", failed: "fell through", withdrawn: "withdrawn", vetoed: "vetoed" };
-    return `<div class="card"><h3>Trades</h3>
-      ${mineT.length ? `<ul class="list">${mineT.map((x) => tradeLine(x, t)).join("")}</ul>` : `<p class="empty">No open offers.</p>`}
-      ${t && LG.phase === "league" ? `<button class="btn go" data-act-trade${sendTo != null ? ` data-with="${sendTo}"` : ""}>${sendTo != null ? `Propose a trade to ${esc(other.abbr)}` : "Propose a trade"}</button>` : !t ? `<p class="ps">Sign in to your team to make offers.</p>` : ""}
-      ${review.length ? `<h3 style="margin-top:14px">League review</h3><ul class="list">${review.map((x) => {
-        const voters = H.voters(LG, x), need = H.vetoesNeeded(LG, x), n = Object.keys(x.votes || {}).length;
-        const can = t && voters.includes(t.id), mineV = can && (x.votes || {})[t.id];
-        return `<li style="display:block">${tradeSides(x)}<div class="tools" style="margin-top:6px"><span class="ps">${n} of ${need} veto vote${need === 1 ? "" : "s"}. Goes through ${fmtWhen(x.reviewEnds)} unless vetoed.</span><span class="grow"></span>
-          ${can ? `<button class="btn sm${mineV ? " warn" : ""}" data-vote="${x.id}" aria-pressed="${!!mineV}">${mineV ? "Take back my veto vote" : "Vote to veto"}</button>` : ""}${me.commish ? `<button class="btn sm warn" data-veto="${x.id}">Commissioner veto</button>` : ""}</div></li>`; }).join("")}</ul>` : ""}
-      ${done.length ? `<h3 style="margin-top:14px">Recent</h3><ul class="list">${done.map((x) => {
-        const open = x.status === "accepted" && LG.settings.tradeReview !== "vote" && now() - x.closed < LG.settings.vetoHours * H.HOUR;
-        return `<li><span>${esc(LG.teams[x.from].abbr)} and ${esc(LG.teams[x.to].abbr)}: ${word[x.status] || x.status}${x.why ? ` (${esc(x.why)})` : ""}${open ? `. Commissioner can veto until ${fmtWhen(x.closed + LG.settings.vetoHours * H.HOUR)}` : ""}</span><span class="grow"></span>${open && me.commish ? `<button class="btn sm warn" data-veto="${x.id}">Veto</button>` : ""}</li>`; }).join("")}</ul>` : ""}</div>`;
-  }
-  const tradeSides = (x) => { const nm = (ids, f) => [...ids.map(nameOf), ...(f ? [`$${f} FAAB`] : [])].join(", ") || "nothing";
-    return `<div><b>${esc(LG.teams[x.from].name)}</b> sends ${esc(nm(x.give, x.faabGive))}</div><div><b>${esc(LG.teams[x.to].name)}</b> sends ${esc(nm(x.get, x.faabGet))}</div>`; };
-  function tradeLine(x, t) {
-    const A = LG.teams[x.from], B = LG.teams[x.to];
-    const nm = (ids, f) => [...ids.map(nameOf), ...(f ? [`$${f} FAAB`] : [])].join(", ") || "nothing";
-    const incoming = t && x.to === t.id;
-    return `<li style="display:block"><div><b>${esc(A.name)}</b> sends ${esc(nm(x.give, x.faabGive))}</div><div><b>${esc(B.name)}</b> sends ${esc(nm(x.get, x.faabGet))}</div>
-      <div class="tools" style="margin-top:6px">${incoming ? `<button class="btn sm go" data-accept="${x.id}">Accept</button><button class="btn sm" data-decline="${x.id}">Decline</button>` : `<span class="ps">Waiting on ${esc(B.name)}</span><button class="btn sm" data-withdraw="${x.id}">Withdraw</button>`}</div></li>`;
+    const sec = (title, list) => (list.length ? `<h3 style="margin:6px 0 0;font-size:15px">${title}</h3>${list.map((x) => U.tradeCard(FS, tradeVM(x, t))).join("")}` : "");
+    return `<div class="stack"><div class="row"><h2 class="disp" style="margin:0;font-size:26px">Trades</h2><span class="grow"></span>${t && LG.phase === "league" ? `<button class="btn go" data-act-trade${sendTo != null ? ` data-with="${sendTo}"` : ""}>${sendTo != null ? `Propose a trade to ${esc(other.abbr)}` : "Propose a trade"}</button>` : !t ? `<span class="ps">Sign in to your team to make offers.</span>` : ""}</div>
+      ${mineT.length ? sec("Your offers", mineT) : `<p class="ps" style="margin:0">No open offers.</p>`}${sec("League review", review)}${sec("Recent", done)}</div>`;
   }
 
   function bidDialog(pid, preDrop) {
@@ -988,50 +1018,43 @@
     }
   }
 
-  function tradeDialog(withTeam, pid) {
+  // The kit's trade window: both rosters (prospects too), FAAB, a value meter, and Hard Cap's cap check on every change.
+  function tradeDialog(withTeam, pid, prefill) {
     const t = myTeam();
     if (!t) { toast("Sign in to your team first.", true); return; }
-    ui.tradeWith = withTeam != null ? withTeam : ui.tradeWith != null ? ui.tradeWith : LG.teams.find((x) => x.id !== t.id).id;
-    ui.give = []; ui.get = pid ? [pid] : []; ui.fg = 0; ui.ft = 0;
-    drawTrade();
-  }
-  function drawTrade() {
-    const t = myTeam(), o = LG.teams[ui.tradeWith];
-    const pieces = (team) => [...H.active(team).map((id) => BY[id]).sort((a, b) => b.sal - a.sal).map((p) => ({ id: p.id, n: p.n, s: money(p.sal) })), ...team.prospects.map((id) => ({ id, n: nameOf(id), s: "prospect" }))];
-    const box = (team, key) => `<div><div class="lbl" style="margin-bottom:6px">${esc(team.name)} sends</div>${pieces(team).map((p) => `<label style="display:flex;gap:8px;align-items:center;padding:3px 0"><input type="checkbox" data-side="${key}" value="${p.id}"${ui[key].includes(p.id) ? " checked" : ""}> <span>${esc(p.n)} <span class="ps">${p.s}</span></span></label>`).join("")}</div>`;
-    const tr = { from: t.id, to: o.id, give: ui.give, get: ui.get, faabGive: ui.fg || 0, faabGet: ui.ft || 0 };
-    const sick = H.irProblem(LG, t, INJ);
-    const c = sick ? { ok: false, why: `${nameOf(sick)} is healthy on IR: activate or release him first.` } : curWeek() > LG.settings.tradeDeadline ? { ok: false, why: `The trade deadline was the end of week ${LG.settings.tradeDeadline}.` }
-      : ui.give.length || ui.get.length || ui.fg || ui.ft ? H.tradeCheck(LG, POOL, tr) : { ok: false, why: "Pick players or FAAB on either side." };
-    const after = (team, out, inn) => H.payroll(team, BY) - out.filter((x) => BY[x]).reduce((s, x) => s + BY[x].sal, 0) + inn.filter((x) => BY[x]).reduce((s, x) => s + BY[x].sal, 0);
-    D.innerHTML = `<h3 class="disp">Propose a trade</h3><form class="form" style="margin-top:8px">
-      <div class="field"><label for="tw">With</label><select id="tw">${LG.teams.filter((x) => x.id !== t.id).map((x) => `<option value="${x.id}"${x.id === o.id ? " selected" : ""}>${esc(x.name)}${x.owner ? "" : " (bot)"}</option>`).join("")}</select></div>
-      <div class="row2" style="max-height:40dvh;overflow:auto">${box(t, "give")}${box(o, "get")}</div>
-      <div class="row2"><div class="field"><label for="fg">FAAB you send (you have $${t.faab})</label><input type="number" id="fg" min="0" max="${t.faab}" value="${ui.fg || 0}"></div>
-      <div class="field"><label for="ft">FAAB they send (they have $${o.faab})</label><input type="number" id="ft" min="0" max="${o.faab}" value="${ui.ft || 0}"></div></div>
-      <dl class="kv"><dt>${esc(t.abbr)} after</dt><dd class="num">${money(after(t, ui.give, ui.get))} of ${money(H.ceilingOf(LG, t))}</dd><dt>${esc(o.abbr)} after</dt><dd class="num">${money(after(o, ui.get, ui.give))} of ${money(H.ceilingOf(LG, o))}</dd></dl>
-      <p class="ps ${c.ok ? "ok" : "bad"}" style="margin:0">${c.ok ? "Both sides fit under their lines." : esc(c.why)}</p>
-      <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go" type="submit" ${c.ok ? "" : "disabled"}>Send offer</button></div></form>`;
-    $$("[data-close]", D).forEach((b) => (b.onclick = () => D.close()));
-    $("#tw", D).onchange = (e) => { ui.tradeWith = +e.target.value; ui.get = []; ui.ft = 0; drawTrade(); };
-    $("#fg", D).onchange = (e) => { ui.fg = Math.max(0, Math.floor(+e.target.value || 0)); drawTrade(); };
-    $("#ft", D).onchange = (e) => { ui.ft = Math.max(0, Math.floor(+e.target.value || 0)); drawTrade(); };
-    $$("[data-side]", D).forEach((cb) => (cb.onchange = () => { const k = cb.dataset.side; ui[k] = cb.checked ? [...ui[k], cb.value] : ui[k].filter((x) => x !== cb.value); drawTrade(); }));
-    $("form", D).onsubmit = async (e) => {
-      e.preventDefault();
-      const target = LG.teams[ui.tradeWith];
-      const ok = await mutate("Trade offer", (L) => {
-        const r = H.proposeTrade(L, POOL, t.id, target.id, ui.give.slice(), ui.get.slice(), now(), ui.fg || 0, ui.ft || 0, curWeek());
-        if (r.ok && !L.teams[target.id].owner) H.respondTrade(L, POOL, r.trade.id, H.botWantsTrade(L, POOL, r.trade), curWeek(), now());
-        return r;
-      });
-      if (ok) {
-        D.close();
-        const tr2 = LG.trades[LG.trades.length - 1];
-        toast(target.owner ? `Offer sent to ${target.name}.` : tr2.status === "accepted" ? `${target.name} accepted.` : `${target.name} passed.`);
-      }
-    };
-    if (!D.open) D.showModal();
+    const other = withTeam != null ? withTeam : ui.tradeWith != null ? ui.tradeWith : LG.teams.find((x) => x.id !== t.id).id;
+    const roster = (id) => { const team = LG.teams[id]; return [...H.active(team).map((x) => BY[x]).filter(Boolean).sort((a, b) => b.sal - a.sal).map((p) => pvm(p.id)), ...team.prospects.map(pvm)]; };
+    const after = (team, out, inn) => H.payroll(team, BY) - out.filter((x) => BY[x]).reduce((s2, x) => s2 + BY[x].sal, 0) + inn.filter((x) => BY[x]).reduce((s2, x) => s2 + BY[x].sal, 0);
+    const floor = POOL.slice().sort((a, b) => b.z - a.z)[119].z;
+    U.tradeWindow({ sport: FS, teams: LG.teams.map(tvm), me: t.id, other, roster, title: prefill ? "Counteroffer" : "Propose a trade",
+      value: (ps, faab) => ps.reduce((a, p) => a + Math.max(0.3, (p.z || floor) - floor + 1), 0) + faab * 0.05,
+      valueLabel: (v) => `${v.toFixed(1)} value`,
+      faab: (id) => LG.teams[id].faab,
+      prefill: prefill || (pid ? { get: [pid] } : null),
+      check: (tr) => {
+        const sick = H.irProblem(LG, t, INJ);
+        if (sick) return { ok: false, why: `${nameOf(sick)} is healthy on IR: activate or release him first.` };
+        if (curWeek() > LG.settings.tradeDeadline) return { ok: false, why: `The trade deadline was the end of week ${LG.settings.tradeDeadline}.` };
+        const x = { from: t.id, to: tr.to, give: tr.give, get: tr.get, faabGive: tr.faabGive, faabGet: tr.faabGet };
+        const c = H.tradeCheck(LG, POOL, x);
+        if (!c.ok) return c;
+        const o = LG.teams[tr.to];
+        return { ok: true, note: `${t.abbr} after: ${money(after(t, tr.give, tr.get))} of ${money(H.ceilingOf(LG, t))}. ${o.abbr} after: ${money(after(o, tr.get, tr.give))} of ${money(H.ceilingOf(LG, o))}.` };
+      },
+      submit: (tr) => {
+        const target = LG.teams[tr.to];
+        mutate("Trade offer", (L) => {
+          const r = H.proposeTrade(L, POOL, t.id, target.id, tr.give.slice(), tr.get.slice(), now(), tr.faabGive || 0, tr.faabGet || 0, curWeek());
+          if (r.ok && prefill && prefill.counterOf) { const o = L.trades.find((y) => y.id === prefill.counterOf); if (o && o.status === "pending") { o.status = "declined"; o.closed = now(); o.why = "Countered"; } }
+          if (r.ok && !L.teams[target.id].owner) H.respondTrade(L, POOL, r.trade.id, H.botWantsTrade(L, POOL, r.trade), curWeek(), now());
+          return r;
+        }).then((ok) => {
+          if (!ok) return;
+          const tr2 = LG.trades[LG.trades.length - 1];
+          toast(target.owner ? `Offer sent to ${target.name}.` : tr2.status === "accepted" || tr2.status === "review" ? `${target.name} accepted.` : `${target.name} passed.`);
+        });
+        return { ok: true };
+      } });
   }
 
   /* ---------- player card ---------- */
@@ -1103,27 +1126,60 @@
   /* ---------- Draft Room ---------- */
   function draftSubs() {
     const phase = LG.phase;
-    return phase === "lobby" ? [["players", "Players"], ["board", "Board"], ["queue", "My queue"], ["details", "Draft details"]]
-      : phase === "nba" ? [["players", "Players"], ["board", "Board"], ["picks", "Picks"], ["mine", "My team"], ["queue", "My queue"], ["details", "Draft details"]]
-        : [["prospects", LG.pauction && phase === "prospects" ? "Prospect auction" : "Prospect Board"], ["board", "Draft results"], ["picks", "Every pick"], ["mine", "My team"], ["details", "Draft details"]];
+    return phase === "lobby" || phase === "nba" ? [["players", "Players"], ["board", "Board"], ["picks", "Picks"], ["details", "Draft details"]]
+      : [["prospects", LG.pauction && phase === "prospects" ? "Prospect auction" : "Prospect Board"], ["board", "Draft results"], ["picks", "Every pick"], ["mine", "My team"], ["details", "Draft details"]];
   }
+  const kitRoom = () => LG && (LG.phase === "lobby" || LG.phase === "nba");
   function viewDraft(arg) {
-    const phase = LG.phase;
     ui.sub = arg;
-    const c = H.onClock(LG, now());
-    const mineOnClock = c && isMine(LG.teams[c.team]);
+    if (kitRoom()) return draftRoom(arg);
+    const phase = LG.phase;
+    const clock = phase === "prospects" && LG.pauction ? auctionBand()
+      : `<div class="clock"><div class="wrap"><div><div class="disp on">${phase === "prospects" ? "Prospect Board auction" : "Draft results"}</div><div class="ps">${phase === "prospects" ? `Sealed bids from your season FAAB. Closes ${fmtWhen(LG.due.auction)}.` : `Completed ${fmtDate(LG.nba.done || now())}.`}</div></div></div></div>`;
+    const body = { board: draftBoard, picks: draftPicks, mine: draftMine, prospects: draftProspects, details: () => `<div style="overflow:auto;max-width:760px">${draftInfoCard()}</div>` }[ui.sub] || draftProspects;
+    return `${clock}<div class="wrap room-shell" id="room"><div class="pane">${body()}</div></div>`;
+  }
+  /* The live draft room: the kit's war room. Who's on the clock and the timer up top, the pick ticker, players or
+     the board on the left, your roster and cap room or your queue on the right. */
+  function draftRoom(sub) {
+    const phase = LG.phase, n = now();
+    const c = phase === "nba" ? H.onClock(LG, n) : null;
     const t = myTeam();
-    const next = t && phase === "nba" ? H.nextPickOf(LG, t.id) : null;
-    const clock = phase === "nba" ? `<div class="clock"><div class="wrap">
-        <div><div class="disp on${mineOnClock ? " me" : ""}">${mineOnClock ? "You're on the clock" : esc(LG.teams[c.team].name) + " on the clock"}</div>
-        <div class="ps">Round ${c.round}, pick ${c.inRound} (${c.pick} of ${c.total})${LG.teams[c.team].owner ? "" : ", bot"}${next && !mineOnClock ? `. Your next pick: ${next} (${next - c.pick} away)` : ""}${LG.nba.paused ? ". Paused by the commissioner" : ""}</div></div>
-        <span class="grow"></span><span class="disp timer" id="timer"></span>
-        ${mineOnClock ? `<button class="btn go" data-autome>Autopick</button>` : ""}</div></div>`
-      : phase === "lobby" ? `<div class="clock"><div class="wrap"><div><div class="disp on">Draft day prep</div><div class="ps">${LG.settings.draftMode === "slow" ? `Slow draft: ${LG.settings.slowHours} hours a pick.` : `Live draft: ${LG.settings.clock} seconds a pick.`} Build your queue now; it picks for you if your clock runs out.</div></div></div></div>`
-        : phase === "prospects" && LG.pauction ? auctionBand()
-        : `<div class="clock"><div class="wrap"><div><div class="disp on">${phase === "prospects" ? "Prospect Board auction" : "Draft results"}</div><div class="ps">${phase === "prospects" ? `Sealed bids from your season FAAB. Closes ${fmtWhen(LG.due.auction)}.` : `Completed ${fmtDate(LG.nba.done || now())}.`}</div></div></div></div>`;
-    const body = { players: draftPlayers, board: draftBoard, picks: draftPicks, mine: draftMine, queue: draftQueue, prospects: draftProspects, details: () => `<div style="overflow:auto;max-width:760px">${draftInfoCard()}</div>` }[ui.sub]();
-    return `${clock}<div class="wrap room-shell" id="room"><div class="pane">${body}</div></div>`;
+    const left = ["players", "board", "picks", "details"].includes(sub) ? sub : "players";
+    if (!ui.dpanel) ui.dpanel = "mine";
+    const tc = c ? LG.teams[c.team] : null, mineOn = c && isMine(tc);
+    const next = t && c ? H.nextPickOf(LG, t.id) : null;
+    const ctl = [];
+    if (mineOn && !LG.nba.paused) ctl.push(`<button class="btn sm go" data-autome>Autopick</button>`);
+    if (me.commish && phase === "nba") ctl.push(`<button class="btn sm" data-pause="${LG.nba.paused ? 0 : 1}">${LG.nba.paused ? "Resume" : "Pause"}</button><button class="btn sm" data-undo>Undo</button>`);
+    if (me.commish && phase === "lobby") ctl.push(`<button class="btn sm go" data-start>Start the draft</button>`);
+    ctl.push(`<a class="btn sm" href="#league">Exit</a>`);
+    const otc = c ? `<div class="otc${mineOn ? " me" : ""}">${tav(tc, "md")}<span class="who"><small>${mineOn ? "You're on the clock" : "On the clock"}</small><b>${esc(tc.name)}</b><span>Round ${c.round}, pick ${c.inRound} (${ordinal(c.pick)} overall)${tc.owner ? "" : ", bot"}${!mineOn && next ? `. You pick in ${next - c.pick}` : ""}${LG.nba.paused ? ", paused" : ""}</span></span><span class="ring" id="ring"><span id="timer"></span></span></div>`
+      : `<div class="otc"><span class="who"><small>Draft day prep</small><b>Build your queue</b><span>${LG.settings.draftMode === "slow" ? `Slow draft, ${LG.settings.slowHours} hours a pick` : `Live draft, ${LG.settings.clock} seconds a pick`}. The commissioner starts it.</span></span></div>`;
+    const top = `<div class="dr-top"><a class="lg" href="#league"><img src="mark.svg" alt=""><span><b>${esc(LG.name)}</b><small>Snake, ${LG.teams.length} teams, ${LG.settings.roster} rounds</small></span></a>${otc}<div class="acts">${ctl.join("")}</div></div>`;
+    const lefts = [["players", "Players"], ["board", "Board"], ["picks", "Picks"], ["details", "Details"]];
+    const rights = t ? [["mine", "My team"], ["queue", "Queue"]] : [];
+    const seg = `<div class="seg" role="group" aria-label="View">${lefts.map(([k, nm]) => `<button type="button" data-dleft="${k}" aria-pressed="${!ui.dmobile && left === k}">${nm}</button>`).join("")}${rights.map(([k, nm]) => `<button type="button" class="show-m" data-dmright="${k}" aria-pressed="${!!ui.dmobile && ui.dpanel === k}">${nm}</button>`).join("")}</div>`;
+    const filters = left === "players" ? `<label class="sr" for="dq">Search</label><input type="search" id="dq" placeholder="Search players or teams" value="${esc(ui.q)}" style="flex:1;min-width:160px;width:auto;border-radius:999px;padding-left:16px">${t ? `<label class="check"><input type="checkbox" id="dfit"${ui.fit ? " checked" : ""}> Only players I can fit</label>` : ""}` : "";
+    const chips = left === "players" ? `<div class="chips" role="group" aria-label="Positions">${["", "PG", "SG", "G", "SF", "PF", "F", "C"].map((x) => `<button type="button" data-dpos="${x}" aria-pressed="${(ui.f.pos || "") === x}">${x || "All"}</button>`).join("")}</div>` : "";
+    const body = { players: draftPlayers, board: draftBoard, picks: draftPicks, details: () => `<div style="overflow:auto">${draftInfoCard()}</div>` }[left]();
+    const panel = t ? (ui.dpanel === "queue" ? draftQueue() : draftMine()) : `<p class="empty">Claim or sign in to your team to see your roster and queue here.</p>`;
+    return `<div class="droom fk-dark">${top}${draftTicker()}<div class="dr-main${ui.dmobile ? " right" : ""}">
+      <section class="dr-left"><div class="dr-bar">${seg}${filters}</div>${chips}${body}</section>
+      <aside class="dr-right">${rights.length ? `<div class="seg hide-m" role="group" aria-label="Panel">${rights.map(([k, nm]) => `<button type="button" data-dright="${k}" aria-pressed="${ui.dpanel === k}">${nm}</button>`).join("")}</div>` : ""}<div class="show-m" style="padding:10px 12px 0">${seg}</div><div class="dr-panel">${panel}</div></aside></div></div>`;
+  }
+  // The pick ticker: the last few picks, the pick on the clock and who's up next.
+  function draftTicker() {
+    const n = LG.teams.length, order = LG.nba.order, picks = LG.nba.picks;
+    const k0 = LG.phase === "nba" ? picks.length : 0;
+    const from = Math.max(0, k0 - 6), to = Math.min(order.length, from + 24);
+    let html = "";
+    for (let k = from; k < to; k++) {
+      const t = LG.teams[order[k]], lab = `${Math.floor(k / n) + 1}.${(k % n) + 1}`, pk = picks[k];
+      if (pk) { const p = pk.pid && BY[pk.pid]; html += p ? `<button type="button" class="tk done c${U.colorOf(FS, pvm(p.id))}${isMine(t) ? " me" : ""}" data-player="${esc(p.id)}"><span class="n">${lab} ${esc(t.abbr)}${pk.auto ? ", auto" : ""}</span><b>${esc(p.n)}</b><small>${H.positions(p).join(", ")} ${esc(p.t)}, ${money(p.sal)}</small></button>` : `<div class="tk"><span class="n">${lab} ${esc(t.abbr)}</span><b>Passed</b><small>Left open for waivers</small></div>`; }
+      else html += `<div class="tk${k === k0 && LG.phase === "nba" ? " now" : ""}${isMine(t) ? " me" : ""}"><span class="n">${tav(t)} ${lab}</span><b>${isMine(t) ? "You" : esc(t.name)}</b><small>${k === k0 && LG.phase === "nba" ? "On the clock" : `${k - k0} away`}</small></div>`;
+    }
+    return `<div class="ticker" id="ticker">${html}</div>`;
   }
   let ghost = null;
   function draftPlayers() {
@@ -1131,20 +1187,18 @@
     const t = myTeam(), c = H.onClock(LG, now());
     const myTurn = c && t && c.team === t.id;
     const q = ui.q.trim().toLowerCase();
-    let rows = ctx.available.filter((p) => !p.gone && (!q || p.n.toLowerCase().includes(q)) && passFilters(p));
+    let rows = ctx.available.filter((p) => !p.gone && (!q || p.n.toLowerCase().includes(q) || p.t.toLowerCase() === q) && passFilters(p));
     sortRows(rows);
     const checked = rows.map((p) => ({ p, c: t ? H.check(LG, t, p, ctx, { reserve: true }) : { ok: true } }));
     const shown = (ui.fit ? checked.filter((x) => x.c.ok) : checked).slice(0, 180);
     return `${t ? `<div id="mycap">${capLine(t, ctx)}</div>` : ""}
-      <div class="tools"><label class="sr" for="dq">Search</label><input type="search" id="dq" placeholder="Search players or teams" value="${esc(ui.q)}">
-        ${t ? `<label class="small muted" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="dfit"${ui.fit ? " checked" : ""}> Only players I can fit</label>` : ""}</div>${filterBox()}
-      <div class="table-wrap" id="pool"><table class="t dense"><thead><tr>${sortTh("rank", "Rk", "r", "Nine-category rank")}${sortTh("dyn", "Dyn", "r", "Dynasty rank")}${sortTh("name", "Player", "")}${sortTh("team", "Team", "")}${sortTh("pos", "Pos", "hide-s")}${sortTh("age", "Age")}${sortTh("sal", "Salary")}${sortTh("yrs", "Yrs", "r hide-s")}${sortTh("gw", "G", "r hide-s", "NBA games this fantasy week")}${sortTh("hc", "HC", "r", "HC Score: value over replacement per $10M")}${sortTh("vorp", "VORP", "r hide-s", "Value over replacement player, season to date")}${lineHeadS()}<th></th></tr></thead><tbody>
-        ${shown.map(({ p, c: k }) => `<tr data-pid="${p.id}" class="${k.ok ? "" : "dim"}"${k.ok ? "" : ` title="${esc(k.why)}"`}><td class="r num">${p.rank}</td><td class="r num ps">${p.dynRank}</td><td class="nm">${pl(p.id)}${p.deal ? " " + typeTag(p) : ""}</td><td class="ps">${p.t}</td><td class="ps hide-s">${H.positions(p).join("/")}</td><td class="r num">${p.age}</td>
+      <div class="table-wrap" id="pool"><table class="t dense"><thead><tr>${sortTh("rank", "Rk", "r", "Nine-category rank")}${sortTh("dyn", "Dyn", "r", "Dynasty rank")}${sortTh("name", "Player", "")}${sortTh("age", "Age")}${sortTh("sal", "Salary")}${sortTh("yrs", "Yrs", "r hide-s")}${sortTh("gw", "G", "r hide-s", "NBA games this fantasy week")}${sortTh("hc", "HC", "r", "HC Score: value over replacement per $10M")}${sortTh("vorp", "VORP", "r hide-s", "Value over replacement player, season to date")}${lineHeadS()}<th class="act"></th></tr></thead><tbody>
+        ${shown.map(({ p, c: k }) => `<tr data-pid="${p.id}" class="${k.ok ? "" : "dim"}"${k.ok ? "" : ` title="${esc(k.why)}"`}><td class="r num ps">${p.rank}</td><td class="r num ps">${p.dynRank}</td><td class="nm">${U.pname(FS, pvm(p.id), p.deal ? esc(p.ctype || "two-way") : "")}</td><td class="r num">${p.age}</td>
           <td class="r"><span class="sal num">${money(p.sal)}</span>${t && soft() && k.ok ? (() => { const add = taxNow(t, p.sal) - taxNow(t); return add ? `<div class="ps bad">+$${add} tax</div>` : ""; })() : ""}</td><td class="r num ps hide-s">${p.future.length ? p.future.length + 1 : "Exp"}</td>${gCell(p).replace('class="r num', 'class="r num hide-s')}${hcCell(p)}<td class="r num hide-s">${p.bbv == null ? "-" : p.bbv.toFixed(1)}</td>${lineCells(p)}
-          <td class="r" style="white-space:nowrap">${myTurn && k.ok && LG.phase === "nba" ? `<button class="btn sm go" data-pick="${p.id}">Draft</button> ` : ""}${t ? (t.queue.includes(p.id) ? `<button class="btn sm" data-unqueue="${p.id}">Queued</button>` : `<button class="btn sm" data-queue="${p.id}">Queue</button>`) : ""}</td></tr>`).join("") || `<tr><td colspan="20" class="empty">No one matches.</td></tr>`}
+          <td class="r act">${myTurn && k.ok && LG.phase === "nba" && !LG.nba.paused ? `<button class="btn xs go" data-pick="${p.id}">Draft</button> ` : ""}${t ? (t.queue.includes(p.id) ? `<button class="star on" data-unqueue="${p.id}" aria-label="Remove from queue" title="In your queue">&#9733;</button>` : `<button class="star" data-queue="${p.id}" aria-label="Add to queue" title="Add to queue">&#9734;</button>`) : ""}</td></tr>`).join("") || `<tr><td colspan="20" class="empty">No one matches.</td></tr>`}
         </tbody></table></div>`;
   }
-  // One line of cap math above the player list; the full cap bar lives on the My team tab.
+  // One line of cap math above the player list.
   function capLine(t, ctx) {
     const open = LG.settings.roster - H.active(t).length;
     const others = LG.phase === "nba" ? LG.teams.filter((x) => x.id !== t.id).reduce((a, x) => a + Math.max(0, LG.settings.roster - H.active(x).length), 0) : 0;
@@ -1153,50 +1207,50 @@
     const pay = H.payroll(t, BY), room = (soft() ? LG.settings.freeLine : H.ceilingOf(LG, t)) - pay - hold;
     return `<div class="capline"><span><b class="num">${money(pay)}</b> on the books</span><span><b class="num">${H.active(t).length}</b> of ${LG.settings.roster} signed</span>
       <span><b class="num ${room >= 0 ? "ok" : "bad"}">${money(Math.abs(room))}</b> ${soft() ? (room >= 0 ? "under the tax line" : `over the tax line ($${H.taxFor(LG, pay + hold, false)} tax)`) : "usable room"}${hold ? ` <span class="ps">after ${money(hold)} held for ${open} spot${open === 1 ? "" : "s"}</span>` : ""}</span>
-      <span class="ps">${soft() ? `Tax line ${money(LG.settings.freeLine)}, ceiling ${money(LG.settings.hardLine)}` : `${esc(H.tierOf(LG, t).label)} line ${money(H.ceilingOf(LG, t))}`}, two-ways ${H.twoWaysOn(t, BY)} of ${LG.settings.twoWayMax == null ? 3 : LG.settings.twoWayMax}</span><span class="grow"></span><a class="btn sm" href="#draft/mine">My team and cap bar</a></div>`;
-  }
-  function recentPicksList(n) {
-    const picks = LG.nba.picks.slice(-n).reverse();
-    return `<div class="card" style="flex:1;min-height:0;display:flex;flex-direction:column"><h3>Latest picks</h3>${picks.length ? `<ol class="picks">${picks.map((pk, i) => { const t = LG.teams[pk.team]; return `<li class="${isMine(t) ? "me" : ""}"><span class="no">${LG.nba.picks.length - i}</span><span>${pk.pid ? pl(pk.pid) : "<b>Passed</b>"}<br><span class="ps">${esc(t.abbr)}${pk.auto ? ", auto" : ""}</span></span><span class="sal num">${pk.pid ? money(BY[pk.pid].sal) : ""}</span></li>`; }).join("")}</ol>` : `<p class="empty">No picks yet.</p>`}</div>`;
+      <span class="ps">${soft() ? `Tax line ${money(LG.settings.freeLine)}, ceiling ${money(LG.settings.hardLine)}` : `${esc(H.tierOf(LG, t).label)} line ${money(H.ceilingOf(LG, t))}`}, two-ways ${H.twoWaysOn(t, BY)} of ${LG.settings.twoWayMax == null ? 3 : LG.settings.twoWayMax}</span></div>`;
   }
   function draftBoard() {
     const n = LG.teams.length, rounds = LG.settings.roster;
     const order = LG.nba.round1;
-    let cells = `<div></div>${order.map((ti) => { const t = LG.teams[ti], room = H.ceilingOf(LG, t) - H.payroll(t, BY), left = LG.settings.roster - H.active(t).length;
-      return `<div class="h${isMine(t) ? " me" : ""}" title="${esc(t.name)}${t.owner ? ", " + esc(t.owner) : ", bot"}"><b>${esc(t.abbr)}</b><small class="num ${room < 0 ? "bad" : ""}">${money(room)}</small><small>${left} open</small></div>`; }).join("")}`;
+    let cells = `<div class="h"></div>${order.map((ti) => { const t = LG.teams[ti], room = H.ceilingOf(LG, t) - H.payroll(t, BY), left = LG.settings.roster - H.active(t).length;
+      return `<div class="h${isMine(t) ? " me" : ""}" title="${esc(t.name)}${t.owner ? ", " + esc(t.owner) : ", bot"}">${tav(t)}<b>${esc(t.name)}</b><small class="num ${room < 0 ? "bad" : ""}">${money(room)}, ${left} open</small></div>`; }).join("")}`;
     for (let r = 0; r < rounds; r++) {
       cells += `<div class="rn">${r + 1}</div>`;
       for (let col = 0; col < n; col++) {
         const k = r * n + (r % 2 ? n - 1 - col : col);
         const pk = LG.nba.picks[k], ti = order[col], t = LG.teams[ti];
-        const cls = ["cell", pk ? "f" : "", isMine(t) ? "me" : "", LG.phase === "nba" && k === LG.nba.picks.length ? "now" : "", pk && !pk.pid ? "skip" : ""].join(" ");
         const p = pk && pk.pid && BY[pk.pid];
-        cells += `<div class="${cls}"${p ? ` data-player="${p.id}" role="button" tabindex="0" title="${esc(p.n)}, ${money(p.sal)}${pk.auto ? ", autopick" : ""}"` : ""}>${pk ? (p ? `<b>${esc(last(p.n))}</b><small>${H.positions(p).join("/")} ${esc(p.t)}</small><small class="sal num">${money(p.sal)}${pk.auto ? ' <i title="Autopick">A</i>' : ""}</small>` : `<b>Passed</b>`) : `<small>${r + 1}.${col + 1}</small><small class="ps">#${k + 1}</small>`}</div>`;
+        const cls = ["cell", p ? "f c" + U.colorOf(FS, pvm(p.id)) : "", isMine(t) ? "me" : "", LG.phase === "nba" && k === LG.nba.picks.length ? "now" : ""].join(" ").replace(/\s+/g, " ");
+        cells += `<div class="${cls}"${p ? ` data-player="${p.id}" role="button" tabindex="0" title="${esc(p.n)}, ${money(p.sal)}${pk.auto ? ", autopick" : ""}"` : ""}>${pk ? (p ? `<b>${esc(p.n)}</b><small>${H.positions(p).join("/")} ${esc(p.t)}, ${money(p.sal)}${pk.auto ? " A" : ""}</small>` : `<b>Passed</b>`) : `<small class="ps">${r + 1}.${col + 1}${LG.phase === "nba" && k === LG.nba.picks.length ? ", on the clock" : ""}</small>`}</div>`;
       }
     }
-    const nowPick = LG.phase === "nba" ? H.onClock(LG, now()) : null;
-    return `<div class="tools"><span class="ps">Each column is a team in first-round order, with its room under the line and open spots. ${nowPick ? `Pick ${nowPick.pick} of ${nowPick.total} is on the clock.` : ""} Click a pick for the player's card.</span></div><div class="board"><div class="bgrid" style="--n:${n};grid-template-columns:30px repeat(${n},minmax(0,1fr));grid-template-rows:auto repeat(${rounds},minmax(52px,1fr))">${cells}</div></div>`;
+    return `<div class="board" id="board"><div class="bgrid" style="--n:${n};grid-template-columns:28px repeat(${n},minmax(0,1fr))">${cells}</div></div>`;
   }
   function draftPicks() {
     const picks = LG.nba.picks.slice().reverse();
-    return `<div class="card" style="flex:1;min-height:0;display:flex;flex-direction:column">${picks.length ? `<ol class="picks">${picks.map((pk, i) => { const t = LG.teams[pk.team], p = BY[pk.pid]; const no = LG.nba.picks.length - i; return `<li class="${isMine(t) ? "me" : ""}"><span class="no">${no}</span><span>${p ? pl(p.id) : "<b>Passed</b>"} <span class="ps">${p ? `${p.t}, HC ${p.hc.toFixed(1)}` : ""}</span><br><span class="ps">Round ${Math.floor((no - 1) / LG.teams.length) + 1}: ${esc(t.name)}${pk.auto ? ", autopick" : ""}</span></span><span class="sal num">${p ? money(p.sal) : ""}</span></li>`; }).join("")}</ol>` : `<p class="empty">No picks yet.</p>`}</div>`;
+    return `<div class="table-wrap" style="flex:1;min-height:0">${picks.length ? `<ol class="picks">${picks.map((pk, i) => { const t = LG.teams[pk.team], p = BY[pk.pid]; const no = LG.nba.picks.length - i;
+      return `<li class="${isMine(t) ? "me" : ""}"><span class="no">${Math.floor((no - 1) / LG.teams.length) + 1}.${((no - 1) % LG.teams.length) + 1}</span>${p ? pcell(p.id, `${money(p.sal)}, HC ${p.hc.toFixed(1)}${pk.auto ? ", autopick" : ""}`) : "<b>Passed</b>"}<span class="row">${tav(t)}<span class="ps hide-s">${esc(t.name)}</span></span></li>`; }).join("")}</ol>` : `<p class="empty">No picks yet.</p>`}</div>`;
   }
   function draftMine() {
     const t = myTeam();
     if (!t) return `<p class="empty">Claim or sign in to your team to see it here.</p>`;
-    const ids = H.active(t).map((id) => BY[id]).sort((a, b) => b.sal - a.sal);
-    return `<div class="card">${capBar(t, { reserve: LG.phase === "nba" })}</div><div class="table-wrap"><table class="t"><thead><tr><th>Player</th><th class="r">Salary</th><th class="hide-s">Contract</th><th class="r">HC</th>${LINE_HEAD}</tr></thead><tbody>
-      ${ids.map((p) => `<tr><td><div class="pn">${esc(p.n)}</div><div class="ps">${p.t}, ${p.pos}</div></td><td class="r"><span class="sal num">${money(p.sal)}</span></td><td class="ps hide-s">${contract(p)}</td>${hcCell(p)}${lineCells(p)}</tr>`).join("") || `<tr><td colspan="14" class="empty">No picks yet.</td></tr>`}
-      ${t.prospects.map((id) => `<tr><td><div class="pn">${esc(nameOf(id))}</div><div class="ps">Prospect, ${esc(PBY[id] ? PBY[id].school : "")}</div></td><td class="r ps">rights</td><td colspan="12"></td></tr>`).join("")}</tbody></table></div>`;
+    const ids = H.active(t).map((id) => BY[id]).filter(Boolean).sort((a, b) => b.sal - a.sal);
+    const open = Math.max(0, LG.settings.roster - ids.length);
+    if (!kitRoom()) return `<div class="card">${capBar(t, { reserve: false })}</div><div class="table-wrap"><table class="t"><thead><tr><th>Player</th><th class="r">Salary</th><th class="hide-s">Contract</th><th class="r">HC</th>${LINE_HEAD}</tr></thead><tbody>
+      ${ids.map((p) => `<tr><td>${pcell(p.id)}</td><td class="r"><span class="sal num">${money(p.sal)}</span></td><td class="ps hide-s">${contract(p)}</td>${hcCell(p)}${lineCells(p)}</tr>`).join("") || `<tr><td colspan="14" class="empty">No picks yet.</td></tr>`}</tbody></table></div>`;
+    return `<div class="mod-h">${tav(t)}<b class="ell">${esc(t.name)}</b><span class="ps" style="margin-left:auto;white-space:nowrap">${ids.length} of ${LG.settings.roster}</span></div>
+      <div style="padding:10px 12px">${capBar(t, { reserve: LG.phase === "nba", compact: true })}</div>
+      <ul class="rslots">${ids.map((p, i) => `<li><span class="slot">${i + 1}</span>${pcell(p.id)}<span class="sal">${money(p.sal)}</span></li>`).join("")}${Array.from({ length: open }, (_, i) => `<li class="open"><span class="slot">${ids.length + i + 1}</span><span class="ps">Open</span><span></span></li>`).join("")}
+      ${t.prospects.map((id) => `<li><span class="slot">P</span>${pcell(id)}<span class="ps">rights</span></li>`).join("")}</ul>`;
   }
   function draftQueue() {
     const t = myTeam();
     if (!t) return `<p class="empty">Claim or sign in to your team to build a queue.</p>`;
     const ctx = H.context(LG, POOL);
-    return `<p class="muted small" style="margin:0">If your clock runs out, the first player here who is still available and fits your line is your pick. Add players from the Players tab.</p>
-      <div class="table-wrap"><table class="t"><thead><tr><th class="r">#</th><th>Player</th><th class="r">Salary</th><th>Status</th><th></th></tr></thead><tbody>
-      ${t.queue.map((id, i) => { const p = BY[id]; const taken = ctx.own[id] != null; return `<tr class="${taken ? "dim" : ""}"><td class="r num">${i + 1}</td><td><div class="pn">${esc(p.n)}</div><div class="ps">${p.t}, rank ${p.rank}</div></td><td class="r"><span class="sal num">${money(p.sal)}</span></td><td>${taken ? "Taken" : H.check(LG, t, p, ctx, { reserve: true }).ok ? `<span class="ok">Fits</span>` : `<span class="bad">Won't fit now</span>`}</td>
-        <td class="r" style="white-space:nowrap"><button class="btn sm" data-qup="${id}" ${i ? "" : "disabled"} aria-label="Move up">Up</button> <button class="btn sm" data-unqueue="${id}">Remove</button></td></tr>`; }).join("") || `<tr><td colspan="5" class="empty">Your queue is empty.</td></tr>`}</tbody></table></div>`;
+    return `<div class="mod-h"><b>Your queue</b><span class="ps" style="margin-left:auto">${t.queue.length} player${t.queue.length === 1 ? "" : "s"}</span></div>
+      <p class="ps" style="margin:8px 12px">If your clock runs out, the first player here who is still available and fits your line is your pick. Star players to add them.</p>
+      <ul class="rslots">${t.queue.map((id, i) => { const p = BY[id]; const taken = ctx.own[id] != null; const fit = !taken && H.check(LG, t, p, ctx, { reserve: true }).ok;
+        return `<li${taken ? ` style="opacity:.45"` : ""}><span class="slot">${i + 1}</span>${pcell(id, taken ? "taken" : fit ? money(p.sal) : `<span class="bad">won't fit now</span>`)}<span class="row" style="gap:4px"><button class="btn xs" data-qup="${id}" ${i ? "" : "disabled"} aria-label="Move up">&uarr;</button><button class="btn xs" data-unqueue="${id}" aria-label="Remove">&times;</button></span></li>`; }).join("") || `<li class="open"><span></span><span class="ps">Empty. Star players on the left.</span><span></span></li>`}</ul>`;
   }
   // ---------- the live Prospect Board auction ----------
   const A_ = () => LG.pauction;
@@ -1430,6 +1484,10 @@ ${H.isSoft(LG) ? "" : `          <div class="field"><label for="sls">The line, i
     on("[data-sortk]", "keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); sortBy(e.currentTarget.dataset.sortk); } });
     on("#dfit", "change", (e) => { ui.fit = e.target.checked; render(); });
     on("[data-sub]", "click", (e) => { ui.sub = e.currentTarget.dataset.sub; history.replaceState(null, "", "#draft/" + ui.sub); render(); });
+    on("[data-dleft]", "click", (e) => { ui.dmobile = false; const k = e.currentTarget.dataset.dleft; if (route().sub === k) render(); else location.hash = "#draft/" + k; });
+    on("[data-dright]", "click", (e) => { ui.dpanel = e.currentTarget.dataset.dright; render(); });
+    on("[data-dmright]", "click", (e) => { ui.dpanel = e.currentTarget.dataset.dmright; ui.dmobile = true; render(); });
+    on("[data-dpos]", "click", (e) => { ui.f.pos = e.currentTarget.dataset.dpos; render(); });
     on("[data-logkind]", "click", (e) => { ui.logKind = e.currentTarget.dataset.logkind; render(); });
     on("[data-bid]", "click", (e) => { if (!myTeam()) return toast("Sign in to your team first.", true); const b = e.currentTarget; fetchMyBids("waiver").then(() => bidDialog(b.dataset.bid, b.dataset.biddrop || null)); });
     on("[data-trade]", "click", (e) => tradeDialog(+e.currentTarget.dataset.trade, e.currentTarget.dataset.pid));
@@ -1462,6 +1520,7 @@ ${H.isSoft(LG) ? "" : `          <div class="field"><label for="sls">The line, i
     on("#tpick", "change", (e) => { location.hash = `#team/${route().sub}/${e.target.value}`; });
     on("[data-go]", "click", (e) => { ui.week = +e.currentTarget.dataset.wk; ui.pair = null; location.hash = "#" + e.currentTarget.dataset.go; });
     on("[data-decline]", "click", (e) => mutate("Declined a trade", (L) => H.respondTrade(L, POOL, e.currentTarget.dataset.decline, false, curWeek(), now())));
+    on("[data-counter]", "click", (e) => { const x = LG.trades.find((y) => y.id === e.currentTarget.dataset.counter); if (x) tradeDialog(x.from, null, { give: x.get.slice(), get: x.give.slice(), faabGive: x.faabGet, faabGet: x.faabGive, counterOf: x.id }); });
     on("[data-veto]", "click", (e) => { const id = e.currentTarget.dataset.veto; dlg(`<h3 class="disp">Veto this trade?</h3><p class="muted">Every player, prospect and FAAB dollar goes back to where it started, and the league log says you vetoed it.</p><form><div class="acts"><button type="button" class="btn" data-close>Keep the trade</button><button class="btn warn" type="submit">Veto</button></div></form>`, async () => { await mutate("Vetoed a trade", (L) => H.vetoTrade(L, POOL, id, now()), { as: "commish" }); }); });
     on("[data-withdraw]", "click", (e) => mutate("Withdrew a trade", (L) => { const t = L.trades.find((x) => x.id === e.currentTarget.dataset.withdraw); if (t) { t.status = "withdrawn"; t.closed = now(); } return { ok: true }; }));
     // commissioner
@@ -1672,18 +1731,21 @@ ${H.isSoft(LG) ? "" : `          <div class="field"><label for="sls">The line, i
     if (!LID) { document.body.classList.remove("room"); return renderLanding(); }
     if (!LG) return;
     const r = route();
-    const room = r.tab === "draft";
+    const war = r.tab === "draft" && kitRoom();
+    const room = r.tab === "draft" && !war;
+    document.body.classList.toggle("fk-room", war);
     document.body.classList.toggle("room", room);
-    if (room) document.documentElement.style.setProperty("--top", ($("#mast").getBoundingClientRect().bottom + 2 + (LG.phase !== "league" ? 0 : 0)) + "px");
+    if (room) document.documentElement.style.setProperty("--top", ($("#mast").getBoundingClientRect().bottom + 2) + "px");
     const views = { league: () => viewLeague(r.sub), team: () => viewTeam(r.sub, r.arg), players: () => viewMarket(r.sub), matchups: () => viewMatchups(r.sub), draft: () => viewDraft(r.sub), commish: () => viewCommish(r.sub) };
     const html = views[r.tab]();
-    app.innerHTML = room ? html : `<div class="wrap page">${html}</div><div class="wrap foot">Hard Cap. Draft the player. Carry the contract. Contracts from Basketball-Reference${STATS.contractsUpdated ? `, updated ${fmtDate(STATS.contractsUpdated)}` : ""}; box scores, injuries and schedules from ESPN${STATS.updated ? `, updated ${fmtDate(STATS.updated)}` : ""}; prospects from Tankathon. <a href="../">More projects by David Solar</a>. League code ${esc(LID)}.</div>`;
+    app.innerHTML = war || room ? html : `<div class="wrap page">${html}</div><div class="wrap foot">Hard Cap. Draft the player. Carry the contract. Contracts from Basketball-Reference${STATS.contractsUpdated ? `, updated ${fmtDate(STATS.contractsUpdated)}` : ""}; box scores, injuries and schedules from ESPN${STATS.updated ? `, updated ${fmtDate(STATS.updated)}` : ""}; prospects from Tankathon. <a href="../">More projects by David Solar</a>. League code ${esc(LID)}.</div>`;
     if (room) {
       const clockH = $(".clock") ? $(".clock").getBoundingClientRect().height : 0;
       document.documentElement.style.setProperty("--top", ($("#mast").getBoundingClientRect().bottom + clockH) + "px");
     }
     wire();
-    if (room && $("#pool")) {
+    if (war) { const tk = $("#ticker"), cur = tk && $(".tk.now", tk); if (cur) tk.scrollLeft = Math.max(0, cur.offsetLeft - tk.clientWidth * 0.3); }
+    if ((room || war) && $("#pool")) {
       // Clicking anywhere on a row (not a button) opens the player's card, where you can draft him.
       $$("#pool tr[data-pid]").forEach((tr) => tr.addEventListener("click", (e) => { if (!e.target.closest("button,a,input")) playerCard(tr.dataset.pid); }));
     }
@@ -1697,7 +1759,9 @@ ${H.isSoft(LG) ? "" : `          <div class="field"><label for="sls">The line, i
     const left = Math.max(0, Math.ceil(c.left / 1000));
     const h = Math.floor(left / 3600), m = Math.floor((left % 3600) / 60), s = left % 60;
     el.textContent = h ? `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}` : `${m}:${String(s).padStart(2, "0")}`;
-    el.className = "disp timer" + (left <= 10 && LG.settings.draftMode === "live" ? " hot" : "");
+    const ring = $("#ring");
+    if (ring) { ring.style.setProperty("--p", Math.max(0, Math.min(1, c.left / H.clockLen(LG))).toFixed(3)); ring.classList.toggle("hot", left <= 10 && LG.settings.draftMode === "live"); }
+    else el.className = "disp timer" + (left <= 10 && LG.settings.draftMode === "live" ? " hot" : "");
   }
   window.addEventListener("hashchange", () => { ui.pair = null; render(); window.scrollTo(0, 0); });
   window.addEventListener("resize", () => route().tab === "draft" && render());

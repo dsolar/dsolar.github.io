@@ -66,9 +66,10 @@ dsolar.github.io/
                               sports.js (positions, lineup slots, scoring for basketball, football, baseball), value.js
                               (z-scores, fantasy points, value over replacement, auction dollars), draft.js (snake, linear,
                               third-round reversal and auction drafts), ui.js and kit.css (shell, player tables, player card,
-                              draft room), lab.js (Draft Lab itself) and data/ (player pools, written by the Fantasy Kit
+                              draft room), league.js and league-ui.js (seasons and every league page), lab.js (Draft Lab),
+                              league.html and demo.js (the demo league) and data/ (player pools, written by the Fantasy Kit
                               data workflow from tools/fantasykit_data.py; don't edit). See fantasy-kit/README.md.
-                              Tests: node --test tests/fantasykit.test.mjs
+                              Tests: node --test tests/fantasykit.test.mjs tests/fantasyleague.test.mjs
   guillotine/                 Bastille Day Odds: index.html, sim.js (the simulation),
                               data.json (league data, written by the workflow below)
   calendar/                   Night Out: index.html, taste.json, picks.json and places.json (edit these),

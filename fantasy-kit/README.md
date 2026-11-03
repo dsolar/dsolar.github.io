@@ -1,6 +1,10 @@
 # Fantasy Kit
 
-The shared parts of every fantasy league page on davidsolar.dev: player data for basketball, football and baseball, player values, a draft engine, and the screens that sit on top of them. Draft Lab (`index.html`, `lab.js`) is the kit with nothing added: mock drafts against bots.
+The shared parts of every fantasy league page on davidsolar.dev: player data for basketball, football and baseball, player values, a draft engine, a season engine, and the screens that sit on top of them. The look blends Yahoo and ESPN density for tables with Sleeper polish for matchups, trades and the draft room, in light and dark.
+
+- **Draft Lab** (`index.html`, `lab.js`): mock drafts against bots.
+- **Demo league** (`league.html`, `demo.js`): a full league with bots and a season that moves in real time.
+- **Hard Cap** (`../hardcap/`) uses the kit's styles, shell, matchup hero, feeds, trade window and draft room layout with its own rules.
 
 Plain browser scripts, no build step. `sports.js`, `value.js` and `draft.js` have no DOM and no network, so Node tests and a Supabase edge function can load them too.
 
@@ -11,7 +15,9 @@ Plain browser scripts, no build step. `sports.js`, `value.js` and `draft.js` hav
 | `sports.js` | `FK.sports`: positions, lineup slots, position limits, stat columns, position colors and scoring presets for `nba`, `nfl` and `mlb` |
 | `value.js` | `FK.value.evaluate`: category z-scores or fantasy points, value over replacement by position, auction dollars |
 | `draft.js` | `FK.draft`: snake, linear, third-round reversal and auction drafts; clocks, queues, keepers, bots, pause, undo, results |
-| `ui.js` | `FK.ui`: helpers, the masthead and tab bars, sortable tables, player filters, the player card, the full draft room |
+| `league.js` | `FK.league`: rosters, weekly lineups, schedule, scoring (simulated, or a `hooks.score` for real box scores), standings, playoffs, power rankings, free agents, FAAB waivers, trades with review votes, the transaction log |
+| `league-ui.js` | `FK.ui.leagueApp`: every league page (Overview, Standings, Scoreboard, Transactions, Roster, Schedule, Trades, Matchup, Players, Waiver claims, Draft results) |
+| `ui.js` | `FK.ui`: helpers, avatars, the masthead and tab bars, sortable tables, position chips, the player card, and view-model modules (`scoreboard`, `versus`, `vsTable`, `standingsTable`, `feed`, `tradeCard`, `tradeWindow`), plus the full draft room |
 | `kit.css` | Every style the above needs, light and dark |
 | `data/*.json` | Player pools, written by `tools/fantasykit_data.py` (the Fantasy Kit data workflow). Don't edit |
 
@@ -121,3 +127,19 @@ Set four tokens on `:root` after `kit.css`. `.fk-band` is always dark, in both t
 - Bot auctions finish within budget.
 - A manager can't overspend in an auction.
 - Passing closes a lot.
+
+## League pages
+
+```js
+const L = FK.league.create({ sport, draft: D, settings: { weeks: 14, playoffTeams: 4, tradeReview: "vote" } });
+FK.ui.leagueApp({ top, el, sport, players, league: () => L, save: (L) => saveSomewhere(L), me: () => myTeamId, frac: (w) => shareOfWeekPlayed });
+```
+
+The modules take plain view models, so a league with its own engine (Hard Cap) builds the same screens:
+
+- `FK.ui.versus({ a: { team, rec, score, proj }, b, wp, status, cats })` is the matchup hero.
+- `FK.ui.scoreboard(games)` is the scoreboard strip.
+- `FK.ui.feed(items)` is a transaction or activity feed.
+- `FK.ui.tradeCard(sport, vm)` and `FK.ui.tradeWindow(opts)` handle offers. The window takes `roster`, `value`, `check` and `submit` callbacks, so a salary cap rule plugs straight in.
+
+`node --test tests/fantasyleague.test.mjs` plays full seasons in each sport and tests lineups, free agency, waivers, trades and vetoes.
