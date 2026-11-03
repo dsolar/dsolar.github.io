@@ -651,6 +651,41 @@
     }
     return out;
   }
+  /* ---------- the trading block ---------- */
+  // Players a team says it would move. A manager lists his own (L.block). A bot lists the bench players it can
+  // spare most: its best two off the bench, leaving kickers and defenses out.
+  function blockOf(L, ctx, team) {
+    const ros = L.rosters[team] || [], set = L.block && L.block[team];
+    if (L.teams[team].owner || set) return (set || []).filter((id) => ros.includes(id));
+    if (!isAlive(L, team)) return [];
+    const lu = lineupFor(L, ctx, team, Math.min(L.week, totalWeeks(L))), ir = L.ir[team] || [];
+    return ros.filter((id) => !lu.includes(id) && !ir.includes(id)).map((id) => ctx.byId[id])
+      .filter((p) => p && !(ctx.sport.late && S.isLate(ctx.sport, p))).sort((a, b) => b.vor - a.vor).slice(0, 2).map((p) => p.id);
+  }
+  function setBlock(L, team, pid, on) {
+    if (!(L.rosters[team] || []).includes(pid)) return { ok: false, why: "He isn't on your team" };
+    L.block = L.block || {};
+    const cur = (L.block[team] || []).filter((id) => L.rosters[team].includes(id));
+    const i = cur.indexOf(pid);
+    if (on && i < 0) { if (cur.length >= 6) return { ok: false, why: "Six on the block at most. Take someone off first." }; cur.push(pid); }
+    if (!on && i >= 0) cur.splice(i, 1);
+    L.block[team] = cur;
+    return { ok: true };
+  }
+  // What a team is looking for, in its own words (a manager's note) or, for a bot, the position it's weakest at.
+  function blockNote(L, ctx, team) {
+    if (L.blockNote && L.blockNote[team]) return L.blockNote[team];
+    if (L.teams[team].owner) return "";
+    const lu = lineupFor(L, ctx, team, Math.min(L.week, totalWeeks(L))), slots = L.settings.lineup;
+    let worst = null;
+    slots.forEach((sl, i) => {
+      if (ctx.sport.slots[sl] === "*" || (ctx.sport.late || []).includes(sl)) return;
+      const p = lu[i] && ctx.byId[lu[i]], v = p ? p.vor : -1e9;
+      if (!worst || v < worst.v) worst = { sl, v };
+    });
+    return worst ? `Looking for ${worst.sl === "FLEX" || worst.sl === "SFLEX" || worst.sl === "UTIL" || worst.sl === "UT" ? "depth" : `a ${worst.sl}`}` : "";
+  }
+
   // Power rankings: record, points and roster strength together.
   function power(L, ctx) {
     if (isGuillotine(L)) return survival(L).map((r) => ({ team: r.team, rank: r.rank, move: 0, score: r.pf }));
@@ -993,7 +1028,7 @@
   }
 
   return { DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
-    finishWeek, formOf, hot, standings, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, power, onWaivers, canRoster, addDrop, claim, cancelClaim, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
+    finishWeek, formOf, hot, standings, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, blockOf, setBlock, blockNote, power, onWaivers, canRoster, addDrop, claim, cancelClaim, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
 });

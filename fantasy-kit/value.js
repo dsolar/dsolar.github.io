@@ -198,9 +198,9 @@
   }
 
   // Kickers and defenses (sport.late): a season projection for them barely predicts the season, and the waiver wire
-  // has a startable one every week, so most of the gap over replacement is noise. Keep a fifth of it, and set
-  // their replacement level near the end of the draft, where real drafts take them: past every starter and most
-  // of the bench.
+  // has a startable one every week, so they go in the last rounds of real drafts. Their value is spread over that
+  // stretch: the best one is worth what the draft's last few rounds start at (past every other starter and most of
+  // the bench), a replacement-level one what its last pick is worth, and anyone below that less still.
   function streamers(sport, players, league) {
     const late = new Set(sport.late || []);
     if (!late.size) return;
@@ -209,9 +209,16 @@
     const bench = league.bench == null ? sport.bench : league.bench;
     const lateSlots = lineup.filter((x) => late.has(x)).length;
     const others = players.filter((p) => !isLate(p)).map((p) => p.vor).sort((a, b) => b - a);
-    const at = Math.min(others.length - 1, Math.round(teams * (lineup.length - lateSlots + 0.8 * bench)));
-    const floor = others.length ? others[Math.max(0, at)] : 0;
-    for (const p of players) if (isLate(p)) p.vor = 0.2 * p.vor + floor;
+    if (!others.length) return;
+    const at = (k) => others[Math.max(0, Math.min(others.length - 1, Math.round(k)))];
+    const hi = at(teams * (lineup.length - lateSlots + 0.8 * bench)), lo = at(teams * (lineup.length - lateSlots + bench));
+    const top = {};
+    for (const p of players) if (isLate(p)) { const k = S.positions(p)[0]; top[k] = Math.max(top[k] || 0, p.vor); }
+    for (const p of players) {
+      if (!isLate(p)) continue;
+      const mx = top[S.positions(p)[0]] || 1;
+      p.vor = p.vor >= 0 ? lo + (hi - lo) * (p.vor / mx) : lo + 0.2 * p.vor;
+    }
   }
 
   // The position a player is ranked at: his scarcest one (a C/1B ranks at C).

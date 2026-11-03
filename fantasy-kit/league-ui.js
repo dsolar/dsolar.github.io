@@ -65,7 +65,7 @@
     /* ---------- routing ---------- */
     const TABS = () => [["league", "League"], ["team", "My Team"], ["matchup", gl() ? "The block" : roto() ? "Categories" : "Matchup"], ["players", "Players"], ["draft", "Draft"]].concat(opts.commishTools ? [["commish", "Commissioner"]] : []);
     function subsOf(tab) {
-      if (tab === "league") return [["overview", "Overview"], ["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : roto() ? "By week" : "Scoreboard"], ["tx", "Transactions"], ["settings", "Settings"]];
+      if (tab === "league") return [["overview", "Overview"]].concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []).concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : roto() ? "By week" : "Scoreboard"], ["tx", "Transactions"], ["settings", "Settings"]]);
       if (tab === "team") return [["roster", "Roster"]].concat(roto() ? [] : [["schedule", gl() ? "History" : "Schedule"]]).concat(L().settings.trades === false ? [] : [["trades", "Trades", pendingTrades()]]);
       if (tab === "players") return [["fa", "Free agents"], ["all", "All players"], ["watch", "Watchlist"], ["claims", "Waiver claims", L().claims.filter((c) => c.team === me() && c.status === "open").length]];
       return [];
@@ -128,7 +128,8 @@
       const recent = L().tx.slice().reverse().filter((x) => x.type !== "draft").slice(0, 7);
       const offers = L().trades.filter((t) => t.status === "pending" && t.to === mid);
       const champ = over() ? championOf() : null;
-      const hot = ctx.free.filter((p) => !G.onWaivers(L(), p.id, now())).map((p) => ({ p, h: G.hot(L(), p) })).sort((a, b) => (b.p.vor + b.h * 0.6) - (a.p.vor + a.h * 0.6)).slice(0, 5);
+      // kickers and defenses are always there on waivers; the list is for players worth a look
+      const hot = ctx.free.filter((p) => !G.onWaivers(L(), p.id, now()) && !(sport.late && S.isLate(sport, p))).map((p) => ({ p, h: G.hot(L(), p) })).sort((a, b) => (b.p.vor + b.h * 0.6) - (a.p.vor + a.h * 0.6)).slice(0, 5);
       const pw = G.power(L(), ctx).slice(0, 6);
       const myRow = mid != null ? st.find((r) => r.team.id === mid) : null;
       // your team, claims and offers: top of the page on a phone, the sidebar on a wide screen
@@ -146,11 +147,13 @@
           ${mine ? `<div class="card"><div class="mod-h"><h2>Your matchup</h2><span class="ps">Week ${w}${w > L().settings.weeks ? `, ${esc(kindName(mine.kind, w).toLowerCase())}` : ""}</span><a href="${matchHref(w, mine.i)}">Full matchup</a></div>${U.versus(versusVM(w, mine))}</div>` : ""}
           ${lastWeekCard()}
           <div class="card"><div class="mod-h"><h2>Standings</h2><a href="#league/standings">Full standings</a></div>${U.standingsTable(st, { compact: true, pfLabel: pts() ? "PF" : "Cats", fmt: fmtS })}</div>
+          <div class="card"><div class="mod-h"><h2>Recent activity</h2><a href="#league/tx">All transactions</a></div>${U.feed(recent.map(txVM), "No moves yet. Pick up a free agent to get things going.")}</div>
         </div><aside class="stack">
           ${myCards.trim() ? `<div class="d-only stack">${myCards}</div>` : ""}
+          ${chatCard()}
+          ${blockCard(3)}
           <div class="card"><div class="mod-h"><h2>Power rankings</h2><a href="#league/standings">More</a></div><ol class="feed">${pw.map((r) => `<li style="grid-template-columns:24px auto minmax(0,1fr) auto;align-items:center;padding:8px 16px"><b class="ps num">${r.rank}</b>${teamAv(T(r.team), "sm")}<span class="ell"><b>${esc(T(r.team).name)}</b></span>${moveTag(r.move)}</li>`).join("")}</ol></div>
           ${over() ? "" : `<div class="card"><div class="mod-h"><h2>Hot on waivers</h2><a href="#players/fa">Free agents</a></div><ul class="feed">${hot.map(({ p, h }) => `<li style="grid-template-columns:minmax(0,1fr) auto;align-items:center;padding:8px 16px"><span data-player="${esc(p.id)}" style="cursor:pointer;min-width:0">${pname(sport, p, h > 1.15 ? `<span class="win">hot</span>` : "")}</span>${mid != null ? `<button class="btn icon add" data-add="${esc(p.id)}" aria-label="Add ${esc(p.n)}">+</button>` : ""}</li>`).join("") || `<li class="empty">Nobody stands out.</li>`}</ul></div>`}
-          <div class="card"><div class="mod-h"><h2>Recent activity</h2><a href="#league/tx">All transactions</a></div>${U.feed(recent.map(txVM), "No moves yet. Pick up a free agent to get things going.")}</div>
         </aside></div></div>`;
     }
     // The week that just ended: every result, with the high score called out.
@@ -241,6 +244,40 @@
       if (x.type === "chop") { lines.length = 0; lines.push(`<span class="ps">${esc(x.text)}</span>`); }
       const badge = x.type === "chop" ? `<span class="tag loss">Chopped</span>` : x.type === "champion" ? `<span class="tag win">Champion</span>` : x.type === "trade" ? `<span class="tag info">Trade</span>` : x.type === "waiver" ? `<span class="tag gold">Waiver</span>` : x.type === "veto" ? `<span class="tag loss">Veto</span>` : "";
       return { team: T(Math.max(0, x.team)), with: x.type === "trade" ? T(x.other) : null, when: now() - x.at < 2 * 864e5 && x.at <= now() ? `Week ${x.week}, ${U.ago(x.at, now())}` : `Week ${x.week}`, lines, badge };
+    }
+    /* ---------- league chat (shared leagues pass opts.chat: posts(), send(body), unread(), seen()) ---------- */
+    // Posts and the league's biggest moves, oldest first, so a trade shows up where people talked about it.
+    function chatItems() {
+      const posts = opts.chat.posts().map((p) => ({ at: p.at, p }));
+      const moves = L().tx.filter((x) => x.type === "trade" || x.type === "chop" || x.type === "champion").map((x) => ({ at: x.at, x }));
+      return posts.concat(moves).sort((a, b) => a.at - b.at);
+    }
+    const chatBody = (t) => esc(t).replace(/\n/g, "<br>");
+    function chatLi(it, prev) {
+      if (it.x) {
+        const x = it.x, t = T(x.team);
+        const text = x.type === "trade" ? `<b>${esc(t.name)}</b> and <b>${esc(T(x.other).name)}</b> made a trade` : x.type === "chop" ? `<b>${esc(t.name)}</b> was chopped` : `<b>${esc(t.name)}</b> won the title`;
+        return `<li class="sys"><span class="txi ${x.type === "chop" ? "drop" : "trade"}" aria-hidden="true">${x.type === "chop" ? "&times;" : x.type === "trade" ? "&#8644;" : "&#9733;"}</span><span>${text}</span><time>${esc(U.ago(x.at, now()))}</time></li>`;
+      }
+      const p = it.p, t = T(p.team) || { name: p.author, abbr: "", color: 0 };
+      // a run of posts from the same team within ten minutes reads as one message
+      const cont = prev && prev.p && prev.p.team === p.team && it.at - prev.at < 6e5;
+      return `<li class="${isMe(p.team) ? "mine " : ""}${cont ? "cont" : ""}">${cont ? `<span></span>` : teamAv(t, "sm")}<div class="what">${cont ? "" : `<div class="who"><b>${esc(t.name)}</b><span class="ps">${esc(p.author)}</span><time>${esc(U.ago(p.at, now()))}</time></div>`}<p>${chatBody(p.body)}</p></div></li>`;
+    }
+    function chatList(items) {
+      return items.length ? `<ul class="chat">${items.map((it, i) => chatLi(it, items[i - 1])).join("")}</ul>` : `<div class="bd"><p class="ps" style="margin:0">No posts yet. Say hello, or talk some trash about this week's matchup.</p></div>`;
+    }
+    const chatForm = (big) => (me() != null ? `<form class="chat-f" id="fk-chatf"><label class="sr" for="fk-chat">Message the league</label><textarea id="fk-chat" rows="${big ? 2 : 1}" maxlength="500" placeholder="Message the league">${esc(ui.chatDraft || "")}</textarea><button class="btn go">Send</button></form>`
+      : `<div class="bd ps">Only managers in this league can post.</div>`);
+    function chatPage() {
+      opts.chat.seen();
+      return `<div class="wrap page"><div class="head"><h1 class="disp">Chat</h1><span class="ps">Everyone in the league sees this. Trades and big moves show up here too.</span></div>
+        <div class="card chat-card" style="max-width:760px">${chatList(chatItems().slice(-200))}${chatForm(true)}</div></div>`;
+    }
+    function chatCard() {
+      if (!opts.chat) return "";
+      const items = chatItems().slice(-4), n = opts.chat.unread();
+      return `<div class="card chat-card"><div class="mod-h"><h2>League chat</h2>${n ? `<span class="badge">${n}</span>` : ""}<a href="#league/chat">Open chat</a></div>${chatList(items)}${chatForm(false)}</div>`;
     }
     function txPage() {
       const f = ui.txf;
@@ -475,6 +512,7 @@
         const irBtn = G.irEligible(p) && ir.length < irMax ? `<button class="btn xs" data-toir="${esc(p.id)}" title="Move to injured reserve">IR</button> ` : "";
         return `${irBtn}${!locked ? `<button class="btn xs hide-s" data-move="${esc(p.id)}">Move</button>` : ""} <button class="btn icon drop hide-s" data-drop="${esc(p.id)}" aria-label="Drop ${esc(p.n)}" title="Drop">&minus;</button>`;
       };
+      const blocked = new Set(L().settings.trades === false ? [] : G.blockOf(L(), ctx, id));
       const row = (slotLabel, p, i, onIR) => {
         const can = mine && !locked && p && !onIR;
         const tgt = targetFor(p, i);
@@ -482,7 +520,7 @@
         const slotEl = can ? `<button type="button" class="slot slotbtn${on}" data-move="${moving && p === moving ? "" : esc(p.id)}" title="${moving && p === moving ? "Cancel the move" : `Move ${esc(p.n)}`}">${esc(slotLabel)}</button>`
           : `<span class="slot${on}${onIR ? " ir" : ""}">${esc(slotLabel)}</span>`;
         const cls = [moving && p === moving ? "me" : "", tgt ? "tgt" : "", onIR ? "irrow" : ""].filter(Boolean).join(" ");
-        return `<tr class="${cls}"><td class="c" style="width:70px">${slotEl}</td><td class="nm">${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, `${esc(p.prank)}${onIR && !G.irEligible(p) ? `, <span class="win">healthy</span>` : ""}`)}</span>` : `<span class="ps">${onIR ? "Open for a player who's out or on IR" : "Empty"}</span>`}</td>
+        return `<tr class="${cls}"><td class="c" style="width:70px">${slotEl}</td><td class="nm">${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, `${esc(p.prank)}${onIR && !G.irEligible(p) ? `, <span class="win">healthy</span>` : ""}${blocked.has(p.id) ? `, <span class="blk-tag">on the block</span>` : ""}`)}</span>` : `<span class="ps">${onIR ? "Open for a player who's out or on IR" : "Empty"}</span>`}</td>
           <td class="r num hide-s">${p ? `<span class="ps">#${p.rank}</span>` : ""}</td><td class="r num">${p && pts() && !onIR ? `<b>${fmtS(ptsOf(p.id))}</b>` : p && !onIR ? `<b>${p.v.toFixed(1)}</b>` : ""}</td><td class="r num hide-s">${p && pts() && !onIR ? fmtS(projOf(p)) : ""}</td>
           <td class="r act">${tgt || actsFor(p, onIR)}</td></tr>`;
       };
@@ -685,7 +723,22 @@
       const sec = (title, list, empty) => `<div class="stack"><h2 style="margin:0;font-size:16px">${title}</h2>${list.length ? list.map((t) => U.tradeCard(sport, tradeVM(t))).join("") : `<p class="ps" style="margin:0">${empty}</p>`}</div>`;
       return `<div class="wrap page"><div class="head"><h1 class="disp">Trades</h1><span class="grow"></span>${canTrade() ? `<button class="btn go" data-trade>Propose a trade</button>` : mid != null && L().settings.deadline && L().week > L().settings.deadline && !over() ? `<span class="ps">The trade deadline was week ${L().settings.deadline}.</span>` : ""}</div>
         <div class="cols"><div class="stack">${sec("Offers for you", toMe, "No offers waiting.")}${sec("Your offers", fromMe, "You haven't sent any open offers.")}${sec("League review", review, "No trades under review.")}</div>
-        <aside class="stack">${sec("Recent trades", done, "No trades yet.")}</aside></div></div>`;
+        <aside class="stack">${blockCard(99, true)}${sec("Recent trades", done, "No trades yet.")}</aside></div></div>`;
+    }
+    // The trading block: who each team would move, and what it wants. limit caps the teams shown; full adds your
+    // own block with a note you can edit.
+    function blockCard(limit, full) {
+      if (L().settings.trades === false || over()) return "";
+      const mid = me();
+      const rows = L().teams.filter((t) => t.id !== mid && G.isAlive(L(), t.id)).map((t) => ({ t, ids: G.blockOf(L(), ctx, t.id), note: G.blockNote(L(), ctx, t.id) })).filter((x) => x.ids.length);
+      const mine = mid != null ? G.blockOf(L(), ctx, mid) : [];
+      if (!rows.length && !full) return "";
+      const offer = (t, id) => (canTrade() && mid != null ? `<button class="btn xs" data-trade="${t.id}" data-want="${esc(id)}" aria-label="Offer for ${esc(ctx.byId[id].n)}">Offer</button>` : "");
+      const li = (x) => `<li>${teamAv(x.t, "md")}<div class="what"><div class="row" style="gap:8px"><b class="ell">${esc(x.t.name)}</b>${x.note ? `<span class="ps ell">${esc(x.note)}</span>` : ""}</div>
+        ${x.ids.map((id) => `<div class="row bkp"><span data-player="${esc(id)}" style="cursor:pointer;min-width:0;flex:1">${pname(sport, ctx.byId[id], `${esc(ctx.byId[id].prank)}`, { size: "sm" })}</span>${x.t.id === mid ? `<button class="btn xs ghost" data-unblock="${esc(id)}">Take off</button>` : offer(x.t, id)}</div>`).join("")}</div></li>`;
+      const yours = full && mid != null ? `<div class="bd" style="border-top:1px solid var(--line)"><form class="stack" id="fk-blocknote" style="gap:8px"><label class="lbl" for="fk-bn">What you're looking for</label><div class="row"><input type="text" id="fk-bn" maxlength="80" placeholder="Say what you need, like a starting RB" value="${esc((L().blockNote || {})[mid] || "")}" style="flex:1;min-width:0"><button class="btn sm">Save</button></div></form>
+        ${mine.length ? "" : `<p class="ps" style="margin:8px 0 0">Open one of your players and choose Put on the block, so the league knows he's available.</p>`}</div>${mine.length ? `<ul class="feed">${li({ t: T(mid), ids: mine, note: "" })}</ul>` : ""}` : "";
+      return `<div class="card"><div class="mod-h"><h2>Trading block</h2>${full ? "" : `<a href="#team/trades">All teams</a>`}</div>${rows.length ? `<ul class="feed">${rows.slice(0, limit).map(li).join("")}</ul>` : `<div class="bd"><p class="ps" style="margin:0">Nobody has put players on the block yet.</p></div>`}${yours}</div>`;
     }
     function openTrade(other, want, prefill) {
       const mid = me();
@@ -806,7 +859,7 @@
         const w = watch();
         actions += `<button class="btn" data-card="watch">${w.includes(pid) ? "Unwatch" : "Watch"}</button>`;
         if (own == null && canMove()) actions += `<button class="btn go" data-card="add">${G.onWaivers(L(), pid, now()) ? "Put in a claim" : "Add"}</button>`;
-        else if (own === mid && canMove()) actions += `<button class="btn warn" data-card="drop">Drop</button>`;
+        else if (own === mid && canMove()) actions += `${L().settings.trades !== false && !over() ? `<button class="btn" data-card="block">${G.blockOf(L(), ctx, mid).includes(pid) ? "Take off the block" : "Put on the block"}</button>` : ""}<button class="btn warn" data-card="drop">Drop</button>`;
         else if (own != null && own !== mid && canTrade()) actions += `<button class="btn go" data-card="trade">Trade for him</button>`;
       }
       const status = own != null ? `${teamAv(T(own), "sm")} On ${esc(T(own).name)}` : G.onWaivers(L(), pid, now()) ? `<span class="tag gold">On waivers</span>` : `<span class="tag win">Free agent</span>`;
@@ -817,6 +870,7 @@
         else if (a === "add") addDialog(pid);
         else if (a === "drop") dropDialog(pid);
         else if (a === "trade") openTrade(own, pid);
+        else if (a === "block") { const on = !G.blockOf(L(), ctx, mid).includes(pid); act(() => G.setBlock(L(), mid, pid, on), on ? `${p.n} is on the block.` : `${p.n} is off the block.`); }
       }));
     }
 
@@ -832,7 +886,7 @@
       const keep = $("#fk-players") ? $("#fk-players").scrollTop : 0;
       const focus = U.focusKey(opts.el) || U.focusKey(opts.top);
       let html = "";
-      if (r.tab === "league") html = { overview, standings: standingsPage, scoreboard: () => scoreboardPage(r.arg), tx: txPage, settings: settingsPage }[r.sub]();
+      if (r.tab === "league") html = { overview, chat: chatPage, standings: standingsPage, scoreboard: () => scoreboardPage(r.arg), tx: txPage, settings: settingsPage }[r.sub]();
       else if (r.tab === "team") html = { roster: () => rosterPage(r.arg), schedule: () => schedulePage(r.arg), trades: tradesPage }[r.sub]();
       else if (r.tab === "matchup") html = matchupPage(r.sub, r.arg);
       else if (r.tab === "players") html = playersPage(r.sub);
@@ -850,18 +904,46 @@
         if (on && box.scrollWidth > box.clientWidth) box.scrollLeft += on.getBoundingClientRect().left - box.getBoundingClientRect().left - (box.clientWidth - on.clientWidth) / 2;
       }
       if ($("#fk-players")) $("#fk-players").scrollTop = keep;
+      // the chat opens at the newest post
+      const cl = r.sub === "chat" && $(".chat-card .chat", opts.el); if (cl) cl.scrollTop = cl.scrollHeight;
       U.keyboardPlayers(opts.el);
       U.refocus(document, focus);
     }
 
+    opts.el.addEventListener("input", (e) => { if (e.target.id === "fk-chat") ui.chatDraft = e.target.value; });
+    opts.el.addEventListener("keydown", (e) => {
+      // Enter sends, Shift+Enter starts a new line
+      if (e.target.id === "fk-chat" && e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); e.target.form.requestSubmit(); }
+    });
+    opts.el.addEventListener("submit", async (e) => {
+      if (e.target.id !== "fk-chatf" || !opts.chat) return;
+      e.preventDefault();
+      const body = (ui.chatDraft || "").trim();
+      if (!body || ui.sending) return;
+      ui.sending = true;
+      const btn = e.target.querySelector("button"); if (btn) btn.disabled = true;
+      const r = await opts.chat.send(body).catch((err) => ({ error: err.message }));
+      ui.sending = false;
+      if (r && r.error) { if (btn) btn.disabled = false; U.toast(r.error, true); return; }
+      ui.chatDraft = ""; render();
+      const box = $("#fk-chat", opts.el); if (box) box.focus();
+    });
+    opts.el.addEventListener("submit", (e) => {
+      if (e.target.id !== "fk-blocknote" || me() == null) return;
+      e.preventDefault();
+      const v = $("#fk-bn", opts.el).value.replace(/\s+/g, " ").trim().slice(0, 80);
+      L().blockNote = Object.assign({}, L().blockNote, { [me()]: v });
+      save(); render(); U.toast(v ? "Note saved." : "Note cleared.");
+    });
     opts.el.addEventListener("click", (e) => {
       const mb = e.target.closest("[data-more]");
       if (mb) { ui.plimit = (ui.plimit || 250) + 250; render(); return; }
-      const b = e.target.closest("[data-editteam],[data-toir],[data-activate],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],th[data-sort]");
+      const b = e.target.closest("[data-unblock],[data-editteam],[data-toir],[data-activate],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],th[data-sort]");
       if (b) {
         e.preventDefault(); e.stopPropagation();
         const d = b.dataset, mid = me();
-        if (b.hasAttribute("data-editteam")) editTeam();
+        if (d.unblock) act(() => G.setBlock(L(), mid, d.unblock, false), `${ctx.byId[d.unblock].n} is off the block.`);
+        else if (b.hasAttribute("data-editteam")) editTeam();
         else if (d.toir) act(() => G.toIR(L(), ctx, mid, d.toir, now()), `${ctx.byId[d.toir].n} is on IR. His roster spot is open.`);
         else if (d.activate) { const r = G.activate(L(), ctx, mid, d.activate, null, now()); if (r.needDrop) activateDialog(d.activate); else if (!r.ok) U.toast(r.why, true); else { save(); U.toast(`${ctx.byId[d.activate].n} is back from IR.`); render(); } }
         else if (d.swapb) { const w = ui.week && ui.week >= L().week ? ui.week : curWeek(); ui.moving = null; act(() => G.move(L(), ctx, mid, w, d.swapb, +d.slot, now())); }

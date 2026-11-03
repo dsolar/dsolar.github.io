@@ -338,3 +338,43 @@ create or replace function fk_history(p_id text) returns jsonb language sql stab
   select coalesce((select seasons from fk_leagues where id = p_id), '[]'::jsonb);
 $$;
 grant execute on function fk_new_season(text, int, jsonb, jsonb, jsonb), fk_history(text) to anon, authenticated;
+-- ---------- league chat (migration fantasykit_chat) ----------
+create table if not exists fk_posts (
+  id bigserial primary key,
+  league text not null references fk_leagues(id) on delete cascade,
+  team int not null,
+  author text not null,
+  body text not null,
+  at timestamptz not null default now()
+);
+create index if not exists fk_posts_league_id on fk_posts (league, id);
+alter table fk_posts enable row level security;
+revoke all on public.fk_posts from anon, authenticated;
+
+-- A manager posts to his league's chat: up to 500 characters, line breaks kept, eight posts a minute at most.
+create or replace function fk_post(p_id text, p_body text)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare uid uuid := auth.uid(); s fk_seats; b text; r fk_posts;
+begin
+  if uid is null then return jsonb_build_object('error', 'Sign in first.'); end if;
+  select * into s from fk_seats where league = p_id and user_id = uid;
+  if not found then return jsonb_build_object('error', 'Only managers in this league can post.'); end if;
+  b := regexp_replace(coalesce(p_body, ''), '[\x01-\x09\x0b-\x1f\x7f]', '', 'g');
+  b := regexp_replace(b, '\n{3,}', E'\n\n', 'g');
+  b := left(btrim(b, E' \n'), 500);
+  if b = '' then return jsonb_build_object('error', 'Write something first.'); end if;
+  if (select count(*) from fk_posts where league = p_id and team = s.team and at > now() - interval '1 minute') >= 8 then
+    return jsonb_build_object('error', 'Slow down a little, then try again.');
+  end if;
+  insert into fk_posts (league, team, author, body) values (p_id, s.team, s.manager, b) returning * into r;
+  return jsonb_build_object('ok', true, 'post', jsonb_build_object('id', r.id, 'team', r.team, 'author', r.author, 'body', r.body, 'at', (extract(epoch from r.at) * 1000)::bigint));
+end $$;
+
+-- The newest 200 posts after p_after, oldest first. Anyone with the league's link can read, as with fk_view.
+create or replace function fk_posts(p_id text, p_after bigint default 0)
+returns jsonb language sql stable security definer set search_path = public as $$
+  select coalesce(jsonb_agg(jsonb_build_object('id', id, 'team', team, 'author', author, 'body', body, 'at', (extract(epoch from at) * 1000)::bigint) order by id), '[]'::jsonb)
+  from (select * from fk_posts where league = p_id and id > coalesce(p_after, 0) order by id desc limit 200) x;
+$$;
+revoke all on function fk_post(text, text), fk_posts(text, bigint) from public;
+grant execute on function fk_post(text, text), fk_posts(text, bigint) to anon, authenticated;

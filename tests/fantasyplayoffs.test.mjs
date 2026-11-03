@@ -127,3 +127,22 @@ test('kickers and defenses go late, like real drafts', () => {
     assert.ok(best('K').$ <= 4 && best('DEF').$ <= 5);
   }
 });
+
+test('trading block: managers list their own players, bots list the bench players they can spare', () => {
+  const s = league('nfl', { format: 'h2h', weeks: 3, playoffTeams: 2 }, 6);
+  const { L, ctx } = s;
+  L.teams[0].owner = 'Dave';
+  assert.deepEqual(G.blockOf(L, ctx, 0), [], 'a manager starts with nobody on the block');
+  const pid = L.rosters[0][3];
+  assert.ok(G.setBlock(L, 0, pid, true).ok);
+  assert.deepEqual(G.blockOf(L, ctx, 0), [pid]);
+  assert.equal(G.setBlock(L, 0, L.rosters[1][0], true).ok, false, "can't list another team's player");
+  // a player who leaves the roster leaves the block
+  L.rosters[0] = L.rosters[0].filter((x) => x !== pid);
+  assert.deepEqual(G.blockOf(L, ctx, 0), []);
+  // bots: two bench players, no kickers or defenses, and a note on what they need
+  const bot = G.blockOf(L, ctx, 2), lu = G.lineupFor(L, ctx, 2, L.week);
+  assert.equal(bot.length, 2);
+  assert.ok(bot.every((id) => L.rosters[2].includes(id) && !lu.includes(id) && !['K', 'DEF'].includes(ctx.byId[id].pos[0])));
+  assert.match(G.blockNote(L, ctx, 2), /^Looking for/);
+});

@@ -86,10 +86,40 @@
       right: () => `<button class="btn sm ghost" data-live="league">${info.commish ? "Invite" : "League"}</button>`,
       get commishTools() { return info.commish ? commishTools : null; },
       notice: () => guestNote() + startNote() + keeperNote(),
+      chat,
     });
+    loadPosts();
     if (catchUp()) push();
     app.refresh();
   }
+  /* ---------- league chat: posts load every few seconds while the page is open ---------- */
+  let posts = [], postT = null, seen = 0;
+  try { seen = Number(localStorage.getItem("fk-chat-seen:" + id)) || 0; } catch (e) { /* no storage */ }
+  const lastId = () => (posts.length ? posts[posts.length - 1].id : 0);
+  const chat = {
+    posts: () => posts,
+    unread: () => posts.filter((p) => p.id > seen && p.team !== info.me).length,
+    seen: () => { const n = lastId(); if (n > seen) { seen = n; try { localStorage.setItem("fk-chat-seen:" + id, String(n)); } catch (e) { /* no storage */ } } },
+    async send(body) {
+      const r = await C.rpc("fk_post", { p_id: id, p_body: body });
+      if (r && r.post && !posts.some((p) => p.id === r.post.id)) posts.push(r.post);
+      if (r && r.ok) chat.seen();
+      return r;
+    },
+  };
+  async function loadPosts() {
+    clearTimeout(postT);
+    if (!document.hidden && L) {
+      const r = await C.rpc("fk_posts", { p_id: id, p_after: lastId() }).catch(() => null);
+      if (Array.isArray(r) && r.length) {
+        const have = new Set(posts.map((p) => p.id));
+        posts = posts.concat(r.filter((p) => !have.has(p.id))).slice(-300);
+        if (app && !U.dialogOpen()) app.refresh();
+      }
+    }
+    postT = setTimeout(loadPosts, document.hidden ? 60000 : 10000);
+  }
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && L) loadPosts(); });
   // before week 1: when it starts
   function startNote() {
     if (!L || now() >= L.start) return "";
