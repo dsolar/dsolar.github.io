@@ -135,3 +135,42 @@ test('draft offers: the clock stops while the manager on the clock reads one', (
   F.propose(D, ctx, { from: 1, to: 0, give: [F.pickId(5)], get: [F.pickId(4)], balance: false }, 200000);
   assert.equal(F.offerHold(D, 200000), false);
 });
+
+test('customization: commissioner review, season pickup cap, reverse-standings waivers, minimum bid', () => {
+  const { L, ctx } = league({ review: 'commish', reviewHours: 12, maxAddsSeason: 1, minBid: 1, waiverOrder: 'standings', deadline: 0 });
+  assert.equal(L.settings.tradeReview, 'commish'); assert.equal(L.settings.reviewHours, 12);
+  assert.equal(L.settings.maxAddsSeason, 1); assert.equal(L.settings.minBid, 1); assert.equal(L.settings.waiverOrder, 'standings');
+  const r = G.propose(L, ctx, 0, 1, [L.rosters[0][0]], [L.rosters[1][0]], 1);
+  assert.ok(G.respond(L, ctx, r.trade.id, true, 2).ok);
+  assert.equal(r.trade.status, 'review');
+  assert.deepEqual(G.voters(L, r.trade), [], 'nobody votes under commissioner review');
+  assert.ok(G.commishVeto(L, r.trade.id, 3).ok);
+  assert.equal(r.trade.status, 'vetoed');
+  assert.equal(G.commishVeto(L, r.trade.id, 4).ok, false);
+  // rules validate the new options
+  assert.ok(G.setRules(L, { tradeReview: 'vote', vetoShare: 0.67, waiverOrder: 'rolling', minBid: 0 }, 5).ok);
+  assert.equal(L.settings.vetoShare, 0.67);
+  assert.equal(G.setRules(L, { waiverOrder: 'random' }, 5).ok, false);
+  // reverse standings: the worst record gets the first claim
+  L.settings.waiverOrder = 'standings';
+  L.teams.forEach((t, i) => (t.priority = i + 1));
+  G.reorderWaivers(L);
+  const pr = L.teams.map((t) => t.priority).sort((a, b) => a - b);
+  assert.deepEqual(pr, L.teams.map((_, i) => i + 1));
+});
+
+test('draft order: the commissioner sets or shuffles it before the draft', () => {
+  const data = JSON.parse(readFileSync(new URL('../fantasy-kit/data/nfl.json', import.meta.url), 'utf8'));
+  const sport = S.attach(Object.assign({}, S.nfl), data);
+  const D = F.create({ sport, teams: 6, seed: 3, now: 0, scoring: 'half', botDelay: 0 });
+  const want = D.round1.slice().reverse();
+  assert.ok(F.setOrder(D, want).ok);
+  assert.deepEqual(D.round1, want);
+  assert.deepEqual(D.order.slice(0, 6), want);
+  assert.deepEqual(D.order.slice(6, 12), want.slice().reverse(), 'round two snakes back');
+  assert.equal(F.setOrder(D, [0, 0, 1, 2, 3, 4]).ok, false, 'every team once');
+  assert.ok(F.setOrder(D, null, 7).ok);
+  assert.deepEqual(D.round1.slice().sort(), want.slice().sort());
+  F.start(D, 1);
+  assert.equal(F.setOrder(D, want).ok, false, 'not once it starts');
+});

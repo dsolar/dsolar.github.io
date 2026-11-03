@@ -101,6 +101,22 @@
 
   // Before the draft starts: the same draft with a different set of teams (the commissioner added or removed some).
   // teams: [{ name, abbr, owner, color }] in the new order. Keepers and a dynasty's carried rosters can't resize.
+  // Before the draft starts: the commissioner sets the first round's order (team ids), or shuffles it. Later rounds
+  // follow the draft type (snake, linear, third-round reversal). Not once keepers are on the board.
+  function setOrder(D, first, seed) {
+    if (D.phase !== "setup") return { ok: false, why: "The draft already started" };
+    if (D.type === "auction") return { ok: false, why: "An auction has no draft order" };
+    if ((D.board || []).some((pk) => pk && pk.keeper) || D.carry || D.type === "mystery") return { ok: false, why: "This draft's order is set by its keepers or packages" };
+    const want = D.round1.slice();
+    let next = first ? first.slice() : want.slice();
+    if (!first) { const r = rng(seed == null ? Date.now() % 2 ** 31 : seed); for (let i = next.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [next[i], next[j]] = [next[j], next[i]]; } }
+    if (next.length !== want.length || want.some((t) => !next.includes(t))) return { ok: false, why: "Every drafting team needs one spot" };
+    D.round1 = next;
+    D.order = makeOrder(D.type === "elephant" ? "snake" : D.type, next, D.rounds);
+    D.board = Array(D.order.length).fill(null);
+    D.via = {};
+    return { ok: true };
+  }
   function resize(D, sport, teams, players) {
     if (D.phase !== "setup") return { ok: false, why: "The draft has started" };
     if (teams.length < 2 || teams.length > 20) return { ok: false, why: "A league has 2 to 20 teams" };
@@ -930,7 +946,7 @@
   }
   const made_ = (D) => made(D);
 
-  return { recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
+  return { setOrder, recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
     start, pause, pick, worth, resize, offerHold, holdLeft, HOLD_MAX, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, botMax, standings, sizeOf,
     clockLen, thinkTime, bankShare, slotInfo, fitsRoster, canSteal, steal, stealsOf, stealsLeft, stealsOpen, botSteal, pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
     tradeCheck, balance, propose, respond, cancel, botAnswer, botOffer };

@@ -261,7 +261,7 @@
         <div class="row"><input type="text" readonly value="${esc(inviteUrl())}" id="lv-link" style="flex:1;min-width:0" aria-label="Invite link"><button type="button" class="btn go" data-lv="copy">Copy</button></div>` : ""}
       ${seatList()}
       ${info.commish && D && !L && D.phase !== "done" && D.trading ? `<div class="field" style="margin-top:10px"><label for="lv-oh">A trade offer stops the clock</label><select id="lv-oh">${opt("clock", "When it's to the team on the clock", D.offerHold || "clock")}${opt("all", "For any manager, up to 90 seconds", D.offerHold || "clock")}${opt("off", "Never: the draft keeps going", D.offerHold || "clock")}</select></div>` : ""}
-      ${info.commish && D && !L && D.phase === "setup" ? `<div class="row" style="margin-top:8px;flex-wrap:wrap;gap:8px"><span class="ps">${D.teams.length} teams. Teams can change until the draft starts.</span><span class="grow"></span>${D.teams.length < 20 ? `<button type="button" class="btn sm" data-lv="addteam">Add a team</button>` : ""}</div>` : ""}
+      ${info.commish && D && !L && D.phase === "setup" ? `<div class="row" style="margin-top:8px;flex-wrap:wrap;gap:8px"><span class="ps">${D.teams.length} teams. Teams can change until the draft starts.</span><span class="grow"></span>${D.type !== "auction" && D.type !== "mystery" && !D.carry && !(D.board || []).some((pk) => pk && pk.keeper) ? `<button type="button" class="btn sm" data-lv="order">Draft order</button>` : ""}${D.teams.length < 20 ? `<button type="button" class="btn sm" data-lv="addteam">Add a team</button>` : ""}</div>` : ""}
       <div id="lv-past"></div>
       ${info.me != null ? `<label class="check" style="margin-top:10px"><input type="checkbox" id="lv-mail"${info.notify !== false ? " checked" : ""}> Email me about trade offers, waiver results${D && D.clock >= 3600 ? ", my turn in the draft" : ""} and weekly results</label>` : ""}
       <div class="row ps" style="margin:12px 0 0;gap:6px 16px;flex-wrap:wrap"><span>${u ? `Signed in as ${esc(u.email)}` : `<a href="leagues.html">Sign in</a> to make moves`}</span><span class="grow"></span>${info.commish && !L ? `<button type="button" class="btn sm ghost warn" data-lv="delete">Delete league</button>` : ""}${u ? `<button type="button" class="btn sm ghost" data-lv="out">Sign out</button>` : ""}<button type="button" class="btn sm ghost" data-lv="theme">${theme.dark() ? "Light mode" : "Dark mode"}</button></div>`, null, { wide: true });
@@ -278,6 +278,7 @@
       else if (b.dataset.lv === "out") { await C.signOut(); location.reload(); }
       else if (b.dataset.lv === "theme") { theme.toggle(); b.textContent = theme.dark() ? "Light mode" : "Dark mode"; if (app) app.render(); }
       else if (b.dataset.lv === "addteam") { dlg.close(); resizeTeams(null); }
+      else if (b.dataset.lv === "order") { dlg.close(); orderDialog(); }
       else if (b.dataset.lv === "rmteam") { const t = Number(b.dataset.team); dlg.close(); U.confirm(`Remove ${teamName(t)}?`, "The league drops to one fewer team. You can add one back until the draft starts.", "Remove the team", () => resizeTeams(t)); }
       else if (b.dataset.lv === "delete") { dlg.close(); deleteDialog(); }
       else if (b.dataset.free != null) {
@@ -374,6 +375,11 @@
         ${sel("maxAdds", "Pickups a week", [0, 1, 2, 3, 4, 5, 7, 10].map((x) => [x, x ? `Up to ${x}` : "No limit"]), s.maxAdds || 0)}
       </div>
       <div class="row3">
+        ${sel("maxAddsSeason", "Pickups a season", [0, 10, 15, 20, 25, 30, 40, 50].map((x) => [x, x ? `Up to ${x}` : "No limit"]), s.maxAddsSeason || 0)}
+        ${gl || s.waivers === "faab" ? sel("minBid", "Lowest bid", [[0, "$0 bids allowed"], [1, "$1"]], s.minBid || 0) : ""}
+        ${gl ? "" : sel("waiverOrder", "Waiver order", [["rolling", "Rolling"], ["standings", "Reverse standings, weekly"]], s.waiverOrder || "rolling")}
+      </div>
+      <div class="row3">
         ${sel("bench", "Bench spots", [2, 3, 4, 5, 6, 7, 8, 10, 12].map((x) => [x, x]), s.bench)}
         ${sel("ir", "IR spots", [0, 1, 2, 3, 4].map((x) => [x, x || "None"]), s.ir || 0)}
         ${s.dynasty ? sel("taxi", "Taxi squad", [0, 1, 2, 3, 4, 5].map((x) => [x, x ? `${x} spot${x > 1 ? "s" : ""}` : "None"]), s.taxi || 0) : ""}
@@ -381,9 +387,10 @@
       </div>
       ${gl ? "" : `<div class="row3">
         ${sel("deadline", "Trade deadline", [[0, "None"]].concat(Array.from({ length: Math.max(0, s.weeks - 1) }, (_, i) => [i + 1, `After week ${i + 1}`])), s.deadline || 0)}
-        ${sel("tradeReview", "Trade review", [["vote", "League can veto"], ["none", "None: trades go through"]], s.tradeReview)}
+        ${sel("tradeReview", "Trade review", [["vote", "The league votes"], ["commish", "The commissioner reviews"], ["none", "None: trades go through"]], s.tradeReview)}
         ${sel("reviewHours", "Review lasts", [12, 24, 48].map((x) => [x, `${x} hours`]), s.reviewHours || 24)}
       </div>
+      ${s.tradeReview === "vote" ? `<div class="row3">${sel("vetoShare", "Votes to veto", [[0.34, "A third"], [0.5, "Half"], [0.67, "Two thirds"]], s.vetoShare || 0.5)}</div>` : ""}
       <div class="row3">
         ${medianOk ? sel("median", "Median game", [[0, "Off"], [1, "On"]], s.median ? 1 : 0) : ""}
         ${sel("bestBall", "Lineups", [[0, "Set each week"], [1, "Best ball"]], s.bestBall ? 1 : 0)}
@@ -397,7 +404,7 @@
       <p class="ps" style="margin:0">${started ? "The season has started, so its length and schedule are set. " : ""}Changes apply from now on; finished weeks keep their results${medianOk ? ", except that turning the median game on or off recounts every record" : ""}.</p>
       <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">Save rules</button></div></form>`, (fd) => {
       const patch = {};
-      for (const [k, v] of fd.entries()) patch[k] = ["trades", "median", "bestBall"].includes(k) ? v === "1" : ["waivers", "tradeReview", "playoffLegs", "consolation"].includes(k) ? v : Number(v);
+      for (const [k, v] of fd.entries()) patch[k] = ["trades", "median", "bestBall"].includes(k) ? v === "1" : ["waivers", "tradeReview", "playoffLegs", "consolation", "waiverOrder"].includes(k) ? v : Number(v);
       for (const k of Object.keys(patch)) if (JSON.stringify(patch[k]) === JSON.stringify(k === "trades" ? s.trades !== false : k === "median" || k === "bestBall" ? !!s[k] : s[k])) delete patch[k];
       if (!Object.keys(patch).length) return;
       const r = G.setRules(L, patch, now());
@@ -463,6 +470,26 @@
     });
   }
   // before the draft: add a team, or remove one nobody has claimed
+  // the commissioner sets the first-round order by hand or shuffles it, any time before the draft starts
+  function orderDialog() {
+    let list = D.round1.slice();
+    const rows = () => list.map((t, i) => `<li class="ord-row"><span class="ord-n">${i + 1}</span>${U.teamAv(D.teams[t], "sm")}<b class="grow">${esc(D.teams[t].name)}</b>
+      <button type="button" class="btn sm ghost" data-up="${i}" aria-label="Move ${esc(D.teams[t].name)} up"${i ? "" : " disabled"}>Up</button><button type="button" class="btn sm ghost" data-dn="${i}" aria-label="Move ${esc(D.teams[t].name)} down"${i < list.length - 1 ? "" : " disabled"}>Down</button></li>`).join("");
+    U.dialog(`<h3>Draft order</h3><p class="muted" style="margin:0 0 8px">The first round's order. ${D.type === "linear" ? "Every round goes in this order." : D.type === "3rr" ? "Round two snakes back and round three reverses again." : "Later rounds snake back."}</p>
+      <form class="stack"><ol class="ord" id="ord-l">${rows()}</ol>
+      <div class="acts"><button type="button" class="btn ghost" data-shuf>Shuffle</button><span class="grow"></span><button type="button" class="btn" data-close>Cancel</button><button class="btn go">Save order</button></div></form>`, () => {
+      const r = F.setOrder(D, list);
+      if (!r.ok) { U.toast(r.why, true); return false; }
+      push(); mount(); U.toast("Draft order saved.");
+    });
+    const dlg = $("#fk-dlg");
+    dlg.onclick = (e) => {
+      const b = e.target.closest("[data-up],[data-dn],[data-shuf]"); if (!b) return;
+      if (b.hasAttribute("data-shuf")) { for (let i = list.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [list[i], list[j]] = [list[j], list[i]]; } }
+      else { const i = +(b.dataset.up ?? b.dataset.dn), j = b.dataset.up != null ? i - 1 : i + 1; [list[i], list[j]] = [list[j], list[i]]; }
+      $("#ord-l").innerHTML = rows();
+    };
+  }
   async function resizeTeams(remove) {
     const keep = D.teams.filter((t) => t.id !== remove);
     const list = keep.map((t) => ({ name: t.name, abbr: t.abbr, owner: t.owner, color: t.color }));

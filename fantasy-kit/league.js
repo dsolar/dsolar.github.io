@@ -488,8 +488,17 @@
     L.week = w + 1;
     if (w <= L.settings.weeks) openBites(L, w, games, now);
     if (L.week > totalWeeks(L)) { closeSeason(L, now); return { ok: true, over: true }; }
+    reorderWaivers(L);
     runWaivers(L, ctx, now);
     return { ok: true };
+  }
+
+  // settings.waiverOrder "standings": every week the priority resets to the reverse of the standings (worst team
+  // first), instead of rolling (a winning claim sends a team to the back). The vampire still claims first.
+  function reorderWaivers(L) {
+    if (L.settings.waiverOrder !== "standings" || isGuillotine(L)) return;
+    standings(L).map((r) => r.team).reverse().forEach((t, i) => (L.teams[t].priority = i + 1));
+    vampireFirst(L);
   }
 
   /* ---------- vampire leagues ---------- */
@@ -904,7 +913,8 @@
   // (the regular season's length, scoring) only changes before week 1; playoff rules only before the playoffs.
   const RULES = {
     waivers: (v) => (v === "faab" || v === "rolling" ? v : null), waiverHours: (v) => clampInt(v, 0, 168), maxAdds: (v) => clampInt(v, 0, 50),
-    ir: (v) => clampInt(v, 0, 6), bench: (v) => clampInt(v, 0, 20), deadline: (v) => clampInt(v, 0, 52), tradeReview: (v) => (v === "vote" || v === "none" ? v : null),
+    ir: (v) => clampInt(v, 0, 6), bench: (v) => clampInt(v, 0, 20), deadline: (v) => clampInt(v, 0, 52), tradeReview: (v) => (["vote", "commish", "none"].includes(v) ? v : null),
+    waiverOrder: (v) => (v === "rolling" || v === "standings" ? v : null), minBid: (v) => clampInt(v, 0, 5), maxAddsSeason: (v) => clampInt(v, 0, 200),
     reviewHours: (v) => clampInt(v, 1, 168), vetoShare: (v) => (Number.isFinite(+v) && +v > 0 && +v <= 1 ? +v : null), offerHours: (v) => clampInt(v, 1, 336),
     trades: (v) => !!v, median: (v) => !!v, bestBall: (v) => !!v, posMax: (v) => (v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, clampInt(x, 0, 30)]).filter(([, x]) => x)) : null),
     playoffTeams: (v) => clampInt(v, 0, 32), playoffLegs: (v) => (["1", "final2", "all2"].includes(String(v)) ? String(v) : null), consolation: (v) => (["none", "third", "bracket"].includes(v) ? v : null),
@@ -1045,6 +1055,9 @@
   const onWaivers = (L, pid, now) => L.waivers[pid] != null && L.waivers[pid] > now;
   // Pickups this week: adds and won claims (trades don't count). settings.maxAdds caps them, if set.
   const pickups = (L, teamId) => L.tx.filter((x) => x.team === teamId && x.week === L.week && (x.type === "add" || x.type === "add/drop" || x.type === "waiver")).length;
+  // settings.maxAddsSeason: a cap on pickups for the whole season (a vampire's first roster doesn't count)
+  const seasonPickups = (L, teamId) => L.tx.filter((x) => x.team === teamId && (x.type === "add" || x.type === "add/drop" || x.type === "waiver") && !(vampireOf(L) === teamId && x.week === 1)).length;
+  const seasonPickupsLeft = (L, teamId) => (L.settings.maxAddsSeason ? Math.max(0, L.settings.maxAddsSeason - seasonPickups(L, teamId)) : Infinity);
   // (a vampire filling its first roster isn't held to the weekly limit)
   const pickupsLeft = (L, teamId) => (L.settings.maxAdds && !(vampireOf(L) === teamId && L.week === 1) ? Math.max(0, L.settings.maxAdds - pickups(L, teamId)) : Infinity);
   function canRoster(L, ctx, teamId, add, drops, pickup) {
@@ -1052,6 +1065,7 @@
     if (!isAlive(L, teamId)) return { ok: false, why: "That team has been chopped" };
     const ros = L.rosters[teamId].filter((id) => !(drops || []).includes(id));
     if (add && pickup && pickupsLeft(L, teamId) <= 0) return { ok: false, why: `You've used all ${L.settings.maxAdds} pickups this week` };
+    if (add && pickup && seasonPickupsLeft(L, teamId) <= 0) return { ok: false, why: `You've used all ${L.settings.maxAddsSeason} pickups for the season` };
     // settings.posMax { QB: 4 }: at most that many players whose main position it is
     const pm = L.settings.posMax || {}, ap = add && ctx.byId[add] ? S.positions(ctx.byId[add])[0] : null;
     if (ap && pm[ap] && ros.filter((id) => ctx.byId[id] && S.positions(ctx.byId[id])[0] === ap).length >= pm[ap]) return { ok: false, why: `A roster can have at most ${pm[ap]} ${ap}` };
@@ -1331,7 +1345,15 @@
     return { ok: true, review: true };
   }
   const cancelTrade = (L, id, now) => { const t = L.trades.find((x) => x.id === id && x.status === "pending"); if (!t) return { ok: false, why: "No open offer" }; t.status = "cancelled"; t.done = now; return { ok: true }; };
-  const voters = (L, t) => L.teams.filter((x) => x.id !== t.from && x.id !== t.to).map((x) => x.id);
+  // tradeReview "commish": the commissioner reviews alone (commishVeto), so the league has no votes
+  const voters = (L, t) => (L.settings.tradeReview === "commish" ? [] : L.teams.filter((x) => x.id !== t.from && x.id !== t.to).map((x) => x.id));
+  function commishVeto(L, id, now, why) {
+    const t = L.trades.find((x) => x.id === id && x.status === "review");
+    if (!t) return { ok: false, why: "That trade isn't under review" };
+    t.status = "vetoed"; t.done = now; t.why = why || "Vetoed by the commissioner";
+    log(L, now, { type: "veto", team: t.from, other: t.to, trade: t.id, text: "The commissioner vetoed a trade" });
+    return { ok: true };
+  }
   const vetoesNeeded = (L, t) => Math.max(1, Math.ceil(voters(L, t).length * L.settings.vetoShare));
   function vote(L, ctx, id, teamId, veto, now) {
     const t = L.trades.find((x) => x.id === id && x.status === "review");
@@ -1515,7 +1537,7 @@
     return n;
   }
 
-  return { vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
+  return { commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
     finishWeek, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };

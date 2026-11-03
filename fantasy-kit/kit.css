@@ -812,3 +812,7 @@ select.pill-sel{width:auto;border-radius:999px;min-height:36px;font-size:13px}
 /* the draft room's projected standings */
 table.t.proj td.win{color:var(--win);font-weight:800} table.t.proj td.loss{color:var(--loss)}
 .pk-h select.pill-sel{justify-self:start;max-width:280px}
+/* draft order editor */
+ol.ord{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;max-height:60vh;overflow:auto}
+.ord-row{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.ord-n{width:22px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px}

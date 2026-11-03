@@ -35,11 +35,14 @@
     const settings = s.format === "guillotine" ? { format: "guillotine", bestBall: true, waiverAt: 60, faab: s.faab || 1000 }
       : { format: s.format === "roto" ? "roto" : "h2h", tally: s.tally || "game", weeks, playoffTeams: s.format === "roto" ? 0 : Math.min(s.playoffTeams != null ? s.playoffTeams : 4, n),
         playoffLegs: s.playoffLegs || "1", consolation: s.consolation || "none",
-        deadline: s.deadline != null ? s.deadline : Math.max(1, weeks - 3), tradeReview: s.review === "none" ? "none" : "vote", reviewHours: 24,
+        deadline: s.deadline != null ? s.deadline : Math.max(1, weeks - 3), tradeReview: ["none", "commish"].includes(s.review) ? s.review : "vote", reviewHours: s.reviewHours || 24, vetoShare: s.vetoShare || 0.5,
         waiverHours: s.waiverHours || 36, faab: s.faab || 100, waivers: s.waivers === "rolling" ? "rolling" : "faab" };
     // roster rules from the form: IR spots, a weekly pickup limit, position limits
     if (s.ir != null) settings.ir = s.ir;
     if (s.maxAdds) settings.maxAdds = s.maxAdds;
+    if (s.maxAddsSeason) settings.maxAddsSeason = s.maxAddsSeason;
+    if (s.minBid != null) settings.minBid = s.minBid;
+    if (s.waiverOrder === "standings") settings.waiverOrder = "standings";
     if (s.posMax && Object.keys(s.posMax).length) settings.posMax = Object.assign({}, s.posMax);
     // weekly extras: a game against the league median, best ball lineups, divisions
     if (s.median) settings.median = true;
