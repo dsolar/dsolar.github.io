@@ -47,7 +47,8 @@
     let invite = "";
     if (joinId) {
       const v = await C.rpc("fk_view", { p_id: joinId, p_since: null }).catch((e) => ({ error: e.message }));
-      invite = v.error ? fail(v.error) : u ? joinCard(v) : `<div class="banner"><b>You're invited to ${esc(v.name)}</b> <span class="muted">a ${esc(S[v.sport].name.toLowerCase())} league with ${v.draft.teams.length} teams. Sign in to pick your team.</span></div>`;
+      invite = v.error ? fail(v.error) : u ? joinCard(v) : "";
+      if (!u && !v.error) return page(`${err}${signInCard(v)}`);
     }
     if (!u) return page(`${err}${invite}${signInCard()}`);
     if (view === "new") return page(newForm());
@@ -78,15 +79,20 @@
       ${big ? `<span class="lgstat${l.phase === "live" ? " live" : ""}"><b>${esc(big)}</b><small>${esc(small)}</small></span>` : ""}<span class="btn sm">Open</span></a>`;
   }
 
-  function signInCard() {
-    if (sent) return `<div class="card narrow"><div class="bd stack"><h1 class="disp" style="margin:0;font-size:clamp(26px,7vw,32px)">Check your email</h1>
-      <p style="margin:0">We sent a sign-in link to <b style="overflow-wrap:anywhere">${esc(sent)}</b>. Open it on the phone or computer you want to play on. It works once and expires in an hour.</p>
-      <p class="ps" style="margin:0">Nothing there after a minute? Check spam, or send it again.</p>
-      <div class="row" style="flex-wrap:wrap"><button class="btn" data-a="again">Use a different email</button><button class="btn ghost" data-a="resend">Send it again</button></div></div></div>`;
-    const k = S.inSeason();
+  function signInCard(inv) {
+    if (sent) { const k0 = S.inSeason(); return `<div class="su sp-${k0}"><div class="nl-band si-band">${FIELD[k0]}<div class="nl-bi">
+        <h1 class="disp">Check your email</h1>
+        <p>We sent a sign-in link to <b style="color:#fff;overflow-wrap:anywhere">${esc(sent)}</b>.</p>
+        <div class="si-card">
+          <ol class="si-steps"><li>Open the email from Draft Lab on the phone or computer you want to play on.</li><li>Tap <b>Sign in</b>. The link works once and expires in an hour.</li><li>You land back here, signed in.</li></ol>
+          <p class="ps">Nothing there after a minute? Check spam, or send it again.</p>
+          <div class="si-row"><button class="btn go" data-a="resend">Send it again</button><button class="btn" data-a="again">Use a different email</button></div></div>
+      </div></div></div>`; }
+    const k = inv && S[inv.sport] ? inv.sport : S.inSeason();
     return `<div class="su sp-${k}"><div class="nl-band si-band">${FIELD[k]}<div class="nl-bi">
-        <h1 class="disp">Draft with your friends.</h1>
-        <p>Start a league, send the invite link and draft live. Every move saves for the whole league, and you can get an email when a trade offer or a waiver result needs you.</p>
+        ${inv ? `<p class="jn-kick">${icon(k, "sp-ic")}You're invited</p><h1 class="disp">${esc(inv.name)}</h1>
+        <p>A ${esc(S[k].name.toLowerCase())} league with ${inv.draft.teams.length} teams. Sign in with your email, then pick your team.</p>` : `<h1 class="disp">Draft with your friends.</h1>
+        <p>Start a league, send the invite link and draft live. Every move saves for the whole league, and you can get an email when a trade offer or a waiver result needs you.</p>`}
         <form class="si-card" id="signin">
           <label for="si-email">Email</label>
           <div class="si-row"><input id="si-email" type="email" autocomplete="email" required value="${esc(C.lastEmail())}" placeholder="you@example.com"><button class="btn go" type="submit"${busy ? " disabled" : ""}>Email me a sign-in link</button></div>
@@ -105,10 +111,17 @@
     const open = teams.map((t, i) => [t, i]).filter(([, i]) => seats[i] == null);
     if (!open.length) return fail(`Every team in ${v.name} has a manager.`);
     const u = C.user(), guess = (u.email.split("@")[0] || "").replace(/[._-]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()).slice(0, 24);
-    return `<form class="card" id="join"><div class="mod-h"><h2>Join ${esc(v.name)}</h2><span class="ps">${esc(S[v.sport].name)}, ${teams.length} teams${v.draft.phase !== "setup" ? ". The draft has started, so you take over that team's picks." : ""}</span></div><div class="bd stack">
-      <fieldset class="seats"><legend class="sr">Pick a team</legend>${teams.map((t, i) => `<label class="${seats[i] != null ? "taken" : ""}"><input type="radio" name="team" value="${i}"${seats[i] != null ? " disabled" : open[0][1] === i ? " checked" : ""}>${U.teamAv(t, "sm")}<span><b>${esc(t.name)}</b><small>${seats[i] != null ? esc(seats[i]) : "Open"}</small></span></label>`).join("")}</fieldset>
-      <div class="field"><label for="j-name">Your name</label><input id="j-name" type="text" maxlength="24" required value="${esc(guess)}"></div>
-      <div><button class="btn go" type="submit">Join the league</button></div></div></form>`;
+    const k = v.sport;
+    return `<div class="su sp-${k}"><form id="join"><div class="nl-band si-band jn-band">${FIELD[k] || ""}<div class="nl-bi">
+        <p class="jn-kick">${icon(k, "sp-ic")}You're invited</p>
+        <h1 class="disp">${esc(v.name)}</h1>
+        <p>${esc(S[k].name)}, ${teams.length} teams, ${open.length} open${v.draft.phase !== "setup" ? ". The draft has started, so you take over that team's picks." : ". Pick a team and you're in."}</p>
+      </div></div>
+      <div class="nl-ess jn-body">
+        <div class="fl"><div class="fl-l">Pick your team</div><fieldset class="seats"><legend class="sr">Pick a team</legend>${teams.map((t, i) => `<label class="${seats[i] != null ? "taken" : ""}"><input type="radio" name="team" value="${i}"${seats[i] != null ? " disabled" : open[0][1] === i ? " checked" : ""}>${U.teamAv(t, "sm")}<span><b>${esc(t.name)}</b><small>${seats[i] != null ? esc(seats[i]) : "Open"}</small></span></label>`).join("")}</fieldset></div>
+        <div class="g2"><div class="fl"><div class="fl-l"><label for="j-name">Your name</label></div><input id="j-name" type="text" maxlength="24" required value="${esc(guess)}"></div><div></div></div>
+        <div><button class="btn go" type="submit">Join the league</button></div>
+      </div></form></div>`;
   }
 
   /* ---------- start a league: six steps, one at a time, with a live summary beside them ---------- */

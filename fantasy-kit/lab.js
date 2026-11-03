@@ -368,17 +368,21 @@
   function kitPage() {
     document.body.classList.remove("fk-room");
     app.onclick = app.oninput = app.onchange = null;
-    app.innerHTML = `<div class="wrap page doc">
-      <div class="head"><h1 class="disp">The Fantasy Kit</h1></div>
-      <div class="cols"><div class="stack">
-        <div class="card pad"><h2>What it is</h2><p>The shared parts of every league page on this site: player data for three sports, player values, a draft engine and the screens that sit on top of them. Draft Lab is the kit with nothing added. A league page adds its own rules (a salary cap, keepers, a scoring quirk) through hooks and its own colors through four tokens.</p></div>
-        <div class="card pad"><h2>Files</h2><ul>
-          <li><b>sports.js</b>: positions, lineup slots, position limits, stat columns and scoring for basketball, football and baseball.</li>
-          <li><b>value.js</b>: category z-scores or fantasy points, value over replacement by position, auction dollars.</li>
-          <li><b>draft.js</b>: snake, linear, third-round reversal, mystery packages, white elephant and auction drafts with clocks, queues, keepers, bots, pause, undo and trades during the draft. No screen code, so a server can run it.</li>
-          <li><b>ui.js</b> and <b>kit.css</b>: masthead and tabs, sortable player tables, filters, the player card and the full draft room.</li>
-          <li><b>data/</b>: nba.json, nfl.json and mlb.json, rebuilt by tools/fantasykit_data.py.</li></ul></div>
-        <div class="card pad"><h2>A league page in a few lines</h2><div class="code">&lt;link rel="stylesheet" href="/fantasy-kit/kit.css"&gt;
+    const FILES = [["sports.js", "Positions, lineup slots, stat columns and scoring for basketball, football and baseball, plus custom scoring and bonuses."],
+      ["value.js", "Category z-scores or fantasy points, value over replacement by position, auction dollars, dynasty age curves and the market."],
+      ["draft.js", "Snake, linear, third-round reversal, mystery packages, white elephant and auction drafts: clocks, queues, keepers, bots and trades."],
+      ["league.js", "The season: lineups, waivers and FAAB, trades and review, IR and taxi squads, playoffs, guillotine and vampire rules."],
+      ["season.js", "Turns a finished draft into a league, plays weeks forward, writes the emails, and starts next season's draft."],
+      ["ui.js, league-ui.js", "The draft room, player tables and cards, and every league page and tab."],
+      ["setup.js", "The setup controls: cards, pills, switches, steppers and sliders."],
+      ["cloud.js", "Sign-in and shared leagues on Supabase, saved for the whole league."]];
+    const TOK = [["--band", "#13233A", "Masthead and clock"], ["--brand", "#F6C445", "Fills: on the clock, your picks, buttons"], ["--brand-ink", "#1F1600", "Text on the brand"], ["--accent", "#9A6A00", "The brand as text"]];
+    app.innerHTML = `<div class="wrap page"><div class="su kit">
+      <div class="nl-band kit-band"><div class="nl-bi"><h1 class="disp">The Fantasy Kit</h1>
+        <p>The shared parts of every league page on this site: player data for three sports, player values, a draft engine, a season engine and the screens on top. Draft Lab is the kit with nothing added. A league page adds its own rules through hooks and its own colors through four tokens.</p></div></div>
+      <section class="nl-sec"><h2 class="nl-h">Files</h2><div class="kit-files">${FILES.map(([f, d]) => `<div class="mk-tip"><b class="kit-f">${esc(f)}</b><p>${esc(d)}</p></div>`).join("")}</div></section>
+      <div class="kit-cols">
+        <section class="nl-sec"><h2 class="nl-h">A league page in a few lines</h2><div class="code">&lt;link rel="stylesheet" href="/fantasy-kit/kit.css"&gt;
 &lt;script src="/fantasy-kit/sports.js"&gt;&lt;/script&gt; &lt;!-- then value.js, draft.js, ui.js --&gt;
 
 const data = await (await fetch("/fantasy-kit/data/mlb.json")).json();
@@ -386,15 +390,11 @@ const sport = FK.sports.attach({ ...FK.sports.mlb }, data);
 FK.value.evaluate(sport, data.players, { teams: 12, scoring: "yoenis" });
 const D = FK.draft.create({ sport, teams: 12, type: "snake", keepers });
 FK.ui.room({ el, sport, players: data.players, draft: () =&gt; D,
-  save: (D) =&gt; saveSomewhere(D), me: () =&gt; myTeamId, drive: true });</div></div>
-      </div><aside class="stack">
-        <div class="card pad"><h2>Brand it</h2><p class="small">Set these on :root after kit.css:</p><div class="code">--band: #13233A;   /* masthead, clock */
---brand: #F6C445;  /* fills */
---brand-ink: #1F1600;
---accent: #9A6A00; /* brand as text */</div></div>
-        <div class="card pad"><h2>Custom rules</h2><p class="small">hooks.check(D, team, player) can refuse a pick (Hard Cap's salary line). hooks.worth(D, team, player, w) changes what bots want.</p></div>
-        <div class="card pad"><h2>Data</h2><p class="small" style="margin:0">${["nba", "nfl", "mlb"].map((k) => `<b>${S[k].name}</b>: ${cache[k] ? `${cache[k].players.length} players, ${esc(cache[k].source)}` : "loads on first use"}`).join("<br>")}</p></div>
-      </aside></div></div>`;
+  save: (D) =&gt; saveSomewhere(D), me: () =&gt; myTeamId, drive: true });</div>
+          <h2 class="nl-h" style="margin-top:20px">Custom rules</h2><p class="kit-p"><code>hooks.check(D, team, player)</code> can refuse a pick (Hard Cap's salary line). <code>hooks.worth(D, team, player, w)</code> changes what bots want.</p></section>
+        <section class="nl-sec"><h2 class="nl-h">Brand it</h2><div class="kit-tok">${TOK.map(([k, v, d]) => `<div><span class="sw" style="background:${v}"></span><span><code>${k}: ${v}</code><small>${esc(d)}</small></span></div>`).join("")}</div>
+          <h2 class="nl-h" style="margin-top:20px">Data</h2><div class="kit-data">${["nba", "nfl", "mlb"].map((k) => `<div class="mk-tip"><b>${esc(S[k].name)}</b><p>${cache[k] ? `${cache[k].players.length} players, ${esc(cache[k].source)}` : "Loads on first use"}</p></div>`).join("")}</div></section>
+      </div></div></div>`;
   }
 
   /* ---------- routing ---------- */

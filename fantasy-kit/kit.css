@@ -1031,3 +1031,19 @@ ol.ord{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap
 .lg-sp{display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:12px;color:#fff;background:#1E6631}
 .lg-sp.sp-nba{background:#B4511F}.lg-sp.sp-mlb{background:#21498F}
 .lg-sp .sp-ic{width:24px;height:24px}
+.si-steps{margin:0 0 4px;padding-left:20px;display:grid;gap:6px;font-size:14.5px;line-height:1.45}
+.nl-bi .si-card .si-steps li{color:var(--ink)}
+.jn-kick{display:flex;align-items:center;gap:8px;margin:0 0 6px !important;font-weight:800;font-size:13px !important;color:rgba(255,255,255,.85) !important}
+.jn-kick .sp-ic{width:20px;height:20px}
+.jn-band h1{margin:0 0 6px !important;font-size:clamp(30px,5vw,48px) !important}
+.jn-body{margin-top:14px}
+.su .seats{border:0;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.su .seats label{display:flex;align-items:center;gap:10px;border:1px solid var(--line-2);border-radius:12px;padding:10px 12px;background:var(--field);cursor:pointer}
+.su .seats label.taken{opacity:.55;cursor:default;background:var(--surface-2)}
+.su .seats label:has(input:checked){border-color:var(--sp);box-shadow:inset 0 0 0 1px var(--sp);background:var(--sp-soft)}
+.su .seats input{position:absolute;opacity:0;pointer-events:none}
+.su .seats label:has(input:focus-visible){outline:2px solid var(--brand);outline-offset:2px}
+.su .seats span{display:grid;min-width:0}
+.su .seats small{color:var(--muted)}
+.su .seats b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:520px){.su .seats{grid-template-columns:1fr 1fr;gap:6px}.su .seats label{padding:8px 9px;gap:8px}}
