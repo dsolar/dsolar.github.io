@@ -114,8 +114,17 @@
     return `<tr class="detail"><td colspan="${cols()}"><div class="det">
       <div><h4>${D.league === "nba" ? "This season" : "2026 season"}</h4>${profile(p)}<h4>Consensus rank over time</h4>${spark(p)}</div>
       <div><h4>Board by board</h4><ul>${live.map((s) => `<li class="${p.ranks[s.id] == null ? "miss" : ""}"><span>${esc(s.name)}${s.analyst ? ` <span class="note">(${esc(s.analyst.split(" ").slice(-1)[0])})</span>` : ""}</span><span>${p.ranks[s.id] ?? `not in top ${s.count}`}</span></li>`).join("")}
-        ${mk.map((s) => `<li class="${p.mocks[s.id] ? "" : "miss"}"><span>${esc(s.name)}</span><span>${p.mocks[s.id] ? `pick ${p.mocks[s.id][0]}${p.mocks[s.id][1] ? `, ${esc(p.mocks[s.id][1])}` : ""}` : "not in mock"}</span></li>`).join("")}</ul></div>
+        ${mk.map((s) => `<li class="${p.mocks[s.id] ? "" : "miss"}"><span>${esc(s.name)}</span><span>${p.mocks[s.id] ? `pick ${p.mocks[s.id][0]}${p.mocks[s.id][1] ? `, ${esc(p.mocks[s.id][1])}` : ""}` : "not in mock"}</span></li>`).join("")}</ul>
+        ${marketLines(p)}</div>
     </div></td></tr>`;
+  }
+
+  // Kalshi's player markets that name him, as chances.
+  function marketLines(p) {
+    const list = ((D.markets || {}).list || []).map((m) => ({ m, o: m.outcomes.find((o) => o.pid === p.id) })).filter((x) => x.o);
+    if (!list.length) return "";
+    return `<h4>Markets</h4><ul>${list.map(({ m, o }) => `<li><span>${esc(m.title)}</span><span>${Math.round(o.p)}%</span></li>`).join("")}</ul>
+      <p class="note">Kalshi, ${fmtDay(D.markets.updated)}. <a href="#${D.league}/markets">All markets</a></p>`;
   }
 
   async function render(lg) {

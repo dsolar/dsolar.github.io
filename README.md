@@ -451,6 +451,12 @@ Pushing a new snapshot rebuilds `draft/nba.json` and `draft/nfl.json` through th
 
 **Trade pricing.** Bots price NFL trades on the Jimmy Johnson chart and NBA trades on the curve in `draft/engine.js`, with future picks half a round lower per year out. `node tools/draft_trades_test.js` runs real trade-ups (Rams 15 to 1, 49ers 12 to 3, Mavericks 5 to 3, Pelicans 23 to 13 and more) through that pricing and fails if any lands outside its range. Run it after changing pick values.
 
+**Markets tab.** `tools/draft_markets.py` reads Kalshi's public market data each morning (no account needed) into `tools/draft_data/markets.json`; the build keeps player markets only (No. 1 pick, first QB taken, who declares and so on), drops team markets and any market whose quotes are mostly too wide to mean anything, and matches names to the board. A player's odds also show in his board detail.
+
+**Top 10 Challenge.** Visitors post a top-10 mock under a name and a 4-to-8-digit PIN. It runs on the site's Supabase project (`tools/draft_challenge_supabase.sql`, already set up; safe to run again). Scoring is by pick number: 3 for the exact player, 1 within two picks, 0.5 elsewhere in the top 10, times an early bonus (2x for a pick set on Nov 3, 2026, sliding to 1x at the lock). Picks keep the time they were set until they change, and everyone's picks are public. Before the draft the leaderboard scores against today's consensus. Two things to do later:
+- When the NBA announces its 2027 draft date, update the lock: `update bb_drafts set lock_at = '<date> 20:00-04', note = 'Round 1, <date>' where league = 'nba';` in the Supabase SQL editor.
+- After each draft, add `"results": ["player-id", ...]` (the first ten picks' board ids, in order) to that league's data; the leaderboard switches to final scores.
+
 ## Wipe Yoenis: luck, drafts and manager profiles
 
 Player lookup (the Players section) builds its index in the browser from data the page already has: every draft board, the keeper lists, every trade, `history.picked` (every pickup worth at least a point, from `tools/yoenis_history_build.py`) and the awards.

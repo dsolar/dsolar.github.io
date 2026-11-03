@@ -242,23 +242,29 @@ def markets(league, players, canon):
                 pid = canon(m.group(1))
                 declare.append({"n": m.group(1), "pid": pid if pid in ids else None, "p": o["price"]})
             continue
-        title = next((t.format(*re.search(rx, e["event"]).groups()) for rx, t in MARKET_NAMES if re.search(rx, e["event"])), None)
-        if not title:
+        hit = next(((i, t.format(*re.search(rx, e["event"]).groups())) for i, (rx, t) in enumerate(MARKET_NAMES) if re.search(rx, e["event"])), None)
+        if not hit:
             continue
+        rank, title = hit
         outs = []
         for o in e.get("outcomes", []):
             if o.get("price") is None or o["price"] < 0.5:
                 continue
+            # No real market: a bid of 1 and an ask of 93 says nothing, so skip quotes that wide.
+            spread = o["ask"] - o["bid"] if o.get("bid") is not None and o.get("ask") else 0
+            if spread > 60:
+                continue
             pid = canon(o["name"])
-            outs.append({"n": o["name"], "pid": pid if pid in ids else None, "p": o["price"]})
+            outs.append({"n": o["name"], "pid": pid if pid in ids else None, "p": o["price"], "_s": spread})
         # A player market: most outcomes are players on the board.
-        if outs and sum(1 for o in outs if o["pid"]) >= max(1, len(outs) * 0.6):
-            out.append({"id": e["event"], "title": title, "url": e.get("url"), "outcomes": outs})
+        spreads = sorted(o.pop("_s") for o in outs)
+        thin = spreads and spreads[len(spreads) // 2] > 30   # most quotes too wide to mean much
+        if len(outs) >= 2 and not thin and sum(1 for o in outs if o["pid"]) >= max(1, len(outs) * 0.6):
+            out.append({"id": e["event"], "title": title, "url": e.get("url"), "outcomes": outs, "_o": rank})
     if declare:
         out.append({"id": "declare", "title": "Declares for the draft", "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
-                    "outcomes": sorted(declare, key=lambda o: -o["p"])})
-    order = {t: i for i, (_, t) in enumerate(MARKET_NAMES)}
-    out.sort(key=lambda m: (order.get(re.sub(r"\d+", "{0}", m["title"]), 99), m["title"]))
+                    "outcomes": sorted(declare, key=lambda o: -o["p"]), "_o": 99})
+    out.sort(key=lambda m: (m.pop("_o"), m["title"]))
     return {"source": "Kalshi", "updated": raw.get("updated"), "list": out} if out else None
 
 

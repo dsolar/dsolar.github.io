@@ -427,6 +427,50 @@ body[data-screen] .trade-pick select{background:var(--panel);color:var(--chalk)}
 .rv-tile.gold{border-color:#F5D547}.rv-tile.gold b{color:#F5D547}
 .rv-tap{margin-top:24px;font-size:13px;color:#8D929B}
 @media (max-width:700px){.reveal{grid-template-columns:1fr;grid-template-rows:auto 1fr}.rv-team{min-height:200px}.rv-num{font-size:240px}}
+
+/* Top 10 Challenge and Markets */
+.challenge,.markets{padding-top:18px}
+.ch-lock{font-weight:600;margin:10px 0 0}
+.ch-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin-top:16px;align-items:start}
+.ch-grid h3,.ch-h{font:700 20px/1.2 var(--display);margin:0 0 8px}
+.ch-h{margin-top:26px}
+.ch-slots,.ch-list,.ch-board,.ch-picks{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.ch-slot{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);cursor:pointer;min-height:52px}
+.ch-slot.on{outline:2px solid var(--chalk);outline-offset:-1px}
+.ch-slot.empty .ct{color:var(--faint)}
+.ch-slot .cn,.ch-picks .cn{font:700 20px/1 var(--display);width:26px;text-align:right;flex:none}
+.ct{flex:1;min-width:0}.ct b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ct small{color:var(--dim);font-size:12.5px}
+.cm{font:600 12px/1 var(--body);padding:4px 6px;border-radius:4px;border:1px dashed var(--line);color:var(--dim);flex:none}
+.cm.kept{border-style:solid;color:var(--chalk)}
+.ca{display:flex;gap:2px;flex:none}
+.ic{border:0;background:none;color:var(--dim);font-size:13px;padding:6px;cursor:pointer;border-radius:4px}.ic:hover{background:var(--line)}.ic:disabled{opacity:.25;cursor:default}
+.ch-save{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-top:12px}
+.ch-save label{display:grid;gap:4px}.ch-save input{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:inherit;width:150px}
+.ch-pool .tools{margin:0 0 8px}
+.ch-list{max-height:560px;overflow-y:auto;border:1px solid var(--line);border-radius:6px;padding:6px;background:var(--panel)}
+.ch-p{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;background:none;color:inherit;font:inherit;padding:6px 8px;border-radius:6px;cursor:pointer}
+.ch-p:hover{background:var(--line)}.ch-p.used{opacity:.35;cursor:default}
+.ch-p .rk{font:700 18px/1 var(--display);width:30px;text-align:right;flex:none}
+.ch-board>li{border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+.ch-board>li.me{outline:2px solid var(--chalk);outline-offset:-1px}
+.ch-row{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;color:inherit;font:inherit;text-align:left;padding:10px 12px;cursor:pointer}
+.ch-row .rn{font:700 20px/1 var(--display);width:24px}
+.ch-row .pts{font:700 22px/1 var(--display)}
+.ch-picks{padding:0 12px 12px 48px;gap:4px}.ch-picks li{display:flex;gap:10px;align-items:center;font-size:14px}.ch-picks .cn{font-size:15px;width:20px}
+.mkt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:16px}
+.mkt{border:1px solid var(--line);border-radius:6px;background:var(--panel);padding:12px 14px}
+.mkt header{display:flex;justify-content:space-between;align-items:baseline;gap:10px}.mkt h3{font:700 19px/1.2 var(--display);margin:0}
+.mkt ol{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
+.mkt li{display:grid;grid-template-columns:minmax(0,1fr) 70px 40px;gap:10px;align-items:center}
+.mn b{display:block;font-size:14.5px}.mn small{color:var(--dim);font-size:12px}
+.mbar{height:8px;background:var(--line);border-radius:4px;overflow:hidden}.mbar i{display:block;height:100%;background:var(--chalk)}
+.mp{font:700 15px/1 var(--display);text-align:right}
+@media (max-width:760px){
+  .ch-grid{grid-template-columns:1fr}
+  .ch-list{max-height:380px}
+  .tabs{overflow-x:auto;scrollbar-width:none}
+  body[data-screen] .tabs a,.tabs a{font-size:16px;padding:9px 9px 8px;white-space:nowrap}
+}
 </style>
 </head>
 <body>
@@ -449,6 +493,8 @@ body[data-screen] .trade-pick select{background:var(--panel);color:var(--chalk)}
   <nav class="tabs" aria-label="Views">
     <a href="#" data-view="board" aria-current="page">Big Board</a>
     <a href="#" data-view="mock">Mock Draft</a>
+    <a href="#" data-view="challenge">Challenge</a>
+    <a href="#" data-view="markets">Markets</a>
   </nav>
 
   <div id="board-view">
@@ -488,30 +534,38 @@ body[data-screen] .trade-pick select{background:var(--panel);color:var(--chalk)}
   <p class="stamp" id="stamp"></p>
   </div>
   <div id="mock-view" hidden></div>
+  <div id="challenge-view" hidden></div>
+  <div id="markets-view" hidden></div>
 </main>
 
-<script src="common.js?v=23"></script>
-<script src="engine.js?v=23"></script>
-<script src="board.js?v=23"></script>
-<script src="mock.js?v=23"></script>
+<script src="common.js?v=25"></script>
+<script src="engine.js?v=25"></script>
+<script src="board.js?v=25"></script>
+<script src="mock.js?v=25"></script>
+<script src="challenge.js?v=25"></script>
+<script src="markets.js?v=25"></script>
 <script>
 (() => {
-  // #nba, #nfl, #nba/mock, #nfl/mock
+  // #nba, #nfl, then /mock, /challenge or /markets
+  const VIEWS = ["board", "mock", "challenge", "markets"];
   const parse = () => {
     const [lg, view] = location.hash.slice(1).split("/");
     const saved = BB.store.get("bigboard") || {};
-    return { lg: lg === "nfl" || lg === "nba" ? lg : (saved.lg || "nba"), view: view === "mock" ? "mock" : (lg ? "board" : (saved.view || "board")) };
+    return { lg: lg === "nfl" || lg === "nba" ? lg : (saved.lg || "nba"), view: VIEWS.includes(view) ? view : (lg ? "board" : (VIEWS.includes(saved.view) ? saved.view : "board")) };
   };
   async function go() {
     const { lg, view } = parse();
     document.querySelectorAll("button[data-lg]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lg === lg)));
     document.querySelectorAll(".tabs [data-view]").forEach((b) => b.setAttribute("aria-current", b.dataset.view === view ? "page" : "false"));
-    document.getElementById("board-view").hidden = view !== "board";
-    document.getElementById("mock-view").hidden = view !== "mock";
+    VIEWS.forEach((v) => { document.getElementById(v + "-view").hidden = view !== v; });
     document.body.dataset.screen = view;
     BB.store.set("bigboard", { lg, view });
     try { const D = await BB.data(lg); document.getElementById("kicker").textContent = `${D.year} ${lg.toUpperCase()} Draft`; } catch (e) { /* the view says so */ }
-    if (view === "board") { Mock.stop(); Board.render(lg); } else Mock.render(lg);
+    if (view !== "mock") Mock.stop();
+    if (view === "board") Board.render(lg);
+    else if (view === "mock") Mock.render(lg);
+    else if (view === "challenge") Challenge.render(lg);
+    else Markets.render(lg);
   }
   document.addEventListener("click", (e) => {
     const l = e.target.closest("button[data-lg]"), v = e.target.closest(".tabs [data-view]");
@@ -519,7 +573,7 @@ body[data-screen] .trade-pick select{background:var(--panel);color:var(--chalk)}
     e.preventDefault();
     const cur = parse();
     const lg = l ? l.dataset.lg : cur.lg, view = v ? v.dataset.view : cur.view;
-    history.replaceState(null, "", "#" + lg + (view === "mock" ? "/mock" : ""));
+    history.replaceState(null, "", "#" + lg + (view === "board" ? "" : "/" + view));
     go();
   });
   window.addEventListener("hashchange", go);
