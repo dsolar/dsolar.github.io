@@ -287,6 +287,17 @@
   const withScoring = (sport, spec) => (spec && (spec.type === "points" || spec.type === "cats")
     ? Object.assign({}, sport, { scorings: Object.assign({}, sport.scorings, { custom: customScoring(sport, spec) }) }) : sport);
 
+  // Which sport is in season. Each runs on a month-day window (mmdd), wrapping the new year where needed:
+  // regular season start to the end of the fantasy season. The default sport is the one whose fantasy season matters
+  // most right now: football from August drafts until its fantasy playoffs end in early January, then basketball,
+  // then baseball from its March drafts through July.
+  const SEASONS = { nfl: [901, 107], nba: [1020, 415], mlb: [325, 928] };
+  const DEFAULT_SPORT = [[801, 107, "nfl"], [108, 314, "nba"], [315, 731, "mlb"]];
+  const mmdd = (d) => (d.getMonth() + 1) * 100 + d.getDate();
+  const within = (x, [a, b]) => (a <= b ? x >= a && x <= b : x >= a || x <= b);
+  const seasonOn = (key, date) => !!SEASONS[key] && within(mmdd(date || new Date()), SEASONS[key]);
+  const inSeason = (date) => { const x = mmdd(date || new Date()); return (DEFAULT_SPORT.find(([a, b]) => within(x, [a, b])) || [0, 0, "nfl"])[2]; };
+
   // Each pro team's main color, for its abbreviation next to a player's name. Colors only: no logos or marks.
   const TEAM_COLORS = {
     nba: { ATL: "#E03A3E", BOS: "#007A33", BRK: "#000000", CHO: "#1D1160", CHI: "#CE1141", CLE: "#860038", DAL: "#00538C", DEN: "#0E2240", DET: "#C8102E", GSW: "#1D428A",
@@ -304,5 +315,5 @@
   const inkOn = (hex) => { const n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255; return 0.299 * r + 0.587 * g + 0.114 * b > 160 ? "#111" : "#fff"; };
   const teamColor = (sportKey, abbr) => { const c = (TEAM_COLORS[sportKey] || {})[abbr]; return c ? { bg: c, ink: inkOn(c) } : null; };
 
-  return { ALL, nba, nfl, mlb, attach, TEAM_COLORS, teamColor, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines };
+  return { ALL, nba, nfl, mlb, attach, TEAM_COLORS, teamColor, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn };
 });

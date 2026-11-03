@@ -7,7 +7,7 @@
   const theme = U.theme("fk-lab");
   const top = $("#top"), app = $("#app");
   const BLURB = { nba: "Real per-game lines, 9-cat or points", nfl: "Season points, half PPR, PPR or standard", mlb: "Last season paced to full, 5x5 or 8x8" };
-  const DEFAULTS = { sport: "nba", scoring: "", type: "snake", teams: 10, slot: 0, clock: 30, budget: 200, bench: null, lineup: "", name: "", reveal: "start", test: 1, trades: 1 };
+  const DEFAULTS = { sport: S.inSeason(), scoring: "", type: "snake", teams: 10, slot: 0, clock: 30, budget: 200, bench: null, lineup: "", name: "", reveal: "start", test: 1, trades: 1 };
   let cfg = Object.assign({}, DEFAULTS, store.get("cfg", {}));
   // ?s=nfl (from the fantasy hub) picks the sport for setup and rankings
   const qs = new URLSearchParams(location.search).get("s");
@@ -45,7 +45,7 @@
     const right = `<a class="btn sm ghost" href="../fantasy/">All fantasy</a><button class="btn sm ghost" data-act="theme">${theme.dark() ? "Light" : "Dark"}</button>${mock ? `<button class="btn sm" data-act="new">New mock</button>` : ""}`;
     top.innerHTML = U.shell({ brand: { name: "Draft Lab", href: "./", mark: `<img src="mark.svg" alt="">` },
       tabs: [["draft", "Mock draft"], ["rankings", "Rankings"], ["league", "Demo league"], ["leagues", "Your leagues"], ["kit", "The kit"]], tab, right,
-      hrefOf: (t, sub) => (t === "league" ? "league.html" : t === "leagues" ? "leagues.html" : "#" + t + (sub ? "/" + sub : "")) });
+      hrefOf: (t, sub) => (t === "league" ? `league.html?s=${cfg.sport}` : t === "leagues" ? "leagues.html" : "#" + t + (sub ? "/" + sub : "")) });
   }
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-act]");

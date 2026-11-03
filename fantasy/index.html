@@ -30,6 +30,7 @@
 .sp-h h2{margin:0;font-size:clamp(34px,3.6vw,48px);--disp-wdth:66;color:var(--ink)}
 .sp-h p{margin:6px 0 0;color:var(--muted);font-size:14px}
 .sp-h .pool{display:block;margin-top:10px;font-size:12px;color:var(--dim);min-height:1.2em}
+.sp-h .season{position:absolute;top:16px;right:18px;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;background:color-mix(in srgb,var(--sp) 18%,var(--surface));color:var(--ink);border:1px solid color-mix(in srgb,var(--sp) 45%,transparent)}
 .lg{margin:0 16px;padding:16px;border-radius:10px;background:var(--band);color:#EEF2F7;display:grid;gap:8px;text-decoration:none}
 .lg:hover{filter:brightness(1.08)}
 .lg small{font-size:12px;font-weight:700;color:color-mix(in srgb,var(--sp) 55%,#fff)}
@@ -187,6 +188,24 @@
     i.textContent = note;
     li.classList.add("live");
   });
+
+  // The sport in season goes first, and each one playing now says so. Same calendar as Draft Lab (sports.js):
+  // a season runs from its first games to the end of its fantasy season, and the lead sport is football from August
+  // drafts to early January, basketball to mid March, then baseball. /fantasy/nfl/ and ?s=nfl put that sport first.
+  var md = function (d) { return (d.getMonth() + 1) * 100 + d.getDate(); };
+  var within = function (x, r) { return r[0] <= r[1] ? x >= r[0] && x <= r[1] : x >= r[0] || x <= r[1]; };
+  var SEASONS = { nfl: [901, 107], nba: [1020, 415], mlb: [325, 928] };
+  var today = md(new Date());
+  var lead = [[801, 107, "nfl"], [108, 314, "nba"], [315, 731, "mlb"]].filter(function (r) { return within(today, r); })[0];
+  var asked = new URLSearchParams(location.search).get("s");
+  var first = NAMES[asked] ? asked : lead ? lead[2] : "nfl";
+  var box = document.querySelector(".sports"), nav = document.querySelector(".fk-nav nav");
+  ["mlb", "nba", "nfl"].sort(function (a, b) { return (a === first) - (b === first); }).forEach(function (k) {
+    var sec = document.getElementById(k), link = nav.querySelector('a[href="#' + k + '"]');
+    if (k === first) { box.insertBefore(sec, box.firstChild); nav.insertBefore(link, nav.firstChild); }
+    if (within(today, SEASONS[k])) sec.querySelector(".sp-h").insertAdjacentHTML("beforeend", '<span class="season">In season</span>');
+  });
+  if (NAMES[asked] && innerWidth < 1060) document.getElementById(asked).scrollIntoView();
 
   // The player pools, from the same files Draft Lab uses.
   document.querySelectorAll("[data-pool]").forEach(function (el) {

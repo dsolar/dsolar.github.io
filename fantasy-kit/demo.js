@@ -13,7 +13,7 @@
   };
   const GNAMES = { nba: "Last Team Standing", nfl: "Off With Their Heads", mlb: "Sudden Death" };
   const params = new URLSearchParams(location.search);
-  const sportKey = S.ALL[params.get("s")] ? params.get("s") : store.get("last", "nba");
+  const sportKey = S.ALL[params.get("s")] ? params.get("s") : store.get("last", S.inSeason());
   const fmt = params.get("f") === "g" ? "g" : params.get("f") === "h" ? "h" : params.get("s") ? "h" : store.get("lastf", "h");
   const guil = fmt === "g";
   const KEY = sportKey + (guil ? ":g" : "");

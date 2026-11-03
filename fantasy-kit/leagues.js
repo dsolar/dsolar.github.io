@@ -12,7 +12,7 @@
   const SPORT_CLR = { nba: 4, nfl: 2, mlb: 0 };
   const BLURB = { nba: "Points or categories", nfl: "PPR, half or standard", mlb: "Roto or points" };
   let sent = null, busy = false, view = "list";
-  const form = { sport: "nfl", teams: 10, type: "snake", clock: 90, season: "h2h", weeks: 14, trades: 1, scoring: "",
+  const form = { sport: S.inSeason(), teams: 10, type: "snake", clock: 90, season: "h2h", weeks: 14, trades: 1, scoring: "",
     lineup: "", bench: null, playoffs: 4, deadline: null, review: "vote", faab: null, waiverHours: 36,
     weights: null, cats: null, waivers: "faab", ir: 1, maxAdds: 0, posMax: {}, keepers: 0, keeperCost: "round", legs: "1", cons: "none", median: 0, bestball: 0, divs: 0, rookie: 3, fpicks: 1, taxi: 2, ohold: "clock", tep: 0, ptd: 4, b100r: 0, b100c: 0, b300p: 0 };
   // scoring: a preset key, or "cp" (custom points) / "cc" (custom categories)
