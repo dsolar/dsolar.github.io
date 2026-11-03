@@ -86,7 +86,7 @@
       const ms = G.matchups(L(), ctx, w, frac(w));
       return ms.map((m) => ({
         href: matchHref(w, m.i), me: isMe(m.a) || isMe(m.b), status: m.final ? "final" : m.live ? "live" : "proj",
-        label: m.final ? "Final" : m.live ? "Live" : `Week ${w}`, sub: w > L().settings.weeks ? "Playoffs" : "",
+        label: m.final ? "Final" : m.live ? "Live" : `Week ${w}`, sub: w > L().settings.weeks ? kindName(m.kind, w) : "",
         a: { team: T(m.a), score: m.final || m.live ? m.sa : pts() ? m.pa : null, rec: recOf(m.a) }, b: { team: T(m.b), score: m.final || m.live ? m.sb : pts() ? m.pb : null, rec: recOf(m.b) }, m,
         wp: m.final ? null : m.winProb,
       })).sort((x, y) => (y.me ? 1 : 0) - (x.me ? 1 : 0));   // your game first
@@ -143,7 +143,7 @@
         <div class="stack" style="gap:8px"><div class="row"><h2 style="margin:0;font-size:15px">${over() ? "Final week" : `Week ${w} scoreboard`}</h2><a href="#league/scoreboard" class="small" style="margin-left:auto">All scores</a></div>${U.scoreboard(games, fmtS)}</div>
         <div class="cols"><div class="stack">
           ${myCards.trim() ? `<div class="m-only stack">${myCards}</div>` : ""}
-          ${mine ? `<div class="card"><div class="mod-h"><h2>Your matchup</h2><span class="ps">Week ${w}${w > L().settings.weeks ? ", playoffs" : ""}</span><a href="${matchHref(w, mine.i)}">Full matchup</a></div>${U.versus(versusVM(w, mine))}</div>` : ""}
+          ${mine ? `<div class="card"><div class="mod-h"><h2>Your matchup</h2><span class="ps">Week ${w}${w > L().settings.weeks ? `, ${esc(kindName(mine.kind, w).toLowerCase())}` : ""}</span><a href="${matchHref(w, mine.i)}">Full matchup</a></div>${U.versus(versusVM(w, mine))}</div>` : ""}
           ${lastWeekCard()}
           <div class="card"><div class="mod-h"><h2>Standings</h2><a href="#league/standings">Full standings</a></div>${U.standingsTable(st, { compact: true, pfLabel: pts() ? "PF" : "Cats", fmt: fmtS })}</div>
         </div><aside class="stack">
@@ -167,31 +167,46 @@
       return `<div class="card"><div class="mod-h"><h2>Week ${w} results</h2><span class="ps">${line}${hi ? `${line ? ". " : ""}High score: ${esc(hi[0].abbr)} ${fmtS(hi[1])}` : ""}</span><a href="#league/scoreboard/${w}">Scoreboard</a></div><div class="bd sbtwo">${U.scoreboard(games.map((g) => Object.assign({}, g, { wp: null })), fmtS, { list: true })}</div></div>`;
     }
     const moveTag = (m) => (m > 0 ? `<span class="tag win">+${m}</span>` : m < 0 ? `<span class="tag loss">${m}</span>` : `<span class="ps">-</span>`);
-    function championOf() {
-      if (gl()) return G.champion(L());
-      if (!L().settings.playoffTeams) return standings()[0] ? standings()[0].team : null;   // no playoffs: first place wins
-      const fin = L().results[G.totalWeeks(L())];
-      if (!fin || !fin[0]) return null;
-      return fin[0].w === "b" ? fin[0].b : fin[0].a;
-    }
+    const championOf = () => G.finish(L()).champion;
+    const byes = () => { const n = L().settings.playoffTeams || 0; return n >= 2 ? 2 ** Math.ceil(Math.log2(n)) - n : 0; };
     function finishTag(id) {
       if (!over()) return "";
-      if (!L().settings.playoffTeams) return id === championOf() ? ` <span class="tag gold">Champion</span>` : "";
-      const fin = L().results[G.totalWeeks(L())];
-      if (!fin || !fin[0]) return "";
-      const win = fin[0].w === "b" ? fin[0].b : fin[0].a, lose = win === fin[0].a ? fin[0].b : fin[0].a;
-      return id === win ? ` <span class="tag gold">Champion</span>` : id === lose ? ` <span class="tag">Runner-up</span>` : "";
+      const f = G.finish(L());
+      return id === f.champion ? ` <span class="tag gold">Champion</span>` : id === f.runnerUp ? ` <span class="tag">Runner-up</span>` : id === f.third ? ` <span class="tag">Third</span>`
+        : id === f.consolation ? ` <span class="tag info">Consolation</span>` : "";
     }
-    // If the season ended today: the seeds, first-round games and the rounds after them.
+    // a playoff game's label: the round, and which bracket it's in
+    function kindName(kind, w) {
+      const rd = G.roundOf(L(), w);
+      if (!rd) return "Playoffs";
+      const leg = rd.weeks.length > 1 ? `, week ${rd.weeks.indexOf(w) + 1} of 2` : "";
+      return kind === "third" ? `Third place${leg}` : kind === "cons" ? `Consolation ${rd.name.toLowerCase()}${leg}` : `${rd.name}${leg}`;
+    }
+    // short week chips: "Week 9", then "Semis", "Final 1", "Final 2"
+    function weekChip(x) {
+      const rd = G.roundOf(L(), x);
+      if (!rd) return `Week ${x}`;
+      const short = { Final: "Final", Semifinals: "Semis", Quarterfinals: "Quarters" }[rd.name] || rd.name.replace("Round ", "R");
+      return rd.weeks.length > 1 ? `${short} ${rd.weeks.indexOf(x) + 1}` : short;
+    }
+    function playoffLine(s) {
+      const n = s.playoffTeams, P = 2 ** Math.ceil(Math.log2(n)), byes = P - n, plan = G.playoffPlan(L());
+      const legs = s.playoffLegs === "all2" ? ", every round two weeks" : s.playoffLegs === "final2" ? ", a two-week final" : "";
+      const extra = s.consolation === "third" ? ", and a third-place game" : s.consolation === "bracket" ? ", and a consolation bracket for the teams that miss" : "";
+      return `${s.weeks} weeks, then ${n} teams in the playoffs${byes ? ` (the top ${byes} get a bye)` : ""} over ${plan.reduce((a, rd) => a + rd.weeks.length, 0)} weeks${legs}${extra}`;
+    }
+    // If the season ended today: the seeds, first-round games (and byes) and the rounds after them.
     function bracketPreview() {
       const n = L().settings.playoffTeams, seeds = standings().slice(0, n);
       if (n < 2) return `<p class="ps" style="margin:0">No playoffs in this league.</p>`;
-      const pairs = [];
-      for (let i = 0; i < n / 2; i++) pairs.push([seeds[i], seeds[n - 1 - i]]);
+      const P = 2 ** Math.ceil(Math.log2(n)), first = [];
+      for (let i = 0; i < P / 2; i++) first.push([seeds[i], seeds[P - 1 - i] || null]);
       const team = (r) => `<div class="bk-t${isMe(r.team) ? " me" : ""}"><span class="sd">${r.rank}</span>${teamAv(T(r.team), "sm")}<span class="ell">${esc(T(r.team).name)}</span><span class="ps">${esc(recOf(r.team))}</span></div>`;
-      const rounds = [];
-      for (let k = 1, m = n / 2; m >= 1; k++, m /= 2) rounds.push({ name: m === 1 ? "Final" : m === 2 ? "Semifinals" : `Round ${k}`, week: L().settings.weeks + k, games: m });
-      return `<p class="ps" style="margin:0 0 10px">If the season ended today:</p><div class="bk">${rounds.map((rd, ri) => `<div class="bk-r"><b class="ps">${esc(rd.name)}, week ${rd.week}</b>${ri === 0 ? pairs.map(([a, b]) => `<div class="bk-g">${team(a)}${team(b)}</div>`).join("") : Array.from({ length: rd.games }, () => `<div class="bk-g tbd"><div class="bk-t"><span class="ps">Winner</span></div><div class="bk-t"><span class="ps">Winner</span></div></div>`).join("")}</div>`).join("")}</div>`;
+      const wk = (rd) => (rd.weeks.length > 1 ? `weeks ${rd.weeks[0]} and ${rd.weeks[1]}` : `week ${rd.weeks[0]}`);
+      const tbd = `<div class="bk-g tbd"><div class="bk-t"><span class="ps">Winner</span></div><div class="bk-t"><span class="ps">Winner</span></div></div>`;
+      return `<p class="ps" style="margin:0 0 10px">If the season ended today:</p><div class="bk">${G.playoffPlan(L()).map((rd, ri) => `<div class="bk-r"><b class="ps">${esc(rd.name)}, ${wk(rd)}</b>${ri === 0
+        ? first.map(([a, b]) => (b ? `<div class="bk-g">${team(a)}${team(b)}</div>` : `<div class="bk-g">${team(a)}<div class="bk-t"><span class="ps">Bye</span></div></div>`)).join("")
+        : Array.from({ length: P / 2 ** (ri + 1) }, () => tbd).join("")}</div>`).join("")}</div>`;
     }
     function standingsPage() {
       if (gl()) return survivorsPage();
@@ -199,11 +214,11 @@
       const st = standings().map((r) => Object.assign({}, r, { team: T(r.team), me: isMe(r.team), href: teamHref(r.team), cut: r.rank === L().settings.playoffTeams && r.rank < L().teams.length, badge: finishTag(r.team) }));
       const pw = G.power(L(), ctx);
       const br = G.bracket(L(), ctx);
-      return `<div class="wrap page"><div class="head"><h1 class="disp">Standings</h1><span class="ps">${!L().settings.playoffTeams ? `No playoffs: first place wins the title. Ties break on ${pts() ? "points for" : "categories won"}.` : over() ? "Final regular-season standings. The playoffs decided the title." : `Top ${L().settings.playoffTeams} make the playoffs (the dashed line). Ties break on ${pts() ? "points for" : "categories won"}.`}</span></div>
+      return `<div class="wrap page"><div class="head"><h1 class="disp">Standings</h1><span class="ps">${!L().settings.playoffTeams ? `No playoffs: first place wins the title. Ties break on ${pts() ? "points for" : "categories won"}.` : over() ? "Final regular-season standings. The playoffs decided the title." : `Top ${L().settings.playoffTeams} make the playoffs (the dashed line)${byes() ? `, and the top ${byes()} get a bye` : ""}. Ties break on ${pts() ? "points for" : "categories won"}.`}</span></div>
         ${U.standingsTable(st, { pfLabel: pts() ? "PF" : "Cats won", paLabel: pts() ? "PA" : "Cats lost", fmt: fmtS })}
         <div class="cols2">
           <div class="card"><div class="mod-h"><h2>Power rankings</h2><span class="ps">Record, scoring and roster strength</span></div><ol class="feed">${pw.map((r) => `<li style="grid-template-columns:24px auto minmax(0,1fr) auto;align-items:center;padding:8px 16px"><b class="ps num">${r.rank}</b>${teamAv(T(r.team), "sm")}<a class="ell" href="${teamHref(r.team)}" style="color:inherit;text-decoration:none"><b>${esc(T(r.team).name)}</b> <span class="ps">${recOf(r.team)}</span></a>${moveTag(r.move)}</li>`).join("")}</ol></div>
-          <div class="card"><div class="mod-h"><h2>Playoffs</h2><span class="ps">Weeks ${L().settings.weeks + 1} to ${G.totalWeeks(L())}</span></div><div class="bd">${br.length ? br.map((b) => `<div class="stack" style="gap:8px;margin-bottom:12px"><b class="ps">${esc(b.round)}, week ${b.week}</b>${U.scoreboard(b.games.map((m) => ({ href: matchHref(b.week, m.i), me: isMe(m.a) || isMe(m.b), status: m.final ? "final" : "proj", a: { team: T(m.a), score: m.final ? m.sa : m.pa }, b: { team: T(m.b), score: m.final ? m.sb : m.pb } })), fmtS)}</div>`).join("") : bracketPreview()}</div></div>
+          <div class="card"><div class="mod-h"><h2>Playoffs</h2><span class="ps">Weeks ${L().settings.weeks + 1} to ${G.totalWeeks(L())}</span></div><div class="bd pobd">${br.length ? br.map((b) => [["title", ""], ["third", "Third place"], ["cons", "Consolation"]].map(([k, name]) => [name, b.games.filter((m) => (m.kind || "title") === k)]).filter(([, gs]) => gs.length).map(([name, gs]) => `<div class="stack" style="gap:8px;margin-bottom:12px"><b class="ps">${name ? `${name}: ` : ""}${esc(b.round)}, week ${b.week}${b.leg ? ` (${b.leg})` : ""}</b>${U.scoreboard(gs.map((m) => ({ href: matchHref(b.week, m.i), me: isMe(m.a) || isMe(m.b), status: m.final ? "final" : "proj", a: { team: T(m.a), score: m.final ? m.sa : m.pa }, b: { team: T(m.b), score: m.final ? m.sb : m.pb } })), fmtS)}</div>`).join("")).join("") : bracketPreview()}</div></div>
         </div></div>`;
     }
     function scoreboardPage(arg) {
@@ -212,7 +227,7 @@
       const w = Math.min(curWeek(), +arg || ui.sbWeek || curWeek());
       const weeks = Array.from({ length: Math.min(curWeek(), G.totalWeeks(L())) }, (_, i) => i + 1);
       return `<div class="wrap page"><div class="head"><h1 class="disp">Scoreboard</h1></div>
-        <div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-sbweek="${x}" aria-pressed="${x === w}">${x > L().settings.weeks ? (x === G.totalWeeks(L()) ? "Final" : "Playoffs " + (x - L().settings.weeks)) : "Week " + x}</button>`).join("")}</div>
+        <div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-sbweek="${x}" aria-pressed="${x === w}">${weekChip(x)}</button>`).join("")}</div>
         <div class="cols2 hide-m">${G.matchups(L(), ctx, w, frac(w)).slice().sort((a, b) => (isMe(b.a) || isMe(b.b) ? 1 : 0) - (isMe(a.a) || isMe(a.b) ? 1 : 0)).map((m) => `<a class="card" href="${matchHref(w, m.i)}" style="text-decoration:none;color:inherit${isMe(m.a) || isMe(m.b) ? ";border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)" : ""}">${U.versus(Object.assign(versusVM(w, m), { cats: null }))}</a>`).join("")}</div>
         <div class="show-m sbm">${U.scoreboard(gamesVM(w), fmtS, { list: true })}</div></div>`;
     }
@@ -238,7 +253,7 @@
       const s = L().settings;
       return `<div class="wrap page"><div class="head"><h1 class="disp">League settings</h1></div><div class="cols2">
         <div class="card"><div class="mod-h"><h2>Format</h2></div><div class="bd"><dl class="kv"><dt>Sport</dt><dd>${esc(sport.name)}</dd><dt>Scoring</dt><dd>${esc(sc().label)}</dd><dt>Stats</dt><dd>${s.real ? `Real box scores${(opts.hooks || {}).real ? ` from ${esc(opts.hooks.real.source)}` : ""}. A week closes once its last games are in` : "Simulated from each player's season"}</dd><dt>Teams</dt><dd>${L().teams.length}</dd><dt>Format</dt><dd>${gl() ? `Guillotine: the lowest score each week is chopped${s.chops > 1 ? ` (${s.chops} a week)` : ""}. On a tie, the lower projection goes` : roto() ? "Rotisserie: season totals in each category, ranked" : s.tally === "cats" ? "Head to head: each category is a win or a loss" : s.tally === "allplay" ? "All-play: each week, your score against every team" : "Head to head"}${bb() ? ", best ball" : ""}</dd>
-          <dt>Season</dt><dd>${gl() ? `${s.weeks} weeks, until one team is left` : s.playoffTeams ? `${s.weeks} weeks, then ${s.playoffTeams} teams in the playoffs` : `${s.weeks} weeks, no playoffs: first place wins`}</dd>${s.trades === false ? `<dt>Trades</dt><dd>None</dd>` : `<dt>Trade deadline</dt><dd>${s.deadline ? `After week ${s.deadline}` : "None"}</dd><dt>Trade review</dt><dd>${s.tradeReview === "none" ? "None" : `${fmtHours(s.reviewHours)}, ${Math.round(s.vetoShare * 100)}% of the league to veto`}</dd><dt>Offers</dt><dd>Expire after ${fmtHours(s.offerHours || 48)}</dd>`}</dl></div></div>
+          <dt>Season</dt><dd>${gl() ? `${s.weeks} weeks, until one team is left` : s.playoffTeams ? playoffLine(s) : `${s.weeks} weeks, no playoffs: first place wins`}</dd>${s.trades === false ? `<dt>Trades</dt><dd>None</dd>` : `<dt>Trade deadline</dt><dd>${s.deadline ? `After week ${s.deadline}` : "None"}</dd><dt>Trade review</dt><dd>${s.tradeReview === "none" ? "None" : `${fmtHours(s.reviewHours)}, ${Math.round(s.vetoShare * 100)}% of the league to veto`}</dd><dt>Offers</dt><dd>Expire after ${fmtHours(s.offerHours || 48)}</dd>`}</dl></div></div>
         <div class="stack"><div class="card"><div class="mod-h"><h2>Rosters</h2></div><div class="bd"><dl class="kv"><dt>Starters</dt><dd>${s.lineup.map((x) => `<span class="slot" style="margin:0 3px 3px 0">${esc(x)}</span>`).join("")}</dd><dt>Bench</dt><dd>${s.bench}</dd><dt>IR spots</dt><dd>${s.ir || "None"}</dd>${s.maxAdds ? `<dt>Pickups</dt><dd>Up to ${s.maxAdds} a week, counting adds and won claims</dd>` : ""}${s.posMax && Object.keys(s.posMax).length ? `<dt>Position limits</dt><dd>${Object.entries(s.posMax).map(([k, v]) => `${v} ${esc(k)}`).join(", ")}</dd>` : ""}<dt>Lineups</dt><dd>${bb() ? "Best ball: set automatically" : "Set each week"}</dd><dt>Waivers</dt><dd>${s.waivers === "faab" ? `${s.faabBank ? `FAAB from the draft's time bank, $${Math.round(s.faab / 2)} to $${Math.round(s.faab * 1.5)}` : `$${s.faab} FAAB`}${gl() ? " for the whole season" : ""}, ${s.waiverAt != null ? `claims run ${Math.round(s.waiverAt / 24 * 10) / 10} days into each week` : `${s.waiverHours} hours after a drop`}` : "Rolling priority"}</dd><dt>Waiver order</dt><dd>${s.waivers === "faab" ? "The highest bid wins. On a tie, the better waiver priority wins" : "The best waiver priority wins"}. Winning a claim sends you to the back of the line, even within the same run.</dd></dl></div></div>
         ${sc().cats ? `<div class="card"><div class="mod-h"><h2>Categories</h2></div><div class="bd">${sc().cats.map((c) => `<span class="slot" style="margin:0 4px 4px 0">${esc(c.label)}</span>`).join("")}<p class="ps">${gl() ? "Each week, teams are ranked in every category: the best gets one point per team alive, the worst gets one. Lowest total is chopped." : "Head to head: win more categories than your opponent to win the week."}</p></div></div>` : ""}
       </div></div></div>`;
@@ -633,12 +648,19 @@
       for (let w = 1; w <= G.totalWeeks(L()); w++) {
         const games = w <= L().settings.weeks ? L().schedule[w - 1] : w <= L().week ? G.playoffGames(L(), ctx, w) : [];
         const i = games.findIndex((g) => g[0] === id || g[1] === id);
-        if (i < 0) { if (w > L().settings.weeks) rows.push(`<tr><td>Week ${w}</td><td colspan="3" class="ps">${w <= L().week ? "Out of the playoffs" : "Playoffs"}</td></tr>`); continue; }
+        if (i < 0) {
+          if (w > L().settings.weeks) {
+            const rd = G.roundOf(L(), w), row = rd && w <= L().week && G.postseason(L()).find((x) => x.round === rd.round);
+            const bye = row && row.main.some((g) => g.bye === id);
+            rows.push(`<tr><td>Week ${w}</td><td colspan="3" class="ps">${bye ? `A bye through the ${esc(rd.name.toLowerCase())}` : w <= L().week ? "Out of the playoffs" : "Playoffs"}</td></tr>`);
+          }
+          continue;
+        }
         const [a, b] = games[i], opp = a === id ? b : a;
         const res = L().results[w] && L().results[w][i];
         const mineA = a === id;
         const r = res ? (res.w === "t" ? "T" : (res.w === "a") === mineA ? "W" : "L") : "";
-        rows.push(`<tr${w === L().week ? ` class="me"` : ""}><td><a href="${matchHref(w, i)}">Week ${w}</a>${w > L().settings.weeks ? ` <span class="tag info">Playoffs</span>` : ""}</td><td>${teamName(T(opp), { owner: false })}</td><td class="r num">${res ? `<span class="${r === "W" ? "win" : r === "L" ? "loss" : ""}" style="font-weight:850">${r}</span> ${fmtS(mineA ? res.sa : res.sb)}-${fmtS(mineA ? res.sb : res.sa)}` : w === L().week ? `<span class="pill live">Live</span>` : ""}</td><td class="ps hide-s">${recOf(opp)}</td></tr>`);
+        rows.push(`<tr${w === L().week ? ` class="me"` : ""}><td><a href="${matchHref(w, i)}">Week ${w}</a>${w > L().settings.weeks ? ` <span class="tag info">${esc(kindName(games[i].kind, w))}</span>` : ""}</td><td>${teamName(T(opp), { owner: false })}</td><td class="r num">${res ? `<span class="${r === "W" ? "win" : r === "L" ? "loss" : ""}" style="font-weight:850">${r}</span> ${fmtS(mineA ? res.sa : res.sb)}-${fmtS(mineA ? res.sb : res.sa)}` : w === L().week ? `<span class="pill live">Live</span>` : ""}</td><td class="ps hide-s">${recOf(opp)}</td></tr>`);
       }
       return `<div class="wrap page">${teamHead(id)}<div class="table-wrap"><table class="t"><thead><tr><th>Week</th><th>Opponent</th><th class="r">Result</th><th class="hide-s">Their record</th></tr></thead><tbody>${rows.join("")}</tbody></table></div></div>`;
     }
@@ -705,8 +727,8 @@
       });
       const weeks = Array.from({ length: curWeek() }, (_, k) => k + 1);
       return `<div class="wrap page">
-        <div class="head"><h1 class="disp">${w > L().settings.weeks ? `Playoffs, round ${w - L().settings.weeks}` : `Week ${w} matchup`}</h1>${!pts() ? `<span class="ps">Each starter's line for the week so far.</span>` : ""}</div>
-        <div class="row" style="flex-wrap:wrap"><div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-mweek="${x}" aria-pressed="${x === w}">${x > L().settings.weeks ? "P" + (x - L().settings.weeks) : "Week " + x}</button>`).join("")}</div></div>
+        <div class="head"><h1 class="disp">${w > L().settings.weeks ? esc(kindName(m.kind, w)) : `Week ${w} matchup`}</h1>${!pts() ? `<span class="ps">Each starter's line for the week so far.</span>` : ""}</div>
+        <div class="row" style="flex-wrap:wrap"><div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-mweek="${x}" aria-pressed="${x === w}">${weekChip(x)}</button>`).join("")}</div></div>
         <div class="card">${U.versus(versusVM(w, m))}</div>
         <div class="cols2" style="grid-template-columns:minmax(0,1fr)">${U.vsTable(sport, rows, pts() ? { a: m.sa, b: m.sb } : null, (x) => (x == null ? "-" : typeof x === "string" ? (/^(No games|Didn't play|Yet to play)$/.test(x) ? `<span class="ps">${x}</span>` : x) : x.toFixed(1)))}</div>
         <div class="stack" style="gap:8px"><b class="ps">Other games, week ${w}</b>${U.scoreboard(gamesVM(w), fmtS)}</div></div>`;

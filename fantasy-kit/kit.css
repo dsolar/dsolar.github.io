@@ -553,6 +553,9 @@ dialog.fk-dlg h3{margin:0 0 6px;font-size:22px;padding-right:40px}
 .wpm{display:flex;height:4px;border-radius:2px;overflow:hidden;background:var(--surface-3);margin-top:3px}
 .wpm i{display:block;height:100%}
 .scoreboard.list{display:grid;gap:8px;overflow:visible}
+.pobd .scoreboard{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));overflow:visible}
+.pobd .scoreboard .game{width:auto}
+@media (max-width:700px){.pobd .scoreboard{grid-template-columns:repeat(2,minmax(0,1fr))}.pobd .scoreboard:not(.list) .game{width:auto}}
 .scoreboard.list .game{width:auto;padding:11px 14px}
 .scoreboard.list .game .ln{font-size:15px}
 @media (max-width:640px){

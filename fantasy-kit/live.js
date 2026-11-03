@@ -242,7 +242,7 @@
     const opts = Z.keeperOptions(L, lctx(), info.me), max = L.settings.keepers;
     const cur = (L.next.picks && L.next.picks[info.me]) || Z.autoKeepers(L, lctx(), info.me);
     U.dialog(`<h3>Your keepers</h3><p class="muted" style="margin:0 0 10px">Keep up to ${max}. Each costs ${L.draft && L.draft.type === "auction" ? "the price shown, out of next year's budget" : "the pick shown in next year's draft"}. The best values over their cost are checked to start.</p>
-      <form><ul class="seatl kp">${opts.map((o) => `<li><label class="check" style="flex:1;min-width:0"><input type="checkbox" name="k" value="${esc(o.pid)}"${cur.includes(o.pid) ? " checked" : ""}> <span class="ell"><b>${esc(o.n)}</b> <small>${esc(o.cost.label)}</small></span></label><span class="tag${o.surplus > 0 ? " win" : ""}">${o.surplus > 0 ? "Good value" : "Costly"}</span></li>`).join("")}</ul>
+      <form><ul class="seatl kp">${opts.map((o) => `<li><label class="check" style="flex:1;min-width:0"><input type="checkbox" name="k" value="${esc(o.pid)}"${cur.includes(o.pid) ? " checked" : ""}> <span class="ell"><b>${esc(o.n)}</b> <small>${esc(o.cost.label)}</small></span></label><span class="tag${o.surplus > 0 && o.pos !== "K" && o.pos !== "DEF" ? " win" : ""}">${o.pos === "K" || o.pos === "DEF" ? "Easy to replace" : o.surplus > 0 ? "Good value" : "Costly"}</span></li>`).join("")}</ul>
       <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">Save keepers</button></div></form>`, (fd) => {
       const ks = fd.getAll("k");
       if (ks.length > max) { U.toast(`You can keep ${max}`, true); return false; }

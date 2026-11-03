@@ -49,7 +49,7 @@
     const guillotine = s.format === "guillotine";
     if (guillotine) { s.chops = Math.max(1, s.chops); s.weeks = Math.ceil((n - 1) / s.chops); s.playoffTeams = 0; s.playoffWeeks = 0; }
     else if (s.format === "roto") { s.playoffTeams = 0; s.playoffWeeks = 0; }
-    else { s.playoffTeams = Math.min(s.playoffTeams, n - (n % 2)); s.playoffTeams = s.playoffTeams >= 2 ? s.playoffTeams : 0; s.playoffWeeks = s.playoffTeams ? Math.ceil(Math.log2(s.playoffTeams)) : 0; }
+    else { s.playoffTeams = Math.min(s.playoffTeams, n); s.playoffTeams = s.playoffTeams >= 2 ? s.playoffTeams : 0; s.playoffWeeks = planOf(s).reduce((a, rd) => a + rd.weeks.length, 0); }
     const seed = opts.seed != null ? opts.seed : D ? D.seed + 1 : Math.floor(Math.random() * 2 ** 31);
     const rosters = D ? F.rosters(D) : (opts.rosters || teams.map(() => []));
     // waiver priority starts as the reverse of the draft order
@@ -308,12 +308,13 @@
   function matchups(L, ctx, w, frac = 1) {
     if (isGuillotine(L) || isRoto(L)) return [];
     const games = w <= L.settings.weeks ? L.schedule[w - 1] : playoffGames(L, ctx, w);
-    return games.map(([a, b], i) => {
-      if (L.results[w] && L.results[w][i]) return Object.assign({ a, b, final: true, i }, L.results[w][i]);
+    return games.map((pair, i) => {
+      const [a, b] = pair, kind = pair.kind || (w > L.settings.weeks ? "title" : null);
+      if (L.results[w] && L.results[w][i]) return Object.assign({ a, b, final: true, i, kind }, L.results[w][i]);
       const x = teamWeek(L, ctx, a, w, frac), y = teamWeek(L, ctx, b, w, frac);
       const c = compare(L, ctx, x, y);
       const pa = projection(L, ctx, a, w), pb = projection(L, ctx, b, w);
-      return Object.assign({ a, b, final: false, i, live: frac > 0 && frac < 1, frac, ta: x, tb: y, pa: pa.total, pb: pb.total, winProb: winProb(L, ctx, c, pa.total, pb.total, frac) }, c);
+      return Object.assign({ a, b, final: false, i, kind, live: frac > 0 && frac < 1, frac, ta: x, tb: y, pa: pa.total, pb: pb.total, winProb: winProb(L, ctx, c, pa.total, pb.total, frac) }, c);
     });
   }
   // A simple live win probability: the projected margin shrinks toward the current margin as the week plays out.
@@ -429,7 +430,7 @@
       return { ok: true };
     }
     const games = matchups(L, ctx, w, 1);
-    L.results[w] = games.map((g) => ({ a: g.a, b: g.b, sa: g.sa, sb: g.sb, ties: g.ties || 0, w: g.w, cats: g.cats || null, ta: g.ta && g.ta.players ? { players: g.ta.players } : null, tb: g.tb && g.tb.players ? { players: g.tb.players } : null }));
+    L.results[w] = games.map((g) => ({ a: g.a, b: g.b, kind: g.kind || undefined, sa: g.sa, sb: g.sb, ties: g.ties || 0, w: g.w, cats: g.cats || null, ta: g.ta && g.ta.players ? { players: g.ta.players } : null, tb: g.tb && g.tb.players ? { players: g.tb.players } : null }));
     L.lineups[w] = L.lineups[w] || {};
     const best = {};
     if (L.settings.bestBall) for (const g of games) { if (g.ta && g.ta.lineup) best[g.a] = g.ta.lineup; if (g.tb && g.tb.lineup) best[g.b] = g.tb.lineup; }
@@ -539,25 +540,114 @@
     out.forEach((r, i) => { r.rank = i + 1; r.inPlayoffs = r.alive; });
     return out;
   }
-  // Playoff games for a week after the regular season: seeds 1 v 4, 2 v 3 and so on, winners advance.
-  function playoffGames(L, ctx, w) {
-    const k = w - L.settings.weeks;
-    let alive = standings(L).slice(0, L.settings.playoffTeams).map((r) => r.team);
-    for (let pw = 1; pw < k; pw++) {
-      const res = L.results[L.settings.weeks + pw];
-      if (!res) break;
-      alive = res.map((g) => (g.w === "b" ? g.b : g.a));
+  /* Playoffs. settings.playoffTeams can be any number from 2 up: when it isn't a power of two the top seeds get
+     byes. settings.playoffLegs: "1" (a week a round), "final2" (a two-week final), "all2" (every round two weeks,
+     scores added up). settings.consolation: "none", "third" (the semifinal losers play for third) or "bracket" (the
+     best of the teams that missed play their own bracket, finishing the same week as the final). Ties in a round go
+     to the higher seed. */
+  const ROUNDS = (R, r) => (r === R ? "Final" : r === R - 1 ? "Semifinals" : r === R - 2 ? "Quarterfinals" : `Round ${r}`);
+  function planOf(s) {
+    const m = s.playoffTeams || 0;
+    if (m < 2) return [];
+    const R = Math.ceil(Math.log2(m)), out = [];
+    let w = s.weeks + 1;
+    for (let r = 1; r <= R; r++) {
+      const legs = s.playoffLegs === "all2" || (s.playoffLegs === "final2" && r === R) ? 2 : 1;
+      out.push({ round: r, name: ROUNDS(R, r), weeks: Array.from({ length: legs }, (_, i) => w + i) });
+      w += legs;
     }
-    const games = [];
-    for (let i = 0; i < alive.length / 2; i++) games.push([alive[i], alive[alive.length - 1 - i]]);
-    return games;
+    return out;
   }
+  const playoffPlan = (L) => planOf(L.settings);
+  const roundOf = (L, w) => playoffPlan(L).find((rd) => rd.weeks.includes(w)) || null;
+  // One round of a bracket from its entrants, best seed first: in a field that isn't a power of two the top seeds
+  // sit out (a bye), and the rest play best against worst. Returns the games and the slots, in bracket order.
+  function pairUp(E) {
+    const P = 2 ** Math.ceil(Math.log2(Math.max(2, E.length))), slots = [];
+    for (let i = 0; i < P / 2; i++) slots.push(E[P - 1 - i] == null ? { bye: E[i] } : { a: E[i], b: E[P - 1 - i] });
+    return slots;
+  }
+  // How a game came out over the round's weeks: the legs add up. null until every leg is final.
+  function decide(L, rd, a, b) {
+    let sa = 0, sb = 0;
+    for (const w of rd.weeks) {
+      const g = (L.results[w] || []).find((x) => (x.a === a && x.b === b) || (x.a === b && x.b === a));
+      if (!g) return null;
+      if (g.a === a) { sa += g.sa; sb += g.sb; } else { sa += g.sb; sb += g.sa; }
+    }
+    return sb > sa ? { win: b, lose: a, sa, sb } : { win: a, lose: b, sa, sb };
+  }
+  // The whole postseason as far as results allow: for each round, the title games (with byes), a third-place
+  // game, and the consolation games, each with its outcome once the round is over.
+  function postseason(L) {
+    const plan = playoffPlan(L), R = plan.length, s = L.settings;
+    if (!R) return [];
+    const st = standings(L), seeds = st.slice(0, s.playoffTeams).map((r) => r.team);
+    const cons = s.consolation === "bracket" ? st.slice(s.playoffTeams, s.playoffTeams + 2 ** R).map((r) => r.team) : [];
+    const consR = cons.length >= 2 ? Math.ceil(Math.log2(cons.length)) : 0;
+    const seedOf = (t) => st.findIndex((r) => r.team === t);
+    let main = seeds, low = cons, semiLosers = [];
+    const out = [];
+    for (const rd of plan) {
+      const r = rd.round, row = { round: r, name: rd.name, weeks: rd.weeks, main: [], third: null, cons: [] };
+      if (main) {
+        const slots = pairUp(main), next = [];
+        for (const sl of slots) {
+          if (sl.bye != null) { row.main.push({ bye: sl.bye }); next.push(sl.bye); continue; }
+          const res = decide(L, rd, sl.a, sl.b);
+          row.main.push({ a: sl.a, b: sl.b, res });
+          next.push(res ? res.win : null);
+          if (r === R - 1) semiLosers.push(res ? res.lose : null);
+        }
+        main = next.every((x) => x != null) ? next : null;
+      }
+      if (r === R && s.consolation === "third" && R >= 2 && semiLosers.length === 2 && semiLosers.every((x) => x != null)) {
+        const [a, b] = semiLosers.slice().sort((x, y) => seedOf(x) - seedOf(y));
+        row.third = { a, b, res: decide(L, rd, a, b) };
+      }
+      if (consR && r > R - consR && low) {
+        const slots = pairUp(low), next = [];
+        for (const sl of slots) {
+          if (sl.bye != null) { row.cons.push({ bye: sl.bye }); next.push(sl.bye); continue; }
+          const res = decide(L, rd, sl.a, sl.b);
+          row.cons.push({ a: sl.a, b: sl.b, res });
+          next.push(res ? res.win : null);
+        }
+        low = next.every((x) => x != null) ? next : null;
+      }
+      out.push(row);
+    }
+    return out;
+  }
+  // The games of one playoff week, title games first (so the final is always game 0), then third place, then the
+  // consolation bracket. Each pair carries its kind.
+  function playoffGames(L, ctx, w) {
+    const rd = roundOf(L, w);
+    if (!rd) return [];
+    const row = postseason(L).find((x) => x.round === rd.round);
+    if (!row) return [];
+    const tag = (g, kind) => Object.assign([g.a, g.b], { kind });
+    return row.main.filter((g) => g.bye == null && g.a != null && g.b != null).map((g) => tag(g, "title"))
+      .concat(row.third ? [tag(row.third, "third")] : [], row.cons.filter((g) => g.bye == null && g.a != null && g.b != null).map((g) => tag(g, "cons")));
+  }
+  // How the season ended: the champion and runner-up, third place, and the consolation winner, as far as decided.
+  function finish(L) {
+    if (isGuillotine(L)) return { champion: champion(L) };
+    const st = standings(L);
+    if (isRoto(L) || !L.settings.playoffTeams) return { champion: L.week > totalWeeks(L) && st[0] ? st[0].team : null };
+    const ps = postseason(L), last = ps[ps.length - 1], fin = last && last.main[0] && last.main[0].res;
+    return { champion: fin ? fin.win : null, runnerUp: fin ? fin.lose : null, third: last && last.third && last.third.res ? last.third.res.win : null,
+      consolation: last && last.cons[0] && last.cons[0].res ? last.cons[0].res.win : null };
+  }
+  // The playoffs so far, a round at a time, for the standings page.
   function bracket(L, ctx) {
     const out = [];
-    for (let k = 1; k <= L.settings.playoffWeeks; k++) {
-      const w = L.settings.weeks + k;
-      if (w > L.week) break;
-      out.push({ week: w, round: k === L.settings.playoffWeeks ? "Final" : k === L.settings.playoffWeeks - 1 ? "Semifinals" : `Round ${k}`, games: matchups(L, ctx, w, w < L.week ? 1 : 0) });
+    for (const rd of playoffPlan(L)) {
+      for (const w of rd.weeks) {
+        if (w > L.week) return out;
+        const games = matchups(L, ctx, w, w < L.week ? 1 : 0);
+        out.push({ week: w, round: rd.name, leg: rd.weeks.length > 1 ? `${rd.weeks.indexOf(w) + 1} of 2` : "", games });
+      }
     }
     return out;
   }
@@ -903,7 +993,7 @@
   }
 
   return { DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
-    finishWeek, formOf, hot, standings, playoffGames, bracket, power, onWaivers, canRoster, addDrop, claim, cancelClaim, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
+    finishWeek, formOf, hot, standings, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, power, onWaivers, canRoster, addDrop, claim, cancelClaim, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
 });

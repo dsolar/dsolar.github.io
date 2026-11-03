@@ -33,7 +33,8 @@
     const weeks = s.weeks || 14, n = D.teams.length;
     // the commissioner's choices from the start-a-league form (D.season), with defaults for anything left out
     const settings = s.format === "guillotine" ? { format: "guillotine", bestBall: true, waiverAt: 60, faab: s.faab || 1000 }
-      : { format: s.format === "roto" ? "roto" : "h2h", tally: s.tally || "game", weeks, playoffTeams: s.format === "roto" ? 0 : Math.min(s.playoffTeams != null ? s.playoffTeams : 4, n - (n % 2)),
+      : { format: s.format === "roto" ? "roto" : "h2h", tally: s.tally || "game", weeks, playoffTeams: s.format === "roto" ? 0 : Math.min(s.playoffTeams != null ? s.playoffTeams : 4, n),
+        playoffLegs: s.playoffLegs || "1", consolation: s.consolation || "none",
         deadline: s.deadline != null ? s.deadline : Math.max(1, weeks - 3), tradeReview: s.review === "none" ? "none" : "vote", reviewHours: 24,
         waiverHours: s.waiverHours || 36, faab: s.faab || 100, waivers: s.waivers === "rolling" ? "rolling" : "faab" };
     // roster rules from the form: IR spots, a weekly pickup limit, position limits
@@ -153,7 +154,19 @@
             const mine = g[side], opp = side === "a" ? g.b : g.a, sm = side === "a" ? g.sa : g.sb, so = side === "a" ? g.sb : g.sa;
             if (mine == null || mine < 0 || opp == null || opp < 0) continue;
             const won = g.w === "t" ? null : g.w === side;
-            add(mine, "week", `week ${w} final`, `You ${won == null ? "tied" : won ? "beat" : "lost to"} ${teamName(opp)}, ${fmtS(sm)} to ${fmtS(so)}.`);
+            const rd = +w > cl.settings.weeks ? G.roundOf(cl, +w) : null;
+            if (!rd) { add(mine, "week", `week ${w} final`, `You ${won == null ? "tied" : won ? "beat" : "lost to"} ${teamName(opp)}, ${fmtS(sm)} to ${fmtS(so)}.`); continue; }
+            // playoffs: name the round, add up a two-week round, and say what's next
+            const what = g.kind === "cons" ? `consolation ${rd.name.toLowerCase()}` : g.kind === "third" ? "third-place game" : rd.name.toLowerCase();
+            const leg = rd.weeks.indexOf(+w), two = rd.weeks.length > 1;
+            if (two && leg === 0) { add(mine, "week", `${what}, week 1 of 2`, `You ${sm > so ? "lead" : sm < so ? "trail" : "are tied with"} ${teamName(opp)}, ${fmtS(sm)} to ${fmtS(so)}, with a week to go.`); continue; }
+            let tm = sm, to = so;
+            if (two) { const g0 = (cl.results[rd.weeks[0]] || []).find((x) => (x.a === mine && x.b === opp) || (x.b === mine && x.a === opp)); if (g0) { tm += g0.a === mine ? g0.sa : g0.sb; to += g0.a === mine ? g0.sb : g0.sa; } }
+            const seedFirst = G.standings(cl).findIndex((r) => r.team === mine) < G.standings(cl).findIndex((r) => r.team === opp);
+            const win = tm > to || (tm === to && seedFirst), last = rd.round === G.playoffPlan(cl).length;
+            const head = g.kind === "title" && last ? (win ? "you won the championship" : "you finished second") : g.kind === "third" ? (win ? "you finished third" : "you finished fourth")
+              : g.kind === "cons" && last ? (win ? "you won the consolation bracket" : `${what} final`) : `${what}: you ${win ? "advance" : "are out"}`;
+            add(mine, "week", head, `You ${win ? "beat" : "lost to"} ${teamName(opp)}, ${fmtS(tm)} to ${fmtS(to)}${two ? " over the two weeks" : ""}${tm === to ? ", and the tie went to the higher seed" : ""}.`);
           }
         }
       }
@@ -167,13 +180,17 @@
   // went for (a pickup costs $5), "price5" that plus $5.
   function keeperCost(L, pid) {
     const D = L.draft, how = L.settings.keeperCost || "round";
+    // a player who changed hands by trade keeps his draft cost; one who was dropped and picked up is a pickup
+    const owner = L.rosters.findIndex((r) => r.includes(pid));
+    const traded = (L.tx || []).some((e) => e.type === "trade" && [].concat(e.adds || [], e.drops || []).includes(pid));
+    const mine = (team) => owner >= 0 && (team === owner || traded);
     if (D && D.type === "auction") {
-      const sale = (D.sales || []).find((x) => x.pid === pid);
+      const sale = (D.sales || []).find((x) => x.pid === pid && mine(x.team));
       const base = sale ? sale.price : 5;
       return { price: how === "price5" ? base + 5 : base, label: `$${how === "price5" ? base + 5 : base}${sale ? "" : ", a pickup"}` };
     }
     const rounds = D ? D.rounds : 15;
-    const k = D ? D.board.findIndex((pk) => pk && pk.pid === pid && !pk.gone) : -1;
+    const k = D ? D.board.findIndex((pk) => pk && pk.pid === pid && !pk.gone && mine(pk.team)) : -1;
     const base = k >= 0 ? F.slotInfo(D, k).round : rounds;
     if (how === "free") return { round: null, label: "A last-round pick" };
     const r = Math.max(1, how === "round1" ? base - 1 : base);
@@ -185,11 +202,13 @@
     return L.rosters[teamId].map((id) => ctx.byId[id]).filter(Boolean).map((p) => {
       const c = keeperCost(L, p.id);
       const surplus = c.price != null ? (p.$ || 0) - c.price : c.round == null ? (p.$ || 0) + 100 : ((c.round - 1) * n + n / 2) - (p.rank || 999);
-      return { pid: p.id, n: p.n, cost: c, surplus };
+      return { pid: p.id, n: p.n, pos: p.pos[0], cost: c, surplus };
     }).sort((a, b) => b.surplus - a.surplus);
   }
   // A bot, or a manager who never chose, keeps his best values, up to the limit, as long as each beats its cost.
-  const autoKeepers = (L, ctx, teamId) => keeperOptions(L, ctx, teamId).filter((o) => o.surplus > 0).slice(0, L.settings.keepers || 0).map((o) => o.pid);
+  // Kickers and defenses come cheap every year, so nobody spends a keeper on one.
+  const NO_KEEP = { K: 1, DEF: 1 };
+  const autoKeepers = (L, ctx, teamId) => keeperOptions(L, ctx, teamId).filter((o) => o.surplus > 0 && !NO_KEEP[o.pos]).slice(0, L.settings.keepers || 0).map((o) => o.pid);
   // Next season's draft: the same teams, rules and scoring, worst-to-first order, keepers already on the board.
   function nextDraft(L, ctx, sport, picks, o = {}) {
     const D0 = L.draft || {}, now = o.now || Date.now(), n = L.teams.length;
@@ -214,7 +233,7 @@
   }
   // A finished season in a few lines, for the league's history.
   function summary(L) {
-    const st = standings(L), champ = G.isGuillotine(L) ? G.champion(L) : !L.settings.playoffTeams || G.isRoto(L) ? st[0] && st[0].team : (() => { const fin = L.results[G.totalWeeks(L)]; return fin && fin[0] ? (fin[0].w === "b" ? fin[0].b : fin[0].a) : st[0] && st[0].team; })();
+    const st = standings(L), fin = G.finish(L), champ = fin.champion != null ? fin.champion : st[0] && st[0].team;
     return { season: L.season, year: (L.draft && L.draft.year) || 1, champion: champ != null ? { team: champ, name: L.teams[champ].name, owner: L.teams[champ].owner } : null,
       standings: st.map((r) => ({ team: r.team, name: L.teams[r.team].name, owner: L.teams[r.team].owner, rank: r.rank, w: r.w, l: r.l, t: r.t, pts: r.pts != null ? r.pts : r.pf })) };
   }
