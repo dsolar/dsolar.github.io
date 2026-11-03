@@ -455,7 +455,7 @@ Pushing a new snapshot rebuilds `draft/nba.json` and `draft/nfl.json` through th
 
 **Top 10 Challenge.** Visitors post a top-10 mock under a name and a 4-to-8-digit PIN. It runs on the site's Supabase project (`tools/draft_challenge_supabase.sql`, already set up; safe to run again). Scoring is by pick number: 3 for the exact player, 1 within two picks, 0.5 elsewhere in the top 10, times an early bonus (2x for a pick set on Nov 3, 2026, sliding to 1x at the lock). Picks keep the time they were set until they change, and everyone's picks are public. Before the draft the leaderboard scores against today's consensus. Two things to do later:
 - When the NBA announces its 2027 draft date, update the lock: `update bb_drafts set lock_at = '<date> 20:00-04', note = 'Round 1, <date>' where league = 'nba';` in the Supabase SQL editor.
-- After each draft, add `"results": ["player-id", ...]` (the first ten picks' board ids, in order) to that league's data; the leaderboard switches to final scores.
+- After each draft, put the first ten picks' board ids, in order, in `tools/draft_results.json` (`{"nfl": ["jeremiah-smith", ...]}`) and push; the leaderboard switches to final scores.
 
 ## Wipe Yoenis: luck, drafts and manager profiles
 

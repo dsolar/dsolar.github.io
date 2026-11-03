@@ -214,7 +214,9 @@ def build(league, sources, aliases):
             "values": (load(os.path.join(TOOLS, "draft_values.json"), {}) or {}).get(league),
             "future": (load(os.path.join(TOOLS, "draft_future.json"), {}) or {}).get(league),
             "needs": (load(os.path.join(TOOLS, "draft_needs.json"), {}) or {}).get(league),
-            "markets": markets(league, players, canon)}
+            "markets": markets(league, players, canon),
+            # The real top ten once a draft is done (board ids in pick order), for the Top 10 Challenge's final scores.
+            "results": (load(os.path.join(TOOLS, "draft_results.json"), {}) or {}).get(league) or None}
 
 
 # Kalshi's player markets (tools/draft_markets.py): which player goes No. 1, who goes top five, the order the
