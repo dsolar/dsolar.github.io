@@ -41,7 +41,8 @@
   function header(tab) {
     const right = `<button class="btn sm ghost" data-act="theme">${theme.dark() ? "Light" : "Dark"}</button>${mock ? `<button class="btn sm" data-act="new">New mock</button>` : ""}`;
     top.innerHTML = U.shell({ brand: { name: "Draft Lab", href: "./", mark: `<img src="mark.svg" alt="">` },
-      tabs: [["draft", "Mock draft"], ["rankings", "Rankings"], ["kit", "The kit"]], tab, right });
+      tabs: [["draft", "Mock draft"], ["rankings", "Rankings"], ["league", "Demo league"], ["kit", "The kit"]], tab, right,
+      hrefOf: (t, sub) => (t === "league" ? "league.html" : "#" + t + (sub ? "/" + sub : "")) });
   }
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-act]");
@@ -143,7 +144,8 @@
     if (roomCtl) roomCtl.stop();
     app.innerHTML = `<div id="room"></div>`;
     roomCtl = U.room({ el: $("#room"), sport: P.sport, players: P.players, draft: () => mock.D, save: () => store.set("mock", mock), me: () => 0, commish: true, drive: true,
-      extra: () => `<button class="btn go" data-new>New mock</button>` });
+      brand: { name: "Draft Lab", mark: `<img src="mark.svg" alt="">` }, exit: { href: "#home", label: "Exit" },
+      extra: () => `<a class="btn sm go" href="league.html?s=${mock.D.sport}#commish">Play a season with it</a><button class="btn sm" data-new>New mock</button>` });
     $("#room").addEventListener("click", (e) => { if (e.target.closest("[data-new]")) { mock = null; store.set("mock", null); route(); } });
   }
 
@@ -162,11 +164,13 @@
       <div class="head"><h1 class="disp">${esc(sp.name)} rankings</h1><span class="ps">${esc(sp.data.source)}, ${esc(sp.data.season)}. ${c.teams} teams, ${esc(sp.scorings[P.scoring].label)}${P.lineup.length ? `, starting ${P.lineup.join(" ")}` : ""}.</span></div>
       <div class="tools"><label class="sr" for="r-sport">Sport</label><select id="r-sport">${Object.values(S.ALL).map((s) => opt(s.key, s.name, rank.sport)).join("")}</select>
         <label class="sr" for="r-scoring">Scoring</label><select id="r-scoring">${Object.entries(sp.scorings).map(([k, s]) => opt(k, s.label.replace(/ \(.*\)$/, ""), P.scoring)).join("")}</select></div>
-      ${U.filterBar(sp, rank.f, teams)}
+      <div class="tools">${U.search(rank.f)}<label class="sr" for="fk-team">${esc(sp.league)} team</label><select id="fk-team" class="${rank.f.team ? "set" : ""}"><option value="">All ${esc(sp.league)} teams</option>${teams.map((t) => `<option${t === rank.f.team ? " selected" : ""}>${esc(t)}</option>`).join("")}</select></div>${U.posFilter(sp, rank.f.pos)}
       ${U.table({ cols, rows, sort: rank.sort, dense: true, limit: 300, rowAttr: (p) => `data-player="${esc(p.id)}"`, empty: "No one matches." })}
       <p class="ps">Ranks are value over the replacement player at each position, for the league size and lineup above. Auction values split ${c.teams} budgets of $${c.budget}.</p></div>`;
     if (focus) { const f = document.getElementById(focus); if (f) { f.focus(); if (f.type === "search") f.setSelectionRange(f.value.length, f.value.length); } }
     app.onclick = (e) => {
+      const fp = e.target.closest("[data-fpos]");
+      if (fp) { rank.f.pos = fp.dataset.fpos; rankingsPage(); return; }
       const th = e.target.closest("th[data-sort]");
       if (th) { rank.sort = U.nextSort(rank.sort, th.dataset.sort, cols); rankingsPage(); return; }
       const tr = e.target.closest("[data-player]");
@@ -220,9 +224,10 @@ FK.ui.room({ el, sport, players: data.players, draft: () =&gt; D,
   /* ---------- routing ---------- */
   async function route() {
     const r = U.route("draft");
-    const tab = ["draft", "rankings", "kit"].includes(r.tab) ? r.tab : "draft";
-    header(tab);
+    const tab = ["draft", "rankings", "kit", "home"].includes(r.tab) ? r.tab : "draft";
+    header(tab === "home" ? "draft" : tab);
     if (tab !== "draft" && roomCtl) { roomCtl.stop(); roomCtl = null; }
+    if (tab === "home") { app.onclick = app.oninput = app.onchange = null; return setupPage(); }
     if (tab === "draft") { app.onclick = app.oninput = app.onchange = null; return mock ? draftPage() : setupPage(); }
     if (tab === "rankings") return rankingsPage();
     return kitPage();
