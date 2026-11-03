@@ -18,6 +18,10 @@ Plain browser scripts, no build step. `sports.js`, `value.js` and `draft.js` hav
 | `league.js` | `FK.league`: head to head or guillotine, with or without best ball; rosters, weekly lineups, schedule, scoring (simulated, or a `hooks.score` for real box scores), standings, playoffs, power rankings, free agents, FAAB waivers, trades with review votes, the transaction log |
 | `league-ui.js` | `FK.ui.leagueApp`: every league page (Overview, Standings, Scoreboard, Transactions, Roster, Schedule, Trades, Matchup, Players, Waiver claims, Draft results) |
 | `ui.js` | `FK.ui`: helpers, avatars, the masthead and tab bars, sortable tables, position chips, the player card, and view-model modules (`scoreboard`, `versus`, `vsTable`, `standingsTable`, `feed`, `tradeCard`, `tradeWindow`), plus the full draft room |
+| `season.js` | `FK.season`: a shared league's clock (catch up ended weeks, drive overdue draft picks, start the season after the draft) and the emails each save should send. Runs on a league page and in the `fk-clock` job |
+| `cloud.js` | `FK.cloud`: sign-in by emailed link (Supabase Auth over plain fetch) and calls to the league functions |
+| `leagues.html`, `leagues.js` | Your leagues: sign in, start a league, join from an invite link |
+| `play.html`, `live.js` | One shared league: the live draft room, then the league pages, saved for everyone |
 | `kit.css` | Every style the above needs, light and dark |
 | `data/*.json` | Player pools, written by `tools/fantasykit_data.py` (the Fantasy Kit data workflow). Don't edit |
 
@@ -190,3 +194,28 @@ The modules take plain view models, so a league with its own engine (Hard Cap) b
 `node --test tests/fantasyguillotine.test.mjs` plays guillotine seasons in each sport and tests the midweek waiver run, chop odds and best ball.
 
 `node --test tests/fantasyleague.test.mjs` plays full seasons in each sport and tests lineups, free agency, waivers, trades and vetoes.
+
+## Shared leagues
+
+`leagues.html` is where people sign in (an emailed link, no password), start a league and join one. A league lives in
+Supabase (`tools/fantasykit_supabase.sql`) as one draft document and, after the draft, one league document, with a
+version number. Every page runs the same rules and saves with the version it started from (`fk_save`). If someone
+else saved first, the save is refused and the page takes the newer copy. The server only decides who's signed in, who
+owns which team, the invite code and the save order. It also stamps each team's owner from its seat list.
+
+- **Invites.** The commissioner shares `leagues.html?join=<id>&code=<invite>`. Whoever opens it signs in and picks an
+  open team. Teams nobody has claimed are bots, and a bot's team can be taken over later.
+- **The draft.** The commissioner's page runs bots and the clock. Any other page steps in when a pick is five
+  seconds overdue. In a slow draft (an hour or more a pick), managers get an email when they're on the clock.
+- **The season** starts the Monday after the draft (Tuesday for football) at 9:00 UTC and runs on the real calendar,
+  like the demo leagues.
+- **The clock job.** `supabase/functions/fk-clock` runs every five minutes from pg_cron. It plays out ended weeks,
+  waivers and trade reviews, and finishes overdue picks, so leagues keep moving with no page open. It loads the
+  engine from the live site.
+- **Emails.** A save lists the emails it causes, and `fk_save` queues them in `fk_outbox` for managers with alerts
+  on. They cover trade offers and answers, waiver results, weekly results, the draft starting and finishing, and
+  your turn in a slow draft. `fk-clock` sends them with Resend once `RESEND_API_KEY` and `FK_MAIL_FROM` are set.
+
+`node --test tests/fantasyseason.test.mjs` covers the season start date, a draft finishing on the clock, the
+emails for slow-draft turns, weekly results and chops, and trade offers and answers.
+

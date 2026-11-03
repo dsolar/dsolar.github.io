@@ -8,7 +8,7 @@
      Players  Free agents, All players, Watchlist, Waiver claims
      Commish  whatever opts.commishTools() returns
    opts: { top, el, sport, players, league(), save(L), me(), now(), frac(w) (how much of week w has played),
-           brand, right(), switcher, commishTools(), draftHref } */
+           brand, right(), switcher, commishTools(), draftHref, notice() (html above every page) } */
 (function (root) {
   "use strict";
   const FK = root.FK, S = FK.sports, G = FK.league, U = FK.ui;
@@ -713,7 +713,7 @@
       else if (r.tab === "players") html = playersPage(r.sub);
       else if (r.tab === "draft") html = draftPage();
       else if (r.tab === "commish") html = `<div class="wrap page">${opts.commishTools()}</div>`;
-      opts.el.innerHTML = alertsBar(r) + html;
+      opts.el.innerHTML = (opts.notice ? opts.notice() : "") + alertsBar(r) + html;
       for (const box of $$(".fk-nav nav, .fk-subs .wrap, .chips", document)) {
         const on = $('[aria-current="page"], [aria-pressed="true"]', box);
         if (on && box.scrollWidth > box.clientWidth) box.scrollLeft += on.getBoundingClientRect().left - box.getBoundingClientRect().left - (box.clientWidth - on.clientWidth) / 2;

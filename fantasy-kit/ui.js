@@ -439,6 +439,7 @@
       if (opts.commish && d.phase === "live") ctl.push(`<button class="btn sm" data-act="pause">${d.paused ? "Resume" : "Pause"}</button><button class="btn sm" data-act="undo">Undo</button>`);
       if (opts.commish && d.phase === "setup") ctl.push(`<button class="btn sm go" data-act="start">Start the draft</button>`);
       if (d.phase === "done" && opts.extra) ctl.push(opts.extra());
+      if (opts.tools) ctl.push(opts.tools());
       if (opts.exit) ctl.push(`<a class="btn sm" href="${esc(opts.exit.href)}">${esc(opts.exit.label || "Exit")}</a>`);
       let mid = "";
       if (d.phase === "setup") mid = `<div class="otc"><span class="ring" style="--p:1"><span>${d.bank ? fmtLeft(bankFull()) : d.clock || d.auction ? (auction() ? d.auction.bidClock : d.clock) : "-"}</span></span><span class="who"><small>Draft room is open</small><b>${mystery() && !seenK(0) ? "Packages are sealed" : "Build your queue"}</b><span>${auction() ? `$${d.auction.budget} budgets, ${d.auction.bidClock} seconds a bid` : d.bank ? `${fmtLeft(bankFull())} bank each. What's left becomes FAAB` : d.clock ? `${d.clock} seconds a pick` : "No pick clock"}</span></span></div>`;

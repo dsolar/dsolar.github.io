@@ -17,8 +17,10 @@
 --   fk_mine()                                              -> [{id, name, sport, team, commish, phase, updated}]
 --   fk_notify(p_id, p_on)                                  -> {ok}       email alerts on or off for your seat
 --   fk_leave(p_id, p_team)                                 -> {ok}       give up your team (or the commissioner frees one)
--- The mailer (supabase/functions/fk-mailer, called by pg_cron) uses:
---   fk_outbox_take(p_token, p_limit) and fk_outbox_done(p_token, p_ids, p_errors)
+-- The server clock (supabase/functions/fk-clock, called by pg_cron every five minutes) keeps leagues moving with no
+-- page open and sends the email outbox. It passes a token whose sha256 is in fk_config:
+--   fk_clock_list(p_token), fk_clock_save(p_token, p_id, p_version, p_draft, p_league, p_events)
+--   fk_outbox_take(p_token, p_limit), fk_outbox_done(p_token, p_ids, p_errors)
 --
 -- Every table is closed to the public (row level security with no policies); only these functions touch them.
 
@@ -251,12 +253,53 @@ grant execute on function public.fk_create(text, text, text, jsonb), public.fk_v
   public.fk_save(text, int, jsonb, jsonb, jsonb), public.fk_mine(), public.fk_notify(text, boolean), public.fk_leave(text, int) to anon, authenticated;
 grant execute on function public.fk_outbox_take(text, int), public.fk_outbox_done(text, bigint[], jsonb) to anon;
 
--- After deploying fk-mailer, give it a token and schedule it (run once, with a long random token):
+-- Migration fantasykit_clock: the server clock's two functions.
+create or replace function public.fk_clock_list(p_token text) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare out jsonb;
+begin
+  if not fk_token_ok(p_token) then return jsonb_build_object('error', 'no'); end if;
+  select coalesce(jsonb_agg(jsonb_build_object('id', l.id, 'version', l.version, 'name', l.name, 'sport', l.sport,
+    'updated', (extract(epoch from l.updated_at) * 1000)::bigint, 'seats', fk_seat_map(l.id),
+    'draft', case when l.league is null then l.draft else null end, 'league', l.league)), '[]'::jsonb) into out
+  from fk_leagues l
+  where l.updated_at > now() - interval '150 days'
+    and ((l.league is null and l.draft->>'phase' = 'live') or l.league is not null);
+  return jsonb_build_object('leagues', out, 'now', (extract(epoch from now()) * 1000)::bigint);
+end $$;
+
+create or replace function public.fk_clock_save(p_token text, p_id text, p_version int, p_draft jsonb, p_league jsonb, p_events jsonb) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare l fk_leagues; e jsonb; k int := 0;
+begin
+  if not fk_token_ok(p_token) then return jsonb_build_object('error', 'no'); end if;
+  select * into l from fk_leagues where id = p_id for update;
+  if not found then return jsonb_build_object('error', 'gone'); end if;
+  if l.version <> p_version then return jsonb_build_object('error', 'stale'); end if;
+  update fk_leagues set draft = fk_stamp(p_id, coalesce(p_draft, draft)), league = fk_stamp(p_id, coalesce(p_league, league)),
+    version = version + 1, updated_at = now() where id = p_id;
+  if jsonb_typeof(p_events) = 'array' then
+    for e in select * from jsonb_array_elements(p_events) loop
+      exit when k >= 60;
+      if (e->>'team') ~ '^\d+$' and exists (select 1 from fk_seats where league = p_id and team = (e->>'team')::int and notify) then
+        insert into fk_outbox (league, team, kind, subject, body)
+          values (p_id, (e->>'team')::int, fk_clean(e->>'kind', 20), fk_clean(e->>'subject', 120), left(coalesce(e->>'body', ''), 2000));
+        k := k + 1;
+      end if;
+    end loop;
+  end if;
+  return jsonb_build_object('ok', true, 'version', l.version + 1);
+end $$;
+
+revoke all on function public.fk_clock_list(text), public.fk_clock_save(text, text, int, jsonb, jsonb, jsonb) from public, authenticated;
+grant execute on function public.fk_clock_list(text), public.fk_clock_save(text, text, int, jsonb, jsonb, jsonb) to anon;
+
+-- After deploying fk-clock, give it a token and schedule it (run once, with a long random token):
 --   insert into fk_config values ('mailer_token_sha256', encode(extensions.digest('<token>', 'sha256'), 'hex'))
 --     on conflict (name) do update set value = excluded.value;
 --   insert into fk_config values ('mailer_token', '<token>') on conflict (name) do update set value = excluded.value;
---   select cron.schedule('fk-mailer', '*/2 * * * *', $job$ select net.http_post(
---     url := 'https://baxrczyufqbzrogftmyn.supabase.co/functions/v1/fk-mailer',
+--   select cron.schedule('fk-clock', '*/5 * * * *', $job$ select net.http_post(
+--     url := 'https://baxrczyufqbzrogftmyn.supabase.co/functions/v1/fk-clock',
 --     headers := jsonb_build_object('Content-Type', 'application/json', 'x-fk-token', (select value from public.fk_config where name = 'mailer_token')),
---     body := '{}'::jsonb) $job$);
--- The function sends with Resend when the secrets RESEND_API_KEY and FK_MAIL_FROM are set, and does nothing until then.
+--     body := '{}'::jsonb, timeout_milliseconds := 60000) $job$);
+-- Emails go out once the function's secrets RESEND_API_KEY and FK_MAIL_FROM are set; until then they wait in fk_outbox.
