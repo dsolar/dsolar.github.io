@@ -223,6 +223,45 @@ tr.open td{background:rgba(242,193,78,.05)}
   .res-split{grid-template-columns:1fr}
   .hide-m{display:none}
 }
+
+.offers{margin-top:12px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(18,34,56,.7)}
+.offers.none{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}
+.offers.none .lab,.offers.none .note{margin:0}
+.offer-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px}
+.offer{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--panel-hi);border-left:4px solid var(--t1)}
+.ot{flex:1;min-width:0;font-size:13.5px}
+.ot b{display:block;font-size:14.5px}
+.ot span{display:block;color:var(--dim)}
+.ot small{color:var(--faint);font-size:11.5px}
+.meter{display:block;height:4px;border-radius:2px;background:var(--line);margin:6px 0 3px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--up)}
+.oa{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.modal{position:fixed;inset:0;z-index:80;background:rgba(3,7,13,.72);display:flex;align-items:flex-start;justify-content:center;padding:6vh 16px;overflow-y:auto}
+.sheet{width:min(760px,100%);background:#0F1D30;border:1px solid var(--line-strong);border-radius:16px;padding:16px 18px 18px}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.sheet-head h3{margin:0;font-size:26px}
+.trade-pick{display:flex;flex-wrap:wrap;gap:12px;margin:6px 0 12px}
+.trade-pick select{background:var(--panel);border:1px solid var(--line-strong);border-radius:8px;padding:8px 10px;min-width:220px}
+.trade-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-height:46vh;overflow-y:auto}
+.as{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;font-size:14px;cursor:pointer}
+.as:hover{background:rgba(255,255,255,.04)}
+.as span{flex:1}
+.as em{font-style:normal;color:var(--faint);font-size:12.5px}
+.trade-foot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:10px;margin-top:12px;border-top:1px solid var(--line);padding-top:12px}
+.tv{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:baseline}
+.tv .note{flex-basis:100%;margin:0}
+.tmsg{font-size:13px;color:var(--down);max-width:300px;text-align:right}
+.tmsg.ok{color:var(--up)}
+.btn[disabled]{opacity:.45;cursor:default}
+.trades{margin-top:18px}
+.trades h3{font-size:22px;margin:0 0 6px}
+.trades ul{list-style:none;margin:0;padding:0}
+.trades li{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:var(--panel);margin-bottom:6px;font-size:14px}
+.trades li>span:not(.badge){flex:1}
+.card-sheet{width:min(480px,100%)}
+.card-img{display:block;width:100%;height:auto;border-radius:10px}
+a.btn{text-decoration:none;display:inline-block}
+@media (max-width:560px){.trade-cols{grid-template-columns:1fr}}
 .col-src{display:table-cell}
 @media (max-width:860px){.col-src{display:none}}
 @media (max-width:560px){
@@ -294,10 +333,10 @@ tr.open td{background:rgba(242,193,78,.05)}
   <div id="mock-view" hidden></div>
 </main>
 
-<script src="common.js?v=3"></script>
-<script src="engine.js?v=3"></script>
-<script src="board.js?v=3"></script>
-<script src="mock.js?v=3"></script>
+<script src="common.js?v=5"></script>
+<script src="engine.js?v=5"></script>
+<script src="board.js?v=5"></script>
+<script src="mock.js?v=5"></script>
 <script>
 (() => {
   // #nba, #nfl, #nba/mock, #nfl/mock
@@ -308,17 +347,17 @@ tr.open td{background:rgba(242,193,78,.05)}
   };
   async function go() {
     const { lg, view } = parse();
-    document.querySelectorAll("[data-lg]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lg === lg)));
-    document.querySelectorAll("[data-view]").forEach((b) => b.setAttribute("aria-current", b.dataset.view === view ? "page" : "false"));
+    document.querySelectorAll("button[data-lg]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lg === lg)));
+    document.querySelectorAll(".tabs [data-view]").forEach((b) => b.setAttribute("aria-current", b.dataset.view === view ? "page" : "false"));
     document.getElementById("board-view").hidden = view !== "board";
     document.getElementById("mock-view").hidden = view !== "mock";
-    document.body.dataset.view = view;
+    document.body.dataset.screen = view;
     BB.store.set("bigboard", { lg, view });
     try { const D = await BB.data(lg); document.getElementById("kicker").textContent = `${D.year} ${lg.toUpperCase()} Draft`; } catch (e) { /* the view says so */ }
     if (view === "board") { Mock.stop(); Board.render(lg); } else Mock.render(lg);
   }
   document.addEventListener("click", (e) => {
-    const l = e.target.closest("[data-lg]"), v = e.target.closest("[data-view]");
+    const l = e.target.closest("button[data-lg]"), v = e.target.closest(".tabs [data-view]");
     if (!l && !v) return;
     e.preventDefault();
     const cur = parse();

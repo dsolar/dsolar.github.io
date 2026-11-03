@@ -206,7 +206,10 @@ def build(league, sources, aliases):
     return {"league": league, "year": YEAR, "asof": today, "halfLife": HALF_LIFE, "dates": dates,
             "sources": src_out, "teams": teams, "records": records,
             "order": {"updated": order.get("updated"), "source": order.get("source"), "picks": order.get("picks", [])},
-            "rules": rules, "players": players}
+            "rules": rules, "players": players,
+            "values": (load(os.path.join(TOOLS, "draft_values.json"), {}) or {}).get(league),
+            "future": (load(os.path.join(TOOLS, "draft_future.json"), {}) or {}).get(league),
+            "needs": (load(os.path.join(TOOLS, "draft_needs.json"), {}) or {}).get(league)}
 
 
 def main():

@@ -320,7 +320,7 @@ window.PROJECTS = [
     url: "draft/",
     action: "Open the board",
     question: "Where does everyone actually have him?",
-    summary: "The 2027 NBA and NFL drafts with every board worth reading rolled into one ranking: Tankathon, Bleacher Report, FanSided, SI and NFL Mock Draft Database now, with No Ceilings, KOC, Jeremiah and the rest as they publish. Who's rising, who's sliding, where the boards can't agree, and a mock draft with the real lottery odds and every protected pick.",
+    summary: "The 2027 NBA and NFL drafts with every board worth reading rolled into one ranking: Tankathon, Bleacher Report, FanSided, SI and NFL Mock Draft Database now, with No Ceilings, KOC, Jeremiah and the rest as they publish. Who's rising, who's sliding, where the boards can't agree, and a mock draft with the real lottery odds, every protected pick, trade offers on the clock and future picks.",
     facts: [["139", "NBA prospects across 4 boards"], ["219", "NFL prospects across 2 boards"], ["12", "protected 2027 NBA firsts, resolved"]],
     stack: ["JavaScript", "Python", "GitHub Actions"],
     cover: { bg: "#0B1626", band: "#F2C14E" },

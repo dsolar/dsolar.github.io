@@ -1,0 +1,17 @@
+{
+ "_about": "NFL team needs for the mock draft's bots, most pressing first, from NFL.com's weekly draft order with biggest needs (entering Week 8 of 2026): https://www.nfl.com/news/2027-nfl-draft-order-biggest-needs-for-every-team. Positions use the board's labels (DT is DL).",
+ "asof": "2026-10-27",
+ "nfl": {
+  "LAC": ["WR", "EDGE", "DL", "CB", "IOL"], "TEN": ["OT", "DL", "RB", "EDGE", "CB"], "MIA": ["QB", "EDGE", "OT", "CB", "S"],
+  "WAS": ["CB", "WR", "EDGE", "DL", "IOL"], "PHI": ["OT", "CB", "IOL", "TE", "QB"], "NYJ": ["QB", "DL", "CB", "LB", "IOL"],
+  "HOU": ["OT", "RB", "LB", "DL", "CB"], "IND": ["DL", "WR", "QB", "EDGE", "IOL"], "ARI": ["WR", "EDGE", "QB", "OT", "CB"],
+  "NO": ["DL", "RB", "EDGE", "CB", "S"], "TB": ["EDGE", "WR", "CB", "IOL", "TE"], "DAL": ["WR", "CB", "DL", "S", "EDGE"],
+  "LV": ["WR", "DL", "CB", "IOL", "EDGE"], "CLE": ["QB", "EDGE", "OT", "CB", "IOL"], "ATL": ["OT", "EDGE", "IOL", "TE", "QB"],
+  "BAL": ["CB", "DL", "RB", "OT", "EDGE"], "SEA": ["EDGE", "WR", "CB", "IOL", "OT"], "NE": ["IOL", "LB", "DL", "S", "WR"],
+  "CAR": ["OT", "TE", "CB", "EDGE", "WR"], "NYG": ["DL", "CB", "WR", "IOL", "OT"], "CIN": ["CB", "S", "RB", "LB", "OT"],
+  "DET": ["TE", "CB", "S", "EDGE", "IOL"], "JAX": ["DL", "RB", "S", "IOL", "LB"], "PIT": ["QB", "S", "CB", "DL", "LB"],
+  "GB": ["IOL", "OT", "CB", "EDGE", "RB"], "CHI": ["CB", "EDGE", "OT", "WR", "DL"], "LAR": ["WR", "DL", "IOL", "OT", "EDGE"],
+  "DEN": ["TE", "S", "CB", "OT", "LB"], "KC": ["WR", "OT", "TE", "LB", "EDGE"], "BUF": ["S", "IOL", "CB", "LB", "DL"],
+  "SF": ["IOL", "OT", "EDGE", "WR", "DL"], "MIN": ["QB", "S", "TE", "RB", "EDGE"]
+ }
+}

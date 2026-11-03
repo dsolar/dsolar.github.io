@@ -17,6 +17,9 @@ on:
       - tools/draft_pull.py
       - tools/draft_teams.json
       - tools/draft_rules.json
+      - tools/draft_future.json
+      - tools/draft_needs.json
+      - tools/draft_values.json
       - tools/draft_sources.json
       - tools/draft_aliases.json
       - tools/draft_boards/**

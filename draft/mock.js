@@ -78,6 +78,10 @@
     M.pool = D.players.slice().sort((a, b) => a.score - b.score);
     M.rand = E.rng((M.seed || Date.now()) ^ 0x9e3779b9);
     M.taken = {};
+    M.ledger = E.ledger(D);
+    M.trades = [];
+    M.offers = {};
+    M.trade = null;
     room();
     step();
   }
@@ -90,20 +94,21 @@
     if (M.phase !== "draft") return;
     const p = onClock();
     if (!p) { M.phase = "done"; done(); return; }
-    if (isMine(p) || M.paused) { room(); return; }
+    if (isMine(p) || M.paused || M.trade) { room(); return; }
     const delay = M.skip ? 0 : SPEED[M.speed];
     timer = setTimeout(() => { botPick(); }, delay);
     if (delay) room();
   }
   function botPick() {
     const p = onClock();
-    const pick = E.botPick(available(), { rand: M.rand, chaos: STYLE[M.style], league: D.league, taken: M.taken[p.owner] || [] });
+    const pick = E.botPick(available(), { rand: M.rand, chaos: STYLE[M.style], league: D.league, taken: M.taken[p.owner] || [],
+      needs: (D.needs || {})[p.owner] || [], pick: p.n });
     take(pick);
   }
   function take(player) {
     const p = onClock();
     p.player = player;
-    (M.taken[p.owner] = M.taken[p.owner] || []).push(String(player.pos || "").toUpperCase());
+    (M.taken[p.owner] = M.taken[p.owner] || []).push(D.league === "nfl" ? E.nflPos(player.pos) : String(player.pos || "").toUpperCase());
     M.i++;
     if (M.skip && isMine(onClock())) M.skip = false;
     if (M.i >= M.picks.length) { M.phase = "done"; M.skip = false; done(); return; }
@@ -128,10 +133,13 @@
           <span class="sub2">${esc((D.records || {})[p.owner] || "")}${p.owner !== p.orig ? ` &middot; via ${esc(BB.team(D, p.orig).city)}${p.note ? ` (${esc(p.note)})` : ""}` : ""}</span></div>
         <div class="clock-act">
           ${mineNow ? `<span class="note on">Pick from the board</span>` : `<button type="button" class="btn sm" data-act="pause">${M.paused ? "Resume" : "Pause"}</button>`}
+          ${M.mine.size ? `<button type="button" class="btn sm" data-act="trade">Trade</button>` : ""}
           ${next && !mineNow ? `<button type="button" class="btn sm" data-act="skip">Sim to my pick</button>` : ""}
           ${!next && !mineNow ? `<button type="button" class="btn sm" data-act="skip">Sim to the end</button>` : ""}
           <button type="button" class="link" data-act="restart">Restart</button></div>
       </div>` : ""}
+      ${mineNow ? offersPanel() : ""}
+      ${M.trade ? tradeModal() : ""}
       <div class="room-grid">
         <aside class="rail" aria-label="Picks">${rounds.map((r) => `<div class="rail-round">Round ${r}</div>${M.picks.filter((x) => x.rnd === r).map((x) => {
           const t = clockOf(x), idx = M.picks.indexOf(x), cur = idx === M.i;
@@ -153,6 +161,89 @@
     </section>`;
     const cur = document.getElementById("rp-cur");
     if (cur) cur.scrollIntoView({ block: "nearest" });
+  }
+
+  // ---------- trades ----------
+  const ord = (n) => { const s = ["th", "st", "nd", "rd"], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
+  function assetsOf(team) {
+    const cur = M.picks.filter((p, j) => j >= M.i && p.owner === team && !p.player).map((p) => ({ kind: "pick", n: p.n, key: "p" + p.n }));
+    const fut = M.ledger.filter((a) => a.owner === team && a.ok).sort((a, b) => a.year - b.year || a.rd - b.rd).map((a) => ({ kind: "future", a, key: "f" + a.id }));
+    return cur.concat(fut);
+  }
+  const label = (x) => E.assetLabel(D, x);
+  const val = (x) => E.assetValue(D, x);
+  const sum = (xs) => xs.reduce((s, x) => s + val(x), 0);
+
+  function offersPanel() {
+    const cur = onClock();
+    if (!M.offers[M.i]) {
+      M.offers[M.i] = E.offersFor(D, { picks: M.picks, i: M.i, available: available(), mine: M.mine, ledger: M.ledger, chaos: STYLE[M.style] }, M.rand)
+        .map((o) => ({ ...o, status: "open" }));
+    }
+    const list = M.offers[M.i].filter((o) => o.status === "open");
+    if (!list.length) return `<div class="offers none"><span class="lab">Phone's quiet</span><span class="note">No one's calling about No. ${cur.n}. You can still shop it: hit Trade.</span></div>`;
+    return `<div class="offers"><span class="lab">The phone's ringing</span><div class="offer-row">${list.map((o, k) => {
+      const tm = BB.team(D, o.team), pct = Math.round(o.ratio * 100);
+      return `<div class="offer" style="--t1:${tm.c[0]}">${BB.logo(D, o.team, 34)}<div class="ot"><b>${esc(tm.city)} ${esc(tm.name)}</b>
+        <span>want No. ${cur.n} for ${o.give.map((x) => esc(label(x))).join(" + ")}</span><span class="meter"><i style="width:${Math.min(100, pct - 50)}%"></i></span><small>${pct}% of the pick's value</small></div>
+        <div class="oa"><button type="button" class="btn sm go" data-offer="${k}" data-ans="yes">Accept</button><button type="button" class="link" data-offer="${k}" data-ans="no">Pass</button></div></div>`;
+    }).join("")}</div></div>`;
+  }
+
+  function doTrade(a, b, aGives, bGives) {
+    const moves = [];
+    const apply = (x, from, to) => {
+      if (x.kind === "pick") { const p = M.picks.find((q) => q.n === x.n); p.owner = to; }
+      else { const L = M.ledger.find((q) => q.id === x.a.id); L.owner = to; moves.push(L.id); }
+    };
+    aGives.forEach((x) => apply(x, a, b));
+    bGives.forEach((x) => apply(x, b, a));
+    M.trades.push({ at: onClock() ? onClock().n : null, a, b, aGives: aGives.map(label), bGives: bGives.map(label) });
+  }
+
+  function tradeModal() {
+    const T = M.trade;
+    const myTeams = [...M.mine];
+    const partners = Object.keys(D.teams).filter((t) => !M.mine.has(t)).sort();
+    const mine = assetsOf(T.me), theirs = T.with ? assetsOf(T.with) : [];
+    const give = mine.filter((x) => T.give.has(x.key)), get = theirs.filter((x) => T.get.has(x.key));
+    const gv = sum(give), rv = sum(get);
+    const row = (x, side) => `<label class="as"><input type="checkbox" data-asset="${side}" value="${esc(x.key)}"${(side === "give" ? T.give : T.get).has(x.key) ? " checked" : ""}><span>${esc(label(x))}</span><em>${val(x).toFixed(D.league === "nba" ? 1 : 0)}</em></label>`;
+    return `<div class="modal" role="dialog" aria-label="Trade"><div class="sheet">
+      <div class="sheet-head"><h3 class="disp">Make a trade</h3><button type="button" class="link" data-act="trade-close">Close</button></div>
+      <div class="trade-pick">
+        ${myTeams.length > 1 ? `<label><span class="lab">For</span><select data-tsel="me">${myTeams.map((t) => `<option value="${t}"${t === T.me ? " selected" : ""}>${esc(D.teams[t].city)} ${esc(D.teams[t].name)}</option>`).join("")}</select></label>` : ""}
+        <label><span class="lab">With</span><select data-tsel="with"><option value="">Pick a team</option>${partners.map((t) => `<option value="${t}"${t === T.with ? " selected" : ""}>${esc(D.teams[t].city)} ${esc(D.teams[t].name)}</option>`).join("")}</select></label>
+      </div>
+      <div class="trade-cols">
+        <div><span class="lab">${esc(T.me)} sends</span>${mine.map((x) => row(x, "give")).join("") || `<p class="note">No picks left to trade.</p>`}</div>
+        <div><span class="lab">${T.with ? `${esc(T.with)} sends` : "Their picks"}</span>${T.with ? theirs.map((x) => row(x, "get")).join("") || `<p class="note">They're out of picks.</p>` : `<p class="note">Choose a team to see their picks, this year's and future ones.</p>`}</div>
+      </div>
+      <div class="trade-foot"><div class="tv"><span>You send <b>${gv.toFixed(D.league === "nba" ? 1 : 0)}</b></span><span>You get <b>${rv.toFixed(D.league === "nba" ? 1 : 0)}</b></span>
+        <span class="note">${D.league === "nfl" ? "Values: Fitzgerald-Spielberger chart. Future picks count a round less." : "Future picks are valued at a projected slot; protected ones only where they convey."}</span></div>
+        <div class="oa">${T.msg ? `<span class="tmsg ${T.ok ? "ok" : ""}">${esc(T.msg)}</span>` : ""}<button type="button" class="btn go" data-act="propose"${T.with && (give.length || get.length) ? "" : " disabled"}>Propose</button></div></div>
+    </div></div>`;
+  }
+
+  function propose() {
+    const T = M.trade;
+    const give = assetsOf(T.me).filter((x) => T.give.has(x.key)), get = assetsOf(T.with).filter((x) => T.get.has(x.key));
+    const moves = give.filter((x) => x.kind === "future").map((x) => ({ id: x.a.id, from: T.me, to: T.with }))
+      .concat(get.filter((x) => x.kind === "future").map((x) => ({ id: x.a.id, from: T.with, to: T.me })));
+    const st = E.stepienOK(D, M.ledger, moves);
+    if (!st.ok) { T.msg = `Can't do that: it leaves ${st.team} without a first in ${st.year} and ${st.year + 1} (the Stepien rule).`; T.ok = false; room(); return; }
+    const gv = sum(give), rv = sum(get);
+    const cur = onClock();
+    const eager = get.some((x) => x.kind === "pick" && cur && x.n > cur.n) && give.some((x) => x.kind === "pick" && cur && x.n === cur.n);
+    if (E.botAccepts(rv, gv, M.rand, eager)) {
+      doTrade(T.me, T.with, give, get);
+      T.msg = `Done. ${D.teams[T.with].name} accept.`; T.ok = true;
+      T.give = new Set(); T.get = new Set();
+    } else {
+      const short = rv * 1.04 - gv;
+      T.msg = `${D.teams[T.with].name} pass. They'd want about ${short.toFixed(D.league === "nba" ? 1 : 0)} more in value.`; T.ok = false;
+    }
+    room();
   }
 
   function valueTag(x) {
@@ -182,7 +273,8 @@
     $("#mock-view").innerHTML = `<section class="results">
       <div class="setup-head"><h2 class="disp">The draft</h2><p class="sub">${mine.length ? "Grades are against the consensus: taking a player later than his rank is value, earlier is a reach." : "You watched this one. Here's how it went."}</p></div>
       ${mine.length ? `<div class="res-grid">${mine.map(card).join("")}</div>` : ""}
-      <div class="go-row"><button type="button" class="btn go" data-act="again">Run it again</button><button type="button" class="btn" data-act="copy">Copy the results</button><button type="button" class="link" data-act="back">Change teams</button><span class="note" id="copied"></span></div>
+      ${M.trades && M.trades.length ? `<div class="trades"><h3 class="disp">Trades</h3><ul>${M.trades.map((t) => `<li>${BB.logo(D, t.a, 22)}<span><b>${esc(t.a)}</b> sent ${esc(t.aGives.join(" + ") || "nothing")} to <b>${esc(t.b)}</b> for ${esc(t.bGives.join(" + ") || "nothing")}</span>${BB.logo(D, t.b, 22)}</li>`).join("")}</ul></div>` : ""}
+      <div class="go-row"><button type="button" class="btn go" data-act="again">Run it again</button><button type="button" class="btn" data-act="card">Share card</button><button type="button" class="btn" data-act="copy">Copy the results</button><button type="button" class="link" data-act="back">Change teams</button><span class="note" id="copied"></span></div>
       <div class="res-split">
         <div><h3 class="disp">Every pick</h3><ol class="all-picks">${M.picks.map((x) => `<li class="${M.mine.has(x.owner) ? "mine" : ""}"><span class="rn">${x.n}</span>${BB.logo(D, x.owner, 24)}<span class="rt"><b>${esc(x.player.n)}</b><small>${esc(x.owner)}${x.owner !== x.orig ? ` via ${esc(x.orig)}` : ""} &middot; ${esc([x.player.pos, x.player.school].filter(Boolean).join(", "))}</small></span>${valueTag(x)}</li>`).join("")}</ol></div>
         <div><h3 class="disp">Best values</h3><ol class="all-picks">${steals.slice(0, 5).map(({ p }) => `<li><span class="rn">${p.n}</span>${BB.logo(D, p.owner, 24)}<span class="rt"><b>${esc(p.player.n)}</b><small>consensus ${p.player.rank}</small></span>${valueTag(p)}</li>`).join("")}</ol>
@@ -193,9 +285,97 @@
   function copyText() {
     const lines = [`${D.year} ${D.league.toUpperCase()} mock draft (davidsolar.dev/draft)`];
     M.picks.forEach((x) => lines.push(`${x.n}. ${x.owner}${x.owner !== x.orig ? ` (via ${x.orig})` : ""}: ${x.player.n}, ${[x.player.pos, x.player.school].filter(Boolean).join(", ")}`));
+    (M.trades || []).forEach((t) => lines.push(`Trade: ${t.a} sent ${t.aGives.join(" + ")} to ${t.b} for ${t.bGives.join(" + ")}`));
     [...M.mine].forEach((t) => { const l = M.picks.filter((p) => p.owner === t); if (l.length) lines.push(`${t} grade: ${grade(l)}`); });
     const txt = lines.join("\n");
     (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => { $("#copied").textContent = "Copied."; }, () => { $("#copied").textContent = "Couldn't copy here."; });
+  }
+
+  // ---------- share card ----------
+  function loadImg(src) {
+    return new Promise((res) => {
+      const im = new Image(); im.crossOrigin = "anonymous";
+      im.onload = () => res(im); im.onerror = () => res(null);
+      im.src = src;
+    });
+  }
+  async function shareCard() {
+    const team = [...M.mine].find((t) => M.picks.some((p) => p.owner === t));
+    const tm = team ? D.teams[team] : null;
+    const nPicks = team ? Math.min(8, M.picks.filter((p) => p.owner === team).length) : 10;
+    const nTrades = team ? Math.min(2, (M.trades || []).filter((t) => t.a === team || t.b === team).length) : 0;
+    const W = 1080, H = Math.max(1080, Math.min(1350, (team ? 390 + nPicks * 118 + nTrades * 48 : 280 + nPicks * 92) + 150));
+    const cv = document.createElement("canvas");
+    cv.width = W; cv.height = H;
+    const g = cv.getContext("2d");
+    try { await document.fonts.ready; } catch (e) { /* system fonts */ }
+    const c1 = tm ? tm.c[0] : "#0B1626";
+    const bg = g.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, c1); bg.addColorStop(0.55, "#0B1626"); bg.addColorStop(1, "#060D18");
+    g.fillStyle = bg; g.fillRect(0, 0, W, H);
+    const disp = (w, px) => `${w} ${px}px "Big Shoulders Display", "Arial Narrow", Impact, sans-serif`;
+    const body = (w, px) => `${w} ${px}px Barlow, system-ui, sans-serif`;
+    g.fillStyle = "#F2C14E"; g.font = body(700, 30);
+    g.fillText(`${D.year} ${D.league.toUpperCase()} MOCK DRAFT`, 70, 100);
+    let y = 150;
+    if (tm) {
+      const logo = await loadImg(`https://a.espncdn.com/i/teamlogos/${D.league}/500-dark/${tm.espn}.png`);
+      if (logo) g.drawImage(logo, 70, y, 170, 170);
+      else {
+        g.fillStyle = tm.c[0]; g.beginPath(); g.arc(155, y + 85, 85, 0, Math.PI * 2); g.fill();
+        g.fillStyle = BB.light(tm.c[1]) ? tm.c[1] : "#FFFFFF"; g.font = disp(900, 64); g.textAlign = "center"; g.fillText(team, 155, y + 108); g.textAlign = "left";
+      }
+      g.fillStyle = "#FFFFFF"; g.font = disp(900, 92);
+      g.fillText(tm.city.toUpperCase(), 270, y + 80);
+      g.fillText(tm.name.toUpperCase(), 270, y + 165);
+      const list = M.picks.filter((p) => p.owner === team);
+      const gr = grade(list);
+      g.fillStyle = "rgba(0,0,0,.3)"; g.fillRect(W - 230, y + 20, 160, 140);
+      g.fillStyle = "#FFFFFF"; g.font = disp(900, 110); g.textAlign = "center"; g.fillText(gr, W - 150, y + 132); g.textAlign = "left";
+      y += 240;
+      const show = list.slice(0, 8);
+      for (const x of show) {
+        g.fillStyle = "rgba(255,255,255,.08)"; g.fillRect(70, y, W - 140, 104);
+        g.fillStyle = "#F2C14E"; g.font = disp(900, 58); g.fillText(String(x.n), 96, y + 72);
+        g.fillStyle = "#FFFFFF"; g.font = body(700, 42); g.fillText(x.player.n, 230, y + 52);
+        g.fillStyle = "rgba(236,239,233,.72)"; g.font = body(500, 28);
+        g.fillText([x.player.pos, x.player.school].filter(Boolean).join(", ") + `  ·  consensus ${x.player.rank}`, 230, y + 88);
+        const v = E.value(x.n, x.player), big = Math.max(4, x.n * 0.25);
+        if (Math.abs(v) >= big) {
+          g.fillStyle = v > 0 ? "#3FB37F" : "#E8435C"; g.font = body(700, 32); g.textAlign = "right";
+          g.fillText(v > 0 ? `STEAL +${v}` : `REACH ${v}`, W - 96, y + 66); g.textAlign = "left";
+        }
+        y += 118;
+      }
+      const tr = (M.trades || []).filter((t) => t.a === team || t.b === team).slice(0, 2);
+      g.fillStyle = "rgba(236,239,233,.8)"; g.font = body(500, 27);
+      for (const t of tr) { y += 8; g.fillText(`Trade: ${t.a} sent ${t.aGives.join(" + ")} to ${t.b} for ${t.bGives.join(" + ")}`.slice(0, 74), 70, y + 28); y += 40; }
+    } else {
+      g.fillStyle = "#FFFFFF"; g.font = disp(900, 96); g.fillText("THE TOP 10", 70, y + 80);
+      y += 130;
+      for (const x of M.picks.slice(0, 10)) {
+        g.fillStyle = "#F2C14E"; g.font = disp(900, 52); g.fillText(String(x.n), 70, y + 50);
+        g.fillStyle = "#FFFFFF"; g.font = body(700, 38); g.fillText(`${x.owner}: ${x.player.n}`, 170, y + 48);
+        y += 92;
+      }
+    }
+    g.fillStyle = "rgba(236,239,233,.6)"; g.font = body(600, 28);
+    g.fillText("davidsolar.dev/draft", 70, H - 60);
+    g.textAlign = "right"; g.fillText("Big Board mock draft", W - 70, H - 60); g.textAlign = "left";
+    let blob = null;
+    try { blob = await new Promise((r) => cv.toBlob(r, "image/png")); } catch (e) { blob = null; }
+    if (!blob) { $("#copied").textContent = "Couldn't make the image here."; return; }
+    const url = URL.createObjectURL(blob);
+    const file = new File([blob], `mock-draft-${D.league}.png`, { type: "image/png" });
+    const canShare = navigator.canShare && navigator.canShare({ files: [file] });
+    const wrap = document.createElement("div");
+    wrap.className = "modal"; wrap.innerHTML = `<div class="sheet card-sheet"><div class="sheet-head"><h3 class="disp">Share card</h3><button type="button" class="link" data-close>Close</button></div>
+      <img src="${url}" alt="Mock draft results card" class="card-img"><div class="go-row">${canShare ? `<button type="button" class="btn go" data-share>Share</button>` : ""}<a class="btn" href="${url}" download="mock-draft-${D.league}.png">Download</a></div></div>`;
+    document.body.appendChild(wrap);
+    wrap.addEventListener("click", async (e) => {
+      if (e.target.closest("[data-close]") || e.target === wrap) { wrap.remove(); URL.revokeObjectURL(url); }
+      if (e.target.closest("[data-share]")) { try { await navigator.share({ files: [file], title: "My mock draft" }); } catch (err) { /* dismissed */ } }
+    });
   }
 
   // ---------- events ----------
@@ -211,6 +391,13 @@
     }
     const mp = e.target.closest("[data-mpos]");
     if (mp) { M.pos = mp.dataset.mpos; room(); return; }
+    const of = e.target.closest("[data-offer]");
+    if (of) {
+      const o = M.offers[M.i].filter((x) => x.status === "open")[Number(of.dataset.offer)];
+      if (o && of.dataset.ans === "yes") { const cur = onClock(); doTrade(cur.owner, o.team, [{ kind: "pick", n: cur.n }], o.give); o.status = "done"; M.offers[M.i].forEach((x) => { x.status = "gone"; }); step(); room(); }
+      else if (o) { o.status = "passed"; room(); }
+      return;
+    }
     const dr = e.target.closest("[data-draft]");
     if (dr && isMine(onClock())) { take(M.pool.find((x) => x.id === dr.dataset.draft)); return; }
     const a = e.target.closest("[data-act]");
@@ -226,6 +413,17 @@
     else if (act === "restart") { clearTimeout(timer); M.phase = "setup"; M.skip = false; setup(); }
     else if (act === "again") { M.seed = M.order === "lottery" ? (Math.random() * 2 ** 31) | 0 : (Math.random() * 2 ** 31) | 0; if (M.order === "lottery") { M.phase = "lottery"; lotteryView(); } else start(); }
     else if (act === "copy") copyText();
+    else if (act === "card") shareCard();
+    else if (act === "trade") { M.trade = { me: [...M.mine].find((t) => M.picks.some((p, j) => j >= M.i && p.owner === t)) || [...M.mine][0], with: "", give: new Set(), get: new Set(), msg: "" }; clearTimeout(timer); room(); }
+    else if (act === "trade-close") { M.trade = null; step(); room(); }
+    else if (act === "propose") propose();
+  });
+  document.addEventListener("change", (e) => {
+    if (!M || !M.trade) return;
+    const sel = e.target.closest("[data-tsel]");
+    if (sel) { if (sel.dataset.tsel === "me") M.trade.me = sel.value; else M.trade.with = sel.value; M.trade.give = new Set(); M.trade.get = new Set(); M.trade.msg = ""; room(); return; }
+    const cb = e.target.closest("[data-asset]");
+    if (cb) { const set = cb.dataset.asset === "give" ? M.trade.give : M.trade.get; cb.checked ? set.add(cb.value) : set.delete(cb.value); M.trade.msg = ""; room(); }
   });
   document.addEventListener("input", (e) => {
     if (e.target.id === "mq" && M) { M.q = e.target.value; room(); const el = document.getElementById("mq"); el.focus(); el.setSelectionRange(el.value.length, el.value.length); }

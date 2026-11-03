@@ -100,21 +100,29 @@
   }
 
   /* How a bot team picks. Each player's value is his consensus average plus noise that grows with the
-     randomness setting and with his rank (the boards agree on the top, not on No. 40), plus small nudges:
-     NFL position value, and not doubling up on a position the team already took. Lowest value goes. */
+     randomness setting and with his rank (the boards agree on the top, not on No. 40), plus small nudges.
+     NFL: position value, the team's needs (NFL.com's list), and no doubling up at a position.
+     Needs are kept from taking over three ways: the pull is worth a few spots at most and shrinks at the top
+     of the draft (best player available wins there), a need stops counting once it's filled, and a need never
+     moves a player who'd be a big reach at this pick. Lowest value goes. */
   const NFL_POS = { QB: -2.5, EDGE: -1.5, OT: -1, CB: -0.5, WR: 0, DL: 0, IOL: 1.5, LB: 2, S: 2, TE: 2.5, RB: 3 };
+  const NEED_W = [3, 2.2, 1.5, 1, 0.6];
   function botPick(available, ctx) {
     const rand = ctx.rand, chaos = ctx.chaos == null ? 0.5 : ctx.chaos;
-    const taken = ctx.taken || [];
+    const taken = ctx.taken || [], needs = ctx.needs || [], pickNo = ctx.pick || 1;
     let best = null, bestV = Infinity;
     const look = available.slice(0, 40);
     for (const p of look) {
       const g = gauss(rand);
       let v = p.score + g * (1.5 + p.score * 0.12) * (0.25 + chaos * 1.5);
       if (ctx.league === "nfl") {
-        const pos = (p.pos || "").toUpperCase();
+        const pos = nflPos(p.pos);
         v += (NFL_POS[pos] || 0) * (p.score > 12 ? 1 : 0.4);
         if (taken.includes(pos)) v += 6 + p.score * 0.1;
+        const ni = needs.indexOf(pos);
+        if (ni >= 0 && !taken.includes(pos) && p.score <= pickNo * 1.35 + 8) {
+          v -= NEED_W[ni] * Math.min(1, 0.35 + pickNo / 40) * (1 + p.score / 60);
+        }
       } else {
         const g2 = posGroup(p.pos);
         if (taken.filter((x) => posGroup(x) === g2).length >= 1) v += 2;
@@ -122,6 +130,10 @@
       if (v < bestV) { bestV = v; best = p; }
     }
     return best;
+  }
+  function nflPos(pos) {
+    const p = String(pos || "").toUpperCase().split(/[\/]/)[0];
+    return p === "DT" || p === "IDL" || p === "NT" ? "DL" : p === "OG" || p === "C" || p === "OL" ? "IOL" : p === "DE" ? "EDGE" : p === "NB" ? "CB" : p;
   }
   function posGroup(pos) {
     const f = String(pos || "").toUpperCase().split(/[\/-]/)[0];
@@ -134,10 +146,149 @@
     return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
   }
 
+
+  // ---------- pick values and trades ----------
+
+  // A pick in this draft. NFL: the Fitzgerald-Spielberger chart. NBA: no standard chart exists, so a curve:
+  // 100 at No. 1, about 10 at No. 30, falling to about 1 at No. 60 (second-rounders are cheap, unguaranteed).
+  function pickValue(D, n) {
+    if (D.league === "nfl") return (D.values && D.values[Math.min(n, D.values.length) - 1]) || 150;
+    return n <= 30 ? 100 * Math.exp(-0.08 * (n - 1)) : 9.8 * Math.exp(-0.07 * (n - 30));
+  }
+
+  // Every future pick in the trade window, with who holds it now and whether it can move.
+  function ledger(D) {
+    const F = D.future || { years: [], owed: [] };
+    const rounds = D.league === "nba" ? 2 : 7;
+    const owed = {};
+    (F.owed || []).forEach((o) => { owed[`${o[0]}-${o[1]}-${o[2]}`] = o; });
+    const out = [];
+    for (const t of Object.keys(D.teams)) {
+      for (const y of F.years) {
+        for (let rd = 1; rd <= rounds; rd++) {
+          const id = `${t}-${y}-${rd}`, o = owed[id];
+          const a = { id, orig: t, year: y, rd, owner: t, prot: "", ok: true, note: "" };
+          if (o) {
+            const to = o[3], kind = o[4];
+            if (kind === "swap") { a.ok = false; a.note = `Swap rights: ${to.replace(/\//g, " or ")}`; }
+            else if (to.includes("/") || kind === "fav" || kind === "cond" || to === "?") { a.owner = null; a.ok = false; a.note = to === "?" ? "Owed, terms vary" : `Owed to ${to.replace(/\//g, " or ")}`; }
+            else { a.owner = to; if (/^\d+-\d+$/.test(kind)) { a.prot = kind; a.note = `Protected ${kind}`; } }
+          }
+          out.push(a);
+        }
+      }
+    }
+    return out;
+  }
+
+  // Where a team's pick would land this year (its first-round slot as the season stands), 1 to 30 or 32.
+  function slotNow(D, team) {
+    const p = D.order.picks.find((x) => x[1] === 1 && x[3] === team);
+    return p ? p[0] : Math.ceil(Object.keys(D.teams).length / 2);
+  }
+
+  // A future pick's value: projected slot pulled toward the middle the further out it is, a discount per year,
+  // and for a protected pick only the share of likely landing spots where it actually conveys.
+  function futureValue(D, a) {
+    const N = Object.keys(D.teams).length, mid = (N + 1) / 2, k = Math.max(1, a.year - (D.year || 2027));
+    const proj = mid + (slotNow(D, a.orig) - mid) * Math.pow(D.league === "nba" ? 0.5 : 0.4, k);
+    let v;
+    if (D.league === "nfl") v = pickValue(D, Math.round((a.rd - 1) * 32 + proj)) * Math.pow(0.75, k);
+    else v = pickValue(D, Math.round((a.rd - 1) * 30 + proj)) * Math.pow(0.85, k);
+    if (a.prot) {
+      const [lo, hi] = a.prot.split("-").map(Number);
+      let conv = 0, tot = 0;
+      for (let s = Math.max(1, Math.round(proj - 8)); s <= Math.min(N * 2, Math.round(proj + 8)); s++) {
+        const slot = (a.rd - 1) * N + s;
+        tot++; if (slot < lo || slot > hi) conv++;
+      }
+      v *= tot ? Math.max(0.15, conv / tot) : 1;
+    }
+    return v;
+  }
+
+  // Asset values. A current pick is { kind: "pick", n }; a future one is { kind: "future", a }.
+  function assetValue(D, x) { return x.kind === "pick" ? pickValue(D, x.n) : futureValue(D, x.a); }
+  function assetLabel(D, x) {
+    if (x.kind === "pick") return `No. ${x.n}`;
+    const a = x.a, rd = a.rd === 1 ? "1st" : a.rd === 2 ? "2nd" : a.rd === 3 ? "3rd" : `${a.rd}th`;
+    return `${a.year} ${rd}${a.owner !== a.orig ? ` (${a.orig})` : ""}${a.prot ? `, protected ${a.prot}` : ""}`;
+  }
+
+  /* NBA trade rules for future picks. Stepien rule: a team can't be left without a first-round pick in two
+     straight future drafts. Picks can only be traded seven drafts out (the ledger already stops at 2033).
+     Only a trade that creates a new gap is blocked, since some teams already have gaps the way protections
+     and swaps are written. */
+  function firstsGap(L, team, years) {
+    const has = (y) => L.some((a) => a.year === y && a.rd === 1 && a.owner === team);
+    const gaps = [];
+    for (let i = 0; i < years.length - 1; i++) if (!has(years[i]) && !has(years[i + 1])) gaps.push(years[i]);
+    return gaps;
+  }
+  function stepienOK(D, L, moves) {
+    if (D.league !== "nba") return { ok: true };
+    const years = (D.future || {}).years || [];
+    const teams = [...new Set(moves.map((m) => m.from).concat(moves.map((m) => m.to)))];
+    const before = Object.fromEntries(teams.map((t) => [t, firstsGap(L, t, years).length]));
+    const after = L.map((a) => { const m = moves.find((x) => x.id === a.id); return m ? { ...a, owner: m.to } : a; });
+    for (const t of teams) {
+      const g = firstsGap(after, t, years);
+      if (g.length > before[t]) return { ok: false, team: t, year: g[g.length - 1] };
+    }
+    return { ok: true };
+  }
+
+  // Does a bot take this? It wants a little more than it gives, plus noise; desperate teams less so.
+  function botAccepts(give, get, rand, eager) {
+    if (!give || give <= 0) return get > 0;
+    const need = 1.04 - (eager ? 0.05 : 0) + (rand() - 0.5) * 0.06;
+    return get / give >= need;
+  }
+
+  /* Offers for the user's pick while he's on the clock. A team calls if a player it likes better than the rest
+     is still here and probably won't last to its own pick. Its package starts with its next pick and adds
+     what it takes to clear the pick's value by a little, without overpaying by much. */
+  function offersFor(D, st, rand) {
+    const cur = st.picks[st.i], V = pickValue(D, cur.n);
+    const avail = st.available;
+    const offers = [];
+    const teams = Object.keys(D.teams).filter((t) => !st.mine.has(t) && t !== cur.owner);
+    for (const t of teams.sort(() => rand() - 0.5)) {
+      if (offers.length >= 3) break;
+      const theirs = st.picks.filter((p, j) => j > st.i && p.owner === t && !p.player);
+      if (!theirs.length) continue;
+      const next = theirs[0];
+      const target = avail[0];
+      if (!target) break;
+      const gone = avail.slice(0, Math.max(1, Math.round((next.n - cur.n) * 0.9))).length;
+      const keen = target.score < next.n - 3 && gone > 2 && rand() < 0.55 + 0.15 * (st.chaos || 0.5);
+      if (!keen) continue;
+      const pool = theirs.map((p) => ({ kind: "pick", n: p.n }))
+        .concat(st.ledger.filter((a) => a.owner === t && a.ok).sort((a, b) => a.year - b.year || a.rd - b.rd).map((a) => ({ kind: "future", a })));
+      const pkg = [pool[0]];
+      let sum = assetValue(D, pool[0]);
+      const want = V * (1.02 + rand() * 0.12);
+      const rest = pool.slice(1).map((x) => ({ x, v: assetValue(D, x) })).sort((a, b) => a.v - b.v);
+      while (sum < want && rest.length) {
+        const gap = want - sum;
+        let pickI = rest.findIndex((r) => r.v >= gap);
+        if (pickI < 0) pickI = rest.length - 1;
+        const r = rest.splice(pickI, 1)[0];
+        pkg.push(r.x); sum += r.v;
+      }
+      if (sum < V || sum > V * 1.45) continue;
+      const moves = pkg.filter((x) => x.kind === "future").map((x) => ({ id: x.a.id, from: t, to: cur.owner }));
+      if (!stepienOK(D, st.ledger, moves).ok) continue;
+      offers.push({ team: t, give: pkg, value: sum, ratio: sum / V, target: target.id });
+    }
+    return offers;
+  }
+
   // A pick's grade against the consensus: positive is value (taken later than his rank), negative a reach.
   function value(pick, player) { return pick - player.rank; }
 
-  const api = { ODDS, rng, lottery, resolve, buildOrder, botPick, value };
+  const api = { ODDS, rng, lottery, resolve, buildOrder, botPick, nflPos, value, pickValue, ledger, futureValue,
+    assetValue, assetLabel, stepienOK, firstsGap, botAccepts, offersFor };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.DraftEngine = api;
 })(typeof window !== "undefined" ? window : globalThis);
