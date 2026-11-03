@@ -323,7 +323,15 @@
   function assetLabel(D, x) {
     if (x.kind === "pick") return `No. ${x.n}`;
     const a = x.a, rd = a.rd === 1 ? "1st" : a.rd === 2 ? "2nd" : a.rd === 3 ? "3rd" : `${a.rd}th`;
-    return `${a.year} ${rd}${a.owner !== a.orig ? ` (${a.orig})` : ""}${a.prot ? `, protected ${a.prot}` : ""}`;
+    return `${a.year} ${rd}${a.owner !== a.orig ? ` (${a.orig})` : ""}${protLabel(D, a)}`;
+  }
+  // "top-5 protected", "lottery protected", and for an NBA first with none, "unprotected", so nobody misses it.
+  function protLabel(D, a) {
+    if (!a.prot) return D.league === "nba" && a.rd === 1 ? ", unprotected" : "";
+    const [lo, hi] = a.prot.split("-").map(Number);
+    if (lo === 1 && hi === 14 && D.league === "nba") return ", lottery protected";
+    if (lo === 1) return `, top-${hi} protected`;
+    return `, protected ${a.prot}`;
   }
 
   /* NBA trade rules for future picks. Stepien rule: a team can't be left without a first-round pick in two
@@ -379,17 +387,21 @@
       const gone = avail.slice(0, Math.max(1, Math.round((next.n - cur.n) * 0.9))).length;
       const keen = target.score < next.n - 3 && gone > 2 && rand() < (qb ? 0.85 : 0.55 + 0.15 * (st.chaos || 0.5));
       if (!keen) continue;
-      // What they can put in. NBA: these deals run on second-rounders and this year's picks; a future first
-      // only goes to climb into the lottery, and it comes protected (top 10, or the whole lottery for a smaller
-      // climb) unless the prize is a top-three pick. NFL: this year's picks first, future firsts last.
+      /* What they can put in. NBA: these deals run on second-rounders and this year's picks. A future first goes
+         only to climb into the lottery, and its protection follows how real trade-ups were written: into the top
+         three, light (Philadelphia's 2017 jump from 3 to 1 used a top-1 protected first, Dallas's 2018 jump from 5
+         to 3 a top-5 protected one), into picks 4 to 8 top-10, later in the lottery the whole lottery. Unprotected
+         firsts happen, but rarely, and the offer says so. NFL: this year's picks first, future firsts last. */
       const nba = D.league === "nba";
-      const yearNow = D.year || 2027;
       const cands = theirs.slice(1, 5).map((p) => ({ kind: "pick", n: p.n }));
       const futs = st.ledger.filter((a) => a.owner === t && a.ok && !a.prot).sort((a, b) => a.year - b.year || a.rd - b.rd);
+      const variants = !nba ? [""]
+        : cur.n <= 3 ? ["1-1", "1-3", "1-5", ...(rand() < 0.35 ? [""] : [])]
+        : cur.n <= 8 ? ["1-10", "1-5", ...(rand() < 0.12 ? [""] : [])]
+        : cur.n <= 14 ? ["1-14", "1-10", ...(rand() < 0.06 ? [""] : [])]
+        : rand() < 0.04 ? [""] : [];
       futs.filter((a) => a.rd === 1).slice(0, 2).forEach((a) => {
-        if (nba && cur.n > 14) return;
-        const prot = nba && cur.n > 3 ? (cur.n <= 8 ? "1-10" : "1-14") : "";
-        cands.push({ kind: "future", a: prot ? { ...a, prot, note: `Protected ${prot}` } : a });
+        variants.forEach((prot) => cands.push({ kind: "future", a: prot ? { ...a, prot, note: `Protected ${prot}` } : a }));
       });
       futs.filter((a) => a.rd === 2 || (!nba && a.rd === 3)).slice(0, 4).forEach((a) => cands.push({ kind: "future", a }));
       const lead = { kind: "pick", n: next.n };
@@ -400,13 +412,21 @@
       const maxExtra = nba ? 3 : (cur.n <= 5 ? 3 : 2);
       // The cheapest-looking package that clears it: least overpay, with a cost on each future first (teams
       // hate giving them) and a little on every extra piece.
-      const firstCost = (x) => (x.kind === "future" && x.a.rd === 1 ? V * (nba ? 0.18 : 0.15) : 0);
+      // In the NBA the lighter the protection, the harder a team swallows: unprotected costs most.
+      const firstCost = (x) => {
+        if (x.kind !== "future" || x.a.rd !== 1) return 0;
+        if (!nba) return V * 0.15;
+        const hi = x.a.prot ? Number(x.a.prot.split("-")[1]) : 0;
+        return V * (0.1 + 0.2 * Math.max(0, 14 - hi) / 14);
+      };
       let best = null, bestScore = Infinity;
       const vals = cands.map((x) => assetValue(D, x));
       const n = cands.length;
       const tryCombo = (idx) => {
         const sumV = leadV + idx.reduce((s2, i) => s2 + vals[i], 0);
         if (sumV < want || sumV > V * (qb ? 1.4 : 1.3)) return;
+        const ids = idx.map((i) => cands[i].kind === "future" ? cands[i].a.id : "n" + cands[i].n);
+        if (new Set(ids).size < ids.length) return;   // two versions of the same pick
         const firsts = idx.filter((i) => cands[i].kind === "future" && cands[i].a.rd === 1).length;
         if (firsts > 1 && cur.n > 3) return;
         const score = (sumV - want) + idx.reduce((s2, i) => s2 + firstCost(cands[i]), 0) + idx.length * V * 0.02;
@@ -427,7 +447,9 @@
       const sum = leadV + best.reduce((s2, i) => s2 + vals[i], 0);
       const moves = pkg.filter((x) => x.kind === "future").map((x) => ({ id: x.a.id, from: t, to: cur.owner }));
       if (!stepienOK(D, st.ledger, moves).ok) continue;
-      offers.push({ team: t, give: pkg, value: sum, ratio: sum / V, target: target.id, qb: !!qb });
+      const unprot = nba && pkg.some((x) => x.kind === "future" && x.a.rd === 1 && !x.a.prot);
+      offers.push({ team: t, give: pkg, value: sum, ratio: sum / V, target: target.id, qb: !!qb,
+        note: unprot ? (cur.n <= 3 ? "Unprotected first: they really want this pick" : "Unprotected first: rare for a pick this low") : "" });
     }
     return offers;
   }
@@ -436,7 +458,7 @@
   function value(pick, player) { return pick - player.rank; }
 
   const api = { rng, lottery321, oddsAtOne, standing, resolve, buildOrder, botPick, nflPos, value, pickValue, ledger, futureValue,
-    assetValue, assetLabel, stepienOK, firstsGap, botAccepts, offersFor };
+    assetValue, assetLabel, protLabel, stepienOK, firstsGap, botAccepts, offersFor };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.DraftEngine = api;
 })(typeof window !== "undefined" ? window : globalThis);

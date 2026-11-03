@@ -14,10 +14,10 @@
   function fresh(lg) {
     const p = prefs[lg] || {};
     return { lg, phase: "setup", mine: new Set(p.mine || []), rounds: p.rounds || 1, style: p.style || "balanced",
-      speed: p.speed || "fast", chart: p.chart || "jj", basis: p.basis || "projected", draw: p.draw !== false, seed: null, picks: [], i: 0, q: "", pos: "all", paused: false, preview: null };
+      speed: p.speed || "fast", chart: p.chart || "jj", basis: p.basis || "projected", draw: p.draw !== false, reveal: p.reveal || "mine", seed: null, picks: [], i: 0, q: "", pos: "all", paused: false, preview: null };
   }
   function savePrefs() {
-    prefs[M.lg] = { mine: [...M.mine], rounds: M.rounds, style: M.style, speed: M.speed, chart: M.chart, basis: M.basis, draw: M.draw };
+    prefs[M.lg] = { mine: [...M.mine], rounds: M.rounds, style: M.style, speed: M.speed, chart: M.chart, basis: M.basis, draw: M.draw, reveal: M.reveal };
     BB.store.set("bigboard-mock", prefs);
   }
   // NFL mocks go as deep as the boards do: three rounds now, up to seven as the boards grow toward the draft.
@@ -44,6 +44,7 @@
         <div><span class="lab">Rounds</span>${seg("rounds", Array.from({ length: maxRounds() }, (_, i) => [i + 1, String(i + 1)]), M.rounds)}</div>
         <div><span class="lab">The other ${D.league === "nba" ? "29" : "31"}</span>${seg("style", [["chalk", "Chalk"], ["balanced", "Balanced"], ["chaos", "Chaos"]], M.style)}</div>
         <div><span class="lab">Speed</span>${seg("speed", [["slow", "Slow"], ["fast", "Fast"], ["instant", "Instant"]], M.speed)}</div>
+        <div><span class="lab">Full-screen pick card</span>${seg("reveal", [["all", "Every pick"], ["mine", "My picks"], ["off", "Off"]], M.reveal)}</div>
         ${D.league === "nfl" ? `<div><span class="lab">Trade chart</span>${seg("chart", [["jj", "Jimmy Johnson"], ["fs", "Fitzgerald-Spielberger"]], M.chart)}</div>` : ""}
       </div>
       <div class="teams-head"><span class="lab">Your team${mine.length === 1 ? "" : "s"}</span><span class="note">${mine.length ? `${mine.map((t) => `${D.teams[t].city} ${D.teams[t].name}`).join(", ")}: ${mine.reduce((s, t) => s + count(t), 0)} pick${mine.reduce((s, t) => s + count(t), 0) === 1 ? "" : "s"} as it stands` : "None picked: you'll just watch."}</span>
@@ -124,7 +125,8 @@
       step();
       if (!SPEED[M.speed] || isMine(onClock())) room();
     };
-    if (!M.skip && M.speed !== "instant") { room(); reveal(p, after); } else after();
+    const show = M.reveal === "all" || (M.reveal === "mine" && isMine(p));
+    if (!M.skip && M.speed !== "instant" && show) { room(); reveal(p, after); } else after();
   }
 
   // Long names come down a size so they break between words, never inside one.
@@ -167,7 +169,7 @@
     const tm = p ? clockOf(p) : null;
     const mineNow = isMine(p);
     const q = M.q.trim().toLowerCase();
-    const av = available().filter((x) => (M.pos === "all" || BB.group(D.league, x.pos) === M.pos) && (!q || x.n.toLowerCase().includes(q) || (x.school || "").toLowerCase().includes(q)));
+    const av = available().filter((x) => BB.inGroup(D.league, x.pos, M.pos) && (!q || x.n.toLowerCase().includes(q) || (x.school || "").toLowerCase().includes(q)));
     const next = M.picks.slice(M.i).find(isMine);
     const rounds = [...new Set(M.picks.map((x) => x.rnd))];
     $("#mock-view").innerHTML = `<section class="room">
@@ -181,6 +183,7 @@
           ${M.mine.size ? `<button type="button" class="btn sm" data-act="trade">Trade</button>` : ""}
           ${next && !mineNow ? `<button type="button" class="btn sm" data-act="skip">Sim to my pick</button>` : ""}
           ${!next && !mineNow ? `<button type="button" class="btn sm" data-act="skip">Sim to the end</button>` : ""}
+          <button type="button" class="link" data-act="reveal" title="The full-screen card when a pick comes in">Pick card: ${M.reveal === "all" ? "every pick" : M.reveal === "mine" ? "my picks" : "off"}</button>
           <button type="button" class="link" data-act="restart">Restart</button></div>
       </div>` : ""}
       ${mineNow ? offersPanel() : ""}
@@ -230,7 +233,7 @@
     return `<div class="offers"><span class="lab">The phone's ringing</span><div class="offer-row">${list.map((o, k) => {
       const tm = BB.team(D, o.team), pct = Math.round(o.ratio * 100);
       return `<div class="offer" style="--t1:${tm.c[0]}">${BB.logo(D, o.team, 34)}<div class="ot"><b>${esc(tm.city)} ${esc(tm.name)}</b>
-        <span>want No. ${cur.n} for ${o.give.map((x) => esc(label(x))).join(" + ")}</span>${o.qb ? `<small class="qbtag">Chasing a quarterback</small>` : ""}<span class="meter"><i style="width:${Math.min(100, pct - 50)}%"></i></span><small>${pct}% of the pick's value</small></div>
+        <span>want No. ${cur.n} for ${o.give.map((x) => esc(label(x))).join(" + ")}</span>${o.qb ? `<small class="qbtag">Chasing a quarterback</small>` : ""}${o.note ? `<small class="qbtag">${esc(o.note)}</small>` : ""}<span class="meter"><i style="width:${Math.min(100, pct - 50)}%"></i></span><small>${pct}% of the pick's value</small></div>
         <div class="oa"><button type="button" class="btn sm go" data-offer="${k}" data-ans="yes">Accept</button><button type="button" class="link" data-offer="${k}" data-ans="no">Pass</button></div></div>`;
     }).join("")}</div></div>`;
   }
@@ -314,7 +317,7 @@
   }
   // ---------- the recap ----------
   const rdName = (r) => (r === 1 ? "1st" : r === 2 ? "2nd" : r === 3 ? "3rd" : `${r}th`);
-  const futLabel = (a) => `${a.year} ${rdName(a.rd)}${a.orig !== a._for ? ` (${a.orig})` : ""}${a.prot ? `, protected ${a.prot}` : ""}`;
+  const futLabel = (a) => `${a.year} ${rdName(a.rd)}${a.orig !== a._for ? ` (${a.orig})` : ""}${E.protLabel(D, a)}`;
 
   function futureMoves(t) {
     const before = Object.fromEntries((M.ledger0 || []).map((a) => [a.id, a]));
@@ -520,6 +523,7 @@
     else if (act === "redraw") { M.seed = (Math.random() * 2 ** 31) | 0; lotteryView(); }
     else if (act === "draft") start();
     else if (act === "back") { clearTimeout(timer); M.phase = "setup"; setup(); }
+    else if (act === "reveal") { M.reveal = { all: "mine", mine: "off", off: "all" }[M.reveal] || "mine"; savePrefs(); room(); }
     else if (act === "pause") { M.paused = !M.paused; step(); room(); }
     else if (act === "skip") { M.paused = false; M.skip = true; step(); }
     else if (act === "restart") { clearTimeout(timer); if (M.revealing) { M.revealing.close(); M.revealing = null; } M.phase = "setup"; M.skip = false; setup(); }

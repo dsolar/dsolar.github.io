@@ -42,21 +42,20 @@
     $("#thead").innerHTML = `<tr>${th("rank", "#", "r")}${th("move", "Move", "", prev ? `Spots since ${prev}` : "")}${th("name", "Player")}
       ${hasStats() ? `<th class="hide-m">${D.league === "nba" ? "This season" : "2026 season"}</th>` : ""}${th("score", "Avg", "r hide-s", "Weighted average rank")}
       ${live.map((s) => th("s:" + s.id, esc(s.abbr), "r col-src", `${s.name}${s.analyst ? `, ${s.analyst}` : ""}, ${fmtDay(s.date)}`)).join("")}
-      ${live.length > 1 ? `${th("spread", "Range", "rng", "Best and worst rank across the boards")}${th("on", "Boards", "c hide-s")}` : ""}${mk.length ? th("mock", "Mock", "hide-s", mk.map((m) => `${m.name}, ${fmtDay(m.date)}`).join("; ")) : ""}</tr>`;
+      ${live.length > 1 ? `${th("spread", "Range", "rng", "Best and worst rank across the boards")}` : ""}${mk.length ? th("mock", "Mock", "hide-s", mk.map((m) => `${m.name}, ${fmtDay(m.date)}`).join("; ")) : ""}</tr>`;
   }
 
-  function cols() { return 4 + (hasStats() ? 1 : 0) + liveBoards().length + (liveBoards().length > 1 ? 2 : 0) + (mocks().length ? 1 : 0); }
+  function cols() { return 4 + (hasStats() ? 1 : 0) + liveBoards().length + (liveBoards().length > 1 ? 1 : 0) + (mocks().length ? 1 : 0); }
 
   function rows() {
     const live = liveBoards(), mk = mocks();
     const q = ui.q.trim().toLowerCase();
-    let ps = D.players.filter((p) => (ui.pos === "all" || BB.group(ui.lg, p.pos) === ui.pos)
+    let ps = D.players.filter((p) => BB.inGroup(ui.lg, p.pos, ui.pos)
       && (!q || p.n.toLowerCase().includes(q) || (p.school || "").toLowerCase().includes(q)));
     const val = (p) => {
       if (ui.sort === "name") return p.n.split(" ").slice(-1)[0].toLowerCase();
       if (ui.sort === "move") { const m = move(p); return m == null ? -999 * ui.dir : -m; }
       if (ui.sort === "spread") return -(p.lo - p.hi);
-      if (ui.sort === "on") return -p.on;
       if (ui.sort === "mock") { const m = mk.map((s) => p.mocks[s.id]).find(Boolean); return m ? m[0] : 999; }
       if (ui.sort.startsWith("s:")) return p.ranks[ui.sort.slice(2)] ?? 999;
       return p[ui.sort];
@@ -81,9 +80,8 @@
         <td class="r sc hide-s">${p.score.toFixed(1)}</td>
         ${live.map((s) => p.ranks[s.id] != null ? `<td class="r cell col-src">${p.ranks[s.id]}</td>` : `<td class="r cell miss col-src" title="Not on this board">&ndash;</td>`).join("")}
         ${n > 1 ? `<td class="rng"><span${spread >= hotCut && p.on > 1 ? ` class="hot"` : ""}>${p.on > 1 ? `${p.hi}&ndash;${p.lo}` : `${p.hi} only`}</span>
-          <div class="bar" aria-hidden="true"><i style="left:${pct(p.hi)}%;right:${(100 - pct(p.lo)).toFixed(1)}%"></i><b style="left:${pct(p.rank)}%"></b></div></td>
-        <td class="c sc hide-s">${p.on}/${n}</td>` : ""}
-        ${mk.length ? `<td class="mk hide-s">${mockCell ? `${mockCell[0]}${mockCell[1] ? ` ${esc(mockCell[1])}` : ""}` : "&ndash;"}</td>` : ""}
+          <div class="bar" aria-hidden="true"><i style="left:${pct(p.hi)}%;right:${(100 - pct(p.lo)).toFixed(1)}%"></i><b style="left:${pct(p.rank)}%"></b></div></td>` : ""}
+        ${mk.length ? `<td class="mk hide-s">${mockCell ? `<span class="mk-pick"${mockCell[1] && D.teams[mockCell[1]] ? ` title="No. ${mockCell[0]} to ${esc(D.teams[mockCell[1]].city)}"` : ""}>${mockCell[0]}${mockCell[1] && D.teams[mockCell[1]] ? BB.logo(D, mockCell[1], 20) : mockCell[1] ? ` ${esc(mockCell[1])}` : ""}</span>` : "&ndash;"}</td>` : ""}
       </tr>${open ? detail(p) : ""}`;
     }).join("");
   }
@@ -124,6 +122,7 @@
     if (lg !== ui.lg) ui = { lg, q: "", pos: "all", sort: "rank", dir: 1, open: null };
     $("#q").value = ui.q;
     try { D = await BB.data(lg); } catch (e) { $("#tbody").innerHTML = `<tr><td class="empty">Couldn't load the board. Try a refresh.</td></tr>`; return; }
+    if (!BB.POS[lg].some(([k]) => k === ui.pos)) ui.pos = "all";
     $("#pos").innerHTML = BB.POS[lg].map(([k, l]) => `<button type="button" data-pos="${k}" aria-pressed="${ui.pos === k}">${l}</button>`).join("");
     const live = liveBoards();
     $("#note").textContent = live.length < 3

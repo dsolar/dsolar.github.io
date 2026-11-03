@@ -49,23 +49,19 @@
       return String(l).replace(/^REC YDS$/i, "YDS").replace(/^RUSH YDS$/i, "RU YDS").replace(/^PASS YDS$/i, "YDS").replace(/^TACKLES$/i, "TKL").replace(/^PASS DEF$/i, "PD").toUpperCase();
     },
     num(v) { const x = Number(v); return Number.isFinite(x) && Math.abs(x) >= 1000 ? x.toLocaleString("en-US") : BB.esc(v); },
-    group(lg, pos) {
-      const p = String(pos || "").toUpperCase();
-      if (lg === "nba") {
-        const first = p.split(/[\/-]/)[0];
-        if (first === "PG" || first === "SG" || first === "G") return "g";
-        if (first === "C" || p === "PF/C" || p === "F-C") return "b";
-        if (first === "PF") return p.includes("C") ? "b" : "w";
-        return "w";
-      }
-      if (p === "OT" || p === "IOL" || p === "OL" || p === "OG") return "OL";
-      if (p === "DL" || p === "DT" || p === "IDL") return "DL";
-      if (p === "CB" || p === "S" || p === "NB" || p === "DB") return "DB";
-      return p;
+    // Every filter a listed position belongs to. Hybrids count for each half: an SG/SF shows under SG and SF,
+    // a G under PG and SG, an OT/IOL under OT and IOL.
+    groups(lg, pos) {
+      const parts = String(pos || "").toUpperCase().split(/[\/-]/).filter(Boolean);
+      const map = lg === "nba"
+        ? { G: ["PG", "SG"], F: ["SF", "PF"], W: ["SG", "SF"] }
+        : { OL: ["OT", "IOL"], OG: ["IOL"], G: ["IOL"], C: ["IOL"], IDL: ["DL"], DT: ["DL"], DE: ["EDGE"], NB: ["CB"], DB: ["CB", "S"], FS: ["S"], SS: ["S"], ILB: ["LB"], OLB: ["LB"] };
+      return new Set(parts.flatMap((x) => map[x] || [x]));
     },
+    inGroup(lg, pos, key) { return key === "all" || BB.groups(lg, pos).has(key); },
     POS: {
-      nba: [["all", "All"], ["g", "Guards"], ["w", "Wings"], ["b", "Bigs"]],
-      nfl: [["all", "All"], ["QB", "QB"], ["RB", "RB"], ["WR", "WR"], ["TE", "TE"], ["OL", "OL"], ["DL", "DL"], ["EDGE", "EDGE"], ["LB", "LB"], ["DB", "DB"]]
+      nba: [["all", "All"], ["PG", "PG"], ["SG", "SG"], ["SF", "SF"], ["PF", "PF"], ["C", "C"]],
+      nfl: [["all", "All"], ["QB", "QB"], ["RB", "RB"], ["WR", "WR"], ["TE", "TE"], ["OT", "OT"], ["IOL", "IOL"], ["DL", "DL"], ["EDGE", "EDGE"], ["LB", "LB"], ["CB", "CB"], ["S", "S"]]
     },
     store: {
       get(k) { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } },
