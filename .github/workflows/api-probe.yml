@@ -1,0 +1,12 @@
+# One-off: checks which free fantasy data APIs answer from GitHub's runners (tools/api_probe.py). Run by hand.
+name: API probe
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - run: python3 tools/api_probe.py
