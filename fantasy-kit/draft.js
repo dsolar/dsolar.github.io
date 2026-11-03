@@ -344,6 +344,7 @@
     const T = (D.trades || []).find((x) => open(x) && !D.held[x.id]);
     if (!T) return false;
     D.held[T.id] = 1;
+    if (now - T.at >= HOLD_MAX) return false;     // an offer from a while ago (the draft caught up on its own) doesn't stop it
     pause(D, now, true);
     D.hold = { trade: T.id, team: T.to, at: now };
     return true;
@@ -357,7 +358,7 @@
       const c = onClock(D, now);
       if (!c) break;
       const team = D.teams[c.team];
-      if (!isBot(team) && !D.offered[c.index]) { D.offered[c.index] = true; if (botOffer(D, ctx, c, now)) { offerHold(D, now); if (D.paused) break; } }
+      if (!isBot(team) && !D.offered[c.index]) { D.offered[c.index] = true; if (botOffer(D, ctx, c, Math.min(now, D.clockStart))) { offerHold(D, now); if (D.paused) break; } }
       const at = isBot(team) ? D.clockStart + D.botDelay : c.deadline;
       if (now < at) break;
       if (isBot(team) && team.owner == null && D.steals) {
