@@ -208,7 +208,7 @@
     // dynasty: the outside consensus rank and how age moves each player's value
     const extra = rank.dyn ? [
       { k: "cons", label: "Cons", cls: "r num", title: "Outside dynasty consensus rank (FantasyPros, plus FantasyCalc for football)", sort: (p) => p.cons || 1e4, asc: true, html: (p) => (p.cons ? String(p.cons) : `<span class="ps">-</span>`) },
-      { k: "dyn", label: "Age", cls: "r num", hide: "s", title: "How age moves his value over the next five seasons: above 1 he's still climbing, below 1 he's fading", sort: (p) => p.dyn || 1, html: (p) => (p.dyn && p.dyn !== 1 ? `<span class="${p.dyn > 1 ? "win" : "loss"}">&times;${p.dyn.toFixed(2)}</span>` : `<span class="ps">&times;1</span>`) },
+      { k: "dyn", label: "Outlook", cls: "r num", hide: "s", title: "How age moves his value over the next five seasons: above 1 he's still climbing, below 1 he's fading", sort: (p) => p.dyn || 1, html: (p) => (p.dyn && p.dyn !== 1 ? `<span class="${p.dyn > 1 ? "win" : "loss"}">&times;${p.dyn.toFixed(2)}</span>` : `<span class="ps">&times;1</span>`) },
     ] : [];
     const cols = U.poolColumns(sp, { group: U.groupOf(sp, rank.f), scoring: P.scoring, extra });
     const teams = [...new Set(P.players.map((p) => p.t))].sort();
