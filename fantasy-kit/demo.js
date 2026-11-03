@@ -34,6 +34,7 @@
     V.evaluate(sport, players, { teams: 10, lineup, scoring });
     weeks = await fetch(`data/weeks-${sportKey}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null);
     if (weeks && String(weeks.season) !== String(data.season)) weeks = null;
+    livePoll();
     L = store.get(KEY, null);
     if (!L || L.v !== 1 || L.demo !== 2) L = build(lineup, scoring);
     // a demo on this season's real calendar scores on real games from here on
@@ -41,6 +42,18 @@
     catchUp();
   }
 
+  // live box scores, every minute while the page is open, for a demo on this season's real games
+  let liveT = null;
+  async function livePoll() {
+    clearTimeout(liveT);
+    const FK = window.FK;
+    if (weeks && FK.cloud && FK.season && !document.hidden && (!L || L.settings.real)) {
+      const lv = await FK.cloud.live(sportKey);
+      if (FK.season.mergeLive(weeks, lv) && app && !U.dialogOpen()) app.refresh();
+    }
+    liveT = setTimeout(livePoll, document.hidden ? 5 * 60e3 : 60e3);
+  }
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && weeks) livePoll(); });
   // The demo runs on the real calendar: fantasy week 1 of this season (football weeks start Tuesday, after Monday
   // night; basketball weeks start Monday). Out of season, a replay lined up with Mondays, five weeks in.
   const WEEK1 = { nfl: new Date(2026, 8, 8).getTime(), nba: new Date(2026, 9, 19).getTime() };

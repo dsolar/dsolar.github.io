@@ -47,6 +47,7 @@
     byId = Object.fromEntries(players.map((p) => [p.id, p]));
     weeks = await fetch(`data/weeks-${info.sport}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null);
     if (weeks && String(weeks.season) !== String(data.season)) weeks = null;
+    livePoll();
     if (C.user()) C.rpc("fk_mine", {}).then((m) => { if (Array.isArray(m)) { mine = m; if (app) app.render(); } }).catch(() => {});
     mount();
     if (link && link.error) U.toast(`That sign-in link didn't work: ${link.error}`, true);
@@ -92,6 +93,17 @@
     if (catchUp()) push();
     app.refresh();
   }
+  /* ---------- live box scores: every minute while the page is open and the league plays on real games ---------- */
+  let liveT = null;
+  async function livePoll() {
+    clearTimeout(liveT);
+    if (weeks && !document.hidden && (!L || L.settings.real)) {
+      const lv = await C.live(info.sport);
+      if (Z.mergeLive(weeks, lv) && app && !U.dialogOpen()) { app.refresh(); }
+    }
+    liveT = setTimeout(livePoll, document.hidden ? 5 * 60e3 : 60e3);
+  }
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && weeks) livePoll(); });
   /* ---------- league chat: posts load every few seconds while the page is open ---------- */
   let posts = [], postT = null, seen = 0;
   try { seen = Number(localStorage.getItem("fk-chat-seen:" + id)) || 0; } catch (e) { /* no storage */ }

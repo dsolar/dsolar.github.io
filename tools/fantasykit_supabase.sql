@@ -390,3 +390,13 @@ grant execute on function fk_post(text, text), fk_posts(text, bigint) to anon, a
 --   each claimed seat to its new team number, and a claimed team can't be removed.
 -- fk_delete(p_id, p_name): the commissioner deletes the league (seats, chat and queued emails go with it); the name
 --   has to match. Rule, roster, trade and team edits save through fk_save like any other move.
+
+-- ---------- live box scores (migration fantasykit_live) ----------
+-- supabase/functions/fk-live serves the current week's totals so far for each sport (verify_jwt off: public sports
+-- data). fk_live keeps the last result about a minute; fk_live_games keeps each finished game's lines. Only the
+-- function's service role touches either table.
+create table if not exists fk_live (sport text primary key, data jsonb not null, updated_at timestamptz not null default now());
+create table if not exists fk_live_games (sport text not null, gid text not null, day date, final boolean not null default false, lines jsonb not null default '{}'::jsonb, updated_at timestamptz not null default now(), primary key (sport, gid));
+alter table fk_live enable row level security;
+alter table fk_live_games enable row level security;
+revoke all on public.fk_live, public.fk_live_games from anon, authenticated;

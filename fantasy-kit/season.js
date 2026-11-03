@@ -61,6 +61,20 @@
     const ends = Object.values((weeks && weeks.weeks) || {}).map((w) => Date.parse(w.end + "T23:59:59Z")).filter(Boolean);
     return ends.length > 0 && Math.max(...ends) >= start - 8 * DAY;
   }
+  // Lays the live feed (C.live) over a weeks file: the feed's week replaces that week's lines, unless the file has
+  // already closed it, or joins the file if the week is new. Each pro team's games played, live and left this week
+  // ride along as weeks.live, for live win chances. True if anything changed.
+  function mergeLive(weeks, live) {
+    if (!weeks || !live || !live.start || live.error || String(live.season) !== String(weeks.season)) return false;
+    const before = weeks.live && weeks.live.updated;
+    const k = Object.keys(weeks.weeks || {}).find((x) => weeks.weeks[x].start === live.start);
+    const wk = k ? weeks.weeks[k] : null;
+    if (wk && wk.final) { weeks.live = null; return false; }
+    if (wk) wk.lines = live.players || {};
+    else (weeks.weeks = weeks.weeks || {})["live"] = { start: live.start, end: live.end, final: false, lines: live.players || {} };
+    weeks.live = { start: live.start, updated: live.updated, teams: live.teams || {} };
+    return before !== live.updated;
+  }
   function catchUp(L, ctx, now) {
     if (!L) return false;
     const before = JSON.stringify(L);
@@ -113,10 +127,14 @@
       if (team == null || team === o.me || seats[team] == null || out.some((x) => x.team === team && x.subject.endsWith(subject))) return;
       out.push({ team, kind, subject: `${o.name}: ${subject}`, body: `${body}\n\nOpen the league: ${o.url}` });
     };
-    function trades(bt, ct) {
+    // the rest of the league hears about trades too: one up for a vote, and one that went through
+    const others = (t) => seated.filter((x) => x !== t.from && x !== t.to);
+    function trades(bt, ct, wide) {
       const was = Object.fromEntries((bt || []).map((t) => [t.id, t.status]));
       for (const t of ct || []) {
         const s0 = was[t.id];
+        if (wide && s0 !== "review" && t.status === "review") for (const x of others(t)) add(x, "trade", "a trade is up for review", `${teamName(t.from)} sends ${names(t.give, t.pickGive)} to ${teamName(t.to)} for ${names(t.get, t.pickGet)}. If enough teams veto it by ${when(t.reviewEnds)}, it's off. Vote on the Trades page.`);
+        if (wide && s0 !== "accepted" && t.status === "accepted") for (const x of others(t)) add(x, "trade", `${teamName(t.from)} and ${teamName(t.to)} made a trade`, `${teamName(t.from)} gets ${names(t.get, t.pickGet)}. ${teamName(t.to)} gets ${names(t.give, t.pickGive)}.`);
         if (s0 == null && t.status === "pending") add(t.to, "trade", `${teamName(t.from)} sent you a trade offer`, `${teamName(t.from)} offered ${names(t.give, t.pickGive)} for ${names(t.get, t.pickGet)}.${t.note ? `\n\n"${t.note}"` : ""}`);
         else if (s0 === "pending" && t.status !== "pending") {
           const verb = { accepted: "accepted", review: "accepted", rejected: "declined", declined: "declined", expired: "didn't answer" }[t.status];
@@ -141,14 +159,14 @@
           if (cc && (!cb || cb.index !== cc.index) && !F.isBot(cd.teams[cc.team])) add(cc.team, "clock", "you're on the clock", `Pick ${cc.pick} is yours. You have until ${when(cc.deadline)}.`);
         } catch (e) { /* no clock to read */ }
       }
-      trades(bd.trades, cd.trades);
+      trades(bd.trades, cd.trades, (cd.clock || 0) >= 3600);
     }
     // a new season: the league went back to a draft
     if (b && b.league && !c.league && cd) seated.forEach((t) => add(t, "season", "next season's draft room is open", `${cd.rookie ? `Your whole roster carries over. The rookie and free agent draft is ${cd.rounds} rounds, worst team first. ` : (cd.board || []).some((pk) => pk && pk.keeper && pk.team === t) || (cd.sales || []).some((x) => x.keeper && x.team === t) ? "Your keepers are on the board. " : ""}The commissioner starts the draft when everyone's ready.`));
     if (c.league) {
       const bl = (b && b.league) || { trades: [], claims: [], results: {} }, cl = c.league;
       if (cl.next && !bl.next) seated.forEach((t) => add(t, "keepers", "pick your keepers", `The season is over. Pick up to ${cl.settings.keepers} keepers for next season${cl.next.due ? ` by ${when(cl.next.due)}` : ""}. If you don't, your best values are kept for you.`));
-      trades(bl.trades, cl.trades);
+      trades(bl.trades, cl.trades, true);
       const was = Object.fromEntries((bl.claims || []).map((x) => [x.id, x.status]));
       for (const x of cl.claims || []) {
         if (was[x.id] !== "open") continue;
@@ -282,5 +300,5 @@
   }
   const standings = (L) => G.standings(L);
 
-  return { startAfter, realCovers, begin, catchUp, driveDraft, events, keeperCost, keeperOptions, autoKeepers, nextDraft, summary };
+  return { startAfter, realCovers, mergeLive, begin, catchUp, driveDraft, events, keeperCost, keeperOptions, autoKeepers, nextDraft, summary };
 });

@@ -892,7 +892,7 @@
     // The clock: redraw the timer; when this page drives the draft, bots and expired clocks move it.
     let lastSig = "";
     const sig = () => { const d = D(); return [d.phase, d.paused, F.made(d).length, d.auction && d.auction.lot ? d.auction.lot.bid + ":" + d.auction.lot.team + ":" + (d.auction.lot.passed || []).length : "", (d.trades || []).map((T) => T.status[0]).join("")].join("|"); };
-    let seenOffers = new Set((D().trades || []).map((T) => T.id));
+    let seenOffers = new Set((D().trades || []).map((T) => T.id)), seenDone = new Set((D().trades || []).filter((T) => T.status === "accepted").map((T) => T.id)), ready = true;
     let seenSteals = (D().log || []).filter((x) => x.kind === "steal").length;
     const newSteals = () => {
       const st = (D().log || []).filter((x) => x.kind === "steal");
@@ -907,6 +907,13 @@
     // If the draft is holding for it, it says so and how long the hold lasts.
     const newOffers = () => {
       const d = D();
+      // everyone in the room hears about a trade that went through
+      for (const T of d.trades || []) {
+        if (T.status !== "accepted" || seenDone.has(T.id)) continue;
+        seenDone.add(T.id);
+        if (ready && T.from !== me() && T.to !== me()) toast(`${team(T.from).name} and ${team(T.to).name} made a trade. See Trades.`);
+      }
+      ready = true;
       for (const T of d.trades || []) {
         if (seenOffers.has(T.id)) continue;
         if (T.status !== "pending" || T.to !== me() || T.from === me()) { seenOffers.add(T.id); continue; }

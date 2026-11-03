@@ -125,3 +125,37 @@ test('real scoring only when the box scores reach the season', () => {
   assert.equal(Z.realCovers(mlb, Date.UTC(2026, 10, 10, 13)), false, 'an offseason league is simulated');
   assert.equal(Z.realCovers(null, Date.now()), false);
 });
+
+test('live feed: the current week fills in, and win chances count games left to play', () => {
+  const weeks = JSON.parse(JSON.stringify(nbaWeeks));
+  const s = setup('nba', 'points', weeks);
+  const { L } = s;
+  // a live feed for week 1 with a partial week: team "AAA" done, others with games left
+  const wk1 = G.realWeek(s.L, s.ctx, 1);
+  const lu = G.lineupFor(L, s.ctx, 0, 1).filter(Boolean).map((id) => s.ctx.byId[id]);
+  const teams = {};
+  for (const p of s.players) teams[p.t] = { played: 2, live: 0, left: 2 };
+  const live = { sport: 'nba', season: weeks.season, start: wk1.start, end: wk1.end, players: {}, teams, updated: '2026-10-21T01:00:00Z' };
+  for (const p of lu) live.players[p.id] = [2, 2, 60, 15, 30, 5, 6, 3, 38, 10, 6, 2, 1, 3];
+  // a final week in the file isn't overwritten
+  const k = Object.keys(weeks.weeks).find((x) => weeks.weeks[x].start === wk1.start);
+  weeks.weeks[k].final = false;
+  assert.ok(Z.mergeLive(weeks, live));
+  assert.equal(Z.mergeLive(weeks, live), false, 'the same feed twice changes nothing');
+  const ctx = G.context(L, s.players, s.sport, { real: weeks });
+  const o = G.outlook(L, ctx, 0, 1);
+  assert.ok(o && o.left > 0 && o.rem > 0);
+  const m = G.matchups(L, ctx, 1, 0.5).find((g) => g.a === 0 || g.b === 0);
+  assert.ok(m.outlook && m.winProb > 0 && m.winProb < 1);
+  // everyone done: the score decides it
+  for (const t of Object.values(teams)) { t.played = 4; t.left = 0; }
+  live.updated = 'x';
+  Z.mergeLive(weeks, live);
+  const ctx2 = G.context(L, s.players, s.sport, { real: weeks });
+  const m2 = G.matchups(L, ctx2, 1, 0.9).find((g) => g.a === 0 || g.b === 0);
+  assert.equal(m2.pa, m2.sa);
+  assert.ok(m2.winProb === 0 || m2.winProb === 1 || m2.winProb === 0.5);
+  // a closed week stays as the file has it
+  weeks.weeks[k].final = true;
+  assert.equal(Z.mergeLive(weeks, Object.assign({}, live, { updated: 'y' })), false);
+});

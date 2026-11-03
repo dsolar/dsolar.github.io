@@ -85,5 +85,8 @@
     return j;
   }
 
-  FK.cloud = { user, signIn, signOut, fromLink, rpc, now: () => Date.now() + offset, lastEmail: () => { try { return JSON.parse(localStorage.getItem("fk-auth:email")) || ""; } catch (e) { return ""; } } };
+  // the live box score feed (supabase/functions/fk-live): this week's totals so far, games in progress included
+  const live = (sport) => fetch(`${BASE}/functions/v1/fk-live?sport=${encodeURIComponent(sport)}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+
+  FK.cloud = { user, signIn, signOut, fromLink, rpc, live, now: () => Date.now() + offset, lastEmail: () => { try { return JSON.parse(localStorage.getItem("fk-auth:email")) || ""; } catch (e) { return ""; } } };
 })(typeof window !== "undefined" ? window : globalThis);

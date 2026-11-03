@@ -101,14 +101,20 @@
     // the same game with the sides swapped, so your team reads first
     function flip(m) {
       const cats = m.cats ? Object.fromEntries(Object.entries(m.cats).map(([k, [x, y, d]]) => [k, [y, x, -d]])) : m.cats;
-      return Object.assign({}, m, { a: m.b, b: m.a, sa: m.sb, sb: m.sa, pa: m.pb, pb: m.pa, ta: m.tb, tb: m.ta, w: m.w === "a" ? "b" : m.w === "b" ? "a" : m.w, winProb: m.winProb == null ? null : 1 - m.winProb, cats });
+      return Object.assign({}, m, { a: m.b, b: m.a, sa: m.sb, sb: m.sa, pa: m.pb, pb: m.pa, ta: m.tb, tb: m.ta, w: m.w === "a" ? "b" : m.w === "b" ? "a" : m.w, winProb: m.winProb == null ? null : 1 - m.winProb, cats, outlook: m.outlook ? [m.outlook[1], m.outlook[0]] : m.outlook });
+    }
+    // with the live feed: "Playing now", "2 games left", or nothing to say
+    function liveLeft(p, w) {
+      const R = (opts.hooks || {}).real, lv = R && R.live, rw = G.realWeek(L(), ctx, w), t = lv && lv.teams && lv.teams[p.t];
+      if (!t || !rw || rw.start !== lv.start) return "";
+      return t.live ? "Playing now" : t.left ? `${t.left} game${t.left === 1 ? "" : "s"} left` : t.played ? "Done this week" : "No games this week";
     }
     // A category player's week in a few words: the first three counting categories, like "62 PTS, 21 REB, 9 AST".
     function weekLine(p, w) {
       if (frac(w) <= 0) return "Yet to play";
       const line = G.playerWeek(L(), ctx, p, w, frac(w));
       // a real week: no games yet means no games yet, not a zero
-      if (G.realWeek(L(), ctx, w)) { const ln = line[sc().cats[0].line || "pg"], gi = ln && (sport.cols[sc().cats[0].line || "pg"] || {}).gp; if (ln && gi != null && !ln[gi]) return w < L().week ? "Didn't play" : "No games"; }
+      if (G.realWeek(L(), ctx, w)) { const ln = line[sc().cats[0].line || "pg"], gi = ln && (sport.cols[sc().cats[0].line || "pg"] || {}).gp; if (ln && gi != null && !ln[gi]) return w < L().week ? "Didn't play" : liveLeft(p, w) || "No games"; }
       // counting categories this player's line has (a hitter's for a hitter, a pitcher's for a pitcher), the big three first
       const pref = ["pts", "reb", "ast", "r", "hr", "rbi", "k", "w", "sv"];
       const cats = sc().cats.filter((c) => c.col && line[c.line || "pg"]).sort((a, b) => (pref.indexOf(a.col) + 99) % 99 - (pref.indexOf(b.col) + 99) % 99).slice(0, 3);
@@ -182,6 +188,20 @@
     }
     // with divisions the playoff line isn't a line, so each team in line for the playoffs is tagged with its seed
     const seedTag = (r) => (L().divs && r.seed && !over() ? ` <span class="tag${r.divLeader ? " gold" : " info"}" title="${r.divLeader ? "Leads the division" : "Wild card"}">Seed ${r.seed}</span>` : "");
+    // a player's projection for the week: with the live feed, what he has plus what his team's games left should add
+    function projOf(p, sofar, w) {
+      const wk = G.WEEK[sport.key] || { weeks: 20 }, R = (opts.hooks || {}).real, lv = R && R.live, rw = G.realWeek(L(), ctx, w);
+      if (!lv || !rw || rw.start !== lv.start || !lv.teams || !lv.teams[p.t]) return p.v / wk.weeks;
+      const t = lv.teams[p.t], per = (p.v || 0) / ({ nba: 82, nfl: 17, mlb: 162 }[sport.key] || 82);
+      return (typeof sofar === "number" ? sofar : 0) + per * (t.left + 0.5 * t.live);
+    }
+    // games each lineup still has to play this week, from the live feed
+    function outlookLine(m) {
+      if (!m.outlook || m.final) return "";
+      const n = (x) => Math.round(x.left * 2) / 2, unit = sport.key === "nfl" ? "player" : "game";
+      const say = (t, o) => `<b>${esc(T(t).name)}</b> ${n(o) ? `${fmtS(n(o))} ${unit}${n(o) === 1 ? "" : "s"} left` : "done"}`;
+      return `<div class="medline"><span>Still to play:</span><span>${say(m.a, m.outlook[0])}</span><span>${say(m.b, m.outlook[1])}</span>${(L().settings.real && (opts.hooks || {}).real && opts.hooks.real.live) ? `<span class="ps">Live box scores, updated ${esc(new Date(opts.hooks.real.live.updated).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }))}</span>` : ""}</div>`;
+    }
     // median scoring: where both teams stand against the league's median score this week
     function medianLine(w, m) {
       if (!L().settings.median || w > L().settings.weeks) return "";
@@ -624,11 +644,14 @@
       const cut = L().week === 1 ? G.overLimit(L(), mid) : 0;
       if (cut) items.push(`<a class="alert loss" href="#team/roster"><span>Cut ${cut} player${cut === 1 ? "" : "s"} before week 1 starts ${esc(new Date(L().start).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" }))}. If you don't, your lowest-valued bench players are dropped.</span><b class="go">Your roster</b></a>`);
       if (!(r.tab === "team" && r.sub === "trades")) {
+        // the whole league sees trades: one waiting on your vote, and ones that just went through
+        const fresh = L().trades.filter((t) => t.status === "accepted" && t.from !== mid && t.to !== mid && now() - (t.done || t.at) < 48 * 36e5);
+        for (const t of fresh.slice(-2)) items.push(`<a class="alert info" href="#league/tx"><span><b>${esc(T(t.from).name)}</b> and <b>${esc(T(t.to).name)}</b> made a trade: ${esc(t.get.map((x) => (ctx.byId[x] || {}).n).filter(Boolean).concat((t.pickGet || []).length ? ["picks"] : []).join(", "))} for ${esc(t.give.map((x) => (ctx.byId[x] || {}).n).filter(Boolean).concat((t.pickGive || []).length ? ["picks"] : []).join(", "))}.</span><b class="go">Transactions</b></a>`);
         const offers = L().trades.filter((t) => t.status === "pending" && t.to === mid);
         for (const t of offers.slice(0, 2)) items.push(`<a class="alert" href="#team/trades">${teamAv(T(t.from), "sm")}<span><b>${esc(T(t.from).name)}</b> sent you a trade offer</span><b class="go">Review</b></a>`);
         if (offers.length > 2) items.push(`<a class="alert" href="#team/trades"><span>${offers.length - 2} more trade offers</span><b class="go">Review</b></a>`);
         const votes = L().trades.filter((t) => t.status === "review" && G.voters(L(), t).includes(mid) && !(t.votes || {})[mid]).length;
-        if (votes) items.push(`<a class="alert" href="#team/trades"><span>${votes === 1 ? "A trade needs" : `${votes} trades need`} your vote</span><b class="go">Vote</b></a>`);
+        if (votes) items.push(`<a class="alert" href="#team/trades"><span>${votes === 1 ? "A trade needs" : `${votes} trades need`} your vote. It goes through unless the league vetoes it.</span><b class="go">Vote</b></a>`);
       }
       const claims = L().claims.filter((c) => c.team === mid && c.status === "open").length;
       if (claims && !(r.tab === "players" && r.sub === "claims") && !(r.tab === "team" && r.sub === "roster") && !(r.tab === "league" && r.sub === "overview")) items.push(`<a class="alert info" href="#players/claims"><span>${claims} waiver claim${claims === 1 ? "" : "s"} pending. ${esc(claimsRun())}</span><b class="go">See claims</b></a>`);
@@ -801,14 +824,14 @@
         const pa = la[k] && ctx.byId[la[k]], pb = lb[k] && ctx.byId[lb[k]];
         const xa = pa ? (pts() ? ptsA[pa.id] : weekLine(pa, w)) : null, xb = pb ? (pts() ? ptsB[pb.id] : weekLine(pb, w)) : null;
         const cmp = pts() && xa != null && xb != null;
-        return { slot, a: { p: pa, pts: xa, proj: pts() && pa && !m.final ? pa.v / wk.weeks : null, w: cmp && xa > xb }, b: { p: pb, pts: xb, proj: pts() && pb && !m.final ? pb.v / wk.weeks : null, w: cmp && xb > xa } };
+        return { slot, a: { p: pa, pts: xa, proj: pts() && pa && !m.final ? projOf(pa, xa, w) : null, w: cmp && xa > xb }, b: { p: pb, pts: xb, proj: pts() && pb && !m.final ? projOf(pb, xb, w) : null, w: cmp && xb > xa } };
       });
       const weeks = Array.from({ length: curWeek() }, (_, k) => k + 1);
       return `<div class="wrap page">
         <div class="head"><h1 class="disp">${w > L().settings.weeks ? esc(kindName(m.kind, w)) : `Week ${w} matchup`}</h1>${!pts() ? `<span class="ps">Each starter's line for the week so far.</span>` : ""}</div>
         <div class="row" style="flex-wrap:wrap"><div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-mweek="${x}" aria-pressed="${x === w}">${weekChip(x)}</button>`).join("")}</div></div>
-        <div class="card">${U.versus(versusVM(w, m))}${medianLine(w, m)}</div>
-        <div class="cols2" style="grid-template-columns:minmax(0,1fr)">${U.vsTable(sport, rows, pts() ? { a: m.sa, b: m.sb } : null, (x) => (x == null ? "-" : typeof x === "string" ? (/^(No games|Didn't play|Yet to play)$/.test(x) ? `<span class="ps">${x}</span>` : x) : x.toFixed(1)))}</div>
+        <div class="card">${U.versus(versusVM(w, m))}${outlookLine(m)}${medianLine(w, m)}</div>
+        <div class="cols2" style="grid-template-columns:minmax(0,1fr)">${U.vsTable(sport, rows, pts() ? { a: m.sa, b: m.sb } : null, (x) => (x == null ? "-" : typeof x === "string" ? (/^(No games|Didn't play|Yet to play|Playing now|Done this week|No games this week|\d+ games? left)$/.test(x) ? `<span class="ps">${x}</span>` : x) : x.toFixed(1)))}</div>
         <div class="stack" style="gap:8px"><b class="ps">Other games, week ${w}</b>${U.scoreboard(gamesVM(w), fmtS)}</div></div>`;
     }
 

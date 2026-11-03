@@ -329,9 +329,36 @@
       const x = teamWeek(L, ctx, a, w, frac), y = teamWeek(L, ctx, b, w, frac);
       const c = compare(L, ctx, x, y);
       const pa = projection(L, ctx, a, w), pb = projection(L, ctx, b, w);
+      // a real week with the live feed: the score so far plus what each starter has left to play
+      const oa = outlook(L, ctx, a, w), ob = outlook(L, ctx, b, w);
+      if (oa && ob) {
+        const sc = scoring(L, ctx), left = oa.left + ob.left, all = left + oa.played + ob.played;
+        const fr = all ? 1 - left / all : frac;
+        const wp = sc.type === "points" ? liveWin(c.sa + oa.rem, c.sb + ob.rem, oa.vr + ob.vr) : winProb(L, ctx, c, pa.total, pb.total, fr);
+        return Object.assign({ a, b, final: false, i, kind, live: fr > 0 && fr < 1, frac: fr, ta: x, tb: y, pa: sc.type === "points" ? c.sa + oa.rem : pa.total, pb: sc.type === "points" ? c.sb + ob.rem : pb.total, winProb: wp, outlook: [oa, ob] }, c);
+      }
       return Object.assign({ a, b, final: false, i, kind, live: frac > 0 && frac < 1, frac, ta: x, tb: y, pa: pa.total, pb: pb.total, winProb: winProb(L, ctx, c, pa.total, pb.total, frac) }, c);
     });
   }
+  // What a team's starters have left this week, from the live feed (ctx.hooks.real.live.teams: each pro team's
+  // games played, in progress and left): expected points still to come, their variance, and starter-games played
+  // and left. A game in progress counts as half played. null without the feed for this week.
+  const GAMES = { nba: 82, nfl: 17, mlb: 162 }, SPREAD = { nba: 0.38, nfl: 0.62, mlb: 1.0 };
+  function outlook(L, ctx, teamId, w) {
+    const R = ctx.hooks && ctx.hooks.real, lv = R && R.live, rw = realWeek(L, ctx, w);
+    if (!lv || !rw || rw.missing || rw.start !== lv.start || !lv.teams) return null;
+    const sc = scoring(L, ctx), g = GAMES[ctx.sport.key] || 82, k = SPREAD[ctx.sport.key] || 0.5;
+    let rem = 0, vr = 0, played = 0, left = 0;
+    for (const id of lineupFor(L, ctx, teamId, w).filter(Boolean)) {
+      const p = ctx.byId[id], t = p && lv.teams[p.t];
+      if (!p || !t) continue;
+      const togo = t.left + 0.5 * t.live, per = sc.type === "points" ? (p.v || 0) / g : 0;
+      rem += per * togo; vr += togo * (k * per) ** 2;
+      played += t.played + 0.5 * t.live; left += togo;
+    }
+    return { rem, vr, played, left };
+  }
+  const liveWin = (a, b, vr) => (vr <= 1e-6 ? (a > b ? 1 : a < b ? 0 : 0.5) : 1 / (1 + Math.exp(-1.702 * (a - b) / Math.sqrt(vr))));
   // A simple live win probability: the projected margin shrinks toward the current margin as the week plays out.
   function winProb(L, ctx, c, pa, pb, frac) {
     const sc = scoring(L, ctx);
@@ -1213,7 +1240,7 @@
   }
 
   return { DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
-    finishWeek, formOf, hot, standings, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
+    finishWeek, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
 });
