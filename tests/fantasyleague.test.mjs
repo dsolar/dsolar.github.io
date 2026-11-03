@@ -40,7 +40,8 @@ for (const [key, scoring] of [['nfl', 'half'], ['nba', 'cats9'], ['mlb', 'roto5'
     assert.equal(br.length, 2);
     assert.equal(br[1].games.length, 1, 'one final');
     assert.ok(s.L.tx.some((x) => x.type === 'add/drop' || x.type === 'waiver'), 'bots made moves');
-    for (const ros of s.L.rosters) assert.ok(ros.length <= G.maxRoster(s.L));
+    // players on IR don't count against the roster limit
+    s.L.rosters.forEach((ros, t) => assert.ok(ros.length - (s.L.ir[t] || []).length <= G.maxRoster(s.L), `${s.L.teams[t].name}: ${ros.length} players, ${(s.L.ir[t] || []).length} on IR`));
   });
 }
 
@@ -134,3 +135,33 @@ test('IR: a player traded off IR arrives active and his old spot opens', () => {
   assert.ok(L.rosters[1].includes(hurt) && !(L.ir[1] || []).includes(hurt));
   delete ctx.byId[hurt].inj;
 });
+
+test('waiver priority rotates within one run: two tied bids each go to a different team', () => {
+  const s = season('nfl', { scoring: 'half' });
+  const L = s.L, ctx = s.ctx;
+  L.settings.waivers = 'faab';
+  const byPri = L.teams.slice().sort((a, b) => a.priority - b.priority);
+  const [first, second] = [byPri[0].id, byPri[1].id];
+  const fas = ctx.free.filter((p) => !G.onWaivers(L, p.id, T0 + DAY)).slice(0, 2);
+  const drop = (t, k) => L.rosters[t].map((id) => ctx.byId[id]).sort((a, b) => a.v - b.v)[k].id;
+  for (const [i, p] of fas.entries()) {
+    assert.ok(G.claim(L, ctx, first, p.id, drop(first, i), 5, T0 + DAY + i).ok);
+    assert.ok(G.claim(L, ctx, second, p.id, drop(second, i), 5, T0 + DAY + 10 + i).ok);
+  }
+  const won = G.runWaivers(L, ctx, T0 + 2 * DAY);
+  assert.equal(won.length, 2);
+  assert.deepEqual(won.map((c) => c.team).sort(), [first, second].sort(), 'after its first win, the top team drops to the back');
+});
+
+for (const key of ['nfl', 'mlb']) {
+  test(`${key}: bots never leave a starting slot empty`, () => {
+    const s = season(key);
+    const r = F.rng(8);
+    let now = T0;
+    while (s.L.week <= G.totalWeeks(s.L)) { now += 7 * DAY; G.botWeek(s.L, s.ctx, now, r); G.tick(s.L, s.ctx, now); G.finishWeek(s.L, s.ctx, now); }
+    for (const [w, byTeam] of Object.entries(s.L.lineups)) for (const [t, lu] of Object.entries(byTeam)) {
+      if (+t === 0) continue;
+      assert.ok(lu.every((x) => x != null), `week ${w} ${s.L.teams[t].name} has an empty slot`);
+    }
+  });
+}

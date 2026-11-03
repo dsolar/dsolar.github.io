@@ -210,6 +210,8 @@
   }
   const nextPickOf = (D, teamId) => { for (let k = 0; k < D.order.length; k++) if (!D.board[k] && D.order[k] === teamId) return k + 1; return null; };
   const isBot = (t) => !t.owner || t.auto;
+  // Autodraft only makes picks: trades are for teams nobody manages, never on a manager's behalf.
+  const tradesForThem = (t) => !t.owner;
 
   function start(D, now) {
     if (D.phase !== "setup") return { ok: false, why: "The draft already started" };
@@ -261,16 +263,26 @@
 
   // How much a bot (or an autopick) wants a player: his auction value, a little less for a bench spot while
   // starters are open, nothing for a kicker before the last rounds, and some noise so bots don't all agree.
-  function worth(D, ctx, teamId, p, r) {
+  // What a team's roster needs right now, worked out once per pick: whether a player fills an open starting slot
+  // depends only on his positions, so that answer is kept per position set.
+  function needs(D, ctx, teamId) {
     const ids = rosters(D)[teamId];
     const mine = ids.map((id) => ctx.byId[id]).filter(Boolean);
-    const left = sizeOf(D) - ids.length;
     const filled = assign(ctx.sport, mine, D.lineup).filter(Boolean).length;
-    const fillsStarter = assign(ctx.sport, mine.concat(p), D.lineup).filter(Boolean).length > filled;
-    const openStarters = D.lineup.length - filled;
+    const lateOpen = D.lineup.filter((s) => (ctx.sport.slots[s] || []) !== "*" && ctx.sport.late.some((x) => (ctx.sport.slots[s] || []).includes(x))).length;
+    const memo = new Map();
+    const fills = (p) => {
+      const k = S.positions(p).join("/");
+      if (!memo.has(k)) memo.set(k, assign(ctx.sport, mine.concat(p), D.lineup).filter(Boolean).length > filled);
+      return memo.get(k);
+    };
+    return { left: sizeOf(D) - ids.length, openStarters: D.lineup.length - filled, lateOpen, fills };
+  }
+  function worth(D, ctx, teamId, p, r, need) {
+    const { left, openStarters, lateOpen, fills } = need || needs(D, ctx, teamId);
+    const fillsStarter = fills(p);
     let w = (p.$ || 0) + Math.max(0, p.vor || 0) / ctx.maxVor;
     if (S.isLate(ctx.sport, p)) {
-      const lateOpen = D.lineup.filter((s) => (ctx.sport.slots[s] || []) !== "*" && ctx.sport.late.some((x) => (ctx.sport.slots[s] || []).includes(x))).length;
       if (left > lateOpen + 1) w *= 0.05;
     }
     if (!fillsStarter && openStarters > 0) w *= left <= openStarters + 1 ? 0.1 : 0.75;
@@ -284,8 +296,9 @@
     const team = D.teams[teamId];
     for (const id of team.queue || []) { const p = ctx.byId[id]; if (p && canAdd(D, ctx, teamId, p).ok) return p; }
     let best = null, bw = -Infinity;
+    const need = needs(D, ctx, teamId);
     for (const p of ctx.available.slice(0, 300)) {
-      const w = worth(D, ctx, teamId, p, r);
+      const w = worth(D, ctx, teamId, p, r, need);
       if (w > bw && canAdd(D, ctx, teamId, p).ok) { bw = w; best = p; }
     }
     if (best) return best;
@@ -734,7 +747,7 @@
       // what each piece was worth when the offer went out, so the record doesn't drift as the draft goes on
       vals: Object.fromEntries(t.give.concat(t.get).map((id) => [id, Math.round(assetValue(D, ctx, id))])) };
     D.trades.push(T);
-    if (isBot(D.teams[t.to])) {
+    if (tradesForThem(D.teams[t.to])) {
       const a = botAnswer(D, ctx, T);
       if (a.yes) { execute(D, ctx, T, now); return { ok: true, trade: T, accepted: true }; }
       T.status = "declined"; T.why = a.why; T.done = now;
@@ -784,7 +797,7 @@
     const r = rng(D.seed + c.index * 53 + 11);
     if (r() > 0.4) return null;
     let v = pickValue(D, ctx, c.index);
-    const bots = D.teams.filter((t) => isBot(t) && t.id !== c.team).map((t) => ({ t, ks: picksOf(D, t.id).filter((k) => k > c.index) })).filter((x) => x.ks.length >= 2 && x.ks[0] - c.index >= 3);
+    const bots = D.teams.filter((t) => tradesForThem(t) && t.id !== c.team).map((t) => ({ t, ks: picksOf(D, t.id).filter((k) => k > c.index) })).filter((x) => x.ks.length >= 2 && x.ks[0] - c.index >= 3);
     if (!bots.length) return null;
     bots.sort((a, b) => a.ks[0] - b.ks[0]);
     const pool = bots.slice(0, 4);

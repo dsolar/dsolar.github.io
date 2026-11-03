@@ -201,6 +201,12 @@
     else if (L.week !== before.week) U.toast(`On to week ${Math.min(L.week, G.totalWeeks(L))}.`);
   }, 15000);
 
+  // Another tab saved this league: take its copy, so two tabs don't overwrite each other's moves.
+  window.addEventListener("storage", (e) => {
+    if (e.key !== "fk-demo:" + KEY || !L || !app) return;
+    const next = store.get(KEY, null);
+    if (next && next.v === 1) { L = next; app.refresh(); }
+  });
   load().then(mount).then(() => {
     // Draft Lab's "Play a season with it" lands here with ?mock=1
     if (params.get("mock") === "1") { history.replaceState(null, "", location.pathname + `?s=${sportKey}&f=${fmt}` + location.hash); if (mockDone()) useMock(); }

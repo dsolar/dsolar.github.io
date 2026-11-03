@@ -208,7 +208,9 @@
     const P = await pool(mock.cfg);
     if (roomCtl) roomCtl.stop();
     app.innerHTML = `<div id="room"></div>`;
-    roomCtl = U.room({ el: $("#room"), sport: P.sport, players: P.players, draft: () => mock.D, save: () => store.set("mock", mock), me: () => 0, commish: true, drive: true,
+    roomCtl = U.room({ el: $("#room"), sport: P.sport, players: P.players, draft: () => mock.D, save: () => store.set("mock", mock), me: () => 0, commish: true,
+      // with the room open in two tabs, only the one you're looking at runs the clock and the bots
+      get drive() { return !document.hidden; },
       brand: { name: "Draft Lab", mark: `<img src="mark.svg" alt="">` }, exit: { href: "#home", label: "Exit" },
       extra: () => `<a class="btn sm go" href="league.html?s=${mock.D.sport}&f=h&mock=1">Play a season with it</a><button class="btn sm" data-new>New mock</button>` });
     $("#room").addEventListener("click", (e) => { if (e.target.closest("[data-new]")) { mock = null; store.set("mock", null); route(); } });
@@ -298,5 +300,14 @@ FK.ui.room({ el, sport, players: data.players, draft: () =&gt; D,
     return kitPage();
   }
   window.addEventListener("hashchange", route);
+  // the mock changed in another tab: follow it, so the two don't split into different drafts
+  window.addEventListener("storage", (e) => {
+    if (e.key !== "fk-lab:mock") return;
+    const next = store.get("mock", null);
+    const was = mock && mock.D && mock.D.created;
+    mock = next;
+    if (roomCtl && mock && mock.D && mock.D.created === was) roomCtl.refresh();
+    else if (U.route("draft").tab === "draft") route();
+  });
   route().catch((e) => { app.innerHTML = `<div class="wrap page"><div class="banner"><b>Couldn't load the players.</b> <span class="muted">${esc(e.message)}. Reload to try again.</span></div></div>`; });
 })();

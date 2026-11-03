@@ -12,7 +12,7 @@
   --band:#13233A; --band-2:#1B3150; --brand:#F6C445; --brand-ink:#1F1600; --accent:#946300; --brand-soft:rgba(246,196,69,.22);
   --bg:#F1F3F6; --surface:#FFFFFF; --surface-2:#F6F7F9; --surface-3:#ECEFF3; --line:#E1E5EB; --line-2:#C9D0D9; --field:#FFFFFF;
   --ink:#0E1621; --muted:#566273; --dim:#677284;
-  --win:#13883E; --win-soft:#E3F5E9; --loss:#C8283A; --loss-soft:#FCE6E8; --info:#1E5FD6; --info-soft:#E4EDFD; --gold:#9A5B00; --gold-soft:#FFF1D6;
+  --win:#0E7A36; --win-soft:#E3F5E9; --loss:#C8283A; --loss-soft:#FCE6E8; --info:#1E5FD6; --info-soft:#E4EDFD; --gold:#9A5B00; --gold-soft:#FFF1D6;
   --p1:#DCEBFF; --p1i:#0D3F82; --p2:#E2F5D6; --p2i:#2B5C0E; --p3:#FFE6CC; --p3i:#7A3A00; --p4:#F0E0FF; --p4i:#53198A;
   --p5:#FFDCE0; --p5i:#8A1424; --p6:#E2E6EB; --p6i:#3A4452; --p7:#D4F2EE; --p7i:#0E5A52; --p8:#FFF1BC; --p8i:#6A5200;
   --t0:#2563EB; --t1:#DC2626; --t2:#059669; --t3:#7C3AED; --t4:#EA580C; --t5:#0891B2; --t6:#DB2777; --t7:#65A30D; --t8:#334155; --t9:#92400E; --t10:#0F766E; --t11:#4338CA;
@@ -107,7 +107,7 @@ a{color:var(--accent)}
 .switch summary::-webkit-details-marker{display:none}
 .chev{width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translateY(-2px);flex:none;opacity:.7}
 .switch[open] .chev{transform:rotate(-135deg) translateY(-1px)}
-.menu{position:absolute;left:0;top:calc(100% + 8px);min-width:270px;max-width:90vw;background:#fff;color:#0E1621;border:1px solid #E1E5EB;border-radius:12px;box-shadow:0 16px 44px rgba(0,0,0,.24);padding:6px;z-index:60}
+.menu{position:absolute;left:0;top:calc(100% + 8px);min-width:min(270px,calc(100vw - 24px));max-width:calc(100vw - 24px);background:#fff;color:#0E1621;border:1px solid #E1E5EB;border-radius:12px;box-shadow:0 16px 44px rgba(0,0,0,.24);padding:6px;z-index:60}
 :root[data-theme="dark"] .menu{background:#1A2029;color:#E9EEF4;border-color:#36404D}
 .menu a,.menu button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:8px;color:inherit;text-decoration:none;font-weight:700;font-size:14px;cursor:pointer}
 .menu a:hover,.menu button:hover{background:rgba(127,140,150,.14)}
@@ -195,7 +195,8 @@ table.t td.num,table.t td.r.num{white-space:nowrap}
 table.t.dense td{padding:4px 9px;font-size:13px;white-space:nowrap}
 table.t.dense th{padding:6px 9px}
 table.t tr.me td{background:var(--brand-soft)}
-table.t tr.dim td{opacity:.45}
+/* dimmed rows (chopped teams, players you can't add) fade by color, not opacity, so their text stays readable */
+table.t tr.dim td{color:var(--muted)} table.t tr.dim td b,table.t tr.dim td .pn{color:var(--muted)} table.t tr.dim .av,table.t tr.dim .pav{opacity:.55}
 table.t tr.cut td{border-bottom:2px dashed var(--line-2)}
 table.t tr.sec td{background:var(--surface-2);font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:6px 10px}
 table.t tr[data-player]{cursor:pointer}
@@ -634,3 +635,17 @@ table.t.vs .wl{white-space:nowrap}
 table.t.vs .wl+.wl::before{content:", "}
 table.t.vs .wl b{font-weight:800}
 @media (max-width:600px){table.t.vs .wl{display:block;font-size:11.5px;line-height:1.25}table.t.vs .wl+.wl::before{content:""}}
+/* small phones: the league switcher gets the room the brand name would take */
+@media (max-width:400px){.fk-mast:has(.switch) .fk-brand b{display:none}.switch summary{max-width:58vw}}
+/* matchup header on a phone: long team names wrap to two lines instead of cutting off */
+@media (max-width:600px){.versus .nm{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}}
+@media (max-width:380px){.versus .side>.av{display:none}.versus .score{font-size:30px}}
+/* the trade window on a small phone: both lists open in one scroll, instead of two tiny boxes */
+@media (max-width:420px),(max-height:700px){.tw-list{max-height:none}.tw-h{padding:12px 52px 10px 14px}.tw-f{padding:10px 14px}}
+/* the NBA lineup comparison fits a tablet without scrolling sideways */
+@media (max-width:900px){table.vs td{padding:6px 6px}table.vs .pname .av{display:none}}
+/* switcher menu items with a note under the name */
+.menu a:not(:has(> span)){flex-direction:column;align-items:flex-start;gap:0}
+
+/* the masthead buttons stay on one line on a small phone */
+@media (max-width:400px){.fk-who{flex-wrap:nowrap;gap:6px}.fk-who .btn.sm{padding:0 9px;font-size:12px;min-height:32px}}

@@ -161,6 +161,12 @@
   }
 
   const healthy = (L, ctx, teamId) => L.rosters[teamId].filter((id) => !(L.ir[teamId] || []).includes(id)).map((id) => ctx.byId[id]).filter((p) => p && !/^(out|ir|o)$/i.test(p.inj || ""));
+  // How many lineup slots a set of players can't fill with healthy players (IR doesn't count).
+  function holes(L, ctx, teamId, ids) {
+    const ir = L.ir[teamId] || [];
+    const ps = ids.filter((id) => !ir.includes(id)).map((id) => ctx.byId[id]).filter((p) => p && !/^(out|ir|o)$/i.test(p.inj || ""));
+    return F.assign(ctx.sport, ps, L.settings.lineup).filter((x) => !x).length;
+  }
   function projectedBest(L, ctx, teamId) { return F.assign(ctx.sport, healthy(L, ctx, teamId), L.settings.lineup).map((p) => (p ? p.id : null)); }
   // The best lineup of healthy players, with any slot still open filled by a hurt player who fits (better than empty).
   function fillLineup(L, ctx, teamId) {
@@ -496,10 +502,11 @@
   const cancelClaim = (L, id) => { const c = L.claims.find((x) => x.id === id && x.status === "open"); if (!c) return { ok: false, why: "No such claim" }; c.status = "cancelled"; return { ok: true }; };
   // Highest bid wins; ties go to waiver priority. A team that wins moves to the back of the priority line.
   function runWaivers(L, ctx, now) {
-    const open = L.claims.filter((c) => c.status === "open").sort((a, b) => b.bid - a.bid || L.teams[a.team].priority - L.teams[b.team].priority || a.at - b.at);
+    const open = L.claims.filter((c) => c.status === "open");
     const won = [];
-    for (const c of open) {
-      if (c.status !== "open") continue;
+    // highest bid first; on a tie the better waiver priority, which changes after every win, then the earlier claim
+    const next = () => open.filter((c) => c.status === "open").sort((a, b) => b.bid - a.bid || L.teams[a.team].priority - L.teams[b.team].priority || a.at - b.at)[0];
+    for (let c = next(); c; c = next()) {
       const t = L.teams[c.team];
       const rivals = open.filter((x) => x.add === c.add && x.status === "open");
       c.done = now; c.week = L.week;
@@ -678,6 +685,21 @@
       const hurt = L.rosters[t.id].map((x) => ctx.byId[x]).filter((p) => p && irEligible(p) && !(L.ir[t.id] || []).includes(p.id)).sort((a, b) => b.vor - a.vor);
       for (const p of hurt) if (!toIR(L, ctx, t.id, p.id, now).ok) break;
     }
+    // a bot with an empty lineup slot fills it first: the best free agent who fits, for its least useful player
+    // whose drop doesn't open another hole
+    for (const t of L.teams) {
+      if (t.owner || !isAlive(L, t.id)) continue;
+      const ids = L.rosters[t.id], now0 = holes(L, ctx, t.id, ids);
+      if (!now0) continue;
+      const order = ids.map((id) => ctx.byId[id]).filter(Boolean).sort((a, b) => (a.vor || 0) - (b.vor || 0));
+      for (const p of ctx.free.filter((x) => !onWaivers(L, x.id, now) && !/^(out|ir|o)$/i.test(x.inj || "")).slice(0, 150)) {
+        const room = ids.length - (L.ir[t.id] || []).length < maxRoster(L);
+        const drop = room ? null : order.find((d) => holes(L, ctx, t.id, ids.filter((x) => x !== d.id).concat(p.id)) < now0);
+        if (!room && !drop) continue;
+        if (holes(L, ctx, t.id, ids.filter((x) => !drop || x !== drop.id).concat(p.id)) >= now0) continue;
+        if (addDrop(L, ctx, t.id, p.id, drop ? drop.id : null, now).ok) break;
+      }
+    }
     for (const t of L.teams) {
       if (t.owner || !isAlive(L, t.id) || r() > 0.45) continue;
       // Bots chase form: value counts, and so does how a player has played the last two weeks.
@@ -685,7 +707,10 @@
       const heat = (p) => (p.vor || 0) + span * 0.12 * (hot(L, p) - 1) * 3;
       const ros = L.rosters[t.id].map((id) => ctx.byId[id]).filter(Boolean).sort((a, b) => heat(a) - heat(b));
       const worst = ros[0];
-      const cand = ctx.free.filter((p) => !onWaivers(L, p.id, now)).slice(0, 40).filter((p) => worst && heat(p) > heat(worst) && S.positions(p).some((x) => S.positions(worst).includes(x) || r() < 0.4));
+      const before = holes(L, ctx, t.id, L.rosters[t.id]);
+      // never a move that leaves a starting slot empty (like a fifth kicker for the only quarterback)
+      const keeps = (p) => holes(L, ctx, t.id, L.rosters[t.id].filter((x) => x !== worst.id).concat(p.id)) <= before;
+      const cand = ctx.free.filter((p) => !onWaivers(L, p.id, now)).slice(0, 40).filter((p) => worst && heat(p) > heat(worst) && S.positions(p).some((x) => S.positions(worst).includes(x) || r() < 0.4) && keeps(p));
       if (!cand.length || !worst) continue;
       const p = cand[Math.floor(r() * Math.min(5, cand.length))];
       if (r() < 0.35 && L.settings.waivers === "faab" && t.faab > 0) claim(L, ctx, t.id, p.id, worst.id, Math.min(t.faab, Math.round(r() * 12)), now);
@@ -697,7 +722,8 @@
         const a = bots[Math.floor(r() * bots.length)], b = bots.filter((x) => x !== a)[Math.floor(r() * (bots.length - 1))];
         const ra = L.rosters[a.id].slice().sort((x, y) => ctx.byId[y].$ - ctx.byId[x].$), rb = L.rosters[b.id].slice().sort((x, y) => ctx.byId[y].$ - ctx.byId[x].$);
         const ga = ra[2 + Math.floor(r() * 4)], gb = rb[2 + Math.floor(r() * 4)];
-        if (ga && gb && Math.abs(pValue(ctx, ga) - pValue(ctx, gb)) < 6) {
+        const ok = (id, ids, give, get) => holes(L, ctx, id, ids.filter((x) => x !== give).concat(get)) <= holes(L, ctx, id, ids);
+        if (ga && gb && Math.abs(pValue(ctx, ga) - pValue(ctx, gb)) < 6 && ok(a.id, L.rosters[a.id], ga, gb) && ok(b.id, L.rosters[b.id], gb, ga)) {
           const res = propose(L, ctx, a.id, b.id, [ga], [gb], now);
           if (res.ok) respond(L, ctx, res.trade.id, true, now + 3 * HOUR);
         }

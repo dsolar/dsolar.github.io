@@ -323,3 +323,17 @@ test('white elephant: bots steal, and the draft still finishes with full, legal 
   }
   assert.ok(steals >= 3, `${steals} bot steals`);
 });
+
+test('trades: autodraft makes picks, never trades, for a manager', () => {
+  const s = setup('nfl', { human: 0 });
+  s.D.teams[1].owner = 'Bob'; s.D.teams[1].auto = true;
+  F.start(s.D, T0);
+  const mine = F.picksOf(s.D, 0), bobs = F.picksOf(s.D, 1);
+  // a big overpay to Bob's team: the bot doesn't accept it for him
+  const r = F.propose(s.D, s.ctx, { from: 0, to: 1, give: [F.pickId(mine[0]), F.pickId(mine[1])], get: [F.pickId(bobs[2])] }, T0 + 1000);
+  assert.ok(r.ok && !r.accepted, JSON.stringify(r));
+  assert.equal(s.D.trades.at(-1).status, 'pending', 'it waits for Bob');
+  // and bots never send offers from Bob's team
+  run(s);
+  assert.ok(!s.D.trades.some((t) => t.from === 1), 'no offers from an autodrafting manager');
+});

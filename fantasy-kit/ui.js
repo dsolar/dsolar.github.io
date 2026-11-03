@@ -49,6 +49,64 @@
     return D;
   }
   const dialogOpen = () => { const D = $("#fk-dlg"); return !!(D && D.open); };
+  // Keyboard focus across a redraw: remember what had it (an id, or its tag and data attributes) and find it again,
+  // or the nearest thing like it (the next Draft button after you draft), so focus doesn't fall back to the page.
+  function focusKey(root) {
+    const a = document.activeElement;
+    if (!a || a === document.body || !root.contains(a)) return null;
+    const attrs = [...a.attributes].filter((x) => /^(data-|aria-label$|href$|name$|value$)/.test(x.name) && !/^data-(kb)$/.test(x.name));
+    const q = (list) => a.tagName.toLowerCase() + list.map((x) => `[${x.name}="${String(x.value).replace(/["\\]/g, "\\$&")}"]`).join("");
+    return { id: a.id || null, q: q(attrs), loose: attrs.find((x) => x.name.startsWith("data-")) ? q([attrs.find((x) => x.name.startsWith("data-"))]).replace(/="[^"]*"\]$/, "]") : null,
+      text: (a.textContent || "").trim(), sel: a.selectionStart != null ? [a.selectionStart, a.selectionEnd] : null };
+  }
+  function refocus(root, k) {
+    if (!k || (document.activeElement && document.activeElement !== document.body && document.activeElement.isConnected)) return;
+    let el = k.id ? document.getElementById(k.id) : null;
+    try {
+      if (!el && k.q) { const c = [...root.querySelectorAll(k.q)]; el = c.find((x) => (x.textContent || "").trim() === k.text) || c[0]; }
+      if (!el && k.loose) el = root.querySelector(k.loose);
+    } catch (e) { el = null; }
+    if (!el) return;
+    el.focus({ preventScroll: true });
+    if (k.sel) try { el.setSelectionRange(k.sel[0], k.sel[1]); } catch (e) { /* not a text field */ }
+  }
+  // Player names open the player card: make each one reachable by Tab and Enter where a row or chip carries
+  // data-player but isn't a control itself.
+  function keyboardPlayers(root) {
+    for (const host of root.querySelectorAll("[data-player]")) {
+      if (/^(BUTTON|A|INPUT|SELECT)$/.test(host.tagName) || host.hasAttribute("tabindex")) continue;
+      const pn = host.querySelector(".pn") || (host.tagName === "TR" ? null : host);
+      if (!pn || pn.hasAttribute("tabindex")) continue;
+      pn.setAttribute("tabindex", "0"); pn.setAttribute("role", "button"); pn.dataset.kb = "1";
+      if (pn !== host) pn.setAttribute("aria-label", `${pn.textContent.trim()}: player card`);
+    }
+  }
+  // An open league switcher stays on screen, and Escape or a click elsewhere closes it.
+  if (typeof document !== "undefined") {
+    document.addEventListener("toggle", (e) => {
+      const d = e.target;
+      if (!d.matches || !d.matches("details.switch") || !d.open) return;
+      const m = d.querySelector(".menu");
+      if (!m) return;
+      m.style.left = "0px";
+      const r = m.getBoundingClientRect(), over = r.right - (document.documentElement.clientWidth - 12);
+      if (over > 0) m.style.left = `${-Math.min(over, r.left - 12)}px`;
+    }, true);
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+      const d = document.querySelector("details.switch[open]");
+      if (d) { d.open = false; const s0 = d.querySelector("summary"); if (s0) s0.focus(); }
+    });
+    document.addEventListener("click", (e) => { for (const d of document.querySelectorAll("details.switch[open]")) if (!d.contains(e.target)) d.open = false; });
+  }
+  // Enter and Space work on everything that acts like a button without being one: sortable headers, board cells,
+  // player names.
+  if (typeof document !== "undefined") document.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const t = e.target;
+    if (!t || !t.matches || /^(BUTTON|A|INPUT|SELECT|TEXTAREA|SUMMARY)$/.test(t.tagName)) return;
+    if (t.matches("th[data-sort], [role=button][tabindex], [data-kb]")) { e.preventDefault(); t.click(); }
+  });
   function confirm(title, body, yes, onYes) {
     dialog(`<h3>${esc(title)}</h3><p class="muted" style="margin:0">${body}</p><form><div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">${esc(yes)}</button></div></form>`, () => { onYes(); });
   }
@@ -146,7 +204,7 @@
   }
   // A league switcher: current league with its avatar, a menu of leagues and extra menu items.
   const switcher = (cur, items, extra = "") => `<details class="switch"><summary>${teamAv(cur, "sm")}<span class="ell">${esc(cur.name)}</span><span class="chev" aria-hidden="true"></span></summary>
-    <div class="menu" role="menu">${items.map((x) => `<a role="menuitem" href="${esc(x.href)}">${x.av ? teamAv(x.av, "sm") : ""}<span>${esc(x.name)}${x.sub ? `<small>${esc(x.sub)}</small>` : ""}</span></a>`).join("")}${extra ? `${items.length ? "<hr>" : ""}${extra}` : ""}</div></details>`;
+    <div class="menu">${items.map((x) => `<a href="${esc(x.href)}">${x.av ? teamAv(x.av, "sm") : ""}<span>${esc(x.name)}${x.sub ? `<small>${esc(x.sub)}</small>` : ""}</span></a>`).join("")}${extra ? `${items.length ? "<hr>" : ""}${extra}` : ""}</div></details>`;
   const route = (def) => { const h = location.hash.replace(/^#/, "").split("/").map(decodeURIComponent); return { tab: h[0] || def, sub: h[1] || "", arg: h[2] || "" }; };
 
   /* ---------- tables ---------- */
@@ -167,7 +225,7 @@
     const th = (c) => {
       const cls = [c.cls || "", c.hide ? "hide-" + c.hide : "", c.sort ? "sortable" : "", c.sort && sort.k === c.k ? "on" : ""].join(" ").trim();
       const aria = c.sort ? ` aria-sort="${sort.k === c.k ? (sort.dir > 0 ? "ascending" : "descending") : "none"}" data-sort="${esc(c.k)}" tabindex="0"` : "";
-      return `<th class="${cls}"${aria}${c.title ? ` title="${esc(c.title)}"` : ""}>${esc(c.label)}</th>`;
+      return `<th class="${cls}"${aria}${c.title ? ` title="${esc(c.title)}"` : ""}>${c.raw ? c.label : esc(c.label)}</th>`;
     };
     const lim = opts.limit || 400, rows = opts.rows.slice(0, lim);
     const more = opts.rows.length > lim ? `<tr><td colspan="${cols.length}" class="more"><button type="button" class="btn sm" data-more="${esc(opts.id || "")}">Show ${Math.min(250, opts.rows.length - lim)} more</button> <span class="ps">Showing ${lim} of ${opts.rows.length}</span></td></tr>` : "";
@@ -208,7 +266,7 @@
       if (opts.group && c.group && c.group !== opts.group) continue;
       cols.push({ k: "s" + i, label: c.label, title: c.title, cls: "r num", hide: c.hide, sort: (p) => statCell(sport, p, c), html: (p) => { const v = statCell(sport, p, c); return v == null ? `<span class="ps">-</span>` : c.fmt(v); } });
     }
-    if (opts.actions) cols.push({ k: "act", label: "", cls: "r act", html: opts.actions });
+    if (opts.actions) cols.push({ k: "act", label: '<span class="sr">Actions</span>', raw: true, cls: "r act", html: opts.actions });
     return (opts.lead || []).concat(cols);
   }
   // Position chips across the top of a player list; groups (Hitters, Pitchers) when the sport has them.
@@ -258,11 +316,11 @@
   // games: [{ href, me, status: "final" | "live" | "proj", label, sub, a: { team, score, rec }, b }]
   // The scoreboard: a strip of games (opts.list stacks them full width, for phones). g.wp adds a win probability bar.
   function scoreboard(games, fmt = (x) => x, opts = {}) {
-    return `<div class="scoreboard${opts.list ? " list" : ""}" role="list">${games.map((g) => {
+    return `<div class="scoreboard${opts.list ? " list" : ""}">${games.map((g) => {
       const lead = g.a.score === g.b.score ? null : g.a.score > g.b.score ? "a" : "b";
       const ln = (s, k) => `<div class="ln ${lead ? (lead === k ? "lead" : "trail") : ""}">${teamAv(s.team, "sm")}<span class="ell">${esc(s.team.name)}</span><span class="ab">${esc(s.team.abbr || "")}</span><small>${esc(s.rec || "")}</small><b>${fmt(s.score)}</b></div>`;
       const wp = g.wp != null ? `<div class="wpm" aria-label="Win probability ${Math.round(g.wp * 100)} to ${Math.round((1 - g.wp) * 100)}"><i style="width:${(g.wp * 100).toFixed(1)}%;background:var(--t${g.a.team.color % 12})"></i><i style="width:${((1 - g.wp) * 100).toFixed(1)}%;background:var(--t${g.b.team.color % 12})"></i></div>` : "";
-      return `<a class="game${g.me ? " me" : ""}" role="listitem" href="${esc(g.href || "#")}"><div class="st"><span class="${g.status === "live" ? "live" : ""}">${esc(g.label || (g.status === "final" ? "Final" : g.status === "live" ? "Live" : "Projected"))}</span>${g.sub ? `<span>${esc(g.sub)}</span>` : g.wp != null && opts.list ? `<span>${Math.round(Math.max(g.wp, 1 - g.wp) * 100)}% ${esc(g.wp >= 0.5 ? g.a.team.abbr : g.b.team.abbr)}</span>` : ""}</div>${ln(g.a, "a")}${ln(g.b, "b")}${opts.list ? wp : ""}</a>`;
+      return `<a class="game${g.me ? " me" : ""}" href="${esc(g.href || "#")}"><div class="st"><span class="${g.status === "live" ? "live" : ""}">${esc(g.label || (g.status === "final" ? "Final" : g.status === "live" ? "Live" : "Projected"))}</span>${g.sub ? `<span>${esc(g.sub)}</span>` : g.wp != null && opts.list ? `<span>${Math.round(Math.max(g.wp, 1 - g.wp) * 100)}% ${esc(g.wp >= 0.5 ? g.a.team.abbr : g.b.team.abbr)}</span>` : ""}</div>${ln(g.a, "a")}${ln(g.b, "b")}${opts.list ? wp : ""}</a>`;
     }).join("")}</div>`;
   }
   // The matchup hero. vm: { a: { team, rec, score, proj }, b, wp (0..1 for a), status, live, cats: [{ label, fa, fb, d }], fmt }
@@ -303,7 +361,7 @@
     return `<ul class="feed">${items.map((x) => `<li>${teamAv(x.team, "md")}<div class="what"><div class="row"><b>${esc(x.team.name)}</b>${x.with ? `<span class="ps">and</span><b>${esc(x.with.name)}</b>` : ""}${x.badge ? ` ${x.badge}` : ""}</div>${x.lines.join("")}${x.note ? `<span class="ps">${x.note}</span>` : ""}</div><time>${esc(x.when)}</time></li>`).join("")}</ul>`;
   }
   const TXI = { add: ["+", "Added"], drop: ["&minus;", "Dropped"], trade: ["&#8644;", "Traded for"], waiver: ["W", "Claimed"] };
-  const txLine = (sport, kind, p, extra = "") => `<div class="row"><span class="txi ${kind}" aria-label="${TXI[kind][1]}" title="${TXI[kind][1]}">${TXI[kind][0]}</span><span data-player="${esc(p.id)}" style="cursor:pointer;min-width:0">${pname(sport, p, extra, { size: "sm" })}</span></div>`;
+  const txLine = (sport, kind, p, extra = "") => `<div class="row"><span class="txi ${kind}" role="img" aria-label="${TXI[kind][1]}" title="${TXI[kind][1]}">${TXI[kind][0]}</span><span data-player="${esc(p.id)}" style="cursor:pointer;min-width:0">${pname(sport, p, extra, { size: "sm" })}</span></div>`;
   // vm: { id, status, statusLabel, from, to, give: [players], get, faab: [give, get], note, when, acts (html) }
   function tradeCard(sport, vm) {
     const side = (t, ps, faab, label) => `<div class="side"><h4>${teamAv(t, "sm")}${esc(label)}</h4>${ps.map((p) => p.pick ? pname(sport, p) : `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, p.price != null ? esc(p.price) : p.$ ? money(p.$) : "")}</span>`).join("") || `<span class="ps">No players</span>`}${faab ? `<span><span class="tag gold">$${faab} FAAB</span></span>` : ""}</div>`;
@@ -460,7 +518,7 @@
       const d = D(), n = d.teams.length;
       if (auction()) return lotBar();
       const k0 = d.phase === "live" ? F.onClock(d, now()).index : d.phase === "done" ? d.order.length : 0;
-      if (mystery() && d.phase === "setup" && !seenK(0)) return `<div class="ticker" id="fk-ticker"><div class="tk hid wide"><span class="n">${d.order.length} picks</span><b>Every package is dealt and sealed</b><small>They add up within ${(d.mystery.spread * 100).toFixed(1)}% of each other. You'll see them when the draft starts.</small></div></div>`;
+      if (mystery() && d.phase === "setup" && !seenK(0)) return `<div class="ticker" id="fk-ticker" tabindex="0" aria-label="Picks"><div class="tk hid wide"><span class="n">${d.order.length} picks</span><b>Every package is dealt and sealed</b><small>They add up within ${(d.mystery.spread * 100).toFixed(1)}% of each other. You'll see them when the draft starts.</small></div></div>`;
       const from = Math.max(0, k0 - 6), to = Math.min(d.order.length, from + 22);
       const cards = [];
       for (let k = from; k < to; k++) {
@@ -470,7 +528,7 @@
         if (p) cards.push(`<button type="button" class="tk done c${colorOf(sport, p)}${isMe(t) ? " me" : ""}${pk.steal ? " steal" : ""}${pk.gone ? " gone" : ""}" data-player="${esc(p.id)}"><span class="n">${lab} ${esc(t.abbr)}</span><b>${esc(p.n)}</b><small>${pk.steal ? `Stolen from ${esc(team(pk.from).abbr)}` : pk.gone ? "Later stolen" : `${S.positions(p).join(", ")} ${esc(p.t)}`}</small></button>`);
         else cards.push(`<div class="tk${k === k0 && d.phase === "live" ? " now" : ""}${isMe(t) ? " me" : ""}"><span class="n">${teamAv(t, "sm")} ${lab}</span><b>${isMe(t) ? "You" : esc(t.name)}</b><small>${d.phase === "setup" ? (k === 0 ? "Up first" : `Pick ${k + 1}`) : k === k0 && d.phase === "live" ? "On the clock" : k > k0 ? `${k - k0} away` : "Passed"}${via ? `, via ${esc(via.abbr)}` : ""}</small></div>`);
       }
-      const tk = `<div class="ticker" id="fk-ticker">${cards.join("")}</div>`;
+      const tk = `<div class="ticker" id="fk-ticker" tabindex="0" aria-label="Picks">${cards.join("")}</div>`;
       return d.bank ? `<div>${tk}<div class="budgets bank" aria-label="Time banks">${bankChips()}</div></div>` : tk;
     }
     function lotBar() {
@@ -510,7 +568,7 @@
         if (mine == null) return "";
         const ok = F.canAdd(d, ctx, mine, p).ok;
         const q = team(mine).queue.includes(p.id);
-        return `${myTurn && ok ? `<button class="btn xs go" data-pick="${esc(p.id)}">Draft</button> ` : ""}${myNom && ok ? `<button class="btn xs go" data-nominate="${esc(p.id)}">Nominate</button> ` : ""}<button class="star${q ? " on" : ""}" data-queue="${esc(p.id)}" aria-label="${q ? "Remove from" : "Add to"} queue" title="${q ? "In your queue" : "Add to queue"}">${q ? "&#9733;" : "&#9734;"}</button>`;
+        return `${myTurn && ok ? `<button class="btn xs go" data-pick="${esc(p.id)}">Draft</button> ` : ""}${myNom && ok ? `<button class="btn xs go" data-nominate="${esc(p.id)}">Nominate</button> ` : ""}<button class="star${q ? " on" : ""}" data-queue="${esc(p.id)}" aria-label="${q ? "Remove" : "Add"} ${esc(p.n)} ${q ? "from" : "to"} your queue" aria-pressed="${!!q}" title="${q ? "In your queue" : "Add to queue"}">${q ? "&#9733;" : "&#9734;"}</button>`;
       };
       const cols = poolColumns(sport, { group: groupOf(sport, ui.f), scoring: d.scoring, actions });
       rows = sortRows(rows, cols, ui.sort);
@@ -627,7 +685,7 @@
           const b = bal(t), c = F.tradeCheck(D(), ctx, b);
           if (!c.ok) return c;
           const add = b.added.map((x) => `${team(x.team).abbr} adds ${seenK(F.pickIdx(x.id)) ? pickVM(F.pickIdx(x.id)).n.replace("Pick ", "pick ") : "its last pick"}`);
-          return { ok: true, note: [add.length ? `To keep rosters even, ${add.join(" and ")}.` : "", F.isBot(team(t.to)) ? "They'll answer right away." : ""].filter(Boolean).join(" ") };
+          return { ok: true, note: [add.length ? `To keep rosters even, ${add.join(" and ")}.` : "", !team(t.to).owner ? "They'll answer right away." : ""].filter(Boolean).join(" ") };
         },
         submit: (t) => {
           const r = F.propose(D(), ctx, Object.assign({}, t, { by: "you" }), now());
@@ -673,9 +731,8 @@
       const offers = me() != null ? d.trades.filter((T) => T.status === "pending" && T.to === me()).length : 0;
       const rights = me() != null ? [["team", "My team"], ["queue", "Queue"], ["teams", "Teams"]].concat(d.trading ? [["trades", offers ? `Trades (${offers})` : "Trades"]] : []) : [["teams", "Teams"]];
       if (!rights.some((x) => x[0] === ui.right)) ui.right = rights[0][0];
-      const keep = { q: document.activeElement && document.activeElement.id, scroll: {} };
+      const keep = { f: focusKey(el), scroll: {} };
       $$("#fk-pool,#fk-board,#fk-picks,.dr-panel,#fk-ticker", el).forEach((x) => (keep.scroll[x.id || x.className] = [x.scrollTop, x.scrollLeft]));
-      const sel = keep.q === "fk-q" ? [document.activeElement.selectionStart, document.activeElement.selectionEnd] : null;
       const left = { players, board, picks, results, packages, steal: steals }[ui.left]();
       const right = { team: () => rosterPanel(me()), queue: queuePanel, teams: teamsPanel, trades: tradesPanel }[ui.right]();
       // one view switch: the left views, plus the right panels as views on narrow screens
@@ -688,8 +745,14 @@
       const tk = $("#fk-ticker", el), cur = tk && $(".tk.now", tk);
       if (cur && tk && (!keep.scroll["fk-ticker"] || ui.lastPick !== F.made(d).length)) tk.scrollLeft = Math.max(0, cur.offsetLeft - tk.clientWidth * 0.3);
       ui.lastPick = F.made(d).length;
-      if (keep.q) { const f = document.getElementById(keep.q); if (f) { f.focus(); if (sel) try { f.setSelectionRange(sel[0], sel[1]); } catch (e) { /* number input */ } } }
+      keyboardPlayers(el);
+      refocus(el, keep.f);
       drawTimer();
+      // say it when you come on the clock (the toast is a live region)
+      if (d.phase === "live" && me() != null && !auction()) {
+        const c = F.onClock(d, now());
+        if (c && c.team === me() && ui.told !== c.index) { ui.told = c.index; toast(c.makeup ? "You were robbed. Pick again." : `You're on the clock: pick ${c.pick}.`); }
+      }
       if (opts.onChange) opts.onChange(d);
     }
     function drawTimer() {
@@ -796,9 +859,6 @@
       if (pl && pl.dataset.player) { e.preventDefault(); openCard(pl.dataset.player); }
     });
     el.addEventListener("keydown", (e) => {
-      if (e.key !== "Enter" && e.key !== " ") return;
-      const th = e.target.closest("th[data-sort]"), cell = e.target.closest(".cell[data-player]");
-      if (th || cell) { e.preventDefault(); e.target.click(); }
       if (e.target.id === "fk-bid" && e.key === "Enter") { e.preventDefault(); $("[data-act=bid]", el).click(); }
     });
     el.addEventListener("input", (e) => {
@@ -833,7 +893,10 @@
       }
     };
     timer = setInterval(() => {
-      if (opts.drive && D().phase === "live") {
+      // a paused or finished draft has no clock to run; check for changes from elsewhere once a second
+      const idle = D().phase !== "live" || D().paused;
+      if (idle && (ui.idleN = (ui.idleN || 0) + 1) % 4) return;
+      if (opts.drive && D().phase === "live" && !D().paused) {
         const before = F.made(D()).length;
         const moved = F.tick(D(), ctx, now(), 3);
         if (moved) {
@@ -854,7 +917,7 @@
     return { render, stop: () => { clearInterval(timer); document.body.classList.remove("fk-room"); }, get ctx() { return ctx; }, refresh: () => { refresh(); render(); }, ui };
   }
 
-  FK.ui = { esc, $, $$, store, toast, dialog, dialogOpen, confirm, theme, fmtLeft, money, ord, last, initials, ago,
+  FK.ui = { esc, $, $$, store, toast, dialog, dialogOpen, focusKey, refocus, keyboardPlayers, confirm, theme, fmtLeft, money, ord, last, initials, ago,
     teamAv, SHAPES, GLYPHS, logoSvg, glyphOf, shapeOf, playerAv, pname, teamName, posChip, posChips, colorOf, injTag,
     shell, switcher, route, table, sortRows, nextSort, poolColumns, posFilter, search, passes, groupOf, statCell, label, isPoints,
     playerCard, scoreboard, versus, vsTable, standingsTable, feed, txLine, tradeCard, tradeWindow, room };
