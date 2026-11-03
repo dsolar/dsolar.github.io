@@ -260,6 +260,11 @@
     ];
     if (opts.age !== false && sport.hasAge) cols.push({ k: "age", label: "Age", cls: "r num", hide: "s", sort: (p) => p.age, asc: true, html: (p) => (p.age ? p.age : "") });
     if (opts.owner) cols.push({ k: "owner", label: "Status", cls: "", sort: opts.ownerSort, html: opts.owner });
+    // the market, when the page loaded it (value.js market): ESPN's rank and what players go for in real ESPN auctions
+    if (sport.market && opts.market !== false) {
+      cols.push({ k: "espn", label: "ESPN", cls: "r num", hide: "s", title: `ESPN's ${sport.market.type === "ROTO" ? "roto" : sport.market.type === "STANDARD" ? "standard" : sport.market.type === "SUPERFLEX" ? "superflex" : "PPR"} rank${sport.market.type === "STANDARD" || sport.market.type === "ROTO" ? "" : ""}, from ${sport.market.source}`, sort: (p) => (p.mk && p.mk.r) || 1e4, asc: true, html: (p) => (p.mk && p.mk.r ? String(p.mk.r) : `<span class="ps">-</span>`) });
+      cols.push({ k: "aav", label: "ESPN $", cls: "r num", hide: "s", title: "What he goes for in real ESPN auctions (average price), or ESPN's own auction value before there are any", sort: (p) => (p.mk && (p.mk.aav || p.mk.a)) || 0, html: (p) => { const v = p.mk && (p.mk.aav || p.mk.a); return v ? `<span class="ps">${money(Math.round(v))}</span>` : `<span class="ps">-</span>`; } });
+    }
     if (opts.money !== false) cols.push({ k: "$", label: "$", cls: "r num", title: "Auction value in this league", sort: (p) => p.$, html: (p) => (p.$ ? `<span class="dollar">${money(p.$)}</span>` : `<span class="ps">-</span>`) });
     cols.push({ k: "v", label: pts ? "Proj" : "Value", cls: "r num", title: pts ? "Season pace: this season's scoring per game blended with the projection, over a full season" : "Summed category z-scores", sort: (p) => p.v, html: (p) => `<b>${p.v == null ? "-" : p.v.toFixed(pts ? 0 : 1)}</b>` });
     if (pts && sport.data && sport.data.lines && sport.data.lines.proj && sport.data.lines.proj.ros) cols.push({ k: "ros", label: "ROS", cls: "r num", hide: "s", title: `Projected points for the rest of the season, ${sport.data.lines.proj.weeks} weeks`, sort: (p) => p.ros, html: (p) => (p.ros == null ? `<span class="ps">-</span>` : p.ros.toFixed(0)) });

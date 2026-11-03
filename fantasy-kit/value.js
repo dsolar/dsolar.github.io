@@ -156,7 +156,26 @@
   }
   const width = (sport, slot) => (sport.slots[slot] === "*" ? 99 : sport.slots[slot].length);
 
+  // Projections (baseball's pbat and ppit, FanGraphs' Steamer): when the data has them, players are valued on the
+  // projection, not last season. A player with no projection for a line has nothing on it (he isn't expected to
+  // play). Their own lines go back afterward, so tables still show what they did. league.projections = false skips it.
+  const PROJ_LINES = { bat: "pbat", pit: "ppit" };
+  function swapProjections(sport, players, league) {
+    const L = sport.data && sport.data.lines;
+    if (league.projections === false || !L || !Object.values(PROJ_LINES).some((k) => L[k])) return null;
+    const kept = [];
+    for (const p of players) {
+      const n = Object.assign({}, p.l);
+      for (const [a, b] of Object.entries(PROJ_LINES)) { if (!L[b]) continue; if (n[b]) n[a] = n[b]; else delete n[a]; }
+      kept.push([p, p.l]); p.l = n;
+    }
+    return kept;
+  }
   function evaluate(sport, players, league = {}) {
+    const kept = swapProjections(sport, players, league);
+    try { return evaluate_(sport, players, league); } finally { if (kept) for (const [p, l] of kept) p.l = l; }
+  }
+  function evaluate_(sport, players, league) {
     const sc = scoringOf(sport, league);
     if (sc.type === "cats") {
       catValues(sport, players, sc);
@@ -190,6 +209,7 @@
     }
     streamers(sport, players, league);
     if (league.dynasty) dynasty(sport, players, league);
+    if (league.market) market(sport, players, league, sc);
     const sorted = players.slice().sort((a, b) => b.vor - a.vor || b.v - a.v);
     const posN = {};
     sorted.forEach((p, i) => {
@@ -200,6 +220,25 @@
     });
     dollars(sport, sorted, league);
     return { scoring: sc, repl };
+  }
+
+  /* ---------- the market: ESPN's ranks, ADP and auction prices (data/market-<sport>.json, tools/market_pull.py) ---------- */
+  // p.mk = { r: ESPN's rank for this league's kind of scoring, a: ESPN's auction value, adp, aav: the average price in
+  // real ESPN auctions, own: percent of ESPN leagues rostering him, add: Sleeper adds in the last day }.
+  function market(sport, players, league, sc) {
+    const rows = league.market && league.market.players;
+    if (!rows) return;
+    const lineup = league.lineup || sport.lineup;
+    const type = sport.key === "nfl" ? (lineup.includes("SFLEX") || lineup.filter((x) => x === "QB").length >= 2 ? "SUPERFLEX" : /std/.test(sc.col || "") ? "STANDARD" : "PPR")
+      : sc.type === "cats" ? "ROTO" : "STANDARD";
+    let n = 0;
+    for (const p of players) {
+      const m = rows[p.id];
+      if (!m) { delete p.mk; continue; }
+      p.mk = { r: (m.r || {})[type] || (m.r || {}).STANDARD || null, a: (m.a || {})[type] || (m.a || {}).STANDARD || null, adp: m.adp || null, aav: m.aav || null, own: m.own == null ? null : m.own, add: m.add || null };
+      n++;
+    }
+    sport.market = n > 50 ? { type, source: league.market.source, updated: league.market.updated } : null;
   }
 
   /* ---------- dynasty: value over the next five seasons, not just this one ---------- */

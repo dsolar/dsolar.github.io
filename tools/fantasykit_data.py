@@ -252,6 +252,7 @@ def mlb():
     for pid, row in by.items():
         if ab.get(pid, 0) < 130 and ip.get(pid, 0) < 50:
             row["rk"] = 1
+    proj_src = steamer(by, ab, ip)
     # ages, for dynasty values: the Stats API's people endpoint, a hundred players a call
     ids = list(by.keys())
     try:
@@ -264,9 +265,78 @@ def mlb():
     except Exception as e:
         print(f"MLB ages didn't load: {type(e).__name__}: {e}")
     print(f"MLB ages: {sum(1 for r in by.values() if r.get('age'))} of {len(by)}")
-    write("mlb", {"sport": "mlb", "season": years[-1], "updated": NOW, "source": "MLB Stats API (statsapi.mlb.com)",
-                  "lines": {"bat": {"label": "Batting", "cols": BAT_COLS}, "pit": {"label": "Pitching", "cols": PIT_COLS}},
+    lines = {"bat": {"label": "Batting", "cols": BAT_COLS}, "pit": {"label": "Pitching", "cols": PIT_COLS}}
+    if proj_src:
+        lines["pbat"] = {"label": f"{proj_src}, batting", "cols": BAT_COLS, "proj": True}
+        lines["ppit"] = {"label": f"{proj_src}, pitching", "cols": PIT_COLS, "proj": True}
+    write("mlb", {"sport": "mlb", "season": years[-1], "updated": NOW, "source": "MLB Stats API (statsapi.mlb.com)" + (f", projections from {proj_src} (fangraphs.com)" if proj_src else ""),
+                  "lines": lines,
                   "players": list(by.values())})
+
+
+# Projections: FanGraphs' Steamer, by MLBAM id (the same ids as the Stats API). Rest of season while one is out
+# (steamerr), else the full-season projection (between seasons, next season's). Players with a projection and no
+# line last season join the pool when they're projected for real playing time (250 PA or 50 IP): rookies, mostly.
+FG = "https://www.fangraphs.com/api/projections?type={t}&stats={s}&pos=all&team=0&players=0&lg=all"
+FG_TEAMS = {"CHW": "CWS", "KCR": "KC", "SDP": "SD", "SFG": "SF", "TBR": "TB", "WSN": "WSH"}
+
+
+def steamer(by, ab, ip):
+    got, label = {}, None
+    for t, name in (("steamerr", "Steamer rest of season"), ("steamer", "Steamer")):
+        try:
+            bat, pit = get(FG.format(t=t, s="bat")), get(FG.format(t=t, s="pit"))
+        except Exception as e:
+            print(f"FanGraphs {t} didn't load: {type(e).__name__}: {e}")
+            continue
+        if len(bat) > 500 and len(pit) > 500:
+            got, label = {"bat": bat, "pit": pit}, name
+            break
+    if not got:
+        return None
+    n = {"bat": 0, "pit": 0, "new": 0}
+    num = lambda r, k: float(r.get(k) or 0)
+    for r in got["bat"]:
+        pid = r.get("xMLBAMID")
+        if not pid:
+            continue
+        line = [round(num(r, "G"), 1), round(num(r, "PA"), 1), round(num(r, "AB"), 1), round(num(r, "R"), 1), round(num(r, "H"), 1), round(num(r, "HR"), 1),
+                round(num(r, "RBI"), 1), round(num(r, "SB"), 1), round(num(r, "1B") + 2 * num(r, "2B") + 3 * num(r, "3B") + 4 * num(r, "HR"), 1),
+                round(num(r, "AVG"), 3), round(num(r, "OBP"), 3), round(num(r, "OPS"), 3)]
+        row = by.get(pid)
+        if not row and num(r, "PA") >= 250:
+            pos = str(r.get("minpos") or "UT").split("/")[0]
+            ps = ["OF"] if pos in OF else ["UT"] if pos in ("DH", "X", "") else [pos]
+            team = str(r.get("Team") or "FA")
+            row = by[pid] = {"id": str(pid), "n": r.get("PlayerName") or str(pid), "t": FG_TEAMS.get(team, team), "pos": ps if ps[0] in MLB_ORDER else ["UT"], "l": {}}
+            if ab.get(pid, 0) < 130:
+                row["rk"] = 1
+            n["new"] += 1
+        if row:
+            row["l"]["pbat"] = line
+            n["bat"] += 1
+    for r in got["pit"]:
+        pid = r.get("xMLBAMID")
+        if not pid:
+            continue
+        line = [round(num(r, "G"), 1), round(num(r, "GS"), 1), round(num(r, "IP"), 1), round(num(r, "W"), 1), round(num(r, "L"), 1), round(num(r, "SV"), 1),
+                round(num(r, "HLD"), 1), round(num(r, "SO"), 1), round(num(r, "ER"), 1), round(num(r, "BB"), 1), round(num(r, "H"), 1),
+                round(num(r, "ERA"), 2), round(num(r, "WHIP"), 3), round(num(r, "QS"), 1)]
+        row = by.get(pid)
+        if not row and num(r, "IP") >= 50:
+            team = str(r.get("Team") or "FA")
+            sp = num(r, "GS") >= max(3, num(r, "G") * 0.5)
+            row = by[pid] = {"id": str(pid), "n": r.get("PlayerName") or str(pid), "t": FG_TEAMS.get(team, team), "pos": ["SP" if sp else "RP"], "l": {}}
+            if ip.get(pid, 0) < 50:
+                row["rk"] = 1
+            n["new"] += 1
+        if row:
+            row["l"]["ppit"] = line
+            if "SP" not in row["pos"] and "RP" not in row["pos"]:
+                row["pos"] = row["pos"] + (["SP"] if num(r, "GS") >= max(3, num(r, "G") * 0.5) else ["RP"])
+            n["pit"] += 1
+    print(f"MLB projections ({label}): {n['bat']} hitters, {n['pit']} pitchers, {n['new']} new to the pool")
+    return label
 
 
 # Real weeks: every regular-season box score, added up Monday to Sunday.

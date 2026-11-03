@@ -29,6 +29,11 @@
   // dropped, like kickers before the football feed has them), and the pool valued for this league.
   // Outside dynasty rankings (data/dynasty-<sport>.json, rebuilt daily by tools/dynasty_pull.py), when there are any.
   const dynCache = {};
+  const mktCache = {};
+  async function loadMarket(k) {
+    if (!(k in mktCache)) mktCache[k] = await fetch(`data/market-${k}.json`, { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    return mktCache[k];
+  }
   async function loadDynasty(k) {
     if (!(k in dynCache)) dynCache[k] = await fetch(`data/dynasty-${k}.json`, { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
     return dynCache[k];
@@ -43,7 +48,7 @@
     const scoring = sport.scorings[c.scoring] ? c.scoring : Object.keys(sport.scorings)[0];
     const bench = c.bench == null ? sport.bench : c.bench;
     const dyn = c.dynasty ? await loadDynasty(c.sport) : null;
-    V.evaluate(sport, players, { teams: c.teams, lineup, bench, scoring, budget: c.budget, dynasty: !!c.dynasty, dynastyRanks: dyn });
+    V.evaluate(sport, players, { teams: c.teams, lineup, bench, scoring, budget: c.budget, dynasty: !!c.dynasty, dynastyRanks: dyn, market: await loadMarket(c.sport) });
     return { sport, players, lineup, scoring, bench, data };
   }
 

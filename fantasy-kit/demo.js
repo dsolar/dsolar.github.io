@@ -31,7 +31,7 @@
     const lineup = sport.lineup.filter((s) => sport.slots[s] === "*" || sport.slots[s].some((x) => have.has(x)));
     players = data.players.map((p) => Object.assign({}, p));
     const scoring = Object.keys(sport.scorings)[0];
-    V.evaluate(sport, players, { teams: 10, lineup, scoring });
+    V.evaluate(sport, players, { teams: 10, lineup, scoring, market: await fetch(`data/market-${sportKey}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null) });
     weeks = await fetch(`data/weeks-${sportKey}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null);
     if (weeks && String(weeks.season) !== String(data.season)) weeks = null;
     livePoll();

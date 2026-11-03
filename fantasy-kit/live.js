@@ -45,7 +45,8 @@
     players = data.players.map((p) => Object.assign({}, p));
     // a dynasty values players over the next five seasons (value.js), a redraft league this season only
     const dyn = !!((D.season && D.season.dynasty) || (L && L.settings.dynasty));
-    V.evaluate(sport, players, { teams: D.teams.length, lineup: D.lineup, bench: D.bench, scoring: D.scoring, budget: D.auction ? D.auction.budget : 200, dynasty: dyn, dynastyRanks: dyn ? await dynastyRanks(info.sport) : null });
+    V.evaluate(sport, players, { teams: D.teams.length, lineup: D.lineup, bench: D.bench, scoring: D.scoring, budget: D.auction ? D.auction.budget : 200, dynasty: dyn, dynastyRanks: dyn ? await dynastyRanks(info.sport) : null,
+      market: await fetch(`data/market-${info.sport}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null) });
     byId = Object.fromEntries(players.map((p) => [p.id, p]));
     weeks = await fetch(`data/weeks-${info.sport}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null);
     if (weeks && String(weeks.season) !== String(data.season)) weeks = null;

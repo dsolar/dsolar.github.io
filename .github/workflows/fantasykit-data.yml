@@ -17,6 +17,7 @@ on:
     paths:
       - tools/fantasykit_data.py
       - tools/dynasty_pull.py
+      - tools/market_pull.py
       - .github/workflows/fantasykit-data.yml
   workflow_dispatch:
 
@@ -46,6 +47,10 @@ jobs:
 
       - name: Pull outside dynasty rankings
         run: python3 tools/dynasty_pull.py
+        continue-on-error: true
+
+      - name: Pull ESPN ranks, ADP and auction prices
+        run: python3 tools/market_pull.py
         continue-on-error: true
 
       - name: Commit the pools
