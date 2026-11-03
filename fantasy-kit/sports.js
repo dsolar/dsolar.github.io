@@ -146,7 +146,7 @@
         base: mlbBase, pace: mlbPace,
       },
       yoenis: {
-        label: "8x8 (R H HR RBI SB TB AVG OPS / W L SV K HLD ERA WHIP QS)", type: "cats",
+        label: "8x8 categories", type: "cats",
         cats: [
           { k: "r", label: "R", line: "bat", col: "r" },
           { k: "h", label: "H", line: "bat", col: "h" },

@@ -278,6 +278,19 @@
   const isPoints = (sport, scoring) => (sport.scorings[scoring] || Object.values(sport.scorings)[0]).type === "points";
   // Columns for a player table. opts: { group (one baseball side), money (false to hide $), scoring, owner (p => html),
   // actions (p => html), lead (columns first), stats (false to skip), extra (columns before the stats), age }
+  // Baseball's stat columns follow the league's categories, so an 8x8 league sees H, TB, OPS, L, HLD and QS; a
+  // category the data can't show (none today) is skipped. The usual five by five show on a phone, the rest from tablets up.
+  const MLB_CORE = new Set(["r", "hr", "rbi", "sb", "avg", "w", "sv", "k", "era"]);
+  function statColumns(sport, scoring) {
+    const sc = sport.scorings && sport.scorings[scoring];
+    if (sport.key !== "mlb" || !sc || sc.type !== "cats" || !sport.cols) return sport.columns;
+    const col = (c) => c.col || c.rate;
+    const ok = (c) => c.line && sport.cols[c.line] && col(c) in sport.cols[c.line];
+    const mk = (c) => ({ line: c.line, col: col(c), label: c.label, group: c.line, fmt: c.fmt || ((x) => (x == null ? "" : Math.round(x).toString())), hide: MLB_CORE.has(c.k) ? undefined : "s" });
+    const bat = sc.cats.filter((c) => c.line === "bat" && ok(c)).map(mk), pit = sc.cats.filter((c) => c.line === "pit" && ok(c)).map(mk);
+    const ip = sport.columns.find((c) => c.col === "ip");
+    return bat.concat(ip ? [ip] : [], pit);
+  }
   function poolColumns(sport, opts = {}) {
     const pts = isPoints(sport, opts.scoring);
     const cols = [
@@ -303,7 +316,7 @@
     cols.push({ k: "v", label: pts ? "Proj" : "Value", cls: "r num", title: pts ? "Season pace: this season's scoring per game blended with the projection, over a full season" : "Summed category z-scores", sort: (p) => p.v, html: (p) => `<b>${p.v == null ? "-" : p.v.toFixed(pts ? 0 : 1)}</b>` });
     if (pts && sport.data && sport.data.lines && sport.data.lines.proj && sport.data.lines.proj.ros) cols.push({ k: "ros", label: "ROS", cls: "r num", hide: "s", title: `Projected points for the rest of the season, ${sport.data.lines.proj.weeks} weeks`, sort: (p) => p.ros, html: (p) => (p.ros == null ? `<span class="ps">-</span>` : p.ros.toFixed(0)) });
     for (const c of opts.extra || []) cols.push(c);
-    if (opts.stats !== false) for (const [i, c] of sport.columns.entries()) {
+    if (opts.stats !== false) for (const [i, c] of statColumns(sport, opts.scoring).entries()) {
       if (opts.group && c.group && c.group !== opts.group) continue;
       cols.push({ k: "s" + i, label: c.label, title: c.title, cls: "r num", hide: c.hide, sort: (p) => statCell(sport, p, c), html: (p) => { const v = statCell(sport, p, c); return v == null ? `<span class="ps">-</span>` : v === 0 && !c.fpts && !c.fpg ? `<span class="zero">${c.fmt(v)}</span>` : c.fmt(v); } });
     }
@@ -1219,7 +1232,7 @@
     const i = cur.lastIndexOf(btn.dataset.lb);
     return i >= 0 ? cur.filter((_, j) => j !== i) : cur;
   }
-  FK.ui = { LINEUP_PRESETS: PRESETS, lineupBuilder, orderLineup, lineupStep, slotDesc, esc, $, $$, store, toast, dialog, dialogOpen, focusKey, refocus, keyboardPlayers, confirm, theme, fmtLeft, money, ord, last, initials, ago,
+  FK.ui = { statColumns, LINEUP_PRESETS: PRESETS, lineupBuilder, orderLineup, lineupStep, slotDesc, esc, $, $$, store, toast, dialog, dialogOpen, focusKey, refocus, keyboardPlayers, confirm, theme, fmtLeft, money, ord, last, initials, ago,
     teamAv, SHAPES, GLYPHS, logoSvg, glyphOf, shapeOf, playerAv, pname, teamName, posChip, posChips, colorOf, injTag,
     proTeam, shell, switcher, route, table, sortRows, nextSort, poolColumns, posFilter, search, passes, groupOf, statCell, label, isPoints,
     playerCard, scoreboard, versus, vsTable, standingsTable, feed, txLine, tradeCard, tradeWindow, room, board: myBoard, viewSelect, setView, initView, hasProj, lineOf };
