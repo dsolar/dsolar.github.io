@@ -236,12 +236,23 @@
     const spots = teams * ((league.lineup || sport.lineup).length + (league.bench == null ? sport.bench : league.bench));
     const pool = sorted.slice(0, spots);
     const floor = pool.length ? pool[pool.length - 1].vor : 0;
-    const surplus = pool.map((p) => Math.max(0, p.vor - floor));
-    const total = sum(surplus) || 1;
+    // Real auctions are top heavy: stars go for far more than their share of
+    // points, and the last third of every roster goes for about the minimum.
+    // Blend a rank curve (quadratic, reaching the minimum at 60% of the
+    // rostered pool) with a convex value curve so tiers in the projections
+    // still show. Tuned to ESPN and Yahoo average auction prices.
+    const edge = Math.max(1, CURVE.edge * spots);
+    const byRank = pool.map((p, i) => Math.max(0, 1 - i / edge) ** 2);
+    const byValue = pool.map((p) => Math.max(0, p.vor - floor) ** CURVE.power);
+    const rt = sum(byRank) || 1, vt = sum(byValue) || 1;
     const money = teams * budget - spots * minBid;
     for (const p of sorted) p.$ = 0;
-    pool.forEach((p, i) => (p.$ = Math.max(minBid, Math.round(minBid + (surplus[i] / total) * money))));
+    pool.forEach((p, i) => {
+      const share = CURVE.rank * (byRank[i] / rt) + (1 - CURVE.rank) * (byValue[i] / vt);
+      p.$ = Math.max(minBid, Math.round(minBid + share * money));
+    });
   }
+  const CURVE = { edge: 0.6, rank: 0.7, power: 1.4 };
 
   return { evaluate, scoringOf, mainPos, replacement, dollars };
 });
