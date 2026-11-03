@@ -1,0 +1,38 @@
+# One-off reader for the Big Board's mock draft: saves a few public pages (draft order, pick ownership,
+# prospect stats) as a downloadable artifact, so the parsers can be written against the real markup.
+# Run by hand only.
+name: Big Board probe
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Save the pages
+        run: |
+          mkdir -p probe
+          UA="Mozilla/5.0 (compatible; davidsolar-draft/1.0; +https://davidsolar.dev/draft/)"
+          get() { curl -sSL -m 30 -A "$UA" -o "probe/$1" -w "$1 %{http_code} %{size_download}\n" "$2" || echo "$1 failed"; }
+          get tank-nba-order.html "https://www.tankathon.com/full_draft"
+          get tank-nfl-order.html "https://www.tankathon.com/nfl/full_draft"
+          get tank-nfl-board.html "https://www.tankathon.com/nfl/big_board"
+          get tank-nba-future.html "https://www.tankathon.com/picks/future_picks"
+          get tank-nfl-future.html "https://www.tankathon.com/nfl/picks/future_picks"
+          get tank-nba-board.html "https://www.tankathon.com/big_board"
+          get realgm-future.html "https://basketball.realgm.com/nba/draft/future_drafts/detailed"
+          get espn-search-stokes.json "https://site.web.api.espn.com/apis/search/v2?query=Tyran%20Stokes&limit=10"
+          get espn-search-jsmith.json "https://site.web.api.espn.com/apis/search/v2?query=Jeremiah%20Smith&limit=10"
+          get espn-nba-standings.json "https://site.api.espn.com/apis/v2/sports/basketball/nba/standings"
+          get espn-nfl-standings.json "https://site.api.espn.com/apis/v2/sports/football/nfl/standings"
+          get espn-cfb-teams.json "https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams?limit=1000"
+          get espn-mcbb-teams.json "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/teams?limit=1000"
+          get otc-draft.html "https://overthecap.com/draft"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: probe
+          path: probe/
+          retention-days: 3
