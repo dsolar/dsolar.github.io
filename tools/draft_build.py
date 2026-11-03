@@ -213,7 +213,53 @@ def build(league, sources, aliases):
             "rules": rules, "players": players,
             "values": (load(os.path.join(TOOLS, "draft_values.json"), {}) or {}).get(league),
             "future": (load(os.path.join(TOOLS, "draft_future.json"), {}) or {}).get(league),
-            "needs": (load(os.path.join(TOOLS, "draft_needs.json"), {}) or {}).get(league)}
+            "needs": (load(os.path.join(TOOLS, "draft_needs.json"), {}) or {}).get(league),
+            "markets": markets(league, players, canon)}
+
+
+# Kalshi's player markets (tools/draft_markets.py): which player goes No. 1, who goes top five, the order the
+# quarterbacks go, who declares. Team markets (which team picks where) are left out: the Markets tab is player props.
+MARKET_NAMES = [
+    (r"DRAFTPICK-27-1$", "No. 1 overall pick"),
+    (r"DRAFTTOP-27-(\d+)$", "Drafted in the top {0}"),
+    (r"DRAFTQB-27P1$", "First quarterback taken"),
+    (r"DRAFTQB-27P2$", "Second quarterback taken"),
+    (r"DRAFTQB-27P3$", "Third quarterback taken"),
+]
+
+
+def markets(league, players, canon):
+    raw = load(os.path.join(TOOLS, "draft_data", "markets.json"), {}) or {}
+    ids = {p["id"] for p in players}
+    out, declare = [], []
+    for e in raw.get("events", []):
+        if e.get("league") != league:
+            continue
+        if "DECLARE" in e["series"]:
+            m = re.match(r"Will (.+?) declare", e.get("title") or "")
+            o = (e.get("outcomes") or [{}])[0]
+            if m and o.get("price") is not None:
+                pid = canon(m.group(1))
+                declare.append({"n": m.group(1), "pid": pid if pid in ids else None, "p": o["price"]})
+            continue
+        title = next((t.format(*re.search(rx, e["event"]).groups()) for rx, t in MARKET_NAMES if re.search(rx, e["event"])), None)
+        if not title:
+            continue
+        outs = []
+        for o in e.get("outcomes", []):
+            if o.get("price") is None or o["price"] < 0.5:
+                continue
+            pid = canon(o["name"])
+            outs.append({"n": o["name"], "pid": pid if pid in ids else None, "p": o["price"]})
+        # A player market: most outcomes are players on the board.
+        if outs and sum(1 for o in outs if o["pid"]) >= max(1, len(outs) * 0.6):
+            out.append({"id": e["event"], "title": title, "url": e.get("url"), "outcomes": outs})
+    if declare:
+        out.append({"id": "declare", "title": "Declares for the draft", "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+                    "outcomes": sorted(declare, key=lambda o: -o["p"])})
+    order = {t: i for i, (_, t) in enumerate(MARKET_NAMES)}
+    out.sort(key=lambda m: (order.get(re.sub(r"\d+", "{0}", m["title"]), 99), m["title"]))
+    return {"source": "Kalshi", "updated": raw.get("updated"), "list": out} if out else None
 
 
 def main():

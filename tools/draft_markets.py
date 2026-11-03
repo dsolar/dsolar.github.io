@@ -92,13 +92,18 @@ def main():
                 name = (m.get("yes_sub_title") or m.get("subtitle") or "").strip()
                 if not name or m.get("status") not in (None, "active", "open", "initialized"):
                     continue
-                price = cents(m, "last_price")
+                # The midpoint of the bid and ask, since the last trade can be months old on a thin market.
+                last = cents(m, "last_price")
                 bid, ask = cents(m, "yes_bid"), cents(m, "yes_ask")
-                if (price is None or price == 0) and bid is not None and ask:
-                    price = round((bid + ask) / 2, 1)
-                outs.append({"name": name, "price": price, "bid": bid, "ask": ask, "volume": m.get("volume") or 0})
+                price = round((bid + ask) / 2, 1) if bid is not None and ask else last
+                vol = next((m.get(k) for k in ("volume", "volume_fp", "volume_24h") if m.get(k) not in (None, "")), 0)
+                try:
+                    vol = int(float(vol))
+                except (TypeError, ValueError):
+                    vol = 0
+                outs.append({"name": name, "price": price, "last": last, "bid": bid, "ask": ask, "volume": vol})
             outs.sort(key=lambda o: -(o["price"] or 0))
-            seen.append({"series": tk, "event": etk, "title": title, "n": len(outs)})
+            seen.append({"series": tk, "event": etk, "n": len(outs), "keys": sorted((e.get("markets") or [{}])[0].keys())[:60] if not seen else None})
             if outs:
                 events.append({"league": lg, "series": tk, "event": etk, "title": title, "sub": sub,
                                "url": f"https://kalshi.com/markets/{tk.lower()}", "outcomes": outs})
