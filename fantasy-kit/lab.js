@@ -233,6 +233,7 @@
       <div class="head"><h1 class="disp">${esc(sp.name)} rankings</h1><span class="ps">${esc(sp.data.source)}, ${esc(sp.data.season)}. ${c.teams} teams, ${esc(sp.scorings[P.scoring].label)}${P.lineup.length ? `, starting ${P.lineup.join(" ")}` : ""}.</span></div>
       <div class="tools"><label class="sr" for="r-sport">Sport</label><select id="r-sport">${Object.values(S.ALL).map((s) => opt(s.key, s.name, rank.sport)).join("")}</select>
         <label class="sr" for="r-scoring">Scoring</label><select id="r-scoring">${Object.entries(sp.scorings).map(([k, s]) => opt(k, s.label.replace(/ \(.*\)$/, ""), P.scoring)).join("")}</select>
+        ${U.viewSelect(sp, "r-statv")}
         <label class="sr" for="r-dyn">League type</label><select id="r-dyn">${opt("", "Redraft", rank.dyn ? "1" : "")}${opt("1", "Dynasty", rank.dyn ? "1" : "")}</select>
         <div class="seg" role="group" aria-label="Rankings"><button type="button" data-rmode="default" aria-pressed="${rank.mode === "default"}">Rankings</button><button type="button" data-rmode="board" aria-pressed="${mine}">My board</button>${sp.key === "mlb" ? "" : `<button type="button" data-rmode="prospects" aria-pressed="${rank.mode === "prospects"}">Prospects</button>`}</div></div>
       <div class="tools">${U.search(rank.f)}<label class="sr" for="fk-team">${esc(sp.league)} team</label><select id="fk-team" class="${rank.f.team ? "set" : ""}"><option value="">All ${esc(sp.league)} teams</option>${teams.map((t) => `<option${t === rank.f.team ? " selected" : ""}>${esc(t)}</option>`).join("")}</select></div>${U.posFilter(sp, rank.f.pos)}
@@ -282,6 +283,7 @@
       if (id === "r-sport") { rank.sport = e.target.value; rank.scoring = ""; rank.f = { q: "", pos: "", team: "" }; rank.sort = { k: "rank", dir: 1 }; }
       else if (id === "r-scoring") rank.scoring = e.target.value;
       else if (id === "r-dyn") rank.dyn = !!e.target.value;
+      else if (id === "r-statv") U.setView(sp, e.target.value);
       else if (id === "fk-pos") rank.f.pos = e.target.value;
       else if (id === "fk-team") rank.f.team = e.target.value;
       else return;

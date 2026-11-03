@@ -247,12 +247,34 @@
   }
 
   /* ---------- players ---------- */
+  // Stats or projections: a sport with projection lines (baseball's pbat and ppit, basketball's ppg) can show either
+  // in its tables. sport.statView = "proj" reads the projection, and a player without one shows a dash.
+  const PROJ_OF = { bat: "pbat", pit: "ppit", pg: "ppg" };
+  const hasProj = (sport) => !!(sport && sport.data && sport.data.lines && Object.values(PROJ_OF).some((k) => sport.data.lines[k]));
+  const projLabel = (sport) => { const L = sport.data.lines, l = ((L.pbat || L.ppg || {}).label || "Projections").replace(/, (batting|per game)$/, ""); return sport.key === "mlb" && l === "Steamer" ? `${+sport.data.season + 1} Steamer projections` : l.replace(/season projection/, "projections"); };
+  const statsLabel = (sport) => `${sport.data.season} stats`;
+  const lineOf = (sport, p, line) => { const pl = PROJ_OF[line]; return sport.statView === "proj" && pl && sport.data.lines[pl] ? pl : line; };
   function statCell(sport, p, c) {
     if (c.fpts) return p.fpts;
     if (c.fpg) return p.fpg;
-    if (c.ratio) { const n = S.stat(sport, p, c.line, c.ratio[0]), d = S.stat(sport, p, c.line, c.ratio[1]); return d ? n / d : null; }
-    return S.stat(sport, p, c.line, c.col);
+    const line = c.line ? lineOf(sport, p, c.line) : c.line;
+    if (line !== c.line && !(p.l && p.l[line])) return null;
+    if (c.ratio) { const n = S.stat(sport, p, line, c.ratio[0]), d = S.stat(sport, p, line, c.ratio[1]); return d ? n / d : null; }
+    return S.stat(sport, p, line, c.col);
   }
+  // the switch itself, a small select; the choice sticks per sport in this browser
+  const viewKey = (sport) => `fk-statview:${sport.key}`;
+  function initView(sport) {
+    if (!hasProj(sport)) { sport.statView = "stats"; return; }
+    let v = null; try { v = localStorage.getItem(viewKey(sport)); } catch (e) { /* no storage */ }
+    sport.statView = v === "stats" || v === "proj" ? v : sport.key === "mlb" ? "proj" : "stats";
+  }
+  function viewSelect(sport, id) {
+    if (!hasProj(sport)) return "";
+    if (!sport.statView) initView(sport);
+    return `<label class="sr" for="${id}">Stats or projections</label><select id="${id}" class="pill-sel">${[["stats", statsLabel(sport)], ["proj", projLabel(sport)]].map(([v, l]) => `<option value="${v}"${sport.statView === v ? " selected" : ""}>${esc(l)}</option>`).join("")}</select>`;
+  }
+  function setView(sport, v) { sport.statView = v === "proj" ? "proj" : "stats"; try { localStorage.setItem(viewKey(sport), sport.statView); } catch (e) { /* no storage */ } }
   const isPoints = (sport, scoring) => (sport.scorings[scoring] || Object.values(sport.scorings)[0]).type === "points";
   // Columns for a player table. opts: { group (one baseball side), money (false to hide $), scoring, owner (p => html),
   // actions (p => html), lead (columns first), stats (false to skip), extra (columns before the stats), age }
@@ -730,6 +752,36 @@
         return `<div class="card"${isMe(t) ? ` style="border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)"` : ""}><div class="mod-h">${teamAv(t, "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(t.name)}${isMe(t) ? ` <span class="tag you">You</span>` : ""}</b><span class="ps">${ord(r.rank)}, ${pts() ? `${Math.round(r.score)} projected` : `${r.score.toFixed(1)} value`}${r.spent != null ? `, spent ${money(r.spent)}` : ""}${d.bank ? `, ${fmtLeft(t.bank)} banked for ${bankFaab(t)} FAAB` : ""}${bv && bv.diff > 0 ? `<br>Best value: ${esc(last(ctx.byId[bv.pid].n))}, +${money(bv.diff)}` : ""}</span></div><b class="grade disp">${r.grade}</b></div>
           <ol>${d.lineup.map((sl, i) => { const p = r.starters[i]; return `<li><span class="slot">${esc(sl)}</span>${p ? `<button class="btn link ell" data-player="${esc(p.id)}">${esc(p.n)}</button><span class="grow"></span><span class="ps">#${p.rank}</span>` : `<span class="ps">Empty</span>`}</li>`; }).join("")}${r.bench.map((p) => `<li class="bn"><span class="slot">BN</span><button class="btn link ell" data-player="${esc(p.id)}">${esc(p.n)}</button><span class="grow"></span><span class="ps">#${p.rank}</span></li>`).join("")}</ol></div>`; }).join("")}</div></div>`;
     }
+    // Projected standings from the rosters so far: each team's best lineup, its category totals and the roto points
+    // they'd earn (or its projected points), on the stats or projections the switch shows.
+    function projected() {
+      const d = D(), sc = sport.scorings[d.scoring] || Object.values(sport.scorings)[0], ros = F.rosters(d);
+      const rows = d.teams.map((t) => {
+        const ps = ros[t.id].map((id) => ctx.byId[id]).filter(Boolean);
+        const st = F.assign(sport, ps, d.lineup).filter(Boolean);
+        return { t, n: ps.length, st, tot: sc.type === "cats" ? FK.value.teamCats(sport, sc, st, (p, line) => lineOf(sport, p, line)) : null, pts: sc.type === "points" ? st.reduce((a, p) => a + (p.v || 0), 0) : null };
+      });
+      const any = rows.some((r) => r.n);
+      const head = `<div class="pk-h"><b>Projected standings</b><span class="ps">${sc.type === "cats" ? `Each team's starters so far, by ${sport.statView === "proj" && hasProj(sport) ? esc(projLabel(sport).toLowerCase().replace(/^(\d{4}) steamer/, "$1 Steamer")) : esc(statsLabel(sport))}. Roto points: ${d.teams.length} for the best in a category, 1 for the worst.` : "Each team's starters so far, by projected points for the season."}</span><span class="grow"></span>${viewSelect(sport, "fk-statv2")}</div>`;
+      if (!any) return `<div style="overflow:auto;flex:1;min-height:0">${head}<p class="empty">Projections fill in as teams draft.</p></div>`;
+      if (sc.type !== "cats") {
+        const sorted = rows.slice().sort((a, b) => b.pts - a.pts);
+        return `<div style="overflow:auto;flex:1;min-height:0">${head}<table class="t dense"><thead><tr><th class="r">#</th><th>Team</th><th class="r">Starters</th><th class="r">Projected points</th></tr></thead><tbody>${sorted.map((r, i) => `<tr${isMe(r.t) ? ' class="me"' : ""}><td class="r num">${i + 1}</td><td class="nm"><span class="row" style="gap:6px">${teamAv(r.t, "sm")}<span class="ell">${esc(r.t.name)}</span></span></td><td class="r num ps">${r.st.length} of ${d.lineup.length}</td><td class="r num"><b>${Math.round(r.pts)}</b></td></tr>`).join("")}</tbody></table></div>`;
+      }
+      // roto points per category: ties split the points
+      const pts = rows.map(() => ({ tot: 0, by: {} }));
+      for (const c of sc.cats) {
+        const vals = rows.map((r, i) => ({ i, v: r.tot[c.k] })).filter((x) => x.v != null && rows[x.i].n);
+        vals.sort((a, b) => (c.low ? b.v - a.v : a.v - b.v));
+        vals.forEach((x) => { const same = vals.filter((y) => y.v === x.v), first = vals.indexOf(same[0]); const p = first + (same.length + 1) / 2; pts[x.i].by[c.k] = p; pts[x.i].tot += p; });
+      }
+      const order = rows.map((r, i) => i).sort((a, b) => pts[b].tot - pts[a].tot);
+      const fmtC = (c, v) => (v == null ? "-" : c.num || c.rate === "avg" || c.rate === "obp" || c.rate === "ops" ? v.toFixed(3).replace(/^0/, "") : c.rate ? v.toFixed(2) : sport.key === "mlb" ? String(Math.round(v)) : v.toFixed(1));
+      const n = d.teams.length;
+      return `<div style="overflow:auto;flex:1;min-height:0">${head}<div class="table-wrap" style="border:0;border-radius:0"><table class="t dense proj"><thead><tr><th class="r">#</th><th>Team</th>${sc.cats.map((c) => `<th class="r">${esc(c.label)}</th>`).join("")}<th class="r">Roto</th></tr></thead><tbody>
+        ${order.map((i, j) => { const r = rows[i]; return `<tr${isMe(r.t) ? ' class="me"' : ""}><td class="r num">${j + 1}</td><td class="nm"><span class="row" style="gap:6px">${teamAv(r.t, "sm")}<span class="ell">${esc(r.t.name)}</span></span></td>${sc.cats.map((c) => { const p = pts[i].by[c.k]; return `<td class="r num${p != null && p >= n - 0.5 ? " win" : p != null && p <= 1.5 ? " loss" : ""}" title="${p != null ? `${p} roto points` : ""}">${fmtC(c, r.tot[c.k])}</td>`; }).join("")}<td class="r num"><b>${Math.round(pts[i].tot * 10) / 10}</b></td></tr>`; }).join("")}
+        </tbody></table></div></div>`;
+    }
     // Mystery packages: every team's picks side by side, with what each package is worth on the pick curve.
     function packages() {
       const d = D(), M = d.mystery, nowK = d.phase === "live" ? F.onClock(d, now()).index : -1;
@@ -866,7 +918,7 @@
       const d = D();
       if (d.phase === "done" && ui.phase && ui.phase !== "done") { ui.left = "results"; ui.mobileRight = false; }
       ui.phase = d.phase;
-      const lefts = [["players", "Players"], ["board", "Board"], ["picks", auction() ? "Sales" : "Picks"]].concat(mystery() ? [["packages", "Packages"]] : [], elephant() && d.phase !== "done" ? [["steal", "Steal"]] : [], d.phase === "done" ? [["results", "Results"]] : []);
+      const lefts = [["players", "Players"], ["board", "Board"], ["picks", auction() ? "Sales" : "Picks"], ["proj", "Projected"]].concat(mystery() ? [["packages", "Packages"]] : [], elephant() && d.phase !== "done" ? [["steal", "Steal"]] : [], d.phase === "done" ? [["results", "Results"]] : []);
       if (!lefts.some((x) => x[0] === ui.left)) ui.left = "players";
       const offers = me() != null ? d.trades.filter((T) => T.status === "pending" && T.to === me()).length : 0;
       const unread = opts.chat && ui.right !== "chat" ? opts.chat.unread() : 0;
@@ -875,11 +927,11 @@
       if (!rights.some((x) => x[0] === ui.right)) ui.right = rights[0][0];
       const keep = { f: focusKey(el), scroll: {} };
       $$("#fk-pool,#fk-board,#fk-picks,.dr-panel,#fk-ticker,#fk-seg,#fk-seg2,#fk-rchatl", el).forEach((x) => (keep.scroll[x.id || x.className] = [x.scrollTop, x.scrollLeft]));
-      const left = { players, board, picks, results, packages, steal: steals }[ui.left]();
+      const left = { players, board, picks, results, packages, steal: steals, proj: projected }[ui.left]();
       const right = { team: () => rosterPanel(me()), queue: queuePanel, teams: teamsPanel, trades: tradesPanel, chat: chatPanel }[ui.right]();
       // one view switch: the left views, plus the right panels as views on narrow screens
       const seg = `<div class="seg" id="fk-seg" role="group" aria-label="View">${lefts.map(([k, n]) => `<button type="button" data-left="${k}" aria-pressed="${!ui.mobileRight && ui.left === k}">${esc(n)}</button>`).join("")}${rights.map(([k, n]) => `<button type="button" class="show-m" data-mright="${k}" aria-pressed="${ui.mobileRight && ui.right === k}">${esc(n)}</button>`).join("")}</div>`;
-      const filters = ui.left === "players" ? `${search(ui.f)}<label class="sr" for="fk-show">Show</label><select id="fk-show" style="width:auto;border-radius:999px;min-height:36px;font-size:13px"><option value="avail"${ui.show === "avail" ? " selected" : ""}>Available</option><option value="all"${ui.show === "all" ? " selected" : ""}>All players</option></select>` : "";
+      const filters = ui.left === "players" ? `${search(ui.f)}<label class="sr" for="fk-show">Show</label><select id="fk-show" style="width:auto;border-radius:999px;min-height:36px;font-size:13px"><option value="avail"${ui.show === "avail" ? " selected" : ""}>Available</option><option value="all"${ui.show === "all" ? " selected" : ""}>All players</option></select>${viewSelect(sport, "fk-statv")}` : "";
       el.innerHTML = `<div class="droom fk-dark">${top()}${ticker()}<div class="dr-main${ui.mobileRight ? " right" : ""}">
         <section class="dr-left"><div class="dr-bar">${seg}${filters}</div>${ui.left === "players" ? posFilter(sport, ui.f.pos) : ""}${left}</section>
         <aside class="dr-right"><div class="seg hide-m" role="group" aria-label="Panel">${rights.map(([k, n]) => `<button type="button" data-right="${k}" aria-pressed="${ui.right === k}">${esc(n)}</button>`).join("")}</div><div class="show-m" style="padding:10px 12px 0">${seg.replace('id="fk-seg"', 'id="fk-seg2"')}</div><div class="dr-panel">${right}</div></aside></div></div>`;
@@ -1053,6 +1105,7 @@
     });
     el.addEventListener("change", (e) => {
       if (e.target.id === "fk-show") { ui.show = e.target.value; render(); }
+      if (e.target.id === "fk-statv" || e.target.id === "fk-statv2") { setView(sport, e.target.value); render(); }
       if (e.target.id === "fk-view") { ui.view = +e.target.value; render(); }
     });
 
@@ -1169,5 +1222,5 @@
   FK.ui = { LINEUP_PRESETS: PRESETS, lineupBuilder, orderLineup, lineupStep, slotDesc, esc, $, $$, store, toast, dialog, dialogOpen, focusKey, refocus, keyboardPlayers, confirm, theme, fmtLeft, money, ord, last, initials, ago,
     teamAv, SHAPES, GLYPHS, logoSvg, glyphOf, shapeOf, playerAv, pname, teamName, posChip, posChips, colorOf, injTag,
     proTeam, shell, switcher, route, table, sortRows, nextSort, poolColumns, posFilter, search, passes, groupOf, statCell, label, isPoints,
-    playerCard, scoreboard, versus, vsTable, standingsTable, feed, txLine, tradeCard, tradeWindow, room, board: myBoard };
+    playerCard, scoreboard, versus, vsTable, standingsTable, feed, txLine, tradeCard, tradeWindow, room, board: myBoard, viewSelect, setView, initView, hasProj, lineOf };
 })(this);

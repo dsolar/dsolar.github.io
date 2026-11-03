@@ -380,5 +380,19 @@
   }
   const CURVE = { edge: 0.6, rank: 0.7, power: 1.4 };
 
-  return { evaluate, scoringOf, mainPos, replacement, dollars, dynastyMult, ageOf };
+  // A team's projected category totals from its players: counting stats summed, rates weighted by their volume
+  // (AVG by at-bats, ERA by innings) or built from their parts (FG% from makes and attempts). lineOf(p, line) picks
+  // which line to read (a projection or the stats).
+  function teamCats(sport, sc, ps, lineOf) {
+    const out = {};
+    const get = (p, line, col) => { const ln = lineOf ? lineOf(p, line) : line, cols = sport.data.lines[ln] && sport.data.lines[ln].cols, row = p.l[ln]; const i = cols ? cols.indexOf(col) : -1; return row && i >= 0 ? row[i] || 0 : 0; };
+    for (const c of sc.cats || []) {
+      const line = c.line || sc.line;
+      if (c.num) { const n = sum(ps.map((p) => get(p, line, c.num))), d = sum(ps.map((p) => get(p, line, c.den))); out[c.k] = d ? n / d : null; }
+      else if (c.rate) { const w = sum(ps.map((p) => get(p, line, c.w))); out[c.k] = w ? sum(ps.map((p) => get(p, line, c.rate) * get(p, line, c.w))) / w : null; }
+      else out[c.k] = sum(ps.map((p) => get(p, line, c.col)));
+    }
+    return out;
+  }
+  return { teamCats, evaluate, scoringOf, mainPos, replacement, dollars, dynastyMult, ageOf };
 });

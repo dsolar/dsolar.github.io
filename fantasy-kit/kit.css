@@ -807,3 +807,8 @@ table.roto td small.rp{display:block;font-size:10.5px;font-weight:650;color:var(
 .pav.lgo{background:#fff;box-shadow:inset 0 0 0 2px var(--pc,var(--p6));font-size:0;overflow:hidden}
 .pav.lgo img{width:70%;height:70%;object-fit:contain}
 .pav.lg.lgo{box-shadow:inset 0 0 0 3px var(--pc,var(--p6))}
+/* a compact select that sits in a row of chips and pills (stats or projections, and the like) */
+select.pill-sel{width:auto;border-radius:999px;min-height:36px;font-size:13px}
+/* the draft room's projected standings */
+table.t.proj td.win{color:var(--win);font-weight:800} table.t.proj td.loss{color:var(--loss)}
+.pk-h select.pill-sel{justify-self:start;max-width:280px}
