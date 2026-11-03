@@ -88,7 +88,7 @@
     M.ledger = E.ledger(D);
     M.ledger0 = M.ledger.map((a) => ({ ...a }));
     M.trades = [];
-    M.ticker = []; M.shop = null; M.lastShop = null;
+    M.ticker = []; M.shop = null; M.lastShop = null; M.swaps = [];
     M.offers = {};
     M.trade = null;
     room();
@@ -303,6 +303,11 @@
     const moves = [];
     const apply = (x, from, to) => {
       if (x.kind === "pick") { const p = M.picks.find((q) => q.n === x.n); p.owner = to; }
+      else if (x.kind === "swap") {
+        const { year, from: f, to: t } = x.s;
+        [`${f}-${year}-1`, `${t}-${year}-1`].forEach((id) => { const L = M.ledger.find((q) => q.id === id); if (L) { L.ok = false; L.note = `Swap rights: ${t} can swap with ${f}`; } });
+        (M.swaps = M.swaps || []).push({ ...x.s });
+      }
       else {
         const L = M.ledger.find((q) => q.id === x.a.id);
         L.owner = to;
@@ -378,7 +383,7 @@
   }
   // ---------- the recap ----------
   const rdName = (r) => (r === 1 ? "1st" : r === 2 ? "2nd" : r === 3 ? "3rd" : `${r}th`);
-  const futLabel = (a) => `${a.year} ${rdName(a.rd)}${a.orig !== a._for ? ` (${a.orig})` : ""}${E.protLabel(D, a)}`;
+  const futLabel = (a) => a.swap ? a.swap : `${a.year} ${rdName(a.rd)}${a.orig !== a._for ? ` (${a.orig})` : ""}${E.protLabel(D, a)}`;
 
   function futureMoves(t) {
     const before = Object.fromEntries((M.ledger0 || []).map((a) => [a.id, a]));
@@ -389,6 +394,10 @@
       if (a.owner === t && b.owner !== t) added.push({ ...a, _for: t });
       if (b.owner === t && a.owner !== t) sent.push({ ...b, prot: a.prot || b.prot, _for: t, to: a.owner });
     }
+    (M.swaps || []).forEach((w) => {
+      if (w.to === t) added.push({ year: w.year, rd: 1, swap: `${w.year} 1st swap with ${w.from}` });
+      if (w.from === t) sent.push({ year: w.year, rd: 1, swap: `${w.year} 1st swap`, to: w.to });
+    });
     const sort = (x, y) => x.year - y.year || x.rd - y.rd;
     return { added: added.sort(sort), sent: sent.sort(sort) };
   }

@@ -327,9 +327,26 @@
   }
 
   // Asset values. A current pick is { kind: "pick", n }; a future one is { kind: "future", a }.
-  function assetValue(D, x) { return x.kind === "pick" ? pickValue(D, x.n) : futureValue(D, x.a); }
+  function assetValue(D, x) { return x.kind === "pick" ? pickValue(D, x.n) : x.kind === "swap" ? swapValue(D, x.s) : futureValue(D, x.a); }
+
+  /* NBA swap rights: s.to may trade its own first in s.year for s.from's. Worth what it gains on average across
+     the likely landing spots of both picks, nothing when its own pick lands higher. A cheap sweetener from a
+     good team, a real one from a bad team (the 2025 Pelicans gave Atlanta "the better of" theirs and
+     Milwaukee's to move from 23 to 13). */
+  function swapValue(D, s) {
+    const N = Object.keys(D.teams).length, mid = (N + 1) / 2, k = Math.max(1, s.year - (D.year || 2027));
+    const pf = mid + (slotNow(D, s.from) - mid) * Math.pow(0.5, k), pt = mid + (slotNow(D, s.to) - mid) * Math.pow(0.5, k);
+    const clamp = (x) => Math.max(1, Math.min(N, Math.round(x)));
+    let gain = 0, n = 0;
+    for (let d1 = -8; d1 <= 8; d1 += 2) for (let d2 = -8; d2 <= 8; d2 += 2) {
+      const a = clamp(pf + d1), b = clamp(pt + d2);
+      gain += a < b ? pickValue(D, a) - pickValue(D, b) : 0; n++;
+    }
+    return (gain / n) * Math.pow(0.95, k);
+  }
   function assetLabel(D, x) {
     if (x.kind === "pick") return `No. ${x.n}`;
+    if (x.kind === "swap") return `${x.s.year} 1st swap with ${x.s.from}`;
     const a = x.a, rd = a.rd === 1 ? "1st" : a.rd === 2 ? "2nd" : a.rd === 3 ? "3rd" : `${a.rd}th`;
     return `${a.year} ${rd}${a.owner !== a.orig ? ` (${a.orig})` : ""}${protLabel(D, a)}`;
   }
@@ -418,6 +435,13 @@
         variants.forEach((prot) => cands.push({ kind: "future", a: prot ? { ...a, prot, note: `Protected ${prot}` } : a }));
       });
       futs.filter((a) => a.rd === 2 || (!nba && a.rd === 3)).slice(0, 4).forEach((a) => cands.push({ kind: "future", a }));
+      if (nba && cur.n <= 20) {
+        // Swap rights on next year's or the year after's firsts, when both teams still hold their own.
+        const own = (team, y) => st.ledger.find((a) => a.id === `${team}-${y}-1` && a.owner === team && a.ok && !a.prot);
+        ((D.future || {}).years || []).slice(0, 2).forEach((y) => {
+          if (own(t, y) && own(cur.owner, y)) cands.push({ kind: "swap", s: { id: `swap-${t}-${cur.owner}-${y}`, year: y, from: t, to: cur.owner } });
+        });
+      }
       const lead = { kind: "pick", n: next.n };
       const leadV = assetValue(D, lead);
       if (leadV < V * 0.4) continue;
@@ -434,6 +458,7 @@
       // hate giving them) and a little on every extra piece.
       // In the NBA the lighter the protection, the harder a team swallows: unprotected costs most.
       const firstCost = (x) => {
+        if (x.kind === "swap") return V * 0.05;
         if (x.kind !== "future" || x.a.rd !== 1) return 0;
         if (!nba) return V * 0.15;
         const hi = x.a.prot ? Number(x.a.prot.split("-")[1]) : 0;
@@ -445,7 +470,8 @@
       const tryCombo = (idx) => {
         const sumV = leadV + idx.reduce((s2, i) => s2 + vals[i], 0);
         if (sumV < want || sumV > V * (qb || needFirsts ? 1.45 : 1.3)) return;
-        const ids = idx.map((i) => cands[i].kind === "future" ? cands[i].a.id : "n" + cands[i].n);
+        // A swap of a year's firsts can't ride with that same first.
+        const ids = idx.map((i) => cands[i].kind === "future" ? cands[i].a.id : cands[i].kind === "swap" ? `${cands[i].s.from}-${cands[i].s.year}-1` : "n" + cands[i].n);
         if (new Set(ids).size < ids.length) return;   // two versions of the same pick
         const firsts = idx.filter((i) => cands[i].kind === "future" && cands[i].a.rd === 1).length;
         const firstsNow = idx.filter((i) => cands[i].kind === "pick" && cands[i].n <= N1).length;
@@ -484,7 +510,7 @@
   function value(pick, player) { return pick - player.rank; }
 
   const api = { rng, lottery321, oddsAtOne, standing, resolve, buildOrder, botPick, nflPos, value, pickValue, ledger, futureValue,
-    assetValue, assetLabel, protLabel, stepienOK, firstsGap, botAccepts, offersFor };
+    assetValue, swapValue, assetLabel, protLabel, stepienOK, firstsGap, botAccepts, offersFor };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.DraftEngine = api;
 })(typeof window !== "undefined" ? window : globalThis);

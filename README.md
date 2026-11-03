@@ -449,6 +449,8 @@ Pushing a new snapshot rebuilds `draft/nba.json` and `draft/nfl.json` through th
 
 **Mock draft order.** The mock defaults to a projected order from ESPN's Basketball and Football Power Index records (`tools/draft_data/projections.json`, pulled daily); "As it stands" uses today's standings. The NBA draws the 3-2-1 lottery: 16 teams, all 16 picks drawn, the worst three can't fall past 12, and `tools/draft_rules.json` (`lottery`) lists who's barred from No. 1 or the top five that year. Update those two lists after each spring's lottery.
 
+**Trade pricing.** Bots price NFL trades on the Jimmy Johnson chart and NBA trades on the curve in `draft/engine.js`, with future picks half a round lower per year out. `node tools/draft_trades_test.js` runs real trade-ups (Rams 15 to 1, 49ers 12 to 3, Mavericks 5 to 3, Pelicans 23 to 13 and more) through that pricing and fails if any lands outside its range. Run it after changing pick values.
+
 ## Wipe Yoenis: luck, drafts and manager profiles
 
 Player lookup (the Players section) builds its index in the browser from data the page already has: every draft board, the keeper lists, every trade, `history.picked` (every pickup worth at least a point, from `tools/yoenis_history_build.py`) and the awards.
