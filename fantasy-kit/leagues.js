@@ -14,7 +14,7 @@
   let sent = null, busy = false, view = "list";
   const form = { sport: "nfl", teams: 10, type: "snake", clock: 90, season: "h2h", weeks: 14, trades: 1, scoring: "",
     lineup: "", bench: null, playoffs: 4, deadline: null, review: "vote", faab: null, waiverHours: 36,
-    weights: null, cats: null, waivers: "faab", ir: 1, maxAdds: 0, posMax: {}, keepers: 0, keeperCost: "round", legs: "1", cons: "none", median: 0, bestball: 0, divs: 0, rookie: 3, fpicks: 1 };
+    weights: null, cats: null, waivers: "faab", ir: 1, maxAdds: 0, posMax: {}, keepers: 0, keeperCost: "round", legs: "1", cons: "none", median: 0, bestball: 0, divs: 0, rookie: 3, fpicks: 1, ohold: "clock" };
   // scoring: a preset key, or "cp" (custom points) / "cc" (custom categories)
   const isCustom = () => form.scoring === "cp" || form.scoring === "cc";
   const scoringType = (sp) => (form.scoring === "cp" ? "points" : form.scoring === "cc" ? "cats" : (sp.scorings[form.scoring] || Object.values(sp.scorings)[0]).type);
@@ -121,7 +121,7 @@
           <div class="field"><label for="n-type">Draft</label><select id="n-type" data-f="type">${Object.entries(F.FORMATS).map(([k, l]) => opt(k, l, form.type)).join("")}</select></div>
           <div class="field"><label for="n-clock">${auction ? "Bid clock" : "Pick clock"}</label><select id="n-clock" data-f="clock">${clocks.map(([v, l]) => opt(v, l, form.clock)).join("")}</select></div>
         </div>
-        ${!auction && form.type !== "mystery" && form.type !== "elephant" ? `<div class="row3"><div class="field"><label for="n-trades">Trades during the draft</label><select id="n-trades" data-f="trades">${opt(1, "Picks and players", form.trades)}${opt(0, "Off", form.trades)}</select></div></div>` : ""}
+        ${!auction && form.type !== "mystery" && form.type !== "elephant" ? `<div class="row3"><div class="field"><label for="n-trades">Trades during the draft</label><select id="n-trades" data-f="trades">${opt(1, "Picks and players", form.trades)}${opt(0, "Off", form.trades)}</select></div>${form.trades !== 0 ? `<div class="field"><label for="n-oh">A trade offer stops the clock</label><select id="n-oh" data-f="ohold">${opt("clock", "When it's to the team on the clock", form.ohold)}${opt("all", "For any manager, up to 90 seconds", form.ohold)}${opt("off", "Never: the draft keeps going", form.ohold)}</select></div>` : ""}</div>` : ""}
         <div class="row3">
           <div class="field"><label for="n-scoring">Scoring</label><select id="n-scoring" data-f="scoring">${Object.entries(sp.scorings).map(([k, s]) => opt(k, s.label.replace(/ \(.*\)$/, ""), scoring)).join("")}${opt("cp", "Custom points", scoring)}${sp.key !== "nfl" ? opt("cc", "Custom categories", scoring) : ""}</select></div>
           <div class="field"><label for="n-season">Season</label><select id="n-season" data-f="season">${seasons.map(([k, l]) => opt(k, l, form.season)).join("")}</select></div>
@@ -243,7 +243,8 @@
       const D = F.create({ sport, type: form.type, teams: n, seed: Math.floor(Math.random() * 2 ** 31), now: Date.now(), lineup, bench, scoring,
         botDelay: 3000, clock: auction ? 0 : form.clock, bidClock: auction ? form.clock : 15, nomClock: 30, budget: 200, name: form.name.trim(),
         trades: form.trades !== 0, curve: form.type === "mystery" ? F.pickCurve(players, total) : null, reveal: form.type === "mystery" ? "own" : undefined });
-      D.teams.forEach((t, i) => (t.color = (i * 5) % 12));        // each team its own color, the same ones the league pages use
+      D.teams.forEach((t, i) => (t.color = (i * 5) % 12));
+      if (D.trading) D.offerHold = form.ohold || "clock";        // each team its own color, the same ones the league pages use
       const tn = form.team.trim() || `${form.me.trim().split(" ")[0]}'s team`;
       D.teams[0].name = tn.slice(0, 28);
       D.teams[0].abbr = tn.replace(/[^A-Za-z0-9 ]/g, "").split(/\s+/).filter(Boolean).map((w) => w[0]).join("").slice(0, 3).toUpperCase() || "YOU";

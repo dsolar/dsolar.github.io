@@ -98,3 +98,40 @@ test('before the draft: add and remove teams', () => {
   F.start(D, 2);
   assert.equal(F.resize(D, sport, teams).ok, false, 'not once the draft starts');
 });
+
+test('draft offers: the clock stops while the manager on the clock reads one', () => {
+  const data = JSON.parse(readFileSync(new URL('../fantasy-kit/data/nfl.json', import.meta.url), 'utf8'));
+  const sport = S.attach(Object.assign({}, S.nfl), data);
+  const players = data.players.map((p) => ({ ...p }));
+  V.evaluate(sport, players, { teams: 4, scoring: 'half' });
+  const D = F.create({ sport, teams: 4, seed: 2, now: 0, scoring: 'half', clock: 60, botDelay: 0, order: [0, 1, 2, 3], botOffers: false });
+  D.teams[0].owner = 'A'; D.teams[1].owner = 'B';
+  const ctx = F.context(D, players, sport);
+  F.start(D, 1000);
+  // B offers A a swap of first-rounders while A is on the clock
+  const r = F.propose(D, ctx, { from: 1, to: 0, give: [F.pickId ? F.pickId(1) : 'pk:1'], get: [F.pickId ? F.pickId(0) : 'pk:0'], balance: false }, 2000);
+  assert.ok(r.ok && r.pending, r.why);
+  assert.ok(F.offerHold(D, 2000));
+  assert.ok(D.paused && D.hold && D.hold.team === 0);
+  // time passes, but the clock doesn't run out while held
+  assert.equal(F.tick(D, ctx, 50000), 0);
+  assert.equal(F.made(D).length, 0);
+  // A declines: the draft picks up with the time A had left
+  F.respond(D, ctx, r.trade.id, 0, false, 60000);
+  assert.ok(F.offerHold(D, 60000));
+  assert.ok(!D.paused && !D.hold);
+  assert.equal(F.onClock(D, 60000).team, 0);
+  assert.ok(F.onClock(D, 60000).left > 55000, 'A still has nearly the whole clock');
+  // an offer that sits too long stops holding (and holds only once)
+  const r2 = F.propose(D, ctx, { from: 1, to: 0, give: [F.pickId(1)], get: [F.pickId(0)], balance: false }, 61000);
+  F.offerHold(D, 61000);
+  assert.ok(D.paused);
+  F.offerHold(D, 61000 + F.HOLD_MAX + 1);
+  assert.ok(!D.paused, 'the hold ends after the limit');
+  F.offerHold(D, 61000 + F.HOLD_MAX + 2);
+  assert.ok(!D.paused, 'and the same offer doesn\'t hold again');
+  // "off" never holds
+  D.offerHold = 'off';
+  F.propose(D, ctx, { from: 1, to: 0, give: [F.pickId(5)], get: [F.pickId(4)], balance: false }, 200000);
+  assert.equal(F.offerHold(D, 200000), false);
+});

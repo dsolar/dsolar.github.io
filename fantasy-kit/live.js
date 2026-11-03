@@ -136,7 +136,8 @@
   // The commissioner's page runs bots and the clock. Anyone else's page steps in when that's five seconds late,
   // so the draft keeps moving when the commissioner's page is closed.
   function driveOk() {
-    if (!D || D.phase !== "live" || D.paused || !canAct()) return false;
+    if (!D || D.phase !== "live" || !canAct()) return false;
+    if (D.paused) return !!D.hold;                     // a draft held for a trade offer: any page can let it go on
     if (info.commish) return true;
     if (D.type === "auction") return Date.now() - lastChange > 8000;
     const c = F.onClock(D, now());
@@ -229,6 +230,7 @@
       ${info.commish ? `<p class="muted" style="margin:0 0 8px">Send this link to your league. Anyone who opens it signs in with their email and picks an open team.</p>
         <div class="row"><input type="text" readonly value="${esc(inviteUrl())}" id="lv-link" style="flex:1;min-width:0" aria-label="Invite link"><button type="button" class="btn go" data-lv="copy">Copy</button></div>` : ""}
       ${seatList()}
+      ${info.commish && D && !L && D.phase !== "done" && D.trading ? `<div class="field" style="margin-top:10px"><label for="lv-oh">A trade offer stops the clock</label><select id="lv-oh">${opt("clock", "When it's to the team on the clock", D.offerHold || "clock")}${opt("all", "For any manager, up to 90 seconds", D.offerHold || "clock")}${opt("off", "Never: the draft keeps going", D.offerHold || "clock")}</select></div>` : ""}
       ${info.commish && D && !L && D.phase === "setup" ? `<div class="row" style="margin-top:8px;flex-wrap:wrap;gap:8px"><span class="ps">${D.teams.length} teams. Teams can change until the draft starts.</span><span class="grow"></span>${D.teams.length < 20 ? `<button type="button" class="btn sm" data-lv="addteam">Add a team</button>` : ""}</div>` : ""}
       <div id="lv-past"></div>
       ${info.me != null ? `<label class="check" style="margin-top:10px"><input type="checkbox" id="lv-mail"${info.notify !== false ? " checked" : ""}> Email me about trade offers, waiver results${D && D.clock >= 3600 ? ", my turn in the draft" : ""} and weekly results</label>` : ""}
@@ -258,6 +260,7 @@
       }
     };
     dlg.onchange = async (e) => {
+      if (e.target.id === "lv-oh") { D.offerHold = e.target.value; push(); U.toast("Saved."); return; }
       if (e.target.id !== "lv-mail") return;
       const on = e.target.checked;
       const r = await C.rpc("fk_notify", { p_id: id, p_on: on }).catch((err) => ({ error: err.message }));

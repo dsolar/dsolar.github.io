@@ -519,7 +519,7 @@
       } else {
         const c = F.onClock(d, n), t = team(c.team), mine = isMe(t);
         const next = me() != null ? F.nextPickOf(d, me()) : null;
-        mid = `<div class="otc${mine ? " me" : ""}">${teamAv(t, "md")}<span class="who"><small>${mine ? (c.makeup ? "You were robbed. Pick again" : "You're on the clock") : c.makeup ? "Make-up pick" : "On the clock"}</small><b>${esc(t.name)}</b><span>${c.makeup ? `Make-up pick: ${esc(team(c.makeup.from).abbr)} stole ${esc((ctx.byId[c.makeup.forbid] || {}).n || "a player")}` : mystery() ? `Pick ${c.pick} of ${c.total}` : `Round ${c.round}, pick ${c.inRound} (${ord(c.pick)} overall)`}${elephant() && mine ? (F.stealsOpen(d, c.index) ? `. ${F.stealsLeft(d, me())} steal${F.stealsLeft(d, me()) === 1 ? "" : "s"} left` : ". Steals are over") : ""}${viaOf(c.index) ? `, from ${isMe(viaOf(c.index)) ? "you" : esc(viaOf(c.index).name)}` : ""}${!mine && next ? `. You pick in ${next - c.pick}` : ""}${d.paused ? ", paused" : ""}${d.bank && t.bank <= 0 ? `. Bank empty: ${d.bank.floor} seconds a pick` : ""}</span></span><span class="ring" id="fk-ring" title="${d.bank ? "Time left in the bank" : "Time left on the pick"}"><span id="fk-timer"></span></span></div>`;
+        mid = `<div class="otc${mine ? " me" : ""}">${teamAv(t, "md")}<span class="who"><small>${mine ? (c.makeup ? "You were robbed. Pick again" : "You're on the clock") : c.makeup ? "Make-up pick" : "On the clock"}</small><b>${esc(t.name)}</b><span>${c.makeup ? `Make-up pick: ${esc(team(c.makeup.from).abbr)} stole ${esc((ctx.byId[c.makeup.forbid] || {}).n || "a player")}` : mystery() ? `Pick ${c.pick} of ${c.total}` : `Round ${c.round}, pick ${c.inRound} (${ord(c.pick)} overall)`}${elephant() && mine ? (F.stealsOpen(d, c.index) ? `. ${F.stealsLeft(d, me())} steal${F.stealsLeft(d, me()) === 1 ? "" : "s"} left` : ". Steals are over") : ""}${viaOf(c.index) ? `, from ${isMe(viaOf(c.index)) ? "you" : esc(viaOf(c.index).name)}` : ""}${!mine && next ? `. You pick in ${next - c.pick}` : ""}${d.paused ? (d.hold ? `. Stopped while ${isMe(team(d.hold.team)) ? "you look" : `${esc(team(d.hold.team).name)} looks`} at a trade offer` : ", paused") : ""}${d.bank && t.bank <= 0 ? `. Bank empty: ${d.bank.floor} seconds a pick` : ""}</span></span><span class="ring" id="fk-ring" title="${d.bank ? "Time left in the bank" : "Time left on the pick"}"><span id="fk-timer"></span></span></div>`;
       }
       return `<div class="dr-top">${lg}${mid}<div class="acts">${ctl.join("")}</div></div>`;
     }
@@ -654,8 +654,9 @@
       if (!ks.length) return "";
       return `<div class="mod-h" style="border-top:1px solid var(--line)"><b>Picks to come</b><span class="ps" style="margin-left:auto">${ks.length}</span></div><div class="pkcs" style="padding:8px 12px 12px">${ks.map((k) => `<span class="pkc${viaOf(k) ? " via" : ""}" title="${ord(k + 1)} overall${viaOf(k) ? `, via ${esc(viaOf(k).name)}` : ""}">${plab(k)}</span>`).join("")}</div>`;
     }
-    function tradesPanel() {
-      const d = D(), m = me();
+    // a draft trade as a card: what each side sends, valued as it was when offered
+    function roomTradeVM(T, acts) {
+      const d = D();
       const LBL = { pending: "Pending", accepted: "Accepted", declined: "Declined", expired: "Expired", canceled: "Canceled" };
       const CLS = { pending: "pending", accepted: "accepted", declined: "rejected", expired: "cancelled", canceled: "cancelled" };
       // picks in a card read as they were offered: the pick and its value, without where it has gone since
@@ -666,8 +667,11 @@
         const val = T && T.vals && T.vals[id] != null ? T.vals[id] : F.pickValue(d, ctx, x.k);
         return Object.assign({}, x, { sub: `${ord(x.k + 1)} overall, worth ${money(val)} then${who ? `, became ${who.n}` : ""}` });
       };
-      const vm = (T, acts) => ({ id: T.id, status: CLS[T.status], statusLabel: LBL[T.status], from: team(T.from), to: team(T.to), give: T.give.map((id) => cardVM(id, T)).filter(Boolean), get: T.get.map((id) => cardVM(id, T)).filter(Boolean),
+      return ({ id: T.id, status: CLS[T.status], statusLabel: LBL[T.status], from: team(T.from), to: team(T.to), give: T.give.map((id) => cardVM(id, T)).filter(Boolean), get: T.get.map((id) => cardVM(id, T)).filter(Boolean),
         note: T.status === "declined" && T.why ? T.why : T.note, when: ago(T.done || T.at, now()), acts, sub: T.added && T.added.length ? "Evened out with a late pick" : "" });
+    }
+    function tradesPanel() {
+      const d = D(), m = me(), vm = roomTradeVM;
       const list = d.trades.slice().reverse();
       const toMe = list.filter((T) => T.status === "pending" && T.to === m);
       const out = list.filter((T) => T.status === "pending" && T.from === m);
@@ -700,6 +704,7 @@
         submit: (t) => {
           const r = F.propose(D(), ctx, Object.assign({}, t, { by: "you" }), now());
           if (!r.ok) return r;
+          if (r.pending) F.offerHold(D(), now());        // a manager on the clock gets time to read it
           save(); ui.right = "trades"; render();
           if (r.accepted) toast(`${team(t.to).name} accepted.`);
           else if (r.pending) toast("Offer sent.");
@@ -898,18 +903,40 @@
       }
       seenSteals = st.length;
     };
+    // An offer to you opens right away, over whatever you're doing (or as soon as the dialog you have open closes).
+    // If the draft is holding for it, it says so and how long the hold lasts.
     const newOffers = () => {
       const d = D();
       for (const T of d.trades || []) {
         if (seenOffers.has(T.id)) continue;
+        if (T.status !== "pending" || T.to !== me() || T.from === me()) { seenOffers.add(T.id); continue; }
+        if (dialogOpen()) return;
         seenOffers.add(T.id);
-        if (T.status === "pending" && T.to === me() && T.from !== me()) { toast(`${team(T.from).name} sent you a trade offer. See Trades.`); }
+        offerDialog(T);
+        return;
       }
     };
+    function offerDialog(T) {
+      const d = D(), held = d.hold && d.hold.trade === T.id;
+      const Dl = dialog(`<h3>${esc(team(T.from).name)} sent you a trade offer</h3>
+        <p class="ps" style="margin:0 0 10px">${held ? `The draft is stopped while you decide: ${Math.max(1, Math.round(F.holdLeft(d, now()) / 1000))} seconds at most, then it goes on and the offer stays open.` : "The draft keeps going while you decide. The offer stays open until a pick in it is made."}</p>
+        ${tradeCard(sport, roomTradeVM(T, ""))}
+        <div class="acts"><button type="button" class="btn" data-od="later">Decide later</button><button type="button" class="btn" data-od="counter">Counter</button><button type="button" class="btn warn" data-od="no">Decline</button><button type="button" class="btn go" data-od="yes">Accept</button></div>`, null, { wide: true, dark: true });
+      Dl.addEventListener("click", (e) => {
+        const b = e.target.closest("[data-od]"); if (!b) return;
+        const k = b.dataset.od;
+        Dl.close();
+        if (k === "yes") { if (act(() => F.respond(D(), ctx, T.id, me(), true, now()))) toast("Trade accepted."); }
+        else if (k === "no") { if (act(() => F.respond(D(), ctx, T.id, me(), false, now()))) toast("Offer declined."); }
+        else if (k === "counter") { act(() => F.respond(D(), ctx, T.id, me(), false, now())); openTrade(T.from, { give: T.get.slice(), get: T.give.slice() }); }
+        else { ui.right = "trades"; render(); }
+      });
+    }
     timer = setInterval(() => {
       // a paused or finished draft has no clock to run; check for changes from elsewhere once a second
-      const idle = D().phase !== "live" || D().paused;
+      const idle = D().phase !== "live" || (D().paused && !D().hold);
       if (idle && (ui.idleN = (ui.idleN || 0) + 1) % 4) return;
+      if (opts.drive && D().phase === "live" && F.offerHold(D(), now())) save();
       if (opts.drive && D().phase === "live" && !D().paused) {
         const before = F.made(D()).length;
         const moved = F.tick(D(), ctx, now(), 3);

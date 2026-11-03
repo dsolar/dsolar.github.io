@@ -247,7 +247,7 @@
       D.paused = true;
       D.left = lot ? lot.ends - now : D.clockStart + (D.type === "auction" ? D.auction.nomClock * 1000 : Math.min(1e12, clockLen(D, nextIndex(D)))) - now;
     } else if (!on && D.paused) {
-      D.paused = false;
+      D.paused = false; delete D.hold;
       if (lot) lot.ends = now + D.left;
       else D.clockStart = now - ((D.type === "auction" ? D.auction.nomClock * 1000 : Math.min(1e12, clockLen(D, nextIndex(D)))) - D.left);
       D.left = null;
@@ -326,14 +326,38 @@
 
   // Moves the draft forward to `now`: bots pick after a short delay, a manager whose clock ran out gets an
   // autopick stamped at the moment it expired.
+  // A trade offer stops the clock so the manager can read it. D.offerHold: "clock" (the default) holds the draft
+  // while the manager on the clock has an offer open, "all" holds it for any manager's offer, "off" never holds.
+  // Each offer holds once, for up to HOLD_MAX, and the draft picks up where it was when the offer is answered.
+  const HOLD_MAX = 90e3;
+  function offerHold(D, now) {
+    if (D.type === "auction" || D.phase !== "live") return false;
+    const mode = D.offerHold || "clock", c = onClock(D, now);
+    const open = (T) => T.status === "pending" && !isBot(D.teams[T.to]) && (mode === "all" || (c && T.to === c.team));
+    if (D.hold) {
+      const T = (D.trades || []).find((x) => x.id === D.hold.trade);
+      if (!T || !open(T) || now - D.hold.at >= HOLD_MAX) { pause(D, now, false); return true; }
+      return false;
+    }
+    if (mode === "off" || D.paused) return false;
+    D.held = D.held || {};
+    const T = (D.trades || []).find((x) => open(x) && !D.held[x.id]);
+    if (!T) return false;
+    D.held[T.id] = 1;
+    pause(D, now, true);
+    D.hold = { trade: T.id, team: T.to, at: now };
+    return true;
+  }
+  const holdLeft = (D, now) => (D.hold ? Math.max(0, HOLD_MAX - (now - D.hold.at)) : 0);
   function tick(D, ctx, now, max = 1000) {
     if (D.type === "auction") return auctionTick(D, ctx, now, max);
+    offerHold(D, now);
     let n = 0;
     while (n < max && D.phase === "live" && !D.paused) {
       const c = onClock(D, now);
       if (!c) break;
       const team = D.teams[c.team];
-      if (!isBot(team) && !D.offered[c.index]) { D.offered[c.index] = true; botOffer(D, ctx, c, now); }
+      if (!isBot(team) && !D.offered[c.index]) { D.offered[c.index] = true; if (botOffer(D, ctx, c, now)) { offerHold(D, now); if (D.paused) break; } }
       const at = isBot(team) ? D.clockStart + D.botDelay : c.deadline;
       if (now < at) break;
       if (isBot(team) && team.owner == null && D.steals) {
@@ -851,7 +875,7 @@
   }
 
   return { FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
-    start, pause, pick, worth, resize, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, botMax, standings, sizeOf,
+    start, pause, pick, worth, resize, offerHold, holdLeft, HOLD_MAX, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, botMax, standings, sizeOf,
     clockLen, thinkTime, bankShare, slotInfo, fitsRoster, canSteal, steal, stealsOf, stealsLeft, stealsOpen, botSteal, pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
     tradeCheck, balance, propose, respond, cancel, botAnswer, botOffer };
 });

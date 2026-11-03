@@ -90,8 +90,10 @@
   }
 
   function driveDraft(D, ctx, now) {
-    if (!D || D.phase !== "live" || D.paused) return false;
-    return F.tick(D, ctx, now, 2000) > 0;
+    if (!D || D.phase !== "live") return false;
+    const held = F.offerHold(D, now);                     // an answered offer (or one held long enough) lets the draft go on
+    if (D.paused) return held;
+    return F.tick(D, ctx, now, 2000) > 0 || held;
   }
 
   /* ---------- emails ---------- */
