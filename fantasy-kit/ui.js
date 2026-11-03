@@ -732,19 +732,23 @@
       const rights = me() != null ? [["team", "My team"], ["queue", "Queue"], ["teams", "Teams"]].concat(d.trading ? [["trades", offers ? `Trades (${offers})` : "Trades"]] : []) : [["teams", "Teams"]];
       if (!rights.some((x) => x[0] === ui.right)) ui.right = rights[0][0];
       const keep = { f: focusKey(el), scroll: {} };
-      $$("#fk-pool,#fk-board,#fk-picks,.dr-panel,#fk-ticker", el).forEach((x) => (keep.scroll[x.id || x.className] = [x.scrollTop, x.scrollLeft]));
+      $$("#fk-pool,#fk-board,#fk-picks,.dr-panel,#fk-ticker,#fk-seg,#fk-seg2", el).forEach((x) => (keep.scroll[x.id || x.className] = [x.scrollTop, x.scrollLeft]));
       const left = { players, board, picks, results, packages, steal: steals }[ui.left]();
       const right = { team: () => rosterPanel(me()), queue: queuePanel, teams: teamsPanel, trades: tradesPanel }[ui.right]();
       // one view switch: the left views, plus the right panels as views on narrow screens
-      const seg = `<div class="seg" role="group" aria-label="View">${lefts.map(([k, n]) => `<button type="button" data-left="${k}" aria-pressed="${!ui.mobileRight && ui.left === k}">${esc(n)}</button>`).join("")}${rights.map(([k, n]) => `<button type="button" class="show-m" data-mright="${k}" aria-pressed="${ui.mobileRight && ui.right === k}">${esc(n)}</button>`).join("")}</div>`;
+      const seg = `<div class="seg" id="fk-seg" role="group" aria-label="View">${lefts.map(([k, n]) => `<button type="button" data-left="${k}" aria-pressed="${!ui.mobileRight && ui.left === k}">${esc(n)}</button>`).join("")}${rights.map(([k, n]) => `<button type="button" class="show-m" data-mright="${k}" aria-pressed="${ui.mobileRight && ui.right === k}">${esc(n)}</button>`).join("")}</div>`;
       const filters = ui.left === "players" ? `${search(ui.f)}<label class="sr" for="fk-show">Show</label><select id="fk-show" style="width:auto;border-radius:999px;min-height:36px;font-size:13px"><option value="avail"${ui.show === "avail" ? " selected" : ""}>Available</option><option value="all"${ui.show === "all" ? " selected" : ""}>All players</option></select>` : "";
       el.innerHTML = `<div class="droom fk-dark">${top()}${ticker()}<div class="dr-main${ui.mobileRight ? " right" : ""}">
         <section class="dr-left"><div class="dr-bar">${seg}${filters}</div>${ui.left === "players" ? posFilter(sport, ui.f.pos) : ""}${left}</section>
-        <aside class="dr-right"><div class="seg hide-m" role="group" aria-label="Panel">${rights.map(([k, n]) => `<button type="button" data-right="${k}" aria-pressed="${ui.right === k}">${esc(n)}</button>`).join("")}</div><div class="show-m" style="padding:10px 12px 0">${seg}</div><div class="dr-panel">${right}</div></aside></div></div>`;
-      $$("#fk-pool,#fk-board,#fk-picks,.dr-panel,#fk-ticker", el).forEach((x) => { const v = keep.scroll[x.id || x.className]; if (v) { x.scrollTop = v[0]; x.scrollLeft = v[1]; } });
+        <aside class="dr-right"><div class="seg hide-m" role="group" aria-label="Panel">${rights.map(([k, n]) => `<button type="button" data-right="${k}" aria-pressed="${ui.right === k}">${esc(n)}</button>`).join("")}</div><div class="show-m" style="padding:10px 12px 0">${seg.replace('id="fk-seg"', 'id="fk-seg2"')}</div><div class="dr-panel">${right}</div></aside></div></div>`;
+      $$("#fk-pool,#fk-board,#fk-picks,.dr-panel,#fk-ticker,#fk-seg,#fk-seg2", el).forEach((x) => { const v = keep.scroll[x.id || x.className]; if (v) { x.scrollTop = v[0]; x.scrollLeft = v[1]; } });
       const tk = $("#fk-ticker", el), cur = tk && $(".tk.now", tk);
       if (cur && tk && (!keep.scroll["fk-ticker"] || ui.lastPick !== F.made(d).length)) tk.scrollLeft = Math.max(0, cur.offsetLeft - tk.clientWidth * 0.3);
       ui.lastPick = F.made(d).length;
+      // on a phone the view switch scrolls: when the view changes, bring its button into sight
+      const view = ui.mobileRight ? "r:" + ui.right : "l:" + ui.left;
+      if (ui.lastView !== view) $$("#fk-seg,#fk-seg2", el).forEach((sg) => { const on = $('[aria-pressed="true"]', sg); if (on && sg.scrollWidth > sg.clientWidth) sg.scrollLeft = Math.max(0, on.offsetLeft - (sg.clientWidth - on.offsetWidth) / 2); });
+      ui.lastView = view;
       keyboardPlayers(el);
       refocus(el, keep.f);
       drawTimer();

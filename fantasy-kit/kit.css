@@ -553,6 +553,15 @@ dialog.fk-dlg h3{margin:0 0 6px;font-size:22px;padding-right:40px}
 .wpm{display:flex;height:4px;border-radius:2px;overflow:hidden;background:var(--surface-3);margin-top:3px}
 .wpm i{display:block;height:100%}
 .scoreboard.list{display:grid;gap:8px;overflow:visible}
+/* the add dialog's drop list fits the dialog: long names cut off, the rank stays */
+.droplist{table-layout:fixed;width:100%}
+.droplist td:nth-child(1){width:36px}.droplist td:nth-child(3){width:52px}
+.droplist .pname{min-width:0;max-width:100%}
+.droplist .pname>span{min-width:0;overflow:hidden}
+.droplist .pn,.droplist .sub{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:380px){.pc-h{gap:10px}.pc-h h3{font-size:20px}.pc-h .av.lg{width:48px;height:48px;font-size:17px}}
+/* a strip with only a few cards fills the row on a wide screen */
+@media (min-width:981px){.scoreboard.fill{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));overflow:visible}.scoreboard.fill .game{width:auto}}
 .pobd .scoreboard{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));overflow:visible}
 .pobd .scoreboard .game{width:auto}
 @media (max-width:700px){.pobd .scoreboard{grid-template-columns:repeat(2,minmax(0,1fr))}.pobd .scoreboard:not(.list) .game{width:auto}}
@@ -681,7 +690,11 @@ table.t.vs .wl b{font-weight:800}
   /* side-by-side lineups: room for names */
   table.t.vs td.pa,table.t.vs td.pb{max-width:70px}
   /* tab strips that scroll fade at the edge, so a cut-off tab reads as more to see */
-  .fk-nav nav,.fk-subs .wrap,.dr-bar .seg{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);padding-right:24px}
+  /* the draft room's view switch scrolls sideways, so Teams and Trades stay in reach */
+  #fk-seg,#fk-seg2{max-width:100%;overflow-x:auto;scrollbar-width:none;position:relative}
+  #fk-seg::-webkit-scrollbar,#fk-seg2::-webkit-scrollbar{display:none}
+  #fk-seg button,#fk-seg2 button{flex:none;white-space:nowrap}
+  .fk-nav nav,.fk-subs .wrap,#fk-seg,#fk-seg2{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);padding-right:24px}
   /* the trade window: a compact footer, so both lists have room */
   .tw-f{gap:8px;padding:10px 14px}
   .tw-f .row{flex-wrap:nowrap}

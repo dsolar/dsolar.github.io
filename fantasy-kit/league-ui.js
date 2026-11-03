@@ -356,7 +356,7 @@
     function scoreStrip(w) {
       const rows = blockOf(w), live = w === L().week;
       const list = rows.slice().sort((a, b) => (isMe(b.team) ? 1 : 0) - (isMe(a.team) ? 1 : 0));
-      return `<div class="scoreboard">${list.map((r) => `<a class="game solo${isMe(r.team) ? " me" : ""}" href="${teamHref(r.team)}"><div class="st"><span class="${live && frac(w) > 0 ? "live" : ""}">${live ? (frac(w) > 0 ? "Live" : "Projected") : "Final"}</span><span>${ord(r.rank)}</span></div>
+      return `<div class="scoreboard${list.length <= 6 ? " fill" : ""}">${list.map((r) => `<a class="game solo${isMe(r.team) ? " me" : ""}" href="${teamHref(r.team)}"><div class="st"><span class="${live && frac(w) > 0 ? "live" : ""}">${live ? (frac(w) > 0 ? "Live" : "Projected") : "Final"}</span><span>${ord(r.rank)}</span></div>
         <div class="ln">${teamAv(T(r.team), "sm")}<span class="ell">${esc(T(r.team).name)}</span><span class="ab">${esc(T(r.team).abbr)}</span><b>${fmtS(r.score)}</b></div>
         <div class="ln"><small>${r.chop != null ? `${pct(r.chop)} to be chopped` : r.out ? "Chopped" : "Safe"}</small></div></a>`).join("")}</div>`;
     }
@@ -513,7 +513,7 @@
       const mid = me(), p = ctx.byId[pid];
       const ros = L().rosters[mid].filter((x) => x !== pid && !(L().ir[mid] || []).includes(x)).map((x) => ctx.byId[x]).filter(Boolean).sort((a, b) => a.vor - b.vor);
       U.dialog(`<div class="pc-h">${U.playerAv(sport, p, "lg")}<div><h3 class="disp">Activate ${esc(p.n)}</h3><div class="ps">Your roster is full, so someone has to go to make room.</div></div></div>
-        <form class="stack"><div class="field"><span class="lbl">Drop</span><div class="table-wrap" style="max-height:44dvh"><table class="t dense"><tbody>${ros.map((q, i) => `<tr><td style="width:28px"><input type="radio" name="drop" value="${esc(q.id)}" id="ad${i}"${i === 0 ? " checked" : ""}></td><td><label for="ad${i}" style="cursor:pointer">${pname(sport, q, esc(q.prank))}</label></td><td class="r ps">#${q.rank}</td></tr>`).join("")}</tbody></table></div></div>
+        <form class="stack"><div class="field"><span class="lbl">Drop</span><div class="table-wrap" style="max-height:44dvh"><table class="t dense droplist"><tbody>${ros.map((q, i) => `<tr><td style="width:28px"><input type="radio" name="drop" value="${esc(q.id)}" id="ad${i}"${i === 0 ? " checked" : ""}></td><td><label for="ad${i}" style="cursor:pointer">${pname(sport, q, esc(q.prank))}</label></td><td class="r ps">#${q.rank}</td></tr>`).join("")}</tbody></table></div></div>
         <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">Activate and drop</button></div></form>`,
         (fd) => act(() => G.activate(L(), ctx, mid, pid, fd.get("drop"), now()), `${p.n} is back from IR.`));
     }
@@ -783,7 +783,7 @@
       const ros = L().rosters[mid].filter((x) => !irs.includes(x)).map((x) => ctx.byId[x]).sort((a, b) => a.vor - b.vor);
       if (L().settings.maxAdds && G.pickupsLeft(L(), mid) <= 0) { U.toast(`You've used all ${L().settings.maxAdds} pickups this week`, true); return; }
       U.dialog(`${L().settings.maxAdds ? `<p class="ps" style="margin:0 0 6px">${G.pickupsLeft(L(), mid)} of ${L().settings.maxAdds} pickups left this week.</p>` : ""}<div class="pc-h">${U.playerAv(sport, p, "lg")}<div><h3 class="disp">${onW ? "Claim" : "Add"} ${esc(p.n)}</h3><div class="ps">${p.inj ? `<span class="tag inj">${esc(p.inj)}</span> ` : ""}${posChips(sport, p)} ${esc(p.t)}, ${esc(p.prank)}${onW ? `. On waivers: ${esc(claimsRun().replace(/^Claims/, "claims"))}` : ""}</div></div></div>
-        <form class="stack">${full ? `<div class="field"><span class="lbl">Pick who to drop to make room</span><div class="table-wrap" style="max-height:44dvh"><table class="t dense"><tbody>${ros.map((q, i) => `<tr><td style="width:28px"><input type="radio" name="drop" value="${esc(q.id)}" id="d${i}"${i === 0 ? " required" : ""}></td><td><label for="d${i}" style="cursor:pointer">${pname(sport, q, esc(q.prank))}</label></td><td class="r ps">#${q.rank}</td></tr>`).join("")}</tbody></table></div></div>` : `<p class="ps" style="margin:0">You have an open roster spot.</p>`}
+        <form class="stack">${full ? `<div class="field"><span class="lbl">Pick who to drop to make room</span><div class="table-wrap" style="max-height:44dvh"><table class="t dense droplist"><tbody>${ros.map((q, i) => `<tr><td style="width:28px"><input type="radio" name="drop" value="${esc(q.id)}" id="d${i}"${i === 0 ? " required" : ""}></td><td><label for="d${i}" style="cursor:pointer">${pname(sport, q, esc(q.prank))}</label></td><td class="r ps">#${q.rank}</td></tr>`).join("")}</tbody></table></div></div>` : `<p class="ps" style="margin:0">You have an open roster spot.</p>`}
           ${onW && L().settings.waivers === "faab" ? `<div class="field"><label for="bid">Your FAAB bid (you have $${T(mid).faab})</label><input type="number" id="bid" name="bid" min="0" max="${T(mid).faab}" value="${Math.min(T(mid).faab, Math.max(1, Math.round(gl() ? T(mid).faab * Math.min(0.5, (p.$ || 1) / 200) : (p.$ || 1) / 4)))}"></div>` : ""}
           <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">${onW ? "Put in the claim" : full ? "Add and drop" : "Add"}</button></div></form>`,
         (fd) => {
