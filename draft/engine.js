@@ -387,19 +387,23 @@
       const gone = avail.slice(0, Math.max(1, Math.round((next.n - cur.n) * 0.9))).length;
       const keen = target.score < next.n - 3 && gone > 2 && rand() < (qb ? 0.85 : 0.55 + 0.15 * (st.chaos || 0.5));
       if (!keen) continue;
-      /* What they can put in. NBA: these deals run on second-rounders and this year's picks. A future first goes
-         only to climb into the lottery, and its protection follows how real trade-ups were written: into the top
-         three, light (Philadelphia's 2017 jump from 3 to 1 used a top-1 protected first, Dallas's 2018 jump from 5
-         to 3 a top-5 protected one), into picks 4 to 8 top-10, later in the lottery the whole lottery. Unprotected
-         firsts happen, but rarely, and the offer says so. NFL: this year's picks first, future firsts last. */
+      /* What they can put in. NBA: these deals run on second-rounders and this year's picks. A future first comes in
+         when the gap between their pick and this one is too big for seconds, and how much protection it keeps
+         depends on how big that gap is: a short climb keeps the pick lottery protected, a long one gives up more.
+         New Orleans went from 23 to 13 in 2025 with an unprotected first (the better of its own and Milwaukee's);
+         Dallas went 5 to 3 in 2018 with a top-5 protected one; Philadelphia 3 to 1 in 2017 with a top-1 protected
+         one. Each first is offered at every level of protection that fits the pick being chased, and the search
+         below takes the heaviest protection that still closes the gap, so unprotected is the last resort.
+         NFL: this year's picks first, future firsts last. */
       const nba = D.league === "nba";
       const cands = theirs.slice(1, 5).map((p) => ({ kind: "pick", n: p.n }));
       const futs = st.ledger.filter((a) => a.owner === t && a.ok && !a.prot).sort((a, b) => a.year - b.year || a.rd - b.rd);
       const variants = !nba ? [""]
-        : cur.n <= 3 ? ["1-1", "1-3", "1-5", ...(rand() < 0.35 ? [""] : [])]
-        : cur.n <= 8 ? ["1-10", "1-5", ...(rand() < 0.12 ? [""] : [])]
-        : cur.n <= 14 ? ["1-14", "1-10", ...(rand() < 0.06 ? [""] : [])]
-        : rand() < 0.04 ? [""] : [];
+        : cur.n <= 3 ? ["1-5", "1-3", "1-1", ""]
+        : cur.n <= 8 ? ["1-10", "1-5", ""]
+        : cur.n <= 14 ? ["1-14", "1-10", "1-5", ""]
+        : cur.n <= 20 ? ["1-14", ""]
+        : [];
       futs.filter((a) => a.rd === 1).slice(0, 2).forEach((a) => {
         variants.forEach((prot) => cands.push({ kind: "future", a: prot ? { ...a, prot, note: `Protected ${prot}` } : a }));
       });
@@ -461,7 +465,7 @@
       if (!stepienOK(D, st.ledger, moves).ok) continue;
       const unprot = nba && pkg.some((x) => x.kind === "future" && x.a.rd === 1 && !x.a.prot);
       offers.push({ team: t, give: pkg, value: sum, ratio: sum / V, target: target.id, qb: !!qb,
-        note: unprot ? (cur.n <= 3 ? "Unprotected first: they really want this pick" : "Unprotected first: rare for a pick this low") : "" });
+        note: unprot ? (cur.n <= 3 ? "Unprotected first: they really want this pick" : `Unprotected first: it takes that to climb ${next.n - cur.n} spots`) : "" });
     }
     return offers;
   }
