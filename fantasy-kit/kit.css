@@ -614,3 +614,23 @@ td.more{text-align:center;padding:12px}
 .blk .odds.bare{background:none}
 @media (max-width:600px){table.t.roster td.num,table.t.roster th.r{min-width:50px;padding-right:8px}}
 .teams .card li.bn{opacity:.75}
+
+/* playoff bracket preview */
+.bk{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(180px,1fr);gap:14px;overflow-x:auto}
+.bk-r{display:grid;gap:10px;align-content:space-around}
+.bk-g{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.bk-g.tbd{border-style:dashed}
+.bk-t{display:grid;grid-template-columns:18px auto minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 10px;font-size:13.5px;font-weight:650}
+.bk-t+.bk-t{border-top:1px solid var(--line)}
+.bk-t.me{background:var(--brand-soft)}
+.bk-t .sd{font-weight:900;color:var(--dim);font-variant-numeric:tabular-nums}
+.bk-g.tbd .bk-t{grid-template-columns:1fr;min-height:36px}
+/* a matchup cell holding a stat line instead of a number */
+table.t.vs td.pa,table.t.vs td.pb{white-space:nowrap}
+@media (max-width:600px){table.t.vs td.pa,table.t.vs td.pb{white-space:normal;font-size:11.5px;max-width:84px}}
+.sbtwo .scoreboard.list{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.sbtwo .scoreboard.list .game{padding:8px 12px}
+table.t.vs .wl{white-space:nowrap}
+table.t.vs .wl+.wl::before{content:", "}
+table.t.vs .wl b{font-weight:800}
+@media (max-width:600px){table.t.vs .wl{display:block;font-size:11.5px;line-height:1.25}table.t.vs .wl+.wl::before{content:""}}
