@@ -14,6 +14,7 @@ const Sim = require("../guillotine/sim.js");
 
 const DATA = path.join(__dirname, "..", "guillotine", "data.json");
 const HIST = path.join(__dirname, "..", "guillotine", "history.json");
+const LEAGUE = path.join(__dirname, "..", "guillotine", "league.json");
 const r4 = (x) => Math.round(x * 10000) / 10000;
 const r1 = (x) => Math.round(x * 10) / 10;
 
@@ -26,12 +27,33 @@ const hist = fs.existsSync(HIST) ? JSON.parse(fs.readFileSync(HIST, "utf8")) : {
 const before = JSON.stringify(hist);
 const wk = String(data.week);
 
+// A team renamed mid-season keeps one name everywhere: league.json "renames" maps each old Yahoo name to
+// the current one, and every saved week (odds, lineups, scores, cut and closest survivor, estate) follows it.
+const renames = (fs.existsSync(LEAGUE) && JSON.parse(fs.readFileSync(LEAGUE, "utf8")).renames) || {};
+function rename(x) {
+  if (typeof x === "string") return Object.prototype.hasOwnProperty.call(renames, x) ? renames[x] : x;
+  if (Array.isArray(x)) return x.map(rename);
+  if (x && typeof x === "object") {
+    const out = {};
+    for (const k of Object.keys(x)) out[rename(k)] = rename(x[k]);
+    return out;
+  }
+  return x;
+}
+if (Object.keys(renames).length) {
+  hist.weeks = rename(hist.weeks);
+  if (hist.last_seen) hist.last_seen = rename(hist.last_seen);
+}
+
 // Record each elimination on the week it happened.
 for (const t of data.teams || []) {
   if (!t.out) continue;
   const w = (hist.weeks[String(t.out)] = hist.weeks[String(t.out)] || {});
   w.cut_team = t.name;
+  // The pasted pages carried the cut score; from Yahoo it's that week's entry in the team's weekly scores.
+  const own = Array.isArray(t.scores) ? t.scores[t.out - (data.first_week || 1)] : undefined;
   if (typeof t.cut === "number") w.cut_score = t.cut;
+  else if (typeof own === "number") w.cut_score = Math.round(own * 100) / 100;
 }
 
 // Has the week started? A finished game on any roster, or the first game's date has arrived.

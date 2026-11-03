@@ -780,7 +780,7 @@
      ],
      "faab": 282
     },
-    "Breece’s Pieces": {
+    "Braelon’s Pieces": {
      "chop": 0.0864,
      "win": 0.0415,
      "expected": 119,
@@ -797,7 +797,7 @@
      ],
      "faab": 115
     },
-    "Likely to Burden Tate w Penix": {
+    "A Warren Boston": {
      "chop": 0.0987,
      "win": 0.1399,
      "expected": 115.5,
@@ -886,7 +886,7 @@
    "next_team": "Deviated Rectums",
    "next_score": 93.34,
    "lineups": {
-    "Likely to Burden Tate w Penix": [
+    "A Warren Boston": [
      {
       "n": "Tyler Shough",
       "pos": "QB",
@@ -1594,7 +1594,7 @@
       "pts": 0
      }
     ],
-    "Breece’s Pieces": [
+    "Braelon’s Pieces": [
      {
       "n": "Caleb Williams",
       "pos": "QB",
@@ -2090,7 +2090,7 @@
         "bid": 169
        },
        {
-        "team": "Breece’s Pieces",
+        "team": "Braelon’s Pieces",
         "bid": 115
        },
        {
@@ -2138,7 +2138,7 @@
       "n": "Trey McBride",
       "pos": "TE",
       "nfl": "ARI",
-      "claimed_by": "Breece’s Pieces",
+      "claimed_by": "Braelon’s Pieces",
       "bid": 114,
       "bids": [
        {
@@ -2184,7 +2184,7 @@
         "bid": 47
        },
        {
-        "team": "Breece’s Pieces",
+        "team": "Braelon’s Pieces",
         "bid": 38
        },
        {
@@ -2232,7 +2232,7 @@
       "n": "Germie Bernard",
       "pos": "WR",
       "nfl": "PIT",
-      "claimed_by": "Likely to Burden Tate w Penix",
+      "claimed_by": "A Warren Boston",
       "bid": 47,
       "bids": [
        {
@@ -2240,7 +2240,7 @@
         "bid": 11
        },
        {
-        "team": "Breece’s Pieces",
+        "team": "Braelon’s Pieces",
         "bid": 7
        },
        {
@@ -2354,7 +2354,7 @@
      ],
      "faab": 275
     },
-    "Breece’s Pieces": {
+    "Braelon’s Pieces": {
      "chop": 0.0876,
      "win": 0.0032,
      "expected": 129,
@@ -2386,7 +2386,7 @@
      ],
      "faab": 679
     },
-    "Likely to Burden Tate w Penix": {
+    "A Warren Boston": {
      "chop": 0.0775,
      "win": 0.1708,
      "expected": 130.6,
@@ -2844,7 +2844,7 @@
       "pts": 0
      }
     ],
-    "Breece’s Pieces": [
+    "Braelon’s Pieces": [
      {
       "n": "Caleb Williams",
       "pos": "QB",
@@ -3080,7 +3080,7 @@
       "pts": 16.2
      }
     ],
-    "Likely to Burden Tate w Penix": [
+    "A Warren Boston": [
      {
       "n": "Tyler Shough",
       "pos": "QB",
@@ -3615,7 +3615,7 @@
         "bid": 28
        },
        {
-        "team": "Breece’s Pieces",
+        "team": "Braelon’s Pieces",
         "bid": 1
        }
       ],
@@ -3669,7 +3669,7 @@
         "bid": 1
        },
        {
-        "team": "Breece’s Pieces",
+        "team": "Braelon’s Pieces",
         "bid": 0
        }
       ],
@@ -3688,7 +3688,7 @@
         "bid": 4
        },
        {
-        "team": "Breece’s Pieces",
+        "team": "Braelon’s Pieces",
         "bid": 0
        },
        {
@@ -3832,7 +3832,7 @@
      ],
      "faab": 397
     },
-    "Likely to Burden Tate w Penix": {
+    "A Warren Boston": {
      "chop": 0.1315,
      "win": 0.0945,
      "expected": 129.4,
@@ -3862,7 +3862,7 @@
      ],
      "faab": 207
     },
-    "Breece’s Pieces": {
+    "Braelon’s Pieces": {
      "chop": 0.1577,
      "win": 0.0433,
      "expected": 127.3,
@@ -4950,7 +4950,8 @@
     "Deviated Rectums": 91.74
    },
    "next_team": "Braelon’s Pieces",
-   "next_score": 95.98
+   "next_score": 95.98,
+   "cut_score": 91.74
   },
   "9": {
    "teams": {
@@ -5840,11 +5841,11 @@
     "season": 885.96,
     "points": 0
    },
-   "Likely to Burden Tate w Penix": {
+   "A Warren Boston": {
     "season": 877.48,
     "points": 0
    },
-   "Breece’s Pieces": {
+   "Braelon’s Pieces": {
     "season": 841.36,
     "points": 0
    },

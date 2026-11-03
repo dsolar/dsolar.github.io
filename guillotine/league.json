@@ -1,5 +1,5 @@
 {
-  "_about": "Hand-kept details the Yahoo pull doesn't provide. Keyed by team name as it appears in Yahoo. history_2025: each 2025 elimination with the cut team's season points at that point (not a weekly score). cut_history: the score that got cut each week, by season; score is exact, max means only an upper bound is known, proj is the cut team's Yahoo projection that week. Past seasons also carry next_team/next_score (the closest survivor Yahoo shows on the cut team's page), best (the best lineup the cut team's own roster could have started, in actual points), bench (the bench players that lineup uses) and send_off (the closing line of that week's In Memoriam email). champions: each finished season's winner and a line from the champion tribute. eulogies.*.hide_odds: leave the model's pregame cut odds off that team's send-off. Never put email addresses here: this file is public. live_url: the live relay (tools/live-relay.js), once set up.",
+  "_about": "Hand-kept details the Yahoo pull doesn't provide. Keyed by team name as it appears in Yahoo. history_2025: each 2025 elimination with the cut team's season points at that point (not a weekly score). cut_history: the score that got cut each week, by season; score is exact, max means only an upper bound is known, proj is the cut team's Yahoo projection that week. Past seasons also carry next_team/next_score (the closest survivor Yahoo shows on the cut team's page), best (the best lineup the cut team's own roster could have started, in actual points), bench (the bench players that lineup uses) and send_off (the closing line of that week's In Memoriam email). champions: each finished season's winner and a line from the champion tribute. eulogies.*.hide_odds: leave the model's pregame cut odds off that team's send-off. Never put email addresses here: this file is public. renames: old Yahoo team name to the current one, for a team renamed mid-season; tools/guillotine_snapshot.js applies it to every saved week in history.json. live_url: the live relay (tools/live-relay.js), once set up.",
   "live_url": "https://guillotine-live.dsolar.workers.dev/",
   "managers": {
     "23 Richard": "Gabriel",
@@ -16,7 +16,13 @@
     "Love a Kittle Lamb & WhiteRice": "David B",
     "Love Purdy Flowers": "Nate",
     "Maye I see your TDs": "Matthew E",
-    "Tai Streetz Lata?": "Jeff S"
+    "Tai Streetz Lata?": "Jeff S",
+    "Braelon’s Pieces": "Garhett",
+    "A Warren Boston": "Noah M"
+  },
+  "renames": {
+    "Breece’s Pieces": "Braelon’s Pieces",
+    "Likely to Burden Tate w Penix": "A Warren Boston"
   },
   "eulogies": {
     "Liberté Égalité Henri": {
@@ -86,6 +92,10 @@
         "Funny Man got fileted",
         "Pass the tartar sauce"
       ]
+    },
+    "Deviated Rectums": {
+      "week": 8,
+      "score": 91.74
     }
   },
   "history_2025": [
@@ -186,6 +196,11 @@
         "week": 7,
         "team": "Liberté Égalité Henri",
         "score": 95.28
+      },
+      {
+        "week": 8,
+        "team": "Deviated Rectums",
+        "score": 91.74
       }
     ],
     "2025": [
