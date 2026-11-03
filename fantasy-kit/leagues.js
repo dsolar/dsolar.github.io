@@ -14,7 +14,7 @@
   let sent = null, busy = false, view = "list";
   const form = { sport: "nfl", teams: 10, type: "snake", clock: 90, season: "h2h", weeks: 14, trades: 1, scoring: "",
     lineup: "", bench: null, playoffs: 4, deadline: null, review: "vote", faab: null, waiverHours: 36,
-    weights: null, cats: null, waivers: "faab", ir: 1, maxAdds: 0, posMax: {}, keepers: 0, keeperCost: "round", legs: "1", cons: "none", median: 0, bestball: 0, divs: 0, rookie: 3, fpicks: 1, taxi: 2, ohold: "clock" };
+    weights: null, cats: null, waivers: "faab", ir: 1, maxAdds: 0, posMax: {}, keepers: 0, keeperCost: "round", legs: "1", cons: "none", median: 0, bestball: 0, divs: 0, rookie: 3, fpicks: 1, taxi: 2, ohold: "clock", tep: 0, ptd: 4, b100r: 0, b100c: 0, b300p: 0 };
   // scoring: a preset key, or "cp" (custom points) / "cc" (custom categories)
   const isCustom = () => form.scoring === "cp" || form.scoring === "cc";
   const scoringType = (sp) => (form.scoring === "cp" ? "points" : form.scoring === "cc" ? "cats" : (sp.scorings[form.scoring] || Object.values(sp.scorings)[0]).type);
@@ -135,12 +135,36 @@
         <div class="row"><button class="btn go" type="submit"${busy ? " disabled" : ""}>${busy ? "Making the league…" : "Make the league"}</button><button class="btn ghost" type="button" data-a="list">Cancel</button></div>
       </div></form>`;
   }
+  // Football bonuses on any points scoring: a TE premium, passing TDs worth more, and points for big yardage games.
+  function nflExtras() {
+    const pos = {}, bonus = [];
+    if (form.tep) pos.TE = { rec: form.tep };
+    if (form.scoring !== "cp" && form.ptd && form.ptd !== 4) pos["*"] = { pass_td: form.ptd - 4 };
+    if (form.b100r) bonus.push({ stat: "rush_yd", at: 100, pts: form.b100r });
+    if (form.b100c) bonus.push({ stat: "rec_yd", at: 100, pts: form.b100c });
+    if (form.b300p) bonus.push({ stat: "pass_yd", at: 300, pts: form.b300p });
+    return Object.keys(pos).length || bonus.length ? { pos, bonus } : null;
+  }
+  function bonusFields(sp) {
+    if (sp.key !== "nfl" || scoringType(sp) !== "points") return "";
+    const opt = (v, l, cur) => `<option value="${esc(v)}"${String(v) === String(cur) ? " selected" : ""}>${esc(l)}</option>`;
+    const pts = (id, label, cur) => `<div class="field"><label for="n-${id}">${label}</label><select id="n-${id}" data-f="${id}">${[0, 1, 2, 3, 5].map((x) => opt(x, x ? `+${x} points` : "No bonus", cur)).join("")}</select></div>`;
+    return `<fieldset class="rules"><legend>Bonuses</legend><div class="row3">
+      <div class="field"><label for="n-tep">TE premium</label><select id="n-tep" data-f="tep">${[0, 0.25, 0.5, 1].map((x) => opt(x, x ? `+${x} a catch` : "None", form.tep)).join("")}</select></div>
+      ${form.scoring === "cp" ? "" : `<div class="field"><label for="n-ptd">Passing TDs</label><select id="n-ptd" data-f="ptd">${[4, 5, 6].map((x) => opt(x, `${x} points`, form.ptd)).join("")}</select></div>`}
+      ${pts("b100r", "100-yard rushing game", form.b100r)}${pts("b100c", "100-yard receiving game", form.b100c)}${pts("b300p", "300-yard passing game", form.b300p)}
+    </div><p class="ps" style="margin:6px 0 0">A yardage bonus counts once a game. Player values and projections include what each bonus is likely to add.</p></fieldset>`;
+  }
   // Custom scoring: a value for every stat, or the categories to play.
   function scoringEditor(sp) {
+    if (form.scoring !== "cc" && sp.key === "nfl") return pointsEditor(sp) + bonusFields(sp);
+    return pointsEditor(sp);
+  }
+  function pointsEditor(sp) {
     if (form.scoring === "cp") {
       const w = form.weights || (form.weights = Object.assign({}, S.POINT_DEFAULTS[sp.key]));
       return `<fieldset class="rules"><legend>Points for each stat</legend><div class="wts">${S.POINT_STATS[sp.key].map(([k, l]) => `<label class="wt"><span>${esc(l)}</span><input type="number" step="0.01" data-w="${esc(k)}" value="${w[k] != null ? w[k] : 0}" aria-label="Points for ${esc(l)}"></label>`).join("")}</div>
-        <p class="ps" style="margin:8px 0 0">${sp.key === "nfl" ? "Per yard, catch, touchdown and so on. Points allowed counts each point a defense gives up, so use a small negative number. Bonuses and yardage tiers aren't supported yet." : sp.key === "mlb" ? "Hitting and pitching stats from each player's line. Total bases count singles 1, doubles 2, triples 3 and homers 4." : "Per stat, per game."}</p></fieldset>`;
+        <p class="ps" style="margin:8px 0 0">${sp.key === "nfl" ? "Per yard, catch, touchdown and so on. Points allowed counts each point a defense gives up, so use a small negative number. Bonuses for big games are below." : sp.key === "mlb" ? "Hitting and pitching stats from each player's line. Total bases count singles 1, doubles 2, triples 3 and homers 4." : "Per stat, per game."}</p></fieldset>`;
     }
     if (form.scoring === "cc") {
       const all = S.catCatalog(sp);
@@ -205,7 +229,7 @@
     const f = $("#new"); if (!f) return;
     form.name = $("#n-name").value; form.me = $("#n-me").value; form.team = $("#n-team").value;
     const s = f.querySelector("input[name=sport]:checked"); if (s) form.sport = s.value;
-    f.querySelectorAll("[data-f]").forEach((el) => { form[el.dataset.f] = /^(teams|clock|weeks|trades|bench|faab|playoffs|deadline|waiverHours|ir|maxAdds|keepers|median|bestball|divs|rookie|fpicks|taxi)$/.test(el.dataset.f) ? Number(el.value) : el.value; });
+    f.querySelectorAll("[data-f]").forEach((el) => { form[el.dataset.f] = /^(teams|clock|weeks|trades|bench|faab|playoffs|deadline|waiverHours|ir|maxAdds|keepers|median|bestball|divs|rookie|fpicks|taxi|tep|ptd|b100r|b100c|b300p)$/.test(el.dataset.f) ? Number(el.value) : el.value; });
     f.querySelectorAll("[data-w]").forEach((el) => { form.weights = form.weights || {}; form.weights[el.dataset.w] = Number(el.value) || 0; });
     f.querySelectorAll("[data-pm]").forEach((el) => { form.posMax[el.dataset.pm] = Number(el.value) || 0; });
   }
@@ -220,10 +244,12 @@
       const r0 = await fetch(`data/${form.sport}.json`, { cache: "no-cache" });
       const data = await r0.json();
       // a custom scoring rides along as plain data (D.scoringSpec) and becomes the sport's "custom" scoring
-      const spec = form.scoring === "cp" ? { type: "points", weights: Object.fromEntries(Object.entries(form.weights || S.POINT_DEFAULTS[form.sport]).filter(([, v]) => v)) }
-        : form.scoring === "cc" ? { type: "cats", cats: (form.cats || []).slice() } : null;
+      const ex = form.sport === "nfl" && form.scoring !== "cc" ? nflExtras() : null, sp0 = S[form.sport];
+      const spec = form.scoring === "cp" ? Object.assign({ type: "points", weights: Object.fromEntries(Object.entries(form.weights || S.POINT_DEFAULTS[form.sport]).filter(([, v]) => v)) }, ex || {})
+        : form.scoring === "cc" ? { type: "cats", cats: (form.cats || []).slice() }
+        : ex ? Object.assign({ type: "points", base: sp0.scorings[form.scoring] ? form.scoring : Object.keys(sp0.scorings)[0] }, ex) : null;
       if (spec && spec.type === "cats" && spec.cats.length < 2) throw new Error("Pick at least two categories.");
-      if (spec && spec.type === "points" && !Object.keys(spec.weights).length) throw new Error("Give at least one stat a point value.");
+      if (spec && spec.type === "points" && !spec.base && !Object.keys(spec.weights).length) throw new Error("Give at least one stat a point value.");
       const sport = S.withScoring(S.attach(Object.assign({}, S[form.sport]), data), spec);
       const have = new Set(data.players.flatMap((p) => p.pos));
       const lineup = lineupOf(sport).filter((s) => sport.slots[s] === "*" || sport.slots[s].some((x) => have.has(x)));

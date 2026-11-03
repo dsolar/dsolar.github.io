@@ -102,6 +102,8 @@
       const at = (k) => { const i = k.indexOf("."); return (i > 0 ? S.stat(sport, p, k.slice(0, i), k.slice(i + 1)) : S.stat(sport, p, line, k)) || 0; };
       if (sc.weights) tot = sum(Object.entries(sc.weights).map(([k, w]) => at(k) * w));
       else tot = S.stat(sport, p, line, sc.col) || 0;
+      const base = tot, gl0 = p.l[line] ? line : Object.keys(p.l).find((k) => k !== "proj") || line;
+      tot += S.extraPts(sc, p, at, S.stat(sport, p, gl0, sport.sample ? sport.sample.col : "g") || 0);
       const gl = p.l[line] ? line : Object.keys(p.l).find((k) => k !== "proj") || line;
       const g = S.stat(sport, p, gl, sport.sample ? sport.sample.col : "g") || 0;
       if (sc.per === "game") { p.fpg = tot; p.fpts = tot * g; } else { p.fpts = tot; p.fpg = g ? tot / g : 0; }
@@ -112,6 +114,8 @@
         const half = S.stat(sport, p, "tot", "pts_half_ppr") || 0;
         proj = p.l.proj[sc.projScale] * (half > 5 && tot > 0 ? tot / half : 1);
       }
+      // bonuses lift a preset's projection by as much as they lift his season so far
+      if (proj != null && tot !== base && base > 5) proj *= tot / base;
       p.proj = proj;
     }
   }

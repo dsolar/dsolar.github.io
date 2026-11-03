@@ -123,3 +123,31 @@ test('roster rules: pickup limit, position limits, IR spots, rolling waivers', (
   assert.equal(L.teams[1].faab, before);
   assert.ok(L.claims.some((x) => x.team === 1 && x.status === 'won'));
 });
+
+test('football bonuses: TE premium, passing TDs and yardage bonuses, counted and projected', async () => {
+  const { readFileSync } = await import('node:fs');
+  const { createRequire } = await import('node:module');
+  const req = createRequire(import.meta.url);
+  const S = req('../fantasy-kit/sports.js'), V = req('../fantasy-kit/value.js');
+  const data = JSON.parse(readFileSync(new URL('../fantasy-kit/data/nfl.json', import.meta.url), 'utf8'));
+  const spec = { type: 'points', base: 'half', pos: { TE: { rec: 0.5 }, '*': { pass_td: 2 } }, bonus: [{ stat: 'rec_yd', at: 100, pts: 3 }] };
+  const sport = S.withScoring(S.attach(Object.assign({}, S.nfl), data), spec);
+  const sc = sport.scorings.custom;
+  assert.equal(sc.col, 'pts_half_ppr', 'a preset with extras keeps its own points');
+  assert.match(sc.label, /^Half PPR, TE premium \+0\.5, 6-point passing TDs, yardage bonuses$/);
+  // one game: 8 catches for 112 yards is 4 premium points plus the 3-point bonus for a tight end, 3 for a receiver
+  const stats = { rec: 8, rec_yd: 112, pass_td: 0 }, at = (k) => stats[k] || 0;
+  assert.equal(S.extraPts(sc, { pos: ['TE'] }, at), 7);
+  assert.equal(S.extraPts(sc, { pos: ['WR'] }, at), 3);
+  assert.equal(S.extraPts(sc, { pos: ['QB'] }, (k) => ({ pass_td: 3 })[k] || 0), 6);
+  stats.rec_yd = 99; assert.equal(S.extraPts(sc, { pos: ['WR'] }, at), 0, 'a yard short is no bonus');
+  // the season values count them: tight ends gain the most
+  const base = data.players.map((p) => ({ ...p })), extra = data.players.map((p) => ({ ...p }));
+  V.evaluate(S.attach(Object.assign({}, S.nfl), data), base, { teams: 12, scoring: 'half' });
+  V.evaluate(sport, extra, { teams: 12, scoring: 'custom' });
+  const by = Object.fromEntries(base.map((p) => [p.id, p]));
+  const te = extra.filter((p) => p.pos[0] === 'TE').sort((a, b) => b.fpts - a.fpts)[0];
+  assert.ok(te.fpts > by[te.id].fpts * 1.15, 'a top tight end gains at least 15%');
+  const wr = extra.filter((p) => p.pos[0] === 'WR').sort((a, b) => b.fpts - a.fpts)[0];
+  assert.ok(wr.fpts > by[wr.id].fpts && wr.fpts < by[wr.id].fpts * 1.15, 'a receiver gains only his expected bonuses');
+});

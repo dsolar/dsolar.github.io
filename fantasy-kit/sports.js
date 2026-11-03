@@ -213,7 +213,7 @@
   const POINT_STATS = {
     nba: [["pts", "Points"], ["reb", "Rebounds"], ["ast", "Assists"], ["stl", "Steals"], ["blk", "Blocks"], ["tov", "Turnovers"], ["tpm", "3-pointers made"],
       ["fgm", "Field goals made"], ["fga", "Field goals tried"], ["ftm", "Free throws made"], ["fta", "Free throws tried"]],
-    nfl: [["pass_yd", "Passing yards"], ["pass_td", "Passing TDs"], ["pass_int", "Interceptions thrown"], ["rush_yd", "Rushing yards"], ["rush_td", "Rushing TDs"],
+    nfl: [["pass_yd", "Passing yards"], ["pass_td", "Passing TDs"], ["pass_int", "Interceptions thrown"], ["rush_att", "Carries"], ["rush_yd", "Rushing yards"], ["rush_td", "Rushing TDs"],
       ["rec", "Receptions"], ["rec_yd", "Receiving yards"], ["rec_td", "Receiving TDs"], ["fum_lost", "Fumbles lost"], ["fgm", "Field goals made"], ["xpm", "Extra points made"],
       ["def_td", "Defensive TDs"], ["def_int", "Interceptions caught"], ["def_sack", "Sacks"], ["pts_allow", "Points allowed"]],
     mlb: [["bat.r", "Runs"], ["bat.h", "Hits"], ["bat.hr", "Home runs"], ["bat.rbi", "RBI"], ["bat.sb", "Stolen bases"], ["bat.tb", "Total bases"],
@@ -236,14 +236,53 @@
   function customScoring(sport, spec) {
     const base = ALL[sport.key].scorings;
     if (spec.type === "points") {
+      const extra = { pos: spec.pos && Object.keys(spec.pos).length ? spec.pos : null, bonus: spec.bonus && spec.bonus.length ? spec.bonus.slice() : null };
+      // a preset plus bonuses: the preset's own columns and projections, with the extras added on top
+      if (spec.base && base[spec.base] && base[spec.base].type === "points") return Object.assign({}, base[spec.base], extra, { label: base[spec.base].label + extraLabel(spec), custom: true, base: spec.base });
       const pts = Object.values(base).find((x) => x.type === "points") || {};
       const line = sport.key === "nfl" ? "tot" : sport.key === "nba" ? "pg" : "bat";
       return { label: "Custom points", type: "points", line, per: sport.key === "nba" ? "game" : undefined, games: pts.games || (sport.key === "mlb" ? 162 : 17),
-        weights: Object.assign({}, spec.weights), projScale: sport.key === "nfl" ? 1 : undefined, custom: true };
+        weights: Object.assign({}, spec.weights), projScale: sport.key === "nfl" ? 1 : undefined, custom: true, ...extra, label: "Custom points" + extraLabel(spec) };
     }
     const cats = Object.values(base).find((x) => x.type === "cats");
     const all = catCatalog(sport);
     return Object.assign({}, cats, { label: "Custom categories", cats: (spec.cats || []).map((k) => all.find((c) => c.k === k)).filter(Boolean), custom: true });
+  }
+  // Bonus scoring on top of any points scoring:
+  //   spec.pos   { TE: { rec: 0.5 }, "*": { pass_td: 2 } }  extra points per stat for a position ("*" is everyone)
+  //   spec.bonus [{ stat: "rush_yd", at: 100, pts: 3 }]    points for a game that reaches a mark
+  // A week's box score is one game in football, so a bonus counts once a week; a season projection counts the games
+  // a player is likely to reach the mark in, from his average and a typical spread game to game.
+  const BONUS_NAMES = { rush_yd: "rushing", rec_yd: "receiving", pass_yd: "passing" };
+  function extraLabel(spec) {
+    const out = [];
+    if (spec.pos && spec.pos.TE && spec.pos.TE.rec) out.push(`TE premium +${spec.pos.TE.rec}`);
+    if (spec.pos && spec.pos["*"] && spec.pos["*"].pass_td) out.push(`${4 + spec.pos["*"].pass_td}-point passing TDs`);
+    if (spec.bonus && spec.bonus.length) out.push("yardage bonuses");
+    return out.length ? `, ${out.join(", ")}` : "";
+  }
+  function bonusLines(sc) {
+    const out = [];
+    for (const [pos, w] of Object.entries(sc.pos || {})) for (const [k, v] of Object.entries(w)) if (v) out.push(pos === "TE" && k === "rec" ? `TE catches: +${v} each` : pos === "*" && k === "pass_td" ? `Passing TDs: ${4 + v} points` : `${pos === "*" ? "Everyone" : pos}, ${k.replace(/_/g, " ")}: ${v > 0 ? "+" : ""}${v}`);
+    for (const b of sc.bonus || []) out.push(`${b.at}-yard ${BONUS_NAMES[b.stat] || b.stat} game: +${b.pts}`);
+    return out;
+  }
+  // The extras for one player, given at(stat) for his line: per-stat position points, and bonuses either counted
+  // (games == null: a single game, so the mark is reached or not) or expected over a season of `games`.
+  const normCdf = (z) => 1 / (1 + Math.exp(-1.702 * z));
+  function extraPts(sc, p, at, games) {
+    if (!sc.pos && !sc.bonus) return 0;
+    let x = 0;
+    const main = positions(p)[0];
+    for (const w of [sc.pos && sc.pos["*"], sc.pos && sc.pos[main]]) if (w) for (const [k, v] of Object.entries(w)) x += (at(k) || 0) * v;
+    for (const b of sc.bonus || []) {
+      const v = at(b.stat) || 0;
+      if (games == null) { if (v >= b.at) x += b.pts; continue; }
+      if (!games || v <= 0) continue;
+      const m = v / games, sd = 0.55 * m + 8;               // yards vary about half their average game to game
+      x += games * (1 - normCdf((b.at - m) / sd)) * b.pts;
+    }
+    return x;
   }
   const withScoring = (sport, spec) => (spec && (spec.type === "points" || spec.type === "cats")
     ? Object.assign({}, sport, { scorings: Object.assign({}, sport.scorings, { custom: customScoring(sport, spec) }) }) : sport);
@@ -265,5 +304,5 @@
   const inkOn = (hex) => { const n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255; return 0.299 * r + 0.587 * g + 0.114 * b > 160 ? "#111" : "#fff"; };
   const teamColor = (sportKey, abbr) => { const c = (TEAM_COLORS[sportKey] || {})[abbr]; return c ? { bg: c, ink: inkOn(c) } : null; };
 
-  return { ALL, nba, nfl, mlb, attach, TEAM_COLORS, teamColor, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring };
+  return { ALL, nba, nfl, mlb, attach, TEAM_COLORS, teamColor, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines };
 });

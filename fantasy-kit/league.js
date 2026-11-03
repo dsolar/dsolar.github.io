@@ -240,14 +240,14 @@
   const lineupLocked = (L, w, now) => w < L.week || (now != null && now >= weekStart(L, w + 1));
   // A weeks file has one line (R.line, R.cols, and each player's week is an array) or several (R.lines maps each
   // line to its columns, and each player's week is { line: array }), as baseball's batting and pitching do.
-  const realPts = (R, sc, line) => {
+  const realPts = (R, sc, line, p) => {
     const at = (k) => {
       const d = k.indexOf("."), lk = d > 0 ? k.slice(0, d) : null, c = d > 0 ? k.slice(d + 1) : k;
       if (R.lines) { const keys = lk ? [lk] : Object.keys(R.lines); return sum(keys.map((x) => { const i = (R.lines[x] || []).indexOf(c); return i >= 0 && line[x] ? line[x][i] || 0 : 0; })); }
       if (lk && lk !== R.line) return 0;
       const i = R.cols.indexOf(c); return i >= 0 ? line[i] || 0 : 0;
     };
-    return sc.weights ? sum(Object.entries(sc.weights).map(([k, x]) => at(k) * x)) : at(sc.col);
+    return (sc.weights ? sum(Object.entries(sc.weights).map(([k, x]) => at(k) * x)) : at(sc.col)) + (p ? S.extraPts(sc, p, at) : 0);
   };
   function playerWeek(L, ctx, p, w, frac = 1, whole) {
     const form = formOf(L, p, w);
@@ -257,7 +257,7 @@
       // the box score so far; a player who joined or left midweek counts for his share of it
       const R = ctx.hooks.real, line = rw.lines[p.id];
       const share = whole > 0 ? Math.max(0, Math.min(1, frac / whole)) : frac > 0 ? 1 : 0;
-      if (sc.type === "points") return { pts: line ? realPts(R, sc, line) * share : 0, real: true };
+      if (sc.type === "points") return { pts: line ? realPts(R, sc, line, p) * share : 0, real: true };
       const out = {};
       for (const [key, def] of Object.entries(ctx.sport.data.lines)) {
         const cols = R.lines ? R.lines[key] : R.cols, vals = R.lines ? line && line[key] : line;
