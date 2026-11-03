@@ -180,3 +180,16 @@ test('dynasty values: age curves, then outside consensus where there is one', ()
   assert.equal(c.cons, 5);
   assert.equal(c.v, d[pick.id].v, 'season value is untouched');
 });
+
+test('best ball values upside and depth', () => {
+  const data = JSON.parse(readFileSync(new URL('../fantasy-kit/data/nfl.json', import.meta.url), 'utf8'));
+  const W = JSON.parse(readFileSync(new URL('../fantasy-kit/data/weeks-nfl.json', import.meta.url), 'utf8'));
+  const run = (bb) => { const sp = S.attach(Object.assign({}, S.nfl), data); const ps = data.players.map((p) => ({ ...p })); const r = V.evaluate(sp, ps, { teams: 12, scoring: 'half', bench: 6, bestBall: bb, weeks: bb ? W : null }); return { ps, r }; };
+  const a = run(false), b = run(true);
+  const byA = Object.fromEntries(a.ps.map((p) => [p.id, p]));
+  const top = b.ps.filter((p) => p.rank <= 60);
+  assert.ok(top.every((p) => p.bb > 0), 'every top player gets an upside bump');
+  assert.ok(top.every((p) => p.v > byA[p.id].v), 'and a higher season value');
+  assert.ok(b.r.repl.WR <= a.r.repl.WR + 25 && b.r.repl.RB <= a.r.repl.RB + 25, 'replacement sits deeper');
+  assert.ok(Math.abs(b.ps.filter((p) => p.rank <= 120 && p.pos[0] === 'QB').length - a.ps.filter((p) => p.rank <= 120 && p.pos[0] === 'QB').length) <= 6, 'no flood of quarterbacks');
+});

@@ -92,9 +92,11 @@ async function tickLeagues(token: string) {
       const sport = S.withScoring(S.attach(Object.assign({}, S[l.sport]), data), doc.scoringSpec);
       const players = data.players.map((p: any) => Object.assign({}, p));
       const dyn = (L && L.settings && L.settings.dynasty) || (doc.season && doc.season.dynasty);
-      V.evaluate(sport, players, { teams: doc.teams.length, lineup: doc.lineup, bench: doc.bench, scoring: doc.scoring, budget: doc.auction ? doc.auction.budget : 200, dynasty: !!dyn, dynastyRanks: dyn ? await loadDynasty(l.sport) : null });
-      const byId = Object.fromEntries(players.map((p: any) => [p.id, p]));
       const weeks = await loadWeeks(l.sport, data.season);
+      // best ball values upside and depth; a guillotine keeps normal ranks
+      const bb = L ? !!L.settings.bestBall && L.settings.format !== "guillotine" : !!(doc.season && doc.season.bestBall && doc.season.format !== "guillotine");
+      V.evaluate(sport, players, { teams: doc.teams.length, lineup: doc.lineup, bench: doc.bench, scoring: doc.scoring, budget: doc.auction ? doc.auction.budget : 200, dynasty: !!dyn, dynastyRanks: dyn ? await loadDynasty(l.sport) : null, bestBall: bb, weeks: bb ? weeks : null });
+      const byId = Object.fromEntries(players.map((p: any) => [p.id, p]));
       const hooks = { real: weeks, prospects: dyn && (l.sport === "nfl" || l.sport === "nba") ? await loadClass(S, l.sport) : null };
       const base = structuredClone({ draft: D, league: L });
       let changed = false;

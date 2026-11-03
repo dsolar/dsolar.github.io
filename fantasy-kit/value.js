@@ -140,6 +140,13 @@
     const lineup = league.lineup || sport.lineup;
     const cap = {};
     for (const s of lineup) cap[s] = (cap[s] || 0) + (league.teams || 10);
+    // best ball: the bench plays too, so half of it counts like more starters, spread over the lineup the way the
+    // starting slots are (no extra kickers or defenses)
+    if (league.bestBall && league.bench) {
+      const late = (x) => sport.slots[x] !== "*" && sport.slots[x].every((q) => (sport.late || []).includes(q));
+      const core = lineup.filter((x) => !late(x)).length;
+      if (core) { const f = 1 + (league.bench * BB.benchShare) / core; for (const k of Object.keys(cap)) if (!late(k)) cap[k] = Math.round(cap[k] * f); }
+    }
     const order = Object.keys(cap).sort((a, b) => width(sport, a) - width(sport, b));
     const sorted = players.slice().sort((a, b) => b.v - a.v);
     const used = new Set();
@@ -181,6 +188,42 @@
     }
     return kept;
   }
+  // Best ball (league.bestBall, which a guillotine never sets): only each week's best scores count, so a player's upside
+  // is worth more than his steadiness, and the bench plays. A player's rate gets a share (lambda) of his weekly swing:
+  // the standard deviation of his real weeks this season when league.weeks has three or more, otherwise a typical swing
+  // for his position. Replacement sits deeper too (half the bench counts as starters, in replacement above).
+  const BB = { lambda: 0.25, benchShare: 0.5, minWeeks: 3, cv: { QB: 0.38, RB: 0.55, WR: 0.62, TE: 0.7, K: 0.45, DEF: 0.65, PG: 0.3, SG: 0.32, SF: 0.32, PF: 0.32, C: 0.3, "*": 0.5 } };
+  function weeklySwing(sport, players, W, sc) {
+    if (!W || !W.weeks || !Array.isArray(W.cols)) return {};
+    const ci = W.cols.indexOf(sc.col);
+    const wts = ci < 0 && sc.weights ? Object.entries(sc.weights).map(([k, w]) => [W.cols.indexOf(k.split(".").pop()), w]).filter(([i]) => i >= 0) : null;
+    const fallback = W.cols.indexOf("pts_half_ppr");
+    const pts = (row) => (ci >= 0 ? row[ci] : wts && wts.length ? wts.reduce((a, [i, w]) => a + (row[i] || 0) * w, 0) : fallback >= 0 ? row[fallback] : null);
+    const gi = W.cols.indexOf("g"), by = {};
+    for (const wk of Object.values(W.weeks)) for (const [id, row] of Object.entries(wk.lines || {})) {
+      if (gi >= 0 && !row[gi]) continue;
+      const x = pts(row); if (x == null) continue;
+      (by[id] = by[id] || []).push(x);
+    }
+    const out = {};
+    for (const [id, xs] of Object.entries(by)) {
+      if (xs.length < BB.minWeeks) continue;
+      const m = xs.reduce((a, b) => a + b, 0) / xs.length;
+      out[id] = Math.sqrt(xs.reduce((a, b) => a + (b - m) ** 2, 0) / (xs.length - 1));
+    }
+    return out;
+  }
+  function bestBall(sport, players, league, sc) {
+    const swing = weeklySwing(sport, players, league.weeks, sc), games = sc.games || 17;
+    for (const p of players) {
+      const rate = (p.v || 0) / games;
+      if (rate <= 0) continue;
+      // a real swing, but never more than his own rate (a backup with one big start isn't a weekly boom)
+      const sd = Math.min(swing[p.id] != null ? swing[p.id] : (BB.cv[mainPos(sport, p)] || BB.cv["*"]) * rate, rate);
+      p.bb = Math.round(BB.lambda * sd * games * 10) / 10;            // what best ball adds over his season
+      p.v = (rate + BB.lambda * sd) * games;
+    }
+  }
   function evaluate(sport, players, league = {}) {
     const kept = swapProjections(sport, players, league);
     try { return evaluate_(sport, players, league); } finally { if (kept) for (const [p, l] of kept) p.l = l; }
@@ -212,6 +255,7 @@
         p.ros = meta.ros && p.proj != null ? p.proj : null;
       }
     }
+    if (league.bestBall && sc.type === "points") bestBall(sport, players, league, sc);
     const repl = replacement(sport, players, league);
     for (const p of players) {
       const ps = S.positions(p).filter((x) => repl[x] != null);

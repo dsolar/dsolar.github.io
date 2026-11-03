@@ -45,11 +45,13 @@
     players = data.players.map((p) => Object.assign({}, p));
     // a dynasty values players over the next five seasons (value.js), a redraft league this season only
     const dyn = !!((D.season && D.season.dynasty) || (L && L.settings.dynasty));
-    V.evaluate(sport, players, { teams: D.teams.length, lineup: D.lineup, bench: D.bench, scoring: D.scoring, budget: D.auction ? D.auction.budget : 200, dynasty: dyn, dynastyRanks: dyn ? await dynastyRanks(info.sport) : null,
-      market: await fetch(`data/market-${info.sport}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null) });
-    byId = Object.fromEntries(players.map((p) => [p.id, p]));
     weeks = await fetch(`data/weeks-${info.sport}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null);
     if (weeks && String(weeks.season) !== String(data.season)) weeks = null;
+    // best ball (but not a guillotine, which keeps normal ranks) values upside and depth
+    const bb = L ? !!L.settings.bestBall && L.settings.format !== "guillotine" : !!(D.season && D.season.bestBall && D.season.format !== "guillotine");
+    V.evaluate(sport, players, { teams: D.teams.length, lineup: D.lineup, bench: D.bench, scoring: D.scoring, budget: D.auction ? D.auction.budget : 200, dynasty: dyn, dynastyRanks: dyn ? await dynastyRanks(info.sport) : null, bestBall: bb, weeks: bb ? weeks : null,
+      market: await fetch(`data/market-${info.sport}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null) });
+    byId = Object.fromEntries(players.map((p) => [p.id, p]));
     // a dynasty prices its rookie picks from next year's class on the Big Board
     if ((D.season && D.season.dynasty) || (L && L.settings.dynasty)) prospects = S.prospectClass(await fetch(`../draft/${info.sport}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null), info.sport);
     livePoll();
