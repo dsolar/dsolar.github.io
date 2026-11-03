@@ -4,7 +4,8 @@
 Writes tools/draft_data/:
   nba-order.json, nfl-order.json   every pick in order as [pick, round, owner, original team], from Tankathon's full
                                    draft (current standings, with each traded pick resolved as of today)
-  records.json                     each team's record from ESPN's standings
+  records.json                     each team's record and playoff seed from ESPN's standings
+  projections.json                 each team's projected record from ESPN's BPI and FPI
   nba-info.json, nfl-info.json     per prospect (by Big Board key): height, weight, class, age, school logo, stats
 and a new tools/draft_boards/nfl/tankathon/<date>.json whenever Tankathon's NFL board order changes (the NBA one
 already comes in through Hard Cap's pull).
@@ -82,7 +83,7 @@ def order(lg):
 
 
 def records():
-    out = {}
+    out = {"seeds": {}}
     for lg, path in (("nba", "basketball/nba"), ("nfl", "football/nfl")):
         data = json.loads(fetch(f"https://site.web.api.espn.com/apis/v2/sports/{path}/standings?{Q}"))
         by_espn = {t["espn"]: abbr for abbr, t in TEAMS[lg].items()}
@@ -94,11 +95,33 @@ def records():
                 code = (e["team"].get("abbreviation") or "").lower()
                 ab = by_espn.get(code) or (code.upper() if code.upper() in TEAMS[lg] else None)
                 stats = {s["name"]: s.get("displayValue") for s in e.get("stats", [])}
+                seed = next((s.get("value") for s in e.get("stats", []) if s["name"] == "playoffSeed"), None)
+                if ab and seed:
+                    out["seeds"].setdefault(lg, {})[ab] = int(seed)
                 if ab:
                     w, l, t = stats.get("wins", "0"), stats.get("losses", "0"), stats.get("ties", "0")
                     rec[ab] = f"{w}-{l}" + (f"-{t}" if t not in (None, "0") else "")
             stack.extend(node.get("children", []))
         out[lg] = rec
+    return out
+
+
+def projections():
+    """ESPN's power index projected records (BPI for the NBA, FPI for the NFL), for the mock's projected order."""
+    out = {}
+    for lg, path in (("nba", "basketball/nba"), ("nfl", "football/nfl")):
+        data = json.loads(fetch(f"https://site.web.api.espn.com/apis/fitt/v3/sports/{path}/powerindex?{Q}&limit=50"))
+        by_espn = {t["espn"]: abbr for abbr, t in TEAMS[lg].items()}
+        rows = {}
+        for t in data.get("teams", []):
+            code = (t.get("team", {}).get("abbreviation") or "").lower()
+            ab = by_espn.get(code) or (code.upper() if code.upper() in TEAMS[lg] else None)
+            cat = next((c for c in t.get("categories", []) if c.get("name") == "projections"), None)
+            if ab and cat and cat.get("values") and cat["values"][0] is not None:
+                rows[ab] = {"w": round(float(cat["values"][0]), 1), "l": round(float(cat["values"][1]), 1)}
+        if len(rows) < len(TEAMS[lg]):
+            raise ValueError(f"{lg}: only {len(rows)} teams")
+        out[lg] = rows
     return out
 
 
@@ -222,9 +245,15 @@ def main():
         except Exception as e:
             print(f"{lg} board: kept the last file ({type(e).__name__}: {e})")
     try:
+        pr = projections()
+        save("projections.json", {"updated": TODAY, "source": "ESPN Basketball Power Index and Football Power Index projected records", **pr})
+        print(f"projections: {len(pr['nba'])} NBA, {len(pr['nfl'])} NFL")
+    except Exception as e:
+        print(f"projections: kept the last file ({type(e).__name__}: {e})")
+    try:
         rec = records()
         save("records.json", {"updated": TODAY, **rec})
-        print(f"records: {len(rec['nba'])} NBA, {len(rec['nfl'])} NFL")
+        print(f"records: {len(rec['nba'])} NBA, {len(rec['nfl'])} NFL, seeds for {len(rec['seeds'].get('nba', {}))} NBA teams")
     except Exception as e:
         print(f"records: kept the last file ({type(e).__name__}: {e})")
     return 0

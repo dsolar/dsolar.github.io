@@ -1,4 +1,4 @@
-/* The mock draft: pick your team(s), set the order (NBA: as it stands or a lottery drawing with every 2027
+/* The mock draft: pick your team(s), set the order (projected or as it stands; NBA: a 3-2-1 lottery drawing with every 2027
    protection applied), and draft against bots that pick off the consensus with some noise. */
 (function () {
   "use strict";
@@ -14,10 +14,10 @@
   function fresh(lg) {
     const p = prefs[lg] || {};
     return { lg, phase: "setup", mine: new Set(p.mine || []), rounds: p.rounds || 1, style: p.style || "balanced",
-      speed: p.speed || "fast", chart: p.chart || "jj", order: "standings", seed: null, picks: [], i: 0, q: "", pos: "all", paused: false, preview: null };
+      speed: p.speed || "fast", chart: p.chart || "jj", basis: p.basis || "projected", draw: p.draw !== false, seed: null, picks: [], i: 0, q: "", pos: "all", paused: false, preview: null };
   }
   function savePrefs() {
-    prefs[M.lg] = { mine: [...M.mine], rounds: M.rounds, style: M.style, speed: M.speed, chart: M.chart };
+    prefs[M.lg] = { mine: [...M.mine], rounds: M.rounds, style: M.style, speed: M.speed, chart: M.chart, basis: M.basis, draw: M.draw };
     BB.store.set("bigboard-mock", prefs);
   }
   // NFL mocks go as deep as the boards do: three rounds now, up to seven as the boards grow toward the draft.
@@ -26,20 +26,21 @@
   const clockOf = (p) => BB.team(D, p.owner);
 
   function orderFor() {
-    const ord = E.buildOrder(D, { lottery: M.order === "standings" ? "standings" : M.seed });
+    const ord = E.buildOrder(D, { order: M.basis, lottery: D.league === "nba" && M.draw ? M.seed : null });
     return ord.filter((p) => p.rnd <= M.rounds);
   }
 
   // ---------- setup ----------
   function setup() {
-    const ord = E.buildOrder(D, { lottery: "standings" });
+    const ord = E.buildOrder(D, { order: M.basis, lottery: null });
     const count = (t) => ord.filter((p) => p.owner === t && p.rnd <= M.rounds).length;
     const seg = (name, opts, cur) => `<div class="seg" role="group" aria-label="${name}">${opts.map(([k, l]) => `<button type="button" data-set="${name}" data-v="${k}" aria-pressed="${String(cur) === String(k)}">${l}</button>`).join("")}</div>`;
     const mine = [...M.mine];
     $("#mock-view").innerHTML = `<section class="mock-setup">
-      <div class="setup-head"><h2 class="disp">Mock draft</h2><p class="sub">Pick your team, or a few. Everyone else drafts off the consensus board, with as much chaos as you want. ${D.league === "nba" ? "Draw the lottery first or go with the order as it stands." : ""}</p></div>
+      <div class="setup-head"><h2 class="disp">Mock draft</h2><p class="sub">Pick your team, or a few. Everyone else drafts off the consensus board, with as much chaos as you want. ${D.league === "nba" ? "Draw the 3-2-1 lottery first, or skip it and draft in record order." : ""}</p></div>
       <div class="opts">
-        ${D.league === "nba" ? `<div><span class="lab">Order</span>${seg("order", [["standings", "As it stands"], ["lottery", "Draw the lottery"]], M.order === "standings" ? "standings" : "lottery")}</div>` : ""}
+        <div><span class="lab">Order</span>${seg("basis", [["projected", "Projected"], ["standings", "As it stands"]], M.basis)}</div>
+        ${D.league === "nba" ? `<div><span class="lab">3-2-1 lottery</span>${seg("draw", [["yes", "Draw it"], ["no", "Skip the draw"]], M.draw ? "yes" : "no")}</div>` : ""}
         <div><span class="lab">Rounds</span>${seg("rounds", Array.from({ length: maxRounds() }, (_, i) => [i + 1, String(i + 1)]), M.rounds)}</div>
         <div><span class="lab">The other ${D.league === "nba" ? "29" : "31"}</span>${seg("style", [["chalk", "Chalk"], ["balanced", "Balanced"], ["chaos", "Chaos"]], M.style)}</div>
         <div><span class="lab">Speed</span>${seg("speed", [["slow", "Slow"], ["fast", "Fast"], ["instant", "Instant"]], M.speed)}</div>
@@ -52,20 +53,22 @@
         return `<button type="button" class="tm${on ? " on" : ""}${n ? "" : " nopick"}" data-team="${t}" aria-pressed="${on}" style="--t1:${tm.c[0]};--t2:${tm.c[1]}">
           ${BB.logo(D, t, 40)}<span class="tn">${esc(tm.name)}</span><span class="tr">${esc((D.records || {})[t] || "")}${n ? ` &middot; ${n} pick${n === 1 ? "" : "s"}` : " &middot; no pick"}</span></button>`;
       }).join("")}</div>
-      <div class="go-row"><button type="button" class="btn go" data-act="start">${M.order === "lottery" ? "Draw the lottery" : "Start the draft"}</button>
-        <span class="note">Order from Tankathon's standings, ${esc(BB.fmtDay(D.order.updated))}. ${D.league === "nba" ? "Protected picks resolve the way the trades are written." : "Traded picks as they stand."}</span></div>
+      <div class="go-row"><button type="button" class="btn go" data-act="start">${D.league === "nba" && M.draw ? "Draw the lottery" : "Start the draft"}</button>
+        <span class="note">${M.basis === "projected" ? `Projected order from ESPN's ${D.league === "nba" ? "Basketball" : "Football"} Power Index records, ${esc(BB.fmtDay((D.proj || {}).updated))}.` : `Order from today's standings, ${esc(BB.fmtDay(D.order.updated))}.`} ${D.league === "nba" ? "Protected picks resolve the way the trades are written." : "Traded picks as they stand."}</span></div>
     </section>`;
   }
 
   // ---------- lottery ----------
   function lotteryView() {
-    const ord = E.buildOrder(D, { lottery: M.seed }).filter((p) => p.rnd === 1).slice(0, 14);
+    const ord = E.buildOrder(D, { order: M.basis, lottery: M.seed }).filter((p) => p.rnd === 1).slice(0, 16);
+    const odds = E.oddsAtOne(D, M.basis);
+    const L = (D.rules && D.rules.lottery) || {};
     $("#mock-view").innerHTML = `<section class="lotto">
-      <div class="setup-head"><h2 class="disp">The lottery</h2><p class="sub">Four picks drawn, 14% odds for the three worst records down to 0.5%. Protections settle once the order does.</p></div>
+      <div class="setup-head"><h2 class="disp">The 3-2-1 lottery</h2><p class="sub">New for 2027: 16 teams, every one of the 16 picks drawn. Three balls for most non-play-in teams, two for the three worst records and the 9 and 10 seeds, one for the 7-8 play-in losers. The worst teams can't fall past 12.${(L.no1 || []).length ? ` ${(L.no1 || []).map((t) => esc(D.teams[t].city)).join(", ")} can't win No. 1 again;` : ""}${(L.top5 || []).length ? ` ${(L.top5 || []).map((t) => esc(D.teams[t].city)).join(", ")} can't land top five a third straight year.` : ""} Protections settle once the order does.</p></div>
       <ol class="lotto-list">${ord.map((p) => {
         const tm = clockOf(p), moved = p.jump || 0;
-        return `<li style="--t1:${tm.c[0]}" class="${p.n <= 4 ? "won" : ""}${M.mine.has(p.owner) ? " mine" : ""}"><span class="ln">${p.n}</span>${BB.logo(D, p.owner, 34)}
-          <span class="lt"><b>${esc(tm.city)} ${esc(tm.name)}</b>${p.owner !== p.orig ? `<small>via ${esc(p.orig)}${p.note ? `: ${esc(p.note)}` : ""}</small>` : p.note ? `<small>${esc(p.note)}</small>` : ""}</span>
+        return `<li style="--t1:${tm.c[0]}" class="${(p.jump || 0) > 0 ? "won" : ""}${M.mine.has(p.owner) ? " mine" : ""}"><span class="ln">${p.n}</span>${BB.logo(D, p.owner, 34)}
+          <span class="lt"><b>${esc(tm.city)} ${esc(tm.name)}</b><small>${p.balls ? `${p.balls} ball${p.balls === 1 ? "" : "s"}, ${(100 * (odds[p.orig] || 0)).toFixed(1)}% at No. 1` : ""}${p.owner !== p.orig ? ` &middot; ${esc(BB.team(D, p.orig).city)}'s pick${p.note ? `: ${esc(p.note)}` : ""}` : p.note ? ` &middot; ${esc(p.note)}` : ""}</small></span>
           <span class="lj ${moved > 0 ? "up" : moved < 0 ? "down" : ""}">${moved > 0 ? `&#9650;${moved}` : moved < 0 ? `&#9660;${-moved}` : "&ndash;"}</span></li>`;
       }).join("")}</ol>
       <div class="go-row"><button type="button" class="btn" data-act="redraw">Draw again</button><button type="button" class="btn go" data-act="draft">Draft with this order</button><button type="button" class="link" data-act="back">Back</button></div>
@@ -495,7 +498,7 @@
     const st = e.target.closest("[data-set]");
     if (st) {
       const k = st.dataset.set, v = st.dataset.v;
-      if (k === "rounds") M.rounds = Number(v); else if (k === "order") M.order = v; else M[k] = v;
+      if (k === "rounds") M.rounds = Number(v); else if (k === "draw") M.draw = v === "yes"; else M[k] = v;
       savePrefs(); setup(); return;
     }
     const mp = e.target.closest("[data-mpos]");
@@ -513,14 +516,14 @@
     if (!a) return;
     const act = a.dataset.act;
     if (act === "clear") { M.mine.clear(); savePrefs(); setup(); }
-    else if (act === "start") { if (M.order === "lottery") { M.seed = (Math.random() * 2 ** 31) | 0; M.phase = "lottery"; lotteryView(); } else { M.seed = (Math.random() * 2 ** 31) | 0; start(); } }
+    else if (act === "start") { M.seed = (Math.random() * 2 ** 31) | 0; if (D.league === "nba" && M.draw) { M.phase = "lottery"; lotteryView(); } else start(); }
     else if (act === "redraw") { M.seed = (Math.random() * 2 ** 31) | 0; lotteryView(); }
     else if (act === "draft") start();
     else if (act === "back") { clearTimeout(timer); M.phase = "setup"; setup(); }
     else if (act === "pause") { M.paused = !M.paused; step(); room(); }
     else if (act === "skip") { M.paused = false; M.skip = true; step(); }
     else if (act === "restart") { clearTimeout(timer); if (M.revealing) { M.revealing.close(); M.revealing = null; } M.phase = "setup"; M.skip = false; setup(); }
-    else if (act === "again") { M.seed = M.order === "lottery" ? (Math.random() * 2 ** 31) | 0 : (Math.random() * 2 ** 31) | 0; if (M.order === "lottery") { M.phase = "lottery"; lotteryView(); } else start(); }
+    else if (act === "again") { M.seed = (Math.random() * 2 ** 31) | 0; if (D.league === "nba" && M.draw) { M.phase = "lottery"; lotteryView(); } else start(); }
     else if (act === "copy") copyText();
     else if (act === "card") shareCard();
     else if (act === "trade") { M.trade = { me: [...M.mine].find((t) => M.picks.some((p, j) => j >= M.i && p.owner === t)) || [...M.mine][0], with: "", give: new Set(), get: new Set(), msg: "" }; clearTimeout(timer); room(); }

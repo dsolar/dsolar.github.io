@@ -447,6 +447,8 @@ Trades in the mock: pick values come from `tools/draft_values.json` (NFL: the Ji
 
 Pushing a new snapshot rebuilds `draft/nba.json` and `draft/nfl.json` through the Big Board workflow, which also runs after every Hard Cap stats pull. Boards fade by half every 90 days, mock drafts are shown next to each player but don't feed the rank, and WalterFootball stays out. PFF and The Athletic go in only from a subscription.
 
+**Mock draft order.** The mock defaults to a projected order from ESPN's Basketball and Football Power Index records (`tools/draft_data/projections.json`, pulled daily); "As it stands" uses today's standings. The NBA draws the 3-2-1 lottery: 16 teams, all 16 picks drawn, the worst three can't fall past 12, and `tools/draft_rules.json` (`lottery`) lists who's barred from No. 1 or the top five that year. Update those two lists after each spring's lottery.
+
 ## Wipe Yoenis: luck, drafts and manager profiles
 
 Player lookup (the Players section) builds its index in the browser from data the page already has: every draft board, the keeper lists, every trade, `history.picked` (every pickup worth at least a point, from `tools/yoenis_history_build.py`) and the awards.

@@ -3,9 +3,6 @@
 (function (root) {
   "use strict";
 
-  // 2019-format lottery: chances per 1,000 for the 14 worst records, top four picks drawn.
-  const ODDS = [140, 140, 140, 125, 105, 90, 75, 60, 45, 30, 20, 15, 10, 5];
-
   function rng(seed) {   // mulberry32: a seeded random, so a draft can be replayed
     let a = seed >>> 0;
     return function () {
@@ -15,20 +12,6 @@
       t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
       return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
-  }
-
-  // lotteryTeams: the 14 worst teams, worst first. Returns them in draft order after the drawing.
-  function lottery(lotteryTeams, rand) {
-    const pool = lotteryTeams.map((t, i) => ({ t, w: ODDS[i] || 0 }));
-    const won = [];
-    for (let k = 0; k < 4; k++) {
-      const tot = pool.reduce((s, x) => s + x.w, 0);
-      let r = rand() * tot;
-      let i = 0;
-      for (; i < pool.length - 1; i++) { r -= pool[i].w; if (r < 0) break; }
-      won.push(pool.splice(i, 1)[0].t);
-    }
-    return won.concat(pool.map((x) => x.t));
   }
 
   // slot: original team -> its pick number in round one. Returns original team -> who picks there.
@@ -73,23 +56,130 @@
     return { owner, notes };
   }
 
+  /* Where every team stands, worst first, for one of two orders:
+     "standings": the records right now (Tankathon's order breaks ties); "projected": ESPN's projected final
+     records (BPI and FPI). */
+  function standing(D, mode) {
+    const base = D.order.picks.filter((p) => p[1] === 1).sort((a, b) => a[0] - b[0]).map((p) => p[3]);
+    const tie = (t) => base.indexOf(t);
+    const pct = (t) => {
+      if (mode === "projected" && D.proj && D.proj.teams && D.proj.teams[t]) { const x = D.proj.teams[t]; return x.w / (x.w + x.l); }
+      const r = String((D.records || {})[t] || "").split("-").map(Number);
+      return r.length >= 2 && r[0] + r[1] > 0 ? (r[0] + (r[2] || 0) / 2) / (r[0] + r[1] + (r[2] || 0)) : 0.5;
+    };
+    return Object.keys(D.teams).sort((a, b) => pct(a) - pct(b) || tie(a) - tie(b)).map((t) => ({ t, pct: pct(t) }));
+  }
+
+  /* NBA conference seeds for a mode: ESPN's playoff seeds as it stands, or seeds from projected records. */
+  function seedsFor(D, mode, ranked) {
+    const seeds = {};
+    if (mode !== "projected" && D.seeds && Object.keys(D.seeds).length >= Object.keys(D.teams).length) return { ...D.seeds };
+    for (const conf of ["East", "West"]) {
+      ranked.filter((x) => (D.teams[x.t] || {}).conf === conf).slice().reverse().forEach((x, i) => { seeds[x.t] = i + 1; });
+    }
+    return seeds;
+  }
+
+  /* The NBA's 3-2-1 lottery, new for 2027. 16 teams, all 16 picks drawn. Balls: 2 each for the three worst
+     records, 3 each for the other seven teams outside the play-in, 2 each for the 9 and 10 seeds, 1 each for
+     the losers of the 7-8 play-in games. The worst three can fall no lower than 12. Nobody wins No. 1 two years
+     running or a top-five pick three years running (D.rules.lottery lists who's barred). */
+  function lottery321(D, mode, rand) {
+    const ranked = standing(D, mode);
+    const seeds = seedsFor(D, mode, ranked);
+    const worst = ranked.map((x) => x.t);
+    const outside = worst.filter((t) => seeds[t] >= 11).slice(0, 10);
+    const balls = {};
+    outside.forEach((t, i) => { balls[t] = i < 3 ? 2 : 3; });
+    worst.filter((t) => seeds[t] === 9 || seeds[t] === 10).forEach((t) => { balls[t] = 2; });
+    // The 7-8 play-in game in each conference: the 7 seed wins 60% of the time; the loser joins the lottery.
+    const playIn = {};
+    for (const conf of ["East", "West"]) {
+      const s7 = worst.find((t) => seeds[t] === 7 && D.teams[t].conf === conf);
+      const s8 = worst.find((t) => seeds[t] === 8 && D.teams[t].conf === conf);
+      if (!s7 || !s8) continue;
+      const loser = rand ? (rand() < 0.6 ? s8 : s7) : s8;
+      balls[loser] = 1;
+      playIn[loser] = true;
+    }
+    const pool = worst.filter((t) => balls[t]);
+    const floorTeams = outside.slice(0, 3);
+    const L = (D.rules && D.rules.lottery) || {};
+    const no1 = new Set(L.no1 || []), top5 = new Set(L.top5 || []);
+    if (!rand) return { order: pool, balls, seeds, playIn, floorTeams };
+    const left = pool.slice(), order = [];
+    for (let k = 1; k <= pool.length; k++) {
+      const mustFloor = floorTeams.filter((t) => left.includes(t));
+      let pickFrom = left.filter((t) => !(k === 1 && no1.has(t)) && !(k <= 5 && top5.has(t)));
+      if (mustFloor.length && mustFloor.length >= 12 - k + 1) pickFrom = mustFloor;
+      if (!pickFrom.length) pickFrom = left.slice();
+      const tot = pickFrom.reduce((s2, t) => s2 + balls[t], 0);
+      let r = rand() * tot, i = 0;
+      for (; i < pickFrom.length - 1; i++) { r -= balls[pickFrom[i]]; if (r < 0) break; }
+      const t = pickFrom[i];
+      order.push(t);
+      left.splice(left.indexOf(t), 1);
+    }
+    return { order, balls, seeds, playIn, floorTeams };
+  }
+
+  // Each team's chance at No. 1 under the 3-2-1 lottery, for the lottery screen.
+  function oddsAtOne(D, mode) {
+    // Simulated, so the No. 1 ban, the floor and the 7-8 play-in coin all count.
+    D._odds = D._odds || {};
+    if (D._odds[mode]) return D._odds[mode];
+    const N = 6000, hits = {}, rand = rng(20270);
+    for (let k = 0; k < N; k++) {
+      const t = lottery321(D, mode, rand).order[0];
+      hits[t] = (hits[t] || 0) + 1;
+    }
+    const out = {};
+    lottery321(D, mode, null).order.concat(Object.keys(hits)).forEach((t) => { out[t] = (hits[t] || 0) / N; });
+    return (D._odds[mode] = out);
+  }
+
   /* The full order for a mock.
-     D: the league file (order, rules). opts.lottery: "standings" (as the season stands) or a seed to draw one.
+     opts.order: "standings" (as the season stands) or "projected" (ESPN's projected final records).
+     opts.lottery: a seed to draw the NBA lottery, or null for the order before any drawing.
      Returns [{ n, rnd, owner, orig, note, jump }]. */
   function buildOrder(D, opts) {
-    const base = D.order.picks.map((p) => ({ n: p[0], rnd: p[1], owner: p[2], orig: p[3] }));
-    if (D.league !== "nba" || !opts || opts.lottery == null || opts.lottery === "standings") {
-      return base.map((p) => ({ ...p, note: noteFor(D, p) }));
+    opts = opts || {};
+    const mode = opts.order === "projected" ? "projected" : "standings";
+    const tank = D.order.picks.map((p) => ({ n: p[0], rnd: p[1], owner: p[2], orig: p[3] }));
+    // Who owns each original team's pick in each round, as the trades stand today.
+    const ownerOf = {};
+    tank.forEach((p) => { ownerOf[`${p.rnd}-${p.orig}`] = ownerOf[`${p.rnd}-${p.orig}`] || p.owner; });
+
+    if (D.league === "nfl") {
+      if (mode === "standings") return tank.map((p) => ({ ...p, note: "" }));
+      const order = standing(D, "projected").map((x) => x.t);
+      const out = [];
+      const rounds = [...new Set(tank.map((p) => p.rnd))];
+      for (const r of rounds) {
+        const inRound = tank.filter((p) => p.rnd === r);
+        const seen = new Set(), regular = [], comp = [];
+        inRound.forEach((p) => { if (seen.has(p.orig)) comp.push(p); else { seen.add(p.orig); regular.push(p); } });
+        regular.sort((a, b) => order.indexOf(a.orig) - order.indexOf(b.orig));
+        regular.concat(comp).forEach((p) => out.push({ rnd: r, orig: p.orig, owner: p.owner, note: "", jump: 0 }));
+      }
+      out.forEach((p, i) => { p.n = i + 1; });
+      return out;
     }
-    const r1 = base.filter((p) => p.rnd === 1).sort((a, b) => a.n - b.n);
-    const byRecord = r1.map((p) => p.orig);
-    const drawn = lottery(byRecord.slice(0, 14), rng(opts.lottery));
-    const order1 = drawn.concat(byRecord.slice(14));
+
+    // NBA: the 3-2-1 lottery for 1-16, record for 17-30; round two mirrors round one for its first 16.
+    const L = lottery321(D, mode, opts.lottery == null ? null : rng(opts.lottery));
+    const ranked = standing(D, mode).map((x) => x.t);
+    const lotto = L.order;
+    const rest = ranked.filter((t) => !lotto.includes(t));
+    const order1 = lotto.concat(rest);
+    const before = lottery321(D, mode, null).order.concat(rest);
     const slot = {};
     order1.forEach((t, i) => { slot[t] = i + 1; });
     const res = resolve(slot, D.rules && D.rules.first);
-    const out = order1.map((t, i) => ({ n: i + 1, rnd: 1, orig: t, owner: res.owner[t], note: res.notes[t] || "", jump: byRecord.indexOf(t) + 1 - (i + 1) }));
-    base.filter((p) => p.rnd > 1).forEach((p) => out.push({ ...p, note: "" }));
+    const out = order1.map((t, i) => ({ n: i + 1, rnd: 1, orig: t, owner: res.owner[t], note: res.notes[t] || "",
+      jump: opts.lottery == null ? 0 : before.indexOf(t) - i, balls: L.balls[t] || 0 }));
+    const order2 = lotto.concat(rest);
+    order2.forEach((t, i) => out.push({ n: 31 + i, rnd: 2, orig: t, owner: ownerOf[`2-${t}`] || t, note: "" }));
     return out;
   }
 
@@ -345,7 +435,7 @@
   // A pick's grade against the consensus: positive is value (taken later than his rank), negative a reach.
   function value(pick, player) { return pick - player.rank; }
 
-  const api = { ODDS, rng, lottery, resolve, buildOrder, botPick, nflPos, value, pickValue, ledger, futureValue,
+  const api = { rng, lottery321, oddsAtOne, standing, resolve, buildOrder, botPick, nflPos, value, pickValue, ledger, futureValue,
     assetValue, assetLabel, stepienOK, firstsGap, botAccepts, offersFor };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.DraftEngine = api;

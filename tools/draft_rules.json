@@ -4,18 +4,139 @@
   "year": 2027,
   "source": "https://basketball.realgm.com/nba/draft/future_drafts/detailed",
   "first": [
-   {"type": "to", "orig": "ATL", "to": "SAS", "note": "Unprotected"},
-   {"type": "to", "orig": "NYK", "to": "BKN", "note": "Unprotected"},
-   {"type": "to", "orig": "PHX", "to": "HOU", "note": "Unprotected"},
-   {"type": "swap", "holder": "HOU", "with": "BKN", "note": "Houston can swap its pick for Brooklyn's"},
-   {"type": "to", "orig": "DAL", "to": "CHA", "keep": [1, 2], "note": "Top-2 protected"},
-   {"type": "to", "orig": "MIA", "to": "CHA", "keep": [1, 14], "note": "Lottery protected; unprotected in 2028"},
-   {"type": "to", "orig": "LAL", "to": "MEM", "keep": [1, 4], "note": "Top-4 protected"},
-   {"type": "to", "orig": "DEN", "to": "OKC", "keep": [1, 5], "note": "Top-5 protected (rolls to 2028, 2029)"},
-   {"type": "okc", "note": "OKC can swap its pick or Denver's for the Clippers'; the Clippers can then swap for Toronto's"},
-   {"type": "split", "orig": "SAS", "ranges": [[1, 16, "SAC"], [17, 30, "OKC"]], "note": "Picks 1-16 to Sacramento, 17-30 to Oklahoma City"},
-   {"type": "favorable", "picks": ["NOP", "MIL"], "to": ["NOP", "ATL"], "lastKeep": [1, 4], "fallback": "NOP", "note": "New Orleans takes the better of its and Milwaukee's; Atlanta the other, top-4 protected"},
-   {"type": "favorable", "picks": ["UTA", "CLE", "MIN"], "bar": {"UTA": [1, 5]}, "to": ["MEM", "UTA", "PHX"], "note": "Memphis takes the best of Utah's (unless top 5), Cleveland's and Minnesota's; Utah the next, Phoenix the last"}
-  ]
+   {
+    "type": "to",
+    "orig": "ATL",
+    "to": "SAS",
+    "note": "Unprotected"
+   },
+   {
+    "type": "to",
+    "orig": "NYK",
+    "to": "BKN",
+    "note": "Unprotected"
+   },
+   {
+    "type": "to",
+    "orig": "PHX",
+    "to": "HOU",
+    "note": "Unprotected"
+   },
+   {
+    "type": "swap",
+    "holder": "HOU",
+    "with": "BKN",
+    "note": "Houston can swap its pick for Brooklyn's"
+   },
+   {
+    "type": "to",
+    "orig": "DAL",
+    "to": "CHA",
+    "keep": [
+     1,
+     2
+    ],
+    "note": "Top-2 protected"
+   },
+   {
+    "type": "to",
+    "orig": "MIA",
+    "to": "CHA",
+    "keep": [
+     1,
+     14
+    ],
+    "note": "Lottery protected; unprotected in 2028"
+   },
+   {
+    "type": "to",
+    "orig": "LAL",
+    "to": "MEM",
+    "keep": [
+     1,
+     4
+    ],
+    "note": "Top-4 protected"
+   },
+   {
+    "type": "to",
+    "orig": "DEN",
+    "to": "OKC",
+    "keep": [
+     1,
+     5
+    ],
+    "note": "Top-5 protected (rolls to 2028, 2029)"
+   },
+   {
+    "type": "okc",
+    "note": "OKC can swap its pick or Denver's for the Clippers'; the Clippers can then swap for Toronto's"
+   },
+   {
+    "type": "split",
+    "orig": "SAS",
+    "ranges": [
+     [
+      1,
+      16,
+      "SAC"
+     ],
+     [
+      17,
+      30,
+      "OKC"
+     ]
+    ],
+    "note": "Picks 1-16 to Sacramento, 17-30 to Oklahoma City"
+   },
+   {
+    "type": "favorable",
+    "picks": [
+     "NOP",
+     "MIL"
+    ],
+    "to": [
+     "NOP",
+     "ATL"
+    ],
+    "lastKeep": [
+     1,
+     4
+    ],
+    "fallback": "NOP",
+    "note": "New Orleans takes the better of its and Milwaukee's; Atlanta the other, top-4 protected"
+   },
+   {
+    "type": "favorable",
+    "picks": [
+     "UTA",
+     "CLE",
+     "MIN"
+    ],
+    "bar": {
+     "UTA": [
+      1,
+      5
+     ]
+    },
+    "to": [
+     "MEM",
+     "UTA",
+     "PHX"
+    ],
+    "note": "Memphis takes the best of Utah's (unless top 5), Cleveland's and Minnesota's; Utah the next, Phoenix the last"
+   }
+  ],
+  "lottery": {
+   "format": "3-2-1",
+   "no1": [
+    "WAS"
+   ],
+   "top5": [
+    "UTA"
+   ],
+   "note": "The 3-2-1 lottery, new for 2027: 16 teams, every one of the 16 picks drawn. Balls: 2 each for the three worst records, 3 each for the next seven non-play-in teams, 2 each for the 9 and 10 seeds, 1 each for the teams that lose the 7-8 play-in games. The worst teams can fall no lower than 12. No team wins No. 1 two years running (Washington won it in 2026) or a top-five pick three years running (Utah was top five in 2025 and 2026); both follow the original team's pick. Picks 17-30 go by record, and the first 16 second-rounders mirror the first round.",
+   "source": "https://www.hoopsrumors.com/2026/05/nbas-board-of-governors-approves-3-2-1-lottery-reform-plan.html"
+  }
  }
 }

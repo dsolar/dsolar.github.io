@@ -201,10 +201,14 @@ def build(league, sources, aliases):
              "versions": len(snaps[s["id"]]), "w": w_now} if latest else {}))
     teams = (load(os.path.join(TOOLS, "draft_teams.json"), {}) or {}).get(league, {})
     order = load(os.path.join(TOOLS, "draft_data", f"{league}-order.json"), {}) or {}
-    records = (load(os.path.join(TOOLS, "draft_data", "records.json"), {}) or {}).get(league, {})
+    rec_all = load(os.path.join(TOOLS, "draft_data", "records.json"), {}) or {}
+    records = rec_all.get(league, {})
+    seeds = (rec_all.get("seeds") or {}).get(league, {})
+    proj_all = load(os.path.join(TOOLS, "draft_data", "projections.json"), {}) or {}
+    proj = {"updated": proj_all.get("updated"), "source": proj_all.get("source"), "teams": proj_all.get(league, {})}
     rules = (load(os.path.join(TOOLS, "draft_rules.json"), {}) or {}).get(league)
     return {"league": league, "year": YEAR, "asof": today, "halfLife": HALF_LIFE, "dates": dates,
-            "sources": src_out, "teams": teams, "records": records,
+            "sources": src_out, "teams": teams, "records": records, "seeds": seeds, "proj": proj,
             "order": {"updated": order.get("updated"), "source": order.get("source"), "picks": order.get("picks", [])},
             "rules": rules, "players": players,
             "values": (load(os.path.join(TOOLS, "draft_values.json"), {}) or {}).get(league),
