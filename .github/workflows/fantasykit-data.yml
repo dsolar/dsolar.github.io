@@ -16,6 +16,7 @@ on:
     branches: [main]
     paths:
       - tools/fantasykit_data.py
+      - tools/dynasty_pull.py
       - .github/workflows/fantasykit-data.yml
   workflow_dispatch:
 
@@ -42,6 +43,10 @@ jobs:
 
       - name: Build the player pools
         run: python3 tools/fantasykit_data.py
+
+      - name: Pull outside dynasty rankings
+        run: python3 tools/dynasty_pull.py
+        continue-on-error: true
 
       - name: Commit the pools
         run: |

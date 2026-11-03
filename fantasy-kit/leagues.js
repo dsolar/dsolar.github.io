@@ -265,7 +265,7 @@
         if (haveN < k) throw new Error(`There aren't enough ${pos} for this lineup: ${n} teams need ${k}, and the pool has ${haveN}.`);
       }
       if (total > players.length) throw new Error(`${n} teams with ${lineup.length + bench} roster spots need ${total} players, and the pool has ${players.length}.`);
-      V.evaluate(sport, players, { teams: n, lineup, bench, scoring });
+      V.evaluate(sport, players, { teams: n, lineup, bench, scoring, dynasty: form.keepers === -1 && form.season !== "guillotine", dynastyRanks: form.keepers === -1 && form.season !== "guillotine" ? await fetch(`data/dynasty-${form.sport}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null) : null });
       const auction = form.type === "auction";
       const D = F.create({ sport, type: form.type, teams: n, seed: Math.floor(Math.random() * 2 ** 31), now: Date.now(), lineup, bench, scoring,
         botDelay: 3000, clock: auction ? 0 : form.clock, bidClock: auction ? form.clock : 15, nomClock: 30, budget: 200, name: form.name.trim(),

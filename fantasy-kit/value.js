@@ -189,6 +189,7 @@
       p.vor = p.v - (ps.length ? Math.min(...ps.map((x) => repl[x])) : Math.max(...Object.values(repl)));
     }
     streamers(sport, players, league);
+    if (league.dynasty) dynasty(sport, players, league);
     const sorted = players.slice().sort((a, b) => b.vor - a.vor || b.v - a.v);
     const posN = {};
     sorted.forEach((p, i) => {
@@ -199,6 +200,63 @@
     });
     dollars(sport, sorted, league);
     return { scoring: sc, repl };
+  }
+
+  /* ---------- dynasty: value over the next five seasons, not just this one ---------- */
+  // A player's value this season carried forward on an age curve for his position. Each curve is [peak starts, peak
+  // ends, growth a year before the peak, decline a year for two years after it, decline a year after that, the age
+  // players start retiring, the share still playing each year past it]. Later seasons count less (0.9, 0.8, 0.7,
+  // 0.6), and the sum is scaled so a player at his peak keeps his value: a 20-year-old climbs, a 29-year-old running
+  // back or a 37-year-old guard falls a long way, and a 30-year-old quarterback barely moves.
+  const AGE_CURVES = {
+    nfl: { RB: [23, 26, 0.06, 0.12, 0.2, 30, 0.7], WR: [24, 29, 0.07, 0.08, 0.15, 32, 0.8], TE: [25, 30, 0.1, 0.08, 0.15, 33, 0.8], QB: [25, 33, 0.05, 0.06, 0.15, 37, 0.75] },
+    nba: { "*": [24, 29, 0.08, 0.06, 0.15, 33, 0.65] },
+    mlb: { SP: [26, 30, 0.04, 0.05, 0.09, 34, 0.8], RP: [26, 30, 0.04, 0.05, 0.09, 34, 0.8], "*": [26, 30, 0.05, 0.04, 0.08, 35, 0.8] },
+  };
+  const ROOKIE_AGE = { nfl: 22, nba: 20, mlb: 24 };
+  const YEAR_W = [1, 0.9, 0.8, 0.7, 0.6];
+  function level(c, age) {
+    const [a, b, g, d1, d2, ra, q] = c;
+    let x;
+    if (age < a) x = Math.pow(1 + g, -(a - age));
+    else if (age <= b) x = 1;
+    else { const over = age - b; x = Math.pow(1 - d1, Math.min(2, over)) * Math.pow(1 - d2, Math.max(0, over - 2)); }
+    return age > ra ? x * Math.pow(q, age - ra) : x;           // the chance he's still playing
+  }
+  function ageOf(sport, p) {
+    if (p.age) return p.age;
+    if (sport.key === "nfl" && p.exp != null) return 22.5 + p.exp;
+    return p.rk ? ROOKIE_AGE[sport.key] : null;
+  }
+  function dynastyMult(sport, p) {
+    const curves = AGE_CURVES[sport.key];
+    if (!curves) return 1;
+    const pos = mainPos(sport, p), c = curves[pos] || curves["*"], age = ageOf(sport, p);
+    if (!c || !age) return 1;
+    const now = level(c, age);
+    return YEAR_W.reduce((t, w, y) => t + w * level(c, age + y) / now, 0) / YEAR_W.reduce((t, w) => t + w, 0);
+  }
+  function dynasty(sport, players, league) {
+    for (const p of players) {
+      const m = dynastyMult(sport, p);
+      p.dyn = Math.round(m * 100) / 100;
+      // below replacement: a rising player climbs toward it, a fading one sinks further
+      p.vor = p.vor >= 0 ? p.vor * m : p.vor * (2 - Math.min(1.9, m));
+    }
+    // outside consensus (league.dynastyRanks, from tools/dynasty_pull.py): a ranked player takes most of his value
+    // from the consensus, read as the model's value at that rank, and keeps some of the model's, which knows this
+    // league's scoring and lineup. A football league with a superflex or two QB slots uses the superflex rankings.
+    const file = league.dynastyRanks, lineup = league.lineup || sport.lineup;
+    const sf = lineup.includes("SFLEX") || lineup.filter((x) => x === "QB").length >= 2;
+    const ranks = file && ((sf && file.sf) || file.players);
+    if (!ranks || Object.keys(ranks).length < 50) return;
+    const curve = players.map((p) => p.vor).sort((a, b) => b - a), n = Object.keys(ranks).length;
+    for (const p of players) {
+      const r = ranks[p.id];
+      if (r) { p.cons = r[0]; p.vor = 0.65 * curve[Math.min(curve.length - 1, r[0] - 1)] + 0.35 * p.vor; }
+      // someone the consensus leaves out ranks no higher than its last player (kickers and defenses aside)
+      else if (!(sport.late && S.isLate(sport, p))) p.vor = Math.min(p.vor, curve[Math.min(curve.length - 1, n - 1)]);
+    }
   }
 
   // Kickers and defenses (sport.late): a season projection for them barely predicts the season, and the waiver wire
@@ -258,5 +316,5 @@
   }
   const CURVE = { edge: 0.6, rank: 0.7, power: 1.4 };
 
-  return { evaluate, scoringOf, mainPos, replacement, dollars };
+  return { evaluate, scoringOf, mainPos, replacement, dollars, dynastyMult, ageOf };
 });

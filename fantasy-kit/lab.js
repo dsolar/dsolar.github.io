@@ -27,6 +27,12 @@
   }
   // A fresh sport object linked to its data, the lineup this league uses (slots nobody in the pool can fill are
   // dropped, like kickers before the football feed has them), and the pool valued for this league.
+  // Outside dynasty rankings (data/dynasty-<sport>.json, rebuilt daily by tools/dynasty_pull.py), when there are any.
+  const dynCache = {};
+  async function loadDynasty(k) {
+    if (!(k in dynCache)) dynCache[k] = await fetch(`data/dynasty-${k}.json`, { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    return dynCache[k];
+  }
   async function pool(c) {
     const data = await loadSport(c.sport);
     const sport = S.attach(Object.assign({}, S[c.sport]), data);
@@ -36,7 +42,8 @@
     const players = data.players.map((p) => Object.assign({}, p));
     const scoring = sport.scorings[c.scoring] ? c.scoring : Object.keys(sport.scorings)[0];
     const bench = c.bench == null ? sport.bench : c.bench;
-    V.evaluate(sport, players, { teams: c.teams, lineup, bench, scoring, budget: c.budget });
+    const dyn = c.dynasty ? await loadDynasty(c.sport) : null;
+    V.evaluate(sport, players, { teams: c.teams, lineup, bench, scoring, budget: c.budget, dynasty: !!c.dynasty, dynastyRanks: dyn });
     return { sport, players, lineup, scoring, bench, data };
   }
 
@@ -195,10 +202,15 @@
   /* ---------- rankings ---------- */
   async function rankingsPage() {
     document.body.classList.remove("fk-room");
-    const c = Object.assign({}, cfg, { sport: rank.sport, scoring: rank.scoring || (rank.sport === cfg.sport ? cfg.scoring : ""), lineup: rank.sport === cfg.sport ? cfg.lineup : "", bench: rank.sport === cfg.sport ? cfg.bench : null });
+    const c = Object.assign({}, cfg, { dynasty: rank.dyn, sport: rank.sport, scoring: rank.scoring || (rank.sport === cfg.sport ? cfg.scoring : ""), lineup: rank.sport === cfg.sport ? cfg.lineup : "", bench: rank.sport === cfg.sport ? cfg.bench : null });
     const P = await pool(c);
     const sp = P.sport;
-    const cols = U.poolColumns(sp, { group: U.groupOf(sp, rank.f), scoring: P.scoring });
+    // dynasty: the outside consensus rank and how age moves each player's value
+    const extra = rank.dyn ? [
+      { k: "cons", label: "Cons", cls: "r num", title: "Outside dynasty consensus rank (FantasyPros, plus FantasyCalc for football)", sort: (p) => p.cons || 1e4, asc: true, html: (p) => (p.cons ? String(p.cons) : `<span class="ps">-</span>`) },
+      { k: "dyn", label: "Age", cls: "r num", hide: "s", title: "How age moves his value over the next five seasons: above 1 he's still climbing, below 1 he's fading", sort: (p) => p.dyn || 1, html: (p) => (p.dyn && p.dyn !== 1 ? `<span class="${p.dyn > 1 ? "win" : "loss"}">&times;${p.dyn.toFixed(2)}</span>` : `<span class="ps">&times;1</span>`) },
+    ] : [];
+    const cols = U.poolColumns(sp, { group: U.groupOf(sp, rank.f), scoring: P.scoring, extra });
     const teams = [...new Set(P.players.map((p) => p.t))].sort();
     const rows = U.sortRows(P.players.filter((p) => U.passes(sp, p, rank.f)), cols, rank.sort);
     const mine = rank.mode === "board", B = U.board.of(sp.key, P.players);
@@ -208,10 +220,11 @@
       <div class="head"><h1 class="disp">${esc(sp.name)} rankings</h1><span class="ps">${esc(sp.data.source)}, ${esc(sp.data.season)}. ${c.teams} teams, ${esc(sp.scorings[P.scoring].label)}${P.lineup.length ? `, starting ${P.lineup.join(" ")}` : ""}.</span></div>
       <div class="tools"><label class="sr" for="r-sport">Sport</label><select id="r-sport">${Object.values(S.ALL).map((s) => opt(s.key, s.name, rank.sport)).join("")}</select>
         <label class="sr" for="r-scoring">Scoring</label><select id="r-scoring">${Object.entries(sp.scorings).map(([k, s]) => opt(k, s.label.replace(/ \(.*\)$/, ""), P.scoring)).join("")}</select>
+        <label class="sr" for="r-dyn">League type</label><select id="r-dyn">${opt("", "Redraft", rank.dyn ? "1" : "")}${opt("1", "Dynasty", rank.dyn ? "1" : "")}</select>
         <div class="seg" role="group" aria-label="Rankings"><button type="button" data-rmode="default" aria-pressed="${rank.mode === "default"}">Rankings</button><button type="button" data-rmode="board" aria-pressed="${mine}">My board</button>${sp.key === "mlb" ? "" : `<button type="button" data-rmode="prospects" aria-pressed="${rank.mode === "prospects"}">Prospects</button>`}</div></div>
       <div class="tools">${U.search(rank.f)}<label class="sr" for="fk-team">${esc(sp.league)} team</label><select id="fk-team" class="${rank.f.team ? "set" : ""}"><option value="">All ${esc(sp.league)} teams</option>${teams.map((t) => `<option${t === rank.f.team ? " selected" : ""}>${esc(t)}</option>`).join("")}</select></div>${U.posFilter(sp, rank.f.pos)}
       ${rank.mode === "prospects" && sp.key !== "mlb" ? await prospectsView(sp) : mine ? myBoard(sp, P, B) : U.table({ cols, rows, sort: rank.sort, dense: true, limit: 300, rowAttr: (p) => `data-player="${esc(p.id)}"`, empty: "No one matches." })}
-      <p class="ps">Ranks are value over the replacement player at each position, for the league size and lineup above. Auction values split ${c.teams} budgets of $${c.budget}.</p></div>`;
+      <p class="ps">${rank.dyn ? "Dynasty: each player's value over the next five seasons, from an age curve for his position, blended with outside dynasty consensus where it ranks him. " : ""}Ranks are value over the replacement player at each position, for the league size and lineup above. Auction values split ${c.teams} budgets of $${c.budget}.</p></div>`;
     if (rank.focus) { const f = $(rank.focus, app); rank.focus = null; if (f) { f.focus(); f.scrollIntoView({ block: "nearest" }); } }
     else if (focus) { const f = document.getElementById(focus); if (f) { f.focus(); if (f.type === "search") f.setSelectionRange(f.value.length, f.value.length); } }
     // your board: move a player past the next one showing, to a spot, or by dragging; tier breaks
@@ -255,6 +268,7 @@
       const id = e.target.id;
       if (id === "r-sport") { rank.sport = e.target.value; rank.scoring = ""; rank.f = { q: "", pos: "", team: "" }; rank.sort = { k: "rank", dir: 1 }; }
       else if (id === "r-scoring") rank.scoring = e.target.value;
+      else if (id === "r-dyn") rank.dyn = !!e.target.value;
       else if (id === "fk-pos") rank.f.pos = e.target.value;
       else if (id === "fk-team") rank.f.team = e.target.value;
       else return;

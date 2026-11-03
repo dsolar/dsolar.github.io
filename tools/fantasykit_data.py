@@ -98,6 +98,16 @@ def after_night(d):
     return datetime(d.year, d.month, d.day, tzinfo=timezone.utc) + timedelta(days=1, hours=8)
 
 
+def age_on(birth, today=None):
+    """Age in years, to a tenth, from a YYYY-MM-DD birth date; None if it doesn't parse."""
+    try:
+        b = date.fromisoformat(str(birth)[:10])
+    except ValueError:
+        return None
+    t = today or date.today()
+    return round((t - b).days / 365.25, 1)
+
+
 def get(url):
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json"})
     with urllib.request.urlopen(req, timeout=40) as r:
@@ -242,6 +252,18 @@ def mlb():
     for pid, row in by.items():
         if ab.get(pid, 0) < 130 and ip.get(pid, 0) < 50:
             row["rk"] = 1
+    # ages, for dynasty values: the Stats API's people endpoint, a hundred players a call
+    ids = list(by.keys())
+    try:
+        for i in range(0, len(ids), 100):
+            chunk = ",".join(str(x) for x in ids[i:i + 100])
+            for person in (get(f"{MLB_API}people?personIds={chunk}&fields=people,id,birthDate") or {}).get("people", []):
+                a = age_on(person.get("birthDate"))
+                if a and person.get("id") in by:
+                    by[person["id"]]["age"] = a
+    except Exception as e:
+        print(f"MLB ages didn't load: {type(e).__name__}: {e}")
+    print(f"MLB ages: {sum(1 for r in by.values() if r.get('age'))} of {len(by)}")
     write("mlb", {"sport": "mlb", "season": years[-1], "updated": NOW, "source": "MLB Stats API (statsapi.mlb.com)",
                   "lines": {"bat": {"label": "Batting", "cols": BAT_COLS}, "pit": {"label": "Pitching", "cols": PIT_COLS}},
                   "players": list(by.values())})
@@ -397,6 +419,9 @@ def nfl():
         p = by.setdefault(pid, {"id": pid, "n": name, "t": r.get("team") or pl.get("team") or "FA", "pos": [pos], "l": {}})
         if pl.get("injury_status"):
             p["inj"] = pl["injury_status"]
+        a = age_on(pl.get("birth_date")) if pl.get("birth_date") else pl.get("age")
+        if a:
+            p["age"] = a
         if pl.get("years_exp") is not None:
             p["exp"] = pl["years_exp"]
             if pl["years_exp"] == 0:
@@ -437,6 +462,18 @@ def nfl():
     if use_ros:
         for p in by.values():
             p["l"]["proj"] = [round(x, 1) for x in ros.get(p["id"], [0.0] * len(PROJ_COLS))]
+    # ages, for dynasty values: Sleeper's full player list has birth dates for anyone the stats rows left out
+    if sum(1 for p in by.values() if p.get("age")) < len(by) * 0.8:
+        try:
+            allp = get("https://api.sleeper.app/v1/players/nfl")
+            for pid, p in by.items():
+                q = allp.get(pid) or {}
+                a = age_on(q.get("birth_date")) if q.get("birth_date") else q.get("age")
+                if a and not p.get("age"):
+                    p["age"] = a
+        except Exception as e:
+            print(f"Sleeper's player list didn't load: {type(e).__name__}: {e}")
+    print(f"NFL ages: {sum(1 for p in by.values() if p.get('age'))} of {len(by)}")
     players = [p for p in by.values() if (p["l"].get("tot") and p["l"]["tot"][NFL_COLS.index("pts_half_ppr")] > 0) or (p["l"].get("proj") and p["l"]["proj"][1] > 20)]
     try:
         nfl_weeks(season, state)

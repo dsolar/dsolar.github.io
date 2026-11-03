@@ -43,7 +43,9 @@
     data = await r.json();
     sport = S.withScoring(S.attach(Object.assign({}, S[info.sport]), data), D.scoringSpec);   // the league's custom scoring, if it has one
     players = data.players.map((p) => Object.assign({}, p));
-    V.evaluate(sport, players, { teams: D.teams.length, lineup: D.lineup, bench: D.bench, scoring: D.scoring, budget: D.auction ? D.auction.budget : 200 });
+    // a dynasty values players over the next five seasons (value.js), a redraft league this season only
+    const dyn = !!((D.season && D.season.dynasty) || (L && L.settings.dynasty));
+    V.evaluate(sport, players, { teams: D.teams.length, lineup: D.lineup, bench: D.bench, scoring: D.scoring, budget: D.auction ? D.auction.budget : 200, dynasty: dyn, dynastyRanks: dyn ? await dynastyRanks(info.sport) : null });
     byId = Object.fromEntries(players.map((p) => [p.id, p]));
     weeks = await fetch(`data/weeks-${info.sport}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null);
     if (weeks && String(weeks.season) !== String(data.season)) weeks = null;
@@ -106,6 +108,8 @@
     pastAsked = true;
     C.rpc("fk_history", { p_id: id }).then((h) => { if (Array.isArray(h)) { past = h; if (app && !U.dialogOpen()) app.refresh(); } }).catch(() => { pastAsked = false; });
   }
+  // Outside dynasty rankings (data/dynasty-<sport>.json, rebuilt daily by tools/dynasty_pull.py), when there are any.
+  const dynastyRanks = (k) => fetch(`data/dynasty-${k}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null);
   /* ---------- live box scores: every minute while the page is open and the league plays on real games ---------- */
   let liveT = null;
   async function livePoll() {

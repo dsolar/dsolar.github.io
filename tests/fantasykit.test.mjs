@@ -156,3 +156,27 @@ test("autopick follows a manager's own board, but not into a roster hole", () =>
   delete D.teams[0].board;
   assert.notEqual(F.autoChoice(D, ctx, 0).id, te.id, 'without the board, the default pick');
 });
+
+test('dynasty values: age curves, then outside consensus where there is one', () => {
+  const data = JSON.parse(readFileSync(new URL('../fantasy-kit/data/nba.json', import.meta.url), 'utf8'));
+  const sport = S.attach(Object.assign({}, S.nba), data);
+  const red = data.players.map((p) => ({ ...p })), dyn = data.players.map((p) => ({ ...p }));
+  V.evaluate(sport, red, { teams: 10 }); V.evaluate(sport, dyn, { teams: 10, dynasty: true });
+  const r = Object.fromEntries(red.map((p) => [p.id, p])), d = Object.fromEntries(dyn.map((p) => [p.id, p]));
+  const old = red.filter((p) => p.age >= 35 && p.rank <= 40)[0], young = red.filter((p) => p.age && p.age <= 21 && p.rank <= 60)[0];
+  assert.ok(old && young, 'the pool has a veteran and a young starter');
+  assert.ok(d[old.id].rank > r[old.id].rank, `${old.n} falls in dynasty`);
+  assert.ok(d[young.id].rank < r[young.id].rank, `${young.n} climbs in dynasty`);
+  assert.ok(d[old.id].dyn < 0.8 && d[young.id].dyn > 1);
+  // a consensus that loves a mid-tier player moves him up; the redraft values don't change
+  const pick = red.slice().sort((a, b) => a.rank - b.rank)[80];
+  const order = red.slice().sort((a, b) => a.rank - b.rank).map((p) => p.id).filter((id) => id !== pick.id);
+  order.splice(4, 0, pick.id);
+  const players = Object.fromEntries(order.slice(0, 200).map((id, i) => [id, [i + 1, 2]]));
+  const con = data.players.map((p) => ({ ...p }));
+  V.evaluate(sport, con, { teams: 10, dynasty: true, dynastyRanks: { players } });
+  const c = con.find((p) => p.id === pick.id);
+  assert.ok(c.rank <= 15, `consensus #5 lands near the top (got ${c.rank})`);
+  assert.equal(c.cons, 5);
+  assert.equal(c.v, d[pick.id].v, 'season value is untouched');
+});
