@@ -98,12 +98,20 @@
     for (const p of players) {
       const line = sc.line;
       let tot = 0;
-      if (sc.weights) tot = sum(Object.entries(sc.weights).map(([k, w]) => (S.stat(sport, p, line, k) || 0) * w));
+      // weights name a stat on the scoring's line, or "line.stat" for a sport with two (baseball's bat and pit)
+      const at = (k) => { const i = k.indexOf("."); return (i > 0 ? S.stat(sport, p, k.slice(0, i), k.slice(i + 1)) : S.stat(sport, p, line, k)) || 0; };
+      if (sc.weights) tot = sum(Object.entries(sc.weights).map(([k, w]) => at(k) * w));
       else tot = S.stat(sport, p, line, sc.col) || 0;
-      const g = S.stat(sport, p, line, sport.sample ? sport.sample.col : "g") || 0;
+      const gl = p.l[line] ? line : Object.keys(p.l).find((k) => k !== "proj") || line;
+      const g = S.stat(sport, p, gl, sport.sample ? sport.sample.col : "g") || 0;
       if (sc.per === "game") { p.fpg = tot; p.fpts = tot * g; } else { p.fpts = tot; p.fpg = g ? tot / g : 0; }
       p.g = g;
-      const proj = sc.proj != null && p.l.proj ? p.l.proj[sc.proj] : null;
+      let proj = sc.proj != null && p.l.proj ? p.l.proj[sc.proj] : null;
+      // custom football points: Sleeper's half-PPR projection, scaled by how this scoring rates the player so far
+      if (proj == null && sc.projScale != null && p.l.proj) {
+        const half = S.stat(sport, p, "tot", "pts_half_ppr") || 0;
+        proj = p.l.proj[sc.projScale] * (half > 5 && tot > 0 ? tot / half : 1);
+      }
       p.proj = proj;
     }
   }

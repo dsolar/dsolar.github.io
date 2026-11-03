@@ -41,7 +41,7 @@
     document.title = `${info.name} | Draft Lab`;
     const r = await fetch(`data/${info.sport}.json`, { cache: "no-cache" });
     data = await r.json();
-    sport = S.attach(Object.assign({}, S[info.sport]), data);
+    sport = S.withScoring(S.attach(Object.assign({}, S[info.sport]), data), D.scoringSpec);   // the league's custom scoring, if it has one
     players = data.players.map((p) => Object.assign({}, p));
     V.evaluate(sport, players, { teams: D.teams.length, lineup: D.lineup, bench: D.bench, scoring: D.scoring, budget: D.auction ? D.auction.budget : 200 });
     byId = Object.fromEntries(players.map((p) => [p.id, p]));

@@ -66,8 +66,8 @@ async function tickLeagues(token: string) {
       // a live draft someone saved in the last minute has a page driving it
       if (!L && now - l.updated < 60e3) { out.skip = "busy"; report.push(out); continue; }
       const data = await loadData(l.sport);
-      const sport = S.attach(Object.assign({}, S[l.sport]), data);
       const doc = L ? L.draft || D : D;
+      const sport = S.withScoring(S.attach(Object.assign({}, S[l.sport]), data), doc.scoringSpec);
       const players = data.players.map((p: any) => Object.assign({}, p));
       V.evaluate(sport, players, { teams: doc.teams.length, lineup: doc.lineup, bench: doc.bench, scoring: doc.scoring, budget: doc.auction ? doc.auction.budget : 200 });
       const byId = Object.fromEntries(players.map((p: any) => [p.id, p]));

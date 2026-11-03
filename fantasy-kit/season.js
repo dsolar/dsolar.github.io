@@ -33,8 +33,13 @@
     const weeks = s.weeks || 14, n = D.teams.length;
     // the commissioner's choices from the start-a-league form (D.season), with defaults for anything left out
     const settings = s.format === "guillotine" ? { format: "guillotine", bestBall: true, waiverAt: 60, faab: s.faab || 1000 }
-      : { weeks, playoffTeams: Math.min(s.playoffTeams != null ? s.playoffTeams : 4, n - (n % 2)), deadline: s.deadline != null ? s.deadline : Math.max(1, weeks - 3),
-        tradeReview: s.review === "none" ? "none" : "vote", reviewHours: 24, waiverHours: s.waiverHours || 36, faab: s.faab || 100 };
+      : { format: s.format === "roto" ? "roto" : "h2h", tally: s.tally || "game", weeks, playoffTeams: s.format === "roto" ? 0 : Math.min(s.playoffTeams != null ? s.playoffTeams : 4, n - (n % 2)),
+        deadline: s.deadline != null ? s.deadline : Math.max(1, weeks - 3), tradeReview: s.review === "none" ? "none" : "vote", reviewHours: 24,
+        waiverHours: s.waiverHours || 36, faab: s.faab || 100, waivers: s.waivers === "rolling" ? "rolling" : "faab" };
+    // roster rules from the form: IR spots, a weekly pickup limit, position limits
+    if (s.ir != null) settings.ir = s.ir;
+    if (s.maxAdds) settings.maxAdds = s.maxAdds;
+    if (s.posMax && Object.keys(s.posMax).length) settings.posMax = Object.assign({}, s.posMax);
     // a draft that ran out on the clock while nobody was around is "done" in the past; start after now, not then
     const at = Math.max(D.done || 0, o.now || Date.now());
     if (o.real) settings.real = true;
@@ -135,6 +140,9 @@
           const gone = (res.chopped || []).map(teamName).join(" and ");
           for (const r of res.block) add(r.team, "week", r.out ? `you were chopped in week ${w}` : `you survived week ${w}`,
             r.out ? `You scored ${fmtS(r.score)}, the lowest this week. Thanks for playing.` : `You scored ${fmtS(r.score)} and finished ${ord(r.rank)}. ${gone} ${(res.chopped || []).length > 1 ? "were" : "was"} chopped, and their players are up for bids.`);
+        } else if (res && res.roto) {
+          const st = G.rotoStandings(Object.assign({}, cl, { results: Object.fromEntries(Object.entries(cl.results).filter(([k]) => +k <= +w)) }), +w);
+          for (const r of st) add(r.team, "week", `week ${w} standings`, `You're ${ord(r.rank)} of ${st.length} with ${fmtS(r.pts)} roto points${r.rank > 1 ? `, ${fmtS(r.gb)} behind first` : ""}.`);
         } else if (Array.isArray(res)) {
           for (const g of res) for (const side of ["a", "b"]) {
             const mine = g[side], opp = side === "a" ? g.b : g.a, sm = side === "a" ? g.sa : g.sb, so = side === "a" ? g.sb : g.sa;

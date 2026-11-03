@@ -696,3 +696,10 @@ table.t.vs .wl b{font-weight:800}
 .gradeitem>div{flex:1}.gradeitem .grade{margin-left:auto}
 /* a starter with no games yet: a quiet one-line note, not a stat line */
 table.vs td .ps{white-space:nowrap;font-size:11.5px;font-weight:600}
+/* rotisserie: category values with their roto points, and your rank in each category */
+table.roto td small.rp{display:block;font-size:10.5px;font-weight:650;color:var(--dim)}
+.catrank{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px}
+.catrank>div{display:grid;gap:1px;padding:6px 8px;border-radius:8px;background:var(--surface-2)}
+.catrank small{font-size:11px;color:var(--muted);font-weight:750}
+.catrank b{font-variant-numeric:tabular-nums}
+

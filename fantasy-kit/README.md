@@ -207,6 +207,11 @@ owns which team, the invite code and the save order. It also stamps each team's 
   guillotine, the starting lineup (the same builder as Draft Lab, with presets like Superflex and 2 QB), bench
   size, FAAB budget, how long dropped players sit on waivers, playoff teams (none, 2, 4 or 8), the trade deadline
   and whether the league can veto trades. They ride along in the draft as `D.season` and become the league's settings.
+- **Scoring and formats.** Custom points (a value for every stat) or custom categories ride along as
+  `D.scoringSpec` and become the sport's "custom" scoring (`FK.sports.withScoring`). Formats: head to head (most
+  categories wins, or each category counts with `settings.tally: "cats"`), all-play for points (`tally: "allplay"`),
+  rotisserie (`format: "roto"`, season totals ranked per category), and best ball guillotine. Roster rules:
+  `waivers: "rolling"`, `ir`, `maxAdds` (pickups a week) and `posMax` (most players at a main position).
 - **Invites.** The commissioner shares `leagues.html?join=<id>&code=<invite>`. Whoever opens it signs in and picks an
   open team. Teams nobody has claimed are bots, and a bot's team can be taken over later.
 - **The draft.** The commissioner's page runs bots and the clock. Any other page steps in when a pick is five

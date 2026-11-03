@@ -48,6 +48,7 @@
     s.bench = opts.bench != null ? opts.bench : D ? D.bench : sport.bench;
     const guillotine = s.format === "guillotine";
     if (guillotine) { s.chops = Math.max(1, s.chops); s.weeks = Math.ceil((n - 1) / s.chops); s.playoffTeams = 0; s.playoffWeeks = 0; }
+    else if (s.format === "roto") { s.playoffTeams = 0; s.playoffWeeks = 0; }
     else { s.playoffTeams = Math.min(s.playoffTeams, n - (n % 2)); s.playoffTeams = s.playoffTeams >= 2 ? s.playoffTeams : 0; s.playoffWeeks = s.playoffTeams ? Math.ceil(Math.log2(s.playoffTeams)) : 0; }
     const seed = opts.seed != null ? opts.seed : D ? D.seed + 1 : Math.floor(Math.random() * 2 ** 31);
     const rosters = D ? F.rosters(D) : (opts.rosters || teams.map(() => []));
@@ -57,7 +58,7 @@
       v: 1, kind: "fk-league", sport: sport.key, scoring: opts.scoring || (D && D.scoring) || Object.keys(sport.scorings)[0],
       name: opts.name || "Fantasy League", season: opts.season || "", seed, created: opts.now || Date.now(), start: opts.start || opts.now || Date.now(),
       settings: s, teams, rosters: rosters.map((r) => r.slice()), ir: teams.map(() => []), lineups: {},
-      schedule: guillotine ? Array.from({ length: s.weeks }, () => []) : roundRobin(n, s.weeks, rng(seed + 7)), results: {}, week: 1,
+      schedule: guillotine || s.format === "roto" ? Array.from({ length: s.weeks }, () => []) : roundRobin(n, s.weeks, rng(seed + 7)), results: {}, week: 1,
       tx: [], trades: [], claims: [], waivers: {}, watch: {}, draft: D || null, nextId: 1,
       alive: teams.map((t) => t.id), chopped: [], waiverRuns: {},
     };
@@ -93,6 +94,8 @@
   const refresh = (L, ctx) => Object.assign(ctx, context(L, ctx.players, ctx.sport, ctx.hooks));
   const maxRoster = (L) => L.settings.lineup.length + L.settings.bench;
   const isGuillotine = (L) => L.settings.format === "guillotine";
+  // Rotisserie: no weekly games; season totals in each category, ranked, the best team getting n points.
+  const isRoto = (L) => L.settings.format === "roto";
   const isAlive = (L, teamId) => !isGuillotine(L) || (L.alive || []).includes(teamId);
   const totalWeeks = (L) => L.settings.weeks + L.settings.playoffWeeks;
   const weekStart = (L, w) => L.start + (w - 1) * 7 * DAY;
@@ -224,7 +227,7 @@
   // Once a week's time is up its lineups are locked, even while the league waits for the last box scores.
   const lineupLocked = (L, w, now) => w < L.week || (now != null && now >= weekStart(L, w + 1));
   const realPts = (R, sc, line) => {
-    const at = (k) => { const i = R.cols.indexOf(k); return i >= 0 ? line[i] || 0 : 0; };
+    const at = (k) => { const d = k.indexOf("."); if (d > 0 && k.slice(0, d) !== R.line) return 0; const i = R.cols.indexOf(d > 0 ? k.slice(d + 1) : k); return i >= 0 ? line[i] || 0 : 0; };
     return sc.weights ? sum(Object.entries(sc.weights).map(([k, x]) => at(k) * x)) : at(sc.col);
   };
   function playerWeek(L, ctx, p, w, frac = 1, whole) {
@@ -266,16 +269,16 @@
       for (const [id, v] of Object.entries(banked)) players[id] = (players[id] || 0) + v;
       return { total: sum(Object.values(players)), players, lineup: best, banked: Object.keys(banked) };
     }
-    const cats = {};
+    const cats = {}, parts = {};
     for (const c of sc.cats) {
       const line = c.line || "pg";
       const has = lines.filter(([, s]) => s[line]);
       const ix = (col) => ctx.sport.cols[line][col];
-      if (c.num) { const n = sum(has.map(([, s]) => s[line][ix(c.num)])), d = sum(has.map(([, s]) => s[line][ix(c.den)])); cats[c.k] = d ? n / d : 0; }
-      else if (c.rate) { const wt = sum(has.map(([, s]) => s[line][ix(c.w)])); cats[c.k] = wt ? sum(has.map(([, s]) => s[line][ix(c.rate)] * s[line][ix(c.w)])) / wt : 0; }
+      if (c.num) { const n = sum(has.map(([, s]) => s[line][ix(c.num)])), d = sum(has.map(([, s]) => s[line][ix(c.den)])); cats[c.k] = d ? n / d : 0; parts[c.k] = [n, d]; }
+      else if (c.rate) { const wt = sum(has.map(([, s]) => s[line][ix(c.w)])), x = sum(has.map(([, s]) => s[line][ix(c.rate)] * s[line][ix(c.w)])); cats[c.k] = wt ? x / wt : 0; parts[c.k] = [x, wt]; }
       else cats[c.k] = sum(has.map(([, s]) => s[line][ix(c.col)]));
     }
-    return { cats, total: null, lineup: best };
+    return { cats, parts, total: null, lineup: best };
   }
   // What a team should score this week with average form.
   function projection(L, ctx, teamId, w) {
@@ -303,7 +306,7 @@
   }
   // Every game of a week, final or (for the current week) in progress at `frac` of the week.
   function matchups(L, ctx, w, frac = 1) {
-    if (isGuillotine(L)) return [];
+    if (isGuillotine(L) || isRoto(L)) return [];
     const games = w <= L.settings.weeks ? L.schedule[w - 1] : playoffGames(L, ctx, w);
     return games.map(([a, b], i) => {
       if (L.results[w] && L.results[w][i]) return Object.assign({ a, b, final: true, i }, L.results[w][i]);
@@ -397,6 +400,22 @@
   function finishWeek(L, ctx, now) {
     const w = L.week;
     if (w > totalWeeks(L)) return { ok: false, why: "The season is over" };
+    if (isRoto(L)) {
+      // every team's week in each category, with the parts of the rate stats, so season totals add up exactly
+      const sc = scoring(L, ctx);
+      L.lineups[w] = L.lineups[w] || {};
+      const teams = {};
+      for (const t of L.teams) {
+        const x = teamWeek(L, ctx, t.id, w, 1);
+        teams[t.id] = { cats: x.cats || {}, parts: x.parts || {} };
+        L.lineups[w][t.id] = x.lineup || lineupFor(L, ctx, t.id, w);
+      }
+      L.results[w] = { roto: teams, cats: sc.cats.map((c) => ({ k: c.k, low: !!c.low, ratio: !!(c.num || c.rate) })) };
+      L.week = w + 1;
+      if (L.week > totalWeeks(L)) { closeSeason(L, now); return { ok: true, over: true }; }
+      runWaivers(L, ctx, now);
+      return { ok: true };
+    }
     if (isGuillotine(L)) {
       if (L.alive.length <= 1) return { ok: false, why: "The season is over" };
       L.lineups[w] = L.lineups[w] || {};
@@ -422,17 +441,29 @@
   }
 
   /* ---------- standings and playoffs ---------- */
-  function standings(L, upTo) {
+  function standings(L, upTo, live) {
     if (isGuillotine(L)) return survival(L);
+    if (isRoto(L)) return rotoStandings(L, upTo, live);
     const last = Math.min(upTo || L.settings.weeks, L.settings.weeks);
     const rows = L.teams.map((t) => ({ team: t.id, w: 0, l: 0, t: 0, pf: 0, pa: 0, streak: "", form: [] }));
+    const tally = L.settings.tally || "game";
     for (let w = 1; w <= last; w++) {
-      for (const g of L.results[w] || []) {
+      const res = L.results[w] || [];
+      for (const g of res) {
         const A = rows[g.a], B = rows[g.b];
         A.pf += g.sa; A.pa += g.sb; B.pf += g.sb; B.pa += g.sa;
-        if (g.w === "a") { A.w++; B.l++; A.form.push("W"); B.form.push("L"); }
-        else if (g.w === "b") { B.w++; A.l++; A.form.push("L"); B.form.push("W"); }
-        else { A.t++; B.t++; A.form.push("T"); B.form.push("T"); }
+        const fa = g.w === "a" ? "W" : g.w === "b" ? "L" : "T";
+        A.form.push(fa); B.form.push(fa === "W" ? "L" : fa === "L" ? "W" : "T");
+        // each category counts: a 6-3 week is six wins and three losses
+        if (tally === "cats") { A.w += g.sa; A.l += g.sb; B.w += g.sb; B.l += g.sa; A.t += g.ties || 0; B.t += g.ties || 0; }
+        else if (tally !== "allplay") {
+          if (g.w === "a") { A.w++; B.l++; } else if (g.w === "b") { B.w++; A.l++; } else { A.t++; B.t++; }
+        }
+      }
+      // all-play: every team's score against every other team's that week
+      if (tally === "allplay") {
+        const sc = res.flatMap((g) => [[g.a, g.sa], [g.b, g.sb]]);
+        for (const [t, x] of sc) for (const [u, y] of sc) { if (t === u) continue; if (x > y) rows[t].w++; else if (x < y) rows[t].l++; else rows[t].t++; }
       }
     }
     for (const r of rows) {
@@ -446,6 +477,52 @@
     const lead = sorted[0];
     sorted.forEach((r, i) => { r.rank = i + 1; r.gb = ((lead.w - r.w) + (r.l - lead.l)) / 2; r.inPlayoffs = i < L.settings.playoffTeams; });
     return sorted;
+  }
+  // Rotisserie standings: each category's season total ranked across the league (n points for the best, 1 for the
+  // worst, ties split), added up. `live` is { week: teamWeek rows } for the week in progress, or null.
+  function rotoStandings(L, upTo, live) {
+    const last = Math.min(upTo || L.settings.weeks, L.settings.weeks);
+    const n = L.teams.length;
+    let cats = null;
+    const tot = L.teams.map(() => ({}));
+    const addWeek = (wk, defs) => {
+      cats = cats || defs;
+      for (const t of L.teams) {
+        const x = wk[t.id] || { cats: {}, parts: {} };
+        for (const c of defs) {
+          const acc = tot[t.id][c.k] || (tot[t.id][c.k] = c.ratio ? [0, 0] : 0);
+          if (c.ratio) { const pt = x.parts[c.k] || [0, 0]; acc[0] += pt[0]; acc[1] += pt[1]; } else tot[t.id][c.k] = acc + (x.cats[c.k] || 0);
+        }
+      }
+    };
+    for (let w = 1; w <= last; w++) if (L.results[w] && L.results[w].roto) addWeek(L.results[w].roto, L.results[w].cats);
+    if (live && live.rows) addWeek(live.rows, live.cats);
+    cats = cats || [];
+    const rows = L.teams.map((t) => {
+      const v = {};
+      for (const c of cats) { const a = tot[t.id][c.k]; v[c.k] = c.ratio ? (a && a[1] ? a[0] / a[1] : 0) : a || 0; }
+      return { team: t.id, vals: v, catPts: {}, pts: 0, w: 0, l: 0, t: 0, pa: 0, form: [], streak: "" };
+    });
+    for (const c of cats) {
+      const sorted = rows.slice().sort((a, b) => (a.vals[c.k] - b.vals[c.k]) * (c.low ? -1 : 1));   // worst first
+      for (let i = 0; i < sorted.length;) {
+        let j = i; while (j + 1 < sorted.length && Math.abs(sorted[j + 1].vals[c.k] - sorted[i].vals[c.k]) < 1e-9) j++;
+        const pts = (i + 1 + j + 1) / 2;                                        // ties split the points
+        for (let k = i; k <= j; k++) { sorted[k].catPts[c.k] = pts; sorted[k].pts += pts; }
+        i = j + 1;
+      }
+    }
+    const out = rows.sort((a, b) => b.pts - a.pts || a.team - b.team);
+    out.forEach((r, i) => { r.rank = i + 1; r.pf = r.pts; r.pct = n > 1 ? r.pts / (cats.length * n || 1) : 0; r.gb = out[0].pts - r.pts; r.inPlayoffs = false; });
+    return out;
+  }
+  // The week in progress, for live roto standings.
+  function rotoLive(L, ctx, frac) {
+    if (!isRoto(L) || L.week > totalWeeks(L)) return null;
+    const sc = scoring(L, ctx);
+    const rows = {};
+    for (const t of L.teams) { const x = teamWeek(L, ctx, t.id, L.week, frac); rows[t.id] = { cats: x.cats || {}, parts: x.parts || {} }; }
+    return { rows, cats: sc.cats.map((c) => ({ k: c.k, low: !!c.low, ratio: !!(c.num || c.rate) })) };
   }
   // Guillotine standings: teams still alive by points this season, then the chopped, last one out first.
   function survival(L) {
@@ -500,10 +577,17 @@
 
   /* ---------- free agency and waivers ---------- */
   const onWaivers = (L, pid, now) => L.waivers[pid] != null && L.waivers[pid] > now;
-  function canRoster(L, ctx, teamId, add, drops) {
+  // Pickups this week: adds and won claims (trades don't count). settings.maxAdds caps them, if set.
+  const pickups = (L, teamId) => L.tx.filter((x) => x.team === teamId && x.week === L.week && (x.type === "add" || x.type === "add/drop" || x.type === "waiver")).length;
+  const pickupsLeft = (L, teamId) => (L.settings.maxAdds ? Math.max(0, L.settings.maxAdds - pickups(L, teamId)) : Infinity);
+  function canRoster(L, ctx, teamId, add, drops, pickup) {
     if (L.week > totalWeeks(L)) return { ok: false, why: "The season is over" };
     if (!isAlive(L, teamId)) return { ok: false, why: "That team has been chopped" };
     const ros = L.rosters[teamId].filter((id) => !(drops || []).includes(id));
+    if (add && pickup && pickupsLeft(L, teamId) <= 0) return { ok: false, why: `You've used all ${L.settings.maxAdds} pickups this week` };
+    // settings.posMax { QB: 4 }: at most that many players whose main position it is
+    const pm = L.settings.posMax || {}, ap = add && ctx.byId[add] ? S.positions(ctx.byId[add])[0] : null;
+    if (ap && pm[ap] && ros.filter((id) => ctx.byId[id] && S.positions(ctx.byId[id])[0] === ap).length >= pm[ap]) return { ok: false, why: `A roster can have at most ${pm[ap]} ${ap}` };
     const irKept = (L.ir[teamId] || []).filter((x) => !(drops || []).includes(x)).length;
     if (ros.length + (add ? 1 : 0) > maxRoster(L) + irKept) return { ok: false, why: "Roster is full: pick someone to drop" };
     if (ctx.hooks.check) { const c = ctx.hooks.check(L, teamId, add ? ctx.byId[add] : null, drops, ctx); if (c && !c.ok) return c; }
@@ -521,7 +605,7 @@
     if (add && ctx.own[add] != null) return { ok: false, why: `${ctx.byId[add].n} is on a roster` };
     if (add && onWaivers(L, add, now)) return { ok: false, why: `${ctx.byId[add].n} is on waivers: put in a claim` };
     if (drop && !L.rosters[teamId].includes(drop)) return { ok: false, why: "That player isn't on your roster" };
-    const ok = canRoster(L, ctx, teamId, add, drop ? [drop] : []);
+    const ok = canRoster(L, ctx, teamId, add, drop ? [drop] : [], true);
     if (!ok.ok) return ok;
     if (drop) { bank(L, ctx, teamId, drop, now); dropOne(L, teamId, drop, now); }
     if (add) { L.rosters[teamId].push(add); delete L.waivers[add]; joined(L, teamId, add, now); }
@@ -533,7 +617,7 @@
     if (ctx.own[add] != null) return { ok: false, why: `${ctx.byId[add].n} is on a roster` };
     bid = Math.max(L.settings.minBid, Math.round(bid || 0));
     if (L.settings.waivers === "faab" && bid > L.teams[teamId].faab) return { ok: false, why: `You have $${L.teams[teamId].faab} of FAAB` };
-    const ok = canRoster(L, ctx, teamId, add, drop ? [drop] : []);
+    const ok = canRoster(L, ctx, teamId, add, drop ? [drop] : [], true);
     if (!ok.ok) return ok;
     L.claims = L.claims.filter((c) => !(c.team === teamId && c.add === add && c.status === "open"));
     L.claims.push({ id: L.nextId++, team: teamId, add, drop: drop || null, bid, at: now, status: "open" });
@@ -553,7 +637,7 @@
       const why = ctx.own[c.add] != null ? `${(ctx.byId[c.add] || {}).n || "He"} was already taken`
         : L.settings.waivers === "faab" && c.bid > t.faab ? `Only $${t.faab} left by then`
         : c.drop && !L.rosters[c.team].includes(c.drop) ? `${(ctx.byId[c.drop] || {}).n || "Your drop"} was already gone`
-        : !canRoster(L, ctx, c.team, c.add, c.drop ? [c.drop] : []).ok ? "No roster spot open" : null;
+        : !canRoster(L, ctx, c.team, c.add, c.drop ? [c.drop] : [], true).ok ? canRoster(L, ctx, c.team, c.add, c.drop ? [c.drop] : [], true).why.replace("Roster is full: pick someone to drop", "No roster spot open") : null;
       if (why) { c.status = "failed"; c.why = why; continue; }
       if (c.drop) { bank(L, ctx, c.team, c.drop, now); dropOne(L, c.team, c.drop, now); }
       L.rosters[c.team].push(c.add); delete L.waivers[c.add]; joined(L, c.team, c.add, now);
@@ -818,7 +902,7 @@
     return n;
   }
 
-  return { DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
+  return { DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
     finishWeek, formOf, hot, standings, playoffGames, bracket, power, onWaivers, canRoster, addDrop, claim, cancelClaim, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };

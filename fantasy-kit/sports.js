@@ -205,5 +205,48 @@
   // Players who only fill late slots (kickers, defenses) are "late" for bots.
   const isLate = (sport, p) => positions(p).length > 0 && positions(p).every((x) => sport.late.includes(x));
 
-  return { ALL, nba, nfl, mlb, attach, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 } };
+  /* ---------- custom scoring ---------- */
+  // A league's own scoring, kept as plain data with the draft (D.scoringSpec) and rebuilt here:
+  //   { type: "points", weights: { stat: value } }   stat keys from POINT_STATS (baseball's are "bat.r", "pit.k")
+  //   { type: "cats", cats: ["fg", "ft", ...] }       category keys from catCatalog(sport)
+  // withScoring(sport, spec) adds it to the sport as the "custom" scoring.
+  const POINT_STATS = {
+    nba: [["pts", "Points"], ["reb", "Rebounds"], ["ast", "Assists"], ["stl", "Steals"], ["blk", "Blocks"], ["tov", "Turnovers"], ["tpm", "3-pointers made"],
+      ["fgm", "Field goals made"], ["fga", "Field goals tried"], ["ftm", "Free throws made"], ["fta", "Free throws tried"]],
+    nfl: [["pass_yd", "Passing yards"], ["pass_td", "Passing TDs"], ["pass_int", "Interceptions thrown"], ["rush_yd", "Rushing yards"], ["rush_td", "Rushing TDs"],
+      ["rec", "Receptions"], ["rec_yd", "Receiving yards"], ["rec_td", "Receiving TDs"], ["fum_lost", "Fumbles lost"], ["fgm", "Field goals made"], ["xpm", "Extra points made"],
+      ["def_td", "Defensive TDs"], ["def_int", "Interceptions caught"], ["def_sack", "Sacks"], ["pts_allow", "Points allowed"]],
+    mlb: [["bat.r", "Runs"], ["bat.h", "Hits"], ["bat.hr", "Home runs"], ["bat.rbi", "RBI"], ["bat.sb", "Stolen bases"], ["bat.tb", "Total bases"],
+      ["pit.ip", "Innings pitched"], ["pit.w", "Wins"], ["pit.l", "Losses"], ["pit.sv", "Saves"], ["pit.hld", "Holds"], ["pit.k", "Strikeouts"], ["pit.er", "Earned runs"],
+      ["pit.bb", "Walks allowed"], ["pit.h", "Hits allowed"], ["pit.qs", "Quality starts"]],
+  };
+  const POINT_DEFAULTS = {
+    nba: { pts: 1, reb: 1.2, ast: 1.5, stl: 3, blk: 3, tov: -1, tpm: 0.5 },
+    nfl: { pass_yd: 0.04, pass_td: 4, pass_int: -2, rush_yd: 0.1, rush_td: 6, rec: 0.5, rec_yd: 0.1, rec_td: 6, fum_lost: -2, fgm: 3, xpm: 1, def_td: 6, def_int: 2, def_sack: 1 },
+    mlb: { "bat.r": 1, "bat.tb": 1, "bat.rbi": 1, "bat.sb": 1, "pit.ip": 3, "pit.w": 2, "pit.l": -2, "pit.sv": 5, "pit.hld": 2, "pit.k": 1, "pit.er": -2, "pit.bb": -1, "pit.h": -1 },
+  };
+  // Every category any of a sport's presets uses, plus a few common extras.
+  const EXTRA_CATS = { mlb: [{ k: "obp", label: "OBP", line: "bat", rate: "obp", w: "pa", fmt: r3 }] };
+  function catCatalog(sport) {
+    const seen = new Map();
+    for (const sc of Object.values(ALL[sport.key].scorings)) if (sc.type === "cats") for (const c of sc.cats) if (!seen.has(c.k)) seen.set(c.k, c);
+    for (const c of EXTRA_CATS[sport.key] || []) if (!seen.has(c.k)) seen.set(c.k, c);
+    return [...seen.values()];
+  }
+  function customScoring(sport, spec) {
+    const base = ALL[sport.key].scorings;
+    if (spec.type === "points") {
+      const pts = Object.values(base).find((x) => x.type === "points") || {};
+      const line = sport.key === "nfl" ? "tot" : sport.key === "nba" ? "pg" : "bat";
+      return { label: "Custom points", type: "points", line, per: sport.key === "nba" ? "game" : undefined, games: pts.games || (sport.key === "mlb" ? 162 : 17),
+        weights: Object.assign({}, spec.weights), projScale: sport.key === "nfl" ? 1 : undefined, custom: true };
+    }
+    const cats = Object.values(base).find((x) => x.type === "cats");
+    const all = catCatalog(sport);
+    return Object.assign({}, cats, { label: "Custom categories", cats: (spec.cats || []).map((k) => all.find((c) => c.k === k)).filter(Boolean), custom: true });
+  }
+  const withScoring = (sport, spec) => (spec && (spec.type === "points" || spec.type === "cats")
+    ? Object.assign({}, sport, { scorings: Object.assign({}, sport.scorings, { custom: customScoring(sport, spec) }) }) : sport);
+
+  return { ALL, nba, nfl, mlb, attach, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring };
 });
