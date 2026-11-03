@@ -271,7 +271,7 @@
     const mk = sport.market;
     if (mk && opts.market !== false && mk.fp) {
       const ros = mk.fp === "rest of season";
-      cols.push({ k: "fp", label: ros ? "ROS" : "Pros", cls: "r num", hide: "s", title: `FantasyPros expert consensus, ${ros ? "rest of season" : "draft rankings"}${mk.fpType === "ALL" ? "" : `, ${mk.fpType === "HALF" ? "half PPR" : mk.fpType === "PPR" ? "PPR" : "standard"}`}`, sort: (p) => (p.mk && p.mk.fp) || 1e4, asc: true, html: (p) => (p.mk && p.mk.fp ? String(p.mk.fp) : `<span class="ps">-</span>`) });
+      cols.push({ k: "fp", label: "ECR", cls: "r num", hide: "s", title: `FantasyPros expert consensus, ${ros ? "rest of season" : "draft rankings"}${mk.fpType === "ALL" ? "" : `, ${mk.fpType === "HALF" ? "half PPR" : mk.fpType === "PPR" ? "PPR" : "standard"}`}`, sort: (p) => (p.mk && p.mk.fp) || 1e4, asc: true, html: (p) => (p.mk && p.mk.fp ? String(p.mk.fp) : `<span class="ps">-</span>`) });
       if (mk.trade) cols.push({ k: "tr", label: "Trade", cls: "r num", hide: "s", title: "Rank by FantasyCalc's values from real redraft trades this season", sort: (p) => (p.mk && p.mk.tr) || 1e4, asc: true, html: (p) => (p.mk && p.mk.tr ? String(p.mk.tr) : `<span class="ps">-</span>`) });
     }
     if (mk && opts.market !== false && mk.espn && !(mk.fp === "rest of season")) {
