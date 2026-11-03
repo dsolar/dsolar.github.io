@@ -105,6 +105,8 @@
     function weekLine(p, w) {
       if (frac(w) <= 0) return "Yet to play";
       const line = G.playerWeek(L(), ctx, p, w, frac(w));
+      // a real week: no games yet means no games yet, not a zero
+      if (G.realWeek(L(), ctx, w)) { const ln = line[sc().cats[0].line || "pg"], gi = ln && (sport.cols[sc().cats[0].line || "pg"] || {}).gp; if (ln && gi != null && !ln[gi]) return w < L().week ? "Didn't play" : "No games yet"; }
       // counting categories this player's line has (a hitter's for a hitter, a pitcher's for a pitcher), the big three first
       const pref = ["pts", "reb", "ast", "r", "hr", "rbi", "k", "w", "sv"];
       const cats = sc().cats.filter((c) => c.col && line[c.line || "pg"]).sort((a, b) => (pref.indexOf(a.col) + 99) % 99 - (pref.indexOf(b.col) + 99) % 99).slice(0, 3);
@@ -223,7 +225,7 @@
     function settingsPage() {
       const s = L().settings;
       return `<div class="wrap page"><div class="head"><h1 class="disp">League settings</h1></div><div class="cols2">
-        <div class="card"><div class="mod-h"><h2>Format</h2></div><div class="bd"><dl class="kv"><dt>Sport</dt><dd>${esc(sport.name)}</dd><dt>Scoring</dt><dd>${esc(sc().label)}</dd><dt>Teams</dt><dd>${L().teams.length}</dd><dt>Format</dt><dd>${gl() ? `Guillotine: the lowest score each week is chopped${s.chops > 1 ? ` (${s.chops} a week)` : ""}. On a tie, the lower projection goes` : "Head to head"}${bb() ? ", best ball" : ""}</dd>
+        <div class="card"><div class="mod-h"><h2>Format</h2></div><div class="bd"><dl class="kv"><dt>Sport</dt><dd>${esc(sport.name)}</dd><dt>Scoring</dt><dd>${esc(sc().label)}</dd><dt>Stats</dt><dd>${s.real ? `Real box scores${(opts.hooks || {}).real ? ` from ${esc(opts.hooks.real.source)}` : ""}. A week closes once its last games are in` : "Simulated from each player's season"}</dd><dt>Teams</dt><dd>${L().teams.length}</dd><dt>Format</dt><dd>${gl() ? `Guillotine: the lowest score each week is chopped${s.chops > 1 ? ` (${s.chops} a week)` : ""}. On a tie, the lower projection goes` : "Head to head"}${bb() ? ", best ball" : ""}</dd>
           <dt>Season</dt><dd>${gl() ? `${s.weeks} weeks, until one team is left` : `${s.weeks} weeks, then ${s.playoffTeams} teams in the playoffs`}</dd>${s.trades === false ? `<dt>Trades</dt><dd>None</dd>` : `<dt>Trade deadline</dt><dd>${s.deadline ? `After week ${s.deadline}` : "None"}</dd><dt>Trade review</dt><dd>${s.tradeReview === "none" ? "None" : `${fmtHours(s.reviewHours)}, ${Math.round(s.vetoShare * 100)}% of the league to veto`}</dd><dt>Offers</dt><dd>Expire after ${fmtHours(s.offerHours || 48)}</dd>`}</dl></div></div>
         <div class="card"><div class="mod-h"><h2>Rosters</h2></div><div class="bd"><dl class="kv"><dt>Starters</dt><dd>${s.lineup.map((x) => `<span class="slot" style="margin:0 3px 3px 0">${esc(x)}</span>`).join("")}</dd><dt>Bench</dt><dd>${s.bench}</dd><dt>Lineups</dt><dd>${bb() ? "Best ball: set automatically" : "Set each week"}</dd><dt>Waivers</dt><dd>${s.waivers === "faab" ? `${s.faabBank ? `FAAB from the draft's time bank, $${Math.round(s.faab / 2)} to $${Math.round(s.faab * 1.5)}` : `$${s.faab} FAAB`}${gl() ? " for the whole season" : ""}, ${s.waiverAt != null ? `claims run ${Math.round(s.waiverAt / 24 * 10) / 10} days into each week` : `${s.waiverHours} hours after a drop`}` : "Rolling priority"}</dd><dt>Waiver order</dt><dd>${s.waivers === "faab" ? "The highest bid wins. On a tie, the better waiver priority wins" : "The best waiver priority wins"}. Winning a claim sends you to the back of the line, even within the same run.</dd></dl></div></div>
         ${sc().cats ? `<div class="card"><div class="mod-h"><h2>Categories</h2></div><div class="bd">${sc().cats.map((c) => `<span class="slot" style="margin:0 4px 4px 0">${esc(c.label)}</span>`).join("")}<p class="ps">${gl() ? "Each week, teams are ranked in every category: the best gets one point per team alive, the worst gets one. Lowest total is chopped." : "Head to head: win more categories than your opponent to win the week."}</p></div></div>` : ""}
@@ -395,6 +397,17 @@
         <span class="grow"></span>${isMe(id) ? `<button class="btn" data-editteam>Edit team</button>` : ""}${!isMe(id) && canTrade() ? `<button class="btn go" data-trade="${id}">Propose a trade</button>` : ""}
         <label class="sr" for="team-pick">Team</label><select id="team-pick" style="width:auto;border-radius:999px">${L().teams.map((x) => `<option value="${x.id}"${x.id === id ? " selected" : ""}>${esc(x.name)}${isMe(x.id) ? " (you)" : ""}</option>`).join("")}</select></div>`;
     }
+    // Where this week's numbers come from: real box scores (and when they last came in), or a simulation.
+    function scoreNote() {
+      if (over()) return "";
+      const R = (opts.hooks || {}).real, w = L().week, rw = G.realWeek(L(), ctx, w);
+      const when = (t) => new Date(t).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" });
+      let msg;
+      if (rw && now() >= G.weekStart(L(), w + 1) && !rw.final) msg = `Week ${w} is over and lineups are locked. It closes when the last box scores come in, usually by the next morning.`;
+      else if (rw) msg = `Real box scores from ${esc(R.source || "the league feeds")}, updated ${when(R.updated)}.`;
+      else msg = "Scores are simulated from each player's season, not real games.";
+      return `<div class="wrap" style="padding-top:10px"><p class="ps" style="margin:0">${msg}</p></div>`;
+    }
     // a link to something that isn't there says so once, instead of quietly showing something else
     function badLink(msg) { if (ui.badLink === location.hash) return; ui.badLink = location.hash; setTimeout(() => U.toast(msg, true), 0); }
     function rosterPage(arg) {
@@ -418,7 +431,7 @@
       const ir = L().ir[id] || [], irMax = G.irSlots(L()), alive = G.isAlive(L(), id);
       const moving = ui.moving && L().rosters[id].includes(ui.moving) && !ir.includes(ui.moving) ? ctx.byId[ui.moving] : null;
       const movingSlot = moving ? lu.indexOf(moving.id) : -1;
-      const locked = w < L().week || bb() || !alive;
+      const locked = G.lineupLocked(L(), w, now()) || bb() || !alive;
       const fitsSlot = (i) => moving && i != null && S.fits(sport, moving, slots[i]);
       // where the player being moved can go: an open or filled starting slot he fits, or a bench player who fits his slot
       const targetFor = (p, i) => {
@@ -741,7 +754,8 @@
       const pageName = subName && subName !== "Overview" ? subName : tabName;
       document.title = `${pageName ? pageName + " | " : ""}${L().name}`;
       if (!/<h1[\s>]/.test(html)) html = `<h1 class="sr">${esc(pageName || L().name)}, ${esc(L().name)}</h1>` + html;
-      opts.el.innerHTML = (opts.notice ? opts.notice() : "") + alertsBar(r) + html;
+      const scores = r.tab === "matchup" || (r.tab === "league" && (r.sub === "scoreboard" || r.sub === "overview")) ? scoreNote() : "";
+      opts.el.innerHTML = (opts.notice ? opts.notice() : "") + alertsBar(r) + scores + html;
       for (const box of $$(".fk-nav nav, .fk-subs .wrap, .chips", document)) {
         const on = $('[aria-current="page"], [aria-pressed="true"]', box);
         if (on && box.scrollWidth > box.clientWidth) box.scrollLeft += on.getBoundingClientRect().left - box.getBoundingClientRect().left - (box.clientWidth - on.clientWidth) / 2;
@@ -761,13 +775,13 @@
         if (b.hasAttribute("data-editteam")) editTeam();
         else if (d.toir) act(() => G.toIR(L(), ctx, mid, d.toir, now()), `${ctx.byId[d.toir].n} is on IR. His roster spot is open.`);
         else if (d.activate) { const r = G.activate(L(), ctx, mid, d.activate, null, now()); if (r.needDrop) activateDialog(d.activate); else if (!r.ok) U.toast(r.why, true); else { save(); U.toast(`${ctx.byId[d.activate].n} is back from IR.`); render(); } }
-        else if (d.swapb) { const w = ui.week && ui.week >= L().week ? ui.week : curWeek(); ui.moving = null; act(() => G.move(L(), ctx, mid, w, d.swapb, +d.slot)); }
+        else if (d.swapb) { const w = ui.week && ui.week >= L().week ? ui.week : curWeek(); ui.moving = null; act(() => G.move(L(), ctx, mid, w, d.swapb, +d.slot, now())); }
         else if (d.add) addDialog(d.add);
         else if (d.drop) dropDialog(d.drop);
         else if (d.trade !== undefined && b.hasAttribute("data-trade")) openTrade(d.trade === "" ? null : +d.trade, d.want || null);
         else if (d.move !== undefined && b.hasAttribute("data-move")) { ui.moving = d.move || null; render(); }
-        else if (d.here !== undefined && b.hasAttribute("data-here")) { const w = ui.week && ui.week >= L().week ? ui.week : curWeek(); const pid = ui.moving; ui.moving = null; act(() => G.move(L(), ctx, mid, w, pid, d.here === "BN" ? "BN" : +d.here)); }
-        else if (b.hasAttribute("data-optimize")) { const w = ui.week && ui.week >= L().week ? ui.week : curWeek(); delete (L().lineups[w] || {})[mid]; act(() => G.setLineup(L(), ctx, mid, w, G.lineupFor(L(), ctx, mid, w)), "Best lineup set."); }
+        else if (d.here !== undefined && b.hasAttribute("data-here")) { const w = ui.week && ui.week >= L().week ? ui.week : curWeek(); const pid = ui.moving; ui.moving = null; act(() => G.move(L(), ctx, mid, w, pid, d.here === "BN" ? "BN" : +d.here, now())); }
+        else if (b.hasAttribute("data-optimize")) { const w = ui.week && ui.week >= L().week ? ui.week : curWeek(); delete (L().lineups[w] || {})[mid]; act(() => G.setLineup(L(), ctx, mid, w, G.lineupFor(L(), ctx, mid, w), now()), "Best lineup set."); }
         else if (d.week) { ui.week = +d.week; render(); }
         else if (d.watch) { const w = watch(); const i = w.indexOf(d.watch); if (i >= 0) w.splice(i, 1); else w.push(d.watch); save(); render(); }
         else if (d.unclaim) act(() => G.cancelClaim(L(), +d.unclaim), "Claim cancelled.");

@@ -207,8 +207,8 @@ owns which team, the invite code and the save order. It also stamps each team's 
   open team. Teams nobody has claimed are bots, and a bot's team can be taken over later.
 - **The draft.** The commissioner's page runs bots and the clock. Any other page steps in when a pick is five
   seconds overdue. In a slow draft (an hour or more a pick), managers get an email when they're on the clock.
-- **The season** starts the Monday after the draft (Tuesday for football) at 9:00 UTC and runs on the real calendar,
-  like the demo leagues.
+- **The season** starts the Monday after the draft (Tuesday for football) at 13:00 UTC and runs on the real calendar.
+  Basketball and football leagues are scored on real box scores (see Real scoring).
 - **The clock job.** `supabase/functions/fk-clock` runs every five minutes from pg_cron. It plays out ended weeks,
   waivers and trade reviews, and finishes overdue picks, so leagues keep moving with no page open. It loads the
   engine from the live site.

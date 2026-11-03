@@ -25,12 +25,12 @@ function setup(key, scoring, season) {
   return { sport, players, D, T0, byId: Object.fromEntries(players.map((p) => [p.id, p])) };
 }
 
-test('the season starts the next Monday (Tuesday for football) at 9:00 UTC', () => {
+test('the season starts the next Monday (Tuesday for football) at 13:00 UTC', () => {
   const tue = Date.UTC(2026, 10, 3, 15);
-  assert.equal(new Date(Z.startAfter(tue, 'nba')).toISOString(), '2026-11-09T09:00:00.000Z');
-  assert.equal(new Date(Z.startAfter(tue, 'nfl')).toISOString(), '2026-11-10T09:00:00.000Z');
-  assert.equal(new Date(Z.startAfter(Date.UTC(2026, 10, 9, 8), 'nba')).toISOString(), '2026-11-09T09:00:00.000Z', 'same morning, before 9');
-  assert.equal(new Date(Z.startAfter(Date.UTC(2026, 10, 9, 10), 'nba')).toISOString(), '2026-11-16T09:00:00.000Z');
+  assert.equal(new Date(Z.startAfter(tue, 'nba')).toISOString(), '2026-11-09T13:00:00.000Z');
+  assert.equal(new Date(Z.startAfter(tue, 'nfl')).toISOString(), '2026-11-10T13:00:00.000Z');
+  assert.equal(new Date(Z.startAfter(Date.UTC(2026, 10, 9, 12), 'nba')).toISOString(), '2026-11-09T13:00:00.000Z', 'same morning, before 13:00');
+  assert.equal(new Date(Z.startAfter(Date.UTC(2026, 10, 9, 14), 'nba')).toISOString(), '2026-11-16T13:00:00.000Z');
 });
 
 test('a draft nobody comes back to finishes on the clock, and everyone seated hears about it', () => {

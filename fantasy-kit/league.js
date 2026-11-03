@@ -120,7 +120,7 @@
     }
     const counting = lineupFor(L, ctx, teamId, w);
     if (!counting.includes(pid)) return;
-    const pts = playerWeek(L, ctx, ctx.byId[pid], w, effFrac(L, teamId, pid, w, f)).pts;
+    const pts = playerWeek(L, ctx, ctx.byId[pid], w, effFrac(L, teamId, pid, w, f), f).pts;
     const b = (((L.banked = L.banked || {})[w] = L.banked[w] || {})[teamId] = L.banked[w][teamId] || {});
     b[pid] = (b[pid] || 0) + pts;
   }
@@ -133,9 +133,9 @@
     if (saved) return saved.map((id) => (id && ros.includes(id) && !ir.includes(id) ? id : null));
     return fillLineup(L, ctx, teamId).map((p) => (p ? p.id : null));
   }
-  function setLineup(L, ctx, teamId, w, slots) {
+  function setLineup(L, ctx, teamId, w, slots, now) {
     if (L.settings.bestBall) return { ok: false, why: "Best ball sets your lineup for you" };
-    if (w < L.week) return { ok: false, why: `Week ${w} is locked` };
+    if (lineupLocked(L, w, now)) return { ok: false, why: `Week ${w} is locked` };
     const ros = L.rosters[teamId], seen = new Set();
     for (let i = 0; i < L.settings.lineup.length; i++) {
       const id = slots[i];
@@ -150,14 +150,14 @@
     return { ok: true };
   }
   // Swap a roster player into a slot (or to the bench): the Yahoo "Move" flow.
-  function move(L, ctx, teamId, w, pid, toSlot) {
+  function move(L, ctx, teamId, w, pid, toSlot, now) {
     const cur = lineupFor(L, ctx, teamId, w).slice();
     const from = cur.indexOf(pid);
-    if (toSlot === "BN" || toSlot == null) { if (from >= 0) cur[from] = null; return setLineup(L, ctx, teamId, w, cur); }
+    if (toSlot === "BN" || toSlot == null) { if (from >= 0) cur[from] = null; return setLineup(L, ctx, teamId, w, cur, now); }
     const other = cur[toSlot];
     cur[toSlot] = pid;
     if (from >= 0) cur[from] = other && S.fits(ctx.sport, ctx.byId[other], L.settings.lineup[from]) ? other : null;
-    return setLineup(L, ctx, teamId, w, cur);
+    return setLineup(L, ctx, teamId, w, cur, now);
   }
 
   const healthy = (L, ctx, teamId) => L.rosters[teamId].filter((id) => !(L.ir[teamId] || []).includes(id)).map((id) => ctx.byId[id]).filter((p) => p && !/^(out|ir|o)$/i.test(p.inj || ""));
@@ -187,7 +187,7 @@
     const sc = scoring(L, ctx);
     const leavers = Object.keys((L.left && L.left[w] && L.left[w][teamId]) || {}).filter((id) => !L.rosters[teamId].includes(id) || (L.ir[teamId] || []).includes(id)).map((id) => ctx.byId[id]).filter(Boolean);
     const ps = healthy(L, ctx, teamId).concat(leavers).map((p) => {
-      const v = sc.type === "points" ? playerWeek(L, ctx, p, w, effFrac(L, teamId, p.id, w, frac)).pts : (p.v || 0) + 0.5 * (formOf(L, p, w) - 1) * Math.max(1, Math.abs(p.v || 0));
+      const v = sc.type === "points" ? playerWeek(L, ctx, p, w, effFrac(L, teamId, p.id, w, frac), frac).pts : (p.v || 0) + 0.5 * (formOf(L, p, w) - 1) * Math.max(1, Math.abs(p.v || 0));
       return Object.assign({}, p, { v, _id: p.id });
     });
     return F.assign(ctx.sport, ps, L.settings.lineup).map((p) => (p ? p._id : null));
@@ -200,9 +200,49 @@
   const formOf = (L, p, w) => Math.max(0.05, 1 + 0.38 * gauss(rng(L.seed * 7 + w * 7919 + hash01(p.id) * 1e6)));
   // How a player is trending: his last two weeks of form.
   const hot = (L, p) => (L.week > 1 ? (formOf(L, p, L.week - 1) + (L.week > 2 ? formOf(L, p, L.week - 2) : 1)) / 2 : 1);
-  function playerWeek(L, ctx, p, w, frac = 1) {
+  /* ---------- real box scores ---------- */
+  // A league scored on real games (settings.real) reads each week's totals from hooks.real, the weekly file
+  // (fantasy-kit/data/weeks-<sport>.json): the data week that starts within two days of the league week. A week
+  // the data doesn't have yet counts as no games played, never as made-up stats.
+  function realWeek(L, ctx, w) {
+    const R = ctx.hooks && ctx.hooks.real;
+    if (!L.settings.real || !R || !R.weeks) return null;
+    if (ctx._rwOf !== R) { ctx._rw = {}; ctx._rwOf = R; }
+    if (w in ctx._rw) return ctx._rw[w];
+    const t = weekStart(L, w);
+    const hit = Object.values(R.weeks).find((x) => Math.abs(Date.parse(x.start + "T12:00:00Z") - t) < 2.5 * DAY);
+    return (ctx._rw[w] = hit || { lines: {}, final: false, missing: true });
+  }
+  // Can the week close? Its time is up, and in a real league the data has the whole week (or it's three days late,
+  // so a broken feed can't stall the season forever).
+  function canFinish(L, ctx, now) {
+    const end = weekStart(L, L.week + 1);
+    if (L.week > totalWeeks(L) || now < end) return false;
+    const rw = realWeek(L, ctx, L.week);
+    return !rw || !!rw.final || now >= end + 3 * DAY;
+  }
+  // Once a week's time is up its lineups are locked, even while the league waits for the last box scores.
+  const lineupLocked = (L, w, now) => w < L.week || (now != null && now >= weekStart(L, w + 1));
+  const realPts = (R, sc, line) => {
+    const at = (k) => { const i = R.cols.indexOf(k); return i >= 0 ? line[i] || 0 : 0; };
+    return sc.weights ? sum(Object.entries(sc.weights).map(([k, x]) => at(k) * x)) : at(sc.col);
+  };
+  function playerWeek(L, ctx, p, w, frac = 1, whole) {
     const form = formOf(L, p, w);
     const sc = scoring(L, ctx);
+    const rw = realWeek(L, ctx, w);
+    if (rw) {
+      // the box score so far; a player who joined or left midweek counts for his share of it
+      const R = ctx.hooks.real, line = rw.lines[p.id];
+      const share = whole > 0 ? Math.max(0, Math.min(1, frac / whole)) : frac > 0 ? 1 : 0;
+      if (sc.type === "points") return { pts: line ? realPts(R, sc, line) * share : 0, real: true };
+      const out = {};
+      for (const [key, def] of Object.entries(ctx.sport.data.lines)) {
+        if (key !== R.line && !(def.cols.every((c) => R.cols.includes(c)))) continue;
+        out[key] = def.cols.map((c) => { const i = R.cols.indexOf(c); const v = line && i >= 0 ? line[i] || 0 : 0; return /^(avg|obp|ops|era|whip|fg|ft)$/.test(c) ? v : v * share; });
+      }
+      return out;
+    }
     const wk = WEEK[ctx.sport.key] || { weeks: 20 };
     if (sc.type === "points") return { pts: (p.v / wk.weeks) * form * frac };
     const out = {};
@@ -219,7 +259,7 @@
     const sc = scoring(L, ctx);
     const best = L.settings.bestBall && w >= L.week ? bestBallIds(L, ctx, teamId, w, frac) : null;
     const ids = (best || lineupFor(L, ctx, teamId, w)).filter(Boolean);
-    const lines = ids.map((id) => [ctx.byId[id], ctx.byId[id] && playerWeek(L, ctx, ctx.byId[id], w, effFrac(L, teamId, id, w, frac))]).filter((x) => x[0]);
+    const lines = ids.map((id) => [ctx.byId[id], ctx.byId[id] && playerWeek(L, ctx, ctx.byId[id], w, effFrac(L, teamId, id, w, frac), frac)]).filter((x) => x[0]);
     if (sc.type === "points") {
       const players = Object.fromEntries(lines.map(([p, s]) => [p.id, s.pts]));
       const banked = (L.banked && L.banked[w] && L.banked[w][teamId]) || {};
@@ -778,7 +818,7 @@
     return n;
   }
 
-  return { DEFAULTS, WEEK, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
+  return { DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
     finishWeek, formOf, hot, standings, playoffGames, bracket, power, onWaivers, canRoster, addDrop, claim, cancelClaim, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };

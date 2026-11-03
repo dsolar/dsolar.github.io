@@ -14,7 +14,8 @@
   const now = () => C.now();
   const clone = (x) => (x == null ? x : JSON.parse(JSON.stringify(x)));
   let info = null, D = null, L = null, version = 0, base = null;
-  let data = null, sport = null, players = null, byId = {}, room = null, app = null, mode = null, mine = [];
+  let data = null, sport = null, players = null, byId = {}, room = null, app = null, mode = null, mine = [], weeks = null;
+  const hooks = () => ({ real: weeks });
   let inflight = false, dirty = false, lastChange = Date.now(), userAt = 0, pollT = null;
 
   const fatal = (msg, more = "") => { document.body.classList.remove("fk-room"); $("#top").innerHTML = ""; $("#app").innerHTML = `<div class="wrap page"><div class="banner loss" role="alert"><b>${esc(msg)}</b> ${more}</div><p><a class="btn" href="leagues.html">Your leagues</a></p></div>`; };
@@ -40,6 +41,8 @@
     players = data.players.map((p) => Object.assign({}, p));
     V.evaluate(sport, players, { teams: D.teams.length, lineup: D.lineup, bench: D.bench, scoring: D.scoring, budget: D.auction ? D.auction.budget : 200 });
     byId = Object.fromEntries(players.map((p) => [p.id, p]));
+    weeks = await fetch(`data/weeks-${info.sport}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null);
+    if (weeks && String(weeks.season) !== String(data.season)) weeks = null;
     if (C.user()) C.rpc("fk_mine", {}).then((m) => { if (Array.isArray(m)) { mine = m; if (app) app.render(); } }).catch(() => {});
     mount();
     if (link && link.error) U.toast(`That sign-in link didn't work: ${link.error}`, true);
@@ -71,7 +74,7 @@
   function mountLeague() {
     document.body.classList.remove("fk-room");
     app = U.leagueApp({
-      top: $("#top"), el: $("#app"), sport, players, league: () => L, save: () => push(), me: () => info.me, now, frac,
+      top: $("#top"), el: $("#app"), sport, players, league: () => L, save: () => push(), me: () => info.me, now, frac, hooks: hooks(),
       brand: { name: "Draft Lab", href: "leagues.html", mark: `<img src="mark.svg" alt="">` },
       switcher: () => U.switcher({ name: L.name, abbr: info.sport.toUpperCase(), color: SPORT_CLR[info.sport] },
         mine.filter((m) => m.id !== id).map((m) => ({ href: `play.html?id=${encodeURIComponent(m.id)}`, name: m.name, sub: S[m.sport].name, av: { abbr: m.sport.toUpperCase(), color: SPORT_CLR[m.sport] } })),
@@ -109,8 +112,9 @@
   }
 
   /* ---------- the season (season.js) ---------- */
-  function beginSeason() { L = Z.begin(D, sport, { name: info.name, season: data.season, now: now() }); }
-  const catchUp = () => (L ? Z.catchUp(L, G.context(L, players, sport), now()) : false);
+  // basketball and football seasons in progress are scored on real box scores
+  function beginSeason() { L = Z.begin(D, sport, { name: info.name, season: data.season, now: now(), real: !!weeks }); }
+  const catchUp = () => (L ? Z.catchUp(L, G.context(L, players, sport, hooks()), now()) : false);
   const events = (b, c) => Z.events(b, c, { name: info.name, url: location.origin + location.pathname + "?id=" + encodeURIComponent(id), seats: info.seats, me: info.me, byId, now: now() });
 
   /* ---------- saving ---------- */

@@ -19,7 +19,9 @@
   const KEY = sportKey + (guil ? ":g" : "");
   const nameOf = (k, g) => (g ? GNAMES : NAMES)[k];
   store.set("last", sportKey); store.set("lastf", fmt);
-  let data = null, sport = null, players = null, L = null, app = null;
+  let data = null, sport = null, players = null, L = null, app = null, weeks = null;
+  // real box scores for this season, when the data has them (basketball and football)
+  const hooks = () => ({ real: weeks });
 
   async function load() {
     const r = await fetch(`data/${sportKey}.json`, { cache: "no-cache" });
@@ -30,8 +32,12 @@
     players = data.players.map((p) => Object.assign({}, p));
     const scoring = Object.keys(sport.scorings)[0];
     V.evaluate(sport, players, { teams: 10, lineup, scoring });
+    weeks = await fetch(`data/weeks-${sportKey}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null);
+    if (weeks && String(weeks.season) !== String(data.season)) weeks = null;
     L = store.get(KEY, null);
     if (!L || L.v !== 1 || L.demo !== 2) L = build(lineup, scoring);
+    // a demo on this season's real calendar scores on real games from here on
+    if (weeks && !/replay/.test(L.season || "") && L.settings.real == null) L.settings.real = true;
     catchUp();
   }
 
@@ -67,7 +73,7 @@
     lg.teams.forEach((t, i) => (t.color = [0, 1, 2, 3, 4, 5, 6, 7, 11, 9, 8, 10][i % 12]));
     return lg;
   }
-  const ctxOf = () => G.context(L, players, sport);
+  const ctxOf = () => G.context(L, players, sport, hooks());
   // Real time moves the season: every week that has ended since the last visit gets played.
   function catchUp() {
     const ctx = ctxOf();
@@ -80,7 +86,7 @@
       L.botBid[L.week] = true;
       G.botBids(L, ctx, at, F.rng(L.seed + L.week * 41));
     };
-    while (L.week <= G.totalWeeks(L) && Date.now() >= G.weekStart(L, L.week + 1)) {
+    while (G.canFinish(L, ctx, Date.now())) {
       const end = G.weekStart(L, L.week + 1);
       bids();
       if (G.isGuillotine(L)) G.tick(L, ctx, G.waiverRunAt(L) + 1);
@@ -117,7 +123,7 @@
   function mount() {
     const leagues = Object.values(S.ALL).flatMap((s) => [[s, false], [s, true]]).filter(([s, g]) => !(s.key === sportKey && g === guil));
     app = U.leagueApp({
-      top: $("#top"), el: $("#app"), sport, players, league: () => L, save: () => save(), me: () => 0, now: () => Date.now(), frac,
+      top: $("#top"), el: $("#app"), sport, players, league: () => L, save: () => save(), me: () => 0, now: () => Date.now(), frac, hooks: hooks(),
       brand: { name: "Draft Lab", href: "./", mark: `<img src="mark.svg" alt="">` },
       switcher: () => U.switcher({ name: L.name, abbr: sportKey.toUpperCase(), color: { nba: 4, nfl: 2, mlb: 0 }[sportKey] },
         leagues.map(([s, g]) => ({ href: `?s=${s.key}&f=${g ? "g" : "h"}`, name: nameOf(s.key, g), sub: `${s.name}, ${g ? "best ball guillotine" : "head to head"}`, av: { abbr: s.key.toUpperCase(), color: { nba: 4, nfl: 2, mlb: 0 }[s.key] } })),
@@ -133,7 +139,7 @@
     return `<div class="head"><h1 class="disp">Commissioner</h1><span class="ps">Demo controls. They only change this device's copy of the league.</span></div>
       <div class="cols2">
         <div class="card"><div class="mod-h"><h2>The season</h2></div><div class="bd stack">
-          <p class="small" style="margin:0">${done ? "The season is over." : `Week ${L.week} of ${G.totalWeeks(L)}. It ends ${new Date(next).toLocaleString("en-US", { weekday: "long", hour: "numeric", minute: "2-digit" })}, then ${G.isGuillotine(L) ? "the lowest team is chopped and its players go up for bids. Bids run 60 hours into the next week" : "waivers run and the next week starts"}.`}</p>
+          <p class="small" style="margin:0">${done ? "The season is over." : `Week ${L.week} of ${G.totalWeeks(L)}. It ends ${new Date(next).toLocaleString("en-US", { weekday: "long", hour: "numeric", minute: "2-digit" })}, then ${G.isGuillotine(L) ? "the lowest team is chopped and its players go up for bids. Bids run 60 hours into the next week" : "waivers run and the next week starts"}.`}${L.settings.real ? " This demo is scored on real box scores. Jumping ahead leaves the real calendar, so the rest of the season would be simulated." : ""}</p>
           <div class="row" style="flex-wrap:wrap"><button class="btn go" data-c="week"${done ? " disabled" : ""}>Finish this week now</button><button class="btn" data-c="season"${done ? " disabled" : ""}>Play out the season</button></div></div></div>
         <div class="card"><div class="mod-h"><h2>Start over</h2></div><div class="bd stack">
           <p class="small" style="margin:0">A new bot draft and a new season, ${guil ? "four" : "five"} weeks in.</p>
@@ -149,8 +155,10 @@
   }
   const mockDone = () => { const m = U.store("fk-lab").get("mock", null); return m && m.D && m.D.phase === "done" && m.D.sport === sportKey && m.D.teams.length >= 4; };
   // Jump ahead: shift the calendar back so the current week has already ended, then catch up.
-  function skip(weeks) {
-    for (let i = 0; i < weeks && L.week <= G.totalWeeks(L); i++) {
+  function skip(n) {
+    // jumping ahead leaves the real calendar, so the rest of the season is simulated
+    if (L.settings.real) L.settings.real = false;
+    for (let i = 0; i < n && L.week <= G.totalWeeks(L); i++) {
       const shift = Math.max(0, G.weekStart(L, L.week + 1) - Date.now()) + 1000;
       L.start -= shift;
       for (const t of L.trades) { if (t.reviewEnds) t.reviewEnds -= shift; if (t.status === "pending") t.at -= shift; }

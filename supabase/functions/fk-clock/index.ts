@@ -39,6 +39,19 @@ async function loadData(sport: string) {
   return data;
 }
 
+// Real weekly box scores (fantasy-kit/data/weeks-<sport>.json), for leagues scored on real games. None for a sport
+// out of season, or when the file is for another season than the player data.
+const weekFiles: Record<string, { at: number; data: any }> = {};
+async function loadWeeks(sport: string, season: string) {
+  const c = weekFiles[sport];
+  if (!c || Date.now() - c.at >= 10 * 60e3) {
+    const data = await fetch(`${SITE}data/weeks-${sport}.json?t=${Math.floor(Date.now() / 600e3)}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    weekFiles[sport] = { at: Date.now(), data };
+  }
+  const w = weekFiles[sport].data;
+  return w && String(w.season) === String(season) ? w : null;
+}
+
 async function tickLeagues(token: string) {
   const FK = await loadEngine();
   const { sports: S, value: V, draft: F, league: G, season: Z } = FK;
@@ -58,12 +71,14 @@ async function tickLeagues(token: string) {
       const players = data.players.map((p: any) => Object.assign({}, p));
       V.evaluate(sport, players, { teams: doc.teams.length, lineup: doc.lineup, bench: doc.bench, scoring: doc.scoring, budget: doc.auction ? doc.auction.budget : 200 });
       const byId = Object.fromEntries(players.map((p: any) => [p.id, p]));
+      const weeks = await loadWeeks(l.sport, data.season);
+      const hooks = { real: weeks };
       const base = structuredClone({ draft: D, league: L });
       let changed = false;
       if (!L) {
         changed = Z.driveDraft(D, F.context(D, players, sport), now);
-        if (D.phase === "done") { L = Z.begin(D, sport, { name: l.name, season: data.season, now }); changed = true; }
-      } else changed = Z.catchUp(L, G.context(L, players, sport), now);
+        if (D.phase === "done") { L = Z.begin(D, sport, { name: l.name, season: data.season, now, real: !!weeks }); changed = true; }
+      } else changed = Z.catchUp(L, G.context(L, players, sport, hooks), now);
       if (!changed) { report.push(out); continue; }
       const events = Z.events(base, { draft: D, league: L }, { name: l.name, url: `${SITE}play.html?id=${encodeURIComponent(l.id)}`, seats: l.seats, me: null, byId, now });
       const r = await rpc("fk_clock_save", { p_token: token, p_id: l.id, p_version: l.version, p_draft: base.league ? null : D, p_league: L, p_events: events });

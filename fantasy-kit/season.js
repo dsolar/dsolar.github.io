@@ -3,8 +3,9 @@
    (supabase/functions/fk-clock).
 
    FK.season:
-     startAfter(t, sportKey)              the season's first week: the next Monday at 9:00 UTC (Tuesday for football)
-     begin(D, sport, { name, season })    the league that follows a finished draft
+     startAfter(t, sportKey)              the season's first week: the next Monday at 13:00 UTC (Tuesday for football),
+                                          after the night's box scores are in, so real weeks line up with the data
+     begin(D, sport, { name, season, real })  the league that follows a finished draft; real scores it on real games
      catchUp(L, ctx, now)                 plays every week that has ended, runs bots, waivers and trade reviews; true if anything changed
      driveDraft(D, ctx, now)              a draft's overdue picks (bots, expired clocks); true if anything changed
      events(before, after, o)             the emails a save should send: [{ team, kind, subject, body }]
@@ -21,7 +22,7 @@
 
   function startAfter(t, sportKey) {
     const d = new Date(t), want = sportKey === "nfl" ? 2 : 1;
-    d.setUTCHours(9, 0, 0, 0);
+    d.setUTCHours(13, 0, 0, 0);
     let add = (want - d.getUTCDay() + 7) % 7;
     if (add === 0 && d.getTime() <= t) add = 7;
     return d.getTime() + add * DAY;
@@ -34,6 +35,7 @@
       : { weeks, playoffTeams: Math.min(4, n - (n % 2)), deadline: Math.max(1, weeks - 3), tradeReview: "vote", reviewHours: 24, waiverHours: 36 };
     // a draft that ran out on the clock while nobody was around is "done" in the past; start after now, not then
     const at = Math.max(D.done || 0, o.now || Date.now());
+    if (o.real) settings.real = true;
     return G.create({ sport, draft: D, name: o.name || D.name, season: o.season || "", now: at, start: startAfter(at, sport.key), scoring: D.scoring, settings });
   }
 
@@ -48,7 +50,8 @@
       L.botBid[L.week] = true;
       G.botBids(L, ctx, at, F.rng(L.seed + L.week * 41));
     };
-    while (L.week <= G.totalWeeks(L) && now >= G.weekStart(L, L.week + 1)) {
+    // a real league waits for the week's last box scores before closing it
+    while (G.canFinish(L, ctx, now)) {
       const end = G.weekStart(L, L.week + 1);
       bids();
       if (G.isGuillotine(L)) G.tick(L, ctx, G.waiverRunAt(L) + 1);
