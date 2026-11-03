@@ -196,3 +196,24 @@ test('emails: the draft-done email carries each team its roster, by position', (
   assert.match(e.data.roster.rows[0].how, /^round \d+, pick \d+$/);
   assert.ok(JSON.stringify(e.data).length < 20000, 'fits the outbox');
 });
+
+test('lineup reminder: once a week, before kickoff, for a hole in the lineup', () => {
+  const { L, ctx, D } = league({ deadline: 0 });
+  const w = L.week, start = G.weekStart(L, w);
+  const ids = G.lineupFor(L, ctx, 1, w);
+  const hurt = ctx.byId[ids[0]]; hurt.inj = 'Out';
+  G.setLineup(L, ctx, 1, w, ids, start - 1);
+  const base = JSON.parse(JSON.stringify({ draft: D, league: L }));
+  Z.catchUp(L, ctx, start + 3600e3);
+  assert.ok(!(L.reminders || {})[w], 'not yet: football checks Thursday');
+  Z.catchUp(L, ctx, start + 57 * 3600e3);
+  assert.ok(L.reminders[w].teams[1], 'team 1 has an out starter');
+  assert.ok(!L.reminders[w].teams[0] || L.reminders[w].teams[0].hurt.every((h) => h.n !== hurt.n));
+  const ev = Z.events(base, { draft: D, league: L }, { name: 'T', url: 'u', seats: { 1: 'B' }, me: null, byId: ctx.byId, now: start + 57 * 3600e3 });
+  const e = ev.find((x) => x.kind === 'lineup' && x.team === 1);
+  assert.ok(e, 'an email for team 1');
+  assert.match(e.body, new RegExp(`${hurt.n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\(\\w+\\) is listed as out`));
+  const again = JSON.parse(JSON.stringify({ draft: D, league: L }));
+  Z.catchUp(L, ctx, start + 60 * 3600e3);
+  assert.equal(Z.events(again, { draft: D, league: L }, { name: 'T', url: 'u', seats: { 1: 'B' }, me: null, byId: ctx.byId, now: start + 60 * 3600e3 }).filter((x) => x.kind === 'lineup').length, 0, 'only once a week');
+});

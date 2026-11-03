@@ -109,7 +109,30 @@
     }
     bids();
     G.tick(L, ctx, now);
+    lineupCheck(L, ctx, now);
     return JSON.stringify(L) !== before;
+  }
+
+  // Once a week, before the games start, note every team whose lineup has an empty spot or a starter who's out, for
+  // the reminder email (events below). Football checks Thursday afternoon, before the first kickoff; the daily sports
+  // check a couple of hours into the week. Best ball sets lineups itself, so it never needs one.
+  const REMIND_AT = { nfl: 56 * HOUR, nba: 2 * HOUR, mlb: 2 * HOUR };
+  const OUT = /^(out|ir|o|doubtful|d|pup|sus|suspension|suspended|il\d*|injured reserve)$/i;
+  function lineupCheck(L, ctx, now) {
+    const w = L.week;
+    if (L.settings.bestBall || w > G.totalWeeks(L) || (L.reminders && L.reminders[w])) return;
+    const at = G.weekStart(L, w) + (REMIND_AT[L.sport] != null ? REMIND_AT[L.sport] : 2 * HOUR);
+    if (now < at || now >= G.weekStart(L, w + 1)) return;
+    const slots = L.settings.lineup, out = {};
+    for (const t of L.teams) {
+      if (G.isGuillotine(L) && !G.isAlive(L, t.id)) continue;
+      if (w > L.settings.weeks && !G.isGuillotine(L)) { let gs = []; try { gs = G.playoffGames(L, ctx, w) || []; } catch (e) { gs = []; } if (!gs.some((g) => g && (g[0] === t.id || g[1] === t.id))) continue; }
+      let ids; try { ids = G.lineupFor(L, ctx, t.id, w); } catch (e) { continue; }
+      const empty = slots.filter((s, i) => !ids[i]);
+      const hurt = ids.map((id) => id && ctx.byId[id]).filter((p) => p && OUT.test(String(p.inj || "").trim())).map((p) => ({ n: p.n, pos: (p.pos || [])[0] || "", inj: p.inj }));
+      if (empty.length || hurt.length) out[t.id] = { empty, hurt };
+    }
+    (L.reminders = L.reminders || {})[w] = { at: now, teams: out };
   }
 
   function driveDraft(D, ctx, now) {
@@ -200,6 +223,17 @@
       const bl = (b && b.league) || { trades: [], claims: [], results: {} }, cl = c.league;
       if (cl.next && !bl.next) seated.forEach((t) => add(t, "keepers", "pick your keepers", `The season is over. Pick up to ${cl.settings.keepers} keepers for next season${cl.next.due ? ` by ${when(cl.next.due)}` : ""}. If you don't, your best values are kept for you.`));
       trades(bl.trades, cl.trades, true);
+      // the weekly lineup check: a reminder to each team whose lineup has a hole
+      for (const [w, r] of Object.entries(cl.reminders || {})) {
+        if ((bl.reminders || {})[w]) continue;
+        for (const [t, x] of Object.entries(r.teams || {})) {
+          const bits = [];
+          if (x.empty.length) bits.push(`${x.empty.length === 1 ? "an empty starting spot" : `${x.empty.length} empty starting spots`} (${x.empty.join(", ")})`);
+          for (const h of x.hurt) bits.push(`${h.n} (${h.pos}) is listed as ${String(h.inj).toLowerCase() === "o" ? "out" : String(h.inj).toLowerCase()}`);
+          const list = bits.length > 1 ? `${bits.slice(0, -1).join(", ")} and ${bits.at(-1)}` : bits[0];
+          add(+t, "lineup", `set your lineup for week ${w}`, `Your week ${w} lineup has ${list}. Swap in someone who's playing before the games start.`);
+        }
+      }
       const was = Object.fromEntries((bl.claims || []).map((x) => [x.id, x.status]));
       for (const x of cl.claims || []) {
         if (was[x.id] !== "open") continue;
