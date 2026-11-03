@@ -30,7 +30,7 @@ UA = "Mozilla/5.0 (compatible; davidsolar-draftlab/1.0; +https://davidsolar.dev/
 NOW = datetime.now(timezone.utc).isoformat(timespec="seconds")
 ESPN = "https://lm-api-reads.fantasy.espn.com/apis/v3/games/{game}/seasons/{season}/segments/0/leaguedefaults/3?view=kona_player_info"
 # each sport's ESPN game, the seasons to try (the newest first), and the rank type to sort by
-GAMES = {"nfl": ("ffl", (2026,), "PPR"), "nba": ("fba", (2027,), "STANDARD"), "mlb": ("flb", (2027, 2026), "STANDARD")}
+GAMES = {"nfl": ("ffl", (2026,), "PPR"), "nba": ("fba", (2027,), "STANDARD"), "mlb": ("flb", (2027,), "STANDARD")}   # last season's ranks go stale once it ends
 DP_IDS = "https://raw.githubusercontent.com/dynastyprocess/data/master/files/db_playerids.csv"
 SLEEPER_TRENDING = "https://api.sleeper.app/v1/players/nfl/trending/add?lookback_hours=24&limit=100"
 # ESPN's default position ids
@@ -94,7 +94,7 @@ def build(sport):
         return
     rows, season = espn(sport)
     if not rows:
-        print("  ESPN didn't answer; kept the last file")
+        print("  no current ESPN season; kept the last file")
         return
     ids = {p["id"] for p in pool}
     by_name = {}
