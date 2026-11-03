@@ -231,14 +231,21 @@
     const lineup = league.lineup || sport.lineup;
     const type = sport.key === "nfl" ? (lineup.includes("SFLEX") || lineup.filter((x) => x === "QB").length >= 2 ? "SUPERFLEX" : /std/.test(sc.col || "") ? "STANDARD" : "PPR")
       : sc.type === "cats" ? "ROTO" : "STANDARD";
+    // FantasyPros' consensus for this scoring (football: standard, half or full PPR), FantasyCalc's trade market for
+    // this points-per-catch and QB count
+    const ppr = sc.weights ? sc.weights.rec || 0 : /half/.test(sc.col || "") ? 0.5 : /ppr/.test(sc.col || "") ? 1 : 0;
+    const fpType = sport.key === "nfl" ? (ppr >= 0.75 ? "PPR" : ppr >= 0.25 ? "HALF" : "STANDARD") : "ALL";
+    const trKey = `${ppr >= 0.75 ? 1 : ppr >= 0.25 ? 0.5 : 0}|${type === "SUPERFLEX" ? 2 : 1}`;
     let n = 0;
     for (const p of players) {
       const m = rows[p.id];
       if (!m) { delete p.mk; continue; }
-      p.mk = { r: (m.r || {})[type] || (m.r || {}).STANDARD || null, a: (m.a || {})[type] || (m.a || {}).STANDARD || null, adp: m.adp || null, aav: m.aav || null, own: m.own == null ? null : m.own, add: m.add || null };
+      p.mk = { r: (m.r || {})[type] || (m.r || {}).STANDARD || null, a: (m.a || {})[type] || (m.a || {}).STANDARD || null, adp: m.adp || null, aav: m.aav || null, own: m.own == null ? null : m.own, add: m.add || null,
+        fp: m.fp ? m.fp[fpType] || m.fp.ALL || m.fp.HALF || null : null, tr: m.tr ? m.tr[trKey] || null : null };
       n++;
     }
-    sport.market = n > 50 ? { type, source: league.market.source, updated: league.market.updated } : null;
+    sport.market = n > 50 ? { type, fpType, fp: league.market.fp || null, trade: sport.key === "nfl" && players.some((p) => p.mk && p.mk.tr), espn: players.filter((p) => p.mk && p.mk.r).length > 50,
+      source: league.market.source, updated: league.market.updated } : null;
   }
 
   /* ---------- dynasty: value over the next five seasons, not just this one ---------- */

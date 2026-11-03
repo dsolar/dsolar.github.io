@@ -33,6 +33,15 @@ ESPN = "https://lm-api-reads.fantasy.espn.com/apis/v3/games/{game}/seasons/{seas
 GAMES = {"nfl": ("ffl", (2026,), "PPR"), "nba": ("fba", (2027,), "STANDARD"), "mlb": ("flb", (2027,), "STANDARD")}   # last season's ranks go stale once it ends
 DP_IDS = "https://raw.githubusercontent.com/dynastyprocess/data/master/files/db_playerids.csv"
 SLEEPER_TRENDING = "https://api.sleeper.app/v1/players/nfl/trending/add?lookback_hours=24&limit=100"
+# FantasyPros expert consensus: rest of season while a sport is playing, the draft rankings otherwise. Each page's
+# data rides along as `ecrData`. Football has one per scoring.
+FP = "https://www.fantasypros.com/"
+FP_PAGES = {"nfl": {"STANDARD": "nfl/rankings/ros-overall.php", "HALF": "nfl/rankings/ros-half-point-ppr-overall.php", "PPR": "nfl/rankings/ros-ppr-overall.php"},
+            "nba": {"ALL": "nba/rankings/ros-overall.php"}, "mlb": {"ALL": "mlb/rankings/overall.php"}}
+FP_KIND = {"nfl": "rest of season", "nba": "rest of season", "mlb": "draft"}
+# FantasyCalc's redraft values: what players go for in real trades this season, by points per catch and QB count
+FC = "https://api.fantasycalc.com/values/current?isDynasty=false&numQbs={qbs}&numTeams=12&ppr={ppr}"
+DP_FP = "fantasypros_id"
 # ESPN's default position ids
 POS = {"nfl": {1: "QB", 2: "RB", 3: "WR", 4: "TE", 5: "K", 16: "DEF"},
        "nba": {1: "PG", 2: "SG", 3: "SF", 4: "PF", 5: "C"},
@@ -77,13 +86,62 @@ def espn(sport):
     return [], None
 
 
-def espn_to_sleeper():
+def to_sleeper(col):
+    """{another site's id: Sleeper id} from DynastyProcess' id table, for one of its columns (espn_id, fantasypros_id)."""
     try:
         rows = csv.DictReader(io.StringIO(fetch(DP_IDS, accept="text/csv")))
-        return {r["espn_id"]: r["sleeper_id"] for r in rows if r.get("espn_id") not in (None, "", "NA") and r.get("sleeper_id") not in (None, "", "NA")}
+        return {r[col]: r["sleeper_id"] for r in rows if r.get(col) not in (None, "", "NA") and r.get("sleeper_id") not in (None, "", "NA")}
     except Exception as e:
         print(f"  DynastyProcess ids: {type(e).__name__}: {e}")
         return {}
+
+
+def espn_to_sleeper():
+    return to_sleeper("espn_id")
+
+
+def fantasypros(sport, find):
+    """{kit id: {rank type: consensus rank}} from FantasyPros, and how many experts' pages loaded."""
+    xw = to_sleeper(DP_FP) if sport == "nfl" else {}
+    out, n = {}, 0
+    for kind, page in FP_PAGES[sport].items():
+        try:
+            m = re.search(r"ecrData\s*=\s*(\{.*?\});", fetch(FP + page), re.S)
+            rows = json.loads(m.group(1)).get("players", []) if m else []
+        except Exception as e:
+            print(f"  FantasyPros {page}: {type(e).__name__}: {e}")
+            continue
+        if len(rows) < 50:
+            print(f"  FantasyPros {page}: only {len(rows)} players, skipped")
+            continue
+        n += 1
+        hit = 0
+        for r in rows:
+            pos = re.sub(r"\d+$", "", str(r.get("player_position_id") or r.get("primary_position") or "")).upper()
+            pid = find(r.get("player_name"), pos, xw.get(str(r.get("player_id"))))
+            if pid and r.get("rank_ecr"):
+                out.setdefault(pid, {})[kind] = int(r["rank_ecr"]); hit += 1
+        print(f"  FantasyPros {page}: {len(rows)} players, {hit} matched")
+    return out, n
+
+
+def fantasycalc_redraft(ids):
+    out = {}
+    for qbs in (1, 2):
+        for ppr in (0, 0.5, 1):
+            try:
+                rows = json.loads(fetch(FC.format(qbs=qbs, ppr=ppr)))
+            except Exception as e:
+                print(f"  FantasyCalc redraft ({qbs} QB, {ppr} PPR): {type(e).__name__}: {e}")
+                continue
+            rows = [r for r in rows if str((r.get("player") or {}).get("position", "")).upper() not in ("PICK", "K", "DST", "DEF")]
+            rows.sort(key=lambda r: -(r.get("value") or 0))
+            for i, r in enumerate(rows):
+                sid = str((r.get("player") or {}).get("sleeperId") or "")
+                if sid in ids:
+                    out.setdefault(sid, {})[f"{ppr}|{qbs}"] = i + 1
+    print(f"  FantasyCalc redraft: {len(out)} players")
+    return out
 
 
 def build(sport):
@@ -94,13 +152,20 @@ def build(sport):
         return
     rows, season = espn(sport)
     if not rows:
-        print("  no current ESPN season; kept the last file")
-        return
+        print("  no current ESPN season; FantasyPros only")
     ids = {p["id"] for p in pool}
     by_name = {}
     for p in pool:
         by_name.setdefault(norm(p["n"]), []).append(p)
     xwalk = espn_to_sleeper() if sport == "nfl" else {}
+
+    def find(name, pos, sid=None):
+        if sid and sid in ids:
+            return sid
+        cands = by_name.get(norm(name or ""), [])
+        if len(cands) > 1 and pos:
+            cands = [c for c in cands if pos in c["pos"] or (pos in ("SP", "RP", "P") and set(c["pos"]) & {"SP", "RP"})] or cands
+        return cands[0]["id"] if cands else None
     out = {}
     for r in rows:
         pl = r.get("player") or {}
@@ -132,9 +197,17 @@ def build(sport):
                     out.setdefault(pid, {"r": {}, "a": {}})["add"] = t.get("count")
         except Exception as e:
             print(f"  Sleeper trending: {type(e).__name__}: {e}")
+    # the experts' consensus, and for football the trade market
+    fp, pages = fantasypros(sport, find)
+    for pid, ranks in fp.items():
+        out.setdefault(pid, {"r": {}, "a": {}})["fp"] = ranks
+    if sport == "nfl":
+        for pid, ranks in fantasycalc_redraft(ids).items():
+            out.setdefault(pid, {"r": {}, "a": {}})["tr"] = ranks
     print(f"  matched {len(out)} of the kit's {len(pool)} players")
     with open(os.path.join(OUT, f"market-{sport}.json"), "w", encoding="utf-8") as f:
-        json.dump({"sport": sport, "updated": NOW, "source": f"ESPN fantasy ({season})" + (", Sleeper trending adds" if sport == "nfl" else ""), "players": out},
+        json.dump({"sport": sport, "updated": NOW, "source": ", ".join(x for x in [f"ESPN fantasy ({season})" if season else "", "FantasyPros consensus" if pages else "", "FantasyCalc trades" if sport == "nfl" else "", "Sleeper trending adds" if sport == "nfl" else ""] if x),
+                   "fp": FP_KIND[sport] if pages else None, "players": out},
                   f, ensure_ascii=False, separators=(",", ":"))
 
 

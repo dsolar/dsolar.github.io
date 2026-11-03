@@ -188,7 +188,13 @@
   // A draft pick as a tradeable item: { id, n: "Pick 2.5", pick: true, sub, price }.
   const pickItem = (p, extra = "") => `<span class="pname"><span class="pav pk" aria-hidden="true">#</span><span><span class="pn">${esc(p.n)}</span><span class="sub">${esc(p.sub || "Draft pick")}${extra ? ", " + extra : ""}</span></span></span>`;
   // a player's pro team: its abbreviation in the team's color
-  const proTeam = (sport, t) => { if (!t || t === "FA") return "Unsigned"; const c = S.teamColor && sport && S.teamColor(sport.key, t); return c ? `<span class="ptm" style="--c:${c.bg};--ci:${c.ink}">${esc(t)}</span>` : esc(t); };
+  // A pro team: its logo and abbreviation on a light chip, or the abbreviation in team colors if the logo won't load.
+  const proTeam = (sport, t) => {
+    if (!t || t === "FA") return "Unsigned";
+    const c = S.teamColor && sport && S.teamColor(sport.key, t), src = S.teamLogo && sport && S.teamLogo(sport.key, t);
+    if (!c) return esc(t);
+    return `<span class="ptm${src ? " lg" : ""}" style="--c:${c.bg};--ci:${c.ink}">${src ? `<img src="${esc(src)}" alt="" width="14" height="14" loading="lazy" onerror="this.parentNode.classList.remove('lg');this.remove()">` : ""}${esc(t)}</span>`;
+  };
   const pname = (sport, p, extra = "", opts = {}) => p && p.pick ? pickItem(p, extra) : p ? `<span class="pname${opts.b ? " b" : ""}">${opts.noAv ? "" : playerAv(sport, p, opts.size || "")}<span><span class="pn">${esc(p.n)}</span><span class="sub">${injTag(p).trim()}${p.inj ? " " : ""}${p.rk ? `<span class="rkt" title="Rookie">R</span> ` : ""}${S.positions(p).join(", ")} ${proTeam(sport, p.t)}${extra ? ", " + extra : ""}</span></span></span>` : `<span class="ps">Empty</span>`;
   const teamName = (t, opts = {}) => `<span class="row" style="gap:9px">${teamAv(t, opts.size || "sm")}<span class="ell"><b>${esc(t.name)}</b>${opts.you ? ` <span class="tag you">You</span>` : ""}${opts.owner !== false && t.owner && !(opts.you && /^you$/i.test(t.owner)) ? ` <span class="ps">${esc(t.owner)}</span>` : ""}${opts.badge || ""}</span></span>`;
 
@@ -261,7 +267,14 @@
     if (opts.age !== false && sport.hasAge) cols.push({ k: "age", label: "Age", cls: "r num", hide: "s", sort: (p) => p.age, asc: true, html: (p) => (p.age ? p.age : "") });
     if (opts.owner) cols.push({ k: "owner", label: "Status", cls: "", sort: opts.ownerSort, html: opts.owner });
     // the market, when the page loaded it (value.js market): ESPN's rank and what players go for in real ESPN auctions
-    if (sport.market && opts.market !== false) {
+    // in season the experts' consensus and the trade market; before a season, ESPN's draft market
+    const mk = sport.market;
+    if (mk && opts.market !== false && mk.fp) {
+      const ros = mk.fp === "rest of season";
+      cols.push({ k: "fp", label: ros ? "ROS" : "Pros", cls: "r num", hide: "s", title: `FantasyPros expert consensus, ${ros ? "rest of season" : "draft rankings"}${mk.fpType === "ALL" ? "" : `, ${mk.fpType === "HALF" ? "half PPR" : mk.fpType === "PPR" ? "PPR" : "standard"}`}`, sort: (p) => (p.mk && p.mk.fp) || 1e4, asc: true, html: (p) => (p.mk && p.mk.fp ? String(p.mk.fp) : `<span class="ps">-</span>`) });
+      if (mk.trade) cols.push({ k: "tr", label: "Trade", cls: "r num", hide: "s", title: "Rank by FantasyCalc's values from real redraft trades this season", sort: (p) => (p.mk && p.mk.tr) || 1e4, asc: true, html: (p) => (p.mk && p.mk.tr ? String(p.mk.tr) : `<span class="ps">-</span>`) });
+    }
+    if (mk && opts.market !== false && mk.espn && !(mk.fp === "rest of season")) {
       cols.push({ k: "espn", label: "ESPN", cls: "r num", hide: "s", title: `ESPN's ${sport.market.type === "ROTO" ? "roto" : sport.market.type === "STANDARD" ? "standard" : sport.market.type === "SUPERFLEX" ? "superflex" : "PPR"} rank${sport.market.type === "STANDARD" || sport.market.type === "ROTO" ? "" : ""}, from ${sport.market.source}`, sort: (p) => (p.mk && p.mk.r) || 1e4, asc: true, html: (p) => (p.mk && p.mk.r ? String(p.mk.r) : `<span class="ps">-</span>`) });
       cols.push({ k: "aav", label: "ESPN $", cls: "r num", hide: "s", title: "What he goes for in real ESPN auctions (average price), or ESPN's own auction value before there are any", sort: (p) => (p.mk && (p.mk.aav || p.mk.a)) || 0, html: (p) => { const v = p.mk && (p.mk.aav || p.mk.a); return v ? `<span class="ps">${money(Math.round(v))}</span>` : `<span class="ps">-</span>`; } });
     }

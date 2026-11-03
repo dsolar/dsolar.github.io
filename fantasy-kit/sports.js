@@ -326,7 +326,12 @@
   };
   // light team colors (gold, yellow) take dark text
   const inkOn = (hex) => { const n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255; return 0.299 * r + 0.587 * g + 0.114 * b > 160 ? "#111" : "#fff"; };
+  // Team logos from ESPN's image server, as on the Big Board: its code for each team where it differs from ours.
+  const ESPN_CODES = { nba: { BRK: "bkn", CHO: "cha", PHO: "phx", GSW: "gs", NOP: "no", SAS: "sa", UTA: "utah", WAS: "wsh", NYK: "ny" },
+    nfl: { WAS: "wsh" }, mlb: { CWS: "chw", ATH: "oak" } };
+  const teamLogo = (sportKey, abbr, px = 28) => (TEAM_COLORS[sportKey] && TEAM_COLORS[sportKey][abbr]
+    ? `https://a.espncdn.com/combiner/i?img=/i/teamlogos/${sportKey}/500/${(ESPN_CODES[sportKey] || {})[abbr] || String(abbr).toLowerCase()}.png&w=${px}&h=${px}` : null);
   const teamColor = (sportKey, abbr) => { const c = (TEAM_COLORS[sportKey] || {})[abbr]; return c ? { bg: c, ink: inkOn(c) } : null; };
 
-  return { ALL, nba, nfl, mlb, attach, TEAM_COLORS, teamColor, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, prospectClass };
+  return { ALL, nba, nfl, mlb, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, prospectClass };
 });

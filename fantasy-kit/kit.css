@@ -803,3 +803,7 @@ table.roto td small.rp{display:block;font-size:10.5px;font-weight:650;color:var(
 @media (max-width:640px){.myboard .mb{grid-template-columns:40px minmax(0,1fr) auto;row-gap:4px}.myboard .grip,.myboard .dollar{display:none}.myboard .mb-act .btn.xs{padding:0 8px}}
 /* the draft room's Mine column: place and tier */
 .tier-n{display:block;font-size:10px;font-weight:700;color:var(--dim);line-height:1}
+/* a pro team's logo chip: always on white so dark logos read in both themes */
+.ptm.lg{background:#fff;color:#1b2430;box-shadow:0 0 0 1px rgba(16,24,40,.14);padding:1px 4px 1px 2px}
+.ptm.lg img{width:14px;height:14px;vertical-align:-3px;margin-right:2px;object-fit:contain}
+[data-theme="dark"] .ptm.lg,.fk-dark .ptm.lg{box-shadow:none}
