@@ -35,7 +35,11 @@ FP_PAGES = {
     "nba": {"players": ["nba/rankings/dynasty.php", "nba/rankings/dynasty-overall.php"]},
     "mlb": {"players": ["mlb/rankings/dynasty.php", "mlb/rankings/dynasty-overall.php"]},
 }
-FC = "https://api.fantasycalc.com/values/current?isDynasty=true&numQbs={qbs}&numTeams=12&ppr=1"
+FC = "https://api.fantasycalc.com/values/current?isDynasty=true&numQbs={qbs}&numTeams={teams}&ppr={ppr}"
+# FantasyCalc prices each league setup on its own trades; the kit picks the nearest one to a league's
+FC_TEAMS, FC_PPR, FC_QBS = (10, 12, 14), (0, 0.5, 1), (1, 2)
+# DynastyProcess' player id table: FantasyPros ids to Sleeper ids (the kit's football ids), for exact matches
+DP_IDS = "https://raw.githubusercontent.com/dynastyprocess/data/master/files/db_playerids.csv"
 SKIP_POS = {"K", "DST", "DEF"}
 
 
@@ -71,7 +75,7 @@ def ecr(html):
         pos = re.sub(r"\d+$", "", str(p.get("player_position_id") or p.get("pos_rank") or "")).upper()
         rank = p.get("rank_ecr") or p.get("rank_ave")
         if p.get("player_name") and rank:
-            out.append((p["player_name"], pos, str(p.get("player_team_id") or "").upper(), float(rank)))
+            out.append((p["player_name"], pos, str(p.get("player_team_id") or "").upper(), float(rank), "fp:" + str(p.get("player_id") or "")))
     return out
 
 
@@ -89,11 +93,11 @@ def fantasypros(sport, kind):
     return [], None
 
 
-def fantasycalc(qbs):
+def fantasycalc(qbs, teams=12, ppr=1, quiet=False):
     try:
-        rows = json.loads(fetch(FC.format(qbs=qbs), "application/json"))
+        rows = json.loads(fetch(FC.format(qbs=qbs, teams=teams, ppr=ppr), "application/json"))
     except Exception as e:
-        print(f"  FantasyCalc ({qbs} QB): {type(e).__name__}: {e}")
+        print(f"  FantasyCalc ({qbs} QB, {teams} teams, {ppr} PPR): {type(e).__name__}: {e}")
         return []
     out = []
     for i, r in enumerate(sorted(rows, key=lambda r: -(r.get("value") or 0))):
@@ -101,8 +105,25 @@ def fantasycalc(qbs):
         if p.get("position") in SKIP_POS or str(p.get("position", "")).upper() == "PICK":
             continue
         out.append((p.get("name"), str(p.get("position") or "").upper(), str(p.get("maybeTeam") or "").upper(), float(i + 1), str(p.get("sleeperId") or "")))
-    print(f"  FantasyCalc ({qbs} QB): {len(out)} players")
+    if not quiet:
+        print(f"  FantasyCalc ({qbs} QB, {teams} teams, {ppr} PPR): {len(out)} players")
     return out
+
+
+def fp_to_sleeper():
+    """{FantasyPros id: Sleeper id} from DynastyProcess' id table."""
+    try:
+        import csv, io
+        rows = csv.DictReader(io.StringIO(fetch(DP_IDS, "text/csv")))
+        out = {r["fantasypros_id"]: r["sleeper_id"] for r in rows if r.get("fantasypros_id") not in (None, "", "NA") and r.get("sleeper_id") not in (None, "", "NA")}
+        print(f"  DynastyProcess ids: {len(out)} FantasyPros to Sleeper")
+        return out
+    except Exception as e:
+        print(f"  DynastyProcess ids: {type(e).__name__}: {e}")
+        return {}
+
+
+xwalk = {}
 
 
 def matcher(pool):
@@ -112,6 +133,8 @@ def matcher(pool):
     ids = {p["id"] for p in pool}
 
     def find(name, pos, team, sid=None):
+        if sid and sid.startswith("fp:"):
+            sid = xwalk.get(sid[3:])
         if sid and sid in ids:
             return sid
         cands = by_name.get(norm(name or ""), [])
@@ -147,7 +170,9 @@ def build(sport):
     rows, url = fantasypros(sport, "players")
     if rows:
         lists.append(rows); sources.append({"id": "fantasypros", "name": "FantasyPros dynasty consensus", "url": url, "n": len(rows)})
+    variants = {}
     if sport == "nfl":
+        xwalk.update(fp_to_sleeper())
         fc1 = fantasycalc(1)
         if fc1:
             lists.append(fc1); sources.append({"id": "fantasycalc", "name": "FantasyCalc dynasty values", "url": "https://fantasycalc.com/dynasty-rankings", "n": len(fc1)})
@@ -157,12 +182,22 @@ def build(sport):
         fc2 = fantasycalc(2)
         if fc2:
             sf_lists.append(fc2)
+        # every FantasyCalc setup, each blended with FantasyPros for its QB count: "teams|ppr|qbs"
+        for t in FC_TEAMS:
+            for ppr in FC_PPR:
+                for q in FC_QBS:
+                    fc = fantasycalc(q, t, ppr, quiet=True)
+                    if fc:
+                        variants[f"{t}|{ppr}|{q}"] = combine(([rows] if q == 1 and rows else [sf] if q == 2 and sf else []) + [fc], find)
+        print(f"  FantasyCalc setups: {len(variants)} of {len(FC_TEAMS) * len(FC_PPR) * len(FC_QBS)}")
     if not lists:
         print("  every source failed; kept the last file")
         return
     out = {"sport": sport, "updated": NOW, "sources": sources, "players": combine(lists, find)}
     if sf_lists:
         out["sf"] = combine(sf_lists, find)
+    if variants:
+        out["v"] = variants
     print(f"  matched {len(out['players'])} of the kit's {len(pool)} players" + (f", superflex {len(out['sf'])}" if "sf" in out else ""))
     with open(os.path.join(OUT, f"dynasty-{sport}.json"), "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, separators=(",", ":"))

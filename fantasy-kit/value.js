@@ -248,7 +248,15 @@
     // league's scoring and lineup. A football league with a superflex or two QB slots uses the superflex rankings.
     const file = league.dynastyRanks, lineup = league.lineup || sport.lineup;
     const sf = lineup.includes("SFLEX") || lineup.filter((x) => x === "QB").length >= 2;
-    const ranks = file && ((sf && file.sf) || file.players);
+    // football: FantasyCalc's own market for the nearest setup (team count, points per catch, QB count) when the file has it
+    let ranks = file && ((sf && file.sf) || file.players);
+    if (file && file.v && sport.key === "nfl") {
+      const sc = scoringOf(sport, league), base = sc.col || "";
+      const ppr = sc.weights ? sc.weights.rec || 0 : /ppr/.test(base) ? (/half/.test(base) ? 0.5 : 1) : 0;
+      const near = (xs, x) => xs.reduce((a, b) => (Math.abs(b - x) < Math.abs(a - x) ? b : a));
+      const key = `${near([10, 12, 14], league.teams || 12)}|${near([0, 0.5, 1], ppr)}|${sf ? 2 : 1}`;
+      if (file.v[key]) ranks = file.v[key];
+    }
     if (!ranks || Object.keys(ranks).length < 50) return;
     const curve = players.map((p) => p.vor).sort((a, b) => b - a), n = Object.keys(ranks).length;
     for (const p of players) {
