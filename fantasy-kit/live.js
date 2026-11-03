@@ -74,7 +74,9 @@
       brand: { name: "Draft Lab", mark: `<img src="mark.svg" alt="">` }, exit: { href: "leagues.html", label: "Your leagues" },
       tools: () => `<button class="btn sm" data-live="league">${info.commish ? "Invite" : "League"}</button>`,
       extra: () => (L ? "" : `<span class="ps">Setting up the season…</span>`),
+      chat,
     });
+    loadPosts();
   }
   function mountLeague() {
     document.body.classList.remove("fk-room");
@@ -130,17 +132,17 @@
   };
   async function loadPosts() {
     clearTimeout(postT);
-    if (!document.hidden && L) {
+    if (!document.hidden && (L || D)) {
       const r = await C.rpc("fk_posts", { p_id: id, p_after: lastId() }).catch(() => null);
       if (Array.isArray(r) && r.length) {
         const have = new Set(posts.map((p) => p.id));
         posts = posts.concat(r.filter((p) => !have.has(p.id))).slice(-300);
-        if (app && !U.dialogOpen()) app.refresh();
+        if (!U.dialogOpen()) { if (room) room.render(); else if (app) app.refresh(); }
       }
     }
     postT = setTimeout(loadPosts, document.hidden ? 60000 : 10000);
   }
-  document.addEventListener("visibilitychange", () => { if (!document.hidden && L) loadPosts(); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && (L || D)) loadPosts(); });
   // before week 1: when it starts
   function startNote() {
     if (!L || now() >= L.start) return "";

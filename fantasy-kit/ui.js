@@ -772,6 +772,21 @@
       return `<div class="mod-h">${teamAv(t, "sm")}<b class="ell">${esc(t.name)}</b><span class="ps" style="margin-left:auto;white-space:nowrap">${ps.length} of ${F.sizeOf(d)}${auction() ? `, ${money(t.budget)} left` : ""}</span></div>
         <ul class="rslots">${d.lineup.map((s, i) => li(s, starters[i])).join("")}${bench.map((p) => li("BN", p)).join("")}${Array.from({ length: Math.max(0, d.bench - bench.length) }, () => li("BN", null)).join("")}</ul>${upcoming(id)}`;
     }
+    /* league chat in the room (shared leagues pass opts.chat: posts(), send(body), unread(), seen()) */
+    function chatPanel() {
+      const c = opts.chat; c.seen();
+      const posts = c.posts().slice(-150);
+      const done = (D().trades || []).filter((T) => T.status === "accepted").map((T) => ({ at: T.done || T.at, trade: T }));
+      const items = posts.map((p) => ({ at: p.at, p })).concat(done).sort((a, b) => a.at - b.at);
+      const li = (it, prev) => {
+        if (it.trade) return `<li class="sys"><span class="txi trade" aria-hidden="true">&#8644;</span><span><b>${esc(team(it.trade.from).name)}</b> and <b>${esc(team(it.trade.to).name)}</b> made a trade</span><time>${esc(ago(it.at, now()))}</time></li>`;
+        const p = it.p, t = team(p.team) || { name: p.author, abbr: "", color: 0 };
+        const cont = prev && prev.p && prev.p.team === p.team && it.at - prev.at < 6e5;
+        return `<li class="${me() != null && p.team === me() ? "mine " : ""}${cont ? "cont" : ""}">${cont ? "<span></span>" : teamAv(t, "sm")}<div class="what">${cont ? "" : `<div class="who"><b>${esc(t.name)}</b><span class="ps">${esc(p.author)}</span><time>${esc(ago(p.at, now()))}</time></div>`}<p>${esc(p.body).replace(/\n/g, "<br>")}</p></div></li>`;
+      };
+      return `<div class="rchat"><ul class="chat" id="fk-rchatl">${items.length ? items.map((it, i) => li(it, items[i - 1])).join("") : `<li class="sys"><span></span><span class="ps">No posts yet. The whole league sees this.</span></li>`}</ul>
+        ${me() != null ? `<form class="chat-f" id="fk-rchatf"><label class="sr" for="fk-rchat">Message the league</label><textarea id="fk-rchat" rows="1" maxlength="500" placeholder="Message the league">${esc(ui.chatDraft || "")}</textarea><button class="btn go">Send</button></form>` : ""}</div>`;
+    }
     function queuePanel() {
       const t = team(me());
       return `<div class="mod-h"><b>Your queue</b><span class="ps" style="margin-left:auto">${t.queue.length} player${t.queue.length === 1 ? "" : "s"}</span></div>
@@ -792,19 +807,21 @@
       const lefts = [["players", "Players"], ["board", "Board"], ["picks", auction() ? "Sales" : "Picks"]].concat(mystery() ? [["packages", "Packages"]] : [], elephant() && d.phase !== "done" ? [["steal", "Steal"]] : [], d.phase === "done" ? [["results", "Results"]] : []);
       if (!lefts.some((x) => x[0] === ui.left)) ui.left = "players";
       const offers = me() != null ? d.trades.filter((T) => T.status === "pending" && T.to === me()).length : 0;
-      const rights = me() != null ? [["team", "My team"], ["queue", "Queue"], ["teams", "Teams"]].concat(d.trading ? [["trades", offers ? `Trades (${offers})` : "Trades"]] : []) : [["teams", "Teams"]];
+      const unread = opts.chat && ui.right !== "chat" ? opts.chat.unread() : 0;
+      const rights = (me() != null ? [["team", "My team"], ["queue", "Queue"], ["teams", "Teams"]].concat(d.trading ? [["trades", offers ? `Trades (${offers})` : "Trades"]] : []) : [["teams", "Teams"]])
+        .concat(opts.chat ? [["chat", unread ? `Chat (${unread})` : "Chat"]] : []);
       if (!rights.some((x) => x[0] === ui.right)) ui.right = rights[0][0];
       const keep = { f: focusKey(el), scroll: {} };
-      $$("#fk-pool,#fk-board,#fk-picks,.dr-panel,#fk-ticker,#fk-seg,#fk-seg2", el).forEach((x) => (keep.scroll[x.id || x.className] = [x.scrollTop, x.scrollLeft]));
+      $$("#fk-pool,#fk-board,#fk-picks,.dr-panel,#fk-ticker,#fk-seg,#fk-seg2,#fk-rchatl", el).forEach((x) => (keep.scroll[x.id || x.className] = [x.scrollTop, x.scrollLeft]));
       const left = { players, board, picks, results, packages, steal: steals }[ui.left]();
-      const right = { team: () => rosterPanel(me()), queue: queuePanel, teams: teamsPanel, trades: tradesPanel }[ui.right]();
+      const right = { team: () => rosterPanel(me()), queue: queuePanel, teams: teamsPanel, trades: tradesPanel, chat: chatPanel }[ui.right]();
       // one view switch: the left views, plus the right panels as views on narrow screens
       const seg = `<div class="seg" id="fk-seg" role="group" aria-label="View">${lefts.map(([k, n]) => `<button type="button" data-left="${k}" aria-pressed="${!ui.mobileRight && ui.left === k}">${esc(n)}</button>`).join("")}${rights.map(([k, n]) => `<button type="button" class="show-m" data-mright="${k}" aria-pressed="${ui.mobileRight && ui.right === k}">${esc(n)}</button>`).join("")}</div>`;
       const filters = ui.left === "players" ? `${search(ui.f)}<label class="sr" for="fk-show">Show</label><select id="fk-show" style="width:auto;border-radius:999px;min-height:36px;font-size:13px"><option value="avail"${ui.show === "avail" ? " selected" : ""}>Available</option><option value="all"${ui.show === "all" ? " selected" : ""}>All players</option></select>` : "";
       el.innerHTML = `<div class="droom fk-dark">${top()}${ticker()}<div class="dr-main${ui.mobileRight ? " right" : ""}">
         <section class="dr-left"><div class="dr-bar">${seg}${filters}</div>${ui.left === "players" ? posFilter(sport, ui.f.pos) : ""}${left}</section>
         <aside class="dr-right"><div class="seg hide-m" role="group" aria-label="Panel">${rights.map(([k, n]) => `<button type="button" data-right="${k}" aria-pressed="${ui.right === k}">${esc(n)}</button>`).join("")}</div><div class="show-m" style="padding:10px 12px 0">${seg.replace('id="fk-seg"', 'id="fk-seg2"')}</div><div class="dr-panel">${right}</div></aside></div></div>`;
-      $$("#fk-pool,#fk-board,#fk-picks,.dr-panel,#fk-ticker,#fk-seg,#fk-seg2", el).forEach((x) => { const v = keep.scroll[x.id || x.className]; if (v) { x.scrollTop = v[0]; x.scrollLeft = v[1]; } });
+      $$("#fk-pool,#fk-board,#fk-picks,.dr-panel,#fk-ticker,#fk-seg,#fk-seg2,#fk-rchatl", el).forEach((x) => { const v = keep.scroll[x.id || x.className]; if (v) { x.scrollTop = v[0]; x.scrollLeft = v[1]; } });
       const tk = $("#fk-ticker", el), cur = tk && $(".tk.now", tk);
       if (cur && tk && (!keep.scroll["fk-ticker"] || ui.lastPick !== F.made(d).length)) tk.scrollLeft = Math.max(0, cur.offsetLeft - tk.clientWidth * 0.3);
       ui.lastPick = F.made(d).length;
@@ -814,6 +831,8 @@
       ui.lastView = view;
       keyboardPlayers(el);
       refocus(el, keep.f);
+      const cl = ui.right === "chat" && $("#fk-rchatl", el);
+      if (cl) { const n = opts.chat.posts().length; if (ui.chatN !== n) { cl.scrollTop = cl.scrollHeight; ui.chatN = n; } }
       drawTimer();
       // say it when you come on the clock (the toast is a live region), chime, and flash the tab if it's in the
       // background; a softer chime when you're on deck. Autodraft stays quiet.
@@ -946,6 +965,22 @@
     el.addEventListener("input", (e) => {
       if (e.target.id === "fk-q") { ui.f.q = e.target.value; render(); }
       if (e.target.id === "fk-bid") ui.bidAmt = +e.target.value;
+      if (e.target.id === "fk-rchat") ui.chatDraft = e.target.value;
+    });
+    el.addEventListener("keydown", (e) => {
+      if (e.target.id === "fk-rchat" && e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); e.target.form.requestSubmit(); }
+    });
+    el.addEventListener("submit", async (e) => {
+      if (e.target.id !== "fk-rchatf" || !opts.chat) return;
+      e.preventDefault();
+      const body = (ui.chatDraft || "").trim();
+      if (!body || ui.sending) return;
+      ui.sending = true;
+      const r = await opts.chat.send(body).catch((err) => ({ error: err.message }));
+      ui.sending = false;
+      if (r && r.error) { toast(r.error, true); return; }
+      ui.chatDraft = ""; ui.chatN = -1; render();
+      const box = $("#fk-rchat", el); if (box) box.focus();
     });
     el.addEventListener("change", (e) => {
       if (e.target.id === "fk-show") { ui.show = e.target.value; render(); }
