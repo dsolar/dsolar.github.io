@@ -7,7 +7,7 @@
   const theme = U.theme("fk-lab");
   const top = $("#top"), app = $("#app");
   const BLURB = { nba: "Real per-game lines, 9-cat or points", nfl: "Season points, half PPR, PPR or standard", mlb: "Last season paced to full, 5x5 or 8x8" };
-  const DEFAULTS = { sport: "nba", scoring: "", type: "snake", teams: 10, slot: 0, clock: 30, budget: 200, bench: null, lineup: "", name: "" };
+  const DEFAULTS = { sport: "nba", scoring: "", type: "snake", teams: 10, slot: 0, clock: 30, budget: 200, bench: null, lineup: "", name: "", reveal: "start", test: 1, trades: 1 };
   let cfg = Object.assign({}, DEFAULTS, store.get("cfg", {}));
   let mock = store.get("mock", null);            // { cfg, D }
   const cache = {};
@@ -73,9 +73,12 @@
           </div>
           <div class="row3">
             <div class="field"><label for="s-teams">Teams</label><select id="s-teams" name="teams">${[4, 6, 8, 10, 12, 14, 16].map((n) => opt(n, n, cfg.teams)).join("")}</select></div>
-            <div class="field"><label for="s-slot">${cfg.type === "auction" ? "Your nomination turn" : "Your pick"}</label><select id="s-slot" name="slot">${opt(0, "Random", cfg.slot)}${Array.from({ length: cfg.teams }, (_, i) => opt(i + 1, U.ord(i + 1), cfg.slot)).join("")}</select></div>
+            ${cfg.type === "mystery" ? `<div class="field"><label for="s-trades">Trades</label><select id="s-trades" name="trades">${opt(1, "Picks and players", cfg.trades)}${opt(0, "Off", cfg.trades)}</select></div>` : `<div class="field"><label for="s-slot">${cfg.type === "auction" ? "Your nomination turn" : "Your pick"}</label><select id="s-slot" name="slot">${opt(0, "Random", cfg.slot)}${Array.from({ length: cfg.teams }, (_, i) => opt(i + 1, U.ord(i + 1), cfg.slot)).join("")}</select></div>`}
             <div class="field"><label for="s-clock">${cfg.type === "auction" ? "Bid clock" : "Pick clock"}</label><select id="s-clock" name="clock">${(cfg.type === "auction" ? [10, 15, 20, 30] : [15, 30, 60, 90, 0]).map((n) => opt(n, n ? n + " seconds" : "No clock", cfg.clock)).join("")}</select></div>
           </div>
+          ${cfg.type === "mystery" ? `<div class="row2"><div class="field"><label for="s-reveal">Packages open</label><select id="s-reveal" name="reveal">${Object.entries(F.REVEALS).map(([k, l]) => opt(k, l, cfg.reveal)).join("")}</select></div><div class="field"><label for="s-test">Bot test</label><select id="s-test" name="test">${opt(1, "Keep the most even of 5 bot drafts", cfg.test)}${opt(0, "Off, use the first even deal", cfg.test)}</select></div></div>
+            <p class="ps" style="margin:-4px 0 0">Every team gets a random set of picks, like 1, 24 and 42 against 12, 13 and 18, dealt so each set adds up to the same value on the pick curve.</p>` : ""}
+          ${cfg.type !== "auction" && cfg.type !== "mystery" ? `<div class="row2"><div class="field"><label for="s-trades">Trades during the draft</label><select id="s-trades" name="trades">${opt(1, "Picks and players", cfg.trades)}${opt(0, "Off", cfg.trades)}</select></div><div></div></div>` : ""}
           ${cfg.type === "auction" ? `<div class="row2"><div class="field"><label for="s-budget">Budget per team</label><select id="s-budget" name="budget">${[100, 200, 260, 300, 1000].map((n) => opt(n, "$" + n, cfg.budget)).join("")}</select></div><div></div></div>` : ""}
           <div class="field"><label for="s-lineup">Starting lineup</label><input type="text" id="s-lineup" name="lineup" value="${esc(lineup)}" spellcheck="false" autocomplete="off">
             <div class="ps">Slots: ${Object.keys(sport.slots).filter((s) => s !== "BN").map(esc).join(", ")}. Separate with spaces.</div><div class="slots" id="slotprev"></div></div>
@@ -88,6 +91,7 @@
         </form>
         <aside class="stack">
           <div class="card"><h3>How the bots draft</h3><p class="small muted" style="margin:0">Bots value players by points or category z-scores over the replacement player at each position, so a scarce catcher or tight end goes earlier than his raw numbers say. They fill starters before the bench, leave kickers and defenses for the last rounds, and in an auction bid by proxy up to a price set by their budget and needs.</p></div>
+          <div class="card"><h3>Trades</h3><p class="small muted" style="margin:0">Trade picks, and players you've drafted, with any team while the draft runs. Bots answer right away, and sometimes call you to move up when you're on the clock.</p></div>
           <div class="card"><h3>Your seat</h3><p class="small muted" style="margin:0">Queue players before you start. If your clock runs out, the first queued player who still fits is your pick, then the best fit. The draft saves on this device, so you can close the tab and come back.</p></div>
         </aside>
       </div></div>`;
@@ -101,7 +105,7 @@
       const fd = new FormData(f);
       if (n === "sport") { cfg = Object.assign(cfg, { sport: fd.get("sport"), scoring: "", lineup: "", bench: null }); }
       else if (n === "type") { cfg.type = fd.get("type"); cfg.clock = cfg.type === "auction" ? 15 : 30; }
-      else cfg[n] = n === "scoring" ? fd.get(n) : +fd.get(n);
+      else cfg[n] = n === "scoring" || n === "reveal" ? fd.get(n) : +fd.get(n);
       cfg.name = fd.get("name"); if (n !== "sport") cfg.lineup = fd.get("lineup");
       store.set("cfg", cfg); setupPage();
     });
@@ -111,8 +115,11 @@
       const s = S[fd.get("sport")];
       const bad = fd.get("lineup").split(/[\s,]+/).filter(Boolean).filter((x) => !s.slots[x] || x === "BN");
       if (bad.length) { const w = $("#s-why"); w.hidden = false; w.textContent = `Unknown slot${bad.length > 1 ? "s" : ""}: ${bad.join(", ")}`; return; }
-      cfg = Object.assign(cfg, { sport: fd.get("sport"), type: fd.get("type"), scoring: fd.get("scoring"), teams: +fd.get("teams"), slot: +fd.get("slot"), clock: +fd.get("clock"), budget: +(fd.get("budget") || cfg.budget), bench: +fd.get("bench"), lineup: fd.get("lineup").trim(), name: fd.get("name").trim() });
+      cfg = Object.assign(cfg, { sport: fd.get("sport"), type: fd.get("type"), scoring: fd.get("scoring"), teams: +fd.get("teams"), slot: +fd.get("slot"), clock: +fd.get("clock"), budget: +(fd.get("budget") || cfg.budget), bench: +fd.get("bench"), lineup: fd.get("lineup").trim(), name: fd.get("name").trim(),
+        reveal: fd.get("reveal") || cfg.reveal, test: fd.get("test") == null ? cfg.test : +fd.get("test"), trades: fd.get("trades") == null ? cfg.trades : +fd.get("trades") });
       store.set("cfg", cfg);
+      const go = $("button.go", f); go.disabled = true; go.textContent = cfg.type === "mystery" && cfg.test ? "Dealing and testing packages..." : "Setting up...";
+      await new Promise((r) => setTimeout(r, 30));
       await newMock(cfg);
       location.hash = "#draft"; route();
     });
@@ -127,8 +134,11 @@
     for (let i = others.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [others[i], others[j]] = [others[j], others[i]]; }
     const slot = c.slot ? c.slot - 1 : Math.floor(r() * n);
     const order = others.slice(0, slot).concat(0, others.slice(slot));
+    const total = n * (P.lineup.length + P.bench);
     const D = F.create({ sport: P.sport, type: c.type, teams: n, seed, now: Date.now(), lineup: P.lineup, bench: P.bench, scoring: P.scoring,
-      botDelay: 1200, clock: c.type === "auction" ? 0 : c.clock, bidClock: c.clock || 15, nomClock: 30, budget: c.budget, order, name: `${P.sport.name} mock` });
+      botDelay: 1200, clock: c.type === "auction" ? 0 : c.clock, bidClock: c.clock || 15, nomClock: 30, budget: c.budget, order, name: `${P.sport.name} mock`,
+      trades: c.trades !== 0, curve: c.type === "mystery" ? F.pickCurve(P.players, total) : null, reveal: c.reveal });
+    if (c.type === "mystery" && c.test) F.fairDeal(D, P.players, P.sport, null, { tries: 5 });
     D.teams[0].owner = "You";
     if (c.name) { D.teams[0].name = c.name; D.teams[0].abbr = c.name.replace(/[^A-Za-z0-9 ]/g, "").split(/\s+/).map((w) => w[0]).join("").slice(0, 3).toUpperCase() || "YOU"; }
     else { D.teams[0].name = "Your team"; D.teams[0].abbr = "YOU"; }
@@ -199,7 +209,7 @@
         <div class="card"><h2>Files</h2><ul>
           <li><b>sports.js</b>: positions, lineup slots, position limits, stat columns and scoring for basketball, football and baseball.</li>
           <li><b>value.js</b>: category z-scores or fantasy points, value over replacement by position, auction dollars.</li>
-          <li><b>draft.js</b>: snake, linear, third-round reversal and auction drafts with clocks, queues, keepers, bots, pause and undo. No screen code, so a server can run it.</li>
+          <li><b>draft.js</b>: snake, linear, third-round reversal, mystery packages and auction drafts with clocks, queues, keepers, bots, pause, undo and trades during the draft. No screen code, so a server can run it.</li>
           <li><b>ui.js</b> and <b>kit.css</b>: masthead and tabs, sortable player tables, filters, the player card and the full draft room.</li>
           <li><b>data/</b>: nba.json, nfl.json and mlb.json, rebuilt by tools/fantasykit_data.py.</li></ul></div>
         <div class="card"><h2>A league page in a few lines</h2><div class="code">&lt;link rel="stylesheet" href="/fantasy-kit/kit.css"&gt;

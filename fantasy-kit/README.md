@@ -14,7 +14,7 @@ Plain browser scripts, no build step. `sports.js`, `value.js` and `draft.js` hav
 | --- | --- |
 | `sports.js` | `FK.sports`: positions, lineup slots, position limits, stat columns, position colors and scoring presets for `nba`, `nfl` and `mlb` |
 | `value.js` | `FK.value.evaluate`: category z-scores or fantasy points, value over replacement by position, auction dollars |
-| `draft.js` | `FK.draft`: snake, linear, third-round reversal and auction drafts; clocks, queues, keepers, bots, pause, undo, results |
+| `draft.js` | `FK.draft`: snake, linear, third-round reversal, mystery packages and auction drafts; clocks, queues, keepers, bots, pause, undo, trades during the draft, results |
 | `league.js` | `FK.league`: rosters, weekly lineups, schedule, scoring (simulated, or a `hooks.score` for real box scores), standings, playoffs, power rankings, free agents, FAAB waivers, trades with review votes, the transaction log |
 | `league-ui.js` | `FK.ui.leagueApp`: every league page (Overview, Standings, Scoreboard, Transactions, Roster, Schedule, Trades, Matchup, Players, Waiver claims, Draft results) |
 | `ui.js` | `FK.ui`: helpers, avatars, the masthead and tab bars, sortable tables, position chips, the player card, and view-model modules (`scoreboard`, `versus`, `vsTable`, `standingsTable`, `feed`, `tradeCard`, `tradeWindow`), plus the full draft room |
@@ -83,6 +83,28 @@ The draft document `D` is plain JSON. Save it wherever the league lives, such as
 - A lot closes three seconds after every manager who could still bid has passed.
 - `FK.draft.maxBid` keeps $1 back for every open spot.
 
+**Mystery packages:** create the draft with `type: "mystery"`, a pick curve and a reveal.
+
+```js
+const curve = FK.draft.pickCurve(players, teams * rounds);   // pick k is worth the k-th best player's dollars, plus $1
+const D = FK.draft.create({ sport, type: "mystery", teams, curve, reveal: "start" });
+FK.draft.fairDeal(D, players, sport, hooks, { tries: 5 });   // optional bot test
+```
+
+- Every team gets a random set of picks, one per roster spot, like 1, 24 and 42 against 12, 13 and 18.
+- The deal starts random, then swaps picks between the richest team and the others until every package is within 1% of the average (`tolerance`). Packages from different seeds don't repeat.
+- `fairDeal` deals a few sets, has bots draft each one, and keeps the set where the bots finished closest together. `D.mystery.test` records it.
+- `reveal` is `"start"` (sealed until the draft starts), `"own"` (your picks at the start, everyone else's as they come up) or `"now"`. `FK.draft.seen(D, k, team)` says whether a team can see who holds pick `k`.
+
+**Trades during the draft** work in every format but auction. Picks and players a team has drafted can both move.
+
+- `FK.draft.propose(D, ctx, { from, to, give, get, note }, now)` sends an offer. A pick is `FK.draft.pickId(k)`, a player is his id. A bot answers at once. A manager answers with `FK.draft.respond(D, ctx, id, team, yes, now)`.
+- Every team starts with one pick per roster spot, so `FK.draft.balance` evens out a 2-for-1: the team getting more adds its latest pick.
+- `FK.draft.tradeCheck` keeps rosters legal: room for everyone, every starting slot still fillable, position limits.
+- Bots value picks by `FK.draft.pickValue`, the dollars of the player you'd expect to be left there. They take a deal that gets them 3% to 10% more than they send.
+- When a manager comes on the clock, a bot that picks later sometimes offers to move up. Offers that can't happen anymore, because a pick was made or a piece moved, expire.
+- Set `trades: false` on `create` to turn trades off, or `botOffers: false` to keep trades but stop bot offers. Add `hooks.tradeCheck(D, trade, ctx)` for a league rule.
+
 **League rules** plug in through hooks:
 
 - `hooks.check(D, team, player, ctx)` returns `{ ok, why }`. Use it for a salary cap or a keeper rule.
@@ -141,5 +163,7 @@ The modules take plain view models, so a league with its own engine (Hard Cap) b
 - `FK.ui.scoreboard(games)` is the scoreboard strip.
 - `FK.ui.feed(items)` is a transaction or activity feed.
 - `FK.ui.tradeCard(sport, vm)` and `FK.ui.tradeWindow(opts)` handle offers. The window takes `roster`, `value`, `check` and `submit` callbacks, so a salary cap rule plugs straight in.
+
+`node --test tests/fantasymodes.test.mjs` tests mystery packages (balance, variety, sealing, the bot test) and trades during the draft (bot answers, players moving with their spot, balancing, stale offers, bot offers).
 
 `node --test tests/fantasyleague.test.mjs` plays full seasons in each sport and tests lineups, free agency, waivers, trades and vetoes.

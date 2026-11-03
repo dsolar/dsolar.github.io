@@ -83,7 +83,9 @@
   const playerAv = (sport, p, size = "") => `<span class="pav c${colorOf(sport, p)}${size ? " " + size : ""}" aria-hidden="true">${esc(initials(p.n))}</span>`;
   const injTag = (p) => (p && p.inj ? ` <span class="tag inj" title="${esc(p.inj)}">${esc(String(p.inj).replace(/^day.*/i, "DTD").replace(/^questionable/i, "Q").slice(0, 3).toUpperCase())}</span>` : "");
   // Avatar, name and a small line (positions and team) for any player.
-  const pname = (sport, p, extra = "", opts = {}) => p ? `<span class="pname${opts.b ? " b" : ""}">${opts.noAv ? "" : playerAv(sport, p, opts.size || "")}<span><span class="pn">${esc(p.n)}${injTag(p)}</span><span class="sub">${S.positions(p).join(", ")} ${esc(p.t)}${extra ? ", " + extra : ""}</span></span></span>` : `<span class="ps">Empty</span>`;
+  // A draft pick as a tradeable item: { id, n: "Pick 2.5", pick: true, sub, price }.
+  const pickItem = (p, extra = "") => `<span class="pname"><span class="pav pk" aria-hidden="true">#</span><span><span class="pn">${esc(p.n)}</span><span class="sub">${esc(p.sub || "Draft pick")}${extra ? ", " + extra : ""}</span></span></span>`;
+  const pname = (sport, p, extra = "", opts = {}) => p && p.pick ? pickItem(p, extra) : p ? `<span class="pname${opts.b ? " b" : ""}">${opts.noAv ? "" : playerAv(sport, p, opts.size || "")}<span><span class="pn">${esc(p.n)}${injTag(p)}</span><span class="sub">${S.positions(p).join(", ")} ${esc(p.t)}${extra ? ", " + extra : ""}</span></span></span>` : `<span class="ps">Empty</span>`;
   const teamName = (t, opts = {}) => `<span class="row" style="gap:9px">${teamAv(t, opts.size || "sm")}<span class="ell"><b>${esc(t.name)}</b>${opts.you ? ` <span class="tag you">You</span>` : ""}${opts.owner !== false && t.owner ? ` <span class="ps">${esc(t.owner)}</span>` : ""}</span></span>`;
 
   /* ---------- shell ---------- */
@@ -256,7 +258,7 @@
   const txLine = (sport, kind, p, extra = "") => `<div class="row"><span class="txi ${kind}" aria-label="${TXI[kind][1]}" title="${TXI[kind][1]}">${TXI[kind][0]}</span><span data-player="${esc(p.id)}" style="cursor:pointer;min-width:0">${pname(sport, p, extra, { size: "sm" })}</span></div>`;
   // vm: { id, status, statusLabel, from, to, give: [players], get, faab: [give, get], note, when, acts (html) }
   function tradeCard(sport, vm) {
-    const side = (t, ps, faab, label) => `<div class="side"><h4>${teamAv(t, "sm")}${esc(label)}</h4>${ps.map((p) => `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, p.price != null ? esc(p.price) : p.$ ? money(p.$) : "")}</span>`).join("") || `<span class="ps">No players</span>`}${faab ? `<span><span class="tag gold">$${faab} FAAB</span></span>` : ""}</div>`;
+    const side = (t, ps, faab, label) => `<div class="side"><h4>${teamAv(t, "sm")}${esc(label)}</h4>${ps.map((p) => p.pick ? pname(sport, p) : `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, p.price != null ? esc(p.price) : p.$ ? money(p.$) : "")}</span>`).join("") || `<span class="ps">No players</span>`}${faab ? `<span><span class="tag gold">$${faab} FAAB</span></span>` : ""}</div>`;
     return `<div class="card" id="trade-${vm.id}"><div class="mod-h"><span class="status ${vm.status}">${esc(vm.statusLabel)}</span>${vm.sub ? `<span class="ps">${vm.sub}</span>` : ""}<span class="ps" style="margin-left:auto">${esc(vm.when || "")}</span></div>
       <div class="trade">${side(vm.from, vm.give, vm.faab && vm.faab[0], `${vm.from.name} sends`)}<span class="arrow" aria-hidden="true">&#8644;</span>${side(vm.to, vm.get, vm.faab && vm.faab[1], `${vm.to.name} sends`)}</div>
       ${vm.note ? `<p class="small" style="margin:0 16px 12px">&ldquo;${esc(vm.note)}&rdquo;</p>` : ""}${vm.acts ? `<div class="trade-foot">${vm.acts}</div>` : ""}</div>`;
@@ -265,25 +267,27 @@
   /* The trade window: both rosters side by side, pick players and FAAB, see the value swing, send.
      opts: { sport, teams, me, other, roster(teamId) -> players, value(players, faab) -> number, faab(teamId) (omit to hide),
              roomFor(trade) -> drops needed, check(trade) -> { ok, why }, submit(trade) -> { ok, why },
-             prefill: { give, get, faabGive, faabGet, note }, title } */
+             prefill: { give, get, faabGive, faabGet, note }, title,
+             values(trade) -> [send, get] to override value(), dark, empty (the prompt before anything is picked) }
+     A roster item with pick: true is a draft pick ({ id, n, sub, price }) and renders as one. */
   function tradeWindow(opts) {
     const pf = opts.prefill || {};
     const st = { other: opts.other, give: new Set(pf.give || []), get: new Set(pf.get || []), drops: new Set(), faabGive: pf.faabGive || 0, faabGet: pf.faabGet || 0, note: pf.note || "" };
     const sport = opts.sport;
     const me = opts.teams.find((t) => t.id === opts.me);
     const trade = () => ({ from: opts.me, to: st.other, give: [...st.give], get: [...st.get], faabGive: st.faabGive, faabGet: st.faabGet, dropsFrom: [...st.drops], note: st.note, counterOf: pf.counterOf || null });
-    const D = dialog(`<div class="tw"></div>`, null, { full: true });
+    const D = dialog(`<div class="tw"></div>`, null, { full: true, dark: opts.dark });
     const draw = (focus) => {
       const other = opts.teams.find((t) => t.id === st.other);
       const mine = opts.roster(opts.me), theirs = opts.roster(st.other);
       const byId = Object.fromEntries(mine.concat(theirs).map((p) => [p.id, p]));
-      const vg = opts.value([...st.give].map((id) => byId[id]).filter(Boolean), st.faabGive), vr = opts.value([...st.get].map((id) => byId[id]).filter(Boolean), st.faabGet);
+      const [vg, vr] = opts.values ? opts.values(trade()) : [opts.value([...st.give].map((id) => byId[id]).filter(Boolean), st.faabGive), opts.value([...st.get].map((id) => byId[id]).filter(Boolean), st.faabGet)];
       const need = opts.roomFor ? opts.roomFor(trade()) : 0;
       for (const id of [...st.drops]) if (st.give.has(id)) st.drops.delete(id);
       const tot = vg + vr || 1, swing = (vr - vg) / tot;
       const vl = opts.valueLabel || money;
       const picked = st.give.size || st.get.size;
-      const verdict = !picked ? "Pick players on either side" : Math.abs(swing) < 0.08 ? "About even" : swing > 0 ? (swing > 0.35 ? "Lopsided your way" : "Leans your way") : swing < -0.35 ? "Lopsided their way" : "Leans their way";
+      const verdict = !picked ? (opts.empty || "Pick players on either side") : Math.abs(swing) < 0.08 ? "About even" : swing > 0 ? (swing > 0.35 ? "Lopsided your way" : "Leans your way") : swing < -0.35 ? "Lopsided their way" : "Leans their way";
       const list = (ps, set, kind) => ps.map((p) => `<label class="${set.has(p.id) ? "on" : ""}${kind === "drop" ? " drop" : ""}"><input type="checkbox" data-tw="${kind}" value="${esc(p.id)}"${set.has(p.id) ? " checked" : ""}>${pname(sport, p)}<span class="dollar">${p.price != null ? esc(p.price) : p.$ ? money(p.$) : ""}</span></label>`).join("");
       const dropList = need > 0 ? `<div class="sec">Drop ${need} to make room</div>${list(mine.filter((p) => !st.give.has(p.id)), st.drops, "drop")}` : "";
       const chk = opts.check ? opts.check(trade()) : { ok: true };
@@ -349,7 +353,21 @@
     const team = (id) => D().teams[id];
     const isMe = (t) => me() != null && t && t.id === me();
     const auction = () => D().type === "auction";
+    const mystery = () => D().type === "mystery";
     const pts = () => isPoints(sport, D().scoring);
+    const canTrade = () => { const d = D(); return d.trading && me() != null && d.phase !== "done"; };
+    // a pick's short label for the ticker and board: 2.5 in a snake, #15 in mystery packages
+    const plab = (k) => { const d = D(), n = d.teams.length; return mystery() ? `#${k + 1}` : `${Math.floor(k / n) + 1}.${(k % n) + 1}`; };
+    const seenK = (k) => F.seen(D(), k, me());
+    const viaOf = (k) => { const v = D().via[k]; return v != null ? team(v) : null; };
+    // the board spots that belong to a team: picks it made or holds, in pick order (traded players move with theirs)
+    const slotsOf = (id) => { const d = D(); return d.order.map((t, k) => ((d.board[k] ? d.board[k].team === id : t === id) ? k : -1)).filter((k) => k >= 0); };
+    const pickVM = (k) => { const d = D(), v = viaOf(k); return { id: F.pickId(k), k, pick: true, n: mystery() ? `Pick ${k + 1}` : `Pick ${plab(k)}`, sub: `${ord(k + 1)} overall, about ${money(F.pickValue(d, ctx, k))}${v ? `, via ${v.abbr}` : ""}`, price: money(F.pickValue(d, ctx, k)) }; };
+    // a pick you can't see yet (mystery packages, reveal "own") trades blind, valued at the average pick still to come
+    const avgPick = () => { const d = D(), ks = d.order.map((t, k) => k).filter((k) => !d.board[k]); return ks.length ? ks.reduce((a, k) => a + F.pickValue(d, ctx, k), 0) / ks.length : 0; };
+    const sealedVM = (k) => ({ id: F.pickId(k), k, pick: true, sealed: true, n: "Sealed pick", sub: "Somewhere later in the draft", price: "?" });
+    const assetVM = (id) => (F.isPickId(id) ? (seenK(F.pickIdx(id)) ? pickVM(F.pickIdx(id)) : sealedVM(F.pickIdx(id))) : ctx.byId[id]);
+    const valueOf = (id) => (F.isPickId(id) && !seenK(F.pickIdx(id)) ? avgPick() : F.assetValue(D(), ctx, id));
 
     /* the top bar: league, who's up and the clock, controls */
     function top() {
@@ -358,12 +376,13 @@
       const lg = `<a class="lg" href="${esc((opts.exit && opts.exit.href) || "#")}">${brand.mark || ""}<span><b>${esc(d.name || brand.name || "Draft")}</b><small>${esc(F.FORMATS[d.type])}, ${d.teams.length} teams, ${d.rounds} rounds</small></span></a>`;
       const ctl = [];
       if (me() != null && d.phase !== "done") ctl.push(`<button class="btn sm" data-act="auto" aria-pressed="${!!team(me()).auto}" title="Let the bot draft for you">Autodraft</button>`);
+      if (canTrade() && d.phase === "live") ctl.push(`<button class="btn sm" data-act="trade">Trade</button>`);
       if (opts.commish && d.phase === "live") ctl.push(`<button class="btn sm" data-act="pause">${d.paused ? "Resume" : "Pause"}</button><button class="btn sm" data-act="undo">Undo</button>`);
       if (opts.commish && d.phase === "setup") ctl.push(`<button class="btn sm go" data-act="start">Start the draft</button>`);
       if (d.phase === "done" && opts.extra) ctl.push(opts.extra());
       if (opts.exit) ctl.push(`<a class="btn sm" href="${esc(opts.exit.href)}">${esc(opts.exit.label || "Exit")}</a>`);
       let mid = "";
-      if (d.phase === "setup") mid = `<div class="otc"><span class="ring" style="--p:1"><span>${d.clock || d.auction ? (auction() ? d.auction.bidClock : d.clock) : "-"}</span></span><span class="who"><small>Draft room is open</small><b>Build your queue</b><span>${auction() ? `$${d.auction.budget} budgets, ${d.auction.bidClock} seconds a bid` : d.clock ? `${d.clock} seconds a pick` : "No pick clock"}</span></span></div>`;
+      if (d.phase === "setup") mid = `<div class="otc"><span class="ring" style="--p:1"><span>${d.clock || d.auction ? (auction() ? d.auction.bidClock : d.clock) : "-"}</span></span><span class="who"><small>Draft room is open</small><b>${mystery() && !seenK(0) ? "Packages are sealed" : "Build your queue"}</b><span>${auction() ? `$${d.auction.budget} budgets, ${d.auction.bidClock} seconds a bid` : d.clock ? `${d.clock} seconds a pick` : "No pick clock"}</span></span></div>`;
       else if (d.phase === "done") mid = `<div class="otc"><span class="who"><small>Draft complete</small><b>${F.made(d).length} ${auction() ? "players bought" : "picks"}</b><span>See the Results tab</span></span></div>`;
       else if (auction()) {
         const st = F.auctionState(d, n);
@@ -372,7 +391,7 @@
       } else {
         const c = F.onClock(d, n), t = team(c.team), mine = isMe(t);
         const next = me() != null ? F.nextPickOf(d, me()) : null;
-        mid = `<div class="otc${mine ? " me" : ""}">${teamAv(t, "md")}<span class="who"><small>${mine ? "You're on the clock" : "On the clock"}</small><b>${esc(t.name)}</b><span>Round ${c.round}, pick ${c.inRound} (${ord(c.pick)} overall)${!mine && next ? `. You pick in ${next - c.pick}` : ""}${d.paused ? ", paused" : ""}</span></span><span class="ring" id="fk-ring"><span id="fk-timer"></span></span></div>`;
+        mid = `<div class="otc${mine ? " me" : ""}">${teamAv(t, "md")}<span class="who"><small>${mine ? "You're on the clock" : "On the clock"}</small><b>${esc(t.name)}</b><span>${mystery() ? `Pick ${c.pick} of ${c.total}` : `Round ${c.round}, pick ${c.inRound} (${ord(c.pick)} overall)`}${viaOf(c.index) ? `, from ${isMe(viaOf(c.index)) ? "you" : esc(viaOf(c.index).name)}` : ""}${!mine && next ? `. You pick in ${next - c.pick}` : ""}${d.paused ? ", paused" : ""}</span></span><span class="ring" id="fk-ring"><span id="fk-timer"></span></span></div>`;
       }
       return `<div class="dr-top">${lg}${mid}<div class="acts">${ctl.join("")}</div></div>`;
     }
@@ -381,13 +400,15 @@
       const d = D(), n = d.teams.length;
       if (auction()) return lotBar();
       const k0 = d.phase === "live" ? F.onClock(d, now()).index : d.phase === "done" ? d.order.length : 0;
+      if (mystery() && d.phase === "setup" && !seenK(0)) return `<div class="ticker" id="fk-ticker"><div class="tk hid wide"><span class="n">${d.order.length} picks</span><b>Every package is dealt and sealed</b><small>They add up within ${(d.mystery.spread * 100).toFixed(1)}% of each other. You'll see them when the draft starts.</small></div></div>`;
       const from = Math.max(0, k0 - 6), to = Math.min(d.order.length, from + 22);
       const cards = [];
       for (let k = from; k < to; k++) {
-        const pk = d.board[k], t = team(d.order[k]), lab = `${Math.floor(k / n) + 1}.${(k % n) + 1}`;
-        const p = pk && pk.pid && ctx.byId[pk.pid];
+        const pk = d.board[k], t = team(d.order[k]), lab = plab(k);
+        const p = pk && pk.pid && ctx.byId[pk.pid], via = viaOf(k);
+        if (!seenK(k)) { cards.push(`<div class="tk hid"><span class="n">${lab}</span><b>Sealed</b><small>${d.phase === "live" && k > k0 ? `${k - k0} away` : "Revealed at the start"}</small></div>`); continue; }
         if (p) cards.push(`<button type="button" class="tk done c${colorOf(sport, p)}${isMe(t) ? " me" : ""}" data-player="${esc(p.id)}"><span class="n">${lab} ${esc(t.abbr)}</span><b>${esc(p.n)}</b><small>${S.positions(p).join(", ")} ${esc(p.t)}</small></button>`);
-        else cards.push(`<div class="tk${k === k0 && d.phase === "live" ? " now" : ""}${isMe(t) ? " me" : ""}"><span class="n">${teamAv(t, "sm")} ${lab}</span><b>${isMe(t) ? "You" : esc(t.name)}</b><small>${k === k0 && d.phase === "live" ? "On the clock" : k > k0 ? `${k - k0} away` : "Passed"}</small></div>`);
+        else cards.push(`<div class="tk${k === k0 && d.phase === "live" ? " now" : ""}${isMe(t) ? " me" : ""}"><span class="n">${teamAv(t, "sm")} ${lab}</span><b>${isMe(t) ? "You" : esc(t.name)}</b><small>${k === k0 && d.phase === "live" ? "On the clock" : k > k0 ? `${k - k0} away` : "Passed"}${via ? `, via ${esc(via.abbr)}` : ""}</small></div>`);
       }
       return `<div class="ticker" id="fk-ticker">${cards.join("")}</div>`;
     }
@@ -437,11 +458,13 @@
         rowAttr: (p) => `data-player="${esc(p.id)}" class="${mine != null && ctx.own[p.id] == null && !F.canAdd(d, ctx, mine, p).ok ? "dim" : ""}"` });
     }
     function board() {
-      const d = D(), n = d.teams.length, rounds = d.rounds, cols = d.round1;
+      const d = D(), n = d.teams.length, cols = d.round1;
+      const slots = auction() ? null : cols.map(slotsOf);
+      const rounds = auction() ? d.rounds : Math.max(d.rounds, ...slots.map((x) => x.length));
       const cellOf = (r, col) => {
         if (auction()) { const s = d.sales.filter((x) => x.team === cols[col])[r]; return s ? { pk: s, label: money(s.price) } : null; }
-        for (let k = r * n; k < (r + 1) * n; k++) if (d.order[k] === cols[col]) return { pk: d.board[k], k };
-        return null;
+        const k = slots[col][r];
+        return k == null ? null : { pk: d.board[k], k };
       };
       const nowK = !auction() && d.phase === "live" ? F.onClock(d, now()).index : -1;
       let cells = `<div class="h"></div>${cols.map((id) => { const t = team(id); return `<div class="h${isMe(t) ? " me" : ""}" title="${esc(t.name)}${t.owner ? ", " + esc(t.owner) : ", bot"}">${teamAv(t, "sm")}<b>${esc(t.name)}</b><small>${auction() ? money(t.budget) + " left" : esc(t.owner || "Bot")}</small></div>`; }).join("")}`;
@@ -450,8 +473,10 @@
         for (let col = 0; col < n; col++) {
           const x = cellOf(r, col), t = team(cols[col]);
           const pk = x && x.pk, p = pk && pk.pid && ctx.byId[pk.pid];
+          if (x && x.k != null && !pk && !seenK(x.k)) { cells += `<div class="cell hid${isMe(t) ? " me" : ""}"><small class="ps">Sealed</small></div>`; continue; }
+          const via = x && x.k != null ? (pk && pk.drafter != null && pk.drafter !== pk.team ? team(pk.drafter) : !pk ? viaOf(x.k) : null) : null;
           const cls = ["cell", p ? "f c" + colorOf(sport, p) : "", isMe(t) ? "me" : "", x && x.k === nowK ? "now" : "", pk && pk.keeper ? "keep" : ""].join(" ").replace(/\s+/g, " ");
-          cells += `<div class="${cls}"${p ? ` data-player="${esc(p.id)}" role="button" tabindex="0" title="${esc(p.n)}${pk.auto ? ", autopick" : ""}"` : ""}>${p ? `<b>${esc(p.n)}</b><small>${S.positions(p).join(", ")} ${esc(p.t)}${x.label ? " " + x.label : ""}</small>` : pk ? "<b>Passed</b>" : x && x.k != null ? `<small class="ps">${r + 1}.${col + 1}${x.k === nowK ? ", on the clock" : ""}</small>` : ""}</div>`;
+          cells += `<div class="${cls}"${p ? ` data-player="${esc(p.id)}" role="button" tabindex="0" title="${esc(p.n)}${pk.auto ? ", autopick" : ""}"` : ""}>${p ? `<b>${esc(p.n)}</b><small>${via ? `from ${esc(via.abbr)}` : `${S.positions(p).join(", ")} ${esc(p.t)}`}${x.label ? " " + x.label : ""}</small>` : pk ? "<b>Passed</b>" : x && x.k != null ? `<small class="ps">${plab(x.k)}${x.k === nowK ? ", on the clock" : via ? `, via ${esc(via.abbr)}` : ""}</small>` : ""}</div>`;
         }
       }
       return `<div class="board" id="fk-board"><div class="bgrid" style="--n:${n};grid-template-columns:28px repeat(${n},minmax(0,1fr))">${cells}</div></div>`;
@@ -459,7 +484,7 @@
     function picks() {
       const d = D(), list = F.made(d).reverse();
       return `<div class="table-wrap" id="fk-picks" style="flex:1;min-height:0">${list.length ? `<ol class="picks">${list.map((pk) => { const t = team(pk.team), p = ctx.byId[pk.pid];
-        return `<li class="${isMe(t) ? "me" : ""}"><span class="no">${auction() ? money(pk.price) : `${Math.ceil(pk.n / d.teams.length)}.${((pk.n - 1) % d.teams.length) + 1}`}</span><span ${p ? `data-player="${esc(p.id)}"` : ""} style="cursor:pointer;min-width:0">${p ? pname(sport, p, `${pk.keeper ? "keeper" : pk.auto ? "autopick" : ""}`) : "<b>Passed</b>"}</span><span class="row">${teamAv(t, "sm")}<span class="ps hide-s">${esc(t.name)}</span></span></li>`; }).join("")}</ol>` : `<p class="empty">No ${auction() ? "sales" : "picks"} yet.</p>`}</div>`;
+        return `<li class="${isMe(t) ? "me" : ""}"><span class="no">${auction() ? money(pk.price) : plab(pk.n - 1)}</span><span ${p ? `data-player="${esc(p.id)}"` : ""} style="cursor:pointer;min-width:0">${p ? pname(sport, p, [pk.keeper ? "keeper" : pk.auto ? "autopick" : "", pk.drafter != null && pk.drafter !== pk.team ? `traded from ${team(pk.drafter).abbr}` : ""].filter(Boolean).join(", ")) : "<b>Passed</b>"}</span><span class="row">${teamAv(t, "sm")}<span class="ps hide-s">${esc(t.name)}</span></span></li>`; }).join("")}</ol>` : `<p class="empty">No ${auction() ? "sales" : "picks"} yet.</p>`}</div>`;
     }
     function results() {
       const d = D(), st = F.standings(d, ctx).sort((a, b) => a.rank - b.rank);
@@ -467,6 +492,79 @@
         return `<div class="card"${isMe(t) ? ` style="border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)"` : ""}><div class="mod-h">${teamAv(t, "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(t.name)}${isMe(t) ? ` <span class="tag you">You</span>` : ""}</b><span class="ps">${ord(r.rank)}, ${pts() ? `${Math.round(r.score)} projected` : `${r.score.toFixed(1)} value`}${r.spent != null ? `, spent ${money(r.spent)}` : ""}</span></div><b class="grade disp">${r.grade}</b></div>
           <ol>${r.starters.filter(Boolean).map((p) => `<li>${posChip(sport, FK.value.mainPos(sport, p))}<button class="btn link ell" data-player="${esc(p.id)}">${esc(p.n)}</button><span class="grow"></span><span class="ps">${p.rank}</span></li>`).join("")}</ol></div>`; }).join("")}</div></div>`;
     }
+    // Mystery packages: every team's picks side by side, with what each package is worth on the pick curve.
+    function packages() {
+      const d = D(), M = d.mystery, nowK = d.phase === "live" ? F.onClock(d, now()).index : -1;
+      const rows = d.round1.slice().sort((a, b) => (a === me() ? -1 : b === me() ? 1 : 0)).map((id) => {
+        const ks = slotsOf(id), t = team(id), sealed = ks.some((k) => !seenK(k));
+        const tot = ks.reduce((a, k) => a + M.curve[k], 0);
+        const chips = ks.map((k) => {
+          if (!seenK(k)) return `<span class="pkc hid" title="Sealed">?</span>`;
+          const pk = d.board[k], p = pk && pk.pid && ctx.byId[pk.pid];
+          return `<span class="pkc${p ? ` done c${colorOf(sport, p)}` : ""}${k === nowK ? " now" : ""}"${p ? ` data-player="${esc(p.id)}" title="${esc(p.n)}"` : ` title="${ord(k + 1)} pick, about ${money(F.pickValue(d, ctx, k))}"`}>${k + 1}</span>`;
+        }).join("");
+        return { id, t, sealed, tot, chips };
+      });
+      const max = Math.max(...rows.map((r) => r.tot), 1);
+      const test = M.test ? ` The bot test drafted ${M.test.tries} deals and kept the one where the bots finished closest.` : "";
+      return `<div style="overflow:auto;flex:1;min-height:0"><div class="pk-h"><b>Mystery packages</b><span class="ps">Every team's picks add up to the same value on the pick curve, within ${(M.spread * 100).toFixed(1)}% of each other.${test} ${d.phase === "setup" && !seenK(0) ? "Packages open when the draft starts." : M.reveal === "own" && d.phase === "live" ? "Other teams' picks show when they come up." : ""}</span></div>
+        <ul class="pkl">${rows.map((r) => `<li class="${isMe(r.t) ? "me" : ""}"><span class="row">${teamAv(r.t, "sm")}<b class="ell">${esc(r.t.name)}</b></span><span class="pkv">${r.sealed ? `<span class="ps">Sealed</span>` : `<i style="width:${((r.tot / max) * 100).toFixed(1)}%"></i><span>${Math.round(r.tot)}</span>`}</span><span class="pkcs">${r.chips}</span></li>`).join("")}</ul></div>`;
+    }
+    function upcoming(id) {
+      const d = D();
+      if (auction()) return "";
+      const ks = F.picksOf(d, id).filter(seenK);
+      if (!ks.length) return "";
+      return `<div class="mod-h" style="border-top:1px solid var(--line)"><b>Picks to come</b><span class="ps" style="margin-left:auto">${ks.length}</span></div><div class="pkcs" style="padding:8px 12px 12px">${ks.map((k) => `<span class="pkc${viaOf(k) ? " via" : ""}" title="${ord(k + 1)} overall${viaOf(k) ? `, via ${esc(viaOf(k).name)}` : ""}">${plab(k)}</span>`).join("")}</div>`;
+    }
+    function tradesPanel() {
+      const d = D(), m = me();
+      const LBL = { pending: "Pending", accepted: "Accepted", declined: "Declined", expired: "Expired", canceled: "Canceled" };
+      const CLS = { pending: "pending", accepted: "accepted", declined: "rejected", expired: "cancelled", canceled: "cancelled" };
+      // picks in a card read as they were offered: the pick and its value, without where it has gone since
+      const cardVM = (id) => { const x = assetVM(id); return x && x.pick && !x.sealed ? Object.assign({}, x, { sub: `${ord(x.k + 1)} overall, about ${money(F.pickValue(d, ctx, x.k))}` }) : x; };
+      const vm = (T, acts) => ({ id: T.id, status: CLS[T.status], statusLabel: LBL[T.status], from: team(T.from), to: team(T.to), give: T.give.map(cardVM).filter(Boolean), get: T.get.map(cardVM).filter(Boolean),
+        note: T.status === "declined" && T.why ? T.why : T.note, when: ago(T.done || T.at, now()), acts, sub: T.added && T.added.length ? "Evened out with a late pick" : "" });
+      const list = d.trades.slice().reverse();
+      const toMe = list.filter((T) => T.status === "pending" && T.to === m);
+      const out = list.filter((T) => T.status === "pending" && T.from === m);
+      const done = list.filter((T) => T.status === "accepted" || (T.status !== "pending" && (T.from === m || T.to === m) && T.status !== "expired")).slice(0, 15);
+      const sec = (title, items) => items.length ? `<div class="mod-h"><b>${title}</b></div><div class="dtr">${items.join("")}</div>` : "";
+      return `<div class="mod-h"><b>Trades</b><button class="btn xs go" data-act="trade" style="margin-left:auto"${canTrade() ? "" : " disabled"}>Propose a trade</button></div>
+        ${!toMe.length && !out.length && !done.length ? `<p class="ps" style="margin:8px 12px">Trade picks, and players you've drafted, with any team. Bots answer right away. When the counts don't match, the team getting more adds its latest pick so every roster stays the same size.</p>` : ""}
+        ${sec("Offers for you", toMe.map((T) => tradeCard(sport, vm(T, `<button class="btn sm go" data-tr-yes="${T.id}">Accept</button><button class="btn sm" data-tr-no="${T.id}">Decline</button>`))))}
+        ${sec("You sent", out.map((T) => tradeCard(sport, vm(T, `<button class="btn sm" data-tr-cancel="${T.id}">Cancel</button>`))))}
+        ${sec("Done", done.map((T) => tradeCard(sport, vm(T))))}`;
+    }
+    function openTrade(other, prefill) {
+      const d = D(), m = me();
+      const others = d.teams.filter((t) => t.id !== m);
+      const roster = (id) => {
+        const ks = F.picksOf(D(), id);
+        const sealed = ks.filter((k) => !seenK(k)).sort((a, b) => F.hash01(`${D().seed}:${a}`) - F.hash01(`${D().seed}:${b}`)).map(sealedVM);
+        return ks.filter(seenK).map(pickVM).concat(sealed, F.rosters(D())[id].map((x) => ctx.byId[x]).filter(Boolean));
+      };
+      const bal = (t) => F.balance(D(), t);
+      tradeWindow({ sport, teams: d.teams, me: m, other: other != null ? other : (others.find((t) => !isMe(t)) || others[0]).id, roster, dark: true, title: "Trade during the draft", prefill,
+        empty: "Pick picks or players on either side",
+        values: (t) => { const b = bal(t), v = (ids) => ids.reduce((a, id) => a + valueOf(id), 0); return [v(b.give), v(b.get)]; },
+        check: (t) => {
+          const b = bal(t), c = F.tradeCheck(D(), ctx, b);
+          if (!c.ok) return c;
+          const add = b.added.map((x) => `${team(x.team).abbr} adds ${seenK(F.pickIdx(x.id)) ? pickVM(F.pickIdx(x.id)).n.replace("Pick ", "pick ") : "its last pick"}`);
+          return { ok: true, note: [add.length ? `To keep rosters even, ${add.join(" and ")}.` : "", F.isBot(team(t.to)) ? "They'll answer right away." : ""].filter(Boolean).join(" ") };
+        },
+        submit: (t) => {
+          const r = F.propose(D(), ctx, Object.assign({}, t, { by: "you" }), now());
+          if (!r.ok) return r;
+          save(); ui.right = "trades"; render();
+          if (r.accepted) toast(`${team(t.to).name} accepted.`);
+          else if (r.pending) toast("Offer sent.");
+          else toast(`${team(t.to).name} declined: ${r.why}.`, true);
+          return { ok: true };
+        } });
+    }
+
     /* right side: my team, queue, teams */
     function rosterPanel(id) {
       const d = D(), t = team(id);
@@ -476,7 +574,7 @@
       const paid = (p) => { const s = auction() ? d.sales.find((x) => x.pid === p.id) : null; return s ? money(s.price) : ""; };
       const li = (slot, p) => `<li class="${p ? "" : "open"}"><span class="slot">${esc(slot)}</span>${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer;min-width:0">${pname(sport, p, "", { size: "sm" })}</span><span class="ps">${paid(p) || "#" + p.rank}</span>` : `<span class="ps">Open</span><span></span>`}</li>`;
       return `<div class="mod-h">${teamAv(t, "sm")}<b class="ell">${esc(t.name)}</b><span class="ps" style="margin-left:auto;white-space:nowrap">${ps.length} of ${F.sizeOf(d)}${auction() ? `, ${money(t.budget)} left` : ""}</span></div>
-        <ul class="rslots">${d.lineup.map((s, i) => li(s, starters[i])).join("")}${bench.map((p) => li("BN", p)).join("")}${Array.from({ length: Math.max(0, d.bench - bench.length) }, () => li("BN", null)).join("")}</ul>`;
+        <ul class="rslots">${d.lineup.map((s, i) => li(s, starters[i])).join("")}${bench.map((p) => li("BN", p)).join("")}${Array.from({ length: Math.max(0, d.bench - bench.length) }, () => li("BN", null)).join("")}</ul>${upcoming(id)}`;
     }
     function queuePanel() {
       const t = team(me());
@@ -487,7 +585,7 @@
     function teamsPanel() {
       const d = D();
       const id = ui.view != null ? ui.view : d.round1.find((x) => x !== me());
-      return `<div style="padding:8px 12px 0"><label class="sr" for="fk-view">Team</label><select id="fk-view">${d.round1.map((x) => `<option value="${x}"${x === id ? " selected" : ""}>${esc(team(x).name)}${isMe(team(x)) ? " (you)" : ""}</option>`).join("")}</select></div>${rosterPanel(id)}`;
+      return `<div style="padding:8px 12px 0"><label class="sr" for="fk-view">Team</label><select id="fk-view">${d.round1.map((x) => `<option value="${x}"${x === id ? " selected" : ""}>${esc(team(x).name)}${isMe(team(x)) ? " (you)" : ""}</option>`).join("")}</select>${canTrade() && !isMe(team(id)) && D().phase === "live" ? `<button class="btn xs" data-trade-with="${id}" style="margin-top:8px">Trade with ${esc(team(id).abbr)}</button>` : ""}</div>${rosterPanel(id)}`;
     }
 
     /* render and wire */
@@ -495,15 +593,16 @@
       const d = D();
       if (d.phase === "done" && ui.phase && ui.phase !== "done") { ui.left = "results"; ui.mobileRight = false; }
       ui.phase = d.phase;
-      const lefts = [["players", "Players"], ["board", "Board"], ["picks", auction() ? "Sales" : "Picks"]].concat(d.phase === "done" ? [["results", "Results"]] : []);
+      const lefts = [["players", "Players"], ["board", "Board"], ["picks", auction() ? "Sales" : "Picks"]].concat(mystery() ? [["packages", "Packages"]] : [], d.phase === "done" ? [["results", "Results"]] : []);
       if (!lefts.some((x) => x[0] === ui.left)) ui.left = "players";
-      const rights = me() != null ? [["team", "My team"], ["queue", "Queue"], ["teams", "Teams"]] : [["teams", "Teams"]];
+      const offers = me() != null ? d.trades.filter((T) => T.status === "pending" && T.to === me()).length : 0;
+      const rights = me() != null ? [["team", "My team"], ["queue", "Queue"], ["teams", "Teams"]].concat(d.trading ? [["trades", offers ? `Trades (${offers})` : "Trades"]] : []) : [["teams", "Teams"]];
       if (!rights.some((x) => x[0] === ui.right)) ui.right = rights[0][0];
       const keep = { q: document.activeElement && document.activeElement.id, scroll: {} };
       $$("#fk-pool,#fk-board,#fk-picks,.dr-panel,#fk-ticker", el).forEach((x) => (keep.scroll[x.id || x.className] = [x.scrollTop, x.scrollLeft]));
       const sel = keep.q === "fk-q" ? [document.activeElement.selectionStart, document.activeElement.selectionEnd] : null;
-      const left = { players, board, picks, results }[ui.left]();
-      const right = { team: () => rosterPanel(me()), queue: queuePanel, teams: teamsPanel }[ui.right]();
+      const left = { players, board, picks, results, packages }[ui.left]();
+      const right = { team: () => rosterPanel(me()), queue: queuePanel, teams: teamsPanel, trades: tradesPanel }[ui.right]();
       // one view switch: the left views, plus the right panels as views on narrow screens
       const seg = `<div class="seg" role="group" aria-label="View">${lefts.map(([k, n]) => `<button type="button" data-left="${k}" aria-pressed="${!ui.mobileRight && ui.left === k}">${esc(n)}</button>`).join("")}${rights.map(([k, n]) => `<button type="button" class="show-m" data-mright="${k}" aria-pressed="${ui.mobileRight && ui.right === k}">${esc(n)}</button>`).join("")}</div>`;
       const filters = ui.left === "players" ? `${search(ui.f)}<label class="sr" for="fk-show">Show</label><select id="fk-show" style="width:auto;border-radius:999px;min-height:36px;font-size:13px"><option value="avail"${ui.show === "avail" ? " selected" : ""}>Available</option><option value="all"${ui.show === "all" ? " selected" : ""}>All players</option></select>` : "";
@@ -574,6 +673,16 @@
       if (fp) { ui.f.pos = fp.dataset.fpos; render(); return; }
       const th = e.target.closest("th[data-sort]");
       if (th) { const cols = poolColumns(sport, { scoring: D().scoring, group: groupOf(sport, ui.f) }); ui.sort = nextSort(ui.sort, th.dataset.sort, cols); render(); return; }
+      const tb = e.target.closest("[data-tr-yes],[data-tr-no],[data-tr-cancel],[data-trade-with]");
+      if (tb) {
+        e.stopPropagation();
+        const ds = tb.dataset;
+        if (ds.tradeWith) { openTrade(+ds.tradeWith); return; }
+        if (ds.trCancel) { act(() => F.cancel(D(), +ds.trCancel, me(), now())); return; }
+        const yes = !!ds.trYes, id = +(ds.trYes || ds.trNo);
+        if (act(() => F.respond(D(), ctx, id, me(), yes, now()))) toast(yes ? "Trade accepted." : "Offer declined.");
+        return;
+      }
       const b = e.target.closest("button[data-pick],button[data-queue],button[data-nominate],button[data-bid],button[data-qup],button[data-act]");
       if (b) {
         e.stopPropagation();
@@ -590,6 +699,7 @@
           else if (a === "undo") act(() => F.undo(d, ctx, n));
           else if (a === "pass") act(() => F.pass(d, ctx, me(), n));
           else if (a === "bid") { const v = +($("#fk-bid", el) || {}).value; act(() => F.bid(d, ctx, me(), v, n)); }
+          else if (a === "trade") openTrade();
           else if (a === "auto") { const t = team(me()); t.auto = !t.auto; if (t.auto) toast("Autodraft is on: the bot picks for you."); save(); render(); }
         }
         return;
@@ -614,13 +724,23 @@
 
     // The clock: redraw the timer; when this page drives the draft, bots and expired clocks move it.
     let lastSig = "";
-    const sig = () => { const d = D(); return [d.phase, d.paused, F.made(d).length, d.auction && d.auction.lot ? d.auction.lot.bid + ":" + d.auction.lot.team + ":" + (d.auction.lot.passed || []).length : ""].join("|"); };
+    const sig = () => { const d = D(); return [d.phase, d.paused, F.made(d).length, d.auction && d.auction.lot ? d.auction.lot.bid + ":" + d.auction.lot.team + ":" + (d.auction.lot.passed || []).length : "", (d.trades || []).map((T) => T.status[0]).join("")].join("|"); };
+    let seenOffers = new Set((D().trades || []).map((T) => T.id));
+    const newOffers = () => {
+      const d = D();
+      for (const T of d.trades || []) {
+        if (seenOffers.has(T.id)) continue;
+        seenOffers.add(T.id);
+        if (T.status === "pending" && T.to === me() && T.from !== me()) { toast(`${team(T.from).name} sent you a trade offer. See Trades.`); }
+      }
+    };
     timer = setInterval(() => {
       if (opts.drive && D().phase === "live" && !dialogOpen()) {
         const moved = F.tick(D(), ctx, now(), 3);
         if (moved) save();
       }
       const s = sig();
+      if (s !== lastSig) newOffers();
       if (s !== lastSig) { lastSig = s; if (!dialogOpen()) render(); else drawTimer(); } else drawTimer();
     }, 250);
 

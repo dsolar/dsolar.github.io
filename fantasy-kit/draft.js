@@ -1,8 +1,10 @@
 /* Fantasy Kit: the draft. No DOM and no network: every page in a draft runs the same rules on the same saved
    document, so they agree on what happened, and a server can run it too.
 
-   Formats: snake, linear (same order every round), 3rr (snake with the third round reversed again) and auction
-   (teams nominate in turn; every bid resets the clock; the high bid wins when it runs out).
+   Formats: snake, linear (same order every round), 3rr (snake with the third round reversed again), mystery (every
+   team gets a random package of picks dealt so the packages add up to the same value) and auction (teams nominate
+   in turn; every bid resets the clock; the high bid wins when it runs out). Every format but auction can trade picks
+   and drafted players while the draft runs.
 
    The draft is a plain JSON object (create()). Functions take (D, ctx, ...) where ctx = context(D, players, sport,
    hooks) holds the evaluated player pool (FK.value.evaluate first). Hooks let a league add its own rules:
@@ -23,7 +25,8 @@
   }
   function hash01(str) { let h = 2166136261; for (const c of String(str)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return ((h >>> 0) % 100000) / 100000; }
 
-  const FORMATS = { snake: "Snake", linear: "Linear", "3rr": "Third-round reversal", auction: "Auction" };
+  const FORMATS = { snake: "Snake", linear: "Linear", "3rr": "Third-round reversal", mystery: "Mystery packages", auction: "Auction" };
+  const REVEALS = { start: "When the draft starts", own: "Yours at the start, the rest as they come up", now: "Right away" };
   const NAMES = [
     ["Night Shift", "NS"], ["Bench Mob", "BM"], ["Waiver Wire", "WW"], ["Late Scratch", "LS"], ["Deep Sleepers", "DS"], ["Box Score", "BX"],
     ["Hot Corner", "HC"], ["Full Count", "FC"], ["Red Zone", "RZ"], ["Fast Break", "FB"], ["Two Minute", "TM"], ["Garbage Time", "GT"],
@@ -62,11 +65,17 @@
       scoring: opts.scoring || Object.keys(sport.scorings)[0],
       lineup, bench, rounds, posMax: opts.posMax || sport.posMax || {},
       clock: opts.clock == null ? 60 : opts.clock, botDelay: opts.botDelay == null ? 1500 : opts.botDelay,
-      teams, round1: first, order: type === "auction" ? [] : makeOrder(type, first, rounds),
+      teams, round1: first, order: type === "auction" ? [] : type === "mystery" ? Array(n * rounds).fill(0) : makeOrder(type, first, rounds),
       board: type === "auction" ? [] : Array(n * rounds).fill(null), sales: [],
       phase: "setup", clockStart: null, paused: false, left: null, log: [],
       auction: type === "auction" ? { budget: opts.budget || 200, minBid: opts.minBid == null ? 1 : opts.minBid, nomClock: opts.nomClock || 30, bidClock: opts.bidClock || 15, nom: 0, lot: null } : null,
+      trading: type !== "auction" && opts.trades !== false, botOffers: opts.botOffers !== false, trades: [], via: {}, offered: {},
     };
+    if (type === "mystery") {
+      const curve = (opts.curve || defaultCurve(n * rounds)).slice(0, n * rounds).map((v) => Math.round(v * 100) / 100);
+      D.mystery = { reveal: REVEALS[opts.reveal] ? opts.reveal : "start", curve, tolerance: opts.tolerance == null ? 0.01 : opts.tolerance };
+      applyDeal(D, dealPackages(n, rounds, curve, seed, { tolerance: D.mystery.tolerance }));
+    }
     for (const k of opts.keepers || []) keep(D, k.team, k.pid, k.round, k.price);
     return D;
   }
@@ -204,6 +213,7 @@
     for (const t of D.teams) t.queue = t.queue.filter((x) => x !== pid);
     D.clockStart = now;
     finishIfDone(D, now);
+    expireTrades(D, ctx, now);
     return { ok: true, pick: c.pick };
   }
 
@@ -249,6 +259,7 @@
       const c = onClock(D, now);
       if (!c) break;
       const team = D.teams[c.team];
+      if (!isBot(team) && !D.offered[c.index]) { D.offered[c.index] = true; botOffer(D, ctx, c, now); }
       const at = isBot(team) ? D.clockStart + D.botDelay : c.deadline;
       if (now < at) break;
       const p = autoChoice(D, ctx, c.team, rng(D.seed + c.index * 31 + 7));
@@ -418,6 +429,246 @@
     return n;
   }
 
+
+  /* ---------- mystery packages ---------- */
+  // What each pick is worth before the draft: the auction dollars of the k-th best player, plus a dollar so a late
+  // pick still counts for something. Without a player pool, a curve with the same shape.
+  function pickCurve(players, total) {
+    const vals = (players || []).map((p) => Math.max(0, p.$ || 0)).sort((a, b) => b - a);
+    return Array.from({ length: total }, (_, k) => (k < vals.length ? vals[k] : 0) + 1);
+  }
+  const defaultCurve = (total) => Array.from({ length: total }, (_, k) => 1 + 60 * Math.exp(-k / Math.max(1, total * 0.18)));
+  function spreadOf(tots) { const mean = sum(tots) / tots.length; return mean ? (Math.max(...tots) - Math.min(...tots)) / mean : 0; }
+
+  // Deals n packages of R picks: a random split, then swaps between the richest team and the others (the swap that
+  // closes their gap closest to halfway) until the richest and poorest are within `tolerance` of the average. Each
+  // swap shrinks the spread of totals, so it always stops; a few fresh shuffles keep the best deal.
+  function dealPackages(n, R, curve, seed, opts = {}) {
+    const N = n * R, tol = opts.tolerance == null ? 0.01 : opts.tolerance;
+    let best = null;
+    for (let tryN = 0; tryN < (opts.restarts || 8); tryN++) {
+      const r = rng(seed * 7 + tryN * 977 + 13);
+      const idx = [...Array(N).keys()];
+      for (let i = N - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [idx[i], idx[j]] = [idx[j], idx[i]]; }
+      const packs = Array.from({ length: n }, (_, t) => idx.slice(t * R, (t + 1) * R));
+      const tot = packs.map((ks) => sum(ks.map((k) => curve[k])));
+      const trySwap = (a, b, gap) => {          // move value gap/2 from team a to team b
+        let bi = -1, bj = -1, be = Infinity;
+        for (let i = 0; i < R; i++) for (let j = 0; j < R; j++) {
+          const g = curve[packs[a][i]] - curve[packs[b][j]];
+          if (g <= 1e-9 || g >= gap - 1e-9) continue;
+          const e = Math.abs(g - gap / 2);
+          if (e < be) { be = e; bi = i; bj = j; }
+        }
+        if (bi < 0) return false;
+        const g = curve[packs[a][bi]] - curve[packs[b][bj]];
+        [packs[a][bi], packs[b][bj]] = [packs[b][bj], packs[a][bi]];
+        tot[a] -= g; tot[b] += g;
+        return true;
+      };
+      for (let it = 0; it < 5000; it++) {
+        if (spreadOf(tot) <= tol) break;
+        const order = [...Array(n).keys()].sort((a, b) => tot[b] - tot[a]);
+        let moved = false;
+        for (let x = 0; x < n && !moved; x++) for (let y = n - 1; y > x && !moved; y--) moved = trySwap(order[x], order[y], tot[order[x]] - tot[order[y]]);
+        if (!moved) break;
+      }
+      const sp = spreadOf(tot);
+      if (!best || sp < best.spread) best = { packs: packs.map((ks) => ks.slice().sort((a, b) => a - b)), tots: tot.slice(), spread: sp };
+      if (sp <= tol) break;
+    }
+    return best;
+  }
+  function applyDeal(D, deal) {
+    deal.packs.forEach((ks, t) => ks.forEach((k) => (D.order[k] = t)));
+    D.mystery.packs = deal.packs;
+    D.mystery.tots = deal.tots.map((v) => Math.round(v * 10) / 10);
+    D.mystery.spread = deal.spread;
+  }
+
+  // The bot-draft check: deal a few sets of packages, let bots draft each one, and keep the deal where the bot teams
+  // finished closest together. Every deal already balances on paper; this catches the ones where the way the picks
+  // cluster (three picks in a row, a long wait) makes one package play better than the others.
+  function fairDeal(D, players, sport, hooks, opts = {}) {
+    if (D.type !== "mystery" || D.phase !== "setup") return null;
+    const n = D.teams.length, tries = opts.tries || 5, out = [];
+    let best = null;
+    for (let i = 0; i < tries; i++) {
+      const deal = dealPackages(n, D.rounds, D.mystery.curve, D.seed + 101 * i, { tolerance: D.mystery.tolerance });
+      const T = JSON.parse(JSON.stringify(D));
+      applyDeal(T, deal);
+      T.teams.forEach((t) => { t.auto = true; t.queue = []; });
+      T.botDelay = 0; T.botOffers = false; T.trading = false;
+      const ctx = context(T, players, sport, hooks);
+      start(T, 0); tick(T, ctx, 1e13, 100000);
+      const scores = standings(T, ctx).map((r) => r.score);
+      const range = Math.max(...scores) - Math.min(...scores);
+      out.push(range);
+      if (!best || range < best.range) best = { deal, range, i };
+    }
+    applyDeal(D, best.deal);
+    const sorted = out.slice().sort((a, b) => a - b);
+    D.mystery.test = { tries, kept: best.i, range: best.range, median: sorted[Math.floor(sorted.length / 2)], worst: sorted[sorted.length - 1] };
+    return D.mystery.test;
+  }
+
+  // Can `viewer` see who owns pick k? Packages stay sealed until the draft starts. With reveal "own" you see your
+  // own picks at the start and everyone else's once they're on the clock.
+  function seen(D, k, viewer) {
+    if (D.type !== "mystery" || D.board[k] || D.mystery.reveal === "now") return true;
+    if (D.phase === "setup") return false;
+    if (D.mystery.reveal === "start" || D.phase === "done") return true;
+    if (viewer != null && D.order[k] === viewer) return true;
+    const id = pickId(k);                       // a pick you traded away, or saw in a deal you made, stays known
+    if (viewer != null && (D.trades || []).some((T) => T.status === "accepted" && (T.from === viewer || T.to === viewer) && (T.give.includes(id) || T.get.includes(id)))) return true;
+    const next = nextIndex(D);
+    return next >= 0 && k <= next;
+  }
+
+  /* ---------- trades during the draft ---------- */
+  const PICK = "pick:";
+  const isPickId = (x) => String(x).startsWith(PICK);
+  const pickId = (k) => PICK + k;
+  const pickIdx = (x) => +String(x).slice(PICK.length);
+  function pickLabel(D, k) {
+    const n = D.teams.length;
+    return D.type === "mystery" ? `Pick ${k + 1}` : `${Math.floor(k / n) + 1}.${(k % n) + 1}`;
+  }
+  // A team's picks still to make, and its players so far.
+  const picksOf = (D, teamId) => D.order.map((t, k) => (t === teamId && !D.board[k] ? k : -1)).filter((k) => k >= 0);
+
+  // A pick's worth now: the auction dollars of the player you'd expect to be left when it comes up, plus a dollar.
+  function pickValue(D, ctx, k) {
+    const made = D.board.filter(Boolean).length;
+    if (!ctx._pv || ctx._pv.made !== made) ctx._pv = { made, vals: ctx.available.map((p) => Math.max(0, p.$ || 0)).sort((a, b) => b - a) };
+    let ahead = 0;
+    for (let i = 0; i < k; i++) if (!D.board[i]) ahead++;
+    return (ctx._pv.vals[ahead] || 0) + 1;
+  }
+  const assetValue = (D, ctx, id) => (isPickId(id) ? pickValue(D, ctx, pickIdx(id)) : ((ctx.byId[id] && ctx.byId[id].$) || 0) + 1);
+  const sideValue = (D, ctx, ids) => sum((ids || []).map((id) => assetValue(D, ctx, id)));
+
+  // Is this trade legal right now? Both teams still own what they'd send, nothing is a pick already made, and after
+  // the swap each team can still fit its players and picks on its roster and fill its starting lineup.
+  function tradeCheck(D, ctx, t) {
+    if (!D.trading) return { ok: false, why: "Trades are off in this draft" };
+    if (D.phase === "done") return { ok: false, why: "The draft is over" };
+    if (D.type === "mystery" && D.phase === "setup" && D.mystery.reveal !== "now") return { ok: false, why: "Packages are sealed until the draft starts" };
+    if (t.from === t.to || !D.teams[t.from] || !D.teams[t.to]) return { ok: false, why: "Pick a team to trade with" };
+    const give = t.give || [], get = t.get || [];
+    if (!give.length || !get.length) return { ok: false, why: "Add something from each side" };
+    const R = rosters(D);
+    const owns = (team, id) => (isPickId(id) ? D.order[pickIdx(id)] === team && !D.board[pickIdx(id)] : R[team].includes(id));
+    for (const id of give) if (!owns(t.from, id)) return { ok: false, why: `${D.teams[t.from].name} no longer has ${label(D, ctx, id)}` };
+    for (const id of get) if (!owns(t.to, id)) return { ok: false, why: `${D.teams[t.to].name} no longer has ${label(D, ctx, id)}` };
+    for (const [team, out, inn] of [[t.from, give, get], [t.to, get, give]]) {
+      const ps = R[team].filter((id) => !out.includes(id)).concat(inn.filter((id) => !isPickId(id))).map((id) => ctx.byId[id]).filter(Boolean);
+      const picks = picksOf(D, team).filter((k) => !out.includes(pickId(k))).length + inn.filter(isPickId).length;
+      const name = D.teams[team].name;
+      if (ps.length + picks > sizeOf(D)) return { ok: false, why: `${name} wouldn't have room for everyone` };
+      const open = D.lineup.length - assign(ctx.sport, ps, D.lineup).filter(Boolean).length;
+      if (open > picks) return { ok: false, why: `${name} couldn't fill its starting lineup` };
+      for (const [pos, max] of Object.entries(D.posMax || {})) if (ps.filter((q) => S.positions(q).every((x) => x === pos)).length > max) return { ok: false, why: `${name} would have more than ${max} at ${pos}` };
+    }
+    if (ctx.hooks.tradeCheck) { const c = ctx.hooks.tradeCheck(D, t, ctx); if (c && !c.ok) return c; }
+    return { ok: true };
+  }
+  // Every team starts with exactly one pick per roster spot, so a 2-for-1 would leave someone with too many. The team
+  // getting more pieces adds its latest picks until the counts match: the usual way leagues even these out.
+  function balance(D, t) {
+    const give = (t.give || []).slice(), get = (t.get || []).slice(), added = [];
+    const fill = (team, side, need) => {
+      const ks = picksOf(D, team).filter((k) => !side.includes(pickId(k))).reverse();
+      for (const k of ks.slice(0, need)) { side.push(pickId(k)); added.push({ team, id: pickId(k) }); }
+    };
+    if (get.length > give.length) fill(t.from, give, get.length - give.length);
+    else if (give.length > get.length) fill(t.to, get, give.length - get.length);
+    return Object.assign({}, t, { give, get, added });
+  }
+  const label = (D, ctx, id) => (isPickId(id) ? pickLabel(D, pickIdx(id)) : (ctx.byId[id] || { n: "a player" }).n);
+
+  // A bot takes a deal that gets it a little more value than it sends, by an amount that varies from bot to bot.
+  function botAnswer(D, ctx, t) {
+    const recv = sideValue(D, ctx, t.give), send = sideValue(D, ctx, t.get);
+    const want = 1.03 + 0.07 * hash01(`${D.seed}:ask:${t.to}`);
+    if (recv >= send * want) return { yes: true };
+    return { yes: false, why: recv >= send ? "They want a little more" : recv >= send * 0.8 ? "They want more for it" : "Not close for them" };
+  }
+
+  function propose(D, ctx, t, now) {
+    if (t.balance !== false) t = balance(D, t);
+    const c = tradeCheck(D, ctx, t);
+    if (!c.ok) return c;
+    const T = { id: (D.trades.length ? D.trades[D.trades.length - 1].id : 0) + 1, from: t.from, to: t.to, give: t.give.slice(), get: t.get.slice(),
+      note: t.note || "", at: now, status: "pending", by: t.by || null, added: (t.added || []).map((x) => x.id) };
+    D.trades.push(T);
+    if (isBot(D.teams[t.to])) {
+      const a = botAnswer(D, ctx, T);
+      if (a.yes) { execute(D, ctx, T, now); return { ok: true, trade: T, accepted: true }; }
+      T.status = "declined"; T.why = a.why; T.done = now;
+      return { ok: true, trade: T, accepted: false, why: a.why };
+    }
+    return { ok: true, trade: T, pending: true };
+  }
+  function respond(D, ctx, id, teamId, yes, now) {
+    const T = D.trades.find((x) => x.id === id);
+    if (!T || T.status !== "pending") return { ok: false, why: "That offer is gone" };
+    if (T.to !== teamId) return { ok: false, why: "That offer isn't yours to answer" };
+    if (!yes) { T.status = "declined"; T.done = now; return { ok: true, trade: T }; }
+    const c = tradeCheck(D, ctx, T);
+    if (!c.ok) { T.status = "expired"; T.done = now; return c; }
+    execute(D, ctx, T, now);
+    return { ok: true, trade: T };
+  }
+  function cancel(D, id, teamId, now) {
+    const T = D.trades.find((x) => x.id === id);
+    if (!T || T.status !== "pending" || T.from !== teamId) return { ok: false, why: "That offer is gone" };
+    T.status = "canceled"; T.done = now;
+    return { ok: true };
+  }
+  function execute(D, ctx, T, now) {
+    const c = onClock(D, now);
+    const move = (ids, from, to) => {
+      for (const id of ids) {
+        if (isPickId(id)) { const k = pickIdx(id); if (D.via[k] == null) D.via[k] = from; D.order[k] = to; if (D.via[k] === to) delete D.via[k]; }
+        else { const pk = D.board.find((x) => x && x.pid === id); if (pk) { if (pk.drafter == null) pk.drafter = pk.team; pk.team = to; } }
+      }
+    };
+    move(T.give, T.from, T.to); move(T.get, T.to, T.from);
+    T.status = "accepted"; T.done = now;
+    if (c && D.order[c.index] !== c.team) D.clockStart = now;     // the pick on the clock changed hands: a fresh clock
+    refresh(D, ctx);
+    expireTrades(D, ctx, now);
+  }
+  // Offers that can't happen anymore (a pick was made, an asset moved) close.
+  function expireTrades(D, ctx, now) {
+    for (const T of D.trades || []) if (T.status === "pending" && !tradeCheck(D, ctx, T).ok) { T.status = "expired"; T.done = now || T.at; }
+  }
+
+  // When a manager comes on the clock, a bot that picks later sometimes offers to move up: its next pick plus the
+  // cheapest later pick that makes the deal worth it to the manager.
+  function botOffer(D, ctx, c, now) {
+    if (!D.trading || !D.botOffers) return null;
+    const r = rng(D.seed + c.index * 53 + 11);
+    if (r() > 0.4) return null;
+    let v = pickValue(D, ctx, c.index);
+    const bots = D.teams.filter((t) => isBot(t) && t.id !== c.team).map((t) => ({ t, ks: picksOf(D, t.id).filter((k) => k > c.index) })).filter((x) => x.ks.length >= 2 && x.ks[0] - c.index >= 3);
+    if (!bots.length) return null;
+    bots.sort((a, b) => a.ks[0] - b.ks[0]);
+    const pool = bots.slice(0, 4);
+    const b = pool[Math.floor(r() * pool.length)];
+    const k2 = b.ks[0], v2 = pickValue(D, ctx, k2);
+    const mineLast = picksOf(D, c.team).filter((k) => k !== c.index).pop();
+    if (mineLast == null) return null;
+    v += pickValue(D, ctx, mineLast);                 // the manager adds his last pick to even out the counts
+    let k3 = null;
+    for (const k of b.ks.slice(1).reverse()) if (v2 + pickValue(D, ctx, k) >= v * 1.04) { k3 = k; break; }
+    if (k3 == null || v2 + pickValue(D, ctx, k3) > v * 1.3) return null;
+    const t = balance(D, { from: b.t.id, to: c.team, give: [pickId(k2), pickId(k3)], get: [pickId(c.index)], note: "Looking to move up", by: "bot" });
+    if (!tradeCheck(D, ctx, t).ok) return null;
+    return propose(D, ctx, t, now);
+  }
+
   /* ---------- results ---------- */
   // Each team's best lineup and what it adds up to: summed category z-scores or projected points of its starters.
   function standings(D, ctx) {
@@ -435,6 +686,8 @@
     return rows;
   }
 
-  return { FORMATS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
-    start, pause, pick, worth, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, botMax, standings, sizeOf };
+  return { FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
+    start, pause, pick, worth, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, botMax, standings, sizeOf,
+    pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
+    tradeCheck, balance, propose, respond, cancel, botAnswer, botOffer };
 });
