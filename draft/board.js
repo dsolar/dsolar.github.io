@@ -18,14 +18,18 @@
 
   function sources() {
     const maxW = Math.max(...D.sources.map((s) => s.w || 0), 1);
-    $("#sources").innerHTML = D.sources.map((s) => {
-      const pending = !s.date;
+    // Outlets that have published get a card each; the ones still to come share one card, so the strip
+    // fits in a row or two and never scrolls.
+    const out = D.sources.filter((s) => s.date), waiting = D.sources.filter((s) => !s.date);
+    $("#sources").innerHTML = out.map((s) => {
       const who = s.analyst ? `${s.name}, ${s.analyst.split(" ").slice(-1)[0]}` : s.name;
-      return `<a class="src${pending ? " pending" : ""}${s.kind === "mock" ? " mock" : ""}" href="${esc(s.link || s.url)}" target="_blank" rel="noopener" title="${esc(s.note || s.title || s.name)}">
+      return `<a class="src${s.kind === "mock" ? " mock" : ""}" href="${esc(s.link || s.url)}" target="_blank" rel="noopener" title="${esc(s.note || s.title || s.name)}">
         <b>${esc(s.abbr)}</b><span class="who">${esc(who)}</span>
-        <span class="when"><span>${pending ? "Not out yet" : fmtDay(s.date)}</span><span>${pending ? "" : s.kind === "mock" ? `${s.count} picks` : `Top ${s.count}`}</span></span>
-        ${s.kind === "board" && !pending ? `<span class="w" aria-hidden="true"><i style="width:${Math.round(100 * (s.w || 0) / maxW)}%"></i></span>` : ""}</a>`;
-    }).join("");
+        <span class="when"><span>${fmtDay(s.date)}</span><span>${s.kind === "mock" ? `${s.count} picks` : `Top ${s.count}`}</span></span>
+        ${s.kind === "board" ? `<span class="w" aria-hidden="true"><i style="width:${Math.round(100 * (s.w || 0) / maxW)}%"></i></span>` : ""}</a>`;
+    }).join("") + (waiting.length ? `<div class="src pending" title="${esc(waiting.map((s) => s.analyst ? `${s.name} (${s.analyst})` : s.name).join(", "))}">
+        <b>Not out yet</b><span class="who wrap">${esc(waiting.map((s) => s.analyst ? s.analyst.split(" ").slice(-1)[0] : s.name).join(", "))}</span>
+        <span class="when"><span>Joins when they publish</span></span></div>` : "");
     $("#srcList").innerHTML = D.sources.map((s) => `<li><a href="${esc(s.link || s.url)}" target="_blank" rel="noopener">${esc(s.name)}${s.analyst ? ` (${esc(s.analyst)})` : ""}</a>: ${s.date ? `${s.kind === "mock" ? "mock draft" : `top ${s.count}`}, ${fmtDay(s.date)}${s.versions > 1 ? `, ${s.versions} readings` : ""}` : "not out for this class yet"}${s.kind === "mock" ? ". Shown, not counted" : ""}</li>`).join("")
       + (Object.keys(D.excluded || {}).length ? `<li>Left out on purpose: WalterFootball. PFF and The Athletic only if pasted from a subscription.</li>` : "")
       + `<li>Size, age and stats: <a href="${D.league === "nba" ? "https://www.tankathon.com/big_board" : "https://www.tankathon.com/nfl/big_board"}" target="_blank" rel="noopener">Tankathon</a>, every morning.</li>`;

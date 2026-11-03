@@ -142,7 +142,7 @@
     const stats = (x.stats || []).slice(0, 3).map(([l, v]) => `<div class="rv-tile"><b>${BB.num(v)}</b><span>${esc(BB.label(l))}</span></div>`).join("");
     el.innerHTML = `<div class="rv-team"><span class="rv-num" aria-hidden="true">${p.n}</span>
         <div class="rv-live"><i></i>The pick is in</div>
-        <div class="rv-badge"><div class="rv-logo">${BB.logo(D, p.owner, 120, "tl")}</div>
+        <div class="rv-badge"><div class="rv-logo">${BB.logo(D, p.owner, 120, "tl", true)}</div>
           <p>Round ${p.rnd} &middot; Pick ${p.n}${p.owner !== p.orig ? ` &middot; via ${esc(BB.team(D, p.orig).city)}` : ""}</p><b>${esc(tm.city)} ${esc(tm.name)}</b></div></div>
       <div class="rv-main"><p class="lead">With the ${nth} pick, the ${esc(tm.city)} ${esc(tm.name)} select</p>
         <h2 style="font-size:${nameSize(x.n)}">${esc(x.n)}</h2>
@@ -167,7 +167,7 @@
     const rounds = [...new Set(M.picks.map((x) => x.rnd))];
     $("#mock-view").innerHTML = `<section class="room">
       ${p ? `<div class="clock" style="--t1:${tm.c[0]};--t2:${tm.c[1]}">
-        <div class="clock-logo">${BB.logo(D, p.owner, 64, "tl big")}</div>
+        <div class="clock-logo">${BB.logo(D, p.owner, 64, "tl big", true)}</div>
         <div class="clock-txt"><span class="kick">${mineNow ? "You're on the clock" : "On the clock"} &middot; Round ${p.rnd}, pick ${p.n}</span>
           <b class="disp">${esc(tm.city)} ${esc(tm.name)}</b>
           <span class="sub2">${esc((D.records || {})[p.owner] || "")}${p.owner !== p.orig ? ` &middot; via ${esc(BB.team(D, p.orig).city)}${p.note ? ` (${esc(p.note)})` : ""}` : ""}</span></div>
@@ -313,7 +313,7 @@
     const steals = M.picks.filter((p) => p.player).map((p) => ({ p, v: E.value(p.n, p.player) / Math.max(4, p.n * 0.25) })).sort((a, b) => b.v - a.v);
     const card = (t) => {
       const tm = D.teams[t], list = M.picks.filter((p) => p.owner === t);
-      return `<div class="res-card" style="--t1:${tm.c[0]};--t2:${tm.c[1]}"><div class="res-head">${BB.logo(D, t, 44)}<b class="disp">${esc(tm.city)} ${esc(tm.name)}</b><span class="grade">${grade(list)}</span></div>
+      return `<div class="res-card" style="--t1:${tm.c[0]};--t2:${tm.c[1]}"><div class="res-head">${BB.logo(D, t, 44, "tl", true)}<b class="disp">${esc(tm.city)} ${esc(tm.name)}</b><span class="grade">${grade(list)}</span></div>
         <ul>${list.map((x) => `<li><span class="rn">${x.n}</span>${BB.school(x.player, 22)}<span class="rt"><b>${esc(x.player.n)}</b><small>${esc([x.player.pos, x.player.school].filter(Boolean).join(", "))} &middot; consensus ${x.player.rank}</small></span>${valueTag(x)}</li>`).join("")}</ul></div>`;
     };
     $("#mock-view").innerHTML = `<section class="results">

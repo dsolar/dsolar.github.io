@@ -15,11 +15,12 @@
       return cache[lg];
     },
     team(D, abbr) { return (D.teams || {})[abbr] || { city: abbr, name: "", c: ["#33415A", "#ECEFE9"] }; },
-    // Team logos from ESPN's CDN (the dark-background versions), with the abbreviation in team colors if one fails.
-    logo(D, abbr, size = 40, cls = "tl") {
+    // Team logos from ESPN's CDN, with the abbreviation in team colors if one fails.
+    // Light-background logos by default; pass dark for a logo sitting on the team's own color.
+    logo(D, abbr, size = 40, cls = "tl", dark = false) {
       const t = BB.team(D, abbr);
       if (!t.espn) return BB.badge(D, abbr, cls);
-      const src = `https://a.espncdn.com/combiner/i?img=/i/teamlogos/${D.league}/500-dark/${t.espn}.png&w=${size * 2}&h=${size * 2}`;
+      const src = `https://a.espncdn.com/combiner/i?img=/i/teamlogos/${D.league}/${dark ? "500-dark" : "500"}/${t.espn}.png&w=${size * 2}&h=${size * 2}`;
       return `<img class="${cls}" src="${src}" alt="" width="${size}" height="${size}" loading="lazy" data-badge="${BB.esc(abbr)}" data-lg="${D.league}">`;
     },
     badge(D, abbr, cls = "tl") {

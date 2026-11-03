@@ -58,15 +58,16 @@ a{color:var(--gold)}
 .seg button[aria-pressed="true"]{background:var(--chalk);color:var(--stage-deep)}
 .big .seg button{font:800 18px/1 var(--display);letter-spacing:.08em;padding:9px 22px}
 
-.sources{display:flex;gap:8px;overflow-x:auto;padding:18px 0 4px;scrollbar-width:thin}
-.src{flex:none;min-width:132px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px;text-decoration:none;color:inherit}
+.sources{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;padding:18px 0 4px}
+.src{min-width:0;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px;text-decoration:none;color:inherit}
 .src:hover{border-color:var(--line-strong)}
 .src b{display:block;font:800 17px/1 var(--display);letter-spacing:.05em}
-.src .who{display:block;font-size:12.5px;color:var(--dim);margin-top:4px;white-space:nowrap}
-.src .when{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--faint);margin-top:6px}
-.src .w{height:3px;border-radius:2px;background:var(--line);margin-top:7px;overflow:hidden}
+.src .who{display:block;font-size:12.5px;color:var(--dim);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.src .who.wrap{white-space:normal}
+.src .when{margin-top:auto;padding-top:6px;display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--faint)}
+.src .w{display:block;flex:none;height:3px;border-radius:2px;background:var(--line);margin-top:7px;overflow:hidden}
 .src .w i{display:block;height:100%;background:var(--gold)}
-.src.pending{opacity:.5;border-style:dashed}
+.src.pending{opacity:.7;border-style:dashed}
 .src.mock b::after{content:"MOCK";font:700 9.5px/1 var(--body);letter-spacing:.12em;color:var(--stage-deep);background:var(--dim);border-radius:3px;padding:2px 4px;margin-left:6px;vertical-align:3px}
 
 .tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:16px 0 10px}
@@ -273,27 +274,19 @@ a.btn{text-decoration:none;display:inline-block}
 
 /* ---------- Themes: the Board is a war room (paper and ink), the Mock Draft is draft night (black, one loud accent) ---------- */
 :root{--surface:var(--panel);--head:var(--panel);--sheet:var(--panel);--accent:var(--gold);--ink-on-accent:#0A0A0B}
-body[data-screen="board"]{
+body[data-screen]{
   --stage:#F3EFE6;--stage-deep:#F3EFE6;--panel:#FFFDF8;--panel-hi:#F1EBDD;--surface:#FFFDF8;--head:#FFFDF8;--sheet:#FFFDF8;
   --line:#E6E0D3;--line-strong:#B9B1A0;--chalk:#17191E;--dim:#4A4E55;--faint:#5B5F66;
   --gold:#1F4FBF;--accent:#1F4FBF;--red-hi:#17191E;--up:#1F4FBF;--down:#B4531A;
   --display:"Zilla Slab",Georgia,serif;--body:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
   color-scheme:light;
 }
-body[data-screen="mock"]{
-  --stage:#0A0A0B;--stage-deep:#0A0A0B;--panel:#141518;--panel-hi:#1C1E22;--surface:#121316;--head:#141518;--sheet:#141518;
-  --line:rgba(255,255,255,.1);--line-strong:rgba(255,255,255,.24);--chalk:#FFFFFF;--dim:#B8BCC4;--faint:#8D929B;
-  --gold:#F5D547;--accent:#F5D547;--red-hi:#F5D547;--up:#4FC08D;--down:#F06A5B;
-  --display:"Anton",Impact,"Arial Narrow",sans-serif;--body:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
-}
 body[data-screen]{background:var(--stage);background-image:none}
 html{background:var(--stage-deep)}
 body[data-screen] .mast h1{font-weight:700;letter-spacing:-.01em;text-transform:none}
-body[data-screen="mock"] .mast h1{font-weight:400;text-transform:uppercase;letter-spacing:.01em}
-body[data-screen="board"] .kicker{color:var(--faint)}
+body[data-screen] .kicker{color:var(--faint)}
 body[data-screen] .tabs{border-bottom:1.5px solid var(--chalk)}
 body[data-screen] .tabs a{font-family:var(--display);text-transform:none;font-weight:600;font-size:21px;letter-spacing:0}
-body[data-screen="mock"] .tabs a{text-transform:uppercase;letter-spacing:.04em;font-weight:400}
 body[data-screen] .tabs a[aria-current="page"]{border-bottom-color:var(--chalk);border-bottom-width:4px}
 body[data-screen] .seg{border-radius:6px;border:1.5px solid var(--chalk);background:transparent;padding:0}
 body[data-screen] .seg button{border-radius:0;min-height:40px}
@@ -301,46 +294,60 @@ body[data-screen] .seg button[aria-pressed="true"]{background:var(--chalk);color
 body[data-screen] .big .seg button{font-family:var(--body);font-weight:700;letter-spacing:.08em;font-size:16px}
 
 /* Board: paper, ink, index cards, highlighter */
-body[data-screen="board"] .src{border-radius:4px;box-shadow:0 1px 0 var(--line)}
-body[data-screen="board"] .src .w i{background:var(--chalk)}
-body[data-screen="board"] .src.mock b::after{background:var(--chalk);color:var(--stage)}
-body[data-screen="board"] .tools input{border:1.5px solid var(--chalk);border-radius:6px;min-height:44px}
-body[data-screen="board"] .chips button{border:1.5px solid var(--line-strong);border-radius:6px;color:var(--chalk);min-height:40px}
-body[data-screen="board"] .chips button[aria-pressed="true"]{background:var(--chalk);border-color:var(--chalk);color:var(--stage)}
-body[data-screen="board"] .table-wrap{border-radius:4px}
-body[data-screen="board"] th{border-bottom:1.5px solid var(--chalk)}
-body[data-screen="board"] .rk{font-family:var(--display);font-size:30px;font-weight:700}
-body[data-screen="board"] .nm{font-size:17px}
-body[data-screen="board"] tr.open td{background:#FBF4D9}
-body[data-screen="board"] tr.p:hover td{background:#FAF6EC}
-body[data-screen="board"] .hot{background:#F5D547;color:var(--chalk);padding:1px 5px}
-body[data-screen="board"] .bar{height:2px;background:var(--line);margin-top:8px}
-body[data-screen="board"] .bar i{top:-2px;height:6px;border-radius:0;background:var(--chalk)}
-body[data-screen="board"] .bar b{top:-6px;height:14px;width:4px;background:var(--accent);border-radius:0;margin-left:-2px}
-body[data-screen="board"] .chip{background:#FFFFFF;border:1px solid var(--line)}
-body[data-screen="board"] .stat{background:var(--panel);border:1px solid var(--line);border-radius:4px}
-body[data-screen="board"] .stat b{font-family:var(--display);font-weight:700}
-body[data-screen="board"] .det li{border-bottom-color:var(--line-strong)}
-body[data-screen="board"] .how div{background:none;border:0;border-top:3px solid var(--chalk);border-radius:0;padding:12px 0 0}
-body[data-screen="board"] .how h3{text-transform:none;font-weight:700;font-size:22px}
-body[data-screen="board"] .spark text{fill:var(--faint)}
+body[data-screen] .src{border-radius:4px;box-shadow:0 1px 0 var(--line)}
+body[data-screen] .src .w i{background:var(--chalk)}
+body[data-screen] .src.mock b::after{background:var(--chalk);color:var(--stage)}
+body[data-screen] .tools input{border:1.5px solid var(--chalk);border-radius:6px;min-height:44px}
+body[data-screen] .chips button{border:1.5px solid var(--line-strong);border-radius:6px;color:var(--chalk);min-height:40px}
+body[data-screen] .chips button[aria-pressed="true"]{background:var(--chalk);border-color:var(--chalk);color:var(--stage)}
+body[data-screen] .table-wrap{border-radius:4px}
+body[data-screen] th{border-bottom:1.5px solid var(--chalk)}
+body[data-screen] .rk{font-family:var(--display);font-size:30px;font-weight:700}
+body[data-screen] .nm{font-size:17px}
+body[data-screen] tr.open td{background:#FBF4D9}
+body[data-screen] tr.p:hover td{background:#FAF6EC}
+body[data-screen] .hot{background:#F5D547;color:var(--chalk);padding:1px 5px}
+body[data-screen] .bar{height:2px;background:var(--line);margin-top:8px}
+body[data-screen] .bar i{top:-2px;height:6px;border-radius:0;background:var(--chalk)}
+body[data-screen] .bar b{top:-6px;height:14px;width:4px;background:var(--accent);border-radius:0;margin-left:-2px}
+body[data-screen] .chip{background:#FFFFFF;border:1px solid var(--line)}
+body[data-screen] .stat{background:var(--panel);border:1px solid var(--line);border-radius:4px}
+body[data-screen] .stat b{font-family:var(--display);font-weight:700}
+body[data-screen] .det li{border-bottom-color:var(--line-strong)}
+body[data-screen] .how div{background:none;border:0;border-top:3px solid var(--chalk);border-radius:0;padding:12px 0 0}
+body[data-screen] .how h3{text-transform:none;font-weight:700;font-size:22px}
+body[data-screen] .spark text{fill:var(--faint)}
 
-/* Mock draft: draft-night broadcast */
-body[data-screen="mock"] .setup-head h2,body[data-screen="mock"] .disp{font-weight:400;letter-spacing:.02em}
-body[data-screen="mock"] .tm{border-radius:6px}
-body[data-screen="mock"] .tm::before{background:var(--t1);opacity:.16}
-body[data-screen="mock"] .tm.on::before{opacity:.6}
-body[data-screen="mock"] .tm .tn{font-weight:400;letter-spacing:.05em;font-size:16px}
-body[data-screen="mock"] .clock{background:var(--t1);border-radius:6px;border:0}
-body[data-screen="mock"] .clock-txt b{font-weight:400;letter-spacing:.02em;font-size:clamp(30px,5vw,46px)}
-body[data-screen="mock"] .btn{border-radius:6px}
-body[data-screen="mock"] .btn.go{background:var(--accent);border-color:var(--accent);color:#0A0A0B}
-body[data-screen="mock"] .btn.go:hover{background:#FFE36B}
-body[data-screen="mock"] .rp,body[data-screen="mock"] .offer,body[data-screen="mock"] .lotto-list li{border-radius:6px}
-body[data-screen="mock"] .rp.cur{background:rgba(245,213,71,.12);outline-color:var(--accent)}
-body[data-screen="mock"] .grade{font-weight:400}
-body[data-screen="mock"] .res-head{background:var(--t1)}
-body[data-screen="mock"] .chip{background:#FFFFFF}
+/* Mock draft: same paper, with the team's color where a team is on the clock */
+body[data-screen] .setup-head h2{font-weight:700;text-transform:none;font-size:36px}
+body[data-screen] .disp{text-transform:none;letter-spacing:0;font-weight:700}
+body[data-screen] .tm{border-radius:6px;background:var(--panel)}
+body[data-screen] .tm::before{background:var(--t1);opacity:.08}
+body[data-screen] .tm:hover::before{opacity:.16}
+body[data-screen] .tm.on{border-color:var(--t1);box-shadow:0 0 0 2px var(--t1)}
+body[data-screen] .tm.on::before{opacity:.18}
+body[data-screen] .tm .tn{font-family:var(--body);font-weight:700;letter-spacing:.02em;font-size:15px;text-transform:none}
+body[data-screen] .clock{background:var(--t1);border-radius:6px;border:0}
+body[data-screen] .clock-txt b{font-family:"Anton",Impact,sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:.02em;font-size:clamp(30px,5vw,46px)}
+body[data-screen] .btn{border-radius:6px;background:var(--panel);border:1.5px solid var(--line-strong);color:var(--chalk)}
+body[data-screen] .btn.go{background:var(--chalk);border-color:var(--chalk);color:var(--stage)}
+body[data-screen] .btn.go:hover{background:#000}
+body[data-screen] .clock-act .btn{background:rgba(0,0,0,.25);border-color:rgba(255,255,255,.4);color:#fff}
+body[data-screen] .rp,body[data-screen] .offer,body[data-screen] .lotto-list li{border-radius:6px}
+body[data-screen] .rp.cur{background:#FBF4D9;outline-color:var(--chalk)}
+body[data-screen] .rp.mine .rn{color:var(--accent)}
+body[data-screen] .lotto-list li.won{background:#FBF4D9}
+body[data-screen] .lotto-list li.mine{outline-color:var(--chalk)}
+body[data-screen] .res-head{background:var(--t1)}
+body[data-screen] .res-head b{font-family:"Anton",Impact,sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:.02em}
+body[data-screen] .grade{font-family:"Anton",Impact,sans-serif;font-weight:400}
+body[data-screen] .vt.steal{background:rgba(31,79,191,.1);color:var(--up)}
+body[data-screen] .vt.reach{background:rgba(180,83,26,.12);color:var(--down)}
+body[data-screen] .meter i{background:var(--accent)}
+body[data-screen] .all-picks li.mine{background:#FBF4D9}
+body[data-screen] .tmsg.ok{color:var(--up)}
+body[data-screen] .modal{background:rgba(23,25,30,.45)}
+body[data-screen] .trade-pick select{background:var(--panel);color:var(--chalk)}
 
 /* The pick is in */
 .reveal{position:fixed;inset:0;z-index:90;background:#0A0A0B;color:#fff;display:grid;grid-template-columns:minmax(0,36%) minmax(0,1fr);font-family:"IBM Plex Sans Condensed","Arial Narrow",sans-serif;cursor:pointer;animation:rv-in .18s ease-out}
@@ -430,10 +437,10 @@ body[data-screen="mock"] .chip{background:#FFFFFF}
   <div id="mock-view" hidden></div>
 </main>
 
-<script src="common.js?v=7"></script>
-<script src="engine.js?v=7"></script>
-<script src="board.js?v=7"></script>
-<script src="mock.js?v=7"></script>
+<script src="common.js?v=9"></script>
+<script src="engine.js?v=9"></script>
+<script src="board.js?v=9"></script>
+<script src="mock.js?v=9"></script>
 <script>
 (() => {
   // #nba, #nfl, #nba/mock, #nfl/mock
