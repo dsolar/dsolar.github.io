@@ -271,7 +271,7 @@
     const D = F.create({ sport, type: D0.type || "snake", teams: L.teams.map((t) => ({ name: t.name, abbr: t.abbr, owner: t.owner })), seed: Math.floor((o.seed != null ? o.seed : Math.random()) * 2 ** 31) || 1,
       now, lineup: L.settings.lineup, bench: L.settings.bench, scoring: L.scoring, botDelay: D0.botDelay, clock: D0.clock, bidClock: D0.auction ? D0.auction.bidClock : undefined,
       nomClock: D0.auction ? D0.auction.nomClock : undefined, budget: D0.auction ? D0.auction.budget : undefined, name: L.name, trades: D0.trading !== false, order, keepers,
-      curve: D0.curve, reveal: D0.reveal });
+      curve: D0.type === "mystery" && ctx && ctx.players ? F.pickCurve(ctx.players, n * (D0.rounds || L.settings.lineup.length + L.settings.bench)) : D0.curve, reveal: D0.reveal });
     D.teams.forEach((t, i) => (t.color = L.teams[i].color));
     D.season = D0.season; if (D0.scoringSpec) D.scoringSpec = D0.scoringSpec;
     D.year = (D0.year || 1) + 1;
@@ -295,12 +295,7 @@
     if (G.taxiSlots(L)) { D.taxi = L.teams.map((t) => G.taxiOf(L, t.id).slice()); D.promoted = Object.assign({}, L.promoted || {}); }
     return D;
   }
-  // A finished season in a few lines, for the league's history.
-  function summary(L) {
-    const st = standings(L), fin = G.finish(L), champ = fin.champion != null ? fin.champion : st[0] && st[0].team;
-    return { season: L.season, year: (L.draft && L.draft.year) || 1, champion: champ != null ? { team: champ, name: L.teams[champ].name, owner: L.teams[champ].owner } : null,
-      standings: st.map((r) => ({ team: r.team, name: L.teams[r.team].name, owner: L.teams[r.team].owner, rank: r.rank, w: r.w, l: r.l, t: r.t, pts: r.pts != null ? r.pts : r.pf })) };
-  }
+  const summary = (L) => G.summary(L);
   const standings = (L) => G.standings(L);
 
   return { startAfter, realCovers, mergeLive, begin, catchUp, driveDraft, events, keeperCost, keeperOptions, autoKeepers, nextDraft, summary };

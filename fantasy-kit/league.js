@@ -714,6 +714,50 @@
     return { champion: fin ? fin.win : null, runnerUp: fin ? fin.lose : null, third: last && last.third && last.third.res ? last.third.res.win : null,
       consolation: last && last.cons[0] && last.cons[0].res ? last.cons[0].res.win : null };
   }
+  // A season's records for the league's history: the best and worst weekly scores, the biggest and closest wins, and
+  // the longest winning streak. Points leagues only for scores (a category week is a count of categories, not a
+  // score); guillotine weeks count their scores too. Playoff games count, marked as such.
+  function records(L) {
+    const done = Math.min(L.week - 1, totalWeeks(L)), out = {}, name = (t) => L.teams[t] && L.teams[t].name;
+    const top = (k, v, x, better) => { if (out[k] == null || better(v, out[k].v)) out[k] = Object.assign({ v }, x); };
+    const hi = (a, b) => a > b, lo = (a, b) => a < b;
+    const run = {};
+    for (let w = 1; w <= done; w++) {
+      const res = L.results[w];
+      if (!res || res.roto) continue;
+      const po = w > L.settings.weeks;
+      if (res.block) { for (const r of res.block) { top("high", r.score, { team: r.team, name: name(r.team), week: w }, hi); top("low", r.score, { team: r.team, name: name(r.team), week: w }, lo); } continue; }
+      for (const g of res) {
+        if (!g.cats) {
+          for (const [t, x] of [[g.a, g.sa], [g.b, g.sb]]) { top("high", x, { team: t, name: name(t), week: w, po }, hi); top("low", x, { team: t, name: name(t), week: w, po }, lo); }
+          if (g.w === "a" || g.w === "b") {
+            const [win, lose, m] = g.w === "a" ? [g.a, g.b, g.sa - g.sb] : [g.b, g.a, g.sb - g.sa];
+            const x = { win, lose, winName: name(win), loseName: name(lose), week: w, po, score: g.w === "a" ? [g.sa, g.sb] : [g.sb, g.sa] };
+            top("blowout", m, x, hi); top("closest", m, x, lo);
+          }
+        }
+        if (po) continue;                                      // streaks are regular season only
+        for (const [t, r] of [[g.a, "a"], [g.b, "b"]]) {
+          run[t] = g.w === r ? (run[t] || 0) + 1 : 0;
+          if (run[t] >= 2) top("streak", run[t], { team: t, name: name(t), through: w }, hi);
+        }
+      }
+    }
+    for (const k of Object.keys(out)) if (typeof out[k].v === "number") out[k].v = Math.round(out[k].v * 100) / 100;
+    return out;
+  }
+  // A finished season in a few lines, for the league's history.
+  function summary(L) {
+    const st = standings(L), fin = finish(L), champ = fin.champion != null ? fin.champion : st[0] && st[0].team;
+    const who = (t) => (t != null && L.teams[t] ? { team: t, name: L.teams[t].name, owner: L.teams[t].owner } : null);
+    // where each team finished: the playoffs decide the top places, the standings the rest
+    const place = {}, order = [fin.champion, fin.runnerUp, fin.third].filter((t) => t != null);
+    order.forEach((t, i) => (place[t] = i + 1));
+    let k = order.length; for (const r of st) if (place[r.team] == null) place[r.team] = ++k;
+    return { season: L.season, year: (L.draft && L.draft.year) || 1, sport: L.sport, format: L.settings.format || "h2h", champion: champ != null ? who(champ) : null, runnerUp: who(fin.runnerUp), third: who(fin.third),
+      playoffTeams: L.settings.playoffTeams || 0, records: records(L),
+      standings: st.map((r) => ({ team: r.team, name: L.teams[r.team].name, owner: L.teams[r.team].owner, rank: r.rank, place: place[r.team], w: r.w, l: r.l, t: r.t, pts: r.pts != null ? r.pts : r.pf, pa: r.pa })) };
+  }
   // The playoffs so far, a round at a time, for the standings page.
   function bracket(L, ctx) {
     const out = [];
@@ -1314,7 +1358,7 @@
     return n;
   }
 
-  return { taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
+  return { summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
     finishWeek, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };

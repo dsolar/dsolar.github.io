@@ -623,7 +623,8 @@
     const vals = (players || []).map((p) => Math.max(0, p.$ || 0)).sort((a, b) => b - a);
     return Array.from({ length: total }, (_, k) => (k < vals.length ? vals[k] : 0) + 1);
   }
-  const defaultCurve = (total) => Array.from({ length: total }, (_, k) => 1 + 60 * Math.exp(-k / Math.max(1, total * 0.18)));
+  // with no player list to price picks from: the same top-heavy shape as auction values (see value.js)
+  const defaultCurve = (total) => Array.from({ length: total }, (_, k) => 1 + 70 * Math.max(0, 1 - k / Math.max(1, total * 0.6)) ** 2);
   function spreadOf(tots) { const mean = sum(tots) / tots.length; return mean ? (Math.max(...tots) - Math.min(...tots)) / mean : 0; }
 
   // Deals n packages of R picks: a random split, then swaps between the richest team and the others (the swap that
