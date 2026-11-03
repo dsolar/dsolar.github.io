@@ -80,91 +80,129 @@
   /* ---------- lineup builder (FK.ui.lineupBuilder) ---------- */
   const { lineupBuilder, orderLineup } = U;
 
-  /* ---------- setup ---------- */
-  function setupPage() {
+  /* ---------- setup: the same look and controls as Start a league (FK.setup) ---------- */
+  const K = window.FK.setup;
+  const open = {};
+  const CLOCKS = [[15, "15 sec"], [30, "30 sec"], [60, "1 min"], [90, "90 sec"], [0, "No clock"], [-20, "Bank 20s"], [-30, "Bank 30s"], [-60, "Bank 60s"]];
+  const BID_CLOCKS = [[10, "10 sec"], [15, "15 sec"], [20, "20 sec"], [30, "30 sec"]];
+  const NUM = /^(teams|slot|clock|budget|bench|test|trades)$/;
+  function setupView() {
+    const sport = S[cfg.sport], c = cfg;
+    const scoring = sport.scorings[c.scoring] ? c.scoring : Object.keys(sport.scorings)[0];
+    const lu = (c.lineup || sport.lineup.join(" ")).split(/[\s,]+/).filter((x) => sport.slots[x] && x !== "BN");
+    const bench = c.bench == null ? sport.bench : c.bench;
+    const auction = c.type === "auction", mystery = c.type === "mystery", elephant = c.type === "elephant";
+    const tradesOk = !auction && !elephant;
+    const clock = (auction ? BID_CLOCKS : CLOCKS).find(([v]) => v === c.clock) || (auction ? BID_CLOCKS[1] : CLOCKS[1]);
+    const sc = (sport.scorings[scoring] || {}).label || "";
+    const line = `${sport.name}, ${c.teams} teams, ${sc.replace(/ \(.*\)$/, "")}, ${K.DRAFT_SHORT[c.type] || c.type}${auction ? `, $${c.budget}` : ""}, ${clock[1].toLowerCase()}${c.slot && !mystery ? `, pick ${c.slot}` : ""}`;
+    const formats = K.pickCards("type", Object.entries(F.FORMATS).map(([k, l]) => [k, K.DRAFT_SHORT[k] || l, K.DRAFTS[k] || ""]), c.type, "Draft format");
+    const presets = Object.entries(sport.scorings).map(([k, x]) => [k, x.label.replace(/ \(.*\)$/, ""), K.SC_SUB[k] || ""]);
+    const roster = `<div class="nr${open.roster ? " open" : ""}"><button type="button" class="nr-h" data-row="roster" aria-expanded="${!!open.roster}"><span class="nr-t"><b>Roster</b><small>Starting lineup and bench</small></span><span class="nr-v">${lu.length} starters, ${bench} bench</span><span class="chev" aria-hidden="true"></span></button>
+      ${open.roster ? `<div class="nr-b">${K.group("Starting lineup", lineupBuilder(sport, lu))}${K.group("Bench", K.fld("Bench spots", K.stepper("bench", [0, 1, 2, 3, 4, 5, 6, 7, 8, 10], bench, String, "Bench spots")))}</div>` : ""}</div>`;
+    const tip = (t, b) => `<div class="mk-tip"><b>${esc(t)}</b><p>${b}</p></div>`;
+    return `<div class="wrap page"><div class="su sp-${sport.key}">
+      <div class="nl-band">${K.FIELD[sport.key]}<div class="nl-bi">
+        <div class="nl-sports" role="radiogroup" aria-label="Sport">${Object.values(S.ALL).map((x) => `<label class="nl-sp"><input type="radio" name="sport" value="${x.key}"${x.key === c.sport ? " checked" : ""}>${K.icon(x.key)}<span>${esc(x.name)}</span></label>`).join("")}</div>
+        <h1 class="disp">Mock a ${esc(sport.name.toLowerCase())} draft</h1>
+        <p>Draft against bots that know positions, budgets and the clock, with real player data. It saves on this device, so you can leave and come back.</p>
+      </div></div>
+      ${mock ? `<a class="mk-resume" href="#draft"><span><b>Your ${esc(S[mock.D.sport] ? S[mock.D.sport].name.toLowerCase() : "")} mock is ${mock.D.phase === "done" ? "done" : "still going"}</b><small>${esc(K.DRAFT_SHORT[mock.D.type] || "")}, ${mock.D.teams.length} teams${mock.D.phase === "done" ? ". See how it turned out." : ". Pick up where you left off."}</small></span><span class="btn sm">Back to your mock</span></a>` : ""}
+      <form class="nl-body" id="setup" novalidate>
+        <section class="nl-sec"><h2 class="nl-h">Format</h2>${formats}</section>
+        <section class="nl-sec nl-ess">
+          <div class="g2">${K.fld("Teams", K.seg("teams", [4, 6, 8, 10, 12, 14, 16].map((x) => [x, String(x)]), c.teams, "Teams", { wrap: true, cls: "big" }))}
+            ${mystery ? K.fld("Packages open", K.seg("reveal", Object.entries(F.REVEALS).map(([k, l]) => [k, l.replace(", the rest as they come up", ", then as picks come up")]), c.reveal, "Packages open", { wrap: true })) : K.fld(auction ? "Your nomination turn" : "Your pick", K.stepper("slot", Array.from({ length: c.teams + 1 }, (_, i) => i), Math.min(c.slot, c.teams), (x) => (x ? U.ord(x) : "Random"), auction ? "Your nomination turn" : "Your pick"))}</div>
+          ${K.fld("Scoring", K.cards("scoring", presets, scoring, "Scoring", presets.length > 3 ? 3 : presets.length))}
+          <div class="g2">${K.fld(auction ? "Bid clock" : "Pick clock", K.seg("clock", auction ? BID_CLOCKS : CLOCKS, clock[0], auction ? "Bid clock" : "Pick clock", { wrap: true }),
+              auction ? "Every bid resets the clock." : c.clock < 0 ? "One clock for your whole draft, topped up each round. Run it out and every pick gets 10 seconds. What's left becomes FAAB for the season." : c.clock ? "When your clock runs out, your first queued player who fits is taken, then the best fit." : "Take as long as you like.")}
+            ${auction ? K.fld("Budget per team", K.seg("budget", [100, 200, 260, 300, 1000].map((x) => [x, `$${x}`]), c.budget, "Budget per team", { wrap: true })) : `<div class="fl"><div class="fl-l"><label for="s-name">Your team name</label></div><input type="text" id="s-name" maxlength="28" value="${esc(c.name)}" placeholder="Your team"></div>`}</div>
+          ${auction ? `<div class="g2"><div class="fl"><div class="fl-l"><label for="s-name">Your team name</label></div><input type="text" id="s-name" maxlength="28" value="${esc(c.name)}" placeholder="Your team"></div></div>` : ""}
+          ${tradesOk || mystery ? `<div class="nl-bb">${K.toggle("trades", "Trades during the draft", "Trade picks and drafted players with any team. Bots answer right away.", c.trades)}${mystery ? K.toggle("test", "Even out the packages", "Deal five times and keep the most even draft", c.test) : ""}</div>` : ""}
+          ${elephant ? `<p class="fl-h">Each team gets 3 steals, a player is frozen after 2, and steals end with 2 rounds to go. The team you rob picks again right away.</p>` : ""}
+        </section>
+        <section class="nl-sec"><h2 class="nl-h">Fine-tune</h2><div class="nr-l">${roster}</div></section>
+        <section class="nl-sec mk-how">${tip("How the bots draft", "They value players over the replacement at each position, fill starters before the bench, and save kickers and defenses for last. In an auction they bid by proxy up to a price set by their budget and needs.")}
+          ${tip("Your seat", "Queue players before you start. If your clock runs out, the first queued player who fits is your pick.")}
+          ${tip("After the draft", `Play a season with your team in a demo league: <a href="league.html?s=${esc(c.sport)}&f=h">head to head</a> or <a href="league.html?s=${esc(c.sport)}&f=g">guillotine</a>.`)}</section>
+        <div class="nl-bar"><div class="nl-sum">${K.icon(sport.key, "nl-sum-ic")}<span><b>${esc(c.name || "Your team")}</b><small>${esc(line)}</small></span></div>
+          <p id="s-why" role="alert"></p><span class="grow"></span>${mock ? `<a class="btn ghost" href="#draft">Back to your mock</a>` : ""}<button type="submit" class="btn go">Take your seat</button></div>
+      </form></div></div>`;
+  }
+  function setupGrab() {
+    const root = $("#app .su"); if (!root) return;
+    const sp = root.querySelector("input[name=sport]:checked"); if (sp) cfg.sport = sp.value;
+    root.querySelectorAll("[data-f]").forEach((el) => {
+      if (el.type === "radio" && !el.checked) return;
+      const k = el.dataset.f, v = el.type === "checkbox" ? (el.checked ? 1 : 0) : el.value;
+      cfg[k] = NUM.test(k) ? Number(v) : v;
+    });
+    const nm = $("#s-name"); if (nm) cfg.name = nm.value;
+  }
+  function setupPage(focusSel) {
     document.body.classList.remove("fk-room");
-    const sport = S[cfg.sport];
-    const scoring = sport.scorings[cfg.scoring] ? cfg.scoring : Object.keys(sport.scorings)[0];
-    const lineup = cfg.lineup || sport.lineup.join(" ");
-    const bench = cfg.bench == null ? sport.bench : cfg.bench;
-    const opt = (v, l, cur) => `<option value="${esc(v)}"${String(v) === String(cur) ? " selected" : ""}>${esc(l)}</option>`;
-    app.innerHTML = `<div class="wrap page">
-      <div class="hero"><h1 class="disp">Mock it before<br>you draft it.</h1><p>Pick a sport and a format, take a seat, and draft against bots that know positions, budgets and the clock. Real player data, refreshed from the same feeds as the league pages.</p></div>
-      <div class="setup">
-        <form class="card form" id="setup">
-          <div class="sports" role="radiogroup" aria-label="Sport">${Object.values(S.ALL).map((s) => `<label><input type="radio" name="sport" value="${s.key}"${s.key === cfg.sport ? " checked" : ""}><span><b class="disp">${esc(s.name)}</b><small>${esc(BLURB[s.key])}</small></span></label>`).join("")}</div>
-          <div class="row2">
-            <div class="field"><label for="s-type">Format</label><select id="s-type" name="type">${Object.entries(F.FORMATS).map(([k, l]) => opt(k, l, cfg.type)).join("")}</select></div>
-            <div class="field"><label for="s-scoring">Scoring</label><select id="s-scoring" name="scoring">${Object.entries(sport.scorings).map(([k, s]) => opt(k, s.label.replace(/ \(.*\)$/, ""), scoring)).join("")}</select></div>
-          </div>
-          <div class="row3">
-            <div class="field"><label for="s-teams">Teams</label><select id="s-teams" name="teams">${[4, 6, 8, 10, 12, 14, 16].map((n) => opt(n, n, cfg.teams)).join("")}</select></div>
-            ${cfg.type === "mystery" ? `<div class="field"><label for="s-trades">Trades</label><select id="s-trades" name="trades">${opt(1, "Picks and players", cfg.trades)}${opt(0, "Off", cfg.trades)}</select></div>` : `<div class="field"><label for="s-slot">${cfg.type === "auction" ? "Your nomination turn" : "Your pick"}</label><select id="s-slot" name="slot">${opt(0, "Random", cfg.slot)}${Array.from({ length: cfg.teams }, (_, i) => opt(i + 1, U.ord(i + 1), cfg.slot)).join("")}</select></div>`}
-            <div class="field"><label for="s-clock">${cfg.type === "auction" ? "Bid clock" : "Pick clock"}</label><select id="s-clock" name="clock">${(cfg.type === "auction" ? [10, 15, 20, 30] : [15, 30, 60, 90, 0, -20, -30, -60]).map((n) => opt(n, n < 0 ? `Time bank, ${-n} seconds a round` : n ? n + " seconds" : "No clock", cfg.clock)).join("")}</select></div>
-          </div>
-          ${cfg.type === "mystery" ? `<div class="row2"><div class="field"><label for="s-reveal">Packages open</label><select id="s-reveal" name="reveal">${Object.entries(F.REVEALS).map(([k, l]) => opt(k, l, cfg.reveal)).join("")}</select></div><div class="field"><label for="s-test">Bot test</label><select id="s-test" name="test">${opt(1, "Keep the most even of 5 bot drafts", cfg.test)}${opt(0, "Off, use the first even deal", cfg.test)}</select></div></div>
-            <p class="ps" style="margin:-4px 0 0">Every team gets a random set of picks, like 1, 24 and 42 against 12, 13 and 18, dealt so each set adds up to the same value on the pick curve.</p>` : ""}
-          ${cfg.type === "elephant" ? `<p class="ps" style="margin:-4px 0 0">A snake draft where your turn can be a steal: take a player someone already drafted. The team you rob picks again right away and can't take him straight back. Each team gets 3 steals, a player is frozen after 2, and steals end with 2 rounds to go.</p>` : ""}
-          ${cfg.type !== "auction" && cfg.type !== "mystery" && cfg.type !== "elephant" ? `<div class="row2"><div class="field"><label for="s-trades">Trades during the draft</label><select id="s-trades" name="trades">${opt(1, "Picks and players", cfg.trades)}${opt(0, "Off", cfg.trades)}</select></div><div></div></div>` : ""}
-          ${cfg.clock < 0 && cfg.type !== "auction" ? `<p class="ps" style="margin:-4px 0 0">One clock for your whole draft. Run it out and every pick gets 10 seconds. The time you have left at the end becomes FAAB for the season: from half the league's budget to one and a half times it. Bots draft at their own pace and pay for it the same way.</p>` : ""}
-          ${cfg.type === "auction" ? `<div class="row2"><div class="field"><label for="s-budget">Budget per team</label><select id="s-budget" name="budget">${[100, 200, 260, 300, 1000].map((n) => opt(n, "$" + n, cfg.budget)).join("")}</select></div><div></div></div>` : ""}
-          <div class="field"><span class="lbl">Starting lineup</span>${lineupBuilder(sport, lineup.split(/[\s,]+/).filter((x) => sport.slots[x] && x !== "BN"))}</div>
-          <div class="row2">
-            <div class="field"><label for="s-bench">Bench spots</label><select id="s-bench" name="bench">${[0, 1, 2, 3, 4, 5, 6, 7, 8, 10].map((n) => opt(n, n, bench)).join("")}</select></div>
-            <div class="field"><label for="s-name">Your team name</label><input type="text" id="s-name" name="name" maxlength="28" value="${esc(cfg.name)}" placeholder="Your team"></div>
-          </div>
-          <p class="why" id="s-why" hidden></p>
-          <div class="acts" style="justify-content:flex-start"><button class="btn go">Take your seat</button>${mock ? `<a class="btn" href="#draft">Back to your mock</a>` : ""}</div>
-        </form>
-        <aside class="stack">
-          <div class="card pad"><h3>How the bots draft</h3><p class="small muted" style="margin:0">Bots value players by points or category z-scores over the replacement player at each position, so a scarce catcher or tight end goes earlier than his raw numbers say. They fill starters before the bench, leave kickers and defenses for the last rounds, and in an auction bid by proxy up to a price set by their budget and needs.</p></div>
-          <div class="card pad"><h3>Trades</h3><p class="small muted" style="margin:0">Trade picks, and players you've drafted, with any team while the draft runs. Bots answer right away, and sometimes call you to move up when you're on the clock.</p></div>
-          <div class="card pad"><h3>Demo leagues</h3><p class="small muted" style="margin:0 0 10px">Seasons with bots that play out in real time.</p><div class="row" style="flex-wrap:wrap"><a class="btn sm" href="league.html?s=${esc(cfg.sport)}&f=h">Head to head</a><a class="btn sm" href="league.html?s=${esc(cfg.sport)}&f=g">Best ball guillotine</a></div></div>
-          <div class="card pad"><h3>Your seat</h3><p class="small muted" style="margin:0">Queue players before you start. If your clock runs out, the first queued player who still fits is your pick, then the best fit. The draft saves on this device, so you can close the tab and come back.</p></div>
-        </aside>
-      </div></div>`;
-    const f = $("#setup");
-    f.addEventListener("click", (e) => {
+    if (cfg.slot > cfg.teams) cfg.slot = 0;
+    app.innerHTML = setupView();
+    if (focusSel) { const el = $(focusSel); if (el && !el.disabled) el.focus({ preventScroll: true }); }
+  }
+  let setupWired = false;
+  function wireSetup() {
+    if (setupWired) return; setupWired = true;
+    const live = () => !!$("#app #setup");
+    const save = (focusSel) => { store.set("cfg", cfg); setupPage(focusSel); };
+    app.addEventListener("click", (e) => {
+      if (!live()) return;
+      const sport = S[cfg.sport];
+      const ty = e.target.closest("[data-type]");
+      if (ty) { setupGrab(); cfg.type = ty.dataset.type; if (cfg.type === "auction") { if (![10, 15, 20, 30].includes(cfg.clock)) cfg.clock = 15; } else if (!CLOCKS.some(([v]) => v === cfg.clock)) cfg.clock = 30; save(`[data-type="${cfg.type}"]`); return; }
+      const st = e.target.closest("[data-stp]");
+      if (st) {
+        setupGrab();
+        const inp = st.parentNode.querySelector("input[type=hidden]"), vals = inp.dataset.vals.split(",").map(Number);
+        cfg[st.dataset.stp] = vals[Math.min(vals.length - 1, Math.max(0, vals.indexOf(Number(inp.value)) + Number(st.dataset.d)))];
+        save(`#${st.id}`); return;
+      }
+      const row = e.target.closest("[data-row]");
+      if (row) { setupGrab(); open[row.dataset.row] = !open[row.dataset.row]; save(`[data-row="${row.dataset.row}"]`); return; }
       const pr = e.target.closest("[data-preset]"), lb = e.target.closest("[data-lb]");
       if (!pr && !lb) return;
+      setupGrab();
       const cur = (cfg.lineup || sport.lineup.join(" ")).split(/[\s,]+/).filter((x) => sport.slots[x] && x !== "BN");
       let next = cur;
       if (pr) next = pr.dataset.preset.split(" ");
       else if (+lb.dataset.d > 0) next = orderLineup(sport, cur.concat(lb.dataset.lb));
       else { const i = cur.lastIndexOf(lb.dataset.lb); if (i >= 0) next = cur.filter((_, j) => j !== i); }
       if (!next.length) { U.toast("A lineup needs at least one starter", true); return; }
-      cfg.name = new FormData(f).get("name"); cfg.lineup = next.join(" ");
-      store.set("cfg", cfg); setupPage();
-      // keep keyboard focus on the button that was pressed
-      const back = lb ? $(`[data-lb="${lb.dataset.lb}"][data-d="${lb.dataset.d}"]`) : $(`[data-preset="${pr.dataset.preset}"]`);
-      if (back && !back.disabled) back.focus(); else if (lb) { const other = $(`[data-lb="${lb.dataset.lb}"]:not([disabled])`); if (other) other.focus(); }
+      cfg.lineup = next.join(" ");
+      save(lb ? `[data-lb="${lb.dataset.lb}"][data-d="${lb.dataset.d}"]` : `[data-preset="${pr.dataset.preset}"]`);
     });
-    f.addEventListener("change", (e) => {
-      const n = e.target.name;
-      if (n === "lineup" || n === "name") return;
-      const fd = new FormData(f);
-      if (n === "sport") { cfg = Object.assign(cfg, { sport: fd.get("sport"), scoring: "", lineup: "", bench: null }); }
-      else if (n === "type") { cfg.type = fd.get("type"); cfg.clock = cfg.type === "auction" ? 15 : [15, 30, 60, 90, 0, -20, -30, -60].includes(cfg.clock) ? cfg.clock : 30; }
-      else cfg[n] = n === "scoring" || n === "reveal" ? fd.get(n) : +fd.get(n);
-      cfg.name = fd.get("name"); if (n !== "sport") cfg.lineup = fd.get("lineup");
-      store.set("cfg", cfg); setupPage();
+    app.addEventListener("change", (e) => {
+      if (!live() || e.target.id === "s-name") return;
+      const was = cfg.sport;
+      setupGrab();
+      if (cfg.sport !== was) Object.assign(cfg, { scoring: "", lineup: "", bench: null });
+      save(e.target.id ? `#${e.target.id}` : null);
     });
-    f.addEventListener("submit", async (e) => {
+    app.addEventListener("input", (e) => { if (live() && e.target.id === "s-name") { const b = $("#app .nl-sum b"); if (b) b.textContent = e.target.value || "Your team"; } });
+    app.addEventListener("submit", async (e) => {
+      if (e.target.id !== "setup") return;
       e.preventDefault();
-      const fd = new FormData(f);
-      const s = S[fd.get("sport")];
-      const bad = fd.get("lineup").split(/[\s,]+/).filter(Boolean).filter((x) => !s.slots[x] || x === "BN");
-      if (bad.length) { const w = $("#s-why"); w.hidden = false; w.textContent = `Unknown slot${bad.length > 1 ? "s" : ""}: ${bad.join(", ")}`; return; }
-      cfg = Object.assign(cfg, { sport: fd.get("sport"), type: fd.get("type"), scoring: fd.get("scoring"), teams: +fd.get("teams"), slot: +fd.get("slot"), clock: +fd.get("clock"), budget: +(fd.get("budget") || cfg.budget), bench: +fd.get("bench"), lineup: fd.get("lineup").trim(), name: fd.get("name").trim(),
-        reveal: fd.get("reveal") || cfg.reveal, test: fd.get("test") == null ? cfg.test : +fd.get("test"), trades: fd.get("trades") == null ? cfg.trades : +fd.get("trades") });
+      setupGrab();
+      const s = S[cfg.sport];
+      cfg.scoring = s.scorings[cfg.scoring] ? cfg.scoring : Object.keys(s.scorings)[0];
+      if (cfg.bench == null) cfg.bench = s.bench;
+      cfg.lineup = (cfg.lineup || s.lineup.join(" ")).trim();
+      cfg.name = (cfg.name || "").trim();
       store.set("cfg", cfg);
-      const go = $("button.go", f); go.disabled = true; go.textContent = cfg.type === "mystery" && cfg.test ? "Dealing and testing packages..." : "Setting up...";
+      const go = $("#app .nl-bar button.go"), why = $("#s-why");
+      go.disabled = true; go.textContent = cfg.type === "mystery" && cfg.test ? "Dealing and testing packages..." : "Setting up...";
       await new Promise((r) => setTimeout(r, 30));
       try { await newMock(cfg); }
-      catch (err) { go.disabled = false; go.textContent = "Take your seat"; const w = $("#s-why"); w.hidden = false; w.textContent = err.message; w.scrollIntoView({ block: "center" }); return; }
+      catch (err) { go.disabled = false; go.textContent = "Take your seat"; why.textContent = err.message; return; }
       location.hash = "#draft"; route();
     });
   }
+  wireSetup();
 
   async function newMock(c) {
     const P = await pool(c);
