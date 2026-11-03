@@ -12,6 +12,7 @@
   {"id": "nbadraftnet-mock", "name": "NBADraft.net mock", "abbr": "NDN", "kind": "mock", "weight": 1, "how": "paste", "url": "https://www.nbadraft.net/"}
  ],
  "nfl": [
+  {"id": "tankathon", "name": "Tankathon", "abbr": "TANK", "kind": "board", "weight": 1, "how": "auto", "url": "https://www.tankathon.com/nfl/big_board", "note": "Daily, from tools/draft_pull.py; a new reading only when the order changes."},
   {"id": "nflmdd", "name": "NFL Mock Draft Database", "abbr": "MDD", "kind": "board", "weight": 2, "how": "paste", "url": "https://www.nflmockdraftdatabase.com/big-boards/2027/consensus-big-board-2027", "note": "Itself a consensus of 60+ boards and 200+ mocks, so it counts double. Free view stops at 100."},
   {"id": "jeremiah", "name": "NFL Network", "analyst": "Daniel Jeremiah", "abbr": "DJ", "kind": "board", "weight": 1.25, "how": "paste", "status": "pending", "url": "https://www.nfl.com/news/series/top-150-prospects", "note": "Top 50 usually starts in late January."},
   {"id": "norris", "name": "Underdog", "analyst": "Josh Norris", "abbr": "JN", "kind": "board", "weight": 1, "how": "paste", "status": "pending", "url": "https://underdogfantasy.com/"},

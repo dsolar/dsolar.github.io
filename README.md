@@ -441,6 +441,8 @@ The Big Board (`draft/`) rolls every outlet's 2027 board into one consensus for 
 2. `python3 tools/draft_paste.py nba no-ceilings paste.txt --date 2026-11-20 --url <the article>` (add `--dry` first to check what it read). It saves the snapshot, takes the outlet off pending, and rebuilds the board.
 3. If it lists a name as new that's really a misspelling of someone already on the board, add a line to `tools/draft_aliases.json` and run `python3 tools/draft_build.py`.
 
+The mock draft (the Mock Draft tab) runs on `draft/engine.js`. Every morning `tools/draft_pull.py` saves Tankathon's full draft order with each traded pick's current owner, ESPN's standings, and each prospect's size, age and stats (`tools/draft_data/`). The NBA lottery draws the top four with the real odds, then `tools/draft_rules.json` settles every protected 2027 first-rounder (written from RealGM's pick list; update it when a 2027 first changes hands). Team colors and ESPN logo codes are in `tools/draft_teams.json`; school logos map through `tools/draft_schools.json`, which the pull extends on its own.
+
 Pushing a new snapshot rebuilds `draft/nba.json` and `draft/nfl.json` through the Big Board workflow, which also runs after every Hard Cap stats pull. Boards fade by half every 90 days, mock drafts are shown next to each player but don't feed the rank, and WalterFootball stays out. PFF and The Athletic go in only from a subscription.
 
 ## Wipe Yoenis: luck, drafts and manager profiles

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>Big Board | David Solar</title>
-<meta name="description" content="The 2027 NBA and NFL drafts: every board worth reading, rolled into one consensus, with who's rising and where the boards disagree.">
+<meta name="description" content="The 2027 NBA and NFL drafts: every board worth reading rolled into one consensus, plus a mock draft with the lottery and every protected pick.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://davidsolar.dev/draft/">
 <meta property="og:title" content="Big Board">
@@ -122,6 +122,107 @@ tr.open td{background:rgba(242,193,78,.05)}
 .how ul{margin:0;padding-left:18px}
 .stamp{font-size:12.5px;color:var(--faint);margin-top:18px}
 
+
+.tabs{display:flex;gap:4px;margin:14px 0 0;border-bottom:1px solid var(--line)}
+.tabs a{font:800 18px/1 var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--dim);text-decoration:none;padding:10px 14px 9px;border-bottom:3px solid transparent;margin-bottom:-1px}
+.tabs a[aria-current="page"]{color:var(--chalk);border-bottom-color:var(--red-hi)}
+.tabs a:hover{color:var(--chalk)}
+.disp{font-family:var(--display);font-weight:800;text-transform:uppercase;letter-spacing:.03em}
+.faint{color:var(--faint)}
+.who-cell{display:flex;align-items:center;gap:10px}
+.chip{flex:none;width:30px;height:30px;border-radius:50%;background:#EEF0EC;display:inline-flex;align-items:center;justify-content:center;overflow:hidden}
+.chip img{width:24px;height:24px;object-fit:contain;display:block}
+.chip.txt{font:800 10px/1 var(--body);color:#0B1626;letter-spacing:.02em}
+.stl{font-size:13px;color:var(--dim);white-space:nowrap}
+.tl{display:block;object-fit:contain;flex:none}
+.badge{display:inline-flex;align-items:center;justify-content:center;border-radius:8px;font:800 12px/1 var(--display);letter-spacing:.04em;width:32px;height:32px}
+.bio{margin:0 0 8px;font-size:14px;color:var(--chalk)}
+.stats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.stat{background:var(--panel-hi);border-radius:8px;padding:6px 10px;min-width:64px}
+.stat b{display:block;font:800 20px/1 var(--display)}
+.stat span{font-size:11px;color:var(--dim);letter-spacing:.06em}
+.stat em{font-style:normal;color:var(--faint)}
+.btn{background:var(--panel-hi);border:1px solid var(--line-strong);border-radius:999px;padding:9px 18px;font-weight:700;color:var(--chalk)}
+.btn:hover{border-color:var(--chalk)}
+.btn.go{background:var(--red);border-color:var(--red);color:#fff}
+.btn.go:hover{background:var(--red-hi)}
+.btn.sm{padding:6px 13px;font-size:13px}
+.link{background:none;border:0;color:var(--dim);text-decoration:underline;text-underline-offset:3px;padding:6px}
+.link:hover{color:var(--chalk)}
+.lab{display:block;font:700 11px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
+
+.mock-setup,.lotto,.results,.room{padding-top:18px}
+.setup-head h2{font-size:34px;margin:0}
+.setup-head .sub{color:var(--dim);margin:6px 0 0;max-width:44rem}
+.opts{display:flex;flex-wrap:wrap;gap:16px 28px;margin:20px 0}
+.teams-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;margin:6px 0 10px}
+.teams-head .lab{margin:0}
+.teams-head .note{margin:0}
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:8px}
+.tm{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px 10px;border-radius:12px;border:1px solid var(--line);background:var(--panel);position:relative;overflow:hidden}
+.tm::before{content:"";position:absolute;inset:0;background:linear-gradient(160deg,var(--t1),transparent 75%);opacity:.22;transition:opacity .15s}
+.tm:hover::before{opacity:.4}
+.tm.on{border-color:var(--chalk);box-shadow:0 0 0 2px var(--t1)}
+.tm.on::before{opacity:.75}
+.tm>*{position:relative}
+.tm .tn{font:800 15px/1 var(--display);letter-spacing:.04em;text-transform:uppercase}
+.tm .tr{font-size:11.5px;color:var(--dim)}
+.tm.nopick{opacity:.6}
+.go-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin:22px 0}
+.go-row .note{margin:0}
+
+.lotto-list{list-style:none;margin:18px 0 0;padding:0;display:grid;gap:6px;max-width:640px}
+.lotto-list li{display:flex;align-items:center;gap:12px;padding:8px 12px;border-radius:10px;background:var(--panel);border-left:4px solid var(--t1)}
+.lotto-list li.won{background:linear-gradient(90deg,rgba(242,193,78,.14),var(--panel) 60%)}
+.lotto-list li.mine{outline:1px solid var(--gold)}
+.ln{font:800 22px/1 var(--display);width:28px;text-align:right}
+.lt{flex:1;min-width:0}.lt b{display:block}.lt small{color:var(--dim);font-size:12.5px}
+.lj{font-weight:700;font-size:13px;color:var(--faint)}.lj.up{color:var(--up)}.lj.down{color:var(--down)}
+
+.clock{display:flex;align-items:center;gap:16px;padding:14px 18px;border-radius:14px;background:linear-gradient(110deg,var(--t1) 0%,color-mix(in srgb,var(--t1) 55%,#060D18) 100%);border:1px solid rgba(255,255,255,.12);flex-wrap:wrap}
+.clock-logo{width:72px;height:72px;border-radius:50%;background:rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center}
+.clock-txt{flex:1;min-width:200px}
+.clock-txt .kick{display:block;font:700 11px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.8)}
+.clock-txt b{display:block;font-size:clamp(26px,5vw,38px);line-height:1;margin:6px 0 4px;color:#fff}
+.clock-txt .sub2{font-size:13px;color:rgba(255,255,255,.82)}
+.clock-act{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.clock-act .btn{background:rgba(0,0,0,.3);border-color:rgba(255,255,255,.35)}
+.clock-act .link{color:rgba(255,255,255,.8)}
+.clock-act .note.on{color:#fff;font-weight:700;margin:0}
+.room-grid{display:grid;grid-template-columns:300px minmax(0,1fr);gap:14px;margin-top:14px}
+.rail{max-height:76vh;overflow-y:auto;border:1px solid var(--line);border-radius:12px;background:rgba(18,34,56,.55);padding:6px}
+.rail-round{font:700 11px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--faint);padding:10px 8px 6px}
+.rp{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;border-left:3px solid var(--t1);margin-bottom:3px;background:rgba(255,255,255,.02)}
+.rp.cur{background:rgba(242,193,78,.12);outline:1px solid var(--gold)}
+.rp.mine .rn{color:var(--gold)}
+.rn{font:800 16px/1 var(--display);width:24px;text-align:right;flex:none}
+.rt{flex:1;min-width:0;font-size:13.5px}
+.rt b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rt small{display:block;color:var(--dim);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vt{font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 7px;flex:none}
+.vt.steal{background:rgba(63,179,127,.18);color:var(--up)}
+.vt.reach{background:rgba(232,67,92,.16);color:var(--down)}
+.pool .tools{margin-top:0}
+.pool-t td{padding:7px 8px}
+.pr:hover td{background:rgba(255,255,255,.03)}
+
+.res-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:18px}
+.res-card{border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--panel)}
+.res-head{display:flex;align-items:center;gap:12px;padding:12px 14px;background:linear-gradient(110deg,var(--t1),color-mix(in srgb,var(--t1) 50%,#060D18))}
+.res-head b{flex:1;font-size:22px;color:#fff}
+.grade{font:900 34px/1 var(--display);color:#fff;background:rgba(0,0,0,.28);border-radius:10px;padding:6px 10px;min-width:56px;text-align:center}
+.res-card ul,.all-picks{list-style:none;margin:0;padding:8px}
+.res-card li,.all-picks li{display:flex;align-items:center;gap:9px;padding:6px 6px;border-bottom:1px solid var(--line)}
+.all-picks li.mine{background:rgba(242,193,78,.08)}
+.res-split{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:18px;margin-top:8px}
+.res-split h3{font-size:22px;margin:16px 0 6px}
+.all-picks{border:1px solid var(--line);border-radius:12px;background:rgba(18,34,56,.55)}
+@media (max-width:860px){
+  .room-grid{grid-template-columns:1fr}
+  .rail{max-height:220px;order:2}
+  .res-split{grid-template-columns:1fr}
+  .hide-m{display:none}
+}
 .col-src{display:table-cell}
 @media (max-width:860px){.col-src{display:none}}
 @media (max-width:560px){
@@ -142,13 +243,19 @@ tr.open td{background:rgba(242,193,78,.05)}
     <div>
       <p class="kicker" id="kicker">2027 Draft</p>
       <h1>Big <span>Board</span></h1>
-      <p class="sub">Every board worth reading, rolled into one consensus. Who's climbing, who's sliding, and where the boards can't agree.</p>
+      <p class="sub">Every board worth reading, rolled into one consensus, and a mock draft that runs off it. Who's climbing, who's sliding, and where the boards can't agree.</p>
     </div>
     <div class="seg big" role="group" aria-label="League">
       <button type="button" data-lg="nba" aria-pressed="true">NBA</button>
       <button type="button" data-lg="nfl" aria-pressed="false">NFL</button>
     </div>
   </header>
+  <nav class="tabs" aria-label="Views">
+    <a href="#" data-view="board" aria-current="page">Big Board</a>
+    <a href="#" data-view="mock">Mock Draft</a>
+  </nav>
+
+  <div id="board-view">
 
   <div class="sources" id="sources" aria-label="Boards in the consensus"></div>
 
@@ -175,7 +282,7 @@ tr.open td{background:rgba(242,193,78,.05)}
     <div>
       <h3>Range and movement</h3>
       <p>Range is a player's best and worst rank across the boards, with his consensus spot marked. A wide bar is an argument. Gold numbers flag the biggest ones.</p>
-      <p>Move is spots gained or lost since the previous update. Open a player for his line over the season.</p>
+      <p>Move is spots gained or lost since the previous update. Open a player for his size, stats and line over the season.</p>
     </div>
     <div id="howSources">
       <h3>The boards</h3>
@@ -183,175 +290,44 @@ tr.open td{background:rgba(242,193,78,.05)}
     </div>
   </section>
   <p class="stamp" id="stamp"></p>
+  </div>
+  <div id="mock-view" hidden></div>
 </main>
 
+<script src="common.js?v=3"></script>
+<script src="engine.js?v=3"></script>
+<script src="board.js?v=3"></script>
+<script src="mock.js?v=3"></script>
 <script>
 (() => {
-  const $ = (s) => document.querySelector(s);
-  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const fmtDay = (d) => d ? new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
-  const POS = {
-    nba: [["all", "All"], ["g", "Guards"], ["w", "Wings"], ["b", "Bigs"]],
-    nfl: [["all", "All"], ["QB", "QB"], ["RB", "RB"], ["WR", "WR"], ["TE", "TE"], ["OL", "OL"], ["DL", "DL"], ["EDGE", "EDGE"], ["LB", "LB"], ["DB", "DB"]]
+  // #nba, #nfl, #nba/mock, #nfl/mock
+  const parse = () => {
+    const [lg, view] = location.hash.slice(1).split("/");
+    const saved = BB.store.get("bigboard") || {};
+    return { lg: lg === "nfl" || lg === "nba" ? lg : (saved.lg || "nba"), view: view === "mock" ? "mock" : (lg ? "board" : (saved.view || "board")) };
   };
-  const group = (lg, pos) => {
-    const p = String(pos || "").toUpperCase();
-    if (lg === "nba") {
-      const first = p.split(/[\/-]/)[0];
-      if (first === "PG" || first === "SG" || first === "G") return "g";
-      if (first === "C" || p === "PF/C" || p === "F-C") return "b";
-      if (first === "PF") return p.includes("C") ? "b" : "w";
-      return "w";
-    }
-    if (p === "OT" || p === "IOL" || p === "OL" || p === "OG") return "OL";
-    if (p === "DL" || p === "DT" || p === "IDL") return "DL";
-    if (p === "CB" || p === "S" || p === "NB" || p === "DB") return "DB";
-    return p;
-  };
-
-  const cache = {};
-  let ui = { lg: location.hash.slice(1) === "nfl" ? "nfl" : "nba", q: "", pos: "all", sort: "rank", dir: 1, open: null };
-  try { const s = JSON.parse(localStorage.getItem("bigboard") || "{}"); if (!location.hash && s.lg) ui.lg = s.lg; } catch (e) { /* fine without it */ }
-
-  async function data(lg) {
-    if (!cache[lg]) {
-      const r = await fetch(`${lg}.json`, { cache: "no-cache" });
-      cache[lg] = await r.json();
-    }
-    return cache[lg];
+  async function go() {
+    const { lg, view } = parse();
+    document.querySelectorAll("[data-lg]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lg === lg)));
+    document.querySelectorAll("[data-view]").forEach((b) => b.setAttribute("aria-current", b.dataset.view === view ? "page" : "false"));
+    document.getElementById("board-view").hidden = view !== "board";
+    document.getElementById("mock-view").hidden = view !== "mock";
+    document.body.dataset.view = view;
+    BB.store.set("bigboard", { lg, view });
+    try { const D = await BB.data(lg); document.getElementById("kicker").textContent = `${D.year} ${lg.toUpperCase()} Draft`; } catch (e) { /* the view says so */ }
+    if (view === "board") { Mock.stop(); Board.render(lg); } else Mock.render(lg);
   }
-
-  const liveBoards = (D) => D.sources.filter((s) => s.kind === "board" && s.w);
-  const mocks = (D) => D.sources.filter((s) => s.kind === "mock" && s.date);
-
-  function move(p) {
-    const h = p.hist, now = h[h.length - 1];
-    if (h.length < 2) return 0;
-    for (let i = h.length - 2; i >= 0; i--) if (h[i] != null) return h[i] - now;
-    return null;
-  }
-
-  function sources(D) {
-    const maxW = Math.max(...D.sources.map((s) => s.w || 0), 1);
-    $("#sources").innerHTML = D.sources.map((s) => {
-      const pending = !s.date;
-      const who = s.analyst ? `${s.name}, ${s.analyst.split(" ").slice(-1)[0]}` : s.name;
-      return `<a class="src${pending ? " pending" : ""}${s.kind === "mock" ? " mock" : ""}" href="${esc(s.link || s.url)}" target="_blank" rel="noopener" title="${esc(s.note || s.title || s.name)}">
-        <b>${esc(s.abbr)}</b><span class="who">${esc(who)}</span>
-        <span class="when"><span>${pending ? "Not out yet" : fmtDay(s.date)}</span><span>${pending ? "" : s.kind === "mock" ? `${s.count} picks` : `Top ${s.count}`}</span></span>
-        ${s.kind === "board" && !pending ? `<span class="w" aria-hidden="true"><i style="width:${Math.round(100 * (s.w || 0) / maxW)}%"></i></span>` : ""}</a>`;
-    }).join("");
-    $("#srcList").innerHTML = D.sources.map((s) => `<li><a href="${esc(s.link || s.url)}" target="_blank" rel="noopener">${esc(s.name)}${s.analyst ? ` (${esc(s.analyst)})` : ""}</a>: ${s.date ? `${s.kind === "mock" ? "mock draft" : `top ${s.count}`}, ${fmtDay(s.date)}${s.versions > 1 ? `, ${s.versions} readings` : ""}` : "not out for this class yet"}${s.kind === "mock" ? ". Shown, not counted" : ""}</li>`).join("")
-      + (Object.keys(D.excluded || {}).length ? `<li>Left out on purpose: WalterFootball. PFF and The Athletic only if pasted from a subscription.</li>` : "");
-  }
-
-  function head(D) {
-    const live = liveBoards(D), mk = mocks(D);
-    const th = (k, label, cls = "", title = "") => `<th class="${cls}"${ui.sort === k ? ` aria-sort="${ui.dir > 0 ? "ascending" : "descending"}"` : ""}${title ? ` title="${esc(title)}"` : ""}><button type="button" data-sort="${k}">${label}</button></th>`;
-    const prev = D.dates.length > 1 ? fmtDay(D.dates[D.dates.length - 2]) : "";
-    $("#thead").innerHTML = `<tr>${th("rank", "#", "r")}${th("move", "Move", "", prev ? `Spots since ${prev}` : "")}${th("name", "Player")}${th("score", "Avg", "r hide-s", "Weighted average rank")}
-      ${live.map((s) => th("s:" + s.id, esc(s.abbr), "r col-src", `${s.name}${s.analyst ? `, ${s.analyst}` : ""}, ${fmtDay(s.date)}`)).join("")}
-      ${live.length > 1 ? `${th("spread", "Range", "rng", "Best and worst rank across the boards")}${th("on", "Boards", "c hide-s")}` : ""}${mk.length ? th("mock", "Mock", "hide-s", mk.map((m) => `${m.name}, ${fmtDay(m.date)}`).join("; ")) : ""}</tr>`;
-  }
-
-  function rows(D) {
-    const live = liveBoards(D), mk = mocks(D);
-    const q = ui.q.trim().toLowerCase();
-    let ps = D.players.filter((p) => (ui.pos === "all" || group(ui.lg, p.pos) === ui.pos)
-      && (!q || p.n.toLowerCase().includes(q) || (p.school || "").toLowerCase().includes(q)));
-    const val = (p) => {
-      if (ui.sort === "name") return p.n.split(" ").slice(-1)[0].toLowerCase();
-      if (ui.sort === "move") { const m = move(p); return m == null ? -999 * ui.dir : -m; }
-      if (ui.sort === "spread") return -(p.lo - p.hi);
-      if (ui.sort === "on") return -p.on;
-      if (ui.sort === "mock") { const m = mk.map((s) => p.mocks[s.id]).find(Boolean); return m ? m[0] : 999; }
-      if (ui.sort.startsWith("s:")) return p.ranks[ui.sort.slice(2)] ?? 999;
-      return p[ui.sort];
-    };
-    ps = ps.slice().sort((a, b) => { const x = val(a), y = val(b); return (x < y ? -1 : x > y ? 1 : a.rank - b.rank) * ui.dir; });
-    const spreads = D.players.slice(0, 60).map((p) => p.lo - p.hi).sort((a, b) => b - a);
-    const hotCut = spreads[Math.min(5, spreads.length - 1)] || 99;
-    const maxR = Math.max(60, ...ps.slice(0, 100).map((p) => p.lo));
-    const n = live.length;
-    if (!ps.length) { $("#tbody").innerHTML = `<tr><td class="empty" colspan="12">No one matches that.</td></tr>`; return; }
-    $("#tbody").innerHTML = ps.slice(0, 200).map((p) => {
-      const m = move(p);
-      const mvTxt = m == null ? `<span class="mv flat" title="New this update">new</span>` : m > 0 ? `<span class="mv up">&#9650;${m}</span>` : m < 0 ? `<span class="mv down">&#9660;${-m}</span>` : `<span class="mv flat">&ndash;</span>`;
-      const spread = p.lo - p.hi;
-      const pct = (r) => (100 * (Math.min(r, maxR) - 1) / (maxR - 1)).toFixed(1);
-      const mockCell = mk.map((s) => p.mocks[s.id]).find(Boolean);
-      const open = ui.open === p.id;
-      return `<tr class="p${open ? " open" : ""}" data-id="${esc(p.id)}" tabindex="0" aria-expanded="${open}">
-        <td class="rk r">${p.rank}</td><td>${mvTxt}</td>
-        <td><div class="nm">${esc(p.n)}<small>${esc([p.pos, p.school].filter(Boolean).join(", "))}</small></div></td>
-        <td class="r sc hide-s">${p.score.toFixed(1)}</td>
-        ${live.map((s) => p.ranks[s.id] != null ? `<td class="r cell col-src">${p.ranks[s.id]}</td>` : `<td class="r cell miss col-src" title="Not on this board">&ndash;</td>`).join("")}
-        ${n > 1 ? `<td class="rng"><span${spread >= hotCut && p.on > 1 ? ` class="hot"` : ""}>${p.on > 1 ? `${p.hi}&ndash;${p.lo}` : `${p.hi} only`}</span>
-          <div class="bar" aria-hidden="true"><i style="left:${pct(p.hi)}%;right:${(100 - pct(p.lo)).toFixed(1)}%"></i><b style="left:${pct(p.rank)}%"></b></div></td>
-        <td class="c sc hide-s">${p.on}/${n}</td>` : ""}
-        ${mk.length ? `<td class="mk hide-s">${mockCell ? `${mockCell[0]}${mockCell[1] ? ` ${esc(mockCell[1])}` : ""}` : "&ndash;"}</td>` : ""}
-      </tr>${open ? detail(D, p) : ""}`;
-    }).join("");
-  }
-
-  function spark(D, p) {
-    const pts = D.dates.map((d, i) => [d, p.hist[i]]).filter((x) => x[1] != null);
-    if (pts.length < 2) return `<p class="note">One reading so far. The line fills in as boards update.</p>`;
-    const W = 420, H = 96, pad = 22;
-    const lo = Math.max(...pts.map((x) => x[1])), hi = Math.min(...pts.map((x) => x[1]));
-    const top = Math.max(1, hi - 2), bot = lo + 2;
-    const t0 = Date.parse(pts[0][0]), t1 = Date.parse(pts[pts.length - 1][0]);
-    const X = (d) => pad + (W - 2 * pad) * (t1 === t0 ? 0 : (Date.parse(d) - t0) / (t1 - t0));
-    const Y = (r) => 20 + (H - 46) * (r - top) / Math.max(1, bot - top);
-    const path = pts.map((x, i) => `${i ? "L" : "M"}${X(x[0]).toFixed(1)},${Y(x[1]).toFixed(1)}`).join("");
-    return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Consensus rank over time">
-      <path d="${path}" fill="none" stroke="var(--gold)" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
-      ${pts.map((x) => `<circle cx="${X(x[0]).toFixed(1)}" cy="${Y(x[1]).toFixed(1)}" r="3.5" fill="var(--stage)" stroke="var(--gold)" stroke-width="2"/><text x="${X(x[0]).toFixed(1)}" y="${(Y(x[1]) - 8).toFixed(1)}" text-anchor="middle">${x[1]}</text>`).join("")}
-      <text x="${pad}" y="${H - 4}">${fmtDay(pts[0][0])}</text><text x="${W - pad}" y="${H - 4}" text-anchor="end">${fmtDay(pts[pts.length - 1][0])}</text></svg>`;
-  }
-
-  function detail(D, p) {
-    const live = liveBoards(D), mk = mocks(D);
-    const cols = 4 + live.length + (live.length > 1 ? 2 : 0) + (mk.length ? 1 : 0);
-    return `<tr class="detail"><td colspan="${cols}"><div class="det">
-      <div><h4>Consensus rank over time</h4>${spark(D, p)}</div>
-      <div><h4>Board by board</h4><ul>${live.map((s) => `<li class="${p.ranks[s.id] == null ? "miss" : ""}"><span>${esc(s.name)}${s.analyst ? ` <span class="note">(${esc(s.analyst.split(" ").slice(-1)[0])})</span>` : ""}</span><span>${p.ranks[s.id] ?? `not in top ${s.count}`}</span></li>`).join("")}
-        ${mk.map((s) => `<li class="${p.mocks[s.id] ? "" : "miss"}"><span>${esc(s.name)}</span><span>${p.mocks[s.id] ? `pick ${p.mocks[s.id][0]}${p.mocks[s.id][1] ? `, ${esc(p.mocks[s.id][1])}` : ""}` : "not in mock"}</span></li>`).join("")}</ul></div>
-    </div></td></tr>`;
-  }
-
-  async function render() {
-    document.querySelectorAll("[data-lg]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lg === ui.lg)));
-    let D;
-    try { D = await data(ui.lg); } catch (e) { $("#tbody").innerHTML = `<tr><td class="empty">Couldn't load the board. Try a refresh.</td></tr>`; return; }
-    $("#kicker").textContent = `${D.year} ${ui.lg.toUpperCase()} Draft`;
-    $("#pos").innerHTML = POS[ui.lg].map(([k, l]) => `<button type="button" data-pos="${k}" aria-pressed="${ui.pos === k}">${l}</button>`).join("");
-    const live = liveBoards(D);
-    $("#note").textContent = live.length < 3
-      ? `${live.length} board${live.length === 1 ? "" : "s"} so far. ${D.sources.filter((s) => !s.date).map((s) => s.analyst || s.name).join(", ")} join as they publish for this class.`
-      : `${D.players.length} players across ${live.length} boards. Tap a player for his line.`;
-    sources(D); head(D); rows(D);
-    $("#stamp").textContent = `Built ${new Date(D.updated).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}. Newest board: ${fmtDay(D.asof)}.`;
-    try { localStorage.setItem("bigboard", JSON.stringify({ lg: ui.lg })); } catch (e) { /* private window */ }
-  }
-
   document.addEventListener("click", (e) => {
-    const lg = e.target.closest("[data-lg]");
-    if (lg && lg.dataset.lg !== ui.lg) { ui = { ...ui, lg: lg.dataset.lg, pos: "all", sort: "rank", dir: 1, open: null }; history.replaceState(null, "", "#" + ui.lg); render(); return; }
-    const pos = e.target.closest("[data-pos]");
-    if (pos) { ui.pos = pos.dataset.pos; render(); return; }
-    const so = e.target.closest("[data-sort]");
-    if (so) { const k = so.dataset.sort; ui.dir = ui.sort === k ? -ui.dir : 1; ui.sort = k; render(); return; }
-    const tr = e.target.closest("tr.p");
-    if (tr) { ui.open = ui.open === tr.dataset.id ? null : tr.dataset.id; render(); }
+    const l = e.target.closest("[data-lg]"), v = e.target.closest("[data-view]");
+    if (!l && !v) return;
+    e.preventDefault();
+    const cur = parse();
+    const lg = l ? l.dataset.lg : cur.lg, view = v ? v.dataset.view : cur.view;
+    history.replaceState(null, "", "#" + lg + (view === "mock" ? "/mock" : ""));
+    go();
   });
-  document.addEventListener("keydown", (e) => {
-    const tr = e.target.closest && e.target.closest("tr.p");
-    if (tr && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); tr.click(); }
-  });
-  $("#q").addEventListener("input", (e) => { ui.q = e.target.value; data(ui.lg).then((D) => rows(D)); });
-  window.addEventListener("hashchange", () => { const lg = location.hash.slice(1); if ((lg === "nba" || lg === "nfl") && lg !== ui.lg) { ui = { ...ui, lg, pos: "all", open: null }; render(); } });
-  render();
+  window.addEventListener("hashchange", go);
+  go();
 })();
 </script>
 </body>

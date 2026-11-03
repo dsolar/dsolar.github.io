@@ -63,8 +63,8 @@ def snapshots(league, sid):
     return out
 
 
-def tankathon():
-    """Hard Cap's daily Tankathon readings as snapshots. Names come from the latest board; older ids that dropped
+def tankathon(league="nba"):
+    """Hard Cap's daily Tankathon readings as snapshots (NBA). The NFL board's readings are ordinary snapshot files. Names come from the latest board; older ids that dropped
     off it are rebuilt from the slug."""
     data = load(os.path.join(ROOT, "hardcap", "prospects.json"), {}) or {}
     info = {r["id"]: r for r in data.get("board", [])}
@@ -89,7 +89,7 @@ def build(league, sources, aliases):
     canon = lambda n: alias.get(key(n), key(n))
     snaps = {}
     for s in sources:
-        snaps[s["id"]] = tankathon() if s["id"] == "tankathon" else snapshots(league, s["id"])
+        snaps[s["id"]] = tankathon() if (s["id"] == "tankathon" and league == "nba") else snapshots(league, s["id"])
     boards = [s for s in sources if s["kind"] == "board"]
     mocks = [s for s in sources if s["kind"] == "mock"]
 
@@ -161,6 +161,9 @@ def build(league, sources, aliases):
         for row in snap["ranks"]:
             mock_now.setdefault(canon(row[1]), {})[s["id"]] = [row[0], row[4] if len(row) > 4 else ""]
 
+    info = (load(os.path.join(TOOLS, "draft_data", f"{league}-info.json"), {}) or {}).get("players", {})
+    info = {canon(k): v for k, v in info.items()} | {}
+    schools = (load(os.path.join(TOOLS, "draft_schools.json"), {}) or {}).get(league, {})
     players = []
     for p, c in sorted(now.items(), key=lambda x: x[1]["rank"]):
         per = {}
@@ -181,6 +184,13 @@ def build(league, sources, aliases):
             "mocks": mock_now.get(p, {}),
             "hist": [hist[d][p]["rank"] if p in hist[d] else None for d in dates],
         })
+        x = info.get(p, {})
+        for k2 in ("ht", "wt", "yr", "age", "flag", "stats"):
+            if x.get(k2):
+                players[-1][k2] = x[k2]
+        sid = schools.get(players[-1]["school"])
+        if sid:
+            players[-1]["sid"] = sid
 
     src_out = []
     for s in sources:
@@ -189,8 +199,14 @@ def build(league, sources, aliases):
         src_out.append({k: s[k] for k in ("id", "name", "analyst", "abbr", "kind", "weight", "url", "status", "note") if k in s} | (
             {"date": latest["date"], "link": latest.get("url"), "title": latest.get("title"), "count": len(latest["ranks"]),
              "versions": len(snaps[s["id"]]), "w": w_now} if latest else {}))
+    teams = (load(os.path.join(TOOLS, "draft_teams.json"), {}) or {}).get(league, {})
+    order = load(os.path.join(TOOLS, "draft_data", f"{league}-order.json"), {}) or {}
+    records = (load(os.path.join(TOOLS, "draft_data", "records.json"), {}) or {}).get(league, {})
+    rules = (load(os.path.join(TOOLS, "draft_rules.json"), {}) or {}).get(league)
     return {"league": league, "year": YEAR, "asof": today, "halfLife": HALF_LIFE, "dates": dates,
-            "sources": src_out, "players": players}
+            "sources": src_out, "teams": teams, "records": records,
+            "order": {"updated": order.get("updated"), "source": order.get("source"), "picks": order.get("picks", [])},
+            "rules": rules, "players": players}
 
 
 def main():

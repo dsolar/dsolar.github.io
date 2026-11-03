@@ -1,9 +1,12 @@
-# Rebuilds the Big Board (draft/nba.json, draft/nfl.json) from every outlet's saved board.
-# Runs after each Hard Cap stats pull (that's where Tankathon's daily reading comes from), when a new board
-# is pasted in or the script changes, and by hand.
+# Rebuilds the Big Board (draft/nba.json, draft/nfl.json): pulls the draft order, team records and prospect
+# details (tools/draft_pull.py), then rolls every outlet's saved board into the consensus (tools/draft_build.py).
+# Runs every morning, after each Hard Cap stats pull (that's where Tankathon's NBA reading comes from), when a
+# new board is pasted in or a script changes, and by hand.
 name: Big Board
 
 on:
+  schedule:
+    - cron: "17 12 * * *"
   workflow_run:
     workflows: ["Hard Cap stats"]
     types: [completed]
@@ -11,6 +14,9 @@ on:
     branches: [main]
     paths:
       - tools/draft_build.py
+      - tools/draft_pull.py
+      - tools/draft_teams.json
+      - tools/draft_rules.json
       - tools/draft_sources.json
       - tools/draft_aliases.json
       - tools/draft_boards/**
@@ -38,12 +44,16 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+      - name: Pull the draft order, records and prospect details
+        continue-on-error: true
+        run: python3 tools/draft_pull.py
+
       - name: Build the consensus
         run: python3 tools/draft_build.py
 
       - name: Commit the board
         run: |
-          git add draft/nba.json draft/nfl.json
+          git add draft/nba.json draft/nfl.json tools/draft_data tools/draft_boards tools/draft_schools.json
           if git diff --cached --quiet; then
             echo "Nothing changed."
             exit 0
