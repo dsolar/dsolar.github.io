@@ -114,3 +114,23 @@ test('IR: a hurt player frees a roster spot, and coming back needs room', () => 
   assert.equal(L.ir[0].length, 0);
   delete ctx.byId[healthy].inj;
 });
+
+test('IR: a player traded off IR arrives active and his old spot opens', () => {
+  const s = season('nfl', { scoring: 'half' });
+  const L = s.L, ctx = s.ctx;
+  const hurt = L.rosters[0][3];
+  ctx.byId[hurt].inj = 'IR';
+  assert.ok(G.toIR(L, ctx, 0, hurt, T0).ok);
+  const fa = ctx.free.find((p) => !G.onWaivers(L, p.id, T0 + 1));
+  assert.ok(G.addDrop(L, ctx, 0, fa.id, null, T0 + 1).ok, 'the IR spot made room');
+  // one for one: they get the IR player, so team 0 has one more active player than it can hold
+  const r = G.tradeCheck(L, ctx, { from: 0, to: 1, give: [hurt], get: [L.rosters[1][0]] });
+  assert.equal(r.ok, false, 'team 0 would be over the limit without its IR spot');
+  assert.ok(G.addDrop(L, ctx, 1, null, L.rosters[1][L.rosters[1].length - 1], T0 + 1).ok, 'team 1 makes room for a 2-for-1');
+  const ok = G.tradeCheck(L, ctx, { from: 0, to: 1, give: [hurt, fa.id], get: [L.rosters[1][0]] });
+  assert.ok(ok.ok, ok.why);
+  assert.ok(G.execute(L, ctx, Object.assign({ id: 99, faabGive: 0, faabGet: 0, dropsFrom: [] }, { from: 0, to: 1, give: [hurt, fa.id], get: [L.rosters[1][0]] }), T0 + 2).ok);
+  assert.deepEqual(L.ir[0], []);
+  assert.ok(L.rosters[1].includes(hurt) && !(L.ir[1] || []).includes(hurt));
+  delete ctx.byId[hurt].inj;
+});

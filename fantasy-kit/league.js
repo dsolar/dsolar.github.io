@@ -530,8 +530,9 @@
     for (const id of t.get) if (!L.rosters[t.to].includes(id)) return { ok: false, why: `${ctx.byId[id].n} isn't on ${L.teams[t.to].name}` };
     if ((t.faabGive || 0) > L.teams[t.from].faab || (t.faabGet || 0) > L.teams[t.to].faab) return { ok: false, why: "Not enough FAAB" };
     const after = (team, out, inn, drops) => L.rosters[team].length - out.length + inn.length - drops.length;
-    if (after(t.from, t.give, t.get, t.dropsFrom || []) > maxRoster(L) + (L.ir[t.from] || []).length) return { ok: false, why: `${L.teams[t.from].name} would have too many players: add a drop` };
-    if (after(t.to, t.get, t.give, t.dropsTo || []) > maxRoster(L) + (L.ir[t.to] || []).length) return { ok: false, why: `${L.teams[t.to].name} would have too many players` };
+    const irLeft = (team, out) => (L.ir[team] || []).filter((x) => !out.includes(x)).length;   // IR players traded away arrive active
+    if (after(t.from, t.give, t.get, t.dropsFrom || []) > maxRoster(L) + irLeft(t.from, t.give)) return { ok: false, why: `${L.teams[t.from].name} would have too many players: add a drop` };
+    if (after(t.to, t.get, t.give, t.dropsTo || []) > maxRoster(L) + irLeft(t.to, t.get)) return { ok: false, why: `${L.teams[t.to].name} would have too many players` };
     if (ctx.hooks.tradeCheck) { const c = ctx.hooks.tradeCheck(L, t, ctx); if (c && !c.ok) return c; }
     return { ok: true };
   }
@@ -575,6 +576,9 @@
     for (const id of t.dropsFrom || []) dropOne(L, t.from, id, now);
     L.rosters[t.from] = L.rosters[t.from].filter((x) => !t.give.includes(x)).concat(t.get);
     L.rosters[t.to] = L.rosters[t.to].filter((x) => !t.get.includes(x)).concat(t.give);
+    // a player traded off IR arrives active; his old team's IR spot opens
+    L.ir[t.from] = (L.ir[t.from] || []).filter((x) => !t.give.includes(x));
+    L.ir[t.to] = (L.ir[t.to] || []).filter((x) => !t.get.includes(x));
     for (const w of Object.keys(L.lineups)) if (+w >= L.week) { delete (L.lineups[w] || {})[t.from]; delete (L.lineups[w] || {})[t.to]; }
     L.teams[t.from].faab += (t.faabGet || 0) - (t.faabGive || 0);
     L.teams[t.to].faab += (t.faabGive || 0) - (t.faabGet || 0);
@@ -664,7 +668,7 @@
         const bid = Math.max(L.settings.minBid, Math.min(t.faab, Math.round(t.faab * want)));
         const drop = bench.length ? bench[0] : keepers[0];
         if (!drop) continue;
-        const c = claim(L, ctx, t.id, p.id, ros.length >= maxRoster(L) ? drop.id : null, bid, now);
+        const c = claim(L, ctx, t.id, p.id, ros.length - (L.ir[t.id] || []).length >= maxRoster(L) ? drop.id : null, bid, now);
         if (c.ok) { bids++; n++; }
       }
     }
