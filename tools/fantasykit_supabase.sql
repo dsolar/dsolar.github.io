@@ -378,3 +378,7 @@ returns jsonb language sql stable security definer set search_path = public as $
 $$;
 revoke all on function fk_post(text, text), fk_posts(text, bigint) from public;
 grant execute on function fk_post(text, text), fk_posts(text, bigint) to anon, authenticated;
+
+-- ---------- Your leagues cards (migration fantasykit_league_cards) ----------
+-- fk_card(l, team) adds to each fk_mine row: your team's name, team and seat counts, the week, your head-to-head
+-- record, whether you're alive in a guillotine league, and the draft's pick count. See the migration for the body.

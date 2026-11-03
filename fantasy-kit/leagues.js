@@ -54,9 +54,25 @@
       <div class="head"><h1 class="disp">Your leagues</h1><span class="ps">Signed in as ${esc(u.email)}</span><span class="grow"></span><button class="btn go" data-a="new">Start a league</button></div>
       ${mine.error ? fail(mine.error) : mine.length ? `<div class="lgl">${mine.map(card).join("")}</div>` : joinId ? "" : `<div class="card"><div class="bd stack"><p style="margin:0"><b>No leagues yet.</b></p><p class="ps" style="margin:0">Start one and send your friends the invite link, or open the invite link your commissioner sent you.</p><div><button class="btn go" data-a="new">Start a league</button></div></div></div>`}`);
   }
-  const PHASE = { setup: "Draft room open", live: "Drafting now", done: "Draft done", season: "In season" };
-  const card = (l) => `<a class="card lgc" href="play.html?id=${esc(l.id)}">${U.teamAv({ abbr: l.sport.toUpperCase(), color: SPORT_CLR[l.sport] }, "md")}
-    <span class="grow"><b>${esc(l.name)}</b><small>${esc(S[l.sport].name)}, ${esc(PHASE[l.phase] || l.phase)}${l.commish ? ", you're the commissioner" : ""}</small></span><span class="btn sm">Open</span></a>`;
+  // One league in the list: your team, where the league is, and your record or the draft's progress.
+  function card(l) {
+    const c = l.card || {}, when = (t) => new Date(t).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+    const total = c.weeks != null ? c.weeks + (c.playoffWeeks || 0) : null;
+    let status = "", big = "", small = "", bar = null;
+    if (l.phase === "season") {
+      if (c.start && Date.now() < c.start) status = `Week 1 starts ${when(c.start)}`;
+      else if (total != null && c.week > total) status = "Season over";
+      else if (c.week != null) status = c.weeks != null && c.week > c.weeks ? `Playoffs, week ${c.week}` : `Week ${c.week}${c.weeks ? ` of ${c.weeks}` : ""}`;
+      if (c.format === "guillotine") { big = c.alive === false ? "Out" : c.alive ? "Alive" : ""; small = c.alive === false ? "Chopped" : "Still standing"; }
+      else if (c.format !== "roto" && l.team != null && c.w != null && (c.w || c.l || c.t)) { big = `${c.w}-${c.l}${c.t ? "-" + c.t : ""}`; small = "Record"; }
+    } else if (l.phase === "live") { status = "Drafting now"; if (c.total) { bar = c.picks / c.total; big = `${c.picks}`; small = `of ${c.total} picks`; } }
+    else if (l.phase === "done") status = "Draft done, the season starts soon";
+    else { status = "Draft room open"; if (c.teams) { big = `${c.claimed}/${c.teams}`; small = "teams claimed"; } }
+    const sub = [c.teamName ? esc(c.teamName) : "", esc(status), l.commish ? "you're the commissioner" : ""].filter(Boolean).join(", ");
+    return `<a class="card lgc" href="play.html?id=${esc(l.id)}">${U.teamAv({ abbr: l.sport.toUpperCase(), color: SPORT_CLR[l.sport] }, "md")}
+      <span class="grow"><b>${esc(l.name)}</b><small>${esc(S[l.sport].name)}${sub ? `: ${sub}` : ""}</small>${bar != null ? `<span class="lgbar" role="img" aria-label="${Math.round(bar * 100)}% of picks in"><i style="width:${(bar * 100).toFixed(1)}%"></i></span>` : ""}</span>
+      ${big ? `<span class="lgstat${l.phase === "live" ? " live" : ""}"><b>${esc(big)}</b><small>${esc(small)}</small></span>` : ""}<span class="btn sm">Open</span></a>`;
+  }
 
   function signInCard() {
     if (sent) return `<div class="card narrow"><div class="bd stack"><h1 class="disp" style="margin:0;font-size:clamp(26px,7vw,32px)">Check your email</h1>
