@@ -41,6 +41,11 @@
     if (s.ir != null) settings.ir = s.ir;
     if (s.maxAdds) settings.maxAdds = s.maxAdds;
     if (s.posMax && Object.keys(s.posMax).length) settings.posMax = Object.assign({}, s.posMax);
+    // weekly extras: a game against the league median, best ball lineups, divisions
+    if (s.median) settings.median = true;
+    if (s.bestBall && s.format !== "guillotine") settings.bestBall = true;
+    if (s.divisions) settings.divisions = s.divisions;
+    if (s.dynasty) settings.dynasty = { rounds: s.dynasty.rounds || 3, picks: s.dynasty.picks !== false };
     // keepers: how many each team carries into next season, and what each one costs
     if (s.keepers) { settings.keepers = s.keepers; settings.keeperCost = s.keeperCost || (D.type === "auction" ? "price" : "round"); }
     // a draft that ran out on the clock while nobody was around is "done" in the past; start after now, not then
@@ -52,6 +57,8 @@
   function catchUp(L, ctx, now) {
     if (!L) return false;
     const before = JSON.stringify(L);
+    // a dynasty's long rosters after the rookie draft: bots cut now, everyone else by the start of week 1
+    if (L.week === 1) G.cutDown(L, ctx, Math.min(now, L.start), now >= L.start);
     // guillotine bots bid on the chopped roster early in the week, before the midweek waiver run
     const bids = () => {
       L.botBid = L.botBid || {};
@@ -90,7 +97,8 @@
     const doc = c.league || c.draft;
     const teamName = (t) => (doc && doc.teams[t] ? doc.teams[t].name : "A team");
     const pn = (pid) => (F.isPickId(pid) ? `pick ${F.pickIdx(pid) + 1}` : ((o.byId || {})[pid] || {}).n || "a player");
-    const names = (ids) => (ids && ids.length ? ids.map(pn).join(", ") : "nothing");
+    const pickName = (k) => { const [r, t] = String(k).split(":").map(Number); return `a round ${r} pick (${teamName(t)}'s)`; };
+    const names = (ids, picks) => { const xs = (ids || []).map(pn).concat((picks || []).map(pickName)); return xs.length ? xs.join(", ") : "nothing"; };
     const seated = Object.keys(seats).map(Number);
     const add = (team, kind, subject, body) => {
       if (team == null || team === o.me || seats[team] == null || out.some((x) => x.team === team && x.subject.endsWith(subject))) return;
@@ -100,13 +108,13 @@
       const was = Object.fromEntries((bt || []).map((t) => [t.id, t.status]));
       for (const t of ct || []) {
         const s0 = was[t.id];
-        if (s0 == null && t.status === "pending") add(t.to, "trade", `${teamName(t.from)} sent you a trade offer`, `${teamName(t.from)} offered ${names(t.give)} for ${names(t.get)}.${t.note ? `\n\n"${t.note}"` : ""}`);
+        if (s0 == null && t.status === "pending") add(t.to, "trade", `${teamName(t.from)} sent you a trade offer`, `${teamName(t.from)} offered ${names(t.give, t.pickGive)} for ${names(t.get, t.pickGet)}.${t.note ? `\n\n"${t.note}"` : ""}`);
         else if (s0 === "pending" && t.status !== "pending") {
           const verb = { accepted: "accepted", review: "accepted", rejected: "declined", declined: "declined", expired: "didn't answer" }[t.status];
           if (!verb) continue;
           const body = t.status === "review" ? `${teamName(t.to)} accepted. The league can vote on it until ${when(t.reviewEnds)}.`
             : t.status === "expired" ? `Your offer to ${teamName(t.to)} expired.`
-            : `${teamName(t.to)} ${verb} your offer of ${names(t.give)} for ${names(t.get)}.${t.why ? ` "${t.why}"` : ""}`;
+            : `${teamName(t.to)} ${verb} your offer of ${names(t.give, t.pickGive)} for ${names(t.get, t.pickGet)}.${t.why ? ` "${t.why}"` : ""}`;
           add(t.from, "trade", `${teamName(t.to)} ${verb} your trade`, body);
         } else if (s0 === "review" && t.status === "vetoed") {
           add(t.from, "trade", "your trade was vetoed", "The league voted it down.");
@@ -127,7 +135,7 @@
       trades(bd.trades, cd.trades);
     }
     // a new season: the league went back to a draft
-    if (b && b.league && !c.league && cd) seated.forEach((t) => add(t, "season", "next season's draft room is open", `${(cd.board || []).some((pk) => pk && pk.keeper && pk.team === t) || (cd.sales || []).some((x) => x.keeper && x.team === t) ? "Your keepers are on the board. " : ""}The commissioner starts the draft when everyone's ready.`));
+    if (b && b.league && !c.league && cd) seated.forEach((t) => add(t, "season", "next season's draft room is open", `${cd.rookie ? `Your whole roster carries over. The rookie and free agent draft is ${cd.rounds} rounds, worst team first. ` : (cd.board || []).some((pk) => pk && pk.keeper && pk.team === t) || (cd.sales || []).some((x) => x.keeper && x.team === t) ? "Your keepers are on the board. " : ""}The commissioner starts the draft when everyone's ready.`));
     if (c.league) {
       const bl = (b && b.league) || { trades: [], claims: [], results: {} }, cl = c.league;
       if (cl.next && !bl.next) seated.forEach((t) => add(t, "keepers", "pick your keepers", `The season is over. Pick up to ${cl.settings.keepers} keepers for next season${cl.next.due ? ` by ${when(cl.next.due)}` : ""}. If you don't, your best values are kept for you.`));
@@ -155,7 +163,16 @@
             if (mine == null || mine < 0 || opp == null || opp < 0) continue;
             const won = g.w === "t" ? null : g.w === side;
             const rd = +w > cl.settings.weeks ? G.roundOf(cl, +w) : null;
-            if (!rd) { add(mine, "week", `week ${w} final`, `You ${won == null ? "tied" : won ? "beat" : "lost to"} ${teamName(opp)}, ${fmtS(sm)} to ${fmtS(so)}.`); continue; }
+            if (!rd) {
+              // median scoring: the week's second game, against the league median
+              let med = "";
+              if (cl.settings.median) {
+                const xs = res.flatMap((x) => [x.sa, x.sb]).sort((p, q) => p - q), m = xs.length % 2 ? xs[(xs.length - 1) / 2] : (xs[xs.length / 2 - 1] + xs[xs.length / 2]) / 2;
+                med = ` Against the league median of ${fmtS(m)}, you ${sm > m ? "won" : sm < m ? "lost" : "tied"}.`;
+              }
+              add(mine, "week", `week ${w} final`, `You ${won == null ? "tied" : won ? "beat" : "lost to"} ${teamName(opp)}, ${fmtS(sm)} to ${fmtS(so)}.${med}`);
+              continue;
+            }
             // playoffs: name the round, add up a two-week round, and say what's next
             const what = g.kind === "cons" ? `consolation ${rd.name.toLowerCase()}` : g.kind === "third" ? "third-place game" : rd.name.toLowerCase();
             const leg = rd.weeks.indexOf(+w), two = rd.weeks.length > 1;
@@ -213,6 +230,7 @@
   function nextDraft(L, ctx, sport, picks, o = {}) {
     const D0 = L.draft || {}, now = o.now || Date.now(), n = L.teams.length;
     const order = standings(L).map((r) => r.team).reverse();
+    if (L.settings.dynasty) return rookieDraft(L, ctx, sport, order, o);
     const keepers = [];
     for (const t of L.teams) {
       const mine = (picks && picks[t.id] != null ? picks[t.id] : autoKeepers(L, ctx, t.id)).filter((id) => L.rosters[t.id].includes(id)).slice(0, L.settings.keepers || 0);
@@ -229,6 +247,22 @@
     D.teams.forEach((t, i) => (t.color = L.teams[i].color));
     D.season = D0.season; if (D0.scoringSpec) D.scoringSpec = D0.scoringSpec;
     D.year = (D0.year || 1) + 1;
+    return D;
+  }
+  // A dynasty's next season: every roster (IR too) carries over, and a short linear draft of rookies and free agents
+  // runs worst to first. Traded picks go to the teams holding them.
+  function rookieDraft(L, ctx, sport, order, o = {}) {
+    const D0 = L.draft || {}, now = o.now || Date.now(), n = L.teams.length, R = L.settings.dynasty.rounds || 3;
+    const carry = L.teams.map((t) => L.rosters[t.id].slice());
+    const D = F.create({ sport, type: "linear", teams: L.teams.map((t) => ({ name: t.name, abbr: t.abbr, owner: t.owner })), seed: Math.floor((o.seed != null ? o.seed : Math.random()) * 2 ** 31) || 1,
+      now, lineup: L.settings.lineup, bench: L.settings.bench, scoring: L.scoring, botDelay: D0.botDelay, clock: D0.type === "auction" ? 60 : D0.clock, name: L.name, trades: D0.trading !== false,
+      order, rounds: R, carry });
+    // a traded pick: its slot belongs to the team that holds it now, and remembers whose it was
+    D.order.forEach((orig, k) => { const r = Math.floor(k / n) + 1, own = G.pickOwner(L, `${r}:${orig}`); if (own !== orig) { D.order[k] = own; D.via[k] = orig; } });
+    D.teams.forEach((t, i) => (t.color = L.teams[i].color));
+    D.season = D0.season; if (D0.scoringSpec) D.scoringSpec = D0.scoringSpec;
+    D.year = (D0.year || 1) + 1;
+    D.rookie = true;
     return D;
   }
   // A finished season in a few lines, for the league's history.

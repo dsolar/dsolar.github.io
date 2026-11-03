@@ -378,41 +378,46 @@
      A roster item with pick: true is a draft pick ({ id, n, sub, price }) and renders as one. */
   function tradeWindow(opts) {
     const pf = opts.prefill || {};
-    const st = { other: opts.other, give: new Set(pf.give || []), get: new Set(pf.get || []), drops: new Set(), faabGive: pf.faabGive || 0, faabGet: pf.faabGet || 0, note: pf.note || "" };
+    const st = { other: opts.other, give: new Set(pf.give || []), get: new Set(pf.get || []), pgive: new Set(pf.pickGive || []), pget: new Set(pf.pickGet || []), drops: new Set(), faabGive: pf.faabGive || 0, faabGet: pf.faabGet || 0, note: pf.note || "" };
     const sport = opts.sport;
     const me = opts.teams.find((t) => t.id === opts.me);
-    const trade = () => ({ from: opts.me, to: st.other, give: [...st.give], get: [...st.get], faabGive: st.faabGive, faabGet: st.faabGet, dropsFrom: [...st.drops], note: st.note, counterOf: pf.counterOf || null });
+    const trade = () => ({ from: opts.me, to: st.other, give: [...st.give], get: [...st.get], pickGive: [...st.pgive], pickGet: [...st.pget], faabGive: st.faabGive, faabGet: st.faabGet, dropsFrom: [...st.drops], note: st.note, counterOf: pf.counterOf || null });
     const D = dialog(`<div class="tw"></div>`, null, { full: true, dark: opts.dark });
     const draw = (focus) => {
       const other = opts.teams.find((t) => t.id === st.other);
       const mine = opts.roster(opts.me), theirs = opts.roster(st.other);
       const byId = Object.fromEntries(mine.concat(theirs).map((p) => [p.id, p]));
-      const [vg, vr] = opts.values ? opts.values(trade()) : [opts.value([...st.give].map((id) => byId[id]).filter(Boolean), st.faabGive), opts.value([...st.get].map((id) => byId[id]).filter(Boolean), st.faabGet)];
+      // next season's draft picks (a dynasty), listed under each roster: { id, n, sub, $, pick: true }
+      const myPicks = opts.picks ? opts.picks(opts.me) : [], theirPicks = opts.picks ? opts.picks(st.other) : [];
+      const pv = (list, set) => list.filter((k) => set.has(k.id)).reduce((a, k) => a + (k.$ || 0), 0);
+      let [vg, vr] = opts.values ? opts.values(trade()) : [opts.value([...st.give].map((id) => byId[id]).filter(Boolean), st.faabGive), opts.value([...st.get].map((id) => byId[id]).filter(Boolean), st.faabGet)];
+      vg += pv(myPicks, st.pgive); vr += pv(theirPicks, st.pget);
       const need = opts.roomFor ? opts.roomFor(trade()) : 0;
       for (const id of [...st.drops]) if (st.give.has(id)) st.drops.delete(id);
       const tot = vg + vr || 1, swing = (vr - vg) / tot;
       const vl = opts.valueLabel || money;
-      const picked = st.give.size || st.get.size;
+      const picked = st.give.size || st.get.size || st.pgive.size || st.pget.size;
       const verdict = !picked ? (opts.empty || "Pick players on either side") : Math.abs(swing) < 0.08 ? "About even" : swing > 0 ? (swing > 0.35 ? "Lopsided your way" : "Leans your way") : swing < -0.35 ? "Lopsided their way" : "Leans their way";
       const list = (ps, set, kind) => ps.map((p) => `<label class="${set.has(p.id) ? "on" : ""}${kind === "drop" ? " drop" : ""}"><input type="checkbox" data-tw="${kind}" value="${esc(p.id)}"${set.has(p.id) ? " checked" : ""}>${pname(sport, p)}<span class="dollar">${p.price != null ? esc(p.price) : p.$ ? money(p.$) : ""}</span></label>`).join("");
+      const pickList = (ps, set, kind) => (ps.length ? `<div class="sec">Next season's picks</div>${list(ps, set, kind)}` : "");
       const dropList = need > 0 ? `<div class="sec">Drop ${need} to make room</div>${list(mine.filter((p) => !st.give.has(p.id)), st.drops, "drop")}` : "";
       let chk = opts.check ? opts.check(trade()) : { ok: true };
       const same = (a, b) => a.length === b.length && a.every((x) => b.includes(x));
-      if (pf.counterOf && same([...st.give], pf.give || []) && same([...st.get], pf.get || []) && st.faabGive === (pf.faabGive || 0) && st.faabGet === (pf.faabGet || 0)) chk = { ok: false, why: "Change something to counter, or accept their offer as it is" };
+      if (pf.counterOf && same([...st.give], pf.give || []) && same([...st.get], pf.get || []) && same([...st.pgive], pf.pickGive || []) && same([...st.pget], pf.pickGet || []) && st.faabGive === (pf.faabGive || 0) && st.faabGet === (pf.faabGet || 0)) chk = { ok: false, why: "Change something to counter, or accept their offer as it is" };
       const ready = chk.ok && picked && st.drops.size >= need;
       const scroll = $$(".tw-list", D).map((x) => x.scrollTop);
       $(".tw", D).innerHTML = `
         <div class="tw-h"><h3>${esc(opts.title || "Propose a trade")}</h3><label class="sr" for="tw-team">Trade with</label><select id="tw-team">${opts.teams.filter((t) => t.id !== opts.me).map((t) => `<option value="${t.id}"${t.id === st.other ? " selected" : ""}>${esc(t.name)}</option>`).join("")}</select></div>
         <div class="tw-b">
-          <div class="tw-col"><div class="hd">${teamAv(me, "sm")}<b>You send</b><span class="ps">${st.give.size} selected</span></div><div class="tw-list">${list(mine, st.give, "give")}${dropList}</div></div>
-          <div class="tw-col"><div class="hd">${teamAv(other, "sm")}<b>${esc(other.name)} sends</b><span class="ps">${st.get.size} selected</span></div><div class="tw-list">${list(theirs, st.get, "get")}</div></div>
+          <div class="tw-col"><div class="hd">${teamAv(me, "sm")}<b>You send</b><span class="ps">${st.give.size + st.pgive.size} selected</span></div><div class="tw-list">${list(mine, st.give, "give")}${pickList(myPicks, st.pgive, "pgive")}${dropList}</div></div>
+          <div class="tw-col"><div class="hd">${teamAv(other, "sm")}<b>${esc(other.name)} sends</b><span class="ps">${st.get.size + st.pget.size} selected</span></div><div class="tw-list">${list(theirs, st.get, "get")}${pickList(theirPicks, st.pget, "pget")}</div></div>
         </div>
         <div class="tw-f">
           <div class="meter"><div class="meter-l"><span>You send ${vl(vg)}</span><span>${esc(verdict)}</span><span>You get ${vl(vr)}</span></div>
             <div class="meter-bar"><i style="${swing >= 0 ? `left:50%;width:${Math.min(50, swing * 50)}%;background:var(--win)` : `right:50%;width:${Math.min(50, -swing * 50)}%;background:var(--loss)`}"></i></div></div>
           ${opts.faab ? `<div class="row"><label class="check">FAAB you send <input type="number" min="0" max="${opts.faab(opts.me)}" data-tw="faabGive" value="${st.faabGive}"></label><label class="check">FAAB you get <input type="number" min="0" max="${opts.faab(st.other)}" data-tw="faabGet" value="${st.faabGet}"></label><span class="ps">You have $${opts.faab(opts.me)}, they have $${opts.faab(st.other)}</span></div>` : ""}
           <div class="row"><label class="sr" for="tw-note">Note</label><input type="text" id="tw-note" data-tw="note" maxlength="140" placeholder="Add a note (optional)" value="${esc(st.note)}" style="flex:1;min-width:160px"><button type="button" class="btn" data-tw-cancel>Cancel</button><button type="button" class="btn go" data-tw-send${ready ? "" : " disabled"}>Send offer</button></div>
-          ${picked && !chk.ok ? `<span class="why">${esc(chk.why)}</span>` : picked && need > st.drops.size ? `<span class="why">Pick ${need - st.drops.size} more to drop.</span>` : picked && chk.note ? `<span class="ps ok">${esc(chk.note)}</span>` : ""}
+          ${picked && need > st.drops.size ? `<span class="why">Pick ${need - st.drops.size} more to drop, under your roster.</span>` : picked && !chk.ok ? `<span class="why">${esc(chk.why)}</span>` : picked && chk.note ? `<span class="ps ok">${esc(chk.note)}</span>` : ""}
         </div>`;
       $$(".tw-list", D).forEach((x, i) => (x.scrollTop = scroll[i] || 0));
       if (focus) { const f = $(`[data-tw=${focus}]`, D); if (f) { f.focus(); try { f.select(); } catch (e) { /* number */ } } }
@@ -424,8 +429,8 @@
     };
     D.onchange = (e) => {
       const k = e.target.dataset.tw;
-      if (e.target.id === "tw-team") { st.other = +e.target.value; st.get.clear(); st.faabGet = 0; draw(); return; }
-      const set = k === "give" ? st.give : k === "get" ? st.get : k === "drop" ? st.drops : null;
+      if (e.target.id === "tw-team") { st.other = +e.target.value; st.get.clear(); st.pget.clear(); st.faabGet = 0; draw(); return; }
+      const set = k === "give" ? st.give : k === "get" ? st.get : k === "pgive" ? st.pgive : k === "pget" ? st.pget : k === "drop" ? st.drops : null;
       if (!set) return;
       if (e.target.checked) set.add(e.target.value); else set.delete(e.target.value);
       draw();

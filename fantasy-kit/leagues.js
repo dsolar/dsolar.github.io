@@ -14,7 +14,7 @@
   let sent = null, busy = false, view = "list";
   const form = { sport: "nfl", teams: 10, type: "snake", clock: 90, season: "h2h", weeks: 14, trades: 1, scoring: "",
     lineup: "", bench: null, playoffs: 4, deadline: null, review: "vote", faab: null, waiverHours: 36,
-    weights: null, cats: null, waivers: "faab", ir: 1, maxAdds: 0, posMax: {}, keepers: 0, keeperCost: "round", legs: "1", cons: "none" };
+    weights: null, cats: null, waivers: "faab", ir: 1, maxAdds: 0, posMax: {}, keepers: 0, keeperCost: "round", legs: "1", cons: "none", median: 0, bestball: 0, divs: 0, rookie: 3, fpicks: 1 };
   // scoring: a preset key, or "cp" (custom points) / "cc" (custom categories)
   const isCustom = () => form.scoring === "cp" || form.scoring === "cc";
   const scoringType = (sp) => (form.scoring === "cp" ? "points" : form.scoring === "cc" ? "cats" : (sp.scorings[form.scoring] || Object.values(sp.scorings)[0]).type);
@@ -121,6 +121,7 @@
           <div class="field"><label for="n-type">Draft</label><select id="n-type" data-f="type">${Object.entries(F.FORMATS).map(([k, l]) => opt(k, l, form.type)).join("")}</select></div>
           <div class="field"><label for="n-clock">${auction ? "Bid clock" : "Pick clock"}</label><select id="n-clock" data-f="clock">${clocks.map(([v, l]) => opt(v, l, form.clock)).join("")}</select></div>
         </div>
+        ${!auction && form.type !== "mystery" && form.type !== "elephant" ? `<div class="row3"><div class="field"><label for="n-trades">Trades during the draft</label><select id="n-trades" data-f="trades">${opt(1, "Picks and players", form.trades)}${opt(0, "Off", form.trades)}</select></div></div>` : ""}
         <div class="row3">
           <div class="field"><label for="n-scoring">Scoring</label><select id="n-scoring" data-f="scoring">${Object.entries(sp.scorings).map(([k, s]) => opt(k, s.label.replace(/ \(.*\)$/, ""), scoring)).join("")}${opt("cp", "Custom points", scoring)}${sp.key !== "nfl" ? opt("cc", "Custom categories", scoring) : ""}</select></div>
           <div class="field"><label for="n-season">Season</label><select id="n-season" data-f="season">${seasons.map(([k, l]) => opt(k, l, form.season)).join("")}</select></div>
@@ -129,7 +130,6 @@
         </div>
         ${scoringEditor(sp)}
         ${rulesFields(sp)}
-        ${!auction && form.type !== "mystery" && form.type !== "elephant" ? `<div class="row3"><div class="field"><label for="n-trades">Trades during the draft</label><select id="n-trades" data-f="trades">${opt(1, "Picks and players", form.trades)}${opt(0, "Off", form.trades)}</select></div></div>` : ""}
         <p class="ps" style="margin:0">Teams nobody has claimed draft on their own. Anyone with the invite link can take one over, even after the draft. ${form.clock >= 3600 ? "In a slow draft, managers who turn on email alerts get one when they're on the clock." : "If someone's clock runs out, the best player left is taken for them."}</p>
         <p class="ps" id="n-why" role="alert" style="margin:0;color:var(--loss)"></p>
         <div class="row"><button class="btn go" type="submit"${busy ? " disabled" : ""}>${busy ? "Making the league…" : "Make the league"}</button><button class="btn ghost" type="button" data-a="list">Cancel</button></div>
@@ -157,6 +157,7 @@
     const bench = form.bench == null ? sp.bench : form.bench, faab = form.faab == null ? (gl ? 1000 : 100) : form.faab;
     const po = Math.min(form.playoffs, n), dl = form.deadline == null ? Math.max(1, form.weeks - 3) : form.deadline;
     return `<fieldset class="rules"><legend>Starting lineup</legend>${U.lineupBuilder(sp, lineupOf(sp))}</fieldset>
+      <h3 class="fsec">Rosters and waivers</h3>
       <div class="row3">
         <div class="field"><label for="n-bench">Bench spots</label><select id="n-bench" data-f="bench">${[2, 3, 4, 5, 6, 7, 8, 10].map((x) => opt(x, x, bench)).join("")}</select></div>
         ${gl || form.waivers === "faab" ? `<div class="field"><label for="n-faab">FAAB budget</label><select id="n-faab" data-f="faab">${[100, 200, 500, 1000].map((x) => opt(x, `$${x}${gl ? " for the season" : ""}`, faab)).join("")}</select></div>` : `<div class="field"><label>FAAB budget</label><p class="ps" style="margin:6px 0 0">None: claims go by waiver priority</p></div>`}
@@ -168,13 +169,13 @@
         <div class="field"><label for="n-ir">IR spots</label><select id="n-ir" data-f="ir">${[0, 1, 2, 3, 4].map((x) => opt(x, x ? x : "None", form.ir)).join("")}</select></div>
         <div class="field"><label for="n-ma">Pickups a week</label><select id="n-ma" data-f="maxAdds">${[0, 1, 2, 3, 4, 5, 7, 10].map((x) => opt(x, x ? `Up to ${x}` : "No limit", form.maxAdds)).join("")}</select></div>
       </div>
-      <div class="row3">
-        <div class="field"><label for="n-kp">Keepers</label><select id="n-kp" data-f="keepers">${[0, 1, 2, 3, 4, 5, 6, 8].map((x) => opt(x, x ? `Keep up to ${x}` : "None: redraft every year", form.keepers)).join("")}</select></div>
-        ${form.keepers ? `<div class="field"><label for="n-kc">A keeper costs</label><select id="n-kc" data-f="keeperCost">${(form.type === "auction" ? [["price", "What he went for"], ["price5", "What he went for, plus $5"]] : [["round", "The round he went in"], ["round1", "One round earlier"], ["free", "A last-round pick"]]).map(([v, l]) => opt(v, l, kc())).join("")}</select></div>
-        <div class="field"><label>Next season</label><p class="ps" style="margin:6px 0 0">Worst team picks first. Pickups cost ${form.type === "auction" ? "$5" : "the last round"}.</p></div>` : ""}
-      </div>
       <details class="rules-more"${Object.values(form.posMax).some(Boolean) ? " open" : ""}><summary>Position limits</summary><div class="pml">${(POS_MAIN[sp.key] || []).map((ps) => `<label class="wt"><span>${esc(ps)}</span><select data-pm="${esc(ps)}" aria-label="Most ${esc(ps)} on a roster">${opt(0, "Any", form.posMax[ps] || 0)}${[1, 2, 3, 4, 5, 6, 8].map((x) => opt(x, `Up to ${x}`, form.posMax[ps] || 0)).join("")}</select></label>`).join("")}</div></details>
-      ${!h2hLike() ? (form.season === "roto" ? `<div class="row3">${dealRules()}</div>` : "") : `<div class="row3">
+      ${form.season === "guillotine" ? "" : `<h3 class="fsec">Weekly format</h3><div class="row3">
+        <div class="field"><label for="n-bb">Lineups</label><select id="n-bb" data-f="bestball">${opt(0, "Set each week", form.bestball)}${opt(1, "Best ball: set for you", form.bestball)}</select></div>
+        ${form.season === "h2h" ? `<div class="field"><label for="n-md">Median game</label><select id="n-md" data-f="median">${opt(0, "Off", form.median)}${opt(1, "On: also play the league median", form.median)}</select></div>` : ""}
+        ${form.season !== "roto" && n >= 4 ? `<div class="field"><label for="n-dv">Divisions</label><select id="n-dv" data-f="divs">${[0, 2, 3, 4].filter((k) => !k || n >= 2 * k).map((k) => opt(k, k ? `${k} divisions` : "None", form.divs)).join("")}</select></div>` : ""}
+      </div>`}
+      ${!h2hLike() ? (form.season === "roto" ? `<h3 class="fsec">Trades</h3><div class="row3">${dealRules()}</div>` : "") : `<h3 class="fsec">Playoffs and trades</h3><div class="row3">
         <div class="field"><label for="n-po">Playoff teams</label><select id="n-po" data-f="playoffs">${[0, 2, 3, 4, 6, 8, 10, 12].filter((x) => x <= n).map((x) => { const b = 2 ** Math.ceil(Math.log2(Math.max(2, x))) - x; return opt(x, x ? `${x} teams${b ? `, top ${b} get a bye` : ""}` : "No playoffs", po); }).join("")}</select></div>
         ${dealRules()}
       </div>
@@ -182,7 +183,14 @@
         <div class="field"><label for="n-lg">Playoff rounds</label><select id="n-lg" data-f="legs">${opt("1", "One week each", form.legs)}${opt("final2", "Two-week final", form.legs)}${opt("all2", "Two weeks each", form.legs)}</select></div>
         <div class="field"><label for="n-cs">Also play</label><select id="n-cs" data-f="cons">${opt("none", "Nothing else", form.cons)}${po >= 3 ? opt("third", "A third-place game", form.cons) : ""}${n - po >= 2 ? opt("bracket", "A consolation bracket", form.cons) : ""}</select></div>
         <div class="field"><label>Playoff weeks</label><p class="ps" style="margin:6px 0 0">${playoffWeeks(po)} after week ${form.weeks}, so the season runs ${form.weeks + playoffWeeks(po)} weeks.</p></div>
-      </div>` : ""}`}`;
+      </div>` : ""}`}
+      <h3 class="fsec">Next season</h3>
+      <div class="row3">
+        <div class="field"><label for="n-kp">What carries over</label><select id="n-kp" data-f="keepers">${[0, 1, 2, 3, 4, 5, 6, 8].map((x) => opt(x, x ? `Keep up to ${x}` : "Redraft: nobody carries over", form.keepers)).join("")}${form.season === "guillotine" ? "" : opt(-1, "Dynasty: keep everyone", form.keepers)}</select></div>
+        ${form.keepers === -1 ? `<div class="field"><label for="n-rk">Rookie draft</label><select id="n-rk" data-f="rookie">${[2, 3, 4, 5].map((x) => opt(x, `${x} rounds, worst team first`, form.rookie)).join("")}</select></div>
+        <div class="field"><label for="n-fp">Trade future picks</label><select id="n-fp" data-f="fpicks">${opt(1, "Yes: next season's picks", form.fpicks)}${opt(0, "No", form.fpicks)}</select></div>` : form.keepers > 0 ? `<div class="field"><label for="n-kc">A keeper costs</label><select id="n-kc" data-f="keeperCost">${(form.type === "auction" ? [["price", "What he went for"], ["price5", "What he went for, plus $5"]] : [["round", "The round he went in"], ["round1", "One round earlier"], ["free", "A last-round pick"]]).map(([v, l]) => opt(v, l, kc())).join("")}</select></div>
+        <div class="field"><label>Keeper rules</label><p class="ps" style="margin:6px 0 0">Worst team picks first. Pickups cost ${form.type === "auction" ? "$5" : "the last round"}.</p></div>` : ""}
+      </div>`;
     function dealRules() {
       return `<div class="field"><label for="n-dl">Trade deadline</label><select id="n-dl" data-f="deadline">${opt(0, "None", dl)}${Array.from({ length: form.weeks - 1 }, (_, i) => i + 1).map((x) => opt(x, `After week ${x}`, dl)).join("")}</select></div>
         <div class="field"><label for="n-rv">Trade review</label><select id="n-rv" data-f="review">${opt("vote", "League can veto for 24 hours", form.review)}${opt("none", "None: trades go through", form.review)}</select></div>`;
@@ -196,7 +204,7 @@
     const f = $("#new"); if (!f) return;
     form.name = $("#n-name").value; form.me = $("#n-me").value; form.team = $("#n-team").value;
     const s = f.querySelector("input[name=sport]:checked"); if (s) form.sport = s.value;
-    f.querySelectorAll("[data-f]").forEach((el) => { form[el.dataset.f] = /^(teams|clock|weeks|trades|bench|faab|playoffs|deadline|waiverHours|ir|maxAdds|keepers)$/.test(el.dataset.f) ? Number(el.value) : el.value; });
+    f.querySelectorAll("[data-f]").forEach((el) => { form[el.dataset.f] = /^(teams|clock|weeks|trades|bench|faab|playoffs|deadline|waiverHours|ir|maxAdds|keepers|median|bestball|divs|rookie|fpicks)$/.test(el.dataset.f) ? Number(el.value) : el.value; });
     f.querySelectorAll("[data-w]").forEach((el) => { form.weights = form.weights || {}; form.weights[el.dataset.w] = Number(el.value) || 0; });
     f.querySelectorAll("[data-pm]").forEach((el) => { form.posMax[el.dataset.pm] = Number(el.value) || 0; });
   }
@@ -245,7 +253,11 @@
       D.season = { format: fmt, tally: form.season === "h2hcats" ? "cats" : form.season === "allplay" ? "allplay" : "game", weeks: form.weeks,
         faab: form.faab == null ? (gl ? 1000 : 100) : form.faab, ir: form.ir, maxAdds: form.maxAdds || 0,
         posMax: Object.fromEntries(Object.entries(form.posMax).filter(([, v]) => v)) };
-      if (form.keepers) Object.assign(D.season, { keepers: form.keepers, keeperCost: kc() });
+      if (form.keepers > 0) Object.assign(D.season, { keepers: form.keepers, keeperCost: kc() });
+      if (form.keepers === -1 && !gl) D.season.dynasty = { rounds: form.rookie || 3, picks: form.fpicks !== 0 };
+      if (!gl && form.bestball) D.season.bestBall = true;
+      if (form.season === "h2h" && form.median) D.season.median = true;
+      if (fmt !== "roto" && !gl && form.divs && n >= 2 * form.divs) D.season.divisions = form.divs;
       if (!gl) Object.assign(D.season, { waivers: form.waivers, deadline: form.deadline == null ? Math.max(1, form.weeks - 3) : form.deadline, review: form.review, waiverHours: form.waiverHours,
         playoffTeams: fmt === "roto" ? 0 : Math.min(form.playoffs, n), playoffLegs: form.legs,
         consolation: form.cons === "third" && Math.min(form.playoffs, n) < 3 ? "none" : form.cons === "bracket" && n - Math.min(form.playoffs, n) < 2 ? "none" : form.cons });

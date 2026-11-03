@@ -57,7 +57,7 @@
     const sport = typeof opts.sport === "string" ? S.ALL[opts.sport] : opts.sport;
     const lineup = opts.lineup || sport.lineup;
     const bench = opts.bench == null ? sport.bench : opts.bench;
-    const rounds = lineup.length + bench;
+    const rounds = opts.rounds || lineup.length + bench;
     const seed = opts.seed == null ? Math.floor(Math.random() * 2 ** 31) : opts.seed;
     const list = Array.isArray(opts.teams) ? opts.teams : Array.from({ length: opts.teams || 10 }, () => ({}));
     const n = Math.max(2, Math.min(20, list.length));
@@ -90,6 +90,8 @@
       applyDeal(D, dealPackages(n, rounds, curve, seed, { tolerance: D.mystery.tolerance }));
     }
     for (const k of opts.keepers || []) keep(D, k.team, k.pid, k.round, k.price);
+    // a dynasty's rookie and free agent draft: every team brings its whole roster (D.carry) and adds a few rounds
+    if (opts.carry) D.carry = D.teams.map((t) => (opts.carry[t.id] || []).slice());
     return D;
   }
 
@@ -113,7 +115,7 @@
   /* ---------- who has whom ---------- */
   const made = (D) => (D.type === "auction" ? D.sales.slice() : D.board.filter(Boolean).sort((a, b) => a.at - b.at || a.n - b.n));
   function rosters(D) {
-    const out = D.teams.map(() => []);
+    const out = D.teams.map((t) => (D.carry && D.carry[t.id] ? D.carry[t.id].slice() : []));
     for (const pk of D.type === "auction" ? D.sales : D.board) if (pk && pk.pid && !pk.gone) out[pk.team].push(pk.pid);
     return out;
   }
@@ -146,7 +148,7 @@
     return at;
   }
 
-  const sizeOf = (D) => D.lineup.length + D.bench;
+  const sizeOf = (D) => D.lineup.length + D.bench + (D.carry ? D.rounds : 0);
 
   // Can this team take this player now? Roster room, position limits, every starting slot still fillable, and the
   // league's own rule.

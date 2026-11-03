@@ -571,6 +571,11 @@ dialog.fk-dlg h3{margin:0 0 6px;font-size:22px;padding-right:40px}
 .wkbars rect.hi{fill:var(--accent)}
 .wkbars text{font-size:10px;fill:var(--muted);font-weight:650}
 .wkbars line.avg{stroke:var(--ink);stroke-width:1;stroke-dasharray:3 3;opacity:.55}
+/* median scoring under the matchup */
+.medline{display:flex;flex-wrap:wrap;gap:6px 18px;padding:10px 18px;border-top:1px solid var(--line);font-size:13.5px;color:var(--muted)}
+.medline b{color:var(--ink)}
+/* standings tables line up with each other (two divisions, one above the other) */
+@media (min-width:701px){table.stand th:nth-child(1){width:52px}table.stand th:nth-child(3){width:110px}table.stand th:nth-child(4){width:90px}table.stand th:nth-child(5){width:70px}table.stand th:nth-child(6),table.stand th:nth-child(7){width:110px}table.stand th:nth-child(8){width:80px}table.stand th:nth-child(9){width:120px}}
 /* league chat */
 .chat{list-style:none;margin:0;padding:6px 0}
 .chat>li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;padding:8px 16px}
@@ -608,6 +613,7 @@ dialog.fk-dlg h3{margin:0 0 6px;font-size:22px;padding-right:40px}
 .alerts{display:grid;gap:8px;padding-top:14px}
 .alert{display:flex;align-items:center;gap:10px;background:var(--gold-soft);border:1px solid color-mix(in srgb,var(--gold) 35%,transparent);border-radius:var(--rl);padding:10px 14px;color:var(--ink);text-decoration:none;font-size:14px}
 .alert.info{background:var(--info-soft);border-color:color-mix(in srgb,var(--info) 30%,transparent)}
+.alert.loss{background:var(--loss-soft);border-color:color-mix(in srgb,var(--loss) 30%,transparent)}
 .alert>span:not(.av){flex:1;min-width:0}
 .alert .go{flex:none;font-size:13px;font-weight:800;color:var(--accent);white-space:nowrap}
 .alert.info .go{color:var(--info)}

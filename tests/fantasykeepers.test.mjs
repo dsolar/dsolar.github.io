@@ -123,3 +123,51 @@ test('events: keeper picks open, then the new draft room', () => {
   const ev2 = Z.events({ league: L }, { draft: D2, league: null }, o);
   assert.equal(ev2.filter((e) => /draft room is open/.test(e.subject)).length, 2);
 });
+
+test('dynasty: picks trade like players, rosters carry over, a short rookie draft runs worst to first', () => {
+  const s = finished('nfl', { format: 'h2h', weeks: 3, playoffTeams: 2, dynasty: { rounds: 3, picks: true } });
+  const { L, ctx, sport } = s;
+  assert.deepEqual(L.settings.dynasty, { rounds: 3, picks: true });
+  assert.equal(G.picksOf(L, 0).length, 3);
+  assert.ok(G.pickValue(L, ctx, '1:0') > G.pickValue(L, ctx, '3:0'), 'an earlier round is worth more');
+  // trade team 0's first-round pick for a bench player (rewind the clock so trades are open)
+  const week = L.week; L.week = 2; L.settings.deadline = 0;
+  const want = L.rosters[1].slice().sort((a, b) => ctx.byId[a].$ - ctx.byId[b].$)[0];
+  const drop = L.rosters[0].slice().sort((a, b) => ctx.byId[a].$ - ctx.byId[b].$)[0];
+  const r = G.propose(L, ctx, 0, 1, [], [want], Date.now(), { pickGive: ['1:0'], dropsFrom: [drop] });
+  assert.ok(r.ok, r.why);
+  L.settings.tradeReview = 'none';
+  assert.ok(G.respond(L, ctx, r.trade.id, true, Date.now()).ok);
+  assert.equal(G.pickOwner(L, '1:0'), 1);
+  assert.deepEqual(G.picksOf(L, 0), ['2:0', '3:0']);
+  assert.equal(G.picksOf(L, 1).length, 4);
+  // can't trade a pick you don't hold
+  assert.match(G.tradeCheck(L, ctx, { from: 0, to: 1, give: [], get: [], pickGive: ['1:0'], pickGet: [] }).why, /doesn't have that pick/);
+  L.week = week;
+  // next season: whole rosters carried, three rounds, traded pick in the right hands
+  const D2 = Z.nextDraft(L, ctx, sport, {}, { now: Date.UTC(2027, 7, 1), seed: 0.4 });
+  assert.equal(D2.type, 'linear'); assert.equal(D2.rounds, 3); assert.ok(D2.rookie);
+  assert.deepEqual(F.rosters(D2).map((r) => r.length), L.rosters.map((r) => r.length));
+  const n = L.teams.length, worst = G.standings(L).map((x) => x.team).reverse();
+  const k0 = worst.indexOf(0);
+  assert.equal(D2.order[k0], 1, "team 0's first-round slot now belongs to team 1");
+  assert.equal(D2.via[k0], 0);
+  assert.equal(D2.order[n + k0], 0, 'team 0 still has its second-rounder');
+  // the draft adds three players a team, then week 1 cuts every roster back to size
+  const players = s.players.map((p) => ({ ...p }));
+  let t = Date.UTC(2027, 7, 1); F.start(D2, t);
+  const c2 = F.context(D2, players, sport);
+  for (let i = 0; i < 5000 && D2.phase === 'live'; i++) { t += 3000; F.tick(D2, c2, t); }
+  assert.equal(D2.phase, 'done');
+  const picksBy = (i) => D2.order.filter((x) => x === i).length;
+  assert.equal(picksBy(0), 2); assert.equal(picksBy(1), 4);
+  assert.ok(F.rosters(D2).every((r, i) => r.length === L.rosters[i].length + picksBy(i)));
+  const L2 = Z.begin(D2, sport, { now: t });
+  const ctx2 = G.context(L2, players, sport);
+  assert.ok(L2.settings.dynasty);
+  Z.catchUp(L2, ctx2, t + 1);
+  const max = L2.settings.lineup.length + L2.settings.bench;
+  assert.ok(L2.rosters.every((r, i) => !L2.teams[i].owner ? r.length - (L2.ir[i] || []).length <= max : true), 'bots cut right away');
+  Z.catchUp(L2, ctx2, L2.start + 1);
+  assert.ok(L2.rosters.every((r, i) => r.length - (L2.ir[i] || []).length <= max), 'everyone is at the limit by week 1');
+});

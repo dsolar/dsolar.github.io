@@ -146,3 +146,44 @@ test('trading block: managers list their own players, bots list the bench player
   assert.ok(bot.every((id) => L.rosters[2].includes(id) && !lu.includes(id) && !['K', 'DEF'].includes(ctx.byId[id].pos[0])));
   assert.match(G.blockNote(L, ctx, 2), /^Looking for/);
 });
+
+test('median scoring: every week is two games, one of them against the league median', () => {
+  const s = league('nfl', { format: 'h2h', weeks: 4, playoffTeams: 4, median: true }, 8);
+  const { L } = s;
+  assert.equal(L.settings.median, true);
+  playTo(s, 4);
+  const st = G.standings(L);
+  assert.equal(st.reduce((a, r) => a + r.w + r.l + r.t, 0), 4 * 8 * 2, 'two decisions per team per week');
+  // half the league beats the median each week (no ties in practice)
+  assert.equal(st.reduce((a, r) => a + (r.mw || 0), 0), 4 * 4);
+  const m = G.medianOf(L, s.ctx, 1), sc = L.results[1].flatMap((g) => [g.sa, g.sb]).sort((a, b) => a - b);
+  assert.equal(m, (sc[3] + sc[4]) / 2);
+  // not offered where it doesn't fit
+  const r = league('nfl', { format: 'h2h', tally: 'allplay', weeks: 2, playoffTeams: 0, median: true }, 4);
+  assert.ok(!r.L.settings.median);
+});
+
+test('divisions: division winners take the top seeds', () => {
+  const s = league('nfl', { format: 'h2h', weeks: 4, playoffTeams: 4, divisions: 2 }, 8);
+  const { L } = s;
+  assert.deepEqual(L.divNames, ['East', 'West']);
+  assert.deepEqual(L.divs, [0, 1, 0, 1, 0, 1, 0, 1]);
+  playTo(s, 4);
+  const st = G.standings(L), seeds = G.seedOrder(L);
+  const leader = (k) => st.find((r) => L.divs[r.team] === k).team;
+  assert.deepEqual(seeds.slice(0, 2).sort(), [leader(0), leader(1)].sort());
+  assert.ok(st.filter((r) => r.divLeader).length === 2);
+  assert.equal(st.filter((r) => r.inPlayoffs).length, 4);
+  // the bracket uses those seeds
+  const games = G.playoffGames(L, s.ctx, 5);
+  assert.deepEqual(games.map((g) => [g[0], g[1]]), [[seeds[0], seeds[3]], [seeds[1], seeds[2]]]);
+});
+
+test('best ball works in a head-to-head league too', () => {
+  const s = league('nfl', { format: 'h2h', weeks: 2, playoffTeams: 0, bestBall: true }, 4);
+  const { L, ctx } = s;
+  assert.equal(L.settings.bestBall, true);
+  assert.equal(G.setLineup(L, ctx, 0, L.week, [], Date.now()).ok, false);
+  playTo(s, 2);
+  assert.ok(L.results[1].every((g) => g.sa > 0 && g.sb > 0));
+});

@@ -382,3 +382,5 @@ grant execute on function fk_post(text, text), fk_posts(text, bigint) to anon, a
 -- ---------- Your leagues cards (migration fantasykit_league_cards) ----------
 -- fk_card(l, team) adds to each fk_mine row: your team's name, team and seat counts, the week, your head-to-head
 -- record, whether you're alive in a guillotine league, and the draft's pick count. See the migration for the body.
+-- fantasykit_league_cards_median: fk_card's record also counts each week's game against the league median when
+-- settings.median is on.

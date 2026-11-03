@@ -288,7 +288,7 @@
     const doc = L, picks = (L.next && L.next.picks) || {};
     const rows = doc.teams.map((t) => `<li>${U.teamAv(t, "sm")}<span class="grow"><b>${esc(t.name)}</b><small>${info.seats[t.id] != null ? (picks[t.id] ? `Keeping ${picks[t.id].length}` : "Hasn't picked yet: keeps the best values") : "Bot: keeps its best values"}</small></span></li>`).join("");
     return `<div class="card"><div class="mod-h"><h2>Next season</h2></div><div class="bd stack">
-      <p class="small" style="margin:0">${k ? "Keeper picks are open." : "The season is over."} Starting next season saves this one to the league's history and opens a new draft room${k ? " with the keepers on the board" : ""}, worst team picking first.</p>
+      <p class="small" style="margin:0">${L.settings.dynasty ? `The season is over. Starting next season saves this one to the league's history. Every roster carries over, and a ${L.settings.dynasty.rounds}-round rookie and free agent draft opens, worst team first${G.pickRounds(L) ? ", with traded picks going to the teams that hold them" : ""}.` : `${k ? "Keeper picks are open." : "The season is over."} Starting next season saves this one to the league's history and opens a new draft room${k ? " with the keepers on the board" : ""}, worst team picking first.`}</p>
       ${k ? `<ul class="seatl">${rows}</ul>` : ""}<div><button class="btn go" data-live="new-season">Start next season's draft</button></div></div></div>`;
   }
   async function newSeason() {

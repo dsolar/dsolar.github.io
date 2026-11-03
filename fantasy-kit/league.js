@@ -62,10 +62,17 @@
       tx: [], trades: [], claims: [], waivers: {}, watch: {}, draft: D || null, nextId: 1,
       alive: teams.map((t) => t.id), chopped: [], waiverRuns: {},
     };
+    // divisions: teams split evenly, in team order (0, 1, 2 in divisions A, B, C, then around again)
+    if (!guillotine && s.format !== "roto" && s.divisions >= 2 && n >= 2 * s.divisions) {
+      L.divs = teams.map((t) => t.id % s.divisions);
+      L.divNames = (s.divNames || DIV_NAMES[s.divisions] || []).slice(0, s.divisions);
+    } else s.divisions = 0;
+    if (s.median && (guillotine || s.format === "roto" || s.tally === "allplay" || s.tally === "cats")) s.median = false;
     if (D) log(L, D.done || L.created, { type: "draft", team: -1, text: `Draft complete: ${F.made(D).length} picks` });
     return L;
   }
 
+  const DIV_NAMES = { 2: ["East", "West"], 3: ["North", "South", "West"], 4: ["North", "South", "East", "West"] };
   // Everyone plays everyone, then repeats: the circle method.
   function roundRobin(n, weeks, r) {
     const ids = [...Array(n).keys()];
@@ -461,6 +468,12 @@
           if (g.w === "a") { A.w++; B.l++; } else if (g.w === "b") { B.w++; A.l++; } else { A.t++; B.t++; }
         }
       }
+      // median scoring: a second game each week against the league's median score
+      if (L.settings.median && tally !== "allplay" && res.length) {
+        const sc = res.flatMap((g) => [[g.a, g.sa], [g.b, g.sb]]), xs = sc.map((x) => x[1]).sort((a, b) => a - b);
+        const m = xs.length % 2 ? xs[(xs.length - 1) / 2] : (xs[xs.length / 2 - 1] + xs[xs.length / 2]) / 2;
+        for (const [t, x] of sc) { const r = rows[t]; if (x > m) { r.w++; r.mw = (r.mw || 0) + 1; } else if (x < m) { r.l++; r.ml = (r.ml || 0) + 1; } else { r.t++; r.mt = (r.mt || 0) + 1; } }
+      }
       // all-play: every team's score against every other team's that week
       if (tally === "allplay") {
         const sc = res.flatMap((g) => [[g.a, g.sa], [g.b, g.sb]]);
@@ -477,6 +490,11 @@
     const sorted = rows.slice().sort((a, b) => b.pct - a.pct || b.pf - a.pf || a.team - b.team);
     const lead = sorted[0];
     sorted.forEach((r, i) => { r.rank = i + 1; r.gb = ((lead.w - r.w) + (r.l - lead.l)) / 2; r.inPlayoffs = i < L.settings.playoffTeams; });
+    // divisions: each division's leader, then everyone else, decides the playoff seeds
+    if (L.divs) {
+      const seeds = seedOrder(L, sorted);
+      sorted.forEach((r) => { r.div = L.divs[r.team]; const k = seeds.indexOf(r.team); r.seed = k >= 0 && k < L.settings.playoffTeams ? k + 1 : null; r.inPlayoffs = r.seed != null; r.divLeader = sorted.find((x) => L.divs[x.team] === r.div) === r; });
+    }
     return sorted;
   }
   // Rotisserie standings: each category's season total ranked across the league (n points for the best, 1 for the
@@ -540,6 +558,23 @@
     out.forEach((r, i) => { r.rank = i + 1; r.inPlayoffs = r.alive; });
     return out;
   }
+  // Playoff seeding: with divisions, every division winner is seeded ahead of the wild cards (as long as the field
+  // has room for all of them), best record first within each group. Without divisions it's the standings.
+  function seedOrder(L, st) {
+    st = st || standings(L);
+    const order = st.map((r) => r.team);
+    if (!L.divs || L.settings.playoffTeams < L.settings.divisions) return order;
+    const leaders = [];
+    for (const t of order) if (!leaders.some((x) => L.divs[x] === L.divs[t])) leaders.push(t);
+    return leaders.concat(order.filter((t) => !leaders.includes(t)));
+  }
+  // The league median for a finished or live week (points of every team that played), or null.
+  function medianOf(L, ctx, w, frac = 1) {
+    if (!L.settings.median) return null;
+    const xs = matchups(L, ctx, w, frac).flatMap((g) => [g.sa, g.sb]).filter((x) => x != null).sort((a, b) => a - b);
+    if (!xs.length) return null;
+    return xs.length % 2 ? xs[(xs.length - 1) / 2] : (xs[xs.length / 2 - 1] + xs[xs.length / 2]) / 2;
+  }
   /* Playoffs. settings.playoffTeams can be any number from 2 up: when it isn't a power of two the top seeds get
      byes. settings.playoffLegs: "1" (a week a round), "final2" (a two-week final), "all2" (every round two weeks,
      scores added up). settings.consolation: "none", "third" (the semifinal losers play for third) or "bracket" (the
@@ -582,10 +617,10 @@
   function postseason(L) {
     const plan = playoffPlan(L), R = plan.length, s = L.settings;
     if (!R) return [];
-    const st = standings(L), seeds = st.slice(0, s.playoffTeams).map((r) => r.team);
-    const cons = s.consolation === "bracket" ? st.slice(s.playoffTeams, s.playoffTeams + 2 ** R).map((r) => r.team) : [];
+    const st = standings(L), seeds = seedOrder(L, st).slice(0, s.playoffTeams);
+    const cons = s.consolation === "bracket" ? st.map((r) => r.team).filter((t) => !seeds.includes(t)).slice(0, 2 ** R) : [];
     const consR = cons.length >= 2 ? Math.ceil(Math.log2(cons.length)) : 0;
-    const seedOf = (t) => st.findIndex((r) => r.team === t);
+    const seedOf = (t) => { const k = seeds.indexOf(t); return k >= 0 ? k : st.findIndex((r) => r.team === t); };
     let main = seeds, low = cons, semiLosers = [];
     const out = [];
     for (const rd of plan) {
@@ -651,6 +686,22 @@
     }
     return out;
   }
+  // A dynasty's new season: after the rookie draft rosters run long, and every team cuts down before week 1. Bots
+  // cut right away; a manager who hasn't by the time week 1 starts loses his lowest-valued bench players.
+  const overLimit = (L, team) => Math.max(0, L.rosters[team].length - (L.ir[team] || []).length - maxRoster(L));
+  function cutDown(L, ctx, now, all) {
+    let n = 0;
+    for (const t of L.teams) {
+      if (!all && t.owner) continue;
+      let k = overLimit(L, t.id);
+      if (!k) continue;
+      const lu = lineupFor(L, ctx, t.id, L.week), ir = L.ir[t.id] || [];
+      const cut = L.rosters[t.id].filter((id) => !lu.includes(id) && !ir.includes(id)).map((id) => ctx.byId[id]).filter(Boolean).sort((a, b) => (a.vor || 0) - (b.vor || 0));
+      for (const p of cut.slice(0, k)) { const r = addDrop(L, ctx, t.id, null, p.id, now); if (r.ok) n++; }
+    }
+    return n;
+  }
+
   /* ---------- the trading block ---------- */
   // Players a team says it would move. A manager lists his own (L.block). A bot lists the bench players it can
   // spare most: its best two off the bench, leaving kickers and defenses out.
@@ -714,7 +765,8 @@
     const pm = L.settings.posMax || {}, ap = add && ctx.byId[add] ? S.positions(ctx.byId[add])[0] : null;
     if (ap && pm[ap] && ros.filter((id) => ctx.byId[id] && S.positions(ctx.byId[id])[0] === ap).length >= pm[ap]) return { ok: false, why: `A roster can have at most ${pm[ap]} ${ap}` };
     const irKept = (L.ir[teamId] || []).filter((x) => !(drops || []).includes(x)).length;
-    if (ros.length + (add ? 1 : 0) > maxRoster(L) + irKept) return { ok: false, why: "Roster is full: pick someone to drop" };
+    // a drop on its own always goes through (a dynasty roster cutting down can be over the limit)
+    if (add && ros.length + 1 > maxRoster(L) + irKept) return { ok: false, why: ros.length > maxRoster(L) + irKept ? `Roster is over the limit: drop ${ros.length - maxRoster(L) - irKept + 1} first` : "Roster is full: pick someone to drop" };
     if (ctx.hooks.check) { const c = ctx.hooks.check(L, teamId, add ? ctx.byId[add] : null, drops, ctx); if (c && !c.ok) return c; }
     return { ok: true };
   }
@@ -825,13 +877,38 @@
 
   /* ---------- trades ---------- */
   // Trade value: auction dollars (at least $1 a player) plus FAAB at a tenth of a dollar per dollar.
+  /* ---------- dynasty: next season's draft picks, traded like players ---------- */
+  // settings.dynasty = { rounds, picks }: every roster carries over, next season opens with a rounds-long rookie and
+  // free agent draft, and when picks is on those picks can be traded. A pick is "round:team", the team it started
+  // with; L.picks maps a traded pick to the team that holds it now.
+  const pickRounds = (L) => (L.settings.dynasty && L.settings.dynasty.picks !== false ? L.settings.dynasty.rounds || 3 : 0);
+  const pickOwner = (L, key) => { const o = L.picks && L.picks[key]; return o != null ? o : +key.split(":")[1]; };
+  function picksOf(L, team) {
+    const out = [], R = pickRounds(L);
+    for (let r = 1; r <= R; r++) for (const t of L.teams) { const k = `${r}:${t.id}`; if (pickOwner(L, k) === team) out.push(k); }
+    return out;
+  }
+  const pickLabel = (L, key) => { const [r, t] = key.split(":").map(Number); return `${ordinal(r)}-round pick${pickOwner(L, key) !== t ? `, from ${L.teams[t].name}` : ""}`; };
+  // What a pick is worth: the free agent who'd go about there, by where its team sits in the standings now (worst
+  // picks first), plus a little for the upside of a rookie.
+  function pickValue(L, ctx, key) {
+    const [r, t] = key.split(":").map(Number), n = L.teams.length;
+    const order = standings(L).map((x) => x.team).reverse(), slot = (r - 1) * n + Math.max(0, order.indexOf(t));
+    const pool = ctx.free.slice().sort((a, b) => (b.$ || 0) - (a.$ || 0));
+    return Math.max(2, ((pool[slot] && pool[slot].$) || 1) * 1.3 + (pickRounds(L) - r + 1) * 2);
+  }
+  const ordinal = (k) => k + (k % 100 >= 11 && k % 100 <= 13 ? "th" : { 1: "st", 2: "nd", 3: "rd" }[k % 10] || "th");
   const pValue = (ctx, id) => Math.max(1, (ctx.byId[id] && ctx.byId[id].$) || 0) + Math.max(0, (ctx.byId[id] && ctx.byId[id].vor) || 0) * 0.01;
   const sideValue = (ctx, ids, faab = 0) => sum(ids.map((id) => pValue(ctx, id))) + faab * 0.1;
   function tradeCheck(L, ctx, t) {
     if (L.settings.trades === false) return { ok: false, why: "This league has no trades" };
     if (!isAlive(L, t.from) || !isAlive(L, t.to)) return { ok: false, why: "That team has been chopped" };
     if (t.from === t.to) return { ok: false, why: "Pick another team" };
-    if (!t.give.length && !t.get.length) return { ok: false, why: "Add at least one player" };
+    const pg = t.pickGive || [], pr = t.pickGet || [];
+    if (!t.give.length && !t.get.length && !pg.length && !pr.length) return { ok: false, why: "Add at least one player" };
+    for (const k of pg) if (pickOwner(L, k) !== t.from) return { ok: false, why: `${L.teams[t.from].name} doesn't have that pick` };
+    for (const k of pr) if (pickOwner(L, k) !== t.to) return { ok: false, why: `${L.teams[t.to].name} doesn't have that pick` };
+    if ((pg.length || pr.length) && !pickRounds(L)) return { ok: false, why: "This league doesn't trade draft picks" };
     if (L.settings.deadline && L.week > L.settings.deadline) return { ok: false, why: `The trade deadline was week ${L.settings.deadline}` };
     if (L.week > totalWeeks(L)) return { ok: false, why: "The season is over" };
     const busy = new Set(L.trades.filter((x) => x.status === "review" && x.id !== t.id).flatMap((x) => x.give.concat(x.get)));
@@ -847,7 +924,7 @@
     return { ok: true };
   }
   function propose(L, ctx, from, to, give, get, now, extra = {}) {
-    const t = { id: L.nextId++, from, to, give: give.slice(), get: get.slice(), faabGive: extra.faabGive || 0, faabGet: extra.faabGet || 0, dropsFrom: extra.dropsFrom || [], dropsTo: [], note: extra.note || "", at: now, status: "pending", counterOf: extra.counterOf || null };
+    const t = { id: L.nextId++, from, to, give: give.slice(), get: get.slice(), pickGive: (extra.pickGive || []).slice(), pickGet: (extra.pickGet || []).slice(), faabGive: extra.faabGive || 0, faabGet: extra.faabGet || 0, dropsFrom: extra.dropsFrom || [], dropsTo: [], note: extra.note || "", at: now, status: "pending", counterOf: extra.counterOf || null };
     const c = tradeCheck(L, ctx, t);
     if (!c.ok) return c;
     if (t.counterOf) { const o = L.trades.find((x) => x.id === t.counterOf); if (o && o.status === "pending") { o.status = "countered"; o.done = now; } }
@@ -898,14 +975,21 @@
     for (const id of t.give) joined(L, t.to, id, now);
     L.teams[t.from].faab += (t.faabGet || 0) - (t.faabGive || 0);
     L.teams[t.to].faab += (t.faabGive || 0) - (t.faabGet || 0);
+    if ((t.pickGive || []).length || (t.pickGet || []).length) {
+      L.picks = L.picks || {};
+      for (const k of t.pickGive || []) L.picks[k] = t.to;
+      for (const k of t.pickGet || []) L.picks[k] = t.from;
+    }
     t.status = "accepted"; t.done = now;
-    log(L, now, { type: "trade", team: t.from, other: t.to, adds: t.get, drops: t.give, trade: t.id, faab: (t.faabGive || t.faabGet) ? [t.faabGive || 0, t.faabGet || 0] : null });
+    log(L, now, { type: "trade", team: t.from, other: t.to, adds: t.get, drops: t.give, trade: t.id, faab: (t.faabGive || t.faabGet) ? [t.faabGive || 0, t.faabGet || 0] : null,
+      picks: (t.pickGive || []).length || (t.pickGet || []).length ? [t.pickGet || [], t.pickGive || []] : null });
     refresh(L, ctx);
     return { ok: true };
   }
   // A bot takes a deal that leaves it ahead on value.
   function botAnswer(L, ctx, t) {
-    const gets = sideValue(ctx, t.give, t.faabGive), gives = sideValue(ctx, t.get, t.faabGet);
+    const pv = (ks) => sum((ks || []).map((k) => pickValue(L, ctx, k)));
+    const gets = sideValue(ctx, t.give, t.faabGive) + pv(t.pickGive), gives = sideValue(ctx, t.get, t.faabGet) + pv(t.pickGet);
     if (gets >= gives * 1.06 + 1) return { accept: true };
     return { accept: false, why: gives > gets * 1.5 ? "Not even close." : "Close, but not enough coming back." };
   }
@@ -1028,7 +1112,7 @@
   }
 
   return { DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
-    finishWeek, formOf, hot, standings, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, blockOf, setBlock, blockNote, power, onWaivers, canRoster, addDrop, claim, cancelClaim, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
+    finishWeek, formOf, hot, standings, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
 });
