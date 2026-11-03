@@ -662,10 +662,32 @@
       return `<div class="table-wrap" id="fk-picks" style="flex:1;min-height:0">${list.length ? `<ol class="picks">${list.map((pk) => { const t = team(pk.team), p = ctx.byId[pk.pid];
         return `<li class="${isMe(t) ? "me" : ""}"><span class="no">${auction() ? money(pk.price) : plab(pk.n - 1)}</span><span ${p ? `data-player="${esc(p.id)}"` : ""} style="cursor:pointer;min-width:0">${p ? pname(sport, p, [pk.keeper ? "keeper" : pk.auto ? "autopick" : "", pk.drafter != null && pk.drafter !== pk.team ? `traded from ${team(pk.drafter).abbr}` : "", pk.steal ? `stole him from ${team(pk.from).abbr}` : "", pk.gone ? "later stolen" : ""].filter(Boolean).join(", ")) : "<b>Passed</b>"}</span><span class="row">${teamAv(t, "sm")}<span class="ps hide-s">${esc(t.name)}</span></span></li>`; }).join("")}</ol>` : `<p class="empty">No ${auction() ? "sales" : "picks"} yet.</p>`}</div>`;
     }
+    // The recap above the team cards: best values, biggest reaches, position runs; Copy puts it in words for a group chat.
+    function recapLine(x) {
+      const p = ctx.byId[x.pid];
+      return D().type === "auction" ? `${p.n} for ${money(x.price)}, worth ${money(x.$)}` : `${p.n} at ${plab(x.at - 1)}, ranked #${x.rank}`;
+    }
+    function recapText() {
+      const d = D(), R = F.recap(d, ctx), st = F.standings(d, ctx).sort((a, b) => a.rank - b.rank);
+      const lines = [`${d.name || "Draft"} recap`, "", "Grades: " + st.map((r) => `${team(r.team).name} ${r.grade}`).join(", ")];
+      if (R.steals.length) lines.push("", "Best values:", ...R.steals.map((x) => `  ${recapLine(x)} (${team(x.team).name}, +${money(x.diff)})`));
+      if (R.reaches.length) lines.push("", "Biggest reaches:", ...R.reaches.map((x) => `  ${recapLine(x)} (${team(x.team).name}, ${money(-x.diff)} over)`));
+      if (R.runs.length) lines.push("", "Runs:", ...R.runs.map((r) => `  ${r.pos}: ${r.count} of ${r.of} picks, ${plab(r.fromPick - 1)} to ${plab(r.toPick - 1)}`));
+      return lines.join("\n");
+    }
+    function recapCard() {
+      const d = D(), R = F.recap(d, ctx);
+      if (!R.steals.length && !R.reaches.length) return "";
+      const item = (x, good) => `<li><span data-player="${esc(x.pid)}" style="cursor:pointer;min-width:0">${pname(sport, ctx.byId[x.pid], `${esc(team(x.team).name)}, ${d.type === "auction" ? `${money(x.price)} for ${money(x.$)} of value` : `${plab(x.at - 1)}, ranked #${x.rank}`}`, { size: "sm" })}</span><b class="${good ? "win" : "loss"} num">${good ? "+" : "-"}${money(Math.abs(x.diff))}</b></li>`;
+      return `<div class="card recap"><div class="mod-h"><b>Draft recap</b><span class="ps" style="margin-left:6px">Against the rankings at draft time</span><span class="grow"></span><button class="btn sm" data-act="recap">Copy recap</button></div>
+        <div class="recap-cols"><div><h4>Best values</h4><ul class="rslots">${R.steals.map((x) => item(x, true)).join("") || `<li class="ps">None to speak of</li>`}</ul></div>
+        <div><h4>Biggest reaches</h4><ul class="rslots">${R.reaches.map((x) => item(x, false)).join("") || `<li class="ps">None to speak of</li>`}</ul></div>
+        ${R.runs.length ? `<div><h4>Position runs</h4><ul class="rslots">${R.runs.map((r) => `<li><span><b>${esc(r.pos)}</b> ${r.count} of ${r.of} picks</span><span class="ps">${plab(r.fromPick - 1)} to ${plab(r.toPick - 1)}</span></li>`).join("")}</ul></div>` : ""}</div></div>`;
+    }
     function results() {
-      const d = D(), st = F.standings(d, ctx).sort((a, b) => a.rank - b.rank);
-      return `<div style="overflow:auto;flex:1;min-height:0"><div class="teams">${st.map((r) => { const t = team(r.team);
-        return `<div class="card"${isMe(t) ? ` style="border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)"` : ""}><div class="mod-h">${teamAv(t, "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(t.name)}${isMe(t) ? ` <span class="tag you">You</span>` : ""}</b><span class="ps">${ord(r.rank)}, ${pts() ? `${Math.round(r.score)} projected` : `${r.score.toFixed(1)} value`}${r.spent != null ? `, spent ${money(r.spent)}` : ""}${d.bank ? `, ${fmtLeft(t.bank)} banked for ${bankFaab(t)} FAAB` : ""}</span></div><b class="grade disp">${r.grade}</b></div>
+      const d = D(), st = F.standings(d, ctx).sort((a, b) => a.rank - b.rank), R = F.recap(d, ctx);
+      return `<div style="overflow:auto;flex:1;min-height:0">${recapCard()}<div class="teams">${st.map((r) => { const t = team(r.team), bv = R.best[r.team];
+        return `<div class="card"${isMe(t) ? ` style="border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)"` : ""}><div class="mod-h">${teamAv(t, "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(t.name)}${isMe(t) ? ` <span class="tag you">You</span>` : ""}</b><span class="ps">${ord(r.rank)}, ${pts() ? `${Math.round(r.score)} projected` : `${r.score.toFixed(1)} value`}${r.spent != null ? `, spent ${money(r.spent)}` : ""}${d.bank ? `, ${fmtLeft(t.bank)} banked for ${bankFaab(t)} FAAB` : ""}${bv && bv.diff > 0 ? `<br>Best value: ${esc(last(ctx.byId[bv.pid].n))}, +${money(bv.diff)}` : ""}</span></div><b class="grade disp">${r.grade}</b></div>
           <ol>${d.lineup.map((sl, i) => { const p = r.starters[i]; return `<li><span class="slot">${esc(sl)}</span>${p ? `<button class="btn link ell" data-player="${esc(p.id)}">${esc(p.n)}</button><span class="grow"></span><span class="ps">#${p.rank}</span>` : `<span class="ps">Empty</span>`}</li>`; }).join("")}${r.bench.map((p) => `<li class="bn"><span class="slot">BN</span><button class="btn link ell" data-player="${esc(p.id)}">${esc(p.n)}</button><span class="grow"></span><span class="ps">#${p.rank}</span></li>`).join("")}</ol></div>`; }).join("")}</div></div>`;
     }
     // Mystery packages: every team's picks side by side, with what each package is worth on the pick curve.
@@ -951,6 +973,7 @@
           else if (a === "pass") act(() => F.pass(d, ctx, me(), n));
           else if (a === "bid") { const v = +($("#fk-bid", el) || {}).value; act(() => F.bid(d, ctx, me(), v, n)); }
           else if (a === "trade") openTrade();
+          else if (a === "recap") { const txt = recapText(); (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast("Recap copied. Paste it in your group chat."), () => dialog(`<h3>Draft recap</h3><textarea rows="14" style="width:100%;font:inherit;font-size:13px" readonly>${esc(txt)}</textarea><div class="acts"><button type="button" class="btn" data-close>Close</button></div>`)); }
           else if (a === "alerts") { const v = !alerts.on(); alerts.set(v).then(() => { toast(v ? (typeof Notification !== "undefined" && Notification.permission === "denied" ? "Alerts on. Your browser blocks notifications, so you'll get the chime and tab only." : "Alerts on: a chime, and a notification when this tab is in the background.") : "Alerts off."); render(); }); }
           else if (a === "auto") { const t = team(me()); t.auto = !t.auto; if (t.auto) toast("Autodraft is on: the bot picks for you."); save(); render(); }
         }

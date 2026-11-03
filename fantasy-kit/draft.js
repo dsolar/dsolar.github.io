@@ -876,7 +876,42 @@
     return rows;
   }
 
-  return { FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
+  // The draft in a few headlines: the best values and biggest reaches against the rankings (a pick's slot against
+  // the player's overall rank; in an auction, his value against his price), each team's best value, and position
+  // runs (four or more of one position inside six straight picks). Keepers and kickers/defenses are left out.
+  function recap(D, ctx) {
+    const sp = ctx.sport, auc = D.type === "auction";
+    const made = made_(D).filter((pk) => pk && pk.pid && !pk.keeper && ctx.byId[pk.pid]);
+    // a snake pick's worth: what the player at that slot in the rankings is worth, so a value at 1.08 counts for
+    // more than one in round 14
+    const curve = ctx.players.map((p) => Math.max(0, p.$ || 0)).sort((a, b) => b - a);
+    const rows = made.map((pk, i) => {
+      const p = ctx.byId[pk.pid], at = auc ? i + 1 : pk.n, slot = auc ? pk.price : curve[at - 1] || 0;
+      return { team: pk.team, pid: pk.pid, at, rank: p.rank, price: auc ? pk.price : null, $: p.$ || 0, slot,
+        diff: Math.round((p.$ || 0) - slot), late: !!(sp.late && sp.late.length && S.isLate(sp, p)), pos: S.positions(p)[0] };
+    });
+    const real = rows.filter((r) => !r.late);
+    const steals = real.slice().sort((a, b) => b.diff - a.diff).filter((r) => r.diff > 0).slice(0, 5);
+    const reaches = real.slice().sort((a, b) => a.diff - b.diff).filter((r) => r.diff < 0).slice(0, 5);
+    const best = {}, worst = {};
+    for (const r of real) { if (!best[r.team] || r.diff > best[r.team].diff) best[r.team] = r; if (!worst[r.team] || r.diff < worst[r.team].diff) worst[r.team] = r; }
+    const runs = [];
+    if (!auc) {
+      const seq = made.slice().sort((a, b) => a.n - b.n).map((pk) => S.positions(ctx.byId[pk.pid])[0]);
+      for (let i = 0; i + 6 <= seq.length; i++) {
+        const win = seq.slice(i, i + 6), pos = win[0], n = win.filter((x) => x === pos).length;
+        if (n < 4 || (sp.late || []).includes(pos)) continue;
+        const prev = runs[runs.length - 1];
+        if (prev && prev.pos === pos && prev.to >= i) { prev.to = i + 5; prev.count = seq.slice(prev.from, prev.to + 1).filter((x) => x === pos).length; continue; }
+        runs.push({ pos, from: i, to: i + 5, count: n });
+      }
+      for (const r of runs) { const ks = made.slice().sort((a, b) => a.n - b.n); r.fromPick = ks[r.from].n; r.toPick = ks[r.to].n; r.of = r.to - r.from + 1; }
+    }
+    return { steals, reaches, best, worst, runs: runs.slice(0, 4), auction: auc };
+  }
+  const made_ = (D) => made(D);
+
+  return { recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
     start, pause, pick, worth, resize, offerHold, holdLeft, HOLD_MAX, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, botMax, standings, sizeOf,
     clockLen, thinkTime, bankShare, slotInfo, fitsRoster, canSteal, steal, stealsOf, stealsLeft, stealsOpen, botSteal, pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
     tradeCheck, balance, propose, respond, cancel, botAnswer, botOffer };
