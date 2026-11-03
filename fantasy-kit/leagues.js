@@ -55,8 +55,8 @@
     // on an invite, the join form is the page; your other leagues, if any, follow it quietly
     if (joinId) return page(`${err}${invite}${Array.isArray(mine) && mine.length ? `<div class="head" style="margin-top:8px"><h2 style="margin:0">Your other leagues</h2></div><div class="lgl">${mine.map(card).join("")}</div>` : ""}`);
     page(`${err}${invite}
-      <div class="head"><h1 class="disp">Your leagues</h1><span class="ps">Signed in as ${esc(u.email)}</span><span class="grow"></span><button class="btn go" data-a="new">Start a league</button></div>
-      ${mine.error ? fail(mine.error) : mine.length ? `<div class="lgl">${mine.map(card).join("")}</div>` : joinId ? "" : `<div class="card"><div class="bd stack"><p style="margin:0"><b>No leagues yet.</b></p><p class="ps" style="margin:0">Start one and send your friends the invite link, or open the invite link your commissioner sent you.</p><div><button class="btn go" data-a="new">Start a league</button></div></div></div>`}`);
+      <div class="su sp-${S.inSeason()}"><div class="nl-band lg-band">${FIELD[S.inSeason()]}<div class="nl-bi"><h1 class="disp">Your leagues</h1><p>Signed in as ${esc(u.email)}</p><button class="btn go" data-a="new">Start a league</button></div></div>
+      ${mine.error ? fail(mine.error) : mine.length ? `<div class="lgl">${mine.map(card).join("")}</div>` : joinId ? "" : `<div class="card"><div class="bd stack"><p style="margin:0"><b>No leagues yet.</b></p><p class="ps" style="margin:0">Start one and send your friends the invite link, or open the invite link your commissioner sent you.</p><div><button class="btn go" data-a="new">Start a league</button></div></div>`}</div>`);
   }
   // One league in the list: your team, where the league is, and your record or the draft's progress.
   function card(l) {
@@ -73,7 +73,7 @@
     else if (l.phase === "done") status = "Draft done, the season starts soon";
     else { status = "Draft room open"; if (c.teams) { big = `${c.claimed}/${c.teams}`; small = "teams claimed"; } }
     const sub = [c.teamName ? esc(c.teamName) : "", esc(status), l.commish ? "you're the commissioner" : ""].filter(Boolean).join(", ");
-    return `<a class="card lgc" href="play.html?id=${esc(l.id)}">${U.teamAv({ abbr: l.sport.toUpperCase(), color: SPORT_CLR[l.sport] }, "md")}
+    return `<a class="card lgc" href="play.html?id=${esc(l.id)}"><span class="lg-sp sp-${esc(l.sport)}">${icon(l.sport)}</span>
       <span class="grow"><b>${esc(l.name)}</b><small>${esc(S[l.sport].name)}${sub ? `: ${sub}` : ""}</small>${bar != null ? `<span class="lgbar" role="img" aria-label="${Math.round(bar * 100)}% of picks in"><i style="width:${(bar * 100).toFixed(1)}%"></i></span>` : ""}</span>
       ${big ? `<span class="lgstat${l.phase === "live" ? " live" : ""}"><b>${esc(big)}</b><small>${esc(small)}</small></span>` : ""}<span class="btn sm">Open</span></a>`;
   }
@@ -83,11 +83,20 @@
       <p style="margin:0">We sent a sign-in link to <b style="overflow-wrap:anywhere">${esc(sent)}</b>. Open it on the phone or computer you want to play on. It works once and expires in an hour.</p>
       <p class="ps" style="margin:0">Nothing there after a minute? Check spam, or send it again.</p>
       <div class="row" style="flex-wrap:wrap"><button class="btn" data-a="again">Use a different email</button><button class="btn ghost" data-a="resend">Send it again</button></div></div></div>`;
-    return `<div class="hero"><h1 class="disp">Draft with<br>your friends.</h1><p>Start a league, send the invite link and draft live. Every move saves for the whole league, and you can get an email when a trade offer or a waiver result needs you.</p></div>
-      <form class="card narrow" id="signin"><div class="bd stack">
-        <div class="field"><label for="si-email">Email</label><input id="si-email" type="email" autocomplete="email" required value="${esc(C.lastEmail())}" placeholder="you@example.com"></div>
-        <button class="btn go" type="submit"${busy ? " disabled" : ""}>Email me a sign-in link</button>
-        <p class="ps" style="margin:0">No password. We'll email you a link that signs you in.</p></div></form>`;
+    const k = S.inSeason();
+    return `<div class="su sp-${k}"><div class="nl-band si-band">${FIELD[k]}<div class="nl-bi">
+        <h1 class="disp">Draft with your friends.</h1>
+        <p>Start a league, send the invite link and draft live. Every move saves for the whole league, and you can get an email when a trade offer or a waiver result needs you.</p>
+        <form class="si-card" id="signin">
+          <label for="si-email">Email</label>
+          <div class="si-row"><input id="si-email" type="email" autocomplete="email" required value="${esc(C.lastEmail())}" placeholder="you@example.com"><button class="btn go" type="submit"${busy ? " disabled" : ""}>Email me a sign-in link</button></div>
+          <p class="ps">No password. We'll email you a link that signs you in.</p></form>
+      </div></div>
+      <div class="mk-how" style="margin-top:14px">
+        <div class="mk-tip"><b>Draft live or slow</b><p>Snake, auction, mystery packages or white elephant, with a pick clock from 30 seconds to 8 hours.</p></div>
+        <div class="mk-tip"><b>A whole season</b><p>Lineups, waivers, trades and playoffs, scored from real games. Redraft, keeper or dynasty.</p></div>
+        <div class="mk-tip"><b>Your formats</b><p>Guillotine, vampire, best ball, custom scoring, TE premium and more.</p></div>
+      </div></div>`;
   }
 
   function joinCard(v) {
