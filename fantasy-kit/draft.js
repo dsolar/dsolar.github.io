@@ -10,6 +10,10 @@
    hooks) holds the evaluated player pool (FK.value.evaluate first). Hooks let a league add its own rules:
      hooks.check(D, team, p, ctx)  -> { ok, why }  extra legality (a salary cap, a keeper rule)
      hooks.worth(D, team, p, w, ctx) -> number     how much a bot or autopick likes a player (w is the default)
+   Clocks: a clock per pick (clock: seconds), or a time bank (bank: { perRound, floor }): each team gets one clock for
+   the whole draft, perRound seconds for every round. Once it's gone every pick gets `floor` seconds. What's left at
+   the end becomes FAAB in the league (bankShare). Bots don't really wait, so they're charged a made-up think time.
+
    Every change takes `now` (ms) so a replay of the same calls gives the same draft. */
 (function (root, factory) {
   const m = factory(root.FK ? root.FK.sports : typeof require !== "undefined" ? require("./sports.js") : null);
@@ -69,8 +73,10 @@
       board: type === "auction" ? [] : Array(n * rounds).fill(null), sales: [],
       phase: "setup", clockStart: null, paused: false, left: null, log: [],
       auction: type === "auction" ? { budget: opts.budget || 200, minBid: opts.minBid == null ? 1 : opts.minBid, nomClock: opts.nomClock || 30, bidClock: opts.bidClock || 15, nom: 0, lot: null } : null,
+      bank: type !== "auction" && opts.bank ? { perRound: opts.bank.perRound || 30, floor: opts.bank.floor == null ? 10 : opts.bank.floor } : null,
       trading: type !== "auction" && opts.trades !== false, botOffers: opts.botOffers !== false, trades: [], via: {}, offered: {},
     };
+    if (D.bank) for (const t of D.teams) t.bank = D.bank.perRound * rounds * 1000;
     if (type === "mystery") {
       const curve = (opts.curve || defaultCurve(n * rounds)).slice(0, n * rounds).map((v) => Math.round(v * 100) / 100);
       D.mystery = { reveal: REVEALS[opts.reveal] ? opts.reveal : "start", curve, tolerance: opts.tolerance == null ? 0.01 : opts.tolerance };
@@ -157,12 +163,27 @@
 
   /* ---------- the clock ---------- */
   const nextIndex = (D) => D.board.findIndex((x) => !x);
+  // How long the pick on the clock gets: the pick clock, or what's left of the team's bank (never under the floor).
+  function clockLen(D, k) {
+    if (D.bank) { const t = D.teams[D.order[k]]; return Math.max(t.bank, D.bank.floor * 1000); }
+    return D.clock ? D.clock * 1000 : Infinity;
+  }
+  // A bot's (or an autodrafting manager's) pretend time on a pick: each one has its own pace, and some picks take longer.
+  const thinkTime = (D, teamId, k) => Math.round((5 + 20 * hash01(`${D.seed}:pace:${teamId}`)) * (0.4 + 1.2 * hash01(`${D.seed}:think:${k}`)) * 1000);
+  function charge(D, k, teamId, now) {
+    if (!D.bank) return;
+    const t = D.teams[teamId];
+    const used = isBot(t) ? Math.min(thinkTime(D, teamId, k), clockLen(D, k)) : Math.max(0, now - D.clockStart);
+    t.bank = Math.max(0, t.bank - used);
+  }
+  // What share of each team's bank was left when the draft ended, 0 to 1.
+  const bankShare = (D) => D.teams.map((t) => (D.bank ? Math.max(0, Math.min(1, t.bank / (D.bank.perRound * D.rounds * 1000))) : null));
   function onClock(D, now) {
     if (D.phase !== "live" || D.type === "auction") return null;
     const k = nextIndex(D);
     if (k < 0) return null;
     const n = D.teams.length;
-    const len = D.clock ? D.clock * 1000 : Infinity;
+    const len = clockLen(D, k);
     const deadline = D.clockStart + len;
     return { pick: k + 1, index: k, round: Math.floor(k / n) + 1, inRound: (k % n) + 1, team: D.order[k], total: D.order.length,
       deadline, left: D.paused ? D.left : deadline - now };
@@ -183,11 +204,11 @@
     const lot = D.auction && D.auction.lot;
     if (on && !D.paused) {
       D.paused = true;
-      D.left = lot ? lot.ends - now : D.clockStart + (D.type === "auction" ? D.auction.nomClock * 1000 : (D.clock || 1e9) * 1000) - now;
+      D.left = lot ? lot.ends - now : D.clockStart + (D.type === "auction" ? D.auction.nomClock * 1000 : Math.min(1e12, clockLen(D, nextIndex(D)))) - now;
     } else if (!on && D.paused) {
       D.paused = false;
       if (lot) lot.ends = now + D.left;
-      else D.clockStart = now - ((D.type === "auction" ? D.auction.nomClock * 1000 : (D.clock || 1e9) * 1000) - D.left);
+      else D.clockStart = now - ((D.type === "auction" ? D.auction.nomClock * 1000 : Math.min(1e12, clockLen(D, nextIndex(D)))) - D.left);
       D.left = null;
     }
     return { ok: true };
@@ -207,6 +228,7 @@
     const p = ctx.byId[pid];
     const ok = canAdd(D, ctx, teamId, p);
     if (!ok.ok) return ok;
+    charge(D, c.index, teamId, now);
     D.board[c.index] = { n: c.pick, team: teamId, pid, at: now, auto: !!auto };
     ctx.own[pid] = teamId;
     ctx.available = ctx.available.filter((x) => x.id !== pid);
@@ -263,7 +285,7 @@
       const at = isBot(team) ? D.clockStart + D.botDelay : c.deadline;
       if (now < at) break;
       const p = autoChoice(D, ctx, c.team, rng(D.seed + c.index * 31 + 7));
-      if (!p) { D.board[c.index] = { n: c.pick, team: c.team, pid: null, at, auto: true }; D.clockStart = at; finishIfDone(D, at); n++; continue; }
+      if (!p) { charge(D, c.index, c.team, at); D.board[c.index] = { n: c.pick, team: c.team, pid: null, at, auto: true }; D.clockStart = at; finishIfDone(D, at); n++; continue; }
       const res = pick(D, ctx, c.team, p.id, at, true);
       if (!res.ok) break;
       n++;
@@ -688,6 +710,6 @@
 
   return { FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
     start, pause, pick, worth, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, botMax, standings, sizeOf,
-    pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
+    clockLen, thinkTime, bankShare, pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
     tradeCheck, balance, propose, respond, cancel, botAnswer, botOffer };
 });

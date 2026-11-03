@@ -74,11 +74,12 @@
           <div class="row3">
             <div class="field"><label for="s-teams">Teams</label><select id="s-teams" name="teams">${[4, 6, 8, 10, 12, 14, 16].map((n) => opt(n, n, cfg.teams)).join("")}</select></div>
             ${cfg.type === "mystery" ? `<div class="field"><label for="s-trades">Trades</label><select id="s-trades" name="trades">${opt(1, "Picks and players", cfg.trades)}${opt(0, "Off", cfg.trades)}</select></div>` : `<div class="field"><label for="s-slot">${cfg.type === "auction" ? "Your nomination turn" : "Your pick"}</label><select id="s-slot" name="slot">${opt(0, "Random", cfg.slot)}${Array.from({ length: cfg.teams }, (_, i) => opt(i + 1, U.ord(i + 1), cfg.slot)).join("")}</select></div>`}
-            <div class="field"><label for="s-clock">${cfg.type === "auction" ? "Bid clock" : "Pick clock"}</label><select id="s-clock" name="clock">${(cfg.type === "auction" ? [10, 15, 20, 30] : [15, 30, 60, 90, 0]).map((n) => opt(n, n ? n + " seconds" : "No clock", cfg.clock)).join("")}</select></div>
+            <div class="field"><label for="s-clock">${cfg.type === "auction" ? "Bid clock" : "Pick clock"}</label><select id="s-clock" name="clock">${(cfg.type === "auction" ? [10, 15, 20, 30] : [15, 30, 60, 90, 0, -20, -30, -60]).map((n) => opt(n, n < 0 ? `Time bank, ${-n} seconds a round` : n ? n + " seconds" : "No clock", cfg.clock)).join("")}</select></div>
           </div>
           ${cfg.type === "mystery" ? `<div class="row2"><div class="field"><label for="s-reveal">Packages open</label><select id="s-reveal" name="reveal">${Object.entries(F.REVEALS).map(([k, l]) => opt(k, l, cfg.reveal)).join("")}</select></div><div class="field"><label for="s-test">Bot test</label><select id="s-test" name="test">${opt(1, "Keep the most even of 5 bot drafts", cfg.test)}${opt(0, "Off, use the first even deal", cfg.test)}</select></div></div>
             <p class="ps" style="margin:-4px 0 0">Every team gets a random set of picks, like 1, 24 and 42 against 12, 13 and 18, dealt so each set adds up to the same value on the pick curve.</p>` : ""}
           ${cfg.type !== "auction" && cfg.type !== "mystery" ? `<div class="row2"><div class="field"><label for="s-trades">Trades during the draft</label><select id="s-trades" name="trades">${opt(1, "Picks and players", cfg.trades)}${opt(0, "Off", cfg.trades)}</select></div><div></div></div>` : ""}
+          ${cfg.clock < 0 && cfg.type !== "auction" ? `<p class="ps" style="margin:-4px 0 0">One clock for your whole draft. Run it out and every pick gets 10 seconds. The time you have left at the end becomes FAAB for the season: from half the league's budget to one and a half times it. Bots draft at their own pace and pay for it the same way.</p>` : ""}
           ${cfg.type === "auction" ? `<div class="row2"><div class="field"><label for="s-budget">Budget per team</label><select id="s-budget" name="budget">${[100, 200, 260, 300, 1000].map((n) => opt(n, "$" + n, cfg.budget)).join("")}</select></div><div></div></div>` : ""}
           <div class="field"><label for="s-lineup">Starting lineup</label><input type="text" id="s-lineup" name="lineup" value="${esc(lineup)}" spellcheck="false" autocomplete="off">
             <div class="ps">Slots: ${Object.keys(sport.slots).filter((s) => s !== "BN").map(esc).join(", ")}. Separate with spaces.</div><div class="slots" id="slotprev"></div></div>
@@ -92,6 +93,7 @@
         <aside class="stack">
           <div class="card"><h3>How the bots draft</h3><p class="small muted" style="margin:0">Bots value players by points or category z-scores over the replacement player at each position, so a scarce catcher or tight end goes earlier than his raw numbers say. They fill starters before the bench, leave kickers and defenses for the last rounds, and in an auction bid by proxy up to a price set by their budget and needs.</p></div>
           <div class="card"><h3>Trades</h3><p class="small muted" style="margin:0">Trade picks, and players you've drafted, with any team while the draft runs. Bots answer right away, and sometimes call you to move up when you're on the clock.</p></div>
+          <div class="card"><h3>Demo leagues</h3><p class="small muted" style="margin:0 0 10px">Seasons with bots that play out in real time.</p><div class="row" style="flex-wrap:wrap"><a class="btn sm" href="league.html?s=${esc(cfg.sport)}&f=h">Head to head</a><a class="btn sm" href="league.html?s=${esc(cfg.sport)}&f=g">Best ball guillotine</a></div></div>
           <div class="card"><h3>Your seat</h3><p class="small muted" style="margin:0">Queue players before you start. If your clock runs out, the first queued player who still fits is your pick, then the best fit. The draft saves on this device, so you can close the tab and come back.</p></div>
         </aside>
       </div></div>`;
@@ -104,7 +106,7 @@
       if (n === "lineup" || n === "name") return;
       const fd = new FormData(f);
       if (n === "sport") { cfg = Object.assign(cfg, { sport: fd.get("sport"), scoring: "", lineup: "", bench: null }); }
-      else if (n === "type") { cfg.type = fd.get("type"); cfg.clock = cfg.type === "auction" ? 15 : 30; }
+      else if (n === "type") { cfg.type = fd.get("type"); cfg.clock = cfg.type === "auction" ? 15 : [15, 30, 60, 90, 0, -20, -30, -60].includes(cfg.clock) ? cfg.clock : 30; }
       else cfg[n] = n === "scoring" || n === "reveal" ? fd.get(n) : +fd.get(n);
       cfg.name = fd.get("name"); if (n !== "sport") cfg.lineup = fd.get("lineup");
       store.set("cfg", cfg); setupPage();
@@ -136,7 +138,7 @@
     const order = others.slice(0, slot).concat(0, others.slice(slot));
     const total = n * (P.lineup.length + P.bench);
     const D = F.create({ sport: P.sport, type: c.type, teams: n, seed, now: Date.now(), lineup: P.lineup, bench: P.bench, scoring: P.scoring,
-      botDelay: 1200, clock: c.type === "auction" ? 0 : c.clock, bidClock: c.clock || 15, nomClock: 30, budget: c.budget, order, name: `${P.sport.name} mock`,
+      botDelay: 1200, clock: c.type === "auction" || c.clock < 0 ? 0 : c.clock, bank: c.clock < 0 && c.type !== "auction" ? { perRound: -c.clock, floor: 10 } : null, bidClock: c.clock || 15, nomClock: 30, budget: c.budget, order, name: `${P.sport.name} mock`,
       trades: c.trades !== 0, curve: c.type === "mystery" ? F.pickCurve(P.players, total) : null, reveal: c.reveal });
     if (c.type === "mystery" && c.test) F.fairDeal(D, P.players, P.sport, null, { tries: 5 });
     D.teams[0].owner = "You";

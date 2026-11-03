@@ -169,3 +169,64 @@ test('trades: auctions have none', () => {
   const s = setup('nba', { type: 'auction' });
   assert.equal(s.D.trading, false);
 });
+
+/* ---------- time bank ---------- */
+function bankSetup(key, opts = {}) {
+  const data = JSON.parse(readFileSync(new URL(`../fantasy-kit/data/${key}.json`, import.meta.url), 'utf8'));
+  const sport = S.attach(Object.assign({}, S[key]), data);
+  const have = new Set(data.players.flatMap((p) => p.pos));
+  const lineup = sport.lineup.filter((s) => sport.slots[s] === '*' || sport.slots[s].some((x) => have.has(x)));
+  const players = data.players.map((p) => ({ ...p }));
+  V.evaluate(sport, players, { teams: 10, lineup });
+  const D = F.create({ sport, teams: 10, seed: 5, now: T0, lineup, botDelay: 1000, bank: { perRound: 30, floor: 10 } });
+  D.teams[0].owner = 'David';
+  return { sport, players, D, ctx: F.context(D, players, sport) };
+}
+// The manager takes `secs` on every pick; bots move on their own.
+function bankRun(s, secs) {
+  let now = T0; F.start(s.D, now);
+  for (let i = 0; i < 20000 && s.D.phase === 'live'; i++) {
+    const c = F.onClock(s.D, now);
+    if (c && c.team === 0 && secs != null && now - s.D.clockStart >= secs * 1000) F.pick(s.D, s.ctx, 0, F.autoChoice(s.D, s.ctx, 0).id, now);
+    F.tick(s.D, s.ctx, now);
+    now += 500;
+  }
+  return now;
+}
+
+test('time bank: every team starts with 30 seconds a round, and fast drafting keeps more of it', () => {
+  const fast = bankSetup('nfl'), slow = bankSetup('nfl');
+  assert.ok(fast.D.teams.every((t) => t.bank === 30 * fast.D.rounds * 1000));
+  bankRun(fast, 3); bankRun(slow, 40);
+  assert.equal(fast.D.phase, 'done'); assert.equal(slow.D.phase, 'done');
+  const f = F.bankShare(fast.D)[0], sl = F.bankShare(slow.D)[0];
+  assert.ok(f > 0.85, `fast kept ${f}`);
+  assert.equal(sl, 0, 'the slow drafter ran out');
+  const bots = F.bankShare(fast.D).slice(1);
+  assert.ok(bots.every((x) => x > 0.05 && x < 0.95), `bots spend some of theirs: ${bots.map((x) => x.toFixed(2))}`);
+  assert.ok(new Set(bots.map((x) => x.toFixed(2))).size > 3, 'bots draft at different paces');
+});
+
+test('time bank: once it runs out, every pick gets the 10-second floor', () => {
+  const s = bankSetup('nba');
+  s.D.teams[0].bank = 0;
+  F.start(s.D, T0);
+  let now = T0;
+  while (F.onClock(s.D, now).team !== 0) { now += 500; F.tick(s.D, s.ctx, now); }
+  const c = F.onClock(s.D, now);
+  assert.equal(c.deadline - s.D.clockStart, 10000);
+  F.tick(s.D, s.ctx, c.deadline + 1);
+  assert.ok(s.D.board[c.index] && s.D.board[c.index].auto, 'autopick at the floor');
+});
+
+test('time bank: leftover time becomes league FAAB, half to one and a half budgets', () => {
+  const G = require('../fantasy-kit/league.js');
+  const s = bankSetup('nfl');
+  bankRun(s, 2);
+  const L = G.create({ sport: s.sport, draft: s.D, now: T0, settings: { faab: 100 } });
+  const share = F.bankShare(s.D);
+  L.teams.forEach((t, i) => assert.equal(t.faab, Math.round(100 * (0.5 + share[i]))));
+  assert.ok(L.teams[0].faab > Math.max(...L.teams.slice(1).map((t) => t.faab)) - 1, 'the fast drafter has the most');
+  const Lg = G.create({ sport: s.sport, draft: s.D, now: T0, settings: { format: 'guillotine' } });
+  assert.equal(Lg.teams[0].faab, Math.round(1000 * (0.5 + share[0])), 'scales to a guillotine budget');
+});

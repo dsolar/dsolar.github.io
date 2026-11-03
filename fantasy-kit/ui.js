@@ -359,6 +359,13 @@
     // a pick's short label for the ticker and board: 2.5 in a snake, #15 in mystery packages
     const plab = (k) => { const d = D(), n = d.teams.length; return mystery() ? `#${k + 1}` : `${Math.floor(k / n) + 1}.${(k % n) + 1}`; };
     const seenK = (k) => F.seen(D(), k, me());
+    const bankFull = () => { const d = D(); return d.bank ? d.bank.perRound * d.rounds * 1000 : 0; };
+    // what a team's leftover bank is worth at the end, on a league budget of $100
+    const bankFaab = (t) => money(100 * (0.5 + Math.max(0, Math.min(1, t.bank / bankFull()))));
+    function bankChips() {
+      const d = D(), c = d.phase === "live" ? F.onClock(d, now()) : null;
+      return d.round1.map((id) => { const t = team(id); return `<span class="${isMe(t) ? "me" : ""}${c && c.team === id ? " lead" : ""}" title="${esc(t.name)}: ${fmtLeft(t.bank)} left in the bank, worth ${bankFaab(t)} of FAAB now">${teamAv(t, "sm")}${fmtLeft(t.bank)} <span class="ps">${bankFaab(t)}</span></span>`; }).join("");
+    }
     const viaOf = (k) => { const v = D().via[k]; return v != null ? team(v) : null; };
     // the board spots that belong to a team: picks it made or holds, in pick order (traded players move with theirs)
     const slotsOf = (id) => { const d = D(); return d.order.map((t, k) => ((d.board[k] ? d.board[k].team === id : t === id) ? k : -1)).filter((k) => k >= 0); };
@@ -382,7 +389,7 @@
       if (d.phase === "done" && opts.extra) ctl.push(opts.extra());
       if (opts.exit) ctl.push(`<a class="btn sm" href="${esc(opts.exit.href)}">${esc(opts.exit.label || "Exit")}</a>`);
       let mid = "";
-      if (d.phase === "setup") mid = `<div class="otc"><span class="ring" style="--p:1"><span>${d.clock || d.auction ? (auction() ? d.auction.bidClock : d.clock) : "-"}</span></span><span class="who"><small>Draft room is open</small><b>${mystery() && !seenK(0) ? "Packages are sealed" : "Build your queue"}</b><span>${auction() ? `$${d.auction.budget} budgets, ${d.auction.bidClock} seconds a bid` : d.clock ? `${d.clock} seconds a pick` : "No pick clock"}</span></span></div>`;
+      if (d.phase === "setup") mid = `<div class="otc"><span class="ring" style="--p:1"><span>${d.bank ? fmtLeft(bankFull()) : d.clock || d.auction ? (auction() ? d.auction.bidClock : d.clock) : "-"}</span></span><span class="who"><small>Draft room is open</small><b>${mystery() && !seenK(0) ? "Packages are sealed" : "Build your queue"}</b><span>${auction() ? `$${d.auction.budget} budgets, ${d.auction.bidClock} seconds a bid` : d.bank ? `${fmtLeft(bankFull())} bank each. What's left becomes FAAB` : d.clock ? `${d.clock} seconds a pick` : "No pick clock"}</span></span></div>`;
       else if (d.phase === "done") mid = `<div class="otc"><span class="who"><small>Draft complete</small><b>${F.made(d).length} ${auction() ? "players bought" : "picks"}</b><span>See the Results tab</span></span></div>`;
       else if (auction()) {
         const st = F.auctionState(d, n);
@@ -391,7 +398,7 @@
       } else {
         const c = F.onClock(d, n), t = team(c.team), mine = isMe(t);
         const next = me() != null ? F.nextPickOf(d, me()) : null;
-        mid = `<div class="otc${mine ? " me" : ""}">${teamAv(t, "md")}<span class="who"><small>${mine ? "You're on the clock" : "On the clock"}</small><b>${esc(t.name)}</b><span>${mystery() ? `Pick ${c.pick} of ${c.total}` : `Round ${c.round}, pick ${c.inRound} (${ord(c.pick)} overall)`}${viaOf(c.index) ? `, from ${isMe(viaOf(c.index)) ? "you" : esc(viaOf(c.index).name)}` : ""}${!mine && next ? `. You pick in ${next - c.pick}` : ""}${d.paused ? ", paused" : ""}</span></span><span class="ring" id="fk-ring"><span id="fk-timer"></span></span></div>`;
+        mid = `<div class="otc${mine ? " me" : ""}">${teamAv(t, "md")}<span class="who"><small>${mine ? "You're on the clock" : "On the clock"}</small><b>${esc(t.name)}</b><span>${mystery() ? `Pick ${c.pick} of ${c.total}` : `Round ${c.round}, pick ${c.inRound} (${ord(c.pick)} overall)`}${viaOf(c.index) ? `, from ${isMe(viaOf(c.index)) ? "you" : esc(viaOf(c.index).name)}` : ""}${!mine && next ? `. You pick in ${next - c.pick}` : ""}${d.paused ? ", paused" : ""}${d.bank && t.bank <= 0 ? `. Bank empty: ${d.bank.floor} seconds a pick` : ""}</span></span><span class="ring" id="fk-ring" title="${d.bank ? "Time left in the bank" : "Time left on the pick"}"><span id="fk-timer"></span></span></div>`;
       }
       return `<div class="dr-top">${lg}${mid}<div class="acts">${ctl.join("")}</div></div>`;
     }
@@ -410,7 +417,8 @@
         if (p) cards.push(`<button type="button" class="tk done c${colorOf(sport, p)}${isMe(t) ? " me" : ""}" data-player="${esc(p.id)}"><span class="n">${lab} ${esc(t.abbr)}</span><b>${esc(p.n)}</b><small>${S.positions(p).join(", ")} ${esc(p.t)}</small></button>`);
         else cards.push(`<div class="tk${k === k0 && d.phase === "live" ? " now" : ""}${isMe(t) ? " me" : ""}"><span class="n">${teamAv(t, "sm")} ${lab}</span><b>${isMe(t) ? "You" : esc(t.name)}</b><small>${k === k0 && d.phase === "live" ? "On the clock" : k > k0 ? `${k - k0} away` : "Passed"}${via ? `, via ${esc(via.abbr)}` : ""}</small></div>`);
       }
-      return `<div class="ticker" id="fk-ticker">${cards.join("")}</div>`;
+      const tk = `<div class="ticker" id="fk-ticker">${cards.join("")}</div>`;
+      return d.bank ? `<div>${tk}<div class="budgets bank" aria-label="Time banks">${bankChips()}</div></div>` : tk;
     }
     function lotBar() {
       const d = D(), n = now();
@@ -489,7 +497,7 @@
     function results() {
       const d = D(), st = F.standings(d, ctx).sort((a, b) => a.rank - b.rank);
       return `<div style="overflow:auto;flex:1;min-height:0"><div class="teams">${st.map((r) => { const t = team(r.team);
-        return `<div class="card"${isMe(t) ? ` style="border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)"` : ""}><div class="mod-h">${teamAv(t, "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(t.name)}${isMe(t) ? ` <span class="tag you">You</span>` : ""}</b><span class="ps">${ord(r.rank)}, ${pts() ? `${Math.round(r.score)} projected` : `${r.score.toFixed(1)} value`}${r.spent != null ? `, spent ${money(r.spent)}` : ""}</span></div><b class="grade disp">${r.grade}</b></div>
+        return `<div class="card"${isMe(t) ? ` style="border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)"` : ""}><div class="mod-h">${teamAv(t, "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(t.name)}${isMe(t) ? ` <span class="tag you">You</span>` : ""}</b><span class="ps">${ord(r.rank)}, ${pts() ? `${Math.round(r.score)} projected` : `${r.score.toFixed(1)} value`}${r.spent != null ? `, spent ${money(r.spent)}` : ""}${d.bank ? `, ${fmtLeft(t.bank)} banked for ${bankFaab(t)} FAAB` : ""}</span></div><b class="grade disp">${r.grade}</b></div>
           <ol>${r.starters.filter(Boolean).map((p) => `<li>${posChip(sport, FK.value.mainPos(sport, p))}<button class="btn link ell" data-player="${esc(p.id)}">${esc(p.n)}</button><span class="grow"></span><span class="ps">${p.rank}</span></li>`).join("")}</ol></div>`; }).join("")}</div></div>`;
     }
     // Mystery packages: every team's picks side by side, with what each package is worth on the pick curve.
@@ -621,7 +629,7 @@
       const d = D(), n = now();
       let left = null, total = 1;
       if (auction()) { const st = F.auctionState(d, n); left = st ? st.left : null; total = st && st.kind === "lot" ? d.auction.bidClock * 1000 : d.auction.nomClock * 1000; }
-      else { const c = F.onClock(d, n); left = c ? c.left : null; total = (d.clock || 1) * 1000; }
+      else { const c = F.onClock(d, n); left = c ? c.left : null; total = d.bank ? (c && team(c.team).bank > d.bank.floor * 1000 ? bankFull() : d.bank.floor * 1000) : (d.clock || 1) * 1000; }
       const fin = left != null && Number.isFinite(left);
       for (const [ti, ri] of [["#fk-timer", "#fk-ring"], ["#fk-timer2", "#fk-ring2"]]) {
         const t = $(ti, el), ring = $(ri, el);

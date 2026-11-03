@@ -368,9 +368,9 @@ body.fk-room .fk-top,body.fk-room .ds-bar{display:none}
 .lot .ring::before{background:var(--surface)}
 .lot .ring{background:conic-gradient(var(--rc,var(--win)) calc(var(--p)*360deg),var(--surface-3) 0)}
 .budgets{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:6px 16px;background:var(--surface);border-bottom:1px solid var(--line)}
-.budgets span{flex:none;display:flex;align-items:center;gap:6px;font-size:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:3px 9px 3px 4px;font-weight:700}
-.budgets span.me{border-color:var(--brand)}
-.budgets span.lead{background:var(--brand-soft);border-color:var(--brand)}
+.budgets>span{flex:none;display:flex;align-items:center;gap:6px;font-size:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:3px 9px 3px 4px;font-weight:700}
+.budgets>span.me{border-color:var(--brand)}
+.budgets>span.lead{background:var(--brand-soft);border-color:var(--brand)}
 /* the board */
 .board{flex:1;min-height:0;overflow:auto;border:1px solid var(--line);border-radius:var(--rl);background:var(--surface)}
 .bgrid{display:grid;gap:3px;padding:0 6px 6px;min-width:calc(var(--n) * 98px + 40px)}

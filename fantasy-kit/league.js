@@ -38,7 +38,11 @@
     const D = opts.draft;
     const given = opts.settings || {};
     const s = Object.assign({}, DEFAULTS, given.format === "guillotine" ? GUILLOTINE : {}, given);
-    const teams = (D ? D.teams : opts.teams).map((t, i) => ({ id: i, name: t.name, abbr: t.abbr, owner: t.owner || null, color: t.color != null ? t.color : (i * 5) % COLORS, faab: s.faab, priority: i }));
+    // a time-bank draft pays out: leftover time sets each team's FAAB, from half the league's budget to one and a half times it
+    const share = D && D.bank ? F.bankShare(D) : null;
+    const teams = (D ? D.teams : opts.teams).map((t, i) => ({ id: i, name: t.name, abbr: t.abbr, owner: t.owner || null, color: t.color != null ? t.color : (i * 5) % COLORS,
+      faab: share ? Math.round(s.faab * (0.5 + share[i])) : s.faab, priority: i }));
+    if (share) s.faabBank = true;
     const n = teams.length;
     s.lineup = (opts.lineup || (D && D.lineup) || sport.lineup).slice();
     s.bench = opts.bench != null ? opts.bench : D ? D.bench : sport.bench;

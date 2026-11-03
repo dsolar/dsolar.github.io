@@ -3,7 +3,7 @@
 The shared parts of every fantasy league page on davidsolar.dev: player data for basketball, football and baseball, player values, a draft engine, a season engine, and the screens that sit on top of them. The look blends Yahoo and ESPN density for tables with Sleeper polish for matchups, trades and the draft room, in light and dark.
 
 - **Draft Lab** (`index.html`, `lab.js`): mock drafts against bots.
-- **Demo league** (`league.html`, `demo.js`): a full league with bots and a season that moves in real time.
+- **Demo leagues** (`league.html`, `demo.js`): full leagues with bots and seasons that move in real time. Each sport has a head to head league and a best ball guillotine league (`?f=g`).
 - **Hard Cap** (`../hardcap/`) uses the kit's styles, shell, matchup hero, feeds, trade window and draft room layout with its own rules.
 
 Plain browser scripts, no build step. `sports.js`, `value.js` and `draft.js` have no DOM and no network, so Node tests and a Supabase edge function can load them too.
@@ -14,8 +14,8 @@ Plain browser scripts, no build step. `sports.js`, `value.js` and `draft.js` hav
 | --- | --- |
 | `sports.js` | `FK.sports`: positions, lineup slots, position limits, stat columns, position colors and scoring presets for `nba`, `nfl` and `mlb` |
 | `value.js` | `FK.value.evaluate`: category z-scores or fantasy points, value over replacement by position, auction dollars |
-| `draft.js` | `FK.draft`: snake, linear, third-round reversal, mystery packages and auction drafts; clocks, queues, keepers, bots, pause, undo, trades during the draft, results |
-| `league.js` | `FK.league`: rosters, weekly lineups, schedule, scoring (simulated, or a `hooks.score` for real box scores), standings, playoffs, power rankings, free agents, FAAB waivers, trades with review votes, the transaction log |
+| `draft.js` | `FK.draft`: snake, linear, third-round reversal, mystery packages and auction drafts; pick clocks or a time bank, queues, keepers, bots, pause, undo, trades during the draft, results |
+| `league.js` | `FK.league`: head to head or guillotine, with or without best ball; rosters, weekly lineups, schedule, scoring (simulated, or a `hooks.score` for real box scores), standings, playoffs, power rankings, free agents, FAAB waivers, trades with review votes, the transaction log |
 | `league-ui.js` | `FK.ui.leagueApp`: every league page (Overview, Standings, Scoreboard, Transactions, Roster, Schedule, Trades, Matchup, Players, Waiver claims, Draft results) |
 | `ui.js` | `FK.ui`: helpers, avatars, the masthead and tab bars, sortable tables, position chips, the player card, and view-model modules (`scoreboard`, `versus`, `vsTable`, `standingsTable`, `feed`, `tradeCard`, `tradeWindow`), plus the full draft room |
 | `kit.css` | Every style the above needs, light and dark |
@@ -105,6 +105,12 @@ FK.draft.fairDeal(D, players, sport, hooks, { tries: 5 });   // optional bot tes
 - When a manager comes on the clock, a bot that picks later sometimes offers to move up. Offers that can't happen anymore, because a pick was made or a piece moved, expire.
 - Set `trades: false` on `create` to turn trades off, or `botOffers: false` to keep trades but stop bot offers. Add `hooks.tradeCheck(D, trade, ctx)` for a league rule.
 
+**Time bank:** create the draft with `bank: { perRound: 30, floor: 10 }` instead of a pick clock.
+
+- Each team gets one clock for the whole draft, `perRound` seconds for every round. Once it's gone, every pick gets `floor` seconds.
+- Bots don't really wait, so each one is charged a pretend think time at its own pace. They can't hoard the bank.
+- `FK.draft.bankShare(D)` gives the share of each bank left. A league made from the draft turns it into FAAB: from half the league's budget (an empty bank) to one and a half times it (a full one).
+
 **League rules** plug in through hooks:
 
 - `hooks.check(D, team, player, ctx)` returns `{ ok, why }`. Use it for a salary cap or a keeper rule.
@@ -157,6 +163,14 @@ const L = FK.league.create({ sport, draft: D, settings: { weeks: 14, playoffTeam
 FK.ui.leagueApp({ top, el, sport, players, league: () => L, save: (L) => saveSomewhere(L), me: () => myTeamId, frac: (w) => shareOfWeekPlayed });
 ```
 
+**Formats:** `settings.format` is `"h2h"` (the default) or `"guillotine"`. `settings.bestBall` works with either.
+
+- **Guillotine:** everyone scores every week and the lowest team is chopped (`chops` a week). The season runs until one team is left. Its defaults: a $1000 season budget, no trades, and waivers that run `waiverAt` hours (60) into each week, so a chopped roster is back in play by the next week.
+- `FK.league.block(L, ctx, week, frac)` is the chopping block: every team still alive with its score, projection and odds of being chopped, from a few hundred simulations of the rest of the week. Category leagues rank like roto.
+- `FK.league.botBids` has bots bid on a chopped roster: more for better players and more as the season runs down.
+- `settings.immune` `{ team: week }` protects a team through a week. The demo uses it so your seat is alive when you arrive.
+- **Best ball:** no lineups to set. Each week a team scores the best lineup it could have started, picked from what its players actually did.
+
 The modules take plain view models, so a league with its own engine (Hard Cap) builds the same screens:
 
 - `FK.ui.versus({ a: { team, rec, score, proj }, b, wp, status, cats })` is the matchup hero.
@@ -164,6 +178,8 @@ The modules take plain view models, so a league with its own engine (Hard Cap) b
 - `FK.ui.feed(items)` is a transaction or activity feed.
 - `FK.ui.tradeCard(sport, vm)` and `FK.ui.tradeWindow(opts)` handle offers. The window takes `roster`, `value`, `check` and `submit` callbacks, so a salary cap rule plugs straight in.
 
-`node --test tests/fantasymodes.test.mjs` tests mystery packages (balance, variety, sealing, the bot test) and trades during the draft (bot answers, players moving with their spot, balancing, stale offers, bot offers).
+`node --test tests/fantasymodes.test.mjs` tests mystery packages (balance, variety, sealing, the bot test), trades during the draft (bot answers, players moving with their spot, balancing, stale offers, bot offers) and the time bank (pace, the floor, the FAAB payout).
+
+`node --test tests/fantasyguillotine.test.mjs` plays guillotine seasons in each sport and tests the midweek waiver run, chop odds and best ball.
 
 `node --test tests/fantasyleague.test.mjs` plays full seasons in each sport and tests lineups, free agency, waivers, trades and vetoes.
