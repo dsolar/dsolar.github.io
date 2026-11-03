@@ -57,6 +57,33 @@
     }
   });
 
+  /* ---------- lineup builder ---------- */
+  // Common lineups for each sport, then a counter for every slot.
+  const PRESETS = {
+    nba: [["Standard", "PG SG G SF PF F C UTIL UTIL UTIL"], ["Two centers", "PG SG G SF PF F C C UTIL UTIL"], ["Shallow", "PG SG SF PF C UTIL UTIL"], ["Deep", "PG SG G SF PF F C C UTIL UTIL UTIL UTIL"]],
+    nfl: [["Standard", "QB RB RB WR WR TE FLEX K DEF"], ["Superflex", "QB RB RB WR WR TE FLEX SFLEX K DEF"], ["2 QB", "QB QB RB RB WR WR TE FLEX K DEF"], ["3 WR", "QB RB RB WR WR WR TE FLEX K DEF"], ["No kicker", "QB RB RB WR WR TE FLEX FLEX DEF"]],
+    mlb: [["Standard", "C 1B 2B 3B SS OF OF OF UTIL UTIL SP SP RP RP P P P P"], ["Corner and middle", "C 1B 2B 3B SS MI CI OF OF OF OF OF UTIL P P P P P P P P P"], ["Shallow", "C 1B 2B 3B SS OF OF OF UTIL SP SP SP RP RP"]],
+  };
+  const SLOT_NAMES = { G: "Guard", F: "Forward", UTIL: "Utility", FLEX: "Flex", SFLEX: "Superflex", MI: "Middle infield", CI: "Corner infield", P: "Pitcher" };
+  const POS_NAMES = {
+    nba: { PG: "Point guard", SG: "Shooting guard", SF: "Small forward", PF: "Power forward", C: "Center" },
+    nfl: { QB: "Quarterback", RB: "Running back", WR: "Wide receiver", TE: "Tight end", K: "Kicker", DEF: "Team defense" },
+    mlb: { C: "Catcher", "1B": "First base", "2B": "Second base", "3B": "Third base", SS: "Shortstop", OF: "Outfield", SP: "Starting pitcher", RP: "Relief pitcher" },
+  };
+  const slotDesc = (sport, k) => { const v = sport.slots[k]; if (v !== "*" && v.length === 1 && !SLOT_NAMES[k]) return (POS_NAMES[sport.key] || {})[k] || k; return `${SLOT_NAMES[k] || k}: ${v === "*" ? "any player" : v.join(", ")}`; };
+  function lineupBuilder(sport, lineup) {
+    const keys = Object.keys(sport.slots).filter((k) => k !== "BN");
+    const count = (k) => lineup.filter((x) => x === k).length;
+    const cur = lineup.join(" ");
+    return `<div class="chips presets" role="group" aria-label="Lineup presets">${(PRESETS[sport.key] || []).map(([n, l]) => `<button type="button" data-preset="${esc(l)}" aria-pressed="${l === cur}">${esc(n)}</button>`).join("")}</div>
+      <div class="lb">${keys.map((k) => `<div class="lb-r${count(k) ? " on" : ""}"><span class="pp c${(sport.colors[(sport.slots[k] === "*" ? [] : sport.slots[k])[0]] || 6)}">${esc(k)}</span><span class="ps">${esc(slotDesc(sport, k))}</span>
+        <span class="lb-n"><button type="button" class="btn icon" data-lb="${esc(k)}" data-d="-1" aria-label="One fewer ${esc(k)}"${count(k) ? "" : " disabled"}>&minus;</button><b>${count(k)}</b><button type="button" class="btn icon" data-lb="${esc(k)}" data-d="1" aria-label="One more ${esc(k)}"${count(k) >= 9 || lineup.length >= 25 ? " disabled" : ""}>+</button></span></div>`).join("")}</div>
+      <div class="slots" id="slotprev">${lineup.map((x) => `<span class="pp c${(sport.colors[(sport.slots[x] === "*" ? [] : sport.slots[x])[0]] || 6)}">${esc(x)}</span>`).join("")}<span class="ps" style="margin-left:6px">${lineup.length} starters</span></div>
+      <input type="hidden" name="lineup" value="${esc(cur)}">`;
+  }
+  // Slots kept in the sport's own order, so a lineup always reads QB, RB, WR...
+  const orderLineup = (sport, list) => { const keys = Object.keys(sport.slots); return list.slice().sort((a, b) => keys.indexOf(a) - keys.indexOf(b)); };
+
   /* ---------- setup ---------- */
   function setupPage() {
     document.body.classList.remove("fk-room");
@@ -85,8 +112,7 @@
           ${cfg.type !== "auction" && cfg.type !== "mystery" && cfg.type !== "elephant" ? `<div class="row2"><div class="field"><label for="s-trades">Trades during the draft</label><select id="s-trades" name="trades">${opt(1, "Picks and players", cfg.trades)}${opt(0, "Off", cfg.trades)}</select></div><div></div></div>` : ""}
           ${cfg.clock < 0 && cfg.type !== "auction" ? `<p class="ps" style="margin:-4px 0 0">One clock for your whole draft. Run it out and every pick gets 10 seconds. The time you have left at the end becomes FAAB for the season: from half the league's budget to one and a half times it. Bots draft at their own pace and pay for it the same way.</p>` : ""}
           ${cfg.type === "auction" ? `<div class="row2"><div class="field"><label for="s-budget">Budget per team</label><select id="s-budget" name="budget">${[100, 200, 260, 300, 1000].map((n) => opt(n, "$" + n, cfg.budget)).join("")}</select></div><div></div></div>` : ""}
-          <div class="field"><label for="s-lineup">Starting lineup</label><input type="text" id="s-lineup" name="lineup" value="${esc(lineup)}" spellcheck="false" autocomplete="off">
-            <div class="ps">Slots: ${Object.keys(sport.slots).filter((s) => s !== "BN").map(esc).join(", ")}. Separate with spaces.</div><div class="slots" id="slotprev"></div></div>
+          <div class="field"><span class="lbl">Starting lineup</span>${lineupBuilder(sport, lineup.split(/[\s,]+/).filter((x) => sport.slots[x] && x !== "BN"))}</div>
           <div class="row2">
             <div class="field"><label for="s-bench">Bench spots</label><select id="s-bench" name="bench">${[0, 1, 2, 3, 4, 5, 6, 7, 8, 10].map((n) => opt(n, n, bench)).join("")}</select></div>
             <div class="field"><label for="s-name">Your team name</label><input type="text" id="s-name" name="name" maxlength="28" value="${esc(cfg.name)}" placeholder="Your team"></div>
@@ -102,9 +128,18 @@
         </aside>
       </div></div>`;
     const f = $("#setup");
-    const preview = () => { const s = S[f.sport.value]; $("#slotprev").innerHTML = f.lineup.value.split(/[\s,]+/).filter(Boolean).map((x) => s.slots[x] && x !== "BN" ? `<span class="pp c${s.colors[(s.slots[x] === "*" ? [] : s.slots[x])[0]] || 6}">${esc(x)}</span>` : `<span class="tag inj">${esc(x)}?</span>`).join(""); };
-    preview();
-    f.addEventListener("input", (e) => { if (e.target.name === "lineup") preview(); });
+    f.addEventListener("click", (e) => {
+      const pr = e.target.closest("[data-preset]"), lb = e.target.closest("[data-lb]");
+      if (!pr && !lb) return;
+      const cur = (cfg.lineup || sport.lineup.join(" ")).split(/[\s,]+/).filter((x) => sport.slots[x] && x !== "BN");
+      let next = cur;
+      if (pr) next = pr.dataset.preset.split(" ");
+      else if (+lb.dataset.d > 0) next = orderLineup(sport, cur.concat(lb.dataset.lb));
+      else { const i = cur.lastIndexOf(lb.dataset.lb); if (i >= 0) next = cur.filter((_, j) => j !== i); }
+      if (!next.length) { U.toast("A lineup needs at least one starter", true); return; }
+      cfg.name = new FormData(f).get("name"); cfg.lineup = next.join(" ");
+      store.set("cfg", cfg); setupPage();
+    });
     f.addEventListener("change", (e) => {
       const n = e.target.name;
       if (n === "lineup" || n === "name") return;

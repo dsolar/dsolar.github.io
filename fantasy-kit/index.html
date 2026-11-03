@@ -32,6 +32,16 @@
 .sports input:checked+span{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent);background:var(--brand-soft)}
 .sports input:focus-visible+span{outline:2px solid var(--brand);outline-offset:2px}
 .slots{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.presets{margin:2px 0 10px}
+.lb{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.lb-r{display:grid;grid-template-columns:58px minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:6px 8px;background:var(--surface-2)}
+.lb-r.on{background:var(--field);border-color:var(--line-2)}
+.lb-r .pp{justify-self:start}
+.lb-r .ps{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-n{display:flex;align-items:center;gap:6px}
+.lb-n b{min-width:16px;text-align:center;font-variant-numeric:tabular-nums}
+.lb-n .btn.icon{width:30px;height:30px}
+@media (max-width:600px){.lb{grid-template-columns:1fr}.row2:has(#s-trades){grid-template-columns:1fr}}
 .code{font:600 13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--ledger);border-radius:6px;padding:10px 12px;overflow:auto;white-space:pre}
 .doc h2{font-size:22px;margin:4px 0 8px}
 .doc p,.doc li{max-width:72ch}

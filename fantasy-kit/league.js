@@ -27,7 +27,7 @@
   const COLORS = 12;
 
   const DEFAULTS = { format: "h2h", bestBall: false, weeks: 14, playoffTeams: 4, faab: 100, minBid: 0, waivers: "faab", waiverHours: 48, waiverAt: null,
-    tradeReview: "vote", reviewHours: 24, vetoShare: 0.5, deadline: 11, ir: 1, trades: true, chops: 1 };
+    tradeReview: "vote", reviewHours: 24, vetoShare: 0.5, deadline: 11, ir: 1, trades: true, chops: 1, offerHours: 48 };
   // A guillotine league's own defaults: one season budget, no trades, waivers that run midweek so a chopped roster
   // is back in play for the next week.
   const GUILLOTINE = { faab: 1000, trades: false, waiverAt: 60, playoffTeams: 0, deadline: 0 };
@@ -202,9 +202,12 @@
     if (sc.type === "points") return { sa: a.total, sb: b.total, w: a.total > b.total ? "a" : a.total < b.total ? "b" : "t" };
     let wa = 0, wb = 0, t = 0;
     const cats = {};
+    // compare what the page shows: counting stats to a tenth, rates to three places, so 0.0 vs 0.0 is a tie
+    const shown = (c, v) => (c.num || c.rate ? Math.round(v * 1000) / 1000 : Math.round(v * 10) / 10);
     for (const c of sc.cats) {
       const x = a.cats[c.k], y = b.cats[c.k];
-      const d = Math.abs(x - y) < 1e-9 ? 0 : (x > y ? 1 : -1) * (c.low ? -1 : 1);
+      const sx = shown(c, x), sy = shown(c, y);
+      const d = sx === sy ? 0 : (sx > sy ? 1 : -1) * (c.low ? -1 : 1);
       cats[c.k] = [x, y, d];
       if (d > 0) wa++; else if (d < 0) wb++; else t++;
     }
@@ -294,6 +297,11 @@
     }
     return out;
   }
+  // After the final: open offers and claims close, so nothing is left hanging over the champion.
+  function closeSeason(L, now) {
+    for (const t of L.trades) if (t.status === "pending" || t.status === "review") { t.status = "expired"; t.done = now; }
+    for (const c of L.claims) if (c.status === "open") { c.status = "cancelled"; c.done = now; }
+  }
   const champion = (L) => (isGuillotine(L) ? (L.alive.length === 1 ? L.alive[0] : null) : null);
 
   // Closes the current week: results stored, lineups frozen, waivers run, the next week starts.
@@ -307,6 +315,7 @@
       chop(L, ctx, now);
       if (L.alive.length <= 1) log(L, now, { type: "champion", team: L.alive[0], text: "Last team standing" });
       L.week = L.alive.length <= 1 ? totalWeeks(L) + 1 : w + 1;
+      if (L.week > totalWeeks(L)) { closeSeason(L, now); return { ok: true, over: true }; }
       if (L.settings.waiverAt == null) runWaivers(L, ctx, now);
       refresh(L, ctx);
       return { ok: true };
@@ -318,6 +327,7 @@
     if (L.settings.bestBall) for (const g of games) { if (g.ta && g.ta.lineup) best[g.a] = g.ta.lineup; if (g.tb && g.tb.lineup) best[g.b] = g.tb.lineup; }
     for (const t of L.teams) L.lineups[w][t.id] = best[t.id] || lineupFor(L, ctx, t.id, w);
     L.week = w + 1;
+    if (L.week > totalWeeks(L)) { closeSeason(L, now); return { ok: true, over: true }; }
     runWaivers(L, ctx, now);
     return { ok: true };
   }
@@ -446,12 +456,13 @@
       if (c.status !== "open") continue;
       const t = L.teams[c.team];
       const rivals = open.filter((x) => x.add === c.add && x.status === "open");
+      c.done = now; c.week = L.week;
       if (ctx.own[c.add] != null || (L.settings.waivers === "faab" && c.bid > t.faab) || (c.drop && !L.rosters[c.team].includes(c.drop)) || !canRoster(L, ctx, c.team, c.add, c.drop ? [c.drop] : []).ok) { c.status = "failed"; continue; }
       if (c.drop) dropOne(L, c.team, c.drop, now);
       L.rosters[c.team].push(c.add); delete L.waivers[c.add];
       if (L.settings.waivers === "faab") t.faab -= c.bid;
       c.status = "won";
-      for (const x of rivals) if (x !== c) { x.status = "lost"; x.lostTo = c.team; }
+      for (const x of rivals) if (x !== c) { x.status = "lost"; x.lostTo = c.team; x.done = now; x.week = L.week; }
       const mx = Math.max(...L.teams.map((x) => x.priority));
       for (const x of L.teams) if (x.priority > t.priority) x.priority--;
       t.priority = mx;
@@ -512,6 +523,9 @@
     if (t.from === t.to) return { ok: false, why: "Pick another team" };
     if (!t.give.length && !t.get.length) return { ok: false, why: "Add at least one player" };
     if (L.settings.deadline && L.week > L.settings.deadline) return { ok: false, why: `The trade deadline was week ${L.settings.deadline}` };
+    if (L.week > totalWeeks(L)) return { ok: false, why: "The season is over" };
+    const busy = new Set(L.trades.filter((x) => x.status === "review" && x.id !== t.id).flatMap((x) => x.give.concat(x.get)));
+    for (const id of t.give.concat(t.get)) if (busy.has(id)) return { ok: false, why: `${ctx.byId[id].n} is already in a trade the league is reviewing` };
     for (const id of t.give) if (!L.rosters[t.from].includes(id)) return { ok: false, why: `${ctx.byId[id].n} isn't on ${L.teams[t.from].name}` };
     for (const id of t.get) if (!L.rosters[t.to].includes(id)) return { ok: false, why: `${ctx.byId[id].n} isn't on ${L.teams[t.to].name}` };
     if ((t.faabGive || 0) > L.teams[t.from].faab || (t.faabGet || 0) > L.teams[t.to].faab) return { ok: false, why: "Not enough FAAB" };
@@ -658,7 +672,10 @@
   }
   // Moves the league forward: trades past review go through, bots answer offers, and a midweek waiver run happens
   // once its time comes.
+  const offerEnds = (L, t) => t.at + (L.settings.offerHours || 48) * HOUR;
   function tick(L, ctx, now) {
+    // offers nobody answered close after offerHours
+    for (const t of L.trades) if (t.status === "pending" && now >= offerEnds(L, t)) { t.status = "expired"; t.done = offerEnds(L, t); }
     let n = finalize(L, ctx, now);
     n += botsAnswer(L, ctx, now, 0);
     L.waiverRuns = L.waiverRuns || {};
@@ -673,5 +690,5 @@
   return { DEFAULTS, WEEK, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
     finishWeek, formOf, hot, standings, playoffGames, bracket, power, onWaivers, canRoster, addDrop, claim, cancelClaim, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
-    IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
+    offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
 });

@@ -31,17 +31,27 @@
     const scoring = Object.keys(sport.scorings)[0];
     V.evaluate(sport, players, { teams: 10, lineup, scoring });
     L = store.get(KEY, null);
-    if (!L || L.v !== 1) L = build(lineup, scoring);
+    if (!L || L.v !== 1 || L.demo !== 2) L = build(lineup, scoring);
     catchUp();
   }
 
+  // The demo runs on the real calendar: fantasy week 1 of this season (football weeks start Tuesday, after Monday
+  // night; basketball weeks start Monday). Out of season, a replay lined up with Mondays, five weeks in.
+  const WEEK1 = { nfl: new Date(2026, 8, 8).getTime(), nba: new Date(2026, 9, 19).getTime() };
+  function calendar(now) {
+    const s = WEEK1[sportKey];
+    if (s && now - s >= WEEK && now - s < 24 * WEEK) return { start: s, replay: false };
+    const d = new Date(now); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+    return { start: d.getTime() - 5 * WEEK, replay: true };
+  }
   // A bot draft (your seat drafts on autopilot), then the first weeks played, with bots working the wire.
   function build(lineup, scoring, fromMock) {
     const now = Date.now();
+    const cal = calendar(now);
     const seed = Math.floor(Math.random() * 2 ** 31);
     let D = fromMock;
     if (!D) {
-      D = F.create({ sport, teams: guil ? 12 : 10, seed, now: now - 6 * WEEK, lineup, scoring, botDelay: 0, name: nameOf(sportKey, guil) + " draft" });
+      D = F.create({ sport, teams: guil ? 12 : 10, seed, now: cal.start - 4 * DAY, lineup, scoring, botDelay: 0, name: nameOf(sportKey, guil) + " draft" });
       D.teams[0].owner = "You"; D.teams[0].name = "Your Team"; D.teams[0].abbr = "YOU";
       const dctx = F.context(D, players, sport);
       F.start(D, D.created); D.teams[0].auto = true;
@@ -49,10 +59,11 @@
       D.teams[0].auto = false;
     }
     // a guillotine demo opens a day after a chop, with the bidding still open
-    const start = now - (guil ? 4 * WEEK + 1.2 * DAY : 5 * WEEK + 3.4 * DAY);
-    const settings = guil ? { format: "guillotine", bestBall: true, waiverAt: 60, immune: { 0: 4 } }
+    const start = cal.start, played = Math.floor((now - start) / WEEK);
+    const settings = guil ? { format: "guillotine", bestBall: true, waiverAt: 60, immune: { 0: played } }
       : { weeks: 14, playoffTeams: 4, deadline: 11, tradeReview: "vote", reviewHours: 0.03, vetoShare: 0.5, waiverHours: 36 };
-    const lg = G.create({ sport, draft: D, name: nameOf(sportKey, guil), season: data.season, now: start, start, scoring: D.scoring, settings });
+    const lg = G.create({ sport, draft: D, name: nameOf(sportKey, guil), season: data.season + (cal.replay ? " replay" : ""), now: start, start, scoring: D.scoring, settings });
+    lg.demo = 2;
     lg.teams.forEach((t, i) => (t.color = [0, 1, 2, 3, 4, 5, 6, 7, 11, 9, 8, 10][i % 12]));
     return lg;
   }
@@ -145,11 +156,28 @@
     if (th) { theme.toggle(); app.render(); return; }
     if (!c) return;
     const a = c.dataset.c;
-    if (a === "week") { skip(1); U.toast(`On to week ${Math.min(L.week, G.totalWeeks(L))}.`); app.refresh(); }
-    else if (a === "season") { skip(30); U.toast("The season is over."); location.hash = "#league/overview"; app.refresh(); }
+    if (a === "week") { const w = L.week; skip(1); U.toast(recap(w)); app.refresh(); }
+    else if (a === "season") U.confirm("Play out the whole season?", "Every week left is played right now, through the final. You can't undo it, but you can start a new demo league.", "Play it out", () => { skip(30); U.toast("The season is over."); location.hash = "#league/overview"; app.refresh(); });
     else if (a === "reset") U.confirm("Start a new demo league?", "This clears the current league on this device.", "Start over", () => { L = build(lineupNow(), Object.keys(sport.scorings)[0]); catchUp(); location.hash = "#league/overview"; app.refresh(); });
     else if (a === "mock") { const m = U.store("fk-lab").get("mock", null); const D = m.D; D.teams[0].owner = "You"; L = build(D.lineup, D.scoring, D); catchUp(); location.hash = "#league/overview"; app.refresh(); }
   });
+  // One line on how your week went, for the toast after "Finish this week now".
+  function recap(w) {
+    const res = L.results[w];
+    if (!res) return `On to week ${Math.min(L.week, G.totalWeeks(L))}.`;
+    const f = (x) => (typeof x === "number" ? (Number.isInteger(x) ? x : x.toFixed(1)) : x);
+    if (res.block) {
+      const out = res.chopped.map((t) => L.teams[t].name).join(" and ");
+      const mine = res.block.find((r) => r.team === 0);
+      if (!mine) return `Week ${w}: ${out} was chopped.`;
+      return mine.out ? `Week ${w}: you were chopped with ${f(mine.score)}.` : `Week ${w}: you survived in ${mine.rank}${["th", "st", "nd", "rd"][mine.rank % 10 > 3 || [11, 12, 13].includes(mine.rank % 100) ? 0 : mine.rank % 10]} place. ${out} was chopped.`;
+    }
+    const g = res.find((x) => x.a === 0 || x.b === 0);
+    if (!g) return `Week ${w} is final.`;
+    const mineA = g.a === 0, me = mineA ? g.sa : g.sb, them = mineA ? g.sb : g.sa, opp = L.teams[mineA ? g.b : g.a].name;
+    const won = g.w === "t" ? null : (g.w === "a") === mineA;
+    return `Week ${w} final: you ${won == null ? "tied" : won ? "beat" : "lost to"} ${opp}, ${f(me)} to ${f(them)}.`;
+  }
   const lineupNow = () => { const have = new Set(data.players.flatMap((p) => p.pos)); return sport.lineup.filter((s) => sport.slots[s] === "*" || sport.slots[s].some((x) => have.has(x))); };
   // Live scores and bot replies: refresh every few seconds while the page is open.
   setInterval(() => {

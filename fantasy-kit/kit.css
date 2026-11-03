@@ -11,7 +11,7 @@
 :root{
   --band:#13233A; --band-2:#1B3150; --brand:#F6C445; --brand-ink:#1F1600; --accent:#946300; --brand-soft:rgba(246,196,69,.22);
   --bg:#F1F3F6; --surface:#FFFFFF; --surface-2:#F6F7F9; --surface-3:#ECEFF3; --line:#E1E5EB; --line-2:#C9D0D9; --field:#FFFFFF;
-  --ink:#0E1621; --muted:#566273; --dim:#7C8695;
+  --ink:#0E1621; --muted:#566273; --dim:#677284;
   --win:#13883E; --win-soft:#E3F5E9; --loss:#C8283A; --loss-soft:#FCE6E8; --info:#1E5FD6; --info-soft:#E4EDFD; --gold:#9A5B00; --gold-soft:#FFF1D6;
   --p1:#DCEBFF; --p1i:#0D3F82; --p2:#E2F5D6; --p2i:#2B5C0E; --p3:#FFE6CC; --p3i:#7A3A00; --p4:#F0E0FF; --p4i:#53198A;
   --p5:#FFDCE0; --p5i:#8A1424; --p6:#E2E6EB; --p6i:#3A4452; --p7:#D4F2EE; --p7i:#0E5A52; --p8:#FFF1BC; --p8i:#6A5200;
@@ -22,7 +22,7 @@
 }
 :root[data-theme="dark"],.fk-dark{
   --bg:#0B0E13; --surface:#141920; --surface-2:#1A2029; --surface-3:#212834; --line:#252D38; --line-2:#36404D; --field:#0F1318;
-  --ink:#E9EEF4; --muted:#9BA7B5; --dim:#6F7B89; --accent:#F6C445; --brand-soft:rgba(246,196,69,.15);
+  --ink:#E9EEF4; --muted:#9BA7B5; --dim:#8994A2; --accent:#F6C445; --brand-soft:rgba(246,196,69,.15);
   --win:#3DD68C; --win-soft:rgba(61,214,140,.14); --loss:#FF6B78; --loss-soft:rgba(255,107,120,.14); --info:#7AA7FF; --info-soft:rgba(122,167,255,.14); --gold:#F2B654; --gold-soft:rgba(242,182,84,.14);
   --p1:#1D3250; --p1i:#A9CBFF; --p2:#22361A; --p2i:#B5E59A; --p3:#3F2A14; --p3i:#FFC48A; --p4:#33224A; --p4i:#D9B8FF;
   --p5:#43212A; --p5i:#FFB0BA; --p6:#2A2F36; --p6i:#C3CAD3; --p7:#173A37; --p7i:#9EE6DD; --p8:#3A3214; --p8i:#F2DC84;
@@ -242,7 +242,7 @@ th.sortable.on[aria-sort="ascending"]::after{border-top-color:transparent;border
 .wp-bar{height:8px;border-radius:999px;background:var(--surface-3);overflow:hidden;display:flex}
 .wp-bar i{display:block;height:100%}
 .wp-l{display:flex;justify-content:space-between;font-size:12px;font-weight:750;color:var(--muted)}
-.catgrid{display:grid;grid-template-columns:repeat(var(--nc,9),minmax(0,1fr));border-top:1px solid var(--line)}
+.catgrid{display:grid;grid-template-columns:44px repeat(var(--nc,9),minmax(0,1fr));border-top:1px solid var(--line)}
 .catgrid>div{padding:9px 4px;text-align:center;display:grid;gap:2px;border-left:1px solid var(--line)}
 .catgrid>div:first-child{border-left:0}
 .catgrid small{font-size:10.5px;font-weight:850;letter-spacing:.04em;color:var(--muted)}
@@ -589,3 +589,25 @@ table.t.roster td.nm{min-width:0}
 .swatches .pick{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:4px;cursor:pointer;line-height:0}
 .swatches .pick.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
 @media (max-width:980px){div.show-m.sbm{display:block !important}}
+
+/* audit fixes */
+:root[data-theme="dark"] .btn.win,.fk-dark .btn.win{color:#05230F}
+td.more{text-align:center;padding:12px}
+.catgrid .who b{color:var(--muted);font-size:12px;font-weight:850}
+.pname .sub .tag.inj{margin:0 2px 0 0;font-size:9.5px;padding:0 4px;vertical-align:1px}
+.fk-nav nav,.fk-subs .wrap,.chips{scroll-behavior:smooth}
+@media (max-width:600px){
+  .catgrid{grid-template-columns:repeat(3,minmax(0,1fr)) !important}
+  .catgrid>div{border-top:1px solid var(--line)}
+  .catgrid>div:nth-child(3n+2){border-left:0}
+  .catgrid .who{grid-column:1/-1;display:flex;justify-content:center;gap:14px;border-top:0;padding:7px 4px}
+  .catgrid .who small{display:none}
+  .catgrid .who b:first-of-type::before{content:"Top: "}
+  .catgrid .who b:last-of-type::before{content:"Bottom: "}
+  table.t.vs td.nm{min-width:0 !important;max-width:118px}
+  table.t.vs .pname .pav{display:none}
+  table.t.vs .pname .pn{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+  table.t.vs .pname .sub{font-size:10.5px}
+  table.t.vs td{padding-left:6px;padding-right:6px}
+}
+.game.solo .ln small{display:inline !important;color:var(--muted)}

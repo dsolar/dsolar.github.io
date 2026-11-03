@@ -41,7 +41,27 @@ def load(path, default=None):
         return default
 
 
+# Some feeds title-case names ("Jimmy Butler Iii", "Doug Mcdermott"). Put suffixes, Mc/Mac names and a few known
+# spellings back the way the players write them.
+NAME_FIX = {"Iii": "III", "Ii": "II", "Iv": "IV", "Jr": "Jr.", "Sr": "Sr.", "Tyty": "TyTy", "Dejon": "DeJon", "Deaaron": "De'Aaron",
+            "Demar": "DeMar", "Lamelo": "LaMelo", "Deandre": "DeAndre", "Rj": "RJ", "Cj": "CJ", "Pj": "PJ", "Aj": "AJ", "Og": "OG", "Kj": "KJ", "Tj": "TJ"}
+
+
+def fix_name(n):
+    out = []
+    for w in str(n).split():
+        if w in NAME_FIX:
+            w = NAME_FIX[w]
+        elif len(w) > 3 and w.startswith("Mc") and w[2].islower():
+            w = "Mc" + w[2].upper() + w[3:]
+        out.append(w)
+    return " ".join(out)
+
+
 def write(sport, data):
+    for p in data.get("players", []):
+        if p.get("n"):
+            p["n"] = fix_name(p["n"])
     os.makedirs(OUT, exist_ok=True)
     path = os.path.join(OUT, sport + ".json")
     with open(path, "w", encoding="utf-8") as f:
