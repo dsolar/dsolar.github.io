@@ -14,7 +14,7 @@
   let sent = null, busy = false, view = "list";
   const form = { sport: "nfl", teams: 10, type: "snake", clock: 90, season: "h2h", weeks: 14, trades: 1, scoring: "",
     lineup: "", bench: null, playoffs: 4, deadline: null, review: "vote", faab: null, waiverHours: 36,
-    weights: null, cats: null, waivers: "faab", ir: 1, maxAdds: 0, posMax: {} };
+    weights: null, cats: null, waivers: "faab", ir: 1, maxAdds: 0, posMax: {}, keepers: 0, keeperCost: "round" };
   // scoring: a preset key, or "cp" (custom points) / "cc" (custom categories)
   const isCustom = () => form.scoring === "cp" || form.scoring === "cc";
   const scoringType = (sp) => (form.scoring === "cp" ? "points" : form.scoring === "cc" ? "cats" : (sp.scorings[form.scoring] || Object.values(sp.scorings)[0]).type);
@@ -152,6 +152,11 @@
         <div class="field"><label for="n-ir">IR spots</label><select id="n-ir" data-f="ir">${[0, 1, 2, 3, 4].map((x) => opt(x, x ? x : "None", form.ir)).join("")}</select></div>
         <div class="field"><label for="n-ma">Pickups a week</label><select id="n-ma" data-f="maxAdds">${[0, 1, 2, 3, 4, 5, 7, 10].map((x) => opt(x, x ? `Up to ${x}` : "No limit", form.maxAdds)).join("")}</select></div>
       </div>
+      <div class="row3">
+        <div class="field"><label for="n-kp">Keepers</label><select id="n-kp" data-f="keepers">${[0, 1, 2, 3, 4, 5, 6, 8].map((x) => opt(x, x ? `Keep up to ${x}` : "None: redraft every year", form.keepers)).join("")}</select></div>
+        ${form.keepers ? `<div class="field"><label for="n-kc">A keeper costs</label><select id="n-kc" data-f="keeperCost">${(form.type === "auction" ? [["price", "What he went for"], ["price5", "What he went for, plus $5"]] : [["round", "The round he went in"], ["round1", "One round earlier"], ["free", "A last-round pick"]]).map(([v, l]) => opt(v, l, kc())).join("")}</select></div>
+        <div class="field"><label>Next season</label><p class="ps" style="margin:6px 0 0">Worst team picks first. Pickups cost ${form.type === "auction" ? "$5" : "the last round"}.</p></div>` : ""}
+      </div>
       <details class="rules-more"${Object.values(form.posMax).some(Boolean) ? " open" : ""}><summary>Position limits</summary><div class="pml">${(POS_MAIN[sp.key] || []).map((ps) => `<label class="wt"><span>${esc(ps)}</span><select data-pm="${esc(ps)}" aria-label="Most ${esc(ps)} on a roster">${opt(0, "Any", form.posMax[ps] || 0)}${[1, 2, 3, 4, 5, 6, 8].map((x) => opt(x, `Up to ${x}`, form.posMax[ps] || 0)).join("")}</select></label>`).join("")}</div></details>
       ${!h2hLike() ? (form.season === "roto" ? `<div class="row3">${dealRules()}</div>` : "") : `<div class="row3">
         <div class="field"><label for="n-po">Playoff teams</label><select id="n-po" data-f="playoffs">${[0, 2, 4, 8].filter((x) => x <= n - (n % 2)).map((x) => opt(x, x ? `${x} teams` : "No playoffs", po)).join("")}</select></div>
@@ -162,13 +167,14 @@
         <div class="field"><label for="n-rv">Trade review</label><select id="n-rv" data-f="review">${opt("vote", "League can veto for 24 hours", form.review)}${opt("none", "None: trades go through", form.review)}</select></div>`;
     }
   }
+  const kc = () => { const ok = form.type === "auction" ? ["price", "price5"] : ["round", "round1", "free"]; return ok.includes(form.keeperCost) ? form.keeperCost : ok[0]; };
   const POS_MAIN = { nfl: ["QB", "RB", "WR", "TE", "K", "DEF"], nba: ["PG", "SG", "SF", "PF", "C"], mlb: ["C", "1B", "2B", "3B", "SS", "OF", "SP", "RP"] };
   // keep what's typed when a choice redraws the form
   function grab() {
     const f = $("#new"); if (!f) return;
     form.name = $("#n-name").value; form.me = $("#n-me").value; form.team = $("#n-team").value;
     const s = f.querySelector("input[name=sport]:checked"); if (s) form.sport = s.value;
-    f.querySelectorAll("[data-f]").forEach((el) => { form[el.dataset.f] = /^(teams|clock|weeks|trades|bench|faab|playoffs|deadline|waiverHours|ir|maxAdds)$/.test(el.dataset.f) ? Number(el.value) : el.value; });
+    f.querySelectorAll("[data-f]").forEach((el) => { form[el.dataset.f] = /^(teams|clock|weeks|trades|bench|faab|playoffs|deadline|waiverHours|ir|maxAdds|keepers)$/.test(el.dataset.f) ? Number(el.value) : el.value; });
     f.querySelectorAll("[data-w]").forEach((el) => { form.weights = form.weights || {}; form.weights[el.dataset.w] = Number(el.value) || 0; });
     f.querySelectorAll("[data-pm]").forEach((el) => { form.posMax[el.dataset.pm] = Number(el.value) || 0; });
   }
@@ -217,6 +223,7 @@
       D.season = { format: fmt, tally: form.season === "h2hcats" ? "cats" : form.season === "allplay" ? "allplay" : "game", weeks: form.weeks,
         faab: form.faab == null ? (gl ? 1000 : 100) : form.faab, ir: form.ir, maxAdds: form.maxAdds || 0,
         posMax: Object.fromEntries(Object.entries(form.posMax).filter(([, v]) => v)) };
+      if (form.keepers) Object.assign(D.season, { keepers: form.keepers, keeperCost: kc() });
       if (!gl) Object.assign(D.season, { waivers: form.waivers, deadline: form.deadline == null ? Math.max(1, form.weeks - 3) : form.deadline, review: form.review, waiverHours: form.waiverHours,
         playoffTeams: fmt === "roto" ? 0 : Math.min(form.playoffs, n - (n % 2)) });
       const r = await C.rpc("fk_create", { p_name: form.name, p_sport: form.sport, p_manager: form.me, p_draft: D });
@@ -260,8 +267,10 @@
   });
   app.addEventListener("change", (e) => {
     if (!e.target.closest("#new") || !(e.target.name === "sport" || e.target.dataset.f)) return;
-    const was = { sport: form.sport, season: form.season };
+    const was = { sport: form.sport, season: form.season, weeks: form.weeks };
     grab();
+    // a shorter season can't keep a deadline past its end; go back to the default for the new length
+    if (form.weeks !== was.weeks && form.deadline != null && form.deadline >= form.weeks) form.deadline = null;
     // a new sport starts from its own lineup; a new season format from its own budget
     if (form.sport !== was.sport) { form.lineup = ""; form.bench = null; form.scoring = ""; form.weights = null; form.cats = null; form.posMax = {}; }
     if (form.season !== was.season) form.faab = null;

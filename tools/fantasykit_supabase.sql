@@ -303,3 +303,38 @@ grant execute on function public.fk_clock_list(text), public.fk_clock_save(text,
 --     headers := jsonb_build_object('Content-Type', 'application/json', 'x-fk-token', (select value from public.fk_config where name = 'mailer_token')),
 --     body := '{}'::jsonb, timeout_milliseconds := 60000) $job$);
 -- Emails go out once the function's secrets RESEND_API_KEY and FK_MAIL_FROM are set; until then they wait in fk_outbox.
+
+-- ---------- next season: keepers, then a new draft (migration fantasykit_new_season) ----------
+alter table fk_leagues add column if not exists seasons jsonb not null default '[]'::jsonb;
+
+create or replace function fk_new_season(p_id text, p_version int, p_draft jsonb, p_summary jsonb, p_events jsonb)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare uid uuid := auth.uid(); l fk_leagues; e jsonb; k int := 0;
+begin
+  if uid is null then return jsonb_build_object('error', 'Sign in first.'); end if;
+  select * into l from fk_leagues where id = p_id for update;
+  if not found then return jsonb_build_object('error', 'No league with that link.'); end if;
+  if l.commish <> uid then return jsonb_build_object('error', 'Only the commissioner can start a new season.'); end if;
+  if l.league is null then return jsonb_build_object('error', 'This league is already drafting.'); end if;
+  if l.version <> p_version then return jsonb_build_object('error', 'stale', 'version', l.version, 'draft', l.draft, 'league', l.league); end if;
+  if jsonb_typeof(p_draft->'teams') is distinct from 'array' then return jsonb_build_object('error', 'That draft is missing its teams.'); end if;
+  if octet_length(p_draft::text) > 1500000 then return jsonb_build_object('error', 'That league is too big to save.'); end if;
+  update fk_leagues set seasons = seasons || jsonb_build_array(coalesce(p_summary, '{}'::jsonb)), draft = fk_stamp(p_id, p_draft), league = null,
+    version = version + 1, updated_at = now() where id = p_id;
+  if jsonb_typeof(p_events) = 'array' then
+    for e in select * from jsonb_array_elements(p_events) loop
+      exit when k >= 40;
+      if (e->>'team') ~ '^\d+$' and exists (select 1 from fk_seats where league = p_id and team = (e->>'team')::int and notify) then
+        insert into fk_outbox (league, team, kind, subject, body)
+          values (p_id, (e->>'team')::int, fk_clean(e->>'kind', 20), fk_clean(e->>'subject', 120), left(coalesce(e->>'body', ''), 2000));
+        k := k + 1;
+      end if;
+    end loop;
+  end if;
+  return jsonb_build_object('ok', true, 'version', l.version + 1);
+end $$;
+
+create or replace function fk_history(p_id text) returns jsonb language sql stable security definer set search_path = public as $$
+  select coalesce((select seasons from fk_leagues where id = p_id), '[]'::jsonb);
+$$;
+grant execute on function fk_new_season(text, int, jsonb, jsonb, jsonb), fk_history(text) to anon, authenticated;

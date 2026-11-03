@@ -85,7 +85,7 @@
         `<a href="leagues.html">Your leagues<small>Start or join a league</small></a><a href="./">Draft Lab<small>Mock drafts and rankings</small></a>`),
       right: () => `<button class="btn sm ghost" data-live="league">${info.commish ? "Invite" : "League"}</button>`,
       get commishTools() { return info.commish ? commishTools : null; },
-      notice: () => guestNote() + startNote(),
+      notice: () => guestNote() + startNote() + keeperNote(),
     });
     if (catchUp()) push();
     app.refresh();
@@ -199,9 +199,15 @@
       ${info.commish ? `<p class="muted" style="margin:0 0 8px">Send this link to your league. Anyone who opens it signs in with their email and picks an open team.</p>
         <div class="row"><input type="text" readonly value="${esc(inviteUrl())}" id="lv-link" style="flex:1;min-width:0" aria-label="Invite link"><button type="button" class="btn go" data-lv="copy">Copy</button></div>` : ""}
       ${seatList()}
+      <div id="lv-past"></div>
       ${info.me != null ? `<label class="check" style="margin-top:10px"><input type="checkbox" id="lv-mail"${info.notify !== false ? " checked" : ""}> Email me about trade offers, waiver results${D && D.clock >= 3600 ? ", my turn in the draft" : ""} and weekly results</label>` : ""}
       <div class="row ps" style="margin:12px 0 0;gap:6px 16px;flex-wrap:wrap"><span>${u ? `Signed in as ${esc(u.email)}` : `<a href="leagues.html">Sign in</a> to make moves`}</span><span class="grow"></span>${u ? `<button type="button" class="btn sm ghost" data-lv="out">Sign out</button>` : ""}<button type="button" class="btn sm ghost" data-lv="theme">${theme.dark() ? "Light mode" : "Dark mode"}</button></div>`, null, { wide: true });
     const dlg = $("#fk-dlg");
+    // past seasons, newest first; most leagues have none yet, so this stays empty until there are
+    if ((D && D.year > 1) || (L && L.draft && L.draft.year > 1)) C.rpc("fk_history", { p_id: id }).then((h) => {
+      const el = $("#lv-past"); if (!el || !Array.isArray(h) || !h.length) return;
+      el.innerHTML = `<h4 style="margin:14px 0 6px">Past seasons</h4><ul class="seatl">${h.slice().reverse().map((x) => `<li><span class="grow"><b>Year ${esc(x.year)}${x.season ? `, ${esc(x.season)}` : ""}</b><small>${x.champion ? `Champion: ${esc(x.champion.name)}${x.champion.owner ? ` (${esc(x.champion.owner)})` : ""}` : "No champion"}</small></span></li>`).join("")}</ul>`;
+    }).catch(() => {});
     dlg.onclick = async (e) => {
       const b = e.target.closest("[data-lv],[data-free]");
       if (!b) return;
@@ -224,8 +230,50 @@
       if (r.error) { U.toast(r.error, true); e.target.checked = !on; } else { info.notify = on; U.toast(on ? "Email alerts are on." : "Email alerts are off."); }
     };
   }
+  /* ---------- the next season: keepers, then a new draft ---------- */
+  const seasonOver = () => L && L.week > G.totalWeeks(L);
+  const lctx = () => G.context(L, players, sport, hooks());
+  function keeperNote() {
+    if (!seasonOver() || !L.next || info.me == null || !L.settings.keepers) return "";
+    const mine = L.next.picks && L.next.picks[info.me];
+    return `<div class="wrap" style="padding-top:12px"><div class="banner"><b>${mine ? `You're keeping ${mine.length} for next season.` : "Pick your keepers for next season."}</b> <span class="muted">Up to ${L.settings.keepers}${L.next.due ? `, by ${new Date(L.next.due).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}` : ""}.</span> <button class="btn sm go" data-live="keepers">${mine ? "Change keepers" : "Pick keepers"}</button></div></div>`;
+  }
+  function keeperDialog() {
+    const opts = Z.keeperOptions(L, lctx(), info.me), max = L.settings.keepers;
+    const cur = (L.next.picks && L.next.picks[info.me]) || Z.autoKeepers(L, lctx(), info.me);
+    U.dialog(`<h3>Your keepers</h3><p class="muted" style="margin:0 0 10px">Keep up to ${max}. Each costs ${L.draft && L.draft.type === "auction" ? "the price shown, out of next year's budget" : "the pick shown in next year's draft"}. The best values over their cost are checked to start.</p>
+      <form><ul class="seatl kp">${opts.map((o) => `<li><label class="check" style="flex:1;min-width:0"><input type="checkbox" name="k" value="${esc(o.pid)}"${cur.includes(o.pid) ? " checked" : ""}> <span class="ell"><b>${esc(o.n)}</b> <small>${esc(o.cost.label)}</small></span></label><span class="tag${o.surplus > 0 ? " win" : ""}">${o.surplus > 0 ? "Good value" : "Costly"}</span></li>`).join("")}</ul>
+      <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">Save keepers</button></div></form>`, (fd) => {
+      const ks = fd.getAll("k");
+      if (ks.length > max) { U.toast(`You can keep ${max}`, true); return false; }
+      L.next.picks = Object.assign({}, L.next.picks, { [info.me]: ks });
+      push(); app.refresh();
+      U.toast(ks.length ? `Keeping ${ks.length}.` : "Keeping nobody.");
+    }, { wide: true });
+  }
+  function nextSeasonCard() {
+    if (!seasonOver()) return "";
+    const k = L.settings.keepers || 0;
+    if (k && !L.next) return `<div class="card"><div class="mod-h"><h2>Next season</h2></div><div class="bd stack"><p class="small" style="margin:0">The season is over. Open keeper picks: every manager gets an email and picks up to ${k}. Bots keep their best values.</p><div><button class="btn go" data-live="open-keepers">Open keeper picks</button></div></div></div>`;
+    const doc = L, picks = (L.next && L.next.picks) || {};
+    const rows = doc.teams.map((t) => `<li>${U.teamAv(t, "sm")}<span class="grow"><b>${esc(t.name)}</b><small>${info.seats[t.id] != null ? (picks[t.id] ? `Keeping ${picks[t.id].length}` : "Hasn't picked yet: keeps the best values") : "Bot: keeps its best values"}</small></span></li>`).join("");
+    return `<div class="card"><div class="mod-h"><h2>Next season</h2></div><div class="bd stack">
+      <p class="small" style="margin:0">${k ? "Keeper picks are open." : "The season is over."} Starting next season saves this one to the league's history and opens a new draft room${k ? " with the keepers on the board" : ""}, worst team picking first.</p>
+      ${k ? `<ul class="seatl">${rows}</ul>` : ""}<div><button class="btn go" data-live="new-season">Start next season's draft</button></div></div></div>`;
+  }
+  async function newSeason() {
+    const D2 = Z.nextDraft(L, lctx(), sport, (L.next && L.next.picks) || {}, { now: now() });
+    const evs = events(clone({ draft: D, league: L }), { draft: D2, league: null });
+    const r = await C.rpc("fk_new_season", { p_id: id, p_version: version, p_draft: D2, p_summary: Z.summary(L), p_events: evs }).catch((e) => ({ error: e.message }));
+    if (r.error === "stale") { U.toast("Someone else saved first. Try again.", true); version = -1; pull(); return; }
+    if (r.error) { U.toast(r.error, true); return; }
+    version = r.version; D = D2; L = null; base = clone({ draft: D, league: null });
+    app = null; mount();
+    U.toast("Next season's draft room is open.");
+  }
   function commishTools() {
     return `<div class="head"><h1 class="disp">Commissioner</h1><span class="ps">Invite managers and manage teams. Changes save for everyone.</span></div>
+      ${nextSeasonCard()}
       <div class="cols2"><div class="card"><div class="mod-h"><h2>Invite link</h2></div><div class="bd stack">
         <p class="small" style="margin:0">Anyone with this link can sign in and take an open team, even mid-season.</p>
         <button class="btn go" data-live="league">Show the invite link</button></div></div>
@@ -235,6 +283,9 @@
     const lv = e.target.closest("[data-live]"), th = e.target.closest("button[data-theme]");
     if (th) { theme.toggle(); if (app) app.render(); return; }
     if (lv && lv.dataset.live === "league") { e.preventDefault(); leagueDialog(); }
+    if (lv && lv.dataset.live === "keepers") keeperDialog();
+    if (lv && lv.dataset.live === "open-keepers") { L.next = { opened: now(), due: now() + 3 * 864e5, picks: {} }; push(); app.refresh(); U.toast("Keeper picks are open. Everyone gets an email."); }
+    if (lv && lv.dataset.live === "new-season") U.confirm("Start next season?", "This season goes into the league's history, and the league opens a new draft room. You can't undo it.", "Start next season", newSeason);
     const fr = e.target.closest("#app [data-free]");
     if (fr) { const t = Number(fr.dataset.free); U.confirm(`Free ${teamName(t)}?`, `${esc(info.seats[t])} loses the team, and a bot runs it until someone else claims it with the invite link.`, "Free the team", async () => {
       const r = await C.rpc("fk_leave", { p_id: id, p_team: t }).catch((err) => ({ error: err.message }));

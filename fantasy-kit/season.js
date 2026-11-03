@@ -40,6 +40,8 @@
     if (s.ir != null) settings.ir = s.ir;
     if (s.maxAdds) settings.maxAdds = s.maxAdds;
     if (s.posMax && Object.keys(s.posMax).length) settings.posMax = Object.assign({}, s.posMax);
+    // keepers: how many each team carries into next season, and what each one costs
+    if (s.keepers) { settings.keepers = s.keepers; settings.keeperCost = s.keeperCost || (D.type === "auction" ? "price" : "round"); }
     // a draft that ran out on the clock while nobody was around is "done" in the past; start after now, not then
     const at = Math.max(D.done || 0, o.now || Date.now());
     if (o.real) settings.real = true;
@@ -123,8 +125,11 @@
       }
       trades(bd.trades, cd.trades);
     }
+    // a new season: the league went back to a draft
+    if (b && b.league && !c.league && cd) seated.forEach((t) => add(t, "season", "next season's draft room is open", `${(cd.board || []).some((pk) => pk && pk.keeper && pk.team === t) || (cd.sales || []).some((x) => x.keeper && x.team === t) ? "Your keepers are on the board. " : ""}The commissioner starts the draft when everyone's ready.`));
     if (c.league) {
       const bl = (b && b.league) || { trades: [], claims: [], results: {} }, cl = c.league;
+      if (cl.next && !bl.next) seated.forEach((t) => add(t, "keepers", "pick your keepers", `The season is over. Pick up to ${cl.settings.keepers} keepers for next season${cl.next.due ? ` by ${when(cl.next.due)}` : ""}. If you don't, your best values are kept for you.`));
       trades(bl.trades, cl.trades);
       const was = Object.fromEntries((bl.claims || []).map((x) => [x.id, x.status]));
       for (const x of cl.claims || []) {
@@ -156,5 +161,64 @@
     return out;
   }
 
-  return { startAfter, begin, catchUp, driveDraft, events };
+  /* ---------- keepers and the next season ---------- */
+  // What keeping a player costs next year. Snake drafts: "round" is the round he went in (a pickup costs the last
+  // round), "round1" one round earlier than that, "free" one of the team's last picks. Auctions: "price" is what he
+  // went for (a pickup costs $5), "price5" that plus $5.
+  function keeperCost(L, pid) {
+    const D = L.draft, how = L.settings.keeperCost || "round";
+    if (D && D.type === "auction") {
+      const sale = (D.sales || []).find((x) => x.pid === pid);
+      const base = sale ? sale.price : 5;
+      return { price: how === "price5" ? base + 5 : base, label: `$${how === "price5" ? base + 5 : base}${sale ? "" : ", a pickup"}` };
+    }
+    const rounds = D ? D.rounds : 15;
+    const k = D ? D.board.findIndex((pk) => pk && pk.pid === pid && !pk.gone) : -1;
+    const base = k >= 0 ? F.slotInfo(D, k).round : rounds;
+    if (how === "free") return { round: null, label: "A last-round pick" };
+    const r = Math.max(1, how === "round1" ? base - 1 : base);
+    return { round: r, label: `Round ${r}${k < 0 ? ", a pickup" : ""}` };
+  }
+  // Each player a team could keep, with his cost and how much he's worth over it (higher is a better keep).
+  function keeperOptions(L, ctx, teamId) {
+    const D = L.draft, n = L.teams.length;
+    return L.rosters[teamId].map((id) => ctx.byId[id]).filter(Boolean).map((p) => {
+      const c = keeperCost(L, p.id);
+      const surplus = c.price != null ? (p.$ || 0) - c.price : c.round == null ? (p.$ || 0) + 100 : ((c.round - 1) * n + n / 2) - (p.rank || 999);
+      return { pid: p.id, n: p.n, cost: c, surplus };
+    }).sort((a, b) => b.surplus - a.surplus);
+  }
+  // A bot, or a manager who never chose, keeps his best values, up to the limit, as long as each beats its cost.
+  const autoKeepers = (L, ctx, teamId) => keeperOptions(L, ctx, teamId).filter((o) => o.surplus > 0).slice(0, L.settings.keepers || 0).map((o) => o.pid);
+  // Next season's draft: the same teams, rules and scoring, worst-to-first order, keepers already on the board.
+  function nextDraft(L, ctx, sport, picks, o = {}) {
+    const D0 = L.draft || {}, now = o.now || Date.now(), n = L.teams.length;
+    const order = standings(L).map((r) => r.team).reverse();
+    const keepers = [];
+    for (const t of L.teams) {
+      const mine = (picks && picks[t.id] != null ? picks[t.id] : autoKeepers(L, ctx, t.id)).filter((id) => L.rosters[t.id].includes(id)).slice(0, L.settings.keepers || 0);
+      const free = [];
+      for (const pid of mine) { const c = keeperCost(L, pid); if (c.round == null && c.price == null) free.push(pid); else keepers.push({ team: t.id, pid, round: c.round, price: c.price }); }
+      free.forEach((pid, i) => keepers.push({ team: t.id, pid, round: (D0.rounds || 15) - i }));
+    }
+    // a keeper whose round is taken slides to the team's next open pick, so place the earliest rounds first
+    keepers.sort((a, b) => (a.round || 0) - (b.round || 0));
+    const D = F.create({ sport, type: D0.type || "snake", teams: L.teams.map((t) => ({ name: t.name, abbr: t.abbr, owner: t.owner })), seed: Math.floor((o.seed != null ? o.seed : Math.random()) * 2 ** 31) || 1,
+      now, lineup: L.settings.lineup, bench: L.settings.bench, scoring: L.scoring, botDelay: D0.botDelay, clock: D0.clock, bidClock: D0.auction ? D0.auction.bidClock : undefined,
+      nomClock: D0.auction ? D0.auction.nomClock : undefined, budget: D0.auction ? D0.auction.budget : undefined, name: L.name, trades: D0.trading !== false, order, keepers,
+      curve: D0.curve, reveal: D0.reveal });
+    D.teams.forEach((t, i) => (t.color = L.teams[i].color));
+    D.season = D0.season; if (D0.scoringSpec) D.scoringSpec = D0.scoringSpec;
+    D.year = (D0.year || 1) + 1;
+    return D;
+  }
+  // A finished season in a few lines, for the league's history.
+  function summary(L) {
+    const st = standings(L), champ = G.isGuillotine(L) ? G.champion(L) : !L.settings.playoffTeams || G.isRoto(L) ? st[0] && st[0].team : (() => { const fin = L.results[G.totalWeeks(L)]; return fin && fin[0] ? (fin[0].w === "b" ? fin[0].b : fin[0].a) : st[0] && st[0].team; })();
+    return { season: L.season, year: (L.draft && L.draft.year) || 1, champion: champ != null ? { team: champ, name: L.teams[champ].name, owner: L.teams[champ].owner } : null,
+      standings: st.map((r) => ({ team: r.team, name: L.teams[r.team].name, owner: L.teams[r.team].owner, rank: r.rank, w: r.w, l: r.l, t: r.t, pts: r.pts != null ? r.pts : r.pf })) };
+  }
+  const standings = (L) => G.standings(L);
+
+  return { startAfter, begin, catchUp, driveDraft, events, keeperCost, keeperOptions, autoKeepers, nextDraft, summary };
 });
