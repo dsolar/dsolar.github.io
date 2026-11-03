@@ -316,6 +316,21 @@
     for (const id of team.queue || []) { const p = ctx.byId[id]; if (p && canAdd(D, ctx, teamId, p).ok) return p; }
     let best = null, bw = -Infinity;
     const need = needs(D, ctx, teamId);
+    // a manager's own board (team.board, from the Rankings page): the first player on it his roster has a use for
+    // (no kicker while starters are open, no bench player while a starting slot he can't fill waits), so it follows
+    // his order without taking a third quarterback
+    if (team.board && team.board.length) {
+      const base = (p) => (p.$ || 0) + Math.max(0, p.vor || 0) / ctx.maxVor;
+      let first = null;
+      for (const id of team.board) {
+        const p = ctx.byId[id];
+        if (!p || ctx.own[id] != null || !canAdd(D, ctx, teamId, p).ok) continue;
+        first = first || p;
+        const b = base(p);
+        if (b <= 0 || worth(D, ctx, teamId, p, null, need) / b >= 0.7) return p;
+      }
+      if (first) return first;
+    }
     for (const p of ctx.available.slice(0, 300)) {
       const w = worth(D, ctx, teamId, p, r, need);
       if (w > bw && canAdd(D, ctx, teamId, p).ok) { bw = w; best = p; }

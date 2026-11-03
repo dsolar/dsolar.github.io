@@ -458,6 +458,25 @@
        drive           true if this page runs the clock (bots and autopicks)
        hooks           FK.draft hooks (a cap rule, a custom bot)
        brand           { name, mark } for the top bar; exit { href, label }; extra() html for the top bar when done */
+  /* ---------- your own board: a ranking you set on the Rankings page, one per sport, kept in this browser ---------- */
+  // { ids: [player ids in your order], tiers: [ids that end a tier] }. Players you haven't placed (new to the data, or
+  // past the first 400) fall in at their default rank, so the board always covers everyone.
+  const myBoard = {
+    key: (sk) => `fk-board:${sk}`,
+    saved(sk) { try { const v = JSON.parse(localStorage.getItem(myBoard.key(sk)) || "null"); return v && Array.isArray(v.ids) && v.ids.length ? v : null; } catch (e) { return null; } },
+    of(sk, players) {
+      const def = players.slice().sort((a, b) => a.rank - b.rank).map((p) => p.id), v = myBoard.saved(sk);
+      if (!v) return { ids: def, tiers: [], custom: false };
+      const have = new Set(def), seen = new Set(), ids = v.ids.filter((id) => have.has(id) && !seen.has(id) && seen.add(id));
+      def.forEach((id, i) => { if (!seen.has(id)) { ids.splice(Math.min(ids.length, i), 0, id); seen.add(id); } });
+      return { ids, tiers: (v.tiers || []).filter((id) => seen.has(id)), custom: true };
+    },
+    save(sk, b) { try { localStorage.setItem(myBoard.key(sk), JSON.stringify({ ids: b.ids.slice(0, 400), tiers: b.tiers || [], at: Date.now() })); } catch (e) { /* private mode */ } },
+    reset(sk) { try { localStorage.removeItem(myBoard.key(sk)); } catch (e) { /* private mode */ } },
+    // { id: { n: 1-based place, tier: 1-based tier } }
+    places(b) { const out = {}; let tier = 1; const ends = new Set(b.tiers); b.ids.forEach((id, i) => { out[id] = { n: i + 1, tier }; if (ends.has(id)) tier++; }); return out; },
+  };
+
   /* ---------- draft alerts: a chime, a flashing tab and a desktop notification when you're up ---------- */
   // On by default (sound needs one click on the page first, which every browser asks for). The desktop notification
   // only shows while the tab is in the background, and only once the browser has allowed it.
@@ -628,7 +647,11 @@
         const q = team(mine).queue.includes(p.id);
         return `${myTurn && ok ? `<button class="btn xs go" data-pick="${esc(p.id)}">Draft</button> ` : ""}${myNom && ok ? `<button class="btn xs go" data-nominate="${esc(p.id)}">Nominate</button> ` : ""}<button class="star${q ? " on" : ""}" data-queue="${esc(p.id)}" aria-label="${q ? "Remove" : "Add"} ${esc(p.n)} ${q ? "from" : "to"} your queue" aria-pressed="${!!q}" title="${q ? "In your queue" : "Add to queue"}">${q ? "&#9733;" : "&#9734;"}</button>`;
       };
-      const cols = poolColumns(sport, { group: groupOf(sport, ui.f), scoring: d.scoring, actions });
+      // your board, when you've made one: its place and tier, sortable, and the sort the room opens on
+      const bd = mine != null ? myBoard.of(sport.key, opts.players) : null, at = bd && bd.custom ? myBoard.places(bd) : null;
+      const lead = at ? [{ k: "my", label: "Mine", cls: "r num", title: "Your board, from the Rankings page", sort: (p) => (at[p.id] ? at[p.id].n : 1e4), asc: true, html: (p) => (at[p.id] ? `<b>${at[p.id].n}</b><span class="tier-n">T${at[p.id].tier}</span>` : "") }] : [];
+      if (at && !ui.sortSet) { ui.sort = { k: "my", dir: 1 }; ui.sortSet = true; }
+      const cols = poolColumns(sport, { group: groupOf(sport, ui.f), scoring: d.scoring, actions, lead });
       rows = sortRows(rows, cols, ui.sort);
       return table({ cols, rows, sort: ui.sort, dense: true, id: "fk-pool", limit: ui.limit || 250, empty: "No one matches.",
         rowAttr: (p) => `data-player="${esc(p.id)}" class="${mine != null && ctx.own[p.id] == null && !F.canAdd(d, ctx, mine, p).ok ? "dim" : ""}"` });
@@ -875,6 +898,12 @@
           else if (!(st && st.kind === "nominate" && st.team === me())) alerts.stop();
         }
       } else alerts.stop();
+      // autopick follows your board when you have one: it rides on your team so the server's clock uses it too
+      if (me() != null && d.phase !== "done") {
+        const bd = myBoard.of(sport.key, opts.players), t = team(me());
+        const want = bd.custom ? bd.ids.slice(0, 300) : null;
+        if (JSON.stringify(t.board || null) !== JSON.stringify(want)) { if (want) t.board = want; else delete t.board; opts.save(d); refresh(); }
+      }
       if (opts.onChange) opts.onChange(d);
     }
     function drawTimer() {
@@ -1123,5 +1152,5 @@
   FK.ui = { LINEUP_PRESETS: PRESETS, lineupBuilder, orderLineup, lineupStep, slotDesc, esc, $, $$, store, toast, dialog, dialogOpen, focusKey, refocus, keyboardPlayers, confirm, theme, fmtLeft, money, ord, last, initials, ago,
     teamAv, SHAPES, GLYPHS, logoSvg, glyphOf, shapeOf, playerAv, pname, teamName, posChip, posChips, colorOf, injTag,
     proTeam, shell, switcher, route, table, sortRows, nextSort, poolColumns, posFilter, search, passes, groupOf, statCell, label, isPoints,
-    playerCard, scoreboard, versus, vsTable, standingsTable, feed, txLine, tradeCard, tradeWindow, room };
+    playerCard, scoreboard, versus, vsTable, standingsTable, feed, txLine, tradeCard, tradeWindow, room, board: myBoard };
 })(this);

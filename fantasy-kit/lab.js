@@ -15,7 +15,7 @@
   let mock = store.get("mock", null);            // { cfg, D }
   const cache = {};
   let roomCtl = null;
-  const rank = { sport: cfg.sport, scoring: "", f: { q: "", pos: "", team: "" }, sort: { k: "rank", dir: 1 } };
+  const rank = { sport: cfg.sport, scoring: "", f: { q: "", pos: "", team: "" }, sort: { k: "rank", dir: 1 }, mode: "default" };
 
   async function loadSport(key) {
     if (!cache[key]) {
@@ -201,17 +201,48 @@
     const cols = U.poolColumns(sp, { group: U.groupOf(sp, rank.f), scoring: P.scoring });
     const teams = [...new Set(P.players.map((p) => p.t))].sort();
     const rows = U.sortRows(P.players.filter((p) => U.passes(sp, p, rank.f)), cols, rank.sort);
+    const mine = rank.mode === "board", B = U.board.of(sp.key, P.players);
     const opt = (v, l, cur) => `<option value="${esc(v)}"${v === cur ? " selected" : ""}>${esc(l)}</option>`;
     const focus = document.activeElement && document.activeElement.id;
     app.innerHTML = `<div class="wrap page">
       <div class="head"><h1 class="disp">${esc(sp.name)} rankings</h1><span class="ps">${esc(sp.data.source)}, ${esc(sp.data.season)}. ${c.teams} teams, ${esc(sp.scorings[P.scoring].label)}${P.lineup.length ? `, starting ${P.lineup.join(" ")}` : ""}.</span></div>
       <div class="tools"><label class="sr" for="r-sport">Sport</label><select id="r-sport">${Object.values(S.ALL).map((s) => opt(s.key, s.name, rank.sport)).join("")}</select>
-        <label class="sr" for="r-scoring">Scoring</label><select id="r-scoring">${Object.entries(sp.scorings).map(([k, s]) => opt(k, s.label.replace(/ \(.*\)$/, ""), P.scoring)).join("")}</select></div>
+        <label class="sr" for="r-scoring">Scoring</label><select id="r-scoring">${Object.entries(sp.scorings).map(([k, s]) => opt(k, s.label.replace(/ \(.*\)$/, ""), P.scoring)).join("")}</select>
+        <div class="seg" role="group" aria-label="Rankings"><button type="button" data-rmode="default" aria-pressed="${!mine}">Rankings</button><button type="button" data-rmode="board" aria-pressed="${mine}">My board</button></div></div>
       <div class="tools">${U.search(rank.f)}<label class="sr" for="fk-team">${esc(sp.league)} team</label><select id="fk-team" class="${rank.f.team ? "set" : ""}"><option value="">All ${esc(sp.league)} teams</option>${teams.map((t) => `<option${t === rank.f.team ? " selected" : ""}>${esc(t)}</option>`).join("")}</select></div>${U.posFilter(sp, rank.f.pos)}
-      ${U.table({ cols, rows, sort: rank.sort, dense: true, limit: 300, rowAttr: (p) => `data-player="${esc(p.id)}"`, empty: "No one matches." })}
+      ${mine ? myBoard(sp, P, B) : U.table({ cols, rows, sort: rank.sort, dense: true, limit: 300, rowAttr: (p) => `data-player="${esc(p.id)}"`, empty: "No one matches." })}
       <p class="ps">Ranks are value over the replacement player at each position, for the league size and lineup above. Auction values split ${c.teams} budgets of $${c.budget}.</p></div>`;
-    if (focus) { const f = document.getElementById(focus); if (f) { f.focus(); if (f.type === "search") f.setSelectionRange(f.value.length, f.value.length); } }
+    if (rank.focus) { const f = $(rank.focus, app); rank.focus = null; if (f) { f.focus(); f.scrollIntoView({ block: "nearest" }); } }
+    else if (focus) { const f = document.getElementById(focus); if (f) { f.focus(); if (f.type === "search") f.setSelectionRange(f.value.length, f.value.length); } }
+    // your board: move a player past the next one showing, to a spot, or by dragging; tier breaks
+    const visible = () => B.ids.filter((id) => { const p = P.players.find((x) => x.id === id); return p && U.passes(sp, p, rank.f); });
+    const keep = () => { U.board.save(sp.key, B); rankingsPage(); };
+    const moveTo = (id, at) => { const i = B.ids.indexOf(id); if (i < 0) return; B.ids.splice(i, 1); B.ids.splice(Math.max(0, Math.min(B.ids.length, at)), 0, id); keep(); };
+    app.ondragstart = (e) => { const li = e.target.closest && e.target.closest("[data-bid]"); if (li) { e.dataTransfer.setData("text/plain", li.dataset.bid); e.dataTransfer.effectAllowed = "move"; li.classList.add("drag"); } };
+    app.ondragover = (e) => { const li = e.target.closest && e.target.closest("[data-bid]"); if (li) { e.preventDefault(); $$(".mb.over", app).forEach((x) => x.classList.remove("over")); li.classList.add("over"); } };
+    app.ondrop = (e) => { const li = e.target.closest && e.target.closest("[data-bid]"), id = e.dataTransfer.getData("text/plain"); if (!li || !id || li.dataset.bid === id) return; e.preventDefault(); moveTo(id, B.ids.indexOf(li.dataset.bid)); };
+    app.ondragend = () => $$(".mb.drag,.mb.over", app).forEach((x) => x.classList.remove("drag", "over"));
     app.onclick = (e) => {
+      const rm = e.target.closest("[data-rmode]");
+      if (rm) { rank.mode = rm.dataset.rmode; rankingsPage(); return; }
+      const bu = e.target.closest("[data-bup],[data-bdown]");
+      if (bu) {
+        const up = !!bu.dataset.bup, id = bu.dataset.bup || bu.dataset.bdown, vis = visible(), k = vis.indexOf(id), other = vis[k + (up ? -1 : 1)];
+        if (!other) return;
+        rank.focus = `[data-${up ? "bup" : "bdown"}="${CSS.escape(id)}"]`;
+        moveTo(id, B.ids.indexOf(other));                  // up: in front of him; down: right after him
+        return;
+      }
+      const bt = e.target.closest("[data-btier]");
+      if (bt) { const id = bt.dataset.btier; B.tiers = B.tiers.includes(id) ? B.tiers.filter((x) => x !== id) : B.tiers.concat(id); keep(); return; }
+      const bm = e.target.closest("[data-bmove]");
+      if (bm) {
+        const id = bm.dataset.bmove, p = P.players.find((x) => x.id === id);
+        U.dialog(`<h3>Move ${esc(p.n)}</h3><form class="stack"><div class="field"><label for="mb-to">To spot</label><input type="number" id="mb-to" name="to" min="1" max="${B.ids.length}" value="${B.ids.indexOf(id) + 1}"></div><div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">Move</button></div></form>`,
+          (fd) => { const to = Math.round(+fd.get("to")); if (!(to >= 1)) return false; moveTo(id, to - 1); });
+        return;
+      }
+      if (e.target.closest("[data-breset]")) { U.confirm("Reset your board?", "Your order and tiers go back to the default rankings.", "Reset", () => { U.board.reset(sp.key); rankingsPage(); }); return; }
       const fp = e.target.closest("[data-fpos]");
       if (fp) { rank.f.pos = fp.dataset.fpos; rankingsPage(); return; }
       const th = e.target.closest("th[data-sort]");
@@ -229,6 +260,23 @@
       else return;
       rankingsPage();
     };
+  }
+
+  // Your board: your order for every player, with tier breaks. The draft room shows it as the Mine column and opens
+  // sorted by it, and autopick (an expired clock or Autodraft) follows it.
+  function myBoard(sp, P, B) {
+    const by = new Map(P.players.map((p) => [p.id, p])), ends = new Set(B.tiers), places = U.board.places(B);
+    const shown = B.ids.filter((id) => U.passes(sp, by.get(id), rank.f)).slice(0, 300);
+    const rows = shown.map((id, i) => {
+      const p = by.get(id), pl = places[id];
+      const tierHead = i === 0 || places[shown[i - 1]].tier !== pl.tier ? `<li class="mb-tier"><span>Tier ${pl.tier}</span></li>` : "";
+      return `${tierHead}<li class="mb" draggable="true" data-bid="${esc(id)}"><button type="button" class="mb-n" data-bmove="${esc(id)}" title="Move to a spot" aria-label="Spot ${pl.n}: move ${esc(p.n)}">${pl.n}</button><span class="grip" aria-hidden="true">&#8942;&#8942;</span>
+        <span class="mb-p" data-player="${esc(id)}">${U.pname(sp, p, `#${p.rank} by value`)}</span><span class="dollar">${p.$ ? U.money(p.$) : ""}</span>
+        <span class="mb-act"><button type="button" class="btn icon" data-bup="${esc(id)}" aria-label="Move ${esc(p.n)} up">&uarr;</button><button type="button" class="btn icon" data-bdown="${esc(id)}" aria-label="Move ${esc(p.n)} down">&darr;</button><button type="button" class="btn xs" data-btier="${esc(id)}" aria-pressed="${ends.has(id)}" title="End a tier after him">Tier<span class="hide-s"> break</span></button></span></li>`;
+    }).join("");
+    return `<div class="card mb-card"><div class="mod-h"><b>My board</b><span class="ps" style="margin-left:6px">${B.custom ? "Saved in this browser" : "Starts as the default rankings. Your first change saves it."}</span><span class="grow"></span>${B.custom ? `<button type="button" class="btn sm" data-breset>Reset to default</button>` : ""}</div>
+      <ol class="myboard">${rows || `<li class="ps" style="padding:14px 16px">No one matches.</li>`}</ol>
+      <div class="bd ps" style="border-top:1px solid var(--line)">Drag a player, use the arrows, or tap his number to move him to a spot. In any draft room in this browser, your board is the Mine column, the room opens sorted by it, and autopick follows it when your clock runs out or Autodraft is on.</div></div>`;
   }
 
   /* ---------- the kit ---------- */

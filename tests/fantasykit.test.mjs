@@ -141,3 +141,18 @@ test('auction: when every manager passes, the lot closes in three seconds', () =
   F.tick(s.D, s.ctx, T0 + 5000);
   assert.equal(s.D.sales.length, 1);
 });
+
+test("autopick follows a manager's own board, but not into a roster hole", () => {
+  const data = JSON.parse(readFileSync(new URL('../fantasy-kit/data/nfl.json', import.meta.url), 'utf8'));
+  const sport = S.attach(Object.assign({}, S.nfl), data), players = data.players.map((p) => ({ ...p }));
+  V.evaluate(sport, players, { teams: 10, scoring: 'half' });
+  const D = F.create({ sport, teams: 10, seed: 5, now: 0, lineup: sport.lineup, scoring: 'half', botDelay: 0 });
+  const ctx = F.context(D, players, sport);
+  const byRank = players.slice().sort((a, b) => a.rank - b.rank);
+  // a board that loves a mid-round tight end, then a kicker, then the default order
+  const te = byRank.find((p) => p.pos[0] === 'TE' && p.rank > 40), k = byRank.find((p) => p.pos[0] === 'K');
+  D.teams[0].board = [k.id, te.id].concat(byRank.map((p) => p.id).filter((id) => id !== te.id && id !== k.id));
+  assert.equal(F.autoChoice(D, ctx, 0).id, te.id, 'his guy first, the kicker waits');
+  delete D.teams[0].board;
+  assert.notEqual(F.autoChoice(D, ctx, 0).id, te.id, 'without the board, the default pick');
+});
