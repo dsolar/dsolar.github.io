@@ -123,6 +123,26 @@
   const fmtS = (x) => (typeof x === "number" ? (Number.isInteger(x) ? String(x) : x.toFixed(1)) : String(x));
   const when = (t) => new Date(t).toLocaleString("en-US", { timeZone: "America/New_York", weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short" });
 
+  // A team's roster right after the draft, for the email: position, player, pro team and how he was drafted,
+  // in the lineup's position order (QB, RB, WR...) and draft order within a position.
+  function draftRoster(L, team, byId) {
+    const D = L.draft || {}, ids = (L.rosters || [])[team] || [];
+    if (!ids.length) return null;
+    const order = [];
+    for (const s of L.settings.lineup || D.lineup || []) if (!order.includes(s)) order.push(s);
+    const per = (D.round1 || D.teams || []).length || 1, pick = {}, paid = {};
+    (D.board || []).forEach((pk, i) => { if (pk && pk.pid != null && pk.team === team) pick[pk.pid] = { i, n: pk.n, keeper: pk.keeper }; });
+    (D.sales || []).forEach((x) => { if (x.team === team) paid[x.pid] = x; });
+    const rows = ids.map((pid) => {
+      const p = byId[pid] || {}, pos = (p.pos || [])[0] || "", k = pick[pid], $ = paid[pid];
+      const how = $ ? `$${$.price}${$.keeper ? ", keeper" : ""}` : k ? `${k.keeper ? "Keeper, " : ""}round ${Math.floor(k.i / per) + 1}, pick ${k.n}` : "Added";
+      const rank = order.indexOf(pos);
+      return { pid, n: p.n || "Player", pos: (p.pos || []).join("/") || "-", main: pos, t: p.t || "", how, sort: [rank < 0 ? 99 : rank, k ? k.i : $ ? -$.price : 9999] };
+    }).sort((a, b) => a.sort[0] - b.sort[0] || a.sort[1] - b.sort[1]).map(({ sort, ...r }) => r);
+    const tm = (L.teams || [])[team] || {};
+    return { team: tm.name || "Your team", rows, auction: !!(D.sales && D.sales.length), spent: D.sales ? D.sales.filter((x) => x.team === team).reduce((a, x) => a + x.price, 0) : null };
+  }
+
   function events(b, c, o) {
     const out = [], seats = o.seats || {}, now = o.now || Date.now();
     const doc = c.league || c.draft;
@@ -131,9 +151,9 @@
     const pickName = (k) => { const [r, t] = String(k).split(":").map(Number); return `a round ${r} pick (${teamName(t)}'s)`; };
     const names = (ids, picks) => { const xs = (ids || []).map(pn).concat((picks || []).map(pickName)); return xs.length ? xs.join(", ") : "nothing"; };
     const seated = Object.keys(seats).map(Number);
-    const add = (team, kind, subject, body) => {
+    const add = (team, kind, subject, body, data) => {
       if (team == null || team === o.me || seats[team] == null || out.some((x) => x.team === team && x.subject.endsWith(subject))) return;
-      out.push({ team, kind, subject: `${o.name}: ${subject}`, body: `${body}\n\nOpen the league: ${o.url}` });
+      out.push(Object.assign({ team, kind, subject: `${o.name}: ${subject}`, body: `${body}\n\nOpen the league: ${o.url}` }, data ? { data } : {}));
     };
     // the rest of the league hears about trades too: one up for a vote, and one that went through
     const others = (t) => seated.filter((x) => x !== t.from && x !== t.to);
@@ -160,7 +180,11 @@
     const bd = b && b.draft, cd = c.draft;
     if (bd && cd && !(b && b.league)) {
       if (bd.phase === "setup" && cd.phase === "live") seated.forEach((t) => add(t, "draft", "the draft started", "The draft room is live. If your clock runs out, the best player left is taken for you, so jump in."));
-      if (bd.phase !== "done" && cd.phase === "done") seated.forEach((t) => add(t, "draft", "the draft is done", `Every pick is in.${c.league ? ` The season starts ${when(c.league.start)}.` : ""} Set your lineup and check the free agents.`));
+      if (bd.phase !== "done" && cd.phase === "done") seated.forEach((t) => {
+        const ros = c.league ? draftRoster(c.league, t, o.byId || {}) : null;
+        add(t, "draft", "the draft is done", `Every pick is in.${c.league ? ` The season starts ${when(c.league.start)}.` : ""} Set your lineup and check the free agents.`
+, ros ? { roster: ros, url: o.url, start: c.league.start } : null);
+      });
       if (cd.phase === "live" && cd.type !== "auction" && (cd.clock || 0) >= 3600) {
         try {
           const cc = F.onClock(cd, now), cb = bd.phase === "live" ? F.onClock(bd, now) : null;
@@ -308,5 +332,5 @@
   const summary = (L) => G.summary(L);
   const standings = (L) => G.standings(L);
 
-  return { startAfter, realCovers, mergeLive, begin, catchUp, driveDraft, events, keeperCost, keeperOptions, autoKeepers, nextDraft, summary };
+  return { draftRoster, startAfter, realCovers, mergeLive, begin, catchUp, driveDraft, events, keeperCost, keeperOptions, autoKeepers, nextDraft, summary };
 });

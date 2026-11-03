@@ -112,19 +112,70 @@ async function tickLeagues(token: string) {
   return { leagues: report };
 }
 
+// ---------- the email itself: plain text, plus an HTML version with a button and, after a draft, the roster ----------
+const BAND: Record<string, string> = { nfl: "#1E6631", nba: "#B4511F", mlb: "#21498F" };
+const POS_C = [["#E2E6EB", "#3A4452"], ["#DCEBFF", "#0D3F82"], ["#E2F5D6", "#2B5C0E"], ["#FFE6CC", "#7A3A00"], ["#F0E0FF", "#53198A"], ["#FFDCE0", "#8A1424"], ["#E2E6EB", "#3A4452"], ["#D4F2EE", "#0E5A52"], ["#FFF1BC", "#6A5200"]];
+const h = (x: unknown) => String(x ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string));
+const FONT = `-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif`;
+function rosterText(r: any) {
+  return `\n\n${r.team}'s roster:\n` + r.rows.map((x: any) => `${String(x.pos).padEnd(6)}${x.n}${x.t ? `, ${x.t}` : ""} (${x.how})`).join("\n");
+}
+function rosterHtml(r: any, sport: string, FK: any) {
+  const sp = FK && FK.sports && FK.sports[sport], colors = (sp && sp.colors) || {};
+  const logo = (t: string) => { try { const u = FK.sports.teamLogo && FK.sports.teamLogo(sport, t, 40); return u ? `<img src="${h(u)}" width="16" height="16" alt="" style="vertical-align:-3px;margin-right:5px;border:0">` : ""; } catch (_) { return ""; } };
+  let last = "";
+  const rows = r.rows.map((x: any) => {
+    const [bg, fg] = POS_C[colors[x.main] || 0] || POS_C[0];
+    const gap = last && x.main !== last ? "border-top:2px solid #E1E5EB;" : "border-top:1px solid #EEF1F4;"; last = x.main;
+    return `<tr><td style="${gap}padding:9px 0 9px 16px;width:48px;vertical-align:middle"><span style="display:inline-block;min-width:30px;text-align:center;padding:3px 6px;border-radius:5px;background:${bg};color:${fg};font:800 11px ${FONT}">${h(x.main || x.pos)}</span></td>
+      <td style="${gap}padding:9px 8px;vertical-align:middle;font:700 15px ${FONT};color:#0E1621">${h(x.n)}<div style="font:400 12.5px ${FONT};color:#677284;margin-top:2px">${x.t ? `${logo(x.t)}${h(x.t)}` : ""}${String(x.pos).includes("/") ? `${x.t ? ", " : ""}${h(x.pos)}` : ""}${!x.t && !String(x.pos).includes("/") ? "&nbsp;" : ""}</div></td>
+      <td style="${gap}padding:9px 16px 9px 8px;vertical-align:middle;text-align:right;font:600 12.5px ${FONT};color:#566273;white-space:nowrap">${h(x.how)}</td></tr>`;
+  }).join("");
+  const sub = `${r.rows.length} players${r.auction && r.spent != null ? `, $${r.spent} spent` : ""}`;
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #E1E5EB;border-radius:12px;border-collapse:separate;overflow:hidden;margin:6px 0 22px">
+    <tr><td colspan="3" style="padding:14px 16px 10px;background:#F6F7F9;border-bottom:1px solid #E1E5EB"><div style="font:800 17px ${FONT};color:#0E1621">${h(r.team)}</div><div style="font:400 13px ${FONT};color:#566273;margin-top:2px">${h(sub)}</div></td></tr>${rows}</table>`;
+}
+function emailHtml(e: any, FK: any) {
+  const lines = String(e.body || "").split("\n\n");
+  const link = lines.length && /^Open the league: (\S+)$/.exec(lines[lines.length - 1]);
+  const url = link ? link[1] : (e.data && e.data.url) || SITE;
+  const paras = (link ? lines.slice(0, -1) : lines).map((p) => `<p style="margin:0 0 14px;font:400 16px/1.5 ${FONT};color:#26303D">${h(p).replace(/\n/g, "<br>")}</p>`).join("");
+  const roster = e.data && e.data.roster && Array.isArray(e.data.roster.rows) ? rosterHtml(e.data.roster, e.sport, FK) : "";
+  const band = BAND[e.sport] || "#13233A";
+  const title = String(e.subject || "").replace(/^[^:]*:\s*/, "");
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><title>${h(e.subject)}</title></head>
+<body style="margin:0;padding:0;background:#F1F3F6">
+<div style="display:none;max-height:0;overflow:hidden">${h(lines[0] || "").slice(0, 140)}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F1F3F6"><tr><td align="center" style="padding:24px 12px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#FFFFFF;border-radius:14px;overflow:hidden;border:1px solid #E1E5EB">
+  <tr><td style="background:${band};padding:20px 24px">
+    <div style="font:700 12.5px ${FONT};color:rgba(255,255,255,.78)">${h(e.league_name)}</div>
+    <div style="font:900 24px/1.2 ${FONT};color:#FFFFFF;margin-top:4px">${h(title.charAt(0).toUpperCase() + title.slice(1))}</div></td></tr>
+  <tr><td style="padding:22px 24px 8px">
+    <p style="margin:0 0 14px;font:400 16px/1.5 ${FONT};color:#26303D">Hi ${h(e.manager || "there")},</p>
+    ${paras}${roster}
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:4px 0 22px"><tr><td style="background:#F6C445;border-radius:9px"><a href="${h(url)}" style="display:inline-block;padding:12px 22px;font:800 15px ${FONT};color:#1F1600;text-decoration:none">Open the league</a></td></tr></table>
+  </td></tr>
+  <tr><td style="padding:14px 24px 18px;border-top:1px solid #EEF1F4;font:400 12.5px/1.5 ${FONT};color:#677284">You get these because email alerts are on for your team in ${h(e.league_name)}. To turn them off, open the league, choose League, then uncheck email alerts.<br><br>Draft Lab, <a href="https://davidsolar.dev/fantasy-kit/" style="color:#677284">davidsolar.dev</a></td></tr>
+</table></td></tr></table></body></html>`;
+}
+
 async function sendMail(token: string) {
   const key = Deno.env.get("RESEND_API_KEY"), from = Deno.env.get("FK_MAIL_FROM");
   if (!key || !from) return { mail: "not set up" };
   const { emails, error } = await rpc("fk_outbox_take", { p_token: token, p_limit: 40 });
   if (error) return { error };
+  const FK = (emails as any[]).length ? await loadEngine().catch(() => null) : null;
   const ids: number[] = [], errors: Record<string, string> = {};
   for (const e of emails as any[]) {
     ids.push(e.id);
     if (!e.email) { errors[e.id] = "no email address"; continue; }
-    const text = `Hi ${e.manager || "there"},\n\n${e.body}\n\nYou get these because email alerts are on for your team in ${e.league_name}. To turn them off, open the league and choose League, then uncheck email alerts.\n\nDraft Lab, davidsolar.dev`;
+    const roster = e.data && e.data.roster && Array.isArray(e.data.roster.rows) ? rosterText(e.data.roster) : "";
+    const body = roster ? String(e.body).replace(/\n\nOpen the league: /, `${roster}\n\nOpen the league: `) : e.body;
+    const text = `Hi ${e.manager || "there"},\n\n${body}\n\nYou get these because email alerts are on for your team in ${e.league_name}. To turn them off, open the league and choose League, then uncheck email alerts.\n\nDraft Lab, davidsolar.dev`;
     const r = await fetch("https://api.resend.com/emails", {
       method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from, to: [e.email], subject: e.subject, text }),
+      body: JSON.stringify({ from, to: [e.email], subject: e.subject, text, html: emailHtml(e, FK) }),
     });
     if (!r.ok) errors[e.id] = `${r.status} ${(await r.text()).slice(0, 200)}`;
     await new Promise((ok) => setTimeout(ok, 550)); // Resend allows two a second

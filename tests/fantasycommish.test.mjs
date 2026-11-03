@@ -174,3 +174,25 @@ test('draft order: the commissioner sets or shuffles it before the draft', () =>
   F.start(D, 1);
   assert.equal(F.setOrder(D, want).ok, false, 'not once it starts');
 });
+
+test('emails: the draft-done email carries each team its roster, by position', () => {
+  const data = JSON.parse(readFileSync(new URL('../fantasy-kit/data/nfl.json', import.meta.url), 'utf8'));
+  const sport = S.attach(Object.assign({}, S.nfl), data);
+  const players = data.players.map((p) => ({ ...p }));
+  V.evaluate(sport, players, { teams: 6, scoring: 'half' });
+  const T0 = Date.UTC(2026, 9, 1);
+  const D = F.create({ sport, teams: 6, seed: 9, now: T0, scoring: 'half', botDelay: 0 });
+  D.season = { format: 'h2h', weeks: 6, playoffTeams: 4 };
+  F.start(D, T0); const base = { draft: JSON.parse(JSON.stringify(D)), league: null };
+  let t = T0; const c = F.context(D, players, sport);
+  for (let i = 0; i < 9000 && D.phase === 'live'; i++) { t += 3000; F.tick(D, c, t); }
+  const L = Z.begin(D, sport, { now: t });
+  const byId = Object.fromEntries(players.map((p) => [p.id, p]));
+  const ev = Z.events(base, { draft: D, league: L }, { name: 'T', url: 'u', seats: { 0: 'A', 3: 'B' }, me: null, byId, now: t });
+  const e = ev.find((x) => x.team === 3 && x.kind === 'draft');
+  assert.ok(e && e.data && e.data.roster);
+  assert.equal(e.data.roster.rows.length, L.rosters[3].length);
+  assert.equal(e.data.roster.rows[0].main, 'QB', 'quarterbacks first');
+  assert.match(e.data.roster.rows[0].how, /^round \d+, pick \d+$/);
+  assert.ok(JSON.stringify(e.data).length < 20000, 'fits the outbox');
+});
