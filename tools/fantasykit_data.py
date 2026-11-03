@@ -358,7 +358,8 @@ def nfl_weeks(season, state):
             line = [g] + [round(st.get(c, 0) or 0, 2) for c in NFL_COLS[1:]]
             if g or any(line[1:]):
                 lines[str(r.get("player_id"))] = line
-        if not lines and k in weeks:
+        if not lines and k in weeks and weeks[k].get("lines"):
+            weeks[k].update(start=start.isoformat(), end=end.isoformat())
             continue                                   # keep what we had if Sleeper came back empty
         weeks[k] = {"start": start.isoformat(), "end": end.isoformat(), "final": now >= after_night(end), "lines": lines}
     write_weeks("nfl", {"sport": "nfl", "season": str(season), "updated": NOW, "source": "Sleeper",
