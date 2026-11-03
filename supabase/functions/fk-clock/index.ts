@@ -60,7 +60,7 @@ async function loadClass(S: any, sport: string) {
     const data = await fetch(`https://davidsolar.dev/draft/${sport}.json?t=${Math.floor(Date.now() / 3600e3)}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
     boards[sport] = { at: Date.now(), data };
   }
-  return S.prospectClass(boards[sport].data, sport);
+  return S.prospectClass ? S.prospectClass(boards[sport].data, sport) : null;
 }
 
 async function tickLeagues(token: string) {
