@@ -161,3 +161,31 @@ test('season over: no more roster moves', () => {
   assert.match(G.addDrop(s.L, s.ctx, champ, fa.id, null, Date.now()).why, /over/);
   assert.match(G.claim(s.L, s.ctx, champ, fa.id, null, 1, Date.now()).why, /over/);
 });
+
+test('a guillotine can be best ball or set lineups', () => {
+  const data = JSON.parse(readFileSync(new URL('../fantasy-kit/data/nfl.json', import.meta.url), 'utf8'));
+  const sport = S.attach(Object.assign({}, S.nfl), data);
+  for (const bb of [undefined, true, false]) {
+    const D = F.create({ sport, teams: 6, seed: 2, now: 0, scoring: 'half', botDelay: 0 });
+    D.season = Object.assign({ format: 'guillotine' }, bb === undefined ? {} : { bestBall: bb });
+    D.phase = 'done';
+    const L = require('../fantasy-kit/season.js').begin(D, sport, { now: 0 });
+    assert.equal(L.settings.bestBall, bb !== false, `bestBall ${bb}`);
+  }
+});
+
+test('a set-lineups guillotine plays a full season down to a champion', () => {
+  const s = league('nfl', { format: 'guillotine', bestBall: false }, { scoring: 'half' });
+  assert.equal(!!s.L.settings.bestBall, false);
+  const r = F.rng(4);
+  for (let w = 1; w <= 9; w++) {
+    const before = s.L.alive.length;
+    assert.ok(playWeek(s, r).ok);
+    assert.equal(s.L.alive.length, before - 1);
+  }
+  assert.equal(G.champion(s.L), s.L.alive[0]);
+  // managers set their own lineups here
+  const s2 = league('nfl', { format: 'guillotine', bestBall: false }, { scoring: 'half' });
+  const slots = G.lineupFor(s2.L, s2.ctx, 0, 1);
+  assert.ok(G.setLineup(s2.L, s2.ctx, 0, 1, slots, T0).ok !== false);
+});

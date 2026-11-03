@@ -23,8 +23,8 @@
   const isCustom = () => form.scoring === "cp" || form.scoring === "cc";
   const scoringType = (sp) => (form.scoring === "cp" ? "points" : form.scoring === "cc" ? "cats" : (sp.scorings[form.scoring] || Object.values(sp.scorings)[0]).type);
   // season: how a week is decided. Category leagues can count each category, or go rotisserie; points leagues can add all-play.
-  const SEASONS = { cats: [["h2h", "Head to head: most categories wins the week"], ["h2hcats", "Head to head: each category is a win or loss"], ["roto", "Rotisserie: season totals"], ["guillotine", "Best ball guillotine"]],
-    points: [["h2h", "Head to head"], ["allplay", "All-play: your score against every team"], ["guillotine", "Best ball guillotine"]] };
+  const SEASONS = { cats: [["h2h", "Head to head: most categories wins the week"], ["h2hcats", "Head to head: each category is a win or loss"], ["roto", "Rotisserie: season totals"], ["guillotine", "Guillotine"]],
+    points: [["h2h", "Head to head"], ["allplay", "All-play: your score against every team"], ["guillotine", "Guillotine"]] };
   const h2hLike = () => form.season === "h2h" || form.season === "h2hcats" || form.season === "allplay";
   // the sport's standard lineup, without slots its player pool can't fill
   const lineupOf = (sp) => (form.lineup ? form.lineup.split(" ") : sp.lineup.slice()).filter((x) => sp.slots[x] && x !== "BN");
@@ -199,7 +199,7 @@
       <form class="nl-body" id="new" novalidate>
         <section class="nl-sec"><h2 class="nl-h">League type</h2>${kinds}</section>
         <section class="nl-sec"><h2 class="nl-h">Format</h2>${formats}
-          ${gl ? "" : `<div class="nl-bb">${toggle("bestball", "Best ball", "Lineups set themselves: your best scores count each week", form.bestball)}${form.season === "h2h" && !form.vampOn && scoringType(sp) === "points" ? toggle("median", "Median game", "Also play the league median, for a second win or loss each week", form.median) : ""}</div>`}</section>
+          ${`<div class="nl-bb">${toggle("bestball", gl ? "Best ball guillotine" : "Best ball", gl ? "Your best lineup counts each week, so nobody gets chopped for a bad lineup" : "Lineups set themselves: your best scores count each week", form.bestball)}${form.season === "h2h" && !form.vampOn && scoringType(sp) === "points" ? toggle("median", "Median game", "Also play the league median, for a second win or loss each week", form.median) : ""}</div>`}</section>
         <section class="nl-sec nl-ess">
           <div class="nl-name"><label for="n-name">League name</label><input id="n-name" type="text" maxlength="40" required value="${esc(form.name || "")}" placeholder="Name your league" autocomplete="off"></div>
           <div class="g2">${fld("Your name", `<input id="n-me" type="text" maxlength="24" required value="${esc(form.me || "")}" autocomplete="name">`, "", "n-me")}${fld("Your team's name", `<input id="n-team" type="text" maxlength="28" value="${esc(form.team || "")}" placeholder="Optional">`, "", "n-team")}</div>
@@ -227,7 +227,7 @@
     const faab = form.faab == null ? (gl ? 1000 : 100) : form.faab;
     const dl = form.deadline == null ? Math.max(1, form.weeks - 3) : form.deadline;
     const seasonName = (seasonsFor(sp).find(([x]) => x === form.season) || [, ""])[1].split(":")[0];
-    const style = `${(KINDS.find(([k]) => k === form.kind) || [, "Redraft"])[1]}, ${scoringType(sp) === "cats" && formatOf() === "h2h" ? "head to head, most categories" : scoringType(sp) === "cats" && formatOf() === "h2hcats" ? "head to head, each category" : FORMATS[formatOf()] ? FORMATS[formatOf()][0].toLowerCase() : ""}${form.bestball && !gl ? ", best ball" : ""}`;
+    const style = `${(KINDS.find(([k]) => k === form.kind) || [, "Redraft"])[1]}, ${scoringType(sp) === "cats" && formatOf() === "h2h" ? "head to head, most categories" : scoringType(sp) === "cats" && formatOf() === "h2hcats" ? "head to head, each category" : FORMATS[formatOf()] ? FORMATS[formatOf()][0].toLowerCase() : ""}${form.bestball ? (gl ? ", best ball" : ", best ball") : gl ? ", set lineups" : ""}`;
     return {
       line: `${sp.name}, ${n} teams, ${sc}, ${DRAFT_SHORT[form.type]} draft. ${style}`,
       scoring: bon.length ? bon.join(", ") : form.scoring === "cp" ? "Custom points" : "No bonuses",
@@ -433,7 +433,8 @@
         posMax: Object.fromEntries(Object.entries(form.posMax).filter(([, v]) => v)) };
       if (form.keepers > 0) Object.assign(D.season, { keepers: form.keepers, keeperCost: kc() });
       if (form.keepers === -1 && !gl) { D.season.dynasty = { rounds: form.rookie || 3, picks: form.fpicks !== 0 }; if (form.taxi) D.season.taxi = form.taxi; }
-      if (!gl && form.bestball) D.season.bestBall = true;
+      if (form.bestball) D.season.bestBall = true;
+      else if (gl) D.season.bestBall = false;
       if (form.season === "h2h" && form.median && scoringType(sport) === "points") D.season.median = true;
       if (vampire != null) D.season.vampire = { team: vampire, samePos: form.vlike === 1, double: form.vdouble === 1 };
       if (fmt !== "roto" && !gl && form.divs && n >= 2 * form.divs) D.season.divisions = form.divs;

@@ -31,8 +31,9 @@
   function begin(D, sport, o = {}) {
     const s = D.season || { format: "h2h", weeks: 14 };
     const weeks = s.weeks || 14, n = D.teams.length;
-    // the commissioner's choices from the start-a-league form (D.season), with defaults for anything left out
-    const settings = s.format === "guillotine" ? { format: "guillotine", bestBall: true, waiverAt: 60, faab: s.faab || 1000 }
+    // the commissioner's choices from the start-a-league form (D.season), with defaults for anything left out.
+    // A guillotine is best ball unless the form says otherwise (bestBall: false), so managers set lineups.
+    const settings = s.format === "guillotine" ? { format: "guillotine", bestBall: s.bestBall !== false, waiverAt: 60, faab: s.faab || 1000 }
       : { format: s.format === "roto" ? "roto" : "h2h", tally: s.tally || "game", weeks, playoffTeams: s.format === "roto" ? 0 : Math.min(s.playoffTeams != null ? s.playoffTeams : 4, n),
         playoffLegs: s.playoffLegs || "1", consolation: s.consolation || "none",
         deadline: s.deadline != null ? s.deadline : Math.max(1, weeks - 3), tradeReview: ["none", "commish"].includes(s.review) ? s.review : "vote", reviewHours: s.reviewHours || 24, vetoShare: s.vetoShare || 0.5,
