@@ -112,6 +112,20 @@ window.PROJECTS = [
     cover: { image: "assets/covers/calendar.jpg", bg: "#17130E", band: "#FFC53D" }
   },
   {
+    title: "Fantasy",
+    line: "Every league and draft tool, by sport",
+    type: "Fantasy Leagues",
+    featured: true,
+    released: "2026-11",
+    url: "fantasy/",
+    action: "Pick a sport",
+    question: "What if every league I play in ran on the same draft room and the same season engine?",
+    summary: "The hub for the basketball, football and baseball leagues, with mock drafts against bots, rankings and demo leagues for each sport.",
+    facts: [["3", "sports on one kit"], ["6", "draft formats, from snake to white elephant"], ["6", "demo leagues that play in real time"]],
+    stack: ["JavaScript", "Python", "GitHub Actions"],
+    cover: { image: "assets/covers/fantasy.svg", bg: "#13233A", band: "#F6C445" }
+  },
+  {
     title: "Bastille Day Odds",
     line: "Who gets cut next in the guillotine",
     tag: "Live on game days",

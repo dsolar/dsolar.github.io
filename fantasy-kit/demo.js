@@ -110,7 +110,7 @@
       brand: { name: "Draft Lab", href: "./", mark: `<img src="mark.svg" alt="">` },
       switcher: () => U.switcher({ name: L.name, abbr: sportKey.toUpperCase(), color: { nba: 4, nfl: 2, mlb: 0 }[sportKey] },
         leagues.map(([s, g]) => ({ href: `?s=${s.key}&f=${g ? "g" : "h"}`, name: nameOf(s.key, g), sub: `${s.name}, ${g ? "best ball guillotine" : "head to head"}`, av: { abbr: s.key.toUpperCase(), color: { nba: 4, nfl: 2, mlb: 0 }[s.key] } })),
-        `<a href="./">Draft Lab<small>Mock drafts and rankings</small></a>`),
+        `<a href="./">Draft Lab<small>Mock drafts and rankings</small></a><a href="../fantasy/">All fantasy<small>Every league and tool, by sport</small></a>`),
       right: () => `<button class="btn sm ghost" data-theme>${theme.dark() ? "Light" : "Dark"}</button>`,
       draftHref: "./#draft",
       commishTools,

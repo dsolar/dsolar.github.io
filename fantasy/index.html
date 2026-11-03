@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Fantasy | David Solar</title>
+<meta name="description" content="Every fantasy page on davidsolar.dev by sport: the basketball, football and baseball leagues, plus Draft Lab mock drafts, rankings and demo leagues.">
+<meta name="theme-color" content="#13233A">
+<script>try{var t=localStorage.getItem("fk-lab:theme");if(t==='"dark"'||t==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+<link rel="icon" href="../fantasy-kit/mark.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,400..900;1,62..125,700..900&display=swap">
+<link rel="stylesheet" href="../assets/bar.css">
+<link rel="stylesheet" href="../fantasy-kit/kit.css">
+<script src="../assets/analytics.js" defer></script>
+<style>
+/* The fantasy hub: the Fantasy Kit's default brand (stadium navy, scoreboard amber), with one color per sport
+   carried from the demo league switcher: basketball orange, football green, baseball blue. */
+.nba{--sp:var(--t4)} .nfl{--sp:var(--t2)} .mlb{--sp:var(--t0)}
+.intro{padding:28px 0 18px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.intro h1{margin:0;font-size:clamp(44px,7.4vw,92px);--disp-wdth:70}
+.intro p{margin:10px 0 0;max-width:56ch;color:var(--muted);font-size:17px}
+.resume{display:flex;gap:8px;flex-wrap:wrap}
+
+/* three sport panels, side by side on a wide screen */
+.sports{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch;padding-bottom:8px}
+.sp{background:var(--surface);border:1px solid var(--line);border-radius:var(--rl);box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden;scroll-margin-top:16px}
+.sp-h{position:relative;padding:18px 20px 16px;border-top:6px solid var(--sp);background:linear-gradient(180deg,color-mix(in srgb,var(--sp) 12%,var(--surface)),var(--surface))}
+.sp-h h2{margin:0;font-size:clamp(34px,3.6vw,48px);--disp-wdth:66;color:var(--ink)}
+.sp-h p{margin:6px 0 0;color:var(--muted);font-size:14px}
+.sp-h .pool{display:block;margin-top:10px;font-size:12px;color:var(--dim);min-height:1.2em}
+.lg{margin:0 16px;padding:16px;border-radius:10px;background:var(--band);color:#EEF2F7;display:grid;gap:8px;text-decoration:none}
+.lg:hover{filter:brightness(1.08)}
+.lg small{font-size:12px;font-weight:700;color:color-mix(in srgb,var(--sp) 55%,#fff)}
+.lg b{font-size:24px;line-height:1.05}
+.lg span{font-size:14px;color:#BAC5D3}
+.lg .go{justify-self:start;margin-top:4px;background:var(--brand);color:var(--brand-ink);font-weight:800;font-size:13px;border-radius:999px;padding:7px 14px}
+.links{list-style:none;margin:14px 0 0;padding:0 0 8px}
+.links li{border-top:1px solid var(--line)}
+.links a{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;align-items:center;padding:11px 20px;color:inherit;text-decoration:none}
+.links a:hover{background:var(--surface-2)}
+.links b{font-size:15px}
+.links span{grid-column:1;font-size:13px;color:var(--muted)}
+.links i{grid-row:1/3;grid-column:2;font-style:normal;font-size:12px;font-weight:700;color:var(--accent);white-space:nowrap}
+.links .live i{color:var(--win)}
+
+/* the formats, as a reference */
+.formats{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin:16px 0 40px}
+.formats .card{padding:0}
+.formats h2{margin:0;padding:16px 20px 4px;font-size:22px}
+.formats .lede{margin:0;padding:0 20px 10px;color:var(--muted);font-size:14px}
+.fl{list-style:none;margin:0;padding:0}
+.fl li{display:grid;grid-template-columns:170px minmax(0,1fr);gap:12px;padding:11px 20px;border-top:1px solid var(--line)}
+.fl b{font-size:14.5px}
+.fl span{font-size:14px;color:var(--muted)}
+.fl a{color:var(--accent);font-weight:700;text-decoration:none}
+.fl a:hover{text-decoration:underline}
+.foot{padding:0 0 40px;color:var(--muted);font-size:13px}
+@media (max-width:1060px){.sports{grid-template-columns:1fr}.sp{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}.sp-h{grid-column:1/-1}.lg{margin:0 0 16px 16px}.links{margin:0}}
+@media (max-width:760px){.sp{display:flex}.lg{margin:0 16px}.links{margin-top:14px}.formats{grid-template-columns:1fr}.fl li{grid-template-columns:1fr;gap:2px}}
+</style>
+</head>
+<body>
+<nav class="ds-bar" aria-label="davidsolar.dev"><a href="../"><img src="../assets/ds-mark.svg" alt="" width="20" height="20"><span class="ds-bar-name">David Solar</span></a><a href="../#projects">All projects</a></nav>
+<header class="fk-top">
+  <div class="fk-mast fk-band"><div class="wrap">
+    <a class="fk-brand" href="./"><img src="../fantasy-kit/mark.svg" alt=""><b class="disp">Fantasy</b></a>
+    <span class="grow"></span><div class="fk-who"><button class="btn sm ghost" type="button" id="theme">Dark</button></div>
+  </div></div>
+  <div class="fk-nav"><div class="wrap"><nav aria-label="Sports">
+    <a href="#nba">Basketball</a><a href="#nfl">Football</a><a href="#mlb">Baseball</a><a href="../fantasy-kit/">Draft Lab</a>
+  </nav></div></div>
+</header>
+
+<main class="wrap">
+  <div class="intro">
+    <div>
+      <h1 class="disp">Fantasy</h1>
+      <p>The leagues I play in, and the tools I built for them. Each sport has its league page, mock drafts against bots, rankings and demo leagues you can play right now.</p>
+    </div>
+    <div class="resume" id="resume"></div>
+  </div>
+
+  <div class="sports">
+    <section class="sp nba" id="nba" aria-labelledby="nba-h">
+      <div class="sp-h"><h2 class="disp" id="nba-h">Basketball</h2><p>Nine-category and points leagues, real per-game lines.</p><span class="pool" data-pool="nba"></span></div>
+      <a class="lg" href="../hardcap/"><small>The league</small><b>Hard Cap</b><span>Salary-cap dynasty: draft the player, carry the contract. Real NBA salaries, one hard line, a Prospect Board and nine-category weeks scored from real box scores.</span><em class="go">Open Hard Cap</em></a>
+      <ul class="links">
+        <li><a href="../fantasy-kit/?s=nba#home"><b>Mock draft</b><span>Snake, auction, mystery packages, white elephant or a time bank, against bots.</span><i>Draft Lab</i></a></li>
+        <li><a href="../fantasy-kit/?s=nba#rankings"><b>Rankings</b><span>Value over replacement and auction dollars for your league size.</span><i>Draft Lab</i></a></li>
+        <li data-demo="nba"><a href="../fantasy-kit/league.html?s=nba&amp;f=h"><b>Demo league</b><span>Head to head with bots, a season moving in real time.</span><i>Hardwood Heads</i></a></li>
+        <li data-demo="nba:g"><a href="../fantasy-kit/league.html?s=nba&amp;f=g"><b>Best ball guillotine</b><span>Lowest score each week is chopped. Bid on what's left.</span><i>Last Team Standing</i></a></li>
+      </ul>
+    </section>
+
+    <section class="sp nfl" id="nfl" aria-labelledby="nfl-h">
+      <div class="sp-h"><h2 class="disp" id="nfl-h">Football</h2><p>Half PPR, PPR or standard, with kickers and defenses.</p><span class="pool" data-pool="nfl"></span></div>
+      <a class="lg" href="../guillotine/"><small>The league</small><b>Bastille Day Odds</b><span>Weekly survival odds for a 15-team guillotine league, from 20,000 simulated seasons every update.</span><em class="go">See who's next</em></a>
+      <ul class="links">
+        <li><a href="../fantasy-kit/?s=nfl#home"><b>Mock draft</b><span>Snake, auction, mystery packages, white elephant or a time bank, against bots.</span><i>Draft Lab</i></a></li>
+        <li><a href="../fantasy-kit/?s=nfl#rankings"><b>Rankings</b><span>Projected points and positional value for your scoring.</span><i>Draft Lab</i></a></li>
+        <li data-demo="nfl"><a href="../fantasy-kit/league.html?s=nfl&amp;f=h"><b>Demo league</b><span>Head to head with bots, a season moving in real time.</span><i>Sunday Scaries</i></a></li>
+        <li data-demo="nfl:g"><a href="../fantasy-kit/league.html?s=nfl&amp;f=g"><b>Best ball guillotine</b><span>Lowest score each week is chopped. Bid on what's left.</span><i>Off With Their Heads</i></a></li>
+      </ul>
+    </section>
+
+    <section class="sp mlb" id="mlb" aria-labelledby="mlb-h">
+      <div class="sp-h"><h2 class="disp" id="mlb-h">Baseball</h2><p>5x5 roto or the Yoenis 8x8, last season paced to full.</p><span class="pool" data-pool="mlb"></span></div>
+      <a class="lg" href="../yoenis/"><small>The league</small><b>Don't Forget to Wipe Yoenis</b><span>The record book for a 16-team Yahoo keeper league: every champion, standing and draft pick since 2013, plus keeper costs.</span><em class="go">Open the record book</em></a>
+      <ul class="links">
+        <li><a href="../fantasy-kit/?s=mlb#home"><b>Mock draft</b><span>Snake, auction, mystery packages, white elephant or a time bank, against bots.</span><i>Draft Lab</i></a></li>
+        <li><a href="../fantasy-kit/?s=mlb#rankings"><b>Rankings</b><span>Category z-scores, value over replacement and auction dollars.</span><i>Draft Lab</i></a></li>
+        <li data-demo="mlb"><a href="../fantasy-kit/league.html?s=mlb&amp;f=h"><b>Demo league</b><span>Head to head with bots, a season moving in real time.</span><i>Bullpen Mafia</i></a></li>
+        <li data-demo="mlb:g"><a href="../fantasy-kit/league.html?s=mlb&amp;f=g"><b>Best ball guillotine</b><span>Lowest score each week is chopped. Bid on what's left.</span><i>Sudden Death</i></a></li>
+      </ul>
+    </section>
+  </div>
+
+  <div class="formats">
+    <section class="card" aria-labelledby="df-h">
+      <h2 id="df-h">Draft formats</h2>
+      <p class="lede">All of them run in Draft Lab, for any of the three sports.</p>
+      <ul class="fl">
+        <li><b>Snake</b><span>The order flips every round. Linear and third-round reversal are there too.</span></li>
+        <li><b>Auction</b><span>Nominate, bid, and fill a roster on a budget. Bots bid by proxy.</span></li>
+        <li><b>Mystery packages</b><span>Every team gets a random set of picks, like 1, 24 and 42 against 12, 13 and 18, dealt so each set is worth the same.</span></li>
+        <li><b>White elephant</b><span>Your turn can be a steal. The team you rob picks again right away.</span></li>
+        <li><b>Time bank</b><span>One clock for the whole draft. The time you save becomes FAAB.</span></li>
+        <li><b>Draft-day trades</b><span>Trade picks and players you've drafted while the draft runs. Bots answer, and sometimes call you.</span></li>
+      </ul>
+      <p class="lede" style="padding-top:10px"><a href="../fantasy-kit/#home" style="font-weight:700;text-decoration:none">Start a mock draft</a></p>
+    </section>
+    <section class="card" aria-labelledby="sf-h">
+      <h2 id="sf-h">Season formats</h2>
+      <p class="lede">The demo leagues play these with bots, a week at a time in real time.</p>
+      <ul class="fl">
+        <li><b>Head to head</b><span>Weekly matchups, standings, playoffs, FAAB waivers and trades with a league vote.</span></li>
+        <li><b>Guillotine</b><span>Everyone scores every week and the lowest team is chopped. Its roster goes up for bids midweek, and the last team standing wins.</span></li>
+        <li><b>Best ball</b><span>No lineups to set. Each week your best possible lineup scores.</span></li>
+        <li><b>Salary cap</b><span>Hard Cap's model: real contracts, one hard line and a Prospect Board.</span></li>
+      </ul>
+    </section>
+  </div>
+  <p class="foot">Everything here runs on the Fantasy Kit, one set of player data, draft and season code shared by every league page. <a href="../fantasy-kit/#kit">How it's built</a>.</p>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  // Theme, shared with Draft Lab and the demo leagues.
+  var btn = document.getElementById("theme");
+  var root = document.documentElement;
+  var paint = function () { btn.textContent = root.dataset.theme === "dark" ? "Light" : "Dark"; };
+  btn.addEventListener("click", function () {
+    var dark = root.dataset.theme !== "dark";
+    if (dark) root.dataset.theme = "dark"; else delete root.dataset.theme;
+    try { localStorage.setItem("fk-lab:theme", JSON.stringify(dark ? "dark" : "light")); } catch (e) { /* private mode */ }
+    paint();
+  });
+  paint();
+
+  var read = function (k) { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } };
+  var NAMES = { nba: "Basketball", nfl: "Football", mlb: "Baseball" };
+
+  // Where you left off: a mock draft in progress, and how your demo leagues stand.
+  var resume = document.getElementById("resume");
+  var mock = read("fk-lab:mock");
+  if (mock && mock.D && mock.D.phase !== "done") {
+    var a = document.createElement("a");
+    a.className = "btn go"; a.href = "../fantasy-kit/#draft";
+    a.textContent = "Back to your " + (NAMES[mock.D.sport] || "").toLowerCase() + " mock";
+    resume.appendChild(a);
+  }
+  document.querySelectorAll("[data-demo]").forEach(function (li) {
+    var L = read("fk-demo:" + li.dataset.demo);
+    if (!L || !L.settings) return;
+    var weeks = L.settings.weeks + (L.settings.playoffWeeks || 0);
+    var over = L.week > weeks;
+    var note = over ? "Season over" : "Week " + L.week + " of " + weeks;
+    if (L.settings.format === "guillotine" && L.alive) note = over ? "Season over" : L.alive.indexOf(0) >= 0 ? "Week " + L.week + ", you're alive" : "Week " + L.week + ", you were chopped";
+    var i = li.querySelector("i");
+    i.textContent = note;
+    li.classList.add("live");
+  });
+
+  // The player pools, from the same files Draft Lab uses.
+  document.querySelectorAll("[data-pool]").forEach(function (el) {
+    fetch("../fantasy-kit/data/" + el.dataset.pool + ".json").then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+      if (!d || !d.players) return;
+      el.textContent = d.players.length.toLocaleString("en-US") + " players, " + d.season + " lines. " + d.source + ".";
+    }).catch(function () { /* the panel works without it */ });
+  });
+})();
+</script>
+</body>
+</html>

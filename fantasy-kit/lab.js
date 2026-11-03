@@ -9,6 +9,9 @@
   const BLURB = { nba: "Real per-game lines, 9-cat or points", nfl: "Season points, half PPR, PPR or standard", mlb: "Last season paced to full, 5x5 or 8x8" };
   const DEFAULTS = { sport: "nba", scoring: "", type: "snake", teams: 10, slot: 0, clock: 30, budget: 200, bench: null, lineup: "", name: "", reveal: "start", test: 1, trades: 1 };
   let cfg = Object.assign({}, DEFAULTS, store.get("cfg", {}));
+  // ?s=nfl (from the fantasy hub) picks the sport for setup and rankings
+  const qs = new URLSearchParams(location.search).get("s");
+  if (S[qs] && qs !== cfg.sport) { cfg = Object.assign(cfg, { sport: qs, scoring: "", lineup: "", bench: null }); store.set("cfg", cfg); }
   let mock = store.get("mock", null);            // { cfg, D }
   const cache = {};
   let roomCtl = null;
@@ -39,7 +42,7 @@
 
   /* ---------- header ---------- */
   function header(tab) {
-    const right = `<button class="btn sm ghost" data-act="theme">${theme.dark() ? "Light" : "Dark"}</button>${mock ? `<button class="btn sm" data-act="new">New mock</button>` : ""}`;
+    const right = `<a class="btn sm ghost" href="../fantasy/">All fantasy</a><button class="btn sm ghost" data-act="theme">${theme.dark() ? "Light" : "Dark"}</button>${mock ? `<button class="btn sm" data-act="new">New mock</button>` : ""}`;
     top.innerHTML = U.shell({ brand: { name: "Draft Lab", href: "./", mark: `<img src="mark.svg" alt="">` },
       tabs: [["draft", "Mock draft"], ["rankings", "Rankings"], ["league", "Demo league"], ["kit", "The kit"]], tab, right,
       hrefOf: (t, sub) => (t === "league" ? "league.html" : "#" + t + (sub ? "/" + sub : "")) });
