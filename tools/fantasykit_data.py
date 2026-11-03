@@ -332,7 +332,8 @@ def nfl_weeks(season, state):
     cur = int(state.get("week") or 0) if state.get("season_type") == "regular" else 18
     kick = state.get("season_start_date")
     if kick:
-        tue1 = date.fromisoformat(kick) - timedelta(days=2)      # kickoff Thursday, so the week starts Tuesday
+        k0 = date.fromisoformat(kick)
+        tue1 = k0 - timedelta(days=(k0.weekday() - 1) % 7)      # the Tuesday on or before kickoff
     else:
         sep1 = date(season, 9, 1)
         tue1 = sep1 + timedelta(days=(0 - sep1.weekday()) % 7 + 1)   # the Tuesday after Labor Day
@@ -344,6 +345,7 @@ def nfl_weeks(season, state):
         start = tue1 + timedelta(days=7 * (w - 1))
         end = start + timedelta(days=6)
         if weeks.get(k, {}).get("final"):
+            weeks[k].update(start=start.isoformat(), end=end.isoformat())
             continue
         rows = nfl_rows(f"https://api.sleeper.com/stats/nfl/{season}/{w}?season_type=regular{POS_Q}")
         lines = {}
