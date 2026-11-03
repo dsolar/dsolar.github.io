@@ -1140,25 +1140,40 @@
     const order = standings(L).map((x) => x.team).reverse();
     return (r - 1) * n + (pickYear(key) > 1 ? Math.floor(n / 2) : Math.max(0, order.indexOf(t)));
   }
-  // The prospect next year's class puts at a pick's slot (ctx.hooks.prospects, from the Big Board), or null.
-  const pickProspect = (L, ctx, key) => { const cls = ctx.hooks && ctx.hooks.prospects; return pickYear(key) === 1 && cls && cls.length ? cls[pickSlot(L, key)] || null : null; };
-  // Where a rookie taken at place i of his fantasy class tends to rank among a league's players a year in: the
-  // first one is about a top-10 asset, and each one after him lands a few spots deeper.
-  const CLASS_DEPTH = { nfl: [12, 6], nba: [16, 7] };
+  // Next year's class (ctx.hooks.prospects, from the Big Board) as this league would draft it: each prospect priced
+  // against this league's players at his position, then in order of that price, so a 1-QB league lets quarterbacks
+  // slide and a superflex league doesn't. His board score (weighted average rank) stands in for draft capital: the
+  // consensus top prospect compares to about the 5th player at his position, and each step down the board is worth
+  // less as the board goes on (the square root), so a clear #1 stands apart and the middle of a class bunches up.
+  const CLASS_FIT = { nfl: { RB: [2, 3], WR: [3, 3.2], TE: [4, 2.6], QB: [5, 3] }, nba: { "*": [10, 9] } };
+  function classValues(L, ctx) {
+    const cls = ctx.hooks && ctx.hooks.prospects, fit = CLASS_FIT[ctx.sport.key];
+    if (!cls || !cls.length || !fit) return null;
+    if (ctx._class && ctx._class.src === cls) return ctx._class.list;
+    const byPos = {};
+    const curve = (pos) => byPos[pos] || (byPos[pos] = ctx.players.filter((p) => pos === "*" || S.positions(p)[0] === pos).map((p) => Math.max(0, p.$ || 0)).sort((a, b) => b - a));
+    const list = cls.map((pr) => {
+      const pos = fit["*"] ? "*" : String(pr.pos).split("/").find((x) => fit[x]);
+      if (!pos) return null;
+      const [a, b] = fit[pos], at = Math.round(a + b * Math.sqrt(Math.max(1, pr.score || pr.rank))) - 1, c = curve(pos);
+      return { pr, v: c.length ? c[Math.min(c.length - 1, at)] : 0, like: at + 1, pos };
+    }).filter(Boolean).sort((x, y) => y.v - x.v || (x.pr.score || x.pr.rank) - (y.pr.score || y.pr.rank));
+    ctx._class = { src: cls, list };
+    return list;
+  }
+  // The prospect next year's class puts at a pick's slot, or null (and none for a pick two seasons out).
+  const pickProspect = (L, ctx, key) => { const cl = pickYear(key) === 1 && classValues(L, ctx); return cl ? (cl[pickSlot(L, key)] || {}).pr || null : null; };
   function pickValue(L, ctx, key) {
-    const r = +key.split(":")[0], far = pickYear(key) > 1, slot = pickSlot(L, key);
+    const r = +key.split(":")[0], far = pickYear(key) > 1, slot = pickSlot(L, key), R = pickRounds(L) || 3, n = L.teams.length;
     // a pick two seasons out could land anywhere, so it's priced at the middle of its round, and a little lower
     const pool = ctx.free.slice().sort((a, b) => (b.$ || 0) - (a.$ || 0));
-    let v = (pool[slot] && pool[slot].$) || 1;
-    // next year's class, when the Big Board knows it: the pick is worth the better of the free agent and the rookie
-    // (a pick two seasons out uses this class as the typical one, at the middle of its round)
-    const cls = ctx.hooks && ctx.hooks.prospects, pr = cls && cls.length ? cls[slot] : null, dep = CLASS_DEPTH[ctx.sport.key];
-    if (pr && dep) {
-      const all = ctx._dollars && ctx._dollars.n === ctx.players.length ? ctx._dollars.v : (ctx._dollars = { n: ctx.players.length, v: ctx.players.map((p) => Math.max(0, p.$ || 0)).sort((a, b) => b - a) }).v;
-      const at = Math.round((dep[0] + (pr.fr - 1) * dep[1]) * L.teams.length / 10) - 1;
-      v = Math.max(v, all[Math.min(all.length - 1, at)] || 0);
-    }
-    return Math.max(2, (v * 1.3 + (pickRounds(L) - r + 1) * 2) * (far ? 0.85 : 1));
+    const fa = (pool[slot] && pool[slot].$) || 1, cl = classValues(L, ctx);
+    // no class to go on (baseball, or the board didn't load): the free agent at that slot, plus a rookie's upside
+    if (!cl) return Math.max(2, (fa * 1.3 + (R - r + 1) * 2) * (far ? 0.85 : 1));
+    // with the class: the better of the prospect and the free agent at that slot, plus a little that steps down pick
+    // by pick, so a late 2nd is still worth more than a late 3rd when both are $1 players
+    const v = Math.max(fa, (cl[slot] || { v: 0 }).v, 1) + 2 * R * Math.max(0, 1 - slot / (R * n));
+    return Math.max(1, v * (far ? 0.85 : 1));
   }
   const ordinal = (k) => k + (k % 100 >= 11 && k % 100 <= 13 ? "th" : { 1: "st", 2: "nd", 3: "rd" }[k % 10] || "th");
   const pValue = (ctx, id) => Math.max(1, (ctx.byId[id] && ctx.byId[id].$) || 0) + Math.max(0, (ctx.byId[id] && ctx.byId[id].vor) || 0) * 0.01;
