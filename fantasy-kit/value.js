@@ -159,14 +159,24 @@
   // Projections (baseball's pbat and ppit, FanGraphs' Steamer): when the data has them, players are valued on the
   // projection, not last season. A player with no projection for a line has nothing on it (he isn't expected to
   // play). Their own lines go back afterward, so tables still show what they did. league.projections = false skips it.
+  // Basketball's ppg (Sleeper's season projection, per game) is a prior instead: it counts like 15 games next to his
+  // own (pg already leans on last season), so it steadies small samples and fades as the games pile up.
   const PROJ_LINES = { bat: "pbat", pit: "ppit" };
+  const PROJ_BLEND = { pg: { proj: "ppg", games: "eg", k: 15 } };
   function swapProjections(sport, players, league) {
     const L = sport.data && sport.data.lines;
-    if (league.projections === false || !L || !Object.values(PROJ_LINES).some((k) => L[k])) return null;
+    const swap = L && Object.values(PROJ_LINES).some((k) => L[k]), blend = L && Object.entries(PROJ_BLEND).filter(([a, b]) => L[a] && L[b.proj]);
+    if (league.projections === false || !L || (!swap && !blend.length)) return null;
     const kept = [];
     for (const p of players) {
       const n = Object.assign({}, p.l);
-      for (const [a, b] of Object.entries(PROJ_LINES)) { if (!L[b]) continue; if (n[b]) n[a] = n[b]; else delete n[a]; }
+      if (swap) for (const [a, b] of Object.entries(PROJ_LINES)) { if (!L[b]) continue; if (n[b]) n[a] = n[b]; else delete n[a]; }
+      for (const [a, b] of blend) {
+        const own = n[a], pr = n[b.proj];
+        if (!pr) continue;
+        const cols = L[a].cols, gi = cols.indexOf(b.games), g = own && gi >= 0 ? own[gi] || 0 : 0;
+        n[a] = cols.map((c, i) => (c === "gp" ? (own ? own[i] : 0) : c === b.games ? g + b.k : own ? ((own[i] || 0) * g + (pr[i] || 0) * b.k) / (g + b.k) : pr[i] || 0));
+      }
       kept.push([p, p.l]); p.l = n;
     }
     return kept;

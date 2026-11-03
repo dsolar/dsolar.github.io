@@ -21,7 +21,7 @@ import os
 import re
 import unicodedata
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "fantasy-kit", "data")
@@ -192,6 +192,13 @@ def build(sport):
         print(f"  FantasyCalc setups: {len(variants)} of {len(FC_TEAMS) * len(FC_PPR) * len(FC_QBS)}")
     if not lists:
         print("  every source failed; kept the last file")
+        return
+    # a source missing today that the last file had: keep the last file for up to a week rather than ranking on
+    # fewer sources
+    old = load(os.path.join(OUT, f"dynasty-{sport}.json")) or {}
+    had, have = {x["id"] for x in old.get("sources", [])}, {x["id"] for x in sources}
+    if had - have and old.get("updated", "") >= (datetime.now(timezone.utc) - timedelta(days=7)).isoformat():
+        print(f"  {', '.join(sorted(had - have))} failed today; kept the last file from {old['updated'][:10]}")
         return
     out = {"sport": sport, "updated": NOW, "sources": sources, "players": combine(lists, find)}
     if sf_lists:

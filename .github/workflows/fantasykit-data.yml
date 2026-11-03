@@ -18,6 +18,7 @@ on:
       - tools/fantasykit_data.py
       - tools/dynasty_pull.py
       - tools/market_pull.py
+      - tools/data_health.py
       - .github/workflows/fantasykit-data.yml
   workflow_dispatch:
 
@@ -53,6 +54,10 @@ jobs:
         run: python3 tools/market_pull.py
         continue-on-error: true
 
+      - name: Check the data
+        id: health
+        run: python3 tools/data_health.py || echo "bad=1" >> "$GITHUB_OUTPUT"
+
       - name: Commit the pools
         run: |
           git add fantasy-kit/data
@@ -63,3 +68,9 @@ jobs:
           git commit -m "Update Fantasy Kit player pools"
           git pull --rebase -X theirs -q
           git push
+
+      - name: Fail if any data looks wrong (GitHub emails about a failed run)
+        if: steps.health.outputs.bad == '1'
+        run: |
+          python3 -c "import json; print('\n'.join(json.load(open('fantasy-kit/data/health.json'))['problems']))"
+          exit 1

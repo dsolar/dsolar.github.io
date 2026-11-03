@@ -162,9 +162,51 @@ def nba():
         if inj.get(pid):
             row["inj"] = inj[pid][0]
         out.append(row)
+    lines = {"pg": {"label": "Per game", "cols": NBA_COLS}}
+    src = sleeper_nba(out)
+    if src:
+        lines["ppg"] = {"label": "Sleeper season projection, per game", "cols": NBA_COLS, "proj": True}
     write("nba", {"sport": "nba", "season": season_label(st),
-                  "updated": st.get("updated") or NOW, "source": "ESPN box scores via Hard Cap",
-                  "lines": {"pg": {"label": "Per game", "cols": NBA_COLS}}, "players": out})
+                  "updated": st.get("updated") or NOW, "source": "ESPN box scores via Hard Cap" + (", projections from Sleeper" if src else ""),
+                  "lines": lines, "players": out})
+
+
+# Sleeper's season projections, per game: a prior for players with few games so far (value.js blends them in) and
+# ages for anyone celtics/data.json doesn't have. If Sleeper doesn't answer, last file's projections stay.
+def sleeper_nba(out):
+    try:
+        season = int(datetime.now(timezone.utc).year) - (0 if datetime.now(timezone.utc).month >= 9 else 1)
+        rows = get(f"https://api.sleeper.com/projections/nba/{season}?season_type=regular")
+    except Exception as e:
+        print(f"Sleeper NBA projections didn't load: {type(e).__name__}: {e}")
+        rows = []
+    by = {r["id"]: r for r in out}
+    names = {slug(fix_name(r["n"])): r for r in out}
+    n = 0
+    for x in rows if len(rows) > 200 else []:
+        pl, st = x.get("player") or {}, x.get("stats") or {}
+        row = by.get(slug(f"{pl.get('first_name', '')} {pl.get('last_name', '')}")) or names.get(slug(fix_name(f"{pl.get('first_name', '')} {pl.get('last_name', '')}")))
+        if not row or not st.get("pts"):
+            continue
+        g = lambda k: round(float(st.get(k) or 0), 2)
+        vals = {"gp": 0, "eg": 0, "min": round(float(st.get("sp") or 0) / 60, 1), "fgm": g("fgm"), "fga": g("fga"), "ftm": g("ftm"), "fta": g("fta"),
+                "tpm": g("tpm"), "pts": g("pts"), "reb": g("reb"), "ast": g("ast"), "stl": g("stl"), "blk": g("blk"), "tov": g("to")}
+        row["l"]["ppg"] = [vals[c] for c in NBA_COLS]
+        if not row.get("age") and pl.get("birth_date"):
+            a = age_on(pl["birth_date"])
+            if a:
+                row["age"] = a
+        n += 1
+    if not n:
+        old = {p["id"]: p for p in (load("fantasy-kit/data/nba.json", {}) or {}).get("players", [])}
+        for row in out:
+            pp = ((old.get(row["id"]) or {}).get("l") or {}).get("ppg")
+            if pp:
+                row["l"]["ppg"] = pp; n += 1
+        print(f"NBA projections: kept last file's for {n} players")
+        return "kept" if n else None
+    print(f"NBA projections (Sleeper): {n} players, ages for {sum(1 for r in out if r.get('age'))} of {len(out)}")
+    return "sleeper"
 
 
 def nba_weeks():
@@ -293,7 +335,28 @@ def steamer(by, ab, ip):
             got, label = {"bat": bat, "pit": pit}, name
             break
     if not got:
-        return None
+        # FanGraphs didn't answer: keep yesterday's projections (and the projection-only players) rather than
+        # sliding back to last season's stats
+        old = load("fantasy-kit/data/mlb.json", {}) or {}
+        label = (((old.get("lines") or {}).get("pbat") or {}).get("label") or "").replace(", batting", "")
+        kept = 0
+        for op in old.get("players", []):
+            ol = op.get("l") or {}
+            if not (ol.get("pbat") or ol.get("ppit")):
+                continue
+            pid = int(op["id"]) if str(op["id"]).isdigit() else op["id"]
+            row = by.get(pid)
+            if not row:
+                if ol.get("bat") or ol.get("pit"):
+                    continue                     # he had a line last season then; not a projection-only player
+                row = by[pid] = {k: v for k, v in op.items() if k != "l"}
+                row["l"] = {}
+            for k in ("pbat", "ppit"):
+                if ol.get(k):
+                    row["l"][k] = ol[k]
+            kept += 1
+        print(f"MLB projections: kept last file's for {kept} players")
+        return label or None
     n = {"bat": 0, "pit": 0, "new": 0}
     num = lambda r, k: float(r.get(k) or 0)
     for r in got["bat"]:

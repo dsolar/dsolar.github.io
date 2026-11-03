@@ -1,0 +1,69 @@
+{
+ "ok": false,
+ "problems": [
+  "nba.json has no ppg line"
+ ],
+ "files": {
+  "nfl.json": {
+   "players": 542,
+   "updated": "2026-11-03T20:28:37+00:00",
+   "lines": [
+    "tot",
+    "proj"
+   ]
+  },
+  "nba.json": {
+   "players": 642,
+   "updated": "2026-11-03T02:53:36Z",
+   "lines": [
+    "pg"
+   ]
+  },
+  "mlb.json": {
+   "players": 1328,
+   "updated": "2026-11-03T20:28:37+00:00",
+   "lines": [
+    "bat",
+    "pit",
+    "pbat",
+    "ppit"
+   ]
+  },
+  "dynasty-nfl.json": {
+   "players": 376,
+   "updated": "2026-11-03T20:28:44+00:00"
+  },
+  "dynasty-nba.json": {
+   "players": 415,
+   "updated": "2026-11-03T20:28:44+00:00"
+  },
+  "dynasty-mlb.json": {
+   "players": 1193,
+   "updated": "2026-11-03T20:28:44+00:00"
+  },
+  "market-nfl.json": {
+   "players": 539,
+   "updated": "2026-11-03T20:28:51+00:00",
+   "fp": null,
+   "tr": null
+  },
+  "market-nba.json": {
+   "players": 610,
+   "updated": "2026-11-03T20:28:51+00:00",
+   "fp": null
+  },
+  "market-mlb.json": {
+   "players": 1192,
+   "updated": "2026-11-03T20:28:51+00:00",
+   "fp": null
+  },
+  "draft/nfl.json": {
+   "players": 219,
+   "updated": "2026-11-03T20:00:25+00:00"
+  },
+  "draft/nba.json": {
+   "players": 141,
+   "updated": "2026-11-03T20:00:25+00:00"
+  }
+ }
+}

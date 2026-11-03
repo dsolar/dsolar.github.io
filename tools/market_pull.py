@@ -201,13 +201,34 @@ def build(sport):
     fp, pages = fantasypros(sport, find)
     for pid, ranks in fp.items():
         out.setdefault(pid, {"r": {}, "a": {}})["fp"] = ranks
-    if sport == "nfl":
-        for pid, ranks in fantasycalc_redraft(ids).items():
-            out.setdefault(pid, {"r": {}, "a": {}})["tr"] = ranks
+    tr = fantasycalc_redraft(ids) if sport == "nfl" else {}
+    for pid, ranks in tr.items():
+        out.setdefault(pid, {"r": {}, "a": {}})["tr"] = ranks
+    # a source that failed today keeps yesterday's numbers (each source on its own), and says when they're from
+    old = load(os.path.join(OUT, f"market-{sport}.json")) or {}
+    status = dict(old.get("status") or {})
+    fields = {"espn": ("r", "a", "adp", "aav", "own"), "fp": ("fp",), "tr": ("tr",)}
+    ok = {"espn": bool(rows), "fp": bool(pages), "tr": bool(tr) if sport == "nfl" else None}
+    for src, good in ok.items():
+        if good is None:
+            continue
+        if good:
+            status[src] = {"ok": True, "at": NOW}
+            continue
+        prev = status.get(src) or {}
+        status[src] = {"ok": False, "at": prev.get("at"), "failed": NOW}
+        n = 0
+        for pid, row in (old.get("players") or {}).items():
+            vals = {k: row[k] for k in fields[src] if row.get(k)}
+            if vals and pid in ids:
+                out.setdefault(pid, {"r": {}, "a": {}}).update(vals); n += 1
+        if n:
+            print(f"  {src}: failed today, kept the last numbers for {n} players")
+    fp_kind = FP_KIND[sport] if pages else old.get("fp")
     print(f"  matched {len(out)} of the kit's {len(pool)} players")
     with open(os.path.join(OUT, f"market-{sport}.json"), "w", encoding="utf-8") as f:
-        json.dump({"sport": sport, "updated": NOW, "source": ", ".join(x for x in [f"ESPN fantasy ({season})" if season else "", "FantasyPros consensus" if pages else "", "FantasyCalc trades" if sport == "nfl" else "", "Sleeper trending adds" if sport == "nfl" else ""] if x),
-                   "fp": FP_KIND[sport] if pages else None, "players": out},
+        json.dump({"sport": sport, "updated": NOW, "source": ", ".join(x for x in [f"ESPN fantasy ({season})" if season else "", "FantasyPros consensus" if fp_kind else "", "FantasyCalc trades" if sport == "nfl" else "", "Sleeper trending adds" if sport == "nfl" else ""] if x),
+                   "fp": fp_kind, "status": status, "players": out},
                   f, ensure_ascii=False, separators=(",", ":"))
 
 
