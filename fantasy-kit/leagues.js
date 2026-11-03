@@ -16,7 +16,7 @@
     lineup: "", bench: null, playoffs: 4, deadline: null, review: "vote", faab: null, waiverHours: 36,
     weights: null, cats: null, waivers: "faab", ir: 1, maxAdds: 0, posMax: {}, keepers: 0, keeperCost: "round", legs: "1", cons: "none", median: 0, bestball: 0, divs: 0, rookie: 3, fpicks: 1, taxi: 2, ohold: "clock", tep: 0, ptd: 4, b100r: 0, b100c: 0, b300p: 0, vamp: "off", vlike: 0, vdouble: 0,
     reviewHours: 24, vetoShare: 0.5, waiverOrder: "rolling", minBid: 0, maxAddsSeason: 0,
-    step: "basics", kind: "redraft", keepN: 3, tepOn: 0, tepAmt: 0.5, b100rOn: 0, b100rAmt: 3, b100cOn: 0, b100cAmt: 3, b300pOn: 0, b300pAmt: 3, vampOn: 0, vampWho: "random" };
+    open: {}, kind: "redraft", keepN: 3, tepOn: 0, tepAmt: 0.5, b100rOn: 0, b100rAmt: 3, b100cOn: 0, b100cAmt: 3, b300pOn: 0, b300pAmt: 3, vampOn: 0, vampWho: "random" };
   // a vampire league: football, head to head on points, and a draft where one team can simply sit out
   const vampOk = () => form.sport === "nfl" && form.season === "h2h" && ["snake", "linear", "3rr"].includes(form.type);
   // scoring: a preset key, or "cp" (custom points) / "cc" (custom categories)
@@ -103,7 +103,6 @@
   }
 
   /* ---------- start a league: six steps, one at a time, with a live summary beside them ---------- */
-  const STEPS = [["basics", "League"], ["draft", "Draft"], ["scoring", "Scoring"], ["roster", "Roster"], ["season", "Season"], ["moves", "Waivers and trades"]];
   const ICON = { nba: `<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2v20M5 4.9c2.6 2 4 4.4 4 7.1s-1.4 5.1-4 7.1M19 4.9c-2.6 2-4 4.4-4 7.1s1.4 5.1 4 7.1"/>`,
     nfl: `<ellipse cx="12" cy="12" rx="10.6" ry="6.4" transform="rotate(-40 12 12)"/><path d="M9.2 14.8l5.6-5.6M9.8 12.8l1.4 1.4M11.3 11.3l1.4 1.4M12.8 9.8l1.4 1.4"/>`,
     mlb: `<circle cx="12" cy="12" r="10"/><path d="M6.2 4.2c2 2.2 3 4.8 3 7.8s-1 5.6-3 7.8M17.8 4.2c-2 2.2-3 4.8-3 7.8s1 5.6 3 7.8"/>` };
@@ -116,7 +115,7 @@
   const opt = (v, l, cur) => `<option value="${esc(v)}"${String(v) === String(cur) ? " selected" : ""}>${esc(l)}</option>`;
   const fid = (f, v) => `n-${f}${v != null ? "-" + String(v).replace(/[^a-z0-9]/gi, "_") : ""}`;
   // pills for a short list of choices
-  const seg = (f, opts, cur, label, o = {}) => `<div class="sg${o.wrap ? " wr" : ""}" role="radiogroup" aria-label="${esc(label)}">${opts.map(([v, l, dis]) => `<label class="sg-o"><input type="radio" name="g-${f}" id="${fid(f, v)}" data-f="${f}" value="${esc(v)}"${String(v) === String(cur) ? " checked" : ""}${dis ? " disabled" : ""}><span>${esc(l)}</span></label>`).join("")}</div>`;
+  const seg = (f, opts, cur, label, o = {}) => `<div class="sg${o.wrap ? " wr" : ""}${o.cls ? " " + o.cls : ""}" role="radiogroup" aria-label="${esc(label)}">${opts.map(([v, l, dis]) => `<label class="sg-o"><input type="radio" name="g-${f}" id="${fid(f, v)}" data-f="${f}" value="${esc(v)}"${String(v) === String(cur) ? " checked" : ""}${dis ? " disabled" : ""}><span>${esc(l)}</span></label>`).join("")}</div>`;
   // cards with a line of explanation, for the choices that shape the league
   const cards = (f, opts, cur, label, cols) => `<div class="cc" role="radiogroup" aria-label="${esc(label)}"${cols ? ` style="--cols:${cols}"` : ""}>${opts.map(([v, l, sub, dis]) => `<label class="cc-o${dis ? " off" : ""}"><input type="radio" name="g-${f}" id="${fid(f, v)}" data-f="${f}" value="${esc(v)}"${String(v) === String(cur) ? " checked" : ""}${dis ? " disabled" : ""}><span><b>${esc(l)}</b><small>${esc(sub)}</small></span></label>`).join("")}</div>`;
   // minus, the value, plus: for counts
@@ -135,6 +134,36 @@
   const group = (title, body, sub) => `<section class="gp"><div class="gp-h"><h3>${esc(title)}</h3>${sub ? `<p>${sub}</p>` : ""}</div><div class="gp-b">${body}</div></section>`;
   const noLimit = (x) => (x ? `${x}` : "No limit");
 
+  // the league's style: one card that sets the few choices that define it
+  const STYLES = [["redraft", "Redraft", "A fresh draft every season"], ["keeper", "Keeper", "Keep a few players a year"], ["dynasty", "Dynasty", "Keep everyone, draft rookies"],
+    ["bestball", "Best ball", "Draft, then lineups set themselves"], ["guillotine", "Guillotine", "The lowest score is cut every week"], ["vampire", "Vampire", "One team skips the draft and steals"]];
+  const STYLE_ART = {
+    redraft: `<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v4.5h-4.5"/>`,
+    keeper: `<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/><circle cx="12" cy="15.5" r="1.3"/>`,
+    dynasty: `<path d="M4 18h16l1-10-5 4-4-7-4 7-5-4z"/><path d="M4 21h16"/>`,
+    bestball: `<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>`,
+    guillotine: `<path d="M5 3v18M19 3v18M5 3h14"/><path d="M7 7h10l-10 5z"/><path d="M9 18h6"/>`,
+    vampire: `<path d="M12 9.5c-.8-1.4-1.6-2-2.4-2l.6-1.8-1.6 1.2C6.4 6.6 4 7.4 2 9.6c1.6-.2 2.8.4 3.4 1.6 1-.8 2.2-.7 2.8.4.9-.6 2.1-.2 2.6.9L12 16l1.2-3.5c.5-1.1 1.7-1.5 2.6-.9.6-1.1 1.8-1.2 2.8-.4.6-1.2 1.8-1.8 3.4-1.6-2-2.2-4.4-3-6.6-2.7l-1.6-1.2.6 1.8c-.8 0-1.6.6-2.4 2z"/>` };
+  const art = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${STYLE_ART[k]}</svg>`;
+  const styleOf = () => (form.season === "guillotine" ? "guillotine" : vampOk() && form.vampOn ? "vampire" : form.kind === "dynasty" ? "dynasty" : form.kind === "keeper" ? "keeper" : form.bestball ? "bestball" : "redraft");
+  function applyStyle(k) {
+    if (form.season === "guillotine") form.season = "h2h";
+    form.vampOn = 0; form.bestball = 0; form.kind = "redraft";
+    if (k === "keeper") form.kind = "keeper";
+    if (k === "dynasty") { form.kind = "dynasty"; if (!form.taxi) form.taxi = 3; }
+    if (k === "bestball") form.bestball = 1;
+    if (k === "guillotine") { form.season = "guillotine"; form.faab = null; }
+    if (k === "vampire") { form.vampOn = 1; form.season = "h2h"; if (!["snake", "linear", "3rr"].includes(form.type)) form.type = "snake"; }
+    form.faab = k === "guillotine" || form.faab === 1000 ? null : form.faab;
+  }
+  const SC_SUB = { half: "Half a point a catch", ppr: "A point a catch", std: "No points for catches", cats9: "FG%, FT%, 3PM, PTS, REB, AST, STL, BLK, TO", points: "Points for every stat", roto5: "R, HR, RBI, SB, AVG, W, SV, K, ERA, WHIP", yoenis: "Adds H, TB, OPS, L, HLD and QS", cp: "Set a value for every stat", cc: "Pick your own categories" };
+  const DRAFT_SHORT = { snake: "Snake", auction: "Auction", linear: "Linear", "3rr": "Third-round reversal", mystery: "Mystery packages", elephant: "White elephant" };
+  // a field drawn behind the header, one for each sport
+  const FIELD = {
+    nfl: `<svg class="nl-art" viewBox="0 0 600 200" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">${Array.from({ length: 11 }, (_, i) => `<line x1="${40 + i * 52}" y1="0" x2="${40 + i * 52}" y2="200"/>`).join("")}${Array.from({ length: 50 }, (_, i) => `<line x1="${40 + i * 10.4}" y1="62" x2="${40 + i * 10.4}" y2="70"/><line x1="${40 + i * 10.4}" y1="130" x2="${40 + i * 10.4}" y2="138"/>`).join("")}<text x="${40 + 4 * 52}" y="185">40</text><text x="${40 + 6 * 52}" y="185">50</text><text x="${40 + 8 * 52}" y="185">40</text></svg>`,
+    nba: `<svg class="nl-art" viewBox="0 0 600 200" preserveAspectRatio="xMaxYMid slice" aria-hidden="true"><circle cx="330" cy="100" r="46"/><line x1="330" y1="0" x2="330" y2="200"/><path d="M600 20 H520 V180 H600"/><path d="M600 -40 A150 150 0 0 0 600 240" /><circle cx="520" cy="100" r="34"/><path d="M60 20 H140 V180 H60"/><circle cx="140" cy="100" r="34"/></svg>`,
+    mlb: `<svg class="nl-art" viewBox="0 0 600 200" preserveAspectRatio="xMaxYMid slice" aria-hidden="true"><path d="M420 190 L330 100 L420 10 L510 100 Z"/><path d="M420 190 L240 10 M420 190 L600 10"/><circle cx="420" cy="104" r="12"/><path d="M300 30 A170 170 0 0 1 540 30"/><rect x="414" y="184" width="12" height="12" transform="rotate(45 420 190)"/></svg>` };
+
   function newForm() {
     const sp = S[form.sport];
     if (!(sp.scorings[form.scoring] || isCustom())) form.scoring = Object.keys(sp.scorings)[0];
@@ -143,81 +172,104 @@
     if (!seasons.some(([k]) => k === form.season)) form.season = "h2h";
     if (form.season === "guillotine" && form.kind === "dynasty") form.kind = "redraft";
     if (!form.clocks || form.clocks !== auction) { form.clocks = auction; const ok = auction ? [15, 30, 60] : [30, 60, 90, 120, 3600, 14400, 28800]; if (!ok.includes(form.clock)) form.clock = auction ? 15 : 90; }
-    const at = STEPS.findIndex(([k]) => k === form.step), k = Math.max(0, at);
-    const body = { basics: basicsStep, draft: draftStep, scoring: scoringStep, roster: rosterStep, season: seasonStep, moves: movesStep }[STEPS[k][0]](sp);
-    const prev = STEPS[k - 1], next = STEPS[k + 1];
+    const st = styleOf(), V = values(sp);
+    const styles = STYLES.filter(([k]) => k !== "vampire" || sp.key === "nfl").map(([k, l, sub]) => {
+      return `<button type="button" class="sty${k === st ? " on" : ""}" data-style="${k}" aria-pressed="${k === st}">${art(k)}<b>${esc(l)}</b><small>${esc(sub)}</small></button>`;
+    }).join("");
+    const presets = Object.entries(sp.scorings).map(([k, x]) => [k, x.label.replace(/ \(.*\)$/, ""), SC_SUB[k] || ""]).concat([["cp", "Custom points", SC_SUB.cp]], sp.key !== "nfl" ? [["cc", "Custom categories", SC_SUB.cc]] : []);
+    const live = auction ? [[15, "15 sec"], [30, "30 sec"], [60, "1 min"]] : [[30, "30 sec"], [60, "1 min"], [90, "90 sec"], [120, "2 min"], [3600, "1 hr"], [14400, "4 hr"], [28800, "8 hr"]];
+    const rows = ROWS(sp).map(([k, title, sub, value, body]) => {
+      const open = !!form.open[k];
+      return `<div class="nr${open ? " open" : ""}"><button type="button" class="nr-h" data-row="${k}" aria-expanded="${open}" aria-controls="nr-${k}"><span class="nr-t"><b>${esc(title)}</b><small>${esc(sub)}</small></span><span class="nr-v">${esc(value)}</span><span class="chev" aria-hidden="true"></span></button>${open ? `<div class="nr-b" id="nr-${k}">${body()}</div>` : ""}</div>`;
+    }).join("");
     return `<div class="su sp-${sp.key}">
-      <div class="su-h"><h1 class="disp">Start a league</h1><p>You'll be the commissioner. Every choice has a sensible default, so you can make the league from any step and change most rules later.</p></div>
-      <div class="su-sports" role="radiogroup" aria-label="Sport">${Object.values(S.ALL).map((s) => `<label class="su-sp sp-${s.key}"><input type="radio" name="sport" value="${s.key}"${s.key === form.sport ? " checked" : ""}>${icon(s.key)}<span><b class="disp">${esc(s.name)}</b><small>${esc(BLURB[s.key])}</small></span></label>`).join("")}</div>
-      <div class="su-grid">
-        <form class="su-main" id="new" novalidate>
-          <nav class="su-steps" aria-label="Setup steps">${STEPS.map(([key, l], i) => `<button type="button" data-go="${key}"${i === k ? ` aria-current="step" class="on"` : ""}><span class="n">${i + 1}</span>${esc(l)}</button>`).join("")}</nav>
-          <div class="su-pane"><h2 class="su-t disp">${esc(STEPS[k][1])}</h2>${body}</div>
-          <div class="su-foot">${prev ? `<button type="button" class="btn ghost" data-go="${prev[0]}">Back</button>` : ""}<span class="grow"></span>${next ? `<button type="button" class="btn" data-go="${next[0]}">Next<span class="nx-l">: ${esc(next[1])}</span></button>` : ""}<button type="submit" class="btn go su-mk${next ? "" : " show"}"${busy ? " disabled" : ""}>${busy ? "Making…" : "Make the league"}</button></div>
-        </form>
-        <aside class="su-side">${ticket(sp)}</aside>
-      </div></div>`;
+      <div class="nl-band">${FIELD[sp.key]}<div class="nl-bi">
+        <div class="nl-sports" role="radiogroup" aria-label="Sport">${Object.values(S.ALL).map((s) => `<label class="nl-sp"><input type="radio" name="sport" value="${s.key}"${s.key === form.sport ? " checked" : ""}>${icon(s.key)}<span>${esc(s.name)}</span></label>`).join("")}</div>
+        <h1 class="disp">Start a ${esc(sp.name.toLowerCase())} league</h1>
+        <p>Pick a style, give it a name, and you can send the invite link in a minute. Every rule has a default, and most can change after the draft.</p>
+      </div></div>
+      <form class="nl-body" id="new" novalidate>
+        <section class="nl-sec"><h2 class="nl-h">Style</h2><div class="sty-g" style="--n:${sp.key === "nfl" ? 6 : 5}">${styles}</div></section>
+        <section class="nl-sec nl-ess">
+          <div class="nl-name"><label for="n-name">League name</label><input id="n-name" type="text" maxlength="40" required value="${esc(form.name || "")}" placeholder="Name your league" autocomplete="off"></div>
+          <div class="g2">${fld("Your name", `<input id="n-me" type="text" maxlength="24" required value="${esc(form.me || "")}" autocomplete="name">`, "", "n-me")}${fld("Your team's name", `<input id="n-team" type="text" maxlength="28" value="${esc(form.team || "")}" placeholder="Optional">`, "", "n-team")}</div>
+          ${fld("Teams", seg("teams", [4, 6, 8, 10, 12, 14, 16, 20].map((x) => [x, String(x)]), form.teams, "Teams", { wrap: true, cls: "big" }))}
+          ${fld("Scoring", cards("scoring", presets, form.scoring, "Scoring", presets.length > 4 ? 3 : presets.length))}
+          <div class="nl-dr">${fld("Draft", seg("type", Object.keys(F.FORMATS).map((k) => [k, DRAFT_SHORT[k] || F.FORMATS[k]]), form.type, "Draft format", { wrap: true }), esc(DRAFTS[form.type] || ""))}
+          ${fld(auction ? "Bid clock" : "Pick clock", seg("clock", live, form.clock, auction ? "Bid clock" : "Pick clock", { wrap: true }), auction ? "Every bid resets the clock." : form.clock >= 3600 ? "A slow draft: managers with email alerts get one when they're up." : "When a clock runs out, the best player left is taken.")}</div>
+        </section>
+        <section class="nl-sec"><h2 class="nl-h">Fine-tune</h2><p class="nl-sub">Every rule and what it's set to. Open one to change it.</p><div class="nr-l">${rows}</div></section>
+        <div class="nl-bar"><div class="nl-sum">${icon(sp.key, "nl-sum-ic")}<span><b id="tk-name">${esc(form.name || "Your league")}</b><small>${esc(V.line)}</small></span></div>
+          <p id="n-why" role="alert"></p><span class="grow"></span><button type="button" class="btn ghost" data-a="list">Cancel</button><button type="submit" class="btn go"${busy ? " disabled" : ""}>${busy ? "Making the league…" : "Make the league"}</button></div>
+      </form></div>`;
   }
-
-  // The summary beside the steps: what you'd get if you made the league right now. Each line opens its step.
-  function ticket(sp) {
+  // plain-English values for the summary bar and the fine-tune rows
+  function values(sp) {
     const gl = form.season === "guillotine", n = form.teams, lu = lineupOf(sp), po = Math.min(form.playoffs, n);
-    const cnt = {}; lu.forEach((x) => (cnt[x] = (cnt[x] || 0) + 1));
-    const lineTxt = Object.entries(cnt).map(([x, c]) => (c > 1 ? `${c} ${x}` : x)).join(", ");
     const sc = form.scoring === "cp" ? "Custom points" : form.scoring === "cc" ? `Custom categories (${(form.cats || []).length})` : (sp.scorings[form.scoring] || Object.values(sp.scorings)[0]).label.replace(/ \(.*\)$/, "");
     const bon = [];
     if (sp.key === "nfl" && scoringType(sp) === "points") {
-      if (form.tep) bon.push(`TE +${form.tep} a catch`);
-      if (form.scoring !== "cp" && form.ptd !== 4) bon.push(`${form.ptd}-point passing TDs`);
-      if (form.b100r || form.b100c || form.b300p) bon.push("yardage bonuses");
+      if (form.tep) bon.push(`TE +${form.tep}`);
+      if (form.scoring !== "cp" && form.ptd !== 4) bon.push(`${form.ptd}-pt pass TD`);
+      const y = [form.b100r, form.b100c, form.b300p].filter(Boolean).length; if (y) bon.push(`${y} yardage bonus${y > 1 ? "es" : ""}`);
     }
-    const kind = form.kind === "dynasty" ? `Dynasty, ${form.rookie}-round rookie draft` : form.kind === "keeper" ? `Keeper, up to ${form.keepN} a team` : "Redraft";
-    const clockTxt = form.clock >= 3600 ? `${form.clock / 3600} hours a pick` : auction() ? `${form.clock} seconds a bid` : form.clock >= 60 ? `${form.clock / 60 === 1.5 ? "90 seconds" : form.clock / 60 + " minute" + (form.clock > 60 ? "s" : "")} a pick` : `${form.clock} seconds a pick`;
-    const seasonTxt = (seasonsFor(sp).find(([x]) => x === form.season) || [, ""])[1].split(":")[0] + (gl ? `, ${n - 1} weeks` : `, ${form.weeks} weeks`) + (h2hLike() && po ? `, ${po}-team playoff` : "");
+    const clock = form.clock >= 3600 ? `${form.clock / 3600} hr` : form.clock >= 60 ? `${form.clock === 90 ? "90 sec" : form.clock / 60 + " min"}` : `${form.clock} sec`;
     const faab = form.faab == null ? (gl ? 1000 : 100) : form.faab;
-    const wv = gl ? `$${faab} FAAB for the season` : form.waivers === "faab" ? `$${faab} FAAB, clears in ${form.waiverHours} hours` : `Rolling priority, clears in ${form.waiverHours} hours`;
     const dl = form.deadline == null ? Math.max(1, form.weeks - 3) : form.deadline;
-    const tr = gl ? "No trades" : `${dl ? `Deadline after week ${dl}` : "No deadline"}, ${form.review === "vote" ? "league votes" : form.review === "commish" ? "commissioner reviews" : "no review"}`;
-    const rows = [["basics", "League", `${n} teams. ${kind}`], ["draft", "Draft", `${F.FORMATS[form.type]}, ${clockTxt}`], ["scoring", "Scoring", sc + (bon.length ? `. ${bon.join(", ")}` : "")],
-      ["roster", "Roster", `${lineTxt}, plus ${form.bench == null ? sp.bench : form.bench} bench${form.ir ? `, ${form.ir} IR` : ""}`], ["season", "Season", seasonTxt + (vampOk() && form.vampOn ? ". Vampire league" : "")], ["moves", "Moves", `${wv}. ${tr}`]];
-    return `<div class="lt"><div class="lt-h">${icon(sp.key, "lt-ic")}<span><b class="disp" id="tk-name">${esc(form.name || "Your league")}</b><small>${esc(sp.name)}, ${n} teams</small></span></div>
-      <dl class="lt-l">${rows.map(([st, l, v]) => `<div><dt>${l}</dt><dd><button type="button" data-go="${st}">${esc(v)}</button></dd></div>`).join("")}</dl>
-      <div class="lt-f"><p class="ps" id="n-why" role="alert"></p><button type="submit" form="new" class="btn go"${busy ? " disabled" : ""}>${busy ? "Making the league…" : "Make the league"}</button><button type="button" class="btn ghost" data-a="list">Cancel</button>
-      <p class="ps">Teams nobody claims draft on their own, and anyone with the invite link can take one over later.</p></div></div>`;
+    const seasonName = (seasonsFor(sp).find(([x]) => x === form.season) || [, ""])[1].split(":")[0];
+    const style = (STYLES.find(([k]) => k === styleOf()) || [, "Redraft"])[1];
+    return {
+      line: `${sp.name}, ${n} teams, ${sc}, ${DRAFT_SHORT[form.type]} draft, ${style}`,
+      scoring: bon.length ? bon.join(", ") : form.scoring === "cp" ? "Custom points" : "No bonuses",
+      draft: `${clock} a ${auction() ? "bid" : "pick"}${!auction() && form.type !== "mystery" && form.type !== "elephant" ? (form.trades ? ", trades on" : ", no trades") : ""}`,
+      roster: `${lu.length} starters, ${form.bench == null ? sp.bench : form.bench} bench${form.ir ? `, ${form.ir} IR` : ""}`,
+      season: `${seasonName}, ${gl ? `${n - 1} weeks` : `${form.weeks} weeks`}${form.median && form.season === "h2h" ? ", median" : ""}${form.bestball && !gl ? ", best ball" : ""}`,
+      playoffs: po ? `${po} teams, ${playoffWeeks(po)} weeks` : "None",
+      waivers: gl ? `$${faab} FAAB` : form.waivers === "faab" ? `$${faab} FAAB, ${form.waiverHours}h` : `Rolling, ${form.waiverHours}h`,
+      trades: `${dl ? `Deadline week ${dl}` : "No deadline"}, ${form.review === "vote" ? "league vote" : form.review === "commish" ? "commissioner" : "no review"}`,
+      carry: form.kind === "dynasty" ? `Dynasty, ${form.rookie}-round rookie draft` : form.kind === "keeper" ? `Up to ${form.keepN} keepers` : "Redraft",
+      vampire: form.vampOn ? (form.vampWho === "me" ? "You're the vampire" : "A random team") : "Off",
+    };
   }
   const auction = () => form.type === "auction";
   const seasonsFor = (sp) => SEASONS[scoringType(sp)];
-
-  function basicsStep(sp) {
-    const gl = form.season === "guillotine";
-    const kindX = form.kind === "keeper" ? `<div class="g2">${fld("Keepers a team", stepper("keepN", [1, 2, 3, 4, 5, 6, 8], form.keepN, String, "Keepers a team"))}
-        ${fld("A keeper costs", seg("keeperCost", form.type === "auction" ? [["price", "His price"], ["price5", "His price + $5"]] : [["round", "His round"], ["round1", "A round earlier"], ["free", "A last-round pick"]], kc(), "A keeper costs", { wrap: true }), `Worst team picks first. Players picked up in season cost ${form.type === "auction" ? "$5" : "the last round"}.`)}</div>`
-      : form.kind === "dynasty" ? `<div class="g3">${fld("Rookie draft", stepper("rookie", [2, 3, 4, 5], form.rookie, (x) => `${x} rounds`, "Rookie draft rounds"), "Worst team picks first.")}
+  // the fine-tune list: [key, title, what it covers, current value, body]
+  function ROWS(sp) {
+    const V = values(sp), gl = form.season === "guillotine", rows = [];
+    if (form.kind !== "redraft") rows.push(["carry", form.kind === "dynasty" ? "Dynasty" : "Keepers", form.kind === "dynasty" ? "Rookie draft, taxi squad, future picks" : "How many and what they cost", V.carry, () => carryBody()]);
+    if (vampOk() && form.vampOn) rows.push(["vampire", "Vampire", "Who it is and how it bites", V.vampire, () => vampireBody()]);
+    rows.push(["scoring", "Scoring details", sp.key === "nfl" ? "Bonuses, TE premium, custom points" : form.scoring === "cp" ? "Points for each stat" : "Categories and custom scoring", V.scoring, () => scoringBody(sp)]);
+    rows.push(["roster", "Roster", "Starting lineup, bench, IR, position limits", V.roster, () => rosterStep(sp)]);
+    rows.push(["draft", "Draft room", "Trades during the draft", V.draft, () => draftBody()]);
+    rows.push(["season", "Season", "Format, length, best ball, median, divisions", V.season, () => seasonBody(sp)]);
+    if (h2hLike()) rows.push(["playoffs", "Playoffs", "Teams, rounds, consolation", V.playoffs, () => playoffsBody()]);
+    rows.push(["waivers", "Waivers", "FAAB, clear times, pickup limits", V.waivers, () => waiversBody()]);
+    if (!gl) rows.push(["trades", "Trades", "Deadline and review", V.trades, () => tradesBody()]);
+    return rows;
+  }
+  function carryBody() {
+    if (form.kind === "keeper") return `<div class="g2">${fld("Keepers a team", stepper("keepN", [1, 2, 3, 4, 5, 6, 8], form.keepN, String, "Keepers a team"))}
+        ${fld("A keeper costs", seg("keeperCost", form.type === "auction" ? [["price", "His price"], ["price5", "His price + $5"]] : [["round", "His round"], ["round1", "A round earlier"], ["free", "A last-round pick"]], kc(), "A keeper costs", { wrap: true }), `Worst team picks first. Players picked up in season cost ${form.type === "auction" ? "$5" : "the last round"}.`)}</div>`;
+    return `<div class="g3">${fld("Rookie draft", stepper("rookie", [2, 3, 4, 5], form.rookie, (x) => `${x} rounds`, "Rookie draft rounds"), "Worst team picks first.")}
         ${fld("Taxi squad", stepper("taxi", [0, 1, 2, 3, 4, 5], form.taxi, (x) => (x ? `${x} spot${x > 1 ? "s" : ""}` : "None"), "Taxi squad spots"), "Stash rookies off the roster.")}
-        ${fld("Future picks", toggle("fpicks", "Tradeable", "Next season's picks", form.fpicks))}</div>` : "";
-    return group("The basics", `<div class="g3">
-        ${fld("League name", `<input id="n-name" type="text" maxlength="40" required value="${esc(form.name || "")}" placeholder="Sunday Funday">`, "", "n-name")}
-        ${fld("Your name", `<input id="n-me" type="text" maxlength="24" required value="${esc(form.me || "")}">`, "", "n-me")}
-        ${fld("Your team's name", `<input id="n-team" type="text" maxlength="28" value="${esc(form.team || "")}" placeholder="Optional">`, "", "n-team")}</div>
-        ${fld("Teams", stepper("teams", [4, 6, 8, 10, 12, 14, 16, 20], form.teams, String, "Teams"))}`)
-      + group("League type", cards("kind", [["redraft", "Redraft", "A fresh draft every season"], ["keeper", "Keeper", "Keep a few players, draft the rest"], ["dynasty", "Dynasty", gl ? "Not for a guillotine league" : "Keep everyone and draft rookies", gl]], form.kind, "League type") + kindX);
+        ${fld("Future picks", toggle("fpicks", "Tradeable", "Next season's picks", form.fpicks))}</div>`;
   }
-
-  function draftStep() {
-    const a = auction(), live = a ? [[15, "15 sec"], [30, "30 sec"], [60, "1 min"]] : [[30, "30 sec"], [60, "1 min"], [90, "90 sec"], [120, "2 min"]], slow = a ? [] : [[3600, "1 hour"], [14400, "4 hours"], [28800, "8 hours"]];
-    const tradesOk = !a && form.type !== "mystery" && form.type !== "elephant";
-    return group("Format", cards("type", Object.entries(F.FORMATS).map(([key, l]) => [key, l, DRAFTS[key] || ""]), form.type, "Draft format", 3))
-      + group(a ? "Bid clock" : "Pick clock", seg("clock", live.concat(slow), form.clock, a ? "Bid clock" : "Pick clock", { wrap: true }),
-        a ? "Every bid resets the clock. The high bid wins when it runs out." : form.clock >= 3600 ? "A slow draft. Managers with email alerts on get one when they're on the clock." : "If a clock runs out, the best player left is taken for that team. Pick 1 hour or more for a slow draft.")
-      + (tradesOk ? group("Trades during the draft", toggle("trades", "Trade picks and players", "Deals happen right in the draft room", form.trades,
-        fld("A trade offer stops the clock", seg("ohold", [["clock", "For the team on the clock"], ["all", "For anyone, up to 90 seconds"], ["off", "Never"]], form.ohold, "A trade offer stops the clock", { wrap: true })))) : "");
+  function vampireBody() {
+    return `<div class="g2">${fld("The vampire is", seg("vampWho", [["random", "A random team"], ["me", "Me"]], form.vampWho, "The vampire is"))}${fld("Swaps", seg("vlike", [[0, "Any position"], [1, "Same position"]], form.vlike, "The vampire swaps"))}</div>
+      ${toggle("vdouble", "Bite the low scorer too", "Each week, also take from the league's lowest score", form.vdouble)}
+      <p class="fl-h">The vampire skips the draft and builds from free agents, with the first waiver claim every week. Each regular-season week it wins, it takes a player from the team it beat and gives one back.</p>`;
   }
-
-  function scoringStep(sp) {
-    const presets = Object.entries(sp.scorings).map(([key, x]) => [key, x.label.replace(/ \(.*\)$/, "")]).concat([["cp", "Custom points"]], sp.key !== "nfl" ? [["cc", "Custom categories"]] : []);
-    const cur = sp.scorings[form.scoring], catsTxt = cur && cur.type === "cats" ? cur.cats.map((c) => c.label).join(", ") : "";
-    return group("System", seg("scoring", presets, form.scoring, "Scoring", { wrap: true }) + (catsTxt ? `<div class="catl" aria-label="Categories">${cur.cats.map((c) => `<span class="${c.line === "pit" ? "pit" : ""}">${esc(c.label)}</span>`).join("")}</div>` : ""))
-      + pointsEditor(sp) + (form.scoring !== "cc" && sp.key === "nfl" ? bonusFields(sp) : "");
+  function scoringBody(sp) {
+    const cur = sp.scorings[form.scoring];
+    const cats = cur && cur.type === "cats" ? `<div class="catl" aria-label="Categories">${cur.cats.map((c) => `<span class="${c.line === "pit" ? "pit" : ""}">${esc(c.label)}</span>`).join("")}</div><p class="fl-h">Want different categories? Pick Custom categories above.</p>` : "";
+    const ed = pointsEditor(sp) + (form.scoring !== "cc" && sp.key === "nfl" ? bonusFields(sp) : "");
+    return cats + ed || `<p class="fl-h">${esc(cur ? cur.label : "")}. Pick Custom points above to set every stat.</p>`;
+  }
+  function draftBody() {
+    const tradesOk = !auction() && form.type !== "mystery" && form.type !== "elephant";
+    return tradesOk ? toggle("trades", "Trade picks and players", "Deals happen right in the draft room", form.trades,
+      fld("A trade offer stops the clock", seg("ohold", [["clock", "For the team on the clock"], ["all", "For anyone, up to 90 seconds"], ["off", "Never"]], form.ohold, "A trade offer stops the clock", { wrap: true })))
+      : `<p class="fl-h">${auction() ? "An auction" : "This draft format"} doesn't allow trades during the draft. Teams can trade once the season starts.</p>`;
   }
   // Football bonuses on any points scoring: a TE premium, passing TDs worth more, and points for big yardage games.
   function nflExtras() {
@@ -260,44 +312,42 @@
     const pm = (POS_MAIN[sp.key] || []).map((ps) => `<div class="pm"><span class="pm-l">${esc(ps)}</span>${stepper("pm_" + ps, [0, 1, 2, 3, 4, 5, 6, 8], form.posMax[ps] || 0, (x) => (x ? `Up to ${x}` : "Any"), `Most ${ps} on a roster`)}</div>`).join("");
     return group("Starting lineup", U.lineupBuilder(sp, lineupOf(sp)))
       + group("Reserves", `<div class="g3">${fld("Bench spots", stepper("bench", [2, 3, 4, 5, 6, 7, 8, 10, 12], bench, String, "Bench spots"))}
-        ${fld("IR spots", stepper("ir", [0, 1, 2, 3, 4], form.ir, (x) => (x ? String(x) : "None"), "IR spots"), "For players listed as out.")}
-        ${form.kind === "dynasty" ? fld("Taxi squad", stepper("taxi", [0, 1, 2, 3, 4, 5], form.taxi, (x) => (x ? `${x} spot${x > 1 ? "s" : ""}` : "None"), "Taxi squad spots"), "Rookies only.") : ""}</div>`)
-      + `<details class="gp more"${Object.values(form.posMax).some(Boolean) ? " open" : ""}><summary><h3>Position limits</h3><span>The most of one position a team can roster</span></summary><div class="pml">${pm}</div></details>`;
+        ${fld("IR spots", stepper("ir", [0, 1, 2, 3, 4], form.ir, (x) => (x ? String(x) : "None"), "IR spots"), "For players listed as out.")}</div>`)
+      + group("Position limits", `<div class="pml">${pm}</div>`, "The most of one position a team can roster.");
   }
-
-  function seasonStep(sp) {
+  function seasonBody(sp) {
     const gl = form.season === "guillotine", n = form.teams, po = Math.min(form.playoffs, n);
     const fmt = cards("season", seasonsFor(sp).map(([key, l]) => [key, l.split(":")[0], SEASON_SUB[key] || l.split(": ")[1] || ""]), form.season, "Season format", 3);
     const length = gl ? `<p class="fl-h">${n - 1} weeks: one team is cut each week until one is left.</p>` : range("weeks", 8, 16, form.weeks, (x) => `${x} weeks`, h2hLike() && po ? "Weeks before the playoffs" : "Season length");
-    const poOpts = [0, 2, 3, 4, 6, 8, 10, 12].filter((x) => x <= n).map((x) => [x, x ? `${x} teams` : "None"]);
-    const byes = po ? 2 ** Math.ceil(Math.log2(Math.max(2, po))) - po : 0;
-    const playoffs = h2hLike() ? group("Playoffs", `${fld("Playoff teams", seg("playoffs", poOpts, po, "Playoff teams", { wrap: true }), po ? `${byes ? `The top ${byes} get a bye. ` : ""}${playoffWeeks(po)} playoff weeks after week ${form.weeks}, so the season runs ${form.weeks + playoffWeeks(po)} weeks.` : "")}
-        ${po >= 2 ? `<div class="g2">${fld("Each round lasts", seg("legs", [["1", "One week"], ["final2", "Two-week final"], ["all2", "Two weeks"]], form.legs, "Playoff rounds", { wrap: true }))}
-        ${fld("Also play", seg("cons", [["none", "Nothing else"]].concat(po >= 3 ? [["third", "Third-place game"]] : [], n - po >= 2 ? [["bracket", "Consolation bracket"]] : []), form.cons, "Also play", { wrap: true }))}</div>` : ""}`) : "";
-    const weekly = gl ? "" : group("Each week", `<div class="bl">${toggle("bestball", "Best ball", "Your best lineup is set for you after the games", form.bestball)}
-        ${form.season === "h2h" ? toggle("median", "Median game", "Also play the league median, for a second win or loss", form.median) : ""}</div>
-        ${form.season !== "roto" && n >= 4 ? fld("Divisions", seg("divs", [0, 2, 3, 4].filter((d) => !d || n >= 2 * d).map((d) => [d, d ? `${d}` : "None"]), form.divs, "Divisions")) : ""}`);
-    const vamp = vampOk() ? group("Vampire", toggle("vampOn", "Vampire league", "One team skips the draft, builds from free agents and steals a player from each team it beats", form.vampOn,
-      `<div class="g2">${fld("The vampire is", seg("vampWho", [["random", "A random team"], ["me", "Me"]], form.vampWho, "The vampire is"))}${fld("Swaps", seg("vlike", [[0, "Any position"], [1, "Same position"]], form.vlike, "The vampire swaps"))}</div>
-      ${toggle("vdouble", "Bite the low scorer too", "Each week, also take from the league's lowest score", form.vdouble)}`)) : "";
-    return group("Format", fmt) + group("Length", length) + playoffs + weekly + vamp;
+    const weekly = gl ? "" : `<div class="bl">${toggle("bestball", "Best ball", "Your best lineup is set for you after the games", form.bestball)}
+        ${form.season === "h2h" ? toggle("median", "Median game", "Also play the league median, for a second win or loss", form.median) : ""}
+        ${vampOk() ? toggle("vampOn", "Vampire", "One team skips the draft and steals a player from each team it beats", form.vampOn) : ""}</div>
+        ${form.season !== "roto" && n >= 4 ? fld("Divisions", seg("divs", [0, 2, 3, 4].filter((d) => !d || n >= 2 * d).map((d) => [d, d ? `${d}` : "None"]), form.divs, "Divisions")) : ""}`;
+    return group("Format", fmt) + group("Length", length) + (weekly ? group("Each week", weekly) : "");
   }
-
-  function movesStep() {
+  function playoffsBody() {
+    const n = form.teams, po = Math.min(form.playoffs, n);
+    const poOpts = [0, 2, 3, 4, 6, 8, 10, 12].filter((x) => x <= n).map((x) => [x, x ? `${x}` : "None"]);
+    const byes = po ? 2 ** Math.ceil(Math.log2(Math.max(2, po))) - po : 0;
+    return `${fld("Playoff teams", seg("playoffs", poOpts, po, "Playoff teams", { wrap: true }), po ? `${byes ? `The top ${byes} get a bye. ` : ""}${playoffWeeks(po)} playoff weeks after week ${form.weeks}, so the season runs ${form.weeks + playoffWeeks(po)} weeks.` : "")}
+        ${po >= 2 ? `<div class="g2">${fld("Each round lasts", seg("legs", [["1", "One week"], ["final2", "Two-week final"], ["all2", "Two weeks"]], form.legs, "Playoff rounds", { wrap: true }))}
+        ${fld("Also play", seg("cons", [["none", "Nothing else"]].concat(po >= 3 ? [["third", "Third place"]] : [], n - po >= 2 ? [["bracket", "Consolation"]] : []), form.cons, "Also play", { wrap: true }))}</div>` : ""}`;
+  }
+  function waiversBody() {
     const gl = form.season === "guillotine", faab = form.faab == null ? (gl ? 1000 : 100) : form.faab, fb = gl || form.waivers === "faab";
-    const dl = form.deadline == null ? Math.max(1, form.weeks - 3) : form.deadline;
-    const waivers = group("Waivers", `${gl ? "" : fld("Claims go by", cards("waivers", [["faab", "FAAB bids", "A season budget. High bid wins"], ["rolling", "Rolling priority", "Top of the order wins, then goes to the back"]], form.waivers, "Waivers", 2))}
+    return `${gl ? "" : fld("Claims go by", cards("waivers", [["faab", "FAAB bids", "A season budget. High bid wins"], ["rolling", "Rolling priority", "Top of the order wins, then goes to the back"]], form.waivers, "Waivers", 2))}
       ${fb ? `<div class="g2">${fld("FAAB budget", `<div class="row" style="flex-wrap:wrap">${numIn("faab", faab, { pre: "$", min: 1, max: 100000, label: "FAAB budget" })}<span class="qk">${(gl ? [500, 1000, 2000] : [100, 200, 500, 1000]).map((x) => `<button type="button" data-set="faab" data-v="${x}" aria-pressed="${x === faab}">$${x}</button>`).join("")}</span></div>`, gl ? "For the whole season." : "")}
         ${fld("Lowest bid", seg("minBid", [[0, "$0"], [1, "$1"]], form.minBid, "Lowest bid"))}</div>` : ""}
       ${gl ? `<p class="fl-h">Waivers run midweek, 60 hours in, so a chopped roster is back in play.</p>` : `<div class="g2">${fld("Dropped players clear in", seg("waiverHours", [[24, "24h"], [36, "36h"], [48, "48h"], [72, "72h"]], form.waiverHours, "Dropped players clear in"))}
         ${fld("Waiver order", seg("waiverOrder", [["rolling", "Rolling"], ["standings", "Reverse standings"]], form.waiverOrder, "Waiver order"), form.waiverOrder === "standings" ? "Resets every week: the worst record claims first." : "A winning claim moves you to the back.")}</div>`}
-      <div class="g2">${fld("Pickups a week", stepper("maxAdds", [0, 1, 2, 3, 4, 5, 7, 10], form.maxAdds, noLimit, "Pickups a week"))}${fld("Pickups a season", stepper("maxAddsSeason", [0, 10, 15, 20, 25, 30, 40, 50], form.maxAddsSeason, noLimit, "Pickups a season"))}</div>`);
-    if (gl) return waivers;
-    const trades = group("Trades", `${range("deadline", 0, Math.max(1, form.weeks - 1), Math.min(dl, form.weeks - 1), (x) => (x ? `After week ${x}` : "No deadline"), "Trade deadline")}
+      <div class="g2">${fld("Pickups a week", stepper("maxAdds", [0, 1, 2, 3, 4, 5, 7, 10], form.maxAdds, noLimit, "Pickups a week"))}${fld("Pickups a season", stepper("maxAddsSeason", [0, 10, 15, 20, 25, 30, 40, 50], form.maxAddsSeason, noLimit, "Pickups a season"))}</div>`;
+  }
+  function tradesBody() {
+    const dl = form.deadline == null ? Math.max(1, form.weeks - 3) : form.deadline;
+    return `${range("deadline", 0, Math.max(1, form.weeks - 1), Math.min(dl, form.weeks - 1), (x) => (x ? `After week ${x}` : "No deadline"), "Trade deadline")}
       ${fld("Review", cards("review", [["vote", "League vote", "Other teams can veto"], ["commish", "Commissioner", "You approve or veto"], ["none", "None", "Trades go through"]], form.review, "Trade review", 3))}
       ${form.review !== "none" ? `<div class="g2">${fld("Review lasts", seg("reviewHours", [[12, "12h"], [24, "24h"], [48, "48h"]], form.reviewHours, "Review lasts"))}
-        ${form.review === "vote" ? fld("Votes to veto", seg("vetoShare", [[0.34, "A third"], [0.5, "Half"], [0.67, "Two thirds"]], form.vetoShare, "Votes to veto"), "Of the teams not in the trade.") : ""}</div>` : ""}`);
-    return waivers + trades;
+        ${form.review === "vote" ? fld("Votes to veto", seg("vetoShare", [[0.34, "A third"], [0.5, "Half"], [0.67, "Two thirds"]], form.vetoShare, "Votes to veto"), "Of the teams not in the trade.") : ""}</div>` : ""}`;
   }
   const playoffWeeks = (po) => { const R = Math.ceil(Math.log2(po)); return form.legs === "all2" ? 2 * R : form.legs === "final2" ? R + 1 : R; };
   const kc = () => { const ok = form.type === "auction" ? ["price", "price5"] : ["round", "round1", "free"]; return ok.includes(form.keeperCost) ? form.keeperCost : ok[0]; };
@@ -328,7 +378,7 @@
   async function makeLeague() {
     grab();
     const why = (m) => { const el = $("#n-why"); if (el) el.textContent = m; };
-    const need = (m, el) => { form.step = "basics"; render().then(() => { why(m); const x = $(el); if (x) x.focus(); }); };
+    const need = (m, el) => { why(m); const x = $(el); if (x) { x.focus({ preventScroll: true }); x.scrollIntoView({ block: "center", behavior: "smooth" }); } };
     if (!(form.name || "").trim()) return need("Give the league a name.", "#n-name");
     if (!(form.me || "").trim()) return need("Add your name.", "#n-me");
     busy = true; render();
@@ -407,15 +457,13 @@
     } else if (f.id === "new") makeLeague();
   });
   // redraw the form and put focus back where it was
-  const redraw = (focusId) => render().then(() => { const el = focusId && document.getElementById(focusId); if (el && !el.disabled) el.focus({ preventScroll: true }); const on = $(".su-steps .on"); if (on && on.scrollIntoView) on.scrollIntoView({ block: "nearest", inline: "nearest" }); });
+  const redraw = (focusId) => render().then(() => { const el = focusId && (document.getElementById(focusId) || (focusId.startsWith("n-style-") && $(`.su [data-style="${focusId.slice(8)}"]`))); if (el && !el.disabled) el.focus({ preventScroll: true }); });
   app.addEventListener("click", (e) => {
     if (!e.target.closest(".su")) return;
-    const go = e.target.closest("[data-go]");
-    if (go) {
-      grab(); form.step = go.dataset.go;
-      render().then(() => { const top = $(".su-grid"); if (top && top.getBoundingClientRect().top < 0) top.scrollIntoView({ block: "start" }); const t = $(".su-pane .su-t"); if (t) { t.setAttribute("tabindex", "-1"); t.focus({ preventScroll: true }); } });
-      return;
-    }
+    const row = e.target.closest("[data-row]");
+    if (row) { grab(); const k = row.dataset.row; form.open = form.open[k] ? {} : { [k]: 1 }; render().then(() => { const h = $(`.su [data-row="${k}"]`); if (h) { h.focus({ preventScroll: true }); const r = h.getBoundingClientRect(); if (r.top < 70 || r.top > innerHeight - 160) h.scrollIntoView({ block: "start", behavior: "smooth" }); } }); return; }
+    const sty = e.target.closest("[data-style]");
+    if (sty) { grab(); applyStyle(sty.dataset.style); derive(); if (sty.dataset.style === "keeper" || sty.dataset.style === "dynasty" || sty.dataset.style === "vampire") form.open = { [sty.dataset.style === "vampire" ? "vampire" : "carry"]: 1 }; redraw(`n-style-${sty.dataset.style}`); return; }
     const st = e.target.closest("[data-stp]");
     if (st) {
       grab();
