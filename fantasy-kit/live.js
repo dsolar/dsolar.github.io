@@ -14,8 +14,8 @@
   const now = () => C.now();
   const clone = (x) => (x == null ? x : JSON.parse(JSON.stringify(x)));
   let info = null, D = null, L = null, version = 0, base = null;
-  let data = null, sport = null, players = null, byId = {}, room = null, app = null, mode = null, mine = [], weeks = null;
-  const hooks = () => ({ real: weeks });
+  let data = null, sport = null, players = null, byId = {}, room = null, app = null, mode = null, mine = [], weeks = null, prospects = null;
+  const hooks = () => ({ real: weeks, prospects });
   let inflight = false, dirty = false, lastChange = Date.now(), userAt = 0, pollT = null;
 
   const fatal = (msg, more = "") => { document.body.classList.remove("fk-room"); $("#top").innerHTML = ""; $("#app").innerHTML = `<div class="wrap page"><div class="banner loss" role="alert"><b>${esc(msg)}</b> ${more}</div><p><a class="btn" href="leagues.html">Your leagues</a></p></div>`; };
@@ -47,6 +47,8 @@
     byId = Object.fromEntries(players.map((p) => [p.id, p]));
     weeks = await fetch(`data/weeks-${info.sport}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null);
     if (weeks && String(weeks.season) !== String(data.season)) weeks = null;
+    // a dynasty prices its rookie picks from next year's class on the Big Board
+    if ((D.season && D.season.dynasty) || (L && L.settings.dynasty)) prospects = S.prospectClass(await fetch(`../draft/${info.sport}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null), info.sport);
     livePoll();
     if (C.user()) C.rpc("fk_mine", {}).then((m) => { if (Array.isArray(m)) { mine = m; if (app) app.render(); } }).catch(() => {});
     mount();

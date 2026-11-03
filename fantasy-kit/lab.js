@@ -208,9 +208,9 @@
       <div class="head"><h1 class="disp">${esc(sp.name)} rankings</h1><span class="ps">${esc(sp.data.source)}, ${esc(sp.data.season)}. ${c.teams} teams, ${esc(sp.scorings[P.scoring].label)}${P.lineup.length ? `, starting ${P.lineup.join(" ")}` : ""}.</span></div>
       <div class="tools"><label class="sr" for="r-sport">Sport</label><select id="r-sport">${Object.values(S.ALL).map((s) => opt(s.key, s.name, rank.sport)).join("")}</select>
         <label class="sr" for="r-scoring">Scoring</label><select id="r-scoring">${Object.entries(sp.scorings).map(([k, s]) => opt(k, s.label.replace(/ \(.*\)$/, ""), P.scoring)).join("")}</select>
-        <div class="seg" role="group" aria-label="Rankings"><button type="button" data-rmode="default" aria-pressed="${!mine}">Rankings</button><button type="button" data-rmode="board" aria-pressed="${mine}">My board</button></div></div>
+        <div class="seg" role="group" aria-label="Rankings"><button type="button" data-rmode="default" aria-pressed="${rank.mode === "default"}">Rankings</button><button type="button" data-rmode="board" aria-pressed="${mine}">My board</button>${sp.key === "mlb" ? "" : `<button type="button" data-rmode="prospects" aria-pressed="${rank.mode === "prospects"}">Prospects</button>`}</div></div>
       <div class="tools">${U.search(rank.f)}<label class="sr" for="fk-team">${esc(sp.league)} team</label><select id="fk-team" class="${rank.f.team ? "set" : ""}"><option value="">All ${esc(sp.league)} teams</option>${teams.map((t) => `<option${t === rank.f.team ? " selected" : ""}>${esc(t)}</option>`).join("")}</select></div>${U.posFilter(sp, rank.f.pos)}
-      ${mine ? myBoard(sp, P, B) : U.table({ cols, rows, sort: rank.sort, dense: true, limit: 300, rowAttr: (p) => `data-player="${esc(p.id)}"`, empty: "No one matches." })}
+      ${rank.mode === "prospects" && sp.key !== "mlb" ? await prospectsView(sp) : mine ? myBoard(sp, P, B) : U.table({ cols, rows, sort: rank.sort, dense: true, limit: 300, rowAttr: (p) => `data-player="${esc(p.id)}"`, empty: "No one matches." })}
       <p class="ps">Ranks are value over the replacement player at each position, for the league size and lineup above. Auction values split ${c.teams} budgets of $${c.budget}.</p></div>`;
     if (rank.focus) { const f = $(rank.focus, app); rank.focus = null; if (f) { f.focus(); f.scrollIntoView({ block: "nearest" }); } }
     else if (focus) { const f = document.getElementById(focus); if (f) { f.focus(); if (f.type === "search") f.setSelectionRange(f.value.length, f.value.length); } }
@@ -260,6 +260,24 @@
       else return;
       rankingsPage();
     };
+  }
+
+  // Next year's class from the Big Board (../draft/), as a fantasy league would draft it: football's skill
+  // positions, all of basketball. A dynasty league prices its rookie picks from the same list.
+  const boards = {};
+  async function prospectsView(sp) {
+    if (!(sp.key in boards)) boards[sp.key] = await fetch(`../draft/${sp.key}.json`, { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    const B = boards[sp.key], all = S.prospectClass(B, sp.key);
+    if (!all.length) return `<p class="empty">The Big Board isn't loading right now.</p>`;
+    const q = (rank.f.q || "").toLowerCase(), pos = rank.f.pos;
+    const rows = all.filter((p) => (!q || p.n.toLowerCase().includes(q) || String(p.school).toLowerCase().includes(q)) && (!pos || String(p.pos).split("/").includes(pos)));
+    const move = (p) => { const h = p.hist || []; if (h.length < 2) return ""; const d = Math.round(h[0] - h[h.length - 1]); return d ? `<span class="${d > 0 ? "win" : "loss"}">${d > 0 ? "&#9650;" : "&#9660;"}${Math.abs(d)}</span>` : `<span class="ps">0</span>`; };
+    const stat = (p) => (p.stats || []).slice(0, 3).map((x) => `${esc(x[1])} ${esc(x[0])}`).join(", ");
+    const hasYr = all.some((p) => p.yr || p.age), hasMove = all.some((p) => (p.hist || []).length > 1);
+    const head = `<p class="ps" style="margin:0 0 8px">The ${B.year} class by consensus of ${B.sources.length} outlets on the <a href="../draft/#${sp.key}">Big Board</a>, updated ${esc(String(B.asof || ""))}. ${sp.key === "nfl" ? "Skill positions only. " : ""}Class is his place among fantasy prospects; dynasty leagues price next season's rookie picks from it.</p>`;
+    return head + `<div class="table-wrap"><table class="t dense"><thead><tr><th class="r">Class</th><th class="r hide-s">Board</th><th>Prospect</th>${hasYr ? `<th class="hide-s">Year, age</th>` : ""}<th class="r" title="His best and worst rank across outlets">Range</th>${hasMove ? `<th class="r hide-s" title="Consensus rank gained or lost since the first reading">Move</th>` : ""}<th class="hide-s">${sp.key === "nba" ? "This season" : "2026 season"}</th></tr></thead><tbody>
+      ${rows.slice(0, 200).map((p) => `<tr><td class="r num"><b>${p.fr}</b></td><td class="r num hide-s ps">${p.rank}</td><td class="nm"><b>${esc(p.n)}</b><div class="ps">${esc(p.pos)}, ${esc(p.school || "")}${p.ht ? `, ${esc(p.ht)}` : ""}</div></td>${hasYr ? `<td class="hide-s ps">${esc(p.yr || "")}${p.age ? `${p.yr ? ", " : ""}${p.age.toFixed(1)}` : ""}</td>` : ""}<td class="r num ps">${p.hi === p.lo ? p.hi : `${p.hi}-${p.lo}`}</td>${hasMove ? `<td class="r num hide-s">${move(p)}</td>` : ""}<td class="hide-s ps">${stat(p)}</td></tr>`).join("") || `<tr><td colspan="7" class="empty">No one matches.</td></tr>`}
+      </tbody></table></div>`;
   }
 
   // Your board: your order for every player, with tier breaks. The draft room shows it as the Mine column and opens

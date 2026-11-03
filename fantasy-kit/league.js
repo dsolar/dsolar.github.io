@@ -1135,12 +1135,30 @@
   const pickLabel = (L, key) => { const [r, t] = key.split(":").map(Number); return `${pickYear(key) > 1 ? "Two seasons out: " : ""}${ordinal(r)}-round pick${pickOwner(L, key) !== t ? `, from ${L.teams[t].name}` : ""}`; };
   // What a pick is worth: the free agent who'd go about there, by where its team sits in the standings now (worst
   // picks first), plus a little for the upside of a rookie.
+  function pickSlot(L, key) {
+    const [r, t] = key.split(":").map(Number), n = L.teams.length;
+    const order = standings(L).map((x) => x.team).reverse();
+    return (r - 1) * n + (pickYear(key) > 1 ? Math.floor(n / 2) : Math.max(0, order.indexOf(t)));
+  }
+  // The prospect next year's class puts at a pick's slot (ctx.hooks.prospects, from the Big Board), or null.
+  const pickProspect = (L, ctx, key) => { const cls = ctx.hooks && ctx.hooks.prospects; return pickYear(key) === 1 && cls && cls.length ? cls[pickSlot(L, key)] || null : null; };
+  // Where a rookie taken at place i of his fantasy class tends to rank among a league's players a year in: the
+  // first one is about a top-10 asset, and each one after him lands a few spots deeper.
+  const CLASS_DEPTH = { nfl: [12, 6], nba: [16, 7] };
   function pickValue(L, ctx, key) {
-    const [r, t] = key.split(":").map(Number), n = L.teams.length, far = pickYear(key) > 1;
+    const r = +key.split(":")[0], far = pickYear(key) > 1, slot = pickSlot(L, key);
     // a pick two seasons out could land anywhere, so it's priced at the middle of its round, and a little lower
-    const order = standings(L).map((x) => x.team).reverse(), slot = (r - 1) * n + (far ? Math.floor(n / 2) : Math.max(0, order.indexOf(t)));
     const pool = ctx.free.slice().sort((a, b) => (b.$ || 0) - (a.$ || 0));
-    return Math.max(2, (((pool[slot] && pool[slot].$) || 1) * 1.3 + (pickRounds(L) - r + 1) * 2) * (far ? 0.85 : 1));
+    let v = (pool[slot] && pool[slot].$) || 1;
+    // next year's class, when the Big Board knows it: the pick is worth the better of the free agent and the rookie
+    // (a pick two seasons out uses this class as the typical one, at the middle of its round)
+    const cls = ctx.hooks && ctx.hooks.prospects, pr = cls && cls.length ? cls[slot] : null, dep = CLASS_DEPTH[ctx.sport.key];
+    if (pr && dep) {
+      const all = ctx._dollars && ctx._dollars.n === ctx.players.length ? ctx._dollars.v : (ctx._dollars = { n: ctx.players.length, v: ctx.players.map((p) => Math.max(0, p.$ || 0)).sort((a, b) => b - a) }).v;
+      const at = Math.round((dep[0] + (pr.fr - 1) * dep[1]) * L.teams.length / 10) - 1;
+      v = Math.max(v, all[Math.min(all.length - 1, at)] || 0);
+    }
+    return Math.max(2, (v * 1.3 + (pickRounds(L) - r + 1) * 2) * (far ? 0.85 : 1));
   }
   const ordinal = (k) => k + (k % 100 >= 11 && k % 100 <= 13 ? "th" : { 1: "st", 2: "nd", 3: "rd" }[k % 10] || "th");
   const pValue = (ctx, id) => Math.max(1, (ctx.byId[id] && ctx.byId[id].$) || 0) + Math.max(0, (ctx.byId[id] && ctx.byId[id].vor) || 0) * 0.01;
@@ -1373,7 +1391,7 @@
   }
 
   return { summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
-    finishWeek, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
+    finishWeek, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
 });

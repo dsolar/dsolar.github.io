@@ -52,6 +52,17 @@ async function loadWeeks(sport: string, season: string) {
   return w && String(w.season) === String(season) ? w : null;
 }
 
+// Next year's class from the Big Board (draft/nba.json, draft/nfl.json), for a dynasty's rookie pick values.
+const boards: Record<string, { at: number; data: any }> = {};
+async function loadClass(S: any, sport: string) {
+  const c = boards[sport];
+  if (!c || Date.now() - c.at >= 60 * 60e3) {
+    const data = await fetch(`https://davidsolar.dev/draft/${sport}.json?t=${Math.floor(Date.now() / 3600e3)}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    boards[sport] = { at: Date.now(), data };
+  }
+  return S.prospectClass(boards[sport].data, sport);
+}
+
 async function tickLeagues(token: string) {
   const FK = await loadEngine();
   const { sports: S, value: V, draft: F, league: G, season: Z } = FK;
@@ -72,7 +83,8 @@ async function tickLeagues(token: string) {
       V.evaluate(sport, players, { teams: doc.teams.length, lineup: doc.lineup, bench: doc.bench, scoring: doc.scoring, budget: doc.auction ? doc.auction.budget : 200 });
       const byId = Object.fromEntries(players.map((p: any) => [p.id, p]));
       const weeks = await loadWeeks(l.sport, data.season);
-      const hooks = { real: weeks };
+      const dyn = (L && L.settings && L.settings.dynasty) || (doc.season && doc.season.dynasty);
+      const hooks = { real: weeks, prospects: dyn && (l.sport === "nfl" || l.sport === "nba") ? await loadClass(S, l.sport) : null };
       const base = structuredClone({ draft: D, league: L });
       let changed = false;
       if (!L) {

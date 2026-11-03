@@ -124,7 +124,7 @@
     const findGame = (w, teamId) => G.matchups(L(), ctx, w, frac(w)).find((m) => m.a === teamId || m.b === teamId);
     const playerVM = (id) => ctx.byId[id];
     // a dynasty's draft pick, shaped like a player for trade cards and the trade window
-    const pickVM = (key) => { const [r, t] = key.split(":").map(Number); return { pick: true, id: key, n: `Round ${r} pick, ${G.pickYear(key) > 1 ? "two seasons out" : "next season"}`, sub: G.pickOwner(L(), key) === t ? `${T(t).name}'s own` : `From ${T(t).name}`, $: Math.round(G.pickValue(L(), ctx, key)) }; };
+    const pickVM = (key) => { const [r, t] = key.split(":").map(Number); return { pick: true, id: key, n: `Round ${r} pick, ${G.pickYear(key) > 1 ? "two seasons out" : "next season"}`, sub: (G.pickOwner(L(), key) === t ? `${T(t).name}'s own` : `From ${T(t).name}`) + (G.pickProspect(L(), ctx, key) ? `. Projects to ${G.pickProspect(L(), ctx, key).n}, ${G.pickProspect(L(), ctx, key).pos}` : ""), $: Math.round(G.pickValue(L(), ctx, key)) }; };
 
     /* ---------- pages: League ---------- */
     function overview() {
@@ -825,7 +825,7 @@
     function picksCard() {
       if (!G.pickRounds(L()) || me() == null) return "";
       const ks = G.picksOf(L(), me());
-      return `<div class="card"><div class="mod-h"><h2>Your draft picks</h2><span class="ps">Next two seasons</span></div>${ks.length ? `<ul class="feed">${ks.map((k) => { const p = pickVM(k); return `<li style="grid-template-columns:minmax(0,1fr) auto;align-items:center;padding:8px 16px">${pname(sport, p)}<span class="ps num">${money(p.$)}</span></li>`; }).join("")}</ul>` : `<div class="bd"><p class="ps" style="margin:0">You've traded away all your picks.</p></div>`}<div class="bd ps" style="border-top:1px solid var(--line)">Next season's values follow the standings: a worse record means an earlier pick. Picks two seasons out are priced at the middle of their round.</div></div>`;
+      return `<div class="card"><div class="mod-h"><h2>Your draft picks</h2><span class="ps">Next two seasons</span></div>${ks.length ? `<ul class="feed">${ks.map((k) => { const p = pickVM(k); return `<li style="grid-template-columns:minmax(0,1fr) auto;align-items:center;padding:8px 16px">${pname(sport, p)}<span class="ps num">${money(p.$)}</span></li>`; }).join("")}</ul>` : `<div class="bd"><p class="ps" style="margin:0">You've traded away all your picks.</p></div>`}<div class="bd ps" style="border-top:1px solid var(--line)">Next season's values follow the standings: a worse record means an earlier pick${(opts.hooks || {}).prospects && opts.hooks.prospects.length ? `, and each projects to the prospect the <a href="../draft/">Big Board</a> consensus puts at that spot in next year's class` : ""}. Picks two seasons out are priced at the middle of their round.</div></div>`;
     }
     // The trading block: who each team would move, and what it wants. limit caps the teams shown; full adds your
     // own block with a note you can edit.

@@ -257,3 +257,20 @@ test('dynasty offseason: trades stay open after the season, and picks two season
   assert.equal(G.pickOwner(L2, '1:1'), 0, 'the traded pick is now a next-season pick');
   assert.ok(!G.offseason(L2));
 });
+
+test("dynasty rookie picks price off next year's class on the Big Board", () => {
+  const s = finished('nfl', { format: 'h2h', weeks: 3, playoffTeams: 2, dynasty: { rounds: 3, picks: true } });
+  const { L, players, sport } = s;
+  const board = JSON.parse(readFileSync(new URL('../draft/nfl.json', import.meta.url), 'utf8'));
+  const cls = S.prospectClass(board, 'nfl');
+  assert.ok(cls.length > 20 && cls.every((p) => /QB|RB|WR|TE/.test(p.pos)), 'skill positions only');
+  assert.equal(cls[0].fr, 1);
+  const plain = G.context(L, players, sport, {}), withC = G.context(L, players, sport, { prospects: cls });
+  const st = G.standings(L), worst = st[st.length - 1].team, best = st[0].team;
+  assert.equal(G.pickProspect(L, withC, `1:${worst}`).id, cls[0].id, "the worst team's first projects to the top of the class");
+  assert.equal(G.pickProspect(L, plain, `1:${worst}`), null);
+  assert.equal(G.pickProspect(L, withC, `1:${worst}:2`), null, 'no projection two seasons out');
+  assert.ok(G.pickValue(L, withC, `1:${worst}`) > G.pickValue(L, plain, `1:${worst}`) * 2, 'a top-of-class pick is worth far more than a free agent');
+  assert.ok(G.pickValue(L, withC, `1:${worst}`) > G.pickValue(L, withC, `1:${best}`), 'earlier picks are worth more');
+  assert.ok(G.pickValue(L, withC, `1:${worst}:2`) < G.pickValue(L, withC, `1:${worst}`));
+});
