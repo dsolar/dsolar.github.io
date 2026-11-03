@@ -128,7 +128,7 @@ test('dynasty: picks trade like players, rosters carry over, a short rookie draf
   const s = finished('nfl', { format: 'h2h', weeks: 3, playoffTeams: 2, dynasty: { rounds: 3, picks: true } });
   const { L, ctx, sport } = s;
   assert.deepEqual(L.settings.dynasty, { rounds: 3, picks: true });
-  assert.equal(G.picksOf(L, 0).length, 3);
+  assert.equal(G.picksOf(L, 0).length, 6, 'three rounds next season, three the season after');
   assert.ok(G.pickValue(L, ctx, '1:0') > G.pickValue(L, ctx, '3:0'), 'an earlier round is worth more');
   // trade team 0's first-round pick for a bench player (rewind the clock so trades are open)
   const week = L.week; L.week = 2; L.settings.deadline = 0;
@@ -139,8 +139,8 @@ test('dynasty: picks trade like players, rosters carry over, a short rookie draf
   L.settings.tradeReview = 'none';
   assert.ok(G.respond(L, ctx, r.trade.id, true, Date.now()).ok);
   assert.equal(G.pickOwner(L, '1:0'), 1);
-  assert.deepEqual(G.picksOf(L, 0), ['2:0', '3:0']);
-  assert.equal(G.picksOf(L, 1).length, 4);
+  assert.deepEqual(G.picksOf(L, 0), ['2:0', '3:0', '1:0:2', '2:0:2', '3:0:2']);
+  assert.equal(G.picksOf(L, 1).length, 7);
   // can't trade a pick you don't hold
   assert.match(G.tradeCheck(L, ctx, { from: 0, to: 1, give: [], get: [], pickGive: ['1:0'], pickGet: [] }).why, /doesn't have that pick/);
   L.week = week;
@@ -223,4 +223,37 @@ test('taxi squads: rookies stash off the roster, promote for good, carry into ne
   const max = L2.settings.lineup.length + L2.settings.bench;
   assert.ok(L2.rosters.every((r, i) => r.length - G.held(L2, i).length <= max));
   assert.ok(L2.taxi.some((x) => x.length), 'someone used a taxi spot instead of cutting');
+});
+
+test('dynasty offseason: trades stay open after the season, and picks two seasons out roll forward', () => {
+  const s = finished('nfl', { format: 'h2h', weeks: 3, playoffTeams: 2, dynasty: { rounds: 3, picks: true } });
+  const { L, ctx, sport } = s;
+  assert.ok(L.week > G.totalWeeks(L) && G.offseason(L));
+  L.settings.tradeReview = 'none';
+  // a 2-for-1 with no drop: the offseason has no roster limit
+  const mine = L.rosters[0].slice(0, 2), theirs = L.rosters[1][0];
+  const r = G.propose(L, ctx, 0, 1, mine, [theirs], Date.now(), { pickGet: ['1:1:2'] });
+  assert.ok(r.ok, r.why);
+  assert.ok(G.respond(L, ctx, r.trade.id, true, Date.now()).ok);
+  assert.equal(G.pickOwner(L, '1:1:2'), 0);
+  assert.equal(L.rosters[1].length, L.rosters[0].length + 2);
+  assert.match(G.pickLabel(L, '1:1:2'), /^Two seasons out: 1st-round pick, from/);
+  assert.ok(G.pickValue(L, ctx, '1:1:2') < G.pickValue(L, ctx, '1:' + G.standings(L).slice(-1)[0].team), "a far pick is worth less than next season's worst-team first");
+  // a bot answers an offseason offer when the clock ticks, and pending offers don't expire at the deadline
+  L.settings.tradeReview = 'vote';
+  const bot = L.teams.find((t) => !t.owner && t.id > 1).id;
+  const big = G.propose(L, ctx, 0, bot, L.rosters[0].slice(0, 3), [], Date.now());
+  assert.ok(big.ok, big.why);
+  G.tick(L, ctx, Date.now() + 1000);
+  assert.notEqual(big.trade.status, 'expired');
+  // next season: the far pick becomes next season's, still owned by team 0
+  const D2 = Z.nextDraft(L, ctx, sport, {}, { now: Date.UTC(2027, 7, 1), seed: 0.4 });
+  assert.equal(D2.futurePicks['1:1'], 0);
+  const players = s.players.map((p) => ({ ...p }));
+  let t = Date.UTC(2027, 7, 1); F.start(D2, t);
+  const c2 = F.context(D2, players, sport);
+  for (let i = 0; i < 5000 && D2.phase === 'live'; i++) { t += 3000; F.tick(D2, c2, t); }
+  const L2 = Z.begin(D2, sport, { now: t });
+  assert.equal(G.pickOwner(L2, '1:1'), 0, 'the traded pick is now a next-season pick');
+  assert.ok(!G.offseason(L2));
 });

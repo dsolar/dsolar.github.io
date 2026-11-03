@@ -291,6 +291,9 @@
     D.season = D0.season; if (D0.scoringSpec) D.scoringSpec = D0.scoringSpec;
     D.year = (D0.year || 1) + 1;
     D.rookie = true;
+    // picks traded for the season after next become next season's picks in the new league
+    D.futurePicks = {};
+    for (const [k, own] of Object.entries(L.picks || {})) if (G.pickYear(k) === 2) { const [r, t] = k.split(":"); if (own !== +t) D.futurePicks[`${r}:${t}`] = own; }
     // taxi squads carry over, and so does who's been promoted off one
     if (G.taxiSlots(L)) { D.taxi = L.teams.map((t) => G.taxiOf(L, t.id).slice()); D.promoted = Object.assign({}, L.promoted || {}); }
     return D;

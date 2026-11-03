@@ -35,7 +35,8 @@
     const gl = () => G.isGuillotine(L());
     // moves are open while the season runs and your team is alive; trades also stop at the deadline
     const canMove = () => me() != null && !over() && G.isAlive(L(), me());
-    const canTrade = () => canMove() && L().settings.trades !== false && !(L().settings.deadline && L().week > L().settings.deadline);
+    // a dynasty keeps trading through the offseason, until next season starts
+    const canTrade = () => me() != null && L().settings.trades !== false && (G.offseason(L()) || (canMove() && !(L().settings.deadline && L().week > L().settings.deadline)));
     const bb = () => !!L().settings.bestBall;
     const roto = () => G.isRoto(L());
     const recOf = (id) => {
@@ -123,7 +124,7 @@
     const findGame = (w, teamId) => G.matchups(L(), ctx, w, frac(w)).find((m) => m.a === teamId || m.b === teamId);
     const playerVM = (id) => ctx.byId[id];
     // a dynasty's draft pick, shaped like a player for trade cards and the trade window
-    const pickVM = (key) => { const [r, t] = key.split(":").map(Number); return { pick: true, id: key, n: `Round ${r} pick, next season`, sub: G.pickOwner(L(), key) === t ? `${T(t).name}'s own` : `From ${T(t).name}`, $: Math.round(G.pickValue(L(), ctx, key)) }; };
+    const pickVM = (key) => { const [r, t] = key.split(":").map(Number); return { pick: true, id: key, n: `Round ${r} pick, ${G.pickYear(key) > 1 ? "two seasons out" : "next season"}`, sub: G.pickOwner(L(), key) === t ? `${T(t).name}'s own` : `From ${T(t).name}`, $: Math.round(G.pickValue(L(), ctx, key)) }; };
 
     /* ---------- pages: League ---------- */
     function overview() {
@@ -816,7 +817,7 @@
       const toMe = all.filter((t) => t.status === "pending" && t.to === mid), fromMe = all.filter((t) => t.status === "pending" && t.from === mid);
       const review = all.filter((t) => t.status === "review"), done = all.filter((t) => !["pending", "review"].includes(t.status) && (t.from === mid || t.to === mid || t.status === "accepted")).slice(0, 20);
       const sec = (title, list, empty) => `<div class="stack"><h2 style="margin:0;font-size:16px">${title}</h2>${list.length ? list.map((t) => U.tradeCard(sport, tradeVM(t))).join("") : `<p class="ps" style="margin:0">${empty}</p>`}</div>`;
-      return `<div class="wrap page"><div class="head"><h1 class="disp">Trades</h1><span class="grow"></span>${canTrade() ? `<button class="btn go" data-trade>Propose a trade</button>` : mid != null && L().settings.deadline && L().week > L().settings.deadline && !over() ? `<span class="ps">The trade deadline was week ${L().settings.deadline}.</span>` : ""}</div>
+      return `<div class="wrap page"><div class="head"><h1 class="disp">Trades</h1><span class="grow"></span>${canTrade() ? `<button class="btn go" data-trade>Propose a trade</button>` : mid != null && L().settings.deadline && L().week > L().settings.deadline && !over() ? `<span class="ps">The trade deadline was week ${L().settings.deadline}.</span>` : ""}</div>${G.offseason(L()) && L().settings.trades !== false ? `<div class="banner info"><b>Offseason trading is open.</b> <span class="muted">Trade players and picks for the next two seasons until next season starts. Roster limits wait until next season's week 1.</span></div>` : ""}
         <div class="cols"><div class="stack">${sec("Offers for you", toMe, "No offers waiting.")}${sec("Your offers", fromMe, "You haven't sent any open offers.")}${sec("League review", review, "No trades under review.")}</div>
         <aside class="stack">${picksCard()}${blockCard(99, true)}${sec("Recent trades", done, "No trades yet.")}</aside></div></div>`;
     }
@@ -824,12 +825,12 @@
     function picksCard() {
       if (!G.pickRounds(L()) || me() == null) return "";
       const ks = G.picksOf(L(), me());
-      return `<div class="card"><div class="mod-h"><h2>Your draft picks</h2><span class="ps">Next season</span></div>${ks.length ? `<ul class="feed">${ks.map((k) => { const p = pickVM(k); return `<li style="grid-template-columns:minmax(0,1fr) auto;align-items:center;padding:8px 16px">${pname(sport, p)}<span class="ps num">${money(p.$)}</span></li>`; }).join("")}</ul>` : `<div class="bd"><p class="ps" style="margin:0">You've traded away all your picks.</p></div>`}<div class="bd ps" style="border-top:1px solid var(--line)">Values follow the standings: a worse record means an earlier pick.</div></div>`;
+      return `<div class="card"><div class="mod-h"><h2>Your draft picks</h2><span class="ps">Next two seasons</span></div>${ks.length ? `<ul class="feed">${ks.map((k) => { const p = pickVM(k); return `<li style="grid-template-columns:minmax(0,1fr) auto;align-items:center;padding:8px 16px">${pname(sport, p)}<span class="ps num">${money(p.$)}</span></li>`; }).join("")}</ul>` : `<div class="bd"><p class="ps" style="margin:0">You've traded away all your picks.</p></div>`}<div class="bd ps" style="border-top:1px solid var(--line)">Next season's values follow the standings: a worse record means an earlier pick. Picks two seasons out are priced at the middle of their round.</div></div>`;
     }
     // The trading block: who each team would move, and what it wants. limit caps the teams shown; full adds your
     // own block with a note you can edit.
     function blockCard(limit, full) {
-      if (L().settings.trades === false || over()) return "";
+      if (L().settings.trades === false || (over() && !G.offseason(L()))) return "";
       const mid = me();
       const rows = L().teams.filter((t) => t.id !== mid && G.isAlive(L(), t.id)).map((t) => ({ t, ids: G.blockOf(L(), ctx, t.id), note: G.blockNote(L(), ctx, t.id) })).filter((x) => x.ids.length);
       const mine = mid != null ? G.blockOf(L(), ctx, mid) : [];
@@ -850,7 +851,7 @@
       const t0 = other != null ? other : teams.find((t) => t.id !== mid).id;
       U.tradeWindow({ sport, teams, me: mid, other: t0, roster, title: prefill && prefill.counterOf ? "Counteroffer" : "Propose a trade",
         value: (ps, faab) => G.sideValue(ctx, ps.map((p) => p.id), faab), faab: (id) => T(id).faab,
-        roomFor: (tr) => Math.max(0, L().rosters[mid].length - tr.give.length + tr.get.length - G.maxRoster(L()) - G.held(L(), mid).filter((x) => !tr.give.includes(x)).length),
+        roomFor: (tr) => G.offseason(L()) ? 0 : Math.max(0, L().rosters[mid].length - tr.give.length + tr.get.length - G.maxRoster(L()) - G.held(L(), mid).filter((x) => !tr.give.includes(x)).length),
         check: (tr) => G.tradeCheck(L(), ctx, Object.assign({ dropsTo: [] }, tr)),
         prefill: prefill || (want ? { get: [want] } : null),
         picks: G.pickRounds(L()) ? (id) => G.picksOf(L(), id).map(pickVM) : null,

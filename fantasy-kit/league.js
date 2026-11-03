@@ -72,6 +72,7 @@
     // a rookie draft's picks can go on the taxi squad, rookies or not
     if (D && D.rookie) { L.taxiOk = {}; for (const pk of D.board || []) if (pk && pk.pid && !pk.keeper) L.taxiOk[pk.pid] = true; }
     if (D && D.promoted) L.promoted = Object.assign({}, D.promoted);
+    if (D && D.futurePicks && Object.keys(D.futurePicks).length) L.picks = Object.assign({}, D.futurePicks);
     if (D) log(L, D.done || L.created, { type: "draft", team: -1, text: `Draft complete: ${F.made(D).length} picks` });
     return L;
   }
@@ -1118,21 +1119,28 @@
   // settings.dynasty = { rounds, picks }: every roster carries over, next season opens with a rounds-long rookie and
   // free agent draft, and when picks is on those picks can be traded. A pick is "round:team", the team it started
   // with; L.picks maps a traded pick to the team that holds it now.
+  // A dynasty's offseason: the season is over and the next hasn't started. Trades stay open (players and picks).
+  const offseason = (L) => !!L.settings.dynasty && !isGuillotine(L) && L.week > totalWeeks(L);
+  // Picks for next season are "round:team"; the season after that, "round:team:2". When a new season starts, the
+  // later ones become next season's.
+  const PICK_YEARS = 2;
+  const pickYear = (key) => +(key.split(":")[2] || 1);
   const pickRounds = (L) => (L.settings.dynasty && L.settings.dynasty.picks !== false ? L.settings.dynasty.rounds || 3 : 0);
   const pickOwner = (L, key) => { const o = L.picks && L.picks[key]; return o != null ? o : +key.split(":")[1]; };
   function picksOf(L, team) {
     const out = [], R = pickRounds(L);
-    for (let r = 1; r <= R; r++) for (const t of L.teams) { const k = `${r}:${t.id}`; if (pickOwner(L, k) === team) out.push(k); }
+    for (let y = 1; y <= (R ? PICK_YEARS : 0); y++) for (let r = 1; r <= R; r++) for (const t of L.teams) { const k = y > 1 ? `${r}:${t.id}:${y}` : `${r}:${t.id}`; if (pickOwner(L, k) === team) out.push(k); }
     return out;
   }
-  const pickLabel = (L, key) => { const [r, t] = key.split(":").map(Number); return `${ordinal(r)}-round pick${pickOwner(L, key) !== t ? `, from ${L.teams[t].name}` : ""}`; };
+  const pickLabel = (L, key) => { const [r, t] = key.split(":").map(Number); return `${pickYear(key) > 1 ? "Two seasons out: " : ""}${ordinal(r)}-round pick${pickOwner(L, key) !== t ? `, from ${L.teams[t].name}` : ""}`; };
   // What a pick is worth: the free agent who'd go about there, by where its team sits in the standings now (worst
   // picks first), plus a little for the upside of a rookie.
   function pickValue(L, ctx, key) {
-    const [r, t] = key.split(":").map(Number), n = L.teams.length;
-    const order = standings(L).map((x) => x.team).reverse(), slot = (r - 1) * n + Math.max(0, order.indexOf(t));
+    const [r, t] = key.split(":").map(Number), n = L.teams.length, far = pickYear(key) > 1;
+    // a pick two seasons out could land anywhere, so it's priced at the middle of its round, and a little lower
+    const order = standings(L).map((x) => x.team).reverse(), slot = (r - 1) * n + (far ? Math.floor(n / 2) : Math.max(0, order.indexOf(t)));
     const pool = ctx.free.slice().sort((a, b) => (b.$ || 0) - (a.$ || 0));
-    return Math.max(2, ((pool[slot] && pool[slot].$) || 1) * 1.3 + (pickRounds(L) - r + 1) * 2);
+    return Math.max(2, (((pool[slot] && pool[slot].$) || 1) * 1.3 + (pickRounds(L) - r + 1) * 2) * (far ? 0.85 : 1));
   }
   const ordinal = (k) => k + (k % 100 >= 11 && k % 100 <= 13 ? "th" : { 1: "st", 2: "nd", 3: "rd" }[k % 10] || "th");
   const pValue = (ctx, id) => Math.max(1, (ctx.byId[id] && ctx.byId[id].$) || 0) + Math.max(0, (ctx.byId[id] && ctx.byId[id].vor) || 0) * 0.01;
@@ -1146,8 +1154,9 @@
     for (const k of pg) if (pickOwner(L, k) !== t.from) return { ok: false, why: `${L.teams[t.from].name} doesn't have that pick` };
     for (const k of pr) if (pickOwner(L, k) !== t.to) return { ok: false, why: `${L.teams[t.to].name} doesn't have that pick` };
     if ((pg.length || pr.length) && !pickRounds(L)) return { ok: false, why: "This league doesn't trade draft picks" };
-    if (L.settings.deadline && L.week > L.settings.deadline) return { ok: false, why: `The trade deadline was week ${L.settings.deadline}` };
-    if (L.week > totalWeeks(L)) return { ok: false, why: "The season is over" };
+    const off = offseason(L);
+    if (!off && L.settings.deadline && L.week > L.settings.deadline) return { ok: false, why: `The trade deadline was week ${L.settings.deadline}` };
+    if (!off && L.week > totalWeeks(L)) return { ok: false, why: "The season is over" };
     const busy = new Set(L.trades.filter((x) => x.status === "review" && x.id !== t.id).flatMap((x) => x.give.concat(x.get)));
     for (const id of t.give.concat(t.get)) if (busy.has(id)) return { ok: false, why: `${ctx.byId[id].n} is already in a trade the league is reviewing` };
     for (const id of t.give) if (!L.rosters[t.from].includes(id)) return { ok: false, why: `${ctx.byId[id].n} isn't on ${L.teams[t.from].name}` };
@@ -1155,8 +1164,9 @@
     if ((t.faabGive || 0) > L.teams[t.from].faab || (t.faabGet || 0) > L.teams[t.to].faab) return { ok: false, why: "Not enough FAAB" };
     const after = (team, out, inn, drops) => L.rosters[team].length - out.length + inn.length - drops.length;
     const irLeft = (team, out) => held(L, team).filter((x) => !out.includes(x)).length;   // IR players traded away arrive active
-    if (after(t.from, t.give, t.get, t.dropsFrom || []) > maxRoster(L) + irLeft(t.from, t.give)) return { ok: false, why: `${L.teams[t.from].name} would have too many players: add a drop` };
-    if (after(t.to, t.get, t.give, t.dropsTo || []) > maxRoster(L) + irLeft(t.to, t.get)) return { ok: false, why: `${L.teams[t.to].name} would have too many players` };
+    // the offseason has no roster limit: rosters cut down before next season's week 1 anyway
+    if (!off && after(t.from, t.give, t.get, t.dropsFrom || []) > maxRoster(L) + irLeft(t.from, t.give)) return { ok: false, why: `${L.teams[t.from].name} would have too many players: add a drop` };
+    if (!off && after(t.to, t.get, t.give, t.dropsTo || []) > maxRoster(L) + irLeft(t.to, t.get)) return { ok: false, why: `${L.teams[t.to].name} would have too many players` };
     if (ctx.hooks.tradeCheck) { const c = ctx.hooks.tradeCheck(L, t, ctx); if (c && !c.ok) return c; }
     return { ok: true };
   }
@@ -1349,7 +1359,7 @@
   const offerEnds = (L, t) => t.at + (L.settings.offerHours || 48) * HOUR;
   function tick(L, ctx, now) {
     // offers nobody answered close after offerHours
-    const pastDeadline = L.settings.deadline && L.week > L.settings.deadline;
+    const pastDeadline = L.settings.deadline && L.week > L.settings.deadline && !offseason(L);
     for (const t of L.trades) if (t.status === "pending" && (now >= offerEnds(L, t) || pastDeadline)) { t.status = "expired"; t.done = pastDeadline ? now : offerEnds(L, t); }
     let n = finalize(L, ctx, now);
     n += botsAnswer(L, ctx, now, 0);
@@ -1363,7 +1373,7 @@
   }
 
   return { summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
-    finishWeek, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
+    finishWeek, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
 });
