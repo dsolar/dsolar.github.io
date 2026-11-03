@@ -5,6 +5,10 @@
    pool. Scoring is a hook: a league with real box scores passes hooks.score(L, ctx, teamId, week) -> { total, cats };
    without it, weeks are simulated from player values, which is what the demo league uses.
 
+   Formats (settings.format): "h2h", head to head with playoffs, or "guillotine": everyone scores every week, the
+   lowest team is chopped and its players go on waivers, and the last team standing wins. settings.bestBall makes
+   lineups automatic in either: each week counts the best lineup a roster could have started.
+
    Everything that changes the league takes `now` (ms) and stays deterministic for the same calls. */
 (function (root, factory) {
   const FK = root.FK || {};
@@ -22,19 +26,25 @@
   const WEEK = { nba: { pg: 3.4, weeks: 24 }, nfl: { tot: 1 / 17, weeks: 17 }, mlb: { bat: 1 / 26, pit: 1 / 26, weeks: 26 } };
   const COLORS = 12;
 
-  const DEFAULTS = { weeks: 14, playoffTeams: 4, faab: 100, minBid: 0, waivers: "faab", waiverHours: 48, tradeReview: "vote", reviewHours: 24, vetoShare: 0.5, deadline: 11, ir: 1 };
+  const DEFAULTS = { format: "h2h", bestBall: false, weeks: 14, playoffTeams: 4, faab: 100, minBid: 0, waivers: "faab", waiverHours: 48, waiverAt: null,
+    tradeReview: "vote", reviewHours: 24, vetoShare: 0.5, deadline: 11, ir: 1, trades: true, chops: 1 };
+  // A guillotine league's own defaults: one season budget, no trades, waivers that run midweek so a chopped roster
+  // is back in play for the next week.
+  const GUILLOTINE = { faab: 1000, trades: false, waiverAt: 60, playoffTeams: 0, deadline: 0 };
 
   /* ---------- making a league ---------- */
   function create(opts) {
     const sport = typeof opts.sport === "string" ? S.ALL[opts.sport] : opts.sport;
     const D = opts.draft;
-    const s = Object.assign({}, DEFAULTS, opts.settings || {});
+    const given = opts.settings || {};
+    const s = Object.assign({}, DEFAULTS, given.format === "guillotine" ? GUILLOTINE : {}, given);
     const teams = (D ? D.teams : opts.teams).map((t, i) => ({ id: i, name: t.name, abbr: t.abbr, owner: t.owner || null, color: t.color != null ? t.color : (i * 5) % COLORS, faab: s.faab, priority: i }));
     const n = teams.length;
     s.lineup = (opts.lineup || (D && D.lineup) || sport.lineup).slice();
     s.bench = opts.bench != null ? opts.bench : D ? D.bench : sport.bench;
-    s.playoffTeams = Math.min(s.playoffTeams, n - (n % 2));
-    s.playoffWeeks = Math.ceil(Math.log2(Math.max(2, s.playoffTeams)));
+    const guillotine = s.format === "guillotine";
+    if (guillotine) { s.chops = Math.max(1, s.chops); s.weeks = Math.ceil((n - 1) / s.chops); s.playoffTeams = 0; s.playoffWeeks = 0; }
+    else { s.playoffTeams = Math.min(s.playoffTeams, n - (n % 2)); s.playoffWeeks = Math.ceil(Math.log2(Math.max(2, s.playoffTeams))); }
     const seed = opts.seed != null ? opts.seed : D ? D.seed + 1 : Math.floor(Math.random() * 2 ** 31);
     const rosters = D ? F.rosters(D) : (opts.rosters || teams.map(() => []));
     // waiver priority starts as the reverse of the draft order
@@ -43,8 +53,9 @@
       v: 1, kind: "fk-league", sport: sport.key, scoring: opts.scoring || (D && D.scoring) || Object.keys(sport.scorings)[0],
       name: opts.name || "Fantasy League", season: opts.season || "", seed, created: opts.now || Date.now(), start: opts.start || opts.now || Date.now(),
       settings: s, teams, rosters: rosters.map((r) => r.slice()), ir: teams.map(() => []), lineups: {},
-      schedule: roundRobin(n, s.weeks, rng(seed + 7)), results: {}, week: 1,
+      schedule: guillotine ? Array.from({ length: s.weeks }, () => []) : roundRobin(n, s.weeks, rng(seed + 7)), results: {}, week: 1,
       tx: [], trades: [], claims: [], waivers: {}, watch: {}, draft: D || null, nextId: 1,
+      alive: teams.map((t) => t.id), chopped: [], waiverRuns: {},
     };
     if (D) log(L, D.done || L.created, { type: "draft", team: -1, text: `Draft complete: ${F.made(D).length} picks` });
     return L;
@@ -77,6 +88,8 @@
   }
   const refresh = (L, ctx) => Object.assign(ctx, context(L, ctx.players, ctx.sport, ctx.hooks));
   const maxRoster = (L) => L.settings.lineup.length + L.settings.bench;
+  const isGuillotine = (L) => L.settings.format === "guillotine";
+  const isAlive = (L, teamId) => !isGuillotine(L) || (L.alive || []).includes(teamId);
   const totalWeeks = (L) => L.settings.weeks + L.settings.playoffWeeks;
   const weekStart = (L, w) => L.start + (w - 1) * 7 * DAY;
   const log = (L, at, e) => { const x = Object.assign({ id: L.nextId++, at, week: L.week }, e); L.tx.push(x); return x; };
@@ -84,12 +97,14 @@
   /* ---------- lineups ---------- */
   function lineupFor(L, ctx, teamId, w) {
     const saved = L.lineups[w] && L.lineups[w][teamId];
+    if (L.settings.bestBall && w >= L.week) return projectedBest(L, ctx, teamId);
     const ros = L.rosters[teamId], ir = L.ir[teamId] || [];
     if (saved) return saved.map((id) => (id && ros.includes(id) && !ir.includes(id) ? id : null));
     const ps = ros.filter((id) => !ir.includes(id)).map((id) => ctx.byId[id]).filter((p) => p && !/^(out|ir|o)$/i.test(p.inj || ""));
     return F.assign(ctx.sport, ps, L.settings.lineup).map((p) => (p ? p.id : null));
   }
   function setLineup(L, ctx, teamId, w, slots) {
+    if (L.settings.bestBall) return { ok: false, why: "Best ball sets your lineup for you" };
     if (w < L.week) return { ok: false, why: `Week ${w} is locked` };
     const ros = L.rosters[teamId], seen = new Set();
     for (let i = 0; i < L.settings.lineup.length; i++) {
@@ -113,6 +128,19 @@
     cur[toSlot] = pid;
     if (from >= 0) cur[from] = other && S.fits(ctx.sport, ctx.byId[other], L.settings.lineup[from]) ? other : null;
     return setLineup(L, ctx, teamId, w, cur);
+  }
+
+  const healthy = (L, ctx, teamId) => L.rosters[teamId].filter((id) => !(L.ir[teamId] || []).includes(id)).map((id) => ctx.byId[id]).filter((p) => p && !/^(out|ir|o)$/i.test(p.inj || ""));
+  function projectedBest(L, ctx, teamId) { return F.assign(ctx.sport, healthy(L, ctx, teamId), L.settings.lineup).map((p) => (p ? p.id : null)); }
+  // Best ball: the best lineup this roster could have started, by what each player actually scored this week. In a
+  // category league a player's week counts as his value moved by his form.
+  function bestBallIds(L, ctx, teamId, w, frac) {
+    const sc = scoring(L, ctx);
+    const ps = healthy(L, ctx, teamId).map((p) => {
+      const v = sc.type === "points" ? playerWeek(L, ctx, p, w, frac).pts : (p.v || 0) + 0.5 * (formOf(L, p, w) - 1) * Math.max(1, Math.abs(p.v || 0));
+      return Object.assign({}, p, { v, _id: p.id });
+    });
+    return F.assign(ctx.sport, ps, L.settings.lineup).map((p) => (p ? p._id : null));
   }
 
   /* ---------- scoring ---------- */
@@ -139,11 +167,12 @@
   function teamWeek(L, ctx, teamId, w, frac = 1) {
     if (ctx.hooks.score) return ctx.hooks.score(L, ctx, teamId, w, frac);
     const sc = scoring(L, ctx);
-    const ids = lineupFor(L, ctx, teamId, w).filter(Boolean);
+    const best = L.settings.bestBall && w >= L.week ? bestBallIds(L, ctx, teamId, w, frac) : null;
+    const ids = (best || lineupFor(L, ctx, teamId, w)).filter(Boolean);
     const lines = ids.map((id) => [ctx.byId[id], playerWeek(L, ctx, ctx.byId[id], w, frac)]).filter((x) => x[0]);
     if (sc.type === "points") {
       const players = Object.fromEntries(lines.map(([p, s]) => [p.id, s.pts]));
-      return { total: sum(Object.values(players)), players };
+      return { total: sum(Object.values(players)), players, lineup: best };
     }
     const cats = {};
     for (const c of sc.cats) {
@@ -154,7 +183,7 @@
       else if (c.rate) { const wt = sum(has.map(([, s]) => s[line][ix(c.w)])); cats[c.k] = wt ? sum(has.map(([, s]) => s[line][ix(c.rate)] * s[line][ix(c.w)])) / wt : 0; }
       else cats[c.k] = sum(has.map(([, s]) => s[line][ix(c.col)]));
     }
-    return { cats, total: null };
+    return { cats, total: null, lineup: best };
   }
   // What a team should score this week with average form.
   function projection(L, ctx, teamId, w) {
@@ -179,6 +208,7 @@
   }
   // Every game of a week, final or (for the current week) in progress at `frac` of the week.
   function matchups(L, ctx, w, frac = 1) {
+    if (isGuillotine(L)) return [];
     const games = w <= L.settings.weeks ? L.schedule[w - 1] : playoffGames(L, ctx, w);
     return games.map(([a, b], i) => {
       if (L.results[w] && L.results[w][i]) return Object.assign({ a, b, final: true, i }, L.results[w][i]);
@@ -200,14 +230,89 @@
     return 1 / (1 + Math.exp(-edge));
   }
 
+  /* ---------- the guillotine ---------- */
+  // Every team still alive this week, best to worst, with each one's odds of being chopped. Points leagues rank by
+  // points. Category leagues rank like roto: in each category the best team gets n points, the worst gets 1.
+  function block(L, ctx, w, frac = 1) {
+    if (L.results[w] && L.results[w].block) return L.results[w].block.map((r) => Object.assign({ final: true }, r));
+    const sc = scoring(L, ctx);
+    const alive = w === L.week ? L.alive.slice() : (L.results[w - 1] && L.results[w - 1].alive) || L.alive.slice();
+    const rows = alive.map((t) => { const x = teamWeek(L, ctx, t, w, frac), p = projection(L, ctx, t, w); return { team: t, wk: x, proj: p.total, players: x.players || null, lineup: x.lineup || null }; });
+    if (sc.type === "points") rows.forEach((r) => (r.score = r.wk.total));
+    else {
+      rows.forEach((r) => { r.score = 0; r.cats = {}; });
+      for (const c of sc.cats) {
+        const sorted = rows.slice().sort((a, b) => (a.wk.cats[c.k] - b.wk.cats[c.k]) * (c.low ? -1 : 1));
+        sorted.forEach((r, i) => { r.score += i + 1; r.cats[c.k] = r.wk.cats[c.k]; });
+      }
+    }
+    chopOdds(L, ctx, rows, w, frac, sc.type === "points");
+    rows.sort((a, b) => b.score - a.score || b.proj - a.proj);
+    rows.forEach((r, i) => { r.rank = i + 1; r.final = false; r.live = frac > 0 && frac < 1; r.frac = frac; delete r.wk; });
+    return rows;
+  }
+  // The chance each team ends the week lowest: what's left of each team's projection plays out with noise, a few
+  // hundred times. Category leagues use roster strength as the projection.
+  function chopOdds(L, ctx, rows, w, frac, points) {
+    const k = L.settings.chops, sims = 500, r = rng(L.seed * 3 + w * 101 + Math.round(frac * 1000));
+    const hits = rows.map(() => 0);
+    const rest = 1 - frac;
+    const zs = (xs) => { const m = sum(xs) / xs.length, d = Math.sqrt(sum(xs.map((x) => (x - m) ** 2)) / xs.length) || 1; return xs.map((x) => (x - m) / d); };
+    // points: what's banked plus the rest of the projection; categories: standing so far blended with roster strength
+    const zScore = points ? null : zs(rows.map((x) => x.score)), zProj = points ? null : zs(rows.map((x) => x.proj));
+    const mean = rows.map((x, j) => (points ? x.score + x.proj * rest : frac * zScore[j] + rest * zProj[j]));
+    const sd = rows.map((x) => (points ? Math.max(1, x.proj * 0.16 * Math.sqrt(rest + 0.0001)) : 0.15 + 0.9 * Math.sqrt(rest)));
+    for (let i = 0; i < sims; i++) {
+      const fin = rows.map((x, j) => mean[j] + sd[j] * gauss(r));
+      const order = fin.map((v, j) => [v, j]).sort((a, b) => a[0] - b[0]);
+      for (let c = 0; c < k && c < order.length - 1; c++) hits[order[c][1]]++;
+    }
+    rows.forEach((x, j) => (x.chop = frac >= 1 ? null : hits[j] / sims));
+  }
+  // The week ends: the lowest team is chopped and everything it had goes on waivers until the next waiver run.
+  function chop(L, ctx, now) {
+    const w = L.week;
+    const rows = block(L, ctx, w, 1);
+    // settings.immune { team: lastWeek } protects a team through that week (the demo keeps your seat until you arrive)
+    const imm = L.settings.immune || {};
+    const open = rows.filter((r) => !(imm[r.team] >= w));
+    const out = open.slice(-Math.min(L.settings.chops, rows.length - 1)).map((r) => r.team);
+    const runAt = L.settings.waiverAt != null ? weekStart(L, w + 1) + L.settings.waiverAt * HOUR : now + L.settings.waiverHours * HOUR;
+    L.results[w] = { block: rows.map((r) => ({ team: r.team, score: r.score, proj: r.proj, rank: r.rank, cats: r.cats || null, players: r.players, lineup: r.lineup, out: out.includes(r.team) })), chopped: out, alive: L.alive.slice() };
+    for (const t of out) {
+      const roster = L.rosters[t].slice();
+      const row = rows.find((r) => r.team === t);
+      L.chopped.push({ team: t, week: w, score: row.score, at: now, roster, faab: L.teams[t].faab, place: L.alive.length });
+      for (const pid of roster) { dropOne(L, t, pid, now); L.waivers[pid] = runAt; }
+      L.claims.forEach((c) => { if (c.team === t && c.status === "open") c.status = "cancelled"; });
+      L.alive = L.alive.filter((x) => x !== t);
+      log(L, now, { type: "chop", team: t, drops: roster, text: `Chopped in week ${w} with ${roster.length} players back on waivers` });
+    }
+    return out;
+  }
+  const champion = (L) => (isGuillotine(L) ? (L.alive.length === 1 ? L.alive[0] : null) : null);
+
   // Closes the current week: results stored, lineups frozen, waivers run, the next week starts.
   function finishWeek(L, ctx, now) {
     const w = L.week;
     if (w > totalWeeks(L)) return { ok: false, why: "The season is over" };
+    if (isGuillotine(L)) {
+      if (L.alive.length <= 1) return { ok: false, why: "The season is over" };
+      L.lineups[w] = L.lineups[w] || {};
+      for (const t of L.alive) { const x = teamWeek(L, ctx, t, w, 1); L.lineups[w][t] = x.lineup || lineupFor(L, ctx, t, w); }
+      chop(L, ctx, now);
+      if (L.alive.length <= 1) log(L, now, { type: "champion", team: L.alive[0], text: "Last team standing" });
+      L.week = L.alive.length <= 1 ? totalWeeks(L) + 1 : w + 1;
+      if (L.settings.waiverAt == null) runWaivers(L, ctx, now);
+      refresh(L, ctx);
+      return { ok: true };
+    }
     const games = matchups(L, ctx, w, 1);
     L.results[w] = games.map((g) => ({ a: g.a, b: g.b, sa: g.sa, sb: g.sb, ties: g.ties || 0, w: g.w, cats: g.cats || null, ta: g.ta && g.ta.players ? { players: g.ta.players } : null, tb: g.tb && g.tb.players ? { players: g.tb.players } : null }));
     L.lineups[w] = L.lineups[w] || {};
-    for (const t of L.teams) L.lineups[w][t.id] = lineupFor(L, ctx, t.id, w);
+    const best = {};
+    if (L.settings.bestBall) for (const g of games) { if (g.ta && g.ta.lineup) best[g.a] = g.ta.lineup; if (g.tb && g.tb.lineup) best[g.b] = g.tb.lineup; }
+    for (const t of L.teams) L.lineups[w][t.id] = best[t.id] || lineupFor(L, ctx, t.id, w);
     L.week = w + 1;
     runWaivers(L, ctx, now);
     return { ok: true };
@@ -215,6 +320,7 @@
 
   /* ---------- standings and playoffs ---------- */
   function standings(L, upTo) {
+    if (isGuillotine(L)) return survival(L);
     const last = Math.min(upTo || L.settings.weeks, L.settings.weeks);
     const rows = L.teams.map((t) => ({ team: t.id, w: 0, l: 0, t: 0, pf: 0, pa: 0, streak: "", form: [] }));
     for (let w = 1; w <= last; w++) {
@@ -237,6 +343,21 @@
     const lead = sorted[0];
     sorted.forEach((r, i) => { r.rank = i + 1; r.gb = ((lead.w - r.w) + (r.l - lead.l)) / 2; r.inPlayoffs = i < L.settings.playoffTeams; });
     return sorted;
+  }
+  // Guillotine standings: teams still alive by points this season, then the chopped, last one out first.
+  function survival(L) {
+    const rows = L.teams.map((t) => {
+      const weeks = Object.keys(L.results).map(Number).sort((a, b) => a - b).map((w) => (L.results[w].block || []).find((r) => r.team === t.id)).filter(Boolean);
+      const c = (L.chopped || []).find((x) => x.team === t.id);
+      return { team: t.id, alive: !c, out: c ? c.week : null, place: c ? c.place : null, pf: sum(weeks.map((r) => r.score)), last: weeks.length ? weeks[weeks.length - 1].score : null,
+        close: weeks.filter((r, i) => r.rank >= (L.results[i + 1].block.length - 1)).length,
+        weeks: weeks.length, w: c ? c.week - 1 : weeks.length, l: c ? 1 : 0, t: 0, pa: 0, pct: 0, streak: "", form: [], gb: 0 };
+    });
+    const alive = rows.filter((r) => r.alive).sort((a, b) => b.pf - a.pf || a.team - b.team);
+    const dead = rows.filter((r) => !r.alive).sort((a, b) => b.out - a.out || b.pf - a.pf);
+    const out = alive.concat(dead);
+    out.forEach((r, i) => { r.rank = i + 1; r.inPlayoffs = r.alive; });
+    return out;
   }
   // Playoff games for a week after the regular season: seeds 1 v 4, 2 v 3 and so on, winners advance.
   function playoffGames(L, ctx, w) {
@@ -262,6 +383,7 @@
   }
   // Power rankings: record, points and roster strength together.
   function power(L, ctx) {
+    if (isGuillotine(L)) return survival(L).map((r) => ({ team: r.team, rank: r.rank, move: 0, score: r.pf }));
     const st = standings(L);
     const str = L.teams.map((t) => sum(lineupFor(L, ctx, t.id, L.week).filter(Boolean).map((id) => (ctx.byId[id] ? ctx.byId[id].vor : 0))));
     const zs = (xs) => { const m = sum(xs) / xs.length, sd = Math.sqrt(sum(xs.map((x) => (x - m) ** 2)) / xs.length) || 1; return xs.map((x) => (x - m) / sd); };
@@ -276,6 +398,7 @@
   /* ---------- free agency and waivers ---------- */
   const onWaivers = (L, pid, now) => L.waivers[pid] != null && L.waivers[pid] > now;
   function canRoster(L, ctx, teamId, add, drops) {
+    if (!isAlive(L, teamId)) return { ok: false, why: "That team has been chopped" };
     const ros = L.rosters[teamId].filter((id) => !(drops || []).includes(id));
     if (ros.length + (add ? 1 : 0) > maxRoster(L) + (L.ir[teamId] || []).length) return { ok: false, why: "Roster is full: pick someone to drop" };
     if (ctx.hooks.check) { const c = ctx.hooks.check(L, teamId, add ? ctx.byId[add] : null, drops, ctx); if (c && !c.ok) return c; }
@@ -335,12 +458,16 @@
     for (const id of Object.keys(L.waivers)) if (L.waivers[id] <= now) delete L.waivers[id];
     return won;
   }
+  // When waivers run this week: settings.waiverAt hours after the week starts, or when the week ends.
+  const waiverRunAt = (L, w = L.week) => (L.settings.waiverAt != null ? weekStart(L, w) + L.settings.waiverAt * HOUR : weekStart(L, w + 1));
 
   /* ---------- trades ---------- */
   // Trade value: auction dollars (at least $1 a player) plus FAAB at a tenth of a dollar per dollar.
   const pValue = (ctx, id) => Math.max(1, (ctx.byId[id] && ctx.byId[id].$) || 0) + Math.max(0, (ctx.byId[id] && ctx.byId[id].vor) || 0) * 0.01;
   const sideValue = (ctx, ids, faab = 0) => sum(ids.map((id) => pValue(ctx, id))) + faab * 0.1;
   function tradeCheck(L, ctx, t) {
+    if (L.settings.trades === false) return { ok: false, why: "This league has no trades" };
+    if (!isAlive(L, t.from) || !isAlive(L, t.to)) return { ok: false, why: "That team has been chopped" };
     if (t.from === t.to) return { ok: false, why: "Pick another team" };
     if (!t.give.length && !t.get.length) return { ok: false, why: "Add at least one player" };
     if (L.settings.deadline && L.week > L.settings.deadline) return { ok: false, why: `The trade deadline was week ${L.settings.deadline}` };
@@ -423,7 +550,7 @@
   // Each week a few bots pick up the best free agent who beats their weakest player, and now and then two bots trade.
   function botWeek(L, ctx, now, r) {
     for (const t of L.teams) {
-      if (t.owner || r() > 0.45) continue;
+      if (t.owner || !isAlive(L, t.id) || r() > 0.45) continue;
       // Bots chase form: value counts, and so does how a player has played the last two weeks.
       const span = Math.max(1e-6, Math.abs(ctx.players.reduce((m, p) => Math.max(m, p.vor || 0), 0)));
       const heat = (p) => (p.vor || 0) + span * 0.12 * (hot(L, p) - 1) * 3;
@@ -435,8 +562,8 @@
       if (r() < 0.35 && L.settings.waivers === "faab" && t.faab > 0) claim(L, ctx, t.id, p.id, worst.id, Math.min(t.faab, Math.round(r() * 12)), now);
       else addDrop(L, ctx, t.id, p.id, worst.id, now);
     }
-    if (r() < 0.3) {
-      const bots = L.teams.filter((t) => !t.owner);
+    if (r() < 0.3 && L.settings.trades !== false) {
+      const bots = L.teams.filter((t) => !t.owner && isAlive(L, t.id));
       if (bots.length >= 2) {
         const a = bots[Math.floor(r() * bots.length)], b = bots.filter((x) => x !== a)[Math.floor(r() * (bots.length - 1))];
         const ra = L.rosters[a.id].slice().sort((x, y) => ctx.byId[y].$ - ctx.byId[x].$), rb = L.rosters[b.id].slice().sort((x, y) => ctx.byId[y].$ - ctx.byId[x].$);
@@ -448,14 +575,52 @@
       }
     }
   }
-  // Moves the league forward: trades past review go through, bots answer offers.
+  // Guillotine bots bid on what the chopped team left behind. Each one looks at the players who would start for it
+  // over its weakest starter and bids a share of its budget: more for a better player, more as the season runs down
+  // (money is worth less late, and there are fewer players left to buy), and a little private taste.
+  function botBids(L, ctx, now, r) {
+    const pool = Object.keys(L.waivers).filter((id) => L.waivers[id] > now && ctx.own[id] == null).map((id) => ctx.byId[id]).filter(Boolean).sort((a, b) => b.$ - a.$);
+    if (!pool.length) return 0;
+    const left = Math.max(1, totalWeeks(L) - L.week + 1), late = 1 - left / Math.max(1, totalWeeks(L));
+    let n = 0;
+    for (const t of L.teams) {
+      if (t.owner || !isAlive(L, t.id) || t.faab <= 0) continue;
+      const ros = L.rosters[t.id].map((id) => ctx.byId[id]).filter(Boolean);
+      const starters = new Set(F.assign(ctx.sport, ros, L.settings.lineup).filter(Boolean).map((p) => p.id));
+      const keepers = ros.filter((p) => starters.has(p.id)).sort((a, b) => a.v - b.v);
+      const bench = ros.filter((p) => !starters.has(p.id)).sort((a, b) => a.v - b.v);
+      let bids = 0;
+      for (const p of pool.slice(0, 25)) {
+        if (bids >= 4) break;
+        const after = F.assign(ctx.sport, ros.filter((q) => q !== (bench[0] || keepers[0])).concat(p), L.settings.lineup).filter(Boolean);
+        const gain = sum(after.map((q) => q.v)) - sum(keepers.map((q) => q.v));
+        if (gain <= 0 && r() > 0.15) continue;
+        const want = Math.min(1, (p.$ || 1) / 45) * (0.06 + 0.8 * late * late) * (0.6 + 0.8 * r());
+        const bid = Math.max(L.settings.minBid, Math.min(t.faab, Math.round(t.faab * want)));
+        const drop = bench.length ? bench[0] : keepers[0];
+        if (!drop) continue;
+        const c = claim(L, ctx, t.id, p.id, ros.length >= maxRoster(L) ? drop.id : null, bid, now);
+        if (c.ok) { bids++; n++; }
+      }
+    }
+    return n;
+  }
+  // Moves the league forward: trades past review go through, bots answer offers, and a midweek waiver run happens
+  // once its time comes.
   function tick(L, ctx, now) {
     let n = finalize(L, ctx, now);
     n += botsAnswer(L, ctx, now, 0);
+    L.waiverRuns = L.waiverRuns || {};
+    if (L.settings.waiverAt != null && L.week <= totalWeeks(L) && !L.waiverRuns[L.week] && now >= waiverRunAt(L)) {
+      const at = waiverRunAt(L);
+      L.waiverRuns[L.week] = at;
+      n += runWaivers(L, ctx, at).length;
+    }
     return n;
   }
 
   return { DEFAULTS, WEEK, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
     finishWeek, formOf, hot, standings, playoffGames, bracket, power, onWaivers, canRoster, addDrop, claim, cancelClaim, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
-    voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log };
+    voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
+    GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
 });
