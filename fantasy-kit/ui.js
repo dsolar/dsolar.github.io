@@ -309,7 +309,7 @@
     return `<div class="pc-h">${playerAv(sport, p, "lg")}<div><h3 class="disp">${esc(p.n)}</h3><div class="ps">${posChips(sport, p)} ${esc(p.t)}${p.age ? `, age ${p.age}` : ""}${p.inj ? `, <span class="bad">${esc(p.inj)}</span>` : ""}</div>${opts.status ? `<div class="ps row" style="margin-top:6px">${opts.status}</div>` : ""}</div></div>
       <div class="stat-row" style="margin-bottom:14px"><div><small>Overall</small><b>${p.rank}</b></div><div><small>Position</small><b>${esc(p.prank)}</b></div><div><small>${sc.type === "points" ? "Projection" : "Value"}</small><b>${sc.type === "points" ? Math.round(p.v) : p.v.toFixed(1)}</b></div><div><small>Auction</small><b>${p.$ ? money(p.$) : "-"}</b></div></div>
       ${opts.note ? `<p class="small" style="margin:0 0 12px">${opts.note}</p>` : ""}
-      <div class="stack">${zs}${lines}</div>${opts.actions ? `<div class="acts">${opts.actions}</div>` : ""}`;
+      <div class="stack">${opts.extra || ""}${zs}${lines}</div>${opts.actions ? `<div class="acts">${opts.actions}</div>` : ""}`;
   }
 
   /* ---------- league modules (view models in, HTML out) ---------- */

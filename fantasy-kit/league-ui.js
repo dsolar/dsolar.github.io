@@ -147,7 +147,7 @@
           ${mine ? `<div class="card"><div class="mod-h"><h2>Your matchup</h2><span class="ps">Week ${w}${w > L().settings.weeks ? `, ${esc(kindName(mine.kind, w).toLowerCase())}` : ""}</span><a href="${matchHref(w, mine.i)}">Full matchup</a></div>${U.versus(versusVM(w, mine))}</div>` : ""}
           ${lastWeekCard()}
           <div class="card"><div class="mod-h"><h2>Standings</h2><a href="#league/standings">Full standings</a></div>${U.standingsTable(st, { compact: true, pfLabel: pts() ? "PF" : "Cats", fmt: fmtS })}</div>
-          <div class="card"><div class="mod-h"><h2>Recent activity</h2><a href="#league/tx">All transactions</a></div>${U.feed(recent.map(txVM), "No moves yet. Pick up a free agent to get things going.")}</div>
+          <div class="card feed2"><div class="mod-h"><h2>Recent activity</h2><a href="#league/tx">All transactions</a></div>${U.feed(recent.slice(0, 6).map(txVM), "No moves yet. Pick up a free agent to get things going.")}</div>
         </div><aside class="stack">
           ${myCards.trim() ? `<div class="d-only stack">${myCards}</div>` : ""}
           ${chatCard()}
@@ -851,6 +851,18 @@
       const p = ctx.byId[pid];
       U.confirm(`Drop ${p.n}?`, `He goes on waivers for ${L().settings.waiverHours} hours, then becomes a free agent.`, "Drop him", () => act(() => G.addDrop(L(), ctx, me(), null, pid, now()), `${p.n} dropped.`));
     }
+    // A points league's player card: what he's scored in this league each week, with his average.
+    function weekBars(p) {
+      if (!pts()) return "";
+      const last = Math.min(L().week - 1, G.totalWeeks(L()));
+      if (last < 2) return "";
+      const ws = Array.from({ length: last }, (_, i) => i + 1), vals = ws.map((w) => Math.max(0, G.playerWeek(L(), ctx, p, w, 1).pts || 0));
+      const max = Math.max(...vals, 1), avg = vals.reduce((a, b) => a + b, 0) / vals.length, bw = 22, gap = 6, H = 64;
+      const x = (i) => i * (bw + gap), y = (v) => H - (v / max) * (H - 6);
+      const bars = vals.map((v, i) => `<g><title>Week ${ws[i]}: ${fmtS(v)}</title><rect x="${x(i)}" y="${Math.min(H - 2, y(v)).toFixed(1)}" width="${bw}" height="${Math.max(2, H - y(v)).toFixed(1)}" rx="${v ? 3 : 1}" class="${v >= avg ? "hi" : ""}"></rect><text x="${x(i) + bw / 2}" y="${H + 13}" text-anchor="middle">${ws[i]}</text></g>`).join("");
+      const W = x(vals.length) - gap;
+      return `<div class="wkbars"><div class="ps"><b>Points by week</b>, ${fmtS(avg)} a week on average</div><svg viewBox="0 -2 ${W} ${H + 18}" role="img" aria-label="Points by week: ${vals.map((v, i) => `week ${ws[i]} ${fmtS(v)}`).join(", ")}" preserveAspectRatio="xMinYMid meet" style="max-width:${Math.max(W, 120)}px">${bars}<line x1="0" x2="${W}" y1="${y(avg).toFixed(1)}" y2="${y(avg).toFixed(1)}" class="avg"></line></svg></div>`;
+    }
     function playerCard(pid) {
       const p = ctx.byId[pid], mid = me(), own = ctx.own[pid];
       if (!p) return;
@@ -863,7 +875,7 @@
         else if (own != null && own !== mid && canTrade()) actions += `<button class="btn go" data-card="trade">Trade for him</button>`;
       }
       const status = own != null ? `${teamAv(T(own), "sm")} On ${esc(T(own).name)}` : G.onWaivers(L(), pid, now()) ? `<span class="tag gold">On waivers</span>` : `<span class="tag win">Free agent</span>`;
-      const Dl = U.dialog(U.playerCard(sport, p, { scoring: L().scoring, actions, status }), null, { wide: true });
+      const Dl = U.dialog(U.playerCard(sport, p, { scoring: L().scoring, actions, status, extra: weekBars(p) }), null, { wide: true });
       $$("[data-card]", Dl).forEach((b) => b.addEventListener("click", () => {
         const a = b.dataset.card; Dl.close();
         if (a === "watch") { const w = watch(); const i = w.indexOf(pid); if (i >= 0) w.splice(i, 1); else w.push(pid); save(); render(); }
