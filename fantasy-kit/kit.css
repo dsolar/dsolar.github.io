@@ -51,6 +51,10 @@ a{color:var(--accent)}
 .av.md{width:40px;height:40px;border-radius:11px;font-size:14px}
 .av.lg{width:56px;height:56px;border-radius:15px;font-size:19px}
 .av.xl{width:76px;height:76px;border-radius:20px;font-size:26px}
+.av.logo{background:none;box-shadow:none;border-radius:0;color:inherit}
+.av.logo svg{width:100%;height:100%;display:block;overflow:visible}
+.av.logo.img{border-radius:22%;overflow:hidden;background:var(--surface-3)}
+.av.logo.img img{width:100%;height:100%;object-fit:cover;display:block}
 .av.c0{--c:var(--t0)}.av.c1{--c:var(--t1)}.av.c2{--c:var(--t2)}.av.c3{--c:var(--t3)}.av.c4{--c:var(--t4)}.av.c5{--c:var(--t5)}
 .av.c6{--c:var(--t6)}.av.c7{--c:var(--t7)}.av.c8{--c:var(--t8)}.av.c9{--c:var(--t9)}.av.c10{--c:var(--t10)}.av.c11{--c:var(--t11)}
 .pav{display:inline-flex;align-items:center;justify-content:center;flex:none;width:30px;height:30px;border-radius:50%;background:var(--pc,var(--p6));color:var(--pci,var(--p6i));font-weight:800;font-size:11px;font-variation-settings:"wdth" 80}
@@ -540,3 +544,48 @@ dialog.fk-dlg h3{margin:0 0 6px;font-size:22px;padding-right:40px}
 .tk.gone{opacity:.45;text-decoration:line-through}
 .cell.steal{box-shadow:inset 0 0 0 2px var(--loss)}
 .cell.mk{border-style:dashed;border-color:var(--loss)}
+
+/* the scoreboard on phones: short cards with abbreviations, or a full-width list */
+.game .ab{display:none}
+.scoreboard{scroll-snap-type:x proximity}
+.game{scroll-snap-align:start}
+.wpm{display:flex;height:4px;border-radius:2px;overflow:hidden;background:var(--surface-3);margin-top:3px}
+.wpm i{display:block;height:100%}
+.scoreboard.list{display:grid;gap:8px;overflow:visible}
+.scoreboard.list .game{width:auto;padding:11px 14px}
+.scoreboard.list .game .ln{font-size:15px}
+@media (max-width:640px){
+  .scoreboard:not(.list) .game{width:146px;padding:8px 10px}
+  .scoreboard:not(.list) .game .ell{display:none}
+  .scoreboard:not(.list) .game .ab{display:inline;font-weight:800;letter-spacing:.02em}
+  .scoreboard:not(.list) .game .ln small{display:none}
+  .scoreboard:not(.list) .game .st{font-size:10px}
+}
+
+/* alerts: what's waiting on you */
+.alerts{display:grid;gap:8px;padding-top:14px}
+.alert{display:flex;align-items:center;gap:10px;background:var(--gold-soft);border:1px solid color-mix(in srgb,var(--gold) 35%,transparent);border-radius:var(--rl);padding:10px 14px;color:var(--ink);text-decoration:none;font-size:14px}
+.alert.info{background:var(--info-soft);border-color:color-mix(in srgb,var(--info) 30%,transparent)}
+.alert>span:not(.av){flex:1;min-width:0}
+.alert .go{flex:none;font-size:13px;font-weight:800;color:var(--accent);white-space:nowrap}
+.alert.info .go{color:var(--info)}
+.alert:hover{filter:brightness(.98)}
+.alerts+.page{padding-top:14px}
+
+/* lineup moves and IR */
+.movebar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--band);color:#EEF2F7;border-radius:var(--rl);padding:10px 14px;font-size:14px;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.movebar .btn{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25);color:#fff}
+.slotbtn{border:0;cursor:pointer;font:inherit;font-size:11.5px;font-weight:850;letter-spacing:.03em}
+.slotbtn:hover{background:var(--line-2);color:var(--ink)}
+.slot.ir{background:var(--loss-soft);color:var(--loss)}
+table.t tr.tgt td{background:color-mix(in srgb,var(--brand) 9%,transparent)}
+table.t.roster td.nm{min-width:0}
+@media (max-width:600px){table.t.roster td.c{width:52px !important;padding-left:8px;padding-right:4px}table.t.roster .slot{min-width:38px}}
+
+/* team editor */
+.swatches{display:flex;flex-wrap:wrap;gap:6px}
+.swatches .sw{width:30px;height:30px;border:0;cursor:pointer;border-radius:8px;padding:0}
+.swatches .sw.on{outline:3px solid var(--ink);outline-offset:2px}
+.swatches .pick{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:4px;cursor:pointer;line-height:0}
+.swatches .pick.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+@media (max-width:980px){div.show-m.sbm{display:block !important}}

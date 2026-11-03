@@ -465,6 +465,43 @@
   // When waivers run this week: settings.waiverAt hours after the week starts, or when the week ends.
   const waiverRunAt = (L, w = L.week) => (L.settings.waiverAt != null ? weekStart(L, w) + L.settings.waiverAt * HOUR : weekStart(L, w + 1));
 
+  /* ---------- injured reserve ---------- */
+  // Who can go on IR: players out, on IR, PUP, suspended or on the injured list. Day-to-day and questionable can't.
+  const IR_OK = /^(ir|out|o|pup|na|sus|suspension|suspended|il\d*|injured reserve)$/i;
+  const irEligible = (p) => !!p && IR_OK.test(String(p.inj || "").trim());
+  const irSlots = (L) => Math.max(0, L.settings.ir || 0);
+  // An IR spot doesn't count against the roster, so putting a hurt player there frees a spot for a pickup.
+  function toIR(L, ctx, teamId, pid, now) {
+    const p = ctx.byId[pid];
+    if (!isAlive(L, teamId)) return { ok: false, why: "That team has been chopped" };
+    if (!L.rosters[teamId].includes(pid)) return { ok: false, why: "He isn't on your roster" };
+    const ir = (L.ir[teamId] = L.ir[teamId] || []);
+    if (ir.includes(pid)) return { ok: false, why: `${p.n} is already on IR` };
+    if (!irSlots(L)) return { ok: false, why: "This league has no IR spots" };
+    if (ir.length >= irSlots(L)) return { ok: false, why: `Your IR ${irSlots(L) === 1 ? "spot is" : "spots are"} full` };
+    if (!irEligible(p)) return { ok: false, why: `${p.n} isn't out or on IR, so he can't go there` };
+    ir.push(pid);
+    for (const w of Object.keys(L.lineups)) if (+w >= L.week && L.lineups[w][teamId]) L.lineups[w][teamId] = L.lineups[w][teamId].map((x) => (x === pid ? null : x));
+    log(L, now, { type: "ir", team: teamId, adds: [], drops: [], text: `${p.n} to IR` });
+    return { ok: true };
+  }
+  // Back from IR: he needs a roster spot again, so a full roster has to drop someone.
+  function activate(L, ctx, teamId, pid, drop, now) {
+    const ir = L.ir[teamId] || [];
+    const p = ctx.byId[pid];
+    if (!ir.includes(pid)) return { ok: false, why: `${p ? p.n : "He"} isn't on IR` };
+    const active = L.rosters[teamId].length - ir.length;
+    if (active + 1 > maxRoster(L) && !drop) return { ok: false, why: "Your roster is full: drop someone to activate him", needDrop: true };
+    if (drop && (drop === pid || !L.rosters[teamId].includes(drop))) return { ok: false, why: "Pick someone on your roster to drop" };
+    L.ir[teamId] = ir.filter((x) => x !== pid);
+    if (drop) { dropOne(L, teamId, drop, now); log(L, now, { type: "drop", team: teamId, adds: [], drops: [drop] }); }
+    log(L, now, { type: "ir", team: teamId, adds: [], drops: [], text: `${p.n} back from IR` });
+    refresh(L, ctx);
+    return { ok: true };
+  }
+  // Players who can't stay on IR any longer (they're healthy) block other moves until they come off, like Yahoo.
+  const irBlocked = (L, ctx, teamId) => (L.ir[teamId] || []).filter((id) => !irEligible(ctx.byId[id]));
+
   /* ---------- trades ---------- */
   // Trade value: auction dollars (at least $1 a player) plus FAAB at a tenth of a dollar per dollar.
   const pValue = (ctx, id) => Math.max(1, (ctx.byId[id] && ctx.byId[id].$) || 0) + Math.max(0, (ctx.byId[id] && ctx.byId[id].vor) || 0) * 0.01;
@@ -553,6 +590,16 @@
   /* ---------- bots in season ---------- */
   // Each week a few bots pick up the best free agent who beats their weakest player, and now and then two bots trade.
   function botWeek(L, ctx, now, r) {
+    // bots park their hurt players on IR, and bring back the healthy ones when there's room
+    for (const t of L.teams) {
+      if (t.owner || !isAlive(L, t.id)) continue;
+      for (const id of irBlocked(L, ctx, t.id)) {
+        const worst = L.rosters[t.id].filter((x) => !(L.ir[t.id] || []).includes(x)).map((x) => ctx.byId[x]).filter(Boolean).sort((a, b) => a.vor - b.vor)[0];
+        activate(L, ctx, t.id, id, L.rosters[t.id].length - (L.ir[t.id] || []).length >= maxRoster(L) && worst ? worst.id : null, now);
+      }
+      const hurt = L.rosters[t.id].map((x) => ctx.byId[x]).filter((p) => p && irEligible(p) && !(L.ir[t.id] || []).includes(p.id)).sort((a, b) => b.vor - a.vor);
+      for (const p of hurt) if (!toIR(L, ctx, t.id, p.id, now).ok) break;
+    }
     for (const t of L.teams) {
       if (t.owner || !isAlive(L, t.id) || r() > 0.45) continue;
       // Bots chase form: value counts, and so does how a player has played the last two weeks.
@@ -626,5 +673,5 @@
   return { DEFAULTS, WEEK, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
     finishWeek, formOf, hot, standings, playoffGames, bracket, power, onWaivers, canRoster, addDrop, claim, cancelClaim, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
-    GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
+    IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
 });

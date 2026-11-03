@@ -92,6 +92,8 @@
   }
   const volume = (sport, p, line) => (line === "bat" ? S.stat(sport, p, "bat", "pa") : line === "pit" ? S.stat(sport, p, "pit", "ip") : S.stat(sport, p, line, "min") || S.stat(sport, p, line, "gp")) || 0;
 
+  // How much of a season projection a hurt player is likely to play.
+  const AVAIL = { ir: 0.5, pup: 0.5, out: 0.82, o: 0.82, doubtful: 0.9, d: 0.9, questionable: 0.97, q: 0.97, sus: 0.7 };
   function pointValues(sport, players, sc) {
     for (const p of players) {
       const line = sc.line;
@@ -152,10 +154,22 @@
       }
     } else {
       pointValues(sport, players, sc);
-      // Per game, shrunk toward replacement for small samples, then over a full season; a projection wins when there is one.
+      // What a player scores per game from here: his own rate this season (shrunk for small samples) blended with the
+      // projection, the real games counting more as they pile up (half and half after six). A rest-of-season
+      // projection already leaves out the weeks a player is hurt; a season projection set in the summer doesn't, so
+      // injuries come off it. Value stays on a season scale so a week is v / games anywhere it's used.
       for (const p of players) p.v = p.fpg;
       shrink(sport, players, "v");
-      for (const p of players) p.v = p.proj > 0 ? p.proj : p.v * (sc.games || 17);
+      const meta = (sport.data && sport.data.lines && sport.data.lines.proj) || {};
+      const games = sc.games || 17, left = meta.ros ? Math.max(1, meta.weeks || 1) : games;
+      for (const p of players) {
+        const pr = p.proj > 0 ? p.proj / left : null;
+        const w = p.g ? p.g / (p.g + 6) : 0;
+        let rate = pr == null ? p.v : p.g ? w * p.v + (1 - w) * pr : pr;
+        if (!meta.ros) rate *= AVAIL[String(p.inj || "").toLowerCase()] || 1;
+        p.v = rate * games;
+        p.ros = meta.ros && p.proj != null ? p.proj : null;
+      }
     }
     const repl = replacement(sport, players, league);
     for (const p of players) {

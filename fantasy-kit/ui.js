@@ -2,7 +2,7 @@
 
    FK.ui gives a league page:
      helpers     esc, $, $$, store(ns), toast, dialog, confirm, theme, fmtLeft, money, ord, ago
-     identity    teamAv, playerAv, pname, teamName, posChip(s)
+     identity    teamAv, SHAPES, GLYPHS, logoSvg, glyphOf, shapeOf, playerAv, pname, teamName, posChip(s)
      shell       masthead, section tabs, page tabs, league switcher
      tables      sortable tables from column definitions, player columns per sport, position chips
      modules     scoreboard, versus (matchup hero), vsTable (side-by-side lineups), standingsTable, feed, txLine,
@@ -76,7 +76,51 @@
   };
 
   /* ---------- identity ---------- */
-  const teamAv = (t, size = "") => `<span class="av c${((t && t.color) || 0) % 12}${size ? " " + size : ""}" aria-hidden="true">${esc(String((t && t.abbr) || "?").slice(0, 3))}</span>`;
+  /* ---------- team logos ---------- */
+  // Every team gets a crest: a shape in its color with an icon, picked from its name unless the team chose its own
+  // (team.shape, team.glyph) or uploaded an image (team.img, a small data URL). glyph: false keeps the abbreviation.
+  const SHAPES = {
+    shield: "M20 2l16 5v12c0 10-7 16-16 19C11 35 4 29 4 19V7z",
+    circle: "M20 1a19 19 0 1 0 0 38a19 19 0 1 0 0-38z",
+    hex: "M20 1l17 9.5v19L20 39 3 29.5v-19z",
+    square: "M9 1h22a8 8 0 0 1 8 8v22a8 8 0 0 1-8 8H9a8 8 0 0 1-8-8V9a8 8 0 0 1 8-8z",
+  };
+  const GLYPHS = {
+    moon: "M15 3a9 9 0 1 0 6 15A7.5 7.5 0 0 1 15 3z",
+    bolt: "M13 2L4 14h6l-1 8 9-12h-6l1-8z",
+    flame: "M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-3 2-4 2-7 1 1 2 2 2 4 1-2 1-5 1-8z",
+    target: "M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20zm0 4a6 6 0 1 1 0 12a6 6 0 1 1 0-12zm0 3a3 3 0 1 0 0 6a3 3 0 1 0 0-6z",
+    clock: "M10 1h4v2h-4zM12 4a9 9 0 1 0 0 18a9 9 0 1 0 0-18zm0 2.5a6.5 6.5 0 1 1 0 13a6.5 6.5 0 1 1 0-13zM11 8h2v5h-2z",
+    crown: "M3 18h18v3H3zM3 7l5 4 4-7 4 7 5-4-2 10H5z",
+    star: "M12 2l3 7h7l-5.5 4.5 2 7.5-6.5-4.5-6.5 4.5 2-7.5L2 9h7z",
+    rain: "M7 15a5 5 0 1 1 1-9.9A6 6 0 0 1 19 8a3.5 3.5 0 0 1 0 7zM8 17l-1.5 4h2L10 17zm5 0l-1.5 4h2L15 17z",
+    hourglass: "M6 2h12v2l-5 8 5 8v2H6v-2l5-8-5-8z",
+    house: "M12 3l9 8h-3v9h-5v-6h-2v6H6v-9H3z",
+    peak: "M2 20l7-12 4 6 3-4 6 10z",
+    chevrons: "M3 5h5l6 7-6 7H3l6-7zM11 5h5l6 7-6 7h-5l6-7z",
+    can: "M5 7h14l-1.5 14h-11zM9 2h6v2H9zM3 4h18v2H3z",
+    grid: "M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z",
+    diamond: "M12 2l10 10-10 10L2 12zm0 5l-5 5 5 5 5-5z",
+    zzz: "M4 4h7v2l-4.5 5H11v2H4v-2l4.5-5H4zm9 6h7v2l-4.5 5H20v2h-7v-2l4.5-5H13z",
+    claws: "M5 3h3L5 21H2zm7 0h3l-3 18H9zm7 0h3l-3 18h-3z",
+    wave: "M2 14c3-4 5-4 8 0s5 4 8 0 3-3 4-2v4c-1-1-1-1-4 2s-5 4-8 0-5-4-8 0z",
+    bench: "M3 8h18v3H3zM3 13h18v2H3zM5 15h2v6H5zm12 0h2v6h-2z",
+    ball: "M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20zm-1 2.1V11H4.1A8 8 0 0 1 11 4.1zm2 0A8 8 0 0 1 19.9 11H13zM4.1 13H11v6.9A8 8 0 0 1 4.1 13zM13 13h6.9A8 8 0 0 1 13 19.9z",
+  };
+  const NAME_GLYPH = { "night shift": "moon", "bench mob": "bench", "waiver wire": "bolt", "late scratch": "claws", "deep sleepers": "zzz", "box score": "grid",
+    "hot corner": "flame", "full count": "diamond", "red zone": "target", "fast break": "chevrons", "two minute": "clock", "garbage time": "can",
+    "pick six": "star", "rain delay": "rain", "shot clock": "clock", "trade deadline": "hourglass", "home stand": "house", "overtime": "clock",
+    "sixth man": "star", "bye week": "wave", "your team": "crown" };
+  const hashOf = (str) => { let h = 2166136261; for (const c of String(str)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
+  const glyphOf = (t) => (t.glyph && GLYPHS[t.glyph] ? t.glyph : NAME_GLYPH[String(t.name || "").toLowerCase()] || Object.keys(GLYPHS)[hashOf(t.name) % Object.keys(GLYPHS).length]);
+  const shapeOf = (t) => (t.shape && SHAPES[t.shape] ? t.shape : Object.keys(SHAPES)[hashOf(t.name + "|s") % 4]);
+  const logoSvg = (t) => { const sh = shapeOf(t); return `<svg viewBox="0 0 40 40" focusable="false"><path d="${SHAPES[sh]}" fill="var(--c)"/><path d="${SHAPES[sh]}" fill="none" stroke="rgba(0,0,0,.22)" stroke-width="2"/><g transform="translate(9 ${sh === "shield" ? 7 : 8}) scale(.92)"><path d="${GLYPHS[glyphOf(t)]}" fill="#fff" fill-rule="evenodd"/></g></svg>`; };
+  const teamAv = (t, size = "") => {
+    const c = `av c${((t && t.color) || 0) % 12}${size ? " " + size : ""}`;
+    if (t && t.img) return `<span class="${c} logo img" aria-hidden="true"><img src="${esc(t.img)}" alt=""></span>`;
+    if (t && t.name && t.glyph !== false) return `<span class="${c} logo" aria-hidden="true">${logoSvg(t)}</span>`;
+    return `<span class="${c}" aria-hidden="true">${esc(String((t && t.abbr) || "?").slice(0, 3))}</span>`;
+  };
   const posChip = (sport, pos) => `<span class="pp c${(sport.colors && sport.colors[pos]) || 6}">${esc(pos)}</span>`;
   const posChips = (sport, p) => S.positions(p).map((x) => posChip(sport, x)).join("");
   const colorOf = (sport, p) => (sport.colors && sport.colors[FK.value.mainPos(sport, p)]) || 6;
@@ -156,7 +200,8 @@
     if (opts.age !== false && sport.hasAge) cols.push({ k: "age", label: "Age", cls: "r num", hide: "s", sort: (p) => p.age, asc: true, html: (p) => (p.age ? p.age : "") });
     if (opts.owner) cols.push({ k: "owner", label: "Status", cls: "", sort: opts.ownerSort, html: opts.owner });
     if (opts.money !== false) cols.push({ k: "$", label: "$", cls: "r num", title: "Auction value in this league", sort: (p) => p.$, html: (p) => (p.$ ? `<span class="dollar">${money(p.$)}</span>` : `<span class="ps">-</span>`) });
-    cols.push({ k: "v", label: pts ? "Proj" : "Value", cls: "r num", title: pts ? "Projected season fantasy points" : "Summed category z-scores", sort: (p) => p.v, html: (p) => `<b>${p.v == null ? "-" : p.v.toFixed(pts ? 0 : 1)}</b>` });
+    cols.push({ k: "v", label: pts ? "Proj" : "Value", cls: "r num", title: pts ? "Season pace: this season's scoring per game blended with the projection, over a full season" : "Summed category z-scores", sort: (p) => p.v, html: (p) => `<b>${p.v == null ? "-" : p.v.toFixed(pts ? 0 : 1)}</b>` });
+    if (pts && sport.data && sport.data.lines && sport.data.lines.proj && sport.data.lines.proj.ros) cols.push({ k: "ros", label: "ROS", cls: "r num", hide: "s", title: `Projected points for the rest of the season, ${sport.data.lines.proj.weeks} weeks`, sort: (p) => p.ros, html: (p) => (p.ros == null ? `<span class="ps">-</span>` : p.ros.toFixed(0)) });
     for (const c of opts.extra || []) cols.push(c);
     if (opts.stats !== false) for (const [i, c] of sport.columns.entries()) {
       if (opts.group && c.group && c.group !== opts.group) continue;
@@ -210,11 +255,13 @@
 
   /* ---------- league modules (view models in, HTML out) ---------- */
   // games: [{ href, me, status: "final" | "live" | "proj", label, sub, a: { team, score, rec }, b }]
-  function scoreboard(games, fmt = (x) => x) {
-    return `<div class="scoreboard" role="list">${games.map((g) => {
+  // The scoreboard: a strip of games (opts.list stacks them full width, for phones). g.wp adds a win probability bar.
+  function scoreboard(games, fmt = (x) => x, opts = {}) {
+    return `<div class="scoreboard${opts.list ? " list" : ""}" role="list">${games.map((g) => {
       const lead = g.a.score === g.b.score ? null : g.a.score > g.b.score ? "a" : "b";
-      const ln = (s, k) => `<div class="ln ${lead ? (lead === k ? "lead" : "trail") : ""}">${teamAv(s.team, "sm")}<span class="ell">${esc(s.team.name)}</span><small>${esc(s.rec || "")}</small><b>${fmt(s.score)}</b></div>`;
-      return `<a class="game${g.me ? " me" : ""}" role="listitem" href="${esc(g.href || "#")}"><div class="st"><span class="${g.status === "live" ? "live" : ""}">${esc(g.label || (g.status === "final" ? "Final" : g.status === "live" ? "Live" : "Projected"))}</span>${g.sub ? `<span>${esc(g.sub)}</span>` : ""}</div>${ln(g.a, "a")}${ln(g.b, "b")}</a>`;
+      const ln = (s, k) => `<div class="ln ${lead ? (lead === k ? "lead" : "trail") : ""}">${teamAv(s.team, "sm")}<span class="ell">${esc(s.team.name)}</span><span class="ab">${esc(s.team.abbr || "")}</span><small>${esc(s.rec || "")}</small><b>${fmt(s.score)}</b></div>`;
+      const wp = g.wp != null ? `<div class="wpm" aria-label="Win probability ${Math.round(g.wp * 100)} to ${Math.round((1 - g.wp) * 100)}"><i style="width:${(g.wp * 100).toFixed(1)}%;background:var(--t${g.a.team.color % 12})"></i><i style="width:${((1 - g.wp) * 100).toFixed(1)}%;background:var(--t${g.b.team.color % 12})"></i></div>` : "";
+      return `<a class="game${g.me ? " me" : ""}" role="listitem" href="${esc(g.href || "#")}"><div class="st"><span class="${g.status === "live" ? "live" : ""}">${esc(g.label || (g.status === "final" ? "Final" : g.status === "live" ? "Live" : "Projected"))}</span>${g.sub ? `<span>${esc(g.sub)}</span>` : g.wp != null && opts.list ? `<span>${Math.round(Math.max(g.wp, 1 - g.wp) * 100)}% ${esc(g.wp >= 0.5 ? g.a.team.abbr : g.b.team.abbr)}</span>` : ""}</div>${ln(g.a, "a")}${ln(g.b, "b")}${opts.list ? wp : ""}</a>`;
     }).join("")}</div>`;
   }
   // The matchup hero. vm: { a: { team, rec, score, proj }, b, wp (0..1 for a), status, live, cats: [{ label, fa, fb, d }], fmt }
@@ -785,7 +832,7 @@
   }
 
   FK.ui = { esc, $, $$, store, toast, dialog, dialogOpen, confirm, theme, fmtLeft, money, ord, last, initials, ago,
-    teamAv, playerAv, pname, teamName, posChip, posChips, colorOf, injTag,
+    teamAv, SHAPES, GLYPHS, logoSvg, glyphOf, shapeOf, playerAv, pname, teamName, posChip, posChips, colorOf, injTag,
     shell, switcher, route, table, sortRows, nextSort, poolColumns, posFilter, search, passes, groupOf, statCell, label, isPoints,
     playerCard, scoreboard, versus, vsTable, standingsTable, feed, txLine, tradeCard, tradeWindow, room };
 })(this);

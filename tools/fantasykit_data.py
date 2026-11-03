@@ -219,15 +219,37 @@ def nfl():
         s = r.get("stats") or {}
         g = s.get("gp") or s.get("gms_active") or 0
         p["l"]["tot"] = [g] + [round(s.get(c, 0) or 0, 2) for c in NFL_COLS[1:]]
+    # Rest of season: Sleeper's weekly projections for every week still to play, added up. Its season projection is
+    # set before the season and doesn't move, so it's only the fallback (and the whole story before week 1).
+    week = int(state.get("week") or 0) if state.get("season_type") in (None, "regular") else 0
+    ros, left = {}, list(range(week + 1, 19)) if week else []
+    try:
+        for w in left:
+            for r in nfl_rows(f"https://api.sleeper.com/projections/nfl/{season}/{w}?season_type=regular{POS_Q}"):
+                if row_for(r) is None:
+                    continue
+                s = r.get("stats") or {}
+                acc = ros.setdefault(str(r.get("player_id")), [0.0] * len(PROJ_COLS))
+                for i, c in enumerate(PROJ_COLS):
+                    acc[i] += s.get(c, 0) or 0
+    except Exception as e:
+        print(f"Weekly projections didn't answer: {type(e).__name__}: {e}")
+        ros = {}
+    use_ros = len(ros) >= 100
+    print(f"Rest of season: weeks {left[0] if left else '-'} to 18, {len(ros)} players" if use_ros else "Using the season projection")
     for r in proj:
         p = row_for(r)
         if not p:
             continue
         s = r.get("stats") or {}
         p["l"]["proj"] = [round(s.get(c, 0) or 0, 1) for c in PROJ_COLS]
+    if use_ros:
+        for p in by.values():
+            p["l"]["proj"] = [round(x, 1) for x in ros.get(p["id"], [0.0] * len(PROJ_COLS))]
     players = [p for p in by.values() if (p["l"].get("tot") and p["l"]["tot"][NFL_COLS.index("pts_half_ppr")] > 0) or (p["l"].get("proj") and p["l"]["proj"][1] > 20)]
     write("nfl", {"sport": "nfl", "season": str(season), "week": state.get("week"), "updated": NOW, "source": "Sleeper (sleeper.com)",
-                  "lines": {"tot": {"label": "Season totals", "cols": NFL_COLS}, "proj": {"label": "Rest-of-season projection", "cols": PROJ_COLS}},
+                  "lines": {"tot": {"label": "Season totals", "cols": NFL_COLS},
+                            "proj": {"label": "Rest-of-season projection" if use_ros else "Season projection", "cols": PROJ_COLS, "ros": use_ros, "weeks": len(left) if use_ros else 17}},
                   "players": players})
 
 

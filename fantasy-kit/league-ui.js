@@ -81,7 +81,8 @@
         href: matchHref(w, m.i), me: isMe(m.a) || isMe(m.b), status: m.final ? "final" : m.live ? "live" : "proj",
         label: m.final ? "Final" : m.live ? "Live" : `Week ${w}`, sub: w > L().settings.weeks ? "Playoffs" : "",
         a: { team: T(m.a), score: m.final || m.live ? m.sa : m.pa, rec: recOf(m.a) }, b: { team: T(m.b), score: m.final || m.live ? m.sb : m.pb, rec: recOf(m.b) }, m,
-      }));
+        wp: m.final ? null : m.winProb,
+      })).sort((x, y) => (y.me ? 1 : 0) - (x.me ? 1 : 0));   // your game first
     }
     function versusVM(w, m) {
       const live = !m.final;
@@ -116,6 +117,7 @@
           ${myRow ? `<div class="card"><div class="mod-h">${teamAv(myRow.team, "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(myRow.team.name)}</b><span class="ps">${ord(myRow.rank)} place, ${myRow.w}-${myRow.l}${myRow.t ? "-" + myRow.t : ""}</span></div></div>
             <div class="bd"><div class="stat-row"><div><small>FAAB</small><b>$${T(mid).faab}</b></div><div><small>Waiver priority</small><b>${ord(T(mid).priority + 1)}</b></div><div><small>Streak</small><b>${esc(myRow.streak || "-")}</b></div></div>
             <div class="row" style="margin-top:12px;flex-wrap:wrap"><a class="btn sm" href="#team/roster">Set lineup</a><button class="btn sm" data-trade>Propose a trade</button><a class="btn sm" href="#players/fa">Free agents</a></div></div></div>` : ""}
+          ${mid != null && L().claims.some((c) => c.team === mid && c.status === "open") ? `<div class="card"><div class="mod-h"><h2>Your waiver claims</h2><a href="#players/claims">All claims</a></div><div class="bd" style="padding-bottom:0"><span class="ps">${esc(claimsRun())}</span></div>${claimList(L().claims.filter((c) => c.team === mid && c.status === "open"))}</div>` : ""}
           ${offers.length ? `<div class="card"><div class="mod-h"><h2>Trade offers for you</h2><span class="badge">${offers.length}</span><a href="#team/trades">Review</a></div>${U.feed(offers.map((t) => ({ team: T(t.from), when: U.ago(t.at, now()), lines: t.get.map((id) => U.txLine(sport, "drop", playerVM(id), "you send")).concat(t.give.map((id) => U.txLine(sport, "add", playerVM(id), "you get"))) })))}</div>` : ""}
           <div class="card"><div class="mod-h"><h2>Power rankings</h2><a href="#league/standings">More</a></div><ol class="feed">${pw.map((r) => `<li style="grid-template-columns:24px auto minmax(0,1fr) auto;align-items:center;padding:8px 16px"><b class="ps num">${r.rank}</b>${teamAv(T(r.team), "sm")}<span class="ell"><b>${esc(T(r.team).name)}</b></span>${moveTag(r.move)}</li>`).join("")}</ol></div>
           <div class="card"><div class="mod-h"><h2>Hot on waivers</h2><a href="#players/fa">Free agents</a></div><ul class="feed">${hot.map(({ p, h }) => `<li style="grid-template-columns:minmax(0,1fr) auto;align-items:center;padding:8px 16px"><span data-player="${esc(p.id)}" style="cursor:pointer;min-width:0">${pname(sport, p, h > 1.15 ? `<span class="win">hot</span>` : "")}</span>${mid != null ? `<button class="btn icon add" data-add="${esc(p.id)}" aria-label="Add ${esc(p.n)}">+</button>` : ""}</li>`).join("") || `<li class="empty">Nobody stands out.</li>`}</ul></div>
@@ -146,7 +148,8 @@
       const weeks = Array.from({ length: Math.min(curWeek(), G.totalWeeks(L())) }, (_, i) => i + 1);
       return `<div class="wrap page"><div class="head"><h1 class="disp">Scoreboard</h1></div>
         <div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-sbweek="${x}" aria-pressed="${x === w}">${x > L().settings.weeks ? (x === G.totalWeeks(L()) ? "Final" : "Playoffs " + (x - L().settings.weeks)) : "Week " + x}</button>`).join("")}</div>
-        <div class="cols2">${G.matchups(L(), ctx, w, frac(w)).map((m) => `<a class="card" href="${matchHref(w, m.i)}" style="text-decoration:none;color:inherit${isMe(m.a) || isMe(m.b) ? ";border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)" : ""}">${U.versus(Object.assign(versusVM(w, m), { cats: null }))}</a>`).join("")}</div></div>`;
+        <div class="cols2 hide-m">${G.matchups(L(), ctx, w, frac(w)).slice().sort((a, b) => (isMe(b.a) || isMe(b.b) ? 1 : 0) - (isMe(a.a) || isMe(a.b) ? 1 : 0)).map((m) => `<a class="card" href="${matchHref(w, m.i)}" style="text-decoration:none;color:inherit${isMe(m.a) || isMe(m.b) ? ";border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)" : ""}">${U.versus(Object.assign(versusVM(w, m), { cats: null }))}</a>`).join("")}</div>
+        <div class="show-m sbm">${U.scoreboard(gamesVM(w), fmtS, { list: true })}</div></div>`;
     }
     const TXK = { add: "add", drop: "drop", "add/drop": "add", waiver: "waiver", trade: "trade", veto: "trade" };
     function txVM(x) {
@@ -254,6 +257,7 @@
           ${myRow ? `<div class="card"><div class="mod-h">${teamAv(T(mid), "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(T(mid).name)}</b><span class="ps">${myRow.alive ? (over() ? "Champion" : `Alive, ${ord(myRow.rank)} in points`) : `Chopped in week ${myRow.out}`}</span></div></div>
             <div class="bd"><div class="stat-row"><div><small>FAAB left</small><b>$${T(mid).faab}</b></div><div><small>${mine ? "Chop odds" : "Weeks survived"}</small><b class="${mine && mine.chop >= 0.25 ? "loss" : ""}">${mine ? pct(mine.chop) : myRow.w}</b></div><div><small>Points</small><b>${fmtS(myRow.pf)}</b></div></div>
             ${myRow.alive && !over() ? `<div class="row" style="margin-top:12px;flex-wrap:wrap"><a class="btn sm" href="#team/roster">${bb() ? "See my roster" : "Set lineup"}</a><a class="btn sm" href="#players/claims">My bids</a><a class="btn sm" href="#players/fa">Free agents</a></div>` : ""}</div></div>` : ""}
+          ${mid != null && !over() && L().claims.some((c) => c.team === mid && c.status === "open") ? `<div class="card"><div class="mod-h"><h2>Your bids</h2><a href="#players/claims">All bids</a></div><div class="bd" style="padding-bottom:0"><span class="ps">${esc(claimsRun())}</span></div>${claimList(L().claims.filter((c) => c.team === mid && c.status === "open"))}</div>` : ""}
           ${over() ? "" : `<div class="card"><div class="mod-h"><h2>Up for bids</h2>${!over() && Object.keys(L().waivers).some((id) => G.onWaivers(L(), id, now())) ? `<span class="ps">${esc(claimsRun())}</span>` : ""}</div>${upForBids(8)}</div>`}
         </aside></div></div>`;
     }
@@ -312,7 +316,7 @@
       const t = T(id), r = standings().find((x) => x.team === id);
       return `<div class="team-h">${teamAv(t, "xl")}<div style="min-width:0"><h1 class="disp">${esc(t.name)}${isMe(id) ? ` <span class="tag you" style="font-size:13px;vertical-align:6px">You</span>` : ""}</h1>
         <div class="meta">${gl() ? `<span><b>${esc(recOf(id))}</b>${r.alive ? `, ${ord(r.rank)} in points` : ""}</span>` : `<span><b>${r.w}-${r.l}${r.t ? "-" + r.t : ""}</b>, ${ord(r.rank)} place</span>`}<span>${pts() ? `<b>${fmtS(r.pf)}</b> points for` : `<b>${r.pf}</b> categories won`}</span><span>FAAB <b>$${t.faab}</b></span><span>Waiver priority <b>${ord(t.priority + 1)}</b></span>${t.owner ? `<span>Manager <b>${esc(t.owner)}</b></span>` : `<span>Bot</span>`}</div></div>
-        <span class="grow"></span>${!isMe(id) && me() != null && L().settings.trades !== false ? `<button class="btn go" data-trade="${id}">Propose a trade</button>` : ""}
+        <span class="grow"></span>${isMe(id) ? `<button class="btn" data-editteam>Edit team</button>` : ""}${!isMe(id) && me() != null && L().settings.trades !== false ? `<button class="btn go" data-trade="${id}">Propose a trade</button>` : ""}
         <label class="sr" for="team-pick">Team</label><select id="team-pick" style="width:auto;border-radius:999px">${L().teams.map((x) => `<option value="${x.id}"${x.id === id ? " selected" : ""}>${esc(x.name)}${isMe(x.id) ? " (you)" : ""}</option>`).join("")}</select></div>`;
     }
     function rosterPage(arg) {
@@ -328,28 +332,129 @@
       const ptsOf = (pid) => (brow ? (brow.players || {})[pid] : side ? (side.players || {})[pid] : null);
       const wk = G.WEEK[sport.key] || { weeks: 20 };
       const projOf = (p) => (pts() ? p.v / wk.weeks : null);
-      const moving = ui.moving && L().rosters[id].includes(ui.moving) ? ctx.byId[ui.moving] : null;
-      const locked = w < L().week || bb() || !G.isAlive(L(), id);
-      const cols = (slotHtml, p, i) => {
-        const tgt = moving && p !== moving && i != null && S.fits(sport, moving, slots[i]) ? `<button class="btn xs go" data-here="${i}">Here</button>` : "";
-        return `<td class="c" style="width:70px">${slotHtml}</td><td class="nm">${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, `${esc(p.prank)}`)}</span>` : `<span class="ps">Empty</span>`}</td>
-          <td class="r num hide-s">${p ? `<span class="ps">#${p.rank}</span>` : ""}</td><td class="r num">${p && pts() ? `<b>${fmtS(ptsOf(p.id))}</b>` : p ? `<b>${p.v.toFixed(1)}</b>` : ""}</td><td class="r num hide-s">${p && pts() ? fmtS(projOf(p)) : ""}</td>
-          <td class="r act">${tgt}${mine && !locked && p && !moving ? `<button class="btn xs" data-move="${esc(p.id)}">Move</button>` : ""}${mine && p && !moving && G.isAlive(L(), id) ? ` <button class="btn icon drop" data-drop="${esc(p.id)}" aria-label="Drop ${esc(p.n)}" title="Drop">&minus;</button>` : ""}${!mine && p && me() != null && L().settings.trades !== false ? ` <button class="btn icon trade" data-trade="${id}" data-want="${esc(p.id)}" aria-label="Trade for ${esc(p.n)}" title="Trade for">&#8644;</button>` : ""}</td>`;
+      const ir = L().ir[id] || [], irMax = G.irSlots(L()), alive = G.isAlive(L(), id);
+      const moving = ui.moving && L().rosters[id].includes(ui.moving) && !ir.includes(ui.moving) ? ctx.byId[ui.moving] : null;
+      const movingSlot = moving ? lu.indexOf(moving.id) : -1;
+      const locked = w < L().week || bb() || !alive;
+      const fitsSlot = (i) => moving && i != null && S.fits(sport, moving, slots[i]);
+      // where the player being moved can go: an open or filled starting slot he fits, or a bench player who fits his slot
+      const targetFor = (p, i) => {
+        if (!moving || p === moving) return "";
+        if (i != null) return fitsSlot(i) ? `<button class="btn xs go" data-here="${i}">${p ? "Swap" : "Move here"}</button>` : "";
+        return p && movingSlot >= 0 && S.fits(sport, p, slots[movingSlot]) ? `<button class="btn xs go" data-swapb="${esc(p.id)}" data-slot="${movingSlot}">Swap</button>` : "";
       };
-      const starters = slots.map((s, i) => { const p = lu[i] ? ctx.byId[lu[i]] : null; return `<tr class="${moving && p === moving ? "me" : ""}">${cols(`<span class="slot${moving && S.fits(sport, moving, s) ? " on" : ""}">${esc(s)}</span>`, p, i)}</tr>`; }).join("");
-      const benchIds = L().rosters[id].filter((x) => !lu.includes(x));
-      const bench = benchIds.map((x) => ctx.byId[x]).sort((a, b) => a.rank - b.rank).map((p) => `<tr class="${moving && p === moving ? "me" : ""}">${cols(`<span class="slot">BN</span>`, p, null)}</tr>`).join("") || `<tr><td colspan="6" class="empty">No one on the bench.</td></tr>`;
+      const actsFor = (p, onIR) => {
+        if (!p) return "";
+        if (!mine) return me() != null && L().settings.trades !== false ? `<button class="btn icon trade" data-trade="${id}" data-want="${esc(p.id)}" aria-label="Trade for ${esc(p.n)}" title="Trade for">&#8644;</button>` : "";
+        if (!alive) return "";
+        if (onIR) return `<button class="btn xs${G.irEligible(p) ? "" : " go"}" data-activate="${esc(p.id)}">Activate</button>`;
+        if (moving) return "";
+        const irBtn = G.irEligible(p) && ir.length < irMax ? `<button class="btn xs" data-toir="${esc(p.id)}" title="Move to injured reserve">IR</button> ` : "";
+        return `${irBtn}${!locked ? `<button class="btn xs hide-s" data-move="${esc(p.id)}">Move</button>` : ""} <button class="btn icon drop hide-s" data-drop="${esc(p.id)}" aria-label="Drop ${esc(p.n)}" title="Drop">&minus;</button>`;
+      };
+      const row = (slotLabel, p, i, onIR) => {
+        const can = mine && !locked && p && !onIR;
+        const tgt = targetFor(p, i);
+        const on = fitsSlot(i) ? " on" : "";
+        const slotEl = can ? `<button type="button" class="slot slotbtn${on}" data-move="${moving && p === moving ? "" : esc(p.id)}" title="${moving && p === moving ? "Cancel the move" : `Move ${esc(p.n)}`}">${esc(slotLabel)}</button>`
+          : `<span class="slot${on}${onIR ? " ir" : ""}">${esc(slotLabel)}</span>`;
+        const cls = [moving && p === moving ? "me" : "", tgt ? "tgt" : "", onIR ? "irrow" : ""].filter(Boolean).join(" ");
+        return `<tr class="${cls}"><td class="c" style="width:70px">${slotEl}</td><td class="nm">${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, `${esc(p.prank)}${onIR && !G.irEligible(p) ? `, <span class="win">healthy</span>` : ""}`)}</span>` : `<span class="ps">${onIR ? "Open for a player who's out or on IR" : "Empty"}</span>`}</td>
+          <td class="r num hide-s">${p ? `<span class="ps">#${p.rank}</span>` : ""}</td><td class="r num">${p && pts() && !onIR ? `<b>${fmtS(ptsOf(p.id))}</b>` : p && !onIR ? `<b>${p.v.toFixed(1)}</b>` : ""}</td><td class="r num hide-s">${p && pts() && !onIR ? fmtS(projOf(p)) : ""}</td>
+          <td class="r act">${tgt || actsFor(p, onIR)}</td></tr>`;
+      };
+      const starters = slots.map((s, i) => row(s, lu[i] ? ctx.byId[lu[i]] : null, i, false)).join("");
+      const benchIds = L().rosters[id].filter((x) => !lu.includes(x) && !ir.includes(x));
+      const bench = benchIds.map((x) => ctx.byId[x]).filter(Boolean).sort((a, b) => a.rank - b.rank).map((p) => row("BN", p, null, false)).join("") || `<tr><td colspan="6" class="empty">No one on the bench.</td></tr>`;
+      const irRows = irMax ? ir.map((x) => row("IR", ctx.byId[x], null, true)).join("") + Array.from({ length: Math.max(0, irMax - ir.length) }, () => row("IR", null, null, true)).join("") : "";
       const weeks = [curWeek()].concat(curWeek() < G.totalWeeks(L()) ? [curWeek() + 1] : []);
+      const claims = mine ? L().claims.filter((c) => c.team === id && c.status === "open") : [];
       return `<div class="wrap page">${teamHead(id)}
         <div class="row" style="flex-wrap:wrap">${weeks.length > 1 ? `<div class="seg" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-week="${x}" aria-pressed="${x === w}">Week ${x}${x === L().week ? ", now" : ""}</button>`).join("")}</div>` : ""}
           ${game ? `<a class="pill" href="${matchHref(w, game.i)}" style="text-decoration:none">vs ${esc(T(game.a === id ? game.b : game.a).name)}: ${fmtS(game.a === id ? game.sa : game.sb)} to ${fmtS(game.a === id ? game.sb : game.sa)}</a>` : ""}
           ${brow ? `<a class="pill" href="#matchup/${w}" style="text-decoration:none">${fmtS(brow.score)}, ${ord(brow.rank)} of ${L().alive.length}, ${pct(brow.chop)} to be chopped</a>` : ""}
-          <span class="grow"></span>${moving ? `<span class="ps">Moving <b>${esc(moving.n)}</b>: pick a highlighted slot.</span><button class="btn sm" data-here="BN">To bench</button><button class="btn sm" data-move="">Cancel</button>` : mine && !locked ? `<button class="btn sm" data-optimize>Start my best lineup</button>` : ""}</div>
-        ${gl() && !G.isAlive(L(), id) ? `<div class="banner loss"><b>Chopped in week ${(L().chopped.find((c) => c.team === id) || {}).week}.</b> <span class="muted">This roster went back on waivers.</span></div>` : ""}
-        <div class="table-wrap"><table class="t"><thead><tr><th class="c">Slot</th><th>Player</th><th class="r hide-s">Rank</th><th class="r">${pts() ? "Pts" : "Value"}</th><th class="r hide-s">${pts() ? "Proj" : ""}</th><th class="act"></th></tr></thead><tbody>
-          <tr class="sec"><td colspan="6">Starters</td></tr>${starters}<tr class="sec"><td colspan="6">Bench</td></tr>${bench}</tbody></table></div>
-        ${mine ? `<p class="ps">${bb() ? "Best ball: there's no lineup to set. Each week your best possible lineup scores, picked from what your players actually did." : !G.isAlive(L(), id) ? "" : locked ? "This week is locked." : `Lineups lock when week ${w} starts. Starters left empty score nothing.`}</p>` : ""}</div>`;
+          <span class="grow"></span>${mine && !locked && !moving ? `<button class="btn sm" data-optimize>Start my best lineup</button>` : ""}</div>
+        ${moving ? `<div class="movebar" role="status"><span>Moving <b>${esc(moving.n)}</b>. Pick a highlighted spot${movingSlot >= 0 ? ", or swap with a bench player" : ""}.</span><span class="grow"></span>${movingSlot >= 0 ? `<button class="btn sm" data-here="BN">To bench</button>` : ""}<button class="btn sm" data-move="">Cancel</button></div>` : ""}
+        ${gl() && !alive ? `<div class="banner loss"><b>Chopped in week ${(L().chopped.find((c) => c.team === id) || {}).week}.</b> <span class="muted">This roster went back on waivers.</span></div>` : ""}
+        ${claims.length ? `<div class="card"><div class="mod-h"><h2>Pending waiver claims</h2><span class="ps">${esc(claimsRun())}</span><a href="#players/claims">All claims</a></div>${claimList(claims)}</div>` : ""}
+        <div class="table-wrap"><table class="t roster"><thead><tr><th class="c">Slot</th><th>Player</th><th class="r hide-s">Rank</th><th class="r">${pts() ? "Pts" : "Value"}</th><th class="r hide-s">${pts() ? "Proj" : ""}</th><th class="act"></th></tr></thead><tbody>
+          <tr class="sec"><td colspan="6">Starters</td></tr>${starters}<tr class="sec"><td colspan="6">Bench</td></tr>${bench}${irMax ? `<tr class="sec"><td colspan="6">Injured reserve, ${ir.length} of ${irMax}</td></tr>${irRows}` : ""}</tbody></table></div>
+        ${mine ? `<p class="ps">${bb() ? "Best ball: there's no lineup to set. Each week your best possible lineup scores, picked from what your players actually did." : !alive ? "" : locked ? "This week is locked." : `Tap a slot to move a player. Lineups lock when week ${w} starts, and starters left empty score nothing.`}${irMax && alive ? " IR spots don't count against your roster." : ""}</p>` : ""}</div>`;
     }
+    // Pending claims with their bids, each one cancellable.
+    function claimList(list) {
+      return `<ul class="feed">${list.map((c) => `<li style="grid-template-columns:minmax(0,1fr) auto auto;align-items:center"><div class="what">${U.txLine(sport, "add", ctx.byId[c.add])}${c.drop ? U.txLine(sport, "drop", ctx.byId[c.drop]) : ""}</div><b class="dollar">$${c.bid}</b><button class="btn sm" data-unclaim="${c.id}">Cancel</button></li>`).join("")}</ul>`;
+    }
+    // Who to drop when a full roster brings a player back from IR.
+    function activateDialog(pid) {
+      const mid = me(), p = ctx.byId[pid];
+      const ros = L().rosters[mid].filter((x) => x !== pid && !(L().ir[mid] || []).includes(x)).map((x) => ctx.byId[x]).filter(Boolean).sort((a, b) => a.vor - b.vor);
+      U.dialog(`<div class="pc-h">${U.playerAv(sport, p, "lg")}<div><h3 class="disp">Activate ${esc(p.n)}</h3><div class="ps">Your roster is full, so someone has to go to make room.</div></div></div>
+        <form class="stack"><div class="field"><span class="lbl">Drop</span><div class="table-wrap" style="max-height:44dvh"><table class="t dense"><tbody>${ros.map((q, i) => `<tr><td style="width:28px"><input type="radio" name="drop" value="${esc(q.id)}" id="ad${i}"${i === 0 ? " checked" : ""}></td><td><label for="ad${i}" style="cursor:pointer">${pname(sport, q, esc(q.prank))}</label></td><td class="r ps">#${q.rank}</td></tr>`).join("")}</tbody></table></div></div>
+        <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">Activate and drop</button></div></form>`,
+        (fd) => act(() => G.activate(L(), ctx, mid, pid, fd.get("drop"), now()), `${p.n} is back from IR.`));
+    }
+    // Your team's look: name, abbreviation, color and crest, or an uploaded logo.
+    function editTeam() {
+      const mid = me(), t = T(mid);
+      const st = { color: t.color || 0, shape: U.shapeOf(t), glyph: t.glyph === false ? "abbr" : U.glyphOf(t), img: t.img || null };
+      const Dl = U.dialog(`<h3>Edit your team</h3><form class="stack et">
+        <div class="row" id="et-prev" style="gap:14px"></div>
+        <div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:10px"><div class="field"><label for="et-name">Team name</label><input type="text" id="et-name" name="name" maxlength="28" value="${esc(t.name)}"></div><div class="field"><label for="et-abbr">Abbreviation</label><input type="text" id="et-abbr" name="abbr" maxlength="3" value="${esc(t.abbr)}" style="text-transform:uppercase"></div></div>
+        <div class="field"><span class="lbl">Color</span><div class="swatches">${Array.from({ length: 12 }, (_, i) => `<button type="button" class="sw av c${i}" data-et-color="${i}" aria-label="Color ${i + 1}"></button>`).join("")}</div></div>
+        <div class="field"><span class="lbl">Shape</span><div class="swatches">${Object.keys(U.SHAPES).map((k) => `<button type="button" class="pick" data-et-shape="${k}" aria-label="${k}"></button>`).join("")}</div></div>
+        <div class="field"><span class="lbl">Icon</span><div class="swatches">${Object.keys(U.GLYPHS).concat("abbr").map((k) => `<button type="button" class="pick" data-et-glyph="${k}" aria-label="${k === "abbr" ? "Abbreviation" : k}"></button>`).join("")}</div></div>
+        <div class="field"><label for="et-img">Or upload a logo</label><input type="file" id="et-img" accept="image/*"><span class="ps">Square images look best. It's shrunk to 128 pixels and saved on this device. <button type="button" class="btn link" data-et-noimg>Use the crest instead</button></span></div>
+        <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">Save team</button></div></form>`,
+        (fd) => {
+          const name = String(fd.get("name") || "").trim(), abbr = String(fd.get("abbr") || "").trim().toUpperCase();
+          if (!name) { U.toast("Give your team a name", true); return false; }
+          Object.assign(T(mid), { name, abbr: abbr || name.split(/\s+/).map((x) => x[0]).join("").slice(0, 3).toUpperCase(), color: st.color, shape: st.shape, glyph: st.glyph === "abbr" ? false : st.glyph });
+          if (st.img) T(mid).img = st.img; else delete T(mid).img;
+          save(); U.toast("Team saved."); render();
+        });
+      const abbrNow = () => ($("#et-abbr", Dl).value || t.abbr).toUpperCase();
+      const redraw = () => {
+        $$("[data-et-color]", Dl).forEach((b) => { const on = +b.dataset.etColor === st.color; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); });
+        $$("[data-et-shape]", Dl).forEach((b) => { const on = b.dataset.etShape === st.shape && !st.img; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); b.innerHTML = teamAv({ name: "x", color: st.color, shape: b.dataset.etShape, glyph: "star" }, "md"); });
+        $$("[data-et-glyph]", Dl).forEach((b) => { const k = b.dataset.etGlyph, on = k === st.glyph && !st.img; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); b.innerHTML = teamAv({ name: "x", abbr: abbrNow(), color: st.color, shape: st.shape, glyph: k === "abbr" ? false : k }, "md"); });
+        const v = { name: $("#et-name", Dl).value || t.name, abbr: abbrNow(), color: st.color, shape: st.shape, glyph: st.glyph === "abbr" ? false : st.glyph, img: st.img };
+        $("#et-prev", Dl).innerHTML = `${teamAv(v, "xl")}<div style="min-width:0"><b class="disp ell" style="font-size:24px;display:block">${esc(v.name)}</b><div class="row ps" style="margin-top:4px">${teamAv(v, "sm")} ${esc(v.abbr)}</div></div>`;
+      };
+      Dl.addEventListener("click", (e) => {
+        const c = e.target.closest("[data-et-color]"), sh = e.target.closest("[data-et-shape]"), g = e.target.closest("[data-et-glyph]");
+        if (c) { st.color = +c.dataset.etColor; redraw(); } else if (sh) { st.shape = sh.dataset.etShape; st.img = null; redraw(); } else if (g) { st.glyph = g.dataset.etGlyph; st.img = null; redraw(); }
+        else if (e.target.closest("[data-et-noimg]")) { st.img = null; redraw(); }
+      });
+      Dl.addEventListener("input", (e) => { if (e.target.id === "et-name" || e.target.id === "et-abbr") redraw(); });
+      $("#et-img", Dl).addEventListener("change", (e) => {
+        const f = e.target.files && e.target.files[0];
+        if (!f) return;
+        const img = new Image(), url = URL.createObjectURL(f);
+        img.onload = () => { const c = document.createElement("canvas"); c.width = c.height = 128; const x = c.getContext("2d"); const sz = Math.min(img.width, img.height); x.drawImage(img, (img.width - sz) / 2, (img.height - sz) / 2, sz, sz, 0, 0, 128, 128); st.img = c.toDataURL("image/png"); URL.revokeObjectURL(url); redraw(); };
+        img.onerror = () => U.toast("That file isn't an image", true);
+        img.src = url;
+      });
+      redraw();
+    }
+    // Things waiting on you, at the top of every page: trade offers, votes, waiver claims, a healthy player on IR.
+    function alertsBar(r) {
+      const mid = me();
+      if (mid == null) return "";
+      const items = [];
+      if (!(r.tab === "team" && r.sub === "trades")) {
+        const offers = L().trades.filter((t) => t.status === "pending" && t.to === mid);
+        for (const t of offers.slice(0, 2)) items.push(`<a class="alert" href="#team/trades">${teamAv(T(t.from), "sm")}<span><b>${esc(T(t.from).name)}</b> sent you a trade offer</span><b class="go">Review</b></a>`);
+        if (offers.length > 2) items.push(`<a class="alert" href="#team/trades"><span>${offers.length - 2} more trade offers</span><b class="go">Review</b></a>`);
+        const votes = L().trades.filter((t) => t.status === "review" && G.voters(L(), t).includes(mid) && !(t.votes || {})[mid]).length;
+        if (votes) items.push(`<a class="alert" href="#team/trades"><span>${votes === 1 ? "A trade needs" : `${votes} trades need`} your vote</span><b class="go">Vote</b></a>`);
+      }
+      const claims = L().claims.filter((c) => c.team === mid && c.status === "open").length;
+      if (claims && !(r.tab === "players" && r.sub === "claims") && !(r.tab === "team" && r.sub === "roster") && !(r.tab === "league" && r.sub === "overview")) items.push(`<a class="alert info" href="#players/claims"><span>${claims} waiver claim${claims === 1 ? "" : "s"} pending. ${esc(claimsRun())}</span><b class="go">See claims</b></a>`);
+      for (const id of G.irBlocked(L(), ctx, mid)) items.push(`<a class="alert" href="#team/roster"><span><b>${esc(ctx.byId[id].n)}</b> is healthy and still on IR</span><b class="go">Activate</b></a>`);
+      return items.length ? `<div class="wrap alerts" role="status">${items.join("")}</div>` : "";
+    }
+
     function schedulePage(arg) {
       const id = arg !== "" && arg != null && L().teams[+arg] ? +arg : me() != null ? me() : 0;
       if (gl()) return historyPage(id);
@@ -444,6 +549,8 @@
         const own = ctx.own[p.id];
         const star = mid != null ? `<button class="star${w.includes(p.id) ? " on" : ""}" data-watch="${esc(p.id)}" aria-label="Watch">${w.includes(p.id) ? "&#9733;" : "&#9734;"}</button>` : "";
         if (mid == null) return star;
+        const myClaim = own == null ? L().claims.find((c) => c.team === mid && c.add === p.id && c.status === "open") : null;
+        if (myClaim) return `${star}<a class="tag gold" href="#players/claims" title="Your pending claim">Bid $${myClaim.bid}</a>`;
         if (own == null) return `${star}<button class="btn icon add" data-add="${esc(p.id)}" aria-label="${G.onWaivers(L(), p.id, now()) ? "Claim" : "Add"} ${esc(p.n)}" title="${G.onWaivers(L(), p.id, now()) ? "Put in a claim" : "Add"}">+</button>`;
         if (own === mid) return `${star}<button class="btn icon drop" data-drop="${esc(p.id)}" aria-label="Drop ${esc(p.n)}">&minus;</button>`;
         return L().settings.trades === false ? star : `${star}<button class="btn icon trade" data-trade="${own}" data-want="${esc(p.id)}" aria-label="Trade for ${esc(p.n)}">&#8644;</button>`;
@@ -523,17 +630,21 @@
       else if (r.tab === "players") html = playersPage(r.sub);
       else if (r.tab === "draft") html = draftPage();
       else if (r.tab === "commish") html = `<div class="wrap page">${opts.commishTools()}</div>`;
-      opts.el.innerHTML = html;
+      opts.el.innerHTML = alertsBar(r) + html;
       if ($("#fk-players")) $("#fk-players").scrollTop = keep;
       if (focus === "fk-q") { const f = $("#fk-q"); if (f) { f.focus(); f.setSelectionRange(f.value.length, f.value.length); } }
     }
 
     opts.el.addEventListener("click", (e) => {
-      const b = e.target.closest("[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],th[data-sort]");
+      const b = e.target.closest("[data-editteam],[data-toir],[data-activate],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],th[data-sort]");
       if (b) {
         e.preventDefault(); e.stopPropagation();
         const d = b.dataset, mid = me();
-        if (d.add) addDialog(d.add);
+        if (b.hasAttribute("data-editteam")) editTeam();
+        else if (d.toir) act(() => G.toIR(L(), ctx, mid, d.toir, now()), `${ctx.byId[d.toir].n} is on IR. His roster spot is open.`);
+        else if (d.activate) { const r = G.activate(L(), ctx, mid, d.activate, null, now()); if (r.needDrop) activateDialog(d.activate); else if (!r.ok) U.toast(r.why, true); else { save(); U.toast(`${ctx.byId[d.activate].n} is back from IR.`); render(); } }
+        else if (d.swapb) { const w = ui.week && ui.week >= L().week ? ui.week : curWeek(); ui.moving = null; act(() => G.move(L(), ctx, mid, w, d.swapb, +d.slot)); }
+        else if (d.add) addDialog(d.add);
         else if (d.drop) dropDialog(d.drop);
         else if (d.trade !== undefined && b.hasAttribute("data-trade")) openTrade(d.trade === "" ? null : +d.trade, d.want || null);
         else if (d.move !== undefined && b.hasAttribute("data-move")) { ui.moving = d.move || null; render(); }

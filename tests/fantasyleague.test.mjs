@@ -89,3 +89,28 @@ test('trades: propose, bot answers, review and veto', () => {
   assert.equal(ok.trade.status, 'accepted');
   assert.ok(s.L.rosters[3].includes(mine[0]));
 });
+
+test('IR: a hurt player frees a roster spot, and coming back needs room', () => {
+  const s = season('nfl', { scoring: 'half' });
+  const L = s.L, ctx = s.ctx;
+  const ros = L.rosters[0];
+  const healthy = ros.find((id) => !G.irEligible(ctx.byId[id]));
+  ctx.byId[healthy].inj = 'Questionable';
+  assert.match(G.toIR(L, ctx, 0, healthy, T0).why, /isn't out/);
+  ctx.byId[healthy].inj = 'IR';
+  assert.ok(G.toIR(L, ctx, 0, healthy, T0).ok);
+  assert.ok(!G.lineupFor(L, ctx, 0, L.week).includes(healthy), 'out of the lineup');
+  const other = ros.find((id) => id !== healthy);
+  ctx.byId[other].inj = 'Out';
+  assert.match(G.toIR(L, ctx, 0, other, T0).why, /full/, 'one IR spot');
+  delete ctx.byId[other].inj;
+  // the open spot takes a free agent
+  const fa = ctx.free.find((p) => !G.onWaivers(L, p.id, T0 + 1));
+  assert.ok(G.addDrop(L, ctx, 0, fa.id, null, T0 + 1).ok, 'room for a pickup');
+  // now he needs a drop to come back
+  assert.equal(G.activate(L, ctx, 0, healthy, null, T0 + 2).needDrop, true);
+  assert.ok(G.activate(L, ctx, 0, healthy, fa.id, T0 + 2).ok);
+  assert.ok(L.rosters[0].includes(healthy) && !L.rosters[0].includes(fa.id));
+  assert.equal(L.ir[0].length, 0);
+  delete ctx.byId[healthy].inj;
+});

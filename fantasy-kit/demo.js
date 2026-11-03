@@ -154,10 +154,15 @@
   // Live scores and bot replies: refresh every few seconds while the page is open.
   setInterval(() => {
     if (!L || U.dialogOpen() || document.querySelector('details[open]') || (document.activeElement && document.activeElement.id === 'fk-q')) return;
-    const before = JSON.stringify([L.week, L.trades.map((t) => t.status)]);
+    const offersNow = () => L.trades.filter((t) => t.status === "pending" && t.to === 0).map((t) => t.id);
+    const before = { week: L.week, offers: offersNow(), mine: L.trades.filter((t) => t.from === 0).map((t) => t.status).join() };
     catchUp();
     app.refresh();
-    if (JSON.stringify([L.week, L.trades.map((t) => t.status)]) !== before) U.toast("League updated.");
+    // say what changed: a new offer (it's also waiting at the top of every page), an answer to yours, a new week
+    const fresh = L.trades.filter((t) => t.status === "pending" && t.to === 0 && !before.offers.includes(t.id));
+    if (fresh.length) U.toast(`${L.teams[fresh[0].from].name} sent you a trade offer. Review it from the banner at the top.`);
+    else if (L.trades.filter((t) => t.from === 0).map((t) => t.status).join() !== before.mine) U.toast("One of your trade offers got an answer. See Trades.");
+    else if (L.week !== before.week) U.toast(`On to week ${Math.min(L.week, G.totalWeeks(L))}.`);
   }, 15000);
 
   load().then(mount).catch((e) => { $("#app").innerHTML = `<div class="wrap page"><div class="banner loss"><b>Couldn't load the league.</b> <span class="muted">${esc(e.message)}</span></div></div>`; console.error(e); });

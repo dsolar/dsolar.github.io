@@ -118,6 +118,7 @@ test('best ball: the lineup picks itself from what players scored', () => {
     if (!lu[i]) continue;
     for (const id of ids.filter((x) => !lu.includes(x))) {
       const p = s.ctx.byId[id];
+      if (/^(out|ir|o)$/i.test(p.inj || '')) continue;   // hurt players don't count in best ball
       if (S.positions(p).length === 1 && S.fits(s.sport, p, s.L.settings.lineup[i]) && S.positions(s.ctx.byId[lu[i]]).length === 1) {
         assert.ok(G.playerWeek(s.L, s.ctx, p, 1).pts <= wk.players[lu[i]] + 1e-9, `${p.n} sat but outscored the starter`);
       }
