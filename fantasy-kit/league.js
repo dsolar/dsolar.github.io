@@ -233,8 +233,15 @@
   }
   // Once a week's time is up its lineups are locked, even while the league waits for the last box scores.
   const lineupLocked = (L, w, now) => w < L.week || (now != null && now >= weekStart(L, w + 1));
+  // A weeks file has one line (R.line, R.cols, and each player's week is an array) or several (R.lines maps each
+  // line to its columns, and each player's week is { line: array }), as baseball's batting and pitching do.
   const realPts = (R, sc, line) => {
-    const at = (k) => { const d = k.indexOf("."); if (d > 0 && k.slice(0, d) !== R.line) return 0; const i = R.cols.indexOf(d > 0 ? k.slice(d + 1) : k); return i >= 0 ? line[i] || 0 : 0; };
+    const at = (k) => {
+      const d = k.indexOf("."), lk = d > 0 ? k.slice(0, d) : null, c = d > 0 ? k.slice(d + 1) : k;
+      if (R.lines) { const keys = lk ? [lk] : Object.keys(R.lines); return sum(keys.map((x) => { const i = (R.lines[x] || []).indexOf(c); return i >= 0 && line[x] ? line[x][i] || 0 : 0; })); }
+      if (lk && lk !== R.line) return 0;
+      const i = R.cols.indexOf(c); return i >= 0 ? line[i] || 0 : 0;
+    };
     return sc.weights ? sum(Object.entries(sc.weights).map(([k, x]) => at(k) * x)) : at(sc.col);
   };
   function playerWeek(L, ctx, p, w, frac = 1, whole) {
@@ -248,8 +255,9 @@
       if (sc.type === "points") return { pts: line ? realPts(R, sc, line) * share : 0, real: true };
       const out = {};
       for (const [key, def] of Object.entries(ctx.sport.data.lines)) {
-        if (key !== R.line && !(def.cols.every((c) => R.cols.includes(c)))) continue;
-        out[key] = def.cols.map((c) => { const i = R.cols.indexOf(c); const v = line && i >= 0 ? line[i] || 0 : 0; return /^(avg|obp|ops|era|whip|fg|ft)$/.test(c) ? v : v * share; });
+        const cols = R.lines ? R.lines[key] : R.cols, vals = R.lines ? line && line[key] : line;
+        if (!cols || (!R.lines && key !== R.line && !(def.cols.every((c) => cols.includes(c))))) continue;
+        out[key] = def.cols.map((c) => { const i = cols.indexOf(c); const v = vals && i >= 0 ? vals[i] || 0 : 0; return /^(avg|obp|ops|era|whip|fg|ft)$/.test(c) ? v : v * share; });
       }
       return out;
     }

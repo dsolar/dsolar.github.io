@@ -18,6 +18,12 @@ Real weekly box scores, for leagues scored on what actually happened (fantasy-ki
 
   weeks-nba.json  Monday to Sunday weeks from Hard Cap's ESPN box scores (hardcap/stats.json "wk")
   weeks-nfl.json  Tuesday to Monday weeks from Sleeper's weekly stats
+  weeks-mlb.json  Monday to Sunday weeks from MLB's Stats API box scores, every regular-season game. Two lines,
+                  so the file has "lines": {"bat": cols, "pit": cols} and each player's week is {"bat": [...], "pit": [...]}.
+                  Weeks already final aren't fetched again.
+
+Rookies: a player in his first season carries "rk": 1 (football: Sleeper's years_exp 0; basketball: no line last
+season; baseball: under 130 at-bats and 50 innings before this season, MLB's own rookie limits).
   A week is final once the data was pulled after its last night, so a league can close it.
 
   python tools/fantasykit_data.py            all three
@@ -141,6 +147,8 @@ def nba():
         row = {"id": pid, "n": nm, "t": team, "pos": pos, "l": {"pg": line}}
         if p.get("age"):
             row["age"] = p["age"]
+        if prev and not b and (not p.get("age") or p["age"] <= 24):    # no line last season, and young
+            row["rk"] = 1
         if inj.get(pid):
             row["inj"] = inj[pid][0]
         out.append(row)
@@ -205,6 +213,14 @@ def mlb():
         print("No MLB season files")
         return
     src = load(f"tools/mlb/{years[-1]}.json")
+    # MLB's rookie limits: under 130 at-bats and 50 innings before this season
+    ab, ip = {}, {}
+    for y in years[:-1]:
+        old = load(f"tools/mlb/{y}.json") or {}
+        for h in old.get("hitting", []):
+            ab[h["id"]] = ab.get(h["id"], 0) + (h.get("ab") or 0)
+        for q in old.get("pitching", []):
+            ip[q["id"]] = ip.get(q["id"], 0) + ip_real(q.get("ip") or 0)
     by = {}
     for h in src.get("hitting", []):
         if h.get("pa", 0) < 20 or h.get("pos") == "P":
@@ -223,9 +239,115 @@ def mlb():
         line = [p.get(c, 0) for c in PIT_COLS]
         line[PIT_COLS.index("ip")] = round(ip_real(p.get("ip", 0)), 2)
         row["l"]["pit"] = line
+    for pid, row in by.items():
+        if ab.get(pid, 0) < 130 and ip.get(pid, 0) < 50:
+            row["rk"] = 1
     write("mlb", {"sport": "mlb", "season": years[-1], "updated": NOW, "source": "MLB Stats API (statsapi.mlb.com)",
                   "lines": {"bat": {"label": "Batting", "cols": BAT_COLS}, "pit": {"label": "Pitching", "cols": PIT_COLS}},
                   "players": list(by.values())})
+
+
+# Real weeks: every regular-season box score, added up Monday to Sunday.
+MLB_API = "https://statsapi.mlb.com/api/v1/"
+WK_BAT = BAT_COLS + ["bb", "hbp", "sf"]           # the parts the rates come from ride along
+WK_PIT = PIT_COLS + ["outs"]
+
+
+BOX_FIELDS = ",".join(["teams", "away", "home", "players", "person", "id", "stats", "batting", "pitching", "plateAppearances", "atBats", "runs", "hits",
+                       "homeRuns", "rbi", "stolenBases", "totalBases", "baseOnBalls", "hitByPitch", "sacFlies", "inningsPitched", "gamesStarted",
+                       "wins", "losses", "saves", "holds", "strikeOuts", "earnedRuns"])
+
+
+def mlb_boxes(pk):
+    """One game's lines: {player id: {"b": [g, pa, ab, r, h, hr, rbi, sb, tb, bb, hbp, sf], "p": [g, gs, outs, w, l, sv, hld, k, er, bb, h, qs]}}."""
+    # only the fields we read (a whole box score is ~100 KB); if the filter ever comes back empty, take it all
+    box = get(f"{MLB_API}game/{pk}/boxscore?fields={BOX_FIELDS}")
+    if not any(((box.get("teams") or {}).get(s) or {}).get("players") for s in ("away", "home")):
+        box = get(f"{MLB_API}game/{pk}/boxscore")
+    out = {}
+    for side in ("away", "home"):
+        for pl in ((box.get("teams") or {}).get(side) or {}).get("players", {}).values():
+            pid = str((pl.get("person") or {}).get("id"))
+            st = pl.get("stats") or {}
+            b, q = st.get("batting") or {}, st.get("pitching") or {}
+            row = {}
+            if b and (b.get("plateAppearances") or b.get("atBats") or b.get("runs") or b.get("stolenBases")):
+                row["b"] = [1, b.get("plateAppearances", 0), b.get("atBats", 0), b.get("runs", 0), b.get("hits", 0), b.get("homeRuns", 0),
+                            b.get("rbi", 0), b.get("stolenBases", 0), b.get("totalBases", 0), b.get("baseOnBalls", 0), b.get("hitByPitch", 0), b.get("sacFlies", 0)]
+            if q and q.get("inningsPitched") not in (None, ""):
+                whole, _, part = str(q["inningsPitched"]).partition(".")
+                outs = int(whole or 0) * 3 + int(part or 0)
+                gs = 1 if q.get("gamesStarted") else 0
+                row["p"] = [1, gs, outs, q.get("wins", 0), q.get("losses", 0), q.get("saves", 0), q.get("holds", 0), q.get("strikeOuts", 0),
+                            q.get("earnedRuns", 0), q.get("baseOnBalls", 0), q.get("hits", 0), 1 if gs and outs >= 18 and q.get("earnedRuns", 0) <= 3 else 0]
+            if row:
+                out[pid] = row
+    return out
+
+
+def mlb_lines(acc):
+    """Week totals in the file's columns, rates worked out from their parts."""
+    out = {}
+    for pid, a in acc.items():
+        row = {}
+        if "b" in a:
+            g, pa, ab, r, h, hr, rbi, sb, tb, bb, hbp, sf = a["b"]
+            obp = (h + bb + hbp) / (ab + bb + hbp + sf) if ab + bb + hbp + sf else 0
+            row["bat"] = [g, pa, ab, r, h, hr, rbi, sb, tb, round(h / ab, 3) if ab else 0, round(obp, 3), round(obp + (tb / ab if ab else 0), 3), bb, hbp, sf]
+        if "p" in a:
+            g, gs, outs, w, l, sv, hld, k, er, bb, h, qs = a["p"]
+            ip = outs / 3
+            row["pit"] = [g, gs, round(ip, 2), w, l, sv, hld, k, er, bb, h, round(er * 9 / ip, 2) if ip else 0, round((bb + h) / ip, 2) if ip else 0, qs, outs]
+        out[pid] = row
+    return out
+
+
+def mlb_weeks():
+    from concurrent.futures import ThreadPoolExecutor
+    today = datetime.now(timezone.utc).date()
+    year = today.year
+    sched = get(f"{MLB_API}schedule?sportId=1&season={year}&gameType=R&fields=dates,date,games,gamePk,status,abstractGameState,officialDate")
+    dates = [d for d in sched.get("dates", []) if d.get("games")]
+    if not dates or date.fromisoformat(dates[0]["date"]) > today:     # before opening day: last season's weeks
+        year -= 1
+        sched = get(f"{MLB_API}schedule?sportId=1&season={year}&gameType=R&fields=dates,date,games,gamePk,status,abstractGameState,officialDate")
+        dates = [d for d in sched.get("dates", []) if d.get("games")]
+    if not dates:
+        print("No MLB schedule")
+        return
+    opener = date.fromisoformat(dates[0]["date"])
+    monday = opener - timedelta(days=opener.weekday())
+    old = load("fantasy-kit/data/weeks-mlb.json", {}) or {}
+    keep = old.get("weeks", {}) if str(old.get("season")) == str(year) else {}
+    by_week = {}
+    for d in dates:
+        dd = date.fromisoformat(d["date"])
+        if dd > today:
+            continue
+        k = str((dd - monday).days // 7 + 1)
+        by_week.setdefault(k, []).extend(d["games"])
+    weeks, fetched = {}, 0
+    last_day = max(date.fromisoformat(d["date"]) for d in dates)
+    for k in sorted(by_week, key=int):
+        start = monday + timedelta(days=7 * (int(k) - 1))
+        end = start + timedelta(days=6)
+        if keep.get(k, {}).get("final"):
+            weeks[k] = keep[k]
+            continue
+        games = [g for g in by_week[k] if (g.get("status") or {}).get("abstractGameState") == "Final"]
+        acc = {}
+        with ThreadPoolExecutor(max_workers=8) as ex:
+            for box in ex.map(lambda g: mlb_boxes(g["gamePk"]), games):
+                fetched += 1
+                for pid, row in box.items():
+                    a = acc.setdefault(pid, {})
+                    for part, vals in row.items():
+                        a[part] = [x + y for x, y in zip(a[part], vals)] if part in a else list(vals)
+        done = all((g.get("status") or {}).get("abstractGameState") == "Final" for g in by_week[k])
+        over = today > min(end, last_day)
+        weeks[k] = {"start": start.isoformat(), "end": end.isoformat(), "final": bool(over and done and datetime.now(timezone.utc) >= after_night(min(end, last_day))), "lines": mlb_lines(acc)}
+    print(f"MLB weeks: {len(weeks)} ({fetched} box scores fetched)")
+    write_weeks("mlb", {"sport": "mlb", "season": str(year), "updated": NOW, "source": "MLB Stats API", "lines": {"bat": WK_BAT, "pit": WK_PIT}, "weeks": weeks})
 
 
 # ---------- NFL ----------
@@ -277,6 +399,8 @@ def nfl():
             p["inj"] = pl["injury_status"]
         if pl.get("years_exp") is not None:
             p["exp"] = pl["years_exp"]
+            if pl["years_exp"] == 0:
+                p["rk"] = 1
         return p
 
     for r in stats:
@@ -403,6 +527,11 @@ def main(argv):
         {"nba": nba, "mlb": mlb, "nfl": nfl}[s]()
         if s == "nba":
             nba_weeks()
+        if s == "mlb":
+            try:
+                mlb_weeks()
+            except Exception as e:
+                print(f"MLB weeks didn't build: {type(e).__name__}: {e}")
     return 0
 
 

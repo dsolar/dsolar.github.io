@@ -146,8 +146,8 @@
   }
 
   /* ---------- the season (season.js) ---------- */
-  // basketball and football seasons in progress are scored on real box scores
-  function beginSeason() { L = Z.begin(D, sport, { name: info.name, season: data.season, now: now(), real: !!weeks }); }
+  // a season in progress is scored on real box scores; out of season it's simulated
+  function beginSeason() { L = Z.begin(D, sport, { name: info.name, season: data.season, now: now(), real: weeks || false }); }
   const catchUp = () => (L ? Z.catchUp(L, G.context(L, players, sport, hooks()), now()) : false);
   const events = (b, c) => Z.events(b, c, { name: info.name, url: location.origin + location.pathname + "?id=" + encodeURIComponent(id), seats: info.seats, me: info.me, byId, now: now() });
 

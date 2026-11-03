@@ -1,5 +1,5 @@
 # Rebuilds the Fantasy Kit's player pools (fantasy-kit/data/nba.json, nfl.json, mlb.json) and real weekly box scores
-# (weeks-nba.json, weeks-nfl.json) for Draft Lab and the
+# (weeks-nba.json, weeks-nfl.json, weeks-mlb.json) for Draft Lab and the
 # league pages: basketball from Hard Cap's ESPN lines, baseball from MLB's Stats API files in tools/mlb, football
 # from Sleeper. Runs after each Hard Cap stats pull, when the script or this file changes, or by hand.
 name: Fantasy Kit data
@@ -29,7 +29,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
         with:

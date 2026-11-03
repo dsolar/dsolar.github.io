@@ -49,11 +49,18 @@
     // keepers: how many each team carries into next season, and what each one costs
     if (s.keepers) { settings.keepers = s.keepers; settings.keeperCost = s.keeperCost || (D.type === "auction" ? "price" : "round"); }
     // a draft that ran out on the clock while nobody was around is "done" in the past; start after now, not then
-    const at = Math.max(D.done || 0, o.now || Date.now());
-    if (o.real) settings.real = true;
-    return G.create({ sport, draft: D, name: o.name || D.name, season: o.season || "", now: at, start: startAfter(at, sport.key), scoring: D.scoring, settings });
+    const at = Math.max(D.done || 0, o.now || Date.now()), start = startAfter(at, sport.key);
+    // o.real: a weeks file (real scoring if its box scores reach the league's start) or true
+    if (o.real && (o.real === true || realCovers(o.real, start))) settings.real = true;
+    return G.create({ sport, draft: D, name: o.name || D.name, season: o.season || "", now: at, start, scoring: D.scoring, settings });
   }
 
+  // Do a weeks file's box scores reach a season starting at `start`? They do while the real season is on (its
+  // latest week ends within a week of the start); out of season they don't, and the league is simulated.
+  function realCovers(weeks, start) {
+    const ends = Object.values((weeks && weeks.weeks) || {}).map((w) => Date.parse(w.end + "T23:59:59Z")).filter(Boolean);
+    return ends.length > 0 && Math.max(...ends) >= start - 8 * DAY;
+  }
   function catchUp(L, ctx, now) {
     if (!L) return false;
     const before = JSON.stringify(L);
@@ -273,5 +280,5 @@
   }
   const standings = (L) => G.standings(L);
 
-  return { startAfter, begin, catchUp, driveDraft, events, keeperCost, keeperOptions, autoKeepers, nextDraft, summary };
+  return { startAfter, realCovers, begin, catchUp, driveDraft, events, keeperCost, keeperOptions, autoKeepers, nextDraft, summary };
 });

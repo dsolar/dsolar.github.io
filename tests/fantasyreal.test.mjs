@@ -90,3 +90,38 @@ test('simulated leagues are unchanged without real data', () => {
   assert.ok(line[s.sport.data.lines.pg.cols.indexOf('pts')] > 0);
   assert.equal(G.realWeek(s.L, s.ctx, 1), null);
 });
+
+test('baseball real weeks: batting and pitching lines in one file', () => {
+  const data = JSON.parse(readFileSync(new URL('../fantasy-kit/data/mlb.json', import.meta.url), 'utf8'));
+  const bat = data.players.find((p) => p.l.bat && p.l.bat[1] > 300), pit = data.players.find((p) => p.l.pit && p.l.pit[1] > 10);
+  const WB = ['g', 'pa', 'ab', 'r', 'h', 'hr', 'rbi', 'sb', 'tb', 'avg', 'obp', 'ops', 'bb', 'hbp', 'sf'];
+  const WP = ['g', 'gs', 'ip', 'w', 'l', 'sv', 'hld', 'k', 'er', 'bb', 'h', 'era', 'whip', 'qs', 'outs'];
+  const weeks = { sport: 'mlb', season: data.season, lines: { bat: WB, pit: WP }, weeks: {
+    1: { start: '2026-10-19', end: '2026-10-25', final: true, lines: {
+      [bat.id]: { bat: [6, 26, 22, 5, 8, 3, 7, 1, 17, 0.364, 0.423, 1.196, 3, 1, 0] },
+      [pit.id]: { pit: [1, 1, 7, 1, 0, 0, 0, 9, 1, 1, 4, 1.29, 0.71, 1, 21] } } } } };
+  const s = setup('mlb', 'roto5', weeks);
+  const wb = G.playerWeek(s.L, s.ctx, s.ctx.byId[bat.id], 1, 1, 1), wp = G.playerWeek(s.L, s.ctx, s.ctx.byId[pit.id], 1, 1, 1);
+  const bc = s.sport.data.lines.bat.cols, pc = s.sport.data.lines.pit.cols;
+  assert.equal(wb.bat[bc.indexOf('hr')], 3);
+  assert.equal(wb.bat[bc.indexOf('avg')], 0.364);
+  assert.equal(wp.pit[pc.indexOf('k')], 9);
+  assert.equal(wp.pit[pc.indexOf('era')], 1.29);
+  // custom points read "line.col" weights from both lines
+  const spec = { type: 'points', weights: { 'bat.hr': 4, 'bat.r': 1, 'pit.k': 1, 'pit.w': 5 } };
+  const sp = S.withScoring(S.attach(Object.assign({}, S.mlb), data), spec);
+  const players = data.players.map((p) => ({ ...p }));
+  V.evaluate(sp, players, { teams: 4, scoring: 'custom' });
+  const L = Object.assign({}, s.L, { scoring: 'custom' });
+  const ctx = G.context(L, players, sp, { real: weeks });
+  assert.equal(G.playerWeek(L, ctx, ctx.byId[bat.id], 1, 1, 1).pts, 3 * 4 + 5);
+  assert.equal(G.playerWeek(L, ctx, ctx.byId[pit.id], 1, 1, 1).pts, 9 + 5);
+});
+
+test('real scoring only when the box scores reach the season', () => {
+  const nfl = { weeks: { 1: { start: '2026-09-08', end: '2026-09-14' }, 9: { start: '2026-10-27', end: '2026-11-02' } } };
+  assert.equal(Z.realCovers(nfl, Date.UTC(2026, 10, 10, 13)), true, 'in season');
+  const mlb = { weeks: { 26: { start: '2026-09-21', end: '2026-09-27' } } };
+  assert.equal(Z.realCovers(mlb, Date.UTC(2026, 10, 10, 13)), false, 'an offseason league is simulated');
+  assert.equal(Z.realCovers(null, Date.now()), false);
+});
