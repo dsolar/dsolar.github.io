@@ -182,12 +182,12 @@
       const st = FK.draft.standings(D, dctx).sort((a, b) => a.rank - b.rank);
       const n = D.teams.length, cols = D.round1, auction = D.type === "auction";
       let cells = `<div class="h"></div>${cols.map((id) => `<div class="h${isMe(id) ? " me" : ""}">${teamAv(T(id), "sm")}<b>${esc(T(id).name)}</b></div>`).join("")}`;
+      // each team's column: the players it ended the draft with, in the order it got them (steals and trades included)
+      const mine = (id) => D.board.filter((x) => x && x.team === id && !x.gone);
       for (let r = 0; r < D.rounds; r++) {
         cells += `<div class="rn">${r + 1}</div>`;
         for (let col = 0; col < n; col++) {
-          let pk = null;
-          if (auction) pk = D.sales.filter((x) => x.team === cols[col])[r];
-          else for (let k = r * n; k < (r + 1) * n; k++) if (D.order[k] === cols[col]) pk = D.board[k];
+          const pk = auction ? D.sales.filter((x) => x.team === cols[col])[r] : mine(cols[col])[r];
           const p = pk && pk.pid && ctx.byId[pk.pid];
           cells += `<div class="cell${p ? " f c" + U.colorOf(sport, p) : ""}${isMe(cols[col]) ? " me" : ""}"${p ? ` data-player="${esc(p.id)}" role="button" tabindex="0"` : ""}>${p ? `<b>${esc(p.n)}</b><small>${S.positions(p).join(", ")} ${esc(p.t)}${auction ? " " + money(pk.price) : ""}</small>` : ""}</div>`;
         }

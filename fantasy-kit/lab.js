@@ -78,7 +78,8 @@
           </div>
           ${cfg.type === "mystery" ? `<div class="row2"><div class="field"><label for="s-reveal">Packages open</label><select id="s-reveal" name="reveal">${Object.entries(F.REVEALS).map(([k, l]) => opt(k, l, cfg.reveal)).join("")}</select></div><div class="field"><label for="s-test">Bot test</label><select id="s-test" name="test">${opt(1, "Keep the most even of 5 bot drafts", cfg.test)}${opt(0, "Off, use the first even deal", cfg.test)}</select></div></div>
             <p class="ps" style="margin:-4px 0 0">Every team gets a random set of picks, like 1, 24 and 42 against 12, 13 and 18, dealt so each set adds up to the same value on the pick curve.</p>` : ""}
-          ${cfg.type !== "auction" && cfg.type !== "mystery" ? `<div class="row2"><div class="field"><label for="s-trades">Trades during the draft</label><select id="s-trades" name="trades">${opt(1, "Picks and players", cfg.trades)}${opt(0, "Off", cfg.trades)}</select></div><div></div></div>` : ""}
+          ${cfg.type === "elephant" ? `<p class="ps" style="margin:-4px 0 0">A snake draft where your turn can be a steal: take a player someone already drafted. The team you rob picks again right away and can't take him straight back. Each team gets 3 steals, a player is frozen after 2, and steals end with 2 rounds to go.</p>` : ""}
+          ${cfg.type !== "auction" && cfg.type !== "mystery" && cfg.type !== "elephant" ? `<div class="row2"><div class="field"><label for="s-trades">Trades during the draft</label><select id="s-trades" name="trades">${opt(1, "Picks and players", cfg.trades)}${opt(0, "Off", cfg.trades)}</select></div><div></div></div>` : ""}
           ${cfg.clock < 0 && cfg.type !== "auction" ? `<p class="ps" style="margin:-4px 0 0">One clock for your whole draft. Run it out and every pick gets 10 seconds. The time you have left at the end becomes FAAB for the season: from half the league's budget to one and a half times it. Bots draft at their own pace and pay for it the same way.</p>` : ""}
           ${cfg.type === "auction" ? `<div class="row2"><div class="field"><label for="s-budget">Budget per team</label><select id="s-budget" name="budget">${[100, 200, 260, 300, 1000].map((n) => opt(n, "$" + n, cfg.budget)).join("")}</select></div><div></div></div>` : ""}
           <div class="field"><label for="s-lineup">Starting lineup</label><input type="text" id="s-lineup" name="lineup" value="${esc(lineup)}" spellcheck="false" autocomplete="off">
@@ -211,7 +212,7 @@
         <div class="card"><h2>Files</h2><ul>
           <li><b>sports.js</b>: positions, lineup slots, position limits, stat columns and scoring for basketball, football and baseball.</li>
           <li><b>value.js</b>: category z-scores or fantasy points, value over replacement by position, auction dollars.</li>
-          <li><b>draft.js</b>: snake, linear, third-round reversal, mystery packages and auction drafts with clocks, queues, keepers, bots, pause, undo and trades during the draft. No screen code, so a server can run it.</li>
+          <li><b>draft.js</b>: snake, linear, third-round reversal, mystery packages, white elephant and auction drafts with clocks, queues, keepers, bots, pause, undo and trades during the draft. No screen code, so a server can run it.</li>
           <li><b>ui.js</b> and <b>kit.css</b>: masthead and tabs, sortable player tables, filters, the player card and the full draft room.</li>
           <li><b>data/</b>: nba.json, nfl.json and mlb.json, rebuilt by tools/fantasykit_data.py.</li></ul></div>
         <div class="card"><h2>A league page in a few lines</h2><div class="code">&lt;link rel="stylesheet" href="/fantasy-kit/kit.css"&gt;

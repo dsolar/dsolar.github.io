@@ -14,7 +14,7 @@ Plain browser scripts, no build step. `sports.js`, `value.js` and `draft.js` hav
 | --- | --- |
 | `sports.js` | `FK.sports`: positions, lineup slots, position limits, stat columns, position colors and scoring presets for `nba`, `nfl` and `mlb` |
 | `value.js` | `FK.value.evaluate`: category z-scores or fantasy points, value over replacement by position, auction dollars |
-| `draft.js` | `FK.draft`: snake, linear, third-round reversal, mystery packages and auction drafts; pick clocks or a time bank, queues, keepers, bots, pause, undo, trades during the draft, results |
+| `draft.js` | `FK.draft`: snake, linear, third-round reversal, mystery packages, white elephant and auction drafts; pick clocks or a time bank, queues, keepers, bots, pause, undo, trades during the draft, results |
 | `league.js` | `FK.league`: head to head or guillotine, with or without best ball; rosters, weekly lineups, schedule, scoring (simulated, or a `hooks.score` for real box scores), standings, playoffs, power rankings, free agents, FAAB waivers, trades with review votes, the transaction log |
 | `league-ui.js` | `FK.ui.leagueApp`: every league page (Overview, Standings, Scoreboard, Transactions, Roster, Schedule, Trades, Matchup, Players, Waiver claims, Draft results) |
 | `ui.js` | `FK.ui`: helpers, avatars, the masthead and tab bars, sortable tables, position chips, the player card, and view-model modules (`scoreboard`, `versus`, `vsTable`, `standingsTable`, `feed`, `tradeCard`, `tradeWindow`), plus the full draft room |
@@ -105,6 +105,13 @@ FK.draft.fairDeal(D, players, sport, hooks, { tries: 5 });   // optional bot tes
 - When a manager comes on the clock, a bot that picks later sometimes offers to move up. Offers that can't happen anymore, because a pick was made or a piece moved, expire.
 - Set `trades: false` on `create` to turn trades off, or `botOffers: false` to keep trades but stop bot offers. Add `hooks.tradeCheck(D, trade, ctx)` for a league rule.
 
+**White elephant:** create the draft with `type: "elephant"`. It's a snake where your turn can be a steal.
+
+- `FK.draft.steal(D, ctx, team, pid, now)` takes a drafted player instead of a new one. The team you took him from gets a make-up pick right away and can't take him straight back.
+- `steals: { perTeam: 3, freeze: 2, lastRounds: 2 }`: steals each team gets, steals before a player is frozen, and the rounds at the end with no steals.
+- `FK.draft.canSteal` says why a steal won't go. Bots steal when a drafted player is worth clearly more to them than the best one left, more often as the draft goes on.
+- Make-up picks sit between scheduled picks, so round labels count only scheduled ones. A make-up pick shows as `3.M`. Trades are off in this format.
+
 **Time bank:** create the draft with `bank: { perRound: 30, floor: 10 }` instead of a pick clock.
 
 - Each team gets one clock for the whole draft, `perRound` seconds for every round. Once it's gone, every pick gets `floor` seconds.
@@ -178,7 +185,7 @@ The modules take plain view models, so a league with its own engine (Hard Cap) b
 - `FK.ui.feed(items)` is a transaction or activity feed.
 - `FK.ui.tradeCard(sport, vm)` and `FK.ui.tradeWindow(opts)` handle offers. The window takes `roster`, `value`, `check` and `submit` callbacks, so a salary cap rule plugs straight in.
 
-`node --test tests/fantasymodes.test.mjs` tests mystery packages (balance, variety, sealing, the bot test), trades during the draft (bot answers, players moving with their spot, balancing, stale offers, bot offers) and the time bank (pace, the floor, the FAAB payout).
+`node --test tests/fantasymodes.test.mjs` tests mystery packages (balance, variety, sealing, the bot test), trades during the draft (bot answers, players moving with their spot, balancing, stale offers, bot offers) the time bank (pace, the floor, the FAAB payout) and white elephant (make-up picks, undo, freezing, the late-round cutoff, bot drafts).
 
 `node --test tests/fantasyguillotine.test.mjs` plays guillotine seasons in each sport and tests the midweek waiver run, chop odds and best ball.
 

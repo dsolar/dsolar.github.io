@@ -230,3 +230,96 @@ test('time bank: leftover time becomes league FAAB, half to one and a half budge
   const Lg = G.create({ sport: s.sport, draft: s.D, now: T0, settings: { format: 'guillotine' } });
   assert.equal(Lg.teams[0].faab, Math.round(1000 * (0.5 + share[0])), 'scales to a guillotine budget');
 });
+
+/* ---------- white elephant ---------- */
+test('white elephant: a steal takes the player and the victim picks again right away', () => {
+  const s = setup('nfl', { type: 'elephant', human: 0 });
+  s.D.teams[1].owner = 'Sam';
+  let now = T0; F.start(s.D, now);
+  // draft until the manager (team 0) is on the clock and someone has a player
+  while (true) {
+    const c = F.onClock(s.D, now);
+    if (c.team === 0 && F.rosters(s.D)[1].length) break;
+    if (!F.isBot(s.D.teams[c.team])) F.pick(s.D, s.ctx, c.team, F.autoChoice(s.D, s.ctx, c.team).id, now);
+    else { s.D.steals.lastRounds = 99; F.tick(s.D, s.ctx, now + 2000); s.D.steals.lastRounds = 2; }
+    now += 2000;
+  }
+  const before = s.D.order.length;
+  const target = F.rosters(s.D)[1][0];
+  const c = F.onClock(s.D, now);
+  const r = F.steal(s.D, s.ctx, 0, target, now);
+  assert.ok(r.ok, r.why);
+  assert.equal(r.from, 1);
+  assert.equal(s.D.order.length, before + 1, 'a make-up pick was added');
+  assert.ok(F.rosters(s.D)[0].includes(target) && !F.rosters(s.D)[1].includes(target));
+  const m = F.onClock(s.D, now);
+  assert.equal(m.team, 1, 'the victim is up next');
+  assert.ok(m.makeup && m.index === c.index + 1);
+  assert.equal(F.pickLabel(s.D, m.index).endsWith('.M'), true);
+  assert.equal(F.canSteal(s.D, s.ctx, 1, target, now).ok, false, 'no stealing him straight back');
+  // the make-up pick doesn't shift the round count
+  F.pick(s.D, s.ctx, 1, F.autoChoice(s.D, s.ctx, 1).id, now + 1);
+  const next = F.onClock(s.D, now + 1);
+  assert.ok(!next.makeup);
+  const sched = (x) => (x.round - 1) * 10 + x.inRound;
+  assert.equal(sched(next), sched(c) + 1, 'the make-up pick is not counted as a scheduled pick');
+});
+
+test('white elephant: undo puts a steal back', () => {
+  const s = setup('nba', { type: 'elephant', human: 0 });
+  let now = T0; F.start(s.D, now);
+  while (!(F.onClock(s.D, now).team === 0 && F.rosters(s.D).some((x, i) => i && x.length))) {
+    const c = F.onClock(s.D, now);
+    if (c.team === 0) F.pick(s.D, s.ctx, 0, F.autoChoice(s.D, s.ctx, 0).id, now);
+    else { F.pick(s.D, s.ctx, c.team, F.autoChoice(s.D, s.ctx, c.team).id, now); }
+    now += 1000;
+  }
+  const victim = F.rosters(s.D).findIndex((x, i) => i && x.length), pid = F.rosters(s.D)[victim][0];
+  const len = s.D.order.length;
+  assert.ok(F.steal(s.D, s.ctx, 0, pid, now).ok);
+  assert.ok(F.undo(s.D, s.ctx, now + 1).ok);
+  assert.equal(s.D.order.length, len);
+  assert.ok(F.rosters(s.D)[victim].includes(pid));
+  assert.equal(F.onClock(s.D, now + 1).team, 0);
+});
+
+test('white elephant: a player freezes after two steals, and steals stop late', () => {
+  const s = setup('nfl', { type: 'elephant' });
+  for (const t of s.D.teams) t.owner = 'M' + t.id;
+  let now = T0; F.start(s.D, now);
+  const go = () => { const c = F.onClock(s.D, now); F.pick(s.D, s.ctx, c.team, F.autoChoice(s.D, s.ctx, c.team).id, now); now += 1000; };
+  for (let i = 0; i < 12; i++) go();
+  const star = s.D.board[0].pid;
+  for (let k = 0; k < 2; k++) {
+    let c = F.onClock(s.D, now);
+    while (s.ctx.own[star] === c.team) { go(); c = F.onClock(s.D, now); }
+    assert.ok(F.steal(s.D, s.ctx, c.team, star, now).ok, `steal ${k + 1}`);
+    go();                           // the make-up pick
+  }
+  let c = F.onClock(s.D, now);
+  while (s.ctx.own[star] === c.team) { go(); c = F.onClock(s.D, now); }
+  assert.match(F.canSteal(s.D, s.ctx, c.team, star, now).why, /frozen/);
+  while (F.onClock(s.D, now).round <= s.D.rounds - 2) go();
+  c = F.onClock(s.D, now);
+  const other = Object.keys(s.ctx.own).find((id) => s.ctx.own[id] !== c.team && id !== star);
+  assert.match(F.canSteal(s.D, s.ctx, c.team, other, now).why, /last 2 rounds/);
+  while (s.D.phase === 'live') go();
+  assert.ok(F.rosters(s.D).every((ids) => ids.length === F.sizeOf(s.D)), 'every roster ends full');
+});
+
+test('white elephant: bots steal, and the draft still finishes with full, legal rosters', () => {
+  let steals = 0;
+  for (const seed of [1, 2, 3]) {
+    const s = setup('nba', { type: 'elephant', seed });
+    run(s);
+    assert.equal(s.D.phase, 'done');
+    const ros = F.rosters(s.D);
+    assert.ok(ros.every((ids) => ids.length === F.sizeOf(s.D)));
+    assert.equal(new Set(ros.flat()).size, ros.flat().length, 'nobody on two teams');
+    const st = s.D.board.filter((x) => x && x.steal);
+    steals += st.length;
+    for (const x of st) assert.ok(F.stealsOf(s.D, x.pid) <= 2);
+    assert.equal(s.D.order.length, s.D.teams.length * s.D.rounds + st.length);
+  }
+  assert.ok(steals >= 3, `${steals} bot steals`);
+});

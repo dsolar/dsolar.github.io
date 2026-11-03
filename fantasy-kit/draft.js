@@ -6,6 +6,11 @@
    in turn; every bid resets the clock; the high bid wins when it runs out). Every format but auction can trade picks
    and drafted players while the draft runs.
 
+   White elephant ("elephant") is a snake where your turn can be a steal: take a player someone already drafted.
+   The team you took him from picks again right away (a make-up pick) and can't take him straight back. A player
+   freezes after `steals.freeze` steals (2), each team gets `steals.perTeam` steals a draft (3), and steals stop
+   for the last `steals.lastRounds` rounds (2).
+
    The draft is a plain JSON object (create()). Functions take (D, ctx, ...) where ctx = context(D, players, sport,
    hooks) holds the evaluated player pool (FK.value.evaluate first). Hooks let a league add its own rules:
      hooks.check(D, team, p, ctx)  -> { ok, why }  extra legality (a salary cap, a keeper rule)
@@ -29,7 +34,7 @@
   }
   function hash01(str) { let h = 2166136261; for (const c of String(str)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return ((h >>> 0) % 100000) / 100000; }
 
-  const FORMATS = { snake: "Snake", linear: "Linear", "3rr": "Third-round reversal", mystery: "Mystery packages", auction: "Auction" };
+  const FORMATS = { snake: "Snake", linear: "Linear", "3rr": "Third-round reversal", mystery: "Mystery packages", elephant: "White elephant", auction: "Auction" };
   const REVEALS = { start: "When the draft starts", own: "Yours at the start, the rest as they come up", now: "Right away" };
   const NAMES = [
     ["Night Shift", "NS"], ["Bench Mob", "BM"], ["Waiver Wire", "WW"], ["Late Scratch", "LS"], ["Deep Sleepers", "DS"], ["Box Score", "BX"],
@@ -69,12 +74,14 @@
       scoring: opts.scoring || Object.keys(sport.scorings)[0],
       lineup, bench, rounds, posMax: opts.posMax || sport.posMax || {},
       clock: opts.clock == null ? 60 : opts.clock, botDelay: opts.botDelay == null ? 1500 : opts.botDelay,
-      teams, round1: first, order: type === "auction" ? [] : type === "mystery" ? Array(n * rounds).fill(0) : makeOrder(type, first, rounds),
+      teams, round1: first, order: type === "auction" ? [] : type === "mystery" ? Array(n * rounds).fill(0) : makeOrder(type === "elephant" ? "snake" : type, first, rounds),
       board: type === "auction" ? [] : Array(n * rounds).fill(null), sales: [],
       phase: "setup", clockStart: null, paused: false, left: null, log: [],
       auction: type === "auction" ? { budget: opts.budget || 200, minBid: opts.minBid == null ? 1 : opts.minBid, nomClock: opts.nomClock || 30, bidClock: opts.bidClock || 15, nom: 0, lot: null } : null,
       bank: type !== "auction" && opts.bank ? { perRound: opts.bank.perRound || 30, floor: opts.bank.floor == null ? 10 : opts.bank.floor } : null,
-      trading: type !== "auction" && opts.trades !== false, botOffers: opts.botOffers !== false, trades: [], via: {}, offered: {},
+      trading: type !== "auction" && type !== "elephant" && opts.trades !== false,
+      steals: type === "elephant" ? { freeze: (opts.steals && opts.steals.freeze) || 2, perTeam: (opts.steals && opts.steals.perTeam) || 3, lastRounds: opts.steals && opts.steals.lastRounds != null ? opts.steals.lastRounds : 2 } : null,
+      extra: {}, botOffers: opts.botOffers !== false, trades: [], via: {}, offered: {},
     };
     if (D.bank) for (const t of D.teams) t.bank = D.bank.perRound * rounds * 1000;
     if (type === "mystery") {
@@ -107,7 +114,7 @@
   const made = (D) => (D.type === "auction" ? D.sales.slice() : D.board.filter(Boolean).sort((a, b) => a.at - b.at || a.n - b.n));
   function rosters(D) {
     const out = D.teams.map(() => []);
-    for (const pk of D.type === "auction" ? D.sales : D.board) if (pk && pk.pid) out[pk.team].push(pk.pid);
+    for (const pk of D.type === "auction" ? D.sales : D.board) if (pk && pk.pid && !pk.gone) out[pk.team].push(pk.pid);
     return out;
   }
   function context(D, players, sport, hooks) {
@@ -146,6 +153,10 @@
   function canAdd(D, ctx, teamId, p) {
     if (!p) return { ok: false, why: "Unknown player" };
     if (ctx.own[p.id] != null) return { ok: false, why: `${p.n} is already taken` };
+    return fitsRoster(D, ctx, teamId, p);
+  }
+  // Room for him on this roster: size, position limits, the starting lineup still fillable, the league's own rule.
+  function fitsRoster(D, ctx, teamId, p) {
     const team = D.teams[teamId];
     const ids = rosters(D)[teamId];
     if (ids.length >= sizeOf(D)) return { ok: false, why: "Roster is full" };
@@ -185,8 +196,17 @@
     const n = D.teams.length;
     const len = clockLen(D, k);
     const deadline = D.clockStart + len;
-    return { pick: k + 1, index: k, round: Math.floor(k / n) + 1, inRound: (k % n) + 1, team: D.order[k], total: D.order.length,
+    const si = slotInfo(D, k);
+    return { pick: k + 1, index: k, round: si.round, inRound: si.inRound, makeup: si.makeup, team: D.order[k], total: D.order.length,
       deadline, left: D.paused ? D.left : deadline - now };
+  }
+  // A pick's round and place in the round, counting only scheduled picks (make-up picks after a steal sit between them).
+  function slotInfo(D, k) {
+    const n = D.teams.length, ex = D.extra || {};
+    let sched = 0;
+    if (Object.keys(ex).length) { for (let i = 0; i < k; i++) if (!ex[i]) sched++; } else sched = k;
+    if (ex[k]) return { round: Math.floor(Math.max(0, sched - 1) / n) + 1, inRound: null, makeup: ex[k] };
+    return { round: Math.floor(sched / n) + 1, inRound: (sched % n) + 1, makeup: null };
   }
   const nextPickOf = (D, teamId) => { for (let k = 0; k < D.order.length; k++) if (!D.board[k] && D.order[k] === teamId) return k + 1; return null; };
   const isBot = (t) => !t.owner || t.auto;
@@ -284,6 +304,10 @@
       if (!isBot(team) && !D.offered[c.index]) { D.offered[c.index] = true; botOffer(D, ctx, c, now); }
       const at = isBot(team) ? D.clockStart + D.botDelay : c.deadline;
       if (now < at) break;
+      if (isBot(team) && team.owner == null && D.steals) {
+        const st = botSteal(D, ctx, c, rng(D.seed + c.index * 37 + 3));
+        if (st) { steal(D, ctx, c.team, st.id, at); n++; continue; }
+      }
       const p = autoChoice(D, ctx, c.team, rng(D.seed + c.index * 31 + 7));
       if (!p) { charge(D, c.index, c.team, at); D.board[c.index] = { n: c.pick, team: c.team, pid: null, at, auto: true }; D.clockStart = at; finishIfDone(D, at); n++; continue; }
       const res = pick(D, ctx, c.team, p.id, at, true);
@@ -307,6 +331,11 @@
     D.board.forEach((pk, i) => { if (pk && !pk.keeper && (pk.at > at || (pk.at === at && i > k))) { at = pk.at; k = i; } });
     if (k < 0) return { ok: false, why: "Nothing to undo" };
     const pk = D.board[k];
+    if (pk.steal) {
+      const was = D.board.find((x) => x && x.gone && x.stolenAt === k);
+      if (was) { was.gone = false; delete was.stolenAt; }
+      if (D.extra[k + 1] && !D.board[k + 1]) removePick(D, k + 1);
+    }
     D.board[k] = null; D.phase = "live"; D.clockStart = now; delete D.done;
     if (ctx) refresh(D, ctx);
     return { ok: true, pick: pk };
@@ -452,6 +481,84 @@
   }
 
 
+
+  /* ---------- white elephant ---------- */
+  // Every board entry that ever held this player, and how many times he's been stolen.
+  const stealsOf = (D, pid) => D.board.filter((x) => x && x.pid === pid && x.steal).length;
+  const stealsLeft = (D, teamId) => (D.steals ? D.steals.perTeam - D.board.filter((x) => x && x.steal && x.team === teamId).length : 0);
+  const activeEntry = (D, pid) => D.board.find((x) => x && x.pid === pid && !x.gone);
+  function stealsOpen(D, k) {
+    if (!D.steals) return false;
+    return slotInfo(D, k).round <= D.rounds - D.steals.lastRounds;
+  }
+  // Can the team on the clock take this player off another roster right now?
+  function canSteal(D, ctx, teamId, pid, now) {
+    if (!D.steals) return { ok: false, why: "No steals in this draft" };
+    const c = onClock(D, now);
+    if (!c) return { ok: false, why: "The draft isn't open" };
+    if (c.team !== teamId) return { ok: false, why: "It's not your pick" };
+    if (!stealsOpen(D, c.index)) return { ok: false, why: `No steals in the last ${D.steals.lastRounds} rounds` };
+    const p = ctx.byId[pid], from = ctx.own[pid];
+    if (!p || from == null) return { ok: false, why: "Nobody has him to steal" };
+    if (from === teamId) return { ok: false, why: "He's already yours" };
+    if (stealsLeft(D, teamId) <= 0) return { ok: false, why: `You've used all ${D.steals.perTeam} steals` };
+    const e = activeEntry(D, pid);
+    if (e && e.keeper) return { ok: false, why: `${p.n} is a keeper` };
+    if (stealsOf(D, pid) >= D.steals.freeze) return { ok: false, why: `${p.n} is frozen: stolen ${D.steals.freeze} times` };
+    const mk = D.extra[c.index];
+    if (mk && mk.forbid === pid) return { ok: false, why: `You can't steal ${p.n} straight back` };
+    return fitsRoster(D, ctx, teamId, p);
+  }
+  // A new pick slot right after index j, for `team`. Everything keyed by pick index past j moves up one.
+  function insertPick(D, j, team, info) {
+    D.order.splice(j, 0, team); D.board.splice(j, 0, null);
+    const shift = (obj) => { const out = {}; for (const [k, v] of Object.entries(obj || {})) out[+k >= j ? +k + 1 : k] = v; return out; };
+    D.extra = shift(D.extra); D.via = shift(D.via); D.offered = shift(D.offered);
+    for (const x of D.board) if (x && x.stolenAt != null && x.stolenAt >= j) x.stolenAt++;
+    D.extra[j] = info;
+  }
+  function removePick(D, j) {
+    D.order.splice(j, 1); D.board.splice(j, 1);
+    const shift = (obj) => { const out = {}; for (const [k, v] of Object.entries(obj || {})) { if (+k === j) continue; out[+k > j ? +k - 1 : k] = v; } return out; };
+    D.extra = shift(D.extra); D.via = shift(D.via); D.offered = shift(D.offered);
+  }
+  function steal(D, ctx, teamId, pid, now) {
+    const ok = canSteal(D, ctx, teamId, pid, now);
+    if (!ok.ok) return ok;
+    const c = onClock(D, now), from = ctx.own[pid], e = activeEntry(D, pid);
+    charge(D, c.index, teamId, now);
+    e.gone = true; e.stolenAt = c.index;
+    D.board[c.index] = { n: c.pick, team: teamId, pid, at: now, steal: true, from };
+    insertPick(D, c.index + 1, from, { from: teamId, forbid: pid, at: now });
+    // board entries after the new slot keep their own pick numbers in sync
+    D.board.forEach((x, i) => { if (x) x.n = i + 1; });
+    for (const t of D.teams) t.queue = t.queue.filter((x) => x !== pid);
+    D.clockStart = now;
+    D.log.push({ kind: "steal", at: now, team: teamId, from, pid });
+    refresh(D, ctx);
+    return { ok: true, from, pick: c.pick };
+  }
+  // A bot steals when a drafted player is worth clearly more to it than the best one left, and some bots are greedier
+  // than others.
+  function botSteal(D, ctx, c, r) {
+    if (!stealsOpen(D, c.index)) return null;
+    if (stealsLeft(D, c.team) <= 0) return null;
+    // greedier bots steal more, and everyone steals more as the good players dry up
+    const greed = 0.15 + 0.5 * hash01(`${D.seed}:greed:${c.team}`);
+    if (r() > (greed + 0.05) * (0.25 + slotInfo(D, c.index).round / D.rounds)) return null;
+    const best = autoChoice(D, ctx, c.team, null);
+    const bw = best ? worth(D, ctx, c.team, best, null) : 0;
+    let pickP = null, pw = -Infinity;
+    for (const [id, t] of Object.entries(ctx.own)) {
+      if (t === c.team) continue;
+      const p = ctx.byId[id];
+      if (!p || !canSteal(D, ctx, c.team, id, D.clockStart).ok) continue;
+      const w = worth(D, ctx, c.team, p, null);
+      if (w > pw) { pw = w; pickP = p; }
+    }
+    return pickP && pw > bw * (1.7 - greed * 0.6) + 2 ? pickP : null;
+  }
+
   /* ---------- mystery packages ---------- */
   // What each pick is worth before the draft: the auction dollars of the k-th best player, plus a dollar so a late
   // pick still counts for something. Without a player pool, a curve with the same shape.
@@ -553,8 +660,9 @@
   const pickId = (k) => PICK + k;
   const pickIdx = (x) => +String(x).slice(PICK.length);
   function pickLabel(D, k) {
-    const n = D.teams.length;
-    return D.type === "mystery" ? `Pick ${k + 1}` : `${Math.floor(k / n) + 1}.${(k % n) + 1}`;
+    if (D.type === "mystery") return `Pick ${k + 1}`;
+    const si = slotInfo(D, k);
+    return si.makeup ? `${si.round}.M` : `${si.round}.${si.inRound}`;
   }
   // A team's picks still to make, and its players so far.
   const picksOf = (D, teamId) => D.order.map((t, k) => (t === teamId && !D.board[k] ? k : -1)).filter((k) => k >= 0);
@@ -710,6 +818,6 @@
 
   return { FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
     start, pause, pick, worth, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, botMax, standings, sizeOf,
-    clockLen, thinkTime, bankShare, pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
+    clockLen, thinkTime, bankShare, slotInfo, fitsRoster, canSteal, steal, stealsOf, stealsLeft, stealsOpen, botSteal, pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
     tradeCheck, balance, propose, respond, cancel, botAnswer, botOffer };
 });

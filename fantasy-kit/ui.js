@@ -357,7 +357,9 @@
     const pts = () => isPoints(sport, D().scoring);
     const canTrade = () => { const d = D(); return d.trading && me() != null && d.phase !== "done"; };
     // a pick's short label for the ticker and board: 2.5 in a snake, #15 in mystery packages
-    const plab = (k) => { const d = D(), n = d.teams.length; return mystery() ? `#${k + 1}` : `${Math.floor(k / n) + 1}.${(k % n) + 1}`; };
+    const plab = (k) => (mystery() ? `#${k + 1}` : F.pickLabel(D(), k));
+    const elephant = () => !!D().steals;
+    const stealOk = (pid) => { const d = D(); return elephant() && me() != null && d.phase === "live" && F.canSteal(d, ctx, me(), pid, now()); };
     const seenK = (k) => F.seen(D(), k, me());
     const bankFull = () => { const d = D(); return d.bank ? d.bank.perRound * d.rounds * 1000 : 0; };
     // what a team's leftover bank is worth at the end, on a league budget of $100
@@ -368,7 +370,7 @@
     }
     const viaOf = (k) => { const v = D().via[k]; return v != null ? team(v) : null; };
     // the board spots that belong to a team: picks it made or holds, in pick order (traded players move with theirs)
-    const slotsOf = (id) => { const d = D(); return d.order.map((t, k) => ((d.board[k] ? d.board[k].team === id : t === id) ? k : -1)).filter((k) => k >= 0); };
+    const slotsOf = (id) => { const d = D(); return d.order.map((t, k) => ((d.board[k] ? d.board[k].team === id && !d.board[k].gone : t === id) ? k : -1)).filter((k) => k >= 0); };
     const pickVM = (k) => { const d = D(), v = viaOf(k); return { id: F.pickId(k), k, pick: true, n: mystery() ? `Pick ${k + 1}` : `Pick ${plab(k)}`, sub: `${ord(k + 1)} overall, about ${money(F.pickValue(d, ctx, k))}${v ? `, via ${v.abbr}` : ""}`, price: money(F.pickValue(d, ctx, k)) }; };
     // a pick you can't see yet (mystery packages, reveal "own") trades blind, valued at the average pick still to come
     const avgPick = () => { const d = D(), ks = d.order.map((t, k) => k).filter((k) => !d.board[k]); return ks.length ? ks.reduce((a, k) => a + F.pickValue(d, ctx, k), 0) / ks.length : 0; };
@@ -398,7 +400,7 @@
       } else {
         const c = F.onClock(d, n), t = team(c.team), mine = isMe(t);
         const next = me() != null ? F.nextPickOf(d, me()) : null;
-        mid = `<div class="otc${mine ? " me" : ""}">${teamAv(t, "md")}<span class="who"><small>${mine ? "You're on the clock" : "On the clock"}</small><b>${esc(t.name)}</b><span>${mystery() ? `Pick ${c.pick} of ${c.total}` : `Round ${c.round}, pick ${c.inRound} (${ord(c.pick)} overall)`}${viaOf(c.index) ? `, from ${isMe(viaOf(c.index)) ? "you" : esc(viaOf(c.index).name)}` : ""}${!mine && next ? `. You pick in ${next - c.pick}` : ""}${d.paused ? ", paused" : ""}${d.bank && t.bank <= 0 ? `. Bank empty: ${d.bank.floor} seconds a pick` : ""}</span></span><span class="ring" id="fk-ring" title="${d.bank ? "Time left in the bank" : "Time left on the pick"}"><span id="fk-timer"></span></span></div>`;
+        mid = `<div class="otc${mine ? " me" : ""}">${teamAv(t, "md")}<span class="who"><small>${mine ? (c.makeup ? "You were robbed. Pick again" : "You're on the clock") : c.makeup ? "Make-up pick" : "On the clock"}</small><b>${esc(t.name)}</b><span>${c.makeup ? `Make-up pick: ${esc(team(c.makeup.from).abbr)} stole ${esc((ctx.byId[c.makeup.forbid] || {}).n || "a player")}` : mystery() ? `Pick ${c.pick} of ${c.total}` : `Round ${c.round}, pick ${c.inRound} (${ord(c.pick)} overall)`}${elephant() && mine ? `. ${F.stealsLeft(d, me())} steal${F.stealsLeft(d, me()) === 1 ? "" : "s"} left${F.stealsOpen(d, c.index) ? "" : ", but steals are over"}` : ""}${viaOf(c.index) ? `, from ${isMe(viaOf(c.index)) ? "you" : esc(viaOf(c.index).name)}` : ""}${!mine && next ? `. You pick in ${next - c.pick}` : ""}${d.paused ? ", paused" : ""}${d.bank && t.bank <= 0 ? `. Bank empty: ${d.bank.floor} seconds a pick` : ""}</span></span><span class="ring" id="fk-ring" title="${d.bank ? "Time left in the bank" : "Time left on the pick"}"><span id="fk-timer"></span></span></div>`;
       }
       return `<div class="dr-top">${lg}${mid}<div class="acts">${ctl.join("")}</div></div>`;
     }
@@ -414,7 +416,7 @@
         const pk = d.board[k], t = team(d.order[k]), lab = plab(k);
         const p = pk && pk.pid && ctx.byId[pk.pid], via = viaOf(k);
         if (!seenK(k)) { cards.push(`<div class="tk hid"><span class="n">${lab}</span><b>Sealed</b><small>${d.phase === "live" && k > k0 ? `${k - k0} away` : "Revealed at the start"}</small></div>`); continue; }
-        if (p) cards.push(`<button type="button" class="tk done c${colorOf(sport, p)}${isMe(t) ? " me" : ""}" data-player="${esc(p.id)}"><span class="n">${lab} ${esc(t.abbr)}</span><b>${esc(p.n)}</b><small>${S.positions(p).join(", ")} ${esc(p.t)}</small></button>`);
+        if (p) cards.push(`<button type="button" class="tk done c${colorOf(sport, p)}${isMe(t) ? " me" : ""}${pk.steal ? " steal" : ""}${pk.gone ? " gone" : ""}" data-player="${esc(p.id)}"><span class="n">${lab} ${esc(t.abbr)}</span><b>${esc(p.n)}</b><small>${pk.steal ? `Stolen from ${esc(team(pk.from).abbr)}` : pk.gone ? "Later stolen" : `${S.positions(p).join(", ")} ${esc(p.t)}`}</small></button>`);
         else cards.push(`<div class="tk${k === k0 && d.phase === "live" ? " now" : ""}${isMe(t) ? " me" : ""}"><span class="n">${teamAv(t, "sm")} ${lab}</span><b>${isMe(t) ? "You" : esc(t.name)}</b><small>${k === k0 && d.phase === "live" ? "On the clock" : k > k0 ? `${k - k0} away` : "Passed"}${via ? `, via ${esc(via.abbr)}` : ""}</small></div>`);
       }
       const tk = `<div class="ticker" id="fk-ticker">${cards.join("")}</div>`;
@@ -454,7 +456,7 @@
       const myNom = st && st.kind === "nominate" && st.team === mine;
       let rows = (ui.show === "all" ? opts.players : ctx.available).filter((p) => passes(sport, p, ui.f));
       const actions = (p) => {
-        if (ctx.own[p.id] != null) return `${teamAv(team(ctx.own[p.id]), "sm")}`;
+        if (ctx.own[p.id] != null) { const ok = stealOk(p.id); return `${ok && ok.ok ? `<button class="btn xs warn" data-steal="${esc(p.id)}">Steal</button> ` : ""}${teamAv(team(ctx.own[p.id]), "sm")}`; }
         if (mine == null) return "";
         const ok = F.canAdd(d, ctx, mine, p).ok;
         const q = team(mine).queue.includes(p.id);
@@ -483,8 +485,8 @@
           const pk = x && x.pk, p = pk && pk.pid && ctx.byId[pk.pid];
           if (x && x.k != null && !pk && !seenK(x.k)) { cells += `<div class="cell hid${isMe(t) ? " me" : ""}"><small class="ps">Sealed</small></div>`; continue; }
           const via = x && x.k != null ? (pk && pk.drafter != null && pk.drafter !== pk.team ? team(pk.drafter) : !pk ? viaOf(x.k) : null) : null;
-          const cls = ["cell", p ? "f c" + colorOf(sport, p) : "", isMe(t) ? "me" : "", x && x.k === nowK ? "now" : "", pk && pk.keeper ? "keep" : ""].join(" ").replace(/\s+/g, " ");
-          cells += `<div class="${cls}"${p ? ` data-player="${esc(p.id)}" role="button" tabindex="0" title="${esc(p.n)}${pk.auto ? ", autopick" : ""}"` : ""}>${p ? `<b>${esc(p.n)}</b><small>${via ? `from ${esc(via.abbr)}` : `${S.positions(p).join(", ")} ${esc(p.t)}`}${x.label ? " " + x.label : ""}</small>` : pk ? "<b>Passed</b>" : x && x.k != null ? `<small class="ps">${plab(x.k)}${x.k === nowK ? ", on the clock" : via ? `, via ${esc(via.abbr)}` : ""}</small>` : ""}</div>`;
+          const cls = ["cell", p ? "f c" + colorOf(sport, p) : "", isMe(t) ? "me" : "", x && x.k === nowK ? "now" : "", pk && pk.keeper ? "keep" : "", pk && pk.steal ? "steal" : "", x && x.k != null && !pk && D().extra[x.k] ? "mk" : ""].join(" ").replace(/\s+/g, " ");
+          cells += `<div class="${cls}"${p ? ` data-player="${esc(p.id)}" role="button" tabindex="0" title="${esc(p.n)}${pk.auto ? ", autopick" : ""}"` : ""}>${p ? `<b>${esc(p.n)}</b><small>${pk.steal ? `stolen from ${esc(team(pk.from).abbr)}` : via ? `from ${esc(via.abbr)}` : `${S.positions(p).join(", ")} ${esc(p.t)}`}${x.label ? " " + x.label : ""}</small>` : pk ? "<b>Passed</b>" : x && x.k != null ? `<small class="ps">${plab(x.k)}${x.k === nowK ? ", on the clock" : via ? `, via ${esc(via.abbr)}` : ""}</small>` : ""}</div>`;
         }
       }
       return `<div class="board" id="fk-board"><div class="bgrid" style="--n:${n};grid-template-columns:28px repeat(${n},minmax(0,1fr))">${cells}</div></div>`;
@@ -492,7 +494,7 @@
     function picks() {
       const d = D(), list = F.made(d).reverse();
       return `<div class="table-wrap" id="fk-picks" style="flex:1;min-height:0">${list.length ? `<ol class="picks">${list.map((pk) => { const t = team(pk.team), p = ctx.byId[pk.pid];
-        return `<li class="${isMe(t) ? "me" : ""}"><span class="no">${auction() ? money(pk.price) : plab(pk.n - 1)}</span><span ${p ? `data-player="${esc(p.id)}"` : ""} style="cursor:pointer;min-width:0">${p ? pname(sport, p, [pk.keeper ? "keeper" : pk.auto ? "autopick" : "", pk.drafter != null && pk.drafter !== pk.team ? `traded from ${team(pk.drafter).abbr}` : ""].filter(Boolean).join(", ")) : "<b>Passed</b>"}</span><span class="row">${teamAv(t, "sm")}<span class="ps hide-s">${esc(t.name)}</span></span></li>`; }).join("")}</ol>` : `<p class="empty">No ${auction() ? "sales" : "picks"} yet.</p>`}</div>`;
+        return `<li class="${isMe(t) ? "me" : ""}"><span class="no">${auction() ? money(pk.price) : plab(pk.n - 1)}</span><span ${p ? `data-player="${esc(p.id)}"` : ""} style="cursor:pointer;min-width:0">${p ? pname(sport, p, [pk.keeper ? "keeper" : pk.auto ? "autopick" : "", pk.drafter != null && pk.drafter !== pk.team ? `traded from ${team(pk.drafter).abbr}` : "", pk.steal ? `stole him from ${team(pk.from).abbr}` : "", pk.gone ? "later stolen" : ""].filter(Boolean).join(", ")) : "<b>Passed</b>"}</span><span class="row">${teamAv(t, "sm")}<span class="ps hide-s">${esc(t.name)}</span></span></li>`; }).join("")}</ol>` : `<p class="empty">No ${auction() ? "sales" : "picks"} yet.</p>`}</div>`;
     }
     function results() {
       const d = D(), st = F.standings(d, ctx).sort((a, b) => a.rank - b.rank);
@@ -517,6 +519,15 @@
       const test = M.test ? ` The bot test drafted ${M.test.tries} deals and kept the one where the bots finished closest.` : "";
       return `<div style="overflow:auto;flex:1;min-height:0"><div class="pk-h"><b>Mystery packages</b><span class="ps">Every team's picks add up to the same value on the pick curve, within ${(M.spread * 100).toFixed(1)}% of each other.${test} ${d.phase === "setup" && !seenK(0) ? "Packages open when the draft starts." : M.reveal === "own" && d.phase === "live" ? "Other teams' picks show when they come up." : ""}</span></div>
         <ul class="pkl">${rows.map((r) => `<li class="${isMe(r.t) ? "me" : ""}"><span class="row">${teamAv(r.t, "sm")}<b class="ell">${esc(r.t.name)}</b></span><span class="pkv">${r.sealed ? `<span class="ps">Sealed</span>` : `<i style="width:${((r.tot / max) * 100).toFixed(1)}%"></i><span>${Math.round(r.tot)}</span>`}</span><span class="pkcs">${r.chips}</span></li>`).join("")}</ul></div>`;
+    }
+    // White elephant: everyone on another roster, whether you can take him, and why not.
+    function steals() {
+      const d = D(), m = me(), c = d.phase === "live" ? F.onClock(d, now()) : null;
+      const rows = Object.entries(ctx.own).filter(([, t]) => t !== m).map(([id, t]) => ({ p: ctx.byId[id], t })).filter((x) => x.p).sort((a, b) => a.p.rank - b.p.rank).slice(0, 150);
+      const left = m != null ? F.stealsLeft(d, m) : 0;
+      const why = (id) => (m == null || !c ? null : F.canSteal(d, ctx, m, id, now()));
+      return `<div style="overflow:auto;flex:1;min-height:0"><div class="pk-h"><b>Steal a player</b><span class="ps">On your turn, take someone already drafted instead of a new player. The team you take him from picks again right away and can't take him straight back. A player is frozen after ${d.steals.freeze} steals, every team gets ${d.steals.perTeam}, and steals end with ${d.steals.lastRounds} rounds to go.${m != null ? ` You have ${left} left.` : ""}</span></div>
+        ${rows.length ? `<ul class="rslots">${rows.map(({ p, t }) => { const r = why(p.id), n = F.stealsOf(d, p.id), frozen = n >= d.steals.freeze; return `<li style="grid-template-columns:minmax(0,1fr) auto auto"><span data-player="${esc(p.id)}" style="cursor:pointer;min-width:0">${pname(sport, p, `#${p.rank}, ${money(p.$)}`, { size: "sm" })}</span><span class="row" style="gap:6px">${frozen ? `<span class="tag">Frozen</span>` : n ? `<span class="tag gold">Stolen ${n}x</span>` : ""}${teamAv(team(t), "sm")}</span>${r && r.ok ? `<button class="btn xs warn" data-steal="${esc(p.id)}">Steal</button>` : `<span class="ps" style="font-size:11px;max-width:150px;text-align:right">${r && c && c.team === m && !frozen ? esc(r.why) : ""}</span>`}</li>`; }).join("")}</ul>` : `<p class="empty">Nobody has drafted anyone yet.</p>`}</div>`;
     }
     function upcoming(id) {
       const d = D();
@@ -601,7 +612,7 @@
       const d = D();
       if (d.phase === "done" && ui.phase && ui.phase !== "done") { ui.left = "results"; ui.mobileRight = false; }
       ui.phase = d.phase;
-      const lefts = [["players", "Players"], ["board", "Board"], ["picks", auction() ? "Sales" : "Picks"]].concat(mystery() ? [["packages", "Packages"]] : [], d.phase === "done" ? [["results", "Results"]] : []);
+      const lefts = [["players", "Players"], ["board", "Board"], ["picks", auction() ? "Sales" : "Picks"]].concat(mystery() ? [["packages", "Packages"]] : [], elephant() && d.phase !== "done" ? [["steal", "Steal"]] : [], d.phase === "done" ? [["results", "Results"]] : []);
       if (!lefts.some((x) => x[0] === ui.left)) ui.left = "players";
       const offers = me() != null ? d.trades.filter((T) => T.status === "pending" && T.to === me()).length : 0;
       const rights = me() != null ? [["team", "My team"], ["queue", "Queue"], ["teams", "Teams"]].concat(d.trading ? [["trades", offers ? `Trades (${offers})` : "Trades"]] : []) : [["teams", "Teams"]];
@@ -609,7 +620,7 @@
       const keep = { q: document.activeElement && document.activeElement.id, scroll: {} };
       $$("#fk-pool,#fk-board,#fk-picks,.dr-panel,#fk-ticker", el).forEach((x) => (keep.scroll[x.id || x.className] = [x.scrollTop, x.scrollLeft]));
       const sel = keep.q === "fk-q" ? [document.activeElement.selectionStart, document.activeElement.selectionEnd] : null;
-      const left = { players, board, picks, results, packages }[ui.left]();
+      const left = { players, board, picks, results, packages, steal: steals }[ui.left]();
       const right = { team: () => rosterPanel(me()), queue: queuePanel, teams: teamsPanel, trades: tradesPanel }[ui.right]();
       // one view switch: the left views, plus the right panels as views on narrow screens
       const seg = `<div class="seg" role="group" aria-label="View">${lefts.map(([k, n]) => `<button type="button" data-left="${k}" aria-pressed="${!ui.mobileRight && ui.left === k}">${esc(n)}</button>`).join("")}${rights.map(([k, n]) => `<button type="button" class="show-m" data-mright="${k}" aria-pressed="${ui.mobileRight && ui.right === k}">${esc(n)}</button>`).join("")}</div>`;
@@ -649,12 +660,15 @@
       let actions = "";
       if (mine != null && !taken) actions += `<button class="btn" data-card="queue">${team(mine).queue.includes(pid) ? "Remove from queue" : "Add to queue"}</button>`;
       if (can && can.ok && c && c.team === mine) actions += `<button class="btn go" data-card="pick">Draft ${esc(last(p.n))}</button>`;
+      const sk = taken && ctx.own[pid] !== mine ? stealOk(pid) : null;
+      if (sk && sk.ok) actions += `<button class="btn warn" data-card="steal">Steal ${esc(last(p.n))}</button>`;
       if (can && can.ok && st && st.kind === "nominate" && st.team === mine) actions += `<button class="btn go" data-card="nominate">Nominate</button>`;
-      const status = taken ? `${teamAv(team(ctx.own[pid]), "sm")} Drafted by ${esc(team(ctx.own[pid]).name)}` : can && !can.ok ? `<span class="bad">${esc(can.why)}</span>` : "";
+      const status = taken ? `${teamAv(team(ctx.own[pid]), "sm")} On ${esc(team(ctx.own[pid]).name)}${elephant() ? `, stolen ${F.stealsOf(d, pid)} of ${d.steals.freeze} times${sk && !sk.ok && c && c.team === mine ? `. <span class="bad">${esc(sk.why)}</span>` : ""}` : ""}` : can && !can.ok ? `<span class="bad">${esc(can.why)}</span>` : "";
       const Dl = dialog(playerCard(sport, p, { scoring: d.scoring, actions, status }), null, { wide: true, dark: true });
       $$("[data-card]", Dl).forEach((b) => b.addEventListener("click", () => {
         const a = b.dataset.card;
         if (a === "pick") { if (act(() => F.pick(D(), ctx, mine, pid, now()))) Dl.close(); }
+        else if (a === "steal") { if (act(() => F.steal(D(), ctx, mine, pid, now()))) { Dl.close(); toast(`You stole ${p.n}.`); } }
         else if (a === "nominate") { Dl.close(); nominateDialog(pid); }
         else { toggleQueue(pid); Dl.close(); }
       }));
@@ -691,6 +705,8 @@
         if (act(() => F.respond(D(), ctx, id, me(), yes, now()))) toast(yes ? "Trade accepted." : "Offer declined.");
         return;
       }
+      const sb = e.target.closest("button[data-steal]");
+      if (sb) { e.stopPropagation(); const p = ctx.byId[sb.dataset.steal]; if (act(() => F.steal(D(), ctx, me(), sb.dataset.steal, now()))) toast(`You stole ${p.n}.`); return; }
       const b = e.target.closest("button[data-pick],button[data-queue],button[data-nominate],button[data-bid],button[data-qup],button[data-act]");
       if (b) {
         e.stopPropagation();
@@ -734,6 +750,16 @@
     let lastSig = "";
     const sig = () => { const d = D(); return [d.phase, d.paused, F.made(d).length, d.auction && d.auction.lot ? d.auction.lot.bid + ":" + d.auction.lot.team + ":" + (d.auction.lot.passed || []).length : "", (d.trades || []).map((T) => T.status[0]).join("")].join("|"); };
     let seenOffers = new Set((D().trades || []).map((T) => T.id));
+    let seenSteals = (D().log || []).filter((x) => x.kind === "steal").length;
+    const newSteals = () => {
+      const st = (D().log || []).filter((x) => x.kind === "steal");
+      for (const x of st.slice(seenSteals)) {
+        const p = ctx.byId[x.pid];
+        if (x.team === me()) continue;
+        toast(x.from === me() ? `${team(x.team).name} stole ${p ? p.n : "a player"} from you. Pick again now.` : `${team(x.team).abbr} stole ${p ? p.n : "a player"} from ${team(x.from).abbr}.`, x.from === me());
+      }
+      seenSteals = st.length;
+    };
     const newOffers = () => {
       const d = D();
       for (const T of d.trades || []) {
@@ -748,7 +774,7 @@
         if (moved) save();
       }
       const s = sig();
-      if (s !== lastSig) newOffers();
+      if (s !== lastSig) { newOffers(); newSteals(); }
       if (s !== lastSig) { lastSig = s; if (!dialogOpen()) render(); else drawTimer(); } else drawTimer();
     }, 250);
 
