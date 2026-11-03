@@ -27,6 +27,10 @@ create table if not exists public.bb_entries (
   unique (league, name_key)
 );
 
+-- Open to anyone with the link, so new names are rate-limited: three a day from one network (a salted hash of
+-- the address, never the address itself) and forty in ten minutes per league overall.
+alter table public.bb_entries add column if not exists ip_hash text;
+
 alter table public.bb_drafts enable row level security;
 alter table public.bb_entries enable row level security;
 revoke all on public.bb_drafts, public.bb_entries from anon, authenticated;
@@ -75,6 +79,7 @@ declare
   pids text[] := '{}';
   s int;
   pid text;
+  ip text;
 begin
   select * into d from public.bb_drafts where league = p_league;
   if not found then return jsonb_build_object('error', 'No such draft.'); end if;
@@ -104,8 +109,15 @@ begin
   end loop;
 
   if e.id is null then
-    insert into public.bb_entries (league, name, name_key, pin_hash, picks)
-      values (p_league, nm, lower(nm), crypt(p_pin, gen_salt('bf', 8)), res);
+    ip := encode(digest(coalesce(split_part(current_setting('request.headers', true)::json ->> 'x-forwarded-for', ',', 1), '') || 'bb-challenge', 'sha256'), 'hex');
+    if (select count(*) from public.bb_entries where ip_hash = ip and league = p_league and created_at > now() - interval '1 day') >= 3 then
+      return jsonb_build_object('error', 'That''s three new names from here today. Try again tomorrow, or update one you have.');
+    end if;
+    if (select count(*) from public.bb_entries where league = p_league and created_at > now() - interval '10 minutes') >= 40 then
+      return jsonb_build_object('error', 'Lots of new entries right now. Try again in a few minutes.');
+    end if;
+    insert into public.bb_entries (league, name, name_key, pin_hash, picks, ip_hash)
+      values (p_league, nm, lower(nm), crypt(p_pin, gen_salt('bf', 8)), res, ip);
   else
     update public.bb_entries set picks = res, name = nm, updated_at = now() where id = e.id;
   end if;
@@ -142,3 +154,6 @@ revoke all on function public.bb_board(text) from public;
 grant execute on function public.bb_save(text, text, text, jsonb) to anon, authenticated;
 grant execute on function public.bb_mine(text, text, text) to anon, authenticated;
 grant execute on function public.bb_board(text) to anon, authenticated;
+
+-- To take down an entry (a junk name, say), in the SQL editor:
+--   delete from public.bb_entries where league = 'nfl' and name_key = lower('The Name');
