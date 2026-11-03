@@ -331,7 +331,20 @@
     nfl: { WAS: "wsh" }, mlb: { CWS: "chw", ATH: "oak" } };
   const teamLogo = (sportKey, abbr, px = 28) => (TEAM_COLORS[sportKey] && TEAM_COLORS[sportKey][abbr]
     ? `https://a.espncdn.com/combiner/i?img=/i/teamlogos/${sportKey}/500/${(ESPN_CODES[sportKey] || {})[abbr] || String(abbr).toLowerCase()}.png&w=${px}&h=${px}` : null);
-  const teamColor = (sportKey, abbr) => { const c = (TEAM_COLORS[sportKey] || {})[abbr]; return c ? { bg: c, ink: inkOn(c) } : null; };
+  // A team's chip: its color, and whichever of white or near-black reads better on it. When neither reaches 4.5:1
+  // (a mid blue like Carolina's), the color is darkened a little until white text does.
+  const relLum = (n) => [n >> 16, (n >> 8) & 255, n & 255].map((x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; }).reduce((a, x, i) => a + x * [0.2126, 0.7152, 0.0722][i], 0);
+  const chipCache = {};
+  function teamColor(sportKey, abbr) {
+    const c = (TEAM_COLORS[sportKey] || {})[abbr];
+    if (!c) return null;
+    if (chipCache[c]) return chipCache[c];
+    let n = parseInt(c.slice(1), 16);
+    const onWhite = (m) => 1.05 / (relLum(m) + 0.05), onDark = (m) => (relLum(m) + 0.05) / (relLum(0x111111) + 0.05);
+    if (onDark(n) >= 4.5 && onDark(n) >= onWhite(n)) return (chipCache[c] = { bg: c, ink: "#111" });
+    for (let k = 0; k < 12 && onWhite(n) < 4.5; k++) n = [16, 8, 0].reduce((a, sh) => a | (Math.round(((n >> sh) & 255) * 0.92) << sh), 0);
+    return (chipCache[c] = { bg: "#" + n.toString(16).padStart(6, "0"), ink: "#fff" });
+  }
 
   return { ALL, nba, nfl, mlb, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, prospectClass };
 });
