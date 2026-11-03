@@ -433,6 +433,16 @@ The quotes live in `tools/scouting_quotes.json`, one entry per prospect: his `id
 
 The stamp works itself out: the experts "whiffed" when they panned a player who turned into a steal or a star, or praised one who busted. Drafts from 2000 to 2021 only, so every career has had time to happen. The daily five walks the whole folder in a seeded order before anyone repeats.
 
+## Big Board: adding a board
+
+The Big Board (`draft/`) rolls every outlet's 2027 board into one consensus for the NBA and the NFL. The outlets, their weights and which ones haven't published yet are in `tools/draft_sources.json`. Each board version is a dated file under `tools/draft_boards/<league>/<outlet>/`. Tankathon comes in on its own every day through Hard Cap's pull; the rest are pasted in.
+
+1. Copy the board off the outlet's page and save it as a text file.
+2. `python3 tools/draft_paste.py nba no-ceilings paste.txt --date 2026-11-20 --url <the article>` (add `--dry` first to check what it read). It saves the snapshot, takes the outlet off pending, and rebuilds the board.
+3. If it lists a name as new that's really a misspelling of someone already on the board, add a line to `tools/draft_aliases.json` and run `python3 tools/draft_build.py`.
+
+Pushing a new snapshot rebuilds `draft/nba.json` and `draft/nfl.json` through the Big Board workflow, which also runs after every Hard Cap stats pull. Boards fade by half every 90 days, mock drafts are shown next to each player but don't feed the rank, and WalterFootball stays out. PFF and The Athletic go in only from a subscription.
+
 ## Wipe Yoenis: luck, drafts and manager profiles
 
 Player lookup (the Players section) builds its index in the browser from data the page already has: every draft board, the keeper lists, every trade, `history.picked` (every pickup worth at least a point, from `tools/yoenis_history_build.py`) and the awards.

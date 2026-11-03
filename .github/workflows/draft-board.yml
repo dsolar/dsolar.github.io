@@ -1,0 +1,53 @@
+# Rebuilds the Big Board (draft/nba.json, draft/nfl.json) from every outlet's saved board.
+# Runs after each Hard Cap stats pull (that's where Tankathon's daily reading comes from), when a new board
+# is pasted in or the script changes, and by hand.
+name: Big Board
+
+on:
+  workflow_run:
+    workflows: ["Hard Cap stats"]
+    types: [completed]
+  push:
+    branches: [main]
+    paths:
+      - tools/draft_build.py
+      - tools/draft_sources.json
+      - tools/draft_aliases.json
+      - tools/draft_boards/**
+      - .github/workflows/draft-board.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: draft-board
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main   # pick up the Tankathon reading Hard Cap just committed
+
+      - name: Set the bot's git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Build the consensus
+        run: python3 tools/draft_build.py
+
+      - name: Commit the board
+        run: |
+          git add draft/nba.json draft/nfl.json
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+            exit 0
+          fi
+          git commit -m "Update the Big Board"
+          git pull --rebase -X theirs -q
+          git push

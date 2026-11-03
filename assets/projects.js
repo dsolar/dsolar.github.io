@@ -310,5 +310,20 @@ window.PROJECTS = [
     summary: "Charlotte’s game, designed by Charlotte and built with her dad. Build a whole house room by room, from a kitchen to a beauty parlor, decorate every corner with wallpaper, paint and her own art, design the yard, and grow a whole island village. Cow, who just learned to talk, is her guide and hands out stickers for design missions.",
     stack: ["JavaScript", "SVG"],
     cover: { image: "assets/covers/wild-bloom-isles-studio.jpg", bg: "#F4F1E8", band: "#B8788B" }
+  },
+  {
+    title: "Big Board",
+    line: "Every 2027 draft board, one consensus",
+    tag: "Updated every day",
+    type: "Simulations",
+    released: "2026-11",
+    url: "draft/",
+    action: "See the board",
+    question: "Where does everyone actually have him?",
+    summary: "The 2027 NBA and NFL drafts with every board worth reading rolled into one ranking: Tankathon, Bleacher Report, FanSided, SI and NFL Mock Draft Database now, with No Ceilings, KOC, Jeremiah and the rest as they publish. Who's rising, who's sliding, and where the boards can't agree.",
+    facts: [["139", "NBA prospects across 4 boards"], ["100", "NFL prospects"], ["90", "days for a board to count half"]],
+    stack: ["JavaScript", "Python", "GitHub Actions"],
+    cover: { bg: "#0B1626", band: "#F2C14E" },
+    hidden: true
   }
 ];

@@ -1,0 +1,25 @@
+{
+ "_about": "Outlets behind the Big Board (draft/). Each board snapshot lives in tools/draft_boards/<league>/<id>/<date>.json. kind: board (ranks talent, feeds the consensus) or mock (projects picks, shown separately). weight scales a source in the consensus; recency lowers it further. status pending = not published for this class yet, so nothing to read. how: auto (a script pulls it), paste (tools/draft_paste.py from copied page text).",
+ "nba": [
+  {"id": "tankathon", "name": "Tankathon", "abbr": "TANK", "kind": "board", "weight": 1, "how": "auto", "url": "https://www.tankathon.com/big_board", "note": "Daily, from Hard Cap's pull (hardcap/prospects.json)."},
+  {"id": "bleacher-report", "name": "Bleacher Report", "analyst": "Jonathan Wasserman", "abbr": "B/R", "kind": "board", "weight": 1, "how": "paste", "url": "https://bleacherreport.com/nba"},
+  {"id": "fansided", "name": "FanSided", "abbr": "FS", "kind": "board", "weight": 1, "how": "paste", "url": "https://fansided.com/nba/"},
+  {"id": "si", "name": "Sports Illustrated", "abbr": "SI", "kind": "board", "weight": 1, "how": "paste", "url": "https://www.si.com/nba/nba-draft"},
+  {"id": "no-ceilings", "name": "No Ceilings", "abbr": "NC", "kind": "board", "weight": 1.25, "how": "paste", "status": "pending", "url": "https://www.noceilingsnba.com/", "note": "Staff composite Top 60; posts as <year>-nba-draft-big-board-v<N>. Composite only, not the paid personal boards."},
+  {"id": "koc-yahoo", "name": "Yahoo Sports", "analyst": "Kevin O'Connor", "abbr": "KOC", "kind": "board", "weight": 1.25, "how": "paste", "status": "pending", "url": "https://sports.yahoo.com/nba/"},
+  {"id": "ringer", "name": "The Ringer", "abbr": "RING", "kind": "board", "weight": 1, "how": "paste", "status": "pending", "url": "https://www.theringer.com/nba-draft"},
+  {"id": "nbadraftnet", "name": "NBADraft.net", "abbr": "NDN", "kind": "board", "weight": 1, "how": "paste", "status": "pending", "url": "https://www.nbadraft.net/", "note": "Top 100 big board. Their extended mock is tracked as its own source below."},
+  {"id": "nbadraftnet-mock", "name": "NBADraft.net mock", "abbr": "NDN", "kind": "mock", "weight": 1, "how": "paste", "url": "https://www.nbadraft.net/"}
+ ],
+ "nfl": [
+  {"id": "nflmdd", "name": "NFL Mock Draft Database", "abbr": "MDD", "kind": "board", "weight": 2, "how": "paste", "url": "https://www.nflmockdraftdatabase.com/big-boards/2027/consensus-big-board-2027", "note": "Itself a consensus of 60+ boards and 200+ mocks, so it counts double. Free view stops at 100."},
+  {"id": "jeremiah", "name": "NFL Network", "analyst": "Daniel Jeremiah", "abbr": "DJ", "kind": "board", "weight": 1.25, "how": "paste", "status": "pending", "url": "https://www.nfl.com/news/series/top-150-prospects", "note": "Top 50 usually starts in late January."},
+  {"id": "norris", "name": "Underdog", "analyst": "Josh Norris", "abbr": "JN", "kind": "board", "weight": 1, "how": "paste", "status": "pending", "url": "https://underdogfantasy.com/"},
+  {"id": "schrager", "name": "ESPN", "analyst": "Peter Schrager", "abbr": "PS", "kind": "mock", "weight": 1, "how": "paste", "status": "pending", "url": "https://www.espn.com/nfl/"}
+ ],
+ "excluded": {
+  "walterfootball": "David's call: not good enough.",
+  "pff": "Subscription site; paste in only from his own account if he subscribes.",
+  "the-athletic": "Subscription site; paste in only from his own account if he subscribes."
+ }
+}

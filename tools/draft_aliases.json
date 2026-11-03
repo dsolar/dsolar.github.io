@@ -1,0 +1,13 @@
+{
+ "_about": "Spellings that point at the same player. Key: the variant's match key (lowercase, no accents, no Jr./II/III, hyphens for spaces). Value: the key to use instead. Suffixes and accents are already ignored, so only real spelling differences belong here.",
+ "nba": {
+  "malach-moreno": "malachi-moreno",
+  "klark-reithauser": "klark-riethauser",
+  "davis-fogel": "davis-fogle",
+  "arfan-diane": "arafan-diane",
+  "alvaro-folguiras": "alvaro-folgueiras",
+  "jojo-tugler": "joseph-tugler",
+  "hugo-yimga-mouko": "hugo-yimga-moukouri"
+ },
+ "nfl": {}
+}
