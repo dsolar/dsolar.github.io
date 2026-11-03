@@ -458,6 +458,52 @@
        drive           true if this page runs the clock (bots and autopicks)
        hooks           FK.draft hooks (a cap rule, a custom bot)
        brand           { name, mark } for the top bar; exit { href, label }; extra() html for the top bar when done */
+  /* ---------- draft alerts: a chime, a flashing tab and a desktop notification when you're up ---------- */
+  // On by default (sound needs one click on the page first, which every browser asks for). The desktop notification
+  // only shows while the tab is in the background, and only once the browser has allowed it.
+  const alerts = (() => {
+    const KEY = "fk-alerts";
+    let ac = null, base = null, flashT = null;
+    const on = () => { try { return localStorage.getItem(KEY) !== "0"; } catch (e) { return true; } };
+    const unlock = () => { try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended") ac.resume(); } catch (e) { /* no audio */ } };
+    function chime(kind) {
+      if (!on() || !ac) return;
+      try {
+        const t0 = ac.currentTime + 0.02, notes = kind === "deck" ? [587] : [659, 880];
+        notes.forEach((f, i) => {
+          const o = ac.createOscillator(), g = ac.createGain(), t = t0 + i * 0.17;
+          o.type = "sine"; o.frequency.value = f;
+          g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(kind === "deck" ? 0.08 : 0.16, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+          o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + 0.45);
+        });
+      } catch (e) { /* no audio */ }
+    }
+    function stop() { if (flashT) { clearInterval(flashT); flashT = null; if (base != null) document.title = base; base = null; } }
+    function flash(text) {
+      stop();
+      if (!on() || !document.hidden) return;
+      base = document.title; let k = 0;
+      flashT = setInterval(() => { document.title = k++ % 2 ? base : text; }, 1000);
+    }
+    function notify(title, body) {
+      if (!on() || !document.hidden || typeof Notification === "undefined" || Notification.permission !== "granted") return;
+      try { const n = new Notification(title, { body, tag: "fk-draft" }); n.onclick = () => { window.focus(); n.close(); }; } catch (e) { /* not allowed here */ }
+    }
+    async function set(v) {
+      try { localStorage.setItem(KEY, v ? "1" : "0"); } catch (e) { /* private mode */ }
+      if (!v) { stop(); return; }
+      unlock();
+      if (typeof Notification !== "undefined" && Notification.permission === "default") { try { await Notification.requestPermission(); } catch (e) { /* declined */ } }
+      chime("deck");
+    }
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", () => { if (!document.hidden) stop(); });
+      document.addEventListener("pointerdown", unlock, { capture: true });
+      document.addEventListener("keydown", unlock, { capture: true });
+    }
+    return { on, set, chime, flash, stop, notify };
+  })();
+
   function room(opts) {
     const { el, sport } = opts;
     const ui = { left: "players", right: "team", sort: { k: "rank", dir: 1 }, f: { q: "", pos: "" }, show: "avail", view: null, bidAmt: null, mobileRight: false };
@@ -504,7 +550,7 @@
       const brand = opts.brand || {};
       const lg = `<a class="lg" href="${esc((opts.exit && opts.exit.href) || "#")}">${brand.mark || ""}<span><b>${esc(d.name || brand.name || "Draft")}</b><small>${esc(F.FORMATS[d.type])}, ${d.teams.length} teams, ${d.rounds} rounds</small></span></a>`;
       const ctl = [];
-      if (me() != null && d.phase !== "done") ctl.push(`<button class="btn sm" data-act="auto" aria-pressed="${!!team(me()).auto}" title="Let the bot draft for you">Autodraft</button>`);
+      if (me() != null && d.phase !== "done") ctl.push(`<button class="btn sm" data-act="alerts" aria-pressed="${alerts.on()}" title="A chime, and a notification while this tab is in the background, when you're up">Alerts</button><button class="btn sm" data-act="auto" aria-pressed="${!!team(me()).auto}" title="Let the bot draft for you">Autodraft</button>`);
       if (canTrade() && d.phase === "live") ctl.push(`<button class="btn sm" data-act="trade">Trade</button>`);
       if (opts.commish && d.phase === "live") ctl.push(`<button class="btn sm" data-act="pause">${d.paused ? "Resume" : "Pause"}</button><button class="btn sm" data-act="undo">Undo</button>`);
       if (opts.commish && d.phase === "setup") ctl.push(`<button class="btn sm go" data-act="start">Start the draft</button>`);
@@ -769,11 +815,25 @@
       keyboardPlayers(el);
       refocus(el, keep.f);
       drawTimer();
-      // say it when you come on the clock (the toast is a live region)
-      if (d.phase === "live" && me() != null && !auction()) {
-        const c = F.onClock(d, now());
-        if (c && c.team === me() && ui.told !== c.index) { ui.told = c.index; toast(c.makeup ? "You were robbed. Pick again." : `You're on the clock: pick ${c.pick}.`); }
-      }
+      // say it when you come on the clock (the toast is a live region), chime, and flash the tab if it's in the
+      // background; a softer chime when you're on deck. Autodraft stays quiet.
+      if (d.phase === "live" && me() != null && !team(me()).auto) {
+        if (!auction()) {
+          const c = F.onClock(d, now());
+          if (c && c.team === me() && ui.told !== c.index) {
+            ui.told = c.index; toast(c.makeup ? "You were robbed. Pick again." : `You're on the clock: pick ${c.pick}.`);
+            alerts.chime("clock"); alerts.flash("Your pick!"); alerts.notify("You're on the clock", `${d.name || "Your draft"}: pick ${plab(c.index)}`);
+          } else if (c && c.team !== me()) {
+            alerts.stop();
+            const next = F.nextPickOf(d, me());
+            if (next != null && next - 1 === c.index + 1 && ui.deck !== next) { ui.deck = next; toast("You're on deck."); alerts.chime("deck"); alerts.notify("You're on deck", `${d.name || "Your draft"}: you pick next`); }
+          }
+        } else {
+          const st = F.auctionState(d, now()), k = (d.sales || []).length;
+          if (st && st.kind === "nominate" && st.team === me() && ui.nomTold !== k) { ui.nomTold = k; toast("Your nomination."); alerts.chime("clock"); alerts.flash("Your nomination!"); alerts.notify("Your nomination", d.name || "Your draft"); }
+          else if (!(st && st.kind === "nominate" && st.team === me())) alerts.stop();
+        }
+      } else alerts.stop();
       if (opts.onChange) opts.onChange(d);
     }
     function drawTimer() {
@@ -872,6 +932,7 @@
           else if (a === "pass") act(() => F.pass(d, ctx, me(), n));
           else if (a === "bid") { const v = +($("#fk-bid", el) || {}).value; act(() => F.bid(d, ctx, me(), v, n)); }
           else if (a === "trade") openTrade();
+          else if (a === "alerts") { const v = !alerts.on(); alerts.set(v).then(() => { toast(v ? (typeof Notification !== "undefined" && Notification.permission === "denied" ? "Alerts on. Your browser blocks notifications, so you'll get the chime and tab only." : "Alerts on: a chime, and a notification when this tab is in the background.") : "Alerts off."); render(); }); }
           else if (a === "auto") { const t = team(me()); t.auto = !t.auto; if (t.auto) toast("Autodraft is on: the bot picks for you."); save(); render(); }
         }
         return;
