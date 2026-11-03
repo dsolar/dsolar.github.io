@@ -14,7 +14,7 @@
   let sent = null, busy = false, view = "list";
   const form = { sport: "nfl", teams: 10, type: "snake", clock: 90, season: "h2h", weeks: 14, trades: 1, scoring: "",
     lineup: "", bench: null, playoffs: 4, deadline: null, review: "vote", faab: null, waiverHours: 36,
-    weights: null, cats: null, waivers: "faab", ir: 1, maxAdds: 0, posMax: {}, keepers: 0, keeperCost: "round", legs: "1", cons: "none", median: 0, bestball: 0, divs: 0, rookie: 3, fpicks: 1, ohold: "clock" };
+    weights: null, cats: null, waivers: "faab", ir: 1, maxAdds: 0, posMax: {}, keepers: 0, keeperCost: "round", legs: "1", cons: "none", median: 0, bestball: 0, divs: 0, rookie: 3, fpicks: 1, taxi: 2, ohold: "clock" };
   // scoring: a preset key, or "cp" (custom points) / "cc" (custom categories)
   const isCustom = () => form.scoring === "cp" || form.scoring === "cc";
   const scoringType = (sp) => (form.scoring === "cp" ? "points" : form.scoring === "cc" ? "cats" : (sp.scorings[form.scoring] || Object.values(sp.scorings)[0]).type);
@@ -188,6 +188,7 @@
       <div class="row3">
         <div class="field"><label for="n-kp">What carries over</label><select id="n-kp" data-f="keepers">${[0, 1, 2, 3, 4, 5, 6, 8].map((x) => opt(x, x ? `Keep up to ${x}` : "Redraft: nobody carries over", form.keepers)).join("")}${form.season === "guillotine" ? "" : opt(-1, "Dynasty: keep everyone", form.keepers)}</select></div>
         ${form.keepers === -1 ? `<div class="field"><label for="n-rk">Rookie draft</label><select id="n-rk" data-f="rookie">${[2, 3, 4, 5].map((x) => opt(x, `${x} rounds, worst team first`, form.rookie)).join("")}</select></div>
+        <div class="field"><label for="n-tx">Taxi squad</label><select id="n-tx" data-f="taxi">${[0, 1, 2, 3, 4, 5].map((x) => opt(x, x ? `${x} spot${x > 1 ? "s" : ""} for rookies` : "None", form.taxi)).join("")}</select></div>
         <div class="field"><label for="n-fp">Trade future picks</label><select id="n-fp" data-f="fpicks">${opt(1, "Yes: next season's picks", form.fpicks)}${opt(0, "No", form.fpicks)}</select></div>` : form.keepers > 0 ? `<div class="field"><label for="n-kc">A keeper costs</label><select id="n-kc" data-f="keeperCost">${(form.type === "auction" ? [["price", "What he went for"], ["price5", "What he went for, plus $5"]] : [["round", "The round he went in"], ["round1", "One round earlier"], ["free", "A last-round pick"]]).map(([v, l]) => opt(v, l, kc())).join("")}</select></div>
         <div class="field"><label>Keeper rules</label><p class="ps" style="margin:6px 0 0">Worst team picks first. Pickups cost ${form.type === "auction" ? "$5" : "the last round"}.</p></div>` : ""}
       </div>`;
@@ -204,7 +205,7 @@
     const f = $("#new"); if (!f) return;
     form.name = $("#n-name").value; form.me = $("#n-me").value; form.team = $("#n-team").value;
     const s = f.querySelector("input[name=sport]:checked"); if (s) form.sport = s.value;
-    f.querySelectorAll("[data-f]").forEach((el) => { form[el.dataset.f] = /^(teams|clock|weeks|trades|bench|faab|playoffs|deadline|waiverHours|ir|maxAdds|keepers|median|bestball|divs|rookie|fpicks)$/.test(el.dataset.f) ? Number(el.value) : el.value; });
+    f.querySelectorAll("[data-f]").forEach((el) => { form[el.dataset.f] = /^(teams|clock|weeks|trades|bench|faab|playoffs|deadline|waiverHours|ir|maxAdds|keepers|median|bestball|divs|rookie|fpicks|taxi)$/.test(el.dataset.f) ? Number(el.value) : el.value; });
     f.querySelectorAll("[data-w]").forEach((el) => { form.weights = form.weights || {}; form.weights[el.dataset.w] = Number(el.value) || 0; });
     f.querySelectorAll("[data-pm]").forEach((el) => { form.posMax[el.dataset.pm] = Number(el.value) || 0; });
   }
@@ -255,7 +256,7 @@
         faab: form.faab == null ? (gl ? 1000 : 100) : form.faab, ir: form.ir, maxAdds: form.maxAdds || 0,
         posMax: Object.fromEntries(Object.entries(form.posMax).filter(([, v]) => v)) };
       if (form.keepers > 0) Object.assign(D.season, { keepers: form.keepers, keeperCost: kc() });
-      if (form.keepers === -1 && !gl) D.season.dynasty = { rounds: form.rookie || 3, picks: form.fpicks !== 0 };
+      if (form.keepers === -1 && !gl) { D.season.dynasty = { rounds: form.rookie || 3, picks: form.fpicks !== 0 }; if (form.taxi) D.season.taxi = form.taxi; }
       if (!gl && form.bestball) D.season.bestBall = true;
       if (form.season === "h2h" && form.median) D.season.median = true;
       if (fmt !== "roto" && !gl && form.divs && n >= 2 * form.divs) D.season.divisions = form.divs;

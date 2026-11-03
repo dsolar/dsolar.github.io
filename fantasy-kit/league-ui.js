@@ -326,7 +326,7 @@
       return `<div class="wrap page"><div class="head"><h1 class="disp">League settings</h1></div><div class="cols2">
         <div class="card"><div class="mod-h"><h2>Format</h2></div><div class="bd"><dl class="kv"><dt>Sport</dt><dd>${esc(sport.name)}</dd><dt>Scoring</dt><dd>${esc(sc().label)}</dd><dt>Stats</dt><dd>${s.real ? `Real box scores${(opts.hooks || {}).real ? ` from ${esc(opts.hooks.real.source)}` : ""}. A week closes once its last games are in` : "Simulated from each player's season"}</dd><dt>Teams</dt><dd>${L().teams.length}</dd><dt>Format</dt><dd>${gl() ? `Guillotine: the lowest score each week is chopped${s.chops > 1 ? ` (${s.chops} a week)` : ""}. On a tie, the lower projection goes` : roto() ? "Rotisserie: season totals in each category, ranked" : s.tally === "cats" ? "Head to head: each category is a win or a loss" : s.tally === "allplay" ? "All-play: each week, your score against every team" : "Head to head"}${bb() ? ", best ball" : ""}${s.median ? ", plus a game each week against the league median" : ""}</dd>${L().divs ? `<dt>Divisions</dt><dd>${L().divNames.map((nm, k) => `${esc(nm)}: ${L().teams.filter((t) => L().divs[t.id] === k).map((t) => esc(t.name)).join(", ")}`).join("<br>")}</dd>` : ""}
           <dt>Season</dt><dd>${gl() ? `${s.weeks} weeks, until one team is left` : s.playoffTeams ? playoffLine(s) : `${s.weeks} weeks, no playoffs: first place wins`}</dd>${s.trades === false ? `<dt>Trades</dt><dd>None</dd>` : `<dt>Trade deadline</dt><dd>${s.deadline ? `After week ${s.deadline}` : "None"}</dd><dt>Trade review</dt><dd>${s.tradeReview === "none" ? "None" : `${fmtHours(s.reviewHours)}, ${Math.round(s.vetoShare * 100)}% of the league to veto`}</dd><dt>Offers</dt><dd>Expire after ${fmtHours(s.offerHours || 48)}</dd>`}</dl></div></div>
-        <div class="stack"><div class="card"><div class="mod-h"><h2>Rosters</h2></div><div class="bd"><dl class="kv"><dt>Starters</dt><dd>${s.lineup.map((x) => `<span class="slot" style="margin:0 3px 3px 0">${esc(x)}</span>`).join("")}</dd><dt>Bench</dt><dd>${s.bench}</dd><dt>IR spots</dt><dd>${s.ir || "None"}</dd>${s.maxAdds ? `<dt>Pickups</dt><dd>Up to ${s.maxAdds} a week, counting adds and won claims</dd>` : ""}${s.posMax && Object.keys(s.posMax).length ? `<dt>Position limits</dt><dd>${Object.entries(s.posMax).map(([k, v]) => `${v} ${esc(k)}`).join(", ")}</dd>` : ""}<dt>Lineups</dt><dd>${bb() ? "Best ball: set automatically" : "Set each week"}</dd>${s.dynasty ? `<dt>Dynasty</dt><dd>Every roster carries over. Each new season opens with a ${s.dynasty.rounds}-round rookie and free agent draft, worst team first${s.dynasty.picks !== false ? ", and next season's picks can be traded" : ""}.</dd>` : s.keepers ? `<dt>Keepers</dt><dd>Up to ${s.keepers}, costing ${{ round: "the round he went in", round1: "one round earlier than he went", free: "a last-round pick", price: "what he went for", price5: "what he went for plus $5" }[s.keeperCost] || "the round he went in"}</dd>` : ""}<dt>Waivers</dt><dd>${s.waivers === "faab" ? `${s.faabBank ? `FAAB from the draft's time bank, $${Math.round(s.faab / 2)} to $${Math.round(s.faab * 1.5)}` : `$${s.faab} FAAB`}${gl() ? " for the whole season" : ""}, ${s.waiverAt != null ? `claims run ${Math.round(s.waiverAt / 24 * 10) / 10} days into each week` : `${s.waiverHours} hours after a drop`}` : "Rolling priority"}</dd><dt>Waiver order</dt><dd>${s.waivers === "faab" ? "The highest bid wins. On a tie, the better waiver priority wins" : "The best waiver priority wins"}. Winning a claim sends you to the back of the line, even within the same run.</dd></dl></div></div>
+        <div class="stack"><div class="card"><div class="mod-h"><h2>Rosters</h2></div><div class="bd"><dl class="kv"><dt>Starters</dt><dd>${s.lineup.map((x) => `<span class="slot" style="margin:0 3px 3px 0">${esc(x)}</span>`).join("")}</dd><dt>Bench</dt><dd>${s.bench}</dd><dt>IR spots</dt><dd>${s.ir || "None"}</dd>${s.maxAdds ? `<dt>Pickups</dt><dd>Up to ${s.maxAdds} a week, counting adds and won claims</dd>` : ""}${s.posMax && Object.keys(s.posMax).length ? `<dt>Position limits</dt><dd>${Object.entries(s.posMax).map(([k, v]) => `${v} ${esc(k)}`).join(", ")}</dd>` : ""}<dt>Lineups</dt><dd>${bb() ? "Best ball: set automatically" : "Set each week"}</dd>${s.dynasty ? `<dt>Dynasty</dt><dd>Every roster carries over. Each new season opens with a ${s.dynasty.rounds}-round rookie and free agent draft, worst team first${s.dynasty.picks !== false ? ", and next season's picks can be traded" : ""}.</dd>${s.dynasty && s.taxi ? `<dt>Taxi squad</dt><dd>${s.taxi} spot${s.taxi > 1 ? "s" : ""} for rookies and rookie-draft picks, off the roster limit. They can't start, and a promotion is for good.</dd>` : ""}` : s.keepers ? `<dt>Keepers</dt><dd>Up to ${s.keepers}, costing ${{ round: "the round he went in", round1: "one round earlier than he went", free: "a last-round pick", price: "what he went for", price5: "what he went for plus $5" }[s.keeperCost] || "the round he went in"}</dd>` : ""}<dt>Waivers</dt><dd>${s.waivers === "faab" ? `${s.faabBank ? `FAAB from the draft's time bank, $${Math.round(s.faab / 2)} to $${Math.round(s.faab * 1.5)}` : `$${s.faab} FAAB`}${gl() ? " for the whole season" : ""}, ${s.waiverAt != null ? `claims run ${Math.round(s.waiverAt / 24 * 10) / 10} days into each week` : `${s.waiverHours} hours after a drop`}` : "Rolling priority"}</dd><dt>Waiver order</dt><dd>${s.waivers === "faab" ? "The highest bid wins. On a tie, the better waiver priority wins" : "The best waiver priority wins"}. Winning a claim sends you to the back of the line, even within the same run.</dd></dl></div></div>
         ${sc().cats ? `<div class="card"><div class="mod-h"><h2>Categories</h2></div><div class="bd">${sc().cats.map((c) => `<span class="slot" style="margin:0 4px 4px 0">${esc(c.label)}</span>`).join("")}<p class="ps">${gl() ? "Each week, teams are ranked in every category: the best gets one point per team alive, the worst gets one. Lowest total is chopped." : "Head to head: win more categories than your opponent to win the week."}</p></div></div>` : ""}
       </div></div></div>`;
     }
@@ -527,8 +527,8 @@
       };
       const wk = G.WEEK[sport.key] || { weeks: 20 };
       const projOf = (p) => (pts() ? p.v / wk.weeks : null);
-      const ir = L().ir[id] || [], irMax = G.irSlots(L()), alive = G.isAlive(L(), id);
-      const moving = ui.moving && L().rosters[id].includes(ui.moving) && !ir.includes(ui.moving) ? ctx.byId[ui.moving] : null;
+      const ir = L().ir[id] || [], irMax = G.irSlots(L()), alive = G.isAlive(L(), id), taxi = G.taxiOf(L(), id), txMax = G.taxiSlots(L());
+      const moving = ui.moving && L().rosters[id].includes(ui.moving) && !G.held(L(), id).includes(ui.moving) ? ctx.byId[ui.moving] : null;
       const movingSlot = moving ? lu.indexOf(moving.id) : -1;
       const locked = G.lineupLocked(L(), w, now()) || bb() || !alive;
       const fitsSlot = (i) => moving && i != null && S.fits(sport, moving, slots[i]);
@@ -538,30 +538,33 @@
         if (i != null) return fitsSlot(i) ? `<button class="btn xs go" data-here="${i}">${p ? "Swap" : "Move here"}</button>` : "";
         return p && movingSlot >= 0 && S.fits(sport, p, slots[movingSlot]) ? `<button class="btn xs go" data-swapb="${esc(p.id)}" data-slot="${movingSlot}">Swap</button>` : "";
       };
-      const actsFor = (p, onIR) => {
+      const actsFor = (p, onIR, onTaxi) => {
         if (!p) return "";
+        if (onTaxi) return mine && alive && !over() ? `<button class="btn xs go" data-promote="${esc(p.id)}" title="Move up to the active roster for good">Promote</button>` : !mine && canTrade() ? `<button class="btn icon trade" data-trade="${id}" data-want="${esc(p.id)}" aria-label="Trade for ${esc(p.n)}" title="Trade for">&#8644;</button>` : "";
         if (!mine) return canTrade() ? `<button class="btn icon trade" data-trade="${id}" data-want="${esc(p.id)}" aria-label="Trade for ${esc(p.n)}" title="Trade for">&#8644;</button>` : "";
         if (!alive || over()) return "";
         if (onIR) return `<button class="btn xs${G.irEligible(p) ? "" : " go"}" data-activate="${esc(p.id)}">Activate</button>`;
         if (moving) return "";
         const irBtn = G.irEligible(p) && ir.length < irMax ? `<button class="btn xs" data-toir="${esc(p.id)}" title="Move to injured reserve">IR</button> ` : "";
-        return `${irBtn}${!locked ? `<button class="btn xs hide-s" data-move="${esc(p.id)}">Move</button>` : ""} <button class="btn icon drop hide-s" data-drop="${esc(p.id)}" aria-label="Drop ${esc(p.n)}" title="Drop">&minus;</button>`;
+        const txBtn = txMax && taxi.length < txMax && !lu.includes(p.id) && G.taxiEligible(L(), ctx, p.id) ? `<button class="btn xs" data-totaxi="${esc(p.id)}" title="Stash him on the taxi squad">Taxi</button> ` : "";
+        return `${irBtn}${txBtn}${!locked ? `<button class="btn xs hide-s" data-move="${esc(p.id)}">Move</button>` : ""} <button class="btn icon drop hide-s" data-drop="${esc(p.id)}" aria-label="Drop ${esc(p.n)}" title="Drop">&minus;</button>`;
       };
       const blocked = new Set(L().settings.trades === false ? [] : G.blockOf(L(), ctx, id));
-      const row = (slotLabel, p, i, onIR) => {
-        const can = mine && !locked && p && !onIR;
+      const row = (slotLabel, p, i, onIR, onTaxi) => {
+        const can = mine && !locked && p && !onIR && !onTaxi;
         const tgt = targetFor(p, i);
         const on = fitsSlot(i) ? " on" : "";
         const slotEl = can ? `<button type="button" class="slot slotbtn${on}" data-move="${moving && p === moving ? "" : esc(p.id)}" title="${moving && p === moving ? "Cancel the move" : `Move ${esc(p.n)}`}">${esc(slotLabel)}</button>`
           : `<span class="slot${on}${onIR ? " ir" : ""}">${esc(slotLabel)}</span>`;
         const cls = [moving && p === moving ? "me" : "", tgt ? "tgt" : "", onIR ? "irrow" : ""].filter(Boolean).join(" ");
-        return `<tr class="${cls}"><td class="c" style="width:70px">${slotEl}</td><td class="nm">${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, `${esc(p.prank)}${onIR && !G.irEligible(p) ? `, <span class="win">healthy</span>` : ""}${blocked.has(p.id) ? `, <span class="blk-tag">on the block</span>` : ""}`)}</span>` : `<span class="ps">${onIR ? "Open for a player who's out or on IR" : "Empty"}</span>`}</td>
-          <td class="r num hide-s">${p ? `<span class="ps">#${p.rank}</span>` : ""}</td><td class="r num">${p && pts() && !onIR ? `<b>${fmtS(ptsOf(p.id))}</b>` : p && !onIR ? `<b>${p.v.toFixed(1)}</b>` : ""}</td><td class="r num hide-s">${p && pts() && !onIR ? fmtS(projOf(p)) : ""}</td>
-          <td class="r act">${tgt || actsFor(p, onIR)}</td></tr>`;
+        return `<tr class="${cls}"><td class="c" style="width:70px">${slotEl}</td><td class="nm">${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, `${esc(p.prank)}${onIR && !G.irEligible(p) ? `, <span class="win">healthy</span>` : ""}${blocked.has(p.id) ? `, <span class="blk-tag">on the block</span>` : ""}`)}</span>` : `<span class="ps">${onIR ? "Open for a player who's out or on IR" : onTaxi ? "Open for a rookie" : "Empty"}</span>`}</td>
+          <td class="r num hide-s">${p ? `<span class="ps">#${p.rank}</span>` : ""}</td><td class="r num">${p && pts() && !onIR && !onTaxi ? `<b>${fmtS(ptsOf(p.id))}</b>` : p && !onIR && !onTaxi ? `<b>${p.v.toFixed(1)}</b>` : ""}</td><td class="r num hide-s">${p && pts() && !onIR && !onTaxi ? fmtS(projOf(p)) : ""}</td>
+          <td class="r act">${tgt || actsFor(p, onIR, onTaxi)}</td></tr>`;
       };
       const starters = slots.map((s, i) => row(s, lu[i] ? ctx.byId[lu[i]] : null, i, false)).join("");
-      const benchIds = L().rosters[id].filter((x) => !lu.includes(x) && !ir.includes(x));
+      const benchIds = L().rosters[id].filter((x) => !lu.includes(x) && !ir.includes(x) && !taxi.includes(x));
       const bench = benchIds.map((x) => ctx.byId[x]).filter(Boolean).sort((a, b) => a.rank - b.rank).map((p) => row("BN", p, null, false)).join("") || `<tr><td colspan="6" class="empty">No one on the bench.</td></tr>`;
+      const txRows = txMax ? taxi.map((x) => row("TX", ctx.byId[x], null, false, true)).join("") + Array.from({ length: Math.max(0, txMax - taxi.length) }, () => row("TX", null, null, false, true)).join("") : "";
       const irRows = irMax ? ir.map((x) => row("IR", ctx.byId[x], null, true)).join("") + Array.from({ length: Math.max(0, irMax - ir.length) }, () => row("IR", null, null, true)).join("") : "";
       const weeks = [curWeek()].concat(curWeek() < G.totalWeeks(L()) ? [curWeek() + 1] : []);
       const claims = mine ? L().claims.filter((c) => c.team === id && c.status === "open") : [];
@@ -574,21 +577,21 @@
         ${gl() && !alive ? `<div class="banner loss"><b>Chopped in week ${(L().chopped.find((c) => c.team === id) || {}).week}.</b> <span class="muted">This roster went back on waivers.</span></div>` : ""}
         ${claims.length ? `<div class="card"><div class="mod-h"><h2>Pending waiver claims</h2><span class="ps">${esc(claimsRun())}</span><a href="#players/claims">All claims</a></div>${claimList(claims)}</div>` : ""}
         <div class="table-wrap"><table class="t roster"><thead><tr><th class="c">Slot</th><th>Player</th><th class="r hide-s">Rank</th><th class="r">${pts() ? "Pts" : "Value"}</th><th class="r hide-s">${pts() ? "Proj" : ""}</th><th class="act"></th></tr></thead><tbody>
-          <tr class="sec"><td colspan="6">Starters</td></tr>${starters}<tr class="sec"><td colspan="6">Bench</td></tr>${bench}${irMax ? `<tr class="sec"><td colspan="6">Injured reserve, ${ir.length} of ${irMax}</td></tr>${irRows}` : ""}</tbody></table></div>
-        ${mine ? `<p class="ps">${bb() ? "Best ball: there's no lineup to set. Each week your best possible lineup scores, picked from what your players actually did." : !alive ? "" : locked ? "This week is locked." : w === L().week && frac(w) > 0 ? `Tap a slot to move a player. Week ${w} is under way; in this demo a change counts for the whole week. Starters left empty score nothing.` : `Tap a slot to move a player. Week ${w} lineups lock when it starts, and starters left empty score nothing.`}${irMax && alive ? " IR spots don't count against your roster." : ""}</p>` : ""}</div>`;
+          <tr class="sec"><td colspan="6">Starters</td></tr>${starters}<tr class="sec"><td colspan="6">Bench</td></tr>${bench}${irMax ? `<tr class="sec"><td colspan="6">Injured reserve, ${ir.length} of ${irMax}</td></tr>${irRows}` : ""}${txMax ? `<tr class="sec"><td colspan="6">Taxi squad, ${taxi.length} of ${txMax}</td></tr>${txRows}` : ""}</tbody></table></div>
+        ${mine ? `<p class="ps">${bb() ? "Best ball: there's no lineup to set. Each week your best possible lineup scores, picked from what your players actually did." : !alive ? "" : locked ? "This week is locked." : w === L().week && frac(w) > 0 ? `Tap a slot to move a player. Week ${w} is under way; in this demo a change counts for the whole week. Starters left empty score nothing.` : `Tap a slot to move a player. Week ${w} lineups lock when it starts, and starters left empty score nothing.`}${irMax && alive ? " IR spots don't count against your roster." : ""}${txMax && alive ? " Neither do taxi spots: stash rookies there, and promote one when he's ready to play. A promotion is for good." : ""}</p>` : ""}</div>`;
     }
     // Pending claims with their bids, each one cancellable.
     function claimList(list) {
       return `<ul class="feed">${list.map((c) => `<li style="grid-template-columns:minmax(0,1fr) auto auto;align-items:center"><div class="what">${U.txLine(sport, "add", ctx.byId[c.add])}${c.drop ? U.txLine(sport, "drop", ctx.byId[c.drop]) : ""}</div><b class="dollar">$${c.bid}</b><button class="btn sm" data-unclaim="${c.id}">Cancel</button></li>`).join("")}</ul>`;
     }
     // Who to drop when a full roster brings a player back from IR.
-    function activateDialog(pid) {
+    function activateDialog(pid, taxi) {
       const mid = me(), p = ctx.byId[pid];
-      const ros = L().rosters[mid].filter((x) => x !== pid && !(L().ir[mid] || []).includes(x)).map((x) => ctx.byId[x]).filter(Boolean).sort((a, b) => a.vor - b.vor);
-      U.dialog(`<div class="pc-h">${U.playerAv(sport, p, "lg")}<div><h3 class="disp">Activate ${esc(p.n)}</h3><div class="ps">Your roster is full, so someone has to go to make room.</div></div></div>
+      const ros = L().rosters[mid].filter((x) => x !== pid && !G.held(L(), mid).includes(x)).map((x) => ctx.byId[x]).filter(Boolean).sort((a, b) => a.vor - b.vor);
+      U.dialog(`<div class="pc-h">${U.playerAv(sport, p, "lg")}<div><h3 class="disp">${taxi ? "Promote" : "Activate"} ${esc(p.n)}</h3><div class="ps">Your roster is full, so someone has to go to make room.</div></div></div>
         <form class="stack"><div class="field"><span class="lbl">Drop</span><div class="table-wrap" style="max-height:44dvh"><table class="t dense droplist"><tbody>${ros.map((q, i) => `<tr><td style="width:28px"><input type="radio" name="drop" value="${esc(q.id)}" id="ad${i}"${i === 0 ? " checked" : ""}></td><td><label for="ad${i}" style="cursor:pointer">${pname(sport, q, esc(q.prank))}</label></td><td class="r ps">#${q.rank}</td></tr>`).join("")}</tbody></table></div></div>
-        <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">Activate and drop</button></div></form>`,
-        (fd) => act(() => G.activate(L(), ctx, mid, pid, fd.get("drop"), now()), `${p.n} is back from IR.`));
+        <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">${taxi ? "Promote" : "Activate"} and drop</button></div></form>`,
+        (fd) => act(() => (taxi ? G.promote : G.activate)(L(), ctx, mid, pid, fd.get("drop"), now()), taxi ? `${p.n} is on the active roster.` : `${p.n} is back from IR.`));
     }
     // Your team's look: name, abbreviation, color and crest, or an uploaded logo.
     function editTeam() {
@@ -656,7 +659,7 @@
       const claims = L().claims.filter((c) => c.team === mid && c.status === "open").length;
       if (claims && !(r.tab === "players" && r.sub === "claims") && !(r.tab === "team" && r.sub === "roster") && !(r.tab === "league" && r.sub === "overview")) items.push(`<a class="alert info" href="#players/claims"><span>${claims} waiver claim${claims === 1 ? "" : "s"} pending. ${esc(claimsRun())}</span><b class="go">See claims</b></a>`);
       if (!bb() && !over() && G.isAlive(L(), mid) && !(r.tab === "team" && r.sub === "roster")) {
-        const lu = G.lineupFor(L(), ctx, mid, curWeek()), ir = L().ir[mid] || [];
+        const lu = G.lineupFor(L(), ctx, mid, curWeek()), ir = G.held(L(), mid);
         const bench = L().rosters[mid].filter((x) => !lu.includes(x) && !ir.includes(x)).map((x) => ctx.byId[x]).filter(Boolean);
         const open = L().settings.lineup.filter((sl, i) => !lu[i] && bench.some((p) => S.fits(sport, p, sl)));
         const named = Object.entries(open.reduce((m, x) => ((m[x] = (m[x] || 0) + 1), m), {})).map(([k, n]) => (n > 1 ? `${n} ${k}` : k));
@@ -796,7 +799,7 @@
       const t0 = other != null ? other : teams.find((t) => t.id !== mid).id;
       U.tradeWindow({ sport, teams, me: mid, other: t0, roster, title: prefill && prefill.counterOf ? "Counteroffer" : "Propose a trade",
         value: (ps, faab) => G.sideValue(ctx, ps.map((p) => p.id), faab), faab: (id) => T(id).faab,
-        roomFor: (tr) => Math.max(0, L().rosters[mid].length - tr.give.length + tr.get.length - G.maxRoster(L()) - (L().ir[mid] || []).filter((x) => !tr.give.includes(x)).length),
+        roomFor: (tr) => Math.max(0, L().rosters[mid].length - tr.give.length + tr.get.length - G.maxRoster(L()) - G.held(L(), mid).filter((x) => !tr.give.includes(x)).length),
         check: (tr) => G.tradeCheck(L(), ctx, Object.assign({ dropsTo: [] }, tr)),
         prefill: prefill || (want ? { get: [want] } : null),
         picks: G.pickRounds(L()) ? (id) => G.picksOf(L(), id).map(pickVM) : null,
@@ -879,7 +882,7 @@
     function addDialog(pid) {
       const mid = me(), p = ctx.byId[pid];
       const onW = G.onWaivers(L(), pid, now());
-      const irs = L().ir[mid] || [];
+      const irs = G.held(L(), mid);
       const full = L().rosters[mid].length - irs.length >= G.maxRoster(L());
       const ros = L().rosters[mid].filter((x) => !irs.includes(x)).map((x) => ctx.byId[x]).sort((a, b) => a.vor - b.vor);
       if (L().settings.maxAdds && G.pickupsLeft(L(), mid) <= 0) { U.toast(`You've used all ${L().settings.maxAdds} pickups this week`, true); return; }
@@ -998,13 +1001,15 @@
     opts.el.addEventListener("click", (e) => {
       const mb = e.target.closest("[data-more]");
       if (mb) { ui.plimit = (ui.plimit || 250) + 250; render(); return; }
-      const b = e.target.closest("[data-unblock],[data-editteam],[data-toir],[data-activate],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],th[data-sort]");
+      const b = e.target.closest("[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],th[data-sort]");
       if (b) {
         e.preventDefault(); e.stopPropagation();
         const d = b.dataset, mid = me();
         if (d.unblock) act(() => G.setBlock(L(), mid, d.unblock, false), `${ctx.byId[d.unblock].n} is off the block.`);
         else if (b.hasAttribute("data-editteam")) editTeam();
         else if (d.toir) act(() => G.toIR(L(), ctx, mid, d.toir, now()), `${ctx.byId[d.toir].n} is on IR. His roster spot is open.`);
+        else if (d.totaxi) act(() => G.toTaxi(L(), ctx, mid, d.totaxi, now()), `${ctx.byId[d.totaxi].n} is on the taxi squad. His roster spot is open.`);
+        else if (d.promote) { const r = G.promote(L(), ctx, mid, d.promote, null, now()); if (r.needDrop) activateDialog(d.promote, true); else if (!r.ok) U.toast(r.why, true); else { save(); U.toast(`${ctx.byId[d.promote].n} is on the active roster.`); render(); } }
         else if (d.activate) { const r = G.activate(L(), ctx, mid, d.activate, null, now()); if (r.needDrop) activateDialog(d.activate); else if (!r.ok) U.toast(r.why, true); else { save(); U.toast(`${ctx.byId[d.activate].n} is back from IR.`); render(); } }
         else if (d.swapb) { const w = ui.week && ui.week >= L().week ? ui.week : curWeek(); ui.moving = null; act(() => G.move(L(), ctx, mid, w, d.swapb, +d.slot, now())); }
         else if (d.add) addDialog(d.add);

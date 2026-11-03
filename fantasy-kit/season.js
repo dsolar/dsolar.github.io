@@ -46,6 +46,7 @@
     if (s.bestBall && s.format !== "guillotine") settings.bestBall = true;
     if (s.divisions) settings.divisions = s.divisions;
     if (s.dynasty) settings.dynasty = { rounds: s.dynasty.rounds || 3, picks: s.dynasty.picks !== false };
+    if (s.dynasty && s.taxi) settings.taxi = Math.max(0, Math.min(6, s.taxi | 0));
     // keepers: how many each team carries into next season, and what each one costs
     if (s.keepers) { settings.keepers = s.keepers; settings.keeperCost = s.keeperCost || (D.type === "auction" ? "price" : "round"); }
     // a draft that ran out on the clock while nobody was around is "done" in the past; start after now, not then
@@ -290,6 +291,8 @@
     D.season = D0.season; if (D0.scoringSpec) D.scoringSpec = D0.scoringSpec;
     D.year = (D0.year || 1) + 1;
     D.rookie = true;
+    // taxi squads carry over, and so does who's been promoted off one
+    if (G.taxiSlots(L)) { D.taxi = L.teams.map((t) => G.taxiOf(L, t.id).slice()); D.promoted = Object.assign({}, L.promoted || {}); }
     return D;
   }
   // A finished season in a few lines, for the league's history.

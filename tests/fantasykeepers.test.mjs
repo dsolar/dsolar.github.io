@@ -171,3 +171,56 @@ test('dynasty: picks trade like players, rosters carry over, a short rookie draf
   Z.catchUp(L2, ctx2, L2.start + 1);
   assert.ok(L2.rosters.every((r, i) => r.length - (L2.ir[i] || []).length <= max), 'everyone is at the limit by week 1');
 });
+
+test('taxi squads: rookies stash off the roster, promote for good, carry into next season', () => {
+  const s = finished('nfl', { format: 'h2h', weeks: 3, playoffTeams: 2, dynasty: { rounds: 3, picks: true }, taxi: 2 });
+  const { L, ctx, sport } = s;
+  assert.equal(L.settings.taxi, 2);
+  assert.equal(G.taxiSlots(L), 2);
+  // rewind so moves are open, and hand team 0 a rookie it can stash
+  const week = L.week; L.week = 2;
+  const rookie = ctx.free.find((p) => p.rk && !G.onWaivers(L, p.id, 0));
+  assert.ok(rookie, 'the data flags rookies');
+  const vet = ctx.free.find((p) => !p.rk && !G.onWaivers(L, p.id, 0));
+  const drop = L.rosters[0].filter((x) => !G.held(L, 0).includes(x)).sort((a, b) => ctx.byId[a].vor - ctx.byId[b].vor)[0];
+  assert.ok(G.addDrop(L, ctx, 0, rookie.id, drop, 0).ok);
+  const size = L.rosters[0].length;
+  assert.match(G.toTaxi(L, ctx, 0, L.rosters[0].find((x) => !ctx.byId[x].rk), 0).why, /Only rookies/);
+  assert.ok(G.toTaxi(L, ctx, 0, rookie.id, 0).ok);
+  assert.ok(G.taxiOf(L, 0).includes(rookie.id));
+  assert.ok(!G.lineupFor(L, ctx, 0, L.week).includes(rookie.id), "a taxi player can't start");
+  // the taxi spot frees a roster spot: a vet comes in with no drop
+  assert.ok(G.addDrop(L, ctx, 0, vet.id, null, 0).ok, 'room for one more');
+  assert.equal(L.rosters[0].length, size + 1);
+  assert.equal(G.overLimit(L, 0), 0);
+  const lu = G.lineupFor(L, ctx, 0, L.week).slice(); lu[0] = rookie.id;
+  assert.match(G.setLineup(L, ctx, 0, L.week, lu, 0).why || '', /taxi squad|can't play/);
+  // promoting needs a spot now; with a drop it goes through and he can't go back
+  for (const p of ctx.free.filter((x) => !G.onWaivers(L, x.id, 0) && !x.rk)) { if (L.rosters[0].length - G.held(L, 0).length >= G.maxRoster(L)) break; G.addDrop(L, ctx, 0, p.id, null, 0); }
+  const r = G.promote(L, ctx, 0, rookie.id, null, 0);
+  assert.ok(r.needDrop);
+  const cut = L.rosters[0].filter((x) => !G.held(L, 0).includes(x)).sort((a, b) => ctx.byId[a].vor - ctx.byId[b].vor)[0];
+  assert.ok(G.promote(L, ctx, 0, rookie.id, cut, 0).ok);
+  assert.match(G.toTaxi(L, ctx, 0, rookie.id, 0).why, /promoted/);
+  L.week = week;
+  // next season: taxi squads carry, rookie-draft picks are eligible, bots stash before they cut
+  const other = ctx.free.find((p) => p.rk);
+  L.rosters[2].push(other.id); L.taxi[2].push(other.id); G.refresh(L, ctx);
+  const D2 = Z.nextDraft(L, ctx, sport, {}, { now: Date.UTC(2027, 7, 1), seed: 0.4 });
+  assert.ok(D2.taxi[2].includes(other.id));
+  const players = s.players.map((p) => ({ ...p }));
+  let t = Date.UTC(2027, 7, 1); F.start(D2, t);
+  const c2 = F.context(D2, players, sport);
+  for (let i = 0; i < 5000 && D2.phase === 'live'; i++) { t += 3000; F.tick(D2, c2, t); }
+  const L2 = Z.begin(D2, sport, { now: t });
+  const ctx2 = G.context(L2, players, sport);
+  assert.equal(L2.settings.taxi, 2);
+  assert.ok(L2.taxi[2].includes(other.id), 'the stashed rookie is still stashed');
+  assert.ok(L2.promoted[rookie.id], 'promotions are remembered');
+  const drafted = D2.board.filter(Boolean)[0].pid;
+  assert.ok(G.taxiEligible(L2, ctx2, drafted), 'a rookie-draft pick can go on the taxi squad');
+  Z.catchUp(L2, ctx2, L2.start + 1);
+  const max = L2.settings.lineup.length + L2.settings.bench;
+  assert.ok(L2.rosters.every((r, i) => r.length - G.held(L2, i).length <= max));
+  assert.ok(L2.taxi.some((x) => x.length), 'someone used a taxi spot instead of cutting');
+});
