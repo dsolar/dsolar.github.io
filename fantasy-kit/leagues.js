@@ -12,7 +12,10 @@
   const SPORT_CLR = { nba: 4, nfl: 2, mlb: 0 };
   const BLURB = { nba: "Points or categories", nfl: "PPR, half or standard", mlb: "Roto or points" };
   let sent = null, busy = false, view = "list";
-  const form = { sport: "nfl", teams: 10, type: "snake", clock: 90, season: "h2h", weeks: 14, trades: 1, scoring: "" };
+  const form = { sport: "nfl", teams: 10, type: "snake", clock: 90, season: "h2h", weeks: 14, trades: 1, scoring: "",
+    lineup: "", bench: null, playoffs: 4, deadline: null, review: "vote", faab: null, waiverHours: 36 };
+  // the sport's standard lineup, without slots its player pool can't fill
+  const lineupOf = (sp) => (form.lineup ? form.lineup.split(" ") : sp.lineup.slice()).filter((x) => sp.slots[x] && x !== "BN");
   if (S.ALL[params.get("s")]) { form.sport = params.get("s"); view = "new"; }
 
   function header() {
@@ -93,21 +96,41 @@
         <div class="row3">
           <div class="field"><label for="n-scoring">Scoring</label><select id="n-scoring" data-f="scoring">${Object.entries(sp.scorings).map(([k, s]) => opt(k, s.label.replace(/ \(.*\)$/, ""), scoring)).join("")}</select></div>
           <div class="field"><label for="n-season">Season</label><select id="n-season" data-f="season">${opt("h2h", "Head to head", form.season)}${opt("guillotine", "Best ball guillotine", form.season)}</select></div>
-          ${form.season === "h2h" ? `<div class="field"><label for="n-weeks">Weeks before playoffs</label><select id="n-weeks" data-f="weeks">${[8, 10, 12, 14, 16].map((n) => opt(n, `${n} weeks`, form.weeks)).join("")}</select></div>`
+          ${form.season === "h2h" ? `<div class="field"><label for="n-weeks">${form.playoffs ? "Weeks before playoffs" : "Season length"}</label><select id="n-weeks" data-f="weeks">${[8, 10, 12, 14, 16].map((n) => opt(n, `${n} weeks`, form.weeks)).join("")}</select></div>`
             : `<div class="field"><label>Weeks</label><p class="ps" style="margin:6px 0 0">${form.teams - 1}: the lowest score is chopped each week</p></div>`}
         </div>
+        ${rulesFields(sp)}
         ${!auction && form.type !== "mystery" && form.type !== "elephant" ? `<div class="row3"><div class="field"><label for="n-trades">Trades during the draft</label><select id="n-trades" data-f="trades">${opt(1, "Picks and players", form.trades)}${opt(0, "Off", form.trades)}</select></div></div>` : ""}
         <p class="ps" style="margin:0">Teams nobody has claimed draft on their own. Anyone with the invite link can take one over, even after the draft. ${form.clock >= 3600 ? "In a slow draft, managers who turn on email alerts get one when they're on the clock." : "If someone's clock runs out, the best player left is taken for them."}</p>
         <p class="ps" id="n-why" role="alert" style="margin:0;color:var(--loss)"></p>
         <div class="row"><button class="btn go" type="submit"${busy ? " disabled" : ""}>${busy ? "Making the league…" : "Make the league"}</button><button class="btn ghost" type="button" data-a="list">Cancel</button></div>
       </div></form>`;
   }
+  // Lineup, bench, budget, and the head to head rules: playoffs, the trade deadline and trade review.
+  function rulesFields(sp) {
+    const opt = (v, l, cur) => `<option value="${esc(v)}"${String(v) === String(cur) ? " selected" : ""}>${esc(l)}</option>`;
+    const gl = form.season === "guillotine", n = form.teams;
+    const bench = form.bench == null ? sp.bench : form.bench, faab = form.faab == null ? (gl ? 1000 : 100) : form.faab;
+    const po = Math.min(form.playoffs, n - (n % 2)), dl = form.deadline == null ? Math.max(1, form.weeks - 3) : form.deadline;
+    return `<fieldset class="rules"><legend>Starting lineup</legend>${U.lineupBuilder(sp, lineupOf(sp))}</fieldset>
+      <div class="row3">
+        <div class="field"><label for="n-bench">Bench spots</label><select id="n-bench" data-f="bench">${[2, 3, 4, 5, 6, 7, 8, 10].map((x) => opt(x, x, bench)).join("")}</select></div>
+        <div class="field"><label for="n-faab">FAAB budget</label><select id="n-faab" data-f="faab">${[100, 200, 500, 1000].map((x) => opt(x, `$${x}${gl ? " for the season" : ""}`, faab)).join("")}</select></div>
+        ${gl ? `<div class="field"><label>Waivers</label><p class="ps" style="margin:6px 0 0">Run midweek, 60 hours in, so a chopped roster is back in play</p></div>`
+          : `<div class="field"><label for="n-wh">Dropped players clear in</label><select id="n-wh" data-f="waiverHours">${[24, 36, 48, 72].map((x) => opt(x, `${x} hours`, form.waiverHours)).join("")}</select></div>`}
+      </div>
+      ${gl ? "" : `<div class="row3">
+        <div class="field"><label for="n-po">Playoff teams</label><select id="n-po" data-f="playoffs">${[0, 2, 4, 8].filter((x) => x <= n - (n % 2)).map((x) => opt(x, x ? `${x} teams` : "No playoffs", po)).join("")}</select></div>
+        <div class="field"><label for="n-dl">Trade deadline</label><select id="n-dl" data-f="deadline">${opt(0, "None", dl)}${Array.from({ length: form.weeks - 1 }, (_, i) => i + 1).map((x) => opt(x, `After week ${x}`, dl)).join("")}</select></div>
+        <div class="field"><label for="n-rv">Trade review</label><select id="n-rv" data-f="review">${opt("vote", "League can veto for 24 hours", form.review)}${opt("none", "None: trades go through", form.review)}</select></div>
+      </div>`}`;
+  }
   // keep what's typed when a choice redraws the form
   function grab() {
     const f = $("#new"); if (!f) return;
     form.name = $("#n-name").value; form.me = $("#n-me").value; form.team = $("#n-team").value;
     const s = f.querySelector("input[name=sport]:checked"); if (s) form.sport = s.value;
-    f.querySelectorAll("[data-f]").forEach((el) => { form[el.dataset.f] = /^(teams|clock|weeks|trades)$/.test(el.dataset.f) ? Number(el.value) : el.value; });
+    f.querySelectorAll("[data-f]").forEach((el) => { form[el.dataset.f] = /^(teams|clock|weeks|trades|bench|faab|playoffs|deadline|waiverHours)$/.test(el.dataset.f) ? Number(el.value) : el.value; });
   }
 
   async function makeLeague() {
@@ -121,19 +144,30 @@
       const data = await r0.json();
       const sport = S.attach(Object.assign({}, S[form.sport]), data);
       const have = new Set(data.players.flatMap((p) => p.pos));
-      const lineup = sport.lineup.filter((s) => sport.slots[s] === "*" || sport.slots[s].some((x) => have.has(x)));
+      const lineup = lineupOf(sport).filter((s) => sport.slots[s] === "*" || sport.slots[s].some((x) => have.has(x)));
+      const bench = form.bench == null ? sport.bench : form.bench;
       const players = data.players.map((p) => Object.assign({}, p));
       const scoring = sport.scorings[form.scoring] ? form.scoring : Object.keys(sport.scorings)[0];
-      const n = form.teams, total = n * (lineup.length + sport.bench);
-      V.evaluate(sport, players, { teams: n, lineup, bench: sport.bench, scoring });
+      const n = form.teams, total = n * (lineup.length + bench);
+      // can the player pool fill it? every one-position slot needs a player per team, and so does every roster spot
+      const need = {};
+      for (const sl of lineup) { const v = sport.slots[sl]; if (v !== "*" && v.length === 1) need[v[0]] = (need[v[0]] || 0) + n; }
+      for (const [pos, k] of Object.entries(need)) {
+        const haveN = players.filter((p) => S.positions(p).includes(pos)).length;
+        if (haveN < k) throw new Error(`There aren't enough ${pos} for this lineup: ${n} teams need ${k}, and the pool has ${haveN}.`);
+      }
+      if (total > players.length) throw new Error(`${n} teams with ${lineup.length + bench} roster spots need ${total} players, and the pool has ${players.length}.`);
+      V.evaluate(sport, players, { teams: n, lineup, bench, scoring });
       const auction = form.type === "auction";
-      const D = F.create({ sport, type: form.type, teams: n, seed: Math.floor(Math.random() * 2 ** 31), now: Date.now(), lineup, bench: sport.bench, scoring,
+      const D = F.create({ sport, type: form.type, teams: n, seed: Math.floor(Math.random() * 2 ** 31), now: Date.now(), lineup, bench, scoring,
         botDelay: 3000, clock: auction ? 0 : form.clock, bidClock: auction ? form.clock : 15, nomClock: 30, budget: 200, name: form.name.trim(),
         trades: form.trades !== 0, curve: form.type === "mystery" ? F.pickCurve(players, total) : null, reveal: form.type === "mystery" ? "own" : undefined });
       const tn = form.team.trim() || `${form.me.trim().split(" ")[0]}'s team`;
       D.teams[0].name = tn.slice(0, 28);
       D.teams[0].abbr = tn.replace(/[^A-Za-z0-9 ]/g, "").split(/\s+/).filter(Boolean).map((w) => w[0]).join("").slice(0, 3).toUpperCase() || "YOU";
-      D.season = { format: form.season, weeks: form.weeks };
+      const gl = form.season === "guillotine";
+      D.season = { format: form.season, weeks: form.weeks, faab: form.faab == null ? (gl ? 1000 : 100) : form.faab };
+      if (!gl) Object.assign(D.season, { playoffTeams: Math.min(form.playoffs, n - (n % 2)), deadline: form.deadline == null ? Math.max(1, form.weeks - 3) : form.deadline, review: form.review, waiverHours: form.waiverHours });
       const r = await C.rpc("fk_create", { p_name: form.name, p_sport: form.sport, p_manager: form.me, p_draft: D });
       if (r.error) throw new Error(r.error);
       location.href = `play.html?id=${encodeURIComponent(r.id)}#invite`;
@@ -156,7 +190,24 @@
       location.href = `play.html?id=${encodeURIComponent(joinId)}`;
     } else if (f.id === "new") makeLeague();
   });
-  app.addEventListener("change", (e) => { if (e.target.closest("#new") && (e.target.name === "sport" || e.target.dataset.f)) { grab(); render(); } });
+  app.addEventListener("click", (e) => {
+    const b = e.target.closest("#new [data-preset], #new [data-lb]");
+    if (!b) return;
+    grab();
+    const sp = S[form.sport], next = U.lineupStep(sp, lineupOf(sp), b);
+    if (!next.length) { U.toast("A lineup needs at least one starter", true); return; }
+    form.lineup = next.join(" ");
+    render().then(() => { const back = b.dataset.lb ? $(`#new [data-lb="${b.dataset.lb}"][data-d="${b.dataset.d}"]`) : $(`#new [data-preset="${b.dataset.preset}"]`); if (back && !back.disabled) back.focus(); });
+  });
+  app.addEventListener("change", (e) => {
+    if (!e.target.closest("#new") || !(e.target.name === "sport" || e.target.dataset.f)) return;
+    const was = { sport: form.sport, season: form.season };
+    grab();
+    // a new sport starts from its own lineup; a new season format from its own budget
+    if (form.sport !== was.sport) { form.lineup = ""; form.bench = null; form.scoring = ""; }
+    if (form.season !== was.season) form.faab = null;
+    render();
+  });
   document.addEventListener("click", async (e) => {
     const a = e.target.closest("[data-a]"), th = e.target.closest("[data-theme]");
     if (th) { theme.toggle(); header(); return; }

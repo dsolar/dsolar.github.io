@@ -31,8 +31,10 @@
   function begin(D, sport, o = {}) {
     const s = D.season || { format: "h2h", weeks: 14 };
     const weeks = s.weeks || 14, n = D.teams.length;
-    const settings = s.format === "guillotine" ? { format: "guillotine", bestBall: true, waiverAt: 60 }
-      : { weeks, playoffTeams: Math.min(4, n - (n % 2)), deadline: Math.max(1, weeks - 3), tradeReview: "vote", reviewHours: 24, waiverHours: 36 };
+    // the commissioner's choices from the start-a-league form (D.season), with defaults for anything left out
+    const settings = s.format === "guillotine" ? { format: "guillotine", bestBall: true, waiverAt: 60, faab: s.faab || 1000 }
+      : { weeks, playoffTeams: Math.min(s.playoffTeams != null ? s.playoffTeams : 4, n - (n % 2)), deadline: s.deadline != null ? s.deadline : Math.max(1, weeks - 3),
+        tradeReview: s.review === "none" ? "none" : "vote", reviewHours: 24, waiverHours: s.waiverHours || 36, faab: s.faab || 100 };
     // a draft that ran out on the clock while nobody was around is "done" in the past; start after now, not then
     const at = Math.max(D.done || 0, o.now || Date.now());
     if (o.real) settings.real = true;

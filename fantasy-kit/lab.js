@@ -57,32 +57,8 @@
     }
   });
 
-  /* ---------- lineup builder ---------- */
-  // Common lineups for each sport, then a counter for every slot.
-  const PRESETS = {
-    nba: [["Standard", "PG SG G SF PF F C UTIL UTIL UTIL"], ["Two centers", "PG SG G SF PF F C C UTIL UTIL"], ["Shallow", "PG SG SF PF C UTIL UTIL"], ["Deep", "PG SG G SF PF F C C UTIL UTIL UTIL UTIL"]],
-    nfl: [["Standard", "QB RB RB WR WR TE FLEX K DEF"], ["Superflex", "QB RB RB WR WR TE FLEX SFLEX K DEF"], ["2 QB", "QB QB RB RB WR WR TE FLEX K DEF"], ["3 WR", "QB RB RB WR WR WR TE FLEX K DEF"], ["No kicker", "QB RB RB WR WR TE FLEX FLEX DEF"]],
-    mlb: [["Standard", "C 1B 2B 3B SS OF OF OF UTIL UTIL SP SP RP RP P P P P"], ["Corner and middle", "C 1B 2B 3B SS MI CI OF OF OF OF OF UTIL P P P P P P P P P"], ["Shallow", "C 1B 2B 3B SS OF OF OF UTIL SP SP SP RP RP"]],
-  };
-  const SLOT_NAMES = { G: "Guard", F: "Forward", UTIL: "Utility", FLEX: "Flex", SFLEX: "Superflex", MI: "Middle infield", CI: "Corner infield", P: "Pitcher" };
-  const POS_NAMES = {
-    nba: { PG: "Point guard", SG: "Shooting guard", SF: "Small forward", PF: "Power forward", C: "Center" },
-    nfl: { QB: "Quarterback", RB: "Running back", WR: "Wide receiver", TE: "Tight end", K: "Kicker", DEF: "Team defense" },
-    mlb: { C: "Catcher", "1B": "First base", "2B": "Second base", "3B": "Third base", SS: "Shortstop", OF: "Outfield", SP: "Starting pitcher", RP: "Relief pitcher" },
-  };
-  const slotDesc = (sport, k) => { const v = sport.slots[k]; if (v !== "*" && v.length === 1 && !SLOT_NAMES[k]) return (POS_NAMES[sport.key] || {})[k] || k; return `${SLOT_NAMES[k] || k}: ${v === "*" ? "any player" : v.join(", ")}`; };
-  function lineupBuilder(sport, lineup) {
-    const keys = Object.keys(sport.slots).filter((k) => k !== "BN");
-    const count = (k) => lineup.filter((x) => x === k).length;
-    const cur = lineup.join(" ");
-    return `<div class="chips presets" role="group" aria-label="Lineup presets">${(PRESETS[sport.key] || []).map(([n, l]) => `<button type="button" data-preset="${esc(l)}" aria-pressed="${l === cur}">${esc(n)}</button>`).join("")}</div>
-      <div class="lb">${keys.map((k) => `<div class="lb-r${count(k) ? " on" : ""}"><span class="pp c${(sport.colors[(sport.slots[k] === "*" ? [] : sport.slots[k])[0]] || 6)}">${esc(k)}</span><span class="ps">${esc(slotDesc(sport, k))}</span>
-        <span class="lb-n"><button type="button" class="btn icon" data-lb="${esc(k)}" data-d="-1" aria-label="One fewer ${esc(k)}"${count(k) ? "" : " disabled"}>&minus;</button><b>${count(k)}</b><button type="button" class="btn icon" data-lb="${esc(k)}" data-d="1" aria-label="One more ${esc(k)}"${count(k) >= 9 || lineup.length >= 25 ? " disabled" : ""}>+</button></span></div>`).join("")}</div>
-      <div class="slots" id="slotprev">${lineup.map((x) => `<span class="pp c${(sport.colors[(sport.slots[x] === "*" ? [] : sport.slots[x])[0]] || 6)}">${esc(x)}</span>`).join("")}<span class="ps" style="margin-left:6px">${lineup.length} starters</span></div>
-      <input type="hidden" name="lineup" value="${esc(cur)}">`;
-  }
-  // Slots kept in the sport's own order, so a lineup always reads QB, RB, WR...
-  const orderLineup = (sport, list) => { const keys = Object.keys(sport.slots); return list.slice().sort((a, b) => keys.indexOf(a) - keys.indexOf(b)); };
+  /* ---------- lineup builder (FK.ui.lineupBuilder) ---------- */
+  const { lineupBuilder, orderLineup } = U;
 
   /* ---------- setup ---------- */
   function setupPage() {

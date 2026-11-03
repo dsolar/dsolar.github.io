@@ -48,7 +48,7 @@
     s.bench = opts.bench != null ? opts.bench : D ? D.bench : sport.bench;
     const guillotine = s.format === "guillotine";
     if (guillotine) { s.chops = Math.max(1, s.chops); s.weeks = Math.ceil((n - 1) / s.chops); s.playoffTeams = 0; s.playoffWeeks = 0; }
-    else { s.playoffTeams = Math.min(s.playoffTeams, n - (n % 2)); s.playoffWeeks = Math.ceil(Math.log2(Math.max(2, s.playoffTeams))); }
+    else { s.playoffTeams = Math.min(s.playoffTeams, n - (n % 2)); s.playoffTeams = s.playoffTeams >= 2 ? s.playoffTeams : 0; s.playoffWeeks = s.playoffTeams ? Math.ceil(Math.log2(s.playoffTeams)) : 0; }
     const seed = opts.seed != null ? opts.seed : D ? D.seed + 1 : Math.floor(Math.random() * 2 ** 31);
     const rosters = D ? F.rosters(D) : (opts.rosters || teams.map(() => []));
     // waiver priority starts as the reverse of the draft order

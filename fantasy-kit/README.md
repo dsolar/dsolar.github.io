@@ -203,6 +203,10 @@ version number. Every page runs the same rules and saves with the version it sta
 else saved first, the save is refused and the page takes the newer copy. The server only decides who's signed in, who
 owns which team, the invite code and the save order. It also stamps each team's owner from its seat list.
 
+- **Rules.** The commissioner picks the sport, teams, draft format and clock, scoring, head to head or best ball
+  guillotine, the starting lineup (the same builder as Draft Lab, with presets like Superflex and 2 QB), bench
+  size, FAAB budget, how long dropped players sit on waivers, playoff teams (none, 2, 4 or 8), the trade deadline
+  and whether the league can veto trades. They ride along in the draft as `D.season` and become the league's settings.
 - **Invites.** The commissioner shares `leagues.html?join=<id>&code=<invite>`. Whoever opens it signs in and picks an
   open team. Teams nobody has claimed are bots, and a bot's team can be taken over later.
 - **The draft.** The commissioner's page runs bots and the clock. Any other page steps in when a pick is five
