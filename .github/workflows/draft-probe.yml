@@ -6,6 +6,9 @@ name: Big Board probe
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   probe:
     runs-on: ubuntu-latest
@@ -25,14 +28,20 @@ jobs:
           get realgm-future.html "https://basketball.realgm.com/nba/draft/future_drafts/detailed"
           get espn-search-stokes.json "https://site.web.api.espn.com/apis/search/v2?query=Tyran%20Stokes&limit=10"
           get espn-search-jsmith.json "https://site.web.api.espn.com/apis/search/v2?query=Jeremiah%20Smith&limit=10"
-          get espn-nba-standings.json "https://site.api.espn.com/apis/v2/sports/basketball/nba/standings"
-          get espn-nfl-standings.json "https://site.api.espn.com/apis/v2/sports/football/nfl/standings"
-          get espn-cfb-teams.json "https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams?limit=1000"
-          get espn-mcbb-teams.json "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/teams?limit=1000"
+          Q="region=us&lang=en&contentorigin=espn"
+          get espn-nba-standings.json "https://site.web.api.espn.com/apis/v2/sports/basketball/nba/standings?$Q"
+          get espn-nfl-standings.json "https://site.web.api.espn.com/apis/v2/sports/football/nfl/standings?$Q"
+          get espn-cfb-teams.json "https://site.web.api.espn.com/apis/site/v2/sports/football/college-football/teams?$Q&limit=1000"
+          get espn-mcbb-teams.json "https://site.web.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/teams?$Q&limit=1000"
+          get espn-cfb-stats.json "https://site.web.api.espn.com/apis/common/v3/sports/football/college-football/statistics/byathlete?$Q&limit=50&category=receiving"
+          get espn-mcbb-stats.json "https://site.web.api.espn.com/apis/common/v3/sports/basketball/mens-college-basketball/statistics/byathlete?$Q&limit=50"
           get otc-draft.html "https://overthecap.com/draft"
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: probe
-          path: probe/
-          retention-days: 3
+      - name: Park them on a throwaway branch
+        run: |
+          cd probe
+          git init -q -b probe-data
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A && git commit -q -m "probe"
+          git push -f -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" probe-data
