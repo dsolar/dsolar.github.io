@@ -173,7 +173,7 @@ tr.open td{background:rgba(242,193,78,.05)}
 .go-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin:22px 0}
 .go-row .note{margin:0}
 
-.needs{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:6px}.needs .lab{margin:0 2px 0 0}.needs b,.needs s{font:600 12px/1 var(--body,inherit);padding:4px 7px;border-radius:4px;border:1px solid currentColor;opacity:.95}.needs s{opacity:.45}
+.needs{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-top:8px}.needs .lab{margin:0 3px 0 0;color:rgba(255,255,255,.75)}body[data-screen] .clock-txt .needs b,.clock-txt .needs b,.clock-txt .needs s{display:inline-block;font:600 12px/1 var(--body);letter-spacing:.02em;text-transform:none;margin:0;padding:4px 7px;border-radius:4px;border:1px solid rgba(255,255,255,.55);color:#fff}.clock-txt .needs s{opacity:.5}
 .ticker{margin:10px 0 0;display:grid;gap:4px}.ticker p{margin:0;display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--dim)}.ticker b{color:inherit}
 .offers.shop{border-color:var(--gold)}
 .lotto-list{list-style:none;margin:18px 0 0;padding:0;display:grid;gap:6px;max-width:640px}
@@ -224,7 +224,7 @@ tr.open td{background:rgba(242,193,78,.05)}
 .all-picks{border:1px solid var(--line);border-radius:12px;background:var(--surface)}
 @media (max-width:860px){
   .room-grid{grid-template-columns:1fr}
-  .rail{max-height:220px;order:2}
+  .rail{max-height:168px}
   .res-split{grid-template-columns:1fr}
   .hide-m{display:none}
 }
@@ -490,10 +490,10 @@ body[data-screen] .trade-pick select{background:var(--panel);color:var(--chalk)}
   <div id="mock-view" hidden></div>
 </main>
 
-<script src="common.js?v=21"></script>
-<script src="engine.js?v=21"></script>
-<script src="board.js?v=21"></script>
-<script src="mock.js?v=21"></script>
+<script src="common.js?v=23"></script>
+<script src="engine.js?v=23"></script>
+<script src="board.js?v=23"></script>
+<script src="mock.js?v=23"></script>
 <script>
 (() => {
   // #nba, #nfl, #nba/mock, #nfl/mock

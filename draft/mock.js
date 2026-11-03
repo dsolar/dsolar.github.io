@@ -268,8 +268,12 @@
         </div>
       </div>
     </section>`;
-    const cur = document.getElementById("rp-cur");
-    if (cur) cur.scrollIntoView({ block: "nearest" });
+    // Keep the pick on the clock in view inside the rail without scrolling the page under the reader.
+    const cur = document.getElementById("rp-cur"), rail = document.querySelector(".rail");
+    if (cur && rail) rail.scrollTop += cur.getBoundingClientRect().top - rail.getBoundingClientRect().top - rail.clientHeight / 3;
+    // A team shopping its pick pauses the draft, so bring the offer into view if the reader has scrolled past it.
+    const shop = document.querySelector(".offers.shop");
+    if (shop && shop.getBoundingClientRect().top < 0) shop.scrollIntoView({ block: "start", behavior: "smooth" });
   }
 
   // ---------- trades ----------
