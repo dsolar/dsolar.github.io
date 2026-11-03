@@ -576,6 +576,9 @@ dialog.fk-dlg h3{margin:0 0 6px;font-size:22px;padding-right:40px}
 .medline b{color:var(--ink)}
 /* standings tables line up with each other (two divisions, one above the other) */
 @media (min-width:701px){table.stand th:nth-child(1){width:52px}table.stand th:nth-child(3){width:110px}table.stand th:nth-child(4){width:90px}table.stand th:nth-child(5){width:70px}table.stand th:nth-child(6),table.stand th:nth-child(7){width:110px}table.stand th:nth-child(8){width:80px}table.stand th:nth-child(9){width:120px}}
+/* a pro team's abbreviation in its color */
+.ptm{display:inline-block;font-size:9.5px;font-weight:850;line-height:1;padding:2px 4px;border-radius:4px;background:var(--c);color:var(--ci);letter-spacing:.02em;vertical-align:1px}
+[data-theme="dark"] .ptm,.fk-dark .ptm{box-shadow:0 0 0 1px rgba(255,255,255,.22)}
 /* a rookie, next to his positions */
 .rkt{display:inline-block;font-size:9.5px;font-weight:900;line-height:1;padding:2px 4px;border-radius:4px;background:var(--info-soft);color:var(--info);vertical-align:1px}
 /* three fields to a row in forms, two on a phone */

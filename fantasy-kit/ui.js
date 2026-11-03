@@ -187,7 +187,9 @@
   // Avatar, name and a small line (positions and team) for any player.
   // A draft pick as a tradeable item: { id, n: "Pick 2.5", pick: true, sub, price }.
   const pickItem = (p, extra = "") => `<span class="pname"><span class="pav pk" aria-hidden="true">#</span><span><span class="pn">${esc(p.n)}</span><span class="sub">${esc(p.sub || "Draft pick")}${extra ? ", " + extra : ""}</span></span></span>`;
-  const pname = (sport, p, extra = "", opts = {}) => p && p.pick ? pickItem(p, extra) : p ? `<span class="pname${opts.b ? " b" : ""}">${opts.noAv ? "" : playerAv(sport, p, opts.size || "")}<span><span class="pn">${esc(p.n)}</span><span class="sub">${injTag(p).trim()}${p.inj ? " " : ""}${p.rk ? `<span class="rkt" title="Rookie">R</span> ` : ""}${S.positions(p).join(", ")} ${esc(p.t === "FA" ? "Unsigned" : p.t)}${extra ? ", " + extra : ""}</span></span></span>` : `<span class="ps">Empty</span>`;
+  // a player's pro team: its abbreviation in the team's color
+  const proTeam = (sport, t) => { if (!t || t === "FA") return "Unsigned"; const c = S.teamColor && sport && S.teamColor(sport.key, t); return c ? `<span class="ptm" style="--c:${c.bg};--ci:${c.ink}">${esc(t)}</span>` : esc(t); };
+  const pname = (sport, p, extra = "", opts = {}) => p && p.pick ? pickItem(p, extra) : p ? `<span class="pname${opts.b ? " b" : ""}">${opts.noAv ? "" : playerAv(sport, p, opts.size || "")}<span><span class="pn">${esc(p.n)}</span><span class="sub">${injTag(p).trim()}${p.inj ? " " : ""}${p.rk ? `<span class="rkt" title="Rookie">R</span> ` : ""}${S.positions(p).join(", ")} ${proTeam(sport, p.t)}${extra ? ", " + extra : ""}</span></span></span>` : `<span class="ps">Empty</span>`;
   const teamName = (t, opts = {}) => `<span class="row" style="gap:9px">${teamAv(t, opts.size || "sm")}<span class="ell"><b>${esc(t.name)}</b>${opts.you ? ` <span class="tag you">You</span>` : ""}${opts.owner !== false && t.owner && !(opts.you && /^you$/i.test(t.owner)) ? ` <span class="ps">${esc(t.owner)}</span>` : ""}${opts.badge || ""}</span></span>`;
 
   /* ---------- shell ---------- */
@@ -309,7 +311,7 @@
       return `<div class="stack" style="gap:6px"><div class="ps"><b>${esc(def.label)}</b>, ${esc(sport.data.season)}</div><div class="sgrid">${cells}</div></div>`;
     }).join("");
     const zs = sc.type === "cats" && p.zc ? `<div class="zbars" aria-label="Category strength">${sc.cats.filter((c) => p.zc[c.k] != null).map((c) => { const z = Math.max(-3, Math.min(3, p.zc[c.k])); const w = (Math.abs(z) / 3) * 50; return `<span class="ps"><b>${esc(c.label)}</b></span><span class="zbar"><i class="${z < 0 ? "n" : ""}" style="${z < 0 ? `right:50%;width:${w}%` : `left:50%;width:${w}%`}"></i></span><span class="num ps" style="text-align:right">${z >= 0 ? "+" : ""}${z.toFixed(1)}</span>`; }).join("")}</div>` : "";
-    return `<div class="pc-h">${playerAv(sport, p, "lg")}<div><h3 class="disp">${esc(p.n)}</h3><div class="ps">${posChips(sport, p)} ${esc(p.t)}${p.age ? `, age ${p.age}` : ""}${p.inj ? `, <span class="bad">${esc(p.inj)}</span>` : ""}</div>${opts.status ? `<div class="ps row" style="margin-top:6px">${opts.status}</div>` : ""}</div></div>
+    return `<div class="pc-h">${playerAv(sport, p, "lg")}<div><h3 class="disp">${esc(p.n)}</h3><div class="ps">${posChips(sport, p)} ${proTeam(sport, p.t)}${p.age ? `, age ${p.age}` : ""}${p.inj ? `, <span class="bad">${esc(p.inj)}</span>` : ""}</div>${opts.status ? `<div class="ps row" style="margin-top:6px">${opts.status}</div>` : ""}</div></div>
       <div class="stat-row" style="margin-bottom:14px"><div><small>Overall</small><b>${p.rank}</b></div><div><small>Position</small><b>${esc(p.prank)}</b></div><div><small>${sc.type === "points" ? "Projection" : "Value"}</small><b>${sc.type === "points" ? Math.round(p.v) : p.v.toFixed(1)}</b></div><div><small>Auction</small><b>${p.$ ? money(p.$) : "-"}</b></div></div>
       ${opts.note ? `<p class="small" style="margin:0 0 12px">${opts.note}</p>` : ""}
       <div class="stack">${opts.extra || ""}${zs}${lines}</div>${opts.actions ? `<div class="acts">${opts.actions}</div>` : ""}`;
@@ -554,7 +556,7 @@
       const can = mine && !isMe(lead) && F.maxBid(d, me()) > lot.bid && F.canAdd(d, ctx, me(), p).ok && !d.paused;
       const next = lot.bid + 1, max = mine ? F.maxBid(d, me()) : 0;
       const passed = mine && (lot.passed || []).includes(me());
-      return `<div><div class="lot">${playerAv(sport, p, "lg")}<div class="lp"><b class="disp">${esc(p.n)}</b><span class="ps">${posChips(sport, p)} ${esc(p.t)}, ${esc(p.prank)}, value ${money(p.$)}. Nominated by ${esc(team(lot.by).name)}</span></div>
+      return `<div><div class="lot">${playerAv(sport, p, "lg")}<div class="lp"><b class="disp">${esc(p.n)}</b><span class="ps">${posChips(sport, p)} ${proTeam(sport, p.t)}, ${esc(p.prank)}, value ${money(p.$)}. Nominated by ${esc(team(lot.by).name)}</span></div>
         <div class="bid"><small>${teamAv(lead, "sm")} ${isMe(lead) ? "Your bid" : esc(lead.abbr)}</small><b class="${isMe(lead) ? "win" : ""}">${money(lot.bid)}</b></div>
         <div class="acts">${can ? `<button class="btn go" data-bid="${next}">Bid ${money(next)}</button><button class="btn" data-bid="${Math.min(max, lot.bid + 5)}">${money(Math.min(max, lot.bid + 5))}</button><label class="sr" for="fk-bid">Your bid</label><input type="number" id="fk-bid" min="${next}" max="${max}" value="${ui.bidAmt && ui.bidAmt > lot.bid ? ui.bidAmt : next}"><button class="btn" data-act="bid">Bid</button>${passed ? `<span class="ps">You passed</span>` : `<button class="btn ghost" data-act="pass">Pass</button>`}`
           : mine ? `<span class="ps">${isMe(lead) ? "You have the high bid." : max <= lot.bid ? `Your max bid is ${money(max)}.` : esc(F.canAdd(d, ctx, me(), p).why || "")}</span>` : ""}</div></div>
@@ -1001,6 +1003,6 @@
   }
   FK.ui = { LINEUP_PRESETS: PRESETS, lineupBuilder, orderLineup, lineupStep, slotDesc, esc, $, $$, store, toast, dialog, dialogOpen, focusKey, refocus, keyboardPlayers, confirm, theme, fmtLeft, money, ord, last, initials, ago,
     teamAv, SHAPES, GLYPHS, logoSvg, glyphOf, shapeOf, playerAv, pname, teamName, posChip, posChips, colorOf, injTag,
-    shell, switcher, route, table, sortRows, nextSort, poolColumns, posFilter, search, passes, groupOf, statCell, label, isPoints,
+    proTeam, shell, switcher, route, table, sortRows, nextSort, poolColumns, posFilter, search, passes, groupOf, statCell, label, isPoints,
     playerCard, scoreboard, versus, vsTable, standingsTable, feed, txLine, tradeCard, tradeWindow, room };
 })(this);

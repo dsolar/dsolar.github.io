@@ -248,5 +248,22 @@
   const withScoring = (sport, spec) => (spec && (spec.type === "points" || spec.type === "cats")
     ? Object.assign({}, sport, { scorings: Object.assign({}, sport.scorings, { custom: customScoring(sport, spec) }) }) : sport);
 
-  return { ALL, nba, nfl, mlb, attach, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring };
+  // Each pro team's main color, for its abbreviation next to a player's name. Colors only: no logos or marks.
+  const TEAM_COLORS = {
+    nba: { ATL: "#E03A3E", BOS: "#007A33", BRK: "#000000", CHO: "#1D1160", CHI: "#CE1141", CLE: "#860038", DAL: "#00538C", DEN: "#0E2240", DET: "#C8102E", GSW: "#1D428A",
+      HOU: "#CE1141", IND: "#002D62", LAC: "#C8102E", LAL: "#552583", MEM: "#5D76A9", MIA: "#98002E", MIL: "#00471B", MIN: "#0C2340", NOP: "#0C2340", NYK: "#006BB6",
+      OKC: "#007AC1", ORL: "#0077C0", PHI: "#006BB6", PHO: "#1D1160", POR: "#E03A3E", SAC: "#5A2D81", SAS: "#000000", TOR: "#CE1141", UTA: "#002B5C", WAS: "#002B5C" },
+    nfl: { ARI: "#97233F", ATL: "#A71930", BAL: "#241773", BUF: "#00338D", CAR: "#0085CA", CHI: "#0B162A", CIN: "#FB4F14", CLE: "#311D00", DAL: "#003594", DEN: "#FB4F14",
+      DET: "#0076B6", GB: "#203731", HOU: "#03202F", IND: "#002C5F", JAX: "#006778", KC: "#E31837", LAC: "#0080C6", LAR: "#003594", LV: "#000000", MIA: "#008E97",
+      MIN: "#4F2683", NE: "#002244", NO: "#D3BC8D", NYG: "#0B2265", NYJ: "#125740", PHI: "#004C54", PIT: "#FFB612", SEA: "#002244", SF: "#AA0000", TB: "#D50A0A",
+      TEN: "#0C2340", WAS: "#5A1414" },
+    mlb: { ARI: "#A71930", ATH: "#003831", ATL: "#CE1141", BAL: "#DF4601", BOS: "#BD3039", CHC: "#0E3386", CWS: "#27251F", CIN: "#C6011F", CLE: "#00385D", COL: "#333366",
+      DET: "#0C2340", HOU: "#002D62", KC: "#004687", LAA: "#BA0021", LAD: "#005A9C", MIA: "#00A3E0", MIL: "#12284B", MIN: "#002B5C", NYM: "#002D72", NYY: "#0C2340",
+      PHI: "#E81828", PIT: "#FDB827", SD: "#2F241D", SEA: "#0C2C56", SF: "#FD5A1E", STL: "#C41E3A", TB: "#092C5C", TEX: "#003278", TOR: "#134A8E", WSH: "#AB0003" },
+  };
+  // light team colors (gold, yellow) take dark text
+  const inkOn = (hex) => { const n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255; return 0.299 * r + 0.587 * g + 0.114 * b > 160 ? "#111" : "#fff"; };
+  const teamColor = (sportKey, abbr) => { const c = (TEAM_COLORS[sportKey] || {})[abbr]; return c ? { bg: c, ink: inkOn(c) } : null; };
+
+  return { ALL, nba, nfl, mlb, attach, TEAM_COLORS, teamColor, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring };
 });
