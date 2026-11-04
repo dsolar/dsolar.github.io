@@ -1,8 +1,14 @@
-# One-off: checks which free fantasy data APIs answer from GitHub's runners (tools/api_probe.py). Run by hand.
+# One-off: checks which data sources answer from GitHub's runners (tools/api_probe.py) and saves what they return
+# to tools/api_probe_out.json. Runs when the script changes, or by hand.
 name: API probe
-on: workflow_dispatch
+on:
+  push:
+    branches: [main]
+    paths:
+      - tools/api_probe.py
+  workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
   probe:
     runs-on: ubuntu-latest
@@ -10,3 +16,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - run: python3 tools/api_probe.py
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/api_probe_out.json
+          git commit -m "API probe results" || exit 0
+          git pull --rebase && git push
