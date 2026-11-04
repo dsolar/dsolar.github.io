@@ -384,7 +384,7 @@
         <div class="card"><div class="mod-h"><h2>Managers</h2></div><div class="bd">${seatList()}</div></div>
       </div>
       ${L ? `<div class="cols2">
-        ${card("League rules", `<dl class="kv"><dt>Waivers</dt><dd>${s.waivers === "rolling" ? "Rolling priority" : `FAAB, $${s.faab}`}, ${s.waiverHours} hours</dd><dt>Trades</dt><dd>${s.trades === false ? "Off" : `${s.deadline ? `Deadline after week ${s.deadline}` : "No deadline"}, ${s.tradeReview === "none" ? "no review" : "league review"}`}</dd><dt>Playoffs</dt><dd>${s.playoffTeams ? `${s.playoffTeams} teams` : "None"}</dd><dt>Rosters</dt><dd>${s.bench} bench, ${s.ir || 0} IR${s.maxAdds ? `, ${s.maxAdds} pickups a week` : ""}</dd></dl>`, `<button class="btn" data-cm="rules">Edit rules</button>`)}
+        ${card("League rules", `<dl class="kv"><dt>Waivers</dt><dd>${s.waivers === "rolling" ? "Rolling priority" : `FAAB, $${s.faab}`}, ${G.waiverDays(L)} business day${G.waiverDays(L) === 1 ? "" : "s"}${G.gameLockOn(L) ? ", locked once his game starts" : ""}</dd><dt>Trades</dt><dd>${s.trades === false ? "Off" : `${s.deadline ? `Deadline after week ${s.deadline}` : "No deadline"}, ${s.tradeReview === "none" ? "no review" : "league review"}`}</dd><dt>Playoffs</dt><dd>${s.playoffTeams ? `${s.playoffTeams} teams` : "None"}</dd><dt>Rosters</dt><dd>${s.bench} bench, ${s.ir || 0} IR${s.maxAdds ? `, ${s.maxAdds} pickups a week` : ""}</dd></dl>`, `<button class="btn" data-cm="rules">Edit rules</button>`)}
         ${card("Teams", `<p class="small" style="margin:0">Rename teams, set FAAB and the waiver order${L.divs ? ", and rename or rearrange the divisions" : ""}.</p>`, `<button class="btn" data-cm="teams">Edit teams</button>`)}
       </div>
       <div class="cols2">
@@ -403,7 +403,8 @@
     U.dialog(`<h3>League rules</h3><form class="stack">
       <div class="row3">
         ${gl ? "" : sel("waivers", "Waivers", [["faab", "FAAB bids"], ["rolling", "Rolling priority"]], s.waivers)}
-        ${sel("waiverHours", "Dropped players clear in", [12, 24, 36, 48, 72].map((x) => [x, `${x} hours`]), s.waiverHours)}
+        ${sel("waiverDays", "Dropped players clear after", [[0, "Right away"], [1, "1 business day"], [2, "2 business days"], [3, "3 business days"]], G.waiverDays(L))}
+        ${sel("gameLock", "After a player's game starts", [["week", "Locked until next week"], ["off", "Free to add"]], G.gameLockOn(L) ? "week" : "off")}
         ${sel("maxAdds", "Pickups a week", [0, 1, 2, 3, 4, 5, 7, 10].map((x) => [x, x ? `Up to ${x}` : "No limit"]), s.maxAdds || 0)}
       </div>
       <div class="row3">
@@ -437,7 +438,7 @@
       <p class="ps" style="margin:0">${started ? "The season has started, so its length and schedule are set. " : ""}Changes apply from now on; finished weeks keep their results${medianOk ? ", except that turning the median game on or off recounts every record" : ""}.</p>
       <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">Save rules</button></div></form>`, (fd) => {
       const patch = {};
-      for (const [k, v] of fd.entries()) patch[k] = ["trades", "median", "bestBall"].includes(k) ? v === "1" : ["waivers", "tradeReview", "playoffLegs", "consolation", "waiverOrder", "waiverPrice"].includes(k) ? v : Number(v);
+      for (const [k, v] of fd.entries()) patch[k] = ["trades", "median", "bestBall"].includes(k) ? v === "1" : ["waivers", "tradeReview", "playoffLegs", "consolation", "waiverOrder", "waiverPrice", "gameLock"].includes(k) ? v : Number(v);
       for (const k of Object.keys(patch)) if (JSON.stringify(patch[k]) === JSON.stringify(k === "trades" ? s.trades !== false : k === "median" || k === "bestBall" ? !!s[k] : s[k])) delete patch[k];
       if (!Object.keys(patch).length) return;
       const r = G.setRules(L, patch, now());

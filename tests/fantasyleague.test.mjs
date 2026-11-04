@@ -476,3 +476,43 @@ test('pack draft: alike packs, every pick from the pack in front of you, passing
     assert.ok(F.assign(sport, ros, lineup).every(Boolean), `${D.teams[team].name} fills its lineup`);
   }
 });
+
+test('waivers clear after full business days at 3 AM Eastern, and a player whose game started waits for next week', () => {
+  const L0 = { settings: { waiverDays: 2 } };
+  const et = (ms) => new Date(ms).toLocaleString('en-US', { timeZone: 'America/New_York', weekday: 'short', hour: 'numeric', hourCycle: 'h23' }).replace(',', '');
+  // Monday Nov 2 2026, 3 PM ET -> Thursday 3 AM
+  assert.equal(et(G.waiverClear(L0, Date.UTC(2026, 10, 2, 20))), 'Thu 03');
+  // Friday Nov 6, 6 PM ET -> Mon, Tue -> Wednesday 3 AM
+  assert.equal(et(G.waiverClear(L0, Date.UTC(2026, 10, 6, 23))), 'Wed 03');
+  // Saturday -> Wednesday too
+  assert.equal(et(G.waiverClear(L0, Date.UTC(2026, 10, 7, 17))), 'Wed 03');
+  // one day, across daylight saving's end (Sun Nov 1): a Friday Oct 30 drop clears Tuesday 3 AM Eastern
+  assert.equal(et(G.waiverClear({ settings: { waiverDays: 1 } }, Date.UTC(2026, 9, 30, 16))), 'Tue 03');
+  // old leagues set hours: 36 reads as 2 days, 0 means no waivers
+  assert.equal(G.waiverDays({ settings: { waiverHours: 36 } }), 2);
+  assert.equal(G.waiverClear({ settings: { waiverHours: 0 } }, 1000), 1000);
+
+  // the game lock: a football free agent whose team has kicked off this week is on waivers until next week
+  const data = JSON.parse(readFileSync(new URL('../fantasy-kit/data/nfl.json', import.meta.url), 'utf8'));
+  const sport = S.attach(Object.assign({}, S.nfl), data);
+  const players = data.players.map((p) => ({ ...p }));
+  const lineup = ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'FLEX'];
+  V.evaluate(sport, players, { teams: 4, lineup, bench: 2, scoring: 'half' });
+  const t0 = Date.UTC(2026, 10, 3, 13);
+  const D = F.create({ sport, teams: 4, seed: 5, now: t0, lineup, bench: 2, botDelay: 0, scoring: 'half' });
+  const dctx = F.context(D, players, sport); F.start(D, t0); D.teams.forEach((t) => (t.auto = true)); F.tick(D, dctx, t0 + 1, 5000);
+  const L = G.create({ sport, draft: D, now: t0, start: t0, settings: { weeks: 4, playoffTeams: 0 } });
+  const ctx = G.context(L, players, sport);
+  const fa = ctx.free.find((p) => p.t && p.t !== 'FA');
+  L.kick = { week: 1, teams: { [fa.t]: t0 + 2 * 864e5 } };                     // his team plays Thursday
+  const drop = L.rosters[0][L.rosters[0].length - 1];
+  const after = t0 + 3 * 864e5;                                                // Friday
+  const r = G.addDrop(L, ctx, 0, fa.id, drop, after);
+  assert.equal(r.ok, false, 'no Friday pickup of a Thursday player');
+  assert.ok(G.onWaivers(L, fa.id, after) && L.waivers[fa.id] >= G.weekStart(L, 2), 'on waivers into next week');
+  assert.ok(G.claim(L, ctx, 0, fa.id, drop, 5, after).ok, 'but you can put in a claim');
+  G.tick(L, ctx, L.waivers[fa.id] - 1);
+  assert.ok(!L.rosters[0].includes(fa.id), 'not before he clears');
+  L.week = 2; G.tick(L, ctx, L.waivers[fa.id] + 1);
+  assert.ok(L.rosters[0].includes(fa.id), 'the claim runs when he clears');
+});

@@ -82,7 +82,7 @@
     // a guillotine demo opens a day after a chop, with the bidding still open
     const start = cal.start, played = Math.floor((now - start) / WEEK);
     const settings = guil ? { format: "guillotine", bestBall: true, waiverAt: 60, immune: { 0: played } }
-      : { weeks: 14, playoffTeams: 4, deadline: 11, tradeReview: "vote", reviewHours: 0.03, vetoShare: 0.5, waiverHours: 36 };
+      : { weeks: 14, playoffTeams: 4, deadline: 11, tradeReview: "vote", reviewHours: 0.03, vetoShare: 0.5, waiverDays: 2 };
     const lg = G.create({ sport, draft: D, name: nameOf(sportKey, guil), season: data.season + (cal.replay ? " replay" : ""), now: start, start, scoring: D.scoring, settings });
     lg.demo = 2;
     lg.teams.forEach((t, i) => (t.color = [0, 1, 2, 3, 4, 5, 6, 7, 11, 9, 8, 10][i % 12]));

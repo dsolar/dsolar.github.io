@@ -620,7 +620,7 @@
     const imm = L.settings.immune || {};
     const open = rows.filter((r) => !(imm[r.team] >= w));
     const out = open.slice(-Math.min(L.settings.chops, rows.length - 1)).map((r) => r.team);
-    const runAt = L.settings.waiverAt != null ? weekStart(L, w + 1) + L.settings.waiverAt * HOUR : now + L.settings.waiverHours * HOUR;
+    const runAt = L.settings.waiverAt != null ? weekStart(L, w + 1) + L.settings.waiverAt * HOUR : waiverClear(L, now);
     L.results[w] = { block: rows.map((r) => ({ team: r.team, score: r.score, proj: r.proj, rank: r.rank, cats: r.cats || null, players: r.players, lineup: r.lineup, out: out.includes(r.team) })), chopped: out, alive: L.alive.slice() };
     for (const t of out) {
       const roster = L.rosters[t].slice();
@@ -657,7 +657,7 @@
       L.results[w] = { roto: teams, cats: sc.cats.map((c) => ({ k: c.k, low: !!c.low, ratio: !!(c.num || c.rate) })) };
       L.week = w + 1;
       if (L.week > totalWeeks(L)) { closeSeason(L, now); return { ok: true, over: true }; }
-      runWaivers(L, ctx, now);
+      runDue(L, ctx, now);
       return { ok: true };
     }
     if (isGuillotine(L)) {
@@ -668,7 +668,7 @@
       if (L.alive.length <= 1) log(L, now, { type: "champion", team: L.alive[0], text: "Last team standing" });
       L.week = L.alive.length <= 1 ? totalWeeks(L) + 1 : w + 1;
       if (L.week > totalWeeks(L)) { closeSeason(L, now); return { ok: true, over: true }; }
-      if (L.settings.waiverAt == null) runWaivers(L, ctx, now);
+      if (L.settings.waiverAt == null) runDue(L, ctx, now);
       refresh(L, ctx);
       return { ok: true };
     }
@@ -682,7 +682,7 @@
     if (w <= L.settings.weeks) openBites(L, w, games, now);
     if (L.week > totalWeeks(L)) { closeSeason(L, now); return { ok: true, over: true }; }
     reorderWaivers(L);
-    runWaivers(L, ctx, now);
+    runDue(L, ctx, now);
     return { ok: true };
   }
 
@@ -1105,7 +1105,7 @@
   // Rules the commissioner can change mid-season, and when. Anything that would rewrite games already played
   // (the regular season's length, scoring) only changes before week 1; playoff rules only before the playoffs.
   const RULES = {
-    waivers: (v) => (v === "faab" || v === "rolling" ? v : null), waiverHours: (v) => clampInt(v, 0, 168), maxAdds: (v) => clampInt(v, 0, 50),
+    waivers: (v) => (v === "faab" || v === "rolling" ? v : null), waiverHours: (v) => clampInt(v, 0, 168), waiverDays: (v) => clampInt(v, 0, 5), gameLock: (v) => (v === "week" || v === "off" ? v : null), maxAdds: (v) => clampInt(v, 0, 50),
     ir: (v) => clampInt(v, 0, 6), bench: (v) => clampInt(v, 0, 20), deadline: (v) => clampInt(v, 0, 52), tradeReview: (v) => (["vote", "commish", "none"].includes(v) ? v : null),
     waiverOrder: (v) => (v === "rolling" || v === "standings" ? v : null), minBid: (v) => clampInt(v, 0, 5), maxAddsSeason: (v) => clampInt(v, 0, 200),
     reviewHours: (v) => clampInt(v, 1, 168), vetoShare: (v) => (Number.isFinite(+v) && +v > 0 && +v <= 1 ? +v : null), offerHours: (v) => clampInt(v, 1, 336),
@@ -1245,6 +1245,52 @@
   }
 
   /* ---------- free agency and waivers ---------- */
+  // Waivers run like the big leagues': a dropped player clears at the processing hour (3 AM Eastern) after
+  // settings.waiverDays full business days (drop on Monday with 2 days, he clears early Thursday), and the claims on
+  // him run then, highest bid first. In football (settings.gameLock "week"), a free agent whose game has started this
+  // week can't be picked up until next week: he goes on waivers until the first processing time of the next week.
+  const PROCESS_HOUR = 3;
+  // the wall clock in New York for a moment: { y, m, d, wd (0 Sunday), h }
+  function etParts(ms) {
+    const f = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", year: "numeric", month: "numeric", day: "numeric", weekday: "short", hour: "numeric", hourCycle: "h23" });
+    const o = {}; for (const x of f.formatToParts(new Date(ms))) o[x.type] = x.value;
+    return { y: +o.year, m: +o.month, d: +o.day, wd: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(o.weekday), h: +o.hour % 24 };
+  }
+  // the moment a New York date and hour happens (Eastern is UTC-4 or UTC-5; try both)
+  function etAt(y, m, d, h) {
+    for (const off of [4, 5]) { const ms = Date.UTC(y, m - 1, d, h + off); const q = etParts(ms); if (q.d === d && q.h === h) return ms; }
+    return Date.UTC(y, m - 1, d, h + 5);
+  }
+  const nextDay = (y, m, d) => { const t = new Date(Date.UTC(y, m - 1, d + 1)); return [t.getUTCFullYear(), t.getUTCMonth() + 1, t.getUTCDate()]; };
+  const weekday = (y, m, d) => new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+  const waiverDays = (L) => (L.settings.waiverDays != null ? L.settings.waiverDays : Math.round((L.settings.waiverHours != null ? L.settings.waiverHours : 48) / 24));
+  // when a player dropped at `now` clears: the processing hour the day after `days` full business days
+  function waiverClear(L, now, days = waiverDays(L)) {
+    if (!days) return now;
+    const t = etParts(now);
+    let [y, m, d] = [t.y, t.m, t.d], left = days;
+    while (left > 0) { [y, m, d] = nextDay(y, m, d); const wd = weekday(y, m, d); if (wd !== 0 && wd !== 6) left--; }
+    [y, m, d] = nextDay(y, m, d);
+    return etAt(y, m, d, PROCESS_HOUR);
+  }
+  // the first processing time once next week has started
+  function nextWeekClear(L) {
+    const t = etParts(weekStart(L, L.week + 1));
+    let at = etAt(t.y, t.m, t.d, PROCESS_HOUR);
+    if (at < weekStart(L, L.week + 1)) { const [y, m, d] = nextDay(t.y, t.m, t.d); at = etAt(y, m, d, PROCESS_HOUR); }
+    return at;
+  }
+  const gameLockOn = (L) => (L.settings.gameLock ? L.settings.gameLock === "week" : L.sport === "nfl");
+  // free agents whose game this week has started: on waivers until next week
+  function lockPlayed(L, ctx, now) {
+    if (!gameLockOn(L) || !L.kick || L.kick.week !== L.week) return 0;
+    const started = new Set(Object.entries(L.kick.teams).filter(([, at]) => now >= at).map(([t]) => t));
+    if (!started.size) return 0;
+    const until = nextWeekClear(L);
+    let n = 0;
+    for (const p of ctx.free) if (started.has(p.t) && !(L.waivers[p.id] > now)) { L.waivers[p.id] = until; n++; }
+    return n;
+  }
   const onWaivers = (L, pid, now) => L.waivers[pid] != null && L.waivers[pid] > now;
   // Pickups this week: adds and won claims (trades don't count). settings.maxAdds caps them, if set.
   const pickups = (L, teamId) => L.tx.filter((x) => x.team === teamId && x.week === L.week && (x.type === "add" || x.type === "add/drop" || x.type === "waiver")).length;
@@ -1273,7 +1319,7 @@
     L.ir[teamId] = (L.ir[teamId] || []).filter((x) => x !== pid);
     if (L.taxi && L.taxi[teamId]) L.taxi[teamId] = L.taxi[teamId].filter((x) => x !== pid);
     for (const w of Object.keys(L.lineups)) if (+w >= L.week && L.lineups[w][teamId]) L.lineups[w][teamId] = L.lineups[w][teamId].map((x) => (x === pid ? null : x));
-    L.waivers[pid] = now + L.settings.waiverHours * HOUR;
+    L.waivers[pid] = waiverClear(L, now);
   }
   // A free agent who isn't on waivers: added right away.
   function addDrop(L, ctx, teamId, add, drop, now) {
@@ -1281,7 +1327,8 @@
     // after a heist rosters are set for the week: the only move is filling a spot a steal emptied
     if (L.settings.frozen && drop) return { ok: false, why: "Rosters are set for the week. You can only fill a spot a steal emptied" };
     if (add && ctx.own[add] != null) return { ok: false, why: `${ctx.byId[add].n} is on a roster` };
-    if (add && onWaivers(L, add, now)) return { ok: false, why: `${ctx.byId[add].n} is on waivers: put in a claim` };
+    if (add && gameLockOn(L) && !onWaivers(L, add, now) && isLocked(L, ctx.byId[add], L.week, now)) L.waivers[add] = nextWeekClear(L);
+    if (add && onWaivers(L, add, now)) return { ok: false, why: `${ctx.byId[add].n} is on waivers until ${waiverWhen(L.waivers[add])}: put in a claim` };
     if (drop && !L.rosters[teamId].includes(drop)) return { ok: false, why: "That player isn't on your roster" };
     if (drop && lockedStarter(L, ctx, teamId, drop, now)) return { ok: false, why: lockWhy(ctx.byId[drop]) };
     const ok = canRoster(L, ctx, teamId, add, drop ? [drop] : [], true);
@@ -1335,8 +1382,20 @@
     const second = others.length ? Math.max(...others) : null;
     return Math.min(c.bid, second == null ? Math.max(0, L.settings.minBid || 0) : second + 1);
   }
-  function runWaivers(L, ctx, now) {
+  const waiverWhen = (at) => new Date(at).toLocaleString("en-US", { timeZone: "America/New_York", weekday: "short", hour: "numeric", minute: "2-digit" }) + " ET";
+  // claims for the players whose waivers have cleared, each batch at the moment it cleared
+  function runDue(L, ctx, now) {
     const open = L.claims.filter((c) => c.status === "open");
+    const due = [...new Set(open.filter((c) => L.waivers[c.add] != null && L.waivers[c.add] <= now).map((c) => L.waivers[c.add]))].sort((a, b) => a - b);
+    let n = 0;
+    for (const at of due) n += runWaivers(L, ctx, at, new Set(Object.keys(L.waivers).filter((id) => L.waivers[id] === at))).length;
+    // a claim on a player who's off waivers already (a free agent now) runs right away
+    const loose = new Set(open.filter((c) => c.status === "open" && L.waivers[c.add] == null).map((c) => c.add));
+    if (loose.size) n += runWaivers(L, ctx, now, loose).length;
+    return n;
+  }
+  function runWaivers(L, ctx, now, only) {
+    const open = L.claims.filter((c) => c.status === "open" && (!only || only.has(c.add)));
     const won = [];
     // highest bid first; on a tie the better waiver priority, which changes after every win, then the earlier claim
     const next = () => open.filter((c) => c.status === "open").sort((a, b) => b.bid - a.bid || L.teams[a.team].priority - L.teams[b.team].priority || claimOrd(a) - claimOrd(b))[0];
@@ -1760,6 +1819,8 @@
     let n = finalize(L, ctx, now);
     n += botsAnswer(L, ctx, now, 0);
     n += runBites(L, ctx, now);
+    lockPlayed(L, ctx, now);
+    if (L.settings.waiverAt == null) n += runDue(L, ctx, now);
     L.waiverRuns = L.waiverRuns || {};
     if (L.settings.waiverAt != null && L.week <= totalWeeks(L) && !L.waiverRuns[L.week] && now >= waiverRunAt(L)) {
       const at = waiverRunAt(L);
@@ -1772,5 +1833,5 @@
   return { realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
     finishWeek, slotMult, setKicks, isLocked, freezeLineups, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
-    weekFrac, joined, effFrac, bank, waiverPrice, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
+    weekFrac, joined, effFrac, bank, waiverPrice, waiverClear, nextWeekClear, waiverDays, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
 });

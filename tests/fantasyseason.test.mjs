@@ -98,11 +98,11 @@ test('trade offers and answers go to the right manager', () => {
 });
 
 test('the commissioner\'s rules from the start-a-league form carry into the season', () => {
-  const s = setup('nfl', 'half', { format: 'h2h', weeks: 10, playoffTeams: 0, deadline: 6, review: 'none', faab: 200, waiverHours: 24 });
+  const s = setup('nfl', 'half', { format: 'h2h', weeks: 10, playoffTeams: 0, deadline: 6, review: 'none', faab: 200, waiverDays: 1 });
   Z.driveDraft(s.D, F.context(s.D, s.players, s.sport), s.T0 + 3 * DAY);
   const L = Z.begin(s.D, s.sport, { name: 'Test' });
-  assert.deepEqual([L.settings.weeks, L.settings.playoffTeams, L.settings.playoffWeeks, L.settings.deadline, L.settings.tradeReview, L.settings.waiverHours, L.teams[0].faab],
-    [10, 0, 0, 6, 'none', 24, 200]);
+  assert.deepEqual([L.settings.weeks, L.settings.playoffTeams, L.settings.playoffWeeks, L.settings.deadline, L.settings.tradeReview, L.settings.waiverDays, L.teams[0].faab],
+    [10, 0, 0, 6, 'none', 1, 200]);
   assert.equal(G.totalWeeks(L), 10, 'no playoff weeks');
   const g = setup('nfl', 'half', { format: 'guillotine', faab: 500 });
   Z.driveDraft(g.D, F.context(g.D, g.players, g.sport), g.T0 + 3 * DAY);
