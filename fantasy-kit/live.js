@@ -172,6 +172,8 @@
   // The commissioner's page runs bots and the clock. Anyone else's page steps in when that's five seconds late,
   // so the draft keeps moving when the commissioner's page is closed.
   function driveOk() {
+    // the heist: the commissioner's page settles it, or anyone's once its clock is five seconds past
+    if (D && D.phase === "heist" && canAct()) return info.commish || now() > D.heist.ends + 5000 || F.heistFoe(D, info.me) != null && D.heist.pairs.flat().every((t) => D.heist.moves[t] || !D.teams[t].owner);
     if (!D || D.phase !== "live" || !canAct()) return false;
     if (D.paused) return !!D.hold;                     // a draft held for a trade offer: any page can let it go on
     if (info.commish) return true;

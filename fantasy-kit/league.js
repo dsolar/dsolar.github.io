@@ -398,7 +398,7 @@
     const lines = ids.map((id) => [ctx.byId[id], ctx.byId[id] && playerWeek(L, ctx, ctx.byId[id], w, effFrac(L, teamId, id, w, frac), frac)]).filter((x) => x[0]);
     if (sc.type === "points") {
       // a slot can count extra (a showdown's captain, 1.5x)
-      const players = Object.fromEntries(lines.map(([p, s]) => [p.id, s.pts * slotMult(L, slotsOf.indexOf(p.id))]));
+      const players = Object.fromEntries(lines.map(([p, s]) => [p.id, s.pts * slotMult(L, slotsOf.indexOf(p.id), p.id)]));
       const banked = (L.banked && L.banked[w] && L.banked[w][teamId]) || {};
       for (const [id, v] of Object.entries(banked)) players[id] = (players[id] || 0) + v;
       return { total: sum(Object.values(players)), players, lineup: best, banked: Object.keys(banked) };
@@ -486,13 +486,14 @@
     return { probs, win, sa, sb: n - sa };
   }
   // How much a lineup slot counts: settings.mult, by slot name (a showdown's CPT, 1.5), or 1
-  const slotMult = (L, i) => (i >= 0 && L.settings.mult && L.settings.mult[L.settings.lineup[i]]) || 1;
+  // ...times what a heist put on the player himself (L.pmult: a stolen player's 1.5x, a jinxed one's half)
+  const slotMult = (L, i, pid) => ((i >= 0 && L.settings.mult && L.settings.mult[L.settings.lineup[i]]) || 1) * ((pid != null && L.pmult && L.pmult[pid]) || 1);
   // What a team should score this week with average form.
   function projection(L, ctx, teamId, w) {
     const sc = scoring(L, ctx);
     const wk = WEEK[ctx.sport.key] || { weeks: 20 };
     const lu = lineupFor(L, ctx, teamId, w), ids = lu.filter(Boolean);
-    if (sc.type === "points") return { total: sum(ids.map((id) => (ctx.byId[id] ? (ctx.byId[id].v / wk.weeks) * slotMult(L, lu.indexOf(id)) : 0))) };
+    if (sc.type === "points") return { total: sum(ids.map((id) => (ctx.byId[id] ? (ctx.byId[id].v / wk.weeks) * slotMult(L, lu.indexOf(id), id) : 0))) };
     return { total: sum(ids.map((id) => (ctx.byId[id] ? ctx.byId[id].v : 0))) };
   }
   function compare(L, ctx, a, b) {
@@ -552,7 +553,7 @@
       const p = ctx.byId[id], t = p && lv.teams[p.t];
       if (!p || !t) continue;
       // a points rate is per game the player plays (sc.games a season), and a player who's out won't add to it
-      const togo = t.left + 0.5 * t.live, per = sc.type === "points" ? ((p.v || 0) / (sc.games || g)) * plays(p) * slotMult(L, lu.indexOf(id)) : 0;
+      const togo = t.left + 0.5 * t.live, per = sc.type === "points" ? ((p.v || 0) / (sc.games || g)) * plays(p) * slotMult(L, lu.indexOf(id), id) : 0;
       rem += per * togo; vr += togo * (k * per) ** 2;
       played += t.played + 0.5 * t.live; left += togo;
     }
@@ -1277,6 +1278,8 @@
   // A free agent who isn't on waivers: added right away.
   function addDrop(L, ctx, teamId, add, drop, now) {
     if (L.week > totalWeeks(L)) return { ok: false, why: "The season is over" };
+    // after a heist rosters are set for the week: the only move is filling a spot a steal emptied
+    if (L.settings.frozen && drop) return { ok: false, why: "Rosters are set for the week. You can only fill a spot a steal emptied" };
     if (add && ctx.own[add] != null) return { ok: false, why: `${ctx.byId[add].n} is on a roster` };
     if (add && onWaivers(L, add, now)) return { ok: false, why: `${ctx.byId[add].n} is on waivers: put in a claim` };
     if (drop && !L.rosters[teamId].includes(drop)) return { ok: false, why: "That player isn't on your roster" };
@@ -1285,11 +1288,17 @@
     if (!ok.ok) return ok;
     if (drop) { bank(L, ctx, teamId, drop, now); dropOne(L, teamId, drop, now); }
     if (add) { L.rosters[teamId].push(add); delete L.waivers[add]; joined(L, teamId, add, now, ctx); }
+    // a heist fill-in goes straight into the open spot he fits
+    if (add && L.settings.frozen) {
+      const w = L.week, cur = lineupFor(L, ctx, teamId, w).slice(), i = cur.findIndex((id, k) => !id && S.fits(ctx.sport, ctx.byId[add], L.settings.lineup[k]));
+      if (i >= 0) { cur[i] = add; (L.lineups[w] = L.lineups[w] || {})[teamId] = cur; }
+    }
     log(L, now, { type: add && drop ? "add/drop" : add ? "add" : "drop", team: teamId, adds: add ? [add] : [], drops: drop ? [drop] : [] });
     refresh(L, ctx);
     return { ok: true };
   }
   function claim(L, ctx, teamId, add, drop, bid, now) {
+    if (L.settings.frozen && drop) return { ok: false, why: "Rosters are set for the week" };
     if (ctx.own[add] != null) return { ok: false, why: `${ctx.byId[add].n} is on a roster` };
     bid = Math.max(L.settings.minBid, Math.round(bid || 0));
     if (L.settings.waivers === "faab" && bid > L.teams[teamId].faab) return { ok: false, why: `You have $${L.teams[teamId].faab} of FAAB` };

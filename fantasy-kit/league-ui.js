@@ -59,6 +59,30 @@
       return `Claims run ${new Date(at).toLocaleString("en-US", { weekday: "long", hour: "numeric", minute: "2-digit" })}.`;
     };
     const LOCK = `<svg class="lk-i" viewBox="0 0 16 16" width="11" height="11" aria-hidden="true"><rect x="3" y="7" width="10" height="7.5" rx="1.6" fill="currentColor"/><path d="M5.2 7V5.2a2.8 2.8 0 0 1 5.6 0V7" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>`;
+    /* ---------- the heist's results ---------- */
+    // a player's heist mark: stolen (1.5x for his new team) or jinxed (half)
+    const heistTag = (p) => { const m = p && L().pmult && L().pmult[p.id]; return !m || m === 1 ? "" : m > 1 ? ` <span class="tag win" title="Stolen in the heist: scores ${m}x">${m}x</span>` : ` <span class="tag loss" title="Jinxed in the heist: scores ${m === 0.5 ? "half" : m + "x"}">Jinxed</span>`; };
+    // One matchup's heist, both sides: what each team shielded, and every strike with how it landed
+    function heistCard(t, opts2 = {}) {
+      const H = L().heist; if (!H) return "";
+      const pair = H.pairs.find((x) => x.includes(t)); if (!pair) return "";
+      const nm = (pid) => esc((ctx.byId[pid] || {}).n || "a player");
+      const line = (e, i) => `<li class="${e.ok ? "ok" : "no"}" style="--i:${i}"><span class="hz-k ${e.type}">${e.type === "steal" ? "Steal" : "Jinx"}</span><span><b>${esc(T(e.by).abbr)}</b> ${e.type === "steal" ? "went for" : "jinxed"} <b>${nm(e.pid)}</b></span><b class="hz-r">${e.ok ? (e.type === "steal" ? "Stolen" : "Halved") : "Blocked"}</b></li>`;
+      const evs = H.events.filter((e) => pair.includes(e.by));
+      const side = (x) => `<div class="hz-sd"><div class="hz-t">${teamAv(T(x), "sm")}<b>${esc(T(x).name)}</b></div><p class="ps">Shielded ${(H.shields[x] || []).map(nm).join(", ") || "no one"}.</p><ul class="hz-ev">${evs.filter((e) => e.by === x).map(line).join("") || `<li class="none"><span class="ps">No strikes.</span></li>`}</ul></div>`;
+      const lost = isMe(t) && L().rosters[t].length < G.maxRoster(L()) && !over() ? `<div class="alert"><span>A steal left a spot open in your lineup. Pick up a free agent for it before his game starts: he scores normal points.</span><a class="btn sm go" href="#players/fa">Free agents</a></div>` : "";
+      const order = isMe(pair[1]) ? [pair[1], pair[0]] : pair;   // your side first
+      const note = `Stolen players score ${F_HEIST().steal}x for their new team; jinxed ones score half.`;
+      return `<div class="card hz-card${opts2.reveal ? " reveal" : ""}${opts2.stack ? " stack" : ""}">${opts2.reveal ? `<p class="ps" style="margin:0 0 4px">${note}</p>` : `<div class="mod-h"><h2>The heist</h2><span class="ps">${note}</span></div>`}${lost}<div class="hz-sds">${side(order[0])}${side(order[1])}</div></div>`;
+    }
+    const F_HEIST = () => Object.assign({}, FK.draft.HEIST, (L().draft && L().draft.season && L().draft.season.heist) || {});
+    // the first time you open the league after its heist: the results, revealed one by one
+    function heistReveal() {
+      const H = L().heist, mid = me(); if (!H || mid == null || U.dialogOpen()) return;
+      const key = "fk-heist-seen:" + (L().created || "") + ":" + (L().name || "");
+      try { if (localStorage.getItem(key)) return; localStorage.setItem(key, "1"); } catch (e) { return; }
+      U.dialog(`<h3 class="disp">The heist</h3>${heistCard(mid, { reveal: true })}<div class="acts"><button class="btn go" data-close>On to the week</button></div>`, null, { wide: true });
+    }
     const act = (fn, okMsg) => { const r = fn(); if (r && r.ok === false) { U.toast(r.why, true); return false; } save(); if (okMsg) U.toast(okMsg); if (U.dialogOpen()) setTimeout(render, 0); else render(); return true; };
     // review windows and offer lifetimes read in plain time
     const fmtHours = (h) => (h < 1 ? `${Math.max(1, Math.round(h * 60))} minutes` : h < 48 ? `${Math.round(h)} hour${Math.round(h) === 1 ? "" : "s"}` : `${Math.round(h / 24)} days`);
@@ -202,7 +226,7 @@
       const pw = G.power(L(), ctx).slice(0, 6);
       const myRow = mid != null ? st.find((r) => r.team.id === mid) : null;
       // your team, claims and offers: top of the page on a phone, the sidebar on a wide screen
-      const myCards = `
+      const myCards = `${L().heist && mid != null && !over() ? heistCard(mid, { stack: true }) : ""}
           ${myRow ? `<div class="card"><div class="mod-h">${teamAv(myRow.team, "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(myRow.team.name)}</b><span class="ps">${ord(myRow.rank)} place, ${myRow.w}-${myRow.l}${myRow.t ? "-" + myRow.t : ""}</span></div></div>
             <div class="bd"><div class="stat-row"><div><small>FAAB</small><b>$${T(mid).faab}</b></div><div><small>Waiver priority</small><b>${ord(T(mid).priority + 1)}</b></div><div><small>Streak</small><b>${esc(myRow.streak || "-")}</b></div></div>
             ${over() ? "" : `<div class="row" style="margin-top:12px;flex-wrap:wrap"><a class="btn sm" href="#team/roster">Set lineup</a>${canTrade() ? `<button class="btn sm" data-trade>Propose a trade</button>` : ""}<a class="btn sm" href="#players/fa">Free agents</a></div>`}</div></div>` : ""}
@@ -647,7 +671,7 @@
       // this week: what he should finish with (so far plus what's left); next week: his projection for it
       const soFar = (p) => { const v = ptsOf(p.id); return v != null ? v : frac(w) > 0 ? G.playerWeek(L(), ctx, p, w, frac(w)).pts || 0 : 0; };   // bench players too
       // a starter's projection counts his slot's weight too (a showdown captain's 1.5x)
-      const projOf = (p) => { if (!pts()) return null; const m = G.slotMult(L(), lu.indexOf(p.id)); return w === curWeek() ? soFar(p) + (projFor(p, soFar(p), w) - soFar(p)) * m : (p.v / wk.weeks) * m; };
+      const projOf = (p) => { if (!pts()) return null; const m = G.slotMult(L(), lu.indexOf(p.id), p.id); return w === curWeek() ? soFar(p) + (projFor(p, soFar(p), w) - soFar(p)) * m : (p.v / wk.weeks) * m; };
       const ir = L().ir[id] || [], irMax = G.irSlots(L()), alive = G.isAlive(L(), id), taxi = G.taxiOf(L(), id), txMax = G.taxiSlots(L());
       const moving = ui.moving && L().rosters[id].includes(ui.moving) && !G.held(L(), id).includes(ui.moving) ? ctx.byId[ui.moving] : null;
       const movingSlot = moving ? lu.indexOf(moving.id) : -1;
@@ -673,7 +697,7 @@
         if (lockedIn) return `<span class="lk-tag" title="His game has started. He's locked in until the week ends.">${LOCK}Locked</span>`;
         const irBtn = G.irEligible(p) && ir.length < irMax ? `<button class="btn xs" data-toir="${esc(p.id)}" title="Move to injured reserve">IR</button> ` : "";
         const txBtn = txMax && taxi.length < txMax && !lu.includes(p.id) && G.taxiEligible(L(), ctx, p.id) ? `<button class="btn xs" data-totaxi="${esc(p.id)}" title="Stash him on the taxi squad">Taxi</button> ` : "";
-        return `${irBtn}${txBtn}${!locked && !pl(p) ? `<button class="btn xs hide-s" data-move="${esc(p.id)}">Move</button>` : ""} <button class="btn icon drop hide-s" data-drop="${esc(p.id)}" aria-label="Drop ${esc(p.n)}" title="Drop">&minus;</button>`;
+        return `${irBtn}${txBtn}${!locked && !pl(p) ? `<button class="btn xs hide-s" data-move="${esc(p.id)}">Move</button>` : ""}${L().settings.frozen ? "" : ` <button class="btn icon drop hide-s" data-drop="${esc(p.id)}" aria-label="Drop ${esc(p.n)}" title="Drop">&minus;</button>`}`;
       };
       const blocked = new Set(L().settings.trades === false ? [] : G.blockOf(L(), ctx, id));
       const row = (slotLabel, p, i, onIR, onTaxi) => {
@@ -687,7 +711,7 @@
         // drag and drop: a starter, bench or IR player can be dragged; every slot, the bench and IR take drops
         const drag = mine && alive && !over() && p && !onTaxi && (onIR || !locked) && (onIR || !pl(p)) ? ` data-dg="${esc(p.id)}" data-from="${onIR ? "ir" : i != null ? "s" + i : "bn"}"` : "";
         const zone = i != null ? (pl(p) ? "" : ` data-dz="s${i}"`) : onIR ? ` data-dz="ir"` : onTaxi ? "" : ` data-dz="bn"${p && !pl(p) ? ` data-dzp="${esc(p.id)}"` : ""}`;
-        return `<tr class="${cls}"${drag}${zone}><td class="c" style="width:70px">${drag ? `<span class="grip" aria-hidden="true"></span>` : ""}${slotEl}</td><td class="nm">${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, `${esc(p.prank)}${onIR && !G.irEligible(p) ? `, <span class="win">healthy</span>` : ""}${blocked.has(p.id) ? `, <span class="blk-tag">on the block</span>` : ""}`)}</span>${!onIR && !onTaxi && w === curWeek() && gameChip(p, w) ? `<div class="gmr">${gameChip(p, w)}</div>` : ""}` : `<span class="ps">${onIR ? "Open for a player who's out or on IR" : onTaxi ? "Open for a rookie" : "Empty"}</span>`}</td>
+        return `<tr class="${cls}"${drag}${zone}><td class="c" style="width:70px">${drag ? `<span class="grip" aria-hidden="true"></span>` : ""}${slotEl}</td><td class="nm">${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, `${esc(p.prank)}${onIR && !G.irEligible(p) ? `, <span class="win">healthy</span>` : ""}${blocked.has(p.id) ? `, <span class="blk-tag">on the block</span>` : ""}${heistTag(p)}`)}</span>${!onIR && !onTaxi && w === curWeek() && gameChip(p, w) ? `<div class="gmr">${gameChip(p, w)}</div>` : ""}` : `<span class="ps">${onIR ? "Open for a player who's out or on IR" : onTaxi ? "Open for a rookie" : L().heist && i != null ? "Open: stolen in the heist. Add a free agent here" : "Empty"}</span>`}</td>
           <td class="r num hide-s">${p ? `<span class="ps">#${p.rank}</span>` : ""}</td><td class="r num">${p && pts() && !onIR && !onTaxi ? `<b>${fmtS(ptsOf(p.id))}</b><small class="ps only-s">proj ${fmtS(projOf(p))}</small>` : p && !onIR && !onTaxi ? `<b>${p.v.toFixed(1)}</b>` : ""}</td><td class="r num hide-s">${p && pts() && !onIR && !onTaxi ? fmtS(projOf(p)) : ""}</td>
           <td class="r act">${tgt || actsFor(p, onIR, onTaxi)}</td></tr>`;
       };
@@ -705,6 +729,7 @@
           <span class="grow"></span>${mine && !locked && !moving ? `<button class="btn sm" data-optimize><span class="hide-xs">Start my best lineup</span><span class="show-xs">Best lineup</span></button>` : ""}</div>
         ${moving ? `<div class="movebar" role="status"><span>Moving <b>${esc(moving.n)}</b>. Pick a highlighted spot${movingSlot >= 0 ? ", or swap with a bench player" : ""}.</span><span class="grow"></span>${movingSlot >= 0 ? `<button class="btn sm" data-here="BN">To bench</button>` : ""}<button class="btn sm" data-move="">Cancel</button></div>` : ""}
         ${gl() && !alive ? `<div class="banner loss"><b>Chopped in week ${(L().chopped.find((c) => c.team === id) || {}).week}.</b> <span class="muted">This roster went back on waivers.</span></div>` : ""}
+        ${mine && L().settings.frozen && L().heist && L().rosters[id].length < G.maxRoster(L()) && !over() ? `<div class="alert"><span>A steal left a spot open in your lineup. Pick up a free agent for it before his game starts: he scores normal points.</span><a class="btn sm go" href="#players/fa">Free agents</a></div>` : ""}
         ${claims.length ? `<div class="card"><div class="mod-h"><h2>Pending waiver claims</h2><span class="ps">${esc(claimsRun())}</span><a href="#players/claims">All claims</a></div>${claimList(claims)}</div>` : ""}
         <div class="table-wrap"><table class="t roster"><thead><tr><th class="c">Slot</th><th>Player</th><th class="r hide-s">Rank</th><th class="r">${pts() ? "Pts" : "Value"}</th><th class="r hide-s">${pts() ? "Proj" : ""}</th><th class="act"></th></tr></thead><tbody>
           <tr class="sec"><td colspan="6">Starters</td></tr>${starters}<tr class="sec" data-dz="bn"><td colspan="6">Bench</td></tr>${bench}${irMax ? `<tr class="sec" data-dz="ir"><td colspan="6">Injured reserve, ${ir.length} of ${irMax}</td></tr>${irRows}` : ""}${txMax ? `<tr class="sec"><td colspan="6">Taxi squad, ${taxi.length} of ${txMax}</td></tr>${txRows}` : ""}</tbody></table></div>
@@ -1017,7 +1042,7 @@
         const pa = la[k] && ctx.byId[la[k]], pb = lb[k] && ctx.byId[lb[k]];
         const xa = pa ? (pts() ? ptsA[pa.id] : weekLine(pa, w)) : null, xb = pb ? (pts() ? ptsB[pb.id] : weekLine(pb, w)) : null;
         const cmp = pts() && xa != null && xb != null;
-        return { slot, a: { p: pa, pts: xa, proj: pts() && pa && !m.final ? (xa || 0) + (projFor(pa, xa, w) - (xa || 0)) * G.slotMult(L(), k) : null, w: cmp && xa > xb, game: pa ? gameChip(pa, w) : "" }, b: { p: pb, pts: xb, proj: pts() && pb && !m.final ? (xb || 0) + (projFor(pb, xb, w) - (xb || 0)) * G.slotMult(L(), k) : null, w: cmp && xb > xa, game: pb ? gameChip(pb, w) : "" } };
+        return { slot, a: { p: pa, pts: xa, proj: pts() && pa && !m.final ? (xa || 0) + (projFor(pa, xa, w) - (xa || 0)) * G.slotMult(L(), k, pa.id) : null, w: cmp && xa > xb, game: pa ? gameChip(pa, w) : "" }, b: { p: pb, pts: xb, proj: pts() && pb && !m.final ? (xb || 0) + (projFor(pb, xb, w) - (xb || 0)) * G.slotMult(L(), k, pb.id) : null, w: cmp && xb > xa, game: pb ? gameChip(pb, w) : "" } };
       });
       // playing, yet to play and done, for each lineup
       const tallyOf = (ids) => { const c = { in: 0, pre: 0, post: 0 }; for (const id of ids) { const p = id && ctx.byId[id], gs = p && gamesOf(p, w); if (!gs) return null; const g = gameNow(gs); if (!g) c.post++; else if (g.state === "in") c.in++; else if (gs.some((x) => x.state === "pre")) c.pre++; else c.post++; } return c; };
@@ -1038,7 +1063,7 @@
       return `<div class="wrap page">
         <div class="head"><h1 class="disp">${w > L().settings.weeks ? esc(kindName(m.kind, w)) : L().settings.showdown ? `${esc(L().settings.showdown.label)} showdown` : `Week ${w} matchup`}</h1>${!pts() ? `<span class="ps">Each starter's line for the week so far.</span>` : ""}</div>
         <div class="row" style="flex-wrap:wrap"><div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-mweek="${x}" aria-pressed="${x === w}">${weekChip(x)}</button>`).join("")}</div></div>
-        <div class="card">${U.versus(versusVM(w, m))}${leftHtml || outlookLine(m)}${medianLine(w, m)}</div>${playsHtml}
+        <div class="card">${U.versus(versusVM(w, m))}${leftHtml || outlookLine(m)}${medianLine(w, m)}</div>${w === 1 && L().heist ? heistCard(m.a) : ""}${playsHtml}
         <div class="cols2" style="grid-template-columns:minmax(0,1fr)">${U.vsTable(sport, rows, pts() ? { a: m.sa, b: m.sb } : null, (x) => (x == null ? "-" : typeof x === "string" ? (/^(No games|Didn't play|Yet to play|Playing now|Done this week|No games this week|\d+ games? left)$/.test(x) ? `<span class="ps">${x}</span>` : x) : x.toFixed(1)))}</div>
         <div class="stack" style="gap:8px"><b class="ps">Other games, week ${w}</b>${U.scoreboard(gamesVM(w), fmtS)}</div></div>`;
     }
@@ -1270,6 +1295,7 @@
       if (!/<h1[\s>]/.test(html)) html = `<h1 class="sr">${esc(pageName || L().name)}, ${esc(L().name)}</h1>` + html;
       const scores = r.tab === "matchup" || (r.tab === "league" && (r.sub === "scoreboard" || r.sub === "overview")) ? scoreNote() : "";
       opts.el.innerHTML = (opts.notice ? opts.notice() : "") + alertsBar(r) + scores + html;
+      if (L().heist) setTimeout(heistReveal, 0);
       for (const box of $$(".fk-nav nav, .fk-subs .wrap, .chips", document)) {
         const on = $('[aria-current="page"], [aria-pressed="true"]', box);
         if (on && box.scrollWidth > box.clientWidth) box.scrollLeft += on.getBoundingClientRect().left - box.getBoundingClientRect().left - (box.clientWidth - on.clientWidth) / 2;

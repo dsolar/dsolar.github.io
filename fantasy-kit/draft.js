@@ -340,8 +340,95 @@
 
   function finishIfDone(D, now) {
     const full = rosters(D).every((ids) => ids.length >= sizeOf(D));
-    if (D.type !== "auction" ? nextIndex(D) < 0 : full) { D.phase = "done"; D.done = now; return true; }
+    if (D.type !== "auction" ? nextIndex(D) < 0 : full) {
+      // a heist league isn't done yet: the heist comes right after the last pick
+      if (D.season && D.season.heist && !D.heist) { startHeist(D, now); return true; }
+      D.phase = "done"; D.done = now; return true;
+    }
     return false;
+  }
+
+  /* ---------- the heist ---------- */
+  // D.season.heist: { shields, steals, jinxes, clock (seconds) }. When the last pick is in the draft goes to phase
+  // "heist": each team, against its opponent for the week, secretly shields some of its own starters and strikes at
+  // the opponent's. A steal takes the player, who plays at 1.5x in the same lineup spot for the thief (the thief's own
+  // player there is released); the robbed team can pick up a free agent for the hole, at normal points. A jinx halves
+  // a player's points. A strike at a shielded player fails. Once every team is in, or the clock runs out, it all
+  // resolves at once: a team that didn't choose shields its best starters and strikes at no one.
+  const HEIST = { shields: 3, steals: 1, jinxes: 1, clock: 60, steal: 1.5, jinx: 0.5 };
+  const heistRules = (D) => Object.assign({}, HEIST, (D.season && D.season.heist) || {});
+  function startHeist(D, now) {
+    const ids = D.teams.map((t, i) => i), r = rng((D.seed ^ 0x4e157) >>> 0);
+    for (let i = ids.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [ids[i], ids[j]] = [ids[j], ids[i]]; }
+    const pairs = [];
+    for (let i = 0; i + 1 < ids.length; i += 2) pairs.push([ids[i], ids[i + 1]]);
+    D.phase = "heist";
+    D.heist = { pairs, at: now, ends: now + heistRules(D).clock * 1000, moves: {} };
+  }
+  const heistFoe = (D, t) => { const p = D.heist && D.heist.pairs.find((x) => x.includes(t)); return p ? (p[0] === t ? p[1] : p[0]) : null; };
+  // a team's lineup as the draft left it: one player per starting slot
+  const heistLineup = (D, ctx, t) => assign(ctx.sport, rosters(D)[t].map((id) => ctx.byId[id]).filter(Boolean), D.lineup).map((p) => (p ? p.id : null));
+  function heistMove(D, ctx, t, m, now) {
+    if (D.phase !== "heist") return { ok: false, why: "The heist is over" };
+    const foe = heistFoe(D, t);
+    if (foe == null) return { ok: false, why: "You sit this one out: no opponent this week" };
+    if (D.heist.moves[t]) return { ok: false, why: "Your moves are locked in" };
+    const R = heistRules(D), mine = heistLineup(D, ctx, t).filter(Boolean), theirs = heistLineup(D, ctx, foe).filter(Boolean);
+    const shield = [...new Set(m.shield || [])], steal = [...new Set(m.steal || [])], jinx = [...new Set(m.jinx || [])];
+    if (shield.length > R.shields || steal.length > R.steals || jinx.length > R.jinxes) return { ok: false, why: "That's more moves than you have" };
+    if (!shield.every((id) => mine.includes(id))) return { ok: false, why: "Shield your own starters" };
+    if (!steal.concat(jinx).every((id) => theirs.includes(id))) return { ok: false, why: "Strike at your opponent's starters" };
+    if (steal.some((id) => jinx.includes(id))) return { ok: false, why: "A player can be stolen or jinxed, not both" };
+    D.heist.moves[t] = { shield, steal, jinx, at: now };
+    return { ok: true };
+  }
+  // The moves a bot makes, or a manager who never chose (shield the best, strike at no one). A bot plays the guessing
+  // game: it shields mostly but not always its best, steals where it gains the most from a player it guesses is open,
+  // and jinxes a good player it doesn't steal.
+  function heistDefault(D, ctx, t, bot, r) {
+    const R = heistRules(D), foe = heistFoe(D, t), v = (id) => (id && ctx.byId[id] ? Math.max(0, ctx.byId[id].v || 0) : 0);
+    const mine = heistLineup(D, ctx, t), theirs = heistLineup(D, ctx, foe);
+    const byVal = (ids) => ids.filter(Boolean).sort((a, b) => v(b) - v(a));
+    if (!bot) return { shield: byVal(mine).slice(0, R.shields), steal: [], jinx: [], auto: true };
+    const draw = (cands, n) => { const out = [], c = cands.slice(); while (out.length < n && c.length) { const tot = c.reduce((s, x) => s + x.w, 0); if (tot <= 0) break; let x = r() * tot, i = 0; while (i < c.length - 1 && (x -= c[i].w) > 0) i++; out.push(c[i].id); c.splice(i, 1); } return out; };
+    const shield = draw(byVal(mine).map((id) => ({ id, w: v(id) ** 2 })), R.shields);
+    const rank = byVal(theirs), guard = (id) => (rank.indexOf(id) < R.shields ? 0.45 : 1);   // their best are likely shielded
+    const steal = draw(theirs.map((id, i) => ({ id, w: id ? Math.max(0, R.steal * v(id) - v(mine[i])) ** 1.5 * guard(id) : 0 })).filter((x) => x.w > 0), R.steals);
+    const jinx = draw(theirs.filter((id) => id && !steal.includes(id)).map((id) => ({ id, w: v(id) * guard(id) })), R.jinxes);
+    return { shield, steal, jinx, auto: true };
+  }
+  function heistTick(D, ctx, now) {
+    if (D.phase !== "heist") return false;
+    let changed = false;
+    const paired = D.heist.pairs.flat();
+    // bots move at once; a manager who autodrafted still gets to make his own moves
+    for (const t of paired) if (!D.heist.moves[t] && !D.teams[t].owner) { D.heist.moves[t] = Object.assign(heistDefault(D, ctx, t, true, rng((D.seed + 977 * (t + 1)) >>> 0)), { at: now }); changed = true; }
+    if (paired.every((t) => D.heist.moves[t]) || now >= D.heist.ends) {
+      for (const t of paired) if (!D.heist.moves[t]) D.heist.moves[t] = Object.assign(heistDefault(D, ctx, t, false), { at: now });
+      resolveHeist(D, ctx, now);
+      changed = true;
+    }
+    return changed;
+  }
+  // Every move lands at once, from the lineups the draft left: steals first take their players, then each thief's
+  // stolen player fills the matching spot (whoever was there is released unless someone stole him too).
+  function resolveHeist(D, ctx, now) {
+    const R = heistRules(D), H = D.heist, events = [], mult = {};
+    const before = Object.fromEntries(D.teams.map((t, i) => [i, heistLineup(D, ctx, i)]));
+    const after = Object.fromEntries(Object.entries(before).map(([t, l]) => [t, l.slice()]));
+    const takes = [];
+    for (const [a, b] of H.pairs) for (const [x, y] of [[a, b], [b, a]]) {
+      const m = H.moves[x] || {}, guard = new Set((H.moves[y] || {}).shield || []);
+      for (const pid of m.steal || []) { const ok = !guard.has(pid); events.push({ type: "steal", by: x, on: y, pid, ok }); if (ok) takes.push({ by: x, from: y, pid, slot: before[y].indexOf(pid) }); }
+      for (const pid of m.jinx || []) { const ok = !guard.has(pid); events.push({ type: "jinx", by: x, on: y, pid, ok }); if (ok) mult[pid] = (mult[pid] || 1) * R.jinx; }
+    }
+    for (const k of takes) if (after[k.from][k.slot] === k.pid) after[k.from][k.slot] = null;
+    for (const k of takes) { after[k.by][k.slot] = k.pid; mult[k.pid] = (mult[k.pid] || 1) * R.steal; }
+    const kept = new Set(Object.values(after).flat().filter(Boolean));
+    const released = Object.values(before).flat().filter((id) => id && !kept.has(id));
+    H.result = { events, lineups: after, released, mult, shields: Object.fromEntries(H.pairs.flat().map((t) => [t, (H.moves[t] || {}).shield || []])) };
+    H.done = now;
+    D.phase = "done"; D.done = now;
   }
 
   /* ---------- picks ---------- */
@@ -1009,7 +1096,7 @@
   }
   const made_ = (D) => made(D);
 
-  return { spinOf, wheelFor, respin, respinsLeft, setOrder, recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
+  return { HEIST, heistRules, heistFoe, heistLineup, heistMove, heistDefault, heistTick, spinOf, wheelFor, respin, respinsLeft, setOrder, recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
     start, pause, pick, worth, resize, offerHold, holdLeft, HOLD_MAX, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, botMax, standings, sizeOf,
     clockLen, thinkTime, bankShare, slotInfo, fitsRoster, canSteal, steal, stealsOf, stealsLeft, stealsOpen, botSteal, pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
     tradeCheck, balance, propose, respond, cancel, botAnswer, botOffer };

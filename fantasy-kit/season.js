@@ -47,6 +47,8 @@
     if (s.posMax && Object.keys(s.posMax).length) settings.posMax = Object.assign({}, s.posMax);
     // weekly extras: a game against the league median, best ball lineups, divisions
     if (s.median) settings.median = true;
+    // a one-week league has no trades: there's no week after this one to build for
+    if (s.oneWeek) settings.trades = false;
     if (s.bestBall && s.format !== "guillotine") settings.bestBall = true;
     if (s.divisions) settings.divisions = s.divisions;
     // a vampire league (football, head to head): which team is the vampire, and its swap rules
@@ -68,6 +70,18 @@
     const L = G.create({ sport, draft: D, name: o.name || D.name, season: o.season || "", now: at, start, scoring: D.scoring, settings });
     // its kickoff locks everyone, even before a page has seen the live feed
     if (sd && sd.at && L.week === 1) L.kick = { week: 1, teams: Object.fromEntries(sd.teams.map((t) => [t, sd.at])) };
+    // a heist: the lineups it left (stolen players moved, the thieves' bumped players released), each player's 1.5x or
+    // half, the week's matchups as the heist paired them, and rosters set for the week but for filling a robbed spot
+    const hr = D.heist && D.heist.result;
+    if (hr) {
+      L.rosters = L.teams.map((t) => (hr.lineups[t.id] || []).filter(Boolean));
+      L.lineups[1] = Object.fromEntries(L.teams.map((t) => [t.id, (hr.lineups[t.id] || []).slice()]));
+      L.pmult = Object.assign({}, hr.mult);
+      L.heist = { pairs: D.heist.pairs, events: hr.events, released: hr.released, shields: hr.shields };
+      if ((L.settings.weeks || 1) === 1 && L.schedule && L.schedule.length) L.schedule[0] = D.heist.pairs.map((p) => p.slice());
+      Object.assign(L.settings, { frozen: true, trades: false, ir: 0 });
+      L.waivers = {};
+    }
     // started midweek: what every player had done this week before the league began doesn't count
     if (thisWeek && settings.real && o.real && o.real !== true) L.baseline = { start: weekKeyOf(o.real, start), at, lines: JSON.parse(JSON.stringify(linesAt(o.real, start) || {})) };
     return L;
@@ -170,6 +184,7 @@
   }
 
   function driveDraft(D, ctx, now) {
+    if (D && D.phase === "heist") return F.heistTick(D, ctx, now);
     if (!D || D.phase !== "live") return false;
     const held = F.offerHold(D, now);                     // an answered offer (or one held long enough) lets the draft go on
     if (D.paused) return held;

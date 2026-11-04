@@ -652,7 +652,8 @@
       if (opts.tools) ctl.push(opts.tools());
       if (opts.exit) ctl.push(`<a class="btn sm" href="${esc(opts.exit.href)}">${esc(opts.exit.label || "Exit")}</a>`);
       let mid = "";
-      if (d.phase === "setup") mid = `<div class="otc"><span class="ring" style="--p:1"><span>${d.bank ? fmtLeft(bankFull()) : d.clock || d.auction ? (auction() ? d.auction.bidClock : d.clock) : "-"}</span></span><span class="who"><small>Draft room is open</small><b>${mystery() && !seenK(0) ? "Packages are sealed" : "Build your queue"}</b><span>${auction() ? `$${d.auction.budget} budgets, ${d.auction.bidClock} seconds a bid` : d.bank ? `${fmtLeft(bankFull())} bank each. What's left becomes FAAB` : d.clock ? `${d.clock} seconds a pick` : "No pick clock"}</span></span></div>`;
+      if (d.phase === "heist") mid = `<div class="otc me"><span class="ring" id="fk-ring"><span id="fk-timer"></span></span><span class="who"><small>The draft is done</small><b>The heist</b><span>Shield yours, strike at theirs</span></span></div>`;
+      else if (d.phase === "setup") mid = `<div class="otc"><span class="ring" style="--p:1"><span>${d.bank ? fmtLeft(bankFull()) : d.clock || d.auction ? (auction() ? d.auction.bidClock : d.clock) : "-"}</span></span><span class="who"><small>Draft room is open</small><b>${mystery() && !seenK(0) ? "Packages are sealed" : "Build your queue"}</b><span>${auction() ? `$${d.auction.budget} budgets, ${d.auction.bidClock} seconds a bid` : d.bank ? `${fmtLeft(bankFull())} bank each. What's left becomes FAAB` : d.clock ? `${d.clock} seconds a pick` : "No pick clock"}</span></span></div>`;
       else if (d.phase === "done") mid = `<div class="otc"><span class="who"><small>Draft complete</small><b>${F.made(d).length} ${auction() ? "players bought" : "picks"}</b><span>See the Results tab</span></span></div>`;
       else if (auction()) {
         const st = F.auctionState(d, n);
@@ -665,6 +666,49 @@
         mid = `<div class="otc${mine ? " me" : ""}">${teamAv(t, "md")}<span class="who"><small>${mine ? (c.makeup ? "You were robbed. Pick again" : "You're on the clock") : c.makeup ? "Make-up pick" : "On the clock"}</small><b>${esc(t.name)}</b><span>${c.makeup ? `Make-up pick: ${esc(team(c.makeup.from).abbr)} stole ${esc((ctx.byId[c.makeup.forbid] || {}).n || "a player")}` : mystery() ? `Pick ${c.pick} of ${c.total}` : `Round ${c.round}, pick ${c.inRound} (${ord(c.pick)} overall)`}${elephant() && mine ? (F.stealsOpen(d, c.index) ? `. ${F.stealsLeft(d, me())} steal${F.stealsLeft(d, me()) === 1 ? "" : "s"} left` : ". Steals are over") : ""}${viaOf(c.index) ? `, from ${isMe(viaOf(c.index)) ? "you" : esc(viaOf(c.index).name)}` : ""}${!mine && next ? `. You pick in ${next - c.pick}` : ""}${d.paused ? (d.hold ? `. Stopped while ${isMe(team(d.hold.team)) ? "you look" : `${esc(team(d.hold.team).name)} looks`} at a trade offer` : ", paused") : ""}${d.bank && t.bank <= 0 ? `. Bank empty: ${d.bank.floor} seconds a pick` : ""}</span></span><span class="ring" id="fk-ring" title="${d.bank ? "Time left in the bank" : "Time left on the pick"}"><span id="fk-timer"></span></span></div>`;
       }
       return `<div class="dr-top">${lg}${mid}${wheelHtml()}<div class="acts">${ctl.join("")}</div></div>`;
+    }
+    /* ---------- the heist: shield yours, strike at theirs ---------- */
+    const hsel = () => (ui.hs = ui.hs || { shield: [], steal: [], jinx: [] });
+    function heistView() {
+      const d = D(), R = F.heistRules(d), mine = me(), foe = mine != null ? F.heistFoe(d, mine) : null, sel = hsel();
+      const wk = (p) => (p ? (p.v || 0) / 17 : 0), fm = (x) => (Math.round(x * 10) / 10).toFixed(1);
+      const status = d.heist.pairs.flat().map((t) => `<span class="${d.heist.moves[t] ? "ok" : ""}">${teamAv(team(t), "sm")}${esc(team(t).abbr)} ${d.heist.moves[t] ? "locked in" : "deciding"}</span>`).join("");
+      const rules = `Shield up to ${R.shields} of yours. Steal ${R.steals} and jinx ${R.jinxes} of theirs. A strike at a shielded player fails. A stolen player scores ${R.steal}x for you in the same spot, and your player there is let go; a jinxed one scores half for them.`;
+      if (mine == null || foe == null) return `<div class="hz"><div class="hz-h"><h2 class="disp">The heist</h2><p>${mine == null ? "Managers are making their moves." : "You have no opponent this week, so you sit this one out."} ${esc(rules)}</p></div><div class="hz-st">${status}</div></div>`;
+      const done = d.heist.moves[mine];
+      const a = F.heistLineup(d, ctx, mine), b = F.heistLineup(d, ctx, foe);
+      const row = (slot, id, side, i) => {
+        const p = id && ctx.byId[id];
+        if (!p) return `<li><span class="slot">${esc(slot)}</span><span class="ps">Empty</span></li>`;
+        const on = (k) => (done ? done[k] : sel[k]).includes(id);
+        let btns = "";
+        if (side === "me") btns = `<button type="button" class="hz-b sh${on("shield") ? " on" : ""}" data-hz="shield" data-pid="${esc(id)}" aria-pressed="${on("shield")}"${done ? " disabled" : ""}>Shield</button>`;
+        else {
+          const gain = R.steal * wk(p) - wk(a[i] && ctx.byId[a[i]]);
+          btns = `<button type="button" class="hz-b st${on("steal") ? " on" : ""}" data-hz="steal" data-pid="${esc(id)}" aria-pressed="${on("steal")}"${done ? " disabled" : ""} title="Steal him: he plays ${R.steal}x for you at ${esc(slot)}">Steal <small>${gain >= 0 ? "+" : ""}${fm(gain)}</small></button><button type="button" class="hz-b jx${on("jinx") ? " on" : ""}" data-hz="jinx" data-pid="${esc(id)}" aria-pressed="${on("jinx")}"${done ? " disabled" : ""} title="Jinx him: he scores half for them">Jinx</button>`;
+        }
+        return `<li class="${on("shield") ? "sh" : ""}${on("steal") ? " st" : ""}${on("jinx") ? " jx" : ""}"><span class="slot">${esc(slot)}</span><span data-player="${esc(id)}" class="hz-p">${pname(sport, p, `about ${fm(wk(p))} a week`)}</span><span class="hz-a">${btns}</span></li>`;
+      };
+      const count = (k, n) => `<span class="hz-c${(done ? done[k] : sel[k]).length === n ? " full" : ""}"><b>${(done ? done[k] : sel[k]).length}</b> of ${n} ${k === "shield" ? "shields" : k === "steal" ? (n === 1 ? "steal" : "steals") : n === 1 ? "jinx" : "jinxes"}</span>`;
+      return `<div class="hz"><div class="hz-h"><h2 class="disp">The heist</h2><p>${esc(rules)}</p></div>
+        <div class="hz-cols">
+          <section class="hz-col"><div class="hz-t">${teamAv(team(mine), "sm")}<b>Your lineup</b>${count("shield", R.shields)}</div><ul class="hz-l">${d.lineup.map((sl, i) => row(sl, a[i], "me", i)).join("")}</ul></section>
+          <section class="hz-col"><div class="hz-t">${teamAv(team(foe), "sm")}<b>${esc(team(foe).name)}</b>${count("steal", R.steals)}${count("jinx", R.jinxes)}</div><ul class="hz-l">${d.lineup.map((sl, i) => row(sl, b[i], "foe", i)).join("")}</ul></section>
+        </div>
+        <div class="hz-go">${done ? `<b>Locked in.</b><span class="ps">Everything is revealed once both of you are in, or when the clock runs out.</span>` : `<span class="ps">Moves you don't make: your best starters get your shields, and you strike at no one.</span><span class="grow"></span><button class="btn go" data-act="heistgo">Lock in</button>`}</div>
+        <div class="hz-st">${status}</div></div>`;
+    }
+    function heistPick(k, pid) {
+      const d = D(), R = F.heistRules(d), sel = hsel(), cap = { shield: R.shields, steal: R.steals, jinx: R.jinxes }[k];
+      const list = sel[k], i = list.indexOf(pid);
+      if (i >= 0) list.splice(i, 1);
+      else {
+        // a player is stolen or jinxed, not both: picking one clears the other
+        for (const o of ["steal", "jinx"]) if (o !== k && k !== "shield") { const j = sel[o].indexOf(pid); if (j >= 0) sel[o].splice(j, 1); }
+        if (list.length >= cap) list.shift();
+        list.push(pid);
+      }
+      render();
     }
     // team roulette: a football team's full name is its defense's; elsewhere the abbreviation does
     let fullNames = null;
@@ -983,6 +1027,7 @@
       if (!rights.some((x) => x[0] === ui.right)) ui.right = rights[0][0];
       const keep = { f: focusKey(el), scroll: {} };
       $$("#fk-pool,#fk-board,#fk-picks,.dr-panel,#fk-ticker,#fk-seg,#fk-seg2,#fk-rchatl", el).forEach((x) => (keep.scroll[x.id || x.className] = [x.scrollTop, x.scrollLeft]));
+      if (d.phase === "heist") { const sc = $(".hz-scroll", el), y = sc ? sc.scrollTop : 0; el.innerHTML = `<div class="droom hzr fk-dark">${top()}<div class="hz-scroll">${heistView()}</div></div>`; if (y) $(".hz-scroll", el).scrollTop = y; drawTimer(); if (opts.onChange) opts.onChange(d); return; }
       const left = { players, board, picks, results, packages, steal: steals, proj: projected }[ui.left]();
       const right = { team: () => rosterPanel(me()), queue: queuePanel, teams: teamsPanel, trades: tradesPanel, chat: chatPanel }[ui.right]();
       // one view switch: the left views, plus the right panels as views on narrow screens
@@ -1034,7 +1079,8 @@
     function drawTimer() {
       const d = D(), n = now();
       let left = null, total = 1;
-      if (auction()) { const st = F.auctionState(d, n); left = st ? st.left : null; total = st && st.kind === "lot" ? d.auction.bidClock * 1000 : d.auction.nomClock * 1000; }
+      if (d.phase === "heist") { left = Math.max(0, d.heist.ends - n); total = F.heistRules(d).clock * 1000; }
+      else if (auction()) { const st = F.auctionState(d, n); left = st ? st.left : null; total = st && st.kind === "lot" ? d.auction.bidClock * 1000 : d.auction.nomClock * 1000; }
       else { const c = F.onClock(d, n); left = c ? c.left : null; total = d.bank ? (c && team(c.team).bank > d.bank.floor * 1000 ? bankFull() : d.bank.floor * 1000) : (d.clock || 1) * 1000; }
       const fin = left != null && Number.isFinite(left);
       for (const [ti, ri] of [["#fk-timer", "#fk-ring"], ["#fk-timer2", "#fk-ring2"]]) {
@@ -1110,6 +1156,8 @@
         confirm(`Steal ${p.n}?`, `${esc(from.name)} picks again right away and can't take him straight back. You have ${F.stealsLeft(D(), me())} steal${F.stealsLeft(D(), me()) === 1 ? "" : "s"} left.`, "Steal him", () => { if (act(() => F.steal(D(), ctx, me(), pid, now()))) { ui.left = "players"; render(); toast(`You stole ${p.n} from ${from.abbr}.`); } });
         return;
       }
+      const hz = e.target.closest("button[data-hz]");
+      if (hz) { heistPick(hz.dataset.hz, hz.dataset.pid); return; }
       const b = e.target.closest("button[data-pick],button[data-queue],button[data-nominate],button[data-bid],button[data-qup],button[data-act]");
       if (b) {
         e.stopPropagation();
@@ -1129,6 +1177,7 @@
           else if (a === "trade") openTrade();
           else if (a === "recap") { const txt = recapText(); (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast("Recap copied. Paste it in your group chat."), () => dialog(`<h3>Draft recap</h3><textarea rows="14" style="width:100%;font:inherit;font-size:13px" readonly>${esc(txt)}</textarea><div class="acts"><button type="button" class="btn" data-close>Close</button></div>`)); }
           else if (a === "alerts") { const v = !alerts.on(); alerts.set(v).then(() => { toast(v ? (typeof Notification !== "undefined" && Notification.permission === "denied" ? "Alerts on. Your browser blocks notifications, so you'll get the chime and tab only." : "Alerts on: a chime, and a notification when this tab is in the background.") : "Alerts off."); render(); }); }
+          else if (a === "heistgo") { const sel = hsel(); if (act(() => F.heistMove(d, ctx, me(), sel, n))) toast("Locked in."); }
           else if (a === "respin") act(() => { const r = F.respin(d, ctx, me(), n); if (r.ok) toast(`The wheel lands on ${teamFull(r.team)}.`); return r; });
           else if (a === "rlall") { ui.rlAll = !ui.rlAll; render(); }
           else if (a === "auto") { const t = team(me()); t.auto = !t.auto; if (t.auto) toast("Autodraft is on: the bot picks for you."); save(); render(); }
@@ -1219,6 +1268,7 @@
     }
     timer = setInterval(() => {
       // a paused or finished draft has no clock to run; check for changes from elsewhere once a second
+      if (opts.drive && D().phase === "heist") { if (F.heistTick(D(), ctx, now())) { save(); render(); } else drawTimer(); return; }
       const idle = D().phase !== "live" || (D().paused && !D().hold);
       if (idle && (ui.idleN = (ui.idleN || 0) + 1) % 4) return;
       if (opts.drive && D().phase === "live" && F.offerHold(D(), now())) save();

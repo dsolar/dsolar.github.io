@@ -340,3 +340,43 @@ test('team roulette: every pick comes from the team the wheel lands on, a round 
   const off = players.find((p) => p.t !== r.team && ctx.own[p.id] == null);
   assert.equal(F.pick(D, ctx, 0, off.id, T0 + 3).ok, false, 'a player from another team is refused');
 });
+
+test('heist: shields block, a steal takes the player at 1.5x and frees a hole to fill, a jinx halves, rosters freeze', () => {
+  const Z = require('../fantasy-kit/season.js');
+  const data = JSON.parse(readFileSync(new URL('../fantasy-kit/data/nfl.json', import.meta.url), 'utf8'));
+  const sport = S.attach(Object.assign({}, S.nfl), data);
+  const players = data.players.map((p) => ({ ...p }));
+  const lineup = ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'FLEX'];
+  V.evaluate(sport, players, { teams: 2, lineup, bench: 0, scoring: 'half' });
+  const now = Date.UTC(2026, 10, 4, 15);
+  const D = F.create({ sport, teams: 2, seed: 13, now, lineup, bench: 0, botDelay: 0, scoring: 'half' });
+  D.teams[0].owner = 'David'; D.teams[1].owner = 'Bea';
+  D.season = { format: 'h2h', weeks: 1, oneWeek: true, playoffTeams: 0, deadline: 0, ir: 0, heist: { shields: 3, steals: 1, jinxes: 1, clock: 60 } };
+  const ctx = F.context(D, players, sport);
+  F.start(D, now); D.teams[0].auto = true; D.teams[1].auto = true; F.tick(D, ctx, now + 1);
+  D.teams[0].auto = false; D.teams[1].auto = false;
+  assert.equal(D.phase, 'heist', 'the heist follows the last pick');
+  const a = F.heistLineup(D, ctx, 0), b = F.heistLineup(D, ctx, 1);
+  // David shields three, steals Bea's QB and jinxes her TE; Bea shields her TE and steals nothing
+  assert.equal(F.heistMove(D, ctx, 0, { shield: a.slice(0, 4), steal: [], jinx: [] }, now).ok, false, 'four shields is one too many');
+  assert.ok(F.heistMove(D, ctx, 0, { shield: a.slice(1, 4), steal: [b[0]], jinx: [b[6]] }, now).ok);
+  assert.ok(F.heistMove(D, ctx, 1, { shield: [b[6]], steal: [], jinx: [] }, now).ok);
+  assert.ok(F.heistTick(D, ctx, now + 2));
+  assert.equal(D.phase, 'done');
+  const ev = D.heist.result.events;
+  assert.ok(ev.find((e) => e.type === 'steal' && e.ok), 'the steal of an unshielded QB works');
+  assert.ok(ev.find((e) => e.type === 'jinx' && !e.ok), 'the jinx on a shielded TE fails');
+  const L = Z.begin(D, sport, { now: now + 3 });
+  const lc = G.context(L, players, sport);
+  assert.ok(L.rosters[0].includes(b[0]) && !L.rosters[1].includes(b[0]), 'the QB changed teams');
+  assert.ok(!L.rosters[0].includes(a[0]), "the thief's own QB was released");
+  assert.equal(L.pmult[b[0]], 1.5);
+  assert.equal(L.rosters[1].length, 7, 'the robbed team has a hole');
+  assert.equal(G.addDrop(L, lc, 0, null, L.rosters[0][3], now + 4).ok, false, 'no drops after a heist');
+  const fa = lc.free.find((p) => S.positions(p).includes('QB'));
+  assert.ok(G.addDrop(L, lc, 1, fa.id, null, now + 4).ok, 'the robbed team fills the hole');
+  assert.equal(G.lineupFor(L, lc, 1, 1)[0], fa.id, 'and he goes straight into the open spot');
+  const tw = G.teamWeek(L, lc, 0, 1, 1), plain = G.playerWeek(L, lc, lc.byId[b[0]], 1, 1, 1).pts;
+  assert.ok(Math.abs(tw.players[b[0]] - plain * 1.5) < 1e-9, 'the stolen QB scores 1.5x for the thief');
+  assert.deepEqual(L.schedule[0], D.heist.pairs);
+});

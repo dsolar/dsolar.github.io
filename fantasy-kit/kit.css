@@ -1253,3 +1253,69 @@ tr.sec.dz-ok>td{color:var(--ink)}
 @media (max-width:700px){.rl-now{padding:6px 10px;gap:9px}.rl-w{width:24px;height:24px}.rl-t b{font-size:14px}}
 .dr-top .rl-now{flex:0 1 auto;min-width:250px}
 .rl-t b{overflow:visible}
+
+/* the heist, in the draft room: your lineup with shields, theirs with steal and jinx */
+.hz{max-width:1180px;margin:0 auto;padding:18px 16px 40px;display:grid;gap:16px}
+.hz-h h2{margin:0;font-size:30px}
+.hz-h p{margin:6px 0 0;max-width:780px;color:var(--muted);font-size:14px;line-height:1.5}
+.hz-cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.hz-col{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.hz-t{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.hz-t b{font-size:15px;margin-right:auto}
+.hz-c{font-size:12.5px;color:var(--muted);font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid var(--line-2)}
+.hz-c b{color:var(--ink)}
+.hz-c.full{border-color:var(--accent);color:var(--accent)}
+.hz-l{list-style:none;margin:0;padding:0}
+.hz-l li{display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;gap:10px;padding:9px 14px;border-top:1px solid var(--line);transition:background .15s}
+.hz-l li:first-child{border-top:0}
+.hz-l li.sh{background:rgba(122,167,255,.1)}
+.hz-l li.st{background:rgba(61,214,140,.1)}
+.hz-l li.jx{background:rgba(255,107,120,.1)}
+.hz-p{min-width:0;cursor:pointer}
+.hz-a{display:flex;gap:6px}
+.hz-b{border:1px solid var(--line-2);background:var(--surface-2);color:var(--muted);border-radius:9px;padding:7px 11px;font:inherit;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap}
+.hz-b small{font-weight:700;opacity:.8;margin-left:3px}
+.hz-b:hover:not(:disabled){color:var(--ink);border-color:var(--muted)}
+.hz-b:disabled{cursor:default;opacity:.55}
+.hz-b.sh.on{background:var(--info);border-color:var(--info);color:#06122A}
+.hz-b.st.on{background:var(--win);border-color:var(--win);color:#04210F}
+.hz-b.jx.on{background:var(--loss);border-color:var(--loss);color:#2A0408}
+.hz-go{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--line)}
+.hz-go .btn.go{min-width:140px}
+.hz-st{display:flex;flex-wrap:wrap;gap:8px}
+.hz-st span{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--muted);padding:4px 10px 4px 4px;border-radius:999px;border:1px solid var(--line)}
+.hz-st span.ok{color:var(--win);border-color:var(--win)}
+@media (max-width:760px){
+  .hz-cols{grid-template-columns:minmax(0,1fr)}
+  .hz-l li{grid-template-columns:44px minmax(0,1fr);row-gap:6px}
+  .hz-a{grid-column:2;justify-content:flex-start}
+  .hz-go{position:sticky;bottom:0;z-index:5}
+}
+/* the heist's results in the league */
+.hz-card .alert{margin:0 16px 12px}
+.hz-sds{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;border-top:1px solid var(--line)}
+.hz-sd{padding:12px 16px;display:grid;gap:8px;align-content:start}
+.hz-sd+.hz-sd{border-left:1px solid var(--line)}
+.hz-sd .hz-t{padding:0;border:0;background:none}
+.hz-sd p{margin:0}
+.hz-ev{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.hz-ev li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:9px;font-size:14px;padding:8px 10px;border-radius:10px;background:var(--surface-2)}
+.hz-ev li.none{display:block;background:none;padding:0}
+.hz-k{font-size:11px;font-weight:900;padding:2px 7px;border-radius:6px;background:var(--surface-3);color:var(--muted)}
+.hz-ev li.ok .hz-r{color:var(--win)}
+.hz-ev li.no .hz-r{color:var(--loss)}
+.hz-ev li.ok .hz-k.steal{background:var(--win-soft);color:var(--win)}
+.hz-ev li.ok .hz-k.jinx{background:var(--loss-soft);color:var(--loss)}
+.hz-card.reveal{border:0;box-shadow:none}
+@media (prefers-reduced-motion:no-preference){
+  .hz-card.reveal .hz-ev li{opacity:0;animation:hz-in .4s ease-out forwards;animation-delay:calc(.5s + var(--i,0) * .7s)}
+  .hz-card.reveal .hz-sd+.hz-sd .hz-ev li{animation-delay:calc(1s + var(--i,0) * .7s)}
+  @keyframes hz-in{from{opacity:0;transform:translateY(6px) scale(.98)}to{opacity:1;transform:none}}
+}
+@media (max-width:640px){.hz-sds{grid-template-columns:minmax(0,1fr)}.hz-sd+.hz-sd{border-left:0;border-top:1px solid var(--line)}}
+.hz-card.stack .hz-sds{grid-template-columns:minmax(0,1fr)}
+.hz-card.stack .hz-sd+.hz-sd{border-left:0;border-top:1px solid var(--line)}
+.hz-card.reveal .alert{margin:0 0 10px}
+.droom.hzr{grid-template-rows:auto minmax(0,1fr)}
+.droom.hzr .hz-scroll{overflow:auto;-webkit-overflow-scrolling:touch}
+@media (max-width:760px){.droom.hzr .hz-h h2{font-size:24px}.hz{padding-top:12px}}
