@@ -125,13 +125,18 @@
       const gs = gamesOf(p, w);
       if (!gs) return "";
       if (!gs.length) return `<span class="gm none">No game this week</span>`;
-      const g = gameNow(gs), vs = `${g.home ? "vs" : "@"} ${esc(g.opp)}`, done = gs.filter((x) => x.state === "post").length;
+      const g = gameNow(gs), done = gs.filter((x) => x.state === "post").length;
       const of = gs.length > 1 ? `<span class="gm-of">${done} of ${gs.length} played</span>` : "";
+      return oneGame(g) + of;
+    }
+    // one game as a chip: kickoff, live clock and score, or the final
+    function oneGame(g) {
+      const vs = `${g.home ? "vs" : "@"} ${esc(g.opp)}`;
       // ESPN's "4:21 3rd" reads better as "Q3 4:21"
       const clock = String(g.detail || "Live").replace(/^(\d+:\d+)\s+(\d)(st|nd|rd|th)$/, (x, c, q) => (sport.key === "nfl" ? `Q${q} ${c}` : `${q}${{ 1: "st", 2: "nd", 3: "rd" }[q] || "th"} ${c}`));
-      if (g.state === "in") return `<span class="gm live"><i aria-hidden="true"></i>${esc(clock)}, ${g.us}-${g.them} ${vs}</span>${of}`;
-      if (g.state === "post" && !gs.some((x) => x.state === "pre")) return `<span class="gm done">Final, ${g.us > g.them ? "W" : g.us < g.them ? "L" : "T"} ${g.us}-${g.them} ${vs}</span>${of}`;
-      return `<span class="gm">${esc(kick(g.at))} ${vs}</span>${of}`;
+      if (g.state === "in") return `<span class="gm live"><i aria-hidden="true"></i>${esc(clock)}, ${g.us}-${g.them} ${vs}</span>`;
+      if (g.state === "post") return `<span class="gm done">Final, ${g.us > g.them ? "W" : g.us < g.them ? "L" : "T"} ${g.us}-${g.them} ${vs}</span>`;
+      return `<span class="gm">${esc(kick(g.at))} ${vs}</span>`;
     }
     // how far a football game has gone, 0 to 1, from ESPN's clock ("4:21 3rd", "Halftime", "End of 2nd")
     function progress(g) {
@@ -1126,16 +1131,76 @@
       U.confirm(`Drop ${p.n}?`, `He goes on waivers for ${L().settings.waiverHours} hours, then becomes a free agent.`, "Drop him", () => act(() => G.addDrop(L(), ctx, me(), null, pid, now()), `${p.n} dropped.`));
     }
     // A points league's player card: what he's scored in this league each week, with his average.
-    function weekBars(p) {
-      if (!pts()) return "";
+    // A points player's weeks in this league: each finished week, and the current one so far against its projection.
+    function weeksOf(p) {
       const last = Math.min(L().week - 1, G.totalWeeks(L()));
-      if (last < 2) return "";
-      const ws = Array.from({ length: last }, (_, i) => i + 1), vals = ws.map((w) => Math.max(0, G.playerWeek(L(), ctx, p, w, 1).pts || 0));
-      const max = Math.max(...vals, 1), avg = vals.reduce((a, b) => a + b, 0) / vals.length, bw = 22, gap = 6, H = 64;
-      const x = (i) => i * (bw + gap), y = (v) => H - (v / max) * (H - 6);
-      const bars = vals.map((v, i) => `<g><title>Week ${ws[i]}: ${fmtS(v)}</title><rect x="${x(i)}" y="${Math.min(H - 2, y(v)).toFixed(1)}" width="${bw}" height="${Math.max(2, H - y(v)).toFixed(1)}" rx="${v ? 3 : 1}" class="${v >= avg ? "hi" : ""}"></rect><text x="${x(i) + bw / 2}" y="${H + 13}" text-anchor="middle">${ws[i]}</text></g>`).join("");
-      const W = x(vals.length) - gap;
-      return `<div class="wkbars"><div class="ps"><b>Points by week</b>, ${fmtS(avg)} a week on average</div><svg viewBox="0 -2 ${W} ${H + 18}" role="img" aria-label="Points by week: ${vals.map((v, i) => `week ${ws[i]} ${fmtS(v)}`).join(", ")}" preserveAspectRatio="xMinYMid meet" style="max-width:${Math.max(W, 120)}px">${bars}<line x1="0" x2="${W}" y1="${y(avg).toFixed(1)}" y2="${y(avg).toFixed(1)}" class="avg"></line></svg></div>`;
+      const done = Array.from({ length: last }, (_, i) => ({ w: i + 1, v: Math.max(0, G.playerWeek(L(), ctx, p, i + 1, 1).pts || 0) }));
+      const cw = over() ? null : curWeek(), so = cw && frac(cw) > 0 ? Math.max(0, G.playerWeek(L(), ctx, p, cw, frac(cw)).pts || 0) : 0;
+      return { done, cur: cw ? { w: cw, so, pj: Math.max(so, projFor(p, so, cw) || 0) } : null, avg: done.length ? done.reduce((t, x) => t + x.v, 0) / done.length : null };
+    }
+    function weekBars(p, W) {
+      if (!pts()) return catWeeks(p);
+      const vals = W.done.map((x) => x.v), n = vals.length + (W.cur ? 1 : 0);
+      if (n < 2) return "";
+      const max = Math.max(...vals, W.cur ? W.cur.pj : 0, 1), avg = W.avg || 0, bw = 22, gap = 6, H = 64;
+      const x = (i) => i * (bw + gap), y = (v) => H - (v / max) * (H - 6), hgt = (v) => Math.max(2, H - y(v));
+      const bars = W.done.map((d, i) => `<g><title>Week ${d.w}: ${fmtS(d.v)}</title><rect x="${x(i)}" y="${Math.min(H - 2, y(d.v)).toFixed(1)}" width="${bw}" height="${hgt(d.v).toFixed(1)}" rx="${d.v ? 3 : 1}" class="${d.v >= avg ? "hi" : ""}"></rect><text x="${x(i) + bw / 2}" y="${H + 13}" text-anchor="middle">${d.w}</text></g>`).join("");
+      // this week: an outline to the projection, filled to what he has so far
+      const c = W.cur, k = vals.length;
+      const now = c ? `<g><title>Week ${c.w}: ${fmtS(c.so)} so far, projected ${fmtS(c.pj)}</title><rect x="${x(k) + 1}" y="${Math.min(H - 2, y(c.pj)).toFixed(1)}" width="${bw - 2}" height="${hgt(c.pj).toFixed(1)}" rx="3" class="pj"></rect>${c.so > 0 ? `<rect x="${x(k)}" y="${Math.min(H - 2, y(c.so)).toFixed(1)}" width="${bw}" height="${hgt(c.so).toFixed(1)}" rx="3" class="so"></rect>` : ""}<text x="${x(k) + bw / 2}" y="${H + 13}" text-anchor="middle" class="cw">${c.w}</text></g>` : "";
+      const Wd = x(n) - gap;
+      return `<div class="wkbars"><div class="ps"><b>Points by week</b>${W.avg != null ? `, ${fmtS(avg)} a week on average` : ""}${c ? `. The outlined bar is week ${c.w}'s projection` : ""}</div><svg viewBox="0 -2 ${Wd} ${H + 18}" role="img" aria-label="Points by week: ${W.done.map((d) => `week ${d.w} ${fmtS(d.v)}`).join(", ")}${c ? `, week ${c.w} ${fmtS(c.so)} so far of ${fmtS(c.pj)} projected` : ""}" preserveAspectRatio="xMinYMid meet" style="max-width:${Math.max(Wd, 120)}px">${bars}${now}${vals.length ? `<line x1="0" x2="${x(k) - gap}" y1="${y(avg).toFixed(1)}" y2="${y(avg).toFixed(1)}" class="avg"></line>` : ""}</svg></div>`;
+    }
+    // the counting categories that say the most about a player, the big ones first: PTS REB AST, R HR RBI, K W SV
+    const PREF = ["pts", "reb", "ast", "tpm", "stl", "blk", "r", "hr", "rbi", "sb", "k", "w", "sv", "qs", "hld"];
+    const topCats = (p, n = 5) => sc().cats.filter((c) => c.col && p.l[c.line || "pg"] && (sport.cols[c.line || "pg"] || {})[c.col] != null).sort((a, b) => ((PREF.indexOf(a.col) + 99) % 99) - ((PREF.indexOf(b.col) + 99) % 99)).slice(0, n);
+    const catVal = (ln, c) => { const v = ln && ln[c.line || "pg"], i = (sport.cols[c.line || "pg"] || {})[c.col]; return v && i != null ? v[i] || 0 : 0; };
+    // A category player's weeks: his line in the big categories, one row a week, this week so far and projected
+    function catWeeks(p) {
+      const cats = topCats(p);
+      const last = Math.min(L().week - 1, G.totalWeeks(L()));
+      if (!cats.length || last < 1) return "";
+      const ws = Array.from({ length: last }, (_, i) => i + 1).slice(-6);
+      const row = (lab, ln, cls = "") => `<tr class="${cls}"><th scope="row">${lab}</th>${cats.map((c) => `<td class="num">${Math.round(catVal(ln, c))}</td>`).join("")}</tr>`;
+      const cw = over() ? null : curWeek();
+      const proj = cw ? G.projectLine(L(), ctx, ctx.own[p.id] != null ? ctx.own[p.id] : -1, p, cw, frac(cw)) : null;
+      const tot = proj ? Object.fromEntries(Object.keys(proj[1]).map((k) => [k, (proj[1][k] || []).map((v, i) => v + ((proj[0][k] || [])[i] || 0))])) : null;
+      return `<div class="stack" style="gap:6px"><div class="ps"><b>By week</b></div><div class="table-wrap"><table class="t dense pc-wt"><thead><tr><th>Week</th>${cats.map((c) => `<th class="num">${esc(c.label)}</th>`).join("")}</tr></thead><tbody>
+        ${ws.map((w) => row(String(w), G.playerWeek(L(), ctx, p, w, 1))).join("")}${cw ? row(`${cw}, so far`, frac(cw) > 0 ? G.playerWeek(L(), ctx, p, cw, frac(cw)) : {}, "cur") + row(`${cw}, projected`, tot, "pj") : ""}</tbody></table></div></div>`;
+    }
+    // What's ahead this week: his games, and what he has and should end up with
+    function weekPanel(p, W) {
+      if (over()) return "";
+      const w = curWeek(), gs = gamesOf(p, w);
+      const games = gs ? (gs.length ? gs.map(oneGame).join("") : `<span class="gm none">No game this week</span>`) : "";
+      let nums;
+      if (pts()) nums = `${W.cur.so > 0 ? `<div><small>So far</small><b>${fmtS(W.cur.so)}</b></div>` : ""}<div><small>Projected</small><b>${fmtS(W.cur.pj)}</b></div>${W.avg != null ? `<div><small>His average</small><b>${fmtS(W.avg)}</b></div>` : ""}`;
+      else {
+        const [a, b] = G.projectLine(L(), ctx, ctx.own[p.id] != null ? ctx.own[p.id] : -1, p, w, frac(w));
+        nums = topCats(p, 4).map((c) => `<div><small>${esc(c.label)}</small><b>${Math.round(catVal(a, c) + catVal(b, c))}</b></div>`).join("");
+      }
+      const left = gs && gs.length > 1 ? `<span class="ps">${gs.filter((g) => g.state !== "post").length} of ${gs.length} games left</span>` : "";
+      return `<div class="pc-wk"><div class="pc-wk-h"><b>Week ${w}${pts() ? "" : ", projected"}</b>${left}${p.inj ? `<span class="tag inj">${esc(p.inj)}</span>` : ""}</div>${games ? `<div class="pc-gms">${games}</div>` : ""}<div class="pc-wk-n">${nums}</div></div>`;
+    }
+    // Everything that's happened to him in this league, newest first
+    function leagueLog(p) {
+      const items = [], D = L().draft;
+      for (const x of L().tx) {
+        const got = (x.adds || []).includes(p.id), lost = (x.drops || []).includes(p.id);
+        if (!got && !lost) continue;
+        const t = T(x.team), o = x.other != null ? T(x.other) : null, ab = (y) => `<b>${esc(y.name)}</b>`;
+        const text = x.type === "trade" ? (got ? `Traded to ${ab(t)} by ${ab(o)}` : `Traded to ${ab(o)} by ${ab(t)}`)
+          : x.type === "waiver" && got ? `Claimed by ${ab(t)}${x.faab != null ? ` for $${x.faab}${x.bids > 1 ? `, over ${x.bids - 1} other bid${x.bids > 2 ? "s" : ""}` : ""}` : ""}`
+          : got ? `Added by ${ab(t)}` : `Dropped by ${ab(t)}`;
+        items.push({ at: x.at, week: x.week, text });
+      }
+      if (D) {
+        if (D.type === "auction") { const x = (D.sales || []).find((y) => y.pid === p.id); if (x) items.push({ at: x.at || D.done, week: 0, text: `${x.keeper ? "Kept" : "Bought"} by <b>${esc(T(x.team).name)}</b> for ${money(x.price)}` }); }
+        else { const i = (D.board || []).findIndex((y) => y && y.pid === p.id); if (i >= 0) { const x = D.board[i], n = D.teams.length; items.push({ at: x.at || D.done, week: 0, text: `${x.keeper ? "Kept" : "Drafted"} by <b>${esc(T(x.team).name)}</b>, round ${Math.floor(i / n) + 1}, pick ${x.n || i + 1}` }); } }
+      }
+      if (!items.length) return "";
+      items.sort((a, b) => b.at - a.at);
+      return `<div class="stack" style="gap:6px"><div class="ps"><b>In this league</b></div><ul class="pc-log">${items.slice(0, 8).map((x) => `<li><span>${x.text}</span><small>${x.week ? `Week ${x.week}` : "Draft"}</small></li>`).join("")}</ul></div>`;
     }
     function playerCard(pid) {
       const p = ctx.byId[pid], mid = me(), own = ctx.own[pid];
@@ -1149,7 +1214,18 @@
         else if (own != null && own !== mid && canTrade()) actions += `<button class="btn go" data-card="trade">Trade for him</button>`;
       }
       const status = own != null ? `${teamAv(T(own), "sm")} On ${esc(T(own).name)}` : G.onWaivers(L(), pid, now()) ? `<span class="tag gold">On waivers</span>` : `<span class="tag win">Free agent</span>`;
-      const Dl = U.dialog(U.playerCard(sport, p, { scoring: L().scoring, actions, status, extra: weekBars(p) }), null, { wide: true });
+      // the headline numbers: rank and position, then how he's scoring here (season average, the last three weeks),
+      // how often his team starts him, and what he'd go for in an auction
+      const W = pts() ? weeksOf(p) : null, last3 = W && W.done.length >= 4 ? W.done.slice(-3).reduce((t, x) => t + x.v, 0) / 3 : null;
+      const trend = last3 != null && W.avg ? (last3 - W.avg) / W.avg : null;
+      const startWeeks = own != null ? Array.from({ length: Math.min(L().week - 1, G.totalWeeks(L())) }, (_, i) => i + 1) : [];
+      const started = startWeeks.filter((w) => G.lineupFor(L(), ctx, own, w).includes(pid)).length;
+      const stats = [["Overall", `#${p.rank}`], ["Position", esc(p.prank)]]
+        .concat(W && W.avg != null ? [["Per week", fmtS(W.avg)]] : [[pts() ? "Projection" : "Value", pts() ? String(Math.round(p.v)) : p.v.toFixed(1)]])
+        .concat(trend != null ? [["Last 3 weeks", `${fmtS(last3)}<em class="${trend >= 0.1 ? "up" : trend <= -0.1 ? "dn" : ""}">${trend >= 0 ? "+" : ""}${Math.round(trend * 100)}%</em>`]] : [])
+        .concat(startWeeks.length && !bb() ? [["Started", `${started} of ${startWeeks.length}`]] : [])
+        .concat([["Auction", p.$ ? money(p.$) : "-"]]);
+      const Dl = U.dialog(U.playerCard(sport, p, { scoring: L().scoring, actions, status, stats, week: weekPanel(p, W || {}), extra: pts() ? weekBars(p, W) : catWeeks(p), after: leagueLog(p), fold: true }), null, { wide: true, sheet: true });
       $$("[data-card]", Dl).forEach((b) => b.addEventListener("click", () => {
         const a = b.dataset.card; Dl.close();
         if (a === "watch") { const w = watch(); const i = w.indexOf(pid); if (i >= 0) w.splice(i, 1); else w.push(pid); save(); render(); }
@@ -1168,7 +1244,8 @@
       const tabs = TABS().map(([k, n]) => [k, n, k === "team" ? pendingTrades() : 0]);
       const subs = subsOf(r.tab);
       const hrefOf = (t, s) => "#" + t + (s ? "/" + s : "");
-      opts.top.innerHTML = U.shell({ brand: opts.brand, title: opts.switcher ? opts.switcher() : "", tabs, tab: r.tab, subs, sub: r.sub, hrefOf, right: opts.right ? opts.right() : "" });
+      opts.top.innerHTML = U.shell({ brand: opts.brand, title: opts.switcher ? opts.switcher() : "", tabs, tab: r.tab, subs, sub: r.sub, hrefOf, right: opts.right ? opts.right() : "", tabbar: true });
+      document.body.classList.add("fk-hasbar");
       const keep = $("#fk-players") ? $("#fk-players").scrollTop : 0;
       const focus = U.focusKey(opts.el) || U.focusKey(opts.top);
       let html = "";

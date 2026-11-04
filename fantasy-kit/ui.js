@@ -34,7 +34,7 @@
   function dialog(html, onSubmit, opts = {}) {
     let D = $("#fk-dlg");
     if (!D) { D = document.createElement("dialog"); D.id = "fk-dlg"; document.body.appendChild(D); D.addEventListener("close", () => { const f = D.onclosed; D.onclosed = null; if (f) f(); }); }
-    D.className = "fk-dlg" + (opts.wide ? " wide" : "") + (opts.full ? " full" : "") + (opts.dark ? " fk-dark" : "");
+    D.className = "fk-dlg" + (opts.wide ? " wide" : "") + (opts.full ? " full" : "") + (opts.dark ? " fk-dark" : "") + (opts.full ? "" : " sheet");
     D.oninput = D.onchange = D.onclick = null;
     D.innerHTML = `<button type="button" class="dlg-x" data-close aria-label="Close">&times;</button>` + html;
     D.onclosed = opts.onClose || null;
@@ -206,9 +206,21 @@
     return `<div class="fk-mast fk-band"><div class="wrap">
         <a class="fk-brand" href="${esc(opts.brand.href || "./")}">${opts.brand.mark || ""}<b class="disp">${esc(opts.brand.name)}</b></a>
         ${opts.title || ""}<span class="grow"></span><div class="fk-who">${opts.right || ""}</div></div></div>
-      ${opts.tabs && opts.tabs.length ? `<div class="fk-nav"><div class="wrap"><nav aria-label="Sections">${opts.tabs.map(([k, n, b]) => `<a href="${href(k)}"${k === opts.tab ? ' aria-current="page"' : ""}>${esc(n)}${badge(b)}</a>`).join("")}</nav></div></div>` : ""}
-      ${opts.subs && opts.subs.length ? `<nav class="fk-subs" aria-label="Pages"><div class="wrap">${opts.subs.map(([k, n, b]) => `<a href="${href(opts.tab, k)}"${k === opts.sub ? ' aria-current="page"' : ""}>${esc(n)}${badge(b)}</a>`).join("")}</div></nav>` : ""}`;
+      ${opts.tabs && opts.tabs.length ? `<div class="fk-nav${opts.tabbar ? " has-bar" : ""}"><div class="wrap"><nav aria-label="Sections">${opts.tabs.map(([k, n, b]) => `<a href="${href(k)}"${k === opts.tab ? ' aria-current="page"' : ""}>${esc(n)}${badge(b)}</a>`).join("")}</nav></div></div>` : ""}
+      ${opts.subs && opts.subs.length ? `<nav class="fk-subs" aria-label="Pages"><div class="wrap">${opts.subs.map(([k, n, b]) => `<a href="${href(opts.tab, k)}"${k === opts.sub ? ' aria-current="page"' : ""}>${esc(n)}${badge(b)}</a>`).join("")}</div></nav>` : ""}
+      ${opts.tabbar && opts.tabs && opts.tabs.length ? `<nav class="fk-tabbar" aria-label="Sections, phone" style="--n:${opts.tabs.length}">${opts.tabs.map(([k, n, b]) => `<a href="${href(k)}"${k === opts.tab ? ' aria-current="page"' : ""}>${TAB_ICON[k] || TAB_ICON.league}<span>${esc(SHORT_TAB[k] || n)}</span>${b ? `<i class="tb-n">${b}</i>` : ""}</a>`).join("")}</nav>` : ""}`;
   }
+  // phone tab bar icons, drawn on a 24 grid with a 1.8 stroke
+  const ico = (d) => `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+  const TAB_ICON = {
+    league: ico('<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4"/><path d="M12 13v4M8.5 20h7M10 17h4"/>'),
+    team: ico('<path d="M9 3.5 5 5.5 2.8 9.5l3 1.6L7 9.8V20.5h10V9.8l1.2 1.3 3-1.6L19 5.5l-4-2a3 3 0 0 1-6 0z"/>'),
+    matchup: ico('<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M12 5v14"/><path d="M6.5 10.5h2M15.5 10.5h2M6.5 13.5h2M15.5 13.5h2"/>'),
+    players: ico('<circle cx="10" cy="8" r="3.5"/><path d="M3.5 20a6.5 6.5 0 0 1 13 0"/><path d="M19 8v6M16 11h6"/>'),
+    draft: ico('<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>'),
+    commish: ico('<path d="M4 15.5a5 5 0 0 0 9.6 1.9L20.5 9a1.5 1.5 0 0 0-1-2.5H12a5 5 0 0 0-8 9z"/><circle cx="9" cy="14.5" r="1.6"/><path d="M14 6.5V4"/>'),
+  };
+  const SHORT_TAB = { team: "Team", commish: "Commish" };
   // A league switcher: current league with its avatar, a menu of leagues and extra menu items.
   const switcher = (cur, items, extra = "") => `<details class="switch"><summary>${teamAv(cur, "sm")}<span class="ell">${esc(cur.name)}</span><span class="chev" aria-hidden="true"></span></summary>
     <div class="menu">${items.map((x) => `<a href="${esc(x.href)}">${x.av ? teamAv(x.av, "sm") : ""}<span>${esc(x.name)}${x.sub ? `<small>${esc(x.sub)}</small>` : ""}</span></a>`).join("")}${extra ? `${items.length ? "<hr>" : ""}${extra}` : ""}</div></details>`;
@@ -362,11 +374,14 @@
       }).join("");
       return `<div class="stack" style="gap:6px"><div class="ps"><b>${esc(def.label)}</b>, ${esc(sport.data.season)}</div><div class="sgrid">${cells}</div></div>`;
     }).join("");
-    const zs = sc.type === "cats" && p.zc ? `<div class="zbars" aria-label="Category strength">${sc.cats.filter((c) => p.zc[c.k] != null).map((c) => { const z = Math.max(-3, Math.min(3, p.zc[c.k])); const w = (Math.abs(z) / 3) * 50; return `<span class="ps"><b>${esc(c.label)}</b></span><span class="zbar"><i class="${z < 0 ? "n" : ""}" style="${z < 0 ? `right:50%;width:${w}%` : `left:50%;width:${w}%`}"></i></span><span class="num ps" style="text-align:right">${z >= 0 ? "+" : ""}${z.toFixed(1)}</span>`; }).join("")}</div>` : "";
+    // a league's card leads with the week and the league; the season lines fold away under one heading
+    const linesHtml = opts.fold && lines ? `<details class="pc-more"><summary>Season stats and projections</summary><div class="stack">${lines}</div></details>` : lines;
+    const statRow = (opts.stats || [["Overall", p.rank], ["Position", esc(p.prank)], [sc.type === "points" ? "Projection" : "Value", sc.type === "points" ? Math.round(p.v) : p.v.toFixed(1)], ["Auction", p.$ ? money(p.$) : "-"]]).map(([k, v]) => `<div><small>${esc(k)}</small><b>${v}</b></div>`).join("");
+    const zs = sc.type === "cats" && p.zc ? `<div class="ps"><b>Strength by category</b>, against the player pool</div><div class="zbars" aria-label="Category strength">${sc.cats.filter((c) => p.zc[c.k] != null).map((c) => { const z = Math.max(-3, Math.min(3, p.zc[c.k])); const w = (Math.abs(z) / 3) * 50; return `<span class="ps"><b>${esc(c.label)}</b></span><span class="zbar"><i class="${z < 0 ? "n" : ""}" style="${z < 0 ? `right:50%;width:${w}%` : `left:50%;width:${w}%`}"></i></span><span class="num ps" style="text-align:right">${z >= 0 ? "+" : ""}${z.toFixed(1)}</span>`; }).join("")}</div>` : "";
     return `<div class="pc-h">${playerAv(sport, p, "lg")}<div><h3 class="disp">${esc(p.n)}</h3><div class="ps">${posChips(sport, p)} ${proTeam(sport, p.t)}${p.age ? `, age ${p.age}` : ""}${p.inj ? `, <span class="bad">${esc(p.inj)}</span>` : ""}</div>${opts.status ? `<div class="ps row" style="margin-top:6px">${opts.status}</div>` : ""}</div></div>
-      <div class="stat-row" style="margin-bottom:14px"><div><small>Overall</small><b>${p.rank}</b></div><div><small>Position</small><b>${esc(p.prank)}</b></div><div><small>${sc.type === "points" ? "Projection" : "Value"}</small><b>${sc.type === "points" ? Math.round(p.v) : p.v.toFixed(1)}</b></div><div><small>Auction</small><b>${p.$ ? money(p.$) : "-"}</b></div></div>
+      ${opts.week || ""}<div class="stat-row pc-stats" style="margin-bottom:14px">${statRow}</div>
       ${opts.note ? `<p class="small" style="margin:0 0 12px">${opts.note}</p>` : ""}
-      <div class="stack">${opts.extra || ""}${zs}${lines}</div>${opts.actions ? `<div class="acts">${opts.actions}</div>` : ""}`;
+      <div class="stack">${opts.extra || ""}${zs}${opts.after || ""}${linesHtml}</div>${opts.actions ? `<div class="acts pc-acts">${opts.actions}</div>` : ""}`;
   }
 
   /* ---------- league modules (view models in, HTML out) ---------- */
