@@ -1,7 +1,8 @@
 // The Fantasy Kit's live box scores: GET /functions/v1/fk-live?sport=nba|nfl|mlb returns the current fantasy week's
 // totals so far for every player, games in progress included, in the same shape as fantasy-kit/data/weeks-<sport>.json
 // (columns as { line, cols } or { lines }, and each player's week under players), plus where each pro team stands this week ({ teams: { ABBR: { played, live, left } } }),
-// which the league pages use for live win chances.
+// which the league pages use for live win chances, each team's games ({ games: { ABBR: [{ at, state, detail, opp, home, us, them }] } }) for the
+// matchup page, and for football Sleeper's projections for the week ({ proj: { id: line } }).
 //
 //   basketball  ESPN's scoreboard and box scores, Monday to Sunday weeks, player ids as name slugs (like Hard Cap)
 //   football    Sleeper's live weekly stats (the same feed as weeks-nfl.json), game states from ESPN's scoreboard
@@ -43,6 +44,18 @@ const mondayOf = (iso: string) => { const d = new Date(iso + "T12:00:00Z"); retu
 const slug = (n: string) => n.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 const sumInto = (acc: Record<string, number[]>, id: string, row: number[]) => { const a = acc[id]; acc[id] = a ? a.map((x, i) => x + (row[i] || 0)) : row.slice(); };
 type Teams = Record<string, { played: number; live: number; left: number }>;
+// each pro team's games this week, for the matchup page: when, against whom, where it stands
+type Game = { id: string; at: string; state: string; detail: string; opp: string; home: boolean; us: number | null; them: number | null };
+type Games = Record<string, Game[]>;
+function espnGames(games: Games, e: any, map: Record<string, string>) {
+  const comp = e.competitions?.[0] || {}, cs = comp.competitors || [], state = e.status?.type?.state || "pre";
+  const detail = String(e.status?.type?.shortDetail || "").replace(/\s+-\s+/, " ");
+  for (const c of cs) {
+    const o = cs.find((x: any) => x !== c); if (!o) continue;
+    const ab = map[c.team?.abbreviation] || c.team?.abbreviation, oab = map[o.team?.abbreviation] || o.team?.abbreviation;
+    (games[ab] ||= []).push({ id: String(e.id), at: e.date, state, detail, opp: oab, home: c.homeAway === "home", us: state === "pre" ? null : Number(c.score) || 0, them: state === "pre" ? null : Number(o.score) || 0 });
+  }
+}
 const tally = (teams: Teams, abbr: string, state: string) => { const t = (teams[abbr] ||= { played: 0, live: 0, left: 0 }); if (state === "post") t.played++; else if (state === "in") t.live++; else t.left++; };
 
 // a finished game's lines, kept; anything else fetched fresh
@@ -65,10 +78,11 @@ async function nba() {
   const y = Number(today.slice(0, 4)), m = Number(today.slice(5, 7)), sy = m >= 7 ? y : y - 1;
   const days = Array.from({ length: 7 }, (_, i) => addDays(start, i));
   const boards = await pool(days, 4, (d) => getJSON(`https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${d.replace(/-/g, "")}`).catch(() => ({ events: [] })));
-  const teams: Teams = {}, games: { id: string; day: string; state: string }[] = [];
+  const teams: Teams = {}, games: { id: string; day: string; state: string }[] = [], sched: Games = {};
   boards.forEach((b: any, i) => {
     for (const e of b.events || []) {
       const state = e.status?.type?.state || "pre";
+      espnGames(sched, e, NBA_TEAM);
       for (const c of e.competitions?.[0]?.competitors || []) tally(teams, NBA_TEAM[c.team?.abbreviation] || c.team?.abbreviation, state);
       if (state !== "pre") games.push({ id: String(e.id), day: days[i], state });
     }
@@ -95,7 +109,7 @@ async function nba() {
   await keep("nba", fresh);
   const acc: Record<string, number[]> = {};
   for (const l of lines) for (const [id, row] of Object.entries(l || {})) sumInto(acc, id, row as number[]);
-  return { sport: "nba", season: `${sy}-${String(sy + 1).slice(2)}`, start, end, line: "pg", cols: NBA_COLS, players: acc, teams };
+  return { sport: "nba", season: `${sy}-${String(sy + 1).slice(2)}`, start, end, line: "pg", cols: NBA_COLS, players: acc, teams, games: sched };
 }
 
 /* ---------- football ---------- */
@@ -123,9 +137,28 @@ async function nfl() {
     const line = [g].concat(NFL_COLS.slice(1).map((c) => Math.round((st[c] || 0) * 100) / 100));
     if (g || line.slice(1).some(Boolean)) lines[String(r.player_id)] = line;
   }
-  const teams: Teams = {};
-  for (const e of board.events || []) for (const c of e.competitions?.[0]?.competitors || []) tally(teams, NFL_TEAM[c.team?.abbreviation] || c.team?.abbreviation, e.status?.type?.state || "pre");
-  return { sport: "nfl", season: String(season), start, end, line: "tot", cols: NFL_COLS, players: lines, teams };
+  const teams: Teams = {}, sched: Games = {};
+  for (const e of board.events || []) { espnGames(sched, e, NFL_TEAM); for (const c of e.competitions?.[0]?.competitors || []) tally(teams, NFL_TEAM[c.team?.abbreviation] || c.team?.abbreviation, e.status?.type?.state || "pre"); }
+  return { sport: "nfl", season: String(season), week, start, end, line: "tot", cols: NFL_COLS, players: lines, teams, games: sched, proj: await nflProj(season, week, q) };
+}
+
+// Sleeper's projections for this week, same columns as the stat lines, so any scoring can total them. They move a
+// few times a day, so they're kept half an hour (table fk_live, under "nfl-proj").
+async function nflProj(season: number, week: number, q: string) {
+  const key = `nfl-proj`;
+  const r = await db(`fk_live?sport=eq.${key}&select=data,updated_at`);
+  const row = r.ok ? (await r.json())[0] : null;
+  if (row && row.data && row.data.week === week && Date.now() - Date.parse(row.updated_at) < 30 * 60e3) return row.data.lines;
+  const rows: any = await getJSON(`https://api.sleeper.com/projections/nfl/${season}/${week}?season_type=regular${q}`).catch(() => null);
+  if (!rows) return row && row.data && row.data.week === week ? row.data.lines : {};
+  const lines: Record<string, number[]> = {};
+  for (const x of Array.isArray(rows) ? rows : Object.values(rows || {})) {
+    const st = x.stats || {};
+    if (!st.pts_half_ppr && !st.pts_ppr && !st.pts_std) continue;
+    lines[String(x.player_id)] = [1].concat(NFL_COLS.slice(1).map((c) => Math.round((st[c] || 0) * 100) / 100));
+  }
+  await db("fk_live", { method: "POST", headers: { Prefer: "resolution=merge-duplicates" }, body: JSON.stringify({ sport: key, data: { week, lines }, updated_at: new Date().toISOString() }) });
+  return lines;
 }
 
 /* ---------- baseball ---------- */
@@ -142,11 +175,17 @@ const WK_PIT = ["g", "gs", "ip", "w", "l", "sv", "hld", "k", "er", "bb", "h", "e
 const MLB = "https://statsapi.mlb.com/api/v1/";
 async function mlb() {
   const today = nyDate(), start = mondayOf(today), end = addDays(start, 6);
-  const sched: any = await getJSON(`${MLB}schedule?sportId=1&gameType=R&startDate=${start}&endDate=${end}`).catch(() => ({ dates: [] }));
-  const teams: Teams = {}, games: { id: string; day: string; state: string }[] = [];
+  const sched: any = await getJSON(`${MLB}schedule?sportId=1&gameType=R&startDate=${start}&endDate=${end}&hydrate=linescore`).catch(() => ({ dates: [] }));
+  const teams: Teams = {}, games: { id: string; day: string; state: string }[] = [], byTeam: Games = {};
   for (const d of sched.dates || []) for (const g of d.games || []) {
     const ab = g.status?.abstractGameState, state = ab === "Final" ? "post" : ab === "Live" ? "in" : "pre";
     if (g.status?.detailedState === "Postponed") continue;
+    const ls = g.linescore || {}, detail = state === "post" ? "Final" : state === "in" ? `${ls.inningHalf || ls.inningState || ""} ${ls.currentInningOrdinal || ""}`.trim() : "";
+    for (const [side, other] of [["away", "home"], ["home", "away"]]) {
+      const me = g.teams?.[side], op = g.teams?.[other];
+      const a1 = MLB_TEAMS[me?.team?.name] || me?.team?.abbreviation, a2 = MLB_TEAMS[op?.team?.name] || op?.team?.abbreviation;
+      if (a1) (byTeam[a1] ||= []).push({ id: String(g.gamePk), at: g.gameDate, state, detail, opp: a2, home: side === "home", us: state === "pre" ? null : me?.score ?? 0, them: state === "pre" ? null : op?.score ?? 0 });
+    }
     for (const side of ["away", "home"]) tally(teams, MLB_TEAMS[g.teams?.[side]?.team?.name] || g.teams?.[side]?.team?.abbreviation, state);
     if (state !== "pre") games.push({ id: String(g.gamePk), day: d.date, state });
   }
@@ -187,7 +226,7 @@ async function mlb() {
     }
     lines[id] = row;
   }
-  return { sport: "mlb", season: start.slice(0, 4), start, end, lines: { bat: WK_BAT, pit: WK_PIT }, players: lines, teams };
+  return { sport: "mlb", season: start.slice(0, 4), start, end, lines: { bat: WK_BAT, pit: WK_PIT }, players: lines, teams, games: byTeam };
 }
 
 const BUILD: Record<string, () => Promise<any>> = { nba, nfl, mlb };

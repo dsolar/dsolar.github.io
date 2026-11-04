@@ -110,6 +110,56 @@
       if (!t || !rw || rw.start !== lv.start) return "";
       return t.live ? "Playing now" : t.left ? `${t.left} game${t.left === 1 ? "" : "s"} left` : t.played ? "Done this week" : "No games this week";
     }
+    /* ---------- gameday: each pro team's games this week, from the live feed ---------- */
+    const liveWeek = (w) => { const R = (opts.hooks || {}).real, lv = R && R.live, rw = G.realWeek(L(), ctx, w); return lv && rw && rw.start === lv.start ? lv : null; };
+    const gamesOf = (p, w) => { const lv = liveWeek(w); return lv && lv.games && p && p.t ? lv.games[p.t] || [] : null; };
+    // the game that matters now: one being played, else the next, else the last
+    const gameNow = (gs) => (gs && gs.length ? gs.find((g) => g.state === "in") || gs.find((g) => g.state === "pre") || gs[gs.length - 1] : null);
+    const kick = (at) => new Date(at).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" }).replace(":00", "");
+    // "Sun 1 PM vs NYJ", "Q3 4:21, 17-10", "Final, W 24-17", plus "2 of 4 played" for the daily sports
+    function gameChip(p, w) {
+      const gs = gamesOf(p, w);
+      if (!gs) return "";
+      if (!gs.length) return `<span class="gm none">No game this week</span>`;
+      const g = gameNow(gs), vs = `${g.home ? "vs" : "@"} ${esc(g.opp)}`, done = gs.filter((x) => x.state === "post").length;
+      const of = gs.length > 1 ? `<span class="gm-of">${done} of ${gs.length} played</span>` : "";
+      // ESPN's "4:21 3rd" reads better as "Q3 4:21"
+      const clock = String(g.detail || "Live").replace(/^(\d+:\d+)\s+(\d)(st|nd|rd|th)$/, (x, c, q) => (sport.key === "nfl" ? `Q${q} ${c}` : `${q}${{ 1: "st", 2: "nd", 3: "rd" }[q] || "th"} ${c}`));
+      if (g.state === "in") return `<span class="gm live"><i aria-hidden="true"></i>${esc(clock)}, ${g.us}-${g.them} ${vs}</span>${of}`;
+      if (g.state === "post" && !gs.some((x) => x.state === "pre")) return `<span class="gm done">Final, ${g.us > g.them ? "W" : g.us < g.them ? "L" : "T"} ${g.us}-${g.them} ${vs}</span>${of}`;
+      return `<span class="gm">${esc(kick(g.at))} ${vs}</span>${of}`;
+    }
+    // how far a football game has gone, 0 to 1, from ESPN's clock ("4:21 3rd", "Halftime", "End of 2nd")
+    function progress(g) {
+      if (!g || g.state === "pre") return 0;
+      if (g.state === "post") return 1;
+      const d = String(g.detail || ""), q = /(\d)(st|nd|rd|th)/.exec(d), clock = /(\d+):(\d+)/.exec(d);
+      if (/half/i.test(d)) return 0.5;
+      if (!q) return 0.5;
+      const left = clock ? (+clock[1] * 60 + +clock[2]) / 900 : /end/i.test(d) ? 0 : 1;
+      return Math.min(1, (Math.min(4, +q[1]) - left) / 4);
+    }
+    // a football player's projection for the week: Sleeper's, scored the league's way, less the share of his game already played
+    function weekProj(p, w) {
+      const lv = liveWeek(w), line = lv && lv.proj && lv.proj[p.id], R = (opts.hooks || {}).real;
+      if (!line || !R || !R.cols) return null;
+      return G.realPts({ line: R.line, cols: R.cols }, sc(), line, p);
+    }
+    // what a scoring change from the live feed was, in a few words: "rushing TD, 12 rush yd"
+    const PLAY = { nfl: [["pass_td", "TD pass", "TD passes"], ["rush_td", "rushing TD", "rushing TDs"], ["rec_td", "receiving TD", "receiving TDs"], ["def_td", "defensive TD", "defensive TDs"], ["fgm", "field goal", "field goals"], ["xpm", "extra point", "extra points"], ["def_int", "interception", "interceptions"], ["def_sack", "sack", "sacks"], ["pass_int", "interception thrown", "interceptions thrown"], ["fum_lost", "fumble lost", "fumbles lost"], ["rec", "catch", "catches"], ["pass_yd", "pass yd"], ["rush_yd", "rush yd"], ["rec_yd", "rec yd"]],
+      nba: [["pts", "PTS"], ["reb", "REB"], ["ast", "AST"], ["stl", "STL"], ["blk", "BLK"], ["tpm", "3PM"], ["tov", "TO"]],
+      mlb: [["hr", "HR"], ["r", "R"], ["rbi", "RBI"], ["sb", "SB"], ["h", "H"], ["w", "W"], ["sv", "SV"], ["k", "K"], ["er", "ER"]] };
+    function playText(d) {
+      const R = (opts.hooks || {}).real; if (!R) return "";
+      const bits = [];
+      const cols = R.cols ? { _: R.cols } : R.lines || {};
+      for (const [key, one, many] of PLAY[sport.key] || []) for (const [ln, cs] of Object.entries(cols)) {
+        const row = Array.isArray(d) ? d : d[ln]; const i = cs.indexOf(key); if (!row || i < 0) continue;
+        const v = Math.round(row[i] * 10) / 10; if (!v) continue;
+        bits.push(many === undefined ? `${v > 0 ? "" : ""}${v} ${one}` : Math.abs(v) === 1 ? `${v < 0 ? "lost " : ""}${one}` : `${v} ${many}`);
+      }
+      return bits.slice(0, 3).join(", ");
+    }
     // A category player's week in a few words: the first three counting categories, like "62 PTS, 21 REB, 9 AST".
     function weekLine(p, w) {
       if (frac(w) <= 0) return "Yet to play";
@@ -191,6 +241,8 @@
     const seedTag = (r) => (L().divs && r.seed && !over() ? ` <span class="tag${r.divLeader ? " gold" : " info"}" title="${r.divLeader ? "Leads the division" : "Wild card"}">Seed ${r.seed}</span>` : "");
     // a player's projection for the week: with the live feed, what he has plus what his team's games left should add
     function projOf(p, sofar, w) {
+      const wp = sport.key === "nfl" ? weekProj(p, w) : null;
+      if (wp != null) { const g = gameNow(gamesOf(p, w) || []); return (typeof sofar === "number" ? sofar : 0) + wp * (1 - progress(g)); }
       const wk = G.WEEK[sport.key] || { weeks: 20 }, R = (opts.hooks || {}).real, lv = R && R.live, rw = G.realWeek(L(), ctx, w);
       if (!lv || !rw || rw.start !== lv.start || !lv.teams || !lv.teams[p.t]) return p.v / wk.weeks;
       const t = lv.teams[p.t], per = (p.v || 0) / ({ nba: 82, nfl: 17, mlb: 162 }[sport.key] || 82);
@@ -918,13 +970,28 @@
         const pa = la[k] && ctx.byId[la[k]], pb = lb[k] && ctx.byId[lb[k]];
         const xa = pa ? (pts() ? ptsA[pa.id] : weekLine(pa, w)) : null, xb = pb ? (pts() ? ptsB[pb.id] : weekLine(pb, w)) : null;
         const cmp = pts() && xa != null && xb != null;
-        return { slot, a: { p: pa, pts: xa, proj: pts() && pa && !m.final ? projOf(pa, xa, w) : null, w: cmp && xa > xb }, b: { p: pb, pts: xb, proj: pts() && pb && !m.final ? projOf(pb, xb, w) : null, w: cmp && xb > xa } };
+        return { slot, a: { p: pa, pts: xa, proj: pts() && pa && !m.final ? projOf(pa, xa, w) : null, w: cmp && xa > xb, game: pa ? gameChip(pa, w) : "" }, b: { p: pb, pts: xb, proj: pts() && pb && !m.final ? projOf(pb, xb, w) : null, w: cmp && xb > xa, game: pb ? gameChip(pb, w) : "" } };
       });
+      // playing, yet to play and done, for each lineup
+      const tallyOf = (ids) => { const c = { in: 0, pre: 0, post: 0 }; for (const id of ids) { const p = id && ctx.byId[id], gs = p && gamesOf(p, w); if (!gs) return null; const g = gameNow(gs); if (!g) c.post++; else if (g.state === "in") c.in++; else if (gs.some((x) => x.state === "pre")) c.pre++; else c.post++; } return c; };
+      const ta = !m.final && tallyOf(la), tb = !m.final && tallyOf(lb);
+      const pips = (c, name) => `<div class="left-t"><b>${esc(name)}</b><span class="lp in" title="Playing now">${c.in} playing</span><span class="lp pre" title="Yet to play">${c.pre} to play</span><span class="lp post" title="Done">${c.post} done</span></div>`;
+      const leftHtml = ta && tb ? `<div class="left-l">${pips(ta, T(m.a).name)}${pips(tb, T(m.b).name)}</div>` : "";
+      // scoring plays from the live feed, for both lineups, newest first
+      const lvw = liveWeek(w), mine = new Set(la.concat(lb).filter(Boolean));
+      const plays = lvw && lvw.feed ? lvw.feed.filter((x) => mine.has(x.id)).slice(-40).reverse().map((x) => {
+        const p = ctx.byId[x.id]; if (!p) return null;
+        const R = (opts.hooks || {}).real, d = pts() && R ? G.realPts(R.cols ? { line: R.line, cols: R.cols } : { lines: R.lines }, sc(), x.d, p) : null;
+        const txt = playText(x.d); if (!txt && !d) return null;
+        const side = la.includes(x.id) ? "a" : "b";
+        return `<li class="${side}">${U.playerAv ? U.playerAv(sport, p, "sm") : ""}<span class="grow"><b>${esc(p.n)}</b><small>${esc(txt)}</small></span>${d != null ? `<b class="pl-d ${d >= 0 ? "up" : "dn"}">${d >= 0 ? "+" : ""}${fmtS(d)}</b>` : ""}<span class="ps">${esc(U.ago(new Date(x.at).getTime(), now()))}</span></li>`;
+      }).filter(Boolean).slice(0, 12) : [];
+      const playsHtml = plays.length ? `<div class="card plays"><div class="mod-h"><h2>Scoring plays</h2><span class="ps">Updates every minute</span></div><ul class="pl-l">${plays.join("")}</ul></div>` : "";
       const weeks = Array.from({ length: curWeek() }, (_, k) => k + 1);
       return `<div class="wrap page">
         <div class="head"><h1 class="disp">${w > L().settings.weeks ? esc(kindName(m.kind, w)) : `Week ${w} matchup`}</h1>${!pts() ? `<span class="ps">Each starter's line for the week so far.</span>` : ""}</div>
         <div class="row" style="flex-wrap:wrap"><div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-mweek="${x}" aria-pressed="${x === w}">${weekChip(x)}</button>`).join("")}</div></div>
-        <div class="card">${U.versus(versusVM(w, m))}${outlookLine(m)}${medianLine(w, m)}</div>
+        <div class="card">${U.versus(versusVM(w, m))}${leftHtml || outlookLine(m)}${medianLine(w, m)}</div>${playsHtml}
         <div class="cols2" style="grid-template-columns:minmax(0,1fr)">${U.vsTable(sport, rows, pts() ? { a: m.sa, b: m.sb } : null, (x) => (x == null ? "-" : typeof x === "string" ? (/^(No games|Didn't play|Yet to play|Playing now|Done this week|No games this week|\d+ games? left)$/.test(x) ? `<span class="ps">${x}</span>` : x) : x.toFixed(1)))}</div>
         <div class="stack" style="gap:8px"><b class="ps">Other games, week ${w}</b>${U.scoreboard(gamesVM(w), fmtS)}</div></div>`;
     }

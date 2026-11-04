@@ -1048,3 +1048,31 @@ ol.ord{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap
 .su .seats b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media (max-width:520px){.su .seats{grid-template-columns:1fr 1fr;gap:6px}.su .seats label{padding:8px 9px;gap:8px}}
 @media (max-width:700px){button.star{min-width:32px;min-height:32px}}
+
+/* gameday: each starter's game, the lineups' counts and the scoring plays */
+.gmr{display:flex;flex-wrap:wrap;gap:2px 8px;margin-top:2px;padding-left:40px;font-size:11.5px;line-height:1.3}
+.gmr.b{justify-content:flex-end;padding-left:0;padding-right:40px}
+.gm{color:var(--muted);font-weight:650;white-space:nowrap}
+.gm.live{color:var(--loss);font-weight:800}
+.gm.live i{display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;margin-right:4px;vertical-align:1px;animation:fk-pulse 1.6s ease-in-out infinite}
+.gm.done{color:var(--dim)}
+.gm.none{color:var(--dim);font-style:italic}
+.gm-of{color:var(--dim)}
+@keyframes fk-pulse{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.gm.live i{animation:none}}
+.left-l{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;padding:10px 16px 14px;border-top:1px solid var(--line)}
+.left-t{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12.5px}
+.left-t b{flex-basis:100%;font-size:12.5px;color:var(--muted)}
+.left-l .left-t:last-child{justify-content:flex-end;text-align:right}
+.lp{padding:2px 8px;border-radius:999px;font-weight:750;background:var(--surface-2);color:var(--muted)}
+.lp.in{background:var(--loss-soft);color:var(--loss)}
+.lp.pre{background:var(--info-soft);color:var(--info)}
+.plays .pl-l{list-style:none;margin:0;padding:4px 0}
+.plays li{display:flex;align-items:center;gap:10px;padding:8px 16px;border-top:1px solid var(--line)}
+.plays li:first-child{border-top:0}
+.plays li .grow{display:grid;min-width:0}
+.plays li small{color:var(--muted);font-size:12px}
+.plays li.a{box-shadow:inset 3px 0 0 var(--brand)}
+.pl-d{font-variant-numeric:tabular-nums;font-size:14px}
+.pl-d.up{color:var(--win)}.pl-d.dn{color:var(--loss)}
+@media (max-width:600px){.gmr{font-size:10.5px;padding-left:0;display:block}.gmr.b{padding-right:0;text-align:right}.gmr .gm{white-space:normal}.gmr .gm-of{display:block}.left-l{grid-template-columns:1fr}.left-l .left-t:last-child{justify-content:flex-start;text-align:left}}

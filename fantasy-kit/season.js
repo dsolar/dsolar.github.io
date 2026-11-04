@@ -77,9 +77,17 @@
     const k = Object.keys(weeks.weeks || {}).find((x) => weeks.weeks[x].start === live.start);
     const wk = k ? weeks.weeks[k] : null;
     if (wk && wk.final) { weeks.live = null; return false; }
+    // what changed since the last poll of this same week: the scoring plays the matchup page lists
+    const old = wk ? wk.lines : weeks.weeks && weeks.weeks.live && weeks.weeks.live.start === live.start ? weeks.weeks.live.lines : null;
+    const feed = weeks.live && weeks.live.start === live.start ? weeks.live.feed || [] : [];
+    if (old && before && before !== live.updated) {
+      const diff = (a, b) => (Array.isArray(b) ? (b.some((x, i) => x !== ((a || [])[i] || 0)) ? b.map((x, i) => x - ((a || [])[i] || 0)) : null)
+        : b && typeof b === "object" ? (() => { const o = {}; let any = false; for (const k of Object.keys(b)) { const d = diff((a || {})[k], b[k]); if (d) { o[k] = d; any = true; } } return any ? o : null; })() : null);
+      for (const [id, line] of Object.entries(live.players || {})) { const d = diff(old[id], line); if (d) feed.push({ id, at: live.updated, d }); }
+    }
     if (wk) wk.lines = live.players || {};
     else (weeks.weeks = weeks.weeks || {})["live"] = { start: live.start, end: live.end, final: false, lines: live.players || {} };
-    weeks.live = { start: live.start, updated: live.updated, teams: live.teams || {} };
+    weeks.live = { start: live.start, updated: live.updated, teams: live.teams || {}, games: live.games || {}, proj: live.proj || null, feed: feed.slice(-300) };
     return before !== live.updated;
   }
   function catchUp(L, ctx, now) {
