@@ -400,3 +400,11 @@ create table if not exists fk_live_games (sport text not null, gid text not null
 alter table fk_live enable row level security;
 alter table fk_live_games enable row level security;
 revoke all on public.fk_live, public.fk_live_games from anon, authenticated;
+
+-- ---------- dues and invites (applied as migrations fk_dues, fk_team_name_member_invite) ----------
+-- fk_leagues.dues jsonb: { amount, due, payout, high, note, pay: { venmo, paypal, cashapp, zelle }, paid: { team: ms }, claimed: { team: ms } }
+-- fk_view returns invite and dues to the league's own managers (any seat, or the commissioner)
+-- fk_dues_set(p_id, p_dues jsonb): commissioner only; top-level keys replace
+-- fk_dues_claim(p_id, p_on boolean): a manager marks "I sent it" for their own team
+-- fk_team_name(p_id, p_name): a manager names their own team in the draft and league docs (used right after joining)
+alter table fk_leagues add column if not exists dues jsonb;
