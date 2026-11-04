@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex">
 <meta name="description" content="Two games David Solar's daughters designed with him: Lucy's Jellycat Battle Club and Charlotte's Wild Bloom Isles.">
 <link rel="canonical" href="https://davidsolar.dev/kids/">
-<!-- The header and footer match index.html: if you change one, change both.
+<!-- The category navigation is shared through assets/navigation.js.
      The cards come from the section: "kids" entries in assets/projects.js. -->
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
@@ -23,22 +23,16 @@
 <link rel="stylesheet" href="/assets/site.css?v=20261028-dep">
 <script src="/assets/site.js" defer></script>
 <script src="/assets/analytics.js" defer></script>
+
+<link rel="stylesheet" href="/assets/navigation.css?v=20261104-nav">
+<script src="/assets/navigation.js?v=20261104-nav" defer></script>
 </head>
 <body>
 
-<header class="site-header">
-  <div class="wrap">
-    <a class="brand" href="/" aria-label="David Solar, home">
-      <img class="brand-logo" src="/assets/david-solar-sports-data-nonsense-compact.svg" alt="">
-    </a>
-    <nav class="site-nav" aria-label="Main">
-      <a href="/#projects">Projects</a>
-      <a href="/#writing">Writing</a>
-      <a href="/#about">About</a>
-      <a href="/kids/" aria-current="page">Kids</a>
-    </nav>
-  </div>
-</header>
+<nav class="ds-bar ds-navigation" data-ds-navigation aria-label="Main">
+  <a class="ds-brand" href="/" aria-label="David Solar, home"><img src="/assets/nav-mark.svg" alt="" width="38" height="38"><span>David Solar</span></a>
+  <a href="/#projects">Explore all projects</a>
+</nav>
 
 <main>
   <section class="section kids" id="kids" aria-labelledby="kids-title">
@@ -61,16 +55,18 @@
       <span>&copy; <span id="year">2026</span> David Solar</span>
     </div>
     <nav class="foot-nav" aria-label="Footer">
-      <a href="/#projects">Projects</a>
+      <a href="/fantasy/">Fantasy</a>
+      <a href="/#games">Games</a>
+      <a href="/#simulations">Simulations &amp; Tools</a>
+      <a href="/kids/">Kids</a>
       <a href="/#writing">Writing</a>
       <a href="/#about">About</a>
-      <a href="/kids/">Kids</a>
       <a data-user="hello" data-domain="davidsolar.dev">Email</a>
     </nav>
   </div>
 </footer>
 
-<script src="/assets/projects.js?v=20261102-fantasy"></script>
+<script src="/assets/projects.js?v=20261104-nav"></script>
 <script src="/assets/project-cards.js?v=20261028-dep"></script>
 <script>
 (function () {
