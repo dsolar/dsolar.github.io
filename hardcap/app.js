@@ -458,8 +458,17 @@
     const mine = store.get("hc:leagues", []);
     const SIZES = [4, 6, 8, 10, 12, 14, 16], ROSTERS = [10, 11, 12, 13, 14, 15];
     app.innerHTML = `<div class="wrap">
-      <section class="hero"><h1 class="disp"><span>Draft the player.</span><span>Carry the contract.</span></h1>
-        <p>Hard Cap is dynasty fantasy basketball where every player costs his real NBA salary and every roster has to fit under a hard line. Talent has a price.</p>${bar}</section>
+      <section class="start-hero"><h1 class="disp"><span>Draft the player.</span> <span>Carry the contract.</span></h1>
+        <p>Hard Cap is dynasty fantasy basketball where every player costs his real NBA salary and every roster has to fit under a hard line. Talent has a price.</p></section>
+      <section class="start-cards" aria-label="Get started with Hard Cap">
+        <article class="start-card start-card-primary"><p class="start-kicker">01 / Take a test drive</p><h2 class="disp">Try a practice draft</h2><p>Take the first pick. Draft against nine bots with real NBA salaries and the same hard-cap rules. No setup needed.</p><a class="btn go" href="demo.html">Try the practice draft <span aria-hidden="true">→</span></a></article>
+        <article class="start-card"><p class="start-kicker">02 / Bring your league</p><h2 class="disp">Create a league</h2><p>Set your rules, invite your managers, and run a live or slow draft. Open teams can be bots while you test.</p><button type="button" class="btn" data-entry-create aria-controls="create-panel" aria-expanded="${!!params.get("new") || location.hash === "#create"}">Set up your league</button></article>
+        <article class="start-card"><p class="start-kicker">03 / Back to business</p><h2 class="disp">Your leagues</h2>
+          ${mine.length ? `<ul class="start-leagues">${mine.slice(0,3).map(x => `<li><a href="?l=${esc(x.id)}">${esc(x.name)} →</a></li>`).join("")}</ul>` : `<p>Open an invite from your commissioner, or enter your league code below.</p>`}
+          <form class="start-open" id="open-league"><label for="open-code">League code or invite link</label><input id="open-code" name="code" type="text" required autocomplete="off" placeholder="Your league code"><button type="submit" class="btn">Open league</button><span class="ps" id="open-error" role="alert"></span></form></article>
+      </section>
+      <details class="start-details"><summary>See how the salary cap works</summary>${bar}<p class="start-note">Every player uses his real NBA salary. Room is held for your remaining roster spots, so an early star cannot leave you unable to finish the team.</p></details>
+      <details class="start-details" id="create-panel"${params.get("new") || location.hash === "#create" ? " open" : ""}><summary>League setup</summary>
       <section class="landing">
         <form class="card form" id="create">
           <div><h2 class="disp">Start a league</h2><p class="muted small" style="margin:0">You'll be the commissioner. Send the invite link to your managers and they claim their own teams. Open teams are bots until someone claims them, so you can test the whole thing alone.</p></div>
@@ -478,17 +487,32 @@
           <div><button class="btn go" type="submit">Create the league</button></div>
         </form>
         <div class="stack">
-          ${mine.length ? `<div class="card"><h3>Your leagues</h3><p class="muted small" style="margin:0">Jump back in from the league menu at the top of every page.</p><ul class="list" style="margin-top:8px">${mine.slice(0, 4).map((x) => `<li><a href="?l=${esc(x.id)}">${esc(x.name)}</a></li>`).join("")}</ul></div>` : ""}
+
+
+          <div class="card"><h3>Got an invite?</h3><p class="muted small" style="margin:0">Open the link your commissioner sent. It looks like davidsolar.dev/hardcap/?l=abc1234.</p></div>
+          <div class="card"><h3>The defaults</h3><dl class="kv"><dt>Buy-in</dt><dd>$${H.DEFAULTS.buyIn}, plus any tier upgrade</dd><dt>Season FAAB</dt><dd>$${H.DEFAULTS.faab}, $${H.DEFAULTS.minBid} minimum bid</dd><dt>Scoring</dt><dd>9 categories plus VORP, weekly</dd><dt>Playoffs</dt><dd>Top ${H.DEFAULTS.playoffTeams}, weeks ${H.DEFAULTS.regWeeks + 1} and ${H.DEFAULTS.regWeeks + 2}</dd><dt>Payout</dt><dd>${H.DEFAULTS.payout.join(" / ")}</dd></dl></div>
+        </div>
+      </section>
+      </details>
+      <details class="start-details" id="restore-help"${params.get("deleted") || location.hash === "#restore" ? " open" : ""}><summary>Help &amp; league recovery</summary>
           ${params.get("deleted") ? `<div class="banner gold"><div><b>${esc((store.get("hc:deleted", {}) || {}).name || "The league")} is in the trash.</b> <span class="muted">Restore it below with code ${esc(params.get("deleted"))} any time before ${fmtDate((store.get("hc:deleted", {}) || {}).until || Date.now() + 30 * 864e5)}.</span></div></div>` : ""}
           <form class="card form" id="restore"><h3>Restore a deleted league</h3><p class="muted small" style="margin:0">Deleted leagues stay in the trash for 30 days. Enter the league code and the commissioner PIN to bring one back with every team, claim and bid.</p>
             <div class="row2"><div class="field"><label for="rcode">League code</label><input type="text" id="rcode" name="code" value="${esc(params.get("deleted") || "")}" maxlength="12" required autocomplete="off"></div>
             <div class="field"><label for="rpin">Commissioner PIN</label><input type="password" id="rpin" name="pin" inputmode="numeric" pattern="\\d{4,8}" required autocomplete="current-password"></div></div>
             <div><button class="btn" type="submit">Restore league</button></div></form>
-          <div class="card"><h3>Got an invite?</h3><p class="muted small" style="margin:0">Open the link your commissioner sent. It looks like davidsolar.dev/hardcap/?l=abc1234.</p></div>
-          <div class="card"><h3>The defaults</h3><dl class="kv"><dt>Buy-in</dt><dd>$${H.DEFAULTS.buyIn}, plus any tier upgrade</dd><dt>Season FAAB</dt><dd>$${H.DEFAULTS.faab}, $${H.DEFAULTS.minBid} minimum bid</dd><dt>Scoring</dt><dd>9 categories plus VORP, weekly</dd><dt>Playoffs</dt><dd>Top ${H.DEFAULTS.playoffTeams}, weeks ${H.DEFAULTS.regWeeks + 1} and ${H.DEFAULTS.regWeeks + 2}</dd><dt>Payout</dt><dd>${H.DEFAULTS.payout.join(" / ")}</dd></dl></div>
-        </div>
-      </section>
-      <section class="card rules-mod"><div class="head"><h2 class="disp">The rules</h2><span class="muted small">The commissioner can change any of these numbers before the draft.</span></div>${rulesList(null)}</section></div>`;
+      </details>
+      <details class="start-details"><summary>Read the rules</summary><p class="start-note">The commissioner can change these settings before the draft.</p>${rulesList(null)}</details></div>`;
+    const setupPanel = $("#create-panel"), setupButton = $("[data-entry-create]");
+    setupButton.onclick = () => { setupPanel.open = true; setupPanel.scrollIntoView({ block: "start" }); $("#ln").focus({ preventScroll: true }); };
+    setupPanel.ontoggle = () => setupButton.setAttribute("aria-expanded", String(setupPanel.open));
+    $("#open-league").onsubmit = e => {
+      e.preventDefault();
+      const raw = $("#open-code").value.trim(); let code = raw;
+      try { code = new URL(raw, location.href).searchParams.get("l") || raw; } catch (err) {}
+      code = code.trim().toLowerCase();
+      if (!/^[a-z0-9]{4,12}$/.test(code)) { $("#open-error").textContent = "Enter the league code or the invite link your commissioner sent."; return; }
+      location.href = "?l=" + encodeURIComponent(code) + "#league";
+    };
     const rf = $("#restore");
     rf.onsubmit = async (e) => {
       e.preventDefault();
@@ -500,7 +524,7 @@
       store.set("hc:leagues", [{ id: r.id, name: r.name }, ...store.get("hc:leagues", []).filter((x) => x.id !== r.id)].slice(0, 12));
       location.href = `?l=${r.id}#league`;
     };
-    if (location.hash === "#restore") rf.scrollIntoView({ block: "center" });
+    if (location.hash === "#restore" || params.get("deleted")) { $("#restore-help").open = true; rf.scrollIntoView({ block: "center" }); }
     let n = 10, mode = "live", ro = 12;
     const f = $("#create");
     $$("[data-n]", f).forEach((b) => (b.onclick = () => { n = +b.dataset.n; $$("[data-n]", f).forEach((x) => x.setAttribute("aria-pressed", x === b)); }));

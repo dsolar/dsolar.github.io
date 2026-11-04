@@ -16,19 +16,20 @@
   var all = window.PROJECTS || [];
   var project = all.find(function (p) { return !p.external && p.url.replace(/\/$/, "") === folder; });
   var section = folder === "fantasy" || folder === "fantasy-kit" || folder === "hardcap" ? "fantasy"
+    : folder === "games" ? "games" : folder === "simulations" ? "simulations"
     : folder === "kids" || (project && project.section === "kids") ? "kids"
     : project && project.type === "Fantasy Leagues" ? "fantasy"
     : project && project.type === "Games" ? "games"
     : project && project.type === "Simulations" ? "simulations" : "";
   var sections = [
     { id: "fantasy", label: "Fantasy", url: "fantasy/" },
-    { id: "games", label: "Games", url: "#games" },
-    { id: "simulations", label: "Simulations & Tools", url: "#simulations" },
+    { id: "games", label: "Games", url: "games/" },
+    { id: "simulations", label: "Simulations & Tools", url: "simulations/" },
     { id: "kids", label: "Kids", url: "kids/" },
     { id: "writing", label: "Writing", url: "#writing" }
   ];
   var parent = sections.find(function (s) { return s.id === section; });
-  var isHub = !path || folder === "kids" || folder === "fantasy" || path === "404.html";
+  var isHub = !path || folder === "kids" || folder === "fantasy" || folder === "games" || folder === "simulations" || path === "404.html";
   var desktop = matchMedia("(min-width: 1000px)");
   var chevron = '<svg viewBox="0 0 12 8" width="10" height="7" aria-hidden="true"><path d="m1 1 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>';
   document.body.classList.add("ds-page-" + (folder.replace(/[^a-z0-9-]/gi, "") || "home"));

@@ -1,0 +1,21 @@
+/* Start screens: one useful decision before the detailed setup. */
+.start-hero{padding:30px 0 24px}.start-hero h1{font-size:clamp(42px,6vw,74px);line-height:1;margin:0 0 16px}.start-hero>p{max-width:64ch;color:var(--muted);font-size:17px;line-height:1.5;margin:0}
+.start-kicker{font-family:inherit;font-size:11px;font-weight:750;line-height:1.4;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0 0 14px}
+.start-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:0 0 28px}
+.start-card{display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding:24px;background:var(--surface);border:1px solid var(--line-2);border-radius:14px;min-width:0}
+.start-card .start-kicker{margin:0}.start-card h2{font-size:27px;line-height:1.08;margin:0}.start-card p{font-size:14px;line-height:1.5;color:var(--muted);margin:0}.start-card>.btn,.start-card>.start-actions{margin-top:auto}
+.start-card-primary{background:var(--band);color:#f7f9f3;border-top:4px solid var(--brand);padding-top:21px}.start-card-primary h2{color:#fff}.start-card-primary p{color:#ced8d4}.start-card-primary .start-kicker{color:var(--brand)}
+.start-actions{display:flex;gap:8px;flex-wrap:wrap}.start-note{font-size:12px;color:var(--muted);line-height:1.5;margin:12px 0}
+.start-sports{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 24px}.start-sports button{min-height:44px;padding-inline:16px}.start-sports button[aria-pressed="true"]{background:var(--band);color:#fff;border-color:var(--band)}
+.start-resume{display:flex;gap:20px;align-items:center;justify-content:space-between;margin:0 0 24px;padding:20px 24px;border:1px solid var(--line-2);border-left:4px solid var(--accent);border-radius:12px;background:var(--surface)}
+.start-resume h2{font-size:22px;margin:0 0 7px}.start-resume p{font-size:14px;color:var(--muted);margin:0}.start-resume .btn{flex:none}
+.start-leagues{list-style:none;padding:0;margin:0;width:100%}.start-leagues li{margin:0 0 8px}.start-leagues a{font-size:14px;font-weight:700}.start-open{display:grid;gap:8px;width:100%;margin-top:auto}.start-open label{font-size:12px;font-weight:700}.start-open input{width:100%;min-width:0}.start-open .btn{justify-self:start}
+.start-details{border:1px solid var(--line-2);border-radius:12px;background:var(--surface);margin:0 0 22px;padding:0 20px}.start-details>summary{cursor:pointer;min-height:54px;padding:16px 0;font-weight:750;font-size:15px}.start-details>summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}.start-details[open]{padding-bottom:20px}.start-details .landing{margin:4px 0 0}.start-details .rules{margin-bottom:0}.start-details .capbar{margin-top:8px}
+.start-back{display:inline-flex;align-items:center;min-height:44px;font-size:13px;font-weight:700;text-decoration:none;margin-bottom:8px}
+@media(max-width:900px){.start-cards{grid-template-columns:1fr}.start-card{padding:22px;gap:10px}.start-card h2{font-size:25px}.start-card-primary{padding-top:19px}.start-card>.btn,.start-card>.start-actions{margin-top:5px}.start-resume{flex-wrap:wrap;padding:20px}.start-hero{padding-top:22px}.start-details{padding-inline:14px}.start-details .landing{grid-template-columns:1fr}}
+
+.start-hero h1>span{display:block}.start-hero h1>span+span{color:var(--accent)}
+
+.start-details [hidden]{display:none!important}
+
+@media(max-width:600px){.fk-mast a[href="../fantasy/"]{display:none}}

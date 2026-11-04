@@ -7,6 +7,7 @@ A personal passion project, built for fun and for learning: a home page of sport
 ```
 dsolar.github.io/
   index.html                  home page: header, hero, projects, writing, About, footer
+  games/, simulations/        full project collections; the homepage features selected picks
   404.html                    the page anyone sees at an address that doesn't exist
   assets/
     projects.js               THE LIST OF PROJECTS. Edit this to add or change one.
@@ -16,6 +17,7 @@ dsolar.github.io/
     analytics.js              Cloudflare Web Analytics (paste the token here to turn it on)
     bar.css                   the fallback site bar on top of each game
     navigation.js, .css        shared category menus, parent links and mobile navigation
+    catalog.js, .css           curated homepage picks and complete collections
     nav-mark.svg              the transparent Fenway/CITGO mark used by the shared header
     ds-mark.svg, favicon.svg  the DS logo
     apple-touch-icon.png      icon when someone saves the site to a phone home screen
@@ -116,7 +118,7 @@ dsolar.github.io/
 3. Save a screenshot as `assets/covers/my-new-thing.jpg` (4:3, about 1040 x 780). Optional: without one, the home page draws a colored block with the title.
 4. Copy a `{ ... }` block in `assets/projects.js`, paste it at the end and fill it in. Every field is explained at the top of that file.
 
-The home page and shared menus read the list. Games are grouped into daily challenges and strategy games; Fantasy has its league pages and draft tools; Simulations & Tools includes the front-office games and Big Board. Kids projects stay in their own section. A new project appears in the right menu automatically.
+The homepage, full Games and Simulations collections, and shared menus read the list. Set `homeFeatured: true` to include a project in the homepage picks (four Games and two Simulations). Games are grouped into daily challenges and strategy games; Fantasy has its league pages and draft tools; Simulations & Tools includes the front-office games and Big Board. Kids projects stay in their own section. A new project appears in the right menu and full collection automatically.
 
 To keep something off the home page and menus but still reachable by its link, set `hidden: true`. The existing homepage app code reveals it for that tab's session. To list something you're still building, set `status: "building"`.
 
@@ -483,3 +485,9 @@ The same Monday workflow pulls every trade since 2013 (`tools/yoenis_trades_pull
 
 `tools/yoenis_history_pull.py` saves every season's weekly matchups (category stats and Yahoo's category winners) and every add and drop to `tools/yahoo_yoenis/history/<year>.json`. Finished seasons are pulled once; the latest is pulled each run. Yahoo refuses some seasons' full transaction list in one call (2023), so it pages through, 100 at a time. `tools/yoenis_history_build.py` turns that into `history` in `yoenis/data.json`: the 16-0 club (and 15-1 near misses), all-time rivalries by manager, and the waiver wire hall of fame, where a pickup counts his value over replacement for the time he stayed on that team plus any seasons that manager kept him. A 16-0 in progress also gets a "16-0 watch" tag on the Race section's matchups.
 
+
+## First visits and practice drafts
+
+Hard Cap opens with practice, create, and return-to-league choices. `hardcap/demo.html` uses `practice.js` and the existing Hard Cap rules for a salary-cap draft against bots. Its progress uses only `hc:practice:v1` in this browser; shared league records are never opened or written by the practice page. League creation and recovery keep their existing forms and server calls behind the landing-page controls.
+
+Draft Lab opens with quick start, custom setup, and demo/shared-league choices. `#setup` retains all custom options, `#draft` resumes a saved mock, and `#home` returns to quick start. A quick mock uses standard settings without overwriting the saved custom configuration; replacing a saved mock requires confirmation.

@@ -37,14 +37,15 @@
 .world-button{display:inline-flex;gap:35px;align-items:center;background:#f6c445;color:#13233a;padding:12px 20px;text-decoration:none;font-weight:700;margin-top:26px}.world-button:hover{background:#ffe08a;color:#13233a}
 .fantasy-shortcuts{display:flex;flex-wrap:wrap;gap:10px 20px;margin-top:22px;font-size:.78rem}.fantasy-shortcuts a{color:#e4e9f0;text-decoration-color:#647185}
 .fantasy-sports{display:grid;border-left:1px solid #425066}.fantasy-sports>a{position:relative;display:flex;flex-direction:column;justify-content:center;padding:25px 52px 25px 30px;text-decoration:none;border-bottom:1px solid #425066;color:#f7f4eb;gap:5px}.fantasy-sports>a:last-child{border:0}.fantasy-sports>a:hover{background:#20344e}.sport-label{font-size:.67rem;text-transform:uppercase;letter-spacing:.09em;color:#f6c445}.fantasy-sports strong{font-family:var(--f-display);font-size:1.35rem}.fantasy-sports a>span:last-of-type{font-size:.82rem;color:#cbd4df}.fantasy-sports b{position:absolute;right:25px;top:40%}
-#games-and-simulations{padding-top:0}.project-start{scroll-margin-top:90px}.world-group{scroll-margin-top:24px;margin-bottom:55px}.world-heading{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:end;border-top:2px solid var(--ink);padding-top:22px;margin-bottom:25px}.world-heading h2{font-size:clamp(1.7rem,3vw,2.5rem);line-height:1.2}.world-heading>p{color:var(--muted);font-size:.9rem;max-width:48ch;justify-self:end}.world-group .tiles{grid-template-columns:repeat(4,minmax(0,1fr))}#simulations .tiles{grid-template-columns:repeat(3,minmax(0,1fr))}#simulations .tile-cover{aspect-ratio:4/3}
+#games-and-simulations{padding-top:0}.project-start{scroll-margin-top:90px}.world-group{scroll-margin-top:24px;margin-bottom:55px}.world-heading{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:end;border-top:2px solid var(--ink);padding-top:22px;margin-bottom:25px}.world-heading h2{font-size:clamp(1.7rem,3vw,2.5rem);line-height:1.2}.world-heading>p{color:var(--muted);font-size:.9rem;max-width:48ch;justify-self:end}.world-group .tiles{grid-template-columns:repeat(4,minmax(0,1fr))}#simulations .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}#simulations .tile-cover{aspect-ratio:4/3}
 .family-world{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:24px;border-block:1px solid var(--rule);padding-block:32px;margin-bottom:24px}.family-world h2{font-size:1.9rem;line-height:1.2;margin-bottom:16px}.family-world p:not(.world-label){color:var(--muted);font-size:.9rem;margin-bottom:20px}.family-feature{text-decoration:none;background:var(--paper-2)}.family-feature img{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover}.family-feature>span{display:block;padding:15px;font-size:.72rem}.family-feature strong{display:block;font-family:var(--f-display);font-size:1.08rem;margin-top:4px}
 @media(max-width:900px){#simulations .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.world-group .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.family-world{grid-template-columns:1fr 1fr}.family-world>div{grid-column:1/-1}.fantasy-main{padding:28px}.fantasy-door{margin-inline:16px}.world-heading{grid-template-columns:1fr;gap:12px}.world-heading>p{justify-self:start}}
 @media(max-width:600px){.hero .wrap{padding-block:30px}.fantasy-door{grid-template-columns:1fr;margin-block:28px}.fantasy-sports{border-left:0;border-top:1px solid #425066}.fantasy-main h2{font-size:2.4rem}.fantasy-sports>a{padding:20px 45px 20px 28px}.site-nav{font-size:.8rem;gap:10px 17px}.family-world{gap:12px}.family-feature>span{padding:10px}#simulations .tiles{grid-template-columns:1fr}.world-nav{font-size:.78rem}.world-group{margin-bottom:36px}}
 </style>
 
 <link rel="stylesheet" href="assets/navigation.css?v=20261104-nav">
-<script src="assets/navigation.js?v=20261104-nav" defer></script>
+<link rel="stylesheet" href="assets/catalog.css?v=20261104-start">
+<script src="assets/navigation.js?v=20261104-discovery" defer></script>
 </head>
 <body>
 
@@ -298,42 +299,16 @@
   </div>
 </footer>
 
-<script src="assets/projects.js?v=20261104-nav"></script>
+<script src="assets/projects.js?v=20261104-start"></script>
 <script src="assets/project-cards.js?v=20261029-all"></script>
+<script src="assets/catalog.js?v=20261104-start"></script>
 <script>
 /* Draws the project list from assets/projects.js. You shouldn't need to edit this. */
 (function () {
   var esc = window.ProjectCards.esc;
   var showHidden = false;
   try { showHidden = sessionStorage.getItem("dsolar-hidden-apps") === "shown"; } catch (e) {}
-  function renderProjects() {
-  var all = (window.PROJECTS || []).filter(function (p) { return showHidden || !p.hidden; });
-  // The order of assets/projects.js; "kids" projects have their own page (kids/).
-  var projects = all.filter(function (p) { return !p.section; });
-
-  var catalog = document.getElementById("catalog");
-  var tile = function (p, i) { return window.ProjectCards.tile(p, { showHidden: showHidden, order: i + 1 }); };
-  var groups = [
-    {type:"Games", id:"games", label:"02 / Games", title:"Got a few minutes?", intro:"Make the call, name the player, or outthink your friends. Pick a daily challenge or settle in for another round."},
-    {type:"Simulations", id:"simulations", label:"03 / Simulations & Tools", title:"You’re running the front office.", intro:"Build a roster. Work the cap. Scout the next draft. Put your front-office ideas to the test."},
-    {type:"Social Tools", id:"social", label:"Unlocked / Social tools", title:"For the group chat.", intro:"The extra projects behind the app code."},
-    {type:"Fantasy Leagues", id:"unlocked-fantasy", label:"Unlocked / Fantasy", title:"More league tools.", intro:"Your additional fantasy projects."}
-  ];
-  catalog.innerHTML = groups.map(function (g) {
-    var entries = projects.filter(function (p) { return p.type === g.type && (g.type !== "Fantasy Leagues" || p.hidden); });
-    if (!entries.length) return "";
-    return '<section class="world-group" id="' + g.id + '" aria-labelledby="' + g.id + '-title"><div class="world-heading"><div><p class="world-label">' + esc(g.label) + '</p><h2 id="' + g.id + '-title">' + esc(g.title) + '</h2></div><p>' + esc(g.intro) + '</p></div><ul class="tiles">' + entries.map(tile).join("") + '</ul></section>';
-  }).join("");
-  // A team logo that doesn't load gives way to its abbreviation
-  if (!catalog.dataset.logoFallback) {
-    catalog.dataset.logoFallback = "1";
-    catalog.addEventListener("error", function (e) {
-      var img = e.target;
-      if (img.tagName === "IMG" && img.closest(".mu-logo")) img.closest(".mu-logo").replaceWith(document.createTextNode(""));
-    }, true);
-  }
-
-  }
+  function renderProjects() { window.ProjectCatalog.home(showHidden); }
   function updateAccess() {
     renderProjects();
     window.dispatchEvent(new Event("dsolar:projects-change"));
