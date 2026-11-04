@@ -507,8 +507,17 @@ body.battle-focus .move-grid.moves-4{grid-template-columns:repeat(4,minmax(0,1fr
 .learn-modal .learn-art>*{max-width:100%;max-height:100%}
 .learn-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px}
 </style>
+
+<link rel="stylesheet" href="../assets/navigation.css?v=20261104-nav">
+<script src="../assets/projects.js?v=20261104-nav" defer></script>
+<script src="../assets/navigation.js?v=20261104-nav" defer></script>
 </head>
 <body>
+<nav class="ds-bar ds-navigation" data-ds-navigation aria-label="Main">
+  <a class="ds-brand" href="../" aria-label="David Solar, home"><img src="../assets/nav-mark.svg" alt="" width="38" height="38"><span>David Solar</span></a>
+  <a href="../kids/">← Kids</a>
+  <a href="../#projects">Explore all projects</a>
+</nav>
   <div id="mobile-movement" aria-label="Touch walking controls">
     <div class="touch-stick" id="touch-stick" role="group" aria-label="Drag the purple joystick in any direction to walk">
       <span class="stick-thumb" id="stick-thumb" aria-hidden="true">✿</span>

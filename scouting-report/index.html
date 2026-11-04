@@ -161,11 +161,16 @@ h1{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(2.2rem,7v
   .stamp{font-size:1rem}
 }
 </style>
+
+<link rel="stylesheet" href="../assets/navigation.css?v=20261104-nav">
+<script src="../assets/projects.js?v=20261104-nav" defer></script>
+<script src="../assets/navigation.js?v=20261104-nav" defer></script>
 </head>
 <body data-screen="home">
-<nav class="ds-bar" aria-label="davidsolar.dev">
-  <a href="../"><img src="../assets/ds-mark.svg" alt="" width="20" height="20"><span class="ds-bar-name">David Solar</span></a>
-  <a href="../#projects">All projects</a>
+<nav class="ds-bar ds-navigation" data-ds-navigation aria-label="Main">
+  <a class="ds-brand" href="../" aria-label="David Solar, home"><img src="../assets/nav-mark.svg" alt="" width="38" height="38"><span>David Solar</span></a>
+  <a href="../#games">← Games</a>
+  <a href="../#projects">Explore all projects</a>
 </nav>
 <main class="wrap">
   <header class="top">

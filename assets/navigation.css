@@ -1,0 +1,62 @@
+/* Scoped so every project can keep its own typography, controls and colors. */
+.ds-bar.ds-navigation{--ds-ink:#f7f4eb;--ds-gold:#f6c445;position:sticky;top:0;z-index:70;display:block;box-sizing:border-box;min-height:52px;padding:0 max(20px,env(safe-area-inset-right,0px)) 0 max(20px,env(safe-area-inset-left,0px));background:#002244;color:var(--ds-ink);border:0;border-bottom:2px solid #c60c30;font:500 13px/1.4 "Libre Franklin","Helvetica Neue",Arial,sans-serif;letter-spacing:0;text-align:left;text-transform:none;isolation:isolate}
+.ds-navigation *{box-sizing:border-box}
+.ds-navigation [hidden]{display:none!important}
+.ds-navigation .ds-nav-inner{display:flex;align-items:center;gap:18px;min-height:50px;max-width:1240px;margin:0 auto;padding-top:env(safe-area-inset-top,0px)}
+.ds-navigation[data-layout="hub"] .ds-nav-inner{min-height:70px}
+.ds-navigation .ds-brand{display:inline-flex;align-items:center;flex:none;gap:9px;padding:4px 0;color:var(--ds-ink);font:700 19px/1.2 "Besley",Georgia,serif;letter-spacing:-.4px;text-decoration:none;white-space:nowrap}
+.ds-navigation .ds-brand img{display:block;flex:none;width:38px;height:38px;max-width:none;border:0;border-radius:0;background:transparent}
+.ds-navigation[data-layout="app"] .ds-brand img{width:30px;height:30px}
+.ds-navigation .ds-parent{display:inline-flex;align-items:center;gap:5px;border-left:1px solid #47617b;padding:4px 0 4px 16px;color:var(--ds-gold);font-size:12px;text-decoration:none;white-space:nowrap}
+.ds-navigation .ds-primary{display:flex;align-items:center;gap:12px;margin-left:auto}
+.ds-navigation .ds-nav-item{position:relative}
+.ds-navigation .ds-nav-label{display:flex;align-items:center;border-radius:4px}
+.ds-navigation .ds-section-link{display:flex;align-items:center;min-height:40px;padding:8px 2px;color:var(--ds-ink);font:600 13px/1.25 "Libre Franklin","Helvetica Neue",Arial,sans-serif;text-decoration:none;white-space:nowrap}
+.ds-navigation .ds-disclosure,.ds-navigation .ds-menu-toggle{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:30px;min-height:36px;margin:0;padding:7px;border:0;border-radius:4px;background:transparent;box-shadow:none;color:var(--ds-ink);font:600 13px/1.2 "Libre Franklin","Helvetica Neue",Arial,sans-serif;cursor:pointer;text-transform:none;letter-spacing:0;transform:none}
+.ds-navigation .ds-disclosure svg{transition:transform .15s}
+.ds-navigation .ds-disclosure[aria-expanded="true"] svg{transform:rotate(180deg)}
+.ds-navigation .ds-menu-toggle{display:none;width:auto;min-height:40px;padding:8px 12px;border:1px solid #6d8094}
+.ds-navigation .ds-current .ds-section-link{color:var(--ds-gold);text-decoration:underline;text-underline-offset:8px;text-decoration-thickness:2px;text-decoration-color:var(--ds-gold)}
+.ds-navigation a:hover{color:#fff;text-decoration:underline;text-decoration-color:var(--ds-gold);text-underline-offset:4px}
+.ds-navigation .ds-nav-label:hover,.ds-navigation button:hover{background:#153955;color:#fff}
+.ds-navigation a:focus-visible,.ds-navigation button:focus-visible{outline:2px solid var(--ds-gold);outline-offset:3px;border-radius:3px}
+.ds-navigation .ds-dropdown{position:absolute;right:0;top:calc(100% + 7px);width:340px;max-width:calc(100vw - 32px);max-height:calc(100dvh - 100px);overflow:auto;padding:14px;background:#f7f4eb;color:#14283e;border:1px solid #c8d0d6;border-top:3px solid var(--ds-gold);border-radius:0 0 8px 8px;box-shadow:0 15px 35px #00172d40}
+.ds-navigation .ds-dropdown-fantasy,.ds-navigation .ds-dropdown-games{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;width:580px}
+.ds-navigation .ds-menu-label{margin:2px 9px 7px;color:#566473;font:700 10px/1.4 "Libre Franklin","Helvetica Neue",Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.ds-navigation .ds-menu-link{display:flex;flex-direction:column;align-items:stretch;gap:3px;min-height:42px;padding:10px 9px;border:0;border-radius:4px;color:#14283e;font:650 13px/1.35 "Libre Franklin","Helvetica Neue",Arial,sans-serif;text-decoration:none;white-space:normal}
+.ds-navigation .ds-menu-link small{display:block;color:#536171;font:400 11px/1.4 "Libre Franklin","Helvetica Neue",Arial,sans-serif}
+.ds-navigation .ds-menu-link:hover,.ds-navigation .ds-menu-link[aria-current="page"]{background:#e6e9e6;color:#002244;text-decoration:none}
+.ds-navigation .ds-view-all{grid-column:1/-1;display:flex;justify-content:space-between;gap:16px;margin:10px 5px 0;padding:12px 4px 3px;border-top:1px solid #ccd2d3;color:#14283e;font-weight:700;text-decoration:none}
+.ds-navigation .ds-view-all:hover{color:#002244}
+.ds-navigation .ds-all-projects{display:none}
+.ds-navigation:not([data-enhanced]){display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;padding-block:8px}
+.ds-navigation:not([data-enhanced]) a{color:#f7f4eb}
+html:has(.ds-navigation){scroll-padding-top:90px}
+body:has(.ds-navigation) .fk-top{top:var(--ds-navigation-height,52px)}
+body.ds-page-guillotine .jump,body.ds-page-yoenis .jump,body.ds-page-celtics .tabs,body.ds-page-rohan .page-nav,body.ds-page-calendar .bar{top:var(--ds-navigation-height,52px)}
+body.ds-page-31st-franchise .side{top:calc(var(--ds-navigation-height,52px) + 10px)}
+body.ds-page-journeyman .desk,body.ds-page-sunday-strategist .board{top:calc(var(--ds-navigation-height,52px) + 16px)}
+body.ds-page-wild-bloom-isles .shelf{top:calc(var(--ds-navigation-height,52px) + 12px);max-height:calc(100dvh - var(--ds-navigation-height,52px) - 24px)}
+body.fk-room{--ds-navigation-height:0px}
+body.mobile-world .ds-navigation{display:none}
+@media(max-width:999px){
+ .ds-bar.ds-navigation{padding-inline:max(14px,env(safe-area-inset-left,0px)) max(14px,env(safe-area-inset-right,0px))}
+ .ds-navigation .ds-nav-inner,.ds-navigation[data-layout="hub"] .ds-nav-inner{min-height:56px;gap:12px}
+ .ds-navigation .ds-brand{font-size:17px;gap:7px}
+ .ds-navigation .ds-brand img,.ds-navigation[data-layout="app"] .ds-brand img{width:32px;height:32px}
+ .ds-navigation .ds-menu-toggle{display:inline-flex;margin-left:auto;flex:none;min-height:44px}
+ .ds-navigation .ds-brand{min-height:44px}
+ .ds-navigation .ds-parent{font-size:11px;padding-left:10px;max-width:190px;min-height:44px;white-space:normal}
+ .ds-navigation[data-enhanced] .ds-primary{position:absolute;top:100%;left:0;right:0;display:block;max-height:calc(100dvh - 70px);overflow-y:auto;overscroll-behavior:contain;margin:0;padding:10px 18px 18px;background:#002244;border-bottom:3px solid #f6c445;box-shadow:0 16px 30px #00172d40}
+ .ds-navigation .ds-nav-item{border-bottom:1px solid #36506b}
+ .ds-navigation .ds-nav-label{justify-content:space-between}
+ .ds-navigation .ds-section-link{flex:1;min-height:48px;font-size:15px;padding:10px 8px}
+ .ds-navigation .ds-disclosure{width:48px;min-height:48px}
+ .ds-navigation .ds-dropdown,.ds-navigation .ds-dropdown-fantasy,.ds-navigation .ds-dropdown-games{position:static;display:block;width:100%;max-width:none;max-height:none;padding:14px 8px 8px;background:#f7f4eb;border:0;border-left:3px solid #f6c445;border-radius:0;box-shadow:none;margin-bottom:12px}
+ .ds-navigation .ds-menu-group+.ds-menu-group{margin-top:16px}
+ .ds-navigation .ds-menu-link{min-height:46px;font-size:14px}
+ .ds-navigation .ds-all-projects{display:flex;justify-content:space-between;min-height:46px;margin-top:12px;padding:12px 8px;color:#f6c445;font-weight:650;text-decoration:none}
+ body.ds-page-sunday-strategist .field-wrap{top:var(--ds-navigation-height,58px)}
+}
+@media(max-width:359px){.ds-navigation .ds-brand{font-size:15px}.ds-navigation .ds-brand img{width:28px;height:28px}.ds-navigation .ds-parent{font-size:10px;padding-left:7px}.ds-navigation .ds-menu-toggle{padding-inline:8px}.ds-navigation .ds-nav-inner{gap:8px}}
+@media(prefers-reduced-motion:reduce){.ds-navigation .ds-disclosure svg{transition:none}}

@@ -14,7 +14,9 @@ dsolar.github.io/
     site.js                   email links and the footer year, shared by every page
     slate.js                  Today's slate, the hero scoreboard of the daily games (reads each game's saved progress)
     analytics.js              Cloudflare Web Analytics (paste the token here to turn it on)
-    bar.css                   the slim "David Solar / All projects" bar on top of each game
+    bar.css                   the fallback site bar on top of each game
+    navigation.js, .css        shared category menus, parent links and mobile navigation
+    nav-mark.svg              the transparent Fenway/CITGO mark used by the shared header
     ds-mark.svg, favicon.svg  the DS logo
     apple-touch-icon.png      icon when someone saves the site to a phone home screen
     og.png                    preview image when the link is shared in a text or Slack
@@ -110,13 +112,13 @@ dsolar.github.io/
 ## Adding a project
 
 1. Put the project in its own folder at the top of the repo, for example `my-new-thing/index.html`. Its address becomes `davidsolar.dev/my-new-thing/`.
-2. Paste the site bar as the first thing inside its `<body>`, and link `bar.css` in its `<head>`. The exact markup is at the top of `assets/bar.css`.
+2. Copy the shared navigation markup and its three asset tags from an existing game such as `journeyman/index.html`: `navigation.css`, `projects.js` and `navigation.js`. Keep `data-ds-navigation` on the fallback bar and load the scripts with `defer`. The menu reads the same project list as the homepage and picks the correct parent category from it. Keep the game's `bar.css` link for its fallback styles.
 3. Save a screenshot as `assets/covers/my-new-thing.jpg` (4:3, about 1040 x 780). Optional: without one, the home page draws a colored block with the title.
 4. Copy a `{ ... }` block in `assets/projects.js`, paste it at the end and fill it in. Every field is explained at the top of that file.
 
-That's it. The home page reads the list, so it never needs editing for a new project. Once there's more than one type of project (say a Tool next to the Games), filter buttons show up on their own.
+The home page and shared menus read the list. Games are grouped into daily challenges and strategy games; Fantasy has its league pages and draft tools; Simulations & Tools includes the front-office games and Big Board. Kids projects stay in their own section. A new project appears in the right menu automatically.
 
-To keep something off the home page but still reachable by its link, set `hidden: true`. To list something you're still building, set `status: "building"`.
+To keep something off the home page and menus but still reachable by its link, set `hidden: true`. The existing homepage app code reveals it for that tab's session. To list something you're still building, set `status: "building"`.
 
 Each new game should also load analytics: put `<script src="../assets/analytics.js" defer></script>` in its `<head>` next to `bar.css`.
 
@@ -158,7 +160,7 @@ Visits show up in that same Web Analytics screen within a few minutes. It only c
 
 ## The 404 page
 
-`404.html` is what GitHub Pages shows for any address that doesn't exist. Its header and footer are copies of the home page's, so if you change the nav or footer in `index.html`, make the same change there.
+`404.html` is what GitHub Pages shows for any address that doesn't exist. It uses the same shared navigation as the homepage and Kids. Its asset paths start with `/` so they work at any depth.
 
 ## Adding a private area later
 

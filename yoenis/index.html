@@ -570,9 +570,17 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
 @media(max-width:520px){.player-popover{left:0;max-width:calc(100vw - 50px)}}
 
 </style>
+
+<link rel="stylesheet" href="../assets/navigation.css?v=20261104-nav">
+<script src="../assets/projects.js?v=20261104-nav" defer></script>
+<script src="../assets/navigation.js?v=20261104-nav" defer></script>
 </head>
 <body>
-<nav class="ds-bar" aria-label="davidsolar.dev"><a href="../"><img src="../assets/ds-mark.svg" alt="" width="20" height="20"><span class="ds-bar-name">David Solar</span></a><a href="../#projects">All projects</a></nav>
+<nav class="ds-bar ds-navigation" data-ds-navigation aria-label="Main">
+  <a class="ds-brand" href="../" aria-label="David Solar, home"><img src="../assets/nav-mark.svg" alt="" width="38" height="38"><span>David Solar</span></a>
+  <a href="../fantasy/">← Fantasy</a>
+  <a href="../#projects">Explore all projects</a>
+</nav>
 
 <main class="wrap">
   <header class="hero">

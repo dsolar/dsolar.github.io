@@ -126,6 +126,16 @@ window.PROJECTS = [
     cover: { image: "assets/covers/fantasy.svg", bg: "#13233A", band: "#F6C445" }
   },
   {
+    title: "Hard Cap",
+    line: "Salary-cap dynasty basketball",
+    type: "Fantasy Leagues",
+    released: "2026-11",
+    url: "hardcap/",
+    action: "Open Hard Cap",
+    summary: "Draft the player and carry his real NBA contract in a salary-cap dynasty league.",
+    cover: { image: "hardcap/mark.svg", bg: "#10251f", band: "#B7E43B" }
+  },
+  {
     title: "Bastille Day Odds",
     line: "Who gets cut next in the guillotine",
     tag: "Live on game days",
