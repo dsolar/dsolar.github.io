@@ -4,7 +4,7 @@
  "week": 9,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-04T13:40:46Z",
+ "updated": "2026-11-04T13:43:19Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -4769,7 +4769,8 @@
     "g": 7,
     "last": 10.04,
     "claimed_by": "Drake Mayezini",
-    "bid": 47
+    "bid": 47,
+    "run": "2026-11-04"
    },
    {
     "name": "Dak Prescott",
@@ -4782,7 +4783,8 @@
     "g": 8,
     "last": 19.8,
     "claimed_by": "Drake Mayezini",
-    "bid": 21
+    "bid": 21,
+    "run": "2026-11-04"
    },
    {
     "name": "Kirk Cousins",
@@ -4795,7 +4797,8 @@
     "g": 8,
     "last": 28.18,
     "claimed_by": "Braelon’s Pieces",
-    "bid": 0
+    "bid": 0,
+    "run": "2026-11-04"
    },
    {
     "name": "Amon-Ra St. Brown",
@@ -4808,7 +4811,8 @@
     "g": 7,
     "last": 9.1,
     "claimed_by": "A Warren Boston",
-    "bid": 190
+    "bid": 190,
+    "run": "2026-11-04"
    },
    {
     "name": "Justin Jefferson",
@@ -4821,7 +4825,8 @@
     "g": 6,
     "last": 11.8,
     "claimed_by": "Love Purdy Flowers",
-    "bid": 66
+    "bid": 66,
+    "run": "2026-11-04"
    },
    {
     "name": "Parker Washington",
@@ -4834,7 +4839,8 @@
     "g": 7,
     "last": 3.1,
     "claimed_by": "Tai Streetz Lata?",
-    "bid": 21
+    "bid": 21,
+    "run": "2026-11-04"
    },
    {
     "name": "Ollie Gordon II",
@@ -4847,7 +4853,8 @@
     "g": 7,
     "last": 6.9,
     "claimed_by": "Holofernes",
-    "bid": 0
+    "bid": 0,
+    "run": "2026-11-04"
    },
    {
     "name": "Malik Washington",
@@ -4871,7 +4878,8 @@
     "g": 8,
     "last": 21,
     "claimed_by": "Love Purdy Flowers",
-    "bid": 51
+    "bid": 51,
+    "run": "2026-11-04"
    },
    {
     "name": "Jordan Mason",
@@ -4895,7 +4903,8 @@
     "g": 8,
     "last": 8,
     "claimed_by": "Tai Streetz Lata?",
-    "bid": 11
+    "bid": 11,
+    "run": "2026-11-04"
    },
    {
     "name": "Emeka Egbuka",
@@ -4908,7 +4917,8 @@
     "g": 6,
     "last": 0,
     "claimed_by": "Tai Streetz Lata?",
-    "bid": 5
+    "bid": 5,
+    "run": "2026-11-04"
    },
    {
     "name": "Kyle Monangai",
@@ -4941,7 +4951,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-04T13:40:48Z",
+  "updated": "2026-11-04T13:43:22Z",
   "players": 3045,
   "unmatched": []
  }
