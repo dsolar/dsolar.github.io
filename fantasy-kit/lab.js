@@ -92,7 +92,7 @@
     const lu = (c.lineup || sport.lineup.join(" ")).split(/[\s,]+/).filter((x) => sport.slots[x] && x !== "BN");
     const bench = c.bench == null ? sport.bench : c.bench;
     const auction = c.type === "auction", mystery = c.type === "mystery", elephant = c.type === "elephant";
-    const tradesOk = !auction && !elephant;
+    const tradesOk = !auction && !elephant && c.type !== "pack";
     const clock = (auction ? BID_CLOCKS : CLOCKS).find(([v]) => v === c.clock) || (auction ? BID_CLOCKS[1] : CLOCKS[1]);
     const sc = (sport.scorings[scoring] || {}).label || "";
     const line = `${sport.name}, ${c.teams} teams, ${sc.replace(/ \(.*\)$/, "")}, ${K.DRAFT_SHORT[c.type] || c.type}${auction ? `, $${c.budget}` : ""}, ${clock[1].toLowerCase()}${c.slot && !mystery ? `, pick ${c.slot}` : ""}`;
@@ -228,6 +228,7 @@
       botDelay: 1200, clock: c.type === "auction" || c.clock < 0 ? 0 : c.clock, bank: c.clock < 0 && c.type !== "auction" ? { perRound: -c.clock, floor: 10 } : null, bidClock: c.clock || 15, nomClock: 30, budget: c.budget, order, name: `${P.sport.name} mock`,
       trades: c.trades !== 0, curve: c.type === "mystery" ? F.pickCurve(P.players, total) : null, reveal: c.reveal });
     if (c.type === "mystery" && c.test) F.fairDeal(D, P.players, P.sport, null, { tries: 5 });
+    if (c.type === "pack") F.dealPacks(D, P.players, P.sport);
     D.teams[0].owner = "You";
     if (c.name) { D.teams[0].name = c.name; D.teams[0].abbr = c.name.replace(/[^A-Za-z0-9 ]/g, "").split(/\s+/).map((w) => w[0]).join("").slice(0, 3).toUpperCase() || "YOU"; }
     else { D.teams[0].name = "Your team"; D.teams[0].abbr = "YOU"; }

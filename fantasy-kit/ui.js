@@ -659,6 +659,11 @@
         const st = F.auctionState(d, n);
         const t = st.kind === "lot" ? team(st.lot.team) : team(st.team);
         mid = `<div class="otc${isMe(t) && st.kind === "nominate" ? " me" : ""}">${teamAv(t, "md")}<span class="who"><small>${st.kind === "lot" ? "High bid" : isMe(t) ? "Your nomination" : "Nominating"}</small><b>${esc(t.name)}</b><span>${d.sales.length} of ${d.teams.length * d.rounds} bought${d.paused ? ", paused" : ""}</span></span><span class="ring" id="fk-ring"><span id="fk-timer"></span></span></div>`;
+      } else if (d.packs) {
+        // a pack draft: everyone picks from the pack in front of them at once, on one clock
+        const tt = F.packTurnNow(d), at = F.packAt(d, tt), mineUp = me() != null && F.packSlot(d, me()) >= 0;
+        const waiting = d.round1.filter((id) => F.packSlot(d, id) >= 0).length;
+        mid = `<div class="otc${mineUp ? " me" : ""}"><span class="ring" id="fk-ring"><span id="fk-timer"></span></span><span class="who"><small>Pack ${at.q + 1} of ${at.sets}, pick ${at.j + 1} of ${at.size}</small><b>${mineUp ? "Your pick" : me() != null ? "Picked" : "Everyone picks"}</b><span>${waiting ? `${waiting} still picking` : "Passing the packs"}, then they go ${at.q % 2 === 0 ? "left" : "right"}</span></span></div>`;
       } else {
         const c = F.onClock(d, n), t = team(c.team), mine = isMe(t);
         const next = me() != null ? F.nextPickOf(d, me()) : null;
@@ -738,7 +743,9 @@
         if (!seenK(k)) { cards.push(`<div class="tk hid"><span class="n">${lab}</span><b>Sealed</b><small>${d.phase === "live" && k > k0 ? `${k - k0} away` : "Revealed at the start"}</small></div>`); continue; }
         if (p) cards.push(`<button type="button" class="tk done c${colorOf(sport, p)}${isMe(t) ? " me" : ""}${pk.steal ? " steal" : ""}${pk.gone ? " gone" : ""}" data-player="${esc(p.id)}"><span class="n">${lab} ${esc(t.abbr)}</span><b>${esc(p.n)}</b><small>${pk.steal ? `Stolen from ${esc(team(pk.from).abbr)}` : pk.gone ? "Later stolen" : `${S.positions(p).join(", ")} ${esc(p.t)}`}</small></button>`);
         else { const sp = d.roulette && !auction() ? (k === k0 && d.phase === "live" ? F.wheelFor(d, ctx, d.order[k]) : F.spinOf(d, k)) : null;
-          cards.push(`<div class="tk${k === k0 && d.phase === "live" ? " now" : ""}${isMe(t) ? " me" : ""}"><span class="n">${teamAv(t, "sm")} ${lab}</span><b>${isMe(t) ? "You" : esc(t.name)}</b><small>${sp ? `${proTeam(sport, sp)} ` : ""}${d.phase === "setup" ? (k === 0 ? "Up first" : `Pick ${k + 1}`) : k === k0 && d.phase === "live" ? "On the clock" : k > k0 ? `${k - k0} away` : "Passed"}${via ? `, via ${esc(via.abbr)}` : ""}</small></div>`); }
+          // a pack draft's turn has everyone picking at once
+          const packNow = d.packs && d.phase === "live" && Math.floor(k / n) === Math.floor(k0 / n);
+          cards.push(`<div class="tk${(k === k0 || packNow) && d.phase === "live" ? " now" : ""}${isMe(t) ? " me" : ""}"><span class="n">${teamAv(t, "sm")} ${lab}</span><b>${isMe(t) ? "You" : esc(t.name)}</b><small>${sp ? `${proTeam(sport, sp)} ` : ""}${d.phase === "setup" ? (k === 0 ? "Up first" : `Pick ${k + 1}`) : packNow ? "Picking" : k === k0 && d.phase === "live" ? "On the clock" : d.packs && k > k0 ? `Pack turn ${Math.floor(k / n) + 1}` : k > k0 ? `${k - k0} away` : "Passed"}${via ? `, via ${esc(via.abbr)}` : ""}</small></div>`); }
       }
       const tk = `<div class="ticker" id="fk-ticker" tabindex="0" aria-label="Picks">${cards.join("")}</div>`;
       return d.bank ? `<div>${tk}<div class="budgets bank" aria-label="Time banks">${bankChips()}</div></div>` : tk;
@@ -771,13 +778,16 @@
     function players() {
       const d = D(), n = now(), mine = me();
       const c = !auction() && d.phase === "live" ? F.onClock(d, n) : null;
-      const myTurn = c && c.team === mine;
+      const myTurn = d.packs ? mine != null && F.packSlot(d, mine) >= 0 : c && c.team === mine;
       const st = auction() && d.phase === "live" ? F.auctionState(d, n) : null;
       const myNom = st && st.kind === "nominate" && st.team === mine;
       let rows = (ui.show === "all" ? opts.players : ctx.available).filter((p) => passes(sport, p, ui.f));
       // team roulette: the list shows the wheel's team for the pick on the clock, unless you ask for everyone
       const sn = spinNow(), only = sn && sn.t && !ui.rlAll && ui.show !== "all";
       if (only) rows = rows.filter((p) => p.t === sn.t);
+      // a pack draft: the list is the pack in front of you, unless you ask for everyone
+      const pk = d.packs && d.phase === "live" && mine != null ? F.packFor(d, ctx, mine) : null, packOnly = pk && !ui.rlAll && ui.show !== "all";
+      if (packOnly) rows = rows.filter((p) => pk.includes(p.id));
       const actions = (p) => {
         if (ctx.own[p.id] != null) { const ok = stealOk(p.id); return `${ok && ok.ok ? `<button class="btn xs warn" data-steal="${esc(p.id)}">Steal</button> ` : ""}${teamAv(team(ctx.own[p.id]), "sm")}`; }
         if (mine == null) return "";
@@ -791,7 +801,9 @@
       if (at && !ui.sortSet) { ui.sort = { k: "my", dir: 1 }; ui.sortSet = true; }
       const cols = poolColumns(sport, { group: groupOf(sport, ui.f), scoring: d.scoring, actions, lead });
       rows = sortRows(rows, cols, ui.sort);
-      const rlBar = sn && sn.t ? `<div class="rl-bar"><span>${only ? `Showing ${esc(teamFull(sn.t))} players: the wheel's team for this pick.` : `Showing everyone. This pick has to come from ${esc(teamFull(sn.t))}.`}</span><button class="btn xs" data-act="rlall">${only ? "Show everyone" : `Only ${esc(sn.t)}`}</button></div>` : "";
+      const pat = pk ? F.packAt(d, F.packTurnNow(d)) : null;
+      const packBar = pk ? `<div class="rl-bar"><span>${packOnly ? `Your pack: ${pk.length} left. ${myTurn ? "Take one" : "You've picked"}, then it passes ${pat.q % 2 === 0 ? "left" : "right"}.` : "Showing everyone. You can only take a player from your pack."}</span><button class="btn xs" data-act="rlall">${packOnly ? "Show everyone" : "Only my pack"}</button></div>` : "";
+      const rlBar = packBar || sn && sn.t ? packBar || `<div class="rl-bar"><span>${only ? `Showing ${esc(teamFull(sn.t))} players: the wheel's team for this pick.` : `Showing everyone. This pick has to come from ${esc(teamFull(sn.t))}.`}</span><button class="btn xs" data-act="rlall">${only ? "Show everyone" : `Only ${esc(sn.t)}`}</button></div>` : "";
       return rlBar + table({ cols, rows, sort: ui.sort, dense: true, id: "fk-pool", limit: ui.limit || 250, empty: "No one matches.",
         rowAttr: (p) => `data-player="${esc(p.id)}" class="${mine != null && ctx.own[p.id] == null && !F.canAdd(d, ctx, mine, p).ok ? "dim" : ""}"` });
     }
@@ -1080,6 +1092,7 @@
       const d = D(), n = now();
       let left = null, total = 1;
       if (d.phase === "heist") { left = Math.max(0, d.heist.ends - n); total = F.heistRules(d).clock * 1000; }
+      else if (d.packs && d.phase === "live") { left = d.clock ? Math.max(0, d.clockStart + d.clock * 1000 - n) : null; total = (d.clock || 1) * 1000; }
       else if (auction()) { const st = F.auctionState(d, n); left = st ? st.left : null; total = st && st.kind === "lot" ? d.auction.bidClock * 1000 : d.auction.nomClock * 1000; }
       else { const c = F.onClock(d, n); left = c ? c.left : null; total = d.bank ? (c && team(c.team).bank > d.bank.floor * 1000 ? bankFull() : d.bank.floor * 1000) : (d.clock || 1) * 1000; }
       const fin = left != null && Number.isFinite(left);
@@ -1100,7 +1113,7 @@
       const can = mine != null && !taken ? F.canAdd(d, ctx, mine, p) : null;
       let actions = "";
       if (mine != null && !taken) actions += `<button class="btn" data-card="queue">${team(mine).queue.includes(pid) ? "Remove from queue" : "Add to queue"}</button>`;
-      if (can && can.ok && c && c.team === mine) actions += `<button class="btn go" data-card="pick">Draft ${esc(last(p.n))}</button>`;
+      if (can && can.ok && (d.packs ? F.packSlot(d, mine) >= 0 : c && c.team === mine)) actions += `<button class="btn go" data-card="pick">Draft ${esc(last(p.n))}</button>`;
       const sk = taken && ctx.own[pid] !== mine ? stealOk(pid) : null;
       if (sk && sk.ok) actions += `<button class="btn warn" data-card="steal">Steal ${esc(last(p.n))}</button>`;
       if (can && can.ok && st && st.kind === "nominate" && st.team === mine) actions += `<button class="btn go" data-card="nominate">Nominate</button>`;

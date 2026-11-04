@@ -380,3 +380,36 @@ test('heist: shields block, a steal takes the player at 1.5x and frees a hole to
   assert.ok(Math.abs(tw.players[b[0]] - plain * 1.5) < 1e-9, 'the stolen QB scores 1.5x for the thief');
   assert.deepEqual(L.schedule[0], D.heist.pairs);
 });
+
+test('pack draft: alike packs, every pick from the pack in front of you, passing left then right, full lineups', () => {
+  const data = JSON.parse(readFileSync(new URL('../fantasy-kit/data/nfl.json', import.meta.url), 'utf8'));
+  const sport = S.attach(Object.assign({}, S.nfl), data);
+  const players = data.players.map((p) => ({ ...p }));
+  const lineup = ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'FLEX'];
+  V.evaluate(sport, players, { teams: 4, lineup, bench: 2, scoring: 'half' });
+  const D = F.create({ sport, type: 'pack', teams: 4, seed: 8, now: T0, lineup, bench: 2, botDelay: 0, scoring: 'half' });
+  F.dealPacks(D, players, sport);
+  assert.deepEqual(D.packs.sizes, [5, 5]);
+  assert.equal(D.trading, false);
+  const byId = Object.fromEntries(players.map((p) => [p.id, p]));
+  const tot = D.packs.cards[0].map((ids) => ids.reduce((s, id) => s + Math.max(0, byId[id].v), 0));
+  assert.ok(Math.max(...tot) / Math.min(...tot) < 1.35, `the first packs are alike: ${tot.map(Math.round).join(', ')}`);
+  const ctx = F.context(D, players, sport);
+  F.start(D, T0);
+  // turn by turn: each team's pick is from the pack in front of it
+  const n = 4;
+  for (let t = 0; t < D.rounds; t++) {
+    const before = Object.fromEntries(D.round1.map((team) => [team, F.packFor(D, ctx, team)]));
+    // in turn 1 of a set each seat holds its own pack; a turn later, the pack from the seat to its left (or right)
+    const { q, j } = F.packAt(D, t);
+    if (j === 1) { const seat0 = D.round1[0], from = q % 2 === 0 ? n - 1 : 1; assert.ok(D.packs.cards[q][from].includes(before[seat0][0]) || D.packs.cards[q][from].some((id) => before[seat0].includes(id))); }
+    F.tick(D, ctx, T0 + t + 1, n);
+    for (const team of D.round1) { const pk = D.board[t * n + D.round1.indexOf(team)]; assert.ok(before[team].includes(pk.pid), `turn ${t + 1}: ${D.teams[team].name} picked from its pack`); }
+  }
+  assert.equal(D.phase, 'done');
+  for (const team of D.round1) {
+    const ros = F.rosters(D)[team].map((id) => byId[id]);
+    assert.equal(ros.length, 10);
+    assert.ok(F.assign(sport, ros, lineup).every(Boolean), `${D.teams[team].name} fills its lineup`);
+  }
+});

@@ -34,7 +34,7 @@
   }
   function hash01(str) { let h = 2166136261; for (const c of String(str)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return ((h >>> 0) % 100000) / 100000; }
 
-  const FORMATS = { snake: "Snake", linear: "Linear", "3rr": "Third-round reversal", mystery: "Mystery packages", elephant: "White elephant", auction: "Auction" };
+  const FORMATS = { snake: "Snake", linear: "Linear", "3rr": "Third-round reversal", mystery: "Mystery packages", elephant: "White elephant", pack: "Pack draft", auction: "Auction" };
   const REVEALS = { start: "When the draft starts", own: "Yours at the start, the rest as they come up", now: "Right away" };
   const NAMES = [
     ["Night Shift", "NS"], ["Bench Mob", "BM"], ["Waiver Wire", "WW"], ["Late Scratch", "LS"], ["Deep Sleepers", "DS"], ["Box Score", "BX"],
@@ -78,12 +78,12 @@
       scoring: opts.scoring || Object.keys(sport.scorings)[0],
       lineup, bench, rounds, posMax: opts.posMax || sport.posMax || {},
       clock: opts.clock == null ? 60 : opts.clock, botDelay: opts.botDelay == null ? 1500 : opts.botDelay,
-      teams, round1: first, order: type === "auction" ? [] : type === "mystery" ? Array(m * rounds).fill(0) : makeOrder(type === "elephant" ? "snake" : type, first, rounds),
+      teams, round1: first, order: type === "auction" ? [] : type === "mystery" ? Array(m * rounds).fill(0) : makeOrder(type === "elephant" ? "snake" : type === "pack" ? "linear" : type, first, rounds),
       board: type === "auction" ? [] : Array(m * rounds).fill(null), sales: [], sit: sit.length ? sit : undefined,
       phase: "setup", clockStart: null, paused: false, left: null, log: [],
       auction: type === "auction" ? { budget: opts.budget || 200, minBid: opts.minBid == null ? 1 : opts.minBid, nomClock: opts.nomClock || 30, bidClock: opts.bidClock || 15, nom: 0, lot: null } : null,
       bank: type !== "auction" && opts.bank ? { perRound: opts.bank.perRound || 30, floor: opts.bank.floor == null ? 10 : opts.bank.floor } : null,
-      trading: type !== "auction" && type !== "elephant" && opts.trades !== false,
+      trading: type !== "auction" && type !== "elephant" && type !== "pack" && opts.trades !== false,
       steals: type === "elephant" ? { freeze: (opts.steals && opts.steals.freeze) || 2, perTeam: (opts.steals && opts.steals.perTeam) || 3, lastRounds: opts.steals && opts.steals.lastRounds != null ? opts.steals.lastRounds : 2 } : null,
       extra: {}, botOffers: opts.botOffers !== false, trades: [], via: {}, offered: {},
     };
@@ -194,7 +194,130 @@
     if (ctx.own[p.id] != null) return { ok: false, why: `${p.n} is already taken` };
     const spun = wheelFor(D, ctx, teamId);
     if (spun && p.t !== spun) return { ok: false, why: `This pick has to come from ${spun}` };
+    const pk = D.packs && D.phase === "live" ? packFor(D, ctx, teamId) : null;
+    if (pk) {
+      if (!pk.includes(p.id)) return { ok: false, why: `${p.n} isn't in your pack` };
+      const fit = fitsRoster(D, ctx, teamId, p);
+      // nobody in the pack fits what the lineup still needs: any of them will do, so a pick is never stuck
+      if (!fit.ok && rosters(D)[teamId].length < sizeOf(D) && !pk.some((id) => fitsRoster(D, ctx, teamId, ctx.byId[id]).ok)) return { ok: true };
+      return fit;
+    }
     return fitsRoster(D, ctx, teamId, p);
+  }
+
+  /* ---------- pack draft ---------- */
+  // Like a booster draft: every team opens a pack, takes one player from it, and passes the rest on; the next pick
+  // comes from the pack passed in. Packs go left, then right for the next set. No two teams ever hold the same pack,
+  // so a turn has everyone picking at once, on one clock. D.packs: { sizes: picks per pack, extra: players left over
+  // in each, cards: [pack set][seat] -> player ids }. Seats are the first round's order.
+  // Deal the packs from a valued pool so they come out alike: enough players at each lineup position (a quarter
+  // more than the lineups need), the rest the best left, then every position spread across the packs in turn.
+  function dealPacks(D, players, sport) {
+    // with no bench every pick has to fill a lineup spot, so each pack carries a spare more
+    const n = D.round1.length, R = D.rounds, Q = R >= 6 ? 2 : 1, extra = D.bench ? 2 : 3;
+    const sizes = Array.from({ length: Q }, (_, q) => Math.floor(R / Q) + (q < R % Q ? 1 : 0));
+    const total = sizes.reduce((a, x) => a + (x + extra) * n, 0);
+    const ok = players.filter((p) => D.lineup.some((sl) => S.fits(sport, p, sl)) && (p.v || 0) > -1e9).sort((a, b) => (b.v || 0) - (a.v || 0));
+    const pick = new Set(), main = (p) => S.positions(p)[0];
+    // each position's share of the pool is its share of the lineup (a flex spot split among what it takes, the bench
+    // like the starters), and each position's best players fill it
+    const all = [...new Set(ok.map(main))], demand = {};
+    for (const sl of D.lineup) { const v = sport.slots[sl], el = v === "*" ? all : v.filter((x) => all.includes(x)); for (const x of el) demand[x] = (demand[x] || 0) + 1 / el.length; }
+    const dsum = Object.values(demand).reduce((a, x) => a + x, 0) || 1;
+    const want = {};
+    let given = 0;
+    for (const [pos, d] of Object.entries(demand)) { want[pos] = Math.floor((d / dsum) * total); given += want[pos]; }
+    for (const pos of Object.keys(demand).sort((a, b) => ((demand[b] / dsum) * total % 1) - ((demand[a] / dsum) * total % 1))) { if (given >= total) break; want[pos]++; given++; }
+    // a position with its own lineup spot gets at least one and a half players a team, taken from the biggest group
+    const own = {};
+    for (const sl of D.lineup) { const v = sport.slots[sl]; if (v !== "*" && v.length === 1) own[v[0]] = (own[v[0]] || 0) + 1; }
+    for (const [pos, k] of Object.entries(own)) { const min = Math.ceil(k * n * (D.bench ? 1.5 : 1.7)); while ((want[pos] || 0) < min) { const big = Object.keys(want).filter((x) => x !== pos).sort((a, b) => want[b] - want[a])[0]; if (!big || want[big] <= (own[big] || 0) * n * 1.5) break; want[big]--; want[pos] = (want[pos] || 0) + 1; } }
+    for (const [pos, k] of Object.entries(want)) { let left = k; for (const p of ok) { if (!left) break; if (main(p) === pos && !pick.has(p.id)) { pick.add(p.id); left--; } } }
+    for (const p of ok) { if (pick.size >= total) break; pick.add(p.id); }
+    const byId = Object.fromEntries(ok.map((p) => [p.id, p]));
+    // the packs in dealing order, each with room for its picks plus the extras
+    const packs = [];
+    for (let q = 0; q < Q; q++) for (let i = 0; i < n; i++) packs.push({ q, i, cap: sizes[q] + extra, ids: [] });
+    const groups = {};
+    for (const id of pick) (groups[main(byId[id])] = groups[main(byId[id])] || []).push(byId[id]);
+    // scarce positions first, so each pack gets its share of them
+    const order = Object.keys(groups).sort((a, b) => groups[a].length - groups[b].length);
+    let at = 0, dir = 1;
+    const r = rng((D.seed ^ 0xbacc) >>> 0);
+    for (const pos of order) for (const p of groups[pos].sort((a, b) => (b.v || 0) - (a.v || 0))) {
+      let tries = 0;
+      while (packs[at].ids.length >= packs[at].cap && tries++ < packs.length * 2) { at += dir; if (at >= packs.length || at < 0) { dir = -dir; at += dir; } }
+      if (packs[at].ids.length >= packs[at].cap) break;
+      packs[at].ids.push(p.id);
+      at += dir; if (at >= packs.length || at < 0) { dir = -dir; at += dir; }
+    }
+    // which seat opens which pack is shuffled, so the dealing order gives nobody an edge
+    const cards = sizes.map((_, q) => { const ps = packs.filter((x) => x.q === q).map((x) => x.ids); for (let i = ps.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [ps[i], ps[j]] = [ps[j], ps[i]]; } return ps; });
+    D.packs = { sizes, extra, cards };
+    D.trading = false;
+    return D.packs;
+  }
+  // where the draft stands: pack set q, pick j within it, for turn t (a turn is one round of the board)
+  function packAt(D, t) {
+    let q = 0, j = t;
+    while (q < D.packs.sizes.length - 1 && j >= D.packs.sizes[q]) { j -= D.packs.sizes[q]; q++; }
+    return { q, j, size: D.packs.sizes[q], sets: D.packs.sizes.length };
+  }
+  const packTurnNow = (D) => { const k = nextIndex(D); return k < 0 ? -1 : Math.floor(k / D.round1.length); };
+  // the pack in front of a team this turn: the one opened by the seat that many places back (left), or ahead (right)
+  function packFor(D, ctx, teamId, t) {
+    if (!D.packs) return null;
+    if (t == null) t = packTurnNow(D);
+    if (t < 0) return null;
+    const n = D.round1.length, seat = D.round1.indexOf(teamId);
+    if (seat < 0) return null;
+    const { q, j } = packAt(D, t), dir = q % 2 === 0 ? 1 : -1;
+    const src = (((seat - dir * j) % n) + n) % n;
+    return (D.packs.cards[q][src] || []).filter((id) => !ctx || ctx.own[id] == null);
+  }
+  // a team's spot on the board this turn, if it hasn't picked yet
+  function packSlot(D, teamId) {
+    const t = packTurnNow(D);
+    if (t < 0 || D.phase !== "live") return -1;
+    const k = t * D.round1.length + D.round1.indexOf(teamId);
+    return D.board[k] ? -1 : k;
+  }
+  function packPick(D, ctx, teamId, pid, now, auto) {
+    if (D.phase !== "live") return { ok: false, why: "The draft isn't open" };
+    const k = packSlot(D, teamId);
+    if (k < 0) return { ok: false, why: "You've picked from this pack. The next one comes when everyone has" };
+    const p = ctx.byId[pid];
+    const ok = canAdd(D, ctx, teamId, p);
+    if (!ok.ok) return ok;
+    const t = Math.floor(k / D.round1.length);
+    D.board[k] = { n: k + 1, team: teamId, pid, at: now, auto: !!auto };
+    ctx.own[pid] = teamId;
+    ctx.available = ctx.available.filter((x) => x.id !== pid);
+    for (const tm of D.teams) tm.queue = tm.queue.filter((x) => x !== pid);
+    // the turn is over once everyone has picked: the packs pass and the clock starts again
+    if (packTurnNow(D) !== t) D.clockStart = now;
+    finishIfDone(D, now);
+    return { ok: true, pick: k + 1 };
+  }
+  // bots pick a moment into the turn; a manager whose clock runs out gets the best player left in his pack
+  function packTick(D, ctx, now, max) {
+    let n = 0;
+    while (n < max && D.phase === "live" && !D.paused) {
+      const t = packTurnNow(D);
+      if (t < 0) break;
+      const deadline = D.clockStart + clockLen(D, t * D.round1.length);
+      let moved = false;
+      for (const team of D.round1) {
+        if (packSlot(D, team) < 0) continue;
+        const bot = isBot(D.teams[team]), at = bot ? D.clockStart + D.botDelay : deadline;
+        if (now < at) continue;
+        const p = autoChoice(D, ctx, team, rng(D.seed + (t * 97 + team) * 31 + 7));
+        if (!p) continue;
+        if (packPick(D, ctx, team, p.id, Math.min(now, at), true).ok) { n++; moved = true; if (packTurnNow(D) !== t) break; }
+      }
+      if (!moved) break;
+    }
+    return n;
   }
 
   /* ---------- team roulette ---------- */
@@ -433,6 +556,7 @@
 
   /* ---------- picks ---------- */
   function pick(D, ctx, teamId, pid, now, auto) {
+    if (D.packs) return packPick(D, ctx, teamId, pid, now, auto);
     const c = onClock(D, now);
     if (!c) return { ok: false, why: "The draft isn't open" };
     if (c.team !== teamId) return { ok: false, why: "It's not your pick" };
@@ -465,16 +589,41 @@
       if (!memo.has(k)) memo.set(k, assign(ctx.sport, mine.concat(p), D.lineup).filter(Boolean).length > filled);
       return memo.get(k);
     };
-    return { left: sizeOf(D) - ids.length, openStarters: D.lineup.length - filled, lateOpen, fills };
+    return { left: sizeOf(D) - ids.length, openStarters: D.lineup.length - filled, lateOpen, fills, urgency: D.packs && D.phase === "live" ? packUrgency(D, ctx, teamId, mine) : null };
+  }
+  // In a pack draft a position can run out. For a team's open spots that only one position can fill (its TE, its QB):
+  // how short that position is, as the teams still needing one against the players left at it in the packs to come.
+  function packUrgency(D, ctx, teamId, mine) {
+    const t = packTurnNow(D);
+    if (t < 0) return null;
+    const { q } = packAt(D, t), main = (p) => S.positions(p)[0];
+    const supply = {};
+    for (let x = q; x < D.packs.cards.length; x++) for (const ids of D.packs.cards[x]) for (const id of ids) if (ctx.own[id] == null && ctx.byId[id]) supply[main(ctx.byId[id])] = (supply[main(ctx.byId[id])] || 0) + 1;
+    const openOwn = (team) => {
+      const ros = rosters(D)[team].map((id) => ctx.byId[id]).filter(Boolean), got = assign(ctx.sport, ros, D.lineup), out = {};
+      D.lineup.forEach((sl, i) => { const v = ctx.sport.slots[sl]; if (!got[i] && v !== "*" && v.length === 1) out[v[0]] = (out[v[0]] || 0) + 1; });
+      return out;
+    };
+    const demand = {};
+    for (const team of D.round1) for (const [pos, k] of Object.entries(openOwn(team))) demand[pos] = (demand[pos] || 0) + k;
+    const mineOpen = teamId != null ? openOwn(teamId) : {};
+    // a position with a single lineup spot (QB, TE): a third of the way in, take one the first time it's there
+    const single = {};
+    for (const sl of D.lineup) { const v = ctx.sport.slots[sl]; if (v !== "*" && v.length === 1) single[v[0]] = (single[v[0]] || 0) + 1; }
+    const late = t >= D.rounds / 3;
+    return (pos) => (mineOpen[pos] ? Math.min(3, (demand[pos] || 0) / Math.max(1, supply[pos] || 0)) + (late && single[pos] === 1 ? 2 : 0) : 0);
   }
   function worth(D, ctx, teamId, p, r, need) {
-    const { left, openStarters, lateOpen, fills } = need || needs(D, ctx, teamId);
+    const { left, openStarters, lateOpen, fills, urgency } = need || needs(D, ctx, teamId);
     const fillsStarter = fills(p);
     let w = (p.$ || 0) + Math.max(0, p.vor || 0) / ctx.maxVor;
     if (S.isLate(ctx.sport, p)) {
       if (left > lateOpen + 1) w *= 0.05;
     }
     if (!fillsStarter && openStarters > 0) w *= left <= openStarters + 1 ? 0.1 : 0.75;
+    // a pack draft can't count on a position coming back around: fill the lineup first
+    // the scarcer a position he alone can fill, the sooner a bot takes one while it's there
+    if (D.packs) w = fillsStarter ? w * (1.4 + (urgency ? 6 * urgency(S.positions(p)[0]) : 0)) + 1 + (urgency ? 20 * urgency(S.positions(p)[0]) : 0) : openStarters > 0 ? w * 0.02 : w;
     if (r) w *= 0.85 + r() * 0.3;
     if (ctx.hooks.worth) w = ctx.hooks.worth(D, D.teams[teamId], p, w, ctx);
     return w;
@@ -537,6 +686,7 @@
   const holdLeft = (D, now) => (D.hold ? Math.max(0, HOLD_MAX - (now - D.hold.at)) : 0);
   function tick(D, ctx, now, max = 1000) {
     if (D.type === "auction") return auctionTick(D, ctx, now, max);
+    if (D.packs) return packTick(D, ctx, now, max);
     offerHold(D, now);
     let n = 0;
     while (n < max && D.phase === "live" && !D.paused) {
@@ -1096,7 +1246,7 @@
   }
   const made_ = (D) => made(D);
 
-  return { HEIST, heistRules, heistFoe, heistLineup, heistMove, heistDefault, heistTick, spinOf, wheelFor, respin, respinsLeft, setOrder, recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
+  return { dealPacks, packFor, packAt, packSlot, packTurnNow, HEIST, heistRules, heistFoe, heistLineup, heistMove, heistDefault, heistTick, spinOf, wheelFor, respin, respinsLeft, setOrder, recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
     start, pause, pick, worth, resize, offerHold, holdLeft, HOLD_MAX, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, botMax, standings, sizeOf,
     clockLen, thinkTime, bankShare, slotInfo, fitsRoster, canSteal, steal, stealsOf, stealsLeft, stealsOpen, botSteal, pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
     tradeCheck, balance, propose, respond, cancel, botAnswer, botOffer };

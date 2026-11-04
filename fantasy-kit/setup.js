@@ -11,7 +11,7 @@
     nfl: `<ellipse cx="12" cy="12" rx="10.6" ry="6.4" transform="rotate(-40 12 12)"/><path d="M9.2 14.8l5.6-5.6M9.8 12.8l1.4 1.4M11.3 11.3l1.4 1.4M12.8 9.8l1.4 1.4"/>`,
     mlb: `<circle cx="12" cy="12" r="10"/><path d="M6.2 4.2c2 2.2 3 4.8 3 7.8s-1 5.6-3 7.8M17.8 4.2c-2 2.2-3 4.8-3 7.8s1 5.6 3 7.8"/>` };
   const icon = (k, cls) => `<svg class="${cls || "sp-ic"}" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">${ICON[k]}</svg>`;
-  const DRAFTS = { snake: "The order flips every round", linear: "The same order every round", "3rr": "A snake, with round three flipped again", auction: "A $200 budget and live bidding on every player",
+  const DRAFTS = { pack: "Everyone opens a pack, takes one, passes the rest. All at once", snake: "The order flips every round", linear: "The same order every round", "3rr": "A snake, with round three flipped again", auction: "A $200 budget and live bidding on every player",
     mystery: "Each team gets a random package of picks of equal value", elephant: "A snake where your turn can steal a drafted player" };
   const RANGE_FMT = {};
   const opt = (v, l, cur) => `<option value="${esc(v)}"${String(v) === String(cur) ? " selected" : ""}>${esc(l)}</option>`;
@@ -42,6 +42,7 @@
     auction: `<path d="M14 4l6 6M11 7l6 6M12.5 5.5l-6 6M9 15l-5 5"/><path d="M4 21h9"/>`,
     mystery: `<rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M3 9h18M12 9v11M12 9c-2.5 0-4.5-1.2-4.5-3s2.5-2 4.5 3c2-5 4.5-4.8 4.5-3s-2 3-4.5 3z"/>`,
     elephant: `<path d="M8 13a5 5 0 1 1 10 0v6h-3v-3h-4v3H8z"/><path d="M8 13c-2 0-3 1.5-3 3.5V20"/><circle cx="14.5" cy="11" r=".8"/>`,
+    pack: `<rect x="5" y="6" width="11" height="14" rx="1.6" transform="rotate(-8 10.5 13)"/><rect x="9" y="4" width="11" height="14" rx="1.6"/><path d="M12.5 8h4M12.5 11h4"/>`,
     redraft: `<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v4.5h-4.5"/>`,
     keeper: `<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/><circle cx="12" cy="15.5" r="1.3"/>`,
     dynasty: `<path d="M4 18h16l1-10-5 4-4-7-4 7-5-4z"/><path d="M4 21h16"/>`,
@@ -64,6 +65,6 @@
 
 
   const SC_SUB = { half: "Half a point a catch", ppr: "A point a catch", std: "No points for catches", cats9: "FG%, FT%, 3PM, PTS, REB, AST, STL, BLK, TO", points: "Points for every stat", roto5: "R, HR, RBI, SB, AVG, W, SV, K, ERA, WHIP", yoenis: "Adds H, TB, OPS, L, HLD and QS", cp: "Set a value for every stat", cc: "Pick your own categories" };
-  const DRAFT_SHORT = { snake: "Snake", auction: "Auction", linear: "Linear", "3rr": "Third-round reversal", mystery: "Mystery packages", elephant: "White elephant" };
+  const DRAFT_SHORT = { snake: "Snake", auction: "Auction", linear: "Linear", "3rr": "Third-round reversal", mystery: "Mystery packages", elephant: "White elephant", pack: "Pack" };
   return { SC_SUB, DRAFT_SHORT, esc, ICON, icon, DRAFTS, RANGE_FMT, opt, fid, seg, cards, stepper, toggle, range, numIn, fld, group, noLimit, STYLE_ART, art, pickCards, FIELD };
 });

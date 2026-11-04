@@ -188,7 +188,7 @@
     form.faab = null;
   }
   const { SC_SUB } = window.FK.setup;
-  const DRAFT_SHORT = { snake: "Snake", auction: "Auction", linear: "Linear", "3rr": "Third-round reversal", mystery: "Mystery packages", elephant: "White elephant" };
+  const DRAFT_SHORT = { snake: "Snake", auction: "Auction", linear: "Linear", "3rr": "Third-round reversal", mystery: "Mystery packages", elephant: "White elephant", pack: "Pack" };
   // a field drawn behind the header, one for each sport
   function newForm() {
     const sp = S[form.sport];
@@ -310,12 +310,14 @@
     return cats + ed || `<p class="fl-h">${esc(cur ? cur.label : "")}. Pick Custom points above to set every stat.</p>`;
   }
   function draftBody() {
+    // trading in the draft room: not in an auction, a white elephant (steals take its place) or a pack draft
+    const tradesOk = !["auction", "elephant", "pack"].includes(form.type);
     const reveal = form.type === "mystery" ? fld("Packages open", seg("reveal", [["now", "Right away"], ["start", "When the draft starts"], ["own", "Yours first, the rest as they come up"]], form.reveal || "start", "Packages open", { wrap: true }),
       form.reveal === "own" ? "Other teams' picks stay hidden until they're on the clock, so a trade for one is a blind deal." : form.reveal === "now" ? "Everyone sees every package now, and teams can trade before the draft starts." : "Everyone sees every package once the draft starts, so trades show exactly which picks move.") : "";
     if (form.type === "mystery") return reveal + toggle("trades", "Trade picks and players", "Deals happen right in the draft room", form.trades);
     return tradesOk ? toggle("trades", "Trade picks and players", "Deals happen right in the draft room", form.trades,
       fld("A trade offer stops the clock", seg("ohold", [["clock", "For the team on the clock"], ["all", "For anyone, up to 90 seconds"], ["off", "Never"]], form.ohold, "A trade offer stops the clock", { wrap: true })))
-      : `<p class="fl-h">${auction() ? "An auction" : "This draft format"} doesn't allow trades during the draft. Teams can trade once the season starts.</p>`;
+      : `<p class="fl-h">${auction() ? "An auction" : form.type === "pack" ? "A pack draft" : "This draft format"} doesn't allow trades during the draft.${oneWeek() ? "" : " Teams can trade once the season starts."}</p>`;
   }
   // Football bonuses on any points scoring: a TE premium, passing TDs worth more, and points for big yardage games.
   function nflExtras() {
@@ -469,6 +471,7 @@
         botDelay: 3000, clock: auction ? 0 : form.clock, bidClock: auction ? form.clock : 15, nomClock: 30, budget: sd ? 50 : 200, name: form.name.trim(),
         trades: form.trades !== 0, curve: form.type === "mystery" ? F.pickCurve(players, total) : null, reveal: form.type === "mystery" ? form.reveal || "start" : undefined });
       D.teams.forEach((t, i) => (t.color = (i * 5) % 12));
+      if (form.type === "pack") F.dealPacks(D, players, sport);
       if (rlOk() && form.rlOn) {
         let pro = [...new Set(players.map((p) => p.t).filter((t) => t && t !== "FA"))].sort();
         // a one-week league that starts now leaves out teams on a bye or already done playing
