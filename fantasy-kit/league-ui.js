@@ -91,7 +91,7 @@
     /* ---------- routing ---------- */
     const TABS = () => [["league", "League"], ["team", "My Team"], ["matchup", gl() ? "The block" : roto() ? "Categories" : "Matchup"], ["players", "Players"], ["draft", "Draft"]].concat(opts.commishTools ? [["commish", "Commissioner"]] : []);
     function subsOf(tab) {
-      if (tab === "league") return [["overview", "Overview"]].concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []).concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : roto() ? "By week" : "Scoreboard"], ["managers", "Managers"], ["history", "History"], ["rules", "Rules"]]);
+      if (tab === "league") return [["overview", "Overview"]].concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []).concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : roto() ? "By week" : "Scoreboard"], ["managers", "Managers"]].concat(opts.dues ? [["dues", "Dues"]] : []).concat([["history", "History"], ["rules", "Rules"]]));
       if (tab === "team") return [["roster", "Roster"]].concat(roto() ? [] : [["schedule", gl() ? "History" : "Schedule"]]).concat(L().settings.trades === false ? [] : [["trades", "Trades", pendingTrades()]]);
       if (tab === "players") return [["fa", "Free agents"], ["all", "All players"], ["watch", "Watchlist"], ["claims", "Waiver claims", L().claims.filter((c) => c.team === me() && c.status === "open").length], ["tx", "Transactions"]];
       return [];
@@ -543,11 +543,12 @@
       const ids = standings().map((r) => r.team).concat(L().teams.map((t) => t.id)).filter((x, i, a) => a.indexOf(x) === i);
       const people = ids.filter((id) => T(id).owner).length;
       const bots = ids.filter((id) => !T(id).owner);
-      const botList = bots.length ? `<div class="card" style="margin-top:14px"><div class="mod-h"><h2>${opts.commishTools ? "Open seats" : "Run by bots"}</h2><span class="ps">${bots.length} team${bots.length > 1 ? "s" : ""}</span>${opts.commishTools ? `<button type="button" class="btn sm" data-live="league" style="margin-left:auto">Invite managers</button>` : ""}</div>
+      const botList = bots.length ? `<div class="card" style="margin-top:14px"><div class="mod-h"><h2>${opts.invite != null ? "Open seats" : "Run by bots"}</h2><span class="ps">${bots.length} team${bots.length > 1 ? "s" : ""}</span>${opts.invite != null ? `<button type="button" class="btn sm" data-live="invite" style="margin-left:auto">Invite managers</button>` : ""}</div>
         <ul class="feed">${bots.map((id) => { const m = managerStats(id); return `<li style="grid-template-columns:auto minmax(0,1fr) auto;align-items:center;padding:9px 16px"><a class="row" href="${teamHref(id)}" style="gap:8px;text-decoration:none;color:inherit;grid-column:1 / 3">${teamAv(T(id), "sm")}<span class="ell"><b>${esc(T(id).name)}</b></span></a><span class="ps num">${esc(m.now)}${!gl() && !roto() && m.place ? `, ${ord(m.place)}` : ""}</span></li>`; }).join("")}</ul></div>` : "";
       return `<div class="wrap page"><div class="head"><h1 class="disp">Managers</h1><span class="ps">${people} of ${L().teams.length} teams have a manager${people < L().teams.length ? ", bots run the rest" : ""}.</span>${me() != null && opts.editProfile ? `<button type="button" class="btn sm" data-editprofile style="margin-left:auto">Edit your profile</button>` : ""}</div>
         <div class="mgrs">${ids.filter((id) => T(id).owner).map((id) => managerCard(id)).join("")}</div>${botList}</div>`;
     }
+    const duesPage = () => (opts.dues ? `<div class="wrap page"><div class="head"><h1 class="disp">Dues</h1><span class="ps">Money moves through Venmo, PayPal, Cash App or Zelle. This keeps track of who's paid.</span></div><div id="fk-dues">${opts.dues()}</div></div>` : `<div class="wrap page"><p class="ps">This league doesn't have dues.</p></div>`);
     function settingsPage() {
       const s = L().settings;
       return `<div class="wrap page"><div class="head"><h1 class="disp">League rules</h1>${opts.commishTools ? `<a class="btn sm" href="#commish" style="margin-left:auto">Change them</a>` : ""}</div><div class="cols2">
@@ -1368,7 +1369,7 @@
       const keep = $("#fk-players") ? $("#fk-players").scrollTop : 0;
       const focus = U.focusKey(opts.el) || U.focusKey(opts.top);
       let html = "";
-      if (r.tab === "league") html = { overview, chat: chatPage, standings: standingsPage, scoreboard: () => scoreboardPage(r.arg), managers: managersPage, history: pastPage, rules: settingsPage }[r.sub]();
+      if (r.tab === "league") html = { overview, chat: chatPage, standings: standingsPage, scoreboard: () => scoreboardPage(r.arg), managers: managersPage, dues: duesPage, history: pastPage, rules: settingsPage }[r.sub]();
       else if (r.tab === "team") html = { roster: () => rosterPage(r.arg), schedule: () => schedulePage(r.arg), trades: tradesPage }[r.sub]();
       else if (r.tab === "matchup") html = matchupPage(r.sub, r.arg);
       else if (r.tab === "players") html = playersPage(r.sub);

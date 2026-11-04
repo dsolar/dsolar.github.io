@@ -153,7 +153,7 @@
       </div></div>
       <div class="nl-ess jn-body">
         <div class="fl"><div class="fl-l">Pick your team</div><fieldset class="seats"><legend class="sr">Pick a team</legend>${teams.map((t, i) => `<label class="${seats[i] != null ? "taken" : ""}"><input type="radio" name="team" value="${i}"${seats[i] != null ? " disabled" : open[0][1] === i ? " checked" : ""}>${U.teamAv(t, "sm")}<span><b>${esc(t.name)}</b><small>${seats[i] != null ? esc(seats[i]) : "Open"}</small></span></label>`).join("")}</fieldset></div>
-        <div class="g2"><div class="fl"><div class="fl-l"><label for="j-name">Your name</label></div><input id="j-name" type="text" maxlength="24" required value="${esc(guess)}"></div><div></div></div>
+        <div class="g2"><div class="fl"><div class="fl-l"><label for="j-name">Your name</label></div><input id="j-name" type="text" maxlength="24" required value="${esc(guess)}" autocomplete="name"></div><div class="fl"><div class="fl-l"><label for="j-team">Your team's name</label></div><input id="j-team" type="text" maxlength="28" placeholder="Leave blank to keep it" autocomplete="off"></div></div>
         <div><button class="btn go" type="submit">Join the league</button></div>
       </div></form></div>`;
   }
@@ -544,6 +544,8 @@
       if (!t) { U.toast("Pick a team", true); return; }
       const r = await C.rpc("fk_join", { p_id: joinId, p_invite: joinCode, p_team: Number(t.value), p_manager: $("#j-name").value }).catch((err) => ({ error: err.message }));
       if (r.error) { U.toast(r.error, true); return; }
+      const tn = $("#j-team").value.trim();
+      if (tn) await C.rpc("fk_team_name", { p_id: joinId, p_name: tn }).catch(() => null);
       location.href = `play.html?id=${encodeURIComponent(joinId)}`;
     } else if (f.id === "new") makeLeague();
   });

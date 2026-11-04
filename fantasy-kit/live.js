@@ -24,7 +24,7 @@
   const teamName = (t) => { const doc = L || D; return doc && doc.teams[t] ? doc.teams[t].name : "A team"; };
 
   function take(v) {
-    info = { me: v.me, commish: !!v.commish, seats: v.seats || {}, invite: v.invite, notify: v.notify, name: v.name, sport: v.sport };
+    info = { me: v.me, commish: !!v.commish, seats: v.seats || {}, invite: v.invite, notify: v.notify, name: v.name, sport: v.sport, dues: v.dues };
     if (v.version != null) version = v.version;
     if ("draft" in v) {
       D = v.draft; L = v.league;
@@ -59,7 +59,7 @@
     if (C.user()) C.rpc("fk_mine", {}).then((m) => { if (Array.isArray(m)) { mine = m; if (app) app.render(); } }).catch(() => {});
     mount();
     if (link && link.error) U.toast(`That sign-in link didn't work: ${link.error}`, true);
-    if (location.hash === "#invite" && info.commish) { history.replaceState(null, "", location.pathname + location.search); leagueDialog(); }
+    if (location.hash === "#invite" && info.invite) { history.replaceState(null, "", location.pathname + location.search); inviteDialog(); }
     schedule();
   }
 
@@ -80,7 +80,7 @@
       el: $("#room"), sport, players, draft: () => D, save: () => push(), me: () => info.me, now,
       get commish() { return info.commish; }, get drive() { return driveOk(); },
       brand: { name: "Draft Lab", mark: `<img src="mark.svg" alt="">` }, exit: { href: "leagues.html", label: "Your leagues" },
-      tools: () => `<button class="btn sm" data-live="league">${info.commish ? "Invite" : "League"}</button>`,
+      tools: () => `${info.invite ? `<button class="btn sm" data-live="invite">Invite</button>` : ""}<button class="btn sm${info.invite ? " ghost" : ""}" data-live="league">League</button>`,
       // heist moves are sealed on the server until everyone's in or the clock runs out
       heist: {
         lock: async (moves) => { const r = await C.rpc("fk_heist_lock", { p_id: id, p_moves: moves }); if (r && r.ok) pull(); return r; },
@@ -115,9 +115,11 @@
       switcher: () => U.switcher({ name: L.name, abbr: info.sport.toUpperCase(), color: SPORT_CLR[info.sport] },
         mine.filter((m) => m.id !== id).map((m) => ({ href: `play.html?id=${encodeURIComponent(m.id)}`, name: m.name, sub: S[m.sport].name, av: { abbr: m.sport.toUpperCase(), color: SPORT_CLR[m.sport] } })),
         `<a href="leagues.html">Your leagues<small>Start or join a league</small></a><a href="./">Draft Lab<small>Mock drafts and rankings</small></a>`),
-      right: () => `<button class="btn sm ghost" data-live="league">${info.commish ? "Invite" : "League"}</button>`,
+      right: () => `${info.invite && openSeats() ? `<button class="btn sm" data-live="invite">Invite</button>` : ""}<button class="btn sm ghost" data-live="league">League</button>`,
       get commishTools() { return info.commish ? commishTools : null; },
-      notice: () => guestNote() + startNote() + keeperNote(),
+      notice: () => guestNote() + duesNote() + startNote() + keeperNote(),
+      get dues() { return info.dues !== undefined && (duesOn() || info.commish) ? duesBody : null; },
+      get invite() { return info.invite ? openSeats() : null; },
       chat,
       history: () => past,
       faces: () => faces,
@@ -191,6 +193,107 @@
     const msg = C.user() ? "You don't have a team in this league. Ask the commissioner for the invite link." : "You're looking as a guest.";
     return `<div class="wrap" style="padding-top:12px"><div class="banner"><b>${esc(msg)}</b> ${C.user() ? "" : `<a href="leagues.html">Sign in</a> <span class="muted">to make moves.</span>`}</div></div>`;
   }
+  /* ---------- dues: the buy-in, where to pay, the payout plan and who's paid. Money moves outside Draft Lab;
+     this is the commissioner's ledger. A manager taps "I sent it", the commissioner confirms. ---------- */
+  const PAYOUTS = { wta: ["Winner takes all", [100]], p7030: ["70 / 30", [70, 30]], p603010: ["60 / 30 / 10", [60, 30, 10]], p502030: ["50 / 30 / 20", [50, 30, 20]] };
+  const PLACES = ["Champion", "Runner-up", "Third place"];
+  const dues = () => info.dues || {};
+  const duesOn = () => Number(dues().amount) > 0;
+  const docTeams = () => (L || D ? (L || D).teams : []);
+  const regWeeks = () => (L ? L.settings.weeks : (D && D.season && D.season.weeks) || 14);
+  const handle = (s) => String(s || "").trim().replace(/^@|^\$|^(https?:\/\/)?(www\.)?(paypal\.me|venmo\.com|cash\.app)\/(u\/)?\$?/i, "").replace(/[^A-Za-z0-9_.-]/g, "").slice(0, 40);
+  function duesMath() {
+    const d = dues(), n = docTeams().length, pot = (Number(d.amount) || 0) * n;
+    const high = Math.min(Number(d.high) || 0, Math.floor(pot / Math.max(1, regWeeks()))), highTotal = high * regWeeks();
+    const left = pot - highTotal, split = (PAYOUTS[d.payout] || PAYOUTS.p603010)[1];
+    // whole $5s, with what's left over going to the champion
+    const places = split.map((p) => Math.floor(left * p / 100 / 5) * 5);
+    places[0] += left - places.reduce((a, b) => a + b, 0);
+    return { pot, high, highTotal, places };
+  }
+  const paidN = () => docTeams().filter((t, i) => (dues().paid || {})[i]).length;
+  const duesLine = () => (duesOn() ? `Dues: ${paidN()} of ${docTeams().length} paid` : "Set up dues");
+  const statusOfDues = (i) => ((dues().paid || {})[i] ? "paid" : (dues().claimed || {})[i] ? "sent" : "owed");
+  function payButtons() {
+    const d = dues(), p = d.pay || {}, amt = Number(d.amount) || 0, note = encodeURIComponent(`${info.name} dues`);
+    const out = [];
+    if (p.venmo) out.push(`<a class="btn go" target="_blank" rel="noopener" href="https://venmo.com/${encodeURIComponent(p.venmo)}?txn=pay&amount=${amt}&note=${note}">Pay $${amt} with Venmo</a>`);
+    if (p.paypal) out.push(`<a class="btn${out.length ? "" : " go"}" target="_blank" rel="noopener" href="https://paypal.me/${encodeURIComponent(p.paypal)}/${amt}">PayPal</a>`);
+    if (p.cashapp) out.push(`<a class="btn${out.length ? "" : " go"}" target="_blank" rel="noopener" href="https://cash.app/$${encodeURIComponent(p.cashapp)}/${amt}">Cash App</a>`);
+    return out.join("");
+  }
+  // the dues page: shows the same in the League > Dues tab and in a dialog from the draft room
+  function duesBody() {
+    const d = dues(), teams = docTeams(), m = duesMath(), mine = info.me;
+    if (!duesOn()) return info.commish
+      ? `<div class="card"><div class="bd stack"><p style="margin:0"><b>No dues yet.</b></p><p class="ps" style="margin:0">Set the buy-in, where to send it and how the pot pays out. Managers see what they owe and tap "I sent it", and you mark who's paid. Money moves through Venmo, PayPal, Cash App or Zelle, not Draft Lab.</p><div><button type="button" class="btn go" data-dues="edit">Set up dues</button></div></div></div>`
+      : `<div class="card"><div class="bd"><p class="ps" style="margin:0">This league doesn't have dues set up.</p></div></div>`;
+    const p = d.pay || {}, st = mine != null ? statusOfDues(mine) : null, due = d.due ? d.due[0].toLowerCase() + d.due.slice(1) : "";
+    const you = mine == null || info.commish ? "" : st === "paid" ? `<div class="dues-you paid"><b>You're paid up.</b><span class="ps">The commissioner marked your $${d.amount} as received.</span></div>`
+      : st === "sent" ? `<div class="dues-you sent"><b>You said you sent it.</b><span class="ps">Waiting for the commissioner to confirm.</span><button type="button" class="btn sm ghost" data-dues="unclaim">I haven't sent it</button></div>`
+      : `<div class="dues-you owed"><b>You owe $${d.amount}.</b>${due ? `<span class="ps">Due ${esc(due)}.</span>` : ""}<div class="row" style="gap:8px;flex-wrap:wrap">${payButtons()}${p.zelle ? `<button type="button" class="btn" data-dues="zelle">Zelle: ${esc(p.zelle)}</button>` : ""}</div><button type="button" class="btn sm" data-dues="claim">I sent it</button></div>`;
+    const rows = teams.map((t, i) => { const s = statusOfDues(i); return `<li>${U.teamAv(t, "sm")}<span class="grow"><b>${esc(t.name)}</b><small>${esc(info.seats[i] || "Open seat")}</small></span>${s === "paid" ? `<span class="tag win">Paid</span>` : s === "sent" ? `<span class="tag gold">Sent</span>` : `<span class="tag">Not yet</span>`}${info.commish ? `<button type="button" class="btn sm ghost" data-dues="mark" data-team="${i}">${s === "paid" ? "Undo" : "Mark paid"}</button>` : ""}</li>`; }).join("");
+    const payTo = [p.venmo && `Venmo @${esc(p.venmo)}`, p.paypal && `PayPal paypal.me/${esc(p.paypal)}`, p.cashapp && `Cash App $${esc(p.cashapp)}`, p.zelle && `Zelle ${esc(p.zelle)}`].filter(Boolean);
+    return `<div class="dues">
+      <div class="card"><div class="mod-h"><h2>$${d.amount} buy-in</h2><span class="ps">$${m.pot} pot, ${paidN()} of ${teams.length} paid</span>${info.commish ? `<button type="button" class="btn sm" data-dues="edit" style="margin-left:auto">Edit dues</button>` : ""}</div>
+        <div class="bd stack">${you}
+          <dl class="kv">${m.places.map((x, i) => `<dt>${PLACES[i]}</dt><dd class="num">$${x}</dd>`).join("")}${m.high ? `<dt>High score each week</dt><dd class="num">$${m.high} a week, $${m.highTotal} in all</dd>` : ""}${payTo.length ? `<dt>Send it to</dt><dd>${payTo.join("<br>")}</dd>` : ""}${d.due ? `<dt>Due</dt><dd>${esc(d.due)}</dd>` : ""}${d.note ? `<dt>Notes</dt><dd>${esc(d.note)}</dd>` : ""}</dl>
+        </div></div>
+      <div class="card"><div class="mod-h"><h2>Who's paid</h2></div><ul class="seatl dues-l">${rows}</ul></div></div>`;
+  }
+  function duesDialog() { U.dialog(`<h3>Dues</h3><div id="fk-dues">${duesBody()}</div>`, null, { wide: true }); }
+  function duesRefresh() { const el = $("#fk-dues"); if (el) el.innerHTML = duesBody(); if (app && !U.dialogOpen()) app.render(); }
+  async function duesSave(patch, msg) {
+    const r = await C.rpc("fk_dues_set", { p_id: id, p_dues: patch }).catch((e) => ({ error: e.message }));
+    if (!r || r.error) { U.toast((r && r.error) || "Couldn't save the dues.", true); return false; }
+    info.dues = r.dues; duesRefresh(); if (msg) U.toast(msg); return true;
+  }
+  function duesEdit() {
+    const d = dues(), p = d.pay || {};
+    const o = (v, label, cur) => `<option value="${v}"${String(cur) === String(v) ? " selected" : ""}>${label}</option>`;
+    U.dialog(`<h3>Dues</h3><form id="dues-f" class="stack">
+      <div class="g2"><div class="field"><label for="du-amt">Buy-in per team</label><div class="row" style="gap:6px"><span>$</span><input id="du-amt" type="number" min="0" max="10000" step="5" value="${Number(d.amount) || 50}" style="flex:1"></div></div>
+        <div class="field"><label for="du-due">Due</label><select id="du-due">${["Before the draft", "By week 1", "By week 2", "By week 4"].map((x) => o(x, x, d.due || "Before the draft")).join("")}</select></div></div>
+      <div class="g2"><div class="field"><label for="du-pay">The pot pays</label><select id="du-pay">${Object.entries(PAYOUTS).map(([k, [lab]]) => o(k, lab, d.payout || "p603010")).join("")}</select></div>
+        <div class="field"><label for="du-high">High score each week</label><select id="du-high">${[0, 5, 10, 20, 25].map((x) => o(x, x ? `$${x} a week, from the pot` : "No weekly prize", d.high || 0)).join("")}</select></div></div>
+      <p class="ps" style="margin:0">Where managers send it. Fill in any you use: each one becomes a pay button with the amount filled in.</p>
+      <div class="g2"><div class="field"><label for="du-venmo">Venmo username</label><input id="du-venmo" type="text" maxlength="40" placeholder="@yourname" value="${esc(p.venmo || "")}"></div>
+        <div class="field"><label for="du-paypal">PayPal.me name</label><input id="du-paypal" type="text" maxlength="40" placeholder="yourname" value="${esc(p.paypal || "")}"></div></div>
+      <div class="g2"><div class="field"><label for="du-cash">Cash App $cashtag</label><input id="du-cash" type="text" maxlength="40" placeholder="$yourname" value="${esc(p.cashapp || "")}"></div>
+        <div class="field"><label for="du-zelle">Zelle email or phone</label><input id="du-zelle" type="text" maxlength="60" value="${esc(p.zelle || "")}"></div></div>
+      <div class="field"><label for="du-note">Notes</label><input id="du-note" type="text" maxlength="140" placeholder="Optional, like who holds the money" value="${esc(d.note || "")}"></div>
+      <div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn go" type="submit">Save dues</button>${duesOn() ? `<button type="button" class="btn ghost" data-dues="reset">Clear who's paid</button><button type="button" class="btn ghost warn" data-dues="off">Turn off dues</button>` : ""}</div></form>`, null, { wide: true });
+    $("#dues-f").onsubmit = async (e) => {
+      e.preventDefault();
+      const amount = Math.max(0, Math.min(10000, Math.round(Number($("#du-amt").value) || 0)));
+      const zelle = $("#du-zelle").value.replace(/[<>]/g, "").trim().slice(0, 60);
+      const ok = await duesSave({ amount, due: $("#du-due").value, payout: $("#du-pay").value, high: Number($("#du-high").value), note: $("#du-note").value.replace(/[<>]/g, "").trim().slice(0, 140),
+        pay: { venmo: handle($("#du-venmo").value), paypal: handle($("#du-paypal").value), cashapp: handle($("#du-cash").value), zelle } }, amount ? "Dues saved. Managers see what they owe." : "Saved.");
+      if (ok) duesDialog();
+    };
+  }
+  document.addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-dues]");
+    if (!b) return;
+    const k = b.dataset.dues;
+    if (k === "edit" && info.commish) duesEdit();
+    else if (k === "mark" && info.commish) {
+      const t = b.dataset.team, paid = Object.assign({}, dues().paid || {}), claimed = Object.assign({}, dues().claimed || {});
+      if (paid[t]) delete paid[t]; else { paid[t] = Date.now(); delete claimed[t]; }
+      duesSave({ paid, claimed });
+    } else if (k === "claim" || k === "unclaim") {
+      const r = await C.rpc("fk_dues_claim", { p_id: id, p_on: k === "claim" }).catch((err) => ({ error: err.message }));
+      if (!r || r.error) U.toast((r && r.error) || "Couldn't save that.", true);
+      else { info.dues = r.dues; duesRefresh(); U.toast(k === "claim" ? "Thanks. The commissioner will confirm it." : "Got it."); }
+    } else if (k === "zelle") { try { await navigator.clipboard.writeText(dues().pay.zelle); U.toast("Copied. Paste it in Zelle."); } catch (err) { U.toast(dues().pay.zelle); } }
+    else if (k === "reset" && info.commish) U.confirm("Clear who's paid?", "Everyone goes back to owing, like the start of a new season.", "Clear it", async () => { if (await duesSave({ paid: {}, claimed: {} }, "Cleared.")) duesDialog(); });
+    else if (k === "off" && info.commish) U.confirm("Turn off dues?", "The buy-in and who's paid are cleared for everyone.", "Turn off dues", () => duesSave({ amount: 0, paid: {}, claimed: {} }, "Dues are off."));
+  });
+  // a reminder for a manager who owes, on the league's overview
+  function duesNote() {
+    if (!duesOn() || info.me == null || statusOfDues(info.me) !== "owed" || !app || !/^#?(league(\/overview)?)?$/.test(location.hash)) return "";
+    return `<div class="wrap" style="padding-top:12px"><div class="banner"><b>You owe $${dues().amount} in dues.</b> <span class="muted">${dues().due ? `Due ${esc(dues().due[0].toLowerCase() + dues().due.slice(1))}.` : ""}</span> <button class="btn sm go" data-live="dues">Pay</button></div></div>`;
+  }
   const frac = (w) => Math.max(0, Math.min(1, (now() - G.weekStart(L, w)) / WEEK));
 
   // The commissioner's page runs bots and the clock. Anyone else's page steps in when that's five seconds late,
@@ -259,6 +362,7 @@
     const wasMe = info.me, wasCommish = info.commish;
     const before = { offers: myOffers(), week: L ? L.week : 0, phase: D && D.phase };
     take(v);
+    refreshInvite();
     if ("draft" in v) {
       refreshView();
       if (L && myOffers().some((t) => !before.offers.includes(t))) U.toast("You have a new trade offer. It's at the top of the page.");
@@ -274,7 +378,7 @@
     const ms = document.hidden ? 30000 : live ? 2500 : !L ? 6000 : 20000;
     pollT = setTimeout(async () => {
       const busy = U.dialogOpen() || document.querySelector("details[open]") || (document.activeElement && /^(fk-q|INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.id || document.activeElement.tagName));
-      if (!busy || (live && !L)) await pull();
+      if (!busy || (live && !L) || $("#lv-seats")) await pull();
       schedule();
     }, ms);
   }
@@ -284,29 +388,63 @@
   function inviteUrl() { return `${location.origin}${location.pathname.replace(/play\.html$/, "leagues.html")}?join=${encodeURIComponent(id)}&code=${encodeURIComponent(info.invite || "")}`; }
   function seatList() {
     const doc = L || D;
-    return `<ul class="seatl">${doc.teams.map((t, i) => `<li>${U.teamAv(t, "sm")}<span class="grow"><b>${esc(t.name)}</b><small>${info.seats[i] != null ? esc(info.seats[i]) : "Open, drafted by a bot"}</small></span>${info.commish && info.seats[i] != null && i !== 0 && i !== info.me ? `<button type="button" class="btn sm ghost" data-free="${i}">Free this team</button>` : ""}${info.commish && info.seats[i] == null && !L && D && D.phase === "setup" && doc.teams.length > 2 ? `<button type="button" class="btn sm ghost" data-lv="rmteam" data-team="${i}">Remove</button>` : ""}</li>`).join("")}</ul>`;
+    return `<ul class="seatl" id="lv-seats">${doc.teams.map((t, i) => `<li>${U.teamAv(t, "sm")}<span class="grow"><b>${esc(t.name)}</b><small>${info.seats[i] != null ? esc(info.seats[i]) : L || (D && D.phase !== "setup") ? "Open: a bot runs it until someone joins" : "Open: a bot drafts it if no one joins"}</small></span>${info.commish && info.seats[i] != null && i !== 0 && i !== info.me ? `<button type="button" class="btn sm ghost" data-free="${i}">Free this team</button>` : ""}${info.commish && info.seats[i] == null && !L && D && D.phase === "setup" && doc.teams.length > 2 ? `<button type="button" class="btn sm ghost" data-lv="rmteam" data-team="${i}" title="The league drops to ${doc.teams.length - 1} teams">Remove team</button>` : ""}</li>`).join("")}</ul>`;
+  }
+  const openSeats = () => { const doc = L || D; return doc ? doc.teams.filter((t, i) => info.seats[i] == null).length : 0; };
+  const inviteMsg = () => { const n = openSeats(); return `Join ${info.name}, my ${S[info.sport].name.toLowerCase()} league on Draft Lab.${n ? ` ${n} team${n > 1 ? "s" : ""} left.` : ""} ${inviteUrl()}`; };
+  function inviteHead() {
+    const doc = L || D, n = openSeats();
+    return `<p class="muted" id="lv-open" style="margin:0 0 10px">${n ? `<b>${n} of ${doc.teams.length} teams are open.</b> ` : `<b>Every team has a manager.</b> `}Anyone with the link signs in with their email, picks an open team and names it${L ? ", even mid-season" : ""}.</p>`;
+  }
+  // inviting: one tap to text, email or share the link; the seats below fill in as people join
+  function inviteDialog() {
+    if (!info.invite) { leagueDialog(); return; }
+    const share = typeof navigator.share === "function";
+    U.dialog(`<h3>Invite managers to ${esc(info.name)}</h3>
+      ${inviteHead()}
+      <div class="inv-share">${share ? `<button type="button" class="btn go" data-lv="share">Share the invite</button>` : ""}<a class="btn${share ? "" : " go"}" href="sms:?&body=${encodeURIComponent(inviteMsg())}">Text it</a><a class="btn" href="mailto:?subject=${encodeURIComponent(`Join ${info.name} on Draft Lab`)}&body=${encodeURIComponent(inviteMsg())}">Email it</a><button type="button" class="btn" data-lv="copy">Copy the link</button></div>
+      <input type="text" readonly value="${esc(inviteUrl())}" id="lv-link" class="inv-link" aria-label="Invite link">
+      <h4 style="margin:14px 0 6px">Teams</h4>
+      ${seatList()}
+      ${info.commish && D && !L && D.phase === "setup" ? `<div class="row" style="margin-top:8px;flex-wrap:wrap;gap:8px"><span class="ps">Teams can change until the draft starts.</span><span class="grow"></span>${D.type !== "auction" && D.type !== "mystery" && !D.carry && !(D.board || []).some((pk) => pk && pk.keeper) ? `<button type="button" class="btn sm" data-lv="order">Draft order</button>` : ""}${D.teams.length < 20 ? `<button type="button" class="btn sm" data-lv="addteam">Add a team</button>` : ""}</div>` : ""}`, null, { wide: true });
+    dialogClicks($("#fk-dlg"));
+  }
+  function refreshInvite() {
+    const ls = $("#lv-seats"), oh = $("#lv-open");
+    if (ls) ls.outerHTML = seatList();
+    if (oh) oh.outerHTML = inviteHead();
   }
   function leagueDialog() {
     const u = C.user();
     U.dialog(`<h3>${esc(info.name)}</h3>
-      ${info.commish ? `<p class="muted" style="margin:0 0 8px">Send this link to your league. Anyone who opens it signs in with their email and picks an open team.</p>
-        <div class="row"><input type="text" readonly value="${esc(inviteUrl())}" id="lv-link" style="flex:1;min-width:0" aria-label="Invite link"><button type="button" class="btn go" data-lv="copy">Copy</button></div>` : ""}
-      ${seatList()}
+      ${info.invite ? `<div class="row" style="gap:8px;flex-wrap:wrap;margin:0 0 6px"><button type="button" class="btn sm" data-lv="invite">Invite managers${openSeats() ? ` (${openSeats()} open)` : ""}</button>${info.dues !== undefined ? `<button type="button" class="btn sm" data-lv="dues">${duesLine()}</button>` : ""}</div>` : ""}
       ${info.commish && D && !L && D.phase !== "done" && D.trading ? `<div class="field" style="margin-top:10px"><label for="lv-oh">A trade offer stops the clock</label><select id="lv-oh">${opt("clock", "When it's to the team on the clock", D.offerHold || "clock")}${opt("all", "For any manager, up to 90 seconds", D.offerHold || "clock")}${opt("off", "Never: the draft keeps going", D.offerHold || "clock")}</select></div>` : ""}
-      ${info.commish && D && !L && D.phase === "setup" ? `<div class="row" style="margin-top:8px;flex-wrap:wrap;gap:8px"><span class="ps">${D.teams.length} teams. Teams can change until the draft starts.</span><span class="grow"></span>${D.type !== "auction" && D.type !== "mystery" && !D.carry && !(D.board || []).some((pk) => pk && pk.keeper) ? `<button type="button" class="btn sm" data-lv="order">Draft order</button>` : ""}${D.teams.length < 20 ? `<button type="button" class="btn sm" data-lv="addteam">Add a team</button>` : ""}</div>` : ""}
       <div id="lv-past"></div>
       ${info.me != null ? `<label class="check" style="margin-top:10px"><input type="checkbox" id="lv-mail"${info.notify !== false ? " checked" : ""}> Email me about trade offers, waiver results${D && D.clock >= 3600 ? ", my turn in the draft" : ""} and weekly results</label>` : ""}
       <div class="row ps" style="margin:12px 0 0;gap:6px 16px;flex-wrap:wrap"><span>${u ? `Signed in as ${esc(u.email)}` : `<a href="leagues.html">Sign in</a> to make moves`}</span><span class="grow"></span>${info.commish && !L ? `<button type="button" class="btn sm ghost warn" data-lv="delete">Delete league</button>` : ""}${u ? `<button type="button" class="btn sm ghost" data-lv="out">Sign out</button>` : ""}<button type="button" class="btn sm ghost" data-lv="theme">${theme.dark() ? "Light mode" : "Dark mode"}</button></div>`, null, { wide: true });
     const dlg = $("#fk-dlg");
+    dialogClicks(dlg);
     // past seasons, newest first; most leagues have none yet, so this stays empty until there are
     if ((D && D.year > 1) || (L && L.draft && L.draft.year > 1)) C.rpc("fk_history", { p_id: id }).then((h) => {
       const el = $("#lv-past"); if (!el || !Array.isArray(h) || !h.length) return;
       el.innerHTML = `<h4 style="margin:14px 0 6px">Past seasons</h4><ul class="seatl">${h.slice().reverse().map((x) => `<li><span class="grow"><b>Year ${esc(x.year)}${x.season ? `, ${esc(x.season)}` : ""}</b><small>${x.champion ? `Champion: ${esc(x.champion.name)}${x.champion.owner ? ` (${esc(x.champion.owner)})` : ""}` : "No champion"}</small></span></li>`).join("")}</ul>`;
     }).catch(() => {});
+    dlg.onchange = async (e) => {
+      if (e.target.id === "lv-oh") { D.offerHold = e.target.value; push(); U.toast("Saved."); return; }
+      if (e.target.id !== "lv-mail") return;
+      const on = e.target.checked;
+      const r = await C.rpc("fk_notify", { p_id: id, p_on: on }).catch((err) => ({ error: err.message }));
+      if (r.error) { U.toast(r.error, true); e.target.checked = !on; } else { info.notify = on; U.toast(on ? "Email alerts are on." : "Email alerts are off."); }
+    };
+  }
+  function dialogClicks(dlg) {
     dlg.onclick = async (e) => {
       const b = e.target.closest("[data-lv],[data-free]");
       if (!b) return;
-      if (b.dataset.lv === "copy") { const el = $("#lv-link"); el.select(); try { await navigator.clipboard.writeText(el.value); U.toast("Invite link copied"); } catch (err) { document.execCommand("copy"); U.toast("Invite link copied"); } }
+      if (b.dataset.lv === "copy") { try { await navigator.clipboard.writeText(inviteUrl()); } catch (err) { const el = $("#lv-link"); if (el) { el.select(); document.execCommand("copy"); } } U.toast("Invite link copied"); }
+      else if (b.dataset.lv === "share") { try { await navigator.share({ title: `Join ${info.name}`, text: inviteMsg().replace(inviteUrl(), "").trim(), url: inviteUrl() }); } catch (err) { /* closed the share sheet */ } }
+      else if (b.dataset.lv === "invite") { dlg.close(); inviteDialog(); }
+      else if (b.dataset.lv === "dues") { dlg.close(); duesDialog(); }
       else if (b.dataset.lv === "out") { await C.signOut(); location.reload(); }
       else if (b.dataset.lv === "theme") { theme.toggle(); b.textContent = theme.dark() ? "Light mode" : "Dark mode"; if (app) app.render(); }
       else if (b.dataset.lv === "addteam") { dlg.close(); resizeTeams(null); }
@@ -321,13 +459,6 @@
           if (r.error) U.toast(r.error, true); else { U.toast("Done. The team is open."); version = -1; pull(); }
         });
       }
-    };
-    dlg.onchange = async (e) => {
-      if (e.target.id === "lv-oh") { D.offerHold = e.target.value; push(); U.toast("Saved."); return; }
-      if (e.target.id !== "lv-mail") return;
-      const on = e.target.checked;
-      const r = await C.rpc("fk_notify", { p_id: id, p_on: on }).catch((err) => ({ error: err.message }));
-      if (r.error) { U.toast(r.error, true); e.target.checked = !on; } else { info.notify = on; U.toast(on ? "Email alerts are on." : "Email alerts are off."); }
     };
   }
   /* ---------- the next season: keepers, then a new draft ---------- */
@@ -380,7 +511,7 @@
     return `<div class="head"><h1 class="disp">Commissioner</h1><span class="ps">Every change here saves for the whole league and shows up in its transactions.</span></div>
       ${nextSeasonCard()}
       <div class="cols2">
-        ${card("Invite link", `<p class="small" style="margin:0">Anyone with this link can sign in and take an open team, even mid-season.</p>`, `<button class="btn go" data-live="league">Show the invite link</button>`)}
+        ${card("Invite and dues", `<p class="small" style="margin:0">${openSeats() ? `${openSeats()} team${openSeats() > 1 ? "s are" : " is"} open. ` : ""}Anyone with the invite link can sign in and take an open team, even mid-season.${duesOn() ? ` Dues: ${paidN()} of ${docTeams().length} paid.` : ""}</p>`, `<button class="btn go" data-live="invite">Invite managers</button><button class="btn" data-live="dues">${duesOn() ? "Dues" : "Set up dues"}</button>`)}
         <div class="card"><div class="mod-h"><h2>Managers</h2></div><div class="bd">${seatList()}</div></div>
       </div>
       ${L ? `<div class="cols2">
@@ -543,6 +674,8 @@
     const lv = e.target.closest("[data-live]"), th = e.target.closest("button[data-theme]");
     if (th) { theme.toggle(); if (app) app.render(); return; }
     if (lv && lv.dataset.live === "league") { e.preventDefault(); leagueDialog(); }
+    if (lv && lv.dataset.live === "invite") { e.preventDefault(); inviteDialog(); }
+    if (lv && lv.dataset.live === "dues") { e.preventDefault(); duesDialog(); }
     if (lv && lv.dataset.live === "keepers") keeperDialog();
     if (lv && lv.dataset.live === "open-keepers") { L.next = { opened: now(), due: now() + 3 * 864e5, picks: {} }; push(); app.refresh(); U.toast("Keeper picks are open. Everyone gets an email."); }
     const cm = e.target.closest("[data-cm]");

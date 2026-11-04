@@ -1494,3 +1494,15 @@ table.t th[title]{text-decoration:underline dotted;text-decoration-color:color-m
 table.t td.act,table.t td.r.act{width:1%;white-space:nowrap}
 table.t.roster td.nm{max-width:none;width:42%}
 table.t.roster th.act,table.t.roster td:last-child{width:1%;white-space:nowrap}
+/* invite: share buttons and the link */
+.inv-share{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 8px}
+.inv-share .btn{flex:1 1 130px;justify-content:center;text-decoration:none}
+.inv-link{width:100%;font-size:13px;color:var(--muted)}
+/* dues */
+.dues{display:grid;gap:14px}
+.dues-you{display:grid;gap:8px;padding:12px 14px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line)}
+.dues-you.paid{background:var(--win-soft);border-color:transparent}
+.dues-you.sent{background:var(--gold-soft);border-color:transparent}
+.dues-you>.btn.sm{justify-self:start}
+.dues-you .btn{text-decoration:none}
+.dues-l li{gap:10px}
