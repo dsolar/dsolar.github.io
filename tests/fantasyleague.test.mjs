@@ -165,3 +165,31 @@ for (const key of ['nfl', 'mlb']) {
     }
   });
 }
+
+test('claim order: equal bids run in the order you set, a higher bid always runs first, and editing keeps the place', () => {
+  const s = season('nfl', { scoring: 'half' });
+  const L = s.L, ctx = s.ctx;
+  L.settings.waivers = 'faab';
+  const fas = ctx.free.filter((p) => !G.onWaivers(L, p.id, T0 + DAY)).slice(0, 3);
+  const drop = L.rosters[0].map((id) => ctx.byId[id]).sort((a, b) => a.v - b.v)[0].id;
+  // both claims drop the same player, so only the one that runs first can win
+  assert.ok(G.claim(L, ctx, 0, fas[0].id, drop, 5, T0 + DAY).ok);
+  assert.ok(G.claim(L, ctx, 0, fas[1].id, drop, 5, T0 + DAY + 1).ok);
+  assert.ok(G.claim(L, ctx, 0, fas[2].id, drop, 9, T0 + DAY + 2).ok);
+  const ids = () => G.myClaims(L, 0).map((c) => c.add);
+  assert.deepEqual(ids(), [fas[2].id, fas[0].id, fas[1].id], 'highest bid first, then the order they went in');
+  const c1 = L.claims.find((c) => c.add === fas[1].id && c.status === 'open');
+  assert.equal(G.moveClaim(L, 0, c1.id, -1).ok, true);
+  assert.deepEqual(ids(), [fas[2].id, fas[1].id, fas[0].id]);
+  const c2 = L.claims.find((c) => c.add === fas[1].id && c.status === 'open');
+  assert.equal(G.moveClaim(L, 0, c2.id, -1).ok, false, 'a $5 bid cannot jump a $9 bid');
+  // raising the $5 bid's amount, then setting it back, keeps its place among the $5 bids
+  assert.ok(G.claim(L, ctx, 0, fas[1].id, drop, 6, T0 + 3 * 3600e3).ok);
+  assert.ok(G.claim(L, ctx, 0, fas[1].id, drop, 5, T0 + 4 * 3600e3).ok);
+  assert.deepEqual(ids(), [fas[2].id, fas[1].id, fas[0].id]);
+  // cancel the $9 so the $5s decide it
+  G.cancelClaim(L, L.claims.find((c) => c.add === fas[2].id && c.status === 'open').id);
+  const won = G.runWaivers(L, ctx, T0 + 2 * DAY);
+  assert.deepEqual(won.map((c) => c.add), [fas[1].id]);
+  assert.equal(L.claims.find((c) => c.add === fas[0].id && c.team === 0 && c.status !== 'cancelled').status, 'failed');
+});

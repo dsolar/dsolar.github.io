@@ -1093,3 +1093,38 @@ tr.sec.dz-ok>td{color:var(--ink)}
 .drag-ghost small{color:var(--accent);font-weight:800}
 .drag-ghost small:empty{display:none}
 @media (hover:none){.grip{opacity:.7}}
+
+/* FAAB bids: the bid builder in the claim dialog, and the claims list in run order */
+.bidbox{--pct:0%;display:grid;gap:8px;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--surface-2)}
+.bid-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bid-top label{font-weight:800;font-size:14px}
+.bid-amt{display:inline-flex;align-items:baseline;gap:2px;font-weight:900;font-size:30px;font-variation-settings:"wdth" 72;font-variant-numeric:tabular-nums}
+.bidbox .bid-amt input{width:4.2ch;height:auto;min-height:0;border:0;border-bottom:2px solid var(--line-2);border-radius:0;box-shadow:none;background:transparent;color:inherit;font:inherit;padding:0 2px;text-align:right;-moz-appearance:textfield}
+.bid-amt input::-webkit-inner-spin-button,.bid-amt input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.bidbox .bid-amt input:focus{outline:none;box-shadow:none;border-bottom-color:var(--accent)}
+.bid-r{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:4px;margin:6px 0 0;background:linear-gradient(to right,var(--brand) var(--pct),var(--line-2) var(--pct));cursor:pointer}
+.bid-r::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:#fff;border:3px solid var(--brand);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.bid-r::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid var(--brand)}
+.bid-r:focus-visible{outline:2px solid var(--info);outline-offset:4px}
+.bid-sc{position:relative;display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:8px}
+.bid-fair{position:absolute;top:0;height:4px;border-radius:2px;background:var(--win);opacity:.55;min-width:6px}
+.bid-q{display:flex;flex-wrap:wrap;gap:6px}
+.bid-q button{border:1px solid var(--line-2);background:var(--surface);border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;font-weight:650;color:var(--muted);cursor:pointer}
+.bid-q button b{color:var(--ink);font-variant-numeric:tabular-nums}
+.bid-q button:hover{border-color:var(--muted)}
+.bid-q button[aria-pressed="true"]{background:var(--brand-soft);border-color:var(--accent);color:var(--ink)}
+.bid-note{margin:0}
+.bid-wins{display:grid;gap:3px;font-size:13px;border-top:1px solid var(--line);padding-top:8px}
+.bid-wins .lbl{font-size:12px;font-weight:800;color:var(--muted)}
+.bid-wins b{font-variant-numeric:tabular-nums}
+.feed.clms>li.clm{grid-template-columns:20px minmax(0,1fr) auto auto;align-items:center}
+.clm .n{font-weight:900;color:var(--muted);font-variant-numeric:tabular-nums;text-align:center}
+.clm .ca{display:flex;gap:6px;align-items:center}
+.ordb{display:inline-flex;flex-direction:column;gap:2px}
+.ordb .btn.icon.xs{width:26px;height:17px;min-height:0;padding:0;font-size:9px;line-height:1;border-radius:5px}
+.ordb .btn:disabled{opacity:.3;cursor:default}
+.clm-note{margin:0;padding:0 16px 12px}
+@media (max-width:600px){
+  .feed.clms>li.clm{grid-template-columns:20px minmax(0,1fr) auto}
+  .clm .ca{grid-column:2/-1;justify-content:flex-end}
+}

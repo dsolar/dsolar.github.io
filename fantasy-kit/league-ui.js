@@ -690,7 +690,29 @@
     }
     // Pending claims with their bids, each one cancellable.
     function claimList(list) {
-      return `<ul class="feed">${list.map((c) => `<li style="grid-template-columns:minmax(0,1fr) auto auto;align-items:center"><div class="what">${U.txLine(sport, "add", ctx.byId[c.add])}${c.drop ? U.txLine(sport, "drop", ctx.byId[c.drop]) : ""}</div><b class="dollar">$${c.bid}</b><button class="btn sm" data-unclaim="${c.id}">Cancel</button></li>`).join("")}</ul>`;
+      const mid = me(), faab = L().settings.waivers === "faab";
+      const order = G.myClaims(L(), mid).filter((c) => list.includes(c));
+      const canSwap = (a, b) => a && b && (!faab || a.bid === b.bid);
+      return `<ul class="feed clms">${order.map((c, i) => `<li class="clm"><span class="n" title="Runs ${ord(i + 1)} of your claims">${i + 1}</span><div class="what">${U.txLine(sport, "add", ctx.byId[c.add])}${c.drop ? U.txLine(sport, "drop", ctx.byId[c.drop]) : ""}</div>${faab ? `<b class="dollar">$${c.bid}</b>` : "<span></span>"}<div class="ca">${order.length > 1 ? `<span class="ordb"><button type="button" class="btn icon xs" data-cup="${c.id}" aria-label="Run this claim earlier"${canSwap(order[i - 1], c) ? "" : " disabled"}>&#9650;</button><button type="button" class="btn icon xs" data-cdown="${c.id}" aria-label="Run this claim later"${canSwap(c, order[i + 1]) ? "" : " disabled"}>&#9660;</button></span>` : ""}<button class="btn sm" data-editclaim="${c.id}">${faab ? "Edit bid" : "Edit"}</button><button class="btn sm ghost" data-unclaim="${c.id}">Cancel</button></div></li>`).join("")}</ul>
+        ${order.length > 1 ? `<p class="ps clm-note">${faab ? "Your claims run highest bid first. Among equal bids, the arrows set which runs first." : "Your claims run in this order, one each time your turn in the waiver line comes up."}</p>` : ""}`;
+    }
+    // What a player on waivers should cost: a fair range from his value, the league's budget and how much season is left.
+    // Guillotine money is spent fast, so late in the season the same player costs a bigger share of what you have.
+    function bidRange(p, tid) {
+      const s = L().settings, have = T(tid).faab, min = s.minBid || 0;
+      const total = Math.max(1, G.totalWeeks(L())), left = Math.max(1, total - L().week + 1), late = 1 - left / total, v = Math.max(1, p.$ || 1);
+      // a depth add goes for a couple percent of a budget, a breakout starter for a quarter or more of it
+      const good = Math.pow(Math.min(1, Math.max(0, v - 1) / 40), 0.8);
+      const mid = gl() ? have * Math.max(0.01, Math.min(1, v / 45) * (0.06 + 0.8 * late * late)) : s.faab * (0.02 + 0.28 * good) * Math.sqrt(Math.max(0.3, left / total));
+      const cl = (x) => Math.max(min, Math.min(have, Math.round(x)));
+      return { lo: cl(mid * 0.6), mid: cl(mid), hi: cl(Math.max(mid * 1.6, mid + 2)), have, min };
+    }
+    // The last few winning bids in this league, the same position first, so a bid has something to go on.
+    function recentWins(p) {
+      const pos = S.positions(p)[0];
+      const wins = L().tx.filter((x) => x.type === "waiver" && x.faab != null && x.adds && ctx.byId[x.adds[0]]).slice(-40).reverse();
+      const pick = wins.filter((x) => S.positions(ctx.byId[x.adds[0]])[0] === pos).slice(0, 3);
+      return (pick.length ? pick : wins.slice(0, 3)).map((x) => ({ p: ctx.byId[x.adds[0]], bid: x.faab, team: x.team, week: x.week, bids: x.bids }));
     }
     // A vampire's bite: one player to take from the victim, one of the vampire's own to give back.
     function biteDialog(id) {
@@ -1036,28 +1058,59 @@
       const sharedNote = shared.length ? `<div class="alert" style="margin:0 16px 10px"><span>${shared.map(([id, k]) => `${k} claims drop <b>${esc((ctx.byId[id] || {}).n || "the same player")}</b>`).join("; ")}. Claims run highest bid first, so once one wins, the others that drop him fail. Pick a different drop for any you'd want too.</span></div>` : "";
       const row = (c) => `<li style="grid-template-columns:minmax(0,1fr) auto auto;align-items:center"><div class="what">${U.txLine(sport, "add", ctx.byId[c.add])}${c.drop ? U.txLine(sport, "drop", ctx.byId[c.drop]) : ""}</div><b class="dollar">$${c.bid}</b>${c.status === "open" ? `<button class="btn sm" data-unclaim="${c.id}">Cancel</button>` : `<span class="status ${c.status === "won" ? "accepted" : "rejected"}">${c.status === "won" ? "Won" : c.status === "lost" ? `Lost to ${esc(T(c.lostTo).abbr)}` : c.status === "cancelled" ? "Cancelled" : "Failed"}${c.week ? `, week ${c.week}` : ""}</span>`}${c.why ? `<span class="ps" style="grid-column:1/-1">${esc(c.why)}</span>` : ""}</li>`;
       return `<div class="wrap page"><div class="head"><h1 class="disp">Waiver claims</h1><span class="ps">${esc(claimsRun())} Highest bid wins; ties go to waiver priority (you're ${ord(T(mid).priority + 1)}). You have $${T(mid).faab}.</span></div>
-        <div class="cols2"><div class="card"><div class="mod-h"><h2>Pending</h2></div>${sharedNote}${open.length ? `<ul class="feed">${open.map(row).join("")}</ul>` : `<p class="empty">No pending claims. Players on waivers have a W on the Players page.</p>`}</div>
+        <div class="cols2"><div class="card"><div class="mod-h"><h2>Pending</h2></div>${sharedNote}${open.length ? claimList(open) : `<p class="empty">No pending claims. Players on waivers have a W on the Players page.</p>`}</div>
         <div class="card"><div class="mod-h"><h2>Results</h2></div>${past.length ? `<ul class="feed">${past.map(row).join("")}</ul>` : `<p class="empty">Nothing yet.</p>`}</div></div></div>`;
     }
     // Add a free agent (or claim one on waivers), choosing who to drop.
-    function addDialog(pid) {
+    function addDialog(pid, edit) {
       const mid = me(), p = ctx.byId[pid];
       const onW = G.onWaivers(L(), pid, now());
       const irs = G.held(L(), mid);
       const full = L().rosters[mid].length - irs.length >= G.maxRoster(L());
       const ros = L().rosters[mid].filter((x) => !irs.includes(x)).map((x) => ctx.byId[x]).sort((a, b) => a.vor - b.vor);
-      if (L().settings.maxAdds && G.pickupsLeft(L(), mid) <= 0) { U.toast(`You've used all ${L().settings.maxAdds} pickups this week`, true); return; }
-      U.dialog(`${L().settings.maxAdds ? `<p class="ps" style="margin:0 0 6px">${G.pickupsLeft(L(), mid)} of ${L().settings.maxAdds} pickups left this week.</p>` : ""}<div class="pc-h">${U.playerAv(sport, p, "lg")}<div><h3 class="disp">${onW ? "Claim" : "Add"} ${esc(p.n)}</h3><div class="ps">${p.inj ? `<span class="tag inj">${esc(p.inj)}</span> ` : ""}${posChips(sport, p)} ${U.proTeam(sport, p.t)}, ${esc(p.prank)}${onW ? `. On waivers: ${esc(claimsRun().replace(/^Claims/, "claims"))}` : ""}</div></div></div>
-        <form class="stack">${full ? `<div class="field"><span class="lbl">Pick who to drop to make room</span><div class="table-wrap" style="max-height:44dvh"><table class="t dense droplist"><tbody>${ros.map((q, i) => `<tr><td style="width:28px"><input type="radio" name="drop" value="${esc(q.id)}" id="d${i}"${i === 0 ? " required" : ""}></td><td><label for="d${i}" style="cursor:pointer">${pname(sport, q, esc(q.prank))}</label></td><td class="r ps">#${q.rank}</td></tr>`).join("")}</tbody></table></div></div>` : `<p class="ps" style="margin:0">You have an open roster spot.</p>`}
-          ${onW && L().settings.waivers === "faab" ? `<div class="field"><label for="bid">Your FAAB bid (you have $${T(mid).faab})</label><input type="number" id="bid" name="bid" min="0" max="${T(mid).faab}" value="${Math.min(T(mid).faab, Math.max(1, Math.round(gl() ? T(mid).faab * Math.min(0.5, (p.$ || 1) / 200) : (p.$ || 1) / 4)))}"></div>` : ""}
-          <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">${onW ? "Put in the claim" : full ? "Add and drop" : "Add"}</button></div></form>`,
+      if (!edit && L().settings.maxAdds && G.pickupsLeft(L(), mid) <= 0) { U.toast(`You've used all ${L().settings.maxAdds} pickups this week`, true); return; }
+      const faab = onW && L().settings.waivers === "faab";
+      const R = faab ? bidRange(p, mid) : null;
+      const others = L().claims.filter((c) => c.team === mid && c.status === "open" && c.add !== pid);
+      const othersBid = others.reduce((t, c) => t + c.bid, 0);
+      const start = edit ? edit.bid : R ? R.mid : 0;
+      const drops = others.reduce((m, c) => (c.drop ? ((m[c.drop] = 1), m) : m), {});
+      const wins = faab ? recentWins(p) : [];
+      // one chip per amount; when two land on the same dollar, Fair wins, then Strong, then Low
+      const quick = R ? [["Min", R.min, 0], ["Low", R.lo, 1], ["Fair", R.mid, 3], ["Strong", R.hi, 2]].filter(([, v, k], i, a) => !a.some(([, v2, k2]) => v2 === v && k2 > k)) : [];
+      const bidBox = R ? `<div class="bidbox" style="--pct:${R.have ? Math.round((start / R.have) * 100) : 0}%">
+          <div class="bid-top"><label for="bid">Your bid</label><span class="bid-amt"><span aria-hidden="true">$</span><input type="number" inputmode="numeric" id="bid" name="bid" min="${R.min}" max="${R.have}" value="${start}" aria-describedby="bid-note"></span></div>
+          <input type="range" class="bid-r" min="${R.min}" max="${R.have}" value="${start}" step="1" aria-label="Bid amount" tabindex="-1">
+          <div class="bid-sc"><span>$${R.min}</span><span class="bid-fair" style="left:${R.have ? (R.lo / R.have) * 100 : 0}%;width:${R.have ? ((R.hi - R.lo) / R.have) * 100 : 0}%" title="Fair range"></span><span>$${R.have}</span></div>
+          <div class="bid-q" role="group" aria-label="Quick bids">${quick.map(([k, v]) => `<button type="button" data-q="${v}" aria-pressed="${v === start}">${k} <b>$${v}</b></button>`).join("")}</div>
+          <p class="ps bid-note" id="bid-note"></p>
+          ${wins.length ? `<div class="bid-wins"><span class="lbl">Recent winning bids</span>${wins.map((x) => `<span><b>$${x.bid}</b> ${esc(x.p.n)} <span class="ps">${esc(S.positions(x.p)[0])}, to ${esc(T(x.team).abbr)} in week ${x.week}${x.bids > 1 ? ` over ${x.bids - 1} other bid${x.bids > 2 ? "s" : ""}` : ""}</span></span>`).join("")}</div>` : ""}</div>` : "";
+      const D = U.dialog(`${!edit && L().settings.maxAdds ? `<p class="ps" style="margin:0 0 6px">${G.pickupsLeft(L(), mid)} of ${L().settings.maxAdds} pickups left this week.</p>` : ""}<div class="pc-h">${U.playerAv(sport, p, "lg")}<div><h3 class="disp">${edit ? "Change your claim for" : onW ? "Claim" : "Add"} ${esc(p.n)}</h3><div class="ps">${p.inj ? `<span class="tag inj">${esc(p.inj)}</span> ` : ""}${posChips(sport, p)} ${U.proTeam(sport, p.t)}, ${esc(p.prank)}${onW ? `. On waivers: ${esc(claimsRun().replace(/^Claims/, "claims"))}` : ""}</div></div></div>
+        <form class="stack">${bidBox}${full ? `<div class="field"><span class="lbl">Pick who to drop to make room</span><div class="table-wrap" style="max-height:${R ? 30 : 44}dvh"><table class="t dense droplist"><tbody>${ros.map((q, i) => `<tr><td style="width:28px"><input type="radio" name="drop" value="${esc(q.id)}" id="d${i}"${i === 0 ? " required" : ""}${edit && edit.drop === q.id ? " checked" : ""}></td><td><label for="d${i}" style="cursor:pointer">${pname(sport, q, `${esc(q.prank)}${drops[q.id] ? `, <span class="blk-tag">dropped in another claim</span>` : ""}`)}</label></td><td class="r ps">#${q.rank}</td></tr>`).join("")}</tbody></table></div></div>` : `<p class="ps" style="margin:0">You have an open roster spot.</p>`}
+          <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">${edit ? "Save the claim" : onW ? (faab ? `Bid <span class="bid-go">$${start}</span>` : "Put in the claim") : full ? "Add and drop" : "Add"}</button></div></form>`,
         (fd) => {
           const drop = fd.get("drop") || null;
           if (full && !drop) { U.toast("Pick who to drop first", true); return false; }
-          if (onW && L().settings.waivers === "faab" && +(fd.get("bid") || 0) > T(mid).faab) { U.toast(`You only have $${T(mid).faab} of FAAB`, true); return false; }
-          if (onW) return act(() => G.claim(L(), ctx, mid, pid, drop, +(fd.get("bid") || 0), now()), `Bid in. ${claimsRun()}`);
+          const bid = +(fd.get("bid") || 0);
+          if (faab && bid > T(mid).faab) { U.toast(`You only have $${T(mid).faab} of FAAB`, true); return false; }
+          if (onW) return act(() => G.claim(L(), ctx, mid, pid, drop, bid, now()), edit ? "Claim saved." : `Bid in. ${claimsRun()}`);
           return act(() => G.addDrop(L(), ctx, mid, pid, drop, now()), `${p.n} added.`);
         });
+      if (!R) return;
+      const num = D.querySelector("#bid"), rng = D.querySelector(".bid-r"), box = D.querySelector(".bidbox"), note = D.querySelector("#bid-note"), go = D.querySelector(".bid-go");
+      const sync = (v, from) => {
+        v = Math.max(R.min, Math.min(R.have, Math.round(+v || 0)));
+        if (from !== num) num.value = v;
+        if (from !== rng) rng.value = v;
+        box.style.setProperty("--pct", `${R.have ? (v / R.have) * 100 : 0}%`);
+        D.querySelectorAll("[data-q]").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.q === v)));
+        if (go) go.textContent = `$${v}`;
+        const where = v < R.lo ? "Below the fair range" : v > R.hi ? "Above the fair range" : "In the fair range";
+        note.innerHTML = `${where} of $${R.lo} to $${R.hi}${R.have ? `, ${Math.round((v / R.have) * 100)}% of your budget` : ""}. If it wins you'll have <b>$${R.have - v}</b> left${othersBid ? `, before your other ${others.length === 1 ? "bid" : `${others.length} bids`} of $${othersBid}` : ""}.`;
+      };
+      D.oninput = (e) => { if (e.target === num || e.target === rng) sync(e.target.value, e.target); };
+      D.onclick = (e) => { const q = e.target.closest("[data-q]"); if (q) { sync(q.dataset.q); num.focus(); } };
+      sync(start);
     }
     function dropDialog(pid) {
       const p = ctx.byId[pid];
@@ -1251,7 +1304,7 @@
     opts.el.addEventListener("click", (e) => {
       const mb = e.target.closest("[data-more]");
       if (mb) { ui.plimit = (ui.plimit || 250) + 250; render(); return; }
-      const b = e.target.closest("[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],th[data-sort]");
+      const b = e.target.closest("[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],th[data-sort]");
       if (b) {
         e.preventDefault(); e.stopPropagation();
         const d = b.dataset, mid = me();
@@ -1272,6 +1325,8 @@
         else if (d.week) { ui.week = +d.week; render(); }
         else if (d.watch) { const w = watch(); const i = w.indexOf(d.watch); if (i >= 0) w.splice(i, 1); else w.push(d.watch); save(); render(); }
         else if (d.unclaim) act(() => G.cancelClaim(L(), +d.unclaim), "Claim cancelled.");
+        else if (d.editclaim) { const c = L().claims.find((x) => x.id === +d.editclaim && x.status === "open"); if (c) addDialog(c.add, c); }
+        else if (d.cup || d.cdown) act(() => G.moveClaim(L(), me(), +(d.cup || d.cdown), d.cup ? -1 : 1));
         else if (d.sbweek) { ui.sbWeek = +d.sbweek; location.hash = `#league/scoreboard/${d.sbweek}`; }
         else if (d.mweek) { location.hash = `#matchup/${d.mweek}`; }
         else if (d.txf !== undefined && b.hasAttribute("data-txf")) { ui.txf = d.txf; render(); }

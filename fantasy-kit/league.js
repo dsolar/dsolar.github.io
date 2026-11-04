@@ -1102,8 +1102,23 @@
     if (L.settings.waivers === "faab" && bid > L.teams[teamId].faab) return { ok: false, why: `You have $${L.teams[teamId].faab} of FAAB` };
     const ok = canRoster(L, ctx, teamId, add, drop ? [drop] : [], true);
     if (!ok.ok) return ok;
-    L.claims = L.claims.filter((c) => !(c.team === teamId && c.add === add && c.status === "open"));
-    L.claims.push({ id: L.nextId++, team: teamId, add, drop: drop || null, bid, at: now, status: "open" });
+    // changing a claim keeps its place in your claim order
+    const was = L.claims.find((c) => c.team === teamId && c.add === add && c.status === "open");
+    L.claims = L.claims.filter((c) => c !== was);
+    L.claims.push({ id: L.nextId++, team: teamId, add, drop: drop || null, bid, at: was ? was.at : now, ord: was ? claimOrd(was) : now, status: "open" });
+    return { ok: true };
+  }
+  // A team's own claims run in this order: highest bid first, then the order the team set.
+  const claimOrd = (c) => (c.ord != null ? c.ord : c.at);
+  const myClaims = (L, teamId) => L.claims.filter((c) => c.team === teamId && c.status === "open").sort((a, b) => b.bid - a.bid || claimOrd(a) - claimOrd(b));
+  // Move a claim up or down among the team's claims. With FAAB the bid decides, so only claims with the same bid can swap.
+  function moveClaim(L, teamId, id, dir) {
+    const list = myClaims(L, teamId), i = list.findIndex((c) => c.id === id), j = i + (dir < 0 ? -1 : 1);
+    if (i < 0 || j < 0 || j >= list.length) return { ok: false, why: "That claim can't move that way" };
+    const a = list[i], b = list[j];
+    if (L.settings.waivers === "faab" && a.bid !== b.bid) return { ok: false, why: "The higher bid runs first: change a bid to change the order" };
+    const x = claimOrd(a); a.ord = claimOrd(b); b.ord = x;
+    if (a.ord === b.ord) a.ord += dir < 0 ? -1 : 1;
     return { ok: true };
   }
   const cancelClaim = (L, id) => { const c = L.claims.find((x) => x.id === id && x.status === "open"); if (!c) return { ok: false, why: "No such claim" }; c.status = "cancelled"; return { ok: true }; };
@@ -1112,7 +1127,7 @@
     const open = L.claims.filter((c) => c.status === "open");
     const won = [];
     // highest bid first; on a tie the better waiver priority, which changes after every win, then the earlier claim
-    const next = () => open.filter((c) => c.status === "open").sort((a, b) => b.bid - a.bid || L.teams[a.team].priority - L.teams[b.team].priority || a.at - b.at)[0];
+    const next = () => open.filter((c) => c.status === "open").sort((a, b) => b.bid - a.bid || L.teams[a.team].priority - L.teams[b.team].priority || claimOrd(a) - claimOrd(b))[0];
     for (let c = next(); c; c = next()) {
       const t = L.teams[c.team];
       const rivals = open.filter((x) => x.add === c.add && x.status === "open");
@@ -1538,7 +1553,7 @@
   }
 
   return { realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
-    finishWeek, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
+    finishWeek, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
 });
