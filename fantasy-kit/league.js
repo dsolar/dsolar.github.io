@@ -76,6 +76,12 @@
     // a vampire league: the vampire's claim is always first
     if (s.vampire && teams[s.vampire.team] && !guillotine && s.format !== "roto") { L.bites = []; vampireFirst(L); } else delete s.vampire;
     if (D) log(L, D.done || L.created, { type: "draft", team: -1, text: `Draft complete: ${F.made(D).length} picks` });
+    // pick your opponent: no divisions, head to head only; week 2's picks open now
+    if (s.pyo && (guillotine || s.format === "roto")) delete s.pyo;
+    if (s.pyo) { s.divisions = 0; delete L.divs; pyoOpen(L, null, 2, L.created); }
+    for (const k of ["robin", "conquest", "crown", "hangover"]) if (s[k] && (guillotine || s.format === "roto")) delete s[k];
+    if (s.topBonus && !guillotine) delete s.topBonus;
+    if (s.crown) L.crown = { king: s.crown.king != null && teams[s.crown.king] ? s.crown.king : null, pot: s.crown.start != null ? s.crown.start : 10, since: 1, reigns: [] };
     return L;
   }
 
@@ -665,6 +671,7 @@
       L.lineups[w] = L.lineups[w] || {};
       for (const t of L.alive) { const x = teamWeek(L, ctx, t, w, 1); L.lineups[w][t] = x.lineup || lineupFor(L, ctx, t, w); }
       chop(L, ctx, now);
+      topBonus(L, w, now);
       if (L.alive.length <= 1) log(L, now, { type: "champion", team: L.alive[0], text: "Last team standing" });
       L.week = L.alive.length <= 1 ? totalWeeks(L) + 1 : w + 1;
       if (L.week > totalWeeks(L)) { closeSeason(L, now); return { ok: true, over: true }; }
@@ -679,7 +686,10 @@
     if (L.settings.bestBall) for (const g of games) { if (g.ta && g.ta.lineup) best[g.a] = g.ta.lineup; if (g.tb && g.tb.lineup) best[g.b] = g.tb.lineup; }
     for (const t of L.teams) L.lineups[w][t.id] = best[t.id] || lineupFor(L, ctx, t.id, w);
     L.week = w + 1;
-    if (w <= L.settings.weeks) openBites(L, w, games, now);
+    if (w <= L.settings.weeks) { openBites(L, w, games, now); openRaids2(L, ctx, w, games, now); crownWeek(L, games, w, now); }
+    // pick your opponent: this week's picks are final, and next week's open
+    if (L.pyo && !L.pyo.done && L.pyo.week <= L.week) { runPyo(L, ctx, Math.max(now, L.pyo.due)); pyoDone(L, now); }
+    if (L.settings.pyo && w + 2 <= L.settings.weeks) pyoOpen(L, ctx, w + 2, now);
     if (L.week > totalWeeks(L)) { closeSeason(L, now); return { ok: true, over: true }; }
     reorderWaivers(L);
     runDue(L, ctx, now);
@@ -718,19 +728,25 @@
       if (low) L.bites.push({ id: L.nextId++, week: w, victim: low[0], why: "lowest", status: "open", at: now, due });
     }
   }
-  const openBite = (L) => (L.bites || []).find((b) => b.status === "open") || null;
+  // who takes in a bite: the vampire, or b.by (Robin Hood's lowest scorer, Conquest's winner); like for like per bite
+  const takerOf = (L, b) => (b.by != null ? b.by : vampireOf(L));
+  const likeFor = (L, b) => (b.like != null ? !!b.like : !!(L.settings.vampire && L.settings.vampire.samePos));
+  const openBite = (L) => (L.bites || []).find((b) => b.status === "open" && b.by == null) || null;
+  const openRaids = (L, team) => (L.bites || []).filter((b) => b.status === "open" && b.by != null && b.by === team);
   function biteCheck(L, ctx, b, take, give) {
-    const v = vampireOf(L), p = ctx.byId[take], q = give ? ctx.byId[give] : null;
     if (!b || b.status !== "open") return { ok: false, why: "That bite is no longer open" };
+    const v = takerOf(L, b), p = ctx.byId[take], q = give ? ctx.byId[give] : null;
     if (!p || !L.rosters[b.victim].includes(take)) return { ok: false, why: `${p ? p.n : "He"} isn't on ${L.teams[b.victim].name}` };
+    if ((b.protect || []).includes(take)) return { ok: false, why: `${p.n} is protected` };
+    if ((L.ir[b.victim] || []).includes(take) && b.by != null) return { ok: false, why: `${p.n} is on injured reserve` };
     const room = L.rosters[v].length - held(L, v).length < maxRoster(L);
     if (!give && !room) return { ok: false, why: "Pick one of your players to give back" };
     if (give && (!q || !L.rosters[v].includes(give))) return { ok: false, why: "That player isn't on your roster" };
-    if (give && L.settings.vampire.samePos && S.positions(p)[0] !== S.positions(q)[0]) return { ok: false, why: `This league swaps like for like: give back a ${S.positions(p)[0]}` };
+    if (give && likeFor(L, b) && S.positions(p)[0] !== S.positions(q)[0]) return { ok: false, why: `This league swaps like for like: give back a ${S.positions(p)[0]}` };
     return { ok: true };
   }
   function bite(L, ctx, id, take, give, now, auto) {
-    const b = (L.bites || []).find((x) => x.id === id), v = vampireOf(L);
+    const b = (L.bites || []).find((x) => x.id === id), v = b ? takerOf(L, b) : null;
     const c = biteCheck(L, ctx, b, take, give);
     if (!c.ok) return c;
     bank(L, ctx, b.victim, take, now);
@@ -741,7 +757,8 @@
     for (const w of Object.keys(L.lineups)) if (+w >= L.week) for (const t of [b.victim, v]) { const lu = L.lineups[w][t]; if (lu) L.lineups[w][t] = lu.map((x) => (x === take || x === give ? null : x)); }
     joined(L, v, take, now, ctx); if (give) joined(L, b.victim, give, now, ctx);
     Object.assign(b, { status: "done", take, give: give || null, done: now, auto: !!auto });
-    log(L, now, { type: "bite", team: v, other: b.victim, adds: [take], drops: give ? [give] : [], text: `${ctx.byId[take].n} taken from ${L.teams[b.victim].name}${give ? `, ${ctx.byId[give].n} given back` : ""}${auto ? " (made for the vampire)" : ""}` });
+    const who = b.why === "robin" ? "Robin Hood: " : b.why === "conquest" ? "Spoils of war: " : "";
+    log(L, now, { type: "bite", kind: b.why, team: v, other: b.victim, adds: [take], drops: give ? [give] : [], text: `${who}${ctx.byId[take].n} taken from ${L.teams[b.victim].name}${give ? `, ${ctx.byId[give].n} given back` : ""}${auto ? ` (made for ${b.by != null ? L.teams[v].name : "the vampire"})` : ""}` });
     refresh(L, ctx);
     return { ok: true };
   }
@@ -749,11 +766,12 @@
   // player it can take that its roster has a use for, for its own least valuable player (of his position, if swaps
   // are like for like).
   function autoBite(L, ctx, b) {
-    const v = vampireOf(L), like = L.settings.vampire.samePos;
+    const v = takerOf(L, b), like = likeFor(L, b);
     const mine = L.rosters[v].filter((x) => !held(L, v).includes(x)).map((x) => ctx.byId[x]).filter(Boolean);
     const room = L.rosters[v].length - held(L, v).length < maxRoster(L);
     const val = (p) => (p.$ || 0) + Math.max(0, p.vor || 0) * 0.01;
-    for (const p of L.rosters[b.victim].map((x) => ctx.byId[x]).filter(Boolean).sort((a, b2) => val(b2) - val(a))) {
+    const off = new Set((b.protect || []).concat(b.by != null ? L.ir[b.victim] || [] : []));
+    for (const p of L.rosters[b.victim].filter((x) => !off.has(x)).map((x) => ctx.byId[x]).filter(Boolean).sort((a, b2) => val(b2) - val(a))) {
       const pool = like ? mine.filter((q) => S.positions(q)[0] === S.positions(p)[0]) : mine;
       const give = room ? null : pool.sort((a, b2) => val(a) - val(b2))[0];
       if (!room && !give) continue;
@@ -763,10 +781,10 @@
     return null;
   }
   function runBites(L, ctx, now) {
-    const v = vampireOf(L);
-    if (v == null) return 0;
     let n = 0;
     for (const b of (L.bites || []).filter((x) => x.status === "open")) {
+      const v = takerOf(L, b);
+      if (v == null) continue;
       const bot = !L.teams[v].owner;
       if (!bot && now < b.due) continue;
       const pick = autoBite(L, ctx, b);
@@ -787,6 +805,128 @@
     let k = 0;
     for (const p of picked.slice(0, n0)) if (addDrop(L, ctx, v, p.id, null, now).ok) k++;
     return k;
+  }
+  /* ---------- twists: Robin Hood, Conquest, Kingslayer, The Hangover, pick your opponent, the top-score bonus ---------- */
+  // The players a raided team keeps: its `n` most valuable (not counting injured reserve).
+  const raidVal = (p) => (p.$ || 0) + Math.max(0, p.vor || 0) * 0.01;
+  const protectOf = (L, ctx, team, n) => L.rosters[team].filter((x) => !(L.ir[team] || []).includes(x)).map((x) => ctx.byId[x]).filter(Boolean).sort((a, b) => raidVal(b) - raidVal(a)).slice(0, Math.max(0, n | 0)).map((p) => p.id);
+  // settings.robin { protect, like }: after each regular-season week the lowest scorer takes one player from the top
+  // scorer (who keeps his `protect` best) and gives one back. settings.conquest { protect, like }: every winner takes one
+  // player from the team it beat the same way. Each raid stays open two days into the next week, then it's made for
+  // the taker (a bot raids at once).
+  function openRaids2(L, ctx, w, games, now) {
+    const due = weekStart(L, w + 1) + BITE_HOURS * HOUR;
+    const add = (by, victim, why, rule) => { if (by === victim || by == null || victim == null) return; L.bites = L.bites || []; L.bites.push({ id: L.nextId++, week: w, by, victim, why, status: "open", at: now, due, like: !!rule.like, protect: protectOf(L, ctx, victim, rule.protect != null ? rule.protect : 2) }); };
+    const rb = L.settings.robin, cq = L.settings.conquest;
+    if (rb) {
+      const rows = games.flatMap((g) => [[g.a, g.sa], [g.b, g.sb]]).filter(([t, sc]) => L.teams[t] && Number.isFinite(sc));
+      if (rows.length >= 2) {
+        rows.sort((a, b) => b[1] - a[1] || L.teams[a[0]].priority - L.teams[b[0]].priority);
+        const rich = rows[0], poor = rows[rows.length - 1];
+        if (rich[1] > poor[1]) add(poor[0], rich[0], "robin", rb);
+      }
+    }
+    if (cq) for (const g of games) if ((g.w === "a" || g.w === "b") && L.teams[g.a] && L.teams[g.b]) add(g.w === "a" ? g.a : g.b, g.w === "a" ? g.b : g.a, "conquest", cq);
+  }
+  // settings.crown { start, step, keep } (Kingslayer): one team wears the crown and the bounty grows by `step` every week
+  // he keeps it; he collects `keep` FAAB for each week he survives. Beat the king and you take the crown and the pot.
+  // The first king is settings.crown.king (last season's champion) or else week 1's top scorer.
+  function crownWeek(L, games, w, now) {
+    const cr = L.settings.crown; if (!cr || w > L.settings.weeks) return;
+    const st = (L.crown = L.crown || { king: cr.king != null && L.teams[cr.king] ? cr.king : null, pot: cr.start != null ? cr.start : 10, since: 1, reigns: [] });
+    const faab = L.settings.waivers === "faab";
+    if (st.king == null) {
+      const top = games.flatMap((g) => [[g.a, g.sa], [g.b, g.sb]]).filter(([t, sc]) => L.teams[t] && Number.isFinite(sc)).sort((a, b) => b[1] - a[1])[0];
+      if (!top) return;
+      Object.assign(st, { king: top[0], since: w + 1, pot: cr.start != null ? cr.start : 10 });
+      log(L, now, { type: "crown", team: top[0], text: `${L.teams[top[0]].name} had the top score and takes the crown. The bounty starts at $${st.pot}` });
+      return;
+    }
+    const g = games.find((x) => x.a === st.king || x.b === st.king);
+    const lost = g && ((g.w === "a" && g.b === st.king) || (g.w === "b" && g.a === st.king));
+    if (lost) {
+      const slayer = g.a === st.king ? g.b : g.a, pot = st.pot;
+      if (faab) L.teams[slayer].faab += pot;
+      st.reigns.push({ king: st.king, from: st.since, to: w, by: slayer, pot });
+      log(L, now, { type: "crown", team: slayer, other: st.king, faab: faab ? pot : null, text: `${L.teams[slayer].name} beat the king, ${L.teams[st.king].name}, and takes the crown${faab ? ` and the $${pot} bounty` : ""}` });
+      Object.assign(st, { king: slayer, since: w + 1, pot: cr.start != null ? cr.start : 10 });
+    } else {
+      st.pot += cr.step != null ? cr.step : 10;
+      if (faab && cr.keep) L.teams[st.king].faab += cr.keep;
+    }
+  }
+  const kingOf = (L) => (L.crown ? L.crown.king : null);
+  // settings.hangover (The Hangover): last week's winners can't add free agents or claim anyone this week.
+  function hungover(L, team) {
+    if (!L.settings.hangover || L.week < 2 || L.week > L.settings.weeks) return null;
+    const res = L.results[L.week - 1], g = Array.isArray(res) ? res.find((x) => x.a === team || x.b === team) : null;
+    const won = g && ((g.w === "a" && g.a === team) || (g.w === "b" && g.b === team));
+    return won ? `${L.teams[team].name} won last week. The Hangover: no free-agent moves until week ${L.week + 1}` : null;
+  }
+  // settings.topBonus (guillotine): the week's top scorer gets this much FAAB, a reason to spend early.
+  function topBonus(L, w, now) {
+    const amt = L.settings.topBonus; if (!amt || !isGuillotine(L)) return;
+    const rows = ((L.results[w] && L.results[w].block) || []).filter((r) => !r.out);
+    const top = rows.slice().sort((a, b) => b.score - a.score)[0];
+    if (!top) return;
+    L.teams[top.team].faab += amt;
+    log(L, now, { type: "bonus", team: top.team, faab: amt, text: `Top score of week ${w}: ${L.teams[top.team].name} gets $${amt} of FAAB` });
+  }
+  // settings.pyo (pick your opponent): during week w-1 the teams pick their week w opponents, worst record first (for
+  // week 2, the reverse of the draft order). Each team gets 12 hours on its turn; a bot picks at once, and a team that
+  // runs out of time gets the weakest team left. Nobody picks the team it plays this week while another is left.
+  const PYO_HOURS = 12;
+  function pyoOpen(L, ctx, target, now) {
+    if (!L.settings.pyo || target < 2 || target > L.settings.weeks) return;
+    const ids = L.teams.map((t) => t.id);
+    const order = target === 2 ? (L.draft && L.draft.round1 ? L.draft.round1.slice().reverse() : ids) : standings(L).map((r) => r.team).reverse();
+    L.pyo = { week: target, order: order.filter((t) => ids.includes(t)), pairs: [], at: now, due: weekStart(L, target) };
+  }
+  const pyoPaired = (L) => new Set((L.pyo ? L.pyo.pairs : []).flat());
+  const pyoTurn = (L) => (L.pyo && !L.pyo.done ? L.pyo.order.find((t) => !pyoPaired(L).has(t)) : null);
+  const pyoLast = (L, t, target) => { const g = (L.schedule[target - 2] || []).find((x) => x.includes(t)); return g ? (g[0] === t ? g[1] : g[0]) : null; };
+  function pyoOptions(L, t) {
+    if (!L.pyo || L.pyo.done) return [];
+    const paired = pyoPaired(L), left = L.pyo.order.filter((x) => x !== t && !paired.has(x));
+    const fresh = left.filter((x) => x !== pyoLast(L, t, L.pyo.week));
+    return fresh.length ? fresh : left;
+  }
+  function pyoPick(L, ctx, t, opp, now, auto) {
+    if (!L.pyo || L.pyo.done) return { ok: false, why: "There's no pick open" };
+    if (pyoTurn(L) !== t) return { ok: false, why: "It isn't your turn to pick" };
+    if (!pyoOptions(L, t).includes(opp)) return { ok: false, why: opp === pyoLast(L, t, L.pyo.week) ? "You play them this week: pick someone else" : "That team is taken" };
+    L.pyo.pairs.push([t, opp]); L.pyo.at = now;
+    log(L, now, { type: "pyo", team: t, other: opp, text: `${L.teams[t].name} picked ${L.teams[opp].name} for week ${L.pyo.week}${auto ? " (picked for them)" : ""}` });
+    const left = L.pyo.order.filter((x) => !pyoPaired(L).has(x));
+    if (left.length === 2) L.pyo.pairs.push([left[0], left[1]]);
+    if (left.length <= 2) pyoDone(L, now);
+    return { ok: true };
+  }
+  function pyoDone(L, now) {
+    const P = L.pyo; if (!P || P.done) return;
+    P.done = now;
+    L.schedule[P.week - 1] = P.pairs.map((x) => x.slice());
+    (L.picked = L.picked || {})[P.week] = P.pairs.map((x) => x[0]);
+  }
+  // a bot's pick (and the pick made for a team whose time ran out): the weakest team it can pick
+  function pyoAuto(L, ctx, t) {
+    const opts = pyoOptions(L, t); if (!opts.length) return null;
+    const pf = Object.fromEntries(standings(L).map((r) => [r.team, r]));
+    const str = (x) => (L.week > 1 && pf[x] ? (pf[x].w || 0) * 1000 + (pf[x].pf || 0) : 0) + projectedBest(L, ctx, x);
+    return opts.sort((a, b) => str(a) - str(b))[0];
+  }
+  function runPyo(L, ctx, now) {
+    let n = 0;
+    for (let guard = 0; guard < 40; guard++) {
+      const t = pyoTurn(L); if (t == null) break;
+      const late = now >= L.pyo.due, slow = now >= L.pyo.at + PYO_HOURS * HOUR;
+      if (L.teams[t].owner && !late && !slow) break;
+      const opp = pyoAuto(L, ctx, t); if (opp == null) break;
+      const at = L.teams[t].owner ? Math.min(now, late ? L.pyo.due : L.pyo.at + PYO_HOURS * HOUR) : now;
+      if (pyoPick(L, ctx, t, opp, at, !!L.teams[t].owner).ok) n++; else break;
+    }
+    if (L.pyo && !L.pyo.done && now >= L.pyo.due) pyoDone(L, now);
+    return n;
   }
   const skipBite = (L, id, now) => { const b = (L.bites || []).find((x) => x.id === id && x.status === "open"); if (!b) return { ok: false, why: "No open bite" }; b.status = "skipped"; b.done = now; return { ok: true }; };
   // the vampire's waiver claim always comes first
@@ -1306,6 +1446,8 @@
     if (L.week > totalWeeks(L)) return { ok: false, why: "The season is over" };
     if (!isAlive(L, teamId)) return { ok: false, why: "That team has been chopped" };
     const ros = L.rosters[teamId].filter((id) => !(drops || []).includes(id));
+    const hg = add && pickup ? hungover(L, teamId) : null;
+    if (hg) return { ok: false, why: hg };
     if (add && pickup && pickupsLeft(L, teamId) <= 0) return { ok: false, why: `You've used all ${L.settings.maxAdds} pickups this week` };
     if (add && pickup && seasonPickupsLeft(L, teamId) <= 0) return { ok: false, why: `You've used all ${L.settings.maxAddsSeason} pickups for the season` };
     // settings.posMax { QB: 4 }: at most that many players whose main position it is
@@ -1822,6 +1964,7 @@
     let n = finalize(L, ctx, now);
     n += botsAnswer(L, ctx, now, 0);
     n += runBites(L, ctx, now);
+    if (L.pyo && !L.pyo.done) n += runPyo(L, ctx, now);
     lockPlayed(L, ctx, now);
     if (L.settings.waiverAt == null) n += runDue(L, ctx, now);
     L.waiverRuns = L.waiverRuns || {};
@@ -1833,7 +1976,7 @@
     return n;
   }
 
-  return { realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
+  return { takerOf, openRaids, protectOf, kingOf, hungover, pyoTurn, pyoOptions, pyoPick, pyoAuto, runPyo, pyoLast, PYO_HOURS, realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
     finishWeek, slotMult, setKicks, isLocked, freezeLineups, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, waiverPrice, waiverClear, nextWeekClear, waiverDays, clearAt, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };

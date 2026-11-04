@@ -54,6 +54,16 @@
     if (s.divisions) settings.divisions = s.divisions;
     // a vampire league (football, head to head): which team is the vampire, and its swap rules
     if (s.vampire && s.format !== "guillotine" && s.format !== "roto") settings.vampire = { team: s.vampire.team, samePos: !!s.vampire.samePos, double: !!s.vampire.double };
+    // the twists: pick your opponent, Robin Hood, Conquest, Kingslayer and The Hangover (head to head), the top-score
+    // bonus (guillotine)
+    const cl = (v, lo, hi, d) => (Number.isFinite(+v) ? Math.max(lo, Math.min(hi, Math.round(+v))) : d);
+    if (s.format !== "guillotine" && s.format !== "roto") {
+      if (s.pyo) settings.pyo = true;
+      if (s.robin) settings.robin = { protect: cl(s.robin.protect, 0, 8, 2), like: !!s.robin.like };
+      if (s.conquest) settings.conquest = { protect: cl(s.conquest.protect, 0, 8, 3), like: !!s.conquest.like };
+      if (s.crown) settings.crown = { start: cl(s.crown.start, 0, 500, 10), step: cl(s.crown.step, 0, 200, 10), keep: cl(s.crown.keep, 0, 100, 5), king: s.crown.king != null ? s.crown.king : undefined };
+      if (s.hangover) settings.hangover = true;
+    } else if (s.format === "guillotine" && s.topBonus) settings.topBonus = cl(s.topBonus, 0, 500, 25);
     if (s.dynasty) settings.dynasty = { rounds: s.dynasty.rounds || 3, picks: s.dynasty.picks !== false };
     if (s.dynasty && s.taxi) settings.taxi = Math.max(0, Math.min(6, s.taxi | 0));
     // keepers: how many each team carries into next season, and what each one costs

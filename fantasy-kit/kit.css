@@ -1525,3 +1525,10 @@ table.t tr.me td.act::before{background:linear-gradient(90deg,transparent,color-
 /* claims in the overview's sidebar: the buttons go under the players, so names have room */
 .d-only .feed.clms>li.clm{grid-template-columns:20px minmax(0,1fr) auto}
 .d-only .clm .ca{grid-column:2/-1;justify-content:flex-end}
+/* twists */
+.crown-i{vertical-align:-2px;margin-right:3px}
+.crown-t{display:inline-flex;align-items:center}
+.crown-c .mod-h h2{display:flex;align-items:center;gap:4px}
+.crown-c .mod-h h2 .crown-i{color:var(--gold)}
+.pyo-l li.on{background:var(--gold-soft)}
+.tw-l{gap:4px}

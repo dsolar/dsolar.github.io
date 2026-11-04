@@ -115,12 +115,14 @@
     const teamHref = (id) => `#team/roster/${id}`;
     const matchHref = (w, i) => `#matchup/${w}/${i}`;
 
+    // pick your opponent: who chose this matchup
+    const pickedBy = (w, m) => { const p = L().picked && L().picked[w]; return p ? (p.includes(m.a) ? m.a : p.includes(m.b) ? m.b : null) : null; };
     /* ---------- view models ---------- */
     function gamesVM(w) {
       const ms = G.matchups(L(), ctx, w, frac(w));
       return ms.map((m) => ({
         href: matchHref(w, m.i), me: isMe(m.a) || isMe(m.b), status: m.final ? "final" : m.live ? "live" : "proj",
-        label: m.final ? "Final" : m.live ? "Live" : pts() ? `Week ${w}, projected` : `Week ${w}`, sub: w > L().settings.weeks ? kindName(m.kind, w) : "",
+        label: m.final ? "Final" : m.live ? "Live" : pts() ? `Week ${w}, projected` : `Week ${w}`, sub: w > L().settings.weeks ? kindName(m.kind, w) : pickedBy(w, m) ? `${T(pickedBy(w, m)).abbr}'s pick` : "",
         a: { team: T(m.a), score: m.final || m.live ? m.sa : pts() ? m.pa : null, rec: recOf(m.a) }, b: { team: T(m.b), score: m.final || m.live ? m.sb : pts() ? m.pb : null, rec: recOf(m.b) }, m,
         wp: m.final ? null : m.winProb,
       })).sort((x, y) => (y.me ? 1 : 0) - (x.me ? 1 : 0));   // your game first
@@ -219,6 +221,33 @@
     const pickVM = (key) => { const [r, t] = key.split(":").map(Number); return { pick: true, id: key, n: `Round ${r} pick, ${G.pickYear(key) > 1 ? "two seasons out" : "next season"}`, sub: (G.pickOwner(L(), key) === t ? `${T(t).name}'s own` : `From ${T(t).name}`) + (G.pickProspect(L(), ctx, key) ? `. Projects to ${G.pickProspect(L(), ctx, key).n}, ${G.pickProspect(L(), ctx, key).pos}` : ""), $: Math.round(G.pickValue(L(), ctx, key)) }; };
 
     /* ---------- pages: League ---------- */
+    // pick your opponent: the order, who's picked whom, and who's on the clock
+    function pyoCard() {
+      const P = L().pyo; if (!P || P.done || over()) return "";
+      const turn = G.pyoTurn(L()), mid = me(), pairs = P.pairs, by = Object.fromEntries(pairs.map(([a, b]) => [a, b]));
+      const paired = new Set(pairs.flat());
+      const rows = P.order.map((t) => by[t] != null ? `<li><span class="pyo-n">${teamAv(T(t), "sm")}</span><span class="grow"><b>${esc(T(t).name)}</b><small>picked ${esc(T(by[t]).name)}</small></span></li>`
+        : paired.has(t) ? "" : `<li${t === turn ? ' class="on"' : ""}><span class="pyo-n">${teamAv(T(t), "sm")}</span><span class="grow"><b>${esc(T(t).name)}</b><small>${t === turn ? "On the clock" : "Waiting"}</small></span>${t === turn && t === mid ? `<button type="button" class="btn sm go" data-pyo>Pick</button>` : ""}</li>`).join("");
+      return `<div class="card"><div class="mod-h"><h2>Week ${P.week}: pick your opponent</h2></div><div class="bd" style="padding-bottom:0"><p class="ps" style="margin:0">Worst record picks first, 12 hours a turn.</p></div><ul class="seatl pyo-l">${rows}</ul></div>`;
+    }
+    // Kingslayer: who wears the crown and what beating him pays
+    function crownCard() {
+      const c = L().crown; if (!c || over() || !L().settings.crown) return "";
+      if (c.king == null) return `<div class="card crown-c"><div class="mod-h"><h2>${CROWN} Kingslayer</h2></div><div class="bd"><p class="ps" style="margin:0">The crown goes to week 1's top scorer. Then whoever beats the king takes the crown and the bounty, which grows $${L().settings.crown.step} every week he holds it.</p></div></div>`;
+      const weeks = Math.max(0, L().week - c.since), foe = (() => { const g = (L().schedule[L().week - 1] || []).find((x) => x.includes(c.king)); return g ? (g[0] === c.king ? g[1] : g[0]) : null; })();
+      return `<div class="card crown-c"><div class="mod-h"><h2>${CROWN} The crown</h2><span class="ps">$${c.pot} bounty</span></div><div class="bd"><div class="row" style="gap:10px">${teamAv(T(c.king), "md")}<div style="min-width:0"><b>${esc(T(c.king).name)}</b><div class="ps">${weeks ? `King for ${weeks} week${weeks === 1 ? "" : "s"}` : "New king"}${c.reigns.length ? `, ${c.reigns.length} change${c.reigns.length === 1 ? "" : "s"} of the crown` : ""}</div></div></div>
+        ${foe != null && L().week <= L().settings.weeks ? `<p class="ps" style="margin:10px 0 0">${isMe(foe) ? `<b>You play the king this week.</b> Win and the crown and $${c.pot} are yours.` : isMe(c.king) ? `You defend the crown against <b>${esc(T(foe).name)}</b>.` : `${esc(T(foe).name)} gets the shot this week.`}</p>` : ""}</div></div>`;
+    }
+    function pyoDialog() {
+      const P = L().pyo, mid = me();
+      if (!P || P.done || G.pyoTurn(L()) !== mid) { U.toast("It isn't your turn to pick", true); return; }
+      const opts = G.pyoOptions(L(), mid), last = G.pyoLast(L(), mid, P.week);
+      const st = Object.fromEntries(standings().map((r) => [r.team, r]));
+      const line = (id) => { const r = st[id] || {}; return `${r.w || 0}-${r.l || 0}${r.t ? "-" + r.t : ""}${pts() && r.pf != null ? `, ${fmtS(r.pf)} points` : ""}${G.kingOf(L()) === id ? ", wears the crown" : ""}`; };
+      const Dl = U.dialog(`<h3 class="disp">Pick your week ${P.week} opponent</h3><p class="ps" style="margin:0 0 8px">${last != null && !opts.includes(last) ? `Not ${esc(T(last).name)}: you play them this week. ` : ""}Pick someone you can beat, or someone you want to beat.</p>
+        <ul class="seatl">${opts.map((id) => `<li>${teamAv(T(id), "sm")}<span class="grow"><b>${esc(T(id).name)}</b><small>${esc(line(id))}</small></span><button type="button" class="btn sm go" data-pyopick="${id}">Pick</button></li>`).join("")}</ul>`, null, { wide: true });
+      Dl.onclick = (e) => { const b = e.target.closest("[data-pyopick]"); if (!b) return; const id = +b.dataset.pyopick; Dl.close(); act(() => { const r = G.pyoPick(L(), ctx, mid, id, now()); if (r.ok) G.runPyo(L(), ctx, now()); return r; }, `You play ${T(id).name} in week ${P.week}.`); };
+    }
     // your watchlist at a glance: who's free, who's on waivers, who got taken
     function watchCard() {
       if (me() == null || over()) return "";
@@ -244,8 +273,9 @@
       const myRow = mid != null ? st.find((r) => r.team.id === mid) : null;
       // your team, claims and offers: top of the page on a phone, the sidebar on a wide screen
       // right after the draft, before week 1 is under way: point at the results and grades
+      const twists = `${pyoCard()}${crownCard()}`;
       const fresh = L().week === 1 && now() < L().start + 2 * 864e5 && L().draft ? `<div class="card"><div class="mod-h"><h2>The draft is done</h2><a href="#draft">Results and grades</a></div><div class="bd"><p class="ps" style="margin:0">Every pick, each team's grade and the steals of the draft.</p></div></div>` : "";
-      const myCards = `${fresh}${L().heist && mid != null && !over() ? heistCard(mid, { stack: true }) : ""}
+      const myCards = `${fresh}${twists}${L().heist && mid != null && !over() ? heistCard(mid, { stack: true }) : ""}
           ${myRow ? `<div class="card"><div class="mod-h">${teamAv(myRow.team, "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(myRow.team.name)}</b><span class="ps">${ord(myRow.rank)} place, ${myRow.w}-${myRow.l}${myRow.t ? "-" + myRow.t : ""}</span></div></div>
             <div class="bd"><div class="stat-row"><div><small>FAAB</small><b>$${T(mid).faab}</b></div><div><small>Waiver priority</small><b>${ord(T(mid).priority + 1)}</b></div><div><small>Streak</small><b>${esc(myRow.streak || "-")}</b></div></div>
             ${over() ? "" : `<div class="row" style="margin-top:12px;flex-wrap:wrap"><a class="btn sm" href="#team/roster">Set lineup</a>${canTrade() ? `<button class="btn sm" data-trade>Propose a trade</button>` : ""}<a class="btn sm" href="#players/fa">Free agents</a></div>`}</div></div>` : ""}
@@ -345,7 +375,9 @@
         : id === f.consolation ? ` <span class="tag info">Consolation</span>` : "";
     }
     // with divisions the playoff line isn't a line, so each team in line for the playoffs is tagged with its seed
-    const seedTag = (r) => (L().divs && r.seed && !over() ? ` <span class="tag${r.divLeader ? " gold" : " info"}" title="${r.divLeader ? "Leads the division" : "Wild card"}">Seed ${r.seed}</span>` : "");
+    const CROWN = `<svg class="crown-i" viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><path d="M2 12.5h12l1-8-4 3-3-5-3 5-4-3z" fill="currentColor"/></svg>`;
+    const crownTag = (id) => (G.kingOf(L()) === id && !over() ? ` <span class="tag gold crown-t" title="Wears the crown: beat them to take it and the $${L().crown.pot} bounty">${CROWN}King</span>` : "");
+    const seedTag = (r) => (L().divs && r.seed && !over() ? ` <span class="tag${r.divLeader ? " gold" : " info"}" title="${r.divLeader ? "Leads the division" : "Wild card"}">Seed ${r.seed}</span>` : "") + crownTag(r.team);
     // a player's projection for the week: with the live feed, what he has plus what his team's games left should add
     // Football: Sleeper's projection for the week, less the share of his game already played. Basketball and baseball:
     // his rate per game times the games his team has left (from the live feed's schedule), nothing more if he's out.
@@ -570,7 +602,13 @@
       const s = L().settings;
       return `<div class="wrap page"><div class="head"><h1 class="disp">League rules</h1>${opts.commishTools ? `<a class="btn sm" href="#commish" style="margin-left:auto">Change them</a>` : ""}</div><div class="cols2">
         <div class="card"><div class="mod-h"><h2>Format</h2></div><div class="bd"><dl class="kv"><dt>Sport</dt><dd>${esc(sport.name)}</dd><dt>Scoring</dt><dd>${esc(sc().label)}</dd>${S.bonusLines(sc()).length ? `<dt>Bonuses</dt><dd>${S.bonusLines(sc()).map(esc).join("<br>")}</dd>` : ""}<dt>Stats</dt><dd>${s.real ? `Real box scores${(opts.hooks || {}).real ? ` from ${esc(opts.hooks.real.source)}` : ""}. A week closes once its last games are in` : "Simulated from each player's season"}</dd><dt>Teams</dt><dd>${L().teams.length}</dd><dt>Format</dt><dd>${gl() ? `Guillotine: the lowest score each week is chopped${s.chops > 1 ? ` (${s.chops} a week)` : ""}. On a tie, the lower projection goes` : roto() ? "Rotisserie: season totals in each category, ranked" : s.tally === "cats" ? "Head to head: each category is a win or a loss" : s.tally === "allplay" ? "All-play: each week, your score against every team" : "Head to head"}${bb() ? ", best ball" : ""}${s.median ? ", plus a game each week against the league median" : ""}</dd>${L().divs ? `<dt>Divisions</dt><dd>${L().divNames.map((nm, k) => `${esc(nm)}: ${L().teams.filter((t) => L().divs[t.id] === k).map((t) => esc(t.name)).join(", ")}`).join("<br>")}</dd>` : ""}
-          ${G.vampireOf(L()) != null ? `<dt>Vampire</dt><dd>${esc(T(G.vampireOf(L())).name)} skipped the draft and built from free agents. Each regular-season week it wins, it takes any player from the team it beat and gives back one of its own${s.vampire.samePos ? " at the same position" : ""}${s.vampire.double ? ", and bites the week's lowest scorer too" : ""}. No bites in the playoffs, and it claims first on waivers every week.</dd>` : ""}<dt>Season</dt><dd>${gl() ? `${s.weeks} weeks, until one team is left` : s.playoffTeams ? playoffLine(s) : `${s.weeks} weeks, no playoffs: first place wins`}</dd>${s.trades === false ? `<dt>Trades</dt><dd>None</dd>` : `<dt>Trade deadline</dt><dd>${s.deadline ? `After week ${s.deadline}` : "None"}</dd><dt>Trade review</dt><dd>${s.tradeReview === "none" ? "None" : `${fmtHours(s.reviewHours)}, ${Math.round(s.vetoShare * 100)}% of the league to veto`}</dd><dt>Offers</dt><dd>Expire after ${fmtHours(s.offerHours || 48)}</dd>`}</dl></div></div>
+          ${G.vampireOf(L()) != null ? `<dt>Vampire</dt><dd>${esc(T(G.vampireOf(L())).name)} skipped the draft and built from free agents. Each regular-season week it wins, it takes any player from the team it beat and gives back one of its own${s.vampire.samePos ? " at the same position" : ""}${s.vampire.double ? ", and bites the week's lowest scorer too" : ""}. No bites in the playoffs, and it claims first on waivers every week.</dd>` : ""}
+          ${s.pyo ? `<dt>Pick your opponent</dt><dd>Week 1 was drawn. After that, during each week the teams pick next week's opponents, worst record first, with 12 hours a turn. A team that runs out of time gets the weakest team left. Nobody picks the team they're playing that week.</dd>` : ""}
+          ${s.robin ? `<dt>Robin Hood</dt><dd>After each regular-season week, the lowest scorer takes one player from the top scorer and gives one back${s.robin.like ? " at the same position" : ""}. The top scorer keeps his ${s.robin.protect} most valuable. Two days into the next week, it's made for him.</dd>` : ""}
+          ${s.conquest ? `<dt>Conquest</dt><dd>Win your matchup and take one player from the team you beat, giving one back${s.conquest.like ? " at the same position" : ""}. The loser keeps his ${s.conquest.protect} most valuable. Two days into the next week, it's made for you.</dd>` : ""}
+          ${s.crown ? `<dt>Kingslayer</dt><dd>Week 1's top scorer took the crown. Beat the king and you take it, with the bounty: it starts at $${s.crown.start} and grows $${s.crown.step} every week he keeps it${s.crown.keep ? `, and he earns $${s.crown.keep} of FAAB for each week he survives` : ""}. Regular season only.</dd>` : ""}
+          ${s.hangover ? `<dt>The Hangover</dt><dd>Last week's winners can't add free agents or put in waiver claims this week. Trades and lineup moves are fine.</dd>` : ""}
+          ${s.topBonus ? `<dt>Top-score bonus</dt><dd>The week's top scorer gets $${s.topBonus} of FAAB.</dd>` : ""}<dt>Season</dt><dd>${gl() ? `${s.weeks} weeks, until one team is left` : s.playoffTeams ? playoffLine(s) : `${s.weeks} weeks, no playoffs: first place wins`}</dd>${s.trades === false ? `<dt>Trades</dt><dd>None</dd>` : `<dt>Trade deadline</dt><dd>${s.deadline ? `After week ${s.deadline}` : "None"}</dd><dt>Trade review</dt><dd>${s.tradeReview === "none" ? "None" : `${fmtHours(s.reviewHours)}, ${Math.round(s.vetoShare * 100)}% of the league to veto`}</dd><dt>Offers</dt><dd>Expire after ${fmtHours(s.offerHours || 48)}</dd>`}</dl></div></div>
         <div class="stack"><div class="card"><div class="mod-h"><h2>Rosters</h2></div><div class="bd"><dl class="kv"><dt>Starters</dt><dd>${s.lineup.map((x) => `<span class="slot" style="margin:0 3px 3px 0">${esc(x)}</span>`).join("")}</dd><dt>Bench</dt><dd>${s.bench}</dd><dt>IR spots</dt><dd>${s.ir || "None"}</dd>${s.maxAdds ? `<dt>Pickups</dt><dd>Up to ${s.maxAdds} a week, counting adds and won claims</dd>` : ""}${s.posMax && Object.keys(s.posMax).length ? `<dt>Position limits</dt><dd>${Object.entries(s.posMax).map(([k, v]) => `${v} ${esc(k)}`).join(", ")}</dd>` : ""}<dt>Lineups</dt><dd>${bb() ? "Best ball: set automatically" : "Set each week"}</dd>${s.dynasty ? `<dt>Dynasty</dt><dd>Every roster carries over. Each new season opens with a ${s.dynasty.rounds}-round rookie and free agent draft, worst team first${s.dynasty.picks !== false ? ", and next season's picks can be traded" : ""}.</dd>${s.dynasty && s.taxi ? `<dt>Taxi squad</dt><dd>${s.taxi} spot${s.taxi > 1 ? "s" : ""} for rookies and rookie-draft picks, off the roster limit. They can't start, and a promotion is for good.</dd>` : ""}` : s.keepers ? `<dt>Keepers</dt><dd>Up to ${s.keepers}, costing ${{ round: "the round he went in", round1: "one round earlier than he went", free: "a last-round pick", price: "what he went for", price5: "what he went for plus $5" }[s.keeperCost] || "the round he went in"}</dd>` : ""}<dt>Waivers</dt><dd>${s.waivers === "faab" ? `${s.faabBank ? `FAAB from the draft's time bank, $${Math.round(s.faab / 2)} to $${Math.round(s.faab * 1.5)}` : `$${s.faab} FAAB`}${gl() ? " for the whole season" : ""}, ${s.waiverAt != null ? `claims run ${Math.round(s.waiverAt / 24 * 10) / 10} days into each week` : `${G.waiverDays(L())} business day${G.waiverDays(L()) === 1 ? "" : "s"} after a drop, at 3 AM Eastern${G.gameLockOn(L()) ? "; a player whose game has started is locked until next week" : ""}`}` : "Rolling priority"}</dd><dt>Waiver order</dt><dd>${s.waivers === "faab" ? "The highest bid wins. On a tie, the better waiver priority wins" : "The best waiver priority wins"}. Winning a claim sends you to the back of the line, even within the same run.</dd></dl></div></div>
         ${sc().cats ? `<div class="card"><div class="mod-h"><h2>Categories</h2></div><div class="bd">${sc().cats.map((c) => `<span class="slot" style="margin:0 4px 4px 0">${esc(c.label)}</span>`).join("")}<p class="ps">${gl() ? "Each week, teams are ranked in every category: the best gets one point per team alive, the worst gets one. Lowest total is chopped." : "Head to head: win more categories than your opponent to win the week."}</p></div></div>` : ""}
       </div></div></div>`;
@@ -871,14 +909,18 @@
     function biteDialog(id) {
       const b = (L().bites || []).find((x) => x.id === id && x.status === "open"), mid = me();
       if (!b) { U.toast("That bite is no longer open", true); return; }
-      const like = L().settings.vampire.samePos, room = L().rosters[mid].length - G.held(L(), mid).length < G.maxRoster(L());
-      const theirs = L().rosters[b.victim].map((x) => ctx.byId[x]).filter(Boolean).sort((a, c) => a.rank - c.rank);
+      const like = b.like != null ? !!b.like : !!(L().settings.vampire && L().settings.vampire.samePos), room = L().rosters[mid].length - G.held(L(), mid).length < G.maxRoster(L());
+      const off = new Set((b.protect || []).concat(b.by != null ? L().ir[b.victim] || [] : []));
+      const theirs = L().rosters[b.victim].map((x) => ctx.byId[x]).filter(Boolean).sort((a, c) => off.has(a.id) - off.has(c.id) || a.rank - c.rank);
       const mine = L().rosters[mid].map((x) => ctx.byId[x]).filter(Boolean).sort((a, c) => c.rank - a.rank);
-      const list = (ps, name) => `<div class="table-wrap" style="max-height:38dvh"><table class="t dense droplist"><tbody>${ps.map((q, i) => `<tr data-pos="${esc(S.positions(q)[0])}"><td style="width:28px"><input type="radio" name="${name}" value="${esc(q.id)}" id="${name}${i}"${i === 0 && name === "take" ? " checked" : ""}></td><td><label for="${name}${i}" style="cursor:pointer">${pname(sport, q, esc(q.prank))}</label></td><td class="r ps">#${q.rank}</td></tr>`).join("")}</tbody></table></div>`;
-      const Dl = U.dialog(`<h3 class="disp">Bite ${esc(T(b.victim).name)}</h3><p class="ps" style="margin:0">${b.why === "lowest" ? "The week's lowest scorer." : `You beat them in week ${b.week}.`} Take any one of their players${room ? "" : ` and give back one of yours${like ? " at the same position" : ""}`}. If you don't by ${esc(new Date(b.due).toLocaleString("en-US", { weekday: "long", hour: "numeric", minute: "2-digit" }))}, the best one is taken for you.</p>
+      const list = (ps, name) => `<div class="table-wrap" style="max-height:38dvh"><table class="t dense droplist"><tbody>${ps.map((q, i) => { const lock = name === "take" && off.has(q.id); return `<tr data-pos="${esc(S.positions(q)[0])}"${lock ? ' class="dim"' : ""}><td style="width:28px"><input type="radio" name="${name}" value="${esc(q.id)}" id="${name}${i}"${lock ? " disabled" : i === 0 && (name === "take" || !room) ? " checked" : ""}></td><td><label for="${name}${i}" style="cursor:pointer">${pname(sport, q, esc(q.prank))}</label></td><td class="r ps">${lock ? `<span class="tag">${(L().ir[b.victim] || []).includes(q.id) ? "IR" : "Protected"}</span>` : `#${q.rank}`}</td></tr>`; }).join("")}</tbody></table></div>`;
+      const head = b.why === "robin" ? `Robin Hood: rob ${esc(T(b.victim).name)}` : b.why === "conquest" ? `The spoils: raid ${esc(T(b.victim).name)}` : `Bite ${esc(T(b.victim).name)}`;
+      const why = b.why === "robin" ? `You had week ${b.week}'s lowest score and they had the highest. They keep their ${(b.protect || []).length} best.` : b.why === "conquest" ? `You beat them in week ${b.week}. They keep their ${(b.protect || []).length} best.` : b.why === "lowest" ? "The week's lowest scorer." : `You beat them in week ${b.week}.`;
+      const verb = b.by != null ? (b.why === "robin" ? "Rob them" : "Take him") : "Bite";
+      const Dl = U.dialog(`<h3 class="disp">${head}</h3><p class="ps" style="margin:0">${why} Take any one of their players${room ? "" : ` and give back one of yours${like ? " at the same position" : ""}`}. If you don't by ${esc(new Date(b.due).toLocaleString("en-US", { weekday: "long", hour: "numeric", minute: "2-digit" }))}, the best one is taken for you.</p>
         <form class="stack"><div class="cols2" style="gap:12px"><div class="field"><span class="lbl">Take from ${esc(T(b.victim).abbr)}</span>${list(theirs, "take")}</div>
         <div class="field"><span class="lbl">${room ? "Give back (optional: you have an open spot)" : "Give back"}</span>${list(mine, "give")}</div></div>
-        <div class="acts"><button type="button" class="btn ghost" data-skipbite>Skip this bite</button><span class="grow"></span><button type="button" class="btn" data-close>Later</button><button class="btn go">Bite</button></div></form>`,
+        <div class="acts"><button type="button" class="btn ghost" data-skipbite>${b.by != null ? "Pass" : "Skip this bite"}</button><span class="grow"></span><button type="button" class="btn" data-close>Later</button><button class="btn go">${verb}</button></div></form>`,
         (fd) => act(() => G.bite(L(), ctx, b.id, fd.get("take"), fd.get("give") || null, now()), `${(ctx.byId[fd.get("take")] || {}).n} is yours.`), { wide: true });
       // like for like: only the positions that match the player you're taking
       const sync = () => {
@@ -889,7 +931,7 @@
       };
       Dl.addEventListener("change", sync); sync();
       const sk = Dl.querySelector("[data-skipbite]");
-      if (sk) sk.addEventListener("click", () => { Dl.close(); act(() => G.skipBite(L(), b.id, now()), "Bite skipped."); });
+      if (sk) sk.addEventListener("click", () => { Dl.close(); act(() => G.skipBite(L(), b.id, now()), b.by != null ? "Passed." : "Bite skipped."); });
     }
     // Who to drop when a full roster brings a player back from IR.
     function activateDialog(pid, taxi) {
@@ -960,6 +1002,14 @@
         const hit = (L().bites || []).filter((b) => b.status === "done" && b.victim === mid && now() - b.done < 72 * 36e5).pop();
         if (hit) items.push(`<a class="alert loss" href="#players/tx"><span>The vampire bit you: <b>${esc((ctx.byId[hit.take] || {}).n || "")}</b> is gone${hit.give ? `, and <b>${esc((ctx.byId[hit.give] || {}).n || "")}</b> joined your roster` : ""}.</span><b class="go">See it</b></a>`);
       }
+      // Robin Hood and Conquest: a raid you get to make, and one made on you
+      const when = (t) => esc(new Date(t).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" }));
+      for (const b of G.openRaids(L(), mid)) items.push(`<button type="button" class="alert loss" data-bite="${b.id}"><span>${b.why === "robin" ? `<b>Robin Hood.</b> You had the low score: take one of <b>${esc(T(b.victim).name)}</b>'s players` : `<b>The spoils.</b> You beat <b>${esc(T(b.victim).name)}</b>: take one of their players`} and give one back, by ${when(b.due)} or it's made for you.</span><b class="go">${b.why === "robin" ? "Rob them" : "Take one"}</b></button>`);
+      const raided = (L().bites || []).filter((b) => b.by != null && b.status === "done" && b.victim === mid && now() - b.done < 72 * 36e5).pop();
+      if (raided) items.push(`<a class="alert loss" href="#players/tx"><span>${raided.why === "robin" ? "Robin Hood struck" : `${esc(T(raided.by).name)} took the spoils`}: <b>${esc((ctx.byId[raided.take] || {}).n || "")}</b> is gone${raided.give ? `, and <b>${esc((ctx.byId[raided.give] || {}).n || "")}</b> joined your roster` : ""}.</span><b class="go">See it</b></a>`);
+      if (L().pyo && !L().pyo.done && G.pyoTurn(L()) === mid) items.push(`<button type="button" class="alert info" data-pyo><span><b>Your pick.</b> Choose your week ${L().pyo.week} opponent by ${when(Math.min(L().pyo.at + G.PYO_HOURS * 36e5, L().pyo.due))}, or the weakest team left is picked for you.</span><b class="go">Pick</b></button>`);
+      const hg = G.hungover(L(), mid);
+      if (hg && r.tab === "players") items.push(`<div class="alert"><span><b>The Hangover.</b> You won last week, so no adds or claims until week ${L().week + 1}. Trades and lineups are fine.</span></div>`);
       // a dynasty's new season: rosters run long after the rookie draft until everyone cuts down
       const cut = L().week === 1 ? G.overLimit(L(), mid) : 0;
       if (cut) items.push(`<a class="alert loss" href="#team/roster"><span>Cut ${cut} player${cut === 1 ? "" : "s"} before week 1 starts ${esc(new Date(L().start).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" }))}. If you don't, your lowest-valued bench players are dropped.</span><b class="go">Your roster</b></a>`);
@@ -1546,7 +1596,7 @@
     opts.el.addEventListener("click", (e) => {
       const mb = e.target.closest("[data-more]");
       if (mb) { ui.plimit = (ui.plimit || 250) + 250; render(); return; }
-      const b = e.target.closest("[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],th[data-sort]");
+      const b = e.target.closest("[data-pyo],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],th[data-sort]");
       if (b) {
         e.preventDefault(); e.stopPropagation();
         const d = b.dataset, mid = me();
@@ -1556,6 +1606,7 @@
         else if (b.hasAttribute("data-editteam")) editTeam();
         else if (d.toir) act(() => G.toIR(L(), ctx, mid, d.toir, now()), `${ctx.byId[d.toir].n} is on IR. His roster spot is open.`);
         else if (d.bite) biteDialog(+d.bite);
+        else if (b.hasAttribute("data-pyo")) pyoDialog();
         else if (d.totaxi) act(() => G.toTaxi(L(), ctx, mid, d.totaxi, now()), `${ctx.byId[d.totaxi].n} is on the taxi squad. His roster spot is open.`);
         else if (d.promote) { const r = G.promote(L(), ctx, mid, d.promote, null, now()); if (r.needDrop) activateDialog(d.promote, true); else if (!r.ok) U.toast(r.why, true); else { save(); U.toast(`${ctx.byId[d.promote].n} is on the active roster.`); render(); } }
         else if (d.activate) { const r = G.activate(L(), ctx, mid, d.activate, null, now()); if (r.needDrop) activateDialog(d.activate); else if (!r.ok) U.toast(r.why, true); else { save(); U.toast(`${ctx.byId[d.activate].n} is back from IR.`); render(); } }
