@@ -1409,3 +1409,8 @@ tr.show-s{display:none}
 .pkd-money b{font-size:16px;font-variant-numeric:tabular-nums}
 .dr-left>.chips,.dr-left>.dr-bar,.dr-left>.rl-bar,.dr-left>.pkd-money,.dr-left>.pkd-seal{flex:none}
 .dr-left>.pkd-grid{flex:1;min-height:0;overflow:auto;align-content:start;padding:2px 2px 6px}
+@media (max-width:600px){
+  .pkd-money{gap:2px 12px;padding:6px 10px;font-size:12px}.pkd-money b{font-size:14px}
+  .dr-left>.rl-bar{font-size:12px;padding:6px 10px}
+  .pkd{padding:12px 8px 10px}.pkd .pav.lg{width:44px;height:44px;font-size:15px}.pkd-r{margin:2px 0 4px}
+}
