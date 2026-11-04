@@ -135,7 +135,7 @@
       <div class="mk-how" style="margin-top:14px">
         <div class="mk-tip"><b>Draft live or slow</b><p>Snake, auction, mystery packages or white elephant, with a pick clock from 30 seconds to 8 hours.</p></div>
         <div class="mk-tip"><b>A whole season</b><p>Lineups, waivers, trades and playoffs, scored from real games. Redraft, keeper or dynasty.</p></div>
-        <div class="mk-tip"><b>Your formats</b><p>Guillotine, vampire, best ball, custom scoring, TE premium and more.</p></div>
+        <div class="mk-tip"><b>Your formats</b><p>Guillotine, vampire, pick your opponent, Robin Hood, Conquest, Kingslayer, best ball and more.</p></div>
       </div></div>`;
   }
 

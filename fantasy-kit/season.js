@@ -286,6 +286,17 @@
       const bl = (b && b.league) || { trades: [], claims: [], results: {} }, cl = c.league;
       if (cl.next && !bl.next) seated.forEach((t) => add(t, "keepers", "pick your keepers", `The season is over. Pick up to ${cl.settings.keepers} keepers for next season${cl.next.due ? ` by ${when(cl.next.due)}` : ""}. If you don't, your best values are kept for you.`));
       trades(bl.trades, cl.trades, true);
+      // pick your opponent: your turn came up
+      const turnOf = (P) => { if (!P || P.done) return null; const got = new Set(P.pairs.flat()); const t = P.order.find((x) => !got.has(x)); return t == null ? null : `${P.week}:${t}`; };
+      const tNow = turnOf(cl.pyo), tWas = turnOf(bl.pyo);
+      if (tNow && tNow !== tWas) { const t = +tNow.split(":")[1]; add(t, "pyo", `pick your week ${cl.pyo.week} opponent`, `It's your turn to pick who you play in week ${cl.pyo.week}. You have until ${when(Math.min(cl.pyo.at + 12 * HOUR, cl.pyo.due))}, then the weakest team left is picked for you.`); }
+      // Robin Hood and Conquest: a raid to make, and one made on you
+      const bw = Object.fromEntries((bl.bites || []).map((x) => [x.id, x.status]));
+      for (const x of cl.bites || []) {
+        if (x.by == null) continue;
+        if (bw[x.id] == null && x.status === "open") add(x.by, "raid", x.why === "robin" ? `Robin Hood: rob ${teamName(x.victim)}` : `the spoils: raid ${teamName(x.victim)}`, `${x.why === "robin" ? `You had week ${x.week}'s lowest score, so you take one of ${teamName(x.victim)}'s players` : `You beat ${teamName(x.victim)}, so you take one of their players`} and give one back, by ${when(x.due)}. If you don't, the best one is taken for you.`);
+        if (bw[x.id] === "open" && x.status === "done") add(x.victim, "raid", `${teamName(x.by)} took ${pn(x.take)}`, `${x.why === "robin" ? "Robin Hood" : "The spoils of war"}: ${teamName(x.by)} took ${pn(x.take)} from your roster${x.give ? ` and sent you ${pn(x.give)}` : ""}.`);
+      }
       // the weekly lineup check: a reminder to each team whose lineup has a hole
       for (const [w, r] of Object.entries(cl.reminders || {})) {
         if ((bl.reminders || {})[w]) continue;
