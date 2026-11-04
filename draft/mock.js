@@ -497,60 +497,68 @@
     const cv = document.createElement("canvas");
     cv.width = W; cv.height = H;
     const g = cv.getContext("2d");
-    try { await document.fonts.ready; } catch (e) { /* system fonts */ }
-    const c1 = tm ? tm.c[0] : "#0B1626";
-    const bg = g.createLinearGradient(0, 0, W, H);
-    bg.addColorStop(0, c1); bg.addColorStop(0.55, "#0B1626"); bg.addColorStop(1, "#060D18");
-    g.fillStyle = bg; g.fillRect(0, 0, W, H);
-    const disp = (w, px) => `${w} ${px}px "Big Shoulders Display", "Arial Narrow", Impact, sans-serif`;
-    const body = (w, px) => `${w} ${px}px Barlow, system-ui, sans-serif`;
-    g.fillStyle = "#F2C14E"; g.font = body(700, 30);
-    g.fillText(`${D.year} ${D.league.toUpperCase()} MOCK DRAFT`, 70, 100);
-    let y = 150;
+    try { await document.fonts.load('700 80px "Zilla Slab"'); await document.fonts.load('700 40px "IBM Plex Sans Condensed"'); await document.fonts.ready; } catch (e) { /* system fonts */ }
+    // The war-room paper look, with the team's color as the accent.
+    const ink = "#17191E", dim = "#4A4E55", paper = "#F3EFE6", panel = "#FFFDF8", line = "#E6E0D3";
+    const c1 = tm ? tm.c[0] : ink;
+    const slab = (px) => `700 ${px}px "Zilla Slab", Georgia, serif`;
+    const body = (w, px) => `${w} ${px}px "IBM Plex Sans Condensed", "Arial Narrow", sans-serif`;
+    g.fillStyle = paper; g.fillRect(0, 0, W, H);
+    g.fillStyle = c1; g.fillRect(0, 0, W, 18);
+    g.fillStyle = dim; g.font = body(700, 28);
+    g.fillText(`${D.year} ${D.league.toUpperCase()} MOCK DRAFT`, 70, 92);
+    let y = 130;
     if (tm) {
-      const logo = await loadImg(`https://a.espncdn.com/i/teamlogos/${D.league}/500-dark/${tm.espn}.png`);
-      if (logo) g.drawImage(logo, 70, y, 170, 170);
+      const logo = await loadImg(`https://a.espncdn.com/i/teamlogos/${D.league}/500/${tm.espn}.png`);
+      if (logo) g.drawImage(logo, 70, y, 160, 160);
       else {
-        g.fillStyle = tm.c[0]; g.beginPath(); g.arc(155, y + 85, 85, 0, Math.PI * 2); g.fill();
-        g.fillStyle = BB.light(tm.c[1]) ? tm.c[1] : "#FFFFFF"; g.font = disp(900, 64); g.textAlign = "center"; g.fillText(team, 155, y + 108); g.textAlign = "left";
+        g.fillStyle = tm.c[0]; g.beginPath(); g.arc(150, y + 80, 80, 0, Math.PI * 2); g.fill();
+        g.fillStyle = BB.light(tm.c[1]) ? tm.c[1] : "#FFFFFF"; g.font = slab(60); g.textAlign = "center"; g.fillText(team, 150, y + 100); g.textAlign = "left";
       }
-      g.fillStyle = "#FFFFFF"; g.font = disp(900, 92);
-      g.fillText(tm.city.toUpperCase(), 270, y + 80);
-      g.fillText(tm.name.toUpperCase(), 270, y + 165);
+      g.fillStyle = ink; g.font = slab(78);
+      g.fillText(tm.city, 260, y + 72, W - 520);
+      g.fillText(tm.name, 260, y + 150, W - 520);
       const list = M.picks.filter((p) => p.owner === team);
       const gr = grade(list);
-      g.fillStyle = "rgba(0,0,0,.3)"; g.fillRect(W - 230, y + 20, 160, 140);
-      g.fillStyle = "#FFFFFF"; g.font = disp(900, 110); g.textAlign = "center"; g.fillText(gr, W - 150, y + 132); g.textAlign = "left";
-      y += 240;
+      g.fillStyle = c1; g.fillRect(W - 220, y + 14, 150, 132);
+      g.fillStyle = "#FFFFFF"; g.font = slab(96); g.textAlign = "center"; g.fillText(gr, W - 145, y + 114); g.textAlign = "left";
+      g.fillStyle = dim; g.font = body(600, 20); g.textAlign = "center"; g.fillText("GRADE", W - 145, y + 172); g.textAlign = "left";
+      y += 220;
       const show = list.slice(0, 8);
       for (const x of show) {
-        g.fillStyle = "rgba(255,255,255,.08)"; g.fillRect(70, y, W - 140, 104);
-        g.fillStyle = "#F2C14E"; g.font = disp(900, 58); g.fillText(String(x.n), 96, y + 72);
-        g.fillStyle = "#FFFFFF"; g.font = body(700, 42); g.fillText(x.player.n, 230, y + 52);
-        g.fillStyle = "rgba(236,239,233,.72)"; g.font = body(500, 28);
-        g.fillText([x.player.pos, x.player.school].filter(Boolean).join(", ") + `  ·  consensus ${x.player.rank}`, 230, y + 88);
+        g.fillStyle = panel; g.fillRect(70, y, W - 140, 104);
+        g.strokeStyle = line; g.lineWidth = 2; g.strokeRect(70, y, W - 140, 104);
+        g.fillStyle = c1; g.fillRect(70, y, 8, 104);
+        g.fillStyle = ink; g.font = slab(54); g.textAlign = "right"; g.fillText(String(x.n), 190, y + 70); g.textAlign = "left";
+        g.fillStyle = ink; g.font = body(700, 40); g.fillText(x.player.n, 230, y + 50, 560);
+        g.fillStyle = dim; g.font = body(500, 27);
+        g.fillText([x.player.pos, x.player.school].filter(Boolean).join(", ") + `  ·  board No. ${x.player.rank}`, 230, y + 86, 560);
         const v = E.value(x.n, x.player), big = Math.max(4, x.n * 0.25);
         if (Math.abs(v) >= big) {
-          g.fillStyle = v > 0 ? "#3FB37F" : "#E8435C"; g.font = body(700, 32); g.textAlign = "right";
-          g.fillText(v > 0 ? `STEAL +${v}` : `REACH ${v}`, W - 96, y + 66); g.textAlign = "left";
+          g.fillStyle = v > 0 ? "#1F4FBF" : "#B4531A"; g.font = body(700, 30); g.textAlign = "right";
+          g.fillText(v > 0 ? `STEAL +${v}` : `REACH ${v}`, W - 96, y + 64); g.textAlign = "left";
         }
         y += 118;
       }
       const tr = (M.trades || []).filter((t) => t.a === team || t.b === team).slice(0, 2);
-      g.fillStyle = "rgba(236,239,233,.8)"; g.font = body(500, 27);
-      for (const t of tr) { y += 8; g.fillText(`Trade: ${t.a} sent ${t.aGives.join(" + ")} to ${t.b} for ${t.bGives.join(" + ")}`.slice(0, 74), 70, y + 28); y += 40; }
+      g.fillStyle = dim; g.font = body(500, 27);
+      for (const t of tr) { y += 8; g.fillText(`Trade: ${t.a} sent ${t.aGives.join(" + ")} to ${t.b} for ${t.bGives.join(" + ")}`, 70, y + 28, W - 140); y += 40; }
     } else {
-      g.fillStyle = "#FFFFFF"; g.font = disp(900, 96); g.fillText("THE TOP 10", 70, y + 80);
-      y += 130;
+      g.fillStyle = ink; g.font = slab(90); g.fillText("The top 10", 70, y + 76);
+      y += 120;
       for (const x of M.picks.slice(0, 10)) {
-        g.fillStyle = "#F2C14E"; g.font = disp(900, 52); g.fillText(String(x.n), 70, y + 50);
-        g.fillStyle = "#FFFFFF"; g.font = body(700, 38); g.fillText(`${x.owner}: ${x.player.n}`, 170, y + 48);
-        y += 92;
+        const t = D.teams[x.owner] || {};
+        g.fillStyle = panel; g.fillRect(70, y, W - 140, 80); g.strokeStyle = line; g.lineWidth = 2; g.strokeRect(70, y, W - 140, 80);
+        g.fillStyle = (t.c || [ink])[0]; g.fillRect(70, y, 8, 80);
+        g.fillStyle = ink; g.font = slab(46); g.textAlign = "right"; g.fillText(String(x.n), 160, y + 56); g.textAlign = "left";
+        g.fillStyle = ink; g.font = body(700, 36); g.fillText(x.player.n, 200, y + 52, 560);
+        g.fillStyle = dim; g.font = body(600, 28); g.textAlign = "right"; g.fillText(x.owner, W - 96, y + 52); g.textAlign = "left";
+        y += 90;
       }
     }
-    g.fillStyle = "rgba(236,239,233,.6)"; g.font = body(600, 28);
-    g.fillText("davidsolar.dev/draft", 70, H - 60);
-    g.textAlign = "right"; g.fillText("Big Board mock draft", W - 70, H - 60); g.textAlign = "left";
+    g.fillStyle = dim; g.font = body(600, 27);
+    g.fillText("Make yours: davidsolar.dev/draft", 70, H - 56);
+    g.textAlign = "right"; g.fillText("Big Board mock draft", W - 70, H - 56); g.textAlign = "left";
     let blob = null;
     try { blob = await new Promise((r) => cv.toBlob(r, "image/png")); } catch (e) { blob = null; }
     if (!blob) { $("#copied").textContent = "Couldn't make the image here."; return; }

@@ -119,10 +119,10 @@
    "name": "NFL Mock Draft Database",
    "abbr": "MDD",
    "kind": "board",
-   "weight": 2,
+   "weight": 1.5,
    "how": "paste",
    "url": "https://www.nflmockdraftdatabase.com/big-boards/2027/consensus-big-board-2027",
-   "note": "Itself a consensus of 60+ boards and 200+ mocks, so it counts double. Free view stops at 100."
+   "note": "Itself a consensus of 60+ boards and 200+ mocks, including several on this board (Kiper, Reid, PFN), so it counts 1.5x rather than double. Free view stops at 100."
   },
   {
    "id": "kiper",
