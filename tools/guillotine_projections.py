@@ -225,11 +225,16 @@ def waiver_pool(data, week, now, nxt, lines, path=HIST):
             for p in t.get("roster") or []:
                 if p.get("name"):
                     owner[(norm(p["name"]), p.get("pos"))] = t["name"]
+    # Winning bids from Yahoo's transactions (newest first), only for adds after this cut's odds were saved
+    taken = (((hist.get("weeks") or {}).get(str(week - 1)) or {}).get("taken") or "")
     bids = {}
     for tx in data.get("transactions") or []:
-        key = (norm(tx.get("player", "")), tx.get("pos"))
-        if key not in bids and isinstance(tx.get("bid"), (int, float)):
-            bids[key] = tx
+        if taken and tx.get("date") and tx["date"] < taken:
+            continue
+        if not isinstance(tx.get("bid"), (int, float)):
+            continue
+        for key in ((norm(tx.get("player", "")), tx.get("pos")), (norm(tx.get("player", "")), None)):
+            bids.setdefault(key, tx)
     entry = (hist.get("weeks") or {}).get(str(week - 1)) or {}
     players = []
     for r in rows:
@@ -256,7 +261,7 @@ def waiver_pool(data, week, now, nxt, lines, path=HIST):
             q["claimed_by"] = offer["team"]
             add_bids(q, offer)
         else:
-            tx = bids.get((norm(r["n"]), r["pos"]))
+            tx = bids.get((norm(r["n"]), r["pos"])) or bids.get((norm(r["n"]), None))
             if tx and (not who or norm(tx.get("team", "")) == norm(who)):
                 q["bid"] = tx["bid"]
         players.append(q)

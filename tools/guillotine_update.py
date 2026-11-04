@@ -394,10 +394,40 @@ def build(y, league_id):
         "source": "Yahoo Fantasy",
         "teams": rows,
     }
+    try:
+        tx = waiver_claims(y, key)
+    except Exception as e:  # waiver results are a nice-to-have; never lose the scores over them
+        print(f"::warning::Couldn't read Yahoo transactions: {e}")
+        tx = []
+    if tx:
+        data["transactions"] = tx
     url = text(lg, "url")
     data["league_url"] = url if url and url.startswith("https://") else \
         f"https://football.fantasysports.yahoo.com/f1/{league_id}"
     return data
+
+
+def waiver_claims(y, key, count=60):
+    """The league's latest waiver and free-agent adds: player, position, the team that got him, the winning
+    FAB bid and when. Yahoo's API only gives the winning bid; every losing bid still comes from a pasted
+    Transactions page (guillotine/paste.txt, "offers")."""
+    root = y.get(f"league/{key}/transactions;types=add;count={count}", soft=True)
+    out = []
+    for t in (root.findall(".//transactions/transaction") if root is not None else []):
+        if text(t, "status") != "successful":
+            continue
+        bid = num(t, "faab_bid")
+        ts = int(num(t, "timestamp") or 0)
+        for pl in t.findall("players/player"):
+            td = pl.find("transaction_data")
+            if td is None or text(td, "type") != "add":
+                continue
+            pos = (text(pl, "display_position") or "").split(",")[0]
+            out.append({"player": text(pl, "name/full"), "pos": pos, "team": text(td, "destination_team_name"),
+                        "bid": int(bid) if bid is not None else 0,
+                        "from": text(td, "source_type"), "ts": ts,
+                        "date": datetime.fromtimestamp(ts, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ") if ts else None})
+    return out
 
 
 def write_if_changed(data, path):

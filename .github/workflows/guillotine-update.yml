@@ -25,6 +25,7 @@ on:
       - .github/workflows/guillotine-update.yml
   schedule:
     - cron: "17 14 * 9-12,1 *"   # 10:17am ET daily (9:17 in winter), September through January
+    - cron: "47 9,11 * 9-12,1 *" # after the overnight waiver run (about 4:30am ET), so claims show by morning
     - cron: "7,22,37,52 14-23 * 9-12,1 0" # Sunday: morning lineups through the evening (UTC)
     - cron: "7,22,37,52 0-5 * 9-12,1 1"   # Sunday night, including after midnight UTC
     - cron: "7,22,37,52 22-23 * 9-12,1 1,4" # Before Monday/Thursday night games
