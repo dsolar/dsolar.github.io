@@ -64,9 +64,19 @@
   const fail = (msg) => `<div class="banner loss" role="alert"><b>${esc(msg)}</b></div>`;
   const back = () => location.origin + location.pathname + location.search;
 
+  // your profile: one name and photo for every league (fk_profile_me), loaded once you're signed in
+  let prof = null;
+  async function loadProfile() {
+    if (!C.user()) { prof = null; return; }
+    const r = await C.rpc("fk_profile_me", {}).catch(() => null);
+    prof = r && r.ok ? r : null;
+    if (prof && prof.name && !(form.me || "").trim()) form.me = prof.name;
+  }
+  const profChip = () => prof ? `<button type="button" class="pf-chip" data-a="profile">${U.faceAv(prof, prof.name, "md")}<span>${esc(prof.name || "Add your name")}<small style="display:block">${prof.saved ? "Edit your profile" : "Set up your profile"}</small></span></button>` : "";
   async function render() {
     header();
     const u = C.user();
+    if (u && !prof) await loadProfile();
     const err = link && link.error ? fail(`That sign-in link didn't work: ${link.error}. Send yourself a new one.`) : "";
     let invite = "";
     if (joinId) {
@@ -80,7 +90,7 @@
     // on an invite, the join form is the page; your other leagues, if any, follow it quietly
     if (joinId) return page(`${err}${invite}${Array.isArray(mine) && mine.length ? `<div class="head" style="margin-top:8px"><h2 style="margin:0">Your other leagues</h2></div><div class="lgl">${mine.map(card).join("")}</div>` : ""}`);
     page(`${err}${invite}
-      <div class="su sp-${S.inSeason()}"><div class="nl-band lg-band">${FIELD[S.inSeason()]}<div class="nl-bi"><h1 class="disp">Your leagues</h1><p>Signed in as ${esc(u.email)}</p><button class="btn go" data-a="new">Start a league</button></div></div>
+      <div class="su sp-${S.inSeason()}"><div class="nl-band lg-band">${FIELD[S.inSeason()]}<div class="nl-bi"><h1 class="disp">Your leagues</h1>${profChip()}<p>Signed in as ${esc(u.email)}</p><button class="btn go" data-a="new">Start a league</button></div></div>
       ${mine.error ? fail(mine.error) : mine.length ? `<div class="lgl">${mine.map(card).join("")}</div>` : joinId ? "" : `<div class="card"><div class="bd stack"><p style="margin:0"><b>No leagues yet.</b></p><p class="ps" style="margin:0">Start one and send your friends the invite link, or open the invite link your commissioner sent you.</p><div><button class="btn go" data-a="new">Start a league</button></div></div>`}</div>`);
   }
   // One league in the list: your team, where the league is, and your record or the draft's progress.
@@ -134,7 +144,7 @@
     if (v.me != null) return `<div class="banner"><b>You're already in ${esc(v.name)}.</b> <a href="play.html?id=${esc(joinId)}">Open the league</a></div>`;
     const open = teams.map((t, i) => [t, i]).filter(([, i]) => seats[i] == null);
     if (!open.length) return fail(`Every team in ${v.name} has a manager.`);
-    const u = C.user(), guess = (u.email.split("@")[0] || "").replace(/[._-]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()).slice(0, 24);
+    const u = C.user(), guess = (prof && prof.name) || (u.email.split("@")[0] || "").replace(/[._-]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()).slice(0, 24);
     const k = v.sport;
     return `<div class="su sp-${k}"><form id="join"><div class="nl-band si-band jn-band">${FIELD[k] || ""}<div class="nl-bi">
         <p class="jn-kick">${icon(k, "sp-ic")}You're invited</p>
@@ -600,7 +610,8 @@
     if (th) { theme.toggle(); header(); return; }
     if (!a) return;
     const k = a.dataset.a;
-    if (k === "out") { await C.signOut(); sent = null; render(); }
+    if (k === "out") { await C.signOut(); sent = null; prof = null; render(); }
+    else if (k === "profile") U.profileDialog(prof, async (v) => { const r = await C.rpc("fk_profile_set", { p_name: v.name, p_photo: v.photo }); if (r && r.ok) { prof = Object.assign({}, prof, { name: r.name, photo: v.photo, saved: true }); form.me = r.name; render(); } return r; });
     else if (k === "again") { sent = null; render(); }
     else if (k === "resend") { try { await C.signIn(sent, back()); U.toast("Sent again."); } catch (err) { U.toast(err.message, true); } }
     else if (k === "new") { view = "new"; render(); }

@@ -91,14 +91,17 @@
     /* ---------- routing ---------- */
     const TABS = () => [["league", "League"], ["team", "My Team"], ["matchup", gl() ? "The block" : roto() ? "Categories" : "Matchup"], ["players", "Players"], ["draft", "Draft"]].concat(opts.commishTools ? [["commish", "Commissioner"]] : []);
     function subsOf(tab) {
-      if (tab === "league") return [["overview", "Overview"]].concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []).concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : roto() ? "By week" : "Scoreboard"], ["tx", "Transactions"], ["history", "History"], ["settings", "Settings"]]);
+      if (tab === "league") return [["overview", "Overview"]].concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []).concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : roto() ? "By week" : "Scoreboard"], ["managers", "Managers"], ["history", "History"], ["rules", "Rules"]]);
       if (tab === "team") return [["roster", "Roster"]].concat(roto() ? [] : [["schedule", gl() ? "History" : "Schedule"]]).concat(L().settings.trades === false ? [] : [["trades", "Trades", pendingTrades()]]);
-      if (tab === "players") return [["fa", "Free agents"], ["all", "All players"], ["watch", "Watchlist"], ["claims", "Waiver claims", L().claims.filter((c) => c.team === me() && c.status === "open").length]];
+      if (tab === "players") return [["fa", "Free agents"], ["all", "All players"], ["watch", "Watchlist"], ["claims", "Waiver claims", L().claims.filter((c) => c.team === me() && c.status === "open").length], ["tx", "Transactions"]];
       return [];
     }
     const pendingTrades = () => L().trades.filter((t) => (t.status === "pending" && t.to === me()) || (t.status === "review" && G.voters(L(), t).includes(me()) && !(t.votes || {})[me()])).length;
     function route() {
       const r = U.route("league");
+      // pages that moved: transactions went under Players, settings became Rules
+      if (r.tab === "league" && r.sub === "tx") { r.tab = "players"; history.replaceState(null, "", "#players/tx"); }
+      if (r.tab === "league" && r.sub === "settings") { r.sub = "rules"; history.replaceState(null, "", "#league/rules"); }
       if (!TABS().some((t) => t[0] === r.tab)) r.tab = "league";
       const subs = subsOf(r.tab);
       if (subs.length && !subs.some((s) => s[0] === r.sub)) { r.arg = r.tab === "team" && /^\d+$/.test(r.sub) ? r.sub : r.arg; r.sub = subs[0][0]; }
@@ -240,7 +243,7 @@
           ${mine ? `<div class="card"><div class="mod-h"><h2>Your matchup</h2><span class="ps">Week ${w}${w > L().settings.weeks ? `, ${esc(kindName(mine.kind, w).toLowerCase())}` : ""}</span><a href="${matchHref(w, mine.i)}">Full matchup</a></div>${U.versus(versusVM(w, mine))}</div>` : ""}
           ${lastWeekCard()}
           <div class="card"><div class="mod-h"><h2>Standings</h2><a href="#league/standings">Full standings</a></div>${U.standingsTable(st, { compact: true, pfLabel: pts() ? "PF" : "Cats", fmt: fmtS })}</div>
-          <div class="card feed2"><div class="mod-h"><h2>Recent activity</h2><a href="#league/tx">All transactions</a></div>${U.feed(recent.slice(0, 6).map(txVM), "No moves yet. Pick up a free agent to get things going.")}</div>
+          <div class="card feed2"><div class="mod-h"><h2>Recent activity</h2><a href="#players/tx">All transactions</a></div>${U.feed(recent.slice(0, 6).map(txVM), "No moves yet. Pick up a free agent to get things going.")}</div>
         </div><aside class="stack">
           ${myCards.trim() ? `<div class="d-only stack">${myCards}</div>` : ""}
           ${chatCard()}
@@ -439,7 +442,7 @@
       const p = it.p, t = T(p.team) || { name: p.author, abbr: "", color: 0 };
       // a run of posts from the same team within ten minutes reads as one message
       const cont = prev && prev.p && prev.p.team === p.team && it.at - prev.at < 6e5;
-      return `<li class="${isMe(p.team) ? "mine " : ""}${cont ? "cont" : ""}">${cont ? `<span></span>` : teamAv(t, "sm")}<div class="what">${cont ? "" : `<div class="who"><b>${esc(t.name)}</b><span class="ps">${esc(p.author)}</span><time>${esc(U.ago(p.at, now()))}</time></div>`}<p>${chatBody(p.body)}</p></div></li>`;
+      return `<li class="${isMe(p.team) ? "mine " : ""}${cont ? "cont" : ""}">${cont ? `<span></span>` : faces()[p.team] && faces()[p.team].photo ? U.faceAv(faces()[p.team], p.author, "sm") : teamAv(t, "sm")}<div class="what">${cont ? "" : `<div class="who"><b>${esc(t.name)}</b><span class="ps">${esc(p.author)}</span><time>${esc(U.ago(p.at, now()))}</time></div>`}<p>${chatBody(p.body)}</p></div></li>`;
     }
     function chatList(items) {
       return items.length ? `<ul class="chat">${items.map((it, i) => chatLi(it, items[i - 1])).join("")}</ul>` : `<div class="bd"><p class="ps" style="margin:0">No posts yet. Say hello, or talk some trash about this week's matchup.</p></div>`;
@@ -514,9 +517,38 @@
           ${rows.map((a) => `<tr${isMe(a.team) ? ` class="me"` : ""}><td class="nm"><a class="row" style="gap:8px;text-decoration:none;color:inherit" href="${teamHref(a.team)}">${teamAv(T(a.team), "sm")}<span class="ell">${esc(T(a.team).name)}</span></a></td>${many ? `<td class="r num hide-s">${a.seasons}</td>` : ""}${hasWL ? `<td class="r num">${rec(a)}</td><td class="r num hide-s">${pct3(a)}</td>` : ""}<td class="r num">${a.titles ? `<b>${a.titles}</b>` : "0"}</td>${many ? `<td class="r num hide-s">${avg(a)}</td>` : ""}${pts() ? `<td class="r num hide-s">${Math.round(a.pts).toLocaleString()}</td>` : ""}</tr>`).join("")}
         </tbody></table></div></div></div></div>`;
     }
+    /* ---------- managers: who runs each team, with their photo, record and titles ---------- */
+    const faces = () => (opts.faces && opts.faces()) || {};
+    const faceOf = (id) => { const t = T(id), f = faces()[id]; return t.owner ? Object.assign({ name: t.owner }, f || {}) : null; };
+    function managerStats(id) {
+      const r = standings().find((x) => x.team === id) || {}, all = seasonsAll();
+      let titles = 0, w = 0, l = 0, t = 0, seasons = 0;
+      for (const x of all) { const row = (x.standings || []).find((y) => y.team === id); if (!row) continue; seasons++; w += row.w || 0; l += row.l || 0; t += row.t || 0; if (!x.live && x.champion && x.champion.team === id) titles++; }
+      const now = gl() ? recOf(id) : roto() ? `${ord(r.rank)}` : `${r.w || 0}-${r.l || 0}${r.t ? "-" + r.t : ""}`;
+      return { now, place: r.rank, titles, seasons, all: `${w}-${l}${t ? "-" + t : ""}` };
+    }
+    function managerCard(id, big) {
+      const tm = T(id), f = faceOf(id), m = managerStats(id), hasWL = !gl() && !roto();
+      const stats = `<div class="mgr-s"><span><small>${gl() ? "This season" : roto() ? "Place" : "Record"}</small><b>${esc(m.now)}</b></span>${!gl() && !roto() && m.place ? `<span><small>Place</small><b>${ord(m.place)}</b></span>` : ""}${m.seasons > 1 && hasWL ? `<span><small>All-time</small><b>${esc(m.all)}</b></span>` : ""}<span><small>Titles</small><b>${m.titles}</b></span></div>`;
+      const tags = `${isMe(id) ? `<span class="tag you">You</span>` : ""}${!tm.owner ? `<span class="tag">Bot</span>` : ""}`;
+      if (big) return `<div class="mgr-card">${U.faceAv(f, tm.owner || "Bot", "xl")}<h3 class="disp" style="margin:6px 0 0">${esc(tm.owner || "A bot")}</h3><div class="mgr-tags">${tags}</div>
+        <a class="mgr-t" href="${teamHref(id)}" data-close>${teamAv(tm, "sm")}<span class="ell">${esc(tm.name)}</span></a>${stats}
+        ${isMe(id) && opts.editProfile ? `<button type="button" class="btn sm" data-editprofile>Edit your profile</button>` : ""}</div>`;
+      return `<button type="button" class="mgr${isMe(id) ? " me" : ""}" data-mgr="${id}"><span class="mgr-h">${U.faceAv(f, tm.owner || "Bot", "lg")}<span style="min-width:0"><b class="ell">${esc(tm.owner || "A bot")}</b><span class="mgr-tags">${tags}</span></span></span>
+        <span class="mgr-t">${teamAv(tm, "sm")}<span class="ell">${esc(tm.name)}</span></span>${stats}</button>`;
+    }
+    function managersPage() {
+      const ids = standings().map((r) => r.team).concat(L().teams.map((t) => t.id)).filter((x, i, a) => a.indexOf(x) === i);
+      const people = ids.filter((id) => T(id).owner).length;
+      const bots = ids.filter((id) => !T(id).owner);
+      const botList = bots.length ? `<div class="card" style="margin-top:14px"><div class="mod-h"><h2>${opts.commishTools ? "Open seats" : "Run by bots"}</h2><span class="ps">${bots.length} team${bots.length > 1 ? "s" : ""}</span>${opts.commishTools ? `<button type="button" class="btn sm" data-live="league" style="margin-left:auto">Invite managers</button>` : ""}</div>
+        <ul class="feed">${bots.map((id) => { const m = managerStats(id); return `<li style="grid-template-columns:auto minmax(0,1fr) auto;align-items:center;padding:9px 16px"><a class="row" href="${teamHref(id)}" style="gap:8px;text-decoration:none;color:inherit;grid-column:1 / 3">${teamAv(T(id), "sm")}<span class="ell"><b>${esc(T(id).name)}</b></span></a><span class="ps num">${esc(m.now)}${!gl() && !roto() && m.place ? `, ${ord(m.place)}` : ""}</span></li>`; }).join("")}</ul></div>` : "";
+      return `<div class="wrap page"><div class="head"><h1 class="disp">Managers</h1><span class="ps">${people} of ${L().teams.length} teams have a manager${people < L().teams.length ? ", bots run the rest" : ""}.</span>${me() != null && opts.editProfile ? `<button type="button" class="btn sm" data-editprofile style="margin-left:auto">Edit your profile</button>` : ""}</div>
+        <div class="mgrs">${ids.filter((id) => T(id).owner).map((id) => managerCard(id)).join("")}</div>${botList}</div>`;
+    }
     function settingsPage() {
       const s = L().settings;
-      return `<div class="wrap page"><div class="head"><h1 class="disp">League settings</h1></div><div class="cols2">
+      return `<div class="wrap page"><div class="head"><h1 class="disp">League rules</h1>${opts.commishTools ? `<a class="btn sm" href="#commish" style="margin-left:auto">Change them</a>` : ""}</div><div class="cols2">
         <div class="card"><div class="mod-h"><h2>Format</h2></div><div class="bd"><dl class="kv"><dt>Sport</dt><dd>${esc(sport.name)}</dd><dt>Scoring</dt><dd>${esc(sc().label)}</dd>${S.bonusLines(sc()).length ? `<dt>Bonuses</dt><dd>${S.bonusLines(sc()).map(esc).join("<br>")}</dd>` : ""}<dt>Stats</dt><dd>${s.real ? `Real box scores${(opts.hooks || {}).real ? ` from ${esc(opts.hooks.real.source)}` : ""}. A week closes once its last games are in` : "Simulated from each player's season"}</dd><dt>Teams</dt><dd>${L().teams.length}</dd><dt>Format</dt><dd>${gl() ? `Guillotine: the lowest score each week is chopped${s.chops > 1 ? ` (${s.chops} a week)` : ""}. On a tie, the lower projection goes` : roto() ? "Rotisserie: season totals in each category, ranked" : s.tally === "cats" ? "Head to head: each category is a win or a loss" : s.tally === "allplay" ? "All-play: each week, your score against every team" : "Head to head"}${bb() ? ", best ball" : ""}${s.median ? ", plus a game each week against the league median" : ""}</dd>${L().divs ? `<dt>Divisions</dt><dd>${L().divNames.map((nm, k) => `${esc(nm)}: ${L().teams.filter((t) => L().divs[t.id] === k).map((t) => esc(t.name)).join(", ")}`).join("<br>")}</dd>` : ""}
           ${G.vampireOf(L()) != null ? `<dt>Vampire</dt><dd>${esc(T(G.vampireOf(L())).name)} skipped the draft and built from free agents. Each regular-season week it wins, it takes any player from the team it beat and gives back one of its own${s.vampire.samePos ? " at the same position" : ""}${s.vampire.double ? ", and bites the week's lowest scorer too" : ""}. No bites in the playoffs, and it claims first on waivers every week.</dd>` : ""}<dt>Season</dt><dd>${gl() ? `${s.weeks} weeks, until one team is left` : s.playoffTeams ? playoffLine(s) : `${s.weeks} weeks, no playoffs: first place wins`}</dd>${s.trades === false ? `<dt>Trades</dt><dd>None</dd>` : `<dt>Trade deadline</dt><dd>${s.deadline ? `After week ${s.deadline}` : "None"}</dd><dt>Trade review</dt><dd>${s.tradeReview === "none" ? "None" : `${fmtHours(s.reviewHours)}, ${Math.round(s.vetoShare * 100)}% of the league to veto`}</dd><dt>Offers</dt><dd>Expire after ${fmtHours(s.offerHours || 48)}</dd>`}</dl></div></div>
         <div class="stack"><div class="card"><div class="mod-h"><h2>Rosters</h2></div><div class="bd"><dl class="kv"><dt>Starters</dt><dd>${s.lineup.map((x) => `<span class="slot" style="margin:0 3px 3px 0">${esc(x)}</span>`).join("")}</dd><dt>Bench</dt><dd>${s.bench}</dd><dt>IR spots</dt><dd>${s.ir || "None"}</dd>${s.maxAdds ? `<dt>Pickups</dt><dd>Up to ${s.maxAdds} a week, counting adds and won claims</dd>` : ""}${s.posMax && Object.keys(s.posMax).length ? `<dt>Position limits</dt><dd>${Object.entries(s.posMax).map(([k, v]) => `${v} ${esc(k)}`).join(", ")}</dd>` : ""}<dt>Lineups</dt><dd>${bb() ? "Best ball: set automatically" : "Set each week"}</dd>${s.dynasty ? `<dt>Dynasty</dt><dd>Every roster carries over. Each new season opens with a ${s.dynasty.rounds}-round rookie and free agent draft, worst team first${s.dynasty.picks !== false ? ", and next season's picks can be traded" : ""}.</dd>${s.dynasty && s.taxi ? `<dt>Taxi squad</dt><dd>${s.taxi} spot${s.taxi > 1 ? "s" : ""} for rookies and rookie-draft picks, off the roster limit. They can't start, and a promotion is for good.</dd>` : ""}` : s.keepers ? `<dt>Keepers</dt><dd>Up to ${s.keepers}, costing ${{ round: "the round he went in", round1: "one round earlier than he went", free: "a last-round pick", price: "what he went for", price5: "what he went for plus $5" }[s.keeperCost] || "the round he went in"}</dd>` : ""}<dt>Waivers</dt><dd>${s.waivers === "faab" ? `${s.faabBank ? `FAAB from the draft's time bank, $${Math.round(s.faab / 2)} to $${Math.round(s.faab * 1.5)}` : `$${s.faab} FAAB`}${gl() ? " for the whole season" : ""}, ${s.waiverAt != null ? `claims run ${Math.round(s.waiverAt / 24 * 10) / 10} days into each week` : `${s.waiverHours} hours after a drop`}` : "Rolling priority"}</dd><dt>Waiver order</dt><dd>${s.waivers === "faab" ? "The highest bid wins. On a tie, the better waiver priority wins" : "The best waiver priority wins"}. Winning a claim sends you to the back of the line, even within the same run.</dd></dl></div></div>
@@ -608,7 +640,7 @@
         <div class="cols"><div class="stack">
           ${!over() ? `<div class="card"><div class="mod-h"><h2>Week ${w}: the chopping block</h2><span class="ps">${L().alive.length} left, lowest ${s.chops > 1 ? s.chops + " go" : "goes"}</span><a href="#matchup/${w}">Full block</a></div>${blockList(w)}</div>` : ""}
           <div class="card"><div class="mod-h"><h2>In memoriam</h2><a href="#league/standings">Survivors</a></div>${memoriam(5)}</div>
-          <div class="card"><div class="mod-h"><h2>Recent activity</h2><a href="#league/tx">All transactions</a></div>${U.feed(recent.map(txVM), "No moves yet.")}</div>
+          <div class="card"><div class="mod-h"><h2>Recent activity</h2><a href="#players/tx">All transactions</a></div>${U.feed(recent.map(txVM), "No moves yet.")}</div>
         </div><aside class="stack">
           ${myRow ? `<div class="card"><div class="mod-h">${teamAv(T(mid), "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(T(mid).name)}</b><span class="ps">${myRow.alive ? (over() ? "Champion" : `Alive, ${ord(myRow.rank)} in points`) : `Chopped in week ${myRow.out}`}</span></div></div>
             <div class="bd"><div class="stat-row"><div><small>FAAB left</small><b>$${T(mid).faab}</b></div><div><small>${mine ? "Chop odds" : "Weeks survived"}</small><b class="${mine && mine.chop >= 0.25 ? "loss" : ""}">${mine ? pct(mine.chop) : myRow.w}</b></div><div><small>Points</small><b>${fmtS(myRow.pf)}</b></div></div>
@@ -685,7 +717,7 @@
     function teamHead(id) {
       const t = T(id), r = standings().find((x) => x.team === id);
       return `<div class="team-h">${teamAv(t, "xl")}<div style="min-width:0"><h1 class="disp">${esc(t.name)}${isMe(id) ? ` <span class="tag you" style="font-size:13px;vertical-align:6px">You</span>` : ""}${G.vampireOf(L()) === id ? ` <span class="tag loss" style="font-size:13px;vertical-align:6px">Vampire</span>` : ""}</h1>
-        <div class="meta">${gl() ? `<span><b>${esc(recOf(id))}</b>${r.alive ? `, ${ord(r.rank)} in points` : ""}</span>` : `<span><b>${r.w}-${r.l}${r.t ? "-" + r.t : ""}</b>, ${ord(r.rank)} place</span>`}<span>${pts() ? `<b>${fmtS(r.pf)}</b> points for` : `<b>${r.pf}</b> categories won`}</span><span>FAAB <b>$${t.faab}</b></span><span>Waiver priority <b>${ord(t.priority + 1)}</b></span>${t.owner ? `<span${isMe(id) ? ' class="th-me"' : ""}>Manager <b>${esc(t.owner)}</b></span>` : `<span>Bot</span>`}</div></div>
+        <div class="meta">${gl() ? `<span><b>${esc(recOf(id))}</b>${r.alive ? `, ${ord(r.rank)} in points` : ""}</span>` : `<span><b>${r.w}-${r.l}${r.t ? "-" + r.t : ""}</b>, ${ord(r.rank)} place</span>`}<span>${pts() ? `<b>${fmtS(r.pf)}</b> points for` : `<b>${r.pf}</b> categories won`}</span><span>FAAB <b>$${t.faab}</b></span><span>Waiver priority <b>${ord(t.priority + 1)}</b></span>${t.owner ? `<a href="#league/managers" data-mgr="${id}"${isMe(id) ? ' class="th-me"' : ""} style="display:inline-flex;align-items:center;gap:6px;color:inherit;text-decoration:none">${U.faceAv(faceOf(id), t.owner, "sm")}Manager <b>${esc(t.owner)}</b></a>` : `<span>Bot</span>`}</div></div>
         <span class="grow"></span><div class="th-acts">${isMe(id) ? `<button class="btn" data-editteam>Edit team</button>` : ""}${!isMe(id) && canTrade() ? `<button class="btn go" data-trade="${id}">Propose a trade</button>` : ""}
         <label class="sr" for="team-pick">Team</label><select id="team-pick" style="width:auto;border-radius:999px">${L().teams.map((x) => `<option value="${x.id}"${x.id === id ? " selected" : ""}>${esc(x.name)}${isMe(x.id) ? " (you)" : ""}</option>`).join("")}</select></div></div>`;
     }
@@ -903,7 +935,7 @@
         if (L().week === 1 && L().rosters[mid].length < G.maxRoster(L())) items.push(`<a class="alert" href="#players"><span>You're the vampire: you skipped the draft. Build your roster from free agents, ${G.maxRoster(L()) - L().rosters[mid].length} spots to fill.</span><b class="go">Free agents</b></a>`);
       } else if (vamp != null) {
         const hit = (L().bites || []).filter((b) => b.status === "done" && b.victim === mid && now() - b.done < 72 * 36e5).pop();
-        if (hit) items.push(`<a class="alert loss" href="#league/tx"><span>The vampire bit you: <b>${esc((ctx.byId[hit.take] || {}).n || "")}</b> is gone${hit.give ? `, and <b>${esc((ctx.byId[hit.give] || {}).n || "")}</b> joined your roster` : ""}.</span><b class="go">See it</b></a>`);
+        if (hit) items.push(`<a class="alert loss" href="#players/tx"><span>The vampire bit you: <b>${esc((ctx.byId[hit.take] || {}).n || "")}</b> is gone${hit.give ? `, and <b>${esc((ctx.byId[hit.give] || {}).n || "")}</b> joined your roster` : ""}.</span><b class="go">See it</b></a>`);
       }
       // a dynasty's new season: rosters run long after the rookie draft until everyone cuts down
       const cut = L().week === 1 ? G.overLimit(L(), mid) : 0;
@@ -911,7 +943,7 @@
       if (!(r.tab === "team" && r.sub === "trades")) {
         // the whole league sees trades: one waiting on your vote, and ones that just went through
         const fresh = L().trades.filter((t) => t.status === "accepted" && t.from !== mid && t.to !== mid && now() - (t.done || t.at) < 48 * 36e5);
-        for (const t of fresh.slice(-2)) items.push(`<a class="alert info" href="#league/tx"><span><b>${esc(T(t.from).name)}</b> and <b>${esc(T(t.to).name)}</b> made a trade: ${esc(t.get.map((x) => (ctx.byId[x] || {}).n).filter(Boolean).concat((t.pickGet || []).length ? ["picks"] : []).join(", "))} for ${esc(t.give.map((x) => (ctx.byId[x] || {}).n).filter(Boolean).concat((t.pickGive || []).length ? ["picks"] : []).join(", "))}.</span><b class="go">Transactions</b></a>`);
+        for (const t of fresh.slice(-2)) items.push(`<a class="alert info" href="#players/tx"><span><b>${esc(T(t.from).name)}</b> and <b>${esc(T(t.to).name)}</b> made a trade: ${esc(t.get.map((x) => (ctx.byId[x] || {}).n).filter(Boolean).concat((t.pickGet || []).length ? ["picks"] : []).join(", "))} for ${esc(t.give.map((x) => (ctx.byId[x] || {}).n).filter(Boolean).concat((t.pickGive || []).length ? ["picks"] : []).join(", "))}.</span><b class="go">Transactions</b></a>`);
         const offers = L().trades.filter((t) => t.status === "pending" && t.to === mid);
         for (const t of offers.slice(0, 2)) items.push(`<a class="alert" href="#team/trades">${teamAv(T(t.from), "sm")}<span><b>${esc(T(t.from).name)}</b> sent you a trade offer</span><b class="go">Review</b></a>`);
         if (offers.length > 2) items.push(`<a class="alert" href="#team/trades"><span>${offers.length - 2} more trade offers</span><b class="go">Review</b></a>`);
@@ -961,7 +993,7 @@
           <div class="card"><div class="mod-h"><h2>How it works</h2></div><div class="bd"><p class="small" style="margin:0">Rotisserie: no weekly games. In each category, the best season total gets ${n} points and the worst gets 1; ties split the points. Most points wins.</p></div></div>
         </div><aside class="stack">
           ${myCard ? `<div class="d-only stack">${myCard}</div>` : ""}
-          <div class="card"><div class="mod-h"><h2>Recent activity</h2><a href="#league/tx">All transactions</a></div>${U.feed(recent.map(txVM), "No moves yet.")}</div>
+          <div class="card"><div class="mod-h"><h2>Recent activity</h2><a href="#players/tx">All transactions</a></div>${U.feed(recent.map(txVM), "No moves yet.")}</div>
         </aside></div></div>`;
     }
     function rotoStandingsPage() {
@@ -1129,6 +1161,7 @@
     function playersPage(sub) {
       const mid = me(), w = watch();
       if (sub === "claims") return claimsPage();
+      if (sub === "tx") return txPage();
       let rows = opts.players.filter((p) => U.passes(sport, p, ui.pf));
       if (sub === "fa") rows = rows.filter((p) => ctx.own[p.id] == null);
       if (sub === "watch") rows = rows.filter((p) => w.includes(p.id));
@@ -1333,7 +1366,7 @@
       const keep = $("#fk-players") ? $("#fk-players").scrollTop : 0;
       const focus = U.focusKey(opts.el) || U.focusKey(opts.top);
       let html = "";
-      if (r.tab === "league") html = { overview, chat: chatPage, standings: standingsPage, scoreboard: () => scoreboardPage(r.arg), tx: txPage, history: pastPage, settings: settingsPage }[r.sub]();
+      if (r.tab === "league") html = { overview, chat: chatPage, standings: standingsPage, scoreboard: () => scoreboardPage(r.arg), managers: managersPage, history: pastPage, rules: settingsPage }[r.sub]();
       else if (r.tab === "team") html = { roster: () => rosterPage(r.arg), schedule: () => schedulePage(r.arg), trades: tradesPage }[r.sub]();
       else if (r.tab === "matchup") html = matchupPage(r.sub, r.arg);
       else if (r.tab === "players") html = playersPage(r.sub);
@@ -1475,11 +1508,13 @@
     opts.el.addEventListener("click", (e) => {
       const mb = e.target.closest("[data-more]");
       if (mb) { ui.plimit = (ui.plimit || 250) + 250; render(); return; }
-      const b = e.target.closest("[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],th[data-sort]");
+      const b = e.target.closest("[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],th[data-sort]");
       if (b) {
         e.preventDefault(); e.stopPropagation();
         const d = b.dataset, mid = me();
-        if (d.unblock) act(() => G.setBlock(L(), mid, d.unblock, false), `${ctx.byId[d.unblock].n} is off the block.`);
+        if (d.mgr != null) { const Dl = U.dialog(managerCard(+d.mgr, true)); Dl.onclick = (ev) => { if (ev.target.closest("[data-editprofile]")) { Dl.close(); opts.editProfile(); } }; }
+        else if (b.hasAttribute("data-editprofile")) opts.editProfile();
+        else if (d.unblock) act(() => G.setBlock(L(), mid, d.unblock, false), `${ctx.byId[d.unblock].n} is off the block.`);
         else if (b.hasAttribute("data-editteam")) editTeam();
         else if (d.toir) act(() => G.toIR(L(), ctx, mid, d.toir, now()), `${ctx.byId[d.toir].n} is on IR. His roster spot is open.`);
         else if (d.bite) biteDialog(+d.bite);

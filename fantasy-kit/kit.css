@@ -1383,3 +1383,19 @@ tr.sec.dz-ok>td{color:var(--ink)}
 @media (max-width:600px){.fk-mast:has(.switch) .fk-brand b{display:none}.fk-mast:has(.switch) .fk-brand{padding-right:10px}.fk-mast .switch summary{font-size:17px;max-width:62vw}}
 tr.show-s{display:none}
 @media (max-width:600px){table.t tr.show-s{display:table-row}table.t tr.show-s td{padding-top:0;border-top:0;white-space:normal}}
+
+/* ---------- managers: photos, the profile editor, the Managers page ---------- */
+.mav{display:inline-flex;align-items:center;justify-content:center;flex:none;width:32px;height:32px;border-radius:50%;overflow:hidden;background:var(--surface-3);color:var(--muted);font-weight:800;font-size:12px;letter-spacing:.02em}
+.mav img{width:100%;height:100%;object-fit:cover;display:block}
+.mav.sm{width:22px;height:22px;font-size:9px}.mav.md{width:44px;height:44px;font-size:15px}.mav.lg{width:72px;height:72px;font-size:24px}.mav.xl{width:96px;height:96px;font-size:32px}
+.pf-top{display:flex;align-items:center;gap:16px}
+.pf-chip{display:inline-flex;align-items:center;gap:10px;padding:5px 12px 5px 5px;border-radius:999px;background:rgba(255,255,255,.12);color:inherit;border:0;font:inherit;font-weight:700;cursor:pointer}
+.pf-chip small{font-weight:500;opacity:.8}
+.mgrs{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.mgr{display:flex;flex-direction:column;gap:12px;padding:16px;border:1px solid var(--line);border-radius:var(--rl);background:var(--surface);text-align:left;font:inherit;color:inherit;cursor:pointer}
+.mgr:hover{border-color:var(--line-2)}.mgr.me{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.mgr-h{display:flex;align-items:center;gap:12px;min-width:0}.mgr-h b{font-size:16px;display:block}.mgr-h .ps{font-size:12.5px}
+.mgr-t{display:flex;align-items:center;gap:8px;min-width:0;font-weight:650}
+.mgr-s{display:flex;gap:16px;flex-wrap:wrap}.mgr-s span{display:flex;flex-direction:column}.mgr-s small{font-size:11px;color:var(--muted)}.mgr-s b{font-variant-numeric:tabular-nums}
+.mgr-tags{display:flex;gap:6px;flex-wrap:wrap}
+.mgr-card{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}

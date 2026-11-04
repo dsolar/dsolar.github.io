@@ -48,6 +48,59 @@
     if (!D.open) D.showModal();
     return D;
   }
+  /* ---------- manager profiles: one name and photo for every league ---------- */
+  // A manager's face: his photo, or his initials on a soft circle. face is { name, photo } or null.
+  function faceAv(face, name, size = "") {
+    const n = (face && face.name) || name || "";
+    const ini = n.split(/\s+/).filter(Boolean).map((w) => w[0]).join("").slice(0, 2).toUpperCase() || "?";
+    return face && face.photo ? `<span class="mav ${size}"><img src="${esc(face.photo)}" alt="" loading="lazy"></span>` : `<span class="mav ini ${size}" aria-hidden="true">${esc(ini)}</span>`;
+  }
+  // A photo from a file: cropped to its middle square and shrunk, as a small JPEG data URL.
+  function squarePhoto(file, px = 192) {
+    return new Promise((ok, no) => {
+      if (!file || !/^image\//.test(file.type)) return no(new Error("That isn't an image"));
+      const url = URL.createObjectURL(file), img = new Image();
+      img.onload = () => {
+        const side = Math.min(img.width, img.height), c = document.createElement("canvas");
+        c.width = c.height = px;
+        c.getContext("2d").drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, px, px);
+        URL.revokeObjectURL(url);
+        let q = 0.85, out = c.toDataURL("image/jpeg", q);
+        while (out.length > 60000 && q > 0.4) { q -= 0.1; out = c.toDataURL("image/jpeg", q); }
+        ok(out);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); no(new Error("That image didn't open")); };
+      img.src = url;
+    });
+  }
+  // Edit your profile: save({ name, photo }) returns a promise of { ok } or { error }.
+  function profileDialog(cur, save) {
+    const st = { photo: (cur && cur.photo) || null };
+    const D = dialog(`<h3>Your profile</h3><form class="stack pf">
+        <div class="pf-top"><span id="pf-prev"></span><div class="stack" style="gap:6px"><label class="btn sm" for="pf-file">Upload a photo</label><input type="file" id="pf-file" accept="image/*" class="sr">
+          <button type="button" class="btn sm link" data-pf-clear${st.photo ? "" : " hidden"}>Remove the photo</button></div></div>
+        <div class="field"><label for="pf-name">Your name</label><input type="text" id="pf-name" name="name" maxlength="24" required value="${esc((cur && cur.name) || "")}" autocomplete="name"></div>
+        <p class="ps" style="margin:0">Your name and photo are the same in every league you're in. Other managers see them on the Managers page and next to your team.</p>
+        <p class="ps loss" id="pf-why" role="alert"></p>
+        <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">Save profile</button></div></form>`, (fd, f, sub) => {
+      const name = String(fd.get("name") || "").trim();
+      if (!name) { $("#pf-why", D).textContent = "Add your name."; return false; }
+      if (sub) sub.disabled = true;
+      Promise.resolve(save({ name, photo: st.photo })).then((r) => {
+        if (r && r.ok) { D.close(); toast("Profile saved."); }
+        else { $("#pf-why", D).textContent = (r && r.error) || "That didn't save. Try again."; if (sub) sub.disabled = false; }
+      }, (e) => { $("#pf-why", D).textContent = e.message; if (sub) sub.disabled = false; });
+      return false;
+    });
+    const draw = () => { $("#pf-prev", D).innerHTML = faceAv({ name: $("#pf-name", D).value, photo: st.photo }, "", "xl"); const c = $("[data-pf-clear]", D); if (c) c.hidden = !st.photo; };
+    draw();
+    D.addEventListener("input", (e) => { if (e.target.id === "pf-name") draw(); });
+    $("#pf-file", D).addEventListener("change", (e) => {
+      squarePhoto(e.target.files[0]).then((u) => { st.photo = u; draw(); }, (err) => { $("#pf-why", D).textContent = err.message; });
+    });
+    $("[data-pf-clear]", D).addEventListener("click", () => { st.photo = null; draw(); });
+    return D;
+  }
   const dialogOpen = () => { const D = $("#fk-dlg"); return !!(D && D.open); };
   // Keyboard focus across a redraw: remember what had it (an id, or its tag and data attributes) and find it again,
   // or the nearest thing like it (the next Draft button after you draft), so focus doesn't fall back to the page.
@@ -1452,7 +1505,7 @@
     const i = cur.lastIndexOf(btn.dataset.lb);
     return i >= 0 ? cur.filter((_, j) => j !== i) : cur;
   }
-  FK.ui = { statColumns, LINEUP_PRESETS: PRESETS, lineupBuilder, orderLineup, lineupStep, slotDesc, esc, $, $$, store, toast, dialog, dialogOpen, focusKey, refocus, keyboardPlayers, confirm, theme, fmtLeft, money, ord, last, initials, ago,
+  FK.ui = { faceAv, squarePhoto, profileDialog, statColumns, LINEUP_PRESETS: PRESETS, lineupBuilder, orderLineup, lineupStep, slotDesc, esc, $, $$, store, toast, dialog, dialogOpen, focusKey, refocus, keyboardPlayers, confirm, theme, fmtLeft, money, ord, last, initials, ago,
     teamAv, SHAPES, GLYPHS, logoSvg, glyphOf, shapeOf, playerAv, pname, teamName, posChip, posChips, colorOf, injTag,
     proTeam, shell, switcher, route, table, sortRows, nextSort, poolColumns, posFilter, search, passes, groupOf, statCell, label, isPoints,
     playerCard, scoreboard, versus, vsTable, standingsTable, feed, txLine, tradeCard, tradeWindow, room, board: myBoard, viewSelect, setView, initView, hasProj, lineOf };

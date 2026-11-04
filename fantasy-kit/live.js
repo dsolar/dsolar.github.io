@@ -91,6 +91,22 @@
     });
     loadPosts();
   }
+  // the managers' photos (fk_faces), for members; your own profile to edit (fk_profile_me, fk_profile_set)
+  let faces = {};
+  async function loadFaces() {
+    if (!C.user()) return;
+    const r = await C.rpc("fk_faces", { p_id: id }).catch(() => null);
+    if (r && r.ok) { faces = r.faces || {}; if (app) app.refresh(); }
+  }
+  async function editProfile() {
+    const me = await C.rpc("fk_profile_me", {}).catch((e) => ({ error: e.message }));
+    if (!me || me.error) { U.toast((me && me.error) || "Couldn't load your profile.", true); return; }
+    U.profileDialog(me, async (v) => {
+      const r = await C.rpc("fk_profile_set", { p_name: v.name, p_photo: v.photo });
+      if (r && r.ok) { await loadFaces(); pull(); }
+      return r;
+    });
+  }
   function mountLeague() {
     document.body.classList.remove("fk-room");
     app = U.leagueApp({
@@ -104,9 +120,12 @@
       notice: () => guestNote() + startNote() + keeperNote(),
       chat,
       history: () => past,
+      faces: () => faces,
+      editProfile: C.user() ? editProfile : null,
     });
     loadPosts();
     loadPast();
+    loadFaces();
     if (catchUp()) push();
     app.refresh();
   }
