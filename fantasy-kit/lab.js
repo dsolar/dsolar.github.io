@@ -9,6 +9,7 @@
   const BLURB = { nba: "Real per-game lines, 9-cat or points", nfl: "Season points, half PPR, PPR or standard", mlb: "Last season paced to full, 5x5 or 8x8" };
   const DEFAULTS = { sport: S.inSeason(), scoring: "", type: "snake", teams: 10, slot: 0, clock: 30, budget: 200, bench: null, lineup: "", name: "", reveal: "start", test: 1, trades: 1 };
   let cfg = Object.assign({}, DEFAULTS, store.get("cfg", {}));
+  if ([-20, -30, -60].includes(cfg.clock)) cfg.clock = -200;                // the old per-round banks
   // ?s=nfl (from the fantasy hub) picks the sport for setup and rankings
   const qs = new URLSearchParams(location.search).get("s");
   if (S[qs] && qs !== cfg.sport) { cfg = Object.assign(cfg, { sport: qs, scoring: "", lineup: "", bench: null }); store.set("cfg", cfg); }
@@ -83,8 +84,9 @@
   /* ---------- setup: the same look and controls as Start a league (FK.setup) ---------- */
   const K = window.FK.setup;
   const open = {};
-  const CLOCKS = [[15, "15 sec"], [30, "30 sec"], [60, "1 min"], [90, "90 sec"], [0, "No clock"], [-20, "Bank 20s"], [-30, "Bank 30s"], [-60, "Bank 60s"]];
+  const CLOCKS = [[15, "15 sec"], [30, "30 sec"], [60, "1 min"], [90, "90 sec"], [0, "No clock"], [-120, "2 min bank"], [-200, "200 sec bank"], [-300, "5 min bank"], [-480, "8 min bank"]];
   const BID_CLOCKS = [[10, "10 sec"], [15, "15 sec"], [20, "20 sec"], [30, "30 sec"]];
+  const fmtBank = (sec) => (sec % 60 ? `${sec} seconds` : `${sec / 60} minutes`);
   const NUM = /^(teams|slot|clock|budget|bench|test|trades|rl|rlRound|hz|sd)$/;
   // the one-week twists: team roulette (drafts that go pick by pick), and for football a showdown (one game, a
   // captain and five flex spots, no bench) or a heist right after the draft (the one-week lineup, no bench)
@@ -123,7 +125,7 @@
             ${mystery ? K.fld("Packages open", K.seg("reveal", Object.entries(F.REVEALS).map(([k, l]) => [k, l.replace(", the rest as they come up", ", then as picks come up")]), c.reveal, "Packages open", { wrap: true })) : K.fld(auction ? "Your nomination turn" : "Your pick", K.stepper("slot", Array.from({ length: c.teams + 1 }, (_, i) => i), Math.min(c.slot, c.teams), (x) => (x ? U.ord(x) : "Random"), auction ? "Your nomination turn" : "Your pick"))}</div>
           ${K.fld("Scoring", K.cards("scoring", presets, scoring, "Scoring", presets.length > 3 ? 3 : presets.length))}
           <div class="g2">${K.fld(auction ? "Bid clock" : "Pick clock", K.seg("clock", auction ? BID_CLOCKS : CLOCKS, clock[0], auction ? "Bid clock" : "Pick clock", { wrap: true }),
-              auction ? "Every bid resets the clock." : c.clock < 0 ? "One clock for your whole draft, topped up each round. Run it out and every pick gets 10 seconds. What's left becomes FAAB for the season." : c.clock ? "When your clock runs out, your first queued player who fits is taken, then the best fit." : "Take as long as you like.")}
+              auction ? "Every bid resets the clock." : c.clock < 0 ? `One clock for your whole draft: ${fmtBank(-c.clock)} for all your picks, about ${Math.round(-c.clock / Math.max(1, (sdOn(c) ? 6 : hzOn(c) ? 8 : lu.length + bench)))} seconds each. Run it out and every pick gets 10 seconds. The bots finish with about half of theirs left. What's left becomes FAAB for the season.` : c.clock ? "When your clock runs out, your first queued player who fits is taken, then the best fit." : "Take as long as you like.")}
             ${auction ? K.fld("Budget per team", K.seg("budget", [100, 200, 260, 300, 1000].map((x) => [x, `$${x}`]), c.budget, "Budget per team", { wrap: true })) : `<div class="fl"><div class="fl-l"><label for="s-name">Your team name</label></div><input type="text" id="s-name" maxlength="28" value="${esc(c.name)}" placeholder="Your team"></div>`}</div>
           ${auction ? `<div class="g2"><div class="fl"><div class="fl-l"><label for="s-name">Your team name</label></div><input type="text" id="s-name" maxlength="28" value="${esc(c.name)}" placeholder="Your team"></div></div>` : ""}
           ${tradesOk || mystery ? `<div class="nl-bb">${K.toggle("trades", "Trades during the draft", "Trade picks and drafted players with any team. Bots answer right away.", c.trades)}${mystery ? K.toggle("test", "Even out the packages", "Deal five times and keep the most even draft", c.test) : ""}</div>` : ""}
@@ -245,7 +247,7 @@
     const order = others.slice(0, slot).concat(0, others.slice(slot));
     const total = n * (P.lineup.length + P.bench);
     const D = F.create({ sport: P.sport, type: c.type, teams: n, seed, now: Date.now(), lineup: P.lineup, bench: P.bench, scoring: P.scoring,
-      botDelay: 1200, clock: c.type === "auction" || c.clock < 0 ? 0 : c.clock, bank: c.clock < 0 && c.type !== "auction" ? { perRound: -c.clock, floor: 10 } : null, bidClock: c.clock || 15, nomClock: 30, budget: sdOn(c) ? 50 : c.budget, order, name: `${P.sport.name} mock`,
+      botDelay: 1200, clock: c.type === "auction" || c.clock < 0 ? 0 : c.clock, bank: c.clock < 0 && c.type !== "auction" ? { perRound: -c.clock / Math.max(1, P.lineup.length + P.bench), floor: 10 } : null, bidClock: c.clock || 15, nomClock: 30, budget: sdOn(c) ? 50 : c.budget, order, name: `${P.sport.name} mock`,
       trades: c.trades !== 0, curve: c.type === "mystery" ? F.pickCurve(P.players, total) : null, reveal: c.reveal });
     if (c.type === "mystery" && c.test) F.fairDeal(D, P.players, P.sport, null, { tries: 5 });
     if (c.type === "pack") F.dealPacks(D, P.players, P.sport);

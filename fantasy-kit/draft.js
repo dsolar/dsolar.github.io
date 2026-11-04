@@ -16,7 +16,7 @@
      hooks.check(D, team, p, ctx)  -> { ok, why }  extra legality (a salary cap, a keeper rule)
      hooks.worth(D, team, p, w, ctx) -> number     how much a bot or autopick likes a player (w is the default)
    Clocks: a clock per pick (clock: seconds), or a time bank (bank: { perRound, floor }): each team gets one clock for
-   the whole draft, perRound seconds for every round. Once it's gone every pick gets `floor` seconds. What's left at
+   the whole draft, all of it up front: perRound seconds times the rounds. Once it's gone every pick gets `floor` seconds. What's left at
    the end becomes FAAB in the league (bankShare). Bots don't really wait, so they're charged a made-up think time.
 
    Every change takes `now` (ms) so a replay of the same calls gives the same draft. */
@@ -449,7 +449,13 @@
     return D.clock ? D.clock * 1000 : Infinity;
   }
   // A bot's (or an autodrafting manager's) pretend time on a pick: each one has its own pace, and some picks take longer.
-  const thinkTime = (D, teamId, k) => Math.round((5 + 20 * hash01(`${D.seed}:pace:${teamId}`)) * (0.4 + 1.2 * hash01(`${D.seed}:think:${k}`)) * 1000);
+  // With a time bank it's sized to the bank: a bot uses about half of its share per pick, more or less by its pace, so
+  // it ends the draft with about half its bank left, like a manager who isn't rushing.
+  const thinkTime = (D, teamId, k) => {
+    const pace = hash01(`${D.seed}:pace:${teamId}`), think = hash01(`${D.seed}:think:${k}`);
+    if (D.bank) return Math.round(D.bank.perRound * 1000 * (0.25 + 0.5 * pace) * (0.5 + think));
+    return Math.round((5 + 20 * pace) * (0.4 + 1.2 * think) * 1000);
+  };
   function charge(D, k, teamId, now) {
     if (!D.bank) return;
     const t = D.teams[teamId];
