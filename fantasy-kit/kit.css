@@ -1488,3 +1488,9 @@ td.more .ps{display:block;margin-top:6px;width:max-content}
 .board.fade-l.fade-r{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent)}
 @media (max-width:600px){table.t.vs td.nm{min-width:0;max-width:none;width:auto}table.t.vs{table-layout:fixed;width:100%}table.t.vs td.pa,table.t.vs td.pb{width:46px}table.t.vs td.sl{width:40px}}
 @media (min-width:861px){body.fk-room .toast{left:auto;right:20px;transform:none;top:88px}}
+/* a column header that explains itself on hover */
+table.t th[title]{text-decoration:underline dotted;text-decoration-color:color-mix(in srgb,currentColor 45%,transparent);text-underline-offset:3px}
+/* action columns take only the room their buttons need */
+table.t td.act,table.t td.r.act{width:1%;white-space:nowrap}
+table.t.roster td.nm{max-width:none;width:42%}
+table.t.roster th.act,table.t.roster td:last-child{width:1%;white-space:nowrap}

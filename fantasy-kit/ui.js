@@ -356,6 +356,12 @@
     const ip = sport.columns.find((c) => c.col === "ip");
     return bat.concat(ip ? [ip] : [], pit);
   }
+  // what each stat column's short label means, for its header's tooltip
+  const STAT_TITLE = { G: "Games played", GP: "Games played", FPTS: "Fantasy points this season", "FP/G": "Fantasy points per game",
+    PaYd: "Passing yards", PaTD: "Passing touchdowns", Int: "Interceptions thrown", RuYd: "Rushing yards", RuTD: "Rushing touchdowns", Rec: "Receptions", ReYd: "Receiving yards", ReTD: "Receiving touchdowns",
+    MIN: "Minutes per game", PTS: "Points per game", REB: "Rebounds per game", AST: "Assists per game", STL: "Steals per game", BLK: "Blocks per game", "3PM": "Threes made per game", "FG%": "Field goal percentage", "FT%": "Free throw percentage", TO: "Turnovers per game",
+    R: "Runs", HR: "Home runs", RBI: "Runs batted in", SB: "Stolen bases", AVG: "Batting average", OBP: "On-base percentage", OPS: "On-base plus slugging", H: "Hits", TB: "Total bases", BB: "Walks",
+    IP: "Innings pitched", W: "Wins", L: "Losses", SV: "Saves", HLD: "Holds", K: "Strikeouts", ERA: "Earned run average", WHIP: "Walks and hits per inning pitched", QS: "Quality starts" };
   function poolColumns(sport, opts = {}) {
     const pts = isPoints(sport, opts.scoring);
     const cols = [
@@ -363,7 +369,7 @@
       { k: "name", label: "Player", td: "nm", sort: (p) => p.n, asc: true, html: (p) => pname(sport, p) },
       { k: "prank", label: "Pos rk", cls: "r ps", hide: "s", title: "Rank at his position", sort: (p) => parseInt(String(p.prank).replace(/\D+/g, ""), 10), asc: true, html: (p) => esc(p.prank) },
     ];
-    if (opts.age !== false && sport.hasAge) cols.push({ k: "age", label: "Age", cls: "r num", hide: "s", sort: (p) => p.age, asc: true, html: (p) => (p.age ? p.age : "") });
+    if (opts.age !== false && sport.hasAge) cols.push({ k: "age", label: "Age", cls: "r num", hide: "s", sort: (p) => p.age, asc: true, html: (p) => (p.age ? Number(p.age).toFixed(1) : `<span class="ps">-</span>`) });
     if (opts.owner) cols.push({ k: "owner", label: "Status", cls: "", hide: opts.ownerHide ? "s" : undefined, sort: opts.ownerSort, html: opts.owner });
     // the market, when the page loaded it (value.js market): ESPN's rank and what players go for in real ESPN auctions
     // in season the experts' consensus and the trade market; before a season, ESPN's draft market
@@ -383,7 +389,7 @@
     for (const c of opts.extra || []) cols.push(c);
     if (opts.stats !== false) for (const [i, c] of statColumns(sport, opts.scoring).entries()) {
       if (opts.group && c.group && c.group !== opts.group) continue;
-      cols.push({ k: "s" + i, label: c.label, title: c.title, cls: "r num", hide: c.hide, sort: (p) => statCell(sport, p, c), html: (p) => { const v = statCell(sport, p, c); return v == null ? `<span class="ps">-</span>` : v === 0 && !c.fpts && !c.fpg ? `<span class="zero">${c.fmt(v)}</span>` : c.fmt(v); } });
+      cols.push({ k: "s" + i, label: c.label, title: c.title || STAT_TITLE[c.label] || "", cls: "r num", hide: c.hide, sort: (p) => statCell(sport, p, c), html: (p) => { const v = statCell(sport, p, c); return v == null ? `<span class="ps">-</span>` : v === 0 && !c.fpts && !c.fpg ? `<span class="zero">${c.fmt(v)}</span>` : c.fmt(v); } });
     }
     if (opts.actions) cols.push({ k: "act", label: '<span class="sr">Actions</span>', raw: true, cls: "r act", html: opts.actions });
     return (opts.lead || []).concat(cols);
