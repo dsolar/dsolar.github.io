@@ -849,22 +849,33 @@
     const TIER = { chase: "Chase", star: "Star", rare: "Rare" };
     function packSealed(pat, pk) {
       return `<div class="pkd-seal"><button type="button" class="pkd-foil" data-act="rip" aria-label="Open pack ${pat.q + 1}"><span class="pkd-fm">${opts.brand && opts.brand.mark ? opts.brand.mark : ""}</span><b>Pack ${pat.q + 1}</b><small>${pk.length} cards</small><i aria-hidden="true"></i></button>
-        <div class="pkd-sx"><h3 class="disp">Your pack is sealed</h3><p>Every pack has a star. A few hold a chase card. The cards turn over from the bottom up, so the best one comes last.</p><button type="button" class="btn go" data-act="rip">Open the pack</button></div></div>`;
+        <div class="pkd-sx"><h3 class="disp">Your pack is sealed</h3><p>${D().packs.price ? `Every pack has a star and one mystery card. Every card has a price, and you have $${D().packs.budget} for the whole draft, so the star isn't always the pick.` : "Every pack has a star. A few hold a chase card."} The cards turn over from the bottom up, so the best one comes last.</p><button type="button" class="btn go" data-act="rip">Open the pack</button></div></div>`;
     }
     function packGrid(rows, pat, myTurn, mine) {
       const d = D(), tier = d.packs.tier || {};
       const ripping = ui.rip && ui.rip.q === pat.q && Date.now() - ui.rip.at < 900 + rows.length * 380;
       const since = ripping ? Date.now() - ui.rip.at : 0;
       // the flip order: worst first, the hit last
-      const order = rows.slice().sort((a, b) => (b.rank || 1e5) - (a.rank || 1e5)).map((p) => p.id);
-      const list = rows.slice().sort((a, b) => (a.rank || 1e5) - (b.rank || 1e5));
+      // a mystery card flips first and sits last, so neither gives away where he ranks
+      const isM = (p) => !!(d.packs.mystery && d.packs.mystery[p.id]);
+      const order = rows.filter(isM).concat(rows.filter((p) => !isM(p)).sort((a, b) => (b.rank || 1e5) - (a.rank || 1e5))).map((p) => p.id);
+      const list = rows.filter((p) => !isM(p)).sort((a, b) => (a.rank || 1e5) - (b.rank || 1e5)).concat(rows.filter(isM));
       return `<div class="pkd-grid${ripping ? " rip" : ""}" role="list">${list.map((p) => {
-        const t = tier[p.id] || "base", ok = F.canAdd(d, ctx, mine, p).ok, i = order.indexOf(p.id);
+        const t = tier[p.id] || "base", can = F.canAdd(d, ctx, mine, p), ok = can.ok, i = order.indexOf(p.id);
+        const price = d.packs.price ? d.packs.price[p.id] || 1 : null, myst = d.packs.mystery && d.packs.mystery[p.id];
+        const tag = price != null ? `<span class="pkd-p" title="What he costs from your budget">$${price}</span>` : "";
+        const why = !ok ? `<span class="ps pkd-why">${/afford|limit|left/.test(can.why || "") ? esc(can.why) : "No room for him"}</span>` : "";
+        // a mystery card stays face down: its tier and position, and what that tier goes for
+        if (myst) return `<article role="listitem" class="pkd t-${t} myst${ok ? "" : " dim"}" style="--d:${i * 380 - since}ms">
+          ${tag}${TIER[t] ? `<span class="pkd-t">${TIER[t]}</span>` : ""}<span class="pkd-q" aria-hidden="true">?</span>
+          <b class="pkd-n">Mystery ${esc(S.positions(p)[0])}</b><span class="pkd-s">${posChips(sport, p)} Face down</span>
+          <span class="pkd-r"><span><small>Priced at</small><b>the ${esc((TIER[t] || "base").toLowerCase())} average</b></span></span>
+          ${myTurn && ok ? `<button class="btn go sm" data-pick="${esc(p.id)}">Draft him</button>` : why}</article>`;
         return `<article role="listitem" class="pkd t-${t}${ok ? "" : " dim"}" style="--d:${i * 380 - since}ms" data-player="${esc(p.id)}">
-          ${TIER[t] ? `<span class="pkd-t">${TIER[t]}</span>` : ""}${playerAv(sport, p, "lg")}
+          ${tag}${TIER[t] ? `<span class="pkd-t">${TIER[t]}</span>` : ""}${playerAv(sport, p, "lg")}
           <b class="pkd-n">${esc(p.n)}</b><span class="pkd-s">${posChips(sport, p)} ${proTeam(sport, p.t)}</span>
           <span class="pkd-r"><span><small>Overall</small><b>#${p.rank || "-"}</b></span><span><small>Position</small><b>${esc(p.prank || "-")}</b></span></span>
-          ${myTurn && ok ? `<button class="btn go sm" data-pick="${esc(p.id)}">Draft</button>` : !ok ? `<span class="ps">No room for him</span>` : ""}</article>`;
+          ${myTurn && ok ? `<button class="btn go sm" data-pick="${esc(p.id)}">Draft</button>` : why}</article>`;
       }).join("")}</div>`;
     }
 
@@ -898,7 +909,7 @@
         if (mine == null) return "";
         const ok = F.canAdd(d, ctx, mine, p).ok;
         const q = team(mine).queue.includes(p.id);
-        return `${myTurn && ok ? `<button class="btn xs go" data-pick="${esc(p.id)}">Draft</button> ` : ""}${myNom && ok ? `<button class="btn xs go" data-nominate="${esc(p.id)}">Nominate</button> ` : ""}<button class="star${q ? " on" : ""}" data-queue="${esc(p.id)}" aria-label="${q ? "Remove" : "Add"} ${esc(p.n)} ${q ? "from" : "to"} your queue" aria-pressed="${!!q}" title="${q ? "In your queue" : "Add to queue"}">${q ? "&#9733;" : "&#9734;"}</button>`;
+        return `${myTurn && ok && !d.packs ? `<button class="btn xs go" data-pick="${esc(p.id)}">Draft</button> ` : ""}${myNom && ok ? `<button class="btn xs go" data-nominate="${esc(p.id)}">Nominate</button> ` : ""}<button class="star${q ? " on" : ""}" data-queue="${esc(p.id)}" aria-label="${q ? "Remove" : "Add"} ${esc(p.n)} ${q ? "from" : "to"} your queue" aria-pressed="${!!q}" title="${q ? "In your queue" : "Add to queue"}">${q ? "&#9733;" : "&#9734;"}</button>`;
       };
       // your board, when you've made one: its place and tier, sortable, and the sort the room opens on
       const bd = mine != null ? myBoard.of(sport.key, opts.players) : null, at = bd && bd.custom ? myBoard.places(bd) : null;
@@ -911,7 +922,9 @@
       if (sealed) return packSealed(pat, pk);
       const chase = pk && pat.j === 0 ? d.round1.filter((id, seat) => (d.packs.cards[pat.q][seat] || []).some((x) => (d.packs.tier || {})[x] === "chase")) : [];
       const chaseLine = chase.length ? ` Chase card${chase.length > 1 ? "s" : ""} this set: ${chase.map((id) => (isMe(team(id)) ? "yours" : `${esc(team(id).name)}'s pack`)).join(", ")}.` : "";
-      const packBar = pk ? `<div class="rl-bar"><span>${packOnly ? `${pat.j === 0 ? `Pack ${pat.q + 1}, fresh: ${pk.length} cards.${chaseLine}` : `Passed from ${esc(team(pw.from).name)}${pw.opener !== pw.from ? `, opened by ${esc(team(pw.opener).name)}` : ""}: ${pk.length} left.`} ${myTurn ? "Take one" : "You've picked"}, then it goes ${pat.q % 2 === 0 ? "left" : "right"}.` : "Showing everyone. You can only take a player from your pack."}</span><button class="btn xs" data-act="rlall">${packOnly ? "Show everyone" : "Only my pack"}</button></div>` : "";
+      const money = pk && d.packs.price && mine != null ? F.packMoney(d, mine) : null;
+      const moneyBar = money ? `<div class="pkd-money"><span><b>$${money.left}</b> of $${d.packs.budget} left</span><span>${money.picks} pick${money.picks === 1 ? "" : "s"} to go, about $${Math.round(money.per)} each</span>${myTurn ? `<span>Most you can pay now: <b>$${money.max}</b></span>` : ""}</div>` : "";
+      const packBar = pk ? moneyBar + `<div class="rl-bar"><span>${packOnly ? `${pat.j === 0 ? `Pack ${pat.q + 1}, fresh: ${pk.length} cards.${chaseLine}` : `Passed from ${esc(team(pw.from).name)}${pw.opener !== pw.from ? `, opened by ${esc(team(pw.opener).name)}` : ""}: ${pk.length} left.`} ${myTurn ? "Take one" : "You've picked"}, then it goes ${pat.q % 2 === 0 ? "left" : "right"}.` : "Showing everyone. You can only take a player from your pack."}</span><button class="btn xs" data-act="rlall">${packOnly ? "Show everyone" : "Only my pack"}</button></div>` : "";
       const rlBar = packBar || sn && sn.t ? packBar || `<div class="rl-bar"><span>${only ? `Showing ${esc(teamFull(sn.t))} players: the wheel's team for this pick.` : `Showing everyone. This pick has to come from ${esc(teamFull(sn.t))}.`}</span><button class="btn xs" data-act="rlall">${only ? "Show everyone" : `Only ${esc(sn.t)}`}</button></div>` : "";
       if (packOnly) return fitBar + rlBar + packGrid(rows, pat, myTurn, mine);
       return fitBar + rlBar + table({ cols, rows, sort: ui.sort, dense: true, id: "fk-pool", limit: ui.limit || 250, empty: "No one matches.",
@@ -957,6 +970,8 @@
       const d = D(), R = F.recap(d, ctx), st = F.standings(d, ctx).sort((a, b) => a.rank - b.rank);
       const lines = [`${d.name || "Draft"} recap`, "", "Grades: " + st.map((r) => `${team(r.team).name} ${r.grade}`).join(", ")];
       if (R.pack) {
+        if (R.budget && R.buys.length) lines.push("", "Best buys:", ...R.buys.map((x) => `  ${ctx.byId[x.pid].n}, $${x.price} for $${Math.round(x.$)} of value (${team(x.team).name})`));
+        if (R.budget && R.mysteries.length) lines.push("", "Mystery cards:", ...R.mysteries.map((x) => `  ${ctx.byId[x.pid].n} for $${x.price}, worth $${Math.round(x.$)} (${team(x.team).name})`));
         if (R.pulls.length) lines.push("", "Best pulls:", ...R.pulls.map((x) => `  ${ctx.byId[x.pid].n}, ${x.tier} (${team(x.team).name}${x.opener !== x.team ? `, from ${team(x.opener).name}'s pack` : ""})`));
         if (R.steals.length) lines.push("", "Steals:", ...R.steals.map((x) => `  ${recapLine(x)} (${team(x.team).name})`));
         if (R.reaches.length) lines.push("", "Left in the pack:", ...R.reaches.map((x) => `  ${recapLine(x)} (${team(x.team).name})`));
@@ -984,6 +999,15 @@
       const pulls = R.pulls.map((x) => li(x, `${esc(team(x.team).name)}${x.opener !== x.team ? `, from ${esc(team(x.opener).name)}'s pack` : ", opened it"}`, `<span class="pkd-t tag-${x.tier}">${TIER[x.tier]}</span>`)).join("");
       const steals = R.steals.map((x) => li(x, esc(team(x.team).name), `<b class="win num">${x.passed} passed</b>`)).join("");
       const left = R.reaches.map((x) => li(x, `${esc(team(x.team).name)}, over ${esc(ctx.byId[x.over.pid].n)}`, `<b class="loss num">-${money(-x.diff)}</b>`)).join("");
+      if (R.budget) {
+        const gain = (x) => { const g = Math.round(x.$ - x.price); return `<b class="${g >= 0 ? "win" : "loss"} num">${g >= 0 ? "+" : "-"}$${Math.abs(g)}</b>`; };
+        const buys = R.buys.map((x) => li(x, `${esc(team(x.team).name)}, $${x.price} for $${Math.round(x.$)} of value`, gain(x))).join("");
+        const myst = R.mysteries.slice(0, 6).map((x) => li(x, `${esc(team(x.team).name)} paid $${x.price}`, gain(x))).join("");
+        return `<div class="card recap"><div class="mod-h"><b>Draft recap</b><span class="ps" style="margin-left:6px">What each pick cost against what he's worth</span><span class="grow"></span><button class="btn sm" data-act="recap">Copy recap</button></div>
+          <div class="recap-cols"><div><h4>Best buys</h4><ul class="rslots">${buys || `<li class="ps">Nobody found a bargain</li>`}</ul></div>
+          <div><h4>Mystery cards</h4><ul class="rslots">${myst || `<li class="ps">Nobody took a mystery card</li>`}</ul></div>
+          <div><h4>Steals: passed by the most teams</h4><ul class="rslots">${steals || `<li class="ps">None to speak of</li>`}</ul></div></div></div>`;
+      }
       return `<div class="card recap"><div class="mod-h"><b>Draft recap</b><span class="ps" style="margin-left:6px">Each pick against the pack it came from</span><span class="grow"></span><button class="btn sm" data-act="recap">Copy recap</button></div>
         <div class="recap-cols"><div><h4>Best pulls</h4><ul class="rslots">${pulls || `<li class="ps">None to speak of</li>`}</ul></div>
         <div><h4>Steals: passed by the most teams</h4><ul class="rslots">${steals || `<li class="ps">None to speak of</li>`}</ul></div>
@@ -1003,7 +1027,7 @@
     function results() {
       const d = D(), st = F.standings(d, ctx).sort((a, b) => a.rank - b.rank), R = F.recap(d, ctx);
       return `<div style="overflow:auto;flex:1;min-height:0">${heistOutcome()}${recapCard()}<div class="teams">${st.map((r) => { const t = team(r.team), bv = R.best[r.team];
-        return `<div class="card"${isMe(t) ? ` style="border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)"` : ""}><div class="mod-h">${teamAv(t, "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(t.name)}${isMe(t) ? ` <span class="tag you">You</span>` : ""}</b><span class="ps">${ord(r.rank)}, ${pts() ? `${Math.round(r.score)} projected` : `${r.score.toFixed(1)} value`}${r.spent != null ? `, spent ${money(r.spent)}` : ""}${d.bank ? `, ${fmtLeft(t.bank)} banked for ${bankFaab(t)} FAAB` : ""}${bv && bv.diff > 0 ? `<br>${R.pack ? `Best steal: ${esc(last(ctx.byId[bv.pid].n))}, ${passedBy(bv.passed)}` : `Best value: ${esc(last(ctx.byId[bv.pid].n))}, +${money(bv.diff)}`}` : ""}</span></div><b class="grade disp">${r.grade}</b></div>
+        return `<div class="card"${isMe(t) ? ` style="border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)"` : ""}><div class="mod-h">${teamAv(t, "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(t.name)}${isMe(t) ? ` <span class="tag you">You</span>` : ""}</b><span class="ps">${ord(r.rank)}, ${pts() ? `${Math.round(r.score)} projected` : `${r.score.toFixed(1)} value`}${r.spent != null ? `, spent ${money(r.spent)}` : ""}${d.bank ? `, ${fmtLeft(t.bank)} banked for ${bankFaab(t)} FAAB` : ""}${R.budget ? `<br>$${R.spent[r.team] || 0} of $${R.budget} spent` : ""}${bv && bv.diff > 0 ? `<br>${R.pack ? `Best steal: ${esc(last(ctx.byId[bv.pid].n))}, ${passedBy(bv.passed)}` : `Best value: ${esc(last(ctx.byId[bv.pid].n))}, +${money(bv.diff)}`}` : ""}</span></div><b class="grade disp">${r.grade}</b></div>
           <ol>${d.lineup.map((sl, i) => { const p = r.starters[i]; return `<li><span class="slot">${esc(sl)}</span>${p ? `<button class="btn link ell" data-player="${esc(p.id)}">${esc(p.n)}</button><span class="grow"></span><span class="ps">#${p.rank}</span>` : `<span class="ps">Empty</span>`}</li>`; }).join("")}${r.bench.map((p) => `<li class="bn"><span class="slot">BN</span><button class="btn link ell" data-player="${esc(p.id)}">${esc(p.n)}</button><span class="grow"></span><span class="ps">#${p.rank}</span></li>`).join("")}</ol></div>`; }).join("")}</div></div>`;
     }
     // Projected standings from the rosters so far: each team's best lineup, its category totals and the roto points
@@ -1317,7 +1341,10 @@
       if (b) {
         e.stopPropagation();
         const d = D(), n = now();
-        if (b.dataset.pick) act(() => F.pick(d, ctx, me(), b.dataset.pick, n));
+        if (b.dataset.pick) {
+          const pid = b.dataset.pick, myst = d.packs && d.packs.mystery && d.packs.mystery[pid], cost = d.packs && d.packs.price ? F.packPrice(d, me(), pid) : null;
+          if (act(() => F.pick(d, ctx, me(), pid, n)) && myst) { const p = ctx.byId[pid]; toast(`The mystery card: ${p.n}, ${S.positions(p)[0]} ${p.t}, ranked #${p.rank}. You paid $${cost}.`); }
+        }
         else if (b.dataset.queue) toggleQueue(b.dataset.queue);
         else if (b.dataset.nominate) nominateDialog(b.dataset.nominate);
         else if (b.dataset.bid) act(() => F.bid(d, ctx, me(), +b.dataset.bid, n));

@@ -205,9 +205,16 @@
     const pk = D.packs && D.phase === "live" ? packFor(D, ctx, teamId) : null;
     if (pk) {
       if (!pk.includes(p.id)) return { ok: false, why: `${p.n} isn't in your pack` };
+      const m = packMoney(D, teamId), cost = (id) => (D.packs.price[id] || 1);
+      const ok = (id) => fitsRoster(D, ctx, teamId, ctx.byId[id]).ok && (!m || cost(id) <= m.max);
       const fit = fitsRoster(D, ctx, teamId, p);
-      // nobody in the pack fits what the lineup still needs: any of them will do, so a pick is never stuck
-      if (!fit.ok && rosters(D)[teamId].length < sizeOf(D) && !pk.some((id) => fitsRoster(D, ctx, teamId, ctx.byId[id]).ok)) return { ok: true };
+      // nobody in the pack fits what the lineup still needs, or what's left of the budget: then any of them will do
+      // (the cheapest when it's the money), so a pick is never stuck
+      if (rosters(D)[teamId].length < sizeOf(D) && !pk.some(ok)) {
+        if (m && !pk.some((id) => cost(id) <= m.max)) { const cheap = Math.min(...pk.map(cost)); return cost(p.id) === cheap ? { ok: true } : { ok: false, why: `You have $${m.left} left: only the cheapest card here` }; }
+        return { ok: true };
+      }
+      if (m && cost(p.id) > m.max) return { ok: false, why: `${m.picks > 1 ? `With $${m.left} left and ${m.picks - 1} more to pick, $${m.max} is your limit` : `You have $${m.left} left`}` };
       return fit;
     }
     return fitsRoster(D, ctx, teamId, p);
@@ -297,7 +304,26 @@
     const tier = {}, chase = Math.floor((n * Q) / 6);
     hits.forEach((id, i) => (tier[id] = i < chase ? "chase" : "star"));
     ranked.filter((id) => !isHit.has(id)).slice(0, 2 * n * Q).forEach((id) => (tier[id] = "rare"));
-    D.packs = { sizes, extra, cards, tier };
+    // Price tags: each card's draft value with a markup or a discount of up to a quarter, so a star can be a
+    // splurge and a mid-round player a bargain. Every team has one budget for the whole draft ($1 a pick at least).
+    // One card a pack is a mystery: face down, showing only its tier and position, and priced at what that tier and
+    // position go for on average.
+    const budget = 200, price = {}, mystery = {}, est = {};
+    for (const set of cards) for (const ids of set) for (const id of ids) {
+      const v = Math.max(0, byId[id].$ || 0), n = 0.75 + 0.55 * hash01(`${D.seed}:price:${id}`);
+      price[id] = Math.max(1, Math.round(v * n));
+    }
+    const groupAvg = {};
+    for (const set of cards) for (const ids of set) for (const id of ids) { const k = (tier[id] || "base") + ":" + main(byId[id]); (groupAvg[k] = groupAvg[k] || []).push(Math.max(0, byId[id].$ || 0)); }
+    for (const set of cards) for (const ids of set) {
+      const pool = ids.filter((id) => tier[id] !== "star" && tier[id] !== "chase" && !(sport.late || []).includes(main(byId[id])));
+      if (!pool.length) continue;
+      const id = pool[Math.floor(r() * pool.length)], g = groupAvg[(tier[id] || "base") + ":" + main(byId[id])];
+      mystery[id] = 1;
+      est[id] = g.reduce((a, x) => a + x, 0) / g.length;
+      price[id] = Math.max(1, Math.round(est[id]));
+    }
+    D.packs = { sizes, extra, cards, tier, budget, price, mystery, est };
     D.trading = false;
     return D.packs;
   }
@@ -319,6 +345,17 @@
     const src = (((seat - dir * j) % n) + n) % n;
     return (D.packs.cards[q][src] || []).filter((id) => !ctx || ctx.own[id] == null);
   }
+  // the budget: what a team has spent, what it has left, and the most it can pay for this pick and still have $1 for
+  // every pick after it
+  const priced = (D) => !!(D.packs && D.packs.price);
+  const packSpent = (D, teamId) => D.board.reduce((a, pk) => a + (pk && pk.team === teamId && pk.price ? pk.price : 0), 0);
+  function packMoney(D, teamId) {
+    if (!priced(D)) return null;
+    const left = D.packs.budget - packSpent(D, teamId), picks = sizeOf(D) - rosters(D)[teamId].length;
+    return { left, picks, max: Math.max(0, left - Math.max(0, picks - 1)), per: picks ? left / picks : 0 };
+  }
+  // what a card costs this team: its price, or, when nothing in the pack is affordable, all it has left
+  const packPrice = (D, teamId, pid) => { const m = packMoney(D, teamId); return m ? Math.min(D.packs.price[pid] || 1, m.max) : 0; };
   // a team's spot on the board this turn, if it hasn't picked yet
   function packSlot(D, teamId) {
     const t = packTurnNow(D);
@@ -334,7 +371,7 @@
     const ok = canAdd(D, ctx, teamId, p);
     if (!ok.ok) return ok;
     const t = Math.floor(k / D.round1.length);
-    D.board[k] = { n: k + 1, team: teamId, pid, at: now, auto: !!auto };
+    D.board[k] = Object.assign({ n: k + 1, team: teamId, pid, at: now, auto: !!auto }, priced(D) ? { price: packPrice(D, teamId, pid) } : {});
     ctx.own[pid] = teamId;
     ctx.available = ctx.available.filter((x) => x.id !== pid);
     for (const tm of D.teams) tm.queue = tm.queue.filter((x) => x !== pid);
@@ -688,7 +725,9 @@
   function worth(D, ctx, teamId, p, r, need) {
     const { left, openStarters, lateOpen, fills, urgency } = need || needs(D, ctx, teamId);
     const fillsStarter = fills(p);
-    let w = (p.$ || 0) + Math.max(0, p.vor || 0) / ctx.maxVor;
+    // a mystery card is worth what its tier and position go for: nobody, bots included, knows who it is
+    const myst = D.packs && D.packs.mystery && D.packs.mystery[p.id] && D.phase === "live";
+    let w = myst ? D.packs.est[p.id] : (p.$ || 0) + Math.max(0, p.vor || 0) / ctx.maxVor;
     if (S.isLate(ctx.sport, p)) {
       if (left > lateOpen + 1) w *= 0.05;
     }
@@ -697,6 +736,17 @@
     // the scarcer a position he alone can fill, the sooner a bot takes one while it's there
     // kickers and defenses still wait for the last rounds: there are plenty to go around
     const waits = S.isLate(ctx.sport, p) && left > lateOpen + 1;
+    if (priced(D) && D.phase === "live") {
+      // with price tags a card is worth what it adds over what it costs, the cost weighed by how tight the money is
+      // (money left at the end buys nothing, so a team that's flush pays up), plus a bonus for filling the lineup
+      const m = packMoney(D, teamId), par = D.packs.budget / sizeOf(D);
+      const beta = 0.85 * Math.max(0.35, Math.min(2.2, par / Math.max(0.5, m.per)));
+      const urg = urgency ? urgency(S.positions(p)[0]) : 0;
+      w = w - beta * (D.packs.price[p.id] || 1) + (waits ? -5 : fillsStarter ? 0.35 * w + 1 + 20 * urg : openStarters > 0 ? -1000 : 0);
+      if (r) w += (r() - 0.5) * 4;
+      if (ctx.hooks.worth) w = ctx.hooks.worth(D, D.teams[teamId], p, w, ctx);
+      return w;
+    }
     if (D.packs && !waits) w = fillsStarter ? w * (1.4 + (urgency ? 6 * urgency(S.positions(p)[0]) : 0)) + 1 + (urgency ? 20 * urgency(S.positions(p)[0]) : 0) : openStarters > 0 ? w * 0.02 : w;
     if (r) w *= 0.85 + r() * 0.3;
     if (ctx.hooks.worth) w = ctx.hooks.worth(D, D.teams[teamId], p, w, ctx);
@@ -1331,7 +1381,7 @@
       const p = ctx.byId[pk.pid], pos = S.positions(p)[0];
       // the best one left at his position: a team that needed a quarterback didn't reach by taking one
       const top = left.filter((id) => ctx.byId[id] && S.positions(ctx.byId[id])[0] === pos).sort((a, b) => $(b) - $(a))[0];
-      return { team: pk.team, pid: pk.pid, at: pk.n, rank: p.rank, $: $(pk.pid), passed: j, opener: D.round1[src], tier: (D.packs.tier || {})[pk.pid] || "",
+      return { team: pk.team, pid: pk.pid, at: pk.n, rank: p.rank, $: $(pk.pid), passed: j, price: pk.price, myst: !!(D.packs.mystery && D.packs.mystery[pk.pid]), opener: D.round1[src], tier: (D.packs.tier || {})[pk.pid] || "",
         over: top != null && $(top) > $(pk.pid) ? { pid: top, by: $(top) - $(pk.pid) } : null, late: !!(ctx.sport.late && ctx.sport.late.length && S.isLate(ctx.sport, p)) };
     }).filter((r) => !r.late);
     // a steal: a good player who went around the table; the score is his value, more for every team that passed him
@@ -1341,11 +1391,17 @@
     const best = {}, worst = {};
     for (const r of steals) if (!best[r.team]) best[r.team] = r;
     for (const r of reaches) if (!worst[r.team]) worst[r.team] = r;
-    return { steals, reaches, best, worst, pulls, pack: true };
+    // with price tags: the best buys (value over what was paid), and how each mystery card turned out
+    const paid = rows.filter((r) => r.price != null);
+    const buys = paid.filter((r) => !r.myst && r.$ - r.price >= 3).sort((a, b) => (b.$ - b.price) - (a.$ - a.price)).slice(0, 5);
+    const mysteries = paid.filter((r) => r.myst).sort((a, b) => (b.$ - b.price) - (a.$ - a.price));
+    const spent = {};
+    for (const r of paid) spent[r.team] = (spent[r.team] || 0) + r.price;
+    return { steals, reaches, best, worst, pulls, buys, mysteries, spent, budget: D.packs.budget, pack: true };
   }
   const made_ = (D) => made(D);
 
-  return { dealPacks, packFor, packAt, packSlot, packTurnNow, HEIST, heistRules, heistFoe, heistLineup, heistMove, heistCheck, heistDefault, heistTick, heistSealed, heistDue, heistIn, heistUnseal, spinOf, wheelFor, respin, respinsLeft, setOrder, recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
+  return { dealPacks, packMoney, packPrice, packFor, packAt, packSlot, packTurnNow, HEIST, heistRules, heistFoe, heistLineup, heistMove, heistCheck, heistDefault, heistTick, heistSealed, heistDue, heistIn, heistUnseal, spinOf, wheelFor, respin, respinsLeft, setOrder, recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
     start, pause, pick, worth, resize, offerHold, holdLeft, HOLD_MAX, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, botMax, standings, sizeOf,
     clockLen, thinkTime, bankShare, slotInfo, fitsRoster, canSteal, steal, stealsOf, stealsLeft, stealsOpen, botSteal, pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
     tradeCheck, balance, propose, respond, cancel, botAnswer, botOffer };

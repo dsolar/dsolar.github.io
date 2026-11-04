@@ -432,6 +432,13 @@ test('pack draft: every pack has a star, a few hold a chase card, K and DEF wait
   for (let i = 0; i < 4000 && D.phase === 'live'; i++) F.tick(D, ctx, 1e12 + 1 + i * 5e5);
   const lu = F.rosters(D).map((r) => F.assign(sport, r.map((id) => ctx.byId[id]).filter(Boolean), lineup));
   assert.equal(lu.flat().filter((x) => !x).length, 0, 'every lineup is full');
+  // price tags: one budget for the draft, never overspent, a dollar a pick at least, one mystery card a pack
+  for (const set of D.packs.cards) for (const ids of set) assert.equal(ids.filter((id) => D.packs.mystery[id]).length, 1, 'one mystery card a pack');
+  for (const t of D.round1) {
+    const paid = D.board.filter((pk) => pk && pk.team === t).map((pk) => pk.price);
+    assert.ok(paid.every((x) => x >= 1), 'every pick costs at least $1');
+    assert.ok(paid.reduce((a, x) => a + x, 0) <= D.packs.budget, 'nobody spends more than the budget');
+  }
   const R = F.recap(D, ctx);
   assert.ok(R.pack && R.pulls.length > 0);
   assert.ok(R.steals.every((x) => x.passed >= 2), 'a steal went around the table');
