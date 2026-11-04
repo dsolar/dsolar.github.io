@@ -214,10 +214,10 @@
   // more than the lineups need), the rest the best left, then every position spread across the packs in turn.
   function dealPacks(D, players, sport) {
     // with no bench every pick has to fill a lineup spot, so each pack carries a spare more
-    const n = D.round1.length, R = D.rounds, Q = R >= 6 ? 2 : 1, extra = D.bench ? 2 : 3;
+    const po = D.packOpts || {}, n = D.round1.length, R = D.rounds, Q = po.sets || (R >= 6 ? 2 : 1), extra = po.extra != null ? po.extra : D.bench ? 2 : 3;
     const sizes = Array.from({ length: Q }, (_, q) => Math.floor(R / Q) + (q < R % Q ? 1 : 0));
     const total = sizes.reduce((a, x) => a + (x + extra) * n, 0);
-    const ok = players.filter((p) => D.lineup.some((sl) => S.fits(sport, p, sl)) && (p.v || 0) > -1e9).sort((a, b) => (b.v || 0) - (a.v || 0));
+    const ok = players.filter((p) => D.lineup.some((sl) => S.fits(sport, p, sl)) && (p.v || 0) > -1e9).sort((a, b) => (a.rank || 1e5) - (b.rank || 1e5));
     const pick = new Set(), main = (p) => S.positions(p)[0];
     // each position's share of the pool is its share of the lineup (a flex spot split among what it takes, the bench
     // like the starters), and each position's best players fill it
@@ -234,26 +234,62 @@
     for (const [pos, k] of Object.entries(own)) { const min = Math.ceil(k * n * (D.bench ? 1.5 : 1.7)); while ((want[pos] || 0) < min) { const big = Object.keys(want).filter((x) => x !== pos).sort((a, b) => want[b] - want[a])[0]; if (!big || want[big] <= (own[big] || 0) * n * 1.5) break; want[big]--; want[pos] = (want[pos] || 0) + 1; } }
     for (const [pos, k] of Object.entries(want)) { let left = k; for (const p of ok) { if (!left) break; if (main(p) === pos && !pick.has(p.id)) { pick.add(p.id); left--; } } }
     for (const p of ok) { if (pick.size >= total) break; pick.add(p.id); }
-    const byId = Object.fromEntries(ok.map((p) => [p.id, p]));
-    // the packs in dealing order, each with room for its picks plus the extras
-    const packs = [];
-    for (let q = 0; q < Q; q++) for (let i = 0; i < n; i++) packs.push({ q, i, cap: sizes[q] + extra, ids: [] });
-    const groups = {};
-    for (const id of pick) (groups[main(byId[id])] = groups[main(byId[id])] || []).push(byId[id]);
-    // scarce positions first, so each pack gets its share of them
-    const order = Object.keys(groups).sort((a, b) => groups[a].length - groups[b].length);
-    let at = 0, dir = 1;
+    const byId = Object.fromEntries(ok.map((p) => [p.id, p])), val = (id) => -(byId[id].rank || 1e5);   // draft rank, not raw points: a star is a star at his position
     const r = rng((D.seed ^ 0xbacc) >>> 0);
-    for (const pos of order) for (const p of groups[pos].sort((a, b) => (b.v || 0) - (a.v || 0))) {
-      let tries = 0;
-      while (packs[at].ids.length >= packs[at].cap && tries++ < packs.length * 2) { at += dir; if (at >= packs.length || at < 0) { dir = -dir; at += dir; } }
-      if (packs[at].ids.length >= packs[at].cap) break;
-      packs[at].ids.push(p.id);
-      at += dir; if (at >= packs.length || at < 0) { dir = -dir; at += dir; }
+    // every pack's hit: one of the best players in the pool, so every pack has a star. The best few of those are
+    // chase cards. Hits go out in a hidden snake: the seat that opens the best pack of one set opens the weakest of
+    // the next, so the luck of the rip evens out over the draft.
+    const ranked = [...pick].sort((a, b) => val(b) - val(a)), hits = ranked.slice(0, n * Q);
+    const seatRank = D.round1.map((_, i) => i);
+    for (let i = n - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [seatRank[i], seatRank[j]] = [seatRank[j], seatRank[i]]; }
+    const packs = [];
+    for (let q = 0; q < Q; q++) for (let seat = 0; seat < n; seat++) {
+      const k = q % 2 === 0 ? seatRank[seat] : n - 1 - seatRank[seat];
+      packs.push({ q, seat, cap: sizes[q] + extra, ids: [hits[q * n + k]] });
     }
-    // which seat opens which pack is shuffled, so the dealing order gives nobody an edge
-    const cards = sizes.map((_, q) => { const ps = packs.filter((x) => x.q === q).map((x) => x.ids); for (let i = ps.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [ps[i], ps[j]] = [ps[j], ps[i]]; } return ps; });
-    D.packs = { sizes, extra, cards };
+    // the rest, position by position (scarce ones first), snaking across the packs from the one with the weakest hit
+    const groups = {}, isHit = new Set(hits);
+    for (const id of pick) if (!isHit.has(id)) (groups[main(byId[id])] = groups[main(byId[id])] || []).push(byId[id]);
+    const flow = packs.slice().sort((x, y) => val(x.ids[0]) - val(y.ids[0]));
+    // kickers and defenses all come in the last set, so the first is all for the lineup's core and the last has
+    // one for everyone
+    const lateP = (pos) => !!(sport.late && sport.late.includes(pos));
+    const order = Object.keys(groups).sort((a, b) => (lateP(b) - lateP(a)) || groups[a].length - groups[b].length);
+    const lastSet = flow.filter((x) => x.q === Q - 1);
+    const cur = new Map([[flow, { at: 0, dir: 1 }], [lastSet, { at: 0, dir: 1 }]]);
+    for (const pos of order) {
+      const lane = lateP(pos) && Q > 1 ? lastSet : flow, c = cur.get(lane);
+      let { at, dir } = c;
+      for (const p of groups[pos].sort((a, b) => (a.rank || 1e5) - (b.rank || 1e5))) {
+        let tries = 0;
+        while (lane[at].ids.length >= lane[at].cap && tries++ < lane.length * 2) { at += dir; if (at >= lane.length || at < 0) { dir = -dir; at += dir; } }
+        if (lane[at].ids.length >= lane[at].cap) break;
+        lane[at].ids.push(p.id);
+        at += dir; if (at >= lane.length || at < 0) { dir = -dir; at += dir; }
+      }
+      Object.assign(c, { at, dir });
+    }
+    const cards = sizes.map((_, q) => packs.filter((x) => x.q === q).sort((x, y) => x.seat - y.seat).map((x) => x.ids));
+    // Who opens which pack, set so the draft comes out even: a seat's haul is roughly the best card of the pack it
+    // opens, the second best of the one passed to it, and so on. Swap openers until every seat's haul is close.
+    const worth$ = (id) => Math.max(0, byId[id].$ || 0) + Math.max(0, 1e3 - (byId[id].rank || 1e3)) / 1e3;
+    const depth = cards.map((set) => set.map((ids) => ids.map(worth$).sort((a, b) => b - a)));
+    const haul = (seat) => sizes.reduce((sum, size, q) => { const d = q % 2 === 0 ? 1 : -1; let h = 0; for (let j = 0; j < size; j++) { const src = (((seat - d * j) % n) + n) % n; h += depth[q][src][j] || 0; } return sum + h; }, 0);
+    const spread = () => { const hs = D.round1.map((_, i) => haul(i)); return Math.max(...hs) - Math.min(...hs); };
+    let best = spread();
+    for (let it = 0; it < 60 * n && best > 0; it++) {
+      const q = Math.floor(r() * Q), a = Math.floor(r() * n), b = Math.floor(r() * n);
+      if (a === b) continue;
+      [cards[q][a], cards[q][b]] = [cards[q][b], cards[q][a]]; [depth[q][a], depth[q][b]] = [depth[q][b], depth[q][a]];
+      const s2 = spread();
+      if (s2 <= best) best = s2;
+      else { [cards[q][a], cards[q][b]] = [cards[q][b], cards[q][a]]; [depth[q][a], depth[q][b]] = [depth[q][b], depth[q][a]]; }
+    }
+    // the rarity printed on each card: the hits are stars (the best of them chase cards), the next tier rares
+    const tier = {}, chase = Math.floor((n * Q) / 6);
+    hits.forEach((id, i) => (tier[id] = i < chase ? "chase" : "star"));
+    ranked.filter((id) => !isHit.has(id)).slice(0, 2 * n * Q).forEach((id) => (tier[id] = "rare"));
+    D.packs = { sizes, extra, cards, tier };
     D.trading = false;
     return D.packs;
   }
@@ -645,7 +681,9 @@
     if (!fillsStarter && openStarters > 0) w *= left <= openStarters + 1 ? 0.1 : 0.75;
     // a pack draft can't count on a position coming back around: fill the lineup first
     // the scarcer a position he alone can fill, the sooner a bot takes one while it's there
-    if (D.packs) w = fillsStarter ? w * (1.4 + (urgency ? 6 * urgency(S.positions(p)[0]) : 0)) + 1 + (urgency ? 20 * urgency(S.positions(p)[0]) : 0) : openStarters > 0 ? w * 0.02 : w;
+    // kickers and defenses still wait for the last rounds: there are plenty to go around
+    const waits = S.isLate(ctx.sport, p) && left > lateOpen + 1;
+    if (D.packs && !waits) w = fillsStarter ? w * (1.4 + (urgency ? 6 * urgency(S.positions(p)[0]) : 0)) + 1 + (urgency ? 20 * urgency(S.positions(p)[0]) : 0) : openStarters > 0 ? w * 0.02 : w;
     if (r) w *= 0.85 + r() * 0.3;
     if (ctx.hooks.worth) w = ctx.hooks.worth(D, D.teams[teamId], p, w, ctx);
     return w;
@@ -1264,7 +1302,31 @@
       }
       for (const r of runs) { const ks = made.slice().sort((a, b) => a.n - b.n); r.fromPick = ks[r.from].n; r.toPick = ks[r.to].n; r.of = r.to - r.from + 1; }
     }
-    return { steals, reaches, best, worst, runs: runs.slice(0, 4), auction: auc };
+    return D.packs ? Object.assign(packRecap(D, ctx, made), { runs: [], auction: false }) : { steals, reaches, best, worst, runs: runs.slice(0, 4), auction: auc };
+  }
+  // A pack draft's round says which pack a player was in, not what he cost. So a pick is judged by the pack he came
+  // from: how many teams passed him by (a steal), and who was still in the pack when he was taken (a reach).
+  function packRecap(D, ctx, made) {
+    const n = D.round1.length, turnOf = {}, $ = (id) => (ctx.byId[id] ? Math.max(0, ctx.byId[id].$ || 0) : 0);
+    for (const pk of made) turnOf[pk.pid] = Math.floor((pk.n - 1) / n);
+    const rows = made.filter((pk) => pk.n - 1 < n * (D.rounds || 1e3)).map((pk) => {
+      const t = Math.floor((pk.n - 1) / n), seat = (pk.n - 1) % n, { q, j } = packAt(D, t), d = q % 2 === 0 ? 1 : -1;
+      const src = (((seat - d * j) % n) + n) % n, pack = D.packs.cards[q][src] || [];
+      const left = pack.filter((id) => id !== pk.pid && !(turnOf[id] < t));           // still in the pack when he was taken
+      const p = ctx.byId[pk.pid], pos = S.positions(p)[0];
+      // the best one left at his position: a team that needed a quarterback didn't reach by taking one
+      const top = left.filter((id) => ctx.byId[id] && S.positions(ctx.byId[id])[0] === pos).sort((a, b) => $(b) - $(a))[0];
+      return { team: pk.team, pid: pk.pid, at: pk.n, rank: p.rank, $: $(pk.pid), passed: j, opener: D.round1[src], tier: (D.packs.tier || {})[pk.pid] || "",
+        over: top != null && $(top) > $(pk.pid) ? { pid: top, by: $(top) - $(pk.pid) } : null, late: !!(ctx.sport.late && ctx.sport.late.length && S.isLate(ctx.sport, p)) };
+    }).filter((r) => !r.late);
+    // a steal: a good player who went around the table; the score is his value, more for every team that passed him
+    const steals = rows.filter((r) => r.passed >= 2 && r.$ > 1).map((r) => Object.assign(r, { diff: Math.round(r.$ * r.passed / 2) })).sort((a, b) => b.diff - a.diff).slice(0, 5);
+    const reaches = rows.filter((r) => r.over && r.over.by >= 3).map((r) => Object.assign({}, r, { diff: -Math.round(r.over.by) })).sort((a, b) => a.diff - b.diff).slice(0, 5);
+    const pulls = rows.filter((r) => r.tier === "chase" || (r.tier === "star" && r.passed === 0)).sort((a, b) => b.$ - a.$).slice(0, 5);
+    const best = {}, worst = {};
+    for (const r of steals) if (!best[r.team]) best[r.team] = r;
+    for (const r of reaches) if (!worst[r.team]) worst[r.team] = r;
+    return { steals, reaches, best, worst, pulls, pack: true };
   }
   const made_ = (D) => made(D);
 

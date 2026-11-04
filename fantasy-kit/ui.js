@@ -777,6 +777,40 @@
       return d.round1.map((id) => { const t = team(id); return `<span class="${isMe(t) ? "me" : ""}${lot && lot.team === id ? " lead" : ""}" title="${esc(t.name)}: ${F.spotsLeft(d, id)} spots left, max bid ${money(F.maxBid(d, id))}">${teamAv(t, "sm")}<b>${esc(t.abbr)}</b> ${money(t.budget)} <span class="ps">max ${money(F.maxBid(d, id))}</span></span>`; }).join("");
     }
 
+    /* ---------- a pack draft: the sealed pack, the rip, the cards ---------- */
+    const packKey = (q) => `fk-pack:${D().seed}:${q}`;
+    function packOpened(q) {
+      if ((ui.opened || {})[q]) return true;
+      try { return !!sessionStorage.getItem(packKey(q)); } catch (e) { return false; }
+    }
+    // the pack in front of a team: who opened it, and who passed it on
+    function packWhere(d, teamId) {
+      const n = d.round1.length, seat = d.round1.indexOf(teamId), { q, j } = F.packAt(d, F.packTurnNow(d)), dir = q % 2 === 0 ? 1 : -1;
+      const at = (k) => d.round1[(((seat - dir * k) % n) + n) % n];
+      return { opener: at(j), from: at(1) };
+    }
+    const TIER = { chase: "Chase", star: "Star", rare: "Rare" };
+    function packSealed(pat, pk) {
+      return `<div class="pkd-seal"><button type="button" class="pkd-foil" data-act="rip" aria-label="Open pack ${pat.q + 1}"><span class="pkd-fm">${opts.brand && opts.brand.mark ? opts.brand.mark : ""}</span><b>Pack ${pat.q + 1}</b><small>${pk.length} cards</small><i aria-hidden="true"></i></button>
+        <div class="pkd-sx"><h3 class="disp">Your pack is sealed</h3><p>Every pack has a star. A few hold a chase card. The cards turn over from the bottom up, so the best one comes last.</p><button type="button" class="btn go" data-act="rip">Open the pack</button></div></div>`;
+    }
+    function packGrid(rows, pat, myTurn, mine) {
+      const d = D(), tier = d.packs.tier || {};
+      const ripping = ui.rip && ui.rip.q === pat.q && Date.now() - ui.rip.at < 900 + rows.length * 380;
+      const since = ripping ? Date.now() - ui.rip.at : 0;
+      // the flip order: worst first, the hit last
+      const order = rows.slice().sort((a, b) => (b.rank || 1e5) - (a.rank || 1e5)).map((p) => p.id);
+      const list = rows.slice().sort((a, b) => (a.rank || 1e5) - (b.rank || 1e5));
+      return `<div class="pkd-grid${ripping ? " rip" : ""}" role="list">${list.map((p) => {
+        const t = tier[p.id] || "base", ok = F.canAdd(d, ctx, mine, p).ok, i = order.indexOf(p.id);
+        return `<article role="listitem" class="pkd t-${t}${ok ? "" : " dim"}" style="--d:${i * 380 - since}ms" data-player="${esc(p.id)}">
+          ${TIER[t] ? `<span class="pkd-t">${TIER[t]}</span>` : ""}${playerAv(sport, p, "lg")}
+          <b class="pkd-n">${esc(p.n)}</b><span class="pkd-s">${posChips(sport, p)} ${proTeam(sport, p.t)}</span>
+          <span class="pkd-r"><span><small>Overall</small><b>#${p.rank || "-"}</b></span><span><small>Position</small><b>${esc(p.prank || "-")}</b></span></span>
+          ${myTurn && ok ? `<button class="btn go sm" data-pick="${esc(p.id)}">Draft</button>` : !ok ? `<span class="ps">No room for him</span>` : ""}</article>`;
+      }).join("")}</div>`;
+    }
+
     /* left side: players, board, picks, results */
     function players() {
       const d = D(), n = now(), mine = me();
@@ -804,9 +838,14 @@
       if (at && !ui.sortSet) { ui.sort = { k: "my", dir: 1 }; ui.sortSet = true; }
       const cols = poolColumns(sport, { group: groupOf(sport, ui.f), scoring: d.scoring, actions, lead });
       rows = sortRows(rows, cols, ui.sort);
-      const pat = pk ? F.packAt(d, F.packTurnNow(d)) : null;
-      const packBar = pk ? `<div class="rl-bar"><span>${packOnly ? `Your pack: ${pk.length} left. ${myTurn ? "Take one" : "You've picked"}, then it passes ${pat.q % 2 === 0 ? "left" : "right"}.` : "Showing everyone. You can only take a player from your pack."}</span><button class="btn xs" data-act="rlall">${packOnly ? "Show everyone" : "Only my pack"}</button></div>` : "";
+      const pat = pk ? F.packAt(d, F.packTurnNow(d)) : null, pw = pk ? packWhere(d, mine) : null;
+      const sealed = pk && packOnly && pat.j === 0 && myTurn && !packOpened(pat.q);
+      if (sealed) return packSealed(pat, pk);
+      const chase = pk && pat.j === 0 ? d.round1.filter((id, seat) => (d.packs.cards[pat.q][seat] || []).some((x) => (d.packs.tier || {})[x] === "chase")) : [];
+      const chaseLine = chase.length ? ` Chase card${chase.length > 1 ? "s" : ""} this set: ${chase.map((id) => (isMe(team(id)) ? "yours" : `${esc(team(id).name)}'s pack`)).join(", ")}.` : "";
+      const packBar = pk ? `<div class="rl-bar"><span>${packOnly ? `${pat.j === 0 ? `Pack ${pat.q + 1}, fresh: ${pk.length} cards.${chaseLine}` : `Passed from ${esc(team(pw.from).name)}${pw.opener !== pw.from ? `, opened by ${esc(team(pw.opener).name)}` : ""}: ${pk.length} left.`} ${myTurn ? "Take one" : "You've picked"}, then it goes ${pat.q % 2 === 0 ? "left" : "right"}.` : "Showing everyone. You can only take a player from your pack."}</span><button class="btn xs" data-act="rlall">${packOnly ? "Show everyone" : "Only my pack"}</button></div>` : "";
       const rlBar = packBar || sn && sn.t ? packBar || `<div class="rl-bar"><span>${only ? `Showing ${esc(teamFull(sn.t))} players: the wheel's team for this pick.` : `Showing everyone. This pick has to come from ${esc(teamFull(sn.t))}.`}</span><button class="btn xs" data-act="rlall">${only ? "Show everyone" : `Only ${esc(sn.t)}`}</button></div>` : "";
+      if (packOnly) return rlBar + packGrid(rows, pat, myTurn, mine);
       return rlBar + table({ cols, rows, sort: ui.sort, dense: true, id: "fk-pool", limit: ui.limit || 250, empty: "No one matches.",
         rowAttr: (p) => `data-player="${esc(p.id)}" class="${mine != null && ctx.own[p.id] == null && !F.canAdd(d, ctx, mine, p).ok ? "dim" : ""}"` });
     }
@@ -840,13 +879,21 @@
         return `<li class="${isMe(t) ? "me" : ""}"><span class="no">${auction() ? money(pk.price) : plab(pk.n - 1)}</span><span ${p ? `data-player="${esc(p.id)}"` : ""} style="cursor:pointer;min-width:0">${p ? pname(sport, p, [pk.keeper ? "keeper" : pk.auto ? "autopick" : "", pk.drafter != null && pk.drafter !== pk.team ? `traded from ${team(pk.drafter).abbr}` : "", pk.steal ? `stole him from ${team(pk.from).abbr}` : "", pk.gone ? "later stolen" : ""].filter(Boolean).join(", ")) : "<b>Passed</b>"}</span><span class="row">${teamAv(t, "sm")}<span class="ps hide-s">${esc(t.name)}</span></span></li>`; }).join("")}</ol>` : `<p class="empty">No ${auction() ? "sales" : "picks"} yet.</p>`}</div>`;
     }
     // The recap above the team cards: best values, biggest reaches, position runs; Copy puts it in words for a group chat.
+    const passedBy = (k) => `passed by ${k} team${k === 1 ? "" : "s"}`;
     function recapLine(x) {
       const p = ctx.byId[x.pid];
+      if (D().packs) return x.diff < 0 && x.over ? `${p.n}, with ${ctx.byId[x.over.pid].n} still in the pack` : x.passed ? `${p.n}, ${passedBy(x.passed)}` : `${p.n}, a ${x.tier || "top"} pull`;
       return D().type === "auction" ? `${p.n} for ${money(x.price)}, worth ${money(x.$)}` : `${p.n} at ${plab(x.at - 1)}, ranked #${x.rank}`;
     }
     function recapText() {
       const d = D(), R = F.recap(d, ctx), st = F.standings(d, ctx).sort((a, b) => a.rank - b.rank);
       const lines = [`${d.name || "Draft"} recap`, "", "Grades: " + st.map((r) => `${team(r.team).name} ${r.grade}`).join(", ")];
+      if (R.pack) {
+        if (R.pulls.length) lines.push("", "Best pulls:", ...R.pulls.map((x) => `  ${ctx.byId[x.pid].n}, ${x.tier} (${team(x.team).name}${x.opener !== x.team ? `, from ${team(x.opener).name}'s pack` : ""})`));
+        if (R.steals.length) lines.push("", "Steals:", ...R.steals.map((x) => `  ${recapLine(x)} (${team(x.team).name})`));
+        if (R.reaches.length) lines.push("", "Left in the pack:", ...R.reaches.map((x) => `  ${recapLine(x)} (${team(x.team).name})`));
+        return lines.join("\n");
+      }
       if (R.steals.length) lines.push("", "Best values:", ...R.steals.map((x) => `  ${recapLine(x)} (${team(x.team).name}, +${money(x.diff)})`));
       if (R.reaches.length) lines.push("", "Biggest reaches:", ...R.reaches.map((x) => `  ${recapLine(x)} (${team(x.team).name}, ${money(-x.diff)} over)`));
       if (R.runs.length) lines.push("", "Runs:", ...R.runs.map((r) => `  ${r.pos}: ${r.count} of ${r.of} picks, ${plab(r.fromPick - 1)} to ${plab(r.toPick - 1)}`));
@@ -854,6 +901,7 @@
     }
     function recapCard() {
       const d = D(), R = F.recap(d, ctx);
+      if (R.pack) return packRecapCard(R);
       if (!R.steals.length && !R.reaches.length) return "";
       const item = (x, good) => `<li><span data-player="${esc(x.pid)}" style="cursor:pointer;min-width:0">${pname(sport, ctx.byId[x.pid], `${esc(team(x.team).name)}, ${d.type === "auction" ? `${money(x.price)} for ${money(x.$)} of value` : `${plab(x.at - 1)}, ranked #${x.rank}`}`, { size: "sm" })}</span><b class="${good ? "win" : "loss"} num">${good ? "+" : "-"}${money(Math.abs(x.diff))}</b></li>`;
       return `<div class="card recap"><div class="mod-h"><b>Draft recap</b><span class="ps" style="margin-left:6px">Against the rankings at draft time</span><span class="grow"></span><button class="btn sm" data-act="recap">Copy recap</button></div>
@@ -861,10 +909,22 @@
         <div><h4>Biggest reaches</h4><ul class="rslots">${R.reaches.map((x) => item(x, false)).join("") || `<li class="ps">None to speak of</li>`}</ul></div>
         ${R.runs.length ? `<div><h4>Position runs</h4><ul class="rslots">${R.runs.map((r) => `<li><span><b>${esc(r.pos)}</b> ${r.count} of ${r.of} picks</span><span class="ps">${plab(r.fromPick - 1)} to ${plab(r.toPick - 1)}</span></li>`).join("")}</ul></div>` : ""}</div></div>`;
     }
+    // a pack draft's recap: the pulls, the players who went around the table, and better ones left behind
+    function packRecapCard(R) {
+      if (!R.pulls.length && !R.steals.length && !R.reaches.length) return "";
+      const li = (x, sub, tag) => `<li><span data-player="${esc(x.pid)}" style="cursor:pointer;min-width:0">${pname(sport, ctx.byId[x.pid], sub, { size: "sm" })}</span>${tag}</li>`;
+      const pulls = R.pulls.map((x) => li(x, `${esc(team(x.team).name)}${x.opener !== x.team ? `, from ${esc(team(x.opener).name)}'s pack` : ", opened it"}`, `<span class="pkd-t tag-${x.tier}">${TIER[x.tier]}</span>`)).join("");
+      const steals = R.steals.map((x) => li(x, esc(team(x.team).name), `<b class="win num">${x.passed} passed</b>`)).join("");
+      const left = R.reaches.map((x) => li(x, `${esc(team(x.team).name)}, over ${esc(ctx.byId[x.over.pid].n)}`, `<b class="loss num">-${money(-x.diff)}</b>`)).join("");
+      return `<div class="card recap"><div class="mod-h"><b>Draft recap</b><span class="ps" style="margin-left:6px">Each pick against the pack it came from</span><span class="grow"></span><button class="btn sm" data-act="recap">Copy recap</button></div>
+        <div class="recap-cols"><div><h4>Best pulls</h4><ul class="rslots">${pulls || `<li class="ps">None to speak of</li>`}</ul></div>
+        <div><h4>Steals: passed by the most teams</h4><ul class="rslots">${steals || `<li class="ps">None to speak of</li>`}</ul></div>
+        <div><h4>Left in the pack</h4><ul class="rslots">${left || `<li class="ps">Nobody left a better player at his position</li>`}</ul></div></div></div>`;
+    }
     function results() {
       const d = D(), st = F.standings(d, ctx).sort((a, b) => a.rank - b.rank), R = F.recap(d, ctx);
       return `<div style="overflow:auto;flex:1;min-height:0">${recapCard()}<div class="teams">${st.map((r) => { const t = team(r.team), bv = R.best[r.team];
-        return `<div class="card"${isMe(t) ? ` style="border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)"` : ""}><div class="mod-h">${teamAv(t, "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(t.name)}${isMe(t) ? ` <span class="tag you">You</span>` : ""}</b><span class="ps">${ord(r.rank)}, ${pts() ? `${Math.round(r.score)} projected` : `${r.score.toFixed(1)} value`}${r.spent != null ? `, spent ${money(r.spent)}` : ""}${d.bank ? `, ${fmtLeft(t.bank)} banked for ${bankFaab(t)} FAAB` : ""}${bv && bv.diff > 0 ? `<br>Best value: ${esc(last(ctx.byId[bv.pid].n))}, +${money(bv.diff)}` : ""}</span></div><b class="grade disp">${r.grade}</b></div>
+        return `<div class="card"${isMe(t) ? ` style="border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)"` : ""}><div class="mod-h">${teamAv(t, "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(t.name)}${isMe(t) ? ` <span class="tag you">You</span>` : ""}</b><span class="ps">${ord(r.rank)}, ${pts() ? `${Math.round(r.score)} projected` : `${r.score.toFixed(1)} value`}${r.spent != null ? `, spent ${money(r.spent)}` : ""}${d.bank ? `, ${fmtLeft(t.bank)} banked for ${bankFaab(t)} FAAB` : ""}${bv && bv.diff > 0 ? `<br>${R.pack ? `Best steal: ${esc(last(ctx.byId[bv.pid].n))}, ${passedBy(bv.passed)}` : `Best value: ${esc(last(ctx.byId[bv.pid].n))}, +${money(bv.diff)}`}` : ""}</span></div><b class="grade disp">${r.grade}</b></div>
           <ol>${d.lineup.map((sl, i) => { const p = r.starters[i]; return `<li><span class="slot">${esc(sl)}</span>${p ? `<button class="btn link ell" data-player="${esc(p.id)}">${esc(p.n)}</button><span class="grow"></span><span class="ps">#${p.rank}</span>` : `<span class="ps">Empty</span>`}</li>`; }).join("")}${r.bench.map((p) => `<li class="bn"><span class="slot">BN</span><button class="btn link ell" data-player="${esc(p.id)}">${esc(p.n)}</button><span class="grow"></span><span class="ps">#${p.rank}</span></li>`).join("")}</ol></div>`; }).join("")}</div></div>`;
     }
     // Projected standings from the rosters so far: each team's best lineup, its category totals and the roto points
@@ -1211,6 +1271,11 @@
           }
           else if (a === "respin") act(() => { const r = F.respin(d, ctx, me(), n); if (r.ok) toast(`The wheel lands on ${teamFull(r.team)}.`); return r; });
           else if (a === "rlall") { ui.rlAll = !ui.rlAll; render(); }
+          else if (a === "rip") {
+            const q = F.packAt(d, F.packTurnNow(d)).q;
+            (ui.opened = ui.opened || {})[q] = true; try { sessionStorage.setItem(packKey(q), "1"); } catch (e) { /* private mode */ }
+            ui.rip = { q, at: Date.now() }; render();
+          }
           else if (a === "auto") { const t = team(me()); t.auto = !t.auto; if (t.auto) toast("Autodraft is on: the bot picks for you."); save(); render(); }
         }
         return;
@@ -1343,7 +1408,7 @@
   // Common lineups for each sport, then a counter for every slot.
   const PRESETS = {
     nba: [["Standard", "PG SG G SF PF F C UTIL UTIL UTIL"], ["Two centers", "PG SG G SF PF F C C UTIL UTIL"], ["Shallow", "PG SG SF PF C UTIL UTIL"], ["Deep", "PG SG G SF PF F C C UTIL UTIL UTIL UTIL"]],
-    nfl: [["Standard", "QB RB RB WR WR TE FLEX K DEF"], ["Superflex", "QB RB RB WR WR TE FLEX SFLEX K DEF"], ["2 QB", "QB QB RB RB WR WR TE FLEX K DEF"], ["3 WR", "QB RB RB WR WR WR TE FLEX K DEF"], ["No kicker", "QB RB RB WR WR TE FLEX FLEX DEF"]],
+    nfl: [["Standard", "QB RB RB WR WR WR TE FLEX K DEF"], ["Superflex", "QB RB RB WR WR WR TE FLEX SFLEX K DEF"], ["2 QB", "QB QB RB RB WR WR WR TE FLEX K DEF"], ["2 WR", "QB RB RB WR WR TE FLEX K DEF"], ["No kicker", "QB RB RB WR WR WR TE FLEX FLEX DEF"]],
     mlb: [["Standard", "C 1B 2B 3B SS OF OF OF UTIL UTIL SP SP RP RP P P P P"], ["Corner and middle", "C 1B 2B 3B SS MI CI OF OF OF OF OF UTIL P P P P P P P P P"], ["Shallow", "C 1B 2B 3B SS OF OF OF UTIL SP SP SP RP RP"]],
   };
   const SLOT_NAMES = { G: "Guard", F: "Forward", UTIL: "Utility", FLEX: "Flex", SFLEX: "Superflex", MI: "Middle infield", CI: "Corner infield", P: "Pitcher" };

@@ -413,6 +413,30 @@ test('heist, sealed: the league shows only who is in; opened moves are checked a
   assert.ok(D.heist.result && foe1 != null);
 });
 
+test('pack draft: every pack has a star, a few hold a chase card, K and DEF wait for the last set, and the recap reads by passes', () => {
+  const data = JSON.parse(readFileSync(new URL('../fantasy-kit/data/nfl.json', import.meta.url), 'utf8'));
+  const sport = S.attach(Object.assign({}, S.nfl), data);
+  const players = data.players.map((p) => ({ ...p }));
+  const lineup = ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'FLEX', 'K', 'DEF'];
+  V.evaluate(sport, players, { teams: 10, lineup, bench: 5, scoring: 'half' });
+  const D = F.create({ sport, type: 'pack', teams: 10, seed: 3, now: 1e12, lineup, bench: 5, botDelay: 0, scoring: 'half' });
+  F.dealPacks(D, players, sport);
+  const ctx = F.context(D, players, sport), tier = D.packs.tier;
+  for (const set of D.packs.cards) for (const ids of set) assert.equal(ids.filter((id) => tier[id] === 'star' || tier[id] === 'chase').length, 1, 'one hit a pack');
+  const chase = Object.values(tier).filter((t) => t === 'chase').length;
+  assert.ok(chase >= 1 && chase <= 4, 'a few chase cards');
+  const late = (id) => /^(K|DEF)$/.test(S.positions(ctx.byId[id])[0]);
+  assert.equal(D.packs.cards[0].flat().filter(late).length, 0, 'no kickers or defenses in the first set');
+  assert.ok(D.packs.cards[1].flat().filter(late).length >= 20, 'enough of them in the last');
+  F.start(D, 1e12);
+  for (let i = 0; i < 4000 && D.phase === 'live'; i++) F.tick(D, ctx, 1e12 + 1 + i * 5e5);
+  const lu = F.rosters(D).map((r) => F.assign(sport, r.map((id) => ctx.byId[id]).filter(Boolean), lineup));
+  assert.equal(lu.flat().filter((x) => !x).length, 0, 'every lineup is full');
+  const R = F.recap(D, ctx);
+  assert.ok(R.pack && R.pulls.length > 0);
+  assert.ok(R.steals.every((x) => x.passed >= 2), 'a steal went around the table');
+});
+
 test('pack draft: alike packs, every pick from the pack in front of you, passing left then right, full lineups', () => {
   const data = JSON.parse(readFileSync(new URL('../fantasy-kit/data/nfl.json', import.meta.url), 'utf8'));
   const sport = S.attach(Object.assign({}, S.nfl), data);

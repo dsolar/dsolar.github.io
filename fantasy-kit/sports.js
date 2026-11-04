@@ -84,7 +84,7 @@
     colors: { QB: 5, RB: 3, WR: 1, TE: 4, K: 6, DEF: 2 },
     // CPT and UTIL take anyone, kickers and defenses too: a showdown's captain and its flex spots
     slots: { QB: ["QB"], RB: ["RB"], WR: ["WR"], TE: ["TE"], FLEX: ["RB", "WR", "TE"], SFLEX: ["QB", "RB", "WR", "TE"], CPT: ["QB", "RB", "WR", "TE", "K", "DEF"], UTIL: ["QB", "RB", "WR", "TE", "K", "DEF"], K: ["K"], DEF: ["DEF"], BN: "*" },
-    lineup: ["QB", "RB", "RB", "WR", "WR", "TE", "FLEX", "K", "DEF"],
+    lineup: ["QB", "RB", "RB", "WR", "WR", "WR", "TE", "FLEX", "K", "DEF"],
     bench: 6,
     posMax: { QB: 3, RB: 7, WR: 7, TE: 3, K: 1, DEF: 1 },
     late: ["K", "DEF"],
