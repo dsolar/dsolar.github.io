@@ -50,13 +50,13 @@
     const data = await loadSport(c.sport);
     const sport = S.attach(Object.assign({}, S[c.sport]), data);
     const have = new Set(data.players.flatMap((p) => p.pos));
-    const want = (c.lineup ? c.lineup.split(/[\s,]+/).filter(Boolean) : sport.lineup).filter((s) => sport.slots[s] && s !== "BN");
+    const want = sdOn(c) ? S.SHOWDOWN.lineup.slice() : hzOn(c) ? ONE_WEEK_NFL.slice() : (c.lineup ? c.lineup.split(/[\s,]+/).filter(Boolean) : sport.lineup).filter((s) => sport.slots[s] && s !== "BN");
     const lineup = want.filter((s) => sport.slots[s] === "*" || sport.slots[s].some((x) => have.has(x)));
-    const players = data.players.map((p) => Object.assign({}, p));
+    const players = data.players.filter((p) => !sdOn(c) || p.t === c.sdA || p.t === c.sdH).map((p) => Object.assign({}, p));
     const scoring = sport.scorings[c.scoring] ? c.scoring : Object.keys(sport.scorings)[0];
-    const bench = c.bench == null ? sport.bench : c.bench;
+    const bench = sdOn(c) ? S.SHOWDOWN.bench : hzOn(c) ? 0 : c.bench == null ? sport.bench : c.bench;
     const dyn = c.dynasty ? await loadDynasty(c.sport) : null;
-    V.evaluate(sport, players, { teams: c.teams, lineup, bench, scoring, budget: c.budget, dynasty: !!c.dynasty, dynastyRanks: dyn, market: await loadMarket(c.sport) });
+    V.evaluate(sport, players, { teams: c.teams, lineup, bench, scoring, budget: sdOn(c) ? 50 : c.budget, dynasty: !!c.dynasty, dynastyRanks: dyn, market: await loadMarket(c.sport) });
     return { sport, players, lineup, scoring, bench, data };
   }
 
@@ -85,7 +85,13 @@
   const open = {};
   const CLOCKS = [[15, "15 sec"], [30, "30 sec"], [60, "1 min"], [90, "90 sec"], [0, "No clock"], [-20, "Bank 20s"], [-30, "Bank 30s"], [-60, "Bank 60s"]];
   const BID_CLOCKS = [[10, "10 sec"], [15, "15 sec"], [20, "20 sec"], [30, "30 sec"]];
-  const NUM = /^(teams|slot|clock|budget|bench|test|trades)$/;
+  const NUM = /^(teams|slot|clock|budget|bench|test|trades|rl|rlRound|hz|sd)$/;
+  // the one-week twists: team roulette (drafts that go pick by pick), and for football a showdown (one game, a
+  // captain and five flex spots, no bench) or a heist right after the draft (the one-week lineup, no bench)
+  const ONE_WEEK_NFL = ["QB", "RB", "RB", "WR", "WR", "WR", "TE", "FLEX"];
+  const rlFits = (c) => ["snake", "linear", "3rr"].includes(c.type);
+  const sdOn = (c) => c.sport === "nfl" && !!c.sd;
+  const hzOn = (c) => c.sport === "nfl" && !!c.hz && !c.sd;
   function setupView() {
     const sport = S[cfg.sport], c = cfg;
     const scoring = sport.scorings[c.scoring] ? c.scoring : Object.keys(sport.scorings)[0];
@@ -95,11 +101,13 @@
     const tradesOk = !auction && !elephant && c.type !== "pack";
     const clock = (auction ? BID_CLOCKS : CLOCKS).find(([v]) => v === c.clock) || (auction ? BID_CLOCKS[1] : CLOCKS[1]);
     const sc = (sport.scorings[scoring] || {}).label || "";
-    const line = `${sport.name}, ${c.teams} teams, ${sc.replace(/ \(.*\)$/, "")}, ${K.DRAFT_SHORT[c.type] || c.type}${auction ? `, $${c.budget}` : ""}, ${clock[1].toLowerCase()}${c.slot && !mystery ? `, pick ${c.slot}` : ""}`;
+    const twHtml = twists(c);
+    const tw = [sdOn(c) ? `showdown, ${c.sdA || "?"} at ${c.sdH || "?"}` : "", rlFits(c) && c.rl && !sdOn(c) ? "team roulette" : "", hzOn(c) ? "a heist" : ""].filter(Boolean);
+    const line = `${sport.name}, ${c.teams} teams, ${sc.replace(/ \(.*\)$/, "")}, ${K.DRAFT_SHORT[c.type] || c.type}${auction ? `, $${sdOn(c) ? 50 : c.budget}` : ""}, ${clock[1].toLowerCase()}${c.slot && !mystery ? `, pick ${c.slot}` : ""}${tw.length ? `, ${tw.join(" and ")}` : ""}`;
     const formats = K.pickCards("type", Object.entries(F.FORMATS).map(([k, l]) => [k, K.DRAFT_SHORT[k] || l, K.DRAFTS[k] || ""]), c.type, "Draft format");
     const presets = Object.entries(sport.scorings).map(([k, x]) => [k, x.label.replace(/ \(.*\)$/, ""), K.SC_SUB[k] || ""]);
-    const roster = `<div class="nr${open.roster ? " open" : ""}"><button type="button" class="nr-h" data-row="roster" aria-expanded="${!!open.roster}"><span class="nr-t"><b>Roster</b><small>Starting lineup and bench</small></span><span class="nr-v">${lu.length} starters, ${bench} bench</span><span class="chev" aria-hidden="true"></span></button>
-      ${open.roster ? `<div class="nr-b">${K.group("Starting lineup", lineupBuilder(sport, lu))}${K.group("Bench", K.fld("Bench spots", K.stepper("bench", [0, 1, 2, 3, 4, 5, 6, 7, 8, 10], bench, String, "Bench spots")))}</div>` : ""}</div>`;
+    const roster = `<div class="nr${open.roster ? " open" : ""}"><button type="button" class="nr-h" data-row="roster" aria-expanded="${!!open.roster}"><span class="nr-t"><b>Roster</b><small>Starting lineup and bench</small></span><span class="nr-v">${sdOn(c) ? "Captain and 5 flex, no bench (showdown)" : hzOn(c) ? "8 starters, no bench (heist)" : `${lu.length} starters, ${bench} bench`}</span><span class="chev" aria-hidden="true"></span></button>
+      ${open.roster && (sdOn(c) || hzOn(c)) ? `<div class="nr-b"><p class="ps" style="margin:0">The ${sdOn(c) ? "showdown" : "heist"} sets the lineup. Turn it off to build your own.</p></div>` : open.roster ? `<div class="nr-b">${K.group("Starting lineup", lineupBuilder(sport, lu))}${K.group("Bench", K.fld("Bench spots", K.stepper("bench", [0, 1, 2, 3, 4, 5, 6, 7, 8, 10], bench, String, "Bench spots")))}</div>` : ""}</div>`;
     const tip = (t, b) => `<div class="mk-tip"><b>${esc(t)}</b><p>${b}</p></div>`;
     return `<div class="wrap page"><div class="su sp-${sport.key}">
       <div class="nl-band">${K.FIELD[sport.key]}<div class="nl-bi">
@@ -121,6 +129,7 @@
           ${tradesOk || mystery ? `<div class="nl-bb">${K.toggle("trades", "Trades during the draft", "Trade picks and drafted players with any team. Bots answer right away.", c.trades)}${mystery ? K.toggle("test", "Even out the packages", "Deal five times and keep the most even draft", c.test) : ""}</div>` : ""}
           ${elephant ? `<p class="fl-h">Each team gets 3 steals, a player is frozen after 2, and steals end with 2 rounds to go. The team you rob picks again right away.</p>` : ""}
         </section>
+        ${twHtml}
         <section class="nl-sec"><h2 class="nl-h">Fine-tune</h2><div class="nr-l">${roster}</div></section>
         <section class="nl-sec mk-how">${tip("How the bots draft", "They value players over the replacement at each position, fill starters before the bench, and save kickers and defenses for last. In an auction they bid by proxy up to a price set by their budget and needs.")}
           ${tip("Your seat", "Queue players before you start. If your clock runs out, the first queued player who fits is your pick.")}
@@ -128,6 +137,17 @@
         <div class="nl-bar"><div class="nl-sum">${K.icon(sport.key, "nl-sum-ic")}<span><b>${esc(c.name || "Your team")}</b><small>${esc(line)}</small></span></div>
           <p id="s-why" role="alert"></p><span class="grow"></span>${mock ? `<a class="btn ghost" href="#draft">Back to your mock</a>` : ""}<button type="submit" class="btn go">Take your seat</button></div>
       </form></div></div>`;
+  }
+  function twists(c) {
+    const nfl = c.sport === "nfl", teams = (cache.nfl ? [...new Set(cache.nfl.players.map((p) => p.t).filter((t) => t && t !== "FA"))].sort() : []);
+    if (nfl && c.sd && !teams.length) loadSport("nfl").then(() => { if ($("#app #setup")) setupPage(); });
+    if (teams.length && (!teams.includes(c.sdA) || !teams.includes(c.sdH) || c.sdA === c.sdH)) { c.sdA = teams.includes("KC") ? "KC" : teams[0]; c.sdH = teams.includes("BUF") ? "BUF" : teams[1]; }
+    const sel = (f, cur) => `<select data-f="${f}" aria-label="${f === "sdA" ? "Away team" : "Home team"}">${teams.map((t) => `<option${t === cur ? " selected" : ""}>${esc(t)}</option>`).join("")}</select>`;
+    const rows = [];
+    if (rlFits(c) && !sdOn(c)) rows.push(K.toggle("rl", "Team roulette", "Each pick has to come from the pro team the wheel lands on. One re-spin each.", c.rl, K.fld("The wheel spins", K.seg("rlRound", [[0, "Every pick"], [1, "Every round"]], c.rlRound ? 1 : 0, "The wheel spins"))));
+    if (nfl) rows.push(K.toggle("sd", "Showdown: one game", "Just the players in one game. A captain at 1.5x and five flex spots, no bench.", c.sd, teams.length ? `<div class="row" style="gap:8px;flex-wrap:wrap">${sel("sdA", c.sdA)}<span class="ps">at</span>${sel("sdH", c.sdH)}</div>` : ""));
+    if (nfl && !sdOn(c)) rows.push(K.toggle("hz", "Heist after the draft", "Shield three of your starters, steal one of your opponent's and jinx another. The one-week lineup, no bench.", c.hz));
+    return rows.length ? `<section class="nl-sec"><h2 class="nl-h">One-week twists</h2><div class="nl-bb">${rows.join("")}</div></section>` : "";
   }
   function setupGrab() {
     const root = $("#app .su"); if (!root) return;
@@ -225,10 +245,13 @@
     const order = others.slice(0, slot).concat(0, others.slice(slot));
     const total = n * (P.lineup.length + P.bench);
     const D = F.create({ sport: P.sport, type: c.type, teams: n, seed, now: Date.now(), lineup: P.lineup, bench: P.bench, scoring: P.scoring,
-      botDelay: 1200, clock: c.type === "auction" || c.clock < 0 ? 0 : c.clock, bank: c.clock < 0 && c.type !== "auction" ? { perRound: -c.clock, floor: 10 } : null, bidClock: c.clock || 15, nomClock: 30, budget: c.budget, order, name: `${P.sport.name} mock`,
+      botDelay: 1200, clock: c.type === "auction" || c.clock < 0 ? 0 : c.clock, bank: c.clock < 0 && c.type !== "auction" ? { perRound: -c.clock, floor: 10 } : null, bidClock: c.clock || 15, nomClock: 30, budget: sdOn(c) ? 50 : c.budget, order, name: `${P.sport.name} mock`,
       trades: c.trades !== 0, curve: c.type === "mystery" ? F.pickCurve(P.players, total) : null, reveal: c.reveal });
     if (c.type === "mystery" && c.test) F.fairDeal(D, P.players, P.sport, null, { tries: 5 });
     if (c.type === "pack") F.dealPacks(D, P.players, P.sport);
+    if (rlFits(c) && c.rl && !sdOn(c)) D.roulette = { teams: [...new Set(P.players.map((p) => p.t).filter((t) => t && t !== "FA"))].sort(), each: c.rlRound ? "round" : "pick", respins: 1, spins: {}, used: {} };
+    if (sdOn(c)) D.season = { format: "h2h", weeks: 1, oneWeek: true, showdown: { teams: [c.sdA, c.sdH], label: `${c.sdA} @ ${c.sdH}` } };
+    if (hzOn(c)) D.season = { format: "h2h", weeks: 1, oneWeek: true, heist: { shields: 3, steals: 1, jinxes: 1, clock: 60 } };
     D.teams[0].owner = "You";
     if (c.name) { D.teams[0].name = c.name; D.teams[0].abbr = c.name.replace(/[^A-Za-z0-9 ]/g, "").split(/\s+/).map((w) => w[0]).join("").slice(0, 3).toUpperCase() || "YOU"; }
     else { D.teams[0].name = "Your team"; D.teams[0].abbr = "YOU"; }

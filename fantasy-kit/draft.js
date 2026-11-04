@@ -182,6 +182,14 @@
       return false;
     };
     for (const p of sorted) tryPlace(p, new Set());
+    // a multiplier spot (a showdown's captain) holds the best player who can play there
+    const mult = (S.SHOWDOWN && S.SHOWDOWN.mult) || {};
+    slots.forEach((sl, i) => {
+      if (!mult[sl] || !at[i]) return;
+      let best = i;
+      at.forEach((q, j) => { if (q && (q.v || 0) > (at[best].v || 0) && S.fits(sport, q, sl) && S.fits(sport, at[i], slots[j])) best = j; });
+      if (best !== i) [at[i], at[best]] = [at[best], at[i]];
+    });
     return at;
   }
 
@@ -1260,7 +1268,8 @@
     const rows = rosters(D).map((ids, t) => {
       const ps = ids.map((id) => ctx.byId[id]).filter(Boolean);
       const starters = assign(ctx.sport, ps, D.lineup);
-      const score = sum(starters.filter(Boolean).map((p) => p.v || 0));
+      const mult = (S.SHOWDOWN && S.SHOWDOWN.mult) || {};
+      const score = sum(starters.map((p, i) => (p ? (p.v || 0) * (mult[D.lineup[i]] || 1) : 0)));
       const cats = {};
       for (const p of starters.filter(Boolean)) for (const [k, z] of Object.entries(p.zc || {})) cats[k] = (cats[k] || 0) + z;
       const spent = D.type === "auction" ? sum(D.sales.filter((s) => s.team === t).map((s) => s.price)) : null;

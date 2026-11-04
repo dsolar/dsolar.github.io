@@ -989,9 +989,20 @@
         <div><h4>Steals: passed by the most teams</h4><ul class="rslots">${steals || `<li class="ps">None to speak of</li>`}</ul></div>
         <div><h4>Left in the pack</h4><ul class="rslots">${left || `<li class="ps">Nobody left a better player at his position</li>`}</ul></div></div></div>`;
     }
+    // after a heist: every move, as it landed
+    function heistOutcome() {
+      const d = D(), hr = d.heist && d.heist.result;
+      if (!hr) return "";
+      const nm = (pid) => esc((ctx.byId[pid] || {}).n || "a player"), tn = (t) => (isMe(team(t)) ? "You" : esc(team(t).name));
+      const line = (e) => e.type === "steal" ? (e.ok ? `<b>${tn(e.by)}</b> stole ${nm(e.pid)} from ${tn(e.on)}. He plays at 1.5x.` : `<b>${tn(e.by)}</b> went for ${nm(e.pid)}, but ${tn(e.on)} had him shielded.`)
+        : e.ok ? `<b>${tn(e.by)}</b> jinxed ${nm(e.pid)}: half points for ${tn(e.on)}.` : `<b>${tn(e.by)}</b> tried to jinx ${nm(e.pid)}. Shielded.`;
+      const mine = hr.events.filter((e) => isMe(team(e.by)) || isMe(team(e.on))), rest = hr.events.filter((e) => !mine.includes(e));
+      return `<div class="card recap"><div class="mod-h"><b>The heist</b><span class="ps" style="margin-left:6px">${hr.events.filter((e) => e.ok).length} of ${hr.events.length} moves landed</span></div>
+        <ul class="rslots" style="padding:4px 16px 12px">${mine.concat(rest).map((e) => `<li class="${isMe(team(e.by)) || isMe(team(e.on)) ? "me" : ""}"><span class="txi ${e.ok ? (e.type === "steal" ? "add" : "drop") : ""}" aria-hidden="true">${e.ok ? (e.type === "steal" ? "&#8644;" : "&#9660;") : "&#9632;"}</span><span>${line(e)}</span></li>`).join("") || `<li class="ps">Nobody made a move.</li>`}</ul></div>`;
+    }
     function results() {
       const d = D(), st = F.standings(d, ctx).sort((a, b) => a.rank - b.rank), R = F.recap(d, ctx);
-      return `<div style="overflow:auto;flex:1;min-height:0">${recapCard()}<div class="teams">${st.map((r) => { const t = team(r.team), bv = R.best[r.team];
+      return `<div style="overflow:auto;flex:1;min-height:0">${heistOutcome()}${recapCard()}<div class="teams">${st.map((r) => { const t = team(r.team), bv = R.best[r.team];
         return `<div class="card"${isMe(t) ? ` style="border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)"` : ""}><div class="mod-h">${teamAv(t, "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(t.name)}${isMe(t) ? ` <span class="tag you">You</span>` : ""}</b><span class="ps">${ord(r.rank)}, ${pts() ? `${Math.round(r.score)} projected` : `${r.score.toFixed(1)} value`}${r.spent != null ? `, spent ${money(r.spent)}` : ""}${d.bank ? `, ${fmtLeft(t.bank)} banked for ${bankFaab(t)} FAAB` : ""}${bv && bv.diff > 0 ? `<br>${R.pack ? `Best steal: ${esc(last(ctx.byId[bv.pid].n))}, ${passedBy(bv.passed)}` : `Best value: ${esc(last(ctx.byId[bv.pid].n))}, +${money(bv.diff)}`}` : ""}</span></div><b class="grade disp">${r.grade}</b></div>
           <ol>${d.lineup.map((sl, i) => { const p = r.starters[i]; return `<li><span class="slot">${esc(sl)}</span>${p ? `<button class="btn link ell" data-player="${esc(p.id)}">${esc(p.n)}</button><span class="grow"></span><span class="ps">#${p.rank}</span>` : `<span class="ps">Empty</span>`}</li>`; }).join("")}${r.bench.map((p) => `<li class="bn"><span class="slot">BN</span><button class="btn link ell" data-player="${esc(p.id)}">${esc(p.n)}</button><span class="grow"></span><span class="ps">#${p.rank}</span></li>`).join("")}</ol></div>`; }).join("")}</div></div>`;
     }
