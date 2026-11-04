@@ -235,9 +235,11 @@
             ${over() ? "" : `<div class="row" style="margin-top:12px;flex-wrap:wrap"><a class="btn sm" href="#team/roster">Set lineup</a>${canTrade() ? `<button class="btn sm" data-trade>Propose a trade</button>` : ""}<a class="btn sm" href="#players/fa">Free agents</a></div>`}</div></div>` : ""}
           ${mid != null && L().claims.some((c) => c.team === mid && c.status === "open") ? `<div class="card"><div class="mod-h"><h2>Your waiver claims</h2><a href="#players/claims">All claims</a></div><div class="bd" style="padding-bottom:0"><span class="ps">${esc(claimsRun())}</span></div>${claimList(L().claims.filter((c) => c.team === mid && c.status === "open"))}</div>` : ""}
           ${offers.length ? `<div class="card"><div class="mod-h"><h2>Trade offers for you</h2><span class="badge">${offers.length}</span><a href="#team/trades">Review</a></div>${U.feed(offers.map((t) => ({ team: T(t.from), when: U.ago(t.at, now()), lines: t.get.map((id) => U.txLine(sport, "drop", playerVM(id), "you send")).concat(t.give.map((id) => U.txLine(sport, "add", playerVM(id), "you get"))) })))}</div>` : ""}`;
+      const total = G.totalWeeks(L());
       return `<div class="wrap page">
+        <div class="head"><h1 class="disp">${over() ? "Season over" : w > L().settings.weeks ? `Playoffs, week ${w}` : `Week ${w}`}</h1><span class="ps">${esc(L().season || "")}${L().season ? " season, " : ""}${over() ? `${total} weeks played` : `${Math.max(0, total - w)} week${total - w === 1 ? "" : "s"} after this one`}${myRow ? `. You're ${ord(myRow.rank)} at ${myRow.w}-${myRow.l}${myRow.t ? "-" + myRow.t : ""}` : ""}.</span></div>
         ${champ != null && oneWeekLg() ? finishCard() : champ != null ? `<div class="banner"><span>${teamAv(T(champ), "lg")}</span><div><b class="disp" style="font-size:26px">${esc(T(champ).name)} won the title</b><div class="ps">The ${esc(L().season || "")} season is over.</div></div></div>` : ""}
-        <div class="stack" style="gap:8px"><div class="row"><h2 style="margin:0;font-size:15px">${over() ? "Final week" : `Week ${w} scoreboard`}</h2><a href="#league/scoreboard" class="small" style="margin-left:auto">All scores</a></div>${U.scoreboard(games, fmtS)}</div>
+        <div class="stack" style="gap:8px"><div class="row"><h2 style="margin:0;font-size:15px">${over() ? "Final week" : mine ? `Around the league, week ${w}` : `Week ${w} scoreboard`}</h2><a href="#league/scoreboard" class="small" style="margin-left:auto">All scores</a></div>${U.scoreboard(mine ? games.filter((g) => !g.me) : games, fmtS)}</div>
         <div class="cols"><div class="stack">
           ${myCards.trim() ? `<div class="m-only stack">${myCards}</div>` : ""}
           ${mine ? `<div class="card"><div class="mod-h"><h2>Your matchup</h2><span class="ps">Week ${w}${w > L().settings.weeks ? `, ${esc(kindName(mine.kind, w).toLowerCase())}` : ""}</span><a href="${matchHref(w, mine.i)}">Full matchup</a></div>${U.versus(versusVM(w, mine))}</div>` : ""}
@@ -464,7 +466,7 @@
       const items = L().tx.slice().reverse().filter((x) => x.type !== "draft" && (!f || (f === "add" ? /add/.test(x.type) : f === "drop" ? (x.drops || []).length && x.type !== "trade" : x.type === f)));
       return `<div class="wrap page"><div class="head"><h1 class="disp">Transactions</h1><span class="ps">${L().tx.length} moves this season</span></div>
         <div class="chips" role="group" aria-label="Type">${[["", "All"], ["add", "Adds"], ["drop", "Drops"], ["waiver", "Waivers"], ["trade", "Trades"]].map(([k, n]) => `<button type="button" data-txf="${k}" aria-pressed="${k === f}">${n}</button>`).join("")}</div>
-        <div class="card" style="max-width:980px">${U.feed(items.slice(0, 120).map(txVM), "Nothing here yet.")}</div></div>`;
+        <div class="card">${U.feed(items.slice(0, 120).map(txVM), "Nothing here yet.")}</div></div>`;
     }
     /* ---------- league history: past seasons (shared leagues pass opts.history()) plus this one ---------- */
     function seasonsAll() {
@@ -480,7 +482,7 @@
         const c = x.champion, row = c && (x.standings || []).find((r) => r.team === c.team), lead = x.live ? (x.standings || [])[0] : null;
         return `<tr><td class="nm"><b>${yearName(x)}</b>${x.live ? ` <span class="pill sm">Now</span>` : ""}</td>
           <td>${x.live ? (lead ? `<span class="ps">Leading:</span> ${esc(lead.name)}` : "") : c ? `<b>${esc(c.name)}</b>${c.owner ? ` <span class="ps">${esc(c.owner)}</span>` : ""}` : `<span class="ps">No champion</span>`}</td>
-          <td class="hide-s">${!x.live && x.runnerUp ? esc(x.runnerUp.name) : ""}</td><td class="r num">${x.live ? (lead ? rec(lead) : "") : row ? rec(row) : ""}</td></tr>`;
+          ${all.some((y) => !y.live && y.runnerUp) ? `<td class="hide-s">${!x.live && x.runnerUp ? esc(x.runnerUp.name) : ""}</td>` : ""}<td class="r num">${x.live ? (lead ? rec(lead) : "") : row ? rec(row) : ""}</td></tr>`;
       }).join("");
       // records across every season that kept them (seasons saved before records were kept are skipped)
       const best = {};
@@ -504,17 +506,17 @@
         if (!x.live) { if (x.champion && x.champion.team === r.team) a.titles++; if ((x.champion && x.champion.team === r.team) || (x.runnerUp && x.runnerUp.team === r.team)) a.finals++; a.places.push(r.place || r.rank); }
       }
       const hasWL = !gl() && !roto();
-      const rows = Object.values(tot).filter((a) => L().teams[a.team]).sort((a, b) => b.titles - a.titles || (hasWL ? (b.w + b.t / 2) / Math.max(1, b.w + b.l + b.t) - (a.w + a.t / 2) / Math.max(1, a.w + a.l + a.t) : b.pts - a.pts));
+      const rows = Object.values(tot).filter((a) => L().teams[a.team]).sort((a, b) => b.titles - a.titles || (hasWL ? (b.w + b.t / 2) / Math.max(1, b.w + b.l + b.t) - (a.w + a.t / 2) / Math.max(1, a.w + a.l + a.t) : 0) || b.pts - a.pts);
       const pct3 = (a) => { const g = a.w + a.l + a.t; return g ? ((a.w + a.t / 2) / g).toFixed(3).replace(/^0/, "") : "-"; };
       const avg = (a) => (a.places.length ? (a.places.reduce((s, x) => s + x, 0) / a.places.length).toFixed(1) : "-");
       return `<div class="wrap page"><div class="head"><h1 class="disp">League history</h1><span class="ps">${done.length ? `${done.length} finished season${done.length > 1 ? "s" : ""}` : "The first season"}${all.some((x) => x.live) ? ", one under way" : ""}</span></div>
         <div class="cols2"><div class="stack">
-          <div class="card"><div class="mod-h"><h2>Champions</h2></div><div class="table-wrap"><table class="t"><thead><tr><th>Season</th><th>Champion</th><th class="hide-s">Runner-up</th><th class="r">Record</th></tr></thead><tbody>${champRows}</tbody></table></div>
+          <div class="card"><div class="mod-h"><h2>Champions</h2></div><div class="table-wrap"><table class="t"><thead><tr><th>Season</th><th>Champion</th>${all.some((x) => !x.live && x.runnerUp) ? `<th class="hide-s">Runner-up</th>` : ""}<th class="r">Record</th></tr></thead><tbody>${champRows}</tbody></table></div>
             ${many ? "" : `<p class="ps" style="margin:10px 16px 14px">Each finished season is added here when the commissioner starts the next one.</p>`}</div>
           <div class="card"><div class="mod-h"><h2>Records</h2>${many ? `<span class="ps">All seasons</span>` : ""}</div>${recRows.length ? `<div class="bd"><dl class="kv rec">${recRows.map(([k, v, w]) => `<dt>${k}</dt><dd>${v}<small>${w}</small></dd>`).join("")}</dl></div>` : `<p class="empty">${pts() || gl() ? "Records start once a week is final." : "Score records are for points leagues; win streaks start once a week is final."}</p>`}</div>
         </div>
         <div class="card"><div class="mod-h"><h2>All-time standings</h2></div><div class="table-wrap"><table class="t"><thead><tr><th>Team</th>${many ? `<th class="r hide-s">Seasons</th>` : ""}${hasWL ? `<th class="r">Record</th><th class="r hide-s">Pct</th>` : ""}<th class="r">Titles</th>${many ? `<th class="r hide-s">Avg finish</th>` : ""}${pts() ? `<th class="r hide-s">Points</th>` : ""}</tr></thead><tbody>
-          ${rows.map((a) => `<tr${isMe(a.team) ? ` class="me"` : ""}><td class="nm"><a class="row" style="gap:8px;text-decoration:none;color:inherit" href="${teamHref(a.team)}">${teamAv(T(a.team), "sm")}<span class="ell">${esc(T(a.team).name)}</span></a></td>${many ? `<td class="r num hide-s">${a.seasons}</td>` : ""}${hasWL ? `<td class="r num">${rec(a)}</td><td class="r num hide-s">${pct3(a)}</td>` : ""}<td class="r num">${a.titles ? `<b>${a.titles}</b>` : "0"}</td>${many ? `<td class="r num hide-s">${avg(a)}</td>` : ""}${pts() ? `<td class="r num hide-s">${Math.round(a.pts).toLocaleString()}</td>` : ""}</tr>`).join("")}
+          ${rows.map((a) => `<tr${isMe(a.team) ? ` class="me"` : ""}><td class="nm"><a class="row" style="gap:8px;text-decoration:none;color:inherit" href="${teamHref(a.team)}">${teamAv(T(a.team), "sm")}<span class="ell">${esc(T(a.team).name)}</span></a></td>${many ? `<td class="r num hide-s">${a.seasons}</td>` : ""}${hasWL ? `<td class="r num">${rec(a)}</td><td class="r num hide-s">${pct3(a)}</td>` : ""}<td class="r num">${a.titles ? `<b>${a.titles}</b>` : "0"}</td>${many ? `<td class="r num hide-s">${avg(a)}</td>` : ""}${pts() ? `<td class="r num hide-s">${fmtS(a.pts)}</td>` : ""}</tr>`).join("")}
         </tbody></table></div></div></div></div>`;
     }
     /* ---------- managers: who runs each team, with their photo, record and titles ---------- */
@@ -530,7 +532,7 @@
     function managerCard(id, big) {
       const tm = T(id), f = faceOf(id), m = managerStats(id), hasWL = !gl() && !roto();
       const stats = `<div class="mgr-s"><span><small>${gl() ? "This season" : roto() ? "Place" : "Record"}</small><b>${esc(m.now)}</b></span>${!gl() && !roto() && m.place ? `<span><small>Place</small><b>${ord(m.place)}</b></span>` : ""}${m.seasons > 1 && hasWL ? `<span><small>All-time</small><b>${esc(m.all)}</b></span>` : ""}<span><small>Titles</small><b>${m.titles}</b></span></div>`;
-      const tags = `${isMe(id) ? `<span class="tag you">You</span>` : ""}${!tm.owner ? `<span class="tag">Bot</span>` : ""}`;
+      const tags = `${isMe(id) && !/^you$/i.test(tm.owner || "") ? `<span class="tag you">You</span>` : ""}${!tm.owner ? `<span class="tag">Bot</span>` : ""}`;
       if (big) return `<div class="mgr-card">${U.faceAv(f, tm.owner || "Bot", "xl")}<h3 class="disp" style="margin:6px 0 0">${esc(tm.owner || "A bot")}</h3><div class="mgr-tags">${tags}</div>
         <a class="mgr-t" href="${teamHref(id)}" data-close>${teamAv(tm, "sm")}<span class="ell">${esc(tm.name)}</span></a>${stats}
         ${isMe(id) && opts.editProfile ? `<button type="button" class="btn sm" data-editprofile>Edit your profile</button>` : ""}</div>`;
@@ -717,7 +719,7 @@
     function teamHead(id) {
       const t = T(id), r = standings().find((x) => x.team === id);
       return `<div class="team-h">${teamAv(t, "xl")}<div style="min-width:0"><h1 class="disp">${esc(t.name)}${isMe(id) ? ` <span class="tag you" style="font-size:13px;vertical-align:6px">You</span>` : ""}${G.vampireOf(L()) === id ? ` <span class="tag loss" style="font-size:13px;vertical-align:6px">Vampire</span>` : ""}</h1>
-        <div class="meta">${gl() ? `<span><b>${esc(recOf(id))}</b>${r.alive ? `, ${ord(r.rank)} in points` : ""}</span>` : `<span><b>${r.w}-${r.l}${r.t ? "-" + r.t : ""}</b>, ${ord(r.rank)} place</span>`}<span>${pts() ? `<b>${fmtS(r.pf)}</b> points for` : `<b>${r.pf}</b> categories won`}</span><span>FAAB <b>$${t.faab}</b></span><span>Waiver priority <b>${ord(t.priority + 1)}</b></span>${t.owner ? `<a href="#league/managers" data-mgr="${id}"${isMe(id) ? ' class="th-me"' : ""} style="display:inline-flex;align-items:center;gap:6px;color:inherit;text-decoration:none">${U.faceAv(faceOf(id), t.owner, "sm")}Manager <b>${esc(t.owner)}</b></a>` : `<span>Bot</span>`}</div></div>
+        <div class="meta">${gl() ? `<span><b>${esc(recOf(id))}</b>${r.alive ? `, ${ord(r.rank)} in points` : ""}</span>` : `<span><b>${r.w}-${r.l}${r.t ? "-" + r.t : ""}</b>, ${ord(r.rank)} place</span>`}<span>${pts() ? `<b>${fmtS(r.pf)}</b> points for` : `<b>${r.pf}</b> categories won`}</span><span>FAAB <b>$${t.faab}</b></span><span>Waiver priority <b>${ord(t.priority + 1)}</b></span>${t.owner && !(isMe(id) && /^you$/i.test(t.owner)) ? `<a href="#league/managers" data-mgr="${id}"${isMe(id) ? ' class="th-me"' : ""} style="display:inline-flex;align-items:center;gap:6px;color:inherit;text-decoration:none">${U.faceAv(faceOf(id), t.owner, "sm")}Manager <b>${esc(t.owner)}</b></a>` : t.owner ? "" : `<span>Bot</span>`}</div></div>
         <span class="grow"></span><div class="th-acts">${isMe(id) ? `<button class="btn" data-editteam>Edit team</button>` : ""}${!isMe(id) && canTrade() ? `<button class="btn go" data-trade="${id}">Propose a trade</button>` : ""}
         <label class="sr" for="team-pick">Team</label><select id="team-pick" style="width:auto;border-radius:999px">${L().teams.map((x) => `<option value="${x.id}"${x.id === id ? " selected" : ""}>${esc(x.name)}${isMe(x.id) ? " (you)" : ""}</option>`).join("")}</select></div></div>`;
     }
@@ -780,7 +782,7 @@
         if (lockedIn) return `<span class="lk-tag" title="His game has started. He's locked in until the week ends.">${LOCK}Locked</span>`;
         const irBtn = G.irEligible(p) && ir.length < irMax ? `<button class="btn xs" data-toir="${esc(p.id)}" title="Move to injured reserve">IR</button> ` : "";
         const txBtn = txMax && taxi.length < txMax && !lu.includes(p.id) && G.taxiEligible(L(), ctx, p.id) ? `<button class="btn xs" data-totaxi="${esc(p.id)}" title="Stash him on the taxi squad">Taxi</button> ` : "";
-        return `${irBtn}${txBtn}${!locked && !pl(p) ? `<button class="btn xs hide-s" data-move="${esc(p.id)}">Move</button>` : ""}${L().settings.frozen ? "" : ` <button class="btn icon drop hide-s" data-drop="${esc(p.id)}" aria-label="Drop ${esc(p.n)}" title="Drop">&minus;</button>`}`;
+        return `${irBtn}${txBtn}${!locked && !pl(p) ? `<button class="btn xs hide-s" data-move="${esc(p.id)}">Move</button>` : ""}${L().settings.frozen ? "" : ` <button class="btn xs warn hide-s" data-drop="${esc(p.id)}" aria-label="Drop ${esc(p.n)}">Drop</button>`}`;
       };
       const blocked = new Set(L().settings.trades === false ? [] : G.blockOf(L(), ctx, id));
       const row = (slotLabel, p, i, onIR, onTaxi) => {
@@ -1084,7 +1086,7 @@
       const offer = (t, id) => (canTrade() && mid != null ? `<button class="btn xs" data-trade="${t.id}" data-want="${esc(id)}" aria-label="Offer for ${esc(ctx.byId[id].n)}">Offer</button>` : "");
       const li = (x) => `<li>${teamAv(x.t, "md")}<div class="what"><div class="row" style="gap:8px"><b class="ell">${esc(x.t.name)}</b>${x.note ? `<span class="ps ell">${esc(x.note)}</span>` : ""}</div>
         ${x.ids.map((id) => `<div class="row bkp"><span data-player="${esc(id)}" style="cursor:pointer;min-width:0;flex:1">${pname(sport, ctx.byId[id], `${esc(ctx.byId[id].prank)}`, { size: "sm" })}</span>${x.t.id === mid ? `<button class="btn xs ghost" data-unblock="${esc(id)}">Take off</button>` : offer(x.t, id)}</div>`).join("")}</div></li>`;
-      const yours = full && mid != null ? `<div class="bd" style="border-top:1px solid var(--line)"><form class="stack" id="fk-blocknote" style="gap:8px"><label class="lbl" for="fk-bn">What you're looking for</label><div class="row"><input type="text" id="fk-bn" maxlength="80" placeholder="Say what you need, like a starting RB" value="${esc((L().blockNote || {})[mid] || "")}" style="flex:1;min-width:0"><button class="btn sm">Save</button></div></form>
+      const yours = full && mid != null ? `<div class="bd" style="border-top:1px solid var(--line)"><form class="stack" id="fk-blocknote" style="gap:8px"><label class="lbl" for="fk-bn">What you're looking for</label><div class="row"><input type="text" id="fk-bn" maxlength="80" placeholder="What you need, like an RB" value="${esc((L().blockNote || {})[mid] || "")}" style="flex:1;min-width:0"><button class="btn sm">Save</button></div></form>
         ${mine.length ? "" : `<p class="ps" style="margin:8px 0 0">Open one of your players and choose Put on the block, so the league knows he's available.</p>`}</div>${mine.length ? `<ul class="feed">${li({ t: T(mid), ids: mine, note: "" })}</ul>` : ""}` : "";
       return `<div class="card"><div class="mod-h"><h2>Trading block</h2>${full ? "" : `<a href="#team/trades">All teams</a>`}</div>${rows.length ? `<ul class="feed">${rows.slice(0, limit).map(li).join("")}</ul>` : `<div class="bd"><p class="ps" style="margin:0">Nobody has put players on the block yet.</p></div>`}${yours}</div>`;
     }
@@ -1175,7 +1177,7 @@
         if (own === mid) return `${star}<button class="btn icon drop" data-drop="${esc(p.id)}" aria-label="Drop ${esc(p.n)}">&minus;</button>`;
         return L().settings.trades === false ? star : `${star}<button class="btn icon trade" data-trade="${own}" data-want="${esc(p.id)}" aria-label="Trade for ${esc(p.n)}">&#8644;</button>`;
       };
-      const cols = U.poolColumns(sport, { group: U.groupOf(sport, ui.pf), scoring: L().scoring, owner: statusOf, ownerSort: (p) => (ctx.own[p.id] == null ? -1 : ctx.own[p.id]), actions, extra: pts() ? [] : [] });
+      const cols = U.poolColumns(sport, { group: U.groupOf(sport, ui.pf), scoring: L().scoring, owner: statusOf, ownerHide: sub === "fa" || sub === "watch", ownerSort: (p) => (ctx.own[p.id] == null ? -1 : ctx.own[p.id]), actions, extra: pts() ? [] : [] });
       rows = U.sortRows(rows, cols, ui.psort);
       return `<div class="wrap page"><div class="head"><h1 class="disp">${sub === "fa" ? "Free agents" : sub === "watch" ? "Watchlist" : "All players"}</h1><span class="ps">${rows.length} players. FA is free to add now; W is on waivers, so put in a claim.</span></div>
         <div class="tools">${U.search(ui.pf)}</div>${U.posFilter(sport, ui.pf.pos, [], L().settings.lineup)}
@@ -1189,7 +1191,7 @@
       const sharedNote = shared.length ? `<div class="alert" style="margin:0 16px 10px"><span>${shared.map(([id, k]) => `${k} claims drop <b>${esc((ctx.byId[id] || {}).n || "the same player")}</b>`).join("; ")}. Claims run highest bid first, so once one wins, the others that drop him fail. Pick a different drop for any you'd want too.</span></div>` : "";
       const row = (c) => `<li style="grid-template-columns:minmax(0,1fr) auto auto;align-items:center"><div class="what">${U.txLine(sport, "add", ctx.byId[c.add])}${c.drop ? U.txLine(sport, "drop", ctx.byId[c.drop]) : ""}</div><b class="dollar">$${c.bid}</b>${c.status === "open" ? `<button class="btn sm" data-unclaim="${c.id}">Cancel</button>` : `<span class="status ${c.status === "won" ? "accepted" : "rejected"}">${c.status === "won" ? "Won" : c.status === "lost" ? `Lost to ${esc(T(c.lostTo).abbr)}` : c.status === "cancelled" ? "Cancelled" : "Failed"}${c.week ? `, week ${c.week}` : ""}</span>`}${c.why ? `<span class="ps" style="grid-column:1/-1">${esc(c.why)}</span>` : ""}</li>`;
       return `<div class="wrap page"><div class="head"><h1 class="disp">Waiver claims</h1><span class="ps">${esc(claimsRun())} Highest bid wins; ties go to waiver priority (you're ${ord(T(mid).priority + 1)}). You have $${T(mid).faab}.</span></div>
-        <div class="cols2"><div class="card"><div class="mod-h"><h2>Pending</h2></div>${sharedNote}${open.length ? claimList(open) : `<p class="empty">No pending claims. Players on waivers have a W on the Players page.</p>`}</div>
+        <div class="cols2"><div class="card"><div class="mod-h"><h2>Pending</h2></div>${sharedNote}${open.length ? claimList(open) : `<p class="empty">No pending claims. Players on waivers have a gold W in <a href="#players/fa">Free agents</a>; claim one there.</p>`}</div>
         <div class="card"><div class="mod-h"><h2>Results</h2></div>${past.length ? `<ul class="feed">${past.map(row).join("")}</ul>` : `<p class="empty">Nothing yet.</p>`}</div></div></div>`;
     }
     // Add a free agent (or claim one on waivers), choosing who to drop.

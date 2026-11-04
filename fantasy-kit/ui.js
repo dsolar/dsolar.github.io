@@ -364,7 +364,7 @@
       { k: "prank", label: "Pos rk", cls: "r ps", hide: "s", title: "Rank at his position", sort: (p) => parseInt(String(p.prank).replace(/\D+/g, ""), 10), asc: true, html: (p) => esc(p.prank) },
     ];
     if (opts.age !== false && sport.hasAge) cols.push({ k: "age", label: "Age", cls: "r num", hide: "s", sort: (p) => p.age, asc: true, html: (p) => (p.age ? p.age : "") });
-    if (opts.owner) cols.push({ k: "owner", label: "Status", cls: "", sort: opts.ownerSort, html: opts.owner });
+    if (opts.owner) cols.push({ k: "owner", label: "Status", cls: "", hide: opts.ownerHide ? "s" : undefined, sort: opts.ownerSort, html: opts.owner });
     // the market, when the page loaded it (value.js market): ESPN's rank and what players go for in real ESPN auctions
     // in season the experts' consensus and the trade market; before a season, ESPN's draft market
     const mk = sport.market;
@@ -700,22 +700,25 @@
       const d = D(), n = now();
       const brand = opts.brand || {};
       const lg = `<a class="lg" href="${esc((opts.exit && opts.exit.href) || "#")}">${brand.mark || ""}<span><b>${esc(d.name || brand.name || "Draft")}</b><small>${esc(F.FORMATS[d.type])}, ${d.teams.length} teams, ${d.rounds} rounds</small></span></a>`;
-      const ctl = [];
-      if (me() != null && d.phase !== "done") ctl.push(`<button class="btn sm" data-act="alerts" aria-pressed="${alerts.on()}" title="A chime, and a notification while this tab is in the background, when you're up">Alerts</button><button class="btn sm" data-act="auto" aria-pressed="${!!team(me()).auto}" title="Let the bot draft for you">Autodraft</button>`);
-      if (canTrade() && d.phase === "live") ctl.push(`<button class="btn sm" data-act="trade">Trade</button>`);
-      if (opts.commish && d.phase === "live") ctl.push(`<button class="btn sm" data-act="pause">${d.paused ? "Resume" : "Pause"}</button><button class="btn sm" data-act="undo">Undo</button>`);
-      if (opts.commish && d.phase === "setup") ctl.push(`<button class="btn sm go" data-act="start">Start the draft</button>`);
-      if (d.phase === "done" && opts.extra) ctl.push(opts.extra());
-      if (opts.tools) ctl.push(opts.tools());
-      if (opts.exit) ctl.push(`<a class="btn sm" href="${esc(opts.exit.href)}">${esc(opts.exit.label || "Exit")}</a>`);
+      // the buttons that matter mid-draft stay out; on a phone the rest fold into a More menu
+      const prim = [], sec = [];
+      if (me() != null && d.phase !== "done") { sec.push(`<button class="btn sm" data-act="alerts" aria-pressed="${alerts.on()}" title="A chime, and a notification while this tab is in the background, when you're up">Alerts</button>`); prim.push(`<button class="btn sm" data-act="auto" aria-pressed="${!!team(me()).auto}" title="Let the bot draft for you">Autodraft</button>`); }
+      if (canTrade() && d.phase === "live") sec.push(`<button class="btn sm" data-act="trade">Trade</button>`);
+      if (opts.commish && d.phase === "live") sec.push(`<button class="btn sm" data-act="pause">${d.paused ? "Resume" : "Pause"}</button><button class="btn sm" data-act="undo">Undo</button>`);
+      if (opts.commish && d.phase === "setup") prim.push(`<button class="btn sm go" data-act="start">Start the draft</button>`);
+      if (d.phase === "done" && opts.extra) prim.push(opts.extra());
+      if (opts.tools) sec.push(opts.tools());
+      if (opts.exit) sec.push(`<a class="btn sm" href="${esc(opts.exit.href)}">${esc(opts.exit.label || "Exit")}</a>`);
+      const ctl = prim.concat(sec.length ? [`<span class="dr-sec">${sec.join("")}</span><details class="dr-more"><summary class="btn sm">More</summary><div class="menu">${sec.join("")}</div></details>`] : []);
       let mid = "";
       if (d.phase === "heist") mid = `<div class="otc me"><span class="ring" id="fk-ring"><span id="fk-timer"></span></span><span class="who"><small>The draft is done</small><b>The heist</b><span>Shield yours, strike at theirs</span></span></div>`;
       else if (d.phase === "setup") mid = `<div class="otc"><span class="ring" style="--p:1"><span>${d.bank ? fmtLeft(bankFull()) : d.clock || d.auction ? (auction() ? d.auction.bidClock : d.clock) : "-"}</span></span><span class="who"><small>Draft room is open</small><b>${mystery() && !seenK(0) ? "Packages are sealed" : "Build your queue"}</b><span>${auction() ? `$${d.auction.budget} budgets, ${d.auction.bidClock} seconds a bid` : d.bank ? `${fmtLeft(bankFull())} bank each. What's left becomes FAAB` : d.clock ? `${d.clock} seconds a pick` : "No pick clock"}</span></span></div>`;
       else if (d.phase === "done") mid = `<div class="otc"><span class="who"><small>Draft complete</small><b>${F.made(d).length} ${auction() ? "players bought" : "picks"}</b><span>See the Results tab</span></span></div>`;
       else if (auction()) {
         const st = F.auctionState(d, n);
-        const t = st.kind === "lot" ? team(st.lot.team) : team(st.team);
-        mid = `<div class="otc${isMe(t) && st.kind === "nominate" ? " me" : ""}">${teamAv(t, "md")}<span class="who"><small>${st.kind === "lot" ? "High bid" : isMe(t) ? "Your nomination" : "Nominating"}</small><b>${esc(t.name)}</b><span>${d.sales.length} of ${d.teams.length * d.rounds} bought${d.paused ? ", paused" : ""}</span></span><span class="ring" id="fk-ring"><span id="fk-timer"></span></span></div>`;
+        // the high bidder shows once, by the bid itself; up here is who's on the block
+        const t = st.kind === "lot" ? team(st.lot.team) : team(st.team), lp = st.kind === "lot" ? ctx.byId[st.lot.pid] : null;
+        mid = `<div class="otc${isMe(t) && st.kind === "nominate" ? " me" : ""}">${lp ? playerAv(sport, lp, "md") : teamAv(t, "md")}<span class="who"><small>${st.kind === "lot" ? "On the block" : isMe(t) ? "Your nomination" : "Nominating"}</small><b>${esc(lp ? lp.n : t.name)}</b><span>${d.sales.length} of ${d.teams.length * d.rounds} bought${d.paused ? ", paused" : ""}</span></span><span class="ring" id="fk-ring"><span id="fk-timer"></span></span></div>`;
       } else if (d.packs) {
         // a pack draft: everyone picks from the pack in front of them at once, on one clock
         const tt = F.packTurnNow(d), at = F.packAt(d, tt), mineUp = me() != null && F.packSlot(d, me()) >= 0;
@@ -817,21 +820,22 @@
       const mine = me() != null;
       if (st.kind === "nominate") {
         const t = team(st.team);
-        return `<div><div class="lot">${teamAv(t, "lg")}<div class="lp"><b class="disp">${isMe(t) ? "Your nomination" : esc(t.name) + " is nominating"}</b><span class="ps">${isMe(t) ? "Pick a player below and set an opening bid. Your queue nominates for you if time runs out." : "The next player goes up in a moment."}</span></div><span></span><span></span><span></span></div><div class="budgets">${budgetChips()}</div></div>`;
+        return `<div><div class="lot">${teamAv(t, "lg")}<div class="lotp"><b class="disp">${isMe(t) ? "Your nomination" : esc(t.name) + " is nominating"}</b><span class="ps">${isMe(t) ? "Pick a player below and set an opening bid. Your queue nominates for you if time runs out." : "The next player goes up in a moment."}</span></div><span></span><span></span><span></span></div><div class="budgets">${budgetChips()}</div></div>`;
       }
       const lot = st.lot, p = ctx.byId[lot.pid], lead = team(lot.team);
       const can = mine && !isMe(lead) && F.maxBid(d, me()) > lot.bid && F.canAdd(d, ctx, me(), p).ok && !d.paused;
       const next = lot.bid + 1, max = mine ? F.maxBid(d, me()) : 0;
       const passed = mine && (lot.passed || []).includes(me());
-      return `<div><div class="lot">${playerAv(sport, p, "lg")}<div class="lp"><b class="disp">${esc(p.n)}</b><span class="ps">${posChips(sport, p)} ${proTeam(sport, p.t)}, ${esc(p.prank)}, value ${money(p.$)}. Nominated by ${esc(team(lot.by).name)}</span></div>
+      return `<div><div class="lot">${playerAv(sport, p, "lg")}<div class="lotp"><b class="disp">${esc(p.n)}</b><span class="ps">${posChips(sport, p)} ${proTeam(sport, p.t)}, ${esc(p.prank)}, value ${money(p.$)}. Nominated by ${esc(team(lot.by).name)}</span></div>
         <div class="bid"><small>${teamAv(lead, "sm")} ${isMe(lead) ? "Your bid" : esc(lead.abbr)}</small><b class="${isMe(lead) ? "win" : ""}">${money(lot.bid)}</b></div>
-        <div class="acts">${can ? `<button class="btn go" data-bid="${next}">Bid ${money(next)}</button><button class="btn" data-bid="${Math.min(max, lot.bid + 5)}">${money(Math.min(max, lot.bid + 5))}</button><label class="sr" for="fk-bid">Your bid</label><input type="number" id="fk-bid" min="${next}" max="${max}" value="${ui.bidAmt && ui.bidAmt > lot.bid ? ui.bidAmt : next}"><button class="btn" data-act="bid">Bid</button>${passed ? `<span class="ps">You passed</span>` : `<button class="btn ghost" data-act="pass">Pass</button>`}`
+        <div class="acts">${can ? (() => { const v = ui.bidAmt && ui.bidAmt > lot.bid ? Math.min(max, ui.bidAmt) : next; return `<span class="bid-q">${[1, 5, 10].filter((x) => lot.bid + x <= max).map((x) => `<button type="button" class="btn sm" data-bidq="${lot.bid + x}" aria-label="Set your bid to ${money(lot.bid + x)}">+$${x}</button>`).join("")}</span><label class="sr" for="fk-bid">Your bid</label><input type="number" id="fk-bid" min="${next}" max="${max}" value="${v}"><button class="btn go" data-act="bid">Bid <span id="fk-bidv">${money(v)}</span></button>${passed ? `<span class="ps">You passed</span>` : `<button class="btn ghost" data-act="pass">Pass</button>`}`; })()
           : mine ? `<span class="ps">${isMe(lead) ? "You have the high bid." : max <= lot.bid ? `Your max bid is ${money(max)}.` : esc(F.canAdd(d, ctx, me(), p).why || "")}</span>` : ""}</div></div>
         <div class="budgets">${budgetChips()}</div></div>`;
     }
     function budgetChips() {
       const d = D(), lot = d.auction.lot;
-      return d.round1.map((id) => { const t = team(id); return `<span class="${isMe(t) ? "me" : ""}${lot && lot.team === id ? " lead" : ""}" title="${esc(t.name)}: ${F.spotsLeft(d, id)} spots left, max bid ${money(F.maxBid(d, id))}">${teamAv(t, "sm")}<b>${esc(t.abbr)}</b> ${money(t.budget)} <span class="ps">max ${money(F.maxBid(d, id))}</span></span>`; }).join("");
+      // each team's money; its max bid only when it can't top the bid on the block
+      return d.round1.map((id) => { const t = team(id), mx = F.maxBid(d, id), out = lot && lot.team !== id && mx <= lot.bid; return `<span class="${isMe(t) ? "me" : ""}${lot && lot.team === id ? " lead" : ""}${out ? " out" : ""}" title="${esc(t.name)}: ${F.spotsLeft(d, id)} spots left, max bid ${money(mx)}">${teamAv(t, "sm")}<b>${esc(t.abbr)}</b> ${money(t.budget)}${out ? ` <span class="ps">can't top it</span>` : ""}</span>`; }).join("");
     }
 
     /* ---------- a pack draft: the sealed pack, the rip, the cards ---------- */
@@ -930,6 +934,8 @@
       return fitBar + rlBar + table({ cols, rows, sort: ui.sort, dense: true, id: "fk-pool", limit: ui.limit || 250, empty: "No one matches.",
         rowAttr: (p) => `data-player="${esc(p.id)}" class="${mine != null && ctx.own[p.id] == null && !F.canAdd(d, ctx, mine, p).ok ? "dim" : ""}"` });
     }
+    // a board cell's name: first initial and last name ("J. Smith-Njigba"); a defense by its team
+    const shortName = (p) => { if (S.positions(p).includes("DEF")) return `${p.t} D/ST`; const w = String(p.n).split(" "); return w.length > 1 && !/^(Jr\.?|Sr\.?|II|III|IV)$/.test(w[1]) ? `${w[0][0]}. ${w.slice(1).join(" ")}` : p.n; };
     function board() {
       const d = D(), cols = d.round1, n = cols.length;
       const slots = auction() ? null : cols.map(slotsOf);
@@ -949,7 +955,7 @@
           if (x && x.k != null && !pk && !seenK(x.k)) { cells += `<div class="cell hid${isMe(t) ? " me" : ""}"><small class="ps">Sealed</small></div>`; continue; }
           const via = x && x.k != null ? (pk && pk.drafter != null && pk.drafter !== pk.team ? team(pk.drafter) : !pk ? viaOf(x.k) : null) : null;
           const cls = ["cell", p ? "f c" + colorOf(sport, p) : "", isMe(t) ? "me" : "", x && x.k === nowK ? "now" : "", pk && pk.keeper ? "keep" : "", pk && pk.steal ? "steal" : "", x && x.k != null && !pk && D().extra[x.k] ? "mk" : ""].join(" ").replace(/\s+/g, " ");
-          cells += `<div class="${cls}"${p ? ` data-player="${esc(p.id)}" role="button" tabindex="0" title="${esc(p.n)}${pk.auto ? ", autopick" : ""}"` : ""}>${p ? `<b>${esc(p.n)}</b><small>${pk.steal ? `stolen from ${esc(team(pk.from).abbr)}` : via ? `from ${esc(via.abbr)}` : `${S.positions(p).join(", ")} ${esc(p.t)}`}${x.label ? " " + x.label : ""}</small>` : pk ? "<b>Passed</b>" : x && x.k != null ? `<small class="ps">${plab(x.k)}${x.k === nowK ? ", on the clock" : via ? `, via ${esc(via.abbr)}` : ""}</small>` : ""}</div>`;
+          cells += `<div class="${cls}"${p ? ` data-player="${esc(p.id)}" role="button" tabindex="0" title="${esc(p.n)}${pk.auto ? ", autopick" : ""}"` : ""}>${p ? `<b>${esc(shortName(p))}</b><small>${pk.steal ? `stolen from ${esc(team(pk.from).abbr)}` : via ? `from ${esc(via.abbr)}` : `${S.positions(p).join(", ")} ${esc(p.t)}`}${x.label ? " " + x.label : ""}</small>` : pk ? "<b>Passed</b>" : x && x.k != null ? `<small class="ps">${plab(x.k)}${x.k === nowK ? ", on the clock" : via ? `, via ${esc(via.abbr)}` : ""}</small>` : ""}</div>`;
         }
       }
       return `<div class="board" id="fk-board"><div class="bgrid" style="--n:${n};grid-template-columns:28px repeat(${n},minmax(0,1fr))">${cells}</div></div>`;
@@ -1216,6 +1222,8 @@
         <aside class="dr-right"><div class="seg hide-m" role="group" aria-label="Panel">${rights.map(([k, n]) => `<button type="button" data-right="${k}" aria-pressed="${ui.right === k}">${esc(n)}</button>`).join("")}</div><div class="show-m" style="padding:10px 12px 0">${seg.replace('id="fk-seg"', 'id="fk-seg2"')}</div><div class="dr-panel">${right}</div></aside></div></div>`;
       $$("#fk-pool,#fk-board,#fk-picks,.dr-panel,#fk-ticker,#fk-seg,#fk-seg2,#fk-rchatl", el).forEach((x) => { const v = keep.scroll[x.id || x.className]; if (v) { x.scrollTop = v[0]; x.scrollLeft = v[1]; } });
       const tk = $("#fk-ticker", el), cur = tk && $(".tk.now", tk);
+      const bd = $("#fk-board", el), mineH = bd && $(".bgrid .h.me", bd);
+      if (bd && mineH && !keep.scroll["fk-board"] && !ui.boardSeen) { ui.boardSeen = true; bd.scrollLeft = Math.max(0, mineH.offsetLeft - bd.clientWidth / 2 + mineH.offsetWidth / 2); }
       if (cur && tk && (!keep.scroll["fk-ticker"] || ui.lastPick !== F.made(d).length)) tk.scrollLeft = Math.max(0, cur.offsetLeft - tk.clientWidth * 0.3);
       ui.lastPick = F.made(d).length;
       // on a phone the view switch scrolls: when the view changes, bring its button into sight
@@ -1337,7 +1345,7 @@
       }
       const hz = e.target.closest("button[data-hz]");
       if (hz) { heistPick(hz.dataset.hz, hz.dataset.pid); return; }
-      const b = e.target.closest("button[data-pick],button[data-queue],button[data-nominate],button[data-bid],button[data-qup],button[data-act]");
+      const b = e.target.closest("button[data-pick],button[data-queue],button[data-nominate],button[data-bid],button[data-bidq],button[data-qup],button[data-act]");
       if (b) {
         e.stopPropagation();
         const d = D(), n = now();
@@ -1347,6 +1355,7 @@
         }
         else if (b.dataset.queue) toggleQueue(b.dataset.queue);
         else if (b.dataset.nominate) nominateDialog(b.dataset.nominate);
+        else if (b.dataset.bidq) { ui.bidAmt = +b.dataset.bidq; const inp = $("#fk-bid", el), bv = $("#fk-bidv", el); if (inp) inp.value = ui.bidAmt; if (bv) bv.textContent = money(ui.bidAmt); }
         else if (b.dataset.bid) act(() => F.bid(d, ctx, me(), +b.dataset.bid, n));
         else if (b.dataset.qup) { const q = team(me()).queue, i = q.indexOf(b.dataset.qup); if (i > 0) { [q[i - 1], q[i]] = [q[i], q[i - 1]]; save(); render(); } }
         else {
@@ -1395,7 +1404,7 @@
     });
     el.addEventListener("input", (e) => {
       if (e.target.id === "fk-q") { ui.f.q = e.target.value; render(); }
-      if (e.target.id === "fk-bid") ui.bidAmt = +e.target.value;
+      if (e.target.id === "fk-bid") { ui.bidAmt = +e.target.value; const bv = $("#fk-bidv", el); if (bv) bv.textContent = money(ui.bidAmt || 0); }
       if (e.target.id === "fk-rchat") ui.chatDraft = e.target.value;
     });
     el.addEventListener("keydown", (e) => {
@@ -1542,6 +1551,31 @@
     if (+btn.dataset.d > 0) return orderLineup(sport, cur.concat(btn.dataset.lb));
     const i = cur.lastIndexOf(btn.dataset.lb);
     return i >= 0 ? cur.filter((_, j) => j !== i) : cur;
+  }
+  // Strips that scroll sideways (tabs, chips, the pick ticker, boards, wide tables): fade the edge with more to see,
+  // and bring the current tab or chip into view when it's off the edge. Runs after every redraw.
+  const STRIPS = ".fk-nav nav,.fk-subs .wrap,.chips,.ticker,.budgets,.seg,.board,.table-wrap,.scoreboard:not(.list)";
+  function hintStrips() {
+    for (const el of document.querySelectorAll(STRIPS)) {
+      const over = el.scrollWidth > el.clientWidth + 2;
+      if (over && !el.dataset.hint) {
+        el.dataset.hint = "1";
+        el.addEventListener("scroll", () => fadeOf(el), { passive: true });
+        const cur = !el.classList.contains("ticker") && el.querySelector('[aria-current="page"],[aria-pressed="true"]');
+        if (cur) { const r = cur.getBoundingClientRect(), b = el.getBoundingClientRect(); if (r.left < b.left || r.right > b.right) el.scrollLeft += r.left - b.left - (b.width - r.width) / 2; }
+      }
+      fadeOf(el, over);
+    }
+  }
+  function fadeOf(el, over = el.scrollWidth > el.clientWidth + 2) {
+    el.classList.toggle("fade-l", over && el.scrollLeft > 2);
+    el.classList.toggle("fade-r", over && el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
+  }
+  if (typeof document !== "undefined" && typeof MutationObserver !== "undefined") {
+    let raf = 0;
+    const kick = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(hintStrips); };
+    const start = () => { new MutationObserver(kick).observe(document.body, { childList: true, subtree: true }); window.addEventListener("resize", kick); kick(); };
+    if (document.body) start(); else document.addEventListener("DOMContentLoaded", start);
   }
   FK.ui = { faceAv, squarePhoto, profileDialog, statColumns, LINEUP_PRESETS: PRESETS, lineupBuilder, orderLineup, lineupStep, slotDesc, esc, $, $$, store, toast, dialog, dialogOpen, focusKey, refocus, keyboardPlayers, confirm, theme, fmtLeft, money, ord, last, initials, ago,
     teamAv, SHAPES, GLYPHS, logoSvg, glyphOf, shapeOf, playerAv, pname, teamName, posChip, posChips, colorOf, injTag,

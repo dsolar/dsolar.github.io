@@ -84,10 +84,13 @@
   /* ---------- setup: the same look and controls as Start a league (FK.setup) ---------- */
   const K = window.FK.setup;
   const open = {};
-  const CLOCKS = [[15, "15 sec"], [30, "30 sec"], [60, "1 min"], [90, "90 sec"], [0, "No clock"], [-120, "2 min bank"], [-200, "200 sec bank"], [-300, "5 min bank"], [-480, "8 min bank"]];
+  // a clock for each pick, or a time bank for the whole draft (a negative clock: its total in seconds)
+  const PICK_CLOCKS = [[15, "15 sec"], [30, "30 sec"], [60, "1 min"], [90, "90 sec"], [0, "No clock"]];
+  const BANKS = [[-120, "2 min"], [-200, "200 sec"], [-300, "5 min"], [-480, "8 min"]];
+  const CLOCKS = PICK_CLOCKS.concat(BANKS.map(([v, l]) => [v, `${l} bank`]));
   const BID_CLOCKS = [[10, "10 sec"], [15, "15 sec"], [20, "20 sec"], [30, "30 sec"]];
   const fmtBank = (sec) => (sec % 60 ? `${sec} seconds` : `${sec / 60} minutes`);
-  const NUM = /^(teams|slot|clock|budget|bench|test|trades|rl|rlRound|hz|sd)$/;
+  const NUM = /^(teams|slot|clock|bank|budget|bench|test|trades|rl|rlRound|hz|sd)$/;
   // the one-week twists: team roulette (drafts that go pick by pick), and for football a showdown (one game, a
   // captain and five flex spots, no bench) or a heist right after the draft (the one-week lineup, no bench)
   const ONE_WEEK_NFL = ["QB", "RB", "RB", "WR", "WR", "WR", "TE", "FLEX"];
@@ -160,13 +163,13 @@
       <form class="nl-body" id="setup" novalidate>
         <section class="nl-sec"><h2 class="nl-h">Format</h2>${formats}</section>
         <section class="nl-sec nl-ess">
-          <div class="g2">${K.fld("Teams", K.seg("teams", [4, 6, 8, 10, 12, 14, 16].map((x) => [x, String(x)]), c.teams, "Teams", { wrap: true, cls: "big" }))}
+          <div class="g2">${K.fld("Teams", K.stepper("teams", [4, 6, 8, 10, 12, 14, 16], c.teams, (x) => `${x} teams`, "Teams"))}
             ${mystery ? K.fld("Packages open", K.seg("reveal", Object.entries(F.REVEALS).map(([k, l]) => [k, l.replace(", the rest as they come up", ", then as picks come up")]), c.reveal, "Packages open", { wrap: true })) : K.fld(auction ? "Your nomination turn" : "Your pick", K.stepper("slot", Array.from({ length: c.teams + 1 }, (_, i) => i), Math.min(c.slot, c.teams), (x) => (x ? U.ord(x) : "Random"), auction ? "Your nomination turn" : "Your pick"))}</div>
           ${K.fld("Scoring", K.cards("scoring", presets, scoring, "Scoring", presets.length > 3 ? 3 : presets.length))}
-          <div class="g2">${K.fld(auction ? "Bid clock" : "Pick clock", K.seg("clock", auction ? BID_CLOCKS : CLOCKS, clock[0], auction ? "Bid clock" : "Pick clock", { wrap: true }),
+          <div class="g2">${K.fld(auction ? "Bid clock" : "Pick clock", K.seg("clock", auction ? BID_CLOCKS : PICK_CLOCKS.concat([[c.clock < 0 ? c.clock : -200, "Time bank"]]), clock[0], auction ? "Bid clock" : "Pick clock", { wrap: true }),
               auction ? "Every bid resets the clock." : c.clock < 0 ? `One clock for your whole draft: ${fmtBank(-c.clock)} for all your picks, about ${Math.round(-c.clock / Math.max(1, (sdOn(c) ? 6 : hzOn(c) ? 8 : lu.length + bench)))} seconds each. Run it out and every pick gets 10 seconds. The bots finish with about half of theirs left. What's left becomes FAAB for the season.` : c.clock ? "When your clock runs out, your first queued player who fits is taken, then the best fit." : "Take as long as you like.")}
-            ${auction ? K.fld("Budget per team", K.seg("budget", [100, 200, 260, 300, 1000].map((x) => [x, `$${x}`]), c.budget, "Budget per team", { wrap: true })) : `<div class="fl"><div class="fl-l"><label for="s-name">Your team name</label></div><input type="text" id="s-name" maxlength="28" value="${esc(c.name)}" placeholder="Your team"></div>`}</div>
-          ${auction ? `<div class="g2"><div class="fl"><div class="fl-l"><label for="s-name">Your team name</label></div><input type="text" id="s-name" maxlength="28" value="${esc(c.name)}" placeholder="Your team"></div></div>` : ""}
+            ${auction ? K.fld("Budget per team", K.seg("budget", [100, 200, 260, 300, 1000].map((x) => [x, `$${x}`]), c.budget, "Budget per team", { wrap: true })) : c.clock < 0 ? K.fld("Time bank", K.seg("bank", BANKS, c.clock, "Time bank", { wrap: true }), "For your whole draft.") : "<div></div>"}</div>
+          <div class="g2"><div class="fl"><div class="fl-l"><label for="s-name">Your team name</label></div><input type="text" id="s-name" maxlength="28" value="${esc(c.name)}" placeholder="Your team"></div><div></div></div>
           ${tradesOk || mystery ? `<div class="nl-bb">${K.toggle("trades", "Trades during the draft", "Trade picks and drafted players with any team. Bots answer right away.", c.trades)}${mystery ? K.toggle("test", "Even out the packages", "Deal five times and keep the most even draft", c.test) : ""}</div>` : ""}
           ${elephant ? `<p class="fl-h">Each team gets 3 steals, a player is frozen after 2, and steals end with 2 rounds to go. The team you rob picks again right away.</p>` : ""}
         </section>
@@ -199,6 +202,9 @@
       cfg[k] = NUM.test(k) ? Number(v) : v;
     });
     const nm = $("#s-name"); if (nm) cfg.name = nm.value;
+    // a time bank: the bank's own control picks how big
+    const bk = root.querySelector("input[data-f=bank]:checked");
+    if (cfg.clock < 0 && bk) cfg.clock = Number(bk.value);
   }
   function setupPage(focusSel) {
     document.body.classList.remove("fk-room");
@@ -293,6 +299,7 @@
     if (rlFits(c) && c.rl && !sdOn(c)) D.roulette = { teams: [...new Set(P.players.map((p) => p.t).filter((t) => t && t !== "FA"))].sort(), each: c.rlRound ? "round" : "pick", respins: 1, spins: {}, used: {} };
     if (sdOn(c)) D.season = { format: "h2h", weeks: 1, oneWeek: true, showdown: { teams: [c.sdA, c.sdH], label: `${c.sdA} @ ${c.sdH}` } };
     if (hzOn(c)) D.season = { format: "h2h", weeks: 1, oneWeek: true, heist: { shields: 3, steals: 1, jinxes: 1, clock: 60 } };
+    D.teams.forEach((t, i) => (t.color = (i * 5) % 12));      // each team its own color, as in a league
     D.teams[0].owner = "You";
     if (c.name) { D.teams[0].name = c.name; D.teams[0].abbr = c.name.replace(/[^A-Za-z0-9 ]/g, "").split(/\s+/).map((w) => w[0]).join("").slice(0, 3).toUpperCase() || "YOU"; }
     else { D.teams[0].name = "Your team"; D.teams[0].abbr = "YOU"; }

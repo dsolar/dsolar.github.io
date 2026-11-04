@@ -281,7 +281,7 @@ table.vs tr.tot td{background:var(--surface-2);font-weight:850}
 .trade-foot{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 16px;border-top:1px solid var(--line);background:var(--surface-2);border-radius:0 0 var(--rl) var(--rl)}
 .status{font-size:12px;font-weight:800;border-radius:999px;padding:2px 10px;white-space:nowrap}
 .status.pending{background:var(--gold-soft);color:var(--gold)} .status.review{background:var(--info-soft);color:var(--info)} .status.accepted{background:var(--win-soft);color:var(--win)}
-.status.rejected,.status.vetoed,.status.failed{background:var(--loss-soft);color:var(--loss)} .status.cancelled,.status.countered{background:var(--surface-3);color:var(--muted)}
+.status.rejected,.status.vetoed,.status.failed{background:var(--loss-soft);color:var(--loss)} .status.cancelled,.status.countered,.status.expired{background:var(--surface-3);color:var(--muted)}
 /* the trade window */
 .tw{display:grid;grid-template-rows:auto minmax(0,1fr) auto;height:min(88dvh,820px)}
 .tw-h{display:flex;align-items:center;gap:12px;padding:16px 60px 12px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
@@ -368,8 +368,8 @@ body.fk-room .fk-top,body.fk-room .ds-bar{display:none}
 .rslots li{display:grid;grid-template-columns:50px minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 12px;border-top:1px solid var(--line);min-height:44px}
 .rslots li.open .ps{font-style:italic}
 .lot{display:grid;grid-template-columns:auto minmax(0,1.2fr) auto auto minmax(0,1.6fr);gap:16px;align-items:center;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--line)}
-.lot .lp{display:grid;gap:2px;min-width:0}
-.lot .lp b{font-size:24px;line-height:1.05}
+.lot .lotp{display:grid;gap:2px;min-width:0}
+.lot .lotp b{font-size:24px;line-height:1.05}
 .lot .bid{display:grid;justify-items:center;line-height:1}
 .lot .bid b{font-size:42px;font-weight:900;font-variant-numeric:tabular-nums;font-variation-settings:"wdth" 75}
 .lot .bid small{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;display:flex;gap:5px;align-items:center}
@@ -485,7 +485,7 @@ dialog.fk-dlg h3{margin:0 0 6px;font-size:22px;padding-right:40px}
   .tk{width:114px}
   .lot{grid-template-columns:minmax(0,1fr) auto auto;gap:8px 10px;padding:8px 12px}.lot>.pav,.lot>.av{display:none}.lot .acts{grid-column:1/-1;justify-content:flex-start}
   .dr-top .acts .btn{min-height:32px;padding:3px 10px}
-  .lot .lp b{font-size:19px}
+  .lot .lotp b{font-size:19px}
   .lot .bid b{font-size:32px}
   .feed>li{grid-template-columns:auto minmax(0,1fr);padding:10px 12px}.feed time{grid-column:2}
 }
@@ -673,7 +673,7 @@ td.more{text-align:center;padding:12px}
   .catgrid .who b:last-of-type::before{content:"Bottom: "}
   table.t.vs td.nm{min-width:0 !important;max-width:118px}
   table.t.vs .pname .pav{display:none}
-  table.t.vs .pname .pn{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+  table.t.vs .pname .pn{display:block;overflow-wrap:anywhere;white-space:normal;font-size:13px;line-height:1.15}
   table.t.vs .pname .sub{font-size:10.5px}
   table.t.vs td{padding-left:6px;padding-right:6px}
 }
@@ -1414,3 +1414,77 @@ tr.show-s{display:none}
   .dr-left>.rl-bar{font-size:12px;padding:6px 10px}
   .pkd{padding:12px 8px 10px}.pkd .pav.lg{width:44px;height:44px;font-size:15px}.pkd-r{margin:2px 0 4px}
 }
+
+/* ---------- layout pass: draft rooms ---------- */
+/* toasts sit at the top of a draft room, clear of the list and the board */
+body.fk-room .toast{top:calc(10px + env(safe-area-inset-top,0px));bottom:auto}
+/* the board: ten columns fit, the round numbers stay put */
+.bgrid{min-width:calc(var(--n) * 84px + 36px)}
+.bgrid .rn{position:sticky;left:0;z-index:2;background:var(--surface)}
+.bgrid>.h:first-child{position:sticky;left:0;z-index:3}
+/* room tables: room for the name */
+.dr-left table.t td:has(.pname){min-width:190px}
+.dr-left table.t td .pname .pn{white-space:normal}
+/* the header's extra buttons fold into More on a phone */
+.dr-more{display:none;position:relative}
+.dr-more summary{list-style:none;cursor:pointer}.dr-more summary::-webkit-details-marker{display:none}
+.dr-more .menu{position:absolute;right:0;top:calc(100% + 6px);z-index:40;display:grid;gap:6px;padding:8px;min-width:150px;border-radius:12px;background:var(--band);border:1px solid rgba(255,255,255,.16);box-shadow:0 12px 30px rgba(0,0,0,.4)}
+.dr-more .menu .btn{width:100%;justify-content:flex-start}
+.dr-sec{display:contents}
+@media (max-width:600px){
+  .dr-sec{display:none}.dr-more{display:block}
+  .dr-top .acts{flex-wrap:nowrap}
+  .otc .who span{text-wrap:pretty}
+}
+.lot .lotp b{color:var(--ink)}
+.lot .lotp .ps{white-space:normal}
+.lot .bid-q{display:flex;gap:4px}
+.budgets>span.out{opacity:.55}
+@media (max-width:600px){.lot .bid-q button:nth-child(3){display:none}.lot .bid-q{flex-wrap:nowrap}}
+
+/* ---------- layout pass: league pages ---------- */
+/* the matchup lineups on a phone: names wrap instead of being cut to a few letters */
+@media (max-width:600px){
+  table.vs td{padding:6px 4px}
+  table.vs td.sl{width:38px}
+  table.vs td.sl .slot{min-width:0;padding:2px 5px;font-size:10px}
+  table.vs td.pa,table.vs td.pb{width:44px;font-size:14px}
+  table.vs td.pa small,table.vs td.pb small{font-size:10px}
+  table.vs .pname .pn{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;font-size:13px;line-height:1.15}
+  table.vs .pname .sub{white-space:normal;font-size:10.5px}
+}
+/* "Show more" stays in view at the left of a wide table */
+td.more{text-align:left}
+td.more .btn,td.more .ps{position:sticky;left:12px}
+td.more .ps{display:block;margin-top:6px;width:max-content}
+/* two-up results on a phone: abbreviations, like the scoreboard strip, instead of cut-off names */
+@media (max-width:700px){
+  .sbtwo .scoreboard.list .game .ell{display:none}
+  .sbtwo .scoreboard.list .game .ab{display:inline;font-weight:800;letter-spacing:.02em;flex:1}
+}
+/* inside a league on a phone the site header scrolls away; the league's own tabs and tab bar stay */
+@media (max-width:700px){body.fk-hasbar .ds-bar.ds-navigation{position:relative}}
+
+/* ---------- layout pass: setup pages ---------- */
+.nl-bar{margin:0;bottom:12px;border-bottom:1px solid var(--line);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.14)}
+.nl-art{-webkit-mask-image:linear-gradient(90deg,transparent 38%,#000 78%);mask-image:linear-gradient(90deg,transparent 38%,#000 78%)}
+@media (min-width:901px){.sty-g .sty b{min-height:2.45em;line-height:1.2}}
+@media (max-width:700px){
+  .nl-art{-webkit-mask-image:linear-gradient(90deg,transparent 55%,#000 100%);mask-image:linear-gradient(90deg,transparent 55%,#000 100%);opacity:.55}
+  .sty-g>.sty:last-child:nth-child(odd){grid-column:1 / -1}
+  .nl-bar{margin:0 -4px;bottom:8px}
+}
+@media (max-width:700px){.cc>.cc-o:last-child:nth-child(odd){grid-column:1 / -1}}
+
+/* ---------- strips that scroll sideways: a fade on the side with more ---------- */
+.fade-r:not(.fade-l){-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent)}
+.fade-l:not(.fade-r){-webkit-mask-image:linear-gradient(90deg,transparent,#000 36px);mask-image:linear-gradient(90deg,transparent,#000 36px)}
+.fade-l.fade-r{-webkit-mask-image:linear-gradient(90deg,transparent,#000 36px,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,transparent,#000 36px,#000 calc(100% - 36px),transparent)}
+/* the ticker and budget strip get room at their ends */
+.ticker{scroll-padding-inline:16px}
+.ticker>:first-child,.budgets>:first-child{margin-left:12px}
+.ticker>:last-child,.budgets>:last-child{margin-right:12px}
+.board.fade-l:not(.fade-r){-webkit-mask-image:none;mask-image:none}
+.board.fade-l.fade-r{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent)}
+@media (max-width:600px){table.t.vs td.nm{min-width:0;max-width:none;width:auto}table.t.vs{table-layout:fixed;width:100%}table.t.vs td.pa,table.t.vs td.pb{width:46px}table.t.vs td.sl{width:40px}}
+@media (min-width:861px){body.fk-room .toast{left:auto;right:20px;transform:none;top:88px}}
