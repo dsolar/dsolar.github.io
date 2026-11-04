@@ -98,14 +98,14 @@
       { line: "tot", col: "g", label: "G", fmt: f0 },
       { fpts: true, label: "FPTS", fmt: f1, title: "Fantasy points this season" },
       { fpg: true, label: "FP/G", fmt: f1, title: "Fantasy points per game" },
-      { line: "tot", col: "pass_yd", label: "PaYd", fmt: f0, hide: "s" },
-      { line: "tot", col: "pass_td", label: "PaTD", fmt: f0, hide: "s" },
-      { line: "tot", col: "pass_int", label: "Int", fmt: f0, hide: "s" },
-      { line: "tot", col: "rush_yd", label: "RuYd", fmt: f0, hide: "s" },
-      { line: "tot", col: "rush_td", label: "RuTD", fmt: f0, hide: "s" },
-      { line: "tot", col: "rec", label: "Rec", fmt: f0, hide: "s" },
-      { line: "tot", col: "rec_yd", label: "ReYd", fmt: f0, hide: "s" },
-      { line: "tot", col: "rec_td", label: "ReTD", fmt: f0, hide: "s" },
+      { line: "tot", col: "pass_yd", pos: ["QB"], label: "PaYd", fmt: f0, hide: "s" },
+      { line: "tot", col: "pass_td", pos: ["QB"], label: "PaTD", fmt: f0, hide: "s" },
+      { line: "tot", col: "pass_int", pos: ["QB"], label: "Int", fmt: f0, hide: "s" },
+      { line: "tot", col: "rush_yd", pos: ["QB", "RB", "FLEX", "SFLEX"], label: "RuYd", fmt: f0, hide: "s" },
+      { line: "tot", col: "rush_td", pos: ["QB", "RB", "FLEX", "SFLEX"], label: "RuTD", fmt: f0, hide: "s" },
+      { line: "tot", col: "rec", pos: ["RB", "WR", "TE", "FLEX", "SFLEX"], label: "Rec", fmt: f0, hide: "s" },
+      { line: "tot", col: "rec_yd", pos: ["RB", "WR", "TE", "FLEX", "SFLEX"], label: "ReYd", fmt: f0, hide: "s" },
+      { line: "tot", col: "rec_td", pos: ["RB", "WR", "TE", "FLEX", "SFLEX"], label: "ReTD", fmt: f0, hide: "s" },
     ],
   };
 
@@ -310,6 +310,15 @@
   const mmdd = (d) => (d.getMonth() + 1) * 100 + d.getDate();
   const within = (x, [a, b]) => (a <= b ? x >= a && x <= b : x >= a || x <= b);
   const seasonOn = (key, date) => !!SEASONS[key] && within(mmdd(date || new Date()), SEASONS[key]);
+  // when this fantasy season ends: the next SEASONS end date after t, or null in the offseason (no cap then)
+  function seasonEnd(key, t) {
+    const se = SEASONS[key]; if (!se) return null;
+    const now = new Date(t || Date.now());
+    if (!within(mmdd(now), se)) return null;
+    let end = new Date(now.getFullYear(), Math.floor(se[1] / 100) - 1, se[1] % 100, 23, 59);
+    if (end.getTime() < now.getTime()) end = new Date(now.getFullYear() + 1, Math.floor(se[1] / 100) - 1, se[1] % 100, 23, 59);
+    return end.getTime();
+  }
   const inSeason = (date) => { const x = mmdd(date || new Date()); return (DEFAULT_SPORT.find(([a, b]) => within(x, [a, b])) || [0, 0, "nfl"])[2]; };
 
   // Each pro team's main color, for its abbreviation next to a player's name. Colors only: no logos or marks.
@@ -352,5 +361,5 @@
   const inPool = (doc, p) => { const t = poolOf(doc); return !t || t.includes(p.t); };
   // A showdown: one game, a captain who scores half again, five spots that take anyone, no bench
   const SHOWDOWN = { lineup: ["CPT", "UTIL", "UTIL", "UTIL", "UTIL", "UTIL"], bench: 0, mult: { CPT: 1.5 } };
-  return { ALL, nba, nfl, mlb, poolOf, inPool, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, prospectClass };
+  return { ALL, nba, nfl, mlb, poolOf, inPool, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
 });

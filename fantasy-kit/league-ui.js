@@ -30,7 +30,9 @@
     const ui = { moving: null, week: null, pf: { q: "", pos: "" }, psort: { k: "rank", dir: 1 }, pshow: "fa", txf: "", sbWeek: null };
     const curWeek = () => Math.min(L().week, G.totalWeeks(L()));
     const over = () => L().week > G.totalWeeks(L());
-    const frac = (w) => { if (w < L().week) return 1; const f = opts.frac ? opts.frac(w) : 0; return f < 0.01 ? 0 : f; };
+    // real scores: nothing is live until the week's first game kicks off (a football Wednesday is still "Projected")
+    const noKicks = (w) => { const k = L().kick; return !!(L().settings.real && w === L().week && k && k.week === w && k.teams && !Object.values(k.teams).some((t) => t <= now())); };
+    const frac = (w) => { if (w < L().week) return 1; if (noKicks(w)) return 0; const f = opts.frac ? opts.frac(w) : 0; return f < 0.01 ? 0 : f; };
     const standings = () => G.standings(L());
     const gl = () => G.isGuillotine(L());
     // moves are open while the season runs and your team is alive; trades also stop at the deadline
@@ -464,9 +466,9 @@
     function txPage() {
       const f = ui.txf;
       const items = L().tx.slice().reverse().filter((x) => x.type !== "draft" && (!f || (f === "add" ? /add/.test(x.type) : f === "drop" ? (x.drops || []).length && x.type !== "trade" : x.type === f)));
-      return `<div class="wrap page"><div class="head"><h1 class="disp">Transactions</h1><span class="ps">${L().tx.length} moves this season</span></div>
+      return `<div class="wrap page"><div class="head"><h1 class="disp">Transactions</h1><span class="ps">${((n) => (n ? `${n} move${n === 1 ? "" : "s"} this season` : "No moves yet this season"))(L().tx.filter((x) => x.type !== "draft").length)}</span></div>
         <div class="chips" role="group" aria-label="Type">${[["", "All"], ["add", "Adds"], ["drop", "Drops"], ["waiver", "Waivers"], ["trade", "Trades"]].map(([k, n]) => `<button type="button" data-txf="${k}" aria-pressed="${k === f}">${n}</button>`).join("")}</div>
-        <div class="card">${U.feed(items.slice(0, 120).map(txVM), "Nothing here yet.")}</div></div>`;
+        <div class="card">${U.feed(items.slice(0, 120).map(txVM), f ? "None of these yet." : "No adds, drops or trades yet.")}</div></div>`;
     }
     /* ---------- league history: past seasons (shared leagues pass opts.history()) plus this one ---------- */
     function seasonsAll() {
@@ -791,7 +793,10 @@
         const tgt = targetFor(p, i);
         const on = fitsSlot(i) ? " on" : "";
         const cpt = slotLabel === "CPT" ? " cpt" : "";
-        const slotEl = can ? `<button type="button" class="slot slotbtn${on}${cpt}" data-move="${moving && p === moving ? "" : esc(p.id)}" title="${moving && p === moving ? "Cancel the move" : `Move ${esc(p.n)}`}">${esc(slotLabel)}</button>`
+        // while moving, a highlighted slot does the move (the same as its Swap button); any other slot cancels it
+        const tgtAttr = moving && p !== moving ? (i != null && fitsSlot(i) ? `data-here="${i}"` : tgt && i == null ? `data-swapb="${esc(p.id)}" data-slot="${movingSlot}"` : `data-move=""`) : "";
+        const slotEl = moving && tgtAttr && (can || (i != null && fitsSlot(i))) ? `<button type="button" class="slot slotbtn${on}${cpt}" ${tgtAttr} title="${tgtAttr === 'data-move=""' ? "Cancel the move" : `Move ${esc(moving.n)} here`}">${esc(slotLabel)}</button>`
+          : can ? `<button type="button" class="slot slotbtn${on}${cpt}" data-move="${moving && p === moving ? "" : esc(p.id)}" title="${moving && p === moving ? "Cancel the move" : `Move ${esc(p.n)}`}">${esc(slotLabel)}</button>`
           : `<span class="slot${on}${cpt}${onIR ? " ir" : ""}${pl(p) && !onIR && !onTaxi ? " lk" : ""}"${pl(p) && !onIR && !onTaxi ? ` title="${esc(p.n)}'s game has started: locked until the week ends"` : ""}>${pl(p) && !onIR && !onTaxi ? LOCK : ""}${esc(slotLabel)}</span>`;
         const cls = [moving && p === moving ? "me" : "", tgt ? "tgt" : "", onIR ? "irrow" : ""].filter(Boolean).join(" ");
         // drag and drop: a starter, bench or IR player can be dragged; every slot, the bench and IR take drops
@@ -899,7 +904,7 @@
           if (abbr && clash) { U.toast(`${clash.name} already uses ${abbr}`, true); return false; }
           Object.assign(T(mid), { name, abbr: abbr || name.split(/\s+/).map((x) => x[0]).join("").slice(0, 3).toUpperCase(), color: st.color, shape: st.shape, glyph: st.glyph === "abbr" ? false : st.glyph });
           if (st.img) T(mid).img = st.img; else delete T(mid).img;
-          save(); U.toast("Team saved."); render();
+          save(); U.toast("Team saved."); setTimeout(render, 0);
         });
       const abbrNow = () => ($("#et-abbr", Dl).value || t.abbr).toUpperCase();
       const redraw = () => {
@@ -1366,6 +1371,8 @@
       const hrefOf = (t, s) => "#" + t + (s ? "/" + s : "");
       opts.top.innerHTML = U.shell({ brand: opts.brand, title: opts.switcher ? opts.switcher() : "", tabs, tab: r.tab, subs, sub: r.sub, hrefOf, right: opts.right ? opts.right() : "", tabbar: true });
       document.body.classList.add("fk-hasbar");
+      // the sticky header's height, so sticky bars on the page (the "Moving" bar) sit just under it
+      const topEl = opts.top.querySelector(".fk-top") || opts.top; document.documentElement.style.setProperty("--fk-top-h", `${Math.round(topEl.getBoundingClientRect().height)}px`);
       const keep = $("#fk-players") ? $("#fk-players").scrollTop : 0;
       const focus = U.focusKey(opts.el) || U.focusKey(opts.top);
       let html = "";
@@ -1456,8 +1463,20 @@
       if (d.over) z.classList.add("dz-on");
       d.ghost.querySelector("small").textContent = d.over ? d.ok.get(d.over).why : "";
       // near the top or bottom of the screen, scroll so the whole roster is in reach
-      const edge = 60; if (y < edge) scrollBy(0, -12); else if (y > innerHeight - edge) scrollBy(0, 12);
+      d.lastX = x; d.lastY = y;
+      if (!d.scrollT) {
+        // keeps scrolling while the finger or mouse rests near an edge (below the sticky header at the top)
+        const step = () => {
+          if (drag !== d || !d.live) { d.scrollT = 0; return; }
+          const top = (opts.top && opts.top.getBoundingClientRect().bottom) || 0, edge = 70;
+          const v = d.lastY < top + edge ? -Math.ceil((top + edge - d.lastY) / 5) : d.lastY > innerHeight - edge ? Math.ceil((d.lastY - innerHeight + edge) / 5) : 0;
+          if (v) { scrollBy(0, Math.max(-24, Math.min(24, v))); moveGhost(d, d.lastX, d.lastY); }
+          d.scrollT = requestAnimationFrame(step);
+        };
+        d.scrollT = requestAnimationFrame(step);
+      }
     }
+
     opts.el.addEventListener("pointerdown", (e) => {
       const row = e.target.closest("tr[data-dg]");
       if (!row || e.button > 0 || e.target.closest("button:not(.slotbtn),a,input,select,[data-player]")) return;

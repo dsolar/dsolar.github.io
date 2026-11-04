@@ -157,7 +157,7 @@
           <p class="small" style="margin:0">${done ? "The season is over." : `Week ${L.week} of ${G.totalWeeks(L)}. It ends ${new Date(next).toLocaleString("en-US", { weekday: "long", hour: "numeric", minute: "2-digit" })}, then ${G.isGuillotine(L) ? "the lowest team is chopped and its players go up for bids. Bids run 60 hours into the next week" : "waivers run and the next week starts"}.`}${L.settings.real ? " This demo is scored on real box scores. Jumping ahead leaves the real calendar, so the rest of the season would be simulated." : ""}</p>
           <div class="row" style="flex-wrap:wrap"><button class="btn go" data-c="week"${done ? " disabled" : ""}>Finish this week now</button><button class="btn" data-c="season"${done ? " disabled" : ""}>Play out the season</button></div></div></div>
         <div class="card"><div class="mod-h"><h2>Start over</h2></div><div class="bd stack">
-          <p class="small" style="margin:0">A new bot draft and a new season, ${guil ? "four" : "five"} weeks in.</p>
+          <p class="small" style="margin:0">A new bot draft and a new season, ${(() => { const c = calendar(Date.now()), n = c.replay ? (guil ? 4 : 5) : Math.floor((Date.now() - c.start) / WEEK); return `${n} week${n === 1 ? "" : "s"}`; })()} in.</p>
           <div class="row" style="flex-wrap:wrap"><button class="btn warn" data-c="reset">New demo league</button>${mockDone() ? `<button class="btn" data-c="mock">Use my Draft Lab mock</button>` : ""}</div></div></div>
       </div>`;
   }

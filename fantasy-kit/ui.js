@@ -28,7 +28,10 @@
     let el = $("#fk-toast");
     if (!el) { el = document.createElement("div"); el.id = "fk-toast"; el.setAttribute("role", "status"); el.setAttribute("aria-live", "polite"); document.body.appendChild(el); }
     el.textContent = msg; el.className = "toast" + (bad ? " bad" : ""); el.hidden = false;
-    clearTimeout(toastT); toastT = setTimeout(() => (el.hidden = true), 3400);
+    // in the top layer, so a toast shows over an open dialog too ("Pick who to drop first")
+    const pop = typeof el.showPopover === "function";
+    if (pop) { if (!el.popover) el.popover = "manual"; try { if (el.matches(":popover-open")) el.hidePopover(); el.showPopover(); } catch (e) { /* not supported */ } }
+    clearTimeout(toastT); toastT = setTimeout(() => { el.hidden = true; if (pop) try { el.hidePopover(); } catch (e) { /* already closed */ } }, 3400);
   }
   // A modal with a close button. onSubmit(formData, form) runs for a <form>; return false to keep it open.
   function dialog(html, onSubmit, opts = {}) {
@@ -389,6 +392,7 @@
     for (const c of opts.extra || []) cols.push(c);
     if (opts.stats !== false) for (const [i, c] of statColumns(sport, opts.scoring).entries()) {
       if (opts.group && c.group && c.group !== opts.group) continue;
+      if (opts.group && c.pos && !c.pos.includes(opts.group)) continue;
       cols.push({ k: "s" + i, label: c.label, title: c.title || STAT_TITLE[c.label] || "", cls: "r num", hide: c.hide, sort: (p) => statCell(sport, p, c), html: (p) => { const v = statCell(sport, p, c); return v == null ? `<span class="ps">-</span>` : v === 0 && !c.fpts && !c.fpg ? `<span class="zero">${c.fmt(v)}</span>` : c.fmt(v); } });
     }
     if (opts.actions) cols.push({ k: "act", label: '<span class="sr">Actions</span>', raw: true, cls: "r act", html: opts.actions });
@@ -417,7 +421,8 @@
     if (st.team && p.t !== st.team) return false;
     return true;
   }
-  const groupOf = (sport, st) => (st.pos && sport.groups ? (st.pos.startsWith("g:") ? st.pos.slice(2) : Object.keys(sport.groups).find((g) => sport.groups[g].includes(st.pos))) : null);
+  // football has no stat groups: the position itself picks the columns (a TE filter drops passing and rushing)
+  const groupOf = (sport, st) => (st.pos && !sport.groups && sport.key === "nfl" ? st.pos : st.pos && sport.groups ? (st.pos.startsWith("g:") ? st.pos.slice(2) : Object.keys(sport.groups).find((g) => sport.groups[g].includes(st.pos))) : null);
 
   const LABELS = { gp: "GP", g: "G", gs: "GS", min: "MIN", fgm: "FGM", fga: "FGA", ftm: "FTM", fta: "FTA", tpm: "3PM", pts: "PTS", reb: "REB", ast: "AST", stl: "STL", blk: "BLK", tov: "TO",
     pa: "PA", ab: "AB", r: "R", h: "H", hr: "HR", rbi: "RBI", sb: "SB", tb: "TB", bb: "BB", avg: "AVG", obp: "OBP", ops: "OPS", ip: "IP", w: "W", l: "L", sv: "SV", hld: "HLD", k: "K", er: "ER", era: "ERA", whip: "WHIP", qs: "QS",
@@ -558,8 +563,8 @@
         <div class="tw-f">
           <div class="meter"><div class="meter-l"><span>You send ${vl(vg)}</span><span>${esc(verdict)}</span><span>You get ${vl(vr)}</span></div>
             <div class="meter-bar"><i style="${swing >= 0 ? `left:50%;width:${Math.min(50, swing * 50)}%;background:var(--win)` : `right:50%;width:${Math.min(50, -swing * 50)}%;background:var(--loss)`}"></i></div></div>
-          ${opts.faab ? `<div class="row"><label class="check">FAAB you send <input type="number" min="0" max="${opts.faab(opts.me)}" data-tw="faabGive" value="${st.faabGive}"></label><label class="check">FAAB you get <input type="number" min="0" max="${opts.faab(st.other)}" data-tw="faabGet" value="${st.faabGet}"></label><span class="ps">You have $${opts.faab(opts.me)}, they have $${opts.faab(st.other)}</span></div>` : ""}
-          <div class="row"><label class="sr" for="tw-note">Note</label><input type="text" id="tw-note" data-tw="note" maxlength="140" placeholder="Add a note (optional)" value="${esc(st.note)}" style="flex:1;min-width:160px"><button type="button" class="btn" data-tw-cancel>Cancel</button><button type="button" class="btn go" data-tw-send${ready ? "" : " disabled"}>Send offer</button></div>
+          ${opts.faab ? `<div class="tw-faab"><label>FAAB you send<span class="ni"><i>$</i><input type="number" min="0" max="${opts.faab(opts.me)}" data-tw="faabGive" value="${st.faabGive}" inputmode="numeric"></span><small>You have $${opts.faab(opts.me)}</small></label><label>FAAB you get<span class="ni"><i>$</i><input type="number" min="0" max="${opts.faab(st.other)}" data-tw="faabGet" value="${st.faabGet}" inputmode="numeric"></span><small>They have $${opts.faab(st.other)}</small></label></div>` : ""}
+          <div class="tw-send"><label class="sr" for="tw-note">Note</label><input type="text" id="tw-note" data-tw="note" maxlength="140" placeholder="Add a note (optional)" value="${esc(st.note)}"><button type="button" class="btn" data-tw-cancel>Cancel</button><button type="button" class="btn go" data-tw-send${ready ? "" : " disabled"}>Send offer</button></div>
           ${picked && need > st.drops.size ? `<span class="why">Pick ${need - st.drops.size} more to drop, under your roster.</span>` : picked && !chk.ok ? `<span class="why">${esc(chk.why)}</span>` : picked && chk.note ? `<span class="ps ok">${esc(chk.note)}</span>` : ""}
         </div>`;
       $$(".tw-list", D).forEach((x, i) => (x.scrollTop = scroll[i] || 0));
@@ -1357,7 +1362,7 @@
         const d = D(), n = now();
         if (b.dataset.pick) {
           const pid = b.dataset.pick, myst = d.packs && d.packs.mystery && d.packs.mystery[pid], cost = d.packs && d.packs.price ? F.packPrice(d, me(), pid) : null;
-          if (act(() => F.pick(d, ctx, me(), pid, n)) && myst) { const p = ctx.byId[pid]; toast(`The mystery card: ${p.n}, ${S.positions(p)[0]} ${p.t}, ranked #${p.rank}. You paid $${cost}.`); }
+          if (act(() => F.pick(d, ctx, me(), pid, n))) { const p = ctx.byId[pid]; if (myst) toast(`The mystery card: ${p.n}, ${S.positions(p)[0]} ${p.t}, ranked #${p.rank}. You paid $${cost}.`); else if (p) toast(`You drafted ${p.n}.`); }
         }
         else if (b.dataset.queue) toggleQueue(b.dataset.queue);
         else if (b.dataset.nominate) nominateDialog(b.dataset.nominate);
@@ -1510,7 +1515,7 @@
           save();
           const mineAuto = F.made(D()).slice(before).find((pk) => pk.team === me() && pk.auto);
           if (mineAuto && dialogOpen()) { const dl = $("#fk-dlg"); if (dl) dl.close(); }
-          if (mineAuto) { const p = ctx.byId[mineAuto.pid]; toast(p ? `Time ran out. You took ${p.n}.` : "Time ran out on your pick.", true); }
+          if (mineAuto) { const p = ctx.byId[mineAuto.pid], on = me() != null && team(me()).auto; toast(on ? (p ? `Autodraft took ${p.n}.` : "Autodraft made your pick.") : p ? `Time ran out. You took ${p.n}.` : "Time ran out on your pick.", !on); }
         }
       }
       const s = sig();

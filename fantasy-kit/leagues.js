@@ -208,6 +208,7 @@
   const DRAFT_SHORT = { snake: "Snake", auction: "Auction", linear: "Linear", "3rr": "Third-round reversal", mystery: "Mystery packages", elephant: "White elephant", pack: "Pack" };
   // a field drawn behind the header, one for each sport
   function newForm() {
+    derive();
     const sp = S[form.sport];
     if (!(sp.scorings[form.scoring] || isCustom())) form.scoring = Object.keys(sp.scorings)[0];
     const auction = form.type === "auction";
@@ -382,7 +383,10 @@
   }
   function seasonBody(sp) {
     const gl = form.season === "guillotine", n = form.teams, po = Math.min(form.playoffs, n);
-    const length = gl ? `<p class="fl-h">${n - 1} weeks: one team is cut each week until one is left.</p>` : range("weeks", 8, 16, form.weeks, (x) => `${x} weeks`, h2hLike() && po ? "Weeks before the playoffs" : "Season length");
+    const left = oneWeek() ? null : weeksLeft(), pw = h2hLike() && po ? playoffWeeks(po) : 0, maxReg = left == null ? 16 : Math.max(1, Math.min(16, left - pw));
+    const capNote = left != null && left < 16 + pw ? `<p class="fl-h">The ${esc(S[form.sport].name.toLowerCase())} season has ${left} weeks left${pw ? `, and the playoffs take ${pw}` : ""}, so the regular season can run ${maxReg} at most. It ends by ${endLabel()}.</p>` : "";
+    const length = gl ? `<p class="fl-h">${n - 1} weeks: one team is cut each week until one is left.${left != null && n - 1 > left ? ` <b>Only ${left} weeks are left in the season</b>, so the last ${n - 1 - left} would have no games. Pick ${left + 1} teams or fewer.` : ""}</p>`
+      : range("weeks", Math.min(8, maxReg), maxReg, Math.min(form.weeks, maxReg), (x) => `${x} weeks`, h2hLike() && po ? "Weeks before the playoffs" : "Season length") + capNote;
     const divs = !gl && form.season !== "roto" && n >= 4 ? fld("Divisions", seg("divs", [0, 2, 3, 4].filter((d) => !d || n >= 2 * d).map((d) => [d, d ? `${d}` : "None"]), form.divs, "Divisions"), form.divs ? "Division winners make the playoffs, and the schedule plays your division more." : "") : "";
     return length + divs;
   }
@@ -417,6 +421,16 @@
       ${form.review !== "none" ? `<div class="g2">${fld("Review lasts", seg("reviewHours", [[12, "12h"], [24, "24h"], [48, "48h"]], form.reviewHours, "Review lasts"))}
         ${form.review === "vote" ? fld("Votes to veto", seg("vetoShare", [[0.34, "A third"], [0.5, "Half"], [0.67, "Two thirds"]], form.vetoShare, "Votes to veto"), "Of the teams not in the trade.") : ""}</div>` : ""}`;
   }
+  // the weeks left in the real season from the first week this league would play (next Monday, Tuesday for football),
+  // so a league started in November can't run into February. null when the season hasn't started (no cap).
+  function weeksLeft() {
+    const end = S.seasonEnd(form.sport, Date.now()); if (!end) return null;
+    const d = new Date(), want = form.sport === "nfl" ? 2 : 1;
+    d.setUTCHours(13, 0, 0, 0);
+    do d.setUTCDate(d.getUTCDate() + 1); while (d.getUTCDay() !== want);
+    return Math.max(1, Math.floor((end - d.getTime()) / 6048e5));
+  }
+  const endLabel = () => { const e = S.seasonEnd(form.sport, Date.now()); return e ? new Date(e).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : ""; };
   const playoffWeeks = (po) => { const R = Math.ceil(Math.log2(po)); return form.legs === "all2" ? 2 * R : form.legs === "final2" ? R + 1 : R; };
   const kc = () => { const ok = form.type === "auction" ? ["price", "price5"] : ["round", "round1", "free"]; return ok.includes(form.keeperCost) ? form.keeperCost : ok[0]; };
   const POS_MAIN = { nfl: ["QB", "RB", "WR", "TE", "K", "DEF"], nba: ["PG", "SG", "SF", "PF", "C"], mlb: ["C", "1B", "2B", "3B", "SS", "OF", "SP", "RP"] };
@@ -431,6 +445,7 @@
       if (el.type === "radio" && !el.checked) return;
       const k = el.dataset.f, x = el.type === "checkbox" ? (el.checked ? 1 : 0) : el.value;
       if (k.startsWith("pm_")) { form.posMax[k.slice(3)] = Number(x) || 0; return; }
+      if (k === "weeks" && Number(x) !== form.weeks) form.weeksWant = Number(x);
       form[k] = NUMERIC.test(k) ? Number(x) : x;
     });
     root.querySelectorAll("[data-w]").forEach((el) => { form.weights = form.weights || {}; form.weights[el.dataset.w] = Number(el.value) || 0; });
@@ -442,6 +457,14 @@
   const span = (a, b, step = 1) => Array.from({ length: Math.floor((b - a) / step) + 1 }, (_, i) => a + i * step);
   const teamVals = () => (showdown() ? [2, 4, 6] : oneWeek() ? span(2, 20, 2) : span(3, 20));
   function derive() {
+    // keep the season inside the real one: fewer playoff weeks first if even one regular week won't fit, then fewer weeks
+    const left = oneWeek() || form.season === "guillotine" ? null : weeksLeft();
+    if (form.weeksWant) form.weeks = form.weeksWant;
+    if (left != null) {
+      const pwOf = (po) => (h2hLike() && po ? playoffWeeks(Math.min(po, form.teams)) : 0);
+      while (form.playoffs > 0 && 1 + pwOf(form.playoffs) > left) form.playoffs = [0, 2, 3, 4, 6, 8, 10, 12].filter((x) => x < form.playoffs).pop() || 0;
+      form.weeks = Math.max(1, Math.min(form.weeks, left - pwOf(form.playoffs)));
+    }
     const tv = teamVals();
     if (!tv.includes(form.teams)) form.teams = tv.reduce((b, v) => (Math.abs(v - form.teams) < Math.abs(b - form.teams) || (Math.abs(v - form.teams) === Math.abs(b - form.teams) && v > b) ? v : b), tv[0]);
     for (const [k, d] of Object.entries(BONUS)) form[k] = form[k + "On"] ? (+form[k + "Amt"] > 0 ? +form[k + "Amt"] : d) : 0;

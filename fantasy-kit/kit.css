@@ -640,7 +640,7 @@ small.only-s{display:none;font-size:11px;font-weight:500}
 .alerts+.page{padding-top:14px}
 
 /* lineup moves and IR */
-.movebar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--band);color:#EEF2F7;border-radius:var(--rl);padding:10px 14px;font-size:14px;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.movebar{position:sticky;top:calc(var(--fk-top-h,0px) + 8px);z-index:5;display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--band);color:#EEF2F7;border-radius:var(--rl);padding:10px 14px;font-size:14px;box-shadow:0 6px 18px rgba(0,0,0,.18)}
 .movebar .btn{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25);color:#fff}
 .slotbtn{border:0;cursor:pointer;font:inherit;font-size:11.5px;font-weight:850;letter-spacing:.03em}
 .slotbtn:hover{background:var(--line-2);color:var(--ink)}
@@ -1416,8 +1416,8 @@ tr.show-s{display:none}
 }
 
 /* ---------- layout pass: draft rooms ---------- */
-/* toasts sit at the top of a draft room, clear of the list and the board */
-body.fk-room .toast{top:calc(10px + env(safe-area-inset-top,0px));bottom:auto}
+/* toasts sit at the bottom of a draft room, clear of the clock, the header buttons and the pick ticker */
+body.fk-room .toast{bottom:calc(16px + env(safe-area-inset-bottom,0px));top:auto}
 /* the board: ten columns fit, the round numbers stay put */
 .bgrid{min-width:calc(var(--n) * 84px + 36px)}
 .bgrid .rn{position:sticky;left:0;z-index:2;background:var(--surface)}
@@ -1487,7 +1487,7 @@ td.more .ps{display:block;margin-top:6px;width:max-content}
 .board.fade-l:not(.fade-r){-webkit-mask-image:none;mask-image:none}
 .board.fade-l.fade-r{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent)}
 @media (max-width:600px){table.t.vs td.nm{min-width:0;max-width:none;width:auto}table.t.vs{table-layout:fixed;width:100%}table.t.vs td.pa,table.t.vs td.pb{width:46px}table.t.vs td.sl{width:40px}}
-@media (min-width:861px){body.fk-room .toast{left:auto;right:20px;transform:none;top:88px}}
+@media (min-width:861px){body.fk-room .toast{left:auto;right:20px;transform:none;top:auto;bottom:20px}}
 /* a column header that explains itself on hover */
 table.t th[title]{text-decoration:underline dotted;text-decoration-color:color-mix(in srgb,currentColor 45%,transparent);text-underline-offset:3px}
 /* action columns take only the room their buttons need */
@@ -1506,3 +1506,19 @@ table.t.roster th.act,table.t.roster td:last-child{width:1%;white-space:nowrap}
 .dues-you>.btn.sm{justify-self:start}
 .dues-you .btn{text-decoration:none}
 .dues-l li{gap:10px}
+/* a column sliding under the sticky action column fades out, so a half-hidden "$54" never reads as "$5" */
+table.t td.act::before,table.t th.act::before{content:"";position:absolute;top:0;bottom:0;left:-28px;width:28px;pointer-events:none;background:linear-gradient(90deg,transparent,var(--surface) 85%)}
+table.t th.act::before{background:linear-gradient(90deg,transparent,var(--surface-2) 85%)}
+table.t tr.me td.act::before{background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--brand-soft) 100%,var(--surface)) 85%)}
+@media (max-width:600px){table.t td.nm{min-width:0;width:150px;max-width:150px} .dr-left table.t td:has(.pname){min-width:0;width:150px;max-width:150px}}
+/* a toast is a popover (top layer, over dialogs); undo the browser's popover box so .toast places it */
+:where(.toast[popover]){top:auto;right:auto;margin:0;border:0;overflow:visible;inset-block-start:auto;inset-inline-end:auto}
+/* trade window: FAAB and the send row fit a phone */
+.tw-faab{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tw-faab label{display:grid;gap:4px;font-size:12px;font-weight:700;color:var(--muted);min-width:0}
+.tw-faab .ni input{width:100%;min-width:0}
+.tw-faab small{font-weight:500}
+.tw-send{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tw-send input{flex:1 1 100%;min-width:0}
+.tw-send .btn{flex:1 1 0}
+@media (min-width:601px){.tw-send input{flex:1 1 200px}.tw-send .btn{flex:none}}
