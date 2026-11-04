@@ -4,7 +4,7 @@
  "week": 9,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-04T13:39:57Z",
+ "updated": "2026-11-04T13:40:46Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -4882,8 +4882,7 @@
     "next_proj": 7.7,
     "avg": 6.9,
     "g": 3,
-    "last": 2,
-    "bid": 0
+    "last": 2
    },
    {
     "name": "Colston Loveland",
@@ -4942,7 +4941,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-04T13:40:00Z",
+  "updated": "2026-11-04T13:40:48Z",
   "players": 3045,
   "unmatched": []
  }
