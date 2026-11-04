@@ -56,11 +56,24 @@
     // keepers: how many each team carries into next season, and what each one costs
     if (s.keepers) { settings.keepers = s.keepers; settings.keeperCost = s.keeperCost || (D.type === "auction" ? "price" : "round"); }
     // a draft that ran out on the clock while nobody was around is "done" in the past; start after now, not then
-    const at = Math.max(D.done || 0, o.now || Date.now()), start = startAfter(at, sport.key);
+    const at = Math.max(D.done || 0, o.now || Date.now());
+    // a one-week league set for this week starts in the week that's on, if enough of it is left to play
+    const cur = weekOf(at, sport.key), thisWeek = s.when === "now" && sport.key !== "mlb" && cur + 7 * DAY - at >= MIN_LEFT;
+    const start = thisWeek ? cur : startAfter(at, sport.key);
     // o.real: a weeks file (real scoring if its box scores reach the league's start) or true
     if (o.real && (o.real === true || realCovers(o.real, start))) settings.real = true;
-    return G.create({ sport, draft: D, name: o.name || D.name, season: o.season || "", now: at, start, scoring: D.scoring, settings });
+    const L = G.create({ sport, draft: D, name: o.name || D.name, season: o.season || "", now: at, start, scoring: D.scoring, settings });
+    // started midweek: what every player had done this week before the league began doesn't count
+    if (thisWeek && settings.real && o.real && o.real !== true) L.baseline = { start: weekKeyOf(o.real, start), at, lines: JSON.parse(JSON.stringify(linesAt(o.real, start) || {})) };
+    return L;
   }
+  // the week that's on at t: the latest week start at or before t
+  const MIN_LEFT = 20 * HOUR;
+  const weekOf = (t, sportKey) => startAfter(t - 7 * DAY, sportKey);
+  // a weeks file's week that begins at `start` (its dates are days; a week start is 13:00 UTC on that day)
+  const weekRow = (weeks, start) => Object.values((weeks && weeks.weeks) || {}).find((x) => Math.abs(Date.parse(x.start + "T12:00:00Z") - start) < 2.5 * DAY);
+  const weekKeyOf = (weeks, start) => { const w = weekRow(weeks, start); return w ? w.start : new Date(start).toISOString().slice(0, 10); };
+  const linesAt = (weeks, start) => { const w = weekRow(weeks, start); return w ? w.lines : null; };
 
   // Do a weeks file's box scores reach a season starting at `start`? They do while the real season is on (its
   // latest week ends within a week of the start); out of season they don't, and the league is simulated.
@@ -375,5 +388,5 @@
   const summary = (L) => G.summary(L);
   const standings = (L) => G.standings(L);
 
-  return { draftRoster, startAfter, realCovers, mergeLive, begin, catchUp, driveDraft, events, keeperCost, keeperOptions, autoKeepers, nextDraft, summary };
+  return { draftRoster, startAfter, weekOf, realCovers, mergeLive, begin, catchUp, driveDraft, events, keeperCost, keeperOptions, autoKeepers, nextDraft, summary };
 });

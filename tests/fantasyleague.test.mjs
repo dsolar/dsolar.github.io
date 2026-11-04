@@ -213,3 +213,36 @@ test('category projections: so far plus the rest of the week, odds that settle a
   assert.equal(G.plays({ inj: 'Out' }), 0);
   assert.equal(G.plays({ inj: '' }), 1);
 });
+
+test('one-week league this week: starts in the week that is on, and only what comes after the start counts', () => {
+  const Z = require('../fantasy-kit/season.js');
+  const data = JSON.parse(readFileSync(new URL('../fantasy-kit/data/nba.json', import.meta.url), 'utf8'));
+  const sport = S.attach(Object.assign({}, S.nba), data);
+  const players = data.players.map((p) => ({ ...p }));
+  const lineup = sport.lineup.filter((x) => x !== 'BN');
+  V.evaluate(sport, players, { teams: 2, lineup, scoring: 'points' });
+  // a Wednesday: the week began Monday at 13:00 UTC
+  const wed = Date.UTC(2026, 10, 4, 15, 0, 0), mon = Date.UTC(2026, 10, 2, 13, 0, 0);
+  const D = F.create({ sport, teams: 2, seed: 4, now: wed - 3600e3, lineup, botDelay: 0, scoring: 'points' });
+  D.teams[0].owner = 'David';
+  F.start(D, wed - 3600e3); D.teams[0].auto = true; F.tick(D, F.context(D, players, sport), wed - 3600e3 + 1);
+  D.season = { format: 'h2h', weeks: 1, when: 'now', oneWeek: true, playoffTeams: 0, deadline: 0 };
+  const pid = D.board.find((x) => x && x.team === 0).pid, W = { sport: 'nba', season: data.season, line: 'pg', cols: ['gp', 'eg', 'min', 'fgm', 'fga', 'ftm', 'fta', 'tpm', 'pts', 'reb', 'ast', 'stl', 'blk', 'tov'], weeks: {} };
+  const line = (g, pts) => [g, 0, 30 * g, 0, 0, 0, 0, 0, pts, 5 * g, 4 * g, 0, 0, 0];
+  W.weeks['3'] = { start: '2026-11-02', end: '2026-11-08', final: false, lines: { [pid]: line(2, 50) } };
+  const L = Z.begin(D, sport, { now: wed, real: W });
+  assert.equal(L.start, mon, 'starts in the week that is on');
+  assert.equal(G.totalWeeks(L), 1);
+  assert.deepEqual(L.baseline.lines[pid], line(2, 50), 'what he had done before the start');
+  const ctx = G.context(L, players, sport, { real: W });
+  const p = ctx.byId[pid];
+  assert.equal(G.playerWeek(L, ctx, p, 1, 0.5).pts, 0, 'nothing yet since the start');
+  W.weeks['3'].lines = { [pid]: line(3, 80) };   // a game later: 30 points, a few rebounds and assists
+  const after = G.playerWeek(L, ctx, p, 1, 0.6).pts;
+  assert.ok(after > 30 && after < 50, `only the new game counts (${after})`);
+  // next week, or with less than a day left this week, it plays the next full week instead
+  D.season.when = 'next';
+  assert.equal(Z.begin(D, sport, { now: wed, real: W }).start, mon + 7 * 864e5);
+  D.season.when = 'now';
+  assert.equal(Z.begin(D, sport, { now: mon + 7 * 864e5 - 3 * 3600e3, real: W }).start, mon + 7 * 864e5);
+});

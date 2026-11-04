@@ -16,7 +16,7 @@
     lineup: "", bench: null, playoffs: 4, deadline: null, review: "vote", faab: null, waiverHours: 36,
     weights: null, cats: null, waivers: "faab", ir: 1, maxAdds: 0, posMax: {}, keepers: 0, keeperCost: "round", legs: "1", cons: "none", median: 0, bestball: 0, divs: 0, rookie: 3, fpicks: 1, taxi: 2, ohold: "clock", tep: 0, ptd: 4, b100r: 0, b100c: 0, b300p: 0, vamp: "off", vlike: 0, vdouble: 0,
     reviewHours: 24, vetoShare: 0.5, waiverOrder: "rolling", minBid: 0, maxAddsSeason: 0,
-    open: {}, reveal: "start", kind: "redraft", keepN: 3, tepOn: 0, tepAmt: 0.5, b100rOn: 0, b100rAmt: 3, b100cOn: 0, b100cAmt: 3, b300pOn: 0, b300pAmt: 3, vampOn: 0, vampWho: "random" };
+    open: {}, reveal: "start", kind: "redraft", when: "now", keepN: 3, tepOn: 0, tepAmt: 0.5, b100rOn: 0, b100rAmt: 3, b100cOn: 0, b100cAmt: 3, b300pOn: 0, b300pAmt: 3, vampOn: 0, vampWho: "random" };
   // a vampire league: football, head to head on points, and a draft where one team can simply sit out
   const vampOk = () => form.sport === "nfl" && form.season === "h2h" && ["snake", "linear", "3rr"].includes(form.type);
   // scoring: a preset key, or "cp" (custom points) / "cc" (custom categories)
@@ -132,7 +132,20 @@
 
   // the league's style: one card that sets the few choices that define it
   // two choices define a league: what carries over to next season, and how a season is played
-  const KINDS = [["redraft", "Redraft", "A fresh draft every season"], ["keeper", "Keeper", "Keep a few players a year"], ["dynasty", "Dynasty", "Keep everyone, draft rookies"]];
+  const KINDS = [["redraft", "Redraft", "A fresh draft every season"], ["keeper", "Keeper", "Keep a few players a year"], ["dynasty", "Dynasty", "Keep everyone, draft rookies"], ["week", "One week", "Draft, play one real week, crown a winner"]];
+  // a one-week league: head to head only, and it plays the week that's on or the next one
+  const oneWeek = () => form.kind === "week";
+  const WEEK_OK = ["h2h", "h2hcats"];
+  // the week that's on (its start, the latest Monday 13:00 UTC, Tuesday for football) and the next, as dates to show
+  function weekChoices(sp) {
+    const DAY = 864e5, want = sp.key === "nfl" ? 2 : 1, now = Date.now(), d = new Date(now);
+    d.setUTCHours(13, 0, 0, 0);
+    let back = (d.getUTCDay() - want + 7) % 7; if (back === 0 && d.getTime() > now) back = 7;
+    const cur = d.getTime() - back * DAY, next = cur + 7 * DAY;
+    const day = (t) => new Date(t).toLocaleDateString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric" });
+    // the week ends the morning after its last day of games
+    return { cur, next, left: next - now, curLabel: `${day(cur)} to ${day(next - DAY)}`, nextLabel: `${day(next)} to ${day(next + 6 * DAY)}` };
+  }
   const FORMATS = { h2h: ["Head to head", "Play one team a week"], h2hcats: ["Head to head, each category", "Every category is its own win or loss"], roto: ["Rotisserie", "Season totals, ranked category by category"],
     allplay: ["All-play", "Your score against every team, every week"], guillotine: ["Guillotine", "The lowest score is cut every week"], vampire: ["Vampire", "One team skips the draft and steals"] };
   const formatOf = () => (vampOk() && form.vampOn ? "vampire" : form.season);
@@ -142,6 +155,7 @@
     if (k === "vampire") { form.vampOn = 1; form.season = "h2h"; if (!["snake", "linear", "3rr"].includes(form.type)) form.type = "snake"; }
     else form.season = k;
     if (k === "guillotine" || k === "vampire") form.kind = "redraft";
+    if (oneWeek() && !WEEK_OK.includes(k)) form.kind = "redraft";
     form.faab = null;
   }
   const { SC_SUB } = window.FK.setup;
@@ -158,10 +172,14 @@
     const V = values(sp), fmt = formatOf(), gl = form.season === "guillotine";
     // a guillotine empties chopped rosters and a vampire's steals would pile up year after year, so both are redraft only
     const oneYear = gl ? "guillotine" : fmt === "vampire" ? "vampire" : null;
-    const kinds = pickCards("kind", KINDS, form.kind, "League type", (k) => (k !== "redraft" && oneYear ? `Not with a ${oneYear}` : ""));
+    const kinds = pickCards("kind", KINDS, form.kind, "League type", (k) => (k !== "redraft" && oneYear ? `Not with a ${oneYear}` : k === "week" && !WEEK_OK.includes(form.season) ? "Head to head only" : ""));
+    const wc = weekChoices(sp), tooLate = wc.left < 30 * 36e5;
+    if (oneWeek() && (tooLate || sp.key === "mlb")) form.when = "next";
+    const whenHtml = oneWeek() ? `<div class="nl-when">${fld("Which week", seg("when", [["now", `This week, ${wc.curLabel}`, tooLate || sp.key === "mlb"], ["next", `Next week, ${wc.nextLabel}`]], form.when, "Which week", { wrap: true }),
+      sp.key === "mlb" ? "Baseball plays a full week: its stats can't be split midweek." : tooLate ? "Too little of this week is left, so it plays next week." : form.when === "now" ? "It starts when the draft ends. Games played before then don't count." : "Draft any time before the week starts.")}</div>` : "";
     const cats = scoringType(sp) === "cats";
     const label = (k) => (cats && k === "h2h" ? ["Most categories", "Head to head: win more categories, win the week"] : cats && k === "h2hcats" ? ["Each category", "Head to head: a 6-4 week counts as 6 wins"] : FORMATS[k]);
-    const formats = pickCards("format", formatsFor(sp).map((k) => [k, label(k)[0], label(k)[1]]), fmt, "Format", (k) => ((k === "guillotine" || k === "vampire") && form.kind !== "redraft" ? `Redraft only: a ${form.kind} league can't use it` : ""));
+    const formats = pickCards("format", formatsFor(sp).map((k) => [k, label(k)[0], label(k)[1]]), fmt, "Format", (k) => (oneWeek() && !WEEK_OK.includes(k) ? "Not for one week" : (k === "guillotine" || k === "vampire") && form.kind !== "redraft" ? `Redraft only: a ${form.kind} league can't use it` : ""));
     const presets = Object.entries(sp.scorings).map(([k, x]) => [k, x.label.replace(/ \(.*\)$/, ""), SC_SUB[k] || ""]).concat([["cp", "Custom points", SC_SUB.cp]], sp.key !== "nfl" ? [["cc", "Custom categories", SC_SUB.cc]] : []);
     const live = auction ? [[15, "15 sec"], [30, "30 sec"], [60, "1 min"]] : [[30, "30 sec"], [60, "1 min"], [90, "90 sec"], [120, "2 min"], [3600, "1 hr"], [14400, "4 hr"], [28800, "8 hr"]];
     const rows = ROWS(sp).map(([k, title, sub, value, body]) => {
@@ -175,13 +193,13 @@
         <p>Pick a league type and a format, give it a name, and you can send the invite link in a minute. Every rule has a default, and most can change after the draft.</p>
       </div></div>
       <form class="nl-body" id="new" novalidate>
-        <section class="nl-sec"><h2 class="nl-h">League type</h2>${kinds}</section>
+        <section class="nl-sec"><h2 class="nl-h">League type</h2>${kinds}${whenHtml}</section>
         <section class="nl-sec"><h2 class="nl-h">Format</h2>${formats}
           ${`<div class="nl-bb">${toggle("bestball", gl ? "Best ball guillotine" : "Best ball", gl ? "Your best lineup counts each week, so nobody gets chopped for a bad lineup" : "Lineups set themselves: your best scores count each week", form.bestball)}${form.season === "h2h" && !form.vampOn && scoringType(sp) === "points" ? toggle("median", "Median game", "Also play the league median, for a second win or loss each week", form.median) : ""}</div>`}</section>
         <section class="nl-sec nl-ess">
           <div class="nl-name"><label for="n-name">League name</label><input id="n-name" type="text" maxlength="40" required value="${esc(form.name || "")}" placeholder="Name your league" autocomplete="off"></div>
           <div class="g2">${fld("Your name", `<input id="n-me" type="text" maxlength="24" required value="${esc(form.me || "")}" autocomplete="name">`, "", "n-me")}${fld("Your team's name", `<input id="n-team" type="text" maxlength="28" value="${esc(form.team || "")}" placeholder="Optional">`, "", "n-team")}</div>
-          ${fld("Teams", seg("teams", [4, 6, 8, 10, 12, 14, 16, 20].map((x) => [x, String(x)]), form.teams, "Teams", { wrap: true, cls: "big" }))}
+          ${fld("Teams", seg("teams", (oneWeek() ? [2] : []).concat([4, 6, 8, 10, 12, 14, 16, 20]).map((x) => [x, String(x)]), form.teams, "Teams", { wrap: true, cls: "big" }), oneWeek() && form.teams === 2 ? "Just you and one other team, head to head." : "")}
           ${fld("Scoring", cards("scoring", presets, form.scoring, "Scoring", presets.length > 4 ? 3 : presets.length))}
           <div class="nl-dr">${fld("Draft", seg("type", Object.keys(F.FORMATS).map((k) => [k, DRAFT_SHORT[k] || F.FORMATS[k]]), form.type, "Draft format", { wrap: true }), esc(DRAFTS[form.type] || ""))}
           ${fld(auction ? "Bid clock" : "Pick clock", seg("clock", live, form.clock, auction ? "Bid clock" : "Pick clock", { wrap: true }), auction ? "Every bid resets the clock." : form.clock >= 3600 ? "A slow draft: managers with email alerts get one when they're up." : "When a clock runs out, the best player left is taken.")}</div>
@@ -205,7 +223,7 @@
     const faab = form.faab == null ? (gl ? 1000 : 100) : form.faab;
     const dl = form.deadline == null ? Math.max(1, form.weeks - 3) : form.deadline;
     const seasonName = (seasonsFor(sp).find(([x]) => x === form.season) || [, ""])[1].split(":")[0];
-    const style = `${(KINDS.find(([k]) => k === form.kind) || [, "Redraft"])[1]}, ${scoringType(sp) === "cats" && formatOf() === "h2h" ? "head to head, most categories" : scoringType(sp) === "cats" && formatOf() === "h2hcats" ? "head to head, each category" : FORMATS[formatOf()] ? FORMATS[formatOf()][0].toLowerCase() : ""}${form.bestball ? (gl ? ", best ball" : ", best ball") : gl ? ", set lineups" : ""}`;
+    const style = `${(KINDS.find(([k]) => k === form.kind) || [, "Redraft"])[1]}${oneWeek() ? ` (${form.when === "now" ? "this week" : "next week"})` : ""}, ${scoringType(sp) === "cats" && formatOf() === "h2h" ? "head to head, most categories" : scoringType(sp) === "cats" && formatOf() === "h2hcats" ? "head to head, each category" : FORMATS[formatOf()] ? FORMATS[formatOf()][0].toLowerCase() : ""}${form.bestball ? (gl ? ", best ball" : ", best ball") : gl ? ", set lineups" : ""}`;
     return {
       line: `${sp.name}, ${n} teams, ${sc}, ${DRAFT_SHORT[form.type]} draft. ${style}`,
       scoring: bon.length ? bon.join(", ") : form.scoring === "cp" ? "Custom points" : "No bonuses",
@@ -214,7 +232,7 @@
       season: `${gl ? `${n - 1} weeks` : `${form.weeks} weeks`}${form.divs && !gl && form.season !== "roto" ? `, ${form.divs} divisions` : ""}`,
       playoffs: po ? `${po} teams, ${playoffWeeks(po)} weeks` : "None",
       waivers: gl ? `$${faab} FAAB` : form.waivers === "faab" ? `$${faab} FAAB, ${form.waiverHours}h` : `Rolling, ${form.waiverHours}h`,
-      trades: `${dl ? `Deadline week ${dl}` : "No deadline"}, ${form.review === "vote" ? "league vote" : form.review === "commish" ? "commissioner" : "no review"}`,
+      trades: `${oneWeek() ? "" : dl ? `Deadline week ${dl}, ` : "No deadline, "}${form.review === "vote" ? "league vote" : form.review === "commish" ? "commissioner" : "no review"}`,
       carry: form.kind === "dynasty" ? `Dynasty, ${form.rookie}-round rookie draft` : form.kind === "keeper" ? `Up to ${form.keepN} keepers` : "Redraft",
       vampire: form.vampOn ? (form.vampWho === "me" ? "You're the vampire" : "A random team") : "Off",
     };
@@ -224,13 +242,13 @@
   // the fine-tune list: [key, title, what it covers, current value, body]
   function ROWS(sp) {
     const V = values(sp), gl = form.season === "guillotine", rows = [];
-    if (form.kind !== "redraft") rows.push(["carry", form.kind === "dynasty" ? "Dynasty" : "Keepers", form.kind === "dynasty" ? "Rookie draft, taxi squad, future picks" : "How many and what they cost", V.carry, () => carryBody()]);
+    if (form.kind !== "redraft" && !oneWeek()) rows.push(["carry", form.kind === "dynasty" ? "Dynasty" : "Keepers", form.kind === "dynasty" ? "Rookie draft, taxi squad, future picks" : "How many and what they cost", V.carry, () => carryBody()]);
     if (vampOk() && form.vampOn) rows.push(["vampire", "Vampire", "Who it is and how it bites", V.vampire, () => vampireBody()]);
     rows.push(["scoring", "Scoring details", sp.key === "nfl" ? "Bonuses, TE premium, custom points" : form.scoring === "cp" ? "Points for each stat" : "Categories and custom scoring", V.scoring, () => scoringBody(sp)]);
     rows.push(["roster", "Roster", "Starting lineup, bench, IR, position limits", V.roster, () => rosterStep(sp)]);
     rows.push(["draft", "Draft room", form.type === "mystery" ? "When packages open, trades during the draft" : "Trades during the draft", V.draft, () => draftBody()]);
-    rows.push(["season", "Season", form.season === "guillotine" ? "Length" : "Length and divisions", V.season, () => seasonBody(sp)]);
-    if (h2hLike()) rows.push(["playoffs", "Playoffs", "Teams, rounds, consolation", V.playoffs, () => playoffsBody()]);
+    if (!oneWeek()) rows.push(["season", "Season", form.season === "guillotine" ? "Length" : "Length and divisions", V.season, () => seasonBody(sp)]);
+    if (h2hLike() && !oneWeek()) rows.push(["playoffs", "Playoffs", "Teams, rounds, consolation", V.playoffs, () => playoffsBody()]);
     rows.push(["waivers", "Waivers", "FAAB, clear times, pickup limits", V.waivers, () => waiversBody()]);
     if (!gl) rows.push(["trades", "Trades", "Deadline and review", V.trades, () => tradesBody()]);
     return rows;
@@ -330,7 +348,7 @@
   }
   function tradesBody() {
     const dl = form.deadline == null ? Math.max(1, form.weeks - 3) : form.deadline;
-    return `${range("deadline", 0, Math.max(1, form.weeks - 1), Math.min(dl, form.weeks - 1), (x) => (x ? `After week ${x}` : "No deadline"), "Trade deadline")}
+    return `${oneWeek() ? "" : range("deadline", 0, Math.max(1, form.weeks - 1), Math.min(dl, form.weeks - 1), (x) => (x ? `After week ${x}` : "No deadline"), "Trade deadline")}
       ${fld("Review", cards("review", [["vote", "League vote", "Other teams can veto"], ["commish", "Commissioner", "You approve or veto"], ["none", "None", "Trades go through"]], form.review, "Trade review", 3))}
       ${form.review !== "none" ? `<div class="g2">${fld("Review lasts", seg("reviewHours", [[12, "12h"], [24, "24h"], [48, "48h"]], form.reviewHours, "Review lasts"))}
         ${form.review === "vote" ? fld("Votes to veto", seg("vetoShare", [[0.34, "A third"], [0.5, "Half"], [0.67, "Two thirds"]], form.vetoShare, "Votes to veto"), "Of the teams not in the trade.") : ""}</div>` : ""}`;
@@ -420,8 +438,9 @@
       if (form.season === "h2h" && form.median && scoringType(sport) === "points") D.season.median = true;
       if (vampire != null) D.season.vampire = { team: vampire, samePos: form.vlike === 1, double: form.vdouble === 1 };
       if (fmt !== "roto" && !gl && form.divs && n >= 2 * form.divs) D.season.divisions = form.divs;
-      if (!gl) Object.assign(D.season, { waivers: form.waivers, deadline: form.deadline == null ? Math.max(1, form.weeks - 3) : form.deadline, review: form.review, waiverHours: form.waiverHours, reviewHours: form.reviewHours, vetoShare: form.vetoShare, waiverOrder: form.waiverOrder,
-        playoffTeams: fmt === "roto" ? 0 : Math.min(form.playoffs, n), playoffLegs: form.legs,
+      if (oneWeek()) Object.assign(D.season, { weeks: 1, when: form.when === "next" || form.sport === "mlb" ? "next" : "now", oneWeek: true });
+      if (!gl) Object.assign(D.season, { waivers: form.waivers, deadline: oneWeek() ? 0 : form.deadline == null ? Math.max(1, form.weeks - 3) : form.deadline, review: n <= 2 && form.review === "vote" ? "none" : form.review, waiverHours: form.waiverHours, reviewHours: form.reviewHours, vetoShare: form.vetoShare, waiverOrder: form.waiverOrder,
+        playoffTeams: fmt === "roto" || oneWeek() ? 0 : Math.min(form.playoffs, n), playoffLegs: form.legs,
         consolation: form.cons === "third" && Math.min(form.playoffs, n) < 3 ? "none" : form.cons === "bracket" && n - Math.min(form.playoffs, n) < 2 ? "none" : form.cons });
       const r = await C.rpc("fk_create", { p_name: form.name, p_sport: form.sport, p_manager: form.me, p_draft: D });
       if (r.error) throw new Error(r.error);
@@ -452,7 +471,7 @@
     const row = e.target.closest("[data-row]");
     if (row) { grab(); const k = row.dataset.row; form.open = form.open[k] ? {} : { [k]: 1 }; render().then(() => { const h = $(`.su [data-row="${k}"]`); if (h) { h.focus({ preventScroll: true }); const r = h.getBoundingClientRect(); if (r.top < 70 || r.top > innerHeight - 160) h.scrollIntoView({ block: "start", behavior: "smooth" }); } }); return; }
     const kd = e.target.closest("[data-kind]");
-    if (kd) { grab(); form.kind = kd.dataset.kind; derive(); form.open = form.kind === "redraft" ? {} : { carry: 1 }; redraw(`n-pick-kind-${form.kind}`); return; }
+    if (kd) { grab(); form.kind = kd.dataset.kind; if (!oneWeek() && form.teams === 2) form.teams = 4; if (oneWeek() && !WEEK_OK.includes(form.season)) form.season = "h2h"; if (oneWeek()) form.vampOn = 0; derive(); form.open = form.kind === "redraft" || oneWeek() ? {} : { carry: 1 }; redraw(`n-pick-kind-${form.kind}`); return; }
     const fm = e.target.closest("[data-format]");
     if (fm) { grab(); pickFormat(fm.dataset.format); derive(); if (fm.dataset.format === "vampire") form.open = { vampire: 1 }; redraw(`n-pick-format-${fm.dataset.format}`); return; }
     const st = e.target.closest("[data-stp]");

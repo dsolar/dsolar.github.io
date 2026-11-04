@@ -102,7 +102,17 @@ async function tickLeagues(token: string) {
       let changed = false;
       if (!L) {
         changed = Z.driveDraft(D, F.context(D, players, sport), now);
-        if (D.phase === "done") { L = Z.begin(D, sport, { name: l.name, season: data.season, now, real: weeks || false }); changed = true; }
+        if (D.phase === "done") {
+          // a one-week league that starts in the week that's on counts only what's played after now, so it needs this
+          // week's totals as of now (the live feed), not as of the last nightly file
+          let real = weeks || false;
+          if (weeks && D.season && D.season.when === "now") {
+            const lv = await fetch(`${URL_}/functions/v1/fk-live?sport=${encodeURIComponent(l.sport)}`, { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` } }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+            if (lv) { real = structuredClone(weeks); Z.mergeLive(real, lv); }
+          }
+          L = Z.begin(D, sport, { name: l.name, season: data.season, now, real });
+          changed = true;
+        }
       } else changed = Z.catchUp(L, G.context(L, players, sport, hooks), now);
       if (!changed) { report.push(out); continue; }
       const events = Z.events(base, { draft: D, league: L }, { name: l.name, url: `${SITE}play.html?id=${encodeURIComponent(l.id)}`, seats: l.seats, me: null, byId, now });

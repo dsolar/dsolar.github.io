@@ -45,6 +45,7 @@
     redraft: `<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v4.5h-4.5"/>`,
     keeper: `<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/><circle cx="12" cy="15.5" r="1.3"/>`,
     dynasty: `<path d="M4 18h16l1-10-5 4-4-7-4 7-5-4z"/><path d="M4 21h16"/>`,
+    week: `<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M10.5 14.5l1.5 1.5 3-3.5"/>`,
     h2h: `<circle cx="8" cy="12" r="5"/><circle cx="16" cy="12" r="5"/>`,
     h2hcats: `<path d="M4 6h3M4 12h3M4 18h3M10 6h10M10 12h10M10 18h10"/>`,
     roto: `<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>`,

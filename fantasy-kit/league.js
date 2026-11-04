@@ -226,10 +226,25 @@
     const R = ctx.hooks && ctx.hooks.real;
     if (!L.settings.real || !R || !R.weeks) return null;
     if (ctx._rwOf !== R) { ctx._rw = {}; ctx._rwOf = R; }
-    if (w in ctx._rw) return ctx._rw[w];
+    if (w in ctx._rw) return sinceStart(L, ctx, ctx._rw[w]);
     const t = weekStart(L, w);
     const hit = Object.values(R.weeks).find((x) => Math.abs(Date.parse(x.start + "T12:00:00Z") - t) < 2.5 * DAY);
-    return (ctx._rw[w] = hit || { lines: {}, final: false, missing: true });
+    ctx._rw[w] = hit || { lines: {}, final: false, missing: true };
+    return sinceStart(L, ctx, ctx._rw[w]);
+  }
+  // A league that began midweek (L.baseline: each player's line for that week when it began) counts only what came
+  // after: the week's lines less the baseline. Worked out again only when the week's lines change (a live poll).
+  function sinceStart(L, ctx, rw) {
+    const b = L.baseline;
+    if (!b || !rw || !rw.lines || rw.start !== b.start) return rw;
+    const c = ctx._since || (ctx._since = {});
+    if (c.src === rw.lines && c.rw === rw && c.final === rw.final) return c.out;
+    const minus = (x, y) => (Array.isArray(x) ? x.map((v, i) => (v || 0) - ((y && y[i]) || 0)) : x && typeof x === "object" ? Object.fromEntries(Object.entries(x).map(([k, v]) => [k, minus(v, y && y[k])])) : x);
+    const lines = {};
+    for (const [id, line] of Object.entries(rw.lines)) lines[id] = b.lines[id] ? minus(line, b.lines[id]) : line;
+    c.src = rw.lines; c.rw = rw; c.final = rw.final;
+    c.out = Object.assign({}, rw, { lines, since: b.at });
+    return c.out;
   }
   // Can the week close? Its time is up, and in a real league the data has the whole week (or it's three days late,
   // so a broken feed can't stall the season forever).

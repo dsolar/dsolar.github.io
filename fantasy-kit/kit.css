@@ -1230,3 +1230,4 @@ tr.sec.dz-ok>td{color:var(--ink)}
 }
 .show-xs{display:none}
 @media (max-width:380px){.hide-xs{display:none}.show-xs{display:inline}}
+.su .nl-when{margin-top:16px}
