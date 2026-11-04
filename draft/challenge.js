@@ -6,14 +6,14 @@
 (function () {
   "use strict";
   const { $, esc, fmtDay } = BB;
-  const URL = "https://baxrczyufqbzrogftmyn.supabase.co/rest/v1/rpc/";
+  const API = "https://baxrczyufqbzrogftmyn.supabase.co/rest/v1/rpc/";
   const KEY = "sb_publishable_brDXGevzcoI7mBaPO7Plow_yaUy4gk4";
   const DAY = 864e5, OPEN = Date.parse("2026-11-03T12:00:00Z");   // the challenge opened: a pick set then is worth 2x
 
   let D = null, C = null;
 
   async function rpc(fn, body) {
-    const res = await fetch(URL + fn, { method: "POST", headers: { apikey: KEY, Authorization: "Bearer " + KEY, "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const res = await fetch(API + fn, { method: "POST", headers: { apikey: KEY, Authorization: "Bearer " + KEY, "Content-Type": "application/json" }, body: JSON.stringify(body) });
     if (!res.ok) throw new Error(String(res.status));
     return res.json();
   }
@@ -109,6 +109,7 @@
             <label><span class="lab">PIN</span><input id="ch-pin" inputmode="numeric" pattern="[0-9]*" maxlength="8" value="${esc(C.pin)}" placeholder="4 to 8 digits"></label>
             <button type="submit" class="btn go"${locked || C.busy ? " disabled" : ""}>${C.server.n ? "Update my mock" : "Save my mock"}</button>
             <button type="button" class="link" data-ch="load"${C.busy ? " disabled" : ""}>Load my saved mock</button>
+            <button type="button" class="btn" data-ch="share"${filled ? "" : " disabled"}>Share image</button>
           </form>
           <p class="note">${C.msg ? `<span class="tmsg ${C.ok ? "ok" : ""}">${esc(C.msg)}</span>` : `${filled}/10 picked. The PIN keeps your name yours; it's not a password anywhere else, so don't reuse one.`}</p>
         </div>
@@ -122,6 +123,67 @@
       <h3 class="ch-h">Everyone's mocks</h3>
       ${boardView(lock)}
     </section>`;
+  }
+
+  // ---------- share card: a 1080x1350 image of your top 10 ----------
+  function loadImg(src) {
+    return new Promise((res) => { const im = new Image(); im.crossOrigin = "anonymous"; im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
+  }
+  async function shareCard() {
+    const lock = new Date(C.lockAt || 0).getTime();
+    const rows = C.picks.map((x, i) => x && { ...x, slot: i + 1, p: player(x.pid, x.n) }).filter(Boolean);
+    if (!rows.length) { C.msg = "Pick at least one player first."; C.ok = false; view(); return; }
+    const W = 1080, H = 1350, cv = document.createElement("canvas");
+    cv.width = W; cv.height = H;
+    const g = cv.getContext("2d");
+    try { await document.fonts.load('700 80px "Zilla Slab"'); await document.fonts.load('700 40px "IBM Plex Sans Condensed"'); await document.fonts.ready; } catch (e) { /* system fonts */ }
+    const ink = "#17191E", dim = "#4A4E55", paper = "#F3EFE6", panel = "#FFFDF8", line = "#E6E0D3", blue = "#1F4FBF";
+    const slab = (px) => `700 ${px}px "Zilla Slab", Georgia, serif`;
+    const sans = (w, px) => `${w} ${px}px "IBM Plex Sans Condensed", "Arial Narrow", sans-serif`;
+    g.fillStyle = paper; g.fillRect(0, 0, W, H);
+    g.fillStyle = ink; g.fillRect(0, 0, W, 14);
+    g.fillStyle = dim; g.font = sans(700, 28);
+    g.fillText(`${D.year} ${D.league.toUpperCase()} DRAFT  ·  TOP 10 CHALLENGE`, 70, 92);
+    g.fillStyle = ink; g.font = slab(84);
+    const who = (C.name || "").trim();
+    g.fillText(who ? `${who}'s top 10` : "My top 10", 70, 182, W - 140);
+    let y = 230;
+    const rowH = 96;
+    const logos = await Promise.all(rows.map((r) => r.p && r.p.sid ? loadImg(`https://a.espncdn.com/combiner/i?img=/i/teamlogos/ncaa/500/${r.p.sid}.png&w=120&h=120`) : null));
+    for (let i = 0; i < 10; i++) {
+      const r = rows.find((x) => x.slot === i + 1);
+      g.fillStyle = panel; g.fillRect(70, y, W - 140, rowH - 10);
+      g.strokeStyle = line; g.lineWidth = 2; g.strokeRect(70, y, W - 140, rowH - 10);
+      g.fillStyle = ink; g.font = slab(52); g.textAlign = "right"; g.fillText(String(i + 1), 150, y + 62); g.textAlign = "left";
+      if (r) {
+        const im = logos[rows.indexOf(r)];
+        if (im) g.drawImage(im, 172, y + 15, 56, 56);
+        g.fillStyle = ink; g.font = sans(700, 38); g.fillText(r.n, 248, y + 44, 560);
+        g.fillStyle = dim; g.font = sans(500, 25);
+        g.fillText(r.p ? `${[r.p.pos, r.p.school].filter(Boolean).join(", ")}  ·  board No. ${r.p.rank}` : "", 248, y + 74, 560);
+        const sv = C.server[i + 1], m = mult(sv && sv.pid === r.pid ? sv.at : nowIso(), lock);
+        g.fillStyle = blue; g.font = sans(700, 30); g.textAlign = "right"; g.fillText(`${m.toFixed(2)}x`, W - 96, y + 56); g.textAlign = "left";
+      } else { g.fillStyle = dim; g.font = sans(500, 30); g.fillText("Still deciding", 248, y + 56); }
+      y += rowH;
+    }
+    g.fillStyle = dim; g.font = sans(600, 27);
+    g.fillText("Make yours: davidsolar.dev/draft", 70, H - 56);
+    g.textAlign = "right"; g.fillText(new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }), W - 70, H - 56); g.textAlign = "left";
+    let blob = null;
+    try { blob = await new Promise((res) => cv.toBlob(res, "image/png")); } catch (e) { blob = null; }
+    if (!blob) { C.msg = "Couldn't make the image here."; C.ok = false; view(); return; }
+    const url = URL.createObjectURL(blob), fname = `top-10-${D.league}.png`;
+    const file = new File([blob], fname, { type: "image/png" });
+    const canShare = navigator.canShare && navigator.canShare({ files: [file] });
+    const wrap = document.createElement("div");
+    wrap.className = "modal";
+    wrap.innerHTML = `<div class="sheet card-sheet"><div class="sheet-head"><h3 class="disp">Share your top 10</h3><button type="button" class="link" data-close>Close</button></div>
+      <img src="${url}" alt="Your top 10 mock" class="card-img"><div class="go-row">${canShare ? `<button type="button" class="btn go" data-share>Share</button>` : ""}<a class="btn" href="${url}" download="${fname}">Download</a></div></div>`;
+    document.body.appendChild(wrap);
+    wrap.addEventListener("click", async (e) => {
+      if (e.target.closest("[data-close]") || e.target === wrap) { wrap.remove(); URL.revokeObjectURL(url); }
+      if (e.target.closest("[data-share]")) { try { await navigator.share({ files: [file], title: "My top 10", text: "My top 10. Make yours: https://davidsolar.dev/draft/#" + D.league + "/challenge" }); } catch (err) { /* dismissed */ } }
+    });
   }
 
   async function loadBoard() {
@@ -196,6 +258,7 @@
     if ((b = t("[data-chpos]"))) { C.pos = b.dataset.chpos; view(); return; }
     if ((b = t("[data-entry]"))) { C.open = C.open === b.dataset.entry ? null : b.dataset.entry; view(); return; }
     if (t('[data-ch="load"]')) { loadMine(); return; }
+    if (t('[data-ch="share"]')) { shareCard(); return; }
   });
   document.addEventListener("submit", (e) => {
     if (!e.target.closest("#challenge-view .ch-save")) return;
