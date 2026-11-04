@@ -231,8 +231,8 @@ def waiver_pool(data, week, now, nxt, lines, path=HIST):
     for tx in data.get("transactions") or []:
         if taken and tx.get("date") and tx["date"] < taken:
             continue
-        if not isinstance(tx.get("bid"), (int, float)):
-            continue
+        if not isinstance(tx.get("bid"), (int, float)) or norm(tx.get("team", "")) == norm(cut["name"]):
+            continue  # the cut team's own earlier pickups aren't part of its estate
         for key in ((norm(tx.get("player", "")), tx.get("pos")), (norm(tx.get("player", "")), None)):
             bids.setdefault(key, tx)
     entry = (hist.get("weeks") or {}).get(str(week - 1)) or {}
