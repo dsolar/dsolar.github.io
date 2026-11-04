@@ -1,11 +1,10 @@
 /* Every project on the home page comes from this list.
    To add a project: copy one { ... } block, paste it at the end, and change the values.
-   No other file needs to change for it to show up.
+   It appears in the full collection and menus; homeFeatured selects homepage picks.
 
    Fields
      title     Project name.
-     type      Homepage category: "Fantasy Leagues", "Simulations", "Games", "Social Tools".
-               Once there's more than one type, filter buttons appear on the home page.
+     type      Collection category: "Fantasy Leagues", "Simulations", "Games", "Social Tools".
      released  Year and month it went live, "YYYY-MM". For your records; it doesn't show on the card.
      line      One short line for its home page tile (about 35 characters).
      daily     true for a daily game; it also gets a row in Today's slate (assets/slate.js).
@@ -17,7 +16,8 @@
      stack     What it's built with.
      cover     image: screenshot in assets/covers/ (optional; without one, a colored
                block with the title is drawn instead). bg / band: the project's own colors.
-     featured  true puts it at the top of its category and adds a Featured tag.
+     homeFeatured true selects a project for the curated homepage. Full collections still show every visible project.
+     featured  Optional featured badge on detailed cards.
      spotlight true puts it first on the page in a full-width card (use on one project).
      status    "live" (default) or "building" (listed with no Play button).
      hidden    true hides it until the homepage app code is entered. Direct links still work.
@@ -26,11 +26,12 @@
      matchups  real games inside, shown on the card with both teams' logos: { you, opp, home or neutral, label },
                where you/opp are NFL abbreviations (Make the Call's famous calls, from its data.js).
 
-   The home page shows projects in this list's order (the spotlight first), so order matters.
+   Collections and homepage picks follow this list's order, so order matters.
 */
 window.PROJECTS = [
   {
     title: "Make the Call",
+    homeFeatured: true,
     line: "NFL calls, graded on win probability",
     daily: true,
     tag: "New challenge every day",
@@ -69,6 +70,7 @@ window.PROJECTS = [
   },
   {
     title: "Journeyman",
+    homeFeatured: true,
     line: "Name the player from his teams",
     daily: true,
     tag: "New ten every day",
@@ -191,6 +193,7 @@ window.PROJECTS = [
   },
   {
   title: "The 31st Franchise",
+    homeFeatured: true,
   line: "Build Seattle an NBA team",
     type: "Simulations",
     released: "2026-10",
@@ -203,6 +206,7 @@ window.PROJECTS = [
   },
   {
     title: "Banner 19",
+    homeFeatured: true,
     line: "Run the Celtics front office",
     type: "Simulations",
     released: "2026-10",
@@ -216,6 +220,7 @@ window.PROJECTS = [
   },
   {
     title: "Paint the Corners",
+    homeFeatured: true,
     line: "Out-pitch Pedro vs. the Yankees",
     type: "Games",
     released: "2026-10",
@@ -228,6 +233,7 @@ window.PROJECTS = [
   },
   {
     title: "Tempo",
+    homeFeatured: true,
     line: "Chess coach, daily puzzles, lessons",
     daily: true,
     tag: "New puzzles every day",

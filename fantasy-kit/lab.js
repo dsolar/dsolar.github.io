@@ -94,6 +94,45 @@
   const rlFits = (c) => ["snake", "linear", "3rr"].includes(c.type);
   const sdOn = (c) => c.sport === "nfl" && !!c.sd;
   const hzOn = (c) => c.sport === "nfl" && !!c.hz && !c.sd;
+  function startPage() {
+    document.body.classList.remove("fk-room");
+    const sport = S[cfg.sport];
+    const scoring = Object.values(sport.scorings)[0].label.replace(/ \(.*\)$/, "");
+    app.innerHTML = `<div class="wrap page">
+      <section class="start-hero"><p class="start-kicker">Draft Lab</p><h1 class="disp">Your next draft starts here.</h1><p>Real players. Bots that know their budgets. Jump into a familiar draft, or build something a little stranger.</p></section>
+      ${mock ? `<section class="start-resume" aria-label="Your saved mock"><div><h2 class="disp">${mock.D.phase === "done" ? "Your draft is in the books." : "Your seat is still here."}</h2><p>${esc(S[mock.D.sport] ? S[mock.D.sport].name : "")} · ${esc(K.DRAFT_SHORT[mock.D.type] || mock.D.type)} · ${mock.D.teams.length} teams. ${mock.D.phase === "done" ? "See your roster and results." : "Continue your saved draft on this device."}</p></div><a class="btn go" href="#draft">${mock.D.phase === "done" ? "View your results" : "Continue your draft"}</a></section>` : ""}
+      <div class="start-sports" role="group" aria-label="Choose a sport">${Object.values(S.ALL).map(s => `<button type="button" class="btn" data-entry-sport="${s.key}" aria-pressed="${s.key === cfg.sport}">${K.icon(s.key)} ${esc(s.name)}</button>`).join("")}</div>
+      <section class="start-cards" aria-label="Choose how to play">
+        <article class="start-card start-card-primary"><p class="start-kicker">01 / Take a seat</p><h2 class="disp">Quick mock</h2><p>A 10-team ${esc(sport.name.toLowerCase())} snake draft. ${esc(scoring)}, standard rosters, and 30 seconds a pick. We’ll find you a seat.</p><button type="button" class="btn go" data-quick>Start a quick mock →</button><p id="quick-error" role="alert"></p></article>
+        <article class="start-card"><p class="start-kicker">02 / Make it yours</p><h2 class="disp">Customize a draft</h2><p>Choose your format, scoring, roster, and clock. Try an auction, mystery packages, white elephant, or your own take on a snake.</p><a class="btn" href="#setup">Customize your draft</a></article>
+        <article class="start-card"><p class="start-kicker">03 / Keep the season going</p><h2 class="disp">Play a league</h2><p>Explore a ready-made demo, or create a shared league and invite your friends.</p><div class="start-actions"><a class="btn" href="league.html?s=${esc(cfg.sport)}&f=h">Explore a demo</a><a class="btn ghost" href="leagues.html?s=${esc(cfg.sport)}">Your leagues</a></div></article>
+      </section><p class="start-note">Mock drafts save on this device. You can leave and come back to the same seat.</p></div>`;
+  }
+  async function quickMock(button) {
+    const error = $("#quick-error");
+    button.disabled = true; button.textContent = "Finding your seat…";
+    const next = Object.assign({}, DEFAULTS, { sport: cfg.sport });
+    next.scoring = Object.keys(S[next.sport].scorings)[0];
+    try {
+      await newMock(next);
+      location.hash = "#draft";
+    } catch (err) {
+      button.disabled = false; button.textContent = "Start a quick mock →";
+      if (error) error.textContent = err.message;
+    }
+  }
+  app.addEventListener("click", e => {
+    const sport = e.target.closest("[data-entry-sport]");
+    if (sport && sport.dataset.entrySport !== cfg.sport) {
+      cfg = Object.assign({}, cfg, { sport: sport.dataset.entrySport, scoring: "", lineup: "", bench: null });
+      rank.sport = cfg.sport; rank.scoring = ""; store.set("cfg", cfg); startPage();
+      const selected = $(`[data-entry-sport="${cfg.sport}"]`); if (selected) selected.focus({ preventScroll: true });
+    }
+    const button = e.target.closest("[data-quick]");
+    if (!button) return;
+    if (mock) U.confirm("Replace your saved mock?", "Starting a quick mock replaces the draft saved on this device. You can keep it and return to your seat instead.", "Start quick mock", () => quickMock(button));
+    else quickMock(button);
+  });
   function setupView() {
     const sport = S[cfg.sport], c = cfg;
     const scoring = sport.scorings[c.scoring] ? c.scoring : Object.keys(sport.scorings)[0];
@@ -111,7 +150,7 @@
     const roster = `<div class="nr${open.roster ? " open" : ""}"><button type="button" class="nr-h" data-row="roster" aria-expanded="${!!open.roster}"><span class="nr-t"><b>Roster</b><small>Starting lineup and bench</small></span><span class="nr-v">${sdOn(c) ? "Captain and 5 flex, no bench (showdown)" : hzOn(c) ? "8 starters, no bench (heist)" : `${lu.length} starters, ${bench} bench`}</span><span class="chev" aria-hidden="true"></span></button>
       ${open.roster && (sdOn(c) || hzOn(c)) ? `<div class="nr-b"><p class="ps" style="margin:0">The ${sdOn(c) ? "showdown" : "heist"} sets the lineup. Turn it off to build your own.</p></div>` : open.roster ? `<div class="nr-b">${K.group("Starting lineup", lineupBuilder(sport, lu))}${K.group("Bench", K.fld("Bench spots", K.stepper("bench", [0, 1, 2, 3, 4, 5, 6, 7, 8, 10], bench, String, "Bench spots")))}</div>` : ""}</div>`;
     const tip = (t, b) => `<div class="mk-tip"><b>${esc(t)}</b><p>${b}</p></div>`;
-    return `<div class="wrap page"><div class="su sp-${sport.key}">
+    return `<div class="wrap page"><a class="start-back" href="#home">← Back to quick start</a><div class="su sp-${sport.key}">
       <div class="nl-band">${K.FIELD[sport.key]}<div class="nl-bi">
         <div class="nl-sports" role="radiogroup" aria-label="Sport">${Object.values(S.ALL).map((x) => `<label class="nl-sp"><input type="radio" name="sport" value="${x.key}"${x.key === c.sport ? " checked" : ""}>${K.icon(x.key)}<span>${esc(x.name)}</span></label>`).join("")}</div>
         <h1 class="disp">Mock a ${esc(sport.name.toLowerCase())} draft</h1>
@@ -429,12 +468,13 @@
 
   /* ---------- routing ---------- */
   async function route() {
-    const r = U.route("draft");
-    const tab = ["draft", "rankings", "home"].includes(r.tab) ? r.tab : "draft";
-    header(tab === "home" ? "draft" : tab);
+    const r = U.route("home");
+    const tab = ["draft", "rankings", "home", "setup"].includes(r.tab) ? r.tab : "home";
+    header(tab === "home" || tab === "setup" ? "draft" : tab);
     if (tab !== "draft" && roomCtl) { roomCtl.stop(); roomCtl = null; }
-    if (tab === "home") { app.onclick = app.oninput = app.onchange = null; return setupPage(); }
-    if (tab === "draft") { app.onclick = app.oninput = app.onchange = null; return mock ? draftPage() : setupPage(); }
+    if (tab === "home") { app.onclick = app.oninput = app.onchange = null; return startPage(); }
+    if (tab === "setup") { app.onclick = app.oninput = app.onchange = null; return setupPage(); }
+    if (tab === "draft") { app.onclick = app.oninput = app.onchange = null; return mock ? draftPage() : startPage(); }
     return rankingsPage();
   }
   window.addEventListener("hashchange", route);
