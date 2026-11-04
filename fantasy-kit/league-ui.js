@@ -233,7 +233,7 @@
           ${mid != null && L().claims.some((c) => c.team === mid && c.status === "open") ? `<div class="card"><div class="mod-h"><h2>Your waiver claims</h2><a href="#players/claims">All claims</a></div><div class="bd" style="padding-bottom:0"><span class="ps">${esc(claimsRun())}</span></div>${claimList(L().claims.filter((c) => c.team === mid && c.status === "open"))}</div>` : ""}
           ${offers.length ? `<div class="card"><div class="mod-h"><h2>Trade offers for you</h2><span class="badge">${offers.length}</span><a href="#team/trades">Review</a></div>${U.feed(offers.map((t) => ({ team: T(t.from), when: U.ago(t.at, now()), lines: t.get.map((id) => U.txLine(sport, "drop", playerVM(id), "you send")).concat(t.give.map((id) => U.txLine(sport, "add", playerVM(id), "you get"))) })))}</div>` : ""}`;
       return `<div class="wrap page">
-        ${champ != null ? `<div class="banner"><span>${teamAv(T(champ), "lg")}</span><div><b class="disp" style="font-size:26px">${esc(T(champ).name)} won the title</b><div class="ps">The ${esc(L().season || "")} season is over.</div></div></div>` : ""}
+        ${champ != null && oneWeekLg() ? finishCard() : champ != null ? `<div class="banner"><span>${teamAv(T(champ), "lg")}</span><div><b class="disp" style="font-size:26px">${esc(T(champ).name)} won the title</b><div class="ps">The ${esc(L().season || "")} season is over.</div></div></div>` : ""}
         <div class="stack" style="gap:8px"><div class="row"><h2 style="margin:0;font-size:15px">${over() ? "Final week" : `Week ${w} scoreboard`}</h2><a href="#league/scoreboard" class="small" style="margin-left:auto">All scores</a></div>${U.scoreboard(games, fmtS)}</div>
         <div class="cols"><div class="stack">
           ${myCards.trim() ? `<div class="m-only stack">${myCards}</div>` : ""}
@@ -251,7 +251,7 @@
     }
     // The week that just ended: every result, with the high score called out.
     function lastWeekCard() {
-      if (roto()) return "";
+      if (roto() || (over() && oneWeekLg())) return "";
       const w = Math.min(L().week, G.totalWeeks(L()) + 1) - 1;
       if (w < 1 || !L().results[w] || gl()) return "";
       const games = gamesVM(w);
@@ -264,6 +264,57 @@
     }
     const moveTag = (m) => (m > 0 ? `<span class="tag win">+${m}</span>` : m < 0 ? `<span class="tag loss">${m}</span>` : `<span class="ps">-</span>`);
     const championOf = () => G.finish(L()).champion;
+    /* ---------- a one-week league's finish: the winner, the score, the MVP and what decided it ---------- */
+    const oneWeekLg = () => L().settings.weeks === 1 && !!(L().draft && L().draft.season && L().draft.season.oneWeek);
+    function finishData() {
+      const res = (L().results[1] || []).filter((g) => g && g.ta);
+      if (!res.length) return null;
+      const champ = championOf(), mid = me();
+      const g = res.find((x) => mid != null && (x.a === mid || x.b === mid)) || res.find((x) => x.a === champ || x.b === champ) || res[0];
+      const pts = (t) => (t === g.a ? g.ta : g.tb) || { players: {} }, sc = (t) => (t === g.a ? g.sa : g.sb);
+      const win = g.sa === g.sb ? null : g.sa > g.sb ? g.a : g.b, lose = win == null ? null : win === g.a ? g.b : g.a;
+      // the best score of the game, and what the heist and the captains did to it
+      let mvp = null;
+      for (const t of [g.a, g.b]) for (const [pid, v] of Object.entries(pts(t).players || {})) if (!mvp || v > mvp.v) mvp = { pid, v, t };
+      const moments = [];
+      const H = L().heist, mult = L().pmult || {};
+      if (H) for (const e of H.events.filter((x) => x.ok && [g.a, g.b].includes(x.by))) {
+        if (e.type === "steal") {
+          const v = (pts(e.by).players || {})[e.pid] || 0, raw = v / (mult[e.pid] || 1);
+          // would the other side have won with him, at normal points, instead?
+          const flip = win === e.by && sc(e.by) - v < sc(e.on) + raw;
+          moments.push({ k: "steal", text: `${T(e.by).name} stole ${(ctx.byId[e.pid] || {}).n}: ${fmtS(v)} points at ${F_HEIST().steal}x${flip ? ". The steal decided it" : ""}`, big: flip });
+        } else {
+          const v = (pts(e.on).players || {})[e.pid] || 0;
+          const flip = win === e.by && sc(e.by) < sc(e.on) + v;
+          moments.push({ k: "jinx", text: `${T(e.by).name}'s jinx on ${(ctx.byId[e.pid] || {}).n} cost ${T(e.on).name} ${fmtS(v)} points${flip ? ". The jinx decided it" : ""}`, big: flip });
+        }
+      }
+      if (L().settings.mult) for (const t of [g.a, g.b]) {
+        const lu = G.lineupFor(L(), ctx, t, 1), i = L().settings.lineup.findIndex((sl) => (L().settings.mult[sl] || 1) > 1), pid = i >= 0 ? lu[i] : null;
+        if (pid) moments.push({ k: "cpt", text: `${T(t).name}'s captain ${(ctx.byId[pid] || {}).n}: ${fmtS((pts(t).players || {})[pid] || 0)} points` });
+      }
+      return { g, champ, win, lose, mvp, moments: moments.sort((a, b) => (b.big ? 1 : 0) - (a.big ? 1 : 0)).slice(0, 4), many: L().teams.length > 2 };
+    }
+    function finishCard() {
+      const f = finishData(); if (!f) return "";
+      const { g, champ, win, lose, mvp } = f, cs = T(champ), mine = isMe(champ);
+      const score = win == null ? `${fmtS(g.sa)} to ${fmtS(g.sb)}, a tie` : `${fmtS(Math.max(g.sa, g.sb))} to ${fmtS(Math.min(g.sa, g.sb))}`;
+      const head = f.many ? `${esc(cs.name)} wins the week` : win == null ? "A dead heat" : `${esc(T(win).name)} beat ${esc(T(lose).name)}`;
+      const sub = f.many ? `Champion on the best record, then points. ${g.a === champ || g.b === champ ? `Won ${score}.` : ""}` : win == null ? `${score}. ${esc(cs.name)} takes it on the tiebreak.` : `${score}, by ${fmtS(Math.abs(g.sa - g.sb))}.`;
+      const mp = mvp && ctx.byId[mvp.pid];
+      return `<div class="card fin${mine ? " me" : ""}">
+        <div class="fin-h">${teamAv(cs, "xl")}<div><small>${esc(L().name || "")}, final</small><b class="disp">${head}</b><span>${sub}</span></div></div>
+        ${mp ? `<div class="fin-mvp"><small>MVP</small><span data-player="${esc(mp.id)}" style="cursor:pointer">${pname(sport, mp, `${fmtS(mvp.v)} points for ${esc(T(mvp.t).name)}`)}</span></div>` : ""}
+        ${f.moments.length ? `<ul class="fin-m">${f.moments.map((m) => `<li class="${m.k}${m.big ? " big" : ""}">${esc(m.text)}</li>`).join("")}</ul>` : ""}
+        <div class="fin-a"><button class="btn sm" data-copyfinal>Copy the result</button><a class="btn sm" href="leagues.html?s=${esc(sport.key)}">Start another</a></div></div>`;
+    }
+    // the result as a few lines for the group chat
+    function finishText() {
+      const f = finishData(); if (!f) return "";
+      const { g, win, lose, mvp } = f, mp = mvp && ctx.byId[mvp.pid];
+      return [`${L().name}: ${win == null ? `a tie, ${fmtS(g.sa)} to ${fmtS(g.sb)}` : `${T(win).name} ${fmtS(Math.max(g.sa, g.sb))}, ${T(lose).name} ${fmtS(Math.min(g.sa, g.sb))}`}`, mp ? `MVP: ${mp.n}, ${fmtS(mvp.v)}` : ""].concat(f.moments.map((m) => m.text)).filter(Boolean).join("\n");
+    }
     const byes = () => { const n = L().settings.playoffTeams || 0; return n >= 2 ? 2 ** Math.ceil(Math.log2(n)) - n : 0; };
     function finishTag(id) {
       if (!over()) return "";
@@ -1063,7 +1114,7 @@
       return `<div class="wrap page">
         <div class="head"><h1 class="disp">${w > L().settings.weeks ? esc(kindName(m.kind, w)) : L().settings.showdown ? `${esc(L().settings.showdown.label)} showdown` : `Week ${w} matchup`}</h1>${!pts() ? `<span class="ps">Each starter's line for the week so far.</span>` : ""}</div>
         <div class="row" style="flex-wrap:wrap"><div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-mweek="${x}" aria-pressed="${x === w}">${weekChip(x)}</button>`).join("")}</div></div>
-        <div class="card">${U.versus(versusVM(w, m))}${leftHtml || outlookLine(m)}${medianLine(w, m)}</div>${w === 1 && L().heist ? heistCard(m.a) : ""}${playsHtml}
+        ${over() && oneWeekLg() ? finishCard() : ""}<div class="card">${U.versus(versusVM(w, m))}${leftHtml || outlookLine(m)}${medianLine(w, m)}</div>${w === 1 && L().heist ? heistCard(m.a) : ""}${playsHtml}
         <div class="cols2" style="grid-template-columns:minmax(0,1fr)">${U.vsTable(sport, rows, pts() ? { a: m.sa, b: m.sb } : null, (x) => (x == null ? "-" : typeof x === "string" ? (/^(No games|Didn't play|Yet to play|Playing now|Done this week|No games this week|\d+ games? left)$/.test(x) ? `<span class="ps">${x}</span>` : x) : x.toFixed(1)))}</div>
         <div class="stack" style="gap:8px"><b class="ps">Other games, week ${w}</b>${U.scoreboard(gamesVM(w), fmtS)}</div></div>`;
     }
@@ -1424,7 +1475,7 @@
     opts.el.addEventListener("click", (e) => {
       const mb = e.target.closest("[data-more]");
       if (mb) { ui.plimit = (ui.plimit || 250) + 250; render(); return; }
-      const b = e.target.closest("[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],th[data-sort]");
+      const b = e.target.closest("[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],th[data-sort]");
       if (b) {
         e.preventDefault(); e.stopPropagation();
         const d = b.dataset, mid = me();
@@ -1444,6 +1495,7 @@
         else if (b.hasAttribute("data-optimize")) { const w = ui.week && ui.week >= L().week ? ui.week : curWeek(); act(() => G.setLineup(L(), ctx, mid, w, G.bestLineup(L(), ctx, mid, w, now()), now()), "Best lineup set."); }
         else if (d.week) { ui.week = +d.week; render(); }
         else if (d.watch) { const w = watch(); const i = w.indexOf(d.watch); if (i >= 0) w.splice(i, 1); else w.push(d.watch); save(); render(); }
+        else if (b.hasAttribute("data-copyfinal")) { const txt = finishText(); (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => U.toast("Copied. Paste it in your group chat."), () => U.dialog(`<h3>The result</h3><textarea rows="6" style="width:100%">${esc(txt)}</textarea><div class="acts"><button class="btn" data-close>Done</button></div>`)); }
         else if (d.unclaim) act(() => G.cancelClaim(L(), +d.unclaim), "Claim cancelled.");
         else if (d.editclaim) { const c = L().claims.find((x) => x.id === +d.editclaim && x.status === "open"); if (c) addDialog(c.add, c); }
         else if (d.cup || d.cdown) act(() => G.moveClaim(L(), me(), +(d.cup || d.cdown), d.cup ? -1 : 1));

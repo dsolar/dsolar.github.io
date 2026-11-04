@@ -1319,3 +1319,19 @@ tr.sec.dz-ok>td{color:var(--ink)}
 .droom.hzr{grid-template-rows:auto minmax(0,1fr)}
 .droom.hzr .hz-scroll{overflow:auto;-webkit-overflow-scrolling:touch}
 @media (max-width:760px){.droom.hzr .hz-h h2{font-size:24px}.hz{padding-top:12px}}
+
+/* a one-week league's finish */
+.card.fin{padding:20px;display:grid;gap:14px;border-top:6px solid var(--brand)}
+.fin-h{display:flex;align-items:center;gap:16px}
+.fin-h small{display:block;font-size:12.5px;font-weight:700;color:var(--muted)}
+.fin-h b{display:block;font-size:clamp(28px,4vw,44px);line-height:1.02;margin:2px 0 4px}
+.fin-h span{color:var(--muted);font-size:15px}
+.fin-mvp{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:var(--surface-2)}
+.fin-mvp small{font-size:11px;font-weight:900;padding:3px 8px;border-radius:6px;background:var(--brand);color:var(--brand-ink)}
+.fin-m{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.fin-m li{font-size:14.5px;padding-left:16px;position:relative}
+.fin-m li::before{content:"";position:absolute;left:0;top:.55em;width:8px;height:8px;border-radius:50%;background:var(--line-2)}
+.fin-m li.steal::before{background:var(--win)}.fin-m li.jinx::before{background:var(--loss)}.fin-m li.cpt::before{background:var(--brand)}
+.fin-m li.big{font-weight:800}
+.fin-a{display:flex;gap:8px;flex-wrap:wrap}
+@media (max-width:600px){.fin-h{align-items:flex-start}.fin-h .av.xl{width:52px;height:52px;font-size:17px}}
