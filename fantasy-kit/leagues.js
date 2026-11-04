@@ -160,6 +160,8 @@
   // a one-week league: head to head only, and it plays the week that's on or the next one
   const oneWeek = () => form.kind === "week";
   const WEEK_OK = ["h2h", "h2hcats", "showdown"];
+  // the formats a league type can use: one week is head to head; a guillotine or vampire is a single season
+  const formatFits = (k) => (oneWeek() ? WEEK_OK.includes(k) : (k !== "guillotine" && k !== "vampire") || form.kind === "redraft") && k !== "showdown" || (k === "showdown" && oneWeek());
   // the week that's on (its start, the latest Monday 13:00 UTC, Tuesday for football) and the next, as dates to show
   function weekChoices(sp) {
     const DAY = 864e5, want = sp.key === "nfl" ? 2 : 1, now = Date.now(), d = new Date(now);
@@ -199,15 +201,17 @@
     const V = values(sp), fmt = formatOf(), gl = form.season === "guillotine";
     // a guillotine empties chopped rosters and a vampire's steals would pile up year after year, so both are redraft only
     const oneYear = gl ? "guillotine" : fmt === "vampire" ? "vampire" : null;
-    const kinds = pickCards("kind", KINDS, form.kind, "League type", (k) => (k !== "redraft" && oneYear ? `Not with a ${oneYear}` : k === "week" && !WEEK_OK.includes(form.season) ? "Head to head only" : ""));
+    // every league type can be picked: one that a format doesn't allow switches the format instead (below, on click)
+    const kinds = pickCards("kind", KINDS, form.kind, "League type");
+    // a one-week league plays the week that's on, or the next one when too little of this week is left (or for
+    // baseball, whose stats can't be split midweek)
     const wc = weekChoices(sp), tooLate = wc.left < 30 * 36e5;
-    if (oneWeek() && (tooLate || sp.key === "mlb")) form.when = "next";
+    form.when = tooLate || sp.key === "mlb" ? "next" : "now";
     const sdHtml = showdown() ? `<div class="nl-when">${sdGames == null ? `<p class="ps">Loading this week's games…</p>` : sdGames.length ? fld("The game", seg("sdGame", sdGames.map((g) => [g.id, `${g.away} @ ${g.home}, ${kickLabel(g.at)}`]), form.sdGame, "The game", { wrap: true }), "Everyone locks at kickoff, so finish the draft before then.") : `<p class="ps">No games left this week to draft. Try again when next week's schedule is out.</p>`}</div>` : "";
-    const whenHtml = showdown() ? "" : oneWeek() ? `<div class="nl-when">${fld("Which week", seg("when", [["now", `This week, ${wc.curLabel}`, tooLate || sp.key === "mlb"], ["next", `Next week, ${wc.nextLabel}`]], form.when, "Which week", { wrap: true }),
-      sp.key === "mlb" ? "Baseball plays a full week: its stats can't be split midweek." : tooLate ? "Too little of this week is left, so it plays next week." : form.when === "now" ? "It starts when the draft ends. Games played before then don't count." : "Draft any time before the week starts.")}</div>` : "";
+    const whenHtml = showdown() || !oneWeek() ? "" : `<p class="nl-when ps">${form.when === "now" ? `Plays this week, ${esc(wc.curLabel)}. It starts when the draft ends, and games played before then don't count.` : `Plays next week, ${esc(wc.nextLabel)}${sp.key === "mlb" ? ": baseball can't split a week midway" : ": too little of this week is left"}.`}</p>`;
     const cats = scoringType(sp) === "cats";
     const label = (k) => (cats && k === "h2h" ? ["Most categories", "Head to head: win more categories, win the week"] : cats && k === "h2hcats" ? ["Each category", "Head to head: a 6-4 week counts as 6 wins"] : FORMATS[k]);
-    const formats = pickCards("format", formatsFor(sp).map((k) => [k, label(k)[0], label(k)[1]]), fmt, "Format", (k) => (oneWeek() && !WEEK_OK.includes(k) ? "Not for one week" : (k === "guillotine" || k === "vampire") && form.kind !== "redraft" ? `Redraft only: a ${form.kind} league can't use it` : ""));
+    const formats = pickCards("format", formatsFor(sp).filter(formatFits).map((k) => [k, label(k)[0], label(k)[1]]), fmt, "Format");
     const presets = Object.entries(sp.scorings).map(([k, x]) => [k, x.label.replace(/ \(.*\)$/, ""), SC_SUB[k] || ""]).concat([["cp", "Custom points", SC_SUB.cp]], sp.key !== "nfl" ? [["cc", "Custom categories", SC_SUB.cc]] : []);
     const live = auction ? [[15, "15 sec"], [30, "30 sec"], [60, "1 min"]] : [[30, "30 sec"], [60, "1 min"], [90, "90 sec"], [120, "2 min"], [3600, "1 hr"], [14400, "4 hr"], [28800, "8 hr"]];
     const rows = ROWS(sp).map(([k, title, sub, value, body]) => {
@@ -257,7 +261,7 @@
     return {
       line: `${sp.name}, ${n} teams, ${sc}, ${DRAFT_SHORT[form.type]} draft${rlOk() && form.rlOn ? " with team roulette" : ""}${heist() ? " and a heist" : ""}. ${style}`,
       scoring: bon.length ? bon.join(", ") : form.scoring === "cp" ? "Custom points" : "No bonuses",
-      draft: `${rlOk() && form.rlOn ? `Team roulette${form.rlRound ? " by round" : ""}, ` : ""}${clock} a ${auction() ? "bid" : "pick"}${form.type === "mystery" ? `, packages open ${{ now: "now", start: "at the start", own: "as picks come up" }[form.reveal || "start"]}` : ""}${!auction() && form.type !== "elephant" ? (form.trades ? ", trades on" : ", no trades") : ""}`,
+      draft: `${rlOk() && form.rlOn ? `Team roulette${form.rlRound ? " by round" : ""}, ` : ""}${auction() ? `$${showdown() ? 50 : 200} budgets, ` : ""}${clock} a ${auction() ? "bid" : "pick"}${form.type === "mystery" ? `, packages open ${{ now: "now", start: "at the start", own: "as picks come up" }[form.reveal || "start"]}` : ""}${!auction() && form.type !== "elephant" ? (form.trades ? ", trades on" : ", no trades") : ""}`,
       roster: showdown() ? "Captain and 5 flex, no bench" : heist() ? "8 starters, no bench" : `${lu.length} starters, ${benchOf(sp)} bench${form.ir ? `, ${form.ir} IR` : ""}`,
       heist: `${form.hzShields} shield${form.hzShields === 1 ? "" : "s"}, ${form.hzSteals} steal${form.hzSteals === 1 ? "" : "s"}, ${form.hzJinxes} jinx${form.hzJinxes === 1 ? "" : "es"}, ${form.hzClock} sec`,
       season: `${gl ? `${n - 1} weeks` : `${form.weeks} weeks`}${form.divs && !gl && form.season !== "roto" ? `, ${form.divs} divisions` : ""}`,
@@ -462,7 +466,7 @@
       // the vampire (the commissioner, or a random team) sits out the draft
       const vampire = vampOk() && form.vamp !== "off" ? (form.vamp === "me" ? 0 : Math.floor(Math.random() * n)) : null;
       const D = F.create({ sport, type: form.type, teams: n, sit: vampire != null ? [vampire] : undefined, seed: Math.floor(Math.random() * 2 ** 31), now: Date.now(), lineup, bench, scoring,
-        botDelay: 3000, clock: auction ? 0 : form.clock, bidClock: auction ? form.clock : 15, nomClock: 30, budget: 200, name: form.name.trim(),
+        botDelay: 3000, clock: auction ? 0 : form.clock, bidClock: auction ? form.clock : 15, nomClock: 30, budget: sd ? 50 : 200, name: form.name.trim(),
         trades: form.trades !== 0, curve: form.type === "mystery" ? F.pickCurve(players, total) : null, reveal: form.type === "mystery" ? form.reveal || "start" : undefined });
       D.teams.forEach((t, i) => (t.color = (i * 5) % 12));
       if (rlOk() && form.rlOn) {
@@ -523,7 +527,7 @@
     const row = e.target.closest("[data-row]");
     if (row) { grab(); const k = row.dataset.row; form.open = form.open[k] ? {} : { [k]: 1 }; render().then(() => { const h = $(`.su [data-row="${k}"]`); if (h) { h.focus({ preventScroll: true }); const r = h.getBoundingClientRect(); if (r.top < 70 || r.top > innerHeight - 160) h.scrollIntoView({ block: "start", behavior: "smooth" }); } }); return; }
     const kd = e.target.closest("[data-kind]");
-    if (kd) { grab(); form.kind = kd.dataset.kind; if (!oneWeek() && form.teams === 2) form.teams = 4; if (oneWeek() && !WEEK_OK.includes(form.season)) form.season = "h2h"; if (oneWeek()) form.vampOn = 0; if (!oneWeek()) form.sd = 0; derive(); form.open = form.kind === "redraft" || oneWeek() ? {} : { carry: 1 }; redraw(`n-pick-kind-${form.kind}`); return; }
+    if (kd) { grab(); form.kind = kd.dataset.kind; if (!formatFits(formatOf())) { form.vampOn = 0; form.sd = 0; form.season = "h2h"; } if (!oneWeek() && form.teams === 2) form.teams = 4; if (oneWeek() && !WEEK_OK.includes(form.season)) form.season = "h2h"; if (oneWeek()) form.vampOn = 0; if (!oneWeek()) form.sd = 0; derive(); form.open = form.kind === "redraft" || oneWeek() ? {} : { carry: 1 }; redraw(`n-pick-kind-${form.kind}`); return; }
     const fm = e.target.closest("[data-format]");
     if (fm) { grab(); pickFormat(fm.dataset.format); derive(); if (fm.dataset.format === "vampire") form.open = { vampire: 1 }; redraw(`n-pick-format-${fm.dataset.format}`); return; }
     const st = e.target.closest("[data-stp]");
