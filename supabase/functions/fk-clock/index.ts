@@ -90,7 +90,8 @@ async function tickLeagues(token: string) {
       const data = await loadData(l.sport);
       const doc = L ? L.draft || D : D;
       const sport = S.withScoring(S.attach(Object.assign({}, S[l.sport]), data), doc.scoringSpec);
-      const players = data.players.map((p: any) => Object.assign({}, p));
+      // a showdown plays one game: its two teams are the whole player pool
+      const players = data.players.filter((p: any) => !S.inPool || S.inPool(L || D, p)).map((p: any) => Object.assign({}, p));
       const dyn = (L && L.settings && L.settings.dynasty) || (doc.season && doc.season.dynasty);
       const weeks = await loadWeeks(l.sport, data.season);
       // best ball values upside and depth; a guillotine keeps normal ranks

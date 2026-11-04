@@ -1236,3 +1236,5 @@ tr.sec.dz-ok>td{color:var(--ink)}
 .slot.lk{display:inline-flex;align-items:center;gap:3px;background:var(--surface-3);color:var(--ink)}
 .lk-i{flex:none;opacity:.75}
 .lk-tag{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:750;color:var(--muted);white-space:nowrap}
+/* a showdown's captain slot */
+.slot.cpt{background:var(--brand);color:var(--brand-ink);font-weight:900}

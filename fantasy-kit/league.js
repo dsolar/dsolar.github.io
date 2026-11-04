@@ -184,7 +184,7 @@
       const q = L.rosters[teamId].map((id) => ctx.byId[id]).filter((p) => p && !used.has(p.id) && !held(L, teamId).includes(p.id) && !isLocked(L, p, w, now) && S.fits(ctx.sport, p, slots[i])).sort((a, b) => (b.v || 0) - (a.v || 0))[0];
       if (q) { out[i] = q.id; used.add(q.id); }
     }
-    return out;
+    return weighted(L, ctx, out, fixed);
   }
   function effFrac(L, teamId, pid, w, frac) {
     const j = L.joined && L.joined[pid];
@@ -214,7 +214,7 @@
     if (L.settings.bestBall && w >= L.week) return projectedBest(L, ctx, teamId);
     const ros = L.rosters[teamId], ir = held(L, teamId);
     if (saved) return saved.map((id) => (id && ros.includes(id) && !ir.includes(id) ? id : null));
-    return fillLineup(L, ctx, teamId).map((p) => (p ? p.id : null));
+    return weighted(L, ctx, fillLineup(L, ctx, teamId).map((p) => (p ? p.id : null)));
   }
   function setLineup(L, ctx, teamId, w, slots, now) {
     if (L.settings.bestBall) return { ok: false, why: "Best ball sets your lineup for you" };
@@ -262,7 +262,25 @@
     const ps = ids.filter((id) => !ir.includes(id)).map((id) => ctx.byId[id]).filter((p) => p && !/^(out|ir|o)$/i.test(p.inj || ""));
     return F.assign(ctx.sport, ps, L.settings.lineup).filter((x) => !x).length;
   }
-  function projectedBest(L, ctx, teamId) { return F.assign(ctx.sport, healthy(L, ctx, teamId), L.settings.lineup).map((p) => (p ? p.id : null)); }
+  function projectedBest(L, ctx, teamId) { return weighted(L, ctx, F.assign(ctx.sport, healthy(L, ctx, teamId), L.settings.lineup).map((p) => (p ? p.id : null))); }
+  // A slot that counts extra (a showdown captain) goes to the best starter who can play it, swapping with whoever had
+  // it when that player fits the other slot. `keep` marks slots that can't change (locked players).
+  function weighted(L, ctx, ids, keep) {
+    const m = L.settings.mult, slots = L.settings.lineup;
+    if (!m) return ids;
+    const out = ids.slice(), v = (id) => (id && ctx.byId[id] ? ctx.byId[id].v || 0 : -Infinity);
+    const order = slots.map((s, i) => i).filter((i) => (m[slots[i]] || 1) > 1 && !(keep && keep[i])).sort((a, b) => m[slots[b]] - m[slots[a]]);
+    for (const i of order) {
+      let best = i;
+      for (let j = 0; j < out.length; j++) {
+        if (j === i || (keep && keep[j]) || (m[slots[j]] || 1) > (m[slots[i]] || 1) || !out[j] || v(out[j]) <= v(out[best])) continue;
+        if (!S.fits(ctx.sport, ctx.byId[out[j]], slots[i]) || (out[i] && !S.fits(ctx.sport, ctx.byId[out[i]], slots[j]))) continue;
+        best = j;
+      }
+      if (best !== i) [out[i], out[best]] = [out[best], out[i]];
+    }
+    return out;
+  }
   // The best lineup of healthy players, with any slot still open filled by a hurt player who fits (better than empty).
   function fillLineup(L, ctx, teamId) {
     const slots = L.settings.lineup, ir = held(L, teamId);
@@ -376,10 +394,11 @@
     if (ctx.hooks.score) return ctx.hooks.score(L, ctx, teamId, w, frac);
     const sc = scoring(L, ctx);
     const best = L.settings.bestBall && w >= L.week ? bestBallIds(L, ctx, teamId, w, frac) : null;
-    const ids = (best || lineupFor(L, ctx, teamId, w)).filter(Boolean);
+    const slotsOf = best || lineupFor(L, ctx, teamId, w), ids = slotsOf.filter(Boolean);
     const lines = ids.map((id) => [ctx.byId[id], ctx.byId[id] && playerWeek(L, ctx, ctx.byId[id], w, effFrac(L, teamId, id, w, frac), frac)]).filter((x) => x[0]);
     if (sc.type === "points") {
-      const players = Object.fromEntries(lines.map(([p, s]) => [p.id, s.pts]));
+      // a slot can count extra (a showdown's captain, 1.5x)
+      const players = Object.fromEntries(lines.map(([p, s]) => [p.id, s.pts * slotMult(L, slotsOf.indexOf(p.id))]));
       const banked = (L.banked && L.banked[w] && L.banked[w][teamId]) || {};
       for (const [id, v] of Object.entries(banked)) players[id] = (players[id] || 0) + v;
       return { total: sum(Object.values(players)), players, lineup: best, banked: Object.keys(banked) };
@@ -466,12 +485,14 @@
     const sa = Math.round(sum(Object.values(probs)));
     return { probs, win, sa, sb: n - sa };
   }
+  // How much a lineup slot counts: settings.mult, by slot name (a showdown's CPT, 1.5), or 1
+  const slotMult = (L, i) => (i >= 0 && L.settings.mult && L.settings.mult[L.settings.lineup[i]]) || 1;
   // What a team should score this week with average form.
   function projection(L, ctx, teamId, w) {
     const sc = scoring(L, ctx);
     const wk = WEEK[ctx.sport.key] || { weeks: 20 };
-    const ids = lineupFor(L, ctx, teamId, w).filter(Boolean);
-    if (sc.type === "points") return { total: sum(ids.map((id) => (ctx.byId[id] ? ctx.byId[id].v / wk.weeks : 0))) };
+    const lu = lineupFor(L, ctx, teamId, w), ids = lu.filter(Boolean);
+    if (sc.type === "points") return { total: sum(ids.map((id) => (ctx.byId[id] ? (ctx.byId[id].v / wk.weeks) * slotMult(L, lu.indexOf(id)) : 0))) };
     return { total: sum(ids.map((id) => (ctx.byId[id] ? ctx.byId[id].v : 0))) };
   }
   function compare(L, ctx, a, b) {
@@ -526,11 +547,12 @@
     if (!lv || !rw || rw.missing || rw.start !== lv.start || !lv.teams) return null;
     const sc = scoring(L, ctx), g = GAMES[ctx.sport.key] || 82, k = SPREAD[ctx.sport.key] || 0.5;
     let rem = 0, vr = 0, played = 0, left = 0;
-    for (const id of lineupFor(L, ctx, teamId, w).filter(Boolean)) {
+    const lu = lineupFor(L, ctx, teamId, w);
+    for (const id of lu.filter(Boolean)) {
       const p = ctx.byId[id], t = p && lv.teams[p.t];
       if (!p || !t) continue;
       // a points rate is per game the player plays (sc.games a season), and a player who's out won't add to it
-      const togo = t.left + 0.5 * t.live, per = sc.type === "points" ? ((p.v || 0) / (sc.games || g)) * plays(p) : 0;
+      const togo = t.left + 0.5 * t.live, per = sc.type === "points" ? ((p.v || 0) / (sc.games || g)) * plays(p) * slotMult(L, lu.indexOf(id)) : 0;
       rem += per * togo; vr += togo * (k * per) ** 2;
       played += t.played + 0.5 * t.live; left += togo;
     }
@@ -1729,7 +1751,7 @@
   }
 
   return { realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
-    finishWeek, setKicks, isLocked, freezeLineups, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
+    finishWeek, slotMult, setKicks, isLocked, freezeLineups, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
 });

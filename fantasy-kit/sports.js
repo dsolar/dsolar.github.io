@@ -82,7 +82,8 @@
     key: "nfl", name: "Football", league: "NFL", unit: "game",
     positions: ["QB", "RB", "WR", "TE", "K", "DEF"],
     colors: { QB: 5, RB: 3, WR: 1, TE: 4, K: 6, DEF: 2 },
-    slots: { QB: ["QB"], RB: ["RB"], WR: ["WR"], TE: ["TE"], FLEX: ["RB", "WR", "TE"], SFLEX: ["QB", "RB", "WR", "TE"], K: ["K"], DEF: ["DEF"], BN: "*" },
+    // CPT and UTIL take anyone, kickers and defenses too: a showdown's captain and its flex spots
+    slots: { QB: ["QB"], RB: ["RB"], WR: ["WR"], TE: ["TE"], FLEX: ["RB", "WR", "TE"], SFLEX: ["QB", "RB", "WR", "TE"], CPT: ["QB", "RB", "WR", "TE", "K", "DEF"], UTIL: ["QB", "RB", "WR", "TE", "K", "DEF"], K: ["K"], DEF: ["DEF"], BN: "*" },
     lineup: ["QB", "RB", "RB", "WR", "WR", "TE", "FLEX", "K", "DEF"],
     bench: 6,
     posMax: { QB: 3, RB: 7, WR: 7, TE: 3, K: 1, DEF: 1 },
@@ -346,5 +347,10 @@
     return (chipCache[c] = { bg: "#" + n.toString(16).padStart(6, "0"), ink: "#fff" });
   }
 
-  return { ALL, nba, nfl, mlb, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, prospectClass };
+  // A league drawn from a few pro teams (a showdown's one game): doc is a draft (its season) or a league (its settings).
+  const poolOf = (doc) => (doc && ((doc.settings && doc.settings.pool) || (doc.season && doc.season.showdown && doc.season.showdown.teams))) || null;
+  const inPool = (doc, p) => { const t = poolOf(doc); return !t || t.includes(p.t); };
+  // A showdown: one game, a captain who scores half again, five spots that take anyone, no bench
+  const SHOWDOWN = { lineup: ["CPT", "UTIL", "UTIL", "UTIL", "UTIL", "UTIL"], bench: 0, mult: { CPT: 1.5 } };
+  return { ALL, nba, nfl, mlb, poolOf, inPool, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, prospectClass };
 });

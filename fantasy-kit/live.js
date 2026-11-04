@@ -42,7 +42,8 @@
     const r = await fetch(`data/${info.sport}.json`, { cache: "no-cache" });
     data = await r.json();
     sport = S.withScoring(S.attach(Object.assign({}, S[info.sport]), data), D.scoringSpec);   // the league's custom scoring, if it has one
-    players = data.players.map((p) => Object.assign({}, p));
+    // a showdown plays one game: its two teams are the whole player pool
+    players = data.players.filter((p) => S.inPool(L || D, p)).map((p) => Object.assign({}, p));
     // a dynasty values players over the next five seasons (value.js), a redraft league this season only
     const dyn = !!((D.season && D.season.dynasty) || (L && L.settings.dynasty));
     weeks = await fetch(`data/weeks-${info.sport}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null);

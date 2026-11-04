@@ -62,7 +62,12 @@
     const start = thisWeek ? cur : startAfter(at, sport.key);
     // o.real: a weeks file (real scoring if its box scores reach the league's start) or true
     if (o.real && (o.real === true || realCovers(o.real, start))) settings.real = true;
+    // a showdown: one game's two teams, a captain who counts half again, and free agency with no waiting
+    const sd = s.showdown;
+    if (sd) Object.assign(settings, { pool: sd.teams.slice(), mult: { CPT: 1.5 }, waiverHours: 0, showdown: { id: sd.id, label: sd.label, at: sd.at } });
     const L = G.create({ sport, draft: D, name: o.name || D.name, season: o.season || "", now: at, start, scoring: D.scoring, settings });
+    // its kickoff locks everyone, even before a page has seen the live feed
+    if (sd && sd.at && L.week === 1) L.kick = { week: 1, teams: Object.fromEntries(sd.teams.map((t) => [t, sd.at])) };
     // started midweek: what every player had done this week before the league began doesn't count
     if (thisWeek && settings.real && o.real && o.real !== true) L.baseline = { start: weekKeyOf(o.real, start), at, lines: JSON.parse(JSON.stringify(linesAt(o.real, start) || {})) };
     return L;

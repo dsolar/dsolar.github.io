@@ -276,3 +276,29 @@ test('game-time locks: a player whose game has started stays put, and a pickup b
   assert.ok(G.addDrop(L, ctx, 0, fa.id, cut.id, now).ok);
   assert.equal(L.joined[fa.id].f, 0);
 });
+
+test('showdown: one game\'s pool, a captain who counts 1.5x and goes to the best player, everyone locked at kickoff', () => {
+  const Z = require('../fantasy-kit/season.js');
+  const data = JSON.parse(readFileSync(new URL('../fantasy-kit/data/nfl.json', import.meta.url), 'utf8'));
+  const sport = S.attach(Object.assign({}, S.nfl), data);
+  const teams = ['BUF', 'MIA'];
+  const players = data.players.filter((p) => teams.includes(p.t)).map((p) => ({ ...p }));
+  V.evaluate(sport, players, { teams: 2, lineup: S.SHOWDOWN.lineup, bench: 0, scoring: 'half' });
+  const now = Date.UTC(2026, 10, 4, 15), at = now + 864e5;
+  const D = F.create({ sport, teams: 2, seed: 9, now, lineup: S.SHOWDOWN.lineup, bench: 0, botDelay: 0, scoring: 'half' });
+  D.teams[0].owner = 'David';
+  F.start(D, now); D.teams[0].auto = true; F.tick(D, F.context(D, players, sport), now + 1);
+  D.season = { format: 'h2h', weeks: 1, when: 'now', oneWeek: true, playoffTeams: 0, deadline: 0, ir: 0, showdown: { id: '401', teams, at, label: 'BUF @ MIA' } };
+  const L = Z.begin(D, sport, { now: now + 2 });
+  const ctx = G.context(L, players, sport);
+  assert.deepEqual(L.settings.pool, teams);
+  assert.ok(L.rosters.flat().every((id) => teams.includes(ctx.byId[id].t)));
+  const lu = G.lineupFor(L, ctx, 0, 1), cap = ctx.byId[lu[0]];
+  assert.equal(L.settings.lineup[0], 'CPT');
+  assert.ok(lu.every((id) => !id || ctx.byId[id].v <= cap.v), 'the captain is the best starter');
+  const tw = G.teamWeek(L, ctx, 0, 1, 1);
+  const plain = G.playerWeek(L, ctx, cap, 1, 1, 1).pts;
+  assert.ok(Math.abs(tw.players[cap.id] - plain * 1.5) < 1e-9, 'the captain scores 1.5x');
+  assert.equal(G.isLocked(L, cap, 1, at - 1), false);
+  assert.equal(G.isLocked(L, cap, 1, at), true, 'kickoff locks everyone');
+});

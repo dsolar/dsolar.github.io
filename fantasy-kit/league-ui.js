@@ -135,7 +135,7 @@
       const vs = `${g.home ? "vs" : "@"} ${esc(g.opp)}`;
       // ESPN's "4:21 3rd" reads better as "Q3 4:21"
       const clock = String(g.detail || "Live").replace(/^(\d+:\d+)\s+(\d)(st|nd|rd|th)$/, (x, c, q) => (sport.key === "nfl" ? `Q${q} ${c}` : `${q}${{ 1: "st", 2: "nd", 3: "rd" }[q] || "th"} ${c}`));
-      if (g.state === "in") return `<span class="gm live"><i aria-hidden="true"></i>${esc(clock)}, ${g.us}-${g.them} ${vs}</span>`;
+      if (g.state === "in") return `<span class="gm live"><i aria-hidden="true"></i>${esc(clock)}${g.us != null ? `, ${g.us}-${g.them}` : ""} ${vs}</span>`;
       if (g.state === "post") return `<span class="gm done">Final, ${g.us > g.them ? "W" : g.us < g.them ? "L" : "T"} ${g.us}-${g.them} ${vs}</span>`;
       return `<span class="gm">${esc(kick(g.at))} ${vs}</span>`;
     }
@@ -646,7 +646,8 @@
       const wk = G.WEEK[sport.key] || { weeks: 20 };
       // this week: what he should finish with (so far plus what's left); next week: his projection for it
       const soFar = (p) => { const v = ptsOf(p.id); return v != null ? v : frac(w) > 0 ? G.playerWeek(L(), ctx, p, w, frac(w)).pts || 0 : 0; };   // bench players too
-      const projOf = (p) => (!pts() ? null : w === curWeek() ? projFor(p, soFar(p), w) : p.v / wk.weeks);
+      // a starter's projection counts his slot's weight too (a showdown captain's 1.5x)
+      const projOf = (p) => { if (!pts()) return null; const m = G.slotMult(L(), lu.indexOf(p.id)); return w === curWeek() ? soFar(p) + (projFor(p, soFar(p), w) - soFar(p)) * m : (p.v / wk.weeks) * m; };
       const ir = L().ir[id] || [], irMax = G.irSlots(L()), alive = G.isAlive(L(), id), taxi = G.taxiOf(L(), id), txMax = G.taxiSlots(L());
       const moving = ui.moving && L().rosters[id].includes(ui.moving) && !G.held(L(), id).includes(ui.moving) ? ctx.byId[ui.moving] : null;
       const movingSlot = moving ? lu.indexOf(moving.id) : -1;
@@ -679,8 +680,9 @@
         const can = mine && !locked && p && !onIR && !onTaxi && !pl(p);
         const tgt = targetFor(p, i);
         const on = fitsSlot(i) ? " on" : "";
-        const slotEl = can ? `<button type="button" class="slot slotbtn${on}" data-move="${moving && p === moving ? "" : esc(p.id)}" title="${moving && p === moving ? "Cancel the move" : `Move ${esc(p.n)}`}">${esc(slotLabel)}</button>`
-          : `<span class="slot${on}${onIR ? " ir" : ""}${pl(p) && !onIR && !onTaxi ? " lk" : ""}"${pl(p) && !onIR && !onTaxi ? ` title="${esc(p.n)}'s game has started: locked until the week ends"` : ""}>${pl(p) && !onIR && !onTaxi ? LOCK : ""}${esc(slotLabel)}</span>`;
+        const cpt = slotLabel === "CPT" ? " cpt" : "";
+        const slotEl = can ? `<button type="button" class="slot slotbtn${on}${cpt}" data-move="${moving && p === moving ? "" : esc(p.id)}" title="${moving && p === moving ? "Cancel the move" : `Move ${esc(p.n)}`}">${esc(slotLabel)}</button>`
+          : `<span class="slot${on}${cpt}${onIR ? " ir" : ""}${pl(p) && !onIR && !onTaxi ? " lk" : ""}"${pl(p) && !onIR && !onTaxi ? ` title="${esc(p.n)}'s game has started: locked until the week ends"` : ""}>${pl(p) && !onIR && !onTaxi ? LOCK : ""}${esc(slotLabel)}</span>`;
         const cls = [moving && p === moving ? "me" : "", tgt ? "tgt" : "", onIR ? "irrow" : ""].filter(Boolean).join(" ");
         // drag and drop: a starter, bench or IR player can be dragged; every slot, the bench and IR take drops
         const drag = mine && alive && !over() && p && !onTaxi && (onIR || !locked) && (onIR || !pl(p)) ? ` data-dg="${esc(p.id)}" data-from="${onIR ? "ir" : i != null ? "s" + i : "bn"}"` : "";
@@ -1015,7 +1017,7 @@
         const pa = la[k] && ctx.byId[la[k]], pb = lb[k] && ctx.byId[lb[k]];
         const xa = pa ? (pts() ? ptsA[pa.id] : weekLine(pa, w)) : null, xb = pb ? (pts() ? ptsB[pb.id] : weekLine(pb, w)) : null;
         const cmp = pts() && xa != null && xb != null;
-        return { slot, a: { p: pa, pts: xa, proj: pts() && pa && !m.final ? projFor(pa, xa, w) : null, w: cmp && xa > xb, game: pa ? gameChip(pa, w) : "" }, b: { p: pb, pts: xb, proj: pts() && pb && !m.final ? projFor(pb, xb, w) : null, w: cmp && xb > xa, game: pb ? gameChip(pb, w) : "" } };
+        return { slot, a: { p: pa, pts: xa, proj: pts() && pa && !m.final ? (xa || 0) + (projFor(pa, xa, w) - (xa || 0)) * G.slotMult(L(), k) : null, w: cmp && xa > xb, game: pa ? gameChip(pa, w) : "" }, b: { p: pb, pts: xb, proj: pts() && pb && !m.final ? (xb || 0) + (projFor(pb, xb, w) - (xb || 0)) * G.slotMult(L(), k) : null, w: cmp && xb > xa, game: pb ? gameChip(pb, w) : "" } };
       });
       // playing, yet to play and done, for each lineup
       const tallyOf = (ids) => { const c = { in: 0, pre: 0, post: 0 }; for (const id of ids) { const p = id && ctx.byId[id], gs = p && gamesOf(p, w); if (!gs) return null; const g = gameNow(gs); if (!g) c.post++; else if (g.state === "in") c.in++; else if (gs.some((x) => x.state === "pre")) c.pre++; else c.post++; } return c; };
@@ -1034,7 +1036,7 @@
       const playsHtml = plays.length ? `<div class="card plays"><div class="mod-h"><h2>Scoring plays</h2><span class="ps">Updates every minute</span></div><ul class="pl-l">${plays.join("")}</ul></div>` : "";
       const weeks = Array.from({ length: curWeek() }, (_, k) => k + 1);
       return `<div class="wrap page">
-        <div class="head"><h1 class="disp">${w > L().settings.weeks ? esc(kindName(m.kind, w)) : `Week ${w} matchup`}</h1>${!pts() ? `<span class="ps">Each starter's line for the week so far.</span>` : ""}</div>
+        <div class="head"><h1 class="disp">${w > L().settings.weeks ? esc(kindName(m.kind, w)) : L().settings.showdown ? `${esc(L().settings.showdown.label)} showdown` : `Week ${w} matchup`}</h1>${!pts() ? `<span class="ps">Each starter's line for the week so far.</span>` : ""}</div>
         <div class="row" style="flex-wrap:wrap"><div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-mweek="${x}" aria-pressed="${x === w}">${weekChip(x)}</button>`).join("")}</div></div>
         <div class="card">${U.versus(versusVM(w, m))}${leftHtml || outlookLine(m)}${medianLine(w, m)}</div>${playsHtml}
         <div class="cols2" style="grid-template-columns:minmax(0,1fr)">${U.vsTable(sport, rows, pts() ? { a: m.sa, b: m.sb } : null, (x) => (x == null ? "-" : typeof x === "string" ? (/^(No games|Didn't play|Yet to play|Playing now|Done this week|No games this week|\d+ games? left)$/.test(x) ? `<span class="ps">${x}</span>` : x) : x.toFixed(1)))}</div>
