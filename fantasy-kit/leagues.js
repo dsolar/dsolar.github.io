@@ -175,12 +175,19 @@
   const FORMATS = { h2h: ["Head to head", "Play one team a week"], h2hcats: ["Head to head, each category", "Every category is its own win or loss"], roto: ["Rotisserie", "Season totals, ranked category by category"],
     allplay: ["All-play", "Your score against every team, every week"], showdown: ["Showdown", "One game: a captain at 1.5x and five flex"], guillotine: ["Guillotine", "The lowest score is cut every week"], vampire: ["Vampire", "One team skips the draft and steals"] };
   const formatOf = () => (form.sd && oneWeek() ? "showdown" : vampOk() && form.vampOn ? "vampire" : form.season);
+  function teamsHint() {
+    const n = form.teams;
+    if (oneWeek()) return n === 2 ? "Just you and one other team, head to head." : `${n / 2} games, everyone plays.`;
+    if (form.season === "guillotine") return `${n - 1} weeks: one team is chopped each week until one is left.`;
+    if (form.season === "roto" || form.season === "allplay") return "Everyone is ranked against everyone, so any number works.";
+    return n % 2 ? `With an odd number, one team has a bye each week.` : "";
+  }
   const formatsFor = (sp) => seasonsFor(sp).map(([k]) => k).concat(sp.key === "nfl" && scoringType(sp) === "points" ? ["vampire"] : [], sp.key === "nfl" && scoringType(sp) === "points" && oneWeek() ? ["showdown"] : []);
   const showdown = () => !!form.sd && oneWeek() && form.sport === "nfl";
   function pickFormat(k) {
     form.vampOn = 0;
     form.sd = k === "showdown" ? 1 : 0;
-    if (k === "showdown") { k = "h2h"; form.when = "now"; form.bestball = 0; form.median = 0; if (![2, 4].includes(form.teams)) form.teams = 2; loadGames(); }
+    if (k === "showdown") { k = "h2h"; form.when = "now"; form.bestball = 0; form.median = 0; if (![2, 4, 6].includes(form.teams)) form.teams = 2; loadGames(); }
     if (k === "vampire") { form.vampOn = 1; form.season = "h2h"; if (!["snake", "linear", "3rr"].includes(form.type)) form.type = "snake"; }
     else form.season = k;
     if (k === "guillotine" || k === "vampire") form.kind = "redraft";
@@ -231,7 +238,7 @@
         <section class="nl-sec nl-ess">
           <div class="nl-name"><label for="n-name">League name</label><input id="n-name" type="text" maxlength="40" required value="${esc(form.name || "")}" placeholder="Name your league" autocomplete="off"></div>
           <div class="g2">${fld("Your name", `<input id="n-me" type="text" maxlength="24" required value="${esc(form.me || "")}" autocomplete="name">`, "", "n-me")}${fld("Your team's name", `<input id="n-team" type="text" maxlength="28" value="${esc(form.team || "")}" placeholder="Optional">`, "", "n-team")}</div>
-          ${fld("Teams", seg("teams", (showdown() ? [2, 4] : (oneWeek() ? [2] : []).concat([4, 6, 8, 10, 12, 14, 16, 20])).map((x) => [x, String(x)]), form.teams, "Teams", { wrap: true, cls: "big" }), oneWeek() && form.teams === 2 ? "Just you and one other team, head to head." : "")}
+          ${fld("Teams", stepper("teams", teamVals(), form.teams, (x) => `${x} teams`, "Teams"), teamsHint())}
           ${fld("Scoring", cards("scoring", presets, form.scoring, "Scoring", presets.length > 4 ? 3 : presets.length))}
           <div class="nl-dr">${fld("Draft", seg("type", Object.keys(F.FORMATS).map((k) => [k, DRAFT_SHORT[k] || F.FORMATS[k]]), form.type, "Draft format", { wrap: true }), esc(DRAFTS[form.type] || ""))}
           ${rlOk() ? toggle("rlOn", "Team roulette", `Each pick, a wheel picks the ${sp.key === "nfl" ? "NFL" : sp.key === "nba" ? "NBA" : "MLB"} team you have to draft from`, form.rlOn,
@@ -419,7 +426,13 @@
     derive();
   }
   // the values the league is made from, worked out from the friendlier controls
+  // Any number of teams from 3 to 20 for a season (an odd count gives one team a bye each week). A one-week league
+  // stays even, since an odd team would sit out the only week, and a showdown's two NFL teams fill at most six rosters.
+  const span = (a, b, step = 1) => Array.from({ length: Math.floor((b - a) / step) + 1 }, (_, i) => a + i * step);
+  const teamVals = () => (showdown() ? [2, 4, 6] : oneWeek() ? span(2, 20, 2) : span(3, 20));
   function derive() {
+    const tv = teamVals();
+    if (!tv.includes(form.teams)) form.teams = tv.reduce((b, v) => (Math.abs(v - form.teams) < Math.abs(b - form.teams) || (Math.abs(v - form.teams) === Math.abs(b - form.teams) && v > b) ? v : b), tv[0]);
     for (const [k, d] of Object.entries(BONUS)) form[k] = form[k + "On"] ? (+form[k + "Amt"] > 0 ? +form[k + "Amt"] : d) : 0;
     form.keepers = form.kind === "dynasty" ? -1 : form.kind === "keeper" ? form.keepN : 0;
     form.vamp = form.vampOn ? form.vampWho || "random" : "off";
