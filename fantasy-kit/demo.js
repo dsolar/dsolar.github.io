@@ -49,7 +49,9 @@
     const FK = window.FK;
     if (weeks && FK.cloud && FK.season && !document.hidden && (!L || L.settings.real)) {
       const lv = await FK.cloud.live(sportKey);
-      if (FK.season.mergeLive(weeks, lv) && app && !U.dialogOpen()) app.refresh();
+      const kicked = L && FK.league.setKicks(L, lv);   // this week's kickoff times, so players lock when their games start
+      if (kicked) save();
+      if ((FK.season.mergeLive(weeks, lv) || kicked) && app && !U.dialogOpen()) app.refresh();
     }
     liveT = setTimeout(livePoll, document.hidden ? 5 * 60e3 : 60e3);
   }

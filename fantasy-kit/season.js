@@ -123,12 +123,20 @@
       const end = G.weekStart(L, L.week + 1);
       bids();
       if (G.isGuillotine(L)) G.tick(L, ctx, G.waiverRunAt(L) + 1);
-      G.botWeek(L, ctx, end - 2 * DAY, F.rng(L.seed + L.week * 13));
+      // simulated weeks have no game times, so bots make their moves late in the week; on real games they did at the start
+      if (!L.settings.real) G.botWeek(L, ctx, end - 2 * DAY, F.rng(L.seed + L.week * 13));
       G.tick(L, ctx, end - DAY);
       L.prevPower = Object.fromEntries(G.power(L, ctx).map((r) => [r.team, r.rank]));
       G.finishWeek(L, ctx, end);
     }
     bids();
+    // real games: bots set up for the week as it starts, before any kickoff, and lineups nobody set are saved as they
+    // stand half an hour before the first game, so nothing shifts once players lock
+    if (L.settings.real && L.week <= G.totalWeeks(L) && now >= G.weekStart(L, L.week) && !(L.botRan && L.botRan[L.week])) {
+      (L.botRan = L.botRan || {})[L.week] = true;
+      G.botWeek(L, ctx, now, F.rng(L.seed + L.week * 13));
+    }
+    G.freezeLineups(L, ctx, now);
     G.tick(L, ctx, now);
     lineupCheck(L, ctx, now);
     return JSON.stringify(L) !== before;

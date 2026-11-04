@@ -119,7 +119,10 @@
     clearTimeout(liveT);
     if (weeks && !document.hidden && (!L || L.settings.real)) {
       const lv = await C.live(info.sport);
-      if (Z.mergeLive(weeks, lv) && app && !U.dialogOpen()) { app.refresh(); }
+      // this week's kickoff times go with the league, so every page and the clock lock players when their games start
+      const kicked = L && canAct() && G.setKicks(L, lv);
+      if (kicked) push();
+      if ((Z.mergeLive(weeks, lv) || kicked) && app && !U.dialogOpen()) { app.refresh(); }
     }
     liveT = setTimeout(livePoll, document.hidden ? 5 * 60e3 : 60e3);
   }

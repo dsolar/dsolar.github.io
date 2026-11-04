@@ -58,6 +58,7 @@
       const at = now() < runAt() ? runAt() : G.waiverRunAt(L(), L().week + 1);
       return `Claims run ${new Date(at).toLocaleString("en-US", { weekday: "long", hour: "numeric", minute: "2-digit" })}.`;
     };
+    const LOCK = `<svg class="lk-i" viewBox="0 0 16 16" width="11" height="11" aria-hidden="true"><rect x="3" y="7" width="10" height="7.5" rx="1.6" fill="currentColor"/><path d="M5.2 7V5.2a2.8 2.8 0 0 1 5.6 0V7" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>`;
     const act = (fn, okMsg) => { const r = fn(); if (r && r.ok === false) { U.toast(r.why, true); return false; } save(); if (okMsg) U.toast(okMsg); if (U.dialogOpen()) setTimeout(render, 0); else render(); return true; };
     // review windows and offer lifetimes read in plain time
     const fmtHours = (h) => (h < 1 ? `${Math.max(1, Math.round(h * 60))} minutes` : h < 48 ? `${Math.round(h)} hour${Math.round(h) === 1 ? "" : "s"}` : `${Math.round(h / 24)} days`);
@@ -650,12 +651,14 @@
       const moving = ui.moving && L().rosters[id].includes(ui.moving) && !G.held(L(), id).includes(ui.moving) ? ctx.byId[ui.moving] : null;
       const movingSlot = moving ? lu.indexOf(moving.id) : -1;
       const locked = G.lineupLocked(L(), w, now()) || bb() || !alive;
-      const fitsSlot = (i) => moving && i != null && S.fits(sport, moving, slots[i]);
+      // a player whose game has started (real leagues): he stays put, in the lineup or on the bench
+      const pl = (p) => !!p && G.isLocked(L(), p, w, now());
+      const fitsSlot = (i) => moving && i != null && S.fits(sport, moving, slots[i]) && !pl(lu[i] && ctx.byId[lu[i]]);
       // where the player being moved can go: an open or filled starting slot he fits, or a bench player who fits his slot
       const targetFor = (p, i) => {
         if (!moving || p === moving) return "";
         if (i != null) return fitsSlot(i) ? `<button class="btn xs go" data-here="${i}">${p ? "Swap" : "Move here"}</button>` : "";
-        return p && movingSlot >= 0 && S.fits(sport, p, slots[movingSlot]) ? `<button class="btn xs go" data-swapb="${esc(p.id)}" data-slot="${movingSlot}">Swap</button>` : "";
+        return p && movingSlot >= 0 && S.fits(sport, p, slots[movingSlot]) && !pl(p) ? `<button class="btn xs go" data-swapb="${esc(p.id)}" data-slot="${movingSlot}">Swap</button>` : "";
       };
       const actsFor = (p, onIR, onTaxi) => {
         if (!p) return "";
@@ -664,21 +667,24 @@
         if (!alive || over()) return "";
         if (onIR) return `<button class="btn xs${G.irEligible(p) ? "" : " go"}" data-activate="${esc(p.id)}">Activate</button>`;
         if (moving) return "";
+        // locked: a starter can't leave the lineup (no IR, no drop); a locked bench player can still be dropped or stashed
+        const lockedIn = pl(p) && lu.includes(p.id);
+        if (lockedIn) return `<span class="lk-tag" title="His game has started. He's locked in until the week ends.">${LOCK}Locked</span>`;
         const irBtn = G.irEligible(p) && ir.length < irMax ? `<button class="btn xs" data-toir="${esc(p.id)}" title="Move to injured reserve">IR</button> ` : "";
         const txBtn = txMax && taxi.length < txMax && !lu.includes(p.id) && G.taxiEligible(L(), ctx, p.id) ? `<button class="btn xs" data-totaxi="${esc(p.id)}" title="Stash him on the taxi squad">Taxi</button> ` : "";
-        return `${irBtn}${txBtn}${!locked ? `<button class="btn xs hide-s" data-move="${esc(p.id)}">Move</button>` : ""} <button class="btn icon drop hide-s" data-drop="${esc(p.id)}" aria-label="Drop ${esc(p.n)}" title="Drop">&minus;</button>`;
+        return `${irBtn}${txBtn}${!locked && !pl(p) ? `<button class="btn xs hide-s" data-move="${esc(p.id)}">Move</button>` : ""} <button class="btn icon drop hide-s" data-drop="${esc(p.id)}" aria-label="Drop ${esc(p.n)}" title="Drop">&minus;</button>`;
       };
       const blocked = new Set(L().settings.trades === false ? [] : G.blockOf(L(), ctx, id));
       const row = (slotLabel, p, i, onIR, onTaxi) => {
-        const can = mine && !locked && p && !onIR && !onTaxi;
+        const can = mine && !locked && p && !onIR && !onTaxi && !pl(p);
         const tgt = targetFor(p, i);
         const on = fitsSlot(i) ? " on" : "";
         const slotEl = can ? `<button type="button" class="slot slotbtn${on}" data-move="${moving && p === moving ? "" : esc(p.id)}" title="${moving && p === moving ? "Cancel the move" : `Move ${esc(p.n)}`}">${esc(slotLabel)}</button>`
-          : `<span class="slot${on}${onIR ? " ir" : ""}">${esc(slotLabel)}</span>`;
+          : `<span class="slot${on}${onIR ? " ir" : ""}${pl(p) && !onIR && !onTaxi ? " lk" : ""}"${pl(p) && !onIR && !onTaxi ? ` title="${esc(p.n)}'s game has started: locked until the week ends"` : ""}>${pl(p) && !onIR && !onTaxi ? LOCK : ""}${esc(slotLabel)}</span>`;
         const cls = [moving && p === moving ? "me" : "", tgt ? "tgt" : "", onIR ? "irrow" : ""].filter(Boolean).join(" ");
         // drag and drop: a starter, bench or IR player can be dragged; every slot, the bench and IR take drops
-        const drag = mine && alive && !over() && p && !onTaxi && (onIR || !locked) ? ` data-dg="${esc(p.id)}" data-from="${onIR ? "ir" : i != null ? "s" + i : "bn"}"` : "";
-        const zone = i != null ? ` data-dz="s${i}"` : onIR ? ` data-dz="ir"` : onTaxi ? "" : ` data-dz="bn"${p ? ` data-dzp="${esc(p.id)}"` : ""}`;
+        const drag = mine && alive && !over() && p && !onTaxi && (onIR || !locked) && (onIR || !pl(p)) ? ` data-dg="${esc(p.id)}" data-from="${onIR ? "ir" : i != null ? "s" + i : "bn"}"` : "";
+        const zone = i != null ? (pl(p) ? "" : ` data-dz="s${i}"`) : onIR ? ` data-dz="ir"` : onTaxi ? "" : ` data-dz="bn"${p && !pl(p) ? ` data-dzp="${esc(p.id)}"` : ""}`;
         return `<tr class="${cls}"${drag}${zone}><td class="c" style="width:70px">${drag ? `<span class="grip" aria-hidden="true"></span>` : ""}${slotEl}</td><td class="nm">${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, `${esc(p.prank)}${onIR && !G.irEligible(p) ? `, <span class="win">healthy</span>` : ""}${blocked.has(p.id) ? `, <span class="blk-tag">on the block</span>` : ""}`)}</span>${!onIR && !onTaxi && w === curWeek() && gameChip(p, w) ? `<div class="gmr">${gameChip(p, w)}</div>` : ""}` : `<span class="ps">${onIR ? "Open for a player who's out or on IR" : onTaxi ? "Open for a rookie" : "Empty"}</span>`}</td>
           <td class="r num hide-s">${p ? `<span class="ps">#${p.rank}</span>` : ""}</td><td class="r num">${p && pts() && !onIR && !onTaxi ? `<b>${fmtS(ptsOf(p.id))}</b><small class="ps only-s">proj ${fmtS(projOf(p))}</small>` : p && !onIR && !onTaxi ? `<b>${p.v.toFixed(1)}</b>` : ""}</td><td class="r num hide-s">${p && pts() && !onIR && !onTaxi ? fmtS(projOf(p)) : ""}</td>
           <td class="r act">${tgt || actsFor(p, onIR, onTaxi)}</td></tr>`;
@@ -700,7 +706,7 @@
         ${claims.length ? `<div class="card"><div class="mod-h"><h2>Pending waiver claims</h2><span class="ps">${esc(claimsRun())}</span><a href="#players/claims">All claims</a></div>${claimList(claims)}</div>` : ""}
         <div class="table-wrap"><table class="t roster"><thead><tr><th class="c">Slot</th><th>Player</th><th class="r hide-s">Rank</th><th class="r">${pts() ? "Pts" : "Value"}</th><th class="r hide-s">${pts() ? "Proj" : ""}</th><th class="act"></th></tr></thead><tbody>
           <tr class="sec"><td colspan="6">Starters</td></tr>${starters}<tr class="sec" data-dz="bn"><td colspan="6">Bench</td></tr>${bench}${irMax ? `<tr class="sec" data-dz="ir"><td colspan="6">Injured reserve, ${ir.length} of ${irMax}</td></tr>${irRows}` : ""}${txMax ? `<tr class="sec"><td colspan="6">Taxi squad, ${taxi.length} of ${txMax}</td></tr>${txRows}` : ""}</tbody></table></div>
-        ${mine ? `<p class="ps">${bb() ? "Best ball: there's no lineup to set. Each week your best possible lineup scores, picked from what your players actually did." : !alive ? "" : locked ? "This week is locked." : w === L().week && frac(w) > 0 ? `Drag a player onto a slot, or tap a slot, to move him. Week ${w} is under way; in this demo a change counts for the whole week. Starters left empty score nothing.` : `Drag a player onto a slot, or tap a slot, to move him. Week ${w} lineups lock when it starts, and starters left empty score nothing.`}${irMax && alive ? " Drag a player who's out onto injured reserve to open a spot; IR spots don't count against your roster." : ""}${txMax && alive ? " Neither do taxi spots: stash rookies there, and promote one when he's ready to play. A promotion is for good." : ""}</p>` : ""}</div>`;
+        ${mine ? `<p class="ps">${bb() ? "Best ball: there's no lineup to set. Each week your best possible lineup scores, picked from what your players actually did." : !alive ? "" : locked ? "This week is locked." : w === L().week && frac(w) > 0 ? `Drag a player onto a slot, or tap a slot, to move him. ${L().kick ? (sport.key === "nfl" ? "Players lock when their game kicks off." : "Players lock for the week when their team's first game starts.") : `Week ${w} is under way; in this demo a change counts for the whole week.`} Starters left empty score nothing.` : `Drag a player onto a slot, or tap a slot, to move him. ${L().settings.real ? (sport.key === "nfl" ? "Each player locks when his game kicks off" : "Each player locks for the week when his team's first game starts") : `Week ${w} lineups lock when it starts`}, and starters left empty score nothing.`}${irMax && alive ? " Drag a player who's out onto injured reserve to open a spot; IR spots don't count against your roster." : ""}${txMax && alive ? " Neither do taxi spots: stash rookies there, and promote one when he's ready to play. A promotion is for good." : ""}</p>` : ""}</div>`;
     }
     // Pending claims with their bids, each one cancellable.
     function claimList(list) {
@@ -1407,7 +1413,7 @@
         else if (d.trade !== undefined && b.hasAttribute("data-trade")) openTrade(d.trade === "" ? null : +d.trade, d.want || null);
         else if (d.move !== undefined && b.hasAttribute("data-move")) { ui.moving = d.move || null; render(); }
         else if (d.here !== undefined && b.hasAttribute("data-here")) { const w = ui.week && ui.week >= L().week ? ui.week : curWeek(); const pid = ui.moving; ui.moving = null; act(() => G.move(L(), ctx, mid, w, pid, d.here === "BN" ? "BN" : +d.here, now())); }
-        else if (b.hasAttribute("data-optimize")) { const w = ui.week && ui.week >= L().week ? ui.week : curWeek(); delete (L().lineups[w] || {})[mid]; act(() => G.setLineup(L(), ctx, mid, w, G.lineupFor(L(), ctx, mid, w), now()), "Best lineup set."); }
+        else if (b.hasAttribute("data-optimize")) { const w = ui.week && ui.week >= L().week ? ui.week : curWeek(); act(() => G.setLineup(L(), ctx, mid, w, G.bestLineup(L(), ctx, mid, w, now()), now()), "Best lineup set."); }
         else if (d.week) { ui.week = +d.week; render(); }
         else if (d.watch) { const w = watch(); const i = w.indexOf(d.watch); if (i >= 0) w.splice(i, 1); else w.push(d.watch); save(); render(); }
         else if (d.unclaim) act(() => G.cancelClaim(L(), +d.unclaim), "Claim cancelled.");

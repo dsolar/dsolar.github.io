@@ -119,7 +119,73 @@
   // How far into the current week `now` is, 0 to 1.
   const weekFrac = (L, now) => Math.max(0, Math.min(1, (now - weekStart(L, L.week)) / (7 * DAY)));
   // A player who joins a team mid-week only scores the rest of that week for it.
-  function joined(L, teamId, pid, now) { (L.joined = L.joined || {})[pid] = { team: teamId, week: L.week, f: weekFrac(L, now) }; }
+  // With game-time locks he can only start for it before his first game, so a pickup made before then counts his
+  // whole week, not the share of the week that was left.
+  function joined(L, teamId, pid, now, ctx) { const k = ctx ? kickOf(L, ctx.byId[pid]) : undefined; (L.joined = L.joined || {})[pid] = { team: teamId, week: L.week, f: k != null && k > now ? 0 : weekFrac(L, now) }; }
+
+  /* ---------- game-time locks ---------- */
+  // In a league on real games a player locks when his pro team's first game of the week starts: until the week is over
+  // he can't move into or out of a lineup, and can't leave the roster from one (dropped, traded, put on IR). Football
+  // teams play once a week, so that's his game; basketball and baseball lock for the week at the first game, the way
+  // weekly-lineup leagues do. That keeps whole-week box scores exact: nobody starts a player after his game.
+  // L.kick, from the live feed's schedule and saved with the league so the clock and every page agree:
+  // { week, teams: { pro team: first kickoff ms } }. Without it (a simulated league), nothing locks.
+  function setKicks(L, live) {
+    if (!L.settings.real || !live || !live.games || !live.start || L.week > totalWeeks(L)) return false;
+    if (Math.abs(Date.parse(live.start + "T12:00:00Z") - weekStart(L, L.week)) >= 2.5 * DAY) return false;
+    const teams = {};
+    for (const [t, gs] of Object.entries(live.games)) {
+      // a game the feed shows under way or over has started, whatever its listed time says
+      // (and keeps the earliest time it was seen started, so a lock never moves later)
+      const seen = Date.parse(live.updated) || null, was = L.kick && L.kick.week === L.week ? L.kick.teams[t] : undefined;
+      const started = (gs || []).some((g) => g.state && g.state !== "pre");
+      let at = Math.min(...(gs || []).map((g) => Date.parse(g.at)).filter(Number.isFinite));
+      if (started && seen) at = Math.min(Number.isFinite(at) ? at : seen, seen, was != null ? was : Infinity);
+      if (Number.isFinite(at)) teams[t] = at;
+    }
+    if (!Object.keys(teams).length) return false;
+    const k = { week: L.week, teams };
+    if (L.kick && JSON.stringify(L.kick) === JSON.stringify(k)) return false;
+    L.kick = k;
+    return true;
+  }
+  const kickOf = (L, p) => (L.kick && L.kick.week === L.week && p && p.t && L.kick.teams[p.t] != null ? L.kick.teams[p.t] : undefined);
+  const isLocked = (L, p, w, now) => w === L.week && now != null && kickOf(L, p) != null && now >= kickOf(L, p);
+  const firstKick = (L) => (L.kick && L.kick.week === L.week ? Math.min(...Object.values(L.kick.teams)) : null);
+  // a locked player in a team's lineup this week: he can't leave it
+  const lockedStarter = (L, ctx, teamId, pid, now) => isLocked(L, ctx.byId[pid], L.week, now) && lineupFor(L, ctx, teamId, L.week).includes(pid);
+  const lockWhy = (p) => `${p.n}'s game has started, so he's locked in until the week ends`;
+  // Lineups nobody set (bots, and anyone who never changed theirs) are filled in automatically, which would let them
+  // shift after games start. Half an hour before the week's first game, each one is saved as it stands.
+  function freezeLineups(L, ctx, now) {
+    const at = firstKick(L), w = L.week;
+    if (at == null || now < at - 30 * 60e3 || L.settings.bestBall || w > totalWeeks(L)) return false;
+    let any = false;
+    for (const t of L.teams) {
+      if (!isAlive(L, t.id) || (L.lineups[w] && L.lineups[w][t.id])) continue;
+      (L.lineups[w] = L.lineups[w] || {})[t.id] = lineupFor(L, ctx, t.id, w).slice();
+      any = true;
+    }
+    return any;
+  }
+  // "Start my best lineup" around the locked players: they stay where they are, the rest fill the open slots.
+  function bestLineup(L, ctx, teamId, w, now) {
+    const cur = lineupFor(L, ctx, teamId, w).slice(), slots = L.settings.lineup;
+    const fixed = cur.map((id) => !!id && isLocked(L, ctx.byId[id], w, now));
+    const pool = healthy(L, ctx, teamId).filter((p) => !isLocked(L, p, w, now) && !cur.some((id, i) => fixed[i] && id === p.id));
+    const open = slots.map((s, i) => i).filter((i) => !fixed[i]);
+    const got = F.assign(ctx.sport, pool, open.map((i) => slots[i]));
+    const out = cur.map((id, i) => (fixed[i] ? id : null));
+    open.forEach((i, k) => { out[i] = got[k] ? got[k].id : null; });
+    // a slot with no healthy player left: a hurt one who fits beats an empty one
+    const used = new Set(out.filter(Boolean));
+    for (const i of open) {
+      if (out[i]) continue;
+      const q = L.rosters[teamId].map((id) => ctx.byId[id]).filter((p) => p && !used.has(p.id) && !held(L, teamId).includes(p.id) && !isLocked(L, p, w, now) && S.fits(ctx.sport, p, slots[i])).sort((a, b) => (b.v || 0) - (a.v || 0))[0];
+      if (q) { out[i] = q.id; used.add(q.id); }
+    }
+    return out;
+  }
   function effFrac(L, teamId, pid, w, frac) {
     const j = L.joined && L.joined[pid];
     const gone = L.left && L.left[w] && L.left[w][teamId] && L.left[w][teamId][pid];
@@ -163,6 +229,17 @@
       if (!ros.includes(id)) return { ok: false, why: `${p ? p.n : id} isn't on your roster` };
       if (taxiOf(L, teamId).includes(id)) return { ok: false, why: `${p.n} is on the taxi squad: promote him first` };
       if (!S.fits(ctx.sport, p, L.settings.lineup[i])) return { ok: false, why: `${p.n} can't play ${L.settings.lineup[i]}` };
+    }
+    // a player whose game has started stays where he is, in the lineup or out of it
+    if (now != null && L.kick) {
+      const cur = lineupFor(L, ctx, teamId, w);
+      for (let i = 0; i < L.settings.lineup.length; i++) {
+        const was = cur[i] || null, will = slots[i] || null;
+        if (was === will) continue;
+        if (was && isLocked(L, ctx.byId[was], w, now) && !slots.includes(was)) return { ok: false, why: lockWhy(ctx.byId[was]) };
+        if (was && isLocked(L, ctx.byId[was], w, now)) return { ok: false, why: `${ctx.byId[was].n}'s game has started, so he stays in his spot` };
+        if (will && isLocked(L, ctx.byId[will], w, now)) return { ok: false, why: `${ctx.byId[will].n}'s game has started, so he can't move into the lineup` };
+      }
     }
     (L.lineups[w] = L.lineups[w] || {})[teamId] = L.settings.lineup.map((_, i) => slots[i] || null);
     return { ok: true };
@@ -639,7 +716,7 @@
     L.rosters[v] = L.rosters[v].filter((x) => x !== give).concat(take);
     for (const t of [b.victim, v]) { L.ir[t] = (L.ir[t] || []).filter((x) => x !== take && x !== give); if (L.taxi && L.taxi[t]) L.taxi[t] = L.taxi[t].filter((x) => x !== take && x !== give); }
     for (const w of Object.keys(L.lineups)) if (+w >= L.week) for (const t of [b.victim, v]) { const lu = L.lineups[w][t]; if (lu) L.lineups[w][t] = lu.map((x) => (x === take || x === give ? null : x)); }
-    joined(L, v, take, now); if (give) joined(L, b.victim, give, now);
+    joined(L, v, take, now, ctx); if (give) joined(L, b.victim, give, now, ctx);
     Object.assign(b, { status: "done", take, give: give || null, done: now, auto: !!auto });
     log(L, now, { type: "bite", team: v, other: b.victim, adds: [take], drops: give ? [give] : [], text: `${ctx.byId[take].n} taken from ${L.teams[b.victim].name}${give ? `, ${ctx.byId[give].n} given back` : ""}${auto ? " (made for the vampire)" : ""}` });
     refresh(L, ctx);
@@ -1046,7 +1123,7 @@
     if (to != null && !L.teams[to]) return { ok: false, why: "No such team" };
     if (from >= 0) dropOne(L, from, pid, now);
     delete L.waivers[pid];
-    if (to != null) { L.rosters[to].push(pid); joined(L, to, pid, now); }
+    if (to != null) { L.rosters[to].push(pid); joined(L, to, pid, now, ctx); }
     log(L, now, { type: "commish", team: to != null ? to : from, adds: to != null ? [pid] : [], drops: to == null ? [pid] : [], text: `${ctx.byId[pid].n} moved ${from >= 0 ? `from ${L.teams[from].name} ` : ""}${to != null ? `to ${L.teams[to].name}` : "to free agency"} by the commissioner` });
     refresh(L, ctx);
     return { ok: true };
@@ -1181,10 +1258,11 @@
     if (add && ctx.own[add] != null) return { ok: false, why: `${ctx.byId[add].n} is on a roster` };
     if (add && onWaivers(L, add, now)) return { ok: false, why: `${ctx.byId[add].n} is on waivers: put in a claim` };
     if (drop && !L.rosters[teamId].includes(drop)) return { ok: false, why: "That player isn't on your roster" };
+    if (drop && lockedStarter(L, ctx, teamId, drop, now)) return { ok: false, why: lockWhy(ctx.byId[drop]) };
     const ok = canRoster(L, ctx, teamId, add, drop ? [drop] : [], true);
     if (!ok.ok) return ok;
     if (drop) { bank(L, ctx, teamId, drop, now); dropOne(L, teamId, drop, now); }
-    if (add) { L.rosters[teamId].push(add); delete L.waivers[add]; joined(L, teamId, add, now); }
+    if (add) { L.rosters[teamId].push(add); delete L.waivers[add]; joined(L, teamId, add, now, ctx); }
     log(L, now, { type: add && drop ? "add/drop" : add ? "add" : "drop", team: teamId, adds: add ? [add] : [], drops: drop ? [drop] : [] });
     refresh(L, ctx);
     return { ok: true };
@@ -1193,6 +1271,7 @@
     if (ctx.own[add] != null) return { ok: false, why: `${ctx.byId[add].n} is on a roster` };
     bid = Math.max(L.settings.minBid, Math.round(bid || 0));
     if (L.settings.waivers === "faab" && bid > L.teams[teamId].faab) return { ok: false, why: `You have $${L.teams[teamId].faab} of FAAB` };
+    if (drop && lockedStarter(L, ctx, teamId, drop, now)) return { ok: false, why: lockWhy(ctx.byId[drop]) };
     const ok = canRoster(L, ctx, teamId, add, drop ? [drop] : [], true);
     if (!ok.ok) return ok;
     // changing a claim keeps its place in your claim order
@@ -1228,10 +1307,11 @@
       const why = ctx.own[c.add] != null ? `${(ctx.byId[c.add] || {}).n || "He"} was already taken`
         : L.settings.waivers === "faab" && c.bid > t.faab ? `Only $${t.faab} left by then`
         : c.drop && !L.rosters[c.team].includes(c.drop) ? `${(ctx.byId[c.drop] || {}).n || "Your drop"} was already gone`
+        : c.drop && lockedStarter(L, ctx, c.team, c.drop, now) ? `${(ctx.byId[c.drop] || {}).n || "Your drop"} was locked in your lineup`
         : !canRoster(L, ctx, c.team, c.add, c.drop ? [c.drop] : [], true).ok ? canRoster(L, ctx, c.team, c.add, c.drop ? [c.drop] : [], true).why.replace("Roster is full: pick someone to drop", "No roster spot open") : null;
       if (why) { c.status = "failed"; c.why = why; continue; }
       if (c.drop) { bank(L, ctx, c.team, c.drop, now); dropOne(L, c.team, c.drop, now); }
-      L.rosters[c.team].push(c.add); delete L.waivers[c.add]; joined(L, c.team, c.add, now);
+      L.rosters[c.team].push(c.add); delete L.waivers[c.add]; joined(L, c.team, c.add, now, ctx);
       if (L.settings.waivers === "faab") t.faab -= c.bid;
       c.status = "won";
       for (const x of rivals) if (x !== c) { x.status = "lost"; x.lostTo = c.team; x.done = now; x.week = L.week; }
@@ -1266,6 +1346,7 @@
     if (!irSlots(L)) return { ok: false, why: "This league has no IR spots" };
     if (ir.length >= irSlots(L)) return { ok: false, why: `Your IR ${irSlots(L) === 1 ? "spot is" : "spots are"} full` };
     if (!irEligible(p)) return { ok: false, why: `${p.n} isn't out or on IR, so he can't go there` };
+    if (lockedStarter(L, ctx, teamId, pid, now)) return { ok: false, why: lockWhy(p) };
     bank(L, ctx, teamId, pid, now);
     ir.push(pid);
     for (const w of Object.keys(L.lineups)) if (+w >= L.week && L.lineups[w][teamId]) L.lineups[w][teamId] = L.lineups[w][teamId].map((x) => (x === pid ? null : x));
@@ -1281,8 +1362,9 @@
     const active = L.rosters[teamId].length - ir.length;
     if (active + 1 > maxRoster(L) && !drop) return { ok: false, why: "Your roster is full: drop someone to activate him", needDrop: true };
     if (drop && (drop === pid || !L.rosters[teamId].includes(drop))) return { ok: false, why: "Pick someone on your roster to drop" };
+    if (drop && lockedStarter(L, ctx, teamId, drop, now)) return { ok: false, why: lockWhy(ctx.byId[drop]) };
     L.ir[teamId] = ir.filter((x) => x !== pid);
-    joined(L, teamId, pid, now);
+    joined(L, teamId, pid, now, ctx);
     if (drop) { bank(L, ctx, teamId, drop, now); dropOne(L, teamId, drop, now); log(L, now, { type: "drop", team: teamId, adds: [], drops: [drop] }); }
     log(L, now, { type: "ir", team: teamId, adds: [], drops: [], text: `${p.n} back from IR` });
     refresh(L, ctx);
@@ -1325,7 +1407,7 @@
     if (drop && (drop === pid || !L.rosters[teamId].includes(drop) || held(L, teamId).includes(drop))) return { ok: false, why: "Pick someone on your active roster to drop" };
     L.taxi[teamId] = tx.filter((x) => x !== pid);
     (L.promoted = L.promoted || {})[pid] = true;
-    joined(L, teamId, pid, now);
+    joined(L, teamId, pid, now, ctx);
     if (drop) { bank(L, ctx, teamId, drop, now); dropOne(L, teamId, drop, now); log(L, now, { type: "drop", team: teamId, adds: [], drops: [drop] }); }
     log(L, now, { type: "taxi", team: teamId, adds: [], drops: [], text: `${p.n} promoted from the taxi squad` });
     refresh(L, ctx);
@@ -1409,7 +1491,7 @@
   const ordinal = (k) => k + (k % 100 >= 11 && k % 100 <= 13 ? "th" : { 1: "st", 2: "nd", 3: "rd" }[k % 10] || "th");
   const pValue = (ctx, id) => Math.max(1, (ctx.byId[id] && ctx.byId[id].$) || 0) + Math.max(0, (ctx.byId[id] && ctx.byId[id].vor) || 0) * 0.01;
   const sideValue = (ctx, ids, faab = 0) => sum(ids.map((id) => pValue(ctx, id))) + faab * 0.1;
-  function tradeCheck(L, ctx, t) {
+  function tradeCheck(L, ctx, t, now) {
     if (L.settings.trades === false) return { ok: false, why: "This league has no trades" };
     if (!isAlive(L, t.from) || !isAlive(L, t.to)) return { ok: false, why: "That team has been chopped" };
     if (t.from === t.to) return { ok: false, why: "Pick another team" };
@@ -1424,6 +1506,7 @@
     const busy = new Set(L.trades.filter((x) => x.status === "review" && x.id !== t.id).flatMap((x) => x.give.concat(x.get)));
     for (const id of t.give.concat(t.get)) if (busy.has(id)) return { ok: false, why: `${ctx.byId[id].n} is already in a trade the league is reviewing` };
     for (const id of t.give) if (!L.rosters[t.from].includes(id)) return { ok: false, why: `${ctx.byId[id].n} isn't on ${L.teams[t.from].name}` };
+    if (now != null) for (const [team, ids] of [[t.from, t.give], [t.to, t.get]]) for (const id of ids) if (lockedStarter(L, ctx, team, id, now)) return { ok: false, why: `${lockWhy(ctx.byId[id])}. Try again after the week` };
     for (const id of t.get) if (!L.rosters[t.to].includes(id)) return { ok: false, why: `${ctx.byId[id].n} isn't on ${L.teams[t.to].name}` };
     if ((t.faabGive || 0) > L.teams[t.from].faab || (t.faabGet || 0) > L.teams[t.to].faab) return { ok: false, why: "Not enough FAAB" };
     const after = (team, out, inn, drops) => L.rosters[team].length - out.length + inn.length - drops.length;
@@ -1436,7 +1519,7 @@
   }
   function propose(L, ctx, from, to, give, get, now, extra = {}) {
     const t = { id: L.nextId++, from, to, give: give.slice(), get: get.slice(), pickGive: (extra.pickGive || []).slice(), pickGet: (extra.pickGet || []).slice(), faabGive: extra.faabGive || 0, faabGet: extra.faabGet || 0, dropsFrom: extra.dropsFrom || [], dropsTo: [], note: extra.note || "", at: now, status: "pending", counterOf: extra.counterOf || null };
-    const c = tradeCheck(L, ctx, t);
+    const c = tradeCheck(L, ctx, t, now);
     if (!c.ok) return c;
     if (t.counterOf) { const o = L.trades.find((x) => x.id === t.counterOf); if (o && o.status === "pending") { o.status = "countered"; o.done = now; } }
     L.trades.push(t);
@@ -1446,7 +1529,7 @@
     const t = L.trades.find((x) => x.id === id);
     if (!t || t.status !== "pending") return { ok: false, why: "That offer is no longer open" };
     if (!accept) { t.status = "rejected"; t.done = now; t.why = why || ""; return { ok: true }; }
-    const c = tradeCheck(L, ctx, t);
+    const c = tradeCheck(L, ctx, t, now);
     if (!c.ok) return c;
     if (L.settings.tradeReview === "none") return execute(L, ctx, t, now);
     t.status = "review"; t.accepted = now; t.reviewEnds = now + L.settings.reviewHours * HOUR; t.votes = {};
@@ -1477,7 +1560,7 @@
     return n;
   }
   function execute(L, ctx, t, now) {
-    const c = tradeCheck(L, ctx, t);
+    const c = tradeCheck(L, ctx, t, now);
     if (!c.ok) return c;
     for (const id of t.give) bank(L, ctx, t.from, id, now);
     for (const id of t.get) bank(L, ctx, t.to, id, now);
@@ -1491,8 +1574,8 @@
     // the players who left come out of the set lineups; everyone else stays where the manager put them
     const moved = new Set(t.give.concat(t.get));
     for (const w of Object.keys(L.lineups)) if (+w >= L.week) for (const team of [t.from, t.to]) { const lu = L.lineups[w][team]; if (lu) L.lineups[w][team] = lu.map((x) => (moved.has(x) ? null : x)); }
-    for (const id of t.get) joined(L, t.from, id, now);
-    for (const id of t.give) joined(L, t.to, id, now);
+    for (const id of t.get) joined(L, t.from, id, now, ctx);
+    for (const id of t.give) joined(L, t.to, id, now, ctx);
     L.teams[t.from].faab += (t.faabGet || 0) - (t.faabGive || 0);
     L.teams[t.to].faab += (t.faabGive || 0) - (t.faabGet || 0);
     if ((t.pickGive || []).length || (t.pickGet || []).length) {
@@ -1646,7 +1729,7 @@
   }
 
   return { realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
-    finishWeek, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
+    finishWeek, setKicks, isLocked, freezeLineups, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
 });

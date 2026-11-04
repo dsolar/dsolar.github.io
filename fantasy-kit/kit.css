@@ -1231,3 +1231,8 @@ tr.sec.dz-ok>td{color:var(--ink)}
 .show-xs{display:none}
 @media (max-width:380px){.hide-xs{display:none}.show-xs{display:inline}}
 .su .nl-when{margin-top:16px}
+
+/* game-time locks: a lock on the slot of a player whose game has started */
+.slot.lk{display:inline-flex;align-items:center;gap:3px;background:var(--surface-3);color:var(--ink)}
+.lk-i{flex:none;opacity:.75}
+.lk-tag{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:750;color:var(--muted);white-space:nowrap}

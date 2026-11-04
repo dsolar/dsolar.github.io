@@ -246,3 +246,33 @@ test('one-week league this week: starts in the week that is on, and only what co
   D.season.when = 'now';
   assert.equal(Z.begin(D, sport, { now: mon + 7 * 864e5 - 3 * 3600e3, real: W }).start, mon + 7 * 864e5);
 });
+
+test('game-time locks: a player whose game has started stays put, and a pickup before his game counts his whole week', () => {
+  const s = season('nfl', { scoring: 'half' });
+  const L = s.L, ctx = s.ctx;
+  L.settings.real = true;
+  const now = G.weekStart(L, 1) + 3 * 864e5;   // Friday
+  const lu = G.lineupFor(L, ctx, 0, 1), starter = ctx.byId[lu[0]];
+  const bench = L.rosters[0].map((id) => ctx.byId[id]).find((p) => !lu.includes(p.id) && p.t !== starter.t);
+  // the live feed's schedule: the starter's team has played, everyone else kicks off Sunday
+  const teams = {}; for (const p of s.players) if (p.t) teams[p.t] = now + 2 * 864e5;
+  teams[starter.t] = now - 864e5;
+  assert.ok(G.setKicks(L, { start: new Date(G.weekStart(L, 1)).toISOString().slice(0, 10), games: Object.fromEntries(Object.entries(teams).map(([t, at]) => [t, [{ at: new Date(at).toISOString(), state: at < now ? 'post' : 'pre' }]])) }));
+  assert.equal(G.isLocked(L, starter, 1, now), true);
+  assert.equal(G.isLocked(L, bench, 1, now), false);
+  assert.equal(G.move(L, ctx, 0, 1, starter.id, 'BN', now).ok, false, 'a locked starter cannot be benched');
+  const slot = L.settings.lineup.indexOf(L.settings.lineup.find((x, i) => i !== 0 && S.fits(ctx.sport, bench, x)));
+  if (slot >= 0) assert.equal(G.move(L, ctx, 0, 1, bench.id, slot, now).ok, true, 'an unlocked bench player can move in');
+  assert.equal(G.addDrop(L, ctx, 0, null, starter.id, now).ok, false, 'a locked starter cannot be dropped');
+  // the best lineup keeps the locked starter where he is
+  assert.equal(G.bestLineup(L, ctx, 0, 1, now)[0], starter.id);
+  // lineups nobody saved are saved half an hour before the first game
+  delete (L.lineups[1] || {})[3];
+  assert.ok(G.freezeLineups(L, ctx, now));
+  assert.ok(L.lineups[1][3], 'a bot lineup is saved once games start');
+  // a free agent picked up before his game counts all of it
+  const fa = ctx.free.find((p) => p.t && p.t !== starter.t && !G.onWaivers(L, p.id, now));
+  const cut = L.rosters[0].map((id) => ctx.byId[id]).find((p) => !G.lineupFor(L, ctx, 0, 1).includes(p.id) && p.id !== bench.id);
+  assert.ok(G.addDrop(L, ctx, 0, fa.id, cut.id, now).ok);
+  assert.equal(L.joined[fa.id].f, 0);
+});
