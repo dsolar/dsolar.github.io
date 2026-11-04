@@ -264,6 +264,8 @@ def waiver_pool(data, week, now, nxt, lines, path=HIST):
             tx = bids.get((norm(r["n"]), r["pos"])) or bids.get((norm(r["n"]), None))
             if tx and (not who or norm(tx.get("team", "")) == norm(who)):
                 q["bid"] = tx["bid"]
+                if tx.get("date"):  # the waiver run's date, Eastern, like the pasted page's
+                    q["run"] = datetime.fromisoformat(tx["date"].replace("Z", "+00:00")).astimezone(ZoneInfo("America/New_York")).strftime("%Y-%m-%d")
         players.append(q)
     players.sort(key=lambda q: -(q.get("proj") or 0) - (q.get("next_proj") or 0))
     pool = {"team": cut["name"], "week": week - 1, "players": players}

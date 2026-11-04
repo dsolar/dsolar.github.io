@@ -1302,8 +1302,16 @@ th.line{border-left:1px solid var(--rule)}
       none.hidden = false;
     } else none.hidden = true;
 
-    // The whole run: every claim on that date, the cut team's players and everyone else's
+    // The whole run: every claim on that date, the cut team's players and everyone else's. The pasted
+    // Transactions page has every bid; without it, Yahoo's own feed (data.transactions) has the winners.
+    var etDay = function (iso) { return iso ? new Date(iso).toLocaleDateString("en-CA", { timeZone: "America/New_York" }) : ""; };
     var offers = (state.data.offers || []).filter(function (o) { return run && o.run === run; });
+    var winnersOnly = false;
+    if (!offers.length && run) {
+      offers = (state.data.transactions || []).filter(function (t) { return t.from === "waivers" && etDay(t.date) === run; })
+        .map(function (t) { return { player: t.player, team: t.team, bid: t.bid, run: run, bids: [] }; });
+      winnersOnly = offers.length > 0;
+    }
     var spend = $("claims-spend"), other = $("claims-other");
     if (offers.length) {
       var by = {};
@@ -1318,13 +1326,13 @@ th.line{border-left:1px solid var(--rule)}
       });
       var rows = Object.keys(by).sort(function (a, b) { return by[b].won - by[a].won || by[b].lost - by[a].lost; });
       spend.innerHTML = '<div class="spend"><h4>The ' + runLabel(run) + " run, team by team</h4><div class=\"scroll\" style=\"border:0;background:none\"><table>" +
-        "<thead><tr><th>Team</th><th>Spent</th><th>Bids that missed</th><th>Left</th></tr></thead><tbody>" +
+        "<thead><tr><th>Team</th><th>Spent</th>" + (winnersOnly ? "" : "<th>Bids that missed</th>") + "<th>Left</th></tr></thead><tbody>" +
         rows.map(function (t) {
           var r = by[t];
           r.misses.sort(function (a, b) { return b.bid - a.bid; });
           var miss = r.misses.filter(function (x) { return x.bid > 0; });
           return "<tr><td>" + (mg(t) ? "<b>" + esc(mg(t)) + "</b><small>" + esc(t) + "</small>" : esc(t)) + "</td><td>" + (r.n ? money(r.won) + "<small>" + r.n + " player" + (r.n > 1 ? "s" : "") + "</small>" : "–") + "</td>" +
-            "<td>" + (miss.length ? money(r.lost) + "<small>" + miss.slice(0, 2).map(function (x) { return esc(x.n) + " $" + x.bid; }).join(", ") + (miss.length > 2 ? ", +" + (miss.length - 2) : "") + "</small>" : "–") + "</td>" +
+            (winnersOnly ? "" : "<td>" + (miss.length ? money(r.lost) + "<small>" + miss.slice(0, 2).map(function (x) { return esc(x.n) + " $" + x.bid; }).join(", ") + (miss.length > 2 ? ", +" + (miss.length - 2) : "") + "</small>" : "–") + "</td>") +
             "<td>" + (typeof r.faab === "number" ? money(r.faab) : "") + "</td></tr>";
         }).join("") + "</tbody></table></div></div>";
       // Claims in the same run that weren't the cut team's: earlier cuts' leftovers, drops, free pickups
@@ -1333,7 +1341,7 @@ th.line{border-left:1px solid var(--rule)}
       var day = runLabel(run), seen = {};
       var extra = offers.filter(function (o) { return !mine[nm(o.player)]; }).map(function (o) { seen[nm(o.player)] = 1; return o; });
       (state.data.transactions || []).forEach(function (t) {
-        if (!mine[nm(t.player)] && !seen[nm(t.player)] && (t.date || "").indexOf(day + ",") === 0) { seen[nm(t.player)] = 1; extra.push(t); }
+        if (!mine[nm(t.player)] && !seen[nm(t.player)] && ((t.date || "").indexOf(day + ",") === 0 || etDay(t.date) === run) && t.team) { seen[nm(t.player)] = 1; extra.push(t); }
       });
       extra.sort(function (a, b) { return b.bid - a.bid; });
       other.innerHTML = extra.length ? "<b>Also in this run:</b> " + extra.map(function (o) {
@@ -1343,7 +1351,10 @@ th.line{border-left:1px solid var(--rule)}
     } else { spend.innerHTML = ""; other.hidden = true; }
 
     var foot = $("claims-foot"), gaps = claimed.filter(function (p) { return !isBid(p); });
-    if (gaps.length) {
+    if (winnersOnly && !gaps.length) {
+      foot.textContent = "Winning bids from Yahoo. Yahoo doesn't share losing bids, so to see who else bid and what they offered, paste League > Transactions.";
+      foot.hidden = false;
+    } else if (gaps.length) {
       foot.textContent = "No bid in the pasted Transactions page for " + gaps.map(function (p) { return p.name; }).join(", ") +
         ". Paste League > Transactions again to fill " + (gaps.length > 1 ? "them" : "it") + " in.";
       foot.hidden = false;
