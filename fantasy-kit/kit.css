@@ -489,9 +489,11 @@ dialog.fk-dlg h3{margin:0 0 6px;font-size:22px;padding-right:40px}
   .lot .bid b{font-size:32px}
   .feed>li{grid-template-columns:auto minmax(0,1fr);padding:10px 12px}.feed time{grid-column:2}
 }
+small.only-s{display:none;font-size:11px;font-weight:500}
 @media (max-width:600px){
   table.t td,table.t th{padding:7px 7px}
   .hide-s{display:none}
+  small.only-s{display:block}
 }
 
 /* draft picks as items, mystery packages, trades in the draft room */
@@ -1076,3 +1078,18 @@ ol.ord{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap
 .pl-d{font-variant-numeric:tabular-nums;font-size:14px}
 .pl-d.up{color:var(--win)}.pl-d.dn{color:var(--loss)}
 @media (max-width:600px){.gmr{font-size:10.5px;padding-left:0;display:block}.gmr.b{padding-right:0;text-align:right}.gmr .gm{white-space:normal}.gmr .gm-of{display:block}.left-l{grid-template-columns:1fr}.left-l .left-t:last-child{justify-content:flex-start;text-align:left}}
+
+/* drag and drop on the roster */
+tr[data-dg]{cursor:grab}
+.grip{display:inline-block;width:8px;height:14px;margin-right:6px;vertical-align:middle;opacity:.45;background:radial-gradient(circle,currentColor 1.2px,transparent 1.5px) 0 0/4px 4.6px;color:var(--muted)}
+tr[data-dg]:hover .grip{opacity:.9}
+body.fk-dragging,body.fk-dragging *{cursor:grabbing !important;user-select:none;-webkit-user-select:none}
+tr.dragging{opacity:.45}
+tr.dz-ok>td{background:color-mix(in srgb,var(--brand) 10%,transparent)}
+tr.dz-ok>td:first-child{box-shadow:inset 3px 0 0 var(--brand)}
+tr.dz-on>td{background:color-mix(in srgb,var(--brand) 26%,transparent)}
+tr.sec.dz-ok>td{color:var(--ink)}
+.drag-ghost{position:fixed;left:0;top:0;z-index:99;display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:12px;background:var(--surface);color:var(--ink);border:1px solid var(--line-2);box-shadow:0 14px 34px -12px rgba(0,0,0,.45);pointer-events:none;font-size:14px;white-space:nowrap}
+.drag-ghost small{color:var(--accent);font-weight:800}
+.drag-ghost small:empty{display:none}
+@media (hover:none){.grip{opacity:.7}}

@@ -631,7 +631,7 @@
         return G.playerWeek(L(), ctx, ctx.byId[pid], w, frac(w)).pts;   // best ball: the bench scores too, it just doesn't count
       };
       const wk = G.WEEK[sport.key] || { weeks: 20 };
-      const projOf = (p) => (pts() ? p.v / wk.weeks : null);
+      const projOf = (p) => (!pts() ? null : w === curWeek() && sport.key === "nfl" && weekProj(p, w) != null ? weekProj(p, w) : p.v / wk.weeks);
       const ir = L().ir[id] || [], irMax = G.irSlots(L()), alive = G.isAlive(L(), id), taxi = G.taxiOf(L(), id), txMax = G.taxiSlots(L());
       const moving = ui.moving && L().rosters[id].includes(ui.moving) && !G.held(L(), id).includes(ui.moving) ? ctx.byId[ui.moving] : null;
       const movingSlot = moving ? lu.indexOf(moving.id) : -1;
@@ -662,8 +662,11 @@
         const slotEl = can ? `<button type="button" class="slot slotbtn${on}" data-move="${moving && p === moving ? "" : esc(p.id)}" title="${moving && p === moving ? "Cancel the move" : `Move ${esc(p.n)}`}">${esc(slotLabel)}</button>`
           : `<span class="slot${on}${onIR ? " ir" : ""}">${esc(slotLabel)}</span>`;
         const cls = [moving && p === moving ? "me" : "", tgt ? "tgt" : "", onIR ? "irrow" : ""].filter(Boolean).join(" ");
-        return `<tr class="${cls}"><td class="c" style="width:70px">${slotEl}</td><td class="nm">${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, `${esc(p.prank)}${onIR && !G.irEligible(p) ? `, <span class="win">healthy</span>` : ""}${blocked.has(p.id) ? `, <span class="blk-tag">on the block</span>` : ""}`)}</span>` : `<span class="ps">${onIR ? "Open for a player who's out or on IR" : onTaxi ? "Open for a rookie" : "Empty"}</span>`}</td>
-          <td class="r num hide-s">${p ? `<span class="ps">#${p.rank}</span>` : ""}</td><td class="r num">${p && pts() && !onIR && !onTaxi ? `<b>${fmtS(ptsOf(p.id))}</b>` : p && !onIR && !onTaxi ? `<b>${p.v.toFixed(1)}</b>` : ""}</td><td class="r num hide-s">${p && pts() && !onIR && !onTaxi ? fmtS(projOf(p)) : ""}</td>
+        // drag and drop: a starter, bench or IR player can be dragged; every slot, the bench and IR take drops
+        const drag = mine && alive && !over() && p && !onTaxi && (onIR || !locked) ? ` data-dg="${esc(p.id)}" data-from="${onIR ? "ir" : i != null ? "s" + i : "bn"}"` : "";
+        const zone = i != null ? ` data-dz="s${i}"` : onIR ? ` data-dz="ir"` : onTaxi ? "" : ` data-dz="bn"${p ? ` data-dzp="${esc(p.id)}"` : ""}`;
+        return `<tr class="${cls}"${drag}${zone}><td class="c" style="width:70px">${drag ? `<span class="grip" aria-hidden="true"></span>` : ""}${slotEl}</td><td class="nm">${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, `${esc(p.prank)}${onIR && !G.irEligible(p) ? `, <span class="win">healthy</span>` : ""}${blocked.has(p.id) ? `, <span class="blk-tag">on the block</span>` : ""}`)}</span>${!onIR && !onTaxi && w === curWeek() && gameChip(p, w) ? `<div class="gmr">${gameChip(p, w)}</div>` : ""}` : `<span class="ps">${onIR ? "Open for a player who's out or on IR" : onTaxi ? "Open for a rookie" : "Empty"}</span>`}</td>
+          <td class="r num hide-s">${p ? `<span class="ps">#${p.rank}</span>` : ""}</td><td class="r num">${p && pts() && !onIR && !onTaxi ? `<b>${fmtS(ptsOf(p.id))}</b><small class="ps only-s">proj ${fmtS(projOf(p))}</small>` : p && !onIR && !onTaxi ? `<b>${p.v.toFixed(1)}</b>` : ""}</td><td class="r num hide-s">${p && pts() && !onIR && !onTaxi ? fmtS(projOf(p)) : ""}</td>
           <td class="r act">${tgt || actsFor(p, onIR, onTaxi)}</td></tr>`;
       };
       const starters = slots.map((s, i) => row(s, lu[i] ? ctx.byId[lu[i]] : null, i, false)).join("");
@@ -682,8 +685,8 @@
         ${gl() && !alive ? `<div class="banner loss"><b>Chopped in week ${(L().chopped.find((c) => c.team === id) || {}).week}.</b> <span class="muted">This roster went back on waivers.</span></div>` : ""}
         ${claims.length ? `<div class="card"><div class="mod-h"><h2>Pending waiver claims</h2><span class="ps">${esc(claimsRun())}</span><a href="#players/claims">All claims</a></div>${claimList(claims)}</div>` : ""}
         <div class="table-wrap"><table class="t roster"><thead><tr><th class="c">Slot</th><th>Player</th><th class="r hide-s">Rank</th><th class="r">${pts() ? "Pts" : "Value"}</th><th class="r hide-s">${pts() ? "Proj" : ""}</th><th class="act"></th></tr></thead><tbody>
-          <tr class="sec"><td colspan="6">Starters</td></tr>${starters}<tr class="sec"><td colspan="6">Bench</td></tr>${bench}${irMax ? `<tr class="sec"><td colspan="6">Injured reserve, ${ir.length} of ${irMax}</td></tr>${irRows}` : ""}${txMax ? `<tr class="sec"><td colspan="6">Taxi squad, ${taxi.length} of ${txMax}</td></tr>${txRows}` : ""}</tbody></table></div>
-        ${mine ? `<p class="ps">${bb() ? "Best ball: there's no lineup to set. Each week your best possible lineup scores, picked from what your players actually did." : !alive ? "" : locked ? "This week is locked." : w === L().week && frac(w) > 0 ? `Tap a slot to move a player. Week ${w} is under way; in this demo a change counts for the whole week. Starters left empty score nothing.` : `Tap a slot to move a player. Week ${w} lineups lock when it starts, and starters left empty score nothing.`}${irMax && alive ? " IR spots don't count against your roster." : ""}${txMax && alive ? " Neither do taxi spots: stash rookies there, and promote one when he's ready to play. A promotion is for good." : ""}</p>` : ""}</div>`;
+          <tr class="sec"><td colspan="6">Starters</td></tr>${starters}<tr class="sec" data-dz="bn"><td colspan="6">Bench</td></tr>${bench}${irMax ? `<tr class="sec" data-dz="ir"><td colspan="6">Injured reserve, ${ir.length} of ${irMax}</td></tr>${irRows}` : ""}${txMax ? `<tr class="sec"><td colspan="6">Taxi squad, ${taxi.length} of ${txMax}</td></tr>${txRows}` : ""}</tbody></table></div>
+        ${mine ? `<p class="ps">${bb() ? "Best ball: there's no lineup to set. Each week your best possible lineup scores, picked from what your players actually did." : !alive ? "" : locked ? "This week is locked." : w === L().week && frac(w) > 0 ? `Drag a player onto a slot, or tap a slot, to move him. Week ${w} is under way; in this demo a change counts for the whole week. Starters left empty score nothing.` : `Drag a player onto a slot, or tap a slot, to move him. Week ${w} lineups lock when it starts, and starters left empty score nothing.`}${irMax && alive ? " Drag a player who's out onto injured reserve to open a spot; IR spots don't count against your roster." : ""}${txMax && alive ? " Neither do taxi spots: stash rookies there, and promote one when he's ready to play. A promotion is for good." : ""}</p>` : ""}</div>`;
     }
     // Pending claims with their bids, each one cancellable.
     function claimList(list) {
@@ -1130,6 +1133,95 @@
       U.keyboardPlayers(opts.el);
       U.refocus(document, focus);
     }
+
+    /* ---------- drag and drop on the roster ---------- */
+    // A mouse drags a row once it moves a few pixels; a finger holds still for a moment first, so a swipe still scrolls.
+    // While dragging, every place the player can go lights up, and letting go there makes the same move the buttons do.
+    let drag = null;
+    function dropsFor(pid, from) {
+      const p = ctx.byId[pid], slots = L().settings.lineup, mid = me(), ir = L().ir[mid] || [], ok = new Map();
+      if (!p) return ok;
+      if (from === "ir") { ok.set("bn", { why: "Activate" }); return ok; }
+      slots.forEach((s, i) => { if (from !== "s" + i && S.fits(sport, p, s)) ok.set("s" + i, { why: "Start" }); });
+      if (from.startsWith("s")) {
+        ok.set("bn", { why: "Bench" });
+        const k = +from.slice(1);
+        const lu = G.lineupFor(L(), ctx, mid, rosterWeek()), tx = G.taxiOf(L(), mid);
+        for (const q of L().rosters[mid]) { const qp = ctx.byId[q]; if (qp && q !== pid && !lu.includes(q) && !ir.includes(q) && !tx.includes(q) && S.fits(sport, qp, slots[k])) ok.set("bn:" + q, { why: "Swap" }); }
+      }
+      if (G.irEligible(p) && ir.length < G.irSlots(L())) ok.set("ir", { why: "To IR" });
+      return ok;
+    }
+    const rosterWeek = () => (ui.week && ui.week >= L().week ? ui.week : curWeek());
+    const zoneKey = (el) => (!el ? null : el.dataset.dzp ? "bn:" + el.dataset.dzp : el.dataset.dz);
+    function dropAt(key) {
+      const { pid, from } = drag, mid = me(), w = rosterWeek(), p = ctx.byId[pid];
+      if (!key || !drag.ok.has(key)) return;
+      if (from === "ir") { const r = G.activate(L(), ctx, mid, pid, null, now()); if (r.needDrop) activateDialog(pid); else if (!r.ok) U.toast(r.why, true); else { save(); U.toast(`${p.n} is back from IR.`); render(); } return; }
+      if (key === "ir") return act(() => G.toIR(L(), ctx, mid, pid, now()), `${p.n} is on IR. His roster spot is open.`);
+      if (key.startsWith("bn:")) return act(() => G.move(L(), ctx, mid, w, key.slice(3), +from.slice(1), now()));
+      if (key === "bn") return act(() => G.move(L(), ctx, mid, w, pid, "BN", now()));
+      act(() => G.move(L(), ctx, mid, w, pid, +key.slice(1), now()));
+    }
+    function endDrag(e, commit) {
+      if (!drag) return;
+      const d = drag; drag = null;
+      clearTimeout(d.hold);
+      document.removeEventListener("touchmove", d.block, { passive: false });
+      if (d.ghost) d.ghost.remove();
+      opts.el.querySelectorAll(".dz-ok,.dz-on,.dragging").forEach((x) => x.classList.remove("dz-ok", "dz-on", "dragging"));
+      document.body.classList.remove("fk-dragging");
+      if (commit && d.live) { drag = d; dropAt(d.over); drag = null; }
+    }
+    function startLive(d, x, y) {
+      d.live = true;
+      d.ok = dropsFor(d.pid, d.from);
+      d.row.classList.add("dragging");
+      opts.el.querySelectorAll("[data-dz]").forEach((z) => { if (d.ok.has(zoneKey(z))) z.classList.add("dz-ok"); });
+      const p = ctx.byId[d.pid], g = document.createElement("div");
+      g.className = "drag-ghost"; g.innerHTML = `${U.playerAv(sport, p, "sm")}<b>${esc(p.n)}</b><small></small>`;
+      document.body.appendChild(g); d.ghost = g;
+      document.body.classList.add("fk-dragging");
+      if (navigator.vibrate) try { navigator.vibrate(10); } catch (err) { /* no buzz */ }
+      moveGhost(d, x, y);
+    }
+    function moveGhost(d, x, y) {
+      d.ghost.style.transform = `translate(${x + 12}px, ${y + 12}px)`;
+      d.ghost.style.visibility = "hidden";
+      const under = document.elementFromPoint(x, y);
+      d.ghost.style.visibility = "";
+      const z = under && under.closest("[data-dz]"), key = zoneKey(z);
+      opts.el.querySelectorAll(".dz-on").forEach((q) => q.classList.remove("dz-on"));
+      d.over = key && d.ok.has(key) ? key : null;
+      if (d.over) z.classList.add("dz-on");
+      d.ghost.querySelector("small").textContent = d.over ? d.ok.get(d.over).why : "";
+      // near the top or bottom of the screen, scroll so the whole roster is in reach
+      const edge = 60; if (y < edge) scrollBy(0, -12); else if (y > innerHeight - edge) scrollBy(0, 12);
+    }
+    opts.el.addEventListener("pointerdown", (e) => {
+      const row = e.target.closest("tr[data-dg]");
+      if (!row || e.button > 0 || e.target.closest("button:not(.slotbtn),a,input,select,[data-player]")) return;
+      const d = { pid: row.dataset.dg, from: row.dataset.from, row, x: e.clientX, y: e.clientY, id: e.pointerId, touch: e.pointerType !== "mouse", live: false };
+      d.block = (ev) => { if (drag && drag.live) ev.preventDefault(); };
+      document.addEventListener("touchmove", d.block, { passive: false });
+      if (d.touch) d.hold = setTimeout(() => { if (drag === d) startLive(d, d.x, d.y); }, 280);
+      drag = d;
+    });
+    window.addEventListener("pointermove", (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      if (!drag.live) {
+        const far = Math.hypot(e.clientX - drag.x, e.clientY - drag.y);
+        if (drag.touch) { if (far > 10) endDrag(e, false); return; }
+        if (far < 6) return;
+        startLive(drag, e.clientX, e.clientY);
+      }
+      e.preventDefault();
+      moveGhost(drag, e.clientX, e.clientY);
+    }, { passive: false });
+    window.addEventListener("pointerup", (e) => { if (drag && e.pointerId === drag.id) { const was = drag.live; endDrag(e, true); if (was) { const stop = (ev) => { ev.stopPropagation(); ev.preventDefault(); window.removeEventListener("click", stop, true); }; window.addEventListener("click", stop, true); setTimeout(() => window.removeEventListener("click", stop, true), 50); } } });
+    window.addEventListener("pointercancel", (e) => { if (drag && e.pointerId === drag.id) endDrag(e, false); });
+    window.addEventListener("keydown", (e) => { if (e.key === "Escape" && drag) endDrag(e, false); });
+    opts.el.addEventListener("contextmenu", (e) => { if (drag && drag.live) e.preventDefault(); });
 
     opts.el.addEventListener("input", (e) => { if (e.target.id === "fk-chat") ui.chatDraft = e.target.value; });
     opts.el.addEventListener("keydown", (e) => {
