@@ -691,9 +691,94 @@ def nfl_seed(season):
                   "lines": {"tot": {"label": "Season totals", "cols": NFL_COLS}}, "players": list(by.values())})
 
 
+# ---------- baseball prospects: FanGraphs' The Board, with this season's minor league lines ----------
+# The newest list that's really out (next year's once it's published, else this year's updated in-season list), the
+# ranked top 100 or so plus everyone graded 45 FV or better, so a dynasty league can go deep. Each prospect carries his
+# minor league line for the season (all levels together) and his MLBAM id, which joins him to the player pool.
+FG_BOARD = "https://www.fangraphs.com/api/prospects/board/prospects-list?draft={d}&season={y}&playerid=&position=&statType=player"
+FG_MINORS = ("https://www.fangraphs.com/api/leaders/minor-league/data?pos=all&level=0&lg=2,4,5,6,7,8,9,10,11,14,12,13,15,16,17,18,30,32"
+             "&stats={st}&qual=0&type=0&team=&season={y}&seasonEnd={y}&org=&ind=0&splitTeam=false")
+PITCH = {"P", "SP", "RP", "RHP", "LHP", "SIRP", "MIRP"}
+
+
+def fv_num(x):
+    m = re.match(r"\d+", str(x or ""))
+    return int(m.group(0)) if m else 0
+
+
+def mlb_prospects():
+    y = date.today().year
+    rows, which = None, None
+    for d, season in ((f"{y + 1}prospect", y + 1), (f"{y}updated", y), (f"{y}prospect", y)):
+        try:
+            got = get(FG_BOARD.format(d=d, y=season))
+        except Exception as e:
+            print(f"Prospects {d}: {type(e).__name__}: {e}")
+            continue
+        # an unknown list comes back as an old one: take it only if it's for the season asked and really ranked
+        ranked = [r for r in got if str(r.get("cOVR") or "").isdigit()]
+        if len(ranked) >= 50 and all(str(r.get("cSeason")) == str(season) for r in ranked[:20]):
+            rows, which = got, (d, season)
+            break
+    if not rows:
+        print("Prospects: no list answered")
+        return
+    keep = [r for r in rows if str(r.get("cOVR") or "").isdigit() or fv_num(r.get("cFV")) >= 45]
+    keep.sort(key=lambda r: (int(r["cOVR"]) if str(r.get("cOVR") or "").isdigit() else 10000, -fv_num(r.get("cFV")), int(r.get("cORG") or 999)))
+    lines = {}
+    for st in ("bat", "pit"):
+        try:
+            got = get(FG_MINORS.format(st=st, y=y))
+            got = got if isinstance(got, list) else got.get("data", [])
+        except Exception as e:
+            print(f"Minor league {st}: {type(e).__name__}: {e}")
+            got = []
+        by = {}
+        for r in got:
+            by.setdefault(r.get("minormasterid"), []).append(r)
+        lines[st] = by
+
+    def line(mid, st):
+        rs = lines[st].get(mid) or []
+        if not rs:
+            return None, None
+        tot = next((r for r in rs if str(r.get("TeamName") or "").strip("- ") == ""), None) or max(rs, key=lambda r: r.get("PA" if st == "bat" else "IP") or 0)
+        lv = [r.get("level") for r in rs if r is not tot and r.get("level")] or [tot.get("level")]
+        mlbam = next((r.get("xMLBAMID") for r in rs if r.get("xMLBAMID")), None)
+        if st == "bat":
+            out = {k: tot.get(k) for k in ("G", "PA", "HR", "R", "RBI", "SB")}
+            out.update({k.lower(): round(tot.get(k) or 0, 3) for k in ("AVG", "OBP", "SLG")})
+            out["wrc"] = round(tot.get("wRC+") or 0)
+        else:
+            out = {k: tot.get(k) for k in ("G", "GS", "W", "SV", "SO")}
+            out.update({"ip": tot.get("IP"), "era": round(tot.get("ERA") or 0, 2), "whip": round(tot.get("WHIP") or 0, 2), "k": round((tot.get("K%") or 0) * 100, 1), "bb": round((tot.get("BB%") or 0) * 100, 1)})
+        out = {k: (int(v) if isinstance(v, float) and v.is_integer() and k not in ("ip",) else v) for k, v in out.items()}
+        out["lv"] = "/".join(dict.fromkeys(lv))
+        return out, mlbam
+
+    out = []
+    for r in keep:
+        mid = r.get("minorMasterId")
+        pit = str(r.get("Position") or r.get("positionDB") or "").upper() in PITCH
+        st, mlbam = line(mid, "pit" if pit else "bat")
+        out.append({"rank": int(r["cOVR"]) if str(r.get("cOVR") or "").isdigit() else None, "org": int(r["cORG"]) if str(r.get("cORG") or "").isdigit() else None,
+                    "n": fix_name(r.get("playerName") or ""), "t": r.get("Team") or "", "pos": r.get("Position") or r.get("positionDB") or "",
+                    "age": age_on(r.get("BirthDate")) if r.get("BirthDate") else (round(float(r["Age"]), 1) if r.get("Age") else None),
+                    "fv": str(r.get("cFV") or ""), "eta": str(r.get("cETA") or ""), "lv": r.get("llevel") or r.get("mlevel") or "", "risk": r.get("cRisk") or "",
+                    "mlbam": str(mlbam) if mlbam else None, "pit": pit, "line": st})
+    os.makedirs(OUT, exist_ok=True)
+    path = os.path.join(OUT, "prospects-mlb.json")
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump({"updated": NOW, "season": y, "list": which[0], "listSeason": which[1], "source": "FanGraphs The Board (fangraphs.com/prospects)", "players": out}, f, ensure_ascii=False, separators=(",", ":"))
+    print(f"Wrote {path}: {len(out)} prospects from {which[0]}, {sum(1 for p in out if p['line'])} with a minor league line")
+
+
 def main(argv):
     want = argv[1:] or ["nba", "mlb", "nfl"]
     for s in want:
+        if s == "prospects":
+            mlb_prospects()
+            continue
         {"nba": nba, "mlb": mlb, "nfl": nfl}[s]()
         if s == "nba":
             nba_weeks()
@@ -702,6 +787,10 @@ def main(argv):
                 mlb_weeks()
             except Exception as e:
                 print(f"MLB weeks didn't build: {type(e).__name__}: {e}")
+            try:
+                mlb_prospects()
+            except Exception as e:
+                print(f"MLB prospects didn't build: {type(e).__name__}: {e}")
     return 0
 
 
