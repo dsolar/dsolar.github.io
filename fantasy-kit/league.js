@@ -1326,6 +1326,15 @@
   }
   const cancelClaim = (L, id) => { const c = L.claims.find((x) => x.id === id && x.status === "open"); if (!c) return { ok: false, why: "No such claim" }; c.status = "cancelled"; return { ok: true }; };
   // Highest bid wins; ties go to waiver priority. A team that wins moves to the back of the priority line.
+  // settings.waiverPrice "second" (a Vickrey auction): the winner pays the second-highest bid plus $1, never more
+  // than his own bid, so the best bid is simply what the player is worth to you. A lone bid pays the lowest bid.
+  const vickrey = (L) => L.settings.waivers === "faab" && L.settings.waiverPrice === "second";
+  function waiverPrice(L, c, rivals) {
+    if (!vickrey(L)) return c.bid;
+    const others = rivals.filter((x) => x !== c).map((x) => Math.min(x.bid, L.teams[x.team].faab));
+    const second = others.length ? Math.max(...others) : null;
+    return Math.min(c.bid, second == null ? Math.max(0, L.settings.minBid || 0) : second + 1);
+  }
   function runWaivers(L, ctx, now) {
     const open = L.claims.filter((c) => c.status === "open");
     const won = [];
@@ -1343,14 +1352,15 @@
       if (why) { c.status = "failed"; c.why = why; continue; }
       if (c.drop) { bank(L, ctx, c.team, c.drop, now); dropOne(L, c.team, c.drop, now); }
       L.rosters[c.team].push(c.add); delete L.waivers[c.add]; joined(L, c.team, c.add, now, ctx);
-      if (L.settings.waivers === "faab") t.faab -= c.bid;
+      const price = waiverPrice(L, c, rivals);
+      if (L.settings.waivers === "faab") { t.faab -= price; c.paid = price; }
       c.status = "won";
       for (const x of rivals) if (x !== c) { x.status = "lost"; x.lostTo = c.team; x.done = now; x.week = L.week; }
       const mx = Math.max(...L.teams.map((x) => x.priority));
       for (const x of L.teams) if (x.priority > t.priority) x.priority--;
       t.priority = mx;
       vampireFirst(L);
-      log(L, now, { type: "waiver", team: c.team, adds: [c.add], drops: c.drop ? [c.drop] : [], faab: L.settings.waivers === "faab" ? c.bid : null, bids: rivals.length });
+      log(L, now, { type: "waiver", team: c.team, adds: [c.add], drops: c.drop ? [c.drop] : [], faab: L.settings.waivers === "faab" ? price : null, bid: vickrey(L) ? c.bid : undefined, bids: rivals.length });
       refresh(L, ctx);
       won.push(c);
     }
@@ -1762,5 +1772,5 @@
   return { realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
     finishWeek, slotMult, setKicks, isLocked, freezeLineups, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
-    weekFrac, joined, effFrac, bank, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
+    weekFrac, joined, effFrac, bank, waiverPrice, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
 });

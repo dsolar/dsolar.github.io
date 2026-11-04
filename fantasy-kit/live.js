@@ -390,6 +390,7 @@
       <div class="row3">
         ${sel("maxAddsSeason", "Pickups a season", [0, 10, 15, 20, 25, 30, 40, 50].map((x) => [x, x ? `Up to ${x}` : "No limit"]), s.maxAddsSeason || 0)}
         ${gl || s.waivers === "faab" ? sel("minBid", "Lowest bid", [[0, "$0 bids allowed"], [1, "$1"]], s.minBid || 0) : ""}
+        ${gl || s.waivers === "faab" ? sel("waiverPrice", "The winner pays", [["first", "Their own bid"], ["second", "Second-highest bid + $1"]], s.waiverPrice || "first") : ""}
         ${gl ? "" : sel("waiverOrder", "Waiver order", [["rolling", "Rolling"], ["standings", "Reverse standings, weekly"]], s.waiverOrder || "rolling")}
       </div>
       <div class="row3">
@@ -417,7 +418,7 @@
       <p class="ps" style="margin:0">${started ? "The season has started, so its length and schedule are set. " : ""}Changes apply from now on; finished weeks keep their results${medianOk ? ", except that turning the median game on or off recounts every record" : ""}.</p>
       <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">Save rules</button></div></form>`, (fd) => {
       const patch = {};
-      for (const [k, v] of fd.entries()) patch[k] = ["trades", "median", "bestBall"].includes(k) ? v === "1" : ["waivers", "tradeReview", "playoffLegs", "consolation", "waiverOrder"].includes(k) ? v : Number(v);
+      for (const [k, v] of fd.entries()) patch[k] = ["trades", "median", "bestBall"].includes(k) ? v === "1" : ["waivers", "tradeReview", "playoffLegs", "consolation", "waiverOrder", "waiverPrice"].includes(k) ? v : Number(v);
       for (const k of Object.keys(patch)) if (JSON.stringify(patch[k]) === JSON.stringify(k === "trades" ? s.trades !== false : k === "median" || k === "bestBall" ? !!s[k] : s[k])) delete patch[k];
       if (!Object.keys(patch).length) return;
       const r = G.setRules(L, patch, now());

@@ -44,6 +44,7 @@
     if (s.maxAddsSeason) settings.maxAddsSeason = s.maxAddsSeason;
     if (s.minBid != null) settings.minBid = s.minBid;
     if (s.waiverOrder === "standings") settings.waiverOrder = "standings";
+    if (s.waiverPrice === "second") settings.waiverPrice = "second";
     if (s.posMax && Object.keys(s.posMax).length) settings.posMax = Object.assign({}, s.posMax);
     // weekly extras: a game against the league median, best ball lineups, divisions
     if (s.median) settings.median = true;

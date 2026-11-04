@@ -189,3 +189,24 @@ test('a set-lineups guillotine plays a full season down to a champion', () => {
   const slots = G.lineupFor(s2.L, s2.ctx, 0, 1);
   assert.ok(G.setLineup(s2.L, s2.ctx, 0, 1, slots, T0).ok !== false);
 });
+
+test('guillotine, Vickrey waivers: the winner pays the second-highest bid plus $1, a lone bid pays the lowest bid', () => {
+  const s = league('nfl', { format: 'guillotine', waiverPrice: 'second' });
+  const r = F.rng(4);
+  playWeek(s, r);
+  if (!s.L.alive.includes(0) || !s.L.alive.includes(1)) return;
+  const out = s.L.chopped[0].roster.map((id) => s.ctx.byId[id]).sort((a, b) => b.$ - a.$);
+  const [star, other] = out, at = G.weekStart(s.L, 2) + HOUR;
+  const low = (t) => s.L.rosters[t].map((id) => s.ctx.byId[id]).sort((a, b) => a.v - b.v);
+  // two of us on the star, one alone on the next
+  s.L.claims = s.L.claims.filter((c) => c.status !== 'open');
+  assert.ok(G.claim(s.L, s.ctx, 0, star.id, low(0)[0].id, 400, at).ok);
+  assert.ok(G.claim(s.L, s.ctx, 1, star.id, low(1)[0].id, 250, at).ok);
+  assert.ok(G.claim(s.L, s.ctx, 0, other.id, low(0)[1].id, 300, at).ok);
+  const f0 = s.L.teams[0].faab;
+  G.tick(s.L, s.ctx, G.waiverRunAt(s.L) + 1);
+  assert.ok(s.L.rosters[0].includes(star.id) && s.L.rosters[0].includes(other.id));
+  assert.equal(f0 - s.L.teams[0].faab, 251 + 0, '$251 for the star, $0 for the lone bid');
+  const tx = s.L.tx.filter((x) => x.type === 'waiver' && x.adds[0] === star.id)[0];
+  assert.equal(tx.faab, 251); assert.equal(tx.bid, 400);
+});

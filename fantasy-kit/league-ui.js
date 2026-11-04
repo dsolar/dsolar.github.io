@@ -414,7 +414,7 @@
     function txVM(x) {
       const lines = [];
       if (x.type === "trade") { for (const id of x.adds) lines.push(U.txLine(sport, "trade", playerVM(id), `to ${esc(T(x.team).abbr)}`)); for (const id of x.drops) lines.push(U.txLine(sport, "trade", playerVM(id), `to ${esc(T(x.other).abbr)}`)); }
-      else { for (const id of x.adds || []) lines.push(U.txLine(sport, x.type === "waiver" ? "waiver" : "add", playerVM(id), x.type === "waiver" && x.faab != null ? `$${x.faab}${x.bids > 1 ? `, beat ${x.bids - 1} bid${x.bids > 2 ? "s" : ""}` : ""}` : "")); for (const id of x.drops || []) lines.push(U.txLine(sport, "drop", playerVM(id))); }
+      else { for (const id of x.adds || []) lines.push(U.txLine(sport, x.type === "waiver" ? "waiver" : "add", playerVM(id), x.type === "waiver" && x.faab != null ? `$${x.faab}${x.bid != null && x.bid !== x.faab ? ` (bid $${x.bid})` : ""}${x.bids > 1 ? `, beat ${x.bids - 1} bid${x.bids > 2 ? "s" : ""}` : ""}` : "")); for (const id of x.drops || []) lines.push(U.txLine(sport, "drop", playerVM(id))); }
       if (x.type === "veto") lines.push(`<span class="ps">The league vetoed a trade</span>`);
       if (x.type === "draft" || x.text) lines.push(`<span class="ps">${esc(x.text || "")}</span>`);
       if (x.type === "chop") { lines.length = 0; lines.push(`<span class="ps">${esc(x.text)}</span>`); }
@@ -1145,7 +1145,7 @@
       const cols = U.poolColumns(sport, { group: U.groupOf(sport, ui.pf), scoring: L().scoring, owner: statusOf, ownerSort: (p) => (ctx.own[p.id] == null ? -1 : ctx.own[p.id]), actions, extra: pts() ? [] : [] });
       rows = U.sortRows(rows, cols, ui.psort);
       return `<div class="wrap page"><div class="head"><h1 class="disp">${sub === "fa" ? "Free agents" : sub === "watch" ? "Watchlist" : "All players"}</h1><span class="ps">${rows.length} players. FA is free to add now; W is on waivers, so put in a claim.</span></div>
-        <div class="tools">${U.search(ui.pf)}</div>${U.posFilter(sport, ui.pf.pos)}
+        <div class="tools">${U.search(ui.pf)}</div>${U.posFilter(sport, ui.pf.pos, [], L().settings.lineup)}
         ${U.table({ cols, rows, sort: ui.psort, dense: true, limit: ui.plimit || 250, id: "fk-players", empty: sub === "watch" ? "Star players to watch them here." : "No one matches.", rowAttr: (p) => `data-player="${esc(p.id)}"${ctx.own[p.id] === mid ? ' class="me"' : ""}` })}</div>`;
     }
     function claimsPage() {
@@ -1177,11 +1177,11 @@
       // one chip per amount; when two land on the same dollar, Fair wins, then Strong, then Low
       const quick = R ? [["Min", R.min, 0], ["Low", R.lo, 1], ["Fair", R.mid, 3], ["Strong", R.hi, 2]].filter(([, v, k], i, a) => !a.some(([, v2, k2]) => v2 === v && k2 > k)) : [];
       const bidBox = R ? `<div class="bidbox" style="--pct:${R.have ? Math.round((start / R.have) * 100) : 0}%">
-          <div class="bid-top"><label for="bid">Your bid</label><span class="bid-amt"><span aria-hidden="true">$</span><input type="number" inputmode="numeric" id="bid" name="bid" min="${R.min}" max="${R.have}" value="${start}" aria-describedby="bid-note"></span></div>
+          <div class="bid-top"><label for="bid">${L().settings.waiverPrice === "second" ? "Your top bid" : "Your bid"}</label><span class="bid-amt"><span aria-hidden="true">$</span><input type="number" inputmode="numeric" id="bid" name="bid" min="${R.min}" max="${R.have}" value="${start}" aria-describedby="bid-note"></span></div>
           <input type="range" class="bid-r" min="${R.min}" max="${R.have}" value="${start}" step="1" aria-label="Bid amount" tabindex="-1">
           <div class="bid-sc"><span>$${R.min}</span><span class="bid-fair" style="left:${R.have ? (R.lo / R.have) * 100 : 0}%;width:${R.have ? ((R.hi - R.lo) / R.have) * 100 : 0}%" title="Fair range"></span><span>$${R.have}</span></div>
           <div class="bid-q" role="group" aria-label="Quick bids">${quick.map(([k, v]) => `<button type="button" data-q="${v}" aria-pressed="${v === start}">${k} <b>$${v}</b></button>`).join("")}</div>
-          <p class="ps bid-note" id="bid-note"></p>
+          ${L().settings.waiverPrice === "second" ? `<p class="ps" style="margin:0">If you win, you pay the next-highest bid plus $1, never more than this. So bid what he's really worth to you.</p>` : ""}<p class="ps bid-note" id="bid-note"></p>
           ${wins.length ? `<div class="bid-wins"><span class="lbl">Recent winning bids</span>${wins.map((x) => `<span><b>$${x.bid}</b> ${esc(x.p.n)} <span class="ps">${esc(S.positions(x.p)[0])}, to ${esc(T(x.team).abbr)} in week ${x.week}${x.bids > 1 ? ` over ${x.bids - 1} other bid${x.bids > 2 ? "s" : ""}` : ""}</span></span>`).join("")}</div>` : ""}</div>` : "";
       const D = U.dialog(`${!edit && L().settings.maxAdds ? `<p class="ps" style="margin:0 0 6px">${G.pickupsLeft(L(), mid)} of ${L().settings.maxAdds} pickups left this week.</p>` : ""}<div class="pc-h">${U.playerAv(sport, p, "lg")}<div><h3 class="disp">${edit ? "Change your claim for" : onW ? "Claim" : "Add"} ${esc(p.n)}</h3><div class="ps">${p.inj ? `<span class="tag inj">${esc(p.inj)}</span> ` : ""}${posChips(sport, p)} ${U.proTeam(sport, p.t)}, ${esc(p.prank)}${onW ? `. On waivers: ${esc(claimsRun().replace(/^Claims/, "claims"))}` : ""}</div></div></div>
         <form class="stack">${bidBox}${full ? `<div class="field"><span class="lbl">Pick who to drop to make room</span><div class="table-wrap" style="max-height:${R ? 30 : 44}dvh"><table class="t dense droplist"><tbody>${ros.map((q, i) => `<tr><td style="width:28px"><input type="radio" name="drop" value="${esc(q.id)}" id="d${i}"${i === 0 ? " required" : ""}${edit && edit.drop === q.id ? " checked" : ""}></td><td><label for="d${i}" style="cursor:pointer">${pname(sport, q, `${esc(q.prank)}${drops[q.id] ? `, <span class="blk-tag">dropped in another claim</span>` : ""}`)}</label></td><td class="r ps">#${q.rank}</td></tr>`).join("")}</tbody></table></div></div>` : `<p class="ps" style="margin:0">You have an open roster spot.</p>`}
@@ -1274,7 +1274,7 @@
         if (!got && !lost) continue;
         const t = T(x.team), o = x.other != null ? T(x.other) : null, ab = (y) => `<b>${esc(y.name)}</b>`;
         const text = x.type === "trade" ? (got ? `Traded to ${ab(t)} by ${ab(o)}` : `Traded to ${ab(o)} by ${ab(t)}`)
-          : x.type === "waiver" && got ? `Claimed by ${ab(t)}${x.faab != null ? ` for $${x.faab}${x.bids > 1 ? `, over ${x.bids - 1} other bid${x.bids > 2 ? "s" : ""}` : ""}` : ""}`
+          : x.type === "waiver" && got ? `Claimed by ${ab(t)}${x.faab != null ? ` for $${x.faab}${x.bid != null && x.bid !== x.faab ? ` on a $${x.bid} bid` : ""}${x.bids > 1 ? `, over ${x.bids - 1} other bid${x.bids > 2 ? "s" : ""}` : ""}` : ""}`
           : got ? `Added by ${ab(t)}` : `Dropped by ${ab(t)}`;
         items.push({ at: x.at, week: x.week, text });
       }

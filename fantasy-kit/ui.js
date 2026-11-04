@@ -336,7 +336,10 @@
     return (opts.lead || []).concat(cols);
   }
   // Position chips across the top of a player list; groups (Hitters, Pitchers) when the sport has them.
-  function posFilter(sport, cur, extra = []) {
+  // the lineup's spots that take more than one position (FLEX, SFLEX), as chips of their own; not one that takes anyone
+  const flexChips = (sport, lineup) => [...new Set(lineup || [])].filter((sl) => { const v = sport.slots[sl]; return Array.isArray(v) && v.length > 1 && sport.positions.some((x) => !v.includes(x) && x !== "UT"); }).map((sl) => ["s:" + sl, sl]);
+  function posFilter(sport, cur, extra = [], lineup) {
+    extra = flexChips(sport, lineup).concat(extra);
     const groups = sport.groups ? [["g:bat", "Hitters"], ["g:pit", "Pitchers"]] : [];
     // rookies get their own chip when the pool flags them (a dynasty's rookie draft starts on it)
     const rk = sport.data && (sport.data.players || []).some((p) => p.rk) ? [["rk", "Rookies"]] : [];
@@ -349,6 +352,7 @@
     if (st.pos === "rk") { if (!p.rk) return false; }
     else if (st.pos) {
       if (st.pos.startsWith("g:")) { const g = sport.groups[st.pos.slice(2)]; if (!S.positions(p).some((x) => g.includes(x))) return false; }
+      else if (st.pos.startsWith("s:")) { if (!S.fits(sport, p, st.pos.slice(2))) return false; }
       else if (!S.positions(p).includes(st.pos)) return false;
     }
     if (st.team && p.t !== st.team) return false;
@@ -825,6 +829,17 @@
       // a pack draft: the list is the pack in front of you, unless you ask for everyone
       const pk = d.packs && d.phase === "live" && mine != null ? F.packFor(d, ctx, mine) : null, packOnly = pk && !ui.rlAll && ui.show !== "all";
       if (packOnly) rows = rows.filter((p) => pk.includes(p.id));
+      // every pick you have left is needed for an open starting spot (only K and DEF to go, say): show only who fits
+      let fitBar = "";
+      if (mine != null && d.phase === "live" && ui.show !== "all") {
+        const ros = F.rosters(d)[mine].map((id) => ctx.byId[id]).filter(Boolean), left = F.sizeOf(d) - ros.length;
+        const got = F.assign(sport, ros, d.lineup), open = d.lineup.filter((sl, i) => !got[i]);
+        if (left > 0 && open.length && left <= open.length) {
+          const names = [...new Set(open)], fitN = rows.filter((p) => F.canAdd(d, ctx, mine, p).ok).length;
+          if (!ui.fitAll && fitN) rows = rows.filter((p) => F.canAdd(d, ctx, mine, p).ok);
+          fitBar = `<div class="rl-bar"><span>${ui.fitAll ? "Showing everyone." : `Only ${names.join(names.length > 2 ? ", " : " and ").replace(/, ([^,]*)$/, ", and $1")} fit${left === 1 ? " your last pick" : ` your last ${left} picks`}, so that's who's showing.`}</span><button class="btn xs" data-act="fitall">${ui.fitAll ? "Only who fits" : "Show everyone"}</button></div>`;
+        }
+      }
       const actions = (p) => {
         if (ctx.own[p.id] != null) { const ok = stealOk(p.id); return `${ok && ok.ok ? `<button class="btn xs warn" data-steal="${esc(p.id)}">Steal</button> ` : ""}${teamAv(team(ctx.own[p.id]), "sm")}`; }
         if (mine == null) return "";
@@ -845,8 +860,8 @@
       const chaseLine = chase.length ? ` Chase card${chase.length > 1 ? "s" : ""} this set: ${chase.map((id) => (isMe(team(id)) ? "yours" : `${esc(team(id).name)}'s pack`)).join(", ")}.` : "";
       const packBar = pk ? `<div class="rl-bar"><span>${packOnly ? `${pat.j === 0 ? `Pack ${pat.q + 1}, fresh: ${pk.length} cards.${chaseLine}` : `Passed from ${esc(team(pw.from).name)}${pw.opener !== pw.from ? `, opened by ${esc(team(pw.opener).name)}` : ""}: ${pk.length} left.`} ${myTurn ? "Take one" : "You've picked"}, then it goes ${pat.q % 2 === 0 ? "left" : "right"}.` : "Showing everyone. You can only take a player from your pack."}</span><button class="btn xs" data-act="rlall">${packOnly ? "Show everyone" : "Only my pack"}</button></div>` : "";
       const rlBar = packBar || sn && sn.t ? packBar || `<div class="rl-bar"><span>${only ? `Showing ${esc(teamFull(sn.t))} players: the wheel's team for this pick.` : `Showing everyone. This pick has to come from ${esc(teamFull(sn.t))}.`}</span><button class="btn xs" data-act="rlall">${only ? "Show everyone" : `Only ${esc(sn.t)}`}</button></div>` : "";
-      if (packOnly) return rlBar + packGrid(rows, pat, myTurn, mine);
-      return rlBar + table({ cols, rows, sort: ui.sort, dense: true, id: "fk-pool", limit: ui.limit || 250, empty: "No one matches.",
+      if (packOnly) return fitBar + rlBar + packGrid(rows, pat, myTurn, mine);
+      return fitBar + rlBar + table({ cols, rows, sort: ui.sort, dense: true, id: "fk-pool", limit: ui.limit || 250, empty: "No one matches.",
         rowAttr: (p) => `data-player="${esc(p.id)}" class="${mine != null && ctx.own[p.id] == null && !F.canAdd(d, ctx, mine, p).ok ? "dim" : ""}"` });
     }
     function board() {
@@ -1109,7 +1124,7 @@
       const seg = `<div class="seg" id="fk-seg" role="group" aria-label="View">${lefts.map(([k, n]) => `<button type="button" data-left="${k}" aria-pressed="${!ui.mobileRight && ui.left === k}">${esc(n)}</button>`).join("")}${rights.map(([k, n]) => `<button type="button" class="show-m" data-mright="${k}" aria-pressed="${ui.mobileRight && ui.right === k}">${esc(n)}</button>`).join("")}</div>`;
       const filters = ui.left === "players" ? `${search(ui.f)}<label class="sr" for="fk-show">Show</label><select id="fk-show" style="width:auto;border-radius:999px;min-height:36px;font-size:13px"><option value="avail"${ui.show === "avail" ? " selected" : ""}>Available</option><option value="all"${ui.show === "all" ? " selected" : ""}>All players</option></select>${viewSelect(sport, "fk-statv")}` : "";
       el.innerHTML = `<div class="droom fk-dark">${top()}${ticker()}<div class="dr-main${ui.mobileRight ? " right" : ""}">
-        <section class="dr-left"><div class="dr-bar">${seg}${filters}</div>${ui.left === "players" ? posFilter(sport, ui.f.pos) : ""}${left}</section>
+        <section class="dr-left"><div class="dr-bar">${seg}${filters}</div>${ui.left === "players" ? posFilter(sport, ui.f.pos, [], d.lineup) : ""}${left}</section>
         <aside class="dr-right"><div class="seg hide-m" role="group" aria-label="Panel">${rights.map(([k, n]) => `<button type="button" data-right="${k}" aria-pressed="${ui.right === k}">${esc(n)}</button>`).join("")}</div><div class="show-m" style="padding:10px 12px 0">${seg.replace('id="fk-seg"', 'id="fk-seg2"')}</div><div class="dr-panel">${right}</div></aside></div></div>`;
       $$("#fk-pool,#fk-board,#fk-picks,.dr-panel,#fk-ticker,#fk-seg,#fk-seg2,#fk-rchatl", el).forEach((x) => { const v = keep.scroll[x.id || x.className]; if (v) { x.scrollTop = v[0]; x.scrollLeft = v[1]; } });
       const tk = $("#fk-ticker", el), cur = tk && $(".tk.now", tk);
@@ -1271,6 +1286,7 @@
           }
           else if (a === "respin") act(() => { const r = F.respin(d, ctx, me(), n); if (r.ok) toast(`The wheel lands on ${teamFull(r.team)}.`); return r; });
           else if (a === "rlall") { ui.rlAll = !ui.rlAll; render(); }
+          else if (a === "fitall") { ui.fitAll = !ui.fitAll; render(); }
           else if (a === "rip") {
             const q = F.packAt(d, F.packTurnNow(d)).q;
             (ui.opened = ui.opened || {})[q] = true; try { sessionStorage.setItem(packKey(q), "1"); } catch (e) { /* private mode */ }
