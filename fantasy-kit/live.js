@@ -81,6 +81,11 @@
       get commish() { return info.commish; }, get drive() { return driveOk(); },
       brand: { name: "Draft Lab", mark: `<img src="mark.svg" alt="">` }, exit: { href: "leagues.html", label: "Your leagues" },
       tools: () => `<button class="btn sm" data-live="league">${info.commish ? "Invite" : "League"}</button>`,
+      // heist moves are sealed on the server until everyone's in or the clock runs out
+      heist: {
+        lock: async (moves) => { const r = await C.rpc("fk_heist_lock", { p_id: id, p_moves: moves }); if (r && r.ok) pull(); return r; },
+        get: () => C.rpc("fk_heist_get", { p_id: id }),
+      },
       extra: () => (L ? "" : `<span class="ps">Setting up the season…</span>`),
       chat,
     });
@@ -173,7 +178,7 @@
   // so the draft keeps moving when the commissioner's page is closed.
   function driveOk() {
     // the heist: the commissioner's page settles it, or anyone's once its clock is five seconds past
-    if (D && D.phase === "heist" && canAct()) return info.commish || now() > D.heist.ends + 5000 || F.heistFoe(D, info.me) != null && D.heist.pairs.flat().every((t) => D.heist.moves[t] || !D.teams[t].owner);
+    if (D && D.phase === "heist" && canAct()) return info.commish || now() > D.heist.ends + 5000 || F.heistFoe(D, info.me) != null && F.heistDue(D, now());
     if (!D || D.phase !== "live" || !canAct()) return false;
     if (D.paused) return !!D.hold;                     // a draft held for a trade offer: any page can let it go on
     if (info.commish) return true;

@@ -677,10 +677,13 @@
     function heistView() {
       const d = D(), R = F.heistRules(d), mine = me(), foe = mine != null ? F.heistFoe(d, mine) : null, sel = hsel();
       const wk = (p) => (p ? (p.v || 0) / 17 : 0), fm = (x) => (Math.round(x * 10) / 10).toFixed(1);
-      const status = d.heist.pairs.flat().map((t) => `<span class="${d.heist.moves[t] ? "ok" : ""}">${teamAv(team(t), "sm")}${esc(team(t).abbr)} ${d.heist.moves[t] ? "locked in" : "deciding"}</span>`).join("");
+      const status = d.heist.pairs.flat().map((t) => `<span class="${F.heistIn(d, t) ? "ok" : ""}">${teamAv(team(t), "sm")}${esc(team(t).abbr)} ${F.heistIn(d, t) ? "locked in" : "deciding"}</span>`).join("");
       const rules = `Shield up to ${R.shields} of yours. Steal ${R.steals} and jinx ${R.jinxes} of theirs. A strike at a shielded player fails. A stolen player scores ${R.steal}x for you in the same spot, and your player there is let go; a jinxed one scores half for them.`;
       if (mine == null || foe == null) return `<div class="hz"><div class="hz-h"><h2 class="disp">The heist</h2><p>${mine == null ? "Managers are making their moves." : "You have no opponent this week, so you sit this one out."} ${esc(rules)}</p></div><div class="hz-st">${status}</div></div>`;
-      const done = d.heist.moves[mine];
+      // a sealed league keeps your moves on the server; this page remembers what you sent, or asks for it
+      const dm = d.heist.moves[mine];
+      if (dm && dm.sealed && !ui.hzMine && opts.heist && !ui.hzAsked) { ui.hzAsked = true; opts.heist.get().then((r) => { if (r && r.mine) { ui.hzMine = r.mine; render(); } }, () => {}); }
+      const done = dm && dm.sealed ? ui.hzMine || { shield: [], steal: [], jinx: [] } : dm;
       const a = F.heistLineup(d, ctx, mine), b = F.heistLineup(d, ctx, foe);
       const row = (slot, id, side, i) => {
         const p = id && ctx.byId[id];
@@ -1190,7 +1193,22 @@
           else if (a === "trade") openTrade();
           else if (a === "recap") { const txt = recapText(); (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast("Recap copied. Paste it in your group chat."), () => dialog(`<h3>Draft recap</h3><textarea rows="14" style="width:100%;font:inherit;font-size:13px" readonly>${esc(txt)}</textarea><div class="acts"><button type="button" class="btn" data-close>Close</button></div>`)); }
           else if (a === "alerts") { const v = !alerts.on(); alerts.set(v).then(() => { toast(v ? (typeof Notification !== "undefined" && Notification.permission === "denied" ? "Alerts on. Your browser blocks notifications, so you'll get the chime and tab only." : "Alerts on: a chime, and a notification when this tab is in the background.") : "Alerts off."); render(); }); }
-          else if (a === "heistgo") { const sel = hsel(); if (act(() => F.heistMove(d, ctx, me(), sel, n))) toast("Locked in."); }
+          else if (a === "heistgo") {
+            const sel = hsel();
+            if (!opts.heist) { if (act(() => F.heistMove(d, ctx, me(), sel, n))) toast("Locked in."); }
+            else if (!ui.hzBusy) {
+              // a shared league: the moves go to the server sealed, and the league only learns that you're in
+              const c = F.heistCheck(d, ctx, me(), sel);
+              if (!c.ok) toast(c.why, true);
+              else {
+                ui.hzBusy = true; b.disabled = true;
+                opts.heist.lock(c.move).then((r) => {
+                  if (r && r.ok) { ui.hzMine = c.move; d.heist.moves[me()] = { sealed: true, at: n }; toast("Locked in. Your moves stay hidden until the reveal."); }
+                  else toast((r && r.error) || "Couldn't lock in. Try again.", true);
+                }, (e) => toast(`Couldn't lock in: ${e.message}`, true)).then(() => { ui.hzBusy = false; render(); });
+              }
+            }
+          }
           else if (a === "respin") act(() => { const r = F.respin(d, ctx, me(), n); if (r.ok) toast(`The wheel lands on ${teamFull(r.team)}.`); return r; });
           else if (a === "rlall") { ui.rlAll = !ui.rlAll; render(); }
           else if (a === "auto") { const t = team(me()); t.auto = !t.auto; if (t.auto) toast("Autodraft is on: the bot picks for you."); save(); render(); }
@@ -1281,7 +1299,20 @@
     }
     timer = setInterval(() => {
       // a paused or finished draft has no clock to run; check for changes from elsewhere once a second
-      if (opts.drive && D().phase === "heist") { if (F.heistTick(D(), ctx, now())) { save(); render(); } else drawTimer(); return; }
+      if (opts.drive && D().phase === "heist") {
+        // sealed moves: once the heist is due, open them on the server, then settle it
+        if (F.heistSealed(D()) && F.heistDue(D(), now())) {
+          if (opts.heist && !ui.hzOpening && Date.now() - (ui.hzTried || 0) > 2000) {
+            ui.hzOpening = true; ui.hzTried = Date.now();
+            opts.heist.get().then((r) => {
+              if (r && r.open && D().phase === "heist" && F.heistUnseal(D(), ctx, r.open) && F.heistTick(D(), ctx, now())) { save(); render(); }
+            }, () => {}).then(() => { ui.hzOpening = false; });
+          }
+          drawTimer(); return;
+        }
+        if (F.heistTick(D(), ctx, now())) { save(); render(); } else drawTimer();
+        return;
+      }
       const idle = D().phase !== "live" || (D().paused && !D().hold);
       if (idle && (ui.idleN = (ui.idleN || 0) + 1) % 4) return;
       if (opts.drive && D().phase === "live" && F.offerHold(D(), now())) save();

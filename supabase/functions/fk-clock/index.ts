@@ -102,7 +102,13 @@ async function tickLeagues(token: string) {
       const base = structuredClone({ draft: D, league: L });
       let changed = false;
       if (!L) {
-        changed = Z.driveDraft(D, F.context(D, players, sport), now);
+        const dctx = F.context(D, players, sport);
+        // a heist's moves are sealed on the server: once it's due, open them so it can settle
+        if (D.phase === "heist" && F.heistSealed && F.heistSealed(D) && F.heistDue(D, now)) {
+          const h = await rpc("fk_clock_heist", { p_token: token, p_id: l.id });
+          if (h && h.open) F.heistUnseal(D, dctx, h.open);
+        }
+        changed = Z.driveDraft(D, dctx, now);
         if (D.phase === "done") {
           // a one-week league that starts in the week that's on counts only what's played after now, so it needs this
           // week's totals as of now (the live feed), not as of the last nightly file

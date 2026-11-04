@@ -381,6 +381,38 @@ test('heist: shields block, a steal takes the player at 1.5x and frees a hole to
   assert.deepEqual(L.schedule[0], D.heist.pairs);
 });
 
+test('heist, sealed: the league shows only who is in; opened moves are checked again; bots move at the reveal', () => {
+  const data = JSON.parse(readFileSync(new URL('../fantasy-kit/data/nfl.json', import.meta.url), 'utf8'));
+  const sport = S.attach(Object.assign({}, S.nfl), data);
+  const players = data.players.map((p) => ({ ...p }));
+  const lineup = ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'FLEX'];
+  V.evaluate(sport, players, { teams: 4, lineup, bench: 0, scoring: 'half' });
+  const now = Date.UTC(2026, 10, 4, 15);
+  const D = F.create({ sport, teams: 4, seed: 21, now, lineup, bench: 0, botDelay: 0, scoring: 'half' });
+  D.teams[0].owner = 'David'; D.teams[1].owner = 'Bea';
+  D.season = { format: 'h2h', weeks: 1, oneWeek: true, playoffTeams: 0, deadline: 0, ir: 0, heist: { shields: 3, steals: 1, jinxes: 1, clock: 60 } };
+  const ctx = F.context(D, players, sport);
+  F.start(D, now); D.teams.forEach((t) => (t.auto = true)); F.tick(D, ctx, now + 1); D.teams.forEach((t) => (t.auto = false));
+  assert.equal(D.phase, 'heist');
+  assert.equal(F.heistTick(D, ctx, now + 2), false, 'two managers still deciding: nothing settles');
+  assert.deepEqual(D.heist.moves, {}, 'and the bots have written nothing anyone could read');
+  const foe0 = F.heistFoe(D, 0), foe1 = F.heistFoe(D, 1), a = F.heistLineup(D, ctx, 0);
+  const good = F.heistCheck(D, ctx, 0, { shield: a.slice(0, 3), steal: [], jinx: [] });
+  assert.ok(good.ok && good.move.shield.length === 3);
+  assert.equal(F.heistCheck(D, ctx, 0, { shield: a.slice(0, 4) }).ok, false);
+  D.heist.moves[0] = { sealed: true, at: now + 3 }; D.heist.moves[1] = { sealed: true, at: now + 4 };
+  assert.ok(F.heistSealed(D) && F.heistDue(D, now + 5), 'everyone is in, so it is due');
+  assert.equal(F.heistTick(D, ctx, now + 5), false, 'but sealed moves cannot settle until they are opened');
+  // team 1 cheated: ten shields. It falls back to the default.
+  const b = F.heistLineup(D, ctx, 1);
+  F.heistUnseal(D, ctx, { 0: Object.assign({}, good.move, { steal: foe0 === 1 ? [b[0]] : [] }), 1: { shield: b.filter(Boolean), steal: [], jinx: [] } });
+  assert.equal(D.heist.moves[1].auto, true, 'a move that breaks the rules becomes the default');
+  assert.equal(D.heist.moves[0].at, now + 3, 'the lock-in time is kept');
+  assert.ok(F.heistTick(D, ctx, now + 6), 'now it settles');
+  assert.ok(D.heist.pairs.flat().every((t) => D.heist.moves[t]), 'the bots moved at the reveal');
+  assert.ok(D.heist.result && foe1 != null);
+});
+
 test('pack draft: alike packs, every pick from the pack in front of you, passing left then right, full lineups', () => {
   const data = JSON.parse(readFileSync(new URL('../fantasy-kit/data/nfl.json', import.meta.url), 'utf8'));
   const sport = S.attach(Object.assign({}, S.nfl), data);
