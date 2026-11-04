@@ -1372,3 +1372,12 @@ tr.sec.dz-ok>td{color:var(--ink)}
 }
 @media (max-width:600px){.pkd-seal{grid-template-columns:1fr;justify-items:center;text-align:center}.pkd-sx p{margin-inline:auto}.pkd-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .recap .pkd-t{position:static;flex:none}.recap .tag-star{background:var(--gold);color:#2a1d00}.recap .tag-chase{background:linear-gradient(90deg,#ff5f8f,#ffd166,#5ee6a8,#58b4ff);color:#16121f}.recap .tag-rare{background:var(--info-soft);color:var(--info)}
+
+/* inside a league, its name is the title of the page; Draft Lab steps back */
+.fk-mast:has(.switch) .fk-brand b{font-size:14px;font-weight:700;opacity:.72}
+.fk-mast:has(.switch) .fk-brand img,.fk-mast:has(.switch) .fk-brand svg{width:24px;height:24px}
+.fk-mast:has(.switch) .fk-brand{padding-right:14px;margin-right:2px;border-right:1px solid rgba(255,255,255,.16)}
+.fk-mast .switch summary{font-size:19px;font-weight:850;letter-spacing:-.01em;border-color:transparent;padding:5px 12px 5px 5px;max-width:min(60vw,560px)}
+.fk-mast .switch summary .av{width:30px;height:30px}
+.fk-mast .switch summary:hover,.fk-mast .switch[open] summary{background:rgba(255,255,255,.08)}
+@media (max-width:600px){.fk-mast:has(.switch) .fk-brand b{display:none}.fk-mast:has(.switch) .fk-brand{padding-right:10px}.fk-mast .switch summary{font-size:17px;max-width:62vw}}

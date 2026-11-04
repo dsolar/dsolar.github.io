@@ -56,7 +56,7 @@
 
   function header() {
     top.innerHTML = U.shell({ brand: { name: "Draft Lab", href: "./", mark: `<img src="mark.svg" alt="">` },
-      tabs: [["draft", "Mock draft"], ["rankings", "Rankings"], ["league", "Demo league"], ["leagues", "Your leagues"], ["kit", "The kit"]], tab: "leagues",
+      tabs: [["leagues", "Your leagues"], ["draft", "Mock draft"], ["rankings", "Rankings"], ["league", "Demo league"]], tab: "leagues",
       right: `${C.user() ? `<button class="btn sm ghost" data-a="out">Sign out</button>` : ""}<button class="btn sm ghost" data-theme>${theme.dark() ? "Light" : "Dark"}</button>`,
       hrefOf: (t) => (t === "leagues" ? "leagues.html" : t === "league" ? "league.html" : "./#" + t) });
   }
