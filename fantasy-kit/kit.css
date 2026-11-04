@@ -1381,3 +1381,5 @@ tr.sec.dz-ok>td{color:var(--ink)}
 .fk-mast .switch summary .av{width:30px;height:30px}
 .fk-mast .switch summary:hover,.fk-mast .switch[open] summary{background:rgba(255,255,255,.08)}
 @media (max-width:600px){.fk-mast:has(.switch) .fk-brand b{display:none}.fk-mast:has(.switch) .fk-brand{padding-right:10px}.fk-mast .switch summary{font-size:17px;max-width:62vw}}
+tr.show-s{display:none}
+@media (max-width:600px){table.t tr.show-s{display:table-row}table.t tr.show-s td{padding-top:0;border-top:0;white-space:normal}}

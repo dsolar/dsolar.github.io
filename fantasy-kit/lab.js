@@ -274,9 +274,9 @@
         <label class="sr" for="r-scoring">Scoring</label><select id="r-scoring">${Object.entries(sp.scorings).map(([k, s]) => opt(k, s.label.replace(/ \(.*\)$/, ""), P.scoring)).join("")}</select>
         ${U.viewSelect(sp, "r-statv")}
         <label class="sr" for="r-dyn">League type</label><select id="r-dyn">${opt("", "Redraft", rank.dyn ? "1" : "")}${opt("1", "Dynasty", rank.dyn ? "1" : "")}</select>
-        <div class="seg" role="group" aria-label="Rankings"><button type="button" data-rmode="default" aria-pressed="${rank.mode === "default"}">Rankings</button><button type="button" data-rmode="board" aria-pressed="${mine}">My board</button>${sp.key === "mlb" ? "" : `<button type="button" data-rmode="prospects" aria-pressed="${rank.mode === "prospects"}">Prospects</button>`}</div></div>
+        <div class="seg" role="group" aria-label="Rankings"><button type="button" data-rmode="default" aria-pressed="${rank.mode === "default"}">Rankings</button><button type="button" data-rmode="board" aria-pressed="${mine}">My board</button><button type="button" data-rmode="prospects" aria-pressed="${rank.mode === "prospects"}">Prospects</button></div></div>
       <div class="tools">${U.search(rank.f)}<label class="sr" for="fk-team">${esc(sp.league)} team</label><select id="fk-team" class="${rank.f.team ? "set" : ""}"><option value="">All ${esc(sp.league)} teams</option>${teams.map((t) => `<option${t === rank.f.team ? " selected" : ""}>${esc(t)}</option>`).join("")}</select></div>${U.posFilter(sp, rank.f.pos)}
-      ${rank.mode === "prospects" && sp.key !== "mlb" ? await prospectsView(sp) : mine ? myBoard(sp, P, B) : U.table({ cols, rows, sort: rank.sort, dense: true, limit: 300, rowAttr: (p) => `data-player="${esc(p.id)}"`, empty: "No one matches." })}
+      ${rank.mode === "prospects" ? (sp.key === "mlb" ? await mlbProspectsView(sp, P) : await prospectsView(sp)) : mine ? myBoard(sp, P, B) : U.table({ cols, rows, sort: rank.sort, dense: true, limit: 300, rowAttr: (p) => `data-player="${esc(p.id)}"`, empty: "No one matches." })}
       <p class="ps">${rank.dyn ? "Dynasty: each player's value over the next five seasons, from an age curve for his position, blended with outside dynasty consensus where it ranks him. " : ""}${await freshness(sp)}${sp.data.lines && sp.data.lines.pbat ? `Values come from ${esc(sp.data.lines.pbat.label.replace(/, batting$/, ""))} projections from FanGraphs; the stat columns show last season. ` : ""}${sp.market ? `ESPN and ESPN $ are ESPN's rank and the average price in real ESPN auctions, for comparison. ` : ""}Ranks are value over the replacement player at each position, for the league size and lineup above. Auction values split ${c.teams} budgets of $${c.budget}.</p></div>`;
     if (rank.focus) { const f = $(rank.focus, app); rank.focus = null; if (f) { f.focus(); f.scrollIntoView({ block: "nearest" }); } }
     else if (focus) { const f = document.getElementById(focus); if (f) { f.focus(); if (f.type === "search") f.setSelectionRange(f.value.length, f.value.length); } }
@@ -345,6 +345,43 @@
     const head = `<p class="ps" style="margin:0 0 8px">The ${B.year} class by consensus of ${B.sources.length} outlets on the <a href="../draft/#${sp.key}">Big Board</a>, updated ${esc(String(B.asof || ""))}. ${sp.key === "nfl" ? "Skill positions only. " : ""}Class is his place among fantasy prospects by consensus. Dynasty leagues price next season's rookie picks from the class, each prospect against the league's own players at his position.</p>`;
     return head + `<div class="table-wrap"><table class="t dense"><thead><tr><th class="r">Class</th><th class="r hide-s">Board</th><th>Prospect</th>${hasYr ? `<th class="hide-s">Year, age</th>` : ""}<th class="r" title="His best and worst rank across outlets">Range</th>${hasMove ? `<th class="r hide-s" title="Consensus rank gained or lost since the first reading">Move</th>` : ""}<th class="hide-s">${sp.key === "nba" ? "This season" : "2026 season"}</th></tr></thead><tbody>
       ${rows.slice(0, 200).map((p) => `<tr><td class="r num"><b>${p.fr}</b></td><td class="r num hide-s ps">${p.rank}</td><td class="nm"><b>${esc(p.n)}</b><div class="ps">${esc(p.pos)}, ${esc(p.school || "")}${p.ht ? `, ${esc(p.ht)}` : ""}</div></td>${hasYr ? `<td class="hide-s ps">${esc(p.yr || "")}${p.age ? `${p.yr ? ", " : ""}${p.age.toFixed(1)}` : ""}</td>` : ""}<td class="r num ps">${p.hi === p.lo ? p.hi : `${p.hi}-${p.lo}`}</td>${hasMove ? `<td class="r num hide-s">${move(p)}</td>` : ""}<td class="hide-s ps">${stat(p)}</td></tr>`).join("") || `<tr><td colspan="7" class="empty">No one matches.</td></tr>`}
+      </tbody></table></div>`;
+  }
+
+  // Baseball's prospects are minor leaguers, not a draft class: FanGraphs' The Board, each with his Future Value,
+  // ETA, level and this season's minor league line. One who's reached the majors links to his pool card, with his
+  // big league stats and projection.
+  let mlbPros;
+  const PRO_POS = { RHP: "SP", LHP: "SP", SP: "SP", P: "SP", SIRP: "RP", MIRP: "RP", RP: "RP", CF: "OF", LF: "OF", RF: "OF", OF: "OF", DH: "UT" };
+  // FanGraphs' team codes where they differ from MLB's
+  const FG_TEAM = { WSN: "WSH", CHW: "CWS", KCR: "KC", SDP: "SD", SFG: "SF", TBR: "TB", AZ: "ARI" };
+  const proTeamOf = (t) => FG_TEAM[t] || t;
+  const proPos = (p) => String(p.pos || "").split(/[\/,]/).map((x) => PRO_POS[x.trim().toUpperCase()] || x.trim().toUpperCase());
+  async function mlbProspectsView(sp, P) {
+    if (mlbPros === undefined) mlbPros = await fetch("data/prospects-mlb.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    const B = mlbPros;
+    if (!B || !B.players || !B.players.length) return `<p class="empty">The prospect list isn't loading right now.</p>`;
+    const byId = Object.fromEntries(P.players.map((p) => [String(p.id), p]));
+    // no MLBAM id (no minor league games this year): match him in the pool by name
+    const nm = (x) => String(x || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z]/g, "");
+    const byName = {}; for (const p of P.players) (byName[nm(p.n)] = byName[nm(p.n)] || []).push(p);
+    const poolOf = (p) => (p.mlbam && byId[p.mlbam]) || ((byName[nm(p.n)] || []).length === 1 ? byName[nm(p.n)][0] : null);
+    const q = (rank.f.q || "").toLowerCase(), pos = rank.f.pos, team = rank.f.team;
+    const fits = (p) => { const ps = proPos(p); if (!pos) return true; if (pos === "g:pit") return p.pit; if (pos === "g:bat") return !p.pit; if (pos === "UT") return !p.pit; return ps.includes(pos); };
+    const rows = B.players.filter((p) => (!q || p.n.toLowerCase().includes(q) || proTeamOf(p.t).toLowerCase() === q) && (!team || proTeamOf(p.t) === team) && fits(p));
+    const n3 = (x) => (x == null ? "" : Number(x).toFixed(3).replace(/^0/, ""));
+    const lineOf = (p) => {
+      const l = p.line; if (!l) return `<span class="ps">No minor league games in ${esc(String(B.season))}</span>`;
+      return p.pit ? `<span class="ps">${esc(l.lv)}</span> ${l.ip} IP, ${l.era.toFixed(2)} ERA, ${l.whip.toFixed(2)} WHIP, ${l.k}% K, ${l.bb}% BB`
+        : `<span class="ps">${esc(l.lv)}</span> ${l.PA} PA, ${n3(l.avg)}/${n3(l.obp)}/${n3(l.slg)}, ${l.HR} HR, ${l.SB} SB, ${l.wrc} wRC+`;
+    };
+    const head = `<p class="ps" style="margin:0 0 8px">Minor leaguers, not a draft class: ${B.listSeason} prospects from <a href="https://www.fangraphs.com/prospects/the-board" rel="noopener">FanGraphs' The Board</a>, the ranked list plus everyone graded 45 FV or better, updated ${esc(String(B.updated).slice(0, 10))}. FV is his Future Value on the 20 to 80 scouting scale. The line is his ${B.season} minor league season, every level together. Tap a prospect who's reached the majors for his big league stats and projection.</p>`;
+    return head + `<div class="table-wrap"><table class="t dense"><thead><tr><th class="r">Rank</th><th>Prospect</th><th class="r hide-s" title="Future Value, 20 to 80">FV</th><th class="r hide-s">ETA</th><th class="hide-s">Level</th><th class="r hide-s">Age</th><th class="hide-s">${B.season} minors</th></tr></thead><tbody>
+      ${rows.slice(0, 400).map((p) => { const pl = poolOf(p);
+        return `<tr${pl ? ` data-player="${esc(pl.id)}" style="cursor:pointer"` : ""}><td class="r num"><b>${p.rank || ""}</b>${p.rank ? "" : `<span class="ps" title="His place in his organization">${p.org ? `org ${p.org}` : ""}</span>`}</td>
+          <td class="nm"><b>${esc(p.n)}</b><div class="ps">${esc(p.pos)}, ${U.proTeam(sp, proTeamOf(p.t))}${p.risk ? `, ${esc(p.risk.toLowerCase())} risk` : ""}${pl ? `, <span class="tag">In the pool, #${pl.rank}</span>` : ""}</div></td>
+          <td class="r num hide-s"><b>${esc(p.fv)}</b></td><td class="r num hide-s">${esc(p.eta)}</td><td class="hide-s">${esc(p.lv)}</td><td class="r num hide-s">${p.age != null ? p.age.toFixed(1) : ""}</td><td class="hide-s small">${lineOf(p)}</td></tr>
+          <tr class="show-s"><td></td><td class="small"><b>${esc(p.fv)} FV</b>, ETA ${esc(p.eta)}, ${esc(p.lv)}, age ${p.age != null ? p.age.toFixed(1) : "?"}<br>${lineOf(p)}</td></tr>`; }).join("")}
       </tbody></table></div>`;
   }
 
