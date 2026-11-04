@@ -701,6 +701,15 @@ FG_MINORS = ("https://www.fangraphs.com/api/leaders/minor-league/data?pos=all&le
 PITCH = {"P", "SP", "RP", "RHP", "LHP", "SIRP", "MIRP"}
 
 
+def birth_age(b):
+    """an age from a birth date in either YYYY-MM-DD or M/D/YYYY"""
+    b = str(b or "").strip()
+    m = re.match(r"(\d{1,2})/(\d{1,2})/(\d{4})", b)
+    if m:
+        b = f"{m.group(3)}-{int(m.group(1)):02d}-{int(m.group(2)):02d}"
+    return age_on(b) if b else None
+
+
 def fv_num(x):
     m = re.match(r"\d+", str(x or ""))
     return int(m.group(0)) if m else 0
@@ -717,7 +726,9 @@ def mlb_prospects():
             continue
         # an unknown list comes back as an old one: take it only if it's for the season asked and really ranked
         ranked = [r for r in got if str(r.get("cOVR") or "").isdigit()]
-        if len(ranked) >= 50 and all(str(r.get("cSeason")) == str(season) for r in ranked[:20]):
+        same = sum(1 for r in ranked[:40] if str(r.get("cSeason") or r.get("Season") or "").startswith(str(season)))
+        print(f"Prospects {d}: {len(got)} rows, {len(ranked)} ranked, seasons {sorted({str(r.get('cSeason')) for r in ranked[:40]})}")
+        if len(ranked) >= 50 and same >= 30:
             rows, which = got, (d, season)
             break
     if not rows:
@@ -763,7 +774,7 @@ def mlb_prospects():
         st, mlbam = line(mid, "pit" if pit else "bat")
         out.append({"rank": int(r["cOVR"]) if str(r.get("cOVR") or "").isdigit() else None, "org": int(r["cORG"]) if str(r.get("cORG") or "").isdigit() else None,
                     "n": fix_name(r.get("playerName") or ""), "t": r.get("Team") or "", "pos": r.get("Position") or r.get("positionDB") or "",
-                    "age": age_on(r.get("BirthDate")) if r.get("BirthDate") else (round(float(r["Age"]), 1) if r.get("Age") else None),
+                    "age": birth_age(r.get("BirthDate")) or (round(float(r["Age"]), 1) if r.get("Age") else None),
                     "fv": str(r.get("cFV") or ""), "eta": str(r.get("cETA") or ""), "lv": r.get("llevel") or r.get("mlevel") or "", "risk": r.get("cRisk") or "",
                     "mlbam": str(mlbam) if mlbam else None, "pit": pit, "line": st})
     os.makedirs(OUT, exist_ok=True)
