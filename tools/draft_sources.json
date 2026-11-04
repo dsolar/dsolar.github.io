@@ -1,23 +1,196 @@
 {
  "_about": "Outlets behind the Big Board (draft/). Each board snapshot lives in tools/draft_boards/<league>/<id>/<date>.json. kind: board (ranks talent, feeds the consensus) or mock (projects picks, shown separately). weight scales a source in the consensus; recency lowers it further. status pending = not published for this class yet, so nothing to read. how: auto (a script pulls it), paste (tools/draft_paste.py from copied page text).",
  "nba": [
-  {"id": "tankathon", "name": "Tankathon", "abbr": "TANK", "kind": "board", "weight": 1, "how": "auto", "url": "https://www.tankathon.com/big_board", "note": "Daily, from Hard Cap's pull (hardcap/prospects.json)."},
-  {"id": "bleacher-report", "name": "Bleacher Report", "analyst": "Jonathan Wasserman", "abbr": "B/R", "kind": "board", "weight": 1, "how": "paste", "url": "https://bleacherreport.com/nba"},
-  {"id": "fansided", "name": "FanSided", "abbr": "FS", "kind": "board", "weight": 1, "how": "paste", "url": "https://fansided.com/nba/"},
-  {"id": "si", "name": "Sports Illustrated", "abbr": "SI", "kind": "board", "weight": 1, "how": "paste", "url": "https://www.si.com/nba/nba-draft"},
-  {"id": "espn", "name": "ESPN", "analyst": "Jeremy Woo", "abbr": "ESPN", "kind": "board", "weight": 1.25, "how": "paste", "url": "https://www.espn.com/nba/draft/", "note": "June 25 watch list of 60: the top 10 by title odds, the rest a big board. Givony and Woo's in-season Top 100 replaces it when it's out."},
-  {"id": "no-ceilings", "name": "No Ceilings", "abbr": "NC", "kind": "board", "weight": 1.25, "how": "paste", "status": "pending", "url": "https://www.noceilingsnba.com/", "note": "Staff composite Top 60; posts as <year>-nba-draft-big-board-v<N>. Composite only, not the paid personal boards."},
-  {"id": "koc-yahoo", "name": "Yahoo Sports", "analyst": "Kevin O'Connor", "abbr": "KOC", "kind": "board", "weight": 1.25, "how": "paste", "status": "pending", "url": "https://sports.yahoo.com/nba/"},
-  {"id": "ringer", "name": "The Ringer", "abbr": "RING", "kind": "board", "weight": 1, "how": "paste", "status": "pending", "url": "https://www.theringer.com/nba-draft"},
-  {"id": "nbadraftnet", "name": "NBADraft.net", "abbr": "NDN", "kind": "board", "weight": 1, "how": "paste", "status": "pending", "url": "https://www.nbadraft.net/", "note": "Top 100 big board. Their extended mock is tracked as its own source below."},
-  {"id": "nbadraftnet-mock", "name": "NBADraft.net mock", "abbr": "NDN", "kind": "mock", "weight": 1, "how": "paste", "url": "https://www.nbadraft.net/"}
+  {
+   "id": "tankathon",
+   "name": "Tankathon",
+   "abbr": "TANK",
+   "kind": "board",
+   "weight": 1,
+   "how": "auto",
+   "url": "https://www.tankathon.com/big_board",
+   "note": "Daily, from Hard Cap's pull (hardcap/prospects.json)."
+  },
+  {
+   "id": "bleacher-report",
+   "name": "Bleacher Report",
+   "analyst": "Jonathan Wasserman",
+   "abbr": "B/R",
+   "kind": "board",
+   "weight": 1,
+   "how": "paste",
+   "url": "https://bleacherreport.com/nba"
+  },
+  {
+   "id": "fansided",
+   "name": "FanSided",
+   "abbr": "FS",
+   "kind": "board",
+   "weight": 1,
+   "how": "paste",
+   "url": "https://fansided.com/nba/"
+  },
+  {
+   "id": "si",
+   "name": "Sports Illustrated",
+   "abbr": "SI",
+   "kind": "board",
+   "weight": 1,
+   "how": "paste",
+   "url": "https://www.si.com/nba/nba-draft"
+  },
+  {
+   "id": "espn",
+   "name": "ESPN",
+   "analyst": "Jeremy Woo",
+   "abbr": "ESPN",
+   "kind": "board",
+   "weight": 1.25,
+   "how": "paste",
+   "url": "https://www.espn.com/nba/draft/",
+   "note": "June 25 watch list of 60: the top 10 by title odds, the rest a big board. Givony and Woo's in-season Top 100 replaces it when it's out."
+  },
+  {
+   "id": "no-ceilings",
+   "name": "No Ceilings",
+   "abbr": "NC",
+   "kind": "board",
+   "weight": 1.25,
+   "how": "paste",
+   "status": "pending",
+   "url": "https://www.noceilingsnba.com/",
+   "note": "Staff composite Top 60; posts as <year>-nba-draft-big-board-v<N>. Composite only, not the paid personal boards."
+  },
+  {
+   "id": "koc-yahoo",
+   "name": "Yahoo Sports",
+   "analyst": "Kevin O'Connor",
+   "abbr": "KOC",
+   "kind": "board",
+   "weight": 1.25,
+   "how": "paste",
+   "status": "pending",
+   "url": "https://sports.yahoo.com/nba/"
+  },
+  {
+   "id": "ringer",
+   "name": "The Ringer",
+   "abbr": "RING",
+   "kind": "board",
+   "weight": 1,
+   "how": "paste",
+   "status": "pending",
+   "url": "https://www.theringer.com/nba-draft"
+  },
+  {
+   "id": "nbadraftnet",
+   "name": "NBADraft.net",
+   "abbr": "NDN",
+   "kind": "board",
+   "weight": 1,
+   "how": "paste",
+   "status": "pending",
+   "url": "https://www.nbadraft.net/",
+   "note": "Top 100 big board. Their extended mock is tracked as its own source below."
+  },
+  {
+   "id": "nbadraftnet-mock",
+   "name": "NBADraft.net mock",
+   "abbr": "NDN",
+   "kind": "mock",
+   "weight": 1,
+   "how": "paste",
+   "url": "https://www.nbadraft.net/"
+  }
  ],
  "nfl": [
-  {"id": "tankathon", "name": "Tankathon", "abbr": "TANK", "kind": "board", "weight": 1, "how": "auto", "url": "https://www.tankathon.com/nfl/big_board", "note": "Daily, from tools/draft_pull.py; a new reading only when the order changes."},
-  {"id": "nflmdd", "name": "NFL Mock Draft Database", "abbr": "MDD", "kind": "board", "weight": 2, "how": "paste", "url": "https://www.nflmockdraftdatabase.com/big-boards/2027/consensus-big-board-2027", "note": "Itself a consensus of 60+ boards and 200+ mocks, so it counts double. Free view stops at 100."},
-  {"id": "jeremiah", "name": "NFL Network", "analyst": "Daniel Jeremiah", "abbr": "DJ", "kind": "board", "weight": 1.25, "how": "paste", "status": "pending", "url": "https://www.nfl.com/news/series/top-150-prospects", "note": "Top 50 usually starts in late January."},
-  {"id": "norris", "name": "Underdog", "analyst": "Josh Norris", "abbr": "JN", "kind": "board", "weight": 1, "how": "paste", "status": "pending", "url": "https://underdogfantasy.com/"},
-  {"id": "schrager", "name": "ESPN", "analyst": "Peter Schrager", "abbr": "PS", "kind": "mock", "weight": 1, "how": "paste", "status": "pending", "url": "https://www.espn.com/nfl/"}
+  {
+   "id": "tankathon",
+   "name": "Tankathon",
+   "abbr": "TANK",
+   "kind": "board",
+   "weight": 1,
+   "how": "auto",
+   "url": "https://www.tankathon.com/nfl/big_board",
+   "note": "Daily, from tools/draft_pull.py; a new reading only when the order changes."
+  },
+  {
+   "id": "nflmdd",
+   "name": "NFL Mock Draft Database",
+   "abbr": "MDD",
+   "kind": "board",
+   "weight": 2,
+   "how": "paste",
+   "url": "https://www.nflmockdraftdatabase.com/big-boards/2027/consensus-big-board-2027",
+   "note": "Itself a consensus of 60+ boards and 200+ mocks, so it counts double. Free view stops at 100."
+  },
+  {
+   "id": "kiper",
+   "name": "ESPN",
+   "analyst": "Mel Kiper Jr.",
+   "abbr": "MK",
+   "kind": "board",
+   "weight": 1.25,
+   "how": "paste",
+   "url": "https://www.espn.com/nfl/draft2027/story/_/id/50182998/2027-nfl-draft-rankings-kiper-big-board-top-prospects",
+   "note": "Top 25, updated a few times a season; grows to a Top 25 by position in spring."
+  },
+  {
+   "id": "reid",
+   "name": "ESPN",
+   "analyst": "Jordan Reid",
+   "abbr": "JR",
+   "kind": "board",
+   "weight": 1.25,
+   "how": "paste",
+   "url": "https://www.espn.com/nfl/draft2027/story/_/id/50068479/2027-nfl-draft-rankings-jordan-reid-top-prospects-players-positions",
+   "note": "Top 50 in season; expands as the draft nears."
+  },
+  {
+   "id": "pfn",
+   "name": "Pro Football Network",
+   "analyst": "Ian Cummings and Jacob Infante",
+   "abbr": "PFN",
+   "kind": "board",
+   "weight": 1,
+   "how": "paste",
+   "url": "https://www.profootballnetwork.com/nfl-draft-hq/pfsn-big-board?year=2027",
+   "note": "Live board of 350-plus; the page shows no date, so each reading is dated the day it was copied. Top 90 or so is plenty."
+  },
+  {
+   "id": "jeremiah",
+   "name": "NFL Network",
+   "analyst": "Daniel Jeremiah",
+   "abbr": "DJ",
+   "kind": "board",
+   "weight": 1.25,
+   "how": "paste",
+   "status": "pending",
+   "url": "https://www.nfl.com/news/series/top-150-prospects",
+   "note": "Top 50 usually starts in late January."
+  },
+  {
+   "id": "norris",
+   "name": "Underdog",
+   "analyst": "Josh Norris",
+   "abbr": "JN",
+   "kind": "board",
+   "weight": 1,
+   "how": "paste",
+   "status": "pending",
+   "url": "https://underdogfantasy.com/"
+  },
+  {
+   "id": "schrager",
+   "name": "ESPN",
+   "analyst": "Peter Schrager",
+   "abbr": "PS",
+   "kind": "mock",
+   "weight": 1,
+   "how": "paste",
+   "status": "pending",
+   "url": "https://www.espn.com/nfl/"
+  }
  ],
  "excluded": {
   "walterfootball": "David's call: not good enough.",
