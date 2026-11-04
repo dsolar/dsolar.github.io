@@ -178,7 +178,7 @@ test('taxi squads: rookies stash off the roster, promote for good, carry into ne
   assert.equal(L.settings.taxi, 2);
   assert.equal(G.taxiSlots(L), 2);
   // rewind so moves are open, and hand team 0 a rookie it can stash
-  const week = L.week; L.week = 2;
+  const week = L.week; L.week = 2; delete L.openWaivers;
   const rookie = ctx.free.find((p) => p.rk && !G.onWaivers(L, p.id, 0));
   assert.ok(rookie, 'the data flags rookies');
   const vet = ctx.free.find((p) => !p.rk && !G.onWaivers(L, p.id, 0));

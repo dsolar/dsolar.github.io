@@ -108,3 +108,24 @@ test('the commissioner\'s rules from the start-a-league form carry into the seas
   Z.driveDraft(g.D, F.context(g.D, g.players, g.sport), g.T0 + 3 * DAY);
   assert.equal(Z.begin(g.D, g.sport, {}).teams[1].faab, 500);
 });
+
+test('after the draft the undrafted pool is on waivers until it clears, and claims on it run together then', () => {
+  const s = setup('nfl', 'half', { format: 'h2h', weeks: 6, waiverDays: 2 });
+  Z.driveDraft(s.D, F.context(s.D, s.players, s.sport), s.T0 + 3 * DAY);
+  const L = Z.begin(s.D, s.sport, { name: 'Test', now: s.D.done });
+  const ctx = G.context(L, s.players, s.sport);
+  assert.ok(L.openWaivers > s.D.done, 'the pool clears later');
+  assert.equal(L.openWaivers, G.waiverClear(L, Math.max(s.D.done, s.D.done)), 'two business days after the draft, 3 AM Eastern');
+  const [a, b] = ctx.free.filter((p) => !(S.positions(p).includes('K') || S.positions(p).includes('DEF'))).slice(0, 2);
+  const at = s.D.done + 60e3;
+  assert.ok(G.onWaivers(L, a.id, at));
+  assert.equal(G.addDrop(L, ctx, 0, a.id, L.rosters[0][L.rosters[0].length - 1], at).ok, false, 'no straight add');
+  const drop0 = L.rosters[0][L.rosters[0].length - 1], drop1 = L.rosters[1][L.rosters[1].length - 1];
+  assert.equal(G.claim(L, ctx, 0, a.id, drop0, 5, at).ok !== false, true);
+  assert.equal(G.claim(L, ctx, 1, a.id, drop1, 9, at).ok !== false, true);
+  G.runDue(L, ctx, L.openWaivers - 1);
+  assert.equal(L.claims.filter((c) => c.status === 'open').length, 2, 'nothing runs before it clears');
+  G.runDue(L, ctx, L.openWaivers + 1);
+  assert.ok(L.rosters[1].includes(a.id), 'the higher bid wins');
+  assert.ok(!G.onWaivers(L, b.id, L.openWaivers + 1), 'and the rest are free agents');
+});

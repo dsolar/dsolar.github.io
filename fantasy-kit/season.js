@@ -83,6 +83,9 @@
       Object.assign(L.settings, { frozen: true, trades: false, ir: 0 });
       L.waivers = {};
     }
+    // the undrafted pool starts on waivers and clears like a drop (business days after the draft), so claims, not
+    // whoever's online first, decide who gets the best of it. Not for one-week leagues, showdowns or guillotines.
+    if (!hr && !sd && !settings.vampire && settings.format !== "guillotine" && (settings.weeks || 14) > 1 && s.draftWaivers !== false && G.waiverDays(L) > 0) L.openWaivers = G.waiverClear(L, at);
     // started midweek: what every player had done this week before the league began doesn't count
     if (thisWeek && settings.real && o.real && o.real !== true) L.baseline = { start: weekKeyOf(o.real, start), at, lines: JSON.parse(JSON.stringify(linesAt(o.real, start) || {})) };
     return L;

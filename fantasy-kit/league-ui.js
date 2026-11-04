@@ -56,7 +56,10 @@
     const whenRun = () => new Date(runAt()).toLocaleString("en-US", { weekday: "long", hour: "numeric", minute: "2-digit" });
     // the next waiver run: this week's if it hasn't happened, otherwise next week's
     const claimsRun = () => {
-      if (L().settings.waiverAt == null) return "Claims run when the week ends.";
+      if (L().settings.waiverAt == null) {
+        const next = L().claims.filter((c) => c.team === me() && c.status === "open").map((c) => G.clearAt(L(), c.add)).filter((x) => x > now()).sort((a, b) => a - b)[0];
+        return next ? `Each claim runs when its player clears waivers. Next: ${G.waiverWhen(next)}.` : "Each claim runs when its player clears waivers, at 3 AM Eastern.";
+      }
       const at = now() < runAt() ? runAt() : G.waiverRunAt(L(), L().week + 1);
       return `Claims run ${new Date(at).toLocaleString("en-US", { weekday: "long", hour: "numeric", minute: "2-digit" })}.`;
     };
@@ -117,7 +120,7 @@
       const ms = G.matchups(L(), ctx, w, frac(w));
       return ms.map((m) => ({
         href: matchHref(w, m.i), me: isMe(m.a) || isMe(m.b), status: m.final ? "final" : m.live ? "live" : "proj",
-        label: m.final ? "Final" : m.live ? "Live" : `Week ${w}`, sub: w > L().settings.weeks ? kindName(m.kind, w) : "",
+        label: m.final ? "Final" : m.live ? "Live" : pts() ? `Week ${w}, projected` : `Week ${w}`, sub: w > L().settings.weeks ? kindName(m.kind, w) : "",
         a: { team: T(m.a), score: m.final || m.live ? m.sa : pts() ? m.pa : null, rec: recOf(m.a) }, b: { team: T(m.b), score: m.final || m.live ? m.sb : pts() ? m.pb : null, rec: recOf(m.b) }, m,
         wp: m.final ? null : m.winProb,
       })).sort((x, y) => (y.me ? 1 : 0) - (x.me ? 1 : 0));   // your game first
@@ -216,6 +219,15 @@
     const pickVM = (key) => { const [r, t] = key.split(":").map(Number); return { pick: true, id: key, n: `Round ${r} pick, ${G.pickYear(key) > 1 ? "two seasons out" : "next season"}`, sub: (G.pickOwner(L(), key) === t ? `${T(t).name}'s own` : `From ${T(t).name}`) + (G.pickProspect(L(), ctx, key) ? `. Projects to ${G.pickProspect(L(), ctx, key).n}, ${G.pickProspect(L(), ctx, key).pos}` : ""), $: Math.round(G.pickValue(L(), ctx, key)) }; };
 
     /* ---------- pages: League ---------- */
+    // your watchlist at a glance: who's free, who's on waivers, who got taken
+    function watchCard() {
+      if (me() == null || over()) return "";
+      const ids = (L().watch[me()] || []).filter((id) => ctx.byId[id]).slice(0, 6);
+      if (!ids.length) return "";
+      return `<div class="card"><div class="mod-h"><h2>Your watchlist</h2><a href="#players/watch">All ${(L().watch[me()] || []).length}</a></div><ul class="feed">${ids.map((id) => { const p = ctx.byId[id], own = ctx.own[id];
+        const tag = own != null ? (own === me() ? `<span class="tag win">Yours</span>` : `<span class="ps">${esc(T(own).abbr)}</span>`) : G.onWaivers(L(), id, now()) ? `<button class="btn xs" data-add="${esc(id)}">Claim</button>` : `<button class="btn xs go" data-add="${esc(id)}">Add</button>`;
+        return `<li style="grid-template-columns:minmax(0,1fr) auto;align-items:center;padding:8px 16px"><span data-player="${esc(id)}" style="cursor:pointer;min-width:0">${pname(sport, p, esc(p.prank || ""))}</span>${tag}</li>`; }).join("")}</ul></div>`;
+    }
     function overview() {
       if (gl()) return guillotineOverview();
       if (roto()) return rotoOverview();
@@ -227,15 +239,18 @@
       const offers = L().trades.filter((t) => t.status === "pending" && t.to === mid);
       const champ = over() ? championOf() : null;
       // kickers and defenses are always there on waivers; the list is for players worth a look
-      const hot = ctx.free.filter((p) => !G.onWaivers(L(), p.id, now()) && !(sport.late && S.isLate(sport, p))).map((p) => ({ p, h: G.hot(L(), p) })).sort((a, b) => (b.p.vor + b.h * 0.6) - (a.p.vor + a.h * 0.6)).slice(0, 5);
+      const hot = ctx.free.filter((p) => (L().openWaivers > now() || !G.onWaivers(L(), p.id, now())) && !(sport.late && S.isLate(sport, p))).map((p) => ({ p, h: G.hot(L(), p) })).sort((a, b) => (b.p.vor + b.h * 0.6) - (a.p.vor + a.h * 0.6)).slice(0, 5);
       const pw = G.power(L(), ctx).slice(0, 6);
       const myRow = mid != null ? st.find((r) => r.team.id === mid) : null;
       // your team, claims and offers: top of the page on a phone, the sidebar on a wide screen
-      const myCards = `${L().heist && mid != null && !over() ? heistCard(mid, { stack: true }) : ""}
+      // right after the draft, before week 1 is under way: point at the results and grades
+      const fresh = L().week === 1 && now() < L().start + 2 * 864e5 && L().draft ? `<div class="card"><div class="mod-h"><h2>The draft is done</h2><a href="#draft">Results and grades</a></div><div class="bd"><p class="ps" style="margin:0">Every pick, each team's grade and the steals of the draft.</p></div></div>` : "";
+      const myCards = `${fresh}${L().heist && mid != null && !over() ? heistCard(mid, { stack: true }) : ""}
           ${myRow ? `<div class="card"><div class="mod-h">${teamAv(myRow.team, "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(myRow.team.name)}</b><span class="ps">${ord(myRow.rank)} place, ${myRow.w}-${myRow.l}${myRow.t ? "-" + myRow.t : ""}</span></div></div>
             <div class="bd"><div class="stat-row"><div><small>FAAB</small><b>$${T(mid).faab}</b></div><div><small>Waiver priority</small><b>${ord(T(mid).priority + 1)}</b></div><div><small>Streak</small><b>${esc(myRow.streak || "-")}</b></div></div>
             ${over() ? "" : `<div class="row" style="margin-top:12px;flex-wrap:wrap"><a class="btn sm" href="#team/roster">Set lineup</a>${canTrade() ? `<button class="btn sm" data-trade>Propose a trade</button>` : ""}<a class="btn sm" href="#players/fa">Free agents</a></div>`}</div></div>` : ""}
           ${mid != null && L().claims.some((c) => c.team === mid && c.status === "open") ? `<div class="card"><div class="mod-h"><h2>Your waiver claims</h2><a href="#players/claims">All claims</a></div><div class="bd" style="padding-bottom:0"><span class="ps">${esc(claimsRun())}</span></div>${claimList(L().claims.filter((c) => c.team === mid && c.status === "open"))}</div>` : ""}
+          ${watchCard()}
           ${offers.length ? `<div class="card"><div class="mod-h"><h2>Trade offers for you</h2><span class="badge">${offers.length}</span><a href="#team/trades">Review</a></div>${U.feed(offers.map((t) => ({ team: T(t.from), when: U.ago(t.at, now()), lines: t.get.map((id) => U.txLine(sport, "drop", playerVM(id), "you send")).concat(t.give.map((id) => U.txLine(sport, "add", playerVM(id), "you get"))) })))}</div>` : ""}`;
       const total = G.totalWeeks(L());
       return `<div class="wrap page">
@@ -1163,7 +1178,7 @@
     function statusOf(p) {
       const own = ctx.own[p.id];
       if (own != null) return `<a href="${teamHref(own)}" class="row" style="gap:6px;text-decoration:none;color:inherit">${teamAv(T(own), "sm")}<span class="ps">${esc(T(own).abbr)}</span></a>`;
-      if (G.onWaivers(L(), p.id, now())) return `<span class="tag gold" title="On waivers until ${G.waiverWhen(L().waivers[p.id])}">W</span>`;
+      if (G.onWaivers(L(), p.id, now())) return `<span class="tag gold" title="On waivers until ${G.waiverWhen(G.clearAt(L(), p.id))}">W</span>`;
       return `<span class="tag win">FA</span>`;
     }
     function playersPage(sub) {
@@ -1186,6 +1201,7 @@
       const cols = U.poolColumns(sport, { group: U.groupOf(sport, ui.pf), scoring: L().scoring, owner: statusOf, ownerHide: sub === "fa" || sub === "watch", ownerSort: (p) => (ctx.own[p.id] == null ? -1 : ctx.own[p.id]), actions, extra: pts() ? [] : [] });
       rows = U.sortRows(rows, cols, ui.psort);
       return `<div class="wrap page"><div class="head"><h1 class="disp">${sub === "fa" ? "Free agents" : sub === "watch" ? "Watchlist" : "All players"}</h1><span class="ps">${rows.length} players. FA is free to add now; W is on waivers, so put in a claim.</span></div>
+        ${L().openWaivers > now() && sub !== "all" ? `<div class="banner" style="margin-bottom:12px"><b>Everyone the draft left is on waivers until ${esc(G.waiverWhen(L().openWaivers))}.</b> <span class="muted">Put in claims now${L().settings.waivers === "faab" ? " with a bid" : ""}. They all run then${L().settings.waivers === "faab" ? ", highest bid first" : ", in waiver order"}.</span></div>` : ""}
         <div class="tools">${U.search(ui.pf)}</div>${U.posFilter(sport, ui.pf.pos, [], L().settings.lineup)}
         ${U.table({ cols, rows, sort: ui.psort, dense: true, limit: ui.plimit || 250, id: "fk-players", empty: sub === "watch" ? "Star players to watch them here." : "No one matches.", rowAttr: (p) => `data-player="${esc(p.id)}"${ctx.own[p.id] === mid ? ' class="me"' : ""}` })}</div>`;
     }
@@ -1232,7 +1248,7 @@
           if (full && !drop) { U.toast("Pick who to drop first", true); return false; }
           const bid = +(fd.get("bid") || 0);
           if (faab && bid > T(mid).faab) { U.toast(`You only have $${T(mid).faab} of FAAB`, true); return false; }
-          if (onW) return act(() => G.claim(L(), ctx, mid, pid, drop, bid, now()), edit ? "Claim saved." : `Bid in. ${claimsRun()}`);
+          if (onW) return act(() => G.claim(L(), ctx, mid, pid, drop, bid, now()), edit ? "Claim saved." : L().settings.waiverAt == null ? `${faab ? "Bid in" : "Claim in"}. It runs ${G.waiverWhen(G.clearAt(L(), pid))}.` : `Bid in. ${claimsRun()}`);
           return act(() => G.addDrop(L(), ctx, mid, pid, drop, now()), `${p.n} added.`);
         });
       if (!R) return;

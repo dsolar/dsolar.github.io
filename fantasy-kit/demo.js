@@ -179,6 +179,7 @@
       for (const t of L.trades) { if (t.reviewEnds) t.reviewEnds -= shift; if (t.status === "pending") t.at -= shift; }
       for (const c of L.claims) if (c.status === "open") c.at -= shift;
       for (const k of Object.keys(L.waivers)) L.waivers[k] -= shift;
+      if (L.openWaivers) L.openWaivers -= shift;
       catchUp();
     }
   }

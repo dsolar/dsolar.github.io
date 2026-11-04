@@ -1291,7 +1291,10 @@
     for (const p of ctx.free) if (started.has(p.t) && !(L.waivers[p.id] > now)) { L.waivers[p.id] = until; n++; }
     return n;
   }
-  const onWaivers = (L, pid, now) => L.waivers[pid] != null && L.waivers[pid] > now;
+  // when a player clears: his own waiver time (a drop, a game lock), or, right after the draft, when the whole
+  // undrafted pool clears (L.openWaivers), so the first manager online doesn't get the best of it
+  const clearAt = (L, pid) => (L.waivers[pid] != null ? L.waivers[pid] : L.openWaivers || null);
+  const onWaivers = (L, pid, now) => { const at = clearAt(L, pid); return at != null && at > now; };
   // Pickups this week: adds and won claims (trades don't count). settings.maxAdds caps them, if set.
   const pickups = (L, teamId) => L.tx.filter((x) => x.team === teamId && x.week === L.week && (x.type === "add" || x.type === "add/drop" || x.type === "waiver")).length;
   // settings.maxAddsSeason: a cap on pickups for the whole season (a vampire's first roster doesn't count)
@@ -1328,7 +1331,7 @@
     if (L.settings.frozen && drop) return { ok: false, why: "Rosters are set for the week. You can only fill a spot a steal emptied" };
     if (add && ctx.own[add] != null) return { ok: false, why: `${ctx.byId[add].n} is on a roster` };
     if (add && gameLockOn(L) && !onWaivers(L, add, now) && isLocked(L, ctx.byId[add], L.week, now)) L.waivers[add] = nextWeekClear(L);
-    if (add && onWaivers(L, add, now)) return { ok: false, why: `${ctx.byId[add].n} is on waivers until ${waiverWhen(L.waivers[add])}: put in a claim` };
+    if (add && onWaivers(L, add, now)) return { ok: false, why: `${ctx.byId[add].n} is on waivers until ${waiverWhen(clearAt(L, add))}: put in a claim` };
     if (drop && !L.rosters[teamId].includes(drop)) return { ok: false, why: "That player isn't on your roster" };
     if (drop && lockedStarter(L, ctx, teamId, drop, now)) return { ok: false, why: lockWhy(ctx.byId[drop]) };
     const ok = canRoster(L, ctx, teamId, add, drop ? [drop] : [], true);
@@ -1386,11 +1389,11 @@
   // claims for the players whose waivers have cleared, each batch at the moment it cleared
   function runDue(L, ctx, now) {
     const open = L.claims.filter((c) => c.status === "open");
-    const due = [...new Set(open.filter((c) => L.waivers[c.add] != null && L.waivers[c.add] <= now).map((c) => L.waivers[c.add]))].sort((a, b) => a - b);
+    const due = [...new Set(open.filter((c) => clearAt(L, c.add) != null && clearAt(L, c.add) <= now).map((c) => clearAt(L, c.add)))].sort((a, b) => a - b);
     let n = 0;
-    for (const at of due) n += runWaivers(L, ctx, at, new Set(Object.keys(L.waivers).filter((id) => L.waivers[id] === at))).length;
+    for (const at of due) n += runWaivers(L, ctx, at, new Set(open.filter((c) => c.status === "open" && clearAt(L, c.add) === at).map((c) => c.add))).length;
     // a claim on a player who's off waivers already (a free agent now) runs right away
-    const loose = new Set(open.filter((c) => c.status === "open" && L.waivers[c.add] == null).map((c) => c.add));
+    const loose = new Set(open.filter((c) => c.status === "open" && clearAt(L, c.add) == null).map((c) => c.add));
     if (loose.size) n += runWaivers(L, ctx, now, loose).length;
     return n;
   }
@@ -1833,5 +1836,5 @@
   return { realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
     finishWeek, slotMult, setKicks, isLocked, freezeLineups, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
-    weekFrac, joined, effFrac, bank, waiverPrice, waiverClear, nextWeekClear, waiverDays, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
+    weekFrac, joined, effFrac, bank, waiverPrice, waiverClear, nextWeekClear, waiverDays, clearAt, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
 });

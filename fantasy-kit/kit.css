@@ -1522,3 +1522,6 @@ table.t tr.me td.act::before{background:linear-gradient(90deg,transparent,color-
 .tw-send input{flex:1 1 100%;min-width:0}
 .tw-send .btn{flex:1 1 0}
 @media (min-width:601px){.tw-send input{flex:1 1 200px}.tw-send .btn{flex:none}}
+/* claims in the overview's sidebar: the buttons go under the players, so names have room */
+.d-only .feed.clms>li.clm{grid-template-columns:20px minmax(0,1fr) auto}
+.d-only .clm .ca{grid-column:2/-1;justify-content:flex-end}
