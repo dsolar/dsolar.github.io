@@ -31,7 +31,7 @@
     let pts = 0;
     for (const x of picks || []) {
       if (!x) continue;
-      const pos = order.indexOf(x.pid) + 1;
+      const pos = order.indexOf(idOf(x)) + 1;
       const base = pos === x.slot ? 3 : pos && Math.abs(pos - x.slot) <= 2 ? 1 : pos && pos <= 10 ? 0.5 : 0;
       pts += base * mult(x.at || nowIso(), lock);
     }
@@ -45,10 +45,15 @@
     return { lg, picks: Array.isArray(saved.picks) && saved.picks.length === 10 ? saved.picks : Array(10).fill(null), name: saved.name || BB.store.get("gtp-name") || "",
       pin: "", active: 0, q: "", pos: "all", server: {}, board: null, msg: "", ok: false, busy: false, open: null };
   }
-  const player = (pid) => D.players.find((p) => p.id === pid);
+  // Board ids are name slugs, so a pick saved under an old spelling still finds its player by name.
+  const SUFFIX = new Set(["jr", "sr", "ii", "iii", "iv", "v"]);
+  const slug = (n) => String(n || "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[.'’]/g, "")
+    .split(/[^a-z0-9]+/).filter((x) => x && !SUFFIX.has(x)).join("-");
+  const player = (pid, n) => D.players.find((p) => p.id === pid) || (n ? D.players.find((p) => p.id === slug(n)) : null);
+  const idOf = (x) => { const p = player(x.pid, x.n); return p ? p.id : x.pid; };
 
   function slotRow(x, i, lock) {
-    const p = x && player(x.pid);
+    const p = x && player(x.pid, x.n);
     const sv = C.server[i + 1];
     const kept = x && sv && sv.pid === x.pid;
     const m = x ? mult(kept ? sv.at : nowIso(), lock) : null;
@@ -62,7 +67,7 @@
   }
 
   function pool() {
-    const q = C.q.trim().toLowerCase(), taken = new Set(C.picks.filter(Boolean).map((x) => x.pid));
+    const q = C.q.trim().toLowerCase(), taken = new Set(C.picks.filter(Boolean).map(idOf));
     const list = D.players.filter((p) => BB.inGroup(D.league, p.pos, C.pos) && (!q || p.n.toLowerCase().includes(q) || (p.school || "").toLowerCase().includes(q))).slice(0, q ? 40 : 60);
     return list.map((p) => `<li><button type="button" class="ch-p${taken.has(p.id) ? " used" : ""}" data-pick="${esc(p.id)}"${taken.has(p.id) ? " disabled" : ""}>
       <span class="rk">${p.rank}</span>${BB.school(p)}<span class="ct"><b>${esc(p.n)}</b><small>${esc([p.pos, p.school].filter(Boolean).join(", "))}</small></span></button></li>`).join("")
