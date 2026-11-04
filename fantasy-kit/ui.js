@@ -384,10 +384,18 @@
   function versus(vm) {
     const lead = vm.a.score === vm.b.score ? null : vm.a.score > vm.b.score ? "a" : "b";
     const fmt = vm.fmt || ((x) => x);
-    const side = (s, k) => `<div class="side ${k}${lead ? (lead === k ? " lead" : " trail") : ""}">${teamAv(s.team, "lg")}<div><span class="nm">${esc(s.team.name)}</span><span class="rec">${esc(s.rec || "")}${s.team.owner ? `, ${esc(s.team.owner)}` : ""}</span><span class="score">${fmt(s.score)}</span>${s.proj != null ? `<span class="proj">Projected ${fmt(s.proj)}</span>` : ""}</div></div>`;
+    const side = (s, k) => `<div class="side ${k}${lead ? (lead === k ? " lead" : " trail") : ""}">${teamAv(s.team, "lg")}<div><span class="nm">${esc(s.team.name)}</span><span class="rec">${esc(s.rec || "")}${s.team.owner ? `, ${esc(s.team.owner)}` : ""}</span><span class="score">${fmt(s.score)}</span>${s.projText ? `<span class="proj">${esc(s.projText)}</span>` : s.proj != null ? `<span class="proj">Projected ${fmt(s.proj)}</span>` : ""}</div></div>`;
     const wp = vm.wp != null ? `<div class="wp"><div class="wp-bar" role="img" aria-label="Win probability ${Math.round(vm.wp * 100)} to ${Math.round((1 - vm.wp) * 100)}"><i style="width:${(vm.wp * 100).toFixed(1)}%;background:var(--t${vm.a.team.color % 12})"></i><i style="width:${((1 - vm.wp) * 100).toFixed(1)}%;background:var(--t${vm.b.team.color % 12})"></i></div><div class="wp-l"><span>${Math.round(vm.wp * 100)}%</span><span>Win probability</span><span>${Math.round((1 - vm.wp) * 100)}%</span></div></div>` : "";
-    const cats = vm.cats && vm.cats.length ? `<div class="catgrid" style="--nc:${vm.cats.length};--nc2:${Math.ceil(vm.cats.length / 2)}"><div class="who"><small>&nbsp;</small><b>${esc(vm.a.team.abbr)}</b><b>${esc(vm.b.team.abbr)}</b></div>${vm.cats.map((c) => `<div><small>${esc(c.label)}</small><b class="${c.d > 0 ? "w" : ""}">${c.fa}</b><b class="${c.d < 0 ? "w" : ""}">${c.fb}</b></div>`).join("")}</div>` : "";
-    return `<div class="versus">${side(vm.a, "a")}<div class="mid">${vm.status ? `<span class="pill${vm.live ? " live" : ""}">${esc(vm.status)}</span>` : ""}<span>vs</span></div>${side(vm.b, "b")}</div>${wp}${cats}`;
+    const cats = vm.cats && vm.cats.length ? `<div class="catgrid" style="--nc:${vm.cats.length};--nc2:${Math.ceil(vm.cats.length / 2)}"><div class="who"><small>&nbsp;</small><b>${esc(vm.a.team.abbr)}</b><b>${esc(vm.b.team.abbr)}</b>${vm.cats.some((c) => c.p != null) ? `<em class="who-p">${esc(vm.a.team.abbr)} odds</em>` : ""}</div>${vm.cats.map((c) => `<div${c.p != null ? ` title="${esc(c.label)} projects to ${esc(String(c.pa))} to ${esc(String(c.pb))}"` : ""}><small>${esc(c.label)}</small><b class="${c.d > 0 ? "w" : ""}">${c.fa}</b><b class="${c.d < 0 ? "w" : ""}">${c.fb}</b>${c.p != null ? catChance(c, vm) : ""}</div>`).join("")}</div>` : "";
+    // categories still in play: the ones neither side has better than a two in three chance of
+    const swing = vm.cats && vm.cats.some((c) => c.p != null) ? vm.cats.filter((c) => c.p != null && c.p > 1 / 3 && c.p < 2 / 3) : null;
+    const swingHtml = swing ? `<div class="cat-sw">${swing.length ? `<span>Still in play:</span>${swing.map((c) => `<b>${esc(c.label)}</b>`).join("")}` : `<span>Every category leans one way.</span>`}</div>` : "";
+    return `<div class="versus">${side(vm.a, "a")}<div class="mid">${vm.status ? `<span class="pill${vm.live ? " live" : ""}">${esc(vm.status)}</span>` : ""}<span>vs</span></div>${side(vm.b, "b")}</div>${wp}${cats}${swingHtml}`;
+  }
+  // one category's odds for the first team: a small bar and its chance, with the projected finish on hover
+  function catChance(c, vm) {
+    const q = Math.round(c.p * 100), lean = c.p >= 2 / 3 ? "up" : c.p <= 1 / 3 ? "dn" : "mid";
+    return `<span class="cch ${lean}" aria-label="${esc(vm.a.team.abbr)} has a ${q}% chance to win ${esc(c.label)}, projected ${esc(String(c.pa))} to ${esc(String(c.pb))}"><i><s style="width:${Math.max(4, q)}%"></s></i><em>${q}%</em></span>`;
   }
   // Side-by-side lineups. rows: [{ slot, a: { p, pts, proj, w }, b: { ... } }], totals: { a, b }
   function vsTable(sport, rows, totals, fmt = (x) => (x == null ? "-" : x.toFixed(1))) {

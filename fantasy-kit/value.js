@@ -188,6 +188,18 @@
     }
     return kept;
   }
+  // The line a player's rate comes from, the way evaluate values him: baseball's projection (his own line when he has
+  // none, so a callup still projects), basketball's own per game line steadied by the projection. Used for a week ahead.
+  function rateLine(sport, p, line) {
+    const L = sport.data && sport.data.lines, own = p.l && p.l[line];
+    if (!L || !p.l) return own || null;
+    const sw = PROJ_LINES[line];
+    if (sw && L[sw]) return p.l[sw] || own || null;
+    const b = PROJ_BLEND[line], pr = b && L[b.proj] && p.l[b.proj];
+    if (!pr) return own || null;
+    const cols = L[line].cols, gi = cols.indexOf(b.games), g = own && gi >= 0 ? own[gi] || 0 : 0;
+    return cols.map((c, i) => (c === "gp" || c === b.games ? (own ? own[i] || 0 : 0) : own ? ((own[i] || 0) * g + (pr[i] || 0) * b.k) / (g + b.k) : pr[i] || 0));
+  }
   // Best ball (league.bestBall, which a guillotine never sets): only each week's best scores count, so a player's upside
   // is worth more than his steadiness, and the bench plays. A player's rate gets a share (lambda) of his weekly swing:
   // the standard deviation of his real weeks this season when league.weeks has three or more, otherwise a typical swing
@@ -438,5 +450,5 @@
     }
     return out;
   }
-  return { teamCats, evaluate, scoringOf, mainPos, replacement, dollars, dynastyMult, ageOf };
+  return { teamCats, rateLine, evaluate, scoringOf, mainPos, replacement, dollars, dynastyMult, ageOf };
 });

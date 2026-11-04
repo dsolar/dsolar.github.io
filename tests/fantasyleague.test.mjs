@@ -193,3 +193,23 @@ test('claim order: equal bids run in the order you set, a higher bid always runs
   assert.deepEqual(won.map((c) => c.add), [fas[1].id]);
   assert.equal(L.claims.find((c) => c.add === fas[0].id && c.team === 0 && c.status !== 'cancelled').status, 'failed');
 });
+
+test('category projections: so far plus the rest of the week, odds that settle as the week ends', () => {
+  const s = season('nba', { scoring: 'cats9' });
+  const L = s.L, ctx = s.ctx;
+  const [a, b] = L.schedule[0][0];
+  const half = G.projectCats(L, ctx, a, 1, 0.5), now = G.matchups(L, ctx, 1, 0.5).find((m) => m.a === a);
+  for (const c of G.scoring(L, ctx).cats) {
+    if (!c.num && !c.rate) assert.ok(half.cats[c.k] >= now.ta.cats[c.k] - 1e-9, `${c.k}: the projection keeps what's already in`);
+    assert.ok(now.proj.probs[c.k] >= 0 && now.proj.probs[c.k] <= 1);
+  }
+  assert.ok(now.winProb > 0 && now.winProb < 1);
+  assert.equal(now.proj.sa + now.proj.sb + now.proj.ties, G.scoring(L, ctx).cats.length);
+  // with the week over nothing is left to come: the projection is the result and the odds are certain
+  const done = G.matchups(L, ctx, 1, 1).find((m) => m.a === a);
+  assert.deepEqual([done.proj.sa, done.proj.sb], [done.sa, done.sb]);
+  for (const q of Object.values(done.proj.probs)) assert.ok(q === 0 || q === 1 || q === 0.5);
+  // a player who's out adds nothing more
+  assert.equal(G.plays({ inj: 'Out' }), 0);
+  assert.equal(G.plays({ inj: '' }), 1);
+});

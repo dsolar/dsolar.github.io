@@ -95,14 +95,18 @@
     function versusVM(w, m) {
       if (isMe(m.b)) m = flip(m);
       const live = !m.final;
-      const cats = !pts() && m.cats ? sc().cats.map((c) => { const [x, y, d] = m.cats[c.k]; const f = c.fmt || ((v) => (Math.abs(v) >= 100 ? Math.round(v) : v.toFixed(1))); return { label: c.label, fa: f(x), fb: f(y), d }; }) : null;
-      return { a: { team: T(m.a), rec: recOf(m.a), score: m.sa, proj: live && pts() ? m.pa : null }, b: { team: T(m.b), rec: recOf(m.b), score: m.sb, proj: live && pts() ? m.pb : null },
+      const pj = live && m.proj ? m.proj : null;
+      const cats = !pts() && m.cats ? sc().cats.map((c) => { const [x, y, d] = m.cats[c.k]; const f = c.fmt || ((v) => (Math.abs(v) >= 100 ? Math.round(v) : v.toFixed(1))); const q = pj && pj.probs[c.k], px = pj && pj.cats[c.k]; return { label: c.label, fa: f(x), fb: f(y), d, p: q, pa: px ? f(px[0]) : null, pb: px ? f(px[1]) : null }; }) : null;
+      // a category week projects to a record: "Projected 6-3"
+      const rec = (x, y, t) => `${x}-${y}${t ? `-${t}` : ""}`;
+      return { a: { team: T(m.a), rec: recOf(m.a), score: m.sa, proj: live && pts() ? m.pa : null, projText: pj ? `Projected ${rec(pj.sa, pj.sb, pj.ties)}` : null }, b: { team: T(m.b), rec: recOf(m.b), score: m.sb, proj: live && pts() ? m.pb : null, projText: pj ? `Projected ${rec(pj.sb, pj.sa, pj.ties)}` : null },
         wp: live ? m.winProb : null, status: m.final ? "Final" : m.live ? `Live, ${Math.round((m.frac || 0) * 100)}% played` : "Projected", live: m.live, cats, fmt: fmtS };
     }
     // the same game with the sides swapped, so your team reads first
     function flip(m) {
       const cats = m.cats ? Object.fromEntries(Object.entries(m.cats).map(([k, [x, y, d]]) => [k, [y, x, -d]])) : m.cats;
-      return Object.assign({}, m, { a: m.b, b: m.a, sa: m.sb, sb: m.sa, pa: m.pb, pb: m.pa, ta: m.tb, tb: m.ta, w: m.w === "a" ? "b" : m.w === "b" ? "a" : m.w, winProb: m.winProb == null ? null : 1 - m.winProb, cats, outlook: m.outlook ? [m.outlook[1], m.outlook[0]] : m.outlook });
+      const proj = m.proj ? { cats: Object.fromEntries(Object.entries(m.proj.cats).map(([k, [x, y, d]]) => [k, [y, x, -d]])), sa: m.proj.sb, sb: m.proj.sa, ties: m.proj.ties, probs: Object.fromEntries(Object.entries(m.proj.probs).map(([k, q]) => [k, 1 - q])) } : m.proj;
+      return Object.assign({}, m, { proj, a: m.b, b: m.a, sa: m.sb, sb: m.sa, pa: m.pb, pb: m.pa, ta: m.tb, tb: m.ta, w: m.w === "a" ? "b" : m.w === "b" ? "a" : m.w, winProb: m.winProb == null ? null : 1 - m.winProb, cats, outlook: m.outlook ? [m.outlook[1], m.outlook[0]] : m.outlook });
     }
     // with the live feed: "Playing now", "2 games left", or nothing to say
     function liveLeft(p, w) {
@@ -240,13 +244,16 @@
     // with divisions the playoff line isn't a line, so each team in line for the playoffs is tagged with its seed
     const seedTag = (r) => (L().divs && r.seed && !over() ? ` <span class="tag${r.divLeader ? " gold" : " info"}" title="${r.divLeader ? "Leads the division" : "Wild card"}">Seed ${r.seed}</span>` : "");
     // a player's projection for the week: with the live feed, what he has plus what his team's games left should add
-    function projOf(p, sofar, w) {
+    // Football: Sleeper's projection for the week, less the share of his game already played. Basketball and baseball:
+    // his rate per game times the games his team has left (from the live feed's schedule), nothing more if he's out.
+    function projFor(p, sofar, w) {
+      const so = typeof sofar === "number" ? sofar : 0;
       const wp = sport.key === "nfl" ? weekProj(p, w) : null;
-      if (wp != null) { const g = gameNow(gamesOf(p, w) || []); return (typeof sofar === "number" ? sofar : 0) + wp * (1 - progress(g)); }
-      const wk = G.WEEK[sport.key] || { weeks: 20 }, R = (opts.hooks || {}).real, lv = R && R.live, rw = G.realWeek(L(), ctx, w);
-      if (!lv || !rw || rw.start !== lv.start || !lv.teams || !lv.teams[p.t]) return p.v / wk.weeks;
-      const t = lv.teams[p.t], per = (p.v || 0) / ({ nba: 82, nfl: 17, mlb: 162 }[sport.key] || 82);
-      return (typeof sofar === "number" ? sofar : 0) + per * (t.left + 0.5 * t.live);
+      if (wp != null) { const g = gameNow(gamesOf(p, w) || []); return so + wp * (1 - progress(g)); }
+      const wk = G.WEEK[sport.key] || { weeks: 20 };
+      if (sport.key === "nfl" || !liveWeek(w) || w !== curWeek()) return w === curWeek() && frac(w) > 0 ? so + (p.v / wk.weeks) * Math.max(0, 1 - frac(w)) : p.v / wk.weeks;
+      const per = (p.v || 0) / (sc().games || { nba: 82, mlb: 162 }[sport.key] || 82);
+      return so + per * G.gamesLeft(L(), ctx, p, w, frac(w)) * G.plays(p);
     }
     // games each lineup still has to play this week, from the live feed
     function outlookLine(m) {
@@ -631,7 +638,9 @@
         return G.playerWeek(L(), ctx, ctx.byId[pid], w, frac(w)).pts;   // best ball: the bench scores too, it just doesn't count
       };
       const wk = G.WEEK[sport.key] || { weeks: 20 };
-      const projOf = (p) => (!pts() ? null : w === curWeek() && sport.key === "nfl" && weekProj(p, w) != null ? weekProj(p, w) : p.v / wk.weeks);
+      // this week: what he should finish with (so far plus what's left); next week: his projection for it
+      const soFar = (p) => { const v = ptsOf(p.id); return v != null ? v : frac(w) > 0 ? G.playerWeek(L(), ctx, p, w, frac(w)).pts || 0 : 0; };   // bench players too
+      const projOf = (p) => (!pts() ? null : w === curWeek() ? projFor(p, soFar(p), w) : p.v / wk.weeks);
       const ir = L().ir[id] || [], irMax = G.irSlots(L()), alive = G.isAlive(L(), id), taxi = G.taxiOf(L(), id), txMax = G.taxiSlots(L());
       const moving = ui.moving && L().rosters[id].includes(ui.moving) && !G.held(L(), id).includes(ui.moving) ? ctx.byId[ui.moving] : null;
       const movingSlot = moving ? lu.indexOf(moving.id) : -1;
@@ -995,7 +1004,7 @@
         const pa = la[k] && ctx.byId[la[k]], pb = lb[k] && ctx.byId[lb[k]];
         const xa = pa ? (pts() ? ptsA[pa.id] : weekLine(pa, w)) : null, xb = pb ? (pts() ? ptsB[pb.id] : weekLine(pb, w)) : null;
         const cmp = pts() && xa != null && xb != null;
-        return { slot, a: { p: pa, pts: xa, proj: pts() && pa && !m.final ? projOf(pa, xa, w) : null, w: cmp && xa > xb, game: pa ? gameChip(pa, w) : "" }, b: { p: pb, pts: xb, proj: pts() && pb && !m.final ? projOf(pb, xb, w) : null, w: cmp && xb > xa, game: pb ? gameChip(pb, w) : "" } };
+        return { slot, a: { p: pa, pts: xa, proj: pts() && pa && !m.final ? projFor(pa, xa, w) : null, w: cmp && xa > xb, game: pa ? gameChip(pa, w) : "" }, b: { p: pb, pts: xb, proj: pts() && pb && !m.final ? projFor(pb, xb, w) : null, w: cmp && xb > xa, game: pb ? gameChip(pb, w) : "" } };
       });
       // playing, yet to play and done, for each lineup
       const tallyOf = (ids) => { const c = { in: 0, pre: 0, post: 0 }; for (const id of ids) { const p = id && ctx.byId[id], gs = p && gamesOf(p, w); if (!gs) return null; const g = gameNow(gs); if (!g) c.post++; else if (g.state === "in") c.in++; else if (gs.some((x) => x.state === "pre")) c.pre++; else c.post++; } return c; };

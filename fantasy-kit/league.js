@@ -12,10 +12,10 @@
    Everything that changes the league takes `now` (ms) and stays deterministic for the same calls. */
 (function (root, factory) {
   const FK = root.FK || {};
-  const m = factory(FK.sports || (typeof require !== "undefined" ? require("./sports.js") : null), FK.draft || (typeof require !== "undefined" ? require("./draft.js") : null));
+  const m = factory(FK.sports || (typeof require !== "undefined" ? require("./sports.js") : null), FK.draft || (typeof require !== "undefined" ? require("./draft.js") : null), FK.value || (typeof require !== "undefined" ? require("./value.js") : null));
   if (typeof module !== "undefined" && module.exports) module.exports = m;
   else (root.FK = root.FK || {}).league = m;
-})(this, function (S, F) {
+})(this, function (S, F, V) {
   "use strict";
   const sum = (a) => a.reduce((s, x) => s + x, 0);
   const DAY = 864e5, HOUR = 36e5;
@@ -292,16 +292,87 @@
       for (const [id, v] of Object.entries(banked)) players[id] = (players[id] || 0) + v;
       return { total: sum(Object.values(players)), players, lineup: best, banked: Object.keys(banked) };
     }
+    return Object.assign(catsOf(ctx, sc, lines.map((x) => x[1])), { total: null, lineup: best });
+  }
+  // Category totals from player lines ({ line: values }): counting stats add up, a percentage is made from its parts,
+  // and a rate stat (AVG, ERA) is weighted by its volume (AB, IP).
+  function catsOf(ctx, sc, lines) {
     const cats = {}, parts = {};
     for (const c of sc.cats) {
       const line = c.line || "pg";
-      const has = lines.filter(([, s]) => s[line]);
+      const has = lines.filter((s) => s && s[line]);
       const ix = (col) => ctx.sport.cols[line][col];
-      if (c.num) { const n = sum(has.map(([, s]) => s[line][ix(c.num)])), d = sum(has.map(([, s]) => s[line][ix(c.den)])); cats[c.k] = d ? n / d : 0; parts[c.k] = [n, d]; }
-      else if (c.rate) { const wt = sum(has.map(([, s]) => s[line][ix(c.w)])), x = sum(has.map(([, s]) => s[line][ix(c.rate)] * s[line][ix(c.w)])); cats[c.k] = wt ? x / wt : 0; parts[c.k] = [x, wt]; }
-      else cats[c.k] = sum(has.map(([, s]) => s[line][ix(c.col)]));
+      if (c.num) { const n = sum(has.map((s) => s[line][ix(c.num)])), d = sum(has.map((s) => s[line][ix(c.den)])); cats[c.k] = d ? n / d : 0; parts[c.k] = [n, d]; }
+      else if (c.rate) { const wt = sum(has.map((s) => s[line][ix(c.w)])), x = sum(has.map((s) => s[line][ix(c.rate)] * s[line][ix(c.w)])); cats[c.k] = wt ? x / wt : 0; parts[c.k] = [x, wt]; }
+      else cats[c.k] = sum(has.map((s) => s[line][ix(c.col)]));
     }
-    return { cats, parts, total: null, lineup: best };
+    return { cats, parts };
+  }
+  // How a player's week should end in a category league: his line so far plus his rate over the games he has left.
+  // With the live feed, games left are his pro team's (one in progress counts half); without it, the rest of the week.
+  // A player who's out projects nothing more; a doubtful or questionable one, a share.
+  const RATIO = /^(avg|obp|ops|era|whip|fg|ft)$/, PLAYS = [[/^(out|o|ir|il|sus|suspended|pup|nfi|dtd-out)/i, 0], [/^(doubtful|d)$/i, 0.3], [/^(questionable|q|gtd|dtd|day-to-day)$/i, 0.85]];
+  function gamesLeft(L, ctx, p, w, frac) {
+    const R = ctx.hooks && ctx.hooks.real, lv = R && R.live, rw = realWeek(L, ctx, w);
+    if (lv && rw && !rw.missing && rw.start === lv.start && lv.teams) { const t = lv.teams[p.t]; return t ? t.left + 0.5 * t.live : 0; }
+    const wk = WEEK[ctx.sport.key] || { weeks: 20 };
+    return Math.max(0, 1 - frac) * (GAMES[ctx.sport.key] || 82) / wk.weeks;
+  }
+  const plays = (p) => { const tag = String(p.inj || "").trim(); if (!tag) return 1; const hit = PLAYS.find(([re]) => re.test(tag)); return hit ? hit[1] : 1; };
+  function projectLine(L, ctx, teamId, p, w, frac) {
+    const sofar = playerWeek(L, ctx, p, w, effFrac(L, teamId, p.id, w, frac), frac);
+    const wk = WEEK[ctx.sport.key] || { weeks: 20 }, g = GAMES[ctx.sport.key] || 82, togo = gamesLeft(L, ctx, p, w, frac) * plays(p);
+    const rest = {};
+    for (const [line, def] of Object.entries(ctx.sport.data.lines)) {
+      if (def.proj || wk[line] == null) continue;
+      const base = V && V.rateLine ? V.rateLine(ctx.sport, p, line) : p.l[line];
+      if (!base) continue;
+      const f = (wk[line] * wk.weeks / g) * togo;   // a season line to one pro team game, times the games left
+      rest[line] = def.cols.map((c, i) => (RATIO.test(c) ? base[i] || 0 : (base[i] || 0) * f));
+    }
+    return [sofar, rest];
+  }
+  // A category team's projected week, and the odds it wins more categories. Each category's margin is uncertain in
+  // proportion to what's still to come, so a category settles as the week plays out.
+  function projectCats(L, ctx, teamId, w, frac) {
+    const sc = scoring(L, ctx);
+    if (sc.type === "points") return null;
+    const lines = [], rest = [];
+    for (const id of lineupFor(L, ctx, teamId, w).filter(Boolean)) {
+      const p = ctx.byId[id]; if (!p) continue;
+      const [a, b] = projectLine(L, ctx, teamId, p, w, frac);
+      lines.push(a, b); rest.push(b);
+    }
+    const r = catsOf(ctx, sc, rest);
+    return Object.assign(catsOf(ctx, sc, lines), { rest: r.cats, restParts: r.parts });
+  }
+  // How much one category can still move, for one team. Counting stats: what's left to come, spread wider than chance
+  // (DISP, a variance-to-mean ratio, since a big night or a rainout moves several at once). Rates and percentages:
+  // the spread of one attempt (UNIT) over the attempts still to come, as a share of all of the week's attempts.
+  const DISP = { pts: 3.5, reb: 2, ast: 2, stl: 1.3, blk: 1.5, tov: 1.3, tpm: 1.6, r: 2, rbi: 2.2, hr: 1.3, sb: 1.6, h: 1.2, tb: 3, k: 2.2, w: 1, l: 1, sv: 1, hld: 1, qs: 1, bb: 1.5, er: 2 };
+  const UNIT = { fg: 0.5, ft: 0.45, avg: 0.43, obp: 0.47, ops: 0.95, era: 7.5, whip: 1.1 };
+  function catSpread(c, pj) {
+    if (c.num || c.rate) {
+      const all = (pj.parts[c.k] || [0, 0])[1], left = (pj.restParts[c.k] || [0, 0])[1];
+      return all > 0 && left > 0 ? (UNIT[c.k] != null ? UNIT[c.k] : 0.5) * Math.sqrt(left) / all : 0;
+    }
+    return Math.sqrt(Math.max(0, pj.rest[c.k] || 0) * (DISP[c.col] || 2));
+  }
+  const normal = (z) => 1 / (1 + Math.exp(-1.702 * z));
+  // Each category's chance, then the chance of winning more categories than you lose, adding them up one at a time.
+  function catOdds(L, ctx, pa, pb) {
+    const sc = scoring(L, ctx), probs = {};
+    for (const c of sc.cats) {
+      const m = (pa.cats[c.k] - pb.cats[c.k]) * (c.low ? -1 : 1), sd = Math.hypot(catSpread(c, pa), catSpread(c, pb));
+      probs[c.k] = sd > 1e-9 ? normal(m / sd) : m > 0 ? 1 : m < 0 ? 0 : 0.5;
+    }
+    let dist = [1];
+    for (const c of sc.cats) { const q = probs[c.k], next = new Array(dist.length + 1).fill(0); dist.forEach((v, i) => { next[i + 1] += v * q; next[i] += v * (1 - q); }); dist = next; }
+    const n = sc.cats.length; let win = 0;
+    dist.forEach((v, k) => { if (k > n - k) win += v; else if (k === n - k) win += v / 2; });
+    // the projected record: categories each side is expected to win, so it reads the same way as the odds
+    const sa = Math.round(sum(Object.values(probs)));
+    return { probs, win, sa, sb: n - sa };
   }
   // What a team should score this week with average form.
   function projection(L, ctx, teamId, w) {
@@ -336,6 +407,12 @@
       if (L.results[w] && L.results[w][i]) return Object.assign({ a, b, final: true, i, kind }, L.results[w][i]);
       const x = teamWeek(L, ctx, a, w, frac), y = teamWeek(L, ctx, b, w, frac);
       const c = compare(L, ctx, x, y);
+      // a category week: where each category should end up, and the odds of winning more of them
+      if (!ctx.hooks.score && scoring(L, ctx).type !== "points") {
+        const oa = outlook(L, ctx, a, w), ob = outlook(L, ctx, b, w);
+        const ja = projectCats(L, ctx, a, w, frac), jb = projectCats(L, ctx, b, w, frac), pc = compare(L, ctx, ja, jb), od = catOdds(L, ctx, ja, jb);
+        return Object.assign({ a, b, final: false, i, kind, live: frac > 0 && frac < 1, frac, ta: x, tb: y, pa: od.sa, pb: od.sb, winProb: od.win, proj: { cats: pc.cats, sa: od.sa, sb: od.sb, ties: 0, probs: od.probs }, outlook: oa && ob ? [oa, ob] : undefined }, c);
+      }
       const pa = projection(L, ctx, a, w), pb = projection(L, ctx, b, w);
       // a real week with the live feed: the score so far plus what each starter has left to play
       const oa = outlook(L, ctx, a, w), ob = outlook(L, ctx, b, w);
@@ -360,7 +437,8 @@
     for (const id of lineupFor(L, ctx, teamId, w).filter(Boolean)) {
       const p = ctx.byId[id], t = p && lv.teams[p.t];
       if (!p || !t) continue;
-      const togo = t.left + 0.5 * t.live, per = sc.type === "points" ? (p.v || 0) / g : 0;
+      // a points rate is per game the player plays (sc.games a season), and a player who's out won't add to it
+      const togo = t.left + 0.5 * t.live, per = sc.type === "points" ? ((p.v || 0) / (sc.games || g)) * plays(p) : 0;
       rem += per * togo; vr += togo * (k * per) ** 2;
       played += t.played + 0.5 * t.live; left += togo;
     }
@@ -1553,7 +1631,7 @@
   }
 
   return { realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
-    finishWeek, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
+    finishWeek, projectCats, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
 });
