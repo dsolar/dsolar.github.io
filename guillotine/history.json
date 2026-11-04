@@ -4857,34 +4857,23 @@
       "pos": "WR",
       "nfl": "DET",
       "claimed_by": "A Warren Boston",
+      "bid": 190,
       "next_proj": 15.2
+     },
+     {
+      "n": "Justin Jefferson",
+      "pos": "WR",
+      "nfl": "MIN",
+      "claimed_by": "Love Purdy Flowers",
+      "bid": 66,
+      "next_proj": 14.62
      },
      {
       "n": "Bucky Irving",
       "pos": "RB",
       "nfl": "TB",
       "claimed_by": "Love Purdy Flowers",
-      "next_proj": 0
-     },
-     {
-      "n": "Colston Loveland",
-      "pos": "TE",
-      "nfl": "CHI",
-      "claimed_by": "Tai Streetz Lata?",
-      "next_proj": 0
-     },
-     {
-      "n": "Dak Prescott",
-      "pos": "QB",
-      "nfl": "DAL",
-      "claimed_by": "Drake Mayezini",
-      "next_proj": 16.87
-     },
-     {
-      "n": "Emeka Egbuka",
-      "pos": "WR",
-      "nfl": "TB",
-      "claimed_by": "Tai Streetz Lata?",
+      "bid": 51,
       "next_proj": 0
      },
      {
@@ -4892,20 +4881,54 @@
       "pos": "QB",
       "nfl": "DET",
       "claimed_by": "Drake Mayezini",
+      "bid": 47,
       "next_proj": 17.77
      },
      {
-      "n": "Justin Jefferson",
+      "n": "Dak Prescott",
+      "pos": "QB",
+      "nfl": "DAL",
+      "claimed_by": "Drake Mayezini",
+      "bid": 21,
+      "next_proj": 16.87
+     },
+     {
+      "n": "Parker Washington",
       "pos": "WR",
+      "nfl": "JAX",
+      "claimed_by": "Tai Streetz Lata?",
+      "bid": 21,
+      "next_proj": 14.5
+     },
+     {
+      "n": "Colston Loveland",
+      "pos": "TE",
+      "nfl": "CHI",
+      "claimed_by": "Tai Streetz Lata?",
+      "bid": 11,
+      "next_proj": 0
+     },
+     {
+      "n": "Emeka Egbuka",
+      "pos": "WR",
+      "nfl": "TB",
+      "claimed_by": "Tai Streetz Lata?",
+      "bid": 5,
+      "next_proj": 0
+     },
+     {
+      "n": "Jordan Mason",
+      "pos": "RB",
       "nfl": "MIN",
-      "claimed_by": "Love Purdy Flowers",
-      "next_proj": 14.62
+      "bid": 0,
+      "next_proj": 7.7
      },
      {
       "n": "Kirk Cousins",
       "pos": "QB",
       "nfl": "LV",
       "claimed_by": "Braelon’s Pieces",
+      "bid": 0,
       "next_proj": 15.9
      },
      {
@@ -4913,26 +4936,14 @@
       "pos": "RB",
       "nfl": "MIA",
       "claimed_by": "Holofernes",
+      "bid": 0,
       "next_proj": 12.79
-     },
-     {
-      "n": "Parker Washington",
-      "pos": "WR",
-      "nfl": "JAX",
-      "claimed_by": "Tai Streetz Lata?",
-      "next_proj": 14.5
      },
      {
       "n": "Dameon Pierce",
       "pos": "RB",
       "nfl": "PHI",
       "next_proj": 0
-     },
-     {
-      "n": "Jordan Mason",
-      "pos": "RB",
-      "nfl": "MIN",
-      "next_proj": 7.7
      },
      {
       "n": "Kyle Monangai",
@@ -4966,106 +4977,106 @@
   "9": {
    "teams": {
     "Holofernes": {
-     "chop": 0.0795,
-     "win": 0.2976,
+     "chop": 0.0824,
+     "win": 0.2932,
      "expected": 145.8,
      "surv": [
-      0.9205,
-      0.8338,
-      0.7464,
-      0.6424,
-      0.5,
-      0.2976
+      0.9176,
+      0.8327,
+      0.7411,
+      0.6351,
+      0.4917,
+      0.2932
      ],
      "faab": 235
     },
     "Drake Mayezini": {
-     "chop": 0.0988,
-     "win": 0.2286,
+     "chop": 0.0982,
+     "win": 0.2267,
      "expected": 143.1,
      "surv": [
-      0.9012,
-      0.7917,
-      0.6854,
-      0.569,
-      0.4202,
-      0.2286
+      0.9018,
+      0.7916,
+      0.6833,
+      0.5692,
+      0.4194,
+      0.2267
      ],
      "faab": 281
     },
     "Love Purdy Flowers": {
-     "chop": 0.1163,
-     "win": 0.0619,
+     "chop": 0.1195,
+     "win": 0.0603,
      "expected": 139.7,
      "surv": [
-      0.8837,
-      0.6896,
-      0.5049,
-      0.3268,
-      0.1727,
-      0.0619
+      0.8806,
+      0.6879,
+      0.5018,
+      0.3248,
+      0.1729,
+      0.0603
      ],
      "faab": 135
     },
     "A Warren Boston": {
-     "chop": 0.162,
-     "win": 0.0542,
+     "chop": 0.1614,
+     "win": 0.0585,
      "expected": 134.4,
      "surv": [
-      0.8381,
-      0.6843,
-      0.5103,
-      0.3235,
-      0.1674,
-      0.0542
+      0.8387,
+      0.6897,
+      0.518,
+      0.3291,
+      0.1707,
+      0.0585
      ],
      "faab": 2
     },
     "Love a Kittle Lamb & WhiteRice": {
-     "chop": 0.1383,
-     "win": 0.2254,
+     "chop": 0.1424,
+     "win": 0.2285,
      "expected": 136.5,
      "surv": [
-      0.8618,
-      0.7426,
-      0.6338,
-      0.5322,
-      0.4,
-      0.2254
+      0.8576,
+      0.7383,
+      0.6323,
+      0.5341,
+      0.4029,
+      0.2285
      ],
      "faab": 397
     },
     "Braelon’s Pieces": {
-     "chop": 0.2274,
-     "win": 0.0196,
+     "chop": 0.2195,
+     "win": 0.019,
      "expected": 128.7,
      "surv": [
-      0.7726,
-      0.5669,
-      0.3611,
-      0.1895,
-      0.0809,
-      0.0196
+      0.7806,
+      0.5722,
+      0.368,
+      0.1953,
+      0.0821,
+      0.019
      ],
      "faab": 1
     },
     "Tai Streetz Lata?": {
-     "chop": 0.1778,
-     "win": 0.1128,
+     "chop": 0.1768,
+     "win": 0.1141,
      "expected": 132.5,
      "surv": [
-      0.8223,
-      0.6912,
-      0.5582,
-      0.4167,
-      0.259,
-      0.1128
+      0.8233,
+      0.6877,
+      0.5558,
+      0.4126,
+      0.2604,
+      0.1141
      ],
      "faab": 178
     }
    },
-   "cut_line": 105.7,
-   "taken": "2026-11-04T13:38:33Z",
+   "cut_line": 105.8,
+   "taken": "2026-11-04T13:40:00Z",
    "lineups": {
     "Holofernes": [
      {

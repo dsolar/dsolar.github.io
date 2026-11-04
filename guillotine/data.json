@@ -4,7 +4,7 @@
  "week": 9,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-04T13:38:31Z",
+ "updated": "2026-11-04T13:39:57Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -3776,6 +3776,341 @@
    ]
   }
  ],
+ "transactions": [
+  {
+   "player": "Kirk Cousins",
+   "pos": "QB",
+   "team": "Braelon’s Pieces",
+   "bid": 0,
+   "from": "waivers",
+   "ts": 1793784895,
+   "date": "2026-11-04T09:34:55Z"
+  },
+  {
+   "player": "Ollie Gordon II",
+   "pos": "RB",
+   "team": "Holofernes",
+   "bid": 0,
+   "from": "waivers",
+   "ts": 1793784895,
+   "date": "2026-11-04T09:34:55Z"
+  },
+  {
+   "player": "Sam Darnold",
+   "pos": "QB",
+   "team": "Holofernes",
+   "bid": 0,
+   "from": "waivers",
+   "ts": 1793784895,
+   "date": "2026-11-04T09:34:55Z"
+  },
+  {
+   "player": "Cam Skattebo",
+   "pos": "RB",
+   "team": "Braelon’s Pieces",
+   "bid": 0,
+   "from": "waivers",
+   "ts": 1793784895,
+   "date": "2026-11-04T09:34:55Z"
+  },
+  {
+   "player": "Blake Corum",
+   "pos": "RB",
+   "team": "Braelon’s Pieces",
+   "bid": 0,
+   "from": "waivers",
+   "ts": 1793784895,
+   "date": "2026-11-04T09:34:55Z"
+  },
+  {
+   "player": "Harold Fannin Jr.",
+   "pos": "TE",
+   "team": "A Warren Boston",
+   "bid": 2,
+   "from": "waivers",
+   "ts": 1793784895,
+   "date": "2026-11-04T09:34:55Z"
+  },
+  {
+   "player": "Emeka Egbuka",
+   "pos": "WR",
+   "team": "Tai Streetz Lata?",
+   "bid": 5,
+   "from": "waivers",
+   "ts": 1793784895,
+   "date": "2026-11-04T09:34:55Z"
+  },
+  {
+   "player": "Tyler Allgeier",
+   "pos": "RB",
+   "team": "A Warren Boston",
+   "bid": 10,
+   "from": "waivers",
+   "ts": 1793784895,
+   "date": "2026-11-04T09:34:55Z"
+  },
+  {
+   "player": "Colston Loveland",
+   "pos": "TE",
+   "team": "Tai Streetz Lata?",
+   "bid": 11,
+   "from": "waivers",
+   "ts": 1793784895,
+   "date": "2026-11-04T09:34:55Z"
+  },
+  {
+   "player": "Parker Washington",
+   "pos": "WR",
+   "team": "Tai Streetz Lata?",
+   "bid": 21,
+   "from": "waivers",
+   "ts": 1793784894,
+   "date": "2026-11-04T09:34:54Z"
+  },
+  {
+   "player": "Dak Prescott",
+   "pos": "QB",
+   "team": "Drake Mayezini",
+   "bid": 21,
+   "from": "waivers",
+   "ts": 1793784894,
+   "date": "2026-11-04T09:34:54Z"
+  },
+  {
+   "player": "Jared Goff",
+   "pos": "QB",
+   "team": "Drake Mayezini",
+   "bid": 47,
+   "from": "waivers",
+   "ts": 1793784894,
+   "date": "2026-11-04T09:34:54Z"
+  },
+  {
+   "player": "Bucky Irving",
+   "pos": "RB",
+   "team": "Love Purdy Flowers",
+   "bid": 51,
+   "from": "waivers",
+   "ts": 1793784894,
+   "date": "2026-11-04T09:34:54Z"
+  },
+  {
+   "player": "Justin Jefferson",
+   "pos": "WR",
+   "team": "Love Purdy Flowers",
+   "bid": 66,
+   "from": "waivers",
+   "ts": 1793784894,
+   "date": "2026-11-04T09:34:54Z"
+  },
+  {
+   "player": "Amon-Ra St. Brown",
+   "pos": "WR",
+   "team": "A Warren Boston",
+   "bid": 190,
+   "from": "waivers",
+   "ts": 1793784894,
+   "date": "2026-11-04T09:34:54Z"
+  },
+  {
+   "player": "Chris Godwin Jr.",
+   "pos": "WR",
+   "team": "Holofernes",
+   "bid": 0,
+   "from": "waivers",
+   "ts": 1793518604,
+   "date": "2026-11-01T07:36:44Z"
+  },
+  {
+   "player": "Ryan Flournoy",
+   "pos": "WR",
+   "team": "Drake Mayezini",
+   "bid": 1,
+   "from": "waivers",
+   "ts": 1793518604,
+   "date": "2026-11-01T07:36:44Z"
+  },
+  {
+   "player": "Tre Tucker",
+   "pos": "WR",
+   "team": "A Warren Boston",
+   "bid": 4,
+   "from": "waivers",
+   "ts": 1793518604,
+   "date": "2026-11-01T07:36:44Z"
+  },
+  {
+   "player": "Jordan Mason",
+   "pos": "RB",
+   "team": "Deviated Rectums",
+   "bid": 0,
+   "from": "waivers",
+   "ts": 1793433538,
+   "date": "2026-10-31T07:58:58Z"
+  },
+  {
+   "player": "Jonah Coleman",
+   "pos": "RB",
+   "team": "A Warren Boston",
+   "bid": 0,
+   "from": "waivers",
+   "ts": 1793346893,
+   "date": "2026-10-30T07:54:53Z"
+  },
+  {
+   "player": "Elijah Mitchell",
+   "pos": "RB",
+   "team": "Love Purdy Flowers",
+   "bid": 0,
+   "from": "waivers",
+   "ts": 1793260939,
+   "date": "2026-10-29T08:02:19Z"
+  },
+  {
+   "player": "Jadarian Price",
+   "pos": "RB",
+   "team": "Holofernes",
+   "bid": 0,
+   "from": "waivers",
+   "ts": 1793176313,
+   "date": "2026-10-28T08:31:53Z"
+  },
+  {
+   "player": "T.J. Hockenson",
+   "pos": "TE",
+   "team": "Love a Kittle Lamb & WhiteRice",
+   "bid": 0,
+   "from": "waivers",
+   "ts": 1793176313,
+   "date": "2026-10-28T08:31:53Z"
+  },
+  {
+   "player": "Malik Willis",
+   "pos": "QB",
+   "team": "Love Purdy Flowers",
+   "bid": 0,
+   "from": "waivers",
+   "ts": 1793176313,
+   "date": "2026-10-28T08:31:53Z"
+  },
+  {
+   "player": "KC Concepcion Jr.",
+   "pos": "WR",
+   "team": "Braelon’s Pieces",
+   "bid": 0,
+   "from": "waivers",
+   "ts": 1793176313,
+   "date": "2026-10-28T08:31:53Z"
+  },
+  {
+   "player": "Dalton Kincaid",
+   "pos": "TE",
+   "team": "Braelon’s Pieces",
+   "bid": 0,
+   "from": "waivers",
+   "ts": 1793176313,
+   "date": "2026-10-28T08:31:53Z"
+  },
+  {
+   "player": "Jaylen Waddle",
+   "pos": "WR",
+   "team": "Tai Streetz Lata?",
+   "bid": 1,
+   "from": "waivers",
+   "ts": 1793176313,
+   "date": "2026-10-28T08:31:53Z"
+  },
+  {
+   "player": "Michael Penix Jr.",
+   "pos": "QB",
+   "team": "Tai Streetz Lata?",
+   "bid": 1,
+   "from": "waivers",
+   "ts": 1793176313,
+   "date": "2026-10-28T08:31:53Z"
+  },
+  {
+   "player": "Ladd McConkey",
+   "pos": "WR",
+   "team": "Tai Streetz Lata?",
+   "bid": 2,
+   "from": "waivers",
+   "ts": 1793176313,
+   "date": "2026-10-28T08:31:53Z"
+  },
+  {
+   "player": "Rome Odunze",
+   "pos": "WR",
+   "team": "Tai Streetz Lata?",
+   "bid": 3,
+   "from": "waivers",
+   "ts": 1793176313,
+   "date": "2026-10-28T08:31:53Z"
+  },
+  {
+   "player": "Omar Cooper Jr.",
+   "pos": "WR",
+   "team": "Drake Mayezini",
+   "bid": 3,
+   "from": "waivers",
+   "ts": 1793176313,
+   "date": "2026-10-28T08:31:53Z"
+  },
+  {
+   "player": "Garrett Wilson",
+   "pos": "WR",
+   "team": "Love a Kittle Lamb & WhiteRice",
+   "bid": 18,
+   "from": "waivers",
+   "ts": 1793176313,
+   "date": "2026-10-28T08:31:53Z"
+  },
+  {
+   "player": "Sam LaPorta",
+   "pos": "TE",
+   "team": "Love Purdy Flowers",
+   "bid": 23,
+   "from": "waivers",
+   "ts": 1793176313,
+   "date": "2026-10-28T08:31:53Z"
+  },
+  {
+   "player": "Matthew Stafford",
+   "pos": "QB",
+   "team": "Drake Mayezini",
+   "bid": 31,
+   "from": "waivers",
+   "ts": 1793176313,
+   "date": "2026-10-28T08:31:53Z"
+  },
+  {
+   "player": "Chuba Hubbard",
+   "pos": "RB",
+   "team": "Drake Mayezini",
+   "bid": 89,
+   "from": "waivers",
+   "ts": 1793176313,
+   "date": "2026-10-28T08:31:53Z"
+  },
+  {
+   "player": "Joe Burrow",
+   "pos": "QB",
+   "team": "A Warren Boston",
+   "bid": 207,
+   "from": "waivers",
+   "ts": 1793176313,
+   "date": "2026-10-28T08:31:53Z"
+  },
+  {
+   "player": "James Cook III",
+   "pos": "RB",
+   "team": "Holofernes",
+   "bid": 217,
+   "from": "waivers",
+   "ts": 1793176313,
+   "date": "2026-10-28T08:31:53Z"
+  }
+ ],
  "league_url": "https://football.fantasysports.yahoo.com/f1/157731",
  "offers": [
   {
@@ -4433,7 +4768,8 @@
     "avg": 20.4,
     "g": 7,
     "last": 10.04,
-    "claimed_by": "Drake Mayezini"
+    "claimed_by": "Drake Mayezini",
+    "bid": 47
    },
    {
     "name": "Dak Prescott",
@@ -4445,7 +4781,8 @@
     "avg": 19.1,
     "g": 8,
     "last": 19.8,
-    "claimed_by": "Drake Mayezini"
+    "claimed_by": "Drake Mayezini",
+    "bid": 21
    },
    {
     "name": "Kirk Cousins",
@@ -4457,7 +4794,8 @@
     "avg": 20.6,
     "g": 8,
     "last": 28.18,
-    "claimed_by": "Braelon’s Pieces"
+    "claimed_by": "Braelon’s Pieces",
+    "bid": 0
    },
    {
     "name": "Amon-Ra St. Brown",
@@ -4469,7 +4807,8 @@
     "avg": 16.4,
     "g": 7,
     "last": 9.1,
-    "claimed_by": "A Warren Boston"
+    "claimed_by": "A Warren Boston",
+    "bid": 190
    },
    {
     "name": "Justin Jefferson",
@@ -4481,7 +4820,8 @@
     "avg": 12.1,
     "g": 6,
     "last": 11.8,
-    "claimed_by": "Love Purdy Flowers"
+    "claimed_by": "Love Purdy Flowers",
+    "bid": 66
    },
    {
     "name": "Parker Washington",
@@ -4493,7 +4833,8 @@
     "avg": 11.7,
     "g": 7,
     "last": 3.1,
-    "claimed_by": "Tai Streetz Lata?"
+    "claimed_by": "Tai Streetz Lata?",
+    "bid": 21
    },
    {
     "name": "Ollie Gordon II",
@@ -4505,7 +4846,8 @@
     "avg": 9.9,
     "g": 7,
     "last": 6.9,
-    "claimed_by": "Holofernes"
+    "claimed_by": "Holofernes",
+    "bid": 0
    },
    {
     "name": "Malik Washington",
@@ -4528,7 +4870,8 @@
     "avg": 15.2,
     "g": 8,
     "last": 21,
-    "claimed_by": "Love Purdy Flowers"
+    "claimed_by": "Love Purdy Flowers",
+    "bid": 51
    },
    {
     "name": "Jordan Mason",
@@ -4539,7 +4882,8 @@
     "next_proj": 7.7,
     "avg": 6.9,
     "g": 3,
-    "last": 2
+    "last": 2,
+    "bid": 0
    },
    {
     "name": "Colston Loveland",
@@ -4551,7 +4895,8 @@
     "avg": 7.2,
     "g": 8,
     "last": 8,
-    "claimed_by": "Tai Streetz Lata?"
+    "claimed_by": "Tai Streetz Lata?",
+    "bid": 11
    },
    {
     "name": "Emeka Egbuka",
@@ -4563,7 +4908,8 @@
     "avg": 9.5,
     "g": 6,
     "last": 0,
-    "claimed_by": "Tai Streetz Lata?"
+    "claimed_by": "Tai Streetz Lata?",
+    "bid": 5
    },
    {
     "name": "Kyle Monangai",
@@ -4596,7 +4942,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-04T13:38:33Z",
+  "updated": "2026-11-04T13:40:00Z",
   "players": 3045,
   "unmatched": []
  }
