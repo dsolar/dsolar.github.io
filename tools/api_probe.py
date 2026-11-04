@@ -28,39 +28,23 @@ def shape(x, depth=0):
     return type(x).__name__ if not isinstance(x, (str, int, float)) else (x if len(str(x)) < 60 else str(x)[:60])
 
 
-for name, url in [
-    ("fg_board_2026", "https://www.fangraphs.com/prospects/the-board/2026-prospect-list"),
-    ("fg_board_2026_inseason", "https://www.fangraphs.com/prospects/the-board/2026-in-season-prospect-list"),
-    ("fg_board_2025_inseason", "https://www.fangraphs.com/prospects/the-board/2025-in-season-prospect-list"),
-]:
-    try:
-        html = get(url)
-        nd = nextdata(html)
-        out[name] = {"bytes": len(html), "next": shape(nd) if nd else None}
-        # any long list of dicts with a player name in it
-        found = []
-        def walk(v, path):
-            if isinstance(v, list) and len(v) > 50 and isinstance(v[0], dict):
-                found.append({"path": path, "len": len(v), "first": v[0], "second": v[1]})
-            elif isinstance(v, dict):
-                for k, w in v.items(): walk(w, path + "." + k)
-        if nd: walk(nd, "")
-        out[name]["lists"] = found[:3]
-    except Exception as e:
-        out[name] = f"FAILED {str(e)[:120]}"
+def board(draft):
+    rows = json.loads(get(f"https://www.fangraphs.com/api/prospects/board/prospects-list?draft={draft}&season=2026&playerid=&position=&statType=player", "application/json"))
+    top = sorted([r for r in rows if str(r.get("cOVR") or "").isdigit()], key=lambda r: int(r["cOVR"]))
+    return {"len": len(rows), "ranked": len(top), "levels": sorted({str(r.get("llevel")) for r in rows}), "top": [(r.get("cOVR"), r.get("playerName"), r.get("llevel"), r.get("mlevel"), r.get("cFV"), r.get("cETA"), r.get("minorMasterId")) for r in top[:12]], "keys": sorted(rows[0].keys()) if rows else None}
 
-for name, url in [
-    ("fg_api_board", "https://www.fangraphs.com/api/prospects/board/prospects-list?draft=2026prospect&season=2026&playerid=&position=&statType=player"),
-    ("fg_api_board2", "https://www.fangraphs.com/api/prospects/board/data?draft=2026prospect"),
-    ("mlb_stats_prospects", "https://statsapi.mlb.com/api/v1/prospects?limit=5"),
-    ("mlb_pipeline_content", "https://www.mlb.com/prospects/top100"),
-]:
+for d in ["2026updated", "2026in-season", "2026inseason", "2026prospect", "2027prospect", "2026update"]:
+    try: out["board_" + d] = board(d)
+    except Exception as e: out["board_" + d] = f"FAILED {str(e)[:120]}"
+
+ML = "https://www.fangraphs.com/api/leaders/minor-league/data?pos=all&level=0&lg=2,4,5,6,7,8,9,10,11,14,12,13,15,16,17,18,30,32&stats={st}&qual=0&type=0&team=&season=2026&seasonEnd=2026&org=&ind=0&splitTeam=false"
+for st in ["bat", "pit"]:
     try:
-        t = get(url, "application/json")
-        try: out[name] = shape(json.loads(t))
-        except Exception: out[name] = {"bytes": len(t), "head": t[:300], "hasNext": "__NEXT_DATA__" in t, "rank_hits": len(re.findall(r'"rank"\s*:', t)), "player_hits": len(re.findall(r'"playerId"|"player_id"|"mlbam', t))}
+        t = json.loads(get(ML.format(st=st), "application/json"))
+        rows = t if isinstance(t, list) else t.get("data") or t
+        out["minors_" + st] = {"len": len(rows), "first": rows[0], "griffin": [r for r in rows if "Griffin" in str(r.get("PlayerName") or r.get("playerName") or "")][:2]}
     except Exception as e:
-        out[name] = f"FAILED {str(e)[:120]}"
+        out["minors_" + st] = f"FAILED {str(e)[:160]}"
 
 json.dump(out, open("tools/api_probe_out.json", "w"), indent=1, default=str)
 print(json.dumps(out, default=str)[:3000])
