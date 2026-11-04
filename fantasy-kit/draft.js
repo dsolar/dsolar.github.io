@@ -192,7 +192,70 @@
   function canAdd(D, ctx, teamId, p) {
     if (!p) return { ok: false, why: "Unknown player" };
     if (ctx.own[p.id] != null) return { ok: false, why: `${p.n} is already taken` };
+    const spun = wheelFor(D, ctx, teamId);
+    if (spun && p.t !== spun) return { ok: false, why: `This pick has to come from ${spun}` };
     return fitsRoster(D, ctx, teamId, p);
+  }
+
+  /* ---------- team roulette ---------- */
+  // D.roulette: { teams: [pro teams], each: "pick" or "round", respins: per team, spins: { pick index: team }, used:
+  // { team id: re-spins used } }. Every pick has to be a player from one pro team, drawn from a shuffled deck so each
+  // team comes up once before any comes up again. With each: "round", the whole round draws the same team. A team the
+  // wheel lands on with nobody this roster can use is skipped for the next card; a re-spin draws a fresh one.
+  const decks = new WeakMap();
+  function deckOf(D) {
+    const R = D.roulette;
+    if (decks.has(R)) return decks.get(R);
+    const r = rng((D.seed ^ 0x5eed) >>> 0), out = [];
+    const need = D.order.length + 64;
+    while (out.length < need) {
+      const t = R.teams.slice();
+      for (let i = t.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [t[i], t[j]] = [t[j], t[i]]; }
+      out.push(...t);
+    }
+    decks.set(R, out);
+    return out;
+  }
+  // the card a pick starts on: its own, or its round's
+  const cardOf = (D, k) => (D.roulette.each === "round" ? Math.floor(k / D.teams.length) : k);
+  // can this roster use anyone left on that pro team?
+  const usable = (D, ctx, teamId, t) => ctx.available.some((q) => q.t === t && ctx.own[q.id] == null && fitsRoster(D, ctx, teamId, q).ok);
+  // The pro team pick k has to come from (with ctx, the first card this roster can use). null without roulette.
+  function spinOf(D, k, ctx, teamId) {
+    const R = D.roulette;
+    if (!R || !R.teams || !R.teams.length || D.type === "auction") return null;
+    if (R.spins && R.spins[k]) return R.spins[k];
+    const deck = deckOf(D), c = cardOf(D, k);
+    if (!ctx) return deck[c % deck.length];
+    for (let j = 0; j < R.teams.length; j++) { const t = deck[(c + j) % deck.length]; if (usable(D, ctx, teamId, t)) return t; }
+    return null;
+  }
+  // the team the pick on the clock is held to, for the team on the clock (cached per board state, since every row of
+  // the player table asks)
+  function wheelFor(D, ctx, teamId) {
+    if (!D.roulette || D.phase !== "live" || D.type === "auction") return null;
+    const k = nextIndex(D);
+    if (k < 0 || D.order[k] !== teamId) return null;
+    const key = `${k}:${D.board.filter(Boolean).length}:${(D.roulette.spins || {})[k] || ""}`;
+    if (ctx._wheel && ctx._wheel.key === key && ctx._wheel.D === D) return ctx._wheel.t;
+    const t = spinOf(D, k, ctx, teamId);
+    ctx._wheel = { key, D, t };
+    return t;
+  }
+  const respinsLeft = (D, teamId) => (D.roulette ? Math.max(0, (D.roulette.respins || 0) - ((D.roulette.used || {})[teamId] || 0)) : 0);
+  // a re-spin: a fresh card for the pick on the clock, never the team it just landed on
+  function respin(D, ctx, teamId, now) {
+    const c = onClock(D, now);
+    if (!D.roulette || !c || c.team !== teamId) return { ok: false, why: "It's not your pick" };
+    if (!respinsLeft(D, teamId)) return { ok: false, why: "You're out of re-spins" };
+    const R = D.roulette, was = wheelFor(D, ctx, teamId), r = rng((D.seed + 7919 * (c.index + 1) + 31 * ((R.used || {})[teamId] || 0)) >>> 0);
+    const pool = R.teams.filter((t) => t !== was && usable(D, ctx, teamId, t));
+    if (!pool.length) return { ok: false, why: "No other team has anyone you can use" };
+    const t = pool[Math.floor(r() * pool.length)];
+    (R.spins = R.spins || {})[c.index] = t;
+    (R.used = R.used || {})[teamId] = ((R.used || {})[teamId] || 0) + 1;
+    ctx._wheel = null;
+    return { ok: true, team: t };
   }
   // Room for him on this roster: size, position limits, the starting lineup still fillable, the league's own rule.
   function fitsRoster(D, ctx, teamId, p) {
@@ -946,7 +1009,7 @@
   }
   const made_ = (D) => made(D);
 
-  return { setOrder, recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
+  return { spinOf, wheelFor, respin, respinsLeft, setOrder, recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
     start, pause, pick, worth, resize, offerHold, holdLeft, HOLD_MAX, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, botMax, standings, sizeOf,
     clockLen, thinkTime, bankShare, slotInfo, fitsRoster, canSteal, steal, stealsOf, stealsLeft, stealsOpen, botSteal, pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
     tradeCheck, balance, propose, respond, cancel, botAnswer, botOffer };

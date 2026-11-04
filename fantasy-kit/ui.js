@@ -661,9 +661,24 @@
       } else {
         const c = F.onClock(d, n), t = team(c.team), mine = isMe(t);
         const next = me() != null ? F.nextPickOf(d, me()) : null;
+
         mid = `<div class="otc${mine ? " me" : ""}">${teamAv(t, "md")}<span class="who"><small>${mine ? (c.makeup ? "You were robbed. Pick again" : "You're on the clock") : c.makeup ? "Make-up pick" : "On the clock"}</small><b>${esc(t.name)}</b><span>${c.makeup ? `Make-up pick: ${esc(team(c.makeup.from).abbr)} stole ${esc((ctx.byId[c.makeup.forbid] || {}).n || "a player")}` : mystery() ? `Pick ${c.pick} of ${c.total}` : `Round ${c.round}, pick ${c.inRound} (${ord(c.pick)} overall)`}${elephant() && mine ? (F.stealsOpen(d, c.index) ? `. ${F.stealsLeft(d, me())} steal${F.stealsLeft(d, me()) === 1 ? "" : "s"} left` : ". Steals are over") : ""}${viaOf(c.index) ? `, from ${isMe(viaOf(c.index)) ? "you" : esc(viaOf(c.index).name)}` : ""}${!mine && next ? `. You pick in ${next - c.pick}` : ""}${d.paused ? (d.hold ? `. Stopped while ${isMe(team(d.hold.team)) ? "you look" : `${esc(team(d.hold.team).name)} looks`} at a trade offer` : ", paused") : ""}${d.bank && t.bank <= 0 ? `. Bank empty: ${d.bank.floor} seconds a pick` : ""}</span></span><span class="ring" id="fk-ring" title="${d.bank ? "Time left in the bank" : "Time left on the pick"}"><span id="fk-timer"></span></span></div>`;
       }
-      return `<div class="dr-top">${lg}${mid}<div class="acts">${ctl.join("")}</div></div>`;
+      return `<div class="dr-top">${lg}${mid}${wheelHtml()}<div class="acts">${ctl.join("")}</div></div>`;
+    }
+    // team roulette: a football team's full name is its defense's; elsewhere the abbreviation does
+    let fullNames = null;
+    const teamFull = (t) => { if (!fullNames) { fullNames = {}; for (const p of opts.players) if (S.positions(p).includes("DEF") && p.t) fullNames[p.t] = p.n; } return fullNames[t] || t; };
+    const spinNow = () => { const d = D(); if (!d.roulette || d.phase !== "live" || auction()) return null; const c = F.onClock(d, now()); return c ? { c, t: F.wheelFor(d, ctx, c.team) } : null; };
+    // the pro team the pick on the clock has to come from, and a re-spin for the manager who's up
+    function wheelHtml() {
+      const d = D();
+      if (!d.roulette || auction()) return "";
+      if (d.phase === "setup") return `<div class="rl-now"><span class="rl-w" aria-hidden="true"></span><span class="rl-t"><small>Team roulette</small><b>${d.roulette.each === "round" ? "Each round" : "Each pick"}, the wheel picks the team</b></span><span class="ps">${d.roulette.respins ? `${d.roulette.respins} re-spin${d.roulette.respins > 1 ? "s" : ""} a team` : "No re-spins"}</span></div>`;
+      const sn = spinNow();
+      if (!sn || !sn.t) return "";
+      const mine = isMe(team(sn.c.team)), left = mine ? F.respinsLeft(d, me()) : 0;
+      return `<div class="rl-now${mine ? " me" : ""}"><span class="rl-w" aria-hidden="true"></span><span class="rl-t"><small>${mine ? "You have to take a player from" : `${esc(team(sn.c.team).abbr)} has to take a player from`}</small><b>${proTeam(sport, sn.t)} ${esc(teamFull(sn.t))}</b></span>${mine && left ? `<button class="btn sm" data-act="respin">Re-spin <span class="ps">${left} left</span></button>` : ""}</div>`;
     }
     // The pick ticker: the last few picks, the pick on the clock, and who's up next.
     function ticker() {
@@ -678,7 +693,8 @@
         const p = pk && pk.pid && ctx.byId[pk.pid], via = viaOf(k);
         if (!seenK(k)) { cards.push(`<div class="tk hid"><span class="n">${lab}</span><b>Sealed</b><small>${d.phase === "live" && k > k0 ? `${k - k0} away` : "Revealed at the start"}</small></div>`); continue; }
         if (p) cards.push(`<button type="button" class="tk done c${colorOf(sport, p)}${isMe(t) ? " me" : ""}${pk.steal ? " steal" : ""}${pk.gone ? " gone" : ""}" data-player="${esc(p.id)}"><span class="n">${lab} ${esc(t.abbr)}</span><b>${esc(p.n)}</b><small>${pk.steal ? `Stolen from ${esc(team(pk.from).abbr)}` : pk.gone ? "Later stolen" : `${S.positions(p).join(", ")} ${esc(p.t)}`}</small></button>`);
-        else cards.push(`<div class="tk${k === k0 && d.phase === "live" ? " now" : ""}${isMe(t) ? " me" : ""}"><span class="n">${teamAv(t, "sm")} ${lab}</span><b>${isMe(t) ? "You" : esc(t.name)}</b><small>${d.phase === "setup" ? (k === 0 ? "Up first" : `Pick ${k + 1}`) : k === k0 && d.phase === "live" ? "On the clock" : k > k0 ? `${k - k0} away` : "Passed"}${via ? `, via ${esc(via.abbr)}` : ""}</small></div>`);
+        else { const sp = d.roulette && !auction() ? (k === k0 && d.phase === "live" ? F.wheelFor(d, ctx, d.order[k]) : F.spinOf(d, k)) : null;
+          cards.push(`<div class="tk${k === k0 && d.phase === "live" ? " now" : ""}${isMe(t) ? " me" : ""}"><span class="n">${teamAv(t, "sm")} ${lab}</span><b>${isMe(t) ? "You" : esc(t.name)}</b><small>${sp ? `${proTeam(sport, sp)} ` : ""}${d.phase === "setup" ? (k === 0 ? "Up first" : `Pick ${k + 1}`) : k === k0 && d.phase === "live" ? "On the clock" : k > k0 ? `${k - k0} away` : "Passed"}${via ? `, via ${esc(via.abbr)}` : ""}</small></div>`); }
       }
       const tk = `<div class="ticker" id="fk-ticker" tabindex="0" aria-label="Picks">${cards.join("")}</div>`;
       return d.bank ? `<div>${tk}<div class="budgets bank" aria-label="Time banks">${bankChips()}</div></div>` : tk;
@@ -715,6 +731,9 @@
       const st = auction() && d.phase === "live" ? F.auctionState(d, n) : null;
       const myNom = st && st.kind === "nominate" && st.team === mine;
       let rows = (ui.show === "all" ? opts.players : ctx.available).filter((p) => passes(sport, p, ui.f));
+      // team roulette: the list shows the wheel's team for the pick on the clock, unless you ask for everyone
+      const sn = spinNow(), only = sn && sn.t && !ui.rlAll && ui.show !== "all";
+      if (only) rows = rows.filter((p) => p.t === sn.t);
       const actions = (p) => {
         if (ctx.own[p.id] != null) { const ok = stealOk(p.id); return `${ok && ok.ok ? `<button class="btn xs warn" data-steal="${esc(p.id)}">Steal</button> ` : ""}${teamAv(team(ctx.own[p.id]), "sm")}`; }
         if (mine == null) return "";
@@ -728,7 +747,8 @@
       if (at && !ui.sortSet) { ui.sort = { k: "my", dir: 1 }; ui.sortSet = true; }
       const cols = poolColumns(sport, { group: groupOf(sport, ui.f), scoring: d.scoring, actions, lead });
       rows = sortRows(rows, cols, ui.sort);
-      return table({ cols, rows, sort: ui.sort, dense: true, id: "fk-pool", limit: ui.limit || 250, empty: "No one matches.",
+      const rlBar = sn && sn.t ? `<div class="rl-bar"><span>${only ? `Showing ${esc(teamFull(sn.t))} players: the wheel's team for this pick.` : `Showing everyone. This pick has to come from ${esc(teamFull(sn.t))}.`}</span><button class="btn xs" data-act="rlall">${only ? "Show everyone" : `Only ${esc(sn.t)}`}</button></div>` : "";
+      return rlBar + table({ cols, rows, sort: ui.sort, dense: true, id: "fk-pool", limit: ui.limit || 250, empty: "No one matches.",
         rowAttr: (p) => `data-player="${esc(p.id)}" class="${mine != null && ctx.own[p.id] == null && !F.canAdd(d, ctx, mine, p).ok ? "dim" : ""}"` });
     }
     function board() {
@@ -1109,6 +1129,8 @@
           else if (a === "trade") openTrade();
           else if (a === "recap") { const txt = recapText(); (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast("Recap copied. Paste it in your group chat."), () => dialog(`<h3>Draft recap</h3><textarea rows="14" style="width:100%;font:inherit;font-size:13px" readonly>${esc(txt)}</textarea><div class="acts"><button type="button" class="btn" data-close>Close</button></div>`)); }
           else if (a === "alerts") { const v = !alerts.on(); alerts.set(v).then(() => { toast(v ? (typeof Notification !== "undefined" && Notification.permission === "denied" ? "Alerts on. Your browser blocks notifications, so you'll get the chime and tab only." : "Alerts on: a chime, and a notification when this tab is in the background.") : "Alerts off."); render(); }); }
+          else if (a === "respin") act(() => { const r = F.respin(d, ctx, me(), n); if (r.ok) toast(`The wheel lands on ${teamFull(r.team)}.`); return r; });
+          else if (a === "rlall") { ui.rlAll = !ui.rlAll; render(); }
           else if (a === "auto") { const t = team(me()); t.auto = !t.auto; if (t.auto) toast("Autodraft is on: the bot picks for you."); save(); render(); }
         }
         return;

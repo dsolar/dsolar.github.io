@@ -302,3 +302,41 @@ test('showdown: one game\'s pool, a captain who counts 1.5x and goes to the best
   assert.equal(G.isLocked(L, cap, 1, at - 1), false);
   assert.equal(G.isLocked(L, cap, 1, at), true, 'kickoff locks everyone');
 });
+
+test('team roulette: every pick comes from the team the wheel lands on, a round can share one, and a re-spin draws another', () => {
+  const data = JSON.parse(readFileSync(new URL('../fantasy-kit/data/nfl.json', import.meta.url), 'utf8'));
+  const sport = S.attach(Object.assign({}, S.nfl), data);
+  const players = data.players.map((p) => ({ ...p }));
+  const lineup = sport.lineup.filter((x) => x !== 'BN');
+  V.evaluate(sport, players, { teams: 4, lineup, scoring: 'half' });
+  const teams = [...new Set(players.map((p) => p.t).filter((t) => t && t !== 'FA'))];
+  for (const each of ['pick', 'round']) {
+    const D = F.create({ sport, teams: 4, seed: 21, now: T0, lineup, botDelay: 0, scoring: 'half' });
+    D.roulette = { teams, each, respins: 1, spins: {}, used: {} };
+    const ctx = F.context(D, players, sport);
+    F.start(D, T0);
+    const byRound = {};
+    for (let k = 0; k < D.order.length; k++) {
+      const want = F.wheelFor(D, ctx, D.order[k]);
+      assert.ok(want, `pick ${k + 1} has a team`);
+      assert.ok(players.filter((p) => p.t === want).some((p) => F.canAdd(D, ctx, D.order[k], p).ok));
+      assert.equal(F.tick(D, ctx, T0 + k + 1, 1), 1);
+      const p = ctx.byId[D.board[k].pid];
+      assert.equal(p.t, want, `pick ${k + 1} came from ${want}`);
+      const r = Math.floor(k / 4); (byRound[r] = byRound[r] || new Set()).add(want);
+    }
+    if (each === 'round') assert.ok(Object.values(byRound).filter((x) => x.size === 1).length >= D.rounds - 3, 'a round mostly shares one team (one is skipped only when a roster has no use for it)');
+    assert.equal(D.phase, 'done');
+  }
+  // a re-spin on the clock changes the team, once
+  const D = F.create({ sport, teams: 2, seed: 5, now: T0, lineup, botDelay: 60e3, scoring: 'half' });
+  D.teams[0].owner = 'David';
+  D.roulette = { teams, each: 'pick', respins: 1, spins: {}, used: {} };
+  const ctx = F.context(D, players, sport);
+  F.start(D, T0);
+  const was = F.wheelFor(D, ctx, 0), r = F.respin(D, ctx, 0, T0 + 1);
+  assert.ok(r.ok); assert.notEqual(r.team, was); assert.equal(F.wheelFor(D, ctx, 0), r.team);
+  assert.equal(F.respin(D, ctx, 0, T0 + 2).ok, false, 'one re-spin a draft');
+  const off = players.find((p) => p.t !== r.team && ctx.own[p.id] == null);
+  assert.equal(F.pick(D, ctx, 0, off.id, T0 + 3).ok, false, 'a player from another team is refused');
+});

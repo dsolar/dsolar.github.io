@@ -36,7 +36,7 @@
     lineup: "", bench: null, playoffs: 4, deadline: null, review: "vote", faab: null, waiverHours: 36,
     weights: null, cats: null, waivers: "faab", ir: 1, maxAdds: 0, posMax: {}, keepers: 0, keeperCost: "round", legs: "1", cons: "none", median: 0, bestball: 0, divs: 0, rookie: 3, fpicks: 1, taxi: 2, ohold: "clock", tep: 0, ptd: 4, b100r: 0, b100c: 0, b300p: 0, vamp: "off", vlike: 0, vdouble: 0,
     reviewHours: 24, vetoShare: 0.5, waiverOrder: "rolling", minBid: 0, maxAddsSeason: 0,
-    open: {}, reveal: "start", kind: "redraft", when: "now", keepN: 3, tepOn: 0, tepAmt: 0.5, b100rOn: 0, b100rAmt: 3, b100cOn: 0, b100cAmt: 3, b300pOn: 0, b300pAmt: 3, vampOn: 0, vampWho: "random" };
+    open: {}, reveal: "start", kind: "redraft", when: "now", rlOn: 0, rlRound: 0, respins: 1, keepN: 3, tepOn: 0, tepAmt: 0.5, b100rOn: 0, b100rAmt: 3, b100cOn: 0, b100cAmt: 3, b300pOn: 0, b300pAmt: 3, vampOn: 0, vampWho: "random" };
   // a vampire league: football, head to head on points, and a draft where one team can simply sit out
   const vampOk = () => form.sport === "nfl" && form.season === "h2h" && ["snake", "linear", "3rr"].includes(form.type);
   // scoring: a preset key, or "cp" (custom points) / "cc" (custom categories)
@@ -226,6 +226,8 @@
           ${fld("Teams", seg("teams", (showdown() ? [2, 4] : (oneWeek() ? [2] : []).concat([4, 6, 8, 10, 12, 14, 16, 20])).map((x) => [x, String(x)]), form.teams, "Teams", { wrap: true, cls: "big" }), oneWeek() && form.teams === 2 ? "Just you and one other team, head to head." : "")}
           ${fld("Scoring", cards("scoring", presets, form.scoring, "Scoring", presets.length > 4 ? 3 : presets.length))}
           <div class="nl-dr">${fld("Draft", seg("type", Object.keys(F.FORMATS).map((k) => [k, DRAFT_SHORT[k] || F.FORMATS[k]]), form.type, "Draft format", { wrap: true }), esc(DRAFTS[form.type] || ""))}
+          ${rlOk() ? toggle("rlOn", "Team roulette", `Each pick, a wheel picks the ${sp.key === "nfl" ? "NFL" : sp.key === "nba" ? "NBA" : "MLB"} team you have to draft from`, form.rlOn,
+            `<div class="g2">${fld("The wheel spins", seg("rlRound", [[0, "Every pick"], [1, "Once a round, same team for all"]], form.rlRound, "The wheel spins", { wrap: true }))}${fld("Re-spins a team", seg("respins", [[0, "None"], [1, "1"], [2, "2"], [3, "3"]], form.respins, "Re-spins a team"))}</div>`) : ""}
           ${fld(auction ? "Bid clock" : "Pick clock", seg("clock", live, form.clock, auction ? "Bid clock" : "Pick clock", { wrap: true }), auction ? "Every bid resets the clock." : form.clock >= 3600 ? "A slow draft: managers with email alerts get one when they're up." : "When a clock runs out, the best player left is taken.")}</div>
         </section>
         <section class="nl-sec"><h2 class="nl-h">Fine-tune</h2><p class="nl-sub">Every rule and what it's set to. Open one to change it.</p><div class="nr-l">${rows}</div></section>
@@ -249,9 +251,9 @@
     const seasonName = (seasonsFor(sp).find(([x]) => x === form.season) || [, ""])[1].split(":")[0];
     const style = showdown() ? `Showdown${sdGame() ? `, ${sdGame().away} @ ${sdGame().home}` : ""}, captain at 1.5x` : `${(KINDS.find(([k]) => k === form.kind) || [, "Redraft"])[1]}${showdown() ? (sdGame() ? `: ${sdGame().away} @ ${sdGame().home}` : "") : oneWeek() ? ` (${form.when === "now" ? "this week" : "next week"})` : ""}, ${scoringType(sp) === "cats" && formatOf() === "h2h" ? "head to head, most categories" : scoringType(sp) === "cats" && formatOf() === "h2hcats" ? "head to head, each category" : FORMATS[formatOf()] ? FORMATS[formatOf()][0].toLowerCase() : ""}${form.bestball ? (gl ? ", best ball" : ", best ball") : gl ? ", set lineups" : ""}`;
     return {
-      line: `${sp.name}, ${n} teams, ${sc}, ${DRAFT_SHORT[form.type]} draft. ${style}`,
+      line: `${sp.name}, ${n} teams, ${sc}, ${DRAFT_SHORT[form.type]} draft${rlOk() && form.rlOn ? " with team roulette" : ""}. ${style}`,
       scoring: bon.length ? bon.join(", ") : form.scoring === "cp" ? "Custom points" : "No bonuses",
-      draft: `${clock} a ${auction() ? "bid" : "pick"}${form.type === "mystery" ? `, packages open ${{ now: "now", start: "at the start", own: "as picks come up" }[form.reveal || "start"]}` : ""}${!auction() && form.type !== "elephant" ? (form.trades ? ", trades on" : ", no trades") : ""}`,
+      draft: `${rlOk() && form.rlOn ? `Team roulette${form.rlRound ? " by round" : ""}, ` : ""}${clock} a ${auction() ? "bid" : "pick"}${form.type === "mystery" ? `, packages open ${{ now: "now", start: "at the start", own: "as picks come up" }[form.reveal || "start"]}` : ""}${!auction() && form.type !== "elephant" ? (form.trades ? ", trades on" : ", no trades") : ""}`,
       roster: showdown() ? "Captain and 5 flex, no bench" : `${lu.length} starters, ${form.bench == null ? sp.bench : form.bench} bench${form.ir ? `, ${form.ir} IR` : ""}`,
       season: `${gl ? `${n - 1} weeks` : `${form.weeks} weeks`}${form.divs && !gl && form.season !== "roto" ? `, ${form.divs} divisions` : ""}`,
       playoffs: po ? `${po} teams, ${playoffWeeks(po)} weeks` : "None",
@@ -262,6 +264,8 @@
     };
   }
   const auction = () => form.type === "auction";
+  // team roulette works with drafts that go pick by pick (not a showdown: two teams make a dull wheel)
+  const rlOk = () => ["snake", "linear", "3rr"].includes(form.type) && !showdown();
   const seasonsFor = (sp) => SEASONS[scoringType(sp)];
   // the fine-tune list: [key, title, what it covers, current value, body]
   function ROWS(sp) {
@@ -380,7 +384,7 @@
   const playoffWeeks = (po) => { const R = Math.ceil(Math.log2(po)); return form.legs === "all2" ? 2 * R : form.legs === "final2" ? R + 1 : R; };
   const kc = () => { const ok = form.type === "auction" ? ["price", "price5"] : ["round", "round1", "free"]; return ok.includes(form.keeperCost) ? form.keeperCost : ok[0]; };
   const POS_MAIN = { nfl: ["QB", "RB", "WR", "TE", "K", "DEF"], nba: ["PG", "SG", "SF", "PF", "C"], mlb: ["C", "1B", "2B", "3B", "SS", "OF", "SP", "RP"] };
-  const NUMERIC = /^(teams|clock|weeks|trades|bench|faab|playoffs|deadline|waiverHours|ir|maxAdds|median|bestball|divs|rookie|fpicks|taxi|ptd|vlike|vdouble|reviewHours|vetoShare|minBid|maxAddsSeason|keepN|vampOn|(tep|b100r|b100c|b300p)(On|Amt)|pm_.+)$/;
+  const NUMERIC = /^(rlOn|rlRound|respins|teams|clock|weeks|trades|bench|faab|playoffs|deadline|waiverHours|ir|maxAdds|median|bestball|divs|rookie|fpicks|taxi|ptd|vlike|vdouble|reviewHours|vetoShare|minBid|maxAddsSeason|keepN|vampOn|(tep|b100r|b100c|b300p)(On|Amt)|pm_.+)$/;
   // keep what's typed when a choice redraws the form
   function grab() {
     const root = $(".su"); if (!root) return;
@@ -449,6 +453,12 @@
         botDelay: 3000, clock: auction ? 0 : form.clock, bidClock: auction ? form.clock : 15, nomClock: 30, budget: 200, name: form.name.trim(),
         trades: form.trades !== 0, curve: form.type === "mystery" ? F.pickCurve(players, total) : null, reveal: form.type === "mystery" ? form.reveal || "start" : undefined });
       D.teams.forEach((t, i) => (t.color = (i * 5) % 12));
+      if (rlOk() && form.rlOn) {
+        let pro = [...new Set(players.map((p) => p.t).filter((t) => t && t !== "FA"))].sort();
+        // a one-week league that starts now leaves out teams on a bye or already done playing
+        if (oneWeek() && form.when !== "next") { const lv = await C.live(form.sport).catch(() => null); const playing = Object.entries((lv && lv.games) || {}).filter(([, gs]) => (gs || []).some((g) => g.state === "pre")).map(([t]) => t); if (playing.length >= 4) pro = pro.filter((t) => playing.includes(t)); }
+        D.roulette = { teams: pro, each: form.rlRound ? "round" : "pick", respins: form.respins || 0, spins: {}, used: {} };
+      }
       if (D.trading) D.offerHold = form.ohold || "clock";        // each team its own color, the same ones the league pages use
       const tn = (form.team || "").trim() || `${form.me.trim().split(" ")[0]}'s team`;
       D.teams[0].name = tn.slice(0, 28);
