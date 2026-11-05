@@ -88,7 +88,9 @@
         return '<div class="ds-nav-item' + (active ? ' ds-current' : '') + '"><div class="ds-nav-label"><a class="ds-section-link" href="' + esc(at(s.url)) + '"' + (active ? ' aria-current="' + (folder === s.id ? 'page' : 'location') + '"' : '') + '>' + esc(s.label) + '</a>'
           + (contents ? '<button class="ds-disclosure" type="button" id="ds-toggle-' + s.id + '" aria-label="' + esc(s.label) + ' submenu" aria-expanded="false" aria-controls="ds-menu-' + s.id + '">' + chevron + '</button>' : '') + '</div>'
           + (contents ? '<div class="ds-dropdown ds-dropdown-' + s.id + '" id="ds-menu-' + s.id + '" aria-labelledby="ds-toggle-' + s.id + '" hidden>' + contents + '<a class="ds-view-all" href="' + esc(at(s.url)) + '">Explore ' + esc(s.label) + ' <span aria-hidden="true">→</span></a></div>' : '') + '</div>';
-      }).join("") + '<a class="ds-all-projects" href="' + esc(at("#projects")) + '">Explore all projects <span aria-hidden="true">→</span></a></div></div>';
+      }).join("") + '<a class="ds-all-projects" href="' + esc(at("#projects")) + '">Explore all projects <span aria-hidden="true">→</span></a></div>'
+      // Sign in, or your account (assets/account.js fills it)
+      + '<div class="ds-account" id="ds-account"></div></div>';
     // The same category destinations in every full-size footer.
     document.querySelectorAll(".foot-nav").forEach(function (footer) {
       var email = footer.querySelector("[data-user]");
@@ -97,6 +99,11 @@
     });
   }
   render();
+  window.dispatchEvent(new Event("dsolar:nav-render"));
+  // the site's account: sign in from any page, and the daily games' saves follow you (assets/account.js)
+  if (!window.DSAccount && !document.querySelector('script[src*="assets/account.js"]')) {
+    var acct = document.createElement("script"); acct.src = at("assets/account.js?v=20261105-acct"); acct.defer = true; document.head.appendChild(acct);
+  }
   bar.addEventListener("click", function (event) {
     var button = event.target.closest("button");
     if (button && button.classList.contains("ds-menu-toggle")) {
@@ -128,7 +135,7 @@
     }
   });
   desktop.addEventListener("change", function () { closeDropdowns(); bar.querySelector(".ds-primary").hidden = !desktop.matches; bar.querySelector(".ds-menu-toggle").setAttribute("aria-expanded", "false"); });
-  window.addEventListener("dsolar:projects-change", render);
+  window.addEventListener("dsolar:projects-change", function () { render(); window.dispatchEvent(new Event("dsolar:nav-render")); });
   if (window.ResizeObserver) new ResizeObserver(function () {
     document.documentElement.style.setProperty("--ds-navigation-height", bar.getBoundingClientRect().height + "px");
   }).observe(bar);

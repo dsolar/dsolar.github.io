@@ -9,6 +9,9 @@
      resetPassword(login, back)       emails a link that comes back with { recovery: true } from fromLink()
      setPassword(password)  sets or changes the signed-in account's password
      signOut()
+     oauth(provider, back)  signs in with Google or Apple (when providers() says it's on), back to `back`
+     providers()            Promise of { google, apple }: which outside sign-ins are switched on
+     token()                the signed-in user's access token, refreshed when it's about to run out
      fromLink()             call once on load: picks up the tokens a sign-in link brings back, or its error
      rpc(name, args)        calls a league function as the signed-in user (or as a guest)
      now()                  the server's clock, give or take a request */
@@ -26,7 +29,7 @@
   function claims(tok) {
     try { const p = tok.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"); return JSON.parse(decodeURIComponent(escape(atob(p + "=".repeat((4 - (p.length % 4)) % 4))))); } catch (e) { return {}; }
   }
-  const user = () => { if (!session) return null; const c = claims(session.access); return c.sub ? { id: c.sub, email: c.email || "" } : null; };
+  const user = () => { if (!session) return null; const c = claims(session.access); return c.sub ? { id: c.sub, email: c.email || "", username: (c.user_metadata && (c.user_metadata.username || c.user_metadata.full_name || c.user_metadata.name)) || "" } : null; };
 
   // A sign-in link comes back as #access_token=...&refresh_token=...; take them and clean the address bar.
   function fromLink() {
@@ -106,6 +109,13 @@
     if (!tok) throw new Error("Sign in first.");
     await auth("user", { password }, tok, "PUT").catch((e) => { throw new Error(/different from the old/i.test(e.message) ? "That's your current password. Pick a new one." : e.message); });
   }
+  // Google or Apple: off to the provider and back to `back` with the same #access_token a sign-in link brings
+  function oauth(provider, back) {
+    location.href = `${BASE}/auth/v1/authorize?provider=${encodeURIComponent(provider)}&redirect_to=${encodeURIComponent(back || location.href.split("#")[0])}`;
+  }
+  // which of those are switched on in Supabase: { google: true, apple: false }
+  let provP = null;
+  const providers = () => (provP = provP || fetch(`${BASE}/auth/v1/settings`, { headers: { apikey: KEY } }).then((r) => (r.ok ? r.json() : {})).then((j) => ({ google: !!(j.external && j.external.google), apple: !!(j.external && j.external.apple) })).catch(() => ({ google: false, apple: false })));
   async function signOut() {
     const s = session; keep(null);
     if (s) try { await auth("logout", {}, s.access); } catch (e) { /* signed out here either way */ }
@@ -143,5 +153,5 @@
   const slates = () => (slatesP = slatesP || fetch(`${BASE}/functions/v1/fk-live?sport=nfl&slates=1`).then((r) => (r.ok ? r.json() : { weeks: [] })).catch(() => { slatesP = null; return { weeks: [] }; }));
   const live = (sport) => fetch(`${BASE}/functions/v1/fk-live?sport=${encodeURIComponent(sport)}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
 
-  FK.cloud = { slates, user, signIn, signUp, passwordSignIn, resetPassword, setPassword, signOut, fromLink, rpc, live, now: () => Date.now() + offset, lastEmail: () => { try { return JSON.parse(localStorage.getItem("fk-auth:email")) || ""; } catch (e) { return ""; } } };
+  FK.cloud = { token, oauth, providers, slates, user, signIn, signUp, passwordSignIn, resetPassword, setPassword, signOut, fromLink, rpc, live, now: () => Date.now() + offset, lastEmail: () => { try { return JSON.parse(localStorage.getItem("fk-auth:email")) || ""; } catch (e) { return ""; } } };
 })(typeof window !== "undefined" ? window : globalThis);

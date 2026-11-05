@@ -1629,3 +1629,9 @@ table.t.en-t td.act,table.t.en-t th.act{position:static;box-shadow:none;backgrou
 .tq-l{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:8px;background:var(--surface-3);font-size:13px;font-weight:900;color:var(--muted)}
 .tq-n{margin:0}
 @media (max-width:600px){.tq-o{grid-template-columns:1fr}.tq{place-items:start center}}
+
+/* sign in with Google or Apple, above the password form */
+.si-oauth{display:grid;gap:8px}
+.si-oauth .si-oa{width:100%;justify-content:center;min-height:46px}
+.si-or{display:flex;align-items:center;gap:10px;margin:2px 0 0;font-size:12px}
+.si-or::before,.si-or::after{content:"";flex:1;border-top:1px solid var(--line)}

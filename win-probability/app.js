@@ -452,6 +452,8 @@
   }
 
   // ---------- public daily speed leaderboard ----------
+  // the name you use on the other daily games' boards
+  function boardName() { try { const v = JSON.parse(localStorage.getItem("gtp-name")); return typeof v === "string" ? v : ""; } catch (e) { return ""; } }
   function playerKey() {
     let key = store.get("speed-player-key", null);
     if (!key) {
@@ -483,6 +485,8 @@
       const button = form.querySelector('button[type="submit"]');
       if (!form.reportValidity()) return;
       const nickname = form.elements.nickname.value.trim();
+      // the same leaderboard name as the other daily games (and your account's, when you're signed in)
+      try { localStorage.setItem("gtp-name", JSON.stringify(nickname)); } catch (e) { /* private mode */ }
       button.disabled = true; status.textContent = "Submitting your score…";
       try {
         const inserted = await rpc("wp_submit_speed_score", {
@@ -583,7 +587,7 @@
       <p class="style-line">${esc(summary.style.line)}</p>
       <div class="stat-row"><div><b>${summary.basePoints}/${summary.n * 100}</b><span>decision points · ${f1(summary.scorePct)}%</span></div><div><b>+${summary.bonusPoints}</b><span>bonus points (separate from grade)</span></div>${summary.wpCount ? `<div><b>${f1(summary.lost)}</b><span>WP points lost on completed calls</span></div>` : ""}<div><b>${summary.n}</b><span>decisions</span></div>${bonusHits ? `<div><b>${bonusHits}</b><span>bonus calls</span></div>` : ""}</div>
       ${speed ? `<div class="block speed-result"><h3>Speed score: ${speed.score}/1000</h3><p>Average answer time: ${speed.averageSeconds}s. Your coaching grade still reflects the quality of each decision; the speed score rewards quick calls.</p></div>` : ""}
-      ${state.mode === "speed" && !submittedToday ? `<form class="block score-entry" id="speed-entry"><h3>Join today’s public leaderboard</h3><p>Choose a display name. Only your name, score, grade and average answer time will appear.</p><label>Display name <input name="nickname" maxlength="20" minlength="2" pattern="[A-Za-z0-9 ._-]{2,20}" required autocomplete="nickname"></label><label class="consent"><input type="checkbox" name="consent" required> Show my display name and score on the public leaderboard</label><button class="ghost" type="submit">Submit score</button><p class="entry-status muted" aria-live="polite"></p></form>` : state.mode === "speed" ? `<div class="block"><p class="muted">Your score has already been submitted for today.</p></div>` : ""}
+      ${state.mode === "speed" && !submittedToday ? `<form class="block score-entry" id="speed-entry"><h3>Join today’s public leaderboard</h3><p>Choose a display name. Only your name, score, grade and average answer time will appear.</p><label>Display name <input name="nickname" maxlength="20" minlength="2" pattern="[A-Za-z0-9 ._-]{2,20}" required autocomplete="nickname" value="${esc(boardName())}"></label><label class="consent"><input type="checkbox" name="consent" required> Show my display name and score on the public leaderboard</label><button class="ghost" type="submit">Submit score</button><p class="entry-status muted" aria-live="polite"></p></form>` : state.mode === "speed" ? `<div class="block"><p class="muted">Your score has already been submitted for today.</p></div>` : ""}
       ${speed ? `<div class="block"><h3>Today’s public leaderboard</h3><div id="end-leaderboard-list" aria-live="polite"><p class="muted">Loading today’s scores…</p></div></div>` : ""}
       ${summary.delays ? `<p>${summary.delays} delay of game: zero points for each missed decision.</p>` : ""}${coach}${sw}
       ${allBadges.length ? `<div class="block"><h3>Badges</h3><div class="badges">${allBadges.map((b) => `<span class="badge">${esc(b.label)}</span>`).join("")}</div></div>` : ""}

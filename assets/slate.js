@@ -154,6 +154,8 @@
 
   render();
   setInterval(render, 30000);
+  // your other devices' scores, once your account brings them (assets/account.js)
+  window.addEventListener("dsolar:sync", render);
   // Coming back from a game in another tab: show the new score right away
   document.addEventListener("visibilitychange", function () { if (!document.hidden) render(); });
   window.addEventListener("storage", render);

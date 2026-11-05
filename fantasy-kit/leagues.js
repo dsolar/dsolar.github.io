@@ -15,6 +15,7 @@
   // signing in: siMode is "password" (username or email and a password), "signup", "forgot" or "link" (an emailed
   // link). confirmTo: a new account waiting on its confirmation email; resetTo: a reset link was asked for.
   // recovery: a reset link brought you back signed in, so the page asks for a new password first.
+  let provs = null;
   let siMode = "password", confirmTo = null, resetTo = null, recovery = !!(link && link.recovery);
   // a showdown's games: this week's, from the live feed, loaded when the format is picked (null until then)
   // one-week football: this week's and next week's games (the live feed), and the slate the form has picked
@@ -182,13 +183,16 @@
     const pwField = (id, auto, label) => `<label for="${id}">${label}</label><div class="si-pw"><input id="${id}" type="password" autocomplete="${auto}" required minlength="${auto === "new-password" ? 8 : 1}"><button type="button" class="si-show" data-a="si-show" data-for="${id}" aria-label="Show password">Show</button></div>`;
     const alt = (items) => `<div class="si-alt">${items.map(([m, n]) => `<button type="button" class="si-link" data-a="si-mode" data-m="${m}">${n}</button>`).join("")}</div>`;
     const go = (label) => `<button class="btn go si-go" type="submit"${busy ? " disabled" : ""}>${busy ? "One moment…" : label}</button>`;
+    // Google (or Apple), once it's switched on in Supabase
+    if (!provs) C.providers().then((p) => { provs = p; if (p.google || p.apple) render(); });
+    const outside = provs && (provs.google || provs.apple) ? `<div class="si-oauth">${provs.google ? `<button type="button" class="btn si-oa" data-a="oauth" data-p="google">Continue with Google</button>` : ""}${provs.apple ? `<button type="button" class="btn si-oa" data-a="oauth" data-p="apple">Continue with Apple</button>` : ""}<p class="ps si-or">or</p></div>` : "";
     const forms = {
-      password: `<form class="si-card" id="pw-in">${tabs}
+      password: `<form class="si-card" id="pw-in">${tabs}${outside}
           <label for="pi-login">Username or email</label><input id="pi-login" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required value="${esc(C.lastEmail())}">
           ${pwField("pi-pw", "current-password", "Password")}${go("Sign in")}
           ${alt([["forgot", "Forgot your password?"], ["link", "Email me a sign-in link instead"]])}
           <p class="ps">Signed in with an emailed link before? Use a link once more, then set a username and password from your profile.</p></form>`,
-      signup: `<form class="si-card" id="pw-up">${tabs}
+      signup: `<form class="si-card" id="pw-up">${tabs}${outside}
           <label for="pu-user">Username</label><input id="pu-user" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required maxlength="20" pattern="[A-Za-z0-9_.\\x2D]{3,20}" aria-describedby="pu-user-h"><p class="ps" id="pu-user-h">3 to 20 letters, numbers, dots, dashes or underscores. It's how you sign in.</p>
           <label for="pu-email">Email</label><input id="pu-email" type="email" autocomplete="email" required value="${esc(C.lastEmail())}" aria-describedby="pu-email-h"><p class="ps" id="pu-email-h">For league alerts and resetting your password. Other managers never see it.</p>
           ${pwField("pu-pw", "new-password", "Password")}<p class="ps">At least 8 characters.</p>${go("Create account")}</form>`,
@@ -890,6 +894,7 @@
     if (k === "out") { await C.signOut(); sent = null; prof = null; siMode = "password"; confirmTo = null; resetTo = null; recovery = false; render(); }
     else if (k === "profile") U.profileDialog(prof, async (v) => { const r = await C.rpc("fk_profile_set", { p_name: v.name, p_photo: v.photo }); if (r && r.ok) { prof = Object.assign({}, prof, { name: r.name, photo: v.photo, saved: true }); form.me = r.name; render(); } return r; });
     else if (k === "again") { sent = null; render(); }
+    else if (k === "oauth") C.oauth(a.dataset.p, location.href.split("#")[0]);
     else if (k === "si-mode") { siMode = a.dataset.m; confirmTo = null; resetTo = null; sent = null; render().then(() => { const el = $(".si-card input:not([type=hidden])"); if (el) el.focus(); }); }
     else if (k === "si-show") { const el = document.getElementById(a.dataset.for); if (el) { const show = el.type === "password"; el.type = show ? "text" : "password"; a.textContent = show ? "Hide" : "Show"; a.setAttribute("aria-label", show ? "Hide password" : "Show password"); } }
     else if (k === "account") accountDialog();
