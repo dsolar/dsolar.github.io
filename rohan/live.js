@@ -42,7 +42,7 @@
       var proj = p[0] === "IR" ? '—' : (data.bye_next.indexOf(p[2]) !== -1 ? 'Bye' :
         '<span class="player-proj" data-proj-player="' + esc(key) + '">…</span>');
       return '<tr><td>' + esc(p[0]) + '</td><td><b>' + esc(p[1]) + '</b></td><td>' + proj + '</td>' +
-        '<td data-player="' + esc(key) + '"><strong class="player-live">0.0</strong></td></tr>';
+        '<td data-player="' + esc(key) + '"><strong class="player-live">—</strong></td></tr>';
     }).join("");
   }
 
@@ -279,7 +279,7 @@
 
   function side(team, projection) {
     return '<div class="matchup-side"><div><b>' + esc(team.name) + '</b><small>' + esc(team.record) + ' · ' + ordinal(team.rank) + '</small></div>' +
-      '<div class="scores"><span class="live-score" data-team="' + esc(team.name) + '">0.0</span><small>LIVE</small></div>' +
+      '<div class="scores"><span class="live-score" data-team="' + esc(team.name) + '">—</span><small>LIVE</small></div>' +
       '<div class="proj"><strong>' + projection.toFixed(1) + '</strong><small>ESPN PROJ</small></div></div>';
   }
 
@@ -313,7 +313,7 @@
     var status = p[4] ? '<i class="injury">' + esc(p[4]) + '</i>' : '';
     return '<div class="tn-player' + (starter ? '' : ' reserve') + '" data-player="' + esc(playerKey(p)) + '"><span><b>' + esc(p[1]) + '</b>' +
       '<small>' + esc((starter ? p[0] : p[0] === "IR" ? "IR" : "Bench") + ' · ' + p[2] + ' ' + p[3]) + '</small></span>' + status +
-      '<strong class="player-live">0.0</strong></div>';
+      '<strong class="player-live">—</strong></div>';
   }
 
   var ALL_TEAMS = ["ARI","ATL","BAL","BUF","CAR","CHI","CIN","CLE","DAL","DEN","DET","GB","HOU","IND","JAX","KC","LAC","LAR","LV","MIA","MIN","NE","NO","NYG","NYJ","PHI","PIT","SF","SEA","TB","TEN","WSH"];
@@ -501,17 +501,26 @@
 
   getJSON("league.json?v=20261027a").then(function (league) {
     data = league;
+    document.querySelector('#now .live-header .eyebrow').textContent = 'WEEK ' + data.week + ' / SAVED SCOREBOARD';
+    $('rosters-title').textContent = 'Week ' + data.week + ' lineups';
+    var stale = Date.now() - Date.parse(data.updated) > 7 * 86400000;
+    if (stale) { $('live-state').textContent = 'SAVED WEEK ' + data.week; $('live-updated').textContent = 'Roster snapshot ' + formatStamp(data.updated) + ' · Open ESPN for current results'; }
     renderMatchups();
     setupMatchupToggle();
     renderThursday();
     renderByes();
     renderInjuries();
     renderRosters();
+    $('tn-title').textContent = data.thursday.away + ' at ' + data.thursday.home;
+    if (stale) {
+      document.querySelectorAll('.live-score, .player-live').forEach(function (el) { el.textContent = '—'; });
+      document.querySelectorAll('.scores small').forEach(function (el) { if (el.textContent === 'LIVE') el.textContent = 'NO LIVE FEED'; });
+    }
     $("week-dashboard").hidden = false;
-    refreshLive();
+    if (!stale) refreshLive();
     getProjections().then(function () { fillProj(); maybeRenderWinProbs(); });
     getHistory().then(maybeRenderWinProbs);
-    window.setInterval(refreshLive, 60000);
+    if (!stale) window.setInterval(refreshLive, 60000);
   }).catch(function () {
     $("dashboard-error").hidden = false;
   });
