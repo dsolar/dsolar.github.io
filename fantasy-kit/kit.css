@@ -1587,6 +1587,8 @@ a.slg{text-decoration:none}
 a.slg:hover{border-color:var(--brand)}
 .sd-any{margin-top:10px}
 .sd-any summary{cursor:pointer;color:var(--muted);font-size:13.5px;font-weight:650}
+/* a player's college conference, in a league that limits starters from one */
+.cft{display:inline-block;font-size:9.5px;font-weight:800;line-height:1;padding:2px 4px;border-radius:4px;background:var(--surface-3);color:var(--muted);vertical-align:1px;white-space:nowrap}
 /* the entry room: a salary cap lineup or a sealed draft's list */
 .droom.en{grid-template-rows:auto minmax(0,1fr)}
 .en .dr-left{overflow:hidden}

@@ -55,6 +55,8 @@
       if (inLineup(p.id) >= 0) return { ok: false };
       const i = spotFor(p, wantCpt);
       if (i == null) return { ok: false, why: wantCpt ? "Captain's filled" : "No open spot" };
+      const cm = D().season && D().season.confMax, cf = cm ? S.confOf(p) : null;
+      if (cf && ui.entry.filter((x) => x && S.confOf(ctx.byId[x]) === cf).length >= cm) return { ok: false, why: `${cm} from the ${cf}` };
       const after = ui.entry.filter((x) => !x).length - 1, c = price(p, lu()[i]);
       if (c > left() - after * minPrice()) return { ok: false, why: `$${c}`, broke: true, i };
       return { ok: true, i, c };
@@ -107,13 +109,13 @@
         if (cap()) {
           const on = inLineup(p.id) >= 0, a = canAdd(p), c = sd ? canAdd(p, true) : null;
           act = on ? `<button type="button" class="btn sm ghost" data-eout="${esc(p.id)}" aria-label="Take ${esc(p.n)} out">Remove</button>`
-            : `${sd ? `<button type="button" class="btn sm${c.ok ? "" : " ghost"}" data-ein="${esc(p.id)}" data-cpt="1"${c.ok && !locked() ? "" : " disabled"} title="Captain: 1.5x points for 1.5x the price">CPT $${price(p, "CPT")}</button>` : ""}<button type="button" class="btn sm${a.ok ? " go" : " ghost"}" data-ein="${esc(p.id)}"${a.ok && !locked() ? "" : " disabled"}>${sd ? "Flex" : "Add"}</button>`;
+            : `${sd ? `<button type="button" class="btn sm${c.ok ? "" : " ghost"}" data-ein="${esc(p.id)}" data-cpt="1"${c.ok && !locked() ? "" : " disabled"} title="Captain: 1.5x points for 1.5x the price">CPT $${price(p, "CPT")}</button>` : ""}<button type="button" class="btn sm${a.ok ? " go" : " ghost"}" data-ein="${esc(p.id)}"${a.ok && !locked() ? "" : " disabled"}${a.why ? ` title="${esc(a.broke ? `${a.why}: more than you can spend` : a.why.includes(" from the ") ? `You already start ${a.why}` : a.why)}"` : ""}>${sd ? "Flex" : "Add"}</button>`;
         } else {
           const r = rankOf(p.id);
           act = r >= 0 ? `<button type="button" class="btn sm ghost" data-eout="${esc(p.id)}" aria-label="Take ${esc(p.n)} off your list">#${r + 1} Remove</button>` : `<button type="button" class="btn sm go" data-ein="${esc(p.id)}"${locked() ? " disabled" : ""}>Add</button>`;
         }
         const mine = cap() ? inLineup(p.id) >= 0 : rankOf(p.id) >= 0;
-        return `<tr class="${mine ? "me" : ""}"><td class="nm"><span class="row" style="gap:8px;min-width:0">${U.playerAv(sport, p, "sm")}<span style="min-width:0"><b class="ell" style="display:block">${esc(p.n)}${U.injTag(p)}</b><small class="ps">${pos} ${U.proTeam(sport, p.t)} ${esc(gameOf(p.t))}</small></span></span></td>
+        return `<tr class="${mine ? "me" : ""}"><td class="nm"><span class="row" style="gap:8px;min-width:0">${U.playerAv(sport, p, "sm")}<span style="min-width:0"><b class="ell" style="display:block">${esc(p.n)}${U.injTag(p)}</b><small class="ps">${pos} ${U.proTeam(sport, p.t)} ${esc(gameOf(p.t))}${sport.conf && S.confOf(p) ? ` <span class="cft" title="${esc(p.col)}">${esc(S.confOf(p))}</span>` : ""}</small></span></span></td>
           <td class="r num">${fm(wk(p))}</td>${cap() ? `<td class="r num"><b>$${pr(p)}</b></td>` : ""}<td class="act r">${act}</td></tr>`;
       }).join("");
       return `<div class="table-wrap"><table class="t dense en-t"><thead><tr><th>Player</th><th class="r" title="Projected points this week">Proj</th>${cap() ? `<th class="r">Price</th>` : ""}<th class="act"></th></tr></thead><tbody>${body || `<tr><td colspan="4" class="ps">No players match.</td></tr>`}</tbody></table></div>`;
@@ -164,7 +166,7 @@
     }
     function add(pid, cpt) {
       const p = ctx.byId[pid]; if (!p || locked()) return;
-      if (cap()) { const a = canAdd(p, cpt); if (!a.ok) { if (a.broke) U.toast(`${p.n} costs $${price(p, lu()[a.i])}. You have $${left()} for ${ui.entry.filter((x) => !x).length} spots.`, true); return; } ui.entry[a.i] = pid; if (!ui.entry.some((x) => !x)) ui.right = true; }
+      if (cap()) { const a = canAdd(p, cpt); if (!a.ok) { if (a.why && / from the /.test(a.why)) U.toast(`You already start ${a.why}, the most allowed.`, true); if (a.broke) U.toast(`${p.n} costs $${price(p, lu()[a.i])}. You have $${left()} for ${ui.entry.filter((x) => !x).length} spots.`, true); return; } ui.entry[a.i] = pid; if (!ui.entry.some((x) => !x)) ui.right = true; }
       else if (rankOf(pid) < 0) ui.entry.push(pid);
       render();
     }

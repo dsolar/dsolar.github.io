@@ -168,7 +168,8 @@
 
   // Best starting lineup: a matching of players to slots, most specific slots first (augmenting paths, so a
   // G/F who blocks a better player gets moved to his other slot).
-  function assign(sport, players, slots) {
+  // limit { of(p) -> group or null, max }: at most max starters from one group (a college conference)
+  function assign(sport, players, slots, limit) {
     const sorted = players.slice().sort((a, b) => (b.v || 0) - (a.v || 0));
     const at = Array(slots.length).fill(null);
     const width = (s) => (sport.slots[s] === "*" ? 99 : (sport.slots[s] || []).length);
@@ -181,7 +182,13 @@
       }
       return false;
     };
-    for (const p of sorted) tryPlace(p, new Set());
+    // best first; a placed player always stays in the lineup (a later one only moves him), so a group's count only grows
+    const n = Object.assign({}, (limit && limit.used) || {});
+    for (const p of sorted) {
+      const g = limit && limit.max ? limit.of(p) : null;
+      if (g && (n[g] || 0) >= limit.max) continue;
+      if (tryPlace(p, new Set()) && g) n[g] = (n[g] || 0) + 1;
+    }
     // a multiplier spot (a showdown's captain) holds the best player who can play there
     const mult = (S.SHOWDOWN && S.SHOWDOWN.mult) || {};
     slots.forEach((sl, i) => {
@@ -1435,6 +1442,13 @@
       seen.add(pid); spent += capCost(D, p, lu[i]);
     }
     if (spent > budget) return { ok: false, why: `That's $${spent}, over the $${budget} cap` };
+    const cm = D.season && D.season.confMax;
+    if (cm) {
+      const by = {};
+      for (const pid of entry) { const c = S.confOf(ctx.byId[pid]); if (c) by[c] = (by[c] || 0) + 1; }
+      const over = Object.keys(by).find((c) => by[c] > cm);
+      if (over) return { ok: false, why: `Only ${cm} starters can come from the ${over}` };
+    }
     return { ok: true, spent, left: budget - spent };
   }
   // a lineup for a team with no entry (a bot, or someone who didn't make it): the most value it can afford, slot by
@@ -1443,6 +1457,7 @@
     const r = rng(seed >>> 0), lu = D.lineup, out = Array(lu.length).fill(null), used = new Set();
     const order = lu.map((sl, i) => i).sort((a, b) => (ctx.sport.slots[lu[a]] === "*" ? 99 : ctx.sport.slots[lu[a]].length) - (ctx.sport.slots[lu[b]] === "*" ? 99 : ctx.sport.slots[lu[b]].length));
     let left = D.cap.budget;
+    const cm = D.season && D.season.confMax, conf = {};
     // the cheapest player there is, and how much projection a dollar buys on average
     const prices = ctx.players.map((p) => capPrice(D, p)).filter((x) => x != null), minP = prices.length ? Math.min(...prices) : 1;
     const vPer = ctx.players.reduce((a, p) => a + (p.v || 0), 0) / Math.max(1, prices.reduce((a, b) => a + b, 0));
@@ -1451,9 +1466,9 @@
       // spend toward an even share of what's left, with room to splurge
       const share = (left - keep * minP) / (keep + 1) * (1.3 + r() * 0.6);
       const minLeft = keep * minP;
-      const pool = ctx.players.filter((p) => !used.has(p.id) && S.fits(ctx.sport, p, lu[i]) && capCost(D, p, lu[i]) != null && capCost(D, p, lu[i]) <= left - minLeft);
+      const pool = ctx.players.filter((p) => !used.has(p.id) && S.fits(ctx.sport, p, lu[i]) && capCost(D, p, lu[i]) != null && capCost(D, p, lu[i]) <= left - minLeft && !(cm && S.confOf(p) && (conf[S.confOf(p)] || 0) >= cm));
       const pick = pool.map((p) => ({ p, s: (p.v || 0) * (0.85 + r() * 0.3) - Math.max(0, capCost(D, p, lu[i]) - share) * vPer })).sort((a, b) => b.s - a.s)[0];
-      if (pick) { out[i] = pick.p.id; used.add(pick.p.id); left -= capCost(D, pick.p, lu[i]); }
+      if (pick) { out[i] = pick.p.id; used.add(pick.p.id); left -= capCost(D, pick.p, lu[i]); const c = S.confOf(pick.p); if (c) conf[c] = (conf[c] || 0) + 1; }
     });
     return out;
   }

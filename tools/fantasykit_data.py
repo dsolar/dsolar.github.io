@@ -595,18 +595,25 @@ def nfl():
     if use_ros:
         for p in by.values():
             p["l"]["proj"] = [round(x, 1) for x in ros.get(p["id"], [0.0] * len(PROJ_COLS))]
-    # ages, for dynasty values: Sleeper's full player list has birth dates for anyone the stats rows left out
-    if sum(1 for p in by.values() if p.get("age")) < len(by) * 0.8:
-        try:
-            allp = get("https://api.sleeper.app/v1/players/nfl")
-            for pid, p in by.items():
-                q = allp.get(pid) or {}
-                a = age_on(q.get("birth_date")) if q.get("birth_date") else q.get("age")
-                if a and not p.get("age"):
-                    p["age"] = a
-        except Exception as e:
-            print(f"Sleeper's player list didn't load: {type(e).__name__}: {e}")
-    print(f"NFL ages: {sum(1 for p in by.values() if p.get('age'))} of {len(by)}")
+    # Sleeper's full player list: each player's college (for a league that limits starters from one conference), and
+    # birth dates, for dynasty values, for anyone the stats rows left out
+    try:
+        allp = get("https://api.sleeper.app/v1/players/nfl")
+        for pid, p in by.items():
+            q = allp.get(pid) or {}
+            a = age_on(q.get("birth_date")) if q.get("birth_date") else q.get("age")
+            if a and not p.get("age"):
+                p["age"] = a
+            if q.get("college"):
+                p["col"] = q["college"]
+    except Exception as e:
+        print(f"Sleeper's player list didn't load: {type(e).__name__}: {e}")
+        # keep the colleges from the last file
+        old = {str(x.get("id")): x.get("col") for x in (load(os.path.join(OUT, "nfl.json"), {}) or {}).get("players", []) if x.get("col")}
+        for pid, p in by.items():
+            if old.get(pid):
+                p["col"] = old[pid]
+    print(f"NFL ages: {sum(1 for p in by.values() if p.get('age'))} of {len(by)}, colleges: {sum(1 for p in by.values() if p.get('col'))}")
     players = [p for p in by.values() if (p["l"].get("tot") and p["l"]["tot"][NFL_COLS.index("pts_half_ppr")] > 0) or (p["l"].get("proj") and p["l"]["proj"][1] > 20)]
     try:
         nfl_weeks(season, state)

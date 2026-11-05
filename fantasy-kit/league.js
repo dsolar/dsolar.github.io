@@ -179,20 +179,33 @@
     }
     return any;
   }
+  // settings.confMax: at most that many starters from one college conference (football, Power 4 schools)
+  const limitOf = (L) => (L.settings.confMax ? { of: S.confOf, max: L.settings.confMax } : null);
+  function confCheck(L, ctx, ids) {
+    const lim = limitOf(L); if (!lim) return null;
+    const by = {};
+    for (const id of ids) { const p = id && ctx.byId[id], c = S.confOf(p); if (c) (by[c] = by[c] || []).push(p.n); }
+    const over = Object.entries(by).find(([, ns]) => ns.length > lim.max);
+    return over ? `Only ${lim.max} starters can come from the ${over[0]}: you have ${over[1].slice(0, -1).join(", ")} and ${over[1][over[1].length - 1]}` : null;
+  }
   // "Start my best lineup" around the locked players: they stay where they are, the rest fill the open slots.
   function bestLineup(L, ctx, teamId, w, now) {
     const cur = lineupFor(L, ctx, teamId, w).slice(), slots = L.settings.lineup;
     const fixed = cur.map((id) => !!id && isLocked(L, ctx.byId[id], w, now));
     const pool = healthy(L, ctx, teamId).filter((p) => !isLocked(L, p, w, now) && !cur.some((id, i) => fixed[i] && id === p.id));
     const open = slots.map((s, i) => i).filter((i) => !fixed[i]);
-    const got = F.assign(ctx.sport, pool, open.map((i) => slots[i]));
+    // locked starters count against the conference limit for the rest
+    const lim = limitOf(L), lockedConf = {};
+    if (lim) cur.forEach((id, i) => { const c = fixed[i] && S.confOf(ctx.byId[id]); if (c) lockedConf[c] = (lockedConf[c] || 0) + 1; });
+    const got = F.assign(ctx.sport, lim ? pool.filter((p) => !(S.confOf(p) && (lockedConf[S.confOf(p)] || 0) >= lim.max)) : pool, open.map((i) => slots[i]), lim ? { of: S.confOf, max: lim.max, used: lockedConf } : null);
     const out = cur.map((id, i) => (fixed[i] ? id : null));
     open.forEach((i, k) => { out[i] = got[k] ? got[k].id : null; });
     // a slot with no healthy player left: a hurt one who fits beats an empty one
     const used = new Set(out.filter(Boolean));
     for (const i of open) {
       if (out[i]) continue;
-      const q = L.rosters[teamId].map((id) => ctx.byId[id]).filter((p) => p && !used.has(p.id) && !held(L, teamId).includes(p.id) && !isLocked(L, p, w, now) && S.fits(ctx.sport, p, slots[i])).sort((a, b) => (b.v || 0) - (a.v || 0))[0];
+      const q = L.rosters[teamId].map((id) => ctx.byId[id]).filter((p) => p && !used.has(p.id) && !held(L, teamId).includes(p.id) && !isLocked(L, p, w, now) && S.fits(ctx.sport, p, slots[i])).sort((a, b) => (b.v || 0) - (a.v || 0))
+        .find((p) => !confCheck(L, ctx, out.concat([p.id])));
       if (q) { out[i] = q.id; used.add(q.id); }
     }
     return weighted(L, ctx, out, fixed);
@@ -241,6 +254,8 @@
       if (taxiOf(L, teamId).includes(id)) return { ok: false, why: `${p.n} is on the taxi squad: promote him first` };
       if (!S.fits(ctx.sport, p, L.settings.lineup[i])) return { ok: false, why: `${p.n} can't play ${L.settings.lineup[i]}` };
     }
+    const cw = confCheck(L, ctx, slots);
+    if (cw) return { ok: false, why: cw };
     // a player whose game has started stays where he is, in the lineup or out of it
     if (now != null && L.kick) {
       const cur = lineupFor(L, ctx, teamId, w);
@@ -271,9 +286,9 @@
   function holes(L, ctx, teamId, ids) {
     const ir = held(L, teamId);
     const ps = ids.filter((id) => !ir.includes(id)).map((id) => ctx.byId[id]).filter((p) => p && !/^(out|ir|o)$/i.test(p.inj || ""));
-    return F.assign(ctx.sport, ps, L.settings.lineup).filter((x) => !x).length;
+    return F.assign(ctx.sport, ps, L.settings.lineup, limitOf(L)).filter((x) => !x).length;
   }
-  function projectedBest(L, ctx, teamId) { return weighted(L, ctx, F.assign(ctx.sport, healthy(L, ctx, teamId), L.settings.lineup).map((p) => (p ? p.id : null))); }
+  function projectedBest(L, ctx, teamId) { return weighted(L, ctx, F.assign(ctx.sport, healthy(L, ctx, teamId), L.settings.lineup, limitOf(L)).map((p) => (p ? p.id : null))); }
   // A slot that counts extra (a showdown captain) goes to the best starter who can play it, swapping with whoever had
   // it when that player fits the other slot. `keep` marks slots that can't change (locked players).
   function weighted(L, ctx, ids, keep) {
@@ -295,12 +310,12 @@
   // The best lineup of healthy players, with any slot still open filled by a hurt player who fits (better than empty).
   function fillLineup(L, ctx, teamId) {
     const slots = L.settings.lineup, ir = held(L, teamId);
-    const first = F.assign(ctx.sport, healthy(L, ctx, teamId), slots);
+    const first = F.assign(ctx.sport, healthy(L, ctx, teamId), slots, limitOf(L));
     const used = new Set(first.filter(Boolean).map((p) => p.id));
     const hurt = L.rosters[teamId].filter((id) => !ir.includes(id) && !used.has(id)).map((id) => ctx.byId[id]).filter(Boolean).sort((a, b) => (b.v || 0) - (a.v || 0));
     for (let i = 0; i < slots.length; i++) {
       if (first[i]) continue;
-      const k = hurt.findIndex((p) => S.fits(ctx.sport, p, slots[i]));
+      const k = hurt.findIndex((p) => S.fits(ctx.sport, p, slots[i]) && !confCheck(L, ctx, first.map((x) => x && x.id).concat([p.id])));
       if (k >= 0) first[i] = hurt.splice(k, 1)[0];
     }
     return first;
@@ -314,7 +329,7 @@
       const v = sc.type === "points" ? playerWeek(L, ctx, p, w, effFrac(L, teamId, p.id, w, frac), frac).pts : (p.v || 0) + 0.5 * (formOf(L, p, w) - 1) * Math.max(1, Math.abs(p.v || 0));
       return Object.assign({}, p, { v, _id: p.id });
     });
-    return F.assign(ctx.sport, ps, L.settings.lineup).map((p) => (p ? p._id : null));
+    return F.assign(ctx.sport, ps, L.settings.lineup, limitOf(L)).map((p) => (p ? p._id : null));
   }
 
   /* ---------- scoring ---------- */

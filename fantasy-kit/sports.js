@@ -361,5 +361,34 @@
   const inPool = (doc, p) => { const t = poolOf(doc); return !t || t.includes(p.t); };
   // A showdown: one game, a captain who scores half again, five spots that take anyone, no bench
   const SHOWDOWN = { lineup: ["CPT", "UTIL", "UTIL", "UTIL", "UTIL", "UTIL"], bench: 0, mult: { CPT: 1.5 } };
-  return { ALL, nba, nfl, mlb, poolOf, inPool, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
+  /* ---------- college conferences (football), for a league that limits starters from one ---------- */
+  // Each school's Power 4 conference this season. Everyone else (smaller conferences, independents, no college)
+  // has no conference here, and no limit.
+  const P4 = {
+    SEC: "alabama arkansas auburn florida georgia kentucky lsu ole miss|mississippi mississippi state missouri oklahoma south carolina tennessee texas texas am vanderbilt",
+    "Big Ten": "illinois indiana iowa maryland michigan michigan state minnesota nebraska northwestern ohio state oregon penn state purdue rutgers ucla usc washington wisconsin",
+    "Big 12": "arizona arizona state baylor byu cincinnati colorado houston iowa state kansas kansas state oklahoma state tcu texas tech ucf utah west virginia",
+    ACC: "boston college california clemson duke florida state georgia tech louisville miami nc state north carolina pittsburgh smu stanford syracuse virginia virginia tech wake forest",
+  };
+  // the multi-word schools, so "ohio state" isn't read as "ohio" and "state"
+  const MULTI = ["ole miss", "mississippi state", "south carolina", "texas am", "michigan state", "ohio state", "penn state", "arizona state", "iowa state", "kansas state", "oklahoma state", "texas tech", "west virginia",
+    "boston college", "florida state", "georgia tech", "nc state", "north carolina", "virginia tech", "wake forest"];
+  const SCHOOL = {};
+  for (const [c, list] of Object.entries(P4)) {
+    let rest = " " + list + " ";
+    for (const m of MULTI.concat(["ole miss|mississippi"])) if (rest.includes(" " + m + " ")) { for (const x of m.split("|")) SCHOOL[x] = c; rest = rest.replace(" " + m + " ", " "); }
+    for (const x of rest.trim().split(/\s+/)) if (x) SCHOOL[x] = c;
+  }
+  const ALIAS = { "louisiana state": "lsu", "southern california": "usc", "southern cal": "usc", "brigham young": "byu", "texas christian": "tcu", "central florida": "ucf", "southern methodist": "smu", "pitt": "pittsburgh",
+    "north carolina state": "nc state", unc: "north carolina", "miami fl": "miami", "miami florida": "miami", "cal": "california", "uc berkeley": "california", "boston col": "boston college", "texas a m": "texas am", "texas a and m": "texas am",
+    "university of mississippi": "ole miss", "mississippi st": "mississippi state", "washington state": "", "oregon state": "", "miami oh": "", "miami ohio": "" };
+  function school(name) {
+    let x = String(name || "").toLowerCase().replace(/&/g, " ").replace(/\bst\.?(?=\s|$)/g, "state").replace(/\bcol\.?(?=\s|$)/g, "college").replace(/^the |^university of |\buniversity\b/g, "").replace(/[().,'-]/g, " ").replace(/\s+/g, " ").trim();
+    if (ALIAS[x] != null) x = ALIAS[x];
+    return x;
+  }
+  const conference = (college) => SCHOOL[school(college)] || null;
+  const confOf = (p) => (p && p.col ? conference(p.col) : null);
+
+  return { conference, confOf, ALL, nba, nfl, mlb, poolOf, inPool, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
 });

@@ -78,3 +78,33 @@ test('salary cap prices: a star costs about twice an even share, and bots spend 
     if (D.lineup[0] === 'CPT') { const e = F.capAuto(D, ctx, 3); assert.equal(F.capCost(D, ctx.byId[e[0]], 'CPT'), Math.round(F.capPrice(D, ctx.byId[e[0]]) * 1.5)); }
   }
 });
+
+test('conference limit: no more than two starters from one Power 4 conference', () => {
+  assert.equal(S.conference('Ohio St.'), 'Big Ten'); assert.equal(S.conference('Texas A&M'), 'SEC'); assert.equal(S.conference('Miami (FL)'), 'ACC');
+  assert.equal(S.conference('Miami (OH)'), null); assert.equal(S.conference('North Dakota State'), null); assert.equal(S.conference('Southern California'), 'Big Ten');
+  const { D, ctx, sport, players } = pool('full', 4);
+  D.season.confMax = 2;
+  // give the pool colleges: every other good player went to an SEC school
+  const sec = ['Alabama', 'Georgia', 'LSU', 'Texas'], top = ctx.players.slice().sort((a, b) => b.v - a.v);
+  top.forEach((p, i) => { p.col = i % 2 ? 'North Dakota State' : sec[i % 4 === 0 ? 0 : 2]; });
+  for (const p of players) { const q = ctx.byId[p.id]; if (q) p.col = q.col; }
+  F.start(D, now); let t = now; for (let k = 0; k < 2000 && D.phase === 'live'; k++) { t += 1000; D.teams.forEach((x) => { x.auto = true; }); F.tick(D, ctx, t, 3); }
+  const L = Z.begin(D, sport, { now: t });
+  assert.equal(L.settings.confMax, 2);
+  const lctx = G.context(L, players, sport);
+  for (const tm of L.teams) {
+    const lu = G.lineupFor(L, lctx, tm.id, 1).filter(Boolean);
+    const n = lu.filter((id) => S.confOf(lctx.byId[id]) === 'SEC').length;
+    assert.ok(n <= 2, `${tm.name} starts ${n} SEC players`);
+  }
+  // setting a lineup with three SEC starters is refused
+  const tm = L.teams[0], ros = L.rosters[tm.id].map((id) => lctx.byId[id]), secs = ros.filter((p) => S.confOf(p) === 'SEC');
+  assert.ok(secs.length >= 3, 'team 0 has three SEC players');
+  {
+    const lu = G.lineupFor(L, lctx, tm.id, 1).slice();
+    let k = 0; for (let i = 0; i < lu.length && k < 3; i++) { const p = secs.find((x) => S.fits(sport, x, L.settings.lineup[i]) && !lu.includes(x.id)); if (p && S.confOf(lctx.byId[lu[i]]) !== 'SEC') { lu[i] = p.id; k++; } }
+    const r = G.setLineup(L, lctx, tm.id, 1, lu);
+    assert.ok(lu.filter((id) => S.confOf(lctx.byId[id]) === 'SEC').length > 2);
+    assert.equal(r.ok, false); assert.match(r.why, /Only 2 starters can come from the SEC/);
+  }
+});
