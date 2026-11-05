@@ -99,6 +99,22 @@
   // the players people know: the top of the pool by value, on a team
   const known = (players, n) => players.filter((p) => p.t && p.t !== "FA" && POS[main(p)]).sort((a, b) => (b.v || 0) - (a.v || 0)).slice(0, n);
   const schoolOf = (p) => (p.col ? String(p.col).replace(/\s+St\.$/, " State") : null);
+  // The player data has each player's last college. These players also played somewhere else first, so a question
+  // about one of those schools leaves them out ("didn't play at Alabama" can't be Jalen Hurts).
+  const EARLIER = {
+    "Jalen Hurts": "Alabama", "Joe Burrow": "Ohio State", "Baker Mayfield": "Texas Tech", "Bo Nix": "Auburn", "Michael Penix Jr.": "Indiana", "Jayden Daniels": "Arizona State",
+    "Caleb Williams": "Oklahoma", "Cam Ward": "Washington State|Incarnate Word", "Kyler Murray": "Texas A&M", "Jameson Williams": "Ohio State", "Puka Nacua": "Washington", "Jordan Addison": "Pittsburgh",
+    "Jahmyr Gibbs": "Georgia Tech", "Quinshon Judkins": "Ole Miss", "Kenneth Walker III": "Wake Forest", "Alvin Kamara": "Alabama", "Zach Charbonnet": "Michigan", "Bucky Irving": "Minnesota",
+    "Tank Dell": "Alabama A&M", "Jaxson Dart": "USC", "Tyler Shough": "Oregon|Texas Tech", "Malik Willis": "Auburn", "Jayden Reed": "Western Michigan", "Keon Coleman": "Michigan State",
+    "Juwan Johnson": "Penn State", "Ray Davis": "Temple|Vanderbilt", "Chase Brown": "Western Michigan", "Woody Marks": "Mississippi State", "Tyrone Tracy Jr.": "Iowa", "Quinn Ewers": "Ohio State",
+    "Shedeur Sanders": "Jackson State", "Travis Hunter": "Jackson State", "Cam Skattebo": "Sacramento State", "Dalton Kincaid": "San Diego", "Jaylen Warren": "Utah State", "Trey Benson": "Oregon",
+    "MarShawn Lloyd": "South Carolina", "Isaac Guerendo": "Wisconsin", "Bhayshul Tuten": "North Carolina A&T", "Jacory Croskey-Merritt": "Alabama State|New Mexico", "Matthew Golden": "Houston",
+    "Tre Harris": "Louisiana Tech", "Jayden Higgins": "Eastern Kentucky", "Kyle Williams": "UNLV", "Jack Bech": "LSU", "Wan'Dale Robinson": "Nebraska", "Ricky Pearsall": "Arizona State",
+    "Isaac TeSlaa": "Hillsdale", "AJ Barner": "Indiana", "Erick All": "Michigan", "Joe Flacco": "Pittsburgh", "Joe Milton III": "Michigan", "Gardner Minshew II": "Troy|East Carolina",
+    "Russell Wilson": "NC State", "Justin Fields": "Georgia", "Will Levis": "Penn State", "Spencer Rattler": "Oklahoma", "Dillon Gabriel": "UCF", "Tory Horton": "Nevada", "Kendre Miller": "",
+  };
+  const norm = (x) => String(x || "").toLowerCase().replace(/\bst\.?$/, "state").replace(/[^a-z]/g, "");
+  const wasAt = (p, school) => norm(schoolOf(p)) === norm(school) || String(EARLIER[p.n] || "").split("|").some((x) => x && norm(x) === norm(school));
 
   // built from the pool: which team a star plays for
   function teamQ(sport, players, r) {
@@ -119,7 +135,7 @@
     if (!groups.length) return null;
     const [k, ps] = groups[Math.floor(r() * groups.length)], [pos, school] = k.split("|");
     const three = shuffle(ps, r).slice(0, 3);
-    const others = top.filter((p) => main(p) === pos && schoolOf(p) !== school).slice(0, 24);
+    const others = top.filter((p) => main(p) === pos && !wasAt(p, school)).slice(0, 24);
     if (!others.length) return null;
     const odd = others[Math.floor(r() * others.length)];
     return { id: `school:${k}`, q: `Which of these ${POS[pos][1]} didn't play college football at ${school}?`, a: odd.n, w: three.map((p) => p.n) };
