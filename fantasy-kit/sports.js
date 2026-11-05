@@ -360,6 +360,21 @@
   const poolOf = (doc) => (doc && ((doc.settings && doc.settings.pool) || (doc.season && doc.season.showdown && doc.season.showdown.teams) || (doc.season && doc.season.slate && doc.season.slate.teams))) || null;
   const inPool = (doc, p) => { const t = poolOf(doc); return !t || t.includes(p.t); };
   // A showdown: one game, a captain who scores half again, five spots that take anyone, no bench
+  // The NFL week a one-week game or a showdown plays (doc: a league, with settings, or a draft, with season): its
+  // slate's week, or for a showdown made before showdowns kept theirs, the week its game is in (New York time, so a
+  // Monday night game is Monday's). null unless the data has a projection line for that week (lines "wk<N>").
+  function weekFor(doc, sport) {
+    const st = (doc && doc.settings) || {}, s = st.slate || st.showdown ? st : (doc && doc.season) || st;
+    const L = (sport && sport.data && sport.data.lines) || {}, weeks = Object.values(L).filter((l) => l.week != null);
+    let n = (s.slate && s.slate.week) || (s.showdown && s.showdown.week) || null;
+    const at = s.showdown && s.showdown.at;
+    if (n == null && at) {
+      const d = new Date(typeof at === "number" ? at : Date.parse(at)).toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+      const hit = weeks.find((l) => l.start <= d && d <= l.end);
+      n = hit ? hit.week : null;
+    }
+    return n != null && weeks.some((l) => l.week === Number(n)) ? Number(n) : null;
+  }
   const SHOWDOWN = { lineup: ["CPT", "UTIL", "UTIL", "UTIL", "UTIL", "UTIL"], bench: 0, mult: { CPT: 1.5 } };
   /* ---------- college conferences (football), for a league that limits starters from one ---------- */
   // Each FBS school's conference this season (2026). Independents (Notre Dame, UConn) and schools outside FBS have
@@ -397,5 +412,5 @@
   // a short label for a tag next to a player's name
   const confShort = (c) => ({ "Conference USA": "C-USA", "Mountain West": "MWC", American: "AAC" })[c] || c;
 
-  return { conference, confOf, power4, confShort, ALL, nba, nfl, mlb, poolOf, inPool, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
+  return { conference, confOf, power4, confShort, ALL, nba, nfl, mlb, poolOf, inPool, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
 });

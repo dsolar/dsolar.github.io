@@ -81,7 +81,7 @@
     if (o.real && (o.real === true || realCovers(o.real, start))) settings.real = true;
     // a showdown: one game's two teams, a captain who counts half again, and free agency with no waiting
     const sd = s.showdown;
-    if (sd) Object.assign(settings, { pool: sd.teams.slice(), mult: { CPT: 1.5 }, waiverDays: 0, gameLock: "off", showdown: { id: sd.id, label: sd.label, at: sd.at } });
+    if (sd) Object.assign(settings, { pool: sd.teams.slice(), mult: { CPT: 1.5 }, waiverDays: 0, gameLock: "off", showdown: { id: sd.id, label: sd.label, at: sd.at, week: sd.week } });
     // a one-week slate: the games it drafted from (a whole week, Sunday, the night games or games picked), each one's
     // kickoff its lock, and free agency with no waiting
     const sl = s.slate && !sd ? s.slate : null;

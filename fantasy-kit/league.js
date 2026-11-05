@@ -514,12 +514,20 @@
   // How much a lineup slot counts: settings.mult, by slot name (a showdown's CPT, 1.5), or 1
   // ...times what a heist put on the player himself (L.pmult: a stolen player's 1.5x, a jinxed one's half)
   const slotMult = (L, i, pid) => ((i >= 0 && L.settings.mult && L.settings.mult[L.settings.lineup[i]]) || 1) * ((pid != null && L.pmult && L.pmult[pid]) || 1);
-  // What a team should score this week with average form.
+  // How much one football player's week can swing: the variance of his points around a projection of x. Measured on
+  // 2026's weeks 3 to 8 against Sleeper's weekly projections: the spread grows about with the square root (a 3-point
+  // projection misses by 4 or so, a 17-point one by 7.5), and falls to nothing for a player projected for nothing.
+  const footballVar = (x) => (x > 0 ? Math.min(9 + 2.9 * x, 5.9 * x) : 0);
+  // What a team should score this week with average form, and for football how much that could swing (var).
   function projection(L, ctx, teamId, w) {
     const sc = scoring(L, ctx);
     const wk = WEEK[ctx.sport.key] || { weeks: 20 };
     const lu = lineupFor(L, ctx, teamId, w), ids = lu.filter(Boolean);
-    if (sc.type === "points") return { total: sum(ids.map((id) => (ctx.byId[id] ? (ctx.byId[id].v / wk.weeks) * slotMult(L, lu.indexOf(id), id) : 0))) };
+    if (sc.type === "points") {
+      let total = 0, vr = 0;
+      for (const id of ids) { const p = ctx.byId[id]; if (!p) continue; const m = slotMult(L, lu.indexOf(id), id), x = p.v / wk.weeks; total += x * m; vr += m * m * footballVar(x); }
+      return { total, var: ctx.sport.key === "nfl" ? vr : null };
+    }
     return { total: sum(ids.map((id) => (ctx.byId[id] ? ctx.byId[id].v : 0))) };
   }
   function compare(L, ctx, a, b) {
@@ -562,7 +570,7 @@
         const wp = sc.type === "points" ? liveWin(c.sa + oa.rem, c.sb + ob.rem, oa.vr + ob.vr) : winProb(L, ctx, c, pa.total, pb.total, fr);
         return Object.assign({ a, b, final: false, i, kind, live: fr > 0 && fr < 1, frac: fr, ta: x, tb: y, pa: sc.type === "points" ? c.sa + oa.rem : pa.total, pb: sc.type === "points" ? c.sb + ob.rem : pb.total, winProb: wp, outlook: [oa, ob] }, c);
       }
-      return Object.assign({ a, b, final: false, i, kind, live: frac > 0 && frac < 1, frac, ta: x, tb: y, pa: pa.total, pb: pb.total, winProb: winProb(L, ctx, c, pa.total, pb.total, frac) }, c);
+      return Object.assign({ a, b, final: false, i, kind, live: frac > 0 && frac < 1, frac, ta: x, tb: y, pa: pa.total, pb: pb.total, winProb: winProb(L, ctx, c, pa.total, pb.total, frac, pa.var != null && pb.var != null ? pa.var + pb.var : null) }, c);
     });
   }
   // What a team's starters have left this week, from the live feed (ctx.hooks.real.live.teams: each pro team's
@@ -578,19 +586,23 @@
     for (const id of lu.filter(Boolean)) {
       const p = ctx.byId[id], t = p && lv.teams[p.t];
       if (!p || !t) continue;
-      // a points rate is per game the player plays (sc.games a season), and a player who's out won't add to it
-      const togo = t.left + 0.5 * t.live, per = sc.type === "points" ? ((p.v || 0) / (sc.games || g)) * plays(p) * slotMult(L, lu.indexOf(id), id) : 0;
-      rem += per * togo; vr += togo * (k * per) ** 2;
+      // a points rate is per game the player plays (sc.games a season), and a player who's out won't add to it (a
+      // one-week game's values, sport.weekOf, already count that)
+      const m = slotMult(L, lu.indexOf(id), id), base = sc.type === "points" ? ((p.v || 0) / (sc.games || g)) * (ctx.sport.weekOf != null ? 1 : plays(p)) : 0;
+      const togo = t.left + 0.5 * t.live, per = base * m;
+      rem += per * togo; vr += togo * (ctx.sport.key === "nfl" ? m * m * footballVar(base) : (k * per) ** 2);
       played += t.played + 0.5 * t.live; left += togo;
     }
     return { rem, vr, played, left };
   }
   const liveWin = (a, b, vr) => (vr <= 1e-6 ? (a > b ? 1 : a < b ? 0 : 0.5) : 1 / (1 + Math.exp(-1.702 * (a - b) / Math.sqrt(vr))));
   // A simple live win probability: the projected margin shrinks toward the current margin as the week plays out.
-  function winProb(L, ctx, c, pa, pb, frac) {
+  // vr: the variance of the two teams' weeks together, when it's known (football)
+  function winProb(L, ctx, c, pa, pb, frac, vr) {
     const sc = scoring(L, ctx);
     if (sc.type === "points") {
       const now = c.sa - c.sb, rest = (pa - pb) * (1 - frac);
+      if (vr != null && vr > 0) return 1 / (1 + Math.exp(-1.702 * (now + rest) / Math.sqrt(vr * (1 - frac + 0.02))));
       const sd = Math.max(1, (pa + pb) * 0.14 * Math.sqrt(1 - frac + 0.02));
       return 1 / (1 + Math.exp(-((now + rest) / sd) * 1.6));
     }

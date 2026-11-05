@@ -37,7 +37,7 @@
     return SL.pick(w, kind) || SL.pick(w, "full");
   }
   // one game: a showdown, with its own lineup and budget
-  const sdGame = () => { const sl = slateOn() ? curSlate() : null; return sl && sl.games.length === 1 ? { id: sl.games[0].id, at: Date.parse(sl.games[0].at), home: sl.games[0].home, away: sl.games[0].away } : null; };
+  const sdGame = () => { const sl = slateOn() ? curSlate() : null; return sl && sl.games.length === 1 ? { id: sl.games[0].id, at: Date.parse(sl.games[0].at), home: sl.games[0].home, away: sl.games[0].away, week: sl.week } : null; };
   const kickLabel = (t) => new Date(t).toLocaleString("en-US", { timeZone: "America/New_York", weekday: "short", hour: "numeric", minute: "2-digit" }).replace(":00", "");
   const form = { sport: S.inSeason(), teams: 10, type: "snake", clock: 90, season: "h2h", weeks: 14, trades: 1, scoring: "",
     lineup: "", bench: null, playoffs: 4, deadline: null, review: "vote", faab: null, waiverDays: 2, gameLock: null,
@@ -697,7 +697,7 @@
       if (!capOn() && total > players.length) throw new Error(`${n} teams with ${lineup.length + bench} roster spots need ${total} players, and the pool has ${players.length}.`);
       const bb = !!form.bestball && form.season !== "guillotine" && !capOn();
       const wk = bb ? await fetch(`data/weeks-${form.sport}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null) : null;
-      V.evaluate(sport, players, { teams: n, lineup, bench, scoring, bestBall: bb, weeks: wk && String(wk.season) === String(data.season) ? wk : null, dynasty: form.keepers === -1 && form.season !== "guillotine", dynastyRanks: form.keepers === -1 && form.season !== "guillotine" ? await fetch(`data/dynasty-${form.sport}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null) : null });
+      V.evaluate(sport, players, { teams: n, lineup, bench, scoring, week: slate ? S.weekFor({ season: { slate } }, sport) : null, bestBall: bb, weeks: wk && String(wk.season) === String(data.season) ? wk : null, dynasty: form.keepers === -1 && form.season !== "guillotine", dynastyRanks: form.keepers === -1 && form.season !== "guillotine" ? await fetch(`data/dynasty-${form.sport}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null) : null });
       const auction = form.type === "auction";
       // the vampire (the commissioner, or a random team) sits out the draft
       const vampire = vampOk() && form.vamp !== "off" ? (form.vamp === "me" ? 0 : Math.floor(Math.random() * n)) : null;
@@ -739,7 +739,7 @@
         posMax: Object.fromEntries(Object.entries(form.posMax).filter(([, v]) => v)) };
       if (form.keepers > 0) Object.assign(D.season, { keepers: form.keepers, keeperCost: kc() });
       if (form.keepers === -1 && !gl) { D.season.dynasty = { rounds: form.rookie || 3, picks: form.fpicks !== 0 }; if (form.taxi) D.season.taxi = form.taxi; }
-      if (sd) Object.assign(D.season, { showdown: { id: sd.id, teams: [sd.away, sd.home], at: sd.at, label: `${sd.away} @ ${sd.home}` }, ir: 0, when: "now" });
+      if (sd) Object.assign(D.season, { showdown: { id: sd.id, teams: [sd.away, sd.home], at: sd.at, week: sd.week, label: `${sd.away} @ ${sd.home}` }, ir: 0, when: "now" });
       else if (slate) Object.assign(D.season, { slate: Object.assign({}, slate, slu && slu.mult ? { mult: slu.mult } : {}), ir: 0, when: slWeeks()[0] && slWeeks()[0].week === slate.week ? "now" : "next" });
       if (form.bestball && !sd && !capOn()) D.season.bestBall = true;
       else if (gl) D.season.bestBall = false;

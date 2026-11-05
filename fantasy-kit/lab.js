@@ -57,7 +57,9 @@
     const scoring = sport.scorings[c.scoring] ? c.scoring : Object.keys(sport.scorings)[0];
     const bench = sdOn(c) ? S.SHOWDOWN.bench : hzOn(c) ? 0 : c.bench == null ? sport.bench : c.bench;
     const dyn = c.dynasty ? await loadDynasty(c.sport) : null;
-    V.evaluate(sport, players, { teams: c.teams, lineup, bench, scoring, budget: sdOn(c) ? 50 : c.budget, dynasty: !!c.dynasty, dynastyRanks: dyn, market: await loadMarket(c.sport) });
+    // a showdown of a real game on this week's or next week's schedule plays that week's projections
+    const sdWk = sdOn(c) && sched ? (sched.weeks.find((w) => (w.games || []).some((g) => g.away === c.sdA && g.home === c.sdH)) || {}).week : null;
+    V.evaluate(sport, players, { teams: c.teams, lineup, bench, scoring, budget: sdOn(c) ? 50 : c.budget, week: sdWk ? S.weekFor({ season: { showdown: { week: sdWk } } }, sport) : null, dynasty: !!c.dynasty, dynastyRanks: dyn, market: await loadMarket(c.sport) });
     return { sport, players, lineup, scoring, bench, data };
   }
 

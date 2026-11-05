@@ -392,8 +392,11 @@
       cols.push({ k: "aav", label: "ESPN $", cls: "r num", hide: "s", title: "What he goes for in real ESPN auctions (average price), or ESPN's own auction value before there are any", sort: (p) => (p.mk && (p.mk.aav || p.mk.a)) || 0, html: (p) => { const v = p.mk && (p.mk.aav || p.mk.a); return v ? `<span class="ps">${money(Math.round(v))}</span>` : `<span class="ps">-</span>`; } });
     }
     if (opts.money !== false) cols.push({ k: "$", label: "$", cls: "r num", title: "Auction value in this league", sort: (p) => p.$, html: (p) => (p.$ ? `<span class="dollar">${money(p.$)}</span>` : `<span class="ps">-</span>`) });
-    cols.push({ k: "v", label: pts ? "Proj" : "Value", cls: "r num", title: pts ? "Season pace: this season's scoring per game blended with the projection, over a full season" : "Summed category z-scores", sort: (p) => p.v, html: (p) => `<b>${p.v == null ? "-" : p.v.toFixed(pts ? 0 : 1)}</b>` });
-    if (pts && sport.data && sport.data.lines && sport.data.lines.proj && sport.data.lines.proj.ros) cols.push({ k: "ros", label: "ROS", cls: "r num", hide: "s", title: `Projected points for the rest of the season, ${sport.data.lines.proj.weeks} weeks`, sort: (p) => p.ros, html: (p) => (p.ros == null ? `<span class="ps">-</span>` : p.ros.toFixed(0)) });
+    // a one-week game or a showdown (sport.weekOf): the week's projected points
+    const wkOf = pts ? sport.weekOf : null;
+    if (wkOf != null) cols.push({ k: "v", label: `Wk ${wkOf}`, cls: "r num", title: `Projected points in week ${wkOf}: Sleeper's projection for the week, scored for this league`, sort: (p) => p.v, html: (p) => `<b>${p.v == null ? "-" : (p.v / 17).toFixed(1)}</b>` });
+    else cols.push({ k: "v", label: pts ? "Proj" : "Value", cls: "r num", title: pts ? "Season pace: this season's scoring per game blended with the projection, over a full season" : "Summed category z-scores", sort: (p) => p.v, html: (p) => `<b>${p.v == null ? "-" : p.v.toFixed(pts ? 0 : 1)}</b>` });
+    if (pts && wkOf == null && sport.data && sport.data.lines && sport.data.lines.proj && sport.data.lines.proj.ros) cols.push({ k: "ros", label: "ROS", cls: "r num", hide: "s", title: `Projected points for the rest of the season, ${sport.data.lines.proj.weeks} weeks`, sort: (p) => p.ros, html: (p) => (p.ros == null ? `<span class="ps">-</span>` : p.ros.toFixed(0)) });
     for (const c of opts.extra || []) cols.push(c);
     if (opts.stats !== false) for (const [i, c] of statColumns(sport, opts.scoring).entries()) {
       if (opts.group && c.group && c.group !== opts.group) continue;
@@ -449,7 +452,7 @@
     }).join("");
     // a league's card leads with the week and the league; the season lines fold away under one heading
     const linesHtml = opts.fold && lines ? `<details class="pc-more"><summary>Season stats and projections</summary><div class="stack">${lines}</div></details>` : lines;
-    const statRow = (opts.stats || [["Overall", p.rank], ["Position", esc(p.prank)], [sc.type === "points" ? "Projection" : "Value", sc.type === "points" ? Math.round(p.v) : p.v.toFixed(1)], ["Auction", p.$ ? money(p.$) : "-"]]).map(([k, v]) => `<div><small>${esc(k)}</small><b>${v}</b></div>`).join("");
+    const statRow = (opts.stats || [["Overall", p.rank], ["Position", esc(p.prank)], [sc.type === "points" ? (sport.weekOf != null ? `Week ${sport.weekOf}` : "Projection") : "Value", sc.type === "points" ? (sport.weekOf != null ? (p.v / 17).toFixed(1) : Math.round(p.v)) : p.v.toFixed(1)], ["Auction", p.$ ? money(p.$) : "-"]]).map(([k, v]) => `<div><small>${esc(k)}</small><b>${v}</b></div>`).join("");
     const zs = sc.type === "cats" && p.zc ? `<div class="ps"><b>Strength by category</b>, against the player pool</div><div class="zbars" aria-label="Category strength">${sc.cats.filter((c) => p.zc[c.k] != null).map((c) => { const z = Math.max(-3, Math.min(3, p.zc[c.k])); const w = (Math.abs(z) / 3) * 50; return `<span class="ps"><b>${esc(c.label)}</b></span><span class="zbar"><i class="${z < 0 ? "n" : ""}" style="${z < 0 ? `right:50%;width:${w}%` : `left:50%;width:${w}%`}"></i></span><span class="num ps" style="text-align:right">${z >= 0 ? "+" : ""}${z.toFixed(1)}</span>`; }).join("")}</div>` : "";
     return `<div class="pc-h">${playerAv(sport, p, "lg")}<div><h3 class="disp">${esc(p.n)}</h3><div class="ps">${posChips(sport, p)} ${proTeam(sport, p.t)}${p.age ? `, age ${p.age}` : ""}${p.inj ? `, <span class="bad">${esc(p.inj)}</span>` : ""}</div>${opts.status ? `<div class="ps row" style="margin-top:6px">${opts.status}</div>` : ""}</div></div>
       ${opts.week || ""}<div class="stat-row pc-stats" style="margin-bottom:14px">${statRow}</div>
@@ -1063,11 +1066,14 @@
       const d = D(), sc = sport.scorings[d.scoring] || Object.values(sport.scorings)[0], ros = F.rosters(d);
       const rows = d.teams.map((t) => {
         const ps = ros[t.id].map((id) => ctx.byId[id]).filter(Boolean);
-        const st = F.assign(sport, ps, d.lineup).filter(Boolean);
-        return { t, n: ps.length, st, tot: sc.type === "cats" ? FK.value.teamCats(sport, sc, st, (p, line) => lineOf(sport, p, line)) : null, pts: sc.type === "points" ? st.reduce((a, p) => a + (p.v || 0), 0) : null };
+        const asg = F.assign(sport, ps, d.lineup), st = asg.filter(Boolean);
+        // one week: the week's points, a captain's at 1.5x
+        const wkly = sport.weekOf != null, mult = (S.SHOWDOWN && S.SHOWDOWN.mult) || {};
+        return { t, n: ps.length, st, tot: sc.type === "cats" ? FK.value.teamCats(sport, sc, st, (p, line) => lineOf(sport, p, line)) : null,
+          pts: sc.type === "points" ? asg.reduce((a, p, i) => a + (p ? (p.v || 0) * (wkly ? (mult[d.lineup[i]] || 1) / 17 : 1) : 0), 0) : null };
       });
       const any = rows.some((r) => r.n);
-      const head = `<div class="pk-h"><b>Projected standings</b><span class="ps">${sc.type === "cats" ? `Each team's starters so far, by ${sport.statView === "proj" && hasProj(sport) ? esc(projLabel(sport).toLowerCase().replace(/^(\d{4}) steamer/, "$1 Steamer")) : esc(statsLabel(sport))}. Roto points: ${d.teams.length} for the best in a category, 1 for the worst.` : "Each team's starters so far, by projected points for the season."}</span><span class="grow"></span>${viewSelect(sport, "fk-statv2")}</div>`;
+      const head = `<div class="pk-h"><b>Projected standings</b><span class="ps">${sc.type === "cats" ? `Each team's starters so far, by ${sport.statView === "proj" && hasProj(sport) ? esc(projLabel(sport).toLowerCase().replace(/^(\d{4}) steamer/, "$1 Steamer")) : esc(statsLabel(sport))}. Roto points: ${d.teams.length} for the best in a category, 1 for the worst.` : sport.weekOf != null ? `Each team's starters so far, by projected points in week ${sport.weekOf}.` : "Each team's starters so far, by projected points for the season."}</span><span class="grow"></span>${viewSelect(sport, "fk-statv2")}</div>`;
       if (!any) return `<div style="overflow:auto;flex:1;min-height:0">${head}<p class="empty">Projections fill in as teams draft.</p></div>`;
       if (sc.type !== "cats") {
         const sorted = rows.slice().sort((a, b) => b.pts - a.pts);

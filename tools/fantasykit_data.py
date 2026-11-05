@@ -570,17 +570,29 @@ def nfl():
         p["l"]["tot"] = [g] + [round(s.get(c, 0) or 0, 2) for c in NFL_COLS[1:]]
     # Rest of season: Sleeper's weekly projections for every week still to play, added up. Its season projection is
     # set before the season and doesn't move, so it's only the fallback (and the whole story before week 1).
+    # This week's and next week's projections are kept whole, stat by stat (lines "wk9", "wk10"): a one-week game or a
+    # showdown values players on them, and any scoring can score them. Backtested on weeks 3 to 8 of 2026, Sleeper's
+    # weekly projection tracked real half-PPR scores far better than a player's season so far (0.68 against 0.39).
     week = int(state.get("week") or 0) if state.get("season_type") in (None, "regular") else 0
     ros, left = {}, list(range(week + 1, 19)) if week else []
+    wk_lines = {}
     try:
-        for w in left:
+        for w in ([week] if week else []) + left:
+            got = {}
             for r in nfl_rows(f"https://api.sleeper.com/projections/nfl/{season}/{w}?season_type=regular{POS_Q}"):
                 if row_for(r) is None:
                     continue
                 s = r.get("stats") or {}
-                acc = ros.setdefault(str(r.get("player_id")), [0.0] * len(PROJ_COLS))
+                pid = str(r.get("player_id"))
+                if w <= week + 1:
+                    got[pid] = [round(s.get("gp", 1) or 0, 2)] + [round(s.get(c, 0) or 0, 2) for c in NFL_COLS[1:]]
+                if w == week:
+                    continue
+                acc = ros.setdefault(pid, [0.0] * len(PROJ_COLS))
                 for i, c in enumerate(PROJ_COLS):
                     acc[i] += s.get(c, 0) or 0
+            if w <= week + 1 and len(got) >= 100:
+                wk_lines[w] = got
     except Exception as e:
         print(f"Weekly projections didn't answer: {type(e).__name__}: {e}")
         ros = {}
@@ -595,6 +607,12 @@ def nfl():
     if use_ros:
         for p in by.values():
             p["l"]["proj"] = [round(x, 1) for x in ros.get(p["id"], [0.0] * len(PROJ_COLS))]
+    for w, got in wk_lines.items():
+        for pid, line in got.items():
+            if pid in by:
+                # projected for nothing (ruled out, say) is kept short, so it isn't mistaken for no projection at all
+                by[pid]["l"][f"wk{w}"] = line if any(line[1:]) else [0]
+    print(f"Weekly projections kept: {', '.join(f'week {w} ({len(g)} players)' for w, g in wk_lines.items()) or 'none'}")
     # Sleeper's full player list: each player's college (for a league that limits starters from one conference), and
     # birth dates, for dynasty values, for anyone the stats rows left out
     try:
@@ -614,15 +632,34 @@ def nfl():
             if old.get(pid):
                 p["col"] = old[pid]
     print(f"NFL ages: {sum(1 for p in by.values() if p.get('age'))} of {len(by)}, colleges: {sum(1 for p in by.values() if p.get('col'))}")
-    players = [p for p in by.values() if (p["l"].get("tot") and p["l"]["tot"][NFL_COLS.index("pts_half_ppr")] > 0) or (p["l"].get("proj") and p["l"]["proj"][1] > 20)]
+    # in the pool: anyone who has scored, is projected for real points the rest of the way, or is projected to score this
+    # week or next (a backup quarterback named the starter, say, and the depth a one-game draft of six teams needs:
+    # without them a game's two teams came to 29 to 38 players, short of the 36 six teams start)
+    hi = NFL_COLS.index("pts_half_ppr")
+    players = [p for p in by.values() if (p["l"].get("tot") and p["l"]["tot"][hi] > 0) or (p["l"].get("proj") and p["l"]["proj"][1] > 20)
+               or any(len(p["l"].get(f"wk{w}") or []) > hi and p["l"][f"wk{w}"][hi] >= 1 for w in wk_lines)]
     try:
         nfl_weeks(season, state)
     except Exception as e:
         print(f"NFL weeks didn't build: {type(e).__name__}: {e}")
     write("nfl", {"sport": "nfl", "season": str(season), "week": state.get("week"), "updated": NOW, "source": "Sleeper (sleeper.com)",
                   "lines": {"tot": {"label": "Season totals", "cols": NFL_COLS},
-                            "proj": {"label": "Rest-of-season projection" if use_ros else "Season projection", "cols": PROJ_COLS, "ros": use_ros, "weeks": len(left) if use_ros else 17}},
+                            "proj": {"label": "Rest-of-season projection" if use_ros else "Season projection", "cols": PROJ_COLS, "ros": use_ros, "weeks": len(left) if use_ros else 17},
+                            **{f"wk{w}": {"label": f"Week {w} projection", "cols": NFL_COLS, "proj": True, "week": w, **week_dates(state, season, w)} for w in wk_lines}},
                   "players": players})
+
+
+def week_dates(state, season, w):
+    """A regular-season week's Tuesday to Monday, the way nfl_weeks counts them."""
+    kick = state.get("season_start_date")
+    if kick:
+        k0 = date.fromisoformat(kick)
+        tue1 = k0 - timedelta(days=(k0.weekday() - 1) % 7)
+    else:
+        sep1 = date(season, 9, 1)
+        tue1 = sep1 + timedelta(days=(0 - sep1.weekday()) % 7 + 1)
+    start = tue1 + timedelta(days=7 * (w - 1))
+    return {"start": start.isoformat(), "end": (start + timedelta(days=6)).isoformat()}
 
 
 def nfl_weeks(season, state):

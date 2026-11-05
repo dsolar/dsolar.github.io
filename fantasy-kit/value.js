@@ -7,7 +7,9 @@
      vor    value over the replacement player at his best position, given how many teams start how many slots
      rank   overall rank by vor; prank like "RB12"
      $      auction value from the league's budgets (always set, so a snake draft can show it too)
-   league: { teams, lineup: [slots], bench, scoring: key in sport.scorings, budget (default 200), minBid (default 1) } */
+   league: { teams, lineup: [slots], bench, scoring: key in sport.scorings, budget (default 200), minBid (default 1),
+     week: an NFL week number, for a one-week game or a showdown: values that week's projection only (sport.weekOf) }
+   Football players also get p.wk = { week: projected points } for the weeks the data has (this one and next). */
 (function (root, factory) {
   const m = factory(root.FK ? root.FK.sports : typeof require !== "undefined" ? require("./sports.js") : null);
   if (typeof module !== "undefined" && module.exports) module.exports = m;
@@ -102,9 +104,10 @@
       const at = (k) => { const i = k.indexOf("."); return (i > 0 ? S.stat(sport, p, k.slice(0, i), k.slice(i + 1)) : S.stat(sport, p, line, k)) || 0; };
       if (sc.weights) tot = sum(Object.entries(sc.weights).map(([k, w]) => at(k) * w));
       else tot = S.stat(sport, p, line, sc.col) || 0;
-      const base = tot, gl0 = p.l[line] ? line : Object.keys(p.l).find((k) => k !== "proj") || line;
+      const own = (k) => k !== "proj" && !(sport.data && sport.data.lines && sport.data.lines[k] && sport.data.lines[k].week != null);
+      const base = tot, gl0 = p.l[line] ? line : Object.keys(p.l).find(own) || line;
       tot += S.extraPts(sc, p, at, S.stat(sport, p, gl0, sport.sample ? sport.sample.col : "g") || 0);
-      const gl = p.l[line] ? line : Object.keys(p.l).find((k) => k !== "proj") || line;
+      const gl = p.l[line] ? line : Object.keys(p.l).find(own) || line;
       const g = S.stat(sport, p, gl, sport.sample ? sport.sample.col : "g") || 0;
       if (sc.per === "game") { p.fpg = tot; p.fpts = tot * g; } else { p.fpts = tot; p.fpg = g ? tot / g : 0; }
       p.g = g;
@@ -118,6 +121,30 @@
       if (proj != null && tot !== base && base > 5) proj *= tot / base;
       p.proj = proj;
     }
+  }
+
+  // One week's projection (football: data lines "wk9", "wk10", Sleeper's projected stat line for the week, from
+  // tools/fantasykit_data.py), scored this league's way, custom scoring and bonuses too: p.wk = { 9: points, 10: points }.
+  // For the nearest week, a player ruled out (or on IR, or suspended) projects nothing and a doubtful one 30%, the
+  // way the live odds count them (league.js). Sleeper usually has them at zero already. Returns the weeks it found.
+  const WEEK_PLAYS = [[/^(out|ir|pup|nfi|sus|suspended|cov)/i, 0], [/^(doubtful|d)$/i, 0.3]];
+  const weekPlays = (p) => { const tag = String(p.inj || "").trim(), hit = tag && WEEK_PLAYS.find(([re]) => re.test(tag)); return hit ? hit[1] : 1; };
+  function weekValues(sport, players, sc) {
+    const L = (sport.data && sport.data.lines) || {};
+    const keys = Object.keys(L).filter((k) => L[k].week != null);
+    if (!keys.length) return [];
+    const near = Math.min(...keys.map((k) => L[k].week));
+    for (const p of players) {
+      p.wk = {};
+      for (const k of keys) {
+        if (!p.l[k]) continue;
+        const at = (s) => { const i = s.indexOf("."); return S.stat(sport, p, k, i > 0 ? s.slice(i + 1) : s) || 0; };
+        let x = sc.weights ? sum(Object.entries(sc.weights).map(([s, w]) => at(s) * w)) : at(sc.col);
+        x += S.extraPts(sc, p, at, at("g"));
+        p.wk[L[k].week] = Math.round(x * (L[k].week === near ? weekPlays(p) : 1) * 100) / 100;
+      }
+    }
+    return keys.map((k) => L[k].week);
   }
 
   // Pulls small samples toward a below-replacement line: g / (g + k) of a player's own rate.
@@ -266,16 +293,32 @@
         p.v = rate * games;
         p.ros = meta.ros && p.proj != null ? p.proj : null;
       }
+      // One week (league.week: a one-week game or a showdown) is valued on that week's projection alone, kept on the
+      // season scale like everything else so v / games is still his week. Backtested on 2026's weeks 3 to 8, the
+      // weekly projection tracked real scores far better than the season rate (correlation 0.68 against 0.39), and
+      // mixing any of the season rate back in only made it worse. A player with no projection that week gets half
+      // his usual rate. sport.weekOf says which week the values are for.
+      const wks = weekValues(sport, players, sc);
+      delete sport.weekOf;
+      if (league.week != null && wks.includes(Number(league.week))) {
+        const n = Number(league.week);
+        for (const p of players) { const x = p.wk && p.wk[n]; p.v = (x != null ? x : (p.v / games) * 0.5 * weekPlays(p)) * games; }
+        sport.weekOf = n;
+      }
     }
+    const oneWeek = sport.weekOf != null;
     if (league.bestBall && sc.type === "points") bestBall(sport, players, league, sc);
     const repl = replacement(sport, players, league);
     for (const p of players) {
       const ps = S.positions(p).filter((x) => repl[x] != null);
       p.vor = p.v - (ps.length ? Math.min(...ps.map((x) => repl[x])) : Math.max(...Object.values(repl)));
     }
-    streamers(sport, players, league);
+    // a kicker's or a defense's season is hard to call, but one week of theirs is projected like anyone's; and the
+    // market's ranks are for a season
+    if (!oneWeek) streamers(sport, players, league);
     if (league.dynasty) dynasty(sport, players, league);
-    if (league.market) market(sport, players, league, sc);
+    if (league.market && !oneWeek) market(sport, players, league, sc);
+    else if (oneWeek) sport.market = null;
     const sorted = players.slice().sort((a, b) => b.vor - a.vor || b.v - a.v);
     const posN = {};
     sorted.forEach((p, i) => {

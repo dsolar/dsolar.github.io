@@ -1471,7 +1471,7 @@
       const startWeeks = own != null ? Array.from({ length: Math.min(L().week - 1, G.totalWeeks(L())) }, (_, i) => i + 1) : [];
       const started = startWeeks.filter((w) => G.lineupFor(L(), ctx, own, w).includes(pid)).length;
       const stats = [["Overall", `#${p.rank}`], ["Position", esc(p.prank)]]
-        .concat(W && W.avg != null ? [["Per week", fmtS(W.avg)]] : [[pts() ? "Projection" : "Value", pts() ? String(Math.round(p.v)) : p.v.toFixed(1)]])
+        .concat(W && W.avg != null ? [["Per week", fmtS(W.avg)]] : [[pts() ? (sport.weekOf != null ? `Week ${sport.weekOf}` : "Projection") : "Value", pts() ? (sport.weekOf != null ? fmtS(p.v / 17) : String(Math.round(p.v))) : p.v.toFixed(1)]])
         .concat(trend != null ? [["Last 3 weeks", `${fmtS(last3)}<em class="${trend >= 0.1 ? "up" : trend <= -0.1 ? "dn" : ""}">${trend >= 0 ? "+" : ""}${Math.round(trend * 100)}%</em>`]] : [])
         .concat(startWeeks.length && !bb() ? [["Started", `${started} of ${startWeeks.length}`]] : [])
         .concat([["Auction", p.$ ? money(p.$) : "-"]]);
