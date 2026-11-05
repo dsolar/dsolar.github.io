@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-05T01:29:58Z",
+ "updated": "2026-11-05T11:10:22Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -441,6 +441,10 @@
     [
      "2026-11-04",
      56
+    ],
+    [
+     "2026-11-05",
+     56
     ]
    ],
    "sg": null,
@@ -540,6 +544,10 @@
     ],
     [
      "2026-11-04",
+     22
+    ],
+    [
+     "2026-11-05",
      22
     ]
    ],
@@ -703,6 +711,10 @@
     [
      "2026-11-04",
      28
+    ],
+    [
+     "2026-11-05",
+     28
     ]
    ],
    "sg": null,
@@ -791,6 +803,10 @@
     [
      "2026-11-04",
      22
+    ],
+    [
+     "2026-11-05",
+     22
     ]
    ],
    "sg": null,
@@ -862,16 +878,6 @@
    "src": null,
    "low": null
   },
-  "sg-18662147": {
-   "history": [],
-   "sg": 18662147,
-   "title": "Jason Isbell",
-   "date": "2026-11-04",
-   "venue": "Concert Hall at Groton Hill Music Center",
-   "url": "https://seatgeek.com/jason-isbell-tickets/groton-massachusetts-groton-hill-music-center-2026-11-04-8-pm/concert/18662147",
-   "src": null,
-   "low": null
-  },
   "sg-18660116": {
    "history": [],
    "sg": 18660116,
@@ -919,16 +925,6 @@
    "date": "2026-11-22",
    "venue": "Knockdown Center",
    "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-11-22-8-pm/concert/18634482",
-   "src": null,
-   "low": null
-  },
-  "espn-401909924": {
-   "history": [],
-   "sg": 18495286,
-   "title": "Celtics vs Bucks",
-   "date": "2026-11-04",
-   "venue": "TD Garden",
-   "url": "https://www.espn.com/nba/game/_/gameId/401909924/bucks-celtics",
    "src": null,
    "low": null
   },
