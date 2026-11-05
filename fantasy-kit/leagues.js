@@ -42,7 +42,7 @@
     lineup: "", bench: null, playoffs: 4, deadline: null, review: "vote", faab: null, waiverDays: 2, gameLock: null,
     weights: null, cats: null, waivers: "faab", ir: 1, maxAdds: 0, posMax: {}, keepers: 0, keeperCost: "round", legs: "1", cons: "none", median: 0, bestball: 0, divs: 0, rookie: 3, fpicks: 1, taxi: 2, ohold: "clock", tep: 0, ptd: 4, b100r: 0, b100c: 0, b300p: 0, vamp: "off", vlike: 0, vdouble: 0,
     reviewHours: 24, vetoShare: 0.5, waiverOrder: "rolling", minBid: 0, waiverPrice: "first", maxAddsSeason: 0,
-    open: {}, pyoOn: 0, robinOn: 0, robinP: 2, conqOn: 0, conqP: 3, conqLike: 0, crownOn: 0, crownStep: 10, crownKeep: 5, hangOn: 0, tbOn: 0, tbAmt: 25, reveal: "start", kind: "redraft", when: "now", rlOn: 0, rlRound: 0, respins: 1, hzOn: 0, hzShields: 3, hzSteals: 1, hzJinxes: 1, hzClock: 60, keepN: 3, tepOn: 0, tepAmt: 0.5, b100rOn: 0, b100rAmt: 3, b100cOn: 0, b100cAmt: 3, b300pOn: 0, b300pAmt: 3, vampOn: 0, vampWho: "random" };
+    open: {}, capBudget: 100, capBonus: 1, pyoOn: 0, robinOn: 0, robinP: 2, conqOn: 0, conqP: 3, conqLike: 0, crownOn: 0, crownStep: 10, crownKeep: 5, hangOn: 0, tbOn: 0, tbAmt: 25, reveal: "start", kind: "redraft", when: "now", rlOn: 0, rlRound: 0, respins: 1, hzOn: 0, hzShields: 3, hzSteals: 1, hzJinxes: 1, hzClock: 60, keepN: 3, tepOn: 0, tepAmt: 0.5, b100rOn: 0, b100rAmt: 3, b100cOn: 0, b100cAmt: 3, b300pOn: 0, b300pAmt: 3, vampOn: 0, vampWho: "random" };
   // a vampire league: football, head to head on points, and a draft where one team can simply sit out
   const vampOk = () => form.sport === "nfl" && form.season === "h2h" && ["snake", "linear", "3rr"].includes(form.type);
   // scoring: a preset key, or "cp" (custom points) / "cc" (custom categories)
@@ -56,10 +56,17 @@
   // one-week football starts eight, no kicker or defense; a heist has no bench at all
   const ONE_WEEK_NFL = ["QB", "RB", "RB", "WR", "WR", "WR", "TE", "FLEX"];
   // a heist needs the full one-week lineup, so a slate of eight games or more
-  const heist = () => !!form.hzOn && slateOn() && form.season === "h2h" && !!curSlate() && curSlate().games.length >= 8;
-  const slateLU = () => { const sl = slateOn() && !heist() ? curSlate() : null; return sl ? SL.lineup(sl.games.length, form.teams) : null; };
+  const heist = () => !!form.hzOn && form.type !== "cap" && slateOn() && form.season === "h2h" && !!curSlate() && curSlate().games.length >= 8;
+  // a salary cap game (one-week football, points): no draft, a lineup under a budget, players on any number of teams.
+  // A sealed draft: everyone ranks players in private and the draft runs itself when the lists lock.
+  const capOn = () => form.type === "cap" && slateOn();
+  const sealedOn = () => form.type === "sealed";
+  const noRoom = () => capOn() || sealedOn();
+  const draftType = () => (form.type === "cap" || form.type === "sealed" ? "snake" : form.type);
+  // with no draft, every team can start the slate's quarterbacks, so it's never a superflex
+  const slateLU = () => { const sl = slateOn() && !heist() ? curSlate() : null; return sl ? SL.lineup(sl.games.length, capOn() ? 2 : form.teams) : null; };
   const lineupOf = (sp) => (heist() ? ONE_WEEK_NFL.slice() : slateLU() ? slateLU().lineup.slice() : form.lineup ? form.lineup.split(" ") : oneWeek() && sp.key === "nfl" ? ONE_WEEK_NFL.slice() : sp.lineup.slice()).filter((x) => sp.slots[x] && x !== "BN");
-  const benchOf = (sp) => (heist() ? 0 : slateLU() ? slateLU().bench : form.bench != null ? form.bench : oneWeek() && sp.key === "nfl" ? 2 : sp.bench);
+  const benchOf = (sp) => (heist() || capOn() ? 0 : slateLU() ? slateLU().bench : form.bench != null ? form.bench : oneWeek() && sp.key === "nfl" ? 2 : sp.bench);
   if (S.ALL[params.get("s")]) { form.sport = params.get("s"); view = "new"; }
   // leagues.html?rematch=<id>: run a one-week game back, next week, with the same managers in the same seats
   const rematchId = params.get("rematch");
@@ -74,6 +81,8 @@
     Object.assign(form, { kind: "week", wkSet: 1, sport: v.sport, teams: D0.teams.length, name: v.name, type: D0.type || "snake", clock: D0.clock || 30,
       season: s0.tally === "allplay" ? "allplay" : s0.tally === "cats" ? "h2hcats" : "h2h", slKind: kind === "custom" ? "full" : kind, slWeek: 0, hzOn: s0.heist ? 1 : 0, bestball: s0.bestBall ? 1 : 0 });
     if (D0.scoring && S[v.sport] && S[v.sport].scorings[D0.scoring]) form.scoring = D0.scoring;
+    if (D0.cap) Object.assign(form, { type: "cap", capBudget: D0.cap.budget, capBonus: D0.cap.bonus ? 1 : 0 });
+    else if (D0.sealed) form.type = "sealed";
     form.dtMode = "at"; form.dtAt = null;
     view = "new"; loadSlates();
   }
@@ -285,12 +294,13 @@
     form.faab = null;
   }
   const { SC_SUB } = window.FK.setup;
-  const DRAFT_SHORT = { snake: "Snake", auction: "Auction", linear: "Linear", "3rr": "Third-round reversal", mystery: "Mystery packages", elephant: "White elephant", pack: "Pack" };
+  const DRAFT_SHORT = { cap: "Salary cap", sealed: "Sealed", snake: "Snake", auction: "Auction", linear: "Linear", "3rr": "Third-round reversal", mystery: "Mystery packages", elephant: "White elephant", pack: "Pack" };
   // a field drawn behind the header, one for each sport
   function newForm() {
     derive();
     const sp = S[form.sport];
     if (!(sp.scorings[form.scoring] || isCustom())) form.scoring = Object.keys(sp.scorings)[0];
+    if (form.type === "cap" && !draftTypes(sp).includes("cap")) form.type = "snake";
     const auction = form.type === "auction";
     const seasons = SEASONS[scoringType(sp)];
     if (!seasons.some(([k]) => k === form.season)) form.season = "h2h";
@@ -330,18 +340,18 @@
         <section class="nl-sec"><h2 class="nl-h">What are you starting?</h2>${modes}${kinds ? `<div style="margin-top:12px">${kinds}</div>` : ""}${whenHtml}</section>
         ${slateHtml}
         <section class="nl-sec"><h2 class="nl-h">Format</h2>${formats}${sdHtml}
-          ${showdown() ? "" : `<div class="nl-bb">${toggle("bestball", gl ? "Best ball guillotine" : "Best ball", gl ? "Your best lineup counts each week, so nobody gets chopped for a bad lineup" : "Lineups set themselves: your best scores count each week", form.bestball)}${slateOn() && form.season === "h2h" && scoringType(sp) === "points" && curSlate() && curSlate().games.length >= 8 ? toggle("hzOn", "Heist", "Right after the draft, everyone secretly shields their own starters and steals or jinxes the other team's", form.hzOn) : ""}${form.season === "h2h" && !form.vampOn && !heist() && scoringType(sp) === "points" ? toggle("median", "Median game", "Also play the league median, for a second win or loss each week", form.median) : ""}</div>`}</section>
+          ${showdown() || capOn() ? "" : `<div class="nl-bb">${toggle("bestball", gl ? "Best ball guillotine" : "Best ball", gl ? "Your best lineup counts each week, so nobody gets chopped for a bad lineup" : "Lineups set themselves: your best scores count each week", form.bestball)}${slateOn() && form.season === "h2h" && scoringType(sp) === "points" && curSlate() && curSlate().games.length >= 8 ? toggle("hzOn", "Heist", "Right after the draft, everyone secretly shields their own starters and steals or jinxes the other team's", form.hzOn) : ""}${form.season === "h2h" && !form.vampOn && !heist() && scoringType(sp) === "points" ? toggle("median", "Median game", "Also play the league median, for a second win or loss each week", form.median) : ""}</div>`}</section>
         ${twistsHtml()}
         <section class="nl-sec nl-ess">
           <div class="nl-name"><label for="n-name">League name</label><input id="n-name" type="text" maxlength="40" required value="${esc(form.name || "")}" placeholder="Name your league" autocomplete="off"></div>
           <div class="g2">${fld("Your name", `<input id="n-me" type="text" maxlength="24" required value="${esc(form.me || "")}" autocomplete="name">`, "", "n-me")}${fld("Your team's name", `<input id="n-team" type="text" maxlength="28" value="${esc(form.team || "")}" placeholder="Optional">`, "", "n-team")}</div>
           ${fld("Teams", stepper("teams", teamVals(), form.teams, (x) => `${x} teams`, "Teams"), teamsHint())}
           ${fld("Scoring", cards("scoring", presets, form.scoring, "Scoring", presets.length > 4 ? 3 : presets.length))}
-          <div class="nl-dr">${fld("Draft", seg("type", Object.keys(F.FORMATS).map((k) => [k, DRAFT_SHORT[k] || F.FORMATS[k]]), form.type, "Draft format", { wrap: true }), esc(DRAFTS[form.type] || ""))}
+          <div class="nl-dr">${fld("Draft", seg("type", draftTypes(sp).map((k) => [k, DRAFT_SHORT[k] || F.FORMATS[k]]), form.type, "Draft format", { wrap: true }), esc(DRAFTS[form.type] || ""))}
           ${rlOk() ? toggle("rlOn", "Team roulette", `Each pick, a wheel picks the ${sp.key === "nfl" ? "NFL" : sp.key === "nba" ? "NBA" : "MLB"} team you have to draft from`, form.rlOn,
             `<div class="g2">${fld("The wheel spins", seg("rlRound", [[0, "Every pick"], [1, "Once a round, same team for all"]], form.rlRound, "The wheel spins", { wrap: true }))}${fld("Re-spins a team", seg("respins", [[0, "None"], [1, "1"], [2, "2"], [3, "3"]], form.respins, "Re-spins a team"))}</div>`) : ""}
-          ${fld(auction ? "Bid clock" : "Pick clock", seg("clock", live, form.clock, auction ? "Bid clock" : "Pick clock", { wrap: true }), auction ? "Every bid resets the clock." : form.clock >= 3600 ? "A slow draft: managers with email alerts get one when they're up." : "When a clock runs out, the best player left is taken.")}</div>
-          ${draftTimeHtml()}
+          ${noRoom() ? "" : fld(auction ? "Bid clock" : "Pick clock", seg("clock", live, form.clock, auction ? "Bid clock" : "Pick clock", { wrap: true }), auction ? "Every bid resets the clock." : form.clock >= 3600 ? "A slow draft: managers with email alerts get one when they're up." : "When a clock runs out, the best player left is taken.")}</div>
+          ${capOn() ? capHtml() : sealedOn() ? lockHtml() : draftTimeHtml()}
         </section>
         <section class="nl-sec"><h2 class="nl-h">Fine-tune</h2><p class="nl-sub">Every rule and what it's set to. Open one to change it.</p><div class="nr-l">${rows}</div></section>
         <div class="nl-bar"><div class="nl-sum">${icon(sp.key, "nl-sum-ic")}<span><b id="tk-name">${esc(form.name || "Your league")}</b><small>${esc(V.line)}</small></span></div>
@@ -367,10 +377,10 @@
     const style = oneWeek() ? `One week${slt ? `: ${slt.label}, week ${slt.week}` : slateOn() ? "" : ` (${form.when === "now" ? "this week" : "next week"})`}${showdown() ? ", captain at 1.5x" : ""}, ${fmtName}${form.bestball ? ", best ball" : ""}`
       : `${(KINDS.find(([k]) => k === form.kind) || [, "Redraft"])[1]}, ${fmtName}${form.bestball ? ", best ball" : gl ? ", set lineups" : ""}`;
     return {
-      line: `${sp.name}, ${n} teams, ${sc}, ${DRAFT_SHORT[form.type]} draft${rlOk() && form.rlOn ? " with team roulette" : ""}${heist() ? " and a heist" : ""}. ${style}`,
+      line: `${sp.name}, ${n} teams, ${sc}, ${capOn() ? `$${form.capBudget} salary cap, no draft` : `${DRAFT_SHORT[form.type]} draft`}${rlOk() && form.rlOn ? " with team roulette" : ""}${heist() ? " and a heist" : ""}. ${style}`,
       scoring: bon.length ? bon.join(", ") : form.scoring === "cp" ? "Custom points" : "No bonuses",
       draft: `${rlOk() && form.rlOn ? `Team roulette${form.rlRound ? " by round" : ""}, ` : ""}${auction() ? `$${showdown() ? 50 : 200} budgets, ` : ""}${clock} a ${auction() ? "bid" : "pick"}${form.type === "mystery" ? `, packages open ${{ now: "now", start: "at the start", own: "as picks come up" }[form.reveal || "start"]}` : ""}${!auction() && form.type !== "elephant" ? (form.trades ? ", trades on" : ", no trades") : ""}`,
-      roster: showdown() ? "Captain and 5 flex, no bench" : heist() ? "8 starters, no bench" : `${lu.length} starters, ${benchOf(sp)} bench${form.ir ? `, ${form.ir} IR` : ""}`,
+      roster: capOn() ? `${lu.length} starters, no bench` : showdown() ? "Captain and 5 flex, no bench" : heist() ? "8 starters, no bench" : `${lu.length} starters, ${benchOf(sp)} bench${form.ir ? `, ${form.ir} IR` : ""}`,
       heist: `${form.hzShields} shield${form.hzShields === 1 ? "" : "s"}, ${form.hzSteals} steal${form.hzSteals === 1 ? "" : "s"}, ${form.hzJinxes} jinx${form.hzJinxes === 1 ? "" : "es"}, ${form.hzClock} sec`,
       season: `${gl ? `${n - 1} weeks` : `${form.weeks} weeks`}${form.divs && !gl && form.season !== "roto" ? `, ${form.divs} divisions` : ""}`,
       playoffs: po ? `${po} teams, ${playoffWeeks(po)} weeks` : "None",
@@ -436,6 +446,22 @@
       at ? "It starts on its own, with an email an hour before. Anyone who isn't there gets picks from their queue, or the best player left." : "Start it from the draft room when everyone's in.");
   }
   const auction = () => form.type === "auction";
+  // the draft types a league can pick: every live format, a sealed draft, and for one-week football on points, a
+  // salary cap game with no draft at all
+  const draftTypes = (sp) => Object.keys(F.FORMATS).concat(["sealed"], slateOn() && scoringType(sp) === "points" ? ["cap"] : []);
+  function capHtml() {
+    const sl = curSlate();
+    return `<div class="g2">${fld("Budget", seg("capBudget", [[50, "$50"], [100, "$100"], [200, "$200"]], form.capBudget, "Budget"), "Stars cost about twice an even share, so you can't have them all.")}
+      ${fld("Unique picks", toggle("capBonus", "1.25x for a player nobody else has", "Fading the obvious picks pays", form.capBonus))}</div>
+      <p class="fl-h">No draft: everyone builds one lineup under the budget, and anyone can pick the same players. Lineups stay hidden and lock at the first kickoff${sl ? `, ${esc(SL.kick(sl.games[0].at))}` : ""}. Anyone who doesn't set one gets a bot's.</p>`;
+  }
+  // a sealed draft: the time the lists lock, when the draft runs itself (before the first kickoff, for a slate)
+  function lockHtml() {
+    if (!form.lkAt) form.lkAt = draftTimeDefault();
+    const sl = slateOn() ? curSlate() : null;
+    return fld("Lists lock", `<input id="n-lk" type="datetime-local" value="${esc(localInput(form.lkAt))}" min="${esc(localInput(Date.now() + 5 * 6e4))}"${sl ? ` max="${esc(localInput(sl.first - 10 * 6e4))}"` : ""} aria-label="When the lists lock">`,
+      "Everyone ranks players in private until then. Then the draft runs itself in a snake order: each pick is the highest player left on that team's list.");
+  }
   // team roulette works with drafts that go pick by pick (not a showdown: two teams make a dull wheel)
   const rlOk = () => ["snake", "linear", "3rr"].includes(form.type) && !showdown();
   const seasonsFor = (sp) => SEASONS[scoringType(sp)];
@@ -447,10 +473,10 @@
     rows.push(["scoring", "Scoring details", sp.key === "nfl" ? "Bonuses, TE premium, custom points" : form.scoring === "cp" ? "Points for each stat" : "Categories and custom scoring", V.scoring, () => scoringBody(sp)]);
     if (heist()) rows.push(["heist", "Heist", "Shields, steals, jinxes and its clock", V.heist, () => heistBody()]);
     if (!slateOn() && !heist()) rows.push(["roster", "Roster", "Starting lineup, bench, IR, position limits", V.roster, () => rosterStep(sp)]);
-    rows.push(["draft", "Draft room", form.type === "mystery" ? "When packages open, trades during the draft" : "Trades during the draft", V.draft, () => draftBody()]);
+    if (!noRoom()) rows.push(["draft", "Draft room", form.type === "mystery" ? "When packages open, trades during the draft" : "Trades during the draft", V.draft, () => draftBody()]);
     if (!oneWeek()) rows.push(["season", "Season", form.season === "guillotine" ? "Length" : "Length and divisions", V.season, () => seasonBody(sp)]);
     if (h2hLike() && !oneWeek()) rows.push(["playoffs", "Playoffs", "Teams, rounds, consolation", V.playoffs, () => playoffsBody()]);
-    if (!showdown() && !heist()) rows.push(["waivers", "Waivers", "FAAB, clear times, pickup limits", V.waivers, () => waiversBody()]);
+    if (!showdown() && !heist() && !capOn()) rows.push(["waivers", "Waivers", "FAAB, clear times, pickup limits", V.waivers, () => waiversBody()]);
     if (!gl && !oneWeek()) rows.push(["trades", "Trades", "Deadline and review", V.trades, () => tradesBody()]);
     return rows;
   }
@@ -474,7 +500,7 @@
   }
   function draftBody() {
     // trading in the draft room: not in an auction, a white elephant (steals take its place) or a pack draft
-    const tradesOk = !["auction", "elephant", "pack"].includes(form.type);
+    const tradesOk = !["auction", "elephant", "pack", "cap", "sealed"].includes(form.type);
     const reveal = form.type === "mystery" ? fld("Packages open", seg("reveal", [["now", "Right away"], ["start", "When the draft starts"], ["own", "Yours first, the rest as they come up"]], form.reveal || "start", "Packages open", { wrap: true }),
       form.reveal === "own" ? "Other teams' picks stay hidden until they're on the clock, so a trade for one is a blind deal." : form.reveal === "now" ? "Everyone sees every package now, and teams can trade before the draft starts." : "Everyone sees every package once the draft starts, so trades show exactly which picks move.") : "";
     if (form.type === "mystery") return reveal + toggle("trades", "Trade picks and players", "Deals happen right in the draft room", form.trades);
@@ -579,12 +605,13 @@
   const playoffWeeks = (po) => { const R = Math.ceil(Math.log2(po)); return form.legs === "all2" ? 2 * R : form.legs === "final2" ? R + 1 : R; };
   const kc = () => { const ok = form.type === "auction" ? ["price", "price5"] : ["round", "round1", "free"]; return ok.includes(form.keeperCost) ? form.keeperCost : ok[0]; };
   const POS_MAIN = { nfl: ["QB", "RB", "WR", "TE", "K", "DEF"], nba: ["PG", "SG", "SF", "PF", "C"], mlb: ["C", "1B", "2B", "3B", "SS", "OF", "SP", "RP"] };
-  const NUMERIC = /^(hzOn|hzShields|hzSteals|hzJinxes|hzClock|rlOn|rlRound|respins|teams|clock|weeks|trades|bench|faab|playoffs|deadline|waiverDays|ir|maxAdds|median|bestball|divs|rookie|fpicks|taxi|ptd|vlike|vdouble|reviewHours|vetoShare|minBid|maxAddsSeason|keepN|vampOn|pyoOn|robinOn|robinP|conqOn|conqP|conqLike|crownOn|crownStep|crownKeep|hangOn|tbOn|tbAmt|slWeek|(tep|b100r|b100c|b300p)(On|Amt)|pm_.+)$/;
+  const NUMERIC = /^(hzOn|hzShields|hzSteals|hzJinxes|hzClock|rlOn|rlRound|respins|teams|clock|weeks|trades|bench|faab|playoffs|deadline|waiverDays|ir|maxAdds|median|bestball|divs|rookie|fpicks|taxi|ptd|vlike|vdouble|reviewHours|vetoShare|minBid|maxAddsSeason|keepN|vampOn|pyoOn|robinOn|robinP|conqOn|conqP|conqLike|crownOn|crownStep|crownKeep|hangOn|tbOn|tbAmt|slWeek|capBudget|capBonus|(tep|b100r|b100c|b300p)(On|Amt)|pm_.+)$/;
   // keep what's typed when a choice redraws the form
   function grab() {
     const root = $(".su"); if (!root) return;
     const v = (q) => { const el = $(q); return el ? el.value : null; };
     if (v("#n-dt")) { const t = new Date(v("#n-dt")).getTime(); if (Number.isFinite(t)) form.dtAt = t; }
+    if (v("#n-lk")) { const t = new Date(v("#n-lk")).getTime(); if (Number.isFinite(t)) form.lkAt = t; }
     if (v("#n-name") != null) form.name = v("#n-name"); if (v("#n-me") != null) form.me = v("#n-me"); if (v("#n-team") != null) form.team = v("#n-team");
     const s = root.querySelector("input[name=sport]:checked"); if (s) form.sport = s.value;
     root.querySelectorAll("[data-f]").forEach((el) => {
@@ -601,7 +628,7 @@
   // Any number of teams from 3 to 20 for a season (an odd count gives one team a bye each week). A one-week league
   // stays even, since an odd team would sit out the only week, and a showdown's two NFL teams fill at most six rosters.
   const span = (a, b, step = 1) => Array.from({ length: Math.floor((b - a) / step) + 1 }, (_, i) => a + i * step);
-  const teamVals = () => (showdown() ? [2, 3, 4, 5, 6] : oneWeek() ? (form.season === "allplay" ? span(2, 16) : span(2, 20, 2)) : span(3, 20));
+  const teamVals = () => (showdown() && !capOn() ? [2, 3, 4, 5, 6] : oneWeek() ? (form.season === "allplay" ? span(2, 16) : span(2, 20, 2)) : span(3, 20));
   function derive() {
     if (rematch) form.teams = rematch.n;
     // keep the season inside the real one: fewer playoff weeks first if even one regular week won't fit, then fewer weeks
@@ -645,27 +672,27 @@
       const sd = slate && slate.games.length === 1 ? sdGame() : null;
       const slu = slate && !heist() ? SL.lineup(slate.games.length, form.teams) : null;
       const lineup = slu ? slu.lineup.slice() : lineupOf(sport).filter((s) => sport.slots[s] === "*" || sport.slots[s].some((x) => have.has(x)));
-      const bench = slu ? slu.bench : benchOf(sport);
+      const bench = capOn() ? 0 : slu ? slu.bench : benchOf(sport);
       const players = data.players.filter((p) => !slate || slate.teams.includes(p.t)).map((p) => Object.assign({}, p));
       const scoring = spec ? "custom" : sport.scorings[form.scoring] ? form.scoring : Object.keys(sport.scorings)[0];
       const n = form.teams, total = n * (lineup.length + bench);
       // can the player pool fill it? every one-position slot needs a player per team, and so does every roster spot
       const need = {};
       for (const sl of lineup) { const v = sport.slots[sl]; if (v !== "*" && v.length === 1) need[v[0]] = (need[v[0]] || 0) + n; }
-      for (const [pos, k] of Object.entries(need)) {
+      if (!capOn()) for (const [pos, k] of Object.entries(need)) {
         const haveN = players.filter((p) => S.positions(p).includes(pos)).length;
         if (haveN < k) throw new Error(`There aren't enough ${pos} for this lineup: ${n} teams need ${k}, and the pool has ${haveN}.`);
       }
-      if (total > players.length) throw new Error(`${n} teams with ${lineup.length + bench} roster spots need ${total} players, and the pool has ${players.length}.`);
-      const bb = !!form.bestball && form.season !== "guillotine";
+      if (!capOn() && total > players.length) throw new Error(`${n} teams with ${lineup.length + bench} roster spots need ${total} players, and the pool has ${players.length}.`);
+      const bb = !!form.bestball && form.season !== "guillotine" && !capOn();
       const wk = bb ? await fetch(`data/weeks-${form.sport}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null) : null;
       V.evaluate(sport, players, { teams: n, lineup, bench, scoring, bestBall: bb, weeks: wk && String(wk.season) === String(data.season) ? wk : null, dynasty: form.keepers === -1 && form.season !== "guillotine", dynastyRanks: form.keepers === -1 && form.season !== "guillotine" ? await fetch(`data/dynasty-${form.sport}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null) : null });
       const auction = form.type === "auction";
       // the vampire (the commissioner, or a random team) sits out the draft
       const vampire = vampOk() && form.vamp !== "off" ? (form.vamp === "me" ? 0 : Math.floor(Math.random() * n)) : null;
-      const D = F.create({ sport, type: form.type, teams: n, sit: vampire != null ? [vampire] : undefined, seed: Math.floor(Math.random() * 2 ** 31), now: Date.now(), lineup, bench, scoring,
+      const D = F.create({ sport, type: draftType(), teams: n, sit: vampire != null ? [vampire] : undefined, seed: Math.floor(Math.random() * 2 ** 31), now: Date.now(), lineup, bench, scoring,
         botDelay: 3000, clock: auction ? 0 : form.clock, bidClock: auction ? form.clock : 15, nomClock: 30, budget: sd ? 50 : 200, name: form.name.trim(),
-        trades: form.trades !== 0, curve: form.type === "mystery" ? F.pickCurve(players, total) : null, reveal: form.type === "mystery" ? form.reveal || "start" : undefined });
+        trades: form.trades !== 0 && !noRoom(), curve: form.type === "mystery" ? F.pickCurve(players, total) : null, reveal: form.type === "mystery" ? form.reveal || "start" : undefined });
       D.teams.forEach((t, i) => (t.color = (i * 5) % 12));
       if (form.type === "pack") F.dealPacks(D, players, sport);
       if (rlOk() && form.rlOn) {
@@ -675,7 +702,15 @@
         D.roulette = { teams: pro, each: form.rlRound ? "round" : "pick", respins: form.respins || 0, spins: {}, used: {} };
       }
       if (D.trading) D.offerHold = form.ohold || "clock";
-      if (form.dtMode === "at") {
+      if (capOn()) {
+        D.cap = { budget: form.capBudget || 100, due: slate.first, bonus: form.capBonus ? 1.25 : null };
+        D.cap.prices = F.capPrices(D, players, sport);
+      } else if (sealedOn()) {
+        const t = form.lkAt || draftTimeDefault();
+        if (t < Date.now() + 2 * 6e4) throw new Error("Pick a time for the lists to lock that's still to come.");
+        if (slate && t >= slate.first) throw new Error(`The lists have to lock before the first kickoff, ${SL.kick(slate.games[0].at)}.`);
+        D.sealed = { due: t };
+      } else if (form.dtMode === "at") {
         const t = form.dtAt || draftTimeDefault();
         if (t < Date.now() + 2 * 6e4) throw new Error("Pick a draft time that's still to come.");
         if (slate && t >= slate.first) throw new Error(`The draft has to start before the first kickoff, ${SL.kick(slate.games[0].at)}.`);
@@ -694,7 +729,7 @@
       if (form.keepers === -1 && !gl) { D.season.dynasty = { rounds: form.rookie || 3, picks: form.fpicks !== 0 }; if (form.taxi) D.season.taxi = form.taxi; }
       if (sd) Object.assign(D.season, { showdown: { id: sd.id, teams: [sd.away, sd.home], at: sd.at, label: `${sd.away} @ ${sd.home}` }, ir: 0, when: "now" });
       else if (slate) Object.assign(D.season, { slate: Object.assign({}, slate, slu && slu.mult ? { mult: slu.mult } : {}), ir: 0, when: slWeeks()[0] && slWeeks()[0].week === slate.week ? "now" : "next" });
-      if (form.bestball && !sd) D.season.bestBall = true;
+      if (form.bestball && !sd && !capOn()) D.season.bestBall = true;
       else if (gl) D.season.bestBall = false;
       if (form.season === "h2h" && form.median && scoringType(sport) === "points") D.season.median = true;
       if (vampire != null) D.season.vampire = { team: vampire, samePos: form.vlike === 1, double: form.vdouble === 1 };

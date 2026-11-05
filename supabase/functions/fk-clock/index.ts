@@ -108,7 +108,14 @@ async function tickLeagues(token: string) {
           const h = await rpc("fk_clock_heist", { p_token: token, p_id: l.id });
           if (h && h.open) F.heistUnseal(D, dctx, h.open);
         }
-        changed = Z.driveDraft(D, dctx, now);
+        // a salary cap game's lineups or a sealed draft's lists: open them once they lock
+        let sealed = null;
+        const sk = Z.sealedKind ? Z.sealedKind(D) : null;
+        if (sk && now >= Z.sealedDue(D)) {
+          const o = await rpc("fk_clock_seal", { p_token: token, p_id: l.id, p_kind: sk });
+          sealed = o && o.open ? o.open : null;
+        }
+        changed = Z.driveDraft(D, dctx, now, sealed);
         if (D.phase === "done") {
           // a one-week league that starts in the week that's on counts only what's played after now, so it needs this
           // week's totals as of now (the live feed), not as of the last nightly file

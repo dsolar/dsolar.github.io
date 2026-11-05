@@ -1401,7 +1401,95 @@
   }
   const made_ = (D) => made(D);
 
-  return { dealPacks, packMoney, packPrice, packFor, packAt, packSlot, packTurnNow, HEIST, heistRules, heistFoe, heistLineup, heistMove, heistCheck, heistDefault, heistTick, heistSealed, heistDue, heistIn, heistUnseal, spinOf, wheelFor, respin, respinsLeft, setOrder, recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
+  /* ---------- salary cap: no draft ---------- */
+  // D.cap { budget, due, bonus }: each team builds one lineup (D.lineup, no bench) under the budget, and a player can
+  // be on any number of teams. Entries are sealed on the server until due (the first kickoff), then capReveal makes
+  // them the board. A player only one team picked scores D.cap.bonus times (1.25x) for that team.
+  // Prices are set once, when the game is made (D.cap.prices), so they can't move under a saved lineup: by projection,
+  // like a daily game, from 40% of an even share of the budget for a fringe player to 1.9x it for the best one. A
+  // captain costs 1.5x.
+  function capPrices(D, players, sport) {
+    const n = D.lineup.length, avg = D.cap.budget / n;
+    const fit = players.filter((p) => D.lineup.some((sl) => S.fits(sport, p, sl))).sort((a, b) => (b.v || 0) - (a.v || 0));
+    if (!fit.length) return {};
+    const hi = fit[0].v || 0, lo = fit[Math.floor(fit.length / 2)].v || 0, out = {};
+    for (const p of fit) {
+      const t = hi > lo ? Math.max(0, Math.min(1, ((p.v || 0) - lo) / (hi - lo))) : 0;
+      out[p.id] = Math.max(1, Math.round(avg * (0.4 + 1.5 * Math.pow(t, 1.1))));
+    }
+    return out;
+  }
+  // a player with no price (a kicker, or someone added to the pool after the game was made) can't be picked: null
+  const capPrice = (D, p) => (!p ? null : D.cap && D.cap.prices ? (D.cap.prices[p.id] == null ? null : D.cap.prices[p.id]) : Math.max(1, Math.round(p.$ || 1)));
+  const capCost = (D, p, slot) => { const x = capPrice(D, p); return x == null ? null : slot === "CPT" ? Math.round(x * 1.5) : x; };
+  function capCheck(D, ctx, entry) {
+    const lu = D.lineup, budget = D.cap.budget;
+    if (!Array.isArray(entry) || entry.length !== lu.length) return { ok: false, why: "Fill every spot in your lineup" };
+    const seen = new Set(); let spent = 0;
+    for (let i = 0; i < lu.length; i++) {
+      const pid = entry[i], p = pid && ctx.byId[pid];
+      if (!pid) return { ok: false, why: `Fill your ${lu[i]} spot` };
+      if (!p || capPrice(D, p) == null) return { ok: false, why: "One of your players isn't in this game's pool" };
+      if (seen.has(pid)) return { ok: false, why: `${p.n} is in your lineup twice` };
+      if (!S.fits(ctx.sport, p, lu[i])) return { ok: false, why: `${p.n} can't play ${lu[i]}` };
+      seen.add(pid); spent += capCost(D, p, lu[i]);
+    }
+    if (spent > budget) return { ok: false, why: `That's $${spent}, over the $${budget} cap` };
+    return { ok: true, spent, left: budget - spent };
+  }
+  // a lineup for a team with no entry (a bot, or someone who didn't make it): the most value it can afford, slot by
+  // slot, one-position slots first, keeping the cheapest price for each spot still to fill, with a little of its own taste
+  function capAuto(D, ctx, seed) {
+    const r = rng(seed >>> 0), lu = D.lineup, out = Array(lu.length).fill(null), used = new Set();
+    const order = lu.map((sl, i) => i).sort((a, b) => (ctx.sport.slots[lu[a]] === "*" ? 99 : ctx.sport.slots[lu[a]].length) - (ctx.sport.slots[lu[b]] === "*" ? 99 : ctx.sport.slots[lu[b]].length));
+    let left = D.cap.budget;
+    // the cheapest player there is, and how much projection a dollar buys on average
+    const prices = ctx.players.map((p) => capPrice(D, p)).filter((x) => x != null), minP = prices.length ? Math.min(...prices) : 1;
+    const vPer = ctx.players.reduce((a, p) => a + (p.v || 0), 0) / Math.max(1, prices.reduce((a, b) => a + b, 0));
+    order.forEach((i, k) => {
+      const keep = order.length - k - 1;
+      // spend toward an even share of what's left, with room to splurge
+      const share = (left - keep * minP) / (keep + 1) * (1.3 + r() * 0.6);
+      const minLeft = keep * minP;
+      const pool = ctx.players.filter((p) => !used.has(p.id) && S.fits(ctx.sport, p, lu[i]) && capCost(D, p, lu[i]) != null && capCost(D, p, lu[i]) <= left - minLeft);
+      const pick = pool.map((p) => ({ p, s: (p.v || 0) * (0.85 + r() * 0.3) - Math.max(0, capCost(D, p, lu[i]) - share) * vPer })).sort((a, b) => b.s - a.s)[0];
+      if (pick) { out[i] = pick.p.id; used.add(pick.p.id); left -= capCost(D, pick.p, lu[i]); }
+    });
+    return out;
+  }
+  function capReveal(D, ctx, entries, now) {
+    if (!D.cap || D.phase !== "setup") return false;
+    const lineups = {};
+    D.teams.forEach((t, i) => {
+      const e = entries && entries[i];
+      lineups[i] = e && capCheck(D, ctx, e).ok ? e.slice() : capAuto(D, ctx, (D.seed || 1) + i * 7919);
+    });
+    D.board = []; D.order = []; let n = 0;
+    for (const i of Object.keys(lineups)) for (const pid of lineups[i]) if (pid) { D.board.push({ n: ++n, team: +i, pid, at: now, auto: !(entries && entries[i]) }); D.order.push(+i); }
+    const count = {};
+    for (const i of Object.keys(lineups)) for (const pid of lineups[i]) if (pid) count[pid] = (count[pid] || 0) + 1;
+    D.cap.lineups = lineups;
+    D.cap.unique = D.cap.bonus ? Object.keys(count).filter((pid) => count[pid] === 1) : [];
+    D.cap.picked = count;
+    D.rounds = D.lineup.length; D.bench = 0;
+    D.phase = "done"; D.done = now; D.started = D.started || now;
+    return true;
+  }
+  /* ---------- a sealed draft ---------- */
+  // D.sealed { due }: everyone ranks players privately by due; then the draft runs itself, each team picking the best
+  // player left on its list (bots and anyone without a list take the best player left).
+  function sealedRun(D, ctx, lists, now) {
+    if (!D.sealed || D.phase !== "setup") return false;
+    D.teams.forEach((t, i) => { t.queue = ((lists && lists[i]) || []).filter((pid) => ctx.byId[pid]).slice(0, 400); t.auto = true; });
+    D.botDelay = 0;
+    start(D, now);
+    let t = now;
+    for (let k = 0; k < 20000 && D.phase === "live"; k++) { t += 1000; tick(D, ctx, t, 2000); }
+    D.teams.forEach((x) => { x.auto = false; });
+    D.sealed.ran = now;
+    return true;
+  }
+  return { capPrices, capPrice, capCost, capCheck, capAuto, capReveal, sealedRun, dealPacks, packMoney, packPrice, packFor, packAt, packSlot, packTurnNow, HEIST, heistRules, heistFoe, heistLineup, heistMove, heistCheck, heistDefault, heistTick, heistSealed, heistDue, heistIn, heistUnseal, spinOf, wheelFor, respin, respinsLeft, setOrder, recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
     start, pause, pick, worth, resize, offerHold, holdLeft, HOLD_MAX, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, botMax, standings, sizeOf,
     clockLen, thinkTime, bankShare, slotInfo, fitsRoster, canSteal, steal, stealsOf, stealsLeft, stealsOpen, botSteal, pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
     tradeCheck, balance, propose, respond, cancel, botAnswer, botOffer };

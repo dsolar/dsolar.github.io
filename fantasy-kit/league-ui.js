@@ -66,7 +66,7 @@
     const LOCK = `<svg class="lk-i" viewBox="0 0 16 16" width="11" height="11" aria-hidden="true"><rect x="3" y="7" width="10" height="7.5" rx="1.6" fill="currentColor"/><path d="M5.2 7V5.2a2.8 2.8 0 0 1 5.6 0V7" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>`;
     /* ---------- the heist's results ---------- */
     // a player's heist mark: stolen (1.5x for his new team) or jinxed (half)
-    const heistTag = (p) => { const m = p && L().pmult && L().pmult[p.id]; return !m || m === 1 ? "" : m > 1 ? ` <span class="tag win" title="Stolen in the heist: scores ${m}x">${m}x</span>` : ` <span class="tag loss" title="Jinxed in the heist: scores ${m === 0.5 ? "half" : m + "x"}">Jinxed</span>`; };
+    const heistTag = (p) => { const m = p && L().pmult && L().pmult[p.id]; return !m || m === 1 ? "" : m > 1 && L().settings.cap ? ` <span class="tag win" title="Nobody else picked him: he scores ${m}x">Unique ${m}x</span>` : m > 1 ? ` <span class="tag win" title="Stolen in the heist: scores ${m}x">${m}x</span>` : ` <span class="tag loss" title="Jinxed in the heist: scores ${m === 0.5 ? "half" : m + "x"}">Jinxed</span>`; };
     // One matchup's heist, both sides: what each team shielded, and every strike with how it landed
     function heistCard(t, opts2 = {}) {
       const H = L().heist; if (!H) return "";

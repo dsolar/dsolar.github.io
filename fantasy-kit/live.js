@@ -64,11 +64,41 @@
   }
 
   /* ---------- the two views ---------- */
-  const modeNow = () => (L ? "league" : "draft");
+  const modeNow = () => (L ? "league" : Z.sealedKind(D) ? "entry" : "draft");
   function mount() {
     mode = modeNow();
     if (room) { room.stop(); room = null; }
-    if (mode === "draft") mountRoom(); else { mountLeague(); loadSeries(); }
+    if (mode === "draft") mountRoom(); else if (mode === "entry") mountEntry(); else { mountLeague(); loadSeries(); }
+  }
+  // a salary cap game or a sealed draft: entries go to the server, hidden until the lock
+  function mountEntry() {
+    const kind = Z.sealedKind(D);
+    $("#top").innerHTML = "";
+    $("#app").innerHTML = `<div id="room"></div>${guestNote()}`;
+    room = U.entryRoom({
+      el: $("#room"), sport, players, draft: () => D, me: () => info.me, now,
+      brand: { name: "Draft Lab", mark: `<img src="mark.svg" alt="">` }, exit: { href: "leagues.html", label: "Your leagues" },
+      tools: () => `${info.invite ? `<button class="btn sm" data-live="invite">Invite</button>` : ""}<button class="btn sm${info.invite ? " ghost" : ""}" data-live="league">League</button>`,
+      load: () => C.rpc("fk_seal_get", { p_id: id, p_kind: kind }),
+      save: async (entry) => { const r = await C.rpc("fk_seal_set", { p_id: id, p_kind: kind, p_data: entry }); if (r && r.ok) pull(); return r; },
+    });
+    loadPosts();
+    reveal();
+  }
+  // once entries lock, any manager's page opens them and builds the lineups or runs the draft (the clock does too)
+  let revealing = false, revealT = null;
+  async function reveal() {
+    clearTimeout(revealT);
+    const kind = Z.sealedKind(D);
+    if (!kind || L) return;
+    const wait = Z.sealedDue(D) - now();
+    if (wait > 0) { revealT = setTimeout(reveal, Math.min(wait + 1500, 6 * 36e5)); return; }
+    if (revealing || !canAct() || !C.user()) return;
+    revealing = true;
+    const r = await C.rpc("fk_seal_get", { p_id: id, p_kind: kind }).catch(() => null);
+    revealing = false;
+    if (!r || !r.open || Z.sealedKind(D) !== kind) { revealT = setTimeout(reveal, 5000); return; }
+    if (Z.driveDraft(D, F.context(D, players, sport), now(), r.open)) push();
   }
   function refreshView() { if (mode !== modeNow()) mount(); else if (room) room.refresh(); else if (app) app.refresh(); }
 
@@ -400,6 +430,7 @@
     pollT = setTimeout(async () => {
       const busy = U.dialogOpen() || document.querySelector("details[open]") || (document.activeElement && /^(fk-q|INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.id || document.activeElement.tagName));
       if (!busy || (live && !L) || $("#lv-seats")) await pull();
+      if (mode === "entry") reveal();
       schedule();
     }, ms);
   }

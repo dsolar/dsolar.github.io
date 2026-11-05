@@ -103,6 +103,13 @@
     // the undrafted pool starts on waivers and clears like a drop (business days after the draft), so claims, not
     // whoever's online first, decide who gets the best of it. Not for one-week leagues, showdowns or guillotines.
     if (!hr && !sd && !sl && !settings.vampire && settings.format !== "guillotine" && (settings.weeks || 14) > 1 && s.draftWaivers !== false && G.waiverDays(L) > 0) L.openWaivers = G.waiverClear(L, at);
+    // a salary cap game: the lineups are the entries, set for the week; a player only one team picked scores the bonus
+    if (D.cap && D.cap.lineups) {
+      L.lineups[1] = Object.fromEntries(L.teams.map((t) => [t.id, (D.cap.lineups[t.id] || []).slice()]));
+      L.pmult = Object.assign({}, L.pmult || {}, Object.fromEntries((D.cap.unique || []).map((pid) => [pid, D.cap.bonus || 1])));
+      Object.assign(L.settings, { frozen: true, trades: false, ir: 0, cap: { budget: D.cap.budget, bonus: D.cap.bonus || null } });
+      L.waivers = {}; delete L.openWaivers;
+    }
     // started midweek: what every player had done this week before the league began doesn't count
     if (thisWeek && settings.real && o.real && o.real !== true) L.baseline = { start: weekKeyOf(o.real, start), at, lines: JSON.parse(JSON.stringify(linesAt(o.real, start) || {})) };
     return L;
@@ -204,8 +211,15 @@
     (L.reminders = L.reminders || {})[w] = { at: now, teams: out };
   }
 
-  function driveDraft(D, ctx, now) {
+  // sealed: the entries for a salary cap game or a sealed draft ({ team: entry }), once they're due
+  const sealedKind = (D) => (D && D.phase === "setup" ? (D.cap ? "cap" : D.sealed ? "rank" : null) : null);
+  const sealedDue = (D) => (D ? (D.cap ? D.cap.due : D.sealed ? D.sealed.due : null) : null);
+  function driveDraft(D, ctx, now, sealed) {
     if (D && D.phase === "heist") return F.heistTick(D, ctx, now);
+    if (sealedKind(D)) {
+      if (now < sealedDue(D) || !sealed) return false;
+      return D.cap ? F.capReveal(D, ctx, sealed, sealedDue(D)) : F.sealedRun(D, ctx, sealed, sealedDue(D));
+    }
     // a draft set for a time (D.startAt): a reminder an hour before, then it starts on its own. Anyone who isn't
     // there when the clock runs out gets the best player left.
     if (D && D.phase === "setup" && D.startAt) {
@@ -459,5 +473,5 @@
   const summary = (L) => G.summary(L);
   const standings = (L) => G.standings(L);
 
-  return { draftRoster, startAfter, weekOf, realCovers, mergeLive, begin, catchUp, driveDraft, events, keeperCost, keeperOptions, autoKeepers, nextDraft, summary };
+  return { sealedKind, sealedDue, draftRoster, startAfter, weekOf, realCovers, mergeLive, begin, catchUp, driveDraft, events, keeperCost, keeperOptions, autoKeepers, nextDraft, summary };
 });
