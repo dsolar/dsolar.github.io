@@ -26,6 +26,23 @@
     slatesAsked = true;
     C.slates().then((d) => { slatesData = d && Array.isArray(d.weeks) ? d : { weeks: [] }; render(); });
   }
+  // how many football players each pro team has (data/nfl.json), so a slate offers only the team counts its players
+  // can fill: one game's two teams have 30 or so, enough for five teams of six but not six
+  let proCount = null, proAsked = false;
+  function loadPros() {
+    if (proAsked) return;
+    proAsked = true;
+    fetch("data/nfl.json", { cache: "no-cache" }).then((r) => r.json()).then((d) => { proCount = {}; for (const p of d.players || []) proCount[p.t] = (proCount[p.t] || 0) + 1; render(); }).catch(() => {});
+  }
+  // the players a slate drafts from, and the most teams that can each fill a roster from them (null: no limit known)
+  function slateRoom() {
+    const sl = slateOn() && !capOn() ? curSlate() : null;
+    if (!sl) return null;
+    loadPros();
+    if (!proCount) return null;
+    const players = sl.teams.reduce((a, t) => a + (proCount[t] || 0), 0), per = lineupOf(S.nfl).length + benchOf(S.nfl);
+    return { players, per, games: sl.games.length, max: Math.max(2, Math.floor(players / Math.max(1, per))) };
+  }
   const slWeeks = () => ((slatesData && slatesData.weeks) || []).filter((w) => SL.list(w).length);
   const slWeek = () => { const ws = slWeeks(); return ws[Math.min(form.slWeek || 0, Math.max(0, ws.length - 1))] || null; };
   const slateOn = () => oneWeek() && form.sport === "nfl";
@@ -284,7 +301,9 @@
   const formatOf = () => (vampOk() && form.vampOn ? "vampire" : form.season);
   function teamsHint() {
     const n = form.teams;
-    if (oneWeek()) return form.season === "allplay" ? (n === 2 ? "Just the two of you: the higher score wins." : `Everyone is ranked 1 to ${n} on points. The top score wins.`) : n === 2 ? "Just you and one other team, head to head." : `${n / 2} games: everyone is paired off.`;
+    const room = oneWeek() ? slateRoom() : null, all = showdown() && !capOn() ? 6 : form.season === "allplay" ? 16 : 20;
+    const cap = room && room.max < all ? ` ${room.games === 1 ? "This game has" : "These games have"} ${room.players} players, enough for ${Math.max(...teamVals())} teams of ${room.per}.` : "";
+    if (oneWeek()) return (form.season === "allplay" ? (n === 2 ? "Just the two of you: the higher score wins." : `Everyone is ranked 1 to ${n} on points. The top score wins.`) : n === 2 ? "Just you and one other team, head to head." : `${n / 2} games: everyone is paired off.`) + cap;
     if (form.season === "guillotine") return `${n - 1} weeks: one team is chopped each week until one is left.`;
     if (form.season === "roto" || form.season === "allplay") return "Everyone is ranked against everyone, so any number works.";
     return n % 2 ? `With an odd number, one team has a bye each week.` : "";
@@ -639,7 +658,11 @@
   // Any number of teams from 3 to 20 for a season (an odd count gives one team a bye each week). A one-week league
   // stays even, since an odd team would sit out the only week, and a showdown's two NFL teams fill at most six rosters.
   const span = (a, b, step = 1) => Array.from({ length: Math.floor((b - a) / step) + 1 }, (_, i) => a + i * step);
-  const teamVals = () => (showdown() && !capOn() ? [2, 3, 4, 5, 6] : oneWeek() ? (form.season === "allplay" ? span(2, 16) : span(2, 20, 2)) : span(3, 20));
+  const teamVals = () => {
+    const all = showdown() && !capOn() ? [2, 3, 4, 5, 6] : oneWeek() ? (form.season === "allplay" ? span(2, 16) : span(2, 20, 2)) : span(3, 20);
+    const room = oneWeek() ? slateRoom() : null, fit = room ? all.filter((n) => n <= room.max) : all;
+    return fit.length ? fit : all.slice(0, 1);
+  };
   function derive() {
     if (rematch) form.teams = rematch.n;
     // keep the season inside the real one: fewer playoff weeks first if even one regular week won't fit, then fewer weeks

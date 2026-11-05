@@ -101,7 +101,9 @@
       let list = pool().filter((p) => (!ui.pos || S.positions(p).includes(ui.pos)) && (!q || p.n.toLowerCase().includes(q) || String(p.t).toLowerCase() === q));
       const pr = (p) => F.capPrice(D(), p) || 0;
       const key = { price: (p) => -pr(p) * 1000 - wk(p), v: (p) => -wk(p), value: (p) => -wk(p) / Math.max(1, pr(p)), rank: (p) => -worth(p), mine: (p) => (rankOf(p.id) >= 0 ? rankOf(p.id) - 1e6 : -worth(p)) }[ui.sort];
-      list = list.slice().sort((a, b) => key(a) - key(b)).slice(0, 150);
+      // a salary cap lineup lists who you can still add first, so a tight budget never leaves a page of grayed-out stars
+      const can = cap() && !locked() ? new Map(list.map((p) => [p.id, inLineup(p.id) >= 0 || canAdd(p).ok || (lu()[0] === "CPT" && canAdd(p, true).ok) ? 0 : 1])) : null;
+      list = list.slice().sort((a, b) => (can ? can.get(a.id) - can.get(b.id) : 0) || key(a) - key(b)).slice(0, 150);
       const sd = lu()[0] === "CPT";
       const body = list.map((p) => {
         const pos = S.positions(p).map((x) => U.posChip(sport, x)).join("");
