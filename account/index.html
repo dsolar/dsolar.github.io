@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Your account | David Solar</title>
+<meta name="description" content="Your davidsolar.dev account: your name, photo, username and password, what's saved, and deleting it.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Besley:ital,wght@0,500;0,600;0,700;0,800;1,500&family=Libre+Franklin:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/assets/site.css?v=20261016-portfolio">
+<script src="/assets/site.js" defer></script>
+<script src="/assets/analytics.js" defer></script>
+<style>
+  .acct{max-width:46rem;padding-block:40px 72px}
+  .acct h1{margin:0 0 4px}
+  .acct .lede{margin:0 0 28px;color:var(--muted)}
+  .ac-card{border:1px solid var(--rule);border-radius:12px;padding:20px;margin:0 0 16px;background:var(--paper)}
+  .ac-card h2{margin:0 0 4px;font-size:1.25rem}
+  .ac-card > p.ps{margin:0 0 14px;color:var(--muted);font-size:.95rem}
+  .ac-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+  .ac-row label{display:grid;gap:5px;flex:1 1 240px;font-size:.85rem;font-weight:650}
+  .ac-card input[type=text],.ac-card input[type=password]{min-height:44px;padding:9px 12px;border:1px solid var(--rule);border-radius:6px;font:400 16px/1.3 var(--f-body);color:var(--ink);background:transparent}
+  .ac-card input:focus{outline:2px solid var(--dome);border-color:var(--ink)}
+  .ac-btn{min-height:44px;padding:10px 18px;border:0;border-radius:6px;background:var(--button);color:var(--button-ink);font:700 15px/1 var(--f-body);cursor:pointer}
+  .ac-btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--rule)}
+  .ac-btn.danger{background:var(--red);color:#fff}
+  .ac-btn:disabled{opacity:.55;cursor:default}
+  .ac-msg{margin:10px 0 0;min-height:1.2em;font-size:.9rem}
+  .ac-msg.bad{color:var(--red)}
+  .ac-photo{display:flex;gap:16px;align-items:center;margin:0 0 14px}
+  .ac-av{width:72px;height:72px;border-radius:50%;object-fit:cover;background:var(--ink);color:var(--paper);display:grid;place-items:center;font:800 24px var(--f-body);flex:none}
+  .ac-photo .links{display:flex;gap:12px;flex-wrap:wrap;font-size:.9rem}
+  .ac-photo button.link{padding:0;border:0;background:none;color:var(--red);font:600 .9rem var(--f-body);text-decoration:underline;cursor:pointer}
+  .ac-kv{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0;font-size:.95rem}
+  .ac-kv dt{color:var(--muted)}
+  .ac-kv dd{margin:0;overflow-wrap:anywhere}
+  .ac-flag{border-color:var(--dome);box-shadow:inset 4px 0 0 var(--dome)}
+  .ac-danger{border-color:var(--red)}
+  .ac-danger ul{margin:0 0 14px;padding-left:1.2em;font-size:.95rem}
+  .ac-danger li{margin:3px 0}
+</style>
+<link rel="stylesheet" href="/assets/navigation.css?v=20261104-nav">
+<script src="/assets/projects.js?v=20261105-nick" defer></script>
+<script src="/assets/navigation.js?v=20261105-acct" defer></script>
+</head>
+<body>
+<nav class="ds-bar ds-navigation" data-ds-navigation aria-label="Main">
+  <a class="ds-brand" href="/" aria-label="David Solar, home"><img src="/assets/nav-mark.svg" alt="" width="38" height="38"><span>David Solar</span></a>
+  <a href="/#projects">Explore all projects</a>
+</nav>
+<main class="wrap acct" id="acct">
+  <h1>Your account</h1>
+  <p class="lede">Loading…</p>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <a class="footer-brand" href="/" aria-label="David Solar, home"><img class="brand-logo" src="/assets/david-solar-sports-data-nonsense.svg" alt=""></a>
+    <div class="foot-copy"><span>&copy; <span id="year">2026</span> David Solar</span></div>
+    <nav class="foot-nav" aria-label="Footer"><a href="/fantasy/">Fantasy</a><a href="/#games">Games</a><a href="/#simulations">Simulations &amp; Tools</a><a href="/kids/">Kids</a><a href="/#writing">Writing</a><a href="/#about">About</a><a data-user="hello" data-domain="davidsolar.dev">Email</a></nav>
+  </div>
+</footer>
+<script>
+/* The account page: name and photo, username, password, what's saved, sign out and delete. It uses the site's
+   account (assets/account.js, which navigation.js loads) and the account functions in tools/ds_account.sql. */
+(function () {
+  "use strict";
+  var el = document.getElementById("acct");
+  var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); };
+  var A = null, C = null, me = null, photo = null;
+  var initials = function (n) { return String(n || "?").replace(/[^A-Za-z0-9 ]/g, " ").trim().split(/\s+/).map(function (w) { return w[0]; }).join("").slice(0, 2).toUpperCase() || "?"; };
+  var day = function (iso) { return iso ? new Date(iso).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : ""; };
+  var msg = function (id, text, bad) { var m = document.getElementById(id); if (m) { m.textContent = text || ""; m.className = "ac-msg" + (bad ? " bad" : ""); } };
+
+  function signedOut() {
+    el.innerHTML = '<h1>Your account</h1><p class="lede">Sign in to change your name, photo, username or password, see what\'s saved, or delete your account.</p>'
+      + '<div class="ac-card"><h2>You\'re not signed in</h2><p class="ps">One account covers the whole site: your fantasy leagues, and your daily game streaks on every device.</p><button type="button" class="ac-btn" data-a="in">Sign in</button></div>';
+  }
+  function draw() {
+    var m = me, pic = photo !== null ? photo : m.photo;
+    var name = m.name || m.username || (m.email || "").split("@")[0];
+    el.innerHTML = '<h1>Your account</h1><p class="lede">Signed in as ' + esc(m.username || m.email) + (m.since ? ", since " + esc(day(m.since)) : "") + '.</p>'
+      + (m.username ? "" : '<div class="ac-card ac-flag" id="username"><h2>Pick a username</h2><p class="ps">It\'s how you sign in with a password, and what your leagues and leaderboards show.' + (m.google ? " You signed in with Google, so you don\'t have one yet." : "") + '</p>' + usernameForm() + '</div>')
+      + '<div class="ac-card"><h2>Name and photo</h2><p class="ps">Other managers in your leagues see these.</p>'
+      + '<div class="ac-photo">' + (pic ? '<img class="ac-av" src="' + esc(pic) + '" alt="">' : '<span class="ac-av" aria-hidden="true">' + esc(initials(name)) + "</span>")
+      + '<div class="links"><label class="ac-btn ghost" style="display:inline-flex;align-items:center;cursor:pointer">Choose a photo<input type="file" accept="image/*" id="ac-file" hidden></label>' + (pic ? '<button type="button" class="link" data-a="nophoto">Remove photo</button>' : "") + "</div></div>"
+      + '<form id="ac-profile" class="ac-row"><label>Your name<input type="text" id="ac-name" maxlength="24" value="' + esc(m.name || "") + '" autocomplete="name" required></label><button class="ac-btn" type="submit">Save</button></form><p class="ac-msg" id="ac-profile-msg" role="status"></p></div>'
+      + (m.username ? '<div class="ac-card" id="username"><h2>Username</h2><p class="ps">For signing in with a password, and on your leagues and leaderboards.</p>' + usernameForm() + "</div>" : "")
+      + '<div class="ac-card"><h2>Signing in</h2><dl class="ac-kv"><dt>Email</dt><dd>' + esc(m.email) + "</dd>" + (m.google ? "<dt>Google</dt><dd>Connected: you can sign in with Continue with Google</dd>" : "") + "<dt>Password</dt><dd>" + (m.password ? "Set" : "Not set yet") + "</dd></dl>"
+      + '<form id="ac-pw" class="ac-row" style="margin-top:14px"><label>' + (m.password ? "New password" : "Set a password") + '<input type="password" id="ac-pw-1" autocomplete="new-password" minlength="8" required></label><button class="ac-btn" type="submit">' + (m.password ? "Change it" : "Set it") + '</button></form><p class="ac-msg" id="ac-pw-msg" role="status"></p></div>'
+      + '<div class="ac-card"><h2>What\'s saved</h2><dl class="ac-kv"><dt>Leagues</dt><dd>' + m.leagues + (m.leagues === 1 ? " league" : " leagues") + (m.commish ? ", " + m.commish + " you run" : "") + ' · <a href="/fantasy-kit/leagues.html">Your leagues</a></dd><dt>Game saves</dt><dd>' + m.saves + " daily game results, streaks and settings that follow you to every device</dd></dl>"
+      + '<p class="ps" style="margin:14px 0 0"><a href="/privacy/">How your information is used</a></p></div>'
+      + '<div class="ac-card"><h2>Sign out</h2><p class="ps">Signs you out in this browser. Your account and everything saved stays.</p><button type="button" class="ac-btn ghost" data-a="out">Sign out</button></div>'
+      + '<div class="ac-card ac-danger"><h2>Delete your account</h2><p class="ps">This can\'t be undone.</p><ul>'
+      + "<li>Your teams become open: a bot runs each one until someone joins.</li>"
+      + (m.commish ? "<li>Leagues you run pass to the manager who's been in them longest. A league with nobody else in it is deleted.</li>" : "")
+      + "<li>Your name, photo, username and saved game progress are deleted.</li></ul>"
+      + '<form id="ac-del" class="ac-row"><label>Type DELETE to confirm<input type="text" id="ac-del-1" autocomplete="off" autocapitalize="characters" required></label><button class="ac-btn danger" type="submit">Delete my account</button></form><p class="ac-msg" id="ac-del-msg" role="status"></p></div>';
+    if (location.hash === "#username") { var u = document.getElementById("username"); if (u) { u.scrollIntoView({ block: "center" }); var i = document.getElementById("ac-un"); if (i) i.focus(); } }
+  }
+  function usernameForm() {
+    return '<form id="ac-user" class="ac-row"><label>Username<input type="text" id="ac-un" maxlength="20" pattern="[A-Za-z0-9_.\\x2D]{3,20}" autocapitalize="none" spellcheck="false" value="' + esc(me.username || "") + '" required></label><button class="ac-btn" type="submit">' + (me.username ? "Change it" : "Save") + '</button></form><p class="ac-msg" id="ac-user-msg" role="status">3 to 20 letters, numbers, dots, dashes or underscores.</p>';
+  }
+  function load() {
+    C.rpc("ds_account_me", {}).then(function (r) {
+      if (!r || r.error) { el.innerHTML = '<h1>Your account</h1><p class="lede">' + esc((r && r.error) || "Couldn't load your account.") + "</p>"; return; }
+      me = r; draw();
+    }).catch(function (e) { el.innerHTML = '<h1>Your account</h1><p class="lede">' + esc(e.message) + ' <a href="/account/">Try again</a></p>'; });
+  }
+  // a photo: cropped square and shrunk to 256 pixels, so it stays small
+  function shrink(file) {
+    return new Promise(function (ok, no) {
+      var img = new Image(), url = URL.createObjectURL(file);
+      img.onload = function () {
+        var s = Math.min(img.width, img.height), c = document.createElement("canvas"); c.width = c.height = 256;
+        c.getContext("2d").drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, 256, 256);
+        URL.revokeObjectURL(url);
+        var q = 0.85, d = c.toDataURL("image/jpeg", q);
+        while (d.length > 88000 && q > 0.4) { q -= 0.1; d = c.toDataURL("image/jpeg", q); }
+        ok(d);
+      };
+      img.onerror = function () { no(new Error("That file isn't a photo we can read.")); };
+      img.src = url;
+    });
+  }
+  function saveProfile(name, pic) {
+    return C.rpc("fk_profile_set", { p_name: name, p_photo: pic }).then(function (r) { if (!r || r.error) throw new Error((r && r.error) || "Couldn't save that."); me.name = name; me.photo = pic; photo = null; return r; });
+  }
+  el.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-a]"); if (!b) return;
+    var a = b.dataset.a;
+    if (a === "in") A.openSignIn("signin");
+    else if (a === "out") A.signOut().then(function () { location.href = "/"; });
+    else if (a === "nophoto") saveProfile(me.name || me.username || "Me", null).then(function () { draw(); msg("ac-profile-msg", "Photo removed."); }, function (err) { msg("ac-profile-msg", err.message, true); });
+  });
+  el.addEventListener("change", function (e) {
+    if (e.target.id !== "ac-file" || !e.target.files[0]) return;
+    shrink(e.target.files[0]).then(function (d) { return saveProfile(document.getElementById("ac-name").value.trim() || me.name || me.username || "Me", d); })
+      .then(function () { draw(); msg("ac-profile-msg", "Photo saved."); }, function (err) { msg("ac-profile-msg", err.message, true); });
+  });
+  el.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var f = e.target, go = f.querySelector("button[type=submit]"); go.disabled = true;
+    var done = function () { go.disabled = false; };
+    if (f.id === "ac-profile") saveProfile(document.getElementById("ac-name").value.trim(), me.photo || null).then(function () { msg("ac-profile-msg", "Saved. Your leagues show the new name."); }, function (err) { msg("ac-profile-msg", err.message, true); }).then(done);
+    else if (f.id === "ac-user") {
+      var un = document.getElementById("ac-un").value.trim();
+      C.rpc("fk_username_set", { p_username: un }).then(function (r) {
+        if (!r || r.error) throw new Error((r && r.error) || "Couldn't save that.");
+        var first = !me.username; me.username = r.username;
+        try { if (!JSON.parse(localStorage.getItem("gtp-name"))) localStorage.setItem("gtp-name", JSON.stringify(r.username)); } catch (x) { /* no storage */ }
+        draw(); msg("ac-user-msg", first ? "Saved. You can also sign in with it and a password once you set one." : "Username changed.");
+      }, function (err) { msg("ac-user-msg", err.message, true); }).then(done);
+    } else if (f.id === "ac-pw") {
+      C.setPassword(document.getElementById("ac-pw-1").value).then(function () { me.password = true; draw(); msg("ac-pw-msg", "Password saved."); }, function (err) { msg("ac-pw-msg", err.message, true); }).then(done);
+    } else if (f.id === "ac-del") {
+      if (document.getElementById("ac-del-1").value.trim() !== "DELETE") { msg("ac-del-msg", "Type DELETE, in capitals, to confirm.", true); done(); return; }
+      C.rpc("ds_account_delete", { p_confirm: "DELETE" }).then(function (r) {
+        if (!r || r.error) throw new Error((r && r.error) || "Couldn't delete it.");
+        return A.signOut().then(function () { el.innerHTML = '<h1>Account deleted</h1><p class="lede">Your account and everything saved with it is gone. Thanks for playing.</p><p><a href="/">Back to the home page</a></p>'; });
+      }).catch(function (err) { msg("ac-del-msg", err.message, true); done(); });
+    }
+  });
+  function begin() {
+    if (!A.me()) { signedOut(); return; }
+    A.cloud().then(function (c) { C = c; load(); }, function (e) { el.innerHTML = '<h1>Your account</h1><p class="lede">' + esc(e.message) + "</p>"; });
+  }
+  // a sign-in link (or Google) landing on this page signs in after the page has drawn
+  window.addEventListener("dsolar:auth", function () { if (A) begin(); });
+  // the site's account script comes with the navigation
+  (function wait(n) {
+    A = window.DSAccount;
+    if (!A) { if (n < 100) setTimeout(function () { wait(n + 1); }, 50); else el.innerHTML = "<h1>Your account</h1><p class=\"lede\">The account didn't load. Reload the page.</p>"; return; }
+    if (/(^|[#&])access_token=/.test(location.hash)) { setTimeout(function () { if (!C) begin(); }, 6000); return; }
+    begin();
+  })(0);
+})();
+</script>
+</body>
+</html>

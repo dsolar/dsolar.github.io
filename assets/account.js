@@ -101,7 +101,7 @@
     var u = me();
     slot.innerHTML = u
       ? '<button type="button" class="ds-acct-btn" aria-haspopup="true" aria-expanded="false" aria-label="Your account, ' + esc(u.name) + '"><span class="ds-acct-av" aria-hidden="true">' + esc(initials(u.name)) + '</span><span class="ds-acct-name">' + esc(u.name) + "</span></button>"
-        + '<div class="ds-acct-menu" hidden><p><b>' + esc(u.name) + "</b>" + esc(u.email) + '</p><a href="' + esc(root + "fantasy-kit/leagues.html") + '">Your leagues</a><button type="button" data-ds-out>Sign out</button></div>'
+        + '<div class="ds-acct-menu" hidden><p><b>' + esc(u.name) + "</b>" + esc(u.email) + '</p><a href="' + esc(root + "fantasy-kit/leagues.html") + '">Your leagues</a><a href="' + esc(root + "account/") + '">Account</a><button type="button" data-ds-out>Sign out</button></div>'
       : '<button type="button" class="ds-acct-btn out" data-ds-in><span class="ds-acct-av" aria-hidden="true">?</span><span>Sign in</span></button>';
   }
   document.addEventListener("click", function (e) {
@@ -257,7 +257,7 @@
       drawButton();
       if (r && r.error) toast("That sign-in didn't work: " + r.error);
       else if (r && r.recovery) location.href = root + "fantasy-kit/leagues.html";
-      else if (r && r.ok) { toast("You're signed in."); write("ds-sync:at", null); pull(); }
+      else if (r && r.ok) { if (dlg && dlg.open) dlg.close(); write("ds-sync:at", null); pull(); askUsername(c); window.dispatchEvent(new CustomEvent("dsolar:auth")); }
     });
     return true;
   }
@@ -268,6 +268,16 @@
     if (takeLink()) return;
     if (me()) pull();
   }
-  window.DSAccount = { me: me, openSignIn: openSignIn, pull: pull, push: push };
+  // signed in with Google, so no username yet: ask for one (leagues and leaderboards show it)
+  function askUsername(c) {
+    if (/\/account\/?$/.test(location.pathname)) return;
+    c.rpc("ds_account_me", {}).then(function (a) {
+      if (a && a.ok && !a.username) toast("You're signed in. Pick a username for your leagues and leaderboards.", { label: "Pick one", run: function () { location.href = root + "account/#username"; } });
+      else toast("You're signed in.");
+    }).catch(function () { toast("You're signed in."); });
+  }
+  window.DSAccount = { me: me, openSignIn: openSignIn, pull: pull, push: push, cloud: cloud, toast: toast, signOut: function () {
+    return cloud().then(function (c) { return c.signOut(); }).catch(function () { write("fk-auth:session", null); }).then(function () { write("ds-sync:at", null); write("ds-sync:dirty", null); drawButton(); });
+  } };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
 })();
