@@ -23,7 +23,7 @@ async function loadEngine() {
   if (engine && Date.now() - engine.at < 10 * 60e3) return engine.FK;
   const bust = `?t=${Math.floor(Date.now() / 600e3)}`;
   const g: any = { FK: {} };
-  for (const f of ["sports", "value", "draft", "league", "season"]) {
+  for (const f of ["sports", "value", "draft", "trivia", "league", "season"]) {
     const src = await fetch(`${SITE}${f}.js${bust}`).then((r) => r.text());
     // the files are UMD: with no module or require around, each one adds itself to root.FK
     new Function("module", "require", src).call(g, undefined, undefined);
@@ -102,7 +102,9 @@ async function tickLeagues(token: string) {
       const base = structuredClone({ draft: D, league: L });
       let changed = false;
       if (!L) {
-        const dctx = F.context(D, players, sport);
+        // a trivia draft's next question, when the clock is the one that puts a pick up
+        const trivia = FK.trivia ? (d: any, k: number) => FK.trivia.make(sport, players, ((d.seed || 1) * 31 + k * 7919) >>> 0, d.trivia.used) : undefined;
+        const dctx = F.context(D, players, sport, { trivia });
         // a heist's moves are sealed on the server: once it's due, open them so it can settle
         if (D.phase === "heist" && F.heistSealed && F.heistSealed(D) && F.heistDue(D, now)) {
           const h = await rpc("fk_clock_heist", { p_token: token, p_id: l.id });

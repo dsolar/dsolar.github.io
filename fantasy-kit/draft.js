@@ -514,10 +514,11 @@
     if (k < 0) return null;
     const n = D.teams.length;
     const len = clockLen(D, k);
-    const deadline = D.clockStart + len;
+    const tq = triviaUp(D, k);
+    const deadline = tq ? tq.ends : D.clockStart + len;
     const si = slotInfo(D, k);
     return { pick: k + 1, index: k, round: si.round, inRound: si.inRound, makeup: si.makeup, team: D.order[k], total: D.order.length,
-      deadline, left: D.paused ? D.left : deadline - now };
+      deadline, left: D.paused ? D.left : deadline - now, trivia: tq || null };
   }
   // A pick's round and place in the round, counting only scheduled picks (make-up picks after a steal sit between them).
   function slotInfo(D, k) {
@@ -532,11 +533,12 @@
   // Autodraft only makes picks: trades are for teams nobody manages, never on a manager's behalf.
   const tradesForThem = (t) => !t.owner;
 
-  function start(D, now) {
+  function start(D, now, ctx) {
     if (D.phase !== "setup") return { ok: false, why: "The draft already started" };
     D.phase = "live"; D.clockStart = now; D.started = now; D.paused = false;
     if (D.type === "auction") skipFull(D);
     finishIfDone(D, now);
+    if (ctx) triviaAsk(D, ctx, now);
     return { ok: true };
   }
 
@@ -670,12 +672,63 @@
     D.phase = "done"; D.done = now;
   }
 
+  /* ---------- a trivia draft ---------- */
+  // D.trivia { sec, cur, ok: { pick: 1 }, bumped: { pick: 1 }, used: [question ids], log: [] }: before each pick the
+  // team on the clock answers an easy multiple-choice question (ctx.hooks.trivia(D, k) makes it). Right, and the pick
+  // clock starts fresh. Wrong, or out of time, and the pick moves to the end of the round: everyone after it in the
+  // round moves up one. A pick that was moved has no question. Bots get about four in five right; a manager on
+  // autodraft skips the questions.
+  const TRIVIA_BOT = 0.8;
+  // the question up for pick k, still unanswered
+  const triviaUp = (D, k) => { const T = D.trivia, q = T && T.cur; return q && q.k === k && q.ans == null && !T.ok[k] && !T.bumped[k] ? q : null; };
+  function triviaAsk(D, ctx, now) {
+    const T = D.trivia;
+    if (!T || D.phase !== "live" || D.paused) return false;
+    const k = nextIndex(D);
+    if (k < 0 || T.ok[k] || T.bumped[k] || (T.cur && T.cur.k === k)) return false;
+    const t = D.teams[D.order[k]];
+    if (!t.owner || t.auto) return false;                      // bots answer on their own; autodraft skips them
+    const make = ctx && ctx.hooks && ctx.hooks.trivia;
+    const q = make ? make(D, k) : null;
+    if (!q) { T.ok[k] = 1; return false; }
+    // a couple of seconds' grace for the question to reach the manager's page
+    T.cur = { k, team: D.order[k], at: now, ends: now + (T.sec || 15) * 1000 + 2500, id: q.id, q: q.q, opts: q.opts, c: q.c, ans: null };
+    T.used = (T.used || []).concat(q.id).slice(-200);
+    return true;
+  }
+  function triviaAnswer(D, ctx, teamId, choice, now) {
+    const c = onClock(D, now), q = c && c.trivia;
+    if (!q || q.team !== teamId) return { ok: false, why: "No question for you right now" };
+    if (now > q.ends) return { ok: false, why: "Time ran out" };
+    q.ans = choice;
+    const right = choice === q.c;
+    D.trivia.log = (D.trivia.log || []).concat({ k: q.k, team: teamId, q: q.q, a: q.opts[q.c], got: q.opts[choice] != null ? q.opts[choice] : null, ok: right, at: now }).slice(-60);
+    if (right) { D.trivia.ok[q.k] = 1; D.clockStart = now; D.trivia.cur = null; return { ok: true, right: true }; }
+    triviaMiss(D, ctx, c, now, choice);
+    return { ok: true, right: false, answer: q.opts[q.c] };
+  }
+  // a miss: the pick goes to the end of its round
+  function triviaMiss(D, ctx, c, at, choice) {
+    const T = D.trivia, k = c.index, n = D.round1.length, end = Math.min(D.order.length - 1, (Math.floor(k / n) + 1) * n - 1);
+    if (T.cur && T.cur.k === k && choice == null) T.log = (T.log || []).concat({ k, team: c.team, q: T.cur.q, a: T.cur.opts[T.cur.c], got: null, ok: false, at }).slice(-60);
+    if (!T.cur || T.cur.k !== k) T.log = (T.log || []).concat({ k, team: c.team, q: null, ok: false, bot: true, at }).slice(-60);
+    T.cur = null;
+    // everyone after it in the round moves up one, a pick that was already moved still marked as moved
+    const team = D.order[k];
+    for (let i = k; i < end; i++) { D.order[i] = D.order[i + 1]; if (T.bumped[i + 1]) T.bumped[i] = 1; else delete T.bumped[i]; delete T.ok[i]; }
+    D.order[end] = team;
+    T.bumped[end] = 1;
+    D.clockStart = at;
+    triviaAsk(D, ctx, at);
+  }
+
   /* ---------- picks ---------- */
   function pick(D, ctx, teamId, pid, now, auto) {
     if (D.packs) return packPick(D, ctx, teamId, pid, now, auto);
     const c = onClock(D, now);
     if (!c) return { ok: false, why: "The draft isn't open" };
     if (c.team !== teamId) return { ok: false, why: "It's not your pick" };
+    if (c.trivia && !auto) return { ok: false, why: "Answer the question first" };
     const p = ctx.byId[pid];
     const ok = canAdd(D, ctx, teamId, p);
     if (!ok.ok) return ok;
@@ -687,6 +740,7 @@
     D.clockStart = now;
     finishIfDone(D, now);
     expireTrades(D, ctx, now);
+    triviaAsk(D, ctx, now);
     return { ok: true, pick: c.pick };
   }
 
@@ -825,6 +879,19 @@
       if (!c) break;
       const team = D.teams[c.team];
       if (!isBot(team) && !D.offered[c.index]) { D.offered[c.index] = true; if (botOffer(D, ctx, c, Math.min(now, D.clockStart))) { offerHold(D, now); if (D.paused) break; } }
+      if (D.trivia && !D.trivia.ok[c.index] && !D.trivia.bumped[c.index]) {
+        if (!team.owner) {
+          // a bot answers after its delay, and gets about four in five right
+          const at = D.clockStart + D.botDelay;
+          if (now < at) break;
+          if (hash01(`${D.seed}:trivia:${c.index}:${c.team}`) >= TRIVIA_BOT) { triviaMiss(D, ctx, c, at, null); n++; continue; }
+          D.trivia.ok[c.index] = 1;
+        } else if (!team.auto) {
+          if (!c.trivia) { if (triviaAsk(D, ctx, now)) n++; else D.trivia.ok[c.index] = 1; continue; }
+          if (now < c.trivia.ends) break;
+          triviaMiss(D, ctx, c, c.trivia.ends, null); n++; continue;
+        }
+      }
       const at = isBot(team) ? D.clockStart + D.botDelay : c.deadline;
       if (now < at) break;
       if (isBot(team) && team.owner == null && D.steals) {
@@ -1504,7 +1571,7 @@
     D.sealed.ran = now;
     return true;
   }
-  return { capPrices, capPrice, capCost, capCheck, capAuto, capReveal, sealedRun, dealPacks, packMoney, packPrice, packFor, packAt, packSlot, packTurnNow, HEIST, heistRules, heistFoe, heistLineup, heistMove, heistCheck, heistDefault, heistTick, heistSealed, heistDue, heistIn, heistUnseal, spinOf, wheelFor, respin, respinsLeft, setOrder, recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
+  return { triviaAsk, triviaAnswer, triviaUp, TRIVIA_BOT, capPrices, capPrice, capCost, capCheck, capAuto, capReveal, sealedRun, dealPacks, packMoney, packPrice, packFor, packAt, packSlot, packTurnNow, HEIST, heistRules, heistFoe, heistLineup, heistMove, heistCheck, heistDefault, heistTick, heistSealed, heistDue, heistIn, heistUnseal, spinOf, wheelFor, respin, respinsLeft, setOrder, recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
     start, pause, pick, worth, resize, offerHold, holdLeft, HOLD_MAX, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, botMax, standings, sizeOf,
     clockLen, thinkTime, bankShare, slotInfo, fitsRoster, canSteal, steal, stealsOf, stealsLeft, stealsOpen, botSteal, pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
     tradeCheck, balance, propose, respond, cancel, botAnswer, botOffer };

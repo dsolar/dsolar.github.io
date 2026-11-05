@@ -15,7 +15,9 @@
   const clone = (x) => (x == null ? x : JSON.parse(JSON.stringify(x)));
   let info = null, D = null, L = null, version = 0, base = null;
   let data = null, sport = null, players = null, byId = {}, room = null, app = null, mode = null, mine = [], weeks = null, prospects = null;
-  const hooks = () => ({ real: weeks, prospects });
+  // a trivia draft's questions, made by whichever page puts the pick on the clock
+  const triviaHook = (d, k) => (window.FK.trivia ? window.FK.trivia.make(sport, players, ((d.seed || 1) * 31 + k * 7919) >>> 0, d.trivia.used) : null);
+  const hooks = () => ({ real: weeks, prospects, trivia: triviaHook });
   let inflight = false, dirty = false, lastChange = Date.now(), userAt = 0, pollT = null;
 
   const fatal = (msg, more = "") => { document.body.classList.remove("fk-room"); $("#top").innerHTML = ""; $("#app").innerHTML = `<div class="wrap page"><div class="banner loss" role="alert"><b>${esc(msg)}</b> ${more}</div><p><a class="btn" href="leagues.html">Your leagues</a></p></div>`; };
@@ -108,7 +110,7 @@
     $("#top").innerHTML = "";
     $("#app").innerHTML = `<div id="room"></div>${guestNote()}`;
     room = U.room({
-      el: $("#room"), sport, players, draft: () => D, save: () => push(), me: () => info.me, now,
+      el: $("#room"), sport, players, draft: () => D, save: () => push(), me: () => info.me, now, hooks: { trivia: triviaHook },
       get commish() { return info.commish; }, get drive() { return driveOk(); },
       brand: { name: "Draft Lab", mark: `<img src="mark.svg" alt="">` }, exit: { href: "leagues.html", label: "Your leagues" },
       tools: () => `${info.invite ? `<button class="btn sm" data-live="invite">Invite</button>` : ""}<button class="btn sm${info.invite ? " ghost" : ""}" data-live="league">League</button>`,

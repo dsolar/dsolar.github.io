@@ -108,3 +108,56 @@ test('conference limit: no more than two starters from one Power 4 conference', 
     assert.equal(r.ok, false); assert.match(r.why, /Only 2 starters can come from the SEC/);
   }
 });
+
+test('trivia draft: a right answer starts the pick clock, a miss moves the pick to the end of the round', () => {
+  const T = require('../fantasy-kit/trivia.js');
+  const { D, players, sport } = pool('full', 4);
+  D.type = 'snake'; D.clock = 60; D.botDelay = 1000; D.trading = false;
+  D.trivia = { sec: 15, ok: {}, bumped: {}, used: [], log: [] };
+  // the first two teams up are managed; the rest are bots
+  D.teams[D.order[0]].owner = 'Dave'; D.teams[D.order[1]].owner = 'Yan';
+  const ctx = F.context(D, players, sport, { trivia: (d, k) => T.make(sport, players, d.seed * 31 + k, d.trivia.used) });
+  F.start(D, now);
+  const round1 = D.order.slice(0, 4);
+  // the first pick: Dave's question
+  F.tick(D, ctx, now + 10);
+  let c = F.onClock(D, now + 10);
+  assert.equal(c.team, round1[0]);
+  assert.ok(c.trivia, 'a question is up');
+  assert.equal(c.trivia.opts.length, 4);
+  assert.equal(F.pick(D, ctx, c.team, ctx.available[0].id, now + 20).ok, false, 'no pick before answering');
+  // a wrong answer: Dave goes to the end of round 1
+  const wrong = (c.trivia.c + 1) % 4, who = c.team;
+  const r = F.triviaAnswer(D, ctx, who, wrong, now + 3000);
+  assert.equal(r.right, false);
+  assert.deepEqual(D.order.slice(0, 4), round1.slice(1).concat(who));
+  assert.ok(D.trivia.bumped[3]);
+  // Yan: right answer, a fresh pick clock
+  c = F.onClock(D, now + 3000); assert.equal(c.team, round1[1]); assert.ok(c.trivia);
+  assert.equal(F.triviaAnswer(D, ctx, c.team, c.trivia.c, now + 5000).right, true);
+  c = F.onClock(D, now + 5000); assert.equal(c.trivia, null); assert.equal(c.deadline, now + 5000 + 60000);
+  assert.ok(F.pick(D, ctx, c.team, ctx.available[0].id, now + 6000).ok);
+  // bots answer on their own, then the draft comes back to Dave with no question
+  F.tick(D, ctx, now + 30000);
+  c = F.onClock(D, now + 30000);
+  assert.equal(c.team, who); assert.ok(c.index <= 3); assert.equal(c.trivia, null, 'a moved pick has no question');
+  assert.ok(F.pick(D, ctx, who, ctx.available[0].id, now + 31000).ok);
+  let t = now + 31000, timedOut = false;
+  for (let k = 0; k < 400 && D.phase === 'live'; k++) {
+    t += 20000; F.tick(D, ctx, t);
+    const x = F.onClock(D, t);
+    if (x && x.trivia && !timedOut) {
+      // nobody answers this one: when its time runs out the pick moves to the end of the round
+      const { index, team } = x, ends = x.trivia.ends;
+      F.tick(D, ctx, ends + 1);
+      if (D.order[index] !== team || index % 4 === 3) timedOut = true;
+      assert.ok(D.trivia.log.some((l) => l.k === index && l.team === team && !l.ok && l.got === null), 'the miss is logged');
+      continue;
+    }
+    if (x && x.trivia && !D.teams[x.team].auto) { D.teams[x.team].auto = true; }
+  }
+  assert.ok(timedOut);
+  assert.equal(D.phase, 'done');
+  assert.ok(F.rosters(D).every((ids) => ids.length === D.rounds), 'every roster full');
+  assert.ok(D.trivia.log.some((x) => x.bot), 'a bot missed one');
+});

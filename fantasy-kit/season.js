@@ -227,7 +227,7 @@
     if (D && D.phase === "setup" && D.startAt) {
       let ch = false;
       if (!D.reminded && now >= D.startAt - HOUR && now < D.startAt) { D.reminded = now; ch = true; }
-      if (now >= D.startAt) { F.start(D, now); ch = true; }
+      if (now >= D.startAt) { F.start(D, now, ctx); ch = true; }
       if (D.phase !== "live") return ch;
       return F.tick(D, ctx, now, 2000) > 0 || ch;
     }

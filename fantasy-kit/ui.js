@@ -741,6 +741,10 @@
         const tt = F.packTurnNow(d), at = F.packAt(d, tt), mineUp = me() != null && F.packSlot(d, me()) >= 0;
         const waiting = d.round1.filter((id) => F.packSlot(d, id) >= 0).length;
         mid = `<div class="otc${mineUp ? " me" : ""}"><span class="ring" id="fk-ring"><span id="fk-timer"></span></span><span class="who"><small>Pack ${at.q + 1} of ${at.sets}, pick ${at.j + 1} of ${at.size}</small><b>${mineUp ? "Your pick" : me() != null ? "Picked" : "Everyone picks"}</b><span>${waiting ? `${waiting} still picking` : "Passing the packs"}, then they go ${at.q % 2 === 0 ? "left" : "right"}</span></span></div>`;
+      } else if (F.onClock(d, n).trivia) {
+        // a trivia draft: the team on the clock answers first
+        const c = F.onClock(d, n), t = team(c.team), mine = isMe(t);
+        mid = `<div class="otc${mine ? " me" : ""}">${teamAv(t, "md")}<span class="who"><small>${mine ? "Answer to pick" : "Trivia, then the pick"}</small><b>${esc(mine ? "Your question" : t.name)}</b><span>${mine ? "Miss it and your pick moves to the end of the round" : `Answering for pick ${plab(c.index)}`}</span></span><span class="ring" id="fk-ring" title="Time left to answer"><span id="fk-timer"></span></span></div>`;
       } else {
         const c = F.onClock(d, n), t = team(c.team), mine = isMe(t);
         const next = me() != null ? F.nextPickOf(d, me()) : null;
@@ -1234,6 +1238,18 @@
       // one view switch: the left views, plus the right panels as views on narrow screens
       const seg = `<div class="seg" id="fk-seg" role="group" aria-label="View">${lefts.map(([k, n]) => `<button type="button" data-left="${k}" aria-pressed="${!ui.mobileRight && ui.left === k}">${esc(n)}</button>`).join("")}${rights.map(([k, n]) => `<button type="button" class="show-m" data-mright="${k}" aria-pressed="${ui.mobileRight && ui.right === k}">${esc(n)}</button>`).join("")}</div>`;
       const filters = ui.left === "players" ? `${search(ui.f)}<label class="sr" for="fk-show">Show</label><select id="fk-show" style="width:auto;border-radius:999px;min-height:36px;font-size:13px"><option value="avail"${ui.show === "avail" ? " selected" : ""}>Available</option><option value="all"${ui.show === "all" ? " selected" : ""}>All players</option></select>${viewSelect(sport, "fk-statv")}` : "";
+      const tq = d.phase === "live" && !auction() && me() != null ? F.onClock(d, now()) : null;
+      if (tq && tq.trivia && tq.team === me() && !team(me()).auto) {
+        const q = tq.trivia;
+        el.innerHTML = `<div class="droom fk-dark">${top()}${ticker()}<div class="tq" role="dialog" aria-labelledby="tq-q"><div class="tq-card">
+          <p class="tq-k">Pick ${esc(plab(tq.index))}: answer first</p><h2 id="tq-q" class="disp">${esc(q.q)}</h2>
+          <div class="tq-o">${q.opts.map((o, i) => `<button type="button" class="tq-b" data-tq="${i}"><span class="tq-l">${"ABCD"[i]}</span>${esc(o)}</button>`).join("")}</div>
+          <p class="ps tq-n">Right, and you pick with a full clock. Wrong or out of time, and your pick moves to the end of the round.</p></div></div></div>`;
+        drawTimer();
+        if (ui.told !== "q" + tq.index) { ui.told = "q" + tq.index; toast("Your question. Answer to pick."); alerts.chime("clock"); alerts.flash("Your question!"); alerts.notify("Your question", `${d.name || "Your draft"}: answer to make pick ${plab(tq.index)}`); }
+        if (opts.onChange) opts.onChange(d);
+        return;
+      }
       el.innerHTML = `<div class="droom fk-dark">${top()}${ticker()}<div class="dr-main${ui.mobileRight ? " right" : ""}">
         <section class="dr-left"><div class="dr-bar">${seg}${filters}</div>${ui.left === "players" ? posFilter(sport, ui.f.pos, [], d.lineup) : ""}${left}</section>
         <aside class="dr-right"><div class="seg hide-m" role="group" aria-label="Panel">${rights.map(([k, n]) => `<button type="button" data-right="${k}" aria-pressed="${ui.right === k}">${esc(n)}</button>`).join("")}</div><div class="show-m" style="padding:10px 12px 0">${seg.replace('id="fk-seg"', 'id="fk-seg2"')}</div><div class="dr-panel">${right}</div></aside></div></div>`;
@@ -1285,6 +1301,7 @@
       if (d.phase === "heist") { left = Math.max(0, d.heist.ends - n); total = F.heistRules(d).clock * 1000; }
       else if (d.packs && d.phase === "live") { left = d.clock ? Math.max(0, d.clockStart + d.clock * 1000 - n) : null; total = (d.clock || 1) * 1000; }
       else if (auction()) { const st = F.auctionState(d, n); left = st ? st.left : null; total = st && st.kind === "lot" ? d.auction.bidClock * 1000 : d.auction.nomClock * 1000; }
+      else if (F.onClock(d, n) && F.onClock(d, n).trivia) { const c = F.onClock(d, n); left = Math.max(0, c.left - 2500); total = (d.trivia.sec || 15) * 1000; }   // the grace for the question to arrive isn't shown
       else { const c = F.onClock(d, n); left = c ? c.left : null; total = d.bank ? (c && team(c.team).bank > d.bank.floor * 1000 ? bankFull() : d.bank.floor * 1000) : (d.clock || 1) * 1000; }
       const fin = left != null && Number.isFinite(left);
       for (const [ti, ri] of [["#fk-timer", "#fk-ring"], ["#fk-timer2", "#fk-ring2"]]) {
@@ -1362,6 +1379,14 @@
       }
       const hz = e.target.closest("button[data-hz]");
       if (hz) { heistPick(hz.dataset.hz, hz.dataset.pid); return; }
+      const tqb = e.target.closest("button[data-tq]");
+      if (tqb) {
+        const r = F.triviaAnswer(D(), ctx, me(), +tqb.dataset.tq, now());
+        if (!r.ok) { toast(r.why, true); render(); return; }
+        save(); render();
+        toast(r.right ? "Right! Make your pick." : `Not quite: it was ${r.answer}. Your pick moves to the end of the round.`, !r.right);
+        return;
+      }
       const b = e.target.closest("button[data-pick],button[data-queue],button[data-nominate],button[data-bid],button[data-bidq],button[data-qup],button[data-act]");
       if (b) {
         e.stopPropagation();
@@ -1377,7 +1402,7 @@
         else if (b.dataset.qup) { const q = team(me()).queue, i = q.indexOf(b.dataset.qup); if (i > 0) { [q[i - 1], q[i]] = [q[i], q[i - 1]]; save(); render(); } }
         else {
           const a = b.dataset.act;
-          if (a === "start") act(() => F.start(d, n));
+          if (a === "start") act(() => F.start(d, n, ctx));
           else if (a === "pause") act(() => F.pause(d, n, !d.paused));
           else if (a === "undo") act(() => F.undo(d, ctx, n));
           else if (a === "pass") act(() => F.pass(d, ctx, me(), n));
@@ -1447,9 +1472,20 @@
 
     // The clock: redraw the timer; when this page drives the draft, bots and expired clocks move it.
     let lastSig = "";
-    const sig = () => { const d = D(); return [d.phase, d.paused, F.made(d).length, d.auction && d.auction.lot ? d.auction.lot.bid + ":" + d.auction.lot.team + ":" + (d.auction.lot.passed || []).length : "", (d.trades || []).map((T) => T.status[0]).join("")].join("|"); };
+    const sig = () => { const d = D(); return [d.phase, d.paused, F.made(d).length, d.auction && d.auction.lot ? d.auction.lot.bid + ":" + d.auction.lot.team + ":" + (d.auction.lot.passed || []).length : "", (d.trades || []).map((T) => T.status[0]).join(""), d.trivia ? `${d.trivia.cur ? d.trivia.cur.k : ""}:${(d.trivia.log || []).length}:${d.order.join("")}` : ""].join("|"); };
     let seenOffers = new Set((D().trades || []).map((T) => T.id)), seenDone = new Set((D().trades || []).filter((T) => T.status === "accepted").map((T) => T.id)), ready = true;
     let seenSteals = (D().log || []).filter((x) => x.kind === "steal").length;
+    // a trivia draft: say it when a team misses its question (your own wrong answers are told when you answer)
+    let seenMiss = ((D().trivia && D().trivia.log) || []).length;
+    const newMisses = () => {
+      const log = (D().trivia && D().trivia.log) || [];
+      for (const x of log.slice(seenMiss)) {
+        if (x.ok) continue;
+        if (x.team === me()) { if (x.got == null) toast("Time's up. Your pick moves to the end of the round.", true); continue; }
+        toast(`${team(x.team).name} missed ${x.got == null && !x.bot ? "the clock on " : ""}their question. That pick moves to the end of the round.`);
+      }
+      seenMiss = log.length;
+    };
     const newSteals = () => {
       const st = (D().log || []).filter((x) => x.kind === "steal");
       for (const x of st.slice(seenSteals)) {
@@ -1512,7 +1548,7 @@
         return;
       }
       // a draft set for a time starts on its own (the server's clock does it too, if nobody's here)
-      if (opts.drive && D().phase === "setup" && D().startAt && now() >= D().startAt) { if (F.start(D(), now()).ok) { save(); render(); } return; }
+      if (opts.drive && D().phase === "setup" && D().startAt && now() >= D().startAt) { if (F.start(D(), now(), ctx).ok) { save(); render(); } return; }
       const idle = D().phase !== "live" || (D().paused && !D().hold);
       if (idle && (ui.idleN = (ui.idleN || 0) + 1) % 4) { if (D().phase === "setup" && D().startAt) drawStart(); return; }
       if (opts.drive && D().phase === "live" && F.offerHold(D(), now())) save();
@@ -1527,7 +1563,7 @@
         }
       }
       const s = sig();
-      if (s !== lastSig) { newOffers(); newSteals(); }
+      if (s !== lastSig) { newOffers(); newSteals(); newMisses(); }
       if (s !== lastSig) { lastSig = s; if (!dialogOpen()) render(); else drawTimer(); } else drawTimer();
     }, 250);
 

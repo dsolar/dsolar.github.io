@@ -1616,3 +1616,16 @@ table.t.en-t td.act,table.t.en-t th.act{position:static;box-shadow:none;backgrou
 .en-who-l small{font-size:11.5px;color:var(--muted)}
 .en-who-l>span.in small{color:var(--win)}
 @media (max-width:980px){.en .dr-right{overflow:auto}}
+
+/* a trivia draft: the question, in place of the room until it's answered */
+.tq{display:grid;place-items:center;padding:24px 16px;overflow:auto}
+.tq-card{width:min(640px,100%);display:grid;gap:16px}
+.tq-k{margin:0;font-size:13px;font-weight:800;color:var(--muted)}
+.tq-card h2{margin:0;font-size:clamp(24px,4vw,34px);line-height:1.15;text-wrap:balance}
+.tq-o{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tq-b{display:flex;align-items:center;gap:12px;text-align:left;min-height:64px;padding:12px 14px;border-radius:14px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font:inherit;font-size:16px;font-weight:750;cursor:pointer}
+.tq-b:hover{border-color:var(--brand);background:var(--surface-2)}
+.tq-b:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.tq-l{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:8px;background:var(--surface-3);font-size:13px;font-weight:900;color:var(--muted)}
+.tq-n{margin:0}
+@media (max-width:600px){.tq-o{grid-template-columns:1fr}.tq{place-items:start center}}
