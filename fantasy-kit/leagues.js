@@ -12,6 +12,10 @@
   const SPORT_CLR = { nba: 4, nfl: 2, mlb: 0 };
   const BLURB = { nba: "Points or categories", nfl: "PPR, half or standard", mlb: "Roto or points" };
   let sent = null, busy = false, view = "list";
+  // signing in: siMode is "password" (username or email and a password), "signup", "forgot" or "link" (an emailed
+  // link). confirmTo: a new account waiting on its confirmation email; resetTo: a reset link was asked for.
+  // recovery: a reset link brought you back signed in, so the page asks for a new password first.
+  let siMode = "password", confirmTo = null, resetTo = null, recovery = !!(link && link.recovery);
   // a showdown's games: this week's, from the live feed, loaded when the format is picked (null until then)
   let sdGames = null, sdAsked = false;
   function loadGames() {
@@ -85,12 +89,13 @@
       if (!u && !v.error) return page(`${err}${signInCard(v)}`);
     }
     if (!u) return page(`${err}${invite}${signInCard()}`);
+    if (recovery) return page(newPasswordCard());
     if (view === "new") return page(newForm());
     const mine = await C.rpc("fk_mine", {}).catch((e) => ({ error: e.message }));
     // on an invite, the join form is the page; your other leagues, if any, follow it quietly
     if (joinId) return page(`${err}${invite}${Array.isArray(mine) && mine.length ? `<div class="head" style="margin-top:8px"><h2 style="margin:0">Your other leagues</h2></div><div class="lgl">${mine.map(card).join("")}</div>` : ""}`);
     page(`${err}${invite}
-      <div class="su sp-${S.inSeason()}"><div class="nl-band lg-band">${FIELD[S.inSeason()]}<div class="nl-bi"><h1 class="disp">Your leagues</h1>${profChip()}<p>Signed in as ${esc(u.email)}</p><button class="btn go" data-a="new">Start a league</button></div></div>
+      <div class="su sp-${S.inSeason()}"><div class="nl-band lg-band">${FIELD[S.inSeason()]}<div class="nl-bi"><h1 class="disp">Your leagues</h1>${profChip()}<p>Signed in as ${esc(u.email)}${prof && prof.username ? `, username <b style="color:#fff">${esc(prof.username)}</b>` : ""}</p><div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn go" data-a="new">Start a league</button><button class="btn" data-a="account">${prof && prof.username ? "Username and password" : "Set a username and password"}</button></div></div></div>
       ${mine.error ? fail(mine.error) : mine.length ? `<div class="lgl">${mine.map(card).join("")}</div>` : joinId ? "" : `<div class="card"><div class="bd stack"><p style="margin:0"><b>No leagues yet.</b></p><p class="ps" style="margin:0">Start one and send your friends the invite link, or open the invite link your commissioner sent you.</p><div><button class="btn go" data-a="new">Start a league</button></div></div>`}</div>`);
   }
   // One league in the list: your team, where the league is, and your record or the draft's progress.
@@ -114,31 +119,76 @@
   }
 
   function signInCard(inv) {
-    if (sent) { const k0 = S.inSeason(); return `<div class="su sp-${k0}"><div class="nl-band si-band">${FIELD[k0]}<div class="nl-bi">
-        <h1 class="disp">Check your email</h1>
-        <p>We sent a sign-in link to <b style="color:#fff;overflow-wrap:anywhere">${esc(sent)}</b>.</p>
+    const k0 = inv && S[inv.sport] ? inv.sport : S.inSeason();
+    const band = (title, body) => `<div class="su sp-${k0}"><div class="nl-band si-band">${FIELD[k0]}<div class="nl-bi"><h1 class="disp">${title}</h1>${body}</div></div></div>`;
+    if (sent) return band("Check your email", `<p>We sent a sign-in link to <b style="color:#fff;overflow-wrap:anywhere">${esc(sent)}</b>.</p>
         <div class="si-card">
           <ol class="si-steps"><li>Open the email from Draft Lab on the phone or computer you want to play on.</li><li>Tap <b>Sign in</b>. The link works once and expires in an hour.</li><li>You land back here, signed in.</li></ol>
           <p class="ps">Nothing there after a minute? Check spam, or send it again.</p>
-          <div class="si-row"><button class="btn go" data-a="resend">Send it again</button><button class="btn" data-a="again">Use a different email</button></div></div>
-      </div></div></div>`; }
-    const k = inv && S[inv.sport] ? inv.sport : S.inSeason();
-    return `<div class="su sp-${k}"><div class="nl-band si-band">${FIELD[k]}<div class="nl-bi">
-        ${inv ? `<p class="jn-kick">${icon(k, "sp-ic")}You're invited</p><h1 class="disp">${esc(inv.name)}</h1>
-        <p>A ${esc(S[k].name.toLowerCase())} league with ${inv.draft.teams.length} teams. Sign in with your email, then pick your team.</p>` : `<h1 class="disp">Draft with your friends.</h1>
-        <p>Start a league, send the invite link and draft live. Every move saves for the whole league, and you can get an email when a trade offer or a waiver result needs you.</p>`}
-        <form class="si-card" id="signin">
+          <div class="si-row"><button class="btn go" data-a="resend">Send it again</button><button class="btn" data-a="again">Use a different email</button></div></div>`);
+    if (confirmTo) return band("Confirm your email", `<p>Your account is made. We sent a confirmation link to <b style="color:#fff;overflow-wrap:anywhere">${esc(confirmTo)}</b>.</p>
+        <div class="si-card">
+          <ol class="si-steps"><li>Open the email from Draft Lab.</li><li>Tap <b>Confirm</b>. You land back here, signed in.</li><li>After that, sign in any time with your username and password.</li></ol>
+          <p class="ps">Nothing there after a minute? Check spam.</p>
+          <div class="si-row"><button class="btn" data-a="si-mode" data-m="password">Back to sign in</button></div></div>`);
+    if (resetTo) return band("Check your email", `<p>If <b style="color:#fff;overflow-wrap:anywhere">${esc(resetTo)}</b> has an account, we sent it a link to reset the password.</p>
+        <div class="si-card"><ol class="si-steps"><li>Open the email and tap the reset link.</li><li>You land back here and pick a new password.</li></ol>
+          <div class="si-row"><button class="btn" data-a="si-mode" data-m="password">Back to sign in</button></div></div>`);
+    const lead = inv ? `<p class="jn-kick">${icon(k0, "sp-ic")}You're invited</p><h1 class="disp">${esc(inv.name)}</h1>
+        <p>A ${esc(S[k0].name.toLowerCase())} league with ${inv.draft.teams.length} teams. Sign in or make an account, then pick your team.</p>` : `<h1 class="disp">Draft with your friends.</h1>
+        <p>Start a league, send the invite link and draft live. Every move saves for the whole league, and you can get an email when a trade offer or a waiver result needs you.</p>`;
+    const tabs = `<div class="si-tabs" role="tablist" aria-label="Sign in or make an account">${[["password", "Sign in"], ["signup", "Create account"]].map(([m, n]) => `<button type="button" role="tab" aria-selected="${siMode === m || (m === "password" && (siMode === "forgot" || siMode === "link"))}" data-a="si-mode" data-m="${m}">${n}</button>`).join("")}</div>`;
+    const pwField = (id, auto, label) => `<label for="${id}">${label}</label><div class="si-pw"><input id="${id}" type="password" autocomplete="${auto}" required minlength="${auto === "new-password" ? 8 : 1}"><button type="button" class="si-show" data-a="si-show" data-for="${id}" aria-label="Show password">Show</button></div>`;
+    const alt = (items) => `<div class="si-alt">${items.map(([m, n]) => `<button type="button" class="si-link" data-a="si-mode" data-m="${m}">${n}</button>`).join("")}</div>`;
+    const go = (label) => `<button class="btn go si-go" type="submit"${busy ? " disabled" : ""}>${busy ? "One moment…" : label}</button>`;
+    const forms = {
+      password: `<form class="si-card" id="pw-in">${tabs}
+          <label for="pi-login">Username or email</label><input id="pi-login" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required value="${esc(C.lastEmail())}">
+          ${pwField("pi-pw", "current-password", "Password")}${go("Sign in")}
+          ${alt([["forgot", "Forgot your password?"], ["link", "Email me a sign-in link instead"]])}
+          <p class="ps">Signed in with an emailed link before? Use a link once more, then set a username and password from your profile.</p></form>`,
+      signup: `<form class="si-card" id="pw-up">${tabs}
+          <label for="pu-user">Username</label><input id="pu-user" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required maxlength="20" pattern="[A-Za-z0-9_.\\x2D]{3,20}" aria-describedby="pu-user-h"><p class="ps" id="pu-user-h">3 to 20 letters, numbers, dots, dashes or underscores. It's how you sign in.</p>
+          <label for="pu-email">Email</label><input id="pu-email" type="email" autocomplete="email" required value="${esc(C.lastEmail())}" aria-describedby="pu-email-h"><p class="ps" id="pu-email-h">For league alerts and resetting your password. Other managers never see it.</p>
+          ${pwField("pu-pw", "new-password", "Password")}<p class="ps">At least 8 characters.</p>${go("Create account")}</form>`,
+      forgot: `<form class="si-card" id="pw-forgot">${tabs}
+          <p class="si-note">Enter your username or email. We'll email you a link to pick a new password.</p>
+          <label for="pf-login">Username or email</label><input id="pf-login" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required value="${esc(C.lastEmail())}">
+          ${go("Email me a reset link")}${alt([["password", "Back to sign in"]])}</form>`,
+      link: `<form class="si-card" id="signin">${tabs}
           <label for="si-email">Email</label>
           <div class="si-row"><input id="si-email" type="email" autocomplete="email" required value="${esc(C.lastEmail())}" placeholder="you@example.com"><button class="btn go" type="submit"${busy ? " disabled" : ""}>Email me a sign-in link</button></div>
-          <p class="ps">No password. We'll email you a link that signs you in.</p></form>
-      </div></div>
+          <p class="ps">No password needed: the link signs you in.</p>${alt([["password", "Use a password instead"]])}</form>`,
+    };
+    return `<div class="su sp-${k0}"><div class="nl-band si-band">${FIELD[k0]}<div class="nl-bi">${lead}${forms[siMode] || forms.password}</div></div>
       <div class="mk-how" style="margin-top:14px">
         <div class="mk-tip"><b>Draft live or slow</b><p>Snake, auction, mystery packages or white elephant, with a pick clock from 30 seconds to 8 hours.</p></div>
         <div class="mk-tip"><b>A whole season</b><p>Lineups, waivers, trades and playoffs, scored from real games. Redraft, keeper or dynasty.</p></div>
         <div class="mk-tip"><b>Your formats</b><p>Guillotine, vampire, pick your opponent, Robin Hood, Conquest, Kingslayer, best ball and more.</p></div>
       </div></div>`;
   }
-
+  // after a reset link: pick the new password before anything else
+  const newPasswordCard = () => `<div class="card" style="max-width:520px;margin:0 auto 16px"><div class="mod-h"><h2>Pick a new password</h2></div><form class="bd stack" id="pw-new">
+      <div class="field"><label for="pn-pw">New password</label><div class="si-pw"><input id="pn-pw" type="password" autocomplete="new-password" required minlength="8"><button type="button" class="si-show" data-a="si-show" data-for="pn-pw" aria-label="Show password">Show</button></div><p class="ps" style="margin:4px 0 0">At least 8 characters.</p></div>
+      <div class="row" style="gap:8px"><button class="btn go" type="submit">Save the password</button><button type="button" class="btn ghost" data-a="pw-skip">Not now</button></div></form></div>`;
+  // username and password for a signed-in account (people who signed up with an emailed link have neither)
+  function accountDialog() {
+    const u = C.user(), un = prof && prof.username;
+    U.dialog(`<h3>Username and password</h3><p class="ps" style="margin:0 0 12px">Signed in as ${esc(u ? u.email : "")}. Sign in with your username or this email, and your password.</p>
+      <form id="acct-user" class="stack" style="gap:6px"><label for="ac-user">Username</label><div class="si-row"><input id="ac-user" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="20" required value="${esc(un || "")}" placeholder="Pick one"><button class="btn" type="submit">${un ? "Change it" : "Save it"}</button></div><p class="ps" style="margin:0">3 to 20 letters, numbers, dots, dashes or underscores.</p></form>
+      <form id="acct-pw" class="stack" style="gap:6px;margin-top:16px"><label for="ac-pw">${prof && prof.hasPassword === false ? "Set a password" : "New password"}</label><div class="si-row"><div class="si-pw" style="flex:1 1 220px"><input id="ac-pw" type="password" autocomplete="new-password" minlength="8" required><button type="button" class="si-show" data-a="si-show" data-for="ac-pw" aria-label="Show password">Show</button></div><button class="btn" type="submit">Save the password</button></div><p class="ps" style="margin:0">At least 8 characters.</p></form>`, null, { wide: true });
+    const D = $("#fk-dlg");
+    D.querySelector("#acct-user").onsubmit = async (e) => {
+      e.preventDefault();
+      const r = await C.rpc("fk_username_set", { p_username: $("#ac-user").value.trim() }).catch((err) => ({ error: err.message }));
+      if (!r || r.error) { U.toast((r && r.error) || "Couldn't save that.", true); return; }
+      prof = Object.assign({}, prof, { username: r.username }); U.toast(`Your username is ${r.username}.`); D.close(); render();
+    };
+    D.querySelector("#acct-pw").onsubmit = async (e) => {
+      e.preventDefault();
+      try { await C.setPassword($("#ac-pw").value); U.toast("Password saved."); D.close(); } catch (err) { U.toast(err.message, true); }
+    };
+  }
   function joinCard(v) {
     const teams = v.draft.teams, seats = v.seats || {};
     if (v.me != null) return `<div class="banner"><b>You're already in ${esc(v.name)}.</b> <a href="play.html?id=${esc(joinId)}">Open the league</a></div>`;
@@ -585,6 +635,20 @@
   app.addEventListener("submit", async (e) => {
     e.preventDefault();
     const f = e.target;
+    if (f.id === "pw-in" || f.id === "pw-up" || f.id === "pw-forgot" || f.id === "pw-new") {
+      const v = (id) => { const el = $("#" + id); return el ? el.value : ""; };
+      const vals = { login: v("pi-login"), pw: v("pi-pw"), user: v("pu-user"), email: v("pu-email"), upw: v("pu-pw"), flogin: v("pf-login"), npw: v("pn-pw") };
+      const btn = f.querySelector("button[type=submit]"); if (btn) { btn.disabled = true; btn.dataset.was = btn.textContent; btn.textContent = "One moment…"; }
+      const done = () => { if (btn && btn.isConnected) { btn.disabled = false; btn.textContent = btn.dataset.was; } };
+      try {
+        if (f.id === "pw-in") { await C.passwordSignIn(vals.login, vals.pw); prof = null; }
+        else if (f.id === "pw-up") { const r = await C.signUp({ username: vals.user, email: vals.email, password: vals.upw, back: back() }); if (r.confirm) confirmTo = r.email; else prof = null; }
+        else if (f.id === "pw-forgot") { await C.resetPassword(vals.flogin, back()); resetTo = vals.flogin.trim(); }
+        else { await C.setPassword(vals.npw); recovery = false; U.toast("Password saved. You're signed in."); }
+      } catch (err) { done(); U.toast(err.message, true); return; }
+      render();
+      return;
+    }
     if (f.id === "signin") {
       const email = $("#si-email").value;
       busy = true;
@@ -663,14 +727,18 @@
     if (th) { theme.toggle(); header(); return; }
     if (!a) return;
     const k = a.dataset.a;
-    if (k === "out") { await C.signOut(); sent = null; prof = null; render(); }
+    if (k === "out") { await C.signOut(); sent = null; prof = null; siMode = "password"; confirmTo = null; resetTo = null; recovery = false; render(); }
     else if (k === "profile") U.profileDialog(prof, async (v) => { const r = await C.rpc("fk_profile_set", { p_name: v.name, p_photo: v.photo }); if (r && r.ok) { prof = Object.assign({}, prof, { name: r.name, photo: v.photo, saved: true }); form.me = r.name; render(); } return r; });
     else if (k === "again") { sent = null; render(); }
+    else if (k === "si-mode") { siMode = a.dataset.m; confirmTo = null; resetTo = null; sent = null; render().then(() => { const el = $(".si-card input:not([type=hidden])"); if (el) el.focus(); }); }
+    else if (k === "si-show") { const el = document.getElementById(a.dataset.for); if (el) { const show = el.type === "password"; el.type = show ? "text" : "password"; a.textContent = show ? "Hide" : "Show"; a.setAttribute("aria-label", show ? "Hide password" : "Show password"); } }
+    else if (k === "account") accountDialog();
+    else if (k === "pw-skip") { recovery = false; render(); }
     else if (k === "resend") { try { await C.signIn(sent, back()); U.toast("Sent again."); } catch (err) { U.toast(err.message, true); } }
     else if (k === "new") { view = "new"; render(); }
     else if (k === "list") { view = "list"; render(); }
   });
   // a sign-in link opened in this same tab only changes the hash
-  window.addEventListener("hashchange", () => { const l = C.fromLink(); if (l) { sent = null; if (l.error) U.toast(l.error, true); render(); } });
+  window.addEventListener("hashchange", () => { const l = C.fromLink(); if (l) { sent = null; confirmTo = null; resetTo = null; if (l.recovery) recovery = true; if (l.error) U.toast(l.error, true); render(); } });
   render().catch((e) => page(fail(e.message)));
 })();

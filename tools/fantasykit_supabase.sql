@@ -408,3 +408,9 @@ revoke all on public.fk_live, public.fk_live_games from anon, authenticated;
 -- fk_dues_claim(p_id, p_on boolean): a manager marks "I sent it" for their own team
 -- fk_team_name(p_id, p_name): a manager names their own team in the draft and league docs (used right after joining)
 alter table fk_leagues add column if not exists dues jsonb;
+
+-- ---------- usernames and passwords (migration fk_usernames, edge function supabase/functions/fk-login) ----------
+-- fk_usernames (user_id, username unique ignoring case), no policies: only these functions touch it
+-- fk_username_free(p_username), fk_username_set(p_username), fk_login_email(p_username) (service role only, for fk-login)
+-- trigger fk_username_on_signup on auth.users: a sign-up's user metadata username, if it's free
+-- fk_profile_me also returns username

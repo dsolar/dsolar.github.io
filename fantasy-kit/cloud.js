@@ -4,6 +4,10 @@
    FK.cloud:
      user()                 { id, email } or null
      signIn(email, back)    emails a sign-in link that returns to `back` (a URL on this site)
+     signUp({ username, email, password, back })  makes an account; { signedIn } or { confirm } (check your email)
+     passwordSignIn(login, password)  a username or email and its password (usernames go through fk-login)
+     resetPassword(login, back)       emails a link that comes back with { recovery: true } from fromLink()
+     setPassword(password)  sets or changes the signed-in account's password
      signOut()
      fromLink()             call once on load: picks up the tokens a sign-in link brings back, or its error
      rpc(name, args)        calls a league function as the signed-in user (or as a guest)
@@ -32,12 +36,13 @@
     history.replaceState(null, "", location.pathname + location.search);
     if (p.get("error_description")) return { error: p.get("error_description").replace(/\+/g, " ") };
     keep({ access: p.get("access_token"), refresh: p.get("refresh_token"), expires: Date.now() + (Number(p.get("expires_in")) || 3600) * 1000 });
-    return { ok: true, user: user() };
+    // a password reset link signs you in so you can pick a new one; a confirmation link (sign up) just signs you in
+    return { ok: true, user: user(), recovery: p.get("type") === "recovery", signup: p.get("type") === "signup" };
   }
 
-  async function auth(path, body, tok) {
+  async function auth(path, body, tok, method) {
     const r = await fetch(BASE + "/auth/v1/" + path, {
-      method: "POST", headers: Object.assign({ apikey: KEY, "Content-Type": "application/json" }, tok ? { Authorization: "Bearer " + tok } : {}),
+      method: method || "POST", headers: Object.assign({ apikey: KEY, "Content-Type": "application/json" }, tok ? { Authorization: "Bearer " + tok } : {}),
       body: JSON.stringify(body || {}),
     });
     const j = await r.json().catch(() => ({}));
@@ -53,6 +58,53 @@
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error("That doesn't look like an email address.");
     await auth("otp?redirect_to=" + encodeURIComponent(back || location.href.split("#")[0]), { email, create_user: true });
     try { localStorage.setItem("fk-auth:email", JSON.stringify(email)); } catch (e) { /* private mode */ }
+  }
+  const fromTokens = (j) => keep({ access: j.access_token, refresh: j.refresh_token, expires: Date.now() + (j.expires_in || 3600) * 1000 });
+  const remember = (email) => { try { localStorage.setItem("fk-auth:email", JSON.stringify(email)); } catch (e) { /* private mode */ } };
+  const USERNAME = /^[A-Za-z0-9_.-]{3,20}$/;
+  function passwordOk(pw) { if (String(pw || "").length < 8) throw new Error("Use at least 8 characters for your password."); }
+  async function fn(name, body) {
+    const r = await fetch(`${BASE}/functions/v1/${name}`, { method: "POST", headers: { apikey: KEY, "Content-Type": "application/json" }, body: JSON.stringify(body || {}) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || j.error) throw new Error(j.error || `Error ${r.status}`);
+    return j;
+  }
+  // a new account with a username and password; the email is for league alerts and resetting the password
+  async function signUp(o) {
+    const username = String(o.username || "").trim(), email = String(o.email || "").trim();
+    if (!USERNAME.test(username)) throw new Error("Use 3 to 20 letters, numbers, dots, dashes or underscores for your username.");
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error("That doesn't look like an email address.");
+    passwordOk(o.password);
+    const free = await rpc("fk_username_free", { p_username: username });
+    if (!free || !free.ok) throw new Error((free && free.why) || "That username is taken.");
+    const j = await auth("signup?redirect_to=" + encodeURIComponent(o.back || location.href.split("#")[0]), { email, password: o.password, data: { username } });
+    remember(email);
+    if (j.access_token) { fromTokens(j); return { signedIn: true }; }
+    // an email that already has an account comes back with no identities and no email is sent
+    const u = j.user || j;
+    if (u && Array.isArray(u.identities) && !u.identities.length) throw new Error("That email already has an account. Sign in, or reset your password.");
+    return { confirm: true, email };
+  }
+  async function passwordSignIn(login, password) {
+    login = String(login || "").trim();
+    if (!login || !password) throw new Error("Enter your username and password.");
+    const j = login.includes("@")
+      ? await auth("token?grant_type=password", { email: login, password }).catch((e) => { throw new Error(/confirm/i.test(e.message) ? "Confirm your email first: tap the link we sent when you made the account." : e.status === 429 ? "Too many tries. Wait a minute and try again." : "Wrong email or password."); })
+      : await fn("fk-login", { action: "login", login, password });
+    fromTokens(j);
+    if (login.includes("@")) remember(login);
+    return { ok: true, user: user() };
+  }
+  async function resetPassword(login, back) {
+    login = String(login || "").trim();
+    if (!login) throw new Error("Enter your username or email.");
+    await fn("fk-login", { action: "reset", login, redirect: back || location.href.split("#")[0] });
+  }
+  async function setPassword(password) {
+    passwordOk(password);
+    const tok = await token();
+    if (!tok) throw new Error("Sign in first.");
+    await auth("user", { password }, tok, "PUT").catch((e) => { throw new Error(/different from the old/i.test(e.message) ? "That's your current password. Pick a new one." : e.message); });
   }
   async function signOut() {
     const s = session; keep(null);
@@ -88,5 +140,5 @@
   // the live box score feed (supabase/functions/fk-live): this week's totals so far, games in progress included
   const live = (sport) => fetch(`${BASE}/functions/v1/fk-live?sport=${encodeURIComponent(sport)}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
 
-  FK.cloud = { user, signIn, signOut, fromLink, rpc, live, now: () => Date.now() + offset, lastEmail: () => { try { return JSON.parse(localStorage.getItem("fk-auth:email")) || ""; } catch (e) { return ""; } } };
+  FK.cloud = { user, signIn, signUp, passwordSignIn, resetPassword, setPassword, signOut, fromLink, rpc, live, now: () => Date.now() + offset, lastEmail: () => { try { return JSON.parse(localStorage.getItem("fk-auth:email")) || ""; } catch (e) { return ""; } } };
 })(typeof window !== "undefined" ? window : globalThis);

@@ -136,7 +136,7 @@ a{color:var(--accent)}
 .star.on{color:var(--brand)}
 .field{display:grid;gap:5px}
 .field>label,.field>.lbl{font-size:13px;font-weight:650;color:var(--muted)}
-input[type=text],input[type=search],input[type=number],input[type=email],select,textarea{min-height:40px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--field);padding:7px 11px;width:100%}
+input[type=text],input[type=search],input[type=number],input[type=email],input[type=password],select,textarea{min-height:40px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--field);padding:7px 11px;width:100%}
 input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--brand-soft)}
 select{appearance:none;-webkit-appearance:none;cursor:pointer;font-weight:650;padding-right:32px;
   background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
@@ -458,7 +458,7 @@ dialog.fk-dlg h3{margin:0 0 6px;font-size:22px;padding-right:40px}
   .switch summary{max-width:52vw;font-size:13px}
   .page{padding-top:14px;gap:14px}
   .btn.sm{min-height:34px}
-  input[type=text],input[type=search],input[type=number],input[type=email],select{font-size:16px}
+  input[type=text],input[type=search],input[type=number],input[type=email],input[type=password],select{font-size:16px}
   dialog.fk-dlg{padding:16px;max-height:94dvh}
   dialog.fk-dlg.full{padding:0}
   .versus{gap:8px;padding:14px 12px 10px}
@@ -1532,3 +1532,20 @@ table.t tr.me td.act::before{background:linear-gradient(90deg,transparent,color-
 .crown-c .mod-h h2 .crown-i{color:var(--gold)}
 .pyo-l li.on{background:var(--gold-soft)}
 .tw-l{gap:4px}
+/* sign in: password or account tabs, show-password toggle, the quieter options under the button */
+.si-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin:0 0 8px;border-radius:10px;background:var(--surface-3)}
+.si-tabs button{border:0;background:transparent;color:var(--muted);font:inherit;font-weight:750;padding:8px 10px;border-radius:7px;cursor:pointer}
+.si-tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.si-card>input,.si-pw input{width:100%;min-width:0}
+.si-card>label{margin-top:6px}
+.si-card>label:first-of-type{margin-top:0}
+.si-pw{position:relative;display:flex}
+.si-pw input{padding-right:64px}
+.si-show{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--muted);font:inherit;font-size:13px;font-weight:700;padding:6px 8px;border-radius:6px;cursor:pointer}
+.si-show:hover{color:var(--ink)}
+.si-go{margin-top:10px;justify-self:start;min-width:160px;justify-content:center}
+.si-alt{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:4px}
+.si-link{border:0;background:none;padding:4px 0;color:var(--accent);font:inherit;font-size:13.5px;font-weight:650;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.si-note{margin:0 0 4px;font-size:14px;color:var(--ink)}
+.nl-bi .si-card .si-note{color:var(--ink)}
+@media (max-width:600px){.si-go{justify-self:stretch}}
