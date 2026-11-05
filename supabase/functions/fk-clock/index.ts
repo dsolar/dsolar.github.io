@@ -24,9 +24,13 @@ async function loadEngine() {
   const bust = `?t=${Math.floor(Date.now() / 600e3)}`;
   const g: any = { FK: {} };
   for (const f of ["sports", "value", "draft", "trivia", "league", "season"]) {
-    const src = await fetch(`${SITE}${f}.js${bust}`).then((r) => r.text());
-    // the files are UMD: with no module or require around, each one adds itself to root.FK
-    new Function("module", "require", src).call(g, undefined, undefined);
+    try {
+      const r = await fetch(`${SITE}${f}.js${bust}`);
+      if (!r.ok) throw new Error(`${f}.js: ${r.status}`);
+      const src = await r.text();
+      // the files are UMD: with no module or require around, each one adds itself to root.FK
+      new Function("module", "require", src).call(g, undefined, undefined);
+    } catch (e) { if (f !== "trivia") throw e; }   // trivia questions are optional: the rest runs without them
   }
   engine = { at: Date.now(), FK: g.FK };
   return g.FK;
