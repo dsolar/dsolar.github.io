@@ -36,7 +36,7 @@
     if (window.FK && window.FK.cloud) return Promise.resolve(window.FK.cloud);
     if (!cloudP) cloudP = new Promise(function (ok, no) {
       var s = document.createElement("script");
-      s.src = root + "fantasy-kit/cloud.js?v=20261105-acct";
+      s.src = root + "fantasy-kit/cloud.js?v=20261105-acct2";
       s.onload = function () { window.FK && window.FK.cloud ? ok(window.FK.cloud) : no(new Error("Sign-in didn't load.")); };
       s.onerror = function () { cloudP = null; no(new Error("Sign-in didn't load. Check your connection.")); };
       document.head.appendChild(s);
