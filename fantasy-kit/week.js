@@ -66,6 +66,11 @@
         <div class="mk-tip"><b>Pick the games</b><p>The whole week, Sunday's day games, the night games, one game or your own picks. The lineup fits the slate, so three games never ask for three receivers.</p></div>
         <div class="mk-tip"><b>Everyone vs. everyone</b><p>With a group, the top score wins and everyone is ranked. Or pair off head to head, add a heist, or go best ball.</p></div>
         <div class="mk-tip"><b>Run it back</b><p>When the week's over, one tap starts next week with the same group. The series keeps score: wins, top-three finishes and points.</p></div>
+      </div>
+      <div class="mk-how wk-modes" style="margin-top:10px">
+        <div class="mk-tip"><b>Salary cap</b><p>No draft at all. Everyone builds a lineup under a $100 cap before the first kickoff, and a player nobody else picked scores 1.25x.</p></div>
+        <div class="mk-tip"><b>Sealed draft</b><p>Rank players in private whenever you like. When the lists lock, the draft runs itself in seconds.</p></div>
+        <div class="mk-tip"><b>Trivia draft</b><p>Answer an easy football question to make your pick. Miss it and your pick moves to the end of the round.</p></div>
       </div></div>`;
   }
   app.addEventListener("change", (e) => { const r = e.target.closest("[data-wk]"); if (r) { wk = +r.dataset.wk; render(); } });
