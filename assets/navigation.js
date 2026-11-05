@@ -94,7 +94,7 @@
     // The same category destinations in every full-size footer.
     document.querySelectorAll(".foot-nav").forEach(function (footer) {
       var email = footer.querySelector("[data-user]");
-      footer.innerHTML = sections.map(function (s) { return '<a href="' + esc(at(s.url)) + '">' + esc(s.label) + '</a>'; }).join("") + '<a href="' + esc(at("#about")) + '">About</a>';
+      footer.innerHTML = sections.map(function (s) { return '<a href="' + esc(at(s.url)) + '">' + esc(s.label) + '</a>'; }).join("") + '<a href="' + esc(at("#about")) + '">About</a><a href="' + esc(at("privacy/")) + '">Privacy</a>';
       if (email) footer.appendChild(email);
     });
   }
