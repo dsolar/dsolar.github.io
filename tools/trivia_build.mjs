@@ -6,6 +6,7 @@
 //   Which team did he start his career with?        his first team, against three that existed that year
 //   Where did he play college ball?                 his school, against three other stars' schools
 //   Where was he born? (baseball, outside the U.S.)
+// Each names the player with his years, so two players with one name can't be mixed up.
 //   Who was the first pick in the YEAR draft?       against picks 2 to 5
 //   Which team drafted him in YEAR?                 (not a pick traded on draft night)
 // Run: node tools/trivia_build.mjs   (after either game's data is rebuilt)
@@ -43,6 +44,8 @@ for (const sport of ["nba", "nfl", "mlb"]) {
     const mine = new Set(p.s.map(([t]) => fr(sport, teams[t][0])));
     const played = [...new Set(p.s.map(([t]) => t))];
     const first = p.s.slice().sort((x, y) => x[1] - y[1])[0], last = Math.max(...p.s.map((s) => s[2]));
+    // his years, so a name two players share (Sandy Alomar, and Sandy Alomar Jr.) means one of them
+    const who = `${p.n} (${first[1]}-${last})`;
     // one team name per franchise, among the names in use during his career
     const others = (y0, y1) => {
       const by = {};
@@ -51,20 +54,20 @@ for (const sport of ["nba", "nfl", "mlb"]) {
     };
     if (played.length >= 3) {
       const never = others(first[1], last);
-      if (never.length) add(sport, { id: `jm-never:${p.n}`, q: `Which of these teams did ${p.n} never play for?`, a: pick(never, 1)[0], w: pick(played.map((t) => teams[t][1]).filter((x, i, a) => a.indexOf(x) === i), 3) });
+      if (never.length) add(sport, { id: `jm-never:${p.n}`, q: `Which of these teams did ${who} never play for?`, a: pick(never, 1)[0], w: pick(played.map((t) => teams[t][1]).filter((x, i, a) => a.indexOf(x) === i), 3) });
     }
     const wrong = others(first[1], first[1]).filter((n) => teams.some((t, i) => t[1] === n && existed(i, first[1])));
-    if (wrong.length >= 3) add(sport, { id: `jm-first:${p.n}`, q: `Which team did ${p.n} start his career with?`, a: teams[first[0]][1], w: pick(wrong, 3) });
+    if (wrong.length >= 3) add(sport, { id: `jm-first:${p.n}`, q: `Which team did ${who} start his career with?`, a: teams[first[0]][1], w: pick(wrong, 3) });
     const col = (p.h.find((x) => x[0] === "College") || [])[1];
     if (col) {
       const norm = (c) => c.replace(/\s+St\.$/, " State");
       const pool = [...new Set(famous.map((x) => (x.h.find((y) => y[0] === "College") || [])[1]).filter((c) => c && norm(c) !== norm(col)).map(norm))];
-      if (pool.length >= 3) add(sport, { id: `jm-col:${p.n}`, q: `Where did ${p.n} play college ${SPORT[sport]}?`, a: norm(col), w: pick(pool, 3) });
+      if (pool.length >= 3) add(sport, { id: `jm-col:${p.n}`, q: `Where did ${who} play college ${SPORT[sport]}?`, a: norm(col), w: pick(pool, 3) });
     }
     const born = (p.h.find((x) => x[0] === "Born") || [])[1];
     const COUNTRY = { "D.R.": "Dominican Republic", "P.R.": "Puerto Rico", Venezuela: "Venezuela", Cuba: "Cuba", "Curaçao": "Curaçao", CAN: "Canada", "México": "Mexico", Panama: "Panama", Colombia: "Colombia", Japan: "Japan", "South Korea": "South Korea" };
     const c = born && COUNTRY[born.split(", ").pop()];
-    if (sport === "mlb" && c) add(sport, { id: `jm-born:${p.n}`, q: `Where was ${p.n} born?`, a: c, w: pick(["Dominican Republic", "Venezuela", "Puerto Rico", "Cuba", "Mexico", "Japan", "Canada", "Panama"].filter((x) => x !== c), 3) });
+    if (sport === "mlb" && c) add(sport, { id: `jm-born:${p.n}`, q: `Where was ${who} born?`, a: c, w: pick(["Dominican Republic", "Venezuela", "Puerto Rico", "Cuba", "Mexico", "Japan", "Canada", "Panama"].filter((x) => x !== c), 3) });
   }
 }
 
