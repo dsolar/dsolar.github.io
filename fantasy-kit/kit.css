@@ -1585,3 +1585,5 @@ table.t.wklb td.num:first-child{width:36px}
 .wk-sd small{color:var(--muted)}
 a.slg{text-decoration:none}
 a.slg:hover{border-color:var(--brand)}
+.sd-any{margin-top:10px}
+.sd-any summary{cursor:pointer;color:var(--muted);font-size:13.5px;font-weight:650}

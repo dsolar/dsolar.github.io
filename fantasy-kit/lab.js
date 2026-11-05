@@ -182,14 +182,21 @@
           <p id="s-why" role="alert"></p><span class="grow"></span>${mock ? `<a class="btn ghost" href="#draft">Back to your mock</a>` : ""}<button type="submit" class="btn go">Take your seat</button></div>
       </form></div></div>`;
   }
+  let sched = null, schedAsked = false;
   function twists(c) {
     const nfl = c.sport === "nfl", teams = (cache.nfl ? [...new Set(cache.nfl.players.map((p) => p.t).filter((t) => t && t !== "FA"))].sort() : []);
     if (nfl && c.sd && !teams.length) loadSport("nfl").then(() => { if ($("#app #setup")) setupPage(); });
     if (teams.length && (!teams.includes(c.sdA) || !teams.includes(c.sdH) || c.sdA === c.sdH)) { c.sdA = teams.includes("KC") ? "KC" : teams[0]; c.sdH = teams.includes("BUF") ? "BUF" : teams[1]; }
     const sel = (f, cur) => `<select data-f="${f}" aria-label="${f === "sdA" ? "Away team" : "Home team"}">${teams.map((t) => `<option${t === cur ? " selected" : ""}>${esc(t)}</option>`).join("")}</select>`;
+    // a showdown picks a real game from this week's or next week's schedule; any two teams is there for practice
+    if (nfl && c.sd && !schedAsked && window.FK.cloud) { schedAsked = true; window.FK.cloud.slates().then((d) => { sched = d || { weeks: [] }; if ($("#app #setup")) setupPage(); }); }
+    const real = sched && window.FK.slates ? sched.weeks.flatMap((w) => window.FK.slates.open(w).map((g) => Object.assign({ wk: w.week }, g))) : null;
+    const gamePick = !teams.length ? "" : real && real.length ? `<div class="slg-l">${real.slice(0, 18).map((g) => { const on = c.sdA === g.away && c.sdH === g.home; return `<button type="button" class="slg${on ? " on" : ""}" data-sdg="${esc(g.away)}|${esc(g.home)}" aria-pressed="${on}"><b>${esc(g.away)} @ ${esc(g.home)}</b><small>Week ${g.wk}, ${esc(window.FK.slates.kick(g.at))}</small></button>`; }).join("")}</div>
+      <details class="sd-any"><summary>Or any two teams</summary><div class="row" style="gap:8px;flex-wrap:wrap;margin-top:8px">${sel("sdA", c.sdA)}<span class="ps">at</span>${sel("sdH", c.sdH)}</div></details>`
+      : `${real ? "" : `<p class="ps" style="margin:0 0 6px">Loading this week's games…</p>`}<div class="row" style="gap:8px;flex-wrap:wrap">${sel("sdA", c.sdA)}<span class="ps">at</span>${sel("sdH", c.sdH)}</div>`;
     const rows = [];
     if (rlFits(c) && !sdOn(c)) rows.push(K.toggle("rl", "Team roulette", "Each pick has to come from the pro team the wheel lands on. One re-spin each.", c.rl, K.fld("The wheel spins", K.seg("rlRound", [[0, "Every pick"], [1, "Every round"]], c.rlRound ? 1 : 0, "The wheel spins"))));
-    if (nfl) rows.push(K.toggle("sd", "Showdown: one game", "Just the players in one game. A captain at 1.5x and five flex spots, no bench.", c.sd, teams.length ? `<div class="row" style="gap:8px;flex-wrap:wrap">${sel("sdA", c.sdA)}<span class="ps">at</span>${sel("sdH", c.sdH)}</div>` : ""));
+    if (nfl) rows.push(K.toggle("sd", "Showdown: one game", "Just the players in one game. A captain at 1.5x and five flex spots, no bench.", c.sd, gamePick));
     if (nfl && !sdOn(c)) rows.push(K.toggle("hz", "Heist after the draft", "Shield three of your starters, steal one of your opponent's and jinx another. The one-week lineup, no bench.", c.hz));
     return rows.length ? `<section class="nl-sec"><h2 class="nl-h">One-week twists</h2><div class="nl-bb">${rows.join("")}</div></section>` : "";
   }
@@ -231,6 +238,8 @@
       }
       const row = e.target.closest("[data-row]");
       if (row) { setupGrab(); open[row.dataset.row] = !open[row.dataset.row]; save(`[data-row="${row.dataset.row}"]`); return; }
+      const sdg = e.target.closest("[data-sdg]");
+      if (sdg) { setupGrab(); [cfg.sdA, cfg.sdH] = sdg.dataset.sdg.split("|"); save(`[data-sdg="${sdg.dataset.sdg}"]`); return; }
       const pr = e.target.closest("[data-preset]"), lb = e.target.closest("[data-lb]");
       if (!pr && !lb) return;
       setupGrab();
