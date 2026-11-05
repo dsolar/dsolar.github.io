@@ -12,8 +12,9 @@
     var all = visible(showHidden);
     var groups = [
       { type: "Games", id: "games", label: "02 / Games", title: "Got a few minutes?", intro: "A few favorites for a quick break. The full collection has daily challenges, strategy games, and chess.", limit: 4, url: "/games/", action: "Explore all games" },
+      // the group chat's tools sit right under the games, for anyone who can see them
+      { type: "Social Tools", id: "social", label: "Social tools", title: "For the group chat.", intro: "Made for the group, starring the group." },
       { type: "Simulations", id: "simulations", label: "03 / Simulations & Tools", title: "You’re running the front office.", intro: "Build a roster. Work the cap. See whether your big idea survives a season.", limit: 2, url: "/simulations/", action: "Explore simulations & tools" },
-      { type: "Social Tools", id: "social", label: "Unlocked / Social tools", title: "For the group chat.", intro: "Your additional projects." },
       { type: "Fantasy Leagues", id: "unlocked-fantasy", label: "Unlocked / Fantasy", title: "More league tools.", intro: "Your additional fantasy projects." }
     ];
     document.getElementById("catalog").innerHTML = groups.map(function (g) {
