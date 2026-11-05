@@ -179,7 +179,7 @@
     }
     return any;
   }
-  // settings.confMax: at most that many starters from one college conference (football, Power 4 schools)
+  // settings.confMax: at most that many starters from one college conference (football, FBS conferences)
   const limitOf = (L) => (L.settings.confMax ? { of: S.confOf, max: L.settings.confMax } : null);
   function confCheck(L, ctx, ids) {
     const lim = limitOf(L); if (!lim) return null;

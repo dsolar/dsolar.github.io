@@ -21,6 +21,7 @@
      spotlight true puts it first on the page in a full-width card (use on one project).
      status    "live" (default) or "building" (listed with no Play button).
      hidden    true hides it until the homepage app code is entered. Direct links still work.
+     members   true (with hidden) also shows it on the home page to anyone signed in to a Draft Lab account.
      section   "kids" puts it on the "Made with my daughters" page (kids/) instead of the home page.
      external  true for a project that lives on another site (url is then the full address).
      matchups  real games inside, shown on the card with both teams' logos: { you, opp, home or neutral, label },
@@ -257,7 +258,8 @@ window.PROJECTS = [
     facts: [["8", "blocks between the bar and home"], ["4:00", "on the clock before it's over"], ["5", "endings to discover"]],
     stack: ["JavaScript", "HTML Canvas"],
     cover: { image: "assets/covers/degenerate-trail.jpg", bg: "#101916", band: "#D8EE82" },
-    hidden: true
+    hidden: true,
+    members: true
   },
   {
     title: "Dynasty Mode",
@@ -283,7 +285,8 @@ window.PROJECTS = [
     action: "Chat with Nick",
     stack: ["JavaScript"],
     cover: { image: "assets/covers/nick-chat.jpg", bg: "#e8ebf2", band: "#596579" },
-    hidden: true
+    hidden: true,
+    members: true
   },
   {
     title: "Trade Analyzer",

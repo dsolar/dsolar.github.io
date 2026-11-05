@@ -255,7 +255,7 @@
   const proTeam = (sport, t) => { if (!t || t === "FA") return "Unsigned"; const c = S.teamColor && sport && S.teamColor(sport.key, t); return c ? `<span class="ptm" style="--c:${c.bg};--ci:${c.ink}">${esc(t)}</span>` : esc(t); };
   const pname = (sport, p, extra = "", opts = {}) => p && p.pick ? pickItem(p, extra) : p ? `<span class="pname${opts.b ? " b" : ""}">${opts.noAv ? "" : playerAv(sport, p, opts.size || "")}<span><span class="pn">${esc(p.n)}</span><span class="sub">${injTag(p).trim()}${p.inj ? " " : ""}${p.rk ? `<span class="rkt" title="Rookie">R</span> ` : ""}${S.positions(p).join(", ")} ${proTeam(sport, p.t)}${confTag(sport, p)}${extra ? ", " + extra : ""}</span></span></span>` : `<span class="ps">Empty</span>`;
   // a league with a conference limit shows each player's college conference
-  const confTag = (sport, p) => { const c = sport && sport.conf && S.confOf ? S.confOf(p) : null; return c ? ` <span class="cft" title="${esc(p.col)}">${esc(c)}</span>` : ""; };
+  const confTag = (sport, p) => { const c = sport && sport.conf && S.confOf ? S.confOf(p) : null; return c ? ` <span class="cft" title="${esc(p.col)}, ${esc(c)}">${esc(S.confShort(c))}</span>` : ""; };
   const teamName = (t, opts = {}) => `<span class="row" style="gap:9px">${teamAv(t, opts.size || "sm")}<span class="ell"><b>${esc(t.name)}</b>${opts.you ? ` <span class="tag you">You</span>` : ""}${opts.owner !== false && t.owner && !(opts.you && /^you$/i.test(t.owner)) ? ` <span class="ps">${esc(t.owner)}</span>` : ""}${opts.badge || ""}</span></span>`;
 
   /* ---------- shell ---------- */

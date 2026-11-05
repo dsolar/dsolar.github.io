@@ -343,7 +343,7 @@
         ${slateHtml}
         <section class="nl-sec"><h2 class="nl-h">Format</h2>${formats}${sdHtml}
           ${showdown() || capOn() ? "" : `<div class="nl-bb">${toggle("bestball", gl ? "Best ball guillotine" : "Best ball", gl ? "Your best lineup counts each week, so nobody gets chopped for a bad lineup" : "Lineups set themselves: your best scores count each week", form.bestball)}${slateOn() && form.season === "h2h" && scoringType(sp) === "points" && curSlate() && curSlate().games.length >= 8 ? toggle("hzOn", "Heist", "Right after the draft, everyone secretly shields their own starters and steals or jinxes the other team's", form.hzOn) : ""}${form.season === "h2h" && !form.vampOn && !heist() && scoringType(sp) === "points" ? toggle("median", "Median game", "Also play the league median, for a second win or loss each week", form.median) : ""}</div>`}</section>
-        ${form.sport === "nfl" ? `<section class="nl-sec" style="padding-top:0"><div class="nl-bb" style="margin-top:0">${toggle("confOn", "Conference limit", "No more than two starters from one college conference: the SEC, Big Ten, Big 12 or ACC", form.confOn)}</div></section>` : ""}
+        ${form.sport === "nfl" ? `<section class="nl-sec" style="padding-top:0"><div class="nl-bb" style="margin-top:0">${toggle("confOn", "Conference limit", "No more than two starters from one FBS college conference, like the SEC or the Mountain West", form.confOn)}</div></section>` : ""}
         ${twistsHtml()}
         <section class="nl-sec nl-ess">
           <div class="nl-name"><label for="n-name">League name</label><input id="n-name" type="text" maxlength="40" required value="${esc(form.name || "")}" placeholder="Name your league" autocomplete="off"></div>

@@ -362,33 +362,40 @@
   // A showdown: one game, a captain who scores half again, five spots that take anyone, no bench
   const SHOWDOWN = { lineup: ["CPT", "UTIL", "UTIL", "UTIL", "UTIL", "UTIL"], bench: 0, mult: { CPT: 1.5 } };
   /* ---------- college conferences (football), for a league that limits starters from one ---------- */
-  // Each school's Power 4 conference this season. Everyone else (smaller conferences, independents, no college)
-  // has no conference here, and no limit.
-  const P4 = {
-    SEC: "alabama arkansas auburn florida georgia kentucky lsu ole miss|mississippi mississippi state missouri oklahoma south carolina tennessee texas texas am vanderbilt",
-    "Big Ten": "illinois indiana iowa maryland michigan michigan state minnesota nebraska northwestern ohio state oregon penn state purdue rutgers ucla usc washington wisconsin",
-    "Big 12": "arizona arizona state baylor byu cincinnati colorado houston iowa state kansas kansas state oklahoma state tcu texas tech ucf utah west virginia",
-    ACC: "boston college california clemson duke florida state georgia tech louisville miami nc state north carolina pittsburgh smu stanford syracuse virginia virginia tech wake forest",
+  // Each FBS school's conference this season (2026). Independents (Notre Dame, UConn) and schools outside FBS have
+  // none, and no limit.
+  const CONF = {
+    SEC: ["Alabama", "Arkansas", "Auburn", "Florida", "Georgia", "Kentucky", "LSU", "Ole Miss", "Mississippi State", "Missouri", "Oklahoma", "South Carolina", "Tennessee", "Texas", "Texas A&M", "Vanderbilt"],
+    "Big Ten": ["Illinois", "Indiana", "Iowa", "Maryland", "Michigan", "Michigan State", "Minnesota", "Nebraska", "Northwestern", "Ohio State", "Oregon", "Penn State", "Purdue", "Rutgers", "UCLA", "USC", "Washington", "Wisconsin"],
+    "Big 12": ["Arizona", "Arizona State", "Baylor", "BYU", "Cincinnati", "Colorado", "Houston", "Iowa State", "Kansas", "Kansas State", "Oklahoma State", "TCU", "Texas Tech", "UCF", "Utah", "West Virginia"],
+    ACC: ["Boston College", "California", "Clemson", "Duke", "Florida State", "Georgia Tech", "Louisville", "Miami", "NC State", "North Carolina", "Pittsburgh", "SMU", "Stanford", "Syracuse", "Virginia", "Virginia Tech", "Wake Forest"],
+    "Pac-12": ["Boise State", "Colorado State", "Fresno State", "Oregon State", "San Diego State", "Texas State", "Utah State", "Washington State"],
+    American: ["Army", "Charlotte", "East Carolina", "Florida Atlantic", "Memphis", "Navy", "North Texas", "Rice", "Temple", "Tulane", "Tulsa", "UAB", "USF", "UTSA"],
+    "Mountain West": ["Air Force", "Hawaii", "Nevada", "New Mexico", "San Jose State", "UNLV", "Wyoming", "UTEP", "Northern Illinois", "North Dakota State"],
+    "Sun Belt": ["Appalachian State", "Arkansas State", "Coastal Carolina", "Georgia Southern", "Georgia State", "James Madison", "Louisiana", "Louisiana-Monroe", "Louisiana Tech", "Marshall", "Old Dominion", "South Alabama", "Southern Miss", "Troy"],
+    "Conference USA": ["Delaware", "FIU", "Jacksonville State", "Kennesaw State", "Liberty", "Middle Tennessee", "Missouri State", "New Mexico State", "Sam Houston", "Western Kentucky"],
+    MAC: ["Akron", "Ball State", "Bowling Green", "Buffalo", "Central Michigan", "Eastern Michigan", "Kent State", "Miami (OH)", "Ohio", "Sacramento State", "Toledo", "UMass", "Western Michigan"],
   };
-  // the multi-word schools, so "ohio state" isn't read as "ohio" and "state"
-  const MULTI = ["ole miss", "mississippi state", "south carolina", "texas am", "michigan state", "ohio state", "penn state", "arizona state", "iowa state", "kansas state", "oklahoma state", "texas tech", "west virginia",
-    "boston college", "florida state", "georgia tech", "nc state", "north carolina", "virginia tech", "wake forest"];
-  const SCHOOL = {};
-  for (const [c, list] of Object.entries(P4)) {
-    let rest = " " + list + " ";
-    for (const m of MULTI.concat(["ole miss|mississippi"])) if (rest.includes(" " + m + " ")) { for (const x of m.split("|")) SCHOOL[x] = c; rest = rest.replace(" " + m + " ", " "); }
-    for (const x of rest.trim().split(/\s+/)) if (x) SCHOOL[x] = c;
-  }
-  const ALIAS = { "louisiana state": "lsu", "southern california": "usc", "southern cal": "usc", "brigham young": "byu", "texas christian": "tcu", "central florida": "ucf", "southern methodist": "smu", "pitt": "pittsburgh",
-    "north carolina state": "nc state", unc: "north carolina", "miami fl": "miami", "miami florida": "miami", "cal": "california", "uc berkeley": "california", "boston col": "boston college", "texas a m": "texas am", "texas a and m": "texas am",
-    "university of mississippi": "ole miss", "mississippi st": "mississippi state", "washington state": "", "oregon state": "", "miami oh": "", "miami ohio": "" };
+  const P4 = ["SEC", "Big Ten", "Big 12", "ACC"];
+  // other spellings the data uses
+  const ALIAS = { "louisiana state": "lsu", "southern california": "usc", "southern cal": "usc", "brigham young": "byu", "texas christian": "tcu", "central florida": "ucf", "southern methodist": "smu", pitt: "pittsburgh",
+    "north carolina state": "nc state", unc: "north carolina", "miami fl": "miami", "miami florida": "miami", cal: "california", "uc berkeley": "california", "texas a m": "texas a m", mississippi: "ole miss",
+    "miami ohio": "miami oh", "south florida": "usf", "florida international": "fiu", "alabama birmingham": "uab", "texas san antonio": "utsa", "texas el paso": "utep", "nevada las vegas": "unlv",
+    "louisiana lafayette": "louisiana", "louisiana monroe": "louisiana monroe", ulm: "louisiana monroe", "southern mississippi": "southern miss", massachusetts: "umass", "app state": "appalachian state",
+    "middle tennessee state": "middle tennessee", "sam houston state": "sam houston", "bowling green state": "bowling green", "san jose state": "san jose state", "hawai i": "hawaii", "army west point": "army",
+    "cal state sacramento": "sacramento state", "east carolina": "east carolina", "ecu": "east carolina", "fau": "florida atlantic", "jmu": "james madison" };
   function school(name) {
-    let x = String(name || "").toLowerCase().replace(/&/g, " ").replace(/\bst\.?(?=\s|$)/g, "state").replace(/\bcol\.?(?=\s|$)/g, "college").replace(/^the |^university of |\buniversity\b/g, "").replace(/[().,'-]/g, " ").replace(/\s+/g, " ").trim();
-    if (ALIAS[x] != null) x = ALIAS[x];
-    return x;
+    let x = String(name || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/&/g, " ").replace(/\bst\.?(?=\s|$)/g, "state").replace(/\bcol\.?(?=\s|$)/g, "college")
+      .replace(/^the |^university of |\buniversity\b/g, "").replace(/[().,'\u2019-]/g, " ").replace(/\s+/g, " ").trim();
+    return ALIAS[x] != null ? ALIAS[x] : x;
   }
+  const SCHOOL = {};
+  for (const [c, list] of Object.entries(CONF)) for (const x of list) SCHOOL[school(x)] = c;
   const conference = (college) => SCHOOL[school(college)] || null;
   const confOf = (p) => (p && p.col ? conference(p.col) : null);
+  const power4 = (c) => P4.includes(c);
+  // a short label for a tag next to a player's name
+  const confShort = (c) => ({ "Conference USA": "C-USA", "Mountain West": "MWC", American: "AAC" })[c] || c;
 
-  return { conference, confOf, ALL, nba, nfl, mlb, poolOf, inPool, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
+  return { conference, confOf, power4, confShort, ALL, nba, nfl, mlb, poolOf, inPool, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
 });

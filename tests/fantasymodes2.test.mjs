@@ -79,14 +79,15 @@ test('salary cap prices: a star costs about twice an even share, and bots spend 
   }
 });
 
-test('conference limit: no more than two starters from one Power 4 conference', () => {
+test('conference limit: no more than two starters from one FBS conference', () => {
   assert.equal(S.conference('Ohio St.'), 'Big Ten'); assert.equal(S.conference('Texas A&M'), 'SEC'); assert.equal(S.conference('Miami (FL)'), 'ACC');
-  assert.equal(S.conference('Miami (OH)'), null); assert.equal(S.conference('North Dakota State'), null); assert.equal(S.conference('Southern California'), 'Big Ten');
+  assert.equal(S.conference('Miami (OH)'), 'MAC'); assert.equal(S.conference('North Dakota State'), 'Mountain West'); assert.equal(S.conference('Southern California'), 'Big Ten');
+  assert.equal(S.conference('Boise St.'), 'Pac-12'); assert.equal(S.conference('South Florida'), 'American'); assert.equal(S.conference('Notre Dame'), null); assert.equal(S.conference('Eastern Washington'), null);
   const { D, ctx, sport, players } = pool('full', 4);
   D.season.confMax = 2;
   // give the pool colleges: every other good player went to an SEC school
   const sec = ['Alabama', 'Georgia', 'LSU', 'Texas'], top = ctx.players.slice().sort((a, b) => b.v - a.v);
-  top.forEach((p, i) => { p.col = i % 2 ? 'North Dakota State' : sec[i % 4 === 0 ? 0 : 2]; });
+  top.forEach((p, i) => { p.col = i % 2 ? (i % 4 === 1 ? 'Eastern Washington' : 'Notre Dame') : sec[i % 4 === 0 ? 0 : 2]; });
   for (const p of players) { const q = ctx.byId[p.id]; if (q) p.col = q.col; }
   F.start(D, now); let t = now; for (let k = 0; k < 2000 && D.phase === 'live'; k++) { t += 1000; D.teams.forEach((x) => { x.auto = true; }); F.tick(D, ctx, t, 3); }
   const L = Z.begin(D, sport, { now: t });

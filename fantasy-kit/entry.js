@@ -115,7 +115,7 @@
           act = r >= 0 ? `<button type="button" class="btn sm ghost" data-eout="${esc(p.id)}" aria-label="Take ${esc(p.n)} off your list">#${r + 1} Remove</button>` : `<button type="button" class="btn sm go" data-ein="${esc(p.id)}"${locked() ? " disabled" : ""}>Add</button>`;
         }
         const mine = cap() ? inLineup(p.id) >= 0 : rankOf(p.id) >= 0;
-        return `<tr class="${mine ? "me" : ""}"><td class="nm"><span class="row" style="gap:8px;min-width:0">${U.playerAv(sport, p, "sm")}<span style="min-width:0"><b class="ell" style="display:block">${esc(p.n)}${U.injTag(p)}</b><small class="ps">${pos} ${U.proTeam(sport, p.t)} ${esc(gameOf(p.t))}${sport.conf && S.confOf(p) ? ` <span class="cft" title="${esc(p.col)}">${esc(S.confOf(p))}</span>` : ""}</small></span></span></td>
+        return `<tr class="${mine ? "me" : ""}"><td class="nm"><span class="row" style="gap:8px;min-width:0">${U.playerAv(sport, p, "sm")}<span style="min-width:0"><b class="ell" style="display:block">${esc(p.n)}${U.injTag(p)}</b><small class="ps">${pos} ${U.proTeam(sport, p.t)} ${esc(gameOf(p.t))}${sport.conf && S.confOf(p) ? ` <span class="cft" title="${esc(p.col)}, ${esc(S.confOf(p))}">${esc(S.confShort(S.confOf(p)))}</span>` : ""}</small></span></span></td>
           <td class="r num">${fm(wk(p))}</td>${cap() ? `<td class="r num"><b>$${pr(p)}</b></td>` : ""}<td class="act r">${act}</td></tr>`;
       }).join("");
       return `<div class="table-wrap"><table class="t dense en-t"><thead><tr><th>Player</th><th class="r" title="Projected points this week">Proj</th>${cap() ? `<th class="r">Price</th>` : ""}<th class="act"></th></tr></thead><tbody>${body || `<tr><td colspan="4" class="ps">No players match.</td></tr>`}</tbody></table></div>`;

@@ -2,7 +2,11 @@
 (function () {
   "use strict";
   var esc = window.ProjectCards.esc;
-  function visible(showHidden) { return (window.PROJECTS || []).filter(function (p) { return !p.section && (showHidden || !p.hidden); }); }
+  // signed in to a Draft Lab account on this site (fantasy-kit/cloud.js keeps the session here): members-only
+  // projects show on the home page
+  function signedIn() { try { var s = JSON.parse(localStorage.getItem("fk-auth:session")); return !!(s && s.refresh); } catch (e) { return false; } }
+  var member = function (p) { return p.hidden && p.members && signedIn(); };
+  function visible(showHidden) { return (window.PROJECTS || []).filter(function (p) { return !p.section && (showHidden || !p.hidden || member(p)); }); }
   function tiles(entries, showHidden) { return '<ul class="tiles">' + entries.map(function (p, i) { return window.ProjectCards.tile(p, { base: "/", showHidden: showHidden, order: i + 1 }); }).join("") + '</ul>'; }
   function home(showHidden) {
     var all = visible(showHidden);
@@ -18,6 +22,7 @@
       var picks = g.limit ? entries.filter(function (p) { return p.homeFeatured && !p.hidden; }).slice(0, g.limit) : entries;
       if (g.limit && !picks.length) picks = entries.filter(function (p) { return !p.hidden; }).slice(0, g.limit);
       if (g.limit && showHidden) picks = picks.concat(entries.filter(function (p) { return p.hidden; }));
+      else if (g.limit) picks = picks.concat(entries.filter(member));
       return '<section class="world-group" id="' + g.id + '" aria-labelledby="' + g.id + '-title"><div class="world-heading"><div><p class="world-label">' + esc(g.label) + '</p><h2 id="' + g.id + '-title">' + esc(g.title) + '</h2></div><p>' + esc(g.intro) + '</p></div>' + tiles(picks, showHidden)
         + (g.url ? '<div class="collection-more"><span>' + entries.length + (g.type === "Games" ? ' games to explore' : ' simulations & tools') + '</span><a href="' + g.url + '">' + esc(g.action) + ' <span aria-hidden="true">→</span></a></div>' : '') + '</section>';
     }).join("");
