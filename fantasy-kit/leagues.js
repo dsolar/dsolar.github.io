@@ -355,7 +355,7 @@
           ${fld("Teams", stepper("teams", teamVals(), form.teams, (x) => `${x} teams`, "Teams"), teamsHint())}
           ${fld("Scoring", cards("scoring", presets, form.scoring, "Scoring", presets.length > 4 ? 3 : presets.length))}
           <div class="nl-dr">${fld("Draft", seg("type", draftTypes(sp).map((k) => [k, DRAFT_SHORT[k] || F.FORMATS[k]]), form.type, "Draft format", { wrap: true }), esc(DRAFTS[form.type] || ""))}
-          ${triviaOk() ? toggle("tvOn", "Trivia draft", "On the clock, answer an easy football question first: four choices, 15 seconds. Miss it and your pick moves to the end of the round", form.tvOn) : ""}
+          ${triviaOk() ? toggle("tvOn", "Trivia draft", `On the clock, answer an easy ${{ nfl: "football", nba: "basketball", mlb: "baseball" }[sp.key] || "sports"} question first: four choices, 15 seconds. Miss it and your pick moves to the end of the round`, form.tvOn) : ""}
           ${rlOk() ? toggle("rlOn", "Team roulette", `Each pick, a wheel picks the ${sp.key === "nfl" ? "NFL" : sp.key === "nba" ? "NBA" : "MLB"} team you have to draft from`, form.rlOn,
             `<div class="g2">${fld("The wheel spins", seg("rlRound", [[0, "Every pick"], [1, "Once a round, same team for all"]], form.rlRound, "The wheel spins", { wrap: true }))}${fld("Re-spins a team", seg("respins", [[0, "None"], [1, "1"], [2, "2"], [3, "3"]], form.respins, "Re-spins a team"))}</div>`) : ""}
           ${noRoom() ? "" : fld(auction ? "Bid clock" : "Pick clock", seg("clock", live, form.clock, auction ? "Bid clock" : "Pick clock", { wrap: true }), auction ? "Every bid resets the clock." : form.clock >= 3600 ? "A slow draft: managers with email alerts get one when they're up." : "When a clock runs out, the best player left is taken.")}</div>
@@ -472,8 +472,8 @@
   }
   // team roulette works with drafts that go pick by pick (not a showdown: two teams make a dull wheel)
   const rlOk = () => ["snake", "linear", "3rr"].includes(form.type) && !showdown();
-  // a trivia draft: football, a draft that goes pick by pick
-  const triviaOk = () => form.sport === "nfl" && ["snake", "linear", "3rr"].includes(form.type);
+  // a trivia draft: any sport, a draft that goes pick by pick
+  const triviaOk = () => ["snake", "linear", "3rr"].includes(form.type);
   const trivia = () => triviaOk() && !!form.tvOn;
   const seasonsFor = (sp) => SEASONS[scoringType(sp)];
   // the fine-tune list: [key, title, what it covers, current value, body]

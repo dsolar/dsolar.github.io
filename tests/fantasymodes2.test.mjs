@@ -162,3 +162,23 @@ test('trivia draft: a right answer starts the pick clock, a miss moves the pick 
   assert.ok(F.rosters(D).every((ids) => ids.length === D.rounds), 'every roster full');
   assert.ok(D.trivia.log.some((x) => x.bot), 'a bot missed one');
 });
+
+test('trivia: basketball and baseball questions, four distinct choices with the right one among them', () => {
+  const T = require('../fantasy-kit/trivia.js');
+  for (const k of ['nba', 'mlb', 'nfl']) {
+    const data = JSON.parse(readFileSync(new URL(`../fantasy-kit/data/${k}.json`, import.meta.url), 'utf8'));
+    const sport = S.attach(Object.assign({}, S[k]), data), ps = data.players.map((p) => ({ ...p }));
+    V.evaluate(sport, ps, { teams: 10 });
+    const used = [], kinds = new Set();
+    for (let i = 0; i < 60; i++) {
+      const q = T.make(sport, ps, 1234 + i * 7919, used);
+      assert.ok(q, `${k}: a question every time`);
+      assert.equal(q.opts.length, 4); assert.equal(new Set(q.opts).size, 4, `${k}: ${q.q} has 4 different choices`);
+      assert.ok(q.c >= 0 && q.c < 4);
+      used.push(q.id); kinds.add(q.id.split(':')[0].replace(/^(nba|mlb)-.*/, 'bank'));
+    }
+    assert.equal(new Set(used).size, used.length, `${k}: no repeats`);
+    assert.ok(kinds.has('team') && kinds.has('pos'), `${k}: questions built from the pool too (${[...kinds]})`);
+  }
+  for (const [k, bank] of Object.entries(T.BANKS)) for (const x of bank) { assert.equal(new Set([x.a].concat(x.w)).size, 4, `${k} ${x.id}`); }
+});
