@@ -138,7 +138,10 @@
   }
 
   // the live box score feed (supabase/functions/fk-live): this week's totals so far, games in progress included
+  // this NFL week's games and next week's, for one-week slates (fk-live ?slates=1); kept for the page's life
+  let slatesP = null;
+  const slates = () => (slatesP = slatesP || fetch(`${BASE}/functions/v1/fk-live?sport=nfl&slates=1`).then((r) => (r.ok ? r.json() : { weeks: [] })).catch(() => { slatesP = null; return { weeks: [] }; }));
   const live = (sport) => fetch(`${BASE}/functions/v1/fk-live?sport=${encodeURIComponent(sport)}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
 
-  FK.cloud = { user, signIn, signUp, passwordSignIn, resetPassword, setPassword, signOut, fromLink, rpc, live, now: () => Date.now() + offset, lastEmail: () => { try { return JSON.parse(localStorage.getItem("fk-auth:email")) || ""; } catch (e) { return ""; } } };
+  FK.cloud = { slates, user, signIn, signUp, passwordSignIn, resetPassword, setPassword, signOut, fromLink, rpc, live, now: () => Date.now() + offset, lastEmail: () => { try { return JSON.parse(localStorage.getItem("fk-auth:email")) || ""; } catch (e) { return ""; } } };
 })(typeof window !== "undefined" ? window : globalThis);

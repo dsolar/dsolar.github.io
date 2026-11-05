@@ -71,16 +71,23 @@
     // a draft that ran out on the clock while nobody was around is "done" in the past; start after now, not then
     const at = Math.max(D.done || 0, o.now || Date.now());
     // a one-week league set for this week starts in the week that's on, if enough of it is left to play
-    const cur = weekOf(at, sport.key), thisWeek = s.when === "now" && sport.key !== "mlb" && cur + 7 * DAY - at >= MIN_LEFT;
+    // (a slate or a showdown plays the week its games are in, however little of it is left)
+    const lastKick = s.slate ? s.slate.last : s.showdown ? s.showdown.at : null, cur = weekOf(at, sport.key);
+    const thisWeek = lastKick != null ? lastKick < cur + 7 * DAY : s.when === "now" && sport.key !== "mlb" && cur + 7 * DAY - at >= MIN_LEFT;
     const start = thisWeek ? cur : startAfter(at, sport.key);
     // o.real: a weeks file (real scoring if its box scores reach the league's start) or true
     if (o.real && (o.real === true || realCovers(o.real, start))) settings.real = true;
     // a showdown: one game's two teams, a captain who counts half again, and free agency with no waiting
     const sd = s.showdown;
     if (sd) Object.assign(settings, { pool: sd.teams.slice(), mult: { CPT: 1.5 }, waiverDays: 0, gameLock: "off", showdown: { id: sd.id, label: sd.label, at: sd.at } });
+    // a one-week slate: the games it drafted from (a whole week, Sunday, the night games or games picked), each one's
+    // kickoff its lock, and free agency with no waiting
+    const sl = s.slate && !sd ? s.slate : null;
+    if (sl) Object.assign(settings, { pool: sl.teams.slice(), waiverDays: 0, gameLock: "off", slate: { kind: sl.kind, label: sl.label, week: sl.week, first: sl.first, last: sl.last, games: sl.games.length } }, sl.mult ? { mult: Object.assign({}, sl.mult) } : {});
     const L = G.create({ sport, draft: D, name: o.name || D.name, season: o.season || "", now: at, start, scoring: D.scoring, settings });
     // its kickoff locks everyone, even before a page has seen the live feed
     if (sd && sd.at && L.week === 1) L.kick = { week: 1, teams: Object.fromEntries(sd.teams.map((t) => [t, sd.at])) };
+    if (sl && L.week === 1) L.kick = { week: 1, teams: Object.fromEntries(sl.games.flatMap((g) => [[g.away, Date.parse(g.at)], [g.home, Date.parse(g.at)]])) };
     // a heist: the lineups it left (stolen players moved, the thieves' bumped players released), each player's 1.5x or
     // half, the week's matchups as the heist paired them, and rosters set for the week but for filling a robbed spot
     const hr = D.heist && D.heist.result;
@@ -95,7 +102,7 @@
     }
     // the undrafted pool starts on waivers and clears like a drop (business days after the draft), so claims, not
     // whoever's online first, decide who gets the best of it. Not for one-week leagues, showdowns or guillotines.
-    if (!hr && !sd && !settings.vampire && settings.format !== "guillotine" && (settings.weeks || 14) > 1 && s.draftWaivers !== false && G.waiverDays(L) > 0) L.openWaivers = G.waiverClear(L, at);
+    if (!hr && !sd && !sl && !settings.vampire && settings.format !== "guillotine" && (settings.weeks || 14) > 1 && s.draftWaivers !== false && G.waiverDays(L) > 0) L.openWaivers = G.waiverClear(L, at);
     // started midweek: what every player had done this week before the league began doesn't count
     if (thisWeek && settings.real && o.real && o.real !== true) L.baseline = { start: weekKeyOf(o.real, start), at, lines: JSON.parse(JSON.stringify(linesAt(o.real, start) || {})) };
     return L;

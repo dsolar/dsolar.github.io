@@ -63,6 +63,11 @@
       tx: [], trades: [], claims: [], waivers: {}, watch: {}, draft: D || null, nextId: 1,
       alive: teams.map((t) => t.id), chopped: [], waiverRuns: {},
     };
+    // all-play with an odd number of teams: the team the schedule leaves out each week plays a second game instead
+    if (s.tally === "allplay" && n % 2 && n > 1 && !guillotine) L.schedule.forEach((games, w) => {
+      const playing = new Set(games.flat()), out = teams.map((t) => t.id).filter((id) => !playing.has(id));
+      for (const id of out) games.push([id, games.length ? games[w % games.length][0] : teams.find((t) => t.id !== id).id]);
+    });
     // divisions: teams split evenly, in team order (0, 1, 2 in divisions A, B, C, then around again)
     if (!guillotine && s.format !== "roto" && s.divisions >= 2 && n >= 2 * s.divisions) {
       L.divs = teams.map((t) => t.id % s.divisions);
@@ -947,9 +952,13 @@
     const tally = L.settings.tally || "game";
     for (let w = 1; w <= last; w++) {
       const res = L.results[w] || [];
+      // all-play with an odd number of teams: one team plays a second game so nobody sits out; its score counts once
+      const once = new Set();
       for (const g of res) {
         const A = rows[g.a], B = rows[g.b];
-        A.pf += g.sa; A.pa += g.sb; B.pf += g.sb; B.pa += g.sa;
+        if (tally !== "allplay" || !once.has(g.a)) { A.pf += g.sa; A.pa += g.sb; }
+        if (tally !== "allplay" || !once.has(g.b)) { B.pf += g.sb; B.pa += g.sa; }
+        once.add(g.a); once.add(g.b);
         const fa = g.w === "a" ? "W" : g.w === "b" ? "L" : "T";
         A.form.push(fa); B.form.push(fa === "W" ? "L" : fa === "L" ? "W" : "T");
         // each category counts: a 6-3 week is six wins and three losses
@@ -966,7 +975,7 @@
       }
       // all-play: every team's score against every other team's that week
       if (tally === "allplay") {
-        const sc = res.flatMap((g) => [[g.a, g.sa], [g.b, g.sb]]);
+        const seen = new Set(), sc = res.flatMap((g) => [[g.a, g.sa], [g.b, g.sb]]).filter(([t]) => !seen.has(t) && seen.add(t));
         for (const [t, x] of sc) for (const [u, y] of sc) { if (t === u) continue; if (x > y) rows[t].w++; else if (x < y) rows[t].l++; else rows[t].t++; }
       }
     }

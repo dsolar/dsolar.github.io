@@ -357,7 +357,7 @@
   }
 
   // A league drawn from a few pro teams (a showdown's one game): doc is a draft (its season) or a league (its settings).
-  const poolOf = (doc) => (doc && ((doc.settings && doc.settings.pool) || (doc.season && doc.season.showdown && doc.season.showdown.teams))) || null;
+  const poolOf = (doc) => (doc && ((doc.settings && doc.settings.pool) || (doc.season && doc.season.showdown && doc.season.showdown.teams) || (doc.season && doc.season.slate && doc.season.slate.teams))) || null;
   const inPool = (doc, p) => { const t = poolOf(doc); return !t || t.includes(p.t); };
   // A showdown: one game, a captain who scores half again, five spots that take anyone, no bench
   const SHOWDOWN = { lineup: ["CPT", "UTIL", "UTIL", "UTIL", "UTIL", "UTIL"], bench: 0, mult: { CPT: 1.5 } };

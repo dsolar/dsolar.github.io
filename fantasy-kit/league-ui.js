@@ -94,7 +94,7 @@
     const watch = () => { const w = L().watch; return (w[me()] = w[me()] || []); };
 
     /* ---------- routing ---------- */
-    const TABS = () => [["league", "League"], ["team", "My Team"], ["matchup", gl() ? "The block" : roto() ? "Categories" : "Matchup"], ["players", "Players"], ["draft", "Draft"]].concat(opts.commishTools ? [["commish", "Commissioner"]] : []);
+    const TABS = () => [["league", "League"], ["team", "My Team"], ["matchup", gl() ? "The block" : roto() ? "Categories" : allplay1() ? "Board" : "Matchup"], ["players", "Players"], ["draft", "Draft"]].concat(opts.commishTools ? [["commish", "Commissioner"]] : []);
     function subsOf(tab) {
       if (tab === "league") return [["overview", "Overview"]].concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []).concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : roto() ? "By week" : "Scoreboard"], ["managers", "Managers"]].concat(opts.dues ? [["dues", "Dues"]] : []).concat([["history", "History"], ["rules", "Rules"]]));
       if (tab === "team") return [["roster", "Roster"]].concat(roto() ? [] : [["schedule", gl() ? "History" : "Schedule"]]).concat(L().settings.trades === false ? [] : [["trades", "Trades", pendingTrades()]]);
@@ -258,6 +258,7 @@
         return `<li style="grid-template-columns:minmax(0,1fr) auto;align-items:center;padding:8px 16px"><span data-player="${esc(id)}" style="cursor:pointer;min-width:0">${pname(sport, p, esc(p.prank || ""))}</span>${tag}</li>`; }).join("")}</ul></div>`;
     }
     function overview() {
+      if (allplay1()) return weekBoardPage();
       if (gl()) return guillotineOverview();
       if (roto()) return rotoOverview();
       const w = curWeek(), mid = me();
@@ -273,7 +274,7 @@
       const myRow = mid != null ? st.find((r) => r.team.id === mid) : null;
       // your team, claims and offers: top of the page on a phone, the sidebar on a wide screen
       // right after the draft, before week 1 is under way: point at the results and grades
-      const twists = `${pyoCard()}${crownCard()}`;
+      const twists = `${pyoCard()}${crownCard()}${oneWeekLg() ? seriesCard() : ""}`;
       const fresh = L().week === 1 && now() < L().start + 2 * 864e5 && L().draft ? `<div class="card"><div class="mod-h"><h2>The draft is done</h2><a href="#draft">Results and grades</a></div><div class="bd"><p class="ps" style="margin:0">Every pick, each team's grade and the steals of the draft.</p></div></div>` : "";
       const myCards = `${fresh}${twists}${L().heist && mid != null && !over() ? heistCard(mid, { stack: true }) : ""}
           ${myRow ? `<div class="card"><div class="mod-h">${teamAv(myRow.team, "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(myRow.team.name)}</b><span class="ps">${ord(myRow.rank)} place, ${myRow.w}-${myRow.l}${myRow.t ? "-" + myRow.t : ""}</span></div></div>
@@ -318,7 +319,49 @@
     const championOf = () => G.finish(L()).champion;
     /* ---------- a one-week league's finish: the winner, the score, the MVP and what decided it ---------- */
     const oneWeekLg = () => L().settings.weeks === 1 && !!(L().draft && L().draft.season && L().draft.season.oneWeek);
+    // one week, everyone vs everyone: one leaderboard, ranked on points (live points, or the projection before kickoff)
+    const allplay1 = () => oneWeekLg() && L().settings.tally === "allplay";
+    function weekRows() {
+      const seen = new Set(), rows = [];
+      for (const g of G.matchups(L(), ctx, 1, frac(1))) for (const [t, sc, pj] of [[g.a, g.sa, g.pa], [g.b, g.sb, g.pb]]) if (!seen.has(t)) { seen.add(t); rows.push({ t, sc: sc || 0, pj: pj != null ? pj : sc || 0 }); }
+      const started = over() || frac(1) > 0 || rows.some((r) => r.sc > 0);
+      rows.sort((a, b) => (started ? b.sc - a.sc || b.pj - a.pj : b.pj - a.pj) || a.t - b.t);
+      return { rows, started };
+    }
+    const slateName = () => { const st = L().settings; return st.slate ? `${st.slate.label}, ${st.slate.games} game${st.slate.games === 1 ? "" : "s"}` : st.showdown ? `${st.showdown.label} showdown` : ""; };
+    function leaderboardCard() {
+      const { rows, started } = weekRows(), live = !over() && frac(1) > 0;
+      const status = over() ? "Final" : live ? "Live" : "Projected until the first kickoff";
+      return `<div class="card"><div class="mod-h"><h2>Leaderboard</h2><span class="ps">${esc(status)}</span></div><div class="table-wrap"><table class="t wklb"><thead><tr><th class="num">#</th><th>Team</th><th class="r">Points</th>${over() ? "" : `<th class="r">Projected</th>`}</tr></thead><tbody>
+        ${rows.map((r, i) => `<tr class="${isMe(r.t) ? "me" : ""}"><td class="num"><b>${i + 1}</b></td><td class="nm"><a href="${teamHref(r.t)}" style="color:inherit;text-decoration:none">${teamName(T(r.t), { you: isMe(r.t), badge: over() && i === 0 ? ` <span class="tag gold">Winner</span>` : "" })}</a></td><td class="r num"><b>${started ? fmtS(r.sc) : "-"}</b></td>${over() ? "" : `<td class="r num ps">${fmtS(r.pj)}</td>`}</tr>`).join("")}</tbody></table></div></div>`;
+    }
+    // a one-week game run back week after week: who's won the most, finished top three, scored the most
+    function seriesCard() {
+      const sr = opts.series && opts.series(); if (!sr || !sr.weeks || sr.weeks.length < 2) return "";
+      const done = sr.weeks.filter((w) => w.done && w.scores && Object.keys(w.scores).length), last = sr.weeks[sr.weeks.length - 1];
+      const names = (last.teams || []).map((n, i) => (L().teams[i] ? L().teams[i].name : n));
+      const row = names.map((n, i) => ({ i, n, wins: 0, top3: 0, pts: 0, played: 0 }));
+      for (const w of done) {
+        const order = Object.entries(w.scores).map(([t, v]) => [+t, +v]).sort((a, b) => b[1] - a[1]);
+        order.forEach(([t, v], k) => { const r = row[t]; if (!r) return; r.played++; r.pts += v; if (k === 0) r.wins++; if (k < 3) r.top3++; });
+      }
+      row.sort((a, b) => b.wins - a.wins || b.top3 - a.top3 || b.pts - a.pts);
+      return `<div class="card"><div class="mod-h"><h2>The series</h2><span class="ps">${done.length} week${done.length === 1 ? "" : "s"} played</span></div><div class="table-wrap"><table class="t dense"><thead><tr><th>Team</th><th class="r">Wins</th><th class="r">Top 3</th><th class="r">Points</th></tr></thead><tbody>
+        ${row.map((r) => `<tr${isMe(r.i) ? ' class="me"' : ""}><td class="nm">${L().teams[r.i] ? teamName(T(r.i), { you: isMe(r.i) }) : esc(r.n)}</td><td class="r num"><b>${r.wins}</b></td><td class="r num">${r.top3}</td><td class="r num">${fmtS(r.pts)}</td></tr>`).join("")}</tbody></table></div>
+        <div class="bd sr-wks">${sr.weeks.map((w) => `<a class="btn xs ghost" href="play.html?id=${esc(w.id)}">Game ${w.n}${w.label ? `: ${esc(w.label)}` : ""}</a>`).join("")}</div></div>`;
+    }
+    function weekBoardPage() {
+      const mid = me(), { rows } = weekRows(), at = rows.findIndex((r) => r.t === mid);
+      return `<div class="wrap page"><div class="head"><h1 class="disp">${over() ? "Final" : "This week"}</h1><span class="ps">${esc(slateName() || L().season || "")}${mid != null && at >= 0 ? `. You're ${ord(at + 1)} of ${rows.length}` : ""}.</span></div>
+        ${over() ? finishCard() : ""}<div class="cols2"><div class="stack">${leaderboardCard()}</div><div class="stack">${seriesCard()}${chatCard()}</div></div></div>`;
+    }
     function finishData() {
+      if (allplay1()) {
+        const { rows } = weekRows(); if (!rows.length || !over()) return null;
+        let mvp = null;
+        for (const g of L().results[1] || []) for (const [t, tx] of [[g.a, g.ta], [g.b, g.tb]]) for (const [pid, v] of Object.entries((tx && tx.players) || {})) if (!mvp || v > mvp.v) mvp = { pid, v, t };
+        return { allplay: true, rows, champ: rows[0].t, mvp, moments: [] };
+      }
       const res = (L().results[1] || []).filter((g) => g && g.ta);
       if (!res.length) return null;
       const champ = championOf(), mid = me();
@@ -348,8 +391,17 @@
       }
       return { g, champ, win, lose, mvp, moments: moments.sort((a, b) => (b.big ? 1 : 0) - (a.big ? 1 : 0)).slice(0, 4), many: L().teams.length > 2 };
     }
+    const rematchBtn = () => (opts.rematch ? `<button class="btn sm go" data-rematch>Run it back</button>` : "");
     function finishCard() {
       const f = finishData(); if (!f) return "";
+      if (f.allplay) {
+        const [a, b] = f.rows, cs = T(a.t), mine = isMe(a.t), mp = f.mvp && ctx.byId[f.mvp.pid], at = f.rows.findIndex((r) => isMe(r.t));
+        return `<div class="card fin${mine ? " me" : ""}">
+          <div class="fin-h">${teamAv(cs, "xl")}<div><small>${esc(L().name || "")}, final</small><b class="disp">${esc(cs.name)} wins the week</b><span>${fmtS(a.sc)} points${b ? `, ${fmtS(a.sc - b.sc)} ahead of ${esc(T(b.t).name)}` : ""}.${at > 2 ? ` You finished ${ord(at + 1)} of ${f.rows.length}.` : ""}</span></div></div>
+          <ol class="fin-pod">${f.rows.slice(0, 3).map((r, i) => `<li${isMe(r.t) ? ' class="me"' : ""}><small>${ord(i + 1)}</small>${teamAv(T(r.t), "sm")}<b class="ell">${esc(T(r.t).name)}</b><span class="num">${fmtS(r.sc)}</span></li>`).join("")}</ol>
+          ${mp ? `<div class="fin-mvp"><small>MVP</small><span data-player="${esc(mp.id)}" style="cursor:pointer">${pname(sport, mp, `${fmtS(f.mvp.v)} points for ${esc(T(f.mvp.t).name)}`)}</span></div>` : ""}
+          <div class="fin-a">${rematchBtn()}<button class="btn sm" data-copyfinal>Copy the result</button><a class="btn sm" href="leagues.html?w=1">Start another</a></div></div>`;
+      }
       const { g, champ, win, lose, mvp } = f, cs = T(champ), mine = isMe(champ);
       const score = win == null ? `${fmtS(g.sa)} to ${fmtS(g.sb)}, a tie` : `${fmtS(Math.max(g.sa, g.sb))} to ${fmtS(Math.min(g.sa, g.sb))}`;
       const head = f.many ? `${esc(cs.name)} wins the week` : win == null ? "A dead heat" : `${esc(T(win).name)} beat ${esc(T(lose).name)}`;
@@ -359,11 +411,12 @@
         <div class="fin-h">${teamAv(cs, "xl")}<div><small>${esc(L().name || "")}, final</small><b class="disp">${head}</b><span>${sub}</span></div></div>
         ${mp ? `<div class="fin-mvp"><small>MVP</small><span data-player="${esc(mp.id)}" style="cursor:pointer">${pname(sport, mp, `${fmtS(mvp.v)} points for ${esc(T(mvp.t).name)}`)}</span></div>` : ""}
         ${f.moments.length ? `<ul class="fin-m">${f.moments.map((m) => `<li class="${m.k}${m.big ? " big" : ""}">${esc(m.text)}</li>`).join("")}</ul>` : ""}
-        <div class="fin-a"><button class="btn sm" data-copyfinal>Copy the result</button><a class="btn sm" href="leagues.html?s=${esc(sport.key)}">Start another</a></div></div>`;
+        <div class="fin-a">${rematchBtn()}<button class="btn sm" data-copyfinal>Copy the result</button><a class="btn sm" href="leagues.html?${sport.key === "nfl" ? "w=1" : `s=${esc(sport.key)}`}">Start another</a></div></div>`;
     }
     // the result as a few lines for the group chat
     function finishText() {
       const f = finishData(); if (!f) return "";
+      if (f.allplay) { const mp = f.mvp && ctx.byId[f.mvp.pid]; return [`${L().name}, final:`].concat(f.rows.map((r, i) => `${i + 1}. ${T(r.t).name} ${fmtS(r.sc)}`), mp ? `MVP: ${mp.n}, ${fmtS(f.mvp.v)}` : "").filter(Boolean).join("\n"); }
       const { g, win, lose, mvp } = f, mp = mvp && ctx.byId[mvp.pid];
       return [`${L().name}: ${win == null ? `a tie, ${fmtS(g.sa)} to ${fmtS(g.sb)}` : `${T(win).name} ${fmtS(Math.max(g.sa, g.sb))}, ${T(lose).name} ${fmtS(Math.min(g.sa, g.sb))}`}`, mp ? `MVP: ${mp.n}, ${fmtS(mvp.v)}` : ""].concat(f.moments.map((m) => m.text)).filter(Boolean).join("\n");
     }
@@ -1179,6 +1232,7 @@
 
     /* ---------- Matchup ---------- */
     function matchupPage(sub, arg) {
+      if (allplay1()) return weekBoardPage();
       if (gl()) return blockPage(sub);
       if (roto()) return rotoWeekPage(sub);
       let w = +sub || curWeek(), i = arg !== "" && arg != null ? +arg : null;
@@ -1596,7 +1650,7 @@
     opts.el.addEventListener("click", (e) => {
       const mb = e.target.closest("[data-more]");
       if (mb) { ui.plimit = (ui.plimit || 250) + 250; render(); return; }
-      const b = e.target.closest("[data-pyo],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],th[data-sort]");
+      const b = e.target.closest("[data-rematch],[data-pyo],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],th[data-sort]");
       if (b) {
         e.preventDefault(); e.stopPropagation();
         const d = b.dataset, mid = me();
@@ -1619,6 +1673,7 @@
         else if (b.hasAttribute("data-optimize")) { const w = ui.week && ui.week >= L().week ? ui.week : curWeek(); act(() => G.setLineup(L(), ctx, mid, w, G.bestLineup(L(), ctx, mid, w, now()), now()), "Best lineup set."); }
         else if (d.week) { ui.week = +d.week; render(); }
         else if (d.watch) { const w = watch(); const i = w.indexOf(d.watch); if (i >= 0) w.splice(i, 1); else w.push(d.watch); save(); render(); }
+        else if (b.hasAttribute("data-rematch")) { if (opts.rematch) opts.rematch(); }
         else if (b.hasAttribute("data-copyfinal")) { const txt = finishText(); (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => U.toast("Copied. Paste it in your group chat."), () => U.dialog(`<h3>The result</h3><textarea rows="6" style="width:100%">${esc(txt)}</textarea><div class="acts"><button class="btn" data-close>Done</button></div>`)); }
         else if (d.unclaim) act(() => G.cancelClaim(L(), +d.unclaim), "Claim cancelled.");
         else if (d.editclaim) { const c = L().claims.find((x) => x.id === +d.editclaim && x.status === "open"); if (c) addDialog(c.add, c); }

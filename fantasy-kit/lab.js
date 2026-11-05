@@ -65,8 +65,8 @@
   function header(tab) {
     const right = `<a class="btn sm ghost" href="../fantasy/">All fantasy</a><button class="btn sm ghost" data-act="theme">${theme.dark() ? "Light" : "Dark"}</button>${mock ? `<button class="btn sm" data-act="new">New mock</button>` : ""}`;
     top.innerHTML = U.shell({ brand: { name: "Draft Lab", href: "./", mark: `<img src="mark.svg" alt="">` },
-      tabs: [["leagues", "Your leagues"], ["draft", "Mock draft"], ["rankings", "Rankings"], ["league", "Demo league"]], tab, right,
-      hrefOf: (t, sub) => (t === "league" ? `league.html?s=${cfg.sport}` : t === "leagues" ? "leagues.html" : "#" + t + (sub ? "/" + sub : "")) });
+      tabs: [["leagues", "Your leagues"], ["week", "One week"], ["draft", "Mock draft"], ["rankings", "Rankings"], ["league", "Demo league"]], tab, right,
+      hrefOf: (t, sub) => (t === "league" ? `league.html?s=${cfg.sport}` : t === "leagues" ? "leagues.html" : t === "week" ? "week.html" : "#" + t + (sub ? "/" + sub : "")) });
   }
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-act]");

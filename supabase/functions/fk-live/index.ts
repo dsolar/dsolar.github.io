@@ -229,11 +229,44 @@ async function mlb() {
   return { sport: "mlb", season: start.slice(0, 4), start, end, lines: { bat: WK_BAT, pit: WK_PIT }, players: lines, teams, games: byTeam };
 }
 
+// One-week slates: this NFL week's games and next week's, each { id, at, away, home, state }, so a one-week league can
+// pick its games (GET ?sport=nfl&slates=1). Kept ten minutes (table fk_live, under "nfl-slates").
+async function nflSlates() {
+  const key = "nfl-slates";
+  const r = await db(`fk_live?sport=eq.${key}&select=data,updated_at`);
+  const row = r.ok ? (await r.json())[0] : null;
+  if (row && Date.now() - Date.parse(row.updated_at) < 10 * 60e3) return row.data;
+  const state: any = await getJSON("https://api.sleeper.app/v1/state/nfl").catch(() => null);
+  if (!state) return row ? row.data : { weeks: [] };
+  const season = Number(state.season), week = Number(state.week || 0) || 1;
+  const kick = state.season_start_date || `${season}-09-05`, kd = new Date(kick + "T12:00:00Z");
+  const tue1 = addDays(kick, -((kd.getUTCDay() - 2 + 7) % 7));
+  const weeks = [];
+  for (const w of [week, week + 1]) {
+    if (w > 18) continue;
+    const board: any = await getJSON(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?seasontype=2&week=${w}&dates=${season}`).catch(() => ({ events: [] }));
+    const games = (board.events || []).map((e: any) => {
+      const cs = e.competitions?.[0]?.competitors || [], side = (h: string) => cs.find((c: any) => c.homeAway === h)?.team?.abbreviation;
+      const ab = (x: string) => NFL_TEAM[x] || x;
+      return { id: String(e.id), at: e.date, away: ab(side("away")), home: ab(side("home")), state: e.status?.type?.state || "pre" };
+    }).filter((g: any) => g.away && g.home).sort((a: any, b: any) => Date.parse(a.at) - Date.parse(b.at));
+    const start = addDays(tue1, 7 * (w - 1));
+    weeks.push({ week: w, start, end: addDays(start, 6), games });
+  }
+  const data = { season: String(season), weeks, updated: new Date().toISOString() };
+  await db("fk_live", { method: "POST", headers: { Prefer: "resolution=merge-duplicates" }, body: JSON.stringify({ sport: key, data, updated_at: data.updated }) });
+  return data;
+}
+
 const BUILD: Record<string, () => Promise<any>> = { nba, nfl, mlb };
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
-  const sport = new URL(req.url).searchParams.get("sport") || "";
+  const q = new URL(req.url).searchParams, sport = q.get("sport") || "";
+  if (sport === "nfl" && q.get("slates")) {
+    const data = await nflSlates().catch((e) => ({ weeks: [], error: String(e) }));
+    return new Response(JSON.stringify(data), { headers: { ...CORS, "content-type": "application/json", "cache-control": "max-age=120" } });
+  }
   if (!BUILD[sport]) return new Response(JSON.stringify({ error: "sport must be nba, nfl or mlb" }), { status: 400, headers: { ...CORS, "content-type": "application/json" } });
   const r = await db(`fk_live?sport=eq.${sport}&select=data,updated_at`);
   const row = r.ok ? (await r.json())[0] : null;

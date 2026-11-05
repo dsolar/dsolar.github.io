@@ -68,7 +68,7 @@
   function mount() {
     mode = modeNow();
     if (room) { room.stop(); room = null; }
-    if (mode === "draft") mountRoom(); else mountLeague();
+    if (mode === "draft") mountRoom(); else { mountLeague(); loadSeries(); }
   }
   function refreshView() { if (mode !== modeNow()) mount(); else if (room) room.refresh(); else if (app) app.refresh(); }
 
@@ -107,6 +107,20 @@
       return r;
     });
   }
+  const oneWeekGame = () => !!(L && L.settings.weeks === 1 && L.draft && L.draft.season && L.draft.season.oneWeek);
+  let series = null, seriesAsked = false;
+  async function loadSeries() {
+    if (seriesAsked || !oneWeekGame() || !C.user()) return;
+    seriesAsked = true;
+    const r = await C.rpc("fk_series", { p_id: id }).catch(() => null);
+    if (r && r.ok) { series = r; if (app) app.refresh(); }
+  }
+  // someone already ran it back: go straight there; otherwise pick next week's games
+  async function rematchGo() {
+    const r = series || (await C.rpc("fk_series", { p_id: id }).catch(() => null));
+    const weeks = (r && r.weeks) || [], me = weeks.find((w) => w.id === id), next = me && weeks.find((w) => w.n === me.n + 1);
+    location.href = next ? `play.html?id=${encodeURIComponent(next.id)}` : `leagues.html?rematch=${encodeURIComponent(id)}`;
+  }
   function mountLeague() {
     document.body.classList.remove("fk-room");
     app = U.leagueApp({
@@ -124,6 +138,9 @@
       history: () => past,
       faces: () => faces,
       editProfile: C.user() ? editProfile : null,
+      // one-week games: run it back next week with the same group, and the series so far
+      get rematch() { return L && oneWeekGame() && info.me != null ? rematchGo : null; },
+      series: () => series,
     });
     loadPosts();
     loadPast();
