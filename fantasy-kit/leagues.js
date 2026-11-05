@@ -74,6 +74,7 @@
     Object.assign(form, { kind: "week", wkSet: 1, sport: v.sport, teams: D0.teams.length, name: v.name, type: D0.type || "snake", clock: D0.clock || 30,
       season: s0.tally === "allplay" ? "allplay" : s0.tally === "cats" ? "h2hcats" : "h2h", slKind: kind === "custom" ? "full" : kind, slWeek: 0, hzOn: s0.heist ? 1 : 0, bestball: s0.bestBall ? 1 : 0 });
     if (D0.scoring && S[v.sport] && S[v.sport].scorings[D0.scoring]) form.scoring = D0.scoring;
+    form.dtMode = "at"; form.dtAt = null;
     view = "new"; loadSlates();
   }
   // leagues.html?w=1: start a one-week game (from the One week page, or a slate picked there)
@@ -340,6 +341,7 @@
           ${rlOk() ? toggle("rlOn", "Team roulette", `Each pick, a wheel picks the ${sp.key === "nfl" ? "NFL" : sp.key === "nba" ? "NBA" : "MLB"} team you have to draft from`, form.rlOn,
             `<div class="g2">${fld("The wheel spins", seg("rlRound", [[0, "Every pick"], [1, "Once a round, same team for all"]], form.rlRound, "The wheel spins", { wrap: true }))}${fld("Re-spins a team", seg("respins", [[0, "None"], [1, "1"], [2, "2"], [3, "3"]], form.respins, "Re-spins a team"))}</div>`) : ""}
           ${fld(auction ? "Bid clock" : "Pick clock", seg("clock", live, form.clock, auction ? "Bid clock" : "Pick clock", { wrap: true }), auction ? "Every bid resets the clock." : form.clock >= 3600 ? "A slow draft: managers with email alerts get one when they're up." : "When a clock runs out, the best player left is taken.")}</div>
+          ${draftTimeHtml()}
         </section>
         <section class="nl-sec"><h2 class="nl-h">Fine-tune</h2><p class="nl-sub">Every rule and what it's set to. Open one to change it.</p><div class="nr-l">${rows}</div></section>
         <div class="nl-bar"><div class="nl-sum">${icon(sp.key, "nl-sum-ic")}<span><b id="tk-name">${esc(form.name || "Your league")}</b><small>${esc(V.line)}</small></span></div>
@@ -416,6 +418,22 @@
     const sum = sl ? `<p class="fl-h slsum"><b>${esc(sl.label)}: ${sl.games.length} game${sl.games.length === 1 ? "" : "s"}, ${sl.teams.length} teams' players.</b> ${heist() ? "The heist lineup: QB, 2 RB, 3 WR, TE and a flex, no bench." : esc(lu.note) + "."} Each player locks when his game kicks off.${early}</p>`
       : `<p class="fl-h slsum">Pick at least one game.</p>`;
     return `<section class="nl-sec"><h2 class="nl-h">The games</h2>${weekSeg}${cardsHtml}${pickOne}${pickMany}${sum}</section>`;
+  }
+  // when the draft starts: when you start it, or on its own at a time (with a reminder an hour before). A one-week
+  // game's time has to come before its first kickoff.
+  const localInput = (ms) => { const d = new Date(ms - new Date(ms).getTimezoneOffset() * 6e4); return d.toISOString().slice(0, 16); };
+  function draftTimeDefault() {
+    const sl = slateOn() ? curSlate() : null, H = 36e5, now = Date.now();
+    let t = sl ? sl.first - H : now + 24 * H;
+    t = Math.floor(t / H) * H;
+    return Math.max(t, Math.ceil((now + 15 * 6e4) / (15 * 6e4)) * 15 * 6e4);
+  }
+  function draftTimeHtml() {
+    const at = form.dtMode === "at";
+    if (at && !form.dtAt) form.dtAt = draftTimeDefault();
+    const sl = slateOn() ? curSlate() : null;
+    return fld("Draft time", `${seg("dtMode", [["self", "I'll start it"], ["at", "Set a time"]], at ? "at" : "self", "Draft time")}${at ? `<div style="margin-top:8px"><input id="n-dt" type="datetime-local" value="${esc(localInput(form.dtAt))}" min="${esc(localInput(Date.now() + 5 * 6e4))}"${sl ? ` max="${esc(localInput(sl.first - 10 * 6e4))}"` : ""} aria-label="When the draft starts"></div>` : ""}`,
+      at ? "It starts on its own, with an email an hour before. Anyone who isn't there gets picks from their queue, or the best player left." : "Start it from the draft room when everyone's in.");
   }
   const auction = () => form.type === "auction";
   // team roulette works with drafts that go pick by pick (not a showdown: two teams make a dull wheel)
@@ -566,6 +584,7 @@
   function grab() {
     const root = $(".su"); if (!root) return;
     const v = (q) => { const el = $(q); return el ? el.value : null; };
+    if (v("#n-dt")) { const t = new Date(v("#n-dt")).getTime(); if (Number.isFinite(t)) form.dtAt = t; }
     if (v("#n-name") != null) form.name = v("#n-name"); if (v("#n-me") != null) form.me = v("#n-me"); if (v("#n-team") != null) form.team = v("#n-team");
     const s = root.querySelector("input[name=sport]:checked"); if (s) form.sport = s.value;
     root.querySelectorAll("[data-f]").forEach((el) => {
@@ -655,7 +674,13 @@
         if (oneWeek() && form.when !== "next") { const lv = await C.live(form.sport).catch(() => null); const playing = Object.entries((lv && lv.games) || {}).filter(([, gs]) => (gs || []).some((g) => g.state === "pre")).map(([t]) => t); if (playing.length >= 4) pro = pro.filter((t) => playing.includes(t)); }
         D.roulette = { teams: pro, each: form.rlRound ? "round" : "pick", respins: form.respins || 0, spins: {}, used: {} };
       }
-      if (D.trading) D.offerHold = form.ohold || "clock";        // each team its own color, the same ones the league pages use
+      if (D.trading) D.offerHold = form.ohold || "clock";
+      if (form.dtMode === "at") {
+        const t = form.dtAt || draftTimeDefault();
+        if (t < Date.now() + 2 * 6e4) throw new Error("Pick a draft time that's still to come.");
+        if (slate && t >= slate.first) throw new Error(`The draft has to start before the first kickoff, ${SL.kick(slate.games[0].at)}.`);
+        D.startAt = t;
+      }        // each team its own color, the same ones the league pages use
       const tn = (form.team || "").trim() || `${form.me.trim().split(" ")[0]}'s team`;
       D.teams[0].name = tn.slice(0, 28);
       D.teams[0].abbr = tn.replace(/[^A-Za-z0-9 ]/g, "").split(/\s+/).filter(Boolean).map((w) => w[0]).join("").slice(0, 3).toUpperCase() || "YOU";

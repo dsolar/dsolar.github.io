@@ -320,6 +320,8 @@
   function driveOk() {
     // the heist: the commissioner's page settles it, or anyone's once its clock is five seconds past
     if (D && D.phase === "heist" && canAct()) return info.commish || now() > D.heist.ends + 5000 || F.heistFoe(D, info.me) != null && F.heistDue(D, now());
+    // a draft set for a time: any manager's page starts it once the time comes
+    if (D && D.phase === "setup" && D.startAt && canAct()) return now() >= D.startAt;
     if (!D || D.phase !== "live" || !canAct()) return false;
     if (D.paused) return !!D.hold;                     // a draft held for a trade offer: any page can let it go on
     if (info.commish) return true;
@@ -437,6 +439,7 @@
     const u = C.user();
     U.dialog(`<h3>${esc(info.name)}</h3>
       ${info.invite ? `<div class="row" style="gap:8px;flex-wrap:wrap;margin:0 0 6px"><button type="button" class="btn sm" data-lv="invite">Invite managers${openSeats() ? ` (${openSeats()} open)` : ""}</button>${info.dues !== undefined ? `<button type="button" class="btn sm" data-lv="dues">${duesLine()}</button>` : ""}</div>` : ""}
+      ${info.commish && D && !L && D.phase === "setup" ? `<div class="field" style="margin-top:4px"><label for="lv-dt">Draft time</label><div class="row" style="gap:8px;flex-wrap:wrap"><input id="lv-dt" type="datetime-local" value="${D.startAt ? new Date(D.startAt - new Date(D.startAt).getTimezoneOffset() * 6e4).toISOString().slice(0, 16) : ""}" style="flex:1 1 200px"><button type="button" class="btn sm" data-lv="dt">${D.startAt ? "Change it" : "Set it"}</button>${D.startAt ? `<button type="button" class="btn sm ghost" data-lv="dt-off">I'll start it</button>` : ""}</div><p class="ps" style="margin:4px 0 0">${D.startAt ? "It starts on its own then, with an email to everyone an hour before." : "Set a time and it starts on its own, with an email to everyone an hour before."}</p></div>` : ""}
       ${info.commish && D && !L && D.phase !== "done" && D.trading ? `<div class="field" style="margin-top:10px"><label for="lv-oh">A trade offer stops the clock</label><select id="lv-oh">${opt("clock", "When it's to the team on the clock", D.offerHold || "clock")}${opt("all", "For any manager, up to 90 seconds", D.offerHold || "clock")}${opt("off", "Never: the draft keeps going", D.offerHold || "clock")}</select></div>` : ""}
       <div id="lv-past"></div>
       ${info.me != null ? `<label class="check" style="margin-top:10px"><input type="checkbox" id="lv-mail"${info.notify !== false ? " checked" : ""}> Email me about trade offers, waiver results${D && D.clock >= 3600 ? ", my turn in the draft" : ""} and weekly results</label>` : ""}
@@ -463,6 +466,14 @@
       if (b.dataset.lv === "copy") { try { await navigator.clipboard.writeText(inviteUrl()); } catch (err) { const el = $("#lv-link"); if (el) { el.select(); document.execCommand("copy"); } } U.toast("Invite link copied"); }
       else if (b.dataset.lv === "share") { try { await navigator.share({ title: `Join ${info.name}`, text: inviteMsg().replace(inviteUrl(), "").trim(), url: inviteUrl() }); } catch (err) { /* closed the share sheet */ } }
       else if (b.dataset.lv === "invite") { dlg.close(); inviteDialog(); }
+      else if (b.dataset.lv === "dt" && info.commish && D && D.phase === "setup") {
+        const t = new Date(($("#lv-dt") || {}).value || "").getTime();
+        if (!Number.isFinite(t) || t < now() + 2 * 6e4) { U.toast("Pick a time that's still to come.", true); return; }
+        const sl = D.season && (D.season.slate || D.season.showdown), first = sl ? sl.first || sl.at : null;
+        if (first && t >= first) { U.toast("The draft has to start before the first kickoff.", true); return; }
+        D.startAt = t; delete D.reminded; push(); dlg.close(); U.toast(`The draft starts ${new Date(t).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" })}. Everyone gets an email.`); refreshView();
+      }
+      else if (b.dataset.lv === "dt-off" && info.commish && D && D.phase === "setup") { delete D.startAt; delete D.reminded; push(); dlg.close(); U.toast("You'll start the draft from the room."); }
       else if (b.dataset.lv === "dues") { dlg.close(); duesDialog(); }
       else if (b.dataset.lv === "out") { await C.signOut(); location.reload(); }
       else if (b.dataset.lv === "theme") { theme.toggle(); b.textContent = theme.dark() ? "Light mode" : "Dark mode"; if (app) app.render(); }

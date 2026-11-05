@@ -958,6 +958,8 @@
         const A = rows[g.a], B = rows[g.b];
         if (tally !== "allplay" || !once.has(g.a)) { A.pf += g.sa; A.pa += g.sb; }
         if (tally !== "allplay" || !once.has(g.b)) { B.pf += g.sb; B.pa += g.sa; }
+        // the last tiebreak: the best single player's score
+        for (const [R, tx] of [[A, g.ta], [B, g.tb]]) for (const v of Object.values((tx && tx.players) || {})) if (typeof v === "number" && v > (R.best || 0)) R.best = v;
         once.add(g.a); once.add(g.b);
         const fa = g.w === "a" ? "W" : g.w === "b" ? "L" : "T";
         A.form.push(fa); B.form.push(fa === "W" ? "L" : fa === "L" ? "W" : "T");
@@ -986,7 +988,7 @@
       while (k >= 0 && r.form[k] === s) { n++; k--; }
       r.streak = s ? s + n : "";
     }
-    const sorted = rows.slice().sort((a, b) => b.pct - a.pct || b.pf - a.pf || a.team - b.team);
+    const sorted = rows.slice().sort((a, b) => b.pct - a.pct || b.pf - a.pf || (b.best || 0) - (a.best || 0) || a.team - b.team);
     const lead = sorted[0];
     sorted.forEach((r, i) => { r.rank = i + 1; r.gb = ((lead.w - r.w) + (r.l - lead.l)) / 2; r.inPlayoffs = i < L.settings.playoffTeams; });
     // divisions: each division's leader, then everyone else, decides the playoff seeds

@@ -325,15 +325,20 @@
       const seen = new Set(), rows = [];
       for (const g of G.matchups(L(), ctx, 1, frac(1))) for (const [t, sc, pj] of [[g.a, g.sa, g.pa], [g.b, g.sb, g.pb]]) if (!seen.has(t)) { seen.add(t); rows.push({ t, sc: sc || 0, pj: pj != null ? pj : sc || 0 }); }
       const started = over() || frac(1) > 0 || rows.some((r) => r.sc > 0);
-      rows.sort((a, b) => (started ? b.sc - a.sc || b.pj - a.pj : b.pj - a.pj) || a.t - b.t);
-      return { rows, started };
+      // final: the standings' order, ties going to the best single player's score
+      if (over()) { const at = Object.fromEntries(G.standings(L()).map((r, i) => [r.team, i])); rows.sort((a, b) => at[a.t] - at[b.t]); }
+      else rows.sort((a, b) => (started ? b.sc - a.sc || b.pj - a.pj : b.pj - a.pj) || a.t - b.t);
+      // during the week: each team's starters whose games haven't kicked off
+      const k = L().kick && L().kick.week === 1 ? L().kick.teams : null;
+      if (k && !over()) for (const r of rows) r.left = G.lineupFor(L(), ctx, r.t, 1).filter((id) => { const p = id && ctx.byId[id]; return p && !(k[p.t] != null && now() >= k[p.t]); }).length;
+      return { rows, started, toPlay: !!k && !over() };
     }
     const slateName = () => { const st = L().settings; return st.slate ? `${st.slate.label}, ${st.slate.games} game${st.slate.games === 1 ? "" : "s"}` : st.showdown ? `${st.showdown.label} showdown` : ""; };
     function leaderboardCard() {
-      const { rows, started } = weekRows(), live = !over() && frac(1) > 0;
+      const { rows, started, toPlay } = weekRows(), live = !over() && frac(1) > 0;
       const status = over() ? "Final" : live ? "Live" : "Projected until the first kickoff";
-      return `<div class="card"><div class="mod-h"><h2>Leaderboard</h2><span class="ps">${esc(status)}</span></div><div class="table-wrap"><table class="t wklb"><thead><tr><th class="num">#</th><th>Team</th><th class="r">Points</th>${over() ? "" : `<th class="r">Projected</th>`}</tr></thead><tbody>
-        ${rows.map((r, i) => `<tr class="${isMe(r.t) ? "me" : ""}"><td class="num"><b>${i + 1}</b></td><td class="nm"><a href="${teamHref(r.t)}" style="color:inherit;text-decoration:none">${teamName(T(r.t), { you: isMe(r.t), badge: over() && i === 0 ? ` <span class="tag gold">Winner</span>` : "" })}</a></td><td class="r num"><b>${started ? fmtS(r.sc) : "-"}</b></td>${over() ? "" : `<td class="r num ps">${fmtS(r.pj)}</td>`}</tr>`).join("")}</tbody></table></div></div>`;
+      return `<div class="card"><div class="mod-h"><h2>Leaderboard</h2><span class="ps">${esc(status)}</span></div><div class="table-wrap"><table class="t wklb"><thead><tr><th class="num">#</th><th>Team</th><th class="r">Points</th>${over() ? "" : `${toPlay ? `<th class="r" title="Starters whose games haven't kicked off">To play</th>` : ""}<th class="r" title="Points so far plus what the players still to play should score">Projected</th>`}</tr></thead><tbody>
+        ${rows.map((r, i) => `<tr class="${isMe(r.t) ? "me" : ""}"><td class="num"><b>${i + 1}</b></td><td class="nm"><a href="${teamHref(r.t)}" style="color:inherit;text-decoration:none">${teamName(T(r.t), { you: isMe(r.t), badge: over() && i === 0 ? ` <span class="tag gold">Winner</span>` : "" })}</a></td><td class="r num"><b>${started ? fmtS(r.sc) : "-"}</b></td>${over() ? "" : `${toPlay ? `<td class="r num">${r.left}</td>` : ""}<td class="r num ps">${fmtS(r.pj)}</td>`}</tr>`).join("")}</tbody></table></div>${over() ? `<div class="bd ps" style="padding-top:8px">A tie on points goes to the team with the best single player's score.</div>` : ""}</div>`;
     }
     // a one-week game run back week after week: who's won the most, finished top three, scored the most
     function seriesCard() {

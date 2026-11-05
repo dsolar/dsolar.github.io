@@ -206,6 +206,15 @@
 
   function driveDraft(D, ctx, now) {
     if (D && D.phase === "heist") return F.heistTick(D, ctx, now);
+    // a draft set for a time (D.startAt): a reminder an hour before, then it starts on its own. Anyone who isn't
+    // there when the clock runs out gets the best player left.
+    if (D && D.phase === "setup" && D.startAt) {
+      let ch = false;
+      if (!D.reminded && now >= D.startAt - HOUR && now < D.startAt) { D.reminded = now; ch = true; }
+      if (now >= D.startAt) { F.start(D, now); ch = true; }
+      if (D.phase !== "live") return ch;
+      return F.tick(D, ctx, now, 2000) > 0 || ch;
+    }
     if (!D || D.phase !== "live") return false;
     const held = F.offerHold(D, now);                     // an answered offer (or one held long enough) lets the draft go on
     if (D.paused) return held;
@@ -273,6 +282,8 @@
     }
     const bd = b && b.draft, cd = c.draft;
     if (bd && cd && !(b && b.league)) {
+      if (cd.phase === "setup" && cd.startAt && cd.startAt !== bd.startAt) seated.forEach((t) => add(t, "draft", `the draft is set for ${when(cd.startAt)}`, `The draft starts on its own at ${when(cd.startAt)}${(cd.clock || 0) > 0 && cd.clock < 3600 ? `, ${cd.clock} seconds a pick` : ""}. Build your queue before then: if you can't make it, your picks come from your queue, or the best player left.`));
+      if (cd.phase === "setup" && cd.reminded && !bd.reminded) seated.forEach((t) => add(t, "draft", "the draft starts in an hour", `The draft starts at ${when(cd.startAt)}. Open the draft room a few minutes early and set your queue.`));
       if (bd.phase === "setup" && cd.phase === "live") seated.forEach((t) => add(t, "draft", "the draft started", "The draft room is live. If your clock runs out, the best player left is taken for you, so jump in."));
       if (bd.phase !== "done" && cd.phase === "done") seated.forEach((t) => {
         const ros = c.league ? draftRoster(c.league, t, o.byId || {}) : null;

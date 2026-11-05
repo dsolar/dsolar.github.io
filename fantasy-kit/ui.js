@@ -172,6 +172,9 @@
     apply(st.get("theme", ""));
     return { dark: () => document.documentElement.dataset.theme === "dark", toggle() { const t = this.dark() ? "light" : "dark"; st.set("theme", t); apply(t); return t; } };
   }
+  // how long until a draft set for a time: "2:14:05", "14:05", "0:42"
+  const startIn = (at) => { const ms = Math.max(0, at - Date.now()), h = Math.floor(ms / 36e5), m = Math.floor((ms % 36e5) / 6e4), sec = Math.floor((ms % 6e4) / 1e3); return h >= 24 ? `${Math.round(h / 24)}d` : h ? `${h}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}` : `${m}:${String(sec).padStart(2, "0")}`; };
+  const drawStart = () => { const el = document.getElementById("fk-startin"); if (el) el.textContent = startIn(+el.dataset.at || 0); };
   const fmtLeft = (ms) => {
     if (!Number.isFinite(ms)) return "";
     const left = Math.max(0, Math.ceil(ms / 1000)), h = Math.floor(left / 3600), m = Math.floor((left % 3600) / 60), x = left % 60;
@@ -723,6 +726,7 @@
       const ctl = prim.concat(sec.length ? [`<span class="dr-sec">${sec.join("")}</span><details class="dr-more"><summary class="btn sm">More</summary><div class="menu">${sec.join("")}</div></details>`] : []);
       let mid = "";
       if (d.phase === "heist") mid = `<div class="otc me"><span class="ring" id="fk-ring"><span id="fk-timer"></span></span><span class="who"><small>The draft is done</small><b>The heist</b><span>Shield yours, strike at theirs</span></span></div>`;
+      else if (d.phase === "setup" && d.startAt) mid = `<div class="otc"><span class="ring" style="--p:1"><span id="fk-startin" data-at="${d.startAt}">${esc(startIn(d.startAt))}</span></span><span class="who"><small>The draft starts</small><b>${esc(new Date(d.startAt).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" }))}</b><span>On its own. Set your queue: if you're not here, your picks come from it.</span></span></div>`;
       else if (d.phase === "setup") mid = `<div class="otc"><span class="ring" style="--p:1"><span>${d.bank ? fmtLeft(bankFull()) : d.clock || d.auction ? (auction() ? d.auction.bidClock : d.clock) : "-"}</span></span><span class="who"><small>Draft room is open</small><b>${mystery() && !seenK(0) ? "Packages are sealed" : "Build your queue"}</b><span>${auction() ? `$${d.auction.budget} budgets, ${d.auction.bidClock} seconds a bid` : d.bank ? `${fmtLeft(bankFull())} bank each. What's left becomes FAAB` : d.clock ? `${d.clock} seconds a pick` : "No pick clock"}</span></span></div>`;
       else if (d.phase === "done") mid = `<div class="otc"><span class="who"><small>Draft complete</small><b>${F.made(d).length} ${auction() ? "players bought" : "picks"}</b><span>See the Results tab</span></span></div>`;
       else if (auction()) {
@@ -1505,8 +1509,10 @@
         if (F.heistTick(D(), ctx, now())) { save(); render(); } else drawTimer();
         return;
       }
+      // a draft set for a time starts on its own (the server's clock does it too, if nobody's here)
+      if (opts.drive && D().phase === "setup" && D().startAt && now() >= D().startAt) { if (F.start(D(), now()).ok) { save(); render(); } return; }
       const idle = D().phase !== "live" || (D().paused && !D().hold);
-      if (idle && (ui.idleN = (ui.idleN || 0) + 1) % 4) return;
+      if (idle && (ui.idleN = (ui.idleN || 0) + 1) % 4) { if (D().phase === "setup" && D().startAt) drawStart(); return; }
       if (opts.drive && D().phase === "live" && F.offerHold(D(), now())) save();
       if (opts.drive && D().phase === "live" && !D().paused) {
         const before = F.made(D()).length;

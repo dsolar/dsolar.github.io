@@ -66,3 +66,25 @@ test('a one-week slate league: only the slate\'s players, each game\'s kickoff l
   assert.equal(st.reduce((a, r) => a + r.w + r.l + r.t, 0), 5 * 4, 'every team against every other once');
   assert.equal(st[0].w, 4 - st[0].t, 'the top score beat everyone');
 });
+
+test('a draft set for a time: a reminder an hour before, then it starts on its own and no-shows are picked for', () => {
+  const now = Date.parse('2026-11-05T13:00Z');
+  const nfl = JSON.parse(readFileSync(new URL('../fantasy-kit/data/nfl.json', import.meta.url), 'utf8'));
+  const sport = S.attach(Object.assign({}, S.nfl), nfl);
+  const sl = SL.pick(wk9, 'prime', null, now), lu = SL.lineup(sl.games.length, 4);
+  const players = nfl.players.filter((p) => sl.teams.includes(p.t)).map((p) => ({ ...p }));
+  V.evaluate(sport, players, { teams: 4, lineup: lu.lineup, bench: lu.bench, scoring: 'half' });
+  const D = F.create({ sport, teams: 4, seed: 2, now, lineup: lu.lineup, bench: lu.bench, scoring: 'half', botDelay: 0, clock: 30 });
+  D.teams[0].owner = 'Dave'; D.teams[1].owner = 'Yan';
+  D.season = { format: 'h2h', tally: 'allplay', weeks: 1, oneWeek: true, slate: sl };
+  D.startAt = now + 3 * 36e5;
+  const ctx = F.context(D, players, sport);
+  assert.equal(Z.driveDraft(D, ctx, now), false, 'nothing yet');
+  assert.ok(Z.driveDraft(D, ctx, D.startAt - 30 * 6e4)); assert.ok(D.reminded); assert.equal(D.phase, 'setup');
+  const ev = Z.events({ draft: { ...D, reminded: undefined } }, { draft: D }, { name: 'Prime', url: 'x', seats: { 0: 'Dave', 1: 'Yan' }, me: null, now });
+  assert.ok(ev.some((e) => /starts in an hour/.test(e.subject)), 'the reminder email');
+  Z.driveDraft(D, ctx, D.startAt + 1000);
+  assert.equal(D.phase, 'live', 'it started on its own');
+  Z.driveDraft(D, ctx, D.startAt + 3 * 36e5);
+  assert.equal(D.phase, 'done', 'nobody showed, so the clock drafted everyone');
+});
