@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-05T11:10:22Z",
+ "updated": "2026-11-06T11:08:13Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -199,16 +199,6 @@
    "title": "Dark Star Orchestra",
    "date": "2027-01-02",
    "venue": "The Capitol Theatre",
-   "low": null,
-   "src": null
-  },
-  "tm-vv177Z_8GkUrfG8x": {
-   "sg": 18498698,
-   "history": [],
-   "url": "https://www.ticketmaster.com/tim-dillon-boston-massachusetts-11-05-2026/event/0100650D9E50C422",
-   "title": "Tim Dillon",
-   "date": "2026-11-05",
-   "venue": "The Wilbur",
    "low": null,
    "src": null
   },
@@ -445,6 +435,10 @@
     [
      "2026-11-05",
      56
+    ],
+    [
+     "2026-11-06",
+     56
     ]
    ],
    "sg": null,
@@ -548,6 +542,10 @@
     ],
     [
      "2026-11-05",
+     22
+    ],
+    [
+     "2026-11-06",
      22
     ]
    ],
@@ -715,6 +713,10 @@
     [
      "2026-11-05",
      28
+    ],
+    [
+     "2026-11-06",
+     28
     ]
    ],
    "sg": null,
@@ -807,6 +809,10 @@
     [
      "2026-11-05",
      22
+    ],
+    [
+     "2026-11-06",
+     22
     ]
    ],
    "sg": null,
@@ -875,16 +881,6 @@
    "date": "2026-12-11",
    "venue": "Bearsville Theater",
    "url": "https://seatgeek.com/moe-tickets/woodstock-new-york-bearsville-theater-2026-12-11-8-pm/concert/18668758",
-   "src": null,
-   "low": null
-  },
-  "sg-18660116": {
-   "history": [],
-   "sg": 18660116,
-   "title": "Jason Isbell",
-   "date": "2026-11-05",
-   "venue": "Troy Savings Bank Music Hall",
-   "url": "https://seatgeek.com/jason-isbell-tickets/troy-new-york-troy-savings-bank-music-hall-2026-11-05-7-30-pm/concert/18660116",
    "src": null,
    "low": null
   },
