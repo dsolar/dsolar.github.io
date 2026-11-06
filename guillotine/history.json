@@ -5179,7 +5179,15 @@
       "pos": "QB",
       "nfl": "DET",
       "slot": "BN",
-      "proj": 19.93,
+      "proj": 19.94,
+      "pts": null
+     },
+     {
+      "n": "Keenan Allen",
+      "pos": "WR",
+      "nfl": "IND",
+      "slot": "BN",
+      "proj": 9,
       "pts": null
      }
     ],
@@ -5253,7 +5261,7 @@
       "pos": "QB",
       "nfl": "KC",
       "slot": "Q/W/R/T",
-      "proj": 21.19,
+      "proj": 21.04,
       "pts": null
      },
      {
@@ -5261,7 +5269,7 @@
       "pos": "WR",
       "nfl": "NYJ",
       "slot": "BN",
-      "proj": 11.65,
+      "proj": 0,
       "pts": null
      },
      {
@@ -5277,7 +5285,7 @@
       "pos": "WR",
       "nfl": "KC",
       "slot": "BN",
-      "proj": 13.12,
+      "proj": 13.01,
       "pts": null
      },
      {
@@ -5327,7 +5335,7 @@
       "pos": "RB",
       "nfl": "KC",
       "slot": "RB",
-      "proj": 20.29,
+      "proj": 20.05,
       "pts": null
      },
      {
@@ -5367,7 +5375,7 @@
       "pos": "RB",
       "nfl": "CHI",
       "slot": "W/R/T",
-      "proj": 15.19,
+      "proj": 15.28,
       "pts": null
      },
      {
@@ -5457,7 +5465,7 @@
       "pos": "WR",
       "nfl": "CHI",
       "slot": "WR",
-      "proj": 12.06,
+      "proj": 11.95,
       "pts": null
      },
      {
@@ -5473,7 +5481,7 @@
       "pos": "WR",
       "nfl": "DET",
       "slot": "WR",
-      "proj": 16.77,
+      "proj": 16.78,
       "pts": null
      },
      {
@@ -5603,7 +5611,7 @@
       "pos": "TE",
       "nfl": "DET",
       "slot": "TE",
-      "proj": 10.87,
+      "proj": 10.88,
       "pts": null
      },
      {
@@ -5627,7 +5635,7 @@
       "pos": "RB",
       "nfl": "TB",
       "slot": "BN",
-      "proj": 16.02,
+      "proj": 16.11,
       "pts": null
      },
      {
@@ -5647,19 +5655,19 @@
       "pts": null
      },
      {
-      "n": "Malik Willis",
-      "pos": "QB",
-      "nfl": "MIA",
-      "slot": "BN",
-      "proj": 17.79,
-      "pts": null
-     },
-     {
       "n": "Omarion Hampton",
       "pos": "RB",
       "nfl": "LAC",
       "slot": "BN",
       "proj": 8.26,
+      "pts": null
+     },
+     {
+      "n": "Kaelon Black",
+      "pos": "RB",
+      "nfl": "SF",
+      "slot": "BN",
+      "proj": 6.24,
       "pts": null
      }
     ],
@@ -5669,7 +5677,7 @@
       "pos": "QB",
       "nfl": "CHI",
       "slot": "QB",
-      "proj": 18.46,
+      "proj": 18.41,
       "pts": null
      },
      {
@@ -5701,7 +5709,7 @@
       "pos": "WR",
       "nfl": "ATL",
       "slot": "WR",
-      "proj": 15.53,
+      "proj": 15.59,
       "pts": null
      },
      {
@@ -5741,7 +5749,7 @@
       "pos": "RB",
       "nfl": "NYJ",
       "slot": "BN",
-      "proj": 9.38,
+      "proj": 9.59,
       "pts": null
      },
      {
@@ -5765,7 +5773,7 @@
       "pos": "RB",
       "nfl": "NYJ",
       "slot": "BN",
-      "proj": 7.36,
+      "proj": 8.86,
       "pts": null
      },
      {
@@ -5831,7 +5839,7 @@
       "pos": "RB",
       "nfl": "ATL",
       "slot": "BN",
-      "proj": 21.37,
+      "proj": 21.96,
       "pts": null
      },
      {
@@ -5839,7 +5847,7 @@
       "pos": "TE",
       "nfl": "CHI",
       "slot": "BN",
-      "proj": 8.82,
+      "proj": 8.72,
       "pts": null
      },
      {
@@ -5879,7 +5887,7 @@
       "pos": "WR",
       "nfl": "CHI",
       "slot": "BN",
-      "proj": 9.65,
+      "proj": 9.6,
       "pts": null
      },
      {
@@ -5887,7 +5895,7 @@
       "pos": "WR",
       "nfl": "TB",
       "slot": "BN",
-      "proj": 8.74,
+      "proj": 8.64,
       "pts": null
      },
      {
@@ -5895,7 +5903,7 @@
       "pos": "TE",
       "nfl": "KC",
       "slot": "BN",
-      "proj": 10.92,
+      "proj": 10.87,
       "pts": null
      },
      {
