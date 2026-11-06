@@ -11,7 +11,7 @@ function senderKind(sender) {
   try {
     const url = new URL(sender.url);
     if (url.protocol==='chrome-extension:' && url.hostname===chrome.runtime.id && url.pathname==='/connect.html') return 'extension';
-    if (['https://davidsolar.dev','https://dsolar.github.io'].includes(url.origin) && url.pathname.startsWith('/trade-analyzer/')) return 'site';
+    if (['https://davidsolar.dev','https://dsolar.github.io'].includes(url.origin) && (url.pathname.startsWith('/trade-analyzer/') || url.pathname.startsWith('/rohan/'))) return 'site';
   } catch { /* Reject malformed origins. */ }
   return null;
 }
@@ -32,7 +32,7 @@ async function api(action, body, query = {}) {
 }
 
 async function notifySite() {
-  const tabs = await chrome.tabs.query({url:['https://davidsolar.dev/trade-analyzer/*','https://dsolar.github.io/trade-analyzer/*']});
+  const tabs = await chrome.tabs.query({url:['https://davidsolar.dev/trade-analyzer/*','https://dsolar.github.io/trade-analyzer/*','https://davidsolar.dev/rohan/*','https://dsolar.github.io/rohan/*']});
   await Promise.allSettled(tabs.map(tab=>chrome.tabs.sendMessage(tab.id,{type:'SDN_ESPN_UPDATED'})));
 }
 

@@ -195,6 +195,9 @@ test('site messages cannot trigger cookie reads or access the extension’s priv
   vm.runInNewContext(source,{chrome,leagueIdentity,URL,crypto,AbortSignal,fetch,console});
   const dispatch=(command,url='https://davidsolar.dev/trade-analyzer/',other={})=>new Promise(resolve=>listener({source:'sdn-espn-bridge-v1',command,...other},{id,url},resolve));
   assert.equal((await dispatch('ping')).ok,true);
+  assert.equal((await dispatch('ping','https://davidsolar.dev/rohan/')).ok,true);
+  assert.equal((await dispatch('connect','https://davidsolar.dev/rohan/',identity)).ok,false);
+  assert.equal((await dispatch('ping','https://davidsolar.dev/other/')).ok,false);
   assert.equal((await dispatch('connect',undefined,identity)).ok,false);assert.equal(cookieReads,0);
   assert.equal((await dispatch('openLeagues')).ok,false);
   assert.equal((await dispatch('ping','https://evil.example/trade-analyzer/')).ok,false);
@@ -207,7 +210,7 @@ test('packaged extension and backend share the same parser and do not expose bac
   for(const path of ['../extensions/espn-connector/espn.mjs','../supabase/functions/espn-sync/espn.mjs'])assert.equal(readFileSync(new URL(path,import.meta.url),'utf8'),shared);
   const manifest=JSON.parse(readFileSync(new URL('../extensions/espn-connector/manifest.json',import.meta.url),'utf8'));
   assert.deepEqual(manifest.permissions,['cookies','storage']);
-  assert.ok(manifest.content_scripts[0].matches.every(x=>x.includes('/trade-analyzer/')));
+  assert.deepEqual([...manifest.content_scripts[0].matches].sort(),['https://davidsolar.dev/trade-analyzer/*','https://dsolar.github.io/trade-analyzer/*','https://davidsolar.dev/rohan/*','https://dsolar.github.io/rohan/*'].sort());
   for(const path of ['../trade-analyzer/app.mjs','../extensions/espn-connector/bridge.js','../extensions/espn-connector/connect.mjs']){
     const source=readFileSync(new URL(path,import.meta.url),'utf8');assert.ok(!source.includes('SUPABASE_SERVICE_ROLE_KEY'));assert.ok(!source.includes('innerHTML'));
   }
