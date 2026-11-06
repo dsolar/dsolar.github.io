@@ -5099,7 +5099,7 @@
       "pos": "RB",
       "nfl": "CAR",
       "slot": "RB",
-      "proj": 15.25,
+      "proj": 15.4,
       "pts": null
      },
      {
@@ -5179,7 +5179,7 @@
       "pos": "QB",
       "nfl": "DET",
       "slot": "BN",
-      "proj": 19.94,
+      "proj": 19.93,
       "pts": null
      }
     ],
@@ -5189,7 +5189,7 @@
       "pos": "QB",
       "nfl": "CAR",
       "slot": "QB",
-      "proj": 17.08,
+      "proj": 17.01,
       "pts": null
      },
      {
@@ -5206,7 +5206,7 @@
       "nfl": "BAL",
       "slot": "RB",
       "proj": 11.21,
-      "pts": null
+      "pts": 5.58
      },
      {
       "n": "CeeDee Lamb",
@@ -5433,7 +5433,7 @@
       "pos": "QB",
       "nfl": "DEN",
       "slot": "QB",
-      "proj": 15.61,
+      "proj": 15.55,
       "pts": null
      },
      {
@@ -5449,7 +5449,7 @@
       "pos": "RB",
       "nfl": "DEN",
       "slot": "RB",
-      "proj": 13.08,
+      "proj": 13.19,
       "pts": null
      },
      {
@@ -5473,7 +5473,7 @@
       "pos": "WR",
       "nfl": "DET",
       "slot": "WR",
-      "proj": 16.78,
+      "proj": 16.77,
       "pts": null
      },
      {
@@ -5580,14 +5580,14 @@
       "nfl": "BAL",
       "slot": "WR",
       "proj": 11.23,
-      "pts": null
+      "pts": 3.8
      },
      {
       "n": "Tetairoa McMillan",
       "pos": "WR",
       "nfl": "CAR",
       "slot": "WR",
-      "proj": 11.45,
+      "proj": 11.35,
       "pts": null
      },
      {
@@ -5603,7 +5603,7 @@
       "pos": "TE",
       "nfl": "DET",
       "slot": "TE",
-      "proj": 10.88,
+      "proj": 10.87,
       "pts": null
      },
      {
@@ -5635,7 +5635,7 @@
       "pos": "WR",
       "nfl": "CAR",
       "slot": "BN",
-      "proj": 11.54,
+      "proj": 11.44,
       "pts": null
      },
      {
@@ -5782,7 +5782,7 @@
       "nfl": "BAL",
       "slot": "IR",
       "proj": 0,
-      "pts": null
+      "pts": 0
      }
     ],
     "Tai Streetz Lata?": [
@@ -5792,7 +5792,7 @@
       "nfl": "JAX",
       "slot": "QB",
       "proj": 19.45,
-      "pts": null
+      "pts": 13.58
      },
      {
       "n": "Parker Washington",
@@ -5800,7 +5800,7 @@
       "nfl": "JAX",
       "slot": "WR",
       "proj": 11.92,
-      "pts": null
+      "pts": 13.1
      },
      {
       "n": "DJ Moore",
@@ -5872,7 +5872,7 @@
       "nfl": "JAX",
       "slot": "BN",
       "proj": 12.43,
-      "pts": null
+      "pts": 8.9
      },
      {
       "n": "Rome Odunze",

@@ -4,14 +4,14 @@
  "week": 9,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-06T02:21:41Z",
+ "updated": "2026-11-06T05:56:50Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
    "name": "Drake Mayezini",
    "manager": "Scott",
    "faab": 281,
-   "proj": 139.34,
+   "proj": 139.37,
    "scores": [
     95.18,
     94.64,
@@ -126,7 +126,7 @@
        "rec_td": 2
       }
      },
-     "proj": 15.25,
+     "proj": 15.4,
      "rank": "RB9",
      "date": "2026-11-08",
      "next_proj": 16.89,
@@ -472,7 +472,7 @@
        "pass_int": 1
       }
      },
-     "proj": 19.94,
+     "proj": 19.93,
      "rank": "QB6",
      "date": "2026-11-08",
      "next_proj": 18.88,
@@ -480,7 +480,7 @@
     }
    ],
    "points_final": 0,
-   "best": 139.8,
+   "best": 139.9,
    "best_next": 149.0,
    "locked": 0,
    "locked_proj": 0,
@@ -490,8 +490,8 @@
    "name": "Love a Kittle Lamb & WhiteRice",
    "manager": "Daid B",
    "faab": 394,
-   "proj": 137.34,
-   "points": 4.98,
+   "proj": 137.02,
+   "points": 5.58,
    "scores": [
     135.46,
     161.16,
@@ -533,7 +533,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 17.08,
+     "proj": 17.01,
      "rank": "QB15",
      "date": "2026-11-08",
      "next_proj": 19.52,
@@ -580,9 +580,10 @@
      "name": "Derrick Henry",
      "nfl": "BAL",
      "pos": "RB",
-     "yahoo_actual": 4.98,
+     "yahoo_actual": 5.58,
      "game": "Thu 8:15 pm",
      "opp": "vs JAX",
+     "yfinal": true,
      "season": {
       "g": 8,
       "wk": [
@@ -609,6 +610,8 @@
      "proj": 11.21,
      "rank": "RB19",
      "date": "2026-11-05",
+     "final": true,
+     "actual": 5.58,
      "next_proj": 15.13
     },
     {
@@ -999,19 +1002,19 @@
      "next_proj": 0.0
     }
    ],
-   "points_final": 0,
-   "best": 137.7,
+   "points_final": 5.58,
+   "best": 137.6,
    "best_next": 139.3,
-   "locked": 0,
-   "locked_proj": 0,
-   "games_final": 0
+   "locked": 5.58,
+   "locked_proj": 11.21,
+   "games_final": 1
   },
   {
    "name": "Holofernes",
    "mine": true,
    "manager": "David S",
    "faab": 235,
-   "proj": 136.74,
+   "proj": 136.89,
    "scores": [
     137.26,
     86.62,
@@ -1544,7 +1547,7 @@
    "name": "A Warren Boston",
    "manager": "Noah M",
    "faab": 2,
-   "proj": 135.29,
+   "proj": 135.34,
    "scores": [
     132.74,
     120.2,
@@ -1586,7 +1589,7 @@
        "rush_td": 2
       }
      },
-     "proj": 15.61,
+     "proj": 15.55,
      "rank": "QB21",
      "date": "2026-11-08",
      "bye_next": true,
@@ -1659,7 +1662,7 @@
        "rec_yd": 97
       }
      },
-     "proj": 13.08,
+     "proj": 13.19,
      "rank": "RB13",
      "date": "2026-11-08",
      "bye_next": true,
@@ -1766,7 +1769,7 @@
        "rush_yd": 9
       }
      },
-     "proj": 16.78,
+     "proj": 16.77,
      "rank": "WR4",
      "date": "2026-11-08",
      "next_proj": 15.9,
@@ -2080,7 +2083,7 @@
     }
    ],
    "points_final": 0,
-   "best": 134.3,
+   "best": 134.4,
    "best_next": 135.8,
    "locked": 0,
    "locked_proj": 0,
@@ -2090,8 +2093,8 @@
    "name": "Love Purdy Flowers",
    "manager": "Nate",
    "faab": 135,
-   "proj": 130.56,
-   "points": 1.8,
+   "proj": 132.81,
+   "points": 3.8,
    "scores": [
     134.08,
     101.78,
@@ -2216,9 +2219,10 @@
      "name": "Zay Flowers",
      "nfl": "BAL",
      "pos": "WR",
-     "yahoo_actual": 1.8,
+     "yahoo_actual": 3.8,
      "game": "Thu 8:15 pm",
      "opp": "vs JAX",
+     "yfinal": true,
      "season": {
       "g": 7,
       "wk": [
@@ -2243,6 +2247,8 @@
      "proj": 11.23,
      "rank": "WR21",
      "date": "2026-11-05",
+     "final": true,
+     "actual": 3.8,
      "next_proj": 13.18
     },
     {
@@ -2273,7 +2279,7 @@
        "rec_td": 2
       }
      },
-     "proj": 11.45,
+     "proj": 11.35,
      "rank": "WR19",
      "date": "2026-11-08",
      "next_proj": 12.54,
@@ -2343,7 +2349,7 @@
        "rush_yd": 2
       }
      },
-     "proj": 10.88,
+     "proj": 10.87,
      "rank": "TE5",
      "date": "2026-11-08",
      "next_proj": 10.22,
@@ -2486,7 +2492,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 11.54,
+     "proj": 11.44,
      "rank": "WR18",
      "date": "2026-11-08",
      "next_proj": 12.75,
@@ -2599,18 +2605,18 @@
      "next_proj": 8.61
     }
    ],
-   "points_final": 0,
-   "best": 140.0,
+   "points_final": 3.8,
+   "best": 139.8,
    "best_next": 134.5,
-   "locked": 0,
-   "locked_proj": 0,
-   "games_final": 0
+   "locked": 3.8,
+   "locked_proj": 11.23,
+   "games_final": 1
   },
   {
    "name": "Braelon’s Pieces",
    "manager": "Garhett",
    "faab": 1,
-   "proj": 125.6,
+   "proj": 125.68,
    "scores": [
     134.5,
     115.3,
@@ -3116,6 +3122,7 @@
      "yahoo_actual": 0.0,
      "game": "Thu 8:15 pm",
      "opp": "vs JAX",
+     "yfinal": true,
      "season": {
       "g": 5,
       "wk": [
@@ -3139,6 +3146,8 @@
       }
      },
      "proj": 0.0,
+     "actual": 0.0,
+     "final": true,
      "next_proj": 0.0
     }
    ],
@@ -3154,7 +3163,7 @@
    "manager": "JeffS",
    "faab": 176,
    "proj": 30.91,
-   "points": 6.88,
+   "points": 26.68,
    "scores": [
     111.28,
     66.9,
@@ -3171,9 +3180,10 @@
      "name": "Trevor Lawrence",
      "nfl": "JAX",
      "pos": "QB",
-     "yahoo_actual": 5.28,
+     "yahoo_actual": 13.58,
      "game": "Thu 8:15 pm",
      "opp": "@ BAL",
+     "yfinal": true,
      "season": {
       "g": 7,
       "wk": [
@@ -3198,6 +3208,8 @@
      "proj": 19.45,
      "rank": "QB8",
      "date": "2026-11-05",
+     "final": true,
+     "actual": 13.58,
      "next_proj": 21.23,
      "in_best": true
     },
@@ -3216,9 +3228,10 @@
      "name": "Parker Washington",
      "nfl": "JAX",
      "pos": "WR",
-     "yahoo_actual": 1.6,
+     "yahoo_actual": 13.1,
      "game": "Thu 8:15 pm",
      "opp": "@ BAL",
+     "yfinal": true,
      "season": {
       "g": 7,
       "wk": [
@@ -3243,6 +3256,8 @@
      "proj": 11.92,
      "rank": "WR16",
      "date": "2026-11-05",
+     "final": true,
+     "actual": 13.1,
      "next_proj": 13.18,
      "in_best": true
     },
@@ -3560,9 +3575,10 @@
      "name": "Bhayshul Tuten",
      "nfl": "JAX",
      "pos": "RB",
-     "yahoo_actual": 8.2,
+     "yahoo_actual": 8.9,
      "game": "Thu 8:15 pm",
      "opp": "@ BAL",
+     "yfinal": true,
      "season": {
       "g": 7,
       "wk": [
@@ -3588,6 +3604,8 @@
      "proj": 12.43,
      "rank": "RB15",
      "date": "2026-11-05",
+     "final": true,
+     "actual": 8.9,
      "next_proj": 14.43,
      "in_best": true
     },
@@ -3727,13 +3745,13 @@
      "next_proj": 10.09
     }
    ],
-   "points_final": 0,
+   "points_final": 26.68,
    "best": 133.5,
    "best_next": 135.9,
    "fill": 100.34,
-   "locked": 0,
-   "locked_proj": 0,
-   "games_final": 0
+   "locked": 26.68,
+   "locked_proj": 31.37,
+   "games_final": 2
   },
   {
    "name": "Deviated Rectums",
@@ -4850,7 +4868,7 @@
     "name": "Jared Goff",
     "pos": "QB",
     "nfl": "DET",
-    "proj": 19.94,
+    "proj": 19.93,
     "rank": "QB6",
     "next_proj": 18.88,
     "avg": 20.4,
@@ -4878,7 +4896,7 @@
     "name": "Amon-Ra St. Brown",
     "pos": "WR",
     "nfl": "DET",
-    "proj": 16.78,
+    "proj": 16.77,
     "rank": "WR4",
     "next_proj": 15.9,
     "avg": 16.4,
@@ -5039,7 +5057,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-06T02:21:43Z",
+  "updated": "2026-11-06T05:56:52Z",
   "players": 3045,
   "unmatched": []
  }
