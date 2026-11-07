@@ -633,11 +633,15 @@
   // only shows while the tab is in the background, and only once the browser has allowed it.
   const alerts = (() => {
     const KEY = "fk-alerts";
-    let ac = null, base = null, flashT = null;
+    let ac = null, base = null, flashT = null, pending = null;
     const on = () => { try { return localStorage.getItem(KEY) !== "0"; } catch (e) { return true; } };
-    const unlock = () => { try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended") ac.resume(); } catch (e) { /* no audio */ } };
+    const unlock = () => { try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended") return ac.resume(); return Promise.resolve(); } catch (e) { return Promise.reject(e); } };
+    const ready = () => !!ac && ac.state === "running";
+    async function test() { try { await unlock(); chime("clock"); return ready(); } catch (e) { return false; } }
     function chime(kind) {
-      if (!on() || !ac) return;
+      if (!on()) return;
+      if (!ready()) { pending = kind; return; }
+      pending = null;
       try {
         const t0 = ac.currentTime + 0.02, notes = kind === "deck" ? [587] : [659, 880];
         notes.forEach((f, i) => {
@@ -648,7 +652,7 @@
         });
       } catch (e) { /* no audio */ }
     }
-    function stop() { if (flashT) { clearInterval(flashT); flashT = null; if (base != null) document.title = base; base = null; } }
+    function stop() { pending = null; if (flashT) { clearInterval(flashT); flashT = null; if (base != null) document.title = base; base = null; } }
     function flash(text) {
       stop();
       if (!on() || !document.hidden) return;
@@ -662,16 +666,16 @@
     async function set(v) {
       try { localStorage.setItem(KEY, v ? "1" : "0"); } catch (e) { /* private mode */ }
       if (!v) { stop(); return; }
-      unlock();
+      try { await unlock(); } catch (e) { /* unsupported */ }
       if (typeof Notification !== "undefined" && Notification.permission === "default") { try { await Notification.requestPermission(); } catch (e) { /* declined */ } }
       chime("deck");
     }
     if (typeof document !== "undefined") {
       document.addEventListener("visibilitychange", () => { if (!document.hidden) stop(); });
-      document.addEventListener("pointerdown", unlock, { capture: true });
-      document.addEventListener("keydown", unlock, { capture: true });
+      document.addEventListener("pointerdown", () => { unlock().then(() => { if (pending) chime(pending); }).catch(() => {}); }, { capture: true });
+      document.addEventListener("keydown", () => { unlock().then(() => { if (pending) chime(pending); }).catch(() => {}); }, { capture: true });
     }
-    return { on, set, chime, flash, stop, notify };
+    return { on, set, chime, flash, stop, notify, test, ready };
   })();
 
   function room(opts) {
@@ -721,7 +725,7 @@
       const lg = `<a class="lg" href="${esc((opts.exit && opts.exit.href) || "#")}">${brand.mark || ""}<span><b>${esc(d.name || brand.name || "Draft")}</b><small>${esc(F.FORMATS[d.type])}, ${d.teams.length} teams, ${d.rounds} rounds</small></span></a>`;
       // the buttons that matter mid-draft stay out; on a phone the rest fold into a More menu
       const prim = [], sec = [];
-      if (me() != null && d.phase !== "done") { sec.push(`<button class="btn sm" data-act="alerts" aria-pressed="${alerts.on()}" title="A chime, and a notification while this tab is in the background, when you're up">Alerts</button>`); prim.push(`<button class="btn sm" data-act="auto" aria-pressed="${!!team(me()).auto}" title="Let the bot draft for you">Autodraft</button>`); }
+      if (me() != null && d.phase !== "done") { sec.push(`<button class="btn sm" data-act="alerts" aria-pressed="${alerts.on()}" title="A chime, and a notification while this tab is in the background, when you're up">Sound ${alerts.on() ? "on" : "off"}</button>`); sec.push(`<button class="btn sm" data-act="test-sound">Test sound</button>`); prim.push(`<button class="btn sm" data-act="auto" aria-pressed="${!!team(me()).auto}" title="Let the bot draft for you">Autodraft</button>`); }
       if (canTrade() && d.phase === "live") sec.push(`<button class="btn sm" data-act="trade">Trade</button>`);
       if (opts.commish && d.phase === "live") sec.push(`<button class="btn sm" data-act="pause">${d.paused ? "Resume" : "Pause"}</button><button class="btn sm" data-act="undo">Undo</button>`);
       if (opts.commish && d.phase === "setup") prim.push(`<button class="btn sm go" data-act="start">Start the draft</button>`);
@@ -848,11 +852,12 @@
       }
       const lot = st.lot, p = ctx.byId[lot.pid], lead = team(lot.team);
       const can = mine && !isMe(lead) && F.maxBid(d, me()) > lot.bid && F.canAdd(d, ctx, me(), p).ok && !d.paused;
+      if (ui.bidLot !== lot.pid) { ui.bidAmt = null; ui.bidLot = lot.pid; }
       const next = lot.bid + 1, max = mine ? F.maxBid(d, me()) : 0;
       const passed = mine && (lot.passed || []).includes(me());
       return `<div><div class="lot">${playerAv(sport, p, "lg")}<div class="lotp"><b class="disp">${esc(p.n)}</b><span class="ps">${posChips(sport, p)} ${proTeam(sport, p.t)}, ${esc(p.prank)}, value ${money(p.$)}. Nominated by ${esc(team(lot.by).name)}</span></div>
         <div class="bid"><small>${teamAv(lead, "sm")} ${isMe(lead) ? "Your bid" : esc(lead.abbr)}</small><b class="${isMe(lead) ? "win" : ""}">${money(lot.bid)}</b></div>
-        <div class="acts">${can ? (() => { const v = ui.bidAmt && ui.bidAmt > lot.bid ? Math.min(max, ui.bidAmt) : next; return `<span class="bid-q">${[1, 5, 10].filter((x) => lot.bid + x <= max).map((x) => `<button type="button" class="btn sm" data-bidq="${lot.bid + x}" aria-label="Set your bid to ${money(lot.bid + x)}">+$${x}</button>`).join("")}</span><label class="sr" for="fk-bid">Your bid</label><input type="number" id="fk-bid" min="${next}" max="${max}" value="${v}"><button class="btn go" data-act="bid">Bid <span id="fk-bidv">${money(v)}</span></button>${passed ? `<span class="ps">You passed</span>` : `<button class="btn ghost" data-act="pass">Pass</button>`}`; })()
+        <div class="acts"><span class="bid-limit">${mine ? `Max bid ${money(max)} · ${F.spotsLeft(d, me())} spots left` : ""}</span>${can ? (() => { const v = ui.bidAmt && ui.bidAmt > lot.bid ? Math.min(max, ui.bidAmt) : next; return `<span class="bid-q">${[1, 5, 10].filter((x) => lot.bid + x <= max).map((x) => `<button type="button" class="btn sm" data-bid="${lot.bid + x}" data-lot="${esc(lot.pid)}" aria-label="Bid ${money(lot.bid + x)} now">Bid ${money(lot.bid + x)}</button>`).join("")}</span><label class="sr" for="fk-bid">Your bid</label><input type="number" inputmode="numeric" step="1" id="fk-bid" min="${next}" max="${max}" value="${v}"><button class="btn go" data-act="bid" data-lot="${esc(lot.pid)}">Bid <span id="fk-bidv">${money(v)}</span></button>${passed ? `<span class="ps">You passed</span>` : `<button class="btn ghost" data-act="pass">Pass</button>`}`; })()
           : mine ? `<span class="ps">${isMe(lead) ? "You have the high bid." : max <= lot.bid ? `Your max bid is ${money(max)}.` : esc(F.canAdd(d, ctx, me(), p).why || "")}</span>` : ""}</div></div>
         <div class="budgets">${budgetChips()}</div></div>`;
     }
@@ -1276,7 +1281,7 @@
       drawTimer();
       // say it when you come on the clock (the toast is a live region), chime, and flash the tab if it's in the
       // background; a softer chime when you're on deck. Autodraft stays quiet.
-      if (d.phase === "live" && me() != null && !team(me()).auto) {
+      if (d.phase === "live" && !d.paused && me() != null && !team(me()).auto) {
         if (!auction()) {
           const c = F.onClock(d, now());
           if (c && c.team === me() && ui.told !== c.index) {
@@ -1289,6 +1294,11 @@
           }
         } else {
           const st = F.auctionState(d, now()), k = (d.sales || []).length;
+          const lot = d.auction.lot;
+          if (lot && ui.highBid && ui.highBid.pid === lot.pid && ui.highBid.team === me() && lot.team !== me()) {
+            toast(`You've been outbid: ${money(lot.bid)}.`); alerts.chime("deck");
+          }
+          ui.highBid = lot ? { pid: lot.pid, team: lot.team } : null;
           if (st && st.kind === "nominate" && st.team === me() && ui.nomTold !== k) { ui.nomTold = k; toast("Your nomination."); alerts.chime("clock"); alerts.flash("Your nomination!"); alerts.notify("Your nomination", d.name || "Your draft"); }
           else if (!(st && st.kind === "nominate" && st.team === me())) alerts.stop();
         }
@@ -1404,7 +1414,10 @@
         else if (b.dataset.queue) toggleQueue(b.dataset.queue);
         else if (b.dataset.nominate) nominateDialog(b.dataset.nominate);
         else if (b.dataset.bidq) { ui.bidAmt = +b.dataset.bidq; const inp = $("#fk-bid", el), bv = $("#fk-bidv", el); if (inp) inp.value = ui.bidAmt; if (bv) bv.textContent = money(ui.bidAmt); }
-        else if (b.dataset.bid) act(() => F.bid(d, ctx, me(), +b.dataset.bid, n));
+        else if (b.dataset.bid) {
+          if (!d.auction.lot || d.auction.lot.pid !== b.dataset.lot) { toast("That nomination ended. Review the new player before bidding.", true); render(); return; }
+          act(() => F.bid(d, ctx, me(), +b.dataset.bid, n));
+        }
         else if (b.dataset.qup) { const q = team(me()).queue, i = q.indexOf(b.dataset.qup); if (i > 0) { [q[i - 1], q[i]] = [q[i], q[i - 1]]; save(); render(); } }
         else {
           const a = b.dataset.act;
@@ -1412,7 +1425,12 @@
           else if (a === "pause") act(() => F.pause(d, n, !d.paused));
           else if (a === "undo") act(() => F.undo(d, ctx, n));
           else if (a === "pass") act(() => F.pass(d, ctx, me(), n));
-          else if (a === "bid") { const v = +($("#fk-bid", el) || {}).value; act(() => F.bid(d, ctx, me(), v, n)); }
+          else if (a === "bid") {
+            if (!d.auction.lot || d.auction.lot.pid !== b.dataset.lot) { toast("That nomination ended. Review the new player before bidding.", true); render(); return; }
+            const inp = $("#fk-bid", el); if (!inp || !inp.reportValidity()) return;
+            act(() => F.bid(d, ctx, me(), +inp.value, n));
+          }
+          else if (a === "test-sound") { alerts.test().then(ok => toast(ok ? (alerts.on() ? "Test sound played. Leave this tab open for your turn alert." : "Sound is off. Turn sound on to hear alerts.") : "Sound is blocked. Check your browser’s sound settings.", !ok)); }
           else if (a === "trade") openTrade();
           else if (a === "recap") { const txt = recapText(); (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast("Recap copied. Paste it in your group chat."), () => dialog(`<h3>Draft recap</h3><textarea rows="14" style="width:100%;font:inherit;font-size:13px" readonly>${esc(txt)}</textarea><div class="acts"><button type="button" class="btn" data-close>Close</button></div>`)); }
           else if (a === "alerts") { const v = !alerts.on(); alerts.set(v).then(() => { toast(v ? (typeof Notification !== "undefined" && Notification.permission === "denied" ? "Alerts on. Your browser blocks notifications, so you'll get the chime and tab only." : "Alerts on: a chime, and a notification when this tab is in the background.") : "Alerts off."); render(); }); }

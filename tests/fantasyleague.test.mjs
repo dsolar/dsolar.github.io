@@ -516,3 +516,25 @@ test('waivers clear after full business days at 3 AM Eastern, and a player whose
   L.week = 2; G.tick(L, ctx, L.waivers[fa.id] + 1);
   assert.ok(L.rosters[0].includes(fa.id), 'the claim runs when he clears');
 });
+
+test('gameday: bench drops lock at kickoff and waiver claims cannot bypass a started game', () => {
+  const { L, ctx } = season('nfl', { scoring: 'half' });
+  L.settings.real = true;
+  const now = G.weekStart(L,1)+3*DAY, lu=G.lineupFor(L,ctx,0,1);
+  const bench=ctx.byId[L.rosters[0].find(id=>!lu.includes(id))];
+  const fa=ctx.free.find(p=>p.t && p.t!==bench.t);
+  L.kick={week:1,teams:{[bench.t]:now,[fa.t]:now}};
+  const before=JSON.stringify(L.rosters);
+  assert.equal(G.addDrop(L,ctx,0,null,bench.id,now-1).ok,true);
+  // use a fresh season so the before-kickoff check doesn't change the post-kickoff test
+  L.rosters[0].push(bench.id); G.refresh(L,ctx);
+  assert.equal(G.addDrop(L,ctx,0,null,bench.id,now).ok,false);
+  assert.deepEqual(L.rosters.map(r=>r.slice().sort()),JSON.parse(before).map(r=>r.slice().sort()));
+  assert.equal(G.claim(L,ctx,0,fa.id,bench.id,1,now).ok,false);
+  const drop=L.rosters[0].find(id=>ctx.byId[id].t!==bench.t && ctx.byId[id].t!==fa.t);
+  assert.ok(G.claim(L,ctx,0,fa.id,drop,1,now-1).ok);
+  G.runWaivers(L,ctx,now);
+  assert.equal(L.claims.at(-1).status,'open');
+  assert.ok(!L.rosters[0].includes(fa.id));
+  assert.ok(L.waivers[fa.id]>now);
+});

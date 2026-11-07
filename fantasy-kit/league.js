@@ -155,6 +155,9 @@
       if (Number.isFinite(at)) teams[t] = at;
     }
     if (!Object.keys(teams).length) return false;
+    if (L.kick && L.kick.week === L.week) for (const [t, at] of Object.entries(L.kick.teams)) {
+      if (at <= (Date.parse(live.updated) || 0)) teams[t] = Math.min(teams[t] == null ? Infinity : teams[t], at);
+    }
     const k = { week: L.week, teams };
     if (L.kick && JSON.stringify(L.kick) === JSON.stringify(k)) return false;
     L.kick = k;
@@ -1510,10 +1513,10 @@
     // after a heist rosters are set for the week: the only move is filling a spot a steal emptied
     if (L.settings.frozen && drop) return { ok: false, why: "Rosters are set for the week. You can only fill a spot a steal emptied" };
     if (add && ctx.own[add] != null) return { ok: false, why: `${ctx.byId[add].n} is on a roster` };
-    if (add && gameLockOn(L) && !onWaivers(L, add, now) && isLocked(L, ctx.byId[add], L.week, now)) L.waivers[add] = nextWeekClear(L);
+    if (add && !onWaivers(L, add, now) && isLocked(L, ctx.byId[add], L.week, now)) L.waivers[add] = nextWeekClear(L);
     if (add && onWaivers(L, add, now)) return { ok: false, why: `${ctx.byId[add].n} is on waivers until ${waiverWhen(clearAt(L, add))}: put in a claim` };
     if (drop && !L.rosters[teamId].includes(drop)) return { ok: false, why: "That player isn't on your roster" };
-    if (drop && lockedStarter(L, ctx, teamId, drop, now)) return { ok: false, why: lockWhy(ctx.byId[drop]) };
+    if (drop && isLocked(L, ctx.byId[drop], L.week, now)) return { ok: false, why: lockWhy(ctx.byId[drop]) };
     const ok = canRoster(L, ctx, teamId, add, drop ? [drop] : [], true);
     if (!ok.ok) return ok;
     if (drop) { bank(L, ctx, teamId, drop, now); dropOne(L, teamId, drop, now); }
@@ -1532,7 +1535,7 @@
     if (ctx.own[add] != null) return { ok: false, why: `${ctx.byId[add].n} is on a roster` };
     bid = Math.max(L.settings.minBid, Math.round(bid || 0));
     if (L.settings.waivers === "faab" && bid > L.teams[teamId].faab) return { ok: false, why: `You have $${L.teams[teamId].faab} of FAAB` };
-    if (drop && lockedStarter(L, ctx, teamId, drop, now)) return { ok: false, why: lockWhy(ctx.byId[drop]) };
+    if (drop && isLocked(L, ctx.byId[drop], L.week, now)) return { ok: false, why: lockWhy(ctx.byId[drop]) };
     const ok = canRoster(L, ctx, teamId, add, drop ? [drop] : [], true);
     if (!ok.ok) return ok;
     // changing a claim keeps its place in your claim order
@@ -1583,13 +1586,19 @@
     // highest bid first; on a tie the better waiver priority, which changes after every win, then the earlier claim
     const next = () => open.filter((c) => c.status === "open").sort((a, b) => b.bid - a.bid || L.teams[a.team].priority - L.teams[b.team].priority || claimOrd(a) - claimOrd(b))[0];
     for (let c = next(); c; c = next()) {
+      // Claims can wait for next week, but cannot award a player after kickoff.
+      if (isLocked(L, ctx.byId[c.add], L.week, now)) {
+        L.waivers[c.add] = Math.max(clearAt(L, c.add) || 0, nextWeekClear(L));
+        for (let i = open.length - 1; i >= 0; i--) if (open[i].add === c.add) open.splice(i, 1);
+        continue;
+      }
       const t = L.teams[c.team];
       const rivals = open.filter((x) => x.add === c.add && x.status === "open");
       c.done = now; c.week = L.week;
       const why = ctx.own[c.add] != null ? `${(ctx.byId[c.add] || {}).n || "He"} was already taken`
         : L.settings.waivers === "faab" && c.bid > t.faab ? `Only $${t.faab} left by then`
         : c.drop && !L.rosters[c.team].includes(c.drop) ? `${(ctx.byId[c.drop] || {}).n || "Your drop"} was already gone`
-        : c.drop && lockedStarter(L, ctx, c.team, c.drop, now) ? `${(ctx.byId[c.drop] || {}).n || "Your drop"} was locked in your lineup`
+        : c.drop && isLocked(L, ctx.byId[c.drop], L.week, now) ? `${(ctx.byId[c.drop] || {}).n || "Your drop"} is locked because his game started`
         : !canRoster(L, ctx, c.team, c.add, c.drop ? [c.drop] : [], true).ok ? canRoster(L, ctx, c.team, c.add, c.drop ? [c.drop] : [], true).why.replace("Roster is full: pick someone to drop", "No roster spot open") : null;
       if (why) { c.status = "failed"; c.why = why; continue; }
       if (c.drop) { bank(L, ctx, c.team, c.drop, now); dropOne(L, c.team, c.drop, now); }
@@ -1629,7 +1638,7 @@
     if (!irSlots(L)) return { ok: false, why: "This league has no IR spots" };
     if (ir.length >= irSlots(L)) return { ok: false, why: `Your IR ${irSlots(L) === 1 ? "spot is" : "spots are"} full` };
     if (!irEligible(p)) return { ok: false, why: `${p.n} isn't out or on IR, so he can't go there` };
-    if (lockedStarter(L, ctx, teamId, pid, now)) return { ok: false, why: lockWhy(p) };
+    if (isLocked(L, ctx.byId[pid], L.week, now)) return { ok: false, why: lockWhy(p) };
     bank(L, ctx, teamId, pid, now);
     ir.push(pid);
     for (const w of Object.keys(L.lineups)) if (+w >= L.week && L.lineups[w][teamId]) L.lineups[w][teamId] = L.lineups[w][teamId].map((x) => (x === pid ? null : x));
@@ -1645,7 +1654,7 @@
     const active = L.rosters[teamId].length - ir.length;
     if (active + 1 > maxRoster(L) && !drop) return { ok: false, why: "Your roster is full: drop someone to activate him", needDrop: true };
     if (drop && (drop === pid || !L.rosters[teamId].includes(drop))) return { ok: false, why: "Pick someone on your roster to drop" };
-    if (drop && lockedStarter(L, ctx, teamId, drop, now)) return { ok: false, why: lockWhy(ctx.byId[drop]) };
+    if (drop && isLocked(L, ctx.byId[drop], L.week, now)) return { ok: false, why: lockWhy(ctx.byId[drop]) };
     L.ir[teamId] = ir.filter((x) => x !== pid);
     joined(L, teamId, pid, now, ctx);
     if (drop) { bank(L, ctx, teamId, drop, now); dropOne(L, teamId, drop, now); log(L, now, { type: "drop", team: teamId, adds: [], drops: [drop] }); }
@@ -1789,7 +1798,7 @@
     const busy = new Set(L.trades.filter((x) => x.status === "review" && x.id !== t.id).flatMap((x) => x.give.concat(x.get)));
     for (const id of t.give.concat(t.get)) if (busy.has(id)) return { ok: false, why: `${ctx.byId[id].n} is already in a trade the league is reviewing` };
     for (const id of t.give) if (!L.rosters[t.from].includes(id)) return { ok: false, why: `${ctx.byId[id].n} isn't on ${L.teams[t.from].name}` };
-    if (now != null) for (const [team, ids] of [[t.from, t.give], [t.to, t.get]]) for (const id of ids) if (lockedStarter(L, ctx, team, id, now)) return { ok: false, why: `${lockWhy(ctx.byId[id])}. Try again after the week` };
+    if (now != null) for (const [team, ids] of [[t.from, t.give], [t.to, t.get]]) for (const id of ids) if (isLocked(L, ctx.byId[id], L.week, now)) return { ok: false, why: `${lockWhy(ctx.byId[id])}. Try again after the week` };
     for (const id of t.get) if (!L.rosters[t.to].includes(id)) return { ok: false, why: `${ctx.byId[id].n} isn't on ${L.teams[t.to].name}` };
     if ((t.faabGive || 0) > L.teams[t.from].faab || (t.faabGet || 0) > L.teams[t.to].faab) return { ok: false, why: "Not enough FAAB" };
     const after = (team, out, inn, drops) => L.rosters[team].length - out.length + inn.length - drops.length;

@@ -109,7 +109,7 @@ async function nba() {
   await keep("nba", fresh);
   const acc: Record<string, number[]> = {};
   for (const l of lines) for (const [id, row] of Object.entries(l || {})) sumInto(acc, id, row as number[]);
-  return { sport: "nba", season: `${sy}-${String(sy + 1).slice(2)}`, start, end, line: "pg", cols: NBA_COLS, players: acc, teams, games: sched };
+  return { sport: "nba", season: `${sy}-${String(sy + 1).slice(2)}`, start, end, line: "pg", cols: NBA_COLS, players: acc, boxes: Object.fromEntries(games.map((g, i) => [g.id, lines[i]])), teams, games: sched };
 }
 
 /* ---------- football ---------- */
@@ -212,6 +212,9 @@ async function mlb() {
     const a = (acc[id] ||= {});
     for (const k of ["b", "p"] as const) if (row[k]) a[k] = a[k] ? a[k]!.map((x, i) => x + row[k]![i]) : row[k]!.slice();
   }
+  return { sport: "mlb", season: start.slice(0, 4), start, end, lines: { bat: WK_BAT, pit: WK_PIT }, players: mlbLines(acc), boxes: Object.fromEntries(games.map((g, i) => [g.id, mlbLines(per[i] || {})])), teams, games: byTeam };
+}
+function mlbLines(acc: Record<string, { b?: number[]; p?: number[] }>) {
   const lines: Record<string, { bat?: number[]; pit?: number[] }> = {};
   const r3 = (x: number) => Math.round(x * 1000) / 1000, r2 = (x: number) => Math.round(x * 100) / 100;
   for (const [id, a] of Object.entries(acc)) {
@@ -226,7 +229,7 @@ async function mlb() {
     }
     lines[id] = row;
   }
-  return { sport: "mlb", season: start.slice(0, 4), start, end, lines: { bat: WK_BAT, pit: WK_PIT }, players: lines, teams, games: byTeam };
+  return lines;
 }
 
 // One-week slates: this NFL week's games and next week's, each { id, at, away, home, state }, so a one-week league can
@@ -274,6 +277,13 @@ Deno.serve(async (req) => {
   try {
     errors.length = 0;
     const data = await BUILD[sport]();
+    // Server-owned player kickoff map also guards roster saves from older clients.
+    const playerPool: any = await getJSON(`https://davidsolar.dev/fantasy-kit/data/${sport}.json`);
+    data.kicks = {};
+    for (const p of playerPool.players || []) {
+      const times = (data.games?.[p.t] || []).map((g: Game) => Date.parse(g.at)).filter(Number.isFinite);
+      if (times.length) data.kicks[String(p.id)] = Math.min(...times);
+    }
     data.updated = new Date().toISOString();
     if (errors.length) data.errors = errors.slice(0, 5);
     await db("fk_live", { method: "POST", headers: { Prefer: "resolution=merge-duplicates" }, body: JSON.stringify({ sport, data, updated_at: data.updated }) });
