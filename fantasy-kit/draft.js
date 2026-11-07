@@ -976,7 +976,7 @@
     if (!lot || D.phase !== "live") return { ok: false, why: "Nothing is up for bid" };
     if (D.paused) return { ok: false, why: "The draft is paused" };
     if (now >= lot.ends) return { ok: false, why: "Bidding closed" };
-    amt = Math.round(amt);
+    if (!Number.isFinite(amt) || !Number.isInteger(amt)) return { ok: false, why: "Enter a whole-dollar bid" };
     if (amt <= lot.bid) return { ok: false, why: `The bid is already $${lot.bid}` };
     if (amt > maxBid(D, teamId)) return { ok: false, why: `You can bid at most $${maxBid(D, teamId)}` };
     const ok = canAdd(D, ctx, teamId, ctx.byId[lot.pid]);

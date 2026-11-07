@@ -135,7 +135,7 @@
   // ride along as weeks.live, for live win chances. True if anything changed.
   function mergeLive(weeks, live) {
     if (!weeks || !live || !live.start || live.error || String(live.season) !== String(weeks.season)) return false;
-    const before = weeks.live && weeks.live.updated;
+    const before = weeks.live && weeks.live.updated, wasStale = !!(weeks.live && weeks.live.stale);
     const k = Object.keys(weeks.weeks || {}).find((x) => weeks.weeks[x].start === live.start);
     const wk = k ? weeks.weeks[k] : null;
     if (wk && wk.final) { weeks.live = null; return false; }
@@ -149,8 +149,8 @@
     }
     if (wk) wk.lines = live.players || {};
     else (weeks.weeks = weeks.weeks || {})["live"] = { start: live.start, end: live.end, final: false, lines: live.players || {} };
-    weeks.live = { start: live.start, updated: live.updated, teams: live.teams || {}, games: live.games || {}, proj: live.proj || null, feed: feed.slice(-300) };
-    return before !== live.updated;
+    weeks.live = { start: live.start, updated: live.updated, teams: live.teams || {}, games: live.games || {}, proj: live.proj || null, boxes: live.boxes || null, players: live.players || {}, stale: !!live.stale, errors: live.errors || [], feed: feed.slice(-300) };
+    return before !== live.updated || wasStale !== !!live.stale;
   }
   function catchUp(L, ctx, now) {
     if (!L) return false;

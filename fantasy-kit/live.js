@@ -406,6 +406,9 @@
       return;
     }
     U.toast(r.error, true);
+    // A rejected game-time move must not remain visible or be retried with a later save.
+    if (base) { D = clone(base.draft); L = clone(base.league); }
+    dirty = false; version = -1; refreshView();
     pull();
   }
   async function pull() {

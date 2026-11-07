@@ -153,7 +153,7 @@
     const liveWeek = (w) => { const R = (opts.hooks || {}).real, lv = R && R.live, rw = G.realWeek(L(), ctx, w); return lv && rw && rw.start === lv.start ? lv : null; };
     const gamesOf = (p, w) => { const lv = liveWeek(w); return lv && lv.games && p && p.t ? lv.games[p.t] || [] : null; };
     // the game that matters now: one being played, else the next, else the last
-    const gameNow = (gs) => (gs && gs.length ? gs.find((g) => g.state === "in") || gs.find((g) => g.state === "pre") || gs[gs.length - 1] : null);
+    const gameNow = (gs) => FK.gameday.current(gs, now());
     const kick = (at) => new Date(at).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" }).replace(":00", "");
     // "Sun 1 PM vs NYJ", "Q3 4:21, 17-10", "Final, W 24-17", plus "2 of 4 played" for the daily sports
     function gameChip(p, w) {
@@ -162,7 +162,14 @@
       if (!gs.length) return `<span class="gm none">No game this week</span>`;
       const g = gameNow(gs), done = gs.filter((x) => x.state === "post").length;
       const of = gs.length > 1 ? `<span class="gm-of">${done} of ${gs.length} played</span>` : "";
-      return oneGame(g) + of;
+      const lv = liveWeek(w), R = (opts.hooks || {}).real;
+      const box = (game) => {
+        const line = FK.gameday.line(sport.key, p, game, lv);
+        const stats = FK.gameday.stats(sport.key, p, line, R);
+        return stats.length ? `<dl class="game-stats" aria-label="Game box score for ${esc(p.n)}">${stats.map(([k,v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : `<span class="ps game-missing">${game.state === "pre" ? "Stats appear after the game starts" : "Awaiting game stats"}</span>`;
+      };
+      const others = gs.filter(x => x.id !== g.id);
+      return oneGame(g) + of + box(g) + (others.length ? `<details class="game-history"><summary>Other games this week</summary>${others.map(x => `<div class="game-history-row">${oneGame(x)}${box(x)}</div>`).join("")}</details>` : "");
     }
     // one game as a chip: kickoff, live clock and score, or the final
     function oneGame(g) {
@@ -358,7 +365,7 @@
     function weekBoardPage() {
       const mid = me(), { rows } = weekRows(), at = rows.findIndex((r) => r.t === mid);
       return `<div class="wrap page"><div class="head"><h1 class="disp">${over() ? "Final" : "This week"}</h1><span class="ps">${esc(slateName() || L().season || "")}${mid != null && at >= 0 ? `. You're ${ord(at + 1)} of ${rows.length}` : ""}.</span></div>
-        ${over() ? finishCard() : ""}<div class="cols2"><div class="stack">${leaderboardCard()}</div><div class="stack">${seriesCard()}${chatCard()}</div></div></div>`;
+        ${over() ? finishCard() : ""}<div class="cols2"><div class="stack">${leaderboardCard()}</div><div class="stack">${seriesCard()}${chatCard()}</div></div>${gamedayStatus(1)}${teamGameBoxes(1, rows.map(r => r.t))}</div>`;
     }
     function finishData() {
       if (allplay1()) {
@@ -781,7 +788,7 @@
       return `<div class="wrap page"><div class="head"><h1 class="disp">The block, week ${w}</h1><span class="ps">${bb() ? "Best ball: every roster's best lineup scores automatically. " : ""}The lowest score is chopped. On a tie, the lower projection goes.</span></div>
         <div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-mweek="${x}" aria-pressed="${x === w}">Wk ${x}</button>`).join("")}</div>
         <div class="cols"><div class="card">${blockList(w)}</div>
-        <aside class="stack">${row ? myWeekCard(w, mid, row) : ""}</aside></div></div>`;
+        <aside class="stack">${row ? myWeekCard(w, mid, row) : ""}</aside></div>${gamedayStatus(w)}${teamGameBoxes(w, blockOf(w).map(r=>r.team))}</div>`;
     }
     // Your week: who's starting (or, in best ball, who's counting) and what each has scored.
     function myWeekCard(w, id, row) {
@@ -1278,9 +1285,23 @@
       return `<div class="wrap page">
         <div class="head"><h1 class="disp">${w > L().settings.weeks ? esc(kindName(m.kind, w)) : L().settings.showdown ? `${esc(L().settings.showdown.label)} showdown` : `Week ${w} matchup`}</h1>${!pts() ? `<span class="ps">Each starter's line for the week so far.</span>` : ""}</div>
         <div class="row" style="flex-wrap:wrap"><div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-mweek="${x}" aria-pressed="${x === w}">${weekChip(x)}</button>`).join("")}</div></div>
-        ${over() && oneWeekLg() ? finishCard() : ""}<div class="card">${U.versus(versusVM(w, m))}${leftHtml || outlookLine(m)}${medianLine(w, m)}</div>${w === 1 && L().heist ? heistCard(m.a) : ""}${playsHtml}
+        ${over() && oneWeekLg() ? finishCard() : ""}<div class="card">${U.versus(versusVM(w, m))}${leftHtml || outlookLine(m)}${medianLine(w, m)}</div>${w === 1 && L().heist ? heistCard(m.a) : ""}${playsHtml}${gamedayStatus(w)}
         <div class="cols2" style="grid-template-columns:minmax(0,1fr)">${U.vsTable(sport, rows, pts() ? { a: m.sa, b: m.sb } : null, (x) => (x == null ? "-" : typeof x === "string" ? (/^(No games|Didn't play|Yet to play|Playing now|Done this week|No games this week|\d+ games? left)$/.test(x) ? `<span class="ps">${x}</span>` : x) : x.toFixed(1)))}</div>
         <div class="stack" style="gap:8px"><b class="ps">Other games, week ${w}</b>${U.scoreboard(gamesVM(w), fmtS)}</div></div>`;
+    }
+
+    function teamGameBoxes(w, teams) {
+      if (!liveWeek(w)) return "";
+      return `<div class="stack">${teams.map(id => {
+        const ids = G.lineupFor(L(), ctx, id, w).filter(Boolean);
+        return `<details class="card team-game-box"${isMe(id) ? " open" : ""}><summary>${esc(T(id).name)} · player box scores</summary><div class="team-game-list">${ids.map(pid => { const p = ctx.byId[pid]; return p ? `<div>${pname(sport,p)}<div class="gmr">${gameChip(p,w)}</div></div>` : ""; }).join("")}</div></details>`;
+      }).join("")}</div>`;
+    }
+    function gamedayStatus(w) {
+      if (!L().settings.real) return "";
+      const lv = liveWeek(w), age = lv ? now() - Date.parse(lv.updated) : Infinity;
+      const delayed = !lv || lv.stale || (lv.errors || []).length || age > 180000;
+      return `<div class="gameday-status" role="status"><b>Game box scores</b><span>${!lv ? "Waiting for the game feed" : `${delayed ? "Feed delayed · " : ""}Updated ${esc(new Date(lv.updated).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}))}`}. Refreshes about once a minute. Fantasy totals use your league’s scoring.</span></div>`;
     }
 
     /* ---------- Players ---------- */
@@ -1288,6 +1309,7 @@
       const own = ctx.own[p.id];
       if (own != null) return `<a href="${teamHref(own)}" class="row" style="gap:6px;text-decoration:none;color:inherit">${teamAv(T(own), "sm")}<span class="ps">${esc(T(own).abbr)}</span></a>`;
       if (G.onWaivers(L(), p.id, now())) return `<span class="tag gold" title="On waivers until ${G.waiverWhen(G.clearAt(L(), p.id))}">W</span>`;
+      if (G.isLocked(L(), p, L().week, now())) return `<span class="tag gold" title="Game started; claims wait until next week">Locked</span>`;
       return `<span class="tag win">FA</span>`;
     }
     function playersPage(sub) {
@@ -1328,10 +1350,10 @@
     // Add a free agent (or claim one on waivers), choosing who to drop.
     function addDialog(pid, edit) {
       const mid = me(), p = ctx.byId[pid];
-      const onW = G.onWaivers(L(), pid, now());
+      const onW = G.onWaivers(L(), pid, now()) || G.isLocked(L(), p, L().week, now());
       const irs = G.held(L(), mid);
       const full = L().rosters[mid].length - irs.length >= G.maxRoster(L());
-      const ros = L().rosters[mid].filter((x) => !irs.includes(x)).map((x) => ctx.byId[x]).sort((a, b) => a.vor - b.vor);
+      const ros = L().rosters[mid].filter((x) => !irs.includes(x) && !G.isLocked(L(), ctx.byId[x], L().week, now())).map((x) => ctx.byId[x]).sort((a, b) => a.vor - b.vor);
       if (!edit && L().settings.maxAdds && G.pickupsLeft(L(), mid) <= 0) { U.toast(`You've used all ${L().settings.maxAdds} pickups this week`, true); return; }
       const faab = onW && L().settings.waivers === "faab";
       const R = faab ? bidRange(p, mid) : null;
