@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-05T18:17:22Z",
+ "updated": "2026-11-07T16:37:58Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,524 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-vvG17Z_5RPAJf1",
-   "date": "2026-11-05",
-   "time": "19:00",
-   "title": "Ethan Regan: Young Regan Tour",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/ethan-regan-young-regan-tour-boston-massachusetts-11-05-2026/event/010064BBE516650A",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18282549"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_kGkmiUTNR",
-   "date": "2026-11-05",
-   "time": "19:00",
-   "title": "Gavin Adcock: The Day I Hang It Up Tour 2026",
-   "cat": "music",
-   "venue": "MGM Music Hall at Fenway",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/gavin-adcock-the-day-i-hang-boston-massachusetts-11-05-2026/event/0100646BACDBF8EF",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18543714"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZk8VGkdprc37",
-   "date": "2026-11-05",
-   "time": "19:00",
-   "title": "Kylie Morgan: Healed Cowgirl Tour",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/kylie-morgan-healed-cowgirl-tour-boston-massachusetts-11-05-2026/event/01006434D67AD484",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18300155"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_FGkTOAXE8",
-   "date": "2026-11-05",
-   "time": "19:00",
-   "title": "Palace - USA & Canada Tour 2026",
-   "cat": "music",
-   "venue": "Citizens House of Blues Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/palace-usa-canada-tour-2026-boston-massachusetts-11-05-2026/event/0100648FE017E9D0",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18197171",
-    "2026-11-05-palace-citizens-house-of-bl"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18742066",
-   "date": "2026-11-05",
-   "time": "19:00",
-   "title": "The Knocks",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/the-knocks-tickets/boston-massachusetts-big-night-live-2026-11-05-7-pm/concert/18742066",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_uBM4oWs",
-   "date": "2026-11-05",
-   "time": "19:30",
-   "title": "CHIEF KEEF",
-   "cat": "music",
-   "venue": "MGM Music Hall at Fenway",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/chief-keef-boston-massachusetts-11-05-2026/event/010064DEB7551F71",
-   "source": "ticketmaster",
-   "times": [
-    "19:30",
-    "20:00"
-   ],
-   "aka": [
-    "sg-18354395",
-    "2026-11-05-chief-keef-mgm-music-hall-at-fe"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18660116",
-   "date": "2026-11-05",
-   "time": "19:30",
-   "title": "Jason Isbell",
-   "cat": "music",
-   "venue": "Troy Savings Bank Music Hall",
-   "city": "Troy, NY",
-   "url": "https://seatgeek.com/jason-isbell-tickets/troy-new-york-troy-savings-bank-music-hall-2026-11-05-7-30-pm/concert/18660116",
-   "source": "seatgeek",
-   "drive_hours": 3.25,
-   "act": "Jason Isbell",
-   "score": 2,
-   "why": "big"
-  },
-  {
-   "id": "tm-vv1AvZkoJGkdqhqRz",
-   "date": "2026-11-05",
-   "time": "19:30",
-   "title": "Joanne McNally: Pinotphile",
-   "cat": "comedy",
-   "venue": "Arts at the Armory",
-   "city": "Somerville, MA",
-   "url": "https://www.ticketmaster.com/joanne-mcnally-pinotphile-somerville-massachusetts-11-05-2026/event/01006466DD6DDBF8",
-   "source": "ticketmaster",
-   "times": [
-    "19:30",
-    "21:30"
-   ],
-   "aka": [
-    "tm-vvG17Z_1D10Iub",
-    "sg-18119952",
-    "sg-18252738"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkfYGkeco0Tt",
-   "date": "2026-11-05",
-   "time": "19:30",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-11-05-2026/event/01006530AD464FE9",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_8GkUrfG8x",
-   "date": "2026-11-05",
-   "time": "19:30",
-   "title": "Tim Dillon",
-   "cat": "comedy",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/tim-dillon-boston-massachusetts-11-05-2026/event/0100650D9E50C422",
-   "source": "ticketmaster",
-   "act": "Tim Dillon",
-   "aka": [
-    "sg-18498698",
-    "2026-11-05-tim-dillon-the-wilbur"
-   ],
-   "score": 2,
-   "why": "fav"
-  },
-  {
-   "id": "tm-vv177Z_6Gkl3s3mj",
-   "date": "2026-11-05",
-   "time": "20:00",
-   "title": "Air Supply - A Matter of Time Tour",
-   "cat": "music",
-   "venue": "Chevalier Theatre",
-   "city": "Medford, MA",
-   "url": "https://www.ticketmaster.com/air-supply-a-matter-of-time-medford-massachusetts-11-05-2026/event/0100647AD2C52B9C",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18155216",
-    "2026-11-05-air-supply-chevalier-theatre"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1AAZgG-",
-   "date": "2026-11-05",
-   "time": "20:00",
-   "title": "Clara La San",
-   "cat": "music",
-   "venue": "Roadrunner-Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZgG-",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18539034"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18611505",
-   "date": "2026-11-05",
-   "time": "20:00",
-   "title": "Puss N Boots",
-   "cat": "music",
-   "venue": "The Cabot",
-   "city": "Beverly, MA",
-   "url": "https://seatgeek.com/puss-n-boots-tickets/beverly-massachusetts-the-cabot-2026-11-05-8-pm/concert/18611505",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A70tPN",
-   "date": "2026-11-05",
-   "time": "20:00",
-   "title": "Winyah (18 and Over)",
-   "cat": "music",
-   "venue": "Royale Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A70tPN",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18421895"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_aGkwHeNYA",
-   "date": "2026-11-06",
-   "time": "19:00",
-   "title": "Amble",
-   "cat": "music",
-   "venue": "Citizens House of Blues Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/amble-boston-massachusetts-11-06-2026/event/0100649CBC0A3C05",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18222463",
-    "2026-11-06-amble-citizens-house-of-bl"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_kGkmR1OOO",
-   "date": "2026-11-06",
-   "time": "19:00",
-   "title": "Gavin Adcock: The Day I Hang It Up Tour 2026",
-   "cat": "music",
-   "venue": "MGM Music Hall at Fenway",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/gavin-adcock-the-day-i-hang-boston-massachusetts-11-06-2026/event/0100646BAF2A0820",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18127646",
-    "2026-11-06-gavin-adcock-mgm-music-hall-at-fe"
-   ],
-   "sub": "with Braxton Keith and The Creekers",
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A7Psua",
-   "date": "2026-11-06",
-   "time": "19:00",
-   "title": "Hovvdy (18 and Over)",
-   "cat": "music",
-   "venue": "Royale Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7Psua",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18349665"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkoVGkdmTNIK",
-   "date": "2026-11-06",
-   "time": "19:00",
-   "title": "Kyle Hume",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/kyle-hume-boston-massachusetts-11-06-2026/event/01006474EEFE3A13",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18141109"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_u7O4TYH",
-   "date": "2026-11-06",
-   "time": "19:00",
-   "title": "almost monday - THANK GOD IT'S ALMOST MONDAY",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/almost-monday-thank-god-its-almost-boston-massachusetts-11-06-2026/event/010064D12057FC3C",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18325021",
-    "2026-11-06-almost-monday-paradise-rock-club"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-k7v17_apFG7c4ap",
-   "date": "2026-11-06",
-   "time": "19:30",
-   "title": "Jason Isbell",
-   "cat": "music",
-   "venue": "Tilles Center Concert Hall",
-   "city": "Brookville, NY",
-   "url": "https://www.ticketmaster.com/jason-isbell-brookville-new-york-11-06-2026/event/0000649588B55256",
-   "source": "ticketmaster",
-   "drive_hours": 4.0,
-   "act": "Jason Isbell",
-   "aka": [
-    "sg-18209295"
-   ],
-   "score": 2,
-   "why": "big"
-  },
-  {
-   "id": "tm-vv1AvZkfYGkec3VTB",
-   "date": "2026-11-06",
-   "time": "19:30",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-11-06-2026/event/01006530AD4B4FFA",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZk3vGkd6ihpp",
-   "date": "2026-11-06",
-   "time": "19:30",
-   "title": "Marc Maron: Yammering into the Void Tour",
-   "cat": "comedy",
-   "venue": "Chevalier Theatre",
-   "city": "Medford, MA",
-   "url": "https://www.ticketmaster.com/marc-maron-yammering-into-the-void-medford-massachusetts-11-06-2026/event/01006481C7B1B596",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18166223"
-   ],
-   "score": 1
-  },
-  {
-   "id": "tm-vv1AvZkfAGkd5CNWg",
-   "date": "2026-11-06",
-   "time": "19:30",
-   "title": "Tim Dillon",
-   "cat": "comedy",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/tim-dillon-boston-massachusetts-11-06-2026/event/01006505CB3A3F75",
-   "source": "ticketmaster",
-   "act": "Tim Dillon",
-   "times": [
-    "19:30",
-    "22:00"
-   ],
-   "aka": [
-    "tm-vv177Z_8GkDdY5rJ",
-    "sg-18472041",
-    "sg-18500387",
-    "2026-11-06-tim-dillon-the-wilbur"
-   ],
-   "score": 2,
-   "why": "fav"
-  },
-  {
-   "id": "tm-vv1A8vPGbGAuMyrW",
-   "date": "2026-11-06",
-   "time": "20:00",
-   "title": "A BOOGIE WIT DA HOODIE: 10 YEARS OF ARTIST",
-   "cat": "music",
-   "venue": "Agganis Arena",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/a-boogie-wit-da-hoodie-10-boston-massachusetts-11-06-2026/event/010065318DDF97BD",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18637279",
-    "2026-11-06-a-boogie-wit-da-hoodie-agganis-arena"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_2Bxn386",
-   "date": "2026-11-06",
-   "time": "20:00",
-   "title": "BEAT: Belew/Vai/Levin/Bozzio Performing the Music of KING CRIMSON",
-   "cat": "music",
-   "venue": "Boch Center Wang Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/beat-belewvailevinbozzio-performing-the-music-of-boston-massachusetts-11-06-2026/event/010064FEA2A92407",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18424077",
-    "2026-11-06-beat-wang-theatre"
-   ],
-   "sub": "Adrian Belew, Steve Vai, Tony Levin and Terry Bozzio play '80s King Crimson",
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A7-VGp",
-   "date": "2026-11-06",
-   "time": "20:00",
-   "title": "Guster w/ Hartford Symphony Orchestra",
-   "cat": "music",
-   "venue": "Bushnell Theatre/ Mortensen Hall",
-   "city": "Hartford, CT",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7-VGp",
-   "source": "ticketmaster",
-   "drive_hours": 2.25,
-   "act": "Guster",
-   "aka": [
-    "sg-18470408"
-   ],
-   "score": 2,
-   "why": "big"
-  },
-  {
-   "id": "sg-18344333",
-   "date": "2026-11-06",
-   "time": "20:00",
-   "title": "Joe Fenti",
-   "cat": "comedy",
-   "venue": "Showcase Live",
-   "city": "Foxborough, MA",
-   "url": "https://seatgeek.com/joe-fenti-tickets/comedy/2026-11-06-8-pm/18344333",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1AAZ_Gd",
-   "date": "2026-11-06",
-   "time": "20:00",
-   "title": "Marty Stuart & His Fabulous Superlatives",
-   "cat": "music",
-   "venue": "The Cabot",
-   "city": "Beverly, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZ_Gd",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18664294"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18573550",
-   "date": "2026-11-06",
-   "time": "20:00",
-   "title": "Nimino (18+)",
-   "cat": "music",
-   "venue": "Roadrunner - Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/nimino-tickets/boston-massachusetts-roadrunner-boston-2026-11-06-8-pm/concert/18573550",
-   "source": "seatgeek",
-   "aka": [
-    "2026-11-06-nimino-roadrunner"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18722970",
-   "date": "2026-11-06",
-   "time": "20:00",
-   "title": "Willie Macc",
-   "cat": "comedy",
-   "venue": "Soundcheck Studios",
-   "city": "Pembroke, MA",
-   "url": "https://seatgeek.com/willie-macc-tickets/comedy/2026-11-06-8-pm/18722970",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A70go6",
-   "date": "2026-11-06",
-   "time": "20:30",
-   "title": "Adult. w/ A Place To Bury Strangers",
-   "cat": "music",
-   "venue": "The Sinclair Music Hall",
-   "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A70go6",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18663876",
-    "2026-11-06-a-place-to-bury-strangers-the-sinclair"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1k7Z_8GUG7XCxY",
-   "date": "2026-11-06",
-   "time": "21:00",
-   "title": "Svdden Death ( 18+ )",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/svdden-death-18-boston-massachusetts-11-06-2026/event/0100650336F8E8B0",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18424716"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-1AtZkfsGkdbzsAO",
-   "date": "2026-11-06",
-   "time": "22:00",
-   "title": "CamelPhat",
-   "cat": "music",
-   "venue": "Royale Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketweb.com/event/camelphat-royale-boston-tickets/14328034?REFERRAL_ID=tmfeed",
-   "source": "ticketmaster",
-   "aka": [
-    "tm-Z7r9jZ1AAvoeK",
-    "sg-18353987",
-    "2026-11-06-camelphat-royale"
-   ],
-   "score": 0
-  },
   {
    "id": "tm-Z7r9jZ1AAZa8E",
    "date": "2026-11-07",
@@ -572,9 +54,6 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/sotalented-presents-topoppgen-chuckyy-blovee-boston-massachusetts-11-07-2026/event/01006550E6BA7F43",
    "source": "ticketmaster",
-   "aka": [
-    "sg-18693801"
-   ],
    "score": 0
   },
   {
@@ -769,18 +248,6 @@
    "venue": "Big Night Live",
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/a-boogie-wit-da-hoodie-dababy-boston-massachusetts-11-07-2026/event/01006553345D8679",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-LvZ18QcYfkzX6__V71mXS",
-   "date": "2026-11-07",
-   "time": "22:00",
-   "title": "Favela Encantada Wig Party (18+) | Nov 7 10PM @ Play Boston Big Night Live",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.universe.com/events/favela-encantada-wig-party-18-nov-7-10pm-play-boston-big-night-live-tickets-GB9654?ref=ticketmaster",
    "source": "ticketmaster",
    "score": 0
   },
@@ -1829,6 +1296,18 @@
    "score": 0
   },
   {
+   "id": "sg-18747166",
+   "date": "2026-11-13",
+   "time": "22:00",
+   "title": "The Glitter Boys",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/the-glitter-boys-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-11-13-10-pm/concert/18747166",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vv1AvZkfYGkecjAdl",
    "date": "2026-11-14",
    "time": "14:00",
@@ -2093,6 +1572,18 @@
    "aka": [
     "sg-18301817"
    ],
+   "score": 0
+  },
+  {
+   "id": "tm-LvZ18QcYfkzX6__V71mXS",
+   "date": "2026-11-14",
+   "time": "21:30",
+   "title": "Favela Encantada Wig Party (18+) | Nov 14 @ Play Boston Big Night Live",
+   "cat": "music",
+   "venue": "Big Night Live",
+   "city": "Boston, MA",
+   "url": "https://www.universe.com/events/favela-encantada-wig-party-18-nov-14-play-boston-big-night-live-tickets-GB9654?ref=ticketmaster",
+   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -2361,6 +1852,21 @@
     "2026-11-16-yung-gravy-paradise-rock-club"
    ],
    "score": 0
+  },
+  {
+   "id": "tm-Z7r9jZ1AA7zoy",
+   "date": "2026-11-16",
+   "time": "19:30",
+   "title": "An Evening With Goose",
+   "cat": "music",
+   "venue": "Ridgefield Playhouse",
+   "city": "Ridgefield, CT",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7zoy",
+   "source": "ticketmaster",
+   "drive_hours": 3.25,
+   "act": "Goose",
+   "score": 3,
+   "why": "love"
   },
   {
    "id": "tm-G5vVZ_3n_EpYc",
@@ -2645,7 +2151,6 @@
    "url": "https://www.ticketmaster.com/trippie-redd-the-nondisclosure-agreement-tour-boston-massachusetts-11-19-2026/event/01006532AECD362E",
    "source": "ticketmaster",
    "aka": [
-    "sg-18617576",
     "2026-11-19-trippie-redd-citizens-house-of-bl"
    ],
    "score": 0
@@ -2804,6 +2309,30 @@
    "act": "LCD Soundsystem",
    "score": 2,
    "why": "big"
+  },
+  {
+   "id": "tm-vv1AvZk4PGkd_i7Av",
+   "date": "2026-11-19",
+   "time": "21:00",
+   "title": "Trippie Redd Non-Disclosure Agreement After Party - Studio B (18+)",
+   "cat": "music",
+   "venue": "Big Night Live",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/trippie-redd-nondisclosure-agreement-after-party-boston-massachusetts-11-19-2026/event/01006565D9B04141",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
+   "id": "sg-18747163",
+   "date": "2026-11-20",
+   "time": "18:00",
+   "title": "Illiterate Light",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/illiterate-light-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-11-20-6-pm/concert/18747163",
+   "source": "seatgeek",
+   "score": 0
   },
   {
    "id": "sg-18670571",
@@ -3020,6 +2549,18 @@
    "aka": [
     "sg-18288846"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18747162",
+   "date": "2026-11-20",
+   "time": "22:00",
+   "title": "The Glitter Boys",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/the-glitter-boys-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-11-20-10-pm/concert/18747162",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -3519,7 +3060,6 @@
    "url": "https://www.ticketmaster.com/maestros-de-la-bachata-18-boston-massachusetts-11-25-2026/event/0100653CBA0DECBA",
    "source": "ticketmaster",
    "aka": [
-    "sg-18639991",
     "2026-11-25-frank-reyes-and-hector-acosta-citizens-house-of-bl"
    ],
    "score": 0
@@ -3551,6 +3091,18 @@
     "sg-18404277",
     "2026-11-25-tyla-mgm-music-hall-at-fe"
    ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv177Z_4GkwLmmiX",
+   "date": "2026-11-25",
+   "time": "21:30",
+   "title": ".tribe ( 21+ )",
+   "cat": "music",
+   "venue": "Big Night Live",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/tribe-21-boston-massachusetts-11-25-2026/event/0100655C9FBAEB3E",
+   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -3699,6 +3251,18 @@
    "aka": [
     "sg-18618955"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18747167",
+   "date": "2026-11-27",
+   "time": "22:00",
+   "title": "The Glitter Boys",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/the-glitter-boys-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-11-27-10-pm/concert/18747167",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -4079,6 +3643,18 @@
    "aka": [
     "sg-18655811"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18746342",
+   "date": "2026-12-01",
+   "time": "19:00",
+   "title": "Sister's Christmas Catechism",
+   "cat": "comedy",
+   "venue": "Charles Playhouse - Stage II",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/sisters-christmas-catechism-tickets/comedy/2026-12-01-7-pm/18746342",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -4555,6 +4131,30 @@
    "aka": [
     "sg-18257215"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18747173",
+   "date": "2026-12-04",
+   "time": "22:00",
+   "title": "The Glitter Boys",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/the-glitter-boys-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-12-04-10-pm/concert/18747173",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
+   "id": "tm-vv16vZk4J_oZA8d5v2",
+   "date": "2026-12-05",
+   "time": "11:00",
+   "title": "For The Children 2026",
+   "cat": "music",
+   "venue": "Big Night Live",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/for-the-children-2026-boston-massachusetts-12-05-2026/event/01006566651F2A0E",
+   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -5296,6 +4896,18 @@
    "score": 0
   },
   {
+   "id": "sg-18747174",
+   "date": "2026-12-11",
+   "time": "22:00",
+   "title": "The Glitter Boys",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/the-glitter-boys-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-12-11-10-pm/concert/18747174",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "espn-401892909",
    "date": "2026-12-12",
    "time": "13:00",
@@ -5405,17 +5017,20 @@
    "score": 0
   },
   {
-   "id": "sg-18634494",
+   "id": "tm-Z7r9jZ1AA7vfy",
    "date": "2026-12-12",
    "time": "20:00",
-   "title": "LCD Soundsystem",
+   "title": "LCD Soundsystem (21+ Event)",
    "cat": "music",
    "venue": "Knockdown Center",
-   "city": "Queens, NY",
-   "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-12-12-8-pm/concert/18634494",
-   "source": "seatgeek",
+   "city": "Maspeth, NY",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7vfy",
+   "source": "ticketmaster",
    "drive_hours": 4.25,
    "act": "LCD Soundsystem",
+   "aka": [
+    "sg-18634494"
+   ],
    "score": 2,
    "why": "big"
   },
@@ -5863,6 +5478,18 @@
    "score": 0
   },
   {
+   "id": "sg-18747176",
+   "date": "2026-12-18",
+   "time": "22:00",
+   "title": "The Glitter Boys",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/the-glitter-boys-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-12-18-10-pm/concert/18747176",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-rZ7HnEZ1AfCa-f",
    "date": "2026-12-18",
    "time": "23:55",
@@ -5956,6 +5583,18 @@
    "aka": [
     "sg-18702713"
    ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv1AvZk40Gkd-gC88",
+   "date": "2026-12-19",
+   "time": "21:00",
+   "title": "Blade Rave (21+)",
+   "cat": "music",
+   "venue": "Citizens House of Blues Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/blade-rave-21-boston-massachusetts-12-19-2026/event/01006564E1D4E410",
+   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -6443,6 +6082,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/gimme-gimme-disco-21-boston-massachusetts-12-31-2026/event/0100655CCF75B6D1",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18734188"
+   ],
    "score": 0
   },
   {
@@ -6660,6 +6302,9 @@
    "city": "Cambridge, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZIuN",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18747177"
+   ],
    "score": 0
   },
   {
@@ -6819,6 +6464,9 @@
    "city": "Cambridge, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7Z_b",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18747179"
+   ],
    "score": 0
   },
   {
@@ -6912,6 +6560,9 @@
    "city": "Cambridge, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7Iug",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18747183"
+   ],
    "score": 0
   },
   {
@@ -7066,9 +6717,6 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/shrek-rave-18-boston-massachusetts-01-22-2027/event/0100649DCF9D1890",
    "source": "ticketmaster",
-   "aka": [
-    "sg-18298890"
-   ],
    "score": 0
   },
   {
@@ -7513,6 +7161,18 @@
    "score": 0
   },
   {
+   "id": "sg-18747184",
+   "date": "2027-02-04",
+   "time": "19:15",
+   "title": "Bren Lukens",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/bren-lukens-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-02-04-7-15-pm/concert/18747184",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vv1AvZk4eGkdmSNz4",
    "date": "2027-02-05",
    "time": "19:00",
@@ -7713,6 +7373,9 @@
    "city": "Cambridge, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7IPP",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18747185"
+   ],
    "score": 0
   },
   {
@@ -7759,6 +7422,33 @@
    "score": 0
   },
   {
+   "id": "tm-Z7r9jZ1AAAd4b",
+   "date": "2027-02-10",
+   "time": "20:30",
+   "title": "Cloud Nothings",
+   "cat": "music",
+   "venue": "The Sinclair Music Hall",
+   "city": "Cambridge, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAAd4b",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18747186"
+   ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv1AvZk4xGkdpBmdn",
+   "date": "2027-02-11",
+   "time": "19:00",
+   "title": "FLOW WORLD TOUR 2027 \"ONCE IN A CENTURY\" ~ANIME THE MAX!!!~",
+   "cat": "music",
+   "venue": "Big Night Live",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/flow-world-tour-2027-once-in-boston-massachusetts-02-11-2027/event/01006562D6EAE0EA",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv1AvZk49GkdjzpuE",
    "date": "2027-02-11",
    "time": "19:00",
@@ -7798,6 +7488,18 @@
    "aka": [
     "sg-18612703"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18748421",
+   "date": "2027-02-12",
+   "time": "19:00",
+   "title": "Liquid Stranger with Sully, Twopercent, Chozen Dee",
+   "cat": "music",
+   "venue": "Royale - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/liquid-stranger-tickets/boston-massachusetts-royale-boston-2027-02-12-7-pm/concert/18748421",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -8207,6 +7909,21 @@
    "score": 0
   },
   {
+   "id": "tm-vv1A8vPbyGAGVprx",
+   "date": "2027-02-23",
+   "time": "20:00",
+   "title": "FEID - FERXXO - THE GREEN STAR Tour 2027",
+   "cat": "music",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/feid-ferxxo-the-green-star-tour-boston-massachusetts-02-23-2027/event/010065639CD167A2",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18746720"
+   ],
+   "score": 0
+  },
+  {
    "id": "tm-Z7r9jZ1AA7bPo",
    "date": "2027-02-23",
    "time": "20:00",
@@ -8352,6 +8069,18 @@
    "score": 1
   },
   {
+   "id": "sg-18747187",
+   "date": "2027-02-26",
+   "time": "20:00",
+   "title": "Fai Laci",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/fai-laci-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-02-26-8-pm/concert/18747187",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "espn-401893410",
    "date": "2027-02-27",
    "time": "12:30",
@@ -8445,6 +8174,18 @@
    "aka": [
     "sg-18691310"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18744924",
+   "date": "2027-02-27",
+   "time": "22:00",
+   "title": "Interplanetary Criminal (21+)",
+   "cat": "music",
+   "venue": "Royale - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/interplanetary-criminal-tickets/boston-massachusetts-royale-boston-2027-02-27-10-pm/concert/18744924",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -8629,6 +8370,9 @@
    "city": "Cambridge, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA70bv",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18747194"
+   ],
    "score": 0
   },
   {
@@ -9330,6 +9074,21 @@
    "score": 0
   },
   {
+   "id": "tm-Z7r9jZ1AA7zZs",
+   "date": "2027-03-14",
+   "time": "20:00",
+   "title": "Two Lanes - Ages 18+",
+   "cat": "music",
+   "venue": "The Sinclair Music Hall",
+   "city": "Cambridge, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7zZs",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18747195"
+   ],
+   "score": 0
+  },
+  {
    "id": "espn-401893530",
    "date": "2027-03-15",
    "time": "19:00",
@@ -9356,7 +9115,8 @@
     "20:00"
    ],
    "aka": [
-    "sg-18709470"
+    "sg-18709470",
+    "sg-18728587"
    ],
    "score": 0
   },
@@ -9371,6 +9131,18 @@
    "url": "https://www.espn.com/nba/game/_/gameId/401910740/kings-celtics",
    "source": "espn",
    "score": 1
+  },
+  {
+   "id": "sg-18747449",
+   "date": "2027-03-16",
+   "time": "20:00",
+   "title": "Boy Throb (18+)",
+   "cat": "music",
+   "venue": "Royale - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/boy-throb-tickets/boston-massachusetts-royale-boston-2027-03-16-8-pm/concert/18747449",
+   "source": "seatgeek",
+   "score": 0
   },
   {
    "id": "tm-vv1AvZkfyGkdOmyJZ",
@@ -9724,6 +9496,9 @@
    "city": "Cambridge, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7EFy",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18747196"
+   ],
    "score": 0
   },
   {
@@ -9831,6 +9606,18 @@
     "sg-18643236"
    ],
    "score": 1
+  },
+  {
+   "id": "sg-18747198",
+   "date": "2027-03-26",
+   "time": "20:00",
+   "title": "Jersey",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/jersey-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-03-26-8-pm/concert/18747198",
+   "source": "seatgeek",
+   "score": 0
   },
   {
    "id": "tm-vvG17Z_CxQDi4_",
@@ -10200,6 +9987,18 @@
    "score": 0
   },
   {
+   "id": "sg-18747821",
+   "date": "2027-04-08",
+   "time": "19:00",
+   "title": "Ian Bagg",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/ian-bagg-tickets/comedy/2027-04-08-7-pm/18747821",
+   "source": "seatgeek",
+   "score": 1
+  },
+  {
    "id": "tm-vv1AvZk4pGkd85EhP",
    "date": "2027-04-08",
    "time": "19:00",
@@ -10239,7 +10038,22 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/elder-18-boston-massachusetts-04-09-2027/event/010064A8C03869CC",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18740841"
+   ],
    "score": 0
+  },
+  {
+   "id": "sg-18747825",
+   "date": "2027-04-09",
+   "time": "19:00",
+   "title": "Ian Bagg",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/ian-bagg-tickets/comedy/2027-04-09-7-pm/18747825",
+   "source": "seatgeek",
+   "score": 1
   },
   {
    "id": "tm-vvG17Z_GCHlChD",
@@ -10270,6 +10084,25 @@
     "sg-18609996"
    ],
    "score": 0
+  },
+  {
+   "id": "sg-18747829",
+   "date": "2027-04-10",
+   "time": "18:30",
+   "title": "Ian Bagg",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/ian-bagg-tickets/comedy/2027-04-10-6-30-pm/18747829",
+   "source": "seatgeek",
+   "times": [
+    "18:30",
+    "21:00"
+   ],
+   "aka": [
+    "sg-18747826"
+   ],
+   "score": 1
   },
   {
    "id": "tm-vv177Z_4GkD1Agiz",
@@ -10347,6 +10180,18 @@
    "score": 0
   },
   {
+   "id": "sg-18747201",
+   "date": "2027-04-11",
+   "time": "20:00",
+   "title": "Vincent Lima",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/vincent-lima-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-04-11-8-pm/concert/18747201",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vvG17Z_1QXBHwy",
    "date": "2027-04-12",
    "time": "19:30",
@@ -10359,6 +10204,18 @@
    "aka": [
     "sg-18235530"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18747204",
+   "date": "2027-04-12",
+   "time": "20:00",
+   "title": "Susannah Joffe",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/susannah-joffe-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-04-12-8-pm/concert/18747204",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -10505,12 +10362,15 @@
    "id": "tm-vv177Z_4GkMU6YcH",
    "date": "2027-04-18",
    "time": "19:00",
-   "title": "Ricky Montgomery - The Monty Tour",
+   "title": "Ricky Montgomery: The Monty Tour",
    "cat": "music",
    "venue": "Citizens House of Blues Boston",
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/ricky-montgomery-the-monty-tour-boston-massachusetts-04-18-2027/event/0100655DF61F0B7C",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18745378"
+   ],
    "score": 0
   },
   {
@@ -10772,15 +10632,18 @@
    "score": 0
   },
   {
-   "id": "sg-18738347",
+   "id": "tm-Z7r9jZ1AA7UOO",
    "date": "2027-04-27",
    "time": "20:00",
-   "title": "Tove Lo",
+   "title": "Tove Lo w/ Coco and Clair Clair",
    "cat": "music",
-   "venue": "Roadrunner - Boston",
+   "venue": "Roadrunner-Boston",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/tove-lo-tickets/boston-massachusetts-roadrunner-boston-2027-04-27-8-pm/concert/18738347",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7UOO",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18738347"
+   ],
    "score": 0
   },
   {
@@ -10951,15 +10814,18 @@
    "score": 0
   },
   {
-   "id": "sg-18663870",
+   "id": "tm-Z7r9jZ1AA7zZS",
    "date": "2027-05-02",
    "time": "20:00",
-   "title": "Madra Salach (Rescheduled from 11/2/26)",
+   "title": "Madra Salach",
    "cat": "music",
-   "venue": "The Sinclair - Cambridge",
+   "venue": "The Sinclair Music Hall",
    "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/madra-salach-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-05-02-8-pm/concert/18663870",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7zZS",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18663870"
+   ],
    "score": 0
   },
   {
@@ -10974,6 +10840,21 @@
    "source": "ticketmaster",
    "aka": [
     "sg-18617511"
+   ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv1AvZk40GkeYFzRE",
+   "date": "2027-05-03",
+   "time": "19:00",
+   "title": "Midnight Generation - Rooted Tour 2027",
+   "cat": "music",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/midnight-generation-rooted-tour-2027-boston-massachusetts-05-03-2027/event/01006564B0238BE7",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18746783"
    ],
    "score": 0
   },
@@ -11005,6 +10886,48 @@
    "aka": [
     "sg-18689300"
    ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv1F7Z_pCA0SZd861",
+   "date": "2027-05-04",
+   "time": "19:30",
+   "title": "Conversations With Nick Cave",
+   "cat": "music",
+   "venue": "Boch Center Shubert Theatre",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/conversations-with-nick-cave-boston-massachusetts-05-04-2027/event/0100656385933F69",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18748265"
+   ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv1F7Z_pCAPSZd8Fa",
+   "date": "2027-05-05",
+   "time": "19:30",
+   "title": "Conversations With Nick Cave",
+   "cat": "music",
+   "venue": "Boch Center Shubert Theatre",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/conversations-with-nick-cave-boston-massachusetts-05-05-2027/event/0100656385973F78",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18748267"
+   ],
+   "score": 0
+  },
+  {
+   "id": "sg-18232062",
+   "date": "2027-05-06",
+   "time": "20:00",
+   "title": "Valery Meladze",
+   "cat": "music",
+   "venue": "Boch Center Shubert Theatre",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/valery-meladze-tickets/boston-massachusetts-boch-center-shubert-theatre-2027-05-06-8-pm/concert/18232062",
+   "source": "seatgeek",
    "score": 0
   }
  ],
@@ -11084,7 +11007,7 @@
   "picks": 5,
   "venues": 1,
   "espn": 74,
-  "ticketmaster": 548,
-  "seatgeek": 101
+  "ticketmaster": 536,
+  "seatgeek": 112
  }
 }
