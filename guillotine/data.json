@@ -4,7 +4,7 @@
  "week": 9,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-08T18:45:14Z",
+ "updated": "2026-11-08T18:49:41Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -13,7 +13,7 @@
    "manager": "David S",
    "faab": 235,
    "proj": 144.33,
-   "points": 38.6,
+   "points": 39.6,
    "scores": [
     137.26,
     86.62,
@@ -212,7 +212,7 @@
      "name": "Omar Cooper Jr.",
      "nfl": "NYJ",
      "pos": "WR",
-     "yahoo_actual": 2.2,
+     "yahoo_actual": 3.2,
      "game": "Sun 1:00 pm",
      "opp": "@ KC",
      "season": {
@@ -352,7 +352,7 @@
      "name": "Josh Downs",
      "nfl": "IND",
      "pos": "WR",
-     "yahoo_actual": 0.0,
+     "yahoo_actual": 1.2,
      "game": "Sun 1:00 pm",
      "opp": "vs DAL",
      "season": {
@@ -386,7 +386,7 @@
      "name": "Ollie Gordon II",
      "nfl": "MIA",
      "pos": "RB",
-     "yahoo_actual": 1.4,
+     "yahoo_actual": 2.2,
      "game": "Sun 1:00 pm",
      "opp": "vs DET",
      "season": {
@@ -892,7 +892,7 @@
      "name": "Bryce Young",
      "nfl": "CAR",
      "pos": "QB",
-     "yahoo_actual": 0.4,
+     "yahoo_actual": 0.88,
      "game": "Sun 1:00 pm",
      "opp": "vs DEN",
      "season": {
@@ -1082,7 +1082,7 @@
    "manager": "Scott",
    "faab": 276,
    "proj": 136.92,
-   "points": 11.18,
+   "points": 12.78,
    "scores": [
     95.18,
     94.64,
@@ -1172,7 +1172,7 @@
      "name": "Chuba Hubbard",
      "nfl": "CAR",
      "pos": "RB",
-     "yahoo_actual": 0.9,
+     "yahoo_actual": 2.5,
      "game": "Sun 1:00 pm",
      "opp": "vs DEN",
      "season": {
@@ -1627,7 +1627,7 @@
    "manager": "Nate",
    "faab": 134,
    "proj": 136.34,
-   "points": 12.8,
+   "points": 14.5,
    "scores": [
     134.08,
     101.78,
@@ -1790,7 +1790,7 @@
      "name": "Tetairoa McMillan",
      "nfl": "CAR",
      "pos": "WR",
-     "yahoo_actual": 0.0,
+     "yahoo_actual": 1.7,
      "game": "Sun 1:00 pm",
      "opp": "vs DEN",
      "season": {
@@ -1969,7 +1969,7 @@
      "name": "Saquon Barkley",
      "nfl": "PHI",
      "pos": "RB",
-     "yahoo_actual": 6.6,
+     "yahoo_actual": 7.1,
      "game": "Sun 1:00 pm",
      "opp": "vs NYG",
      "season": {
@@ -2151,7 +2151,7 @@
    "manager": "Noah M",
    "faab": 2,
    "proj": 136.14,
-   "points": 47.66,
+   "points": 49.0,
    "scores": [
     132.74,
     120.2,
@@ -2168,7 +2168,7 @@
      "name": "Bo Nix",
      "nfl": "DEN",
      "pos": "QB",
-     "yahoo_actual": 6.52,
+     "yahoo_actual": 6.76,
      "game": "Sun 1:00 pm",
      "opp": "@ CAR",
      "season": {
@@ -2241,7 +2241,7 @@
      "name": "Jonah Coleman",
      "nfl": "DEN",
      "pos": "RB",
-     "yahoo_actual": 1.3,
+     "yahoo_actual": 2.4,
      "game": "Sun 1:00 pm",
      "opp": "@ CAR",
      "season": {
@@ -2623,7 +2623,7 @@
      "name": "Tyler Shough",
      "nfl": "NO",
      "pos": "QB",
-     "yahoo_actual": 2.3,
+     "yahoo_actual": 4.38,
      "game": "Sun 1:00 pm",
      "opp": "vs CLE",
      "season": {
@@ -3252,7 +3252,7 @@
    "manager": "Garhett",
    "faab": 1,
    "proj": 127.94,
-   "points": 16.2,
+   "points": 16.5,
    "scores": [
     134.5,
     115.3,
@@ -3305,7 +3305,7 @@
      "name": "Breece Hall",
      "nfl": "NYJ",
      "pos": "RB",
-     "yahoo_actual": 3.3,
+     "yahoo_actual": 3.6,
      "game": "Sun 1:00 pm",
      "opp": "@ KC",
      "season": {
@@ -3651,7 +3651,7 @@
      "name": "Braelon Allen",
      "nfl": "NYJ",
      "pos": "RB",
-     "yahoo_actual": 2.6,
+     "yahoo_actual": 4.5,
      "game": "Sun 1:00 pm",
      "opp": "@ KC",
      "season": {
@@ -5098,7 +5098,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-08T18:45:14Z",
+  "updated": "2026-11-08T18:49:43Z",
   "players": 3045,
   "unmatched": []
  }
