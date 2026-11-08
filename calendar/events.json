@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-07T16:37:58Z",
+ "updated": "2026-11-08T16:47:59Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,259 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-Z7r9jZ1AAZa8E",
-   "date": "2026-11-07",
-   "time": "13:00",
-   "title": "Koo Koo",
-   "cat": "music",
-   "venue": "The Sinclair Music Hall",
-   "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZa8E",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkfYGkec4PZ0",
-   "date": "2026-11-07",
-   "time": "14:00",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-11-07-2026/event/01006530AD565024",
-   "source": "ticketmaster",
-   "times": [
-    "14:00",
-    "19:30"
-   ],
-   "aka": [
-    "tm-vv1AvZkfYGkecfAZ3"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZk48GkdJmEWd",
-   "date": "2026-11-07",
-   "time": "18:00",
-   "title": "SoTalented presents TopOppGen, Chuckyy & B-Lovee",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/sotalented-presents-topoppgen-chuckyy-blovee-boston-massachusetts-11-07-2026/event/01006550E6BA7F43",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_aGkzkA6zp",
-   "date": "2026-11-07",
-   "time": "19:00",
-   "title": "Drew Dunn",
-   "cat": "comedy",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/drew-dunn-boston-massachusetts-11-07-2026/event/0100649E06147E16",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18225204",
-    "2026-11-07-drew-dunn-the-wilbur"
-   ],
-   "score": 1
-  },
-  {
-   "id": "tm-Z7r9jZ1AAvAGN",
-   "date": "2026-11-07",
-   "time": "19:00",
-   "title": "Earlybirds Club (21 and Over)",
-   "cat": "music",
-   "venue": "The Sinclair Music Hall",
-   "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAvAGN",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A7-VJZ",
-   "date": "2026-11-07",
-   "time": "19:00",
-   "title": "Fruit Bats (18 and Over)",
-   "cat": "music",
-   "venue": "Royale Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7-VJZ",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18551738",
-    "2026-11-07-fruit-bats-royale"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A7J3-y",
-   "date": "2026-11-07",
-   "time": "19:00",
-   "title": "Hudson Westbrook",
-   "cat": "music",
-   "venue": "Roadrunner-Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7J3-y",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18373629"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkfIGkeXEJ1D",
-   "date": "2026-11-07",
-   "time": "19:00",
-   "title": "Mr. Fantasy: Sexy Saturday Nights Tour",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/mr-fantasy-sexy-saturday-nights-tour-boston-massachusetts-11-07-2026/event/01006528BE9E62BB",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18578374"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_CxyRNxd",
-   "date": "2026-11-07",
-   "time": "19:00",
-   "title": "Porch Light: Hush Tour",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/porch-light-hush-tour-boston-massachusetts-11-07-2026/event/010064E8B9BE3883",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18371995"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1A8vPGbGAuU_ra",
-   "date": "2026-11-07",
-   "time": "20:00",
-   "title": "A BOOGIE WIT DA HOODIE: 10 YEARS OF ARTIST",
-   "cat": "music",
-   "venue": "Agganis Arena",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/a-boogie-wit-da-hoodie-10-boston-massachusetts-11-07-2026/event/010065318DD99789",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18629299",
-    "2026-11-07-a-boogie-wit-da-hoodie-agganis-arena"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_ue0VWGA",
-   "date": "2026-11-07",
-   "time": "20:00",
-   "title": "Comics Come Home",
-   "cat": "comedy",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/comics-come-home-boston-massachusetts-11-07-2026/event/010064D0A4D3D305",
-   "source": "ticketmaster",
-   "act": "John Mulaney",
-   "aka": [
-    "sg-18325146",
-    "2026-11-07-comics-come-home-td-garden"
-   ],
-   "sub": "30th annual: John Mulaney, Jimmy Fallon, Ray Romano, Leslie Jones, Sam Jay, Alex Edelman and Lenny Clarke",
-   "score": 2,
-   "why": "fav"
-  },
-  {
-   "id": "sg-18344334",
-   "date": "2026-11-07",
-   "time": "20:00",
-   "title": "Joe Fenti",
-   "cat": "comedy",
-   "venue": "Showcase Live",
-   "city": "Foxborough, MA",
-   "url": "https://seatgeek.com/joe-fenti-tickets/comedy/2026-11-07-8-pm/18344334",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-vv1k7Z_dr3G7thXs",
-   "date": "2026-11-07",
-   "time": "20:00",
-   "title": "Sammy Rae & The Friends - the GET DOWN!",
-   "cat": "music",
-   "venue": "MGM Music Hall at Fenway",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/sammy-rae-the-friends-the-get-boston-massachusetts-11-07-2026/event/0100643792A5BFB1",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18036556",
-    "2026-11-07-sammy-rae-and-the-friends-mgm-music-hall-at-fe"
-   ],
-   "sub": "with Melt",
-   "score": 0
-  },
-  {
-   "id": "sg-18663287",
-   "date": "2026-11-07",
-   "time": "20:00",
-   "title": "The Uncle Louie Variety Show",
-   "cat": "comedy",
-   "venue": "Regent Theatre",
-   "city": "Arlington, MA",
-   "url": "https://seatgeek.com/the-uncle-louie-variety-show-tickets/comedy/2026-11-07-8-pm/18663287",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_3GkB_IahD",
-   "date": "2026-11-07",
-   "time": "21:45",
-   "title": "Tim Dillon",
-   "cat": "comedy",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/tim-dillon-boston-massachusetts-11-07-2026/event/0100652E99A096FB",
-   "source": "ticketmaster",
-   "act": "Tim Dillon",
-   "aka": [
-    "sg-18603764",
-    "2026-11-07-tim-dillon-the-wilbur"
-   ],
-   "score": 2,
-   "why": "fav"
-  },
-  {
-   "id": "tm-vv16vZk4KuAZACa6F1",
-   "date": "2026-11-07",
-   "time": "22:00",
-   "title": "A BOOGIE WIT DA HOODIE & DABABY - OFFICIAL AFTER PARTY ( 21+ )",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/a-boogie-wit-da-hoodie-dababy-boston-massachusetts-11-07-2026/event/01006553345D8679",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-1AtZkfsGkdQd-ko",
-   "date": "2026-11-07",
-   "time": "22:00",
-   "title": "MPH",
-   "cat": "music",
-   "venue": "Royale Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketweb.com/event/mph-royale-boston-tickets/14328044?REFERRAL_ID=tmfeed",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18603833"
-   ],
-   "score": 0
-  },
   {
    "id": "espn-401892674",
    "date": "2026-11-08",
@@ -1584,6 +1331,9 @@
    "city": "Boston, MA",
    "url": "https://www.universe.com/events/favela-encantada-wig-party-18-nov-14-play-boston-big-night-live-tickets-GB9654?ref=ticketmaster",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18750255"
+   ],
    "score": 0
   },
   {
@@ -2151,6 +1901,7 @@
    "url": "https://www.ticketmaster.com/trippie-redd-the-nondisclosure-agreement-tour-boston-massachusetts-11-19-2026/event/01006532AECD362E",
    "source": "ticketmaster",
    "aka": [
+    "sg-18617576",
     "2026-11-19-trippie-redd-citizens-house-of-bl"
    ],
    "score": 0
@@ -5595,6 +5346,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/blade-rave-21-boston-massachusetts-12-19-2026/event/01006564E1D4E410",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18749259"
+   ],
    "score": 0
   },
   {
@@ -6082,9 +5836,6 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/gimme-gimme-disco-21-boston-massachusetts-12-31-2026/event/0100655CCF75B6D1",
    "source": "ticketmaster",
-   "aka": [
-    "sg-18734188"
-   ],
    "score": 0
   },
   {
@@ -7446,6 +7197,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/flow-world-tour-2027-once-in-boston-massachusetts-02-11-2027/event/01006562D6EAE0EA",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18750251"
+   ],
    "score": 0
   },
   {
@@ -9115,8 +8869,7 @@
     "20:00"
    ],
    "aka": [
-    "sg-18709470",
-    "sg-18728587"
+    "sg-18709470"
    ],
    "score": 0
   },
@@ -10919,14 +10672,44 @@
    "score": 0
   },
   {
-   "id": "sg-18232062",
+   "id": "tm-vvG17Z_1L0oPid",
    "date": "2027-05-06",
    "time": "20:00",
    "title": "Valery Meladze",
    "cat": "music",
    "venue": "Boch Center Shubert Theatre",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/valery-meladze-tickets/boston-massachusetts-boch-center-shubert-theatre-2027-05-06-8-pm/concert/18232062",
+   "url": "https://www.ticketmaster.com/valery-meladze-boston-massachusetts-05-06-2027/event/010064A7E4465B03",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18232062"
+   ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv1AvZkf0GkdOX_UM",
+   "date": "2027-05-07",
+   "time": "19:30",
+   "title": "Arynne Wexler",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/arynne-wexler-boston-massachusetts-05-07-2027/event/01006524E0F99DB7",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18589472"
+   ],
+   "score": 1
+  },
+  {
+   "id": "sg-18745203",
+   "date": "2027-05-07",
+   "time": "21:00",
+   "title": "Mau P (18+)",
+   "cat": "music",
+   "venue": "Roadrunner - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/mau-p-tickets/boston-massachusetts-roadrunner-boston-2027-05-07-9-pm/concert/18745203",
    "source": "seatgeek",
    "score": 0
   }
@@ -11007,7 +10790,7 @@
   "picks": 5,
   "venues": 1,
   "espn": 74,
-  "ticketmaster": 536,
-  "seatgeek": 112
+  "ticketmaster": 523,
+  "seatgeek": 110
  }
 }
