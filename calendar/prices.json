@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-07T17:46:56Z",
+ "updated": "2026-11-08T06:18:03Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -202,26 +202,6 @@
    "low": null,
    "src": null
   },
-  "tm-vvG17Z_ue0VWGA": {
-   "sg": 18325146,
-   "history": [],
-   "url": "https://www.ticketmaster.com/comics-come-home-boston-massachusetts-11-07-2026/event/010064D0A4D3D305",
-   "title": "Comics Come Home",
-   "date": "2026-11-07",
-   "venue": "TD Garden",
-   "low": null,
-   "src": null
-  },
-  "tm-vv177Z_3GkB_IahD": {
-   "history": [],
-   "sg": 18603764,
-   "title": "Tim Dillon",
-   "date": "2026-11-07",
-   "venue": "The Wilbur",
-   "url": "https://www.ticketmaster.com/tim-dillon-boston-massachusetts-11-07-2026/event/0100652E99A096FB",
-   "src": null,
-   "low": null
-  },
   "tm-vvG17Z_2pIw04C": {
    "history": [],
    "sg": 18474897,
@@ -413,6 +393,10 @@
     [
      "2026-11-07",
      56
+    ],
+    [
+     "2026-11-08",
+     56
     ]
    ],
    "sg": null,
@@ -524,6 +508,10 @@
     ],
     [
      "2026-11-07",
+     22
+    ],
+    [
+     "2026-11-08",
      22
     ]
    ],
@@ -699,6 +687,10 @@
     [
      "2026-11-07",
      28
+    ],
+    [
+     "2026-11-08",
+     28
     ]
    ],
    "sg": null,
@@ -798,6 +790,10 @@
     ],
     [
      "2026-11-07",
+     22
+    ],
+    [
+     "2026-11-08",
      22
     ]
    ],
