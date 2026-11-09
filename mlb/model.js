@@ -161,6 +161,12 @@
   }
 
   // Salary, its kind, and whether he's with the team in a season. Options are decided on value.
+  // An arbitration estimate never drops below last season's salary: awards build on what a player already makes
+  function priorSalary(p, year, season, cfg, resigned) {
+    if (year - 1 < season) return 0;
+    var t = yearTerms(p, year - 1, season, cfg, resigned);
+    return t.on ? t.salary || 0 : 0;
+  }
   // Value never goes below zero: a team can always play a replacement-level player for the minimum instead.
   // Pre-arb and arbitration years aren't guaranteed (the team can option, release or non-tender him), so they're
   // flagged control: a controlled year can't cost the team more than it's worth. Only guaranteed money goes negative.
@@ -177,6 +183,7 @@
         var n = /^A(\d)/.exec(code), arbN = n ? +n[1] : (/arb(\d)/.exec(st) || [0, 1])[1];
         var est = code === "PA" ? cfg.minSalary : Math.max(cfg.minSalary, cfg.arbPct[Math.min(3, arbN - 1)] * Math.max(0, value));
         var arbProj = cy[4] ? cy[4] / 1e6 : null; // FanGraphs' arbitration projection, when it has one
+        if (code !== "PA" && !(sal > 0) && !arbProj) est = Math.max(est, priorSalary(p, year, season, cfg, resigned));
         return { on: true, salary: sal != null && sal > 0 ? sal : (arbProj || est), kind: code === "PA" ? "Pre-arb" : "Arb " + arbN, value: value, war: war, est: !(sal > 0), control: true };
       }
       return { on: true, salary: sal != null ? sal : 0, kind: "Signed", value: value, war: war };
@@ -188,7 +195,7 @@
     if (!signedThrough && st === "pre") return { on: true, salary: cfg.minSalary, kind: "Pre-arb", value: value, war: war, control: true };
     if (!signedThrough && /^arb/.test(st)) {
       var k = +st.slice(3);
-      return { on: true, salary: Math.max(cfg.minSalary, cfg.arbPct[k - 1] * Math.max(0, value)), kind: "Arb " + k, value: value, war: war, est: true, control: true };
+      return { on: true, salary: Math.max(cfg.minSalary, cfg.arbPct[k - 1] * Math.max(0, value), priorSalary(p, year, season, cfg, resigned)), kind: "Arb " + k, value: value, war: war, est: true, control: true };
     }
     if (resigned) return { on: true, salary: Math.max(cfg.minSalary, value), kind: "Re-signed", value: value, war: war };
     return { on: false, salary: 0, kind: "Free agent", value: value, war: war };
