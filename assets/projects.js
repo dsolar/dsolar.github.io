@@ -371,6 +371,6 @@ window.PROJECTS = [
     summary: "This season played out 1,000 times from every team's real record, with the play-in, the playoffs and the 3-2-1 lottery. Every rotation and cap sheet rolled forward five seasons as contracts end and draft picks arrive, surplus value for every contract and pick (picks priced by what each slot has produced since 2001), a trade builder that checks the apron rules, and next summer's free agents.",
     facts: [["30", "rotations and cap sheets"], ["5", "seasons on the year slider"], ["1,080", "draft picks behind the pick values"]],
     stack: ["JavaScript", "Python"],
-    cover: { bg: "#F5F4F0", band: "#C60C30" }
+    cover: { image: "assets/covers/nba-hub.svg", bg: "#F5F4F0", band: "#C60C30" }
   }
 ];
