@@ -357,6 +357,6 @@ window.PROJECTS = [
     summary: "Projected 2027 standings and playoff odds from FanGraphs Depth Charts, every depth chart rolled forward five seasons as contracts end and prospects arrive, surplus value for every player and prospect with a trade builder, and this winter's free agents against what the market really pays.",
     facts: [["30", "organizations, majors down to A ball"], ["5", "seasons on the year slider"], ["6", "free agent classes in the market model"]],
     stack: ["JavaScript", "Python", "GitHub Actions"],
-    cover: { bg: "#F5F4F0", band: "#002244" }
+    cover: { image: "assets/covers/mlb-hub.svg", bg: "#F5F4F0", band: "#002244" }
   }
 ];
