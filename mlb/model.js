@@ -32,7 +32,7 @@
     arbPct: [0.25, 0.4, 0.6, 0.7], // share of market value paid in arbitration years 1-4
     fill: true,        // teams buy modest free agents for empty spots
     fillWar: { bat: 1.5, sp: 1.5, rp: 0.4 },
-    haircut: 0.9,      // share of projected WAR teams pay for (their margin of safety for injuries and misses)
+    haircut: 1,        // share of projected WAR to count. 100%: the price of a win is already read off what teams pay per projected WAR
     fade: 1,           // yearly shrink of WAR further out (projections get less certain each year)
     youngFade: 0.8,    // extra yearly shrink for unproven big leaguers (under 3 years of service): long control on a
                        // short track record is worth less than its projection adds up to
@@ -99,7 +99,8 @@
     }
     // Steamer's read of him now (aged) and the path his grade implies, weighted toward the grade: Steamer can't see
     // how much a teenager will grow, so the younger he is, the more the scouting grade counts
-    var wFv = p.age != null && p.age < 21 ? 0.8 : 0.7;
+    // (a rookie already in the majors has a big league projection to go on, so the grade counts for less)
+    var wFv = p.g !== "min" ? 0.3 : p.age != null && p.age < 21 ? 0.8 : 0.7;
     return p.rate != null ? (1 - wFv) * r + wFv * rp : rp;
   }
 
@@ -139,7 +140,7 @@
     return pts[pts.length - 1][1];
   }
   function fieldValue(war, year, season, cfg, p) {
-    var prospect = p && isProspect(p), young = p && !prospect && p.g !== "min" && (p.st || 0) < 3;
+    var prospect = p && isProspect(p), young = p && !prospect && p.g !== "min" && (p.st || 0) < 3 && !(p.c && p.c.type === "Free Agent"); // a free agent signing (from Japan, say) is established
     var w = Math.max(0, war) * (prospect || cfg.haircut == null ? 1 : cfg.haircut) * Math.pow(cfg.fade == null ? 1 : cfg.fade, year - season)
       * (young ? Math.pow(cfg.youngFade == null ? 1 : cfg.youngFade, Math.min(year - season, Math.ceil(3 - (p.st || 0)))) : 1); // until he'd be established
     return w * (cfg.tiered ? tierMult(w) : 1) * dpwAt(cfg, year, season);
@@ -149,7 +150,7 @@
   function warAt(p, year, season) {
     var rate = rateAt(p, year, season);
     var dc = p.pjs === "dc" && p.pj && p.pj.war != null ? p.pj.war : null;
-    if (year === season && dc != null && p.g !== "min") return dc;
+    if (year === season && dc != null && p.g !== "min") return dc + pitchWarAt(p, year, season);
     // Playing time. A big leaguer: FanGraphs' share for the coming season, growing a little each year. A prospect:
     // half a season the year he arrives, then a regular's share if he's good enough (FanGraphs' share for him this
     // season only reflects that he starts it in the minors). Minor league depth that isn't a graded prospect keeps
@@ -159,10 +160,17 @@
     var share;
     if (p.g === "min" && isProspect(p)) share = year <= arrival(p, season) ? reg * 0.5 : reg;
     else {
-      var share0 = dc != null && p.rate > 0.3 ? Math.max(0.15, Math.min(1, dc / p.rate)) : null;
+      var share0 = dc != null && p.rate > 0.3 ? Math.max(0.15, Math.min(1.2, dc / p.rate)) : null;
       share = share0 == null ? reg : Math.min(Math.max(cap, share0), share0 + 0.05 * (year - season));
     }
-    return Math.max(-0.3, rate * share);
+    return Math.max(-0.3, rate * share) + pitchWarAt(p, year, season);
+  }
+  // A two-way player's pitching (Ohtani): FanGraphs' pitching projection, aged on its own
+  function pitchWarAt(p, year, season) {
+    if (!p.two || !(p.two.war > 0)) return 0;
+    var w = p.two.war;
+    for (var y = season + 1; y <= year; y++) w += agingDelta(seasonAge(p, y, season)) * 0.6;
+    return Math.max(0, w);
   }
 
   // Salary, its kind, and whether he's with the team in a season. Options are decided on value.
@@ -175,12 +183,18 @@
   // Value never goes below zero: a team can always play a replacement-level player for the minimum instead.
   // Pre-arb and arbitration years aren't guaranteed (the team can option, release or non-tender him), so they're
   // flagged control: a controlled year can't cost the team more than it's worth. Only guaranteed money goes negative.
+  function optOuts(p) {
+    if (p._oo) return p._oo;
+    var m = /opt out after ([^;|]+)/i.exec((p.c && p.c.desc) || "");
+    return (p._oo = m ? (m[1].match(/\d{4}/g) || []).map(Number) : []);
+  }
   function yearTerms(p, year, season, cfg, resigned) {
     var war = warAt(p, year, season), value = fieldValue(war, year, season, cfg, p);
     var cy = contractYear(p, year), st = controlStatus(p, year, season);
     if (cy) {
       var sal = cy[1] != null ? cy[1] / 1e6 : null, code = cy[2], buyout = (cy[3] || 0) / 1e6;
-      if (p.c.defer && cy[5]) sal = cy[5] / 1e6; // deferred money: value it at the CBT hit, not face
+      if (code === "G" && optOuts(p).indexOf(year - 1) >= 0) code = "OO"; // opt-outs written only in the deal's description
+      if ((p.c.defer || /defer/i.test(p.c.desc || "")) && cy[5]) sal = cy[5] / 1e6; // deferred money: value it at the CBT hit, not face
       if (code === "CO") return { on: value >= sal, salary: value >= sal ? sal : buyout, kind: value >= sal ? "Club option" : "Option declined", value: value, war: war, option: true, buyout: buyout };
       if (code === "PO" || code === "OO") return { on: sal >= value, salary: sal >= value ? sal : 0, kind: sal >= value ? (code === "OO" ? "Stays (opt-out)" : "Player option") : "Opts out", value: value, war: war, option: true };
       if (code === "MO") return { on: false, salary: buyout, kind: "Mutual option", value: value, war: war, option: true };

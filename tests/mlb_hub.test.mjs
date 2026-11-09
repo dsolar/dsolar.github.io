@@ -102,3 +102,18 @@ test('a below-replacement pre-arb player is worth nothing, never less', () => {
   const t = M.surplus(sunk, cfg, S);
   assert.ok(Math.abs(t.rows[0].surplus + 20) < 1e-9, 'a guaranteed year costs its salary, no more');
 });
+
+test("veterans on market deals: Ohtani's pitching counts, no second-year playing time cliff", { skip: !existsSync(hubPath) }, () => {
+  const hub = JSON.parse(readFileSync(hubPath, 'utf8'));
+  const fa = JSON.parse(readFileSync(new URL('../mlb/data/fa.json', import.meta.url), 'utf8'));
+  const H = new M.Hub(hub, fa, { sims: 100 });
+  const o = H.players.find((p) => p.n === "Shohei Ohtani");
+  assert.ok(H.surplus(o).total > 50, "Ohtani should be well positive");
+  const big = H.players.filter((p) => p.c && p.c.aav >= 15e6 && p.g !== "min");
+  const avg = big.reduce((a, p) => a + H.surplus(p).total, 0) / big.length;
+  assert.ok(avg > -20, "big contracts shouldn't skew negative as a group: " + avg.toFixed(1));
+  for (const p of H.players.filter((q) => q.pjs === "dc" && q.pj && q.pj.war > 3 && q.g !== "min" && !q.two).slice(0, 80)) {
+    const r = H.surplus(p).rows;
+    if (r.length > 1 && p.age < 29) assert.ok(r[1].war > r[0].war - 0.6, p.n + " drops " + r[0].war.toFixed(1) + " to " + r[1].war.toFixed(1));
+  }
+});
