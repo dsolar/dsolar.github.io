@@ -268,7 +268,7 @@
     var poly = function (k, fill, extra) { return sh[k] && sh[k].length > 2 ? '<path d="' + P(sh[k], true) + '" fill="' + fill + '"' + (extra || "") + "/>" : ""; };
     var ang = function (q) { return Math.atan2(q[0], q[1]) * 180 / Math.PI; };
     var wall = function (side) { // the fence along a notable wall, drawn heavier
-      var seg = sh.outfield_outer.filter(function (q) { var a = ang(q); return side === "lf" ? a < -27 : a > 27; });
+      var seg = sh.outfield_outer.filter(function (q) { var a = ang(q); return Math.hypot(q[0], q[1]) > 240 && (side === "lf" ? a < -20 && a > -50 : a > 20 && a < 50); });
       return seg.length > 1 ? '<path d="' + P(seg) + '" fill="none" stroke="var(--monster)" stroke-width="7" stroke-linecap="round" opacity=".85"/>' : "";
     };
     var labels = d.length ? [-45, -22.5, 0, 22.5, 45].map(function (a, i) {
@@ -281,7 +281,7 @@
       '<path d="' + P(sh.outfield_outer, true) + '" fill="none" stroke="var(--grass-2)" stroke-width="2.5"/>' +
       (walls.lf ? wall("lf") : "") + (walls.rf ? wall("rf") : "") +
       poly("infield_outer", "var(--dirt)", ' opacity=".65"') + poly("infield_inner", "var(--grass-2)", ' opacity=".85"') +
-      (sh.foul_lines && sh.foul_lines.length ? '<path d="' + P(sh.foul_lines) + '" fill="none" stroke="#fff" stroke-width="1.6" opacity=".9"/>' : "") +
+      (d.length ? '<path d="M' + (-d[0] * .7071).toFixed(0) + " " + (-d[0] * .7071).toFixed(0) + ' L0 0 L' + (d[4] * .7071).toFixed(0) + " " + (-d[4] * .7071).toFixed(0) + '" fill="none" stroke="#fff" stroke-width="1.8" opacity=".9"/>' : "") +
       b(63.6, 63.6) + b(0, 127.3) + b(-63.6, 63.6) + '<circle cx="0" cy="-60.5" r="9" fill="var(--dirt)"/>' +
       '<path d="M0 3 L-6 -3 L-6 -8 L6 -8 L6 -3 Z" fill="#fff"/>' + labels + "</svg>";
   }
