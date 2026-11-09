@@ -1,0 +1,60 @@
+# Rebuilds the MLB hub (mlb/): pulls projections, rosters, contracts, prospects and free agents from FanGraphs
+# (tools/mlb_hub_pull.py, trimmed snapshots in tools/mlb_hub/), then builds the page data (tools/mlb_hub_build.py,
+# mlb/data/). Runs every morning, when either script changes, and by hand from the Actions tab.
+name: MLB hub
+
+on:
+  schedule:
+    - cron: "23 11 * * *"   # 6:23am ET
+  push:
+    branches: [main]
+    paths:
+      - tools/mlb_hub_pull.py
+      - tools/mlb_hub_build.py
+      - .github/workflows/mlb-hub.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mlb-hub
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set the bot's git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Pull from FanGraphs
+        # A failed part keeps its last good snapshot, so the build below still runs
+        continue-on-error: true
+        run: python3 tools/mlb_hub_pull.py
+
+      - name: Catch up with main
+        run: |
+          git stash -q -u || true
+          git pull --rebase -q origin main
+          git stash pop -q || true
+
+      - name: Build the hub data
+        run: |
+          if [ -f tools/mlb_hub_build.py ]; then python3 tools/mlb_hub_build.py; fi
+
+      - name: Commit
+        run: |
+          git add tools/mlb_hub mlb/data 2>/dev/null || git add tools/mlb_hub
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+            exit 0
+          fi
+          git commit -m "Update the MLB hub"
+          git pull --rebase -q
+          git push
