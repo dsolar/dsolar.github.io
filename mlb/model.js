@@ -36,6 +36,9 @@
     fade: 1,           // yearly shrink of WAR further out (projections get less certain each year)
     youngFade: 0.8,    // extra yearly shrink for unproven big leaguers (under 3 years of service): long control on a
                        // short track record is worth less than its projection adds up to
+    lens: "production",// "production": what he should produce; "market": what free agents get for that many years,
+                       // length premium included (the way Baseball Trade Values reads field value)
+    lenPrem: null,     // {4: premium for 4-5 years, 6: premium for 6+}, read from the free agent market
     tiered: false,     // price WAR by tier: 1-2 WAR players are plentiful, stars aren't (from the free agent market)
     years: 5,          // seasons on the slider
     sims: 4000
@@ -236,6 +239,17 @@
       contractPV += salary / disc;
       if (!t.on) break;
     }
+    // market price: free agents get paid extra for length, so a long remaining term is priced up the same way
+    var n = rows.length, lp = cfg.lenPrem;
+    if (cfg.lens === "market" && lp && n >= 4) {
+      var f = 1 + Math.max(0, n >= 6 ? lp[6] : lp[4]);
+      total = 0; pv = 0; valuePV = 0;
+      rows.forEach(function (r) {
+        r.value *= f; r.surplus = r.value - r.salary;
+        var disc = Math.pow(1 + cfg.discount, r.y - season);
+        r.pv = r.surplus / disc; total += r.surplus; pv += r.pv; valuePV += r.value / disc;
+      });
+    }
     return { rows: rows, total: total, pv: pv, valuePV: valuePV, contractPV: contractPV, prospect: prospect, hit: hit };
   }
 
@@ -275,6 +289,11 @@
     this.fa = fa || { classes: {} };
     this.market = marketRead(this.fa, this.season, this.cfg);
     if (this.market && this.market.dpw && !(opts && opts.dpw)) this.cfg.dpw = this.market.dpw;
+    if (this.market) { // length premiums for the market-price lens, from deals of 4-5 and 6+ years
+      var lb = {};
+      this.market.buckets[0].rows.forEach(function (r) { if (r.n >= 4) lb[r.k] = r.prem; });
+      this.cfg.lenPrem = { 4: lb["4-5 years"] || 0, 6: lb["6+ years"] != null ? lb["6+ years"] : (lb["4-5 years"] || 0) };
+    }
     this._cache = {};
   }
 

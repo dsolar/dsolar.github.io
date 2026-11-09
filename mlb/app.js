@@ -466,8 +466,17 @@
       '<label>Yearly inflation %<input type="number" step="0.5" min="0" max="10" data-cfg="inflation" value="' + (H.cfg.inflation * 100).toFixed(1) + '"></label>' +
       '<label>Discount rate %<input type="number" step="0.5" min="0" max="20" data-cfg="discount" value="' + (H.cfg.discount * 100).toFixed(1) + '"></label>' +
       '<label title="Teams pay for less than the full projection: a margin of safety for injuries and misses">WAR counted %<input type="number" step="5" min="50" max="100" data-cfg="haircut" value="' + (H.cfg.haircut * 100).toFixed(0) + '"></label>' +
+      '<label title="Production: what he should produce. Market: what a free agent gets for that many years, length premium included (like Baseball Trade Values)">Value as<select data-cfg-lens><option value="production"' + (H.cfg.lens !== "market" ? " selected" : "") + '>Production</option><option value="market"' + (H.cfg.lens === "market" ? " selected" : "") + ">Market price</option></select></label>" +
       '<label title="How much an unproven big leaguer\'s value (under 3 years of service) keeps from one year to the next">Young players keep %<input type="number" step="5" min="50" max="100" data-cfg="youngFade" value="' + (H.cfg.youngFade * 100).toFixed(0) + '"></label>' + (extra || "") + "</div>";
   }
+  view.addEventListener("change", function (e) {
+    var l = e.target.closest("[data-cfg-lens]");
+    if (!l) return;
+    H.set("lens", l.value);
+    save("lens", l.value);
+    surplusCache = null;
+    render();
+  });
   view.addEventListener("change", function (e) {
     var c = e.target.closest("[data-cfg]");
     if (!c) return;
@@ -741,7 +750,7 @@
       "<h3>The year slider</h3><p>" + H.season + " is FanGraphs' Depth Charts as published. Every later season is built here: a player stays while he's under a guaranteed contract, a club option worth picking up, a player option he'd keep, or team control (pre-arb under three years of service, arbitration until six). Everyone else becomes a free agent, unless you re-sign him on his team's page. Ratings age a year at a time by season age (modest gains into the mid-20s, flat at 27 and 28, then falling about a fifth of a win a year at 29-30 and a third of a win from the early 30s on), and playing time grows slowly from FanGraphs' share for the coming season. Prospects arrive at their ETA (or by level when there isn't one) and grow toward the WAR their FV grade implies over their first three seasons. Each spot goes to the best available player who can play it; a team gets five starters and eight relievers. Spots nobody can fill are \"FA Fill\": a replacement player, or a modest free agent if teams sign them (the switch). Wins scale from team WAR so later seasons spread the way Depth Charts' do.</p>" +
       "<h3>Surplus value</h3><p>For each season of contract or control: projected WAR × the price of a win, minus salary, discounted " + pct(H.cfg.discount, 0) + " a year. Like front offices, it counts " + pct(H.cfg.haircut, 0) + " of projected WAR (a margin of safety for injuries and misses), and an unproven big leaguer (under three years of service) keeps " + pct(H.cfg.youngFade, 0) + " of his value from one year to the next, since long control on a short track record is worth less than its projection adds up to. Those two defaults are calibrated to Baseball Trade Values' published values, and you can change both on the Trade Value tab. Value never drops below zero (a team can always play a replacement for the minimum), and a pre-arb or arbitration year can't cost the team more than it's worth, since those salaries aren't guaranteed. Arbitration pays 25/40/60% of market value (a fourth year 70%); pre-arb players earn the minimum (" + money(H.cfg.minSalary) + ", until the next CBA says otherwise). Club options are exercised only when they're worth it, and a player option only comes back when it's bad for the team. A prospect's value is scaled by his risk grade.</p>" +
       "<h3>The price of a win</h3><p>" + (mk ? (mk.how === "crowd" ? "This winter's free agents: Steamer's projected WAR for each, aged over the contract the crowd predicts, against the crowd's predicted dollars, then adjusted by how far past crowds landed from real contracts (" + ((mk.crowdErr - 1) >= 0 ? "+" : "") + pct(mk.crowdErr - 1, 0) + "). That gives " + money(H.cfg.dpw) + " per win." : "Carried forward from the last three winters' deals: " + money(H.cfg.dpw) + " per win.") + " The premium patterns on the Free Agents tab come from every deal of the last five winters for a player projected at 1+ WAR, against that winter's going rate. Past classes don't carry the projection at signing, so it's estimated from the season before, fit to how Steamer projects this winter's class." : "The free agent data hasn't arrived yet, so the price of a win is an assumption: " + money(H.cfg.dpw) + ".") + "</p>" +
-      "<h3>Production value, not market value</h3><p>Value here is what a player should produce: projected WAR, aged a year at a time, at the going rate for a win. Some trade-value sites (Baseball Trade Values, for one) value a player at what he'd get as a free agent instead. Free agent deals pay a premium for length (deals of six years or more ran about 19% over the going rate in the last five winters), so a star's long contract can look fair there and underwater here.</p>" +
+      "<h3>Production value or market price</h3><p>By default, value is what a player should produce: projected WAR, aged a year at a time, at the going rate for a win. Some trade-value sites (Baseball Trade Values, for one) value a player at what he'd get as a free agent instead. Free agent deals pay a premium for length (deals of six years or more ran about 19% over the going rate in the last five winters), so a star's long contract can look fair there and underwater here. The Value as switch on the Trade Value tab flips to market price: a remaining term of four or five years gets the premium those deals drew (" + pct(H.cfg.lenPrem ? H.cfg.lenPrem[4] : 0, 0) + "), six or more theirs (" + pct(H.cfg.lenPrem ? H.cfg.lenPrem[6] : 0, 0) + ").</p>" +
       "<h3>What it doesn't know</h3><ul><li>Trades and signings that haven't happened, beyond the switch for filling open spots.</li><li>Injuries after the first season, platoons, and teams' payroll limits.</li><li>Super Two arbitration, and anything the next CBA changes (the current one expires December 1, 2026).</li></ul>" +
       '<p class="note">Data pulled ' + esc(HUB.pulled || "—") + ", built " + esc(HUB.built) + (HUB.failed && HUB.failed.length ? " (last pull missed: " + esc(HUB.failed.join(", ")) + "; using the previous copy)" : "") + ".</p></div>";
   }
@@ -753,6 +762,7 @@
   ]).then(function (d) {
     HUB = d[0];
     H = new M.Hub(HUB, d[1]);
+    H.set("lens", load("lens", "production") === "market" ? "market" : "production");
     var f = load("fill", true);
     fillBox.checked = f;
     H.set("fill", f);
