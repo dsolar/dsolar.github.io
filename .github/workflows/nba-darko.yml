@@ -1,0 +1,48 @@
+# Pulls DARKO's daily player ratings from darko.app into nba/data/darko.json for the NBA Hub.
+# Runs every morning (DARKO updates overnight), when the script or this file changes, or by hand.
+name: NBA DARKO
+
+on:
+  schedule:
+    - cron: "37 13 * * *"   # 8:37am ET in winter, 9:37 in summer
+  push:
+    branches: [main]
+    paths:
+      - tools/darko_pull.py
+      - .github/workflows/nba-darko.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nba-darko
+  cancel-in-progress: false
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+
+      - name: Set the bot's git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Pull DARKO from darko.app
+        run: python3 tools/darko_pull.py
+
+      - name: Commit the ratings
+        run: |
+          git add nba/data/darko.json
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+            exit 0
+          fi
+          git commit -m "Update DARKO ratings"
+          git pull --rebase -X theirs -q
+          git push

@@ -52,6 +52,14 @@
     const players = [];
     const injured = {};
     const seenName = new Set();
+    // DARKO, pulled daily from darko.app: half of every cap-sheet rating is DARKO as of June 3, so swap in today's
+    const slug = (n) => n.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/['’.]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    const dk = inp.darko && inp.darko.p ? {} : null, dkJune = {};
+    if (dk) {
+      for (const r of inp.darko.p) { const k = NC.nameKeys(slug(r[0]))[0]; dk[k] = dk[k] ? "?" : r; }
+      for (const [n, v] of Object.entries(inp.darko.june || {})) dkJune[NC.nameKeys(slug(n))[0]] = v;
+    }
+    const DARKO_W = 0.5;
     for (const p0 of nba.players) {
       // the same player under two spellings ("a-j-green" on the cap sheet, "aj-green" in a hand fix): keep the first
       const nk = NC.nameKeys(p0.id)[0] + "|" + p0.t;
@@ -71,12 +79,25 @@
       if (p.o == null) { p.o = -1.6; p.d = -0.4; }
       if (p.yos == null) p.yos = 1;
       p.o0 = p.o; p.d0 = p.d;
-      // This season so far: Basketball-Reference's BPM, faded in by minutes played
+      // Today's DARKO in place of June's (DARKO already folds in this season's games). A player DARKO didn't rate
+      // in June (this year's rookies) moves halfway from his draft-slot guess to DARKO's number.
+      const inj0 = stats.inj && stats.inj[p.id];
+      const out0 = inj0 && /out for the (rest of the )?season|season-ending|remainder of the season/i.test(inj0[1] || "");
+      const dr = dk && dk[NC.nameKeys(p.id)[0]];
+      if (dr && dr !== "?" && !out0) {                              // DARKO shrinks players who sit; leave the season-long injured be
+        const jn = dkJune[NC.nameKeys(p.id)[0]];
+        if (jn) { p.o += DARKO_W * (dr[2] - jn[0]); p.d += DARKO_W * (dr[3] - jn[1]); }
+        else { p.o += DARKO_W * (dr[2] - p.o); p.d += DARKO_W * (dr[3] - p.d); }
+        p.o = +p.o.toFixed(2); p.d = +p.d.toFixed(2);
+        p.darko = +(dr[2] + dr[3]).toFixed(1);
+      }
+      // This season so far: Basketball-Reference's BPM, faded in by minutes played. With today's DARKO in, the box
+      // score only moves the other half of the rating (RAPM, CraftedNBA, last year's box score), so it counts half.
       const v = stats.vorp && (stats.vorp[p.id] || stats.vorp[NC.nameKeys(p.id)[0]]);
       const a = stats.avg && stats.avg[String(2027)] && stats.avg[String(2027)][p.id];
       const mins = a ? a[0] * a[1] : 0;
       if (v && mins > 0) {
-        const w = mins / (mins + ((p.yos ?? 3) <= 1 ? cfg.blendRookie : cfg.blend));
+        const w = (p.darko != null ? 1 - DARKO_W : 1) * mins / (mins + ((p.yos ?? 3) <= 1 ? cfg.blendRookie : cfg.blend));
         const shift = w * (v[1] - (p.o + p.d));
         p.o = +(p.o + shift * 0.6).toFixed(2); p.d = +(p.d + shift * 0.4).toFixed(2);
         p.form = +shift.toFixed(2); p.bpm = v[1]; p.vorp = v[0];
@@ -772,6 +793,7 @@
     };
     H.findPlayer = id => W.P[id] || null;
     H.teamPlayers = code => Object.values(W.P).filter(p => p.t === code);
+    H.darkoThrough = (inp.darko && inp.darko.through) || null;
     return H;
   }
 

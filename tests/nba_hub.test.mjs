@@ -15,7 +15,7 @@ const Mo = require('../nba/lib/model.js');
 
 const inputs = { data: read('celtics/data.json'), stats: opt('hardcap/stats.json') || {}, fixes: opt('hardcap/contracts.json'), live: opt('celtics/live.json'),
   board: opt('draft/nba.json') || {}, picks: read('nba/data/picks.json'), teams: opt('tools/draft_teams.json'),
-  tpes: read('nba/data/tpes.json'), exceptions: read('nba/data/exceptions.json'), dead: read('nba/data/dead.json') };
+  tpes: read('nba/data/tpes.json'), exceptions: read('nba/data/exceptions.json'), dead: read('nba/data/dead.json'), darko: opt('nba/data/darko.json') };
 const H = Hub.build(inputs, { sims: 300, futureSims: 100 });
 
 test('shared library: name matching runs initials together', () => {
@@ -156,4 +156,15 @@ test('dead money counts in payroll; cap holds lower next summer\'s room', () => 
 test('trade finder only returns legal deals', () => {
   const p = H.players().sort((a, b) => H.salary(b, 0) - H.salary(a, 0))[40];
   for (const r of H.findTrades(p.id)) assert.ok(H.checkTrade({ teams: [p.t, r.team], moves: r.moves }).ok);
+});
+
+test('live DARKO replaces the June DARKO half of a rating', () => {
+  const june = { 'Jayson Tatum': [4.1, 0.2] };
+  const base = Hub.build(Object.assign({}, inputs, { darko: null }), { sims: 20, futureSims: 10 });
+  const live = Hub.build(Object.assign({}, inputs, { darko: { through: '2026-11-08', p: [['Jayson Tatum', 1628369, 5.1, 1.2, 34, 9]], june } }), { sims: 20, futureSims: 10 });
+  const a = base.findPlayer('jayson-tatum'), b = live.findPlayer('jayson-tatum');
+  assert.ok(a && b);
+  assert.equal(b.darko, 6.3);
+  assert.ok(b.o > a.o && b.d > a.d, 'a better DARKO than June raises both ends');
+  assert.equal(live.darkoThrough, '2026-11-08');
 });
