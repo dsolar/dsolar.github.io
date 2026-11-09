@@ -13,6 +13,7 @@ dsolar.github.io/
     projects.js               THE LIST OF PROJECTS. Edit this to add or change one.
     site.css                  the site's colors, fonts and layout (colors are at the top)
     site.js                   email links and the footer year, shared by every page
+    faces.js, faces.css       player photos for any page (MLB by MLBAM id, NBA/NFL/college by ESPN id), initials fallback
     slate.js                  Today's slate, the hero scoreboard of the daily games (reads each game's saved progress)
     analytics.js              Cloudflare Web Analytics (paste the token here to turn it on)
     bar.css                   the fallback site bar on top of each game
@@ -66,6 +67,11 @@ dsolar.github.io/
                               (tools/hardcap_supabase.sql); the server clock is supabase/functions/hardcap-clock.
                               Tests: node --test tests/hardcap.test.mjs
   prospect/                   old address of Hard Cap; forwards to hardcap/
+  mlb/                        MLB Hub: index.html, hub.css, app.js (screens: standings, team depth charts, trade value,
+                              trade builder, free agents), model.js (every number: the year slider, playoff odds,
+                              surplus value, the free agent market) and data/ (hub.json, fa.json: built every morning by
+                              the MLB hub workflow from tools/mlb_hub_pull.py and tools/mlb_hub_build.py; don't edit).
+                              FanGraphs snapshots live in tools/mlb_hub/. Tests: node --test tests/mlb_hub.test.mjs
   fantasy-kit/                The Fantasy Kit, shared by the league pages, and Draft Lab (mock drafts against bots, unlisted):
                               sports.js (positions, lineup slots, scoring for basketball, football, baseball), value.js
                               (z-scores, fantasy points, value over replacement, auction dollars), draft.js (snake, linear,

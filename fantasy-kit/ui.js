@@ -241,11 +241,22 @@
   const posChip = (sport, pos) => `<span class="pp c${(sport.colors && sport.colors[pos]) || 6}">${esc(pos)}</span>`;
   const posChips = (sport, p) => S.positions(p).map((x) => posChip(sport, x)).join("");
   const colorOf = (sport, p) => (sport.colors && sport.colors[FK.value.mainPos(sport, p)]) || 6;
-  // A player's avatar: his team's logo in a ring of his position's color, or his initials if there's no logo (a free
-  // agent, or the image won't load).
+  // A player's photo, linked from his league (MLB) or ESPN (NBA, NFL), when the pool carries his id
+  const facePhoto = (sport, p) => {
+    const k = sport && sport.key;
+    if (k === "mlb" && /^\d{5,7}$/.test(String(p.id))) return `https://img.mlbstatic.com/mlb-photos/image/upload/w_96,q_auto:best/v1/people/${p.id}/headshot/67/current`;
+    if ((k === "nba" || k === "nfl") && p.espn) return `https://a.espncdn.com/combiner/i?img=/i/headshots/${k}/players/full/${p.espn}.png&w=96&h=70&scale=crop`;
+    return null;
+  };
+  // A player's avatar: his face in a ring of his position's color; else his team's logo; else his initials (a free
+  // agent, or the images won't load).
   const playerAv = (sport, p, size = "") => {
-    const src = sport && p && p.t && p.t !== "FA" && S.teamLogo ? S.teamLogo(sport.key, p.t, 96) : null;
-    return `<span class="pav c${colorOf(sport, p)}${size ? " " + size : ""}${src ? " lgo" : ""}" aria-hidden="true">${src ? `<img src="${esc(src)}" alt="" loading="lazy" onerror="this.parentNode.classList.remove('lgo');this.remove()">` : ""}${esc(initials(p.n))}</span>`;
+    const logo = sport && p && p.t && p.t !== "FA" && S.teamLogo ? S.teamLogo(sport.key, p.t, 96) : null;
+    const face = p ? facePhoto(sport, p) : null;
+    const src = face || logo;
+    const fall = face && logo ? `if(!this.dataset.l){this.dataset.l=1;this.parentNode.classList.replace('face','lgo');this.src='${esc(logo)}'}else{this.parentNode.classList.remove('lgo');this.remove()}`
+      : `this.parentNode.classList.remove('lgo','face');this.remove()`;
+    return `<span class="pav c${colorOf(sport, p)}${size ? " " + size : ""}${face ? " face" : src ? " lgo" : ""}" aria-hidden="true">${src ? `<img src="${esc(src)}" alt="" loading="lazy" onerror="${fall}">` : ""}${esc(initials(p.n))}</span>`;
   };
   const injTag = (p) => (p && p.inj ? ` <span class="tag inj" title="${esc(p.inj)}">${esc(String(p.inj).replace(/^day.*/i, "DTD").replace(/^questionable/i, "Q").slice(0, 3).toUpperCase())}</span>` : "");
   // Avatar, name and a small line (positions and team) for any player.

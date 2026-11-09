@@ -27,7 +27,7 @@
     var px = Math.max(48, Math.round((opts.size || 40) * 2));
     switch (sport) {
       case "mlb":
-        return "https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_" + px +
+        return "https://img.mlbstatic.com/mlb-photos/image/upload/w_" + px +
           ",q_auto:best/v1/people/" + id + "/headshot/" + (opts.milb ? "milb" : "67") + "/current";
       case "nba":
         return "https://cdn.nba.com/headshots/nba/latest/260x190/" + id + ".png";

@@ -161,6 +161,9 @@ def nba():
             row["rk"] = 1
         if inj.get(pid):
             row["inj"] = inj[pid][0]
+        r = rosters.get(pid) or []
+        if len(r) > 3 and r[3]:
+            row["espn"] = r[3]                 # ESPN athlete id, for his photo
         out.append(row)
     lines = {"pg": {"label": "Per game", "cols": NBA_COLS}}
     src = sleeper_nba(out)
@@ -624,6 +627,8 @@ def nfl():
                 p["age"] = a
             if q.get("college"):
                 p["col"] = q["college"]
+            if q.get("espn_id"):
+                p["espn"] = str(q["espn_id"])  # ESPN athlete id, for his photo
     except Exception as e:
         print(f"Sleeper's player list didn't load: {type(e).__name__}: {e}")
         # keep the colleges from the last file

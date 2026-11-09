@@ -125,7 +125,7 @@ table.t th.on{color:var(--ink)}
 .panel h3{margin:0;padding:10px 12px;font:700 13px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid var(--rule-2);display:flex;justify-content:space-between;gap:8px;align-items:center}
 .panel h3 small{font-weight:600;letter-spacing:.02em;text-transform:none;color:var(--faint)}
 .panel .body{padding:10px 12px}
-.pl{display:flex;align-items:center;gap:7px;cursor:pointer}
+.pl{display:inline-flex;align-items:center;gap:7px;cursor:pointer;vertical-align:middle}
 .pl .nm{font-weight:600}
 .pl:hover .nm{text-decoration:underline}
 .hand{display:inline-grid;place-items:center;width:15px;height:15px;border-radius:3px;background:var(--ink);color:var(--paper);font:700 9.5px/1 var(--body)}
