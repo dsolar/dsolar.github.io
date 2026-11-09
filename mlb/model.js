@@ -14,7 +14,9 @@
  * Wins come from team WAR (a replacement team wins about 48), scaled so later seasons spread like the first.
  *
  * Surplus value: projected WAR x the market price of a win, minus salary, every year of the contract or team
- * control, discounted. Arbitration pays a share of market value (25/40/60%), pre-arb the minimum. Club options are
+ * control, discounted. Like front offices (and Baseball Trade Values, which these defaults are calibrated to), it pays
+ * for 85% of projected WAR, a margin of safety for injuries and misses, and fades an unproven big leaguer's later years
+ * (20% a year until he'd have 3 years of service), since long control on a short track record is worth less than it adds up to. Arbitration pays a share of market value (25/40/60%), pre-arb the minimum. Club options are
  * picked up only when they're worth it; player options only come back when they're bad for the team.
  * The price of a win is read from recent free agent deals; how far long deals, relievers or qualifying-offer players
  * land above or below it is the market question on the Free Agents tab.
@@ -30,6 +32,11 @@
     arbPct: [0.25, 0.4, 0.6, 0.7], // share of market value paid in arbitration years 1-4
     fill: true,        // teams buy modest free agents for empty spots
     fillWar: { bat: 1.5, sp: 1.5, rp: 0.4 },
+    haircut: 0.85,     // share of projected WAR teams pay for (their margin of safety for injuries and misses)
+    fade: 1,           // yearly shrink of WAR further out (projections get less certain each year)
+    youngFade: 0.8,    // extra yearly shrink for unproven big leaguers (under 3 years of service): long control on a
+                       // short track record is worth less than its projection adds up to
+    tiered: false,     // price WAR by tier: 1-2 WAR players are plentiful, stars aren't (from the free agent market)
     years: 5,          // seasons on the slider
     sims: 4000
   };
@@ -113,6 +120,23 @@
   }
 
   function dpwAt(cfg, year, season) { return cfg.dpw * Math.pow(1 + cfg.inflation, year - season); }
+  // What a season of WAR is worth as a share of the going rate, by how much WAR it is. From this market's own deals:
+  // players projected under 1.5 WAR signed for about 22% under the rate, 2.5-4 WAR players about 15% over.
+  function tierMult(war) {
+    var pts = [[0, 0.7], [1, 0.78], [2, 0.94], [3.25, 1.15], [6, 1.15]];
+    if (war <= 0) return pts[0][1];
+    for (var i = 1; i < pts.length; i++) if (war <= pts[i][0]) {
+      var a = pts[i - 1], b = pts[i];
+      return a[1] + (b[1] - a[1]) * (war - a[0]) / (b[0] - a[0]);
+    }
+    return pts[pts.length - 1][1];
+  }
+  function fieldValue(war, year, season, cfg, p) {
+    var prospect = p && isProspect(p), young = p && !prospect && p.g !== "min" && (p.st || 0) < 3;
+    var w = Math.max(0, war) * (prospect || cfg.haircut == null ? 1 : cfg.haircut) * Math.pow(cfg.fade == null ? 1 : cfg.fade, year - season)
+      * (young ? Math.pow(cfg.youngFade == null ? 1 : cfg.youngFade, Math.min(year - season, Math.ceil(3 - (p.st || 0)))) : 1); // until he'd be established
+    return w * (cfg.tiered ? tierMult(w) : 1) * dpwAt(cfg, year, season);
+  }
 
   // Expected WAR in a season for value purposes: the rate times a playing-time share
   function warAt(p, year, season) {
@@ -128,8 +152,11 @@
   }
 
   // Salary, its kind, and whether he's with the team in a season. Options are decided on value.
+  // Value never goes below zero: a team can always play a replacement-level player for the minimum instead.
+  // Pre-arb and arbitration years aren't guaranteed (the team can option, release or non-tender him), so they're
+  // flagged control: a controlled year can't cost the team more than it's worth. Only guaranteed money goes negative.
   function yearTerms(p, year, season, cfg, resigned) {
-    var war = warAt(p, year, season), value = war * dpwAt(cfg, year, season);
+    var war = warAt(p, year, season), value = fieldValue(war, year, season, cfg, p);
     var cy = contractYear(p, year), st = controlStatus(p, year, season);
     if (cy) {
       var sal = cy[1] != null ? cy[1] / 1e6 : null, code = cy[2], buyout = (cy[3] || 0) / 1e6;
@@ -141,7 +168,7 @@
         var n = /^A(\d)/.exec(code), arbN = n ? +n[1] : (/arb(\d)/.exec(st) || [0, 1])[1];
         var est = code === "PA" ? cfg.minSalary : Math.max(cfg.minSalary, cfg.arbPct[Math.min(3, arbN - 1)] * Math.max(0, value));
         var arbProj = cy[4] ? cy[4] / 1e6 : null; // FanGraphs' arbitration projection, when it has one
-        return { on: true, salary: sal != null && sal > 0 ? sal : (arbProj || est), kind: code === "PA" ? "Pre-arb" : "Arb " + arbN, value: value, war: war, est: !(sal > 0) };
+        return { on: true, salary: sal != null && sal > 0 ? sal : (arbProj || est), kind: code === "PA" ? "Pre-arb" : "Arb " + arbN, value: value, war: war, est: !(sal > 0), control: true };
       }
       return { on: true, salary: sal != null ? sal : 0, kind: "Signed", value: value, war: war };
     }
@@ -149,10 +176,10 @@
     var last = p.c && p.c.yrs && p.c.yrs.length ? p.c.yrs[p.c.yrs.length - 1][0] : null;
     var signedThrough = last != null && year > last && p.c.type && !/Arbitration|Pre-Arb/i.test(p.c.type);
     if (st === "minors") return { on: false, salary: 0, kind: "Minors", value: 0, war: 0 };
-    if (!signedThrough && st === "pre") return { on: true, salary: cfg.minSalary, kind: "Pre-arb", value: value, war: war };
+    if (!signedThrough && st === "pre") return { on: true, salary: cfg.minSalary, kind: "Pre-arb", value: value, war: war, control: true };
     if (!signedThrough && /^arb/.test(st)) {
       var k = +st.slice(3);
-      return { on: true, salary: Math.max(cfg.minSalary, cfg.arbPct[k - 1] * Math.max(0, value)), kind: "Arb " + k, value: value, war: war, est: true };
+      return { on: true, salary: Math.max(cfg.minSalary, cfg.arbPct[k - 1] * Math.max(0, value)), kind: "Arb " + k, value: value, war: war, est: true, control: true };
     }
     if (resigned) return { on: true, salary: Math.max(cfg.minSalary, value), kind: "Re-signed", value: value, war: war };
     return { on: false, salary: 0, kind: "Free agent", value: value, war: war };
@@ -176,6 +203,7 @@
       if (!t.on && !(t.option && t.salary)) { if (y > start) break; else continue; }
       if (retires(p, y, season)) break;
       var s = t.on ? t.value - t.salary : -t.salary; // a declined option still costs its buyout
+      if (t.control) s = Math.max(0, s);             // not guaranteed: the team would cut him before paying more
       if (t.kind === "Player option" && !t.on) s = 0;
       s *= hit;
       var disc = Math.pow(1 + cfg.discount, y - season);
@@ -635,7 +663,7 @@
 
   function mean(a) { return a.length ? a.reduce(function (s, x) { return s + x; }, 0) / a.length : 0; }
 
-  var api = { Hub: Hub, DEFAULTS: DEFAULTS, agingDelta: agingDelta, fvWar: fvWar, rateAt: rateAt, warAt: warAt,
+  var api = { Hub: Hub, DEFAULTS: DEFAULTS, tierMult: tierMult, agingDelta: agingDelta, fvWar: fvWar, rateAt: rateAt, warAt: warAt,
     yearTerms: yearTerms, controlStatus: controlStatus, surplus: surplus, simulate: simulate, seriesWin: seriesWin,
     marketRead: marketRead, warPath: warPath, canPlay: canPlay, FIELD_ORDER: FIELD_ORDER, arrival: arrival };
   if (typeof module === "object" && module.exports) module.exports = api;

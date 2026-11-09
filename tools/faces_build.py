@@ -33,7 +33,7 @@ CACHE = os.path.join(HERE, "faces_cache.json")
 UA = "davidsolar-faces/1.0 (+https://davidsolar.dev/)"
 SPORTS = ["mlb", "nba", "nfl", "ncaab", "ncaaf"]
 ESPN_LEAGUE = {"nba": "nba", "nfl": "nfl", "mlb": "mlb", "ncaab": "mens-college-basketball", "ncaaf": "college-football"}
-SEARCH_PER_RUN = 600
+SEARCH_PER_RUN = 900
 LOCAL = "--local" in sys.argv
 
 

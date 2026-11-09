@@ -48,7 +48,7 @@ test('surplus: a cheap good player is worth more than an expensive one', () => {
   const cheap = { g: 'sl', st: 1, age: 25, rate: 4, pjs: 'dc', pj: { war: 4 } };
   const pricey = { g: 'sl', st: 9, age: 31, rate: 4, pjs: 'dc', pj: { war: 4 }, c: { type: 'Free Agent', yrs: [[2027, 45e6, 'G'], [2028, 45e6, 'G'], [2029, 45e6, 'G']] } };
   const a = M.surplus(cheap, cfg, S), b = M.surplus(pricey, cfg, S);
-  assert.ok(a.pv > 100, `cheap star ${a.pv}`);
+  assert.ok(a.pv > 50, `cheap star ${a.pv}`);
   assert.ok(b.pv < 0, `overpaid star ${b.pv}`);
   assert.equal(a.rows.length, 5, 'one year of service leaves five seasons of control');
 });
@@ -92,4 +92,13 @@ test('real data: 30 teams, standings average 81 wins every season', { skip: !exi
     st.forEach((r) => assert.ok(r.wins > 40 && r.wins < 122, `${r.t.abbr} ${y} ${r.wins}`));
   }
   if (H.market) assert.ok(H.cfg.dpw > 5 && H.cfg.dpw < 20, `price of a win ${H.cfg.dpw}`);
+});
+
+test('a below-replacement pre-arb player is worth nothing, never less', () => {
+  const scrub = { g: 'sl', st: 0.5, age: 28, rate: -0.8, pjs: 'dc', pj: { war: -0.5 } };
+  const s = M.surplus(scrub, cfg, S);
+  s.rows.forEach((r) => assert.ok(r.surplus >= 0, `${r.y} ${r.surplus}`));
+  const sunk = { g: 'sl', st: 9, age: 35, rate: -0.5, pjs: 'dc', pj: { war: -0.5 }, c: { type: 'Free Agent', yrs: [[2027, 20e6, 'G']] } };
+  const t = M.surplus(sunk, cfg, S);
+  assert.ok(Math.abs(t.rows[0].surplus + 20) < 1e-9, 'a guaranteed year costs its salary, no more');
 });

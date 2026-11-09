@@ -202,3 +202,46 @@ dialog#card .x{position:absolute;top:8px;right:10px;border:0;background:none;fon
 .method p,.method li{color:var(--muted)}
 .method li{margin:4px 0}
 .foot{margin-top:28px;font-size:12.5px;color:var(--faint)}
+
+.card-sec{margin:14px 0 4px;font:700 12px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+/* trade builder: team pickers and roster lists */
+.side-h{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.side-h select{flex:1;min-width:0;border:1px solid var(--rule);border-radius:8px;background:var(--paper);padding:7px 8px;font:700 15px/1.2 var(--body);color:var(--ink)}
+.sends{margin:10px 0 2px;font:700 11px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+details.org{margin-top:10px;border-top:1px solid var(--rule-2);padding-top:6px}
+details.org summary{cursor:pointer;font:700 12px/1.6 var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+details.org[open]{max-height:360px;overflow:auto}
+.org-row{display:flex;width:100%;align-items:center;gap:8px;border:0;background:none;padding:5px 2px;text-align:left;font-size:13.5px;border-bottom:1px solid var(--rule-2);color:var(--ink)}
+.org-row:hover{background:var(--paper-2)}
+.org-row .grow{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* grids never push past a phone's width */
+.leagues>*,.two>*,.sides>*,.prem>*{min-width:0}
+/* phones: a compact header (one swipeable row of tabs) so the content starts on the first screen */
+@media (max-width:640px){
+  .mast{padding:14px 0 0}
+  .kicker{margin-bottom:6px;font-size:11px}
+  .mast h1{font-size:34px}
+  .mast .sub{display:none}
+  .tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin-top:10px;gap:2px}
+  .tabs::-webkit-scrollbar{display:none}
+  .tabs a{flex:none;white-space:nowrap;padding:9px 11px 8px;font-size:12.5px}
+  .yearbar{padding-top:10px;gap:8px}
+  .years button{padding:6px 10px}
+  .switch{font-size:12.5px}
+  h2.sec{font-size:22px;margin-top:16px}
+  p.lede{font-size:14px}
+  .thead{margin:12px 0 6px;gap:10px}
+  .thead .logo{width:40px;height:40px}
+  .thead h2{font-size:24px}
+  .teampick{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .teampick a{flex:none}
+  .stats{grid-template-columns:repeat(3,1fr);gap:6px}
+  .stat{padding:8px 4px}
+  .stat b{font-size:18px}
+  .controls{gap:8px 10px}
+  .controls input[type=search]{min-width:0;width:100%}
+  dialog#card{width:100%;max-width:none;margin:auto 0 0;border-radius:16px 16px 0 0;max-height:90vh}
+  .card-h{padding:14px 44px 10px 14px}
+  .card-h h3{font-size:21px}
+  .card-b{padding:10px 14px 16px}
+}

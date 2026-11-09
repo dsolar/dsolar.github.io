@@ -169,6 +169,36 @@ def build():
         types = sorted({y[2] for t in pay.get("teams", {}).values() for c in t.get("contracts", []) for y in c["years"]})
         print("contract year types:", types)
 
+    # ---- recent MLB seasons (tools/mlb/, MLB Stats API, pulled for Wipe Yoenis) and prospects' minor league lines
+    nick = {v[1]: v[0] for v in TEAMS.values()}
+    def abbr_of(team_name):
+        for k, a in nick.items():
+            if str(team_name or "").endswith(k):
+                return a
+        return None
+    hist = {}
+    for y in range(season - 3, season):
+        path = os.path.join(HERE, "mlb", f"{y}.json")
+        if not os.path.exists(path):
+            continue
+        d = json.load(open(path, encoding="utf-8"))
+        for r in d.get("hitting", []):
+            if (r.get("pa") or 0) < 5 or not r.get("id"):
+                continue
+            hist.setdefault(r["id"], {}).setdefault("b", []).append(
+                [y, abbr_of(r.get("team")), r.get("g"), r.get("pa"), r.get("hr"), r.get("r"), r.get("rbi"), r.get("sb"), r.get("avg"), r.get("obp"), r.get("slg")])
+        for r in d.get("pitching", []):
+            if not r.get("id") or not r.get("g"):
+                continue
+            hist.setdefault(r["id"], {}).setdefault("p", []).append(
+                [y, abbr_of(r.get("team")), r.get("g"), r.get("gs"), r.get("ip"), r.get("w"), r.get("l"), r.get("sv"), r.get("k"), r.get("bb"), r.get("era"), r.get("whip")])
+    minors = {}
+    kit = os.path.join(os.path.dirname(HERE), "fantasy-kit", "data", "prospects-mlb.json")
+    if os.path.exists(kit):
+        for r in json.load(open(kit, encoding="utf-8")).get("players", []):
+            if str(r.get("mlbam") or "").isdigit() and r.get("line"):
+                minors[int(r["mlbam"])] = r["line"]
+
     # ---- players: every organization's roster
     players = []
     seen = set()
@@ -238,6 +268,10 @@ def build():
                 p["zips"] = {k: z.get(k) for k in (("ip", "war", "era") if is_p else ("pa", "war", "wrc"))}
             if pr:
                 p.update(pr)
+            if mid in hist:
+                p["hist"] = hist[mid]
+            if mid in minors:
+                p["ml"] = minors[mid]
             if ct:
                 p["c"] = ct
             players.append({k: v for k, v in p.items() if v is not None})

@@ -310,7 +310,8 @@
     if (p.tldr) html += '<p class="tldr">' + esc(p.tldr) + "</p>";
     if (p.c && p.c.desc) html += '<p class="tldr"><b>Contract:</b> ' + esc(p.c.desc) + (p.c.note ? " " + esc(p.c.note) : "") + "</p>";
     else if (p.acq) html += '<p class="tldr">' + esc(p.acq) + "</p>";
-    html += '<div class="scroll"><table class="t"><thead><tr><th>Year</th><th>Age</th><th>Status</th><th>WAR</th><th>Value</th><th>Salary</th><th>Surplus</th></tr></thead><tbody>';
+    html += statTables(p);
+    html += '<h4 class="card-sec">Contract value</h4><div class="scroll"><table class="t"><thead><tr><th>Year</th><th>Age</th><th>Status</th><th>WAR</th><th>Value</th><th>Salary</th><th>Surplus</th></tr></thead><tbody>';
     s.rows.forEach(function (r) {
       html += "<tr><td>" + r.y + "</td><td>" + H.ageAt(p, r.y) + '</td><td style="text-align:left"><span class="pill">' + esc(r.kind) + "</span></td><td>" + f1(r.war) + "</td><td>" + money(r.value) + "</td><td>" + money(r.salary) + (r.est ? "*" : "") + '</td><td class="' + (r.surplus >= 0 ? "pos" : "neg") + '">' + signed(r.surplus) + "</td></tr>";
     });
@@ -322,15 +323,50 @@
     cardBody.innerHTML = html;
     if (!card.open) card.showModal();
   }
+  // The numbers behind the value: the coming season's projection, the last three MLB seasons, the minor league line
+  function d3(x) { return x == null ? "—" : Number(x).toFixed(3).replace(/^0/, ""); }
+  function statTables(p) {
+    var pj = p.pj || {}, html = "", src = p.pjs === "dc" ? "FanGraphs Depth Charts" : "Steamer";
+    var tbl = function (title, head, rows) {
+      return rows.length ? '<h4 class="card-sec">' + title + '</h4><div class="scroll"><table class="t"><thead><tr>' + head.map(function (h) { return "<th>" + h + "</th>"; }).join("") + "</tr></thead><tbody>" +
+        rows.map(function (r) { return "<tr>" + r.map(function (c) { return "<td>" + c + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody></table></div>" : "";
+    };
+    var bat = !p.p, pit = p.p || p.two;
+    var proj = [];
+    if (bat && p.pj) proj.push([H.season + " " + src, f0(pj.pa), f0(pj.hr), f0(pj.sb), d3(pj.avg) + "/" + d3(pj.obp) + "/" + d3(pj.slg), f0(pj.wrc), f1(pj.def), "<b>" + f1(pj.war) + "</b>"]);
+    if (bat && p.zips && p.zips.pa) proj.push([H.season + " ZiPS", f0(p.zips.pa), "—", "—", "—", f0(p.zips.wrc), "—", "<b>" + f1(p.zips.war) + "</b>"]);
+    html += tbl("Projection", ["", "PA", "HR", "SB", "AVG/OBP/SLG", "wRC+", "Def", "WAR"], proj);
+    var pp = [];
+    if (p.p && p.pj) pp.push([H.season + " " + src, f0(pj.ip), f0(pj.gs), pj.era != null ? pj.era.toFixed(2) : "—", pj.fip != null ? pj.fip.toFixed(2) : "—", pj.kbb != null ? (pj.kbb * 100).toFixed(1) + "%" : "—", pj.k9 != null ? pj.k9.toFixed(1) : "—", f0(pj.sv), "<b>" + f1(pj.war) + "</b>"]);
+    if (p.two) pp.push([H.season + " pitching", f0(p.two.ip), f0(p.two.gs), p.two.era != null ? p.two.era.toFixed(2) : "—", "—", "—", "—", "—", "<b>" + f1(p.two.war) + "</b>"]);
+    if (p.p && p.zips && p.zips.ip) pp.push([H.season + " ZiPS", f0(p.zips.ip), "—", p.zips.era != null ? p.zips.era.toFixed(2) : "—", "—", "—", "—", "—", "<b>" + f1(p.zips.war) + "</b>"]);
+    if (pit) html += tbl(bat ? "Pitching projection" : "Projection", ["", "IP", "GS", "ERA", "FIP", "K-BB%", "K/9", "SV", "WAR"], pp);
+    var hb = (p.hist && p.hist.b) || [], hp = (p.hist && p.hist.p) || [];
+    if (bat || hb.length) html += tbl("Last seasons", ["Year", "Tm", "G", "PA", "HR", "R", "RBI", "SB", "AVG/OBP/SLG"],
+      hb.slice().reverse().map(function (r) { return [r[0], esc(r[1] || ""), r[2], r[3], r[4], r[5], r[6], r[7], d3(r[8]) + "/" + d3(r[9]) + "/" + d3(r[10])]; }));
+    if (pit && hp.length) html += tbl(bat ? "Last seasons pitching" : "Last seasons", ["Year", "Tm", "G", "GS", "IP", "W-L", "SV", "K", "BB", "ERA", "WHIP"],
+      hp.slice().reverse().map(function (r) { return [r[0], esc(r[1] || ""), r[2], r[3], r[4], r[5] + "-" + r[6], r[7], r[8], r[9], r[10] != null ? Number(r[10]).toFixed(2) : "—", r[11] != null ? Number(r[11]).toFixed(2) : "—"]; }));
+    if (p.ml) {
+      var m = p.ml;
+      html += m.ip != null
+        ? tbl("Minor leagues, " + (H.season - 1), ["Level", "G", "GS", "IP", "ERA", "WHIP", "K%", "BB%"], [[esc(m.lv || ""), m.G, m.GS, m.ip, m.era, m.whip, m.k != null ? m.k + "%" : "—", m.bb != null ? m.bb + "%" : "—"]])
+        : tbl("Minor leagues, " + (H.season - 1), ["Level", "G", "PA", "HR", "SB", "AVG/OBP/SLG", "wRC+"], [[esc(m.lv || ""), m.G, m.PA, m.HR, m.SB, d3(m.avg) + "/" + d3(m.obp) + "/" + d3(m.slg), m.wrc != null ? m.wrc : "—"]]);
+    }
+    if (!html) html = '<p class="note">No stats on file yet.</p>';
+    return html;
+  }
   function kv(v, k) { return "<div><b>" + v + "</b><span>" + k + "</span></div>"; }
   function closeCard() { if (card.open) card.close(); }
   card.addEventListener("click", function (e) {
     if (e.target === card || e.target.closest("[data-close]")) { closeCard(); return; }
     var add = e.target.closest("[data-add]");
     if (add) {
-      var tr = load("trade", { a: [], b: [], c: [] }), id = add.dataset.id;
+      var tr = Object.assign({ a: [], b: [], c: [], teams: {} }, load("trade", {})), id = add.dataset.id;
+      tr.teams = tr.teams || {};
       ["a", "b", "c"].forEach(function (k) { tr[k] = (tr[k] || []).filter(function (x) { return String(x) !== id; }); });
       tr[add.dataset.add].push(isNaN(+id) ? id : +id);
+      var pl = H.byId[id] || H.byId[+id];
+      if (pl && tr.teams[add.dataset.add] !== pl.t) tr.teams[add.dataset.add] = (tr[add.dataset.add].every(function (x) { var q = H.byId[x]; return q && q.t === pl.t; })) ? pl.t : null;
       save("trade", tr);
       closeCard();
       location.hash = tradeHash(tr);
@@ -342,7 +378,9 @@
     return '<div class="controls">' +
       '<label>$ per WAR (' + H.season + ')<input type="number" step="0.1" min="2" max="30" data-cfg="dpw" value="' + H.cfg.dpw.toFixed(1) + '"></label>' +
       '<label>Yearly inflation %<input type="number" step="0.5" min="0" max="10" data-cfg="inflation" value="' + (H.cfg.inflation * 100).toFixed(1) + '"></label>' +
-      '<label>Discount rate %<input type="number" step="0.5" min="0" max="20" data-cfg="discount" value="' + (H.cfg.discount * 100).toFixed(1) + '"></label>' + (extra || "") + "</div>";
+      '<label>Discount rate %<input type="number" step="0.5" min="0" max="20" data-cfg="discount" value="' + (H.cfg.discount * 100).toFixed(1) + '"></label>' +
+      '<label title="Teams pay for less than the full projection: a margin of safety for injuries and misses">WAR counted %<input type="number" step="5" min="50" max="100" data-cfg="haircut" value="' + (H.cfg.haircut * 100).toFixed(0) + '"></label>' +
+      '<label title="How much an unproven big leaguer\'s value (under 3 years of service) keeps from one year to the next">Young players keep %<input type="number" step="5" min="50" max="100" data-cfg="youngFade" value="' + (H.cfg.youngFade * 100).toFixed(0) + '"></label>' + (extra || "") + "</div>";
   }
   view.addEventListener("change", function (e) {
     var c = e.target.closest("[data-cfg]");
@@ -397,67 +435,94 @@
   });
 
   // ---------- trade builder ----------
+  // A trade lives in the address bar: a=, b=, c= are each side's players; ta=, tb=, tc= the team each side is
   function tradeHash(tr) {
     var q = {};
-    ["a", "b", "c"].forEach(function (k) { if (tr[k] && tr[k].length) q[k] = tr[k].join(","); });
+    ["a", "b", "c"].forEach(function (k) {
+      if (tr[k] && tr[k].length) q[k] = tr[k].join(",");
+      if (tr.teams && tr.teams[k]) q["t" + k] = tr.teams[k];
+    });
+    if (tr.three) q.three = 1;
     return href("trade", q);
   }
   function tradeState() {
-    var q = state.q, tr = { a: [], b: [], c: [] }, any = false;
+    var q = state.q, tr = { a: [], b: [], c: [], teams: {}, three: !!q.three }, any = false;
     ["a", "b", "c"].forEach(function (k) {
       if (q[k]) { any = true; tr[k] = q[k].split(",").map(function (x) { return isNaN(+x) ? x : +x; }).filter(function (id) { return H.byId[id]; }); }
+      if (q["t" + k] && H.byAbbr[q["t" + k]]) { any = true; tr.teams[k] = q["t" + k]; }
     });
-    if (!any) tr = load("trade", tr);
+    if (!any) { var saved = load("trade", null); if (saved) tr = Object.assign(tr, saved, { teams: saved.teams || {} }); }
+    if ((tr.c || []).length || tr.teams.c) tr.three = true;
     return tr;
   }
+  function sideName(tr, k, i) { return tr.teams[k] ? team(tr.teams[k]).name : "Side " + "ABC"[i]; }
   function tradePage() {
-    var tr = tradeState(), three = tr.c && tr.c.length || state.q.three;
+    var tr = tradeState();
     save("trade", tr);
-    var sides = three ? ["a", "b", "c"] : ["a", "b"];
-    var totals = {};
-    var html = '<h2 class="sec">Trade Builder</h2><p class="lede">Put players on each side and compare the surplus value changing hands. Prospects count at their grade, scaled for risk. Every trade has its own link, so you can send it.</p>';
+    var sides = tr.three ? ["a", "b", "c"] : ["a", "b"], totals = {};
+    var teamOpts = function (cur) {
+      return '<option value="">Any team</option>' + H.teams.slice().sort(function (x, y) { return x.name.localeCompare(y.name); })
+        .map(function (t) { return '<option value="' + t.abbr + '"' + (t.abbr === cur ? " selected" : "") + ">" + esc(t.name) + "</option>"; }).join("");
+    };
+    var html = '<h2 class="sec">Trade Builder</h2><p class="lede">Pick a team for each side, then add players and prospects from its roster and farm (or search anyone). Compare the surplus value changing hands. Every trade has its own link, so you can send it.</p>';
     html += controls();
     html += '<div class="sides">';
     sides.forEach(function (k, i) {
-      var ids = tr[k] || [], tot = 0, rows = "";
+      var ids = tr[k] || [], tot = 0, rows = "", tm = tr.teams[k];
       ids.forEach(function (id) {
-        var p = H.byId[id], s = H.surplus(p);
-        tot += s.pv;
-        rows += '<li>' + pname(p, 28) + '<span class="grow"><span class="sub">' + logo(p.t, 14) + " " + esc(p.pos || "") + " · " + (p.c && p.c.desc ? esc(p.c.desc.replace(/\s*\(.*?\)/, "")) : p.fv && p.g === "min" ? "FV " + esc(p.fv) : esc((s.rows[0] || {}).kind || "")) +
-          '</span></span><b class="' + (s.pv >= 0 ? "pos" : "neg") + '">' + signed(s.pv) + '</b><button class="xbtn" data-rm="' + k + '" data-id="' + esc(id) + '" aria-label="Remove">×</button></li>';
+        var p = H.byId[id], sv = H.surplus(p);
+        tot += sv.pv;
+        rows += "<li>" + pname(p, 28) + '<span class="grow"><span class="sub">' + logo(p.t, 14) + " " + esc(p.pos || "") + " · " + (p.c && p.c.desc ? esc(p.c.desc.replace(/\s*\(.*?\)/, "")) : p.fv && p.g === "min" ? "FV " + esc(p.fv) : esc((sv.rows[0] || {}).kind || "")) +
+          '</span></span><b class="' + (sv.pv >= 0 ? "pos" : "neg") + '">' + signed(sv.pv) + '</b><button class="xbtn" data-rm="' + k + '" data-id="' + esc(id) + '" aria-label="Remove">×</button></li>';
       });
       totals[k] = tot;
-      html += '<div class="side"><h3>Side ' + "ABC"[i] + ' <small class="note">sends</small></h3><div class="search"><input type="search" placeholder="Add a player or prospect" data-side="' + k + '" autocomplete="off"><div class="results" hidden></div></div>' +
-        '<ul class="rlist">' + (rows || '<li class="note">No one yet.</li>') + '</ul><div class="tot"><span>Surplus sent</span><span class="num">' + signed(tot) + "</span></div></div>";
+      html += '<div class="side"><div class="side-h">' + (tm ? logo(tm, 28) : "") + '<select data-tside="' + k + '" aria-label="Team for side ' + "ABC"[i] + '">' + teamOpts(tm) + "</select></div>" +
+        '<div class="search"><input type="search" placeholder="' + (tm ? "Search the " + esc(team(tm).name) : "Search any player or prospect") + '" data-side="' + k + '" autocomplete="off"><div class="results" hidden></div></div>' +
+        '<p class="sends">Sends</p><ul class="rlist">' + (rows || '<li class="note">No one yet.</li>') + '</ul><div class="tot"><span>Surplus sent</span><span class="num">' + signed(tot) + "</span></div>" +
+        (tm ? orgPicker(tm, k, ids) : "") + "</div>";
     });
     html += "</div>";
-    if (!three) html += '<p><a class="btn" href="' + href("trade", Object.assign({}, state.q, { three: 1 })) + '">+ Add a third team</a></p>';
-    // verdict
+    if (!tr.three) html += '<p><button class="btn" data-three>+ Add a third team</button></p>';
     var a = totals.a || 0, b = totals.b || 0;
-    if ((tr.a || []).length && (tr.b || []).length && !three) {
+    if ((tr.a || []).length && (tr.b || []).length && !tr.three) {
       var d = a - b, close = Math.abs(d) < Math.max(5, 0.1 * Math.max(Math.abs(a), Math.abs(b)));
+      var na = sideName(tr, "a", 0), nb = sideName(tr, "b", 1);
       html += '<div class="verdict">' + (close ? "<b>Even.</b> The surplus going each way is within " + money(Math.abs(d)) + "."
-        : "<b>Side " + (d > 0 ? "B" : "A") + " wins</b> by " + money(Math.abs(d)) + " of surplus value.") +
-        "<small>Side A sends " + signed(a) + ", Side B sends " + signed(b) + ". Surplus isn't everything: contenders pay for wins now, and a team's payroll room matters.</small></div>";
-    } else if (three && sides.every(function (k) { return (tr[k] || []).length; })) {
-      html += '<div class="verdict"><b>Three-team deal.</b> ' + sides.map(function (k, i) { return "Side " + "ABC"[i] + " sends " + signed(totals[k]); }).join(" · ") + "<small>Who receives what isn't tracked yet: compare what each side gives up.</small></div>";
+        : "<b>" + esc(d > 0 ? nb : na) + " win" + (/s$/.test(d > 0 ? nb : na) ? "" : "s") + "</b> by " + money(Math.abs(d)) + " of surplus value.") +
+        "<small>" + esc(na) + " send " + signed(a) + ", " + esc(nb) + " send " + signed(b) + ". Surplus isn't everything: contenders pay for wins now, and a team's payroll room matters.</small></div>";
+    } else if (tr.three && sides.every(function (k) { return (tr[k] || []).length; })) {
+      html += '<div class="verdict"><b>Three-team deal.</b> ' + sides.map(function (k, i) { return esc(sideName(tr, k, i)) + " send " + signed(totals[k]); }).join(" · ") + "<small>Compare what each side gives up.</small></div>";
     }
     html += '<p><button class="btn" data-clear>Clear the trade</button></p>';
     view.innerHTML = html;
   }
+  // A team's roster and farm, best surplus first, to add with one tap
+  function orgPicker(abbr, k, ids) {
+    var on = {};
+    (ids || []).forEach(function (id) { on[id] = 1; });
+    var list = H.org(abbr).map(function (p) { return { p: p, s: H.surplus(p) }; })
+      .filter(function (x) { return x.s.rows.length && !on[x.p.id]; })
+      .sort(function (x, y) { return (x.p.g === "min") - (y.p.g === "min") || y.s.pv - x.s.pv; });
+    var row = function (x) {
+      return '<button type="button" class="org-row" data-pick="' + esc(x.p.id) + '" data-side="' + k + '">' + face(x.p, 22) + '<span class="grow">' + esc(x.p.n) + ' <span class="note">' + esc(x.p.pos || "") + (x.p.fv && x.p.g === "min" ? " · FV " + esc(x.p.fv) : "") + '</span></span><b class="' + (x.s.pv >= 0 ? "pos" : "neg") + '">' + signed(x.s.pv) + "</b></button>";
+    };
+    var mlb = list.filter(function (x) { return x.p.g !== "min"; }), farm = list.filter(function (x) { return x.p.g === "min"; }).slice(0, 25);
+    return '<details class="org" open><summary>' + esc(team(abbr).name) + " roster</summary>" + mlb.map(row).join("") + "</details>" +
+      '<details class="org"><summary>Farm system</summary>' + farm.map(row).join("") + "</details>";
+  }
   var searchIdx = null;
-  function search(q) {
+  function search(q, abbr) {
     if (!searchIdx) searchIdx = H.players.map(function (p) { return { p: p, k: p.n.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "") }; });
     q = q.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
     if (q.length < 2) return [];
-    return searchIdx.filter(function (x) { return x.k.indexOf(q) >= 0; })
+    return searchIdx.filter(function (x) { return x.k.indexOf(q) >= 0 && (!abbr || x.p.t === abbr); })
       .sort(function (a, b) { return (b.k.indexOf(q) === 0) - (a.k.indexOf(q) === 0) || (b.p.g !== "min") - (a.p.g !== "min") || (b.p.rate || 0) - (a.p.rate || 0); })
       .slice(0, 12).map(function (x) { return x.p; });
   }
   view.addEventListener("input", function (e) {
     var inp = e.target.closest("input[data-side]");
     if (!inp) return;
-    var box = inp.nextElementSibling, res = search(inp.value);
+    var tr = tradeState(), box = inp.nextElementSibling, res = search(inp.value, tr.teams[inp.dataset.side]);
     box.hidden = !res.length;
     box.innerHTML = res.map(function (p) {
       return '<button type="button" data-pick="' + esc(p.id) + '" data-side="' + inp.dataset.side + '">' + face(p, 22) + "<span>" + esc(p.n) + ' <span class="note">' + esc(p.t) + " · " + esc(p.pos || "") + (p.fv && p.g === "min" ? " · FV " + esc(p.fv) : "") + "</span></span></button>";
@@ -467,12 +532,22 @@
     var inp = e.target.closest("input[data-side]");
     if (inp && e.key === "Enter") { var b = inp.nextElementSibling.querySelector("button"); if (b) b.click(); }
   });
+  view.addEventListener("change", function (e) {
+    var sel = e.target.closest("select[data-tside]");
+    if (!sel) return;
+    var tr = tradeState(), k = sel.dataset.tside;
+    tr.teams[k] = sel.value || null;
+    if (sel.value) tr[k] = (tr[k] || []).filter(function (id) { return H.byId[id] && H.byId[id].t === sel.value; });
+    save("trade", tr);
+    location.hash = tradeHash(tr);
+  });
   view.addEventListener("click", function (e) {
-    var pick = e.target.closest("[data-pick]"), rm = e.target.closest("[data-rm]"), clear = e.target.closest("[data-clear]");
-    if (!pick && !rm && !clear) return;
+    var pick = e.target.closest("[data-pick]"), rm = e.target.closest("[data-rm]"), clear = e.target.closest("[data-clear]"), three = e.target.closest("[data-three]");
+    if (!pick && !rm && !clear && !three) return;
     e.stopPropagation();
     var tr = tradeState();
-    if (clear) tr = { a: [], b: [], c: [] };
+    if (clear) tr = { a: [], b: [], c: [], teams: {}, three: false };
+    if (three) tr.three = true;
     if (pick) {
       var id = isNaN(+pick.dataset.pick) ? pick.dataset.pick : +pick.dataset.pick;
       ["a", "b", "c"].forEach(function (k) { tr[k] = (tr[k] || []).filter(function (x) { return x !== id; }); });
@@ -483,7 +558,7 @@
       tr[rm.dataset.rm] = tr[rm.dataset.rm].filter(function (x) { return x !== rid; });
     }
     save("trade", tr);
-    location.hash = tradeHash(tr) + (state.q.three && !(tr.c || []).length ? (tradeHash(tr).indexOf("?") > 0 ? "&" : "?") + "three=1" : "");
+    location.hash = tradeHash(tr);
   }, true);
 
   // ---------- free agents ----------
@@ -578,7 +653,7 @@
       "<li><b>Free agents:</b> RosterResource's free agent tracker for this winter and the five before it, including crowd predictions and the contracts players signed.</li>" +
       "<li><b>Photos:</b> linked from MLB's own servers.</li></ul>" +
       "<h3>The year slider</h3><p>" + H.season + " is FanGraphs' Depth Charts as published. Every later season is built here: a player stays while he's under a guaranteed contract, a club option worth picking up, a player option he'd keep, or team control (pre-arb under three years of service, arbitration until six). Everyone else becomes a free agent, unless you re-sign him on his team's page. Ratings age a year at a time (modest gains into the mid-20s, flat at 27 and 28, falling from 29 and faster after 32), and playing time grows slowly from FanGraphs' share for the coming season. Prospects arrive at their ETA (or by level when there isn't one) and grow toward the WAR their FV grade implies over their first three seasons. Each spot goes to the best available player who can play it; a team gets five starters and eight relievers. Spots nobody can fill are \"FA Fill\": a replacement player, or a modest free agent if teams sign them (the switch). Wins scale from team WAR so later seasons spread the way Depth Charts' do.</p>" +
-      "<h3>Surplus value</h3><p>For each season of contract or control: projected WAR × the price of a win, minus salary, discounted " + pct(H.cfg.discount, 0) + " a year. Arbitration pays 25/40/60% of market value (a fourth year 70%); pre-arb players earn the minimum (" + money(H.cfg.minSalary) + ", until the next CBA says otherwise). Club options are exercised only when they're worth it, and a player option only comes back when it's bad for the team. A prospect's value is scaled by his risk grade.</p>" +
+      "<h3>Surplus value</h3><p>For each season of contract or control: projected WAR × the price of a win, minus salary, discounted " + pct(H.cfg.discount, 0) + " a year. Like front offices, it counts " + pct(H.cfg.haircut, 0) + " of projected WAR (a margin of safety for injuries and misses), and an unproven big leaguer (under three years of service) keeps " + pct(H.cfg.youngFade, 0) + " of his value from one year to the next, since long control on a short track record is worth less than its projection adds up to. Those two defaults are calibrated to Baseball Trade Values' published values, and you can change both on the Trade Value tab. Value never drops below zero (a team can always play a replacement for the minimum), and a pre-arb or arbitration year can't cost the team more than it's worth, since those salaries aren't guaranteed. Arbitration pays 25/40/60% of market value (a fourth year 70%); pre-arb players earn the minimum (" + money(H.cfg.minSalary) + ", until the next CBA says otherwise). Club options are exercised only when they're worth it, and a player option only comes back when it's bad for the team. A prospect's value is scaled by his risk grade.</p>" +
       "<h3>The price of a win</h3><p>" + (mk ? (mk.how === "crowd" ? "This winter's free agents: Steamer's projected WAR for each, aged over the contract the crowd predicts, against the crowd's predicted dollars, then adjusted by how far past crowds landed from real contracts (" + ((mk.crowdErr - 1) >= 0 ? "+" : "") + pct(mk.crowdErr - 1, 0) + "). That gives " + money(H.cfg.dpw) + " per win." : "Carried forward from the last three winters' deals: " + money(H.cfg.dpw) + " per win.") + " The premium patterns on the Free Agents tab come from every deal of the last five winters for a player projected at 1+ WAR, against that winter's going rate. Past classes don't carry the projection at signing, so it's estimated from the season before, fit to how Steamer projects this winter's class." : "The free agent data hasn't arrived yet, so the price of a win is an assumption: " + money(H.cfg.dpw) + ".") + "</p>" +
       "<h3>What it doesn't know</h3><ul><li>Trades and signings that haven't happened, beyond the switch for filling open spots.</li><li>Injuries after the first season, platoons, and teams' payroll limits.</li><li>Super Two arbitration, and anything the next CBA changes (the current one expires December 1, 2026).</li></ul>" +
       '<p class="note">Data pulled ' + esc(HUB.pulled || "—") + ", built " + esc(HUB.built) + (HUB.failed && HUB.failed.length ? " (last pull missed: " + esc(HUB.failed.join(", ")) + "; using the previous copy)" : "") + ".</p></div>";
