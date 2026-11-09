@@ -37,10 +37,12 @@
   // ---------- aging and prospects ----------
 
   // Change in full-time WAR rate going into this season age (hitters and starters; relievers scaled)
+  // Modest gains into the mid-20s (Steamer already builds some growth into a young player's line), flat at 27-28,
+  // then a steepening decline
   function agingDelta(age) {
-    if (age <= 23) return 0.4;
-    var t = { 24: 0.35, 25: 0.25, 26: 0.15, 27: 0.05, 28: 0, 29: -0.1, 30: -0.25, 31: -0.35, 32: -0.4, 33: -0.45, 34: -0.5 };
-    return age in t ? t[age] : -0.55;
+    if (age <= 23) return 0.25;
+    var t = { 24: 0.2, 25: 0.15, 26: 0.1, 27: 0.05, 28: 0, 29: -0.15, 30: -0.3, 31: -0.4, 32: -0.45, 33: -0.5, 34: -0.55 };
+    return age in t ? t[age] : -0.6;
   }
 
   // Full-time WAR a prospect's FV grade implies at his peak (FanGraphs' scale: 50 = average regular, 60 = plus,
@@ -117,9 +119,11 @@
     var rate = rateAt(p, year, season);
     var dc = p.pjs === "dc" && p.pj && p.pj.war != null ? p.pj.war : null;
     if (year === season && dc != null && p.g !== "min") return dc;
+    // Playing time: FanGraphs' share for the coming season, growing a little each year (a catcher tops out lower)
+    var cap = p.pos === "C" || (p.el && p.el[0] === "C") ? 0.8 : 0.9;
     var share0 = dc != null && p.rate > 0.3 ? Math.max(0.15, Math.min(1, dc / p.rate)) : null;
-    var reg = rate >= 2 ? 0.9 : rate >= 1 ? 0.75 : 0.5;
-    var share = share0 == null ? reg : Math.max(share0, reg);
+    var reg = rate >= 2 ? 0.85 : rate >= 1 ? 0.7 : 0.5;
+    var share = share0 == null ? Math.min(cap, reg) : Math.min(Math.max(cap, share0), share0 + 0.05 * (year - season));
     return Math.max(-0.3, rate * share);
   }
 
