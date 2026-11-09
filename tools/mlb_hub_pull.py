@@ -21,6 +21,7 @@ import os
 import re
 import sys
 import time
+import urllib.error
 import urllib.request
 from datetime import date
 
@@ -61,6 +62,12 @@ def fetch(path, kind="json"):
             if kind == "json":
                 return json.loads(body)
             return body
+        except urllib.error.HTTPError as e:
+            body = e.read()[:300].decode("utf-8", "replace") if hasattr(e, "read") else ""
+            if attempt == 3 or e.code in (403, 404):
+                raise RuntimeError(f"HTTP {e.code} on {path[:80]}: {body[:200]!r}")
+            print(f"  retry {path[:90]}: {e}")
+            time.sleep(3 + attempt * 5)
         except Exception as e:
             if attempt == 3:
                 raise
@@ -230,7 +237,7 @@ PARTS = {"proj": pull_proj, "rosters": pull_rosters, "payroll": pull_payroll, "b
 
 if __name__ == "__main__":
     want = sys.argv[1:] or list(PARTS)
-    failed = []
+    failed, errors = [], {}
     for p in want:
         print(f"== {p}")
         try:
@@ -238,7 +245,8 @@ if __name__ == "__main__":
         except Exception as e:  # keep the last good snapshot and move on
             print(f"  FAILED: {e}")
             failed.append(p)
-    status = {"pulled": date.today().isoformat(), "failed": failed}
+            errors[p] = str(e)[:400]
+    status = {"pulled": date.today().isoformat(), "failed": failed, "errors": errors}
     save("status.json", status)
     if len(failed) == len(want):
         sys.exit(1)
