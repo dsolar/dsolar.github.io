@@ -70,7 +70,7 @@
     const q = C.q.trim().toLowerCase(), taken = new Set(C.picks.filter(Boolean).map(idOf));
     const list = D.players.filter((p) => BB.inGroup(D.league, p.pos, C.pos) && (!q || p.n.toLowerCase().includes(q) || (p.school || "").toLowerCase().includes(q))).slice(0, q ? 40 : 60);
     return list.map((p) => `<li><button type="button" class="ch-p${taken.has(p.id) ? " used" : ""}" data-pick="${esc(p.id)}"${taken.has(p.id) ? " disabled" : ""}>
-      <span class="rk">${p.rank}</span>${BB.school(p)}<span class="ct"><b>${esc(p.n)}</b><small>${esc([p.pos, p.school].filter(Boolean).join(", "))}</small></span></button></li>`).join("")
+      <span class="rk">${p.rank}</span>${BB.who(p, 30)}<span class="ct"><b>${esc(p.n)}</b><small>${esc([p.pos, p.school].filter(Boolean).join(", "))}</small></span></button></li>`).join("")
       || `<li class="note">No one matches that.</li>`;
   }
 

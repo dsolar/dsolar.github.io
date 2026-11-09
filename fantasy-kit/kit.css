@@ -809,10 +809,13 @@ table.roto td small.rp{display:block;font-size:10.5px;font-weight:650;color:var(
 .pav.lgo{background:#fff;box-shadow:inset 0 0 0 2px var(--pc,var(--p6));font-size:0;overflow:hidden}
 .pav.lgo img{width:70%;height:70%;object-fit:contain}
 .pav.lg.lgo{box-shadow:inset 0 0 0 3px var(--pc,var(--p6))}
-.pav.face{position:relative;background:#e9edf3;font-size:0;overflow:hidden}
-.pav.face img{width:100%;height:100%;object-fit:cover;object-position:center 18%}
-.pav.face::after{content:"";position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 0 2px var(--pc,var(--p6))}
-.pav.lg.face::after{box-shadow:inset 0 0 0 3px var(--pc,var(--p6))}
+/* player faces: the photo fills the avatar inside the position ring (a registry face replaces the team logo) */
+.pav.face,.pav.has-face{position:relative;background:#e9edf3;font-size:0;overflow:hidden}
+.pav.face img,.pav.has-face img.ds-face-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pav.has-face img:not(.ds-face-img){display:none}
+.pav.espn img{object-position:50% 0;transform:scale(1.45);transform-origin:50% 18%}
+.pav.face::after,.pav.has-face::after{content:"";position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 0 2px var(--pc,var(--p6))}
+.pav.lg.face::after,.pav.lg.has-face::after{box-shadow:inset 0 0 0 3px var(--pc,var(--p6))}
 /* a compact select that sits in a row of chips and pills (stats or projections, and the like) */
 select.pill-sel{width:auto;border-radius:999px;min-height:36px;font-size:13px}
 /* the draft room's projected standings */

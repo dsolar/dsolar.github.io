@@ -210,7 +210,7 @@
       var xy = SPOT_XY[slot], e = tm.line[slot], rows = e ? [e].concat(bk[slot] || []) : [];
       var war = rows.reduce(function (s, r, i) { return s + (i === 0 ? r.war : r.war * 0.5); }, 0);
       var tier = H.tier(y, slot, e ? e.war : 0);
-      html += '<div class="spot" style="left:' + xy[0] + "%;top:" + xy[1] + '%"><header class="T-' + tier + '"><span>' + slot + "</span><span>" + f1(war) + "</span></header>";
+      html += '<div class="spot" data-slot="' + slot + '" style="left:' + xy[0] + "%;top:" + xy[1] + '%"><header class="T-' + tier + '"><span>' + slot + "</span><span>" + f1(war) + "</span></header>";
       if (!e) html += '<div class="r fillr">' + (H.cfg.fill && !tm.first ? "Offseason FA Fill" : "Open") + "</div>";
       rows.forEach(function (r) {
         html += '<div class="r" data-p="' + esc(r.p.id) + '">' + face(r.p, 18) + '<span class="n">' + esc(last(r.p.n)) + (r.debut ? ' <span class="pill new">New</span>' : "") + '</span><span class="w">' + f1(r.war) + "</span></div>";

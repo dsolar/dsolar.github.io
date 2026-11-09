@@ -58,5 +58,7 @@ body.mobile-world .ds-navigation{display:none}
  .ds-navigation .ds-all-projects{display:flex;justify-content:space-between;min-height:46px;margin-top:12px;padding:12px 8px;color:#f6c445;font-weight:650;text-decoration:none}
  body.ds-page-sunday-strategist .field-wrap{top:var(--ds-navigation-height,58px)}
 }
+/* phones: the Menu button keeps its icon (the label stays for screen readers) so the account chip fits */
+@media(max-width:520px){.ds-navigation .ds-nav-inner,.ds-navigation[data-layout="hub"] .ds-nav-inner{gap:8px}.ds-navigation .ds-menu-toggle{position:relative;padding-inline:10px}.ds-navigation .ds-menu-toggle span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.ds-navigation .ds-parent{padding-left:8px}}
 @media(max-width:359px){.ds-navigation .ds-brand{font-size:15px}.ds-navigation .ds-brand img{width:28px;height:28px}.ds-navigation .ds-parent{font-size:10px;padding-left:7px}.ds-navigation .ds-menu-toggle{padding-inline:8px}.ds-navigation .ds-nav-inner{gap:8px}}
 @media(prefers-reduced-motion:reduce){.ds-navigation .ds-disclosure svg{transition:none}}

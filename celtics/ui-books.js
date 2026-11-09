@@ -45,7 +45,7 @@
       for (const p of rowsP) {
         const fit = [];
         if ((p.tpar || 0) >= 0.45) fit.push("high-volume three");
-        body += `<tr><th scope="row"><button class="linkish pname" type="button" data-act="player" data-id="${p.id}">${esc(p.n)}</button><span class="pmeta">${esc(App.posName(p))}, ${p.age + 0} in ${App.sn(i0)}, rated ${App.ovr(p)}${p.note && /Extended|extension/i.test(p.note) ? ", extended" : ""}</span></th>${yrs.map((i, k) => cell(p, i, k)).join("")}</tr>`;
+        body += `<tr><th scope="row"><button class="linkish pname" type="button" data-act="player" data-id="${p.id}">${window.DSFaces ? DSFaces.html({ sport: "nba", name: p.n, size: 24, color: p.t === "BOS" ? "#007A33" : "#4A5568" }) : ""}${esc(p.n)}</button><span class="pmeta">${esc(App.posName(p))}, ${p.age + 0} in ${App.sn(i0)}, rated ${App.ovr(p)}${p.note && /Extended|extension/i.test(p.note) ? ", extended" : ""}</span></th>${yrs.map((i, k) => cell(p, i, k)).join("")}</tr>`;
       }
       // holds that aren't attached to a contract row (rights, picks)
       const extraHolds = new Map();
@@ -259,7 +259,7 @@
     const team = W.T[p.t] ? W.T[p.t].name : p.t === "FA" ? "Free agent" : "";
     const r = Mo.r(p);
     const html = `
-      <p class="small muted" style="margin-top:0">${esc(team)}${p.two ? " (two-way)" : ""}. ${esc(App.posName(p))}, age ${p.age}, ${p.yos} years of service. ${p.note ? esc(p.note) : ""}</p>
+      <p class="small muted" style="margin-top:0;display:flex;align-items:center;gap:10px">${window.DSFaces ? DSFaces.html({ sport: "nba", name: p.n, size: 56, color: p.t === "BOS" ? "#007A33" : "#4A5568" }) : ""}<span>${esc(team)}${p.two ? " (two-way)" : ""}. ${esc(App.posName(p))}, age ${p.age}, ${p.yos} years of service. ${p.note ? esc(p.note) : ""}</span></p>
       <div class="grid3" style="gap:10px">
         <div><div class="small muted">Rating</div><div class="bigstat">${App.ovr(p)}</div><div class="small">${r >= 0 ? "+" : ""}${r.toFixed(1)} per 100 (${p.o >= 0 ? "+" : ""}${p.o.toFixed(1)} offense, ${p.d >= 0 ? "+" : ""}${p.d.toFixed(1)} defense)${p.form ? `, shooting form ${p.form > 0 ? "+" : ""}${p.form}` : ""}</div></div>
         <div><div class="small muted">Availability</div><div class="bigstat">${App.pct(p.h)}</div><div class="small">of games, by the injury model</div></div>

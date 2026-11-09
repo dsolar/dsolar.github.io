@@ -192,7 +192,7 @@
     w.hidden = false;
     w.innerHTML = '<article class="card"><div class="card-band' + (light(c1) ? " light" : "") + '" style="--t1:' + esc(c1) + ";--t2:" + esc(c2) + '">'
       + esc(p.y + " draft" + (p.lg === "nfl" ? ", round " + p.rd : "") + ", pick " + p.pk) + "<b>" + esc(p.tm) + "</b></div>"
-      + '<div class="card-body"><h3>' + esc(p.n) + "</h3>"
+      + '<div class="card-body"><h3 class="ans-h">' + (window.DSFaces ? DSFaces.html({ sport: p.lg, name: p.n, size: 64, color: c1 }) : "") + "<span>" + esc(p.n) + "</span></h3>"
       + '<dl class="facts"><div><dt>Games</dt><dd>' + p.g.toLocaleString() + "</dd></div><div><dt>Career</dt><dd>" + esc(p.stat) + "</dd></div><div><dt>Honors</dt><dd>" + esc(hon) + "</dd></div></dl>"
       + (p.ctx ? '<p class="ctx">' + esc(p.ctx) + (p.offu ? ' <a href="' + esc(p.offu) + '" target="_blank" rel="noopener">Source</a>' : "") + "</p>" : "")
       + '<div class="foot"><span class="pts">' + (s ? "+" + s : "0") + " point" + (s === 1 ? "" : "s") + '</span><span class="src">Quote: <a href="' + esc(p.url) + '" target="_blank" rel="noopener">' + esc(p.who) + (p.who.indexOf(p.outlet) === 0 ? "" : ", " + esc(p.outlet)) + "</a></span></div>"

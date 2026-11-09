@@ -1,0 +1,49 @@
+# Rebuilds the player faces registry (assets/faces/<sport>.json) that assets/faces.js reads: MLB, NBA, NFL and
+# college photo ids for every name the site shows (tools/faces_build.py). Runs every morning after the data pulls,
+# when the script changes, and by hand.
+name: Player faces
+
+on:
+  schedule:
+    - cron: "53 12 * * *"   # 7:53am ET
+  push:
+    branches: [main]
+    paths:
+      - tools/faces_build.py
+      - .github/workflows/faces.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: faces
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+
+      - name: Set the bot's git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Build the registry
+        run: python3 tools/faces_build.py
+
+      - name: Commit
+        run: |
+          git add assets/faces tools/faces_cache.json
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+            exit 0
+          fi
+          git commit -m "Update player faces"
+          git pull --rebase -q
+          git push

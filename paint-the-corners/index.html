@@ -222,6 +222,8 @@ button { font: inherit; color: inherit; }
   background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
   padding: 14px 16px 16px;
 }
+.s-face { display: flex; align-items: center; gap: 12px; }
+.arm-who .ds-face { margin-right: 8px; box-shadow: 0 0 0 2px rgba(255,255,255,.7); }
 .s-name { margin: 0; font-family: var(--display); font-weight: 900; font-size: 32px; line-height: 1; }
 .s-meta { margin: 4px 0 0; color: var(--chalk-dim); font-size: 15px; }
 .s-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 10px; }
@@ -347,6 +349,8 @@ button { font: inherit; color: inherit; }
 </style>
 
 <link rel="stylesheet" href="../assets/navigation.css?v=20261104-nav">
+<link rel="stylesheet" href="../assets/faces.css?v=20261109c">
+<script src="../assets/faces.js?v=20261109c"></script>
 <script src="../assets/projects.js?v=20261104-nav" defer></script>
 <script src="../assets/navigation.js?v=20261104-discovery" defer></script>
 </head>
@@ -527,7 +531,7 @@ button { font: inherit; color: inherit; }
       label = stam > 0.6 ? 'Strong' : stam > 0.3 ? 'Tiring, command slipping' : 'Running on fumes';
       if (pc === 0) label = 'Fresh';
     }
-    $('arm').innerHTML = `<span class="arm-who"><span class="arm-num">${p.num}</span><span class="arm-name">${p.name}</span></span>
+    $('arm').innerHTML = `<span class="arm-who">${window.DSFaces ? DSFaces.html({ sport: "mlb", name: p.name, size: 34, color: "#BD3039" }) : ""}<span class="arm-num">${p.num}</span><span class="arm-name">${p.name}</span></span>
       <span class="arm-meter" role="meter" aria-label="Arm strength" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(stam * 100)}"><i style="width:${Math.round(stam * 100)}%" class="${stam > 0.6 ? '' : stam > 0.3 ? 'mid' : 'low'}"></i></span>
       <span class="arm-lab">${label}</span>`;
   }
@@ -619,7 +623,7 @@ button { font: inherit; color: inherit; }
     const hand = b.switchHitter ? 'switch hitter, batting left' : `bats ${b.bats === 'L' ? 'left' : 'right'}`;
     const filmDone = s.film <= 0 || (known >= 9 && s.pitcher.pitches.every(p => !b.vs[p.fam] || b.pitchKnown[p.fam]));
     $('scout').innerHTML = `
-      <h2 class="s-name">${b.name}</h2>
+      <h2 class="s-name s-face">${window.DSFaces ? DSFaces.html({ sport: "mlb", name: b.name, size: 52, color: b.yankee === false ? "#BD3039" : "#0C2340" }) : ""}<span>${b.name}</span></h2>
       <p class="s-meta">Batting ${ORD(b.slot)}. ${CAP(POSNAME[b.pos])}, ${hand}.</p>
       <div class="s-row"><span class="s-slash">${a}/${o}/${sl}, ${b.hr} HR</span><span class="s-arch">${s.year} season</span></div>
       <p class="s-book">${b.book}</p>

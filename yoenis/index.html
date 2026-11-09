@@ -22,6 +22,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Besley:wght@700&family=Libre+Franklin:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="../assets/bar.css">
+<link rel="stylesheet" href="../assets/faces.css?v=20261109c">
+<style>.player-detail>.ds-face{margin-right:8px;vertical-align:middle}.card-p .ds-face{vertical-align:middle;margin-right:4px;box-shadow:0 0 0 2px rgba(255,255,255,.8)}</style>
 <script src="../assets/analytics.js" defer></script>
 <style>
 /* One narrow column between ballpark set pieces. The top of the page is the Green Monster's manual
@@ -572,6 +574,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
 </style>
 
 <link rel="stylesheet" href="../assets/navigation.css?v=20261104-nav">
+<script src="../assets/faces.js?v=20261109c"></script>
 <script src="../assets/projects.js?v=20261104-nav" defer></script>
 <script src="../assets/navigation.js?v=20261104-discovery" defer></script>
 </head>
@@ -1028,7 +1031,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     var name = a.p ? a.p.replace(/ \((Batter|Pitcher)\)$/, "") : s.teams[a.ti];
     var team = a.p ? teamMan(s, a.ti) : (man(s, a.ti) || "");
     return '<li class="card ' + (DUBIOUS[a.a] ? "dub" : CARD[a.a] || "") + '"><div class="card-in"><h3 class="card-a">' + esc(head) + "</h3>" +
-      '<p class="card-p">' + esc(name) + "</p>" + (team ? '<p class="card-t">' + esc(team) + "</p>" : '<p class="card-t"></p>') +
+      '<p class="card-p">' + (a.p ? face(name, 44) + " " : "") + esc(name) + "</p>" + (team ? '<p class="card-t">' + esc(team) + "</p>" : '<p class="card-t"></p>') +
       '<div class="card-b"><p class="card-line">' + esc(a.line) + '</p><p class="card-why">' + esc(a.detail) + "</p></div></div></li>";
   }
   var CARD = { "MVP": "mvp", "Cy Young": "cy", "Best value pick": "val", "Best keeper": "kpr", "Best offense": "off", "Best pitching staff": "pit" };
@@ -1176,8 +1179,10 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     return (s.b ? '<span class="player-stat-kind">2026 hitting, ' + s.b[8] + " plate appearances</span>" + statsGrid(s.b, BAT_COLS) : "") +
       (s.p ? '<span class="player-stat-kind">2026 pitching, ' + s.p[8] + " innings</span>" + statsGrid(s.p, PIT_COLS) : "");
   }
+  // a player's face from the faces registry (assets/faces.js), initials until it loads
+  function face(name, size) { return window.DSFaces ? DSFaces.html({ sport: "mlb", name: name, size: size || 28, color: "#1D4A36" }) : ""; }
   function playerCard(name) {
-    return '<span class="player-detail"><button type="button" class="player-name-trigger" aria-expanded="false">' + esc(name) + "</button>" +
+    return '<span class="player-detail">' + face(name, 28) + '<button type="button" class="player-name-trigger" aria-expanded="false">' + esc(name) + "</button>" +
       '<span class="player-popover" role="group" aria-label="' + esc(name) + ', 2026 stats"><span class="player-popover-head"><strong>' + esc(name) + "</strong><span>Yahoo 2027: <b>" + yahooRank(name) + "</b></span></span>" +
       '<span class="player-stat-body">' + statBody(name) + "</span>" +
       '<span class="player-source">Stats from MLB. Rank from Yahoo\'s early 2027 top 25.</span></span></span>';

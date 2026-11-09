@@ -393,6 +393,7 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
 .roster .slot{width:3.6rem;color:var(--muted);font-size:.72rem;font-weight:600;letter-spacing:.04em}
 .roster .num{width:3.2rem;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .roster .pl b{font-weight:600}
+.roster .pl .ds-face{margin-right:6px;vertical-align:-7px}
 .roster .pl small{display:block;color:var(--muted);font-size:.72rem}
 .roster tr.sep th{padding-top:.9rem;font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-top:none}
 .roster tr.bad .pl b,.roster tr.bad .num{color:var(--danger)}
@@ -601,6 +602,8 @@ th.line{border-left:1px solid var(--rule)}
 </style>
 
 <link rel="stylesheet" href="../assets/navigation.css?v=20261104-nav">
+<link rel="stylesheet" href="../assets/faces.css?v=20261109c">
+<script src="../assets/faces.js?v=20261109c"></script>
 <script src="../assets/projects.js?v=20261104-nav" defer></script>
 <script src="../assets/navigation.js?v=20261104-discovery" defer></script>
 </head>
@@ -1918,7 +1921,7 @@ th.line{border-left:1px solid var(--rule)}
     var bad = isStarter && (p.bye || p.status === "O" || /^IR|^PUP|^NA|^SUSP/.test(p.status || ""));
     var team = { name: openName || "" };
     return '<tr' + (bad ? ' class="bad"' : "") + '><td class="slot">' + esc(p.slot) + "</td>" +
-      '<td class="pl"><b><span data-p="' + esc(p.name) + '" data-pt="' + esc(team.name) + '" tabindex="0">' + esc(p.name) + "</span>" + (p.stand ? '<span class="ast" title="Assumed: this spot is empty in Yahoo">*</span>' : "") + "</b>" + st + start + "<small>" + esc(p.pos + " · " + where + (p.rank ? " · " + p.rank : "")) + "</small></td>" +
+      '<td class="pl"><b>' + (window.DSFaces ? DSFaces.html({ sport: "nfl", name: p.name, size: 24, color: "#002244" }) : "") + '<span data-p="' + esc(p.name) + '" data-pt="' + esc(team.name) + '" tabindex="0">' + esc(p.name) + "</span>" + (p.stand ? '<span class="ast" title="Assumed: this spot is empty in Yahoo">*</span>' : "") + "</b>" + st + start + "<small>" + esc(p.pos + " · " + where + (p.rank ? " · " + p.rank : "")) + "</small></td>" +
       '<td class="num">' + proj + '</td><td class="num">' + scored + "</td></tr>";
   }
 

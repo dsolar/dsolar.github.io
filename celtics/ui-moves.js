@@ -340,7 +340,7 @@
     } else acts = two ? `<button class="btn ghost sm" type="button" data-act="faTwo" data-id="${p.id}">Two-way</button>` : `<span class="small muted">No way to fit him now</span>`;
     if (own) acts += `<button class="btn ghost sm" type="button" data-act="faSnt" data-id="${p.id}">Sign-and-trade</button><button class="btn ghost sm" type="button" data-act="faRenounce" data-id="${p.id}">Renounce</button>`;
     return `<li class="fa">
-      <div class="fa-who"><button class="linkish" type="button" data-act="player" data-id="${p.id}"><b>${esc(p.n)}</b></button><span class="small muted">${meta}</span>${rfa}</div>
+      <div class="fa-who"><button class="linkish" type="button" data-act="player" data-id="${p.id}">${window.DSFaces ? DSFaces.html({ sport: "nba", name: p.n, size: 28, color: p.t === "BOS" ? "#007A33" : "#4A5568" }) : ""}<b>${esc(p.n)}</b></button><span class="small muted">${meta}</span>${rfa}</div>
       <div class="fa-ask"><b>${m(ask.aav)} x ${ask.years}</b><span class="small muted">${best ? (best.covers ? `fits: ${TOOL[best.via]}` : `${TOOL[best.via]} tops out at ${m(best.total / best.years)}`) : "asking"}${Mo.askDecay(p, W) < 0.97 ? ", asking less lately" : ""}</span></div>
       <div class="fa-act">${acts}</div></li>`;
   };

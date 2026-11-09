@@ -19,6 +19,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&family=Zilla+Slab:wght@600;700&family=Besley:wght@700&family=Libre+Franklin:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/bar.css">
+<link rel="stylesheet" href="../assets/faces.css?v=20261109c">
 <script src="../assets/analytics.js" defer></script>
 <style>
 :root{
@@ -132,6 +133,9 @@ tr.open td{background:rgba(242,193,78,.05)}
 .disp{font-family:var(--display);font-weight:800;text-transform:uppercase;letter-spacing:.03em}
 .faint{color:var(--faint)}
 .who-cell{display:flex;align-items:center;gap:10px}
+.who-av{position:relative;flex:none;width:var(--sz,34px);height:var(--sz,34px)}
+.who-av>.chip{position:absolute;right:-5px;bottom:-4px;width:18px;height:18px;border:1.5px solid #fff;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.who-av>.chip.txt{font-size:7px}
 .chip{flex:none;width:30px;height:30px;border-radius:50%;background:#EEF0EC;display:inline-flex;align-items:center;justify-content:center;overflow:hidden}
 .chip img{width:24px;height:24px;object-fit:contain;display:block}
 .chip.txt{font:800 10px/1 var(--body);color:#0B1626;letter-spacing:.02em}
@@ -543,12 +547,13 @@ body[data-screen] .trade-pick select{background:var(--panel);color:var(--chalk)}
   <div id="markets-view" hidden></div>
 </main>
 
-<script src="common.js?v=29"></script>
-<script src="engine.js?v=29"></script>
-<script src="board.js?v=29"></script>
-<script src="mock.js?v=29"></script>
-<script src="challenge.js?v=29"></script>
-<script src="markets.js?v=29"></script>
+<script src="../assets/faces.js?v=20261109c"></script>
+<script src="common.js?v=30"></script>
+<script src="engine.js?v=30"></script>
+<script src="board.js?v=30"></script>
+<script src="mock.js?v=30"></script>
+<script src="challenge.js?v=30"></script>
+<script src="markets.js?v=30"></script>
 <script>
 (() => {
   // #nba, #nfl, then /mock, /challenge or /markets

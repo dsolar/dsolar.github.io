@@ -13,7 +13,11 @@ dsolar.github.io/
     projects.js               THE LIST OF PROJECTS. Edit this to add or change one.
     site.css                  the site's colors, fonts and layout (colors are at the top)
     site.js                   email links and the footer year, shared by every page
-    faces.js, faces.css       player photos for any page (MLB by MLBAM id, NBA/NFL/college by ESPN id), initials fallback
+    faces.js, faces.css       player photos for any page: by id (MLB MLBAM, ESPN for NBA/NFL/college) or by name through
+                              the faces registry; initials until a photo loads. See the top of faces.js
+    faces/                    the faces registry, one file per sport ({name key: photo id}), rebuilt every morning by
+                              the Player faces workflow from tools/faces_build.py (don't edit; misses cached in
+                              tools/faces_cache.json)
     slate.js                  Today's slate, the hero scoreboard of the daily games (reads each game's saved progress)
     analytics.js              Cloudflare Web Analytics (paste the token here to turn it on)
     bar.css                   the fallback site bar on top of each game

@@ -75,7 +75,7 @@
       const open = ui.open === p.id;
       return `<tr class="p${open ? " open" : ""}" data-id="${esc(p.id)}" tabindex="0" aria-expanded="${open}">
         <td class="rk r">${p.rank}</td><td>${mvTxt}</td>
-        <td><div class="who-cell">${BB.school(p)}<div class="nm">${esc(p.n)}<small>${esc([p.pos, p.school].filter(Boolean).join(", "))}</small></div></div></td>
+        <td><div class="who-cell">${BB.who(p)}<div class="nm">${esc(p.n)}<small>${esc([p.pos, p.school].filter(Boolean).join(", "))}</small></div></div></td>
         ${st ? `<td class="stl hide-m">${BB.statLine(p) || `<span class="faint">&ndash;</span>`}</td>` : ""}
         <td class="r sc hide-s">${p.score.toFixed(1)}</td>
         ${live.map((s) => p.ranks[s.id] != null ? `<td class="r cell col-src">${p.ranks[s.id]}</td>` : `<td class="r cell miss col-src" title="Not on this board">&ndash;</td>`).join("")}

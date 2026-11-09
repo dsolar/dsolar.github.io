@@ -115,7 +115,18 @@ table.t th.on{color:var(--ink)}
 .spot .r .w{font-variant-numeric:tabular-nums;color:var(--muted)}
 .spot .r.fillr{color:var(--t-fringe-i);font-weight:600;cursor:default}
 .staff{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:760px;margin:10px auto 0}
-@media (max-width:640px){.staff{grid-template-columns:1fr}.spot{width:31%;font-size:11.5px}.spot .ds-face{display:none}}
+/* phones: the diamond becomes a 3x3 grid in field order (outfield, infield, then DH and catcher) */
+@media (max-width:640px){
+  .fieldwrap{padding:8px}
+  .field{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-areas:"lf cf rf" "tb ss sb" "dh c fb";gap:6px;aspect-ratio:auto}
+  .field svg{display:none}
+  .field .spot{position:static;transform:none;width:auto;font-size:11.5px}
+  .spot[data-slot="LF"]{grid-area:lf}.spot[data-slot="CF"]{grid-area:cf}.spot[data-slot="RF"]{grid-area:rf}
+  .spot[data-slot="3B"]{grid-area:tb}.spot[data-slot="SS"]{grid-area:ss}.spot[data-slot="2B"]{grid-area:sb}
+  .spot[data-slot="DH"]{grid-area:dh}.spot[data-slot="C"]{grid-area:c}.spot[data-slot="1B"]{grid-area:fb}
+  .spot .r{padding:3px 5px;gap:4px}
+  .staff{grid-template-columns:1fr;margin-top:8px}
+}
 .staff .spot{position:static;transform:none;width:auto}
 .staff .cols{display:grid;grid-template-columns:1fr 1fr}
 

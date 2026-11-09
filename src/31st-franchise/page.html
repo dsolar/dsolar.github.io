@@ -6,6 +6,7 @@
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../assets/bar.css">
 <script src="../assets/analytics.js" defer></script>
+<link rel="stylesheet" href="../assets/faces.css?v=20261109c">
 
 <link rel="stylesheet" href="../assets/navigation.css?v=20261104-nav">
 <script src="../assets/projects.js?v=20261104-nav" defer></script>
@@ -214,6 +215,8 @@ a{color:var(--mark)}
 .drow.static:hover{background:transparent}
 .drow .s{font-family:var(--f-mono);font-size:12px;font-weight:600;color:var(--muted)}
 .drow .who{min-width:0}
+.p-face{display:flex;align-items:center;gap:10px;min-width:0}.p-face>div{min-width:0}
+.drow .who b .ds-face{margin-right:6px;vertical-align:-6px}
 .drow .who b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .drow .who span{display:block;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .drow .who .oop{color:var(--warn)}
@@ -679,6 +682,7 @@ dialog.card-dlg::backdrop{background:rgba(0,0,0,.55)}
   <p class="fanline">Unofficial fan project, not affiliated with the NBA or any of its teams. Contracts, stats and ratings come from the public sources listed above.</p>
 </div>
 
+<script src="../assets/faces.js?v=20261109c"></script>
 <script>
 /*__DATA__*/
 /*__ENGINE__*/
@@ -912,7 +916,7 @@ function renderPool(){
     const stats=(p.ppg==null?`No 2025-26 stats`:`${p.ppg.toFixed(1)} / ${p.rpg.toFixed(1)} / ${p.apg.toFixed(1)}`)+`<span>${rates}</span>`;
     const why=!a.ok?a.why:(!human?(NET.on&&!(NET.game&&NET.game.guest)?"Waiting for your friend to join":EXP[code].nick+" are picking"):"");
     return `<div class="prow ${a.ok?"":"off"}" role="listitem"${p.note?` title="${esc(p.note)}"`:""}>
-      <div class="p-main"><div class="p-name">${esc(p.n)}<span class="tags">${tagsFor(p,code)}</span></div><div class="p-sub">${esc(TEAMS[p.t])} · ${posLabel(p)} · ${p.age}</div></div>
+      <div class="p-main p-face">${window.DSFaces?DSFaces.html({sport:"nba",name:p.n,size:38,color:"#3B4A5C"}):""}<div><div class="p-name">${esc(p.n)}<span class="tags">${tagsFor(p,code)}</span></div><div class="p-sub">${esc(TEAMS[p.t])} · ${posLabel(p)} · ${p.age}</div></div></div>
       <div class="p-cap"><b>${c.main}</b><span>${esc(c.sub)}</span>${svLine(p)}</div>
       ${ovrCell(p)}
       <div class="p-stats">${stats}</div>
@@ -947,7 +951,7 @@ function renderFAPool(){
     const a=faCan(d,code,p), ask=faAsk(d,code,p), h=healthTag(p.h);
     const ok=a.ok&&human;
     return `<div class="prow ${a.ok?"":"off"}" role="listitem"${p.note?` title="${esc(p.note)}"`:""}>
-      <div class="p-main"><div class="p-name">${esc(p.n)}<span class="tags">${tagsFor(p,code)}</span></div><div class="p-sub">Last with the ${esc(short(p.t))} · ${posLabel(p)} · ${p.age}</div></div>
+      <div class="p-main p-face">${window.DSFaces?DSFaces.html({sport:"nba",name:p.n,size:38,color:"#3B4A5C"}):""}<div><div class="p-name">${esc(p.n)}<span class="tags">${tagsFor(p,code)}</span></div><div class="p-sub">Last with the ${esc(short(p.t))} · ${posLabel(p)} · ${p.age}</div></div></div>
       <div class="p-cap"><b>${money(ask.sal)}</b><span>${ask.yrs} yr${ask.yrs>1?"s":""}${ask.sal<=MIN_FA+0.01?", minimum":""}</span></div>
       ${ovrCell(p)}
       <div class="p-stats">${statsCell(p)}</div>
@@ -1122,7 +1126,7 @@ function renderSheet(){
     const canX=p&&editable&&(inFA()||(d.mode==="solo"&&!draftDone(d)));
     return `<li><div class="drow ${p?"":"open"} ${sel?"sel":""} ${editable?"":"static"}" ${editable?`role="button" tabindex="0" data-t="${loc.t}" data-id="${loc.id}"`:""}>
       <span class="s">${label}</span>
-      <span class="who"><b>${p?esc(p.n):"Open"}</b>${p?`<span>${posLabel(p)}${oop?` <span class="oop">out of position</span>`:""} · ${ovr(p)} · ${money(p.s)}${p.signed?" · FA":""}</span>`:""}</span>
+      <span class="who"><b>${p?window.DSFaces?DSFaces.html({sport:"nba",name:p.n,size:22,color:"#3B4A5C"}):""+esc(p.n):"Open"}</b>${p?`<span>${posLabel(p)}${oop?` <span class="oop">out of position</span>`:""} · ${ovr(p)} · ${money(p.s)}${p.signed?" · FA":""}</span>`:""}</span>
       <span class="mins">${p?minTxt:""}</span>
       ${canX?`<button class="x" type="button" data-k="${esc(p.key)}" aria-label="${inFA()?(p.signed?"Release":"Waive"):"Release"} ${esc(p.n)}" title="${inFA()?(p.signed?"Undo this signing":"Waive: off your cap, still paid"):"Undo this pick"}">×</button>`:"<span></span>"}
     </div></li>`;

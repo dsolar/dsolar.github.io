@@ -60,7 +60,7 @@
         const off = dist(p, POS5.indexOf(tag)) >= 2 && POS5.includes(tag);
         return `<li>
           <span class="slot${POS5.includes(tag) ? " st" : ""}">${esc(tag)}</span>
-          <div class="who"><b><button class="linkish" type="button" data-act="player" data-id="${p.id}">${esc(p.n)}</button></b><span class="small muted">${esc(App.posName(p))}${p.two ? ", two-way" : ""}${esc(lv)}</span>${off ? `<span class="small warnc" style="display:block">Out of position at ${tag}</span>` : ""}</div>
+          <div class="who"><b><button class="linkish" type="button" data-act="player" data-id="${p.id}">${window.DSFaces ? DSFaces.html({ sport: "nba", name: p.n, size: 28, color: p.t === "BOS" ? "#007A33" : "#4A5568" }) : ""}${esc(p.n)}</button></b><span class="small muted">${esc(App.posName(p))}${p.two ? ", two-way" : ""}${esc(lv)}</span>${off ? `<span class="small warnc" style="display:block">Out of position at ${tag}</span>` : ""}</div>
           <div class="ovr" title="Rating">${App.ovr(p)}</div>
           <input type="range" min="0" max="42" step="1" value="${mm}" aria-label="Minutes for ${esc(p.n)}" data-on="rotMin" data-live data-id="${p.id}">
           <input type="number" min="0" max="48" step="1" value="${mm}" aria-label="Minutes for ${esc(p.n)} (number)" data-on="rotMin" data-id="${p.id}">

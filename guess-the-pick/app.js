@@ -274,7 +274,8 @@
     $("guess-area").hidden = true; $("reveal").hidden = false;
     $("verdict").className = "verdict v" + tier(s);
     $("verdict").textContent = (gaveUp ? "Here's who it was" : VERDICT[s]) + (s ? " · +" + s : "");
-    $("answer").textContent = p.n;
+    // his face, only now that the answer is out (assets/faces.js)
+    $("answer").innerHTML = (window.DSFaces ? DSFaces.html({ sport: sport, name: p.n, size: 64, color: (colors(p.t) || ["#33415c"])[0] }) : "") + "<span>" + esc(p.n) + "</span>";
     var where = p.to ? " Picked by the " + p.tn + ", " + (p.late ? "debuted with the " : "went to the ") + p.ton + "." : "";
     $("facts").innerHTML = "<b>" + esc([p.pos, p.col].filter(Boolean).join(" · ")) + "</b><br>" + esc(p.line) + "." + esc(where);
     $("context").innerHTML = context(p);

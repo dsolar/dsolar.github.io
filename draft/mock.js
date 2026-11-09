@@ -261,7 +261,7 @@
             <div class="chips">${BB.POS[D.league].map(([k, l]) => `<button type="button" data-mpos="${k}" aria-pressed="${M.pos === k}">${l}</button>`).join("")}</div></div>
           <div class="table-wrap"><table class="pool-t"><thead><tr><th class="r">#</th><th>Player</th><th class="hide-m">Stats</th><th class="r hide-s">Avg</th><th></th></tr></thead><tbody>
           ${av.slice(0, 60).map((x) => `<tr class="pr" data-pid="${esc(x.id)}"><td class="rk r">${x.rank}</td>
-            <td><div class="who-cell">${BB.school(x)}<div class="nm">${esc(x.n)}<small>${esc([x.pos, x.school, x.ht].filter(Boolean).join(", "))}</small></div></div></td>
+            <td><div class="who-cell">${BB.who(x)}<div class="nm">${esc(x.n)}<small>${esc([x.pos, x.school, x.ht].filter(Boolean).join(", "))}</small></div></div></td>
             <td class="stl hide-m">${BB.statLine(x) || `<span class="faint">&ndash;</span>`}</td><td class="r sc hide-s">${x.score.toFixed(1)}</td>
             <td class="r">${mineNow ? `<button type="button" class="btn sm go" data-draft="${esc(x.id)}">Draft</button>` : ""}</td></tr>`).join("") || `<tr><td class="empty" colspan="5">No one left who matches.</td></tr>`}
           </tbody></table></div>

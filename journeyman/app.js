@@ -248,7 +248,8 @@
     $("clues").innerHTML = "";   // the reveal lists every clue anyway
     $("verdict").className = "verdict v" + tier(s);
     $("verdict").textContent = (gaveUp ? "Here's who it was" : VERDICT[s]) + (s ? ", +" + s : "");
-    $("answer").textContent = p.n;
+    // his face, only now that the answer is out (assets/faces.js)
+    $("answer").innerHTML = (window.DSFaces ? DSFaces.html({ sport: sport, name: p.n, size: 64, color: "#33415c" }) : "") + "<span>" + esc(p.n) + "</span>";
     $("facts").innerHTML = p.h.filter(function (h) { return h[1]; }).map(function (h) { return "<b>" + esc(h[0]) + ":</b> " + esc(h[1]); }).join("<br>")
       + "<br>" + esc(p.line) + ".";
     var last = mode === "daily" ? game.results.length >= G.DAILY : game.misses >= G.LIVES;

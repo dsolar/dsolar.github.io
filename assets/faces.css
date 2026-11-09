@@ -20,13 +20,15 @@
   font: 700 calc(var(--face-size, 32px) * .38)/1 system-ui, -apple-system, "Segoe UI", sans-serif;
   letter-spacing: .02em;
 }
+.ds-face.has-face { background: #e9edf3; }
+.ds-face.has-face .ds-face-ini { visibility: hidden; }
 .ds-face img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 18%;
-  background: #e9edf3;
 }
+/* ESPN photos are wide head-and-shoulders shots: zoom in on the face (MLB's are already cropped on it) */
+.ds-face.espn img { object-position: 50% 0; transform: scale(1.45); transform-origin: 50% 18%; }
 .ds-face.square { border-radius: 8px; }

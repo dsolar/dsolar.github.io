@@ -11,6 +11,7 @@
         const r = await fetch(`${lg}.json`, { cache: "no-cache" });
         if (!r.ok) throw new Error(r.status);
         cache[lg] = await r.json();
+        (cache[lg].players || []).forEach((p) => { p.lg = lg; }); // for faces: college basketball or football
       }
       return cache[lg];
     },
@@ -35,6 +36,13 @@
     school(p, size = 26) {
       if (p.sid) return `<span class="chip"><img src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/ncaa/500/${p.sid}.png&w=${size * 2}&h=${size * 2}" alt="" width="${size}" height="${size}" loading="lazy" data-chip="${BB.esc(BB.initials(p.school))}"></span>`;
       return `<span class="chip txt" title="${BB.esc(p.flag || p.school || "")}">${BB.esc(BB.initials(p.flag || p.school))}</span>`;
+    },
+    // A prospect's face (his college photo from ESPN, via assets/faces.js) with his school's logo as a badge.
+    // Without faces.js, just the school chip.
+    who(p, size = 34) {
+      if (!window.DSFaces || !p) return BB.school(p, size - 4);
+      const face = window.DSFaces.html({ sport: p.lg === "nfl" ? "ncaaf" : "ncaab", name: p.n, size, color: "#33415A" });
+      return `<span class="who-av" style="--sz:${size}px">${face}${BB.school(p, 16)}</span>`;
     },
     initials(s) {
       const w = String(s || "").replace(/[()]/g, "").split(/\s+/).filter(Boolean);
