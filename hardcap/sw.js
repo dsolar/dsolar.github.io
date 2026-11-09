@@ -1,7 +1,7 @@
 /* Hard Cap's service worker: alerts (web push) and a network-first cache so the app opens on a bad connection.
    League data always comes live from the league server; this only keeps the app's own files and stats. */
 const CACHE = "hardcap-v1";
-const SHELL = ["./", "index.html", "app.js", "engine.js", "mark.svg", "manifest.webmanifest", "icon-192.png", "stats.json", "../celtics/data.json"];
+const SHELL = ["./", "index.html", "app.js", "engine.js", "../nba/lib/contracts.js?v=1", "mark.svg", "manifest.webmanifest", "icon-192.png", "stats.json", "../celtics/data.json"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => Promise.all(SHELL.map((u) => c.add(u).catch(() => null)))).then(() => self.skipWaiting()));

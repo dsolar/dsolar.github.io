@@ -1,7 +1,7 @@
 /* Dynasty laboratory. Amounts in $M. See rules.md for modeled rules and data limits. */
 (function(root){
 'use strict';
-const Model=typeof module!=='undefined'?require('../celtics/model.js'):root.Model;
+const Model=typeof module!=='undefined'?require('../nba/lib/model.js'):root.Model;
 const copy=x=>JSON.parse(JSON.stringify(x));
 const sum=xs=>xs.reduce((a,b)=>a+b,0);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));

@@ -31,12 +31,19 @@ let cache: { at: number; H: any; nba: any; stats: any } | null = null;
 async function load() {
   if (cache && Date.now() - cache.at < 5 * 60e3) return cache;
   const bust = `?t=${Math.floor(Date.now() / 300e3)}`;
-  const [src, sheet, stats, fixes] = await Promise.all([
+  const [lib, src, sheet, stats, fixes] = await Promise.all([
+    fetch(`${SITE}/nba/lib/contracts.js${bust}`).then((r) => (r.ok ? r.text() : null)).catch(() => null),
     fetch(`${SITE}/hardcap/engine.js${bust}`).then((r) => r.text()),
     fetch(`${SITE}/celtics/data.json${bust}`).then((r) => r.json()),
     fetch(`${SITE}/hardcap/stats.json${bust}`).then((r) => r.json()).catch(() => ({})),
     fetch(`${SITE}/hardcap/contracts.json${bust}`).then((r) => (r.ok ? r.json() : null)).catch(() => null),
   ]);
+  // The engine takes its contract code from the shared NBA library: load that first, as the pages do.
+  if (lib) {
+    const shared = { exports: {} as any };
+    new Function("module", lib)(shared);
+    (globalThis as any).NbaContracts = shared.exports;
+  }
   const module = { exports: {} as any };
   new Function("module", src)(module);
   const H = module.exports;
