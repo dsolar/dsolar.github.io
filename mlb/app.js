@@ -441,7 +441,7 @@
     });
     var i0 = yrs.indexOf(y), room = CBT[0] - cbt[i0];
     var html = '<div class="stats">' + stat(money(pay[i0], 0), y + " payroll") + stat(money(cbt[i0], 0), "Tax payroll (est.)") +
-      stat((room >= 0 ? money(room, 0) : "-" + money(-room, 0)), room >= 0 ? "Under the tax" : "Over the tax") +
+      stat(money(Math.abs(room), 0), room >= 0 ? "Under the tax" : "Over the tax") +
       stat(money(guar.slice(1).reduce(function (a, b) { return a + b; }, 0), 0), "Guaranteed after " + y) +
       stat(money(deadFor(abbr, y).reduce(function (a, d) { return a + d[1] / 1e6; }, 0), 1), "Dead money " + y) + "</div>";
     // tax payroll against the thresholds, by season
