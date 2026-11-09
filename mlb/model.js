@@ -112,7 +112,7 @@
     if (p.g === "min" || p.st == null) {
       var a = arrival(p, season);
       if (year < a) return "minors";
-      st = year - a;
+      st = (p.st || 0) + (year - a); // service he's already earned counts
     } else {
       st = p.st + (year - season);
     }
@@ -147,11 +147,12 @@
     if (year === season && dc != null && p.g !== "min") return dc;
     // Playing time. A big leaguer: FanGraphs' share for the coming season, growing a little each year. A prospect:
     // half a season the year he arrives, then a regular's share if he's good enough (FanGraphs' share for him this
-    // season only reflects that he starts it in the minors). A catcher tops out lower.
+    // season only reflects that he starts it in the minors). Minor league depth that isn't a graded prospect keeps
+    // FanGraphs' small share, growing like a big leaguer's. A catcher tops out lower.
     var cap = p.pos === "C" || (p.el && p.el[0] === "C") ? 0.8 : 0.9;
     var reg = Math.min(cap, rate >= 2 ? 0.85 : rate >= 1 ? 0.7 : 0.5);
     var share;
-    if (p.g === "min") share = year <= arrival(p, season) ? reg * 0.5 : reg;
+    if (p.g === "min" && isProspect(p)) share = year <= arrival(p, season) ? reg * 0.5 : reg;
     else {
       var share0 = dc != null && p.rate > 0.3 ? Math.max(0.15, Math.min(1, dc / p.rate)) : null;
       share = share0 == null ? reg : Math.min(Math.max(cap, share0), share0 + 0.05 * (year - season));
@@ -200,9 +201,12 @@
 
   // ---------- surplus value ----------
 
+  // Every season of contract or control: value, salary, surplus = value - salary, each also discounted.
+  // A pre-arb or arbitration player who'd be worth less than his pay is cut (those salaries aren't guaranteed), so
+  // his line ends there. A prospect's value and pay are both scaled by his chance of becoming a big leaguer.
   function surplus(p, cfg, season, resigned) {
     cfg = cfg || DEFAULTS;
-    var rows = [], pv = 0, total = 0, prospect = isProspect(p);
+    var rows = [], pv = 0, total = 0, valuePV = 0, contractPV = 0, prospect = isProspect(p);
     var start = prospect ? Math.max(season, arrival(p, season)) : season;
     var hit = prospect ? (RISK_HIT[p.risk] || 0.75) : 1;
     for (var y = season; y <= season + 11; y++) {
@@ -210,17 +214,20 @@
       var t = yearTerms(p, y, season, cfg, resigned);
       if (!t.on && !(t.option && t.salary)) { if (y > start) break; else continue; }
       if (retires(p, y, season)) break;
-      var s = t.on ? t.value - t.salary : -t.salary; // a declined option still costs its buyout
-      if (t.control) s = Math.max(0, s);             // not guaranteed: the team would cut him before paying more
-      if (t.kind === "Opts out") s = 0;
-      s *= hit;
+      var value = t.on ? t.value : 0, salary = t.salary;
+      if (t.kind === "Opts out") { value = 0; salary = 0; }
+      if (t.control && value < salary) break;        // he'd be cut before the team paid more than he's worth
       var disc = Math.pow(1 + cfg.discount, y - season);
-      rows.push({ y: y, war: t.on ? t.war : 0, value: t.on ? t.value : 0, salary: t.salary, kind: t.kind, surplus: s, pv: s / disc, est: !!t.est });
+      value *= hit; salary *= hit;
+      var s = value - salary;
+      rows.push({ y: y, war: t.on ? t.war : 0, value: value, salary: salary, kind: t.kind, surplus: s, pv: s / disc, est: !!t.est });
       total += s;
       pv += s / disc;
+      valuePV += value / disc;
+      contractPV += salary / disc;
       if (!t.on) break;
     }
-    return { rows: rows, total: total, pv: pv, prospect: prospect, hit: hit };
+    return { rows: rows, total: total, pv: pv, valuePV: valuePV, contractPV: contractPV, prospect: prospect, hit: hit };
   }
 
   // ---------- depth charts ----------

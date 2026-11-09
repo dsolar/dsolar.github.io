@@ -7,6 +7,25 @@
   var $ = function (s, el) { return (el || document).querySelector(s); };
   var view = $("#view"), years = $("#years"), yearbar = $("#yearbar"), fillBox = $("#fill");
   var state = { year: null, route: "standings", arg: null, q: {} };
+  // Fence distances in feet (left-field line, left-center, center, right-center, right-field line) and any wall that
+  // stands out, for drawing each team's own park. Approximate, from published dimensions.
+  var PARKS = {
+    ARI: ["Chase Field", [330, 374, 407, 374, 334]], ATL: ["Truist Park", [335, 385, 400, 375, 325]],
+    BAL: ["Camden Yards", [333, 376, 400, 373, 318]], BOS: ["Fenway Park", [310, 379, 390, 380, 302], { lf: "37-ft Green Monster" }],
+    CHC: ["Wrigley Field", [355, 368, 400, 368, 353]], CWS: ["Rate Field", [330, 375, 400, 375, 335]],
+    CIN: ["Great American Ball Park", [328, 379, 404, 370, 325]], CLE: ["Progressive Field", [325, 370, 400, 375, 325], { lf: "19-ft wall" }],
+    COL: ["Coors Field", [347, 390, 415, 375, 350]], DET: ["Comerica Park", [345, 370, 412, 365, 330]],
+    HOU: ["Daikin Park", [315, 362, 409, 373, 326], { lf: "Crawford Boxes" }], KC: ["Kauffman Stadium", [330, 387, 410, 387, 330]],
+    LAA: ["Angel Stadium", [347, 390, 396, 370, 350]], LAD: ["Dodger Stadium", [330, 375, 395, 375, 330]],
+    MIA: ["loanDepot park", [344, 386, 400, 387, 335]], MIL: ["American Family Field", [344, 371, 400, 374, 345]],
+    MIN: ["Target Field", [339, 377, 404, 367, 328], { rf: "23-ft wall" }], NYM: ["Citi Field", [335, 370, 408, 375, 330]],
+    NYY: ["Yankee Stadium", [318, 399, 408, 385, 314], { rf: "short porch" }], ATH: ["Sutter Health Park", [330, 388, 403, 388, 325]],
+    PHI: ["Citizens Bank Park", [329, 374, 401, 369, 330]], PIT: ["PNC Park", [325, 389, 399, 375, 320], { rf: "21-ft Clemente Wall" }],
+    SD: ["Petco Park", [334, 357, 396, 382, 322]], SF: ["Oracle Park", [339, 364, 391, 415, 309], { rf: "24-ft wall, Triples Alley" }],
+    SEA: ["T-Mobile Park", [331, 378, 401, 381, 326]], STL: ["Busch Stadium", [336, 375, 400, 375, 335]],
+    TB: ["Tropicana Field", [315, 370, 404, 370, 322]], TEX: ["Globe Life Field", [329, 372, 407, 374, 326]],
+    TOR: ["Rogers Centre", [328, 368, 400, 359, 328]], WSH: ["Nationals Park", [336, 377, 402, 370, 335]]
+  };
   var SPOT_XY = { // field spots, % of the field box
     CF: [50, 13], LF: [19, 25], RF: [81, 25], SS: [34, 45], "2B": [66, 45], "3B": [15, 61], "1B": [85, 61],
     C: [50, 89], DH: [14, 89]
@@ -173,7 +192,7 @@
         }, "Prospects who win a job this year") + "</div>";
     }
     html += rosterTables(tm, y);
-    html += '<div class="two">' + payrollPanel(abbr, y) + farmPanel(abbr) + "</div>";
+    html += payrollPanel(abbr, y) + farmPanel(abbr);
     view.innerHTML = html;
   }
   function stat(v, k) { return '<div class="stat"><b>' + v + "</b><span>" + k + "</span></div>"; }
@@ -205,7 +224,9 @@
     return out;
   }
   function field(tm, y) {
-    var html = '<div class="fieldwrap"><div class="field">' + fieldSvg(), bk = backupMap(tm);
+    var park = PARKS[tm.abbr] || ["", [], {}], notes = park[2] ? Object.keys(park[2]).map(function (k) { return park[2][k]; }) : [];
+    var html = '<div class="fieldwrap"><p class="park"><b>' + esc(park[0]) + "</b>" + (park[1].length ? " · " + park[1].join(" · ") + " ft" : "") + (notes.length ? " · " + esc(notes.join(", ")) : "") +
+      '</p><div class="field">' + fieldSvg(tm.abbr), bk = backupMap(tm);
     M.FIELD_ORDER.forEach(function (slot) {
       var xy = SPOT_XY[slot], e = tm.line[slot], rows = e ? [e].concat(bk[slot] || []) : [];
       var war = rows.reduce(function (s, r, i) { return s + (i === 0 ? r.war : r.war * 0.5); }, 0);
@@ -231,14 +252,38 @@
     }
     return html + "</div></div>";
   }
-  function fieldSvg() {
-    return '<svg viewBox="0 0 118 100" preserveAspectRatio="none" aria-hidden="true">' +
-      '<path d="M59 98 L4 43 Q59 -18 114 43 Z" fill="var(--grass)" opacity=".55"/>' +
-      '<path d="M59 98 L4 43 Q59 -18 114 43 Z" fill="none" stroke="var(--grass-2)" stroke-width=".6"/>' +
-      '<path d="M59 96 L34 71 Q59 40 84 71 Z" fill="var(--dirt)" opacity=".55"/>' +
-      '<path d="M59 90 L44 75 L59 60 L74 75 Z" fill="var(--grass-2)" opacity=".8"/>' +
-      '<g fill="#fff"><rect x="57.6" y="88.6" width="2.8" height="2.8" transform="rotate(45 59 90)"/><rect x="72.6" y="73.6" width="2.4" height="2.4" transform="rotate(45 73.8 74.8)"/><rect x="57.8" y="58.8" width="2.4" height="2.4" transform="rotate(45 59 60)"/><rect x="43" y="73.6" width="2.4" height="2.4" transform="rotate(45 44.2 74.8)"/></g>' +
-      '<circle cx="59" cy="75" r="2.2" fill="var(--dirt)"/></svg>';
+  // A team's park to scale: home plate at the bottom, the fence through its five published distances
+  function fieldSvg(abbr) {
+    var park = PARKS[abbr] || ["", [330, 375, 400, 375, 330]], d = park[1], walls = park[2] || {};
+    var HX = 59, HY = 97, K = 0.205; // feet to drawing units
+    var pt = function (deg, ft) { var a = deg * Math.PI / 180; return [HX + ft * K * Math.sin(a), HY - ft * K * Math.cos(a)]; };
+    var fence = [pt(-45, d[0]), pt(-22.5, d[1]), pt(0, d[2]), pt(22.5, d[3]), pt(45, d[4])];
+    // a smooth fence through the five points (Catmull-Rom as Bezier)
+    var path = "M" + HX + " " + HY + " L" + fence[0][0].toFixed(1) + " " + fence[0][1].toFixed(1);
+    for (var i = 0; i < 4; i++) {
+      var p0 = fence[Math.max(0, i - 1)], p1 = fence[i], p2 = fence[i + 1], p3 = fence[Math.min(4, i + 2)];
+      var c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+      path += " C" + c1[0].toFixed(1) + " " + c1[1].toFixed(1) + " " + c2[0].toFixed(1) + " " + c2[1].toFixed(1) + " " + p2[0].toFixed(1) + " " + p2[1].toFixed(1);
+    }
+    path += " Z";
+    var b = 90 * K, first = pt(45, 90), second = pt(0, 127.3), third = pt(-45, 90), mound = pt(0, 60.5);
+    var dirt = 'M' + HX + ' ' + HY + ' L' + pt(-45, 120).map(function (v) { return v.toFixed(1); }).join(" ") + ' A' + (95 * K * 1.3).toFixed(1) + " " + (95 * K * 1.3).toFixed(1) + " 0 0 1 " + pt(45, 120).map(function (v) { return v.toFixed(1); }).join(" ") + " Z";
+    var labels = fence.map(function (f, i) {
+      var lab = pt([-45, -22.5, 0, 22.5, 45][i], d[i] + 14);
+      return '<text x="' + lab[0].toFixed(1) + '" y="' + lab[1].toFixed(1) + '" text-anchor="middle" class="ft">' + d[i] + "</text>";
+    }).join("");
+    var wall = function (side) { // a heavier stroke along a notable wall
+      var a = side === "lf" ? [fence[0], fence[1]] : [fence[3], fence[4]];
+      return '<path d="M' + a[0][0].toFixed(1) + " " + a[0][1].toFixed(1) + " L" + a[1][0].toFixed(1) + " " + a[1][1].toFixed(1) + '" stroke="var(--monster)" stroke-width="1.6" stroke-linecap="round" opacity=".85"/>';
+    };
+    return '<svg viewBox="0 0 118 100" preserveAspectRatio="xMidYMax meet" aria-hidden="true">' +
+      '<path d="' + path + '" fill="var(--grass)" opacity=".55"/><path d="' + path + '" fill="none" stroke="var(--grass-2)" stroke-width=".7"/>' +
+      (walls.lf ? wall("lf") : "") + (walls.rf ? wall("rf") : "") +
+      '<path d="' + dirt + '" fill="var(--dirt)" opacity=".55"/>' +
+      '<path d="M' + HX + " " + HY + " L" + first.join(" ") + " L" + second.join(" ") + " L" + third.join(" ") + ' Z" fill="var(--grass-2)" opacity=".8"/>' +
+      '<g fill="#fff">' + [first, second, third].map(function (q) { return '<rect x="' + (q[0] - 1.1).toFixed(1) + '" y="' + (q[1] - 1.1).toFixed(1) + '" width="2.2" height="2.2" transform="rotate(45 ' + q[0].toFixed(1) + " " + q[1].toFixed(1) + ')"/>'; }).join("") +
+      '<rect x="' + (HX - 1.3) + '" y="' + (HY - 1.3) + '" width="2.6" height="2.6" transform="rotate(45 ' + HX + " " + HY + ')"/></g>' +
+      '<circle cx="' + mound[0].toFixed(1) + '" cy="' + mound[1].toFixed(1) + '" r="1.9" fill="var(--dirt)"/>' + labels + "</svg>";
   }
   function listPanel(title, items, fn, sub) {
     return '<div class="panel"><h3>' + esc(title) + " <small>" + esc(sub || "") + '</small></h3><ul class="rlist">' +
@@ -279,10 +324,44 @@
   function tablePanel(title, head, body, right) {
     return '<div class="panel"><h3>' + esc(title) + " <small>" + esc(right || "") + '</small></h3><div class="scroll"><table class="t"><thead><tr>' + head + "</tr></thead><tbody>" + (body || '<tr><td class="note">Nobody yet.</td></tr>') + "</tbody></table></div></div>";
   }
+  // The payroll grid: every player's salary each season, how it's set (guaranteed, option, arbitration estimate,
+  // pre-arb), and the totals, like RosterResource's payroll pages
   function payrollPanel(abbr, y) {
-    var html = '<div class="panel"><h3>Payroll <small>committed and estimated, $M</small></h3><div class="body"><div class="payroll">';
-    yearsList().forEach(function (yy) { html += '<div class="' + (yy === y ? "cur" : "") + '"><b>' + money(H.payroll(abbr, yy), 0).replace("$", "$") + "</b><span>" + yy + "</span></div>"; });
-    html += '</div><p class="note" style="margin:8px 0 0">Guaranteed salaries plus arbitration and pre-arb estimates for everyone still under control. Free agents to be signed aren\'t in it.</p></div></div>';
+    var yrs = yearsList(), org = H.org(abbr);
+    var cell = function (p, yy) {
+      var t = H.terms(p, yy);
+      if (t.kind === "Minors") return null;
+      if (!t.on && !(t.option && t.salary)) return { cls: "fa", txt: t.kind === "Free agent" ? "FA" : "", sal: 0 };
+      if (t.kind === "Option declined") return { cls: "opt off", txt: money(t.salary) + " buyout", sal: t.salary, tip: "Club option declined" };
+      var cls = /option|Stays/.test(t.kind) ? "opt" : /^Arb/.test(t.kind) ? "arb" : t.kind === "Pre-arb" ? "pre" : t.kind === "Re-signed" ? "re" : "g";
+      var tag = { opt: t.kind === "Club option" ? "CO" : "PO", arb: t.kind.replace("Arb ", "A"), pre: "", re: "RS", g: "" }[cls];
+      return { cls: cls, txt: money(t.salary) + (t.est ? "*" : ""), tag: tag, sal: t.salary, tip: t.kind };
+    };
+    var rows = [], rest = yrs.map(function () { return 0; }), restN = 0;
+    org.forEach(function (p) {
+      var cells = yrs.map(function (yy) { return cell(p, yy); });
+      var any = cells.some(function (c) { return c && c.sal > 0; });
+      if (!any) return;
+      var keep = p.g !== "min" || (p.c && p.c.yrs && p.c.yrs.some(function (r) { return r[2] === "G"; }));
+      if (!keep) { cells.forEach(function (c, i) { if (c) rest[i] += c.sal; }); restN++; return; }
+      rows.push({ p: p, cells: cells, first: cells[0] && cells[0].sal || 0, tot: cells.reduce(function (a, c) { return a + (c ? c.sal : 0); }, 0) });
+    });
+    rows.sort(function (a, b) { return b.first - a.first || b.tot - a.tot; });
+    var totals = yrs.map(function (yy, i) { return rows.reduce(function (a, r) { return a + (r.cells[i] ? r.cells[i].sal : 0); }, 0) + rest[i]; });
+    var html = '<div class="panel payroll-grid"><h3>Payroll <small>salary by season, $M</small></h3><div class="scroll"><table class="t pg"><thead><tr><th>Player</th><th>Contract</th>' +
+      yrs.map(function (yy) { return '<th class="' + (yy === y ? "cur" : "") + '">' + yy + "</th>"; }).join("") + "<th>Total</th></tr></thead><tbody>";
+    rows.forEach(function (r) {
+      var p = r.p, desc = p.c && p.c.desc ? p.c.desc.replace(/\s*\(.*?\)/, "") : r.cells[0] ? r.cells[0].tip || "" : "";
+      html += "<tr><td>" + pname(p, 20) + ' <span class="note">' + esc(p.pos || "") + '</span></td><td class="desc">' + esc(desc) + "</td>" +
+        r.cells.map(function (c, i) {
+          if (!c) return '<td class="' + (yrs[i] === y ? "cur" : "") + '"></td>';
+          return '<td class="pc ' + c.cls + (yrs[i] === y ? " cur" : "") + '"' + (c.tip ? ' title="' + esc(c.tip) + '"' : "") + ">" + esc(c.txt) + (c.tag ? "<sup>" + esc(c.tag) + "</sup>" : "") + "</td>";
+        }).join("") + "<td><b>" + money(r.tot) + "</b></td></tr>";
+    });
+    if (restN) html += '<tr class="muted-row"><td colspan="2">Call-ups and depth at the minimum (' + restN + ")</td>" + rest.map(function (v, i) { return '<td class="' + (yrs[i] === y ? "cur" : "") + '">' + (v ? money(v) : "") + "</td>"; }).join("") + "<td></td></tr>";
+    html += '<tr class="tot"><td colspan="2">Total payroll</td>' + totals.map(function (v, i) { return '<td class="' + (yrs[i] === y ? "cur" : "") + '"><b>' + money(v, 0) + "</b></td>"; }).join("") + "<td></td></tr>";
+    html += '</tbody></table></div><div class="body"><p class="legend-row"><span class="pc g">Guaranteed</span><span class="pc opt">Option<sup>CO/PO</sup></span><span class="pc arb">Arbitration*<sup>A1-A3</sup></span><span class="pc pre">Pre-arb</span><span class="pc re">Re-signed<sup>RS</sup></span><span class="pc fa">FA</span></p>' +
+      '<p class="note" style="margin:6px 0 0">* Arbitration salaries are estimates (25%, 40% and 60% of market value). Options are picked up or declined on value. Free agents still to be signed aren\'t in it.</p></div></div>';
     return html;
   }
   function farmPanel(abbr) {
@@ -304,9 +383,11 @@
     html += kv(f1(H.warAt(p, H.season)), H.season + " WAR");
     if (p.p) html += kv(pj.era != null ? pj.era.toFixed(2) : "—", "ERA") + kv(f0(pj.ip), "IP");
     else html += kv(f0(pj.wrc), "wRC+") + kv(f0(pj.pa), "PA");
-    html += kv(p.st != null ? p.st.toFixed(2) : "—", "Service yrs") + kv(money(s.pv), "Surplus (PV)");
+    html += kv(p.st != null ? p.st.toFixed(2) : "—", "Service yrs");
     if (p.fv) html += kv(esc(p.fv) + (p.risk ? " / " + esc(p.risk) : ""), "FV / risk") + kv(p.eta || "—", "ETA") + kv(p.ovr ? "#" + p.ovr : "—", "Overall rank");
     html += "</div>";
+    html += '<div class="vcs"><div><span>Value</span><b>' + money(s.valuePV) + '</b><small>what he should produce</small></div><i>−</i><div><span>Contract</span><b>' + money(s.contractPV) +
+      '</b><small>what he\'ll be paid</small></div><i>=</i><div class="' + (s.pv >= 0 ? "up" : "dn") + '"><span>Surplus</span><b>' + signed(s.pv) + "</b><small>" + (s.rows.length ? s.rows.length + " season" + (s.rows.length > 1 ? "s" : "") + ", discounted" : "not worth a roster spot") + "</small></div></div>";
     if (p.tldr) html += '<p class="tldr">' + esc(p.tldr) + "</p>";
     if (p.c && p.c.desc) html += '<p class="tldr"><b>Contract:</b> ' + esc(p.c.desc) + (p.c.note ? " " + esc(p.c.note) : "") + "</p>";
     else if (p.acq) html += '<p class="tldr">' + esc(p.acq) + "</p>";
@@ -315,9 +396,14 @@
     s.rows.forEach(function (r) {
       html += "<tr><td>" + r.y + "</td><td>" + H.ageAt(p, r.y) + '</td><td style="text-align:left"><span class="pill">' + esc(r.kind) + "</span></td><td>" + f1(r.war) + "</td><td>" + money(r.value) + "</td><td>" + money(r.salary) + (r.est ? "*" : "") + '</td><td class="' + (r.surplus >= 0 ? "pos" : "neg") + '">' + signed(r.surplus) + "</td></tr>";
     });
-    if (!s.rows.length) html += '<tr><td class="note" colspan="7">No years under contract or control.</td></tr>';
+    if (!s.rows.length) html += '<tr><td class="note" colspan="7">Projects below his pay in every controlled season: a team would cut him before paying more than he\'s worth.</td></tr>';
+    else {
+      var tw = s.rows.reduce(function (a, r) { return a + r.war; }, 0), tv = s.rows.reduce(function (a, r) { return a + r.value; }, 0), ts = s.rows.reduce(function (a, r) { return a + r.salary; }, 0);
+      html += '<tr class="tot"><td colspan="3">Total</td><td>' + f1(tw) + "</td><td>" + money(tv) + "</td><td>" + money(ts) + '</td><td class="' + (s.total >= 0 ? "pos" : "neg") + '">' + signed(s.total) + "</td></tr>";
+      html += '<tr class="tot"><td colspan="3">Discounted</td><td></td><td>' + money(s.valuePV) + "</td><td>" + money(s.contractPV) + '</td><td class="' + (s.pv >= 0 ? "pos" : "neg") + '"><b>' + signed(s.pv) + "</b></td></tr>";
+    }
     html += "</tbody></table></div>";
-    html += '<p class="note">Total ' + signed(s.total) + ", " + signed(s.pv) + " discounted at " + pct(H.cfg.discount, 0) + " a year. A win costs " + money(H.cfg.dpw) + " in " + H.season + ", up " + pct(H.cfg.inflation, 0) + " a year." +
+    html += '<p class="note">Discounted at ' + pct(H.cfg.discount, 0) + " a year. A win costs " + money(H.cfg.dpw) + " in " + H.season + ", up " + pct(H.cfg.inflation, 0) + " a year." +
       (s.prospect ? " Prospect value is scaled by his risk grade (" + pct(s.hit, 0) + ")." : "") + "</p>";
     html += '<p><button class="btn" data-add="a" data-id="' + esc(p.id) + '">Add to trade: side A</button> <button class="btn" data-add="b" data-id="' + esc(p.id) + '">Side B</button> <a class="btn" href="' + href("team/" + p.t) + '">' + esc(t.name) + " depth chart</a></p></div>";
     cardBody.innerHTML = html;
@@ -409,18 +495,18 @@
       return x.s.rows.length > 0;
     }).sort(function (a, b) { return sortDir * (a.s.pv - b.s.pv); }).slice(0, 150);
     var opt = function (v, l, cur) { return '<option value="' + v + '"' + (v === cur ? " selected" : "") + ">" + l + "</option>"; };
-    var html = '<h2 class="sec">Trade Value</h2><p class="lede">Surplus value: what a player should produce over the rest of his contract or team control, at the market price of a win, minus what he\'s paid. ' +
+    var html = '<h2 class="sec">Trade Value</h2><p class="lede">Value is what a player should produce over the rest of his contract or team control, at the market price of a win. Contract is what he\'ll be paid. Surplus is the difference, all discounted to today. ' +
       (H.market ? "The price of a win (" + money(H.cfg.dpw) + ") is read from the last few winters of free agent deals." : "The price of a win is an assumption until the free agent data arrives.") + " Change any assumption and every number updates.</p>";
     html += controls('<label>Team<select data-q="t">' + opt("", "All teams", tm) + H.teams.slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).map(function (t) { return opt(t.abbr, t.name, tm); }).join("") + "</select></label>" +
       '<label>Players<select data-q="k">' + opt("all", "Everyone", kind) + opt("bat", "MLB hitters", kind) + opt("pit", "MLB pitchers", kind) + opt("pros", "Prospects", kind) + "</select></label>" +
       '<label>Show<select data-q="sort">' + opt("", "Most surplus", q.sort || "") + opt("worst", "Worst contracts", q.sort || "") + "</select></label>" +
       '<label>Search<input type="search" data-q="s" value="' + esc(q.s || "") + '" placeholder="Player"></label>');
-    html += '<div class="panel"><div class="scroll"><table class="t"><thead><tr><th>Player</th><th>Team</th><th>Pos</th><th>Age</th><th>Contract</th><th>Thru</th><th>' + H.season + ' WAR</th><th>Total</th><th>Surplus (PV)</th></tr></thead><tbody>';
+    html += '<div class="panel"><div class="scroll"><table class="t"><thead><tr><th>Player</th><th>Team</th><th>Pos</th><th>Age</th><th>Contract</th><th>Thru</th><th>' + H.season + ' WAR</th><th>Value</th><th>Contract</th><th>Surplus</th></tr></thead><tbody>';
     list.forEach(function (x, i) {
       var p = x.p, s = x.s, lastY = s.rows.length ? s.rows[s.rows.length - 1].y : "—";
       var ctr = p.c && p.c.desc ? p.c.desc.replace(/\s*\(.*?\)/, "") : p.fv && p.g === "min" ? "Prospect · FV " + p.fv : s.rows[0] ? s.rows[0].kind : "";
       html += "<tr><td>" + (i + 1) + ". " + pname(p, 22) + "</td><td>" + logo(p.t, 18) + "</td><td>" + esc(p.pos || "") + "</td><td>" + (p.age ? Math.floor(p.age) : "—") +
-        '</td><td style="text-align:left;max-width:220px;overflow:hidden;text-overflow:ellipsis">' + esc(ctr) + "</td><td>" + lastY + "</td><td>" + f1(H.warAt(p, H.season)) + "</td><td>" + signed(s.total) +
+        '</td><td style="text-align:left;max-width:220px;overflow:hidden;text-overflow:ellipsis">' + esc(ctr) + "</td><td>" + lastY + "</td><td>" + f1(H.warAt(p, H.season)) + "</td><td>" + money(s.valuePV) + "</td><td>" + money(s.contractPV) +
         '</td><td class="' + (s.pv >= 0 ? "pos" : "neg") + '"><b>' + signed(s.pv) + "</b></td></tr>";
     });
     html += "</tbody></table></div></div>";
@@ -468,17 +554,17 @@
     html += controls();
     html += '<div class="sides">';
     sides.forEach(function (k, i) {
-      var ids = tr[k] || [], tot = 0, rows = "", tm = tr.teams[k];
+      var ids = tr[k] || [], tot = 0, rows = "", tm = tr.teams[k], tv = 0, tc = 0;
       ids.forEach(function (id) {
         var p = H.byId[id], sv = H.surplus(p);
-        tot += sv.pv;
+        tot += sv.pv; tv += sv.valuePV; tc += sv.contractPV;
         rows += "<li>" + pname(p, 28) + '<span class="grow"><span class="sub">' + logo(p.t, 14) + " " + esc(p.pos || "") + " · " + (p.c && p.c.desc ? esc(p.c.desc.replace(/\s*\(.*?\)/, "")) : p.fv && p.g === "min" ? "FV " + esc(p.fv) : esc((sv.rows[0] || {}).kind || "")) +
           '</span></span><b class="' + (sv.pv >= 0 ? "pos" : "neg") + '">' + signed(sv.pv) + '</b><button class="xbtn" data-rm="' + k + '" data-id="' + esc(id) + '" aria-label="Remove">×</button></li>';
       });
       totals[k] = tot;
       html += '<div class="side"><div class="side-h">' + (tm ? logo(tm, 28) : "") + '<select data-tside="' + k + '" aria-label="Team for side ' + "ABC"[i] + '">' + teamOpts(tm) + "</select></div>" +
         '<div class="search"><input type="search" placeholder="' + (tm ? "Search the " + esc(team(tm).name) : "Search any player or prospect") + '" data-side="' + k + '" autocomplete="off"><div class="results" hidden></div></div>' +
-        '<p class="sends">Sends</p><ul class="rlist">' + (rows || '<li class="note">No one yet.</li>') + '</ul><div class="tot"><span>Surplus sent</span><span class="num">' + signed(tot) + "</span></div>" +
+        '<p class="sends">Sends</p><ul class="rlist">' + (rows || '<li class="note">No one yet.</li>') + '</ul><div class="tot"><span>Surplus sent</span><span class="num">' + signed(tot) + '</span></div><p class="note" style="margin:4px 0 0">Value ' + money(tv) + " − contracts " + money(tc) + "</p>" +
         (tm ? orgPicker(tm, k, ids) : "") + "</div>";
     });
     html += "</div>";
@@ -652,7 +738,7 @@
       "<li><b>Prospects:</b> FanGraphs' The Board: FV grade, risk and ETA" + (HUB.board ? " (" + esc(HUB.board) + ")" : "") + ".</li>" +
       "<li><b>Free agents:</b> RosterResource's free agent tracker for this winter and the five before it, including crowd predictions and the contracts players signed.</li>" +
       "<li><b>Photos:</b> linked from MLB's own servers.</li></ul>" +
-      "<h3>The year slider</h3><p>" + H.season + " is FanGraphs' Depth Charts as published. Every later season is built here: a player stays while he's under a guaranteed contract, a club option worth picking up, a player option he'd keep, or team control (pre-arb under three years of service, arbitration until six). Everyone else becomes a free agent, unless you re-sign him on his team's page. Ratings age a year at a time (modest gains into the mid-20s, flat at 27 and 28, falling from 29 and faster after 32), and playing time grows slowly from FanGraphs' share for the coming season. Prospects arrive at their ETA (or by level when there isn't one) and grow toward the WAR their FV grade implies over their first three seasons. Each spot goes to the best available player who can play it; a team gets five starters and eight relievers. Spots nobody can fill are \"FA Fill\": a replacement player, or a modest free agent if teams sign them (the switch). Wins scale from team WAR so later seasons spread the way Depth Charts' do.</p>" +
+      "<h3>The year slider</h3><p>" + H.season + " is FanGraphs' Depth Charts as published. Every later season is built here: a player stays while he's under a guaranteed contract, a club option worth picking up, a player option he'd keep, or team control (pre-arb under three years of service, arbitration until six). Everyone else becomes a free agent, unless you re-sign him on his team's page. Ratings age a year at a time by season age (modest gains into the mid-20s, flat at 27 and 28, falling from 29 and faster after 32), and playing time grows slowly from FanGraphs' share for the coming season. Prospects arrive at their ETA (or by level when there isn't one) and grow toward the WAR their FV grade implies over their first three seasons. Each spot goes to the best available player who can play it; a team gets five starters and eight relievers. Spots nobody can fill are \"FA Fill\": a replacement player, or a modest free agent if teams sign them (the switch). Wins scale from team WAR so later seasons spread the way Depth Charts' do.</p>" +
       "<h3>Surplus value</h3><p>For each season of contract or control: projected WAR × the price of a win, minus salary, discounted " + pct(H.cfg.discount, 0) + " a year. Like front offices, it counts " + pct(H.cfg.haircut, 0) + " of projected WAR (a margin of safety for injuries and misses), and an unproven big leaguer (under three years of service) keeps " + pct(H.cfg.youngFade, 0) + " of his value from one year to the next, since long control on a short track record is worth less than its projection adds up to. Those two defaults are calibrated to Baseball Trade Values' published values, and you can change both on the Trade Value tab. Value never drops below zero (a team can always play a replacement for the minimum), and a pre-arb or arbitration year can't cost the team more than it's worth, since those salaries aren't guaranteed. Arbitration pays 25/40/60% of market value (a fourth year 70%); pre-arb players earn the minimum (" + money(H.cfg.minSalary) + ", until the next CBA says otherwise). Club options are exercised only when they're worth it, and a player option only comes back when it's bad for the team. A prospect's value is scaled by his risk grade.</p>" +
       "<h3>The price of a win</h3><p>" + (mk ? (mk.how === "crowd" ? "This winter's free agents: Steamer's projected WAR for each, aged over the contract the crowd predicts, against the crowd's predicted dollars, then adjusted by how far past crowds landed from real contracts (" + ((mk.crowdErr - 1) >= 0 ? "+" : "") + pct(mk.crowdErr - 1, 0) + "). That gives " + money(H.cfg.dpw) + " per win." : "Carried forward from the last three winters' deals: " + money(H.cfg.dpw) + " per win.") + " The premium patterns on the Free Agents tab come from every deal of the last five winters for a player projected at 1+ WAR, against that winter's going rate. Past classes don't carry the projection at signing, so it's estimated from the season before, fit to how Steamer projects this winter's class." : "The free agent data hasn't arrived yet, so the price of a win is an assumption: " + money(H.cfg.dpw) + ".") + "</p>" +
       "<h3>What it doesn't know</h3><ul><li>Trades and signings that haven't happened, beyond the switch for filling open spots.</li><li>Injuries after the first season, platoons, and teams' payroll limits.</li><li>Super Two arbitration, and anything the next CBA changes (the current one expires December 1, 2026).</li></ul>" +
