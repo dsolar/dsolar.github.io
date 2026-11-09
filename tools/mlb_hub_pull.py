@@ -28,8 +28,7 @@ from datetime import date
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "mlb_hub")
 FG = "https://www.fangraphs.com"
-UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-      "Chrome/130.0 Safari/537.36 davidsolar-mlb-hub/1.0 (+https://davidsolar.dev/mlb/)")
+UA = "davidsolar-mlb-hub/1.0 (+https://davidsolar.dev/mlb/)"  # an honest bot name, like the Fantasy Kit's
 
 # FanGraphs team id -> (our abbreviation, payroll page slug)
 TEAMS = {
@@ -54,8 +53,7 @@ def fetch(path, kind="json"):
     for attempt in range(4):
         try:
             req = urllib.request.Request(FG + path, headers={
-                "User-Agent": UA, "Accept": "application/json, text/html;q=0.9, */*;q=0.8",
-                "Accept-Language": "en-US,en;q=0.9", "Referer": FG + "/"})
+                "User-Agent": UA, "Accept": "application/json" if kind == "json" else "text/html"})
             with urllib.request.urlopen(req, timeout=90) as res:
                 body = res.read().decode("utf-8", "replace")
             time.sleep(1.2)  # be polite
