@@ -229,7 +229,9 @@ def build():
             if not (grp != "min" or r40 or pr or (lvl in ("AAA", "AA") and s) or ct):
                 continue
             seen.add(key)
-            p = {"id": mid or key, "n": r.get("player"), "t": org, "g": grp, "lvl": lvl,
+            # FanGraphs tags a few shared names with an old team code ("Jacob Wilson (oak)"); pages show the team anyway
+            name = re.sub(r"\s*\([a-z]{2,4}\)$", "", str(r.get("player") or "")).strip()
+            p = {"id": mid or key, "n": name, "t": org, "g": grp, "lvl": lvl,
                  "role": r.get("role") or None, "pos": (r.get("position") if grp in ("sl", "bn", "sp", "bp") else (pos_list[0] if pos_list else None)),
                  "el": pos_list or None, "p": 1 if is_p else 0, "age": fnum(r.get("age")),
                  "b": r.get("bats"), "th": r.get("throws"), "st": service(r.get("servicetime")),

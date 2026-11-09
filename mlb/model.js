@@ -15,7 +15,7 @@
  *
  * Surplus value: projected WAR x the market price of a win, minus salary, every year of the contract or team
  * control, discounted. Like front offices (and Baseball Trade Values, which these defaults are calibrated to), it pays
- * for 85% of projected WAR, a margin of safety for injuries and misses, and fades an unproven big leaguer's later years
+ * for 90% of projected WAR, a margin of safety for injuries and misses, and fades an unproven big leaguer's later years
  * (20% a year until he'd have 3 years of service), since long control on a short track record is worth less than it adds up to. Arbitration pays a share of market value (25/40/60%), pre-arb the minimum. Club options are
  * picked up only when they're worth it; player options only come back when they're bad for the team.
  * The price of a win is read from recent free agent deals; how far long deals, relievers or qualifying-offer players
@@ -32,7 +32,7 @@
     arbPct: [0.25, 0.4, 0.6, 0.7], // share of market value paid in arbitration years 1-4
     fill: true,        // teams buy modest free agents for empty spots
     fillWar: { bat: 1.5, sp: 1.5, rp: 0.4 },
-    haircut: 0.85,     // share of projected WAR teams pay for (their margin of safety for injuries and misses)
+    haircut: 0.9,      // share of projected WAR teams pay for (their margin of safety for injuries and misses)
     fade: 1,           // yearly shrink of WAR further out (projections get less certain each year)
     youngFade: 0.8,    // extra yearly shrink for unproven big leaguers (under 3 years of service): long control on a
                        // short track record is worth less than its projection adds up to
@@ -46,10 +46,12 @@
   // Change in full-time WAR rate going into this season age (hitters and starters; relievers scaled)
   // Modest gains into the mid-20s (Steamer already builds some growth into a young player's line), flat at 27-28,
   // then a steepening decline
+  var DECLINE = 0.75; // scales the decline side of the curve: 75% of the classic "half a win a year after 30" rule
   function agingDelta(age) {
     if (age <= 23) return 0.25;
     var t = { 24: 0.2, 25: 0.15, 26: 0.1, 27: 0.05, 28: 0, 29: -0.15, 30: -0.3, 31: -0.4, 32: -0.45, 33: -0.5, 34: -0.55 };
-    return age in t ? t[age] : -0.6;
+    var d = age in t ? t[age] : -0.6;
+    return d < 0 ? d * DECLINE : d;
   }
 
   // Full-time WAR a prospect's FV grade implies at his peak (FanGraphs' scale: 50 = average regular, 60 = plus,
@@ -685,7 +687,7 @@
 
   function mean(a) { return a.length ? a.reduce(function (s, x) { return s + x; }, 0) / a.length : 0; }
 
-  var api = { Hub: Hub, DEFAULTS: DEFAULTS, tierMult: tierMult, agingDelta: agingDelta, fvWar: fvWar, rateAt: rateAt, warAt: warAt,
+  var api = { Hub: Hub, DEFAULTS: DEFAULTS, tierMult: tierMult, setDecline: function (x) { DECLINE = x; }, agingDelta: agingDelta, fvWar: fvWar, rateAt: rateAt, warAt: warAt,
     yearTerms: yearTerms, controlStatus: controlStatus, surplus: surplus, simulate: simulate, seriesWin: seriesWin,
     marketRead: marketRead, warPath: warPath, canPlay: canPlay, FIELD_ORDER: FIELD_ORDER, arrival: arrival };
   if (typeof module === "object" && module.exports) module.exports = api;
