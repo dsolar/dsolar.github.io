@@ -28,6 +28,7 @@ from datetime import date
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "mlb_hub")
 FG = "https://www.fangraphs.com"
+PAUSE = 6  # seconds between requests
 UA = "davidsolar-mlb-hub/1.0 (+https://davidsolar.dev/mlb/)"  # an honest bot name, like the Fantasy Kit's
 
 # FanGraphs team id -> (our abbreviation, payroll page slug)
@@ -56,12 +57,16 @@ def fetch(path, kind="json"):
                 "User-Agent": UA, "Accept": "application/json" if kind == "json" else "text/html"})
             with urllib.request.urlopen(req, timeout=90) as res:
                 body = res.read().decode("utf-8", "replace")
-            time.sleep(1.2)  # be polite
+            time.sleep(PAUSE)  # be polite: FanGraphs rate-limits fast clients
             if kind == "json":
                 return json.loads(body)
             return body
         except urllib.error.HTTPError as e:
             body = e.read()[:300].decode("utf-8", "replace") if hasattr(e, "read") else ""
+            if e.code == 429 and attempt < 3:  # too fast: wait it out
+                print(f"  429 on {path[:80]}, waiting {60 * (attempt + 1)}s")
+                time.sleep(60 * (attempt + 1))
+                continue
             if attempt == 3 or e.code in (403, 404):
                 raise RuntimeError(f"HTTP {e.code} on {path[:80]}: {body[:200]!r}")
             print(f"  retry {path[:90]}: {e}")
@@ -158,10 +163,32 @@ def pull_rosters():
 
 # ---------------------------------------------------------------- payroll
 
-def pull_payroll():
-    out = {"season": season(), "teams": {}}
-    for tid, (abbr, slug) in TEAMS.items():
-        d = next_data(fetch(f"/roster-resource/payroll/{slug}", kind="html"))
+def pull_payroll(per_run=10, max_age_days=3):
+    """Contracts change slowly, so each run refreshes the 10 stalest teams: every team every three days."""
+    path = os.path.join(OUT, "payroll.json")
+    out = {"season": season(), "teams": {}, "fetched": {}}
+    if os.path.exists(path):
+        with open(path, encoding="utf-8") as f:
+            prev = json.load(f)
+        if prev.get("season") == season():
+            out["teams"], out["fetched"] = prev.get("teams", {}), prev.get("fetched", {})
+    today = date.today()
+    def age(tid):
+        d = out["fetched"].get(str(tid))
+        return (today - date.fromisoformat(d)).days if d else 999
+    if len(out["teams"]) < 30:
+        per_run = 30  # first fill: get every team now
+    todo = sorted((t for t in TEAMS if age(t) >= max_age_days or str(t) not in out["teams"]), key=lambda t: -age(t))
+    if not todo:
+        print("  every team is fresh")
+    done = 0
+    for tid in todo[:per_run]:
+        abbr, slug = TEAMS[tid]
+        try:
+            d = next_data(fetch(f"/roster-resource/payroll/{slug}", kind="html"))
+        except Exception as e:
+            print(f"  payroll {abbr} failed, keeping the old copy: {e}")
+            continue
         rows = []
         for c in d.get("dataContract") or []:
             s = c.get("contractSummary") or {}
@@ -179,22 +206,36 @@ def pull_payroll():
         dead = [[p.get("Season"), num(p.get("PaymentAmount"), 0), p.get("PaymentDescription")]
                 for p in d.get("dataOtherPayments") or []]
         out["teams"][str(tid)] = {"contracts": rows, "other": dead}
+        out["fetched"][str(tid)] = today.isoformat()
+        done += 1
         print(f"  payroll {abbr}: {len(rows)} contracts")
     out["yearCols"] = ["season", "salary", "type", "arbYear", "arbProj", "buyout", "cbt"]
     save("payroll.json", out)
+    print(f"  {len(out['teams'])}/30 teams on file")
+    if todo and not done:
+        raise RuntimeError("no payroll page answered")
 
 
 # ---------------------------------------------------------------- prospects
 
 def pull_board():
+    """The newest list that's really out: next year's once published, else this year's updated in-season list."""
+    y = season() - 1
     rows, used = [], None
-    for yr in (season(), season() - 1):
-        rows = fetch(f"/api/prospects/board/data?draft={yr}prospect&season={yr}")
-        if isinstance(rows, list) and rows:
-            used = yr
+    for d, yr in ((f"{y + 1}prospect", y + 1), (f"{y}updated", y), (f"{y}prospect", y)):
+        try:
+            got = fetch(f"/api/prospects/board/prospects-list?draft={d}&season={yr}&playerid=&position=&statType=player")
+        except Exception as e:
+            print(f"  board {d}: {e}")
+            continue
+        ranked = [r for r in got if str(r.get("cOVR") or "").isdigit()] if isinstance(got, list) else []
+        same = sum(1 for r in ranked[:40] if str(r.get("cSeason") or r.get("Season") or "").startswith(str(yr)))
+        print(f"  board {d}: {len(got) if isinstance(got, list) else 0} rows, {len(ranked)} ranked")
+        if len(ranked) >= 50 and same >= 30:
+            rows, used = got, d
             break
     if not rows:
-        raise RuntimeError("The Board came back empty")
+        raise RuntimeError("no prospect list answered")
     cols = [("fg", lambda r: str(r.get("PlayerId") or r.get("UPID") or "")), ("name", lambda r: r.get("playerName")),
             ("tid", lambda r: r.get("playerTeamId")), ("pos", lambda r: r.get("Position") or r.get("positionDB")),
             ("age", lambda r: num(r.get("Age"), 1)), ("fv", lambda r: r.get("cFV") or r.get("FV_Current")),
@@ -202,7 +243,7 @@ def pull_board():
             ("ovr", lambda r: num(r.get("cOVR") or r.get("Ovr_Rank"), 0)),
             ("org", lambda r: num(r.get("cORG") or r.get("Org_Rank"), 0)),
             ("lvl", lambda r: r.get("mlevel") or r.get("llevel")), ("tldr", lambda r: (r.get("TLDR") or "")[:240])]
-    out = {"season": used, **table(rows, cols)}
+    out = {"list": used, **table(rows, cols)}
     print(f"  board {used}: {len(rows)} prospects")
     save("board.json", out)
 
@@ -220,6 +261,8 @@ def pull_fa():
         with open(prev_path, encoding="utf-8") as f:
             out["seasons"] = json.load(f).get("seasons", {})
     for yr in range(season() - 5, season() + 1):
+        if yr < season() and str(yr) in out["seasons"] and date.today().weekday() != 0:
+            continue  # past classes only change on Mondays' refresh
         try:
             rows = next_data(fetch(f"/roster-resource/free-agent-tracker?season={yr}", kind="html"))
             out["seasons"][str(yr)] = [[r.get(k) for k in keep] for r in rows]
@@ -231,7 +274,7 @@ def pull_fa():
     save("fa.json", out)
 
 
-PARTS = {"proj": pull_proj, "rosters": pull_rosters, "payroll": pull_payroll, "board": pull_board, "fa": pull_fa}
+PARTS = {"proj": pull_proj, "rosters": pull_rosters, "board": pull_board, "fa": pull_fa, "payroll": pull_payroll}
 
 if __name__ == "__main__":
     want = sys.argv[1:] or list(PARTS)
