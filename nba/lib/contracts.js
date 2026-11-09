@@ -14,7 +14,12 @@
   // then on first initial plus last name.
   const SUFFIX = /^(jr|sr|ii|iii|iv|v)$/;
   const nameKeys = (slug) => {
-    const parts = slug.split("-").filter((x) => !SUFFIX.test(x));
+    // "a-j-green" and "aj-green" are the same player: run single letters together first
+    const parts = slug.split("-").filter((x) => !SUFFIX.test(x)).reduce((a, x) => {
+      if (x.length === 1 && a.length && a.single) { a[a.length - 1] += x; } else { a.push(x); }
+      a.single = x.length === 1;
+      return a;
+    }, []);
     return [parts.join("-"), parts.length > 1 ? parts[0][0] + "-" + parts[parts.length - 1] : parts.join("-")];
   };
   function rosterIndex(stats) {

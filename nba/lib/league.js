@@ -425,13 +425,37 @@
   // tr = { a, b, side: { [code]: { players:[ids], picks:[ids], cash } }, kickWaive:{id:true}, snt:{id:{years,total,shape}} }
   // Each side lists what that team SENDS.
   L.checkTrade = (W, tr) => {
-    const i = W.season, res = { ok: true, teams: {}, issues: [] };
-    const dec = L.decider(W);
+    const res = { ok: true, teams: {}, issues: [] };
     const codes = [tr.a, tr.b];
     const sends = c => tr.side[c] || { players: [], picks: [], cash: 0 };
     for (const code of codes) {
       const other = codes.find(c => c !== code);
-      const t = W.T[code], out = sends(code), inn = sends(other);
+      const r = L.checkSide(W, tr, code, sends(code), sends(other));
+      if (!r.ok) res.ok = false;
+      res.teams[code] = r;
+    }
+    return res;
+  };
+  // Trades among three or more teams. tr.teams: codes; tr.moves: [{ kind: "p" | "k", id, from, to }].
+  // Each team is checked on everything it sends and everything it gets, the same way as a two-team deal.
+  L.checkTradeMulti = (W, tr) => {
+    const res = { ok: true, teams: {}, issues: [] };
+    const side = (code, key) => {
+      const ms = tr.moves.filter(m => m[key] === code);
+      return { players: ms.filter(m => m.kind === "p").map(m => m.id), picks: ms.filter(m => m.kind === "k").map(m => m.id), cash: 0 };
+    };
+    for (const code of tr.teams) {
+      const r = L.checkSide(W, { snt: null, kickWaive: tr.kickWaive || {} }, code, side(code, "from"), side(code, "to"));
+      if (!r.ok) res.ok = false;
+      res.teams[code] = r;
+    }
+    return res;
+  };
+  // One team's side of a trade: out is what it sends, inn what it gets back.
+  L.checkSide = (W, tr, code, out, inn) => {
+    const i = W.season, dec = L.decider(W);
+    {
+      const t = W.T[code];
       const r = { code, msgs: [], ok: true };
       const outP = out.players.map(id => W.P[id]), inP = inn.players.map(id => W.P[id]);
       const sal = (p, recv) => {
@@ -500,10 +524,8 @@
       for (const id of inn.picks || []) { const pk = W.picks.find(x => x.id === id); if (pk && pk.r === 1) firsts[pk.y] = (firsts[pk.y] || 0) + 1; }
       const st = CBA.stepien(firsts, 2027 + W.season + (L.inSeason(W) ? 0 : 0) + (W.phase === "fa" || W.phase === "summer" ? 0 : 0));
       if (!st.ok) { r.ok = false; r.msgs.push(st.why); }
-      if (!r.ok) res.ok = false;
-      res.teams[code] = r;
+      return r;
     }
-    return res;
   };
   // A player as he'd be after a sign-and-trade (new contract), for valuations
   L.sntView = (W, tr, id) => {

@@ -1,0 +1,63 @@
+/* NBA Hub: what the MLB hub's styles (../mlb/hub.css) don't already cover. Hardwood for the court. */
+:root{ --wood:#E7C590; --wood-2:#D9B276; --paint:#C9A06A; }
+@media (prefers-color-scheme: dark){ :root{ --wood:#6B5233; --wood-2:#5C462B; --paint:#4E3B24; } }
+
+.subsec{font:800 18px/1.2 var(--display);margin:18px 0 6px}
+table.t tr.cut td{border-top:2px dashed var(--rule)}
+.pl.static{cursor:default}
+.pl.static:hover .nm{text-decoration:none}
+.fillface{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:var(--paper-2);color:var(--faint);font:700 10px/1 var(--body);border:1px dashed var(--rule);flex:none}
+
+/* impact chips and tiers */
+.rchip{display:inline-block;min-width:42px;padding:2px 6px;border-radius:5px;font:700 13px/1.3 var(--cond);text-align:center}
+.T-Weak{background:var(--t-weak);color:var(--t-weak-i)}
+.T-Strong{background:var(--t-strong);color:var(--t-strong-i)}
+
+/* the court */
+.courtwrap{margin:14px 0 6px}
+.court{position:relative;width:100%;max-width:760px;margin:0 auto;aspect-ratio:500/360;border-radius:14px;overflow:hidden;box-shadow:0 1px 0 var(--rule)}
+.court svg{position:absolute;inset:0;width:100%;height:100%}
+.court .wood{fill:var(--wood)}
+.court .lines{fill:none;stroke:rgba(255,255,255,.85);stroke-width:3}
+.court .lines rect:nth-child(2){fill:var(--paint)}
+.cspot{position:absolute;transform:translate(-50%,-50%);text-align:center;width:150px}
+.cbtn{border:0;background:none;padding:0;display:flex;flex-direction:column;align-items:center;gap:3px;width:100%;color:var(--ink)}
+.cspot>.face,.cspot .face{box-shadow:0 0 0 3px #fff,0 2px 6px rgba(0,0,0,.25)}
+.cn{font:700 14px/1.15 var(--body);background:rgba(255,255,255,.88);color:#0b1b30;padding:2px 7px;border-radius:6px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cr{font:700 11.5px/1 var(--cond);letter-spacing:.04em;padding:3px 6px;border-radius:4px}
+@media (max-width:640px){ .cspot{width:96px} .cn{font-size:11.5px} .cspot .face{width:38px!important;height:38px!important} }
+
+/* cap sheet */
+td.o-po,.key.o-po{background:var(--t-weak);color:var(--t-weak-i)}
+td.o-to,.key.o-to{background:var(--t-elite);color:var(--t-elite-i)}
+td.o-ng,.key.o-ng{background:var(--t-fringe);color:var(--t-fringe-i)}
+td.o-re,.key.o-re{background:var(--t-strong);color:var(--t-strong-i);font-style:italic}
+td.o-rk,.key.o-rk{background:var(--paper-2);color:var(--muted)}
+.key{display:inline-block;padding:1px 6px;border-radius:4px;font-size:11px;margin-left:4px}
+table.t tr.lines td{color:var(--muted);font-size:12.5px}
+table.t td.on{background:var(--paper-2)}
+
+/* trade builder */
+select.dest{border:1px solid var(--rule);border-radius:6px;background:var(--paper);padding:3px 4px;font-size:12.5px;max-width:110px}
+.verdict.legal{border-left:4px solid var(--up)}
+.verdict.illegal{border-left:4px solid var(--down)}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:12px 0 8px}
+.tcol h4{display:flex;align-items:center;gap:6px;margin:0 0 6px;font:800 16px/1.2 var(--display)}
+.kvs{display:grid;grid-template-columns:1fr auto;gap:3px 10px;font-size:13.5px}
+.kvs span{color:var(--muted)}
+.kvs b{text-align:right;font-variant-numeric:tabular-nums}
+ul.msgs{margin:8px 0 0;padding-left:18px;color:var(--down);font-size:13px}
+ul.msgs li{margin:3px 0}
+
+/* free agents */
+.prem{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;padding:4px 0}
+.prem>div{background:var(--paper-2);border-radius:10px;padding:10px 12px}
+.prem span{display:block;font-size:12.5px;color:var(--muted)}
+.prem b{display:block;font:700 24px/1.1 var(--cond);margin-top:2px}
+.prem small{font-size:11.5px;color:var(--faint)}
+.leagues.stack{grid-template-columns:1fr}
+.years button{white-space:nowrap}
+@media (max-width:640px){ .years button{padding:7px 8px;font-size:13px} }
+.verdict .kvs span{color:rgba(255,255,255,.72)}
+.verdict ul.msgs{color:#FFB4B4}
+.verdict .tcol h4{color:#fff}

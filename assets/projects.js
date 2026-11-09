@@ -358,5 +358,19 @@ window.PROJECTS = [
     facts: [["30", "organizations, majors down to A ball"], ["5", "seasons on the year slider"], ["6", "free agent classes in the market model"]],
     stack: ["JavaScript", "Python", "GitHub Actions"],
     cover: { image: "assets/covers/mlb-hub.svg", bg: "#F5F4F0", band: "#002244" }
+  },
+  {
+    title: "NBA Hub",
+    line: "Standings, lottery odds, rotations five years out, trade value",
+    tag: "Updated every day",
+    type: "Simulations",
+    released: "2026-11",
+    url: "nba/",
+    action: "Open the hub",
+    question: "Who's actually worth his contract, and what does every roster look like in 2030?",
+    summary: "This season played out 1,000 times from every team's real record, with the play-in, the playoffs and the 3-2-1 lottery. Every rotation and cap sheet rolled forward five seasons as contracts end and draft picks arrive, surplus value for every contract and pick (picks priced by what each slot has produced since 2001), a trade builder that checks the apron rules, and next summer's free agents.",
+    facts: [["30", "rotations and cap sheets"], ["5", "seasons on the year slider"], ["1,080", "draft picks behind the pick values"]],
+    stack: ["JavaScript", "Python"],
+    cover: { bg: "#F5F4F0", band: "#C60C30" }
   }
 ];

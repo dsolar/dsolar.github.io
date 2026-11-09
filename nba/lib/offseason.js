@@ -398,28 +398,44 @@
     // returning players keep what was really in them
     return scouted.map((x, j) => { const o = list.find(y => y.id === x.id); return o && o.truePot != null ? Object.assign(x, { trueNow: o.trueNow, truePot: o.truePot }) : x; });
   };
-  L.runLottery = W => {
-    const r = L.rng(W), year = L.draftYear(W);
-    const all = L.standings(W).slice().reverse().map(t => t.code);       // worst first
-    const bottom3 = all.slice(0, 3);
+  // The 3-2-1 lottery draw. lot: [{ code, balls }] for every lottery team; bottom3: the three worst records, who can't
+  // fall below 12th. Draws every lottery slot; returns the codes in pick order.
+  L.lotteryEntries = (confOrders, playinLosers, bottom3) => {
     const lot = [];
     for (const conf of ["E", "W"]) {
-      const c = W.post.conf[conf], st = c.order;
-      lot.push({ code: c.playin.l78, balls: 1 });
+      const st = confOrders[conf];
+      lot.push({ code: playinLosers[conf], balls: 1 });
       for (let k = 8; k < st.length; k++) lot.push({ code: st[k], balls: k <= 9 ? 2 : (bottom3.includes(st[k]) ? 2 : 3) });
     }
-    // draw every lottery slot
+    return lot;
+  };
+  L.lotteryDraw = (lot, bottom3, r) => {
     const pool = lot.slice(), order = [];
     while (pool.length) {
       const tot = sum(pool.map(x => x.balls)); let x = r() * tot, k = 0;
       while (x > pool[k].balls && k < pool.length - 1) { x -= pool[k].balls; k++; }
       order.push(pool.splice(k, 1)[0].code);
     }
-    // the bottom three can't fall below 12th
-    for (const code of bottom3) {
-      const k = order.indexOf(code);
-      if (k > 11) { order.splice(k, 1); order.splice(11, 0, code); }
+    // the bottom three can't fall below 12th: each one drawn later takes 12th, and the last team in the top 12 that
+    // isn't one of them drops out (so a bottom-three team already in the top 12 never gets pushed out)
+    const top = order.slice(0, 12), rest = order.slice(12), pushed = [];
+    for (const c of bottom3) {
+      const k = rest.indexOf(c);
+      if (k < 0) continue;
+      rest.splice(k, 1);
+      let j = top.length - 1; while (j >= 0 && bottom3.includes(top[j])) j--;
+      pushed.push(top.splice(j, 1)[0]);
+      top.push(c);
     }
+    pushed.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+    return top.concat(pushed, rest);
+  };
+  L.runLottery = W => {
+    const r = L.rng(W), year = L.draftYear(W);
+    const all = L.standings(W).slice().reverse().map(t => t.code);       // worst first
+    const bottom3 = all.slice(0, 3);
+    const lot = L.lotteryEntries({ E: W.post.conf.E.order, W: W.post.conf.W.order }, { E: W.post.conf.E.playin.l78, W: W.post.conf.W.playin.l78 }, bottom3);
+    const order = L.lotteryDraw(lot, bottom3, r);
     // no No. 1 two years running
     W.lotHist = W.lotHist || {};
     if (W.lotHist[order[0]] === year - 1 && order.length > 1) { const a = order[0]; order[0] = order[1]; order[1] = a; }
