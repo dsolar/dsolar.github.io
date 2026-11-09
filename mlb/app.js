@@ -246,7 +246,7 @@
   }
   function status(p, y) {
     var t = H.terms(p, y);
-    var tag = t.kind === "Signed" ? money(t.salary) : t.kind === "Club option" || t.kind === "Player option" ? t.kind + " " + money(t.salary) : t.kind;
+    var tag = t.kind === "Signed" ? money(t.salary) : /option|Stays/.test(t.kind) && t.on ? t.kind + " " + money(t.salary) : t.kind;
     if (/^Arb/.test(t.kind)) tag += " " + money(t.salary) + (t.est ? "*" : "");
     return '<span class="pill' + (t.kind === "Re-signed" ? " up" : "") + '">' + esc(tag) + "</span>";
   }

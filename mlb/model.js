@@ -161,8 +161,8 @@
     if (cy) {
       var sal = cy[1] != null ? cy[1] / 1e6 : null, code = cy[2], buyout = (cy[3] || 0) / 1e6;
       if (p.c.defer && cy[5]) sal = cy[5] / 1e6; // deferred money: value it at the CBT hit, not face
-      if (code === "CO") return { on: value >= sal, salary: value >= sal ? sal : buyout, kind: "Club option", value: value, war: war, option: true, buyout: buyout };
-      if (code === "PO" || code === "OO") return { on: sal >= value, salary: sal >= value ? sal : 0, kind: "Player option", value: value, war: war, option: true };
+      if (code === "CO") return { on: value >= sal, salary: value >= sal ? sal : buyout, kind: value >= sal ? "Club option" : "Option declined", value: value, war: war, option: true, buyout: buyout };
+      if (code === "PO" || code === "OO") return { on: sal >= value, salary: sal >= value ? sal : 0, kind: sal >= value ? (code === "OO" ? "Stays (opt-out)" : "Player option") : "Opts out", value: value, war: war, option: true };
       if (code === "MO") return { on: false, salary: buyout, kind: "Mutual option", value: value, war: war, option: true };
       if (/^A/.test(code) || code === "PA") {
         var n = /^A(\d)/.exec(code), arbN = n ? +n[1] : (/arb(\d)/.exec(st) || [0, 1])[1];
@@ -204,7 +204,7 @@
       if (retires(p, y, season)) break;
       var s = t.on ? t.value - t.salary : -t.salary; // a declined option still costs its buyout
       if (t.control) s = Math.max(0, s);             // not guaranteed: the team would cut him before paying more
-      if (t.kind === "Player option" && !t.on) s = 0;
+      if (t.kind === "Opts out") s = 0;
       s *= hit;
       var disc = Math.pow(1 + cfg.discount, y - season);
       rows.push({ y: y, war: t.on ? t.war : 0, value: t.on ? t.value : 0, salary: t.salary, kind: t.kind, surplus: s, pv: s / disc, est: !!t.est });
