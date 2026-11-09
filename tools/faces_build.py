@@ -148,11 +148,18 @@ def nfl_bulk():
 
 
 def nba_bulk():
+    # the same ESPN hosts Hard Cap reads rosters from (the first answers from GitHub's runners)
+    hosts = ["https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/teams/{tid}/roster?region=us&lang=en&contentorigin=espn",
+             "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/{tid}/roster"]
     for tid in range(1, 31):
-        try:
-            d = get(f"https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/{tid}/roster")
-        except Exception as e:
-            print(f"  ESPN NBA roster {tid}: {e}")
+        d = None
+        for h in hosts:
+            try:
+                d = get(h.format(tid=tid))
+                break
+            except Exception as e:
+                print(f"  ESPN NBA roster {tid} ({h.split('/')[2]}): {e}")
+        if not d:
             continue
         ath = d.get("athletes") or []
         if ath and isinstance(ath[0], dict) and "items" in ath[0]:
