@@ -5083,7 +5083,7 @@
       "pos": "QB",
       "nfl": "BUF",
       "slot": "QB",
-      "proj": 22.01,
+      "proj": 21.93,
       "pts": null
      },
      {
@@ -5091,7 +5091,7 @@
       "pos": "RB",
       "nfl": "BUF",
       "slot": "RB",
-      "proj": 14.11,
+      "proj": 14.07,
       "pts": null
      },
      {
@@ -5140,7 +5140,7 @@
       "nfl": "CHI",
       "slot": "W/R/T",
       "proj": 17.94,
-      "pts": null
+      "pts": 3.1
      },
      {
       "n": "C.J. Stroud",
@@ -5466,7 +5466,7 @@
       "nfl": "TB",
       "slot": "RB",
       "proj": 16.01,
-      "pts": null
+      "pts": 26.5
      },
      {
       "n": "Zay Flowers",
@@ -5489,7 +5489,7 @@
       "pos": "WR",
       "nfl": "MIN",
       "slot": "WR",
-      "proj": 14.72,
+      "proj": 14.63,
       "pts": null
      },
      {
@@ -5588,7 +5588,7 @@
       "nfl": "CHI",
       "slot": "WR",
       "proj": 12.09,
-      "pts": null
+      "pts": 17.2
      },
      {
       "n": "Chris Olave",
@@ -5734,14 +5734,14 @@
       "nfl": "CHI",
       "slot": "TE",
       "proj": 8.93,
-      "pts": null
+      "pts": 7.4
      },
      {
       "n": "DJ Moore",
       "pos": "WR",
       "nfl": "BUF",
       "slot": "W/R/T",
-      "proj": 10.78,
+      "proj": 10.76,
       "pts": null
      },
      {
@@ -5774,7 +5774,7 @@
       "nfl": "CHI",
       "slot": "BN",
       "proj": 9.81,
-      "pts": null
+      "pts": 14
      },
      {
       "n": "Emeka Egbuka",
@@ -5782,7 +5782,7 @@
       "nfl": "TB",
       "slot": "BN",
       "proj": 8.62,
-      "pts": null
+      "pts": 5.4
      },
      {
       "n": "Travis Kelce",
@@ -5808,7 +5808,7 @@
       "nfl": "CHI",
       "slot": "QB",
       "proj": 18.91,
-      "pts": null
+      "pts": 16.76
      },
      {
       "n": "Breece Hall",
