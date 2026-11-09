@@ -150,6 +150,44 @@ def box_lines(summary, notes):
     return out
 
 
+def starters_of(summary):
+    """{team: [(slug, started, played)]} for one finished game: who started and who got in."""
+    out = {}
+    for team in summary.get("boxscore", {}).get("players", []):
+        ab = team.get("team", {}).get("abbreviation", "")
+        ab = TEAM.get(ab, ab)
+        rows = []
+        for block in team.get("statistics", []):
+            for row in block.get("athletes", []):
+                a = row.get("athlete", {})
+                if not a.get("displayName"):
+                    continue
+                played = bool(row.get("stats")) and not row.get("didNotPlay")
+                rows.append((slug(a.get("displayName")), bool(row.get("starter")), played))
+        if rows:
+            out[ab] = rows
+    return out
+
+
+def record_starts(data, gid, day, summary):
+    """Games started for every player, and each team's most recent starting five (the NBA hub's lineups)."""
+    seen = data.setdefault("startsGames", {})
+    if gid in seen:
+        return
+    starts = data.setdefault("starts", {})
+    lineups = data.setdefault("lineups", {})
+    for team, rows in starters_of(summary).items():
+        five = [pid for pid, st, _ in rows if st]
+        for pid, st, played in rows:
+            if not played and not st:
+                continue
+            s = starts.get(pid) or [0, 0]
+            starts[pid] = [s[0] + (1 if st else 0), s[1] + 1]
+        if len(five) == 5 and (team not in lineups or lineups[team][0] <= day):
+            lineups[team] = [day, five]
+    seen[gid] = day
+
+
 def pull_avg(season, notes):
     out, page, pages = {}, 1, 1
     schema = None
@@ -423,8 +461,23 @@ def main():
                 data["names"][pid] = [pname, team]
             data["games"][gid] = d.isoformat()
             data["last"] = max(data.get("last") or "", d.isoformat())
+            try:
+                record_starts(data, gid, d.isoformat(), summary)
+            except Exception as e:                                  # never lose a box score over the lineup extra
+                notes.append(f"starts {gid}: {type(e).__name__}: {e}"[:200])
             added += 1
         d += timedelta(days=1)
+
+    # Games counted before starters were tracked: fetch them once (a few dozen a run) so starts cover the season
+    back = [(g, dd) for g, dd in sorted(data["games"].items(), key=lambda x: x[1]) if g not in data.get("startsGames", {})]
+    for gid, dd in back[:80]:
+        summary = get_any(SUMMARY, notes, f"starts {gid}", id=gid)
+        if summary is None:
+            continue
+        try:
+            record_starts(data, gid, dd, summary)
+        except Exception as e:
+            notes.append(f"starts {gid}: {type(e).__name__}: {e}"[:200])
 
     if not data["games"] and not data["avg"]:
         for n in notes:
