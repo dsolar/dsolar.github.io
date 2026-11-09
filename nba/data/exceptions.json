@@ -1,0 +1,148 @@
+{
+ "_about": "2026-27 mid-level and bi-annual exception use by team, from Hoops Rumors' 'How Teams Are Using 2026/27 Mid-Level Exceptions' (July 16, 2026, mirrored at https://www.yardbarker.com/nba/articles/how_teams_are_using_202627_mid_level_exceptions/s1_14822_44067750) and 'How Teams Are Using 2026/27 Bi-Annual Exceptions' (July 17, 2026). kind: ntmle (non-taxpayer), tmle (taxpayer), room (used cap room: room exception), none (over the second apron). used: dollars of that exception spent. A team that used its non-taxpayer mid-level is hard-capped at the first apron; the taxpayer mid-level hard-caps at the second. baeUsedLastYear: used the bi-annual in 2025-26, so it can't this season. Signings after mid-July aren't in here: edit by hand.",
+ "updated": "2026-07-16",
+ "teams": {
+  "ATL": {
+   "kind": "ntmle",
+   "used": 14100000,
+   "on": "Jock Landale"
+  },
+  "BOS": {
+   "kind": "ntmle",
+   "used": 15044000,
+   "on": "Mitchell Robinson"
+  },
+  "BRK": {
+   "kind": "room",
+   "used": 0
+  },
+  "CHO": {
+   "kind": "ntmle",
+   "used": 14196974,
+   "on": "Dorian Finney-Smith (trade)"
+  },
+  "CHI": {
+   "kind": "room",
+   "used": 0
+  },
+  "CLE": {
+   "kind": "ntmle",
+   "used": 0
+  },
+  "DAL": {
+   "kind": "ntmle",
+   "used": 3000000,
+   "on": "Tarik Biberovic"
+  },
+  "DEN": {
+   "kind": "tmle",
+   "used": 0
+  },
+  "DET": {
+   "kind": "ntmle",
+   "used": 11323006,
+   "on": "Isaiah Joe (trade)"
+  },
+  "GSW": {
+   "kind": "ntmle",
+   "used": 0
+  },
+  "HOU": {
+   "kind": "tmle",
+   "used": 6064000,
+   "on": "Marcus Smart"
+  },
+  "IND": {
+   "kind": "ntmle",
+   "used": 8050000,
+   "on": "Kelly Oubre Jr."
+  },
+  "LAC": {
+   "kind": "ntmle",
+   "used": 14000000,
+   "on": "Rui Hachimura"
+  },
+  "LAL": {
+   "kind": "room",
+   "used": 9366000,
+   "on": "Collin Sexton"
+  },
+  "MEM": {
+   "kind": "ntmle",
+   "used": 10350000,
+   "on": "Quinten Post"
+  },
+  "MIA": {
+   "kind": "ntmle",
+   "used": 6065000,
+   "on": "Tim Hardaway Jr."
+  },
+  "MIL": {
+   "kind": "ntmle",
+   "used": 0
+  },
+  "MIN": {
+   "kind": "tmle",
+   "used": 0
+  },
+  "NOP": {
+   "kind": "ntmle",
+   "used": 0
+  },
+  "NYK": {
+   "kind": "tmle",
+   "used": 0
+  },
+  "OKC": {
+   "kind": "none",
+   "used": 0
+  },
+  "ORL": {
+   "kind": "tmle",
+   "used": 0
+  },
+  "PHI": {
+   "kind": "ntmle",
+   "used": 15000000,
+   "on": "Dean Wade, Anfernee Simons"
+  },
+  "PHO": {
+   "kind": "tmle",
+   "used": 6064000,
+   "on": "Luke Kennard"
+  },
+  "POR": {
+   "kind": "ntmle",
+   "used": 0
+  },
+  "SAC": {
+   "kind": "ntmle",
+   "used": 0
+  },
+  "SAS": {
+   "kind": "ntmle",
+   "used": 15044000,
+   "on": "Tobias Harris"
+  },
+  "TOR": {
+   "kind": "ntmle",
+   "used": 0
+  },
+  "UTA": {
+   "kind": "ntmle",
+   "used": 12000000,
+   "on": "Jaxson Hayes, Josh Okogie"
+  },
+  "WAS": {
+   "kind": "ntmle",
+   "used": 0
+  }
+ },
+ "baeUsedLastYear": [
+  "CHO",
+  "DET",
+  "LAL",
+  "UTA",
+  "WAS"
+ ]
+}

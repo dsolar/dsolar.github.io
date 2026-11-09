@@ -23,6 +23,7 @@
   const YEARS = 5;
   const sum = a => a.reduce((s, x) => s + x, 0);
   const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+  const money = v => "$" + (v / 1e6).toFixed(1) + "M";
   // The draft board and the team file use ESPN-style codes for three teams
   const CODE = { BKN: "BRK", CHA: "CHO", PHX: "PHO" };
   const fix = c => CODE[c] || c;
@@ -34,6 +35,7 @@
     mode: "prod",        // "prod": what he should produce; "market": what teams would pay him
     fill: true,          // teams fill open roster spots with free agents they can afford
     blend: 2500,         // minutes of this season's BPM it takes to move a rating halfway
+    growth: 0.5,         // share of a young player's projected improvement that counts in his value
   };
 
   function build(inp, opts) {
@@ -114,6 +116,21 @@
     }
     // Pick ledger: 2027 from the current draft order (who owns each team's pick), 2028-33 from every future pick owed
     setPicks(W, board, codes);
+    // Every team's real trade exceptions, mid-level use and hard caps
+    const tp = (inp.tpes && inp.tpes.teams) || {}, ex = (inp.exceptions && inp.exceptions.teams) || {};
+    for (const c of codes) {
+      const t = W.T[c];
+      t.tpes = (tp[c] || []).filter(x => !x.exp || x.exp >= asOf).map((x, k) => ({ id: "tpe-" + c + "-" + k, amt: x.amt, orig: x.amt, from: x.from, made: x.made, exp: x.exp, season: x.season ?? -1 }));
+      const e = ex[c];
+      t.used = {}; t.hard = {}; t.hardWhy = {};
+      if (e) {
+        if (e.kind === "ntmle") { t.used[0] = { ntmle: e.used }; if (e.used > 0) { t.hard[0] = "a1"; t.hardWhy[0] = "Used the non-taxpayer mid-level" + (e.on ? " (" + e.on + ")" : ""); } }
+        else if (e.kind === "tmle") { t.used[0] = { tmle: e.used, ntmleOff: true }; if (e.used > 0) { t.hard[0] = "a2"; t.hardWhy[0] = "Used the taxpayer mid-level" + (e.on ? " (" + e.on + ")" : ""); } }
+        else if (e.kind === "room") t.used[0] = { room: true, rmle: e.used };
+        t.mleNote = e.on ? e.on : "";
+      }
+      if (((inp.exceptions || {}).baeUsedLastYear || []).includes(c)) t.used[-1] = { bae: 1 };
+    }
     const dec = L.decider(W);
 
     const H = { cfg, W, CBA, Mo, L, teams: teamInfo, codes, asOf, frac0, played, injured, curve, board, set, reset: () => memo.clear() };
@@ -124,15 +141,51 @@
     // ---------- Contracts, re-signings and who's on each team in a season ----------
     H.keep = {};                     // user calls on expiring players: id -> true (re-sign) / false (let go)
     H.salary = (p, i) => CBA.salaryIn(p, i, dec);
+    H.kicker = p => CBA.kicker(p, 0, dec);           // trade kicker this season, paid by the team that trades for him
     H.lastYear = p => CBA.lastYear(p, dec, 0);
     H.faKind = p => {
       const c = p.c || {}, n = H.lastYear(p) + 1;
       const rookie = (c.rk && c.rk[1] > 0 && c.rk[1] <= 30) || c.rfa;
       return rookie && (p.yos || 0) + n - 1 <= 4 ? "RFA" : "UFA";
     };
-    H.rating = (p, i) => p.rook ? rookRating(p, i) : Mo.rAhead(p, i);
+    // Ratings ahead: decline counts in full, but only part of a young player's projected growth (cfg.growth),
+    // since a lot of projected growth never shows up. Rookies on the slider grow on their own draft-slot curve.
+    H.rating = (p, i) => {
+      if (p.rook) return rookRating(p, i);
+      const r0 = Mo.r(p), r = Mo.rAhead(p, i);
+      return r > r0 ? r0 + (r - r0) * cfg.growth : r;
+    };
     const marketAt = (p, i) => Mo.market(p, i, W);
-    const prodAt = (p, i) => Mo.mv(p, i, W);
+    // Minutes: what he's actually playing this season (3+ games), fading toward what his rating earns in later years
+    const mpgNow = p => (p.line && p.line.gp >= 3 ? p.line.min : null);
+    // The minutes a rating earns (Banner 19's role minutes, smoothed so a rating crossing a line doesn't jump)
+    const ROLE = [[-3, 10], [-2, 17], [-0.9, 25], [1, 30], [2, 32], [4, 34]];
+    const roleMin = r => { if (r <= ROLE[0][0]) return ROLE[0][1]; for (let k = 1; k < ROLE.length; k++) if (r <= ROLE[k][0]) { const [a, x] = ROLE[k - 1], [b, y] = ROLE[k]; return x + (y - x) * (r - a) / (b - a); } return 34; };
+    H.mpgAt = (p, i) => {
+      const r = H.rating(p, i), base = roleMin(r), a = mpgNow(p);
+      if (a == null || p.rook) return base;
+      return clamp(base + (a - roleMin(H.rating(p, 0))) * Math.pow(0.85, i), 0, 38);
+    };
+    // Production: Stephen Noh's salary model (minutes times impact, scaled to the cap) on real minutes, then scaled
+    // once so the whole league's production adds up to what the whole league is paid this season. A dollar of
+    // production costs what teams actually pay for it, on average; surplus is who's ahead of that and who's behind.
+    const CAP_2526 = 154_647_000;
+    const rawProd = (p, i) => {
+      const r = H.rating(p, i), games = Math.min(76, 82 * (p.h ?? 0.85));
+      let v = games * H.mpgAt(p, i) / 1475 * Math.max(0, r + 3) * 4.32e6;
+      const boost = Math.min(0.10, Math.pow(Math.abs(r) / 4, 1.2) * 0.10);
+      v *= r > 0 ? 1 + boost : 1 - boost;
+      return v * CBA.cap(i) / CAP_2526;
+    };
+    let K = 1;
+    {
+      let sv = 0, ss = 0;
+      for (const p of Object.values(W.P)) { if (p.two) continue; const sal = CBA.salaryIn(p, 0, dec); if (!sal) continue; sv += rawProd(p, 0); ss += sal; }
+      if (sv > 0) K = ss / sv;
+    }
+    H.K = K;
+    const prodAt = (p, i) => Math.max(CBA.minSal((p.yos ?? 3) + i, i), K * rawProd(p, i));
+    H.prodAt = prodAt; H.marketAt = marketAt;
     // A new deal for a player whose contract ends: what the market pays, for as long as the market would go
     H.newDeal = (p, start) => {
       const age = Mo.ageIn(p, start, W), r = Mo.rAhead(p, start);
@@ -157,14 +210,59 @@
     };
 
     // ---------- Team strength ----------
-    const ratedCopy = (p, i) => {
-      const r = H.rating(p, i), r0 = Mo.r(p) || 0.0001;
-      return { id: p.id, pos: p.pos || "W", o: (p.o || 0) * r / r0, d: (p.d || 0) * r / r0, _r: r, ref: p };
-    };
-    function strength(list) {
-      const rot = Mo.autoRotation(list);
-      return { raw: Mo.raw(list, rot.mins), rot };
+    // Lineups. This season: the real starting five (each team's latest game) and real minutes per game, scaled to
+    // 240 among the players available. Later seasons: the best player at each spot (PG, SG, SF, PF, C, by the
+    // positions he plays), so two centers don't start together, then the bench by rating.
+    const SLOTS = ["PG", "SG", "SF", "PF", "C"];
+    const MIN_START = [34, 33, 32, 30, 28], MIN_BENCH = [24, 20, 16, 13, 10];
+    const posList = p => (p.ps && p.ps.length ? p.ps : p.pos === "G" ? ["PG", "SG"] : p.pos === "B" ? ["C", "PF"] : ["SF", "PF"]);
+    function bySlots(entries) {
+      const open = new Set(SLOTS), five = {}, rest = [];
+      for (const e of entries.slice().sort((a, b) => b.r - a.r)) {
+        const slot = open.size ? posList(e.p).find(x => open.has(x)) : null;
+        if (slot) { five[slot] = e; open.delete(slot); } else rest.push(e);
+      }
+      for (const slot of [...open]) { const e = rest.shift(); if (e) five[slot] = e; }
+      return { five, rest };
     }
+    function buildLineup(entries, i, code) {
+      const live = i === 0;
+      let starters, bench, mins = {};
+      if (live) {
+        const latest = stats.lineups && stats.lineups[code];
+        const ids = new Set(entries.map(e => e.p.id));
+        const real = latest && latest[1].every(id => ids.has(id)) ? latest[1] : null;
+        const st = id => (stats.starts && stats.starts[id]) || [0, 0];
+        const want = e => { const m = mpgNow(e.p); return m == null ? Mo.roleMin(e.r) * 0.6 : m; };
+        const pool = entries.slice().sort((a, b) => want(b) - want(a));
+        if (real) starters = real.map(id => entries.find(e => e.p.id === id));
+        else if (stats.starts) starters = pool.slice().sort((a, b) => (st(b.p.id)[0] - st(a.p.id)[0]) || (want(b) - want(a))).slice(0, 5);
+        else starters = SLOTS.map(sl => bySlots(pool).five[sl]).filter(Boolean);
+        bench = pool.filter(e => !starters.includes(e));
+        let tot = 0;
+        for (const e of entries) { mins[e.p.id] = want(e); tot += mins[e.p.id]; }
+        const k = tot > 0 ? 240 / tot : 0;
+        for (const id in mins) mins[id] = Math.min(38, mins[id] * k);
+      } else {
+        const { five, rest } = bySlots(entries);
+        starters = SLOTS.map(sl => five[sl]).filter(Boolean);
+        bench = rest;
+        starters.slice().sort((a, b) => b.r - a.r).forEach((e, k) => { mins[e.p.id] = MIN_START[k]; });
+        bench.forEach((e, k) => { mins[e.p.id] = MIN_BENCH[k] || 0; });
+      }
+      // starters placed PG to C by the positions they play
+      const fit = bySlots(starters).five;
+      const order = SLOTS.map(sl => fit[sl]).filter(Boolean);
+      bench = bench.slice().sort((a, b) => (mins[b.p.id] || 0) - (mins[a.p.id] || 0));
+      return { starters: order, slots: SLOTS.filter(sl => fit[sl]), bench, mins, real: live && !!(stats.lineups && stats.lineups[code]) };
+    }
+    H.buildLineup = buildLineup;
+    function strengthOf(entries, i, code) {
+      const lu = buildLineup(entries, i, code);
+      const list = entries.map(e => ({ id: e.p.id, pos: e.p.pos || "W", o: e.r * 0.6, d: e.r * 0.4 }));
+      return { raw: Mo.raw(list, lu.mins), lu };
+    }
+    H.lineup = (code, i) => cache("lu" + code + ":" + i, () => buildLineup(H.rosterAt(code, i).filter(e => i > 0 || !injured[e.p.id]), i, code));
     function netsFrom(raws) {
       const mean = sum(Object.values(raws)) / codes.length, nets = {};
       for (const c of codes) nets[c] = Mo.netOf(raws[c], mean);
@@ -176,8 +274,8 @@
     H.nets0 = () => cache("nets0", () => {
       const raws = {}, rots = {};
       for (const c of codes) {
-        const list = H.roster0(c).filter(p => !injured[p.id]).map(p => ratedCopy(p, 0));
-        const s = strength(list); raws[c] = s.raw; rots[c] = s.rot;
+        const entries = H.rosterAt(c, 0).filter(e => !injured[e.p.id]);
+        const s = strengthOf(entries, 0, c); raws[c] = s.raw; rots[c] = s.lu;
       }
       return { nets: netsFrom(raws), rots };
     });
@@ -277,7 +375,9 @@
       for (const c of codes) {
         const slot = slots[c];
         const pk = W.picks.find(x => x.y === year && x.r === 1 && x.from === c);
-        const owner = pk ? (pk.prot && slot >= pk.prot.lo && slot <= pk.prot.hi ? pk.prot.back : pk.owner) : c;
+        let owner = pk ? (pk.prot && slot >= pk.prot.lo && slot <= pk.prot.hi ? pk.prot.back : pk.owner) : c;
+        const g = pk && H.groupOf(pk);
+        if (g) owner = assignGroup(g, Object.fromEntries(g.picks.map(id => [id, slots[id.split("-")[2]]])))[pk.id];
         if (!owner || owner === "OUT" || !W.T[owner]) continue;
         const x = year === 2027 ? prospects[slot - 1] : null;
         const deal = CBA.rookieDeal(slot, i);
@@ -324,8 +424,7 @@
       }
       const raws = {}, rots = {};
       for (const c of codes) {
-        const list = H.rosterAt(c, i).map(x => ({ id: x.p.id, pos: x.p.pos || "W", o: x.r * 0.6, d: x.r * 0.4 }));
-        const s = strength(list); raws[c] = s.raw; rots[c] = s.rot;
+        const s = strengthOf(H.rosterAt(c, i), i, c); raws[c] = s.raw; rots[c] = s.lu;
       }
       const nets = netsFrom(raws);
       const rng = Mo.rng(2027 + i * 101), N = cfg.futureSims, sd = 1.6 + 0.6 * i;
@@ -358,7 +457,7 @@
     const discAt = j => Math.pow(1 + cfg.disc, -j);
     H.surplus = (p, mode) => {
       mode = mode || cfg.mode;
-      return cache("sur" + p.id + mode + cfg.disc, () => {
+      return cache("sur" + p.id + mode + cfg.disc + cfg.growth, () => {
         const rows = [];
         const e = H.lastYear(p);
         for (let j = 0; j <= Math.max(e, -1) && j < 6; j++) {
@@ -400,7 +499,44 @@
       const avg = sum(dist.map(([s, p]) => s * p)) / Math.max(1e-9, sum(dist.map(x => x[1])));
       return { dist, conveys, avg: avg + (pk.r === 2 ? 30 : 0) };
     };
+    // Groups (better-of picks) and swaps: play out where the picks land many times and count who ends up with what
+    const sampler = dist => { const cum = []; let t = 0; for (const [sl, p] of dist) { t += p; cum.push([sl, t]); } return u => { u *= t; for (const [sl, c] of cum) if (u <= c) return sl; return cum.length ? cum[cum.length - 1][0] : 15; }; };
+    const slotVal = (slot, round, mode) => { const sl = slot + (round === 2 ? 30 : 0); return mode === "market" ? MARKET_PICK(sl, round) : pickCurve(sl); };
+    const yearAdj = (yrs, mode) => mode === "market" ? Math.pow(0.93, yrs) : Math.pow(CBA.D().growth, yrs) * discAt(yrs);
+    H.groupOf = pk => pk.group ? W.pickGroups.find(g => g.id === pk.group) : null;
+    H.groupValues = (g, mode) => cache("gv" + g.id + mode + cfg.disc, () => {
+      const picks = g.picks.map(id => W.picks.find(x => x.id === id));
+      const samp = picks.map(p => sampler(H.slotDist(p.from, p.y, p.r)));
+      const rng = Mo.rng(g.id.length * 7919 + picks[0].y), N = 3000, got = {};
+      for (let k = 0; k < N; k++) {
+        const slots = {}; picks.forEach((p, j) => { slots[p.id] = samp[j](rng()); });
+        const a = assignGroup(g, slots);
+        for (const id in a) got[a[id]] = (got[a[id]] || 0) + slotVal(slots[id], picks[0].r, mode) / N;
+      }
+      const adj = yearAdj(picks[0].y - 2027, mode);
+      for (const k in got) got[k] *= adj;
+      return got;
+    });
+    H.swapValue = (sw, mode) => cache("sw" + sw.id + (mode || cfg.mode) + cfg.disc, () => {
+      mode = mode || cfg.mode;
+      const a = sampler(H.slotDist(sw.from, sw.y, sw.r)), b = sampler(H.slotDist(sw.holder, sw.y, sw.r));
+      const rng = Mo.rng(sw.id.length * 31 + sw.y), N = 3000; let v = 0;
+      for (let k = 0; k < N; k++) v += Math.max(0, slotVal(a(rng()), sw.r, mode) - slotVal(b(rng()), sw.r, mode)) / N;
+      return v * yearAdj(sw.y - 2027, mode);
+    });
+    H.swapsOf = code => W.swaps.filter(s => s.holder === code);
     H.pickValue = (pk, mode) => {
+      mode = mode || cfg.mode;
+      const g = H.groupOf(pk);
+      if (g) {
+        const got = H.groupValues(g, mode), mine = W.picks.filter(x => x.group === g.id && x.owner === pk.owner).length || 1;
+        return (got[pk.owner] || 0) / mine;
+      }
+      const sw = W.swaps.find(x => x.from === pk.from && x.y === pk.y && x.r === pk.r);
+      if (sw) return Math.max(0, H.pickValue0(pk, mode) - H.swapValue(sw, mode));
+      return H.pickValue0(pk, mode);
+    };
+    H.pickValue0 = (pk, mode) => {
       mode = mode || cfg.mode;
       return cache("pv" + pk.id + mode + cfg.disc, () => {
         const info = H.pickInfo(pk), yrs = pk.y - 2027;
@@ -425,20 +561,47 @@
 
     // ---------- Boards ----------
     H.players = () => Object.values(W.P).filter(p => !p.two && H.salary(p, 0) > 0);
-    H.valueBoard = mode => cache("vb" + (mode || cfg.mode) + cfg.disc, () =>
+    H.valueBoard = mode => cache("vb" + (mode || cfg.mode) + cfg.disc + cfg.growth, () =>
       H.players().map(p => ({ p, s: H.surplus(p, mode) })).sort((a, b) => b.s.pv - a.s.pv));
     // This summer's class: everyone whose deal ends after this season (options as the model expects them to go)
-    H.faClass = () => cache("fa" + cfg.disc, () => {
+    // A summer's free agent class: everyone whose deal ends the season before (options as the model expects them).
+    // i is the season they'd sign for: 1 = summer 2027.
+    H.faClass = (i = 1) => cache("fa" + i + cfg.disc, () => {
       const out = [];
       for (const p of H.players()) {
-        if (H.lastYear(p) !== 0) continue;
-        const opt = p.c.opt && p.c.opt[1];
-        const age = Mo.ageIn(p, 1, W), r = Mo.rAhead(p, 1), yrs = Mo.faYears(age, r);
+        if (H.lastYear(p) !== i - 1) continue;
+        const opt = p.c.opt && p.c.opt[i];
+        const age = Mo.ageIn(p, i, W), r = Mo.rAhead(p, i), yrs = Mo.faYears(age, r);
         let prod = 0, mkt = 0;
-        for (let k = 0; k < yrs; k++) { prod += prodAt(p, 1 + k); mkt += marketAt(p, 1 + k); }
+        for (let k = 0; k < yrs; k++) { prod += prodAt(p, i + k); mkt += marketAt(p, i + k); }
         out.push({ p, kind: H.faKind(p), opt, age, r, yrs, fair: prod / yrs, market: mkt / yrs, team: p.t, keep: H.kept(p) });
       }
       return out.sort((a, b) => b.r - a.r);
+    });
+    // What a team can do right now: cap room, exceptions left, trade exceptions, hard cap, repeater, roster spots
+    H.tools = (code, i = 0) => cache("tools" + code + i, () => {
+      const t = W.T[code], pay = H.payroll(code, i), status = CBA.status(pay, i);
+      const out = [];
+      const used = t.used[i] || {}, hard = t.hard[i];
+      const head = lvl => CBA.levelAmt(lvl, i) - pay;
+      const room = CBA.cap(i) - pay;
+      if (room > 0) out.push({ name: "Cap room", amt: room, ok: true, why: "Under the cap" });
+      const nt = CBA.line("ntmle", i) - (used.ntmle || 0);
+      if (i === 0 && used.room) out.push({ name: "Room mid-level", amt: Math.max(0, CBA.line("rmle", i) - (used.rmle || 0)), ok: CBA.line("rmle", i) - (used.rmle || 0) > 0, why: "Used cap room this summer, so the room exception is its mid-level" });
+      else if (i === 0 && used.ntmleOff) out.push({ name: "Taxpayer mid-level", amt: Math.max(0, CBA.line("tmle", i) - (used.tmle || 0)), ok: CBA.line("tmle", i) - (used.tmle || 0) > 0 && head("a2") > 0, why: (used.tmle ? "Used " + (t.mleNote || "") + ". " : "") + "Signing only, hard-caps at the second apron" });
+      else if (status === "a2") out.push({ name: "Mid-level", amt: 0, ok: false, why: "Over the second apron: no mid-level" });
+      else if (status === "a1") out.push({ name: "Taxpayer mid-level", amt: CBA.line("tmle", i), ok: true, why: "Over the first apron. Signing only, hard-caps at the second apron" });
+      else out.push({ name: "Non-taxpayer mid-level", amt: Math.max(0, Math.min(nt, head("a1"))), ok: nt > 0 && head("a1") > 0, why: (used.ntmle ? "Used " + money(used.ntmle) + (t.mleNote ? " (" + t.mleNote + ")" : "") + ". " : "") + "Can sign or absorb a player in a trade; hard-caps at the first apron" });
+      const baeLast = (t.used[i - 1] || {}).bae;
+      if (!used.room && status !== "a1" && status !== "a2") out.push({ name: "Bi-annual exception", amt: baeLast ? 0 : CBA.line("bae", i), ok: !baeLast && head("a1") > 0, why: baeLast ? "Used last season (every other year)" : "Two years max; hard-caps at the first apron" });
+      for (const x of t.tpes) {
+        const u = L.tpeUsable(W, t, x, status);
+        out.push({ name: "Trade exception: " + x.from, amt: x.amt, ok: u.ok, tpe: true, exp: x.exp, why: u.ok ? "Absorb a player making up to " + money(x.amt + CBA.D().match.plus) + " with nothing back. Expires " + L.fmtDate(x.exp) : u.why });
+      }
+      const rep = L.repeater(W, code, i, j => H.payroll(code, j));
+      const n = H.rosterAt(code, i).filter(e => !e.p.fill).length;
+      return { tools: out, pay, status, hard, hardWhy: t.hardWhy[i] || "", rep, taxBill: CBA.taxBill(pay, i, rep), roster: n, two: Object.values(W.P).filter(p => p.t === code && p.two).length,
+        toTax: CBA.tax(i) - pay, toA1: CBA.a1(i) - pay, toA2: CBA.a2(i) - pay };
     });
     // Next summer's spending power: cap room after the deals already on the books and rookies, or the exception
     H.capOutlook = i => cache("cap" + i, () => codes.map(c => {
@@ -478,15 +641,10 @@
 
     // ---------- Trades ----------
     // tr: { teams: [codes], moves: [{ kind: "p" | "k", id, from, to }] }
-    H.checkTrade = tr => {
-      if (tr.teams.length === 2) {
-        const [a, b] = tr.teams;
-        const side = c => ({ players: tr.moves.filter(m => m.from === c && m.kind === "p").map(m => m.id), picks: tr.moves.filter(m => m.from === c && m.kind === "k").map(m => m.id), cash: 0 });
-        return L.checkTrade(W, { a, b, side: { [a]: side(a), [b]: side(b) } });
-      }
-      return L.checkTradeMulti(W, tr);
-    };
-    H.assetValue = (m, mode) => m.kind === "p" ? H.surplus(W.P[m.id], mode).pv : H.pickValue(W.picks.find(x => x.id === m.id), mode);
+    H.checkTrade = tr => L.checkTradeMulti(W, { teams: tr.teams, moves: tr.moves });
+    H.matchMax = (out, post) => CBA.matchMax(out, 0, post);
+    H.matchRule = (out, post) => CBA.matchRule(out, 0, post);
+    H.assetValue = (m, mode) => m.kind === "c" ? (m.amt || 0) : m.kind === "p" ? H.surplus(W.P[m.id], mode).pv : H.pickValue(W.picks.find(x => x.id === m.id), mode);
     H.tradeSummary = tr => {
       const out = {};
       for (const c of tr.teams) out[c] = { prod: 0, market: 0, salIn: 0, salOut: 0, inn: [], out: [] };
@@ -502,8 +660,8 @@
       const moved = {};
       for (const m of tr.moves) if (m.kind === "p") moved[m.id] = m.to;
       for (const c of codes) {
-        const list = Object.values(W.P).filter(p => !p.two && H.salary(p, 0) > 0 && !injured[p.id] && (moved[p.id] || p.t) === c).map(p => ratedCopy(p, 0));
-        raws[c] = strength(list).raw;
+        const entries = Object.values(W.P).filter(p => !p.two && H.salary(p, 0) > 0 && !injured[p.id] && (moved[p.id] || p.t) === c).map(p => ({ p, r: H.rating(p, 0), sal: H.salary(p, 0) }));
+        raws[c] = strengthOf(entries, 0, c).raw;
       }
       const after = netsFrom(raws);
       for (const c of tr.teams) {
@@ -514,6 +672,14 @@
       }
       return out;
     };
+    // Better-of groups: hand each pick to whoever gets it where the picks are projected to land today
+    for (const g of W.pickGroups) {
+      const slots = {};
+      for (const id of g.picks) { const p = W.picks.find(x => x.id === id); slots[id] = H.pickInfo(Object.assign({}, p, { prot: null })).avg; }
+      const a = assignGroup(g, slots);
+      for (const id of g.picks) { const p = W.picks.find(x => x.id === id); p.owner = a[id]; p.locked = a[id] !== g.to[0]; }
+    }
+    memo.clear();
     H.findPlayer = id => W.P[id] || null;
     H.teamPlayers = code => Object.values(W.P).filter(p => p.t === code);
     return H;
@@ -521,7 +687,8 @@
 
   // 2027: the owner of each team's pick from the current draft order. 2028-33: the ledger of picks owed.
   function setPicks(W, board, codes) {
-    W.picks = [];
+    W.picks = []; W.pickGroups = []; W.swaps = [];
+    const favRows = {};
     for (let y = 2027; y <= 2033; y++) for (const c of codes) for (const r of [1, 2]) W.picks.push({ id: `${y}-${r}-${c}`, y, r, from: c, owner: c });
     const pk = id => W.picks.find(p => p.id === id);
     for (const row of ((board.order || {}).picks || [])) {
@@ -543,7 +710,9 @@
       } else if (x.type === "swap") {
         const p = pk(`2027-1-${fix(x.with)}`); if (p) { p.note = x.note; p.locked = true; }
       } else if (x.type === "favorable") {
-        for (const o of x.picks) { const p = pk(`2027-1-${fix(o)}`); if (p) { p.note = x.note; p.locked = true; } }
+        const ids = x.picks.map(o => `2027-1-${fix(o)}`).filter(pk);
+        for (const id of ids) { const p = pk(id); p.note = x.note; p.group = "g2027-" + ids.join("-"); }
+        W.pickGroups.push({ id: "g2027-" + ids.join("-"), picks: ids, to: x.to.map(fix), bar: Object.fromEntries(Object.entries(x.bar || {}).map(([k, v]) => [fix(k), v])), lastKeep: x.lastKeep || null, fallback: x.fallback ? fix(x.fallback) : null, alt: {}, note: x.note });
       } else if (x.type === "okc") {
         for (const o of ["OKC", "DEN", "LAC", "TOR"]) { const p = pk(`2027-1-${o}`); if (p) { p.note = x.note; p.locked = true; } }
       }
@@ -554,7 +723,18 @@
       if (!p) continue;
       const tos = String(to0).split("/").map(fix);
       if (kind === "forfeit") { p.owner = "OUT"; p.note = "Forfeited by the league"; continue; }
-      if (kind === "swap") { p.note = (p.note ? p.note + "; " : "") + tos.join(" or ") + " can swap"; p.swapBy = tos; p.locked = true; continue; }
+      if (kind === "swap") {
+        p.note = (p.note ? p.note + "; " : "") + tos.join(" or ") + " can swap";
+        if (W.T[tos[0]]) { p.swapBy = tos[0]; W.swaps.push({ id: `swap-${y}-${r}-${p.from}-${tos[0]}`, y, r, from: p.from, holder: tos[0], note: tos.length > 1 ? "Swap rights shared with " + tos.slice(1).join(", ") : "" }); }
+        continue;
+      }
+      if (kind === "fav" && W.T[tos[0]]) {
+        // the first team takes the most favorable pick of the group; each other pick goes to its own second team
+        const key = `${y}-${r}-${tos[0]}`;
+        (favRows[key] = favRows[key] || { y, r, best: tos[0], picks: [] }).picks.push({ id: p.id, alt: tos[1] && W.T[tos[1]] ? tos[1] : null, tos });
+        p.owner = tos[0];
+        continue;
+      }
       const to = tos[0];
       if (to === "?" || !W.T[to]) { p.note = "Conditional"; p.locked = true; continue; }
       p.owner = to;
@@ -566,6 +746,31 @@
         p.note = p.note || (r === 1 ? (+m[1] === 1 ? "Top-" + m[2] + " protected" : "Protected " + m[1] + "-" + m[2]) : "Protected " + m[1] + "-" + m[2]);
       }
     }
+    for (const g of Object.values(favRows)) {
+      const id = `g${g.y}-${g.r}-${g.best}`, alt = {};
+      for (const x of g.picks) { alt[x.id] = x.alt; pk(x.id).group = id; }
+      const froms = g.picks.map(x => x.id.split("-")[2]);
+      const others = [...new Set(g.picks.map(x => x.alt || x.id.split("-")[2]))];
+      const note = g.picks.length > 1 ? (g.best + " gets the best of " + froms.join(", ") + "; " + (g.picks.length > 2 ? "the others go to " : "the other goes to ") + others.join(" or ")) : "Goes to " + g.picks[0].tos.join(" or ") + " (more/less favorable)";
+      for (const x of g.picks) pk(x.id).note = note;
+      W.pickGroups.push({ id, picks: g.picks.map(x => x.id), to: [g.best], bar: {}, lastKeep: null, fallback: null, alt, note });
+    }
+  }
+  // Who gets each pick in a group, given where every pick in it lands (slots: pick id -> slot)
+  function assignGroup(g, slots) {
+    const res = {};
+    let pool = g.picks.slice(), rec = g.to.slice();
+    for (const [from, [lo, hi]] of Object.entries(g.bar || {})) {
+      const id = g.picks.find(x => x.split("-")[2] === from);
+      if (id && slots[id] >= lo && slots[id] <= hi) { res[id] = from; pool = pool.filter(x => x !== id); rec = rec.filter(x => x !== from); }
+    }
+    pool.sort((a, b) => slots[a] - slots[b]);
+    pool.forEach((id, k) => {
+      let o = rec[k] || g.alt[id] || id.split("-")[2];
+      if (k === pool.length - 1 && pool.length > 1 && g.lastKeep && slots[id] >= g.lastKeep[0] && slots[id] <= g.lastKeep[1] && g.fallback) o = g.fallback;
+      res[id] = o;
+    });
+    return res;
   }
 
   const NBAHub = { build, YEARS, DEFAULTS, fix };

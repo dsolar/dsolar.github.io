@@ -442,7 +442,7 @@
     const res = { ok: true, teams: {}, issues: [] };
     const side = (code, key) => {
       const ms = tr.moves.filter(m => m[key] === code);
-      return { players: ms.filter(m => m.kind === "p").map(m => m.id), picks: ms.filter(m => m.kind === "k").map(m => m.id), cash: 0 };
+      return { players: ms.filter(m => m.kind === "p").map(m => m.id), picks: ms.filter(m => m.kind === "k").map(m => m.id), cash: ms.filter(m => m.kind === "c").reduce((a, m) => a + (m.amt || 0), 0) };
     };
     for (const code of tr.teams) {
       const r = L.checkSide(W, { snt: null, kickWaive: tr.kickWaive || {} }, code, side(code, "from"), side(code, "to"));

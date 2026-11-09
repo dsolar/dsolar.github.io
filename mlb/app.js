@@ -80,13 +80,18 @@
     state.route = parts[0] || "standings";
     state.arg = parts[1] || null;
     state.q = q;
+    // the Contracts tab is a team's contracts & cap view (the last team opened, or Boston)
+    if (state.route === "contracts") { state.route = "team"; state.arg = state.arg || load("team", "BOS"); state.q.view = "money"; }
+    if (state.route === "team" && state.arg) save("team", state.arg.toUpperCase());
     var y = +q.y;
     state.year = y && y >= H.season && y < H.season + H.cfg.years ? y : (state.year || H.season);
   }
   function render() {
     parse();
     document.querySelectorAll(".tabs a").forEach(function (a) {
-      var on = a.dataset.tab === state.route || (a.dataset.tab === "teams" && state.route === "team");
+      var money = state.route === "team" && state.q.view === "money";
+      var on = a.dataset.tab === "contracts" ? money : a.dataset.tab === state.route || (a.dataset.tab === "teams" && state.route === "team" && !money);
+      if (a.dataset.tab === "contracts") a.setAttribute("href", href("team/" + (state.route === "team" && state.arg ? state.arg.toUpperCase() : load("team", "BOS")), { view: "money" }));
       if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
     var withYears = state.route === "standings" || state.route === "team";

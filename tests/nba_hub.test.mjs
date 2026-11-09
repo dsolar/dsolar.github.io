@@ -14,7 +14,8 @@ require('../nba/lib/season.js'); require('../nba/lib/offseason.js');
 const Mo = require('../nba/lib/model.js');
 
 const inputs = { data: read('celtics/data.json'), stats: opt('hardcap/stats.json') || {}, fixes: opt('hardcap/contracts.json'), live: opt('celtics/live.json'),
-  board: opt('draft/nba.json') || {}, picks: read('nba/data/picks.json'), teams: opt('tools/draft_teams.json') };
+  board: opt('draft/nba.json') || {}, picks: read('nba/data/picks.json'), teams: opt('tools/draft_teams.json'),
+  tpes: read('nba/data/tpes.json'), exceptions: read('nba/data/exceptions.json') };
 const H = Hub.build(inputs, { sims: 300, futureSims: 100 });
 
 test('shared library: name matching runs initials together', () => {
@@ -93,4 +94,45 @@ test('trades: matching rules apply and value moves both ways', () => {
   assert.ok(Math.abs(s.BOS.prod + s.UTA.prod) < 1);
   const three = H.checkTrade({ teams: ['BOS', 'UTA', 'MIL'], moves: [{ kind: 'k', id: '2033-2-BOS', from: 'BOS', to: 'UTA' }, { kind: 'k', id: '2033-2-UTA', from: 'UTA', to: 'MIL' }, { kind: 'k', id: '2033-2-MIL', from: 'MIL', to: 'BOS' }] });
   assert.equal(Object.keys(three.teams).length, 3);
+});
+
+test('production is scaled so the league is paid what it produces this season', () => {
+  let v = 0, pay = 0;
+  for (const p of H.players()) { v += Math.max(0, H.prodAt(p, 0)); pay += H.salary(p, 0); }
+  assert.ok(Math.abs(v / pay - 1) < 0.08, 'value/pay ' + (v / pay).toFixed(3));
+});
+
+test('better-of picks: one owner per pick, and the best goes to the first team', () => {
+  for (const g of H.W.pickGroups) {
+    const owners = g.picks.map(id => H.W.picks.find(x => x.id === id).owner);
+    assert.ok(owners.includes(g.to[0]) || Object.keys(g.bar || {}).length, g.id);
+  }
+  const lac = H.W.picks.find(x => x.id === '2028-1-LAC'), phi = H.W.picks.find(x => x.id === '2028-1-PHI');
+  if (lac && phi && lac.group) assert.equal([lac.owner, phi.owner].filter(o => o === 'BOS').length, 1);
+});
+
+test('lineups: later seasons never start two players at the same spot', () => {
+  for (const c of H.codes) {
+    const lu = H.lineup(c, 2);
+    assert.equal(new Set(lu.slots).size, lu.slots.length);
+    assert.ok(Object.values(lu.mins).reduce((a, b) => a + b, 0) <= 241);
+  }
+  const now = H.lineup('BOS', 0);
+  assert.ok(Math.abs(Object.values(now.mins).reduce((a, b) => a + b, 0) - 240) < 1 || Object.values(now.mins).some(m => m >= 38));
+});
+
+test('team tools: real trade exceptions and hard caps load', () => {
+  const t = H.tools('BOS', 0);
+  assert.ok(t.tools.some(x => x.tpe));
+  assert.ok(['a1', 'a2', undefined].includes(t.hard));
+  for (const c of H.codes) assert.ok(H.tools(c, 0).tools.length >= 1);
+});
+
+test('free agents by summer', () => {
+  for (let i = 1; i < Hub.YEARS; i++) assert.ok(H.faClass(i).every(x => H.lastYear(x.p) === i - 1));
+});
+
+test('cash moves count against the cash limit', () => {
+  const big = H.checkTrade({ teams: ['BOS', 'UTA'], moves: [{ kind: 'c', id: '99000000', amt: 99e6, from: 'BOS', to: 'UTA' }, { kind: 'k', id: '2033-2-UTA', from: 'UTA', to: 'BOS' }] });
+  assert.ok(!big.teams.BOS.ok);
 });

@@ -1,0 +1,335 @@
+{
+ "_about": "Traded player exceptions still open as of Nov 9, 2026 (all created at or before the 2026 deadline, so none can be used by a team over the first apron). From Sports Business Classroom's list (updated Feb 8, 2026, https://www.sportsbusinessclassroom.com/listing-the-current-nba-trade-exceptions) checked against Spotrac's trade exception page (https://www.spotrac.com/nba/transactions/trade-exceptions), which added Alvarado (NOP), Garland (CLE) and Exum (DAL). Exceptions that expired before Nov 9, 2026 are left off. One used in a summer trade could still be listed here: edit this file by hand.",
+ "updated": "2026-11-09",
+ "teams": {
+  "ATL": [
+   {
+    "amt": 1357994,
+    "exp": "2027-01-11",
+    "made": "2026-01-11",
+    "from": "Trae Young",
+    "season": -1
+   },
+   {
+    "amt": 2349578,
+    "exp": "2027-02-01",
+    "made": "2026-02-01",
+    "from": "Vit Krejci",
+    "season": -1
+   },
+   {
+    "amt": 11000000,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Luke Kennard",
+    "season": -1
+   }
+  ],
+  "BOS": [
+   {
+    "amt": 27678571,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Anfernee Simons",
+    "season": -1
+   },
+   {
+    "amt": 2546675,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Xavier Tillman Sr.",
+    "season": -1
+   },
+   {
+    "amt": 2378870,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Josh Minott",
+    "season": -1
+   },
+   {
+    "amt": 2296274,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Chris Boucher",
+    "season": -1
+   }
+  ],
+  "CHO": [
+   {
+    "amt": 2296274,
+    "exp": "2027-02-04",
+    "made": "2026-02-04",
+    "from": "Mason Plumlee",
+    "season": -1
+   },
+   {
+    "amt": 8200962,
+    "exp": "2027-02-04",
+    "made": "2026-02-04",
+    "from": "Collin Sexton",
+    "season": -1
+   },
+   {
+    "amt": 7000000,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Tyus Jones",
+    "season": -1
+   }
+  ],
+  "CHI": [
+   {
+    "amt": 17991071,
+    "exp": "2027-02-03",
+    "made": "2026-02-03",
+    "from": "Kevin Huerter",
+    "season": -1
+   },
+   {
+    "amt": 1218007,
+    "exp": "2027-02-04",
+    "made": "2026-02-04",
+    "from": "Coby White",
+    "season": -1
+   },
+   {
+    "amt": 6670882,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Ousmane Dieng",
+    "season": -1
+   },
+   {
+    "amt": 2221677,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Julian Phillips",
+    "season": -1
+   }
+  ],
+  "CLE": [
+   {
+    "amt": 6897984,
+    "exp": "2027-02-01",
+    "made": "2026-02-01",
+    "from": "De'Andre Hunter",
+    "season": -1
+   },
+   {
+    "amt": 263397,
+    "exp": "2027-02-04",
+    "made": "2026-02-04",
+    "from": "Darius Garland",
+    "season": -1
+   },
+   {
+    "amt": 10000000,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Lonzo Ball",
+    "season": -1
+   }
+  ],
+  "DAL": [
+   {
+    "amt": 20830154,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Anthony Davis",
+    "season": -1
+   },
+   {
+    "amt": 2909520,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Jaden Hardy",
+    "season": -1
+   },
+   {
+    "amt": 2296274,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Dante Exum",
+    "season": -1
+   }
+  ],
+  "DEN": [
+   {
+    "amt": 2221677,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Hunter Tyson",
+    "season": -1
+   }
+  ],
+  "GSW": [
+   {
+    "amt": 2221677,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Trayce Jackson-Davis",
+    "season": -1
+   }
+  ],
+  "LAC": [
+   {
+    "amt": 2654274,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Kobe Brown",
+    "season": -1
+   },
+   {
+    "amt": 2296274,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Chris Paul",
+    "season": -1
+   },
+   {
+    "amt": 1314427,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Ivica Zubac",
+    "season": -1
+   }
+  ],
+  "LAL": [
+   {
+    "amt": 500000,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Gabe Vincent",
+    "season": -1
+   }
+  ],
+  "MEM": [
+   {
+    "amt": 28872920,
+    "exp": "2027-02-03",
+    "made": "2026-02-03",
+    "from": "Jaren Jackson Jr.",
+    "season": -1
+   }
+  ],
+  "MIN": [
+   {
+    "amt": 10774038,
+    "exp": "2027-02-03",
+    "made": "2026-02-03",
+    "from": "Mike Conley",
+    "season": -1
+   },
+   {
+    "amt": 6576120,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Rob Dillingham",
+    "season": -1
+   }
+  ],
+  "NOP": [
+   {
+    "amt": 4500000,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Jose Alvarado",
+    "season": -1
+   }
+  ],
+  "NYK": [
+   {
+    "amt": 899118,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Dalen Terry",
+    "season": -1
+   },
+   {
+    "amt": 100882,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Guerschon Yabusele",
+    "season": -1
+   }
+  ],
+  "OKC": [
+   {
+    "amt": 2449522,
+    "exp": "2027-02-04",
+    "made": "2026-02-04",
+    "from": "Ousmane Dieng",
+    "season": -1
+   }
+  ],
+  "ORL": [
+   {
+    "amt": 7000000,
+    "exp": "2027-02-04",
+    "made": "2026-02-04",
+    "from": "Tyus Jones",
+    "season": -1
+   }
+  ],
+  "PHI": [
+   {
+    "amt": 4221360,
+    "exp": "2027-02-04",
+    "made": "2026-02-04",
+    "from": "Jared McCain",
+    "season": -1
+   },
+   {
+    "amt": 2296274,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Eric Gordon",
+    "season": -1
+   }
+  ],
+  "PHO": [
+   {
+    "amt": 5000000,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Nick Richards",
+    "season": -1
+   },
+   {
+    "amt": 2048494,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Nigel Hayes-Davis",
+    "season": -1
+   }
+  ],
+  "SAC": [
+   {
+    "amt": 5426000,
+    "exp": "2027-02-01",
+    "made": "2026-02-01",
+    "from": "Dario Saric",
+    "season": -1
+   }
+  ],
+  "TOR": [
+   {
+    "amt": 6383525,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Ochai Agbaji",
+    "season": -1
+   }
+  ],
+  "UTA": [
+   {
+    "amt": 2296274,
+    "exp": "2027-02-05",
+    "made": "2026-02-05",
+    "from": "Jock Landale",
+    "season": -1
+   }
+  ]
+ }
+}

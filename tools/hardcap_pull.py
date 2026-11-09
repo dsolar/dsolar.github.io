@@ -470,7 +470,7 @@ def main():
 
     # Games counted before starters were tracked: fetch them once (a few dozen a run) so starts cover the season
     back = [(g, dd) for g, dd in sorted(data["games"].items(), key=lambda x: x[1]) if g not in data.get("startsGames", {})]
-    for gid, dd in back[:80]:
+    for gid, dd in back[:200]:
         summary = get_any(SUMMARY, notes, f"starts {gid}", id=gid)
         if summary is None:
             continue

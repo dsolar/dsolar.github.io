@@ -13,7 +13,8 @@ Method, for every pick in those 18 drafts:
      seasons with few minutes (500 minutes of replacement play mixed in). That's the same impact-per-100 scale the
      hub's ratings use.
   2. The season is valued with the hub's production model (Stephen Noh's salary model, the one in nba/lib/model.js):
-     minutes / 1475 x (rating + 3) x $4.32M, in 2026-27 cap dollars. Seasons he didn't play are worth nothing.
+     minutes / 1475 x (rating + 3) x $4.32M, in 2026-27 cap dollars, times the hub's league-wide scale (SCALE).
+     Seasons he didn't play are worth nothing.
   3. Surplus against what his pick would pay today:
        First round: the 2026-27 rookie scale. Years 1-2 are guaranteed (value minus salary, which can be negative);
        years 3-4 are team options, picked up only when he's worth it. Years 5-7 are his second contract with his
@@ -38,6 +39,9 @@ DISC = 0.08
 CAP0, CAP_2526 = 164_961_000, 154_647_000
 REPL, SHRINK_MIN = -2.5, 500
 CAP_ONE = 200e6
+# The hub scales production so the league's total production equals what the league is paid (0.88 in Nov 2026).
+# Picks use the same scale, so a pick and a player are valued on the same dollars.
+SCALE = 0.88
 
 
 def load(name, src):
@@ -56,7 +60,7 @@ def num(x, d=0.0):
 
 def season_value(mp, bpm):
     r = (bpm * mp + REPL * SHRINK_MIN) / (mp + SHRINK_MIN)
-    return max(0.0, mp / 1475 * (r + 3) * 4.32e6 * CAP0 / CAP_2526)
+    return max(0.0, mp / 1475 * (r + 3) * 4.32e6 * CAP0 / CAP_2526 * SCALE)
 
 
 def main():
