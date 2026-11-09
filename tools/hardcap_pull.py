@@ -202,7 +202,7 @@ def pull_injuries(notes):
 
 def pull_rosters(notes):
     """{slug: [team, name, position, ESPN athlete id]} for everyone on an NBA roster right now, plus how many of the 30
-    teams answered. The ESPN id (fourth item) is for player photos (assets/faces.js).
+    teams answered. The ESPN id (the fourth item) is for player photos (assets/faces.js).
     Hard Cap releases a fantasy player who is on no roster (waived, bought out, retired) once all 30 come back."""
     out, teams = {}, 0
     for tid in range(1, 31):
