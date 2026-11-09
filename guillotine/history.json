@@ -4858,7 +4858,7 @@
       "nfl": "DET",
       "claimed_by": "A Warren Boston",
       "bid": 190,
-      "next_proj": 15.07
+      "next_proj": 15.38
      },
      {
       "n": "Justin Jefferson",
@@ -4866,7 +4866,7 @@
       "nfl": "MIN",
       "claimed_by": "Love Purdy Flowers",
       "bid": 66,
-      "next_proj": 13.62
+      "next_proj": 13.81
      },
      {
       "n": "Bucky Irving",
@@ -4882,7 +4882,7 @@
       "nfl": "DET",
       "claimed_by": "Drake Mayezini",
       "bid": 47,
-      "next_proj": 17.4
+      "next_proj": 17.9
      },
      {
       "n": "Dak Prescott",
@@ -4890,7 +4890,7 @@
       "nfl": "DAL",
       "claimed_by": "Drake Mayezini",
       "bid": 21,
-      "next_proj": 17.29
+      "next_proj": 17.75
      },
      {
       "n": "Parker Washington",
@@ -4898,7 +4898,7 @@
       "nfl": "JAX",
       "claimed_by": "Tai Streetz Lata?",
       "bid": 21,
-      "next_proj": 13.17
+      "next_proj": 13.26
      },
      {
       "n": "Colston Loveland",
@@ -4922,7 +4922,7 @@
       "nfl": "LV",
       "claimed_by": "Braelon’s Pieces",
       "bid": 0,
-      "next_proj": 14.74
+      "next_proj": 14.89
      },
      {
       "n": "Ollie Gordon II",
@@ -4930,7 +4930,7 @@
       "nfl": "MIA",
       "claimed_by": "Holofernes",
       "bid": 0,
-      "next_proj": 12.77
+      "next_proj": 12.71
      },
      {
       "n": "Dameon Pierce",
@@ -4942,7 +4942,7 @@
       "n": "Jordan Mason",
       "pos": "RB",
       "nfl": "MIN",
-      "next_proj": 9.04
+      "next_proj": 9.06
      },
      {
       "n": "Kyle Monangai",
@@ -4954,7 +4954,7 @@
       "n": "Malik Washington",
       "pos": "WR",
       "nfl": "MIA",
-      "next_proj": 8.54
+      "next_proj": 8.52
      }
     ]
    },
@@ -5108,7 +5108,7 @@
       "nfl": "GB",
       "slot": "WR",
       "proj": 12.33,
-      "pts": null
+      "pts": 27.4
      },
      {
       "n": "Ja'Marr Chase",
@@ -5132,14 +5132,14 @@
       "nfl": "LV",
       "slot": "TE",
       "proj": 15.18,
-      "pts": null
+      "pts": 18.8
      },
      {
       "n": "D'Andre Swift",
       "pos": "RB",
       "nfl": "CHI",
       "slot": "W/R/T",
-      "proj": 17.69,
+      "proj": 17.94,
       "pts": null
      },
      {
@@ -5148,7 +5148,7 @@
       "nfl": "HOU",
       "slot": "Q/W/R/T",
       "proj": 16.81,
-      "pts": null
+      "pts": 36.36
      },
      {
       "n": "Josh Downs",
@@ -5196,7 +5196,7 @@
       "nfl": "NE",
       "slot": "IR",
       "proj": 0,
-      "pts": null
+      "pts": 0
      }
     ],
     "Love a Kittle Lamb & WhiteRice": [
@@ -5238,7 +5238,7 @@
       "nfl": "GB",
       "slot": "WR",
       "proj": 13.61,
-      "pts": null
+      "pts": 26.6
      },
      {
       "n": "Tee Higgins",
@@ -5254,7 +5254,7 @@
       "nfl": "SF",
       "slot": "TE",
       "proj": 13.04,
-      "pts": null
+      "pts": 7.8
      },
      {
       "n": "Woody Marks",
@@ -5262,7 +5262,7 @@
       "nfl": "HOU",
       "slot": "W/R/T",
       "proj": 12.66,
-      "pts": null
+      "pts": 7.9
      },
      {
       "n": "Patrick Mahomes",
@@ -5310,7 +5310,7 @@
       "nfl": "SEA",
       "slot": "BN",
       "proj": 0.73,
-      "pts": null
+      "pts": 0
      },
      {
       "n": "Jeremiyah Love",
@@ -5318,7 +5318,7 @@
       "nfl": "ARI",
       "slot": "IR",
       "proj": 0,
-      "pts": null
+      "pts": 0
      }
     ],
     "Drake Mayezini": [
@@ -5328,7 +5328,7 @@
       "nfl": "NE",
       "slot": "QB",
       "proj": 20.79,
-      "pts": null
+      "pts": 21.26
      },
      {
       "n": "Kyren Williams",
@@ -5360,7 +5360,7 @@
       "nfl": "HOU",
       "slot": "WR",
       "proj": 14.55,
-      "pts": null
+      "pts": 13.5
      },
      {
       "n": "Jaylen Waddle",
@@ -5376,7 +5376,7 @@
       "nfl": "GB",
       "slot": "TE",
       "proj": 8.92,
-      "pts": null
+      "pts": 1.4
      },
      {
       "n": "Josh Jacobs",
@@ -5384,7 +5384,7 @@
       "nfl": "GB",
       "slot": "W/R/T",
       "proj": 13.38,
-      "pts": null
+      "pts": 0.5
      },
      {
       "n": "Jared Goff",
@@ -5400,7 +5400,7 @@
       "nfl": "NE",
       "slot": "BN",
       "proj": 12.36,
-      "pts": null
+      "pts": 13.3
      },
      {
       "n": "Dak Prescott",
@@ -5424,7 +5424,7 @@
       "nfl": "SF",
       "slot": "BN",
       "proj": 0,
-      "pts": null
+      "pts": 0
      },
      {
       "n": "Matthew Stafford",
@@ -5450,7 +5450,7 @@
       "nfl": "SF",
       "slot": "QB",
       "proj": 21.66,
-      "pts": null
+      "pts": 26.28
      },
      {
       "n": "Christian McCaffrey",
@@ -5458,14 +5458,14 @@
       "nfl": "SF",
       "slot": "RB",
       "proj": 20.49,
-      "pts": null
+      "pts": 21.7
      },
      {
       "n": "Bucky Irving",
       "pos": "RB",
       "nfl": "TB",
       "slot": "RB",
-      "proj": 16.11,
+      "proj": 16.01,
       "pts": null
      },
      {
@@ -5514,7 +5514,7 @@
       "nfl": "GB",
       "slot": "Q/W/R/T",
       "proj": 17.08,
-      "pts": null
+      "pts": 36.18
      },
      {
       "n": "Saquon Barkley",
@@ -5546,7 +5546,7 @@
       "nfl": "LAC",
       "slot": "BN",
       "proj": 8.29,
-      "pts": null
+      "pts": 6
      },
      {
       "n": "Kaelon Black",
@@ -5554,7 +5554,7 @@
       "nfl": "SF",
       "slot": "BN",
       "proj": 6.57,
-      "pts": null
+      "pts": 7
      }
     ],
     "A Warren Boston": [
@@ -5587,7 +5587,7 @@
       "pos": "WR",
       "nfl": "CHI",
       "slot": "WR",
-      "proj": 12,
+      "proj": 12.09,
       "pts": null
      },
      {
@@ -5620,7 +5620,7 @@
       "nfl": "ARI",
       "slot": "W/R/T",
       "proj": 11.51,
-      "pts": null
+      "pts": 5.6
      },
      {
       "n": "Joe Burrow",
@@ -5644,7 +5644,7 @@
       "nfl": "LV",
       "slot": "BN",
       "proj": 10.28,
-      "pts": null
+      "pts": 4.5
      },
      {
       "n": "Denzel Boston",
@@ -5726,14 +5726,14 @@
       "nfl": "ARI",
       "slot": "WR",
       "proj": 10.54,
-      "pts": null
+      "pts": 9
      },
      {
       "n": "Colston Loveland",
       "pos": "TE",
       "nfl": "CHI",
       "slot": "TE",
-      "proj": 8.88,
+      "proj": 8.93,
       "pts": null
      },
      {
@@ -5758,7 +5758,7 @@
       "nfl": "LAC",
       "slot": "BN",
       "proj": 10.76,
-      "pts": null
+      "pts": 0
      },
      {
       "n": "Bhayshul Tuten",
@@ -5773,7 +5773,7 @@
       "pos": "WR",
       "nfl": "CHI",
       "slot": "BN",
-      "proj": 9.74,
+      "proj": 9.81,
       "pts": null
      },
      {
@@ -5781,7 +5781,7 @@
       "pos": "WR",
       "nfl": "TB",
       "slot": "BN",
-      "proj": 8.64,
+      "proj": 8.62,
       "pts": null
      },
      {
@@ -5807,7 +5807,7 @@
       "pos": "QB",
       "nfl": "CHI",
       "slot": "QB",
-      "proj": 18.71,
+      "proj": 18.91,
       "pts": null
      },
      {
@@ -5856,7 +5856,7 @@
       "nfl": "ARI",
       "slot": "TE",
       "proj": 11.82,
-      "pts": null
+      "pts": 8.9
      },
      {
       "n": "Jaxon Smith-Njigba",
@@ -5864,7 +5864,7 @@
       "nfl": "SEA",
       "slot": "W/R/T",
       "proj": 20.64,
-      "pts": null
+      "pts": 8.6
      },
      {
       "n": "Kirk Cousins",
@@ -5872,7 +5872,7 @@
       "nfl": "LV",
       "slot": "Q/W/R/T",
       "proj": 17.26,
-      "pts": null
+      "pts": 15.64
      },
      {
       "n": "Zach Charbonnet",
@@ -5880,7 +5880,7 @@
       "nfl": "SEA",
       "slot": "BN",
       "proj": 9.24,
-      "pts": null
+      "pts": 9.1
      },
      {
       "n": "Cam Skattebo",
