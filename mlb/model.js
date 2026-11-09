@@ -92,8 +92,10 @@
       for (var g = 30; g <= age; g++) drop += agingDelta(g) * scale;
       rp = peak + drop;
     }
-    // Steamer's read of him now (aged) and the path his grade implies, weighted toward the grade
-    return p.rate != null ? 0.4 * r + 0.6 * rp : rp;
+    // Steamer's read of him now (aged) and the path his grade implies, weighted toward the grade: Steamer can't see
+    // how much a teenager will grow, so the younger he is, the more the scouting grade counts
+    var wFv = p.age != null && p.age < 21 ? 0.8 : 0.7;
+    return p.rate != null ? (1 - wFv) * r + wFv * rp : rp;
   }
 
   // ---------- contracts and team control ----------
@@ -143,11 +145,17 @@
     var rate = rateAt(p, year, season);
     var dc = p.pjs === "dc" && p.pj && p.pj.war != null ? p.pj.war : null;
     if (year === season && dc != null && p.g !== "min") return dc;
-    // Playing time: FanGraphs' share for the coming season, growing a little each year (a catcher tops out lower)
+    // Playing time. A big leaguer: FanGraphs' share for the coming season, growing a little each year. A prospect:
+    // half a season the year he arrives, then a regular's share if he's good enough (FanGraphs' share for him this
+    // season only reflects that he starts it in the minors). A catcher tops out lower.
     var cap = p.pos === "C" || (p.el && p.el[0] === "C") ? 0.8 : 0.9;
-    var share0 = dc != null && p.rate > 0.3 ? Math.max(0.15, Math.min(1, dc / p.rate)) : null;
-    var reg = rate >= 2 ? 0.85 : rate >= 1 ? 0.7 : 0.5;
-    var share = share0 == null ? Math.min(cap, reg) : Math.min(Math.max(cap, share0), share0 + 0.05 * (year - season));
+    var reg = Math.min(cap, rate >= 2 ? 0.85 : rate >= 1 ? 0.7 : 0.5);
+    var share;
+    if (p.g === "min") share = year <= arrival(p, season) ? reg * 0.5 : reg;
+    else {
+      var share0 = dc != null && p.rate > 0.3 ? Math.max(0.15, Math.min(1, dc / p.rate)) : null;
+      share = share0 == null ? reg : Math.min(Math.max(cap, share0), share0 + 0.05 * (year - season));
+    }
     return Math.max(-0.3, rate * share);
   }
 
