@@ -1,0 +1,62 @@
+{
+ "_about": "Dead money by team. 2026-27 totals from Spotrac's team salary cap tracker (https://www.spotrac.com/nba/cap/2026, Nov 9, 2026); later seasons only where Spotrac's team page shows them (Dallas: JaVale McGee $2,208,856 and Olivier-Maxence Prosper $1,002,360 in 2026-27 and 2027-28). Seasons index from 2026-27 = 0. Edit by hand.",
+ "updated": "2026-11-09",
+ "teams": {
+  "MEM": [
+   {
+    "n": "Dead money",
+    "sal": [
+     4164050
+    ]
+   }
+  ],
+  "MIL": [
+   {
+    "n": "Dead money (incl. Damian Lillard)",
+    "sal": [
+     23183270
+    ]
+   }
+  ],
+  "POR": [
+   {
+    "n": "Dead money",
+    "sal": [
+     268032
+    ]
+   }
+  ],
+  "PHO": [
+   {
+    "n": "Dead money (incl. Bradley Beal)",
+    "sal": [
+     23197051
+    ]
+   }
+  ],
+  "DAL": [
+   {
+    "n": "JaVale McGee",
+    "sal": [
+     2208856,
+     2208856
+    ]
+   },
+   {
+    "n": "Olivier-Maxence Prosper",
+    "sal": [
+     1002360,
+     1002360
+    ]
+   }
+  ],
+  "CLE": [
+   {
+    "n": "Dead money",
+    "sal": [
+     424672
+    ]
+   }
+  ]
+ }
+}

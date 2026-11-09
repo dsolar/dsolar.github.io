@@ -12,9 +12,9 @@ Method, for every pick in those 18 drafts:
   1. Each of his first eight NBA seasons gets a rating: his Box Plus/Minus, shrunk toward replacement (-2.5) for
      seasons with few minutes (500 minutes of replacement play mixed in). That's the same impact-per-100 scale the
      hub's ratings use.
-  2. The season is valued with the hub's production model (Stephen Noh's salary model, the one in nba/lib/model.js):
-     minutes / 1475 x (rating + 3) x $4.32M, in 2026-27 cap dollars, times the hub's league-wide scale (SCALE).
-     Seasons he didn't play are worth nothing.
+  2. The season is valued with the hub's production model:
+     K x minutes x (rating + 2.5) ^ 1.5 (impact above replacement, counted more than linearly), in 2026-27 cap
+     dollars, with the hub's league-wide K. Seasons he didn't play are worth nothing.
   3. Surplus against what his pick would pay today:
        First round: the 2026-27 rookie scale. Years 1-2 are guaranteed (value minus salary, which can be negative);
        years 3-4 are team options, picked up only when he's worth it. Years 5-7 are his second contract with his
@@ -22,7 +22,7 @@ Method, for every pick in those 18 drafts:
        star on a max deal is still underpaid. Everyone else costs about what he's worth by then.
        Second round: minimum-salary deals. Year 1 counts either way; after that he's kept only while he's worth it.
   4. Each later season is discounted 8% a year back to draft night.
-The curve is fit to the average surplus at each slot across the 18 drafts (each career capped at $200M so one LeBron
+The curve is fit to the average surplus at each slot across the 18 drafts (each career capped at $350M so one LeBron
 can't bend it): a steep early drop plus a straight decline to zero at No. 60. Busts count: a slot's value includes
 every miss at that slot.
 """
@@ -38,10 +38,11 @@ YEARS = 8
 DISC = 0.08
 CAP0, CAP_2526 = 164_961_000, 154_647_000
 REPL, SHRINK_MIN = -2.5, 500
-CAP_ONE = 200e6
-# The hub scales production so the league's total production equals what the league is paid (0.88 in Nov 2026).
-# Picks use the same scale, so a pick and a player are valued on the same dollars.
-SCALE = 0.88
+CAP_ONE = 350e6
+# The hub prices production as K x minutes x (impact + 2.5) ^ 1.5, with K set so the league's total production equals
+# what the league is paid (K = 1616 in Nov 2026). Picks use the same pricing, so a pick and a player are valued on
+# the same dollars.
+K_PROD, CONVEX, REPL_PROD = 1616.0, 1.5, -2.5
 
 
 def load(name, src):
@@ -60,7 +61,7 @@ def num(x, d=0.0):
 
 def season_value(mp, bpm):
     r = (bpm * mp + REPL * SHRINK_MIN) / (mp + SHRINK_MIN)
-    return max(0.0, mp / 1475 * (r + 3) * 4.32e6 * CAP0 / CAP_2526 * SCALE)
+    return K_PROD * mp * max(0.0, r - REPL_PROD) ** CONVEX * CAP0 / CAP_2526
 
 
 def main():
@@ -131,7 +132,7 @@ def main():
     hit = [sum(1 for x in by_slot[k] if x > 5e6) / max(1, len(by_slot[k])) for k in range(1, 61)]
     # Eighteen picks per slot is a small sample (one LeBron moves a slot by $20M), so fit a smooth shape instead of
     # trusting each slot: a steep early drop (exponential) plus a straight decline to zero at No. 60. Each slot's
-    # average caps any one career at $200M first, so a single outlier can't bend the whole curve.
+    # average caps any one career at $350M first, so a single outlier can't bend the whole curve.
     capped = [sum(min(x, CAP_ONE) for x in by_slot[k]) / len(by_slot[k]) if by_slot[k] else 0.0 for k in range(1, 61)]
     def fit(B):
         e = [math.exp(-k / B) for k in range(60)]

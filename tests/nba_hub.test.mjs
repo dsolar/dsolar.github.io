@@ -15,7 +15,7 @@ const Mo = require('../nba/lib/model.js');
 
 const inputs = { data: read('celtics/data.json'), stats: opt('hardcap/stats.json') || {}, fixes: opt('hardcap/contracts.json'), live: opt('celtics/live.json'),
   board: opt('draft/nba.json') || {}, picks: read('nba/data/picks.json'), teams: opt('tools/draft_teams.json'),
-  tpes: read('nba/data/tpes.json'), exceptions: read('nba/data/exceptions.json') };
+  tpes: read('nba/data/tpes.json'), exceptions: read('nba/data/exceptions.json'), dead: read('nba/data/dead.json') };
 const H = Hub.build(inputs, { sims: 300, futureSims: 100 });
 
 test('shared library: name matching runs initials together', () => {
@@ -135,4 +135,25 @@ test('free agents by summer', () => {
 test('cash moves count against the cash limit', () => {
   const big = H.checkTrade({ teams: ['BOS', 'UTA'], moves: [{ kind: 'c', id: '99000000', amt: 99e6, from: 'BOS', to: 'UTA' }, { kind: 'k', id: '2033-2-UTA', from: 'UTA', to: 'BOS' }] });
   assert.ok(!big.teams.BOS.ok);
+});
+
+test('valuation: stars outrank cheap role players, and the star premium setting moves them', () => {
+  const rank = n => H.valueBoard('prod').findIndex(x => x.p.n === n);
+  const star = H.valueBoard('prod')[0];
+  assert.ok(H.rating(star.p, 0) > 3, 'top value is a star: ' + star.p.n);
+  const before = H.surplus(star.p, 'prod').pv;
+  H.set('convex', 1.0);
+  assert.ok(H.surplus(star.p, 'prod').pv < before);
+  H.set('convex', 1.5);
+});
+
+test('dead money counts in payroll; cap holds lower next summer\'s room', () => {
+  assert.ok(H.dead('MIL', 0) > 0);
+  const c = H.capOutlook(1);
+  for (const t of c) assert.ok(t.roomHolds <= t.room + 1);
+});
+
+test('trade finder only returns legal deals', () => {
+  const p = H.players().sort((a, b) => H.salary(b, 0) - H.salary(a, 0))[40];
+  for (const r of H.findTrades(p.id)) assert.ok(H.checkTrade({ teams: [p.t, r.team], moves: r.moves }).ok);
 });

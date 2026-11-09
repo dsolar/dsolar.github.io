@@ -123,3 +123,10 @@ ul.tpes{margin:4px 0 0;padding-left:16px;font-size:12.5px}
 .tbtns{margin:12px 0}
 td.how{text-align:left!important;white-space:normal!important;font-size:12.5px;line-height:1.45;min-width:240px}
 td.how ul.msgs{color:var(--down);margin:4px 0 0}
+
+.tbanner.warnb{background:var(--t-weak);color:var(--t-weak-i)}
+details.finder summary{cursor:pointer;list-style:none}
+details.finder summary::-webkit-details-marker{display:none}
+details.finder summary h3::before{content:"▸ ";color:var(--faint)}
+details.finder[open] summary h3::before{content:"▾ "}
+details.finder .rlist li{gap:8px}

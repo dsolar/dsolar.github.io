@@ -297,6 +297,10 @@
       T.tools.map(function (x) { return "<tr><td>" + esc(x.name) + "</td><td>" + (x.amt ? money(x.amt) : "—") + "</td><td>" + (x.ok ? '<span class="pill up">Yes</span>' : '<span class="pill">No</span>') + '</td><td class="note" style="text-align:left;white-space:normal">' + esc(x.why) + "</td></tr>"; }).join("") +
       '</tbody></table></div><p class="note">Trade exceptions as of Nov 2026; mid-level use as of mid-July (Hoops Rumors). A signing since then may have used more.</p></div>';
     html += capSheet(code, i);
+    var ext = H.extensions(code);
+    html += tablePanel("Extension eligible now", "<th>Player</th><th>Kind</th><th>Max first year</th><th>Max years</th><th>Starts</th><th>Worth then</th><th>Market then</th>", ext.map(function (e) {
+      return "<tr><td>" + pname(e.p, 22) + "</td><td>" + esc(e.kind === "rookie" ? "Rookie scale" : "Veteran") + "</td><td>" + money(e.first) + "</td><td>" + (e.years || "—") + "</td><td>" + sname(e.start) + "</td><td>" + money(e.prod) + "</td><td>" + money(e.market) + "</td></tr>";
+    }).join(""), "Worth then: his projected production that season. Market: what he'd get as a free agent");
     html += picksPanel(code);
     view.innerHTML = html;
   }
@@ -320,6 +324,9 @@
         var nm = p.year + " No. " + p.slot + " pick" + (p.from !== p.t ? " (via " + p.from + ")" : "") + (p.prospect ? ' <span class="note">proj. ' + esc(p.n) + "</span>" : "");
         return '<tr><td><span class="pl static">' + logo(p.from, 18) + '<span class="nm">' + nm + '</span></span></td><td class="note">Draft</td>' + cols.map(function (j) { return cell(p, j); }).join("") + "</tr>";
       }).join("");
+    H.W.T[code].dead.forEach(function (d) {
+      body += '<tr><td><span class="pl static"><span class="fillface" style="width:20px;height:20px">$</span><span class="nm">' + esc(d.n) + '</span></span></td><td class="note">Dead</td>' + cols.map(function (j) { return d.sal[j] ? '<td class="o-ng">' + money(d.sal[j]) + "</td>" : "<td></td>"; }).join("") + "</tr>";
+    });
     var tot = cols.map(function (j) { return H.payroll(code, j); });
     body += '<tr class="tot"><td colspan="2">Payroll (with open spots filled)</td>' + tot.map(function (x, j) { return "<td" + (j === i0 ? ' class="on"' : "") + "><b>" + money(x) + "</b></td>"; }).join("") + "</tr>";
     body += '<tr class="lines"><td colspan="2">Salary cap</td>' + cols.map(function (j) { return "<td>" + money(CBA.cap(j)) + "</td>"; }).join("") + "</tr>";
@@ -328,7 +335,7 @@
     body += '<tr class="lines"><td colspan="2">Position</td>' + cols.map(function (j) { var s = CBA.status(tot[j], j); return '<td><span class="pill ' + (s === "a2" || s === "a1" ? "fill" : s === "tax" ? "warn" : s === "room" ? "up" : "") + '">' + esc({ room: "Room", over: "Over cap", tax: "Tax", a1: "1st apron", a2: "2nd apron" }[s]) + "</span></td>"; }).join("") + "</tr>";
     var html = tablePanel("Cap sheet", "<th>Player</th><th></th>" + cols.map(function (j) { return "<th>" + sname(j) + "</th>"; }).join(""), body,
       '<span class="o-po key">Player option</span> <span class="o-to key">Team option</span> <span class="o-ng key">Non-guaranteed</span> <span class="o-re key">Projected re-signing</span> <span class="o-rk key">Draft pick</span>');
-    html += '<p class="note">Draft picks show up starting the season after their draft (a 2027 pick is paid from 2027-28), at the slot each pick is projected to land, with the rookie scale for that slot. 2027 picks name the Big Board\'s player at that slot.' + (two.length ? " Two-way and 10-day deals (not on the cap sheet): " + two.map(function (p) { return esc(p.n); }).join(", ") + "." : "") + "</p>";
+    html += '<p class="note">Dead money: this season from Spotrac\'s team totals; later seasons only where Spotrac lists them. Draft picks show up starting the season after their draft (a 2027 pick is paid from 2027-28), at the slot each pick is projected to land, with the rookie scale for that slot. 2027 picks name the Big Board\'s player at that slot.' + (two.length ? " Two-way and 10-day deals (not on the cap sheet): " + two.map(function (p) { return esc(p.n); }).join(", ") + "." : "") + "</p>";
     return html;
   }
   function picksPanel(code) {
@@ -366,6 +373,8 @@
     });
     html += '<tr class="tot"><td colspan="5">Discounted at ' + pct(H.cfg.disc) + ' a year</td><td class="' + (s.pv >= 0 ? "pos" : "neg") + '"><b>' + signed(s.pv) + "</b></td></tr>";
     html += "</tbody></table></div>";
+    var ee = CBA.extEligible(p, 0);
+    if (ee.ok) { var el = CBA.extLimit(p, 0); html += '<p class="note">Extension eligible now (' + esc(ee.kind) + "): up to " + money(el.first) + " in " + sname(el.start) + (el.maxYears ? ", " + el.maxYears + " years" : "") + ".</p>"; }
     var e = H.lastYear(p);
     if (e >= 0 && e < Hub.YEARS - 1) html += '<p class="note">Becomes a' + (H.faKind(p) === "RFA" ? " restricted" : "n unrestricted") + " free agent after " + sname(e) + ". Market estimate then: " + money(Mo.market(p, e + 1, H.W)) + " a year.</p>";
     html += '<p><button class="btn" data-add="a" data-id="' + esc(p.id) + '">Add to trade</button> <a class="btn" href="' + href("team/" + p.t) + '">' + esc(t.name) + "</a></p></div>";
@@ -395,12 +404,14 @@
   function controls(extra) {
     return '<div class="controls">' +
       '<label title="Production: what he should produce, priced off the cap. Market: what teams would pay him (the market model, capped at the max)">Value as<select data-cfg="mode"><option value="prod"' + (H.cfg.mode !== "market" ? " selected" : "") + '>Production</option><option value="market"' + (H.cfg.mode === "market" ? " selected" : "") + ">Market price</option></select></label>" +
-      '<label title="Each later season counts this much less. 7% matches the cap\'s growth, so values read in today\'s cap dollars">Discount %<input type="number" step="1" min="0" max="20" data-cfg="disc" value="' + (H.cfg.disc * 100).toFixed(0) + '"></label>' + (extra || "") + "</div>";
+      '<label title="Each later season counts this much less. 7% matches the cap\'s growth, so values read in today\'s cap dollars">Discount %<input type="number" step="1" min="0" max="20" data-cfg="disc" value="' + (H.cfg.disc * 100).toFixed(0) + '"></label>' +
+      '<label title="How much more a star\'s impact is worth than the same impact spread across role players. 1.0 is linear (minutes times impact); higher favors stars">Star premium<select data-cfg="convex">' + [1, 1.25, 1.5, 1.75, 2].map(function (v) { return '<option value="' + v + '"' + (H.cfg.convex === v ? " selected" : "") + ">" + v.toFixed(2) + "</option>"; }).join("") + "</select></label>" +
+      '<label title="Share of a young player\'s projected improvement that counts in his value">Growth counted<select data-cfg="growth">' + [0, 0.25, 0.5, 0.75, 1].map(function (v) { return '<option value="' + v + '"' + (H.cfg.growth === v ? " selected" : "") + ">" + (v * 100) + "%</option>"; }).join("") + "</select></label>" + (extra || "") + "</div>";
   }
   view.addEventListener("change", function (e) {
     var c = e.target.closest("[data-cfg]");
     if (!c) return;
-    var k = c.dataset.cfg, v = k === "mode" ? c.value : +c.value / 100;
+    var k = c.dataset.cfg, v = k === "mode" ? c.value : k === "convex" || k === "growth" ? +c.value : +c.value / 100;
     if (k !== "mode" && isNaN(v)) return;
     H.set(k, v); save(k, v);
     render();
@@ -420,8 +431,8 @@
     var opt = function (v, l, cur) { return '<option value="' + v + '"' + (v === cur ? " selected" : "") + ">" + l + "</option>"; };
     var html = '<h2 class="sec">Trade Value</h2><p class="lede">' + (H.cfg.mode === "market"
       ? "Value is what teams would pay each player on the open market (the market model behind Banner 19, fit to current veteran contracts and capped at the max). "
-      : "Value is what each player should produce over the rest of his contract, priced the way the cap prices production (Stephen Noh's salary model, the one Banner 19 uses). ") +
-      "Contract is what he'll be paid. Surplus is the difference, each season discounted. Picks are valued by what their projected slot has produced in past drafts, or in the market view, by what teams pay for them.</p>";
+      : "Value is what each player should produce over the rest of his contract: minutes times impact above replacement, with a premium for star impact, priced so the league's production adds up to what the league is paid. ") +
+      "Contract is what he'll be paid. Surplus is the difference, each season discounted. Picks are valued by what their projected slot has produced in past drafts, or in the market view, by what teams pay for them. The star premium and growth settings change the whole board; How it works explains them.</p>";
     html += controls(teamSelect(tm) + '<label>Show<select data-q="k">' + opt("players", "Players", kind) + opt("picks", "Draft picks", kind) + "</select></label>" +
       (kind === "players" ? '<label>Sort<select data-q="sort">' + opt("", "Most surplus", q.sort || "") + opt("worst", "Worst contracts", q.sort || "") + "</select></label>" +
         '<label>Search<input type="search" data-q="s" value="' + esc(q.s || "") + '" placeholder="Player"></label>' : ""));
@@ -465,6 +476,7 @@
       if (mine.length) q[L5[k]] = mine.map(function (a) { return a.kind + ":" + a.id + (a.to >= 0 && a.to !== a.from ? "~" + L5[a.to] : ""); }).join(",");
     });
     if (tr.sides.length > 2) q.n = tr.sides.length;
+    if (state.q.find) q.find = state.q.find;
     save("trade", q);
     return href("trade", q);
   }
@@ -518,6 +530,9 @@
     var chk = ready && moves.length ? H.checkTrade({ teams: tr.sides, moves: moves }) : null;
     var sum = chk ? H.tradeSummary({ teams: tr.sides, moves: moves }) : null;
     var html = '<h2 class="sec">Trade Builder</h2><p class="lede">Up to five teams. Add players, picks or cash from each roster; every deal is checked against the 2023 CBA as it stands in ' + sname(0) + ": salary matching by apron tier, trade exceptions, hard caps, cash limits, roster limits and the Stepien rule.</p>";
+    html += finderPanel();
+    var warns = ready && moves.length ? H.tradeWarnings({ teams: tr.sides, moves: moves }) : [];
+    if (warns.length) html += '<div class="tbanner warnb"><b>Heads up</b><span>' + warns.map(esc).join("<br>") + "</span></div>";
     if (chk) html += '<div class="tbanner ' + (chk.ok ? "ok" : "bad") + '"><b>' + (chk.ok ? "Trade works" : "Trade doesn't work") + "</b><span>" + (chk.ok ? "Every team passes the cap rules." : tr.sides.filter(function (c) { return !chk.teams[c].ok; }).map(function (c) { return esc(team(c).short); }).join(" and ") + " fail" + (tr.sides.filter(function (c) { return !chk.teams[c].ok; }).length === 1 ? "s" : "") + " the cap rules (details below).") + '</span><button class="btn" data-copy>Copy link</button></div>';
     html += '<div class="tcols n' + n + '">';
     tr.sides.forEach(function (code, k) {
@@ -543,6 +558,32 @@
     if (chk) html += matchTable(tr, chk) + valueTable(tr, sum);
     view.innerHTML = html;
   }
+  // Trade finder: pick a player, get legal deals from around the league
+  function finderPanel() {
+    var q = state.q, target = q.find && H.W.P[q.find] ? H.W.P[q.find] : null;
+    var all = H.players().slice().sort(function (a, b) { return a.n.localeCompare(b.n); });
+    var html = '<details class="panel finder"' + (target ? " open" : "") + '><summary><h3 style="display:inline">Trade finder <small>pick a player, get legal deals from every other team</small></h3></summary>' +
+      '<div class="controls"><label>Player<input list="fplayers" data-find value="' + esc(target ? target.n : "") + '" placeholder="Type a name"></label><datalist id="fplayers">' + all.map(function (p) { return '<option value="' + esc(p.n) + '">' + esc(team(p.t).short) + "</option>"; }).join("") + "</datalist></div>";
+    if (target) {
+      var res = H.findTrades(target.id);
+      html += res.length ? '<ul class="rlist">' + res.map(function (r) {
+        var get = r.moves.filter(function (m) { return m.to === target.t; }), give = r.moves.filter(function (m) { return m.from === target.t && m.id !== target.id; });
+        var nm = function (m) { return m.kind === "p" ? esc(H.W.P[m.id].n) + " (" + money(H.salary(H.W.P[m.id], 0)) + ")" : esc(H.pickName(pickOf(m.id))); };
+        var hq = { ta: target.t, tb: r.team, a: r.moves.filter(function (m) { return m.from === target.t; }).map(function (m) { return m.kind + ":" + m.id; }).join(","), b: r.moves.filter(function (m) { return m.from === r.team; }).map(function (m) { return m.kind + ":" + m.id; }).join(","), find: target.id };
+        return "<li>" + logo(r.team, 24) + '<span class="grow"><b>' + esc(team(r.team).short) + "</b> send " + get.map(nm).join(", ") + (give.length ? '; <span class="note">' + esc(team(target.t).short) + " adds " + give.map(nm).join(", ") + "</span>" : "") + '</span><span class="sub">' + (Math.abs(r.gap) < 1e6 ? "even" : (r.gap > 0 ? esc(team(target.t).short) : esc(team(r.team).short)) + " +" + money(Math.abs(r.gap))) + '</span><a class="btn" href="' + href("trade", hq) + '">Load</a></li>';
+      }).join("") + "</ul>" : '<p class="note">No legal deal within reach of even. Try the market view or a different discount.</p>';
+      html += '<p class="note">Packages of one to three players that make the salaries work for both teams, evened up with draft picks from whichever side gets less, checked against every cap rule. Balanced on ' + (H.cfg.mode === "market" ? "market" : "production") + " surplus.</p>";
+    }
+    return html + "</details>";
+  }
+  view.addEventListener("change", function (e) {
+    var f = e.target.closest("[data-find]");
+    if (!f) return;
+    var p = H.players().find(function (x) { return x.n.toLowerCase() === f.value.trim().toLowerCase(); });
+    if (!p) return;
+    var q = Object.assign({}, state.route === "trade" ? state.q : {}, { find: p.id });
+    location.hash = href("trade", q);
+  });
   // The salary math, team by team: what goes out, what comes back, what the rules allow, and how it gets done
   function matchTable(tr, chk) {
     var nm = { room: "Under the cap", over: "Over the cap", tax: "In the tax", a1: "Over the 1st apron", a2: "Over the 2nd apron" };
@@ -636,9 +677,10 @@
       var gap = x.fair - x.market;
       return "<tr><td>" + (k + 1) + ". " + pname(x.p, 22, x.opt ? ' <span class="pill" title="Projected to decline his ' + esc(CBA.OPT_NAME[x.opt].toLowerCase()) + '">' + esc(x.opt) + " out</span>" : "") + "</td><td>" + logo(x.team, 18) + "</td><td>" + x.age + "</td><td>" + (x.kind === "RFA" ? '<span class="pill up">RFA</span>' : '<span class="pill">UFA</span>') + "</td><td>" + rchip(x.r) + "</td><td>" + x.yrs + "</td><td>" + money(x.fair) + "</td><td><b>" + money(x.market) + '</b></td><td class="' + (gap >= 0 ? "pos" : "neg") + '">' + signed(gap) + "</td></tr>";
     }).join(""), "Gap: positive means a bargain at the market price");
-    html += tablePanel("Who can spend in " + sname(yr), "<th>Team</th><th>Committed</th><th>Cap room</th><th>Players</th><th>Best tool</th>", cap.map(function (c) {
-      return '<tr class="go" data-team="' + c.code + '"><td class="tm">' + logo(c.code) + '<span class="nm">' + esc(team(c.code).name) + "</span></td><td>" + money(c.committed) + '</td><td class="' + (c.room > 0 ? "pos" : "neg") + '">' + (c.room > 0 ? money(c.room) : "—") + "</td><td>" + c.n + "</td><td>" + esc(c.tool) + "</td></tr>";
-    }).join(""), "Contracts and rookie deals already on the books against a " + money(CBA.cap(yr)) + " cap, before cap holds");
+    html += tablePanel("Who can spend in " + sname(yr), "<th>Team</th><th>Committed</th><th>Room (renounce all)</th><th>Cap holds</th><th>Room with holds</th><th>Players</th><th>Best tool</th>", cap.map(function (c) {
+      var hl = c.holdList.slice().sort(function (a, b) { return b.amt - a.amt; }).slice(0, 4).map(function (h) { return esc(h.n) + " " + money(h.amt); }).join(", ");
+      return '<tr class="go" data-team="' + c.code + '"><td class="tm">' + logo(c.code) + '<span class="nm">' + esc(team(c.code).name) + "</span></td><td>" + money(c.committed) + '</td><td class="' + (c.room > 0 ? "pos" : "neg") + '">' + (c.room > 0 ? money(c.room) : "—") + '</td><td title="' + hl + '">' + (c.holds ? money(c.holds) : "—") + '</td><td class="' + (c.roomHolds > 0 ? "pos" : "neg") + '">' + (c.roomHolds > 0 ? money(c.roomHolds) : "—") + "</td><td>" + c.n + "</td><td>" + esc(c.tool) + "</td></tr>";
+    }).join(""), "Against a " + money(CBA.cap(yr)) + " cap. Holds: free agents a team keeps rights to (hover for the biggest); renouncing them frees the room");
     html += '<div class="panel"><h3>What contracts cost against what they buy <small>Every veteran contract on the books now</small></h3><div class="prem">' +
       prem.groups.filter(function (g) { return g.n >= 5; }).map(function (g) {
         var d = g.ratio - 1;
@@ -656,19 +698,23 @@
       "<h3>Lineups and minutes</h3><p>This season uses real rotations: each team's starting five from its most recent game and the minutes every player is averaging, scaled to 240 a game among the players available (anyone ruled out for the season sits). Later seasons don't have that, so the best player at each position starts (by the positions he plays, so two centers don't start together) and the bench plays by rating: 34, 33, 32, 30 and 28 minutes for the starters, then 24, 20, 16, 13 and 10.</p>" +
       "<h3>Standings and odds</h3><p>Ratings times minutes give each team a net rating, and every game left on a fresh schedule is played " + H.cfg.sims.toLocaleString() + " times from each team's real record. Then the play-in, the playoffs and the lottery: 16 lottery teams, three balls each, two for the 9 and 10 seeds and the three worst records, one for each 7-8 play-in loser, and the worst three can't fall below 12th.</p>" +
       "<h3>The year slider</h3><p>" + sname(0) + " is today's rosters. Every later season is built from contracts: options are called on value (a team option is picked up when he's worth it, a player option comes back when it's bad for the team), and when a deal ends he's gone, unless he's a restricted free agent worth his price (matched by default) or you re-sign him on his team's page. Each team's first-round picks arrive at their projected slot on rookie-scale deals (2027 from the simulations, using the Big Board's player at that slot; later drafts from the season before). Better-of picks go to whoever gets them where the picks are projected to land. Open spots go to the free agents a team's cap position can buy: a starter with real cap room, a rotation player with the mid-level, minimums after that.</p>" +
-      "<h3>Surplus value</h3><p>For each season left on a contract: value minus salary, discounted " + pct(H.cfg.disc) + " a year (the cap's growth, so values read in today's cap dollars). This season only counts the part still to play. <b>Production</b> is Stephen Noh's salary model, minutes times impact, on the minutes he actually plays (fading over a few seasons toward what his rating would earn), then scaled once so the whole league's production adds up to what the whole league is paid this season (a factor of " + H.K.toFixed(2) + " today). So a dollar of production costs what teams pay for it on average, and surplus is who's ahead of that. Only half of a young player's projected improvement counts, since a lot of it never shows up; decline counts in full. <b>Market</b> is what teams would pay him: Banner 19's market model, fit to 317 veteran contracts, capped at the max.</p>" +
-      "<h3>Draft picks</h3><p>What each slot is worth comes from what picks 1 to 60 in the 2001-2018 drafts actually produced: each of a player's first eight seasons valued with the same production model, minus what his slot pays today (the rookie scale, team options picked up only when he's worth it, and for stars the part of their second contract above the max). Busts count. The curve is fit to the averages (any one career capped at $200M, so one LeBron can't bend it): No. 1 is worth about " + money(pk[0]) + ", No. 5 " + money(pk[4]) + ", No. 15 " + money(pk[14]) + ", No. 30 " + money(pk[29]) + " and No. 45 " + money(pk[44]) + ". A pick's value averages over every slot it could land in: the simulations for 2027, a spread around the projected slot after that (wider each year out). A protected pick only counts the slots where it conveys. The market view uses what teams pay for picks in trades instead.</p>" +
+      "<h3>Surplus value</h3><p>For each season left on a contract: value minus salary, discounted " + pct(H.cfg.disc) + " a year (the cap's growth, so values read in today's cap dollars). This season only counts the part still to play.</p>" +
+      "<p><b>Production</b> is minutes times impact above replacement (-2.5, what a free minimum-salary player gives you), with that impact raised to the power of the star premium (" + H.cfg.convex.toFixed(2) + "). The premium is there because minutes and roster spots are scarce: one +4 player is worth far more than two +1 players, and the max means stars are always paid less than they're worth. With a linear price (1.0), cheap role players on long minimum deals outranked stars. Minutes are what he actually plays, fading over a few seasons toward what his rating would earn. The whole thing is scaled once so the league's total production adds up to what the league is paid this season, so a dollar of production costs what teams pay on average. Only " + pct(H.cfg.growth) + " of a young player's projected improvement counts, since a lot of it never shows up; decline counts in full. A first- or second-year player's rating starts as a guess from his draft slot, so this season's play moves it faster than a veteran's. Both settings are adjustable on the Trade Value tab.</p>" +
+      "<p><b>Market</b> is what teams would pay him: Banner 19's market model, fit to 317 veteran contracts, capped at the max. It mostly prices minutes and scoring, barely impact, which is why it disagrees with production.</p>" +
+      "<h3>Draft picks</h3><p>What each slot is worth comes from what picks 1 to 60 in the 2001-2018 drafts actually produced: each of a player's first eight seasons valued with the same production model, minus what his slot pays today (the rookie scale, team options picked up only when he's worth it, and for stars the part of their second contract above the max). Busts count. The curve is fit to the averages (any one career capped at $350M, so one LeBron can't bend it): No. 1 is worth about " + money(pk[0]) + ", No. 5 " + money(pk[4]) + ", No. 15 " + money(pk[14]) + ", No. 30 " + money(pk[29]) + " and No. 45 " + money(pk[44]) + ". A pick's value averages over every slot it could land in: the simulations for 2027, a spread around the projected slot after that (wider each year out). A protected pick only counts the slots where it conveys. The market view uses what teams pay for picks in trades instead.</p>" +
       "<h3>Trades and team tools</h3><p>The same rules Banner 19 runs: salary matching by apron tier (200% plus $250K for small salaries, outgoing plus a set amount in the middle, 125% for big ones, 100% over the first apron), trade exceptions (each team's real ones, open as of Nov 2026; teams over the first apron can't use ones made last season), hard caps at the first or second apron when a team takes back more salary, combines salaries or sends cash, the cash limit, the 15-man roster limit and the Stepien rule. Deals with three to five teams check each team on everything it sends and gets. Each team's mid-level use and hard caps come from Hoops Rumors' July tracking; repeater status from the last four tax seasons.</p>" +
-      "<h3>What it doesn't do</h3><p>No cap holds in the free agent outlook (room is before holds), no dead money, no second-round rookies on the slider, and the most tangled pick conditions (Oklahoma City's chain of 2027 swaps) stay with whoever holds them today. Mid-level use after mid-July isn't tracked.</p>" +
+      "<h3>Cap holds, dead money and extensions</h3><p>Next summer's room is shown both ways: if a team renounces everyone, and with the cap holds for free agents it keeps rights to. Dead money is this season's team totals from Spotrac (later seasons only where Spotrac lists them). Extension eligibility and maximums follow the 2023 CBA: rookie-scale players the summer before their fourth season, veterans with two or fewer years left, up to 140% of their salary or the max.</p>" +
+      "<h3>Trade finder</h3><p>Pick a player and every other team's packages of one to three players that make the salaries work for both sides come back, evened up with draft picks from whichever team gets less, and checked against every cap rule.</p>" +
+      "<h3>What it doesn't do</h3><p>Aggregation windows and other timing rules aren't enforced (players signed this summer and the deadline get a warning). No second-round rookies on the slider, and the most tangled pick conditions (Oklahoma City's chain of 2027 swaps) stay with whoever holds them today. Mid-level use after mid-July isn't tracked.</p>" +
       '<p class="note">Built on the shared NBA library (nba/lib) that Banner 19 and Hard Cap also run on, so a cap rule or contract fix lands in all three.</p></div>';
     view.innerHTML = html;
   }
 
   // ---------- start ----------
   function get(u, opt) { return fetch(u, { cache: "no-cache" }).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); }).catch(function (e) { if (opt) return null; throw e; }); }
-  Promise.all([get("../celtics/data.json"), get("../hardcap/stats.json", true), get("../hardcap/contracts.json", true), get("../celtics/live.json", true), get("../draft/nba.json", true), get("data/picks.json"), get("../tools/draft_teams.json", true), get("data/tpes.json", true), get("data/exceptions.json", true)])
+  Promise.all([get("../celtics/data.json"), get("../hardcap/stats.json", true), get("../hardcap/contracts.json", true), get("../celtics/live.json", true), get("../draft/nba.json", true), get("data/picks.json"), get("../tools/draft_teams.json", true), get("data/tpes.json", true), get("data/exceptions.json", true), get("data/dead.json", true)])
     .then(function (r) {
-      H = Hub.build({ data: r[0], stats: r[1] || {}, fixes: r[2], live: r[3], board: r[4] || {}, picks: r[5], teams: r[6], tpes: r[7], exceptions: r[8] }, { mode: load("mode", "prod"), disc: load("disc", 0.07), fill: load("fill", true) });
+      H = Hub.build({ data: r[0], stats: r[1] || {}, fixes: r[2], live: r[3], board: r[4] || {}, picks: r[5], teams: r[6], tpes: r[7], exceptions: r[8], dead: r[9] }, { mode: load("mode", "prod"), disc: load("disc", 0.07), fill: load("fill", true), convex: load("convex", 1.5), growth: load("growth", 0.5) });
       H.keep = load("keep", {}) || {};
       fillBox.checked = H.cfg.fill;
       $("#foot").innerHTML = "Rosters and contracts as of " + esc(H.asOf) + ". Updated every day from Basketball-Reference, ESPN and the Big Board.";

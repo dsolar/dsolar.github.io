@@ -36,6 +36,8 @@
     fill: true,          // teams fill open roster spots with free agents they can afford
     blend: 2500,         // minutes of this season's BPM it takes to move a rating halfway
     growth: 0.5,         // share of a young player's projected improvement that counts in his value
+    convex: 1.5,         // production = minutes x (impact above replacement) ^ convex
+    blendRookie: 1000,   // a first- or second-year player's rating is mostly a draft-slot guess, so his play moves it faster
   };
 
   function build(inp, opts) {
@@ -74,7 +76,7 @@
       const a = stats.avg && stats.avg[String(2027)] && stats.avg[String(2027)][p.id];
       const mins = a ? a[0] * a[1] : 0;
       if (v && mins > 0) {
-        const w = mins / (mins + cfg.blend);
+        const w = mins / (mins + ((p.yos ?? 3) <= 1 ? cfg.blendRookie : cfg.blend));
         const shift = w * (v[1] - (p.o + p.d));
         p.o = +(p.o + shift * 0.6).toFixed(2); p.d = +(p.d + shift * 0.4).toFixed(2);
         p.form = +shift.toFixed(2); p.bpm = v[1]; p.vorp = v[0];
@@ -130,6 +132,7 @@
         t.mleNote = e.on ? e.on : "";
       }
       if (((inp.exceptions || {}).baeUsedLastYear || []).includes(c)) t.used[-1] = { bae: 1 };
+      t.dead = (((inp.dead || {}).teams || {})[c] || []).map(d => ({ n: d.n, sal: d.sal.slice(), why: "Dead money" }));
     }
     const dec = L.decider(W);
 
@@ -170,21 +173,22 @@
     // once so the whole league's production adds up to what the whole league is paid this season. A dollar of
     // production costs what teams actually pay for it, on average; surplus is who's ahead of that and who's behind.
     const CAP_2526 = 154_647_000;
+    // Impact above replacement (-2.5, the level of a free minimum-salary player) counts more than linearly
+    // (cfg.convex): minutes and roster spots are scarce, so one +4 player is worth far more than two +1 players,
+    // and teams can't buy stars at any price because the max holds their pay down. Linear pricing made cheap
+    // role players outrank stars.
     const rawProd = (p, i) => {
       const r = H.rating(p, i), games = Math.min(76, 82 * (p.h ?? 0.85));
-      let v = games * H.mpgAt(p, i) / 1475 * Math.max(0, r + 3) * 4.32e6;
-      const boost = Math.min(0.10, Math.pow(Math.abs(r) / 4, 1.2) * 0.10);
-      v *= r > 0 ? 1 + boost : 1 - boost;
+      const v = games * H.mpgAt(p, i) * Math.pow(Math.max(0, r + 2.5), cfg.convex);
       return v * CBA.cap(i) / CAP_2526;
     };
-    let K = 1;
-    {
+    const Kfor = () => cache("K" + cfg.convex + cfg.growth, () => {
       let sv = 0, ss = 0;
       for (const p of Object.values(W.P)) { if (p.two) continue; const sal = CBA.salaryIn(p, 0, dec); if (!sal) continue; sv += rawProd(p, 0); ss += sal; }
-      if (sv > 0) K = ss / sv;
-    }
-    H.K = K;
-    const prodAt = (p, i) => Math.max(CBA.minSal((p.yos ?? 3) + i, i), K * rawProd(p, i));
+      return sv > 0 ? ss / sv : 1;
+    });
+    Object.defineProperty(H, "K", { get: Kfor });
+    const prodAt = (p, i) => Math.max(CBA.minSal((p.yos ?? 3) + i, i), Kfor() * rawProd(p, i));
     H.prodAt = prodAt; H.marketAt = marketAt;
     // A new deal for a player whose contract ends: what the market pays, for as long as the market would go
     H.newDeal = (p, start) => {
@@ -401,7 +405,7 @@
         if (s > 0) out.push({ p: rk, sal: s, r: rookRating(rk, i), how: "rookie" });
       }
       // Open spots: a team signs what its cap position allows (cap room, then the mid-level, then minimums)
-      const payroll = sum(out.map(x => x.sal));
+      const payroll = sum(out.map(x => x.sal)) + H.dead(code, i);
       let room = CBA.cap(i) - payroll, mle = false, spent = 0;
       for (let n = out.length; n < 13; n++) {
         let r = -2.5, sal = CBA.minSal(3, i), kind = "Replacement player";
@@ -416,7 +420,8 @@
       }
       return out;
     });
-    H.payroll = (code, i) => sum(H.rosterAt(code, i).map(x => x.sal));
+    H.dead = (code, i) => sum(W.T[code].dead.map(d => d.sal[i] || 0));
+    H.payroll = (code, i) => sum(H.rosterAt(code, i).map(x => x.sal)) + H.dead(code, i);
     H.seasonProj = i => cache("proj" + i, () => {
       if (i === 0) {
         const s0 = H.season0();
@@ -604,14 +609,29 @@
         toTax: CBA.tax(i) - pay, toA1: CBA.a1(i) - pay, toA2: CBA.a2(i) - pay };
     });
     // Next summer's spending power: cap room after the deals already on the books and rookies, or the exception
+    // Next summer's spending power: room before cap holds (if the team renounces everyone) and after them
+    // (Banner 19's holds: free agents it still has Bird rights to, and its own first-round picks)
     H.capOutlook = i => cache("cap" + i, () => codes.map(c => {
       const committed = sum(Object.values(W.P).filter(p => p.t === c && !p.two).map(p => H.salary(p, i)))
-        + sum(H.rookies(i).filter(r => r.t === c).map(r => r.c.sal[i] || 0));
+        + sum(H.rookies(i).filter(r => r.t === c).map(r => r.c.sal[i] || 0)) + H.dead(c, i);
       const n = Object.values(W.P).filter(p => p.t === c && !p.two && H.salary(p, i) > 0).length + H.rookies(i).filter(r => r.t === c).length;
-      const room = CBA.cap(i) - committed;
+      let holds = 0, holdList = [];
+      try {
+        const b = L.books(W, c, i);
+        holdList = b.holds.filter(h => h.kind !== "Draft pick");
+        holds = sum(holdList.map(h => h.amt));
+      } catch (e) { /* books unavailable for this season */ }
+      const room = CBA.cap(i) - committed, roomHolds = CBA.cap(i) - committed - holds;
       const tool = room > CBA.line("rmle", i) ? "Cap room" : committed < CBA.a1(i) ? "Non-taxpayer mid-level" : committed < CBA.a2(i) ? "Taxpayer mid-level" : "Minimums only";
-      return { code: c, committed, room, n, tool, status: CBA.status(committed, i) };
+      return { code: c, committed, room, roomHolds, holds, holdList, n, tool, status: CBA.status(committed, i) };
     }).sort((a, b) => b.room - a.room));
+    // Who can sign an extension right now, and for how much
+    H.extensions = code => Object.values(W.P).filter(p => p.t === code && !p.two && H.salary(p, 0) > 0).map(p => {
+      const e = CBA.extEligible(p, 0);
+      if (!e.ok) return null;
+      const lim = CBA.extLimit(p, 0);
+      return { p, kind: e.kind, why: e.why, first: lim.first, years: lim.maxYears, start: lim.start, market: marketAt(p, lim.start), prod: prodAt(p, lim.start) };
+    }).filter(Boolean);
     // What deals pay against what they buy: every veteran contract on the books, grouped by kind
     H.premium = () => cache("prem", () => {
       const rows = [];
@@ -680,6 +700,76 @@
       for (const id of g.picks) { const p = W.picks.find(x => x.id === id); p.owner = a[id]; p.locked = a[id] !== g.to[0]; }
     }
     memo.clear();
+    // Things the cap rules here don't block but a real trade would run into
+    const deadline = L.dates(0).deadlineEnd;
+    H.deadline = deadline;
+    H.tradeWarnings = tr => {
+      const out = [];
+      if (asOf > deadline && asOf < L.dates(0).finals) out.push("It's past this season's trade deadline (" + L.fmtDate(deadline) + " in Banner 19's calendar): no trades until after the season.");
+      for (const m of tr.moves) {
+        const p = m.kind === "p" ? W.P[m.id] : null;
+        if (p && p.c && p.c.signed === 0 && !(p.c.rk && p.c.rk[1] > 0) && asOf < "2026-12-15") out.push(p.n + " signed this offseason; free agents who sign in the summer can't be traded until Dec. 15.");
+      }
+      return out;
+    };
+    // Trade finder: packages from every other team that make the salaries work for a target player, balanced
+    // with draft picks when one side gives up more value. Only legal deals come back.
+    H.findTrades = (pid, mode) => {
+      mode = mode || cfg.mode;
+      const p = W.P[pid];
+      if (!p) return [];
+      const A = p.t, S = H.salary(p, 0), kickA = H.kicker(p), vT = H.surplus(p, mode).pv;
+      const payA = H.payroll(A, 0), out = [];
+      for (const B of codes) {
+        if (B === A) continue;
+        const payB = H.payroll(B, 0);
+        const pool = Object.values(W.P).filter(q => q.t === B && !q.two && H.salary(q, 0) > 0).sort((a, b) => H.salary(b, 0) - H.salary(a, 0)).slice(0, 13);
+        const combos = [];
+        const n = pool.length;
+        for (let a = 0; a < n; a++) {
+          combos.push([pool[a]]);
+          for (let b = a + 1; b < n; b++) {
+            combos.push([pool[a], pool[b]]);
+            for (let c = b + 1; c < n; c++) combos.push([pool[a], pool[b], pool[c]]);
+          }
+        }
+        const cands = [];
+        for (const combo of combos) {
+          const T = sum(combo.map(q => H.salary(q, 0))), kickB = sum(combo.map(q => H.kicker(q)));
+          const postB = payB - T + S + kickA, postA = payA - S + T + kickB;
+          const okB = postB <= CBA.cap(0) || S + kickA <= CBA.matchMax(T, 0, CBA.status(postB, 0));
+          const okA = postA <= CBA.cap(0) || T + kickB <= CBA.matchMax(S, 0, CBA.status(postA, 0));
+          if (!okA || !okB) continue;
+          const v = sum(combo.map(q => H.surplus(q, mode).pv));
+          cands.push({ combo, v, gap: v - vT });          // gap > 0: A gets more than it gives
+        }
+        cands.sort((a, b) => Math.abs(a.gap) - Math.abs(b.gap));
+        let found = 0;
+        for (const c of cands.slice(0, 40)) {
+          if (found >= 2) break;
+          const moves = [{ kind: "p", id: p.id, from: A, to: B }].concat(c.combo.map(q => ({ kind: "p", id: q.id, from: B, to: A })));
+          let gap = c.gap;
+          // the side getting less adds draft picks (smallest that close the gap first) until it's close to even
+          const payer = gap < 0 ? B : A, sign = gap < 0 ? 1 : -1;
+          const picks = H.picksOf(payer).filter(pk => !pk.locked).map(pk => ({ pk, v: H.pickValue(pk, mode) })).filter(x => x.v > 0).sort((x, y) => x.v - y.v);
+          let added = 0;
+          while (Math.abs(gap) > 4e6 && added < 3) {
+            const need = Math.abs(gap);
+            const x = picks.find(y => y.v >= need * 0.8 && y.v <= need * 1.25) || picks.filter(y => y.v < need).pop();
+            if (!x) break;
+            picks.splice(picks.indexOf(x), 1);
+            moves.push({ kind: "k", id: x.pk.id, from: payer, to: payer === A ? B : A });
+            gap += sign * x.v; added++;
+          }
+          if (Math.abs(gap) > Math.max(12e6, Math.abs(vT) * 0.2)) continue;
+          const chk = H.checkTrade({ teams: [A, B], moves });
+          if (!chk.ok) continue;
+          out.push({ team: B, moves, gap, legal: true });
+          found++;
+        }
+      }
+      return out.sort((a, b) => Math.abs(a.gap) - Math.abs(b.gap)).slice(0, 15);
+    };
     H.findPlayer = id => W.P[id] || null;
     H.teamPlayers = code => Object.values(W.P).filter(p => p.t === code);
     return H;
