@@ -187,15 +187,27 @@
     render();
   }, true);
 
-  function backups(tm, slot) {
-    // the bench player most likely to cover this spot
-    var b = tm.bench.filter(function (e) { return M.canPlay(e.p, slot); });
-    return b.slice(0, 1);
+  // The bench player most likely to cover each spot: his listed position first, spread so one utility man
+  // isn't the backup everywhere
+  function backupMap(tm) {
+    var out = {}, load = {};
+    M.FIELD_ORDER.forEach(function (slot) {
+      if (!tm.line[slot]) return;
+      var best = null, score = -1e9;
+      tm.bench.forEach(function (e) {
+        if (!M.canPlay(e.p, slot)) return;
+        var el = e.p.el || [e.p.pos], i = el.indexOf(slot);
+        var s = (i === 0 ? 3 : i > 0 ? 2 : slot === "DH" ? 0.5 : 1) - (load[e.p.id] || 0) * 1.5 + e.war * 0.2;
+        if (s > score) { score = s; best = e; }
+      });
+      if (best) { out[slot] = [best]; load[best.p.id] = (load[best.p.id] || 0) + 1; }
+    });
+    return out;
   }
   function field(tm, y) {
-    var html = '<div class="fieldwrap"><div class="field">' + fieldSvg();
+    var html = '<div class="fieldwrap"><div class="field">' + fieldSvg(), bk = backupMap(tm);
     M.FIELD_ORDER.forEach(function (slot) {
-      var xy = SPOT_XY[slot], e = tm.line[slot], rows = e ? [e].concat(backups(tm, slot)) : [];
+      var xy = SPOT_XY[slot], e = tm.line[slot], rows = e ? [e].concat(bk[slot] || []) : [];
       var war = rows.reduce(function (s, r, i) { return s + (i === 0 ? r.war : r.war * 0.5); }, 0);
       var tier = H.tier(y, slot, e ? e.war : 0);
       html += '<div class="spot" style="left:' + xy[0] + "%;top:" + xy[1] + '%"><header class="T-' + tier + '"><span>' + slot + "</span><span>" + f1(war) + "</span></header>";
@@ -261,7 +273,7 @@
     html += tablePanel("Bullpen", "<th>Pitcher</th><th>Role</th>" + pitHead, tm.pen.map(function (e, i) { return pitRow(e, i, "RP"); }).join(""), f1(tm.pen.reduce(function (s, e) { return s + e.war; }, 0)) + " WAR");
     html += "</div>";
     if (first && tm.il.length) html += tablePanel("Injured list", "<th>Player</th><th>Pos</th><th>Note</th>", tm.il.map(function (e) { return "<tr><td>" + pname(e.p, 22) + "</td><td>" + esc(e.p.pos || "") + '</td><td style="white-space:normal;text-align:left">' + esc(e.p.inj || "") + "</td></tr>"; }).join(""), "");
-    if (!first) html += '<p class="note">* Arbitration salaries are estimates: 40%, 60% and 80% of market value in years one to three.</p>';
+    if (!first) html += '<p class="note">* Arbitration salaries are estimates: 25%, 40% and 60% of market value in years one to three.</p>';
     return html;
   }
   function tablePanel(title, head, body, right) {
@@ -566,7 +578,7 @@
       "<li><b>Free agents:</b> RosterResource's free agent tracker for this winter and the five before it, including crowd predictions and the contracts players signed.</li>" +
       "<li><b>Photos:</b> linked from MLB's own servers.</li></ul>" +
       "<h3>The year slider</h3><p>" + H.season + " is FanGraphs' Depth Charts as published. Every later season is built here: a player stays while he's under a guaranteed contract, a club option worth picking up, a player option he'd keep, or team control (pre-arb under three years of service, arbitration until six). Everyone else becomes a free agent, unless you re-sign him on his team's page. Ratings age a year at a time (gaining into the mid-20s, flat at 27 and 28, falling from 29 and faster after 32). Prospects arrive at their ETA (or by level when there isn't one) and grow toward the WAR their FV grade implies over their first three seasons. Each spot goes to the best available player who can play it; a team gets five starters and eight relievers. Spots nobody can fill are \"FA Fill\": a replacement player, or a modest free agent if teams sign them (the switch). Wins scale from team WAR so later seasons spread the way Depth Charts' do.</p>" +
-      "<h3>Surplus value</h3><p>For each season of contract or control: projected WAR × the price of a win, minus salary, discounted " + pct(H.cfg.discount, 0) + " a year. Arbitration pays 40/60/80% of market value; pre-arb players earn the minimum (" + money(H.cfg.minSalary) + ", until the next CBA says otherwise). Club options are exercised only when they're worth it, and a player option only comes back when it's bad for the team. A prospect's value is scaled by his risk grade.</p>" +
+      "<h3>Surplus value</h3><p>For each season of contract or control: projected WAR × the price of a win, minus salary, discounted " + pct(H.cfg.discount, 0) + " a year. Arbitration pays 25/40/60% of market value (a fourth year 70%); pre-arb players earn the minimum (" + money(H.cfg.minSalary) + ", until the next CBA says otherwise). Club options are exercised only when they're worth it, and a player option only comes back when it's bad for the team. A prospect's value is scaled by his risk grade.</p>" +
       "<h3>The price of a win</h3><p>" + (mk ? (mk.how === "crowd" ? "This winter's free agents: Steamer's projected WAR for each, aged over the contract the crowd predicts, against the crowd's predicted dollars, then adjusted by how far past crowds landed from real contracts (" + ((mk.crowdErr - 1) >= 0 ? "+" : "") + pct(mk.crowdErr - 1, 0) + "). That gives " + money(H.cfg.dpw) + " per win." : "Carried forward from the last three winters' deals: " + money(H.cfg.dpw) + " per win.") + " The premium patterns on the Free Agents tab come from every deal of the last five winters for a player projected at 1+ WAR, against that winter's going rate. Past classes don't carry the projection at signing, so it's estimated from the season before, fit to how Steamer projects this winter's class." : "The free agent data hasn't arrived yet, so the price of a win is an assumption: " + money(H.cfg.dpw) + ".") + "</p>" +
       "<h3>What it doesn't know</h3><ul><li>Trades and signings that haven't happened, beyond the switch for filling open spots.</li><li>Injuries after the first season, platoons, and teams' payroll limits.</li><li>Super Two arbitration, and anything the next CBA changes (the current one expires December 1, 2026).</li></ul>" +
       '<p class="note">Data pulled ' + esc(HUB.pulled || "—") + ", built " + esc(HUB.built) + (HUB.failed && HUB.failed.length ? " (last pull missed: " + esc(HUB.failed.join(", ")) + "; using the previous copy)" : "") + ".</p></div>";

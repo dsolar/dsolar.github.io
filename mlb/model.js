@@ -14,7 +14,7 @@
  * Wins come from team WAR (a replacement team wins about 48), scaled so later seasons spread like the first.
  *
  * Surplus value: projected WAR x the market price of a win, minus salary, every year of the contract or team
- * control, discounted. Arbitration pays a share of market value (40/60/80%), pre-arb the minimum. Club options are
+ * control, discounted. Arbitration pays a share of market value (25/40/60%), pre-arb the minimum. Club options are
  * picked up only when they're worth it; player options only come back when they're bad for the team.
  * The price of a win is read from recent free agent deals; how far long deals, relievers or qualifying-offer players
  * land above or below it is the market question on the Free Agents tab.
@@ -27,7 +27,7 @@
     inflation: 0.03,   // yearly growth in the price of a win
     discount: 0.08,    // yearly discount rate for surplus
     minSalary: 0.8,    // $M, league minimum (assumed until the next CBA sets it)
-    arbPct: [0.4, 0.6, 0.8, 0.8], // share of market value paid in arbitration years 1-4
+    arbPct: [0.25, 0.4, 0.6, 0.7], // share of market value paid in arbitration years 1-4
     fill: true,        // teams buy modest free agents for empty spots
     fillWar: { bat: 1.5, sp: 1.5, rp: 0.4 },
     years: 5,          // seasons on the slider
@@ -307,7 +307,11 @@
     var sum = function (a) { return a.reduce(function (s, e) { return s + e.war; }, 0); };
     var bat = Object.keys(line).reduce(function (s, k) { return s + line[k].war; }, 0) + sum(bench) + fillBat;
     var pit = sum(rot) + sum(pen) + fillPit;
-    pool.forEach(function (e) { if (e.debut && used[e.p.id]) arrivals.push(e); });
+    var placed = {};
+    Object.keys(line).forEach(function (k) { placed[line[k].p.id] = line[k]; });
+    bench.concat(rot, pen).forEach(function (e) { placed[e.p.id] = e; });
+    pool.forEach(function (e) { if (e.debut && placed[e.p.id]) arrivals.push(placed[e.p.id]); });
+    arrivals.sort(function (a, b) { return b.war - a.war; });
     departures.sort(function (a, b) { return b.war - a.war; });
     return { year: year, abbr: abbr, line: line, bench: bench, rot: rot, pen: pen, il: [], bat: bat, pit: pit,
       war: bat + pit, holes: holes, arrivals: arrivals, departures: departures, first: false };
