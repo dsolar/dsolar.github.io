@@ -4,7 +4,7 @@
  "week": 9,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-09T06:06:23Z",
+ "updated": "2026-11-09T20:11:29Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -12,7 +12,7 @@
    "mine": true,
    "manager": "David S",
    "faab": 235,
-   "proj": 144.45,
+   "proj": 144.67,
    "points": 156.26,
    "scores": [
     137.26,
@@ -58,7 +58,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 21.93,
+     "proj": 22.46,
      "rank": "QB1",
      "date": "2026-11-09",
      "next_proj": 26.24,
@@ -94,7 +94,7 @@
        "fum_lost": 2
       }
      },
-     "proj": 14.07,
+     "proj": 14.21,
      "rank": "RB11",
      "date": "2026-11-09",
      "next_proj": 14.61,
@@ -573,7 +573,7 @@
     }
    ],
    "points_final": 156.26,
-   "best": 145.7,
+   "best": 146.4,
    "best_next": 138.2,
    "locked": 156.26,
    "locked_proj": 109.69,
@@ -583,7 +583,7 @@
    "name": "Love a Kittle Lamb & WhiteRice",
    "manager": "Daid B",
    "faab": 392,
-   "proj": 139.17,
+   "proj": 138.81,
    "points": 131.94,
    "scores": [
     135.46,
@@ -1148,7 +1148,7 @@
    "name": "Drake Mayezini",
    "manager": "Scott",
    "faab": 276,
-   "proj": 137.37,
+   "proj": 137.16,
    "points": 92.86,
    "scores": [
     95.18,
@@ -1742,7 +1742,7 @@
    "name": "Love Purdy Flowers",
    "manager": "Nate",
    "faab": 134,
-   "proj": 136.24,
+   "proj": 136.35,
    "points": 142.26,
    "scores": [
     134.08,
@@ -1976,7 +1976,7 @@
        "rush_yd": -11
       }
      },
-     "proj": 14.63,
+     "proj": 14.84,
      "rank": "WR7",
      "date": "2026-11-09",
      "next_proj": 13.81,
@@ -2289,7 +2289,7 @@
     }
    ],
    "points_final": 142.26,
-   "best": 137.5,
+   "best": 137.7,
    "best_next": 134.7,
    "locked": 142.26,
    "locked_proj": 122.73,
@@ -2299,7 +2299,7 @@
    "name": "A Warren Boston",
    "manager": "Noah M",
    "faab": 2,
-   "proj": 136.21,
+   "proj": 136.07,
    "points": 136.32,
    "scores": [
     132.74,
@@ -2883,7 +2883,7 @@
    "name": "Tai Streetz Lata?",
    "manager": "JeffS",
    "faab": 176,
-   "proj": 128.2,
+   "proj": 128.09,
    "points": 106.24,
    "scores": [
     111.28,
@@ -3191,8 +3191,8 @@
        "fum_lost": 1
       }
      },
-     "proj": 10.76,
-     "rank": "WR23",
+     "proj": 10.94,
+     "rank": "WR22",
      "date": "2026-11-09",
      "next_proj": 12.62,
      "in_best": true
@@ -3264,7 +3264,7 @@
       }
      },
      "proj": 10.76,
-     "rank": "WR22",
+     "rank": "WR23",
      "date": "2026-11-08",
      "final": true,
      "actual": 0.0,
@@ -3457,7 +3457,7 @@
     }
    ],
    "points_final": 106.24,
-   "best": 134.2,
+   "best": 134.4,
    "best_next": 136.4,
    "locked": 106.24,
    "locked_proj": 119.65,
@@ -3467,7 +3467,7 @@
    "name": "Breece’s Pieces",
    "manager": "Garhett",
    "faab": 1,
-   "proj": 128.07,
+   "proj": 127.83,
    "points": 87.7,
    "scores": [
     134.5,
@@ -4485,33 +4485,6 @@
    "from": "waivers",
    "ts": 1793176313,
    "date": "2026-10-28T08:31:53Z"
-  },
-  {
-   "player": "T.J. Hockenson",
-   "pos": "TE",
-   "team": "Love a Kittle Lamb & WhiteRice",
-   "bid": 0,
-   "from": "waivers",
-   "ts": 1793176313,
-   "date": "2026-10-28T08:31:53Z"
-  },
-  {
-   "player": "Malik Willis",
-   "pos": "QB",
-   "team": "Love Purdy Flowers",
-   "bid": 0,
-   "from": "waivers",
-   "ts": 1793176313,
-   "date": "2026-10-28T08:31:53Z"
-  },
-  {
-   "player": "KC Concepcion Jr.",
-   "pos": "WR",
-   "team": "Breece’s Pieces",
-   "bid": 0,
-   "from": "waivers",
-   "ts": 1793176313,
-   "date": "2026-10-28T08:31:53Z"
   }
  ],
  "league_url": "https://football.fantasysports.yahoo.com/f1/157731",
@@ -5221,7 +5194,7 @@
     "name": "Justin Jefferson",
     "pos": "WR",
     "nfl": "MIN",
-    "proj": 14.63,
+    "proj": 14.84,
     "rank": "WR7",
     "next_proj": 13.81,
     "avg": 12.1,
@@ -5274,7 +5247,7 @@
     "name": "Jordan Mason",
     "pos": "RB",
     "nfl": "MIN",
-    "proj": 8.1,
+    "proj": 8.12,
     "rank": "RB34",
     "next_proj": 9.06,
     "avg": 6.9,
@@ -5353,7 +5326,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-09T06:06:26Z",
+  "updated": "2026-11-09T20:11:32Z",
   "players": 3045,
   "unmatched": []
  }
