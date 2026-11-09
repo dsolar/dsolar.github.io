@@ -276,3 +276,17 @@ table.pg th.cur,table.pg td.cur{background:color-mix(in srgb,var(--paper-2) 70%,
 table.pg tr.muted-row td{color:var(--muted);font-style:italic}
 .legend-row{display:flex;flex-wrap:wrap;gap:6px 14px;margin:0;font-size:12px}
 .legend-row .pc{padding:2px 0}
+
+.field svg .ft2{font:600 15px/1 var(--cond);fill:var(--muted)}
+/* team sub-tabs */
+.subtabs{display:flex;gap:4px;border-bottom:1px solid var(--rule);margin:4px 0 12px;overflow-x:auto;scrollbar-width:none}
+.subtabs a{flex:none;padding:8px 12px;font:700 13px/1 var(--body);color:var(--muted);text-decoration:none;border-bottom:3px solid transparent;margin-bottom:-1px}
+.subtabs a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--red)}
+/* luxury tax bars */
+.cbt-row{display:grid;grid-template-columns:44px 1fr 64px;align-items:center;gap:10px;padding:4px 0}
+.cbt-row .yr{font:700 13px/1 var(--cond);color:var(--muted)} .cbt-row.cur .yr{color:var(--ink)}
+.cbt-row .v{font:700 14px/1 var(--cond);text-align:right}
+.cbt-bar{position:relative;height:14px;background:var(--paper-2);border-radius:4px}
+.cbt-bar b{position:absolute;inset:0 auto 0 0;border-radius:4px;background:var(--t-strong-i)}
+.cbt-bar b.t1{background:var(--gold)} .cbt-bar b.t2{background:#d9822b} .cbt-bar b.t3{background:var(--red)} .cbt-bar b.t4{background:#7a0019}
+.cbt-bar i{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.45}

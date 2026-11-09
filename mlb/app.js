@@ -179,6 +179,11 @@
       stat(pct(st.playoff), "Playoffs") + stat(pct(st.ws), "World Series") +
       stat(ordinal(H.rank(y, "bat", tm.bat)), "Hitting") + stat(ordinal(H.rank(y, "pit", tm.pit)), "Pitching") +
       stat(f1(tm.war), "Team WAR") + stat(money(H.payroll(abbr, y), 0), "Payroll") + "</div>";
+    var sub = state.q.view === "money" ? "money" : state.q.view === "farm" ? "farm" : "depth";
+    var subLink = function (k, label) { return '<a href="' + href("team/" + abbr, { y: y === H.season ? null : y, view: k === "depth" ? null : k }) + '"' + (sub === k ? ' aria-current="page"' : "") + ">" + label + "</a>"; };
+    html += '<nav class="subtabs">' + subLink("depth", "Depth chart") + subLink("money", "Contracts &amp; cap") + subLink("farm", "Farm system") + "</nav>";
+    if (sub === "money") { view.innerHTML = html + moneyView(abbr, y); return; }
+    if (sub === "farm") { view.innerHTML = html + farmPanel(abbr, true); return; }
     html += '<div class="legend">' + ["Fringe", "Weak", "Average", "Strong", "Elite"].map(function (k) { return '<span class="T-' + k + '">' + k + "</span>"; }).join("") + "</div>";
     html += field(tm, y);
     // what changed going into this season
@@ -192,7 +197,7 @@
         }, "Prospects who win a job this year") + "</div>";
     }
     html += rosterTables(tm, y);
-    html += payrollPanel(abbr, y) + farmPanel(abbr);
+    html += '<p class="note">Salaries, contracts and the luxury tax are on the <a href="' + href("team/" + abbr, { y: y === H.season ? null : y, view: "money" }) + '">Contracts &amp; cap</a> tab; every prospect on <a href="' + href("team/" + abbr, { view: "farm" }) + '">Farm system</a>.</p>';
     view.innerHTML = html;
   }
   function stat(v, k) { return '<div class="stat"><b>' + v + "</b><span>" + k + "</span></div>"; }
@@ -252,8 +257,36 @@
     }
     return html + "</div></div>";
   }
-  // A team's park to scale: home plate at the bottom, the fence through its five published distances
+  // A team's park: its real outline (assets from GeomMLBStadiums, tools/mlb_parks_build.py) when we have one, labeled
+  // with the published distances; otherwise drawn through those five distances
+  var SHAPES = null;
   function fieldSvg(abbr) {
+    var sh = SHAPES && SHAPES[abbr];
+    if (!sh || !sh.outfield_outer || sh.outfield_outer.length < 10) return fieldSvgApprox(abbr);
+    var park = PARKS[abbr] || ["", [], {}], d = park[1], walls = park[2] || {};
+    var P = function (pts, close) { return "M" + pts.map(function (q) { return q[0] + " " + (-q[1]); }).join(" L") + (close ? " Z" : ""); };
+    var poly = function (k, fill, extra) { return sh[k] && sh[k].length > 2 ? '<path d="' + P(sh[k], true) + '" fill="' + fill + '"' + (extra || "") + "/>" : ""; };
+    var ang = function (q) { return Math.atan2(q[0], q[1]) * 180 / Math.PI; };
+    var wall = function (side) { // the fence along a notable wall, drawn heavier
+      var seg = sh.outfield_outer.filter(function (q) { var a = ang(q); return side === "lf" ? a < -27 : a > 27; });
+      return seg.length > 1 ? '<path d="' + P(seg) + '" fill="none" stroke="var(--monster)" stroke-width="7" stroke-linecap="round" opacity=".85"/>' : "";
+    };
+    var labels = d.length ? [-45, -22.5, 0, 22.5, 45].map(function (a, i) {
+      var r = a * Math.PI / 180, ft = d[i] + (i === 2 ? 26 : 30);
+      return '<text x="' + (Math.sin(r) * ft).toFixed(0) + '" y="' + (-Math.cos(r) * ft + (i === 2 ? 0 : 8)).toFixed(0) + '" text-anchor="middle" class="ft2">' + d[i] + "</text>";
+    }).join("") : "";
+    var b = function (x, y) { return '<rect x="' + (x - 3.5) + '" y="' + (-y - 3.5) + '" width="7" height="7" transform="rotate(45 ' + x + " " + (-y) + ')" fill="#fff"/>'; };
+    return '<svg viewBox="-272 -452 544 466" preserveAspectRatio="xMidYMax meet" aria-hidden="true">' +
+      poly("outfield_outer", "var(--dirt)", ' opacity=".5"') + poly("outfield_inner", "var(--grass)", ' opacity=".6"') +
+      '<path d="' + P(sh.outfield_outer, true) + '" fill="none" stroke="var(--grass-2)" stroke-width="2.5"/>' +
+      (walls.lf ? wall("lf") : "") + (walls.rf ? wall("rf") : "") +
+      poly("infield_outer", "var(--dirt)", ' opacity=".65"') + poly("infield_inner", "var(--grass-2)", ' opacity=".85"') +
+      (sh.foul_lines && sh.foul_lines.length ? '<path d="' + P(sh.foul_lines) + '" fill="none" stroke="#fff" stroke-width="1.6" opacity=".9"/>' : "") +
+      b(63.6, 63.6) + b(0, 127.3) + b(-63.6, 63.6) + '<circle cx="0" cy="-60.5" r="9" fill="var(--dirt)"/>' +
+      '<path d="M0 3 L-6 -3 L-6 -8 L6 -8 L6 -3 Z" fill="#fff"/>' + labels + "</svg>";
+  }
+  // A team's park to scale: home plate at the bottom, the fence through its five published distances
+  function fieldSvgApprox(abbr) {
     var park = PARKS[abbr] || ["", [330, 375, 400, 375, 330]], d = park[1], walls = park[2] || {};
     var HX = 59, HY = 97, K = 0.205; // feet to drawing units
     var pt = function (deg, ft) { var a = deg * Math.PI / 180; return [HX + ft * K * Math.sin(a), HY - ft * K * Math.cos(a)]; };
@@ -326,7 +359,7 @@
   }
   // The payroll grid: every player's salary each season, how it's set (guaranteed, option, arbitration estimate,
   // pre-arb), and the totals, like RosterResource's payroll pages
-  function payrollPanel(abbr, y) {
+  function payrollPanel(abbr, y, withDead) {
     var yrs = yearsList(), org = H.org(abbr);
     var cell = function (p, yy) {
       var t = H.terms(p, yy);
@@ -359,16 +392,99 @@
         }).join("") + "<td><b>" + money(r.tot) + "</b></td></tr>";
     });
     if (restN) html += '<tr class="muted-row"><td colspan="2">Call-ups and depth at the minimum (' + restN + ")</td>" + rest.map(function (v, i) { return '<td class="' + (yrs[i] === y ? "cur" : "") + '">' + (v ? money(v) : "") + "</td>"; }).join("") + "<td></td></tr>";
+    var deadRow = yrs.map(function (yy) { return deadFor(abbr, yy).reduce(function (a, d) { return a + d[1] / 1e6; }, 0); });
+    if (withDead && deadRow.some(function (v) { return v; })) {
+      html += '<tr class="muted-row"><td colspan="2">Dead money and other payments</td>' + deadRow.map(function (v, i) { return '<td class="' + (yrs[i] === y ? "cur" : "") + '">' + (v ? money(v) : "") + "</td>"; }).join("") + "<td></td></tr>";
+      totals = totals.map(function (v, i) { return v + deadRow[i]; });
+    }
     html += '<tr class="tot"><td colspan="2">Total payroll</td>' + totals.map(function (v, i) { return '<td class="' + (yrs[i] === y ? "cur" : "") + '"><b>' + money(v, 0) + "</b></td>"; }).join("") + "<td></td></tr>";
     html += '</tbody></table></div><div class="body"><p class="legend-row"><span class="pc g">Guaranteed</span><span class="pc opt">Option<sup>CO/PO</sup></span><span class="pc arb">Arbitration*<sup>A1-A3</sup></span><span class="pc pre">Pre-arb</span><span class="pc re">Re-signed<sup>RS</sup></span><span class="pc fa">FA</span></p>' +
       '<p class="note" style="margin:6px 0 0">* Arbitration salaries are estimates (25%, 40% and 60% of market value). Options are picked up or declined on value. Free agents still to be signed aren\'t in it.</p></div></div>';
     return html;
   }
-  function farmPanel(abbr) {
-    var list = H.org(abbr).filter(function (p) { return p.fv && p.g === "min"; }).sort(function (a, b) { return (a.orgr || 99) - (b.orgr || 99); }).slice(0, 12);
+  function farmPanel(abbr, all) {
+    var list = H.org(abbr).filter(function (p) { return p.fv && p.g === "min"; }).sort(function (a, b) { return (a.orgr || 99) - (b.orgr || 99); }).slice(0, all ? 60 : 12);
     return listPanel("Farm system", list, function (p) {
-      return pname(p, 26) + '<span class="grow"></span><span class="sub">' + esc(p.pos || "") + " · " + esc(p.lvl || "") + " · age " + (p.age ? Math.floor(p.age) : "—") + " · ETA " + (p.eta || "—") + '</span><span class="pill">FV ' + esc(p.fv) + "</span>";
-    }, HUB.board ? "FanGraphs' The Board" : "prospect grades arrive with the next pull");
+      var sv = H.surplus(p);
+      return pname(p, 26) + '<span class="grow"></span><span class="sub">' + esc(p.pos || "") + " · " + esc(p.lvl || "") + " · age " + (p.age ? Math.floor(p.age) : "—") + " · ETA " + (p.eta || "—") + (p.ovr ? " · #" + p.ovr + " overall" : "") +
+        '</span><span class="pill">FV ' + esc(p.fv) + '</span><b class="' + (sv.pv >= 0 ? "pos" : "neg") + '" style="min-width:64px;text-align:right">' + signed(sv.pv) + "</b>";
+    }, HUB.board ? "FanGraphs' The Board, with each prospect's surplus value" : "prospect grades arrive with the next pull");
+  }
+
+  // ---------- contracts & cap ----------
+  // The luxury tax: 2026's thresholds until the next CBA (the current one expires December 1, 2026) sets new ones
+  var CBT = [244, 264, 284, 304], BENEFITS = 17;
+  function cbtHit(p, yy) { // what a player counts against the tax: his contract's average value, else his salary
+    var t = H.terms(p, yy);
+    if (!(t.on || (t.option && t.salary))) return 0;
+    if (p.c && p.c.yrs) for (var i = 0; i < p.c.yrs.length; i++) {
+      var r = p.c.yrs[i];
+      if (r[0] === yy && r[5] && t.on && (t.kind === "Signed" || /option|Stays/.test(t.kind))) return r[5] / 1e6;
+    }
+    return t.salary || 0;
+  }
+  function svc(st) { // years.days, the way service time is written (172 days to a year)
+    if (st == null) return "—";
+    var y = Math.floor(st + 1e-9), d = Math.round((st - y) * 172);
+    if (d >= 172) { y++; d = 0; }
+    return y + "." + String(d).padStart(3, "0");
+  }
+  function deadFor(abbr, yy) {
+    return (team(abbr).dead || []).filter(function (d) { return d[0] === yy && !/potential buyout/i.test(d[2]); });
+  }
+  function moneyView(abbr, y) {
+    var yrs = yearsList(), org = H.org(abbr);
+    var pay = yrs.map(function (yy) { return H.payroll(abbr, yy) + deadFor(abbr, yy).reduce(function (a, d) { return a + d[1] / 1e6; }, 0); });
+    var cbt = yrs.map(function (yy) { return org.reduce(function (a, p) { return a + cbtHit(p, yy); }, 0) + deadFor(abbr, yy).reduce(function (a, d) { return a + d[1] / 1e6; }, 0) + BENEFITS; });
+    var guar = yrs.map(function (yy) {
+      return org.reduce(function (a, p) { var t = H.terms(p, yy); return a + (t.on && t.kind === "Signed" ? t.salary : 0); }, 0);
+    });
+    var i0 = yrs.indexOf(y), room = CBT[0] - cbt[i0];
+    var html = '<div class="stats">' + stat(money(pay[i0], 0), y + " payroll") + stat(money(cbt[i0], 0), "Tax payroll (est.)") +
+      stat((room >= 0 ? money(room, 0) : "-" + money(-room, 0)), room >= 0 ? "Under the tax" : "Over the tax") +
+      stat(money(guar.slice(1).reduce(function (a, b) { return a + b; }, 0), 0), "Guaranteed after " + y) +
+      stat(money(deadFor(abbr, y).reduce(function (a, d) { return a + d[1] / 1e6; }, 0), 1), "Dead money " + y) + "</div>";
+    // tax payroll against the thresholds, by season
+    var max = Math.max(CBT[3] + 20, Math.max.apply(null, cbt) + 10);
+    html += '<div class="panel"><h3>Luxury tax <small>tax payroll by season against 2026\'s thresholds</small></h3><div class="body cbt">';
+    yrs.forEach(function (yy, i) {
+      var v = cbt[i], tier = v >= CBT[3] ? 4 : v >= CBT[2] ? 3 : v >= CBT[1] ? 2 : v >= CBT[0] ? 1 : 0;
+      html += '<div class="cbt-row' + (yy === y ? " cur" : "") + '"><span class="yr">' + yy + '</span><div class="cbt-bar"><b class="t' + tier + '" style="width:' + (v / max * 100).toFixed(1) + '%"></b>' +
+        CBT.map(function (c, k) { return '<i style="left:' + (c / max * 100).toFixed(1) + '%" title="' + ["Tax line", "Second tier", "Third tier", "Top tier"][k] + " $" + c + 'M"></i>'; }).join("") +
+        '</div><span class="v">' + money(v, 0) + "</span></div>";
+    });
+    html += '<p class="note" style="margin:8px 0 0">Tax payroll counts each contract at its average annual value, plus arbitration and pre-arb estimates, money owed for players no longer here, and about $' + BENEFITS + "M in player benefits. Lines mark 2026\'s thresholds ($" + CBT.join("M, $") + "M): the next CBA will set 2027\'s. Later seasons only count players still under contract or control.</p></div></div>";
+    html += payrollPanel(abbr, y, pay);
+    // every contract's terms
+    var rows = org.filter(function (p) { return p.c && p.c.yrs && p.c.yrs.some(function (r) { return r[2] === "G" || r[2] === "VO"; }); })
+      .map(function (p) {
+        var g = p.c.yrs.filter(function (r) { return r[2] === "G" || r[2] === "VO"; });
+        var left = g.reduce(function (a, r) { return a + (r[1] || 0); }, 0) / 1e6, thru = g.length ? g[g.length - 1][0] : null;
+        var opts = p.c.yrs.filter(function (r) { return /CO|PO|MO|OO/.test(r[2]); }).map(function (r) { return r[0] + " " + { CO: "club", PO: "player", MO: "mutual", OO: "opt-out" }[r[2]]; });
+        return { p: p, left: left, thru: thru, opts: opts, aav: (p.c.aav || 0) / 1e6 };
+      }).sort(function (a, b) { return b.aav - a.aav; });
+    html += '<div class="panel"><h3>Contracts <small>guaranteed deals, by average annual value</small></h3><div class="scroll"><table class="t"><thead><tr><th>Player</th><th>Age</th><th>Deal</th><th>Type</th><th>AAV</th><th>Left (from ' + H.season + ')</th><th>Through</th><th>Options</th><th>Surplus</th></tr></thead><tbody>' +
+      rows.map(function (r) {
+        var sv = H.surplus(r.p);
+        return "<tr><td>" + pname(r.p, 20) + ' <span class="note">' + esc(r.p.pos || "") + "</span></td><td>" + (r.p.age ? Math.floor(r.p.age) : "—") + '</td><td class="desc">' + esc(r.p.c.desc || "") + "</td><td>" + esc(r.p.c.type || "") + "</td><td>" + money(r.aav) +
+          "</td><td>" + money(r.left) + "</td><td>" + (r.thru || "—") + '</td><td class="desc">' + esc(r.opts.join(", ")) + '</td><td class="' + (sv.pv >= 0 ? "pos" : "neg") + '">' + signed(sv.pv) + "</td></tr>";
+      }).join("") + "</tbody></table></div></div>";
+    // arbitration and pre-arb: who's under team control and when he reaches free agency
+    var ctl = org.filter(function (p) { return p.g !== "min" && !rows.some(function (r) { return r.p === p; }); }).map(function (p) {
+      var fa = null;
+      for (var yy = H.season; yy <= H.season + 8; yy++) { var t = H.terms(p, yy); if (!t.on && t.kind === "Free agent") { fa = yy; break; } }
+      return { p: p, t: H.terms(p, H.season), fa: fa };
+    }).sort(function (a, b) { return (b.t.salary || 0) - (a.t.salary || 0); });
+    html += '<div class="panel"><h3>Team control <small>arbitration and pre-arb players, with the season each reaches free agency</small></h3><div class="scroll"><table class="t"><thead><tr><th>Player</th><th>Age</th><th>Service</th><th>' + H.season + '</th><th>Salary</th><th>Free agent</th><th>Surplus</th></tr></thead><tbody>' +
+      ctl.map(function (r) {
+        var sv = H.surplus(r.p);
+        return "<tr><td>" + pname(r.p, 20) + ' <span class="note">' + esc(r.p.pos || "") + "</span></td><td>" + (r.p.age ? Math.floor(r.p.age) : "—") + "</td><td>" + svc(r.p.st) +
+          '</td><td><span class="pill">' + esc(r.t.kind) + "</span></td><td>" + (r.t.on ? money(r.t.salary) + (r.t.est ? "*" : "") : "—") + "</td><td>" + (r.fa ? "after " + (r.fa - 1) : "—") + '</td><td class="' + (sv.pv >= 0 ? "pos" : "neg") + '">' + signed(sv.pv) + "</td></tr>";
+      }).join("") + "</tbody></table></div></div>";
+    var dead = (team(abbr).dead || []).filter(function (d) { return !/potential buyout/i.test(d[2]); });
+    if (dead.length) html += '<div class="panel"><h3>Dead money and other payments <small>owed outside active contracts</small></h3><ul class="rlist">' +
+      dead.map(function (d) { return '<li><span class="num" style="min-width:44px">' + d[0] + '</span><span class="grow">' + esc(d[2].replace(/^\$ /, "")) + '</span><b class="' + (d[1] > 0 ? "neg" : "pos") + '">' + money(d[1] / 1e6) + "</b></li>"; }).join("") + "</ul></div>";
+    return html;
   }
 
   // ---------- player card ----------
@@ -383,7 +499,7 @@
     html += kv(f1(H.warAt(p, H.season)), H.season + " WAR");
     if (p.p) html += kv(pj.era != null ? pj.era.toFixed(2) : "—", "ERA") + kv(f0(pj.ip), "IP");
     else html += kv(f0(pj.wrc), "wRC+") + kv(f0(pj.pa), "PA");
-    html += kv(p.st != null ? p.st.toFixed(2) : "—", "Service yrs");
+    html += kv(svc(p.st), "Service (yrs.days)");
     if (p.fv) html += kv(esc(p.fv) + (p.risk ? " / " + esc(p.risk) : ""), "FV / risk") + kv(p.eta || "—", "ETA") + kv(p.ovr ? "#" + p.ovr : "—", "Overall rank");
     html += "</div>";
     html += '<div class="vcs"><div><span>Value</span><b>' + money(s.valuePV) + '</b><small>what he should produce</small></div><i>−</i><div><span>Contract</span><b>' + money(s.contractPV) +
@@ -746,7 +862,8 @@
       "<li><b>Contracts:</b> RosterResource payroll pages, year by year, with options and arbitration years (" + HUB.payrollTeams + " of 30 teams on file).</li>" +
       "<li><b>Prospects:</b> FanGraphs' The Board: FV grade, risk and ETA" + (HUB.board ? " (" + esc(HUB.board) + ")" : "") + ".</li>" +
       "<li><b>Free agents:</b> RosterResource's free agent tracker for this winter and the five before it, including crowd predictions and the contracts players signed.</li>" +
-      "<li><b>Photos:</b> linked from MLB's own servers.</li></ul>" +
+      "<li><b>Photos:</b> linked from MLB's own servers.</li>" +
+      "<li><b>Ballparks:</b> each park's outline from GeomMLBStadiums (Ben Dilday, MIT license), traced from MLB Gameday's field diagrams as of 2023, labeled with published distances. A fence moved since then won't show; the A's Sacramento park is drawn from its published distances.</li></ul>" +
       "<h3>The year slider</h3><p>" + H.season + " is FanGraphs' Depth Charts as published. Every later season is built here: a player stays while he's under a guaranteed contract, a club option worth picking up, a player option he'd keep, or team control (pre-arb under three years of service, arbitration until six). Everyone else becomes a free agent, unless you re-sign him on his team's page. Ratings age a year at a time by season age (modest gains into the mid-20s, flat at 27 and 28, then falling about a fifth of a win a year at 29-30 and a third of a win from the early 30s on), and playing time grows slowly from FanGraphs' share for the coming season. Prospects arrive at their ETA (or by level when there isn't one) and grow toward the WAR their FV grade implies over their first three seasons. Each spot goes to the best available player who can play it; a team gets five starters and eight relievers. Spots nobody can fill are \"FA Fill\": a replacement player, or a modest free agent if teams sign them (the switch). Wins scale from team WAR so later seasons spread the way Depth Charts' do.</p>" +
       "<h3>Surplus value</h3><p>For each season of contract or control: projected WAR × the price of a win, minus salary, discounted " + pct(H.cfg.discount, 0) + " a year. Like front offices, it counts " + pct(H.cfg.haircut, 0) + " of projected WAR (a margin of safety for injuries and misses), and an unproven big leaguer (under three years of service) keeps " + pct(H.cfg.youngFade, 0) + " of his value from one year to the next, since long control on a short track record is worth less than its projection adds up to. Those two defaults are calibrated to Baseball Trade Values' published values, and you can change both on the Trade Value tab. Value never drops below zero (a team can always play a replacement for the minimum), and a pre-arb or arbitration year can't cost the team more than it's worth, since those salaries aren't guaranteed. Arbitration pays 25/40/60% of market value (a fourth year 70%); pre-arb players earn the minimum (" + money(H.cfg.minSalary) + ", until the next CBA says otherwise). Club options are exercised only when they're worth it, and a player option only comes back when it's bad for the team. A prospect's value is scaled by his risk grade.</p>" +
       "<h3>The price of a win</h3><p>" + (mk ? (mk.how === "crowd" ? "This winter's free agents: Steamer's projected WAR for each, aged over the contract the crowd predicts, against the crowd's predicted dollars, then adjusted by how far past crowds landed from real contracts (" + ((mk.crowdErr - 1) >= 0 ? "+" : "") + pct(mk.crowdErr - 1, 0) + "). That gives " + money(H.cfg.dpw) + " per win." : "Carried forward from the last three winters' deals: " + money(H.cfg.dpw) + " per win.") + " The premium patterns on the Free Agents tab come from every deal of the last five winters for a player projected at 1+ WAR, against that winter's going rate. Past classes don't carry the projection at signing, so it's estimated from the season before, fit to how Steamer projects this winter's class." : "The free agent data hasn't arrived yet, so the price of a win is an assumption: " + money(H.cfg.dpw) + ".") + "</p>" +
@@ -758,8 +875,10 @@
   // ---------- start ----------
   Promise.all([
     fetch("data/hub.json", { cache: "no-cache" }).then(function (r) { return r.json(); }),
-    fetch("data/fa.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : { classes: {} }; }).catch(function () { return { classes: {} }; })
+    fetch("data/fa.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : { classes: {} }; }).catch(function () { return { classes: {} }; }),
+    fetch("data/parks.json").then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; })
   ]).then(function (d) {
+    SHAPES = (d[2] && d[2].parks) || null;
     HUB = d[0];
     H = new M.Hub(HUB, d[1]);
     H.set("lens", load("lens", "production") === "market" ? "market" : "production");

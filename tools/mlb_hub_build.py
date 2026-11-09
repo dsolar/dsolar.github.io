@@ -280,6 +280,12 @@ def build():
 
     teams = [{"tid": t, "abbr": v[0], "name": v[1], "lg": v[2], "div": v[3], "color": v[4], "espn": v[5]}
              for t, v in TEAMS.items()]
+    # money a team still owes outside its active contracts: buyouts, released players, cash in trades
+    for t in teams:
+        other = ((pay or {}).get("teams", {}).get(str(t["tid"])) or {}).get("other") or []
+        dead = [[o[0], o[1], o[2]] for o in other if o[0] and o[0] >= season and o[1]]
+        if dead:
+            t["dead"] = dead
 
     # league run environment for the standings display (Depth Charts team totals)
     rs = {}
