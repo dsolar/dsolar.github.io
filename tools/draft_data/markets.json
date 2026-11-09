@@ -4,162 +4,516 @@
  "events": [
   {
    "league": "nfl",
-   "series": "KXNFLDRAFTTOP",
-   "event": "KXNFLDRAFTTOP-27-5",
-   "title": "Pro Football Players Drafted Top 5",
-   "sub": "Top 5 2027",
-   "url": "https://kalshi.com/markets/kxnfldrafttop",
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-2027DMES",
+   "title": "Will Drew Mestemaker declare for the 2027 Pro Football Draft?",
+   "sub": "Drew Mestemaker (2027)",
+   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
    "outcomes": [
     {
-     "name": "Jeremiah Smith",
-     "price": 89.5,
-     "last": 90.0,
-     "bid": 89.0,
-     "ask": 90.0,
-     "volume": 1363
-    },
+     "name": "Drew Mestemaker to declare for the Pro Football Draft",
+     "price": 55.0,
+     "last": 91.0,
+     "bid": 10.0,
+     "ask": 100.0,
+     "volume": 1944
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27AMAN",
+   "title": "Will Arch Manning declare for the 2027 Pro Football Draft?",
+   "sub": "Arch Manning (2027)",
+   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "outcomes": [
+    {
+     "name": "Arch Manning to declare for the Pro Football Draft",
+     "price": 28.0,
+     "last": 31.0,
+     "bid": 26.0,
+     "ask": 30.0,
+     "volume": 903
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27CCAR",
+   "title": "Will CJ Carr declare for the 2027 Pro Football Draft?",
+   "sub": "CJ Carr (2027)",
+   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "outcomes": [
+    {
+     "name": "CJ Carr to declare for the Pro Football Draft",
+     "price": 73.0,
+     "last": 99.0,
+     "bid": 47.0,
+     "ask": 99.0,
+     "volume": 1043
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27DMEN",
+   "title": "Will Darian Mensah declare for the 2027 Pro Football Draft?",
+   "sub": "Darian Mensah (2027)",
+   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "outcomes": [
+    {
+     "name": "Darian Mensah to declare for the Pro Football Draft",
+     "price": 86.0,
+     "last": 83.0,
+     "bid": 83.0,
+     "ask": 89.0,
+     "volume": 11
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27DMOO",
+   "title": "Will Dante Moore declare for the 2027 Pro Football Draft?",
+   "sub": "Dante Moore (2027)",
+   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "outcomes": [
+    {
+     "name": "Dante Moore to declare for the Pro Football Draft",
+     "price": 78.5,
+     "last": 99.0,
+     "bid": 58.0,
+     "ask": 99.0,
+     "volume": 309
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27JBAU",
+   "title": "Will Jadan Baugh declare for the 2027 Pro Football Draft?",
+   "sub": "Jadan Baugh (2027)",
+   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "outcomes": [
+    {
+     "name": "Jadan Baugh to declare for the Pro Football Draft",
+     "price": 91.5,
+     "last": 88.0,
+     "bid": 88.0,
+     "ask": 95.0,
+     "volume": 39
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27RCOL",
+   "title": "Will Ryan Coleman-Williams declare for the 2027 Pro Football Draft?",
+   "sub": "Ryan Coleman-Williams (2027)",
+   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "outcomes": [
+    {
+     "name": "Ryan Coleman-Williams to declare for the Pro Football Draft",
+     "price": 85.0,
+     "last": 89.0,
+     "bid": 81.0,
+     "ask": 89.0,
+     "volume": 61
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTQB",
+   "event": "KXNFLDRAFTQB-27P1",
+   "title": "Pro Football 1st Quarterback Drafted in 2027",
+   "sub": "1st QB 2027",
+   "url": "https://kalshi.com/markets/kxnfldraftqb",
+   "outcomes": [
     {
      "name": "Drew Mestemaker",
-     "price": 75.5,
-     "last": 65.0,
-     "bid": 66.0,
-     "ask": 85.0,
-     "volume": 125
+     "price": 49.5,
+     "last": 77.0,
+     "bid": 26.0,
+     "ask": 73.0,
+     "volume": 3410
     },
     {
      "name": "CJ Carr",
-     "price": 53.0,
-     "last": 64.0,
-     "bid": 26.0,
-     "ask": 80.0,
-     "volume": 44
+     "price": 28.0,
+     "last": 14.0,
+     "bid": 0.0,
+     "ask": 56.0,
+     "volume": 2336
     },
     {
      "name": "Darian Mensah",
-     "price": 47.5,
-     "last": 23.0,
-     "bid": 35.0,
-     "ask": 60.0,
-     "volume": 91
+     "price": 21.0,
+     "last": 24.0,
+     "bid": 18.0,
+     "ask": 24.0,
+     "volume": 531
     },
     {
-     "name": "Leonard Moore",
-     "price": 43.5,
-     "last": 58.0,
-     "bid": 4.0,
-     "ask": 83.0,
-     "volume": 59
+     "name": "Arch Manning",
+     "price": 9.0,
+     "last": 6.0,
+     "bid": 6.0,
+     "ask": 12.0,
+     "volume": 517
     },
     {
-     "name": "Dylan Stewart",
-     "price": 34.0,
-     "last": 80.0,
-     "bid": 8.0,
-     "ask": 60.0,
-     "volume": 187
+     "name": "LaNorris Sellers",
+     "price": 4.0,
+     "last": 2.0,
+     "bid": 2.0,
+     "ask": 6.0,
+     "volume": 1243
     },
     {
      "name": "Trinidad Chambliss",
-     "price": 32.5,
-     "last": 14.0,
-     "bid": 12.0,
-     "ask": 53.0,
-     "volume": 623
+     "price": 3.5,
+     "last": 1.0,
+     "bid": 1.0,
+     "ask": 6.0,
+     "volume": 747
     },
     {
      "name": "Dante Moore",
-     "price": 31.0,
-     "last": 21.0,
-     "bid": 20.0,
-     "ask": 42.0,
-     "volume": 393
+     "price": 3.0,
+     "last": 1.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 480
     },
     {
-     "name": "Jordan Seaton",
-     "price": 25.5,
+     "name": "Austin Simmons",
+     "price": 2.0,
+     "last": 1.0,
+     "bid": 1.0,
+     "ask": 3.0,
+     "volume": 6154
+    },
+    {
+     "name": "Jayden Maiava",
+     "price": 1.5,
+     "last": 40.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 523
+    },
+    {
+     "name": "Nico Iamaleava",
+     "price": 1.0,
      "last": 0.0,
-     "bid": 2.0,
-     "ask": 49.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Julian Sayin",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Drake Lindsey",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Sam Leavitt",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Josh Hoover",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Katin Houser",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTQB",
+   "event": "KXNFLDRAFTQB-27P2",
+   "title": "Pro Football 2nd Quarterback Drafted in 2027",
+   "sub": "2nd QB 2027",
+   "url": "https://kalshi.com/markets/kxnfldraftqb",
+   "outcomes": [
+    {
+     "name": "Darian Mensah",
+     "price": 47.0,
+     "last": 10.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Trinidad Chambliss",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "CJ Carr",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Nico Iamaleava",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Drake Lindsey",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Sam Leavitt",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Josh Hoover",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Katin Houser",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
      "volume": 0
     },
     {
      "name": "LaNorris Sellers",
-     "price": 21.5,
-     "last": 6.0,
-     "bid": 4.0,
-     "ask": 39.0,
-     "volume": 111
-    },
-    {
-     "name": "Jayden Maiava",
-     "price": 20.0,
-     "last": 2.0,
-     "bid": 0.0,
-     "ask": 40.0,
-     "volume": 214
-    },
-    {
-     "name": "Quincy Rhodes Jr.",
-     "price": 17.5,
+     "price": 47.0,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 35.0,
+     "ask": 94.0,
      "volume": 0
     },
     {
-     "name": "Cam Coleman",
-     "price": 17.0,
+     "name": "Dante Moore",
+     "price": 39.0,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 34.0,
+     "ask": 78.0,
      "volume": 0
     },
     {
-     "name": "Ryan Williams",
-     "price": 16.0,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 32.0,
-     "volume": 103
+     "name": "Drew Mestemaker",
+     "price": 35.5,
+     "last": 91.0,
+     "bid": 6.0,
+     "ask": 65.0,
+     "volume": 1
     },
     {
      "name": "Arch Manning",
-     "price": 15.0,
-     "last": 29.0,
-     "bid": 7.0,
-     "ask": 23.0,
-     "volume": 11458
+     "price": 24.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 49.0,
+     "volume": 0
     },
     {
-     "name": "John Mateer",
-     "price": 4.0,
-     "last": 7.0,
+     "name": "Jayden Maiava",
+     "price": 23.5,
+     "last": 0.0,
      "bid": 0.0,
-     "ask": 8.0,
-     "volume": 929
-    },
-    {
-     "name": "Nico Iamaleava",
-     "price": 4.0,
-     "last": 2.0,
-     "bid": 0.0,
-     "ask": 8.0,
-     "volume": 104
+     "ask": 47.0,
+     "volume": 0
     },
     {
      "name": "Julian Sayin",
-     "price": 3.5,
-     "last": 2.0,
-     "bid": 0.0,
-     "ask": 7.0,
-     "volume": 95
-    },
-    {
-     "name": "DJ Lagway",
-     "price": 2.5,
+     "price": 14.5,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 5.0,
+     "ask": 29.0,
+     "volume": 0
+    },
+    {
+     "name": "Austin Simmons",
+     "price": 13.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 25.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTQB",
+   "event": "KXNFLDRAFTQB-27P3",
+   "title": "Pro Football 3rd Quarterback Drafted in 2027",
+   "sub": "3rd QB 2027",
+   "url": "https://kalshi.com/markets/kxnfldraftqb",
+   "outcomes": [
+    {
+     "name": "Darian Mensah",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Trinidad Chambliss",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Dante Moore",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "LaNorris Sellers",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Nico Iamaleava",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Julian Sayin",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Jayden Maiava",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Drake Lindsey",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Sam Leavitt",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Josh Hoover",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Katin Houser",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "CJ Carr",
+     "price": 30.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 59.0,
+     "volume": 0
+    },
+    {
+     "name": "Arch Manning",
+     "price": 29.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 59.0,
+     "volume": 0
+    },
+    {
+     "name": "Drew Mestemaker",
+     "price": 25.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 50.0,
+     "volume": 0
+    },
+    {
+     "name": "Austin Simmons",
+     "price": 20.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 40.0,
      "volume": 0
     }
    ]
@@ -182,10 +536,10 @@
     },
     {
      "name": "Jeremiah Smith",
-     "price": 24.5,
+     "price": 25.5,
      "last": 24.0,
-     "bid": 24.0,
-     "ask": 25.0,
+     "bid": 25.0,
+     "ask": 26.0,
      "volume": 88094
     },
     {
@@ -250,7 +604,7 @@
      "last": 2.0,
      "bid": 0.0,
      "ask": 2.0,
-     "volume": 44414
+     "volume": 44425
     },
     {
      "name": "DJ Lagway",
@@ -347,6 +701,564 @@
      "bid": 0.0,
      "ask": 1.0,
      "volume": 701
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTTOP",
+   "event": "KXNFLDRAFTTOP-27-5",
+   "title": "Pro Football Players Drafted Top 5",
+   "sub": "Top 5 2027",
+   "url": "https://kalshi.com/markets/kxnfldrafttop",
+   "outcomes": [
+    {
+     "name": "Jeremiah Smith",
+     "price": 89.5,
+     "last": 90.0,
+     "bid": 89.0,
+     "ask": 90.0,
+     "volume": 1363
+    },
+    {
+     "name": "Drew Mestemaker",
+     "price": 75.5,
+     "last": 65.0,
+     "bid": 66.0,
+     "ask": 85.0,
+     "volume": 125
+    },
+    {
+     "name": "CJ Carr",
+     "price": 52.5,
+     "last": 64.0,
+     "bid": 26.0,
+     "ask": 79.0,
+     "volume": 44
+    },
+    {
+     "name": "Darian Mensah",
+     "price": 47.5,
+     "last": 23.0,
+     "bid": 35.0,
+     "ask": 60.0,
+     "volume": 91
+    },
+    {
+     "name": "Leonard Moore",
+     "price": 43.5,
+     "last": 58.0,
+     "bid": 4.0,
+     "ask": 83.0,
+     "volume": 59
+    },
+    {
+     "name": "Dylan Stewart",
+     "price": 34.0,
+     "last": 80.0,
+     "bid": 8.0,
+     "ask": 60.0,
+     "volume": 187
+    },
+    {
+     "name": "Trinidad Chambliss",
+     "price": 32.5,
+     "last": 14.0,
+     "bid": 12.0,
+     "ask": 53.0,
+     "volume": 623
+    },
+    {
+     "name": "Dante Moore",
+     "price": 31.0,
+     "last": 21.0,
+     "bid": 20.0,
+     "ask": 42.0,
+     "volume": 393
+    },
+    {
+     "name": "Jordan Seaton",
+     "price": 25.5,
+     "last": 0.0,
+     "bid": 2.0,
+     "ask": 49.0,
+     "volume": 0
+    },
+    {
+     "name": "LaNorris Sellers",
+     "price": 21.5,
+     "last": 6.0,
+     "bid": 4.0,
+     "ask": 39.0,
+     "volume": 111
+    },
+    {
+     "name": "Jayden Maiava",
+     "price": 20.0,
+     "last": 2.0,
+     "bid": 0.0,
+     "ask": 40.0,
+     "volume": 214
+    },
+    {
+     "name": "Quincy Rhodes Jr.",
+     "price": 17.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 35.0,
+     "volume": 0
+    },
+    {
+     "name": "Cam Coleman",
+     "price": 17.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 34.0,
+     "volume": 0
+    },
+    {
+     "name": "Ryan Williams",
+     "price": 16.0,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 32.0,
+     "volume": 103
+    },
+    {
+     "name": "Arch Manning",
+     "price": 14.5,
+     "last": 29.0,
+     "bid": 6.0,
+     "ask": 23.0,
+     "volume": 11458
+    },
+    {
+     "name": "John Mateer",
+     "price": 4.0,
+     "last": 7.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 929
+    },
+    {
+     "name": "Nico Iamaleava",
+     "price": 4.0,
+     "last": 2.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 104
+    },
+    {
+     "name": "Julian Sayin",
+     "price": 3.5,
+     "last": 2.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 95
+    },
+    {
+     "name": "DJ Lagway",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nba",
+   "series": "KXNBADRAFTPICK",
+   "event": "KXNBADRAFTPICK-27-1",
+   "title": "Pro Basketball #1 Overall Pick in 2027",
+   "sub": "1st Pick 2027",
+   "url": "https://kalshi.com/markets/kxnbadraftpick",
+   "outcomes": [
+    {
+     "name": "Motiejus Krivas",
+     "price": 39.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 78.0,
+     "volume": 0
+    },
+    {
+     "name": "Baba Oladotun",
+     "price": 39.0,
+     "last": 6.0,
+     "bid": 0.0,
+     "ask": 78.0,
+     "volume": 193
+    },
+    {
+     "name": "Dylan Mingo",
+     "price": 39.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 78.0,
+     "volume": 0
+    },
+    {
+     "name": "Amari Allen",
+     "price": 35.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 70.0,
+     "volume": 0
+    },
+    {
+     "name": "Hugo Yimga-Moukouri",
+     "price": 35.0,
+     "last": 4.0,
+     "bid": 0.0,
+     "ask": 70.0,
+     "volume": 54
+    },
+    {
+     "name": "Tyran Stokes",
+     "price": 28.5,
+     "last": 53.0,
+     "bid": 2.0,
+     "ask": 55.0,
+     "volume": 4485
+    },
+    {
+     "name": "Colben Landrew",
+     "price": 15.0,
+     "last": 30.0,
+     "bid": 0.0,
+     "ask": 30.0,
+     "volume": 845
+    },
+    {
+     "name": "Patrick Ngongba II",
+     "price": 13.5,
+     "last": 7.0,
+     "bid": 3.0,
+     "ask": 24.0,
+     "volume": 110
+    },
+    {
+     "name": "Jordan Smith Jr.",
+     "price": 7.5,
+     "last": 7.0,
+     "bid": 0.0,
+     "ask": 15.0,
+     "volume": 1739
+    },
+    {
+     "name": "Caleb Holt",
+     "price": 6.5,
+     "last": 13.0,
+     "bid": 0.0,
+     "ask": 13.0,
+     "volume": 1133
+    },
+    {
+     "name": "Bruce Branch III",
+     "price": 6.0,
+     "last": 13.0,
+     "bid": 0.0,
+     "ask": 12.0,
+     "volume": 377
+    },
+    {
+     "name": "Thomas Haugh",
+     "price": 4.0,
+     "last": 8.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 300
+    },
+    {
+     "name": "Cameron Williams",
+     "price": 3.5,
+     "last": 6.0,
+     "bid": 1.0,
+     "ask": 6.0,
+     "volume": 1042
+    },
+    {
+     "name": "Braylon Mullins",
+     "price": 2.5,
+     "last": 5.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 228
+    },
+    {
+     "name": "Brandon McCoy",
+     "price": 1.0,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 81
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFT1ST",
+   "event": "KXNFLDRAFT1ST-27",
+   "title": "Team to make the 1st Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft",
+   "url": "https://kalshi.com/markets/kxnfldraft1st",
+   "outcomes": [
+    {
+     "name": "Los Angeles C",
+     "price": 25.0,
+     "last": 31.0,
+     "bid": 19.0,
+     "ask": 31.0,
+     "volume": 7138
+    },
+    {
+     "name": "Miami",
+     "price": 23.0,
+     "last": 24.0,
+     "bid": 21.0,
+     "ask": 25.0,
+     "volume": 28583
+    },
+    {
+     "name": "Tennessee",
+     "price": 23.0,
+     "last": 21.0,
+     "bid": 22.0,
+     "ask": 24.0,
+     "volume": 8915
+    },
+    {
+     "name": "New York J",
+     "price": 13.0,
+     "last": 14.0,
+     "bid": 12.0,
+     "ask": 14.0,
+     "volume": 10983
+    },
+    {
+     "name": "Philadelphia",
+     "price": 4.5,
+     "last": 9.0,
+     "bid": 2.0,
+     "ask": 7.0,
+     "volume": 3474
+    },
+    {
+     "name": "Indianapolis",
+     "price": 2.0,
+     "last": 5.0,
+     "bid": 1.0,
+     "ask": 3.0,
+     "volume": 10463
+    },
+    {
+     "name": "Carolina",
+     "price": 1.5,
+     "last": 1.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 6829
+    },
+    {
+     "name": "New York G",
+     "price": 1.5,
+     "last": 1.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 5666
+    },
+    {
+     "name": "Washington",
+     "price": 1.5,
+     "last": 1.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 3723
+    },
+    {
+     "name": "Atlanta",
+     "price": 1.0,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 6752
+    },
+    {
+     "name": "Cleveland",
+     "price": 1.0,
+     "last": 2.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 7094
+    },
+    {
+     "name": "Dallas",
+     "price": 1.0,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 3088
+    },
+    {
+     "name": "Las Vegas",
+     "price": 1.0,
+     "last": 2.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 3700
+    },
+    {
+     "name": "New Orleans",
+     "price": 1.0,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 3161
+    },
+    {
+     "name": "San Francisco",
+     "price": 1.0,
+     "last": 2.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 2853
+    },
+    {
+     "name": "Arizona",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 12518
+    },
+    {
+     "name": "Baltimore",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 351
+    },
+    {
+     "name": "Buffalo",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 216
+    },
+    {
+     "name": "Chicago",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 14
+    },
+    {
+     "name": "Cincinnati",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 175
+    },
+    {
+     "name": "Denver",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 28
+    },
+    {
+     "name": "Detroit",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 44
+    },
+    {
+     "name": "Green Bay",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 206
+    },
+    {
+     "name": "Houston",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 2679
+    },
+    {
+     "name": "Jacksonville",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 187
+    },
+    {
+     "name": "Kansas City",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 1701
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 2848
+    },
+    {
+     "name": "Minnesota",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 1035
+    },
+    {
+     "name": "New England",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 617
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 2489
+    },
+    {
+     "name": "Seattle",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 1742
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 4456
     }
    ]
   },
@@ -6768,9 +7680,9 @@
     },
     {
      "name": "Jacksonville",
-     "price": 6.0,
+     "price": 6.5,
      "last": 0.0,
-     "bid": 3.0,
+     "bid": 4.0,
      "ask": 9.0,
      "volume": 0
     },
@@ -8595,925 +9507,13 @@
      "volume": 0
     }
    ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-2027DMES",
-   "title": "Will Drew Mestemaker declare for the 2027 Pro Football Draft?",
-   "sub": "Drew Mestemaker (2027)",
-   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
-   "outcomes": [
-    {
-     "name": "Drew Mestemaker to declare for the Pro Football Draft",
-     "price": 55.0,
-     "last": 91.0,
-     "bid": 10.0,
-     "ask": 100.0,
-     "volume": 1944
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27AMAN",
-   "title": "Will Arch Manning declare for the 2027 Pro Football Draft?",
-   "sub": "Arch Manning (2027)",
-   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
-   "outcomes": [
-    {
-     "name": "Arch Manning to declare for the Pro Football Draft",
-     "price": 28.0,
-     "last": 31.0,
-     "bid": 26.0,
-     "ask": 30.0,
-     "volume": 903
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27CCAR",
-   "title": "Will CJ Carr declare for the 2027 Pro Football Draft?",
-   "sub": "CJ Carr (2027)",
-   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
-   "outcomes": [
-    {
-     "name": "CJ Carr to declare for the Pro Football Draft",
-     "price": 73.0,
-     "last": 99.0,
-     "bid": 47.0,
-     "ask": 99.0,
-     "volume": 1043
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27DMEN",
-   "title": "Will Darian Mensah declare for the 2027 Pro Football Draft?",
-   "sub": "Darian Mensah (2027)",
-   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
-   "outcomes": [
-    {
-     "name": "Darian Mensah to declare for the Pro Football Draft",
-     "price": 86.0,
-     "last": 83.0,
-     "bid": 83.0,
-     "ask": 89.0,
-     "volume": 11
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27DMOO",
-   "title": "Will Dante Moore declare for the 2027 Pro Football Draft?",
-   "sub": "Dante Moore (2027)",
-   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
-   "outcomes": [
-    {
-     "name": "Dante Moore to declare for the Pro Football Draft",
-     "price": 78.5,
-     "last": 99.0,
-     "bid": 58.0,
-     "ask": 99.0,
-     "volume": 309
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27JBAU",
-   "title": "Will Jadan Baugh declare for the 2027 Pro Football Draft?",
-   "sub": "Jadan Baugh (2027)",
-   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
-   "outcomes": [
-    {
-     "name": "Jadan Baugh to declare for the Pro Football Draft",
-     "price": 91.5,
-     "last": 88.0,
-     "bid": 88.0,
-     "ask": 95.0,
-     "volume": 39
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27RCOL",
-   "title": "Will Ryan Coleman-Williams declare for the 2027 Pro Football Draft?",
-   "sub": "Ryan Coleman-Williams (2027)",
-   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
-   "outcomes": [
-    {
-     "name": "Ryan Coleman-Williams to declare for the Pro Football Draft",
-     "price": 85.0,
-     "last": 89.0,
-     "bid": 81.0,
-     "ask": 89.0,
-     "volume": 61
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNFLDRAFTQB",
-   "event": "KXNFLDRAFTQB-27P1",
-   "title": "Pro Football 1st Quarterback Drafted in 2027",
-   "sub": "1st QB 2027",
-   "url": "https://kalshi.com/markets/kxnfldraftqb",
-   "outcomes": [
-    {
-     "name": "Drew Mestemaker",
-     "price": 55.5,
-     "last": 77.0,
-     "bid": 38.0,
-     "ask": 73.0,
-     "volume": 3410
-    },
-    {
-     "name": "CJ Carr",
-     "price": 28.0,
-     "last": 14.0,
-     "bid": 0.0,
-     "ask": 56.0,
-     "volume": 2336
-    },
-    {
-     "name": "Darian Mensah",
-     "price": 21.0,
-     "last": 18.0,
-     "bid": 18.0,
-     "ask": 24.0,
-     "volume": 528
-    },
-    {
-     "name": "Arch Manning",
-     "price": 9.0,
-     "last": 6.0,
-     "bid": 6.0,
-     "ask": 12.0,
-     "volume": 517
-    },
-    {
-     "name": "LaNorris Sellers",
-     "price": 4.0,
-     "last": 2.0,
-     "bid": 2.0,
-     "ask": 6.0,
-     "volume": 1243
-    },
-    {
-     "name": "Trinidad Chambliss",
-     "price": 3.5,
-     "last": 1.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 747
-    },
-    {
-     "name": "Dante Moore",
-     "price": 3.0,
-     "last": 1.0,
-     "bid": 1.0,
-     "ask": 5.0,
-     "volume": 480
-    },
-    {
-     "name": "Austin Simmons",
-     "price": 2.0,
-     "last": 1.0,
-     "bid": 1.0,
-     "ask": 3.0,
-     "volume": 6154
-    },
-    {
-     "name": "Jayden Maiava",
-     "price": 1.5,
-     "last": 40.0,
-     "bid": 0.0,
-     "ask": 3.0,
-     "volume": 523
-    },
-    {
-     "name": "Nico Iamaleava",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Julian Sayin",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Drake Lindsey",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Sam Leavitt",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Josh Hoover",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Katin Houser",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNFLDRAFTQB",
-   "event": "KXNFLDRAFTQB-27P2",
-   "title": "Pro Football 2nd Quarterback Drafted in 2027",
-   "sub": "2nd QB 2027",
-   "url": "https://kalshi.com/markets/kxnfldraftqb",
-   "outcomes": [
-    {
-     "name": "Darian Mensah",
-     "price": 47.0,
-     "last": 10.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Trinidad Chambliss",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "CJ Carr",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Nico Iamaleava",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Drake Lindsey",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Sam Leavitt",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Josh Hoover",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Katin Houser",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "LaNorris Sellers",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Dante Moore",
-     "price": 39.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 78.0,
-     "volume": 0
-    },
-    {
-     "name": "Drew Mestemaker",
-     "price": 35.5,
-     "last": 91.0,
-     "bid": 6.0,
-     "ask": 65.0,
-     "volume": 1
-    },
-    {
-     "name": "Arch Manning",
-     "price": 24.5,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 49.0,
-     "volume": 0
-    },
-    {
-     "name": "Jayden Maiava",
-     "price": 23.5,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 47.0,
-     "volume": 0
-    },
-    {
-     "name": "Julian Sayin",
-     "price": 14.5,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 29.0,
-     "volume": 0
-    },
-    {
-     "name": "Austin Simmons",
-     "price": 13.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 25.0,
-     "volume": 0
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNFLDRAFTQB",
-   "event": "KXNFLDRAFTQB-27P3",
-   "title": "Pro Football 3rd Quarterback Drafted in 2027",
-   "sub": "3rd QB 2027",
-   "url": "https://kalshi.com/markets/kxnfldraftqb",
-   "outcomes": [
-    {
-     "name": "Darian Mensah",
-     "price": 47.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Trinidad Chambliss",
-     "price": 47.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Dante Moore",
-     "price": 47.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "LaNorris Sellers",
-     "price": 47.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Nico Iamaleava",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Julian Sayin",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Jayden Maiava",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Drake Lindsey",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Sam Leavitt",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Josh Hoover",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Katin Houser",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "CJ Carr",
-     "price": 30.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 59.0,
-     "volume": 0
-    },
-    {
-     "name": "Arch Manning",
-     "price": 29.5,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 59.0,
-     "volume": 0
-    },
-    {
-     "name": "Drew Mestemaker",
-     "price": 25.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 50.0,
-     "volume": 0
-    },
-    {
-     "name": "Austin Simmons",
-     "price": 20.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 40.0,
-     "volume": 0
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNFLDRAFT1ST",
-   "event": "KXNFLDRAFT1ST-27",
-   "title": "Team to make the 1st Overall Pick in the 2027 Pro Football Draft",
-   "sub": "2027 Pro Football Draft",
-   "url": "https://kalshi.com/markets/kxnfldraft1st",
-   "outcomes": [
-    {
-     "name": "Los Angeles C",
-     "price": 25.0,
-     "last": 31.0,
-     "bid": 19.0,
-     "ask": 31.0,
-     "volume": 7138
-    },
-    {
-     "name": "Miami",
-     "price": 23.0,
-     "last": 24.0,
-     "bid": 21.0,
-     "ask": 25.0,
-     "volume": 28583
-    },
-    {
-     "name": "Tennessee",
-     "price": 17.0,
-     "last": 20.0,
-     "bid": 15.0,
-     "ask": 19.0,
-     "volume": 8864
-    },
-    {
-     "name": "New York J",
-     "price": 13.0,
-     "last": 14.0,
-     "bid": 12.0,
-     "ask": 14.0,
-     "volume": 10983
-    },
-    {
-     "name": "Philadelphia",
-     "price": 4.5,
-     "last": 9.0,
-     "bid": 2.0,
-     "ask": 7.0,
-     "volume": 3474
-    },
-    {
-     "name": "Indianapolis",
-     "price": 2.0,
-     "last": 5.0,
-     "bid": 1.0,
-     "ask": 3.0,
-     "volume": 10463
-    },
-    {
-     "name": "Carolina",
-     "price": 1.5,
-     "last": 1.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 6829
-    },
-    {
-     "name": "New York G",
-     "price": 1.5,
-     "last": 1.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 5666
-    },
-    {
-     "name": "Washington",
-     "price": 1.5,
-     "last": 1.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 3723
-    },
-    {
-     "name": "Atlanta",
-     "price": 1.0,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 6752
-    },
-    {
-     "name": "Cleveland",
-     "price": 1.0,
-     "last": 2.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 7094
-    },
-    {
-     "name": "Dallas",
-     "price": 1.0,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 3088
-    },
-    {
-     "name": "Las Vegas",
-     "price": 1.0,
-     "last": 2.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 3700
-    },
-    {
-     "name": "New Orleans",
-     "price": 1.0,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 3161
-    },
-    {
-     "name": "San Francisco",
-     "price": 1.0,
-     "last": 2.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 2853
-    },
-    {
-     "name": "Arizona",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 12518
-    },
-    {
-     "name": "Baltimore",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 351
-    },
-    {
-     "name": "Buffalo",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 216
-    },
-    {
-     "name": "Chicago",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 14
-    },
-    {
-     "name": "Cincinnati",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 175
-    },
-    {
-     "name": "Denver",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 28
-    },
-    {
-     "name": "Detroit",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 44
-    },
-    {
-     "name": "Green Bay",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 206
-    },
-    {
-     "name": "Houston",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 2679
-    },
-    {
-     "name": "Jacksonville",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 187
-    },
-    {
-     "name": "Kansas City",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 1701
-    },
-    {
-     "name": "Los Angeles R",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 2848
-    },
-    {
-     "name": "Minnesota",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 1035
-    },
-    {
-     "name": "New England",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 617
-    },
-    {
-     "name": "Pittsburgh",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 2489
-    },
-    {
-     "name": "Seattle",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 1742
-    },
-    {
-     "name": "Tampa Bay",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 4456
-    }
-   ]
-  },
-  {
-   "league": "nba",
-   "series": "KXNBADRAFTPICK",
-   "event": "KXNBADRAFTPICK-27-1",
-   "title": "Pro Basketball #1 Overall Pick in 2027",
-   "sub": "1st Pick 2027",
-   "url": "https://kalshi.com/markets/kxnbadraftpick",
-   "outcomes": [
-    {
-     "name": "Motiejus Krivas",
-     "price": 39.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 78.0,
-     "volume": 0
-    },
-    {
-     "name": "Baba Oladotun",
-     "price": 39.0,
-     "last": 6.0,
-     "bid": 0.0,
-     "ask": 78.0,
-     "volume": 193
-    },
-    {
-     "name": "Dylan Mingo",
-     "price": 39.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 78.0,
-     "volume": 0
-    },
-    {
-     "name": "Amari Allen",
-     "price": 35.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 70.0,
-     "volume": 0
-    },
-    {
-     "name": "Hugo Yimga-Moukouri",
-     "price": 35.0,
-     "last": 4.0,
-     "bid": 0.0,
-     "ask": 70.0,
-     "volume": 54
-    },
-    {
-     "name": "Tyran Stokes",
-     "price": 28.5,
-     "last": 53.0,
-     "bid": 2.0,
-     "ask": 55.0,
-     "volume": 4485
-    },
-    {
-     "name": "Colben Landrew",
-     "price": 15.0,
-     "last": 30.0,
-     "bid": 0.0,
-     "ask": 30.0,
-     "volume": 845
-    },
-    {
-     "name": "Patrick Ngongba II",
-     "price": 13.5,
-     "last": 7.0,
-     "bid": 3.0,
-     "ask": 24.0,
-     "volume": 110
-    },
-    {
-     "name": "Jordan Smith Jr.",
-     "price": 7.5,
-     "last": 7.0,
-     "bid": 0.0,
-     "ask": 15.0,
-     "volume": 1739
-    },
-    {
-     "name": "Caleb Holt",
-     "price": 6.5,
-     "last": 13.0,
-     "bid": 0.0,
-     "ask": 13.0,
-     "volume": 1133
-    },
-    {
-     "name": "Bruce Branch III",
-     "price": 6.0,
-     "last": 13.0,
-     "bid": 0.0,
-     "ask": 12.0,
-     "volume": 377
-    },
-    {
-     "name": "Thomas Haugh",
-     "price": 4.0,
-     "last": 8.0,
-     "bid": 0.0,
-     "ask": 8.0,
-     "volume": 300
-    },
-    {
-     "name": "Cameron Williams",
-     "price": 3.5,
-     "last": 6.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 1042
-    },
-    {
-     "name": "Braylon Mullins",
-     "price": 2.5,
-     "last": 5.0,
-     "bid": 0.0,
-     "ask": 5.0,
-     "volume": 228
-    },
-    {
-     "name": "Brandon McCoy",
-     "price": 1.0,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 81
-    }
-   ]
   }
  ],
  "_seen": [
   {
-   "series": "KXNFLDRAFTTOP",
-   "event": "KXNFLDRAFTTOP-27-5",
-   "n": 19,
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-2027DMES",
+   "n": 1,
    "keys": [
     "can_close_early",
     "close_time",
@@ -9561,9 +9561,81 @@
    ]
   },
   {
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27AMAN",
+   "n": 1,
+   "keys": null
+  },
+  {
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27CCAR",
+   "n": 1,
+   "keys": null
+  },
+  {
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27DMEN",
+   "n": 1,
+   "keys": null
+  },
+  {
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27DMOO",
+   "n": 1,
+   "keys": null
+  },
+  {
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27JBAU",
+   "n": 1,
+   "keys": null
+  },
+  {
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27RCOL",
+   "n": 1,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTQB",
+   "event": "KXNFLDRAFTQB-27P1",
+   "n": 15,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTQB",
+   "event": "KXNFLDRAFTQB-27P2",
+   "n": 15,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTQB",
+   "event": "KXNFLDRAFTQB-27P3",
+   "n": 15,
+   "keys": null
+  },
+  {
    "series": "KXNFLDRAFTPICK",
    "event": "KXNFLDRAFTPICK-27-1",
    "n": 22,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTTOP",
+   "event": "KXNFLDRAFTTOP-27-5",
+   "n": 19,
+   "keys": null
+  },
+  {
+   "series": "KXNBADRAFTPICK",
+   "event": "KXNBADRAFTPICK-27-1",
+   "n": 15,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFT1ST",
+   "event": "KXNFLDRAFT1ST-27",
+   "n": 32,
    "keys": null
   },
   {
@@ -9750,78 +9822,6 @@
    "series": "KXNFLDRAFTSELECT",
    "event": "KXNFLDRAFTSELECT-27P9",
    "n": 32,
-   "keys": null
-  },
-  {
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-2027DMES",
-   "n": 1,
-   "keys": null
-  },
-  {
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27AMAN",
-   "n": 1,
-   "keys": null
-  },
-  {
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27CCAR",
-   "n": 1,
-   "keys": null
-  },
-  {
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27DMEN",
-   "n": 1,
-   "keys": null
-  },
-  {
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27DMOO",
-   "n": 1,
-   "keys": null
-  },
-  {
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27JBAU",
-   "n": 1,
-   "keys": null
-  },
-  {
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27RCOL",
-   "n": 1,
-   "keys": null
-  },
-  {
-   "series": "KXNFLDRAFTQB",
-   "event": "KXNFLDRAFTQB-27P1",
-   "n": 15,
-   "keys": null
-  },
-  {
-   "series": "KXNFLDRAFTQB",
-   "event": "KXNFLDRAFTQB-27P2",
-   "n": 15,
-   "keys": null
-  },
-  {
-   "series": "KXNFLDRAFTQB",
-   "event": "KXNFLDRAFTQB-27P3",
-   "n": 15,
-   "keys": null
-  },
-  {
-   "series": "KXNFLDRAFT1ST",
-   "event": "KXNFLDRAFT1ST-27",
-   "n": 32,
-   "keys": null
-  },
-  {
-   "series": "KXNBADRAFTPICK",
-   "event": "KXNBADRAFTPICK-27-1",
-   "n": 15,
    "keys": null
   }
  ]
