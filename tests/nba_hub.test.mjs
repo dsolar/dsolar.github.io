@@ -15,7 +15,7 @@ const Mo = require('../nba/lib/model.js');
 
 const inputs = { data: read('celtics/data.json'), stats: opt('hardcap/stats.json') || {}, fixes: opt('hardcap/contracts.json'), live: opt('celtics/live.json'),
   board: opt('draft/nba.json') || {}, picks: read('nba/data/picks.json'), teams: opt('tools/draft_teams.json'),
-  tpes: read('nba/data/tpes.json'), exceptions: read('nba/data/exceptions.json'), dead: read('nba/data/dead.json'), darko: opt('nba/data/darko.json') };
+  tpes: read('nba/data/tpes.json'), exceptions: read('nba/data/exceptions.json'), dead: read('nba/data/dead.json'), darko: opt('nba/data/darko.json'), taxhist: opt('nba/data/taxhist.json') };
 const H = Hub.build(inputs, { sims: 300, futureSims: 100 });
 
 test('shared library: name matching runs initials together', () => {
@@ -167,4 +167,20 @@ test('live DARKO replaces the June DARKO half of a rating', () => {
   assert.equal(b.darko, 6.3);
   assert.ok(b.o > a.o && b.d > a.d, 'a better DARKO than June raises both ends');
   assert.equal(live.darkoThrough, '2026-11-08');
+});
+
+test('repeater clock: Boston ducks 2026-27 and gets three standard-rate tax seasons', () => {
+  const R = H.repeaterClock('BOS', { 0: false });
+  assert.equal(R.n0, 3);
+  assert.equal(R.nowRep, true);
+  assert.equal(R.start, 1);
+  assert.equal(R.run, 3);
+  const paidNow = H.repeaterClock('BOS', { 0: true });
+  assert.ok(paidNow.start > 1, 'paying this season pushes the reset back');
+});
+
+test('a declined team option elsewhere does not count against the new team', () => {
+  const p = H.findPlayer('devin-carter');
+  if (p) assert.equal(H.salary(p, 0), 0);
+  assert.ok(H.payroll('BOS', 0) < 200428000, 'Boston is under the 2026-27 tax line');
 });

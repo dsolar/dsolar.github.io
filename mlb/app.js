@@ -26,10 +26,17 @@
     TB: ["Tropicana Field", [315, 370, 404, 370, 322]], TEX: ["Globe Life Field", [329, 372, 407, 374, 326]],
     TOR: ["Rogers Centre", [328, 368, 400, 359, 328]], WSH: ["Nationals Park", [336, 377, 402, 370, 335]]
   };
-  var SPOT_XY = { // field spots, % of the field box
-    CF: [50, 13], LF: [19, 25], RF: [81, 25], SS: [34, 45], "2B": [66, 45], "3B": [15, 61], "1B": [85, 61],
-    C: [50, 89], DH: [14, 89]
+  // Where each card sits, in feet from home plate (x toward first base, y toward center field). The drawing's frame runs
+  // 272 ft either side of the plate and from 452 ft out to 70 ft behind it, so feet map straight onto the box.
+  var VB = { x: -272, y: -452, w: 544, h: 522 };
+  var SPOT_FT = {
+    CF: [0, 340], LF: [-150, 268], RF: [150, 268], SS: [-64, 166], "2B": [64, 166], "3B": [-104, 88], "1B": [104, 88],
+    C: [0, -36], DH: [-196, -36]
   };
+  var SPOT_XY = {};
+  Object.keys(SPOT_FT).forEach(function (k) {
+    var f = SPOT_FT[k]; SPOT_XY[k] = [((f[0] - VB.x) / VB.w * 100).toFixed(2), ((-f[1] - VB.y) / VB.h * 100).toFixed(2)];
+  });
 
   // ---------- helpers ----------
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
@@ -150,7 +157,9 @@
       return;
     }
     var p = e.target.closest("[data-p]");
-    if (p && !e.target.closest(".results")) { openCard(p.dataset.p); }
+    if (p && !e.target.closest(".results")) { openCard(p.dataset.p); return; }
+    var fa = e.target.closest("[data-fa]");
+    if (fa) openFaCard(fa.dataset.fa);
   });
 
   // ---------- teams ----------
@@ -238,7 +247,7 @@
     var html = '<div class="fieldwrap"><p class="park"><b>' + esc(park[0]) + "</b>" + (park[1].length ? " · " + park[1].join(" · ") + " ft" : "") + (notes.length ? " · " + esc(notes.join(", ")) : "") +
       '</p><div class="field">' + fieldSvg(tm.abbr), bk = backupMap(tm);
     M.FIELD_ORDER.forEach(function (slot) {
-      var xy = SPOT_XY[slot], e = tm.line[slot], rows = e ? [e].concat(bk[slot] || []) : [];
+      var xy = SPOT_XY[slot], e = tm.line[slot], rows = e ? [e].concat((bk[slot] || []).slice(0, 1)) : [];
       var war = rows.reduce(function (s, r, i) { return s + (i === 0 ? r.war : r.war * 0.5); }, 0);
       var tier = H.tier(y, slot, e ? e.war : 0);
       html += '<div class="spot" data-slot="' + slot + '" style="left:' + xy[0] + "%;top:" + xy[1] + '%"><header class="T-' + tier + '"><span>' + slot + "</span><span>" + f1(war) + "</span></header>";
@@ -281,7 +290,7 @@
       return '<text x="' + (Math.sin(r) * ft).toFixed(0) + '" y="' + (-Math.cos(r) * ft + (i === 2 ? 0 : 8)).toFixed(0) + '" text-anchor="middle" class="ft2">' + d[i] + "</text>";
     }).join("") : "";
     var b = function (x, y) { return '<rect x="' + (x - 3.5) + '" y="' + (-y - 3.5) + '" width="7" height="7" transform="rotate(45 ' + x + " " + (-y) + ')" fill="#fff"/>'; };
-    return '<svg viewBox="-272 -452 544 466" preserveAspectRatio="xMidYMax meet" aria-hidden="true">' +
+    return '<svg viewBox="' + [VB.x, VB.y, VB.w, VB.h].join(" ") + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' +
       poly("outfield_outer", "var(--dirt)", ' opacity=".5"') + poly("outfield_inner", "var(--grass)", ' opacity=".6"') +
       '<path d="' + P(sh.outfield_outer, true) + '" fill="none" stroke="var(--grass-2)" stroke-width="2.5"/>' +
       (walls.lf ? wall("lf") : "") + (walls.rf ? wall("rf") : "") +
@@ -290,38 +299,38 @@
       b(63.6, 63.6) + b(0, 127.3) + b(-63.6, 63.6) + '<circle cx="0" cy="-60.5" r="9" fill="var(--dirt)"/>' +
       '<path d="M0 3 L-6 -3 L-6 -8 L6 -8 L6 -3 Z" fill="#fff"/>' + labels + "</svg>";
   }
-  // A team's park to scale: home plate at the bottom, the fence through its five published distances
+  // A team's park to scale when there's no traced outline: the fence through its five published distances, drawn in
+  // the same feet-from-home frame as the traced parks so the cards land in the same places
   function fieldSvgApprox(abbr) {
     var park = PARKS[abbr] || ["", [330, 375, 400, 375, 330]], d = park[1], walls = park[2] || {};
-    var HX = 59, HY = 97, K = 0.205; // feet to drawing units
-    var pt = function (deg, ft) { var a = deg * Math.PI / 180; return [HX + ft * K * Math.sin(a), HY - ft * K * Math.cos(a)]; };
+    var pt = function (deg, ft) { var a = deg * Math.PI / 180; return [ft * Math.sin(a), -ft * Math.cos(a)]; };
+    var xy = function (q) { return q[0].toFixed(1) + " " + q[1].toFixed(1); };
     var fence = [pt(-45, d[0]), pt(-22.5, d[1]), pt(0, d[2]), pt(22.5, d[3]), pt(45, d[4])];
-    // a smooth fence through the five points (Catmull-Rom as Bezier)
-    var path = "M" + HX + " " + HY + " L" + fence[0][0].toFixed(1) + " " + fence[0][1].toFixed(1);
-    for (var i = 0; i < 4; i++) {
+    var path = "M0 0 L" + xy(fence[0]);
+    for (var i = 0; i < 4; i++) { // a smooth fence through the five points (Catmull-Rom as Bezier)
       var p0 = fence[Math.max(0, i - 1)], p1 = fence[i], p2 = fence[i + 1], p3 = fence[Math.min(4, i + 2)];
-      var c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
-      path += " C" + c1[0].toFixed(1) + " " + c1[1].toFixed(1) + " " + c2[0].toFixed(1) + " " + c2[1].toFixed(1) + " " + p2[0].toFixed(1) + " " + p2[1].toFixed(1);
+      path += " C" + xy([p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6]) + " " + xy([p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6]) + " " + xy(p2);
     }
     path += " Z";
-    var b = 90 * K, first = pt(45, 90), second = pt(0, 127.3), third = pt(-45, 90), mound = pt(0, 60.5);
-    var dirt = 'M' + HX + ' ' + HY + ' L' + pt(-45, 120).map(function (v) { return v.toFixed(1); }).join(" ") + ' A' + (95 * K * 1.3).toFixed(1) + " " + (95 * K * 1.3).toFixed(1) + " 0 0 1 " + pt(45, 120).map(function (v) { return v.toFixed(1); }).join(" ") + " Z";
+    var first = pt(45, 90), second = pt(0, 127.3), third = pt(-45, 90), mound = pt(0, 60.5);
+    var dirt = "M0 0 L" + xy(pt(-45, 120)) + " A155 155 0 0 1 " + xy(pt(45, 120)) + " Z";
     var labels = fence.map(function (f, i) {
-      var lab = pt([-45, -22.5, 0, 22.5, 45][i], d[i] + 14);
-      return '<text x="' + lab[0].toFixed(1) + '" y="' + lab[1].toFixed(1) + '" text-anchor="middle" class="ft">' + d[i] + "</text>";
+      var lab = pt([-45, -22.5, 0, 22.5, 45][i], d[i] + (i === 2 ? 26 : 30));
+      return '<text x="' + lab[0].toFixed(0) + '" y="' + (lab[1] + (i === 2 ? 0 : 8)).toFixed(0) + '" text-anchor="middle" class="ft2">' + d[i] + "</text>";
     }).join("");
-    var wall = function (side) { // a heavier stroke along a notable wall
+    var wall = function (side) {
       var a = side === "lf" ? [fence[0], fence[1]] : [fence[3], fence[4]];
-      return '<path d="M' + a[0][0].toFixed(1) + " " + a[0][1].toFixed(1) + " L" + a[1][0].toFixed(1) + " " + a[1][1].toFixed(1) + '" stroke="var(--monster)" stroke-width="1.6" stroke-linecap="round" opacity=".85"/>';
+      return '<path d="M' + xy(a[0]) + " L" + xy(a[1]) + '" stroke="var(--monster)" stroke-width="7" stroke-linecap="round" opacity=".85"/>';
     };
-    return '<svg viewBox="0 0 118 100" preserveAspectRatio="xMidYMax meet" aria-hidden="true">' +
-      '<path d="' + path + '" fill="var(--grass)" opacity=".55"/><path d="' + path + '" fill="none" stroke="var(--grass-2)" stroke-width=".7"/>' +
+    var b = function (q) { return '<rect x="' + (q[0] - 3.5).toFixed(1) + '" y="' + (q[1] - 3.5).toFixed(1) + '" width="7" height="7" transform="rotate(45 ' + xy(q).replace(" ", " ") + ')" fill="#fff"/>'; };
+    return '<svg viewBox="' + [VB.x, VB.y, VB.w, VB.h].join(" ") + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' +
+      '<path d="' + path + '" fill="var(--grass)" opacity=".55"/><path d="' + path + '" fill="none" stroke="var(--grass-2)" stroke-width="2.5"/>' +
       (walls.lf ? wall("lf") : "") + (walls.rf ? wall("rf") : "") +
-      '<path d="' + dirt + '" fill="var(--dirt)" opacity=".55"/>' +
-      '<path d="M' + HX + " " + HY + " L" + first.join(" ") + " L" + second.join(" ") + " L" + third.join(" ") + ' Z" fill="var(--grass-2)" opacity=".8"/>' +
-      '<g fill="#fff">' + [first, second, third].map(function (q) { return '<rect x="' + (q[0] - 1.1).toFixed(1) + '" y="' + (q[1] - 1.1).toFixed(1) + '" width="2.2" height="2.2" transform="rotate(45 ' + q[0].toFixed(1) + " " + q[1].toFixed(1) + ')"/>'; }).join("") +
-      '<rect x="' + (HX - 1.3) + '" y="' + (HY - 1.3) + '" width="2.6" height="2.6" transform="rotate(45 ' + HX + " " + HY + ')"/></g>' +
-      '<circle cx="' + mound[0].toFixed(1) + '" cy="' + mound[1].toFixed(1) + '" r="1.9" fill="var(--dirt)"/>' + labels + "</svg>";
+      '<path d="' + dirt + '" fill="var(--dirt)" opacity=".6"/>' +
+      '<path d="M0 0 L' + xy(first) + " L" + xy(second) + " L" + xy(third) + ' Z" fill="var(--grass-2)" opacity=".85"/>' +
+      '<path d="M' + xy(pt(-45, d[0])) + ' L0 0 L' + xy(pt(45, d[4])) + '" fill="none" stroke="#fff" stroke-width="1.8" opacity=".9"/>' +
+      b(first) + b(second) + b(third) + '<circle cx="' + mound[0].toFixed(1) + '" cy="' + mound[1].toFixed(1) + '" r="9" fill="var(--dirt)"/>' +
+      '<path d="M0 3 L-6 -3 L-6 -8 L6 -8 L6 -3 Z" fill="#fff"/>' + labels + "</svg>";
   }
   function listPanel(title, items, fn, sub) {
     return '<div class="panel"><h3>' + esc(title) + " <small>" + esc(sub || "") + '</small></h3><ul class="rlist">' +
@@ -527,6 +536,28 @@
     html += '<p class="note">Discounted at ' + pct(H.cfg.discount, 0) + " a year. A win costs " + money(H.cfg.dpw) + " in " + H.season + ", up " + pct(H.cfg.inflation, 0) + " a year." +
       (s.prospect ? " Prospect value is scaled by his risk grade (" + pct(s.hit, 0) + ")." : "") + "</p>";
     html += '<p><button class="btn" data-add="a" data-id="' + esc(p.id) + '">Add to trade: side A</button> <button class="btn" data-add="b" data-id="' + esc(p.id) + '">Side B</button> <a class="btn" href="' + href("team/" + p.t) + '">' + esc(t.name) + " depth chart</a></p></div>";
+    cardBody.innerHTML = html;
+    if (!card.open) card.showModal();
+  }
+  // A free agent who isn't on a roster yet: his projection, the crowd's contract, what he's worth year by year
+  function openFaCard(id) {
+    var x = H.faBoard().filter(function (b) { return String(b.r.id) === String(id); })[0];
+    if (!x) return;
+    var r = x.r, from = r.from ? team(r.from) : null;
+    var html = '<div class="card-h">' + window.DSFaces.html({ sport: "mlb", id: r.id, name: r.n, size: 72 }) + "<div><h3>" + esc(r.n) + '</h3><div class="meta">' +
+      (from ? logo(r.from, 18) + " " + esc(from.name) + " · " : "") + esc(r.pos || "") + " · age " + (x.age || "—") + (r.b ? " · B/T " + esc(r.b) + "/" + esc(r.th) : "") + " · free agent</div></div></div>";
+    html += '<div class="card-b"><div class="kv">' + kv(f1(x.war), H.season + " WAR (proj.)") + kv(r.my ? r.my + " yr" : "—", "Crowd's length") + kv(money(x.crowdAav), "Crowd's AAV") + kv(r.qo ? money(r.qo / 1e6) : "None", "Qualifying offer") + "</div>";
+    html += '<div class="vcs"><div><span>Fair</span><b>' + money(x.spotAav) + '</b><small>per year, at ' + money(H.cfg.dpw) + ' a win</small></div><i>·</i><div><span>Market</span><b>' + money(x.mktAav) +
+      '</b><small>what deals this long go for</small></div><i>·</i><div class="' + (x.signedAav ? (x.gap > 0 ? "dn" : "up") : "") + '"><span>' + (x.signedAav ? "Signed" : "Status") + "</span><b>" + (x.signedAav ? money(x.signedAav) : "Unsigned") + "</b><small>" +
+      (x.signedAav ? esc(r.to || "") + " · " + (r.yrs || "?") + " yr" + (x.gap != null ? " · " + (x.gap > 0 ? "+" : "") + pct(x.gap, 0) + " vs market" : "") : "still on the market") + "</small></div></div>";
+    html += '<h4 class="card-sec">Year by year over a ' + x.yrs + '-year deal</h4><div class="scroll"><table class="t"><thead><tr><th>Year</th><th>Age</th><th>WAR</th><th>Worth</th></tr></thead><tbody>';
+    var tot = 0, totW = 0;
+    x.path.forEach(function (w, k) {
+      var worth = w * H.cfg.dpw * Math.pow(1 + H.cfg.inflation, k); tot += worth; totW += w;
+      html += "<tr><td>" + (H.season + k) + "</td><td>" + (x.age + k) + "</td><td>" + f1(w) + "</td><td>" + money(worth) + "</td></tr>";
+    });
+    html += '<tr class="tot"><td colspan="2">Total</td><td>' + f1(totW) + "</td><td>" + money(tot) + "</td></tr></tbody></table></div>";
+    html += '<p class="note">WAR ages from his projection; a win costs ' + money(H.cfg.dpw) + " in " + H.season + ", up " + pct(H.cfg.inflation, 0) + " a year. The crowd numbers are FanGraphs readers' median predictions.</p></div>";
     cardBody.innerHTML = html;
     if (!card.open) card.showModal();
   }

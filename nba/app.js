@@ -75,7 +75,7 @@
   function render() {
     parse();
     document.querySelectorAll(".tabs a").forEach(function (a) {
-      var on = a.dataset.tab === state.route || (a.dataset.tab === "teams" && state.route === "team");
+      var on = a.dataset.tab === state.route || (a.dataset.tab === "teams" && state.route === "team") || (a.dataset.tab === "contracts" && state.route === "picks");
       if (a.dataset.tab === "contracts") a.setAttribute("href", href("contracts/" + (state.route === "team" || state.route === "contracts" ? (state.arg || "BOS").toUpperCase() : load("team", "BOS")), {}));
       if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
@@ -83,7 +83,7 @@
     yearbar.hidden = !withYears;
     if (withYears) drawYears();
     if (state.route === "team" && state.arg) save("team", state.arg.toUpperCase());
-    var fn = { standings: standings, team: teamPage, teams: teamsPage, contracts: contractsPage, value: valuePage, trade: tradePage, fa: faPage, method: methodPage }[state.route] || standings;
+    var fn = { standings: standings, team: teamPage, teams: teamsPage, contracts: contractsPage, picks: picksPage, value: valuePage, trade: tradePage, fa: faPage, method: methodPage }[state.route] || standings;
     fn();
   }
   function drawYears() {
@@ -178,15 +178,15 @@
     var lu = H.lineup(code, i), roster = H.rosterAt(code, i);
     html += '<div class="legend">' + ["Fringe", "Weak", "Average", "Strong", "Elite"].map(function (k) { return '<span class="T-' + k + '">' + k + "</span>"; }).join("") + '<span class="note">impact per 100 possessions</span></div>';
     html += court(lu.starters, lu.slots);
-    html += '<p class="note center">' + (i === 0 ? (lu.real ? "Starting five from " + esc(t.short) + "'s last game. Minutes are what each player is averaging this season." : "Starting five by games started and minutes this season.") : "Projected: the best player at each position by rating, the bench by rating.") + "</p>";
+    html += '<p class="note center">' + (i === 0 ? "The usual starting five: most games started this season, with the last game breaking ties. Minutes are what each player is averaging." : "Projected: the best player at each position by rating, the bench by rating.") + "</p>";
     html += depthChart(lu, i);
     if (i > 0) html += changes(code, i);
     var inj = roster.filter(function (e) { return e.p.inj; });
     html += tablePanel("Roster", "<th>Player</th><th>Pos</th><th>Age</th><th>Impact</th><th>Min</th><th>" + (i === 0 ? "Pts / Reb / Ast" : "Salary") + "</th><th>Contract</th>",
       lu.starters.concat(lu.bench).map(function (x, k) {
         var p = x.p, mins = lu.mins[p.id] || 0;
-        var line = i === 0 && p.line ? f1(p.line.pts) + " / " + f1(p.line.reb) + " / " + f1(p.line.ast) : money(x.sal);
-        return "<tr" + (k === 5 || k === 10 ? ' class="cut"' : "") + "><td>" + pname(p, 24, p.inj ? ' <span class="pill warn" title="' + esc(p.inj) + '">' + esc(p.inj) + "</span>" : "") + "</td><td>" + esc(posOf(p)) + "</td><td>" + (p.fill || p.age == null ? "—" : p.rook ? p.age + i - p.arrive : p.age + i) + "</td><td>" + rchip(x.r) + "</td><td>" + (mins ? f0(mins) : "—") + "</td><td>" + line + "</td><td>" + statusPill(x, i) + "</td></tr>";
+        var line = i === 0 ? (p.line ? f1(p.line.pts) + " / " + f1(p.line.reb) + " / " + f1(p.line.ast) : "—") : money(x.sal);
+        return "<tr" + (k === 5 || k === 10 ? ' class="cut"' : "") + "><td>" + pname(p, 24, p.inj ? ' <span class="pill warn" title="' + esc(p.inj) + '">' + esc(p.inj) + "</span>" : "") + "</td><td>" + esc(posOf(p)) + "</td><td>" + (p.fill || p.age == null ? "—" : p.rook ? p.age + i - p.arrive : p.age + i) + "</td><td>" + rchip(x.r) + "</td><td>" + (mins ? f0(mins) : "—") + "</td><td>" + line + "</td><td>" + contractCell(x, i) + "</td></tr>";
       }).join(""), (i === 0 ? "This season's numbers" : "") + (inj.length && i === 0 ? " · " + inj.length + " on the injury report" : ""));
     html += '<p class="note">Cap sheet, exceptions and draft picks are on the <a href="' + href("contracts/" + code, { y: yq(i) }) + '">Contracts tab</a>.</p>';
     view.innerHTML = html;
@@ -215,6 +215,29 @@
     if (opt) return '<span class="pill">' + esc(CBA.OPT_NAME[opt]) + "</span>";
     return '<span class="pill">Thru ' + sname(last) + "</span>";
   }
+  // A contract as it's written: each season left, the money, and any option, then how it ends
+  function contractYears(p, i) {
+    var c = p.c || {}, out = [];
+    for (var j = i; j < (c.sal || []).length; j++) if (c.sal[j] > 0) out.push({ j: j, sal: c.sal[j], opt: c.opt && c.opt[j] });
+    return out;
+  }
+  function contractCell(x, i) {
+    var p = x.p;
+    if (x.how !== "contract") return statusPill(x, i);
+    var ys = contractYears(p, i);
+    if (!ys.length) return statusPill(x, i);
+    var tot = ys.reduce(function (a, y) { return a + y.sal; }, 0), opts = ys.filter(function (y) { return y.opt; });
+    return '<span class="cyrs"><b>' + ys.length + " yr" + (ys.length > 1 ? "s" : "") + ", " + money(tot, 0) + "</b>" +
+      opts.map(function (y) { return '<span class="otag o-' + y.opt + '" title="' + esc(CBA.OPT_NAME[y.opt]) + " for " + sname(y.j) + '">' + CBA.OPT_SHORT[y.opt] + " " + sname(y.j).slice(2) + "</span>"; }).join("") +
+      '<small>then ' + esc(H.faKind(p)) + "</small></span>";
+  }
+  function contractStrip(p, i) {
+    var ys = contractYears(p, i);
+    if (!ys.length) return "";
+    return '<div class="cstrip">' + ys.map(function (y) {
+      return '<div class="cy' + (y.opt ? " o-" + y.opt : "") + '"><span>' + sname(y.j) + "</span><b>" + money(y.sal) + "</b><small>" + (y.opt ? esc(CBA.OPT_NAME[y.opt]) : "Guaranteed") + "</small></div>";
+    }).join("") + '<div class="cy end"><span>After ' + sname(ys[ys.length - 1].j) + "</span><b>" + esc(H.faKind(p)) + "</b><small>" + (H.faKind(p) === "RFA" ? "team can match" : "free to sign anywhere") + "</small></div></div>";
+  }
   // Starting five on a half court
   function court(five, slots) {
     var spots = [[50, 18], [82, 34], [18, 34], [70, 70], [34, 74]], lbl = slots || ["PG", "SG", "SF", "PF", "C"];
@@ -222,7 +245,7 @@
     five.forEach(function (x, k) {
       var s = spots[k], open = !(x.p.fill || x.p.rook);
       html += '<div class="cspot" style="left:' + s[0] + "%;top:" + s[1] + '%">' + (open ? '<button type="button" class="cbtn" data-p="' + esc(x.p.id) + '">' : '<div class="cbtn">') +
-        face(x.p, 52) + '<span class="cn">' + esc(x.p.n) + '</span><span class="cr T-' + tier(x.r) + '">' + lbl[k] + " · " + rt(x.r) + "</span>" + (open ? "</button>" : "</div>") + "</div>";
+        face(x.p, 52) + '<span class="cn">' + esc(x.p.n) + '</span><span class="cr T-' + tier(x.r) + '">' + lbl[k] + " · " + rt(x.r) + "</span>" + (x.starts && x.starts[1] ? '<span class="cg">' + x.starts[0] + " of " + x.starts[1] + " starts</span>" : "") + (open ? "</button>" : "</div>") + "</div>";
     });
     return html + "</div></div>";
   }
@@ -231,7 +254,7 @@
       '<g class="lines"><rect x="2" y="2" width="496" height="356"/><rect x="170" y="190" width="160" height="168"/><circle cx="250" cy="190" r="60"/>' +
       '<path d="M30 358 V300 A220 220 0 0 1 470 300 V358"/><path d="M190 2 A60 60 0 0 0 310 2"/><circle cx="250" cy="330" r="9"/><line x1="220" y1="342" x2="280" y2="342"/></g></svg>';
   }
-  // Depth chart: each position's starter, then the backups who play there, with their minutes
+  // Depth chart: one row per position, the starter first and then the backups who play there, with minutes
   function depthChart(lu, i) {
     var SL = ["PG", "SG", "SF", "PF", "C"], cols = { PG: [], SG: [], SF: [], PF: [], C: [] };
     lu.starters.forEach(function (x, k) { cols[(lu.slots || SL)[k]].push({ x: x, start: true }); });
@@ -240,19 +263,22 @@
       var slot = ps.find(function (s) { return cols[s]; }) || "SF";
       cols[slot].push({ x: x });
     });
-    var total = Object.keys(lu.mins).reduce(function (a, k) { return a + lu.mins[k]; }, 0);
-    var html = '<div class="panel"><h3>Depth chart <small>' + (i === 0 ? "minutes per game this season, scaled to 240" : "projected minutes per game") + '</small></h3><div class="depth">';
+    var html = '<div class="panel"><h3>Depth chart <small>' + (i === 0 ? "minutes per game this season" : "projected minutes per game") + '</small></h3><div class="dchart">' +
+      '<div class="dhead"><span>Pos</span><span>Starter</span><span>Bench</span></div>';
     SL.forEach(function (s) {
-      var tot = cols[s].reduce(function (a, d) { return a + (lu.mins[d.x.p.id] || 0); }, 0);
-      html += '<div class="dcol"><h4>' + s + " <small>" + f0(tot) + " min</small></h4>";
-      cols[s].forEach(function (d) {
-        var m = lu.mins[d.x.p.id] || 0;
-        html += '<div class="drow' + (d.start ? " start" : "") + (m < 1 ? " dnp" : "") + '">' + pname(d.x.p, 22) + '<span class="dm"><i style="width:' + Math.min(100, m / 40 * 100).toFixed(0) + '%" class="T-' + tier(d.x.r) + '"></i><b>' + (m >= 1 ? f0(m) : "DNP") + "</b></span></div>";
-      });
-      html += "</div>";
+      var list = cols[s], tot = list.reduce(function (a, d) { return a + (lu.mins[d.x.p.id] || 0); }, 0);
+      var cell = function (d) {
+        var m = lu.mins[d.x.p.id] || 0, p = d.x.p;
+        return '<span class="dp' + (d.start ? " st" : "") + (m < 1 ? " dnp" : "") + ' T-' + tier(d.x.r) + 'b"' + (p.fill || p.rook ? "" : ' data-p="' + esc(p.id) + '"') + ">" + face(p, d.start ? 30 : 24) +
+          '<span class="dn"><b>' + esc(d.start ? p.n : shortName(p.n)) + "</b><small>" + (m >= 1 ? f0(m) + " min" : "DNP") + " · " + rt(d.x.r) + "</small></span></span>";
+      };
+      var st = list.filter(function (d) { return d.start; }), bn = list.filter(function (d) { return !d.start; });
+      html += '<div class="drow2"><span class="dpos"><b>' + s + "</b><small>" + f0(tot) + " min</small></span>" +
+        '<span class="dst">' + (st.length ? st.map(cell).join("") : '<span class="dp empty">—</span>') + '</span><span class="dbn">' + (bn.length ? bn.map(cell).join("") : '<span class="dp empty">No backup</span>') + "</span></div>";
     });
-    return html + '</div><p class="note">' + f0(total) + " team minutes a game. Bench players are listed at the first position they play.</p></div>";
+    return html + '</div><p class="note">Bench players are listed at the first position they play. The colored edge is the impact tier.</p></div>';
   }
+  function shortName(n) { var parts = String(n).split(" "); return parts.length > 1 ? parts[0][0] + ". " + parts.slice(1).join(" ") : n; }
   // Who left and who arrived going into this season
   function changes(code, i) {
     var gone = [], come = [];
@@ -296,12 +322,76 @@
     html += '<div class="panel"><h3>What ' + esc(team(code).short) + " can do now <small>" + sname(0) + '</small></h3><p class="flags">' + flags.join("<br>") + '</p><div class="scroll"><table class="t"><thead><tr><th>Tool</th><th>Amount</th><th>Usable</th><th>Notes</th></tr></thead><tbody>' +
       T.tools.map(function (x) { return "<tr><td>" + esc(x.name) + "</td><td>" + (x.amt ? money(x.amt) : "—") + "</td><td>" + (x.ok ? '<span class="pill up">Yes</span>' : '<span class="pill">No</span>') + '</td><td class="note" style="text-align:left;white-space:normal">' + esc(x.why) + "</td></tr>"; }).join("") +
       '</tbody></table></div><p class="note">Trade exceptions as of Nov 2026; mid-level use as of mid-July (Hoops Rumors). A signing since then may have used more.</p></div>';
+    html += repeaterPanel(code);
     html += capSheet(code, i);
     var ext = H.extensions(code);
     html += tablePanel("Extension eligible now", "<th>Player</th><th>Kind</th><th>Max first year</th><th>Max years</th><th>Starts</th><th>Worth then</th><th>Market then</th>", ext.map(function (e) {
       return "<tr><td>" + pname(e.p, 22) + "</td><td>" + esc(e.kind === "rookie" ? "Rookie scale" : "Veteran") + "</td><td>" + money(e.first) + "</td><td>" + (e.years || "—") + "</td><td>" + sname(e.start) + "</td><td>" + money(e.prod) + "</td><td>" + money(e.market) + "</td></tr>";
     }).join(""), "Worth then: his projected production that season. Market: what he'd get as a free agent");
     html += picksPanel(code);
+    view.innerHTML = html;
+  }
+  // The repeater clock: five seasons of real tax history, then each projected season (tap one to say the team pays
+  // or ducks that year), whether a bill is at repeater rates, what the repeater costs, and the standard-rate runway
+  var repAssume = {};
+  function repeaterPanel(code) {
+    var A = repAssume[code] || {}, R = H.repeaterClock(code, A), tm = team(code).short;
+    var chips = R.rows.map(function (r) {
+      var cls = "rc" + (r.paid ? " paid" : "") + (r.rep && r.paid ? " rep" : "") + (r.hist ? " hist" : " fut") + (r.forced ? " forced" : "") + (r.j === 0 ? " now" : "");
+      var sub = r.hist ? (r.paid ? "Paid tax" : "Under") : (r.paid ? (r.rep ? "Repeater tax" : "Standard tax") : "Under") + (r.forced ? " (your call)" : "");
+      var detail = r.hist ? "" : (r.over >= 0 ? money(r.over) + " over" : money(-r.over) + " under") + (r.paid && r.bill ? " · bill " + money(r.bill) : "");
+      return (r.hist ? "<div" : '<button type="button" data-rep="' + code + ":" + r.j + '"') + ' class="' + cls + '"><span>' + sname(r.j) + "</span><b>" + sub + "</b>" +
+        (r.n != null ? "<small>" + r.n + " of prior 4 taxed" + (r.rep ? ": repeater" : "") + "</small>" : "<small>&nbsp;</small>") + (detail ? "<em>" + detail + "</em>" : "") + (r.hist ? "</div>" : "</button>");
+    }).join("");
+    var now = R.rows.filter(function (r) { return r.j === 0; })[0];
+    var lines = [];
+    lines.push(now.rep ? "<b>" + esc(tm) + " are repeaters this season.</b> They paid tax in " + now.n + " of the last four seasons, so any " + sname(0) + " bill is at repeater rates ($2.50 to $4.25 per dollar instead of $1.50 to $3.25)."
+      : "<b>" + esc(tm) + " are not repeaters this season.</b> " + now.n + " of the last four seasons in the tax, so a " + sname(0) + " bill would be at standard rates.");
+    if (now.rep && !now.paid) lines.push("They're projected under the line this season, which resets the clock.");
+    if (R.start != null) {
+      var fromS = sname(R.start), lastS = R.run ? sname(R.start + R.run - 1) : null;
+      lines.push(R.run >= 6 ? "From " + fromS + " they could pay the tax every season and never hit repeater rates."
+        : R.run ? "<b>Standard-rate runway: " + R.run + " season" + (R.run > 1 ? "s" : "") + ".</b> Paying tax every season from " + fromS + " stays at standard rates through " + lastS + "; " + sname(R.start + R.run) + " would be at repeater rates."
+        : "");
+    }
+    var cost = R.rows.filter(function (r) { return !r.hist && r.paid && r.rep; }).reduce(function (a, r) { return a + (r.bill - r.billStd); }, 0);
+    if (cost > 0) lines.push("On these projections the repeater adds <b>" + money(cost) + "</b> to their tax bills over what standard rates would cost.");
+    return '<div class="panel"><h3>Repeater clock <small>a bill is at repeater rates after tax in 3 of the prior 4 seasons</small></h3><div class="repclock">' + chips + "</div>" +
+      '<p class="flags">' + lines.filter(Boolean).join("<br>") + '</p><p class="note">Past seasons are who actually finished over the line (Hoops Rumors). Later seasons follow the projected payroll at the tax line; tap one to make the team pay or duck the tax that year and watch the clock move.' +
+      (Object.keys(A).length ? ' <button type="button" class="linkbtn" data-represet="' + code + '">Back to the projection</button>' : "") + "</p></div>";
+  }
+  view.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-rep]"), rs = e.target.closest("[data-represet]");
+    if (rs) { delete repAssume[rs.dataset.represet]; render(); return; }
+    if (!b) return;
+    var parts = b.dataset.rep.split(":"), code = parts[0], j = +parts[1], A = repAssume[code] || (repAssume[code] = {});
+    var proj = H.payroll(code, j) > CBA.tax(j);
+    if (A[j] == null) A[j] = !proj; else delete A[j];   // tap: the other way from the projection; tap again: back
+    render();
+  });
+  // Every traded pick in the league: who owns it, its protection, where it projects
+  function tcell(c) { return '<span class="tcell">' + logo(c, 18) + "<span>" + esc(team(c).short) + "</span></span>"; }
+  function picksPage() {
+    var q = state.q, yr = q.y2 || "", tm = q.t || "";
+    var all = H.allPicks().filter(function (pk) { return (!yr || String(pk.y) === yr) && (!tm || pk.from === tm || pk.owner === tm); });
+    var years = []; H.allPicks().forEach(function (pk) { if (years.indexOf(pk.y) < 0) years.push(pk.y); });
+    var html = '<h2 class="sec">Traded picks</h2><p class="lede">Every first- and second-round pick that has changed hands, with its protection and where it projects to land. Pick terms come from the Big Board\'s ledger (Tankathon and RealGM), refreshed daily.</p>';
+    html += controls('<label>Year<select data-q="y2"><option value="">All</option>' + years.map(function (y) { return '<option value="' + y + '"' + (String(y) === yr ? " selected" : "") + ">" + y + "</option>"; }).join("") + "</select></label>" + teamSelect(tm));
+    var protText = function (pk) {
+      var bits = [];
+      if (pk.prot) bits.push(pk.r === 2 ? "Protected " + (pk.prot.lo + (pk.prot.hi <= 30 ? 30 : 0)) + "-" + (pk.prot.hi + (pk.prot.hi <= 30 ? 30 : 0)) : pk.prot.lo === 1 ? "Top-" + pk.prot.hi + " protected" : "Protected " + pk.prot.lo + "-" + pk.prot.hi);
+      if (pk.group) bits.push("Better-of group");
+      return bits.length ? bits.join(" · ") : "Unprotected";
+    };
+    html += tablePanel(all.length + " picks", "<th>Pick</th><th>Original team</th><th>Owned by</th><th>Protection</th><th>Proj. slot</th><th>Conveys</th><th>Value</th><th>Notes</th>", all.map(function (pk) {
+      var info = H.pickInfo(pk);
+      return "<tr><td>" + pk.y + " " + (pk.r === 1 ? "1st" : "2nd") + "</td><td>" + tcell(pk.from) + "</td><td>" + (pk.owner === "OUT" ? "Forfeited" : tcell(pk.owner)) + "</td><td>" +
+        (pk.prot || pk.group ? "<b>" + esc(protText(pk)) + "</b>" : '<span class="note">Unprotected</span>') + "</td><td>" + f1(info.avg) + "</td><td>" + (pk.prot ? pct(info.conveys) : "") + "</td><td>" + money(H.pickValue(pk, H.cfg.mode)) + '</td><td class="note" style="text-align:left;white-space:normal">' + esc(pk.note || "") + "</td></tr>";
+    }).join(""), "Conveys: share of simulations where the protection doesn't hold");
+    var sw = (H.W.swaps || []).filter(function (s) { return (!yr || String(s.y) === yr) && (!tm || s.from === tm || s.owner === tm); });
+    if (sw.length) html += tablePanel("Swap rights", "<th>Pick</th><th>Holder</th><th>Swaps with</th><th>Value</th><th>Notes</th>", sw.map(function (s) {
+      return "<tr><td>" + s.y + " " + (s.r === 1 ? "1st" : "2nd") + "</td><td>" + tcell(s.owner) + "</td><td>" + tcell(s.from) + "</td><td>" + money(H.swapValue(s, H.cfg.mode)) + '</td><td class="note" style="text-align:left;white-space:normal">' + esc(s.note || "Takes the better of the two picks") + "</td></tr>";
+    }).join(""), "");
     view.innerHTML = html;
   }
   // Every player's salary each season, the options, and the lines that matter
@@ -348,7 +438,7 @@
     var head = "<th>Pick</th><th>To</th><th>Proj. slot</th><th>Conveys</th><th>Value</th><th>Market</th><th>Notes</th>";
     var sw = swaps.map(function (s) { return "<tr><td>" + logo(s.from, 16) + " " + s.y + " " + (s.r === 1 ? "1st" : "2nd") + " swap with " + esc(team(s.from).short) + "</td><td></td><td></td><td></td><td>" + money(H.swapValue(s, "prod")) + "</td><td>" + money(H.swapValue(s, "market")) + '</td><td class="note" style="text-align:left">' + esc(s.note || "Can swap its own pick for theirs if theirs lands higher") + "</td></tr>"; }).join("");
     return '<div>' + tablePanel("Draft picks owned", head, own.filter(function (pk) { return pk.r === 1 || pk.y <= 2029; }).map(function (pk) { return row(pk, true); }).join("") + sw, "Value: what that slot has produced. Market: what teams pay for it") +
-      tablePanel("Own picks owed away", head, owed.map(function (pk) { return row(pk, false); }).join(""), "") + "</div>";
+      tablePanel("Own picks owed away", head, owed.map(function (pk) { return row(pk, false); }).join(""), "") + '<p class="note"><a href="#/picks">Every traded pick in the league, with protections</a></p></div>';
   }
 
   // ---------- player card ----------
@@ -364,6 +454,7 @@
     if (p.darko != null) html += kv(rt(p.darko), "DARKO today");
     if (p.bpm != null) html += kv(rt(p.bpm), "BPM this season");
     html += "</div>";
+    if (contractYears(p, 0).length) html += '<h4 class="card-sec">Contract</h4>' + contractStrip(p, 0);
     var vt = s.rows.reduce(function (a, r) { return a + r.value * Math.pow(1 + H.cfg.disc, -r.j); }, 0), ct = s.rows.reduce(function (a, r) { return a + r.sal * Math.pow(1 + H.cfg.disc, -r.j); }, 0);
     html += '<div class="vcs"><div><span>Value</span><b>' + money(vt) + "</b><small>" + (H.cfg.mode === "market" ? "what teams would pay him" : "what he should produce") + '</small></div><i>−</i><div><span>Contract</span><b>' + money(ct) +
       '</b><small>what he\'ll be paid</small></div><i>=</i><div class="' + (s.pv >= 0 ? "up" : "dn") + '"><span>Surplus</span><b>' + signed(s.pv) + "</b><small>" + s.rows.length + " season" + (s.rows.length === 1 ? "" : "s") + ", discounted</small></div></div>";
@@ -498,6 +589,38 @@
   }
   function destOf(tr, a) { return a.to >= 0 && a.to !== a.from && a.to < tr.sides.length ? a.to : (a.from + 1) % tr.sides.length; }
   function pickOf(id) { return H.W.picks.find(function (x) { return x.id === id; }); }
+  // Salary matching at a glance: what comes in against what the rules let this team take back
+  function gauge(r) {
+    if (!r.inSal && !r.outSal) return "";
+    var room = r.P2 <= CBA.cap(0), max = room ? null : r.outSal > 0 ? H.matchMax(r.outSal, r.post) : 0;
+    var top = Math.max(r.inSal, max || 0, 1) * 1.08, ok = room || r.inSal <= (max || 0) + 1;
+    return '<div class="gauge ' + (ok ? "ok" : "bad") + '"><div class="gbar"><b style="width:' + (r.inSal / top * 100).toFixed(1) + '%"></b>' + (max != null ? '<i style="left:' + (max / top * 100).toFixed(1) + '%" title="Most it can take back"></i>' : "") + "</div><small>" +
+      (room ? "Takes back " + money(r.inSal) + " into cap room" : "Takes back <b>" + money(r.inSal) + "</b> of " + money(max) + " allowed" + (ok ? "" : ": " + money(r.inSal - max) + " too much")) + "</small></div>";
+  }
+  // When a deal fails, look for the one roster player a team could add (or take off) that makes it legal
+  function fixes(tr, chk) {
+    var out = [], fail = tr.sides.filter(function (c) { return !chk.teams[c].ok; });
+    var base = tr.assets.map(function (a) { return { kind: a.kind, id: a.id, amt: a.kind === "c" ? +a.id : 0, from: tr.sides[a.from], to: tr.sides[destOf(tr, a)] }; });
+    var used = {}; tr.assets.forEach(function (a) { used[a.kind + ":" + a.id] = 1; });
+    var tries = 0;
+    tr.sides.forEach(function (c, k) {
+      if (out.length >= 4) return;
+      // a failing team sends more salary, or a partner sends filler to a team under its limit
+      var partner = tr.sides.map(function (x, j) { return j; }).filter(function (j) { return j !== k; })
+        .sort(function (a, b) { return (fail.indexOf(tr.sides[b]) >= 0) - (fail.indexOf(tr.sides[a]) >= 0); })[0];
+      var pool = Object.values(H.W.P).filter(function (p) { return p.t === c && !p.two && H.salary(p, 0) > 0 && !used["p:" + p.id]; }).sort(function (a, b) { return H.salary(a, 0) - H.salary(b, 0); });
+      for (var n = 0; n < pool.length && tries < 40 && out.length < 4; n++) {
+        tries++;
+        var mv = base.concat([{ kind: "p", id: pool[n].id, amt: 0, from: c, to: tr.sides[partner] }]);
+        var t = H.checkTrade({ teams: tr.sides, moves: mv });
+        if (t.ok) out.push({ p: pool[n], k: k, to: partner });
+      }
+    });
+    if (!out.length) return "";
+    return '<div class="fixes"><b>Ways to make it work</b>' + out.map(function (f) {
+      return '<button type="button" class="fixbtn" data-pick="p:' + esc(f.p.id) + '" data-side="' + f.k + '" data-to="' + f.to + '">' + logo(tr.sides[f.k], 16) + " " + esc(team(tr.sides[f.k]).short) + " add " + esc(f.p.n) + " (" + money(H.salary(f.p, 0)) + ")</button>";
+    }).join("") + "</div>";
+  }
   function assetLine(a, tr, k, outgoing) {
     var to = destOf(tr, a), right = "", sub = "", label;
     if (a.kind === "p") {
@@ -507,6 +630,9 @@
       sub = esc(posOf(p)) + " · " + p.age + " · thru " + sname(last) + (p.c.opt && Object.keys(p.c.opt).length ? " (" + Object.keys(p.c.opt).map(function (j) { return p.c.opt[j] + " " + sname(+j).slice(2); }).join(", ") + ")" : "") + " · " + money(left) + " total";
       var kick = outgoing ? 0 : H.kicker(p);
       right = '<b class="sal">' + money(H.salary(p, 0) + kick) + "</b>";
+      sub = esc(posOf(p)) + " · age " + p.age + " · " + rt(H.rating(p, 0)) + " impact · then " + esc(H.faKind(p)) + '<span class="minis">' + contractYears(p, 0).map(function (y) {
+        return '<span class="mini' + (y.opt ? " o-" + y.opt : "") + '"><i>' + sname(y.j).slice(2) + (y.opt ? " " + CBA.OPT_SHORT[y.opt] : "") + "</i>" + money(y.sal) + "</span>";
+      }).join("") + "</span>";
       if (kick) sub += ' · <span class="pill warn">includes ' + money(kick) + " trade kicker</span>";
     } else if (a.kind === "k") {
       var pk = pickOf(a.id);
@@ -535,6 +661,7 @@
     var warns = ready && moves.length ? H.tradeWarnings({ teams: tr.sides, moves: moves }) : [];
     if (warns.length) html += '<div class="tbanner warnb"><b>Heads up</b><span>' + warns.map(esc).join("<br>") + "</span></div>";
     if (chk) html += '<div class="tbanner ' + (chk.ok ? "ok" : "bad") + '"><b>' + (chk.ok ? "Trade works" : "Trade doesn't work") + "</b><span>" + (chk.ok ? "Every team passes the cap rules." : tr.sides.filter(function (c) { return !chk.teams[c].ok; }).map(function (c) { return esc(team(c).short); }).join(" and ") + " fail" + (tr.sides.filter(function (c) { return !chk.teams[c].ok; }).length === 1 ? "s" : "") + " the cap rules (details below).") + '</span><button class="btn" data-copy>Copy link</button></div>';
+    if (chk && !chk.ok) html += fixes(tr, chk);
     html += '<div class="tcols n' + n + '">';
     tr.sides.forEach(function (code, k) {
       var mine = tr.assets.filter(function (a) { return a.from === k; });
@@ -545,7 +672,10 @@
       if (code) {
         var before = H.payroll(code, 0), after = r ? r.P2 : before, sb = CBA.status(before, 0), sa = CBA.status(after, 0);
         var nm = { room: "Room", over: "Over cap", tax: "Tax", a1: "1st apron", a2: "2nd apron" };
-        money0 = '<div class="tc-pay"><div><span>Payroll</span><b>' + money(before) + (r ? ' <i>→</i> ' + money(after) : "") + '</b></div><div><span>Position</span><b><span class="pill ' + (sb === "a1" || sb === "a2" ? "fill" : "") + '">' + nm[sb] + "</span>" + (r && sa !== sb ? ' <i>→</i> <span class="pill ' + (sa === "a1" || sa === "a2" ? "fill" : "") + '">' + nm[sa] + "</span>" : "") + "</b></div></div>";
+        var rep = H.tools(code, 0).rep, tb0 = CBA.taxBill(before, 0, rep), tb1 = CBA.taxBill(after, 0, rep);
+        money0 = '<div class="tc-pay"><div><span>Payroll</span><b>' + money(before) + (r ? ' <i>→</i> ' + money(after) : "") + '</b></div><div><span>Position</span><b><span class="pill ' + (sb === "a1" || sb === "a2" ? "fill" : "") + '">' + nm[sb] + "</span>" + (r && sa !== sb ? ' <i>→</i> <span class="pill ' + (sa === "a1" || sa === "a2" ? "fill" : "") + '">' + nm[sa] + "</span>" : "") + "</b></div>" +
+          '<div><span>Tax bill' + (rep ? " (repeater)" : "") + "</span><b>" + (tb0 ? money(tb0) : "None") + (r && tb1 !== tb0 ? ' <i>→</i> ' + (tb1 ? money(tb1) : "None") : "") + "</b></div>" +
+          '<div><span>To the tax line</span><b>' + (CBA.tax(0) - after >= 0 ? money(CBA.tax(0) - after) + " under" : money(after - CBA.tax(0)) + " over") + "</b></div></div>" + (r ? gauge(r) : "");
       }
       var outSal = mine.reduce(function (a, x) { return a + (x.kind === "p" ? H.salary(H.W.P[x.id], 0) : 0); }, 0);
       var inSal = inc.reduce(function (a, x) { return a + (x.kind === "p" ? H.salary(H.W.P[x.id], 0) + H.kicker(H.W.P[x.id]) : 0); }, 0);
@@ -559,6 +689,12 @@
     if (chk) html += matchTable(tr, chk) + valueTable(tr, sum);
     view.innerHTML = html;
   }
+  view.addEventListener("input", function (e) {
+    var f = e.target.closest("[data-rfilter]");
+    if (!f) return;
+    var v = f.value.trim().toLowerCase();
+    f.closest("details").querySelectorAll(".org-row[data-name]").forEach(function (b) { b.hidden = v && b.dataset.name.indexOf(v) < 0; });
+  });
   // Trade finder: pick a player, get legal deals from around the league
   function finderPanel() {
     var q = state.q, target = q.find && H.W.P[q.find] ? H.W.P[q.find] : null;
@@ -617,8 +753,10 @@
       .sort(function (a, b) { return H.salary(b, 0) - H.salary(a, 0); });
     var pks = H.picksOf(code).filter(function (pk) { return !on["k:" + pk.id] && !pk.locked && (pk.r === 1 || pk.y <= 2029); });
     var tpes = H.W.T[code].tpes;
-    return '<details class="org" open><summary>Roster</summary><div class="rhead"><span>Player</span><span>' + sname(0) + "</span><span>Thru</span></div>" + ps.map(function (p) {
-      return '<button type="button" class="org-row" data-pick="p:' + esc(p.id) + '" data-side="' + k + '">' + face(p, 22) + '<span class="grow">' + esc(p.n) + ' <span class="note">' + esc(posOf(p)) + '</span></span><b class="sal">' + money(H.salary(p, 0)) + '</b><span class="thru">' + sname(H.lastYear(p)).slice(2) + "</span></button>";
+    var dec15 = H.asOf < "2026-12-15";
+    return '<details class="org" open><summary>Roster</summary><input class="rfilter" type="search" placeholder="Filter by name" data-rfilter="' + k + '"><div class="rhead"><span>Player</span><span>' + sname(0) + "</span><span>Thru</span></div>" + ps.map(function (p) {
+      var locked = dec15 && p.c && p.c.signed === 0 && !(p.c.rk && p.c.rk[1] > 0);
+      return '<button type="button" class="org-row' + (locked ? " locked" : "") + '" data-pick="p:' + esc(p.id) + '" data-side="' + k + '" data-name="' + esc(p.n.toLowerCase()) + '"' + (locked ? ' title="Signed this offseason: can\'t be traded until Dec. 15"' : "") + ">" + face(p, 22) + '<span class="grow">' + esc(p.n) + ' <span class="note">' + esc(posOf(p)) + "</span>" + (locked ? ' <span class="pill warn">Dec 15</span>' : "") + '</span><b class="sal">' + money(H.salary(p, 0)) + '</b><span class="thru">' + sname(H.lastYear(p)).slice(2) + "</span></button>";
     }).join("") + "</details>" +
       '<details class="org"><summary>Draft picks</summary>' + pks.map(function (pk) {
         return '<button type="button" class="org-row" data-pick="k:' + esc(pk.id) + '" data-side="' + k + '">' + logo(pk.from, 18) + '<span class="grow">' + esc(H.pickName(pk)) + '</span><span class="note">slot ' + f1(H.pickInfo(pk).avg) + "</span></button>";
@@ -657,7 +795,7 @@
     if (pick) {
       var m = pick.dataset.pick.split(":"), kind = m[0], id = m.slice(1).join(":");
       tr.assets = tr.assets.filter(function (a) { return !(a.kind === kind && a.id === id); });
-      tr.assets.push({ kind: kind, id: id, from: +pick.dataset.side, to: -1 });
+      tr.assets.push({ kind: kind, id: id, from: +pick.dataset.side, to: pick.dataset.to != null ? +pick.dataset.to : -1 });
     }
     if (cash) {
       var k = +cash.dataset.addcash, inp = view.querySelector('[data-cashamt="' + k + '"]'), v = Math.round((+inp.value || 0) * 1e6);
@@ -713,9 +851,9 @@
 
   // ---------- start ----------
   function get(u, opt) { return fetch(u, { cache: "no-cache" }).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); }).catch(function (e) { if (opt) return null; throw e; }); }
-  Promise.all([get("../celtics/data.json"), get("../hardcap/stats.json", true), get("../hardcap/contracts.json", true), get("../celtics/live.json", true), get("../draft/nba.json", true), get("data/picks.json"), get("../tools/draft_teams.json", true), get("data/tpes.json", true), get("data/exceptions.json", true), get("data/dead.json", true), get("data/darko.json", true)])
+  Promise.all([get("../celtics/data.json"), get("../hardcap/stats.json", true), get("../hardcap/contracts.json", true), get("../celtics/live.json", true), get("../draft/nba.json", true), get("data/picks.json"), get("../tools/draft_teams.json", true), get("data/tpes.json", true), get("data/exceptions.json", true), get("data/dead.json", true), get("data/darko.json", true), get("data/taxhist.json", true)])
     .then(function (r) {
-      H = Hub.build({ data: r[0], stats: r[1] || {}, fixes: r[2], live: r[3], board: r[4] || {}, picks: r[5], teams: r[6], tpes: r[7], exceptions: r[8], dead: r[9], darko: r[10] }, { mode: load("mode", "prod"), disc: load("disc", 0.07), fill: load("fill", true), convex: load("convex", 1.5), growth: load("growth", 0.5) });
+      H = Hub.build({ data: r[0], stats: r[1] || {}, fixes: r[2], live: r[3], board: r[4] || {}, picks: r[5], teams: r[6], tpes: r[7], exceptions: r[8], dead: r[9], darko: r[10], taxhist: r[11] }, { mode: load("mode", "prod"), disc: load("disc", 0.07), fill: load("fill", true), convex: load("convex", 1.5), growth: load("growth", 0.5) });
       H.keep = load("keep", {}) || {};
       fillBox.checked = H.cfg.fill;
       $("#foot").innerHTML = "Rosters and contracts as of " + esc(H.asOf) + ". Updated every day from Basketball-Reference, ESPN, DARKO and the Big Board.";

@@ -1,0 +1,11 @@
+{
+  "src": "Hoops Rumors' repeater taxpayer tracker (updated June 27, 2026) for 2022-23 through 2025-26; RealGM for 2021-22",
+  "note": "Seasons are counted back from 2026-27: -1 is 2025-26. Teams that finished the season over the tax line.",
+  "paid": {
+    "-5": ["GSW", "BRK", "LAC", "MIL", "LAL", "UTA", "PHI"],
+    "-4": ["BOS", "BRK", "DAL", "DEN", "GSW", "LAC", "LAL", "MIL", "PHO"],
+    "-3": ["BOS", "DEN", "GSW", "LAC", "LAL", "MIA", "MIL", "PHO"],
+    "-2": ["BOS", "DAL", "DEN", "GSW", "LAL", "MIA", "MIL", "MIN", "NYK", "PHO"],
+    "-1": ["CLE", "GSW", "HOU", "LAC", "LAL", "MIN", "NYK"]
+  }
+}

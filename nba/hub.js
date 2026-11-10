@@ -117,13 +117,25 @@
     for (const p of players) {
       const bb = stats.contracts && stats.contracts[p.id];
       const rows = bb ? [bb.slice(0, 3), ...bb.slice(3)] : [];
-      if (!p.two && count[p.t] > 15 && rows.length && !rows.some(r => r[0] === p.t)) { p.two = true; p.deadElsewhere = rows[0][0]; count[p.t]--; }
+      if (p.two || !rows.length || rows.some(r => r[0] === p.t)) continue;
+      // His only contract is an old team's option for this season, and he's playing somewhere else: the option was
+      // declined, so nobody owes it, and he's here on a new deal the feeds don't price yet (two-way or camp deal)
+      const declined = rows.every(r => r[2] && r[2]["0"] === "TO");
+      if (declined) { p.two = true; p.declinedBy = rows[0][0]; p.c = { sal: [0, 0, 0, 0, 0], opt: {} }; count[p.t]--; continue; }
+      if (count[p.t] > 15) { p.two = true; p.deadElsewhere = rows[0][0]; count[p.t]--; }
     }
     // Banner 19's world, set to today: real records, this season's remaining schedule, the real pick ledger
     const asOf = (live && live.updated ? live.updated : stats.updated || "2026-11-09").slice(0, 10);
     const W = L.newWorld(Object.assign({}, data, { players }), live ? Object.assign({}, live, { players: null }) : null, 19);
     W.phase = "reg"; W.date = asOf;
     for (const p of Object.values(W.P)) if (!p.c.sal.length) p.c.sal = [0, 0, 0, 0, 0];
+    // The real tax history (the world starts with a rough one): who finished over the line in each of the last five seasons
+    if (inp.taxhist && inp.taxhist.paid) {
+      for (const c of Object.keys(W.T)) {
+        W.T[c].taxHist = {};
+        for (const [k, list] of Object.entries(inp.taxhist.paid)) W.T[c].taxHist[k] = list.includes(c);
+      }
+    }
     const rec = L.liveStart(W);
     L.newSchedule(W, rec);
     const played = rec ? sum(Object.values(rec).map(x => x.w + x.l)) / 30 : 0;
@@ -250,6 +262,24 @@
       for (const slot of [...open]) { const e = rest.shift(); if (e) five[slot] = e; }
       return { five, rest };
     }
+    // Five players onto PG..C with the least stretch: a player costs nothing at his listed position, a little at his
+    // second one, and one step for every position away (so a SG/PG plays the point before a forward does)
+    function fitFive(five) {
+      const idx = { PG: 0, SG: 1, SF: 2, PF: 3, C: 4 };
+      const cost = (e, k) => {
+        const ps = posList(e.p);
+        return Math.min(...ps.map((x, n) => Math.abs((idx[x] ?? 2) - k) + (n ? 0.25 : 0)));
+      };
+      let best = null, bestC = Infinity;
+      const perm = (left, chosen) => {
+        if (!left.length) { const c = chosen.reduce((a, e, k) => a + cost(e, k), 0); if (c < bestC) { bestC = c; best = chosen.slice(); } return; }
+        left.forEach((e, n) => perm(left.filter((_, m) => m !== n), chosen.concat([e])));
+      };
+      perm(five, []);
+      const out = {};
+      (best || []).forEach((e, k) => { out[SLOTS[k]] = e; });
+      return out;
+    }
     function buildLineup(entries, i, code) {
       const live = i === 0;
       let starters, bench, mins = {};
@@ -260,9 +290,21 @@
         const st = id => (stats.starts && stats.starts[id]) || [0, 0];
         const want = e => { const m = mpgNow(e.p); return m == null ? Mo.roleMin(e.r) * 0.6 : m; };
         const pool = entries.slice().sort((a, b) => want(b) - want(a));
-        if (real) starters = real.map(id => entries.find(e => e.p.id === id));
-        else if (stats.starts) starters = pool.slice().sort((a, b) => (st(b.p.id)[0] - st(a.p.id)[0]) || (want(b) - want(a))).slice(0, 5);
+        // The usual starting five: most starts this season (one game's lineup is often a rest night), with last game's
+        // starters breaking ties (a starting job that changed hands) and never two true centers when a forward is there
+        if (stats.starts && entries.some(e => st(e.p.id)[0] > 0)) {
+          const last = new Set(real || []);
+          const ranked = pool.slice().sort((a, b) => (st(b.p.id)[0] + (last.has(b.p.id) ? 0.5 : 0)) - (st(a.p.id)[0] + (last.has(a.p.id) ? 0.5 : 0)) || (want(b) - want(a)));
+          const isC = e => /^C/.test(e.p.pos || "") && !/F/.test(e.p.pos || "");
+          starters = [];
+          for (const e of ranked) {
+            if (starters.length === 5) break;
+            if (isC(e) && starters.some(isC) && ranked.some(x => !starters.includes(x) && x !== e && !isC(x) && st(x.p.id)[0] > 0)) continue;
+            starters.push(e);
+          }
+        } else if (real) starters = real.map(id => entries.find(e => e.p.id === id));
         else starters = SLOTS.map(sl => bySlots(pool).five[sl]).filter(Boolean);
+        starters.forEach(e => { e.starts = st(e.p.id); });
         bench = pool.filter(e => !starters.includes(e));
         let tot = 0;
         for (const e of entries) { mins[e.p.id] = want(e); tot += mins[e.p.id]; }
@@ -276,7 +318,7 @@
         bench.forEach((e, k) => { mins[e.p.id] = MIN_BENCH[k] || 0; });
       }
       // starters placed PG to C by the positions they play
-      const fit = bySlots(starters).five;
+      const fit = starters.length === 5 ? fitFive(starters) : bySlots(starters).five;
       const order = SLOTS.map(sl => fit[sl]).filter(Boolean);
       bench = bench.slice().sort((a, b) => (mins[b.p.id] || 0) - (mins[a.p.id] || 0));
       return { starters: order, slots: SLOTS.filter(sl => fit[sl]), bench, mins, real: live && !!(stats.lineups && stats.lineups[code]) };
@@ -579,7 +621,7 @@
     H.pickName = pk => {
       const from = teamInfo[pk.from] ? teamInfo[pk.from].short : pk.from;
       let s = pk.y + " " + (pk.r === 1 ? "1st" : "2nd") + (pk.owner !== pk.from ? " (" + from + ")" : "");
-      if (pk.prot) s += pk.r === 2 ? ", protected " + pk.prot.lo + "-" + pk.prot.hi : pk.prot.lo === 1 ? ", top-" + pk.prot.hi + " protected" : ", protected " + pk.prot.lo + "-" + pk.prot.hi;
+      if (pk.prot) s += pk.r === 2 ? ", protected " + (pk.prot.lo + (pk.prot.hi <= 30 ? 30 : 0)) + "-" + (pk.prot.hi + (pk.prot.hi <= 30 ? 30 : 0)) : pk.prot.lo === 1 ? ", top-" + pk.prot.hi + " protected" : ", protected " + pk.prot.lo + "-" + pk.prot.hi;
       return s;
     };
     H.picksOf = code => W.picks.filter(pk => pk.owner === code).sort((a, b) => a.y - b.y || a.r - b.r);
@@ -629,6 +671,29 @@
       return { tools: out, pay, status, hard, hardWhy: t.hardWhy[i] || "", rep, taxBill: CBA.taxBill(pay, i, rep), roster: n, two: Object.values(W.P).filter(p => p.t === code && p.two).length,
         toTax: CBA.tax(i) - pay, toA1: CBA.a1(i) - pay, toA2: CBA.a2(i) - pay };
     });
+    // The repeater clock: tax paid (history, then each later season's projected payroll unless the user says otherwise),
+    // whether a bill that season would be at repeater rates, and how long a run of standard-rate tax seasons the team has
+    H.repeaterClock = (code, assume) => {
+      const t = W.T[code], A = assume || {}, rows = [];
+      const paid = j => j < 0 ? !!t.taxHist[j] : A[j] != null ? A[j] : j >= YEARS ? false : H.payroll(code, j) > CBA.tax(j);
+      const repAt = (j, pf) => { let n = 0; for (let k = j - 4; k < j; k++) if (pf(k)) n++; return n; };
+      for (let j = -5; j < YEARS; j++) {
+        const pay = j >= 0 ? H.payroll(code, j) : null, n = j >= -1 ? repAt(j, paid) : null, rep = n != null && n >= 3;
+        rows.push({ j, paid: paid(j), hist: j < 0, forced: A[j] != null, pay, over: j >= 0 ? pay - CBA.tax(j) : null, n, rep,
+          bill: j >= 0 && pay > CBA.tax(j) ? CBA.taxBill(pay, j, rep) : 0, billStd: j >= 0 && pay > CBA.tax(j) ? CBA.taxBill(pay, j, false) : 0 });
+      }
+      // The runway: the first season from now a tax bill would be at standard rates, then pay every season after it
+      let start = null;
+      for (let j = 0; j < YEARS + 4 && start == null; j++) if (repAt(j, paid) < 3) start = j;
+      let run = 0;
+      if (start != null) {
+        const pf = k => k >= start ? true : paid(k);
+        for (let j = start; j < start + 6; j++) { if (repAt(j, pf) >= 3) break; run++; }
+      }
+      return { rows, start, run, nowRep: rows.find(r => r.j === 0).rep, n0: rows.find(r => r.j === 0).n };
+    };
+    // Every traded pick in the league, with its protection
+    H.allPicks = () => W.picks.filter(pk => pk.owner !== pk.from).slice().sort((a, b) => a.y - b.y || a.r - b.r || a.from.localeCompare(b.from));
     // Next summer's spending power: cap room after the deals already on the books and rookies, or the exception
     // Next summer's spending power: room before cap holds (if the team renounces everyone) and after them
     // (Banner 19's holds: free agents it still has Bird rights to, and its own first-round picks)

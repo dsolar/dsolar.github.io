@@ -105,26 +105,25 @@ table.t th.on{color:var(--ink)}
 .T-Elite{background:var(--t-elite);color:var(--t-elite-i)}
 
 .fieldwrap{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:12px;margin-bottom:14px}
-.field{position:relative;width:100%;max-width:760px;margin:0 auto;aspect-ratio:1.18/1}
+.field{position:relative;width:100%;max-width:760px;margin:0 auto;aspect-ratio:544/522;container-type:inline-size}
 .field svg{position:absolute;inset:0;width:100%;height:100%}
-.spot{position:absolute;transform:translate(-50%,-50%);width:clamp(118px,19%,150px);background:var(--card);border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.18);overflow:hidden;font-size:12.5px;cursor:default}
-.spot header{display:flex;justify-content:space-between;align-items:center;padding:4px 7px;font:700 13px/1 var(--cond);letter-spacing:.04em}
+.spot{position:absolute;transform:translate(-50%,-50%);width:clamp(104px,17%,132px);background:var(--card);border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.22);overflow:hidden;font-size:12px;cursor:default}
+.spot header{display:flex;justify-content:space-between;align-items:center;padding:4px 7px;font:700 12.5px/1 var(--cond);letter-spacing:.04em}
 .spot .r{display:flex;align-items:center;gap:5px;padding:3px 7px;border-top:1px solid var(--rule-2);cursor:pointer;color:var(--ink)}
 .spot .r:hover{background:var(--paper-2)}
 .spot .r .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .spot .r .w{font-variant-numeric:tabular-nums;color:var(--muted)}
 .spot .r.fillr{color:var(--t-fringe-i);font-weight:600;cursor:default}
+.spot .r + .r{font-size:.92em;color:var(--muted)}
 .staff{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:760px;margin:10px auto 0}
-/* phones: the diamond becomes a 3x3 grid in field order (outfield, infield, then DH and catcher) */
+/* phones: the same field, with compact cards (no faces) sized to the drawing */
 @media (max-width:640px){
-  .fieldwrap{padding:8px}
-  .field{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-areas:"lf cf rf" "tb ss sb" "dh c fb";gap:6px;aspect-ratio:auto}
-  .field svg{display:none}
-  .field .spot{position:static;transform:none;width:auto;font-size:11.5px}
-  .spot[data-slot="LF"]{grid-area:lf}.spot[data-slot="CF"]{grid-area:cf}.spot[data-slot="RF"]{grid-area:rf}
-  .spot[data-slot="3B"]{grid-area:tb}.spot[data-slot="SS"]{grid-area:ss}.spot[data-slot="2B"]{grid-area:sb}
-  .spot[data-slot="DH"]{grid-area:dh}.spot[data-slot="C"]{grid-area:c}.spot[data-slot="1B"]{grid-area:fb}
-  .spot .r{padding:3px 5px;gap:4px}
+  .fieldwrap{padding:6px}
+  .field .spot{width:23.5cqw;font-size:max(9px,2.65cqw);border-radius:6px}
+  .field .spot header{padding:2px 4px;font-size:max(9.5px,2.8cqw)}
+  .field .spot .r{padding:1px 4px;gap:3px}
+  .field .spot .r .ds-face,.field .spot .r .pill{display:none}
+  .field svg .ft2{font-size:20px}
   .staff{grid-template-columns:1fr;margin-top:8px}
 }
 .staff .spot{position:static;transform:none;width:auto}
@@ -290,3 +289,8 @@ table.pg tr.muted-row td{color:var(--muted);font-style:italic}
 .cbt-bar b{position:absolute;inset:0 auto 0 0;border-radius:4px;background:var(--t-strong-i)}
 .cbt-bar b.t1{background:var(--gold)} .cbt-bar b.t2{background:#d9822b} .cbt-bar b.t3{background:var(--red)} .cbt-bar b.t4{background:#7a0019}
 .cbt-bar i{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.45}
+
+/* team logos on dark backgrounds: a light disc so black and navy marks stay readable */
+@media (prefers-color-scheme: dark){
+  img.logo{background:rgba(255,255,255,.94);border-radius:50%;padding:2px;box-sizing:border-box}
+}
