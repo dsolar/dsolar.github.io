@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-09T21:04:03Z",
+ "updated": "2026-11-10T18:15:24Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,73 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-vvG17Z_2YhcSO9",
-   "date": "2026-11-09",
-   "time": "19:00",
-   "title": "George Clanton",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/george-clanton-boston-massachusetts-11-09-2026/event/010064FC1BB73817",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18426322",
-    "2026-11-09-george-clanton-paradise-rock-club"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_CJqMc2Z",
-   "date": "2026-11-09",
-   "time": "19:00",
-   "title": "SIX60",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/six60-boston-massachusetts-11-09-2026/event/010064E99DDED3C0",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18392709"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_2pIw04C",
-   "date": "2026-11-09",
-   "time": "19:30",
-   "title": "Dave Matthews Band",
-   "cat": "music",
-   "venue": "Amica Mutual Pavilion",
-   "city": "Providence, RI",
-   "url": "https://www.ticketmaster.com/dave-matthews-band-providence-rhode-island-11-09-2026/event/010064F5A8CA454E",
-   "source": "ticketmaster",
-   "drive_hours": 1.0,
-   "act": "Dave Matthews Band",
-   "aka": [
-    "sg-18474897"
-   ],
-   "score": 2,
-   "why": "big"
-  },
-  {
-   "id": "tm-Z7r9jZ1A7-fPM",
-   "date": "2026-11-09",
-   "time": "20:00",
-   "title": "Hiss Golden Messenger",
-   "cat": "music",
-   "venue": "The Sinclair Music Hall",
-   "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7-fPM",
-   "source": "ticketmaster",
-   "act": "Hiss Golden Messenger",
-   "aka": [
-    "sg-18095621",
-    "2026-11-09-hiss-golden-messenger-the-sinclair"
-   ],
-   "score": 2,
-   "why": "like"
-  },
   {
    "id": "tm-vvG17Z_2DL1Ise",
    "date": "2026-11-10",
@@ -206,6 +139,18 @@
     "2026-11-11-windwaker-and-don-broco-mgm-music-hall-at-fe"
    ],
    "sub": "with Beartooth and Magnolia Park",
+   "score": 0
+  },
+  {
+   "id": "sg-18754824",
+   "date": "2026-11-11",
+   "time": "18:30",
+   "title": "Mary Beth Barone",
+   "cat": "comedy",
+   "venue": "An Unlikely Story",
+   "city": "Plainville, MA",
+   "url": "https://seatgeek.com/mary-beth-barone-tickets/comedy/2026-11-11-6-30-pm/18754824",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -1019,18 +964,6 @@
    "score": 0
   },
   {
-   "id": "sg-18720956",
-   "date": "2026-11-14",
-   "time": "20:00",
-   "title": "A Boogie Wit Da Hoodie",
-   "cat": "music",
-   "venue": "Agganis Arena",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/a-boogie-wit-da-hoodie-tickets/boston-massachusetts-agganis-arena-2026-11-14-8-pm/concert/18720956",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
    "id": "tm-Z7r9jZ1A70U3f",
    "date": "2026-11-14",
    "time": "20:00",
@@ -1702,6 +1635,7 @@
    "url": "https://www.ticketmaster.com/trippie-redd-the-nondisclosure-agreement-tour-boston-massachusetts-11-19-2026/event/01006532AECD362E",
    "source": "ticketmaster",
    "aka": [
+    "sg-18617576",
     "2026-11-19-trippie-redd-citizens-house-of-bl"
    ],
    "score": 0
@@ -6054,6 +5988,18 @@
    "why": "love"
   },
   {
+   "id": "tm-vv1AvZk4PGkd0q4Bh",
+   "date": "2027-01-16",
+   "time": "18:30",
+   "title": "Grace Potter & The Trespassers",
+   "cat": "music",
+   "venue": "Citizens House of Blues Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/grace-potter-the-trespassers-boston-massachusetts-01-16-2027/event/01006565E4755E9B",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv177Z_fGkXIhHIk",
    "date": "2027-01-16",
    "time": "19:00",
@@ -6638,6 +6584,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/infected-mushroom-live-band-boston-massachusetts-01-30-2027/event/01006564A6CA7DFA",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18754400"
+   ],
    "score": 0
   },
   {
@@ -6649,6 +6598,18 @@
    "venue": "Arts at the Armory",
    "city": "Somerville, MA",
    "url": "https://www.eventbrite.com/e/nurse-georgie-carroll-tickets-2003174281199?aff=oddtdtcreator",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
+   "id": "tm-vv1AvZk4PGkdhEVq5",
+   "date": "2027-01-30",
+   "time": "21:00",
+   "title": "YDG presents Lucid Dreams Tour ( 18+ )",
+   "cat": "music",
+   "venue": "Big Night Live",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/ydg-presents-lucid-dreams-tour-18-boston-massachusetts-01-30-2027/event/01006565DB9F474B",
    "source": "ticketmaster",
    "score": 0
   },
@@ -6818,6 +6779,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7ICF",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18753636"
+   ],
    "score": 0
   },
   {
@@ -7388,6 +7352,18 @@
    "score": 0
   },
   {
+   "id": "tm-vv1k7Z_p38G7MAx6",
+   "date": "2027-02-19",
+   "time": "19:30",
+   "title": "Ms. Pat: The Raising Chaos Tour",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/ms-pat-the-raising-chaos-tour-boston-massachusetts-02-19-2027/event/0100656490DC5887",
+   "source": "ticketmaster",
+   "score": 1
+  },
+  {
    "id": "tm-Z7r9jZ1AAeFvo",
    "date": "2027-02-19",
    "time": "20:00",
@@ -7442,6 +7418,18 @@
    "city": "Beverly, MA",
    "url": "https://seatgeek.com/the-buena-vista-orchestra-tickets/beverly-massachusetts-the-cabot-2027-02-20-8-pm/concert/18715617",
    "source": "seatgeek",
+   "score": 0
+  },
+  {
+   "id": "tm-vv1AvZk4PGkdL94a7",
+   "date": "2027-02-20",
+   "time": "22:00",
+   "title": "Galantis ( 21+ )",
+   "cat": "music",
+   "venue": "Big Night Live",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/galantis-21-boston-massachusetts-02-20-2027/event/01006565DF5D5244",
+   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -8073,6 +8061,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/millington-plus-suckerpunch-boston-massachusetts-03-06-2027/event/01006563BD69A0A8",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18754430"
+   ],
    "score": 0
   },
   {
@@ -8413,6 +8404,37 @@
    "why": "big"
   },
   {
+   "id": "tm-vv1AvZk4xGkdSA3R_",
+   "date": "2027-03-11",
+   "time": "17:30",
+   "title": "The Funeral Portrait - A Hex On The Nation",
+   "cat": "music",
+   "venue": "Paradise Rock Club presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/the-funeral-portrait-a-hex-on-boston-massachusetts-03-11-2027/event/01006562F3152BD9",
+   "source": "ticketmaster",
+   "times": [
+    "17:30",
+    "18:30"
+   ],
+   "aka": [
+    "sg-18755066"
+   ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv1AvZk4JGkd4_Plb",
+   "date": "2027-03-11",
+   "time": "19:00",
+   "title": "All My Friends Tour With Pivot Gang",
+   "cat": "music",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/all-my-friends-tour-with-pivot-boston-massachusetts-03-11-2027/event/01006566D5665AD8",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv177Z_KGkSAw-nS",
    "date": "2027-03-11",
    "time": "19:00",
@@ -8628,6 +8650,18 @@
     "2027-03-13-dinosaur-jr-citizens-house-of-bl"
    ],
    "sub": "with Horse Jumper of Love",
+   "score": 0
+  },
+  {
+   "id": "sg-18754195",
+   "date": "2027-03-13",
+   "time": "19:00",
+   "title": "Dylan Marlowe",
+   "cat": "music",
+   "venue": "Royale - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/dylan-marlowe-tickets/boston-massachusetts-royale-boston-2027-03-13-7-pm/concert/18754195",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -9166,6 +9200,18 @@
    "score": 1
   },
   {
+   "id": "tm-vv1AvZk4NGkeY3z0_",
+   "date": "2027-03-25",
+   "time": "19:00",
+   "title": "Marcy Playground & Wheatus (18+)",
+   "cat": "music",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/marcy-playground-wheatus-18-boston-massachusetts-03-25-2027/event/01006563B04B8919",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-Z7r9jZ1AA7Iu_",
    "date": "2027-03-25",
    "time": "19:30",
@@ -9533,6 +9579,18 @@
    "score": 0
   },
   {
+   "id": "tm-vv1AvZk4JGkd1ldK9",
+   "date": "2027-04-04",
+   "time": "19:00",
+   "title": "The White Buffalo (18+)",
+   "cat": "music",
+   "venue": "Paradise Rock Club presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/the-white-buffalo-18-boston-massachusetts-04-04-2027/event/01006566CAAC34D7",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv1A8vP49GA5L0kW",
    "date": "2027-04-04",
    "time": "20:00",
@@ -9579,6 +9637,18 @@
    "score": 0
   },
   {
+   "id": "tm-vv1AvZk4PGkd6NZgE",
+   "date": "2027-04-05",
+   "time": "20:00",
+   "title": "Todd Rundgren: DAMNED IF I DO TOUR",
+   "cat": "music",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/todd-rundgren-damned-if-i-do-boston-massachusetts-04-05-2027/event/01006565C78C0D67",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-Z7r9jZ1AA780A",
    "date": "2027-04-06",
    "time": "20:00",
@@ -9591,6 +9661,18 @@
    "aka": [
     "sg-18702621"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18753596",
+   "date": "2027-04-06",
+   "time": "20:00",
+   "title": "TWRP",
+   "cat": "music",
+   "venue": "Royale - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/twrp-tickets/boston-massachusetts-royale-boston-2027-04-06-8-pm/concert/18753596",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -9841,6 +9923,18 @@
    "score": 0
   },
   {
+   "id": "tm-vv1AvZk40GkdoXjON",
+   "date": "2027-04-12",
+   "time": "19:00",
+   "title": "Beach Bunny: Out of Office Tour with special guest Daisy Grenade",
+   "cat": "music",
+   "venue": "Citizens House of Blues Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/beach-bunny-out-of-office-tour-boston-massachusetts-04-12-2027/event/01006564D1F9C823",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vvG17Z_1QXBHwy",
    "date": "2027-04-12",
    "time": "19:30",
@@ -10057,6 +10151,18 @@
    "score": 0
   },
   {
+   "id": "tm-vv1A8vPbyGA2OURp",
+   "date": "2027-04-20",
+   "time": "19:00",
+   "title": "An Evening With Shadowgrass (18+)",
+   "cat": "music",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/an-evening-with-shadowgrass-18-boston-massachusetts-04-20-2027/event/010065639F836BD6",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-Z7r9jZ1AA7t7p",
    "date": "2027-04-20",
    "time": "20:00",
@@ -10229,6 +10335,18 @@
    "city": "Cambridge, MA",
    "url": "https://seatgeek.com/ken-yates-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-04-25-8-pm/concert/18702721",
    "source": "seatgeek",
+   "score": 0
+  },
+  {
+   "id": "tm-vv177Z_4GkBfdnaV",
+   "date": "2027-04-25",
+   "time": "20:00",
+   "title": "Tony Hadley",
+   "cat": "music",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/tony-hadley-boston-massachusetts-04-25-2027/event/0100655E940EA274",
+   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -10538,6 +10656,18 @@
    "score": 0
   },
   {
+   "id": "tm-vvG17Z_51gHiTD",
+   "date": "2027-05-04",
+   "time": "18:30",
+   "title": "SiM: HOOMAN AFTER ALL WORLD TOUR",
+   "cat": "music",
+   "venue": "Paradise Rock Club presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/sim-hooman-after-all-world-tour-boston-massachusetts-05-04-2027/event/010064B2B5F2CFFB",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv1F7Z_pCA0SZd861",
    "date": "2027-05-04",
    "time": "19:30",
@@ -10701,7 +10831,7 @@
   "picks": 5,
   "venues": 1,
   "espn": 72,
-  "ticketmaster": 519,
-  "seatgeek": 111
+  "ticketmaster": 528,
+  "seatgeek": 113
  }
 }
