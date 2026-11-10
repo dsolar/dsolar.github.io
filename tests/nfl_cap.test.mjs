@@ -150,6 +150,14 @@ test('trade value: pick chart, better players cost more, packages reach the pric
   const a = P.tradeValue(W, p).pts;
   W.quality[p.id] = { ...W.quality[p.id], z: W.quality[p.id].z + 1, mult: W.quality[p.id].mult + 0.45 };
   assert.ok(P.tradeValue(W, p).pts > a);
-  const pk = P.packages(W, 'NE', 300);
-  assert.ok(pk.list.length >= 1 && pk.list.every(x => x.sum >= 285 && x.picks.length <= 4));
+  const bo = P.bestOffers(W, 'NE', 'IND', 300);
+  assert.ok(bo.list.length >= 1 && Math.abs(bo.list[0].net / 300 - 1) < 0.1 && bo.list[0].give.length <= 5 && bo.list[0].back.length <= 2);
+  // money: the old team keeps the bonus proration as dead money, the new team pays the rest
+  const q = W.players.find(x => x.c && x.c.rows[W.season + 1] && x.c.rows[W.season + 1][C2.R.pr] > 2 && C2.lastYear(x) >= W.season + 2);
+  const mo = P.tradeMoney(W, q, q.t === 'NE' ? 'BUF' : 'NE', 'pre'), r = q.c.rows[W.season + 1];
+  near(mo.rows[0].buyerAdds, r[C2.R.cap] - r[C2.R.pr]);
+  const prLeft = Object.keys(q.c.rows).map(Number).filter(y => y > W.season).reduce((a, y) => a + q.c.rows[y][C2.R.pr], 0);
+  near(mo.rows[0].sellerDead, prLeft);
+  const post = P.tradeMoney(W, q, 'NE', 'post');
+  near(post.rows[0].sellerDead + post.rows[1].sellerDead, prLeft);
 });

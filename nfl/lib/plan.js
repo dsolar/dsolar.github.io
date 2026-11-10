@@ -386,30 +386,63 @@
   // price, times his healthy role, times how far his rating multiplier sits above a replacement-level player's (a
   // rating of about 38), over the next three seasons with aging. Seasons he's under contract count fully; seasons
   // after, 60% (the new team gets first crack at re-signing him, but at market price). Then the contract: each
-  // season under contract adds 60% of what his market price (from comparable deals) exceeds what he's paid, or takes
-  // away 60% of what he's overpaid (veteran deals at their average per year, since back-loaded cap numbers are rarely all paid).
+  // season under contract adds 60% of what his market price (from comparable deals) exceeds what the new team would
+  // pay him (his cap number less the bonus proration, which stays behind in a trade), or takes away 35% of what he's
+  // overpaid (teams discount pricey deals less than the math says: they're trading for the player).
   // Quarterbacks carry a 40% premium on top: they go for more picks than their salaries alone suggest (Stafford,
   // Wilson, Watson). Calibrated so top receivers land where A.J. Brown, Davante Adams and Tyreek Hill did: a first
   // plus a day-two pick, 350-450 points.
-  const TV_PTS = 9, TV_DISC = 0.85, REPL = 0.64, AFTER = 0.6, TV_SUR = 0.6, QB_PREMIUM = 1.4;
-  P.tradeValue = (W, p, y) => {
-    y = y || W.season + 1;
-    const g = P.group(p), last = C.lastYear(p) || W.season, rows = [];
+  const TV_PTS = 9, TV_DISC = 0.85, REPL = 0.64, AFTER = 0.6, TV_SUR = 0.6, TV_OVER = 0.35, QB_PREMIUM = 1.4;
+  // when: "now" (before this season's trade deadline: the rest of this season, then two more), "pre" or "post" (the
+  // next offseason, before or after June 1: the next three seasons). The June 1 choice only moves the old team's dead
+  // money, not what he's worth.
+  P.tradeValue = (W, p, when) => {
+    when = when || "pre";
+    const now = when === "now", g = P.group(p), last = C.lastYear(p) || W.season, rows = [];
+    const left = now ? P.seasonLeft(W) : 1;
+    const years = now ? [W.season, W.season + 1, W.season + 2] : [W.season + 1, W.season + 2, W.season + 3];
+    const wts = now ? [left, 0.92, 0.78] : [1, TV_DISC, TV_DISC * TV_DISC];
     const healthy = P.role(W, p);
-    const est = P.contract(W, p, Math.max(y, last + 1));
+    const est = P.contract(W, p, Math.max(years[0], last + 1));
     let talent = 0, surplus = 0;
-    for (let i = 0; i < 3; i++) {
-      const yy = y + i, d = Math.pow(TV_DISC, i);
+    years.forEach((yy, i) => {
+      const d = wts[i];
       const under = yy <= last && p.c && p.c.rows[yy] && !p.c.rows[yy][C.R.void];
       const above = W.price[g] * Math.pow(healthy, 1.25) * Math.max(0, P.multAt(W, p, yy) - REPL);
       const market = P.contract(W, p, yy).apy;
-      const cost = !under ? market : P.rookieDeal(p) ? C.capHit(p, yy) : Math.min(C.capHit(p, yy), (p.c.apy || 0));
+      // what the new team pays: his cap number less the signing-bonus proration, which stays with the old team
+      const r = under ? p.c.rows[yy] : null, cost = !under ? market : Math.max(0, r[C.R.cap] - r[C.R.pr]);
       talent += d * above * (under ? 1 : AFTER) * (g === "QB" ? QB_PREMIUM : 1);
-      if (under) surplus += d * TV_SUR * (market - cost);
-      rows.push({ y: yy, above, market, cost, under });
-    }
+      if (under) surplus += d * (market >= cost ? TV_SUR : TV_OVER) * (market - cost);
+      rows.push({ y: yy, w: d, above, market, cost: under && i === 0 && now ? cost * left : cost, under });
+    });
     const dollars = talent + surplus;
-    return { pts: dollars * TV_PTS, dollars, talent, surplus, rows, last, est, freeAgent: last < y };
+    return { pts: dollars * TV_PTS, dollars, talent, surplus, rows, last, est, when, freeAgent: !now && last < years[0], rental: now && last === W.season };
+  };
+  // Share of this season still to play (from the league file's week)
+  P.seasonLeft = W => Math.max(0, Math.min(1, (18 - ((W.week || 10) - 1)) / 18));
+  // The money on both sides of a trade, by season. Old team: the bonus proration still to come becomes dead money
+  // (all of it at once now or before June 1; after June 1, this year's share now and the rest next year), and his
+  // cap numbers come off. New team: his salary from then on (the rest of this season's, if now).
+  P.tradeMoney = (W, p, buyer, when) => {
+    const now = when === "now", y0 = now ? W.season : W.season + 1, left = now ? P.seasonLeft(W) : 1;
+    const last = C.lastYear(p) || W.season, rows = [], R_ = C.R;
+    const yrs = []; for (let y = y0; y <= Math.min(last, y0 + 4); y++) if (p.c.rows[y] && !p.c.rows[y][R_.void]) yrs.push(y);
+    const prLeft = Object.keys(p.c.rows).map(Number).filter(y => y >= y0).reduce((a, y) => a + p.c.rows[y][R_.pr], 0);
+    const prNow = when === "post" ? p.c.rows[y0] ? p.c.rows[y0][R_.pr] : 0 : prLeft, prNext = prLeft - prNow;
+    const space = {}; C.teamYears(W, buyer, [], W.season, W.season + 4).forEach(x => { space[x.y] = x.space; });
+    const sspace = {}; C.teamYears(W, p.t, [], W.season, W.season + 4).forEach(x => { sspace[x.y] = x.space; });
+    for (let y = y0; y <= Math.max(y0 + 1, yrs[yrs.length - 1] || y0); y++) {
+      const r = p.c.rows[y], cap = r && !r[R_.void] ? r[R_.cap] : 0, pr = r ? r[R_.pr] : 0;
+      const paid = r && !r[R_.void] ? Math.max(0, cap - pr) * (y === W.season ? left : 1) : 0;
+      const dead = y === y0 ? prNow : y === y0 + 1 ? prNext : 0;
+      // old team: this season's cap number stays except the salary still to be paid; later seasons it all comes off
+      // old team's cap change: this season (now) it sheds the salary still to be paid but takes the later proration
+      // early; otherwise it sheds the whole cap number and takes the dead money
+      const saves = y === W.season ? paid - (prLeft - pr) : cap - dead;
+      rows.push({ y, buyerAdds: paid, buyerSpace: space[y], sellerDead: dead, sellerSaves: saves, sellerSpace: sspace[y] });
+    }
+    return { rows, y0 };
   };
   // A points total as picks: the single pick it matches, or above the No. 1 pick, No. 1 plus what's left
   P.pointsAsPicks = pts => {
@@ -420,30 +453,46 @@
   // Plain-English name for a pick number
   P.pickLabel = n => n === 1 ? "the No. 1 pick" : n <= 3 ? "a top-3 pick" : n <= 10 ? "a top-10 pick" : n <= 21 ? "a mid first" : n <= 32 ? "a late first" : n <= 48 ? "an early second" : n <= 64 ? "a late second" :
     n <= 100 ? "a third" : n <= 140 ? "a fourth" : n <= 180 ? "a fifth" : n <= 220 ? "a sixth" : "a seventh";
-  // The cheapest ways a team could pay it from its own picks (this draft and next): every set of up to four picks (six
-  // for the biggest prices)
-  // worth at least 95% of the target, ranked by how little they overpay (and fewer picks first)
-  P.packages = (W, code, pts) => {
+  // Every pick a team owns in the next two drafts, with its points at its expected spot (next year's at 85%)
+  P.pickPool = (W, code) => {
     const pool = [];
-    [W.season + 1, W.season + 2].forEach((yr, k) => P.picksIn(W, code, yr).forEach(pk => pool.push(Object.assign({ yr, pts: P.pickPoints(pk.en, k) }, pk))));
-    pool.sort((a, b) => b.pts - a.pts);
-    const MAXP = pts > 700 ? 6 : 4, top = pool.slice(0, pts > 700 ? 12 : 14), out = [];
+    [W.season + 1, W.season + 2].forEach((yr, k) => P.picksIn(W, code, yr).forEach(pk => pool.push(Object.assign({ yr, key: code + ":" + yr + ":" + pk.round + ":" + pk.from + ":" + pk.en, pts: P.pickPoints(pk.en, k) }, pk))));
+    return pool.sort((a, b) => b.pts - a.pts);
+  };
+  // The offer that lands closest to the price: up to five of the buyer's picks, with up to two of the seller's coming
+  // back to even it out. Fewer picks win ties.
+  P.bestOffers = (W, buyer, seller, pts) => {
+    const B = P.pickPool(W, buyer), S = P.pickPool(W, seller), out = [];
+    if (pts <= 0) return { list: [], B, S };
+    const top = B.slice(0, 14), back = [[]];
+    S.slice(0, 16).forEach((a, i) => { back.push([a]); S.slice(i + 1, 16).forEach(b => back.push([a, b])); });
+    const bsum = x => x.reduce((a, q) => a + q.pts, 0);
+    back.forEach(x => { x.sum = bsum(x); });
+    back.sort((a, b) => a.sum - b.sum);
+    const consider = (chosen, sum) => {
+      const gap = sum - pts;                                   // how much the buyer is over
+      let best = null;
+      for (const x of back) {
+        if (x.length && x.sum > gap + pts * 0.05) break;       // coming back can't exceed what he's over (by much)
+        const err = Math.abs(gap - x.sum) / pts + 0.04 * (chosen.length + x.length);
+        if (!best || err < best.err) best = { err, back: x };
+      }
+      out.push({ give: chosen.slice(), sum, back: best.back, net: sum - best.back.sum, err: best.err });
+    };
     const rec = (i, chosen, sum) => {
-      if (sum >= pts * 0.95) { out.push({ picks: chosen.slice(), sum }); return; }
-      if (chosen.length >= MAXP || i >= top.length) return;
+      if (chosen.length && sum >= pts * 0.9) consider(chosen, sum);
+      if (chosen.length >= 5 || i >= top.length || sum > pts * 1.6) return;
       for (let j = i; j < top.length; j++) { chosen.push(top[j]); rec(j + 1, chosen, sum + top[j].pts); chosen.pop(); }
     };
-    if (pts > 0) rec(0, [], 0);
-    const score = x => Math.abs(x.sum / pts - 1) + 0.05 * x.picks.length;
-    out.sort((a, b) => score(a) - score(b));
-    // a few different shapes: the closest fit, one without this year's first, one that leans on next year
-    const pick = [], seen = new Set();
-    const add = x => { if (!x) return; const k = x.picks.map(q => q.yr + ":" + q.en).join(","); if (!seen.has(k)) { seen.add(k); pick.push(x); } };
+    rec(0, [], 0);
+    out.sort((a, b) => a.err - b.err);
+    const list = [], seen = new Set();
+    const add = x => { if (!x) return; const k = x.give.map(q => q.key).join() + "|" + x.back.map(q => q.key).join(); if (!seen.has(k)) { seen.add(k); list.push(x); } };
     add(out[0]);
-    add(out.find(x => !x.picks.some(q => q.yr === W.season + 1 && q.round === 1)));
-    add(out.find(x => x.picks.filter(q => q.yr === W.season + 2).length >= x.picks.length / 2));
-    add(out.find(x => x.picks.length === 1));
-    return { list: pick.slice(0, 4), pool, enough: pool.reduce((a, q) => a + q.pts, 0) >= pts * 0.95 };
+    add(out.find(x => !x.give.some(q => q.yr === W.season + 1 && q.round === 1)));
+    add(out.find(x => !x.back.length));
+    add(out.find(x => x.give.filter(q => q.yr === W.season + 2).length > x.give.length / 2));
+    return { list: list.slice(0, 4), B, S, short: !out.length };
   };
 
   // Team strength ahead. This season's rating (from the market and results) carries forward only partly; NFL teams
