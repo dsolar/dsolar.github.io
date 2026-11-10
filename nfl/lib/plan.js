@@ -718,11 +718,12 @@
     return out;
   };
   // Run one team's offseason. opts: moves (the planner's moves for that season), cuts, resign, tag (follow the model
-  // on each), fa (how many free agents to sign at most), draft (draft for needs), ban (players not to sign)
+  // on each), fa (how many free agents to sign at most), rivals (other teams bid), outbid (pay up to win), draft
+  // (draft for needs), ban (players not to sign)
   P.simulateOffseason = (W, code, opts) => {
     opts = opts || {};
     const y = W.season + 1, moves = (opts.moves || []).filter(m => m.year === y).map(m => Object.assign({}, m));
-    const ban = new Set(opts.ban || []), log = { user: moves.slice(), cuts: [], resigned: [], tagged: [], walked: [], signed: [], drafted: [] };
+    const ban = new Set(opts.ban || []), log = { user: moves.slice(), cuts: [], resigned: [], tagged: [], walked: [], signed: [], lost: [], drafted: [] };
     const ratings = {}; if (W.sim) for (const [t, o] of Object.entries(W.sim.teams)) ratings[t] = o.rating;
     const before = { space: C.teamYears(W, code, [], y, y)[0].space, power: null, groups: {} };
     const N0 = P.needs(W, y)[code];
@@ -752,27 +753,53 @@
     W.players.filter(p => p.t === code && p.c && !gone.has(p.id) && ((C.lastYear(p) || 0) >= y || kept.has(p.id)) && P.NEED_GROUPS.includes(P.group(p)))
       .forEach(p => roster[P.group(p)].push({ p, z: P.ratingZ(W, p, y), role: P.role(W, p) }));
     const needOrder = () => P.NEED_GROUPS.map(g => { const gm = P.groupMean(g, roster[g]); return { g, mean: gm.mean, score: IMP[g] * (0.5 - gm.mean) }; }).sort((a, b) => b.score - a.score);
-    // 3. free agency: the signing that lifts a top need the most per dollar, while room lasts (keeping $5M spare)
+    // 3. free agency: the signing that lifts a top need the most per dollar, while room lasts (keeping $5M spare).
+    // With rival bids on, the three keenest other teams (his position among their top three needs, room for him) bid
+    // too: each pushes his price up 8%, and he picks a team with odds weighted toward contenders and the teams that
+    // need him most, with your offer (made at the going price) counting more than any one rival's. "Outbid them" pays
+    // 12% more on top and makes your offer half again as strong.
     let faSpend = 0;
     const pool = P.market(W, y).filter(x => x.p.t !== code && !ban.has(x.p.id));
-    for (let k = 0; k < (opts.fa || 0); k++) {
+    const rivals = opts.rivals !== false, outbid = !!opts.outbid;
+    const rankOf = {}; if (rivals && W.sim) P.power(W, ratings, y).forEach(x => { rankOf[x.code] = x.rank; });
+    const pull = c => 1 + 0.3 * (16.5 - (rankOf[c] || 16.5)) / 15.5;        // contenders are likelier landing spots
+    const roll = (a, b) => { let h = 2166136261; for (const ch of a + "|" + b) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return ((h >>> 0) % 10000) / 10000; };
+    const tried = new Set();
+    for (let k = 0, tries = 0; log.signed.length < (opts.fa || 0) && tries < (opts.fa || 0) * 3 + 3; k++, tries++) {
       const top = needOrder().slice(0, 4).filter(x => x.score > 0), room = space() - faSpend - 5;
       let best = null;
       for (const x of pool) {
         const g = P.group(x.p); if (!top.find(t => t.g === g)) continue;
-        if (log.signed.find(s => s.p.id === x.p.id)) continue;
+        if (tried.has(x.p.id)) continue;
         const z = P.ratingZ(W, x.p, y), role = Math.max(0.6, P.role(W, x.p));
-        const e = P.contract(W, x.p, y, role); if (e.apy * 0.8 > room) continue;           // priced as the starter he'd be
+        const e = P.contract(W, x.p, y, role);                                            // priced as the starter he'd be
+        const bidders = rivals ? P.fits(W, x.p, y, e.apy).filter(f => f.code !== code).slice(0, 3) : [];   // the three keenest
+        const bump = 0.08 * bidders.length + (outbid && bidders.length ? 0.12 : 0), price = e.apy * (1 + bump);
+        if (price * 0.8 > room) continue;
         const now = P.groupMean(g, roster[g]).mean, after = P.groupMean(g, roster[g].concat([{ p: x.p, z, role }])).mean;
         const gain = (after - now) * IMP[g];
         if (gain <= 0.02) continue;
-        const sc = gain / Math.pow(e.apy + 2, 0.5);
-        if (!best || sc > best.sc) best = { x, e, z, role, g, gain, sc };
+        const sc = gain / Math.pow(price + 2, 0.5);
+        if (!best || sc > best.sc) best = { x, e, z, role, g, gain, sc, bidders, price, bump };
       }
       if (!best) break;
+      tried.add(best.x.p.id);
+      // where he signs: your offer against the rivals', each weighted by how much the team wins and needs him
+      if (best.bidders.length) {
+        const mine = pull(code) * 1.3 * (outbid ? 1.5 : 1), theirs = best.bidders.map(f => ({ code: f.code, w: 0.5 * pull(f.code) * [1.2, 1, 0.85][f.rank] }));
+        const total = mine + theirs.reduce((a, t) => a + t.w, 0), r = roll(best.x.p.id, code + (outbid ? "+" : ""));
+        if (r > mine / total) {
+          let acc = mine / total, to = theirs[0].code;
+          for (const t of theirs) { acc += t.w / total; if (r <= acc) { to = t.code; break; } }
+          log.lost.push({ p: best.x.p, to, price: best.price, odds: mine / total, est: best.e, g: best.g, bidders: best.bidders.map(f => f.code) });
+          continue;
+        }
+        best.odds = mine / total;
+      }
       roster[best.g].push({ p: best.x.p, z: best.z, role: best.role });
-      faSpend += best.e.apy * 0.8;
-      log.signed.push({ p: best.x.p, from: best.x.from, cut: best.x.cut, est: best.e, g: best.g });
+      faSpend += best.price * 0.8;
+      const paid = Object.assign({}, best.e, { apy: best.price, total: best.price * best.e.yrs, gtd: best.e.gtd * (1 + best.bump) });
+      log.signed.push({ p: best.x.p, from: best.x.from, cut: best.x.cut, est: paid, base: best.e, g: best.g, bidders: best.bidders.map(f => f.code), bump: best.bump, odds: best.odds });
     }
     // 4. the draft, with this team's needs after free agency
     if (opts.draft) {
