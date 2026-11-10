@@ -190,12 +190,12 @@
     const dr = P.depthRank(W, q), missed = q.st === "RES" || dr >= 4 && (!q.snaps || q.snaps[3] <= Math.max(2, ((W.week || 10) - 1) * 0.4));
     return (W._role[q.id] = Math.min(1, Math.max(P.share(W, q), dr === 1 ? 0.8 : 0, plays >= 600 && missed ? 0.8 : 0)));
   };
-  P.contract = (W, p, y) => {
+  P.contract = (W, p, y, roleOverride) => {
     W._ce = W._ce || {};
-    const key = p.id + ":" + y;
+    const key = p.id + ":" + y + ":" + (roleOverride || "");
     if (W._ce[key]) return W._ce[key];
     const role = q => P.role(W, q);
-    const g = P.group(p), age = (p.age || 26) + (y - W.season), z = P.ratingZ(W, p, y), sh = role(p);
+    const g = P.group(p), age = (p.age || 26) + (y - W.season), z = P.ratingZ(W, p, y), sh = roleOverride || role(p);
     if (!W._pool) {
       W._pool = {};
       for (const q of W.players) {
@@ -395,10 +395,10 @@
   // season under contract adds 60% of what his market price (from comparable deals) exceeds what the new team would
   // pay him (his cap number less the bonus proration, which stays behind in a trade), or takes away 35% of what he's
   // overpaid (teams discount pricey deals less than the math says: they're trading for the player).
-  // Quarterbacks carry a 40% premium on top: they go for more picks than their salaries alone suggest (Stafford,
-  // Wilson, Watson). Calibrated so top receivers land where A.J. Brown, Davante Adams and Tyreek Hill did: a first
+  // Quarterbacks carry a 10% premium on top, and the contract bonus is capped at half the talent value, which puts
+  // prime starters near three firsts and older ones near two (Watson, Wilson, Stafford). Calibrated so top receivers land where A.J. Brown, Davante Adams and Tyreek Hill did: a first
   // plus a day-two pick, 350-450 points.
-  const TV_PTS = 9, TV_DISC = 0.85, REPL = 0.64, AFTER = 0.6, TV_SUR = 0.6, TV_OVER = 0.35, QB_PREMIUM = 1.4;
+  const TV_PTS = 9, TV_DISC = 0.85, REPL = 0.64, AFTER = 0.6, TV_SUR = 0.6, TV_OVER = 0.35, QB_PREMIUM = 1.1;
   // when: "now" (before this season's trade deadline: the rest of this season, then two more), "pre" or "post" (the
   // next offseason, before or after June 1: the next three seasons). The June 1 choice only moves the old team's dead
   // money, not what he's worth.
@@ -422,6 +422,8 @@
       if (under) surplus += d * (market >= cost ? TV_SUR : TV_OVER) * (market - cost);
       rows.push({ y: yy, w: d, above, market, cost: under && i === 0 && now ? cost * left : cost, under });
     });
+    // a cheap contract helps, but never more than half again what his play is worth: teams trade for the player
+    surplus = Math.min(surplus, 0.5 * talent);
     const dollars = talent + surplus;
     return { pts: dollars * TV_PTS, dollars, talent, surplus, rows, last, est, when, freeAgent: !now && last < years[0], rental: now && last === W.season };
   };
@@ -506,6 +508,7 @@
       teams[code] = T;
     }
     for (const g of P.NEED_GROUPS) byG[g].sort((a, b) => a - b);
+    W._needArr = W._needArr || {}; W._needArr[y] = byG;
     for (const code of codes) {
       const T = teams[code];
       for (const g of P.NEED_GROUPS) {
@@ -525,6 +528,21 @@
     }
     return (W._needs[y] = teams);
   };
+  // A position group's strength from any list of players ({z, role}): the same starter pick and empty-spot rule as
+  // the needs, and its grade against the league's other teams that season
+  P.groupMean = (g, list) => {
+    const k = STARTERS[g];
+    const ranked = list.slice().sort((a, b) => (b.role >= 0.4 ? b.z : b.z - 1.2) - (a.role >= 0.4 ? a.z : a.z - 1.2)).slice(0, k);
+    const zs = ranked.map(x => x.role >= 0.4 || x.z > 0 ? x.z : Math.min(x.z, -0.6)); while (zs.length < k) zs.push(-1);
+    return { mean: zs.reduce((a, v) => a + v, 0) / k, starters: ranked };
+  };
+  P.gradeOf = (W, y, g, mean) => {
+    P.needs(W, y);
+    const arr = W._needArr[y][g], below = arr.filter(v => v < mean - 1e-9).length / Math.max(1, arr.length - 1);
+    return { pct: below, grade: below >= 0.8 ? "A" : below >= 0.6 ? "B" : below >= 0.4 ? "C" : below >= 0.2 ? "D" : "F" };
+  };
+  P.IMP = IMP;
+
   // Teams that need a player at his position and can afford him in a season (need in their top three, cap space for
   // his price), best fits first
   P.fits = (W, p, y, price) => {
@@ -601,6 +619,131 @@
     return { list: list.slice(0, 4), B, S, short: !out.length };
   };
 
+  // ---------- the offseason simulator ----------
+  // Rookies' first-season rating by pick (most start below average) and how much they play
+  P.rookieZ = n => Math.max(-1.2, Math.min(0.6, 0.6 - 0.32 * Math.log(Math.max(1, n))));
+  P.rookieRole = round => round === 1 ? 0.8 : round === 2 ? 0.6 : round === 3 ? 0.4 : 0.2;
+  const BB_POS = { DL: ["IDL"], "OT/IOL": ["OT", "IOL"], "S/CB": ["S", "CB"], "LB/EDGE": ["LB", "EDGE"], WR: ["WR"], CB: ["CB"], EDGE: ["EDGE"], QB: ["QB"], OT: ["OT"], S: ["S"], RB: ["RB"], LB: ["LB"], IOL: ["IOL"], TE: ["TE"] };
+  P.bbGroups = pos => BB_POS[pos] || [pos];
+  // Who each team would keep among its own free agents: starters worth at least 85% of their market, 31 or younger
+  P.keeps = (W, p, y) => P.role(W, p) >= 0.5 && (p.age || 30) + (y - W.season) <= 31.99 && P.value(W, p, y, P.role(W, p)) >= 0.85 * P.contract(W, p, y).apy;
+  // The free agent market for a season: every expiring player his team wouldn't keep, plus likely cap casualties
+  P.market = (W, y) => {
+    W._mkt = W._mkt || {};
+    if (W._mkt[y]) return W._mkt[y];
+    const out = W.players.filter(p => p.c && p.st !== "DEV" && C.lastYear(p) === y - 1 && !P.keeps(W, p, y)).map(p => ({ p, from: p.t, cut: false }));
+    P.casualties(W, y).filter(x => x.label === "Likely" && x.kind === "cut").forEach(x => out.push({ p: x.p, from: x.team, cut: true }));
+    return (W._mkt[y] = out);
+  };
+  // A mock draft of next year's class: picks in expected order; each team takes the best player on the Big Board's
+  // consensus within a few spots of the top who fits one of its top three needs, otherwise the best one left. Past
+  // the board, a generic prospect at its top need.
+  P.mockDraft = (W, y, needsFor) => {
+    const order = ((W.draft && W.draft.picks) || []).map(x => x.slice());
+    const sl = P.slots(W, y), first = {};
+    order.forEach(x => { if (first[x[1]] == null) first[x[1]] = x[0]; });
+    const key = x => { const s = sl[x[2]]; return x[0] - first[x[1]] < 32 && s ? (x[1] - 1) * 32 + s.slot : x[0]; };
+    order.sort((a, b) => a[1] - b[1] || key(a) - key(b));
+    const board = ((W.board) || []).slice().sort((a, b) => a.rank - b.rank), taken = new Set(), out = [];
+    const left = {}, got = {};                                // each team's needs, crossed off as it fills them
+    order.forEach((x, i) => {
+      const owner = x[3];
+      const done = (got[owner] = got[owner] || []);
+      if (!left[owner] || !left[owner].length) {               // out of needs: the next groups it hasn't drafted yet
+        left[owner] = (needsFor(owner) || []).concat(["LB", "CB", "S", "IDL", "EDGE", "OT", "IOL", "WR", "TE", "RB"]).filter((g, k, a) => a.indexOf(g) === k && !done.includes(g)).slice(0, 4);
+      }
+      const needs = left[owner].slice(0, 3);
+      const avail = board.filter(b => !taken.has(b.id)), top = avail.slice(0, 6);
+      let pick = top.find(b => P.bbGroups(b.pos).some(g => needs.includes(g)));
+      if (!pick) pick = top.find(b => !P.bbGroups(b.pos).some(g => done.includes(g))) || avail[0];   // best left, not a position it already took
+      if (pick) taken.add(pick.id);
+      const g = pick ? (P.bbGroups(pick.pos).find(q => needs.includes(q)) || P.bbGroups(pick.pos)[0]) : (needs[0] || ["LB", "CB", "S", "IDL", "EDGE", "WR"][i % 6]);
+      const at = left[owner].indexOf(g); if (at >= 0) left[owner].splice(at, 1);
+      got[owner].push(g);
+      out.push({ n: i + 1, round: x[1], owner, from: x[2], prospect: pick || null, g });
+    });
+    return out;
+  };
+  // Run one team's offseason. opts: moves (the planner's moves for that season), cuts, resign, tag (follow the model
+  // on each), fa (how many free agents to sign at most), draft (draft for needs), ban (players not to sign)
+  P.simulateOffseason = (W, code, opts) => {
+    opts = opts || {};
+    const y = W.season + 1, moves = (opts.moves || []).filter(m => m.year === y).map(m => Object.assign({}, m));
+    const ban = new Set(opts.ban || []), log = { user: moves.slice(), cuts: [], resigned: [], tagged: [], walked: [], signed: [], drafted: [] };
+    const ratings = {}; if (W.sim) for (const [t, o] of Object.entries(W.sim.teams)) ratings[t] = o.rating;
+    const before = { space: C.teamYears(W, code, [], y, y)[0].space, power: null, groups: {} };
+    const N0 = P.needs(W, y)[code];
+    P.NEED_GROUPS.forEach(g => { before.groups[g] = { mean: N0.groups[g].mean, grade: N0.groups[g].grade }; });
+    const byId = id => W.byId[id];
+    const gone = new Set(moves.filter(m => /^(cut|trade)/.test(m.kind)).map(m => m.id));
+    const kept = new Set(moves.filter(m => m.kind === "tag" || m.kind === "resign").map(m => m.id));
+    // 1. the model's cuts
+    if (opts.cuts) P.casualties(W, y).filter(x => x.team === code && x.kind === "cut" && x.label === "Likely" && !gone.has(x.p.id) && !kept.has(x.p.id)).forEach(x => {
+      moves.push({ kind: "cut", id: x.p.id, year: y }); gone.add(x.p.id); log.cuts.push({ p: x.p, save: x.save, dead: x.dead });
+    });
+    // 2. tags and re-signings of its own free agents
+    const expiring = W.players.filter(p => p.t === code && p.c && C.lastYear(p) === y - 1 && p.st !== "DEV" && !kept.has(p.id));
+    if (opts.tag) P.suggest(W, code, y).filter(s => s.kind === "tag").forEach(s => {
+      if (kept.has(s.p.id)) return;
+      moves.push({ kind: "tag", id: s.p.id, year: y, amount: s.tag }); kept.add(s.p.id); log.tagged.push({ p: s.p, amount: s.tag });
+    });
+    let space = () => C.teamYears(W, code, moves, y, y)[0].space;
+    expiring.filter(p => !kept.has(p.id)).sort((a, b) => P.value(W, b, y) - P.value(W, a, y)).forEach(p => {
+      const e = P.contract(W, p, y);
+      if (opts.resign && P.keeps(W, p, y) && space() - e.apy > 5) { moves.push({ kind: "resign", id: p.id, year: y, apy: e.apy, years: e.yrs }); kept.add(p.id); log.resigned.push({ p, est: e }); }
+      else if (P.role(W, p) >= 0.4) log.walked.push({ p, est: e });
+    });
+    // the roster as it stands: under contract for the season, or kept, and not cut or traded
+    const roster = {};
+    P.NEED_GROUPS.forEach(g => { roster[g] = []; });
+    W.players.filter(p => p.t === code && p.c && !gone.has(p.id) && ((C.lastYear(p) || 0) >= y || kept.has(p.id)) && P.NEED_GROUPS.includes(P.group(p)))
+      .forEach(p => roster[P.group(p)].push({ p, z: P.ratingZ(W, p, y), role: P.role(W, p) }));
+    const needOrder = () => P.NEED_GROUPS.map(g => { const gm = P.groupMean(g, roster[g]); return { g, mean: gm.mean, score: IMP[g] * (0.5 - gm.mean) }; }).sort((a, b) => b.score - a.score);
+    // 3. free agency: the signing that lifts a top need the most per dollar, while room lasts (keeping $5M spare)
+    let faSpend = 0;
+    const pool = P.market(W, y).filter(x => x.p.t !== code && !ban.has(x.p.id));
+    for (let k = 0; k < (opts.fa || 0); k++) {
+      const top = needOrder().slice(0, 4).filter(x => x.score > 0), room = space() - faSpend - 5;
+      let best = null;
+      for (const x of pool) {
+        const g = P.group(x.p); if (!top.find(t => t.g === g)) continue;
+        if (log.signed.find(s => s.p.id === x.p.id)) continue;
+        const z = P.ratingZ(W, x.p, y), role = Math.max(0.6, P.role(W, x.p));
+        const e = P.contract(W, x.p, y, role); if (e.apy * 0.8 > room) continue;           // priced as the starter he'd be
+        const now = P.groupMean(g, roster[g]).mean, after = P.groupMean(g, roster[g].concat([{ p: x.p, z, role }])).mean;
+        const gain = (after - now) * IMP[g];
+        if (gain <= 0.02) continue;
+        const sc = gain / Math.pow(e.apy + 2, 0.5);
+        if (!best || sc > best.sc) best = { x, e, z, role, g, gain, sc };
+      }
+      if (!best) break;
+      roster[best.g].push({ p: best.x.p, z: best.z, role: best.role });
+      faSpend += best.e.apy * 0.8;
+      log.signed.push({ p: best.x.p, from: best.x.from, cut: best.x.cut, est: best.e, g: best.g });
+    }
+    // 4. the draft, with this team's needs after free agency
+    if (opts.draft) {
+      const mine = needOrder().filter(x => x.score > 0).map(x => x.g);
+      const md = P.mockDraft(W, y, t => t === code ? mine : (P.needs(W, y)[t].top.map(x => x.g)));
+      md.filter(x => x.owner === code).forEach(x => {
+        const z = P.rookieZ(x.n), role = P.rookieRole(x.round);
+        roster[x.g].push({ p: null, z, role, rookie: x });
+        log.drafted.push(x);
+      });
+    }
+    const after = { space: space() - faSpend, groups: {} };
+    P.NEED_GROUPS.forEach(g => { const gm = P.groupMean(g, roster[g]); after.groups[g] = Object.assign({ mean: gm.mean, starters: gm.starters }, P.gradeOf(W, y, g, gm.mean)); });
+    // power ranking: what's left on the roster, the cap room left, at the same dollars-to-points scale
+    if (W.sim) {
+      const val = p => P.value(W, p, y, P.role(W, p));
+      const dRoster = log.signed.reduce((a, s) => a + val(s.p), 0) + log.resigned.concat(log.tagged).reduce((a, s) => a + val(s.p), 0) - log.cuts.reduce((a, s) => a + val(s.p), 0) -
+        log.user.filter(m => /^(cut|trade)/.test(m.kind)).reduce((a, m) => a + (byId(m.id) && byId(m.id).c.rows[y] ? val(byId(m.id)) : 0), 0);
+      const pw0 = P.power(W, ratings, y), pw1 = P.power(W, ratings, y, { [code]: { roster: dRoster, space: after.space - before.space } });
+      before.power = pw0.find(x => x.code === code); after.power = pw1.find(x => x.code === code);
+    }
+    return { y, before, after, log, moves, faSpend };
+  };
+
   // Team strength ahead. This season's rating (from the market and results) carries forward only partly; NFL teams
   // regress hard year to year. The rest comes from what's under contract that year (each player's rough value,
   // aging), the draft class, and the cap space left to add talent, priced at about half its face value.
@@ -619,9 +762,9 @@
     const space = y > W.season ? Math.max(0, ty.space) : 0;
     return { roster, draft, space, qb, total: roster + draft + space * 0.5 };
   };
-  P.power = (W, ratings, y) => {
+  P.power = (W, ratings, y, adj) => {
     const codes = Object.keys(ratings), now = y === W.season;
-    const res = {}; codes.forEach(c => { res[c] = P.resources(W, c, y); });
+    const res = {}; codes.forEach(c => { res[c] = Object.assign({}, P.resources(W, c, y)); const a = adj && adj[c]; if (a) { res[c].roster += a.roster || 0; res[c].space = Math.max(0, res[c].space + (a.space || 0)); res[c].total = res[c].roster + res[c].draft + res[c].space * 0.5; } });
     // dollars to points: fit this season's ratings to this season's roster value
     const r0 = {}; codes.forEach(c => { r0[c] = P.resources(W, c, W.season).roster; });
     const mean0 = codes.reduce((a, c) => a + r0[c], 0) / codes.length;

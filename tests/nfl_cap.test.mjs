@@ -179,3 +179,23 @@ test('needs, fits, cap casualties and round-based prices', () => {
   assert.match(P.priceText(P.roundAvg(1) + P.roundAvg(2)).long, /^a first and a second/);
   assert.match(P.priceText(P.pickPoints(50)).long, /second/);
 });
+
+test('offseason simulator: cuts free room, signings fit the cap, the draft fills needs without repeats', () => {
+  const C2 = require('../nfl/lib/cap.js'), P = require('../nfl/lib/plan.js'), S = require('../nfl/lib/season.js');
+  const d = read('draft/nfl.json');
+  const W = P.init(C2.newWorld(read('nfl/data/league.json'), read('nfl/data/teamcap.json'), read('nfl/data/rating.json')));
+  W.draft = d.order; W.future = d.future; W.board = d.players; W.sim = S.simulate(W.games, Object.keys(S.divOf), { sims: 300, seed: 9 });
+  for (const t of ['NE', 'IND', 'DET', 'KC']) {
+    const r = P.simulateOffseason(W, t, { cuts: true, resign: true, tag: true, fa: 4, draft: true });
+    assert.ok(r.after.space >= -0.01, t + ' over the cap');
+    assert.ok(r.log.signed.length <= 4 && r.log.signed.every(x => x.p.t !== t));
+    const groups = r.log.drafted.map(x => x.g);
+    assert.equal(r.log.drafted.length, P.picksIn(W, t, W.season + 1).length);
+    assert.ok(new Set(groups.slice(0, 5)).size === Math.min(5, groups.length), t + ' drafted a position twice early');
+    const off = P.simulateOffseason(W, t, {});
+    assert.equal(off.log.signed.length + off.log.cuts.length + off.log.drafted.length, 0);
+  }
+  // a skipped free agent isn't signed
+  const r1 = P.simulateOffseason(W, 'NE', { fa: 2 }), first = r1.log.signed[0];
+  if (first) assert.ok(!P.simulateOffseason(W, 'NE', { fa: 2, ban: [first.p.id] }).log.signed.some(x => x.p.id === first.p.id));
+});
