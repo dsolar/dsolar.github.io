@@ -4866,7 +4866,7 @@
       "nfl": "MIN",
       "claimed_by": "Love Purdy Flowers",
       "bid": 66,
-      "next_proj": 14.02
+      "next_proj": 13.89
      },
      {
       "n": "Bucky Irving",
@@ -4890,7 +4890,7 @@
       "nfl": "DAL",
       "claimed_by": "Drake Mayezini",
       "bid": 21,
-      "next_proj": 19.2
+      "next_proj": 18.93
      },
      {
       "n": "Parker Washington",
@@ -4898,7 +4898,7 @@
       "nfl": "JAX",
       "claimed_by": "Tai Streetz Lata?",
       "bid": 21,
-      "next_proj": 13.41
+      "next_proj": 13.28
      },
      {
       "n": "Colston Loveland",
@@ -4942,7 +4942,7 @@
       "n": "Jordan Mason",
       "pos": "RB",
       "nfl": "MIN",
-      "next_proj": 8.89
+      "next_proj": 8.6
      },
      {
       "n": "Kyle Monangai",
@@ -5084,7 +5084,7 @@
       "nfl": "BUF",
       "slot": "QB",
       "proj": 22.49,
-      "pts": null
+      "pts": 13.86
      },
      {
       "n": "James Cook III",
@@ -5092,7 +5092,7 @@
       "nfl": "BUF",
       "slot": "RB",
       "proj": 14.37,
-      "pts": null
+      "pts": 16.7
      },
      {
       "n": "Kenneth Walker III",
@@ -5368,7 +5368,7 @@
       "nfl": "MIN",
       "slot": "WR",
       "proj": 15.22,
-      "pts": null
+      "pts": 7.3
      },
      {
       "n": "Sam LaPorta",
@@ -5864,7 +5864,7 @@
       "nfl": "BUF",
       "slot": "W/R/T",
       "proj": 10.75,
-      "pts": null
+      "pts": 5.1
      },
      {
       "n": "Jayden Daniels",
