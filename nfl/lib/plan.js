@@ -78,8 +78,11 @@
     if (n <= 0) return q.z;
     const a0 = p.age || 26, ay = a0 + n;
     const grow = GROW * Math.max(0, Math.min(ay, PEAK[g]) - a0);
-    const past = Math.max(0, ay - Math.max(a0, PEAK[g]));          // years ahead that fall past his peak
-    return (1 + 0.45 * (q.z + grow)) * Math.pow(1 - AGE_FALL[g], past) / 0.45 - 1 / 0.45;
+    // each year ahead past his peak takes the position's aging rate; from four years past it, the fall speeds up
+    // (twice the rate plus 4 points a year): late-career decline is steep at every position
+    let keep = 1;
+    for (let a = Math.floor(a0); a < Math.floor(ay); a++) if (a >= PEAK[g]) keep *= a >= PEAK[g] + 4 ? 1 - (2 * AGE_FALL[g] + 0.04) : 1 - AGE_FALL[g];
+    return (1 + 0.45 * (q.z + grow)) * Math.max(0.05, keep) / 0.45 - 1 / 0.45;
   };
   P.multAt = (W, p, y) => y <= W.season ? P.quality(W, p).mult : Math.max(0.3, Math.min(2.3, 1 + 0.45 * zAt(W, p, y)));
   // The same thing on the rating's own scale (standard deviations; 50 + 15z on screen)
@@ -398,7 +401,7 @@
   // Quarterbacks carry a 10% premium on top, and the contract bonus is capped at half the talent value, which puts
   // prime starters near three firsts and older ones near two (Watson, Wilson, Stafford). Calibrated so top receivers land where A.J. Brown, Davante Adams and Tyreek Hill did: a first
   // plus a day-two pick, 350-450 points.
-  const TV_PTS = 9, TV_DISC = 0.85, REPL = 0.64, AFTER = 0.6, TV_SUR = 0.6, TV_OVER = 0.35, QB_PREMIUM = 1.1;
+  const TV_PTS = 9, TV_DISC = 0.85, REPL = 0.64, AFTER = 0.6, TV_SUR = 0.6, TV_OVER = 0.35, QB_PREMIUM = 1.1, TV_CURVE = 2.0;
   // when: "now" (before this season's trade deadline: the rest of this season, then two more), "pre" or "post" (the
   // next offseason, before or after June 1: the next three seasons). The June 1 choice only moves the old team's dead
   // money, not what he's worth.
@@ -414,11 +417,14 @@
     years.forEach((yy, i) => {
       const d = wts[i];
       const under = yy <= last && p.c && p.c.rows[yy] && !p.c.rows[yy][C.R.void];
-      const above = W.price[g] * Math.pow(healthy, 1.25) * Math.max(0, P.multAt(W, p, yy) - REPL);
+      // convex (squared): the market pays far more for stars than for average starters, normalized at a good starter
+      // (~70); seasons after his deal count less as he ages past his peak, and not at all six years past it
+      const x = Math.max(0, P.multAt(W, p, yy) - REPL), above = W.price[g] * Math.pow(healthy, 1.25) * Math.pow(x, TV_CURVE) / Math.pow(1.1, TV_CURVE - 1);
+      const ageThen = (p.age || 26) + (yy - W.season), afterW = ageThen <= PEAK[g] + 4 ? AFTER : ageThen <= PEAK[g] + 6 ? AFTER / 2 : 0;
       const market = P.contract(W, p, yy).apy;
       // what the new team pays: his cap number less the signing-bonus proration, which stays with the old team
       const r = under ? p.c.rows[yy] : null, cost = !under ? market : Math.max(0, r[C.R.cap] - r[C.R.pr]);
-      talent += d * above * (under ? 1 : AFTER) * (g === "QB" ? QB_PREMIUM : 1);
+      talent += d * above * (under ? 1 : afterW) * (g === "QB" ? QB_PREMIUM : 1);
       if (under) surplus += d * (market >= cost ? TV_SUR : TV_OVER) * (market - cost);
       rows.push({ y: yy, w: d, above, market, cost: under && i === 0 && now ? cost * left : cost, under });
     });
