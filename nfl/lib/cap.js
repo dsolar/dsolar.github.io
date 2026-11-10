@@ -144,8 +144,9 @@
     return { future, voids };
   };
 
-  C.newWorld = (league, teamcap) => {
-    const W = { season: league.season, players: league.players, depth: league.depth || {}, teamcap: teamcap || null, byId: {} };
+  C.newWorld = (league, teamcap, rating) => {
+    const W = { season: league.season, players: league.players, depth: league.depth || {}, teamcap: teamcap || null, byId: {},
+      stats: league.stats || null, games: league.games || [], rating: rating || null };
     for (const p of W.players) W.byId[p.id] = p;
     return W;
   };

@@ -52,6 +52,13 @@ def fetch(path, binary=False):
     return b if binary else b.decode("utf-8")
 
 
+def nkey(name):
+    import unicodedata
+    n = unicodedata.normalize("NFD", name or "").encode("ascii", "ignore").decode().lower()
+    n = "".join(ch if ch.isalnum() or ch == " " else " " for ch in n).split()
+    return " ".join(w for w in n if w not in ("jr", "sr", "ii", "iii", "iv", "v"))
+
+
 def team(code):
     code = (code or "").strip()
     return FIX.get(code, code)
@@ -85,12 +92,14 @@ def main():
 
     # ---------- snap counts: season shares ----------
     snaps = defaultdict(lambda: [0, 0, 0, 0])          # pfr id -> off, def, st, games
+    snaps_by_name = {}                                  # (name, team) -> pfr id, for rosters missing the PFR id
     team_g = defaultdict(lambda: [0, 0, 0])            # team -> off, def, st snaps (max per game summed)
     per_game = defaultdict(lambda: [0, 0, 0])
     try:
         for r in csv.DictReader(io.StringIO(fetch(f"snap_counts/snap_counts_{SEASON}.csv"))):
             if r["game_type"] != "REG":
                 continue
+            snaps_by_name[(nkey(r["player"]), team(r["team"]))] = r["pfr_player_id"]
             s = snaps[r["pfr_player_id"]]
             o, d, t = num(r["offense_snaps"]), num(r["defense_snaps"]), num(r["st_snaps"])
             s[0] += o; s[1] += d; s[2] += t; s[3] += 1
@@ -183,7 +192,8 @@ def main():
         if tm not in TEAMS:
             continue
         c = contract_for(gid, tm)
-        sn = snaps.get(r["pfr_id"]) if r.get("pfr_id") else None
+        pid = r.get("pfr_id") or snaps_by_name.get((nkey(r["full_name"]), tm))
+        sn = snaps.get(pid) if pid else None
         tg = team_g.get(tm)
         p = {
             "id": gid, "n": r["full_name"], "pos": r["position"], "dpos": r["depth_chart_position"], "t": tm,

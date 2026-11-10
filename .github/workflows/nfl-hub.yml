@@ -1,4 +1,5 @@
-# Builds the NFL Hub's league file (rosters, contracts by year, depth charts, snap shares) from nflverse's public data.
+# Builds the NFL Hub's league file (rosters, contracts by year, depth charts, snap shares) and player rating from
+# nflverse's public data.
 # Runs every day after nflverse's morning refresh, when the script or this file changes, or by hand.
 name: NFL Hub data
 
@@ -9,6 +10,7 @@ on:
     branches: [main]
     paths:
       - tools/nfl_pull.py
+      - tools/nfl_rating.py
       - .github/workflows/nfl-hub.yml
   workflow_dispatch:
 
@@ -22,7 +24,7 @@ concurrency:
 jobs:
   pull:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
         with:
@@ -33,15 +35,25 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Install pyarrow (the contracts file is parquet)
-        run: pip install pyarrow
+      - name: Install pyarrow, numpy and scipy (parquet files, and the player rating's ridge regression)
+        run: pip install pyarrow numpy scipy
 
       - name: Build the league file
         run: python3 tools/nfl_pull.py
 
+      # The on-field rating rests on the last two seasons of play-by-play, which only change in the offseason, so
+      # rebuild it on Mondays (or when the script changes) rather than every day
+      - name: Build the player rating
+        run: |
+          if [ "$(date -u +%u)" = "1" ] || [ "${{ github.event_name }}" != "schedule" ] || [ ! -f nfl/data/rating.json ]; then
+            python3 tools/nfl_rating.py
+          else
+            echo "Not Monday; keeping the current rating."
+          fi
+
       - name: Commit it
         run: |
-          git add nfl/data/league.json nfl/data/weeks.json
+          git add nfl/data/league.json nfl/data/weeks.json nfl/data/rating.json
           if git diff --cached --quiet; then
             echo "Nothing changed."
             exit 0

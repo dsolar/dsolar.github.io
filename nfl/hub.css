@@ -132,3 +132,9 @@ ol.power a:hover{background:var(--paper-2)}
 .pr-bar i.up{left:50%;background:var(--t-strong-i)} .pr-bar i.dn{right:50%;background:var(--down)}
 .pr-r{font:700 15px/1 var(--cond);text-align:right;font-variant-numeric:tabular-nums}
 @media (max-width:640px){ ol.power a{grid-template-columns:26px 28px minmax(0,1fr) 34px 44px;gap:6px;padding:8px} .pr-bar{display:none} .pr-meta{white-space:normal} }
+
+/* player rating */
+.rscore{display:inline-block;min-width:30px;padding:2px 6px;border-radius:5px;font:700 13px/1.3 var(--cond);text-align:center}
+.rscore.e{background:var(--t-elite);color:var(--t-elite-i)} .rscore.g{background:var(--t-strong);color:var(--t-strong-i)} .rscore.a{background:var(--t-avg);color:var(--t-avg-i)} .rscore.w{background:var(--t-fringe);color:var(--t-fringe-i)}
+.rbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 18px;padding:4px 0 8px;font-size:13.5px}
+.rbar .rbig .rscore{font-size:20px;min-width:44px;padding:5px 8px}

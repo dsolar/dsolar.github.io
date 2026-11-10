@@ -28,6 +28,7 @@
   P.group = p => GROUP[p.dpos] || GROUP[p.pos] || "WR";
 
   P.init = W => {
+    P.buildRatings(W);
     W.rookieCost = (code, y) => P.rookieCost(W, code, y).total;
     // starter price at each position: average APY of the starting tier league-wide
     const byG = {};
@@ -63,15 +64,99 @@
   // plays, and the market's own verdict, his contract's average when he signed it (grown with the cap), scaled by
   // whether he's still playing like it. A rookie-scale deal says nothing about quality, so rookies get only the first.
   P.rookieDeal = p => !!(p.draft && p.draft[0] && p.c && p.c.signed === p.draft[0] && (p.c.yrs || 0) <= 5);
+  // Value: his position's starter price, times how much he plays, times how well: the quality multiplier from the
+  // player rating (on-field plus-minus and this season's production, below), then blended 70/30 with the market's own
+  // verdict, his contract (a rookie deal says nothing about quality, so rookies get only the first part).
   P.value = (W, p, y) => {
     const g = P.group(p), sh = P.share(W, p), age = (p.age || 26) + (y - W.season);
     const aging = k => Math.max(0.2, 1 - Math.max(0, k - PEAK[g]) * AGE_FALL[g]);
-    const role = W.price[g] * Math.pow(sh, 1.4) * aging(age);
+    const q = P.quality(W, p);
+    const role = W.price[g] * Math.pow(sh, 1.25) * q.mult * aging(age);
     if (P.rookieDeal(p) || !p.c || !p.c.apy) return role;
     const grown = p.c.apy * Math.pow(1.07, Math.max(0, W.season - (p.c.signed || W.season)));
     const own = grown * Math.min(1, sh / 0.6) * aging(age) / aging((p.age || 26));
-    return 0.5 * role + 0.5 * own;
+    return 0.7 * role + 0.3 * own;
   };
+
+  // ---------- the player rating ----------
+  // Two parts, each as standard deviations above or below the average player at his position:
+  //   on-field: his plus-minus from the last two seasons of play-by-play (tools/nfl_rating.py: every play's EPA
+  //             explained by the 22 players on the field), trusted more the more snaps it rests on
+  //   production: this season's box score per game (EPA per play for quarterbacks; yards, touchdowns and EPA against
+  //             the average play for backs and receivers; pressure numbers for pass rushers; tackles, plays on the
+  //             ball and turnovers for linebackers and defensive backs). Linemen have none, so they're all on-field.
+  // The mix leans on production where the box score sees a player well (quarterbacks, receivers) and on the on-field
+  // number where it doesn't. The multiplier on his position's price runs from 0.3 (well below average) to 2.3.
+  const MIX = { QB: 0.35, RB: 0.4, WR: 0.4, TE: 0.5, OT: 1, IOL: 1, EDGE: 0.5, IDL: 0.6, LB: 0.6, CB: 0.65, S: 0.65, K: 0, P: 0, LS: 0 };
+  P.MIX = MIX;
+  function prodScore(W, s, g) {
+    const b = W.base || { rush: 0, rec: 0 }, gm = Math.max(1, s.games);
+    const tkl = s.def_tackles_solo + 0.5 * s.def_tackle_assists;
+    const oaR = s.rushing_epa - s.carries * b.rush, oaC = s.receiving_epa - s.targets * b.rec;
+    switch (g) {
+      case "QB": { const pl = s.attempts + s.sacks_suffered + s.carries; return pl >= 40 ? { v: (s.passing_epa + s.rushing_epa) / pl, n: pl, k: 100 } : null; }
+      case "RB": return s.carries + s.targets >= 25 ? { v: (s.rushing_yards + s.receiving_yards + 20 * (s.rushing_tds + s.receiving_tds) + 6 * (oaR + oaC)) / gm, n: gm, k: 2 } : null;
+      case "WR": case "TE": return s.targets >= 12 ? { v: (s.receiving_yards + 20 * s.receiving_tds + 6 * oaC) / gm, n: gm, k: 2 } : null;
+      case "EDGE": case "IDL": return s.games >= 3 ? { v: (3 * s.def_sacks + s.def_qb_hits + 1.5 * s.def_tackles_for_loss + 2 * s.def_fumbles_forced + 0.15 * tkl) / gm, n: gm, k: 3 } : null;
+      case "LB": return s.games >= 3 ? { v: (0.4 * tkl + 1.5 * s.def_tackles_for_loss + 3 * s.def_sacks + 4 * s.def_interceptions + 1.5 * s.def_pass_defended + 2 * s.def_fumbles_forced) / gm, n: gm, k: 3 } : null;
+      case "CB": case "S": return s.games >= 3 ? { v: (5 * s.def_interceptions + 2 * s.def_pass_defended + 0.3 * tkl + 2 * s.def_fumbles_forced + s.def_tackles_for_loss + 2 * s.def_sacks) / gm, n: gm, k: 3 } : null;
+      default: return null;
+    }
+  }
+  const DEF_G = new Set(["EDGE", "IDL", "LB", "CB", "S"]);
+  P.buildRatings = W => {
+    const ci = {}; if (W.stats) W.stats.cols.forEach((c, i) => { ci[c] = i; });
+    const statOf = id => { const v = W.stats && W.stats.p[id]; if (!v) return null; const o = {}; for (const k in ci) o[k] = v[ci[k]]; return o; };
+    // league-average EPA per carry and per target
+    if (W.stats) {
+      let c = 0, re = 0, t = 0, ce = 0;
+      for (const v of Object.values(W.stats.p)) { c += v[ci.carries]; re += v[ci.rushing_epa]; t += v[ci.targets]; ce += v[ci.receiving_epa]; }
+      W.base = { rush: c ? re / c : 0, rec: t ? ce / t : 0 };
+    }
+    const raw = {};                       // id -> { on, onN, prod, prodN }
+    for (const p of W.players) {
+      const g = P.group(p), r = W.rating && W.rating.p[p.id], s = statOf(p.id), o = {};
+      if (r) { const def = DEF_G.has(g); o.on = def ? r[1] : r[0]; o.onN = def ? r[3] : r[2]; }
+      const pr = s ? prodScore(W, s, g) : null;
+      if (pr) { o.prod = pr.v; o.prodN = pr.n; o.prodK = pr.k; }
+      raw[p.id] = o;
+    }
+    // standardize within position (players with real samples set the scale)
+    const z = {};
+    const groups = {};
+    for (const p of W.players) (groups[P.group(p)] = groups[P.group(p)] || []).push(p);
+    for (const [g, ps] of Object.entries(groups)) {
+      const stat = key => {
+        const vals = ps.map(p => raw[p.id]).filter(o => o[key] != null && (key === "on" ? o.onN >= 250 : true)).map(o => o[key]);
+        if (vals.length < 8) return null;
+        const mean = vals.reduce((a, v) => a + v, 0) / vals.length, sd = Math.sqrt(vals.reduce((a, v) => a + (v - mean) * (v - mean), 0) / vals.length) || 1;
+        return { mean, sd };
+      };
+      const so = stat("on"), sp = stat("prod");
+      for (const p of ps) {
+        const o = raw[p.id];
+        const zon = so && o.on != null ? (o.on - so.mean) / so.sd * (o.onN / (o.onN + 500)) : null;
+        const zpr = sp && o.prod != null ? (o.prod - sp.mean) / sp.sd * (o.prodN / (o.prodN + o.prodK)) : null;
+        const w = MIX[g] ?? 0.5;
+        let zz = 0;
+        if (zon != null && zpr != null) zz = w * zon + (1 - w) * zpr;
+        else if (zon != null) zz = zon;
+        else if (zpr != null) zz = zpr;
+        z[p.id] = { zz, zon, zpr };
+      }
+      // the blend of two shrunk numbers is narrower than either, so re-scale it so regulars at each position spread
+      // one standard deviation per unit again (part-timers keep their shrink toward average; never stretched more than 2x)
+      const reg = ps.filter(p => { const o = raw[p.id]; return (o.onN || 0) >= 400 || (o.prodN || 0) >= (o.prodK || 1) * 3; }).map(p => z[p.id].zz);
+      let sd = 1;
+      if (reg.length >= 8) { const m = reg.reduce((a, v) => a + v, 0) / reg.length; sd = Math.max(0.5, Math.sqrt(reg.reduce((a, v) => a + (v - m) * (v - m), 0) / reg.length)) || 1; }
+      for (const p of ps) {
+        const q = z[p.id], zz = q.zz / sd;
+        z[p.id] = { z: Math.max(-3, Math.min(3.25, zz)), zon: q.zon, zpr: q.zpr, mult: Math.max(0.3, Math.min(2.3, 1 + 0.45 * zz)) };
+      }
+    }
+    W.quality = z;
+  };
+  P.quality = (W, p) => (W.quality && W.quality[p.id]) || { z: 0, mult: 1, zon: null, zpr: null };
   // Market price for an extension: the APY at the rank his value implies among players at his position
   P.extensionApy = (W, p, y) => {
     const g = P.group(p), list = W.apys[g] || [], v = P.value(W, p, y);

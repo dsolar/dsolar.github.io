@@ -84,3 +84,21 @@ test('draft picks: next year\'s class costs cap, the first pick the most', () =>
   const first = W.draft.picks[0][3];
   assert.ok(P.rookieCost(W, first, 2027).total > 5);
 });
+
+test('player rating: on a 1-99 scale, regulars spread, better players worth more', () => {
+  const C2 = require('../nfl/lib/cap.js'), P = require('../nfl/lib/plan.js');
+  const W = P.init(C2.newWorld(read('nfl/data/league.json'), read('nfl/data/teamcap.json'), read('nfl/data/rating.json')));
+  const qbs = W.players.filter(p => P.group(p) === 'QB' && P.share(W, p) > 0.6).map(p => P.quality(W, p));
+  assert.ok(qbs.length >= 20);
+  const zs = qbs.map(q => q.z).sort((a, b) => b - a);
+  assert.ok(zs[0] > 1 && zs[zs.length - 1] < 0, 'starting QBs should spread both sides of average');
+  for (const q of Object.values(W.quality)) {
+    assert.ok(q.z >= -3 && q.z <= 3.25);
+    assert.ok(q.mult >= 0.3 && q.mult <= 2.3);
+  }
+  // same player, same role: a higher rating means more value
+  const p = W.players.find(x => P.group(x) === 'WR' && P.share(W, x) > 0.6);
+  const v0 = P.value(W, p, W.season);
+  W.quality[p.id] = { ...W.quality[p.id], mult: W.quality[p.id].mult + 0.5 };
+  assert.ok(P.value(W, p, W.season) > v0);
+});
