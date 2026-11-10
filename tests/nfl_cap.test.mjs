@@ -161,3 +161,21 @@ test('trade value: pick chart, better players cost more, packages reach the pric
   const post = P.tradeMoney(W, q, 'NE', 'post');
   near(post.rows[0].sellerDead + post.rows[1].sellerDead, prLeft);
 });
+
+test('needs, fits, cap casualties and round-based prices', () => {
+  const C2 = require('../nfl/lib/cap.js'), P = require('../nfl/lib/plan.js');
+  const W = P.init(C2.newWorld(read('nfl/data/league.json'), read('nfl/data/teamcap.json'), read('nfl/data/rating.json')));
+  const N = P.needs(W, W.season + 1), codes = Object.keys(N);
+  assert.equal(codes.length, 32);
+  for (const g of P.NEED_GROUPS) {                         // grades spread across the league at every group
+    const gr = codes.map(c => N[c].groups[g].grade);
+    assert.ok(gr.includes('A') && gr.includes('F'), g);
+  }
+  for (const c of codes) assert.ok(N[c].top.length <= 4 && N[c].top.every(x => x.why));
+  const cc = P.casualties(W, W.season + 1);
+  assert.ok(cc.length > 10 && cc.every((x, i) => i === 0 || x.lik <= cc[i - 1].lik));
+  assert.ok(!cc.some(x => /^(K|P|LS)$/.test(P.group(x.p))));
+  assert.match(P.priceText(P.roundAvg(1) * 2).long, /^two firsts/);
+  assert.match(P.priceText(P.roundAvg(1) + P.roundAvg(2)).long, /^a first and a second/);
+  assert.match(P.priceText(P.pickPoints(50)).long, /second/);
+});

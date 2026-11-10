@@ -185,7 +185,10 @@
     W._role = W._role || {};
     if (W._role[q.id] != null) return W._role[q.id];
     const r = W.rating && W.rating.p[q.id], plays = r ? Math.max(r[2], r[3]) : 0;
-    return (W._role[q.id] = Math.min(1, Math.max(P.share(W, q), P.depthRank(W, q) === 1 ? 0.8 : 0, plays >= 600 ? 0.8 : 0)));
+    // a regular from the last two seasons counts as a starter only if he's on injured reserve, or off the depth chart
+    // and missing most of this season (not if he's listed as a backup)
+    const dr = P.depthRank(W, q), missed = q.st === "RES" || dr >= 4 && (!q.snaps || q.snaps[3] <= Math.max(2, ((W.week || 10) - 1) * 0.4));
+    return (W._role[q.id] = Math.min(1, Math.max(P.share(W, q), dr === 1 ? 0.8 : 0, plays >= 600 && missed ? 0.8 : 0)));
   };
   P.contract = (W, p, y) => {
     W._ce = W._ce || {};
@@ -329,17 +332,20 @@
     const out = [];
     const ps = W.players.filter(p => p.t === code && p.c && p.st !== "DEV");
     for (const p of ps) {
-      const r = p.c.rows[y], g = P.group(p), val = P.value(W, p, y), share = P.share(W, p);
+      // value at his healthy role (an injured starter isn't a cut candidate); core special teamers aren't valued by
+      // the model at all, so they're left out of cut and trade ideas
+      const r = p.c.rows[y], g = P.group(p), share = P.share(W, p), val = P.value(W, p, y, P.role(W, p));
+      const stOnly = /^(K|P|LS)$/.test(g) || (p.snaps && p.snaps[2] >= 0.35 && Math.max(p.snaps[0], p.snaps[1]) < 0.3);
       const last = C.lastYear(p);
       if (r && !r[C.R.void]) {
         const cap = r[C.R.cap], cut = C.effect(p, { kind: "cut", year: y }), june = C.effect(p, { kind: "cutJune", year: y }), tr = C.effect(p, { kind: "trade", year: y });
         const saveCut = -(cut.delta[y] || 0), saveJune = -(june.delta[y] || 0), saveTrade = -(tr.delta[y] || 0);
         const over = cap - val;
-        if (cap >= 3 && saveCut >= Math.max(2.5, cap * 0.45) && over > Math.max(2, cap * 0.25)) {
+        if (!stOnly && cap >= 3 && saveCut >= Math.max(2.5, cap * 0.45) && over > Math.max(2, cap * 0.25)) {
           out.push({ kind: "cut", p, y, score: saveCut + over, cap, val, save: saveCut, saveJune, dead: cut.dead[y] || 0, deadNext: june.dead[y + 1] || 0,
             why: (C.guaranteeLeft(p, y) < 0.1 ? "No guarantees left. " : "") + "Saves " + m(saveCut) + " (" + m(saveJune) + " after June 1) against " + m(cut.dead[y] || 0) + " dead; value about " + m(val) + " for a " + m(cap) + " cap number." });
         }
-        if (saveTrade >= Math.max(3, saveCut + 3) && cap >= 8 && over > 2) {
+        if (!stOnly && saveTrade >= Math.max(3, saveCut + 3) && cap >= 8 && over > 2) {
           out.push({ kind: "trade", p, y, score: saveTrade + Math.max(0, over) * 0.5, cap, val, save: saveTrade, dead: tr.dead[y] || 0,
             why: "Trading saves " + m(saveTrade) + " (cutting saves " + m(saveCut) + "): his " + m(C.guaranteeLeft(p, y)) + " in guarantees go with him. " + m(tr.dead[y] || 0) + " in bonus money stays behind." });
         }
@@ -450,6 +456,106 @@
     while (left > 15 && out.length < 4) { const n = P.pickForPoints(Math.min(1000, left)); out.push(n); left -= P.pickPoints(n); if (pts < 1000) break; }
     return out;
   };
+  // A price in round terms. Up to about the No. 12 pick it's one pick ("a late second, about No. 50"); above that,
+  // how many average firsts and seconds it adds up to ("two firsts and a second"), the way big trades are described.
+  P.roundAvg = r => { let t = 0; for (let n = (r - 1) * 32 + 1; n <= r * 32; n++) t += P.pickPoints(n); return t / 32; };
+  P.priceText = pts => {
+    const words = ["no", "a", "two", "three", "four", "five", "six"];
+    if (pts <= 15) return { short: "Nothing", long: "next to nothing", single: 262 };
+    if (pts <= P.pickPoints(12)) { const n = P.pickForPoints(pts); return { short: P.pickLabel(n).replace(/^an? /, "").replace(/^\w/, c => c.toUpperCase()), long: P.pickLabel(n) + (n > 1 ? " (about No. " + n + ")" : ""), single: n }; }
+    const a1 = P.roundAvg(1), a2 = P.roundAvg(2), a3 = P.roundAvg(3);
+    let n1 = Math.floor(pts / a1), rem = pts - n1 * a1;
+    if (rem > 0.75 * a1) { n1++; rem = 0; }
+    let n2 = Math.floor(rem / a2), rem2 = rem - n2 * a2;
+    if (rem2 > 0.6 * a2) { n2++; rem2 = 0; }
+    const n3 = n2 === 0 && rem2 > 0.6 * a3 ? 1 : 0;
+    const part = (k, one, many) => k === 1 ? "a " + one : (words[k] || k) + " " + many;
+    const bits = [part(n1, "first", "firsts")]; if (n2) bits.push(part(n2, "second", "seconds")); if (n3) bits.push("a third");
+    const long = bits.length > 1 ? bits.slice(0, -1).join(", ") + " and " + bits[bits.length - 1] : bits[0];
+    return { short: [n1 + (n1 === 1 ? " first" : " firsts")].concat(n2 ? [n2 + (n2 === 1 ? " second" : " seconds")] : []).concat(n3 ? ["a third"] : []).join(" + "), long, firsts: n1, seconds: n2 };
+  };
+
+  // ---------- team needs ----------
+  // For a season: each position group's starters under contract that year (his healthy role decides who starts,
+  // his rating that season, aging included, how good), with empty starting spots filled at replacement level. The
+  // group's grade is where that lands among the 32 teams; a need is a weak group, weighted by how much the position
+  // matters (quarterback most, running back least).
+  const IMP = { QB: 1.6, OT: 1.2, EDGE: 1.2, WR: 1.1, CB: 1.1, IDL: 1.0, IOL: 0.9, S: 0.85, LB: 0.8, TE: 0.8, RB: 0.6 };
+  P.NEED_GROUPS = Object.keys(IMP);
+  P.needs = (W, y) => {
+    y = y || W.season + 1;
+    W._needs = W._needs || {};
+    if (W._needs[y]) return W._needs[y];
+    const teams = {}, byG = {};
+    const codes = [...new Set(W.players.map(p => p.t).filter(Boolean))];
+    for (const code of codes) {
+      const mine = W.players.filter(p => p.t === code && p.c && P.NEED_GROUPS.includes(P.group(p)));
+      const T = { groups: {}, top: [] };
+      for (const g of P.NEED_GROUPS) {
+        const k = STARTERS[g], all = mine.filter(p => P.group(p) === g);
+        const signed = all.filter(p => (C.lastYear(p) || 0) >= y && p.st !== "DEV" || P.rookieDeal(p) && (C.lastYear(p) || 0) >= y);
+        const ranked = signed.map(p => ({ p, z: P.ratingZ(W, p, y), role: P.role(W, p) })).sort((a, b) => (b.role >= 0.4 ? b.z : b.z - 1.2) - (a.role >= 0.4 ? a.z : a.z - 1.2));
+        const st = ranked.slice(0, k), filled = st.filter(x => x.role >= 0.4 || x.z > 0).length;
+        const zs = st.map(x => x.role >= 0.4 || x.z > 0 ? x.z : Math.min(x.z, -0.6)); while (zs.length < k) zs.push(-1);
+        const mean = zs.reduce((a, v) => a + v, 0) / k;
+        const leaving = all.filter(p => (C.lastYear(p) || 0) === y - 1 && P.role(W, p) >= 0.5).sort((a, b) => P.role(W, b) - P.role(W, a));
+        const old = st.filter(x => (x.p.age || 26) + (y - W.season) >= PEAK[g] + 3).map(x => x.p);
+        T.groups[g] = { mean, starters: st, filled, k, leaving, old };
+        (byG[g] = byG[g] || []).push(mean);
+      }
+      teams[code] = T;
+    }
+    for (const g of P.NEED_GROUPS) byG[g].sort((a, b) => a - b);
+    for (const code of codes) {
+      const T = teams[code];
+      for (const g of P.NEED_GROUPS) {
+        const G = T.groups[g], arr = byG[g], below = arr.filter(v => v < G.mean - 1e-9).length / Math.max(1, arr.length - 1);
+        G.pct = below; G.grade = below >= 0.8 ? "A" : below >= 0.6 ? "B" : below >= 0.4 ? "C" : below >= 0.2 ? "D" : "F";
+        G.score = IMP[g] * (0.5 - G.mean) + (G.k - G.filled) * 0.25 * IMP[g];
+        const bits = [];
+        if (G.leaving.length) bits.push(G.leaving.slice(0, 2).map(p => p.n).join(" and ") + (G.leaving.length > 2 ? " and others" : "") + " can be free agent" + (G.leaving.length > 1 ? "s" : ""));
+        if (G.filled < G.k) bits.push((G.filled ? "only " + G.filled + " of " + G.k : "no") + " starter" + (G.k > 1 ? "s" : "") + " signed for " + y);
+        const weak = G.starters.filter(x => x.role >= 0.4 && x.z < -0.3).sort((a, b) => a.z - b.z)[0];
+        if (weak) bits.push(weak.p.n + " rates " + Math.round(50 + 15 * weak.z));
+        if (G.old.length) bits.push(G.old[0].n + " will be " + Math.floor((G.old[0].age || 30) + (y - W.season)));
+        const best = G.starters.filter(x => x.role >= 0.4)[0];
+        G.why = bits.length ? bits.join("; ") : best ? "starters average " + Math.round(50 + 15 * G.mean) + " (best: " + best.p.n + ", " + Math.round(50 + 15 * best.z) + ")" : "no proven starter";
+      }
+      T.top = P.NEED_GROUPS.map(g => Object.assign({ g }, T.groups[g])).filter(x => x.grade === "D" || x.grade === "F" || x.score > 0.9).sort((a, b) => b.score - a.score).slice(0, 4);
+    }
+    return (W._needs[y] = teams);
+  };
+  // Teams that need a player at his position and can afford him in a season (need in their top three, cap space for
+  // his price), best fits first
+  P.fits = (W, p, y, price) => {
+    const g = P.group(p), N = P.needs(W, y), out = [];
+    for (const [code, T] of Object.entries(N)) {
+      if (code === p.t) continue;
+      const i = T.top.findIndex(x => x.g === g);
+      if (i < 0 || i > 2) continue;
+      const sp = C.teamYears(W, code, [], y, y)[0].space;
+      if (price != null && sp < price * 0.8) continue;
+      out.push({ code, rank: i, score: T.top[i].score, space: sp });
+    }
+    return out.sort((a, b) => a.rank - b.rank || b.score - a.score);
+  };
+  // Likely cap casualties for a season: every cut idea league-wide, marked likely when the cut saves most of his cap
+  // number, he's paid well past his value, and his team is tight on room or has better options
+  P.casualties = (W, y) => {
+    y = y || W.season + 1;
+    const out = [], codes = [...new Set(W.players.map(p => p.t).filter(Boolean))];
+    for (const code of codes) {
+      const sp = C.teamYears(W, code, [], y, y)[0].space;
+      for (const s of P.suggest(W, code, y)) {
+        if (s.kind !== "cut" && s.kind !== "trade") continue;
+        const ratio = s.save / Math.max(1, s.cap), over = (s.cap - s.val) / Math.max(1, s.cap), age = (s.p.age || 27) + (y - W.season);
+        const lik = ratio * 0.5 + over * 0.6 + (sp < 10 ? 0.15 : 0) + (age >= PEAK[P.group(s.p)] + 3 ? 0.1 : 0);
+        out.push(Object.assign({}, s, { team: code, space: sp, lik, label: lik >= 0.75 ? "Likely" : lik >= 0.55 ? "Possible" : "Long shot" }));
+      }
+    }
+    return out.sort((a, b) => b.lik - a.lik);
+  };
+
   // Plain-English name for a pick number
   P.pickLabel = n => n === 1 ? "the No. 1 pick" : n <= 3 ? "a top-3 pick" : n <= 10 ? "a top-10 pick" : n <= 21 ? "a mid first" : n <= 32 ? "a late first" : n <= 48 ? "an early second" : n <= 64 ? "a late second" :
     n <= 100 ? "a third" : n <= 140 ? "a fourth" : n <= 180 ? "a fifth" : n <= 220 ? "a sixth" : "a seventh";

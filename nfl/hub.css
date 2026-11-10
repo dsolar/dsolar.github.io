@@ -227,3 +227,20 @@ button.pchip.on{background:var(--ink);color:var(--paper);box-shadow:none} button
 .allpicks{padding:0 14px 12px} .allpicks summary{cursor:pointer;font:600 13px var(--cond);color:var(--muted)}
 .ap{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
 @media (max-width:640px){ .deal2,.ap{grid-template-columns:1fr} }
+
+/* needs */
+.grades{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:6px;padding:10px 14px 4px}
+.gr{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 2px;border-radius:6px;cursor:help}
+.gr b{font:800 20px/1 var(--display)} .gr small{font:600 11px/1.1 var(--cond);text-align:center}
+.gA{background:var(--t-elite);color:var(--t-elite-i)} .gB{background:var(--t-strong);color:var(--t-strong-i)} .gC{background:var(--t-avg);color:var(--t-avg-i)} .gD{background:#fde7c8;color:#8a4b00} .gF{background:#f9d4d4;color:#9b1c1c}
+.needlist{margin:6px 0 10px;padding:0 14px 0 34px;font-size:14px;line-height:1.5} .needlist li{margin:3px 0}
+.needgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.ncard{display:block;padding:10px 12px;border:1px solid var(--rule-2);border-left:4px solid var(--tc);border-radius:8px;background:var(--paper);text-decoration:none;color:var(--ink)}
+.ncard:hover{background:var(--paper-2)} .nc-h{display:flex;align-items:center;gap:8px;margin-bottom:8px} .nc-h b{font-size:14px}
+.nc-n{display:flex;flex-wrap:wrap;gap:5px} .nchip{padding:3px 7px;border-radius:5px;font:600 12px var(--cond)}
+td.fits a{display:inline-flex;align-items:center;gap:2px;margin-right:6px;font:700 11.5px var(--cond);color:var(--ink);text-decoration:none} td.fits{white-space:nowrap}
+.buyers{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px;padding:10px 14px 14px}
+.buyer{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--rule-2);border-radius:8px;text-decoration:none;color:var(--ink)} .buyer:hover{background:var(--paper-2)}
+.buyer span{display:flex;flex-direction:column} .buyer small{font-size:11.5px}
+.controls label.chk{flex-direction:row;align-items:center;gap:6px;align-self:flex-end;padding-bottom:8px;text-transform:none;letter-spacing:0;font-size:13px}
+@media (max-width:700px){ .grades{grid-template-columns:repeat(6,minmax(0,1fr))} }
