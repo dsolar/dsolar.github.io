@@ -411,7 +411,7 @@
   // value. An MVP-level quarterback lands well past the No. 1 overall pick (which went for two firsts, two seconds and
   // a starting receiver in 2023). Calibrated so top receivers land where A.J. Brown, Davante Adams and Tyreek Hill did: a first
   // plus a day-two pick, 350-450 points.
-  const TV_PTS = 5.0, TV_DISC = 0.85, REPL = 0.64, AFTER = 0.6, TV_SUR = 0.6, TV_OVER = 0.35, QB_PREMIUM = 1.0, TV_CURVE = 2.4;
+  const TV_PTS = 5.0, TV_DISC = 0.85, REPL = 0.64, AFTER = 0.6, TV_SUR = 0.6, TV_OVER = 0.35, QB_PREMIUM = 1.0, NONQB_TOP = 550, TV_CURVE = 2.4;
   // when: "now" (before this season's trade deadline: the rest of this season, then two more), "pre" or "post" (the
   // next offseason, before or after June 1: the next three seasons). The June 1 choice only moves the old team's dead
   // money, not what he's worth.
@@ -444,7 +444,12 @@
     // a cheap contract helps, but never more than half again what his play is worth: teams trade for the player
     surplus = Math.min(surplus, 0.5 * talent);
     const dollars = talent + surplus;
-    return { pts: dollars * TV_PTS, dollars, talent, surplus, rows, last, est, when, freeAgent: !now && last < years[0], rental: now && last === W.season };
+    // the modern market for non-quarterbacks tops out around two firsts plus (Mack, Ramsey, Jamal Adams, Tunsil,
+    // Parsons, Simmons; Garrett's Verse-plus-picks package is the high-water mark), so above about 550 points only a third
+    // of the extra counts
+    let pts = dollars * TV_PTS;
+    if (g !== "QB" && pts > NONQB_TOP) pts = NONQB_TOP + 0.35 * (pts - NONQB_TOP);
+    return { pts, dollars, talent, surplus, rows, last, est, when, freeAgent: !now && last < years[0], rental: now && last === W.season };
   };
   // Share of this season still to play (from the league file's week)
   P.seasonLeft = W => Math.max(0, Math.min(1, (18 - ((W.week || 10) - 1)) / 18));
@@ -479,8 +484,8 @@
   };
   // A price in round terms. Up to about the No. 16 pick it's one pick ("a late second, about No. 50"); above that, how
   // many firsts and seconds it adds up to, counted the way contenders pay: a typical first a buyer sends sits around
-  // No. 24 (the Bears' two firsts for Jeffery Simmons were expected in the 20s), a typical second around No. 56.
-  P.FIRST = 24; P.SECOND = 56; P.THIRD = 88;
+  // No. 28 (the Bears' two firsts for Jeffery Simmons were expected late in the round), a second around No. 56.
+  P.FIRST = 28; P.SECOND = 56; P.THIRD = 88;
   P.roundAvg = r => { let t = 0; for (let n = (r - 1) * 32 + 1; n <= r * 32; n++) t += P.pickPoints(n); return t / 32; };
   P.priceText = pts => {
     const words = ["no", "a", "two", "three", "four", "five", "six", "seven"];
@@ -490,7 +495,7 @@
     // past the No. 1 pick's worth, say it that way: the No. 1 overall pick plus what's left
     const one = pts >= top * 0.97, left = one ? Math.max(0, pts - top) : pts;
     let n1 = Math.floor(left / a1), rem = left - n1 * a1;
-    if (rem > 0.6 * a1) { n1++; rem = 0; }
+    if (rem > 0.8 * a1) { n1++; rem = 0; }
     let n2 = Math.floor(rem / a2), rem2 = rem - n2 * a2;
     if (rem2 > 0.6 * a2) { n2++; rem2 = 0; }
     const n3 = n2 === 0 && rem2 > 0.6 * a3 ? 1 : 0;
