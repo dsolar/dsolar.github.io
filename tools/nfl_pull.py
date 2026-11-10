@@ -189,6 +189,7 @@ def main():
             "id": gid, "n": r["full_name"], "pos": r["position"], "dpos": r["depth_chart_position"], "t": tm,
             "st": r["status"], "age": age_on(r["birth_date"], today), "exp": int(r["years_exp"] or 0),
             "espn": r["espn_id"] or None, "pfr": r["pfr_id"] or None,
+            "hs": (r.get("headshot_url") or "").rsplit("/", 1)[-1] or None,   # NFL.com headshot id (the image CDN's file name)
             "draft": [int(r["entry_year"] or 0), int(r["draft_number"] or 0), r["draft_club"] or None] if r.get("draft_number") else None,
         }
         if sn and tg:

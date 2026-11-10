@@ -48,6 +48,15 @@
     const y = mv.year, r0 = row(p, y), out = { delta: {}, dead: {}, other: {}, notes: [] };
     const add = (o, k, v) => { if (Math.abs(v) > 1e-6) o[k] = (o[k] || 0) + v; };
     const ys = yearsOf(p).filter(k => k >= y);
+    // A deal that has run out: re-sign him (new years at the new average, a 35% signing bonus spread up to five
+    // years) or put the franchise tag on him for one year
+    if (mv.kind === "resign") {
+      const addY = mv.years || 3, apy = mv.apy || 0, bonus = apy * addY * 0.35, n = Math.min(5, addY);
+      for (let k = y; k < y + addY; k++) add(out.delta, k, apy - bonus / addY);
+      for (let k = y; k < y + n; k++) add(out.delta, k, bonus / n);
+      out.bonus = bonus; return out;
+    }
+    if (mv.kind === "tag") { add(out.delta, y, mv.amount || 0); return out; }
     if (!r0) { out.notes.push("No contract in " + y + "."); return out; }
     if (mv.kind === "cut" || mv.kind === "cutJune" || mv.kind === "trade" || mv.kind === "tradeJune") {
       const june = mv.kind === "cutJune" || mv.kind === "tradeJune", trade = mv.kind.startsWith("trade");
