@@ -77,12 +77,23 @@
     const g = P.group(p), q = P.quality(W, p), n = y - W.season;
     if (n <= 0) return q.z;
     const a0 = p.age || 26, ay = a0 + n;
-    const grow = GROW * Math.max(0, Math.min(ay, PEAK[g]) - a0);
+    let grow = GROW * Math.max(0, Math.min(ay, PEAK[g]) - a0);
+    // young first-round quarterbacks: upside. Teams expect a recent high pick to grow into his draft slot, so his
+    // rating moves toward what that slot usually becomes (a top-5 pick about 72, picks 6-15 about 66, late firsts
+    // about 60), half the gap in a year and three quarters in two, scaled down as he ages out of it (gone by 28)
+    const up = P.upside(W, p);
+    if (up) grow += up.gap * (1 - Math.pow(0.5, n)) * up.youth;
     // each year ahead past his peak takes the position's aging rate; from four years past it, the fall speeds up
     // (twice the rate plus 4 points a year): late-career decline is steep at every position
     let keep = 1;
     for (let a = Math.floor(a0); a < Math.floor(ay); a++) if (a >= PEAK[g]) keep *= a >= PEAK[g] + 4 ? 1 - (2 * AGE_FALL[g] + 0.04) : 1 - AGE_FALL[g];
     return (1 + 0.45 * (q.z + grow)) * Math.max(0.05, keep) / 0.45 - 1 / 0.45;
+  };
+  P.upside = (W, p) => {
+    if (P.group(p) !== "QB" || !p.draft || p.draft[1] == null || p.draft[1] > 32 || (p.age || 30) >= 28) return null;
+    const n = p.draft[1], prior = n <= 5 ? 1.45 : n <= 15 ? 1.05 : 0.65, z = P.quality(W, p).z;
+    if (prior <= z) return null;
+    return { prior, gap: prior - z, youth: Math.min(1, (28 - p.age) / 5), pick: n };
   };
   P.multAt = (W, p, y) => y <= W.season ? P.quality(W, p).mult : Math.max(0.3, Math.min(2.3, 1 + 0.45 * zAt(W, p, y)));
   // The same thing on the rating's own scale (standard deviations; 50 + 15z on screen)
@@ -449,7 +460,19 @@
     // of the extra counts
     let pts = dollars * TV_PTS;
     if (g !== "QB" && pts > NONQB_TOP) pts = NONQB_TOP + 0.35 * (pts - NONQB_TOP);
-    return { pts, dollars, talent, surplus, rows, last, est, when, freeAgent: !now && last < years[0], rental: now && last === W.season };
+    // a young first-round quarterback is also still worth part of the pick he was: the slot's value, fading with each
+    // season since (85% the first year, then 75, 60, 45, 30), and cut the further his play has fallen short of the slot
+    let pedigree = null;
+    if (g === "QB" && p.draft && p.draft[1] != null && p.draft[1] <= 32 && (p.age || 30) < 28) {
+      const k = W.season - p.draft[0], fade = [0.85, 0.75, 0.6, 0.45, 0.3][k];
+      if (fade) {
+        const q = P.quality(W, p), prior = p.draft[1] <= 5 ? 1.45 : p.draft[1] <= 15 ? 1.05 : 0.65, seen = q.zon != null || q.zpr != null;
+        const f = seen ? Math.max(0.25, Math.min(1, 1 - 0.35 * Math.max(0, prior - q.z))) : 1;
+        pedigree = { pts: P.pickPoints(p.draft[1]) * fade * f, pick: p.draft[1], year: p.draft[0], fade, f };
+        if (pedigree.pts > pts) pts = pedigree.pts;
+      }
+    }
+    return { pts, pedigree, dollars, talent, surplus, rows, last, est, when, freeAgent: !now && last < years[0], rental: now && last === W.season };
   };
   // Share of this season still to play (from the league file's week)
   P.seasonLeft = W => Math.max(0, Math.min(1, (18 - ((W.week || 10) - 1)) / 18));
