@@ -34,8 +34,10 @@
   }
   function lastName(n) { var w = String(n).split(" ").filter(function (x) { return !/^(Jr\.?|Sr\.?|II|III|IV|V)$/.test(x); }); return w.length ? w[w.length - 1] : n; }
   // The player rating on a 0-100 scale: 50 is an average player at his position, each 15 points one standard deviation
-  function score(p) { var q = P.quality(W, p); return Math.max(1, Math.min(99, Math.round(50 + 15 * q.z))); }
-  function scoreChip(p) { var s = score(p); return '<span class="rscore ' + (s >= 75 ? "e" : s >= 60 ? "g" : s >= 40 ? "a" : "w") + '" title="Player rating: 50 is an average player at his position">' + s + "</span>"; }
+  function zScore(z) { return Math.max(1, Math.min(99, Math.round(50 + 15 * z))); }
+  function score(p, y) { return zScore(y && y > W.season ? P.ratingZ(W, p, y) : P.quality(W, p).z); }
+  function chipCls(s) { return s >= 75 ? "e" : s >= 60 ? "g" : s >= 40 ? "a" : "w"; }
+  function scoreChip(p, y) { var s = score(p, y); return '<span class="rscore ' + chipCls(s) + '" title="Player rating' + (y && y > W.season ? " projected for " + y + ", aging included" : "") + ': 50 is an average player at his position">' + s + "</span>"; }
   function posOf(p) { return p.dpos && p.dpos !== "NA" ? p.dpos : p.pos; }
   function pname(p, size, extra) { return '<span class="pl" data-p="' + esc(p.id) + '">' + face(p, size || 22) + '<span class="nm">' + esc(p.n) + "</span>" + (extra || "") + "</span>"; }
   function href(route, q) {
@@ -186,6 +188,7 @@
     S: { min: function (s) { return s.games >= 3; }, score: function (s) { return 5 * s.def_interceptions + 2 * s.def_pass_defended + 0.35 * (s.def_tackles_solo + 0.5 * s.def_tackle_assists) + 2 * s.def_fumbles_forced + s.def_tackles_for_loss + 2 * s.def_sacks; }, cols: [["INT", "def_interceptions"], ["PD", "def_pass_defended"], ["Tkl", "tkl"], ["TFL", "def_tackles_for_loss"], ["FF", "def_fumbles_forced"]] },
     K: { min: function (s) { return s.fg_att >= 5; }, score: function (s) { return s.fg_made - 2 * (s.fg_att - s.fg_made) + 0.05 * s.fg_long; }, cols: [["FG", "fg_made"], ["Att", "fg_att"], ["Long", "fg_long"]] }
   };
+  var ONE = { QB: "quarterback", RB: "running back", WR: "wide receiver", TE: "tight end", OT: "tackle", IOL: "interior lineman", EDGE: "edge rusher", IDL: "interior defensive lineman", LB: "linebacker", CB: "cornerback", S: "safety", K: "kicker", P: "punter", LS: "long snapper" };
   var GROUP_NAME = { QB: "Quarterbacks", RB: "Running backs", WR: "Wide receivers", TE: "Tight ends", OT: "Offensive tackles", IOL: "Interior line", EDGE: "Edge rushers", IDL: "Interior defensive line", LB: "Linebackers", CB: "Cornerbacks", S: "Safeties", K: "Kickers" };
   function statVal(s, key) {
     if (key === "tkl") return s.def_tackles_solo + s.def_tackle_assists;
@@ -249,12 +252,13 @@
       y + " projected: this season's strength carries forward only partly (NFL teams regress hard), and the rest comes from what each team has under contract that year, its draft classes and the cap space it has to add players.") + "</p>";
     html += '<div class="subtabs">' + [W.season, W.season + 1, W.season + 2].map(function (k) { return '<a href="' + href("power", { y: k === W.season ? null : k }) + '"' + (k === y ? ' aria-current="page"' : "") + ">" + (k === W.season ? "This season" : k) + "</a>"; }).join("") + "</div>";
     var max = Math.max.apply(null, pw.map(function (x) { return Math.abs(x.rating); })) || 1;
-    html += '<div class="panel"><ol class="power">' + pw.map(function (x) {
+    var tick = Math.max(1, Math.round(max / 2));
+    html += '<div class="panel"><div class="pr-scale"><span></span><span class="pr-axis"><i style="left:' + (50 - tick / max * 50) + '%">-' + tick + '</i><i style="left:50%">0</i><i style="left:' + (50 + tick / max * 50) + '%">+' + tick + '</i></span><span class="note">pts</span></div><ol class="power">' + pw.map(function (x) {
       var c = x.code, o = SIM.teams[c], res = x.res, mv = base ? r0[c] - x.rank : 0;
       var side = now ? '<span class="pr-meta">' + rec(o.rec) + " · proj. " + o.wins.toFixed(1) + " wins · " + pctTxt(o.playoffs) + " playoffs · " + pctTxt(o.sb) + " title</span>"
         : '<span class="pr-meta">' + m(res.roster, 0) + " under contract · " + (res.qb ? "QB " + esc(lastName(res.qb.p.n)) : '<b class="neg">no QB under contract</b>') + " · " + m(res.space, 0) + " cap space · " + m(res.draft, 0) + " draft value</span>";
       return '<li><a href="' + href("team/" + c) + '" style="--tc:' + team(c).color + '"><span class="pr-rank">' + x.rank + "</span>" + logo(c, 30) + '<span class="pr-name"><b>' + esc(team(c).name) + "</b>" + side + "</span>" +
-        (base ? '<span class="pr-move ' + (mv > 0 ? "pos" : mv < 0 ? "neg" : "") + '">' + (mv > 0 ? "▲" + mv : mv < 0 ? "▼" + (-mv) : "—") + "</span>" : "") +
+        '<span class="pr-move ' + (mv > 0 ? "pos" : mv < 0 ? "neg" : "") + '">' + (!base ? "" : mv > 0 ? "▲" + mv : mv < 0 ? "▼" + (-mv) : "–") + "</span>" +
         '<span class="pr-bar"><i class="' + (x.rating >= 0 ? "up" : "dn") + '" style="width:' + (Math.abs(x.rating) / max * 50).toFixed(1) + '%"></i></span><span class="pr-r">' + (x.rating >= 0 ? "+" : "") + x.rating.toFixed(1) + "</span></a></li>";
     }).join("") + "</ol></div>";
     html += '<p class="note">' + (now ? "Points against an average team on a neutral field." : "Projected points against an average team. The arrows compare with this season's ranking. Value under contract is each player's value that year, aging included.") + "</p>";
@@ -270,10 +274,10 @@
     var html = '<h2 class="sec">Free agents</h2><p class="lede">Everyone whose contract runs out before the ' + y + " season, ranked by value (position price, snaps and player rating). The market estimate is what players his value ranks with are paid; the tag is the NFL's franchise tag at his position grown with the cap (or 120% of his last cap hit if that's more).</p>";
     html += '<div class="controls"><label>Class<select data-q="c">' + [W.season + 1, W.season + 2, W.season + 3].map(function (k) { return '<option value="' + k + '"' + (k === y ? " selected" : "") + ">" + k + "</option>"; }).join("") + '</select></label><label>Position<select data-q="g"><option value="">All</option>' + Object.keys(GROUP_NAME).map(function (k) { return '<option value="' + k + '"' + (k === g ? " selected" : "") + ">" + GROUP_NAME[k] + "</option>"; }).join("") +
       '</select></label><label>Team<select data-q="t"><option value="">All teams</option>' + codes().map(function (c) { return '<option value="' + c + '"' + (c === tm ? " selected" : "") + ">" + esc(team(c).name) + "</option>"; }).join("") + "</select></label></div>";
-    html += tablePanel("The " + y + " class · " + list.length, "<th>#</th><th>Player</th><th>Team</th><th>Pos</th><th>Age</th><th>Rating</th><th>Snaps</th><th>This season</th><th>Value</th><th>Market / yr</th><th>Tag</th><th>" + (y - 1) + " cap</th>",
+    html += tablePanel("The " + y + " class · " + list.length, "<th>#</th><th>Player</th><th>Team</th><th>Pos</th><th>Age</th><th>Rating</th><th title=\"Projected rating that season, aging included\">&rsquo;" + String(y).slice(2) + "</th><th>Snaps</th><th>This season</th><th>Value</th><th>Market / yr</th><th>Tag</th><th>" + (y - 1) + " cap</th>",
       list.slice(0, 150).map(function (x, i) {
         var p = x.p, r = x.apy / x.tag, tagCls = r >= 0.85 ? "up" : r >= 0.6 ? "warn" : "";
-        return "<tr><td>" + (i + 1) + "</td><td>" + pname(p, 24) + '</td><td class="tm">' + logo(p.t, 18) + '<span class="nm">' + esc(p.t) + "</span></td><td>" + esc(posOf(p)) + "</td><td>" + (p.age ? Math.floor(p.age + y - W.season) : "—") + "</td><td>" + scoreChip(p) + "</td><td>" + (p.snaps ? Math.round(P.share(W, p) * 100) + "%" : "—") + '</td><td class="note">' + esc(keyStat(p)) + "</td><td><b>" + m(x.val) + "</b></td><td>" + m(x.apy) + '</td><td><span class="pill ' + tagCls + '" title="Market as a share of the tag: ' + Math.round(r * 100) + '%">' + m(x.tag) + "</span></td><td>" + m(C.capHit(p, y - 1)) + "</td></tr>";
+        return "<tr><td>" + (i + 1) + "</td><td>" + pname(p, 24) + '</td><td class="tm">' + logo(p.t, 18) + '<span class="nm">' + esc(p.t) + "</span></td><td>" + esc(posOf(p)) + "</td><td>" + (p.age ? Math.floor(p.age + y - W.season) : "—") + "</td><td>" + scoreChip(p) + "</td><td>" + scoreChip(p, y) + "</td><td>" + (p.snaps ? Math.round(P.share(W, p) * 100) + "%" : "—") + '</td><td class="note">' + esc(keyStat(p)) + "</td><td><b>" + m(x.val) + "</b></td><td>" + m(x.apy) + '</td><td><span class="pill ' + tagCls + '" title="Market as a share of the tag: ' + Math.round(r * 100) + '%">' + m(x.tag) + "</span></td><td>" + m(C.capHit(p, y - 1)) + "</td></tr>";
       }).join(""), "green tag: about his market, yellow: pricier, gray: well above", "rank");
     view.innerHTML = html;
   }
@@ -549,10 +553,29 @@
   }
   // The rating and its two parts
   function ratingBlock(p) {
-    var q = P.quality(W, p), r = W.rating && W.rating.p[p.id], g = P.group(p), def = /EDGE|IDL|LB|CB|S/.test(g) && g !== "QB";
-    var part = function (z) { return z == null ? "—" : Math.max(1, Math.min(99, Math.round(50 + 15 * z))); };
-    return '<h4 class="card-sec">Player rating</h4><div class="rbar"><span class="rbig">' + scoreChip(p) + '</span><span><b>On field</b> ' + part(q.zon) + (r ? ' <small class="note">(' + (def ? r[1] : r[0]).toFixed(1) + " EPA per 100 plays " + (def ? "saved" : "added") + " over " + (def ? r[3] : r[2]) + " plays, 2024-25)</small>" : ' <small class="note">(no snaps in 2024-25)</small>') +
-      '</span><span><b>This season</b> ' + part(q.zpr) + '</span><span class="note">' + Math.round((1 - (P.MIX[g] == null ? 0.5 : P.MIX[g])) * 100) + "% production, " + Math.round((P.MIX[g] == null ? 0.5 : P.MIX[g]) * 100) + "% on-field at " + esc(g) + "</span></div>";
+    var q = P.quality(W, p), r = W.rating && W.rating.p[p.id], g = P.group(p), def = /^(EDGE|IDL|LB|CB|S)$/.test(g);
+    var w = P.MIX[g] == null ? 0.5 : P.MIX[g], s = st(p);
+    var meter = function (label, z, weight, note) {
+      var v = z == null ? null : zScore(z), raw = z == null ? null : 50 + 15 * z;
+      var shown = v == null ? "—" : raw > 99.5 ? '<span title="Off the top of the scale: about ' + Math.round(raw) + '">99+</span>' : raw < 0.5 ? '<span title="Off the bottom of the scale: about ' + Math.round(raw) + '">&lt;1</span>' : v;
+      return '<div class="rm"><div class="rm-h"><b>' + label + "</b>" + (weight != null ? '<span class="note">' + Math.round(weight * 100) + "% of the rating</span>" : "") + '<span class="rm-v">' + shown + "</span></div>" +
+        '<div class="rm-t"><i class="mid"></i>' + (v == null ? "" : '<i class="fill ' + chipCls(v) + '" style="width:' + v + '%"></i>') + "</div>" + (note ? '<div class="note">' + note + "</div>" : "") + "</div>";
+    };
+    var onNote = r ? (def ? r[1] : r[0]).toFixed(1) + " EPA per 100 plays " + (def ? "saved" : "added") + " vs an average " + esc(g) + ", " + (def ? r[3] : r[2]) + " plays in 2024-25" + ((def ? r[3] : r[2]) < 500 ? " (small sample, pulled toward average)" : "")
+      : "No snaps in 2024-25";
+    var prNote = q.zpr == null ? (/^(OT|IOL)$/.test(g) ? "Linemen have no box-score stats" : "Not enough playing time this season") : keyStat(p) + (s ? " in " + s.games + " games" : "");
+    var useOn = q.zon != null, usePr = q.zpr != null;
+    var html = '<h4 class="card-sec">Player rating</h4><div class="rcard"><div class="rc-big">' + scoreChip(p) + '<span class="note">50 = average ' + esc(ONE[g] || g) + "</span></div>" +
+      '<div class="rc-parts">' + meter("On-field plus-minus", q.zon, useOn && usePr ? w : useOn ? 1 : null, onNote) + meter("This season's production", q.zpr, useOn && usePr ? 1 - w : usePr ? 1 : null, prNote) + "</div></div>";
+    // what's driving it, in a sentence
+    var lead = useOn && usePr ? (Math.abs(q.zon - q.zpr) < 0.5 ? "Both halves agree" : (q.zpr > q.zon ? "This season's production is carrying it" : "His on-field impact is carrying it") + ", so watch " + (q.zpr > q.zon ? "whether it holds up" : "whether the box score catches up"))
+      : useOn ? "All on-field: the box score doesn't see his position" : usePr ? "All production: too few snaps in 2024-25 for an on-field number" : "No data yet, so he's rated average";
+    // the next few seasons with aging
+    var ys = [W.season, W.season + 1, W.season + 2, W.season + 3], peak = P.PEAK[g], age = p.age || 26;
+    html += '<p class="note rc-why">' + lead + ".</p>";
+    html += '<div class="rproj"><span class="note">Ahead, aging included</span>' + ys.map(function (y) { return '<span><small>' + (y === W.season ? "Now" : y) + "</small>" + scoreChip(p, y) + "<small>age " + Math.floor(age + y - W.season) + "</small></span>"; }).join("") +
+      '<span class="note">' + esc(ONE[g] ? ONE[g][0].toUpperCase() + ONE[g].slice(1) : g) + " peak: about " + peak + (age >= peak ? "; he's past it, so expect a slide" : age + 1 < peak ? "; still climbing" : "") + "</span></div>";
+    return html;
   }
   // This season's line, by what the position does
   function statBlock(p) {
@@ -612,7 +635,7 @@
       "<h3>The cap rules</h3><p>Cut before June 1: every remaining year of bonus proration and every remaining guarantee counts that year. After June 1, or with a post-June 1 designation: that year keeps only its own proration and guarantee, the rest moves to the next year. Trade: the old team keeps the bonus proration on the same June 1 split, and the guarantees and salary go with the player. Restructure: base salary above the minimum becomes a signing bonus spread over the years left (up to five; with void years, always five). Extension: three new years at the market average, a signing bonus of 35% of the new money spread over up to five years, with this year's base above the minimum folded in.</p>" +
       "<h3>Cap space ahead</h3><p>2026 and 2027 use Over The Cap's team cap, contracts and dead money, so the starting point matches theirs. 2028 on use a projected base cap (" + m(C.BASE[2028], 0) + " in 2028, up 7% a year) and only contracts signed today: no carryover, no new signings, no rookie classes, so later years look roomier than they will be.</p>" +
       "<h3>The player rating</h3><p>Two parts, each measured against the average player at his position. On the field: football's version of basketball's RAPM. Every run and pass from the last two seasons (2025 counted fully, 2024 half, garbage time left out) is explained by the 22 players on the field, using nflverse's participation data and each play's EPA, so every player gets a number for how much better his side does with him out there, separated from his teammates and opponents. A ridge penalty pulls everyone toward average, hardest for players with few snaps; its strength is set by how well it predicts plays it wasn't fit on. The 2026 participation file isn't published until the season ends, so this season comes in through the second part. This season: his box-score production per game (EPA per play for quarterbacks; yards, touchdowns and EPA against the average play for backs and receivers; pressure stats for pass rushers; tackles, plays on the ball and turnovers for linebackers and defensive backs), trusted more as the games add up. The mix leans on production where the box score sees a player well (65% for quarterbacks) and on the on-field number where it doesn't (all of it for offensive linemen). On the 0-100 scale, 50 is average and every 15 points is a standard deviation.</p>" +
-      "<h3>Value</h3><p>His position's starter price (the average contract of the starting tier league-wide) times his snap share times a quality multiplier from the rating (0.3 for well below average up to 2.3), blended 70/30 with the market's own verdict, his contract average grown with the cap. Rookie deals say nothing about quality, so rookies get only the first part. Age takes a share off each later year, most at running back, least at quarterback.</p>" +
+      "<h3>Value</h3><p>His position's starter price (the average contract of the starting tier league-wide) times his snap share times a quality multiplier from the rating (0.3 for well below average up to 2.3), blended 70/30 with the market's own verdict, his contract average grown with the cap. Rookie deals say nothing about quality, so rookies get only the first part. Age takes a share off each later year, most at running back, least at quarterback.</p><h3>The rating ahead</h3><p>This season's rating already reflects how a player plays at his current age, so only future seasons move. Players short of their position's peak age (running backs about 26, corners 27, receivers, edge rushers and linebackers 28, tight ends and interior defenders 29, linemen 30, quarterbacks 32) gain a little each year until they reach it. Each year past the peak takes a share off, compounding: 12% a year at running back, 9% at corner, 3% at quarterback. Future values, free agent classes and future power rankings all use the aged rating, and each player card shows it for the next three seasons.</p>" +
       "<h3>Suggestions</h3><p>Cut: saves at least 45% of his cap number and he's paid well over his value. Trade: saves at least $3M more than a release (the guarantees leave with him). Restructure: at least $5M of room on a starter with two or more years left. Extend: a starter 29 or younger in the last year of his deal, priced at the contract average of players his value ranks with. Expiring: starters whose deals end this season, with an estimated franchise tag (the top five cap numbers at the position).</p></div>";
   }
 

@@ -65,16 +65,32 @@
   // whether he's still playing like it. A rookie-scale deal says nothing about quality, so rookies get only the first.
   P.rookieDeal = p => !!(p.draft && p.draft[0] && p.c && p.c.signed === p.draft[0] && (p.c.yrs || 0) <= 5);
   // Value: his position's starter price, times how much he plays, times how well: the quality multiplier from the
-  // player rating (on-field plus-minus and this season's production, below), then blended 70/30 with the market's own
-  // verdict, his contract (a rookie deal says nothing about quality, so rookies get only the first part).
+  // player rating (on-field plus-minus and this season's production, below), aged forward for future seasons, then
+  // blended 70/30 with the market's own verdict, his contract (a rookie deal says nothing about quality, so rookies
+  // get only the first part).
+  const aging = (g, k) => Math.max(0.2, 1 - Math.max(0, k - PEAK[g]) * AGE_FALL[g]);
+  // His rating's multiplier in a future season: this season's, grown for young players still short of their
+  // position's peak (+0.1 standard deviations a year, up to the peak) and cut by the position's aging rate for each
+  // year past it (compounding). This season's rating already reflects how he plays at his current age, so only the years ahead move it.
+  const GROW = 0.1;
+  const zAt = (W, p, y) => {
+    const g = P.group(p), q = P.quality(W, p), n = y - W.season;
+    if (n <= 0) return q.z;
+    const a0 = p.age || 26, ay = a0 + n;
+    const grow = GROW * Math.max(0, Math.min(ay, PEAK[g]) - a0);
+    const past = Math.max(0, ay - Math.max(a0, PEAK[g]));          // years ahead that fall past his peak
+    return (1 + 0.45 * (q.z + grow)) * Math.pow(1 - AGE_FALL[g], past) / 0.45 - 1 / 0.45;
+  };
+  P.multAt = (W, p, y) => y <= W.season ? P.quality(W, p).mult : Math.max(0.3, Math.min(2.3, 1 + 0.45 * zAt(W, p, y)));
+  // The same thing on the rating's own scale (standard deviations; 50 + 15z on screen)
+  P.ratingZ = (W, p, y) => Math.max(-3, Math.min(3.25, zAt(W, p, y)));
+  P.PEAK = PEAK;
   P.value = (W, p, y) => {
     const g = P.group(p), sh = P.share(W, p), age = (p.age || 26) + (y - W.season);
-    const aging = k => Math.max(0.2, 1 - Math.max(0, k - PEAK[g]) * AGE_FALL[g]);
-    const q = P.quality(W, p);
-    const role = W.price[g] * Math.pow(sh, 1.25) * q.mult * aging(age);
+    const role = W.price[g] * Math.pow(sh, 1.25) * P.multAt(W, p, y);
     if (P.rookieDeal(p) || !p.c || !p.c.apy) return role;
     const grown = p.c.apy * Math.pow(1.07, Math.max(0, W.season - (p.c.signed || W.season)));
-    const own = grown * Math.min(1, sh / 0.6) * aging(age) / aging((p.age || 26));
+    const own = grown * Math.min(1, sh / 0.6) * aging(g, age) / aging(g, p.age || 26);
     return 0.7 * role + 0.3 * own;
   };
 
@@ -145,13 +161,14 @@
         z[p.id] = { zz, zon, zpr };
       }
       // the blend of two shrunk numbers is narrower than either, so re-scale it so regulars at each position spread
-      // one standard deviation per unit again (part-timers keep their shrink toward average; never stretched more than 2x)
+      // one standard deviation per unit again (part-timers keep their shrink toward average; never stretched more than 2x).
+      // The two parts get the same stretch, so on the player card they average to the overall.
       const reg = ps.filter(p => { const o = raw[p.id]; return (o.onN || 0) >= 400 || (o.prodN || 0) >= (o.prodK || 1) * 3; }).map(p => z[p.id].zz);
       let sd = 1;
       if (reg.length >= 8) { const m = reg.reduce((a, v) => a + v, 0) / reg.length; sd = Math.max(0.5, Math.sqrt(reg.reduce((a, v) => a + (v - m) * (v - m), 0) / reg.length)) || 1; }
       for (const p of ps) {
         const q = z[p.id], zz = q.zz / sd;
-        z[p.id] = { z: Math.max(-3, Math.min(3.25, zz)), zon: q.zon, zpr: q.zpr, mult: Math.max(0.3, Math.min(2.3, 1 + 0.45 * zz)) };
+        z[p.id] = { z: Math.max(-3, Math.min(3.25, zz)), zon: q.zon == null ? null : q.zon / sd, zpr: q.zpr == null ? null : q.zpr / sd, mult: Math.max(0.3, Math.min(2.3, 1 + 0.45 * zz)) };
       }
     }
     W.quality = z;

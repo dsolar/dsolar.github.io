@@ -102,3 +102,14 @@ test('player rating: on a 1-99 scale, regulars spread, better players worth more
   W.quality[p.id] = { ...W.quality[p.id], mult: W.quality[p.id].mult + 0.5 };
   assert.ok(P.value(W, p, W.season) > v0);
 });
+
+test('rating ahead: young players climb toward their peak, older ones slide, this season unchanged', () => {
+  const C2 = require('../nfl/lib/cap.js'), P = require('../nfl/lib/plan.js');
+  const W = P.init(C2.newWorld(read('nfl/data/league.json'), read('nfl/data/teamcap.json'), read('nfl/data/rating.json')));
+  const regs = W.players.filter(p => P.share(W, p) > 0.6 && p.age && Math.abs(P.quality(W, p).z) < 2);
+  const young = regs.find(p => p.age < P.PEAK[P.group(p)] - 3), old = regs.find(p => p.age > P.PEAK[P.group(p)] + 2);
+  near(P.ratingZ(W, young, W.season), P.quality(W, young).z);
+  assert.ok(P.ratingZ(W, young, W.season + 2) > P.ratingZ(W, young, W.season));
+  assert.ok(P.ratingZ(W, old, W.season + 1) < P.ratingZ(W, old, W.season));
+  assert.ok(P.ratingZ(W, old, W.season + 2) < P.ratingZ(W, old, W.season + 1));
+});
