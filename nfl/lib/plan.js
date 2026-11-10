@@ -408,8 +408,8 @@
   // pay him (his cap number less the bonus proration, which stays behind in a trade), or takes away 35% of what he's
   // overpaid (teams discount pricey deals less than the math says: they're trading for the player).
   // Quarterbacks carry a premium that grows with quality (below), and the contract bonus is capped at half the talent
-  // value. An MVP-level quarterback lands well past the No. 1 overall pick (which went for two firsts, two seconds and
-  // a starting receiver in 2023). Calibrated so top receivers land where A.J. Brown, Davante Adams and Tyreek Hill did: a first
+  // value. An MVP-level quarterback lands well past what the No. 1 overall pick went for in 2023 (two firsts, two
+  // seconds and a starting receiver). Calibrated so top receivers land where A.J. Brown, Davante Adams and Tyreek Hill did: a first
   // plus a day-two pick, 350-450 points.
   const TV_PTS = 5.0, TV_DISC = 0.85, REPL = 0.64, AFTER = 0.6, TV_SUR = 0.6, TV_OVER = 0.35, QB_PREMIUM = 1.0, NONQB_TOP = 550, TV_CURVE = 2.4;
   // when: "now" (before this season's trade deadline: the rest of this season, then two more), "pre" or "post" (the
@@ -491,20 +491,20 @@
     const words = ["no", "a", "two", "three", "four", "five", "six", "seven"];
     if (pts <= 15) return { short: "Nothing", long: "next to nothing", single: 262 };
     if (pts <= P.pickPoints(16)) { const n = P.pickForPoints(pts); return { short: P.pickLabel(n).replace(/^an? /, "").replace(/^\w/, c => c.toUpperCase()), long: P.pickLabel(n) + (n > 1 ? " (about No. " + n + ")" : ""), single: n }; }
-    const a1 = P.pickPoints(P.FIRST), a2 = P.pickPoints(P.SECOND), a3 = P.pickPoints(P.THIRD), top = P.pickPoints(1);
-    // past the No. 1 pick's worth, say it that way: the No. 1 overall pick plus what's left
-    const one = pts >= top * 0.97, left = one ? Math.max(0, pts - top) : pts;
-    let n1 = Math.floor(left / a1), rem = left - n1 * a1;
+    // the size of "a first" grows with the deal: two-first deals are paid in contenders' late firsts, the biggest
+    // quarterback deals in better ones (sellers of a franchise quarterback get a rebuilding team's picks)
+    const t = Math.max(0, Math.min(1, (pts - 500) / 700)), lerp = (a, b) => a + (b - a) * t;
+    const a1 = lerp(P.pickPoints(P.FIRST), P.roundAvg(1)), a2 = lerp(P.pickPoints(P.SECOND), P.roundAvg(2)), a3 = P.pickPoints(P.THIRD);
+    let n1 = Math.floor(pts / a1), rem = pts - n1 * a1;
     if (rem > 0.8 * a1) { n1++; rem = 0; }
     let n2 = Math.floor(rem / a2), rem2 = rem - n2 * a2;
     if (rem2 > 0.6 * a2) { n2++; rem2 = 0; }
     const n3 = n2 === 0 && rem2 > 0.6 * a3 ? 1 : 0;
     const part = (k, o, many) => k === 1 ? "a " + o : (words[k] || k) + " " + many;
     const bits = []; if (n1) bits.push(part(n1, "first", "firsts")); if (n2) bits.push(part(n2, "second", "seconds")); if (n3) bits.push("a third");
-    const list = bits.length > 1 ? bits.slice(0, -1).join(", ") + " and " + bits[bits.length - 1] : bits[0] || "";
+    const long = bits.length > 1 ? bits.slice(0, -1).join(", ") + " and " + bits[bits.length - 1] : bits[0] || "";
     const sh = [].concat(n1 ? [n1 + (n1 === 1 ? " first" : " firsts")] : []).concat(n2 ? [n2 + (n2 === 1 ? " second" : " seconds")] : []).concat(n3 ? ["a third"] : []);
-    if (one) return { short: "No. 1 pick" + (sh.length ? " + " + sh.join(" + ") : ""), long: "the No. 1 overall pick" + (list ? " plus " + list : ""), firsts: n1, seconds: n2, overNo1: true };
-    return { short: sh.join(" + "), long: list, firsts: n1, seconds: n2 };
+    return { short: sh.join(" + "), long, firsts: n1, seconds: n2 };
   };
 
   // ---------- team needs ----------
