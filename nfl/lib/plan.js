@@ -175,12 +175,54 @@
   };
   P.quality = (W, p) => (W.quality && W.quality[p.id]) || { z: 0, mult: 1, zon: null, zpr: null };
   // Market price for an extension: the APY at the rank his value implies among players at his position
-  P.extensionApy = (W, p, y) => {
-    const g = P.group(p), list = W.apys[g] || [], v = P.value(W, p, y);
-    const i = list.findIndex(a => a <= v * 1.1);
-    const at = i < 0 ? list[list.length - 1] || v : list[Math.max(0, i - 2)];
-    return Math.max(C.minSalary(p.exp || 0, y) * 1.5, at * Math.pow(1.07, y - W.season));
+  // His next contract, from comparable deals: veterans at his position who signed in the last three years (no rookie
+  // deals), nearest to him in rating, age at signing and playing time (starters compared with starters). The average per year leans 70/30 on what they
+  // got (grown with the cap) and on his own value that season (60/25/15 for a veteran, with his last deal as the third part); years and the guaranteed share are theirs, with years
+  // capped by age (one year at 33 or older, two at 31-32, three at 30). y is the first season of the new deal.
+  P.contract = (W, p, y) => {
+    W._ce = W._ce || {};
+    const key = p.id + ":" + y;
+    if (W._ce[key]) return W._ce[key];
+    W._role = W._role || {};
+    const role = q => W._role[q.id] != null ? W._role[q.id] : (W._role[q.id] = Math.max(P.share(W, q), P.depthRank(W, q) === 1 ? 0.8 : 0));
+    const g = P.group(p), age = (p.age || 26) + (y - W.season), z = P.ratingZ(W, p, y), sh = role(p);
+    if (!W._pool) {
+      W._pool = {};
+      for (const q of W.players) {
+        const c = q.c;
+        if (!c || !c.apy || !c.signed || c.signed < W.season - 3 || /Drafted|Rookie/i.test(c.type || "") || P.rookieDeal(q) || !(c.yrs >= 1)) continue;
+        (W._pool[P.group(q)] = W._pool[P.group(q)] || []).push(q);
+      }
+    }
+    let cands = (W._pool[g] || []).filter(q => q.id !== p.id);
+    const sameRole = cands.filter(q => Math.abs(role(q) - sh) <= 0.3);       // starters with starters, backups with backups
+    if (sameRole.length >= 6) cands = sameRole;
+    const pool = cands.map(q => {
+      const qa = (q.age || 26) - (W.season - q.c.signed);
+      const d = Math.hypot((P.quality(W, q).z - z) / 0.4, (qa - age) / 2.5, (role(q) - sh) / 0.3);
+      return { q, d, qa };
+    }).sort((a, b) => a.d - b.d).slice(0, 6);
+    let wsum = 0, lap = 0, yrs = [], gs = 0;
+    for (const x of pool) {
+      const w = 1 / (0.3 + x.d), c = x.q.c;
+      wsum += w; lap += w * Math.log(c.apy * Math.pow(1.07, y - c.signed));
+      yrs.push([c.yrs, w]); gs += w * Math.min(1, (c.gtd || 0) / (c.value || c.apy * c.yrs));
+    }
+    const min = C.minSalary(p.exp || 0, y) * Math.pow(1.07, 0);
+    const compApy = wsum ? Math.exp(lap / wsum) : P.value(W, p, y);
+    const v = Math.max(min, P.value(W, p, y));
+    // a veteran's last deal anchors the talks a little (aged forward with him)
+    const vet = p.c && p.c.apy && !P.rookieDeal(p) ? p.c.apy * Math.pow(1.07, y - (p.c.signed || W.season)) * P.multAt(W, p, y) / P.quality(W, p).mult : null;
+    let apy = Math.max(min, vet ? Math.exp(0.6 * Math.log(compApy) + 0.25 * Math.log(v) + 0.15 * Math.log(Math.max(min, vet))) : Math.exp(0.7 * Math.log(compApy) + 0.3 * Math.log(v)));
+    yrs.sort((a, b) => a[0] - b[0]);
+    let acc = 0, ny = 1; for (const [n, w] of yrs) { acc += w; if (acc >= wsum / 2) { ny = n; break; } }
+    ny = Math.max(1, Math.min(ny, age >= 33 ? 1 : age >= 31 ? 2 : age >= 30 ? 3 : 5));
+    const gshare = wsum ? gs / wsum : 0.3, total = apy * ny;
+    const out = { apy, yrs: ny, total, gtd: Math.min(total, total * gshare), comps: pool.slice(0, 4).map(x => ({ id: x.q.id, n: x.q.n, t: x.q.t, age: Math.floor(x.qa), signed: x.q.c.signed, yrs: x.q.c.yrs, apy: x.q.c.apy, gtd: x.q.c.gtd })) };
+    return (W._ce[key] = out);
   };
+  P.extensionApy = (W, p, y) => P.contract(W, p, y).apy;
+
   // Franchise tag: the NFL's 2026 non-exclusive tag at his tag position, grown with the cap (the tag is a five-year
   // average share of the cap), or 120% of his last cap number if that's more
   P.TAG2026 = { QB: 43.895, RB: 14.293, WR: 27.298, TE: 15.045, OL: 25.773, DE: 24.434, DT: 27.127, LB: 26.865, CB: 21.161, S: 20.149, K: 6.649 };
@@ -207,15 +249,58 @@
     }
     return (W._rc = curve);
   };
-  // The picks a team has in a draft: next year's from the Big Board's order (Tankathon), later years its own seven at
-  // the same spots
+  // Where each team is expected to pick in a draft (1-32 within a round). Next year's draft: the season sim's average
+  // slot, with a 10th-90th percentile range. The year after: from that season's projected power ranking (worst first).
+  P.slots = (W, y) => {
+    W._slots = W._slots || {};
+    if (W._slots[y]) return W._slots[y];
+    const out = {};
+    if (y === W.season + 1 && W.sim) {
+      for (const [t, o] of Object.entries(W.sim.teams)) {
+        let c = 0, lo = 1, hi = 32;
+        for (let k = 1; k <= 32; k++) { c += o.pickDist[k] || 0; if (c < 0.1) lo = k + 1; if (c < 0.9) hi = k + 1; }
+        out[t] = { slot: o.pick, lo: Math.min(lo, 32), hi: Math.min(hi, 32) };
+      }
+    } else if (W.sim && y <= W.season + 3) {
+      const ratings = {}; for (const [t, o] of Object.entries(W.sim.teams)) ratings[t] = o.rating;
+      const pw = P.power(W, ratings, y - 1);
+      pw.forEach(x => { const sl = 33 - x.rank; out[x.code] = { slot: sl, lo: Math.max(1, sl - 10), hi: Math.min(32, sl + 10), rough: true }; });
+    }
+    return (W._slots[y] = out);
+  };
+  // The picks a team has in a draft. Next year's: the Big Board's order (Tankathon, by today's records) for who owns
+  // what, with the expected spot from the sim. Later years: every team's own seven, less picks it has traded away and
+  // plus picks it holds from others (the Big Board's list of future picks owed).
   P.picksIn = (W, code, y) => {
-    const order = (W.draft && W.draft.picks) || [];
-    if (y === W.season + 1) return order.filter(x => x[3] === code).map(x => ({ n: x[0], round: x[1], from: x[2] }));
-    const own = order.filter(x => x[2] === code && x[1] <= 7);
-    const seen = {}, out = [];
-    for (const x of own) if (!seen[x[1]]) { seen[x[1]] = 1; out.push({ n: x[0], round: x[1], from: code, est: true }); }
-    return out;
+    const order = (W.draft && W.draft.picks) || [], sl = P.slots(W, y);
+    const at = (from, round, fallback) => sl[from] ? Math.round((round - 1) * 32 + sl[from].slot) : fallback;
+    if (y === W.season + 1) {
+      const first = {}, seen = {};
+      order.forEach(x => { if (first[x[1]] == null) first[x[1]] = x[0]; });
+      return order.filter(x => x[3] === code).map(x => {
+        const regular = !seen[x[1] + x[2]] && (seen[x[1] + x[2]] = 1) && x[0] - first[x[1]] < 32;
+        const s = regular ? sl[x[2]] : null;
+        return { n: x[0], en: s ? Math.round(first[x[1]] + s.slot - 1) : x[0], lo: s ? first[x[1]] + s.lo - 1 : null, hi: s ? first[x[1]] + s.hi - 1 : null, round: x[1], from: x[2], comp: !regular,
+          k: s ? Math.round(s.slot) : Math.min(32, x[0] - first[x[1]] + 1), klo: s ? s.lo : null, khi: s ? s.hi : null };   // k: spot within the round
+      });
+    }
+    const owed = ((W.future && W.future.owed) || []).filter(o => o[1] === y);
+    const out = [];
+    for (let rd = 1; rd <= 7; rd++) {
+      const gone = owed.find(o => o[0] === code && o[2] === rd);
+      if (!gone || gone[4] === "swap") out.push({ round: rd, from: code, est: true });
+    }
+    owed.filter(o => o[0] !== code && o[3].split("/").includes(code)).forEach(o => out.push({ round: o[2], from: o[0], est: true, cond: o[4] === "cond" || o[3].includes("/") }));
+    out.forEach(pk => { const s = sl[pk.from]; pk.en = pk.n = at(pk.from, pk.round, (pk.round - 1) * 32 + 16); pk.k = s ? Math.round(s.slot) : 16; if (s) { pk.lo = (pk.round - 1) * 32 + s.lo; pk.hi = (pk.round - 1) * 32 + s.hi; pk.klo = s.lo; pk.khi = s.hi; pk.rough = true; } });
+    return out.sort((a, b) => a.en - b.en);
+  };
+  // Picks a team has traded away in a draft (who holds them)
+  P.picksOut = (W, code, y) => {
+    if (y === W.season + 1) {
+      const order = (W.draft && W.draft.picks) || [];
+      return order.filter(x => x[2] === code && x[3] !== code).map(x => ({ n: x[0], round: x[1], to: x[3] }));
+    }
+    return ((W.future && W.future.owed) || []).filter(o => o[1] === y && o[0] === code && o[4] !== "swap").map(o => ({ round: o[2], to: o[3], cond: o[4] }));
   };
   // Cap a team's draft classes take in a year: each pick's rookie cap hit, less the minimum salary of the player he
   // pushes off the top 51 (how Over The Cap's "effective cap space" counts it)
@@ -225,7 +310,7 @@
       const k = y - cls; if (k > 3) continue;
       const grow = Math.pow(1.07, cls - W.season), curve = P.rookieCurve(W);
       for (const pk of P.picksIn(W, code, cls)) {
-        const hit = curve[Math.min(262, pk.n)] * grow * [0.85, 0.95, 1.05, 1.15][k];
+        const hit = curve[Math.min(262, pk.en || pk.n)] * grow * [0.85, 0.95, 1.05, 1.15][k];
         const eff = Math.max(0, hit - C.minSalary(0, y));
         tot += eff; if (cls === y) list.push(Object.assign({ hit, eff }, pk));
       }
@@ -259,25 +344,28 @@
             why: "Converting " + m(rs.converted) + " of base salary to a bonus frees " + m(freed) + " in " + y + " and adds " + m(later) + " over " + (rs.over - 1) + " later year" + (rs.over > 2 ? "s" : "") + ". The bill grows if he's ever cut." });
         }
         if (last === y && share >= 0.6 && (p.age || 30) <= 29) {
-          const apy = P.extensionApy(W, p, y + 1), ext = C.effect(p, { kind: "extend", year: y, years: 3, apy, lowerNow: true });
-          out.push({ kind: "extend", p, y, score: val * 1.2, cap, val, apy, now: -(ext.delta[y] || 0),
-            why: "Last year of his deal. A 3-year extension near " + m(apy) + " a year " + ((ext.delta[y] || 0) < 0 ? "would lower this year's cap by " + m(-(ext.delta[y] || 0)) + " if his base is folded into the bonus." : "keeps this year's cap about the same.") });
+          const est = P.contract(W, p, y + 1), apy = est.apy, ext = C.effect(p, { kind: "extend", year: y, years: est.yrs, apy, lowerNow: true });
+          out.push({ kind: "extend", p, y, score: val * 1.2, cap, val, apy, years: est.yrs, est, now: -(ext.delta[y] || 0),
+            why: "Last year of his deal. Comparable deals point to " + est.yrs + " year" + (est.yrs > 1 ? "s" : "") + ", " + m(est.total) + " (" + m(apy) + " a year, " + m(est.gtd) + " guaranteed), which " + ((ext.delta[y] || 0) < 0 ? "would lower this year's cap by " + m(-(ext.delta[y] || 0)) + " if his base is folded into the bonus." : "keeps this year's cap about the same.") });
         }
       }
       if (last === y - 1 && share >= 0.6) {
-        const tag = P.tagPrice(W, p, y), apy = P.extensionApy(W, p, y);
-        out.push({ kind: "expiring", p, y, score: val, cap: 0, val, apy, tag,
-          why: "Deal ends after " + (y - 1) + ". Re-signing likely costs about " + m(apy) + " a year; the franchise tag would be about " + m(tag) + " for one year." });
+        const tag = P.tagPrice(W, p, y), est = P.contract(W, p, y), apy = est.apy;
+        out.push({ kind: "expiring", p, y, score: val, cap: 0, val, apy, tag, est, years: est.yrs,
+          why: "Deal ends after " + (y - 1) + ". Re-signing likely takes about " + est.yrs + " year" + (est.yrs > 1 ? "s" : "") + ", " + m(est.total) + " (" + m(apy) + " a year, " + m(est.gtd) + " guaranteed)." });
       }
     }
-    // Franchise tag: each team's two best starters whose deals run out, with the tag's price against his market
-    const exp = out.filter(x => x.kind === "expiring" && P.group(x.p) !== "LS" && (x.p.age || 30) <= 31).sort((a, b) => b.val - a.val).slice(0, 2);
-    for (const x of exp) {
-      const r = x.apy / x.tag;
-      out.push({ kind: "tag", p: x.p, y, score: x.val, cap: 0, val: x.val, apy: x.apy, tag: x.tag, ratio: r,
-        verdict: r >= 0.85 ? "fair" : r >= 0.6 ? "pricey" : "steep",
-        why: "The " + P.tagPos(x.p) + " tag would cost about " + m(x.tag) + " for " + y + " (fully guaranteed), against a market of about " + m(x.apy) + " a year. " +
-          (r >= 0.85 ? "Close to his market: a reasonable one-year hold." : r >= 0.6 ? "Pricier than his market, but it keeps him off it while a long-term deal gets done." : "Well above his market: re-signing is the better route.") });
+    // Franchise tag: only real candidates. A starter (60%+ of snaps) rated 60 or better for next season, 30 or younger,
+    // at a position that gets tagged, whose market is at least 65% of the tag (otherwise he'd never be tagged: a
+    // long-term deal is far cheaper). At most two per team.
+    const cand = out.filter(x => x.kind === "expiring" && !/^(K|P|LS)$/.test(P.group(x.p)) && (x.p.age || 30) + 1 <= 30.99 &&
+      P.ratingZ(W, x.p, y) >= 0.67 && x.apy >= 0.65 * x.tag).sort((a, b) => b.val - a.val).slice(0, 2);
+    for (const x of cand) {
+      const r = x.apy / x.tag, est = P.contract(W, x.p, y);
+      out.push({ kind: "tag", p: x.p, y, score: x.val, cap: 0, val: x.val, apy: x.apy, tag: x.tag, ratio: r, est,
+        verdict: r >= 0.9 ? "fair" : "pricey",
+        why: "The " + P.tagPos(x.p) + " tag would cost about " + m(x.tag) + " for " + y + ", fully guaranteed. His market: about " + est.yrs + " year" + (est.yrs > 1 ? "s" : "") + ", " + m(est.total) + " (" + m(est.apy) + " a year, " + m(est.gtd) + " guaranteed). " +
+          (r >= 0.9 ? "The tag is close to his market, so it's a reasonable one-year hold." : "The tag costs more than his market for a year, but it keeps him off the market while a long-term deal gets done.") });
     }
     return out.sort((a, b) => b.score - a.score);
   };
@@ -294,7 +382,7 @@
       if (P.group(p) === "QB" && (!qb || v > qb.v)) qb = { p, v };
     }
     let draft = 0;
-    if (y > W.season) for (let cls = W.season + 1; cls <= y; cls++) for (const pk of P.picksIn(W, code, cls)) draft += P.rookieCurve(W)[Math.min(262, pk.n)] * (pk.round === 1 ? 1.6 : pk.round <= 3 ? 1.2 : 0.6);
+    if (y > W.season) for (let cls = W.season + 1; cls <= y; cls++) for (const pk of P.picksIn(W, code, cls)) draft += P.rookieCurve(W)[Math.min(262, pk.en || pk.n)] * (pk.round === 1 ? 1.6 : pk.round <= 3 ? 1.2 : 0.6);
     const ty = C.teamYears(W, code, [], y, y)[0];
     const space = y > W.season ? Math.max(0, ty.space) : 0;
     return { roster, draft, space, qb, total: roster + draft + space * 0.5 };

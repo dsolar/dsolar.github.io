@@ -113,3 +113,25 @@ test('rating ahead: young players climb toward their peak, older ones slide, thi
   assert.ok(P.ratingZ(W, old, W.season + 1) < P.ratingZ(W, old, W.season));
   assert.ok(P.ratingZ(W, old, W.season + 2) < P.ratingZ(W, old, W.season + 1));
 });
+
+test('next contracts and tags: comparable deals, years capped by age, only real tag candidates', () => {
+  const C2 = require('../nfl/lib/cap.js'), P = require('../nfl/lib/plan.js'), S = require('../nfl/lib/season.js');
+  const d = read('draft/nfl.json');
+  const W = P.init(C2.newWorld(read('nfl/data/league.json'), read('nfl/data/teamcap.json'), read('nfl/data/rating.json')));
+  W.draft = d.order; W.future = d.future; W.sim = S.simulate(W.games, Object.keys(S.divOf), { sims: 300, seed: 3 });
+  for (const p of W.players.filter(p => p.c && p.age && P.share(W, p) > 0.5).slice(0, 120)) {
+    const e = P.contract(W, p, W.season + 1), age = p.age + 1;
+    assert.ok(e.apy > 0 && e.yrs >= 1 && e.yrs <= 5 && e.gtd <= e.total + 1e-9 && e.comps.length > 0);
+    if (age >= 33) assert.equal(e.yrs, 1);
+  }
+  let n = 0;
+  for (const t of Object.keys(S.divOf)) for (const s of P.suggest(W, t, W.season + 1)) if (s.kind === 'tag') {
+    n++; assert.ok(s.apy >= 0.65 * s.tag && P.ratingZ(W, s.p, W.season + 1) >= 0.67);
+  }
+  assert.ok(n <= 64);
+  // expected draft slots: every slot 1-32 averages out, each team's picks sorted
+  const sl = P.slots(W, W.season + 1), avg = Object.values(sl).reduce((a, x) => a + x.slot, 0) / 32;
+  near(avg, 16.5);
+  const pk = P.picksIn(W, 'NE', W.season + 2);
+  assert.ok(pk.length >= 5 && pk.every((x, i) => i === 0 || x.en >= pk[i - 1].en));
+});

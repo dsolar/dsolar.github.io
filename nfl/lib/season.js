@@ -81,7 +81,7 @@
     opts = opts || {};
     const sims = opts.sims || 10000, r = rng(opts.seed || 2026), rat = S.ratings(games, teams), base = S.records(games, teams);
     const left = games.filter(g => g[0] === "REG" && g[5] == null);
-    const out = {}; teams.forEach(t => { out[t] = { wins: 0, losses: 0, div: 0, playoffs: 0, bye: 0, conf: 0, sb: 0, seeds: new Array(8).fill(0), winDist: new Array(18).fill(0) }; });
+    const out = {}; teams.forEach(t => { out[t] = { wins: 0, losses: 0, div: 0, playoffs: 0, bye: 0, conf: 0, sb: 0, seeds: new Array(8).fill(0), winDist: new Array(18).fill(0), pick: 0, pickDist: new Array(33).fill(0) }; });
     const winP = new Map();                                               // each remaining game's average home win chance
     const pct = rec => (rec.w + 0.5 * rec.t) / Math.max(1, rec.w + rec.l + rec.t);
     for (let s = 0; s < sims; s++) {
@@ -113,23 +113,32 @@
       }
       // playoffs
       const game = (hi, lo, neutral) => S.winProb(rat[hi] - rat[lo] + noise[hi] - noise[lo] + (neutral ? 0 : HFA)) > r() ? hi : lo;
-      const champ = {};
+      const champ = {}, exit = {};                                        // round each playoff team went out in
       for (const conf of ["AFC", "NFC"]) {
         const sd = seedsBy[conf];
+        sd.forEach(t => { exit[t] = 1; });
         let alive = [sd[0], game(sd[1], sd[6]), game(sd[2], sd[5]), game(sd[3], sd[4])];
+        alive.forEach(t => { exit[t] = 2; });
         alive.sort((x, y) => sd.indexOf(x) - sd.indexOf(y));
         const d1 = game(alive[0], alive[3]), d2 = game(alive[1], alive[2]);
+        exit[d1] = exit[d2] = 3;
         const [hi, lo] = sd.indexOf(d1) < sd.indexOf(d2) ? [d1, d2] : [d2, d1];
         champ[conf] = game(hi, lo);
+        exit[champ[conf]] = 4;
         out[champ[conf]].conf++;
       }
-      out[game(champ.AFC, champ.NFC, true)].sb++;
+      const winner = game(champ.AFC, champ.NFC, true);
+      exit[winner] = 5; out[winner].sb++;
+      // draft order: non-playoff teams worst record first, then playoff teams by the round they went out in
+      const ord = teams.slice().sort((x, y) => ((exit[x] || 0) - (exit[y] || 0)) || (pct(R[x]) - pct(R[y])) || (r() - 0.5));
+      ord.forEach((t, i) => { out[t].pick += i + 1; out[t].pickDist[i + 1]++; });
       for (const t of teams) { out[t].wins += R[t].w + 0.5 * R[t].t; out[t].losses += R[t].l + 0.5 * R[t].t; out[t].winDist[Math.min(17, Math.round(R[t].w + 0.5 * R[t].t))]++; }
     }
     for (const t of teams) {
       const o = out[t];
       ["wins", "losses", "div", "playoffs", "bye", "conf", "sb"].forEach(k => { o[k] /= sims; });
       o.seeds = o.seeds.map(v => v / sims); o.winDist = o.winDist.map(v => v / sims);
+      o.pick /= sims; o.pickDist = o.pickDist.map(v => v / sims);
       o.rating = rat[t]; o.rec = base[t];
     }
     return { teams: out, ratings: rat, records: base, winP, left, sims };

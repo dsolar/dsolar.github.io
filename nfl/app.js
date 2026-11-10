@@ -56,7 +56,13 @@
   }
   function setMoves(code, ms) { save("plan." + code, ms); var q = Object.assign({}, state.q, { m: encodeMoves(ms) || null }); location.hash = href("team/" + code, q); }
   function encodeMoves(ms) { return ms.map(function (x) { return [x.kind, x.id, x.year, x.amount != null ? x.amount : "", x.apy != null ? x.apy.toFixed(2) : "", x.years || ""].join(":"); }).join(","); }
-  function moveTitle(mv) { return (KIND[mv.kind] || mv.kind) + (mv.kind === "extend" || mv.kind === "resign" ? ", 3 yrs at " + m(mv.apy) : mv.kind === "tag" ? " at " + m(mv.amount) : ""); }
+  function moveTitle(mv) { return (KIND[mv.kind] || mv.kind) + (mv.kind === "extend" || mv.kind === "resign" ? ", " + (mv.years || 3) + " yr" + ((mv.years || 3) > 1 ? "s" : "") + " at " + m(mv.apy) : mv.kind === "tag" ? " at " + m(mv.amount) : ""); }
+  // Years for a new deal: what comparable contracts point to
+  function estYears(id, kind, y) { var p = W.byId[id]; return p ? P.contract(W, p, kind === "extend" ? y + 1 : y).yrs : 3; }
+  // A contract estimate as "$X/yr" with years, total and guarantees under it
+  function dealCell(e) {
+    return '<span class="deal" title="Comparable deals: ' + esc(e.comps.map(function (c) { return c.n + " (" + c.t + ", " + c.signed + ", age " + c.age + "): " + c.yrs + " yr" + (c.yrs > 1 ? "s" : "") + ", " + m(c.apy * c.yrs) + ", " + m(c.gtd || 0) + " gtd"; }).join("; ")) + '"><b>' + m(e.apy) + "/yr</b><small>" + e.yrs + " yr" + (e.yrs > 1 ? "s" : "") + ", " + m(e.total) + ", " + m(e.gtd) + " gtd</small></span>";
+  }
   function decodeMoves(s) {
     return String(s || "").split(",").filter(Boolean).map(function (t) {
       var a = t.split(":"), mv = { kind: a[0], id: a[1], year: +a[2] };
@@ -233,13 +239,45 @@
     var html = '<div class="card-h">' + logo(code, 48) + "<div><h3>" + esc(team(code).name) + ' draft picks</h3><div class="meta">Rookie cap hits by year, from the current draft order</div></div></div><div class="card-b">';
     [W.season + 1, W.season + 2].forEach(function (y) {
       var rc = P.rookieCost(W, code, y), list = rc.list;
-      html += '<h4 class="card-sec">' + y + " draft" + (y > W.season + 1 ? " (estimated: own picks at the same spots)" : "") + '</h4><div class="scroll"><table class="t"><thead><tr><th>Pick</th><th>Round</th><th>From</th><th>' + y + " cap hit</th><th>Counts against space</th></tr></thead><tbody>" +
-        list.map(function (x) { return "<tr><td>" + x.n + "</td><td>" + x.round + "</td><td>" + (x.from !== code ? logo(x.from, 16) + " " + esc(x.from) : "Own") + "</td><td>" + m(x.hit) + "</td><td>" + m(x.eff) + "</td></tr>"; }).join("") +
+      html += '<h4 class="card-sec">' + y + " draft" + (y > W.season + 1 ? " (rough: spots from the " + (y - 1) + " power ranking)" : " (expected spots from the season sim)") + '</h4><div class="scroll"><table class="t"><thead><tr><th>Expected pick</th><th>Round</th><th>From</th><th>' + y + " cap hit</th><th>Counts against space</th></tr></thead><tbody>" +
+        list.map(function (x) { return "<tr><td>" + (x.en || x.n) + "</td><td>" + x.round + "</td><td>" + (x.from !== code ? logo(x.from, 16) + " " + esc(x.from) : "Own") + "</td><td>" + m(x.hit) + "</td><td>" + m(x.eff) + "</td></tr>"; }).join("") +
         '<tr class="tot"><td colspan="4">Total</td><td>' + m(list.reduce(function (a, x) { return a + x.eff; }, 0)) + "</td></tr></tbody></table></div>";
     });
     html += '<p class="note">Rookie salaries follow the slot: this year\'s class\'s contracts by pick, grown with the cap. "Counts against space" takes off the minimum salary of the player each rookie pushes off the top 51, the way Over The Cap counts effective cap space.</p></div>';
     cardBody.innerHTML = html;
     if (!card.open) card.showModal();
+  }
+
+  // ---------- team draft tab: the picks it owns this year and next, where they're likely to land ----------
+  function draftTab(code) {
+    var t = team(code), html = "", curve = P.rookieCurve(W);
+    [W.season + 1, W.season + 2].forEach(function (y) {
+      var next = y === W.season + 1, picks = P.picksIn(W, code, y), out = P.picksOut(W, code, y), sl = P.slots(W, y)[code], grow = Math.pow(1.07, y - W.season);
+      var rc = {}; P.rookieCost(W, code, y).list.forEach(function (x) { rc[x.round + ":" + x.from + ":" + (x.en || x.n)] = x; });
+      var firstPk = picks[0], cost = picks.reduce(function (a, x) { return a + curve[Math.min(262, x.en)] * grow * 0.85; }, 0);
+      html += '<div class="panel"><h3>' + y + " draft <small>" + (next ? "own slot expected at No. " + (sl ? sl.slot.toFixed(1) : "?") + " in each round (80% range " + (sl ? sl.lo + "-" + sl.hi : "?") + "), from " + (W.sim ? W.sim.sims : "") + " simulated seasons" : "rough: slots from the " + (y - 1) + " power ranking; each team's own seven unless traded") + "</small></h3>";
+      html += '<div class="stats sm">' + stat(picks.length, "Picks") + stat(picks.filter(function (x) { return x.round <= 3; }).length, "In rounds 1-3") + stat(firstPk ? "No. " + firstPk.en : "—", "First pick (expected)") + stat(m(cost), "Rookie class, year-one cap") + "</div>";
+      // the board: 32 slots per round, his picks marked at their expected spot, the likely range shaded
+      html += '<div class="dboard" style="--tc:' + t.color + '">' + [1, 2, 3, 4, 5, 6, 7].map(function (rd) {
+        var mine = picks.filter(function (x) { return x.round === rd; });
+        var cells = "";
+        for (var k = 1; k <= 32; k++) {
+          var at = mine.filter(function (x) { return Math.min(32, Math.max(1, x.k)) === k; })[0];
+          var inR = mine.some(function (x) { return x.klo && k >= x.klo && k <= x.khi; });
+          cells += '<i class="' + (at ? "pk" + (at.from !== code ? " via" : "") : inR ? "rg" : "") + '"' + (at ? ' title="Round ' + rd + ", expected No. " + at.en + (at.from !== code ? " (from " + at.from + ")" : "") + '"' : "") + "></i>";
+        }
+        return '<div class="drow"><span>R' + rd + "</span><div>" + cells + "</div></div>";
+      }).join("") + '<div class="dlegend"><span><i class="pk"></i>own pick</span><span><i class="pk via"></i>from another team</span><span><i class="rg"></i>likely range</span></div></div>';
+      html += '<div class="scroll"><table class="t"><thead><tr><th>Round</th>' + (next ? "<th>Pick today</th>" : "") + "<th>Expected</th><th>Likely range</th><th>From</th><th>Rookie deal (4 yrs)</th><th>" + y + " cap</th></tr></thead><tbody>" +
+        (picks.length ? picks.map(function (x) {
+          var apy = curve[Math.min(262, x.en)] * grow;
+          return "<tr><td>" + x.round + (x.comp ? ' <span class="pill">comp</span>' : "") + "</td>" + (next ? "<td>" + x.n + "</td>" : "") + "<td><b>" + x.en + "</b></td><td>" + (x.lo ? x.lo + "-" + x.hi : "—") + "</td><td>" + (x.from !== code ? logo(x.from, 16) + " " + esc(x.from) + (x.cond ? ' <span class="pill warn">conditional</span>' : "") : "Own") + "</td><td>" + m(apy * 4) + "</td><td>" + m(apy * 0.85) + "</td></tr>";
+        }).join("") : '<tr><td colspan="7" class="note">No picks.</td></tr>') + "</tbody></table></div>";
+      if (out.length) html += '<p class="note"><b>Traded away:</b> ' + out.map(function (x) { return "round " + x.round + (x.n ? " (No. " + x.n + ")" : "") + " to " + esc(x.to) + (x.cond === "cond" ? " (conditional)" : ""); }).join(", ") + ".</p>";
+      html += "</div>";
+    });
+    html += '<p class="note">Who owns what: the Big Board\'s draft order (Tankathon, by today\'s records) and its list of future picks already traded. Expected spots: in each simulated season, teams that miss the playoffs pick worst record first, then playoff teams by the round they went out in. Compensatory picks keep their spot. Rookie deals follow the slot: this year\'s class\'s contracts by pick, grown with the cap. <a href="../draft/">Mock the draft on the Big Board</a>.</p>';
+    return html;
   }
 
   // ---------- power rankings ----------
@@ -269,15 +307,15 @@
   function faPage() {
     var y = +state.q.c || W.season + 1, g = state.q.g || "", tm = state.q.t || "";
     var list = W.players.filter(function (p) { return p.c && C.lastYear(p) === y - 1 && p.st !== "DEV" && (!g || P.group(p) === g) && (!tm || p.t === tm); })
-      .map(function (p) { return { p: p, val: P.value(W, p, y), apy: P.extensionApy(W, p, y), tag: P.tagPrice(W, p, y) }; })
+      .map(function (p) { var e = P.contract(W, p, y); return { p: p, val: P.value(W, p, y), est: e, apy: e.apy, tag: P.tagPrice(W, p, y) }; })
       .sort(function (a, b) { return b.val - a.val; });
-    var html = '<h2 class="sec">Free agents</h2><p class="lede">Everyone whose contract runs out before the ' + y + " season, ranked by value (position price, snaps and player rating). The market estimate is what players his value ranks with are paid; the tag is the NFL's franchise tag at his position grown with the cap (or 120% of his last cap hit if that's more).</p>";
+    var html = '<h2 class="sec">Free agents</h2><p class="lede">Everyone whose contract runs out before the ' + y + " season, ranked by value (position price, snaps and player rating); tap any column to sort by it. The next contract comes from comparable deals: veterans at his position who signed in the last three years, nearest to him in rating, age and role (hover one to see them). The tag is the NFL's franchise tag at his position grown with the cap (or 120% of his last cap hit if that's more).</p>";
     html += '<div class="controls"><label>Class<select data-q="c">' + [W.season + 1, W.season + 2, W.season + 3].map(function (k) { return '<option value="' + k + '"' + (k === y ? " selected" : "") + ">" + k + "</option>"; }).join("") + '</select></label><label>Position<select data-q="g"><option value="">All</option>' + Object.keys(GROUP_NAME).map(function (k) { return '<option value="' + k + '"' + (k === g ? " selected" : "") + ">" + GROUP_NAME[k] + "</option>"; }).join("") +
       '</select></label><label>Team<select data-q="t"><option value="">All teams</option>' + codes().map(function (c) { return '<option value="' + c + '"' + (c === tm ? " selected" : "") + ">" + esc(team(c).name) + "</option>"; }).join("") + "</select></label></div>";
-    html += tablePanel("The " + y + " class · " + list.length, "<th>#</th><th>Player</th><th>Team</th><th>Pos</th><th>Age</th><th>Rating</th><th title=\"Projected rating that season, aging included\">&rsquo;" + String(y).slice(2) + "</th><th>Snaps</th><th>This season</th><th>Value</th><th>Market / yr</th><th>Tag</th><th>" + (y - 1) + " cap</th>",
+    html += tablePanel("The " + y + " class · " + list.length, "<th>#</th><th>Player</th><th>Team</th><th>Pos</th><th>Age</th><th>Rating</th><th title=\"Projected rating that season, aging included\">&rsquo;" + String(y).slice(2) + "</th><th>Snaps</th><th>This season</th><th>Value</th><th title=\"From comparable deals: veterans at his position who signed in the last three years, nearest in rating, age and role. Hover a deal for the comparisons.\">Next contract</th><th>Tag</th><th>" + (y - 1) + " cap</th>",
       list.slice(0, 150).map(function (x, i) {
         var p = x.p, r = x.apy / x.tag, tagCls = r >= 0.85 ? "up" : r >= 0.6 ? "warn" : "";
-        return "<tr><td>" + (i + 1) + "</td><td>" + pname(p, 24) + '</td><td class="tm">' + logo(p.t, 18) + '<span class="nm">' + esc(p.t) + "</span></td><td>" + esc(posOf(p)) + "</td><td>" + (p.age ? Math.floor(p.age + y - W.season) : "—") + "</td><td>" + scoreChip(p) + "</td><td>" + scoreChip(p, y) + "</td><td>" + (p.snaps ? Math.round(P.share(W, p) * 100) + "%" : "—") + '</td><td class="note">' + esc(keyStat(p)) + "</td><td><b>" + m(x.val) + "</b></td><td>" + m(x.apy) + '</td><td><span class="pill ' + tagCls + '" title="Market as a share of the tag: ' + Math.round(r * 100) + '%">' + m(x.tag) + "</span></td><td>" + m(C.capHit(p, y - 1)) + "</td></tr>";
+        return "<tr><td>" + (i + 1) + "</td><td>" + pname(p, 24) + '</td><td class="tm">' + logo(p.t, 18) + '<span class="nm">' + esc(p.t) + "</span></td><td>" + esc(posOf(p)) + "</td><td>" + (p.age ? Math.floor(p.age + y - W.season) : "—") + "</td><td>" + scoreChip(p) + "</td><td>" + scoreChip(p, y) + "</td><td>" + (p.snaps ? Math.round(P.share(W, p) * 100) + "%" : "—") + '</td><td class="note">' + esc(keyStat(p)) + "</td><td><b>" + m(x.val) + "</b></td><td data-v=\"" + x.apy.toFixed(2) + '">' + dealCell(x.est) + '</td><td><span class="pill ' + tagCls + '" title="Market as a share of the tag: ' + Math.round(r * 100) + '%">' + m(x.tag) + "</span></td><td>" + m(C.capHit(p, y - 1)) + "</td></tr>";
       }).join(""), "green tag: about his market, yellow: pricier, gray: well above", "rank");
     view.innerHTML = html;
   }
@@ -361,9 +399,10 @@
     html += '<div class="stats">' + stat(pctTxt(o.div), "Win the division") + stat(pctTxt(o.playoffs), "Make the playoffs") + stat(pctTxt(o.bye), "No. 1 seed") + stat(pctTxt(o.sb), "Win the Super Bowl") + "</div>";
     html += '<div class="stats sm">' + stat(m(base[0].space), "2026 cap space") + stat('<i class="' + (plan[1].space >= 0 ? "pos" : "neg") + '">' + m(plan[1].space) + "</i>", "2027 space" + (ms.length ? " (with plan)" : "")) + stat(m(base[0].dead), "2026 dead money") +
       stat(m(cc.future), "Pushed into later years") + stat(cc.voids > 0.05 ? m(cc.voids) : "None", "In void years") + "</div>";
-    html += '<div class="subtabs">' + [["overview", "Overview"], ["depth", "Depth chart"], ["plan", "Offseason planner"], ["sheet", "Cap sheet"]].map(function (x) { return '<a href="' + href("team/" + code, Object.assign({}, state.q, { v: x[0] })) + '"' + (v === x[0] ? ' aria-current="page"' : "") + ">" + x[1] + "</a>"; }).join("") + "</div>";
+    html += '<div class="subtabs">' + [["overview", "Overview"], ["depth", "Depth chart"], ["draft", "Draft"], ["plan", "Offseason planner"], ["sheet", "Cap sheet"]].map(function (x) { return '<a href="' + href("team/" + code, Object.assign({}, state.q, { v: x[0] })) + '"' + (v === x[0] ? ' aria-current="page"' : "") + ">" + x[1] + "</a>"; }).join("") + "</div>";
     if (v === "sheet") html += capSheet(code, ms);
     else if (v === "depth") html += depthChart(code);
+    else if (v === "draft") html += draftTab(code);
     else if (v === "plan") html += planner(code, y, ms, base, plan);
     else html += overview(code);
     view.innerHTML = html;
@@ -375,7 +414,7 @@
     if (a && a.value) {
       var code = state.arg || load("team", "NE"), ms = movesOf(code).filter(function (x) { return x.id !== a.dataset.act; });
       var y = +state.q.y || 2027, mv = { kind: a.value, id: a.dataset.act, year: y };
-      if (a.value === "extend") { var p = W.byId[a.dataset.act]; mv.apy = P.extensionApy(W, p, y + 1); mv.years = 3; }
+      if (a.value === "extend") { var p = W.byId[a.dataset.act]; mv.apy = P.extensionApy(W, p, y + 1); mv.years = estYears(p.id, "extend", y); }
       ms.push(mv); setMoves(code, ms);
     }
     var yr = e.target.closest("select[data-planyear]");
@@ -386,7 +425,7 @@
     var add = e.target.closest("[data-addmove]"), rm = e.target.closest("[data-rmmove]"), clr = e.target.closest("[data-clearplan]"), cp = e.target.closest("[data-copyplan]");
     if (add) {
       var a = add.dataset.addmove.split("|"), mv = { kind: a[0], id: a[1], year: +a[2] };
-      if (a[3]) mv.apy = +a[3]; if (a[4]) mv.amount = +a[4]; if (mv.kind === "extend" || mv.kind === "resign") mv.years = 3;
+      if (a[3]) mv.apy = +a[3]; if (a[4]) mv.amount = +a[4]; if (mv.kind === "extend" || mv.kind === "resign") mv.years = estYears(mv.id, mv.kind, mv.year);
       var ms = movesOf(code).filter(function (x) { return x.id !== mv.id; }); ms.push(mv); setMoves(code, ms); return;
     }
     if (rm) { setMoves(code, movesOf(code).filter(function (x) { return x.id !== rm.dataset.rmmove; })); return; }
@@ -426,21 +465,23 @@
       '<tr class="tot"><td>Space today</td>' + base.map(function (r) { return '<td class="' + (r.space >= 0 ? "pos" : "neg") + '">' + m(r.space) + "</td>"; }).join("") + "</tr>" +
       (ms.length ? "<tr><td>Your moves</td>" + plan.map(function (r) { return '<td class="' + (r.moves <= 0 ? "pos" : "neg") + '">' + (Math.abs(r.moves) > 0.05 ? sm(-r.moves) : "—") + "</td>"; }).join("") + "</tr>" +
         '<tr class="tot"><td>With your plan</td>' + plan.map(function (r) { return '<td class="' + (r.space >= 0 ? "pos" : "neg") + '"><b>' + m(r.space) + "</b></td>"; }).join("") + "</tr>" : "") +
-      '</tbody></table></div><p class="note">2026 and 2027 start from Over The Cap\'s team figures (carryover included). Draft picks: each pick\'s rookie cap hit less the minimum-salary player he pushes off the top 51 (2027 from the current draft order, 2028 on at the same spots). Later years count only today\'s contracts against a projected cap, so they look roomier than they will be.</p></div>';
+      '</tbody></table></div><p class="note">2026 and 2027 start from Over The Cap\'s team figures (carryover included). Draft picks: each pick\'s rookie cap hit less the minimum-salary player he pushes off the top 51 (2027 at each pick\'s expected spot from the season sim, 2028 from the 2027 power ranking, with traded picks counted). Later years count only today\'s contracts against a projected cap, so they look roomier than they will be.</p></div>';
     // suggestions as cards: the money first
     var groups = [["cut", "Cut", "Saves real money with little dead money"], ["trade", "Trade", "Saves more traded than cut: his guarantees leave with him"],
       ["restructure", "Restructure", "Room now on a player the team keeps, paid back later"], ["extend", "Extend", "Starters in the last year of their deals"],
-      ["tag", "Franchise tag", "The best starters whose deals run out, and what the tag would cost"], ["expiring", "Re-sign or let walk", "Starters whose deals end after " + (y - 1)]];
+      ["tag", "Franchise tag", "Real candidates only: rated 60+, 30 or younger, market near the tag price"], ["expiring", "Re-sign or let walk", "Starters whose deals end after " + (y - 1)]];
     html += '<h3 class="subsec">Ideas for ' + y + '</h3><p class="note">The cap numbers are exact. Who\'s worth keeping uses the player rating and value, so treat these as strong starting points, not verdicts.</p><div class="sugs">';
+    var tagged = {}; sug.forEach(function (s) { if (s.kind === "tag") tagged[s.p.id] = 1; });
     groups.forEach(function (g) {
       var list = sug.filter(function (s) { return s.kind === g[0]; }).slice(0, 4);
+      if (!list.length && g[0] === "tag") { html += '<div class="panel"><h3>Franchise tag <small>' + g[2] + '</small></h3><p class="note pad">No real candidates this year: nobody whose deal runs out is good enough, young enough and priced close enough to the tag to be worth it.</p></div>'; return; }
       if (!list.length) return;
       html += '<div class="panel"><h3>' + g[1] + " <small>" + g[2] + "</small></h3>" + list.map(function (s) {
         var num = s.kind === "tag" ? m(s.tag) : s.kind === "expiring" ? m(s.apy) + "/yr" : s.kind === "extend" ? (s.now > 0.05 ? sm(s.now) : m(s.apy) + "/yr") : sm(s.save);
         var btns = on[s.p.id] ? '<span class="pill up">' + esc(KIND[on[s.p.id].kind]) + "</span>" : s.kind === "tag"
           ? '<button type="button" class="btn sm" data-addmove="' + esc("tag|" + s.p.id + "|" + y + "||" + s.tag.toFixed(2)) + '">Tag him</button><button type="button" class="btn sm ghost" data-addmove="' + esc("resign|" + s.p.id + "|" + y + "|" + s.apy.toFixed(2)) + '">Re-sign instead</button> <span class="pill ' + (s.verdict === "fair" ? "up" : s.verdict === "pricey" ? "warn" : "fill") + '">' + (s.verdict === "fair" ? "Fair price" : s.verdict === "pricey" ? "Pricey" : "Steep") + "</span>"
           : s.kind === "expiring"
-          ? '<button type="button" class="btn sm" data-addmove="' + esc("resign|" + s.p.id + "|" + y + "|" + s.apy.toFixed(2)) + '">Re-sign</button><button type="button" class="btn sm" data-addmove="' + esc("tag|" + s.p.id + "|" + y + "||" + s.tag.toFixed(2)) + '">Tag</button>'
+          ? '<button type="button" class="btn sm" data-addmove="' + esc("resign|" + s.p.id + "|" + y + "|" + s.apy.toFixed(2)) + '">Re-sign</button>' + (tagged[s.p.id] ? '<button type="button" class="btn sm" data-addmove="' + esc("tag|" + s.p.id + "|" + y + "||" + s.tag.toFixed(2)) + '">Tag</button>' : "")
           : '<button type="button" class="btn sm" data-addmove="' + esc(s.kind === "extend" ? "extend|" + s.p.id + "|" + y + "|" + s.apy.toFixed(2) : s.kind + "|" + s.p.id + "|" + y) + '">Add</button><button type="button" class="btn sm ghost" data-opts="' + esc(s.p.id) + '">Options</button>';
         return '<div class="scard"><div class="sc-top">' + pname(s.p, 34) + '<span class="note">' + esc(posOf(s.p)) + " · " + (s.p.age ? Math.floor(s.p.age) : "—") + (s.cap ? " · " + m(s.cap) + " cap hit" : "") + '</span><b class="big ' + (s.kind === "expiring" || s.kind === "tag" ? "" : "pos") + '">' + num + '</b></div><p>' + esc(s.why) + '</p><div class="sc-btns">' + btns + "</div></div>";
       }).join("") + "</div>";
@@ -453,14 +494,14 @@
   function moveChooser(id) {
     var p = W.byId[id], y = +state.q.y || 2027, code = p.t, cur = movesOf(code).filter(function (x) { return x.id === id; })[0];
     if (!p.c || !p.c.rows[y] || p.c.rows[y][C.R.void]) { cardBody.innerHTML = '<div class="card-b"><p>No contract year in ' + y + " to work with.</p></div>"; if (!card.open) card.showModal(); return; }
-    var apy = P.extensionApy(W, p, y + 1);
+    var est = P.contract(W, p, y + 1), apy = est.apy;
     var opts = [["cut", "Cut him before June 1", "Every remaining bonus dollar and guarantee hits now"], ["cutJune", "Cut him after June 1", "Splits the dead money over two years (two of these a year)"],
       ["trade", "Trade him", "Bonus money stays behind; salary and guarantees go"], ["tradeJune", "Trade him after June 1", "Same, with the bonus money split over two years"],
       ["restructure", "Restructure", "Turn base salary into a bonus spread over his remaining years"], ["restructureV", "Restructure with void years", "Spread it over five years, adding fake years at the end"],
-      ["extend", "Extend 3 years at " + m(apy) + "/yr", "Market estimate; this year's base folded into a signing bonus"]];
+      ["extend", "Extend " + est.yrs + " year" + (est.yrs > 1 ? "s" : "") + " at " + m(apy) + "/yr", m(est.total) + " total, " + m(est.gtd) + " guaranteed, from comparable deals; this year's base folded into a signing bonus"]];
     var html = '<div class="card-h">' + face(p, 56) + "<div><h3>" + esc(p.n) + '</h3><div class="meta">' + esc(posOf(p)) + " · " + m(C.capHit(p, y)) + " cap hit in " + y + " · rating " + score(p) + " · value " + m(P.value(W, p, y)) + '</div></div></div><div class="card-b"><table class="t choose"><thead><tr><th>Move</th><th>' + y + "</th><th>Dead money</th><th>Later years</th><th></th></tr></thead><tbody>";
     opts.forEach(function (o) {
-      var mv = { kind: o[0], id: id, year: y }; if (o[0] === "extend") { mv.apy = apy; mv.years = 3; }
+      var mv = { kind: o[0], id: id, year: y }; if (o[0] === "extend") { mv.apy = apy; mv.years = est.yrs; }
       var e = C.effect(p, eng(mv)), now = -(e.delta[y] || 0), dead = Object.keys(e.dead).reduce(function (a, k) { return a + e.dead[k]; }, 0);
       var later = Object.keys(e.delta).filter(function (k) { return +k > y; }).reduce(function (a, k) { return a - e.delta[k]; }, 0);
       var none = (o[0].indexOf("restructure") === 0 && !e.converted);
@@ -537,7 +578,7 @@
     var t = team(p.t), c = p.c || {}, ys = Object.keys(c.rows || {}).map(Number).sort();
     var html = '<div class="card-h">' + face(p, 72) + "<div><h3>" + esc(p.n) + '</h3><div class="meta">' + logo(p.t, 18) + " " + esc(t.name) + " · " + esc(posOf(p)) + " · age " + (p.age ? Math.floor(p.age) : "—") + " · " + p.exp + " yrs exp" + (p.draft ? " · " + p.draft[0] + " pick " + p.draft[1] : "") + "</div></div></div>";
     html += '<div class="card-b"><div class="kv">' + "<div><b>" + (c.yrs ? c.yrs + " yr, " + m(c.value) : "—") + "</b><span>Contract (" + (c.signed || "—") + ")</span></div><div><b>" + m(c.apy) + "</b><span>Per year</span></div><div><b>" + m(c.gtd) + "</b><span>Guaranteed</span></div>" +
-      "<div><b>" + (p.snaps ? Math.round(P.share(W, p) * 100) + "%" : "—") + "</b><span>Snap share (" + (p.snaps ? p.snaps[3] + " g" : "none yet") + ")</span></div><div><b>" + m(P.value(W, p, W.season)) + "</b><span>Value / yr</span></div></div>" + ratingBlock(p);
+      "<div><b>" + (p.snaps ? Math.round(P.share(W, p) * 100) + "%" : "—") + "</b><span>Snap share (" + (p.snaps ? p.snaps[3] + " g" : "none yet") + ")</span></div><div><b>" + m(P.value(W, p, W.season)) + "</b><span>Value / yr</span></div></div>" + ratingBlock(p) + nextDeal(p);
     html += statBlock(p) + '<div id="glog"></div>';
     if (ys.length) {
       html += '<h4 class="card-sec">Contract year by year</h4><div class="scroll"><table class="t"><thead><tr><th>Year</th><th title="Base salary">Base</th><th title="Signing and option bonus money counted this year">Bonus</th><th title="Roster, workout and other bonuses">Other</th><th title="Guaranteed salary">Gtd</th><th>Cap hit</th><th title="Dead money if cut before June 1">Dead</th><th title="Cap saved by cutting him before June 1">Saves</th><th title="Cap saved with a post-June 1 cut">June 1</th></tr></thead><tbody>' + ys.map(function (y) {
@@ -552,6 +593,16 @@
     gameLog(p);
   }
   // The rating and its two parts
+  // His next deal, for players whose contracts end within two seasons: the estimate and the deals behind it
+  function nextDeal(p) {
+    if (!p.c || P.rookieDeal(p) && C.lastYear(p) > W.season + 1) return "";
+    var last = C.lastYear(p); if (!last || last > W.season + 1) return "";
+    var y = last + 1, e = P.contract(W, p, y), tag = P.tagPrice(W, p, y);
+    var html = '<h4 class="card-sec">Next contract (' + y + ')</h4><div class="ndeal"><div><b>' + e.yrs + " yr" + (e.yrs > 1 ? "s" : "") + ", " + m(e.total) + '</b><span class="note">' + m(e.apy) + " a year · " + m(e.gtd) + " guaranteed · franchise tag " + m(tag) + "</span></div></div>";
+    html += '<div class="scroll"><table class="t"><thead><tr><th>Comparable deal</th><th>Signed</th><th>Age then</th><th>Rating now</th><th>Years</th><th>Total</th><th>Per year</th><th>Guaranteed</th></tr></thead><tbody>' +
+      e.comps.map(function (c) { var q = W.byId[c.id]; return "<tr><td>" + (q ? pname(q, 20) : esc(c.n)) + ' <small class="note">' + esc(c.t) + "</small></td><td>" + c.signed + "</td><td>" + c.age + "</td><td>" + (q ? scoreChip(q) : "—") + "</td><td>" + c.yrs + "</td><td>" + m(c.apy * c.yrs) + "</td><td>" + m(c.apy) + "</td><td>" + m(c.gtd || 0) + "</td></tr>"; }).join("") + "</tbody></table></div>";
+    return html + '<p class="note">Veterans at his position who signed in the last three years, nearest to him in rating, age at signing and role. The per-year figure leans on what they got (grown with the cap), then on his own value' + (P.rookieDeal(p) ? "" : " and his last deal") + "; years are capped by age (one at 33 or older, two at 31-32).</p>";
+  }
   function ratingBlock(p) {
     var q = P.quality(W, p), r = W.rating && W.rating.p[p.id], g = P.group(p), def = /^(EDGE|IDL|LB|CB|S)$/.test(g);
     var w = P.MIX[g] == null ? 0.5 : P.MIX[g], s = st(p);
@@ -618,7 +669,7 @@
     if (ch || un) {
       var code = state.arg || load("team", "NE");
       var ms = movesOf(code).filter(function (x) { return x.id !== (ch ? ch.dataset.choose.split("|")[1] : un.dataset.unchoose); });
-      if (ch) { var a = ch.dataset.choose.split("|"), mv = { kind: a[0], id: a[1], year: +a[2] }; if (a[3]) { mv.apy = +a[3]; mv.years = 3; } ms.push(mv); }
+      if (ch) { var a = ch.dataset.choose.split("|"), mv = { kind: a[0], id: a[1], year: +a[2] }; if (a[3]) { mv.apy = +a[3]; mv.years = estYears(mv.id, mv.kind, mv.year); } ms.push(mv); }
       card.close(); setMoves(code, ms);
     }
   });
@@ -629,15 +680,50 @@
       "<h3>Standings and odds</h3><p>Each team gets a strength rating in points against an average team, fit to two things from this season: the betting market's point spread for every game that had one (the market already prices injuries and quarterback changes) and the actual scoring margins (counted about a third as much), pulled toward average so a few games can't make a juggernaut. Home field is worth 1.6 points. The rest of the season is played " + SIM.sims.toLocaleString() + " times, using the posted spread where there is one and the rating gap otherwise, with real results landing about 13.5 points either side of the line; each run also nudges every team's rating a little, since nobody knows them exactly. Then the playoffs: four division winners and three wild cards per conference, a bye for the top seed. Ties break on division record for division titles and conference record for wild cards, then a coin flip, a simpler version of the NFL's tiebreakers.</p>" +
       "<h3>Power rankings</h3><p>This season: each team's strength rating. Next season and the one after: this season's rating carries 45% of the way into next year and 25% into the year after (NFL teams regress hard), and the rest comes from each team's resources that year: the value of everyone under contract (aging included), its draft classes (rookie deals are worth more than they cost, most of all in the first round), and half the face value of its cap space, since free agents rarely return full value. The resources are turned into points with the same scale that links this season's ratings to this season's rosters.</p>" +
       "<h3>Free agents and the franchise tag</h3><p>Everyone whose deal runs out before a season, ranked by value (position price, snaps and player rating). The market estimate is the contract average of players his value ranks with. The tag is the NFL's 2026 non-exclusive franchise tag at his tag position (all offensive linemen share one; edge rushers listed as linebackers get the linebacker tag), grown with the cap, or 120% of his last cap hit if that's more. Each team's tag candidates are its two best expiring starters, rated fair (about his market), pricey or steep.</p>" +
-      "<h3>Draft picks</h3><p>Rookie contracts are set by draft slot, so each team's next class is costed from the current draft order (Tankathon, via the Big Board): this year's class's contracts by pick, grown with the cap, running about 85%, 95%, 105% and 115% of their average over four years. Later classes assume the team's own picks at the same spots. Each rookie counts his cap hit less the minimum salary of the player he pushes off the top 51, as Over The Cap's effective cap space does.</p>" +
+      "<h3>Draft picks</h3><p>Rookie contracts are set by draft slot. Who owns each pick comes from the Big Board (Tankathon's order, plus its list of future picks already traded); where it lands is the season sim's expected spot (non-playoff teams worst record first, then playoff teams by the round they went out in) for next year's draft, and the next year's projected power ranking for the one after. Costs: this year's class's contracts by pick, grown with the cap, running about 85%, 95%, 105% and 115% of their average over four years. Each team page's Draft tab shows every pick with its likely range. Each rookie counts his cap hit less the minimum salary of the player he pushes off the top 51, as Over The Cap's effective cap space does.</p>" +
       "<h3>Player rankings</h3><p>This season's box score from nflverse, ranked by position on a production score: total EPA (expected points added) for quarterbacks; yards, touchdowns and EPA for running backs and receivers; sacks, quarterback hits and tackles for loss for pass rushers; tackles, plays on the ball and turnovers for linebackers and defensive backs. Linemen don't have box-score stats, so they're listed by snap share until the play-by-play rating arrives. Tap any player for his season, game log and contract.</p>" +
       "<h3>The data</h3><p>Rosters, contracts, depth charts and snap counts come from <a href=\"https://github.com/nflverse/nflverse-data\">nflverse</a>'s public data, refreshed every morning: Over The Cap's contract data (each year's base salary, bonus proration, roster bonuses, guarantees and cap number), the NFL's weekly rosters, ESPN's depth charts and Pro Football Reference's snap counts. Team cap figures with carryover and dead money for 2026 and 2027 are Over The Cap's (as of " + esc((W.teamcap || {}).asOf || "") + "). Deals signed this year that don't have a year-by-year breakdown yet are estimated (marked on the cap sheet).</p>" +
       "<h3>The cap rules</h3><p>Cut before June 1: every remaining year of bonus proration and every remaining guarantee counts that year. After June 1, or with a post-June 1 designation: that year keeps only its own proration and guarantee, the rest moves to the next year. Trade: the old team keeps the bonus proration on the same June 1 split, and the guarantees and salary go with the player. Restructure: base salary above the minimum becomes a signing bonus spread over the years left (up to five; with void years, always five). Extension: three new years at the market average, a signing bonus of 35% of the new money spread over up to five years, with this year's base above the minimum folded in.</p>" +
       "<h3>Cap space ahead</h3><p>2026 and 2027 use Over The Cap's team cap, contracts and dead money, so the starting point matches theirs. 2028 on use a projected base cap (" + m(C.BASE[2028], 0) + " in 2028, up 7% a year) and only contracts signed today: no carryover, no new signings, no rookie classes, so later years look roomier than they will be.</p>" +
       "<h3>The player rating</h3><p>Two parts, each measured against the average player at his position. On the field: football's version of basketball's RAPM. Every run and pass from the last two seasons (2025 counted fully, 2024 half, garbage time left out) is explained by the 22 players on the field, using nflverse's participation data and each play's EPA, so every player gets a number for how much better his side does with him out there, separated from his teammates and opponents. A ridge penalty pulls everyone toward average, hardest for players with few snaps; its strength is set by how well it predicts plays it wasn't fit on. The 2026 participation file isn't published until the season ends, so this season comes in through the second part. This season: his box-score production per game (EPA per play for quarterbacks; yards, touchdowns and EPA against the average play for backs and receivers; pressure stats for pass rushers; tackles, plays on the ball and turnovers for linebackers and defensive backs), trusted more as the games add up. The mix leans on production where the box score sees a player well (65% for quarterbacks) and on the on-field number where it doesn't (all of it for offensive linemen). On the 0-100 scale, 50 is average and every 15 points is a standard deviation.</p>" +
       "<h3>Value</h3><p>His position's starter price (the average contract of the starting tier league-wide) times his snap share times a quality multiplier from the rating (0.3 for well below average up to 2.3), blended 70/30 with the market's own verdict, his contract average grown with the cap. Rookie deals say nothing about quality, so rookies get only the first part. Age takes a share off each later year, most at running back, least at quarterback.</p><h3>The rating ahead</h3><p>This season's rating already reflects how a player plays at his current age, so only future seasons move. Players short of their position's peak age (running backs about 26, corners 27, receivers, edge rushers and linebackers 28, tight ends and interior defenders 29, linemen 30, quarterbacks 32) gain a little each year until they reach it. Each year past the peak takes a share off, compounding: 12% a year at running back, 9% at corner, 3% at quarterback. Future values, free agent classes and future power rankings all use the aged rating, and each player card shows it for the next three seasons.</p>" +
-      "<h3>Suggestions</h3><p>Cut: saves at least 45% of his cap number and he's paid well over his value. Trade: saves at least $3M more than a release (the guarantees leave with him). Restructure: at least $5M of room on a starter with two or more years left. Extend: a starter 29 or younger in the last year of his deal, priced at the contract average of players his value ranks with. Expiring: starters whose deals end this season, with an estimated franchise tag (the top five cap numbers at the position).</p></div>";
+      "<h3>Suggestions</h3><p>Cut: saves at least 45% of his cap number and he's paid well over his value. Trade: saves at least $3M more than a release (the guarantees leave with him). Restructure: at least $5M of room on a starter with two or more years left. Extend: a starter 29 or younger in the last year of his deal. Expiring: starters whose deals end this season. Franchise tag: only real candidates, a starter rated 60 or better for next season, 30 or younger, whose market is at least 65% of the tag; most teams have none.</p><h3>Next contracts</h3><p>Every estimate comes from comparable deals: veterans at his position who signed in the last three years (no rookie deals), the six nearest to him in rating, age at signing and role, with starters compared only with starters. The per-year figure is 70% what they got (grown with the cap) and 30% his own value that season; for a veteran, his last deal takes 15% of it. Years are the comparable deals' middle length, capped by age: one year at 33 or older, two at 31-32, three at 30. Guarantees are the comparable deals' guaranteed share of the total. Hover any estimate to see the deals behind it, or open the player's card.</p></div>";
   }
+
+  // ---------- sortable tables: tap a column header to sort by it, tap again to flip ----------
+  function cellVal(td) {
+    if (!td) return null;
+    if (td.dataset.v != null) return +td.dataset.v;
+    var t = td.textContent.trim();
+    if (!t || t === "—" || t === "–") return null;
+    var neg = /^-|^−|^▼/.test(t), mt = t.replace(/[,$%+▲▼−]/g, "").replace(/^-/, "").match(/^\d+(\.\d+)?/);
+    return mt ? (neg ? -1 : 1) * parseFloat(mt[0]) : t.toLowerCase();
+  }
+  document.addEventListener("click", function (e) {
+    var th = e.target.closest("table.t thead th");
+    if (!th || th.closest("table.choose") || e.target.closest("button,a,select")) return;
+    var table = th.closest("table"), tb = table.tBodies[0], col = Array.prototype.indexOf.call(th.parentNode.children, th);
+    if (!tb || th.textContent.trim() === "#") return;
+    var rows = Array.prototype.filter.call(tb.rows, function (r) { return !r.classList.contains("tot") && r.cells.length > col; });
+    if (rows.length < 2) return;
+    var vals = rows.map(function (r) { return cellVal(r.cells[col]); });
+    var numeric = vals.filter(function (v) { return typeof v === "number"; }).length >= vals.filter(function (v) { return v != null; }).length / 2;
+    var dir = th.getAttribute("aria-sort") === (numeric ? "descending" : "ascending") ? (numeric ? "ascending" : "descending") : (numeric ? "descending" : "ascending");
+    var sign = dir === "ascending" ? 1 : -1;
+    var idx = rows.map(function (r, i) { return i; }).sort(function (a, b) {
+      var x = vals[a], y = vals[b];
+      if (x == null || (numeric && typeof x !== "number")) return 1;
+      if (y == null || (numeric && typeof y !== "number")) return -1;
+      return (x < y ? -1 : x > y ? 1 : 0) * sign || a - b;
+    });
+    var tail = Array.prototype.filter.call(tb.rows, function (r) { return rows.indexOf(r) < 0; });
+    idx.forEach(function (i) { tb.appendChild(rows[i]); });
+    tail.forEach(function (r) { tb.appendChild(r); });
+    Array.prototype.forEach.call(th.parentNode.children, function (h) { h.removeAttribute("aria-sort"); });
+    th.setAttribute("aria-sort", dir);
+    var hash = th.parentNode.children[0];
+    if (hash && hash.textContent.trim() === "#") idx.forEach(function (i, k) { rows[i].cells[0].textContent = k + 1; });
+  });
 
   // ---------- start ----------
   function get(u, opt) { return fetch(u, { cache: "no-cache" }).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); }).catch(function (e) { if (opt) return null; throw e; }); }
@@ -645,8 +731,10 @@
     TEAMS = r[2].nfl;
     W = P.init(C.newWorld(r[0], r[1], r[4]));
     W.draft = r[3] && r[3].order ? r[3].order : null;
+    W.future = r[3] && r[3].future ? r[3].future : null;
     W.games = r[0].games || []; W.stats = r[0].stats || null;
     SIM = S.simulate(W.games, Object.keys(S.divOf), { sims: 6000 });
+    W.sim = SIM;
     $("#foot").innerHTML = "Rosters and contracts as of " + esc(r[0].updated) + " (week " + r[0].week + "). Data from nflverse: Over The Cap contracts, NFL rosters, ESPN depth charts, Pro Football Reference snap counts.";
     render();
   }).catch(function (e) { view.innerHTML = '<p class="loading">Couldn\'t load the league: ' + esc(e.message) + "</p>"; });
