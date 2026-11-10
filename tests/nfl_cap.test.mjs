@@ -55,3 +55,13 @@ test('league file: every team, contracts by year, and sums near Over The Cap', (
     assert.ok(Math.abs(ty[1].pin) < 20, code + ' 2027 contracts within $20M of Over The Cap (' + ty[1].pin.toFixed(1) + ')');
   }
 });
+
+test('season sim: every team gets odds that add up', () => {
+  const S = require('../nfl/lib/season.js');
+  const L = read('nfl/data/league.json');
+  const teams = Object.values(S.DIV).flat();
+  const out = S.simulate(L.games, teams, { sims: 1500 });
+  const sum = k => teams.reduce((a, t) => a + out.teams[t][k], 0);
+  near(sum('div'), 8); near(sum('playoffs'), 14); near(sum('sb'), 1); near(sum('bye'), 2);
+  for (const t of teams) assert.ok(out.teams[t].wins + out.teams[t].losses <= 17.01);
+});

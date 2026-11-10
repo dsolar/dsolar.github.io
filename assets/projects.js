@@ -375,15 +375,15 @@ window.PROJECTS = [
   },
   {
     title: "NFL Hub",
-    line: "Cap sheets five years out, an offseason planner, cut and restructure suggestions",
+    line: "Playoff odds by division, depth charts, player rankings, an offseason cap planner",
     tag: "Updated every day",
     type: "Simulations",
     released: "2026-11",
     url: "nfl/",
     action: "Open the planner",
     question: "What happens to a team's cap if it cuts, trades, restructures or extends, and who should it be?",
-    summary: "Every team's contracts year by year from Over The Cap's data via nflverse, with the dead money and savings behind every cut (before or after June 1), trade, restructure and extension. Stack moves into an offseason plan and watch five years of cap space change, see how much each team has pushed into future years, and get suggestions for who to cut, trade, restructure or extend, with the cap math for each.",
-    facts: [["32", "cap sheets"], ["5", "years of cap space"], ["2,600", "contracts by year"]],
+    summary: "The rest of the season played out thousands of times from the betting market's spreads, with every division's projected records and playoff odds. Every depth chart, player rankings with stats and game logs, and every team's contracts year by year from Over The Cap's data via nflverse: the dead money and savings behind every cut, trade, restructure and extension, an offseason planner that stacks moves, and suggestions with the cap math for each.",
+    facts: [["6,000", "simulated seasons"], ["32", "depth charts and cap sheets"], ["2,600", "contracts by year"]],
     stack: ["JavaScript", "Python"],
     hidden: true,
     cover: { image: "assets/covers/nfl-hub.svg", bg: "#F5F4F0", band: "#013369" }

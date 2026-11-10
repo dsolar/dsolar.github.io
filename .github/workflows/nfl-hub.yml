@@ -41,7 +41,7 @@ jobs:
 
       - name: Commit it
         run: |
-          git add nfl/data/league.json
+          git add nfl/data/league.json nfl/data/weeks.json
           if git diff --cached --quiet; then
             echo "Nothing changed."
             exit 0

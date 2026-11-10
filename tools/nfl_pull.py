@@ -149,7 +149,9 @@ def main():
             base = num(s.get("base_salary"))
             other = num(s.get("workout_bonus")) + num(s.get("per_game_roster_bonus")) + num(s.get("other_bonus"))
             rb = num(s.get("roster_bonus"))
-            void = cap > 0 and abs(cap - pr) < 0.01 and base > 0
+            # a void year: salary listed that never counts (the cap number is only bonus money, sometimes with a later
+            # void year's share pulled into it)
+            void = base > 0 and (abs(cap - pr) < 0.01 or base > cap + 0.01)
             if void:
                 base, rb, other = 0.0, 0.0, 0.0
             out[y] = [round(base, 4), round(pr, 4), round(rb, 4), round(other, 4), round(num(s.get("guaranteed_salary")), 4), round(cap, 4), 1 if void else 0]
@@ -200,17 +202,62 @@ def main():
                       "rows": rws, "otc": c.get("otc_id")}
         players.append(p)
 
+    # ---------- this season's games: results, and the betting line where there is one ----------
+    games = []
+    try:
+        for g in csv.DictReader(io.StringIO(fetch("schedules/games.csv"))):
+            if g["season"] != str(SEASON):
+                continue
+            def n(x):
+                return None if x in ("", "NA", None) else float(x)
+            games.append([g["game_type"], int(g["week"]), g["gameday"], team(g["away_team"]), team(g["home_team"]),
+                          n(g["away_score"]), n(g["home_score"]), n(g["spread_line"]), 1 if g["location"] == "Neutral" else 0, 1 if g["div_game"] == "1" else 0])
+    except Exception as e:
+        print("schedule unavailable:", e)
+
+    # ---------- season stats (regular season) for the player rankings ----------
+    STAT = ["games", "attempts", "completions", "passing_yards", "passing_tds", "passing_interceptions", "passing_epa", "sacks_suffered",
+            "carries", "rushing_yards", "rushing_tds", "rushing_epa", "targets", "receptions", "receiving_yards", "receiving_tds", "receiving_epa",
+            "def_tackles_solo", "def_tackle_assists", "def_tackles_for_loss", "def_sacks", "def_qb_hits", "def_interceptions", "def_pass_defended",
+            "def_fumbles_forced", "fg_made", "fg_att", "fg_long", "pt_att", "pt_net_yards"]
+    stats = {"cols": STAT, "p": {}}
+    try:
+        for r in csv.DictReader(io.StringIO(fetch(f"stats_player/stats_player_reg_{SEASON}.csv"))):
+            v = [round(num(r.get(k)), 2) for k in STAT]
+            if v[0] > 0:
+                stats["p"][r["player_id"]] = v
+    except Exception as e:
+        print("player stats unavailable:", e)
+
+    # ---------- game logs for the player cards (loaded only when a card opens) ----------
+    WK = ["attempts", "completions", "passing_yards", "passing_tds", "passing_interceptions", "carries", "rushing_yards", "rushing_tds",
+          "targets", "receptions", "receiving_yards", "receiving_tds", "def_tackles_solo", "def_tackle_assists", "def_sacks", "def_qb_hits",
+          "def_interceptions", "def_pass_defended", "fg_made", "fg_att"]
+    weeks = {"cols": ["week", "opp"] + WK, "p": {}}
+    try:
+        for r in csv.DictReader(io.StringIO(fetch(f"stats_player/stats_player_week_{SEASON}.csv"))):
+            if r.get("season_type") != "REG":
+                continue
+            v = [int(num(r["week"])), team(r.get("opponent_team"))] + [round(num(r.get(k)), 1) for k in WK]
+            if any(v[2:]):
+                weeks["p"].setdefault(r["player_id"], []).append([x if x != 0 else 0 for x in v])
+        (OUT.parent / "weeks.json").write_text(json.dumps(weeks, separators=(",", ":")) + "\n", encoding="utf-8")
+    except Exception as e:
+        print("game logs unavailable:", e)
+
     out = {
         "updated": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
         "season": SEASON, "week": week,
         "src": "nflverse (Over The Cap contracts, NFL rosters, ESPN depth charts, Pro Football Reference snap counts)",
         "players": sorted(players, key=lambda p: (p["t"], p["pos"], p["n"])),
         "depth": depth,
+        "games": games,
+        "stats": stats,
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(out, separators=(",", ":")) + "\n", encoding="utf-8")
     withc = sum(1 for p in players if p.get("c"))
-    print(f"NFL {SEASON} week {week}: {len(players)} players ({withc} with contracts), depth charts for {len(depth)} teams")
+    print(f"NFL {SEASON} week {week}: {len(players)} players ({withc} with contracts), depth charts for {len(depth)} teams, {len(games)} games, stats for {len(stats['p'])}")
 
 
 if __name__ == "__main__":

@@ -34,3 +34,63 @@ table.sheet select{border:1px solid var(--rule);border-radius:6px;background:var
 p.note.center{text-align:center}
 @media (prefers-color-scheme: dark){ img.logo{background:rgba(255,255,255,.94);border-radius:50%;padding:2px;box-sizing:border-box} }
 .stat b i{font-style:normal}
+
+/* standings by division */
+.divgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:12px}
+.dcard{background:var(--card);border:1px solid var(--rule);border-radius:12px;overflow:hidden}
+.dcard h4{margin:0;padding:10px 14px;font:800 15px/1 var(--display);border-bottom:1px solid var(--rule-2);background:var(--paper-2)}
+.dhd,.drow3{display:grid;grid-template-columns:minmax(120px,1.4fr) 54px 74px 1fr 1fr 46px;gap:8px;align-items:center;padding:7px 12px}
+.dhd{font:700 10.5px/1 var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--faint);padding-top:8px;padding-bottom:4px}
+.drow3{border-top:1px solid var(--rule-2);text-decoration:none;color:var(--ink);border-left:4px solid var(--tc);font-variant-numeric:tabular-nums;font-size:14px}
+.drow3:hover{background:var(--paper-2)}
+.drow3 .tn{display:flex;align-items:center;gap:8px;min-width:0}
+.drow3 .tn b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.drow3 .sbp{text-align:right;color:var(--muted);font-weight:600}
+.obar{position:relative;display:block;height:20px;border-radius:5px;background:var(--paper-2);overflow:hidden}
+.obar i{position:absolute;inset:0 auto 0 0;background:var(--t-strong)}
+.obar.dv i{background:var(--t-elite)}
+.obar b{position:relative;display:block;padding:0 6px;font:700 12px/20px var(--cond);color:var(--ink)}
+tr.cutline td{border-bottom:2px dashed var(--rule)}
+@media (max-width:640px){
+  .dhd,.drow3{grid-template-columns:minmax(0,1.3fr) 44px 1fr 1fr;gap:6px;padding:7px 8px}
+  .dhd span:nth-child(3),.drow3>span:nth-child(3),.dhd span:nth-child(6),.drow3 .sbp{display:none}
+  .drow3{font-size:13px}
+}
+/* team tiles */
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1px;background:var(--rule-2)}
+.tile{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card);text-decoration:none;color:var(--ink);border-left:4px solid var(--tc)}
+.tile:hover{background:var(--paper-2)}
+.tile b{display:block;font:800 16px/1.1 var(--display)}
+.tile small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+/* team header band */
+.thead.tband{padding:14px 16px;border-radius:14px;background:linear-gradient(90deg,color-mix(in srgb,var(--tc) 18%,var(--card)),var(--card) 70%);border:1px solid var(--rule);border-left:6px solid var(--tc)}
+.stats.sm .stat b{font-size:18px}
+/* overview */
+.ovgrid{display:grid;grid-template-columns:minmax(260px,340px) 1fr;gap:14px;align-items:start}
+@media (max-width:860px){ .ovgrid{grid-template-columns:1fr} }
+ul.sched{list-style:none;margin:0;padding:0}
+ul.sched li{display:grid;grid-template-columns:26px 1fr 96px;gap:8px;align-items:center;padding:6px 12px;border-top:1px solid var(--rule-2);font-size:13.5px}
+ul.sched .wk{font:700 12px/1 var(--cond);color:var(--faint)}
+ul.sched .op{display:flex;align-items:center;gap:5px;min-width:0;white-space:nowrap;overflow:hidden}
+ul.sched .rs{text-align:right;font-variant-numeric:tabular-nums}
+.wdist{display:grid;grid-template-columns:repeat(18,1fr);gap:3px;align-items:end;height:120px;padding:10px 12px 6px}
+.wdist span{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
+.wdist i{display:block;width:100%;background:var(--t-strong-i);border-radius:3px 3px 0 0;min-height:1px}
+.wdist small{font:600 10px/1.4 var(--cond);color:var(--faint)}
+.seeds{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;padding:10px 12px}
+.seeds span{text-align:center;background:var(--paper-2);border-radius:8px;padding:6px 2px}
+.seeds b{display:block;font:700 15px/1.2 var(--cond)} .seeds small{font-size:10.5px;color:var(--faint)}
+@media (max-width:640px){ .seeds{grid-template-columns:repeat(4,1fr)} }
+/* depth chart by unit */
+.ulist{display:flex;flex-direction:column}
+.urow{display:grid;grid-template-columns:52px minmax(180px,1.2fr) 2fr;gap:8px;align-items:center;padding:6px 12px;border-top:1px solid var(--rule-2)}
+.urow .up{font:800 14px/1 var(--display);color:var(--muted)}
+.urow .us,.urow .ub{display:flex;flex-wrap:wrap;gap:5px;min-width:0}
+.uc{display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 3px;border-radius:999px;background:var(--paper-2);cursor:pointer;font-size:12.5px;min-width:0}
+.uc.st{background:var(--card);box-shadow:inset 0 0 0 1px var(--rule)}
+.uc b{white-space:nowrap} .uc small{display:block;font:600 11px/1.1 var(--cond);color:var(--muted)}
+.uc span{display:flex;flex-direction:column;min-width:0}
+@media (max-width:640px){ .urow{grid-template-columns:40px 1fr} .urow .ub{grid-column:2} }
+.stats-kv{grid-template-columns:repeat(auto-fill,minmax(84px,1fr))}
+table.t.rank th:nth-child(2),table.t.rank td:nth-child(2),table.t.rank td:nth-child(3),table.t.rank th:nth-child(3){text-align:left}
+@media (max-width:640px){ .stats{grid-template-columns:repeat(2,minmax(0,1fr))} .thead.tband select.allteams{margin-left:0} }
