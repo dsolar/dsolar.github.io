@@ -433,7 +433,7 @@
     const years = now ? [W.season, W.season + 1, W.season + 2] : [W.season + 1, W.season + 2, W.season + 3];
     const wts = now ? [left, 0.92, 0.78] : [1, TV_DISC, TV_DISC * TV_DISC];
     const healthy = P.role(W, p);
-    const est = P.contract(W, p, Math.max(years[0], last + 1));
+    const est = P.contract(W, p, Math.max(years[0], last + 1)), m0 = P.contract(W, p, years[0]).apy;
     let talent = 0, surplus = 0;
     years.forEach((yy, i) => {
       const d = wts[i];
@@ -442,7 +442,8 @@
       // (~70); seasons after his deal count less as he ages past his peak, and not at all six years past it
       const x = Math.max(0, P.multAt(W, p, yy) - REPL), above = W.price[g] * Math.pow(healthy, 1.25) * Math.pow(x, TV_CURVE) / Math.pow(1.1, TV_CURVE - 1);
       const ageThen = (p.age || 26) + (yy - W.season), afterW = ageThen <= PEAK[g] + 4 ? AFTER : ageThen <= PEAK[g] + 6 ? AFTER / 2 : 0;
-      const market = P.contract(W, p, yy).apy;
+      // his market each season: one comparable-deals estimate, carried forward with his aging and the cap's growth
+      const market = i === 0 ? m0 : m0 * P.multAt(W, p, yy) / Math.max(0.3, P.multAt(W, p, years[0])) * Math.pow(1.07, yy - years[0]);
       // what the new team pays: his cap number less the signing-bonus proration, which stays with the old team
       const r = under ? p.c.rows[yy] : null, cost = !under ? market : Math.max(0, r[C.R.cap] - r[C.R.pr]);
       // quarterbacks: the better he is, the bigger the premium (an average starter gets none, an MVP-level one about
@@ -596,6 +597,12 @@
   };
   P.IMP = IMP;
 
+  // A team's cap space in a season before any moves (cached: it's asked for constantly)
+  P.space = (W, code, y) => {
+    W._sp = W._sp || {};
+    const k = code + ":" + y;
+    return W._sp[k] != null ? W._sp[k] : (W._sp[k] = C.teamYears(W, code, [], y, y)[0].space);
+  };
   // Teams that need a player at his position and can afford him in a season (need in their top three, cap space for
   // his price), best fits first
   P.fits = (W, p, y, price) => {
@@ -604,7 +611,7 @@
       if (code === p.t) continue;
       const i = T.top.findIndex(x => x.g === g);
       if (i < 0 || i > 2) continue;
-      const sp = C.teamYears(W, code, [], y, y)[0].space;
+      const sp = P.space(W, code, y);
       if (price != null && sp < price * 0.8) continue;
       out.push({ code, rank: i, score: T.top[i].score, space: sp });
     }
@@ -616,7 +623,7 @@
     y = y || W.season + 1;
     const out = [], codes = [...new Set(W.players.map(p => p.t).filter(Boolean))];
     for (const code of codes) {
-      const sp = C.teamYears(W, code, [], y, y)[0].space;
+      const sp = P.space(W, code, y);
       for (const s of P.suggest(W, code, y)) {
         if (s.kind !== "cut" && s.kind !== "trade") continue;
         const ratio = s.save / Math.max(1, s.cap), over = (s.cap - s.val) / Math.max(1, s.cap), age = (s.p.age || 27) + (y - W.season);
@@ -725,7 +732,7 @@
     const y = W.season + 1, moves = (opts.moves || []).filter(m => m.year === y).map(m => Object.assign({}, m));
     const ban = new Set(opts.ban || []), log = { user: moves.slice(), cuts: [], resigned: [], tagged: [], walked: [], signed: [], lost: [], drafted: [] };
     const ratings = {}; if (W.sim) for (const [t, o] of Object.entries(W.sim.teams)) ratings[t] = o.rating;
-    const before = { space: C.teamYears(W, code, [], y, y)[0].space, power: null, groups: {} };
+    const before = { space: P.space(W, code, y), power: null, groups: {} };
     const N0 = P.needs(W, y)[code];
     P.NEED_GROUPS.forEach(g => { before.groups[g] = { mean: N0.groups[g].mean, grade: N0.groups[g].grade }; });
     const byId = id => W.byId[id];
@@ -741,7 +748,8 @@
       if (kept.has(s.p.id)) return;
       moves.push({ kind: "tag", id: s.p.id, year: y, amount: s.tag }); kept.add(s.p.id); log.tagged.push({ p: s.p, amount: s.tag });
     });
-    let space = () => C.teamYears(W, code, moves, y, y)[0].space;
+    let spMemo = -1, spVal = 0;
+    const space = () => { if (spMemo !== moves.length) { spMemo = moves.length; spVal = C.teamYears(W, code, moves, y, y)[0].space; } return spVal; };
     expiring.filter(p => !kept.has(p.id)).sort((a, b) => P.value(W, b, y) - P.value(W, a, y)).forEach(p => {
       const e = P.contract(W, p, y);
       if (opts.resign && P.keeps(W, p, y) && space() - e.apy > 5) { moves.push({ kind: "resign", id: p.id, year: y, apy: e.apy, years: e.yrs }); kept.add(p.id); log.resigned.push({ p, est: e }); }

@@ -292,11 +292,19 @@
     return '<span class="pchip' + (pk.yr > W.season + 1 ? " fut" : "") + '"><b>' + pk.yr + " R" + pk.round + "</b> No. " + pk.en + (pk.from !== code ? " <small>via " + esc(pk.from) + "</small>" : "") + "</span>";
   }
   function asPicksText(pts) { return P.priceText(pts).long; }
+  function tvPool() { return W.players.filter(function (p) { return p.c && p.st !== "DEV" && C.lastYear(p) > W.season && P.role(W, p) >= 0.5 && P.quality(W, p).z > -0.5; }); }
+  function tvOf(p) { W._tvc = W._tvc || {}; return W._tvc[p.id] || (W._tvc[p.id] = P.tradeValue(W, p)); }
   function tvAll() {
     if (W._tvAll) return W._tvAll;
-    W._tvAll = W.players.filter(function (p) { return p.c && p.st !== "DEV" && C.lastYear(p) > W.season && P.role(W, p) >= 0.5 && P.quality(W, p).z > -0.5; })
-      .map(function (p) { return { p: p, tv: P.tradeValue(W, p) }; });
+    W._tvAll = tvPool().map(function (p) { return { p: p, tv: tvOf(p) }; });
     return W._tvAll;
+  }
+  // after the first screen is up, work out trade values a few dozen at a time while the phone is idle, so the
+  // Trade value tab opens instantly later
+  function warmTrade() {
+    var pool = tvPool(), i = 0, idle = window.requestIdleCallback || function (f) { return setTimeout(function () { f({ timeRemaining: function () { return 8; } }); }, 50); };
+    var step = function (dl) { var t0 = Date.now(); while (i < pool.length && (dl.timeRemaining() > 2 || Date.now() - t0 < 8)) tvOf(pool[i++]); if (i < pool.length) idle(step); };
+    idle(step);
   }
   function pickCurve(marks) {
     var w = Math.max(340, Math.min(1100, (view.clientWidth || 900) - 24)), h = w < 600 ? 170 : 220, padL = 40, padB = 24, X = function (n) { return padL + Math.sqrt((n - 1) / 259) * (w - padL - 10); }, Y = function (v) { return 8 + (1 - v / 1000) * (h - padB - 8); };
@@ -494,10 +502,11 @@
       '</select></label><label>Team<select data-q="t"><option value="">All teams</option>' + codes().map(function (c) { return '<option value="' + c + '"' + (c === tm ? " selected" : "") + ">" + esc(team(c).name) + "</option>"; }).join("") + "</select></label>" +
       (y === W.season + 1 ? '<label class="chk"><input type="checkbox" data-qchk="cc"' + (withCC ? " checked" : "") + "> Add likely cap casualties</label>" : "") + "</div>";
     html += tablePanel("The " + y + " class · " + list.length, "<th>#</th><th>Player</th><th>Team</th><th>Pos</th><th>Age</th><th>Rating</th><th title=\"Projected rating that season, aging included\">&rsquo;" + String(y).slice(2) + "</th><th>Snaps</th><th>This season</th><th>Value</th><th title=\"Teams with his position among their top three needs and cap space for him\">Fits</th><th title=\"From comparable deals: veterans at his position who signed in the last three years, nearest in rating, age and role. Hover a deal for the comparisons.\">Next contract</th><th>Tag</th><th>" + (y - 1) + " cap</th>",
-      list.slice(0, 150).map(function (x, i) {
+      list.slice(0, state.q.all === "1" ? 400 : 50).map(function (x, i) {
         var p = x.p, r = x.apy / x.tag, tagCls = r >= 0.85 ? "up" : r >= 0.6 ? "warn" : "";
         return "<tr><td>" + (i + 1) + "</td><td>" + pname(p, 24, x.cc ? ' <span class="pill warn" title="' + esc(x.cc.why) + '">cap casualty?</span>' : "") + '</td><td class="tm">' + logo(p.t, 18) + '<span class="nm">' + esc(p.t) + "</span></td><td>" + esc(posOf(p)) + "</td><td>" + (p.age ? Math.floor(p.age + y - W.season) : "—") + "</td><td>" + scoreChip(p) + "</td><td>" + scoreChip(p, y) + "</td><td>" + (p.snaps ? Math.round(P.share(W, p) * 100) + "%" : "—") + '</td><td class="note">' + esc(keyStat(p)) + "</td><td><b>" + m(x.val) + "</b></td><td class=\"fits\">" + P.fits(W, p, y, x.apy).slice(0, 3).map(function (f) { return '<a href="' + href("team/" + f.code) + '" title="' + esc(team(f.code).name) + ": need No. " + (f.rank + 1) + ", " + m(f.space) + ' in space">' + logo(f.code, 20) + "</a>"; }).join("") + "</td><td data-v=\"" + x.apy.toFixed(2) + '">' + dealCell(x.est) + '</td><td><span class="pill ' + tagCls + '" title="Market as a share of the tag: ' + Math.round(r * 100) + '%">' + m(x.tag) + "</span></td><td>" + m(C.capHit(p, y - 1)) + "</td></tr>";
       }).join(""), "green tag: about his market, yellow: pricier, gray: well above", "rank");
+    if (list.length > 50 && state.q.all !== "1") html += '<p class="more"><a class="btn sm" href="' + href("fa", Object.assign({}, state.q, { all: "1" })) + '">Show all ' + list.length + "</a></p>";
     view.innerHTML = html;
   }
   // ---------- team overview: outlook, schedule, depth chart by unit ----------
@@ -948,5 +957,6 @@
     W.sim = SIM;
     $("#foot").innerHTML = "Rosters and contracts as of " + esc(r[0].updated) + " (week " + r[0].week + "). Data from nflverse: Over The Cap contracts, NFL rosters, ESPN depth charts, Pro Football Reference snap counts.";
     render();
+    setTimeout(warmTrade, 1200);
   }).catch(function (e) { view.innerHTML = '<p class="loading">Couldn\'t load the league: ' + esc(e.message) + "</p>"; });
 })();
