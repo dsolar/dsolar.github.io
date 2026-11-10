@@ -1,0 +1,51 @@
+# Builds the NFL Hub's league file (rosters, contracts by year, depth charts, snap shares) from nflverse's public data.
+# Runs every day after nflverse's morning refresh, when the script or this file changes, or by hand.
+name: NFL Hub data
+
+on:
+  schedule:
+    - cron: "47 16 * * *"   # 11:47am ET in winter
+  push:
+    branches: [main]
+    paths:
+      - tools/nfl_pull.py
+      - .github/workflows/nfl-hub.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nfl-hub
+  cancel-in-progress: false
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+
+      - name: Set the bot's git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Install pyarrow (the contracts file is parquet)
+        run: pip install pyarrow
+
+      - name: Build the league file
+        run: python3 tools/nfl_pull.py
+
+      - name: Commit it
+        run: |
+          git add nfl/data/league.json
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+            exit 0
+          fi
+          git commit -m "Update NFL Hub data"
+          git pull --rebase -X theirs -q
+          git push

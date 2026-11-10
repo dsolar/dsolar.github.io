@@ -1,0 +1,57 @@
+// NFL cap engine checks: node --test tests/nfl_cap.test.mjs
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import assert from 'node:assert/strict';
+import test from 'node:test';
+const require = createRequire(import.meta.url);
+const C = require('../nfl/lib/cap.js');
+const read = p => JSON.parse(readFileSync(new URL('../' + p, import.meta.url), 'utf8'));
+
+// A made-up deal: $20M signing bonus over 4 years ($5M a year), base salaries 10/15/20/25, 2027 base guaranteed
+const p = { id: 'x', exp: 6, t: 'AAA', c: { rows: {
+  2027: [10, 5, 0, 0, 10, 15, 0], 2028: [15, 5, 0, 0, 0, 20, 0], 2029: [20, 5, 0, 0, 0, 25, 0], 2030: [25, 5, 0, 0, 0, 30, 0] } } };
+const near = (a, b) => assert.ok(Math.abs(a - b) < 1e-6, a + ' vs ' + b);
+
+test('cut before June 1: all proration and guarantees now', () => {
+  const e = C.effect(p, { kind: 'cut', year: 2027 });
+  near(e.dead[2027], 20 + 10);
+  near(e.delta[2027], -15 + 30);            // loses cap room this year
+  near(e.delta[2028], -20);
+});
+
+test('cut after June 1: this year keeps its own share, the rest lands next year', () => {
+  const e = C.effect(p, { kind: 'cutJune', year: 2027 });
+  near(e.dead[2027], 5 + 10);
+  near(e.dead[2028], 15);
+  near(e.delta[2027], 0);
+  near(e.delta[2028], -20 + 15);
+});
+
+test('trade: proration stays, salary goes', () => {
+  const e = C.effect(p, { kind: 'trade', year: 2028 });
+  near(e.dead[2028], 15);
+  near(e.delta[2028], -20 + 15);
+  near(e.other[2028], 15);
+});
+
+test('restructure: base above the minimum spread over the years left', () => {
+  const e = C.effect(p, { kind: 'restructure', year: 2028 });
+  const conv = 15 - C.minSalary(6, 2028);
+  near(e.converted, conv);
+  near(e.delta[2028], -conv + conv / 3);
+  near(e.delta[2030], conv / 3);
+  const v = C.effect(p, { kind: 'restructure', year: 2028, voids: true });
+  assert.equal(v.over, 5); assert.equal(v.addsVoid, 2);
+});
+
+test('league file: every team, contracts by year, and sums near Over The Cap', () => {
+  const L = read('nfl/data/league.json'), tc = read('nfl/data/teamcap.json');
+  const W = C.newWorld(L, tc);
+  const teams = new Set(L.players.map(x => x.t));
+  assert.equal(teams.size, 32);
+  for (const code of teams) {
+    const ty = C.teamYears(W, code, [], 2026, 2027);
+    near(ty[0].space, tc.years[2026][code].space / 1e6);
+    assert.ok(Math.abs(ty[1].pin) < 20, code + ' 2027 contracts within $20M of Over The Cap (' + ty[1].pin.toFixed(1) + ')');
+  }
+});

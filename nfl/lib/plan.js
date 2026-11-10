@@ -1,0 +1,130 @@
+/* NFL Hub: rough player value and the suggestion engine.
+
+   Value (version 1, labeled rough on the site): what a starter at his position costs on the market, times how much
+   he plays. The positional price is the average contract (APY) of the players ranked in the starting tier at that
+   position league-wide (32 quarterbacks, 64 corners, 96 interior linemen...). His share is his snap share this
+   season in his phase, so a full-time starter is worth the starter price and a rotational player much less.
+   Age takes a little off each later year, more at running back and less at quarterback.
+
+   Suggestions for a team's planning year (the next league year by default), each with the exact cap math:
+     cut         saves real cap with little dead money, from a player the value says is paid more than he's worth
+     restructure big base salary on a player the team clearly keeps
+     extend      starter entering the last year of his deal (or a young quarterback on his rookie deal)
+     trade       saves more by trade than by release (guarantees go with him)
+     expiring    a starter whose deal ends this season: re-sign or tag */
+(function (root) {
+  "use strict";
+  const C = root.NFLCap || (typeof require !== "undefined" ? require("./cap.js") : null);
+  const P = {};
+  // Position groups and starters per team
+  const GROUP = { QB: "QB", RB: "RB", FB: "RB", WR: "WR", TE: "TE", T: "OT", OT: "OT", G: "IOL", C: "IOL", OG: "IOL", OL: "IOL",
+    DE: "EDGE", OLB: "EDGE", EDGE: "EDGE", DT: "IDL", NT: "IDL", DL: "IDL", LB: "LB", ILB: "LB", MLB: "LB",
+    CB: "CB", DB: "CB", S: "S", SS: "S", FS: "S", SAF: "S", K: "K", P: "P", LS: "LS" };
+  const STARTERS = { QB: 1, RB: 1, WR: 3, TE: 1, OT: 2, IOL: 3, EDGE: 2, IDL: 2, LB: 2, CB: 3, S: 2, K: 1, P: 1, LS: 1 };
+  const DEF = new Set(["EDGE", "IDL", "LB", "CB", "S"]);
+  const AGE_FALL = { QB: 0.03, RB: 0.12, WR: 0.07, TE: 0.06, OT: 0.05, IOL: 0.05, EDGE: 0.07, IDL: 0.06, LB: 0.07, CB: 0.09, S: 0.07, K: 0.02, P: 0.02, LS: 0.02 };
+  const PEAK = { QB: 32, RB: 26, WR: 28, TE: 29, OT: 30, IOL: 30, EDGE: 28, IDL: 29, LB: 28, CB: 27, S: 28, K: 34, P: 34, LS: 34 };
+  P.GROUP = GROUP; P.STARTERS = STARTERS;
+  P.group = p => GROUP[p.dpos] || GROUP[p.pos] || "WR";
+
+  P.init = W => {
+    // starter price at each position: average APY of the starting tier league-wide
+    const byG = {};
+    for (const p of W.players) {
+      if (!p.c || !p.c.apy) continue;
+      (byG[P.group(p)] = byG[P.group(p)] || []).push(p.c.apy);
+    }
+    W.price = {};
+    for (const g of Object.keys(STARTERS)) {
+      const a = (byG[g] || []).sort((x, y) => y - x), n = 32 * STARTERS[g];
+      const top = a.slice(0, n);
+      W.price[g] = top.length ? top.reduce((s, v) => s + v, 0) / top.length : 1;
+    }
+    // league-wide APY rank tables for extension prices
+    W.apys = {};
+    for (const g of Object.keys(byG)) W.apys[g] = byG[g].sort((x, y) => y - x);
+    return W;
+  };
+  // Share of his phase's snaps this season (0..1); without snap data, his depth chart rank stands in
+  P.share = (W, p) => {
+    const g = P.group(p);
+    if (p.snaps && p.snaps[3] >= 2) return Math.min(1, g === "K" || g === "P" || g === "LS" ? Math.max(p.snaps[2] * 3, 0.9) : DEF.has(g) ? p.snaps[1] : p.snaps[0]);
+    const d = P.depthRank(W, p);
+    return d === 1 ? 0.85 : d === 2 ? 0.35 : 0.1;
+  };
+  P.depthRank = (W, p) => {
+    const t = W.depth[p.t];
+    if (!t) return 3;
+    const r = t.rows.filter(x => x[3] === p.id).map(x => x[2]);
+    return r.length ? Math.min(...r) : 4;
+  };
+  // What his play is worth in a season (millions). Two halves: the starter price at his position times how much he
+  // plays, and the market's own verdict, his contract's average when he signed it (grown with the cap), scaled by
+  // whether he's still playing like it. A rookie-scale deal says nothing about quality, so rookies get only the first.
+  P.rookieDeal = p => !!(p.draft && p.draft[0] && p.c && p.c.signed === p.draft[0] && (p.c.yrs || 0) <= 5);
+  P.value = (W, p, y) => {
+    const g = P.group(p), sh = P.share(W, p), age = (p.age || 26) + (y - W.season);
+    const aging = k => Math.max(0.2, 1 - Math.max(0, k - PEAK[g]) * AGE_FALL[g]);
+    const role = W.price[g] * Math.pow(sh, 1.4) * aging(age);
+    if (P.rookieDeal(p) || !p.c || !p.c.apy) return role;
+    const grown = p.c.apy * Math.pow(1.07, Math.max(0, W.season - (p.c.signed || W.season)));
+    const own = grown * Math.min(1, sh / 0.6) * aging(age) / aging((p.age || 26));
+    return 0.5 * role + 0.5 * own;
+  };
+  // Market price for an extension: the APY at the rank his value implies among players at his position
+  P.extensionApy = (W, p, y) => {
+    const g = P.group(p), list = W.apys[g] || [], v = P.value(W, p, y);
+    const i = list.findIndex(a => a <= v * 1.1);
+    const at = i < 0 ? list[list.length - 1] || v : list[Math.max(0, i - 2)];
+    return Math.max(C.minSalary(p.exp || 0, y) * 1.5, at * Math.pow(1.07, y - W.season));
+  };
+  // Franchise tag estimate: average of the top five cap numbers at the position, grown to that year
+  P.tag = (W, g, y) => {
+    const caps = W.players.filter(p => P.group(p) === g && p.c).map(p => C.capHit(p, W.season)).sort((a, b) => b - a).slice(0, 5);
+    return caps.length ? caps.reduce((s, v) => s + v, 0) / caps.length * Math.pow(1.07, y - W.season) : 0;
+  };
+
+  P.suggest = (W, code, y) => {
+    const out = [];
+    const ps = W.players.filter(p => p.t === code && p.c && p.st !== "DEV");
+    for (const p of ps) {
+      const r = p.c.rows[y], g = P.group(p), val = P.value(W, p, y), share = P.share(W, p);
+      const last = C.lastYear(p);
+      if (r && !r[C.R.void]) {
+        const cap = r[C.R.cap], cut = C.effect(p, { kind: "cut", year: y }), june = C.effect(p, { kind: "cutJune", year: y }), tr = C.effect(p, { kind: "trade", year: y });
+        const saveCut = -(cut.delta[y] || 0), saveJune = -(june.delta[y] || 0), saveTrade = -(tr.delta[y] || 0);
+        const over = cap - val;
+        if (cap >= 3 && saveCut >= Math.max(2.5, cap * 0.45) && over > Math.max(2, cap * 0.25)) {
+          out.push({ kind: "cut", p, y, score: saveCut + over, cap, val, save: saveCut, saveJune, dead: cut.dead[y] || 0, deadNext: june.dead[y + 1] || 0,
+            why: (C.guaranteeLeft(p, y) < 0.1 ? "No guarantees left. " : "") + "Saves " + m(saveCut) + " (" + m(saveJune) + " after June 1) against " + m(cut.dead[y] || 0) + " dead; value about " + m(val) + " for a " + m(cap) + " cap number." });
+        }
+        if (saveTrade >= Math.max(3, saveCut + 3) && cap >= 8 && over > 2) {
+          out.push({ kind: "trade", p, y, score: saveTrade + Math.max(0, over) * 0.5, cap, val, save: saveTrade, dead: tr.dead[y] || 0,
+            why: "Trading saves " + m(saveTrade) + " (cutting saves " + m(saveCut) + "): his " + m(C.guaranteeLeft(p, y)) + " in guarantees go with him. " + m(tr.dead[y] || 0) + " in bonus money stays behind." });
+        }
+        const rs = C.effect(p, { kind: "restructure", year: y });
+        const freed = -(rs.delta[y] || 0);
+        if (freed >= 5 && share >= 0.55 && C.yearsLeft(p, y) >= 2 && val >= cap * 0.5) {
+          const later = Object.keys(rs.delta).filter(k => +k > y).reduce((a, k) => a + rs.delta[k], 0);
+          out.push({ kind: "restructure", p, y, score: freed * 0.8, cap, val, save: freed, later,
+            why: "Converting " + m(rs.converted) + " of base salary to a bonus frees " + m(freed) + " in " + y + " and adds " + m(later) + " over " + (rs.over - 1) + " later year" + (rs.over > 2 ? "s" : "") + ". The bill grows if he's ever cut." });
+        }
+        if (last === y && share >= 0.6 && (p.age || 30) <= 29) {
+          const apy = P.extensionApy(W, p, y + 1), ext = C.effect(p, { kind: "extend", year: y, years: 3, apy, lowerNow: true });
+          out.push({ kind: "extend", p, y, score: val * 1.2, cap, val, apy, now: -(ext.delta[y] || 0),
+            why: "Last year of his deal. A 3-year extension near " + m(apy) + " a year " + ((ext.delta[y] || 0) < 0 ? "would lower this year's cap by " + m(-(ext.delta[y] || 0)) + " if his base is folded into the bonus." : "keeps this year's cap about the same.") });
+        }
+      }
+      if (last === y - 1 && share >= 0.6) {
+        const tag = P.tag(W, g, y), apy = P.extensionApy(W, p, y);
+        out.push({ kind: "expiring", p, y, score: val, cap: 0, val, apy, tag,
+          why: "Deal ends after " + (y - 1) + ". Re-signing likely costs about " + m(apy) + " a year; the franchise tag would be about " + m(tag) + " for one year." });
+      }
+    }
+    return out.sort((a, b) => b.score - a.score);
+  };
+  function m(v) { return (v < 0 ? "-$" : "$") + Math.abs(v).toFixed(1) + "M"; }
+
+  if (typeof module !== "undefined" && module.exports) module.exports = P;
+  root.NFLPlan = P;
+})(typeof window !== "undefined" ? window : globalThis);

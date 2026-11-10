@@ -1,0 +1,399 @@
+{
+ "src": "Over The Cap, salary cap space page (overthecap.com/salary-cap-space), copied 2026-11-10",
+ "asOf": "2026-11-10",
+ "note": "teamCap = base cap plus carryover and adjustments (cap space + active spending + dead money). Dead money is what still counts for players no longer on the team. 2027 uses OTC's projected $327M base cap.",
+ "base": {
+  "2026": 301200000,
+  "2027": 327000000
+ },
+ "years": {
+  "2026": {
+   "TEN": {
+    "space": 36274754,
+    "active": 252536552,
+    "dead": 54127077,
+    "teamCap": 342938383
+   },
+   "SF": {
+    "space": 35164858,
+    "active": 259377542,
+    "dead": 46020699,
+    "teamCap": 340563099
+   },
+   "DET": {
+    "space": 33577155,
+    "active": 254134282,
+    "dead": 34705134,
+    "teamCap": 322416571
+   },
+   "IND": {
+    "space": 31576009,
+    "active": 217562940,
+    "dead": 53925073,
+    "teamCap": 303064022
+   },
+   "ATL": {
+    "space": 28163020,
+    "active": 226598683,
+    "dead": 50084945,
+    "teamCap": 304846648
+   },
+   "LAC": {
+    "space": 25532003,
+    "active": 270168444,
+    "dead": 9432983,
+    "teamCap": 305133430
+   },
+   "WAS": {
+    "space": 23575251,
+    "active": 276800617,
+    "dead": 27792498,
+    "teamCap": 328168366
+   },
+   "DAL": {
+    "space": 17025845,
+    "active": 266121173,
+    "dead": 48206069,
+    "teamCap": 331353087
+   },
+   "TB": {
+    "space": 15130386,
+    "active": 284346738,
+    "dead": 17218383,
+    "teamCap": 316695507
+   },
+   "CLE": {
+    "space": 12787208,
+    "active": 204580334,
+    "dead": 121079805,
+    "teamCap": 338447347
+   },
+   "ARI": {
+    "space": 10593312,
+    "active": 213428393,
+    "dead": 103487619,
+    "teamCap": 327509324
+   },
+   "PHI": {
+    "space": 10151897,
+    "active": 222404012,
+    "dead": 83540726,
+    "teamCap": 316096635
+   },
+   "NYJ": {
+    "space": 9482097,
+    "active": 196418026,
+    "dead": 117138305,
+    "teamCap": 323038428
+   },
+   "PIT": {
+    "space": 9450257,
+    "active": 287618849,
+    "dead": 24022453,
+    "teamCap": 321091559
+   },
+   "LV": {
+    "space": 9301438,
+    "active": 244864152,
+    "dead": 60266495,
+    "teamCap": 314432085
+   },
+   "HOU": {
+    "space": 8405516,
+    "active": 227320884,
+    "dead": 74335668,
+    "teamCap": 310062068
+   },
+   "NO": {
+    "space": 7945078,
+    "active": 188232359,
+    "dead": 120828029,
+    "teamCap": 317005466
+   },
+   "CIN": {
+    "space": 7709243,
+    "active": 297061734,
+    "dead": 12593542,
+    "teamCap": 317364519
+   },
+   "BAL": {
+    "space": 7319631,
+    "active": 286601993,
+    "dead": 20142351,
+    "teamCap": 314063975
+   },
+   "NYG": {
+    "space": 6827148,
+    "active": 246480833,
+    "dead": 46887353,
+    "teamCap": 300195334
+   },
+   "GB": {
+    "space": 6524269,
+    "active": 258802372,
+    "dead": 48932823,
+    "teamCap": 314259464
+   },
+   "MIN": {
+    "space": 6173135,
+    "active": 251585289,
+    "dead": 56626305,
+    "teamCap": 314384729
+   },
+   "NE": {
+    "space": 5649411,
+    "active": 299557871,
+    "dead": 47081813,
+    "teamCap": 352289095
+   },
+   "DEN": {
+    "space": 4602451,
+    "active": 290655650,
+    "dead": 8259427,
+    "teamCap": 303517528
+   },
+   "JAX": {
+    "space": 4329803,
+    "active": 244041887,
+    "dead": 61776778,
+    "teamCap": 310148468
+   },
+   "MIA": {
+    "space": 4258937,
+    "active": 113776714,
+    "dead": 190078227,
+    "teamCap": 308113878
+   },
+   "SEA": {
+    "space": 4080522,
+    "active": 303214382,
+    "dead": 7118869,
+    "teamCap": 314413773
+   },
+   "BUF": {
+    "space": 3477721,
+    "active": 246005809,
+    "dead": 51588071,
+    "teamCap": 301071601
+   },
+   "CHI": {
+    "space": 2165809,
+    "active": 280799726,
+    "dead": 26410999,
+    "teamCap": 309376534
+   },
+   "KC": {
+    "space": 1082082,
+    "active": 284298721,
+    "dead": 16189280,
+    "teamCap": 301570083
+   },
+   "LAR": {
+    "space": -16564,
+    "active": 298630147,
+    "dead": 14994247,
+    "teamCap": 313607830
+   },
+   "CAR": {
+    "space": -327721,
+    "active": 284669172,
+    "dead": 27642263,
+    "teamCap": 311983714
+   }
+  },
+  "2027": {
+   "ATL": {
+    "space": 110602889,
+    "active": 203376933,
+    "dead": 13020178,
+    "teamCap": 327000000
+   },
+   "ARI": {
+    "space": 101018768,
+    "active": 203335891,
+    "dead": 22645341,
+    "teamCap": 327000000
+   },
+   "MIA": {
+    "space": 96248892,
+    "active": 173620239,
+    "dead": 57130869,
+    "teamCap": 327000000
+   },
+   "NYJ": {
+    "space": 84661009,
+    "active": 242299986,
+    "dead": 39005,
+    "teamCap": 327000000
+   },
+   "LAR": {
+    "space": 76039047,
+    "active": 248263033,
+    "dead": 2697920,
+    "teamCap": 327000000
+   },
+   "LAC": {
+    "space": 70739789,
+    "active": 255362437,
+    "dead": 897774,
+    "teamCap": 327000000
+   },
+   "WAS": {
+    "space": 70182460,
+    "active": 256502906,
+    "dead": 314634,
+    "teamCap": 327000000
+   },
+   "DET": {
+    "space": 62075008,
+    "active": 262779044,
+    "dead": 2145948,
+    "teamCap": 327000000
+   },
+   "CLE": {
+    "space": 61248914,
+    "active": 214094824,
+    "dead": 51656262,
+    "teamCap": 327000000
+   },
+   "LV": {
+    "space": 56161045,
+    "active": 270383418,
+    "dead": 455537,
+    "teamCap": 327000000
+   },
+   "CIN": {
+    "space": 48850747,
+    "active": 277776626,
+    "dead": 372627,
+    "teamCap": 327000000
+   },
+   "IND": {
+    "space": 47997964,
+    "active": 271555533,
+    "dead": 7446503,
+    "teamCap": 327000000
+   },
+   "PHI": {
+    "space": 37849884,
+    "active": 245481426,
+    "dead": 43668690,
+    "teamCap": 327000000
+   },
+   "MIN": {
+    "space": 36213180,
+    "active": 274772743,
+    "dead": 16014077,
+    "teamCap": 327000000
+   },
+   "SEA": {
+    "space": 34258437,
+    "active": 291813106,
+    "dead": 928457,
+    "teamCap": 327000000
+   },
+   "DEN": {
+    "space": 30464710,
+    "active": 293492513,
+    "dead": 3042777,
+    "teamCap": 327000000
+   },
+   "NO": {
+    "space": 29853246,
+    "active": 295968303,
+    "dead": 1178451,
+    "teamCap": 327000000
+   },
+   "TEN": {
+    "space": 25195389,
+    "active": 279496177,
+    "dead": 22308434,
+    "teamCap": 327000000
+   },
+   "NYG": {
+    "space": 18969045,
+    "active": 304913726,
+    "dead": 3117229,
+    "teamCap": 327000000
+   },
+   "NE": {
+    "space": 15816571,
+    "active": 310302908,
+    "dead": 880521,
+    "teamCap": 327000000
+   },
+   "CAR": {
+    "space": 6315496,
+    "active": 320198175,
+    "dead": 486329,
+    "teamCap": 327000000
+   },
+   "DAL": {
+    "space": -768300,
+    "active": 327151066,
+    "dead": 617234,
+    "teamCap": 327000000
+   },
+   "TB": {
+    "space": -6064022,
+    "active": 332433037,
+    "dead": 630985,
+    "teamCap": 327000000
+   },
+   "GB": {
+    "space": -6951697,
+    "active": 323995701,
+    "dead": 9955996,
+    "teamCap": 327000000
+   },
+   "PIT": {
+    "space": -12335715,
+    "active": 338643932,
+    "dead": 691783,
+    "teamCap": 327000000
+   },
+   "KC": {
+    "space": -14954923,
+    "active": 341861584,
+    "dead": 93339,
+    "teamCap": 327000000
+   },
+   "JAX": {
+    "space": -15422860,
+    "active": 341663962,
+    "dead": 758898,
+    "teamCap": 327000000
+   },
+   "CHI": {
+    "space": -23639538,
+    "active": 350273204,
+    "dead": 366334,
+    "teamCap": 327000000
+   },
+   "SF": {
+    "space": -31540066,
+    "active": 358455063,
+    "dead": 85003,
+    "teamCap": 327000000
+   },
+   "BUF": {
+    "space": -36807006,
+    "active": 363349892,
+    "dead": 457114,
+    "teamCap": 327000000
+   },
+   "HOU": {
+    "space": -41527623,
+    "active": 367885372,
+    "dead": 642251,
+    "teamCap": 327000000
+   },
+   "BAL": {
+    "space": -48827770,
+    "active": 375204646,
+    "dead": 623124,
+    "teamCap": 327000000
+   }
+  }
+ }
+}

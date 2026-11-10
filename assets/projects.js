@@ -372,5 +372,20 @@ window.PROJECTS = [
     facts: [["30", "rotations and cap sheets"], ["5", "seasons on the year slider"], ["1,080", "draft picks behind the pick values"]],
     stack: ["JavaScript", "Python"],
     cover: { image: "assets/covers/nba-hub.svg", bg: "#F5F4F0", band: "#C60C30" }
+  },
+  {
+    title: "NFL Hub",
+    line: "Cap sheets five years out, an offseason planner, cut and restructure suggestions",
+    tag: "Updated every day",
+    type: "Simulations",
+    released: "2026-11",
+    url: "nfl/",
+    action: "Open the planner",
+    question: "What happens to a team's cap if it cuts, trades, restructures or extends, and who should it be?",
+    summary: "Every team's contracts year by year from Over The Cap's data via nflverse, with the dead money and savings behind every cut (before or after June 1), trade, restructure and extension. Stack moves into an offseason plan and watch five years of cap space change, see how much each team has pushed into future years, and get suggestions for who to cut, trade, restructure or extend, with the cap math for each.",
+    facts: [["32", "cap sheets"], ["5", "years of cap space"], ["2,600", "contracts by year"]],
+    stack: ["JavaScript", "Python"],
+    hidden: true,
+    cover: { image: "assets/covers/nfl-hub.svg", bg: "#F5F4F0", band: "#013369" }
   }
 ];

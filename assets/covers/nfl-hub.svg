@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 780">
+  <!-- NFL Hub cover: illustration only, so it never shows stale cap numbers. -->
+  <rect width="1040" height="780" fill="#F5F4F0"/>
+  <rect width="1040" height="12" fill="#013369"/>
+  <g font-family="Arial Narrow, Arial, Helvetica, sans-serif" font-weight="700">
+    <!-- planning year pills -->
+    <rect x="60" y="62" width="460" height="56" rx="28" fill="#fff" stroke="#D9DCE1" stroke-width="2"/>
+    <text x="130" y="97" fill="#56637A" font-size="21" text-anchor="middle">2026</text>
+    <rect x="186" y="70" width="104" height="40" rx="20" fill="#002244"/>
+    <text x="238" y="97" fill="#F5F4F0" font-size="21" text-anchor="middle">2027</text>
+    <text x="340" y="97" fill="#56637A" font-size="21" text-anchor="middle">2028</text>
+    <text x="440" y="97" fill="#56637A" font-size="21" text-anchor="middle">2029</text>
+
+    <!-- field -->
+    <rect x="60" y="150" width="560" height="440" rx="18" fill="#4F8A4A"/>
+    <g stroke="#fff" stroke-width="3" opacity=".35">
+      <line x1="60" y1="210" x2="620" y2="210"/><line x1="60" y1="270" x2="620" y2="270"/>
+      <line x1="60" y1="330" x2="620" y2="330"/><line x1="60" y1="430" x2="620" y2="430"/>
+      <line x1="60" y1="490" x2="620" y2="490"/><line x1="60" y1="550" x2="620" y2="550"/>
+    </g>
+    <line x1="60" y1="380" x2="620" y2="380" stroke="#F5D061" stroke-width="5"/>
+    <!-- defense -->
+    <g fill="#C8102E" stroke="#fff" stroke-width="3">
+      <circle cx="120" cy="260" r="17"/><circle cx="560" cy="260" r="17"/>
+      <circle cx="250" cy="230" r="17"/><circle cx="430" cy="230" r="17"/>
+      <circle cx="280" cy="300" r="17"/><circle cx="400" cy="300" r="17"/>
+      <circle cx="245" cy="350" r="17"/><circle cx="315" cy="350" r="17"/><circle cx="365" cy="350" r="17"/><circle cx="435" cy="350" r="17"/>
+      <circle cx="340" cy="190" r="17"/>
+    </g>
+    <!-- offense -->
+    <g fill="#002244" stroke="#fff" stroke-width="3">
+      <circle cx="260" cy="412" r="17"/><circle cx="300" cy="412" r="17"/><circle cx="340" cy="412" r="17"/><circle cx="380" cy="412" r="17"/><circle cx="420" cy="412" r="17"/>
+      <circle cx="465" cy="420" r="17"/><circle cx="110" cy="412" r="17"/><circle cx="570" cy="412" r="17"/><circle cx="520" cy="440" r="17"/>
+      <circle cx="340" cy="470" r="17"/><circle cx="340" cy="530" r="17"/>
+    </g>
+    <rect x="290" y="560" width="100" height="26" rx="5" fill="#fff"/>
+    <text x="340" y="579" fill="#13233A" font-size="16" text-anchor="middle">QB · $34.7M</text>
+
+    <!-- planner card -->
+    <rect x="650" y="62" width="330" height="290" rx="16" fill="#fff" stroke="#D9DCE1" stroke-width="2"/>
+    <text x="672" y="100" fill="#56637A" font-size="18" letter-spacing="2">THE PLAN</text>
+    <g font-size="21">
+      <rect x="672" y="118" width="64" height="26" rx="5" fill="#F8D7DA"/><text x="704" y="137" fill="#8A1C27" font-size="15" text-anchor="middle">CUT</text>
+      <text x="748" y="138" fill="#13233A">Saves</text><text x="958" y="138" fill="#1F7A3A" text-anchor="end">+$18.6M</text>
+      <rect x="672" y="164" width="64" height="26" rx="5" fill="#D6E6F7"/><text x="704" y="183" fill="#1D4E89" font-size="15" text-anchor="middle">RESTR</text>
+      <text x="748" y="184" fill="#13233A">Frees now</text><text x="958" y="184" fill="#1F7A3A" text-anchor="end">+$13.5M</text>
+      <rect x="672" y="210" width="64" height="26" rx="5" fill="#FDE8CC"/><text x="704" y="229" fill="#8A5A00" font-size="15" text-anchor="middle">EXT</text>
+      <text x="748" y="230" fill="#13233A">Lowers cap</text><text x="958" y="230" fill="#1F7A3A" text-anchor="end">+$6.1M</text>
+    </g>
+    <line x1="672" y1="256" x2="958" y2="256" stroke="#D9DCE1" stroke-width="2"/>
+    <text x="672" y="292" fill="#56637A" font-size="18">2027 SPACE</text>
+    <text x="958" y="296" fill="#13233A" font-size="34" text-anchor="end">+$23.2M</text>
+    <text x="672" y="330" fill="#8A1C27" font-size="17">New dead money $19.5M</text>
+
+    <!-- five-year bars -->
+    <rect x="650" y="372" width="330" height="218" rx="16" fill="#fff" stroke="#D9DCE1" stroke-width="2"/>
+    <text x="672" y="408" fill="#56637A" font-size="18" letter-spacing="2">CAP SPACE BY YEAR</text>
+    <g>
+      <rect x="682" y="490" width="40" height="20" fill="#C8102E"/><rect x="742" y="450" width="40" height="60" fill="#2E8B57"/>
+      <rect x="802" y="470" width="40" height="40" fill="#2E8B57"/><rect x="862" y="440" width="40" height="70" fill="#2E8B57"/><rect x="922" y="430" width="40" height="80" fill="#2E8B57"/>
+      <line x1="672" y1="510" x2="968" y2="510" stroke="#13233A" stroke-width="2"/>
+    </g>
+    <g fill="#56637A" font-size="16" text-anchor="middle">
+      <text x="702" y="536">26</text><text x="762" y="536">27</text><text x="822" y="536">28</text><text x="882" y="536">29</text><text x="942" y="536">30</text>
+    </g>
+    <text x="672" y="570" fill="#56637A" font-size="16">Dead money · void years · restructures</text>
+
+    <!-- strip -->
+    <rect x="60" y="620" width="920" height="100" rx="16" fill="#002244"/>
+    <text x="90" y="663" fill="#9FB3CC" font-size="20" letter-spacing="2">CUT BEFORE JUNE 1</text>
+    <text x="90" y="700" fill="#fff" font-size="28">Cap number − dead money = savings</text>
+    <text x="950" y="690" fill="#F5D061" font-size="40" text-anchor="end">+$18.6M</text>
+  </g>
+</svg>
