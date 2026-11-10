@@ -109,7 +109,8 @@
       const cap = otc ? otc.teamCap / M : C.BASE[y];
       const dead = otc ? otc.dead / M : 0;
       const pin = otc ? otc.active / M - ours : 0;
-      out.push({ y, cap, dead, active: ours + pin, ours, pin, space: cap - dead - ours - pin, moves: 0, newDead: 0 });
+      const rookies = W.rookieCost && y > W.season ? W.rookieCost(code, y) : 0;
+      out.push({ y, cap, dead, active: ours + pin, ours, pin, rookies, space: cap - dead - ours - pin - rookies, moves: 0, newDead: 0 });
     }
     for (const mv of moves || []) {
       const p = W.byId[mv.id];

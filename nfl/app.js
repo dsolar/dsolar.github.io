@@ -76,7 +76,7 @@
       var on = a.dataset.tab === state.route || (a.dataset.tab === "teams" && state.route === "team") || (a.dataset.tab === "cap" && state.route === "league");
       if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
-    ({ standings: standingsPage, teams: teamsPage, team: teamPage, players: playersPage, cap: leaguePage, league: leaguePage, method: methodPage }[state.route] || standingsPage)();
+    ({ standings: standingsPage, power: powerPage, fa: faPage, teams: teamsPage, team: teamPage, players: playersPage, cap: leaguePage, league: leaguePage, method: methodPage }[state.route] || standingsPage)();
   }
   window.addEventListener("hashchange", render);
 
@@ -219,6 +219,59 @@
     location.hash = href(state.route + (state.arg ? "/" + state.arg : ""), q);
   });
 
+
+  // ---------- draft picks a team has to sign ----------
+  function picksCard(code) {
+    var html = '<div class="card-h">' + logo(code, 48) + "<div><h3>" + esc(team(code).name) + ' draft picks</h3><div class="meta">Rookie cap hits by year, from the current draft order</div></div></div><div class="card-b">';
+    [W.season + 1, W.season + 2].forEach(function (y) {
+      var rc = P.rookieCost(W, code, y), list = rc.list;
+      html += '<h4 class="card-sec">' + y + " draft" + (y > W.season + 1 ? " (estimated: own picks at the same spots)" : "") + '</h4><div class="scroll"><table class="t"><thead><tr><th>Pick</th><th>Round</th><th>From</th><th>' + y + " cap hit</th><th>Counts against space</th></tr></thead><tbody>" +
+        list.map(function (x) { return "<tr><td>" + x.n + "</td><td>" + x.round + "</td><td>" + (x.from !== code ? logo(x.from, 16) + " " + esc(x.from) : "Own") + "</td><td>" + m(x.hit) + "</td><td>" + m(x.eff) + "</td></tr>"; }).join("") +
+        '<tr class="tot"><td colspan="4">Total</td><td>' + m(list.reduce(function (a, x) { return a + x.eff; }, 0)) + "</td></tr></tbody></table></div>";
+    });
+    html += '<p class="note">Rookie salaries follow the slot: this year\'s class\'s contracts by pick, grown with the cap. "Counts against space" takes off the minimum salary of the player each rookie pushes off the top 51, the way Over The Cap counts effective cap space.</p></div>';
+    cardBody.innerHTML = html;
+    if (!card.open) card.showModal();
+  }
+
+  // ---------- power rankings ----------
+  var RATINGS = null;
+  function ratings() { if (!RATINGS) { RATINGS = {}; Object.keys(SIM.teams).forEach(function (t) { RATINGS[t] = SIM.teams[t].rating; }); } return RATINGS; }
+  function powerPage() {
+    var y = +state.q.y || W.season, now = y === W.season, pw = P.power(W, ratings(), y), base = now ? null : P.power(W, ratings(), W.season), r0 = {};
+    if (base) base.forEach(function (x) { r0[x.code] = x.rank; });
+    var html = '<h2 class="sec">Power rankings</h2><p class="lede">' + (now ? "This season: every team's strength in points against an average team, from the betting market's spreads and this season's scoring margins." :
+      y + " projected: this season's strength carries forward only partly (NFL teams regress hard), and the rest comes from what each team has under contract that year, its draft classes and the cap space it has to add players.") + "</p>";
+    html += '<div class="subtabs">' + [W.season, W.season + 1, W.season + 2].map(function (k) { return '<a href="' + href("power", { y: k === W.season ? null : k }) + '"' + (k === y ? ' aria-current="page"' : "") + ">" + (k === W.season ? "This season" : k) + "</a>"; }).join("") + "</div>";
+    var max = Math.max.apply(null, pw.map(function (x) { return Math.abs(x.rating); })) || 1;
+    html += '<div class="panel"><ol class="power">' + pw.map(function (x) {
+      var c = x.code, o = SIM.teams[c], res = x.res, mv = base ? r0[c] - x.rank : 0;
+      var side = now ? '<span class="pr-meta">' + rec(o.rec) + " · proj. " + o.wins.toFixed(1) + " wins · " + pctTxt(o.playoffs) + " playoffs · " + pctTxt(o.sb) + " title</span>"
+        : '<span class="pr-meta">' + m(res.roster, 0) + " under contract · " + (res.qb ? "QB " + esc(lastName(res.qb.p.n)) : '<b class="neg">no QB under contract</b>') + " · " + m(res.space, 0) + " cap space · " + m(res.draft, 0) + " draft value</span>";
+      return '<li><a href="' + href("team/" + c) + '" style="--tc:' + team(c).color + '"><span class="pr-rank">' + x.rank + "</span>" + logo(c, 30) + '<span class="pr-name"><b>' + esc(team(c).name) + "</b>" + side + "</span>" +
+        (base ? '<span class="pr-move ' + (mv > 0 ? "pos" : mv < 0 ? "neg" : "") + '">' + (mv > 0 ? "▲" + mv : mv < 0 ? "▼" + (-mv) : "—") + "</span>" : "") +
+        '<span class="pr-bar"><i class="' + (x.rating >= 0 ? "up" : "dn") + '" style="width:' + (Math.abs(x.rating) / max * 50).toFixed(1) + '%"></i></span><span class="pr-r">' + (x.rating >= 0 ? "+" : "") + x.rating.toFixed(1) + "</span></a></li>";
+    }).join("") + "</ol></div>";
+    html += '<p class="note">' + (now ? "Points against an average team on a neutral field." : "Projected points against an average team. The arrows compare with this season's ranking. Value under contract is each player's rough value that year, aging included.") + "</p>";
+    view.innerHTML = html;
+  }
+
+  // ---------- free agents ----------
+  function faPage() {
+    var y = +state.q.c || W.season + 1, g = state.q.g || "", tm = state.q.t || "";
+    var list = W.players.filter(function (p) { return p.c && C.lastYear(p) === y - 1 && p.st !== "DEV" && (!g || P.group(p) === g) && (!tm || p.t === tm); })
+      .map(function (p) { return { p: p, val: P.value(W, p, y), apy: P.extensionApy(W, p, y), tag: P.tagPrice(W, p, y) }; })
+      .sort(function (a, b) { return b.val - a.val; });
+    var html = '<h2 class="sec">Free agents</h2><p class="lede">Everyone whose contract runs out before the ' + y + " season, ranked by rough value. The market estimate is what players his value ranks with are paid; the tag is the NFL's franchise tag at his position grown with the cap (or 120% of his last cap hit if that's more).</p>";
+    html += '<div class="controls"><label>Class<select data-q="c">' + [W.season + 1, W.season + 2, W.season + 3].map(function (k) { return '<option value="' + k + '"' + (k === y ? " selected" : "") + ">" + k + "</option>"; }).join("") + '</select></label><label>Position<select data-q="g"><option value="">All</option>' + Object.keys(GROUP_NAME).map(function (k) { return '<option value="' + k + '"' + (k === g ? " selected" : "") + ">" + GROUP_NAME[k] + "</option>"; }).join("") +
+      '</select></label><label>Team<select data-q="t"><option value="">All teams</option>' + codes().map(function (c) { return '<option value="' + c + '"' + (c === tm ? " selected" : "") + ">" + esc(team(c).name) + "</option>"; }).join("") + "</select></label></div>";
+    html += tablePanel("The " + y + " class · " + list.length, "<th>#</th><th>Player</th><th>Team</th><th>Pos</th><th>Age</th><th>Snaps</th><th>This season</th><th>Rough value</th><th>Market / yr</th><th>Tag</th><th>" + (y - 1) + " cap</th>",
+      list.slice(0, 150).map(function (x, i) {
+        var p = x.p, r = x.apy / x.tag, tagCls = r >= 0.85 ? "up" : r >= 0.6 ? "warn" : "";
+        return "<tr><td>" + (i + 1) + "</td><td>" + pname(p, 24) + '</td><td class="tm">' + logo(p.t, 18) + '<span class="nm">' + esc(p.t) + "</span></td><td>" + esc(posOf(p)) + "</td><td>" + (p.age ? Math.floor(p.age + y - W.season) : "—") + "</td><td>" + (p.snaps ? Math.round(P.share(W, p) * 100) + "%" : "—") + '</td><td class="note">' + esc(keyStat(p)) + "</td><td><b>" + m(x.val) + "</b></td><td>" + m(x.apy) + '</td><td><span class="pill ' + tagCls + '" title="Market as a share of the tag: ' + Math.round(r * 100) + '%">' + m(x.tag) + "</span></td><td>" + m(C.capHit(p, y - 1)) + "</td></tr>";
+      }).join(""), "green tag: about his market, yellow: pricier, gray: well above", "rank");
+    view.innerHTML = html;
+  }
   // ---------- team overview: outlook, schedule, depth chart by unit ----------
   function overview(code) {
     var o = SIM.teams[code], gs = W.games.filter(function (g) { return g[0] === "REG" && (g[3] === code || g[4] === code); }).sort(function (a, b) { return a[1] - b[1]; });
@@ -328,6 +381,8 @@
       var ms = movesOf(code).filter(function (x) { return x.id !== mv.id; }); ms.push(mv); setMoves(code, ms); return;
     }
     if (rm) { setMoves(code, movesOf(code).filter(function (x) { return x.id !== rm.dataset.rmmove; })); return; }
+    var pk = e.target.closest("[data-picks]");
+    if (pk) { picksCard(pk.dataset.picks); return; }
     var op = e.target.closest("[data-opts]");
     if (op) { moveChooser(op.dataset.opts); return; }
     if (clr) { setMoves(code, []); return; }
@@ -358,24 +413,27 @@
       "<tr><td>Team cap</td>" + base.map(function (r) { return "<td>" + m(r.cap) + "</td>"; }).join("") + "</tr>" +
       "<tr><td>Contracts</td>" + base.map(function (r) { return "<td>" + m(r.active) + "</td>"; }).join("") + "</tr>" +
       "<tr><td>Dead money</td>" + base.map(function (r) { return "<td>" + m(r.dead) + "</td>"; }).join("") + "</tr>" +
+      '<tr><td>Draft picks to sign <button type="button" class="linkbtn" data-picks="' + code + '">which?</button></td>' + base.map(function (r) { return "<td>" + (r.rookies > 0.05 ? m(r.rookies) : "—") + "</td>"; }).join("") + "</tr>" +
       '<tr class="tot"><td>Space today</td>' + base.map(function (r) { return '<td class="' + (r.space >= 0 ? "pos" : "neg") + '">' + m(r.space) + "</td>"; }).join("") + "</tr>" +
       (ms.length ? "<tr><td>Your moves</td>" + plan.map(function (r) { return '<td class="' + (r.moves <= 0 ? "pos" : "neg") + '">' + (Math.abs(r.moves) > 0.05 ? sm(-r.moves) : "—") + "</td>"; }).join("") + "</tr>" +
         '<tr class="tot"><td>With your plan</td>' + plan.map(function (r) { return '<td class="' + (r.space >= 0 ? "pos" : "neg") + '"><b>' + m(r.space) + "</b></td>"; }).join("") + "</tr>" : "") +
-      '</tbody></table></div><p class="note">2026 and 2027 start from Over The Cap\'s team figures (carryover included). Later years count only today\'s contracts against a projected cap, so they look roomier than they will be.</p></div>';
+      '</tbody></table></div><p class="note">2026 and 2027 start from Over The Cap\'s team figures (carryover included). Draft picks: each pick\'s rookie cap hit less the minimum-salary player he pushes off the top 51 (2027 from the current draft order, 2028 on at the same spots). Later years count only today\'s contracts against a projected cap, so they look roomier than they will be.</p></div>';
     // suggestions as cards: the money first
     var groups = [["cut", "Cut", "Saves real money with little dead money"], ["trade", "Trade", "Saves more traded than cut: his guarantees leave with him"],
       ["restructure", "Restructure", "Room now on a player the team keeps, paid back later"], ["extend", "Extend", "Starters in the last year of their deals"],
-      ["expiring", "Re-sign or tag", "Starters whose deals end after " + (y - 1)]];
+      ["tag", "Franchise tag", "The best starters whose deals run out, and what the tag would cost"], ["expiring", "Re-sign or let walk", "Starters whose deals end after " + (y - 1)]];
     html += '<h3 class="subsec">Ideas for ' + y + '</h3><p class="note">The cap numbers are exact. Who\'s worth keeping uses the rough value, so treat these as starting points.</p><div class="sugs">';
     groups.forEach(function (g) {
       var list = sug.filter(function (s) { return s.kind === g[0]; }).slice(0, 4);
       if (!list.length) return;
       html += '<div class="panel"><h3>' + g[1] + " <small>" + g[2] + "</small></h3>" + list.map(function (s) {
-        var num = s.kind === "expiring" ? m(s.apy) + "/yr" : s.kind === "extend" ? (s.now > 0.05 ? sm(s.now) : m(s.apy) + "/yr") : sm(s.save);
-        var btns = on[s.p.id] ? '<span class="pill up">' + esc(KIND[on[s.p.id].kind]) + "</span>" : s.kind === "expiring"
+        var num = s.kind === "tag" ? m(s.tag) : s.kind === "expiring" ? m(s.apy) + "/yr" : s.kind === "extend" ? (s.now > 0.05 ? sm(s.now) : m(s.apy) + "/yr") : sm(s.save);
+        var btns = on[s.p.id] ? '<span class="pill up">' + esc(KIND[on[s.p.id].kind]) + "</span>" : s.kind === "tag"
+          ? '<button type="button" class="btn sm" data-addmove="' + esc("tag|" + s.p.id + "|" + y + "||" + s.tag.toFixed(2)) + '">Tag him</button><button type="button" class="btn sm ghost" data-addmove="' + esc("resign|" + s.p.id + "|" + y + "|" + s.apy.toFixed(2)) + '">Re-sign instead</button> <span class="pill ' + (s.verdict === "fair" ? "up" : s.verdict === "pricey" ? "warn" : "fill") + '">' + (s.verdict === "fair" ? "Fair price" : s.verdict === "pricey" ? "Pricey" : "Steep") + "</span>"
+          : s.kind === "expiring"
           ? '<button type="button" class="btn sm" data-addmove="' + esc("resign|" + s.p.id + "|" + y + "|" + s.apy.toFixed(2)) + '">Re-sign</button><button type="button" class="btn sm" data-addmove="' + esc("tag|" + s.p.id + "|" + y + "||" + s.tag.toFixed(2)) + '">Tag</button>'
           : '<button type="button" class="btn sm" data-addmove="' + esc(s.kind === "extend" ? "extend|" + s.p.id + "|" + y + "|" + s.apy.toFixed(2) : s.kind + "|" + s.p.id + "|" + y) + '">Add</button><button type="button" class="btn sm ghost" data-opts="' + esc(s.p.id) + '">Options</button>';
-        return '<div class="scard"><div class="sc-top">' + pname(s.p, 34) + '<span class="note">' + esc(posOf(s.p)) + " · " + (s.p.age ? Math.floor(s.p.age) : "—") + (s.cap ? " · " + m(s.cap) + " cap hit" : "") + '</span><b class="big ' + (s.kind === "expiring" ? "" : "pos") + '">' + num + '</b></div><p>' + esc(s.why) + '</p><div class="sc-btns">' + btns + "</div></div>";
+        return '<div class="scard"><div class="sc-top">' + pname(s.p, 34) + '<span class="note">' + esc(posOf(s.p)) + " · " + (s.p.age ? Math.floor(s.p.age) : "—") + (s.cap ? " · " + m(s.cap) + " cap hit" : "") + '</span><b class="big ' + (s.kind === "expiring" || s.kind === "tag" ? "" : "pos") + '">' + num + '</b></div><p>' + esc(s.why) + '</p><div class="sc-btns">' + btns + "</div></div>";
       }).join("") + "</div>";
     });
     html += "</div>";
@@ -534,6 +592,9 @@
   function methodPage() {
     view.innerHTML = '<div class="method"><h2 class="sec">How it works</h2>' +
       "<h3>Standings and odds</h3><p>Each team gets a strength rating in points against an average team, fit to two things from this season: the betting market's point spread for every game that had one (the market already prices injuries and quarterback changes) and the actual scoring margins (counted about a third as much), pulled toward average so a few games can't make a juggernaut. Home field is worth 1.6 points. The rest of the season is played " + SIM.sims.toLocaleString() + " times, using the posted spread where there is one and the rating gap otherwise, with real results landing about 13.5 points either side of the line; each run also nudges every team's rating a little, since nobody knows them exactly. Then the playoffs: four division winners and three wild cards per conference, a bye for the top seed. Ties break on division record for division titles and conference record for wild cards, then a coin flip, a simpler version of the NFL's tiebreakers.</p>" +
+      "<h3>Power rankings</h3><p>This season: each team's strength rating. Next season and the one after: this season's rating carries 45% of the way into next year and 25% into the year after (NFL teams regress hard), and the rest comes from each team's resources that year: the rough value of everyone under contract (aging included), its draft classes (rookie deals are worth more than they cost, most of all in the first round), and half the face value of its cap space, since free agents rarely return full value. The resources are turned into points with the same scale that links this season's ratings to this season's rosters.</p>" +
+      "<h3>Free agents and the franchise tag</h3><p>Everyone whose deal runs out before a season, ranked by rough value. The market estimate is the contract average of players his value ranks with. The tag is the NFL's 2026 non-exclusive franchise tag at his tag position (all offensive linemen share one; edge rushers listed as linebackers get the linebacker tag), grown with the cap, or 120% of his last cap hit if that's more. Each team's tag candidates are its two best expiring starters, rated fair (about his market), pricey or steep.</p>" +
+      "<h3>Draft picks</h3><p>Rookie contracts are set by draft slot, so each team's next class is costed from the current draft order (Tankathon, via the Big Board): this year's class's contracts by pick, grown with the cap, running about 85%, 95%, 105% and 115% of their average over four years. Later classes assume the team's own picks at the same spots. Each rookie counts his cap hit less the minimum salary of the player he pushes off the top 51, as Over The Cap's effective cap space does.</p>" +
       "<h3>Player rankings</h3><p>This season's box score from nflverse, ranked by position on a production score: total EPA (expected points added) for quarterbacks; yards, touchdowns and EPA for running backs and receivers; sacks, quarterback hits and tackles for loss for pass rushers; tackles, plays on the ball and turnovers for linebackers and defensive backs. Linemen don't have box-score stats, so they're listed by snap share until the play-by-play rating arrives. Tap any player for his season, game log and contract.</p>" +
       "<h3>The data</h3><p>Rosters, contracts, depth charts and snap counts come from <a href=\"https://github.com/nflverse/nflverse-data\">nflverse</a>'s public data, refreshed every morning: Over The Cap's contract data (each year's base salary, bonus proration, roster bonuses, guarantees and cap number), the NFL's weekly rosters, ESPN's depth charts and Pro Football Reference's snap counts. Team cap figures with carryover and dead money for 2026 and 2027 are Over The Cap's (as of " + esc((W.teamcap || {}).asOf || "") + "). Deals signed this year that don't have a year-by-year breakdown yet are estimated (marked on the cap sheet).</p>" +
       "<h3>The cap rules</h3><p>Cut before June 1: every remaining year of bonus proration and every remaining guarantee counts that year. After June 1, or with a post-June 1 designation: that year keeps only its own proration and guarantee, the rest moves to the next year. Trade: the old team keeps the bonus proration on the same June 1 split, and the guarantees and salary go with the player. Restructure: base salary above the minimum becomes a signing bonus spread over the years left (up to five; with void years, always five). Extension: three new years at the market average, a signing bonus of 35% of the new money spread over up to five years, with this year's base above the minimum folded in.</p>" +
@@ -544,9 +605,10 @@
 
   // ---------- start ----------
   function get(u, opt) { return fetch(u, { cache: "no-cache" }).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); }).catch(function (e) { if (opt) return null; throw e; }); }
-  Promise.all([get("data/league.json"), get("data/teamcap.json", true), get("../tools/draft_teams.json")]).then(function (r) {
+  Promise.all([get("data/league.json"), get("data/teamcap.json", true), get("../tools/draft_teams.json"), get("../draft/nfl.json", true)]).then(function (r) {
     TEAMS = r[2].nfl;
     W = P.init(C.newWorld(r[0], r[1]));
+    W.draft = r[3] && r[3].order ? r[3].order : null;
     W.games = r[0].games || []; W.stats = r[0].stats || null;
     SIM = S.simulate(W.games, Object.keys(S.divOf), { sims: 6000 });
     $("#foot").innerHTML = "Rosters and contracts as of " + esc(r[0].updated) + " (week " + r[0].week + "). Data from nflverse: Over The Cap contracts, NFL rosters, ESPN depth charts, Pro Football Reference snap counts.";

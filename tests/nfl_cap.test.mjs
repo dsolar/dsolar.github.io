@@ -65,3 +65,22 @@ test('season sim: every team gets odds that add up', () => {
   near(sum('div'), 8); near(sum('playoffs'), 14); near(sum('sb'), 1); near(sum('bye'), 2);
   for (const t of teams) assert.ok(out.teams[t].wins + out.teams[t].losses <= 17.01);
 });
+
+test('franchise tag: position price grown with the cap, or 120% of last cap hit', () => {
+  const P = require('../nfl/lib/plan.js');
+  const W = { season: 2026, players: [] };
+  const wr = { pos: 'WR', dpos: 'WR', c: { rows: { 2026: [10, 0, 0, 0, 0, 10, 0] } } };
+  near(P.tagPrice(W, wr, 2027), 27.298 * 327 / 301.2);
+  const star = { pos: 'WR', dpos: 'WR', c: { rows: { 2026: [27.3, 0, 0, 0, 0, 27.3, 0] } } };
+  near(P.tagPrice(W, star, 2027), 27.3 * 1.2);
+});
+
+test('draft picks: next year\'s class costs cap, the first pick the most', () => {
+  const C2 = require('../nfl/lib/cap.js'), P = require('../nfl/lib/plan.js');
+  const W = P.init(C2.newWorld(read('nfl/data/league.json'), read('nfl/data/teamcap.json')));
+  W.draft = read('draft/nfl.json').order;
+  const curve = P.rookieCurve(W);
+  assert.ok(curve[1] > curve[32] && curve[32] > curve[100]);
+  const first = W.draft.picks[0][3];
+  assert.ok(P.rookieCost(W, first, 2027).total > 5);
+});

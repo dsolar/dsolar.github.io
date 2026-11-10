@@ -118,3 +118,17 @@ ul.moves .grow{display:flex;flex-direction:column;gap:2px}
 .btn.sm.on{background:var(--t-strong);color:var(--t-strong-i);border-color:transparent}
 table.t.choose td:first-child{text-align:left;white-space:normal} table.t.choose td:first-child small{display:block;margin-top:2px}
 table.t.choose tr.planned td{background:color-mix(in srgb,var(--t-strong) 45%,transparent)}
+
+/* power rankings */
+ol.power{list-style:none;margin:0;padding:0}
+ol.power a{display:grid;grid-template-columns:34px 34px minmax(0,1fr) 44px 160px 52px;gap:10px;align-items:center;padding:9px 14px;border-top:1px solid var(--rule-2);border-left:4px solid var(--tc);text-decoration:none;color:var(--ink)}
+ol.power li:first-child a{border-top:0}
+ol.power a:hover{background:var(--paper-2)}
+.pr-rank{font:800 20px/1 var(--display);color:var(--muted);text-align:right}
+.pr-name{min-width:0} .pr-name b{display:block;font-size:15px} .pr-meta{display:block;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pr-move{font:700 13px/1 var(--cond);text-align:center}
+.pr-bar{position:relative;height:12px;background:var(--paper-2);border-radius:6px}
+.pr-bar i{position:absolute;top:0;bottom:0;border-radius:6px}
+.pr-bar i.up{left:50%;background:var(--t-strong-i)} .pr-bar i.dn{right:50%;background:var(--down)}
+.pr-r{font:700 15px/1 var(--cond);text-align:right;font-variant-numeric:tabular-nums}
+@media (max-width:640px){ ol.power a{grid-template-columns:26px 28px minmax(0,1fr) 34px 44px;gap:6px;padding:8px} .pr-bar{display:none} .pr-meta{white-space:normal} }
