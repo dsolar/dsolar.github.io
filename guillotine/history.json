@@ -4858,7 +4858,7 @@
       "nfl": "DET",
       "claimed_by": "A Warren Boston",
       "bid": 190,
-      "next_proj": 15.38
+      "next_proj": 15.89
      },
      {
       "n": "Justin Jefferson",
@@ -4866,7 +4866,7 @@
       "nfl": "MIN",
       "claimed_by": "Love Purdy Flowers",
       "bid": 66,
-      "next_proj": 13.81
+      "next_proj": 14.02
      },
      {
       "n": "Bucky Irving",
@@ -4882,7 +4882,7 @@
       "nfl": "DET",
       "claimed_by": "Drake Mayezini",
       "bid": 47,
-      "next_proj": 17.9
+      "next_proj": 18.81
      },
      {
       "n": "Dak Prescott",
@@ -4890,7 +4890,7 @@
       "nfl": "DAL",
       "claimed_by": "Drake Mayezini",
       "bid": 21,
-      "next_proj": 17.75
+      "next_proj": 19.2
      },
      {
       "n": "Parker Washington",
@@ -4898,7 +4898,7 @@
       "nfl": "JAX",
       "claimed_by": "Tai Streetz Lata?",
       "bid": 21,
-      "next_proj": 13.26
+      "next_proj": 13.41
      },
      {
       "n": "Colston Loveland",
@@ -4922,7 +4922,7 @@
       "nfl": "LV",
       "claimed_by": "Braelon’s Pieces",
       "bid": 0,
-      "next_proj": 14.89
+      "next_proj": 14.76
      },
      {
       "n": "Ollie Gordon II",
@@ -4930,7 +4930,7 @@
       "nfl": "MIA",
       "claimed_by": "Holofernes",
       "bid": 0,
-      "next_proj": 12.71
+      "next_proj": 11.89
      },
      {
       "n": "Dameon Pierce",
@@ -4942,7 +4942,7 @@
       "n": "Jordan Mason",
       "pos": "RB",
       "nfl": "MIN",
-      "next_proj": 9.06
+      "next_proj": 8.89
      },
      {
       "n": "Kyle Monangai",
@@ -4954,7 +4954,7 @@
       "n": "Malik Washington",
       "pos": "WR",
       "nfl": "MIA",
-      "next_proj": 8.52
+      "next_proj": 8.32
      }
     ]
    },
@@ -5091,7 +5091,7 @@
       "pos": "RB",
       "nfl": "BUF",
       "slot": "RB",
-      "proj": 14.43,
+      "proj": 14.37,
       "pts": null
      },
      {
@@ -5367,7 +5367,7 @@
       "pos": "WR",
       "nfl": "MIN",
       "slot": "WR",
-      "proj": 15.03,
+      "proj": 15.22,
       "pts": null
      },
      {
