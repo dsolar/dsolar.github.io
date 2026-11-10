@@ -106,7 +106,7 @@
   //             ball and turnovers for linebackers and defensive backs). Linemen have none, so they're all on-field.
   // The mix leans on production where the box score sees a player well (quarterbacks, receivers) and on the on-field
   // number where it doesn't. The multiplier on his position's price runs from 0.3 (well below average) to 2.3.
-  const MIX = { QB: 0.35, RB: 0.4, WR: 0.4, TE: 0.5, OT: 1, IOL: 1, EDGE: 0.5, IDL: 0.6, LB: 0.6, CB: 0.65, S: 0.65, K: 0, P: 0, LS: 0 };
+  const MIX = { QB: 0.35, RB: 0.4, WR: 0.4, TE: 0.5, OT: 1, IOL: 1, EDGE: 0.25, IDL: 0.3, LB: 0.45, CB: 0.5, S: 0.5, K: 0, P: 0, LS: 0 };
   P.MIX = MIX;
   function prodScore(W, s, g) {
     const b = W.base || { rush: 0, rec: 0 }, gm = Math.max(1, s.games);
@@ -123,21 +123,30 @@
     }
   }
   const DEF_G = new Set(["EDGE", "IDL", "LB", "CB", "S"]);
+  // Production counts three seasons: this one fully, last season at 70%, the one before at 40%, each judged against
+  // its own season's league averages, so a star who's hurt or off to a slow start keeps his track record
+  const PROD_W = [1, 0.7, 0.4];
   P.buildRatings = W => {
     const ci = {}; if (W.stats) W.stats.cols.forEach((c, i) => { ci[c] = i; });
-    const statOf = id => { const v = W.stats && W.stats.p[id]; if (!v) return null; const o = {}; for (const k in ci) o[k] = v[ci[k]]; return o; };
-    // league-average EPA per carry and per target
-    if (W.stats) {
+    const seasons = W.stats ? [W.stats.p].concat([W.season - 1, W.season - 2].map(y => (W.stats.prev || {})[y] || {})) : [];
+    const bases = seasons.map(tab => {                       // league-average EPA per carry and per target, by season
       let c = 0, re = 0, t = 0, ce = 0;
-      for (const v of Object.values(W.stats.p)) { c += v[ci.carries]; re += v[ci.rushing_epa]; t += v[ci.targets]; ce += v[ci.receiving_epa]; }
-      W.base = { rush: c ? re / c : 0, rec: t ? ce / t : 0 };
-    }
+      for (const v of Object.values(tab)) { c += v[ci.carries]; re += v[ci.rushing_epa]; t += v[ci.targets]; ce += v[ci.receiving_epa]; }
+      return { rush: c ? re / c : 0, rec: t ? ce / t : 0 };
+    });
+    W.base = bases[0] || { rush: 0, rec: 0 };
+    const statIn = (tab, id) => { const v = tab[id]; if (!v) return null; const o = {}; for (const k in ci) o[k] = v[ci[k]]; return o; };
     const raw = {};                       // id -> { on, onN, prod, prodN }
     for (const p of W.players) {
-      const g = P.group(p), r = W.rating && W.rating.p[p.id], s = statOf(p.id), o = {};
+      const g = P.group(p), r = W.rating && W.rating.p[p.id], o = {};
       if (r) { const def = DEF_G.has(g); o.on = def ? r[1] : r[0]; o.onN = def ? r[3] : r[2]; }
-      const pr = s ? prodScore(W, s, g) : null;
-      if (pr) { o.prod = pr.v; o.prodN = pr.n; o.prodK = pr.k; }
+      let sw = 0, sv = 0, k = 0;
+      seasons.forEach((tab, i) => {
+        const st = statIn(tab, p.id); if (!st) return;
+        const pr = prodScore({ base: bases[i] }, st, g); if (!pr) return;
+        sw += PROD_W[i] * pr.n; sv += PROD_W[i] * pr.n * pr.v; k = pr.k;
+      });
+      if (sw > 0) { o.prod = sv / sw; o.prodN = sw; o.prodK = k; }
       raw[p.id] = o;
     }
     // standardize within position (players with real samples set the scale)
@@ -401,7 +410,7 @@
   // Quarterbacks carry a 10% premium on top, and the contract bonus is capped at half the talent value, which puts
   // prime starters near three firsts and older ones near two (Watson, Wilson, Stafford). Calibrated so top receivers land where A.J. Brown, Davante Adams and Tyreek Hill did: a first
   // plus a day-two pick, 350-450 points.
-  const TV_PTS = 9, TV_DISC = 0.85, REPL = 0.64, AFTER = 0.6, TV_SUR = 0.6, TV_OVER = 0.35, QB_PREMIUM = 1.1, TV_CURVE = 2.0;
+  const TV_PTS = 5.0, TV_DISC = 0.85, REPL = 0.64, AFTER = 0.6, TV_SUR = 0.6, TV_OVER = 0.35, QB_PREMIUM = 1.1, TV_CURVE = 2.4;
   // when: "now" (before this season's trade deadline: the rest of this season, then two more), "pre" or "post" (the
   // next offseason, before or after June 1: the next three seasons). The June 1 choice only moves the old team's dead
   // money, not what he's worth.
@@ -464,16 +473,18 @@
     while (left > 15 && out.length < 4) { const n = P.pickForPoints(Math.min(1000, left)); out.push(n); left -= P.pickPoints(n); if (pts < 1000) break; }
     return out;
   };
-  // A price in round terms. Up to about the No. 12 pick it's one pick ("a late second, about No. 50"); above that,
-  // how many average firsts and seconds it adds up to ("two firsts and a second"), the way big trades are described.
+  // A price in round terms. Up to about the No. 16 pick it's one pick ("a late second, about No. 50"); above that, how
+  // many firsts and seconds it adds up to, counted the way contenders pay: a typical first a buyer sends sits around
+  // No. 24 (the Bears' two firsts for Jeffery Simmons were expected in the 20s), a typical second around No. 56.
+  P.FIRST = 24; P.SECOND = 56; P.THIRD = 88;
   P.roundAvg = r => { let t = 0; for (let n = (r - 1) * 32 + 1; n <= r * 32; n++) t += P.pickPoints(n); return t / 32; };
   P.priceText = pts => {
-    const words = ["no", "a", "two", "three", "four", "five", "six"];
+    const words = ["no", "a", "two", "three", "four", "five", "six", "seven"];
     if (pts <= 15) return { short: "Nothing", long: "next to nothing", single: 262 };
-    if (pts <= P.pickPoints(12)) { const n = P.pickForPoints(pts); return { short: P.pickLabel(n).replace(/^an? /, "").replace(/^\w/, c => c.toUpperCase()), long: P.pickLabel(n) + (n > 1 ? " (about No. " + n + ")" : ""), single: n }; }
-    const a1 = P.roundAvg(1), a2 = P.roundAvg(2), a3 = P.roundAvg(3);
+    if (pts <= P.pickPoints(16)) { const n = P.pickForPoints(pts); return { short: P.pickLabel(n).replace(/^an? /, "").replace(/^\w/, c => c.toUpperCase()), long: P.pickLabel(n) + (n > 1 ? " (about No. " + n + ")" : ""), single: n }; }
+    const a1 = P.pickPoints(P.FIRST), a2 = P.pickPoints(P.SECOND), a3 = P.pickPoints(P.THIRD);
     let n1 = Math.floor(pts / a1), rem = pts - n1 * a1;
-    if (rem > 0.75 * a1) { n1++; rem = 0; }
+    if (rem > 0.6 * a1) { n1++; rem = 0; }
     let n2 = Math.floor(rem / a2), rem2 = rem - n2 * a2;
     if (rem2 > 0.6 * a2) { n2++; rem2 = 0; }
     const n3 = n2 === 0 && rem2 > 0.6 * a3 ? 1 : 0;

@@ -239,6 +239,22 @@ def main():
                 stats["p"][r["player_id"]] = v
     except Exception as e:
         print("player stats unavailable:", e)
+    # the two seasons before, for the rating's production part (players on a roster now only)
+    ids = {p["id"] for p in players}
+    stats["prev"] = {}
+    for back in (1, 2):
+        yr = SEASON - back
+        try:
+            got = {}
+            for r in csv.DictReader(io.StringIO(fetch(f"stats_player/stats_player_reg_{yr}.csv"))):
+                if r["player_id"] not in ids:
+                    continue
+                v = [round(num(r.get(k)), 2) for k in STAT]
+                if v[0] > 0:
+                    got[r["player_id"]] = v
+            stats["prev"][str(yr)] = got
+        except Exception as e:
+            print(f"{yr} player stats unavailable:", e)
 
     # ---------- game logs for the player cards (loaded only when a card opens) ----------
     WK = ["attempts", "completions", "passing_yards", "passing_tds", "passing_interceptions", "carries", "rushing_yards", "rushing_tds",
@@ -268,7 +284,7 @@ def main():
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(out, separators=(",", ":")) + "\n", encoding="utf-8")
     withc = sum(1 for p in players if p.get("c"))
-    print(f"NFL {SEASON} week {week}: {len(players)} players ({withc} with contracts), depth charts for {len(depth)} teams, {len(games)} games, stats for {len(stats['p'])}")
+    print(f"NFL {SEASON} week {week}: {len(players)} players ({withc} with contracts), depth charts for {len(depth)} teams, {len(games)} games, stats for {len(stats['p'])} (+{', '.join(f"{k}: {len(v)}" for k, v in stats.get('prev', {}).items())})")
 
 
 if __name__ == "__main__":

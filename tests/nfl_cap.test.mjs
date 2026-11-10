@@ -175,8 +175,12 @@ test('needs, fits, cap casualties and round-based prices', () => {
   const cc = P.casualties(W, W.season + 1);
   assert.ok(cc.length > 10 && cc.every((x, i) => i === 0 || x.lik <= cc[i - 1].lik));
   assert.ok(!cc.some(x => /^(K|P|LS)$/.test(P.group(x.p))));
-  assert.match(P.priceText(P.roundAvg(1) * 2).long, /^two firsts/);
-  assert.match(P.priceText(P.roundAvg(1) + P.roundAvg(2)).long, /^a first and a second/);
+  assert.match(P.priceText(P.pickPoints(P.FIRST) * 2).long, /^two firsts/);
+  assert.match(P.priceText(P.pickPoints(P.FIRST) * 2 + P.pickPoints(P.SECOND)).long, /^two firsts and a second/);
+  // calibration anchors from 2026: Simmons went for two late firsts and a fourth
+  const W2 = P.init(C2.newWorld(read('nfl/data/league.json'), read('nfl/data/teamcap.json'), read('nfl/data/rating.json')));
+  const simmons = W2.players.find(p => p.n === 'Jeffery Simmons');
+  if (simmons) { const pts = P.tradeValue(W2, simmons, 'now').pts; assert.ok(pts > 330 && pts < 600, 'Simmons ' + pts); }
   assert.match(P.priceText(P.pickPoints(50)).long, /second/);
 });
 
