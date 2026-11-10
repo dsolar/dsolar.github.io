@@ -1,0 +1,48 @@
+# Re-runs a GitHub Pages publish that failed because another publish was still in progress.
+# The daily data workflows commit to main on their own schedules; when two pushes land within a minute or so, the
+# second publish fails ("in progress deployment") and the site stays on the older version. This waits for the
+# earlier publish to finish, then re-runs the newest publish (which carries every change before it).
+# Runs after each publish, and hourly as a backstop.
+name: Pages retry
+
+on:
+  workflow_run:
+    workflows: ["pages build and deployment"]
+    types: [completed]
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: pages-retry
+  cancel-in-progress: false
+
+jobs:
+  retry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'failure'
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Re-run the newest publish if it failed
+        run: |
+          set -euo pipefail
+          for i in 1 2 3 4 5 6; do
+            # the newest publish run (it includes every earlier commit)
+            read -r id status conclusion attempt <<<"$(gh run list --workflow pages-build-deployment -L 1 \
+              --json databaseId,status,conclusion,attempt -q '.[0] | "\(.databaseId) \(.status) \(.conclusion) \(.attempt)"')"
+            echo "newest publish: run $id, $status, ${conclusion:-none}, attempt $attempt"
+            if [ "$status" != "completed" ]; then echo "Still publishing; nothing to do."; exit 0; fi
+            if [ "$conclusion" != "failure" ]; then echo "Published fine."; exit 0; fi
+            if [ "$attempt" -ge 4 ]; then echo "Already retried three times; leaving it for a person."; exit 1; fi
+            # give the publish it collided with time to finish, then try again
+            sleep 90
+            if gh run rerun "$id"; then echo "Re-ran run $id."; exit 0; fi
+            sleep 30
+          done

@@ -375,17 +375,16 @@ window.PROJECTS = [
   },
   {
     title: "NFL Hub",
-    line: "Playoff odds by division, depth charts, player rankings, an offseason cap planner",
+    line: "Playoff odds, player ratings, trade values and an offseason you can play out",
     tag: "Updated every day",
     type: "Simulations",
     released: "2026-11",
     url: "nfl/",
-    action: "Open the planner",
-    question: "What happens to a team's cap if it cuts, trades, restructures or extends, and who should it be?",
-    summary: "The rest of the season played out thousands of times from the betting market's spreads, with every division's projected records and playoff odds. Every depth chart, player rankings with stats and game logs, and every team's contracts year by year from Over The Cap's data via nflverse: the dead money and savings behind every cut, trade, restructure and extension, an offseason planner that stacks moves, and suggestions with the cap math for each.",
-    facts: [["6,000", "simulated seasons"], ["32", "depth charts and cap sheets"], ["2,600", "contracts by year"]],
+    action: "Open the hub",
+    question: "What would it take to trade for a star, and what should every team do with its cap this offseason?",
+    summary: "The rest of the season played out thousands of times from the betting market's spreads, with every division's projected records and playoff odds. A player rating built from play-by-play plus-minus and three seasons of production, every depth chart and every contract year by year from Over The Cap's data via nflverse. Price any player in draft picks and build the deal from both teams' picks, see each team's needs and likely cap casualties, and play out a team's whole offseason: cuts, tags, free agency against rival bids, and a mock draft.",
+    facts: [["6,000", "simulated seasons"], ["2,600", "contracts by year"], ["32", "offseasons to play"]],
     stack: ["JavaScript", "Python"],
-    hidden: true,
     cover: { image: "assets/covers/nfl-hub.svg", bg: "#F5F4F0", band: "#013369" }
   }
 ];
