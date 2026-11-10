@@ -135,3 +135,21 @@ test('next contracts and tags: comparable deals, years capped by age, only real 
   const pk = P.picksIn(W, 'NE', W.season + 2);
   assert.ok(pk.length >= 5 && pk.every((x, i) => i === 0 || x.en >= pk[i - 1].en));
 });
+
+test('trade value: pick chart, better players cost more, packages reach the price', () => {
+  const C2 = require('../nfl/lib/cap.js'), P = require('../nfl/lib/plan.js'), S = require('../nfl/lib/season.js');
+  const d = read('draft/nfl.json');
+  const W = P.init(C2.newWorld(read('nfl/data/league.json'), read('nfl/data/teamcap.json'), read('nfl/data/rating.json')));
+  W.draft = d.order; W.future = d.future; W.sim = S.simulate(W.games, Object.keys(S.divOf), { sims: 300, seed: 5 });
+  near(P.pickPoints(1), 1000);
+  assert.ok(P.pickPoints(10) > P.pickPoints(32) && P.pickPoints(32) > P.pickPoints(100));
+  assert.ok(P.pickPoints(20, 1) < P.pickPoints(20));
+  for (const pts of [50, 200, 450, 900]) { const n = P.pickForPoints(pts); assert.ok(P.pickPoints(n) >= pts && P.pickPoints(n + 1) < pts); }
+  // the same player, rated higher, costs more
+  const p = W.players.find(x => P.group(x) === 'WR' && C2.lastYear(x) >= W.season + 2 && P.role(W, x) > 0.7);
+  const a = P.tradeValue(W, p).pts;
+  W.quality[p.id] = { ...W.quality[p.id], z: W.quality[p.id].z + 1, mult: W.quality[p.id].mult + 0.45 };
+  assert.ok(P.tradeValue(W, p).pts > a);
+  const pk = P.packages(W, 'NE', 300);
+  assert.ok(pk.list.length >= 1 && pk.list.every(x => x.sum >= 285 && x.picks.length <= 4));
+});

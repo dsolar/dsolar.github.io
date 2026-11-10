@@ -85,8 +85,8 @@
   // The same thing on the rating's own scale (standard deviations; 50 + 15z on screen)
   P.ratingZ = (W, p, y) => Math.max(-3, Math.min(3.25, zAt(W, p, y)));
   P.PEAK = PEAK;
-  P.value = (W, p, y) => {
-    const g = P.group(p), sh = P.share(W, p), age = (p.age || 26) + (y - W.season);
+  P.value = (W, p, y, shareOverride) => {
+    const g = P.group(p), sh = shareOverride != null ? shareOverride : P.share(W, p), age = (p.age || 26) + (y - W.season);
     const role = W.price[g] * Math.pow(sh, 1.25) * P.multAt(W, p, y);
     if (P.rookieDeal(p) || !p.c || !p.c.apy) return role;
     const grown = p.c.apy * Math.pow(1.07, Math.max(0, W.season - (p.c.signed || W.season)));
@@ -179,12 +179,19 @@
   // deals), nearest to him in rating, age at signing and playing time (starters compared with starters). The average per year leans 70/30 on what they
   // got (grown with the cap) and on his own value that season (60/25/15 for a veteran, with his last deal as the third part); years and the guaranteed share are theirs, with years
   // capped by age (one year at 33 or older, two at 31-32, three at 30). y is the first season of the new deal.
+  // His healthy role: this season's snap share, or a starter's if he's first on the depth chart or was a regular over the
+  // last two seasons (injured stars shouldn't be priced as backups)
+  P.role = (W, q) => {
+    W._role = W._role || {};
+    if (W._role[q.id] != null) return W._role[q.id];
+    const r = W.rating && W.rating.p[q.id], plays = r ? Math.max(r[2], r[3]) : 0;
+    return (W._role[q.id] = Math.min(1, Math.max(P.share(W, q), P.depthRank(W, q) === 1 ? 0.8 : 0, plays >= 600 ? 0.8 : 0)));
+  };
   P.contract = (W, p, y) => {
     W._ce = W._ce || {};
     const key = p.id + ":" + y;
     if (W._ce[key]) return W._ce[key];
-    W._role = W._role || {};
-    const role = q => W._role[q.id] != null ? W._role[q.id] : (W._role[q.id] = Math.max(P.share(W, q), P.depthRank(W, q) === 1 ? 0.8 : 0));
+    const role = q => P.role(W, q);
     const g = P.group(p), age = (p.age || 26) + (y - W.season), z = P.ratingZ(W, p, y), sh = role(p);
     if (!W._pool) {
       W._pool = {};
@@ -209,8 +216,8 @@
       yrs.push([c.yrs, w]); gs += w * Math.min(1, (c.gtd || 0) / (c.value || c.apy * c.yrs));
     }
     const min = C.minSalary(p.exp || 0, y) * Math.pow(1.07, 0);
-    const compApy = wsum ? Math.exp(lap / wsum) : P.value(W, p, y);
-    const v = Math.max(min, P.value(W, p, y));
+    const compApy = wsum ? Math.exp(lap / wsum) : P.value(W, p, y, sh);
+    const v = Math.max(min, P.value(W, p, y, sh));
     // a veteran's last deal anchors the talks a little (aged forward with him)
     const vet = p.c && p.c.apy && !P.rookieDeal(p) ? p.c.apy * Math.pow(1.07, y - (p.c.signed || W.season)) * P.multAt(W, p, y) / P.quality(W, p).mult : null;
     let apy = Math.max(min, vet ? Math.exp(0.6 * Math.log(compApy) + 0.25 * Math.log(v) + 0.15 * Math.log(Math.max(min, vet))) : Math.exp(0.7 * Math.log(compApy) + 0.3 * Math.log(v)));
@@ -369,6 +376,76 @@
     }
     return out.sort((a, b) => b.score - a.score);
   };
+  // ---------- trade value: what picks it takes to get a player ----------
+  // Draft picks in points on a modern trade chart (No. 1 = 1000, No. 10 about 470, No. 32 about 210, No. 64 about 90,
+  // No. 100 about 40), the shape teams' recent pick-for-pick trades follow. A pick a year out is worth 85% of its
+  // expected spot.
+  P.pickPoints = (n, yearsOut) => 1000 * Math.exp(-0.2 * Math.pow(Math.max(1, n) - 1, 0.6)) * Math.pow(0.85, yearsOut || 0);
+  P.pickForPoints = pts => { if (pts >= 1000) return 1; let lo = 1, hi = 262; while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (P.pickPoints(mid) >= pts) lo = mid; else hi = mid; } return lo; };
+  // A player in the same points. The trade market pays for talent above what's easy to find: his position's starter
+  // price, times his healthy role, times how far his rating multiplier sits above a replacement-level player's (a
+  // rating of about 38), over the next three seasons with aging. Seasons he's under contract count fully; seasons
+  // after, 60% (the new team gets first crack at re-signing him, but at market price). Then the contract: each
+  // season under contract adds 60% of what his market price (from comparable deals) exceeds what he's paid, or takes
+  // away 60% of what he's overpaid (veteran deals at their average per year, since back-loaded cap numbers are rarely all paid).
+  // Quarterbacks carry a 40% premium on top: they go for more picks than their salaries alone suggest (Stafford,
+  // Wilson, Watson). Calibrated so top receivers land where A.J. Brown, Davante Adams and Tyreek Hill did: a first
+  // plus a day-two pick, 350-450 points.
+  const TV_PTS = 9, TV_DISC = 0.85, REPL = 0.64, AFTER = 0.6, TV_SUR = 0.6, QB_PREMIUM = 1.4;
+  P.tradeValue = (W, p, y) => {
+    y = y || W.season + 1;
+    const g = P.group(p), last = C.lastYear(p) || W.season, rows = [];
+    const healthy = P.role(W, p);
+    const est = P.contract(W, p, Math.max(y, last + 1));
+    let talent = 0, surplus = 0;
+    for (let i = 0; i < 3; i++) {
+      const yy = y + i, d = Math.pow(TV_DISC, i);
+      const under = yy <= last && p.c && p.c.rows[yy] && !p.c.rows[yy][C.R.void];
+      const above = W.price[g] * Math.pow(healthy, 1.25) * Math.max(0, P.multAt(W, p, yy) - REPL);
+      const market = P.contract(W, p, yy).apy;
+      const cost = !under ? market : P.rookieDeal(p) ? C.capHit(p, yy) : Math.min(C.capHit(p, yy), (p.c.apy || 0));
+      talent += d * above * (under ? 1 : AFTER) * (g === "QB" ? QB_PREMIUM : 1);
+      if (under) surplus += d * TV_SUR * (market - cost);
+      rows.push({ y: yy, above, market, cost, under });
+    }
+    const dollars = talent + surplus;
+    return { pts: dollars * TV_PTS, dollars, talent, surplus, rows, last, est, freeAgent: last < y };
+  };
+  // A points total as picks: the single pick it matches, or above the No. 1 pick, No. 1 plus what's left
+  P.pointsAsPicks = pts => {
+    const out = []; let left = pts;
+    while (left > 15 && out.length < 4) { const n = P.pickForPoints(Math.min(1000, left)); out.push(n); left -= P.pickPoints(n); if (pts < 1000) break; }
+    return out;
+  };
+  // Plain-English name for a pick number
+  P.pickLabel = n => n === 1 ? "the No. 1 pick" : n <= 3 ? "a top-3 pick" : n <= 10 ? "a top-10 pick" : n <= 21 ? "a mid first" : n <= 32 ? "a late first" : n <= 48 ? "an early second" : n <= 64 ? "a late second" :
+    n <= 100 ? "a third" : n <= 140 ? "a fourth" : n <= 180 ? "a fifth" : n <= 220 ? "a sixth" : "a seventh";
+  // The cheapest ways a team could pay it from its own picks (this draft and next): every set of up to four picks (six
+  // for the biggest prices)
+  // worth at least 95% of the target, ranked by how little they overpay (and fewer picks first)
+  P.packages = (W, code, pts) => {
+    const pool = [];
+    [W.season + 1, W.season + 2].forEach((yr, k) => P.picksIn(W, code, yr).forEach(pk => pool.push(Object.assign({ yr, pts: P.pickPoints(pk.en, k) }, pk))));
+    pool.sort((a, b) => b.pts - a.pts);
+    const MAXP = pts > 700 ? 6 : 4, top = pool.slice(0, pts > 700 ? 12 : 14), out = [];
+    const rec = (i, chosen, sum) => {
+      if (sum >= pts * 0.95) { out.push({ picks: chosen.slice(), sum }); return; }
+      if (chosen.length >= MAXP || i >= top.length) return;
+      for (let j = i; j < top.length; j++) { chosen.push(top[j]); rec(j + 1, chosen, sum + top[j].pts); chosen.pop(); }
+    };
+    if (pts > 0) rec(0, [], 0);
+    const score = x => Math.abs(x.sum / pts - 1) + 0.05 * x.picks.length;
+    out.sort((a, b) => score(a) - score(b));
+    // a few different shapes: the closest fit, one without this year's first, one that leans on next year
+    const pick = [], seen = new Set();
+    const add = x => { if (!x) return; const k = x.picks.map(q => q.yr + ":" + q.en).join(","); if (!seen.has(k)) { seen.add(k); pick.push(x); } };
+    add(out[0]);
+    add(out.find(x => !x.picks.some(q => q.yr === W.season + 1 && q.round === 1)));
+    add(out.find(x => x.picks.filter(q => q.yr === W.season + 2).length >= x.picks.length / 2));
+    add(out.find(x => x.picks.length === 1));
+    return { list: pick.slice(0, 4), pool, enough: pool.reduce((a, q) => a + q.pts, 0) >= pts * 0.95 };
+  };
+
   // Team strength ahead. This season's rating (from the market and results) carries forward only partly; NFL teams
   // regress hard year to year. The rest comes from what's under contract that year (each player's rough value,
   // aging), the draft class, and the cap space left to add talent, priced at about half its face value.

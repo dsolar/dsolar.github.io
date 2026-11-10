@@ -87,9 +87,9 @@
       var on = a.dataset.tab === state.route || (a.dataset.tab === "teams" && state.route === "team") || (a.dataset.tab === "cap" && state.route === "league");
       if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
-    ({ standings: standingsPage, power: powerPage, fa: faPage, teams: teamsPage, team: teamPage, players: playersPage, cap: leaguePage, league: leaguePage, method: methodPage }[state.route] || standingsPage)();
+    ({ standings: standingsPage, power: powerPage, fa: faPage, teams: teamsPage, team: teamPage, players: playersPage, trade: tradePage, cap: leaguePage, league: leaguePage, method: methodPage }[state.route] || standingsPage)();
   }
-  window.addEventListener("hashchange", render);
+  window.addEventListener("hashchange", function () { if (card && card.open) card.close(); render(); });
 
   // ---------- league ----------
   function leaguePage() {
@@ -280,6 +280,79 @@
     return html;
   }
 
+  // ---------- trade value: pick a player, see what picks it takes to get him ----------
+  function pickChip(pk, code) {
+    return '<span class="pchip' + (pk.yr > W.season + 1 ? " fut" : "") + '"><b>' + pk.yr + " R" + pk.round + "</b> No. " + pk.en + (pk.from !== code ? " <small>via " + esc(pk.from) + "</small>" : "") + "</span>";
+  }
+  function asPicksText(pts) {
+    var ns = P.pointsAsPicks(pts);
+    if (!ns.length) return "next to nothing";
+    if (pts < 1000) return ns[0] === 1 ? "the No. 1 pick" : P.pickLabel(ns[0]) + " (about No. " + ns[0] + ")";
+    return "more than the No. 1 pick: about No. 1 plus " + ns.slice(1).map(function (n) { return P.pickLabel(n) + " (No. " + n + ")"; }).join(" and ");
+  }
+  function tvAll() {
+    if (W._tvAll) return W._tvAll;
+    W._tvAll = W.players.filter(function (p) { return p.c && p.st !== "DEV" && C.lastYear(p) > W.season && P.role(W, p) >= 0.5 && P.quality(W, p).z > -0.5; })
+      .map(function (p) { return { p: p, tv: P.tradeValue(W, p) }; });
+    return W._tvAll;
+  }
+  function pickCurve(marks) {
+    var w = Math.max(340, Math.min(1100, (view.clientWidth || 900) - 24)), h = w < 600 ? 170 : 220, padL = 40, padB = 24, X = function (n) { return padL + Math.sqrt((n - 1) / 259) * (w - padL - 10); }, Y = function (v) { return 8 + (1 - v / 1000) * (h - padB - 8); };
+    var d = ""; for (var n = 1; n <= 260; n += (n < 40 ? 1 : 4)) d += (d ? "L" : "M") + X(n).toFixed(1) + "," + Y(P.pickPoints(n)).toFixed(1);
+    var svg = '<svg class="pcurve" viewBox="0 0 ' + w + " " + h + '" role="img" aria-label="Draft pick value chart">';
+    [0, 250, 500, 750, 1000].forEach(function (v) { svg += '<line x1="' + padL + '" x2="' + (w - 10) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" class="grid"/><text x="' + (padL - 6) + '" y="' + (Y(v) + 4) + '" text-anchor="end">' + v + "</text>"; });
+    [1, 10, 32, 64, 100, 160, 224].forEach(function (n) { svg += '<text x="' + X(n) + '" y="' + (h - 6) + '" text-anchor="middle">' + n + "</text>"; });
+    svg += '<path d="' + d + '" class="line"/>';
+    (marks || []).forEach(function (mk) {
+      if (mk.kind === "player") { var n = Math.max(1, mk.n); svg += '<line x1="' + X(n) + '" x2="' + X(n) + '" y1="' + Y(Math.min(1000, mk.pts)) + '" y2="' + (h - padB) + '" class="mk"/><circle cx="' + X(n) + '" cy="' + Y(Math.min(1000, mk.pts)) + '" r="6" class="mkdot"/><text x="' + (X(n) + 9) + '" y="' + (Y(Math.min(1000, mk.pts)) - 6) + '" class="mklab">' + esc(mk.label) + "</text>"; }
+      else svg += '<circle cx="' + X(mk.n) + '" cy="' + Y(mk.pts) + '" r="4" class="pk' + (mk.fut ? " fut" : "") + '"><title>' + esc(mk.label) + "</title></circle>";
+    });
+    return svg + "</svg>";
+  }
+  function tradePage() {
+    var id = state.q.p, p = id && W.byId[id], buyer = state.q.t && TEAMS[state.q.t] ? state.q.t : null;
+    var html = '<h2 class="sec">Trade value</h2><p class="lede">Pick a player and the team trading for him. He\'s priced in draft picks: what he\'s worth on the field over the next three seasons above a replacement-level player (aging included), adjusted for what he\'s paid against his market, on the same kind of chart teams use to trade picks for picks. Then it finds the packages the buying team could actually pay from its own picks.</p>';
+    var opts = W.players.filter(function (q) { return q.c && q.st !== "DEV"; }).sort(function (a, b) { return a.n.localeCompare(b.n); });
+    html += '<div class="controls"><label class="grow">Player<input list="tvlist" data-tradep placeholder="Type a name" value="' + (p ? esc(p.n + " · " + p.t + " " + posOf(p)) : "") + '"><datalist id="tvlist">' + opts.map(function (q) { return '<option value="' + esc(q.n + " · " + q.t + " " + posOf(q)) + '">'; }).join("") + "</datalist></label>" +
+      '<label>Trading for him<select data-q="t"><option value="">Pick a team</option>' + codes().filter(function (c) { return !p || c !== p.t; }).map(function (c) { return '<option value="' + c + '"' + (c === buyer ? " selected" : "") + ">" + esc(team(c).name) + "</option>"; }).join("") + "</select></label></div>";
+    if (!p) {
+      var all = tvAll().slice().sort(function (a, b) { return b.tv.pts - a.tv.pts; });
+      html += tablePanel("Most valuable trade assets", "<th>#</th><th class=\"lft\">Player</th><th>Team</th><th>Pos</th><th>Age</th><th>Rating</th><th>Signed through</th><th>Worth in picks</th><th>Points</th>",
+        all.slice(0, 40).map(function (x, i) { var n = P.pickForPoints(x.tv.pts); return "<tr><td>" + (i + 1) + '</td><td class="lft"><a class="plink" href="' + href("trade", { p: x.p.id }) + '">' + face(x.p, 22) + " " + esc(x.p.n) + '</a></td><td class="tm">' + logo(x.p.t, 18) + '<span class="nm">' + esc(x.p.t) + "</span></td><td>" + esc(posOf(x.p)) + "</td><td>" + Math.floor(x.p.age || 0) + "</td><td>" + scoreChip(x.p) + "</td><td>" + C.lastYear(x.p) + '</td><td data-v="' + x.tv.pts.toFixed(0) + '">' + (x.tv.pts >= 1000 ? "No. 1 + " + esc(P.pickLabel(P.pointsAsPicks(x.tv.pts)[1] || 262).replace(/^an? /, "")) : n === 1 ? "The No. 1 pick" : esc(P.pickLabel(n)) + " <small class=\"note\">No. " + n + "</small>") + "</td><td>" + Math.round(x.tv.pts) + "</td></tr>"; }).join(""), "under contract past this season; tap one to price him");
+      var worst = all.slice().sort(function (a, b) { return a.tv.pts - b.tv.pts; }).filter(function (x) { return x.tv.pts < 0; }).slice(0, 12);
+      if (worst.length) html += tablePanel("Hardest contracts to move", "<th class=\"lft\">Player</th><th>Team</th><th>Pos</th><th>Age</th><th>Rating</th><th>Per year</th><th>Signed through</th><th>A team would want</th>",
+        worst.map(function (x) { var n = P.pickForPoints(-x.tv.pts); return '<tr><td class="lft"><a class="plink" href="' + href("trade", { p: x.p.id }) + '">' + face(x.p, 22) + " " + esc(x.p.n) + '</a></td><td class="tm">' + logo(x.p.t, 18) + '<span class="nm">' + esc(x.p.t) + "</span></td><td>" + esc(posOf(x.p)) + "</td><td>" + Math.floor(x.p.age || 0) + "</td><td>" + scoreChip(x.p) + "</td><td>" + m(x.p.c.apy) + "</td><td>" + C.lastYear(x.p) + '</td><td data-v="' + x.tv.pts.toFixed(0) + '">' + esc(P.pickLabel(n)) + ' <small class="note">to take him</small></td></tr>'; }).join(""), "paid well past what his play is worth");
+      view.innerHTML = html; return;
+    }
+    var tv = P.tradeValue(W, p), pts = tv.pts, n1 = P.pickForPoints(Math.max(1, pts)), g = P.group(p);
+    html += '<div class="panel tvcard"><div class="tv-top">' + face(p, 64) + '<div><h3><button type="button" class="linkish" data-p="' + esc(p.id) + '">' + esc(p.n) + "</button></h3><div class=\"meta\">" + esc(team(p.t).name) + " · " + esc(posOf(p)) + " · age " + Math.floor(p.age || 0) + " · " + (p.c ? m(p.c.apy) + " a year through " + tv.last : "no contract") + '</div></div><div class="tv-rt">' + scoreChip(p) + "</div></div>";
+    if (tv.freeAgent) html += '<p class="tv-verdict">His deal ends after ' + tv.last + ', so this offseason he\'s a free agent, not a trade target: signing him should take about <b>' + tv.est.yrs + " year" + (tv.est.yrs > 1 ? "s" : "") + ", " + m(tv.est.total) + "</b> (" + m(tv.est.apy) + " a year, " + m(tv.est.gtd) + ' guaranteed).</p><p class="note">If his team tags him to trade him, his value would be about ' + esc(asPicksText(pts)) + ".</p>";
+    else if (pts <= 0) html += '<p class="tv-verdict">His contract is a burden: a team would want about <b>' + esc(asPicksText(-pts)) + "</b> to take him on.</p>";
+    else html += '<p class="tv-verdict">It would take about <b>' + esc(asPicksText(pts)) + '</b>.</p><p class="note">' + Math.round(pts) + " points on the pick chart (No. 1 = 1000).</p>";
+    // the season-by-season build
+    html += '<div class="scroll"><table class="t tvrows"><thead><tr><th>Season</th><th>Status</th><th>Worth above replacement</th><th>His market price</th><th>He\'s paid</th><th>Contract effect</th></tr></thead><tbody>' +
+      tv.rows.map(function (r) { return "<tr><td>" + r.y + "</td><td>" + (r.under ? "Under contract" : '<span class="note">Re-signed at market (counts 60%)</span>') + "</td><td>" + m(r.above * (g === "QB" ? 1.4 : 1)) + "</td><td>" + m(r.market) + "</td><td>" + (r.under ? m(r.cost) : "—") + '</td><td class="' + (r.under ? (r.market - r.cost >= 0 ? "pos" : "neg") : "") + '">' + (r.under ? sm(0.6 * (r.market - r.cost)) : "—") + "</td></tr>"; }).join("") +
+      '<tr class="tot"><td colspan="2">Total (later seasons discounted 15% a year)</td><td>' + m(tv.talent) + "</td><td></td><td></td><td>" + sm(tv.surplus) + "</td></tr></tbody></table></div>";
+    html += "</div>";
+    // packages from the buyer's picks
+    var marks = [{ kind: "player", n: n1, pts: Math.max(0, pts), label: p.n.split(" ").slice(-1)[0] + (pts >= 1000 ? " (above No. 1)" : "") }];
+    if (buyer && pts > 0 && !tv.freeAgent) {
+      var pk = P.packages(W, buyer, pts);
+      pk.pool.forEach(function (q) { marks.push({ kind: "pick", n: q.en, pts: q.pts, fut: q.yr > W.season + 1, label: team(buyer).name + " " + q.yr + " round " + q.round + ", No. " + q.en }); });
+      html += '<div class="panel"><h3>What the ' + esc(team(buyer).name) + " could offer <small>from their " + (W.season + 1) + " and " + (W.season + 2) + " picks, at their expected spots</small></h3>";
+      if (!pk.list.length) html += '<p class="note pad">' + (pk.enough ? "No package of " + (pts > 700 ? "six" : "four") + " or fewer picks gets there." : "Even every pick they own in the next two drafts falls short. It would take players too.") + "</p>";
+      else html += '<div class="pkgs">' + pk.list.map(function (x, i) {
+        var lab = i === 0 ? "Closest fit" : x.picks.length === 1 ? "One pick" : !x.picks.some(function (q) { return q.yr === W.season + 1 && q.round === 1; }) ? "Keeps this year's first" : "Leans on next year";
+        var pct = x.sum / pts;
+        return '<div class="pkg"><div class="pkg-h"><b>' + lab + '</b><span class="note">' + Math.round(x.sum) + " pts · " + (pct >= 1 ? Math.round((pct - 1) * 100) + "% over" : Math.round((1 - pct) * 100) + "% under") + '</span></div><div class="pkg-picks">' + x.picks.map(function (q) { return pickChip(q, buyer); }).join("") + '</div><div class="pkg-bar"><i style="width:' + Math.min(100, pct / 1.3 * 100).toFixed(1) + '%"></i><span style="left:' + (100 / 1.3).toFixed(1) + '%"></span></div></div>';
+      }).join("") + "</div>";
+      html += "</div>";
+    } else if (!buyer && !tv.freeAgent && pts > 0) html += '<p class="note">Pick the team trading for him to see packages from its own picks.</p>';
+    html += '<div class="panel"><h3>The pick chart <small>points by pick; ' + (buyer ? "dots are the " + esc(team(buyer).name) + "' picks (hollow: next year's, at 85%)" : "the marker is his price") + "</small></h3>" + pickCurve(marks) + "</div>";
+    html += '<p class="note">How it\'s priced: his position\'s starter price, times his healthy role, times how far his rating multiplier sits above a replacement-level player\'s (a rating near 38), for each of the next three seasons with aging. Seasons after his deal ends count 60%, since the new team only gets first crack at re-signing him at market price. Quarterbacks carry a 40% premium, as recent quarterback trades show. Each season under contract then adds 60% of what his market price (from comparable deals) beats his pay, or takes away 60% of what he\'s overpaid. The result is set so top receivers land where A.J. Brown, Davante Adams and Tyreek Hill did: a first plus a day-two pick. A model, not a scouting report: teams pay more for need and less for injury risk.</p>';
+    view.innerHTML = html;
+  }
+
   // ---------- power rankings ----------
   var RATINGS = null;
   function ratings() { if (!RATINGS) { RATINGS = {}; Object.keys(SIM.teams).forEach(function (t) { RATINGS[t] = SIM.teams[t].rating; }); } return RATINGS; }
@@ -408,6 +481,8 @@
     view.innerHTML = html;
   }
   view.addEventListener("change", function (e) {
+    var tp = e.target.closest("input[data-tradep]");
+    if (tp) { var hit = W.players.filter(function (q) { return q.n + " · " + q.t + " " + posOf(q) === tp.value; })[0]; if (hit) location.hash = href("trade", { p: hit.id, t: state.q.t && state.q.t !== hit.t ? state.q.t : null }); return; }
     var s = e.target.closest("select[data-goteam]");
     if (s) { location.hash = href("team/" + s.value, { v: state.q.v, y: state.q.y }); return; }
     var a = e.target.closest("select[data-act]");
@@ -578,7 +653,7 @@
     var t = team(p.t), c = p.c || {}, ys = Object.keys(c.rows || {}).map(Number).sort();
     var html = '<div class="card-h">' + face(p, 72) + "<div><h3>" + esc(p.n) + '</h3><div class="meta">' + logo(p.t, 18) + " " + esc(t.name) + " · " + esc(posOf(p)) + " · age " + (p.age ? Math.floor(p.age) : "—") + " · " + p.exp + " yrs exp" + (p.draft ? " · " + p.draft[0] + " pick " + p.draft[1] : "") + "</div></div></div>";
     html += '<div class="card-b"><div class="kv">' + "<div><b>" + (c.yrs ? c.yrs + " yr, " + m(c.value) : "—") + "</b><span>Contract (" + (c.signed || "—") + ")</span></div><div><b>" + m(c.apy) + "</b><span>Per year</span></div><div><b>" + m(c.gtd) + "</b><span>Guaranteed</span></div>" +
-      "<div><b>" + (p.snaps ? Math.round(P.share(W, p) * 100) + "%" : "—") + "</b><span>Snap share (" + (p.snaps ? p.snaps[3] + " g" : "none yet") + ")</span></div><div><b>" + m(P.value(W, p, W.season)) + "</b><span>Value / yr</span></div></div>" + ratingBlock(p) + nextDeal(p);
+      "<div><b>" + (p.snaps ? Math.round(P.share(W, p) * 100) + "%" : "—") + "</b><span>Snap share (" + (p.snaps ? p.snaps[3] + " g" : "none yet") + ")</span></div><div><b>" + m(P.value(W, p, W.season)) + "</b><span>Value / yr</span></div></div>" + ratingBlock(p) + nextDeal(p) + (p.c && C.lastYear(p) > W.season ? '<p class="tvlink"><a class="btn sm" href="' + href("trade", { p: p.id }) + '">What would it take to trade for him?</a></p>' : "");
     html += statBlock(p) + '<div id="glog"></div>';
     if (ys.length) {
       html += '<h4 class="card-sec">Contract year by year</h4><div class="scroll"><table class="t"><thead><tr><th>Year</th><th title="Base salary">Base</th><th title="Signing and option bonus money counted this year">Bonus</th><th title="Roster, workout and other bonuses">Other</th><th title="Guaranteed salary">Gtd</th><th>Cap hit</th><th title="Dead money if cut before June 1">Dead</th><th title="Cap saved by cutting him before June 1">Saves</th><th title="Cap saved with a post-June 1 cut">June 1</th></tr></thead><tbody>' + ys.map(function (y) {
@@ -687,7 +762,7 @@
       "<h3>Cap space ahead</h3><p>2026 and 2027 use Over The Cap's team cap, contracts and dead money, so the starting point matches theirs. 2028 on use a projected base cap (" + m(C.BASE[2028], 0) + " in 2028, up 7% a year) and only contracts signed today: no carryover, no new signings, no rookie classes, so later years look roomier than they will be.</p>" +
       "<h3>The player rating</h3><p>Two parts, each measured against the average player at his position. On the field: football's version of basketball's RAPM. Every run and pass from the last two seasons (2025 counted fully, 2024 half, garbage time left out) is explained by the 22 players on the field, using nflverse's participation data and each play's EPA, so every player gets a number for how much better his side does with him out there, separated from his teammates and opponents. A ridge penalty pulls everyone toward average, hardest for players with few snaps; its strength is set by how well it predicts plays it wasn't fit on. The 2026 participation file isn't published until the season ends, so this season comes in through the second part. This season: his box-score production per game (EPA per play for quarterbacks; yards, touchdowns and EPA against the average play for backs and receivers; pressure stats for pass rushers; tackles, plays on the ball and turnovers for linebackers and defensive backs), trusted more as the games add up. The mix leans on production where the box score sees a player well (65% for quarterbacks) and on the on-field number where it doesn't (all of it for offensive linemen). On the 0-100 scale, 50 is average and every 15 points is a standard deviation.</p>" +
       "<h3>Value</h3><p>His position's starter price (the average contract of the starting tier league-wide) times his snap share times a quality multiplier from the rating (0.3 for well below average up to 2.3), blended 70/30 with the market's own verdict, his contract average grown with the cap. Rookie deals say nothing about quality, so rookies get only the first part. Age takes a share off each later year, most at running back, least at quarterback.</p><h3>The rating ahead</h3><p>This season's rating already reflects how a player plays at his current age, so only future seasons move. Players short of their position's peak age (running backs about 26, corners 27, receivers, edge rushers and linebackers 28, tight ends and interior defenders 29, linemen 30, quarterbacks 32) gain a little each year until they reach it. Each year past the peak takes a share off, compounding: 12% a year at running back, 9% at corner, 3% at quarterback. Future values, free agent classes and future power rankings all use the aged rating, and each player card shows it for the next three seasons.</p>" +
-      "<h3>Suggestions</h3><p>Cut: saves at least 45% of his cap number and he's paid well over his value. Trade: saves at least $3M more than a release (the guarantees leave with him). Restructure: at least $5M of room on a starter with two or more years left. Extend: a starter 29 or younger in the last year of his deal. Expiring: starters whose deals end this season. Franchise tag: only real candidates, a starter rated 60 or better for next season, 30 or younger, whose market is at least 65% of the tag; most teams have none.</p><h3>Next contracts</h3><p>Every estimate comes from comparable deals: veterans at his position who signed in the last three years (no rookie deals), the six nearest to him in rating, age at signing and role, with starters compared only with starters. The per-year figure is 70% what they got (grown with the cap) and 30% his own value that season; for a veteran, his last deal takes 15% of it. Years are the comparable deals' middle length, capped by age: one year at 33 or older, two at 31-32, three at 30. Guarantees are the comparable deals' guaranteed share of the total. Hover any estimate to see the deals behind it, or open the player's card.</p></div>";
+      "<h3>Suggestions</h3><p>Cut: saves at least 45% of his cap number and he's paid well over his value. Trade: saves at least $3M more than a release (the guarantees leave with him). Restructure: at least $5M of room on a starter with two or more years left. Extend: a starter 29 or younger in the last year of his deal. Expiring: starters whose deals end this season. Franchise tag: only real candidates, a starter rated 60 or better for next season, 30 or younger, whose market is at least 65% of the tag; most teams have none.</p><h3>Trade value</h3><p>Picks are worth points on a modern trade chart: No. 1 is 1000, No. 10 about 470, No. 32 about 210, No. 64 about 90, No. 100 about 40; a pick a year out counts 85% of its expected spot. A player is priced in the same points from what he's worth over the next three seasons above a replacement-level player at his position (healthy role, aging included; seasons after his deal ends count 60%), plus or minus 60% of what he's under- or overpaid against his market, with a 40% premium for quarterbacks. Top receivers land at a first plus a day-two pick, where A.J. Brown, Davante Adams and Tyreek Hill went. The page then searches the buying team's own picks (next two drafts, expected spots) for the packages that come closest.</p><h3>Next contracts</h3><p>Every estimate comes from comparable deals: veterans at his position who signed in the last three years (no rookie deals), the six nearest to him in rating, age at signing and role, with starters compared only with starters. The per-year figure is 70% what they got (grown with the cap) and 30% his own value that season; for a veteran, his last deal takes 15% of it. Years are the comparable deals' middle length, capped by age: one year at 33 or older, two at 31-32, three at 30. Guarantees are the comparable deals' guaranteed share of the total. Hover any estimate to see the deals behind it, or open the player's card.</p></div>";
   }
 
   // ---------- sortable tables: tap a column header to sort by it, tap again to flip ----------
