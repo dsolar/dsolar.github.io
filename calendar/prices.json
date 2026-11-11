@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-10T07:28:55Z",
+ "updated": "2026-11-11T06:44:05Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -385,6 +385,10 @@
     [
      "2026-11-10",
      56
+    ],
+    [
+     "2026-11-11",
+     56
     ]
    ],
    "sg": null,
@@ -508,6 +512,10 @@
     ],
     [
      "2026-11-10",
+     22
+    ],
+    [
+     "2026-11-11",
      22
     ]
    ],
@@ -695,6 +703,10 @@
     [
      "2026-11-10",
      28
+    ],
+    [
+     "2026-11-11",
+     28
     ]
    ],
    "sg": null,
@@ -806,6 +818,10 @@
     ],
     [
      "2026-11-10",
+     22
+    ],
+    [
+     "2026-11-11",
      22
     ]
    ],
@@ -1027,34 +1043,43 @@
    "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-12-11-8-pm/concert/18634492",
    "src": null,
    "low": null
+  },
+  "espn-401892781": {
+   "history": [],
+   "sg": 18378516,
+   "title": "Bruins vs Jets",
+   "date": "2026-11-25",
+   "venue": "TD Garden",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892781/jets-bruins",
+   "src": null,
+   "low": null
   }
  },
  "misses": {
-  "tm-vv1k7Z_3OAG7I4tc": "2026-11-08",
-  "tm-G5vVZ_5R5G1f5": "2026-11-08",
-  "tm-vv1AeZkftGkdqDKq0": "2026-11-08",
-  "tm-G5vVZ_5RuGQjG": "2026-11-08",
-  "tm-vvG17Z_5wCylI9": "2026-11-08",
-  "tm-vv177Z_oGkXBnY-F": "2026-11-08",
-  "tm-vv177Z_oGkXBi8-I": "2026-11-08",
-  "tm-rZ7HnEZ1AfuNZ7": "2026-11-08",
-  "tm-rZ7HnEZ1AfuYF0": "2026-11-08",
-  "tm-vvG17Z_5wbduXe": "2026-11-08",
-  "tm-Z7r9jZ1A7PJaJ": "2026-11-08",
-  "tm-vvG17Z_u7Z_JCI": "2026-11-08",
-  "tm-Z7r9jZ1AAvx-I": "2026-11-08",
-  "tm-Z7r9jZ1AAvx-E": "2026-11-08",
-  "tm-rZ7HnEZ1Afugk7": "2026-11-08",
-  "tm-rZ7HnEZ1AfCA0f": "2026-11-08",
-  "tm-Z7r9jZ1AA77-E": "2026-11-08",
-  "tm-rZ7HnEZ1Af83q7": "2026-11-08",
-  "tm-rZ7HnEZ1Af83Q7": "2026-11-08",
-  "tm-rZ7HnEZ1Af83jf": "2026-11-08",
-  "tm-rZ7HnEZ1Af83jV": "2026-11-08",
-  "tm-rZ7HnEZ1Af83j7": "2026-11-08",
-  "tm-rZ7HnEZ1Af83Qf": "2026-11-08",
-  "tm-rZ7HnEZ1Af83j0": "2026-11-08",
-  "tm-rZ7HnEZ1Af83qf": "2026-11-08",
+  "tm-G5vVZ_5R5G1f5": "2026-11-11",
+  "tm-vv1AeZkftGkdqDKq0": "2026-11-11",
+  "tm-G5vVZ_5RuGQjG": "2026-11-11",
+  "tm-vvG17Z_5wCylI9": "2026-11-11",
+  "tm-vv177Z_oGkXBnY-F": "2026-11-11",
+  "tm-vv177Z_oGkXBi8-I": "2026-11-11",
+  "tm-rZ7HnEZ1AfuNZ7": "2026-11-11",
+  "tm-rZ7HnEZ1AfuYF0": "2026-11-11",
+  "tm-vvG17Z_5wbduXe": "2026-11-11",
+  "tm-Z7r9jZ1A7PJaJ": "2026-11-11",
+  "tm-vvG17Z_u7Z_JCI": "2026-11-11",
+  "tm-Z7r9jZ1AAvx-I": "2026-11-11",
+  "tm-Z7r9jZ1AAvx-E": "2026-11-11",
+  "tm-rZ7HnEZ1Afugk7": "2026-11-11",
+  "tm-rZ7HnEZ1AfCA0f": "2026-11-11",
+  "tm-Z7r9jZ1AA77-E": "2026-11-11",
+  "tm-rZ7HnEZ1Af83q7": "2026-11-11",
+  "tm-rZ7HnEZ1Af83Q7": "2026-11-11",
+  "tm-rZ7HnEZ1Af83jf": "2026-11-11",
+  "tm-rZ7HnEZ1Af83jV": "2026-11-11",
+  "tm-rZ7HnEZ1Af83j7": "2026-11-11",
+  "tm-rZ7HnEZ1Af83Qf": "2026-11-11",
+  "tm-rZ7HnEZ1Af83j0": "2026-11-11",
+  "tm-rZ7HnEZ1Af83qf": "2026-11-11",
   "tm-Z7r9jZ1AA7zoy": "2026-11-10",
   "tm-vv1AvZkf7GkdbzXaM": "2026-11-09"
  },
