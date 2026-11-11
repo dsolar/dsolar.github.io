@@ -232,11 +232,12 @@ test('dynasty offseason: trades stay open after the season, and picks two season
   L.settings.tradeReview = 'none';
   // a 2-for-1 with no drop: the offseason has no roster limit
   const mine = L.rosters[0].slice(0, 2), theirs = L.rosters[1][0];
+  const n0 = L.rosters[0].length, n1 = L.rosters[1].length;   // (rosters can differ by an IR player)
   const r = G.propose(L, ctx, 0, 1, mine, [theirs], Date.now(), { pickGet: ['1:1:2'] });
   assert.ok(r.ok, r.why);
   assert.ok(G.respond(L, ctx, r.trade.id, true, Date.now()).ok);
   assert.equal(G.pickOwner(L, '1:1:2'), 0);
-  assert.equal(L.rosters[1].length, L.rosters[0].length + 2);
+  assert.equal(L.rosters[0].length, n0 - 1); assert.equal(L.rosters[1].length, n1 + 1);
   assert.match(G.pickLabel(L, '1:1:2'), /^Two seasons out: 1st-round pick, from/);
   assert.ok(G.pickValue(L, ctx, '1:1:2') < G.pickValue(L, ctx, '1:' + G.standings(L).slice(-1)[0].team), "a far pick is worth less than next season's worst-team first");
   // a bot answers an offseason offer when the clock ticks, and pending offers don't expire at the deadline

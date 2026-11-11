@@ -98,14 +98,24 @@ test('conference limit: no more than two starters from one FBS conference', () =
     const n = lu.filter((id) => S.confOf(lctx.byId[id]) === 'SEC').length;
     assert.ok(n <= 2, `${tm.name} starts ${n} SEC players`);
   }
-  // setting a lineup with three SEC starters is refused
-  const tm = L.teams[0], ros = L.rosters[tm.id].map((id) => lctx.byId[id]), secs = ros.filter((p) => S.confOf(p) === 'SEC');
-  assert.ok(secs.length >= 3, 'team 0 has three SEC players');
-  {
+  // setting a lineup with three SEC starters is refused. Which team can field three depends on how the draft went
+  // (two SEC quarterbacks can't both start), so find one whose SEC players fill three different starting spots.
+  const tryThree = (tm) => {
+    const secs = L.rosters[tm.id].map((id) => lctx.byId[id]).filter((p) => S.confOf(p) === 'SEC');
     const lu = G.lineupFor(L, lctx, tm.id, 1).slice();
-    let k = 0; for (let i = 0; i < lu.length && k < 3; i++) { const p = secs.find((x) => S.fits(sport, x, L.settings.lineup[i]) && !lu.includes(x.id)); if (p && S.confOf(lctx.byId[lu[i]]) !== 'SEC') { lu[i] = p.id; k++; } }
+    for (let i = 0; i < lu.length; i++) {
+      if (lu.filter((id) => S.confOf(lctx.byId[id]) === 'SEC').length >= 3) break;
+      if (S.confOf(lctx.byId[lu[i]]) === 'SEC') continue;
+      const p = secs.find((x) => S.fits(sport, x, L.settings.lineup[i]) && !lu.includes(x.id));
+      if (p) lu[i] = p.id;
+    }
+    return lu.filter((id) => S.confOf(lctx.byId[id]) === 'SEC').length > 2 ? lu : null;
+  };
+  const tm = L.teams.find((x) => tryThree(x));
+  assert.ok(tm, 'some team can field three SEC starters');
+  {
+    const lu = tryThree(tm);
     const r = G.setLineup(L, lctx, tm.id, 1, lu);
-    assert.ok(lu.filter((id) => S.confOf(lctx.byId[id]) === 'SEC').length > 2);
     assert.equal(r.ok, false); assert.match(r.why, /Only 2 starters can come from the SEC/);
   }
 });

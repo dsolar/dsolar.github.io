@@ -968,7 +968,7 @@
       // every pick you have left is needed for an open starting spot (only K and DEF to go, say): show only who fits
       let fitBar = "";
       if (mine != null && d.phase === "live" && ui.show !== "all") {
-        const ros = F.rosters(d)[mine].map((id) => ctx.byId[id]).filter(Boolean), left = F.sizeOf(d) - ros.length;
+        const ros = F.rosters(d)[mine].map((id) => ctx.byId[id]).filter(Boolean), left = F.sizeOf(d, mine) - ros.length;
         const got = F.assign(sport, ros, d.lineup), open = d.lineup.filter((sl, i) => !got[i]);
         if (left > 0 && open.length && left <= open.length) {
           const names = [...new Set(open)], fitN = rows.filter((p) => F.canAdd(d, ctx, mine, p).ok).length;
@@ -1258,7 +1258,7 @@
       // open bench spots read as one line, not a row each
       const openBn = Math.max(0, d.bench - bench.length);
       const bnLine = openBn ? `<li class="open bn-left"><span class="slot">BN</span><span class="ps">${openBn} bench spot${openBn === 1 ? "" : "s"} open</span><span></span></li>` : "";
-      return `<div class="mod-h">${teamAv(t, "sm")}<b class="ell">${esc(t.name)}</b><span class="ps" style="margin-left:auto;white-space:nowrap">${ps.length} of ${F.sizeOf(d)}${auction() ? `, ${money(t.budget)} left` : ""}</span></div>
+      return `<div class="mod-h">${teamAv(t, "sm")}<b class="ell">${esc(t.name)}</b><span class="ps" style="margin-left:auto;white-space:nowrap">${ps.length} of ${F.sizeOf(d, id)}${auction() ? `, ${money(t.budget)} left` : ""}</span></div>
         ${id === me() && d.phase !== "done" ? brief(id, starters) : ""}
         <ul class="rslots">${d.lineup.map((s, i) => li(s, starters[i])).join("")}${bench.map((p) => li("BN", p)).join("")}${bnLine}</ul>${upcoming(id)}`;
     }

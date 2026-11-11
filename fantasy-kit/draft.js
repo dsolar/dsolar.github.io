@@ -200,7 +200,15 @@
     return at;
   }
 
-  const sizeOf = (D) => D.lineup.length + D.bench + (D.carry ? D.rounds : 0);
+  // A roster's size. A dynasty's rookie draft (D.carry) brings whole rosters, so each team's is what it carried plus
+  // the picks it holds now (more after a trade for a pick, an IR player carried over); week 1 cuts back to size.
+  // Without a team, the largest.
+  const ownedPicks = (D, t) => D.order.reduce((a, x) => a + (x === t ? 1 : 0), 0);
+  const sizeOf = (D, t) => {
+    if (!D.carry) return D.lineup.length + D.bench;
+    if (t == null) return Math.max(...D.teams.map((x) => sizeOf(D, x.id)));
+    return (D.carry[t] || []).length + ownedPicks(D, t);
+  };
 
   // Can this team take this player now? Roster room, position limits, every starting slot still fillable, and the
   // league's own rule.
@@ -217,7 +225,7 @@
       const fit = fitsRoster(D, ctx, teamId, p);
       // nobody in the pack fits what the lineup still needs, or what's left of the budget: then any of them will do
       // (the cheapest when it's the money), so a pick is never stuck
-      if (rosters(D)[teamId].length < sizeOf(D) && !pk.some(ok)) {
+      if (rosters(D)[teamId].length < sizeOf(D, teamId) && !pk.some(ok)) {
         if (m && !pk.some((id) => cost(id) <= m.max)) { const cheap = Math.min(...pk.map(cost)); return cost(p.id) === cheap ? { ok: true } : { ok: false, why: `You have $${m.left} left: only the cheapest card here` }; }
         return { ok: true };
       }
@@ -358,7 +366,7 @@
   const packSpent = (D, teamId) => D.board.reduce((a, pk) => a + (pk && pk.team === teamId && pk.price ? pk.price : 0), 0);
   function packMoney(D, teamId) {
     if (!priced(D)) return null;
-    const left = D.packs.budget - packSpent(D, teamId), picks = sizeOf(D) - rosters(D)[teamId].length;
+    const left = D.packs.budget - packSpent(D, teamId), picks = sizeOf(D, teamId) - rosters(D)[teamId].length;
     return { left, picks, max: Math.max(0, left - Math.max(0, picks - 1)), per: picks ? left / picks : 0 };
   }
   // what a card costs this team: its price, or, when nothing in the pack is affordable, all it has left
@@ -472,7 +480,7 @@
   function fitsRoster(D, ctx, teamId, p) {
     const team = D.teams[teamId];
     const ids = rosters(D)[teamId];
-    if (ids.length >= sizeOf(D)) return { ok: false, why: "Roster is full" };
+    if (ids.length >= sizeOf(D, teamId)) return { ok: false, why: "Roster is full" };
     const mine = ids.map((id) => ctx.byId[id]).filter(Boolean);
     for (const [pos, max] of Object.entries(D.posMax || {})) {
       if (!S.positions(p).every((x) => x === pos)) continue;
@@ -480,7 +488,7 @@
     }
     const after = mine.concat(p);
     const open = D.lineup.length - assign(ctx.sport, after, D.lineup).filter(Boolean).length;
-    if (open > sizeOf(D) - after.length) return { ok: false, why: `Not enough spots left to fill your starting lineup` };
+    if (open > sizeOf(D, teamId) - after.length) return { ok: false, why: `Not enough spots left to fill your starting lineup` };
     if (ctx.hooks.check) { const c = ctx.hooks.check(D, team, p, ctx); if (c && !c.ok) return c; }
     return { ok: true };
   }
@@ -558,7 +566,7 @@
   }
 
   function finishIfDone(D, now) {
-    const full = rosters(D).every((ids) => ids.length >= sizeOf(D));
+    const full = rosters(D).every((ids, t) => ids.length >= sizeOf(D, t));
     if (D.type !== "auction" ? nextIndex(D) < 0 : full) {
       // a heist league isn't done yet: the heist comes right after the last pick
       if (D.season && D.season.heist && !D.heist) { startHeist(D, now); return true; }
@@ -759,7 +767,7 @@
       if (!memo.has(k)) memo.set(k, assign(ctx.sport, mine.concat(p), D.lineup).filter(Boolean).length > filled);
       return memo.get(k);
     };
-    return { left: sizeOf(D) - ids.length, openStarters: D.lineup.length - filled, lateOpen, fills, urgency: D.packs && D.phase === "live" ? packUrgency(D, ctx, teamId, mine) : null };
+    return { left: sizeOf(D, teamId) - ids.length, openStarters: D.lineup.length - filled, lateOpen, fills, urgency: D.packs && D.phase === "live" ? packUrgency(D, ctx, teamId, mine) : null };
   }
   // In a pack draft a position can run out. For a team's open spots that only one position can fill (its TE, its QB):
   // how short that position is, as the teams still needing one against the players left at it in the packs to come.
@@ -933,7 +941,7 @@
   function refresh(D, ctx) { const c = context(D, ctx.players, ctx.sport, ctx.hooks); Object.assign(ctx, c); }
 
   /* ---------- auction ---------- */
-  const spotsLeft = (D, teamId) => sizeOf(D) - rosters(D)[teamId].length;
+  const spotsLeft = (D, teamId) => sizeOf(D, teamId) - rosters(D)[teamId].length;
   // The most a team can bid and still have the minimum for every other open spot.
   const maxBid = (D, teamId) => { const left = spotsLeft(D, teamId); return left <= 0 ? 0 : D.teams[teamId].budget - D.auction.minBid * (left - 1); };
 
@@ -1286,7 +1294,8 @@
       const ps = R[team].filter((id) => !out.includes(id)).concat(inn.filter((id) => !isPickId(id))).map((id) => ctx.byId[id]).filter(Boolean);
       const picks = picksOf(D, team).filter((k) => !out.includes(pickId(k))).length + inn.filter(isPickId).length;
       const name = D.teams[team].name;
-      if (ps.length + picks > sizeOf(D)) return { ok: false, why: `${name} wouldn't have room for everyone` };
+      // (a rookie draft's rosters are long on purpose and cut back at week 1)
+      if (!D.carry && ps.length + picks > sizeOf(D)) return { ok: false, why: `${name} wouldn't have room for everyone` };
       const open = D.lineup.length - assign(ctx.sport, ps, D.lineup).filter(Boolean).length;
       if (open > picks) return { ok: false, why: `${name} couldn't fill its starting lineup` };
       for (const [pos, max] of Object.entries(D.posMax || {})) if (ps.filter((q) => S.positions(q).every((x) => x === pos)).length > max) return { ok: false, why: `${name} would have more than ${max} at ${pos}` };
