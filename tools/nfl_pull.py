@@ -272,6 +272,24 @@ def main():
     except Exception as e:
         print("game logs unavailable:", e)
 
+    # ---------- trades and signings the weekly roster hasn't caught yet ----------
+    # ESPN's depth charts update many times a day; the NFL roster file only once a week. A player listed on exactly
+    # one other team's depth chart has moved there (a trade or a signing), so he's put on that team.
+    on_chart = defaultdict(set)
+    for code, dc in depth.items():
+        for r in dc["rows"]:
+            if r[3]:
+                on_chart[r[3]].add(code)
+    moved = []
+    for pl in players:
+        teams = on_chart.get(pl["id"], set())
+        if len(teams) == 1 and pl["t"] not in teams:
+            new = next(iter(teams))
+            moved.append(f"{pl['n']} {pl['t']}->{new}")
+            pl["from"], pl["t"] = pl["t"], new
+    if moved:
+        print(f"moved by depth charts ({len(moved)}):", ", ".join(moved))
+
     out = {
         "updated": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
         "season": SEASON, "week": week,
