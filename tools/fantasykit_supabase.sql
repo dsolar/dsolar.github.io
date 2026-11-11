@@ -486,3 +486,93 @@ end $$;
 revoke all on function public.fk_wake_clock() from public, anon, authenticated;
 drop trigger if exists fk_wake_clock on public.fk_leagues;
 create trigger fk_wake_clock after update of version on public.fk_leagues for each row execute function public.fk_wake_clock();
+
+-- ============================================================================
+-- Phone alerts (2026-11-11). Each device's web push subscription, by signed-in user. Every alert a manager would
+-- get by email (fk_outbox) also goes to their devices. VAPID keys are Hard Cap's (hc_config), shared by the site.
+-- fk-clock sends them (npm:web-push); ?mail=1 sends the outbox only, and fk_wake_mail calls it on each new alert.
+-- ============================================================================
+create table if not exists public.fk_push (
+  endpoint text primary key,
+  user_id uuid not null,
+  sub jsonb not null,
+  ua text,
+  created_at timestamptz not null default now()
+);
+create index if not exists fk_push_user on public.fk_push (user_id);
+alter table public.fk_push enable row level security;   -- no policies: only the functions below touch it
+
+create or replace function public.fk_push_subscribe(p_sub jsonb, p_ua text default null) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare uid uuid := auth.uid(); ep text := p_sub->>'endpoint';
+begin
+  if uid is null then return jsonb_build_object('error', 'Sign in first, so alerts know who you are.'); end if;
+  if ep is null or ep !~ '^https://' or p_sub->'keys'->>'p256dh' is null or p_sub->'keys'->>'auth' is null then return jsonb_build_object('error', 'That device subscription is not valid.'); end if;
+  insert into fk_push (endpoint, user_id, sub, ua) values (ep, uid, p_sub, left(p_ua, 200))
+    on conflict (endpoint) do update set user_id = excluded.user_id, sub = excluded.sub, ua = excluded.ua, created_at = now();
+  return jsonb_build_object('ok', true);
+end $$;
+create or replace function public.fk_push_unsubscribe(p_endpoint text) returns jsonb
+language plpgsql security definer set search_path = public as $$
+begin
+  delete from fk_push where endpoint = p_endpoint and user_id = auth.uid();
+  return jsonb_build_object('ok', true);
+end $$;
+revoke all on function public.fk_push_subscribe(jsonb, text) from public, anon;
+revoke all on function public.fk_push_unsubscribe(text) from public, anon;
+grant execute on function public.fk_push_subscribe(jsonb, text) to authenticated;
+grant execute on function public.fk_push_unsubscribe(text) to authenticated;
+
+-- for the clock: the keys to sign pushes, and dropping a device that's gone
+create or replace function public.fk_clock_vapid(p_token text) returns jsonb
+language plpgsql security definer set search_path = public as $$
+begin
+  if not fk_token_ok(p_token) then return jsonb_build_object('error', 'no'); end if;
+  return (select jsonb_object_agg(name, value) from hc_config where name in ('vapid_public', 'vapid_private', 'vapid_subject'));
+end $$;
+create or replace function public.fk_clock_push_gone(p_token text, p_endpoint text) returns jsonb
+language plpgsql security definer set search_path = public as $$
+begin
+  if not fk_token_ok(p_token) then return jsonb_build_object('error', 'no'); end if;
+  delete from fk_push where endpoint = p_endpoint;
+  return jsonb_build_object('ok', true);
+end $$;
+revoke all on function public.fk_clock_vapid(text) from public, authenticated;
+revoke all on function public.fk_clock_push_gone(text, text) from public, authenticated;
+grant execute on function public.fk_clock_vapid(text) to anon;
+grant execute on function public.fk_clock_push_gone(text, text) to anon;
+
+-- the outbox now says where each alert's manager has devices
+create or replace function public.fk_outbox_take(p_token text, p_limit integer)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare out jsonb;
+begin
+  if not fk_token_ok(p_token) then return jsonb_build_object('error', 'no'); end if;
+  with picked as (
+    select o.id from fk_outbox o where o.sent_at is null and o.tries < 4 order by o.created_at limit least(coalesce(p_limit, 20), 50) for update skip locked
+  ), bumped as (
+    update fk_outbox o set tries = o.tries + 1 from picked where o.id = picked.id returning o.*
+  )
+  select coalesce(jsonb_agg(jsonb_build_object('id', b.id, 'league', b.league, 'league_name', l.name, 'sport', l.sport, 'team', b.team, 'kind', b.kind,
+    'subject', b.subject, 'body', b.body, 'data', b.data, 'email', s.email, 'manager', s.manager,
+    'push', (select coalesce(jsonb_agg(p.sub), '[]'::jsonb) from fk_push p where p.user_id = s.user_id))), '[]'::jsonb) into out
+  from bumped b join fk_leagues l on l.id = b.league left join fk_seats s on s.league = b.league and s.team = b.team;
+  return jsonb_build_object('emails', out);
+end $$;
+
+-- a new alert goes out now, not at the clock's next five-minute run
+create or replace function public.fk_wake_mail() returns trigger
+language plpgsql security definer set search_path = public, net as $$
+begin
+  begin
+    perform net.http_post(
+      url := 'https://baxrczyufqbzrogftmyn.supabase.co/functions/v1/fk-clock?mail=1',
+      headers := jsonb_build_object('Content-Type', 'application/json', 'x-fk-token', (select value from public.fk_config where name = 'mailer_token')),
+      body := '{}'::jsonb, timeout_milliseconds := 60000);
+  exception when others then null;
+  end;
+  return null;
+end $$;
+revoke all on function public.fk_wake_mail() from public, anon, authenticated;
+drop trigger if exists fk_wake_mail on public.fk_outbox;
+create trigger fk_wake_mail after insert on public.fk_outbox for each statement execute function public.fk_wake_mail();

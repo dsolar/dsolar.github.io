@@ -194,5 +194,42 @@
     return { live: () => joined && checked, close: () => { closed = true; clearInterval(beat); try { ws && ws.close(); } catch (e) { /* already */ } } };
   }
 
-  FK.cloud = { token, oauth, providers, slates, games, listen, user, signIn, signUp, passwordSignIn, resetPassword, setPassword, signOut, fromLink, rpc, live, now: () => Date.now() + offset, lastEmail: () => { try { return JSON.parse(localStorage.getItem("fk-auth:email")) || ""; } catch (e) { return ""; } } };
+  // Phone and computer alerts (web push): this device's subscription, kept by signed-in user (fk_push). Every alert a
+  // manager gets by email also comes here. On an iPhone or iPad, Safari only allows it once Draft Lab is on the home
+  // screen. The key is the site's VAPID public key (shared with Hard Cap).
+  const VAPID = "BC2enuoc9sCrEblbL6HFNkhQ74jHeGVKnu3p7ELbKq27Md89TokJ3Y8Pgkfe1Y_sp0ED8-JNjNNlWMTVQpa938o";
+  const push = {
+    can: () => typeof navigator !== "undefined" && "serviceWorker" in navigator && typeof window !== "undefined" && "PushManager" in window && "Notification" in window,
+    ios: () => typeof navigator !== "undefined" && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)),
+    installed: () => typeof window !== "undefined" && (window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true),
+    reg: () => navigator.serviceWorker.register(new URL("sw.js", document.baseURI).href).then(() => navigator.serviceWorker.ready),
+    // "on" (this device gets them), "off", "blocked" (the browser said no), "install" (an iPhone that needs the home screen first) or "no"
+    async state() {
+      if (!push.can()) return push.ios() && !push.installed() ? "install" : "no";
+      if (Notification.permission === "denied") return "blocked";
+      try { const r = await navigator.serviceWorker.getRegistration(new URL("sw.js", document.baseURI).href); const s = r && (await r.pushManager.getSubscription()); return s && Notification.permission === "granted" ? "on" : "off"; } catch (e) { return "off"; }
+    },
+    async on() {
+      if (!user()) throw new Error("Sign in first, so alerts know who you are.");
+      if (!push.can()) throw new Error(push.ios() && !push.installed() ? "On an iPhone, add Draft Lab to your home screen first: Share, then Add to Home Screen. Then open it from there and turn alerts on." : "This browser can't show alerts.");
+      const perm = await Notification.requestPermission();
+      if (perm !== "granted") throw new Error("Alerts are blocked for this site. Allow notifications in your browser's settings, then try again.");
+      const reg = await push.reg();
+      const key = Uint8Array.from(atob((VAPID + "=".repeat((4 - (VAPID.length % 4)) % 4)).replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0));
+      let sub;
+      try { sub = (await reg.pushManager.getSubscription()) || (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key })); }
+      catch (e) { throw new Error(`This browser couldn't set up alerts (${e.message}). A private window can't; a regular one can.`); }
+      const r = await rpc("fk_push_subscribe", { p_sub: sub.toJSON(), p_ua: navigator.userAgent });
+      if (r && r.error) throw new Error(r.error);
+      return true;
+    },
+    async off() {
+      const r = await navigator.serviceWorker.getRegistration(new URL("sw.js", document.baseURI).href).catch(() => null);
+      const sub = r && (await r.pushManager.getSubscription());
+      if (sub) { await rpc("fk_push_unsubscribe", { p_endpoint: sub.endpoint }).catch(() => null); await sub.unsubscribe().catch(() => null); }
+      return true;
+    },
+  };
+
+  FK.cloud = { token, oauth, providers, slates, games, listen, push, user, signIn, signUp, passwordSignIn, resetPassword, setPassword, signOut, fromLink, rpc, live, now: () => Date.now() + offset, lastEmail: () => { try { return JSON.parse(localStorage.getItem("fk-auth:email")) || ""; } catch (e) { return ""; } } };
 })(typeof window !== "undefined" ? window : globalThis);

@@ -628,6 +628,29 @@
        solo            true when nobody else is in the room (a mock): shows Sim to my pick and a bot speed control
        hooks           FK.draft hooks (a cap rule, a custom bot)
        brand           { name, mark } for the top bar; exit { href, label }; extra() html for the top bar when done */
+  /* ---------- phone alerts: the control on Your leagues and in a league's dialog (cloud.push does the work) ---------- */
+  // Fills el with this device's alert state and a button to change it. compact: one line, for a dialog.
+  function pushBox(el, compact) {
+    const C = FK.cloud;
+    if (!el || !C || !C.push) return;
+    const what = "Your turn in a slow draft, trade offers and answers, waiver results and each week's result";
+    const paint = async () => {
+      const st = await C.push.state();
+      const line = { on: "Alerts are on for this device.", off: `Get a notification on this device: ${what.toLowerCase()}.`, blocked: "Notifications are blocked for this site. Allow them in your browser's settings to turn alerts on.",
+        install: "On an iPhone or iPad, add Draft Lab to your home screen first (Share, then Add to Home Screen), then open it from there.", no: "This browser can't show alerts. Chrome, Edge, Firefox or Safari can." }[st];
+      const btn = st === "on" ? `<button type="button" class="btn sm" data-push="off">Turn off</button>` : st === "off" ? `<button type="button" class="btn sm go" data-push="on">Turn on alerts</button>` : "";
+      el.innerHTML = compact ? `<div class="push-row"><span class="grow"><b>Phone alerts</b> <span class="ps">${esc(line)}</span></span>${btn}</div>`
+        : `<div class="card push-card"><div class="bd"><div class="push-row"><span class="push-ic" aria-hidden="true">&#128276;</span><span class="grow"><b>${st === "on" ? "Phone alerts are on" : "Phone alerts"}</b><small>${esc(line)}</small></span>${btn}</div></div></div>`;
+    };
+    el.addEventListener("click", async (e) => {
+      const b = e.target.closest("[data-push]"); if (!b) return;
+      b.disabled = true;
+      try { if (b.dataset.push === "on") { await C.push.on(); toast("Alerts are on for this device."); } else { await C.push.off(); toast("Alerts are off for this device."); } }
+      catch (err) { toast(err.message, true); }
+      paint();
+    });
+    paint();
+  }
   /* ---------- bot speed: how long a bot takes to pick in a mock, kept in this browser ---------- */
   // the order is the button's cycle: from Normal, one tap is Fast
   const BOT_SPEEDS = [["normal", "Normal", 1200], ["fast", "Fast", 400], ["slow", "Slow", 2500]];
@@ -1758,7 +1781,7 @@
     const start = () => { new MutationObserver(kick).observe(document.body, { childList: true, subtree: true }); window.addEventListener("resize", kick); kick(); };
     if (document.body) start(); else document.addEventListener("DOMContentLoaded", start);
   }
-  FK.ui = { botSpeed, startIn, faceAv, squarePhoto, profileDialog, statColumns, LINEUP_PRESETS: PRESETS, lineupBuilder, orderLineup, lineupStep, slotDesc, esc, $, $$, store, toast, dialog, dialogOpen, focusKey, refocus, keyboardPlayers, confirm, theme, fmtLeft, money, ord, last, initials, ago,
+  FK.ui = { pushBox, botSpeed, startIn, faceAv, squarePhoto, profileDialog, statColumns, LINEUP_PRESETS: PRESETS, lineupBuilder, orderLineup, lineupStep, slotDesc, esc, $, $$, store, toast, dialog, dialogOpen, focusKey, refocus, keyboardPlayers, confirm, theme, fmtLeft, money, ord, last, initials, ago,
     teamAv, SHAPES, GLYPHS, logoSvg, glyphOf, shapeOf, playerAv, pname, teamName, posChip, posChips, colorOf, injTag,
     proTeam, shell, switcher, route, table, sortRows, nextSort, poolColumns, posFilter, search, passes, groupOf, statCell, label, isPoints,
     playerCard, scoreboard, versus, vsTable, standingsTable, feed, txLine, tradeCard, tradeWindow, room, board: myBoard, viewSelect, setView, initView, hasProj, lineOf };

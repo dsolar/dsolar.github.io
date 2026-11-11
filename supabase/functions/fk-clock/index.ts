@@ -4,8 +4,12 @@
 // the same code the pages run (fantasy-kit/*.js, fetched from the live site). Saves go through fk_clock_save with the
 // version it started from, so a manager's save in the same moment wins and the clock tries again next run.
 //
+// Each alert also goes to the manager's phones and computers as a web push (fk_push), signed with the site's VAPID
+// keys (Hard Cap's, in hc_config). A new alert wakes ?mail=1 right away (the fk_wake_mail trigger).
+//
 // Then it sends the email outbox with Resend, once the secrets RESEND_API_KEY and FK_MAIL_FROM are set
 // (FK_MAIL_FROM like "Draft Lab <leagues@davidsolar.dev>", on a domain verified in Resend). Until then emails wait.
+import webpush from "npm:web-push@3.6.7";
 const SITE = "https://davidsolar.dev/fantasy-kit/";
 const URL_ = Deno.env.get("SUPABASE_URL")!;
 const KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -206,6 +210,32 @@ function emailHtml(e: any, FK: any) {
 </table></td></tr></table></body></html>`;
 }
 
+// A phone alert for one outbox row: the league as the title, the subject as the line under it, the league as the link
+let vapidAt = 0, vapidOk = false;
+async function vapid(token: string) {
+  if (Date.now() - vapidAt < 30 * 60e3) return vapidOk;
+  vapidAt = Date.now();
+  const v = await rpc("fk_clock_vapid", { p_token: token }).catch(() => null);
+  vapidOk = !!(v && v.vapid_public && v.vapid_private);
+  if (vapidOk) webpush.setVapidDetails(v.vapid_subject || "mailto:leagues@davidsolar.dev", v.vapid_public, v.vapid_private);
+  return vapidOk;
+}
+async function pushOne(token: string, e: any) {
+  const subs = Array.isArray(e.push) ? e.push : [];
+  if (!subs.length || !(await vapid(token))) return 0;
+  const line = String(e.subject || "").replace(/^[^:]*:\s*/, "");
+  const first = String(e.body || "").split("\n\n")[0].slice(0, 160);
+  const link = /^Open the league: (\S+)$/m.exec(String(e.body || ""));
+  const msg = { title: e.league_name || "Draft Lab", body: line ? `${line.charAt(0).toUpperCase() + line.slice(1)}. ${first}`.slice(0, 220) : first,
+    url: (link && link[1]) || (e.data && e.data.url) || `${SITE}play.html?id=${encodeURIComponent(e.league)}`, tag: `${e.league}:${e.kind || "alert"}` };
+  let sent = 0;
+  for (const sub of subs) {
+    try { await webpush.sendNotification(sub, JSON.stringify(msg), { TTL: 6 * 3600 }); sent++; }
+    catch (err: any) { if (err && (err.statusCode === 404 || err.statusCode === 410)) await rpc("fk_clock_push_gone", { p_token: token, p_endpoint: sub.endpoint }).catch(() => null); }
+  }
+  return sent;
+}
+
 async function sendMail(token: string) {
   const key = Deno.env.get("RESEND_API_KEY"), from = Deno.env.get("FK_MAIL_FROM");
   if (!key || !from) return { mail: "not set up" };
@@ -213,8 +243,10 @@ async function sendMail(token: string) {
   if (error) return { error };
   const FK = (emails as any[]).length ? await loadEngine().catch(() => null) : null;
   const ids: number[] = [], errors: Record<string, string> = {};
+  let pushed = 0;
   for (const e of emails as any[]) {
     ids.push(e.id);
+    pushed += await pushOne(token, e).catch(() => 0);
     if (!e.email) { errors[e.id] = "no email address"; continue; }
     const roster = e.data && e.data.roster && Array.isArray(e.data.roster.rows) ? rosterText(e.data.roster) : "";
     const body = roster ? String(e.body).replace(/\n\nOpen the league: /, `${roster}\n\nOpen the league: `) : e.body;
@@ -229,7 +261,7 @@ async function sendMail(token: string) {
     await new Promise((ok) => setTimeout(ok, 550)); // Resend allows two a second
   }
   if (ids.length) await rpc("fk_outbox_done", { p_token: token, p_ids: ids, p_errors: errors });
-  return { sent: ids.length - Object.keys(errors).length, failed: Object.keys(errors).length };
+  return { sent: ids.length - Object.keys(errors).length, failed: Object.keys(errors).length, pushed };
 }
 
 // Bots on time. Every save to a live draft (fk_wake_clock, a database trigger) calls ?league=<id>: if the next pick
@@ -259,7 +291,12 @@ async function wakeOne(token: string, id: string) {
 Deno.serve(async (req) => {
   const token = req.headers.get("x-fk-token") || "";
   if (!token) return new Response("Not the clock", { status: 401 });
-  const one = new URL(req.url).searchParams.get("league");
+  const q = new URL(req.url).searchParams, one = q.get("league");
+  // a new alert in the outbox: send it now
+  if (q.get("mail")) {
+    const mail = await sendMail(token).catch((e) => ({ error: String(e.message || e) }));
+    return new Response(JSON.stringify({ mail }), { headers: { "Content-Type": "application/json" } });
+  }
   if (one) {
     const r = await wakeOne(token, one).catch((e) => ({ id: one, error: String(e.message || e) }));
     return new Response(JSON.stringify(r), { headers: { "Content-Type": "application/json" } });

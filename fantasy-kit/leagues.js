@@ -129,7 +129,7 @@
       right: `${C.user() ? `<button class="btn sm ghost" data-a="out">Sign out</button>` : ""}<button class="btn sm ghost" data-theme>${theme.dark() ? "Light" : "Dark"}</button>`,
       hrefOf: (t) => (t === "leagues" ? "leagues.html" : t === "week" ? "week.html" : t === "league" ? "league.html" : "./#" + t) });
   }
-  const page = (html) => { app.innerHTML = `<div class="wrap page">${html}</div>`; };
+  const page = (html) => { app.innerHTML = `<div class="wrap page">${html}</div>`; U.pushBox($("#lg-push")); };
   const fail = (msg) => `<div class="banner loss" role="alert"><b>${esc(msg)}</b></div>`;
   const back = () => location.origin + location.pathname + location.search;
 
@@ -163,6 +163,7 @@
     if (joinId) return page(`${err}${invite}${Array.isArray(mine) && mine.length ? `<div class="head" style="margin-top:8px"><h2 style="margin:0">Your other leagues</h2></div><div class="lgl">${mine.map(card).join("")}</div>` : ""}`);
     page(`${err}${invite}
       <div class="su sp-${S.inSeason()}"><div class="nl-band lg-band">${FIELD[S.inSeason()]}<div class="nl-bi"><h1 class="disp">Your leagues</h1>${profChip()}<p>Signed in as ${esc(u.email)}${prof && prof.username ? `, username <b style="color:#fff">${esc(prof.username)}</b>` : ""}</p><div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn go" data-a="new">Start a league</button><button class="btn" data-a="account">${prof && prof.username ? "Username and password" : "Set a username and password"}</button></div></div></div>
+      <div id="lg-push"></div>
       ${mine.error ? fail(mine.error) : mine.length ? `<div class="lgl">${mine.map(card).join("")}</div>` : joinId ? "" : `<div class="card"><div class="bd stack"><p style="margin:0"><b>No leagues yet.</b></p><p class="ps" style="margin:0">Start one and send your friends the invite link, or open the invite link your commissioner sent you.</p><div><button class="btn go" data-a="new">Start a league</button></div></div>`}</div>`);
   }
   // One league in the list: your team, where the league is, and your record or the draft's progress.
