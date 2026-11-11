@@ -306,6 +306,20 @@
         sport.weekOf = n;
       }
     }
+    // A basketball player ruled out who has missed most of his team's games so far is likely out for a while (a torn
+    // ACL, a long recovery), so his season value comes down further than a short absence would:
+    // half his value left with almost no games, 85% with under 40% of them. Last season's line alone (which the
+    // data blends in like 20 games) can't carry him to the top of a draft board. Not for one day, which has its own.
+    if (sport.key === "nba" && !league.oneDay) {
+      const teamG = {};
+      for (const p of players) { const g = S.stat(sport, p, "pg", "gp") || 0; if (g > (teamG[p.t] || 0)) teamG[p.t] = g; }
+      for (const p of players) {
+        if (!/^out/i.test(String(p.inj || ""))) continue;
+        const tg = teamG[p.t] || 0, share = tg ? (S.stat(sport, p, "pg", "gp") || 0) / tg : 1;
+        const k = tg < 6 ? 1 : share < 0.15 ? 0.5 : share < 0.4 ? 0.85 : 1;
+        if (k < 1) p.v = p.v > 0 ? p.v * k : p.v - (1 - k) * Math.abs(p.v);
+      }
+    }
     // One day (league.oneDay: a basketball day slate) is one game: what a player does in a game, if he plays. Out is
     // nothing, doubtful about a third; values stay on the season scale. Like one week, the season's market ranks and
     // streaming don't apply.

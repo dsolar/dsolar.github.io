@@ -414,3 +414,38 @@ alter table fk_leagues add column if not exists dues jsonb;
 -- fk_username_free(p_username), fk_username_set(p_username), fk_login_email(p_username) (service role only, for fk-login)
 -- trigger fk_username_on_signup on auth.users: a sign-up's user metadata username, if it's free
 -- fk_profile_me also returns username
+
+-- ---------- live nudges (Nov 2026) ----------
+-- Every save to a shared league (a page's or the clock's) and every chat post nudges the pages that have it open,
+-- through Realtime's broadcast API on the public topic fk:<league id>. pg_net sends it, so a save never waits on it.
+-- The nudge carries only the new version number; a page then reads the league through fk_view, which still checks
+-- who's allowed to see it. The key is the site's publishable key, already public in fantasy-kit/cloud.js.
+create or replace function public.fk_nudge(p_topic text, p_event text, p_payload jsonb) returns void
+language plpgsql security definer set search_path = public, net as $$
+begin
+  perform net.http_post(
+    url := 'https://baxrczyufqbzrogftmyn.supabase.co/realtime/v1/api/broadcast',
+    body := jsonb_build_object('messages', jsonb_build_array(jsonb_build_object('topic', p_topic, 'event', p_event, 'payload', p_payload))),
+    headers := '{"Content-Type":"application/json","apikey":"sb_publishable_brDXGevzcoI7mBaPO7Plow_yaUy4gk4"}'::jsonb);
+exception when others then null;   -- a nudge that can't go out never blocks the save
+end $$;
+revoke all on function public.fk_nudge(text, text, jsonb) from public, anon, authenticated;
+
+create or replace function public.fk_nudge_save() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if new.version is distinct from old.version then perform public.fk_nudge('fk:' || new.id, 'save', jsonb_build_object('v', new.version)); end if;
+  return new;
+end $$;
+create or replace function public.fk_nudge_post() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  perform public.fk_nudge('fk:' || new.league, 'post', jsonb_build_object('id', new.id));
+  return new;
+end $$;
+drop trigger if exists fk_nudge_save on public.fk_leagues;
+create trigger fk_nudge_save after update of version on public.fk_leagues for each row execute function public.fk_nudge_save();
+drop trigger if exists fk_nudge_post on public.fk_posts;
+create trigger fk_nudge_post after insert on public.fk_posts for each row execute function public.fk_nudge_post();
+revoke all on function public.fk_nudge_save() from public, anon, authenticated;
+revoke all on function public.fk_nudge_post() from public, anon, authenticated;

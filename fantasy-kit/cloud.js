@@ -156,5 +156,43 @@
   const games = (sport, ids) => (ids && ids.length ? fetch(`${BASE}/functions/v1/fk-live?sport=${encodeURIComponent(sport)}&games=${ids.map(encodeURIComponent).join(",")}`).then((r) => (r.ok ? r.json() : null)).catch(() => null) : Promise.resolve(null));
   const live = (sport) => fetch(`${BASE}/functions/v1/fk-live?sport=${encodeURIComponent(sport)}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
 
-  FK.cloud = { token, oauth, providers, slates, games, user, signIn, signUp, passwordSignIn, resetPassword, setPassword, signOut, fromLink, rpc, live, now: () => Date.now() + offset, lastEmail: () => { try { return JSON.parse(localStorage.getItem("fk-auth:email")) || ""; } catch (e) { return ""; } } };
+  // Realtime nudges (Supabase Realtime, public topic fk:<league id>): the database sends one on every save ("save",
+  // { v: version }) and chat post ("post"). listen(topic, fn) keeps a socket open, rejoins after a drop and calls
+  // fn(event, data); .live() says whether it's connected right now. The nudge carries no league data, so a page still
+  // reads the league through fk_view. Plain WebSocket and the Phoenix channel protocol, no client library.
+  function listen(topic, fn) {
+    // joined: the channel accepted us; checked: a ping we sent came back, so broadcasts really reach this page. Only
+    // then does .live() say yes (and a page slows its polling), so a socket that joins but hears nothing changes nothing.
+    let ws = null, ref = 0, beat = null, retry = 0, closed = false, joined = false, checked = false;
+    const send = (m) => { try { ws && ws.readyState === 1 && ws.send(JSON.stringify(m)); } catch (e) { /* closed */ } };
+    function open() {
+      if (closed || typeof WebSocket === "undefined") return;
+      try { ws = new WebSocket(`${BASE.replace(/^http/, "ws")}/realtime/v1/websocket?apikey=${encodeURIComponent(KEY)}&vsn=1.0.0`); } catch (e) { return later(); }
+      ws.onopen = () => {
+        retry = 0;
+        send({ topic: `realtime:${topic}`, event: "phx_join", payload: { config: { broadcast: { ack: false, self: true }, presence: { key: "" }, postgres_changes: [], private: false } }, ref: String(++ref), join_ref: String(ref) });
+        clearInterval(beat); beat = setInterval(() => send({ topic: "phoenix", event: "heartbeat", payload: {}, ref: String(++ref) }), 25000);
+      };
+      ws.onmessage = (e) => {
+        let m; try { m = JSON.parse(e.data); } catch (x) { return; }
+        if (m.event === "phx_reply" && m.topic === `realtime:${topic}` && !joined) {
+          joined = !!(m.payload && m.payload.status === "ok");
+          if (joined) send({ topic: `realtime:${topic}`, event: "broadcast", payload: { type: "broadcast", event: "ping", payload: { t: Date.now() } }, ref: String(++ref), join_ref: String(ref) });
+          return;
+        }
+        if (m.event === "broadcast" && m.payload) {
+          const ev = m.payload.event, data = m.payload.payload || {};
+          if (ev === "ping") { checked = true; return; }
+          try { fn(ev, data); } catch (x) { /* the page's problem */ }
+        }
+      };
+      ws.onclose = () => { joined = false; checked = false; clearInterval(beat); later(); };
+      ws.onerror = () => { try { ws.close(); } catch (x) { /* already */ } };
+    }
+    function later() { if (closed) return; const ms = Math.min(30000, 1000 * 2 ** retry++); setTimeout(open, ms); }
+    open();
+    return { live: () => joined && checked, close: () => { closed = true; clearInterval(beat); try { ws && ws.close(); } catch (e) { /* already */ } } };
+  }
+
+  FK.cloud = { token, oauth, providers, slates, games, listen, user, signIn, signUp, passwordSignIn, resetPassword, setPassword, signOut, fromLink, rpc, live, now: () => Date.now() + offset, lastEmail: () => { try { return JSON.parse(localStorage.getItem("fk-auth:email")) || ""; } catch (e) { return ""; } } };
 })(typeof window !== "undefined" ? window : globalThis);

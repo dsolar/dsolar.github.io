@@ -407,7 +407,8 @@
       cols.push({ k: "espn", label: "ESPN", cls: "r num", hide: "s", title: `ESPN's ${sport.market.type === "ROTO" ? "roto" : sport.market.type === "STANDARD" ? "standard" : sport.market.type === "SUPERFLEX" ? "superflex" : "PPR"} rank${sport.market.type === "STANDARD" || sport.market.type === "ROTO" ? "" : ""}, from ${sport.market.source}`, sort: (p) => (p.mk && p.mk.r) || 1e4, asc: true, html: (p) => (p.mk && p.mk.r ? String(p.mk.r) : `<span class="ps">-</span>`) });
       cols.push({ k: "aav", label: "ESPN $", cls: "r num", hide: "s", title: "What he goes for in real ESPN auctions (average price), or ESPN's own auction value before there are any", sort: (p) => (p.mk && (p.mk.aav || p.mk.a)) || 0, html: (p) => { const v = p.mk && (p.mk.aav || p.mk.a); return v ? `<span class="ps">${money(Math.round(v))}</span>` : `<span class="ps">-</span>`; } });
     }
-    if (opts.money !== false) cols.push({ k: "$", label: "$", cls: "r num", title: "Auction value in this league", sort: (p) => p.$, html: (p) => (p.$ ? `<span class="dollar">${money(p.$)}</span>` : `<span class="ps">-</span>`) });
+    // on a phone the draft room keeps one value column: projected points or value, unless it's an auction
+    if (opts.money !== false) cols.push({ k: "$", label: "$", cls: "r num", hide: opts.compact && !opts.auction ? "s" : undefined, title: "Auction value in this league", sort: (p) => p.$, html: (p) => (p.$ ? `<span class="dollar">${money(p.$)}</span>` : `<span class="ps">-</span>`) });
     // a one-week game or a showdown (sport.weekOf): the week's projected points
     const wkOf = pts ? sport.weekOf : null;
     if (wkOf != null) cols.push({ k: "v", label: `Wk ${wkOf}`, cls: "r num", title: `Projected points in week ${wkOf}: Sleeper's projection for the week, scored for this league`, sort: (p) => p.v, html: (p) => `<b>${p.v == null ? "-" : (p.v / 17).toFixed(1)}</b>` });
@@ -986,7 +987,7 @@
       const bd = mine != null ? myBoard.of(sport.key, opts.players) : null, at = bd && bd.custom ? myBoard.places(bd) : null;
       const lead = at ? [{ k: "my", label: "Mine", cls: "r num", title: "Your board, from the Rankings page", sort: (p) => (at[p.id] ? at[p.id].n : 1e4), asc: true, html: (p) => (at[p.id] ? `<b>${at[p.id].n}</b><span class="tier-n">T${at[p.id].tier}</span>` : "") }] : [];
       if (at && !ui.sortSet) { ui.sort = { k: "my", dir: 1 }; ui.sortSet = true; }
-      const cols = poolColumns(sport, { group: groupOf(sport, ui.f), scoring: d.scoring, actions, lead, compact: true, dynasty: !!(d.season && d.season.dynasty) });
+      const cols = poolColumns(sport, { group: groupOf(sport, ui.f), scoring: d.scoring, actions, lead, compact: true, auction: auction(), dynasty: !!(d.season && d.season.dynasty) });
       rows = sortRows(rows, cols, ui.sort);
       const pat = pk ? F.packAt(d, F.packTurnNow(d)) : null, pw = pk ? packWhere(d, mine) : null;
       const sealed = pk && packOnly && pat.j === 0 && myTurn && !packOpened(pat.q);

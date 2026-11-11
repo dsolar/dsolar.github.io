@@ -214,8 +214,13 @@ owns which team, the invite code and the save order. It also stamps each team's 
   `waivers: "rolling"`, `ir`, `maxAdds` (pickups a week) and `posMax` (most players at a main position).
 - **Invites.** The commissioner shares `leagues.html?join=<id>&code=<invite>`. Whoever opens it signs in and picks an
   open team. Teams nobody has claimed are bots, and a bot's team can be taken over later.
-- **The draft.** The commissioner's page runs bots and the clock. Any other page steps in when a pick is five
-  seconds overdue. In a slow draft (an hour or more a pick), managers get an email when they're on the clock.
+- **Live nudges.** Every save and chat post sends a nudge over Supabase Realtime (a database trigger posts to the
+  broadcast API on topic `fk:<id>`, `tools/fantasykit_supabase.sql`). Pages listen with `FK.cloud.listen`, read the
+  league at once, and slow their polling to a backstop, but only after a ping of their own comes back over the socket.
+- **The draft.** The commissioner's page runs bots and the clock. Any other page steps in when a bot's pick is 1.2
+  seconds overdue (with live nudges on) or a manager's clock is five seconds overdue.
+- **Loading.** `play.html` loads `trivia.js` only for a trivia draft and `league-ui.js` a few seconds after the draft
+  room is up (or right away for a league in season), with the same version tag as `live.js`. In a slow draft (an hour or more a pick), managers get an email when they're on the clock.
 - **The season** starts the Monday after the draft (Tuesday for football) at 13:00 UTC and runs on the real calendar.
   Basketball and football leagues are scored on real box scores (see Real scoring).
 - **The clock job.** `supabase/functions/fk-clock` runs every five minutes from pg_cron. It plays out ended weeks,

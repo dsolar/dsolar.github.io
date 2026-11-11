@@ -16,8 +16,17 @@
   let info = null, D = null, L = null, version = 0, base = null;
   let data = null, sport = null, players = null, byId = {}, room = null, app = null, mode = null, mine = [], weeks = null, prospects = null;
   // a trivia draft's questions, made by whichever page puts the pick on the clock
+  // Loaded when needed, not with the page: the trivia bank (only a trivia draft asks questions) and the league pages
+  // (not until the draft is over; they load in the background once the room is up). Same version as this file.
+  const VER = (() => { try { return new URL(document.currentScript.src).searchParams.get("v") || "1"; } catch (e) { return "1"; } })();
+  const loading = {};
+  const need = (file) => (loading[file] = loading[file] || new Promise((ok, no) => {
+    const el = document.createElement("script"); el.src = `${file}?v=${VER}`; el.onload = ok; el.onerror = () => { delete loading[file]; no(new Error(`Couldn't load ${file}`)); };
+    document.head.appendChild(el);
+  }));
   const triviaHook = (d, k) => (window.FK.trivia ? window.FK.trivia.make(sport, players, ((d.seed || 1) * 31 + k * 7919) >>> 0, d.trivia.used) : null);
   const hooks = () => ({ real: weeks, prospects, trivia: triviaHook });
+  let rt = null;   // the realtime nudge socket (cloud.listen)
   let inflight = false, dirty = false, lastChange = Date.now(), userAt = 0, pollT = null;
 
   const fatal = (msg, more = "") => { document.body.classList.remove("fk-room"); $("#top").innerHTML = ""; $("#app").innerHTML = `<div class="wrap page"><div class="banner loss" role="alert"><b>${esc(msg)}</b> ${more}</div><p><a class="btn" href="leagues.html">Your leagues</a></p></div>`; };
@@ -73,17 +82,26 @@
     byId = Object.fromEntries(players.map((p) => [p.id, p]));
     // a dynasty prices its rookie picks from next year's class on the Big Board
     if (dyn) prospects = S.prospectClass(pros, k);
+    await Promise.all([D && D.trivia && !window.FK.trivia ? need("trivia.js").catch(() => null) : null, L && !U.leagueApp ? need("league-ui.js") : null]);
     livePoll();
     if (C.user()) C.rpc("fk_mine", {}).then((m) => { if (Array.isArray(m)) { mine = m; if (app) app.render(); } }).catch(() => {});
     mount();
     if (link && link.error) U.toast(`That sign-in link didn't work: ${link.error}`, true);
     if (location.hash === "#invite" && info.invite) { history.replaceState(null, "", location.pathname + location.search); inviteDialog(); }
     schedule();
+    // live nudges: another page's or the clock's save, or a chat post, shows up at once instead of at the next poll
+    if (C.listen && !rt) rt = C.listen(`fk:${id}`, (ev, x) => {
+      if (ev === "save" && (x.v == null || x.v > version)) pull();
+      else if (ev === "post") loadPosts();
+    });
+    // the league pages come next, so fetch them while the draft runs
+    if (!U.leagueApp) setTimeout(() => need("league-ui.js").catch(() => {}), 3000);
   }
 
   /* ---------- the two views ---------- */
   const modeNow = () => (L ? "league" : Z.sealedKind(D) ? "entry" : "draft");
   function mount() {
+    if (modeNow() === "league" && !U.leagueApp) { need("league-ui.js").then(mount, (e) => fatal(e.message, `<span class="muted">Reload the page to try again.</span>`)); return; }
     mode = modeNow();
     if (room) { room.stop(); room = null; }
     if (mode === "draft") mountRoom(); else if (mode === "entry") mountEntry(); else { mountLeague(); loadSeries(); }
@@ -249,7 +267,8 @@
         if (!U.dialogOpen()) { if (room) room.render(); else if (app) app.refresh(); }
       }
     }
-    postT = setTimeout(loadPosts, document.hidden ? 60000 : 10000);
+    clearTimeout(postT);   // a nudge can start a second load while one is out: still one timer
+    postT = setTimeout(loadPosts, document.hidden ? 60000 : rt && rt.live() ? 45000 : 10000);
   }
   document.addEventListener("visibilitychange", () => { if (!document.hidden && (L || D)) loadPosts(); });
   // before week 1: when it starts
@@ -381,8 +400,10 @@
     if (D.type === "auction") return Date.now() - lastChange > 8000;
     const c = F.onClock(D, now());
     if (!c) return false;
-    const at = F.isBot(D.teams[c.team]) ? D.clockStart + D.botDelay : c.deadline;
-    return now() > at + 5000;
+    // a bot's pick: any page makes it a moment after it's due (with live nudges, everyone sees it at once, and the save
+    // order settles a tie); a manager's expired clock still waits five seconds for the commissioner's page
+    const bot = F.isBot(D.teams[c.team]), at = bot ? D.clockStart + D.botDelay : c.deadline;
+    return now() > at + (bot && rt && rt.live() ? 1200 : 5000);
   }
 
   /* ---------- the season (season.js) ---------- */
@@ -452,7 +473,9 @@
   function schedule() {
     clearTimeout(pollT);
     const live = D && D.phase === "live" && !L;
-    const ms = document.hidden ? 30000 : live ? 2500 : !L ? 6000 : 20000;
+    // with live nudges coming in, polling is only a backstop
+    const rtOn = rt && rt.live();
+    const ms = document.hidden ? 30000 : live ? (rtOn ? 12000 : 2500) : !L ? (rtOn ? 20000 : 6000) : rtOn ? 60000 : 20000;
     pollT = setTimeout(async () => {
       const busy = U.dialogOpen() || document.querySelector("details[open]") || (document.activeElement && /^(fk-q|INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.id || document.activeElement.tagName));
       if (!busy || (live && !L) || $("#lv-seats")) await pull();

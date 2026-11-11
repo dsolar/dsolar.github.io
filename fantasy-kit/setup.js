@@ -37,6 +37,10 @@
   const noLimit = (x) => (x ? `${x}` : "No limit");
   const STYLE_ART = {
     snake: `<path d="M4 6h13a3 3 0 0 1 0 6H7a3 3 0 0 0 0 6h13"/><path d="M17 15l3 3-3 3"/>`,
+    sealed: `<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 8l9 6 9-6"/>`,
+    cap: `<path d="M12 3v18"/><path d="M16.5 7.5c-.7-1.5-2.4-2.5-4.5-2.5-2.5 0-4.5 1.3-4.5 3.4 0 4.6 9.5 2.6 9.5 7.2 0 2.1-2.1 3.4-5 3.4-2.3 0-4.2-1-5-2.7"/>`,
+    early: `<circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/>`,
+    late: `<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>`,
     linear: `<path d="M4 6h14M4 12h14M4 18h14"/><path d="M15 3l3 3-3 3M15 9l3 3-3 3M15 15l3 3-3 3"/>`,
     "3rr": `<path d="M4 5h14M18 5v0M20 11H6M4 17h14"/><path d="M15 2l3 3-3 3M9 8l-3 3 3 3M15 14l3 3-3 3"/>`,
     auction: `<path d="M14 4l6 6M11 7l6 6M12.5 5.5l-6 6M9 15l-5 5"/><path d="M4 21h9"/>`,
@@ -60,7 +64,7 @@
     guillotine: `<path d="M5 3v18M19 3v18M5 3h14"/><path d="M7 7h10l-10 5z"/><path d="M9 18h6"/>`,
     vampire: `<path d="M12 9.5c-.8-1.4-1.6-2-2.4-2l.6-1.8-1.6 1.2C6.4 6.6 4 7.4 2 9.6c1.6-.2 2.8.4 3.4 1.6 1-.8 2.2-.7 2.8.4.9-.6 2.1-.2 2.6.9L12 16l1.2-3.5c.5-1.1 1.7-1.5 2.6-.9.6-1.1 1.8-1.2 2.8-.4.6-1.2 1.8-1.8 3.4-1.6-2-2.2-4.4-3-6.6-2.7l-1.6-1.2.6 1.8c-.8 0-1.6.6-2.4 2z"/>` };
   const art = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${STYLE_ART[k]}</svg>`;
-  const pickCards = (attr, list, cur, label, disabled) => `<div class="sty-g" role="radiogroup" aria-label="${esc(label)}" style="--n:${list.length}">${list.map(([k, l, sub]) => {
+  const pickCards = (attr, list, cur, label, disabled) => `<div class="sty-g${list.length > 6 ? " many" : ""}" role="radiogroup" aria-label="${esc(label)}" style="--n:${list.length}">${list.map(([k, l, sub]) => {
     const off = disabled && disabled(k);
     return `<button type="button" role="radio" class="sty${k === cur ? " on" : ""}" data-${attr}="${k}" aria-checked="${k === cur}"${off ? ` disabled title="${esc(off)}"` : ""}>${art(k)}<b>${esc(l)}</b><small>${esc(off || sub)}</small></button>`;
   }).join("")}</div>`;

@@ -372,24 +372,28 @@
       </div></div>
       <form class="nl-body" id="new" novalidate>
         ${rematch ? `<div class="banner" style="margin:0 0 4px"><b>Running it back: ${esc(rematch.name)}, the same ${rematch.n} teams and managers.</b> <span class="muted">Pick next week's games and go. Everyone in this week's game is in the new one.</span></div>` : ""}
+        <section class="nl-sec nl-ess"><h2 class="nl-h">The basics</h2>
+          <div class="nl-name"><label for="n-name">League name</label><input id="n-name" type="text" maxlength="40" required value="${esc(form.name || "")}" placeholder="Name your league" autocomplete="off"></div>
+          <div class="g2">${fld("Your name", `<input id="n-me" type="text" maxlength="24" required value="${esc(form.me || "")}" autocomplete="name">`, "", "n-me")}${fld("Your team's name", `<input id="n-team" type="text" maxlength="28" value="${esc(form.team || "")}" placeholder="Optional">`, "", "n-team")}</div>
+          ${fld("Teams", stepper("teams", teamVals(), form.teams, (x) => `${x} teams`, "Teams"), teamsHint())}
+        </section>
         <section class="nl-sec"><h2 class="nl-h">What are you starting?</h2>${modes}${kinds ? `<div style="margin-top:12px">${kinds}</div>` : ""}${whenHtml}</section>
         ${slateHtml}
         <section class="nl-sec"><h2 class="nl-h">Format</h2>${formats}${sdHtml}
           ${showdown() || capOn() ? "" : `<div class="nl-bb">${toggle("bestball", gl ? "Best ball guillotine" : "Best ball", gl ? "Your best lineup counts each week, so nobody gets chopped for a bad lineup" : "Lineups set themselves: your best scores count each week", form.bestball)}${slateOn() && form.season === "h2h" && scoringType(sp) === "points" && curSlate() && curSlate().games.length >= 8 ? toggle("hzOn", "Heist", "Right after the draft, everyone secretly shields their own starters and steals or jinxes the other team's", form.hzOn) : ""}${form.season === "h2h" && !form.vampOn && !heist() && scoringType(sp) === "points" ? toggle("median", "Median game", "Also play the league median, for a second win or loss each week", form.median) : ""}</div>`}</section>
         ${form.sport === "nfl" ? `<section class="nl-sec" style="padding-top:0"><div class="nl-bb" style="margin-top:0">${toggle("confOn", "Conference limit", "No more than two starters from one FBS college conference, like the SEC or the Mountain West", form.confOn)}</div></section>` : ""}
-        ${twistsHtml()}
-        <section class="nl-sec nl-ess">
-          <div class="nl-name"><label for="n-name">League name</label><input id="n-name" type="text" maxlength="40" required value="${esc(form.name || "")}" placeholder="Name your league" autocomplete="off"></div>
-          <div class="g2">${fld("Your name", `<input id="n-me" type="text" maxlength="24" required value="${esc(form.me || "")}" autocomplete="name">`, "", "n-me")}${fld("Your team's name", `<input id="n-team" type="text" maxlength="28" value="${esc(form.team || "")}" placeholder="Optional">`, "", "n-team")}</div>
-          ${fld("Teams", stepper("teams", teamVals(), form.teams, (x) => `${x} teams`, "Teams"), teamsHint())}
-          ${fld("Scoring", cards("scoring", presets, form.scoring, "Scoring", presets.length > 4 ? 3 : presets.length))}
-          <div class="nl-dr">${fld("Draft", seg("type", draftTypes(sp).map((k) => [k, DRAFT_SHORT[k] || F.FORMATS[k]]), form.type, "Draft format", { wrap: true }), esc(DRAFTS[form.type] || ""))}
+        <section class="nl-sec"><h2 class="nl-h">Scoring</h2>
+          ${fld("", cards("scoring", presets, form.scoring, "Scoring", presets.length > 4 ? 3 : presets.length))}
+        </section>
+        <section class="nl-sec"><h2 class="nl-h">The draft</h2>
+          <div class="nl-dr">${pickCards("type", draftTypes(sp).map((k) => [k, DRAFT_SHORT[k] || F.FORMATS[k], DRAFTS[k] || ""]), form.type, "Draft format")}
           ${triviaOk() ? toggle("tvOn", "Trivia draft", `On the clock, answer an easy ${{ nfl: "football", nba: "basketball", mlb: "baseball" }[sp.key] || "sports"} question first: four choices, 15 seconds. Miss it and your pick moves to the end of the round`, form.tvOn) : ""}
           ${rlOk() ? toggle("rlOn", "Team roulette", `Each pick, a wheel picks the ${sp.key === "nfl" ? "NFL" : sp.key === "nba" ? "NBA" : "MLB"} team you have to draft from`, form.rlOn,
             `<div class="g2">${fld("The wheel spins", seg("rlRound", [[0, "Every pick"], [1, "Once a round, same team for all"]], form.rlRound, "The wheel spins", { wrap: true }))}${fld("Re-spins a team", seg("respins", [[0, "None"], [1, "1"], [2, "2"], [3, "3"]], form.respins, "Re-spins a team"))}</div>`) : ""}
           ${noRoom() ? "" : fld(auction ? "Bid clock" : "Pick clock", seg("clock", live, form.clock, auction ? "Bid clock" : "Pick clock", { wrap: true }), auction ? "Every bid resets the clock." : form.clock >= 3600 ? "A slow draft: managers with email alerts get one when they're up." : "When a clock runs out, the best player left is taken.")}</div>
           ${capOn() ? capHtml() : sealedOn() ? lockHtml() : draftTimeHtml()}
         </section>
+        ${twistsHtml()}
         <section class="nl-sec"><h2 class="nl-h">Fine-tune</h2><p class="nl-sub">Every rule and what it's set to. Open one to change it.</p><div class="nr-l">${rows}</div></section>
         <div class="nl-bar"><div class="nl-sum">${icon(sp.key, "nl-sum-ic")}<span><b id="tk-name">${esc(form.name || "Your league")}</b><small>${esc(V.line)}</small></span></div>
           <p id="n-why" role="alert"></p><span class="grow"></span><button type="button" class="btn ghost" data-a="list">Cancel</button><button type="submit" class="btn go"${busy ? " disabled" : ""}>${busy ? (rematch ? "Setting it up…" : "Making the league…") : rematch ? "Run it back" : oneWeek() ? "Make the game" : "Make the league"}</button></div>
@@ -444,7 +448,9 @@
         ${toggle("crownOn", "Kingslayer", faab ? "One team wears the crown. Beat the king to take it and the bounty, which grows every week he holds it" : "Needs FAAB waivers: the bounty is paid in FAAB", form.crownOn && faab,
           `<div class="g2">${fld("Bounty grows", seg("crownStep", [[5, "$5"], [10, "$10"], [20, "$20"]], form.crownStep, "Bounty grows"), "A week, while the king holds the crown. Week 1's top scorer is the first king.")}${fld("The king earns", seg("crownKeep", [[0, "$0"], [5, "$5"], [10, "$10"]], form.crownKeep, "The king earns"), "For each week he survives.")}</div>`)}
         ${toggle("hangOn", "The Hangover", "Last week's winners can't add free agents or put in claims this week", form.hangOn)}`;
-    return `<section class="nl-sec"><h2 class="nl-h">Twists${on ? ` <span class="tag info">${on} on</span>` : ""}</h2><p class="nl-sub">${gl ? "An extra rule on top of the guillotine." : "Extra rules on top of the format. Mix any of them."}</p><div class="stack tw-l">${body}</div></section>`;
+    // folded until you want them; open on its own once one is on
+    const open = on || form.twOpen;
+    return `<section class="nl-sec"><details class="nl-tw" id="nl-tw"${open ? " open" : ""}><summary><span style="display:grid;gap:2px"><b>Twists${on ? ` <span class="tag info">${on} on</span>` : ""}</b><small>${gl ? "An optional extra rule on top of the guillotine." : "Optional extra rules on top of the format: Robin Hood, Kingslayer and more."}</small></span><span class="chev" aria-hidden="true"></span></summary><div class="stack tw-l nl-bb">${body}</div></details></section>`;
   }
   // the games a one-week football game plays: this week or next, a slate, and for one game or your own pick, the games
   function slateSection() {
@@ -741,7 +747,7 @@
       // the vampire (the commissioner, or a random team) sits out the draft
       const vampire = vampOk() && form.vamp !== "off" ? (form.vamp === "me" ? 0 : Math.floor(Math.random() * n)) : null;
       const D = F.create({ sport, type: draftType(), teams: n, sit: vampire != null ? [vampire] : undefined, seed: Math.floor(Math.random() * 2 ** 31), now: Date.now(), lineup, bench, scoring,
-        botDelay: 3000, clock: auction ? 0 : form.clock, bidClock: auction ? form.clock : 15, nomClock: 30, budget: sd ? 50 : 200, name: form.name.trim(),
+        botDelay: 2000, clock: auction ? 0 : form.clock, bidClock: auction ? form.clock : 15, nomClock: 30, budget: sd ? 50 : 200, name: form.name.trim(),
         trades: form.trades !== 0 && !noRoom() && !trivia(), curve: form.type === "mystery" ? F.pickCurve(players, total) : null, reveal: form.type === "mystery" ? form.reveal || "start" : undefined });
       D.teams.forEach((t, i) => (t.color = (i * 5) % 12));
       if (form.type === "pack") F.dealPacks(D, players, sport);
@@ -861,12 +867,16 @@
   }
   // redraw the form and put focus back where it was
   const redraw = (focusId) => render().then(() => { const el = focusId && (document.getElementById(focusId) || (focusId.startsWith("n-pick-") && $(`.su [data-${focusId.split("-")[2]}="${focusId.split("-").slice(3).join("-")}"]`))); if (el && !el.disabled) el.focus({ preventScroll: true }); });
+  // the twists stay open or closed across redraws
+  app.addEventListener("toggle", (e) => { if (e.target && e.target.id === "nl-tw") form.twOpen = e.target.open; }, true);
   app.addEventListener("click", (e) => {
     if (!e.target.closest(".su")) return;
     const row = e.target.closest("[data-row]");
     if (row) { grab(); const k = row.dataset.row; form.open = form.open[k] ? {} : { [k]: 1 }; render().then(() => { const h = $(`.su [data-row="${k}"]`); if (h) { h.focus({ preventScroll: true }); const r = h.getBoundingClientRect(); if (r.top < 70 || r.top > innerHeight - 160) h.scrollIntoView({ block: "start", behavior: "smooth" }); } }); return; }
     const md = e.target.closest("[data-mode]");
     if (md) { grab(); const k = md.dataset.mode === "week" ? "week" : form.lastKind || "redraft"; if (k === "week") oneWeekDefaults(); setKind(k); redraw(`n-pick-mode-${md.dataset.mode}`); return; }
+    const ty = e.target.closest("button[data-type]");
+    if (ty) { grab(); form.type = ty.dataset.type; derive(); redraw(`n-pick-type-${form.type}`); return; }
     const sk = e.target.closest("[data-slkind]");
     if (sk) { grab(); form.slKind = sk.dataset.slkind; if (form.slKind === "custom" && !(form.slGames || []).length && slWeek()) form.slGames = SL.open(slWeek()).slice(0, 3).map((g) => g.id); derive(); redraw(`n-pick-slkind-${form.slKind}`); return; }
     const so = e.target.closest("[data-slone]");
