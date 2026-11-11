@@ -223,6 +223,9 @@ owns which team, the invite code and the save order. It also stamps each team's 
   room is up (or right away for a league in season), with the same version tag as `live.js`. In a slow draft (an hour or more a pick), managers get an email when they're on the clock.
 - **The season** starts the Monday after the draft (Tuesday for football) at 13:00 UTC and runs on the real calendar.
   Basketball and football leagues are scored on real box scores (see Real scoring).
+- **Bots on time.** Every save to a live draft wakes `fk-clock ?league=<id>` (the `fk_wake_clock` trigger). If the
+  next pick is a bot's, or a manager's clock running out, within nine seconds, it waits, reads the draft again and
+  makes it, and that save wakes the next call. A draft of bots runs at its bot pace with no page open.
 - **The clock job.** `supabase/functions/fk-clock` runs every five minutes from pg_cron. It plays out ended weeks,
   waivers and trade reviews, and finishes overdue picks, so leagues keep moving with no page open. It loads the
   engine from the live site.

@@ -78,19 +78,17 @@ async function loadClass(S: any, sport: string) {
   return S.prospectClass ? S.prospectClass(boards[sport].data, sport) : null;
 }
 
-async function tickLeagues(token: string) {
-  const FK = await loadEngine();
+// One league's turn: overdue picks in a live draft, or an ended week, waivers and trades in a season, saved with the
+// version it started from. one: a single league woken by its own save (see bots below), not the five-minute sweep.
+async function advance(FK: any, token: string, l: any, one: boolean) {
   const { sports: S, value: V, draft: F, league: G, season: Z } = FK;
-  const list = await rpc("fk_clock_list", { p_token: token });
-  if (list.error) return { error: list.error };
-  const report: any[] = [];
-  for (const l of list.leagues as any[]) {
-    const out: any = { id: l.id };
-    try {
+  const out: any = { id: l.id };
+  try {
       const now = Date.now();
       let D = l.draft, L = l.league;
-      // a live draft someone saved in the last minute has a page driving it
-      if (!L && now - l.updated < 60e3) { out.skip = "busy"; report.push(out); continue; }
+      // a live draft someone saved in the last minute has a page driving it (the five-minute sweep leaves it alone;
+      // a nudge for that league, right after a save, is how the server keeps its bots moving)
+      if (!one && !L && now - l.updated < 60e3) { out.skip = "busy"; return out; }
       const data = await loadData(l.sport);
       const doc = L ? L.draft || D : D;
       const sport = S.withScoring(S.attach(Object.assign({}, S[l.sport]), data), doc.scoringSpec);
@@ -142,13 +140,21 @@ async function tickLeagues(token: string) {
           changed = true;
         }
       } else changed = Z.catchUp(L, G.context(L, players, sport, hooks), now);
-      if (!changed) { report.push(out); continue; }
+      if (!changed) return out;
       const events = Z.events(base, { draft: D, league: L }, { name: l.name, url: `${SITE}play.html?id=${encodeURIComponent(l.id)}`, seats: l.seats, me: null, byId, now });
       const r = await rpc("fk_clock_save", { p_token: token, p_id: l.id, p_version: l.version, p_draft: base.league ? null : D, p_league: L, p_events: events });
       Object.assign(out, { saved: !!r.ok, error: r.error, emails: events.length });
-    } catch (e) { out.error = String((e as Error).message || e); }
-    report.push(out);
-  }
+  } catch (e) { out.error = String((e as Error).message || e); }
+  return out;
+}
+
+async function tickLeagues(token: string) {
+  const FK = await loadEngine();
+  const { sports: S, value: V, draft: F, league: G, season: Z } = FK;
+  const list = await rpc("fk_clock_list", { p_token: token });
+  if (list.error) return { error: list.error };
+  const report: any[] = [];
+  for (const l of list.leagues as any[]) report.push(await advance(FK, token, l, false));
   return { leagues: report };
 }
 
@@ -226,9 +232,38 @@ async function sendMail(token: string) {
   return { sent: ids.length - Object.keys(errors).length, failed: Object.keys(errors).length };
 }
 
+// Bots on time. Every save to a live draft (fk_wake_clock, a database trigger) calls ?league=<id>: if the next pick
+// is a bot's, or a manager's clock running out, within the next nine seconds, wait for it, read the draft again and
+// make it. That save wakes the next call, so a run of bot picks keeps going with nobody's page open. A page that
+// saved first wins (the save carries its version) and this call just stops.
+async function wakeOne(token: string, id: string) {
+  const FK = await loadEngine();
+  const F = FK.draft;
+  const get = async () => { const r = await rpc("fk_clock_one", { p_token: token, p_id: id }); return r && r.leagues && r.leagues[0]; };
+  let l = await get();
+  if (!l || l.league || !l.draft || l.draft.phase !== "live" || l.draft.paused) return { id, skip: "not drafting" };
+  const D = l.draft, now = Date.now();
+  let due = now;
+  if (D.type !== "auction" && !D.packs) {
+    const c = F.onClock(D, now);
+    if (!c) return { id, skip: "no pick" };
+    due = F.isBot(D.teams[c.team]) ? D.clockStart + (D.botDelay || 0) : c.deadline;
+  }
+  if (!Number.isFinite(due) || due - now > 9000) return { id, skip: "not due yet" };
+  await new Promise((ok) => setTimeout(ok, Math.max(0, due - Date.now()) + 300));
+  l = await get();
+  if (!l) return { id, skip: "gone" };
+  return advance(FK, token, l, true);
+}
+
 Deno.serve(async (req) => {
   const token = req.headers.get("x-fk-token") || "";
   if (!token) return new Response("Not the clock", { status: 401 });
+  const one = new URL(req.url).searchParams.get("league");
+  if (one) {
+    const r = await wakeOne(token, one).catch((e) => ({ id: one, error: String(e.message || e) }));
+    return new Response(JSON.stringify(r), { headers: { "Content-Type": "application/json" } });
+  }
   const leagues = await tickLeagues(token).catch((e) => ({ error: String(e.message || e) }));
   if ((leagues as any).error === "no") return new Response("Not the clock", { status: 401 });
   const mail = await sendMail(token).catch((e) => ({ error: String(e.message || e) }));

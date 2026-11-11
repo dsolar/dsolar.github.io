@@ -449,3 +449,40 @@ drop trigger if exists fk_nudge_post on public.fk_posts;
 create trigger fk_nudge_post after insert on public.fk_posts for each row execute function public.fk_nudge_post();
 revoke all on function public.fk_nudge_save() from public, anon, authenticated;
 revoke all on function public.fk_nudge_post() from public, anon, authenticated;
+
+-- ---------- bots on time (Nov 2026) ----------
+-- One league for the clock, in fk_clock_list's shape (a live draft woken by its own save).
+create or replace function public.fk_clock_one(p_token text, p_id text) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare out jsonb; nowms bigint := (extract(epoch from now()) * 1000)::bigint;
+begin
+  if not fk_token_ok(p_token) then return jsonb_build_object('error', 'no'); end if;
+  select coalesce(jsonb_agg(jsonb_build_object('id', l.id, 'version', l.version, 'name', l.name, 'sport', l.sport,
+    'updated', (extract(epoch from l.updated_at) * 1000)::bigint, 'seats', fk_seat_map(l.id),
+    'draft', case when l.league is null then l.draft else null end, 'league', l.league)), '[]'::jsonb) into out
+  from fk_leagues l where l.id = p_id;
+  return jsonb_build_object('leagues', out, 'now', nowms);
+end $$;
+revoke all on function public.fk_clock_one(text, text) from public, anon, authenticated;
+grant execute on function public.fk_clock_one(text, text) to anon;
+
+-- Every save to a live draft wakes the clock for that league (fk-clock ?league=<id>), which makes the next bot pick
+-- when it's due; that save wakes the next call. pg_net sends it, so the save never waits.
+create or replace function public.fk_wake_clock() returns trigger
+language plpgsql security definer set search_path = public, net as $$
+begin
+  if new.version is distinct from old.version and new.league is null and new.draft->>'phase' = 'live'
+     and coalesce((new.draft->>'paused')::boolean, false) = false then
+    begin
+      perform net.http_post(
+        url := 'https://baxrczyufqbzrogftmyn.supabase.co/functions/v1/fk-clock?league=' || new.id,
+        headers := jsonb_build_object('Content-Type', 'application/json', 'x-fk-token', (select value from public.fk_config where name = 'mailer_token')),
+        body := '{}'::jsonb, timeout_milliseconds := 30000);
+    exception when others then null;
+    end;
+  end if;
+  return new;
+end $$;
+revoke all on function public.fk_wake_clock() from public, anon, authenticated;
+drop trigger if exists fk_wake_clock on public.fk_leagues;
+create trigger fk_wake_clock after update of version on public.fk_leagues for each row execute function public.fk_wake_clock();
