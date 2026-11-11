@@ -100,9 +100,17 @@ async function tickLeagues(token: string) {
       const weeks = await loadWeeks(l.sport, data.season);
       // best ball values upside and depth; a guillotine keeps normal ranks
       const bb = L ? !!L.settings.bestBall && L.settings.format !== "guillotine" : !!(doc.season && doc.season.bestBall && doc.season.format !== "guillotine");
-      V.evaluate(sport, players, { teams: doc.teams.length, lineup: doc.lineup, bench: doc.bench, scoring: doc.scoring, budget: doc.auction ? doc.auction.budget : 200, week: S.weekFor ? S.weekFor(L || D, sport) : null, dynasty: !!dyn, dynastyRanks: dyn ? await loadDynasty(l.sport) : null, bestBall: bb, weeks: bb ? weeks : null });
+      V.evaluate(sport, players, { teams: doc.teams.length, lineup: doc.lineup, bench: doc.bench, scoring: doc.scoring, budget: doc.auction ? doc.auction.budget : 200, week: S.weekFor ? S.weekFor(L || D, sport) : null, oneDay: !!(S.dayOf && S.dayOf(L || D)), dynasty: !!dyn, dynastyRanks: dyn ? await loadDynasty(l.sport) : null, bestBall: bb, weeks: bb ? weeks : null });
       const byId = Object.fromEntries(players.map((p: any) => [p.id, p]));
-      const hooks = { real: weeks, prospects: dyn && (l.sport === "nfl" || l.sport === "nba") ? await loadClass(S, l.sport) : null };
+      // a one-day league scores its own games: their box scores and states from fk-live ?games=, laid over the weeks file
+      let real = weeks;
+      const gids = L && Z.slateGames ? Z.slateGames(L) : null;
+      if (weeks && gids && gids.length) {
+        const gm = await fetch(`${URL_}/functions/v1/fk-live?sport=${encodeURIComponent(l.sport)}&games=${gids.join(",")}`, { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` } }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+        real = Object.assign({}, weeks, { games: {} });
+        if (gm) Z.mergeGames(real, gm);
+      }
+      const hooks = { real, prospects: dyn && (l.sport === "nfl" || l.sport === "nba") ? await loadClass(S, l.sport) : null };
       const base = structuredClone({ draft: D, league: L });
       let changed = false;
       if (!L) {

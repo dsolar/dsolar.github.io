@@ -75,8 +75,10 @@
     // a one-week league set for this week starts in the week that's on, if enough of it is left to play
     // (a slate or a showdown plays the week its games are in, however little of it is left)
     const lastKick = s.slate ? s.slate.last : s.showdown ? s.showdown.at : null, cur = weekOf(at, sport.key);
-    const thisWeek = lastKick != null ? lastKick < cur + 7 * DAY : s.when === "now" && sport.key !== "mlb" && cur + 7 * DAY - at >= MIN_LEFT;
-    const start = thisWeek ? cur : startAfter(at, sport.key);
+    // a one-day slate plays its own night: it starts now and its one week ends with its last game (settings.span)
+    const day = s.slate && s.slate.day && !s.showdown ? s.slate : null;
+    const thisWeek = day ? false : lastKick != null ? lastKick < cur + 7 * DAY : s.when === "now" && sport.key !== "mlb" && cur + 7 * DAY - at >= MIN_LEFT;
+    const start = day ? at : thisWeek ? cur : startAfter(at, sport.key);
     // o.real: a weeks file (real scoring if its box scores reach the league's start) or true
     if (o.real && (o.real === true || realCovers(o.real, start))) settings.real = true;
     // a showdown: one game's two teams, a captain who counts half again, and free agency with no waiting
@@ -86,6 +88,12 @@
     // kickoff its lock, and free agency with no waiting
     const sl = s.slate && !sd ? s.slate : null;
     if (sl) Object.assign(settings, { pool: sl.teams.slice(), waiverDays: 0, gameLock: "off", slate: { kind: sl.kind, label: sl.label, week: sl.week, first: sl.first, last: sl.last, games: sl.games.length } }, sl.mult ? { mult: Object.assign({}, sl.mult) } : {});
+    // a one-day slate scores its own games (settings.slate.list, from their box scores) and its week runs from now to
+    // three hours after the last tip; it closes once every game is final (league.js)
+    if (day) {
+      Object.assign(settings.slate, { day: day.day, list: day.games.map((g) => ({ id: g.id, away: g.away, home: g.home, at: Date.parse(g.at) })) });
+      settings.span = { end: Math.max(at + HOUR, day.last + 3 * HOUR) };
+    }
     const L = G.create({ sport, draft: D, name: o.name || D.name, season: o.season || "", now: at, start, scoring: D.scoring, settings });
     // its kickoff locks everyone, even before a page has seen the live feed
     if (sd && sd.at && L.week === 1) L.kick = { week: 1, teams: Object.fromEntries(sd.teams.map((t) => [t, sd.at])) };
@@ -151,6 +159,23 @@
     else (weeks.weeks = weeks.weeks || {})["live"] = { start: live.start, end: live.end, final: false, lines: live.players || {} };
     weeks.live = { start: live.start, updated: live.updated, teams: live.teams || {}, games: live.games || {}, proj: live.proj || null, boxes: live.boxes || null, players: live.players || {}, stale: !!live.stale, errors: live.errors || [], feed: feed.slice(-300) };
     return before !== live.updated || wasStale !== !!live.stale;
+  }
+  // A one-day league's game ids (to ask fk-live ?games= for), or null
+  const slateGames = (L) => { const sl = L && L.settings && L.settings.slate; return sl && sl.day && Array.isArray(sl.list) ? sl.list.map((g) => g.id) : null; };
+  // Lays fk-live ?games= over a weeks file: weeks.games[id] = { state, lines } for each game, which a one-day league
+  // scores from. A finished game is kept once seen. True if anything changed.
+  function mergeGames(weeks, res) {
+    if (!weeks || !res || !res.games) return false;
+    const g = (weeks.games = weeks.games || {});
+    let changed = false;
+    for (const [id, x] of Object.entries(res.games)) {
+      if (!x || (g[id] && g[id].state === "post" && x.state !== "post")) continue;
+      const before = g[id] ? JSON.stringify(g[id]) : "";
+      g[id] = { state: x.state || "pre", lines: x.lines || {} };
+      if (JSON.stringify(g[id]) !== before) changed = true;
+    }
+    if (changed) weeks.gamesAt = (weeks.gamesAt || 0) + 1;
+    return changed;
   }
   function catchUp(L, ctx, now) {
     if (!L) return false;
@@ -475,5 +500,5 @@
   const summary = (L) => G.summary(L);
   const standings = (L) => G.standings(L);
 
-  return { sealedKind, sealedDue, draftRoster, startAfter, weekOf, realCovers, mergeLive, begin, catchUp, driveDraft, events, keeperCost, keeperOptions, autoKeepers, nextDraft, summary };
+  return { sealedKind, sealedDue, draftRoster, startAfter, weekOf, realCovers, mergeLive, slateGames, mergeGames, begin, catchUp, driveDraft, events, keeperCost, keeperOptions, autoKeepers, nextDraft, summary };
 });

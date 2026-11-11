@@ -306,7 +306,15 @@
         sport.weekOf = n;
       }
     }
-    const oneWeek = sport.weekOf != null;
+    // One day (league.oneDay: a basketball day slate) is one game: what a player does in a game, if he plays. Out is
+    // nothing, doubtful about a third; values stay on the season scale. Like one week, the season's market ranks and
+    // streaming don't apply.
+    if (league.oneDay) {
+      const f = (p) => weekPlays(p);
+      if (sc.type === "points") for (const p of players) p.v *= f(p);
+      else { const lo = Math.min(...players.map((p) => p.v)); for (const p of players) { const k = f(p); if (k < 1) p.v = k === 0 ? lo - 1 : lo + (p.v - lo) * k; } }
+    }
+    const oneWeek = sport.weekOf != null || !!league.oneDay;
     if (league.bestBall && sc.type === "points") bestBall(sport, players, league, sc);
     const repl = replacement(sport, players, league);
     for (const p of players) {

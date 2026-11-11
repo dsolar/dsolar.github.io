@@ -35,7 +35,7 @@
     key: "nba", name: "Basketball", league: "NBA", unit: "game",
     positions: ["PG", "SG", "SF", "PF", "C"],
     colors: { PG: 1, SG: 2, SF: 3, PF: 4, C: 5 },
-    slots: { PG: ["PG"], SG: ["SG"], G: ["PG", "SG"], SF: ["SF"], PF: ["PF"], F: ["SF", "PF"], C: ["C"], UTIL: "*", BN: "*" },
+    slots: { PG: ["PG"], SG: ["SG"], G: ["PG", "SG"], SF: ["SF"], PF: ["PF"], F: ["SF", "PF"], C: ["C"], UTIL: "*", CPT: "*", BN: "*" },   // CPT: a one-day captain
     lineup: ["PG", "SG", "G", "SF", "PF", "F", "C", "UTIL", "UTIL", "UTIL"],
     bench: 3,
     posMax: { C: 5 },
@@ -359,6 +359,8 @@
   // A league drawn from a few pro teams (a showdown's one game): doc is a draft (its season) or a league (its settings).
   const poolOf = (doc) => (doc && ((doc.settings && doc.settings.pool) || (doc.season && doc.season.showdown && doc.season.showdown.teams) || (doc.season && doc.season.slate && doc.season.slate.teams))) || null;
   const inPool = (doc, p) => { const t = poolOf(doc); return !t || t.includes(p.t); };
+  // A one-day game (basketball's day slates): the slate's day, from a league's settings or a draft's season, or null
+  const dayOf = (doc) => { const sl = doc && ((doc.settings && doc.settings.slate) || (doc.season && doc.season.slate)); return (sl && sl.day) || null; };
   // A showdown: one game, a captain who scores half again, five spots that take anyone, no bench
   // The NFL week a one-week game or a showdown plays (doc: a league, with settings, or a draft, with season): its
   // slate's week, or for a showdown made before showdowns kept theirs, the week its game is in (New York time, so a
@@ -412,5 +414,5 @@
   // a short label for a tag next to a player's name
   const confShort = (c) => ({ "Conference USA": "C-USA", "Mountain West": "MWC", American: "AAC" })[c] || c;
 
-  return { conference, confOf, power4, confShort, ALL, nba, nfl, mlb, poolOf, inPool, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
+  return { conference, confOf, power4, confShort, ALL, nba, nfl, mlb, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
 });

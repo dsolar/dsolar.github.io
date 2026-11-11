@@ -123,12 +123,13 @@
   const isRoto = (L) => L.settings.format === "roto";
   const isAlive = (L, teamId) => !isGuillotine(L) || (L.alive || []).includes(teamId);
   const totalWeeks = (L) => L.settings.weeks + L.settings.playoffWeeks;
-  const weekStart = (L, w) => L.start + (w - 1) * 7 * DAY;
+  // A one-day league (settings.span) has one short week: from its start to span.end, three hours after its last tip
+  const weekStart = (L, w) => { const sp = L.settings && L.settings.span; return sp && w > 1 ? sp.end + (w - 2) * 7 * DAY : L.start + (w - 1) * 7 * DAY; };
   const log = (L, at, e) => { const x = Object.assign({ id: L.nextId++, at, week: L.week }, e); L.tx.push(x); return x; };
 
   /* ---------- moves during a week ---------- */
   // How far into the current week `now` is, 0 to 1.
-  const weekFrac = (L, now) => Math.max(0, Math.min(1, (now - weekStart(L, L.week)) / (7 * DAY)));
+  const weekFrac = (L, now) => Math.max(0, Math.min(1, (now - weekStart(L, L.week)) / Math.max(HOUR, weekStart(L, L.week + 1) - weekStart(L, L.week))));
   // A player who joins a team mid-week only scores the rest of that week for it.
   // With game-time locks he can only start for it before his first game, so a pickup made before then counts his
   // whole week, not the share of the week that was left.
@@ -349,12 +350,28 @@
   function realWeek(L, ctx, w) {
     const R = ctx.hooks && ctx.hooks.real;
     if (!L.settings.real || !R || !R.weeks) return null;
+    const sl = L.settings.slate;
+    if (sl && sl.day && Array.isArray(sl.list)) return dayWeek(L, ctx, R, sl);
     if (ctx._rwOf !== R) { ctx._rw = {}; ctx._rwOf = R; }
     if (w in ctx._rw) return sinceStart(L, ctx, ctx._rw[w]);
     const t = weekStart(L, w);
     const hit = Object.values(R.weeks).find((x) => Math.abs(Date.parse(x.start + "T12:00:00Z") - t) < 2.5 * DAY);
     ctx._rw[w] = hit || { lines: {}, final: false, missing: true };
     return sinceStart(L, ctx, ctx._rw[w]);
+  }
+  // A one-day league's week: its own games' box scores added up (R.games, from fk-live ?games= by season.mergeGames),
+  // final once every game is over (a postponed game, "off", counts as over with nothing in it). Worked out again only
+  // when the games change.
+  function dayWeek(L, ctx, R, sl) {
+    const gs = R.games || {}, c = ctx._day || (ctx._day = {});
+    if (c.R === R && c.at === R.gamesAt && c.out) return c.out;
+    const lines = {};
+    const add = (a, b) => (Array.isArray(b) ? b.map((x, i) => (x || 0) + ((a && a[i]) || 0)) : b && typeof b === "object" ? Object.fromEntries(Object.keys(b).map((k) => [k, add(a && a[k], b[k])])) : b);
+    for (const g of sl.list) { const x = gs[g.id]; if (x && x.lines) for (const [id, line] of Object.entries(x.lines)) lines[id] = lines[id] ? add(lines[id], line) : line; }
+    const done = (g) => gs[g.id] && (gs[g.id].state === "post" || gs[g.id].state === "off");
+    c.R = R; c.at = R.gamesAt;
+    c.out = { start: "day:" + sl.day, lines, final: sl.list.every(done), missing: !sl.list.some((g) => gs[g.id]), day: true };
+    return c.out;
   }
   // A league that began midweek (L.baseline: each player's line for that week when it began) counts only what came
   // after: the week's lines less the baseline. Worked out again only when the week's lines change (a live poll).
@@ -376,7 +393,7 @@
     const end = weekStart(L, L.week + 1);
     if (L.week > totalWeeks(L) || now < end) return false;
     const rw = realWeek(L, ctx, L.week);
-    return !rw || !!rw.final || now >= end + 3 * DAY;
+    return !rw || !!rw.final || now >= end + (L.settings.span ? DAY : 3 * DAY);
   }
   // Once a week's time is up its lineups are locked, even while the league waits for the last box scores.
   const lineupLocked = (L, w, now) => w < L.week || (now != null && now >= weekStart(L, w + 1));
@@ -454,6 +471,8 @@
   const RATIO = /^(avg|obp|ops|era|whip|fg|ft)$/, PLAYS = [[/^(out|o|ir|il|sus|suspended|pup|nfi|dtd-out)/i, 0], [/^(doubtful|d)$/i, 0.3], [/^(questionable|q|gtd|dtd|day-to-day)$/i, 0.85]];
   function gamesLeft(L, ctx, p, w, frac) {
     const R = ctx.hooks && ctx.hooks.real, lv = R && R.live, rw = realWeek(L, ctx, w);
+    // a one-day league: his team's game tonight, if it hasn't finished (one in progress counts half)
+    if (rw && rw.day) { const sl = L.settings.slate, g = sl.list.find((x) => x.away === p.t || x.home === p.t), st = g && R.games && R.games[g.id] ? R.games[g.id].state : "pre"; return !g ? 0 : st === "pre" ? 1 : st === "in" ? 0.5 : 0; }
     if (lv && rw && !rw.missing && rw.start === lv.start && lv.teams) { const t = lv.teams[p.t]; return t ? t.left + 0.5 * t.live : 0; }
     const wk = WEEK[ctx.sport.key] || { weeks: 20 };
     return Math.max(0, 1 - frac) * (GAMES[ctx.sport.key] || 82) / wk.weeks;
@@ -582,21 +601,32 @@
   const GAMES = { nba: 82, nfl: 17, mlb: 162 }, SPREAD = { nba: 0.38, nfl: 0.62, mlb: 1.0 };
   function outlook(L, ctx, teamId, w) {
     const R = ctx.hooks && ctx.hooks.real, lv = R && R.live, rw = realWeek(L, ctx, w);
-    if (!lv || !rw || rw.missing || rw.start !== lv.start || !lv.teams) return null;
+    // a one-day league reads its own games' states; anything else, the live feed's week
+    const teams = rw && rw.day ? dayTeams(L, R) : lv && rw && !rw.missing && rw.start === lv.start ? lv.teams : null;
+    if (!teams) return null;
     const sc = scoring(L, ctx), g = GAMES[ctx.sport.key] || 82, k = SPREAD[ctx.sport.key] || 0.5;
     let rem = 0, vr = 0, played = 0, left = 0;
     const lu = lineupFor(L, ctx, teamId, w);
     for (const id of lu.filter(Boolean)) {
-      const p = ctx.byId[id], t = p && lv.teams[p.t];
+      const p = ctx.byId[id], t = p && teams[p.t];
       if (!p || !t) continue;
       // a points rate is per game the player plays (sc.games a season), and a player who's out won't add to it (a
       // one-week game's values, sport.weekOf, already count that)
-      const m = slotMult(L, lu.indexOf(id), id), base = sc.type === "points" ? ((p.v || 0) / (sc.games || g)) * (ctx.sport.weekOf != null ? 1 : plays(p)) : 0;
+      const m = slotMult(L, lu.indexOf(id), id), base = sc.type === "points" ? ((p.v || 0) / (sc.games || g)) * (ctx.sport.weekOf != null || (L.settings.slate && L.settings.slate.day) ? 1 : plays(p)) : 0;
       const togo = t.left + 0.5 * t.live, per = base * m;
       rem += per * togo; vr += togo * (ctx.sport.key === "nfl" ? m * m * footballVar(base) : (k * per) ** 2);
       played += t.played + 0.5 * t.live; left += togo;
     }
     return { rem, vr, played, left };
+  }
+  // each pro team's game in a one-day league, like the live feed's teams: { ABBR: { played, live, left } }
+  function dayTeams(L, R) {
+    const out = {}, gs = (R && R.games) || {};
+    for (const g of L.settings.slate.list) {
+      const st = gs[g.id] ? gs[g.id].state : "pre", t = { played: st === "post" || st === "off" ? 1 : 0, live: st === "in" ? 1 : 0, left: st === "pre" ? 1 : 0 };
+      out[g.away] = t; out[g.home] = Object.assign({}, t);
+    }
+    return out;
   }
   const liveWin = (a, b, vr) => (vr <= 1e-6 ? (a > b ? 1 : a < b ? 0 : 0.5) : 1 / (1 + Math.exp(-1.702 * (a - b) / Math.sqrt(vr))));
   // A simple live win probability: the projected margin shrinks toward the current margin as the week plays out.

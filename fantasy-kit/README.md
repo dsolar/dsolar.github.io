@@ -225,6 +225,26 @@ owns which team, the invite code and the save order. It also stamps each team's 
   on. They cover trade offers and answers, waiver results, weekly results, the draft starting and finishing, and
   your turn in a slow draft. `fk-clock` sends them with Resend once `RESEND_API_KEY` and `FK_MAIL_FROM` are set.
 
+## One day (basketball)
+
+The One week page (`week.html?s=nba`) is One day for basketball: tonight's and tomorrow's NBA games as DraftKings-style
+slates (the main slate, the early and late games, one game, or games you pick).
+
+- **The schedule.** `fk-live?sport=nba&slates=1` gives each day shaped like a week with a `day`, so `slates.js` reads
+  football weeks and basketball days the same way. A day slate carries `{ sport, day }` and no week.
+- **Lineups.** `FK.slates.lineup(n, teams, "nba")`: one to three games is a captain at 1.5x and five flex; four or more
+  start PG, SG, SF, PF, C, G, F and UTIL. Basketball has a `CPT` slot for it.
+- **Values.** `evaluate(..., { oneDay: true })` values one game: a player ruled out is worth nothing, a doubtful one
+  about a third. `FK.sports.dayOf(doc)` says whether a draft or league is a one-day game.
+- **The league.** `season.begin` starts it when the draft ends, with `settings.span.end` three hours after the last tip
+  and the night's games in `settings.slate.list`. `league.weekStart` honors the span.
+- **Scoring.** It counts only its own games: `fk-live?sport=nba&games=id1,id2` gives each game's box score and state,
+  whatever week it's in, and `season.mergeGames` lays them over the weeks file as `real.games`. The week closes once
+  every game is final (or postponed). The league page and the `fk-clock` job both fetch them.
+
+`node --test tests/fantasydays.test.mjs` covers the day slates, the lineups, one-game values, a night scored only on its
+own games and closing once they're final, a showdown's captain, a postponed game, and live win chances.
+
 `node --test tests/fantasyseason.test.mjs` covers the season start date, a draft finishing on the clock, the
 emails for slow-draft turns, weekly results and chops, and trade offers and answers.
 

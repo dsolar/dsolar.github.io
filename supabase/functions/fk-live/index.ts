@@ -8,6 +8,11 @@
 //   football    Sleeper's live weekly stats (the same feed as weeks-nfl.json), game states from ESPN's scoreboard
 //   baseball    MLB's Stats API schedule and box scores, Monday to Sunday weeks
 //
+// Two more reads for one-day games:
+//   ?sport=nba&slates=1          today's and tomorrow's NBA games (New York days), each { id, at, away, home, state }
+//   ?sport=nba&games=id1,id2     those games' box scores and states, { games: { id: { state, lines } } }, whatever week
+//                                they're in, so a one-day league can score its own games and know when they're final
+//
 // A result is kept about a minute (table fk_live), so the feeds get a request or two a minute however many pages are
 // open, and a finished game's lines are kept for good (table fk_live_games) so they're only fetched once.
 const URL_ = Deno.env.get("SUPABASE_URL")!;
@@ -71,6 +76,23 @@ async function keep(sport: string, rows: { gid: string; day: string; final: bool
 }
 
 /* ---------- basketball ---------- */
+const nbaSummary = (id: string) => getJSON(`https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=${id}`).catch(() => null);
+// one game's lines from ESPN's summary, by player name slug, in NBA_COLS order
+function nbaBox(s: any) {
+  const out: Record<string, number[]> = {};
+  for (const side of s?.boxscore?.players || []) {
+    const st = side.statistics?.[0]; if (!st) continue;
+    const ix = (k: string) => (st.labels || []).indexOf(k);
+    for (const a of st.athletes || []) {
+      if (a.didNotPlay || !a.stats?.length) continue;
+      const v = (k: string) => a.stats[ix(k)] ?? "0";
+      const pair = (k: string) => String(v(k)).split("-").map((x) => Number(x) || 0);
+      const [fgm, fga] = pair("FG"), [tpm] = pair("3PT"), [ftm, fta] = pair("FT");
+      out[slug(a.athlete?.displayName || "")] = [1, 1, Number(v("MIN")) || 0, fgm, fga, ftm, fta, tpm, Number(v("PTS")) || 0, Number(v("REB")) || 0, Number(v("AST")) || 0, Number(v("STL")) || 0, Number(v("BLK")) || 0, Number(v("TO")) || 0];
+    }
+  }
+  return out;
+}
 const NBA_COLS = ["gp", "eg", "min", "fgm", "fga", "ftm", "fta", "tpm", "pts", "reb", "ast", "stl", "blk", "tov"];
 const NBA_TEAM: Record<string, string> = { GS: "GSW", NY: "NYK", SA: "SAS", NO: "NOP", UTAH: "UTA", WSH: "WAS", BKN: "BRK", CHA: "CHO", PHX: "PHO" };
 async function nba() {
@@ -90,19 +112,8 @@ async function nba() {
   const have = await cached("nba", games.map((g) => g.id)), fresh: any[] = [];
   const lines = await pool(games, 6, async (g) => {
     if (have[g.id]) return have[g.id];
-    const s: any = await getJSON(`https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=${g.id}`).catch(() => null);
-    const out: Record<string, number[]> = {};
-    for (const side of s?.boxscore?.players || []) {
-      const st = side.statistics?.[0]; if (!st) continue;
-      const ix = (k: string) => (st.labels || []).indexOf(k);
-      for (const a of st.athletes || []) {
-        if (a.didNotPlay || !a.stats?.length) continue;
-        const v = (k: string) => a.stats[ix(k)] ?? "0";
-        const pair = (k: string) => String(v(k)).split("-").map((x) => Number(x) || 0);
-        const [fgm, fga] = pair("FG"), [tpm] = pair("3PT"), [ftm, fta] = pair("FT");
-        out[slug(a.athlete?.displayName || "")] = [1, 1, Number(v("MIN")) || 0, fgm, fga, ftm, fta, tpm, Number(v("PTS")) || 0, Number(v("REB")) || 0, Number(v("AST")) || 0, Number(v("STL")) || 0, Number(v("BLK")) || 0, Number(v("TO")) || 0];
-      }
-    }
+    const s: any = await nbaSummary(g.id);
+    const out = nbaBox(s);
     fresh.push({ gid: g.id, day: g.day, final: g.state === "post" && !!s, lines: out });
     return out;
   });
@@ -261,19 +272,68 @@ async function nflSlates() {
   return data;
 }
 
-const BUILD: Record<string, () => Promise<any>> = { nba, nfl, mlb };
+// One-day slates: today's and tomorrow's NBA games in New York days, each { id, at, away, home, state }
+// (GET ?sport=nba&slates=1). Shaped like the NFL's weeks so the same slate code reads both: each day is a "week"
+// with a day. Kept five minutes (table fk_live, under "nba-slates"), so tip times and late scratches stay fresh.
+async function nbaSlates() {
+  const key = "nba-slates";
+  const r = await db(`fk_live?sport=eq.${key}&select=data,updated_at`);
+  const row = r.ok ? (await r.json())[0] : null;
+  if (row && Date.now() - Date.parse(row.updated_at) < 5 * 60e3) return row.data;
+  const today = nyDate(), days = [today, addDays(today, 1)];
+  const y = Number(today.slice(0, 4)), m = Number(today.slice(5, 7)), sy = m >= 7 ? y : y - 1;
+  const boards: any[] = await Promise.all(days.map((d) => getJSON(`https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${d.replace(/-/g, "")}`).catch(() => null)));
+  if (boards.every((b) => !b)) return row ? row.data : { weeks: [] };
+  const weeks = days.map((d, i) => {
+    const games = ((boards[i] && boards[i].events) || []).map((e: any) => {
+      const cs = e.competitions?.[0]?.competitors || [], side = (h: string) => cs.find((c: any) => c.homeAway === h)?.team?.abbreviation;
+      const ab = (x: string) => NBA_TEAM[x] || x;
+      return { id: String(e.id), at: e.date, away: ab(side("away")), home: ab(side("home")), state: e.status?.type?.state || "pre", off: /postpon|cancel/i.test(e.status?.type?.description || "") };
+    }).filter((g: any) => g.away && g.home && !g.off).map(({ off, ...g }: any) => g).sort((a: any, b: any) => Date.parse(a.at) - Date.parse(b.at));
+    return { day: d, start: d, end: d, games };
+  });
+  const data = { sport: "nba", season: `${sy}-${String(sy + 1).slice(2)}`, weeks, updated: new Date().toISOString() };
+  await db("fk_live", { method: "POST", headers: { Prefer: "resolution=merge-duplicates" }, body: JSON.stringify({ sport: key, data, updated_at: data.updated }) });
+  return data;
+}
 
-Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
-  const q = new URL(req.url).searchParams, sport = q.get("sport") || "";
-  if (sport === "nfl" && q.get("slates")) {
-    const data = await nflSlates().catch((e) => ({ weeks: [], error: String(e) }));
-    return new Response(JSON.stringify(data), { headers: { ...CORS, "content-type": "application/json", "cache-control": "max-age=120" } });
+// Box scores for named games (GET ?sport=nba&games=id1,id2): { games: { id: { state, lines } } }, with the week's
+// columns. Games in this week come from the week's feed (kept a minute); a game from an earlier week (a Sunday night
+// game read on Monday) from the finished games kept for good, or from ESPN. A postponed game reads "off".
+async function gamesFor(sport: string, ids: string[]) {
+  const wk = await liveData(sport).catch(() => null);
+  const out: Record<string, { state: string; lines: unknown }> = {};
+  const state: Record<string, string> = {};
+  for (const gs of Object.values((wk && wk.games) || {}) as Game[][]) for (const g of gs) state[g.id] = g.state;
+  for (const id of ids) if (state[id]) out[id] = { state: state[id], lines: (wk && wk.boxes && wk.boxes[id]) || {} };
+  const rest = ids.filter((id) => !out[id]);
+  if (rest.length) {
+    const have = await cached(sport, rest);
+    for (const id of rest) if (have[id]) out[id] = { state: "post", lines: have[id] };
+    if (sport === "nba") {
+      const fresh: any[] = [];
+      await pool(rest.filter((id) => !out[id]), 4, async (id) => {
+        const s: any = await nbaSummary(id);
+        if (!s) return;
+        const st = s.header?.competitions?.[0]?.status?.type || {}, lines = nbaBox(s);
+        const stt = /postpon|cancel/i.test(st.description || "") ? "off" : st.state || "pre";
+        out[id] = { state: stt, lines };
+        if (stt === "post") fresh.push({ gid: id, day: nyDate(Date.parse(s.header?.competitions?.[0]?.date || "") || Date.now()), final: true, lines });
+      });
+      await keep(sport, fresh);
+    }
   }
-  if (!BUILD[sport]) return new Response(JSON.stringify({ error: "sport must be nba, nfl or mlb" }), { status: 400, headers: { ...CORS, "content-type": "application/json" } });
+  const cols = wk ? (wk.lines ? { lines: wk.lines } : { line: wk.line, cols: wk.cols }) : sport === "nba" ? { line: "pg", cols: NBA_COLS } : {};
+  return { sport, ...cols, games: out, updated: new Date().toISOString() };
+}
+
+const BUILD: Record<string, () => Promise<any>> = { nba, nfl, mlb };
+// the week's feed for a sport: the kept copy if it's under a minute old, else built fresh and kept; a feed that's down
+// gives the last copy marked stale
+async function liveData(sport: string) {
   const r = await db(`fk_live?sport=eq.${sport}&select=data,updated_at`);
   const row = r.ok ? (await r.json())[0] : null;
-  if (row && Date.now() - Date.parse(row.updated_at) < FRESH_MS) return new Response(JSON.stringify(row.data), { headers: { ...CORS, "content-type": "application/json", "cache-control": "max-age=30" } });
+  if (row && Date.now() - Date.parse(row.updated_at) < FRESH_MS) return row.data;
   try {
     errors.length = 0;
     const data = await BUILD[sport]();
@@ -287,10 +347,27 @@ Deno.serve(async (req) => {
     data.updated = new Date().toISOString();
     if (errors.length) data.errors = errors.slice(0, 5);
     await db("fk_live", { method: "POST", headers: { Prefer: "resolution=merge-duplicates" }, body: JSON.stringify({ sport, data, updated_at: data.updated }) });
-    return new Response(JSON.stringify(data), { headers: { ...CORS, "content-type": "application/json", "cache-control": "max-age=30" } });
+    return data;
   } catch (e) {
-    // a feed that's down: the last result if there is one, so the pages keep what they had
-    if (row) return new Response(JSON.stringify(Object.assign({}, row.data, { stale: true })), { headers: { ...CORS, "content-type": "application/json" } });
-    return new Response(JSON.stringify({ error: String(e) }), { status: 502, headers: { ...CORS, "content-type": "application/json" } });
+    if (row) return Object.assign({}, row.data, { stale: true });
+    throw e;
+  }
+}
+const json = (data: unknown, extra: Record<string, string> = {}, status = 200) => new Response(JSON.stringify(data), { status, headers: { ...CORS, "content-type": "application/json", ...extra } });
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
+  const q = new URL(req.url).searchParams, sport = q.get("sport") || "";
+  if (sport === "nfl" && q.get("slates")) return json(await nflSlates().catch((e) => ({ weeks: [], error: String(e) })), { "cache-control": "max-age=120" });
+  if (sport === "nba" && q.get("slates")) return json(await nbaSlates().catch((e) => ({ weeks: [], error: String(e) })), { "cache-control": "max-age=60" });
+  if (!BUILD[sport]) return json({ error: "sport must be nba, nfl or mlb" }, {}, 400);
+  if (q.get("games")) {
+    const ids = [...new Set(String(q.get("games")).split(",").map((x) => x.trim()).filter((x) => /^\d{1,12}$/.test(x)))].slice(0, 20);
+    return json(await gamesFor(sport, ids).catch((e) => ({ games: {}, error: String(e) })), { "cache-control": "max-age=30" });
+  }
+  try {
+    return json(await liveData(sport), { "cache-control": "max-age=30" });
+  } catch (e) {
+    return json({ error: String(e) }, {}, 502);
   }
 });

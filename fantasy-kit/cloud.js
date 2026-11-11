@@ -149,9 +149,12 @@
 
   // the live box score feed (supabase/functions/fk-live): this week's totals so far, games in progress included
   // this NFL week's games and next week's, for one-week slates (fk-live ?slates=1); kept for the page's life
-  let slatesP = null;
-  const slates = () => (slatesP = slatesP || fetch(`${BASE}/functions/v1/fk-live?sport=nfl&slates=1`).then((r) => (r.ok ? r.json() : { weeks: [] })).catch(() => { slatesP = null; return { weeks: [] }; }));
+  // basketball's are today's and tomorrow's games, each day shaped like a week with a day (fk-live ?sport=nba&slates=1)
+  const slatesP = {};
+  const slates = (sport = "nfl") => (slatesP[sport] = slatesP[sport] || fetch(`${BASE}/functions/v1/fk-live?sport=${encodeURIComponent(sport)}&slates=1`).then((r) => (r.ok ? r.json() : { weeks: [] })).catch(() => { slatesP[sport] = null; return { weeks: [] }; }));
+  // named games' box scores and states, for a one-day league (fk-live ?games=)
+  const games = (sport, ids) => (ids && ids.length ? fetch(`${BASE}/functions/v1/fk-live?sport=${encodeURIComponent(sport)}&games=${ids.map(encodeURIComponent).join(",")}`).then((r) => (r.ok ? r.json() : null)).catch(() => null) : Promise.resolve(null));
   const live = (sport) => fetch(`${BASE}/functions/v1/fk-live?sport=${encodeURIComponent(sport)}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
 
-  FK.cloud = { token, oauth, providers, slates, user, signIn, signUp, passwordSignIn, resetPassword, setPassword, signOut, fromLink, rpc, live, now: () => Date.now() + offset, lastEmail: () => { try { return JSON.parse(localStorage.getItem("fk-auth:email")) || ""; } catch (e) { return ""; } } };
+  FK.cloud = { token, oauth, providers, slates, games, user, signIn, signUp, passwordSignIn, resetPassword, setPassword, signOut, fromLink, rpc, live, now: () => Date.now() + offset, lastEmail: () => { try { return JSON.parse(localStorage.getItem("fk-auth:email")) || ""; } catch (e) { return ""; } } };
 })(typeof window !== "undefined" ? window : globalThis);

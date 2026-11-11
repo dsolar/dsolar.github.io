@@ -69,7 +69,7 @@
     if (L || bb) await loadWeeks();
     else loadWeeks().then((w) => { if (!w) return; if (mode === "league") mount(); livePoll(); });
     const [market, dr, pros] = await extras;
-    V.evaluate(sport, players, { teams: D.teams.length, lineup: D.lineup, bench: D.bench, scoring: D.scoring, budget: D.auction ? D.auction.budget : 200, week: S.weekFor(L || D, sport), dynasty: dyn, dynastyRanks: dyn ? dr : null, bestBall: bb, weeks: bb ? weeks : null, market });
+    V.evaluate(sport, players, { teams: D.teams.length, lineup: D.lineup, bench: D.bench, scoring: D.scoring, budget: D.auction ? D.auction.budget : 200, week: S.weekFor(L || D, sport), oneDay: !!S.dayOf(L || D), dynasty: dyn, dynastyRanks: dyn ? dr : null, bestBall: bb, weeks: bb ? weeks : null, market });
     byId = Object.fromEntries(players.map((p) => [p.id, p]));
     // a dynasty prices its rookie picks from next year's class on the Big Board
     if (dyn) prospects = S.prospectClass(pros, k);
@@ -214,7 +214,12 @@
       // this week's kickoff times go with the league, so every page and the clock lock players when their games start
       const kicked = L && canAct() && G.setKicks(L, lv);
       if (kicked) push();
-      if ((Z.mergeLive(weeks, lv) || kicked) && app && !U.dialogOpen()) { app.refresh(); }
+      // a one-day league scores its own games: their box scores and whether they're final
+      const ids = Z.slateGames && Z.slateGames(L);
+      const gm = ids ? await C.games(info.sport, ids) : null;
+      const gch = !!(gm && Z.mergeGames(weeks, gm));
+      if (gch && L && canAct() && catchUp()) push();
+      if ((Z.mergeLive(weeks, lv) || kicked || gch) && app && !U.dialogOpen()) { app.refresh(); }
     }
     liveT = setTimeout(livePoll, document.hidden ? 5 * 60e3 : 60e3);
   }
@@ -361,7 +366,7 @@
     if (!duesOn() || info.me == null || statusOfDues(info.me) !== "owed" || !app || !/^#?(league(\/overview)?)?$/.test(location.hash)) return "";
     return `<div class="wrap" style="padding-top:12px"><div class="banner"><b>You owe $${dues().amount} in dues.</b> <span class="muted">${dues().due ? `Due ${esc(dues().due[0].toLowerCase() + dues().due.slice(1))}.` : ""}</span> <button class="btn sm go" data-live="dues">Pay</button></div></div>`;
   }
-  const frac = (w) => Math.max(0, Math.min(1, (now() - G.weekStart(L, w)) / WEEK));
+  const frac = (w) => Math.max(0, Math.min(1, (now() - G.weekStart(L, w)) / Math.max(36e5, G.weekStart(L, w + 1) - G.weekStart(L, w))));
 
   // The commissioner's page runs bots and the clock. Anyone else's page steps in when that's five seconds late,
   // so the draft keeps moving when the commissioner's page is closed.
