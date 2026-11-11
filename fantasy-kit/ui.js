@@ -620,8 +620,17 @@
        me()            your team id, or null to watch
        commish         true to show start, pause and undo
        drive           true if this page runs the clock (bots and autopicks)
+       solo            true when nobody else is in the room (a mock): shows Sim to my pick and a bot speed control
        hooks           FK.draft hooks (a cap rule, a custom bot)
        brand           { name, mark } for the top bar; exit { href, label }; extra() html for the top bar when done */
+  /* ---------- bot speed: how long a bot takes to pick in a mock, kept in this browser ---------- */
+  // the order is the button's cycle: from Normal, one tap is Fast
+  const BOT_SPEEDS = [["normal", "Normal", 1200], ["fast", "Fast", 400], ["slow", "Slow", 2500]];
+  const botSpeed = {
+    get() { let v = null; try { v = localStorage.getItem("fk-botspeed"); } catch (e) { /* private mode */ } return BOT_SPEEDS.find((x) => x[0] === v) || BOT_SPEEDS[0]; },
+    set(k) { try { localStorage.setItem("fk-botspeed", k); } catch (e) { /* private mode */ } },
+    delay() { return botSpeed.get()[2]; },
+  };
   /* ---------- your own board: a ranking you set on the Rankings page, one per sport, kept in this browser ---------- */
   // { ids: [player ids in your order], tiers: [ids that end a tier] }. Players you haven't placed (new to the data, or
   // past the first 400) fall in at their default rank, so the board always covers everyone.
@@ -739,6 +748,13 @@
       // the buttons that matter mid-draft stay out; on a phone the rest fold into a More menu
       const prim = [], sec = [];
       if (me() != null && d.phase !== "done") { sec.push(`<button class="btn sm" data-act="alerts" aria-pressed="${alerts.on()}" title="A chime, and a notification while this tab is in the background, when you're up">Sound ${alerts.on() ? "on" : "off"}</button>`); sec.push(`<button class="btn sm" data-act="test-sound">Test sound</button>`); prim.push(`<button class="btn sm" data-act="auto" aria-pressed="${!!team(me()).auto}" title="Let the bot draft for you">Autodraft</button>`); }
+      // a mock: skip ahead to your next pick (or to the end with autodraft on), and set how fast the bots pick
+      if (opts.solo && (d.phase === "live" || d.phase === "setup") && !auction() && !d.packs && me() != null) {
+        const oc = d.phase === "live" && !d.paused ? F.onClock(d, n) : null, auto = team(me()).auto;
+        if (oc && (oc.team !== me() || auto) && (auto || F.nextPickOf(d, me()) != null)) prim.push(`<button class="btn sm go" data-act="sim">${auto ? "Sim to the end" : "Sim to my pick"}</button>`);
+        const bs = BOT_SPEEDS.find((x) => x[2] === d.botDelay) || botSpeed.get();
+        sec.push(`<button class="btn sm" data-act="botspeed" title="How long each bot takes to pick">Bots: ${bs[1]}</button>`);
+      }
       if (canTrade() && d.phase === "live") sec.push(`<button class="btn sm" data-act="trade">Trade</button>`);
       if (opts.commish && d.phase === "live") sec.push(`<button class="btn sm" data-act="pause">${d.paused ? "Resume" : "Pause"}</button><button class="btn sm" data-act="undo">Undo</button>`);
       if (opts.commish && d.phase === "setup") prim.push(`<button class="btn sm go" data-act="start">Start the draft</button>`);
@@ -973,7 +989,7 @@
       const packBar = pk ? moneyBar + `<div class="rl-bar"><span>${packOnly ? `${pat.j === 0 ? `Pack ${pat.q + 1}: ${pk.length} cards.${chaseLine}` : `Passed from ${esc(team(pw.from).name)}${pw.opener !== pw.from ? `, opened by ${esc(team(pw.opener).name)}` : ""}: ${pk.length} left.`} ${myTurn ? "Take one" : "You've picked"}, then it goes ${pat.q % 2 === 0 ? "left" : "right"}.` : "Showing everyone. You can only take a player from your pack."}</span><button class="btn xs" data-act="rlall">${packOnly ? "Show everyone" : "Only my pack"}</button></div>` : "";
       const rlBar = packBar || sn && sn.t ? packBar || `<div class="rl-bar"><span>${only ? `Showing ${esc(teamFull(sn.t))} players: the wheel's team for this pick.` : `Showing everyone. This pick has to come from ${esc(teamFull(sn.t))}.`}</span><button class="btn xs" data-act="rlall">${only ? "Show everyone" : `Only ${esc(sn.t)}`}</button></div>` : "";
       if (packOnly) return fitBar + rlBar + packGrid(rows, pat, myTurn, mine);
-      return fitBar + rlBar + table({ cols, rows, sort: ui.sort, dense: true, id: "fk-pool", limit: ui.limit || 250, empty: "No one matches.",
+      return fitBar + rlBar + table({ cols, rows, sort: ui.sort, dense: true, id: "fk-pool", limit: ui.limit || 100, empty: "No one matches.",
         rowAttr: (p) => `data-player="${esc(p.id)}" class="${mine != null && ctx.own[p.id] == null && !F.canAdd(d, ctx, mine, p).ok ? "dim" : ""}"` });
     }
     // a board cell's name: first initial and last name ("J. Smith-Njigba"); a defense by its team
@@ -1243,6 +1259,28 @@
     }
 
     /* render and wire */
+    // Sim to my pick: every bot ahead of you picks at once. Bots normally wait botDelay; with it at zero, one tick runs
+    // them all and stops at your pick, since your clock hasn't run out. With autodraft on it runs to the end.
+    function simAhead() {
+      const d = D(); if (d.phase !== "live" || d.paused) return;
+      const t = now(), c = F.onClock(d, t);
+      if (!c) return;
+      if (F.isBot(d.teams[c.team])) d.clockStart = t;          // your clock starts now, not when the last bot came up
+      const keep = d.botDelay; d.botDelay = 0;
+      let moved = 0;
+      try { moved = F.tick(d, ctx, t, 5000); } finally { d.botDelay = keep; }
+      if (moved) { save(); render(); }
+    }
+    // Search, a position chip, a sort or a stat view only change the player list, so only the list is redrawn.
+    function renderLeft() {
+      const sec = $(".dr-left", el), bar = sec && $(".dr-bar", sec);
+      if (!bar || ui.left !== "players" || D().phase === "heist") return render();
+      const k = focusKey(el);
+      while (bar.nextSibling) bar.nextSibling.remove();
+      bar.insertAdjacentHTML("afterend", posFilter(sport, ui.f.pos, [], D().lineup) + players());
+      keyboardPlayers(sec);
+      refocus(el, k);
+    }
     function render() {
       const d = D();
       if (d.phase === "done" && ui.phase && ui.phase !== "done") { ui.left = "results"; ui.mobileRight = false; }
@@ -1383,9 +1421,9 @@
       const mr = e.target.closest("[data-mright]");
       if (mr) { ui.right = mr.dataset.mright; ui.mobileRight = true; render(); return; }
       const fp = e.target.closest("[data-fpos]");
-      if (fp) { ui.f.pos = fp.dataset.fpos; render(); return; }
+      if (fp) { ui.f.pos = fp.dataset.fpos; renderLeft(); return; }
       const th = e.target.closest("th[data-sort]");
-      if (th) { const cols = poolColumns(sport, { scoring: D().scoring, group: groupOf(sport, ui.f) }); ui.sort = nextSort(ui.sort, th.dataset.sort, cols); render(); return; }
+      if (th) { const cols = poolColumns(sport, { scoring: D().scoring, group: groupOf(sport, ui.f) }); ui.sort = nextSort(ui.sort, th.dataset.sort, cols); renderLeft(); return; }
       const tb = e.target.closest("[data-tr-yes],[data-tr-no],[data-tr-cancel],[data-trade-with]");
       if (tb) {
         e.stopPropagation();
@@ -1398,7 +1436,7 @@
         return;
       }
       const mb = e.target.closest("button[data-more]");
-      if (mb) { ui.limit = (ui.limit || 250) + 250; render(); return; }
+      if (mb) { ui.limit = (ui.limit || 100) + 250; mb.dataset.more === "fk-pool" ? renderLeft() : render(); return; }
       const sb = e.target.closest("button[data-steal]");
       if (sb) {
         e.stopPropagation();
@@ -1471,6 +1509,11 @@
             (ui.opened = ui.opened || {})[q] = true; try { sessionStorage.setItem(packKey(q), "1"); } catch (e) { /* private mode */ }
             ui.rip = { q, at: Date.now() }; render();
           }
+          else if (a === "sim") simAhead();
+          else if (a === "botspeed") {
+            const i = BOT_SPEEDS.findIndex((x) => x[2] === D().botDelay), nx = BOT_SPEEDS[(Math.max(0, i) + 1) % BOT_SPEEDS.length];
+            D().botDelay = nx[2]; botSpeed.set(nx[0]); save(); render(); toast(`Bots pick ${nx[1].toLowerCase()} now.`);
+          }
           else if (a === "auto") { const t = team(me()); t.auto = !t.auto; if (t.auto) toast("Autodraft is on: the bot picks for you."); save(); render(); }
         }
         return;
@@ -1482,7 +1525,8 @@
       if (e.target.id === "fk-bid" && e.key === "Enter") { e.preventDefault(); $("[data-act=bid]", el).click(); }
     });
     el.addEventListener("input", (e) => {
-      if (e.target.id === "fk-q") { ui.f.q = e.target.value; render(); }
+      // wait for a pause in typing, then redraw the list only
+      if (e.target.id === "fk-q") { ui.f.q = e.target.value; clearTimeout(ui.qT); ui.qT = setTimeout(renderLeft, 140); }
       if (e.target.id === "fk-bid") { ui.bidAmt = +e.target.value; const bv = $("#fk-bidv", el); if (bv) bv.textContent = money(ui.bidAmt || 0); }
       if (e.target.id === "fk-rchat") ui.chatDraft = e.target.value;
     });
@@ -1502,7 +1546,7 @@
       const box = $("#fk-rchat", el); if (box) box.focus();
     });
     el.addEventListener("change", (e) => {
-      if (e.target.id === "fk-show") { ui.show = e.target.value; render(); }
+      if (e.target.id === "fk-show") { ui.show = e.target.value; renderLeft(); }
       if (e.target.id === "fk-statv" || e.target.id === "fk-statv2") { setView(sport, e.target.value); render(); }
       if (e.target.id === "fk-view") { ui.view = +e.target.value; render(); }
     });
@@ -1669,7 +1713,7 @@
     const start = () => { new MutationObserver(kick).observe(document.body, { childList: true, subtree: true }); window.addEventListener("resize", kick); kick(); };
     if (document.body) start(); else document.addEventListener("DOMContentLoaded", start);
   }
-  FK.ui = { startIn, faceAv, squarePhoto, profileDialog, statColumns, LINEUP_PRESETS: PRESETS, lineupBuilder, orderLineup, lineupStep, slotDesc, esc, $, $$, store, toast, dialog, dialogOpen, focusKey, refocus, keyboardPlayers, confirm, theme, fmtLeft, money, ord, last, initials, ago,
+  FK.ui = { botSpeed, startIn, faceAv, squarePhoto, profileDialog, statColumns, LINEUP_PRESETS: PRESETS, lineupBuilder, orderLineup, lineupStep, slotDesc, esc, $, $$, store, toast, dialog, dialogOpen, focusKey, refocus, keyboardPlayers, confirm, theme, fmtLeft, money, ord, last, initials, ago,
     teamAv, SHAPES, GLYPHS, logoSvg, glyphOf, shapeOf, playerAv, pname, teamName, posChip, posChips, colorOf, injTag,
     proTeam, shell, switcher, route, table, sortRows, nextSort, poolColumns, posFilter, search, passes, groupOf, statCell, label, isPoints,
     playerCard, scoreboard, versus, vsTable, standingsTable, feed, txLine, tradeCard, tradeWindow, room, board: myBoard, viewSelect, setView, initView, hasProj, lineOf };

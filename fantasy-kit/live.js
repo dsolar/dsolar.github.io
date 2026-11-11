@@ -35,29 +35,44 @@
     }
   }
 
+  // Files load side by side. The league comes first (it says which sport), with that sport's player file already on
+  // its way if this browser has opened the league before. The weekly box scores, the biggest file (1.3 MB for
+  // baseball), are only waited for when something needs them now: a league in its season or a best ball draft's
+  // values. A draft room opens without them, and the season waits for them before it starts (flush).
+  const getJSON = (u) => fetch(u, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null);
+  let weeksP = null, weeksReady = null;
+  const loadWeeks = () => (weeksReady = weeksReady || (weeksP || Promise.resolve(null)).then((w) => (weeks = w && data && String(w.season) === String(data.season) ? w : null)));
   async function boot() {
     if (!id) return fatal("This page needs a league link.", `<span class="muted">Open one from Your leagues.</span>`);
+    const sk = `fk-sport:${id}`;
+    let guess = null; try { guess = localStorage.getItem(sk); } catch (e) { /* private mode */ }
+    const early = ["nba", "nfl", "mlb"].includes(guess) ? { k: guess, p: getJSON(`data/${guess}.json`) } : null;
     const v = await C.rpc("fk_view", { p_id: id, p_since: null });
     if (v.error) return fatal(v.error);
     take(v);
+    try { localStorage.setItem(sk, info.sport); } catch (e) { /* private mode */ }
     document.title = `${info.name} | Draft Lab`;
-    const r = await fetch(`data/${info.sport}.json`, { cache: "no-cache" });
-    data = await r.json();
-    sport = S.withScoring(S.attach(Object.assign({}, S[info.sport]), data), D.scoringSpec);   // the league's custom scoring, if it has one
+    const k = info.sport;
+    // a dynasty values players over the next five seasons (value.js), a redraft league this season only
+    const dyn = !!((D.season && D.season.dynasty) || (L && L.settings.dynasty));
+    // best ball (but not a guillotine, which keeps normal ranks) values upside and depth
+    const bb = L ? !!L.settings.bestBall && L.settings.format !== "guillotine" : !!(D.season && D.season.bestBall && D.season.format !== "guillotine");
+    const dataP = early && early.k === k ? early.p : getJSON(`data/${k}.json`);
+    weeksP = getJSON(`data/weeks-${k}.json`);
+    const extras = Promise.all([getJSON(`data/market-${k}.json`), dyn ? dynastyRanks(k) : null, dyn ? getJSON(`../draft/${k}.json`) : null]);
+    data = await dataP;
+    if (!data || !Array.isArray(data.players)) return fatal("Couldn't load the players.", `<span class="muted">Reload the page to try again.</span>`);
+    sport = S.withScoring(S.attach(Object.assign({}, S[k]), data), D.scoringSpec);   // the league's custom scoring, if it has one
     if ((L && L.settings.confMax) || (D.season && D.season.confMax)) sport.conf = (L && L.settings.confMax) || D.season.confMax;
     // a showdown plays one game: its two teams are the whole player pool
     players = data.players.filter((p) => S.inPool(L || D, p)).map((p) => Object.assign({}, p));
-    // a dynasty values players over the next five seasons (value.js), a redraft league this season only
-    const dyn = !!((D.season && D.season.dynasty) || (L && L.settings.dynasty));
-    weeks = await fetch(`data/weeks-${info.sport}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null);
-    if (weeks && String(weeks.season) !== String(data.season)) weeks = null;
-    // best ball (but not a guillotine, which keeps normal ranks) values upside and depth
-    const bb = L ? !!L.settings.bestBall && L.settings.format !== "guillotine" : !!(D.season && D.season.bestBall && D.season.format !== "guillotine");
-    V.evaluate(sport, players, { teams: D.teams.length, lineup: D.lineup, bench: D.bench, scoring: D.scoring, budget: D.auction ? D.auction.budget : 200, week: S.weekFor(L || D, sport), dynasty: dyn, dynastyRanks: dyn ? await dynastyRanks(info.sport) : null, bestBall: bb, weeks: bb ? weeks : null,
-      market: await fetch(`data/market-${info.sport}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null) });
+    if (L || bb) await loadWeeks();
+    else loadWeeks().then((w) => { if (!w) return; if (mode === "league") mount(); livePoll(); });
+    const [market, dr, pros] = await extras;
+    V.evaluate(sport, players, { teams: D.teams.length, lineup: D.lineup, bench: D.bench, scoring: D.scoring, budget: D.auction ? D.auction.budget : 200, week: S.weekFor(L || D, sport), dynasty: dyn, dynastyRanks: dyn ? dr : null, bestBall: bb, weeks: bb ? weeks : null, market });
     byId = Object.fromEntries(players.map((p) => [p.id, p]));
     // a dynasty prices its rookie picks from next year's class on the Big Board
-    if ((D.season && D.season.dynasty) || (L && L.settings.dynasty)) prospects = S.prospectClass(await fetch(`../draft/${info.sport}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null), info.sport);
+    if (dyn) prospects = S.prospectClass(pros, k);
     livePoll();
     if (C.user()) C.rpc("fk_mine", {}).then((m) => { if (Array.isArray(m)) { mine = m; if (app) app.render(); } }).catch(() => {});
     mount();
@@ -381,7 +396,7 @@
   async function flush() {
     if (!dirty) return;
     dirty = false; inflight = true;
-    if (D && D.phase === "done" && !L) beginSeason();
+    if (D && D.phase === "done" && !L) { await loadWeeks(); if (!L) beginSeason(); }
     const mineMove = Date.now() - userAt < 2500;
     const cur = { draft: D, league: L }, sent = clone(cur);
     let r;

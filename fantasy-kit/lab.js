@@ -303,7 +303,7 @@
     const order = others.slice(0, slot).concat(0, others.slice(slot));
     const total = n * (P.lineup.length + P.bench);
     const D = F.create({ sport: P.sport, type: c.type, teams: n, seed, now: Date.now(), lineup: P.lineup, bench: P.bench, scoring: P.scoring,
-      botDelay: 1200, clock: c.type === "auction" || c.clock < 0 ? 0 : c.clock, bank: c.clock < 0 && c.type !== "auction" ? { perRound: -c.clock / Math.max(1, P.lineup.length + P.bench), floor: 10 } : null, bidClock: c.clock || 15, nomClock: 30, budget: sdOn(c) ? 50 : c.budget, order, name: `${P.sport.name} mock`,
+      botDelay: U.botSpeed.delay(), clock: c.type === "auction" || c.clock < 0 ? 0 : c.clock, bank: c.clock < 0 && c.type !== "auction" ? { perRound: -c.clock / Math.max(1, P.lineup.length + P.bench), floor: 10 } : null, bidClock: c.clock || 15, nomClock: 30, budget: sdOn(c) ? 50 : c.budget, order, name: `${P.sport.name} mock`,
       trades: c.trades !== 0, curve: c.type === "mystery" ? F.pickCurve(P.players, total) : null, reveal: c.reveal });
     if (c.type === "mystery" && c.test) F.fairDeal(D, P.players, P.sport, null, { tries: 5 });
     if (c.type === "pack") F.dealPacks(D, P.players, P.sport);
@@ -325,7 +325,7 @@
     const P = await pool(mock.cfg);
     if (roomCtl) roomCtl.stop();
     app.innerHTML = `<div id="room"></div>`;
-    roomCtl = U.room({ el: $("#room"), sport: P.sport, players: P.players, draft: () => mock.D, save: () => store.set("mock", mock), me: () => 0, commish: true,
+    roomCtl = U.room({ el: $("#room"), sport: P.sport, players: P.players, draft: () => mock.D, save: () => store.set("mock", mock), me: () => 0, commish: true, solo: true,
       // with the room open in two tabs, only the one you're looking at runs the clock and the bots
       get drive() { return !document.hidden; },
       brand: { name: "Draft Lab", mark: `<img src="mark.svg" alt="">` }, exit: { href: "#home", label: "Exit" },
