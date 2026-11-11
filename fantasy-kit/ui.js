@@ -390,7 +390,10 @@
       { k: "name", label: "Player", td: "nm", sort: (p) => p.n, asc: true, html: (p) => pname(sport, p) },
       { k: "prank", label: "Pos rk", cls: "r ps", hide: "s", title: "Rank at his position", sort: (p) => parseInt(String(p.prank).replace(/\D+/g, ""), 10), asc: true, html: (p) => esc(p.prank) },
     ];
-    if (opts.age !== false && sport.hasAge) cols.push({ k: "age", label: "Age", cls: "r num", hide: "s", sort: (p) => p.age, asc: true, html: (p) => (p.age ? Number(p.age).toFixed(1) : `<span class="ps">-</span>`) });
+    // compact (the draft room): with no position picked, only what compares across positions; a position's own stats
+    // show once you pick it
+    const compact = !!opts.compact && !opts.group;
+    if (opts.age !== false && sport.hasAge && !(opts.compact && !opts.dynasty)) cols.push({ k: "age", label: "Age", cls: "r num", hide: "s", sort: (p) => p.age, asc: true, html: (p) => (p.age ? Number(p.age).toFixed(1) : `<span class="ps">-</span>`) });
     if (opts.owner) cols.push({ k: "owner", label: "Status", cls: "", hide: opts.ownerHide ? "s" : undefined, sort: opts.ownerSort, html: opts.owner });
     // the market, when the page loaded it (value.js market): ESPN's rank and what players go for in real ESPN auctions
     // in season the experts' consensus and the trade market; before a season, ESPN's draft market
@@ -398,7 +401,7 @@
     if (mk && opts.market !== false && mk.fp) {
       const ros = mk.fp === "rest of season";
       cols.push({ k: "fp", label: "ECR", cls: "r num", hide: "s", title: `FantasyPros expert consensus, ${ros ? "rest of season" : "draft rankings"}${mk.fpType === "ALL" ? "" : `, ${mk.fpType === "HALF" ? "half PPR" : mk.fpType === "PPR" ? "PPR" : "standard"}`}`, sort: (p) => (p.mk && p.mk.fp) || 1e4, asc: true, html: (p) => (p.mk && p.mk.fp ? String(p.mk.fp) : `<span class="ps">-</span>`) });
-      if (mk.trade) cols.push({ k: "tr", label: "Trade", cls: "r num", hide: "s", title: "Rank by FantasyCalc's values from real redraft trades this season", sort: (p) => (p.mk && p.mk.tr) || 1e4, asc: true, html: (p) => (p.mk && p.mk.tr ? String(p.mk.tr) : `<span class="ps">-</span>`) });
+      if (mk.trade && !opts.compact) cols.push({ k: "tr", label: "Trade", cls: "r num", hide: "s", title: "Rank by FantasyCalc's values from real redraft trades this season", sort: (p) => (p.mk && p.mk.tr) || 1e4, asc: true, html: (p) => (p.mk && p.mk.tr ? String(p.mk.tr) : `<span class="ps">-</span>`) });
     }
     if (mk && opts.market !== false && mk.espn && !(mk.fp === "rest of season")) {
       cols.push({ k: "espn", label: "ESPN", cls: "r num", hide: "s", title: `ESPN's ${sport.market.type === "ROTO" ? "roto" : sport.market.type === "STANDARD" ? "standard" : sport.market.type === "SUPERFLEX" ? "superflex" : "PPR"} rank${sport.market.type === "STANDARD" || sport.market.type === "ROTO" ? "" : ""}, from ${sport.market.source}`, sort: (p) => (p.mk && p.mk.r) || 1e4, asc: true, html: (p) => (p.mk && p.mk.r ? String(p.mk.r) : `<span class="ps">-</span>`) });
@@ -412,6 +415,7 @@
     if (pts && wkOf == null && sport.data && sport.data.lines && sport.data.lines.proj && sport.data.lines.proj.ros) cols.push({ k: "ros", label: "ROS", cls: "r num", hide: "s", title: `Projected points for the rest of the season, ${sport.data.lines.proj.weeks} weeks`, sort: (p) => p.ros, html: (p) => (p.ros == null ? `<span class="ps">-</span>` : p.ros.toFixed(0)) });
     for (const c of opts.extra || []) cols.push(c);
     if (opts.stats !== false) for (const [i, c] of statColumns(sport, opts.scoring).entries()) {
+      if (compact && (c.pos || c.group)) continue;
       if (opts.group && c.group && c.group !== opts.group) continue;
       if (opts.group && c.pos && !c.pos.includes(opts.group)) continue;
       cols.push({ k: "s" + i, label: c.label, title: c.title || STAT_TITLE[c.label] || "", cls: "r num", hide: c.hide, sort: (p) => statCell(sport, p, c), html: (p) => { const v = statCell(sport, p, c); return v == null ? `<span class="ps">-</span>` : v === 0 && !c.fpts && !c.fpg ? `<span class="zero">${c.fmt(v)}</span>` : c.fmt(v); } });
@@ -745,23 +749,28 @@
       const d = D(), n = now();
       const brand = opts.brand || {};
       const lg = `<a class="lg" href="${esc((opts.exit && opts.exit.href) || "#")}">${brand.mark || ""}<span><b>${esc(d.name || brand.name || "Draft")}</b><small>${esc(F.FORMATS[d.type])}, ${d.teams.length} teams, ${d.rounds} rounds</small></span></a>`;
-      // the buttons that matter mid-draft stay out; on a phone the rest fold into a More menu
-      const prim = [], sec = [];
-      if (me() != null && d.phase !== "done") { sec.push(`<button class="btn sm" data-act="alerts" aria-pressed="${alerts.on()}" title="A chime, and a notification while this tab is in the background, when you're up">Sound ${alerts.on() ? "on" : "off"}</button>`); sec.push(`<button class="btn sm" data-act="test-sound">Test sound</button>`); prim.push(`<button class="btn sm" data-act="auto" aria-pressed="${!!team(me()).auto}" title="Let the bot draft for you">Autodraft</button>`); }
-      // a mock: skip ahead to your next pick (or to the end with autodraft on), and set how fast the bots pick
+      // Up front: what you do mid-draft (start, sim, trade, autodraft). Beside them on a wide screen, the league's own
+      // tools and Exit; on a phone those fold into More. Settings (sound, bot speed, pause, undo) always live in More.
+      const prim = [], side = [], menu = [];
+      if (opts.commish && d.phase === "setup") prim.push(`<button class="btn sm go" data-act="start">Start the draft</button>`);
+      if (opts.commish && d.phase === "live" && d.paused && !d.hold) prim.push(`<button class="btn sm go" data-act="pause">Resume</button>`);
       if (opts.solo && (d.phase === "live" || d.phase === "setup") && !auction() && !d.packs && me() != null) {
         const oc = d.phase === "live" && !d.paused ? F.onClock(d, n) : null, auto = team(me()).auto;
         if (oc && (oc.team !== me() || auto) && (auto || F.nextPickOf(d, me()) != null)) prim.push(`<button class="btn sm go" data-act="sim">${auto ? "Sim to the end" : "Sim to my pick"}</button>`);
         const bs = BOT_SPEEDS.find((x) => x[2] === d.botDelay) || botSpeed.get();
-        sec.push(`<button class="btn sm" data-act="botspeed" title="How long each bot takes to pick">Bots: ${bs[1]}</button>`);
+        menu.push(`<button class="btn sm" data-act="botspeed" title="How long each bot takes to pick">Bot speed: ${bs[1]}</button>`);
       }
-      if (canTrade() && d.phase === "live") sec.push(`<button class="btn sm" data-act="trade">Trade</button>`);
-      if (opts.commish && d.phase === "live") sec.push(`<button class="btn sm" data-act="pause">${d.paused ? "Resume" : "Pause"}</button><button class="btn sm" data-act="undo">Undo</button>`);
-      if (opts.commish && d.phase === "setup") prim.push(`<button class="btn sm go" data-act="start">Start the draft</button>`);
+      if (canTrade() && d.phase === "live") prim.push(`<button class="btn sm" data-act="trade">Trade</button>`);
+      if (me() != null && d.phase !== "done") {
+        prim.push(`<button class="btn sm${team(me()).auto ? " on" : ""}" data-act="auto" aria-pressed="${!!team(me()).auto}" title="Let the bot draft for you">${team(me()).auto ? "Autodraft on" : "Autodraft"}</button>`);
+        menu.push(`<button class="btn sm" data-act="alerts" title="A chime, and a notification while this tab is in the background, when you're up">${alerts.on() ? "Sound: on" : "Sound: off"}</button>`, `<button class="btn sm" data-act="test-sound">Test sound</button>`);
+      }
+      if (opts.commish && d.phase === "live") menu.push(`${d.paused && !d.hold ? "" : `<button class="btn sm" data-act="pause">${d.paused ? "Resume" : "Pause the draft"}</button>`}<button class="btn sm" data-act="undo">Undo the last pick</button>`);
       if (d.phase === "done" && opts.extra) prim.push(opts.extra());
-      if (opts.tools) sec.push(opts.tools());
-      if (opts.exit) sec.push(`<a class="btn sm" href="${esc(opts.exit.href)}">${esc(opts.exit.label || "Exit")}</a>`);
-      const ctl = prim.concat(sec.length ? [`<span class="dr-sec">${sec.join("")}</span><details class="dr-more"><summary class="btn sm">More</summary><div class="menu">${sec.join("")}</div></details>`] : []);
+      if (opts.tools) side.push(opts.tools());
+      if (opts.exit) side.push(`<a class="btn sm ghost" href="${esc(opts.exit.href)}">${esc(opts.exit.label || "Exit")}</a>`);
+      const more = menu.length || side.length ? `<details class="dr-more"><summary class="btn sm ghost" aria-label="More draft settings">More</summary><div class="menu">${side.length ? `<div class="dr-mo">${side.join("")}</div>` : ""}${menu.join("")}</div></details>` : "";
+      const ctl = prim.concat(side.length ? [`<span class="dr-sec">${side.join("")}</span>`] : [], more ? [more] : []);
       let mid = "";
       if (d.phase === "heist") mid = `<div class="otc me"><span class="ring" id="fk-ring"><span id="fk-timer"></span></span><span class="who"><small>The draft is done</small><b>The heist</b><span>Shield yours, strike at theirs</span></span></div>`;
       else if (d.phase === "setup" && d.startAt) mid = `<div class="otc"><span class="ring" style="--p:1"><span id="fk-startin" data-at="${d.startAt}">${esc(startIn(d.startAt))}</span></span><span class="who"><small>The draft starts</small><b>${esc(new Date(d.startAt).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" }))}</b><span>On its own. Set your queue: if you're not here, your picks come from it.</span></span></div>`;
@@ -977,7 +986,7 @@
       const bd = mine != null ? myBoard.of(sport.key, opts.players) : null, at = bd && bd.custom ? myBoard.places(bd) : null;
       const lead = at ? [{ k: "my", label: "Mine", cls: "r num", title: "Your board, from the Rankings page", sort: (p) => (at[p.id] ? at[p.id].n : 1e4), asc: true, html: (p) => (at[p.id] ? `<b>${at[p.id].n}</b><span class="tier-n">T${at[p.id].tier}</span>` : "") }] : [];
       if (at && !ui.sortSet) { ui.sort = { k: "my", dir: 1 }; ui.sortSet = true; }
-      const cols = poolColumns(sport, { group: groupOf(sport, ui.f), scoring: d.scoring, actions, lead });
+      const cols = poolColumns(sport, { group: groupOf(sport, ui.f), scoring: d.scoring, actions, lead, compact: true, dynasty: !!(d.season && d.season.dynasty) });
       rows = sortRows(rows, cols, ui.sort);
       const pat = pk ? F.packAt(d, F.packTurnNow(d)) : null, pw = pk ? packWhere(d, mine) : null;
       const sealed = pk && packOnly && pat.j === 0 && myTurn && !packOpened(pat.q);
@@ -1154,6 +1163,23 @@
       return `<div style="overflow:auto;flex:1;min-height:0"><div class="pk-h"><b>Steal a player</b><span class="ps">On your turn, take someone already drafted instead of a new player. The team you take him from picks again right away and can't take him straight back. A player is frozen after ${d.steals.freeze} steals, every team gets ${d.steals.perTeam}, and steals end with ${d.steals.lastRounds} rounds to go.${m != null ? ` You have ${left} left.` : ""}</span></div>
         ${rows.length ? `<ul class="rslots">${rows.map(({ p, t }) => { const r = why(p.id), n = F.stealsOf(d, p.id), frozen = n >= d.steals.freeze; return `<li style="grid-template-columns:minmax(0,1fr) auto auto"><span data-player="${esc(p.id)}" style="cursor:pointer;min-width:0">${pname(sport, p, `#${p.rank}, ${money(p.$)}`, { size: "sm" })}</span><span class="row" style="gap:6px">${frozen ? `<span class="tag">Frozen</span>` : n ? `<span class="tag gold">Stolen ${n}x</span>` : ""}${teamAv(team(t), "sm")}<b class="ps">${esc(team(t).abbr)}</b></span>${r && r.ok ? `<button class="btn xs warn" data-steal="${esc(p.id)}">Steal</button>` : `<span class="ps" style="font-size:11px;max-width:150px;text-align:right">${r && c && c.team === m && !frozen ? esc(r.why) : ""}</span>`}</li>`; }).join("")}</ul>` : `<p class="empty">Nobody has drafted anyone yet.</p>`}</div>`;
     }
+    // your draft at a glance: when you pick next, the starting spots still open, and the top of your queue
+    function brief(id, starters) {
+      const d = D(), n = now(), out = [];
+      if (!auction() && !d.packs && d.phase === "live") {
+        const c = F.onClock(d, n), next = F.nextPickOf(d, id);
+        if (c && c.team === id) out.push(`<div class="br-next on"><b>You're on the clock</b><span>Pick ${esc(plab(c.index))}</span></div>`);
+        else if (next != null && c) { const away = next - 1 - c.index; out.push(`<div class="br-next"><b>${away <= 1 ? "You're on deck" : `Your pick in ${away}`}</b><span>Pick ${esc(plab(next - 1))}</span></div>`); }
+      }
+      const open = {};
+      d.lineup.forEach((sl, i) => { if (!starters[i]) open[sl] = (open[sl] || 0) + 1; });
+      const needs = Object.entries(open);
+      if (needs.length) out.push(`<div class="br-row"><span class="br-k">Need</span><span class="br-chips">${needs.map(([sl, k]) => `<button type="button" class="br-chip" data-fpos="${esc(sport.slots[sl] === "*" ? "" : Array.isArray(sport.slots[sl]) && sport.slots[sl].length > 1 ? "s:" + sl : sl)}" title="Show ${esc(sl)} players">${esc(sl)}${k > 1 ? ` <i>&times;${k}</i>` : ""}</button>`).join("")}</span></div>`);
+      else if (d.phase !== "setup") out.push(`<div class="br-row"><span class="br-k">Need</span><span class="ps">Every starting spot is filled. Bench from here.</span></div>`);
+      const q = team(id).queue.filter((pid) => ctx.own[pid] == null).slice(0, 3).map((pid) => ctx.byId[pid]).filter(Boolean);
+      out.push(`<div class="br-row"><span class="br-k">Queue</span>${q.length ? `<span class="br-q">${q.map((p) => `<span data-player="${esc(p.id)}">${esc(p.n)}</span>`).join("")}</span>` : `<span class="ps">Star players to line them up.</span>`}</div>`);
+      return `<div class="brief">${out.join("")}</div>`;
+    }
     function upcoming(id) {
       const d = D();
       if (auction()) return "";
@@ -1228,8 +1254,12 @@
       const bench = ps.filter((p) => !starters.includes(p));
       const paid = (p) => { const s = auction() ? d.sales.find((x) => x.pid === p.id) : null; return s ? money(s.price) : ""; };
       const li = (slot, p) => `<li class="${p ? "" : "open"}"><span class="slot">${esc(slot)}</span>${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer;min-width:0">${pname(sport, p, "", { size: "sm" })}</span><span class="ps">${paid(p) || "#" + p.rank}</span>` : `<span class="ps">Open</span><span></span>`}</li>`;
+      // open bench spots read as one line, not a row each
+      const openBn = Math.max(0, d.bench - bench.length);
+      const bnLine = openBn ? `<li class="open bn-left"><span class="slot">BN</span><span class="ps">${openBn} bench spot${openBn === 1 ? "" : "s"} open</span><span></span></li>` : "";
       return `<div class="mod-h">${teamAv(t, "sm")}<b class="ell">${esc(t.name)}</b><span class="ps" style="margin-left:auto;white-space:nowrap">${ps.length} of ${F.sizeOf(d)}${auction() ? `, ${money(t.budget)} left` : ""}</span></div>
-        <ul class="rslots">${d.lineup.map((s, i) => li(s, starters[i])).join("")}${bench.map((p) => li("BN", p)).join("")}${Array.from({ length: Math.max(0, d.bench - bench.length) }, () => li("BN", null)).join("")}</ul>${upcoming(id)}`;
+        ${id === me() && d.phase !== "done" ? brief(id, starters) : ""}
+        <ul class="rslots">${d.lineup.map((s, i) => li(s, starters[i])).join("")}${bench.map((p) => li("BN", p)).join("")}${bnLine}</ul>${upcoming(id)}`;
     }
     /* league chat in the room (shared leagues pass opts.chat: posts(), send(body), unread(), seen()) */
     function chatPanel() {
@@ -1312,7 +1342,7 @@
         if (opts.onChange) opts.onChange(d);
         return;
       }
-      el.innerHTML = `<div class="droom fk-dark">${top()}${ticker()}<div class="dr-main${ui.mobileRight ? " right" : ""}">
+      el.innerHTML = `<div class="droom fk-dark">${top()}${ticker()}${offerStrip()}<div class="dr-main${ui.mobileRight ? " right" : ""}">
         <section class="dr-left"><div class="dr-bar">${seg}${filters}</div>${ui.left === "players" ? posFilter(sport, ui.f.pos, [], d.lineup) : ""}${left}</section>
         <aside class="dr-right"><div class="seg hide-m" role="group" aria-label="Panel">${rights.map(([k, n]) => `<button type="button" data-right="${k}" aria-pressed="${ui.right === k}">${esc(n)}</button>`).join("")}</div><div class="show-m" style="padding:10px 12px 0">${seg.replace('id="fk-seg"', 'id="fk-seg2"')}</div><div class="dr-panel">${right}</div></aside></div></div>`;
       $$("#fk-pool,#fk-board,#fk-picks,.dr-panel,#fk-ticker,#fk-seg,#fk-seg2,#fk-rchatl", el).forEach((x) => { const v = keep.scroll[x.id || x.className]; if (v) { x.scrollTop = v[0]; x.scrollLeft = v[1]; } });
@@ -1421,7 +1451,7 @@
       const mr = e.target.closest("[data-mright]");
       if (mr) { ui.right = mr.dataset.mright; ui.mobileRight = true; render(); return; }
       const fp = e.target.closest("[data-fpos]");
-      if (fp) { ui.f.pos = fp.dataset.fpos; renderLeft(); return; }
+      if (fp) { ui.f.pos = fp.dataset.fpos; if (fp.classList.contains("br-chip")) { ui.left = "players"; ui.mobileRight = false; render(); } else renderLeft(); return; }
       const th = e.target.closest("th[data-sort]");
       if (th) { const cols = poolColumns(sport, { scoring: D().scoring, group: groupOf(sport, ui.f) }); ui.sort = nextSort(ui.sort, th.dataset.sort, cols); renderLeft(); return; }
       const tb = e.target.closest("[data-tr-yes],[data-tr-no],[data-tr-cancel],[data-trade-with]");
@@ -1435,6 +1465,9 @@
         else if (act(() => F.respond(D(), ctx, id, me(), false, now()))) toast("Offer declined.");
         return;
       }
+      const ov = e.target.closest("[data-offer-view]");
+      if (ov) { const T = (D().trades || []).find((x) => x.id === +ov.dataset.offerView); if (T) offerDialog(T); return; }
+      if (e.target.closest("[data-offer-hide]")) { ui.offer = null; render(); return; }
       const mb = e.target.closest("button[data-more]");
       if (mb) { ui.limit = (ui.limit || 100) + 250; mb.dataset.more === "fk-pool" ? renderLeft() : render(); return; }
       const sb = e.target.closest("button[data-steal]");
@@ -1590,12 +1623,23 @@
       for (const T of d.trades || []) {
         if (seenOffers.has(T.id)) continue;
         if (T.status !== "pending" || T.to !== me() || T.from === me()) { seenOffers.add(T.id); continue; }
-        if (dialogOpen()) return;
         seenOffers.add(T.id);
-        offerDialog(T);
+        ui.offer = T.id;
+        toast(`${team(T.from).name} sent you a trade offer.`);
+        alerts.chime("deck");
         return;
       }
     };
+    // an offer for you: a strip across the room, not a pop-up over your pick; Review opens the full offer
+    function offerStrip() {
+      const d = D(), T = ui.offer != null && (d.trades || []).find((x) => x.id === ui.offer && x.status === "pending" && x.to === me());
+      if (!T) return "";
+      const name = (id) => (F.isPickId(id) ? `pick ${plab(F.pickIdx(id))}` : (ctx.byId[id] || {}).n || "a player");
+      const list = (ids) => ids.map(name).join(" and ");
+      const held = d.hold && d.hold.trade === T.id;
+      return `<div class="dr-offer" role="status"><span class="grow"><b>${esc(team(T.from).name)} offers ${esc(list(T.give))}</b> <span class="ps">for ${esc(list(T.get))}${held ? `. The draft waits up to ${Math.max(1, Math.round(F.holdLeft(d, now()) / 1000))} seconds while you decide.` : "."}</span></span>
+        <button type="button" class="btn sm go" data-offer-view="${T.id}">Review</button><button type="button" class="btn sm" data-tr-no="${T.id}">Decline</button><button type="button" class="btn sm ghost" data-offer-hide aria-label="Hide this offer">Later</button></div>`;
+    }
     function offerDialog(T) {
       const d = D(), held = d.hold && d.hold.trade === T.id;
       const Dl = dialog(`<h3>${esc(team(T.from).name)} sent you a trade offer</h3>

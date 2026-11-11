@@ -360,6 +360,12 @@ body.fk-room .fk-top,body.fk-room .ds-bar{display:none}
 .dr-left{display:flex;flex-direction:column;min-height:0;padding:10px 12px 12px 16px;gap:9px}
 .dr-right{display:flex;flex-direction:column;min-height:0;border-left:1px solid var(--line);background:var(--surface)}
 .dr-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+/* the room's filters share one row: views, search, show, stats; position chips below */
+.dr-bar #fk-q{flex:1 1 180px;width:auto;min-width:140px;min-height:36px;border-radius:999px;padding:6px 14px}
+.dr-bar select{min-height:36px}
+/* Draft buttons stay quiet until you point at a row; the best player left keeps a solid one */
+.droom table.t .btn[data-pick]{background:transparent;color:var(--brand);border:1px solid rgba(246,196,69,.45);box-shadow:none}
+.droom table.t tbody tr:first-child .btn[data-pick],.droom table.t tbody tr:hover .btn[data-pick],.droom table.t .btn[data-pick]:focus-visible{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
 .dr-left .table-wrap{flex:1;min-height:0;box-shadow:none}
 .dr-right>.seg{margin:10px 12px 4px;align-self:flex-start}
 .dr-panel{flex:1;min-height:0;overflow:auto}
@@ -367,6 +373,18 @@ body.fk-room .fk-top,body.fk-room .ds-bar{display:none}
 .rslots{list-style:none;margin:0;padding:0}
 .rslots li{display:grid;grid-template-columns:50px minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 12px;border-top:1px solid var(--line);min-height:44px}
 .rslots li.open .ps{font-style:italic}
+.rslots li{min-height:40px}
+/* My team: the draft at a glance */
+.brief{display:grid;gap:8px;padding:10px 12px 12px;border-bottom:1px solid var(--line)}
+.br-next{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:10px;background:var(--surface-2)}
+.br-next b{font-size:14px}.br-next span{color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums}
+.br-next.on{background:rgba(246,196,69,.14);box-shadow:inset 0 0 0 1px rgba(246,196,69,.5)}.br-next.on b{color:var(--brand)}
+.br-row{display:grid;grid-template-columns:48px minmax(0,1fr);gap:8px;align-items:start;font-size:13px}
+.br-k{color:var(--muted);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding-top:4px}
+.br-chips{display:flex;flex-wrap:wrap;gap:5px}
+.br-chip{border:1px solid var(--line-2);background:transparent;color:inherit;border-radius:999px;padding:3px 9px;font:700 12px/1.3 inherit;cursor:pointer}
+.br-chip:hover{border-color:var(--brand)}.br-chip i{font-style:normal;color:var(--muted);font-weight:600}
+.br-q{display:flex;flex-wrap:wrap;gap:4px 10px;padding-top:3px}.br-q span{cursor:pointer;font-weight:600}.br-q span:hover{text-decoration:underline}
 .lot{display:grid;grid-template-columns:auto minmax(0,1.2fr) auto auto minmax(0,1.6fr);gap:16px;align-items:center;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--line)}
 .lot .lotp{display:grid;gap:2px;min-width:0}
 .lot .lotp b{font-size:24px;line-height:1.05}
@@ -392,7 +410,15 @@ body.fk-room .fk-top,body.fk-room .ds-bar{display:none}
 .cell b{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variation-settings:"wdth" 82}
 .cell small{font-size:10.5px;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cell.f[class*=" c"]{background:var(--pc);color:var(--pci);border-color:transparent}
-.cell.me{box-shadow:inset 0 0 0 2px var(--accent)}
+/* your column: a soft tint and a bar on your picks, not a box around every cell */
+.cell.me{box-shadow:none;background:rgba(246,196,69,.07);border-color:rgba(246,196,69,.22)}
+.cell.f.me[class*=" c"]{box-shadow:inset 3px 0 0 var(--brand)}
+.bgrid .h.me{border-bottom:2px solid var(--brand)}
+/* empty spots stay in the background; a name gets two lines instead of an ellipsis */
+.cell:not(.f):not(.now):not(.hid){background:transparent;border-color:var(--line);color:var(--dim)}
+.cell:not(.f):not(.now) small,.cell:not(.f):not(.now){font-size:11px}
+.cell.me:not(.f):not(.now):not(.hid){background:rgba(246,196,69,.07);border-color:rgba(246,196,69,.25)}
+.cell.f b{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.1}
 .cell.now{background:var(--brand-soft);border:2px solid var(--brand)}
 .cell.keep b::after{content:" K";font-size:10px;opacity:.7}
 .cell[data-player]{cursor:pointer}
@@ -1438,8 +1464,16 @@ body.fk-room .toast{bottom:calc(16px + env(safe-area-inset-bottom,0px));top:auto
 .dr-more .menu{position:absolute;right:0;top:calc(100% + 6px);z-index:40;display:grid;gap:6px;padding:8px;min-width:150px;border-radius:12px;background:var(--band);border:1px solid rgba(255,255,255,.16);box-shadow:0 12px 30px rgba(0,0,0,.4)}
 .dr-more .menu .btn{width:100%;justify-content:flex-start}
 .dr-sec{display:contents}
+.dr-more{display:block}.dr-mo{display:none}
+.dr-more[open] summary{background:rgba(255,255,255,.12)}
+.dr-top .btn.on{background:rgba(246,196,69,.16);border-color:var(--brand);color:var(--brand)}
+/* an offer for you: a strip under the ticker, not a pop-up */
+.dr-offer{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 16px 0;padding:10px 12px;border-radius:12px;background:rgba(246,196,69,.1);border:1px solid rgba(246,196,69,.45)}
+.dr-offer b{color:var(--ink)}
+.droom:has(> .dr-offer){grid-template-rows:auto auto auto minmax(0,1fr)}
 @media (max-width:600px){
-  .dr-sec{display:none}.dr-more{display:block}
+  .dr-sec{display:none}.dr-mo{display:grid;gap:6px}
+  .dr-offer{margin:6px 10px 0}
   .dr-top .acts{flex-wrap:nowrap}
   .otc .who span{text-wrap:pretty}
 }

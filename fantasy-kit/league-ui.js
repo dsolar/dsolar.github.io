@@ -31,7 +31,16 @@
     const curWeek = () => Math.min(L().week, G.totalWeeks(L()));
     const over = () => L().week > G.totalWeeks(L());
     // real scores: nothing is live until the week's first game kicks off (a football Wednesday is still "Projected")
-    const noKicks = (w) => { const k = L().kick; return !!(L().settings.real && w === L().week && k && k.week === w && k.teams && !Object.values(k.teams).some((t) => t <= now())); };
+    // Has any of this week's games started? The league's kickoff times if it has them, else the live feed's teams, else
+    // for football the week's first game (Thursday night; the week opens Tuesday), so a Wednesday never reads "Live".
+    const anyKicked = (w) => {
+      const k = L().kick;
+      if (k && k.week === w && k.teams) return Object.values(k.teams).some((t) => t <= now());
+      const lv = liveWeek(w);
+      if (lv && lv.teams && Object.keys(lv.teams).length) return Object.values(lv.teams).some((t) => t.played || t.live);
+      return L().sport !== "nfl" || now() >= G.weekStart(L(), w) + 60 * 36e5;
+    };
+    const noKicks = (w) => !!(L().settings.real && w === L().week && !anyKicked(w));
     const frac = (w) => { if (w < L().week) return 1; if (noKicks(w)) return 0; const f = opts.frac ? opts.frac(w) : 0; return f < 0.01 ? 0 : f; };
     const standings = () => G.standings(L());
     const gl = () => G.isGuillotine(L());

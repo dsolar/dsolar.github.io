@@ -177,7 +177,7 @@
         </section>
         ${twHtml}
         <section class="nl-sec"><h2 class="nl-h">Fine-tune</h2><div class="nr-l">${roster}</div></section>
-        <section class="nl-sec mk-how">${tip("How the bots draft", "They value players over the replacement at each position, fill starters before the bench, and save kickers and defenses for last. In an auction they bid by proxy up to a price set by their budget and needs.")}
+        <section class="nl-sec mk-how">${tip("How the bots draft", `They value players over the replacement at each position and fill starters before the bench${c.sport === "nfl" ? ", saving kickers and defenses for last" : c.sport === "mlb" ? ", balancing hitters and pitchers as they go" : ""}. In an auction they bid by proxy up to a price set by their budget and needs.`)}
           ${tip("Your seat", "Queue players before you start. If your clock runs out, the first queued player who fits is your pick.")}
           ${tip("After the draft", `Play a season with your team in a demo league: <a href="league.html?s=${esc(c.sport)}&f=h">head to head</a> or <a href="league.html?s=${esc(c.sport)}&f=g">guillotine</a>.`)}</section>
         <div class="nl-bar"><div class="nl-sum">${K.icon(sport.key, "nl-sum-ic")}<span><b>${esc(c.name || "Your team")}</b><small>${esc(line)}</small></span></div>
@@ -200,7 +200,7 @@
     if (rlFits(c) && !sdOn(c)) rows.push(K.toggle("rl", "Team roulette", "Each pick has to come from the pro team the wheel lands on. One re-spin each.", c.rl, K.fld("The wheel spins", K.seg("rlRound", [[0, "Every pick"], [1, "Every round"]], c.rlRound ? 1 : 0, "The wheel spins"))));
     if (nfl) rows.push(K.toggle("sd", "Showdown: one game", "Just the players in one game. A captain at 1.5x and five flex spots, no bench.", c.sd, gamePick));
     if (nfl && !sdOn(c)) rows.push(K.toggle("hz", "Heist after the draft", "Shield three of your starters, steal one of your opponent's and jinx another. The one-week lineup, no bench.", c.hz));
-    return rows.length ? `<section class="nl-sec"><h2 class="nl-h">One-week twists</h2><div class="nl-bb">${rows.join("")}</div></section>` : "";
+    return rows.length ? `<section class="nl-sec"><h2 class="nl-h">Twists</h2><div class="nl-bb">${rows.join("")}</div></section>` : "";
   }
   function setupGrab() {
     const root = $("#app .su"); if (!root) return;
