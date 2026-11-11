@@ -295,9 +295,10 @@
     const pickName = (k) => { const [r, t] = String(k).split(":").map(Number); return `a round ${r} pick (${teamName(t)}'s)`; };
     const names = (ids, picks) => { const xs = (ids || []).map(pn).concat((picks || []).map(pickName)); return xs.length ? xs.join(", ") : "nothing"; };
     const seated = Object.keys(seats).map(Number);
-    const add = (team, kind, subject, body, data) => {
+    // `hash` opens a page of the league (the week's recap) from the email button and the phone alert
+    const add = (team, kind, subject, body, data, hash) => {
       if (team == null || team === o.me || seats[team] == null || out.some((x) => x.team === team && x.subject.endsWith(subject))) return;
-      out.push(Object.assign({ team, kind, subject: `${o.name}: ${subject}`, body: `${body}\n\nOpen the league: ${o.url}` }, data ? { data } : {}));
+      out.push(Object.assign({ team, kind, subject: `${o.name}: ${subject}`, body: `${body}\n\nOpen the league: ${o.url}${hash && o.url ? "#" + hash : ""}` }, data ? { data } : {}));
     };
     // the rest of the league hears about trades too: one up for a vote, and one that went through
     const others = (t) => seated.filter((x) => x !== t.from && x !== t.to);
@@ -397,7 +398,7 @@
                 const xs = res.flatMap((x) => [x.sa, x.sb]).sort((p, q) => p - q), m = xs.length % 2 ? xs[(xs.length - 1) / 2] : (xs[xs.length / 2 - 1] + xs[xs.length / 2]) / 2;
                 med = ` Against the league median of ${fmtS(m)}, you ${sm > m ? "won" : sm < m ? "lost" : "tied"}.`;
               }
-              add(mine, "week", `week ${w} final`, `You ${won == null ? "tied" : won ? "beat" : "lost to"} ${teamName(opp)}, ${fmtS(sm)} to ${fmtS(so)}.${med}`);
+              add(mine, "week", `week ${w} final`, `You ${won == null ? "tied" : won ? "beat" : "lost to"} ${teamName(opp)}, ${fmtS(sm)} to ${fmtS(so)}.${med}${cl.settings.weeks > 1 ? (g.cats ? " The recap has every result and who moved in the standings." : " The recap has every result, the top players and who left points on the bench.") : ""}`, null, cl.settings.weeks > 1 ? `league/recap/${w}` : null);
               continue;
             }
             // playoffs: name the round, add up a two-week round, and say what's next

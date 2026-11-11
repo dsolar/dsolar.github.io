@@ -1442,6 +1442,66 @@
   }
 
   // Power rankings: record, points and roster strength together.
+  // A finished week as a story: the results with the high and low scores, the blowout and the nail-biter, the top
+  // players, each team's lineup calls (what its best lineup would have scored from the healthy players it had that
+  // week, a player picked up later doesn't count), who climbed the standings and the streaks. Head-to-head leagues
+  // only; null for a week that isn't final.
+  function recap(L, ctx, w) {
+    if (isGuillotine(L) || isRoto(L) || !L.results[w] || !L.results[w].length) return null;
+    const pts = scoring(L, ctx).type === "points";
+    const res = L.results[w], round = (x) => Math.round(x * 100) / 100;
+    const games = res.map((g, i) => ({ i, a: g.a, b: g.b, sa: g.sa, sb: g.sb, w: g.w, kind: g.kind || null, ties: g.ties || 0, margin: round(Math.abs(g.sa - g.sb)) }));
+    // each team once (all-play with an odd number of teams has one team play twice)
+    const seen = new Set(), scores = [];
+    for (const g of games) for (const [t, x] of [[g.a, g.sa], [g.b, g.sb]]) if (!seen.has(t)) { seen.add(t); scores.push({ team: t, score: x }); }
+    scores.sort((x, y) => y.score - x.score || x.team - y.team);
+    const decided = games.filter((g) => g.w === "a" || g.w === "b");
+    const blowout = decided.length > 1 ? decided.slice().sort((x, y) => y.margin - x.margin)[0] : null;
+    const close = games.length > 1 ? games.slice().sort((x, y) => x.margin - y.margin || (y.sa + y.sb) - (x.sa + x.sb))[0] : null;
+    const oppOf = {};
+    for (const g of games) { if (oppOf[g.a] == null) oppOf[g.a] = { opp: g.b, mine: g.sa, theirs: g.sb, won: g.w === "a" }; if (oppOf[g.b] == null) oppOf[g.b] = { opp: g.a, mine: g.sb, theirs: g.sa, won: g.w === "b" }; }
+    let top = [], calls = [];
+    if (pts) {
+      const got = {};
+      for (const g of res) for (const [t, tx] of [[g.a, g.ta], [g.b, g.tb]]) for (const [pid, v] of Object.entries((tx && tx.players) || {})) if (typeof v === "number") got[t + ":" + pid] = { team: t, pid, pts: round(v) };
+      top = Object.values(got).filter((x) => ctx.byId[x.pid]).sort((x, y) => y.pts - x.pts).slice(0, 5);
+      // best ball sets itself, and a custom scorer (a showdown's captain) doesn't add up the same way
+      if (!L.settings.bestBall && !ctx.hooks.score) for (const { team: t, score } of scores) {
+        const started = ((L.lineups[w] && L.lineups[w][t]) || []).filter(Boolean);
+        const val = {};
+        for (const pid of started) val[pid] = (got[t + ":" + pid] || {}).pts || 0;
+        // points banked by a player who left the lineup midweek count either way
+        const banked = Object.values(got).filter((x) => x.team === t && !started.includes(x.pid));
+        const fixed = sum(banked.map((x) => x.pts));
+        const later = (pid) => { const j = L.joined && L.joined[pid]; return j && j.team === t && j.week > w; };
+        for (const p of healthy(L, ctx, t)) if (val[p.id] == null && !later(p.id) && !banked.some((x) => x.pid === p.id)) val[p.id] = round(playerWeek(L, ctx, p, w, 1).pts || 0);
+        const pool = Object.keys(val).map((id) => ctx.byId[id] && Object.assign({}, ctx.byId[id], { v: val[id], _id: id })).filter(Boolean);
+        const bestIds = F.assign(ctx.sport, pool, L.settings.lineup, limitOf(L)).filter(Boolean).map((p) => p._id);
+        const gap = Math.max(0, round(sum(bestIds.map((id) => val[id])) - sum(started.map((id) => val[id]))));
+        const best = round(score + gap);
+        const benched = Object.keys(val).filter((id) => !started.includes(id) && bestIds.includes(id)).sort((x, y) => val[y] - val[x]);
+        const sat = started.filter((id) => !bestIds.includes(id)).sort((x, y) => val[x] - val[y]);
+        const o = oppOf[t];
+        calls.push({ team: t, score, best, gap, miss: benched[0] ? { pid: benched[0], pts: val[benched[0]] } : null, over: sat[0] ? { pid: sat[0], pts: val[sat[0]] } : null,
+          cost: !!o && !o.won && o.mine !== o.theirs && best > o.theirs, opp: o ? o.opp : null });
+      }
+      calls.sort((x, y) => y.gap - x.gap || x.team - y.team);
+    }
+    // the standings: who moved, and the streaks (regular season only)
+    let climb = null, fall = null, streaks = [];
+    if (w <= L.settings.weeks) {
+      const after = standings(L, w);
+      if (w > 1) {
+        const was = Object.fromEntries(standings(L, w - 1).map((r) => [r.team, r.rank]));
+        const moves = after.map((r) => ({ team: r.team, from: was[r.team], to: r.rank, by: was[r.team] - r.rank }));
+        const up = moves.filter((m) => m.by > 0).sort((x, y) => y.by - x.by || x.to - y.to)[0], dn = moves.filter((m) => m.by < 0).sort((x, y) => x.by - y.by || x.to - y.to)[0];
+        climb = up || null; fall = dn || null;
+      }
+      streaks = after.filter((r) => /^[WL]\d+$/.test(r.streak) && +r.streak.slice(1) >= 3).map((r) => ({ team: r.team, kind: r.streak[0], n: +r.streak.slice(1) })).sort((x, y) => y.n - x.n);
+    }
+    return { week: w, pts, playoff: w > L.settings.weeks, games, scores, high: pts ? scores[0] : null, low: pts && scores.length > 1 ? scores[scores.length - 1] : null, blowout, close, top, calls,
+      perfect: calls.filter((c) => c.gap < 0.05).map((c) => c.team), climb, fall, streaks };
+  }
   function power(L, ctx) {
     if (isGuillotine(L)) return survival(L).map((r) => ({ team: r.team, rank: r.rank, move: 0, score: r.pf }));
     const st = standings(L);
@@ -2053,7 +2113,7 @@
     return n;
   }
 
-  return { takerOf, openRaids, protectOf, kingOf, hungover, pyoTurn, pyoOptions, pyoPick, pyoAuto, runPyo, pyoLast, PYO_HOURS, realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
+  return { recap, takerOf, openRaids, protectOf, kingOf, hungover, pyoTurn, pyoOptions, pyoPick, pyoAuto, runPyo, pyoLast, PYO_HOURS, realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
     finishWeek, slotMult, setKicks, isLocked, freezeLineups, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, waiverPrice, waiverClear, nextWeekClear, waiverDays, clearAt, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
