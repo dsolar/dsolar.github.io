@@ -75,6 +75,9 @@
     if ((L && L.settings.confMax) || (D.season && D.season.confMax)) sport.conf = (L && L.settings.confMax) || D.season.confMax;
     // a showdown plays one game: its two teams are the whole player pool
     players = data.players.filter((p) => S.inPool(L || D, p)).map((p) => Object.assign({}, p));
+    // players the feed doesn't carry (a prospect, someone hurt all year) come with the league itself (doc.extraPlayers)
+    { const hide = new Set((L && L.hidePlayers) || D.hidePlayers || []); if (hide.size) players = players.filter((p) => !hide.has(p.id)); }
+    { const have = new Set(players.map((p) => p.id)), xs = (L && L.extraPlayers) || D.extraPlayers; if (Array.isArray(xs)) for (const x of xs) if (!have.has(x.id)) players.push(Object.assign({ l: {}, rank: 9999 }, x)); }
     if (L || bb) await loadWeeks();
     else loadWeeks().then((w) => { if (!w) return; if (mode === "league") mount(); livePoll(); });
     const [market, dr, pros] = await extras;
@@ -576,32 +579,77 @@
   /* ---------- the next season: keepers, then a new draft ---------- */
   const seasonOver = () => L && L.week > G.totalWeeks(L);
   const lctx = () => G.context(L, players, sport, hooks());
+  // keeper picks: open until L.next.due, then locked for managers (the commissioner can still set anyone's)
+  const keepDue = () => (L && L.next && L.next.due) || null;
+  const keepLocked = () => !!keepDue() && now() >= keepDue();
+  const whenTxt = (t) => new Date(t).toLocaleString("en-US", { weekday: "long", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short" });
   function keeperNote() {
     if (!seasonOver() || !L.next || info.me == null || !L.settings.keepers) return "";
-    const mine = L.next.picks && L.next.picks[info.me];
-    return `<div class="wrap" style="padding-top:12px"><div class="banner"><b>${mine ? `You're keeping ${mine.length} for next season.` : "Pick your keepers for next season."}</b> <span class="muted">Up to ${L.settings.keepers}${L.next.due ? `, by ${new Date(L.next.due).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}` : ""}.</span> <button class="btn sm go" data-live="keepers">${mine ? "Change keepers" : "Pick keepers"}</button></div></div>`;
+    const mine = L.next.picks && L.next.picks[info.me], lock = keepLocked();
+    const left = keepDue() && !lock ? keepDue() - now() : 0, soon = left && left < 2 * 864e5 ? ` That's ${left < 36e5 ? "less than an hour" : `${Math.round(left / 36e5)} hours`} from now.` : "";
+    return `<div class="wrap" style="padding-top:12px"><div class="banner${lock ? "" : " go"}"><b>${lock ? (mine ? `Keepers are locked. You kept ${mine.length}.` : "Keepers are locked.") : mine ? `You're keeping ${mine.length} for next season.` : "Pick your keepers for next season."}</b> <span class="muted">${lock ? `The deadline was ${esc(whenTxt(keepDue()))}.` : `Up to ${L.settings.keepers}${keepDue() ? `, by ${esc(whenTxt(keepDue()))}.${soon}` : "."}`}</span> <button class="btn sm${lock ? "" : " go"}" data-live="keepers">${lock ? "See your keepers" : mine ? "Change keepers" : "Pick keepers"}</button></div></div>`;
   }
-  function keeperDialog() {
-    const opts = Z.keeperOptions(L, lctx(), info.me), max = L.settings.keepers;
-    const cur = (L.next.picks && L.next.picks[info.me]) || Z.autoKeepers(L, lctx(), info.me);
-    U.dialog(`<h3>Your keepers</h3><p class="muted" style="margin:0 0 10px">Keep up to ${max}. Each costs ${L.draft && L.draft.type === "auction" ? "the price shown, out of next year's budget" : "the pick shown in next year's draft"}. The best values over their cost are checked to start.</p>
-      <form><ul class="seatl kp">${opts.map((o) => `<li><label class="check" style="flex:1;min-width:0"><input type="checkbox" name="k" value="${esc(o.pid)}"${cur.includes(o.pid) ? " checked" : ""}> <span class="ell"><b>${esc(o.n)}</b> <small>${esc(o.cost.label)}</small></span></label><span class="tag${o.surplus > 0 && o.pos !== "K" && o.pos !== "DEF" ? " win" : ""}">${o.pos === "K" || o.pos === "DEF" ? "Easy to replace" : o.surplus > 0 ? "Good value" : "Costly"}</span></li>`).join("")}</ul>
-      <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">Save keepers</button></div></form>`, (fd) => {
-      const ks = fd.getAll("k");
-      if (ks.length > max) { U.toast(`You can keep ${max}`, true); return false; }
-      L.next.picks = Object.assign({}, L.next.picks, { [info.me]: ks });
-      push(); app.refresh();
-      U.toast(ks.length ? `Keeping ${ks.length}.` : "Keeping nobody.");
+  // a team's keepers: every player with his cost (or why he can't be kept), and where the picks land in the draft
+  function keeperDialog(teamId = info.me) {
+    const asCommish = teamId !== info.me || (info.commish && keepLocked()), ro = keepLocked() && !info.commish;
+    const ctx = lctx(), opts = Z.keeperOptions(L, ctx, teamId), max = L.settings.keepers, t = L.teams[teamId];
+    const cur = (L.next.picks && L.next.picks[teamId]) || (ro ? Z.keepersOf(L, ctx, teamId) : []);
+    const ok = opts.filter((o) => !o.no), no = opts.filter((o) => o.no);
+    const auction = L.draft && L.draft.type === "auction";
+    const row = (o) => `<li${o.no ? ' class="kp-no"' : ""}><label class="check" style="flex:1;min-width:0"><input type="checkbox" name="k" value="${esc(o.pid)}"${cur.includes(o.pid) ? " checked" : ""}${o.no || ro ? " disabled" : ""}> <span class="ell"><b>${esc(o.n)}</b> <small>${esc(o.pos)}, ${esc(o.cost.label)}</small></span></label><span class="kp-at" data-kp="${esc(o.pid)}"></span></li>`;
+    U.dialog(`<h3>${teamId === info.me ? "Your keepers" : `Keepers for ${esc(t.name)}`}</h3>
+      <p class="muted" style="margin:0 0 10px">${ro ? `The deadline passed ${esc(whenTxt(keepDue()))}, so these are set.` : `Keep up to ${max}. Each costs ${auction ? "the price shown, out of next year's budget" : "the pick shown in next year's draft"}.${L.settings.keeperRule ? " A second keeper in a round you have one pick in moves up a round." : ""}${keepDue() ? ` Picks lock ${esc(whenTxt(keepDue()))}.` : ""}`}${asCommish && !ro ? " You're setting these as the commissioner." : ""}</p>
+      <form class="kp-f"><ul class="seatl kp">${ok.map(row).join("")}</ul>
+      ${no.length ? `<details class="kp-nos"><summary>${no.length} can't be kept</summary><ul class="seatl kp">${no.map(row).join("")}</ul></details>` : ""}
+      <p class="kp-why" role="status"></p>
+      <div class="acts">${ro ? `<button type="button" class="btn" data-close>Close</button>` : `${asCommish ? `<button type="button" class="btn ghost" data-kp-clear>Clear (use the deadline rule)</button><span class="grow"></span>` : ""}<button type="button" class="btn" data-close>Cancel</button><button class="btn go">Save keepers</button>`}</div></form>`, ro ? null : (fd) => {
+      const ks = fd.getAll("k"), plan = Z.keeperPlan(L, teamId, ks);
+      if (!plan.ok) { U.toast(plan.why, true); return false; }
+      L.next.picks = Object.assign({}, L.next.picks, { [teamId]: ks });
+      push(); setTimeout(() => app.refresh(), 0);
+      U.toast(`${teamId === info.me ? "" : `${t.name}: `}${ks.length ? `keeping ${ks.length}.` : "keeping nobody."}`.replace(/^k/, "K"));
     }, { wide: true });
+    const f = $(".kp-f"); if (!f) return;
+    // the rounds as they'd land, and anything that breaks the rules, as boxes are checked
+    const draw = () => {
+      const ks = [...f.querySelectorAll("input[name=k]:checked")].map((x) => x.value), plan = Z.keeperPlan(L, teamId, ks);
+      f.querySelectorAll("[data-kp]").forEach((el) => { const r = plan.rows.find((x) => x.pid === el.dataset.kp); el.innerHTML = r && r.round != null ? `<span class="tag${r.moved ? " loss" : " win"}">${auction ? `$${r.cost.price}` : `Rd ${r.round}`}</span>` : ""; el.title = r && r.moved ? `Moves up from round ${r.cost.round}` : ""; });
+      const moved = plan.rows.filter((x) => x.moved);
+      $(".kp-why", f).innerHTML = !plan.ok ? `<b class="loss">${esc(plan.why)}.</b>` : `${ks.length} of ${max} keepers.${moved.length ? ` ${moved.map((x) => `${esc((lctx().byId[x.pid] || {}).n || "")} moves up to round ${x.round}`).join("; ")}.` : ""}`;
+      const go = f.querySelector(".btn.go"); if (go) go.disabled = !plan.ok;
+    };
+    f.addEventListener("change", draw); draw();
+    const clr = f.querySelector("[data-kp-clear]");
+    if (clr) clr.addEventListener("click", () => { const p = Object.assign({}, L.next.picks); delete p[teamId]; L.next.picks = p; push(); app.refresh(); U.dialogClose && U.dialogClose(); const dl = $("#fk-dlg"); if (dl) dl.close(); U.toast(`${t.name} goes back to the deadline rule.`); });
+  }
+  // the commissioner opens keeper picks with a deadline, and what happens to a team that misses it
+  function keeperOpenDialog() {
+    const due = keepDue() || (() => { const d = new Date(now() + 7 * 864e5); d.setHours(23, 59, 0, 0); return d.getTime(); })();
+    const local = (t) => { const d = new Date(t), z = (n) => String(n).padStart(2, "0"); return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`; };
+    U.dialog(`<h3>${L.next ? "Keeper deadline" : "Open keeper picks"}</h3><form class="stack">
+      <label class="cm-l"><span>Keepers lock at</span><input type="datetime-local" name="due" value="${local(due)}" required></label>
+      <fieldset class="kp-miss"><legend>A team that misses the deadline</legend>
+        <label class="check"><input type="radio" name="missed" value="none"${(L.next && L.next.missed) !== "auto" ? " checked" : ""}> Keeps nobody</label>
+        <label class="check"><input type="radio" name="missed" value="auto"${L.next && L.next.missed === "auto" ? " checked" : ""}> Keeps its best values</label></fieldset>
+      <p class="small muted" style="margin:0">${L.next ? "Changing the deadline reopens picks if it moves later." : "Every manager gets an email and a phone alert to pick up to " + L.settings.keepers + "."} You can set any team's keepers yourself, before or after.</p>
+      <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">${L.next ? "Save the deadline" : "Open keeper picks"}</button></div></form>`, (fd) => {
+      const t = new Date(fd.get("due")).getTime();
+      if (!Number.isFinite(t)) { U.toast("Pick a date and time.", true); return false; }
+      const opening = !L.next;
+      L.next = Object.assign({ opened: now(), picks: {} }, L.next || {}, { due: t, missed: fd.get("missed") === "auto" ? "auto" : "none" });
+      push(); setTimeout(() => app.refresh(), 0);
+      U.toast(opening ? "Keeper picks are open. Everyone gets an email." : `Keepers lock ${whenTxt(t)}.`);
+    });
   }
   function nextSeasonCard() {
     if (!seasonOver()) return "";
     const k = L.settings.keepers || 0;
-    if (k && !L.next) return `<div class="card"><div class="mod-h"><h2>Next season</h2></div><div class="bd stack"><p class="small" style="margin:0">The season is over. Open keeper picks: every manager gets an email and picks up to ${k}. Bots keep their best values.</p><div><button class="btn go" data-live="open-keepers">Open keeper picks</button></div></div></div>`;
-    const doc = L, picks = (L.next && L.next.picks) || {};
-    const rows = doc.teams.map((t) => `<li>${U.teamAv(t, "sm")}<span class="grow"><b>${esc(t.name)}</b><small>${info.seats[t.id] != null ? (picks[t.id] ? `Keeping ${picks[t.id].length}` : "Hasn't picked yet: keeps the best values") : "Bot: keeps its best values"}</small></span></li>`).join("");
-    return `<div class="card"><div class="mod-h"><h2>Next season</h2></div><div class="bd stack">
-      <p class="small" style="margin:0">${L.settings.dynasty ? `The season is over. Starting next season saves this one to the league's history. Every roster carries over, and a ${L.settings.dynasty.rounds}-round rookie and free agent draft opens, worst team first${G.pickRounds(L) ? ", with traded picks going to the teams that hold them" : ""}. Until then, trades stay open.` : `${k ? "Keeper picks are open." : "The season is over."} Starting next season saves this one to the league's history and opens a new draft room${k ? " with the keepers on the board" : ""}, worst team picking first.`}</p>
+    if (k && !L.next) return `<div class="card"><div class="mod-h"><h2>Next season</h2></div><div class="bd stack"><p class="small" style="margin:0">The season is over. Open keeper picks with a deadline: every manager gets an email and picks up to ${k}.</p><div><button class="btn go" data-live="open-keepers">Open keeper picks</button></div></div></div>`;
+    const doc = L, picks = (L.next && L.next.picks) || {}, lock = keepLocked(), auto = L.next && L.next.missed === "auto";
+    const status = (t) => picks[t.id] ? `Keeping ${picks[t.id].length}` : info.seats[t.id] == null ? (auto ? "Open seat: keeps its best values" : "Open seat: keeps nobody") : lock ? (auto ? "Missed the deadline: keeps its best values" : "Missed the deadline: keeps nobody") : "Hasn't picked yet";
+    const rows = doc.teams.map((t) => `<li>${U.teamAv(t, "sm")}<span class="grow"><b>${esc(t.name)}</b><small>${status(t)}</small></span>${k ? `<button type="button" class="btn sm ghost" data-kp-team="${t.id}">${picks[t.id] ? "Change" : "Set"}</button>` : ""}</li>`).join("");
+    return `<div class="card"><div class="mod-h"><h2>Next season</h2>${k && L.next ? `<button type="button" class="btn sm" data-live="open-keepers" style="margin-left:auto">Deadline</button>` : ""}</div><div class="bd stack">
+      <p class="small" style="margin:0">${L.settings.dynasty ? `The season is over. Starting next season saves this one to the league's history. Every roster carries over, and a ${L.settings.dynasty.rounds}-round rookie and free agent draft opens, worst team first${G.pickRounds(L) ? ", with traded picks going to the teams that hold them" : ""}. Until then, trades stay open.` : `${k ? (lock ? `Keepers locked ${esc(whenTxt(keepDue()))}.` : `Keeper picks are open until ${esc(whenTxt(keepDue()))}.`) : "The season is over."} Starting next season saves this one to the league's history and opens a new draft room${k ? " with the keepers on the board" : ""}.`}</p>
       ${k ? `<ul class="seatl">${rows}</ul>` : ""}<div><button class="btn go" data-live="new-season">Start next season's draft</button></div></div></div>`;
   }
   async function newSeason() {
@@ -702,7 +750,7 @@
       const brand = { color: Number(fd.get("color")) };
       if (letters && letters !== auto.letters) brand.letters = letters;
       if (brand.color === auto.color && !brand.letters) delete L.settings.brand; else L.settings.brand = brand;
-      commishSave({ ok: true }, "The league has its new look.");
+      setTimeout(() => commishSave({ ok: true }, "The league has its new look."), 0);
     });
     const f = $(".lk-f"); if (!f) return;
     const draw = () => { const b = { color: Number((f.querySelector("input[name=color]:checked") || {}).value || 0), letters: f.letters.value }; $(".lk-prev", f).innerHTML = U.leagueCrest(U.leagueBrand(L.name, b), "lg"); };
@@ -810,7 +858,9 @@
     if (lv && lv.dataset.live === "invite") { e.preventDefault(); inviteDialog(); }
     if (lv && lv.dataset.live === "dues") { e.preventDefault(); duesDialog(); }
     if (lv && lv.dataset.live === "keepers") keeperDialog();
-    if (lv && lv.dataset.live === "open-keepers") { L.next = { opened: now(), due: now() + 3 * 864e5, picks: {} }; push(); app.refresh(); U.toast("Keeper picks are open. Everyone gets an email."); }
+    if (lv && lv.dataset.live === "open-keepers" && info.commish) keeperOpenDialog();
+    const kt = e.target.closest("[data-kp-team]");
+    if (kt && info.commish) keeperDialog(+kt.dataset.kpTeam);
     const cm = e.target.closest("[data-cm]");
     if (cm && info.commish) { const k = cm.dataset.cm; if (k === "rules") rulesDialog(); else if (k === "look") lookDialog(); else if (k === "teams") teamsDialog(); else if (k === "move") moveDialog(); else if (k === "delete") deleteDialog(); }
     const rv = e.target.closest("[data-cm-rev]");

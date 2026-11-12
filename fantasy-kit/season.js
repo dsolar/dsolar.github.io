@@ -70,6 +70,8 @@
     if (s.dynasty && s.taxi) settings.taxi = Math.max(0, Math.min(6, s.taxi | 0));
     // keepers: how many each team carries into next season, and what each one costs
     if (s.keepers) { settings.keepers = s.keepers; settings.keeperCost = s.keeperCost || (D.type === "auction" ? "price" : "round"); }
+    // a climbing keeper rule comes over from last season (nextDraft) or the form
+    if (D.keeperRule || s.keeperRule) { settings.keeperRule = Object.assign({}, D.keeperRule || s.keeperRule); settings.keepers = D.keepersN || s.keepers || settings.keepers || 5; }
     // a draft that ran out on the clock while nobody was around is "done" in the past; start after now, not then
     const at = Math.max(D.done || 0, o.now || Date.now());
     // a one-week league set for this week starts in the week that's on, if enough of it is left to play
@@ -95,6 +97,8 @@
       settings.span = { end: Math.max(at + HOUR, day.last + 3 * HOUR) };
     }
     const L = G.create({ sport, draft: D, name: o.name || D.name, season: o.season || "", now: at, start, scoring: D.scoring, settings });
+    // each keeper's cost history: what he was first worth, and the years he's been kept (this one counted)
+    if (D.keepInfo) L.keepInfo = JSON.parse(JSON.stringify(D.keepInfo));
     // its kickoff locks everyone, even before a page has seen the live feed
     if (sd && sd.at && L.week === 1) L.kick = { week: 1, teams: Object.fromEntries(sd.teams.map((t) => [t, sd.at])) };
     if (sl && L.week === 1) L.kick = { week: 1, teams: Object.fromEntries(sl.games.flatMap((g) => [[g.away, Date.parse(g.at)], [g.home, Date.parse(g.at)]])) };
@@ -344,7 +348,10 @@
     if (b && b.league && !c.league && cd) seated.forEach((t) => add(t, "season", "next season's draft room is open", `${cd.rookie ? `Your whole roster carries over. The rookie and free agent draft is ${cd.rounds} rounds, worst team first. ` : (cd.board || []).some((pk) => pk && pk.keeper && pk.team === t) || (cd.sales || []).some((x) => x.keeper && x.team === t) ? "Your keepers are on the board. " : ""}The commissioner starts the draft when everyone's ready.`));
     if (c.league) {
       const bl = (b && b.league) || { trades: [], claims: [], results: {} }, cl = c.league;
-      if (cl.next && !bl.next) seated.forEach((t) => add(t, "keepers", "pick your keepers", `The season is over. Pick up to ${cl.settings.keepers} keepers for next season${cl.next.due ? ` by ${when(cl.next.due)}` : ""}. If you don't, your best values are kept for you.`));
+      const missTxt = (n) => (n.missed === "none" ? "If you don't pick by then, you keep nobody." : "If you don't pick by then, your best values are kept for you.");
+      if (cl.next && !bl.next) seated.forEach((t) => add(t, "keepers", "pick your keepers", `The season is over. Pick up to ${cl.settings.keepers} keepers for next season${cl.next.due ? ` by ${when(cl.next.due)}` : ""}. ${missTxt(cl.next)}`));
+      // the commissioner moved the deadline: everyone who hasn't picked hears about it
+      if (cl.next && bl.next && cl.next.due && cl.next.due !== bl.next.due) seated.filter((t) => !(cl.next.picks || {})[t]).forEach((t) => add(t, "keepers", "the keeper deadline moved", `Keepers now lock ${when(cl.next.due)}. ${missTxt(cl.next)}`));
       trades(bl.trades, cl.trades, true);
       // pick your opponent: your turn came up
       const turnOf = (P) => { if (!P || P.done) return null; const got = new Set(P.pairs.flat()); const t = P.order.find((x) => !got.has(x)); return t == null ? null : `${P.week}:${t}`; };
@@ -423,7 +430,64 @@
   // What keeping a player costs next year. Snake drafts: "round" is the round he went in (a pickup costs the last
   // round), "round1" one round earlier than that, "free" one of the team's last picks. Auctions: "price" is what he
   // went for (a pickup costs $5), "price5" that plus $5.
+  /* ---------- a climbing keeper cost (a league's own rule, like Wipe Yoenis): settings.keeperRule ----------
+     { steps: [0, 2, 6], fa: 15, cutoff: "09-01", sameRound: "up" }
+     A player costs the round he was drafted in (whoever drafted him, however he changed teams since), or rule.fa
+     when nobody drafted him; each year he's kept he costs steps[years] rounds earlier, never past round 1, and after
+     steps.length years he goes back in the pool. Anyone his team added after the cutoff (month-day, the season's
+     year) can't be kept. L.keepInfo[pid] = { base, years, late } carries a player's history from season to season
+     (and from an import); without it the draft board and the transactions decide. */
+  function keepInfoOf(L, pid) {
+    const r = L.settings.keeperRule || {}, k = (L.keepInfo && L.keepInfo[pid]) || {};
+    let base = k.base;
+    if (base == null) { const D = L.draft, i = D ? D.board.findIndex((pk) => pk && pk.pid === pid) : -1; base = i >= 0 ? F.slotInfo(D, i).round : r.fa || 15; }
+    return { base, years: k.years || 0, late: k.late != null ? !!k.late : lateAdd(L, pid) };
+  }
+  function lateAdd(L, pid) {
+    const r = L.settings.keeperRule || {};
+    if (!r.cutoff) return false;
+    const owner = L.rosters.findIndex((x) => x.includes(pid));
+    if (owner < 0) return false;
+    // the last time his team got him: a pickup or claim after the cutoff makes him a late add; a trade doesn't
+    const got = (L.tx || []).filter((e) => e.team === owner && [].concat(e.adds || []).includes(pid)).pop();
+    if (!got || /trade|draft/.test(got.type || "")) return false;
+    const yr = new Date(L.start || got.at).getUTCFullYear(), [m, d] = r.cutoff.split("-").map(Number);
+    return got.at >= Date.UTC(yr, m - 1, d, 4);
+  }
+  function climbCost(L, pid) {
+    const r = L.settings.keeperRule, steps = r.steps || [0, 2, 6], k = keepInfoOf(L, pid);
+    if (k.late) return { round: null, no: "late", label: `Added after ${new Date(Date.UTC(2000, +r.cutoff.split("-")[0] - 1, +r.cutoff.split("-")[1])).toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric" })}, can't be kept` };
+    if (k.years >= steps.length) return { round: null, no: "done", label: `Kept ${steps.length} years, back in the pool` };
+    const round = Math.max(1, k.base - steps[k.years]);
+    return { round, year: k.years + 1, base: k.base, label: `Round ${round}, ${ord(k.years + 1)} year kept` };
+  }
+  // The rounds a team's keepers land in. Under a climbing rule (sameRound "up"), a second keeper in a round the team
+  // has one pick in moves up a round (and up again if that's taken too), and round 1 can't move: keeping two players
+  // who cost a 1st takes two 1st-round picks. Elsewhere a keeper slides to the next open pick at draft time.
+  // { ok, why, rows: [{ pid, round, cost, moved }] }
+  function keeperPlan(L, teamId, pids) {
+    const rows = pids.map((pid) => ({ pid, cost: keeperCost(L, pid) }));
+    const bad = rows.find((x) => x.cost.no);
+    if (bad) return { ok: false, why: bad.cost.label, rows };
+    if (rows.length > (L.settings.keepers || 0)) return { ok: false, why: `Keep up to ${L.settings.keepers}`, rows };
+    const rule = L.settings.keeperRule;
+    if (!rule || rule.sameRound !== "up") { rows.forEach((x) => (x.round = x.cost.round)); return { ok: true, rows }; }
+    const held = (r) => 1 + Object.entries(L.picksNext || {}).filter(([k, own]) => +k.split(":")[0] === r && own === teamId && +k.split(":")[1] !== teamId).length
+      - Object.entries(L.picksNext || {}).filter(([k, own]) => +k.split(":")[0] === r && +k.split(":")[1] === teamId && own !== teamId).length;
+    const used = {};
+    for (const x of rows.slice().sort((a, b) => a.cost.round - b.cost.round)) {
+      let r = x.cost.round;
+      while ((used[r] || 0) >= held(r)) {
+        if (r === 1) return { ok: false, why: x.cost.round === 1 ? "Round 1 keepers stay in round 1, so keeping two takes two 1st-round picks" : "There's no earlier round left for this keeper", rows };
+        r--;
+      }
+      used[r] = (used[r] || 0) + 1;
+      x.round = r; x.moved = r !== x.cost.round;
+    }
+    return { ok: true, rows };
+  }
   function keeperCost(L, pid) {
+    if (L.settings.keeperRule) return climbCost(L, pid);
     const D = L.draft, how = L.settings.keeperCost || "round";
     // a player who changed hands by trade keeps his draft cost; one who was dropped and picked up is a pickup
     const owner = L.rosters.findIndex((r) => r.includes(pid));
@@ -446,6 +510,7 @@
     const D = L.draft, n = L.teams.length;
     return L.rosters[teamId].map((id) => ctx.byId[id]).filter(Boolean).map((p) => {
       const c = keeperCost(L, p.id);
+      if (c.no) return { pid: p.id, n: p.n, pos: p.pos[0], cost: c, surplus: -1e6, no: c.no };
       const surplus = c.price != null ? (p.$ || 0) - c.price : c.round == null ? (p.$ || 0) + 100 : ((c.round - 1) * n + n / 2) - (p.rank || 999);
       return { pid: p.id, n: p.n, pos: p.pos[0], cost: c, surplus };
     }).sort((a, b) => b.surplus - a.surplus);
@@ -453,7 +518,20 @@
   // A bot, or a manager who never chose, keeps his best values, up to the limit, as long as each beats its cost.
   // Kickers and defenses come cheap every year, so nobody spends a keeper on one.
   const NO_KEEP = { K: 1, DEF: 1 };
-  const autoKeepers = (L, ctx, teamId) => keeperOptions(L, ctx, teamId).filter((o) => o.surplus > 0 && !NO_KEEP[o.pos]).slice(0, L.settings.keepers || 0).map((o) => o.pid);
+  function autoKeepers(L, ctx, teamId) {
+    const pick = keeperOptions(L, ctx, teamId).filter((o) => !o.no && o.surplus > 0 && !NO_KEEP[o.pos]);
+    if (!L.settings.keeperRule) return pick.slice(0, L.settings.keepers || 0).map((o) => o.pid);
+    // a climbing rule: take the best values that still fit (two round-1 keepers need two 1sts)
+    const out = [];
+    for (const o of pick) { if (out.length >= (L.settings.keepers || 0)) break; if (keeperPlan(L, teamId, out.concat(o.pid)).ok) out.push(o.pid); }
+    return out;
+  }
+  // After the deadline (L.next.due), a team that never picked keeps nobody, or its best values (L.next.missed "auto").
+  const keepersOf = (L, ctx, teamId) => {
+    const p = L.next && L.next.picks && L.next.picks[teamId];
+    if (p != null) return p;
+    return L.next && L.next.missed === "none" ? [] : autoKeepers(L, ctx, teamId);
+  };
   // Next season's draft: the same teams, rules and scoring, worst-to-first order, keepers already on the board.
   function nextDraft(L, ctx, sport, picks, o = {}) {
     const D0 = L.draft || {}, now = o.now || Date.now(), n = L.teams.length;
@@ -461,7 +539,12 @@
     if (L.settings.dynasty) return rookieDraft(L, ctx, sport, order, o);
     const keepers = [];
     for (const t of L.teams) {
-      const mine = (picks && picks[t.id] != null ? picks[t.id] : autoKeepers(L, ctx, t.id)).filter((id) => L.rosters[t.id].includes(id)).slice(0, L.settings.keepers || 0);
+      const mine = (picks && picks[t.id] != null ? picks[t.id] : keepersOf(L, ctx, t.id)).filter((id) => L.rosters[t.id].includes(id)).slice(0, L.settings.keepers || 0);
+      if (L.settings.keeperRule) {
+        const plan = keeperPlan(L, t.id, mine.filter((pid) => !keeperCost(L, pid).no));
+        for (const x of plan.ok ? plan.rows : []) keepers.push({ team: t.id, pid: x.pid, round: x.round, years: x.cost.year, base: x.cost.base });
+        continue;
+      }
       const free = [];
       for (const pid of mine) { const c = keeperCost(L, pid); if (c.round == null && c.price == null) free.push(pid); else keepers.push({ team: t.id, pid, round: c.round, price: c.price }); }
       free.forEach((pid, i) => keepers.push({ team: t.id, pid, round: (D0.rounds || 15) - i }));
@@ -475,6 +558,11 @@
     D.teams.forEach((t, i) => (t.color = L.teams[i].color));
     D.season = D0.season; if (D0.scoringSpec) D.scoringSpec = D0.scoringSpec;
     D.year = (D0.year || 1) + 1;
+    // a climbing rule: each keeper's history goes with him into the new season (begin() reads D.keepInfo)
+    if (L.settings.keeperRule) {
+      D.keeperRule = L.settings.keeperRule; D.keepersN = L.settings.keepers;
+      D.keepInfo = Object.fromEntries(keepers.map((k) => [k.pid, { base: k.base, years: k.years }]));
+    }
     return D;
   }
   // A dynasty's next season: every roster (IR too) carries over, and a short linear draft of rookies and free agents
@@ -501,5 +589,5 @@
   const summary = (L) => G.summary(L);
   const standings = (L) => G.standings(L);
 
-  return { sealedKind, sealedDue, draftRoster, startAfter, weekOf, realCovers, mergeLive, slateGames, mergeGames, begin, catchUp, driveDraft, events, keeperCost, keeperOptions, autoKeepers, nextDraft, summary };
+  return { keeperPlan, keepersOf, keepInfoOf, sealedKind, sealedDue, draftRoster, startAfter, weekOf, realCovers, mergeLive, slateGames, mergeGames, begin, catchUp, driveDraft, events, keeperCost, keeperOptions, autoKeepers, nextDraft, summary };
 });

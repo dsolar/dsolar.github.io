@@ -241,7 +241,7 @@
   /* ---------- the league's own look: a banner crest in the league color, and the masthead on its front page ---------- */
   // A league's brand: { color: 0-11, letters: up to 3 } from settings.brand, or picked from its name.
   const leagueBrand = (name, b) => {
-    const words = String(name || "League").replace(/[^A-Za-z0-9 ]/g, " ").split(/\s+/).filter(Boolean);
+    const words = String(name || "League").replace(/['\u2019]/g, "").replace(/[^A-Za-z0-9 ]/g, " ").split(/\s+/).filter(Boolean);
     const auto = (words.length > 1 ? words.slice(0, 2).map((w) => w[0]) : [String(words[0] || "L").slice(0, 2)]).join("").toUpperCase();
     const letters = String((b && b.letters) || auto).replace(/[^A-Za-z0-9&]/g, "").slice(0, 3).toUpperCase() || "L";
     return { color: b && b.color != null && b.color >= 0 ? b.color % 12 : hashOf(String(name || "") + "|lg") % 12, letters };

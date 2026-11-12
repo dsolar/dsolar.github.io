@@ -315,7 +315,7 @@
       return `<div class="wrap page">
         <div class="head sr"><h1 class="disp">${over() ? "Season over" : w > L().settings.weeks ? `Playoffs, week ${w}` : `Week ${w}`}</h1><span class="ps">${esc(L().season || "")}${L().season ? " season, " : ""}${over() ? `${total} weeks played` : `${Math.max(0, total - w)} week${total - w === 1 ? "" : "s"} after this one`}${myRow ? `. You're ${ord(myRow.rank)} at ${myRow.w}-${myRow.l}${myRow.t ? "-" + myRow.t : ""}` : ""}.</span></div>
         ${champ != null && oneWeekLg() ? finishCard() : champ != null ? `<div class="banner"><span>${teamAv(T(champ), "lg")}</span><div><b class="disp" style="font-size:26px">${esc(T(champ).name)} won the title</b><div class="ps">The ${esc(L().season || "")} season is over.</div></div></div>` : ""}
-        <div class="stack" style="gap:8px"><div class="row"><h2 style="margin:0;font-size:15px">${over() ? "Final week" : mine ? `Around the league, week ${w}` : `Week ${w} scoreboard`}</h2><a href="#league/scoreboard" class="small" style="margin-left:auto">All scores</a></div>${U.scoreboard(mine ? games.filter((g) => !g.me) : games, fmtS)}</div>
+        ${!games.length ? "" : `<div class="stack" style="gap:8px"><div class="row"><h2 style="margin:0;font-size:15px">${over() ? "Final week" : mine ? `Around the league, week ${w}` : `Week ${w} scoreboard`}</h2><a href="#league/scoreboard" class="small" style="margin-left:auto">All scores</a></div>${U.scoreboard(mine ? games.filter((g) => !g.me) : games, fmtS)}</div>`}
         <div class="cols"><div class="stack">
           ${myCards.trim() ? `<div class="m-only stack">${myCards}</div>` : ""}
           ${mine ? `<div class="card"><div class="mod-h"><h2>Your matchup</h2><span class="ps">Week ${w}${w > L().settings.weeks ? `, ${esc(kindName(mine.kind, w).toLowerCase())}` : ""}</span><a href="${matchHref(w, mine.i)}">Full matchup</a></div>${U.versus(versusVM(w, mine))}</div>` : ""}
@@ -345,7 +345,7 @@
       return `<div class="card"><div class="mod-h"><h2>Week ${w} results</h2><span class="ps">${line}${hi ? `${line ? ". " : ""}High score: ${esc(hi[0].abbr)} ${fmtS(hi[1])}` : ""}</span><a href="${rc ? `#league/recap/${w}">Read the recap` : `#league/scoreboard/${w}">Scoreboard`}</a></div>${lede ? `<div class="bd rc-mini" style="padding-bottom:0"><p class="ps" style="margin:0">${lede}</p></div>` : ""}<div class="bd sbtwo">${U.scoreboard(games.map((g) => Object.assign({}, g, { wp: null })), fmtS, { list: true })}</div></div>`;
     }
     /* ---------- the weekly recap: a finished week told as a story, with copy for the group chat ---------- */
-    const recapOn = () => !gl() && !roto() && !oneWeekLg() && !allplay1();
+    const recapOn = () => !gl() && !roto() && !oneWeekLg() && !allplay1() && Object.keys(L().results || {}).length > 0;
     const lastDone = () => Math.min(L().week, G.totalWeeks(L()) + 1) - 1;
     const rcCache = {};
     const recapOf = (w) => { const k = `${w}:${L().week}:${L().version || 0}:${(L().tx || []).length}`; return rcCache[w] && rcCache[w].k === k ? rcCache[w].rc : (rcCache[w] = { k, rc: G.recap(L(), ctx, w) }).rc; };
@@ -1187,7 +1187,8 @@
         const named = Object.entries(open.reduce((m, x) => ((m[x] = (m[x] || 0) + 1), m), {})).map(([k, n]) => (n > 1 ? `${n} ${k}` : k));
         if (open.length) items.push(`<a class="alert" href="#team/roster"><span>Your ${esc(named.join(", "))} ${open.length === 1 ? "spot is" : "spots are"} empty this week</span><b class="go">Fix lineup</b></a>`);
       }
-      for (const id of G.irBlocked(L(), ctx, mid)) items.push(`<a class="alert" href="#team/roster"><span><b>${esc(ctx.byId[id].n)}</b> is healthy and still on IR</span><b class="go">Activate</b></a>`);
+      // in the offseason nobody's lineup counts, so a healthy player on IR is nothing to fix
+      if (!over()) for (const id of G.irBlocked(L(), ctx, mid)) items.push(`<a class="alert" href="#team/roster"><span><b>${esc(ctx.byId[id].n)}</b> is healthy and still on IR</span><b class="go">Activate</b></a>`);
       return items.length ? `<div class="wrap alerts" role="status">${items.join("")}</div>` : "";
     }
 

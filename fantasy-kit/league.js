@@ -1005,6 +1005,8 @@
 
   /* ---------- standings and playoffs ---------- */
   function standings(L, upTo, live) {
+    // an imported season: its final standings as the other site had them, { team, w, l, t, rank }
+    if (L.imported && L.imported.standings && !Object.keys(L.results || {}).length) return L.imported.standings.map((r) => Object.assign({ pf: r.w, pa: r.l, streak: "", form: [], pct: (r.w + r.t / 2) / Math.max(1, r.w + r.l + r.t) }, r));
     if (isGuillotine(L)) return survival(L);
     if (isRoto(L)) return rotoStandings(L, upTo, live);
     const last = Math.min(upTo || L.settings.weeks, L.settings.weeks);
@@ -1228,6 +1230,8 @@
   }
   // How the season ended: the champion and runner-up, third place, and the consolation winner, as far as decided.
   function finish(L) {
+    // a season brought in from another site: its final places (L.imported) stand in for games played here
+    if (L.imported && L.imported.final) return Object.assign({}, L.imported.final);
     if (isGuillotine(L)) return { champion: champion(L) };
     const st = standings(L);
     if (isRoto(L) || !L.settings.playoffTeams) return { champion: L.week > totalWeeks(L) && st[0] ? st[0].team : null };
