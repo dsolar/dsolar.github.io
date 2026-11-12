@@ -53,7 +53,7 @@ window.PROJECTS = [
       { you: "DET", opp: "SF", home: false, label: "NFC Title Game, 2023" }
     ],
     stack: ["JavaScript", "Python", "R", "Supabase"],
-    cover: { image: "assets/covers/win-probability.jpg", bg: "#0E2A1F", band: "#F7D23E" }
+    cover: { image: "assets/covers/win-probability.webp?v=20261112", bg: "#0E2A1F", band: "#F7D23E" }
   },
   {
     title: "Guess the Pick",
@@ -68,7 +68,7 @@ window.PROJECTS = [
     summary: "Draft trivia from the last 20 NBA and NFL drafts. You get the year, the pick and the team that made it, and you name the player. A daily ten for the group chat, or endless until you whiff three times.",
     facts: [["1,400+", "picks, 2007 to 2026"], ["10", "picks in the daily, same for everyone"], ["5", "points a pick, minus hints"]],
     stack: ["JavaScript", "Python"],
-    cover: { image: "assets/covers/guess-the-pick.jpg", bg: "#0B1626", band: "#C8102E" }
+    cover: { image: "assets/covers/guess-the-pick.webp", bg: "#0B1626", band: "#C8102E" }
   },
   {
     title: "Journeyman",
@@ -84,7 +84,7 @@ window.PROJECTS = [
     summary: "Every team he played for, drawn as one line on a transit map. Name the player, and buy clues if the stops aren't enough. NBA, NFL and MLB journeymen, a daily ten for the group chat or endless until you whiff three times.",
     facts: [["1,200", "players with 4+ franchises"], ["3", "leagues: NBA, NFL and MLB"], ["14", "teams for Edwin Jackson, the MLB record"]],
     stack: ["JavaScript", "Python"],
-    cover: { image: "assets/covers/journeyman.jpg", bg: "#F1F2EE", band: "#FCCC0A" }
+    cover: { image: "assets/covers/journeyman.webp", bg: "#F1F2EE", band: "#FCCC0A" }
   },
   {
     title: "Scouting Report",
@@ -99,7 +99,7 @@ window.PROJECTS = [
     summary: "Real pre-draft quotes from Kiper, McShay, Mayock, Zierlein, DraftExpress and more, every one of them aged badly. Name the prospect, then see how his career actually went: busts sold as franchise saviors, future stars written off. NFL and NBA, five a day.",
     facts: [["92", "real quotes, each linked to its source"], ["0", "quotes that aged well"], ["5", "points a file, minus the bars you lift"]],
     stack: ["JavaScript", "Python", "Supabase"],
-    cover: { image: "assets/covers/scouting-report.jpg", bg: "#2A2420", band: "#E2B84A" }
+    cover: { image: "assets/covers/scouting-report.webp", bg: "#2A2420", band: "#E2B84A" }
   },
   {
     title: "Night Out",
@@ -113,7 +113,7 @@ window.PROJECTS = [
     summary: "A shared calendar for Boston events, restaurants, and trips, with group planning and ticket tracking.",
     facts: [["Daily", "refresh of shows and games"], ["62", "restaurants, rated 1 to 5 stars"], ["4½ hr", "longest road trip it looks for"]],
     stack: ["JavaScript", "Python", "Cloudflare Workers", "GitHub Actions"],
-    cover: { image: "assets/covers/calendar.jpg", bg: "#17130E", band: "#FFC53D" }
+    cover: { image: "assets/covers/calendar.webp", bg: "#17130E", band: "#FFC53D" }
   },
   {
     title: "Fantasy",
@@ -165,7 +165,7 @@ window.PROJECTS = [
     summary: "The league house for a 10-team ESPN keeper league: live matchups and projections, league history, rules, and drafts.",
     facts: [["21", "seasons since 2006"], ["$205", "auction budget per team"], ["3", "keepers per team"]],
     stack: ["JavaScript", "ESPN and Sleeper data"],
-    cover: { image: "assets/covers/rohan.jpg", bg: "#122B24", band: "#D4C08A" }
+    cover: { image: "assets/covers/rohan.webp", bg: "#122B24", band: "#D4C08A" }
   },
   {
     title: "Don't Forget to Wipe Yoenis",
@@ -218,7 +218,7 @@ window.PROJECTS = [
     summary: "Manage the Celtics' roster, salary cap, trades, and draft strategy across simulated seasons.",
     facts: [["$1.7M", "under the tax on day one"], ["29", "front offices, each with its own tax stance"], ["60", "real prospects in the 2027 draft"]],
     stack: ["JavaScript", "Python", "GitHub Actions"],
-    cover: { image: "assets/covers/celtics.jpg", bg: "#007A33", band: "#BA9653" }
+    cover: { image: "assets/covers/celtics.webp?v=20261112", bg: "#007A33", band: "#BA9653" }
   },
   {
     title: "Paint the Corners",
@@ -231,7 +231,7 @@ window.PROJECTS = [
     summary: "Pitch against historic Yankees lineups at Fenway, using hitter tendencies and pitch placement.",
     facts: [["14", "real Yankees across two ALCS lineups"], ["25", "spots to aim at, nine in the zone"], ["7", "pitches between Pedro and Papelbon"]],
     stack: ["JavaScript", "Monte Carlo simulation"],
-    cover: { image: "assets/covers/paint-the-corners.jpg", bg: "#0A1A33", band: "#C8102E" }
+    cover: { image: "assets/covers/paint-the-corners.webp", bg: "#0A1A33", band: "#C8102E" }
   },
   {
     title: "Tempo",
@@ -246,7 +246,7 @@ window.PROJECTS = [
     summary: "Play Stockfish at six levels while a coach grades every move and explains the better one, then train with a daily five, Puzzle Rush, lessons and endgames to play out.",
     facts: [["5,000", "real puzzles, rated 600 to 2400"], ["16", "lessons, forks to rook endgames"], ["6", "bot levels, Rookie to Master"]],
     stack: ["JavaScript", "Stockfish (WebAssembly)", "chess.js"],
-    cover: { image: "assets/covers/tempo.jpg", bg: "#16201C", band: "#87A097" }
+    cover: { image: "assets/covers/tempo.webp?v=20261112", bg: "#EDF0EA", band: "#87A097" }
   },
   {
     title: "The Degenerate Trail",
@@ -258,7 +258,7 @@ window.PROJECTS = [
     summary: "An Oregon Trail-style browser game. Walk Nick home, dodge distractions, keep his energy, phone and cash alive, and talk your way through the encounters along the way.",
     facts: [["8", "blocks between the bar and home"], ["4:00", "on the clock before it's over"], ["5", "endings to discover"]],
     stack: ["JavaScript", "HTML Canvas"],
-    cover: { image: "assets/covers/degenerate-trail.jpg", bg: "#101916", band: "#D8EE82" },
+    cover: { image: "assets/covers/degenerate-trail.webp", bg: "#101916", band: "#D8EE82" },
     hidden: true,
     members: true
   },
@@ -285,7 +285,7 @@ window.PROJECTS = [
     summary: "A simple chat prototype inspired by Nick’s catchphrases and texting style. Try a conversation with scripted, topic-matched replies.",
     action: "Chat with Nick",
     stack: ["JavaScript"],
-    cover: { image: "assets/covers/nick-chat.jpg", bg: "#e8ebf2", band: "#596579" },
+    cover: { image: "assets/covers/nick-chat.webp", bg: "#e8ebf2", band: "#596579" },
     hidden: true,
     members: true
   },
@@ -300,7 +300,7 @@ window.PROJECTS = [
     question: "Who wins this trade under your league's actual rules?",
     summary: "Connect an ESPN league, build an offer from two real rosters, and compare lineups and keeper costs before and after. Needs a browser extension.",
     stack: ["JavaScript", "Browser extension", "Supabase"],
-    cover: { image: "assets/covers/trade-analyzer.jpg", bg: "#F5F1E8", band: "#173A31" }
+    cover: { image: "assets/covers/trade-analyzer.webp", bg: "#F5F1E8", band: "#173A31" }
 
   },
   {
@@ -315,7 +315,7 @@ window.PROJECTS = [
     summary: "Lucy’s game, designed by Lucy and built with her dad. Name your first Jellycat, explore a pixel-art village, and step into the tall grass to find a battle. Win to bring new friends home, help the neighbors with their stories, and fill your collector’s notebook. Unofficial and fan-made.",
     facts: [["150", "Jellycats to collect"], ["15", "story quests"], ["6", "skill games to master"]],
     stack: ["JavaScript"],
-    cover: { image: "assets/covers/jellycat-battle.jpg", bg: "#F9F1E8", band: "#64398E" }
+    cover: { image: "assets/covers/jellycat-battle.webp", bg: "#F9F1E8", band: "#64398E" }
   },
   {
     title: "Wild Bloom Isles",
@@ -329,7 +329,7 @@ window.PROJECTS = [
     question: "What would a home that is entirely yours look like?",
     summary: "Charlotte’s game, designed by Charlotte and built with her dad. Build a whole house room by room, from a kitchen to a beauty parlor, decorate every corner with wallpaper, paint and her own art, design the yard, and grow a whole island village. Cow, who just learned to talk, is her guide and hands out stickers for design missions.",
     stack: ["JavaScript", "SVG"],
-    cover: { image: "assets/covers/wild-bloom-isles-studio.jpg", bg: "#F4F1E8", band: "#B8788B" }
+    cover: { image: "assets/covers/wild-bloom-isles-studio.webp", bg: "#F4F1E8", band: "#B8788B" }
   },
   {
     title: "Big Board",
@@ -343,7 +343,7 @@ window.PROJECTS = [
     summary: "The 2027 NBA and NFL drafts with every board worth reading rolled into one ranking: Tankathon, ESPN, Bleacher Report, FanSided, SI and NFL Mock Draft Database now, with No Ceilings, KOC, Jeremiah and the rest as they publish. Who's rising, who's sliding, where the boards can't agree, and a mock draft with the real lottery odds, every protected pick, trade offers on the clock and future picks.",
     facts: [["141", "NBA prospects across 5 boards"], ["219", "NFL prospects across 2 boards"], ["12", "protected 2027 NBA firsts, resolved"]],
     stack: ["JavaScript", "Python", "GitHub Actions"],
-    cover: { image: "assets/covers/draft.jpg", bg: "#F3EFE6", band: "#17191E" }
+    cover: { image: "assets/covers/draft.webp", bg: "#F3EFE6", band: "#17191E" }
   },
   {
     title: "MLB Hub",

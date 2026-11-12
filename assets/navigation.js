@@ -94,15 +94,27 @@
     // The same category destinations in every full-size footer.
     document.querySelectorAll(".foot-nav").forEach(function (footer) {
       var email = footer.querySelector("[data-user]");
-      footer.innerHTML = sections.map(function (s) { return '<a href="' + esc(at(s.url)) + '">' + esc(s.label) + '</a>'; }).join("") + '<a href="' + esc(at("#about")) + '">About</a><a href="' + esc(at("privacy/")) + '">Privacy</a>';
+      footer.innerHTML = sections.map(function (s) { return '<a href="' + esc(at(s.url)) + '">' + esc(s.label) + '</a>'; }).join("") + '<a href="' + esc(at("#about")) + '">About</a><a href="' + esc(at("privacy/")) + '">Privacy</a><a href="' + esc(at("terms/")) + '">Terms</a>';
       if (email) footer.appendChild(email);
     });
   }
   render();
   window.dispatchEvent(new Event("dsolar:nav-render"));
+  // A "Skip to content" link ahead of the header, so keyboard users don't tab through the whole menu on every page.
+  // Pages with their own skip link keep it. It goes to the page's <main>, or else whatever follows the header.
+  if (!document.querySelector("a.skip, a.ds-skip")) {
+    var target = document.querySelector("main") || bar.nextElementSibling;
+    if (target) {
+      if (!target.id) target.id = "ds-content";
+      if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
+      var skip = document.createElement("a");
+      skip.className = "ds-skip"; skip.href = "#" + target.id; skip.textContent = "Skip to content";
+      bar.parentNode.insertBefore(skip, bar);
+    }
+  }
   // the site's account: sign in from any page, and the daily games' saves follow you (assets/account.js)
   if (!window.DSAccount && !document.querySelector('script[src*="assets/account.js"]')) {
-    var acct = document.createElement("script"); acct.src = at("assets/account.js?v=20261105-acct2"); acct.defer = true; document.head.appendChild(acct);
+    var acct = document.createElement("script"); acct.src = at("assets/account.js?v=20261112"); acct.defer = true; document.head.appendChild(acct);
   }
   bar.addEventListener("click", function (event) {
     var button = event.target.closest("button");

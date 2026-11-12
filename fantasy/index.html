@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Fantasy | David Solar</title>
 <meta name="description" content="Every fantasy page on davidsolar.dev by sport: the basketball, football and baseball leagues, plus Draft Lab mock drafts, rankings and demo leagues.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://davidsolar.dev/fantasy/">
+<meta property="og:title" content="Fantasy">
+<meta property="og:description" content="Every fantasy page on davidsolar.dev by sport: the basketball, football and baseball leagues, plus Draft Lab mock drafts, rankings and demo leagues.">
+<meta property="og:image" content="https://davidsolar.dev/assets/og/fantasy.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://davidsolar.dev/assets/og/fantasy.jpg">
 <meta name="theme-color" content="#13233A">
 <script>try{var t=localStorage.getItem("fk-lab:theme");if(t==='"dark"'||t==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
 <link rel="icon" href="../fantasy-kit/mark.svg" type="image/svg+xml">
@@ -70,9 +79,10 @@
 @media (max-width:760px){.formats{grid-template-columns:1fr}.fl li{grid-template-columns:1fr;gap:2px}}
 </style>
 
-<link rel="stylesheet" href="../assets/navigation.css?v=20261104-nav">
-<script src="../assets/projects.js?v=20261110-nfl" defer></script>
-<script src="../assets/navigation.js?v=20261104-discovery" defer></script>
+<link rel="stylesheet" href="../assets/navigation.css?v=20261112">
+<script src="../assets/projects.js?v=20261112" defer></script>
+<script src="../assets/navigation.js?v=20261112" defer></script>
+<style>.fh-row{display:flex;align-items:center;gap:12px}.fh-row nav{flex:1;min-width:0}.fh-theme{flex:none}</style>
 </head>
 <body>
 <nav class="ds-bar ds-navigation" data-ds-navigation aria-label="Main">
@@ -80,13 +90,11 @@
   <a href="../#projects">Explore all projects</a>
 </nav>
 <header class="fk-top">
-  <div class="fk-mast fk-band"><div class="wrap">
-    <a class="fk-brand" href="./"><img src="../fantasy-kit/mark.svg" alt=""><b class="disp">Fantasy</b></a>
-    <span class="grow"></span><div class="fk-who"><button class="btn sm ghost" type="button" id="theme">Dark</button></div>
-  </div></div>
-  <div class="fk-nav"><div class="wrap"><nav aria-label="Sports">
+  <!-- one bar under the site's header: the sports, Draft Lab, your leagues, and the light/dark switch (the page's own
+       big heading already says Fantasy) -->
+  <div class="fk-nav"><div class="wrap fh-row"><nav aria-label="Sports">
     <a href="#nba">Basketball</a><a href="#nfl">Football</a><a href="#mlb">Baseball</a><a href="../fantasy-kit/">Draft Lab</a><a href="../fantasy-kit/leagues.html">Your leagues</a>
-  </nav></div></div>
+  </nav><button class="btn sm ghost fh-theme" type="button" id="theme">Dark</button></div></div>
 </header>
 
 <main class="wrap">

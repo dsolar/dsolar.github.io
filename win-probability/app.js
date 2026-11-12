@@ -1,4 +1,5 @@
-/* Win Probability: screens, play clock, reveal, crowd votes. Rules live in engine.js, scenarios in data.js. */
+/* Win Probability: screens, play clock, reveal, crowd votes. Rules live in engine.js, scenarios in data.js and
+   scenarios.js (the big one, loaded after the start screen is up). */
 (function () {
   "use strict";
   const E = window.WPEngine;
@@ -162,6 +163,42 @@
     $("hero-field").innerHTML = fieldSVG({ kind: "4th", you: "NE", opp: "IND", yl: 72, ytg: 2, down: 4 });
   }
 
+  // ---------- the scenario bank ----------
+  // scenarios.js (every season's snaps, about 1 MB) isn't needed for the start screen, so it loads once the page
+  // is up, or as soon as a mode button is touched, and scenario-adjustments.js runs on it once it's in. Every
+  // mode draws from it, so a mode picked before it lands starts when it does.
+  let bank = null, bankReady = false, pendingMode = null;
+  function addScript(src) {
+    return new Promise((resolve, reject) => {
+      const el = document.createElement("script");
+      el.src = src;
+      el.onload = resolve;
+      el.onerror = () => { el.remove(); reject(new Error("couldn't load " + src)); };
+      document.head.appendChild(el);
+    });
+  }
+  function loadBank() {
+    if (!bank) {
+      bank = (D.scenarios ? Promise.resolve() : addScript("scenarios.js?v=1"))
+        .then(() => addScript("scenario-adjustments.js?v=2"))
+        .then(() => { bankReady = true; }, (e) => { bank = null; throw e; });
+    }
+    return bank;
+  }
+  function whenBank(mode) {
+    pendingMode = mode;
+    if (!$("modes").children.length) renderStart();   // a ?mode= link: show the usual start screen while it loads
+    document.body.style.cursor = "progress";
+    loadBank().then(() => {
+      document.body.style.cursor = "";
+      if (pendingMode !== mode) return;
+      pendingMode = null; startGame(mode);
+    }, () => {
+      document.body.style.cursor = ""; pendingMode = null;
+      toast("Couldn't load the scenarios. Check your connection and try again.");
+    });
+  }
+
   // ---------- game flow ----------
   function startGame(mode) {
     if (mode === "daily") {
@@ -172,6 +209,7 @@
       const prev = store.get("speed." + today(), null);
       if (prev && prev.summary) { state = { mode, results: prev.results, speed: prev.speed, replay: true, date: today() }; return renderEnd(prev.summary, prev.results); }
     }
+    if (!bankReady) return whenBank(mode);
     const date = today();
     const opts = { seen: store.get("seen", []) };
     if (mode === "daily" || mode === "speed") { opts.seed = E.hashString("wp-" + mode + "-" + date); opts.dayIndex = Math.max(0, dayIndex(date)); }
@@ -664,4 +702,7 @@
   const requestedMode = new URLSearchParams(window.location.search).get("mode");
   if (requestedMode === "daily" || requestedMode === "speed") startGame(requestedMode);
   else renderStart();
+  $("modes").addEventListener("pointerdown", () => loadBank().catch(() => {}));
+  if (document.readyState === "complete") loadBank().catch(() => {});
+  else window.addEventListener("load", () => loadBank().catch(() => {}), { once: true });
 })();

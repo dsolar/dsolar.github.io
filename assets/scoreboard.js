@@ -420,7 +420,7 @@
     var v = view;
     ({ tonight: rows, last: lastNight, guillotine: leagueRows })[v]().then(function (list) {
       if (v !== view) return;                                            // switched views while this loaded
-      if (list.every(function (r) { return r.error; }) && last[v]) throw new Error("all failed");
+      if (list.every(function (r) { return r.error; }) && (last[v] || (v === "tonight" && !picked))) throw new Error("all failed");
       fails = 0; last[v] = list;
       render(list);
       if (v === "tonight") schedule(list);
@@ -428,7 +428,10 @@
     }).catch(function () {
       if (v !== view) return;
       fails++;
-      if (!last[v]) {
+      // scores that have never loaded on this visit: keep the bar out of the way instead of leading the page with an
+      // error (it appears once a retry works). Someone who picked a view still gets told.
+      if (!last[v] && v === "tonight" && !picked) { bar.hidden = true; }
+      else if (!last[v]) {
         var msg = v === "guillotine" ? ["Bastille Day", "League unavailable", "Trying again shortly", "guillotine/"] : [v === "last" ? "Last night" : "Scoreboard", "Scores unavailable", "Trying again shortly"];
         render([{ note: msg }]);
       }
@@ -534,6 +537,7 @@
   }
 
   // ---- The view switch
+  var picked = false;   // someone chose a view on this visit
   function setView(v, remember) {
     if (VIEWS.indexOf(v) < 0) v = "tonight";
     view = v; fails = 0;
@@ -547,7 +551,7 @@
     refresh();
   }
   buttons.forEach(function (b) {
-    b.addEventListener("click", function () { resumeAt = Date.now() + 15e3; setView(b.getAttribute("data-view"), true); });
+    b.addEventListener("click", function () { resumeAt = Date.now() + 15e3; picked = true; setView(b.getAttribute("data-view"), true); });
   });
   function start() {
     var asked = (/[?&]ticker=(\w+)/.exec(location.search) || [])[1], saved = null;

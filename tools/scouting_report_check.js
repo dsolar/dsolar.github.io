@@ -4,7 +4,8 @@
 const assert = require("assert");
 globalThis.window = globalThis;
 require("../guess-the-pick/engine.js");
-require("../guess-the-pick/names.js");
+require("../guess-the-pick/names-nba.js");
+require("../guess-the-pick/names-nfl.js");
 require("../scouting-report/data.js");
 const G = window.GTP, D = window.SR_DATA;
 assert.ok(D.length >= 30, "enough prospects for a week of dailies");

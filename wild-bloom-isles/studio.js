@@ -409,4 +409,6 @@ $('stickers').onclick=openStickers;
 // ---------- start ----------
 state=load();style=room().wall;if(state.view==='room')category='room';
 render();save();renderSoundBtn();renderStickerCount();booting=false;
-try{if(!localStorage.getItem(GUIDE_KEY))setTimeout(openGuide,600);}catch{}
+// Cow says hello on a first visit, but only where the guide fits beside the room: on a phone it would cover the whole
+// screen, so the Ask Cow button waits for a tap there
+try{if(!localStorage.getItem(GUIDE_KEY)&&matchMedia('(min-width: 760px)').matches)setTimeout(openGuide,600);}catch{}

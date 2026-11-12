@@ -80,8 +80,9 @@
     var tag = accessible ? "a" : "div";
     return '<li class="tile-item" id="' + esc(id) + '" data-type="' + esc(p.type) + '">'
       + "<" + tag + ' class="tile' + (accessible ? "" : " is-off") + '"' + (accessible ? ' href="' + esc(at(p.url)) + '"' : "") + ' style="' + esc(style) + '">'
-      + '<span class="tile-cover">' + art + order + (badge ? '<span class="tile-badge">' + esc(badge) + "</span>" : "") + "</span>"
-      + '<span class="tile-body"><span class="tile-type">' + esc(p.type) + '</span><h3 class="tile-title">' + esc(p.title) + (p.external ? " ↗" : "") + "</h3>"
+      // the number and the badge sit in the card's own line, not on the cover art, where they hid the cover's title
+      + '<span class="tile-cover">' + art + "</span>"
+      + '<span class="tile-body"><span class="tile-meta">' + order + '<span class="tile-type">' + esc(p.type) + "</span>" + (badge ? '<span class="tile-badge">' + esc(badge) + "</span>" : "") + '</span><h3 class="tile-title">' + esc(p.title) + (p.external ? " ↗" : "") + "</h3>"
       + (p.line ? '<span class="tile-line">' + esc(p.line) + "</span>" : "") + "</span>"
       + "</" + tag + "></li>";
   }

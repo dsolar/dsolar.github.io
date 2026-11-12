@@ -40,11 +40,17 @@ function bootWorker(url, ms) {
   });
 }
 function Engine() { this.w = null; this.jobs = []; this.cur = null; this.state = 'loading'; this.ready = null; }
+// The coach and the bot each get their own worker so they can think at the same time, but they boot one after the
+// other: started together, both workers downloaded stockfish.js and stockfish.wasm in parallel, so the engine came
+// down twice. Booting in turn, the second worker gets both files from the HTTP cache (and if the first had to fall
+// back to stockfish.asm.js, the second goes straight to it).
+var engineQueue = Promise.resolve(), engineFile = 'stockfish.js';
 Engine.prototype.start = function () {
   var self = this;
   if (this.ready) return this.ready;
-  this.ready = bootWorker('stockfish.js', 9000)
-    .catch(function () { return bootWorker('stockfish.asm.js', 25000); })
+  this.ready = engineQueue
+    .then(function () { return engineFile === 'stockfish.js' ? bootWorker('stockfish.js', 9000) : Promise.reject(); })
+    .catch(function () { engineFile = 'stockfish.asm.js'; return bootWorker('stockfish.asm.js', 25000); })
     .then(function (w) {
       self.w = w; self.state = 'ready';
       w.onmessage = function (e) { String(e.data).split('\n').forEach(function (l) { self.onLine(l.trim()); }); };
@@ -57,6 +63,7 @@ Engine.prototype.start = function () {
       self.state = 'failed';
       self.jobs.forEach(function (j) { j.res(null); }); self.jobs = [];
     });
+  engineQueue = this.ready;
   return this.ready;
 };
 Engine.prototype.go = function (fen, o) {
@@ -64,6 +71,7 @@ Engine.prototype.go = function (fen, o) {
   return new Promise(function (res) {
     if (self.state === 'failed') { res(null); return; }
     self.jobs.push({ fen: fen, o: o, res: res });
+    self.start();   // an engine boots the first time it's given work
     self.pump();
   });
 };
@@ -1291,7 +1299,10 @@ function start(data) {
   wireTrain();
   noDoubleTapZoom();
   var hotState = data && data.S ? data : null;
-  coachEng.start().then(render); botEng.start().then(render);
+  // The coach boots now (it grades the position on screen). The bot boots, from the HTTP cache, once you touch the
+  // board, so it's warm by the time you've made your move, or on its own first move if it has the white pieces.
+  coachEng.start().then(render);
+  document.getElementById('board').addEventListener('pointerdown', function () { botEng.start(); });
   if (!restore(hotState) && !restore(loadSaved())) { newGame(defaultSettings()); }
   else {
     render();

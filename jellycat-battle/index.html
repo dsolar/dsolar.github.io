@@ -4,12 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-<meta property="og:image" content="https://davidsolar.dev/assets/covers/jellycat-battle.jpg"><meta property="og:image:width" content="1040"><meta property="og:image:height" content="780"><meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#f9f1e8">
   <meta name="description" content="Lucy’s fan-made Jellycat game: explore a pixel-art village, battle in the tall grass, and collect 150 Jellycats. Unofficial and not affiliated with Jellycat.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://davidsolar.dev/jellycat-battle/">
+<meta property="og:image" content="https://davidsolar.dev/assets/og/jellycat-battle.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://davidsolar.dev/assets/og/jellycat-battle.jpg">
   <meta property="og:title" content="Jellycat Battle Club">
   <meta property="og:description" content="Lucy’s fan-made Jellycat game: explore a pixel-art village, battle in the tall grass, and collect 150 Jellycats.">
-  <title>Jellycat Battle Club · The Softlands</title>
+  <title>Jellycat Battle Club | David Solar</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A5%90%3C/text%3E%3C/svg%3E">
   <style>
 
@@ -506,11 +512,14 @@ body.battle-focus .move-grid.moves-4{grid-template-columns:repeat(4,minmax(0,1fr
 .learn-modal .learn-art{width:110px;height:110px;margin:14px auto 4px;display:grid;place-items:center}
 .learn-modal .learn-art>*{max-width:100%;max-height:100%}
 .learn-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px}
+
+/* on a touch screen with no keyboard, the shortcut letters are noise: hide them on buttons */
+@media (hover:none) and (pointer:coarse){.game-nav button kbd,.btn kbd,.move kbd{display:none}}
 </style>
 
-<link rel="stylesheet" href="../assets/navigation.css?v=20261104-nav">
-<script src="../assets/projects.js?v=20261110-nfl" defer></script>
-<script src="../assets/navigation.js?v=20261104-discovery" defer></script>
+<link rel="stylesheet" href="../assets/navigation.css?v=20261112">
+<script src="../assets/projects.js?v=20261112" defer></script>
+<script src="../assets/navigation.js?v=20261112" defer></script>
 </head>
 <body>
 <nav class="ds-bar ds-navigation" data-ds-navigation aria-label="Main">

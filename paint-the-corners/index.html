@@ -5,14 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <meta name="description" content="Pitch as Pedro Martinez or Jonathan Papelbon against the real 2003 and 2004 Yankees at Fenway. Read each hitter, mix your pitches, paint the corners.">
+<meta property="og:image" content="https://davidsolar.dev/assets/og/paint-the-corners.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://davidsolar.dev/assets/og/paint-the-corners.jpg">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://davidsolar.dev/paint-the-corners/">
 <meta property="og:title" content="Paint the Corners">
 <meta property="og:description" content="Pedro vs. the 2003-04 Yankees at Fenway. Can you paint the corners?">
-<meta property="og:image" content="https://davidsolar.dev/assets/covers/paint-the-corners.jpg">
-<meta property="og:image:width" content="1040">
-<meta property="og:image:height" content="780">
-<meta name="twitter:card" content="summary_large_image">
 <title>Paint the Corners | David Solar</title>
 <link rel="canonical" href="https://davidsolar.dev/paint-the-corners/">
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
@@ -262,7 +263,8 @@ button { font: inherit; color: inherit; }
 
 /* ---------- overlay ---------- */
 .overlay {
-  position: fixed; inset: 0; z-index: 10; display: none;
+  /* starts under the site's sticky header (54px), so the top of the sheet isn't hidden behind it */
+  position: fixed; inset: 54px 0 0; z-index: 10; display: none;
   align-items: flex-start; justify-content: center; overflow-y: auto;
   padding: 24px 16px;
   background: rgba(5, 12, 26, .82); backdrop-filter: blur(3px);
@@ -348,11 +350,11 @@ button { font: inherit; color: inherit; }
 }
 </style>
 
-<link rel="stylesheet" href="../assets/navigation.css?v=20261104-nav">
+<link rel="stylesheet" href="../assets/navigation.css?v=20261112">
 <link rel="stylesheet" href="../assets/faces.css?v=20261109c">
 <script src="../assets/faces.js?v=20261109c"></script>
-<script src="../assets/projects.js?v=20261110-nfl" defer></script>
-<script src="../assets/navigation.js?v=20261104-discovery" defer></script>
+<script src="../assets/projects.js?v=20261112" defer></script>
+<script src="../assets/navigation.js?v=20261112" defer></script>
 </head>
 <body>
 <nav class="ds-bar ds-navigation" data-ds-navigation aria-label="Main">

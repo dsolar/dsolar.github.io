@@ -1,7 +1,8 @@
 /* Checks Journeyman's data. Run from the repo root: node tools/journeyman_check.js */
 global.window = global;
 require("../journeyman/data.js");
-require("../guess-the-pick/names.js");
+require("../guess-the-pick/names-nba.js");
+require("../guess-the-pick/names-nfl.js");
 require("../journeyman/names-mlb.js");
 const G = require("../guess-the-pick/engine.js");
 const D = window.JM_DATA;

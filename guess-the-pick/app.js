@@ -123,10 +123,32 @@
   $("years").textContent = "last 20 drafts, " + DATA.years[0] + " to " + DATA.years[1];
 
   function load(s) {
-    sport = s; picks = DATA[s]; pool = G.pool(picks, (window.GTP_NAMES || {})[s]);
+    sport = s; picks = DATA[s]; pool = G.pool(picks, (window.GTP_NAMES || {})[s]); waiting = null;
     store.set("gtp-sport", s);
     document.querySelectorAll(".sport").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-sport") === s)); });
     homeStatus();
+  }
+  // The full name list (names-SPORT.js, every player since 1980) isn't part of the page load: it comes in when a
+  // round starts or the guess box gets focus. Until then the pool knows only this sport's picks, so suggestions
+  // fill in once it lands, and a guess made before that waits for it so it's judged against every name.
+  var waiting = null;
+  function namesIn() { return !!(window.GTP_NAMES || {})[sport]; }
+  function needNames() {
+    if (namesIn()) return;
+    var s = sport;
+    G.names(s, function (known) {
+      if (s !== sport) return;
+      if (known) {
+        pool = G.pool(picks, known);
+        if (document.activeElement === input && input.value && cur && !cur.done) drawList();
+      }
+      var w = waiting; waiting = null;
+      if (w) w();
+    });
+  }
+  function whenNames(fn) {
+    if (namesIn()) return fn();
+    waiting = fn; needNames();
   }
   function dailyKey() { return "gtp-daily5-" + sport + "-" + today; }
   function homeStatus() {
@@ -163,6 +185,7 @@
   // ---- One pick
   function newPick(i, resume) {
     cur = resume && resume.i === i ? resume : { i: i, used: [], wrong: [], done: false };
+    waiting = null; needNames();
     if (mode === "daily") { game.cur = cur; store.set(dailyKey(), game); }
     var p = picks[i];
     show("play");
@@ -233,6 +256,10 @@
   function guess(text) {
     if (cur.done) return;
     closeList();
+    whenNames(function () { judge(text); });
+  }
+  function judge(text) {
+    if (cur.done) return;
     var p = picks[cur.i], verdict = G.judge(text, p, pool);
     var msg = $("msg");
     if (verdict === "ambiguous") {
@@ -487,6 +514,7 @@
     list.hidden = false; input.setAttribute("aria-expanded", "true");
     if (active >= 0) input.setAttribute("aria-activedescendant", "opt-" + active); else input.removeAttribute("aria-activedescendant");
   }
+  input.addEventListener("focus", needNames);
   input.addEventListener("input", function () { active = -1; drawList(); if ($("msg").className === "msg") $("msg").textContent = ""; });
   input.addEventListener("keydown", function (e) {
     if (list.hidden) return;
@@ -505,11 +533,13 @@
   });
   $("guess-form").addEventListener("submit", function (e) {
     e.preventDefault();
-    var v = input.value;
-    // One suggestion left and the box doesn't match a full name yet: that's the guess.
-    var first = G.judge(v, picks[cur.i], pool);
-    if (options.length === 1 && (first === "unknown" || first === "ambiguous")) v = options[0];
-    guess(v);
+    whenNames(function () {
+      var v = input.value;
+      // One suggestion left and the box doesn't match a full name yet: that's the guess.
+      var first = G.judge(v, picks[cur.i], pool);
+      if (options.length === 1 && (first === "unknown" || first === "ambiguous")) v = options[0];
+      guess(v);
+    });
   });
 
   // ---- Buttons

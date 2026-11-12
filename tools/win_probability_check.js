@@ -9,6 +9,7 @@ const dir = path.join(__dirname, "..", "win-probability");
 const ctx = { window: {}, globalThis: {} };
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(dir, "data.js"), "utf8"), ctx);
+vm.runInContext(fs.readFileSync(path.join(dir, "scenarios.js"), "utf8"), ctx);   // the page loads this one after the start screen
 vm.runInContext(fs.readFileSync(path.join(dir, "scenario-adjustments.js"), "utf8"), ctx);
 const D = ctx.window.WP_DATA;
 const E = require(path.join(dir, "engine.js"));

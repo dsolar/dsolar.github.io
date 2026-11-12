@@ -1,7 +1,7 @@
 /* Scouting Report: screens, the guess box and saved progress. The prospects and their real pre-draft quotes are in data.js
    (built by tools/scouting_report_build.py). Name matching, the Boston date and seeded random numbers come from
-   Guess the Pick's engine, and the guess box knows every player in Guess the Pick's names.js, so a suggestion
-   never gives the answer away.
+   Guess the Pick's engine, and the guess box knows every player in Guess the Pick's names-nba.js and names-nfl.js,
+   so a suggestion never gives the answer away. Those lists load per league when a file needs them, not with the page.
    Saved on this device (localStorage):
      sr-daily-YYYY-MM-DD   today's five so far
      sr-best               best endless run
@@ -21,11 +21,34 @@
   var tier = function (s) { return s >= 4 ? 3 : s >= 2 ? 2 : s >= 1 ? 1 : 0; };
   var SQUARE = ["⬛", "🟧", "🟨", "🟩"];
 
-  // The guess box knows every name in the league, not just the prospects
-  var pools = {};
+  // The guess box knows every name in the league, not just the prospects. A league's list comes in when a file
+  // from that league is up (or the guess box gets focus); until it lands the pool is just the prospects, the
+  // suggestions fill in once it does, and a guess made before then waits for it.
+  var pools = {}, waiting = null;
   function pool(lg) {
-    if (!pools[lg]) pools[lg] = G.pool(DATA.filter(function (p) { return p.lg === lg; }).map(function (p) { return { n: p.n, f: 0 }; }), (window.GTP_NAMES || {})[lg]);
+    var known = (window.GTP_NAMES || {})[lg];
+    if (!pools[lg] || (known && !pools[lg].full)) {
+      pools[lg] = G.pool(DATA.filter(function (p) { return p.lg === lg; }).map(function (p) { return { n: p.n, f: 0 }; }), known);
+      pools[lg].full = !!known;
+    }
     return pools[lg];
+  }
+  function curLg() { return cur && DATA[cur.i] ? DATA[cur.i].lg : null; }
+  function needNames() {
+    var lg = curLg();
+    if (!lg || (window.GTP_NAMES || {})[lg]) return;
+    G.names(lg, function (known) {
+      if (lg !== curLg()) return;
+      var input = $("guess");
+      if (known && document.activeElement === input && input.value && !cur.done) showSugg(input.value);
+      var w = waiting; waiting = null;
+      if (w) w();
+    });
+  }
+  function whenNames(fn) {
+    var lg = curLg();
+    if (!lg || (window.GTP_NAMES || {})[lg]) return fn();
+    waiting = fn; needNames();
   }
 
   // The file's lines, in order. Position and draft class are on the file from the start (free); the rest sit
@@ -106,6 +129,7 @@
     if (mode === "endless" && (game.misses >= LIVES || n >= game.order.length)) return finish();
     if (!DATA[game.order[n]]) { store.set(dkey(), null); return mode === "daily" ? startDaily() : startEndless(); }
     cur = { i: game.order[n], used: [], wrong: [], done: false };
+    waiting = null; needNames();
     drawFile(); hud();
     $("ask").hidden = false; $("went").hidden = true; $("note").textContent = "";
     $("guess").value = ""; showSugg("");
@@ -161,6 +185,10 @@
     $("sugg").innerHTML = sugg.map(function (n, k) { return '<li><button type="button" role="option" data-k="' + k + '">' + esc(n) + "</button></li>"; }).join("");
   }
   function guess(text) {
+    if (!cur || cur.done) return;
+    whenNames(function () { judge(text); });
+  }
+  function judge(text) {
     if (!cur || cur.done) return;
     var p = DATA[cur.i], r = G.judge(text, p, pool(p.lg)), note = $("note");
     if (r === "right") return reveal(false);
@@ -283,6 +311,7 @@
   $("again").onclick = startEndless;
   $("home-btn").onclick = function () { homeStatus(); show("home"); };
   $("fields").addEventListener("click", function (e) { var b = e.target.closest("[data-clue]"); if (b) lift(b.getAttribute("data-clue")); });
+  $("guess").addEventListener("focus", needNames);
   $("guess").addEventListener("input", function (e) { showSugg(e.target.value); $("note").textContent = ""; });
   $("guess").addEventListener("keydown", function (e) {
     if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
@@ -292,13 +321,18 @@
   });
   $("sugg").addEventListener("click", function (e) {
     var b = e.target.closest("button[data-k]"); if (!b) return;
-    $("guess").value = sugg[+b.getAttribute("data-k")]; guess($("guess").value);
-    if (!cur.done) { showSugg(""); $("guess").focus(); }
+    $("guess").value = sugg[+b.getAttribute("data-k")];
+    whenNames(function () {
+      guess($("guess").value);
+      if (!cur.done) { showSugg(""); $("guess").focus(); }
+    });
   });
   $("ask").addEventListener("submit", function (e) {
     e.preventDefault();
-    var text = hi >= 0 && sugg[hi] ? sugg[hi] : $("guess").value;
-    guess(text); if (!cur.done) showSugg($("guess").value);
+    whenNames(function () {
+      var text = hi >= 0 && sugg[hi] ? sugg[hi] : $("guess").value;
+      guess(text); if (!cur.done) showSugg($("guess").value);
+    });
   });
   $("give-up").onclick = function () { reveal(true); };
   $("share").onclick = function () {

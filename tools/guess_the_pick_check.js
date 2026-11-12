@@ -1,7 +1,8 @@
 /* Checks Guess the Pick's data and rules. Run from the repo root: node tools/guess_the_pick_check.js */
 global.window = global;
 require("../guess-the-pick/data.js");
-require("../guess-the-pick/names.js");
+require("../guess-the-pick/names-nba.js");
+require("../guess-the-pick/names-nfl.js");
 const G = require("../guess-the-pick/engine.js");
 const D = window.GTP_DATA;
 let fails = 0;

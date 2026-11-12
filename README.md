@@ -49,10 +49,11 @@ dsolar.github.io/
                               Saves live in each browser; old single-room saves move into the first house on their own.
                               Cow's guide answers are the GUIDE list at the bottom of data.js (add questions there).
   guess-the-pick/             Guess the Pick: index.html (layout, styles), app.js (screens, guess box, saved progress),
-                              engine.js (daily ten, scoring, name matching), data.js (every pick) and names.js (every
-                              player since 1980, for the guess box); data.js and names.js are generated, don't edit
+                              engine.js (daily ten, scoring, name matching, and loading a sport's names), data.js (every
+                              pick) and names-nba.js / names-nfl.js (every player since 1980, for the guess box, loaded
+                              when a round needs them); data.js and the names files are generated, don't edit
   journeyman/                 Journeyman: index.html, app.js and data.js (every player's teams; generated) plus
-                              names-mlb.js; it borrows Guess the Pick's engine.js and names.js
+                              names-mlb.js; it borrows Guess the Pick's engine.js and names files
   scouting-report/            Scouting Report: index.html (layout, styles), app.js (screens, clues, daily five, board) and
                               data.js (every prospect, report and career; generated). Borrows Guess the Pick's engine and names
   tempo/                      Tempo, the chess coach: index.html (layout), style.css, app.js (board, bot, coach card,

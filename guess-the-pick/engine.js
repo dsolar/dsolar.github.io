@@ -5,6 +5,7 @@
      GTP.endless(picks, seen, r) one more random pick for endless mode, skipping the ones already seen
      GTP.judge(guess, pick, pool)  "right", "wrong", "ambiguous" (a shared last name) or "unknown" (a typo)
      GTP.suggest(text, pool, n)  name suggestions for the guess box, best known first
+     GTP.names(sport, done)      loads a sport's name list (names-SPORT.js) on demand, then done(list)
    Scoring: every pick starts at 5 points. Hints cost 1 or 2 (app.js has the menu), a wrong guess costs 1,
    and at zero the answer shows. */
 (function (root) {
@@ -89,8 +90,8 @@
   }
 
   // Every distinct name in a sport, with its best-known pick's fame, for suggestions and for judging guesses.
-  // Every name the guess box knows: the game's own picks plus everyone in names.js (all players drafted or
-  // playing since 1980), in names.js order, which is best careers first. Knowing far more names than the game
+  // Every name the guess box knows: the game's own picks plus everyone in names-SPORT.js (all players drafted or
+  // playing since 1980), in that file's order, which is best careers first. Knowing far more names than the game
   // uses means a missing suggestion never gives an answer away.
   function pool(picks, known) {
     var by = {}, sq = {}, last = {}, names = [];
@@ -133,8 +134,33 @@
     return out;
   }
 
+  // The name lists are big (NFL alone is 370 KB), so pages don't load them up front: GTP.names(sport, done) adds
+  // that sport's file the first time it's asked for and calls done(list) when it lands, or done(null) if it
+  // couldn't load (asking again retries). A list that's already in comes back at once.
+  var NAME_FILES = { nba: "names-nba.js?v=2", nfl: "names-nfl.js?v=2", mlb: "../journeyman/names-mlb.js?v=1" };
+  var nameBase = "", nameWait = {};
+  try { nameBase = document.currentScript.src.replace(/[^\/]*$/, ""); } catch (e) { /* node, or no script tag */ }
+  function names(sport, done) {
+    var have = (root.GTP_NAMES || {})[sport];
+    if (have || !NAME_FILES[sport] || typeof document === "undefined") { if (done) done(have || null); return; }
+    var waiting = nameWait[sport];
+    if (!waiting) {
+      waiting = nameWait[sport] = [];
+      var s = document.createElement("script");
+      s.src = nameBase + NAME_FILES[sport];
+      s.async = true;
+      s.onload = s.onerror = function () {
+        delete nameWait[sport];
+        if (!(root.GTP_NAMES || {})[sport]) s.remove();
+        waiting.forEach(function (f) { f((root.GTP_NAMES || {})[sport] || null); });
+      };
+      document.head.appendChild(s);
+    }
+    if (done) waiting.push(done);
+  }
+
   var api = { POINTS: POINTS, DAILY: DAILY, LIVES: LIVES, norm: norm, squash: squash, dailyKey: dailyKey, seeded: seeded,
-    daily: daily, endless: endless, pool: pool, judge: judge, suggest: suggest };
+    daily: daily, endless: endless, pool: pool, judge: judge, suggest: suggest, names: names };
   root.GTP = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);
