@@ -59,7 +59,9 @@
     const ws = weeks(), w = ws[Math.min(wk, Math.max(0, ws.length - 1))];
     const tabName = (x) => (x.day ? `${SL.dayName(x.day)}, ${day(x.day)}` : `Week ${x.week}, ${day(x.start)} to ${day(x.end)}`);
     const weekTabs = ws.length > 1 ? `<div class="sg wr wk-tabs" role="radiogroup" aria-label="${nba() ? "Which night" : "Which week"}">${ws.map((x, i) => `<label class="sg-o"><input type="radio" name="wk" value="${i}"${i === wk ? " checked" : ""} data-wk="${i}"><span>${esc(tabName(x))}</span></label>`).join("")}</div>` : "";
-    const games = !data ? `<p class="ps">Loading ${nba() ? "tonight's" : "this week's"} games…</p>` : !w ? `<div class="card"><div class="bd"><p style="margin:0">${nba() ? `<b>No games left to draft tonight or tomorrow.</b> <span class="ps">The next night's games show up here a day ahead.</span>` : `<b>No games left to draft this week.</b> <span class="ps">The next week's games show up here once the schedule is out.</span>`}</p></div></div>`
+    const games = !data ? `<p class="ps">Loading ${nba() ? "tonight's" : "this week's"} games…</p>`
+      : data.error ? `<div class="card" role="alert"><div class="bd row" style="gap:12px;flex-wrap:wrap;justify-content:space-between"><p style="margin:0"><b>Couldn't load ${nba() ? "tonight's" : "this week's"} games.</b> <span class="ps">Check your connection and try again.</span></p><button type="button" class="btn" data-retry>Try again</button></div></div>`
+      : !w ? `<div class="card"><div class="bd"><p style="margin:0">${nba() ? `<b>No games left to draft tonight or tomorrow.</b> <span class="ps">The next night's games show up here a day ahead.</span>` : `<b>No games left to draft this week.</b> <span class="ps">The next week's games show up here once the schedule is out.</span>`}</p></div></div>`
       : `${weekTabs}${slateCards(w)}<div class="cols2" style="margin-top:14px"><div class="stack">${showdowns(w)}</div><div class="stack">${mineCard()}</div></div>`;
     app.innerHTML = `<div class="wrap page">
       <div class="su sp-${sport}"><div class="nl-band wk-band">${FIELD[sport]}<div class="nl-bi">
@@ -94,7 +96,10 @@
       render(); load();
     }
   });
-  document.addEventListener("click", (e) => { if (e.target.closest("button[data-theme]")) { theme.toggle(); header(); } });
+  document.addEventListener("click", (e) => {
+    if (e.target.closest("button[data-theme]")) { theme.toggle(); header(); }
+    if (e.target.closest("button[data-retry]")) { load(); render(); }
+  });
   if (link && link.error) U.toast(link.error, true);
   render();
   if (nba()) document.title = "One day | Draft Lab";

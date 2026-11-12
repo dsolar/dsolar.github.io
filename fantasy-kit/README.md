@@ -221,6 +221,11 @@ owns which team, the invite code and the save order. It also stamps each team's 
   seconds overdue (with live nudges on) or a manager's clock is five seconds overdue.
 - **Loading.** `play.html` loads `trivia.js` only for a trivia draft and `league-ui.js` a few seconds after the draft
   room is up (or right away for a league in season), with the same version tag as `live.js`. In a slow draft (an hour or more a pick), managers get an email when they're on the clock.
+- **First paint and offline.** Each page's scripts load from a short inline list at the end of `<body>` (bump `?v=`
+  there), which runs once the stylesheets are in, so the static first screen in `index.html`, `week.html` and the
+  header in `leagues.html` paint before the JavaScript arrives. That markup copies what the page's script draws
+  (`startPage()` and `header()` in `lab.js`, `render()` in `week.js`), so keep them in step. `sw.js` (registered by
+  `cloud.js`) keeps the pages, their files and the `data/*.json` they've used on the device; see its header.
 - **The season** starts the Monday after the draft (Tuesday for football) at 13:00 UTC and runs on the real calendar.
   Basketball and football leagues are scored on real box scores (see Real scoring).
 - **Bots on time.** Every save to a live draft wakes `fk-clock ?league=<id>` (the `fk_wake_clock` trigger). If the

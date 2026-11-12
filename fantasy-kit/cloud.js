@@ -14,13 +14,17 @@
      token()                the signed-in user's access token, refreshed when it's about to run out
      fromLink()             call once on load: picks up the tokens a sign-in link brings back, or its error
      rpc(name, args)        calls a league function as the signed-in user (or as a guest)
-     now()                  the server's clock, give or take a request */
+     now()                  the server's clock, give or take a request
+     slates(sport)          this week's games for one-week slates: { weeks }, or { weeks: [], error: true } when the
+                            feed can't be reached (an outage, not an empty week)
+   It also registers sw.js on every page, which keeps the app on this device for a bad connection (see sw.js). */
 (function (root) {
   "use strict";
   const FK = (root.FK = root.FK || {});
   const BASE = "https://baxrczyufqbzrogftmyn.supabase.co";
   const KEY = "sb_publishable_brDXGevzcoI7mBaPO7Plow_yaUy4gk4";
   const SK = "fk-auth:session";
+  const HERE = (typeof document !== "undefined" && document.currentScript && document.currentScript.src) || "";
   let session = read(), refreshing = null, offset = 0;
 
   function read() { try { return JSON.parse(localStorage.getItem(SK)); } catch (e) { return null; } }
@@ -150,8 +154,12 @@
   // the live box score feed (supabase/functions/fk-live): this week's totals so far, games in progress included
   // this NFL week's games and next week's, for one-week slates (fk-live ?slates=1); kept for the page's life
   // basketball's are today's and tomorrow's games, each day shaped like a week with a day (fk-live ?sport=nba&slates=1)
+  // When the feed can't be reached it's { weeks: [], error: true } (not an empty week), and the next call asks again.
   const slatesP = {};
-  const slates = (sport = "nfl") => (slatesP[sport] = slatesP[sport] || fetch(`${BASE}/functions/v1/fk-live?sport=${encodeURIComponent(sport)}&slates=1`).then((r) => (r.ok ? r.json() : { weeks: [] })).catch(() => { slatesP[sport] = null; return { weeks: [] }; }));
+  const slates = (sport = "nfl") => (slatesP[sport] = slatesP[sport] || fetch(`${BASE}/functions/v1/fk-live?sport=${encodeURIComponent(sport)}&slates=1`)
+    .then((r) => { if (!r.ok) throw new Error(`Error ${r.status}`); return r.json(); })
+    .then((d) => { if (!d || !Array.isArray(d.weeks)) throw new Error("No schedule"); return d; })
+    .catch(() => { slatesP[sport] = null; return { weeks: [], error: true }; }));
   // named games' box scores and states, for a one-day league (fk-live ?games=)
   const games = (sport, ids) => (ids && ids.length ? fetch(`${BASE}/functions/v1/fk-live?sport=${encodeURIComponent(sport)}&games=${ids.map(encodeURIComponent).join(",")}`).then((r) => (r.ok ? r.json() : null)).catch(() => null) : Promise.resolve(null));
   const live = (sport) => fetch(`${BASE}/functions/v1/fk-live?sport=${encodeURIComponent(sport)}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
@@ -230,6 +238,13 @@
       return true;
     },
   };
+
+  // the service worker keeps the app shell on this device (sw.js), so every Draft Lab page registers it, not only
+  // alerts. Only pages in this file's own folder: the site header (assets/account.js) loads cloud.js everywhere.
+  if (HERE && typeof navigator !== "undefined" && "serviceWorker" in navigator && location.pathname.startsWith(new URL("./", HERE).pathname)) {
+    const reg = () => navigator.serviceWorker.register(new URL("sw.js", HERE).href).catch(() => null);
+    if (document.readyState === "complete") reg(); else root.addEventListener("load", reg);
+  }
 
   FK.cloud = { token, oauth, providers, slates, games, listen, push, user, signIn, signUp, passwordSignIn, resetPassword, setPassword, signOut, fromLink, rpc, live, now: () => Date.now() + offset, lastEmail: () => { try { return JSON.parse(localStorage.getItem("fk-auth:email")) || ""; } catch (e) { return ""; } } };
 })(typeof window !== "undefined" ? window : globalThis);

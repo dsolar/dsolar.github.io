@@ -27,7 +27,8 @@
     const k = form.sport;
     if (slatesAsked[k] || !SLATE_SPORTS.includes(k)) return;
     slatesAsked[k] = true;
-    C.slates(k).then((d) => { slatesFor[k] = d && Array.isArray(d.weeks) ? d : { weeks: [] }; render(); });
+    // a feed that couldn't be reached ({ error }) is asked again from Try again (data-a="slates-retry")
+    C.slates(k).then((d) => { slatesFor[k] = d && Array.isArray(d.weeks) ? d : { weeks: [], error: true }; render(); });
   }
   const SLATE_SPORTS = ["nfl", "nba"];
   // how many players each pro team has (data/<sport>.json), so a slate offers only the team counts its players can
@@ -457,6 +458,7 @@
   function slateSection() {
     loadSlates();
     if (!slData()) return `<section class="nl-sec"><h2 class="nl-h">The games</h2><p class="ps">Loading the schedule…</p></section>`;
+    if (slData().error) return `<section class="nl-sec" role="alert"><h2 class="nl-h">The games</h2><p class="ps">Couldn't load the schedule. Check your connection and try again.</p><button type="button" class="btn" data-a="slates-retry">Try again</button></section>`;
     const ws = slWeeks();
     if (!ws.length) return `<section class="nl-sec"><h2 class="nl-h">The games</h2><p class="ps">${dayOn() ? "There are no games left tonight or tomorrow to draft." : "There are no games left on the schedule to draft. Try again when the next week's games are out."}</p></section>`;
     const w = slWeek(), list = SL.list(w), day = (iso) => new Date(iso + "T12:00:00Z").toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric" });
@@ -952,6 +954,7 @@
     else if (k === "resend") { try { await C.signIn(sent, back()); U.toast("Sent again."); } catch (err) { U.toast(err.message, true); } }
     else if (k === "new") { view = "new"; render(); }
     else if (k === "list") { view = "list"; render(); }
+    else if (k === "slates-retry") { delete slatesFor[form.sport]; slatesAsked[form.sport] = false; render(); }
   });
   // a sign-in link opened in this same tab only changes the hash
   window.addEventListener("hashchange", () => { const l = C.fromLink(); if (l) { sent = null; confirmTo = null; resetTo = null; if (l.recovery) recovery = true; if (l.error) U.toast(l.error, true); render(); } });

@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>League | Draft Lab</title>
 <meta name="description" content="A shared fantasy league on the Fantasy Kit: a live draft room, then standings, matchups, rosters, waivers and trades that save for the whole league.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="League | Draft Lab">
+<meta property="og:description" content="A shared fantasy league on the Fantasy Kit: a live draft room, then standings, matchups, rosters, waivers and trades that save for the whole league.">
+<meta property="og:image" content="https://davidsolar.dev/assets/og/fantasy-kit.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://davidsolar.dev/assets/og/fantasy-kit.jpg">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#13233A">
 <script>try{var t=localStorage.getItem("fk-lab:theme");if(t==='"dark"'||t==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
@@ -28,9 +36,9 @@
 .seatl small{color:var(--muted)}
 </style>
 
-<link rel="stylesheet" href="../assets/navigation.css?v=20261104-nav">
-<script src="../assets/projects.js?v=20261110-nfl" defer></script>
-<script src="../assets/navigation.js?v=20261104-discovery" defer></script>
+<link rel="stylesheet" href="../assets/navigation.css?v=20261112">
+<script src="../assets/projects.js?v=20261112" defer></script>
+<script src="../assets/navigation.js?v=20261112" defer></script>
 </head>
 <body>
 <nav class="ds-bar ds-navigation" data-ds-navigation aria-label="Main">
@@ -40,16 +48,11 @@
 </nav>
 <header class="fk-top" id="top"></header>
 <main id="app"><div class="wrap" style="padding:80px 16px;color:var(--muted)">Loading the league…</div></main>
-<script src="sports.js?v=20261111d"></script>
-<script src="value.js?v=20261111d"></script>
-<script src="draft.js?v=20261111e"></script>
-<script src="league.js?v=20261111g"></script>
-<script src="../assets/faces.js?v=20261109c"></script>
-<script src="ui.js?v=20261111f"></script>
-<script src="gameday.js?v=20261111d"></script>
-<script src="season.js?v=20261111g"></script>
-<script src="cloud.js?v=20261111f"></script>
-<script src="entry.js?v=20261111d"></script>
-<script src="live.js?v=20261111g"></script>
+<script>
+/* The app's scripts, run in this order. Loaded from here rather than as <script src> tags so they start once the
+   stylesheets are in (an inline script waits for them): the first screen above paints without the JavaScript
+   sharing the connection with kit.css. Bump a file's ?v= here when it changes. */
+["sports.js?v=20261111d", "value.js?v=20261111d", "draft.js?v=20261111e", "league.js?v=20261111g", "../assets/faces.js?v=20261109c", "ui.js?v=20261111f", "gameday.js?v=20261111d", "season.js?v=20261111g", "cloud.js?v=20261112a", "entry.js?v=20261111d", "live.js?v=20261111g"].forEach(function (src) { var s = document.createElement("script"); s.src = src; s.async = false; document.body.appendChild(s); });
+</script>
 </body>
 </html>

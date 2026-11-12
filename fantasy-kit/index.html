@@ -4,7 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Draft Lab | David Solar</title>
-<meta name="description" content="Mock drafts for basketball, football and baseball against bots: snake, third-round reversal or auction, with real player data. Built on the Fantasy Kit that runs David's league pages.">
+<meta name="description" content="Mock drafts against bots and private leagues with your friends, for football, basketball and baseball. Play formats like salary cap, best ball, guillotine and one-week showdowns, with real player data.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://davidsolar.dev/fantasy-kit/">
+<meta property="og:title" content="Draft Lab">
+<meta property="og:description" content="Mock drafts against bots and private leagues with your friends, for football, basketball and baseball. Play formats like salary cap, best ball, guillotine and one-week showdowns, with real player data.">
+<meta property="og:image" content="https://davidsolar.dev/assets/og/fantasy-kit.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://davidsolar.dev/assets/og/fantasy-kit.jpg">
 <meta name="theme-color" content="#13233A">
 <script>try{var t=localStorage.getItem("fk-lab:theme");if(t==='"dark"'||t==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
 <link rel="icon" href="mark.svg" type="image/svg+xml">
@@ -73,9 +82,9 @@ body.fk-room .ds-bar{display:none}
 @media (max-width:860px){.kit-cols{grid-template-columns:1fr}}
 </style>
 
-<link rel="stylesheet" href="../assets/navigation.css?v=20261104-nav">
-<script src="../assets/projects.js?v=20261110-nfl" defer></script>
-<script src="../assets/navigation.js?v=20261104-discovery" defer></script>
+<link rel="stylesheet" href="../assets/navigation.css?v=20261112">
+<script src="../assets/projects.js?v=20261112" defer></script>
+<script src="../assets/navigation.js?v=20261112" defer></script>
 </head>
 <body>
 <nav class="ds-bar ds-navigation" data-ds-navigation aria-label="Main">
@@ -83,16 +92,64 @@ body.fk-room .ds-bar{display:none}
   <a href="../fantasy/">← Fantasy</a>
   <a href="../#projects">Explore all projects</a>
 </nav>
-<header class="fk-top" id="top"></header>
-<main id="app"><div class="wrap" style="padding:80px 16px;color:var(--muted)">Loading…</div></main>
-<script src="sports.js?v=20261111d"></script>
-<script src="value.js?v=20261111d"></script>
-<script src="draft.js?v=20261111e"></script>
-<script src="../assets/faces.js?v=20261109c"></script>
-<script src="ui.js?v=20261111f"></script>
-<script src="setup.js?v=20261111d"></script>
-<script src="cloud.js?v=20261111f"></script>
-<script src="slates.js?v=20261111d"></script>
-<script src="lab.js?v=20261111d"></script>
+<!-- The first screen, drawn before the scripts arrive: what lab.js draws for the start page (startPage() and
+     header()) for a first visit in football season. The script below fits it to this visitor, and lab.js replaces it
+     with the same markup, so nothing moves. Keep the three in step. -->
+<header class="fk-top" id="top"><div class="fk-mast fk-band"><div class="wrap">
+        <a class="fk-brand" href="./"><img src="mark.svg" alt=""><b class="disp">Draft Lab</b></a>
+        <span class="grow"></span><div class="fk-who"><a class="btn sm ghost" href="../fantasy/">All fantasy</a><button class="btn sm ghost" data-act="theme">Dark</button></div></div></div>
+      <div class="fk-nav"><div class="wrap"><nav aria-label="Sections"><a href="leagues.html">Your leagues</a><a href="week.html">One week</a><a href="#draft" aria-current="page">Mock draft</a><a href="#rankings">Rankings</a><a href="league.html?s=nfl">Demo league</a></nav></div></div>
+</header>
+<main id="app"><div class="wrap page">
+      <section class="start-hero"><p class="start-kicker">Draft Lab</p><h1 class="disp">Your next draft starts here.</h1><p>Real players. Bots that know their budgets. Jump into a familiar draft, or build something a little stranger.</p></section>
+      
+      <div class="start-sports" role="group" aria-label="Choose a sport"><button type="button" class="btn" data-entry-sport="nba" aria-pressed="false"><svg class="sp-ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><path d="M2 12h20M12 2v20M5 4.9c2.6 2 4 4.4 4 7.1s-1.4 5.1-4 7.1M19 4.9c-2.6 2-4 4.4-4 7.1s1.4 5.1 4 7.1"></path></svg> Basketball</button><button type="button" class="btn" data-entry-sport="nfl" aria-pressed="true"><svg class="sp-ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><ellipse cx="12" cy="12" rx="10.6" ry="6.4" transform="rotate(-40 12 12)"></ellipse><path d="M9.2 14.8l5.6-5.6M9.8 12.8l1.4 1.4M11.3 11.3l1.4 1.4M12.8 9.8l1.4 1.4"></path></svg> Football</button><button type="button" class="btn" data-entry-sport="mlb" aria-pressed="false"><svg class="sp-ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><path d="M6.2 4.2c2 2.2 3 4.8 3 7.8s-1 5.6-3 7.8M17.8 4.2c-2 2.2-3 4.8-3 7.8s1 5.6 3 7.8"></path></svg> Baseball</button></div>
+      <section class="start-cards" aria-label="Choose how to play">
+        <article class="start-card start-card-primary"><p class="start-kicker">01 / Take a seat</p><h2 class="disp">Quick mock</h2><p>A 10-team football snake draft. Half PPR, standard rosters, and 30 seconds a pick. We’ll find you a seat.</p><button type="button" class="btn go" data-quick>Start a quick mock →</button><p id="quick-error" role="alert"></p></article>
+        <article class="start-card"><p class="start-kicker">02 / Make it yours</p><h2 class="disp">Customize a draft</h2><p>Choose your format, scoring, roster, and clock. Try an auction, mystery packages, white elephant, or your own take on a snake.</p><a class="btn" href="#setup">Customize your draft</a></article>
+        <article class="start-card"><p class="start-kicker">03 / Keep the season going</p><h2 class="disp">Play a league</h2><p>Explore a ready-made demo, or create a shared league and invite your friends.</p><div class="start-actions"><a class="btn" href="league.html?s=nfl&amp;f=h">Explore a demo</a><a class="btn ghost" href="leagues.html?s=nfl">Your leagues</a></div></article>
+      </section><p class="start-note">Mock drafts save on this device. You can leave and come back to the same seat.</p></div></main>
+<script>
+/* Fit the first screen to this visitor the way lab.js will: the route, the sport, a saved mock and the theme. */
+(function () {
+  var get = function (k) { try { return JSON.parse(localStorage.getItem("fk-lab:" + k)); } catch (e) { return null; } };
+  var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return "&#" + c.charCodeAt(0) + ";"; }); };
+  var SP = { nba: ["Basketball", "9 categories"], nfl: ["Football", "Half PPR"], mlb: ["Baseball", "5x5 categories"] };
+  var TYPE = { snake: "Snake", auction: "Auction", linear: "Linear", "3rr": "Third-round reversal", mystery: "Mystery packages", elephant: "White elephant", pack: "Pack" };
+  var top = document.getElementById("top"), app = document.getElementById("app");
+  try {
+    var cfg = get("cfg") || {}, mock = get("mock"), q = new URLSearchParams(location.search).get("s");
+    var d = new Date(), md = (d.getMonth() + 1) * 100 + d.getDate();
+    var sport = SP[q] ? q : SP[cfg.sport] ? cfg.sport : md >= 801 || md <= 107 ? "nfl" : md <= 314 ? "nba" : "mlb";
+    var tab = decodeURIComponent(location.hash.replace(/^#/, "").split("/")[0]);
+    if (mock && !(mock.D && mock.D.teams)) mock = null;
+    if (document.documentElement.dataset.theme === "dark") top.querySelector("[data-act=theme]").textContent = "Light";
+    if (mock) top.querySelector(".fk-who").insertAdjacentHTML("beforeend", '<button class="btn sm" data-act="new">New mock</button>');
+    top.querySelector('a[href^="league.html"]').href = "league.html?s=" + sport;
+    if (tab === "draft" && mock) { document.body.classList.add("fk-room"); app.innerHTML = ""; return; }
+    if (tab === "setup" || tab === "rankings") {
+      if (tab === "rankings") { top.querySelector("[aria-current]").removeAttribute("aria-current"); top.querySelector('a[href="#rankings"]').setAttribute("aria-current", "page"); }
+      app.innerHTML = '<div class="wrap" style="padding:80px 16px;color:var(--muted)">Loading…</div>';
+      return;
+    }
+    if (sport !== "nfl") {
+      [].forEach.call(app.querySelectorAll("[data-entry-sport]"), function (b) { b.setAttribute("aria-pressed", String(b.dataset.entrySport === sport)); });
+      app.querySelector(".start-card-primary p:not(.start-kicker)").textContent = "A 10-team " + SP[sport][0].toLowerCase() + " snake draft. " + SP[sport][1] + ", standard rosters, and 30 seconds a pick. We\u2019ll find you a seat.";
+      var a = app.querySelectorAll(".start-actions a");
+      a[0].href = "league.html?s=" + sport + "&f=h"; a[1].href = "leagues.html?s=" + sport;
+    }
+    if (mock) {
+      var D = mock.D, done = D.phase === "done";
+      app.querySelector(".start-hero").insertAdjacentHTML("afterend", '<section class="start-resume" aria-label="Your saved mock"><div><h2 class="disp">' + (done ? "Your draft is in the books." : "Your seat is still here.") + "</h2><p>" + esc(SP[D.sport] ? SP[D.sport][0] : "") + " \u00b7 " + esc(TYPE[D.type] || D.type) + " \u00b7 " + D.teams.length + " teams. " + (done ? "See your roster and results." : "Continue your saved draft on this device.") + '</p></div><a class="btn go" href="#draft">' + (done ? "View your results" : "Continue your draft") + "</a></section>");
+    }
+  } catch (e) { /* lab.js draws the page either way */ }
+})();
+</script>
+<script>
+/* The app's scripts, run in this order. Loaded from here rather than as <script src> tags so they start once the
+   stylesheets are in (an inline script waits for them): the first screen above paints without ~640K of JavaScript
+   sharing the connection with kit.css. Bump a file's ?v= here when it changes. */
+["sports.js?v=20261111d", "value.js?v=20261111d", "draft.js?v=20261111e", "../assets/faces.js?v=20261109c", "ui.js?v=20261111f", "setup.js?v=20261111d", "cloud.js?v=20261112a", "slates.js?v=20261111d", "lab.js?v=20261111d"].forEach(function (src) { var s = document.createElement("script"); s.src = src; s.async = false; document.body.appendChild(s); });
+</script>
 </body>
 </html>

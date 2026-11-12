@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>One week | Draft Lab</title>
 <meta name="description" content="One-week fantasy football: pick this week's games, draft with your group in ten minutes, play one real week and run it back next week.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://davidsolar.dev/fantasy-kit/week.html">
+<meta property="og:title" content="One week | Draft Lab">
+<meta property="og:description" content="One-week fantasy football: pick this week's games, draft with your group in ten minutes, play one real week and run it back next week.">
+<meta property="og:image" content="https://davidsolar.dev/assets/og/fantasy-kit.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://davidsolar.dev/assets/og/fantasy-kit.jpg">
 <meta name="theme-color" content="#13233A">
 <script>try{var t=localStorage.getItem("fk-lab:theme");if(t==='"dark"'||t==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
 <link rel="icon" href="mark.svg" type="image/svg+xml">
@@ -49,9 +58,9 @@
 
 </style>
 
-<link rel="stylesheet" href="../assets/navigation.css?v=20261104-nav">
-<script src="../assets/projects.js?v=20261110-nfl" defer></script>
-<script src="../assets/navigation.js?v=20261104-discovery" defer></script>
+<link rel="stylesheet" href="../assets/navigation.css?v=20261112">
+<script src="../assets/projects.js?v=20261112" defer></script>
+<script src="../assets/navigation.js?v=20261112" defer></script>
 </head>
 <body>
 <nav class="ds-bar ds-navigation" data-ds-navigation aria-label="Main">
@@ -59,16 +68,45 @@
   <a href="../fantasy/">← Fantasy</a>
   <a href="../#projects">Explore all projects</a>
 </nav>
-<header class="fk-top" id="top"></header>
-<main id="app"><div class="wrap" style="padding:80px 16px;color:var(--muted)">Loading this week's games…</div></main>
-<script src="sports.js?v=20261111d"></script>
-<script src="value.js?v=20261111d"></script>
-<script src="draft.js?v=20261111e"></script>
-<script src="../assets/faces.js?v=20261109c"></script>
-<script src="ui.js?v=20261111f"></script>
-<script src="setup.js?v=20261111d"></script>
-<script src="cloud.js?v=20261111f"></script>
-<script src="slates.js?v=20261111d"></script>
-<script src="week.js?v=20261111d"></script>
+<!-- The first screen, drawn before the scripts arrive: what week.js draws (header() and render()) for football
+     while this week's games load. week.js replaces it with the same markup, so nothing moves. Keep them in step. -->
+<header class="fk-top" id="top"><div class="fk-mast fk-band"><div class="wrap">
+        <a class="fk-brand" href="./"><img src="mark.svg" alt=""><b class="disp">Draft Lab</b></a>
+        <span class="grow"></span><div class="fk-who"><button class="btn sm ghost" data-theme="">Dark</button></div></div></div>
+      <div class="fk-nav"><div class="wrap"><nav aria-label="Sections"><a href="leagues.html">Your leagues</a><a href="week.html" aria-current="page">One week</a><a href="./#draft">Mock draft</a><a href="./#rankings">Rankings</a><a href="league.html">Demo league</a></nav></div></div>
+</header>
+<main id="app"><div class="wrap page">
+      <div class="su sp-nfl"><div class="nl-band wk-band"><svg class="nl-art" viewBox="0 0 600 200" preserveAspectRatio="xMaxYMid slice" aria-hidden="true"><line x1="40" y1="0" x2="40" y2="200"></line><line x1="92" y1="0" x2="92" y2="200"></line><line x1="144" y1="0" x2="144" y2="200"></line><line x1="196" y1="0" x2="196" y2="200"></line><line x1="248" y1="0" x2="248" y2="200"></line><line x1="300" y1="0" x2="300" y2="200"></line><line x1="352" y1="0" x2="352" y2="200"></line><line x1="404" y1="0" x2="404" y2="200"></line><line x1="456" y1="0" x2="456" y2="200"></line><line x1="508" y1="0" x2="508" y2="200"></line><line x1="560" y1="0" x2="560" y2="200"></line><line x1="40" y1="62" x2="40" y2="70"></line><line x1="40" y1="130" x2="40" y2="138"></line><line x1="50.4" y1="62" x2="50.4" y2="70"></line><line x1="50.4" y1="130" x2="50.4" y2="138"></line><line x1="60.8" y1="62" x2="60.8" y2="70"></line><line x1="60.8" y1="130" x2="60.8" y2="138"></line><line x1="71.2" y1="62" x2="71.2" y2="70"></line><line x1="71.2" y1="130" x2="71.2" y2="138"></line><line x1="81.6" y1="62" x2="81.6" y2="70"></line><line x1="81.6" y1="130" x2="81.6" y2="138"></line><line x1="92" y1="62" x2="92" y2="70"></line><line x1="92" y1="130" x2="92" y2="138"></line><line x1="102.4" y1="62" x2="102.4" y2="70"></line><line x1="102.4" y1="130" x2="102.4" y2="138"></line><line x1="112.8" y1="62" x2="112.8" y2="70"></line><line x1="112.8" y1="130" x2="112.8" y2="138"></line><line x1="123.2" y1="62" x2="123.2" y2="70"></line><line x1="123.2" y1="130" x2="123.2" y2="138"></line><line x1="133.60000000000002" y1="62" x2="133.60000000000002" y2="70"></line><line x1="133.60000000000002" y1="130" x2="133.60000000000002" y2="138"></line><line x1="144" y1="62" x2="144" y2="70"></line><line x1="144" y1="130" x2="144" y2="138"></line><line x1="154.4" y1="62" x2="154.4" y2="70"></line><line x1="154.4" y1="130" x2="154.4" y2="138"></line><line x1="164.8" y1="62" x2="164.8" y2="70"></line><line x1="164.8" y1="130" x2="164.8" y2="138"></line><line x1="175.20000000000002" y1="62" x2="175.20000000000002" y2="70"></line><line x1="175.20000000000002" y1="130" x2="175.20000000000002" y2="138"></line><line x1="185.6" y1="62" x2="185.6" y2="70"></line><line x1="185.6" y1="130" x2="185.6" y2="138"></line><line x1="196" y1="62" x2="196" y2="70"></line><line x1="196" y1="130" x2="196" y2="138"></line><line x1="206.4" y1="62" x2="206.4" y2="70"></line><line x1="206.4" y1="130" x2="206.4" y2="138"></line><line x1="216.8" y1="62" x2="216.8" y2="70"></line><line x1="216.8" y1="130" x2="216.8" y2="138"></line><line x1="227.20000000000002" y1="62" x2="227.20000000000002" y2="70"></line><line x1="227.20000000000002" y1="130" x2="227.20000000000002" y2="138"></line><line x1="237.6" y1="62" x2="237.6" y2="70"></line><line x1="237.6" y1="130" x2="237.6" y2="138"></line><line x1="248" y1="62" x2="248" y2="70"></line><line x1="248" y1="130" x2="248" y2="138"></line><line x1="258.4" y1="62" x2="258.4" y2="70"></line><line x1="258.4" y1="130" x2="258.4" y2="138"></line><line x1="268.8" y1="62" x2="268.8" y2="70"></line><line x1="268.8" y1="130" x2="268.8" y2="138"></line><line x1="279.20000000000005" y1="62" x2="279.20000000000005" y2="70"></line><line x1="279.20000000000005" y1="130" x2="279.20000000000005" y2="138"></line><line x1="289.6" y1="62" x2="289.6" y2="70"></line><line x1="289.6" y1="130" x2="289.6" y2="138"></line><line x1="300" y1="62" x2="300" y2="70"></line><line x1="300" y1="130" x2="300" y2="138"></line><line x1="310.40000000000003" y1="62" x2="310.40000000000003" y2="70"></line><line x1="310.40000000000003" y1="130" x2="310.40000000000003" y2="138"></line><line x1="320.8" y1="62" x2="320.8" y2="70"></line><line x1="320.8" y1="130" x2="320.8" y2="138"></line><line x1="331.2" y1="62" x2="331.2" y2="70"></line><line x1="331.2" y1="130" x2="331.2" y2="138"></line><line x1="341.6" y1="62" x2="341.6" y2="70"></line><line x1="341.6" y1="130" x2="341.6" y2="138"></line><line x1="352" y1="62" x2="352" y2="70"></line><line x1="352" y1="130" x2="352" y2="138"></line><line x1="362.40000000000003" y1="62" x2="362.40000000000003" y2="70"></line><line x1="362.40000000000003" y1="130" x2="362.40000000000003" y2="138"></line><line x1="372.8" y1="62" x2="372.8" y2="70"></line><line x1="372.8" y1="130" x2="372.8" y2="138"></line><line x1="383.2" y1="62" x2="383.2" y2="70"></line><line x1="383.2" y1="130" x2="383.2" y2="138"></line><line x1="393.6" y1="62" x2="393.6" y2="70"></line><line x1="393.6" y1="130" x2="393.6" y2="138"></line><line x1="404" y1="62" x2="404" y2="70"></line><line x1="404" y1="130" x2="404" y2="138"></line><line x1="414.40000000000003" y1="62" x2="414.40000000000003" y2="70"></line><line x1="414.40000000000003" y1="130" x2="414.40000000000003" y2="138"></line><line x1="424.8" y1="62" x2="424.8" y2="70"></line><line x1="424.8" y1="130" x2="424.8" y2="138"></line><line x1="435.2" y1="62" x2="435.2" y2="70"></line><line x1="435.2" y1="130" x2="435.2" y2="138"></line><line x1="445.6" y1="62" x2="445.6" y2="70"></line><line x1="445.6" y1="130" x2="445.6" y2="138"></line><line x1="456" y1="62" x2="456" y2="70"></line><line x1="456" y1="130" x2="456" y2="138"></line><line x1="466.40000000000003" y1="62" x2="466.40000000000003" y2="70"></line><line x1="466.40000000000003" y1="130" x2="466.40000000000003" y2="138"></line><line x1="476.8" y1="62" x2="476.8" y2="70"></line><line x1="476.8" y1="130" x2="476.8" y2="138"></line><line x1="487.2" y1="62" x2="487.2" y2="70"></line><line x1="487.2" y1="130" x2="487.2" y2="138"></line><line x1="497.6" y1="62" x2="497.6" y2="70"></line><line x1="497.6" y1="130" x2="497.6" y2="138"></line><line x1="508" y1="62" x2="508" y2="70"></line><line x1="508" y1="130" x2="508" y2="138"></line><line x1="518.4000000000001" y1="62" x2="518.4000000000001" y2="70"></line><line x1="518.4000000000001" y1="130" x2="518.4000000000001" y2="138"></line><line x1="528.8" y1="62" x2="528.8" y2="70"></line><line x1="528.8" y1="130" x2="528.8" y2="138"></line><line x1="539.2" y1="62" x2="539.2" y2="70"></line><line x1="539.2" y1="130" x2="539.2" y2="138"></line><line x1="549.6" y1="62" x2="549.6" y2="70"></line><line x1="549.6" y1="130" x2="549.6" y2="138"></line><text x="248" y="185">40</text><text x="352" y="185">50</text><text x="456" y="185">40</text></svg><div class="nl-bi">
+        <div class="sg wk-sport" role="radiogroup" aria-label="Sport" style="margin-bottom:10px"><label class="sg-o"><input type="radio" name="wks" value="nfl" checked="" data-wks="nfl"><span>Football: one week</span></label><label class="sg-o"><input type="radio" name="wks" value="nba" data-wks="nba"><span>Basketball: one day</span></label></div>
+        <h1 class="disp">One week</h1>
+        <p>Pick the games, draft with your group in about ten minutes, play one real week of football and crown a winner. Then run it back next week with the same people, and keep a running series.</p>
+        <div class="row" style="gap:8px;flex-wrap:wrap"><a class="btn go" href="leagues.html?w=1">Start a one-week game</a><a class="btn" href="./?s=nfl#draft">Mock one first</a></div>
+      </div></div></div>
+      <section style="margin-top:18px"><h2 class="nl-h" style="margin:0 0 10px">This week's games</h2><p class="ps">Loading this week's games…</p></section>
+      <div class="mk-how" style="margin-top:18px">
+        <div class="mk-tip"><b>Pick the games</b><p>The whole week, Sunday's day games, the night games, one game or your own picks. The lineup fits the slate, so three games never ask for three receivers.</p></div>
+        <div class="mk-tip"><b>Everyone vs. everyone</b><p>With a group, the top score wins and everyone is ranked. Or pair off head to head, add a heist, or go best ball.</p></div>
+        <div class="mk-tip"><b>Run it back</b><p>When the week's over, one tap starts next week with the same group. The series keeps score: wins, top-three finishes and points.</p></div>
+      </div>
+      <div class="mk-how wk-modes" style="margin-top:10px">
+        <div class="mk-tip"><b>Salary cap</b><p>No draft at all. Everyone builds a lineup under a $100 cap before the first kickoff, and a player nobody else picked scores 1.25x.</p></div>
+        <div class="mk-tip"><b>Sealed draft</b><p>Rank players in private whenever you like. When the lists lock, the draft runs itself in seconds.</p></div>
+        <div class="mk-tip"><b>Trivia draft</b><p>Answer an easy football question to make your pick. Miss it and your pick moves to the end of the round.</p></div>
+      </div></div></main>
+<script>
+(function () {
+  try {
+    if (document.documentElement.dataset.theme === "dark") document.querySelector("#top [data-theme]").textContent = "Light";
+    // One day (?s=nba) is drawn by week.js
+    if (new URLSearchParams(location.search).get("s") === "nba") document.getElementById("app").innerHTML = '<div class="wrap" style="padding:80px 16px;color:var(--muted)">Loading tonight\'s games…</div>';
+  } catch (e) { /* week.js draws the page either way */ }
+})();
+</script>
+<script>
+/* The app's scripts, run in this order. Loaded from here rather than as <script src> tags so they start once the
+   stylesheets are in (an inline script waits for them): the first screen above paints without the JavaScript
+   sharing the connection with kit.css. Bump a file's ?v= here when it changes. */
+["sports.js?v=20261111d", "value.js?v=20261111d", "draft.js?v=20261111e", "../assets/faces.js?v=20261109c", "ui.js?v=20261111f", "setup.js?v=20261111d", "cloud.js?v=20261112a", "slates.js?v=20261111d", "week.js?v=20261112a"].forEach(function (src) { var s = document.createElement("script"); s.src = src; s.async = false; document.body.appendChild(s); });
+</script>
 </body>
 </html>

@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Your leagues | Draft Lab</title>
 <meta name="description" content="Start a fantasy league on the Fantasy Kit, invite your friends with a link and draft live. Sign in with an emailed link.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://davidsolar.dev/fantasy-kit/leagues.html">
+<meta property="og:title" content="Your leagues | Draft Lab">
+<meta property="og:description" content="Start a fantasy league on the Fantasy Kit, invite your friends with a link and draft live. Sign in with an emailed link.">
+<meta property="og:image" content="https://davidsolar.dev/assets/og/fantasy-kit.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://davidsolar.dev/assets/og/fantasy-kit.jpg">
 <meta name="theme-color" content="#13233A">
 <script>try{var t=localStorage.getItem("fk-lab:theme");if(t==='"dark"'||t==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
 <link rel="icon" href="mark.svg" type="image/svg+xml">
@@ -49,9 +58,9 @@
 
 </style>
 
-<link rel="stylesheet" href="../assets/navigation.css?v=20261104-nav">
-<script src="../assets/projects.js?v=20261110-nfl" defer></script>
-<script src="../assets/navigation.js?v=20261104-discovery" defer></script>
+<link rel="stylesheet" href="../assets/navigation.css?v=20261112">
+<script src="../assets/projects.js?v=20261112" defer></script>
+<script src="../assets/navigation.js?v=20261112" defer></script>
 </head>
 <body>
 <nav class="ds-bar ds-navigation" data-ds-navigation aria-label="Main">
@@ -59,16 +68,29 @@
   <a href="../fantasy/">← Fantasy</a>
   <a href="../#projects">Explore all projects</a>
 </nav>
-<header class="fk-top" id="top"></header>
+<!-- The header, drawn before the scripts arrive: what leagues.js draws (header()). The page under it depends on who's
+     signed in, so it waits for leagues.js. Keep the header in step. -->
+<header class="fk-top" id="top"><div class="fk-mast fk-band"><div class="wrap">
+        <a class="fk-brand" href="./"><img src="mark.svg" alt=""><b class="disp">Draft Lab</b></a>
+        <span class="grow"></span><div class="fk-who"><button class="btn sm ghost" data-theme="">Dark</button></div></div></div>
+      <div class="fk-nav"><div class="wrap"><nav aria-label="Sections"><a href="leagues.html" aria-current="page">Your leagues</a><a href="week.html">One week</a><a href="./#draft">Mock draft</a><a href="./#rankings">Rankings</a><a href="league.html">Demo league</a></nav></div></div>
+</header>
 <main id="app"><div class="wrap" style="padding:80px 16px;color:var(--muted)">Loading…</div></main>
-<script src="sports.js?v=20261111d"></script>
-<script src="value.js?v=20261111d"></script>
-<script src="draft.js?v=20261111e"></script>
-<script src="../assets/faces.js?v=20261109c"></script>
-<script src="ui.js?v=20261111f"></script>
-<script src="setup.js?v=20261111d"></script>
-<script src="cloud.js?v=20261111f"></script>
-<script src="slates.js?v=20261111d"></script>
-<script src="leagues.js?v=20261111f"></script>
+<script>
+(function () {
+  try {
+    var top = document.getElementById("top"), q = new URLSearchParams(location.search);
+    if (q.get("w") === "1") { top.querySelector("[aria-current]").removeAttribute("aria-current"); top.querySelector('a[href="week.html"]').setAttribute("aria-current", "page"); }
+    if (localStorage.getItem("fk-auth:session")) top.querySelector(".fk-who").insertAdjacentHTML("afterbegin", '<button class="btn sm ghost" data-a="out">Sign out</button>');
+    if (document.documentElement.dataset.theme === "dark") top.querySelector("[data-theme]").textContent = "Light";
+  } catch (e) { /* leagues.js draws the header either way */ }
+})();
+</script>
+<script>
+/* The app's scripts, run in this order. Loaded from here rather than as <script src> tags so they start once the
+   stylesheets are in (an inline script waits for them): the first screen above paints without the JavaScript
+   sharing the connection with kit.css. Bump a file's ?v= here when it changes. */
+["sports.js?v=20261111d", "value.js?v=20261111d", "draft.js?v=20261111e", "../assets/faces.js?v=20261109c", "ui.js?v=20261111f", "setup.js?v=20261111d", "cloud.js?v=20261112a", "slates.js?v=20261111d", "leagues.js?v=20261112a"].forEach(function (src) { var s = document.createElement("script"); s.src = src; s.async = false; document.body.appendChild(s); });
+</script>
 </body>
 </html>
