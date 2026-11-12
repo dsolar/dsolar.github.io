@@ -186,6 +186,13 @@
   function catchUp(L, ctx, now) {
     if (!L) return false;
     const before = JSON.stringify(L);
+    // keeper picks: a reminder a day before they lock (to whoever hasn't picked, through events()), and the lock itself
+    if (L.next && L.next.due) {
+      if (!L.next.reminded && now >= L.next.due - DAY && now < L.next.due) L.next.reminded = now;
+      if (!L.next.locked && now >= L.next.due) L.next.locked = now;
+      // moved later after it locked: open again, and remind again
+      if (L.next.locked && now < L.next.due) { delete L.next.locked; if (now < L.next.due - DAY) delete L.next.reminded; }
+    }
     // a dynasty's long rosters after the rookie draft: bots cut now, everyone else by the start of week 1
     if (L.week === 1) G.cutDown(L, ctx, Math.min(now, L.start), now >= L.start);
     // a bot vampire builds its roster from free agents before week 1
@@ -352,6 +359,9 @@
       const bl = (b && b.league) || { trades: [], claims: [], results: {} }, cl = c.league;
       const missTxt = (n) => (n.missed === "none" ? "If you don't pick by then, you keep nobody." : "If you don't pick by then, your best values are kept for you.");
       if (cl.next && !bl.next) seated.forEach((t) => add(t, "keepers", "pick your keepers", `The season is over. Pick up to ${cl.settings.keepers} keepers for next season${cl.next.due ? ` by ${when(cl.next.due)}` : ""}. ${missTxt(cl.next)}`));
+      // a day before the deadline, and when it passes: everyone who hasn't picked hears about it
+      if (cl.next && cl.next.reminded && !(bl.next && bl.next.reminded)) seated.filter((t) => !(cl.next.picks || {})[t]).forEach((t) => add(t, "keepers", "keepers lock tomorrow", `You haven't picked your keepers yet. They lock ${when(cl.next.due)}. ${missTxt(cl.next)}`));
+      if (cl.next && cl.next.locked && !(bl.next && bl.next.locked)) seated.filter((t) => !(cl.next.picks || {})[t]).forEach((t) => add(t, "keepers", "keepers are locked", cl.next.missed === "none" ? "The keeper deadline passed without your picks, so you keep nobody. If that's a mistake, ask the commissioner: they can still set your keepers." : "The keeper deadline passed without your picks, so your best values were kept for you. The commissioner can still change them."));
       // the commissioner moved the deadline: everyone who hasn't picked hears about it
       if (cl.next && bl.next && cl.next.due && cl.next.due !== bl.next.due) seated.filter((t) => !(cl.next.picks || {})[t]).forEach((t) => add(t, "keepers", "the keeper deadline moved", `Keepers now lock ${when(cl.next.due)}. ${missTxt(cl.next)}`));
       trades(bl.trades, cl.trades, true);

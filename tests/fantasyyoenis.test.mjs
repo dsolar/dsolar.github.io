@@ -152,3 +152,31 @@ test('yoenis: offseason trades of players and next year\'s picks, and the draft 
   L.settings.pickTrades = 'offseason'; L.week = 5;
   assert.match(G.tradeCheck(L, ctx, { from: me, to: them, give: [], get: [], pickGive: [`3:${me}`], pickGet: [] }, null).why, /offseason only/);
 });
+
+test('yoenis: players who share a name are the right ones (Luis Garcia Jr. is the infielder, not the pitcher)', () => {
+  const { L, players, team } = league();
+  const me = team("Ippei's Book Club"), on = (n, t) => L.rosters.flat().some((id) => { const p = players.find((x) => x.id === id); return p && p.n === n && p.t === t; });
+  const jr = players.find((p) => p.n === 'Luis García Jr.');
+  assert.ok(L.rosters[me].includes(jr.id), 'Luis García Jr. is on Ippei\'s Book Club');
+  assert.ok(!on('Luis García', 'MIN'), 'the Twins pitcher isn\'t on any roster');
+  assert.ok(on('Max Muncy', 'LAD') && !on('Max Muncy', 'ATH'), 'the Dodgers\' Max Muncy, as Yahoo has him');
+  assert.equal(L.keepInfo[jr.id].base, 14);
+});
+
+test('yoenis: a day before keepers lock, managers who haven\'t picked get a reminder; then a note when it passes', () => {
+  const { L, ctx } = league();
+  const due = Date.UTC(2027, 2, 10, 4);
+  L.next = { opened: due - 7 * 864e5, due, picks: { 7: [] }, missed: 'none' };
+  const seats = { 7: 'David S', 3: 'Someone' };
+  const step = (now) => { const b = JSON.parse(JSON.stringify(L)); const ch = Z.catchUp(L, ctx, now); return { ch, ev: Z.events({ league: b }, { league: L }, { name: 'Yoenis', url: 'x', seats, me: null, now }) }; };
+  let r = step(due - 3 * 864e5);
+  assert.equal(r.ev.filter((e) => e.kind === 'keepers').length, 0, 'nothing three days out');
+  r = step(due - 20 * 36e5);
+  const rem = r.ev.filter((e) => e.kind === 'keepers');
+  assert.deepEqual(rem.map((e) => e.team), [3], 'only the team that hasn\'t picked');
+  assert.match(rem[0].subject, /keepers lock tomorrow/);
+  assert.equal(step(due - 10 * 36e5).ev.filter((e) => e.kind === 'keepers').length, 0, 'once');
+  r = step(due + 60000);
+  assert.match(r.ev.find((e) => e.kind === 'keepers').body, /keep nobody/);
+  assert.ok(L.next.locked);
+});

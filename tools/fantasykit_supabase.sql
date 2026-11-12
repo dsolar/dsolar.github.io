@@ -613,3 +613,26 @@ grant execute on function public.fk_board_save(text, jsonb) to authenticated;
 
 -- 2026-11-12: the leagues list carries each league's look (settings.brand); fk_mine adds 'brand', l.league->'settings'->'brand'
 -- (see migration fk_mine_brand for the full function).
+
+-- ============================================================================
+-- 2026-11-12: keeper leagues between seasons.
+-- * fk_boards (above) and fk_mine's brand: see the migrations fk_boards and fk_mine_brand.
+-- * yoenis_sheet_rows reads the Draft Lab league ('yoenis') keeper picks once they're open (migration
+--   yoenis_sheet_from_draftlab), from league->next->list: [[name, round, year kept, set by the commissioner]].
+-- * fk_keeper_error, called by fk_save after fk_gameday_error (migration fk_keeper_lock): after league->next->due only
+--   the commissioner can change keepers; only the commissioner sets the deadline, the missed-deadline rule and
+--   league->nextOrder.
+-- ============================================================================
+create or replace function public.fk_keeper_error(p_old jsonb, p_new jsonb, p_commish boolean, p_now bigint)
+returns text language plpgsql immutable as $$
+declare o jsonb := p_old->'next'; n jsonb := p_new->'next';
+begin
+  if p_commish or p_new is null or p_old is null then return null; end if;
+  if coalesce(o->'due', 'null'::jsonb) <> coalesce(n->'due', 'null'::jsonb) then return 'Only the commissioner sets the keeper deadline.'; end if;
+  if coalesce(o->'missed', 'null'::jsonb) <> coalesce(n->'missed', 'null'::jsonb) then return 'Only the commissioner sets the keeper deadline.'; end if;
+  if coalesce(p_old->'nextOrder', 'null'::jsonb) <> coalesce(p_new->'nextOrder', 'null'::jsonb) then return 'Only the commissioner sets the draft order.'; end if;
+  if jsonb_typeof(o->'due') = 'number' and p_now >= (o->>'due')::numeric
+     and coalesce(o->'picks', '{}'::jsonb) <> coalesce(n->'picks', '{}'::jsonb) then return 'Keepers are locked. Ask the commissioner to change them.'; end if;
+  return null;
+end $$;
+-- (fk_save itself: as in migration fk_keeper_lock, with the fk_keeper_error check after fk_gameday_error.)
