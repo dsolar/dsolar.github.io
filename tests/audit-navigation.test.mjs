@@ -9,8 +9,18 @@ const boot = app.slice(app.indexOf('  const requestedMode ='), app.lastIndexOf('
 for (const [query, expected] of [['?mode=daily', 'daily'], ['?mode=speed', 'speed'], ['', 'menu'], ['?mode=invalid', 'menu']]) {
   test('Make the Call entry ' + (query || 'without mode'), () => {
     const calls = [];
-    vm.runInNewContext(boot, { URLSearchParams, window: { location: { search: query } }, startGame: mode => calls.push(mode), renderStart: () => calls.push('menu') });
+    // the scenario bank loads after the page (on load, or on the first tap on the modes)
+    const loads = [], listeners = [];
+    vm.runInNewContext(boot, {
+      URLSearchParams, startGame: mode => calls.push(mode), renderStart: () => calls.push('menu'),
+      window: { location: { search: query }, addEventListener: (type) => listeners.push('window:' + type) },
+      document: { readyState: 'loading' },
+      $: (id) => ({ addEventListener: (type) => listeners.push(id + ':' + type) }),
+      loadBank: () => { loads.push(1); return Promise.resolve(); },
+    });
     assert.deepEqual(calls, [expected]);
+    assert.deepEqual(listeners.sort(), ['modes:pointerdown', 'window:load'], 'the bank waits for the page or a tap');
+    assert.equal(loads.length, 0, 'nothing loads before the page does');
   });
 }
 

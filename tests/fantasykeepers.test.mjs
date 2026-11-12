@@ -185,7 +185,8 @@ test('taxi squads: rookies stash off the roster, promote for good, carry into ne
   const drop = L.rosters[0].filter((x) => !G.held(L, 0).includes(x)).sort((a, b) => ctx.byId[a].vor - ctx.byId[b].vor)[0];
   assert.ok(G.addDrop(L, ctx, 0, rookie.id, drop, 0).ok);
   const size = L.rosters[0].length;
-  assert.match(G.toTaxi(L, ctx, 0, L.rosters[0].find((x) => !ctx.byId[x].rk), 0).why, /Only rookies/);
+  // a healthy veteran (an injured one is turned away for being hurt first, whatever the day's injury report says)
+  assert.match(G.toTaxi(L, ctx, 0, L.rosters[0].find((x) => !ctx.byId[x].rk && !ctx.byId[x].inj), 0).why, /Only rookies/);
   assert.ok(G.toTaxi(L, ctx, 0, rookie.id, 0).ok);
   assert.ok(G.taxiOf(L, 0).includes(rookie.id));
   assert.ok(!G.lineupFor(L, ctx, 0, L.week).includes(rookie.id), "a taxi player can't start");
