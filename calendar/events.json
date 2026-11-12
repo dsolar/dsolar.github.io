@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-11T18:02:57Z",
+ "updated": "2026-11-12T18:35:46Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,124 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-vvG17Z_1NJIeZR",
-   "date": "2026-11-11",
-   "time": "18:30",
-   "title": "Beartooth: Pure Ecstasy World Tour",
-   "cat": "music",
-   "venue": "MGM Music Hall at Fenway",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/beartooth-pure-ecstasy-world-tour-boston-massachusetts-11-11-2026/event/010064A8E6A0202F",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18253043",
-    "2026-11-11-windwaker-and-don-broco-mgm-music-hall-at-fe"
-   ],
-   "sub": "with Beartooth and Magnolia Park",
-   "score": 0
-  },
-  {
-   "id": "sg-18754824",
-   "date": "2026-11-11",
-   "time": "18:30",
-   "title": "Mary Beth Barone",
-   "cat": "comedy",
-   "venue": "An Unlikely Story",
-   "city": "Plainville, MA",
-   "url": "https://seatgeek.com/mary-beth-barone-tickets/comedy/2026-11-11-6-30-pm/18754824",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_u72C59W",
-   "date": "2026-11-11",
-   "time": "19:00",
-   "title": "Phillip Phillips: Let's Go Far Tour (18+)",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/phillip-phillips-lets-go-far-tour-boston-massachusetts-11-11-2026/event/010064D10F38B5FD",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18328221",
-    "2026-11-11-phillip-phillips-paradise-rock-club"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_GSpi_Jl",
-   "date": "2026-11-11",
-   "time": "19:00",
-   "title": "The Wldlfe",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/the-wldlfe-boston-massachusetts-11-11-2026/event/010064CCD6B199AB",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18325401"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18573336",
-   "date": "2026-11-11",
-   "time": "20:00",
-   "title": "Brutalismus 3000 (18+)",
-   "cat": "music",
-   "venue": "Royale - Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/brutalismus-3000-tickets/boston-massachusetts-royale-boston-2026-11-11-8-pm/concert/18573336",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A70kff",
-   "date": "2026-11-11",
-   "time": "20:00",
-   "title": "GEESE",
-   "cat": "music",
-   "venue": "Roadrunner-Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A70kff",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18211750"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1AAZAa9",
-   "date": "2026-11-11",
-   "time": "20:00",
-   "title": "The Bad Plus",
-   "cat": "music",
-   "venue": "The Sinclair Music Hall",
-   "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZAa9",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18363578",
-    "2026-11-11-the-bad-plus-the-sinclair"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_Gp4v2Om",
-   "date": "2026-11-11",
-   "time": "20:00",
-   "title": "The Longest Johns",
-   "cat": "music",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/the-longest-johns-boston-massachusetts-11-11-2026/event/010064C59504F82E",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18297921"
-   ],
-   "score": 0
-  },
   {
    "id": "tm-vv177Z_oGkSO2pLq",
    "date": "2026-11-12",
@@ -282,24 +164,18 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PPb-",
    "source": "ticketmaster",
-   "aka": [
-    "sg-18319755"
-   ],
    "score": 0
   },
   {
-   "id": "tm-Z7r9jZ1A70kGb",
+   "id": "sg-18319755",
    "date": "2026-11-12",
-   "time": "20:30",
-   "title": "Dan Whitlam",
+   "time": "20:00",
+   "title": "Sleep (Relocated from Roadrunner)",
    "cat": "music",
-   "venue": "The Sinclair Music Hall",
+   "venue": "The Sinclair - Cambridge",
    "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A70kGb",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18211793"
-   ],
+   "url": "https://seatgeek.com/sleep-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-11-12-8-pm/concert/18319755",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -1388,6 +1264,21 @@
     "2026-11-17-caroline-the-sinclair"
    ],
    "score": 0
+  },
+  {
+   "id": "sg-18760855",
+   "date": "2026-11-17",
+   "time": "20:00",
+   "title": "LCD Soundsystem (18+)",
+   "cat": "music",
+   "venue": "Music Hall of Williamsburg",
+   "city": "Brooklyn, NY",
+   "url": "https://seatgeek.com/lcd-soundsystem-tickets/brooklyn-new-york-music-hall-of-williamsburg-2026-11-17-8-pm/concert/18760855",
+   "source": "seatgeek",
+   "drive_hours": 4.25,
+   "act": "LCD Soundsystem",
+   "score": 2,
+   "why": "big"
   },
   {
    "id": "sg-18580636",
@@ -3351,9 +3242,6 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/hunxho-2night-only-tour-boston-massachusetts-12-04-2026/event/010065360E0DF125",
    "source": "ticketmaster",
-   "aka": [
-    "sg-18618956"
-   ],
    "score": 0
   },
   {
@@ -3472,7 +3360,6 @@
    "source": "ticketmaster",
    "aka": [
     "sg-18399302",
-    "sg-18399302",
     "2026-12-04-brett-eldredge-wang-theatre"
    ],
    "score": 0
@@ -3515,6 +3402,7 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7071k",
    "source": "ticketmaster",
    "aka": [
+    "sg-18573280",
     "2026-12-04-streetlight-manifesto-roadrunner"
    ],
    "score": 0
@@ -4808,21 +4696,6 @@
    "score": 0
   },
   {
-   "id": "tm-Z7r9jZ1AAe_7I",
-   "date": "2026-12-18",
-   "time": "19:00",
-   "title": "Night Lovell",
-   "cat": "music",
-   "venue": "Royale Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAe_7I",
-   "source": "ticketmaster",
-   "aka": [
-    "2026-12-18-night-lovell-royale"
-   ],
-   "score": 0
-  },
-  {
    "id": "espn-401910136",
    "date": "2026-12-18",
    "time": "19:30",
@@ -4920,6 +4793,18 @@
    "from": 44,
    "score": 2,
    "why": "big"
+  },
+  {
+   "date": "2026-12-18",
+   "time": null,
+   "title": "Night Lovell",
+   "cat": "music",
+   "venue": "Royale",
+   "city": "Boston, MA",
+   "url": "https://labs.songkick.com/venues/895621-royale-boston/calendar",
+   "source": "venues",
+   "id": "2026-12-18-night-lovell-royale",
+   "score": 0
   },
   {
    "id": "sg-18601269",
@@ -5501,6 +5386,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/costas-new-years-eve-at-big-boston-massachusetts-12-31-2026/event/010065662DC7DA1C",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18760110"
+   ],
    "score": 0
   },
   {
@@ -7239,6 +7127,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/asaf-avidan-18-boston-massachusetts-02-15-2027/event/01006569F277326F",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18759035"
+   ],
    "score": 0
   },
   {
@@ -8970,11 +8861,11 @@
    "id": "tm-vv168vP_ge9Z7G175",
    "date": "2027-03-19",
    "time": "20:00",
-   "title": "Dashboard Confessional",
+   "title": "Dashboard Confessional - Unplugged 25th Anniversary",
    "cat": "music",
    "venue": "MGM Music Hall at Fenway",
    "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/dashboard-confessional-boston-massachusetts-03-19-2027/event/010065675097B93A",
+   "url": "https://www.ticketmaster.com/dashboard-confessional-unplugged-25th-anniversary-boston-massachusetts-03-19-2027/event/010065675097B93A",
    "source": "ticketmaster",
    "aka": [
     "sg-18753336"
@@ -9804,6 +9695,18 @@
    "score": 1
   },
   {
+   "id": "tm-vv177Z_4GkDZlNEb",
+   "date": "2027-04-10",
+   "time": "19:00",
+   "title": "Dalton & the Sheriffs",
+   "cat": "music",
+   "venue": "Citizens House of Blues Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/dalton-the-sheriffs-boston-massachusetts-04-10-2027/event/0100655EC0AE39D8",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv177Z_4GkD1Agiz",
    "date": "2027-04-10",
    "time": "19:00",
@@ -10137,6 +10040,21 @@
    "score": 0
   },
   {
+   "id": "tm-vv1k7Z_pbvG7sogY",
+   "date": "2027-04-20",
+   "time": "20:00",
+   "title": "Sam Fender: North America Tour '27",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/sam-fender-north-america-tour-27-boston-massachusetts-04-20-2027/event/0100656601C51D70",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18760793"
+   ],
+   "score": 0
+  },
+  {
    "id": "tm-Z7r9jZ1AA7t7p",
    "date": "2027-04-20",
    "time": "20:00",
@@ -10273,6 +10191,18 @@
    "aka": [
     "sg-18726904"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18760435",
+   "date": "2027-04-24",
+   "time": "20:00",
+   "title": "The Dead South with Amigo The Devil ",
+   "cat": "music",
+   "venue": "Roadrunner - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/the-dead-south-tickets/boston-massachusetts-roadrunner-boston-2027-04-24-8-pm/concert/18760435",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -10678,6 +10608,21 @@
    "score": 0
   },
   {
+   "id": "tm-vv177Z_pGktALwu6",
+   "date": "2027-05-06",
+   "time": "19:00",
+   "title": "Haute & Freddy - Bigger Disgrace Tour",
+   "cat": "music",
+   "venue": "Citizens House of Blues Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/haute-freddy-bigger-disgrace-tour-boston-massachusetts-05-06-2027/event/0100656A457F2347",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18760826"
+   ],
+   "score": 0
+  },
+  {
    "id": "tm-vvG17Z_1L0oPid",
    "date": "2027-05-06",
    "time": "20:00",
@@ -10824,9 +10769,9 @@
  ],
  "sources": {
   "picks": 5,
-  "venues": 1,
+  "venues": 2,
   "espn": 72,
-  "ticketmaster": 527,
-  "seatgeek": 112
+  "ticketmaster": 522,
+  "seatgeek": 113
  }
 }
