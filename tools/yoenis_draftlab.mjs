@@ -25,7 +25,19 @@ const s26 = data.seasons.find((x) => +x.year === 2026);
 
 // names match across Yahoo and the player feed once accents, punctuation, suffixes and Ohtani's "(Batter)" go
 const norm = (s) => String(s).normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\(.*?\)/g, '').replace(/\b(jr|sr|ii|iii|iv)\b\.?/g, '').replace(/[^a-z]/g, '');
-const byName = new Map(pool.players.map((p) => [norm(p.n), p]));
+// two players can share a name once it's folded (Luis García Jr. the infielder and Luis García the pitcher; the Dodgers'
+// and the Athletics' Max Muncy): keep every one, and pick by exact name, then MLB team, then position
+const byName = new Map();
+for (const p of pool.players) { const k = norm(p.n); if (!byName.has(k)) byName.set(k, []); byName.get(k).push(p); }
+const fold = (s) => String(s).normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z]/g, '');
+function findPlayer(name, mlb, pos) {
+  const c = byName.get(norm(name));
+  if (!c) return null;
+  if (c.length === 1) return c[0];
+  const ps = yPos(pos);
+  const score = (p) => (fold(p.n) === fold(name) ? 4 : 0) + (mlb && p.t === mlb ? 2 : 0) + (ps.some((x) => p.pos.includes(x)) ? 1 : 0);
+  return c.slice().sort((a, b) => score(b) - score(a))[0];
+}
 
 // the teams, in the order the Yoenis page uses (2026's), with their Yahoo keys and managers
 const teams = s26.teams.map((name, i) => ({ name, owner: (data.owners[s26.o[i]] || {}).n || data.managers[name] || null }));
@@ -40,7 +52,7 @@ const extra = new Map();
 const yPos = (pos) => String(pos || 'UTIL').split(',').map((x) => x.trim()).map((x) => (x === 'Util' ? 'UT' : x)).filter((x) => x && x !== 'IL' && x !== 'BN');
 // Yahoo keeps Ohtani as two players (the batter and the pitcher, on different teams here): this league carries both,
 // each with his half of the feed's lines, and hides the feed's combined Ohtani
-const two = byName.get(norm('Shohei Ohtani'));
+const two = (byName.get(norm('Shohei Ohtani')) || [])[0];
 const split = two ? {
   'shoheiohtanibatter': { id: 'yx-ohtani-b', n: 'Shohei Ohtani (Batter)', t: two.t, pos: ['UT'], age: two.age, l: Object.fromEntries(Object.entries(two.l || {}).filter(([k]) => /bat/.test(k))) },
   'shoheiohtanipitcher': { id: 'yx-ohtani-p', n: 'Shohei Ohtani (Pitcher)', t: two.t, pos: ['SP'], age: two.age, l: Object.fromEntries(Object.entries(two.l || {}).filter(([k]) => /pit/.test(k))) },
@@ -49,7 +61,7 @@ const rawKey = (s) => String(s).normalize('NFKD').replace(/[\u0300-\u036f]/g, ''
 function idOf(name, pos, mlb) {
   const sp = split[rawKey(name)];
   if (sp) { if (!extra.has(sp.id)) extra.set(sp.id, sp); return sp.id; }
-  const p = byName.get(norm(name));
+  const p = findPlayer(name, mlb, pos);
   if (p) return p.id;
   const id = 'yx-' + norm(name);
   if (!extra.has(id)) extra.set(id, { id, n: name.replace(/\s*\((Batter|Pitcher)\)/, ''), t: mlb || 'FA', pos: yPos(pos).length ? yPos(pos) : ['UT'] });
@@ -77,7 +89,7 @@ D.teams.forEach((t, i) => (t.color = (i * 5) % 12));
 D.phase = 'done'; D.done = draftAt + picks.length * 60000; D.year = data.seasons.length;
 // the league's look: the banner says WY (Wipe Yoenis), in green
 const brand = { color: 2, letters: 'WY' };
-D.season = { format: 'h2h', weeks: 22, playoffTeams: 6, faab: 100, waivers: 'faab', keepers: 5, keeperRule: { steps: [0, 2, 6], fa: 15, cutoff: '09-01', sameRound: 'up' }, review: 'commish', ir: 3 };
+D.season = { format: 'h2h', weeks: 22, playoffTeams: 6, faab: 100, waivers: 'faab', keepers: 5, keeperRule: { steps: [0, 2, 6], fa: 15, cutoff: '09-01', sameRound: 'up' }, pickTrades: 'offseason', review: 'commish', ir: 3 };
 D.extraPlayers = [];
 
 // the season, from that draft
@@ -102,7 +114,7 @@ const miss = [];
 for (const [team, rows] of Object.entries(data.keepers2027)) {
   const t = teams.findIndex((x) => x.name === team);
   for (const e of rows) {
-    const pid = idOf(e.p, null, null);
+    const pid = L.rosters[t].find((id) => { const x = pool.players.find((p) => p.id === id) || extra.get(id); return x && (x.n === e.p || norm(x.n) === norm(e.p)) && (!split[rawKey(e.p)] || id === split[rawKey(e.p)].id); }) || idOf(e.p, null, null);
     if (!L.rosters[t].includes(pid)) { miss.push(`${team}: ${e.p}`); continue; }
     const years = e.next ? e.next[1] - 1 : e.k ? e.k[1] : 0;
     L.keepInfo[pid] = Object.assign({ base: e.path[0], years }, e.late ? { late: true } : {});
@@ -134,10 +146,19 @@ const players = pool.players.map((p) => ({ ...p })).concat(L.extraPlayers.map((x
 V.evaluate(sport, players, { teams: 16, lineup, bench, scoring: 'yoenis' });
 let n = 0, bad = [];
 for (const [team, rows] of Object.entries(data.keepers2027)) for (const e of rows) {
-  const pid = idOf(e.p, null, null), c = Z.keeperCost(L, pid); n++;
+  const t = teams.findIndex((x) => x.name === team);
+  const pid = L.rosters[t].find((id) => { const x = players.find((p) => p.id === id); return x && (x.n === e.p || norm(x.n) === norm(e.p)); }) || idOf(e.p, null, null), c = Z.keeperCost(L, pid); n++;
+  if (!L.rosters[t].includes(pid)) bad.push(`${team}: ${e.p} isn't on the roster`);
   const want = e.next ? e.next[0] : null;
   if ((c.round ?? null) !== want) bad.push(`${team}: ${e.p} page ${want} draft lab ${c.round ?? c.no}`);
 }
 console.log(`${teams.length} teams, ${picks.length} picks, ${L.rosters.flat().length} rostered, ${extra.size} players added to the pool, ${seasons.length} past seasons`);
 console.log(`keeper costs checked: ${n}, mismatched: ${bad.length}`, bad.slice(0, 15));
 console.log(`your team: ${teams[me].name} (${me})`);
+// every rostered player is the right one: same MLB team as Yahoo has him, or a player the league carries itself
+const wrong = [];
+for (const [k, list] of Object.entries(Y.rosters)) for (const y of list) {
+  const id = idOf(y.name, y.pos, y.mlb), p = pool.players.find((x) => x.id === id);
+  if (p && y.mlb && p.t !== y.mlb && norm(p.n) === norm(y.name) && (byName.get(norm(y.name)) || []).length > 1) wrong.push(`${y.name} (${y.mlb}) matched ${p.n} (${p.t})`);
+}
+console.log(`name collisions settled: ${wrong.length ? wrong.join('; ') : 'all by team'}`);

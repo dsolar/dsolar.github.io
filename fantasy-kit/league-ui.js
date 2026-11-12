@@ -1330,6 +1330,8 @@
         check: (tr) => G.tradeCheck(L(), ctx, Object.assign({ dropsTo: [] }, tr)),
         prefill: prefill || (want ? { get: [want] } : null),
         picks: G.pickRounds(L()) ? (id) => G.picksOf(L(), id).map(pickVM) : null,
+        // between seasons in a keeper league, what each player would cost to keep is what the trade is about
+        note: G.offseason(L()) && L().settings.keepers && window.FK.season ? (p) => { const c = window.FK.season.keeperCost(L(), p.id); return c.no ? "can't be kept" : c.round != null ? `keep in round ${c.round}` : c.price != null ? `keep for $${c.price}` : ""; } : null,
         submit: (tr) => { const r = G.propose(L(), ctx, mid, tr.to, tr.give, tr.get, now(), tr); if (!r.ok) return r; save(); U.toast(`Offer sent to ${T(tr.to).name}.`); setTimeout(() => { G.tick(L(), ctx, now() + 1); save(); render(); }, 1200); render(); return r; } });
     }
 

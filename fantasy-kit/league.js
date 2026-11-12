@@ -1819,16 +1819,21 @@
   // free agent draft, and when picks is on those picks can be traded. A pick is "round:team", the team it started
   // with; L.picks maps a traded pick to the team that holds it now.
   // A dynasty's offseason: the season is over and the next hasn't started. Trades stay open (players and picks).
-  const offseason = (L) => !!L.settings.dynasty && !isGuillotine(L) && L.week > totalWeeks(L);
+  // Between seasons, trades stay open in a dynasty, and in a keeper league unless it says otherwise
+  // (settings.offseasonTrades false), until next season's draft room opens.
+  const offseason = (L) => (!!L.settings.dynasty || (L.settings.keepers > 0 && L.settings.offseasonTrades !== false)) && !isGuillotine(L) && L.week > totalWeeks(L);
   // Picks for next season are "round:team"; the season after that, "round:team:2". When a new season starts, the
   // later ones become next season's.
   const PICK_YEARS = 2;
   const pickYear = (key) => +(key.split(":")[2] || 1);
-  const pickRounds = (L) => (L.settings.dynasty && L.settings.dynasty.picks !== false ? L.settings.dynasty.rounds || 3 : 0);
+  // A dynasty trades its rookie draft's picks two seasons out. A keeper league with settings.pickTrades trades next
+  // season's draft picks, every round ("offseason": only between seasons).
+  const pickRounds = (L) => (L.settings.dynasty ? (L.settings.dynasty.picks !== false ? L.settings.dynasty.rounds || 3 : 0) : L.settings.pickTrades ? (L.draft && L.draft.rounds) || 15 : 0);
+  const pickYears = (L) => (L.settings.dynasty ? PICK_YEARS : 1);
   const pickOwner = (L, key) => { const o = L.picks && L.picks[key]; return o != null ? o : +key.split(":")[1]; };
   function picksOf(L, team) {
     const out = [], R = pickRounds(L);
-    for (let y = 1; y <= (R ? PICK_YEARS : 0); y++) for (let r = 1; r <= R; r++) for (const t of L.teams) { const k = y > 1 ? `${r}:${t.id}:${y}` : `${r}:${t.id}`; if (pickOwner(L, k) === team) out.push(k); }
+    for (let y = 1; y <= (R ? pickYears(L) : 0); y++) for (let r = 1; r <= R; r++) for (const t of L.teams) { const k = y > 1 ? `${r}:${t.id}:${y}` : `${r}:${t.id}`; if (pickOwner(L, k) === team) out.push(k); }
     return out;
   }
   const pickLabel = (L, key) => { const [r, t] = key.split(":").map(Number); return `${pickYear(key) > 1 ? "Two seasons out: " : ""}${ordinal(r)}-round pick${pickOwner(L, key) !== t ? `, from ${L.teams[t].name}` : ""}`; };
@@ -1886,6 +1891,7 @@
     for (const k of pg) if (pickOwner(L, k) !== t.from) return { ok: false, why: `${L.teams[t.from].name} doesn't have that pick` };
     for (const k of pr) if (pickOwner(L, k) !== t.to) return { ok: false, why: `${L.teams[t.to].name} doesn't have that pick` };
     if ((pg.length || pr.length) && !pickRounds(L)) return { ok: false, why: "This league doesn't trade draft picks" };
+    if ((pg.length || pr.length) && L.settings.pickTrades === "offseason" && !offseason(L)) return { ok: false, why: "Draft picks trade in the offseason only" };
     const off = offseason(L);
     if (!off && L.settings.deadline && L.week > L.settings.deadline) return { ok: false, why: `The trade deadline was week ${L.settings.deadline}` };
     if (!off && L.week > totalWeeks(L)) return { ok: false, why: "The season is over" };
@@ -1968,6 +1974,11 @@
       L.picks = L.picks || {};
       for (const k of t.pickGive || []) L.picks[k] = t.to;
       for (const k of t.pickGet || []) L.picks[k] = t.from;
+    }
+    // a declared keeper who's traded away comes off his old team's keeper list (the new team can keep him)
+    if (L.next && L.next.picks) for (const team of [t.from, t.to]) {
+      if (L.next.picks[team]) L.next.picks[team] = L.next.picks[team].filter((x) => L.rosters[team].includes(x));
+      if (L.next.list && L.next.list[team] && ctx.byId) L.next.list[team] = L.next.list[team].filter((row) => L.next.picks[team].some((x) => ctx.byId[x] && ctx.byId[x].n === row[0]));
     }
     t.status = "accepted"; t.done = now;
     log(L, now, { type: "trade", team: t.from, other: t.to, adds: t.get, drops: t.give, trade: t.id, faab: (t.faabGive || t.faabGet) ? [t.faabGive || 0, t.faabGet || 0] : null,

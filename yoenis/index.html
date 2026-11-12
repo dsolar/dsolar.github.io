@@ -627,7 +627,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     </div>
     <div class="seg tabs" role="tablist" aria-label="Keepers and drafts" data-remember="yoenis-ktab"><button type="button" role="tab" id="kt-cost" aria-controls="kp-cost" aria-selected="true">2027 keepers</button><button type="button" role="tab" id="kt-hist" aria-controls="kp-hist" aria-selected="false" tabindex="-1">Keepers by year</button><button type="button" role="tab" id="kt-best" aria-controls="kp-best" aria-selected="false" tabindex="-1">Best keepers</button><button type="button" role="tab" id="kt-draft" aria-controls="kp-draft" aria-selected="false" tabindex="-1">Every draft</button></div>
     <div role="tabpanel" id="kp-cost" aria-labelledby="kt-cost">
-      <p class="panel-lede">Pick a team to see its final 2026 roster: what each player would cost to keep next March, or why he can't be kept. Check up to five to set your keepers.</p>
+      <p class="panel-lede">Pick a team to see its final 2026 roster: what each player would cost to keep next March, or why he can't be kept.</p>
       <div class="controls">
       <label class="field">Team<select id="k-team"></select></label>
       <label class="field grow">Or find a player<input type="search" id="k-find" placeholder="Any team, e.g. Skenes" autocomplete="off"></label>
@@ -875,7 +875,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
         <li>To be kept, a player has to be on your roster before September 1. The shortened 2020 season didn't count as a keeper year.</li>
         <li>Nothing costs more than round 1, but each first-round keeper needs its own 1st-round pick.</li>
         <li>If you have no pick in a keeper's round, or two keepers there and one pick, he moves up to your next open pick. He still counts at his real round the next year.</li>
-        <li>Keepers lock a week or so before the draft. Declare them in the 2027 keepers tab on this page with your team PIN; they also show up in the <a href="https://docs.google.com/spreadsheets/d/1hikrKHBKWI65A81MFbOQ1n2vezeBwmUfNVFymItL0ZY/edit?usp=sharing" rel="noopener">keeper sheet</a>.</li>
+        <li>Keepers lock a week or so before the draft. Declare them in <a href="../fantasy-kit/play.html?id=yoenis">the league on Draft Lab</a>; they also show up in the <a href="https://docs.google.com/spreadsheets/d/1hikrKHBKWI65A81MFbOQ1n2vezeBwmUfNVFymItL0ZY/edit?usp=sharing" rel="noopener">keeper sheet</a>.</li>
       </ul>
     </div>
     <div class="rule-group" role="tabpanel" id="rp-trades" aria-labelledby="rt-trades" tabindex="0" hidden>
@@ -1200,6 +1200,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
   }
 
   function keeperRow(e, team, pickable) {
+    if (OFF().league) pickable = null;           // keepers are declared in the league on Draft Lab, not here
     var on = pickable && mineFor(pickable).indexOf(e.p) > -1;
     var box = pickable && e.next ? '<label class="keep"><input type="checkbox" data-keep="' + esc(e.p) + '"' + (on ? " checked" : "") + (locked() ? " disabled" : "") + '>Keep</label>' : "";
     return '<li class="kp' + (e.next ? "" : " out") + (on ? " picked" : "") + '"><div class="kp-name">' + playerCard(e.p) + '<span class="kp-sub">' + esc(subText(e, team)) + "</span></div>" +
@@ -1424,6 +1425,10 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
   }
   function drawMine() {
     var team = $("k-team").value; if (!team || !DATA.keepers2027[team]) return;
+    if (OFF().league) {
+      var box = $("k-mine"); if (box) box.innerHTML = '<div class="slot mine"><p class="k">Declare your 2027 keepers in the league</p><p class="muted">Keepers are picked in Draft Lab, where each one\'s round is worked out as you choose. <a href="' + esc(OFF().league) + '">Open the league</a></p></div>';
+      return;
+    }
     var names = mineFor(team), kk = slotKeepers(team, names), live = dbOn(), inSheet = sheetFor(team);
     var rows = kk.list.map(function (x) {
       var sl = x.pick ? slotOf(x.pick.of) : null;

@@ -606,6 +606,9 @@
       const ks = fd.getAll("k"), plan = Z.keeperPlan(L, teamId, ks);
       if (!plan.ok) { U.toast(plan.why, true); return false; }
       L.next.picks = Object.assign({}, L.next.picks, { [teamId]: ks });
+      // a readable copy for the league's keeper sheet: name, the round he lands in, year kept, and whether the
+      // commissioner set it (the sheet marks those with an asterisk, as it always has)
+      L.next.list = Object.assign({}, L.next.list, { [teamId]: plan.rows.map((x) => [(ctx.byId[x.pid] || {}).n || x.pid, x.round, x.cost.year || null, teamId !== info.me]) });
       push(); setTimeout(() => app.refresh(), 0);
       U.toast(`${teamId === info.me ? "" : `${t.name}: `}${ks.length ? `keeping ${ks.length}.` : "keeping nobody."}`.replace(/^k/, "K"));
     }, { wide: true });
@@ -620,7 +623,7 @@
     };
     f.addEventListener("change", draw); draw();
     const clr = f.querySelector("[data-kp-clear]");
-    if (clr) clr.addEventListener("click", () => { const p = Object.assign({}, L.next.picks); delete p[teamId]; L.next.picks = p; push(); app.refresh(); U.dialogClose && U.dialogClose(); const dl = $("#fk-dlg"); if (dl) dl.close(); U.toast(`${t.name} goes back to the deadline rule.`); });
+    if (clr) clr.addEventListener("click", () => { const p = Object.assign({}, L.next.picks); delete p[teamId]; L.next.picks = p; if (L.next.list) { const q = Object.assign({}, L.next.list); delete q[teamId]; L.next.list = q; } push(); app.refresh(); U.dialogClose && U.dialogClose(); const dl = $("#fk-dlg"); if (dl) dl.close(); U.toast(`${t.name} goes back to the deadline rule.`); });
   }
   // the commissioner opens keeper picks with a deadline, and what happens to a team that misses it
   function keeperOpenDialog() {
@@ -641,6 +644,27 @@
       U.toast(opening ? "Keeper picks are open. Everyone gets an email." : `Keepers lock ${whenTxt(t)}.`);
     });
   }
+  // next season's draft order, set by the commissioner (after a lottery, say); without it, worst to first
+  function orderDialog() {
+    const n = L.teams.length, cur = L.nextOrder && L.nextOrder.length === n ? L.nextOrder : G.standings(L).map((r) => r.team).reverse();
+    U.dialog(`<h3>Next season's draft order</h3><form class="stack ord-f">
+      <p class="small muted" style="margin:0">Round 1, first pick to last. Later rounds snake from it${L.picks && Object.keys(L.picks).length ? ", and traded picks go to the teams that hold them" : ""}.</p>
+      <ol class="ord-l">${cur.map((t, i) => `<li><label class="sr" for="ord-${i}">Pick ${i + 1}</label><span class="num">${i + 1}</span><select id="ord-${i}" name="p${i}">${L.teams.map((x) => `<option value="${x.id}"${x.id === t ? " selected" : ""}>${esc(x.name)}</option>`).join("")}</select></li>`).join("")}</ol>
+      <p class="ord-why loss" role="status"></p>
+      <div class="acts">${L.nextOrder ? `<button type="button" class="btn ghost" data-ord-clear>Use worst to first</button><span class="grow"></span>` : ""}<button type="button" class="btn" data-close>Cancel</button><button class="btn go">Save the order</button></div></form>`, (fd) => {
+      const order = Array.from({ length: n }, (_, i) => Number(fd.get("p" + i)));
+      if (new Set(order).size !== n) { U.toast("Each team picks once in round 1.", true); return false; }
+      L.nextOrder = order; push(); setTimeout(() => app.refresh(), 0);
+      U.toast(`${L.teams[order[0]].name} picks first.`);
+    });
+    const f = $(".ord-f"); if (!f) return;
+    f.addEventListener("change", () => {
+      const v = [...f.querySelectorAll("select")].map((x) => x.value), dup = v.filter((x, i) => v.indexOf(x) !== i);
+      $(".ord-why", f).textContent = dup.length ? `${[...new Set(dup)].map((x) => L.teams[+x].name).join(", ")} ${dup.length > 1 ? "are" : "is"} in there twice.` : "";
+    });
+    const clr = f.querySelector("[data-ord-clear]");
+    if (clr) clr.addEventListener("click", () => { delete L.nextOrder; push(); const dl = $("#fk-dlg"); if (dl) dl.close(); setTimeout(() => app.refresh(), 0); U.toast("Back to worst to first."); });
+  }
   function nextSeasonCard() {
     if (!seasonOver()) return "";
     const k = L.settings.keepers || 0;
@@ -650,7 +674,9 @@
     const rows = doc.teams.map((t) => `<li>${U.teamAv(t, "sm")}<span class="grow"><b>${esc(t.name)}</b><small>${status(t)}</small></span>${k ? `<button type="button" class="btn sm ghost" data-kp-team="${t.id}">${picks[t.id] ? "Change" : "Set"}</button>` : ""}</li>`).join("");
     return `<div class="card"><div class="mod-h"><h2>Next season</h2>${k && L.next ? `<button type="button" class="btn sm" data-live="open-keepers" style="margin-left:auto">Deadline</button>` : ""}</div><div class="bd stack">
       <p class="small" style="margin:0">${L.settings.dynasty ? `The season is over. Starting next season saves this one to the league's history. Every roster carries over, and a ${L.settings.dynasty.rounds}-round rookie and free agent draft opens, worst team first${G.pickRounds(L) ? ", with traded picks going to the teams that hold them" : ""}. Until then, trades stay open.` : `${k ? (lock ? `Keepers locked ${esc(whenTxt(keepDue()))}.` : `Keeper picks are open until ${esc(whenTxt(keepDue()))}.`) : "The season is over."} Starting next season saves this one to the league's history and opens a new draft room${k ? " with the keepers on the board" : ""}.`}</p>
-      ${k ? `<ul class="seatl">${rows}</ul>` : ""}<div><button class="btn go" data-live="new-season">Start next season's draft</button></div></div></div>`;
+      ${k ? `<ul class="seatl">${rows}</ul>` : ""}
+      ${L.settings.dynasty ? "" : `<p class="small" style="margin:0"><b>Draft order:</b> ${L.nextOrder ? `set by you, ${esc(L.teams[L.nextOrder[0]].name)} first` : "worst to first, unless you set it"}. <button type="button" class="btn sm ghost" data-live="draft-order">${L.nextOrder ? "Change" : "Set the order"}</button></p>`}
+      <div><button class="btn go" data-live="new-season">Start next season's draft</button></div></div></div>`;
   }
   async function newSeason() {
     const D2 = Z.nextDraft(L, lctx(), sport, (L.next && L.next.picks) || {}, { now: now() });
@@ -859,6 +885,7 @@
     if (lv && lv.dataset.live === "dues") { e.preventDefault(); duesDialog(); }
     if (lv && lv.dataset.live === "keepers") keeperDialog();
     if (lv && lv.dataset.live === "open-keepers" && info.commish) keeperOpenDialog();
+    if (lv && lv.dataset.live === "draft-order" && info.commish) orderDialog();
     const kt = e.target.closest("[data-kp-team]");
     if (kt && info.commish) keeperDialog(+kt.dataset.kpTeam);
     const cm = e.target.closest("[data-cm]");

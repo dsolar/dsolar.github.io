@@ -71,6 +71,8 @@
     // keepers: how many each team carries into next season, and what each one costs
     if (s.keepers) { settings.keepers = s.keepers; settings.keeperCost = s.keeperCost || (D.type === "auction" ? "price" : "round"); }
     // a climbing keeper rule comes over from last season (nextDraft) or the form
+    // next season's draft picks can be traded (keepers leagues; "offseason": only between seasons)
+    if (s.pickTrades) settings.pickTrades = s.pickTrades;
     if (D.keeperRule || s.keeperRule) { settings.keeperRule = Object.assign({}, D.keeperRule || s.keeperRule); settings.keepers = D.keepersN || s.keepers || settings.keepers || 5; }
     // a draft that ran out on the clock while nobody was around is "done" in the past; start after now, not then
     const at = Math.max(D.done || 0, o.now || Date.now());
@@ -472,8 +474,8 @@
     if (rows.length > (L.settings.keepers || 0)) return { ok: false, why: `Keep up to ${L.settings.keepers}`, rows };
     const rule = L.settings.keeperRule;
     if (!rule || rule.sameRound !== "up") { rows.forEach((x) => (x.round = x.cost.round)); return { ok: true, rows }; }
-    const held = (r) => 1 + Object.entries(L.picksNext || {}).filter(([k, own]) => +k.split(":")[0] === r && own === teamId && +k.split(":")[1] !== teamId).length
-      - Object.entries(L.picksNext || {}).filter(([k, own]) => +k.split(":")[0] === r && +k.split(":")[1] === teamId && own !== teamId).length;
+    // the picks a team holds in a round: its own unless traded away, plus any it traded for
+    const held = (r) => L.teams.filter((t) => G.pickOwner(L, `${r}:${t.id}`) === teamId).length;
     const used = {};
     for (const x of rows.slice().sort((a, b) => a.cost.round - b.cost.round)) {
       let r = x.cost.round;
@@ -535,7 +537,10 @@
   // Next season's draft: the same teams, rules and scoring, worst-to-first order, keepers already on the board.
   function nextDraft(L, ctx, sport, picks, o = {}) {
     const D0 = L.draft || {}, now = o.now || Date.now(), n = L.teams.length;
-    const order = standings(L).map((r) => r.team).reverse();
+    // the commissioner's order (L.nextOrder, round 1 first to last: a lottery, say), or worst to first
+    const want = L.nextOrder || (L.next && L.next.order);
+    const set = Array.isArray(want) && want.length === n && new Set(want).size === n ? want.slice() : null;
+    const order = set || standings(L).map((r) => r.team).reverse();
     if (L.settings.dynasty) return rookieDraft(L, ctx, sport, order, o);
     const keepers = [];
     for (const t of L.teams) {
@@ -553,8 +558,12 @@
     keepers.sort((a, b) => (a.round || 0) - (b.round || 0));
     const D = F.create({ sport, type: D0.type || "snake", teams: L.teams.map((t) => ({ name: t.name, abbr: t.abbr, owner: t.owner })), seed: Math.floor((o.seed != null ? o.seed : Math.random()) * 2 ** 31) || 1,
       now, lineup: L.settings.lineup, bench: L.settings.bench, scoring: L.scoring, botDelay: D0.botDelay, clock: D0.clock, bidClock: D0.auction ? D0.auction.bidClock : undefined,
-      nomClock: D0.auction ? D0.auction.nomClock : undefined, budget: D0.auction ? D0.auction.budget : undefined, name: L.name, trades: D0.trading !== false, order, keepers,
-      curve: D0.type === "mystery" && ctx && ctx.players ? F.pickCurve(ctx.players, n * (D0.rounds || L.settings.lineup.length + L.settings.bench)) : D0.curve, reveal: D0.reveal });
+      nomClock: D0.auction ? D0.auction.nomClock : undefined, budget: D0.auction ? D0.auction.budget : undefined, name: L.name, trades: D0.trading !== false, order, keepers: [],
+      rounds: D0.rounds, curve: D0.type === "mystery" && ctx && ctx.players ? F.pickCurve(ctx.players, n * (D0.rounds || L.settings.lineup.length + L.settings.bench)) : D0.curve, reveal: D0.reveal });
+    // picks traded in the offseason belong to the teams holding them (and remember whose they were), then keepers
+    // take their slots
+    if (D.type !== "auction" && L.picks) D.order.forEach((orig, k) => { const r = Math.floor(k / n) + 1, own = G.pickOwner(L, `${r}:${orig}`); if (own !== orig) { D.order[k] = own; D.via[k] = orig; } });
+    for (const k of keepers) F.keep(D, k.team, k.pid, k.round, k.price);
     D.teams.forEach((t, i) => (t.color = L.teams[i].color));
     D.season = D0.season; if (D0.scoringSpec) D.scoringSpec = D0.scoringSpec;
     D.year = (D0.year || 1) + 1;

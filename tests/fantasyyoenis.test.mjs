@@ -68,10 +68,10 @@ test('yoenis: a second keeper in a round moves up; two 1sts take two 1st-round p
   p = Z.keeperPlan(L, me, [name('José Ramírez').id, name('Yoshinobu Yamamoto').id]);
   assert.equal(p.ok, false); assert.match(p.why, /two 1st-round picks/);
   // a traded-for 1st makes room for two
-  L.picksNext = { [`1:${(me + 1) % 16}`]: me };
+  L.picks = { [`1:${(me + 1) % 16}`]: me };
   p = Z.keeperPlan(L, me, [name('José Ramírez').id, name('Yoshinobu Yamamoto').id]);
   assert.ok(p.ok); assert.deepEqual(p.rows.map((x) => x.round), [1, 1]);
-  delete L.picksNext;
+  delete L.picks;
   // six is one too many, and a player who can't be kept is turned away
   assert.match(Z.keeperPlan(L, me, ['a', 'b', 'c', 'd', 'e', 'f'].map(() => name('Matt Olson').id)).why, /Keep up to 5/);
   assert.match(Z.keeperPlan(L, me, [name('Elly De La Cruz').id]).why, /Kept 3 years/);
@@ -116,4 +116,39 @@ test('yoenis: the imported season reads as over, with Yahoo\'s final places', ()
   assert.equal(G.finish(L).champion, st[0].team);
   assert.equal(G.summary(L).champion.name, L.teams[st[0].team].name);
   assert.equal(doc.seasons.length, 13); assert.equal(doc.seasons[0].season, '2013'); assert.ok(doc.seasons.every((s) => s.champion && s.standings.length >= 10));
+});
+
+test('yoenis: offseason trades of players and next year\'s picks, and the draft follows them', () => {
+  const { L, ctx, sport, team, name } = league();
+  assert.ok(G.offseason(L), 'trades are open between seasons');
+  const me = team("Ippei's Book Club"), them = team('Bulba');
+  assert.equal(G.pickRounds(L), 25);
+  assert.equal(G.picksOf(L, me).length, 25, 'one pick a round, next season only');
+  // send Olson and our 2nd for their 1st
+  const olson = name('Matt Olson').id;
+  const r = G.propose(L, ctx, me, them, [olson], [], Date.now(), { pickGive: [`2:${me}`], pickGet: [`1:${them}`] });
+  assert.ok(r.ok, r.why);
+  L.settings.tradeReview = 'none';
+  assert.ok(G.respond(L, ctx, r.trade.id, true, Date.now()).ok);
+  assert.ok(L.rosters[them].includes(olson));
+  assert.equal(G.pickOwner(L, `1:${them}`), me);
+  assert.equal(G.pickOwner(L, `2:${me}`), them);
+  // Olson keeps his draft round on his new team
+  assert.equal(Z.keeperCost(L, olson).round, 2);
+  // two 1st-round keepers now fit; and with no 2nd left, a 2nd-round cost moves up to a 1st... which is now full
+  let p = Z.keeperPlan(L, me, [name('José Ramírez').id, name('Yoshinobu Yamamoto').id]);
+  assert.ok(p.ok, p.why); assert.deepEqual(p.rows.map((x) => x.round), [1, 1]);
+  // the commissioner's order after the lottery, and the traded picks, shape next spring's board
+  L.next = { opened: 1, due: 2, picks: { [me]: [name('José Ramírez').id, name('Yoshinobu Yamamoto').id] }, missed: 'none' }; L.nextOrder = L.teams.map((t) => t.id).reverse();
+  const D2 = Z.nextDraft(L, ctx, sport, L.next.picks, { now: Date.UTC(2027, 2, 20), seed: 0.3 });
+  assert.equal(D2.round1[0], 15, 'the set order, first pick first');
+  const r1 = D2.order.slice(0, 16), r2 = D2.order.slice(16, 32);
+  assert.equal(r1.filter((x) => x === me).length, 2, 'two 1sts');
+  assert.equal(r2.filter((x) => x === me).length, 0, 'no 2nd');
+  assert.equal(D2.via[r1.findIndex((x, i) => x === me && D2.via[i] != null)], them);
+  const mine = D2.board.map((b, k) => (b && b.team === me ? Math.floor(k / 16) + 1 : null)).filter(Boolean);
+  assert.deepEqual(mine, [1, 1]);
+  // picks only trade between seasons when the league says so
+  L.settings.pickTrades = 'offseason'; L.week = 5;
+  assert.match(G.tradeCheck(L, ctx, { from: me, to: them, give: [], get: [], pickGive: [`3:${me}`], pickGet: [] }, null).why, /offseason only/);
 });
