@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-12T11:29:27Z",
+ "updated": "2026-11-12T20:06:10Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -1067,6 +1067,16 @@
    "date": "2026-11-25",
    "venue": "TD Garden",
    "url": "https://www.espn.com/nhl/game/_/gameId/401892781/jets-bruins",
+   "src": null,
+   "low": null
+  },
+  "sg-18760855": {
+   "history": [],
+   "sg": 18760855,
+   "title": "LCD Soundsystem (18+)",
+   "date": "2026-11-17",
+   "venue": "Music Hall of Williamsburg",
+   "url": "https://seatgeek.com/lcd-soundsystem-tickets/brooklyn-new-york-music-hall-of-williamsburg-2026-11-17-8-pm/concert/18760855",
    "src": null,
    "low": null
   }
