@@ -238,6 +238,28 @@
     if (t && t.name && t.glyph !== false) return `<span class="${c} logo" aria-hidden="true">${logoSvg(t)}</span>`;
     return `<span class="${c}" aria-hidden="true">${esc(String((t && t.abbr) || "?").slice(0, 3))}</span>`;
   };
+  /* ---------- the league's own look: a banner crest in the league color, and the masthead on its front page ---------- */
+  // A league's brand: { color: 0-11, letters: up to 3 } from settings.brand, or picked from its name.
+  const leagueBrand = (name, b) => {
+    const words = String(name || "League").replace(/[^A-Za-z0-9 ]/g, " ").split(/\s+/).filter(Boolean);
+    const auto = (words.length > 1 ? words.slice(0, 2).map((w) => w[0]) : [String(words[0] || "L").slice(0, 2)]).join("").toUpperCase();
+    const letters = String((b && b.letters) || auto).replace(/[^A-Za-z0-9&]/g, "").slice(0, 3).toUpperCase() || "L";
+    return { color: b && b.color != null && b.color >= 0 ? b.color % 12 : hashOf(String(name || "") + "|lg") % 12, letters };
+  };
+  // the crest: a banner like the ones hung in the rafters, the league's letters on it. size: "sm" (a menu), "" or "lg"
+  const leagueCrest = (br, size = "") => {
+    const fs = br.letters.length > 2 ? 15 : br.letters.length > 1 ? 19 : 23;
+    return `<span class="lgcr${size ? " " + size : ""}" style="--c:var(--t${br.color})" aria-hidden="true"><svg viewBox="0 0 48 60" focusable="false"><path d="M2 0h44v52L24 43 2 52z" fill="var(--c)"/><path d="M2 0h44v52L24 43 2 52z" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="2"/><path d="M7 5h34" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/><text x="24" y="${br.letters.length > 2 ? 30 : 31}" text-anchor="middle" dominant-baseline="middle" font-size="${fs}" class="lgcr-t">${esc(br.letters)}</text></svg></span>`;
+  };
+  // A past champion's pennant: the season and the team, in the team's color.
+  const pennant = (x) => `<li class="pnt" style="--c:var(--t${(x.color || 0) % 12})" title="${esc(x.season)}: ${esc(x.name)}"><b>${esc(x.season)}</b><span>${esc(x.abbr)}</span></li>`;
+  // The masthead: crest, name (the league switcher), a line about the league, the season as a strip of weeks, and
+  // past champions as pennants. vm: { brand, sub, note, weeks: [{ n, k: "done" | "now" | "next", po }], weekLine, champs }
+  function leagueMast(vm) {
+    const wk = vm.weeks && vm.weeks.length ? `<div class="lgm-wk"><span class="lgm-ticks" aria-hidden="true">${vm.weeks.map((x) => `<i class="${x.k}${x.po ? " po" : ""}${x.gap ? " gap" : ""}" title="${x.po ? "Playoffs, w" : "W"}eek ${x.n}"></i>`).join("")}</span><span class="lgm-wl">${esc(vm.weekLine)}</span></div>` : "";
+    const champs = vm.champs && vm.champs.length ? `<ul class="lgm-pn" aria-label="Past champions">${vm.champs.map(pennant).join("")}</ul>` : "";
+    return { crest: leagueCrest(vm.brand, "lg"), body: `${vm.sub ? `<p class="lgm-sub">${vm.sub}</p>` : ""}${wk}${vm.note ? `<p class="lgm-note">${vm.note}</p>` : ""}`, champs };
+  }
   const posChip = (sport, pos) => `<span class="pp c${(sport.colors && sport.colors[pos]) || 6}">${esc(pos)}</span>`;
   const posChips = (sport, p) => S.positions(p).map((x) => posChip(sport, x)).join("");
   const colorOf = (sport, p) => (sport.colors && sport.colors[FK.value.mainPos(sport, p)]) || 6;
@@ -277,9 +299,13 @@
   function shell(opts) {
     const href = opts.hrefOf || ((t, s) => "#" + t + (s ? "/" + s : ""));
     const badge = (n) => (n ? `<span class="badge">${n}</span>` : "");
-    return `<div class="fk-mast fk-band"><div class="wrap">
+    const m = opts.mast ? leagueMast(opts.mast) : null;
+    return `${m ? `<div class="fk-mast fk-band lgm c${opts.mast.brand.color}" style="--lc:var(--t${opts.mast.brand.color})"><div class="wrap lgm-in">
+        ${m.crest}<div class="lgm-id"><div class="lgm-top"><a class="fk-brand" href="${esc(opts.brand.href || "./")}">${opts.brand.mark || ""}<b class="disp">${esc(opts.brand.name)}</b></a>${opts.title || ""}</div>${m.body}</div>
+        <div class="lgm-side"><div class="fk-who">${opts.right || ""}</div>${m.champs}</div></div></div>`
+      : `<div class="fk-mast fk-band"><div class="wrap">
         <a class="fk-brand" href="${esc(opts.brand.href || "./")}">${opts.brand.mark || ""}<b class="disp">${esc(opts.brand.name)}</b></a>
-        ${opts.title || ""}<span class="grow"></span><div class="fk-who">${opts.right || ""}</div></div></div>
+        ${opts.title || ""}<span class="grow"></span><div class="fk-who">${opts.right || ""}</div></div></div>`}
       ${opts.tabs && opts.tabs.length ? `<div class="fk-nav${opts.tabbar ? " has-bar" : ""}"><div class="wrap"><nav aria-label="Sections">${opts.tabs.map(([k, n, b]) => `<a href="${href(k)}"${k === opts.tab ? ' aria-current="page"' : ""}>${esc(n)}${badge(b)}</a>`).join("")}</nav></div></div>` : ""}
       ${opts.subs && opts.subs.length ? `<nav class="fk-subs" aria-label="Pages"><div class="wrap">${opts.subs.map(([k, n, b]) => `<a href="${href(opts.tab, k)}"${k === opts.sub ? ' aria-current="page"' : ""}>${esc(n)}${badge(b)}</a>`).join("")}</div></nav>` : ""}
       ${opts.tabbar && opts.tabs && opts.tabs.length ? `<nav class="fk-tabbar" aria-label="Sections, phone" style="--n:${opts.tabs.length}">${opts.tabs.map(([k, n, b]) => `<a href="${href(k)}"${k === opts.tab ? ' aria-current="page"' : ""}>${TAB_ICON[k] || TAB_ICON.league}<span>${esc(SHORT_TAB[k] || n)}</span>${b ? `<i class="tb-n">${b}</i>` : ""}</a>`).join("")}</nav>` : ""}`;
@@ -296,8 +322,8 @@
   };
   const SHORT_TAB = { team: "Team", commish: "Commish" };
   // A league switcher: current league with its avatar, a menu of leagues and extra menu items.
-  const switcher = (cur, items, extra = "") => `<details class="switch"><summary>${teamAv(cur, "sm")}<span class="ell">${esc(cur.name)}</span><span class="chev" aria-hidden="true"></span></summary>
-    <div class="menu">${items.map((x) => `<a href="${esc(x.href)}">${x.av ? teamAv(x.av, "sm") : ""}<span>${esc(x.name)}${x.sub ? `<small>${esc(x.sub)}</small>` : ""}</span></a>`).join("")}${extra ? `${items.length ? "<hr>" : ""}${extra}` : ""}</div></details>`;
+  const switcher = (cur, items, extra = "") => `<details class="switch"><summary>${cur.crest || teamAv(cur, "sm")}<span class="ell">${esc(cur.name)}</span><span class="chev" aria-hidden="true"></span></summary>
+    <div class="menu">${items.map((x) => `<a href="${esc(x.href)}">${x.crest || (x.av ? teamAv(x.av, "sm") : "")}<span>${esc(x.name)}${x.sub ? `<small>${esc(x.sub)}</small>` : ""}</span></a>`).join("")}${extra ? `${items.length ? "<hr>" : ""}${extra}` : ""}</div></details>`;
   const route = (def) => { const h = location.hash.replace(/^#/, "").split("/").map(decodeURIComponent); return { tab: h[0] || def, sub: h[1] || "", arg: h[2] || "" }; };
 
   /* ---------- tables ---------- */
@@ -427,13 +453,15 @@
   // Position chips across the top of a player list; groups (Hitters, Pitchers) when the sport has them.
   // the lineup's spots that take more than one position (FLEX, SFLEX), as chips of their own; not one that takes anyone
   const flexChips = (sport, lineup) => [...new Set(lineup || [])].filter((sl) => { const v = sport.slots[sl]; return Array.isArray(v) && v.length > 1 && sport.positions.some((x) => !v.includes(x) && x !== "UT"); }).map((sl) => ["s:" + sl, sl]);
-  function posFilter(sport, cur, extra = [], lineup) {
+  // `need`: chip value -> starting spots still open there; those chips get a count, so a phone shows what you need
+  function posFilter(sport, cur, extra = [], lineup, need) {
     extra = flexChips(sport, lineup).concat(extra);
     const groups = sport.groups ? [["g:bat", "Hitters"], ["g:pit", "Pitchers"]] : [];
     // rookies get their own chip when the pool flags them (a dynasty's rookie draft starts on it)
     const rk = sport.data && (sport.data.players || []).some((p) => p.rk) ? [["rk", "Rookies"]] : [];
     const all = [["", "All"]].concat(groups, sport.positions.filter((x) => x !== "UT").map((x) => [x, x]), rk, extra);
-    return `<div class="chips" role="group" aria-label="Positions">${all.map(([v, l]) => `<button type="button" data-fpos="${esc(v)}" aria-pressed="${v === (cur || "")}">${esc(l)}</button>`).join("")}</div>`;
+    const nd = (v) => (need && v && need[v] ? need[v] : 0);
+    return `<div class="chips" role="group" aria-label="Positions">${all.map(([v, l]) => `<button type="button" data-fpos="${esc(v)}" aria-pressed="${v === (cur || "")}"${nd(v) ? ` class="needed"` : ""}>${esc(l)}${nd(v) ? `<i class="pf-need" aria-hidden="true">${nd(v)}</i><span class="sr">, you need ${nd(v)}</span>` : ""}</button>`).join("")}</div>`;
   }
   const search = (st, ph = "Search players") => `<label class="sr" for="fk-q">${esc(ph)}</label><input type="search" id="fk-q" placeholder="${esc(ph)}" value="${esc(st.q || "")}" autocomplete="off">`;
   function passes(sport, p, st) {
@@ -672,8 +700,36 @@
       def.forEach((id, i) => { if (!seen.has(id)) { ids.splice(Math.min(ids.length, i), 0, id); seen.add(id); } });
       return { ids, tiers: (v.tiers || []).filter((id) => seen.has(id)), custom: true };
     },
-    save(sk, b) { try { localStorage.setItem(myBoard.key(sk), JSON.stringify({ ids: b.ids.slice(0, 400), tiers: b.tiers || [], at: Date.now() })); } catch (e) { /* private mode */ } },
-    reset(sk) { try { localStorage.removeItem(myBoard.key(sk)); } catch (e) { /* private mode */ } },
+    save(sk, b) {
+      const v = { ids: b.ids.slice(0, 400), tiers: b.tiers || [], at: Date.now() };
+      try { localStorage.setItem(myBoard.key(sk), JSON.stringify(v)); } catch (e) { /* private mode */ }
+      myBoard.push(sk, v);
+    },
+    reset(sk) { try { localStorage.removeItem(myBoard.key(sk)); } catch (e) { /* private mode */ } myBoard.push(sk, null); },
+    // signed in, the board also lives with the account, so it follows you to another device: each save goes up (a
+    // second after the last change), and sync(sk) brings down a newer copy. Resolves true when the board here changed.
+    cloud: () => { const C = typeof window !== "undefined" && window.FK && window.FK.cloud; return C && C.boards && C.user() ? C : null; },
+    timers: {},
+    push(sk, v) {
+      const C = myBoard.cloud(); if (!C) return;
+      clearTimeout(myBoard.timers[sk]);
+      myBoard.timers[sk] = setTimeout(() => C.boards.save(sk, v).catch(() => null), 1000);
+    },
+    synced: {},
+    sync(sk) {
+      const C = myBoard.cloud(); if (!C) return Promise.resolve(false);
+      // once per page: a second caller gets false, so a redraw on change can't loop
+      if (myBoard.synced[sk]) return myBoard.synced[sk].then(() => false);
+      return (myBoard.synced[sk] = C.boards.get(sk).then((remote) => {
+        const local = myBoard.saved(sk);
+        if (remote && Array.isArray(remote.ids) && remote.ids.length && (!local || (remote.at || 0) > (local.at || 0))) {
+          try { localStorage.setItem(myBoard.key(sk), JSON.stringify(remote)); } catch (e) { /* private mode */ }
+          return true;
+        }
+        if (local && (!remote || (local.at || 0) > (remote.at || 0))) C.boards.save(sk, local).catch(() => null);
+        return false;
+      }).catch(() => { myBoard.synced[sk] = null; return false; }));
+    },
     // { id: { n: 1-based place, tier: 1-based tier } }
     places(b) { const out = {}; let tier = 1; const ends = new Set(b.tiers); b.ids.forEach((id, i) => { out[id] = { n: i + 1, tier }; if (ends.has(id)) tier++; }); return out; },
   };
@@ -772,7 +828,7 @@
     function top() {
       const d = D(), n = now();
       const brand = opts.brand || {};
-      const lg = `<a class="lg" href="${esc((opts.exit && opts.exit.href) || "#")}">${brand.mark || ""}<span><b>${esc(d.name || brand.name || "Draft")}</b><small>${esc(F.FORMATS[d.type])}, ${d.teams.length} teams, ${d.rounds} rounds</small></span></a>`;
+      const lg = `<a class="lg" href="${esc((opts.exit && opts.exit.href) || "#")}">${brand.mark || ""}<span><h1 class="lg-h">${esc(d.name || brand.name || "Draft")}</h1><small>${esc(F.FORMATS[d.type])}, ${d.teams.length} teams, ${d.rounds} rounds</small></span></a>`;
       // Up front: what you do mid-draft (start, sim, trade, autodraft). Beside them on a wide screen, the league's own
       // tools and Exit; on a phone those fold into More. Settings (sound, bot speed, pause, undo) always live in More.
       const prim = [], side = [], menu = [];
@@ -1187,6 +1243,35 @@
       return `<div style="overflow:auto;flex:1;min-height:0"><div class="pk-h"><b>Steal a player</b><span class="ps">On your turn, take someone already drafted instead of a new player. The team you take him from picks again right away and can't take him straight back. A player is frozen after ${d.steals.freeze} steals, every team gets ${d.steals.perTeam}, and steals end with ${d.steals.lastRounds} rounds to go.${m != null ? ` You have ${left} left.` : ""}</span></div>
         ${rows.length ? `<ul class="rslots">${rows.map(({ p, t }) => { const r = why(p.id), n = F.stealsOf(d, p.id), frozen = n >= d.steals.freeze; return `<li style="grid-template-columns:minmax(0,1fr) auto auto"><span data-player="${esc(p.id)}" style="cursor:pointer;min-width:0">${pname(sport, p, `#${p.rank}, ${money(p.$)}`, { size: "sm" })}</span><span class="row" style="gap:6px">${frozen ? `<span class="tag">Frozen</span>` : n ? `<span class="tag gold">Stolen ${n}x</span>` : ""}${teamAv(team(t), "sm")}<b class="ps">${esc(team(t).abbr)}</b></span>${r && r.ok ? `<button class="btn xs warn" data-steal="${esc(p.id)}">Steal</button>` : `<span class="ps" style="font-size:11px;max-width:150px;text-align:right">${r && c && c.team === m && !frozen ? esc(r.why) : ""}</span>`}</li>`; }).join("")}</ul>` : `<p class="empty">Nobody has drafted anyone yet.</p>`}</div>`;
     }
+    // the starting spots a team still has open, keyed like the position chips ("" for a spot anyone can fill)
+    function openSpots(id, starters) {
+      const d = D();
+      if (!starters) { const ps = F.rosters(d)[id].map((x) => ctx.byId[x]).filter(Boolean); starters = F.assign(sport, ps, d.lineup); }
+      const open = {};
+      d.lineup.forEach((sl, i) => { if (!starters[i]) open[sl] = (open[sl] || 0) + 1; });
+      return open;
+    }
+    const chipOf = (sl) => (sport.slots[sl] === "*" ? "" : Array.isArray(sport.slots[sl]) && sport.slots[sl].length > 1 ? "s:" + sl : sl);
+    function needChips(id) {
+      if (id == null || D().phase === "done") return null;
+      const m = {};
+      for (const [sl, k] of Object.entries(openSpots(id))) { const v = chipOf(sl); if (v) m[v] = (m[v] || 0) + k; }
+      return m;
+    }
+    // on a phone the players list carries the line from My team: when you pick, and what you still need
+    function phoneNeeds() {
+      const d = D(), id = me();
+      if (id == null || d.phase === "done" || d.phase === "heist") return "";
+      const bits = [];
+      if (!auction() && !d.packs && d.phase === "live") {
+        const c = F.onClock(d, now()), next = F.nextPickOf(d, id);
+        // on the clock already fills the banner above
+        if (c && c.team !== id && next != null) { const away = next - 1 - c.index; bits.push(`<b>${away <= 1 ? "You're on deck" : `Your pick in ${away}`}</b>`); }
+      }
+      const open = Object.entries(openSpots(id));
+      bits.push(open.length ? `<span>Need ${open.map(([sl, k]) => `${esc(sl)}${k > 1 ? `&nbsp;&times;${k}` : ""}`).join(", ")}</span>` : `<span>Starters set. Bench from here.</span>`);
+      return `<div class="pf-now show-m" role="status">${bits.join("")}</div>`;
+    }
     // your draft at a glance: when you pick next, the starting spots still open, and the top of your queue
     function brief(id, starters) {
       const d = D(), n = now(), out = [];
@@ -1195,10 +1280,8 @@
         if (c && c.team === id) out.push(`<div class="br-next on"><b>You're on the clock</b><span>Pick ${esc(plab(c.index))}</span></div>`);
         else if (next != null && c) { const away = next - 1 - c.index; out.push(`<div class="br-next"><b>${away <= 1 ? "You're on deck" : `Your pick in ${away}`}</b><span>Pick ${esc(plab(next - 1))}</span></div>`); }
       }
-      const open = {};
-      d.lineup.forEach((sl, i) => { if (!starters[i]) open[sl] = (open[sl] || 0) + 1; });
-      const needs = Object.entries(open);
-      if (needs.length) out.push(`<div class="br-row"><span class="br-k">Need</span><span class="br-chips">${needs.map(([sl, k]) => `<button type="button" class="br-chip" data-fpos="${esc(sport.slots[sl] === "*" ? "" : Array.isArray(sport.slots[sl]) && sport.slots[sl].length > 1 ? "s:" + sl : sl)}" title="Show ${esc(sl)} players">${esc(sl)}${k > 1 ? ` <i>&times;${k}</i>` : ""}</button>`).join("")}</span></div>`);
+      const needs = Object.entries(openSpots(id, starters));
+      if (needs.length) out.push(`<div class="br-row"><span class="br-k">Need</span><span class="br-chips">${needs.map(([sl, k]) => `<button type="button" class="br-chip" data-fpos="${esc(chipOf(sl))}" title="Show ${esc(sl)} players">${esc(sl)}${k > 1 ? ` <i>&times;${k}</i>` : ""}</button>`).join("")}</span></div>`);
       else if (d.phase !== "setup") out.push(`<div class="br-row"><span class="br-k">Need</span><span class="ps">Every starting spot is filled. Bench from here.</span></div>`);
       const q = team(id).queue.filter((pid) => ctx.own[pid] == null).slice(0, 3).map((pid) => ctx.byId[pid]).filter(Boolean);
       out.push(`<div class="br-row"><span class="br-k">Queue</span>${q.length ? `<span class="br-q">${q.map((p) => `<span data-player="${esc(p.id)}">${esc(p.n)}</span>`).join("")}</span>` : `<span class="ps">Star players to line them up.</span>`}</div>`);
@@ -1331,7 +1414,7 @@
       if (!bar || ui.left !== "players" || D().phase === "heist") return render();
       const k = focusKey(el);
       while (bar.nextSibling) bar.nextSibling.remove();
-      bar.insertAdjacentHTML("afterend", posFilter(sport, ui.f.pos, [], D().lineup) + players());
+      bar.insertAdjacentHTML("afterend", phoneNeeds() + posFilter(sport, ui.f.pos, [], D().lineup, needChips(me())) + players());
       keyboardPlayers(sec);
       refocus(el, k);
     }
@@ -1367,7 +1450,7 @@
         return;
       }
       el.innerHTML = `<div class="droom fk-dark">${top()}${ticker()}${offerStrip()}<div class="dr-main${ui.mobileRight ? " right" : ""}">
-        <section class="dr-left"><div class="dr-bar">${seg}${filters}</div>${ui.left === "players" ? posFilter(sport, ui.f.pos, [], d.lineup) : ""}${left}</section>
+        <section class="dr-left"><div class="dr-bar">${seg}${filters}</div>${ui.left === "players" ? phoneNeeds() + posFilter(sport, ui.f.pos, [], d.lineup, needChips(me())) : ""}${left}</section>
         <aside class="dr-right"><div class="seg hide-m" role="group" aria-label="Panel">${rights.map(([k, n]) => `<button type="button" data-right="${k}" aria-pressed="${ui.right === k}">${esc(n)}</button>`).join("")}</div><div class="show-m" style="padding:10px 12px 0">${seg.replace('id="fk-seg"', 'id="fk-seg2"')}</div><div class="dr-panel">${right}</div></aside></div></div>`;
       $$("#fk-pool,#fk-board,#fk-picks,.dr-panel,#fk-ticker,#fk-seg,#fk-seg2,#fk-rchatl", el).forEach((x) => { const v = keep.scroll[x.id || x.className]; if (v) { x.scrollTop = v[0]; x.scrollLeft = v[1]; } });
       const tk = $("#fk-ticker", el), cur = tk && $(".tk.now", tk);
@@ -1662,7 +1745,7 @@
       const list = (ids) => ids.map(name).join(" and ");
       const held = d.hold && d.hold.trade === T.id;
       return `<div class="dr-offer" role="status"><span class="grow"><b>${esc(team(T.from).name)} offers ${esc(list(T.give))}</b> <span class="ps">for ${esc(list(T.get))}${held ? `. The draft waits up to ${Math.max(1, Math.round(F.holdLeft(d, now()) / 1000))} seconds while you decide.` : "."}</span></span>
-        <button type="button" class="btn sm go" data-offer-view="${T.id}">Review</button><button type="button" class="btn sm" data-tr-no="${T.id}">Decline</button><button type="button" class="btn sm ghost" data-offer-hide aria-label="Hide this offer">Later</button></div>`;
+        <button type="button" class="btn sm go" data-offer-view="${T.id}">Review</button><button type="button" class="btn sm" data-tr-no="${T.id}">Decline</button><button type="button" class="btn sm ghost" data-offer-hide title="Hide this offer for now">Later</button></div>`;
     }
     function offerDialog(T) {
       const d = D(), held = d.hold && d.hold.trade === T.id;
@@ -1719,6 +1802,8 @@
     document.body.classList.add("fk-room");
     render();
     lastSig = sig();
+    // your board from your account (another device's edits), for the Mine column
+    myBoard.sync(sport.key).then((ch) => { if (ch && !dialogOpen()) render(); });
     return { render, stop: () => { clearInterval(timer); document.body.classList.remove("fk-room"); }, get ctx() { return ctx; }, refresh: () => { refresh(); render(); }, ui };
   }
 
@@ -1781,7 +1866,7 @@
     const start = () => { new MutationObserver(kick).observe(document.body, { childList: true, subtree: true }); window.addEventListener("resize", kick); kick(); };
     if (document.body) start(); else document.addEventListener("DOMContentLoaded", start);
   }
-  FK.ui = { pushBox, botSpeed, startIn, faceAv, squarePhoto, profileDialog, statColumns, LINEUP_PRESETS: PRESETS, lineupBuilder, orderLineup, lineupStep, slotDesc, esc, $, $$, store, toast, dialog, dialogOpen, focusKey, refocus, keyboardPlayers, confirm, theme, fmtLeft, money, ord, last, initials, ago,
+  FK.ui = { leagueBrand, leagueCrest, pushBox, botSpeed, startIn, faceAv, squarePhoto, profileDialog, statColumns, LINEUP_PRESETS: PRESETS, lineupBuilder, orderLineup, lineupStep, slotDesc, esc, $, $$, store, toast, dialog, dialogOpen, focusKey, refocus, keyboardPlayers, confirm, theme, fmtLeft, money, ord, last, initials, ago,
     teamAv, SHAPES, GLYPHS, logoSvg, glyphOf, shapeOf, playerAv, pname, teamName, posChip, posChips, colorOf, injTag,
     proTeam, shell, switcher, route, table, sortRows, nextSort, poolColumns, posFilter, search, passes, groupOf, statCell, label, isPoints,
     playerCard, scoreboard, versus, vsTable, standingsTable, feed, txLine, tradeCard, tradeWindow, room, board: myBoard, viewSelect, setView, initView, hasProj, lineOf };

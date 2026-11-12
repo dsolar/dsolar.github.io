@@ -12,6 +12,7 @@
 .ds-acct-menu a,.ds-acct-menu button{display:block;width:100%;text-align:left;padding:9px 8px;border:0;border-radius:6px;background:none;color:inherit;font:inherit;text-decoration:none;cursor:pointer}
 .ds-acct-menu a:hover,.ds-acct-menu button:hover{background:#eef2f6}
 .ds-acct-btn.out .ds-acct-av{display:none}
+.ds-acct-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media(max-width:999px){.ds-acct-btn:not(.out) .ds-acct-name{display:none}
 .ds-acct-btn{min-height:44px;padding:6px 10px}
 }

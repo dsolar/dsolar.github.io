@@ -246,5 +246,12 @@
     if (document.readyState === "complete") reg(); else root.addEventListener("load", reg);
   }
 
-  FK.cloud = { token, oauth, providers, slates, games, listen, push, user, signIn, signUp, passwordSignIn, resetPassword, setPassword, signOut, fromLink, rpc, live, now: () => Date.now() + offset, lastEmail: () => { try { return JSON.parse(localStorage.getItem("fk-auth:email")) || ""; } catch (e) { return ""; } } };
+  // your own board (Rankings > My board), kept with your account so it follows you: get(sport) gives the board or null,
+  // save(sport, board) keeps it (null clears it). Both do nothing when signed out.
+  const boards = {
+    get: (sport) => (user() ? rpc("fk_board_get", { p_sport: sport }).then((j) => (j && j.board) || null) : Promise.resolve(null)),
+    save: (sport, b) => (user() ? rpc("fk_board_save", { p_sport: sport, p_board: b || null }) : Promise.resolve(null)),
+  };
+
+  FK.cloud = { token, oauth, providers, slates, games, listen, push, boards, user, signIn, signUp, passwordSignIn, resetPassword, setPassword, signOut, fromLink, rpc, live, now: () => Date.now() + offset, lastEmail: () => { try { return JSON.parse(localStorage.getItem("fk-auth:email")) || ""; } catch (e) { return ""; } } };
 })(typeof window !== "undefined" ? window : globalThis);

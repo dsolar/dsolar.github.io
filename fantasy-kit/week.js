@@ -18,7 +18,7 @@
 
   function header() {
     top.innerHTML = U.shell({ brand: { name: "Draft Lab", href: "./", mark: `<img src="mark.svg" alt="">` },
-      tabs: [["leagues", "Your leagues"], ["week", "One week"], ["draft", "Mock draft"], ["rankings", "Rankings"], ["league", "Demo league"]], tab: "week",
+      tabs: [["leagues", "Your leagues"], ["week", "Quick games"], ["draft", "Mock draft"], ["rankings", "Rankings"], ["league", "Demo league"]], tab: "week",
       right: `<button class="btn sm ghost" data-theme>${theme.dark() ? "Light" : "Dark"}</button>`,
       hrefOf: (t) => (t === "leagues" ? "leagues.html" : t === "week" ? "week.html" : t === "league" ? "league.html" : "./#" + t) });
   }

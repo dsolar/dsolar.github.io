@@ -114,7 +114,7 @@
   }
   // the site's account: sign in from any page, and the daily games' saves follow you (assets/account.js)
   if (!window.DSAccount && !document.querySelector('script[src*="assets/account.js"]')) {
-    var acct = document.createElement("script"); acct.src = at("assets/account.js?v=20261112"); acct.defer = true; document.head.appendChild(acct);
+    var acct = document.createElement("script"); acct.src = at("assets/account.js?v=20261112-a11y"); acct.defer = true; document.head.appendChild(acct);
   }
   bar.addEventListener("click", function (event) {
     var button = event.target.closest("button");

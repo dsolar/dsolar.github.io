@@ -192,8 +192,8 @@
     app = U.leagueApp({
       top: $("#top"), el: $("#app"), sport, players, league: () => L, save: () => push(), me: () => info.me, now, frac, hooks: hooks(),
       brand: { name: "Draft Lab", href: "leagues.html", mark: `<img src="mark.svg" alt="">` },
-      switcher: () => U.switcher({ name: L.name, abbr: info.sport.toUpperCase(), color: SPORT_CLR[info.sport] },
-        mine.filter((m) => m.id !== id).map((m) => ({ href: `play.html?id=${encodeURIComponent(m.id)}`, name: m.name, sub: S[m.sport].name, av: { abbr: m.sport.toUpperCase(), color: SPORT_CLR[m.sport] } })),
+      switcher: () => U.switcher({ name: L.name, crest: U.leagueCrest(U.leagueBrand(L.name, L.settings.brand), "sm") },
+        mine.filter((m) => m.id !== id).map((m) => ({ href: `play.html?id=${encodeURIComponent(m.id)}`, name: m.name, sub: S[m.sport].name, crest: U.leagueCrest(U.leagueBrand(m.name, m.brand), "sm") })),
         `<a href="leagues.html">Your leagues<small>Start or join a league</small></a><a href="./">Draft Lab<small>Mock drafts and rankings</small></a>`),
       right: () => `${info.invite && openSeats() ? `<button class="btn sm" data-live="invite">Invite</button>` : ""}<button class="btn sm ghost" data-live="league">League</button>`,
       get commishTools() { return info.commish ? commishTools : null; },
@@ -628,6 +628,7 @@
       </div>
       ${L ? `<div class="cols2">
         ${card("League rules", `<dl class="kv"><dt>Waivers</dt><dd>${s.waivers === "rolling" ? "Rolling priority" : `FAAB, $${s.faab}`}, ${G.waiverDays(L)} business day${G.waiverDays(L) === 1 ? "" : "s"}${G.gameLockOn(L) ? ", locked once his game starts" : ""}</dd><dt>Trades</dt><dd>${s.trades === false ? "Off" : `${s.deadline ? `Deadline after week ${s.deadline}` : "No deadline"}, ${s.tradeReview === "none" ? "no review" : "league review"}`}</dd><dt>Playoffs</dt><dd>${s.playoffTeams ? `${s.playoffTeams} teams` : "None"}</dd><dt>Rosters</dt><dd>${s.bench} bench, ${s.ir || 0} IR${s.maxAdds ? `, ${s.maxAdds} pickups a week` : ""}</dd></dl>`, `<button class="btn" data-cm="rules">Edit rules</button>`)}
+        ${card("League look", `<div class="row" style="gap:14px;align-items:center">${U.leagueCrest(U.leagueBrand(L.name, s.brand), "lg")}<p class="small" style="margin:0">The league's color and the letters on its banner, at the top of the league's front page and in everyone's list of leagues.</p></div>`, `<button class="btn" data-cm="look">Change the look</button>`)}
         ${card("Teams", `<p class="small" style="margin:0">Rename teams, set FAAB and the waiver order${L.divs ? ", and rename or rearrange the divisions" : ""}.</p>`, `<button class="btn" data-cm="teams">Edit teams</button>`)}
       </div>
       <div class="cols2">
@@ -687,6 +688,26 @@
       const r = G.setRules(L, patch, now());
       if (!commishSave(r, "Rules saved.")) return false;
     }, { wide: true });
+  }
+  // the league's own look: a color from the team palette and up to three letters for its banner crest
+  function lookDialog() {
+    const cur = U.leagueBrand(L.name, L.settings.brand), names = ["Blue", "Red", "Green", "Purple", "Orange", "Teal", "Pink", "Lime", "Slate", "Brown", "Pine", "Indigo"];
+    U.dialog(`<h3>League look</h3><form class="stack lk-f">
+      <div class="lk-prev" aria-hidden="true">${U.leagueCrest(cur, "lg")}</div>
+      <fieldset class="lk-sw"><legend>Color</legend>${names.map((nm, i) => `<label class="lk-c" style="--c:var(--t${i})"><input type="radio" name="color" value="${i}"${i === cur.color ? " checked" : ""}><span title="${nm}"></span><b class="sr">${nm}</b></label>`).join("")}</fieldset>
+      <label class="cm-l"><span>Letters on the banner (up to 3)</span><input type="text" name="letters" value="${esc(cur.letters)}" maxlength="3" autocomplete="off" style="text-transform:uppercase;width:8em"></label>
+      <div class="acts"><button type="button" class="btn ghost" data-lk-reset>Use the default</button><span class="grow"></span><button type="button" class="btn" data-close>Cancel</button><button class="btn go">Save the look</button></div></form>`, (fd) => {
+      const letters = String(fd.get("letters") || "").replace(/[^A-Za-z0-9&]/g, "").slice(0, 3).toUpperCase();
+      const auto = U.leagueBrand(L.name, null);
+      const brand = { color: Number(fd.get("color")) };
+      if (letters && letters !== auto.letters) brand.letters = letters;
+      if (brand.color === auto.color && !brand.letters) delete L.settings.brand; else L.settings.brand = brand;
+      commishSave({ ok: true }, "The league has its new look.");
+    });
+    const f = $(".lk-f"); if (!f) return;
+    const draw = () => { const b = { color: Number((f.querySelector("input[name=color]:checked") || {}).value || 0), letters: f.letters.value }; $(".lk-prev", f).innerHTML = U.leagueCrest(U.leagueBrand(L.name, b), "lg"); };
+    f.addEventListener("input", draw);
+    f.querySelector("[data-lk-reset]").addEventListener("click", () => { const a = U.leagueBrand(L.name, null); f.letters.value = a.letters; const r = f.querySelector(`input[name=color][value="${a.color}"]`); if (r) r.checked = true; draw(); });
   }
   function teamsDialog() {
     const order = L.teams.slice().sort((a, b) => a.priority - b.priority).map((t) => t.id), n = L.teams.length;
@@ -791,7 +812,7 @@
     if (lv && lv.dataset.live === "keepers") keeperDialog();
     if (lv && lv.dataset.live === "open-keepers") { L.next = { opened: now(), due: now() + 3 * 864e5, picks: {} }; push(); app.refresh(); U.toast("Keeper picks are open. Everyone gets an email."); }
     const cm = e.target.closest("[data-cm]");
-    if (cm && info.commish) { const k = cm.dataset.cm; if (k === "rules") rulesDialog(); else if (k === "teams") teamsDialog(); else if (k === "move") moveDialog(); else if (k === "delete") deleteDialog(); }
+    if (cm && info.commish) { const k = cm.dataset.cm; if (k === "rules") rulesDialog(); else if (k === "look") lookDialog(); else if (k === "teams") teamsDialog(); else if (k === "move") moveDialog(); else if (k === "delete") deleteDialog(); }
     const rv = e.target.closest("[data-cm-rev]");
     if (rv && info.commish) { const tid = Number(rv.dataset.cmRev); U.confirm("Reverse this trade?", "Every player, pick and FAAB dollar goes back to the team that sent it.", "Reverse the trade", () => commishSave(G.reverseTrade(L, lctx(), tid, now()), "Trade reversed.")); }
     if (lv && lv.dataset.live === "new-season") U.confirm("Start next season?", "This season goes into the league's history, and the league opens a new draft room. You can't undo it.", "Start next season", newSeason);

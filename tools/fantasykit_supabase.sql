@@ -576,3 +576,40 @@ end $$;
 revoke all on function public.fk_wake_mail() from public, anon, authenticated;
 drop trigger if exists fk_wake_mail on public.fk_outbox;
 create trigger fk_wake_mail after insert on public.fk_outbox for each statement execute function public.fk_wake_mail();
+-- Draft Lab: each signed-in manager's own board (the Rankings page's My board), one per sport, so it follows them
+-- across devices. { ids: [player ids in order], tiers: [ids that end a tier], at: ms }; the newer copy wins.
+create table if not exists public.fk_boards (
+  user_id uuid not null,
+  sport text not null,
+  board jsonb not null,
+  updated_at timestamptz not null default now(),
+  primary key (user_id, sport)
+);
+alter table public.fk_boards enable row level security;   -- no policies: only the functions below touch it
+
+create or replace function public.fk_board_get(p_sport text) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare uid uuid := auth.uid();
+begin
+  if uid is null then return jsonb_build_object('error', 'Sign in first.'); end if;
+  return coalesce((select jsonb_build_object('board', board) from fk_boards where user_id = uid and sport = p_sport), jsonb_build_object('board', null));
+end $$;
+create or replace function public.fk_board_save(p_sport text, p_board jsonb) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare uid uuid := auth.uid();
+begin
+  if uid is null then return jsonb_build_object('error', 'Sign in first.'); end if;
+  if p_sport !~ '^[a-z]{2,8}$' then return jsonb_build_object('error', 'Unknown sport.'); end if;
+  if p_board is null then delete from fk_boards where user_id = uid and sport = p_sport; return jsonb_build_object('ok', true); end if;
+  if jsonb_typeof(p_board->'ids') <> 'array' or jsonb_array_length(p_board->'ids') > 400 or length(p_board::text) > 40000 then return jsonb_build_object('error', 'That board is not valid.'); end if;
+  insert into fk_boards (user_id, sport, board, updated_at) values (uid, p_sport, p_board, now())
+    on conflict (user_id, sport) do update set board = excluded.board, updated_at = now();
+  return jsonb_build_object('ok', true);
+end $$;
+revoke all on function public.fk_board_get(text) from public, anon;
+revoke all on function public.fk_board_save(text, jsonb) from public, anon;
+grant execute on function public.fk_board_get(text) to authenticated;
+grant execute on function public.fk_board_save(text, jsonb) to authenticated;
+
+-- 2026-11-12: the leagues list carries each league's look (settings.brand); fk_mine adds 'brand', l.league->'settings'->'brand'
+-- (see migration fk_mine_brand for the full function).

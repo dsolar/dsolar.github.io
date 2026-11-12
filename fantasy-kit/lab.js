@@ -51,23 +51,25 @@
     const data = await loadSport(c.sport);
     const sport = S.attach(Object.assign({}, S[c.sport]), data);
     const have = new Set(data.players.flatMap((p) => p.pos));
-    const want = sdOn(c) ? S.SHOWDOWN.lineup.slice() : hzOn(c) ? ONE_WEEK_NFL.slice() : (c.lineup ? c.lineup.split(/[\s,]+/).filter(Boolean) : sport.lineup).filter((s) => sport.slots[s] && s !== "BN");
+    const ds = dayOn(c) ? daySlate(c) : null;
+    if (dayOn(c) && !ds) throw new Error(daySched && daySched.error ? "Couldn't reach tonight's schedule. Try again in a moment." : daySched ? "There are no games left tonight or tomorrow. Turn off one day to draft the season." : "Tonight's games are still loading. Try again in a moment.");
+    const want = ds ? ds.lineup.lineup.slice() : sdOn(c) ? S.SHOWDOWN.lineup.slice() : hzOn(c) ? ONE_WEEK_NFL.slice() : (c.lineup ? c.lineup.split(/[\s,]+/).filter(Boolean) : sport.lineup).filter((s) => sport.slots[s] && s !== "BN");
     const lineup = want.filter((s) => sport.slots[s] === "*" || sport.slots[s].some((x) => have.has(x)));
-    const players = data.players.filter((p) => !sdOn(c) || p.t === c.sdA || p.t === c.sdH).map((p) => Object.assign({}, p));
+    const players = data.players.filter((p) => (!sdOn(c) || p.t === c.sdA || p.t === c.sdH) && (!ds || ds.slate.teams.includes(p.t))).map((p) => Object.assign({}, p));
     const scoring = sport.scorings[c.scoring] ? c.scoring : Object.keys(sport.scorings)[0];
-    const bench = sdOn(c) ? S.SHOWDOWN.bench : hzOn(c) ? 0 : c.bench == null ? sport.bench : c.bench;
+    const bench = ds ? ds.lineup.bench : sdOn(c) ? S.SHOWDOWN.bench : hzOn(c) ? 0 : c.bench == null ? sport.bench : c.bench;
     const dyn = c.dynasty ? await loadDynasty(c.sport) : null;
     // a showdown of a real game on this week's or next week's schedule plays that week's projections
     const sdWk = sdOn(c) && sched ? (sched.weeks.find((w) => (w.games || []).some((g) => g.away === c.sdA && g.home === c.sdH)) || {}).week : null;
     V.evaluate(sport, players, { teams: c.teams, lineup, bench, scoring, budget: sdOn(c) ? 50 : c.budget, week: sdWk ? S.weekFor({ season: { showdown: { week: sdWk } } }, sport) : null, dynasty: !!c.dynasty, dynastyRanks: dyn, market: await loadMarket(c.sport) });
-    return { sport, players, lineup, scoring, bench, data };
+    return { sport, players, lineup, scoring, bench, data, slate: ds ? ds.slate : null };
   }
 
   /* ---------- header ---------- */
   function header(tab) {
     const right = `<a class="btn sm ghost" href="../fantasy/">All fantasy</a><button class="btn sm ghost" data-act="theme">${theme.dark() ? "Light" : "Dark"}</button>${mock ? `<button class="btn sm" data-act="new">New mock</button>` : ""}`;
     top.innerHTML = U.shell({ brand: { name: "Draft Lab", href: "./", mark: `<img src="mark.svg" alt="">` },
-      tabs: [["leagues", "Your leagues"], ["week", "One week"], ["draft", "Mock draft"], ["rankings", "Rankings"], ["league", "Demo league"]], tab, right,
+      tabs: [["leagues", "Your leagues"], ["week", "Quick games"], ["draft", "Mock draft"], ["rankings", "Rankings"], ["league", "Demo league"]], tab, right,
       hrefOf: (t, sub) => (t === "league" ? `league.html?s=${cfg.sport}` : t === "leagues" ? "leagues.html" : t === "week" ? "week.html" : "#" + t + (sub ? "/" + sub : "")) });
   }
   document.addEventListener("click", (e) => {
@@ -92,12 +94,39 @@
   const CLOCKS = PICK_CLOCKS.concat(BANKS.map(([v, l]) => [v, `${l} bank`]));
   const BID_CLOCKS = [[10, "10 sec"], [15, "15 sec"], [20, "20 sec"], [30, "30 sec"]];
   const fmtBank = (sec) => (sec % 60 ? `${sec} seconds` : `${sec / 60} minutes`);
-  const NUM = /^(teams|slot|clock|bank|budget|bench|test|trades|rl|rlRound|hz|sd)$/;
+  const NUM = /^(teams|slot|clock|bank|budget|bench|test|trades|rl|rlRound|hz|sd|day)$/;
   // the one-week twists: team roulette (drafts that go pick by pick), and for football a showdown (one game, a
   // captain and five flex spots, no bench) or a heist right after the draft (the one-week lineup, no bench)
   const ONE_WEEK_NFL = ["QB", "RB", "RB", "WR", "WR", "WR", "TE", "FLEX"];
   const rlFits = (c) => ["snake", "linear", "3rr"].includes(c.type);
   const sdOn = (c) => c.sport === "nfl" && !!c.sd;
+  // one day of basketball: tonight's (or tomorrow's) games from the schedule, as in a one-day league
+  const dayOn = (c) => c.sport === "nba" && !!c.day;
+  let daySched = null, dayAsked = false;
+  function dayOptions(now = Date.now()) {
+    const SL = window.FK.slates;
+    if (!daySched || !SL) return null;
+    const out = [];
+    for (const w of (daySched.weeks || []).filter(SL.isDay).slice(0, 2)) {
+      const when = SL.dayName(w.day, now);
+      for (const o of SL.list(w, now)) {
+        if (o.kind === "custom") continue;
+        if (o.kind === "one") { for (const g of SL.open(w, now)) out.push({ key: `${w.day}|one|${g.id}`, when, label: SL.label(g), sub: `${SL.tip(g.at)}, a captain and five flex`, w, kind: "one", ids: [g.id] }); continue; }
+        out.push({ key: `${w.day}|${o.kind}|`, when, label: o.label, sub: o.sub, w, kind: o.kind, ids: null });
+      }
+    }
+    return out;
+  }
+  // the slate the mock plays: { slate, lineup } or null while the schedule loads
+  function daySlate(c) {
+    const os = dayOptions();
+    if (!os || !os.length) return null;
+    const o = os.find((x) => x.key === c.dayK) || os[0];
+    const sl = window.FK.slates.pick(o.w, o.kind, o.ids);
+    if (!sl) return null;
+    const lu = window.FK.slates.lineup(sl.games.length, c.teams, "nba");
+    return { key: o.key, slate: Object.assign(sl, lu.mult ? { mult: lu.mult } : {}), lineup: lu };
+  }
   const hzOn = (c) => c.sport === "nfl" && !!c.hz && !c.sd;
   function startPage() {
     document.body.classList.remove("fk-room");
@@ -148,12 +177,13 @@
     const clock = (auction ? BID_CLOCKS : CLOCKS).find(([v]) => v === c.clock) || (auction ? BID_CLOCKS[1] : CLOCKS[1]);
     const sc = (sport.scorings[scoring] || {}).label || "";
     const twHtml = twists(c);
-    const tw = [sdOn(c) ? `showdown, ${c.sdA || "?"} at ${c.sdH || "?"}` : "", rlFits(c) && c.rl && !sdOn(c) ? "team roulette" : "", hzOn(c) ? "a heist" : ""].filter(Boolean);
+    const dsl = dayOn(c) ? daySlate(c) : null;
+    const tw = [dsl ? `${window.FK.slates.dayName(dsl.slate.day).toLowerCase()}: ${dsl.slate.label.toLowerCase()}` : dayOn(c) ? "one day" : "", sdOn(c) ? `showdown, ${c.sdA || "?"} at ${c.sdH || "?"}` : "", rlFits(c) && c.rl && !sdOn(c) ? "team roulette" : "", hzOn(c) ? "a heist" : ""].filter(Boolean);
     const line = `${sport.name}, ${c.teams} teams, ${sc.replace(/ \(.*\)$/, "")}, ${K.DRAFT_SHORT[c.type] || c.type}${auction ? `, $${sdOn(c) ? 50 : c.budget}` : ""}, ${clock[1].toLowerCase()}${c.slot && !mystery ? `, pick ${c.slot}` : ""}${tw.length ? `, ${tw.join(" and ")}` : ""}`;
     const formats = K.pickCards("type", Object.entries(F.FORMATS).map(([k, l]) => [k, K.DRAFT_SHORT[k] || l, K.DRAFTS[k] || ""]), c.type, "Draft format");
     const presets = Object.entries(sport.scorings).map(([k, x]) => [k, x.label.replace(/ \(.*\)$/, ""), K.SC_SUB[k] || ""]);
-    const roster = `<div class="nr${open.roster ? " open" : ""}"><button type="button" class="nr-h" data-row="roster" aria-expanded="${!!open.roster}"><span class="nr-t"><b>Roster</b><small>Starting lineup and bench</small></span><span class="nr-v">${sdOn(c) ? "Captain and 5 flex, no bench (showdown)" : hzOn(c) ? "8 starters, no bench (heist)" : `${lu.length} starters, ${bench} bench`}</span><span class="chev" aria-hidden="true"></span></button>
-      ${open.roster && (sdOn(c) || hzOn(c)) ? `<div class="nr-b"><p class="ps" style="margin:0">The ${sdOn(c) ? "showdown" : "heist"} sets the lineup. Turn it off to build your own.</p></div>` : open.roster ? `<div class="nr-b">${K.group("Starting lineup", lineupBuilder(sport, lu))}${K.group("Bench", K.fld("Bench spots", K.stepper("bench", [0, 1, 2, 3, 4, 5, 6, 7, 8, 10], bench, String, "Bench spots")))}</div>` : ""}</div>`;
+    const roster = `<div class="nr${open.roster ? " open" : ""}"><button type="button" class="nr-h" data-row="roster" aria-expanded="${!!open.roster}"><span class="nr-t"><b>Roster</b><small>Starting lineup and bench</small></span><span class="nr-v">${dayOn(c) ? (dsl ? `${dsl.lineup.lineup.length} starters, ${dsl.lineup.bench} bench (the slate sets it)` : "Set by the slate") : sdOn(c) ? "Captain and 5 flex, no bench (showdown)" : hzOn(c) ? "8 starters, no bench (heist)" : `${lu.length} starters, ${bench} bench`}</span><span class="chev" aria-hidden="true"></span></button>
+      ${open.roster && (sdOn(c) || hzOn(c) || dayOn(c)) ? `<div class="nr-b"><p class="ps" style="margin:0">The ${dayOn(c) ? "night's slate" : sdOn(c) ? "showdown" : "heist"} sets the lineup. Turn it off to build your own.</p></div>` : open.roster ? `<div class="nr-b">${K.group("Starting lineup", lineupBuilder(sport, lu))}${K.group("Bench", K.fld("Bench spots", K.stepper("bench", [0, 1, 2, 3, 4, 5, 6, 7, 8, 10], bench, String, "Bench spots")))}</div>` : ""}</div>`;
     const tip = (t, b) => `<div class="mk-tip"><b>${esc(t)}</b><p>${b}</p></div>`;
     return `<div class="wrap page"><a class="start-back" href="#home">← Back to quick start</a><div class="su sp-${sport.key}">
       <div class="nl-band">${K.FIELD[sport.key]}<div class="nl-bi">
@@ -169,7 +199,7 @@
             ${mystery ? K.fld("Packages open", K.seg("reveal", Object.entries(F.REVEALS).map(([k, l]) => [k, l.replace(", the rest as they come up", ", then as picks come up")]), c.reveal, "Packages open", { wrap: true })) : K.fld(auction ? "Your nomination turn" : "Your pick", K.stepper("slot", Array.from({ length: c.teams + 1 }, (_, i) => i), Math.min(c.slot, c.teams), (x) => (x ? U.ord(x) : "Random"), auction ? "Your nomination turn" : "Your pick"))}</div>
           ${K.fld("Scoring", K.cards("scoring", presets, scoring, "Scoring", presets.length > 3 ? 3 : presets.length))}
           <div class="g2">${K.fld(auction ? "Bid clock" : "Pick clock", K.seg("clock", auction ? BID_CLOCKS : PICK_CLOCKS.concat([[c.clock < 0 ? c.clock : -200, "Time bank"]]), clock[0], auction ? "Bid clock" : "Pick clock", { wrap: true }),
-              auction ? "Every bid resets the clock." : c.clock < 0 ? `One clock for your whole draft: ${fmtBank(-c.clock)} for all your picks, about ${Math.round(-c.clock / Math.max(1, (sdOn(c) ? 6 : hzOn(c) ? 8 : lu.length + bench)))} seconds each. Run it out and every pick gets 10 seconds. The bots finish with about half of theirs left. What's left becomes FAAB for the season.` : c.clock ? "When your clock runs out, your first queued player who fits is taken, then the best fit." : "Take as long as you like.")}
+              auction ? "Every bid resets the clock." : c.clock < 0 ? `One clock for your whole draft: ${fmtBank(-c.clock)} for all your picks, about ${Math.round(-c.clock / Math.max(1, (dsl ? dsl.lineup.lineup.length + dsl.lineup.bench : sdOn(c) ? 6 : hzOn(c) ? 8 : lu.length + bench)))} seconds each. Run it out and every pick gets 10 seconds. The bots finish with about half of theirs left. What's left becomes FAAB for the season.` : c.clock ? "When your clock runs out, your first queued player who fits is taken, then the best fit." : "Take as long as you like.")}
             ${auction ? K.fld("Budget per team", K.seg("budget", [100, 200, 260, 300, 1000].map((x) => [x, `$${x}`]), c.budget, "Budget per team", { wrap: true })) : c.clock < 0 ? K.fld("Time bank", K.seg("bank", BANKS, c.clock, "Time bank", { wrap: true }), "For your whole draft.") : "<div></div>"}</div>
           <div class="g2"><div class="fl"><div class="fl-l"><label for="s-name">Your team name</label></div><input type="text" id="s-name" maxlength="28" value="${esc(c.name)}" placeholder="Your team"></div><div></div></div>
           ${tradesOk || mystery ? `<div class="nl-bb">${K.toggle("trades", "Trades during the draft", "Trade picks and drafted players with any team. Bots answer right away.", c.trades)}${mystery ? K.toggle("test", "Even out the packages", "Deal five times and keep the most even draft", c.test) : ""}</div>` : ""}
@@ -197,6 +227,14 @@
       <details class="sd-any"><summary>Or any two teams</summary><div class="row" style="gap:8px;flex-wrap:wrap;margin-top:8px">${sel("sdA", c.sdA)}<span class="ps">at</span>${sel("sdH", c.sdH)}</div></details>`
       : `${real ? "" : `<p class="ps" style="margin:0 0 6px">Loading this week's games…</p>`}<div class="row" style="gap:8px;flex-wrap:wrap">${sel("sdA", c.sdA)}<span class="ps">at</span>${sel("sdH", c.sdH)}</div>`;
     const rows = [];
+    if (c.sport === "nba") {
+      if (c.day && !dayAsked && window.FK.cloud) { dayAsked = true; window.FK.cloud.slates("nba").then((d) => { daySched = d || { weeks: [] }; if ($("#app #setup")) setupPage(); }); }
+      const os = c.day ? dayOptions() : null, cur = c.day ? daySlate(c) : null;
+      let when = "";
+      const pickHtml = !c.day ? "" : daySched && daySched.error ? `<p class="ps" style="margin:0">Couldn't reach tonight's schedule. <button type="button" class="btn sm" data-dayretry>Try again</button></p>` : !os ? `<p class="ps" style="margin:0">Loading tonight's games…</p>` : !os.length ? `<p class="ps" style="margin:0">No games left tonight or tomorrow.</p>`
+        : `<div class="slg-l">${os.map((o) => { const on = cur && cur.key === o.key, head = o.when !== when ? (when = o.when) : ""; return `${head ? `<b class="slg-day">${esc(head)}</b>` : ""}<button type="button" class="slg${on ? " on" : ""}" data-dayk="${esc(o.key)}" aria-pressed="${!!on}"><b>${esc(o.label)}</b><small>${esc(o.sub)}</small></button>`; }).join("")}</div>${cur ? `<p class="fl-h">${esc(cur.lineup.note)}.</p>` : ""}`;
+      rows.push(K.toggle("day", "One day: tonight's games", "Draft only the players in a night's real games, with a one-day lineup, like a one-day league.", c.day, pickHtml));
+    }
     if (rlFits(c) && !sdOn(c)) rows.push(K.toggle("rl", "Team roulette", "Each pick has to come from the pro team the wheel lands on. One re-spin each.", c.rl, K.fld("The wheel spins", K.seg("rlRound", [[0, "Every pick"], [1, "Every round"]], c.rlRound ? 1 : 0, "The wheel spins"))));
     if (nfl) rows.push(K.toggle("sd", "Showdown: one game", "Just the players in one game. A captain at 1.5x and five flex spots, no bench.", c.sd, gamePick));
     if (nfl && !sdOn(c)) rows.push(K.toggle("hz", "Heist after the draft", "Shield three of your starters, steal one of your opponent's and jinx another. The one-week lineup, no bench.", c.hz));
@@ -240,6 +278,9 @@
       }
       const row = e.target.closest("[data-row]");
       if (row) { setupGrab(); open[row.dataset.row] = !open[row.dataset.row]; save(`[data-row="${row.dataset.row}"]`); return; }
+      if (e.target.closest("[data-dayretry]")) { setupGrab(); daySched = null; dayAsked = false; save(); return; }
+      const dk = e.target.closest("[data-dayk]");
+      if (dk) { setupGrab(); cfg.dayK = dk.dataset.dayk; save(`[data-dayk="${dk.dataset.dayk}"]`); return; }
       const sdg = e.target.closest("[data-sdg]");
       if (sdg) { setupGrab(); [cfg.sdA, cfg.sdH] = sdg.dataset.sdg.split("|"); save(`[data-sdg="${sdg.dataset.sdg}"]`); return; }
       const pr = e.target.closest("[data-preset]"), lb = e.target.closest("[data-lb]");
@@ -294,6 +335,7 @@
       if (have < k) throw new Error(`There aren't enough ${pos} for this lineup: ${n} teams need ${k}, and the pool has ${have}. Take out some ${pos} spots or use fewer teams.`);
     }
     const spots = n * (P.lineup.length + P.bench);
+    if (spots > P.players.length && P.slate) throw new Error(`${P.slate.label} has ${P.players.length} players, enough for ${Math.floor(P.players.length / (P.lineup.length + P.bench))} teams. Pick fewer teams or a bigger slate.`);
     if (spots > P.players.length) throw new Error(`${n} teams with ${P.lineup.length + P.bench} roster spots need ${spots} players, and the pool has ${P.players.length}.`);
     const seed = Math.floor(Math.random() * 2 ** 31);
     const r = F.rng(seed);
@@ -303,12 +345,13 @@
     const order = others.slice(0, slot).concat(0, others.slice(slot));
     const total = n * (P.lineup.length + P.bench);
     const D = F.create({ sport: P.sport, type: c.type, teams: n, seed, now: Date.now(), lineup: P.lineup, bench: P.bench, scoring: P.scoring,
-      botDelay: U.botSpeed.delay(), clock: c.type === "auction" || c.clock < 0 ? 0 : c.clock, bank: c.clock < 0 && c.type !== "auction" ? { perRound: -c.clock / Math.max(1, P.lineup.length + P.bench), floor: 10 } : null, bidClock: c.clock || 15, nomClock: 30, budget: sdOn(c) ? 50 : c.budget, order, name: `${P.sport.name} mock`,
+      botDelay: U.botSpeed.delay(), clock: c.type === "auction" || c.clock < 0 ? 0 : c.clock, bank: c.clock < 0 && c.type !== "auction" ? { perRound: -c.clock / Math.max(1, P.lineup.length + P.bench), floor: 10 } : null, bidClock: c.clock || 15, nomClock: 30, budget: sdOn(c) ? 50 : c.budget, order, name: P.slate ? `${window.FK.slates.dayName(P.slate.day)}: ${P.slate.label}` : `${P.sport.name} mock`,
       trades: c.trades !== 0, curve: c.type === "mystery" ? F.pickCurve(P.players, total) : null, reveal: c.reveal });
     if (c.type === "mystery" && c.test) F.fairDeal(D, P.players, P.sport, null, { tries: 5 });
     if (c.type === "pack") F.dealPacks(D, P.players, P.sport);
     if (rlFits(c) && c.rl && !sdOn(c)) D.roulette = { teams: [...new Set(P.players.map((p) => p.t).filter((t) => t && t !== "FA"))].sort(), each: c.rlRound ? "round" : "pick", respins: 1, spins: {}, used: {} };
     if (sdOn(c)) D.season = { format: "h2h", weeks: 1, oneWeek: true, showdown: { teams: [c.sdA, c.sdH], label: `${c.sdA} @ ${c.sdH}` } };
+    if (P.slate) D.season = { format: "h2h", weeks: 1, oneWeek: true, slate: P.slate };
     if (hzOn(c)) D.season = { format: "h2h", weeks: 1, oneWeek: true, heist: { shields: 3, steals: 1, jinxes: 1, clock: 60 } };
     D.teams.forEach((t, i) => (t.color = (i * 5) % 12));      // each team its own color, as in a league
     D.teams[0].owner = "You";
@@ -348,6 +391,8 @@
     const teams = [...new Set(P.players.map((p) => p.t))].sort();
     const rows = U.sortRows(P.players.filter((p) => U.passes(sp, p, rank.f)), cols, rank.sort);
     const mine = rank.mode === "board", B = U.board.of(sp.key, P.players);
+    // signed in, the board comes from your account: redraw once if another device changed it
+    U.board.sync(sp.key).then((ch) => { if (ch && $("#app") && rank.sport === sp.key) rankingsPage(); });
     const opt = (v, l, cur) => `<option value="${esc(v)}"${v === cur ? " selected" : ""}>${esc(l)}</option>`;
     const focus = document.activeElement && document.activeElement.id;
     app.innerHTML = `<div class="wrap page">
@@ -479,9 +524,9 @@
         <span class="mb-p" data-player="${esc(id)}">${U.pname(sp, p, `#${p.rank} by value`)}</span><span class="dollar">${p.$ ? U.money(p.$) : ""}</span>
         <span class="mb-act"><button type="button" class="btn icon" data-bup="${esc(id)}" aria-label="Move ${esc(p.n)} up">&uarr;</button><button type="button" class="btn icon" data-bdown="${esc(id)}" aria-label="Move ${esc(p.n)} down">&darr;</button><button type="button" class="btn xs" data-btier="${esc(id)}" aria-pressed="${ends.has(id)}" title="End a tier after him">Tier<span class="hide-s"> break</span></button></span></li>`;
     }).join("");
-    return `<div class="card mb-card"><div class="mod-h"><b>My board</b><span class="ps" style="margin-left:6px">${B.custom ? "Saved in this browser" : "Starts as the default rankings. Your first change saves it."}</span><span class="grow"></span>${B.custom ? `<button type="button" class="btn sm" data-breset>Reset to default</button>` : ""}</div>
+    return `<div class="card mb-card"><div class="mod-h"><b>My board</b><span class="ps" style="margin-left:6px">${B.custom ? (window.FK.cloud && window.FK.cloud.user() ? "Saved to your account" : "Saved in this browser. Sign in to keep it on every device.") : "Starts as the default rankings. Your first change saves it."}</span><span class="grow"></span>${B.custom ? `<button type="button" class="btn sm" data-breset>Reset to default</button>` : ""}</div>
       <ol class="myboard">${rows || `<li class="ps" style="padding:14px 16px">No one matches.</li>`}</ol>
-      <div class="bd ps" style="border-top:1px solid var(--line)">Drag a player, use the arrows, or tap his number to move him to a spot. In any draft room in this browser, your board is the Mine column, the room opens sorted by it, and autopick follows it when your clock runs out or Autodraft is on.</div></div>`;
+      <div class="bd ps" style="border-top:1px solid var(--line)">Drag a player, use the arrows, or tap his number to move him to a spot. In any draft room (on any device you're signed in on), your board is the Mine column, the room opens sorted by it, and autopick follows it when your clock runs out or Autodraft is on.</div></div>`;
   }
 
   /* ---------- routing ---------- */

@@ -126,7 +126,7 @@
 
   function header() {
     top.innerHTML = U.shell({ brand: { name: "Draft Lab", href: "./", mark: `<img src="mark.svg" alt="">` },
-      tabs: [["leagues", "Your leagues"], ["week", "One week"], ["draft", "Mock draft"], ["rankings", "Rankings"], ["league", "Demo league"]], tab: view === "new" && oneWeek() ? "week" : "leagues",
+      tabs: [["leagues", "Your leagues"], ["week", "Quick games"], ["draft", "Mock draft"], ["rankings", "Rankings"], ["league", "Demo league"]], tab: view === "new" && oneWeek() ? "week" : "leagues",
       right: `${C.user() ? `<button class="btn sm ghost" data-a="out">Sign out</button>` : ""}<button class="btn sm ghost" data-theme>${theme.dark() ? "Light" : "Dark"}</button>`,
       hrefOf: (t) => (t === "leagues" ? "leagues.html" : t === "week" ? "week.html" : t === "league" ? "league.html" : "./#" + t) });
   }
@@ -182,7 +182,7 @@
     else if (l.phase === "done") status = "Draft done, the season starts soon";
     else { status = "Draft room open"; if (c.teams) { big = `${c.claimed}/${c.teams}`; small = "teams claimed"; } }
     const sub = [c.teamName ? esc(c.teamName) : "", esc(status), l.commish ? "you're the commissioner" : ""].filter(Boolean).join(", ");
-    return `<a class="card lgc" href="play.html?id=${esc(l.id)}"><span class="lg-sp sp-${esc(l.sport)}">${icon(l.sport)}</span>
+    return `<a class="card lgc" href="play.html?id=${esc(l.id)}">${l.phase === "season" || l.brand ? `<span class="lg-cr">${U.leagueCrest(U.leagueBrand(l.name, l.brand))}</span>` : `<span class="lg-sp sp-${esc(l.sport)}">${icon(l.sport)}</span>`}
       <span class="grow"><b>${esc(l.name)}</b><small>${esc(S[l.sport].name)}${sub ? `: ${sub}` : ""}</small>${bar != null ? `<span class="lgbar" role="img" aria-label="${Math.round(bar * 100)}% of picks in"><i style="width:${(bar * 100).toFixed(1)}%"></i></span>` : ""}</span>
       ${big ? `<span class="lgstat${l.phase === "live" ? " live" : ""}"><b>${esc(big)}</b><small>${esc(small)}</small></span>` : ""}<span class="btn sm">Open</span></a>`;
   }
@@ -289,7 +289,7 @@
   // the league's style: one card that sets the few choices that define it
   // two choices define a league: what carries over to next season, and how a season is played
   // first, a season or one week; then for a season, what carries over to the next one
-  const MODES = [["season", "A season", "Lineups, waivers, trades and playoffs, all season long"], ["week", "One week", "Draft, play one real week, crown a winner"]];
+  const MODES = [["season", "A season", "Lineups, waivers, trades and playoffs, all season long"], ["week", "Quick game", "Draft, play one real night or week, crown a winner"]];
   // the mode card's name for basketball, where a one-week game is one night
   const modeName = (k) => (k === "week" && form.sport === "nba" ? ["One day", "Draft tonight's games, crown a winner by midnight"] : null);
   const KINDS = [["redraft", "Redraft", "A fresh draft every season"], ["keeper", "Keeper", "Keep a few players a year"], ["dynasty", "Dynasty", "Keep everyone, draft rookies"]];

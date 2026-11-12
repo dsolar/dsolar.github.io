@@ -313,7 +313,7 @@
           ${offers.length ? `<div class="card"><div class="mod-h"><h2>Trade offers for you</h2><span class="badge">${offers.length}</span><a href="#team/trades">Review</a></div>${U.feed(offers.map((t) => ({ team: T(t.from), when: U.ago(t.at, now()), lines: t.get.map((id) => U.txLine(sport, "drop", playerVM(id), "you send")).concat(t.give.map((id) => U.txLine(sport, "add", playerVM(id), "you get"))) })))}</div>` : ""}`;
       const total = G.totalWeeks(L());
       return `<div class="wrap page">
-        <div class="head"><h1 class="disp">${over() ? "Season over" : w > L().settings.weeks ? `Playoffs, week ${w}` : `Week ${w}`}</h1><span class="ps">${esc(L().season || "")}${L().season ? " season, " : ""}${over() ? `${total} weeks played` : `${Math.max(0, total - w)} week${total - w === 1 ? "" : "s"} after this one`}${myRow ? `. You're ${ord(myRow.rank)} at ${myRow.w}-${myRow.l}${myRow.t ? "-" + myRow.t : ""}` : ""}.</span></div>
+        <div class="head sr"><h1 class="disp">${over() ? "Season over" : w > L().settings.weeks ? `Playoffs, week ${w}` : `Week ${w}`}</h1><span class="ps">${esc(L().season || "")}${L().season ? " season, " : ""}${over() ? `${total} weeks played` : `${Math.max(0, total - w)} week${total - w === 1 ? "" : "s"} after this one`}${myRow ? `. You're ${ord(myRow.rank)} at ${myRow.w}-${myRow.l}${myRow.t ? "-" + myRow.t : ""}` : ""}.</span></div>
         ${champ != null && oneWeekLg() ? finishCard() : champ != null ? `<div class="banner"><span>${teamAv(T(champ), "lg")}</span><div><b class="disp" style="font-size:26px">${esc(T(champ).name)} won the title</b><div class="ps">The ${esc(L().season || "")} season is over.</div></div></div>` : ""}
         <div class="stack" style="gap:8px"><div class="row"><h2 style="margin:0;font-size:15px">${over() ? "Final week" : mine ? `Around the league, week ${w}` : `Week ${w} scoreboard`}</h2><a href="#league/scoreboard" class="small" style="margin-left:auto">All scores</a></div>${U.scoreboard(mine ? games.filter((g) => !g.me) : games, fmtS)}</div>
         <div class="cols"><div class="stack">
@@ -934,7 +934,8 @@
         <label class="sr" for="team-pick">Team</label><select id="team-pick" style="width:auto;border-radius:999px">${L().teams.map((x) => `<option value="${x.id}"${x.id === id ? " selected" : ""}>${esc(x.name)}${isMe(x.id) ? " (you)" : ""}</option>`).join("")}</select></div></div>`;
     }
     // Where this week's numbers come from: real box scores (and when they last came in), or a simulation.
-    function scoreNote() {
+    function scoreNote() { const m = scoreMsg(); return m ? `<div class="wrap" style="padding-top:10px"><p class="ps" style="margin:0">${m}</p></div>` : ""; }
+    function scoreMsg() {
       if (over()) return "";
       const R = (opts.hooks || {}).real, w = L().week, rw = G.realWeek(L(), ctx, w);
       const when = (t) => new Date(t).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" });
@@ -942,7 +943,7 @@
       if (rw && now() >= G.weekStart(L(), w + 1) && !rw.final) msg = `Week ${w} is over and lineups are locked. It closes when the last box scores come in, usually by the next morning.`;
       else if (rw) msg = `Real box scores from ${esc(R.source || "the league feeds")}, updated ${when(R.updated)}.`;
       else msg = "Scores are simulated from each player's season, not real games.";
-      return `<div class="wrap" style="padding-top:10px"><p class="ps" style="margin:0">${msg}</p></div>`;
+      return msg;
     }
     // a link to something that isn't there says so once, instead of quietly showing something else
     function badLink(msg) { if (ui.badLink === location.hash) return; ui.badLink = location.hash; setTimeout(() => U.toast(msg, true), 0); }
@@ -1597,6 +1598,20 @@
       }));
     }
 
+    /* ---------- the league's masthead, on its front page ---------- */
+    function mastVM() {
+      const Lg = L(), br = U.leagueBrand(Lg.name, Lg.settings.brand), total = G.totalWeeks(Lg), reg = Lg.settings.weeks, w = Lg.week;
+      const st = gl() || roto() ? null : standings(), my = me() != null && st ? st.find((r) => r.team === me()) : null;
+      const lines = [esc(sport.name), `${Lg.teams.length} teams`, esc(sc().label.replace(/ \(.*\)$/, ""))];
+      if (gl()) lines.push("guillotine"); else if (roto()) lines.push("rotisserie");
+      const champ = over() ? championOf() : null;
+      const you = champ != null ? `<b>${esc(T(champ).name)}</b> won the title.` : my ? `You're <b>${ord(my.rank)} at ${my.w}-${my.l}${my.t ? "-" + my.t : ""}</b>.` : "";
+      const weeks = total > 1 ? Array.from({ length: total }, (_, i) => { const n = i + 1; return { n, po: n > reg, gap: n === reg + 1, k: over() || n < w ? "done" : n === w ? "now" : "next" }; }) : [];
+      const weekLine = over() ? "Season over" : oneWeekLg() ? "One week" : w > reg ? `Playoffs, week ${w}` : `Week ${w} of ${reg}${total > reg ? `, then ${total - reg} of playoffs` : ""}`;
+      const champs = seasonsAll().filter((x) => !x.live && x.champion).slice(-4).map((x) => { const t = Lg.teams[x.champion.team]; return { season: x.season || `Year ${x.year}`, name: x.champion.name, abbr: (t && t.name === x.champion.name && t.abbr) || U.initials(x.champion.name).slice(0, 3), color: t ? t.color : 0 }; });
+      return { brand: br, sub: `${lines.join(", ")}.${you ? " " + you : ""}`, weeks, weekLine, note: scoreMsg(), champs };
+    }
+
     /* ---------- render ---------- */
     function render() {
       if (U.dialogOpen()) return;
@@ -1605,7 +1620,8 @@
       const tabs = TABS().map(([k, n]) => [k, n, k === "team" ? pendingTrades() : 0]);
       const subs = subsOf(r.tab);
       const hrefOf = (t, s) => "#" + t + (s ? "/" + s : "");
-      opts.top.innerHTML = U.shell({ brand: opts.brand, title: opts.switcher ? opts.switcher() : "", tabs, tab: r.tab, subs, sub: r.sub, hrefOf, right: opts.right ? opts.right() : "", tabbar: true });
+      const front = r.tab === "league" && (!r.sub || r.sub === "overview");
+      opts.top.innerHTML = U.shell({ brand: opts.brand, title: opts.switcher ? opts.switcher() : "", tabs, tab: r.tab, subs, sub: r.sub, hrefOf, right: opts.right ? opts.right() : "", tabbar: true, mast: front ? mastVM() : null });
       document.body.classList.add("fk-hasbar");
       // the sticky header's height, so sticky bars on the page (the "Moving" bar) sit just under it
       const topEl = opts.top.querySelector(".fk-top") || opts.top; document.documentElement.style.setProperty("--fk-top-h", `${Math.round(topEl.getBoundingClientRect().height)}px`);
@@ -1623,7 +1639,7 @@
       const pageName = subName && subName !== "Overview" ? subName : tabName;
       document.title = `${pageName ? pageName + " | " : ""}${L().name}`;
       if (!/<h1[\s>]/.test(html)) html = `<h1 class="sr">${esc(pageName || L().name)}, ${esc(L().name)}</h1>` + html;
-      const scores = r.tab === "matchup" || (r.tab === "league" && (r.sub === "scoreboard" || r.sub === "overview")) ? scoreNote() : "";
+      const scores = r.tab === "matchup" || (r.tab === "league" && r.sub === "scoreboard") ? scoreNote() : "";
       opts.el.innerHTML = (opts.notice ? opts.notice() : "") + alertsBar(r) + scores + html;
       if (L().heist) setTimeout(heistReveal, 0);
       for (const box of $$(".fk-nav nav, .fk-subs .wrap, .chips", document)) {
