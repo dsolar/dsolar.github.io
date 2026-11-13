@@ -111,8 +111,12 @@ def main():
                 "to": text(td, "destination_type"),
                 "to_team": text(td, "destination_team_key"),
             })
-        tx.append({"id": text(t, "transaction_id"), "type": text(t, "type"), "status": text(t, "status"),
-                   "ts": int(num(t, "timestamp") or 0), "moves": moves})
+        row = {"id": text(t, "transaction_id"), "type": text(t, "type"), "status": text(t, "status"),
+               "ts": int(num(t, "timestamp") or 0), "moves": moves}
+        bid = num(t, "faab_bid")      # what a waiver claim cost in FAAB
+        if bid is not None:
+            row["faab"] = int(bid)
+        tx.append(row)
     tx.sort(key=lambda t: (t["ts"], int(t["id"] or 0)))
 
     out = {

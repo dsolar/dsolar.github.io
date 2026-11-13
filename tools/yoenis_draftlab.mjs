@@ -197,7 +197,7 @@ for (const x of txs) {
   const team = T((x.moves.find((mv) => mv.to_team) || x.moves[0]).to_team || x.moves[0].from_team);
   const add = x.moves.find((mv) => mv.type === 'add'), drop = x.moves.find((mv) => mv.type === 'drop');
   const type = add && add.from === 'waivers' ? 'waiver' : add && drop ? 'add/drop' : add ? 'add' : 'drop';
-  L.tx.push({ id: L.nextId++, at, week, type, team, adds: add ? [pid(add)] : [], drops: drop ? [pid(drop)] : [] });
+  L.tx.push(Object.assign({ id: L.nextId++, at, week, type, team, adds: add ? [pid(add)] : [], drops: drop ? [pid(drop)] : [] }, x.faab != null && add ? { faab: x.faab } : {}));
 }
 
 // every season before this one, for the History page and the champion pennants. A team is this league's team when the
