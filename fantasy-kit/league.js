@@ -396,7 +396,9 @@
     return !rw || !!rw.final || now >= end + (L.settings.span ? DAY : 3 * DAY);
   }
   // Once a week's time is up its lineups are locked, even while the league waits for the last box scores.
-  const lineupLocked = (L, w, now) => w < L.week || (now != null && now >= weekStart(L, w + 1));
+  // Between seasons in a keeper or dynasty league the roster stays open (L.week, past the last week): tidy the lineup,
+  // bring players off IR, before keepers lock. Nothing is scored until next season.
+  const lineupLocked = (L, w, now) => (offseason(L) && w === L.week ? false : w < L.week || (now != null && now >= weekStart(L, w + 1)));
   // A weeks file has one line (R.line, R.cols, and each player's week is an array) or several (R.lines maps each
   // line to its columns, and each player's week is { line: array }), as baseball's batting and pitching do.
   const realPts = (R, sc, line, p) => {
@@ -1411,7 +1413,7 @@
     weeks: (v) => clampInt(v, 1, 30), taxi: (v) => clampInt(v, 0, 6),
     waiverPrice: (v) => (v === "first" || v === "second" ? v : null),
     tradeMax: (v) => clampInt(v, 0, 10), reseed: (v) => !!v, minIP: (v) => clampInt(v, 0, 100), draftOrder: (v) => (["worst", "lottery"].includes(v) ? v : null),
-    lotteryOdds: (v) => (["equal", "weighted"].includes(v) ? v : null), playoffTie: (v) => (v === "seed" || v === "h2h" ? v : null), bots: (v) => !!v,
+    lotteryOdds: (v) => (["equal", "weighted"].includes(v) ? v : null), playoffTie: (v) => (v === "seed" || v === "h2h" ? v : null), bots: (v) => !!v, historyUrl: (v) => (v === "" || /^(https:\/\/|\/)[^\s"<>]{1,200}$/.test(String(v)) ? String(v) : null),
     elig: (v) => (v && typeof v === "object" && ["g", "gs", "sp", "rp"].every((k) => clampInt(v[k], 0, 60) != null) ? { g: clampInt(v.g, 0, 60), gs: clampInt(v.gs, 0, 60), sp: clampInt(v.sp, 0, 60), rp: clampInt(v.rp, 0, 60) } : null),
   };
   const clampInt = (v, lo, hi) => (Number.isFinite(+v) ? Math.max(lo, Math.min(hi, Math.round(+v))) : null);
@@ -1814,7 +1816,7 @@
   // An IR spot doesn't count against the roster, so putting a hurt player there frees a spot for a pickup.
   function toIR(L, ctx, teamId, pid, now) {
     const p = ctx.byId[pid];
-    if (L.week > totalWeeks(L)) return { ok: false, why: "The season is over" };
+    if (L.week > totalWeeks(L) && !offseason(L)) return { ok: false, why: "The season is over" };
     if (!isAlive(L, teamId)) return { ok: false, why: "That team has been chopped" };
     if (!L.rosters[teamId].includes(pid)) return { ok: false, why: "He isn't on your roster" };
     const ir = (L.ir[teamId] = L.ir[teamId] || []);
@@ -1834,10 +1836,11 @@
   function activate(L, ctx, teamId, pid, drop, now) {
     const ir = L.ir[teamId] || [];
     const p = ctx.byId[pid];
-    if (L.week > totalWeeks(L)) return { ok: false, why: "The season is over" };
+    if (L.week > totalWeeks(L) && !offseason(L)) return { ok: false, why: "The season is over" };
     if (!ir.includes(pid)) return { ok: false, why: `${p ? p.n : "He"} isn't on IR` };
     const active = L.rosters[teamId].length - ir.length;
-    if (active + 1 > maxRoster(L) && !drop) return { ok: false, why: "Your roster is full: drop someone to activate him", needDrop: true };
+    // the offseason has no roster limit (rosters cut down before next season's week 1)
+    if (active + 1 > maxRoster(L) && !drop && !offseason(L)) return { ok: false, why: "Your roster is full: drop someone to activate him", needDrop: true };
     if (drop && (drop === pid || !L.rosters[teamId].includes(drop))) return { ok: false, why: "Pick someone on your roster to drop" };
     if (drop && isLocked(L, ctx.byId[drop], L.week, now)) return { ok: false, why: lockWhy(ctx.byId[drop]) };
     L.ir[teamId] = ir.filter((x) => x !== pid);

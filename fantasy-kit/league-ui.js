@@ -719,7 +719,9 @@
       const rows = Object.values(tot).filter((a) => L().teams[a.team]).sort((a, b) => b.titles - a.titles || (hasWL ? (b.w + b.t / 2) / Math.max(1, b.w + b.l + b.t) - (a.w + a.t / 2) / Math.max(1, a.w + a.l + a.t) : 0) || b.pts - a.pts);
       const pct3 = (a) => { const g = a.w + a.l + a.t; return g ? ((a.w + a.t / 2) / g).toFixed(3).replace(/^0/, "") : "-"; };
       const avg = (a) => (a.places.length ? (a.places.reduce((s, x) => s + x, 0) / a.places.length).toFixed(1) : "-");
-      return `<div class="wrap page"><div class="head"><h1 class="disp">League history</h1><span class="ps">${done.length ? `${done.length} finished season${done.length > 1 ? "s" : ""}` : "The first season"}${all.some((x) => x.live) ? ", one under way" : ""}</span></div>
+      // settings.historyUrl: the league's own record book elsewhere (Wipe Yoenis has davidsolar.dev/yoenis/)
+      const hu = /^(https:\/\/|\/)[^\s"<>]*$/.test(L().settings.historyUrl || "") ? L().settings.historyUrl : null;
+      return `<div class="wrap page"><div class="head"><h1 class="disp">League history</h1>${hu ? `<a class="btn sm" href="${esc(hu)}" style="margin-left:auto;order:3">The full record book</a>` : ""}<span class="ps">${done.length ? `${done.length} finished season${done.length > 1 ? "s" : ""}` : "The first season"}${all.some((x) => x.live) ? ", one under way" : ""}</span></div>
         <div class="cols2"><div class="stack">
           <div class="card"><div class="mod-h"><h2>Champions</h2></div><div class="table-wrap"><table class="t"><thead><tr><th>Season</th><th>Champion</th>${all.some((x) => !x.live && x.runnerUp) ? `<th class="hide-s">Runner-up</th>` : ""}<th class="r">Record</th></tr></thead><tbody>${champRows}</tbody></table></div>
             ${many ? "" : `<p class="ps" style="margin:10px 16px 14px">Each finished season is added here when the commissioner starts the next one.</p>`}</div>
@@ -958,7 +960,8 @@
       const id = arg !== "" && arg != null && L().teams[+arg] ? +arg : me() != null ? me() : 0;
       if (arg !== "" && arg != null && !L().teams[+arg]) badLink(`There's no team ${arg} in this league, so here's ${isMe(id) ? "yours" : T(id).name}.`);
       const mine = isMe(id);
-      const w = ui.week && ui.week >= L().week ? ui.week : curWeek();
+      // between seasons the roster shows (and edits) the lineup it'll carry into next season
+      const w = G.offseason(L()) ? L().week : ui.week && ui.week >= L().week ? ui.week : curWeek();
       const slots = L().settings.lineup;
       const game = !over() && !gl() ? findGame(w, id) : null;
       const brow = gl() && !over() && G.isAlive(L(), id) && w === L().week ? blockRow(w, id) : null;

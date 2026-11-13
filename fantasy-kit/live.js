@@ -829,11 +829,15 @@
         ${sel("consolation", "Also play", [["none", "Nothing else"], ["third", "A third-place game"], ["bracket", "A consolation bracket"]], s.consolation || "none")}
       </div>
       <div class="row3">${s.playoffTeams > 2 ? sel("reseed", "Each round", [[0, "A fixed bracket"], [1, "Reseed: best seed left plays the worst"]], s.reseed ? 1 : 0) : ""}</div>`}`}
+      <div class="row3">
+        ${sel("bots", "Teams without a manager", [[1, "Bots run them"], [0, "Wait for their manager"]], s.bots === false ? 0 : 1)}
+        <div class="field" style="grid-column:span 2"><label for="historyUrl">The league's own record book (optional)</label><input id="historyUrl" name="historyUrl" type="url" maxlength="200" placeholder="https://..." value="${esc(s.historyUrl || "")}"></div>
+      </div>
       <p class="ps" style="margin:0">${started ? "The season has started, so its length and schedule are set. " : ""}Changes apply from now on; finished weeks keep their results${medianOk ? ", except that turning the median game on or off recounts every record" : ""}.</p>
       <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">Save rules</button></div></form>`, (fd) => {
       const patch = {};
-      for (const [k, v] of fd.entries()) if (k === "elig") patch[k] = (S.ELIG_PRESETS[v] || S.ELIG_PRESETS.yahoo)[1]; else patch[k] = ["trades", "median", "bestBall", "reseed"].includes(k) ? v === "1" : ["waivers", "tradeReview", "playoffLegs", "consolation", "waiverOrder", "waiverPrice", "gameLock", "draftOrder", "lotteryOdds"].includes(k) ? v : Number(v);
-      const was = (k) => (k === "elig" ? s.elig || S.ELIG : k === "trades" ? s.trades !== false : ["median", "bestBall", "reseed"].includes(k) ? !!s[k] : k === "draftOrder" ? s[k] || "worst" : k === "waiverPrice" ? s[k] || "first" : k === "waiverOrder" ? s[k] || "rolling" : k === "maxAddsSeason" ? s[k] || 0 : k === "lotteryOdds" ? s[k] || "equal" : ["tradeMax", "minIP"].includes(k) ? s[k] || 0 : s[k]);
+      for (const [k, v] of fd.entries()) if (k === "elig") patch[k] = (S.ELIG_PRESETS[v] || S.ELIG_PRESETS.yahoo)[1]; else patch[k] = ["trades", "median", "bestBall", "reseed", "bots"].includes(k) ? v === "1" : k === "historyUrl" ? String(v).trim() : ["waivers", "tradeReview", "playoffLegs", "consolation", "waiverOrder", "waiverPrice", "gameLock", "draftOrder", "lotteryOdds"].includes(k) ? v : Number(v);
+      const was = (k) => (k === "elig" ? s.elig || S.ELIG : k === "bots" ? s.bots !== false : k === "historyUrl" ? s.historyUrl || "" : k === "trades" ? s.trades !== false : ["median", "bestBall", "reseed"].includes(k) ? !!s[k] : k === "draftOrder" ? s[k] || "worst" : k === "waiverPrice" ? s[k] || "first" : k === "waiverOrder" ? s[k] || "rolling" : k === "maxAddsSeason" ? s[k] || 0 : k === "lotteryOdds" ? s[k] || "equal" : ["tradeMax", "minIP"].includes(k) ? s[k] || 0 : s[k]);
       for (const k of Object.keys(patch)) if (JSON.stringify(patch[k]) === JSON.stringify(was(k))) delete patch[k];
       if (!Object.keys(patch).length) return;
       const r = G.setRules(L, patch, now());

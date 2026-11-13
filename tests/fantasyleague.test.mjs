@@ -505,12 +505,13 @@ test('waivers clear after full business days at 3 AM Eastern, and a player whose
   const ctx = G.context(L, players, sport);
   const fa = ctx.free.find((p) => p.t && p.t !== 'FA');
   L.kick = { week: 1, teams: { [fa.t]: t0 + 2 * 864e5 } };                     // his team plays Thursday
-  const drop = L.rosters[0][L.rosters[0].length - 1];
+  // the drop plays for another team, so his own game lock doesn't get in the way
+  const drop = L.rosters[0].slice().reverse().find((id) => ctx.byId[id].t !== fa.t);
   const after = t0 + 3 * 864e5;                                                // Friday
   const r = G.addDrop(L, ctx, 0, fa.id, drop, after);
   assert.equal(r.ok, false, 'no Friday pickup of a Thursday player');
   assert.ok(G.onWaivers(L, fa.id, after) && L.waivers[fa.id] >= G.weekStart(L, 2), 'on waivers into next week');
-  assert.ok(G.claim(L, ctx, 0, fa.id, drop, 5, after).ok, 'but you can put in a claim');
+  const cl = G.claim(L, ctx, 0, fa.id, drop, 5, after); assert.ok(cl.ok, 'but you can put in a claim: ' + cl.why);
   G.tick(L, ctx, L.waivers[fa.id] - 1);
   assert.ok(!L.rosters[0].includes(fa.id), 'not before he clears');
   L.week = 2; G.tick(L, ctx, L.waivers[fa.id] + 1);
