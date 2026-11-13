@@ -41,7 +41,7 @@
   var CACHE_MS = 10 * 60e3;      // schedules and other days' scoreboards are reused this long; today's never are
   var STEP_MS = 5000;            // the ticker moves one game along this often
   // The guillotine view. Its script versions should match the ones guillotine/index.html loads.
-  var LEAGUE = { dir: "guillotine/", scripts: ["sim.js?v=9", "live.js?v=20261113r"], mine: "Holofernes", runs: 4000 };
+  var LEAGUE = { dir: "guillotine/", scripts: ["sim.js?v=9", "live.js?v=20261113s"], mine: "Holofernes", runs: 4000 };
   var VIEWS = ["tonight", "last", "guillotine"], VIEW_KEY = "ticker-view";
 
   var bar = document.getElementById("scores"), list = document.getElementById("scoreboard-list");

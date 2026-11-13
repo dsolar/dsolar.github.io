@@ -125,11 +125,80 @@ L.extraPlayers = [...extra.values()];
 D.extraPlayers = L.extraPlayers;
 if (two) L.hidePlayers = D.hidePlayers = [two.id];
 
-// the season's over: Yahoo's final places stand in for games played here
-const st = s26.standings.map(([rank, t, rec]) => { const [w, l, tt] = rec.split('-').map(Number); return { team: t, w, l, t: tt, rank }; }).sort((a, b) => a.rank - b.rank);
-L.imported = { from: 'Yahoo', standings: st, final: { champion: st[0].team, runnerUp: st[1].team, third: st[2].team } };
+// ---------- the league's real rules (Yahoo's settings page and the league's own rules) ----------
+const H = read('tools/yahoo_yoenis/history/2026.json');
+const yWeeks = H.weeks, REG = yWeeks.filter((w) => !w.matchups.some((m) => m.playoffs || m.consolation)).length;   // 23
+const dayOf = (iso) => Date.parse(iso + 'T12:00:00Z');
+const weekOfDay = (t) => { const w = yWeeks.find((x) => t >= dayOf(x.s) - 12 * 36e5 && t <= dayOf(x.e) + 12 * 36e5); return w ? w.week : t < dayOf(yWeeks[0].s) ? 1 : yWeeks.length; };
+Object.assign(L.settings, {
+  tally: 'cats',                                     // the standings count every category: 214-127-27, not matchups
+  weeks: REG, playoffTeams: 8, playoffLegs: '1', consolation: 'places', reseed: true, playoffTie: 'h2h',  // 8 teams, no byes, every playoff team plays for its place
+  ir: 4, maxAdds: 7, minIP: 30, waiverDays: 2, faab: 100, waivers: 'faab',
+  tradeReview: 'counter', reviewHours: 48, tradeMax: 2, deadline: weekOfDay(Date.parse(Y.settings.trade_end_date + 'T12:00:00Z')),
+  draftOrder: 'lottery', lotteryOdds: 'equal', bots: false,
+});
+L.settings.playoffWeeks = G.playoffPlan(L).reduce((a, rd) => a + rd.weeks.length, 0);
+// weeks line up with Yahoo's: week 1 is the short opening week, then Monday to Sunday
+L.start = dayOf(yWeeks[1].s) - 7 * 864e5 - 5 * 36e5;
+// Yahoo's schedule and every week's category results
+const T = (k) => keyOf[k];
+L.schedule = yWeeks.slice(0, REG).map((w) => w.matchups.map((m) => [T(m.teams[0]), T(m.teams[1])]));
+const sc = sport.scorings.yoenis, catKey = H.cats.map((c) => (sc.cats.find((x) => x.label === c.abbr) || {}).k);
+if (catKey.some((k) => !k)) throw new Error('a Yahoo category has no match: ' + H.cats.map((c) => c.abbr).join(','));
+function resultOf(m, a, b) {
+  const ka = Object.keys(Y.teams).find((k) => T(k) === a), kb = Object.keys(Y.teams).find((k) => T(k) === b);
+  const cats = {}; let wa = 0, wb = 0, ties = 0;
+  catKey.forEach((k, i) => { const won = m.won[i], d = won === ka ? 1 : won === kb ? -1 : 0; cats[k] = [m.stats[ka][i], m.stats[kb][i], d]; if (d > 0) wa++; else if (d < 0) wb++; else ties++; });
+  return { a, b, sa: wa, sb: wb, ties, w: wa > wb ? 'a' : wa < wb ? 'b' : 't', cats, ta: null, tb: null };
+}
+L.results = {};
+for (let w = 1; w <= REG; w++) L.results[w] = yWeeks[w - 1].matchups.map((m) => resultOf(m, T(m.teams[0]), T(m.teams[1])));
+// the playoffs, a round at a time: the bracket this league's rules make, matched to Yahoo's games
+const ctx0 = G.context(L, pool.players.concat([...extra.values()]).map((p) => ({ ...p })), sport);
+const poMiss = [];
+for (let w = REG + 1; w <= yWeeks.length; w++) {
+  L.week = w;
+  const pairs = G.playoffGames(L, ctx0, w), ym = yWeeks[w - 1].matchups.slice();
+  L.results[w] = pairs.map((pr) => {
+    const k = ym.findIndex((m) => { const x = m.teams.map(T); return (x[0] === pr[0] && x[1] === pr[1]) || (x[0] === pr[1] && x[1] === pr[0]); });
+    if (k < 0) { poMiss.push(`week ${w}: ${teams[pr[0]].name} v ${teams[pr[1]].name} isn't a Yahoo game`); return null; }
+    const m = ym.splice(k, 1)[0];
+    return Object.assign(resultOf(m, pr[0], pr[1]), { kind: pr.kind });
+  }).filter(Boolean);
+  for (const m of ym) poMiss.push(`week ${w}: Yahoo's ${m.teams.map((k) => Y.teams[k].name).join(' v ')} isn't in the bracket`);
+}
 L.week = G.totalWeeks(L) + 1;
+const fin = G.finish(L), yFinal = s26.standings.slice().sort((a, b) => a[0] - b[0]).map((r) => r[1]);
+const placesOk = [fin.champion, fin.runnerUp, fin.third].every((t, i) => t === yFinal[i]);
+// Yahoo's final places stand only if the bracket here came out differently
+L.imported = placesOk && !poMiss.length ? { from: 'Yahoo' } : { from: 'Yahoo', final: { champion: yFinal[0], runnerUp: yFinal[1], third: yFinal[2] } };
+
+// ---------- the waiver budget, waiver order, and every move of the season ----------
+let mgr = null;
+try { mgr = JSON.parse(readFileSync(process.env.YOENIS_MANAGERS || '/dev/null', 'utf8')); } catch (e) { /* run without it: FAAB and priority from Yahoo's transactions are skipped */ }
+if (mgr) for (const m of mgr.teams) { const t = teams.findIndex((x) => x.name === m.team || (m.team === 'Kitty' && x.name.startsWith('Kitty'))); if (t >= 0) { L.teams[t].faab = m.fabLeft; L.teams[t].priority = m.waiverPriority; } }
 L.tx = L.tx.filter((x) => x.type === 'draft');
+L.trades = [];
+// Yahoo's own player keys settle two players with one name (the Dodgers' and the Athletics' Max Muncy)
+const byKey = {};
+for (const p of Y.draft) if (p.player) byKey[p.player] = idOf(p.name, p.pos, p.mlb);
+for (const list of Object.values(Y.rosters)) for (const p of list) if (p.key) byKey[p.key] = idOf(p.name, p.pos, p.mlb);
+const txs = Y.transactions.filter((x) => x.status === 'successful' && x.type !== 'commish' && x.moves.length).sort((a, b) => a.ts - b.ts);
+for (const x of txs) {
+  const at = x.ts * 1000, week = weekOfDay(at), pid = (mv) => byKey[mv.player] || idOf(mv.name, mv.pos, null);
+  if (x.type === 'trade') {
+    const from = T(x.moves[0].from_team), to = T(x.moves[0].to_team);
+    const give = x.moves.filter((mv) => T(mv.from_team) === from).map(pid), get = x.moves.filter((mv) => T(mv.from_team) === to).map(pid);
+    const id = L.nextId++;
+    L.trades.push({ id, from, to, give, get, pickGive: [], pickGet: [], faabGive: 0, faabGet: 0, dropsFrom: [], dropsTo: [], note: '', at, status: 'accepted', done: at });
+    L.tx.push({ id: L.nextId++, at, week, type: 'trade', team: from, other: to, adds: get, drops: give, trade: id });
+    continue;
+  }
+  const team = T((x.moves.find((mv) => mv.to_team) || x.moves[0]).to_team || x.moves[0].from_team);
+  const add = x.moves.find((mv) => mv.type === 'add'), drop = x.moves.find((mv) => mv.type === 'drop');
+  const type = add && add.from === 'waivers' ? 'waiver' : add && drop ? 'add/drop' : add ? 'add' : 'drop';
+  L.tx.push({ id: L.nextId++, at, week, type, team, adds: add ? [pid(add)] : [], drops: drop ? [pid(drop)] : [] });
+}
 
 // every season before this one, for the History page and the champion pennants
 const seasons = data.seasons.filter((x) => +x.year < 2026).map((x, i) => {
@@ -138,6 +207,8 @@ const seasons = data.seasons.filter((x) => +x.year < 2026).map((x, i) => {
   return { season: String(x.year), year: i + 1, sport: 'mlb', format: 'h2h', champion: who(rows[0]), runnerUp: who(rows[1]), third: who(rows[2]), playoffTeams: 6, standings: rows };
 });
 
+L.extraPlayers = [...extra.values()];
+D.extraPlayers = L.extraPlayers;
 const me = teams.findIndex((t) => t.name === "Ippei's Book Club");
 writeFileSync(new URL('tools/yoenis_draftlab.json', root), JSON.stringify({ id: 'yoenis', name: data.league, sport: 'mlb', draft: D, league: L, seasons, me }));
 
@@ -155,6 +226,11 @@ for (const [team, rows] of Object.entries(data.keepers2027)) for (const e of row
 console.log(`${teams.length} teams, ${picks.length} picks, ${L.rosters.flat().length} rostered, ${extra.size} players added to the pool, ${seasons.length} past seasons`);
 console.log(`keeper costs checked: ${n}, mismatched: ${bad.length}`, bad.slice(0, 15));
 console.log(`your team: ${teams[me].name} (${me})`);
+console.log(`rules: ${L.settings.weeks} weeks + ${L.settings.playoffWeeks} playoff weeks, ${L.settings.playoffTeams} teams, deadline after week ${L.settings.deadline}`);
+console.log(`results: ${Object.keys(L.results).length} weeks; playoff games matched to Yahoo: ${poMiss.length ? 'NO\n  ' + poMiss.join('\n  ') : 'all'}; final places ${placesOk ? 'match' : 'differ'} (${[fin.champion, fin.runnerUp, fin.third].map((t) => t != null ? teams[t].name : '?').join(', ')})`);
+console.log(`moves: ${L.tx.length - 1} (${L.trades.length} trades); FAAB and waiver order ${mgr ? 'from the managers page' : 'not set (no YOENIS_MANAGERS file)'}`);
+const stand = G.standings(L);
+console.log('regular season:', stand.slice(0, 8).map((r) => `${r.rank}. ${teams[r.team].name} ${r.w}-${r.l}-${r.t} GB ${r.gb} ${r.streak || ''}`).join(' | '));
 // every rostered player is the right one: same MLB team as Yahoo has him, or a player the league carries itself
 const wrong = [];
 for (const [k, list] of Object.entries(Y.rosters)) for (const y of list) {

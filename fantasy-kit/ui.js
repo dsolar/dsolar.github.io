@@ -443,7 +443,7 @@
     // a one-week game or a showdown (sport.weekOf): the week's projected points
     const wkOf = pts ? sport.weekOf : null;
     if (wkOf != null) cols.push({ k: "v", label: `Wk ${wkOf}`, cls: "r num", title: `Projected points in week ${wkOf}: Sleeper's projection for the week, scored for this league`, sort: (p) => p.v, html: (p) => `<b>${p.v == null ? "-" : (p.v / 17).toFixed(1)}</b>` });
-    else cols.push({ k: "v", label: pts ? "Proj" : "Value", cls: "r num", title: pts ? "Season pace: this season's scoring per game blended with the projection, over a full season" : "Summed category z-scores", sort: (p) => p.v, html: (p) => `<b>${p.v == null ? "-" : p.v.toFixed(pts ? 0 : 1)}</b>` });
+    else if (opts.value !== false) cols.push({ k: "v", label: pts ? "Proj" : "Value", cls: "r num", title: pts ? "Season pace: this season's scoring per game blended with the projection, over a full season" : "Summed category z-scores", sort: (p) => p.v, html: (p) => `<b>${p.v == null ? "-" : p.v.toFixed(pts ? 0 : 1)}</b>` });
     if (pts && wkOf == null && sport.data && sport.data.lines && sport.data.lines.proj && sport.data.lines.proj.ros) cols.push({ k: "ros", label: "ROS", cls: "r num", hide: "s", title: `Projected points for the rest of the season, ${sport.data.lines.proj.weeks} weeks`, sort: (p) => p.ros, html: (p) => (p.ros == null ? `<span class="ps">-</span>` : p.ros.toFixed(0)) });
     for (const c of opts.extra || []) cols.push(c);
     if (opts.stats !== false) for (const [i, c] of statColumns(sport, opts.scoring).entries()) {

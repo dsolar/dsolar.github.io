@@ -1178,13 +1178,27 @@
       if (!g) return null;
       if (g.a === a) { sa += g.sa; sb += g.sb; } else { sa += g.sb; sb += g.sa; }
     }
+    // a tie goes to the better seed (a), or with settings.playoffTie "h2h" to the team with the better regular-season
+    // record against the other (Yahoo's rule), then the better seed
+    if (sa === sb && L.settings.playoffTie === "h2h") { const h = h2h(L, a, b); if (h < 0) return { win: b, lose: a, sa, sb }; }
     return sb > sa ? { win: b, lose: a, sa, sb } : { win: a, lose: b, sa, sb };
+  }
+  // a's regular-season record against b, as a's wins minus b's: categories in a league that counts them, else games
+  function h2h(L, a, b) {
+    let n = 0;
+    for (let w = 1; w <= L.settings.weeks; w++) for (const g of L.results[w] || []) {
+      if (!((g.a === a && g.b === b) || (g.a === b && g.b === a))) continue;
+      const mine = g.a === a ? "a" : "b", byCats = L.settings.tally === "cats" && g.cats;
+      n += byCats ? (mine === "a" ? g.sa - g.sb : g.sb - g.sa) : g.w === mine ? 1 : g.w === "t" ? 0 : -1;
+    }
+    return n;
   }
   // The whole postseason as far as results allow: for each round, the title games (with byes), a third-place
   // game, and the consolation games, each with its outcome once the round is over.
   function postseason(L) {
     const plan = playoffPlan(L), R = plan.length, s = L.settings;
     if (!R) return [];
+    if (s.consolation === "places") return placesPostseason(L, plan);
     const st = standings(L), seeds = seedOrder(L, st).slice(0, s.playoffTeams);
     const cons = s.consolation === "bracket" ? st.map((r) => r.team).filter((t) => !seeds.includes(t)).slice(0, 2 ** R) : [];
     const consR = cons.length >= 2 ? Math.ceil(Math.log2(cons.length)) : 0;
@@ -1223,6 +1237,36 @@
     }
     return out;
   }
+  /* settings.consolation "places": every playoff team plays every week for its final place, the way Yahoo runs a
+     playoff. The winners of a round play on for the best places left and the losers for the rest, so eight teams
+     play a quarterfinal, then two semifinals and two games for 5th to 8th, then the final and games for 3rd, 5th and
+     7th. Each game carries place: the best place its winner can finish. Ties go to the better seed. */
+  function placesPostseason(L, plan) {
+    const s = L.settings, st = standings(L), seeds = seedOrder(L, st).slice(0, s.playoffTeams);
+    const seedOf = (t) => seeds.indexOf(t);
+    let groups = [{ place: 1, teams: seeds }];
+    const out = [];
+    for (const rd of plan) {
+      const row = { round: rd.round, name: rd.name, weeks: rd.weeks, main: [], third: null, cons: [], places: [] }, next = [];
+      for (const g of groups) {
+        if (!g.teams || g.teams.length < 2) { if (g.teams && g.teams.length === 1) next.push(g); continue; }
+        const order = s.reseed && rd.round > 1 ? g.teams.slice().sort((x, y) => seedOf(x) - seedOf(y)) : g.teams;
+        const slots = pairUp(order), win = [], lose = [];
+        for (const sl of slots) {
+          if (sl.bye != null) { win.push(sl.bye); (g.place === 1 ? row.main : row.places).push({ bye: sl.bye, place: g.place }); continue; }
+          const res = decide(L, rd, sl.a, sl.b), game = { a: sl.a, b: sl.b, res, place: g.place };
+          if (g.place === 1) row.main.push(game); else if (g.place === 3 && order.length === 2) row.third = game; else row.places.push(game);
+          win.push(res ? res.win : null); lose.push(res ? res.lose : null);
+        }
+        const n = Math.ceil(order.length / 2);
+        next.push({ place: g.place, teams: win.every((x) => x != null) ? win : null });
+        if (lose.length) next.push({ place: g.place + n, teams: lose.every((x) => x != null) ? lose : null });
+      }
+      groups = next;
+      out.push(row);
+    }
+    return out;
+  }
   // The games of one playoff week, title games first (so the final is always game 0), then third place, then the
   // consolation bracket. Each pair carries its kind.
   function playoffGames(L, ctx, w) {
@@ -1231,8 +1275,9 @@
     const row = postseason(L).find((x) => x.round === rd.round);
     if (!row) return [];
     const tag = (g, kind) => Object.assign([g.a, g.b], { kind });
+    const tagP = (g) => Object.assign([g.a, g.b], { kind: `p${g.place}` });   // "p5": the game for 5th place and below
     return row.main.filter((g) => g.bye == null && g.a != null && g.b != null).map((g) => tag(g, "title"))
-      .concat(row.third ? [tag(row.third, "third")] : [], row.cons.filter((g) => g.bye == null && g.a != null && g.b != null).map((g) => tag(g, "cons")));
+      .concat(row.third ? [tag(row.third, "third")] : [], (row.places || []).filter((g) => g.bye == null && g.a != null && g.b != null).map(tagP), row.cons.filter((g) => g.bye == null && g.a != null && g.b != null).map((g) => tag(g, "cons")));
   }
   // How the season ended: the champion and runner-up, third place, and the consolation winner, as far as decided.
   function finish(L) {
@@ -1242,6 +1287,13 @@
     const st = standings(L);
     if (isRoto(L) || !L.settings.playoffTeams) return { champion: L.week > totalWeeks(L) && st[0] ? st[0].team : null };
     const ps = postseason(L), last = ps[ps.length - 1], fin = last && last.main[0] && last.main[0].res;
+    // every playoff team's final place, when they all played for one
+    if (L.settings.consolation === "places" && last) {
+      const places = {};
+      for (const g of last.main.concat(last.third ? [last.third] : [], last.places || [])) if (g.res) { places[g.res.win] = g.place; places[g.res.lose] = g.place + 1; }
+      const at = (k) => { const t = Object.keys(places).find((x) => places[x] === k); return t != null ? +t : null; };
+      return { champion: at(1), runnerUp: at(2), third: at(3), places };
+    }
     return { champion: fin ? fin.win : null, runnerUp: fin ? fin.lose : null, third: last && last.third && last.third.res ? last.third.res.win : null,
       consolation: last && last.cons[0] && last.cons[0].res ? last.cons[0].res.win : null };
   }
@@ -1288,7 +1340,8 @@
     // where each team finished: the playoffs decide the top places, the standings the rest
     const place = {}, order = [fin.champion, fin.runnerUp, fin.third].filter((t) => t != null);
     order.forEach((t, i) => (place[t] = i + 1));
-    let k = order.length; for (const r of st) if (place[r.team] == null) place[r.team] = ++k;
+    if (fin.places) for (const [t, k2] of Object.entries(fin.places)) place[t] = k2;
+    let k = Math.max(order.length, ...Object.values(place), 0); for (const r of st) if (place[r.team] == null) place[r.team] = ++k;
     return { season: L.season, year: (L.draft && L.draft.year) || 1, sport: L.sport, format: L.settings.format || "h2h", champion: champ != null ? who(champ) : null, runnerUp: who(fin.runnerUp), third: who(fin.third),
       playoffTeams: L.settings.playoffTeams || 0, records: records(L),
       standings: st.map((r) => ({ team: r.team, name: L.teams[r.team].name, owner: L.teams[r.team].owner, rank: r.rank, place: place[r.team], w: r.w, l: r.l, t: r.t, pts: r.pts != null ? r.pts : r.pf, pa: r.pa })) };
@@ -1354,15 +1407,15 @@
     waiverOrder: (v) => (v === "rolling" || v === "standings" ? v : null), minBid: (v) => clampInt(v, 0, 5), maxAddsSeason: (v) => clampInt(v, 0, 200),
     reviewHours: (v) => clampInt(v, 1, 168), vetoShare: (v) => (Number.isFinite(+v) && +v > 0 && +v <= 1 ? +v : null), offerHours: (v) => clampInt(v, 1, 336),
     trades: (v) => !!v, median: (v) => !!v, bestBall: (v) => !!v, posMax: (v) => (v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, clampInt(x, 0, 30)]).filter(([, x]) => x)) : null),
-    playoffTeams: (v) => clampInt(v, 0, 32), playoffLegs: (v) => (["1", "final2", "all2"].includes(String(v)) ? String(v) : null), consolation: (v) => (["none", "third", "bracket"].includes(v) ? v : null),
+    playoffTeams: (v) => clampInt(v, 0, 32), playoffLegs: (v) => (["1", "final2", "all2"].includes(String(v)) ? String(v) : null), consolation: (v) => (["none", "third", "bracket", "places"].includes(v) ? v : null),
     weeks: (v) => clampInt(v, 1, 30), taxi: (v) => clampInt(v, 0, 6),
     waiverPrice: (v) => (v === "first" || v === "second" ? v : null),
     tradeMax: (v) => clampInt(v, 0, 10), reseed: (v) => !!v, minIP: (v) => clampInt(v, 0, 100), draftOrder: (v) => (["worst", "lottery"].includes(v) ? v : null),
-    lotteryOdds: (v) => (["equal", "weighted"].includes(v) ? v : null),
+    lotteryOdds: (v) => (["equal", "weighted"].includes(v) ? v : null), playoffTie: (v) => (v === "seed" || v === "h2h" ? v : null), bots: (v) => !!v,
     elig: (v) => (v && typeof v === "object" && ["g", "gs", "sp", "rp"].every((k) => clampInt(v[k], 0, 60) != null) ? { g: clampInt(v.g, 0, 60), gs: clampInt(v.gs, 0, 60), sp: clampInt(v.sp, 0, 60), rp: clampInt(v.rp, 0, 60) } : null),
   };
   const clampInt = (v, lo, hi) => (Number.isFinite(+v) ? Math.max(lo, Math.min(hi, Math.round(+v))) : null);
-  const PLAYOFF_RULES = ["playoffTeams", "playoffLegs", "consolation", "reseed"];
+  const PLAYOFF_RULES = ["playoffTeams", "playoffLegs", "consolation", "reseed", "playoffTie"];
   function setRules(L, patch, now) {
     if (isGuillotine(L) && Object.keys(patch).some((k) => ["playoffTeams", "playoffLegs", "consolation", "median", "weeks"].includes(k))) return { ok: false, why: "A guillotine league has no playoffs or schedule to change" };
     const s = L.settings, changed = [];

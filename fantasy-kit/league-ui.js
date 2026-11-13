@@ -97,6 +97,8 @@
       try { if (localStorage.getItem(key)) return; localStorage.setItem(key, "1"); } catch (e) { return; }
       U.dialog(`<h3 class="disp">The heist</h3>${heistCard(mid, { reveal: true })}<div class="acts"><button class="btn go" data-close>On to the week</button></div>`, null, { wide: true });
     }
+    // a league that drafted by auction prices players in dollars; a snake league has no use for them
+    const auctionLg = () => !!(L().draft && L().draft.type === "auction") || !!L().settings.cap;
     const act = (fn, okMsg) => { const r = fn(); if (r && r.ok === false) { U.toast(r.why, true); return false; } save(); if (okMsg) U.toast(okMsg); if (U.dialogOpen()) setTimeout(render, 0); else render(); return true; };
     // review windows and offer lifetimes read in plain time
     const fmtHours = (h) => (h < 1 ? `${Math.max(1, Math.round(h * 60))} minutes` : h < 48 ? `${Math.round(h)} hour${Math.round(h) === 1 ? "" : "s"}` : `${Math.round(h / 24)} days`);
@@ -560,11 +562,16 @@
       return `<div class="medline"><span>League median${m.final ? "" : " so far"}: <b>${fmtS(md)}</b></span><span>${side(m.a, m.sa)}</span><span>${side(m.b, m.sb)}</span></div>`;
     }
     // a playoff game's label: the round, and which bracket it's in
+    // a placement game (settings.consolation "places"): "5th place" in the last round, "For 5th to 8th" before it
+    function placeGame(place, rd) {
+      const left = 2 ** (G.playoffPlan(L()).length - rd.round + 1), ordn = (k) => ord(k);
+      return left <= 2 ? `${ordn(place)} place` : `For ${ordn(place)} to ${ordn(place + left - 1)}`;
+    }
     function kindName(kind, w) {
       const rd = G.roundOf(L(), w);
       if (!rd) return "Playoffs";
       const leg = rd.weeks.length > 1 ? `, week ${rd.weeks.indexOf(w) + 1} of 2` : "";
-      return kind === "third" ? `Third place${leg}` : kind === "cons" ? `Consolation ${rd.name.toLowerCase()}${leg}` : `${rd.name}${leg}`;
+      return kind === "third" ? `Third place${leg}` : /^p\d+$/.test(kind || "") ? `${placeGame(+kind.slice(1), rd)}${leg}` : kind === "cons" ? `Consolation ${rd.name.toLowerCase()}${leg}` : `${rd.name}${leg}`;
     }
     // short week chips: "Week 9", then "Semis", "Final 1", "Final 2"
     function weekChip(x) {
@@ -576,7 +583,7 @@
     function playoffLine(s) {
       const n = s.playoffTeams, P = 2 ** Math.ceil(Math.log2(n)), byes = P - n, plan = G.playoffPlan(L());
       const legs = s.playoffLegs === "all2" ? ", every round two weeks" : s.playoffLegs === "final2" ? ", a two-week final" : "";
-      const extra = s.consolation === "third" ? ", and a third-place game" : s.consolation === "bracket" ? ", and a consolation bracket for the teams that miss" : "";
+      const extra = s.consolation === "third" ? ", and a third-place game" : s.consolation === "bracket" ? ", and a consolation bracket for the teams that miss" : s.consolation === "places" ? ". Every playoff team plays every week for its final place" : "";
       return `${s.weeks} weeks, then ${n} teams in the playoffs${byes ? ` (the top ${byes} get a bye)` : ""} over ${plan.reduce((a, rd) => a + rd.weeks.length, 0)} weeks${legs}${s.reseed && n > 2 ? `, reseeded every round so the best seed left plays the worst` : ""}${extra}`;
     }
     // If the season ended today: the seeds, first-round games (and byes) and the rounds after them.
@@ -605,7 +612,7 @@
         ${tables}
         <div class="cols2">
           <div class="card"><div class="mod-h"><h2>Power rankings</h2><span class="ps">Record, scoring and roster strength</span></div><ol class="feed">${pw.map((r) => `<li style="grid-template-columns:24px auto minmax(0,1fr) auto;align-items:center;padding:8px 16px"><b class="ps num">${r.rank}</b>${teamAv(T(r.team), "sm")}<a class="ell" href="${teamHref(r.team)}" style="color:inherit;text-decoration:none"><b>${esc(T(r.team).name)}</b> <span class="ps">${recOf(r.team)}</span></a>${moveTag(r.move)}</li>`).join("")}</ol></div>
-          <div class="card"><div class="mod-h"><h2>Playoffs</h2><span class="ps">Weeks ${L().settings.weeks + 1} to ${G.totalWeeks(L())}</span></div><div class="bd pobd">${br.length ? br.map((b) => [["title", ""], ["third", "Third place"], ["cons", "Consolation"]].map(([k, name]) => [name, b.games.filter((m) => (m.kind || "title") === k)]).filter(([, gs]) => gs.length).map(([name, gs]) => `<div class="stack" style="gap:8px;margin-bottom:12px"><b class="ps">${name ? `${name}: ` : ""}${esc(b.round)}, week ${b.week}${b.leg ? ` (${b.leg})` : ""}</b>${U.scoreboard(gs.map((m) => ({ href: matchHref(b.week, m.i), me: isMe(m.a) || isMe(m.b), status: m.final ? "final" : "proj", a: { team: T(m.a), score: m.final ? m.sa : m.pa }, b: { team: T(m.b), score: m.final ? m.sb : m.pb } })), fmtS)}</div>`).join("")).join("") : bracketPreview()}</div></div>
+          <div class="card"><div class="mod-h"><h2>Playoffs</h2><span class="ps">Weeks ${L().settings.weeks + 1} to ${G.totalWeeks(L())}</span></div><div class="bd pobd">${br.length ? br.map((b) => [["title", ""], ["third", "Third place"]].concat([...new Set(b.games.map((m) => m.kind).filter((k) => /^p\d+$/.test(k || "")))].sort((x, y) => +x.slice(1) - +y.slice(1)).map((k) => [k, kindName(k, b.week)]), [["cons", "Consolation"]]).map(([k, name]) => [name, b.games.filter((m) => (m.kind || "title") === k), k]).filter(([, gs]) => gs.length).map(([name, gs, k]) => `<div class="stack" style="gap:8px;margin-bottom:12px"><b class="ps">${/^p\d+$/.test(k) ? `${esc(name)}, week ${b.week}` : `${name ? `${name}: ` : ""}${esc(b.round)}, week ${b.week}${b.leg ? ` (${b.leg})` : ""}`}</b>${U.scoreboard(gs.map((m) => ({ href: matchHref(b.week, m.i), me: isMe(m.a) || isMe(m.b), status: m.final ? "final" : "proj", a: { team: T(m.a), score: m.final ? m.sa : m.pa }, b: { team: T(m.b), score: m.final ? m.sb : m.pb } })), fmtS)}</div>`).join("")).join("") : bracketPreview()}</div></div>
         </div></div>`;
     }
     function scoreboardPage(arg) {
@@ -1428,7 +1435,7 @@
         if (own === mid) return `${star}<button class="btn icon drop" data-drop="${esc(p.id)}" aria-label="Drop ${esc(p.n)}">&minus;</button>`;
         return L().settings.trades === false ? star : `${star}<button class="btn icon trade" data-trade="${own}" data-want="${esc(p.id)}" aria-label="Trade for ${esc(p.n)}">&#8644;</button>`;
       };
-      const cols = U.poolColumns(sport, { group: U.groupOf(sport, ui.pf), scoring: L().scoring, owner: statusOf, ownerHide: sub === "fa" || sub === "watch", ownerSort: (p) => (ctx.own[p.id] == null ? -1 : ctx.own[p.id]), actions, extra: pts() ? [] : [] });
+      const cols = U.poolColumns(sport, { money: auctionLg(), value: pts(), group: U.groupOf(sport, ui.pf), scoring: L().scoring, owner: statusOf, ownerHide: sub === "fa" || sub === "watch", ownerSort: (p) => (ctx.own[p.id] == null ? -1 : ctx.own[p.id]), actions, extra: pts() ? [] : [] });
       rows = U.sortRows(rows, cols, ui.psort);
       return `<div class="wrap page"><div class="head"><h1 class="disp">${sub === "fa" ? "Free agents" : sub === "watch" ? "Watchlist" : "All players"}</h1><span class="ps">${rows.length} players. FA is free to add now; W is on waivers, so put in a claim.</span></div>
         ${L().openWaivers > now() && sub !== "all" ? `<div class="banner" style="margin-bottom:12px"><b>Everyone the draft left is on waivers until ${esc(G.waiverWhen(L().openWaivers))}.</b> <span class="muted">Put in claims now${L().settings.waivers === "faab" ? " with a bid" : ""}. They all run then${L().settings.waivers === "faab" ? ", highest bid first" : ", in waiver order"}.</span></div>` : ""}
@@ -1592,10 +1599,10 @@
       const startWeeks = own != null ? Array.from({ length: Math.min(L().week - 1, G.totalWeeks(L())) }, (_, i) => i + 1) : [];
       const started = startWeeks.filter((w) => G.lineupFor(L(), ctx, own, w).includes(pid)).length;
       const stats = [["Overall", `#${p.rank}`], ["Position", esc(p.prank)]]
-        .concat(W && W.avg != null ? [["Per week", fmtS(W.avg)]] : [[pts() ? (sport.weekOf != null ? `Week ${sport.weekOf}` : "Projection") : "Value", pts() ? (sport.weekOf != null ? fmtS(p.v / 17) : String(Math.round(p.v))) : p.v.toFixed(1)]])
+        .concat(W && W.avg != null ? [["Per week", fmtS(W.avg)]] : pts() ? [[sport.weekOf != null ? `Week ${sport.weekOf}` : "Projection", sport.weekOf != null ? fmtS(p.v / 17) : String(Math.round(p.v))]] : [])
         .concat(trend != null ? [["Last 3 weeks", `${fmtS(last3)}<em class="${trend >= 0.1 ? "up" : trend <= -0.1 ? "dn" : ""}">${trend >= 0 ? "+" : ""}${Math.round(trend * 100)}%</em>`]] : [])
         .concat(startWeeks.length && !bb() ? [["Started", `${started} of ${startWeeks.length}`]] : [])
-        .concat([["Auction", p.$ ? money(p.$) : "-"]]);
+        .concat(auctionLg() ? [["Auction", p.$ ? money(p.$) : "-"]] : []);
       const Dl = U.dialog(U.playerCard(sport, p, { scoring: L().scoring, actions, status, stats, week: weekPanel(p, W || {}), extra: pts() ? weekBars(p, W) : catWeeks(p), after: leagueLog(p), fold: true }), null, { wide: true, sheet: true });
       $$("[data-card]", Dl).forEach((b) => b.addEventListener("click", () => {
         const a = b.dataset.card; Dl.close();
@@ -1846,7 +1853,7 @@
           openTrade(seller, null, { get: (isFrom ? t.give : t.get).slice(), pickGet: ((isFrom ? t.pickGive : t.pickGet) || []).slice(), give: [], rivalOf: t.id, lockGet: true });
         }
         else if (d.trCounter) { const t = L().trades.find((x) => x.id === +d.trCounter); openTrade(t.from, null, { give: t.get.slice(), get: t.give.slice(), pickGive: (t.pickGet || []).slice(), pickGet: (t.pickGive || []).slice(), faabGive: t.faabGet, faabGet: t.faabGive, counterOf: t.id }); }
-        else if (d.sort) { const cols = U.poolColumns(sport, { scoring: L().scoring, group: U.groupOf(sport, ui.pf), owner: statusOf, ownerSort: (p) => ctx.own[p.id] }); ui.psort = U.nextSort(ui.psort, d.sort, cols); render(); }
+        else if (d.sort) { const cols = U.poolColumns(sport, { money: auctionLg(), value: pts(), scoring: L().scoring, group: U.groupOf(sport, ui.pf), owner: statusOf, ownerSort: (p) => ctx.own[p.id] }); ui.psort = U.nextSort(ui.psort, d.sort, cols); render(); }
         return;
       }
       const pl = e.target.closest("[data-player]");

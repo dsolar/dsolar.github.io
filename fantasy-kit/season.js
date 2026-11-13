@@ -28,6 +28,7 @@
     return d.getTime() + add * DAY;
   }
 
+  const CARRY_SKIP = new Set(["real", "span", "slate", "showdown", "pool", "mult", "playoffWeeks", "lineup", "bench", "frozen", "cap", "waiverAt"]);
   function begin(D, sport, o = {}) {
     const s = D.season || { format: "h2h", weeks: 14 };
     const weeks = s.weeks || 14, n = D.teams.length;
@@ -98,6 +99,9 @@
       Object.assign(settings.slate, { day: day.day, list: day.games.map((g) => ({ id: g.id, away: g.away, home: g.home, at: Date.parse(g.at) })) });
       settings.span = { end: Math.max(at + HOUR, day.last + 3 * HOUR) };
     }
+    // a league's second season on: last season's rules as the commissioner left them (D.rules, from nextDraft), so a
+    // change made mid-season isn't lost to the original setup. What belongs to one season stays behind.
+    if (D.rules) for (const [k, v] of Object.entries(D.rules)) if (!CARRY_SKIP.has(k)) settings[k] = JSON.parse(JSON.stringify(v));
     const L = G.create({ sport, draft: D, name: o.name || D.name, season: o.season || "", now: at, start, scoring: D.scoring, settings });
     // each keeper's cost history: what he was first worth, and the years he's been kept (this one counted)
     if (D.keepInfo) L.keepInfo = JSON.parse(JSON.stringify(D.keepInfo));
@@ -576,6 +580,7 @@
     for (const k of keepers) F.keep(D, k.team, k.pid, k.round, k.price);
     D.teams.forEach((t, i) => (t.color = L.teams[i].color));
     D.season = D0.season; if (D0.scoringSpec) D.scoringSpec = D0.scoringSpec;
+    D.rules = JSON.parse(JSON.stringify(L.settings));
     D.year = (D0.year || 1) + 1;
     // a climbing rule: each keeper's history goes with him into the new season (begin() reads D.keepInfo)
     if (L.settings.keeperRule) {
@@ -596,6 +601,7 @@
     D.order.forEach((orig, k) => { const r = Math.floor(k / n) + 1, own = G.pickOwner(L, `${r}:${orig}`); if (own !== orig) { D.order[k] = own; D.via[k] = orig; } });
     D.teams.forEach((t, i) => (t.color = L.teams[i].color));
     D.season = D0.season; if (D0.scoringSpec) D.scoringSpec = D0.scoringSpec;
+    D.rules = JSON.parse(JSON.stringify(L.settings));
     D.year = (D0.year || 1) + 1;
     D.rookie = true;
     // picks traded for the season after next become next season's picks in the new league
