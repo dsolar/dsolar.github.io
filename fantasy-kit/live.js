@@ -921,6 +921,8 @@
       <div class="row3">
         ${sel("tradeMax", "Trade size", [[0, "No limit"], [1, "1-for-1 at most"], [2, "2-for-2 at most"], [3, "3-for-3 at most"], [4, "4-for-4 at most"]], s.tradeMax || 0)}
         ${s.tradeReview === "vote" ? sel("vetoShare", "Votes to veto", [[0.34, "A third"], [0.5, "Half"], [0.67, "Two thirds"]], s.vetoShare || 0.5) : ""}
+        ${s.keepers || s.dynasty ? sel("pickTrades", "Trade draft picks", [["offseason", "In the offseason only"], ["always", "Any time"], ["off", "Never"]], s.pickTrades === "always" || s.pickTrades === true ? "always" : s.pickTrades ? "offseason" : "off") : ""}
+        ${s.waivers === "faab" ? sel("faabTrades", "Trade FAAB", [[1, "Yes, as part of a trade"], [0, "No"]], s.faabTrades === false ? 0 : 1) : ""}
       </div>
       ${s.tradeReview === "counter" ? `<p class="ps" style="margin:0">In the counter window any other team can bid for the same players, offering no more than the deal does. The selling team can take a bid; if it doesn't, the trade goes through when the window closes.</p>` : ""}`}
       ${gl ? "" : `<div class="row3">
@@ -949,8 +951,8 @@
       <p class="ps" style="margin:0">${started ? "The season has started, so its length and schedule are set. " : ""}Changes apply from now on; finished weeks keep their results${medianOk ? ", except that turning the median game on or off recounts every record" : ""}.</p>
       <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">Save rules</button></div></form>`, (fd) => {
       const patch = {};
-      for (const [k, v] of fd.entries()) if (k === "elig") patch[k] = (S.ELIG_PRESETS[v] || S.ELIG_PRESETS.yahoo)[1]; else patch[k] = ["trades", "median", "bestBall", "reseed", "bots", "daily"].includes(k) ? v === "1" : k === "historyUrl" ? String(v).trim() : ["waivers", "tradeReview", "playoffLegs", "consolation", "waiverOrder", "waiverPrice", "gameLock", "draftOrder", "lotteryOdds", "showBids"].includes(k) ? v : Number(v);
-      const was = (k) => (k === "elig" ? s.elig || S.ELIG : k === "bots" ? s.bots !== false : k === "daily" ? !!s.daily : k === "historyUrl" ? s.historyUrl || "" : k === "trades" ? s.trades !== false : ["median", "bestBall", "reseed"].includes(k) ? !!s[k] : k === "draftOrder" ? s[k] || "worst" : k === "waiverPrice" ? s[k] || "first" : k === "waiverOrder" ? s[k] || "rolling" : k === "maxAddsSeason" ? s[k] || 0 : k === "lotteryOdds" ? s[k] || "weighted" : k === "showBids" ? s[k] || "all" : ["tradeMax", "minIP"].includes(k) ? s[k] || 0 : s[k]);
+      for (const [k, v] of fd.entries()) if (k === "elig") patch[k] = (S.ELIG_PRESETS[v] || S.ELIG_PRESETS.yahoo)[1]; else patch[k] = ["trades", "median", "bestBall", "reseed", "bots", "daily", "faabTrades"].includes(k) ? v === "1" : k === "historyUrl" ? String(v).trim() : ["waivers", "tradeReview", "playoffLegs", "consolation", "waiverOrder", "waiverPrice", "gameLock", "draftOrder", "lotteryOdds", "showBids", "pickTrades"].includes(k) ? v : Number(v);
+      const was = (k) => (k === "elig" ? s.elig || S.ELIG : k === "bots" ? s.bots !== false : k === "daily" ? !!s.daily : k === "historyUrl" ? s.historyUrl || "" : k === "trades" ? s.trades !== false : ["median", "bestBall", "reseed"].includes(k) ? !!s[k] : k === "draftOrder" ? s[k] || "worst" : k === "waiverPrice" ? s[k] || "first" : k === "waiverOrder" ? s[k] || "rolling" : k === "maxAddsSeason" ? s[k] || 0 : k === "lotteryOdds" ? s[k] || "weighted" : k === "showBids" ? s[k] || "all" : k === "pickTrades" ? (s[k] === "always" || s[k] === true ? "always" : s[k] ? "offseason" : "off") : k === "faabTrades" ? s[k] !== false : ["tradeMax", "minIP"].includes(k) ? s[k] || 0 : s[k]);
       for (const k of Object.keys(patch)) if (JSON.stringify(patch[k]) === JSON.stringify(was(k))) delete patch[k];
       if (!Object.keys(patch).length) return;
       const r = G.setRules(L, patch, now());

@@ -172,3 +172,33 @@ test('daily lineups: a lineup per day, carried forward, scored day by day', () =
   const tw = G.teamWeek(L, ctx, 0, 1, 1);
   assert.equal(tw.cats.hr, 2);
 });
+
+test('a 2-for-1 can leave the other team over the limit: it picks who to drop when it accepts', () => {
+  const { L, ctx, t } = league({ tradeReview: 'none' });
+  L.settings.tradeReview = 'none';
+  L.teams[1].owner = 'Someone';
+  const full = L.rosters[1].length, max = G.maxRoster(L);
+  assert.equal(full, max, 'drafted rosters start full');
+  const give = L.rosters[0].slice(-2), get = [L.rosters[1][L.rosters[1].length - 1]];
+  const r = G.propose(L, ctx, 0, 1, give, get, t + 1);
+  assert.ok(r.ok, r.why);
+  const no = G.respond(L, ctx, r.trade.id, true, t + 2);
+  assert.equal(no.ok, false);
+  assert.equal(no.needDrops, 1);
+  const drop = L.rosters[1].find((x) => !get.includes(x));
+  const yes = G.respond(L, ctx, r.trade.id, true, t + 3, '', [drop]);
+  assert.ok(yes.ok, yes.why);
+  assert.equal(L.rosters[1].length, max);
+  assert.ok(!L.rosters[1].includes(drop) && give.every((x) => L.rosters[1].includes(x)));
+});
+
+test('a bot taking a 2-for-1 drops its least valuable player itself', () => {
+  const { L, ctx, t } = league({ tradeReview: 'none' });
+  L.settings.tradeReview = 'none';
+  const give = L.rosters[0].slice(-2), get = [L.rosters[2][0]];
+  const r = G.propose(L, ctx, 0, 2, give, get, t + 1);
+  assert.ok(r.ok, r.why);
+  const yes = G.respond(L, ctx, r.trade.id, true, t + 2);
+  assert.ok(yes.ok, yes.why);
+  assert.equal(L.rosters[2].length, G.maxRoster(L));
+});

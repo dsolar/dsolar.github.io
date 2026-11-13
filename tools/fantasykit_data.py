@@ -380,6 +380,41 @@ def mlb():
                   "players": list(by.values())})
 
 
+def mlb_prev():
+    """Last season's lines beside this season's (p["l0"], data["prev"]): what Yahoo shows as the season before. From the
+    season files in tools/mlb, so it runs without the network; mlb() calls it after writing the pool."""
+    path = os.path.join(OUT, "mlb.json")
+    d = load("fantasy-kit/data/mlb.json")
+    if not d or not d.get("season"):
+        return
+    prev = str(int(d["season"]) - 1)
+    src = load(f"tools/mlb/{prev}.json")
+    if not src:
+        print(f"No {prev} season file; no last-season lines")
+        return
+    bat = {str(h["id"]): h for h in src.get("hitting", []) if h.get("pa", 0) >= 20 and h.get("pos") != "P"}
+    pit = {str(q["id"]): q for q in src.get("pitching", []) if q.get("ip", 0) >= 5}
+    n = 0
+    for p in d.get("players", []):
+        l0 = {}
+        h, q = bat.get(str(p.get("id"))), pit.get(str(p.get("id")))
+        if h:
+            l0["bat"] = [h.get(c, 0) for c in BAT_COLS]
+        if q:
+            line = [q.get(c, 0) for c in PIT_COLS]
+            line[PIT_COLS.index("ip")] = round(ip_real(q.get("ip", 0)), 2)
+            l0["pit"] = line
+        if l0:
+            p["l0"] = l0
+            n += 1
+        else:
+            p.pop("l0", None)
+    d["prev"] = prev
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(d, f, ensure_ascii=False, separators=(",", ":"))
+    print(f"MLB {prev} lines: {n} of {len(d.get('players', []))} players")
+
+
 # Projections: FanGraphs' Steamer, by MLBAM id (the same ids as the Stats API). Rest of season while one is out
 # (steamerr), else the full-season projection (between seasons, next season's). Players with a projection and no
 # line last season join the pool when they're projected for real playing time (250 PA or 50 IP): rookies, mostly.
@@ -924,6 +959,10 @@ def main(argv):
                 mlb_weeks()
             except Exception as e:
                 print(f"MLB weeks didn't build: {type(e).__name__}: {e}")
+            try:
+                mlb_prev()
+            except Exception as e:
+                print(f"MLB last-season lines didn't build: {type(e).__name__}: {e}")
             try:
                 mlb_prospects()
             except Exception as e:

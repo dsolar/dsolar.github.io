@@ -1524,7 +1524,7 @@
     playoffTeams: (v) => clampInt(v, 0, 32), playoffLegs: (v) => (["1", "final2", "all2"].includes(String(v)) ? String(v) : null), consolation: (v) => (["none", "third", "bracket", "places"].includes(v) ? v : null),
     weeks: (v) => clampInt(v, 1, 30), taxi: (v) => clampInt(v, 0, 6),
     waiverPrice: (v) => (v === "first" || v === "second" ? v : null),
-    tradeMax: (v) => clampInt(v, 0, 10), reseed: (v) => !!v, minIP: (v) => clampInt(v, 0, 100), draftOrder: (v) => (["worst", "lottery"].includes(v) ? v : null),
+    tradeMax: (v) => clampInt(v, 0, 10), pickTrades: (v) => (v === "offseason" || v === "always" ? v : v === "off" || v === false ? false : null), faabTrades: (v) => !!v, reseed: (v) => !!v, minIP: (v) => clampInt(v, 0, 100), draftOrder: (v) => (["worst", "lottery"].includes(v) ? v : null),
     lotteryOdds: (v) => (["equal", "weighted"].includes(v) ? v : null), playoffTie: (v) => (v === "seed" || v === "h2h" ? v : null), bots: (v) => !!v, daily: (v) => !!v, showBids: (v) => (v === "all" || v === "won" ? v : null), historyUrl: (v) => (v === "" || /^(https:\/\/|\/)[^\s"<>]{1,200}$/.test(String(v)) ? String(v) : null),
     elig: (v) => (v && typeof v === "object" && ["g", "gs", "sp", "rp"].every((k) => clampInt(v[k], 0, 60) != null) ? { g: clampInt(v.g, 0, 60), gs: clampInt(v.gs, 0, 60), sp: clampInt(v.sp, 0, 60), rp: clampInt(v.rp, 0, 60) } : null),
   };
@@ -2076,12 +2076,60 @@
   }
   // The prospect next year's class puts at a pick's slot, or null (and none for a pick two seasons out).
   const pickProspect = (L, ctx, key) => { const cl = pickYear(key) === 1 && classValues(L, ctx); return cl ? (cl[pickSlot(L, key)] || {}).pr || null : null; };
+  /* Trade values in a keeper league. What a deal is worth there is next season's draft:
+       a pick is worth the player you'd expect at that spot once the likely keepers are out of the pool (kept players
+       fill their own rounds' picks, so a 1st-round pick goes deeper into the pool than its number);
+       a player, between seasons, is worth what keeping him saves over the pick he'd cost, and nothing if he can't be
+       kept, because he goes back into the draft. During the season he's worth what he'll score, as anywhere else.
+     The likely keepers: each team's best values over their cost, up to the league's limit. Keeper costs come from
+     season.js (FK.season.keeperCost), or ctx.hooks.keeperCost. */
+  const ROOT = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : {};
+  function keeperMarket(L, ctx) {
+    const kc = (ctx.hooks && ctx.hooks.keeperCost) || (ROOT.FK && ROOT.FK.season && ROOT.FK.season.keeperCost);
+    if (!kc || !(L.settings.keepers > 0) || L.settings.dynasty || (L.draft && L.draft.type === "auction")) return null;
+    const key = `${L.week}:${L.tx.length}:${L.trades.length}:${L.rosters.map((r) => r.length).join(",")}`;
+    if (ctx._km && ctx._km.key === key) return ctx._km;
+    const n = L.teams.length, R = (L.draft && L.draft.rounds) || 15, K = L.settings.keepers;
+    const val = (p) => Math.max(0, (p && p.$) || 0);
+    // one entry a person: a two-way player can be in the pool twice (as a hitter and as a pitcher), and the copy nobody
+    // rosters isn't really there to draft
+    const nm = (p) => String(p.n || "").toLowerCase().replace(/\s*\((batter|pitcher|hitter)\)$/, "").replace(/[^a-z]/g, "");
+    const rostered = new Set(ctx.players.filter((p) => ctx.own[p.id] != null).map(nm)), seen = new Set();
+    const all = ctx.players.filter((p) => p && p.$ != null).sort((a, b) => val(b) - val(a)).filter((p) => { const k = nm(p); if (ctx.own[p.id] == null && rostered.has(k)) return false; if (seen.has(k)) return false; seen.add(k); return true; });
+    const cost = {};
+    for (const ids of L.rosters) for (const id of ids) { try { cost[id] = kc(L, id); } catch (e) { cost[id] = null; } }
+    const mid = (r) => (Math.max(1, Math.min(R, r)) - 1) * n + n / 2;
+    const choose = (draftAt) => {
+      const kept = new Set(), perRound = Array(R + 2).fill(0);
+      for (const ids of L.rosters) {
+        const opts = ids.map((id) => ctx.byId[id]).filter(Boolean).map((p) => { const c = cost[p.id]; return c && !c.no && c.round != null ? { p, r: Math.min(R, c.round), s: val(p) - draftAt(mid(c.round)) } : null; })
+          .filter((x) => x && x.s > 0).sort((a, b) => b.s - a.s).slice(0, K);
+        for (const o of opts) { kept.add(o.p.id); perRound[o.r]++; }
+      }
+      return { kept, perRound };
+    };
+    const market = (k) => {
+      const pool = all.filter((p) => !k.kept.has(p.id));
+      // how many players the draft has taken before an overall pick: every earlier round's open picks, then this one's
+      const before = (slot) => { const r = Math.min(R, Math.floor(slot / n) + 1), j = slot % n; let e = 0; for (let i = 1; i < r; i++) e += Math.max(0, n - k.perRound[i]); return e + (j * Math.max(0, n - k.perRound[r])) / n; };
+      return (slot) => val(pool[Math.max(0, Math.min(pool.length - 1, Math.round(before(slot))))]);
+    };
+    const flat = (slot) => val(all[Math.max(0, Math.min(all.length - 1, Math.round(slot)))]);
+    let k = choose(flat), draftAt = market(k);
+    k = choose(draftAt); draftAt = market(k);
+    const player = (id) => { const p = ctx.byId[id], c = cost[id] !== undefined ? cost[id] : kc(L, id); if (!p) return 0; if (!c || c.no) return 0; if (c.round == null) return val(p); return Math.max(0, val(p) - draftAt(mid(c.round))); };
+    ctx._km = { key, draftAt, kept: k.kept, player, cost };
+    return ctx._km;
+  }
   function pickValue(L, ctx, key) {
     const r = +key.split(":")[0], far = pickYear(key) > 1, slot = pickSlot(L, key), R = pickRounds(L) || 3, n = L.teams.length;
+    // a keeper league: the player who'd be there once the likely keepers are out (two seasons out, the middle of the round, a little lower)
+    const km = keeperMarket(L, ctx);
+    if (km) return Math.max(0.5, km.draftAt(far ? (r - 1) * n + n / 2 : slot) * (far ? 0.85 : 1));
     // a pick two seasons out could land anywhere, so it's priced at the middle of its round, and a little lower
     const pool = ctx.free.slice().sort((a, b) => (b.$ || 0) - (a.$ || 0));
     const fa = (pool[slot] && pool[slot].$) || 1, cl = classValues(L, ctx);
-    // no class to go on (baseball, or the board didn't load): the free agent at that slot, plus a rookie's upside
+    // no class to go on (the board didn't load): the free agent at that slot, plus a rookie's upside, a dynasty's few rounds
     if (!cl) return Math.max(2, (fa * 1.3 + (R - r + 1) * 2) * (far ? 0.85 : 1));
     // with the class: the better of the prospect and the free agent at that slot, plus a little that steps down pick
     // by pick, so a late 2nd is still worth more than a late 3rd when both are $1 players
@@ -2089,8 +2137,14 @@
     return Math.max(1, v * (far ? 0.85 : 1));
   }
   const ordinal = (k) => k + (k % 100 >= 11 && k % 100 <= 13 ? "th" : { 1: "st", 2: "nd", 3: "rd" }[k % 10] || "th");
-  const pValue = (ctx, id) => Math.max(1, (ctx.byId[id] && ctx.byId[id].$) || 0) + Math.max(0, (ctx.byId[id] && ctx.byId[id].vor) || 0) * 0.01;
-  const sideValue = (ctx, ids, faab = 0) => sum(ids.map((id) => pValue(ctx, id))) + faab * 0.1;
+  // a player's trade value: between seasons in a keeper league, what keeping him saves (see keeperMarket); otherwise
+  // his value in this league. Pass L to get the keeper league's view.
+  const pValue = (ctx, id, L) => {
+    const km = L && offseason(L) ? keeperMarket(L, ctx) : null;
+    if (km) return km.player(id);
+    return Math.max(1, (ctx.byId[id] && ctx.byId[id].$) || 0) + Math.max(0, (ctx.byId[id] && ctx.byId[id].vor) || 0) * 0.01;
+  };
+  const sideValue = (ctx, ids, faab = 0, L) => sum(ids.map((id) => pValue(ctx, id, L))) + faab * 0.1;
   function tradeCheck(L, ctx, t, now) {
     if (L.settings.trades === false) return { ok: false, why: "This league has no trades" };
     if (!isAlive(L, t.from) || !isAlive(L, t.to)) return { ok: false, why: "That team has been chopped" };
@@ -2101,6 +2155,7 @@
     for (const k of pr) if (pickOwner(L, k) !== t.to) return { ok: false, why: `${L.teams[t.to].name} doesn't have that pick` };
     if ((pg.length || pr.length) && !pickRounds(L)) return { ok: false, why: "This league doesn't trade draft picks" };
     if ((pg.length || pr.length) && L.settings.pickTrades === "offseason" && !offseason(L)) return { ok: false, why: "Draft picks trade in the offseason only" };
+    if (((t.faabGive || 0) || (t.faabGet || 0)) && L.settings.faabTrades === false) return { ok: false, why: "This league doesn't trade FAAB" };
     const off = offseason(L);
     if (!off && L.settings.deadline && L.week > L.settings.deadline) return { ok: false, why: `The trade deadline was week ${L.settings.deadline}` };
     if (!off && L.week > totalWeeks(L)) return { ok: false, why: "The season is over" };
@@ -2117,7 +2172,9 @@
     const irLeft = (team, out) => held(L, team).filter((x) => !out.includes(x)).length;   // IR players traded away arrive active
     // the offseason has no roster limit: rosters cut down before next season's week 1 anyway
     if (!off && after(t.from, t.give, t.get, t.dropsFrom || []) > maxRoster(L) + irLeft(t.from, t.give)) return { ok: false, why: `${L.teams[t.from].name} would have too many players: add a drop` };
-    if (!off && after(t.to, t.get, t.give, t.dropsTo || []) > maxRoster(L) + irLeft(t.to, t.get)) return { ok: false, why: `${L.teams[t.to].name} would have too many players` };
+    // the team taking more players than it sends picks who to drop when it accepts, so an offer can leave it over
+    const toOver = after(t.to, t.get, t.give, t.dropsTo || []) - maxRoster(L) - irLeft(t.to, t.get);
+    if (!off && toOver > 0 && t.status !== "pending" && t.id != null && L.trades.includes(t)) return { ok: false, why: `${L.teams[t.to].name} has to drop ${toOver} to take this trade`, needDrops: toOver };
     if (ctx.hooks.tradeCheck) { const c = ctx.hooks.tradeCheck(L, t, ctx); if (c && !c.ok) return c; }
     return { ok: true };
   }
@@ -2130,11 +2187,28 @@
     L.trades.push(t);
     return { ok: true, trade: t };
   }
-  function respond(L, ctx, id, accept, now, why) {
+  // how many the receiving team has to drop to take a trade (0 in the offseason, when rosters can run over)
+  function dropsNeeded(L, t) {
+    if (offseason(L)) return 0;
+    const ir = held(L, t.to).filter((x) => !t.get.includes(x)).length;
+    return Math.max(0, L.rosters[t.to].length - t.get.length + t.give.length - maxRoster(L) - ir);
+  }
+  function respond(L, ctx, id, accept, now, why, drops) {
     const t = L.trades.find((x) => x.id === id);
     if (!t || t.status !== "pending") return { ok: false, why: "That offer is no longer open" };
     if (!accept) { t.status = "rejected"; t.done = now; t.why = why || ""; return { ok: true }; }
+    // the receiving team's drops, when it ends up over the limit: its choice, or (a bot) its least valuable bench players
+    const need = dropsNeeded(L, t);
+    if (need > 0) {
+      let ds = (drops || []).filter((x) => L.rosters[t.to].includes(x) && !t.get.includes(x));
+      if (!drops && !L.teams[t.to].owner) ds = L.rosters[t.to].filter((x) => !t.get.includes(x) && !held(L, t.to).includes(x) && ctx.byId[x]).sort((a, b) => pValue(ctx, a) - pValue(ctx, b)).slice(0, need);
+      if (ds.length < need) return { ok: false, why: `Pick ${need} player${need === 1 ? "" : "s"} to drop to make room`, needDrops: need };
+      t.dropsTo = ds.slice(0, need);
+    }
+    t.status = "accepting";
     const c = tradeCheck(L, ctx, t, now);
+    t.status = "pending";
+    if (!c.ok) t.dropsTo = [];
     if (!c.ok) return c;
     // a rival bid the selling team takes: the deal it beat is off, any other bids for it lapse, and this one goes
     // through now (it doesn't get a counter window of its own)
@@ -2206,6 +2280,7 @@
     for (const id of t.give) bank(L, ctx, t.from, id, now);
     for (const id of t.get) bank(L, ctx, t.to, id, now);
     for (const id of t.dropsFrom || []) { bank(L, ctx, t.from, id, now); dropOne(L, t.from, id, now); }
+    for (const id of t.dropsTo || []) { bank(L, ctx, t.to, id, now); dropOne(L, t.to, id, now); }
     L.rosters[t.from] = L.rosters[t.from].filter((x) => !t.give.includes(x)).concat(t.get);
     L.rosters[t.to] = L.rosters[t.to].filter((x) => !t.get.includes(x)).concat(t.give);
     // a player traded off IR arrives active; his old team's IR spot opens
@@ -2238,7 +2313,7 @@
   // A bot takes a deal that leaves it ahead on value.
   function botAnswer(L, ctx, t) {
     const pv = (ks) => sum((ks || []).map((k) => pickValue(L, ctx, k)));
-    const gets = sideValue(ctx, t.give, t.faabGive) + pv(t.pickGive), gives = sideValue(ctx, t.get, t.faabGet) + pv(t.pickGet);
+    const gets = sideValue(ctx, t.give, t.faabGive, L) + pv(t.pickGive), gives = sideValue(ctx, t.get, t.faabGet, L) + pv(t.pickGet);
     if (gets >= gives * 1.06 + 1) return { accept: true };
     return { accept: false, why: gives > gets * 1.5 ? "Not even close." : "Close, but not enough coming back." };
   }
@@ -2386,7 +2461,7 @@
     const seeds = seedOrder(L); return seeds.indexOf(m.a) <= seeds.indexOf(m.b) ? m.a : m.b;
   }
   return { daily, dayIdx, dayNow, dayLines, hasDays, dailyLines, dailyPlayerLine, playoffWinner, recap, takerOf, openRaids, protectOf, kingOf, hungover, pyoTurn, pyoOptions, pyoPick, pyoAuto, runPyo, pyoLast, PYO_HOURS, realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
-    finishWeek, slotMult, setKicks, isLocked, freezeLineups, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade, botsAct, rivalCheck, rivalsOf, draftLottery,
+    finishWeek, slotMult, setKicks, isLocked, freezeLineups, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, keeperMarket, tradeCheck, dropsNeeded, propose, respond, cancelTrade, botsAct, rivalCheck, rivalsOf, draftLottery,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, waiverPrice, waiverClear, nextWeekClear, waiverDays, clearAt, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
 });

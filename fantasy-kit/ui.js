@@ -373,9 +373,19 @@
   const projLabel = (sport) => { const L = sport.data.lines, l = ((L.pbat || L.ppg || {}).label || "Projections").replace(/, (batting|per game)$/, ""); return sport.key === "mlb" && l === "Steamer" ? `${+sport.data.season + 1} Steamer projections` : l.replace(/season projection/, "projections"); };
   const statsLabel = (sport) => `${sport.data.season} stats`;
   const lineOf = (sport, p, line) => { const pl = PROJ_OF[line]; return sport.statView === "proj" && pl && sport.data.lines[pl] ? pl : line; };
+  // last season's line (p.l0, data.prev): what Yahoo shows as the season before this one
+  const hasPrev = (sport) => !!(sport && sport.data && sport.data.prev);
+  const prevLabel = (sport) => `${sport.data.prev} stats`;
+  function prevStat(sport, p, c) {
+    const P = { l: (p && p.l0) || {} }, line = c.line;
+    if (!line || !P.l[line]) return null;
+    if (c.ratio) { const n = S.stat(sport, P, line, c.ratio[0]), d = S.stat(sport, P, line, c.ratio[1]); return d ? n / d : null; }
+    return S.stat(sport, P, line, c.col);
+  }
   function statCell(sport, p, c) {
     if (c.fpts) return p.fpts;
     if (c.fpg) return p.fpg;
+    if (sport.statView === "prev" && c.line && !c.fpts) return prevStat(sport, p, c);
     const line = c.line ? lineOf(sport, p, c.line) : c.line;
     if (line !== c.line && !(p.l && p.l[line])) return null;
     if (c.ratio) { const n = S.stat(sport, p, line, c.ratio[0]), d = S.stat(sport, p, line, c.ratio[1]); return d ? n / d : null; }
@@ -386,14 +396,21 @@
   function initView(sport) {
     if (!hasProj(sport)) { sport.statView = "stats"; return; }
     let v = null; try { v = localStorage.getItem(viewKey(sport)); } catch (e) { /* no storage */ }
-    sport.statView = v === "stats" || v === "proj" ? v : sport.key === "mlb" ? "proj" : "stats";
+    sport.statView = v === "stats" || v === "proj" || (v === "prev" && hasPrev(sport)) ? v : sport.key === "mlb" ? "proj" : "stats";
   }
   function viewSelect(sport, id) {
     if (!hasProj(sport)) return "";
     if (!sport.statView) initView(sport);
-    return `<label class="sr" for="${id}">Stats or projections</label><select id="${id}" class="pill-sel">${[["stats", statsLabel(sport)], ["proj", projLabel(sport)]].map(([v, l]) => `<option value="${v}"${sport.statView === v ? " selected" : ""}>${esc(l)}</option>`).join("")}</select>`;
+    return `<label class="sr" for="${id}">Stats or projections</label><select id="${id}" class="pill-sel">${[["proj", projLabel(sport)], ["stats", statsLabel(sport)]].concat(hasPrev(sport) ? [["prev", prevLabel(sport)]] : []).map(([v, l]) => `<option value="${v}"${sport.statView === v ? " selected" : ""}>${esc(l)}</option>`).join("")}</select>`;
   }
-  function setView(sport, v) { sport.statView = v === "proj" ? "proj" : "stats"; try { localStorage.setItem(viewKey(sport), sport.statView); } catch (e) { /* no storage */ } }
+  // the seasons as a switch: next season's projection, this season, the season before
+  function statSwitch(sport) {
+    if (!hasProj(sport)) return "";
+    if (!sport.statView) initView(sport);
+    const yr = +(sport.data && sport.data.season) || null;
+    return `<div class="seg stsw" role="group" aria-label="Numbers">${[["proj", sport.key === "mlb" && yr ? `${yr + 1} proj` : "Projected"], ["stats", yr ? `${yr}` : "Stats"]].concat(hasPrev(sport) ? [["prev", String(sport.data.prev)]] : []).map(([v, l]) => `<button type="button" data-statview="${v}" aria-pressed="${sport.statView === v}">${esc(l)}</button>`).join("")}</div>`;
+  }
+  function setView(sport, v) { sport.statView = v === "proj" ? "proj" : v === "prev" && hasPrev(sport) ? "prev" : "stats"; try { localStorage.setItem(viewKey(sport), sport.statView); } catch (e) { /* no storage */ } }
   const isPoints = (sport, scoring) => (sport.scorings[scoring] || Object.values(sport.scorings)[0]).type === "points";
   // Columns for a player table. opts: { group (one baseball side), money (false to hide $), scoring, owner (p => html),
   // actions (p => html), lead (columns first), stats (false to skip), extra (columns before the stats), age }
@@ -587,84 +604,136 @@
   const txLine = (sport, kind, p, extra = "") => `<div class="row"><span class="txi ${kind}" role="img" aria-label="${TXI[kind][1]}" title="${TXI[kind][1]}">${TXI[kind][0]}</span><span data-player="${esc(p.id)}" style="cursor:pointer;min-width:0">${pname(sport, p, extra, { size: "sm" })}</span></div>`;
   // vm: { id, status, statusLabel, from, to, give: [players], get, faab: [give, get], note, when, acts (html) }
   function tradeCard(sport, vm) {
-    const side = (t, ps, faab, label) => `<div class="side"><h4>${teamAv(t, "sm")}${esc(label)}</h4>${ps.map((p) => p.pick ? pname(sport, p) : `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, p.price != null ? esc(p.price) : p.$ ? money(p.$) : "")}</span>`).join("") || `<span class="ps">No players</span>`}${faab ? `<span><span class="tag gold">$${faab} FAAB</span></span>` : ""}</div>`;
+    const side = (t, ps, faab, label) => `<div class="side"><h4>${teamAv(t, "sm")}${esc(label)}</h4>${ps.map((p) => p.pick ? pname(sport, p) : `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, p.price != null ? esc(p.price) : "")}</span>`).join("") || `<span class="ps">No players</span>`}${faab ? `<span><span class="tag gold">$${faab} FAAB</span></span>` : ""}</div>`;
     return `<div class="card" id="trade-${vm.id}"><div class="mod-h"><span class="status ${vm.status}">${esc(vm.statusLabel)}</span>${vm.sub ? `<span class="ps">${vm.sub}</span>` : ""}<span class="ps" style="margin-left:auto">${esc(vm.when || "")}</span></div>
       <div class="trade">${side(vm.from, vm.give, vm.faab && vm.faab[0], `${vm.from.name} sends`)}<span class="arrow" aria-hidden="true">&#8644;</span>${side(vm.to, vm.get, vm.faab && vm.faab[1], `${vm.to.name} sends`)}</div>
       ${vm.note ? `<p class="small" style="margin:0 16px 12px">&ldquo;${esc(vm.note)}&rdquo;</p>` : ""}${vm.acts ? `<div class="trade-foot">${vm.acts}</div>` : ""}</div>`;
   }
 
-  /* The trade window: both rosters side by side, pick players and FAAB, see the value swing, send.
-     opts: { sport, teams, me, other, roster(teamId) -> players, value(players, faab) -> number, faab(teamId) (omit to hide),
-             roomFor(trade) -> drops needed, check(trade) -> { ok, why }, submit(trade) -> { ok, why },
-             prefill: { give, get, faabGive, faabGet, note, lockGet (their side is fixed: a rival bid) }, title,
-             values(trade) -> [send, get] to override value(), dark, empty (the prompt before anything is picked) }
-     A roster item with pick: true is a draft pick ({ id, n, sub, price }) and renders as one. */
+  /* The trade builder: the whole screen, your side and theirs. Each side has three tabs, players (with their stat
+     line, rank and keeper cost), draft picks and FAAB, so nothing is a long scroll away. A phone shows one side at a
+     time; a wide screen shows both. The bar at the bottom always shows the deal: what goes each way (tap one to take it
+     out), how even it is, any drops it needs, a note and Send.
+     opts: { sport, teams, me, other, roster(teamId) -> players (a { pick: true } item is a draft pick), picks(teamId),
+             value(players, faab) or values(trade) -> [send, get], showValues (dollar amounts: auctions only),
+             faab(teamId) (omit to hide), roomFor(trade) -> drops you need, theirDrops(trade) -> drops they'll need,
+             check(trade) -> { ok, why, note }, submit(trade) -> { ok, why }, note(p) -> keeper cost and the like,
+             scoring, prefill: { give, get, pickGive, pickGet, faabGive, faabGet, note, lockGet, counterOf }, title, dark, empty } */
   function tradeWindow(opts) {
     const pf = opts.prefill || {};
-    const st = { other: opts.other, give: new Set(pf.give || []), get: new Set(pf.get || []), pgive: new Set(pf.pickGive || []), pget: new Set(pf.pickGet || []), drops: new Set(), faabGive: pf.faabGive || 0, faabGet: pf.faabGet || 0, note: pf.note || "" };
-    const sport = opts.sport;
-    const me = opts.teams.find((t) => t.id === opts.me);
+    const st = { other: opts.other, give: new Set(pf.give || []), get: new Set(pf.get || []), pgive: new Set(pf.pickGive || []), pget: new Set(pf.pickGet || []), drops: new Set(),
+      faabGive: pf.faabGive || 0, faabGet: pf.faabGet || 0, note: pf.note || "", side: "give", tab: { give: "players", get: pf.pickGet && pf.pickGet.length && !(pf.get || []).length ? "picks" : "players" }, grp: { give: "", get: "" }, q: { give: "", get: "" } };
+    const sport = opts.sport, me = opts.teams.find((t) => t.id === opts.me), team = (id) => opts.teams.find((t) => t.id === id);
+    if (hasProj(sport) && !sport.statView) initView(sport);
     const trade = () => ({ from: opts.me, to: st.other, give: [...st.give], get: [...st.get], pickGive: [...st.pgive], pickGet: [...st.pget], faabGive: st.faabGive, faabGet: st.faabGet, dropsFrom: [...st.drops], note: st.note, counterOf: pf.counterOf || null });
-    const D = dialog(`<div class="tw"></div>`, null, { full: true, dark: opts.dark });
-    const draw = (focus) => {
-      const other = opts.teams.find((t) => t.id === st.other);
-      const mine = opts.roster(opts.me), theirs = opts.roster(st.other).filter((p) => !pf.lockGet || st.get.has(p.id));
-      const byId = Object.fromEntries(mine.concat(theirs).map((p) => [p.id, p]));
-      // next season's draft picks (a dynasty), listed under each roster: { id, n, sub, $, pick: true }
-      const myPicks = opts.picks ? opts.picks(opts.me) : [], theirPicks = (opts.picks ? opts.picks(st.other) : []).filter((k) => !pf.lockGet || st.pget.has(k.id));
-      const pv = (list, set) => list.filter((k) => set.has(k.id)).reduce((a, k) => a + (k.$ || 0), 0);
+    const D = dialog(`<div class="tw2"></div>`, null, { full: true, dark: opts.dark });
+    D.classList.add("tw2-dlg");
+    const fixed = (kind) => pf.lockGet && (kind === "get" || kind === "pget");
+    // a player's numbers in the league's categories (the season or the projection, whichever the switch shows)
+    const cols = statColumns(sport, opts.scoring);
+    const grpOf = (p) => (sport.groups && S.positions(p).every((x) => sport.groups.pit.includes(x)) ? "pit" : "bat");
+    const statLine = (p) => {
+      if (p.pick) return "";
+      const cs = cols.filter((c) => c.group ? c.group === grpOf(p) : !c.fpts && !c.fpg).filter((c) => c.col !== "g" && c.col !== "gp").slice(0, 6);
+      const bits = cs.map((c) => { const v = statCell(sport, p, c); return v == null ? null : `<span><b>${c.fmt ? c.fmt(v) : Math.round(v)}</b> ${esc(c.label)}</span>`; }).filter(Boolean);
+      return bits.length ? `<span class="tw2-sl">${bits.join("")}</span>` : `<span class="tw2-sl ps">No ${sport.statView === "proj" ? "projection" : "stats"}</span>`;
+    };
+    const sets = (side) => (side === "give" ? { pl: st.give, pk: opts.picks ? st.pgive : st.give, pkKind: opts.picks ? "pgive" : "give" } : { pl: st.get, pk: opts.picks ? st.pget : st.get, pkKind: opts.picks ? "pget" : "get" });
+    const assets = (side) => {
+      const id = side === "give" ? opts.me : st.other;
+      const items = opts.roster(id), players = items.filter((p) => !p.pick), picks = items.filter((p) => p.pick).concat(opts.picks ? opts.picks(id) : []);
+      const lock = side === "get" && pf.lockGet;
+      return { players: lock ? players.filter((p) => st.get.has(p.id)) : players, picks: lock ? picks.filter((k) => st.pget.has(k.id) || st.get.has(k.id)) : picks };
+    };
+    const totals = () => {
+      const g = assets("give"), r = assets("get"), byId = Object.fromEntries(g.players.concat(r.players).map((p) => [p.id, p]));
       let [vg, vr] = opts.values ? opts.values(trade()) : [opts.value([...st.give].map((id) => byId[id]).filter(Boolean), st.faabGive), opts.value([...st.get].map((id) => byId[id]).filter(Boolean), st.faabGet)];
-      vg += pv(myPicks, st.pgive); vr += pv(theirPicks, st.pget);
-      const need = opts.roomFor ? opts.roomFor(trade()) : 0;
-      for (const id of [...st.drops]) if (st.give.has(id)) st.drops.delete(id);
+      if (opts.picks) { const pv = (list, set) => list.filter((k) => set.has(k.id)).reduce((a, k) => a + (k.$ || 0), 0); vg += pv(g.picks, st.pgive); vr += pv(r.picks, st.pget); }
+      return { vg, vr, g, r };
+    };
+    const row = (p, set, kind) => {
+      const on = set.has(p.id), dis = fixed(kind);
+      const right = p.pick ? (opts.showValues && (p.price != null || p.$) ? `<span class="tw2-rk">${p.price != null ? esc(p.price) : money(p.$)}</span>` : "") : `<span class="tw2-rk" title="Overall rank${p.prank ? ", " + esc(p.prank) + " at his position" : ""}">#${p.rank}${p.prank ? `<small>${esc(p.prank)}</small>` : ""}</span>`;
+      const note = !p.pick && opts.note ? opts.note(p) : "";
+      return `<button type="button" class="tw2-row${on ? " on" : ""}${kind === "drop" ? " drop" : ""}" data-tw="${kind}" data-id="${esc(p.id)}" aria-pressed="${on}"${dis ? " disabled" : ""}><span class="tw2-ck" aria-hidden="true"></span><span class="tw2-who">${pname(sport, p, note ? esc(note) : "", { size: "sm" })}${statLine(p)}</span>${right}</button>`;
+    };
+    const sideHtml = (side) => {
+      const id = side === "give" ? opts.me : st.other, t = team(id), a = assets(side), S2 = sets(side), tab = st.tab[side];
+      const nPl = [...S2.pl].filter((x) => a.players.some((p) => p.id === x)).length, nPk = a.picks.filter((k) => S2.pk.has(k.id)).length, f = side === "give" ? st.faabGive : st.faabGet;
+      const tabs = `<div class="tw2-tabs seg" role="tablist">${[["players", "Players", nPl], ["picks", "Picks", nPk]].concat(opts.faab ? [["faab", "FAAB", f ? "$" + f : 0]] : []).map(([k, n, c]) => `<button type="button" role="tab" data-twtab="${side}:${k}" aria-pressed="${tab === k}">${n}${c ? ` <i>${c}</i>` : ""}</button>`).join("")}</div>`;
+      let body = "";
+      if (tab === "players") {
+        const g = st.grp[side], q = st.q[side].trim().toLowerCase();
+        const list = a.players.filter((p) => (!g || grpOf(p) === g) && (!q || p.n.toLowerCase().includes(q)));
+        const grp = sport.groups ? `<div class="tw2-grp chips">${[["", "All"], ["bat", "Hitters"], ["pit", "Pitchers"]].map(([k, n]) => `<button type="button" data-twgrp="${side}:${k}" aria-pressed="${g === k}">${n}</button>`).join("")}</div>` : "";
+        const need = side === "give" && opts.roomFor ? opts.roomFor(trade()) : 0;
+        const drops = need > 0 ? `<div class="tw2-sec warn">Drop ${need} to make room${st.drops.size ? `: ${st.drops.size} picked` : ""}</div>${a.players.filter((p) => !st.give.has(p.id)).map((p) => row(p, st.drops, "drop")).join("")}` : "";
+        body = `<div class="tw2-filter">${grp}<label class="sr" for="tw2-q-${side}">Find a player</label><input type="search" id="tw2-q-${side}" data-twq="${side}" placeholder="Find a player" value="${esc(st.q[side])}" autocomplete="off"></div>${list.map((p) => row(p, S2.pl, side)).join("") || `<p class="empty">No one matches.</p>`}${drops}`;
+      } else if (tab === "picks") {
+        body = a.picks.length ? a.picks.map((k) => row(k, S2.pk, S2.pkKind)).join("") : `<p class="empty">${side === "give" ? "You have" : esc(t.name) + " has"} no picks to trade.</p>`;
+      } else {
+        const have = opts.faab(id);
+        body = `<div class="tw2-faab"><label for="tw2-f-${side}">${side === "give" ? "FAAB you send" : `FAAB ${esc(t.name)} sends`}</label><span class="ni"><i>$</i><input type="text" inputmode="numeric" pattern="[0-9]*" id="tw2-f-${side}" data-twf="${side}" value="${f || ""}" placeholder="0" autocomplete="off"${fixed("get") && side === "get" ? " disabled" : ""}></span><small>${side === "give" ? "You have" : "They have"} $${have}</small></div>`;
+      }
+      return `<section class="tw2-side${st.side === side ? " cur" : ""}" data-side="${side}"><div class="tw2-sh">${teamAv(t, "sm")}<b>${side === "give" ? "You send" : `${esc(t.name)} sends`}</b></div>${tabs}<div class="tw2-list" data-list="${side}">${body}</div></section>`;
+    };
+    const chip = (kind, id, label) => `<button type="button" class="tw2-chip" data-twx="${kind}:${esc(id)}" title="Take it out">${label}<span aria-hidden="true">&times;</span></button>`;
+    const summaryHtml = () => {
+      const { vg, vr, g, r } = totals();
+      const nameOf = (list, id) => { const p = list.find((x) => x.id === id); return p ? esc(p.pick ? p.n : p.n) : ""; };
+      const sendChips = [...st.give].map((id) => chip("give", id, nameOf(g.players.concat(g.picks), id))).concat([...st.pgive].map((id) => chip("pgive", id, nameOf(g.picks, id))), st.faabGive ? [chip("faabGive", 0, `$${st.faabGive} FAAB`)] : []);
+      const getChips = [...st.get].map((id) => chip("get", id, nameOf(r.players.concat(r.picks), id))).concat([...st.pget].map((id) => chip("pget", id, nameOf(r.picks, id))), st.faabGet ? [chip("faabGet", 0, `$${st.faabGet} FAAB`)] : []);
+      const picked = sendChips.length || getChips.length;
       const tot = vg + vr || 1, swing = (vr - vg) / tot;
-      const vl = opts.valueLabel || money;
-      const picked = st.give.size || st.get.size || st.pgive.size || st.pget.size;
-      const verdict = !picked ? (opts.empty || "Pick players on either side") : Math.abs(swing) < 0.08 ? "About even" : swing > 0 ? (swing > 0.35 ? "Lopsided your way" : "Leans your way") : swing < -0.35 ? "Lopsided their way" : "Leans their way";
-      const fixed = (kind) => pf.lockGet && (kind === "get" || kind === "pget");
-      const list = (ps, set, kind) => ps.map((p) => `<label class="${set.has(p.id) ? "on" : ""}${kind === "drop" ? " drop" : ""}"><input type="checkbox" data-tw="${kind}" value="${esc(p.id)}"${set.has(p.id) ? " checked" : ""}${fixed(kind) ? " disabled" : ""}>${pname(sport, p, !p.pick && opts.note ? esc(opts.note(p) || "") : "")}<span class="dollar">${p.price != null ? esc(p.price) : p.$ ? money(p.$) : ""}</span></label>`).join("");
-      const pickList = (ps, set, kind) => (ps.length ? `<div class="sec">Draft picks</div>${list(ps, set, kind)}` : "");
-      const dropList = need > 0 ? `<div class="sec">Drop ${need} to make room</div>${list(mine.filter((p) => !st.give.has(p.id)), st.drops, "drop")}` : "";
+      const verdict = !picked ? (opts.empty || "Pick players or picks on either side") : Math.abs(swing) < 0.08 ? "About even" : swing > 0 ? (swing > 0.35 ? "Lopsided your way" : "Leans your way") : swing < -0.35 ? "Lopsided their way" : "Leans their way";
+      const need = opts.roomFor ? opts.roomFor(trade()) : 0, theirs = opts.theirDrops ? opts.theirDrops(trade()) : 0;
       let chk = opts.check ? opts.check(trade()) : { ok: true };
-      const same = (a, b) => a.length === b.length && a.every((x) => b.includes(x));
+      const same = (x, y) => x.length === y.length && x.every((z) => y.includes(z));
       if (pf.counterOf && same([...st.give], pf.give || []) && same([...st.get], pf.get || []) && same([...st.pgive], pf.pickGive || []) && same([...st.pget], pf.pickGet || []) && st.faabGive === (pf.faabGive || 0) && st.faabGet === (pf.faabGet || 0)) chk = { ok: false, why: "Change something to counter, or accept their offer as it is" };
       const ready = chk.ok && picked && st.drops.size >= need;
-      const scroll = $$(".tw-list", D).map((x) => x.scrollTop);
-      $(".tw", D).innerHTML = `
-        <div class="tw-h"><h3>${esc(opts.title || "Propose a trade")}</h3><label class="sr" for="tw-team">Trade with</label><select id="tw-team"${pf.lockGet ? " disabled" : ""}>${opts.teams.filter((t) => t.id !== opts.me).map((t) => `<option value="${t.id}"${t.id === st.other ? " selected" : ""}>${esc(t.name)}</option>`).join("")}</select></div>
-        <div class="tw-b">
-          <div class="tw-col"><div class="hd">${teamAv(me, "sm")}<b>You send</b><span class="ps">${st.give.size + st.pgive.size} selected</span></div><div class="tw-list">${list(mine, st.give, "give")}${pickList(myPicks, st.pgive, "pgive")}${dropList}</div></div>
-          <div class="tw-col"><div class="hd">${teamAv(other, "sm")}<b>${esc(other.name)} sends</b><span class="ps">${st.get.size + st.pget.size} selected</span></div><div class="tw-list">${list(theirs, st.get, "get")}${pickList(theirPicks, st.pget, "pget")}</div></div>
-        </div>
-        <div class="tw-f">
-          <div class="meter"><div class="meter-l"><span>You send ${vl(vg)}</span><span>${esc(verdict)}</span><span>You get ${vl(vr)}</span></div>
-            <div class="meter-bar"><i style="${swing >= 0 ? `left:50%;width:${Math.min(50, swing * 50)}%;background:var(--win)` : `right:50%;width:${Math.min(50, -swing * 50)}%;background:var(--loss)`}"></i></div></div>
-          ${opts.faab ? `<div class="tw-faab"><label>FAAB you send<span class="ni"><i>$</i><input type="number" min="0" max="${opts.faab(opts.me)}" data-tw="faabGive" value="${st.faabGive}" inputmode="numeric"></span><small>You have $${opts.faab(opts.me)}</small></label><label>FAAB you get<span class="ni"><i>$</i><input type="number" min="0" max="${opts.faab(st.other)}" data-tw="faabGet" value="${st.faabGet}" inputmode="numeric"></span><small>They have $${opts.faab(st.other)}</small></label></div>` : ""}
-          <div class="tw-send"><label class="sr" for="tw-note">Note</label><input type="text" id="tw-note" data-tw="note" maxlength="140" placeholder="Add a note (optional)" value="${esc(st.note)}"><button type="button" class="btn" data-tw-cancel>Cancel</button><button type="button" class="btn go" data-tw-send${ready ? "" : " disabled"}>Send offer</button></div>
-          ${picked && need > st.drops.size ? `<span class="why">Pick ${need - st.drops.size} more to drop, under your roster.</span>` : picked && !chk.ok ? `<span class="why">${esc(chk.why)}</span>` : picked && chk.note ? `<span class="ps ok">${esc(chk.note)}</span>` : ""}
-        </div>`;
-      $$(".tw-list", D).forEach((x, i) => (x.scrollTop = scroll[i] || 0));
-      if (focus) { const f = $(`[data-tw=${focus}]`, D); if (f) { f.focus(); try { f.select(); } catch (e) { /* number */ } } }
+      const msg = picked && need > st.drops.size ? `<span class="why">You'd be over your roster: pick ${need - st.drops.size} to drop under You send.</span>` : picked && !chk.ok ? `<span class="why">${esc(chk.why)}</span>` : picked && theirs > 0 ? `<span class="ps">${esc(team(st.other).name)} picks ${theirs} player${theirs === 1 ? "" : "s"} to drop when they accept.</span>` : picked && chk.note ? `<span class="ps ok">${esc(chk.note)}</span>` : "";
+      const vals = opts.showValues ? [money(vg), money(vr)] : null;
+      return `<div class="tw2-deal"><div class="tw2-way"><small>You send</small><div>${sendChips.join("") || `<span class="ps">Nothing yet</span>`}</div></div><span class="tw2-arrow" aria-hidden="true">&#8644;</span><div class="tw2-way"><small>You get</small><div>${getChips.join("") || `<span class="ps">Nothing yet</span>`}</div></div></div>
+        <div class="tw2-meter"><div class="meter-l"><span>${vals ? `You send ${vals[0]}` : ""}</span><b>${esc(verdict)}</b><span>${vals ? `You get ${vals[1]}` : ""}</span></div><div class="meter-bar"><i style="${!picked ? "width:0" : swing >= 0 ? `left:50%;width:${Math.min(50, swing * 50)}%;background:var(--win)` : `right:50%;width:${Math.min(50, -swing * 50)}%;background:var(--loss)`}"></i></div></div>
+        ${msg ? `<div class="tw2-msg">${msg}</div>` : ""}
+        <div class="tw2-send"><label class="sr" for="tw2-note">Note</label><input type="text" id="tw2-note" data-twnote maxlength="140" placeholder="Add a note (optional)" value="${esc(st.note)}"><button type="button" class="btn go" data-tw-send${ready ? "" : " disabled"}>Send offer</button></div>`;
     };
-    D.oninput = (e) => {
-      const k = e.target.dataset.tw;
-      if (k === "note") { st.note = e.target.value; return; }
-      if (k === "faabGive" || k === "faabGet") { st[k] = Math.max(0, Math.round(+e.target.value || 0)); draw(k); }
+    const drawSummary = () => { const el = $(".tw2-sum", D); if (!el) return; const f = document.activeElement && document.activeElement.id === "tw2-note"; el.innerHTML = summaryHtml(); if (f) { const n = $("#tw2-note", D); n.focus(); n.setSelectionRange(n.value.length, n.value.length); } };
+    const draw = () => {
+      const keep = $$(".tw2-list", D).map((x) => [x.dataset.list, x.scrollTop]);
+      const other = team(st.other);
+      const view = hasProj(sport) ? `<div class="seg tw2-view" role="group" aria-label="Numbers">${[["proj", sport.key === "mlb" ? `${+sport.data.season + 1} projected` : "Projected"], ["stats", statsLabel(sport)]].concat(hasPrev(sport) ? [["prev", prevLabel(sport)]] : []).map(([v, l]) => `<button type="button" data-twview="${v}" aria-pressed="${sport.statView === v}">${esc(l)}</button>`).join("")}</div>` : "";
+      const cnt = (side) => { const S2 = sets(side); return S2.pl.size + (opts.picks ? S2.pk.size : 0) + ((side === "give" ? st.faabGive : st.faabGet) ? 1 : 0); };
+      $(".tw2", D).innerHTML = `<header class="tw2-h"><h3>${esc(opts.title || "Propose a trade")}</h3><div class="tw2-with"><label for="tw2-team">with</label><select id="tw2-team"${pf.lockGet ? " disabled" : ""}>${opts.teams.filter((t) => t.id !== opts.me).map((t) => `<option value="${t.id}"${t.id === st.other ? " selected" : ""}>${esc(t.name)}</option>`).join("")}</select></div>${view}<button type="button" class="tw2-x" data-tw-cancel aria-label="Close">&times;</button></header>
+        <div class="tw2-pick seg" role="group" aria-label="Side"><button type="button" data-twside="give" aria-pressed="${st.side === "give"}">You send${cnt("give") ? ` <i>${cnt("give")}</i>` : ""}</button><button type="button" data-twside="get" aria-pressed="${st.side === "get"}">${esc(other.abbr || other.name)} sends${cnt("get") ? ` <i>${cnt("get")}</i>` : ""}</button></div>
+        <div class="tw2-b">${sideHtml("give")}${sideHtml("get")}</div>
+        <footer class="tw2-sum">${summaryHtml()}</footer>`;
+      for (const [k, y] of keep) { const el = $(`.tw2-list[data-list="${k}"]`, D); if (el) el.scrollTop = y; }
     };
-    D.onchange = (e) => {
-      const k = e.target.dataset.tw;
-      if (e.target.id === "tw-team") { st.other = +e.target.value; st.get.clear(); st.pget.clear(); st.faabGet = 0; draw(); return; }
-      const set = k === "give" ? st.give : k === "get" ? st.get : k === "pgive" ? st.pgive : k === "pget" ? st.pget : k === "drop" ? st.drops : null;
-      if (!set || (pf.lockGet && (k === "get" || k === "pget"))) return;
-      if (e.target.checked) set.add(e.target.value); else set.delete(e.target.value);
-      draw();
-    };
-    D.onclick = (e) => {
-      if (e.target.closest("[data-tw-cancel]")) { D.close(); return; }
-      if (!e.target.closest("[data-tw-send]")) return;
-      const r = opts.submit(trade());
-      if (r && r.ok === false) toast(r.why, true); else D.close();
-    };
+    const setOf = (k) => ({ give: st.give, get: st.get, pgive: st.pgive, pget: st.pget, drop: st.drops })[k];
+    D.addEventListener("click", (e) => {
+      const b = e.target.closest("button");
+      if (!b || b.disabled) return;
+      const d = b.dataset;
+      if (d.twCancel != null) { D.close(); return; }
+      if (d.twSend != null) { const r = opts.submit(trade()); if (r && r.ok === false) toast(r.why, true); else D.close(); return; }
+      if (d.tw) { const set = setOf(d.tw); if (!set || fixed(d.tw)) return; if (set.has(d.id)) set.delete(d.id); else set.add(d.id); if (d.tw === "give") st.drops.delete(d.id); draw(); return; }
+      if (d.twx) { const [k, id] = d.twx.split(":"); if (fixed(k)) return; if (k === "faabGive" || k === "faabGet") st[k] = 0; else { const set = setOf(k); if (set) set.delete(id); } draw(); return; }
+      if (d.twtab) { const [side, k] = d.twtab.split(":"); st.tab[side] = k; draw(); if (k === "faab") { const f = $(`#tw2-f-${side}`, D); if (f) f.focus(); } return; }
+      if (d.twgrp != null) { const [side, k] = d.twgrp.split(":"); st.grp[side] = k; draw(); return; }
+      if (d.twside) { st.side = d.twside; draw(); return; }
+      if (d.twview) { setView(sport, d.twview); draw(); return; }
+    });
+    // typing never redraws the field you're in: FAAB and the note only refresh the deal bar
+    D.addEventListener("input", (e) => {
+      const t = e.target;
+      if (t.dataset.twf) { const side = t.dataset.twf, cap = opts.faab(side === "give" ? opts.me : st.other), clean = t.value.replace(/\D+/g, "").slice(0, 4); if (clean !== t.value) t.value = clean; const n = Math.min(cap, +clean || 0); st[side === "give" ? "faabGive" : "faabGet"] = n; if (+clean > cap) { t.value = String(cap); toast(`${side === "give" ? "You have" : "They have"} $${cap} of FAAB.`); } drawSummary(); const tab = $(`[data-twtab="${side}:faab"]`, D); if (tab) tab.innerHTML = `FAAB${n ? ` <i>$${n}</i>` : ""}`; return; }
+      if (t.dataset.twnote != null) { st.note = t.value; return; }
+      if (t.dataset.twq) { st.q[t.dataset.twq] = t.value; const side = t.dataset.twq, pos = t.selectionStart; draw(); const q = $(`#tw2-q-${side}`, D); if (q) { q.focus(); q.setSelectionRange(pos, pos); } }
+    });
+    D.addEventListener("change", (e) => {
+      if (e.target.id === "tw2-team") { st.other = +e.target.value; st.get.clear(); st.pget.clear(); st.faabGet = 0; st.q.get = ""; draw(); }
+    });
     draw();
   }
 
@@ -840,7 +909,7 @@
     const viaOf = (k) => { const v = D().via[k]; return v != null ? team(v) : null; };
     // the board spots that belong to a team: picks it made or holds, in pick order (traded players move with theirs)
     const slotsOf = (id) => { const d = D(); return d.order.map((t, k) => ((d.board[k] ? d.board[k].team === id && !d.board[k].gone : t === id) ? k : -1)).filter((k) => k >= 0); };
-    const pickVM = (k) => { const d = D(), v = viaOf(k); return { id: F.pickId(k), k, pick: true, n: mystery() ? `Pick ${k + 1}` : `Pick ${plab(k)}`, sub: `${ord(k + 1)} overall, about ${money(F.pickValue(d, ctx, k))}${v ? `, via ${v.abbr}` : ""}`, price: money(F.pickValue(d, ctx, k)) }; };
+    const pickVM = (k) => { const d = D(), v = viaOf(k); return { id: F.pickId(k), k, pick: true, n: mystery() ? `Pick ${k + 1}` : `Pick ${plab(k)}`, sub: `${ord(k + 1)} overall${v ? `, via ${v.abbr}` : ""}`, price: money(F.pickValue(d, ctx, k)) }; };
     // a pick you can't see yet (mystery packages, reveal "own") trades blind, valued at the average pick still to come
     const avgPick = () => { const d = D(), ks = d.order.map((t, k) => k).filter((k) => !d.board[k]); return ks.length ? ks.reduce((a, k) => a + F.pickValue(d, ctx, k), 0) / ks.length : 0; };
     const sealedVM = (k) => ({ id: F.pickId(k), k, pick: true, sealed: true, n: "Sealed pick", sub: "Somewhere later in the draft", price: "?" });
@@ -1115,7 +1184,7 @@
       if (!hasProj(sport)) return "";
       if (!sport.statView) initView(sport);
       const yr = +(sport.data && sport.data.season) || null, pl = sport.key === "mlb" && yr ? `${yr + 1} projected` : "Projected", sl = yr ? `${yr} stats` : "Stats";
-      return `<div class="seg sv" role="group" aria-label="Numbers">${[["proj", pl], ["stats", sl]].map(([v, l]) => `<button type="button" data-act="sview" data-v="${v}" aria-pressed="${sport.statView === v}">${esc(l)}</button>`).join("")}</div>`;
+      return `<div class="seg sv" role="group" aria-label="Numbers">${[["proj", pl], ["stats", sl]].concat(hasPrev(sport) ? [["prev", `${sport.data.prev}`]] : []).map(([v, l]) => `<button type="button" data-act="sview" data-v="${v}" aria-pressed="${sport.statView === v}">${esc(l)}</button>`).join("")}</div>`;
     }
     function board() {
       const d = D(), cols = d.round1, n = cols.length;
@@ -1341,7 +1410,7 @@
         if (!x || !x.pick || x.sealed) return x;
         const pk = d.board[x.k], who = pk && pk.pid && ctx.byId[pk.pid];
         const val = T && T.vals && T.vals[id] != null ? T.vals[id] : F.pickValue(d, ctx, x.k);
-        return Object.assign({}, x, { sub: `${ord(x.k + 1)} overall, worth ${money(val)} then${who ? `, became ${who.n}` : ""}` });
+        return Object.assign({}, x, { sub: `${ord(x.k + 1)} overall${who ? `, became ${who.n}` : ""}` });
       };
       return ({ id: T.id, status: CLS[T.status], statusLabel: LBL[T.status], from: team(T.from), to: team(T.to), give: T.give.map((id) => cardVM(id, T)).filter(Boolean), get: T.get.map((id) => cardVM(id, T)).filter(Boolean),
         note: T.status === "declined" && T.why ? T.why : T.note, when: ago(T.done || T.at, now()), acts, sub: T.added && T.added.length ? "Evened out with a late pick" : "" });
@@ -1368,7 +1437,7 @@
         return ks.filter(seenK).map(pickVM).concat(sealed, F.rosters(D())[id].map((x) => ctx.byId[x]).filter(Boolean));
       };
       const bal = (t) => F.balance(D(), t);
-      tradeWindow({ sport, teams: d.teams, me: m, other: other != null ? other : (others.find((t) => !isMe(t)) || others[0]).id, roster, dark: true, title: "Trade during the draft", prefill,
+      tradeWindow({ sport, teams: d.teams, me: m, other: other != null ? other : (others.find((t) => !isMe(t)) || others[0]).id, roster, dark: true, title: "Trade during the draft", prefill, showValues: auction(), scoring: d.scoring,
         empty: "Pick picks or players on either side",
         values: (t) => { const b = bal(t), v = (ids) => ids.reduce((a, id) => a + valueOf(id), 0); return [v(b.give), v(b.get)]; },
         check: (t) => {
@@ -1909,7 +1978,7 @@
     const start = () => { new MutationObserver(kick).observe(document.body, { childList: true, subtree: true }); window.addEventListener("resize", kick); kick(); };
     if (document.body) start(); else document.addEventListener("DOMContentLoaded", start);
   }
-  FK.ui = { leagueBrand, leagueCrest, brandC, pushBox, botSpeed, startIn, faceAv, squarePhoto, profileDialog, statColumns, LINEUP_PRESETS: PRESETS, lineupBuilder, orderLineup, lineupStep, slotDesc, esc, $, $$, store, toast, dialog, dialogOpen, focusKey, refocus, keyboardPlayers, confirm, theme, fmtLeft, money, ord, last, initials, ago,
+  FK.ui = { leagueBrand, leagueCrest, brandC, statSwitch, setView, prevStat, hasPrev, pushBox, botSpeed, startIn, faceAv, squarePhoto, profileDialog, statColumns, LINEUP_PRESETS: PRESETS, lineupBuilder, orderLineup, lineupStep, slotDesc, esc, $, $$, store, toast, dialog, dialogOpen, focusKey, refocus, keyboardPlayers, confirm, theme, fmtLeft, money, ord, last, initials, ago,
     teamAv, SHAPES, GLYPHS, logoSvg, glyphOf, shapeOf, playerAv, pname, teamName, posChip, posChips, colorOf, injTag,
     proTeam, shell, switcher, route, table, sortRows, nextSort, poolColumns, posFilter, search, passes, groupOf, statCell, label, isPoints,
     playerCard, scoreboard, versus, vsTable, standingsTable, feed, txLine, tradeCard, tradeWindow, room, board: myBoard, viewSelect, setView, initView, hasProj, lineOf };

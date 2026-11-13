@@ -193,7 +193,7 @@
   function attach(sport, data) {
     sport.cols = {};
     for (const [line, def] of Object.entries(data.lines || {})) sport.cols[line] = Object.fromEntries(def.cols.map((c, i) => [c, i]));
-    sport.data = { season: data.season, updated: data.updated, source: data.source, lines: data.lines };
+    sport.data = { season: data.season, prev: data.prev || null, updated: data.updated, source: data.source, lines: data.lines };
     sport.hasAge = (data.players || []).some((p) => p.age);
     return sport;
   }
