@@ -308,3 +308,4 @@ table.pg tr.muted-row td{color:var(--muted);font-style:italic}
 tr.ungraded td{color:var(--muted)}
 .grades .tm{display:inline-flex;vertical-align:middle} .grades td.arrow{color:var(--muted);padding-left:0;padding-right:0;text-align:center}
 .grades th:nth-child(2),.grades td:nth-child(2),.grades th:nth-child(4),.grades td:nth-child(4),.grades th:nth-child(6),.grades td:nth-child(6){text-align:center}
+.more-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}

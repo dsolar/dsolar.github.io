@@ -27,7 +27,8 @@
   var DEFAULTS = {
     dpw: 9.5,          // $M per WAR in the first season; replaced by the free agent read when there's enough data
     inflation: 0.03,   // yearly growth in the price of a win
-    discount: 0.08,    // yearly discount rate for surplus
+    discount: 0,       // yearly discount rate for surplus. Off by default so every figure is real contract dollars
+                       // (set it on the page to see today's dollars)
     minSalary: 0.8,    // $M, league minimum (assumed until the next CBA sets it)
     arbPct: [0.25, 0.4, 0.6, 0.7], // share of market value paid in arbitration years 1-4
     fill: true,        // teams buy modest free agents for empty spots
