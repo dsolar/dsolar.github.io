@@ -1352,15 +1352,15 @@
   }
   /* Next season's draft order by settings.draftOrder "lottery": the teams that missed the playoffs are drawn for the
      first picks, and the playoff teams follow in reverse order of finish, so the champion picks last.
-     settings.lotteryOdds "equal" gives every lottery team the same chance; "weighted" gives the worst record the
-     most balls (the worst of n teams gets n, the next n - 1, and so on). Sets L.nextOrder and keeps the draw in
+     settings.lotteryOdds "weighted" (the default) gives the worst record the most balls (the worst of n teams gets n,
+     the next n - 1, and so on); "equal" gives every lottery team the same chance. Sets L.nextOrder and keeps the draw in
      L.lottery so everyone can see how it went. rand: a function returning [0, 1). */
   function draftLottery(L, rand, now) {
     const sm = summary(L), n = L.teams.length, po = Math.min(L.settings.playoffTeams || 0, n);
     const byPlace = sm.standings.slice().sort((a, b) => a.place - b.place).map((r) => r.team);
     const playoff = byPlace.slice(0, po), pool = byPlace.slice(po).reverse();     // worst first
     if (!pool.length) return { ok: false, why: "Every team made the playoffs, so there's no lottery" };
-    const weighted = L.settings.lotteryOdds === "weighted", balls = pool.map((t, i) => ({ t, w: weighted ? pool.length - i : 1 }));
+    const weighted = L.settings.lotteryOdds !== "equal", balls = pool.map((t, i) => ({ t, w: weighted ? pool.length - i : 1 }));
     const odds = Object.fromEntries(balls.map((b) => [b.t, b.w])), drawn = [];
     while (balls.length) {
       let x = rand() * sum(balls.map((b) => b.w)), k = 0;

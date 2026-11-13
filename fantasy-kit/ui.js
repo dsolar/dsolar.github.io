@@ -305,9 +305,11 @@
     const href = opts.hrefOf || ((t, s) => "#" + t + (s ? "/" + s : ""));
     const badge = (n) => (n ? `<span class="badge">${n}</span>` : "");
     const m = opts.mast ? leagueMast(opts.mast) : null;
-    return `${m ? `<div class="fk-mast fk-band lgm c${opts.mast.brand.color}" style="--lc:${brandC(opts.mast.brand)}${opts.mast.brand.bg ? `;--band:${opts.mast.brand.bg}` : ""}"><div class="wrap lgm-in">
-        ${m.crest}<div class="lgm-id"><div class="lgm-top"><a class="fk-brand" href="${esc(opts.brand.href || "./")}">${opts.brand.mark || ""}<b class="disp">${esc(opts.brand.name)}</b></a>${opts.title || ""}</div>${m.body}</div>
-        <div class="lgm-side"><div class="fk-who">${opts.right || ""}</div>${m.champs}</div></div></div>`
+    // opts.slim: the same masthead in the league's colors, one line tall (every page but the front page), so the
+    // header doesn't change character from page to page
+    return `${m ? `<div class="fk-mast fk-band lgm${opts.slim ? " slim" : ""} c${opts.mast.brand.color}" style="--lc:${brandC(opts.mast.brand)}${opts.mast.brand.bg ? `;--band:${opts.mast.brand.bg}` : ""}"><div class="wrap lgm-in">
+        ${m.crest}<div class="lgm-id"><div class="lgm-top"><a class="fk-brand" href="${esc(opts.brand.href || "./")}">${opts.brand.mark || ""}<b class="disp">${esc(opts.brand.name)}</b></a>${opts.title || ""}</div>${opts.slim ? "" : m.body}</div>
+        <div class="lgm-side"><div class="fk-who">${opts.right || ""}</div>${opts.slim ? "" : m.champs}</div></div></div>`
       : `<div class="fk-mast fk-band"><div class="wrap">
         <a class="fk-brand" href="${esc(opts.brand.href || "./")}">${opts.brand.mark || ""}<b class="disp">${esc(opts.brand.name)}</b></a>
         ${opts.title || ""}<span class="grow"></span><div class="fk-who">${opts.right || ""}</div></div></div>`}
@@ -804,7 +806,8 @@
 
   function room(opts) {
     const { el, sport } = opts;
-    const ui = { left: "players", right: "team", sort: { k: "rank", dir: 1 }, f: { q: "", pos: "" }, show: "avail", view: null, bidAmt: null, mobileRight: false };
+    // baseball opens on hitters, so the pool shows stat columns to sort by (all players have no shared stats)
+    const ui = { left: "players", right: "team", sort: { k: "rank", dir: 1 }, f: { q: "", pos: sport.groups ? "g:bat" : "" }, show: "avail", view: null, bidAmt: null, mobileRight: false };
     // a dynasty's rookie draft opens on the rookies
     try { if (opts.draft().rookie && (opts.players || []).some((p) => p.rk)) ui.f.pos = "rk"; } catch (e) { /* no draft yet */ }
     let ctx = null, timer = null;
@@ -852,6 +855,8 @@
       const prim = [], side = [], menu = [];
       if (opts.commish && d.phase === "setup") prim.push(`<button class="btn sm go" data-act="start">Start the draft</button>`);
       if (opts.commish && d.phase === "live" && d.paused && !d.hold) prim.push(`<button class="btn sm go" data-act="pause">Resume</button>`);
+      // a draft on your own (a mock, a practice draft): pause sits right in the bar, not tucked in More
+      else if (opts.solo && opts.commish && d.phase === "live" && !d.paused) prim.push(`<button class="btn sm" data-act="pause">Pause</button>`);
       if (opts.solo && (d.phase === "live" || d.phase === "setup") && !auction() && !d.packs && me() != null) {
         const oc = d.phase === "live" && !d.paused ? F.onClock(d, n) : null, auto = team(me()).auto;
         if (oc && (oc.team !== me() || auto) && (auto || F.nextPickOf(d, me()) != null)) prim.push(`<button class="btn sm go" data-act="sim">${auto ? "Sim to the end" : "Sim to my pick"}</button>`);
@@ -1227,10 +1232,12 @@
         vals.sort((a, b) => (c.low ? b.v - a.v : a.v - b.v));
         vals.forEach((x) => { const same = vals.filter((y) => y.v === x.v), first = vals.indexOf(same[0]); const p = first + (same.length + 1) / 2; pts[x.i].by[c.k] = p; pts[x.i].tot += p; });
       }
-      const order = rows.map((r, i) => i).sort((a, b) => pts[b].tot - pts[a].tot);
+      // sortable by any category (best first), or by roto points, the default
+      const sk = ui.projSort && sc.cats.some((c) => c.k === ui.projSort) ? sc.cats.find((c) => c.k === ui.projSort) : null;
+      const order = rows.map((r, i) => i).sort((a, b) => (sk ? (pts[b].by[sk.k] || 0) - (pts[a].by[sk.k] || 0) || pts[b].tot - pts[a].tot : pts[b].tot - pts[a].tot));
       const fmtC = (c, v) => (v == null ? "-" : c.num || c.rate === "avg" || c.rate === "obp" || c.rate === "ops" ? v.toFixed(3).replace(/^0/, "") : c.rate ? v.toFixed(2) : sport.key === "mlb" ? String(Math.round(v)) : v.toFixed(1));
       const n = d.teams.length;
-      return `<div style="overflow:auto;flex:1;min-height:0">${head}<div class="table-wrap" style="border:0;border-radius:0"><table class="t dense proj"><thead><tr><th class="r">#</th><th>Team</th>${sc.cats.map((c) => `<th class="r">${esc(c.label)}</th>`).join("")}<th class="r">Roto</th></tr></thead><tbody>
+      return `<div style="overflow:auto;flex:1;min-height:0">${head}<div class="table-wrap" style="border:0;border-radius:0"><table class="t dense proj"><thead><tr><th class="r">#</th><th>Team</th>${sc.cats.map((c) => `<th class="r sortable${sk === c ? " on" : ""}" data-act="projsort" data-k="${esc(c.k)}" title="Sort by ${esc(c.label)}" aria-sort="${sk === c ? "descending" : "none"}">${esc(c.label)}</th>`).join("")}<th class="r sortable${sk ? "" : " on"}" data-act="projsort" data-k="" title="Sort by roto points" aria-sort="${sk ? "none" : "descending"}">Roto</th></tr></thead><tbody>
         ${order.map((i, j) => { const r = rows[i]; return `<tr${isMe(r.t) ? ' class="me"' : ""}><td class="r num">${j + 1}</td><td class="nm"><span class="row" style="gap:6px">${teamAv(r.t, "sm")}<span class="ell">${esc(r.t.name)}</span></span></td>${sc.cats.map((c) => { const p = pts[i].by[c.k]; return `<td class="r num${p != null && p >= n - 0.5 ? " win" : p != null && p <= 1.5 ? " loss" : ""}" title="${p != null ? `${p} roto points` : ""}">${fmtC(c, r.tot[c.k])}</td>`; }).join("")}<td class="r num"><b>${Math.round(pts[i].tot * 10) / 10}</b></td></tr>`; }).join("")}
         </tbody></table></div></div>`;
     }
@@ -1612,7 +1619,7 @@
         toast(r.right ? "Right! Make your pick." : `Not quite: it was ${r.answer}. Your pick moves to the end of the round.`, !r.right);
         return;
       }
-      const b = e.target.closest("button[data-pick],button[data-queue],button[data-nominate],button[data-bid],button[data-bidq],button[data-qup],button[data-act]");
+      const b = e.target.closest("button[data-pick],button[data-queue],button[data-nominate],button[data-bid],button[data-bidq],button[data-qup],button[data-act],th[data-act]");
       if (b) {
         e.stopPropagation();
         const d = D(), n = now();
@@ -1661,6 +1668,7 @@
           }
           else if (a === "respin") act(() => { const r = F.respin(d, ctx, me(), n); if (r.ok) toast(`The wheel lands on ${teamFull(r.team)}.`); return r; });
           else if (a === "rlall") { ui.rlAll = !ui.rlAll; render(); }
+          else if (a === "projsort") { ui.projSort = b.dataset.k || null; render(); }
           else if (a === "fitall") { ui.fitAll = !ui.fitAll; render(); }
           else if (a === "rip") {
             const q = F.packAt(d, F.packTurnNow(d)).q;
@@ -1751,7 +1759,10 @@
         seenOffers.add(T.id);
         ui.offer = T.id;
         toast(`${team(T.from).name} sent you a trade offer.`);
-        alerts.chime("deck");
+        // the clock chime, a flashing tab title and a desktop notification if they're on: an offer has a timer too
+        alerts.chime("clock");
+        alerts.flash("Trade offer");
+        alerts.notify("Trade offer", `${team(T.from).name} sent you a trade offer.`);
         return;
       }
     };

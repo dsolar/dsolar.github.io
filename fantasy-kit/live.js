@@ -178,11 +178,13 @@
     return { money: false, value: !(sc && sc.type === "cats") };
   }
   /* ---------- a practice draft: next season's real board, keepers and all, against bots, saved only here ---------- */
-  const PK = "fk-practice:" + id;
+  const PK = "fk-practice2:" + id;   // 2: every team keeps someone (boards saved before that left some teams bare)
   const practiceMe = () => (info.me != null ? info.me : 0);
   function practiceBuild() {
     const ctx = lctx(), picks = {};
-    for (const t of L.teams) picks[t.id] = (L.next && L.next.picks && L.next.picks[t.id]) || Z.autoKeepers(L, ctx, t.id);
+    // every team keeps someone, so the board is the real one: declared keepers where a manager has picked, and each
+    // other team's best values (up to the limit) where nobody has yet
+    for (const t of L.teams) { const dec = L.next && L.next.picks && L.next.picks[t.id]; picks[t.id] = dec && dec.length ? dec : Z.autoKeepers(L, ctx, t.id); }
     const D2 = Z.nextDraft(L, ctx, sport, picks, { now: now() });
     // every team but yours is a bot; the clock is short so it moves
     D2.teams.forEach((t, i) => { t.owner = i === practiceMe() ? "you" : null; t.auto = false; });
@@ -199,6 +201,8 @@
   function practiceExit() { practice = null; history.replaceState(null, "", location.pathname + location.search + "#league"); mount(); }
   function mountPractice() {
     document.body.classList.add("fk-room");
+    // a fresh #app: the league page's click handlers (its position filters, say) stay with the old one
+    if (app) { const fresh = $("#app").cloneNode(false); $("#app").replaceWith(fresh); app = null; }
     $("#top").innerHTML = "";
     $("#app").innerHTML = `<div id="room"></div>`;
     const P = practice;
@@ -801,10 +805,19 @@
       ${practiceLine()}
       <div><button class="btn go" data-live="new-season">Start next season's draft</button></div></div></div>`;
   }
+  // before the draw: each lottery team's chance at the first pick, worst record first
+  function lotteryOdds() {
+    try {
+      const sm = G.summary(L), po = Math.min(L.settings.playoffTeams || 0, L.teams.length);
+      const pool = sm.standings.slice().sort((a, b) => a.place - b.place).map((r) => r.team).slice(po).reverse();
+      const w = pool.map((t, i) => (L.settings.lotteryOdds === "equal" ? 1 : pool.length - i)), tot = w.reduce((a, b) => a + b, 0);
+      return `<ol class="lot-o">${pool.map((t, i) => `<li>${U.teamAv(L.teams[t], "sm")}<span>${esc(L.teams[t].name)}</span><small>${Math.round((w[i] / tot) * 1000) / 10}% for the 1st pick</small></li>`).join("")}</ol>`;
+    } catch (e) { return ""; }
+  }
   // settings.draftOrder "lottery": the commissioner runs the draw once, and everyone sees how it came out
   function lotteryLine() {
     const lt = L.lottery;
-    if (!lt || !L.nextOrder) return `<p class="small" style="margin:0"><b>Draft order:</b> a lottery for the ${L.teams.length - Math.min(L.settings.playoffTeams || 0, L.teams.length)} teams that missed the playoffs (${L.settings.lotteryOdds === "weighted" ? "more chances for worse records" : "equal odds"}), then the playoff teams in reverse order of finish. <button type="button" class="btn sm go" data-live="lottery">Run the lottery</button></p>`;
+    if (!lt || !L.nextOrder) return lotteryOdds() + `<p class="small" style="margin:0"><b>Draft order:</b> a lottery for the ${L.teams.length - Math.min(L.settings.playoffTeams || 0, L.teams.length)} teams that missed the playoffs (${L.settings.lotteryOdds !== "equal" ? "weighted toward the worst records" : "equal odds"}), then the playoff teams in reverse order of finish. <button type="button" class="btn sm go" data-live="lottery">Run the lottery</button></p>`;
     return `<div class="stack" style="gap:6px"><p class="small" style="margin:0"><b>Draft order:</b> set by the lottery ${esc(U.ago(lt.at, now()))}. <button type="button" class="btn sm ghost" data-live="draft-order">Adjust</button></p><ol class="lot-o">${L.nextOrder.map((t, i) => `<li${i < lt.drawn.length ? ` class="lot"` : ""}>${U.teamAv(L.teams[t], "sm")}<span>${esc(L.teams[t].name)}</span>${i < lt.drawn.length ? `<small>Lottery</small>` : ""}</li>`).join("")}</ol></div>`;
   }
   function runLottery() {
@@ -888,7 +901,7 @@
         ${sport.key === "mlb" ? sel("elig", "Position eligibility", Object.entries(S.ELIG_PRESETS).map(([k2, [lab]]) => [k2, lab]), Object.keys(S.ELIG_PRESETS).find((k2) => JSON.stringify(S.ELIG_PRESETS[k2][1]) === JSON.stringify(s.elig || S.ELIG)) || "yahoo") : ""}
         ${sport.key === "mlb" && G.scoring(L, lctx()).type !== "points" ? sel("minIP", "Innings a week", [0, 10, 15, 20, 25, 30, 35, 40, 50].map((x) => [x, x ? `At least ${x}, or lose ERA and WHIP` : "No minimum"]), s.minIP || 0) : ""}
         ${sel("draftOrder", "Next season's draft order", [["worst", "Worst to first"], ["lottery", "A lottery for non-playoff teams"]], s.draftOrder || "worst")}
-        ${s.draftOrder === "lottery" ? sel("lotteryOdds", "Lottery odds", [["equal", "Equal for every team"], ["weighted", "More for worse records"]], s.lotteryOdds || "equal") : ""}
+        ${s.draftOrder === "lottery" ? sel("lotteryOdds", "Lottery odds", [["weighted", "Weighted toward the worst records"], ["equal", "Equal for every team"]], s.lotteryOdds || "weighted") : ""}
       </div>
       <div class="row3">
         ${medianOk ? sel("median", "Median game", [[0, "Off"], [1, "On"]], s.median ? 1 : 0) : ""}
@@ -909,7 +922,7 @@
       <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">Save rules</button></div></form>`, (fd) => {
       const patch = {};
       for (const [k, v] of fd.entries()) if (k === "elig") patch[k] = (S.ELIG_PRESETS[v] || S.ELIG_PRESETS.yahoo)[1]; else patch[k] = ["trades", "median", "bestBall", "reseed", "bots"].includes(k) ? v === "1" : k === "historyUrl" ? String(v).trim() : ["waivers", "tradeReview", "playoffLegs", "consolation", "waiverOrder", "waiverPrice", "gameLock", "draftOrder", "lotteryOdds"].includes(k) ? v : Number(v);
-      const was = (k) => (k === "elig" ? s.elig || S.ELIG : k === "bots" ? s.bots !== false : k === "historyUrl" ? s.historyUrl || "" : k === "trades" ? s.trades !== false : ["median", "bestBall", "reseed"].includes(k) ? !!s[k] : k === "draftOrder" ? s[k] || "worst" : k === "waiverPrice" ? s[k] || "first" : k === "waiverOrder" ? s[k] || "rolling" : k === "maxAddsSeason" ? s[k] || 0 : k === "lotteryOdds" ? s[k] || "equal" : ["tradeMax", "minIP"].includes(k) ? s[k] || 0 : s[k]);
+      const was = (k) => (k === "elig" ? s.elig || S.ELIG : k === "bots" ? s.bots !== false : k === "historyUrl" ? s.historyUrl || "" : k === "trades" ? s.trades !== false : ["median", "bestBall", "reseed"].includes(k) ? !!s[k] : k === "draftOrder" ? s[k] || "worst" : k === "waiverPrice" ? s[k] || "first" : k === "waiverOrder" ? s[k] || "rolling" : k === "maxAddsSeason" ? s[k] || 0 : k === "lotteryOdds" ? s[k] || "weighted" : ["tradeMax", "minIP"].includes(k) ? s[k] || 0 : s[k]);
       for (const k of Object.keys(patch)) if (JSON.stringify(patch[k]) === JSON.stringify(was(k))) delete patch[k];
       if (!Object.keys(patch).length) return;
       const r = G.setRules(L, patch, now());

@@ -686,10 +686,14 @@
         const won = (_, k) => wn != null && wn === (k === "a" ? m.a : m.b);
         return `<a class="bk-g" href="${matchHref(wk, m.i)}">${ln(m.a, m.sa, won(m, "a"), "a")}${ln(m.b, m.sb, won(m, "b"), "b")}</a>`;
       };
+      // the consolation bracket: the games for the places after the title (3rd, then 5th to 8th with "places", or a
+      // consolation round for teams out of the title hunt), a column a week, each game labeled with what it's for
       if (side) {
-        const rest = br.flatMap((b) => b.games.filter((m) => m.kind && m.kind !== "title").map((m) => ({ m, wk: b.week, label: m.kind === "third" ? "Third place" : /^p\d+$/.test(m.kind) ? kindName(m.kind, b.week) : `Consolation, ${b.round}` })));
-        if (!rest.length) return "";
-        return `<div class="card"><div class="mod-h"><h2>Placement games</h2><span class="ps">Every playoff team plays for its place</span></div><div class="bd bk-rest">${rest.map((x) => `<div><small class="ps">${esc(x.label)}, week ${x.wk}</small>${box(x.m, x.wk)}</div>`).join("")}</div></div>`;
+        const cols2 = br.map((b) => ({ wk: b.week, round: b.round, games: b.games.filter((m) => m.kind && m.kind !== "title") })).filter((c) => c.games.length);
+        if (!cols2.length) return "";
+        const label = (m, wk) => (m.kind === "third" ? "Third place" : /^p\d+$/.test(m.kind) ? kindName(m.kind, wk) : "Consolation");
+        return `<div class="card bk-card"><div class="mod-h"><h2>Consolation bracket</h2><span class="ps">${L().settings.consolation === "places" ? "Every playoff team plays for its place" : "Playing for the places after the title"}</span></div>
+          <div class="bk cons" style="--cols:${cols2.length}">${cols2.map((c) => `<div class="bk-col"><b class="bk-h">${esc(c.round)}<small>Week ${c.wk}</small></b><div class="bk-gs">${c.games.map((m) => `<div class="bk-lab"><small>${esc(label(m, c.wk))}</small>${box(m, c.wk)}</div>`).join("")}</div></div>`).join("")}</div></div>`;
       }
       const cols = br.map((b) => ({ name: b.round, wk: b.week, games: b.games.filter((m) => (m.kind || "title") === "title") })).filter((c) => c.games.length);
       const champ = over() ? championOf() : null;
@@ -1813,7 +1817,11 @@
       if (sub === "tx") return txPage();
       if (sub === "finder") return finderPage();
       let rows = opts.players.filter((p) => U.passes(sport, p, ui.pf));
-      if (sub === "fa") rows = rows.filter((p) => ctx.own[p.id] == null);
+      // who's shown, Yahoo's way: everyone, available (free agents and waivers), either alone, all taken, your team,
+      // or any one team. Free agents opens on available, All players on everyone
+      const show = ui.pshow && (sub === "fa" || sub === "all" || !sub) ? ui.pshow : sub === "fa" ? "avail" : "all";
+      const onW = (p) => G.onWaivers(L(), p.id, now());
+      if (sub === "fa" || sub === "all" || !sub) rows = rows.filter((p) => { const o = ctx.own[p.id]; return show === "all" ? true : show === "avail" ? o == null : show === "fa" ? o == null && !onW(p) : show === "w" ? o == null && onW(p) : show === "taken" ? o != null : show === "mine" ? o === mid : o === +show; });
       if (sub === "watch") rows = rows.filter((p) => w.includes(p.id));
       const actions = (p) => {
         const own = ctx.own[p.id];
@@ -1825,12 +1833,12 @@
         if (own === mid) return `${star}<button class="btn icon drop" data-drop="${esc(p.id)}" aria-label="Drop ${esc(p.n)}">&minus;</button>`;
         return L().settings.trades === false ? star : `${star}<button class="btn icon trade" data-trade="${own}" data-want="${esc(p.id)}" aria-label="Trade for ${esc(p.n)}">&#8644;</button>`;
       };
-      const cols = U.poolColumns(sport, { money: auctionLg(), value: pts(), group: U.groupOf(sport, ui.pf), scoring: L().scoring, owner: statusOf, ownerHide: sub === "fa" || sub === "watch", ownerSort: (p) => (ctx.own[p.id] == null ? -1 : ctx.own[p.id]), actions, extra: pts() ? [] : [] });
+      const cols = U.poolColumns(sport, { money: auctionLg(), value: pts(), group: U.groupOf(sport, ui.pf), scoring: L().scoring, owner: statusOf, ownerHide: ["avail", "fa", "w"].includes(show) || sub === "watch", ownerSort: (p) => (ctx.own[p.id] == null ? -1 : ctx.own[p.id]), actions, extra: pts() ? [] : [] });
       rows = U.sortRows(rows, cols, ui.psort);
       if (sub === "watch") return watchPage(actions);
       return `<div class="wrap page"><div class="head"><h1 class="disp">${sub === "fa" ? "Free agents" : sub === "watch" ? "Watchlist" : "All players"}</h1><span class="ps">${rows.length} players. FA is free to add now; W is on waivers, so put in a claim.</span></div>
         ${L().openWaivers > now() && sub !== "all" ? `<div class="banner" style="margin-bottom:12px"><b>Everyone the draft left is on waivers until ${esc(G.waiverWhen(L().openWaivers))}.</b> <span class="muted">Put in claims now${L().settings.waivers === "faab" ? " with a bid" : ""}. They all run then${L().settings.waivers === "faab" ? ", highest bid first" : ", in waiver order"}.</span></div>` : ""}
-        <div class="tools">${U.search(ui.pf)}</div>${U.posFilter(sport, ui.pf.pos, [], L().settings.lineup)}
+        <div class="tools">${U.search(ui.pf)}${sub === "watch" ? "" : `<label class="sr" for="fk-pshow">Show</label><select id="fk-pshow" class="txsel"><optgroup label="Players">${[["all", "All players"], ["avail", "All available"], ["fa", "Free agents only"], ["w", "Waivers only"], ["taken", "All taken"]].map(([k, n]) => `<option value="${k}"${show === k ? " selected" : ""}>${n}</option>`).join("")}${mid != null ? `<option value="mine"${show === "mine" ? " selected" : ""}>My team</option>` : ""}</optgroup><optgroup label="A team">${L().teams.filter((t) => t.id !== mid).map((t) => `<option value="${t.id}"${show === String(t.id) ? " selected" : ""}>${esc(t.name)}</option>`).join("")}</optgroup></select>`}</div>${U.posFilter(sport, ui.pf.pos, [], L().settings.lineup)}
         ${U.table({ cols, rows, sort: ui.psort, dense: true, limit: ui.plimit || 250, id: "fk-players", empty: sub === "watch" ? "Star players to watch them here." : "No one matches.", rowAttr: (p) => `data-player="${esc(p.id)}"${ctx.own[p.id] === mid ? ' class="me"' : ""}` })}</div>`;
     }
     function claimsPage() {
@@ -2082,7 +2090,7 @@
       const front = r.tab === "league" && (!r.sub || r.sub === "overview");
       // the league chat sits at the right end of the main nav, with its unread count
       const chatLink = opts.chat ? [hrefOf("league", "chat"), "Chat", opts.chat.unread(), r.tab === "league" && r.sub === "chat"] : null;
-      opts.top.innerHTML = U.shell({ brand: opts.brand, title: opts.switcher ? opts.switcher() : "", tabs, tab: r.tab, subs, sub: r.sub, hrefOf, right: opts.right ? opts.right() : "", tabbar: true, mast: front ? mastVM() : null, navEnd: chatLink });
+      opts.top.innerHTML = U.shell({ brand: opts.brand, title: opts.switcher ? opts.switcher() : "", tabs, tab: r.tab, subs, sub: r.sub, hrefOf, right: opts.right ? opts.right() : "", tabbar: true, mast: mastVM(), slim: !front, navEnd: chatLink });
       document.body.classList.add("fk-hasbar");
       // the sticky header's height, so sticky bars on the page (the "Moving" bar) sit just under it
       const topEl = opts.top.querySelector(".fk-top") || opts.top; document.documentElement.style.setProperty("--fk-top-h", `${Math.round(topEl.getBoundingClientRect().height)}px`);
@@ -2314,7 +2322,7 @@
     });
     opts.el.addEventListener("input", (e) => { if (e.target.id === "fk-q") { ui.pf.q = e.target.value; render(); } });
     opts.el.addEventListener("change", (e) => { if (e.target.id === "fk-txt") { ui.txt = e.target.value; ui.txlim = 200; render(); } });
-    opts.el.addEventListener("change", (e) => { if (e.target.id === "team-pick") { const r = route(); location.hash = `#team/${r.sub || "roster"}/${e.target.value}`; } });
+    opts.el.addEventListener("change", (e) => { if (e.target.id === "fk-pshow") { ui.pshow = e.target.value; ui.plimit = 0; render(); return; } if (e.target.id === "team-pick") { const r = route(); location.hash = `#team/${r.sub || "roster"}/${e.target.value}`; } });
     opts.top.addEventListener("click", (e) => { const t = e.target.closest("[data-trade]"); if (t) { e.preventDefault(); openTrade(null); } });
     window.addEventListener("hashchange", () => { ui.moving = null; render(); window.scrollTo(0, 0); });
     render();

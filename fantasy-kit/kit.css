@@ -2023,3 +2023,21 @@ table.t.mbox + table.t.mbox{border-top:2px solid var(--line-2)}
 .tx-sum b{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1.1}
 @media (max-width:600px){.tx-sum{grid-template-columns:1fr 1fr}.tx-sum>div:nth-child(odd){border-left:0}.tx-sum>div:nth-child(n+3){border-top:1px solid var(--line)}}
 aside .sbtwo .scoreboard.list,aside .card .sbtwo .scoreboard.list.n4{grid-template-columns:minmax(0,1fr) !important}
+/* the slim masthead: the front page's colors and crest, one line tall */
+.fk-mast.lgm.slim .wrap.lgm-in{align-items:center;padding-bottom:10px}
+.lgm.slim .lgcr.lg{width:34px;height:43px;margin-top:10px}
+.lgm.slim .lgm-id{padding-top:8px}
+.lgm.slim .lgm-top{display:flex;align-items:center;gap:14px}
+.lgm.slim .switch summary .ell{font-size:22px}
+.lgm.slim .lgm-side{padding-top:8px}
+@media (max-width:760px){.lgm.slim .lgcr.lg{width:28px;height:36px}.lgm.slim .switch summary .ell{font-size:18px}.lgm.slim .lgm-top{gap:8px}.lgm.slim .lgm-top .fk-brand b{display:none}}
+@media (max-width:760px){
+  .fk-mast.lgm.slim .wrap.lgm-in{grid-template-columns:auto minmax(0,1fr) auto}
+  .lgm.slim .lgm-side{position:static;grid-column:3;padding-top:8px}
+  .lgm.slim .lgm-side .btn{padding:0 9px}
+  .lgm.slim .lgm-top .fk-brand{display:none}
+  .lgm.slim .switch summary .ell{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:17px}
+}
+.bk.cons .bk-col .bk-g::after{display:none}
+.bk-lab{display:grid;gap:4px}
+.bk-lab>small{font-size:11.5px;color:var(--muted);font-weight:700}
