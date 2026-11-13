@@ -1,18 +1,8 @@
 {
- "updated": "2026-11-13T01:56:00Z",
+ "updated": "2026-11-13T11:13:49Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
-  "2026-11-12-joe-russo-s-almost-dead-state-theatre": {
-   "sg": 18593361,
-   "history": [],
-   "url": "https://www.jambase.com/article/joe-russos-almost-dead-tour-dates-2026-november",
-   "title": "Joe Russo's Almost Dead",
-   "date": "2026-11-12",
-   "venue": "State Theatre",
-   "low": null,
-   "src": null
-  },
   "2026-11-13-bert-kreischer-the-vets": {
    "sg": 18163952,
    "history": [],
@@ -41,26 +31,6 @@
    "date": "2026-12-19",
    "venue": "Great Cedar Showroom at Foxwoods",
    "low": null
-  },
-  "tm-k7vGF_3ljUWng": {
-   "sg": 18593196,
-   "history": [],
-   "url": "https://www.ticketmaster.com/trey-anastasio-albany-new-york-11-12-2026/event/0000652ADCDBDAB5",
-   "title": "Trey Anastasio",
-   "date": "2026-11-12",
-   "venue": "The Palace Theatre Albany",
-   "low": null,
-   "src": null
-  },
-  "tm-Z7r9jZ1AAZ3uM": {
-   "sg": 18406743,
-   "history": [],
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZ3uM",
-   "title": "Dark Star Orchestra",
-   "date": "2026-11-12",
-   "venue": "Providence Performing Arts",
-   "low": null,
-   "src": null
   },
   "tm-k7vGF_2Lj9ock": {
    "sg": 18406745,
@@ -201,16 +171,6 @@
    "venue": "The Capitol Theatre",
    "low": null,
    "src": null
-  },
-  "tm-G5diZ_2NJWaf8": {
-   "history": [],
-   "sg": 18474900,
-   "title": "Dave Matthews Band",
-   "date": "2026-11-12",
-   "venue": "Madison Square Garden",
-   "url": "https://www.ticketmaster.com/dave-matthews-band-new-york-new-york-11-12-2026/event/3B0064F8E6F49510",
-   "src": null,
-   "low": null
   },
   "tm-G5diZ_2NJDtfA": {
    "history": [],
@@ -393,6 +353,10 @@
     [
      "2026-11-12",
      56
+    ],
+    [
+     "2026-11-13",
+     56
     ]
    ],
    "sg": null,
@@ -524,6 +488,10 @@
     ],
     [
      "2026-11-12",
+     22
+    ],
+    [
+     "2026-11-13",
      22
     ]
    ],
@@ -719,6 +687,10 @@
     [
      "2026-11-12",
      28
+    ],
+    [
+     "2026-11-13",
+     28
     ]
    ],
    "sg": null,
@@ -838,6 +810,10 @@
     ],
     [
      "2026-11-12",
+     22
+    ],
+    [
+     "2026-11-13",
      22
     ]
    ],
@@ -980,16 +956,6 @@
    "src": null,
    "low": null
   },
-  "espn-401892696": {
-   "history": [],
-   "sg": 18378506,
-   "title": "Bruins vs Canadiens",
-   "date": "2026-11-12",
-   "venue": "TD Garden",
-   "url": "https://www.espn.com/nhl/game/_/gameId/401892696/canadiens-bruins",
-   "src": null,
-   "low": null
-  },
   "espn-401892709": {
    "history": [],
    "sg": 18378511,
@@ -1079,6 +1045,36 @@
    "url": "https://seatgeek.com/lcd-soundsystem-tickets/brooklyn-new-york-music-hall-of-williamsburg-2026-11-17-8-pm/concert/18760855",
    "src": null,
    "low": null
+  },
+  "espn-401892795": {
+   "history": [],
+   "sg": 18378518,
+   "title": "Bruins vs Maple Leafs",
+   "date": "2026-11-27",
+   "venue": "TD Garden",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892795/maple-leafs-bruins",
+   "src": null,
+   "low": null
+  },
+  "espn-401909330": {
+   "history": [],
+   "sg": 18485903,
+   "title": "Celtics vs Hawks",
+   "date": "2026-11-27",
+   "venue": "TD Garden",
+   "url": "https://www.espn.com/nba/game/_/gameId/401909330/hawks-celtics",
+   "src": null,
+   "low": null
+  },
+  "tm-Z7r9jZ1AA7vfy": {
+   "history": [],
+   "sg": 18634494,
+   "title": "LCD Soundsystem (21+ Event)",
+   "date": "2026-12-12",
+   "venue": "Knockdown Center",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7vfy",
+   "src": null,
+   "low": null
   }
  },
  "misses": {
@@ -1107,7 +1103,8 @@
   "tm-rZ7HnEZ1Af83j0": "2026-11-11",
   "tm-rZ7HnEZ1Af83qf": "2026-11-11",
   "tm-Z7r9jZ1AA7zoy": "2026-11-12",
-  "tm-vv1AvZkf7GkdbzXaM": "2026-11-11"
+  "tm-vv1AvZkf7GkdbzXaM": "2026-11-11",
+  "tm-vvG17Z_2wSVFP-": "2026-11-13"
  },
  "drops": []
 }
