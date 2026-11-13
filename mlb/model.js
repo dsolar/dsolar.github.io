@@ -199,14 +199,15 @@
     var prospect = p && isProspect(p);
     var young = p && !prospect && p.g !== "min" && (p.st || 0) < 3 && !(p.c && p.c.type === "Free Agent") // a free agent signing (from Japan, say) is established
       && !provenRecord(p); // so is a young player who has already put in two full seasons' work
-    return Math.max(0, war) * outlookShare(p, cfg) * farShare(year, season, cfg) * (p && p.faith ? p.faith : 1) * (prospect || cfg.haircut == null ? 1 : cfg.haircut) * Math.pow(cfg.fade == null ? 1 : cfg.fade, year - season)
+    // (a prospect's value is already scaled by his risk grade, so far-off seasons don't count less again)
+    return Math.max(0, war) * outlookShare(p, cfg) * (prospect ? 1 : farShare(year, season, cfg)) * (p && p.faith ? p.faith : 1) * (prospect || cfg.haircut == null ? 1 : cfg.haircut) * Math.pow(cfg.fade == null ? 1 : cfg.fade, year - season)
       // after the coming season, an unproven player's projection counts at youngKeep, less of a cut the more big league
       // work he's already done (flat, not compounding: a player who keeps producing is still worth his projection)
       * (young && year > season ? 1 - (1 - youngKeep(p, cfg)) * (1 - recordShare(p)) : 1);
   }
   function fieldValue(war, year, season, cfg, p) {
     var w = countedWar(war, year, season, cfg, p);
-    return w * (cfg.tiered ? tierMult(w) : 1) * dpwAt(cfg, year, season);
+    return w * (cfg.tiered && !(p && isProspect(p)) ? tierMult(w) : 1) * dpwAt(cfg, year, season); // a prospect is priced on his grade's path
   }
 
   // Expected WAR in a season for value purposes: the rate times a playing-time share
