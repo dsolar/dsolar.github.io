@@ -72,7 +72,6 @@ window.PROJECTS = [
   },
   {
     title: "The Number",
-    hidden: true,   // until the database (tools/pickem_supabase.sql) is live
     homeFeatured: true,
     line: "NFL pick'em against the spread",
     tag: "Weekly",

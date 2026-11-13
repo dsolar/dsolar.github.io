@@ -15,8 +15,8 @@
   var logo = function (t) { return "https://a.espncdn.com/i/teamlogos/nfl/500/" + String(t).toLowerCase() + ".png"; };
 
   // a line the way the cards print it: -2½, +7, PK
-  function line(x) {
-    if (x == null) return "TBD";
+  function line(x, locked) {
+    if (x == null) return locked ? "Off" : "TBD";
     if (Number(x) === 0) return "PK";
     var a = Math.abs(Number(x)), whole = Math.floor(a), half = a - whole >= 0.5;
     return (x < 0 ? "−" : "+") + (whole || (half ? "" : "0")) + (half ? "½" : "");
@@ -86,7 +86,7 @@
       var n = g.split.home + g.split.away, ap = Math.round((100 * g.split.away) / n);
       split = '<span class="split" title="How everyone picked">' + ap + "% " + esc(g.away) + ' <i><b style="width:' + ap + '%"></b></i> ' + (100 - ap) + "% " + esc(g.home) + "</span>";
     }
-    var foot = res || split || (g.locked && !g.pick ? "<span>No pick</span>" : "");
+    var foot = res || split || (g.locked && g.spread == null ? "<span>No line was set, so it isn't graded</span>" : g.locked && !g.pick ? "<span>No pick</span>" : "");
     return '<article class="game' + (g.locked ? " locked" : "") + '" data-g="' + esc(g.id) + '"><div class="g-top"><span>' + top + '</span><span class="grow"></span><span>' + esc(g.away) + " @ " + esc(g.home) + "</span></div>"
       + side(g, "away") + side(g, "home")
       + (foot ? '<div class="g-foot">' + res + '<span class="grow"></span>' + split + (res || split ? "" : foot) + "</div>" : "") + "</article>";
@@ -94,10 +94,10 @@
   function side(g, s) {
     var t = s === "home" ? g.home : g.away, sc = s === "home" ? g.homeScore : g.awayScore, ln = sideLine(g, s);
     var can = !g.locked && g.spread != null, on = g.pick === s, cov = g.cover === s;
-    var label = (CITY[t] || t) + " " + (TEAMS[t] || "") + " " + line(ln) + (on ? ", your pick" : "") + (g.locked ? ", locked" : "");
+    var label = (CITY[t] || t) + " " + (TEAMS[t] || "") + " " + (ln == null && g.locked ? "no line" : line(ln)) + (on ? ", your pick" : "") + (g.locked ? ", locked" : "");
     return '<button type="button" class="side' + (on ? " on" : "") + (cov ? " cov" : "") + '" data-pick="' + s + '"' + (can ? "" : " disabled") + ' aria-pressed="' + on + '" aria-label="' + esc(label) + '">'
       + '<img src="' + logo(t) + '" alt="" loading="lazy" width="34" height="34" onerror="this.className=\'gone\'"><span class="tm"><b>' + esc(TEAMS[t] || t) + "</b><small>" + esc(CITY[t] || "") + (s === "home" ? ", home" : "") + "</small></span>"
-      + '<span class="sc">' + (g.locked && sc != null ? sc : "") + '</span><span class="box">' + esc(line(ln)) + "</span></button>";
+      + '<span class="sc">' + (g.locked && sc != null ? sc : "") + '</span><span class="box">' + esc(line(ln, g.locked)) + "</span></button>";
   }
   function drawBar() {
     var b = board; if (!b || tab !== "picks") { bar.hidden = true; return; }
