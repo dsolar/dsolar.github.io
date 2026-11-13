@@ -1,5 +1,6 @@
 # Pulls Wipe Yoenis box scores (each team's starters and their stats, day by day, added up by week) and Yahoo's
-# player ranks into tools/yahoo_yoenis/box/. A finished season is pulled once. In season it runs every morning.
+# player ranks into tools/yahoo_yoenis/box/. Yahoo limits how fast it answers, so a season goes in over a few runs;
+# once it's complete each run exits right away.
 name: Wipe Yoenis box scores
 
 on:
@@ -9,7 +10,7 @@ on:
       - tools/yoenis_box_pull.py
       - .github/workflows/yoenis-box.yml
   schedule:
-    - cron: "13 13 * 4-10 *"    # 9:13am ET, April through October
+    - cron: "13 */3 * * *"      # every three hours: a finished season's pull is spread over a few runs, then stops
   workflow_dispatch:
 
 permissions:
@@ -32,6 +33,7 @@ jobs:
           YAHOO_REFRESH_TOKEN: ${{ secrets.YAHOO_REFRESH_TOKEN }}
         run: python3 tools/yoenis_box_pull.py
       - name: Commit
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

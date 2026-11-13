@@ -13,7 +13,7 @@ A finished season is pulled once (the file is kept when it's complete).
 import json
 import os
 import sys
-from concurrent.futures import ThreadPoolExecutor
+import time
 from datetime import date, timedelta
 from glob import glob
 
@@ -117,74 +117,108 @@ def main():
     # the weeks, from the scoreboard's matchup dates
     weeks = []
     for w in range(int(num(meta, "start_week") or 1), int(num(meta, "end_week") or 1) + 1):
-        sb = y.get(f"league/{key}/scoreboard;week={w}", soft=True)
+        sb = get(y, f"league/{key}/scoreboard;week={w}")
         m = sb.find(".//matchup") if sb is not None else None
         if m is None:
             continue
         weeks.append((w, date.fromisoformat(text(m, "week_start")), date.fromisoformat(text(m, "week_end"))))
     week_of = lambda d: next((w for w, a, b in weeks if a <= d <= b), None)
 
-    def lineup(d):
-        r = y.get(f"league/{key}/teams;team_keys={','.join(team_keys)}/roster;date={d.isoformat()}", soft=True)
-        got = {}
+    # Yahoo turns away a fast caller (HTTP 999), so this goes one request at a time and keeps every finished day in a
+    # cache, committed even when a run stops early; the next run picks up where this one left off
+    cache_path = os.path.join(OUT_DIR, f"days{year}.json")
+    try:
+        cache = json.load(open(cache_path, encoding="utf-8"))
+    except (OSError, ValueError):
+        cache = {}
+    days = [start + timedelta(days=k) for k in range((last - start).days + 1)]
+    todo = [d for d in days if d.isoformat() not in cache or (d >= today - timedelta(days=3) and not finished)]
+    budget, spent, printed = int(os.environ.get("YOENIS_BOX_BUDGET", "1400")), 0, False
+    for d in todo:
+        if spent >= budget:
+            print(f"Stopping at {d}: {spent} requests this run. The next run carries on.")
+            break
+        r = get(y, f"league/{key}/teams;team_keys={','.join(team_keys)}/roster;date={d.isoformat()}")
+        spent += 1
         if r is None:
-            return d, got
+            if y.last_error and "999" in y.last_error:
+                print("Yahoo is turning requests away; stopping for now.")
+                break
+            continue
+        lu = {}
         for t in r.findall(".//team"):
             tk = text(t, "team_key")
             for p in t.findall("roster/players/player"):
                 slot = text(p, "selected_position/position")
                 if slot and slot not in BENCH:
-                    got.setdefault(tk, []).append((text(p, "player_key"), text(p, "name/full"), slot, text(p, "position_type")))
-        return d, got
-
-    def stats(d, pkeys):
-        res = {}
+                    lu.setdefault(tk, []).append([text(p, "player_key"), text(p, "name/full"), slot])
+        pkeys = sorted({x[0] for lst in lu.values() for x in lst})
+        st, ok = {}, True
         for i in range(0, len(pkeys), 25):
-            r = y.get(f"league/{key}/players;player_keys={','.join(pkeys[i:i + 25])}/stats;type=date;date={d.isoformat()}", soft=True)
-            if r is None:
-                continue
-            for p in r.findall(".//player"):
-                res[text(p, "player_key")] = day_stats(p)
-        return res
+            q = get(y, f"league/{key}/players;player_keys={','.join(pkeys[i:i + 25])}/stats;type=date;date={d.isoformat()}")
+            spent += 1
+            if q is None:
+                ok = False
+                break
+            for p in q.findall(".//player"):
+                side, line = day_stats(p)
+                if line:
+                    st[text(p, "player_key")] = [side, line]
+        if not ok:
+            print(f"{d}: stats didn't all come back; stopping for now.")
+            break
+        if not printed and st:
+            print("sample day line:", d, next(iter(st.items())))
+            printed = True
+        cache[d.isoformat()] = {"lu": lu, "st": st}
+        if len(cache) % 10 == 0:
+            save(cache_path, cache)
+    save(cache_path, cache)
 
-    days = [start + timedelta(days=k) for k in range((last - start).days + 1)]
-    box, names, missing = {}, {}, []
-    printed = False
-    with ThreadPoolExecutor(max_workers=4) as ex:
-        lineups = list(ex.map(lineup, days))
-        jobs = []
-        for d, got in lineups:
-            if not got:
-                missing.append(d.isoformat())
-                continue
-            pkeys = sorted({pk for lst in got.values() for pk, *_ in lst})
-            jobs.append((d, got, ex.submit(stats, d, pkeys)))
-        for d, got, fut in jobs:
-            st = fut.result()
-            if not printed and st:
-                print("sample day line:", next(iter(st.items())))
-                printed = True
-            w = week_of(d)
-            if w is None:
-                continue
-            for tk, lst in got.items():
-                for pk, name, slot, ptype in lst:
-                    side, line = st.get(pk, (None, None))
-                    if not line:
-                        continue
-                    names[pk] = name
-                    row = box.setdefault(str(w), {}).setdefault(tk, {}).setdefault(pk, {"side": side, "slot": slot, "days": 0, "s": {}})
-                    row["days"] += 1
-                    row["slot"] = slot
-                    add(row["s"], line)
-
+    # the weeks' box scores, from the cache
+    box, names = {}, {}
+    for ds, day in sorted(cache.items()):
+        w = week_of(date.fromisoformat(ds))
+        if w is None:
+            continue
+        for tk, lst in day["lu"].items():
+            for pk, name, slot in lst:
+                side_line = day["st"].get(pk)
+                if not side_line:
+                    continue
+                side, line = side_line
+                names[pk] = name
+                row = box.setdefault(str(w), {}).setdefault(tk, {}).setdefault(pk, {"side": side, "slot": slot, "days": 0, "s": {}})
+                row["days"] += 1
+                row["slot"] = slot
+                add(row["s"], line)
+    missing = [d.isoformat() for d in days if d.isoformat() not in cache]
     out = {"season": year, "key": key, "pulled": today.isoformat(), "complete": finished and not missing and last >= end,
            "weeks": {str(w): {"start": a.isoformat(), "end": b.isoformat()} for w, a, b in weeks},
-           "names": names, "box": box, "missingDays": missing}
-    with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
+           "names": names, "box": box, "missingDays": len(missing)}
+    save(out_path, out)
     n = sum(len(p) for t in box.values() for p in t.values())
-    print(f"Wrote {out_path}: {len(days)} days, {len(box)} weeks, {n} player-weeks, {len(missing)} days missing.")
+    print(f"Wrote {out_path}: {len(cache)} of {len(days)} days, {len(box)} weeks, {n} player-weeks, {len(missing)} days to go.")
+
+
+def save(path, obj):
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(obj, f, ensure_ascii=False, separators=(",", ":"))
+
+
+def get(y, path, tries=3):
+    """One request, spaced out; a 999 (too fast) waits a minute and tries again, then gives up for this run."""
+    for k in range(tries):
+        time.sleep(1.1)
+        try:
+            r = y.get(path, soft=True)
+        except Failure:
+            r = None
+        if r is not None or not (y.last_error and "999" in y.last_error):
+            return r
+        print(f"Yahoo said slow down; waiting {60 * (k + 1)}s.")
+        time.sleep(60 * (k + 1))
+    return None
 
 
 def ranks():
@@ -197,33 +231,36 @@ def ranks():
 
     def page(args):
         sort, start = args
-        r = y.get(f"league/{key}/players;sort={sort};sort_type=season;start={start};count=25;out=ranks,percent_owned,draft_analysis", soft=True)
+        r = get(y, f"league/{key}/players;sort={sort};sort_type=season;start={start};count=25;out=ranks,percent_owned,draft_analysis")
         return [] if r is None else r.findall(".//player")
 
-    with ThreadPoolExecutor(max_workers=6) as ex:
-        for ps in ex.map(page, [(s, k) for s in ("OR", "AR") for k in range(0, 1000, 25)]):
-            for p in ps:
-                pk = text(p, "player_key")
-                row = {"n": text(p, "name/full"), "t": text(p, "editorial_team_abbr"), "pos": text(p, "display_position")}
-                for rk in p.findall("player_ranks/player_rank"):
-                    t, v, s = text(rk, "rank_type"), num(rk, "rank_value"), text(rk, "rank_season")
-                    if v is None:
-                        continue
-                    if t == "OR":
-                        row["pre"] = int(v)
-                    elif t == "S" and s == str(year):
-                        row["szn"] = int(v)
-                own = num(p, "percent_owned/value")
-                if own is not None:
-                    row["own"] = own
-                adp = num(p, "draft_analysis/average_pick")
-                if adp:
-                    row["adp"] = adp
-                got[pk] = row
     path = os.path.join(OUT_DIR, f"ranks{year}.json")
+    if os.path.exists(path) and json.load(open(path, encoding="utf-8")).get("final"):
+        print("Ranks are final for the season; skipping.")
+        return
+    for ps in map(page, [(s, k) for s in ("OR", "AR") for k in range(0, 1000, 25)]):
+        for p in ps:
+            pk = text(p, "player_key")
+            row = {"n": text(p, "name/full"), "t": text(p, "editorial_team_abbr"), "pos": text(p, "display_position")}
+            for rk in p.findall("player_ranks/player_rank"):
+                t, v, s = text(rk, "rank_type"), num(rk, "rank_value"), text(rk, "rank_season")
+                if v is None:
+                    continue
+                if t == "OR":
+                    row["pre"] = int(v)
+                elif t == "S" and s == str(year):
+                    row["szn"] = int(v)
+            own = num(p, "percent_owned/value")
+            if own is not None:
+                row["own"] = own
+            adp = num(p, "draft_analysis/average_pick")
+            if adp:
+                row["adp"] = adp
+            got[pk] = row
     os.makedirs(OUT_DIR, exist_ok=True)
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump({"season": year, "players": got}, f, ensure_ascii=False, separators=(",", ":"))
+    meta = y.get(f"league/{key}/metadata")
+    final = meta is not None and text(meta.find(".//league"), "is_finished") == "1" and len(got) > 500
+    save(path, {"season": year, "final": final, "players": got})
     print(f"Wrote {path}: {len(got)} players.")
 
 
