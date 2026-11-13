@@ -32,12 +32,18 @@ jobs:
           YAHOO_CLIENT_SECRET: ${{ secrets.YAHOO_CLIENT_SECRET }}
           YAHOO_REFRESH_TOKEN: ${{ secrets.YAHOO_REFRESH_TOKEN }}
         run: python3 tools/yoenis_box_pull.py
+      - name: Build the league's box score file
+        if: always()
+        # the importer rebuilds the whole league; only its box score file (yoenis/box-2026.json) is kept here
+        run: |
+          node tools/yoenis_draftlab.mjs || true
+          git checkout -- tools/yoenis_draftlab.json || true
       - name: Commit
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add tools/yahoo_yoenis/box
+          git add tools/yahoo_yoenis/box yoenis/box-2026.json
           if git diff --cached --quiet; then echo "Nothing changed."; exit 0; fi
           git commit -m "Wipe Yoenis: box scores and ranks from Yahoo"
           git pull --rebase -q origin main

@@ -121,47 +121,6 @@ for (const [team, rows] of Object.entries(data.keepers2027)) {
   }
 }
 if (miss.length) console.warn(`keeper rows with no rostered player (${miss.length}):`, miss.slice(0, 10));
-// ---------- Yahoo's ranks and the season's box scores (tools/yoenis_box_pull.py, run in the box score workflow) ----------
-// a player in the pool by name, without adding anyone new (the ranks and box scores cover players nobody rostered)
-const findId = (name, pos, mlb) => (split[rawKey(name)] || {}).id || (findPlayer(name, mlb, pos) || {}).id || null;
-const tryRead = (f) => { try { return read(f); } catch (e) { return null; } };
-const yr = tryRead('tools/yahoo_yoenis/box/ranks2026.json');
-if (yr && yr.players) {
-  const ranks = {};
-  for (const [yk, r] of Object.entries(yr.players)) {
-    const pid = byKey[yk] || findId(r.n || '', r.pos, r.t);
-    if (!pid) continue;
-    const o = {};
-    if (r.pre) o.pre = r.pre;
-    if (r.szn) o.szn = r.szn;
-    if (r.own != null) o.own = r.own;
-    if (Object.keys(o).length) ranks[pid] = o;
-  }
-  L.ext = { source: 'Yahoo', season: 2026, ranks };
-  console.log(`Yahoo ranks: ${Object.keys(ranks).length} players`);
-}
-const yb = tryRead('tools/yahoo_yoenis/box/2026.json');
-if (yb && yb.box && Object.keys(yb.box).length) {
-  const weeks = {};
-  let n = 0, miss = 0;
-  for (const [w, teamsOf] of Object.entries(yb.box)) {
-    for (const [tk, players] of Object.entries(teamsOf)) {
-      const t = keyOf[tk];
-      if (t == null || t < 0) continue;
-      for (const [pk, row] of Object.entries(players)) {
-        const name = (yb.names || {})[pk] || '';
-        const pid = byKey[pk] || findId(name, null, null);
-        if (!pid) miss++;
-        ((weeks[w] = weeks[w] || {})[t] = weeks[w][t] || []).push([pid || `y:${name}`, row.slot === 'Util' ? 'UTIL' : row.slot, row.days, row.s]);
-        n++;
-      }
-    }
-  }
-  writeFileSync(new URL('yoenis/box-2026.json', root), JSON.stringify({ season: 2026, source: 'Yahoo', complete: !!yb.complete, weeks }));
-  L.imported.boxUrl = '/yoenis/box-2026.json';
-  console.log(`box scores: ${Object.keys(weeks).length} weeks, ${n} player-weeks (${miss} not in the player pool)${yb.complete ? '' : ', still filling in'}`);
-}
-
 L.extraPlayers = [...extra.values()];
 D.extraPlayers = L.extraPlayers;
 if (two) L.hidePlayers = D.hidePlayers = [two.id];
@@ -251,6 +210,64 @@ const seasons = data.seasons.filter((x) => +x.year < 2026).sort((a, b) => a.year
   const who = (r) => (r ? { team: r.team, name: r.name, owner: r.owner } : null);
   return { season: String(x.year), year: i + 1, sport: 'mlb', format: 'h2h', champion: who(rows[0]), runnerUp: who(rows[1]), third: who(rows[2]), playoffTeams: 6, standings: rows };
 });
+
+// ---------- Yahoo's ranks and the season's box scores (tools/yoenis_box_pull.py, run in the box score workflow) ----------
+// a player in the pool by name, without adding anyone new (the ranks and box scores cover players nobody rostered)
+const findId = (name, pos, mlb) => (split[rawKey(name)] || {}).id || (findPlayer(name, mlb, pos) || {}).id || null;
+const tryRead = (f) => { try { return read(f); } catch (e) { return null; } };
+const yr = tryRead('tools/yahoo_yoenis/box/ranks2026.json');
+if (yr && yr.players) {
+  const ranks = {};
+  for (const [yk, r] of Object.entries(yr.players)) {
+    const pid = byKey[yk] || findId(r.n || '', r.pos, r.t);
+    if (!pid) continue;
+    const o = {};
+    if (r.pre) o.pre = r.pre;
+    if (r.szn) o.szn = r.szn;
+    if (r.own != null) o.own = r.own;
+    if (Object.keys(o).length) ranks[pid] = o;
+  }
+  L.ext = { source: 'Yahoo', season: 2026, ranks };
+  console.log(`Yahoo ranks: ${Object.keys(ranks).length} players`);
+}
+const yb = tryRead('tools/yahoo_yoenis/box/2026.json');
+if (yb && yb.box && Object.keys(yb.box).length) {
+  const weeks = {};
+  let n = 0, miss = 0;
+  for (const [w, teamsOf] of Object.entries(yb.box)) {
+    for (const [tk, players] of Object.entries(teamsOf)) {
+      const t = keyOf[tk];
+      if (t == null || t < 0) continue;
+      for (const [pk, row] of Object.entries(players)) {
+        const name = (yb.names || {})[pk] || '';
+        const pid = byKey[pk] || findId(name, null, null);
+        if (!pid) miss++;
+        ((weeks[w] = weeks[w] || {})[t] = weeks[w][t] || []).push([pid || `y:${name}`, row.slot === 'Util' ? 'UTIL' : row.slot, row.days, row.s]);
+        n++;
+      }
+    }
+  }
+  // Yahoo's day lines carry OPS and ERA only as rates, so two things need squaring with each team's real week
+  // (yoenis/race.json): OBP is weighted by at-bats rather than plate appearances, so each team's OBP parts are scaled
+  // to its real OPS; and an outing with no outs recorded has earned runs but no rate to read them from, so those runs
+  // and baserunners go on one line of their own
+  const race = tryRead('yoenis/race.json'), ix = race ? Object.fromEntries(race.cats.map((c, i) => [c.abbr, i])) : null;
+  if (race) for (const rw of race.weeks) for (const mu of rw.matchups) for (const tk of mu.teams) {
+    const t = keyOf[tk], rows = weeks[rw.week] && weeks[rw.week][t];
+    if (!rows) continue;
+    const real = mu.stats[tk], sum = (k) => rows.reduce((a, r) => a + ((r[3] || {})[k] || 0), 0);
+    const ab = sum('ab'), tb = sum('tb'), ob = sum('obpab'), ops = real[ix.OPS];
+    if (ab && ob && ops != null) { const f = (ops - tb / ab) / (ob / ab); if (f > 0.8 && f < 1.3) for (const r of rows) if (r[3] && r[3].obpab) r[3].obpab = Math.round(r[3].obpab * f * 1000) / 1000; }
+    const outs = sum('outs'), er = sum('er'), bbh = sum('bbh'), era = real[ix.ERA], whip = real[ix.WHIP];
+    if (outs && era != null && whip != null) {
+      const xer = Math.round(era * outs / 27 - er), xbbh = Math.round(whip * outs / 3 - bbh);
+      if (xer >= 1 || xbbh >= 1) rows.push(['y:Outings with no outs recorded', 'RP', 0, { outs: 0, er: Math.max(0, xer), bbh: Math.max(0, xbbh) }]);
+    }
+  }
+  writeFileSync(new URL('yoenis/box-2026.json', root), JSON.stringify({ season: 2026, source: 'Yahoo', complete: !!yb.complete, weeks }));
+  L.imported.boxUrl = '/yoenis/box-2026.json';
+  console.log(`box scores: ${Object.keys(weeks).length} weeks, ${n} player-weeks (${miss} not in the player pool)${yb.complete ? '' : ', still filling in'}`);
+}
 
 L.extraPlayers = [...extra.values()];
 D.extraPlayers = L.extraPlayers;
