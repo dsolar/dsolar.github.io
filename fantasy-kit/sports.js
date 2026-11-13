@@ -115,7 +115,7 @@
   const HIT = ["C", "1B", "2B", "3B", "SS", "OF", "UT"];
   // Z-scores measure against players a league would roster: regulars, starters and closers.
   const mlbBase = (sport, p, line) => (line === "bat" ? (stat(sport, p, "bat", "pa") || 0) >= 400
-    : (stat(sport, p, "pit", "ip") || 0) >= 110 || (stat(sport, p, "pit", "sv") || 0) >= 12);
+    : (stat(sport, p, "pit", "ip") || 0) >= 110 || (stat(sport, p, "pit", "sv") || 0) >= 12 || (stat(sport, p, "pit", "hld") || 0) >= 12);
   // Counting stats paced to a full season (600 plate appearances, 175 innings for a starter, 65 for a reliever).
   const mlbPace = {
     bat: { col: "pa", full: 600, k: 200 },

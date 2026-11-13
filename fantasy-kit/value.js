@@ -85,7 +85,9 @@
         for (const p of has) {
           const x = catRaw(sport, p, c, lg, sc);
           if (x == null) continue;
-          p.zc[c.k] = ((x - m) / sd) * (c.low ? -1 : 1);
+          // capped at 4 either way: a category most of the baseline barely touches (saves, holds) has a narrow spread,
+          // and one specialist shouldn't outrank an ace on it alone
+          p.zc[c.k] = Math.max(-4, Math.min(4, ((x - m) / sd) * (c.low ? -1 : 1)));
         }
       }
       for (const p of has) p.v += sum(cats.map((c) => p.zc[c.k] || 0));
@@ -472,6 +474,11 @@
   const mainPos = (sport, p) => {
     const ps = S.positions(p);
     if (ps.length <= 1) return ps[0] || "?";
+    // a pitcher who qualifies at both is ranked where he pitches: a reliever who made a few starts is an RP
+    if (ps.includes("SP") && ps.includes("RP") && p.l && p.l.pit && sport.cols && sport.cols.pit) {
+      const g = S.stat(sport, p, "pit", "g") || 0, gs = S.stat(sport, p, "pit", "gs") || 0;
+      if (g) return gs >= g / 2 ? "SP" : "RP";
+    }
     const sp = ps.filter((x) => x !== "UT");
     return (sp.length ? sp : ps).slice().sort((a, b) => sport.positions.indexOf(a) - sport.positions.indexOf(b))[0];
   };
