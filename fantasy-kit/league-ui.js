@@ -769,7 +769,7 @@
       const champRows = all.slice().reverse().map((x) => {
         const c = x.champion, row = c && (x.standings || []).find((r) => r.team === c.team), lead = x.live ? (x.standings || [])[0] : null;
         return `<tr><td class="nm"><b>${yearName(x)}</b>${x.live ? ` <span class="pill sm">Now</span>` : ""}</td>
-          <td>${x.live ? (lead ? `<span class="ps">Leading:</span> ${esc(lead.name)}` : "") : c ? `<b>${esc(c.name)}</b>${c.owner ? ` <span class="ps">${esc(c.owner)}</span>` : ""}` : `<span class="ps">No champion</span>`}</td>
+          <td>${x.live ? (lead ? `<span class="ps">Leading:</span> ${esc(lead.name)}` : "") : c ? `<b>${esc(c.name)}</b>${c.owner ? `<small class="ps" style="display:block">${esc(c.owner)}</small>` : ""}` : `<span class="ps">No champion</span>`}</td>
           ${all.some((y) => !y.live && y.runnerUp) ? `<td class="hide-s">${!x.live && x.runnerUp ? esc(x.runnerUp.name) : ""}</td>` : ""}<td class="r num">${x.live ? (lead ? rec(lead) : "") : row ? rec(row) : ""}</td></tr>`;
       }).join("");
       // records across every season that kept them (seasons saved before records were kept are skipped)
@@ -805,7 +805,7 @@
             ${many ? "" : `<p class="ps" style="margin:10px 16px 14px">Each finished season is added here when the commissioner starts the next one.</p>`}</div>
           <div class="card"><div class="mod-h"><h2>Records</h2>${many ? `<span class="ps">All seasons</span>` : ""}</div>${recRows.length ? `<div class="bd"><dl class="kv rec">${recRows.map(([k, v, w]) => `<dt>${k}</dt><dd>${v}<small>${w}</small></dd>`).join("")}</dl></div>` : `<p class="empty">${pts() || gl() ? "Records start once a week is final." : "Score records are for points leagues; win streaks start once a week is final."}</p>`}</div>
         </div>
-        <div class="card"><div class="mod-h"><h2>All-time standings</h2></div><div class="table-wrap"><table class="t"><thead><tr><th>Team</th>${many ? `<th class="r hide-s">Seasons</th>` : ""}${hasWL ? `<th class="r">Record</th><th class="r hide-s">Pct</th>` : ""}<th class="r">Titles</th>${many ? `<th class="r hide-s">Avg finish</th>` : ""}${pts() ? `<th class="r hide-s">Points</th>` : ""}</tr></thead><tbody>
+        <div class="card"><div class="mod-h"><h2>All-time standings</h2></div><div class="table-wrap"><table class="t"><thead><tr><th>Team</th>${many ? `<th class="r hide-s">Seasons</th>` : ""}${hasWL ? `<th class="r">Record</th><th class="r hide-s">Pct</th>` : ""}<th class="r">Titles</th>${many ? `<th class="r hide-s" title="Average finish">Avg</th>` : ""}${pts() ? `<th class="r hide-s">Points</th>` : ""}</tr></thead><tbody>
           ${rows.map((a) => `<tr${isMe(a.team) ? ` class="me"` : ""}><td class="nm"><a class="row" style="gap:8px;text-decoration:none;color:inherit" href="${teamHref(a.team)}">${teamAv(T(a.team), "sm")}<span class="ell">${esc(T(a.team).name)}</span></a></td>${many ? `<td class="r num hide-s">${a.seasons}</td>` : ""}${hasWL ? `<td class="r num">${rec(a)}</td><td class="r num hide-s">${pct3(a)}</td>` : ""}<td class="r num">${a.titles ? `<b>${a.titles}</b>` : "0"}</td>${many ? `<td class="r num hide-s">${avg(a)}</td>` : ""}${pts() ? `<td class="r num hide-s">${fmtS(a.pts)}</td>` : ""}</tr>`).join("")}
         </tbody></table></div></div></div></div>`;
     }

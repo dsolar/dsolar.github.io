@@ -200,9 +200,13 @@ for (const x of txs) {
   L.tx.push({ id: L.nextId++, at, week, type, team, adds: add ? [pid(add)] : [], drops: drop ? [pid(drop)] : [] });
 }
 
-// every season before this one, for the History page and the champion pennants
-const seasons = data.seasons.filter((x) => +x.year < 2026).map((x, i) => {
-  const rows = x.standings.map(([rank, t, rec]) => { const [w, l, tt] = rec.split('-').map(Number); return { team: t, name: x.teams[t], owner: (data.owners[x.o[t]] || {}).n || null, w, l, t: tt, rank }; }).sort((a, b) => a.rank - b.rank);
+// every season before this one, for the History page and the champion pennants. A team is this league's team when the
+// same manager runs it now (x.o: the manager behind each team that year), so the all-time standings and titles follow
+// managers through their renames; a manager who has left keeps a team id of his own ("x:" and his key).
+const nowTeam = Object.fromEntries(s26.o.map((k, i) => [k, i]));
+const seasons = data.seasons.filter((x) => +x.year < 2026).sort((a, b) => a.year - b.year).map((x, i) => {
+  const id = (t) => (nowTeam[x.o[t]] != null ? nowTeam[x.o[t]] : `x:${x.o[t]}`);
+  const rows = x.standings.map(([rank, t, rec]) => { const [w, l, tt] = rec.split('-').map(Number); return { team: id(t), name: x.teams[t], owner: (data.owners[x.o[t]] || {}).n || null, w, l, t: tt, rank, place: rank }; }).sort((a, b) => a.rank - b.rank);
   const who = (r) => (r ? { team: r.team, name: r.name, owner: r.owner } : null);
   return { season: String(x.year), year: i + 1, sport: 'mlb', format: 'h2h', champion: who(rows[0]), runnerUp: who(rows[1]), third: who(rows[2]), playoffTeams: 6, standings: rows };
 });
