@@ -1682,6 +1682,8 @@
       if (col === "whip") return d((s2.bbh || 0) * 3, s2.outs);
       return s2[col] != null ? s2[col] : 0;
     };
+    // the two teams' box scores side by side; on a phone, one at a time, swiped between or picked from two tabs
+    const mboxWrap = (m, a, b) => `<div class="mb-tabs seg" role="group" aria-label="Box score">${[m.a, m.b].map((t, i) => `<button type="button" data-mbtab="${i}" aria-pressed="${i === 0}">${teamAv(T(t), "sm")}<span>${esc(T(t).abbr || T(t).name)}</span></button>`).join("")}</div><div class="mboxes">${a}${b}</div>`;
     // box score tables from rows of [player id, slot, days started (or null for one day), stats as parts]; with
     // o.total, a totals row under each table
     const sumParts = (rows) => { const o = {}; for (const r of rows) for (const [k, v] of Object.entries(r[3] || {})) o[k] = (o[k] || 0) + v; return o; };
@@ -1700,7 +1702,7 @@
         };
         return `<div class="card mbox-c"><div class="mod-h">${teamAv(T(team), "sm")}<h2>${esc(T(team).name)}</h2><span class="grow"></span><span class="ps">${esc(o.sub || "Everyone who started, with the days he started")}</span></div><div class="table-wrap">${tbl("bat", "Hitters")}${tbl("pit", "Pitchers")}</div></div>`;
       };
-      return `<div class="mboxes">${box(m.a)}${box(m.b)}</div>`;
+      return mboxWrap(m, box(m.a), box(m.b));
     }
     function importedBoxes(w, m, wk) { return partBoxes(m, (t) => wk[t]); }
 
@@ -1830,7 +1832,7 @@
           };
           return `<div class="card mbox-c"><div class="mod-h">${teamAv(T(team), "sm")}<h2>${esc(T(team).name)}</h2><span class="grow"></span><span class="ps">Each player's days in the lineup</span></div><div class="table-wrap">${tbl("bat", "Hitters")}${tbl("pit", "Pitchers")}</div></div>`;
         };
-        return `<div class="mboxes">${dbox(m.a)}${dbox(m.b)}</div>`;
+        return mboxWrap(m, dbox(m.a), dbox(m.b));
       }
       const box = (team, lu) => {
         const tbl = (grp, title) => {
@@ -1846,7 +1848,7 @@
         const ipTag = min && ip != null ? `<span class="tag ${ip >= min ? "win" : m.final ? "loss" : ""}" title="At least ${min} innings a week, or this team loses ERA and WHIP">${S.fmt.ip(ip)} of ${min} IP</span>` : "";
         return `<div class="card mbox-c"><div class="mod-h">${teamAv(T(team), "sm")}<h2>${esc(T(team).name)}</h2><span class="grow"></span>${ipTag}</div><div class="table-wrap">${tbl("bat", "Hitters")}${tbl("pit", "Pitchers")}</div></div>`;
       };
-      return `<div class="mboxes">${box(m.a, la)}${box(m.b, lb)}</div>`;
+      return mboxWrap(m, box(m.a, la), box(m.b, lb));
     }
     function matchupPage(sub, arg) {
       if (allplay1()) return weekBoardPage();
@@ -2687,7 +2689,7 @@
     opts.el.addEventListener("click", (e) => {
       const mb = e.target.closest("[data-more]");
       if (mb) { ui.plimit = (ui.plimit || 250) + 250; render(); return; }
-      const b = e.target.closest("[data-ctsave],[data-ctinv],[data-ctall],[data-day],[data-tssort],[data-tfmode],[data-tfprop],[data-dview],[data-rview],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-mday],[data-nkind],[data-nmore],[data-trwin],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
+      const b = e.target.closest("[data-ctsave],[data-ctinv],[data-ctall],[data-day],[data-tssort],[data-tfmode],[data-tfprop],[data-dview],[data-rview],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-mday],[data-nkind],[data-nmore],[data-trwin],[data-mbtab],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
       if (b) {
         e.preventDefault(); e.stopPropagation();
         const d = b.dataset, mid = me();
@@ -2747,6 +2749,7 @@
         else if (d.sharerecap) { const rc = recapOf(+d.sharerecap); if (rc) navigator.share({ title: `${L().name}, week ${rc.week} recap`, text: recapText(rc) }).catch(() => {}); }
         else if (d.sbweek) { ui.sbWeek = +d.sbweek; location.hash = `#league/scoreboard/${d.sbweek}`; }
         else if (d.mweek) { location.hash = `#matchup/${d.mweek}`; }
+        else if (d.mbtab != null) { const box = b.closest(".mb-tabs").nextElementSibling; if (box && box.children[+d.mbtab]) box.scrollTo({ left: box.children[+d.mbtab].offsetLeft - box.children[0].offsetLeft, behavior: "smooth" }); }
         else if (d.trwin != null) { ui.trWin = +d.trwin; render(); }
         else if (d.nkind != null) { ui.newsKind = d.nkind; render(); }
         else if (b.hasAttribute("data-nmore")) { ui.newsMore = true; render(); }
@@ -2776,6 +2779,12 @@
       if (pl && !e.target.closest("a")) { e.preventDefault(); playerCard(pl.dataset.player); }
     });
     opts.el.addEventListener("input", (e) => { if (e.target.id === "fk-q") { ui.pf.q = e.target.value; render(); } });
+    opts.el.addEventListener("scroll", (e) => {
+      const box = e.target;
+      if (!box.classList || !box.classList.contains("mboxes") || !box.clientWidth) return;
+      const step = box.children[1] ? box.children[1].offsetLeft - box.children[0].offsetLeft : box.clientWidth, i = Math.round(box.scrollLeft / step), tabs = box.previousElementSibling;
+      if (tabs && tabs.classList.contains("mb-tabs")) tabs.querySelectorAll("[data-mbtab]").forEach((x) => x.setAttribute("aria-pressed", String(+x.dataset.mbtab === i)));
+    }, true);
     opts.el.addEventListener("change", (e) => { if (e.target.id === "fk-txt") { ui.txt = e.target.value; ui.txlim = 200; render(); } });
     opts.el.addEventListener("change", (e) => { if (e.target.id === "fk-nshow") { ui.newsShow = e.target.value; ui.newsMore = false; render(); return; } if (e.target.id === "fk-pshow") { ui.pshow = e.target.value; ui.plimit = 0; render(); return; } if (e.target.id === "fk-pro") { ui.ppro = e.target.value; ui.plimit = 0; render(); return; } if (e.target.id === "team-pick") { const r = route(); location.hash = `#team/${r.sub || "roster"}/${e.target.value}`; } });
     opts.top.addEventListener("click", (e) => { const t = e.target.closest("[data-trade]"); if (t) { e.preventDefault(); openTrade(null); } });

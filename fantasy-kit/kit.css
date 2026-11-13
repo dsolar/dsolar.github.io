@@ -2322,3 +2322,13 @@ details.pk-all > .feed > li:first-child{border-top:1px solid var(--line)}
   .pc-stats>div:nth-child(n+4){border-top:1px solid var(--line)}
   .pc-stats b{font-size:17px}
 }
+/* a matchup's two box scores: side by side on a wide screen; on a phone, swipe between them or tap a team */
+.mb-tabs{display:none}
+@media (max-width:760px){
+  .mb-tabs{display:grid;grid-template-columns:1fr 1fr;width:100%;margin-bottom:8px}
+  .mb-tabs button{display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 10px}
+  .mb-tabs button .av{width:22px;height:22px}
+  .mboxes{display:grid;grid-auto-flow:column;grid-auto-columns:100%;grid-template-columns:none;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;scrollbar-width:none;overscroll-behavior-x:contain}
+  .mboxes::-webkit-scrollbar{display:none}
+  .mboxes>*{scroll-snap-align:start;min-width:0}
+}
