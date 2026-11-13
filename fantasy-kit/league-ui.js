@@ -2283,6 +2283,7 @@
       const d = (x.description || "").toLowerCase(), t = (x.typeDesc || "").toLowerCase();
       if (/injured list/.test(d)) return /activated|reinstated/.test(d) ? ["Back", "win"] : /transferred/.test(d) ? ["IL", "loss"] : ["IL", "loss"];
       if (t === "trade") return ["Trade", "gold"];
+      if (/free agency/.test(d + t)) return ["Free agent", "gold"];
       if (/designated|released|outright/.test(d + t)) return [/released/.test(d + t) ? "Released" : /outright/.test(d + t) ? "Outrighted" : "DFA", "loss"];
       if (/optioned/.test(d)) return ["Optioned", ""];
       if (/recalled|selected|purchased/.test(d)) return ["Called up", "win"];
