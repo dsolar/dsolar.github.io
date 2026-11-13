@@ -123,7 +123,7 @@
     function subsOf(tab) {
       if (tab === "league") return [["overview", "Overview"]].concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : roto() ? "By week" : "Scoreboard"]].concat(recapOn() && lastDone() >= 1 ? [["recap", "Recap"]] : []).concat([["transactions", "Transactions"], ["managers", "Managers"]]).concat(opts.dues ? [["dues", "Dues"]] : []).concat([["history", "History"], ["rules", "Rules"]]).concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []));
       if (tab === "team") return [["roster", "Roster"]].concat(roto() ? [] : [["schedule", gl() ? "History" : "Schedule"]]).concat(L().settings.trades === false ? [] : [["trades", "Trades", pendingTrades()]]);
-      if (tab === "players") return [["fa", "Free agents"], ["all", "All players"], ["watch", "Watch list"], ["claims", "Waiver claims", L().claims.filter((c) => c.team === me() && c.status === "open").length], ["tx", "Transactions"]];
+      if (tab === "players") return [["fa", "Free agents"], ["all", "All players"], ["watch", "Watch list"]].concat(L().settings.trades !== false && me() != null && !pts() ? [["finder", "Trade finder"]] : []).concat([ ["claims", "Waiver claims", L().claims.filter((c) => c.team === me() && c.status === "open").length], ["tx", "Transactions"]]);
       return [];
     }
     const pendingTrades = () => L().trades.filter((t) => (t.status === "pending" && t.to === me()) || (t.status === "review" && G.voters(L(), t).includes(me()) && !(t.votes || {})[me()])).length;
@@ -1591,6 +1591,54 @@
     }
     /* The watch list: the players you're following, hitters and pitchers in their own tables with their stats and
        who has them. Empty, it says how to add players and suggests the free agents worth a look. */
+    /* The trade finder (category leagues). Each team's need in a category is how low it ranks there among the
+       league's starting lineups; a deal scores for a team by the category value it gains, weighted by those needs.
+       It suggests 1-for-1 deals (hitter for hitter, pitcher for pitcher) and 2-for-1s that help both teams and stay
+       close in overall value, best for you first. */
+    function finderPage() {
+      const mid = me();
+      const cats = sc().cats.map((c) => c.k), n = L().teams.length, wk = Math.min(L().week, G.totalWeeks(L()));
+      const zc = (id) => (ctx.byId[id] && ctx.byId[id].zc) || {}, val = (id) => (ctx.byId[id] && ctx.byId[id].v) || 0;
+      const lu = (t) => G.lineupFor(L(), ctx, t, wk).filter(Boolean);
+      // each team's category totals over its lineup, and its rank in each (1 the best)
+      const tot = L().teams.map((t) => { const o = {}; for (const id of lu(t.id)) for (const k of cats) o[k] = (o[k] || 0) + (zc(id)[k] || 0); return o; });
+      const need = L().teams.map((t) => Object.fromEntries(cats.map((k) => { const r = 1 + tot.filter((x) => (x[k] || 0) > (tot[t.id][k] || 0)).length; return [k, 0.35 + (r - 1) / Math.max(1, n - 1)]; })));
+      const grp = (id) => { const p = ctx.byId[id]; return p && sport.groups && S.positions(p).every((x) => sport.groups.pit.includes(x)) ? "pit" : "bat"; };
+      const gain = (t, inn, out) => cats.reduce((a, k) => a + need[t][k] * (inn.reduce((s, id) => s + (zc(id)[k] || 0), 0) - out.reduce((s, id) => s + (zc(id)[k] || 0), 0)), 0);
+      const keepers = new Set(((L().next && L().next.picks) || {})[mid] || []);
+      const mine = L().rosters[mid].filter((id) => ctx.byId[id] && !keepers.has(id)), max = L().settings.tradeMax || 9;
+      const out = [];
+      for (const t of L().teams) {
+        if (t.id === mid) continue;
+        const theirs = L().rosters[t.id].filter((id) => ctx.byId[id]);
+        for (const a of mine) for (const b of theirs) {
+          if (grp(a) !== grp(b)) continue;
+          const g1 = gain(mid, [b], [a]), g2 = gain(t.id, [a], [b]), va = val(a), vb = val(b);
+          if (g1 > 0.25 && g2 > 0.25 && Math.abs(va - vb) <= Math.max(1.5, 0.3 * Math.max(Math.abs(va), Math.abs(vb)))) out.push({ to: t.id, give: [a], get: [b], g1, g2 });
+        }
+        // two of yours for one of theirs: consolidating depth into a better starter
+        if (max >= 2) {
+          const top = mine.slice().sort((x, y) => val(y) - val(x)).slice(0, 16);
+          for (let i = 0; i < top.length; i++) for (let j = i + 1; j < top.length; j++) for (const b of theirs) {
+            if (grp(top[i]) !== grp(b) || grp(top[j]) !== grp(b)) continue;
+            const a1 = top[i], a2 = top[j], g1 = gain(mid, [b], [a1, a2]) + 0.6 * Math.max(0, val(b) - Math.max(val(a1), val(a2))), g2 = gain(t.id, [a1, a2], [b]);
+            if (g1 > 0.4 && g2 > 0.4 && val(a1) + val(a2) >= val(b) * 0.9 && val(a1) + val(a2) <= val(b) * 1.6 && val(b) > Math.max(val(a1), val(a2))) out.push({ to: t.id, give: [a1, a2], get: [b], g1, g2 });
+          }
+        }
+      }
+      // best for you first, a couple per team so one roster doesn't fill the list
+      out.sort((x, y) => Math.min(y.g1, y.g2 * 1.2) - Math.min(x.g1, x.g2 * 1.2));
+      const per = {}, picks = out.filter((x) => (per[x.to] = (per[x.to] || 0) + 1) <= 2).slice(0, 12);
+      const helps = (t, inn, outp) => cats.map((k) => [k, need[t][k] * (inn.reduce((s, id) => s + (zc(id)[k] || 0), 0) - outp.reduce((s, id) => s + (zc(id)[k] || 0), 0))]).filter(([, v]) => v > 0.12).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => (sc().cats.find((c) => c.k === k) || {}).label).filter(Boolean);
+      const pl = (ids) => ids.map((id) => `<div data-player="${esc(id)}" style="cursor:pointer">${pname(sport, ctx.byId[id], esc(ctx.byId[id].prank || ""), { size: "sm" })}</div>`).join("");
+      const card = (x) => `<div class="card tf-c"><div class="mod-h">${teamAv(T(x.to), "sm")}<h2>${esc(T(x.to).name)}</h2><span class="grow"></span><button class="btn sm go" data-tfprop="${x.to}" data-give="${esc(x.give.join(","))}" data-get="${esc(x.get.join(","))}">Propose</button></div>
+        <div class="tf-b"><div><small class="ps">You send</small>${pl(x.give)}</div><span class="arrow" aria-hidden="true">&#8644;</span><div><small class="ps">You get</small>${pl(x.get)}</div></div>
+        <p class="ps tf-why">Helps you in ${esc(helps(mid, x.get, x.give).join(", ") || "depth")}. Helps them in ${esc(helps(x.to, x.give, x.get).join(", ") || "depth")}.</p></div>`;
+      const weak = cats.map((k) => [k, need[mid][k]]).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([k]) => (sc().cats.find((c) => c.k === k) || {}).label);
+      return `<div class="wrap page"><div class="head"><h1 class="disp">Trade finder</h1><span class="ps">Deals that help both sides, for ${esc(T(mid).name)}</span></div>
+        <div class="card"><div class="bd"><p style="margin:0">Your lineup ranks lowest in <b>${esc(weak.join(", "))}</b>. These deals add there while giving the other team something it needs, at close to even value${keepers.size ? ". Your declared keepers are left out" : ""}.</p></div></div>
+        ${picks.length ? `<div class="tf-grid">${picks.map(card).join("")}</div>` : `<div class="card"><p class="empty" style="margin:0">No deal helps both teams right now. Try again after a few moves around the league.</p></div>`}</div>`;
+    }
     function watchPage(actions) {
       const mid = me(), w = watch(), q = (ui.pf.q || "").toLowerCase();
       const mine = opts.players.filter((p) => w.includes(p.id) && (!q || p.n.toLowerCase().includes(q)));
@@ -1613,6 +1661,7 @@
       const mid = me(), w = watch();
       if (sub === "claims") return claimsPage();
       if (sub === "tx") return txPage();
+      if (sub === "finder") return finderPage();
       let rows = opts.players.filter((p) => U.passes(sport, p, ui.pf));
       if (sub === "fa") rows = rows.filter((p) => ctx.own[p.id] == null);
       if (sub === "watch") rows = rows.filter((p) => w.includes(p.id));
@@ -2022,7 +2071,7 @@
     opts.el.addEventListener("click", (e) => {
       const mb = e.target.closest("[data-more]");
       if (mb) { ui.plimit = (ui.plimit || 250) + 250; render(); return; }
-      const b = e.target.closest("[data-dview],[data-rview],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
+      const b = e.target.closest("[data-tfprop],[data-dview],[data-rview],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
       if (b) {
         e.preventDefault(); e.stopPropagation();
         const d = b.dataset, mid = me();
@@ -2065,6 +2114,7 @@
         else if (d.trCmveto) { const id = +d.trCmveto; U.confirm("Veto this trade?", "It won't go through, and both teams keep their players.", "Veto trade", () => act(() => G.commishVeto(L(), id, now()), "Trade vetoed.")); }
         else if (d.trVeto) act(() => G.vote(L(), ctx, +d.trVeto, mid, true, now()), "You voted to veto.");
         else if (d.rview) { ui.rview = d.rview; render(); }
+        else if (d.tfprop != null) openTrade(+d.tfprop, null, { give: d.give.split(","), get: d.get.split(",") });
         else if (d.dview) { ui.dview = d.dview; render(); }
         else if (b.hasAttribute("data-txmore")) { ui.txlim = (ui.txlim || 200) + 300; render(); }
         else if (d.trRival) {

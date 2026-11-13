@@ -1828,6 +1828,11 @@ table.t.en-t td.act,table.t.en-t th.act{position:static;box-shadow:none;backgrou
 .kp-rk small,.kp-cost small{font-size:11px;color:var(--muted)}
 .kp-cost small.win{color:var(--win)}.kp-cost small.loss{color:var(--loss)}
 @media (max-width:760px){.kp-hd{display:none}.seatl.kp li.kp-r{grid-template-columns:minmax(0,1fr) auto 48px;grid-template-areas:"who cost at" "st st st"}.kp-who{grid-area:who}.kp-cost{grid-area:cost;text-align:right}.kp-at{grid-area:at}.kp-st{grid-area:st;padding-left:28px}.kp-rk{display:none}}
+.tf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,400px),1fr));gap:12px;margin-top:12px}
+.tf-b{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:center;padding:4px 16px 0}
+.tf-b>div{display:grid;gap:6px;min-width:0}
+.tf-b .arrow{color:var(--muted);font-size:18px}
+.tf-why{margin:10px 16px 14px;font-size:12.5px}
 .card.sb-feat{background:linear-gradient(180deg,color-mix(in srgb,var(--gold) 10%,var(--surface)),var(--surface) 45%);border-color:color-mix(in srgb,var(--gold) 55%,var(--line))}
 .feat-tag{padding:8px 16px 0;font-size:11px;font-weight:850;letter-spacing:.04em;color:var(--gold)}
 .feat-tag.plain{color:var(--muted)}
