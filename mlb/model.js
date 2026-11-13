@@ -36,8 +36,9 @@
     fillWar: { bat: 1.5, sp: 1.5, rp: 0.4 },
     haircut: 1,        // share of projected WAR to count. 100%: the price of a win is already read off what teams pay per projected WAR
     fade: 1,           // yearly shrink of WAR further out (projections get less certain each year)
-    youngFade: 0.5,    // extra yearly shrink (calibrated to Baseball Trade Values, Nov 2026)
-    extFade: 0.75,     // the same for a young player already signed to an extension for unproven big leaguers (under 3 years of service): long control on a
+    youngFade: 0.3,    // share of an unproven player's projection counted after the coming season, for a player with no big
+                       // league record (scaled toward 100% as he builds one)
+    extFade: 0.5,      // the same for a young player already signed to an extension (the club has committed to him) for unproven big leaguers (under 3 years of service): long control on a
                        // short track record is worth less than its projection adds up to
     lens: "production",// "production": what he should produce; "market": what free agents get for that many years,
                        // length premium included (the way Baseball Trade Values reads field value)
@@ -150,10 +151,28 @@
     if (p.c && /Extension/i.test(p.c.type || "")) return cfg.extFade == null ? 1 : cfg.extFade;
     return cfg.youngFade == null ? 1 : cfg.youngFade;
   }
+  // Two full seasons' worth of big league playing time over the last three: about 1,000 PA, 300 innings as a starter
+  // or 120 in relief. A player with that record is judged on it, not on his service clock
+  function recordShare(p) { // share of those two seasons' work he has put in, 0 to 1
+    var h = p.hist || {}, pa = 0, ip = 0;
+    (h.b || []).forEach(function (r) { pa += r[3] || 0; });
+    (h.p || []).forEach(function (r) { ip += +r[4] || 0; });
+    return Math.min(1, p.p ? ip / (p.sp || /SP/.test(p.pos || "") ? 300 : 120) : pa / 1000);
+  }
+  function provenRecord(p) { return recordShare(p) >= 1; }
+  // The WAR a season is credited with: the projection, less any margin of safety, and less the uncertainty on an
+  // unproven player (or one with a thin big league record)
+  function countedWar(war, year, season, cfg, p) {
+    var prospect = p && isProspect(p);
+    var young = p && !prospect && p.g !== "min" && (p.st || 0) < 3 && !(p.c && p.c.type === "Free Agent") // a free agent signing (from Japan, say) is established
+      && !provenRecord(p); // so is a young player who has already put in two full seasons' work
+    return Math.max(0, war) * (p && p.faith ? p.faith : 1) * (prospect || cfg.haircut == null ? 1 : cfg.haircut) * Math.pow(cfg.fade == null ? 1 : cfg.fade, year - season)
+      // after the coming season, an unproven player's projection counts at youngKeep, less of a cut the more big league
+      // work he's already done (flat, not compounding: a player who keeps producing is still worth his projection)
+      * (young && year > season ? 1 - (1 - youngKeep(p, cfg)) * (1 - recordShare(p)) : 1);
+  }
   function fieldValue(war, year, season, cfg, p) {
-    var prospect = p && isProspect(p), young = p && !prospect && p.g !== "min" && (p.st || 0) < 3 && !(p.c && p.c.type === "Free Agent"); // a free agent signing (from Japan, say) is established
-    var w = Math.max(0, war) * (p && p.faith ? p.faith : 1) * (prospect || cfg.haircut == null ? 1 : cfg.haircut) * Math.pow(cfg.fade == null ? 1 : cfg.fade, year - season)
-      * (young ? Math.pow(youngKeep(p, cfg), Math.min(year - season, Math.ceil(3 - (p.st || 0)))) : 1); // until he'd be established
+    var w = countedWar(war, year, season, cfg, p);
     return w * (cfg.tiered ? tierMult(w) : 1) * dpwAt(cfg, year, season);
   }
 
@@ -257,7 +276,7 @@
       var disc = Math.pow(1 + cfg.discount, y - season);
       value *= hit; salary *= hit;
       var s = value - salary;
-      rows.push({ y: y, war: t.on ? t.war : 0, value: value, salary: salary, kind: t.kind, surplus: s, pv: s / disc, est: !!t.est });
+      rows.push({ y: y, war: t.on ? t.war : 0, cw: t.on ? countedWar(t.war, y, season, cfg, p) * hit : 0, value: value, salary: salary, kind: t.kind, surplus: s, pv: s / disc, est: !!t.est });
       total += s;
       pv += s / disc;
       valuePV += value / disc;
