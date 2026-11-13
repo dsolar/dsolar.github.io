@@ -31,7 +31,9 @@
   const DEFAULTS = {
     sims: 1000,          // simulated rest-of-seasons for this season's odds
     futureSims: 400,     // quick simulated seasons for later years
-    disc: 0.07,          // yearly discount on surplus: the cap's own growth, so values read in today's cap dollars
+    disc: 0,             // yearly discount on surplus. Off by default so values and contracts read in real dollars (set it on
+                         // the page, 7% is about the cap's growth, to see today's cap dollars)
+    anchor: "market",    // price of production: "market" (what teams pay players the max doesn't hold down) or "payroll"
     mode: "prod",        // "prod": what he should produce; "market": what teams would pay him
     fill: true,          // teams fill open roster spots with free agents they can afford
     blend: 2500,         // minutes of this season's BPM it takes to move a rating halfway
@@ -212,12 +214,26 @@
     // role players outrank stars.
     const rawProd = (p, i) => {
       const r = H.rating(p, i), games = Math.min(76, 82 * (p.h ?? 0.85));
-      const v = games * H.mpgAt(p, i) * Math.pow(Math.max(0, r + 2.5), cfg.convex);
+      // minutes for valuation: the role his rating earns anywhere, plus part (cfg.minCtx) of what his own team's depth
+      // chart adds or takes away, since a starter on a thin roster isn't paid for minutes he'd lose on a good one
+      const mv = roleMin(r) + (cfg.minCtx ?? 1) * (H.mpgAt(p, i) - roleMin(r));
+      const v = games * mv * Math.pow(Math.max(0, r - (cfg.repl ?? -2.5)), cfg.convex);
       return v * CBA.cap(i) / CAP_2526;
     };
-    const Kfor = () => cache("K" + cfg.convex + cfg.growth, () => {
+    // The price of production. "market" (the default): what teams pay for it on the open market, read off players the
+    // max doesn't hold down (market price under a quarter of the cap) who play real minutes, so a role player's
+    // production is worth about what role players get, and a star's runs past his max. "payroll": scaled so the whole
+    // league's production adds up to the whole league's payroll (which also spreads sunk money from bad contracts
+    // onto everyone who produces, so it runs rich).
+    const Kfor = () => cache("K" + cfg.convex + cfg.growth + (cfg.repl ?? -2.5) + cfg.anchor + (cfg.minCtx ?? 1), () => {
       let sv = 0, ss = 0;
-      for (const p of Object.values(W.P)) { if (p.two) continue; const sal = CBA.salaryIn(p, 0, dec); if (!sal) continue; sv += rawProd(p, 0); ss += sal; }
+      for (const p of Object.values(W.P)) {
+        if (p.two) continue;
+        if (cfg.anchor === "payroll") { const sal = CBA.salaryIn(p, 0, dec); if (!sal) continue; sv += rawProd(p, 0); ss += sal; continue; }
+        const m = marketAt(p, 0), rp = rawProd(p, 0);
+        if (!(m > 0) || m > 0.25 * CBA.cap(0) || H.mpgAt(p, 0) < 15) continue;
+        sv += rp; ss += m;
+      }
       return sv > 0 ? ss / sv : 1;
     });
     Object.defineProperty(H, "K", { get: Kfor });

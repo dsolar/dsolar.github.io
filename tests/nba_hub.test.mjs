@@ -96,9 +96,20 @@ test('trades: matching rules apply and value moves both ways', () => {
   assert.equal(Object.keys(three.teams).length, 3);
 });
 
-test('production is scaled so the league is paid what it produces this season', () => {
+test('production is priced at the open market: role players the max does not hold down produce about what they would get', () => {
+  let v = 0, m = 0;
+  for (const p of H.players()) {
+    const mk = H.marketAt(p, 0);
+    if (!(mk > 0) || mk > 0.25 * 165e6 || H.mpgAt(p, 0) < 15) continue;
+    v += H.prodAt(p, 0); m += mk;
+  }
+  assert.ok(Math.abs(v / m - 1) < 0.1, 'production/market ' + (v / m).toFixed(3));
+});
+
+test('payroll pricing still scales the league to what it is paid', () => {
+  const Hp = Hub.build(inputs, { sims: 50, futureSims: 20, anchor: 'payroll' });
   let v = 0, pay = 0;
-  for (const p of H.players()) { v += Math.max(0, H.prodAt(p, 0)); pay += H.salary(p, 0); }
+  for (const p of Hp.players()) { v += Math.max(0, Hp.prodAt(p, 0)); pay += Hp.salary(p, 0); }
   assert.ok(Math.abs(v / pay - 1) < 0.08, 'value/pay ' + (v / pay).toFixed(3));
 });
 
