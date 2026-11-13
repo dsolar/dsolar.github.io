@@ -38,12 +38,14 @@
     fade: 1,           // yearly shrink of WAR further out (projections get less certain each year)
     youngFade: 0.3,    // share of an unproven player's projection counted after the coming season, for a player with no big
                        // league record (scaled toward 100% as he builds one)
-    extFade: 0.5,      // the same for a young player already signed to an extension (the club has committed to him) for unproven big leaguers (under 3 years of service): long control on a
+    extFade: 0.3,      // the same for a young player already signed to an extension for unproven big leaguers (under 3 years of service): long control on a
                        // short track record is worth less than its projection adds up to
     lens: "production",// "production": what he should produce; "market": what free agents get for that many years,
                        // length premium included (the way Baseball Trade Values reads field value)
     lenPrem: null,     // {4: premium for 4-5 years, 6: premium for 6+}, read from the free agent market
-    tiered: false,     // price WAR by tier: 1-2 WAR players are plentiful, stars aren't (from the free agent market)
+    tiered: true,      // price WAR by tier: 1-2 WAR players are plentiful, stars aren't (from the free agent market)
+    lateFade: 0.85,    // share of the projection counted each season past lateAfter years out, compounding
+    lateAfter: 3,      // (calibrated to Baseball Trade Values' long extensions, Nov 2026; 100% turns it off)
     qoPickCost: 1.5,   // $M, a small dock for signing another team's qualifying-offer player (the lost draft pick
                        // and international pool money)
     blend: 0.5,        // weight on his last three seasons' actual WAR against FanGraphs' projection (the hub's own
@@ -187,11 +189,17 @@
     var r = p.rate + cfg.blend * rr.rel * (rr.rate - p.rate);
     return Math.max(0.5, Math.min(1.6, r / p.rate));
   }
+  // Seasons more than lateAfter years out count lateFade of the projection, compounding: projections that far ahead
+  // miss more often, and teams (and Baseball Trade Values) value them for less
+  function farShare(year, season, cfg) {
+    var k = year - season - (cfg.lateAfter == null ? 3 : cfg.lateAfter);
+    return cfg.lateFade != null && cfg.lateFade < 1 && k >= 0 ? Math.pow(cfg.lateFade, k + 1) : 1;
+  }
   function countedWar(war, year, season, cfg, p) {
     var prospect = p && isProspect(p);
     var young = p && !prospect && p.g !== "min" && (p.st || 0) < 3 && !(p.c && p.c.type === "Free Agent") // a free agent signing (from Japan, say) is established
       && !provenRecord(p); // so is a young player who has already put in two full seasons' work
-    return Math.max(0, war) * outlookShare(p, cfg) * (p && p.faith ? p.faith : 1) * (prospect || cfg.haircut == null ? 1 : cfg.haircut) * Math.pow(cfg.fade == null ? 1 : cfg.fade, year - season)
+    return Math.max(0, war) * outlookShare(p, cfg) * farShare(year, season, cfg) * (p && p.faith ? p.faith : 1) * (prospect || cfg.haircut == null ? 1 : cfg.haircut) * Math.pow(cfg.fade == null ? 1 : cfg.fade, year - season)
       // after the coming season, an unproven player's projection counts at youngKeep, less of a cut the more big league
       // work he's already done (flat, not compounding: a player who keeps producing is still worth his projection)
       * (young && year > season ? 1 - (1 - youngKeep(p, cfg)) * (1 - recordShare(p)) : 1);
