@@ -559,10 +559,15 @@
     const cats = {};
     // compare what the page shows: counting stats to a tenth, rates to three places, so 0.0 vs 0.0 is a tie
     const shown = (c, v) => (c.fmt ? +String(c.fmt(v)).replace(/[^0-9.-]/g, "") : c.num || c.rate ? Math.round(v * 1000) / 1000 : Math.round(v * 10) / 10);
+    // settings.minIP: a team short of the week's minimum innings loses the rate stats weighted by innings (ERA, WHIP);
+    // both short, those categories tie
+    const min = L.settings.minIP || 0, ipOf = (s) => { const c = sc.cats.find((k) => k.w === "ip"); return c && s.parts && s.parts[c.k] ? s.parts[c.k][1] : null; };
+    const shortA = min && ipOf(a) != null && ipOf(a) < min, shortB = min && ipOf(b) != null && ipOf(b) < min;
     for (const c of sc.cats) {
       const x = a.cats[c.k], y = b.cats[c.k];
       const sx = shown(c, x), sy = shown(c, y);
-      const d = sx === sy ? 0 : (sx > sy ? 1 : -1) * (c.low ? -1 : 1);
+      let d = sx === sy ? 0 : (sx > sy ? 1 : -1) * (c.low ? -1 : 1);
+      if (c.w === "ip" && (shortA || shortB)) d = shortA && shortB ? 0 : shortA ? -1 : 1;
       cats[c.k] = [x, y, d];
       if (d > 0) wa++; else if (d < 0) wb++; else t++;
     }
@@ -1197,7 +1202,8 @@
           next.push(res ? res.win : null);
           if (r === R - 1) semiLosers.push(res ? res.lose : null);
         }
-        main = next.every((x) => x != null) ? next : null;
+        // settings.reseed: each round the best seed left plays the worst, instead of a fixed bracket
+        main = next.every((x) => x != null) ? (s.reseed ? next.slice().sort((x, y) => seedOf(x) - seedOf(y)) : next) : null;
       }
       if (r === R && s.consolation === "third" && R >= 2 && semiLosers.length === 2 && semiLosers.every((x) => x != null)) {
         const [a, b] = semiLosers.slice().sort((x, y) => seedOf(x) - seedOf(y));
@@ -1287,6 +1293,29 @@
       playoffTeams: L.settings.playoffTeams || 0, records: records(L),
       standings: st.map((r) => ({ team: r.team, name: L.teams[r.team].name, owner: L.teams[r.team].owner, rank: r.rank, place: place[r.team], w: r.w, l: r.l, t: r.t, pts: r.pts != null ? r.pts : r.pf, pa: r.pa })) };
   }
+  /* Next season's draft order by settings.draftOrder "lottery": the teams that missed the playoffs are drawn for the
+     first picks, and the playoff teams follow in reverse order of finish, so the champion picks last.
+     settings.lotteryOdds "equal" gives every lottery team the same chance; "weighted" gives the worst record the
+     most balls (the worst of n teams gets n, the next n - 1, and so on). Sets L.nextOrder and keeps the draw in
+     L.lottery so everyone can see how it went. rand: a function returning [0, 1). */
+  function draftLottery(L, rand, now) {
+    const sm = summary(L), n = L.teams.length, po = Math.min(L.settings.playoffTeams || 0, n);
+    const byPlace = sm.standings.slice().sort((a, b) => a.place - b.place).map((r) => r.team);
+    const playoff = byPlace.slice(0, po), pool = byPlace.slice(po).reverse();     // worst first
+    if (!pool.length) return { ok: false, why: "Every team made the playoffs, so there's no lottery" };
+    const weighted = L.settings.lotteryOdds === "weighted", balls = pool.map((t, i) => ({ t, w: weighted ? pool.length - i : 1 }));
+    const odds = Object.fromEntries(balls.map((b) => [b.t, b.w])), drawn = [];
+    while (balls.length) {
+      let x = rand() * sum(balls.map((b) => b.w)), k = 0;
+      while (k < balls.length - 1 && x >= balls[k].w) { x -= balls[k].w; k++; }
+      drawn.push(balls.splice(k, 1)[0].t);
+    }
+    const order = drawn.concat(playoff.slice().reverse());
+    L.nextOrder = order;
+    L.lottery = { at: now, odds: weighted ? "weighted" : "equal", balls: odds, drawn };
+    log(L, now, { type: "commish", team: -1, text: `Draft lottery: ${L.teams[drawn[0]].name} picks first` });
+    return { ok: true, order };
+  }
   // The playoffs so far, a round at a time, for the standings page.
   function bracket(L, ctx) {
     const out = [];
@@ -1321,15 +1350,19 @@
   // (the regular season's length, scoring) only changes before week 1; playoff rules only before the playoffs.
   const RULES = {
     waivers: (v) => (v === "faab" || v === "rolling" ? v : null), waiverHours: (v) => clampInt(v, 0, 168), waiverDays: (v) => clampInt(v, 0, 5), gameLock: (v) => (v === "week" || v === "off" ? v : null), maxAdds: (v) => clampInt(v, 0, 50),
-    ir: (v) => clampInt(v, 0, 6), bench: (v) => clampInt(v, 0, 20), deadline: (v) => clampInt(v, 0, 52), tradeReview: (v) => (["vote", "commish", "none"].includes(v) ? v : null),
+    ir: (v) => clampInt(v, 0, 6), bench: (v) => clampInt(v, 0, 20), deadline: (v) => clampInt(v, 0, 52), tradeReview: (v) => (["vote", "commish", "counter", "none"].includes(v) ? v : null),
     waiverOrder: (v) => (v === "rolling" || v === "standings" ? v : null), minBid: (v) => clampInt(v, 0, 5), maxAddsSeason: (v) => clampInt(v, 0, 200),
     reviewHours: (v) => clampInt(v, 1, 168), vetoShare: (v) => (Number.isFinite(+v) && +v > 0 && +v <= 1 ? +v : null), offerHours: (v) => clampInt(v, 1, 336),
     trades: (v) => !!v, median: (v) => !!v, bestBall: (v) => !!v, posMax: (v) => (v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, clampInt(x, 0, 30)]).filter(([, x]) => x)) : null),
     playoffTeams: (v) => clampInt(v, 0, 32), playoffLegs: (v) => (["1", "final2", "all2"].includes(String(v)) ? String(v) : null), consolation: (v) => (["none", "third", "bracket"].includes(v) ? v : null),
     weeks: (v) => clampInt(v, 1, 30), taxi: (v) => clampInt(v, 0, 6),
+    waiverPrice: (v) => (v === "first" || v === "second" ? v : null),
+    tradeMax: (v) => clampInt(v, 0, 10), reseed: (v) => !!v, minIP: (v) => clampInt(v, 0, 100), draftOrder: (v) => (["worst", "lottery"].includes(v) ? v : null),
+    lotteryOdds: (v) => (["equal", "weighted"].includes(v) ? v : null),
+    elig: (v) => (v && typeof v === "object" && ["g", "gs", "sp", "rp"].every((k) => clampInt(v[k], 0, 60) != null) ? { g: clampInt(v.g, 0, 60), gs: clampInt(v.gs, 0, 60), sp: clampInt(v.sp, 0, 60), rp: clampInt(v.rp, 0, 60) } : null),
   };
   const clampInt = (v, lo, hi) => (Number.isFinite(+v) ? Math.max(lo, Math.min(hi, Math.round(+v))) : null);
-  const PLAYOFF_RULES = ["playoffTeams", "playoffLegs", "consolation"];
+  const PLAYOFF_RULES = ["playoffTeams", "playoffLegs", "consolation", "reseed"];
   function setRules(L, patch, now) {
     if (isGuillotine(L) && Object.keys(patch).some((k) => ["playoffTeams", "playoffLegs", "consolation", "median", "weeks"].includes(k))) return { ok: false, why: "A guillotine league has no playoffs or schedule to change" };
     const s = L.settings, changed = [];
@@ -1413,10 +1446,15 @@
   /* ---------- the trading block ---------- */
   // Players a team says it would move. A manager lists his own (L.block). A bot lists the bench players it can
   // spare most: its best two off the bench, leaving kickers and defenses out.
+  // Unclaimed teams are bots that shop players, answer offers and work the waiver wire, except in a league of real
+  // people (L.imported, or settings.bots false): there an open seat is a manager who hasn't joined yet, and his team
+  // waits for him (its lineup still sets itself each week).
+  const botsAct = (L) => !L.imported && L.settings.bots !== false;
   function blockOf(L, ctx, team) {
     const ros = L.rosters[team] || [], set = L.block && L.block[team];
     if (L.teams[team].owner || set) return (set || []).filter((id) => ros.includes(id));
-    if (!isAlive(L, team)) return [];
+    // a league brought in from another site is real people, some not signed in yet: nobody lists players for them
+    if (!isAlive(L, team) || !botsAct(L)) return [];
     const lu = lineupFor(L, ctx, team, Math.min(L.week, totalWeeks(L))), ir = held(L, team);
     return ros.filter((id) => !lu.includes(id) && !ir.includes(id)).map((id) => ctx.byId[id])
       .filter((p) => p && !(ctx.sport.late && S.isLate(ctx.sport, p))).sort((a, b) => b.vor - a.vor).slice(0, 2).map((p) => p.id);
@@ -1434,7 +1472,7 @@
   // What a team is looking for, in its own words (a manager's note) or, for a bot, the position it's weakest at.
   function blockNote(L, ctx, team) {
     if (L.blockNote && L.blockNote[team]) return L.blockNote[team];
-    if (L.teams[team].owner) return "";
+    if (L.teams[team].owner || !botsAct(L)) return "";
     const lu = lineupFor(L, ctx, team, Math.min(L.week, totalWeeks(L))), slots = L.settings.lineup;
     let worst = null;
     slots.forEach((sl, i) => {
@@ -1895,7 +1933,10 @@
     const off = offseason(L);
     if (!off && L.settings.deadline && L.week > L.settings.deadline) return { ok: false, why: `The trade deadline was week ${L.settings.deadline}` };
     if (!off && L.week > totalWeeks(L)) return { ok: false, why: "The season is over" };
-    const busy = new Set(L.trades.filter((x) => x.status === "review" && x.id !== t.id).flatMap((x) => x.give.concat(x.get)));
+    // settings.tradeMax: no more than this many players from either side
+    const mx = L.settings.tradeMax || 0;
+    if (mx && (t.give.length > mx || t.get.length > mx)) return { ok: false, why: `Trades are ${mx}-for-${mx} at most in this league` };
+    const busy = new Set(L.trades.filter((x) => x.status === "review" && x.id !== t.id && x.id !== t.rivalOf).flatMap((x) => x.give.concat(x.get)));
     for (const id of t.give.concat(t.get)) if (busy.has(id)) return { ok: false, why: `${ctx.byId[id].n} is already in a trade the league is reviewing` };
     for (const id of t.give) if (!L.rosters[t.from].includes(id)) return { ok: false, why: `${ctx.byId[id].n} isn't on ${L.teams[t.from].name}` };
     if (now != null) for (const [team, ids] of [[t.from, t.give], [t.to, t.get]]) for (const id of ids) if (isLocked(L, ctx.byId[id], L.week, now)) return { ok: false, why: `${lockWhy(ctx.byId[id])}. Try again after the week` };
@@ -1911,8 +1952,9 @@
   }
   function propose(L, ctx, from, to, give, get, now, extra = {}) {
     const t = { id: L.nextId++, from, to, give: give.slice(), get: get.slice(), pickGive: (extra.pickGive || []).slice(), pickGet: (extra.pickGet || []).slice(), faabGive: extra.faabGive || 0, faabGet: extra.faabGet || 0, dropsFrom: extra.dropsFrom || [], dropsTo: [], note: extra.note || "", at: now, status: "pending", counterOf: extra.counterOf || null };
+    if (extra.rivalOf != null) { t.rivalOf = extra.rivalOf; const r = rivalCheck(L, t); if (!r.ok) { L.nextId--; return r; } }
     const c = tradeCheck(L, ctx, t, now);
-    if (!c.ok) return c;
+    if (!c.ok) { if (t.rivalOf != null) L.nextId--; return c; }
     if (t.counterOf) { const o = L.trades.find((x) => x.id === t.counterOf); if (o && o.status === "pending") { o.status = "countered"; o.done = now; } }
     L.trades.push(t);
     return { ok: true, trade: t };
@@ -1923,17 +1965,50 @@
     if (!accept) { t.status = "rejected"; t.done = now; t.why = why || ""; return { ok: true }; }
     const c = tradeCheck(L, ctx, t, now);
     if (!c.ok) return c;
+    // a rival bid the selling team takes: the deal it beat is off, any other bids for it lapse, and this one goes
+    // through now (it doesn't get a counter window of its own)
+    if (t.rivalOf != null) {
+      const r = rivalCheck(L, t);
+      if (!r.ok) return r;
+      const o = L.trades.find((x) => x.id === t.rivalOf);
+      const done = execute(L, ctx, t, now);
+      if (!done.ok) return done;
+      o.status = "outbid"; o.done = now; o.why = `${L.teams[t.to].name} took ${L.teams[t.from].name}'s bid instead`;
+      for (const x of L.trades) if (x.rivalOf === o.id && x.status === "pending") { x.status = "expired"; x.done = now; }
+      log(L, now, { type: "outbid", team: t.to, other: o.from === t.to ? o.to : o.from, trade: o.id, text: `${L.teams[t.from].name}'s rival bid beat the deal` });
+      return done;
+    }
     if (L.settings.tradeReview === "none") return execute(L, ctx, t, now);
     t.status = "review"; t.accepted = now; t.reviewEnds = now + L.settings.reviewHours * HOUR; t.votes = {};
     return { ok: true, review: true };
   }
+  /* settings.tradeReview "counter": an accepted trade waits out a counter window (reviewHours) with no vetoes. In it
+     any other team can make a rival bid to either side for the same players that side is sending, offering no more
+     than the deal does: no more players, no more picks, no more FAAB. The selling team can take a bid any time before
+     the window closes; if it doesn't, the original trade goes through. */
+  function rivalCheck(L, t) {
+    const o = L.trades.find((x) => x.id === t.rivalOf);
+    if (!o || o.status !== "review" || L.settings.tradeReview !== "counter") return { ok: false, why: "That trade isn't open to counters" };
+    if (t.from === o.from || t.from === o.to) return { ok: false, why: "Teams in the trade can't counter it" };
+    // the seller's side of the original deal: what it sends, and what it was getting back
+    const side = t.to === o.from ? { send: o.give, sendPicks: o.pickGive || [], back: o.get, backPicks: o.pickGet || [], backFaab: o.faabGet || 0 }
+      : t.to === o.to ? { send: o.get, sendPicks: o.pickGet || [], back: o.give, backPicks: o.pickGive || [], backFaab: o.faabGive || 0 } : null;
+    if (!side) return { ok: false, why: "A counter goes to one of the two teams in the trade" };
+    const same = (a, b) => a.length === b.length && a.every((x) => b.includes(x));
+    if (!same(t.get, side.send) || !same(t.pickGet || [], side.sendPicks)) return { ok: false, why: "A counter has to be for the same players" };
+    if (t.give.length > side.back.length || (t.pickGive || []).length > side.backPicks.length || (t.faabGive || 0) > side.backFaab || (t.faabGet || 0) > 0)
+      return { ok: false, why: `A counter can't add anything: up to ${side.back.length} player${side.back.length === 1 ? "" : "s"}${side.backPicks.length ? ` and ${side.backPicks.length} pick${side.backPicks.length === 1 ? "" : "s"}` : ""}` };
+    return { ok: true };
+  }
+  const rivalsOf = (L, id) => L.trades.filter((x) => x.rivalOf === id && x.status === "pending");
   const cancelTrade = (L, id, now) => { const t = L.trades.find((x) => x.id === id && x.status === "pending"); if (!t) return { ok: false, why: "No open offer" }; t.status = "cancelled"; t.done = now; return { ok: true }; };
   // tradeReview "commish": the commissioner reviews alone (commishVeto), so the league has no votes
-  const voters = (L, t) => (L.settings.tradeReview === "commish" ? [] : L.teams.filter((x) => x.id !== t.from && x.id !== t.to).map((x) => x.id));
+  const voters = (L, t) => (L.settings.tradeReview === "commish" || L.settings.tradeReview === "counter" ? [] : L.teams.filter((x) => x.id !== t.from && x.id !== t.to).map((x) => x.id));
   function commishVeto(L, id, now, why) {
     const t = L.trades.find((x) => x.id === id && x.status === "review");
     if (!t) return { ok: false, why: "That trade isn't under review" };
     t.status = "vetoed"; t.done = now; t.why = why || "Vetoed by the commissioner";
+    for (const x of L.trades) if (x.rivalOf === t.id && x.status === "pending") { x.status = "expired"; x.done = now; }
     log(L, now, { type: "veto", team: t.from, other: t.to, trade: t.id, text: "The commissioner vetoed a trade" });
     return { ok: true };
   }
@@ -1948,7 +2023,10 @@
   }
   function finalize(L, ctx, now) {
     let n = 0;
-    for (const t of L.trades) if (t.status === "review" && now >= t.reviewEnds) { const r = execute(L, ctx, t, now); if (!r.ok) { t.status = "failed"; t.why = r.why; } n++; }
+    for (const t of L.trades) if (t.status === "review" && now >= t.reviewEnds) {
+      const r = execute(L, ctx, t, now); if (!r.ok) { t.status = "failed"; t.why = r.why; } n++;
+      for (const x of L.trades) if (x.rivalOf === t.id && x.status === "pending") { x.status = "expired"; x.done = now; }
+    }
     return n;
   }
   function execute(L, ctx, t, now) {
@@ -1997,7 +2075,7 @@
   function botsAnswer(L, ctx, now, delay = 0) {
     let n = 0;
     for (const t of L.trades) {
-      if (t.status !== "pending" || L.teams[t.to].owner || now - t.at < delay) continue;
+      if (t.status !== "pending" || L.teams[t.to].owner || now - t.at < delay || !botsAct(L)) continue;
       const a = botAnswer(L, ctx, t);
       respond(L, ctx, t.id, a.accept, now, a.why);
       n++;
@@ -2008,6 +2086,7 @@
   /* ---------- bots in season ---------- */
   // Each week a few bots pick up the best free agent who beats their weakest player, and now and then two bots trade.
   function botWeek(L, ctx, now, r) {
+    if (!botsAct(L)) return;
     // bots park their hurt players on IR, and bring back the healthy ones when there's room
     for (const t of L.teams) {
       if (t.owner || !isAlive(L, t.id)) continue;
@@ -2129,7 +2208,7 @@
   }
 
   return { recap, takerOf, openRaids, protectOf, kingOf, hungover, pyoTurn, pyoOptions, pyoPick, pyoAuto, runPyo, pyoLast, PYO_HOURS, realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
-    finishWeek, slotMult, setKicks, isLocked, freezeLineups, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade,
+    finishWeek, slotMult, setKicks, isLocked, freezeLineups, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade, botsAct, rivalCheck, rivalsOf, draftLottery,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, waiverPrice, waiverClear, nextWeekClear, waiverDays, clearAt, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
 });

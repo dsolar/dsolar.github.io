@@ -105,7 +105,7 @@
     /* ---------- routing ---------- */
     const TABS = () => [["league", "League"], ["team", "My Team"], ["matchup", gl() ? "The block" : roto() ? "Categories" : allplay1() ? "Board" : "Matchup"], ["players", "Players"], ["draft", "Draft"]].concat(opts.commishTools ? [["commish", "Commissioner"]] : []);
     function subsOf(tab) {
-      if (tab === "league") return [["overview", "Overview"]].concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []).concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : roto() ? "By week" : "Scoreboard"]].concat(recapOn() && lastDone() >= 1 ? [["recap", "Recap"]] : []).concat([["managers", "Managers"]]).concat(opts.dues ? [["dues", "Dues"]] : []).concat([["history", "History"], ["rules", "Rules"]]));
+      if (tab === "league") return [["overview", "Overview"]].concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : roto() ? "By week" : "Scoreboard"]].concat(recapOn() && lastDone() >= 1 ? [["recap", "Recap"]] : []).concat([["managers", "Managers"]]).concat(opts.dues ? [["dues", "Dues"]] : []).concat([["history", "History"], ["rules", "Rules"]]).concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []));
       if (tab === "team") return [["roster", "Roster"]].concat(roto() ? [] : [["schedule", gl() ? "History" : "Schedule"]]).concat(L().settings.trades === false ? [] : [["trades", "Trades", pendingTrades()]]);
       if (tab === "players") return [["fa", "Free agents"], ["all", "All players"], ["watch", "Watchlist"], ["claims", "Waiver claims", L().claims.filter((c) => c.team === me() && c.status === "open").length], ["tx", "Transactions"]];
       return [];
@@ -577,7 +577,7 @@
       const n = s.playoffTeams, P = 2 ** Math.ceil(Math.log2(n)), byes = P - n, plan = G.playoffPlan(L());
       const legs = s.playoffLegs === "all2" ? ", every round two weeks" : s.playoffLegs === "final2" ? ", a two-week final" : "";
       const extra = s.consolation === "third" ? ", and a third-place game" : s.consolation === "bracket" ? ", and a consolation bracket for the teams that miss" : "";
-      return `${s.weeks} weeks, then ${n} teams in the playoffs${byes ? ` (the top ${byes} get a bye)` : ""} over ${plan.reduce((a, rd) => a + rd.weeks.length, 0)} weeks${legs}${extra}`;
+      return `${s.weeks} weeks, then ${n} teams in the playoffs${byes ? ` (the top ${byes} get a bye)` : ""} over ${plan.reduce((a, rd) => a + rd.weeks.length, 0)} weeks${legs}${s.reseed && n > 2 ? `, reseeded every round so the best seed left plays the worst` : ""}${extra}`;
     }
     // If the season ended today: the seeds, first-round games (and byes) and the rounds after them.
     function bracketPreview() {
@@ -762,8 +762,8 @@
           ${s.conquest ? `<dt>Conquest</dt><dd>Win your matchup and take one player from the team you beat, giving one back${s.conquest.like ? " at the same position" : ""}. The loser keeps his ${s.conquest.protect} most valuable. Two days into the next week, it's made for you.</dd>` : ""}
           ${s.crown ? `<dt>Kingslayer</dt><dd>Week 1's top scorer took the crown. Beat the king and you take it, with the bounty: it starts at $${s.crown.start} and grows $${s.crown.step} every week he keeps it${s.crown.keep ? `, and he earns $${s.crown.keep} of FAAB for each week he survives` : ""}. Regular season only.</dd>` : ""}
           ${s.hangover ? `<dt>The Hangover</dt><dd>Last week's winners can't add free agents or put in waiver claims this week. Trades and lineup moves are fine.</dd>` : ""}
-          ${s.topBonus ? `<dt>Top-score bonus</dt><dd>The week's top scorer gets $${s.topBonus} of FAAB.</dd>` : ""}<dt>Season</dt><dd>${gl() ? `${s.weeks} weeks, until one team is left` : s.playoffTeams ? playoffLine(s) : `${s.weeks} weeks, no playoffs: first place wins`}</dd>${s.trades === false ? `<dt>Trades</dt><dd>None</dd>` : `<dt>Trade deadline</dt><dd>${s.deadline ? `After week ${s.deadline}` : "None"}</dd><dt>Trade review</dt><dd>${s.tradeReview === "none" ? "None" : `${fmtHours(s.reviewHours)}, ${Math.round(s.vetoShare * 100)}% of the league to veto`}</dd><dt>Offers</dt><dd>Expire after ${fmtHours(s.offerHours || 48)}</dd>`}</dl></div></div>
-        <div class="stack"><div class="card"><div class="mod-h"><h2>Rosters</h2></div><div class="bd"><dl class="kv"><dt>Starters</dt><dd>${s.lineup.map((x) => `<span class="slot" style="margin:0 3px 3px 0">${esc(x)}</span>`).join("")}</dd><dt>Bench</dt><dd>${s.bench}</dd><dt>IR spots</dt><dd>${s.ir || "None"}</dd>${s.maxAdds ? `<dt>Pickups</dt><dd>Up to ${s.maxAdds} a week, counting adds and won claims</dd>` : ""}${s.posMax && Object.keys(s.posMax).length ? `<dt>Position limits</dt><dd>${Object.entries(s.posMax).map(([k, v]) => `${v} ${esc(k)}`).join(", ")}</dd>` : ""}${s.confMax ? `<dt>Conference limit</dt><dd>At most ${s.confMax} starters from one FBS college conference, by each school's conference this season. Independents like Notre Dame and schools outside FBS have no limit.</dd>` : ""}<dt>Lineups</dt><dd>${bb() ? "Best ball: set automatically" : "Set each week"}</dd>${s.dynasty ? `<dt>Dynasty</dt><dd>Every roster carries over. Each new season opens with a ${s.dynasty.rounds}-round rookie and free agent draft, worst team first${s.dynasty.picks !== false ? ", and next season's picks can be traded" : ""}.</dd>${s.dynasty && s.taxi ? `<dt>Taxi squad</dt><dd>${s.taxi} spot${s.taxi > 1 ? "s" : ""} for rookies and rookie-draft picks, off the roster limit. They can't start, and a promotion is for good.</dd>` : ""}` : s.keepers ? `<dt>Keepers</dt><dd>Up to ${s.keepers}, costing ${{ round: "the round he went in", round1: "one round earlier than he went", free: "a last-round pick", price: "what he went for", price5: "what he went for plus $5" }[s.keeperCost] || "the round he went in"}</dd>` : ""}<dt>Waivers</dt><dd>${s.waivers === "faab" ? `${s.faabBank ? `FAAB from the draft's time bank, $${Math.round(s.faab / 2)} to $${Math.round(s.faab * 1.5)}` : `$${s.faab} FAAB`}${gl() ? " for the whole season" : ""}, ${s.waiverAt != null ? `claims run ${Math.round(s.waiverAt / 24 * 10) / 10} days into each week` : `${G.waiverDays(L())} business day${G.waiverDays(L()) === 1 ? "" : "s"} after a drop, at 3 AM Eastern${G.gameLockOn(L()) ? "; a player whose game has started is locked until next week" : ""}`}` : "Rolling priority"}</dd><dt>Waiver order</dt><dd>${s.waivers === "faab" ? "The highest bid wins. On a tie, the better waiver priority wins" : "The best waiver priority wins"}. Winning a claim sends you to the back of the line, even within the same run.</dd></dl></div></div>
+          ${s.topBonus ? `<dt>Top-score bonus</dt><dd>The week's top scorer gets $${s.topBonus} of FAAB.</dd>` : ""}<dt>Season</dt><dd>${gl() ? `${s.weeks} weeks, until one team is left` : s.playoffTeams ? playoffLine(s) : `${s.weeks} weeks, no playoffs: first place wins`}</dd>${s.trades === false ? `<dt>Trades</dt><dd>None</dd>` : `<dt>Trade deadline</dt><dd>${s.deadline ? `After week ${s.deadline}` : "None"}</dd><dt>Trade review</dt><dd>${s.tradeReview === "none" ? "None" : s.tradeReview === "counter" ? `A ${fmtHours(s.reviewHours)} counter window, no vetoes. Any other team can bid for the same players, offering no more than the deal does, and the selling team can take the bid instead` : s.tradeReview === "commish" ? `The commissioner reviews for ${fmtHours(s.reviewHours)}` : `${fmtHours(s.reviewHours)}, ${Math.round(s.vetoShare * 100)}% of the league to veto`}</dd>${s.tradeMax ? `<dt>Trade size</dt><dd>${s.tradeMax}-for-${s.tradeMax} at most</dd>` : ""}<dt>Offers</dt><dd>Expire after ${fmtHours(s.offerHours || 48)}</dd>`}${s.keepers || s.dynasty ? `<dt>Draft order</dt><dd>${s.draftOrder === "lottery" ? `A lottery for the teams that miss the playoffs${s.lotteryOdds === "weighted" ? ", with more chances for worse records" : ", equal odds"}; playoff teams follow in reverse order of finish, so the champion picks last` : "Worst to first"}</dd>` : ""}</dl></div></div>
+        <div class="stack"><div class="card"><div class="mod-h"><h2>Rosters</h2></div><div class="bd"><dl class="kv"><dt>Starters</dt><dd>${s.lineup.map((x) => `<span class="slot" style="margin:0 3px 3px 0">${esc(x)}</span>`).join("")}</dd><dt>Bench</dt><dd>${s.bench}</dd><dt>IR spots</dt><dd>${s.ir || "None"}</dd>${s.maxAdds ? `<dt>Pickups</dt><dd>Up to ${s.maxAdds} a week, counting adds and won claims</dd>` : ""}${s.minIP ? `<dt>Innings</dt><dd>At least ${s.minIP} a week. A team short of it loses ERA and WHIP that week</dd>` : ""}${sport.key === "mlb" ? `<dt>Positions</dt><dd>${(() => { const e = s.elig || S.ELIG; return `A hitter qualifies at a position with ${[e.g && `${e.g} games`, e.gs && `${e.gs} starts`].filter(Boolean).join(" or ")} there, a pitcher at SP with ${e.sp} starts and at RP with ${e.rp} relief appearances: last season's games, and once the season is under way, this season's too`; })()}</dd>` : ""}${s.posMax && Object.keys(s.posMax).length ? `<dt>Position limits</dt><dd>${Object.entries(s.posMax).map(([k, v]) => `${v} ${esc(k)}`).join(", ")}</dd>` : ""}${s.confMax ? `<dt>Conference limit</dt><dd>At most ${s.confMax} starters from one FBS college conference, by each school's conference this season. Independents like Notre Dame and schools outside FBS have no limit.</dd>` : ""}<dt>Lineups</dt><dd>${bb() ? "Best ball: set automatically" : "Set each week"}</dd>${s.dynasty ? `<dt>Dynasty</dt><dd>Every roster carries over. Each new season opens with a ${s.dynasty.rounds}-round rookie and free agent draft, worst team first${s.dynasty.picks !== false ? ", and next season's picks can be traded" : ""}.</dd>${s.dynasty && s.taxi ? `<dt>Taxi squad</dt><dd>${s.taxi} spot${s.taxi > 1 ? "s" : ""} for rookies and rookie-draft picks, off the roster limit. They can't start, and a promotion is for good.</dd>` : ""}` : s.keepers ? `<dt>Keepers</dt><dd>Up to ${s.keepers}, costing ${{ round: "the round he went in", round1: "one round earlier than he went", free: "a last-round pick", price: "what he went for", price5: "what he went for plus $5" }[s.keeperCost] || "the round he went in"}</dd>` : ""}<dt>Waivers</dt><dd>${s.waivers === "faab" ? `${s.faabBank ? `FAAB from the draft's time bank, $${Math.round(s.faab / 2)} to $${Math.round(s.faab * 1.5)}` : `$${s.faab} FAAB`}${gl() ? " for the whole season" : ""}, ${s.waiverAt != null ? `claims run ${Math.round(s.waiverAt / 24 * 10) / 10} days into each week` : `${G.waiverDays(L())} business day${G.waiverDays(L()) === 1 ? "" : "s"} after a drop, at 3 AM Eastern${G.gameLockOn(L()) ? "; a player whose game has started is locked until next week" : ""}`}` : "Rolling priority"}</dd><dt>Waiver order</dt><dd>${s.waivers === "faab" ? "The highest bid wins. On a tie, the better waiver priority wins" : "The best waiver priority wins"}. Winning a claim sends you to the back of the line, even within the same run.</dd></dl></div></div>
         ${sc().cats ? `<div class="card"><div class="mod-h"><h2>Categories</h2></div><div class="bd">${sc().cats.map((c) => `<span class="slot" style="margin:0 4px 4px 0">${esc(c.label)}</span>`).join("")}<p class="ps">${gl() ? "Each week, teams are ranked in every category: the best gets one point per team alive, the worst gets one. Lowest total is chopped." : "Head to head: win more categories than your opponent to win the week."}</p></div></div>` : ""}
       </div></div></div>`;
     }
@@ -1271,20 +1271,26 @@
     }
     function tradeVM(t) {
       const mid = me();
-      const label = { pending: "Pending", review: "Under review", accepted: "Accepted", rejected: "Rejected", cancelled: "Cancelled", vetoed: "Vetoed", countered: "Countered", failed: "Failed", expired: "Expired" }[t.status];
+      const ctr = L().settings.tradeReview === "counter";
+      const label = { pending: t.rivalOf != null ? "Rival bid" : "Pending", review: ctr ? "Counter window" : "Under review", accepted: "Accepted", rejected: "Rejected", cancelled: "Cancelled", vetoed: "Vetoed", countered: "Countered", outbid: "Outbid", failed: "Failed", expired: "Expired" }[t.status];
       const ends = t.status === "pending" ? `Expires ${new Date(G.offerEnds(L(), t)).toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric" })}` : "";
       let acts = "";
-      if (t.status === "pending" && t.to === mid) acts = `<button class="btn sm win" data-tr-accept="${t.id}">Accept</button><button class="btn sm" data-tr-counter="${t.id}">Counter</button><button class="btn sm warn" data-tr-reject="${t.id}">Reject</button><span class="grow"></span><span class="ps">${esc(ends)}</span>`;
+      if (t.status === "pending" && t.to === mid && t.rivalOf != null) acts = `<button class="btn sm win" data-tr-accept="${t.id}">Take this bid</button><button class="btn sm warn" data-tr-reject="${t.id}">Turn it down</button><span class="grow"></span><span class="ps">Take it before the counter window closes, or your original deal goes through</span>`;
+      else if (t.status === "pending" && t.to === mid) acts = `<button class="btn sm win" data-tr-accept="${t.id}">Accept</button><button class="btn sm" data-tr-counter="${t.id}">Counter</button><button class="btn sm warn" data-tr-reject="${t.id}">Reject</button><span class="grow"></span><span class="ps">${esc(ends)}</span>`;
       else if (t.status === "pending" && t.from === mid) acts = `<span class="ps">Waiting on ${esc(T(t.to).name)}. ${esc(ends)}</span><span class="grow"></span><button class="btn sm" data-tr-cancel="${t.id}">Cancel offer</button>`;
       else if (t.status === "review") {
         const v = (t.votes || {})[mid], vetoes = Object.values(t.votes || {}).filter((x) => x === "veto").length;
         const cm = !!opts.commishTools, byCm = L().settings.tradeReview === "commish";
         const when = U.ago(t.reviewEnds, now()).includes("ago") ? "soon" : new Date(t.reviewEnds).toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
         const cmBtn = cm ? `<button class="btn sm warn" data-tr-cmveto="${t.id}">${byCm ? "Veto" : "Veto as commissioner"}</button>` : "";
-        acts = byCm ? `<span class="ps">Goes through ${when} unless the commissioner vetoes it</span><span class="grow"></span>${cmBtn}`
+        const bids = G.rivalsOf(L(), t.id).length;
+        const canBid = ctr && mid != null && mid !== t.from && mid !== t.to && !over();
+        const bidBtns = canBid ? [[t.from, t.give, t.pickGive], [t.to, t.get, t.pickGet]].filter(([, ps, pk]) => ps.length || (pk || []).length).map(([seller, ps]) => `<button class="btn sm" data-tr-rival="${t.id}" data-seller="${seller}">Bid for ${esc(ps.map((x) => (ctx.byId[x] || {}).n || "?").join(" and ") || "the picks")}</button>`).join("") : "";
+        if (ctr) acts = `<span class="ps">Goes through ${when} unless ${bids ? `a team takes one of ${bids} rival bid${bids === 1 ? "" : "s"}` : "a team takes a rival bid"}</span><span class="grow"></span>${bidBtns}${cmBtn}`;
+        else acts = byCm ? `<span class="ps">Goes through ${when} unless the commissioner vetoes it</span><span class="grow"></span>${cmBtn}`
           : `<span class="ps">Goes through ${when} unless ${G.vetoesNeeded(L(), t)} teams veto (${vetoes} so far)</span><span class="grow"></span>${G.voters(L(), t).includes(mid) ? (v ? `<span class="tag">${v === "veto" ? "You voted to veto" : "You approved"}</span>` : `<button class="btn sm" data-tr-ok="${t.id}">Approve</button><button class="btn sm warn" data-tr-veto="${t.id}">Veto</button>`) : ""}${cmBtn}`;
       } else if (t.why) acts = `<span class="ps">${esc(T(t.to).name)}: &ldquo;${esc(t.why)}&rdquo;</span>`;
-      return { id: t.id, status: t.status, statusLabel: label, from: T(t.from), to: T(t.to), give: t.give.map(playerVM).concat((t.pickGive || []).map(pickVM)), get: t.get.map(playerVM).concat((t.pickGet || []).map(pickVM)), faab: [t.faabGive, t.faabGet], note: t.note, when: U.ago(t.done || t.at, now()), acts, sub: t.counterOf ? "Counteroffer" : "" };
+      return { id: t.id, status: t.status, statusLabel: label, from: T(t.from), to: T(t.to), give: t.give.map(playerVM).concat((t.pickGive || []).map(pickVM)), get: t.get.map(playerVM).concat((t.pickGet || []).map(pickVM)), faab: [t.faabGive, t.faabGet], note: t.note, when: U.ago(t.done || t.at, now()), acts, sub: t.rivalOf != null ? `For the same players as a deal in its counter window` : t.counterOf ? "Counteroffer" : "" };
     }
     function tradesPage() {
       const mid = me();
@@ -1314,7 +1320,7 @@
       const li = (x) => `<li>${teamAv(x.t, "md")}<div class="what"><div class="row" style="gap:8px"><b class="ell">${esc(x.t.name)}</b>${x.note ? `<span class="ps ell">${esc(x.note)}</span>` : ""}</div>
         ${x.ids.map((id) => `<div class="row bkp"><span data-player="${esc(id)}" style="cursor:pointer;min-width:0;flex:1">${pname(sport, ctx.byId[id], `${esc(ctx.byId[id].prank)}`, { size: "sm" })}</span>${x.t.id === mid ? `<button class="btn xs ghost" data-unblock="${esc(id)}">Take off</button>` : offer(x.t, id)}</div>`).join("")}</div></li>`;
       const yours = full && mid != null ? `<div class="bd" style="border-top:1px solid var(--line)"><form class="stack" id="fk-blocknote" style="gap:8px"><label class="lbl" for="fk-bn">What you're looking for</label><div class="row"><input type="text" id="fk-bn" maxlength="80" placeholder="What you need, like an RB" value="${esc((L().blockNote || {})[mid] || "")}" style="flex:1;min-width:0"><button class="btn sm">Save</button></div></form>
-        ${mine.length ? "" : `<p class="ps" style="margin:8px 0 0">Open one of your players and choose Put on the block, so the league knows he's available.</p>`}</div>${mine.length ? `<ul class="feed">${li({ t: T(mid), ids: mine, note: "" })}</ul>` : ""}` : "";
+        <form class="row" id="fk-blockadd" style="gap:8px;margin-top:10px"><label class="sr" for="fk-ba">Put a player on the block</label><select id="fk-ba" style="flex:1;min-width:0"><option value="">Put a player on the block</option>${L().rosters[mid].filter((x) => !mine.includes(x) && ctx.byId[x]).map((x) => ctx.byId[x]).sort((a, b) => (b.$ || 0) - (a.$ || 0)).map((p) => `<option value="${esc(p.id)}">${esc(p.n)}, ${esc(S.positions(p).join("/"))}</option>`).join("")}</select><button class="btn sm">Add</button></form></div>${mine.length ? `<ul class="feed">${li({ t: T(mid), ids: mine, note: "" })}</ul>` : ""}` : "";
       return `<div class="card"><div class="mod-h"><h2>Trading block</h2>${full ? "" : `<a href="#team/trades">All teams</a>`}</div>${rows.length ? `<ul class="feed">${rows.slice(0, limit).map(li).join("")}</ul>` : `<div class="bd"><p class="ps" style="margin:0">Nobody has put players on the block yet.</p></div>`}${yours}</div>`;
     }
     function openTrade(other, want, prefill) {
@@ -1324,15 +1330,15 @@
       const teams = L().teams;
       const roster = (id) => L().rosters[id].map((x) => ctx.byId[x]).filter(Boolean).sort((a, b) => b.$ - a.$ || a.rank - b.rank);
       const t0 = other != null ? other : teams.find((t) => t.id !== mid).id;
-      U.tradeWindow({ sport, teams, me: mid, other: t0, roster, title: prefill && prefill.counterOf ? "Counteroffer" : "Propose a trade",
+      U.tradeWindow({ sport, teams, me: mid, other: t0, roster, title: prefill && prefill.rivalOf != null ? "Rival bid" : prefill && prefill.counterOf ? "Counteroffer" : "Propose a trade",
         value: (ps, faab) => G.sideValue(ctx, ps.map((p) => p.id), faab), faab: (id) => T(id).faab,
         roomFor: (tr) => G.offseason(L()) ? 0 : Math.max(0, L().rosters[mid].length - tr.give.length + tr.get.length - G.maxRoster(L()) - G.held(L(), mid).filter((x) => !tr.give.includes(x)).length),
-        check: (tr) => G.tradeCheck(L(), ctx, Object.assign({ dropsTo: [] }, tr)),
+        check: (tr) => { const x = Object.assign({ dropsTo: [], rivalOf: prefill && prefill.rivalOf }, tr); if (x.rivalOf != null) { x.from = mid; const r = G.rivalCheck(L(), x); if (!r.ok) return r; } return G.tradeCheck(L(), ctx, x); },
         prefill: prefill || (want ? { get: [want] } : null),
         picks: G.pickRounds(L()) ? (id) => G.picksOf(L(), id).map(pickVM) : null,
         // between seasons in a keeper league, what each player would cost to keep is what the trade is about
         note: G.offseason(L()) && L().settings.keepers && window.FK.season ? (p) => { const c = window.FK.season.keeperCost(L(), p.id); return c.no ? "can't be kept" : c.round != null ? `keep in round ${c.round}` : c.price != null ? `keep for $${c.price}` : ""; } : null,
-        submit: (tr) => { const r = G.propose(L(), ctx, mid, tr.to, tr.give, tr.get, now(), tr); if (!r.ok) return r; save(); U.toast(`Offer sent to ${T(tr.to).name}.`); setTimeout(() => { G.tick(L(), ctx, now() + 1); save(); render(); }, 1200); render(); return r; } });
+        submit: (tr) => { const r = G.propose(L(), ctx, mid, tr.to, tr.give, tr.get, now(), Object.assign({}, tr, prefill && prefill.rivalOf != null ? { rivalOf: prefill.rivalOf } : {})); if (!r.ok) return r; save(); U.toast(`Offer sent to ${T(tr.to).name}.`); setTimeout(() => { G.tick(L(), ctx, now() + 1); save(); render(); }, 1200); render(); return r; } });
     }
 
     /* ---------- Matchup ---------- */
@@ -1624,7 +1630,9 @@
       const subs = subsOf(r.tab);
       const hrefOf = (t, s) => "#" + t + (s ? "/" + s : "");
       const front = r.tab === "league" && (!r.sub || r.sub === "overview");
-      opts.top.innerHTML = U.shell({ brand: opts.brand, title: opts.switcher ? opts.switcher() : "", tabs, tab: r.tab, subs, sub: r.sub, hrefOf, right: opts.right ? opts.right() : "", tabbar: true, mast: front ? mastVM() : null });
+      // the league chat sits at the right end of the main nav, with its unread count
+      const chatLink = opts.chat ? [hrefOf("league", "chat"), "Chat", opts.chat.unread(), r.tab === "league" && r.sub === "chat"] : null;
+      opts.top.innerHTML = U.shell({ brand: opts.brand, title: opts.switcher ? opts.switcher() : "", tabs, tab: r.tab, subs, sub: r.sub, hrefOf, right: opts.right ? opts.right() : "", tabbar: true, mast: front ? mastVM() : null, navEnd: chatLink });
       document.body.classList.add("fk-hasbar");
       // the sticky header's height, so sticky bars on the page (the "Moving" bar) sit just under it
       const topEl = opts.top.querySelector(".fk-top") || opts.top; document.documentElement.style.setProperty("--fk-top-h", `${Math.round(topEl.getBoundingClientRect().height)}px`);
@@ -1776,6 +1784,12 @@
       const box = $("#fk-chat", opts.el); if (box) box.focus();
     });
     opts.el.addEventListener("submit", (e) => {
+      if (e.target.id === "fk-blockadd" && me() != null) {
+        e.preventDefault();
+        const pid = $("#fk-ba", opts.el).value; if (!pid) return;
+        act(() => G.setBlock(L(), me(), pid, true), `${ctx.byId[pid].n} is on the block.`);
+        return;
+      }
       if (e.target.id !== "fk-blocknote" || me() == null) return;
       e.preventDefault();
       const v = $("#fk-bn", opts.el).value.replace(/\s+/g, " ").trim().slice(0, 80);
@@ -1820,12 +1834,17 @@
         else if (d.mweek) { location.hash = `#matchup/${d.mweek}`; }
         else if (d.txf !== undefined && b.hasAttribute("data-txf")) { ui.txf = d.txf; render(); }
         else if (d.fpos !== undefined && b.hasAttribute("data-fpos")) { ui.pf.pos = d.fpos; render(); }
+        else if (d.trAccept && L().trades.some((x) => x.id === +d.trAccept && x.rivalOf != null)) { const id = +d.trAccept; U.confirm("Take this bid?", "It goes through now, and the deal it beat is off.", "Take the bid", () => act(() => G.respond(L(), ctx, id, true, now()), "Done. The rival bid went through.")); }
         else if (d.trAccept) { const id = +d.trAccept; U.confirm("Accept this trade?", L().settings.tradeReview === "none" ? "It goes through right away." : `The ${L().settings.tradeReview === "commish" ? "commissioner gets" : "league gets"} ${fmtHours(L().settings.reviewHours)} to review it before it goes through.`, "Accept trade", () => act(() => G.respond(L(), ctx, id, true, now()), L().settings.tradeReview === "none" ? "Trade accepted." : `Accepted. The league has ${fmtHours(L().settings.reviewHours)} to review it.`)); }
         else if (d.trReject) act(() => G.respond(L(), ctx, +d.trReject, false, now()), "Offer rejected.");
         else if (d.trCancel) act(() => G.cancelTrade(L(), +d.trCancel, now()), "Offer cancelled.");
         else if (d.trOk) act(() => G.vote(L(), ctx, +d.trOk, mid, false, now()), "You approved the trade.");
         else if (d.trCmveto) { const id = +d.trCmveto; U.confirm("Veto this trade?", "It won't go through, and both teams keep their players.", "Veto trade", () => act(() => G.commishVeto(L(), id, now()), "Trade vetoed.")); }
         else if (d.trVeto) act(() => G.vote(L(), ctx, +d.trVeto, mid, true, now()), "You voted to veto.");
+        else if (d.trRival) {
+          const t = L().trades.find((x) => x.id === +d.trRival), seller = +d.seller, isFrom = seller === t.from;
+          openTrade(seller, null, { get: (isFrom ? t.give : t.get).slice(), pickGet: ((isFrom ? t.pickGive : t.pickGet) || []).slice(), give: [], rivalOf: t.id, lockGet: true });
+        }
         else if (d.trCounter) { const t = L().trades.find((x) => x.id === +d.trCounter); openTrade(t.from, null, { give: t.get.slice(), get: t.give.slice(), pickGive: (t.pickGet || []).slice(), pickGet: (t.pickGive || []).slice(), faabGive: t.faabGet, faabGet: t.faabGive, counterOf: t.id }); }
         else if (d.sort) { const cols = U.poolColumns(sport, { scoring: L().scoring, group: U.groupOf(sport, ui.pf), owner: statusOf, ownerSort: (p) => ctx.own[p.id] }); ui.psort = U.nextSort(ui.psort, d.sort, cols); render(); }
         return;

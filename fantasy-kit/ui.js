@@ -239,17 +239,21 @@
     return `<span class="${c}" aria-hidden="true">${esc(String((t && t.abbr) || "?").slice(0, 3))}</span>`;
   };
   /* ---------- the league's own look: a banner crest in the league color, and the masthead on its front page ---------- */
-  // A league's brand: { color: 0-11, letters: up to 3 } from settings.brand, or picked from its name.
+  // A league's brand: { color: 0-11, letters: up to 3 } from settings.brand, or picked from its name. A league can
+  // also set its own colors: hex (the crest and accent) and bg (the masthead), each a #rrggbb.
+  const HEX = /^#[0-9a-f]{6}$/i;
   const leagueBrand = (name, b) => {
     const words = String(name || "League").replace(/['\u2019]/g, "").replace(/[^A-Za-z0-9 ]/g, " ").split(/\s+/).filter(Boolean);
     const auto = (words.length > 1 ? words.slice(0, 2).map((w) => w[0]) : [String(words[0] || "L").slice(0, 2)]).join("").toUpperCase();
     const letters = String((b && b.letters) || auto).replace(/[^A-Za-z0-9&]/g, "").slice(0, 3).toUpperCase() || "L";
-    return { color: b && b.color != null && b.color >= 0 ? b.color % 12 : hashOf(String(name || "") + "|lg") % 12, letters };
+    return { color: b && b.color != null && b.color >= 0 ? b.color % 12 : hashOf(String(name || "") + "|lg") % 12, letters,
+      hex: b && HEX.test(b.hex || "") ? b.hex : null, bg: b && HEX.test(b.bg || "") ? b.bg : null };
   };
+  const brandC = (br) => br.hex || `var(--t${br.color})`;
   // the crest: a banner like the ones hung in the rafters, the league's letters on it. size: "sm" (a menu), "" or "lg"
   const leagueCrest = (br, size = "") => {
     const fs = br.letters.length > 2 ? 15 : br.letters.length > 1 ? 19 : 23;
-    return `<span class="lgcr${size ? " " + size : ""}" style="--c:var(--t${br.color})" aria-hidden="true"><svg viewBox="0 0 48 60" focusable="false"><path d="M2 0h44v52L24 43 2 52z" fill="var(--c)"/><path d="M2 0h44v52L24 43 2 52z" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="2"/><path d="M7 5h34" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/><text x="24" y="${br.letters.length > 2 ? 30 : 31}" text-anchor="middle" dominant-baseline="middle" font-size="${fs}" class="lgcr-t">${esc(br.letters)}</text></svg></span>`;
+    return `<span class="lgcr${size ? " " + size : ""}" style="--c:${brandC(br)}" aria-hidden="true"><svg viewBox="0 0 48 60" focusable="false"><path d="M2 0h44v52L24 43 2 52z" fill="var(--c)"/><path d="M2 0h44v52L24 43 2 52z" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="2"/><path d="M7 5h34" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/><text x="24" y="${br.letters.length > 2 ? 30 : 31}" text-anchor="middle" dominant-baseline="middle" font-size="${fs}" class="lgcr-t">${esc(br.letters)}</text></svg></span>`;
   };
   // A past champion's pennant: the season and the team, in the team's color.
   const pennant = (x) => `<li class="pnt" style="--c:var(--t${(x.color || 0) % 12})" title="${esc(x.season)}: ${esc(x.name)}"><b>${esc(x.season)}</b><span>${esc(x.abbr)}</span></li>`;
@@ -296,17 +300,18 @@
   /* ---------- shell ---------- */
   // opts: { brand: { name, href, mark }, title (html beside the brand), tabs: [[key, label, badge]], tab,
   //         subs: [[key, label, badge]], sub, hrefOf(tab, sub), right (html) }
+  const CHAT_ICON = `<svg class="nav-ic" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 4h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H9l-4 3v-3H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
   function shell(opts) {
     const href = opts.hrefOf || ((t, s) => "#" + t + (s ? "/" + s : ""));
     const badge = (n) => (n ? `<span class="badge">${n}</span>` : "");
     const m = opts.mast ? leagueMast(opts.mast) : null;
-    return `${m ? `<div class="fk-mast fk-band lgm c${opts.mast.brand.color}" style="--lc:var(--t${opts.mast.brand.color})"><div class="wrap lgm-in">
+    return `${m ? `<div class="fk-mast fk-band lgm c${opts.mast.brand.color}" style="--lc:${brandC(opts.mast.brand)}${opts.mast.brand.bg ? `;--band:${opts.mast.brand.bg}` : ""}"><div class="wrap lgm-in">
         ${m.crest}<div class="lgm-id"><div class="lgm-top"><a class="fk-brand" href="${esc(opts.brand.href || "./")}">${opts.brand.mark || ""}<b class="disp">${esc(opts.brand.name)}</b></a>${opts.title || ""}</div>${m.body}</div>
         <div class="lgm-side"><div class="fk-who">${opts.right || ""}</div>${m.champs}</div></div></div>`
       : `<div class="fk-mast fk-band"><div class="wrap">
         <a class="fk-brand" href="${esc(opts.brand.href || "./")}">${opts.brand.mark || ""}<b class="disp">${esc(opts.brand.name)}</b></a>
         ${opts.title || ""}<span class="grow"></span><div class="fk-who">${opts.right || ""}</div></div></div>`}
-      ${opts.tabs && opts.tabs.length ? `<div class="fk-nav${opts.tabbar ? " has-bar" : ""}"><div class="wrap"><nav aria-label="Sections">${opts.tabs.map(([k, n, b]) => `<a href="${href(k)}"${k === opts.tab ? ' aria-current="page"' : ""}>${esc(n)}${badge(b)}</a>`).join("")}</nav></div></div>` : ""}
+      ${opts.tabs && opts.tabs.length ? `<div class="fk-nav${opts.tabbar ? " has-bar" : ""}"><div class="wrap"><nav aria-label="Sections">${opts.tabs.map(([k, n, b]) => `<a href="${href(k)}"${k === opts.tab ? ' aria-current="page"' : ""}>${esc(n)}${badge(b)}</a>`).join("")}${opts.navEnd ? `<a class="nav-end" href="${esc(opts.navEnd[0])}"${opts.navEnd[3] ? ' aria-current="page"' : ""}>${CHAT_ICON}${esc(opts.navEnd[1])}${badge(opts.navEnd[2])}</a>` : ""}</nav></div></div>` : ""}
       ${opts.subs && opts.subs.length ? `<nav class="fk-subs" aria-label="Pages"><div class="wrap">${opts.subs.map(([k, n, b]) => `<a href="${href(opts.tab, k)}"${k === opts.sub ? ' aria-current="page"' : ""}>${esc(n)}${badge(b)}</a>`).join("")}</div></nav>` : ""}
       ${opts.tabbar && opts.tabs && opts.tabs.length ? `<nav class="fk-tabbar" aria-label="Sections, phone" style="--n:${opts.tabs.length}">${opts.tabs.map(([k, n, b]) => `<a href="${href(k)}"${k === opts.tab ? ' aria-current="page"' : ""}>${TAB_ICON[k] || TAB_ICON.league}<span>${esc(SHORT_TAB[k] || n)}</span>${b ? `<i class="tb-n">${b}</i>` : ""}</a>`).join("")}</nav>` : ""}`;
   }
@@ -476,7 +481,17 @@
     return true;
   }
   // football has no stat groups: the position itself picks the columns (a TE filter drops passing and rushing)
-  const groupOf = (sport, st) => (st.pos && !sport.groups && sport.key === "nfl" ? st.pos : st.pos && sport.groups ? (st.pos.startsWith("g:") ? st.pos.slice(2) : Object.keys(sport.groups).find((g) => sport.groups[g].includes(st.pos))) : null);
+  // The stat group a filter shows: hitters or pitchers for a group chip or one position, and for a lineup spot's chip
+  // (UTIL, P) the group every position it takes belongs to, so UTIL shows hitting stats and P pitching
+  const groupOf = (sport, st) => {
+    if (!st.pos) return null;
+    if (!sport.groups) return sport.key === "nfl" ? st.pos : null;
+    if (st.pos.startsWith("g:")) return st.pos.slice(2);
+    const ps = st.pos.startsWith("s:") ? sport.slots[st.pos.slice(2)] : [st.pos];
+    if (!Array.isArray(ps)) return null;
+    const gs = new Set(ps.map((x) => Object.keys(sport.groups).find((g) => sport.groups[g].includes(x))));
+    return gs.size === 1 ? [...gs][0] || null : null;
+  };
 
   const LABELS = { gp: "GP", g: "G", gs: "GS", min: "MIN", fgm: "FGM", fga: "FGA", ftm: "FTM", fta: "FTA", tpm: "3PM", pts: "PTS", reb: "REB", ast: "AST", stl: "STL", blk: "BLK", tov: "TO",
     pa: "PA", ab: "AB", r: "R", h: "H", hr: "HR", rbi: "RBI", sb: "SB", tb: "TB", bb: "BB", avg: "AVG", obp: "OBP", ops: "OPS", ip: "IP", w: "W", l: "L", sv: "SV", hld: "HLD", k: "K", er: "ER", era: "ERA", whip: "WHIP", qs: "QS",
@@ -575,7 +590,7 @@
   /* The trade window: both rosters side by side, pick players and FAAB, see the value swing, send.
      opts: { sport, teams, me, other, roster(teamId) -> players, value(players, faab) -> number, faab(teamId) (omit to hide),
              roomFor(trade) -> drops needed, check(trade) -> { ok, why }, submit(trade) -> { ok, why },
-             prefill: { give, get, faabGive, faabGet, note }, title,
+             prefill: { give, get, faabGive, faabGet, note, lockGet (their side is fixed: a rival bid) }, title,
              values(trade) -> [send, get] to override value(), dark, empty (the prompt before anything is picked) }
      A roster item with pick: true is a draft pick ({ id, n, sub, price }) and renders as one. */
   function tradeWindow(opts) {
@@ -587,10 +602,10 @@
     const D = dialog(`<div class="tw"></div>`, null, { full: true, dark: opts.dark });
     const draw = (focus) => {
       const other = opts.teams.find((t) => t.id === st.other);
-      const mine = opts.roster(opts.me), theirs = opts.roster(st.other);
+      const mine = opts.roster(opts.me), theirs = opts.roster(st.other).filter((p) => !pf.lockGet || st.get.has(p.id));
       const byId = Object.fromEntries(mine.concat(theirs).map((p) => [p.id, p]));
       // next season's draft picks (a dynasty), listed under each roster: { id, n, sub, $, pick: true }
-      const myPicks = opts.picks ? opts.picks(opts.me) : [], theirPicks = opts.picks ? opts.picks(st.other) : [];
+      const myPicks = opts.picks ? opts.picks(opts.me) : [], theirPicks = (opts.picks ? opts.picks(st.other) : []).filter((k) => !pf.lockGet || st.pget.has(k.id));
       const pv = (list, set) => list.filter((k) => set.has(k.id)).reduce((a, k) => a + (k.$ || 0), 0);
       let [vg, vr] = opts.values ? opts.values(trade()) : [opts.value([...st.give].map((id) => byId[id]).filter(Boolean), st.faabGive), opts.value([...st.get].map((id) => byId[id]).filter(Boolean), st.faabGet)];
       vg += pv(myPicks, st.pgive); vr += pv(theirPicks, st.pget);
@@ -600,7 +615,8 @@
       const vl = opts.valueLabel || money;
       const picked = st.give.size || st.get.size || st.pgive.size || st.pget.size;
       const verdict = !picked ? (opts.empty || "Pick players on either side") : Math.abs(swing) < 0.08 ? "About even" : swing > 0 ? (swing > 0.35 ? "Lopsided your way" : "Leans your way") : swing < -0.35 ? "Lopsided their way" : "Leans their way";
-      const list = (ps, set, kind) => ps.map((p) => `<label class="${set.has(p.id) ? "on" : ""}${kind === "drop" ? " drop" : ""}"><input type="checkbox" data-tw="${kind}" value="${esc(p.id)}"${set.has(p.id) ? " checked" : ""}>${pname(sport, p, !p.pick && opts.note ? esc(opts.note(p) || "") : "")}<span class="dollar">${p.price != null ? esc(p.price) : p.$ ? money(p.$) : ""}</span></label>`).join("");
+      const fixed = (kind) => pf.lockGet && (kind === "get" || kind === "pget");
+      const list = (ps, set, kind) => ps.map((p) => `<label class="${set.has(p.id) ? "on" : ""}${kind === "drop" ? " drop" : ""}"><input type="checkbox" data-tw="${kind}" value="${esc(p.id)}"${set.has(p.id) ? " checked" : ""}${fixed(kind) ? " disabled" : ""}>${pname(sport, p, !p.pick && opts.note ? esc(opts.note(p) || "") : "")}<span class="dollar">${p.price != null ? esc(p.price) : p.$ ? money(p.$) : ""}</span></label>`).join("");
       const pickList = (ps, set, kind) => (ps.length ? `<div class="sec">Draft picks</div>${list(ps, set, kind)}` : "");
       const dropList = need > 0 ? `<div class="sec">Drop ${need} to make room</div>${list(mine.filter((p) => !st.give.has(p.id)), st.drops, "drop")}` : "";
       let chk = opts.check ? opts.check(trade()) : { ok: true };
@@ -609,7 +625,7 @@
       const ready = chk.ok && picked && st.drops.size >= need;
       const scroll = $$(".tw-list", D).map((x) => x.scrollTop);
       $(".tw", D).innerHTML = `
-        <div class="tw-h"><h3>${esc(opts.title || "Propose a trade")}</h3><label class="sr" for="tw-team">Trade with</label><select id="tw-team">${opts.teams.filter((t) => t.id !== opts.me).map((t) => `<option value="${t.id}"${t.id === st.other ? " selected" : ""}>${esc(t.name)}</option>`).join("")}</select></div>
+        <div class="tw-h"><h3>${esc(opts.title || "Propose a trade")}</h3><label class="sr" for="tw-team">Trade with</label><select id="tw-team"${pf.lockGet ? " disabled" : ""}>${opts.teams.filter((t) => t.id !== opts.me).map((t) => `<option value="${t.id}"${t.id === st.other ? " selected" : ""}>${esc(t.name)}</option>`).join("")}</select></div>
         <div class="tw-b">
           <div class="tw-col"><div class="hd">${teamAv(me, "sm")}<b>You send</b><span class="ps">${st.give.size + st.pgive.size} selected</span></div><div class="tw-list">${list(mine, st.give, "give")}${pickList(myPicks, st.pgive, "pgive")}${dropList}</div></div>
           <div class="tw-col"><div class="hd">${teamAv(other, "sm")}<b>${esc(other.name)} sends</b><span class="ps">${st.get.size + st.pget.size} selected</span></div><div class="tw-list">${list(theirs, st.get, "get")}${pickList(theirPicks, st.pget, "pget")}</div></div>
@@ -633,7 +649,7 @@
       const k = e.target.dataset.tw;
       if (e.target.id === "tw-team") { st.other = +e.target.value; st.get.clear(); st.pget.clear(); st.faabGet = 0; draw(); return; }
       const set = k === "give" ? st.give : k === "get" ? st.get : k === "pgive" ? st.pgive : k === "pget" ? st.pget : k === "drop" ? st.drops : null;
-      if (!set) return;
+      if (!set || (pf.lockGet && (k === "get" || k === "pget"))) return;
       if (e.target.checked) set.add(e.target.value); else set.delete(e.target.value);
       draw();
     };

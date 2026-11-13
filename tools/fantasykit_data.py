@@ -262,6 +262,43 @@ def ip_real(ip):                              # 96.1 means 96 and a third inning
     return whole + round((ip - whole) * 10) / 3
 
 
+# Position eligibility, Yahoo's way: a hitter qualifies at a position with 5 starts or 10 games there, a pitcher at SP
+# with 3 starts and at RP with 5 relief appearances. Before a season starts that's last season's games; once it's
+# under way, last season's or this one's. Each player also carries the counts ("pg": one {pos: [games, starts]} per
+# season), so a league with its own thresholds (settings.elig) can work them out itself.
+ELIG = {"g": 10, "gs": 5, "sp": 3, "rp": 5}
+
+
+def season_games(src):
+    """{player id: {pos: [games, starts]}} for one season: fielding by position (LF, CF and RF add up to OF), and SP
+    and RP from pitching (starts, and relief appearances)."""
+    out = {}
+    for r in src.get("fielding") or []:
+        pos = "OF" if r["pos"] in OF else r["pos"]
+        if pos not in MLB_ORDER:
+            continue
+        x = out.setdefault(r["id"], {}).setdefault(pos, [0, 0])
+        x[0] += r.get("g") or 0
+        x[1] += r.get("gs") or 0
+    for q in src.get("pitching") or []:
+        g, gs = q.get("g") or 0, q.get("gs") or 0
+        if gs:
+            out.setdefault(q["id"], {})["SP"] = [gs, gs]
+        if g - gs > 0:
+            out.setdefault(q["id"], {})["RP"] = [g - gs, 0]
+    return out
+
+
+def eligible(seasons, t=ELIG):
+    """The positions a player qualifies at from his per-season counts, in roster order."""
+    ok = set()
+    for s in seasons:
+        for pos, (g, gs) in s.items():
+            if pos == "SP" and gs >= t["sp"] or pos == "RP" and g >= t["rp"] or pos not in ("SP", "RP") and (g >= t["g"] or gs >= t["gs"]):
+                ok.add(pos)
+    return sorted(ok, key=lambda x: MLB_ORDER.index(x))
+
+
 def mlb():
     years = sorted(f[:4] for f in os.listdir(os.path.join(ROOT, "tools", "mlb")) if re.match(r"\d{4}\.json$", f))
     if not years:
@@ -297,6 +334,30 @@ def mlb():
     for pid, row in by.items():
         if ab.get(pid, 0) < 130 and ip.get(pid, 0) < 50:
             row["rk"] = 1
+    # eligibility: this season's games, plus last season's while this one is under way (March through September of
+    # its own year); in the offseason the season just played is "last season" for next year
+    today = datetime.now(timezone.utc)
+    window = [src]
+    if len(years) > 1 and int(years[-1]) == today.year and 3 <= today.month <= 9:
+        window = [load(f"tools/mlb/{years[-2]}.json") or {}, src]
+    counts = [season_games(x) for x in window]
+    if any(x.get("fielding") for x in window):
+        n = 0
+        for pid, row in by.items():
+            seasons = [c[pid] for c in counts if pid in c]
+            if not seasons:
+                continue
+            row["pg"] = seasons
+            el = eligible(seasons)
+            pitch = [x for x in row["pos"] if x in ("SP", "RP")]
+            bats = [x for x in el if x not in ("SP", "RP")]
+            # a hitter who qualifies nowhere (a DH) stays UT; a pitcher keeps his role if he's short on both counts
+            if "bat" in row["l"]:
+                row["pos"] = (bats or ([x for x in row["pos"] if x not in ("SP", "RP")] or ["UT"])) + ([x for x in el if x in ("SP", "RP")] if "pit" in row["l"] else [])
+            else:
+                row["pos"] = [x for x in el if x in ("SP", "RP")] or pitch
+            n += len(row["pos"]) > 1
+        print(f"MLB eligibility: {n} of {len(by)} players at more than one position")
     proj_src = steamer(by, ab, ip)
     # ages, for dynasty values: the Stats API's people endpoint, a hundred players a call
     ids = list(by.keys())

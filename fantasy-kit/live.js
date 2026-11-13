@@ -75,6 +75,8 @@
     if ((L && L.settings.confMax) || (D.season && D.season.confMax)) sport.conf = (L && L.settings.confMax) || D.season.confMax;
     // a showdown plays one game: its two teams are the whole player pool
     players = data.players.filter((p) => S.inPool(L || D, p)).map((p) => Object.assign({}, p));
+    // a baseball league's own position eligibility thresholds (settings.elig)
+    { const el = (L && L.settings.elig) || (D.season && D.season.elig); if (el && k === "mlb") S.applyElig(players, el); }
     // players the feed doesn't carry (a prospect, someone hurt all year) come with the league itself (doc.extraPlayers)
     { const hide = new Set((L && L.hidePlayers) || D.hidePlayers || []); if (hide.size) players = players.filter((p) => !hide.has(p.id)); }
     { const have = new Set(players.map((p) => p.id)), xs = (L && L.extraPlayers) || D.extraPlayers; if (Array.isArray(xs)) for (const x of xs) if (!have.has(x.id)) players.push(Object.assign({ l: {}, rank: 9999 }, x)); }
@@ -305,6 +307,23 @@
     places[0] += left - places.reduce((a, b) => a + b, 0);
     return { pot, high, highTotal, places };
   }
+  /* A league's own payouts (dues.prizes): any list of { kind: "playoff" | "season" | "weekly" | "other", place, amount,
+     label }. "playoff" pays a place in the final finish (1 the champion), "season" a place in the regular-season
+     standings, "weekly" the top score each regular-season week (amount is per week), "other" anything the league names
+     (most trades, last place's punishment fund). Without prizes, the preset split (dues.payout) stands. */
+  const PRIZE_KINDS = [["playoff", "Playoff finish"], ["season", "Regular-season record"], ["weekly", "Top score each week"], ["other", "Something else"]];
+  const placeWord = (n) => (n === 1 ? "1st" : n === 2 ? "2nd" : n === 3 ? "3rd" : `${n}th`);
+  const prizeLabel = (x) => x.kind === "playoff" ? ({ 1: "Champion", 2: "Runner-up", 3: "Third place" }[x.place] || `${placeWord(x.place)} place`) : x.kind === "season" ? `${placeWord(x.place)} best regular-season record` : x.kind === "weekly" ? "Top score each week" : x.label || "Prize";
+  const prizeTotal = (x) => (x.kind === "weekly" ? (Number(x.amount) || 0) * regWeeks() : Number(x.amount) || 0);
+  // who won a prize, once it's decided (a finished season, or regular-season places once the regular season is over)
+  function prizeWinner(x) {
+    if (!L) return null;
+    try {
+      if (x.kind === "playoff" && L.week > G.totalWeeks(L)) { const sm = G.summary(L), r = sm.standings.find((y) => y.place === x.place); return r ? r.team : null; }
+      if (x.kind === "season" && L.week > L.settings.weeks) { const st = L.imported && L.imported.regular ? L.imported.regular : G.standings(L); const r = st[x.place - 1]; return r ? r.team : null; }
+    } catch (e) { /* not decided */ }
+    return null;
+  }
   const paidN = () => docTeams().filter((t, i) => (dues().paid || {})[i]).length;
   const duesLine = () => (duesOn() ? `Dues: ${paidN()} of ${docTeams().length} paid` : "Set up dues");
   const statusOfDues = (i) => ((dues().paid || {})[i] ? "paid" : (dues().claimed || {})[i] ? "sent" : "owed");
@@ -331,7 +350,8 @@
     return `<div class="dues">
       <div class="card"><div class="mod-h"><h2>$${d.amount} buy-in</h2><span class="ps">$${m.pot} pot, ${paidN()} of ${teams.length} paid</span>${info.commish ? `<button type="button" class="btn sm" data-dues="edit" style="margin-left:auto">Edit dues</button>` : ""}</div>
         <div class="bd stack">${you}
-          <dl class="kv">${m.places.map((x, i) => `<dt>${PLACES[i]}</dt><dd class="num">$${x}</dd>`).join("")}${m.high ? `<dt>High score each week</dt><dd class="num">$${m.high} a week, $${m.highTotal} in all</dd>` : ""}${payTo.length ? `<dt>Send it to</dt><dd>${payTo.join("<br>")}</dd>` : ""}${d.due ? `<dt>Due</dt><dd>${esc(d.due)}</dd>` : ""}${d.note ? `<dt>Notes</dt><dd>${esc(d.note)}</dd>` : ""}</dl>
+          <dl class="kv">${Array.isArray(d.prizes) && d.prizes.length ? d.prizes.map((x) => { const w = prizeWinner(x); return `<dt>${esc(prizeLabel(x))}</dt><dd class="num">$${Number(x.amount) || 0}${x.kind === "weekly" ? ` a week, $${prizeTotal(x)} in all` : ""}${w != null && teams[w] ? ` <span class="tag win">${esc(teams[w].name)}</span>` : ""}</dd>`; }).join("") + (() => { const tot = d.prizes.reduce((a, x) => a + prizeTotal(x), 0); return tot !== m.pot && info.commish ? `<dt>Check</dt><dd class="loss">Prizes add up to $${tot}, the pot is $${m.pot}</dd>` : ""; })()
+            : `${m.places.map((x, i) => `<dt>${PLACES[i]}</dt><dd class="num">$${x}</dd>`).join("")}${m.high ? `<dt>High score each week</dt><dd class="num">$${m.high} a week, $${m.highTotal} in all</dd>` : ""}`}${payTo.length ? `<dt>Send it to</dt><dd>${payTo.join("<br>")}</dd>` : ""}${d.due ? `<dt>Due</dt><dd>${esc(d.due)}</dd>` : ""}${d.note ? `<dt>Notes</dt><dd>${esc(d.note)}</dd>` : ""}</dl>
         </div></div>
       <div class="card"><div class="mod-h"><h2>Who's paid</h2></div><ul class="seatl dues-l">${rows}</ul></div></div>`;
   }
@@ -342,14 +362,25 @@
     if (!r || r.error) { U.toast((r && r.error) || "Couldn't save the dues.", true); return false; }
     info.dues = r.dues; duesRefresh(); if (msg) U.toast(msg); return true;
   }
+  function prizeRow(x) {
+    const o = (v, label, cur) => `<option value="${v}"${String(cur) === String(v) ? " selected" : ""}>${label}</option>`;
+    return `<div class="du-row"><select data-p="kind" aria-label="Prize for">${PRIZE_KINDS.map(([k, lab]) => o(k, lab, x.kind)).join("")}</select>
+      <select data-p="place" aria-label="Place"${x.kind === "weekly" || x.kind === "other" ? " hidden" : ""}>${Array.from({ length: Math.max(3, docTeams().length) }, (_, i) => o(i + 1, placeWord(i + 1), x.place || 1)).join("")}</select>
+      <input data-p="label" type="text" maxlength="40" placeholder="What it's for" value="${esc(x.label || "")}"${x.kind === "other" ? "" : " hidden"}>
+      <span class="row" style="gap:4px">$<input data-p="amount" type="number" min="0" max="100000" step="5" value="${Number(x.amount) || 0}" style="width:6.5em" aria-label="Amount"></span>
+      <button type="button" class="btn sm ghost" data-du-del aria-label="Remove this prize">Remove</button></div>`;
+  }
   function duesEdit() {
     const d = dues(), p = d.pay || {};
     const o = (v, label, cur) => `<option value="${v}"${String(cur) === String(v) ? " selected" : ""}>${label}</option>`;
     U.dialog(`<h3>Dues</h3><form id="dues-f" class="stack">
       <div class="g2"><div class="field"><label for="du-amt">Buy-in per team</label><div class="row" style="gap:6px"><span>$</span><input id="du-amt" type="number" min="0" max="10000" step="5" value="${Number(d.amount) || 50}" style="flex:1"></div></div>
         <div class="field"><label for="du-due">Due</label><select id="du-due">${["Before the draft", "By week 1", "By week 2", "By week 4"].map((x) => o(x, x, d.due || "Before the draft")).join("")}</select></div></div>
-      <div class="g2"><div class="field"><label for="du-pay">The pot pays</label><select id="du-pay">${Object.entries(PAYOUTS).map(([k, [lab]]) => o(k, lab, d.payout || "p603010")).join("")}</select></div>
-        <div class="field"><label for="du-high">High score each week</label><select id="du-high">${[0, 5, 10, 20, 25].map((x) => o(x, x ? `$${x} a week, from the pot` : "No weekly prize", d.high || 0)).join("")}</select></div></div>
+      <div class="g2"><div class="field"><label for="du-pay">The pot pays</label><select id="du-pay">${Object.entries(PAYOUTS).map(([k, [lab]]) => o(k, lab, d.payout || "p603010")).join("")}${o("custom", "My own prizes", Array.isArray(d.prizes) && d.prizes.length ? "custom" : d.payout || "p603010")}</select></div>
+        <div class="field du-high-f"><label for="du-high">High score each week</label><select id="du-high">${[0, 5, 10, 20, 25].map((x) => o(x, x ? `$${x} a week, from the pot` : "No weekly prize", d.high || 0)).join("")}</select></div></div>
+      <div class="du-prizes stack" style="gap:8px"${Array.isArray(d.prizes) && d.prizes.length ? "" : " hidden"}>
+        <div class="du-rows stack" style="gap:6px">${(Array.isArray(d.prizes) && d.prizes.length ? d.prizes : [{ kind: "playoff", place: 1, amount: 0 }]).map(prizeRow).join("")}</div>
+        <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center"><button type="button" class="btn sm" data-du-add>Add a prize</button><span class="ps du-sum"></span></div></div>
       <p class="ps" style="margin:0">Where managers send it. Fill in any you use: each one becomes a pay button with the amount filled in.</p>
       <div class="g2"><div class="field"><label for="du-venmo">Venmo username</label><input id="du-venmo" type="text" maxlength="40" placeholder="@yourname" value="${esc(p.venmo || "")}"></div>
         <div class="field"><label for="du-paypal">PayPal.me name</label><input id="du-paypal" type="text" maxlength="40" placeholder="yourname" value="${esc(p.paypal || "")}"></div></div>
@@ -357,11 +388,31 @@
         <div class="field"><label for="du-zelle">Zelle email or phone</label><input id="du-zelle" type="text" maxlength="60" value="${esc(p.zelle || "")}"></div></div>
       <div class="field"><label for="du-note">Notes</label><input id="du-note" type="text" maxlength="140" placeholder="Optional, like who holds the money" value="${esc(d.note || "")}"></div>
       <div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn go" type="submit">Save dues</button>${duesOn() ? `<button type="button" class="btn ghost" data-dues="reset">Clear who's paid</button><button type="button" class="btn ghost warn" data-dues="off">Turn off dues</button>` : ""}</div></form>`, null, { wide: true });
+    const f = $("#dues-f");
+    const sync = () => {
+      const custom = $("#du-pay").value === "custom";
+      f.querySelector(".du-prizes").hidden = !custom; f.querySelector(".du-high-f").hidden = custom;
+      for (const r of f.querySelectorAll(".du-row")) { const k = r.querySelector("[data-p=kind]").value; r.querySelector("[data-p=place]").hidden = k === "weekly" || k === "other"; r.querySelector("[data-p=label]").hidden = k !== "other"; }
+      const pot = (Math.round(Number($("#du-amt").value) || 0)) * docTeams().length;
+      const tot = [...f.querySelectorAll(".du-row")].reduce((a, r) => { const amt = Number(r.querySelector("[data-p=amount]").value) || 0; return a + (r.querySelector("[data-p=kind]").value === "weekly" ? amt * regWeeks() : amt); }, 0);
+      f.querySelector(".du-sum").innerHTML = tot === pot ? `Adds up to the $${pot} pot.` : `<b class="loss">$${tot} of the $${pot} pot</b>`;
+    };
+    f.addEventListener("input", sync); f.addEventListener("change", sync);
+    f.addEventListener("click", (e) => {
+      if (e.target.closest("[data-du-add]")) { f.querySelector(".du-rows").insertAdjacentHTML("beforeend", prizeRow({ kind: "playoff", place: f.querySelectorAll(".du-row").length + 1, amount: 0 })); sync(); }
+      const del = e.target.closest("[data-du-del]"); if (del) { del.closest(".du-row").remove(); sync(); }
+    });
+    sync();
     $("#dues-f").onsubmit = async (e) => {
       e.preventDefault();
       const amount = Math.max(0, Math.min(10000, Math.round(Number($("#du-amt").value) || 0)));
       const zelle = $("#du-zelle").value.replace(/[<>]/g, "").trim().slice(0, 60);
-      const ok = await duesSave({ amount, due: $("#du-due").value, payout: $("#du-pay").value, high: Number($("#du-high").value), note: $("#du-note").value.replace(/[<>]/g, "").trim().slice(0, 140),
+      const custom = $("#du-pay").value === "custom";
+      const prizes = custom ? [...document.querySelectorAll("#dues-f .du-row")].map((r) => {
+        const v = (k) => r.querySelector(`[data-p=${k}]`).value, kind = v("kind");
+        return Object.assign({ kind, amount: Math.max(0, Math.min(100000, Math.round(Number(v("amount")) || 0))) }, kind === "playoff" || kind === "season" ? { place: Number(v("place")) } : {}, kind === "other" ? { label: v("label").replace(/[<>]/g, "").trim().slice(0, 40) } : {});
+      }).filter((x) => x.amount > 0) : [];
+      const ok = await duesSave({ amount, due: $("#du-due").value, payout: custom ? "custom" : $("#du-pay").value, prizes, high: custom ? 0 : Number($("#du-high").value), note: $("#du-note").value.replace(/[<>]/g, "").trim().slice(0, 140),
         pay: { venmo: handle($("#du-venmo").value), paypal: handle($("#du-paypal").value), cashapp: handle($("#du-cash").value), zelle } }, amount ? "Dues saved. Managers see what they owe." : "Saved.");
       if (ok) duesDialog();
     };
@@ -675,8 +726,22 @@
     return `<div class="card"><div class="mod-h"><h2>Next season</h2>${k && L.next ? `<button type="button" class="btn sm" data-live="open-keepers" style="margin-left:auto">Deadline</button>` : ""}</div><div class="bd stack">
       <p class="small" style="margin:0">${L.settings.dynasty ? `The season is over. Starting next season saves this one to the league's history. Every roster carries over, and a ${L.settings.dynasty.rounds}-round rookie and free agent draft opens, worst team first${G.pickRounds(L) ? ", with traded picks going to the teams that hold them" : ""}. Until then, trades stay open.` : `${k ? (lock ? `Keepers locked ${esc(whenTxt(keepDue()))}.` : `Keeper picks are open until ${esc(whenTxt(keepDue()))}.`) : "The season is over."} Starting next season saves this one to the league's history and opens a new draft room${k ? " with the keepers on the board" : ""}.`}</p>
       ${k ? `<ul class="seatl">${rows}</ul>` : ""}
-      ${L.settings.dynasty ? "" : `<p class="small" style="margin:0"><b>Draft order:</b> ${L.nextOrder ? `set by you, ${esc(L.teams[L.nextOrder[0]].name)} first` : "worst to first, unless you set it"}. <button type="button" class="btn sm ghost" data-live="draft-order">${L.nextOrder ? "Change" : "Set the order"}</button></p>`}
+      ${L.settings.dynasty ? "" : L.settings.draftOrder === "lottery" ? lotteryLine() : `<p class="small" style="margin:0"><b>Draft order:</b> ${L.nextOrder ? `set by you, ${esc(L.teams[L.nextOrder[0]].name)} first` : "worst to first, unless you set it"}. <button type="button" class="btn sm ghost" data-live="draft-order">${L.nextOrder ? "Change" : "Set the order"}</button></p>`}
       <div><button class="btn go" data-live="new-season">Start next season's draft</button></div></div></div>`;
+  }
+  // settings.draftOrder "lottery": the commissioner runs the draw once, and everyone sees how it came out
+  function lotteryLine() {
+    const lt = L.lottery;
+    if (!lt || !L.nextOrder) return `<p class="small" style="margin:0"><b>Draft order:</b> a lottery for the ${L.teams.length - Math.min(L.settings.playoffTeams || 0, L.teams.length)} teams that missed the playoffs (${L.settings.lotteryOdds === "weighted" ? "more chances for worse records" : "equal odds"}), then the playoff teams in reverse order of finish. <button type="button" class="btn sm go" data-live="lottery">Run the lottery</button></p>`;
+    return `<div class="stack" style="gap:6px"><p class="small" style="margin:0"><b>Draft order:</b> set by the lottery ${esc(U.ago(lt.at, now()))}. <button type="button" class="btn sm ghost" data-live="draft-order">Adjust</button></p><ol class="lot-o">${L.nextOrder.map((t, i) => `<li${i < lt.drawn.length ? ` class="lot"` : ""}>${U.teamAv(L.teams[t], "sm")}<span>${esc(L.teams[t].name)}</span>${i < lt.drawn.length ? `<small>Lottery</small>` : ""}</li>`).join("")}</ol></div>`;
+  }
+  function runLottery() {
+    U.confirm("Run the draft lottery?", "It draws the order for every team that missed the playoffs, saves it for the whole league and shows how it came out. You can still adjust the order after.", "Run it", () => {
+      const r = G.draftLottery(L, Math.random, now());
+      if (!r.ok) { U.toast(r.why, true); return; }
+      push(); if (app) app.refresh();
+      U.toast(`${L.teams[r.order[0]].name} picks first.`);
+    });
   }
   async function newSeason() {
     const D2 = Z.nextDraft(L, lctx(), sport, (L.next && L.next.picks) || {}, { now: now() });
@@ -701,8 +766,8 @@
         <div class="card"><div class="mod-h"><h2>Managers</h2></div><div class="bd">${seatList()}</div></div>
       </div>
       ${L ? `<div class="cols2">
-        ${card("League rules", `<dl class="kv"><dt>Waivers</dt><dd>${s.waivers === "rolling" ? "Rolling priority" : `FAAB, $${s.faab}`}, ${G.waiverDays(L)} business day${G.waiverDays(L) === 1 ? "" : "s"}${G.gameLockOn(L) ? ", locked once his game starts" : ""}</dd><dt>Trades</dt><dd>${s.trades === false ? "Off" : `${s.deadline ? `Deadline after week ${s.deadline}` : "No deadline"}, ${s.tradeReview === "none" ? "no review" : "league review"}`}</dd><dt>Playoffs</dt><dd>${s.playoffTeams ? `${s.playoffTeams} teams` : "None"}</dd><dt>Rosters</dt><dd>${s.bench} bench, ${s.ir || 0} IR${s.maxAdds ? `, ${s.maxAdds} pickups a week` : ""}</dd></dl>`, `<button class="btn" data-cm="rules">Edit rules</button>`)}
-        ${card("League look", `<div class="row" style="gap:14px;align-items:center">${U.leagueCrest(U.leagueBrand(L.name, s.brand), "lg")}<p class="small" style="margin:0">The league's color and the letters on its banner, at the top of the league's front page and in everyone's list of leagues.</p></div>`, `<button class="btn" data-cm="look">Change the look</button>`)}
+        ${card("League rules", `<dl class="kv"><dt>Waivers</dt><dd>${s.waivers === "rolling" ? "Rolling priority" : `FAAB, $${s.faab}`}, ${G.waiverDays(L)} business day${G.waiverDays(L) === 1 ? "" : "s"}${G.gameLockOn(L) ? ", locked once his game starts" : ""}</dd><dt>Trades</dt><dd>${s.trades === false ? "Off" : `${s.deadline ? `Deadline after week ${s.deadline}` : "No deadline"}, ${{ none: "no review", counter: `${s.reviewHours}-hour counter window`, commish: "commissioner review", vote: "league vote" }[s.tradeReview] || "league review"}${s.tradeMax ? `, ${s.tradeMax}-for-${s.tradeMax} at most` : ""}`}</dd><dt>Playoffs</dt><dd>${s.playoffTeams ? `${s.playoffTeams} teams${s.reseed ? ", reseeded" : ""}` : "None"}</dd><dt>Rosters</dt><dd>${s.bench} bench, ${s.ir || 0} IR${s.maxAdds ? `, ${s.maxAdds} pickups a week` : ""}${s.minIP ? `, ${s.minIP} innings a week` : ""}</dd>${s.keepers || s.dynasty ? `<dt>Draft order</dt><dd>${s.draftOrder === "lottery" ? "Lottery for non-playoff teams" : "Worst to first"}</dd>` : ""}</dl>`, `<button class="btn" data-cm="rules">Edit rules</button>`)}
+        ${card("League look", `<div class="row" style="gap:14px;align-items:center">${U.leagueCrest(U.leagueBrand(L.name, s.brand), "lg")}<p class="small" style="margin:0">The league's colors and the letters on its banner, at the top of the league's front page and in everyone's list of leagues.</p></div>`, `<button class="btn" data-cm="look">Change the look</button>`)}
         ${card("Teams", `<p class="small" style="margin:0">Rename teams, set FAAB and the waiver order${L.divs ? ", and rename or rearrange the divisions" : ""}.</p>`, `<button class="btn" data-cm="teams">Edit teams</button>`)}
       </div>
       <div class="cols2">
@@ -733,31 +798,43 @@
       </div>
       <div class="row3">
         ${sel("bench", "Bench spots", [2, 3, 4, 5, 6, 7, 8, 10, 12].map((x) => [x, x]), s.bench)}
-        ${sel("ir", "IR spots", [0, 1, 2, 3, 4].map((x) => [x, x || "None"]), s.ir || 0)}
+        ${sel("ir", "IR spots", [0, 1, 2, 3, 4, 5, 6].map((x) => [x, x || "None"]), s.ir || 0)}
         ${s.dynasty ? sel("taxi", "Taxi squad", [0, 1, 2, 3, 4, 5].map((x) => [x, x ? `${x} spot${x > 1 ? "s" : ""}` : "None"]), s.taxi || 0) : ""}
         ${gl ? "" : sel("trades", "Trades", [[1, "On"], [0, "Off"]], s.trades === false ? 0 : 1)}
       </div>
       ${gl ? "" : `<div class="row3">
         ${sel("deadline", "Trade deadline", [[0, "None"]].concat(Array.from({ length: Math.max(0, s.weeks - 1) }, (_, i) => [i + 1, `After week ${i + 1}`])), s.deadline || 0)}
-        ${sel("tradeReview", "Trade review", [["vote", "The league votes"], ["commish", "The commissioner reviews"], ["none", "None: trades go through"]], s.tradeReview)}
-        ${sel("reviewHours", "Review lasts", [12, 24, 48].map((x) => [x, `${x} hours`]), s.reviewHours || 24)}
+        ${sel("tradeReview", "Trade review", [["vote", "The league votes"], ["commish", "The commissioner reviews"], ["counter", "Counter window: rival bids, no vetoes"], ["none", "None: trades go through"]], s.tradeReview)}
+        ${sel("reviewHours", "Review lasts", [12, 24, 48, 72].map((x) => [x, `${x} hours`]), s.reviewHours || 24)}
       </div>
-      ${s.tradeReview === "vote" ? `<div class="row3">${sel("vetoShare", "Votes to veto", [[0.34, "A third"], [0.5, "Half"], [0.67, "Two thirds"]], s.vetoShare || 0.5)}</div>` : ""}
+      <div class="row3">
+        ${sel("tradeMax", "Trade size", [[0, "No limit"], [1, "1-for-1 at most"], [2, "2-for-2 at most"], [3, "3-for-3 at most"], [4, "4-for-4 at most"]], s.tradeMax || 0)}
+        ${s.tradeReview === "vote" ? sel("vetoShare", "Votes to veto", [[0.34, "A third"], [0.5, "Half"], [0.67, "Two thirds"]], s.vetoShare || 0.5) : ""}
+      </div>
+      ${s.tradeReview === "counter" ? `<p class="ps" style="margin:0">In the counter window any other team can bid for the same players, offering no more than the deal does. The selling team can take a bid; if it doesn't, the trade goes through when the window closes.</p>` : ""}`}
+      ${gl ? "" : `<div class="row3">
+        ${sport.key === "mlb" ? sel("elig", "Position eligibility", Object.entries(S.ELIG_PRESETS).map(([k2, [lab]]) => [k2, lab]), Object.keys(S.ELIG_PRESETS).find((k2) => JSON.stringify(S.ELIG_PRESETS[k2][1]) === JSON.stringify(s.elig || S.ELIG)) || "yahoo") : ""}
+        ${sport.key === "mlb" && G.scoring(L, lctx()).type !== "points" ? sel("minIP", "Innings a week", [0, 10, 15, 20, 25, 30, 35, 40, 50].map((x) => [x, x ? `At least ${x}, or lose ERA and WHIP` : "No minimum"]), s.minIP || 0) : ""}
+        ${sel("draftOrder", "Next season's draft order", [["worst", "Worst to first"], ["lottery", "A lottery for non-playoff teams"]], s.draftOrder || "worst")}
+        ${s.draftOrder === "lottery" ? sel("lotteryOdds", "Lottery odds", [["equal", "Equal for every team"], ["weighted", "More for worse records"]], s.lotteryOdds || "equal") : ""}
+      </div>
       <div class="row3">
         ${medianOk ? sel("median", "Median game", [[0, "Off"], [1, "On"]], s.median ? 1 : 0) : ""}
         ${sel("bestBall", "Lineups", [[0, "Set each week"], [1, "Best ball"]], s.bestBall ? 1 : 0)}
-        ${started || s.format === "roto" ? "" : sel("weeks", "Regular season", [6, 8, 10, 12, 13, 14, 15, 16, 17].map((x) => [x, `${x} weeks`]), s.weeks)}
+        ${started || s.format === "roto" ? "" : sel("weeks", "Regular season", [6, 8, 10, 12, 13, 14, 15, 16, 17].concat(sport.key === "mlb" || sport.key === "nba" ? [18, 19, 20, 21, 22, 23, 24] : []).map((x) => [x, `${x} weeks`]), s.weeks)}
       </div>
       ${inPlayoffs || s.format === "roto" ? `<p class="ps" style="margin:0">${s.format === "roto" ? "" : "The playoffs have started, so their rules are set."}</p>` : `<div class="row3">
-        ${sel("playoffTeams", "Playoff teams", [0, 2, 3, 4, 6, 8, 10, 12].filter((x) => x <= n).map((x) => [x, x ? `${x} teams` : "No playoffs"]), s.playoffTeams)}
+        ${sel("playoffTeams", "Playoff teams", [0, 2, 3, 4, 6, 8, 10, 12, 16].filter((x) => x <= n).map((x) => [x, x ? `${x} teams` : "No playoffs"]), s.playoffTeams)}
         ${sel("playoffLegs", "Playoff rounds", [["1", "One week each"], ["final2", "Two-week final"], ["all2", "Two weeks each"]], s.playoffLegs || "1")}
         ${sel("consolation", "Also play", [["none", "Nothing else"], ["third", "A third-place game"], ["bracket", "A consolation bracket"]], s.consolation || "none")}
-      </div>`}`}
+      </div>
+      <div class="row3">${s.playoffTeams > 2 ? sel("reseed", "Each round", [[0, "A fixed bracket"], [1, "Reseed: best seed left plays the worst"]], s.reseed ? 1 : 0) : ""}</div>`}`}
       <p class="ps" style="margin:0">${started ? "The season has started, so its length and schedule are set. " : ""}Changes apply from now on; finished weeks keep their results${medianOk ? ", except that turning the median game on or off recounts every record" : ""}.</p>
       <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">Save rules</button></div></form>`, (fd) => {
       const patch = {};
-      for (const [k, v] of fd.entries()) patch[k] = ["trades", "median", "bestBall"].includes(k) ? v === "1" : ["waivers", "tradeReview", "playoffLegs", "consolation", "waiverOrder", "waiverPrice", "gameLock"].includes(k) ? v : Number(v);
-      for (const k of Object.keys(patch)) if (JSON.stringify(patch[k]) === JSON.stringify(k === "trades" ? s.trades !== false : k === "median" || k === "bestBall" ? !!s[k] : s[k])) delete patch[k];
+      for (const [k, v] of fd.entries()) if (k === "elig") patch[k] = (S.ELIG_PRESETS[v] || S.ELIG_PRESETS.yahoo)[1]; else patch[k] = ["trades", "median", "bestBall", "reseed"].includes(k) ? v === "1" : ["waivers", "tradeReview", "playoffLegs", "consolation", "waiverOrder", "waiverPrice", "gameLock", "draftOrder", "lotteryOdds"].includes(k) ? v : Number(v);
+      const was = (k) => (k === "elig" ? s.elig || S.ELIG : k === "trades" ? s.trades !== false : ["median", "bestBall", "reseed"].includes(k) ? !!s[k] : k === "draftOrder" ? s[k] || "worst" : k === "waiverPrice" ? s[k] || "first" : k === "waiverOrder" ? s[k] || "rolling" : k === "maxAddsSeason" ? s[k] || 0 : k === "lotteryOdds" ? s[k] || "equal" : ["tradeMax", "minIP"].includes(k) ? s[k] || 0 : s[k]);
+      for (const k of Object.keys(patch)) if (JSON.stringify(patch[k]) === JSON.stringify(was(k))) delete patch[k];
       if (!Object.keys(patch).length) return;
       const r = G.setRules(L, patch, now());
       if (!commishSave(r, "Rules saved.")) return false;
@@ -770,16 +847,21 @@
       <div class="lk-prev" aria-hidden="true">${U.leagueCrest(cur, "lg")}</div>
       <fieldset class="lk-sw"><legend>Color</legend>${names.map((nm, i) => `<label class="lk-c" style="--c:var(--t${i})"><input type="radio" name="color" value="${i}"${i === cur.color ? " checked" : ""}><span title="${nm}"></span><b class="sr">${nm}</b></label>`).join("")}</fieldset>
       <label class="cm-l"><span>Letters on the banner (up to 3)</span><input type="text" name="letters" value="${esc(cur.letters)}" maxlength="3" autocomplete="off" style="text-transform:uppercase;width:8em"></label>
+      <fieldset class="lk-own"><legend>Your own colors <span class="ps">(optional, these win over the swatch)</span></legend>
+        <label class="lk-pick"><input type="checkbox" name="ownOn"${cur.hex || cur.bg ? " checked" : ""}> Use my own colors</label>
+        <label class="lk-pick"><span>Banner and accent</span><input type="color" name="hex" value="${esc(cur.hex || "#1F7A3D")}"></label>
+        <label class="lk-pick"><span>Masthead background</span><input type="color" name="bg" value="${esc(cur.bg || "#0F2A1B")}"></label></fieldset>
       <div class="acts"><button type="button" class="btn ghost" data-lk-reset>Use the default</button><span class="grow"></span><button type="button" class="btn" data-close>Cancel</button><button class="btn go">Save the look</button></div></form>`, (fd) => {
       const letters = String(fd.get("letters") || "").replace(/[^A-Za-z0-9&]/g, "").slice(0, 3).toUpperCase();
       const auto = U.leagueBrand(L.name, null);
       const brand = { color: Number(fd.get("color")) };
       if (letters && letters !== auto.letters) brand.letters = letters;
-      if (brand.color === auto.color && !brand.letters) delete L.settings.brand; else L.settings.brand = brand;
+      if (fd.get("ownOn")) { const hx = (v) => (/^#[0-9a-f]{6}$/i.test(v || "") ? v : null); if (hx(fd.get("hex"))) brand.hex = fd.get("hex"); if (hx(fd.get("bg"))) brand.bg = fd.get("bg"); }
+      if (brand.color === auto.color && !brand.letters && !brand.hex && !brand.bg) delete L.settings.brand; else L.settings.brand = brand;
       setTimeout(() => commishSave({ ok: true }, "The league has its new look."), 0);
     });
     const f = $(".lk-f"); if (!f) return;
-    const draw = () => { const b = { color: Number((f.querySelector("input[name=color]:checked") || {}).value || 0), letters: f.letters.value }; $(".lk-prev", f).innerHTML = U.leagueCrest(U.leagueBrand(L.name, b), "lg"); };
+    const draw = () => { const own = f.ownOn.checked, b = { color: Number((f.querySelector("input[name=color]:checked") || {}).value || 0), letters: f.letters.value, hex: own ? f.hex.value : null, bg: own ? f.bg.value : null }; $(".lk-prev", f).innerHTML = U.leagueCrest(U.leagueBrand(L.name, b), "lg"); $(".lk-prev", f).style.background = b.bg || ""; };
     f.addEventListener("input", draw);
     f.querySelector("[data-lk-reset]").addEventListener("click", () => { const a = U.leagueBrand(L.name, null); f.letters.value = a.letters; const r = f.querySelector(`input[name=color][value="${a.color}"]`); if (r) r.checked = true; draw(); });
   }
@@ -886,6 +968,7 @@
     if (lv && lv.dataset.live === "keepers") keeperDialog();
     if (lv && lv.dataset.live === "open-keepers" && info.commish) keeperOpenDialog();
     if (lv && lv.dataset.live === "draft-order" && info.commish) orderDialog();
+    if (lv && lv.dataset.live === "lottery" && info.commish) runLottery();
     const kt = e.target.closest("[data-kp-team]");
     if (kt && info.commish) keeperDialog(+kt.dataset.kpTeam);
     const cm = e.target.closest("[data-cm]");

@@ -359,6 +359,29 @@
   // A league drawn from a few pro teams (a showdown's one game): doc is a draft (its season) or a league (its settings).
   const poolOf = (doc) => (doc && ((doc.settings && doc.settings.pool) || (doc.season && doc.season.showdown && doc.season.showdown.teams) || (doc.season && doc.season.slate && doc.season.slate.teams))) || null;
   const inPool = (doc, p) => { const t = poolOf(doc); return !t || t.includes(p.t); };
+  /* Baseball position eligibility. The feed works out each player's positions Yahoo's way (ELIG: a hitter qualifies at
+     a position with 10 games or 5 starts there, a pitcher at SP with 3 starts and at RP with 5 relief appearances, from
+     last season and, once it's under way, this one) and carries the counts behind them (p.pg: one { pos: [games,
+     starts] } per season). A league with its own thresholds (settings.elig, the same shape as ELIG) recomputes them. */
+  const ELIG = { g: 10, gs: 5, sp: 3, rp: 5 };
+  const ELIG_PRESETS = { yahoo: ["10 games or 5 starts (Yahoo)", ELIG], espn: ["20 games (ESPN)", { g: 20, gs: 0, sp: 5, rp: 8 }], easy: ["5 games or 3 starts", { g: 5, gs: 3, sp: 2, rp: 3 }] };
+  const ORDER = ["C", "1B", "2B", "3B", "SS", "OF", "UT", "SP", "RP"];
+  function eligibleAt(p, t) {
+    if (!p || !Array.isArray(p.pg)) return null;
+    const ok = new Set(), hitter = p.l && p.l.bat, pitcher = p.l && p.l.pit;
+    for (const season of p.pg) for (const [pos, [g, gs]] of Object.entries(season || {})) {
+      if (pos === "SP" ? pitcher && t.sp && gs >= t.sp : pos === "RP" ? pitcher && t.rp && g >= t.rp : hitter && ((t.g && g >= t.g) || (t.gs && gs >= t.gs))) ok.add(pos);
+    }
+    const bats = [...ok].filter((x) => x !== "SP" && x !== "RP"), arms = [...ok].filter((x) => x === "SP" || x === "RP");
+    // a hitter who qualifies nowhere keeps the feed's spot (UT for a DH); a pitcher short on both counts keeps his role
+    const out = (hitter ? (bats.length ? bats : p.pos.filter((x) => x !== "SP" && x !== "RP")) : []).concat(pitcher ? (arms.length ? arms : p.pos.filter((x) => x === "SP" || x === "RP")) : []);
+    return out.length ? out.sort((a, b) => ORDER.indexOf(a) - ORDER.indexOf(b)) : null;
+  }
+  function applyElig(players, t) {
+    if (!t || (t.g === ELIG.g && t.gs === ELIG.gs && t.sp === ELIG.sp && t.rp === ELIG.rp)) return players;
+    for (const p of players) { const ps = eligibleAt(p, t); if (ps) p.pos = ps; }
+    return players;
+  }
   // A one-day game (basketball's day slates): the slate's day, from a league's settings or a draft's season, or null
   const dayOf = (doc) => { const sl = doc && ((doc.settings && doc.settings.slate) || (doc.season && doc.season.slate)); return (sl && sl.day) || null; };
   // A showdown: one game, a captain who scores half again, five spots that take anyone, no bench
@@ -414,5 +437,5 @@
   // a short label for a tag next to a player's name
   const confShort = (c) => ({ "Conference USA": "C-USA", "Mountain West": "MWC", American: "AAC" })[c] || c;
 
-  return { conference, confOf, power4, confShort, ALL, nba, nfl, mlb, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
+  return { ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
 });

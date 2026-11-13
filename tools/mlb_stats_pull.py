@@ -88,9 +88,28 @@ def quality_starts(pid, year):
     return qs
 
 
+def fielding_rows(year):
+    """Games and starts at each position, for position eligibility: [{"id", "pos", "g", "gs"}], one row per player and
+    position, a traded player's teams added together. LF, CF and RF stay apart (the pool counts them as OF)."""
+    try:
+        rows, _ = season_rows(year, "fielding", {"gamesPlayed": "g", "gamesStarted": "gs"})
+    except Exception as e:  # eligibility is extra: a failed pull keeps the season's other stats
+        print(f"::warning::{year}: fielding didn't load ({type(e).__name__}: {e})")
+        return None
+    out = {}
+    for r in rows:
+        if not r.get("id") or not r.get("pos") or r["pos"] == "P":
+            continue
+        x = out.setdefault((r["id"], r["pos"]), {"id": r["id"], "pos": r["pos"], "g": 0, "gs": 0})
+        x["g"] += r.get("g") or 0
+        x["gs"] += r.get("gs") or 0
+    return list(out.values())
+
+
 def pull(year):
     hitting, _ = season_rows(year, "hitting", HIT)
     pitching, pkeys = season_rows(year, "pitching", PIT)
+    fielding = fielding_rows(year)
     if "qualityStarts" not in pkeys:
         starters = [r for r in pitching if (r.get("gs") or 0) > 0]
         with ThreadPoolExecutor(max_workers=8) as pool:
@@ -108,12 +127,14 @@ def pull(year):
         if not rows or len(rows) < len(old.get(group, [])) / 2:
             print(f"::warning::{year}: MLB returned {len(rows)} {group} rows (had {len(old.get(group, []))}); keeping {path}.")
             return
+    if not fielding and old.get("fielding"):
+        fielding = old["fielding"]
     os.makedirs(OUT, exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump({"season": year, "source": "MLB Stats API (statsapi.mlb.com)",
                    "qs_from_game_logs": "qualityStarts" not in pkeys,
-                   "hitting": hitting, "pitching": pitching}, f, ensure_ascii=False, separators=(",", ":"))
-    print(f"{year}: {len(hitting)} hitters, {len(pitching)} pitchers"
+                   "hitting": hitting, "pitching": pitching, "fielding": fielding or []}, f, ensure_ascii=False, separators=(",", ":"))
+    print(f"{year}: {len(hitting)} hitters, {len(pitching)} pitchers, {len(fielding or [])} fielding rows"
           + (" (quality starts from game logs)" if "qualityStarts" not in pkeys else ""))
 
 
