@@ -818,22 +818,41 @@
       if (!D) return `<div class="wrap page"><p class="empty">This league didn't draft here.</p></div>`;
       const dctx = FK.draft.context(D, opts.players, sport);
       const st = FK.draft.standings(D, dctx).sort((a, b) => a.rank - b.rank);
-      const n = D.teams.length, cols = D.round1, auction = D.type === "auction";
-      let cells = `<div class="h"></div>${cols.map((id) => `<div class="h${isMe(id) ? " me" : ""}">${teamAv(T(id), "sm")}<b>${esc(T(id).name)}</b></div>`).join("")}`;
-      // each team's column: the players it ended the draft with, in the order it got them (steals and trades included)
-      const mine = (id) => D.board.filter((x) => x && x.team === id && !x.gone);
+      const n = D.teams.length, cols = D.round1, auction = D.type === "auction", snake = D.type !== "linear" && !auction;
+      const view = auction ? "team" : ui.dview || "board";
+      const label = (k) => `${Math.floor(k / n) + 1}.${String((k % n) + 1).padStart(2, "0")}`;
+      const head = `<div class="h"></div>${cols.map((id) => `<div class="h${isMe(id) ? " me" : ""}">${teamAv(T(id), "sm")}<b title="${esc(T(id).name)}">${esc(T(id).name)}</b></div>`).join("")}`;
+      const cellOf = (pk, k, colTeam) => {
+        const p = pk && pk.pid && ctx.byId[pk.pid];
+        // a pick a team traded for: who actually made it, in the slot that was another team's
+        const by = pk && colTeam != null && pk.team !== colTeam ? `<em class="by" title="${esc(T(pk.team).name)} made this pick">${esc(T(pk.team).abbr)}</em>` : "";
+        const tag = `<i class="pk">${auction ? money(pk.price) : label(k)}${pk && pk.keeper ? `<span class="kp" title="Kept">K</span>` : ""}${by}</i>`;
+        return `<div class="cell${p ? " f c" + U.colorOf(sport, p) : ""}${pk && isMe(pk.team) ? " me" : ""}${by ? " via" : ""}"${p ? ` data-player="${esc(p.id)}" role="button" tabindex="0"` : ""}>${p ? `${tag}<b>${esc(p.n)}</b><small>${S.positions(p).join(", ")} ${esc(p.t)}</small>` : ""}</div>`;
+      };
+      let cells = head;
       for (let r = 0; r < D.rounds; r++) {
         cells += `<div class="rn">${r + 1}</div>`;
-        for (let col = 0; col < n; col++) {
-          const pk = auction ? D.sales.filter((x) => x.team === cols[col])[r] : mine(cols[col])[r];
-          const p = pk && pk.pid && ctx.byId[pk.pid];
-          cells += `<div class="cell${p ? " f c" + U.colorOf(sport, p) : ""}${isMe(cols[col]) ? " me" : ""}"${p ? ` data-player="${esc(p.id)}" role="button" tabindex="0"` : ""}>${p ? `<b>${esc(p.n)}</b><small>${S.positions(p).join(", ")} ${esc(p.t)}${auction ? " " + money(pk.price) : ""}</small>` : ""}</div>`;
+        for (let c = 0; c < n; c++) {
+          if (view === "board") {
+            // the board: each round left to right in pick order (a snake runs back the other way), by the slot's team
+            const pos = snake && r % 2 ? n - 1 - c : c, k = r * n + pos;
+            cells += cellOf(D.board[k], k, cols[snake && r % 2 ? n - 1 - pos : pos]);
+          } else {
+            // by team: each team's column holds its own picks in order, traded picks included
+            const own = auction ? D.sales.filter((x) => x.team === cols[c]) : D.board.map((x, k) => [x, k]).filter(([x]) => x && x.team === cols[c] && !x.gone);
+            const e = own[r];
+            cells += auction ? cellOf(e, r, null) : e ? cellOf(e[0], e[1], null) : `<div class="cell"></div>`;
+          }
         }
       }
-      return `<div class="wrap page"><div class="head"><h1 class="disp">Draft results</h1><span class="ps">${esc(FK.draft.FORMATS[D.type])}, ${D.rounds} rounds${D.done ? `, ${new Date(D.done).toLocaleDateString("en-US", { month: "long", day: "numeric" })}` : ""}</span>${opts.draftHref ? `<a class="btn sm" href="${esc(opts.draftHref)}" style="margin-left:auto">Open the draft room</a>` : ""}</div>
-        <div class="board" style="max-height:70vh"><div class="bgrid" style="--n:${n};grid-template-columns:28px repeat(${n},minmax(0,1fr))">${cells}</div></div>
+      const seg = auction ? "" : `<div class="seg" role="group" aria-label="Draft view"><button type="button" data-dview="board" aria-pressed="${view === "board"}">Board</button><button type="button" data-dview="team" aria-pressed="${view === "team"}">By team</button></div>`;
+      const traded = !auction && D.board.some((x, k) => x && D.order && D.via && D.via[k] != null);
+      return `<div class="wrap page"><div class="head"><h1 class="disp">Draft results</h1><span class="ps">${esc(FK.draft.FORMATS[D.type])}, ${D.rounds} rounds${D.done ? `, ${new Date(D.done).toLocaleDateString("en-US", { month: "long", day: "numeric" })}` : ""}</span><span class="grow"></span>${seg}${opts.draftHref ? `<a class="btn sm" href="${esc(opts.draftHref)}">Open the draft room</a>` : ""}</div>
+        <p class="ps" style="margin:-6px 0 10px">${view === "board" ? `Every pick in order${snake ? ", each round snaking back" : ""}. A team's abbreviation on a pick means it traded for that slot.` : "Each team's picks in the order it made them."} K marks a keeper.</p>
+        <div class="board fit"><div class="bgrid" style="--n:${n};grid-template-columns:24px repeat(${n},minmax(0,1fr))">${cells}</div></div>
         <div class="card"><div class="mod-h"><h2>Draft grades</h2><span class="ps">By each team's best lineup at draft time</span></div><div class="bd"><div class="teams">${st.map((r) => `<div class="row gradeitem">${teamAv(T(r.team), "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(T(r.team).name)}</b><span class="ps">${ord(r.rank)}${r.spent != null ? `, spent ${money(r.spent)}` : ""}</span></div><b class="grade disp">${r.grade}</b></div>`).join("")}</div></div></div></div>`;
     }
+
 
     /* ---------- pages: the guillotine ---------- */
     const pct = (x) => (x == null ? "" : x < 0.005 ? "<1%" : x > 0.995 ? ">99%" : Math.round(x * 100) + "%");
@@ -1914,7 +1933,7 @@
     opts.el.addEventListener("click", (e) => {
       const mb = e.target.closest("[data-more]");
       if (mb) { ui.plimit = (ui.plimit || 250) + 250; render(); return; }
-      const b = e.target.closest("[data-rview],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
+      const b = e.target.closest("[data-dview],[data-rview],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
       if (b) {
         e.preventDefault(); e.stopPropagation();
         const d = b.dataset, mid = me();
@@ -1957,6 +1976,7 @@
         else if (d.trCmveto) { const id = +d.trCmveto; U.confirm("Veto this trade?", "It won't go through, and both teams keep their players.", "Veto trade", () => act(() => G.commishVeto(L(), id, now()), "Trade vetoed.")); }
         else if (d.trVeto) act(() => G.vote(L(), ctx, +d.trVeto, mid, true, now()), "You voted to veto.");
         else if (d.rview) { ui.rview = d.rview; render(); }
+        else if (d.dview) { ui.dview = d.dview; render(); }
         else if (b.hasAttribute("data-txmore")) { ui.txlim = (ui.txlim || 200) + 300; render(); }
         else if (d.trRival) {
           const t = L().trades.find((x) => x.id === +d.trRival), seller = +d.seller, isFrom = seller === t.from;
