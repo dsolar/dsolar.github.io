@@ -1,0 +1,42 @@
+# Pulls Wipe Yoenis box scores (each team's starters and their stats, day by day, added up by week) and Yahoo's
+# player ranks into tools/yahoo_yoenis/box/. A finished season is pulled once. In season it runs every morning.
+name: Wipe Yoenis box scores
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - tools/yoenis_box_pull.py
+      - .github/workflows/yoenis-box.yml
+  schedule:
+    - cron: "13 13 * 4-10 *"    # 9:13am ET, April through October
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: yoenis-box
+  cancel-in-progress: false
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - name: Pull box scores and ranks
+        env:
+          YAHOO_CLIENT_ID: ${{ secrets.YAHOO_CLIENT_ID }}
+          YAHOO_CLIENT_SECRET: ${{ secrets.YAHOO_CLIENT_SECRET }}
+          YAHOO_REFRESH_TOKEN: ${{ secrets.YAHOO_REFRESH_TOKEN }}
+        run: python3 tools/yoenis_box_pull.py
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/yahoo_yoenis/box
+          if git diff --cached --quiet; then echo "Nothing changed."; exit 0; fi
+          git commit -m "Wipe Yoenis: box scores and ranks from Yahoo"
+          git pull --rebase -q origin main
+          git push
