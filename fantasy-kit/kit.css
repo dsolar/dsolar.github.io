@@ -2147,3 +2147,55 @@ em.dn,.spark.dn{color:var(--loss,#c62828)}
 .tr-free ul.dl li:nth-child(2){border-top:0}
 @media (max-width:700px){.tr-free ul.dl li:nth-child(2){border-top:1px solid var(--line)}}
 @media (max-width:640px){.tr-v .spark{display:none}}
+/* the draft by team: two picks in a round stack in one cell; a pick traded away is a quiet placeholder */
+.cellstack{display:grid;gap:3px;min-width:0}
+.cell.gone{background:repeating-linear-gradient(135deg,transparent 0 6px,var(--line) 6px 7px);color:var(--muted);display:grid;align-content:center;gap:2px}
+.cell.gone small{font-size:10.5px}
+.cell.gone b{color:var(--ink)}
+.cell.via .pk .by{background:var(--ink);color:var(--surface);opacity:1}
+.bgrid .cell.gone{background:repeating-linear-gradient(135deg,var(--surface) 0 6px,var(--line) 6px 7px);border-style:dashed}
+.bgrid .cell.gone small{white-space:normal;overflow:visible}
+/* the close button stays put while a long dialog scrolls under it */
+dialog.fk-dlg:not(.full) > .dlg-x{position:sticky;top:0;float:right;margin:-8px -8px -34px 8px;box-shadow:0 2px 10px rgba(0,0,0,.18);background:var(--surface)}
+/* ---------- the draft room's player list: flat and easy to scan ----------
+   no outlined boxes: positions read as a quiet tab row, the numbers switch is two words, the sorted column is tinted
+   all the way down, rows alternate, and the Draft button is a solid button only where you're about to use it */
+td.srt{background:color-mix(in srgb,var(--accent) 7%,transparent)}
+.droom .chips{gap:2px}
+.droom .chips button{border:0;background:transparent;color:var(--muted);font-weight:750;padding:5px 11px;border-radius:8px;box-shadow:none}
+.droom .chips button:hover{color:var(--ink);background:color-mix(in srgb,var(--ink) 7%,transparent)}
+.droom .chips button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.droom .chips button.needed:not([aria-pressed="true"]){color:var(--ink)}
+.droom .pf-need{background:transparent;color:var(--brand);min-width:0;height:auto;padding:0;margin-left:3px;font-size:11px;vertical-align:4px}
+.droom .chips button[aria-pressed="true"] .pf-need{background:transparent;color:var(--brand)}
+.droom .seg.sv button{padding:6px 12px;font-size:12.5px;white-space:nowrap}
+.droom #fk-pool table.t.dense td{padding:7px 10px;font-size:13.5px;border-bottom-color:transparent}
+.droom #fk-pool table.t.dense th{padding:8px 10px;font-size:11.5px;letter-spacing:.02em}
+.droom #fk-pool tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--ink) 3.5%,transparent)}
+.droom #fk-pool tbody tr:nth-child(even) td.srt,.droom #fk-pool td.srt{background:color-mix(in srgb,var(--brand) 9%,transparent)}
+.droom #fk-pool tbody tr:hover td{background:color-mix(in srgb,var(--brand) 6%,transparent)}
+.droom #fk-pool th.sortable.on{color:var(--brand);box-shadow:inset 0 -2px 0 var(--brand)}
+.droom #fk-pool .pn{font-size:14px;font-weight:750}
+.droom #fk-pool .sub{font-size:12px}
+.droom #fk-pool .ptm{background:none;color:var(--muted);padding:0;font-weight:700}
+.droom #fk-pool td.num,.droom #fk-pool td.r{font-variant-numeric:tabular-nums}
+.droom table.t .btn[data-pick]{border:0;background:transparent;color:var(--brand);padding:2px 10px;text-decoration:none;font-weight:800}
+.droom table.t tbody tr:first-child .btn[data-pick],.droom table.t tbody tr:hover .btn[data-pick],.droom table.t .btn[data-pick]:focus-visible{background:var(--brand);color:var(--brand-ink);border:0}
+@media (hover:hover){.droom table.t tbody tr:not(:first-child):not(:hover):not(:focus-within) .btn[data-pick]{opacity:.55}}
+.droom #fk-pool .star{opacity:.5}
+.droom #fk-pool .star.on,.droom #fk-pool tr:hover .star{opacity:1}
+.droom #fk-pool table.t.dense td.act{padding-left:26px}
+.droom #fk-pool tbody tr:nth-child(even) td.act{background:linear-gradient(color-mix(in srgb,var(--ink) 3.5%,transparent),color-mix(in srgb,var(--ink) 3.5%,transparent)),var(--surface)}
+.droom #fk-pool tbody tr:hover td.act{background:linear-gradient(color-mix(in srgb,var(--brand) 6%,transparent),color-mix(in srgb,var(--brand) 6%,transparent)),var(--surface)}
+.droom #fk-pool .ptm{border:0;box-shadow:none}
+.droom .br-chip{border:0;background:color-mix(in srgb,var(--ink) 7%,transparent);box-shadow:none;font-weight:750}
+.droom .br-chip:hover{background:color-mix(in srgb,var(--brand) 20%,transparent)}
+.droom .br-chip i{color:var(--brand);font-style:normal}
+.psort{display:none;align-items:center;gap:8px;padding:2px 2px 8px;font-size:12.5px;color:var(--muted)}
+.psort select{width:auto;min-height:32px;font-size:13px;border-radius:999px;padding:2px 28px 2px 12px}
+@media (max-width:860px){.psort.show-m{display:flex !important}}
+/* a phone sorted by a stat shows that stat beside the player, not off to the side */
+@media (max-width:600px){.droom #fk-pool table.srtd td.r:not(.srt):not(:first-child):not(.act),.droom #fk-pool table.srtd th.r:not(.on):not(:first-child):not(.act){display:none}}
+.psort label{white-space:nowrap}
+.psort select{flex:1;min-width:0;max-width:220px}
+.board .bgrid .cell.gone{background:repeating-linear-gradient(135deg,var(--surface-2) 0 5px,color-mix(in srgb,var(--line-2) 70%,transparent) 5px 6px)}

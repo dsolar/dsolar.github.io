@@ -119,7 +119,7 @@
       if (x && x.type === "waiver") return { how: "Waivers", detail: `${x.faab != null && L().settings.waivers === "faab" ? `$${x.faab}, ` : ""}${md(x.at)}` };
       if (x && (x.type === "add" || x.type === "fa")) return { how: "Free agent", detail: md(x.at) };
       const D = L().draft, i = D && Array.isArray(D.board) ? D.board.findIndex((y) => y && y.pid === pid && y.team === tid) : -1;
-      if (i >= 0) { const n = D.teams.length, r = Math.floor(i / n) + 1; return { how: D.board[i].keeper ? "Kept" : "Drafted", detail: `round ${r}, ${r}.${String(i % n + 1).padStart(2, "0")}` }; }
+      if (i >= 0) { const n = D.teams.length, r = Math.floor(i / n) + 1; return { how: D.board[i].keeper ? "Kept" : "Drafted", detail: `Round ${r} (${i + 1} overall)` }; }
       return x ? { how: "Added", detail: md(x.at) } : null;
     }
     // a league that drafted by auction prices players in dollars; a snake league has no use for them
@@ -984,10 +984,12 @@
       const view = auction ? "team" : ui.dview || "board";
       const label = (k) => `${Math.floor(k / n) + 1}.${String((k % n) + 1).padStart(2, "0")}`;
       const head = `<div class="h"></div>${cols.map((id) => `<div class="h${isMe(id) ? " me" : ""}">${teamAv(T(id), "sm")}<b title="${esc(T(id).name)}">${esc(T(id).name)}</b></div>`).join("")}`;
-      const cellOf = (pk, k, colTeam) => {
+      // the team whose slot a pick was before any trade: its place in the round (a snake runs back the other way)
+      const origOf = (k) => { const r = Math.floor(k / n), pos = k % n; return cols[snake && r % 2 ? n - 1 - pos : pos]; };
+      // o.by: the team that made a pick in another team's slot (the board); o.via: the slot's team it came from (by team)
+      const cellOf = (pk, k, o = {}) => {
         const p = pk && pk.pid && ctx.byId[pk.pid];
-        // a pick a team traded for: who actually made it, in the slot that was another team's
-        const by = pk && colTeam != null && pk.team !== colTeam ? `<em class="by" title="${esc(T(pk.team).name)} made this pick">${esc(T(pk.team).abbr)}</em>` : "";
+        const by = o.by != null ? `<em class="by" title="${esc(T(o.by).name)} made this pick">${esc(T(o.by).abbr)}</em>` : o.via != null ? `<em class="by" title="Traded for: this was ${esc(T(o.via).name)}'s pick">${esc(T(o.via).abbr)}</em>` : "";
         const tag = `<i class="pk">${auction ? money(pk.price) : label(k)}${pk && pk.keeper ? `<span class="kp" title="Kept">K</span>` : ""}${by}</i>`;
         return `<div class="cell${p ? " f c" + U.colorOf(sport, p) : ""}${pk && isMe(pk.team) ? " me" : ""}${by ? " via" : ""}"${p ? ` data-player="${esc(p.id)}" role="button" tabindex="0"` : ""}>${p ? `${tag}<b>${esc(p.n)}</b><small>${S.positions(p).join(", ")} ${esc(p.t)}</small>` : ""}</div>`;
       };
@@ -997,20 +999,29 @@
         for (let c = 0; c < n; c++) {
           if (view === "board") {
             // the board: each round left to right in pick order (a snake runs back the other way), by the slot's team
-            const pos = snake && r % 2 ? n - 1 - c : c, k = r * n + pos;
-            cells += cellOf(D.board[k], k, cols[snake && r % 2 ? n - 1 - pos : pos]);
+            const pos = snake && r % 2 ? n - 1 - c : c, k = r * n + pos, pk = D.board[k], slotTeam = origOf(k);
+            cells += cellOf(pk, k, { by: pk && pk.team !== slotTeam ? pk.team : null });
+          } else if (auction) {
+            const e = D.sales.filter((x) => x.team === cols[c])[r];
+            cells += cellOf(e, r);
           } else {
-            // by team: each team's column holds its own picks in order, traded picks included
-            const own = auction ? D.sales.filter((x) => x.team === cols[c]) : D.board.map((x, k) => [x, k]).filter(([x]) => x && x.team === cols[c] && !x.gone);
-            const e = own[r];
-            cells += auction ? cellOf(e, r, null) : e ? cellOf(e[0], e[1], null) : `<div class="cell"></div>`;
+            // by team: the picks this team made in this round, however many (traded picks included), and where its
+            // own pick went when it traded it away
+            const t = cols[c], mine = [];
+            for (let k = r * n; k < (r + 1) * n; k++) { const x = D.board[k]; if (x && x.team === t && !x.gone) mine.push(k); }
+            if (mine.length === 1) cells += cellOf(D.board[mine[0]], mine[0], { via: origOf(mine[0]) !== t ? origOf(mine[0]) : null });
+            else if (mine.length > 1) cells += `<div class="cellstack" title="${mine.length} picks this round">${mine.map((k) => cellOf(D.board[k], k, { via: origOf(k) !== t ? origOf(k) : null })).join("")}</div>`;
+            else {
+              const k = Array.from({ length: n }, (_, j) => r * n + j).find((j) => origOf(j) === t), x = k != null ? D.board[k] : null;
+              cells += x && x.team !== t ? `<div class="cell gone"><i class="pk">${label(k)}</i><small>Traded to <b>${esc(T(x.team).abbr)}</b></small></div>` : `<div class="cell gone"><small>No pick</small></div>`;
+            }
           }
         }
       }
       const seg = auction ? "" : `<div class="seg" role="group" aria-label="Draft view"><button type="button" data-dview="board" aria-pressed="${view === "board"}">Board</button><button type="button" data-dview="team" aria-pressed="${view === "team"}">By team</button></div>`;
       const traded = !auction && D.board.some((x, k) => x && D.order && D.via && D.via[k] != null);
       return `<div class="wrap page"><div class="head"><h1 class="disp">Draft results</h1><span class="ps">${esc(FK.draft.FORMATS[D.type])}, ${D.rounds} rounds${D.done ? `, ${new Date(D.done).toLocaleDateString("en-US", { month: "long", day: "numeric" })}` : ""}</span><span class="grow"></span>${seg}${opts.draftHref ? `<a class="btn sm" href="${esc(opts.draftHref)}">Open the draft room</a>` : ""}</div>
-        <p class="ps" style="margin:-6px 0 10px">${view === "board" ? `Every pick in order${snake ? ", each round snaking back" : ""}. A team's abbreviation on a pick means it traded for that slot.` : "Each team's picks in the order it made them."} K marks a keeper.</p>
+        <p class="ps" style="margin:-6px 0 10px">${view === "board" ? `Every pick in order${snake ? ", each round snaking back" : ""}, under the team whose slot it was. A dashed pick was made by the team named on it.` : "Each team's own picks, round by round. A dashed pick came from the team named on it; a striped square is a pick it traded away."} K marks a keeper.</p>
         <div class="board fit"><div class="bgrid" style="--n:${n};grid-template-columns:24px repeat(${n},minmax(0,1fr))">${cells}</div></div>
         <div class="card"><div class="mod-h"><h2>Draft grades</h2><span class="ps">By each team's best lineup at draft time</span></div><div class="bd"><div class="teams">${st.map((r) => `<div class="row gradeitem">${teamAv(T(r.team), "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(T(r.team).name)}</b><span class="ps">${ord(r.rank)}${r.spent != null ? `, spent ${money(r.spent)}` : ""}</span></div><b class="grade disp">${r.grade}</b></div>`).join("")}</div></div></div></div>`;
     }
@@ -2210,7 +2221,7 @@
       }
       if (D) {
         if (D.type === "auction") { const x = (D.sales || []).find((y) => y.pid === p.id); if (x) items.push({ at: x.at || D.done, week: 0, text: `${x.keeper ? "Kept" : "Bought"} by <b>${esc(T(x.team).name)}</b> for ${money(x.price)}` }); }
-        else { const i = (D.board || []).findIndex((y) => y && y.pid === p.id); if (i >= 0) { const x = D.board[i], n = D.teams.length; items.push({ at: x.at || D.done, week: 0, text: `${x.keeper ? "Kept" : "Drafted"} by <b>${esc(T(x.team).name)}</b>, round ${Math.floor(i / n) + 1}, pick ${x.n || i + 1}` }); } }
+        else { const i = (D.board || []).findIndex((y) => y && y.pid === p.id); if (i >= 0) { const x = D.board[i], n = D.teams.length; items.push({ at: x.at || D.done, week: 0, text: `${x.keeper ? "Kept" : "Drafted"} by <b>${esc(T(x.team).name)}</b> in round ${Math.floor(i / n) + 1} (${i + 1} overall)` }); } }
       }
       if (!items.length) return "";
       items.sort((a, b) => b.at - a.at);
@@ -2267,6 +2278,8 @@
        moves, call-ups and options, trades, signings, releases). */
     const NEWS_DAYS = 21;
     let newsFile, newsAsked = false, wire, wireAsked = false;
+    // a jersey number change isn't news
+    const noNews = (x) => /number/i.test(x.typeDesc || "") || x.typeCode === "NUM" || /changed (his )?(uniform |jersey )?number/i.test(x.description || "");
     const isoDay = (t) => new Date(t).toISOString().slice(0, 10);
     function newsData() {
       if (!newsAsked) { newsAsked = true; fetch("data/news-mlb.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).then((j) => { newsFile = j && Array.isArray(j.items) ? j : { items: [] }; newsRender(); }).catch(() => { newsFile = { items: [] }; newsRender(); }); }
@@ -2297,7 +2310,7 @@
       if (nf === undefined && wr === undefined) return undefined;
       const out = [];
       for (const s of (nf && nf.items) || []) out.push({ at: Date.parse(s.at), ids: (s.ids || []).filter((id) => ctx.byId[id]), kind: s.src || "News", cls: "story", text: s.t, url: /^https:\/\//.test(s.u || "") ? s.u : null });
-      for (const x of wr || []) { const id = x.person && String(x.person.id); if (!id || !ctx.byId[id] || !x.description) continue; const [k, c] = wireKind(x); out.push({ at: Date.parse((x.effectiveDate || x.date) + "T12:00:00Z"), ids: [id], kind: k, cls: c, text: x.description, url: null, wire: true }); }
+      for (const x of wr || []) { const id = x.person && String(x.person.id); if (!id || !ctx.byId[id] || !x.description || noNews(x)) continue; const [k, c] = wireKind(x); out.push({ at: Date.parse((x.effectiveDate || x.date) + "T12:00:00Z"), ids: [id], kind: k, cls: c, text: x.description, url: null, wire: true }); }
       // one move logged twice (a trade for each club) shows once
       const seen = new Set();
       return out.filter((n) => n.ids.length && !isNaN(n.at)).sort((a, b) => b.at - a.at).filter((n) => { const k = n.text + "|" + n.ids.join(); if (seen.has(k)) return false; seen.add(k); return true; });
@@ -2314,7 +2327,7 @@
       let moves = [];
       try {
         const j = await fetch(`https://statsapi.mlb.com/api/v1/transactions?playerId=${encodeURIComponent(p.id)}&startDate=${isoDay(now() - 400 * 864e5)}&endDate=${isoDay(now())}`).then((r) => (r.ok ? r.json() : null));
-        moves = ((j && j.transactions) || []).filter((x) => x.description).map((x) => { const [k, c] = wireKind(x); return { at: Date.parse((x.effectiveDate || x.date) + "T12:00:00Z"), ids: [String(p.id)], kind: k, cls: c, text: x.description, url: null }; });
+        moves = ((j && j.transactions) || []).filter((x) => x.description && !noNews(x)).map((x) => { const [k, c] = wireKind(x); return { at: Date.parse((x.effectiveDate || x.date) + "T12:00:00Z"), ids: [String(p.id)], kind: k, cls: c, text: x.description, url: null }; });
       } catch (e) { /* the stories still show */ }
       const nf = newsFile || await fetch("data/news-mlb.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
       if (nf && !newsFile) newsFile = nf;

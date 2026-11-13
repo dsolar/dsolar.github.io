@@ -181,24 +181,34 @@
       <div id="lg-push"></div>
       ${mine.error ? fail(mine.error) : mine.length ? `<div class="lgl">${mine.map(card).join("")}</div>` : joinId ? "" : `<div class="card"><div class="bd stack"><p style="margin:0"><b>No leagues yet.</b></p><p class="ps" style="margin:0">Start one and send your friends the invite link, or open the invite link your commissioner sent you.</p><div><button class="btn go" data-a="new">Start a league</button></div></div>`}</div>`);
   }
-  // One league in the list: your team, where the league is, and your record or the draft's progress.
+  // One league in the list, in its own colors: the crest, the league and your team, where the season is, and the
+  // numbers that matter right now (your finish or standing and your record; the draft's progress before that)
   function card(l) {
     const c = l.card || {}, when = (t) => new Date(t).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
-    const total = c.weeks != null ? c.weeks + (c.playoffWeeks || 0) : null;
-    let status = "", big = "", small = "", bar = null;
+    const total = c.weeks != null ? c.weeks + (c.playoffWeeks || 0) : null, over = l.phase === "season" && total != null && c.week > total;
+    const br = U.leagueBrand(l.name, l.brand), col = U.brandC(br);
+    let status = "", tone = "", stats = [], bar = null;
     if (l.phase === "season") {
       if (c.start && Date.now() < c.start) status = `Week 1 starts ${when(c.start)}`;
-      else if (total != null && c.week > total) status = "Season over";
-      else if (c.week != null) status = c.weeks != null && c.week > c.weeks ? `Playoffs, week ${c.week}` : `Week ${c.week}${c.weeks ? ` of ${c.weeks}` : ""}`;
-      if (c.format === "guillotine") { big = c.alive === false ? "Out" : c.alive ? "Alive" : ""; small = c.alive === false ? "Chopped" : "Still standing"; }
-      else if (c.format !== "roto" && l.team != null && c.w != null && (c.w || c.l || c.t)) { big = `${c.w}-${c.l}${c.t ? "-" + c.t : ""}`; small = "Record"; }
-    } else if (l.phase === "live") { status = "Drafting now"; if (c.total) { bar = c.picks / c.total; big = `${c.picks}`; small = `of ${c.total} picks`; } }
+      else if (over) status = `${c.season ? c.season + " season" : "Season"} over`;
+      else if (c.week != null) { status = c.weeks != null && c.week > c.weeks ? `Playoffs, week ${c.week}` : `Week ${c.week}${c.weeks ? ` of ${c.weeks}` : ""}`; tone = "on"; }
+      if (c.format === "guillotine") stats.push([c.alive === false ? "Out" : "Alive", c.alive === false ? "Chopped" : "Still standing"]);
+      else if (l.team != null) {
+        if (over && c.place) stats.push([U.ord(c.place), "Finish"]);
+        else if (c.rank && (c.w || c.l || c.t || c.cw)) stats.push([U.ord(c.rank), over ? "Regular season" : "Standing"]);
+        if (c.format !== "roto") {
+          if (c.cats && (c.cw || c.cl || c.ct)) stats.push([`${c.cw}-${c.cl}-${c.ct}`, "Categories"]);
+          else if (c.w || c.l || c.t) stats.push([`${c.w}-${c.l}${c.t ? "-" + c.t : ""}`, "Record"]);
+        }
+      }
+    } else if (l.phase === "live") { status = "Drafting now"; tone = "live"; if (c.total) { bar = c.picks / c.total; stats.push([`${c.picks}`, `of ${c.total} picks`]); } }
     else if (l.phase === "done") status = "Draft done, the season starts soon";
-    else { status = "Draft room open"; if (c.teams) { big = `${c.claimed}/${c.teams}`; small = "teams claimed"; } }
-    const sub = [c.teamName ? esc(c.teamName) : "", esc(status), l.commish ? "you're the commissioner" : ""].filter(Boolean).join(", ");
-    return `<a class="card lgc" href="play.html?id=${esc(l.id)}">${l.phase === "season" || l.brand ? `<span class="lg-cr">${U.leagueCrest(U.leagueBrand(l.name, l.brand))}</span>` : `<span class="lg-sp sp-${esc(l.sport)}">${icon(l.sport)}</span>`}
-      <span class="grow"><b>${esc(l.name)}</b><small>${esc(S[l.sport].name)}${sub ? `: ${sub}` : ""}</small>${bar != null ? `<span class="lgbar" role="img" aria-label="${Math.round(bar * 100)}% of picks in"><i style="width:${(bar * 100).toFixed(1)}%"></i></span>` : ""}</span>
-      ${big ? `<span class="lgstat${l.phase === "live" ? " live" : ""}"><b>${esc(big)}</b><small>${esc(small)}</small></span>` : ""}<span class="btn sm">Open</span></a>`;
+    else { status = "Draft room open"; tone = "on"; if (c.teams) stats.push([`${c.claimed}/${c.teams}`, "teams claimed"]); }
+    const facts = [esc(S[l.sport].name), c.teams ? `${c.teams} teams` : ""].filter(Boolean).join(", ");
+    const chips = `${c.teamName ? `<span class="lgc-team">${esc(c.teamName)}</span>` : ""}<span class="lgc-st ${tone}">${esc(status)}</span>${l.commish ? `<span class="lgc-cm">Commissioner</span>` : ""}`;
+    return `<a class="card lgc" href="play.html?id=${esc(l.id)}" style="--lc:${col}">${l.phase === "season" || l.brand ? `<span class="lg-cr">${U.leagueCrest(br)}</span>` : `<span class="lg-sp sp-${esc(l.sport)}">${icon(l.sport)}</span>`}
+      <span class="lgc-m"><b class="lgc-n">${esc(l.name)}</b><small>${facts}</small><span class="lgc-chips">${chips}</span>${bar != null ? `<span class="lgbar" role="img" aria-label="${Math.round(bar * 100)}% of picks in"><i style="width:${(bar * 100).toFixed(1)}%"></i></span>` : ""}</span>
+      ${stats.length ? `<span class="lgc-stats">${stats.map(([big, small], i) => `<span class="lgstat${tone === "live" ? " live" : ""}${i ? " sec" : ""}"><b>${esc(big)}</b><small>${esc(small)}</small></span>`).join("")}</span>` : ""}<span class="lgc-go" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>`;
   }
 
   function signInCard(inv) {

@@ -721,3 +721,86 @@ end $$;
 
 revoke all on function public.fk_contacts(text), public.fk_contact_set(text, int, text, text), public.fk_invite_send(text, int, text) from public, anon;
 grant execute on function public.fk_contacts(text), public.fk_contact_set(text, int, text, text), public.fk_invite_send(text, int, text) to authenticated;
+
+-- fantasykit_league_cards_cats (Nov 2026): fk_card also sends a category league's record in categories (cw-cl-ct),
+-- the team's regular-season standing (rank, by win percentage) and its final place from the last playoff week's
+-- placement game (place), plus the season label. Applied as migration fk_card_cats_rank_place.
+CREATE OR REPLACE FUNCTION public.fk_card(l fk_leagues, t integer)
+ RETURNS jsonb
+ LANGUAGE sql
+ STABLE
+ SET search_path TO 'public'
+AS $function$
+  with allg as (
+    select k::int as wk, g
+    from jsonb_each(case when jsonb_typeof(l.league->'results') = 'object' then l.league->'results' else '{}'::jsonb end) r(k, v),
+      jsonb_array_elements(case when jsonb_typeof(v) = 'array' then v else '[]'::jsonb end) g
+    where k ~ '^\d+$' and jsonb_typeof(g) = 'object' and g ? 'a' and g ? 'b'
+  ),
+  games as (select wk, g from allg where t is not null and wk <= coalesce((l.league->'settings'->>'weeks')::int, 99)),
+  rec as (
+    select
+      count(*) filter (where ((g->>'a')::int = t and g->>'w' = 'a') or ((g->>'b')::int = t and g->>'w' = 'b')) as w,
+      count(*) filter (where ((g->>'a')::int = t and g->>'w' = 'b') or ((g->>'b')::int = t and g->>'w' = 'a')) as lo,
+      count(*) filter (where ((g->>'a')::int = t or (g->>'b')::int = t) and g->>'w' = 't') as ti
+    from games
+  ),
+  scores as (
+    select wk, (g->>'a')::int as team, (g->>'sa')::numeric as sc from games
+    union all select wk, (g->>'b')::int, (g->>'sb')::numeric from games
+  ),
+  med as (
+    select s.wk, s.sc, m.m from scores s
+    join (select wk, percentile_cont(0.5) within group (order by sc) as m from scores group by wk) m on m.wk = s.wk
+    where s.team = t and coalesce((l.league->'settings'->>'median')::boolean, false)
+  ),
+  mrec as (select count(*) filter (where sc > m) as w, count(*) filter (where sc < m) as lo, count(*) filter (where sc = m) as ti from med),
+  sides as (
+    select (g->>'a')::int as team, g ? 'cats' as c,
+      case when g ? 'cats' then coalesce((g->>'sa')::numeric, 0) else (g->>'w' = 'a')::int end as w,
+      case when g ? 'cats' then coalesce((g->>'sb')::numeric, 0) else (g->>'w' = 'b')::int end as lo,
+      case when g ? 'cats' then coalesce((g->>'ties')::numeric, 0) else (g->>'w' = 't')::int end as ti
+    from games
+    union all
+    select (g->>'b')::int, g ? 'cats',
+      case when g ? 'cats' then coalesce((g->>'sb')::numeric, 0) else (g->>'w' = 'b')::int end,
+      case when g ? 'cats' then coalesce((g->>'sa')::numeric, 0) else (g->>'w' = 'a')::int end,
+      case when g ? 'cats' then coalesce((g->>'ties')::numeric, 0) else (g->>'w' = 't')::int end
+    from games
+  ),
+  trec as (select team, bool_or(c) as c, sum(w) as w, sum(lo) as lo, sum(ti) as ti, (sum(w) + 0.5 * sum(ti)) / nullif(sum(w) + sum(lo) + sum(ti), 0) as pct from sides group by team),
+  mine as (select * from trec where team = t),
+  rk as (select case when (select pct from mine) is null then null else 1 + (select count(*) from trec o where o.pct > (select pct from mine)) end as rank),
+  lastg as (
+    select g from allg
+    where t is not null and wk = (select max(wk) from allg where wk > coalesce((l.league->'settings'->>'weeks')::int, 99))
+      and ((g->>'a')::int = t or (g->>'b')::int = t) and g->>'kind' is not null
+    limit 1
+  ),
+  fin as (
+    select case
+      when g->>'w' not in ('a', 'b') then null
+      else (case g->>'kind' when 'title' then 1 when 'third' then 3 else nullif(substring(g->>'kind' from '^p(\d+)$'), '')::int end)
+        + (case when ((g->>'a')::int = t and g->>'w' = 'a') or ((g->>'b')::int = t and g->>'w' = 'b') then 0 else 1 end)
+    end as place from lastg
+  )
+  select jsonb_build_object(
+    'teamName', case when t is null then null else coalesce(l.league, l.draft)->'teams'->t->>'name' end,
+    'teams', jsonb_array_length(coalesce(coalesce(l.league, l.draft)->'teams', '[]'::jsonb)),
+    'claimed', (select count(*) from fk_seats where league = l.id),
+    'week', (l.league->>'week')::int,
+    'weeks', (l.league->'settings'->>'weeks')::int,
+    'playoffWeeks', coalesce((l.league->'settings'->>'playoffWeeks')::int, 0),
+    'format', l.league->'settings'->>'format',
+    'start', (l.league->>'start')::bigint,
+    'season', l.league->>'season',
+    'alive', case when t is null or jsonb_typeof(l.league->'alive') <> 'array' then null else (l.league->'alive') @> to_jsonb(t) end,
+    'picks', (select count(*) from jsonb_array_elements(case when jsonb_typeof(l.draft->'board') = 'array' then l.draft->'board' else '[]'::jsonb end) x where jsonb_typeof(x) = 'object'),
+    'total', case when jsonb_typeof(l.draft->'order') = 'array' then jsonb_array_length(l.draft->'order') else null end,
+    'w', r.w + m.w, 'l', r.lo + m.lo, 't', r.ti + m.ti,
+    'cats', coalesce((select c from mine), false),
+    'cw', (select w from mine), 'cl', (select lo from mine), 'ct', (select ti from mine),
+    'rank', (select rank from rk),
+    'place', (select place from fin))
+  from rec r, mrec m;
+$function$;

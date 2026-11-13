@@ -349,14 +349,14 @@
   function table(opts) {
     const { cols, sort = {} } = opts;
     const th = (c) => {
-      const cls = [c.cls || "", c.hide ? "hide-" + c.hide : "", c.sort ? "sortable" : "", c.sort && sort.k === c.k ? "on" : ""].join(" ").trim();
+      const cls = [c.cls || "", c.hide && !(c.sort && sort.k === c.k) ? "hide-" + c.hide : "", c.sort ? "sortable" : "", c.sort && sort.k === c.k ? "on" : ""].join(" ").trim();
       const aria = c.sort ? ` aria-sort="${sort.k === c.k ? (sort.dir > 0 ? "ascending" : "descending") : "none"}" data-sort="${esc(c.k)}" tabindex="0"` : "";
       return `<th class="${cls}"${aria}${c.title ? ` title="${esc(c.title)}"` : ""}>${c.raw ? c.label : esc(c.label)}</th>`;
     };
     const lim = opts.limit || 400, rows = opts.rows.slice(0, lim);
     const more = opts.rows.length > lim ? `<tr><td colspan="${cols.length}" class="more"><button type="button" class="btn sm" data-more="${esc(opts.id || "")}">Show ${Math.min(250, opts.rows.length - lim)} more</button> <span class="ps">Showing ${lim} of ${opts.rows.length}</span></td></tr>` : "";
     return `<div class="table-wrap"${opts.id ? ` id="${esc(opts.id)}"` : ""}${opts.style ? ` style="${opts.style}"` : ""}><table class="t${opts.dense ? " dense" : ""}${opts.cls ? " " + opts.cls : ""}"><thead><tr>${cols.map(th).join("")}</tr></thead><tbody>
-      ${rows.map((r) => (r && r.__html) || `<tr${opts.rowAttr ? " " + opts.rowAttr(r) : ""}>${cols.map((c) => `<td class="${[c.cls || "", c.hide ? "hide-" + c.hide : "", c.td || ""].join(" ").trim()}">${c.html(r)}</td>`).join("")}</tr>`).join("") || `<tr><td colspan="${cols.length}" class="empty">${esc(opts.empty || "Nothing here.")}</td></tr>`}${more}
+      ${rows.map((r) => (r && r.__html) || `<tr${opts.rowAttr ? " " + opts.rowAttr(r) : ""}>${cols.map((c) => `<td class="${[c.cls || "", c.hide && !(c.sort && sort.k === c.k) ? "hide-" + c.hide : "", c.td || "", c.sort && sort.k === c.k ? "srt" : ""].join(" ").trim()}">${c.html(r)}</td>`).join("")}</tr>`).join("") || `<tr><td colspan="${cols.length}" class="empty">${esc(opts.empty || "Nothing here.")}</td></tr>`}${more}
       </tbody></table></div>`;
   }
   function nextSort(sort, k, cols) {
@@ -1102,11 +1102,20 @@
       const packBar = pk ? moneyBar + `<div class="rl-bar"><span>${packOnly ? `${pat.j === 0 ? `Pack ${pat.q + 1}: ${pk.length} cards.${chaseLine}` : `Passed from ${esc(team(pw.from).name)}${pw.opener !== pw.from ? `, opened by ${esc(team(pw.opener).name)}` : ""}: ${pk.length} left.`} ${myTurn ? "Take one" : "You've picked"}, then it goes ${pat.q % 2 === 0 ? "left" : "right"}.` : "Showing everyone. You can only take a player from your pack."}</span><button class="btn xs" data-act="rlall">${packOnly ? "Show everyone" : "Only my pack"}</button></div>` : "";
       const rlBar = packBar || sn && sn.t ? packBar || `<div class="rl-bar"><span>${only ? `Showing ${esc(teamFull(sn.t))} players: the wheel's team for this pick.` : `Showing everyone. This pick has to come from ${esc(teamFull(sn.t))}.`}</span><button class="btn xs" data-act="rlall">${only ? "Show everyone" : `Only ${esc(sn.t)}`}</button></div>` : "";
       if (packOnly) return fitBar + rlBar + packGrid(rows, pat, myTurn, mine);
-      return fitBar + rlBar + table({ cols, rows, sort: ui.sort, dense: true, id: "fk-pool", limit: ui.limit || 100, empty: "No one matches.",
+      const sortable = cols.filter((c) => c.sort && c.label && !c.raw);
+      const sortSel = `<div class="psort show-m"><label for="fk-psort">Sort by</label><select id="fk-psort">${sortable.map((c) => `<option value="${esc(c.k)}"${ui.sort.k === c.k ? " selected" : ""}>${esc(c.title || c.label)}</option>`).join("")}</select><button type="button" class="btn xs ghost" data-act="sortdir" aria-label="Flip the order">${ui.sort.dir > 0 ? "Low to high" : "High to low"}</button></div>`;
+      return fitBar + rlBar + sortSel + table({ cols, rows, sort: ui.sort, dense: true, id: "fk-pool", cls: ui.sort.k && !["rank", "name", "my"].includes(ui.sort.k) ? "srtd" : "", limit: ui.limit || 100, empty: "No one matches.",
         rowAttr: (p) => `data-player="${esc(p.id)}" class="${mine != null && ctx.own[p.id] == null && !F.canAdd(d, ctx, mine, p).ok ? "dim" : ""}"` });
     }
     // a board cell's name: first initial and last name ("J. Smith-Njigba"); a defense by its team
     const shortName = (p) => { if (S.positions(p).includes("DEF")) return `${p.t} D/ST`; const w = String(p.n).split(" "); return w.length > 1 && !/^(Jr\.?|Sr\.?|II|III|IV)$/.test(w[1]) ? `${w[0][0]}. ${w.slice(1).join(" ")}` : p.n; };
+    // projections or last season's stats, side by side as a switch
+    function statSeg() {
+      if (!hasProj(sport)) return "";
+      if (!sport.statView) initView(sport);
+      const yr = +(sport.data && sport.data.season) || null, pl = sport.key === "mlb" && yr ? `${yr + 1} projected` : "Projected", sl = yr ? `${yr} stats` : "Stats";
+      return `<div class="seg sv" role="group" aria-label="Numbers">${[["proj", pl], ["stats", sl]].map(([v, l]) => `<button type="button" data-act="sview" data-v="${v}" aria-pressed="${sport.statView === v}">${esc(l)}</button>`).join("")}</div>`;
+    }
     function board() {
       const d = D(), cols = d.round1, n = cols.length;
       const slots = auction() ? null : cols.map(slotsOf);
@@ -1462,7 +1471,7 @@
       const right = { team: () => rosterPanel(me()), queue: queuePanel, teams: teamsPanel, trades: tradesPanel, chat: chatPanel }[ui.right]();
       // one view switch: the left views, plus the right panels as views on narrow screens
       const seg = `<div class="seg" id="fk-seg" role="group" aria-label="View">${lefts.map(([k, n]) => `<button type="button" data-left="${k}" aria-pressed="${!ui.mobileRight && ui.left === k}">${esc(n)}</button>`).join("")}${rights.map(([k, n]) => `<button type="button" class="show-m" data-mright="${k}" aria-pressed="${ui.mobileRight && ui.right === k}">${esc(n)}</button>`).join("")}</div>`;
-      const filters = ui.left === "players" ? `${search(ui.f)}<label class="sr" for="fk-show">Show</label><select id="fk-show" style="width:auto;border-radius:999px;min-height:36px;font-size:13px"><option value="avail"${ui.show === "avail" ? " selected" : ""}>Available</option><option value="all"${ui.show === "all" ? " selected" : ""}>All players</option></select>${viewSelect(sport, "fk-statv")}` : "";
+      const filters = ui.left === "players" ? `${search(ui.f)}<label class="sr" for="fk-show">Show</label><select id="fk-show" style="width:auto;border-radius:999px;min-height:36px;font-size:13px"><option value="avail"${ui.show === "avail" ? " selected" : ""}>Available</option><option value="all"${ui.show === "all" ? " selected" : ""}>All players</option></select>${statSeg()}` : "";
       const tq = d.phase === "live" && !auction() && me() != null ? F.onClock(d, now()) : null;
       if (tq && tq.trivia && tq.team === me() && !team(me()).auto) {
         const q = tq.trivia;
@@ -1669,6 +1678,8 @@
           }
           else if (a === "respin") act(() => { const r = F.respin(d, ctx, me(), n); if (r.ok) toast(`The wheel lands on ${teamFull(r.team)}.`); return r; });
           else if (a === "rlall") { ui.rlAll = !ui.rlAll; render(); }
+          else if (a === "sview") { setView(sport, b.dataset.v); render(); }
+          else if (a === "sortdir") { ui.sort = { k: ui.sort.k, dir: -ui.sort.dir }; render(); }
           else if (a === "projsort") { ui.projSort = b.dataset.k || null; render(); }
           else if (a === "fitall") { ui.fitAll = !ui.fitAll; render(); }
           else if (a === "rip") {
@@ -1714,6 +1725,7 @@
     });
     el.addEventListener("change", (e) => {
       if (e.target.id === "fk-show") { ui.show = e.target.value; renderLeft(); }
+      if (e.target.id === "fk-psort") { const k = e.target.value, c = poolColumns(sport, { scoring: D().scoring }).find((x) => x.k === k); ui.sort = { k, dir: c && c.asc ? 1 : -1 }; render(); return; }
       if (e.target.id === "fk-statv" || e.target.id === "fk-statv2") { setView(sport, e.target.value); render(); }
       if (e.target.id === "fk-view") { ui.view = +e.target.value; render(); }
     });
@@ -1896,7 +1908,7 @@
     const start = () => { new MutationObserver(kick).observe(document.body, { childList: true, subtree: true }); window.addEventListener("resize", kick); kick(); };
     if (document.body) start(); else document.addEventListener("DOMContentLoaded", start);
   }
-  FK.ui = { leagueBrand, leagueCrest, pushBox, botSpeed, startIn, faceAv, squarePhoto, profileDialog, statColumns, LINEUP_PRESETS: PRESETS, lineupBuilder, orderLineup, lineupStep, slotDesc, esc, $, $$, store, toast, dialog, dialogOpen, focusKey, refocus, keyboardPlayers, confirm, theme, fmtLeft, money, ord, last, initials, ago,
+  FK.ui = { leagueBrand, leagueCrest, brandC, pushBox, botSpeed, startIn, faceAv, squarePhoto, profileDialog, statColumns, LINEUP_PRESETS: PRESETS, lineupBuilder, orderLineup, lineupStep, slotDesc, esc, $, $$, store, toast, dialog, dialogOpen, focusKey, refocus, keyboardPlayers, confirm, theme, fmtLeft, money, ord, last, initials, ago,
     teamAv, SHAPES, GLYPHS, logoSvg, glyphOf, shapeOf, playerAv, pname, teamName, posChip, posChips, colorOf, injTag,
     proTeam, shell, switcher, route, table, sortRows, nextSort, poolColumns, posFilter, search, passes, groupOf, statCell, label, isPoints,
     playerCard, scoreboard, versus, vsTable, standingsTable, feed, txLine, tradeCard, tradeWindow, room, board: myBoard, viewSelect, setView, initView, hasProj, lineOf };
