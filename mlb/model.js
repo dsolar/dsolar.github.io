@@ -657,17 +657,54 @@
 
   // A signed deal's grade: what deals this long go for (market) against what the team pays, plus the draft pick
   // and pool money a team gives up for another club's qualifying-offer player, as a share of the market price.
-  // A B is a deal at the going rate. Only deals of $2M+ for players projected at 1+ WAR are graded: that's the range
+  // A B is a deal at the going rate or a little over it (teams expect to pay a small premium), and a signing that fills
+  // a real hole gets NEED_CREDIT more room before the grade drops. Only deals of $2M+ for players projected at 1+ WAR are graded: that's the range
   // the market study covers (most relievers and depth signings fall below it, and their percentages swing wildly)
-  var GRADES = [[0.4, "A+"], [0.25, "A"], [0.15, "A-"], [0.06, "B+"], [-0.06, "B"], [-0.15, "B-"], [-0.25, "C+"], [-0.35, "C"], [-0.5, "D"]];
-  function gradeDeal(r, yrs, war, val, mktAav, cfg) {
+  var GRADES = [[0.4, "A+"], [0.25, "A"], [0.15, "A-"], [0.06, "B+"], [-0.1, "B"], [-0.18, "B-"], [-0.27, "C+"], [-0.37, "C"], [-0.5, "D"]];
+  var NEED_CREDIT = 0.08;
+  function gradeDeal(r, yrs, war, val, mktAav, cfg, need) {
     if (!r.aav || !r.yrs || !mktAav || war == null || war < 1 || r.aav < 2e6 || /MiLB/i.test(r.ctype || "")) return null;
     var paid = r.tot ? r.tot / 1e6 : r.aav / 1e6 * r.yrs, mkt = mktAav * yrs;
     var pick = r.qo && !r.qoa && r.to && r.from && r.to !== r.from ? cfg.qoPickCost : 0;
-    var edge = (mkt - paid - pick) / mkt, g = "F";
-    for (var i = 0; i < GRADES.length; i++) if (edge >= GRADES[i][0]) { g = GRADES[i][1]; break; }
-    return { g: g, edge: edge, paid: paid, mkt: mkt, pick: pick, worth: val, prod: val - paid - pick };
+    var edge = (mkt - paid - pick) / mkt, credit = need && need.fills ? NEED_CREDIT : 0, g = "F";
+    for (var i = 0; i < GRADES.length; i++) if (edge + credit >= GRADES[i][0]) { g = GRADES[i][1]; break; }
+    return { g: g, edge: edge, credit: credit, need: need || null, paid: paid, mkt: mkt, pick: pick, worth: val, prod: val - paid - pick };
   }
+
+  // Does a signing fill a hole? The signing team's coming season without him: for a hitter, the weakest of the spots he
+  // can play (his own spot if he's already in Depth Charts' lineup, filled by the best bench bat); for a starter, the
+  // rotation. A hole is a spot in the bottom third of the league that he improves by 0.75+ WAR.
+  Hub.prototype.need = function (r, war) {
+    var abbr = r.to, t = abbr && this.byAbbr[abbr];
+    if (!t || war == null) return null;
+    var self = this, season = this.season, tm = this.team(abbr, season), id = String(r.id);
+    var mine = function (e) { return e && String(e.p.id) === id; };
+    var wOf = function (e) { return e ? e.war : 0; };
+    if (/SP/.test(r.pos || "") && !/RP/.test(r.pos || "")) {
+      var rot = tm.rot.filter(function (e) { return !mine(e); }).slice(0, 5);
+      var sum = rot.reduce(function (a, e) { return a + e.war; }, 0) + (rot.length < 5 ? 0.5 * (5 - rot.length) : 0);
+      var low = rot.length < 5 ? 0.5 : Math.min.apply(null, rot.map(wOf));
+      var tierS = this.tier(season, "SP", sum), upS = war - low;
+      return { spot: "SP", label: "rotation", without: sum, up: upS, tier: tierS, rank: this.rank(season, "SP", sum),
+        fills: /Fringe|Weak/.test(tierS) && upS >= 0.75 };
+    }
+    var p = { pos: String(r.pos || "").split("/")[0], el: String(r.pos || "").split("/") };
+    var bench = tm.bench.filter(function (e) { return !mine(e) && !e.p.p; }).sort(function (a, b) { return (b.p.rate || 0) - (a.p.rate || 0); });
+    var spots = FIELD_ORDER.filter(function (sp) { return canPlay(p, sp); }), best = null;
+    var held = FIELD_ORDER.filter(function (sp) { return mine(tm.line[sp]); })[0];
+    if (held) spots = [held];
+    spots.forEach(function (sp) {
+      var occ = tm.line[sp], w;
+      if (!occ || mine(occ)) {
+        var sub = bench.filter(function (e) { return canPlay(e.p, sp); })[0];
+        w = sub ? (sub.p.rate || sub.war) * 0.9 : 0;
+      } else w = occ.war;
+      var tr = self.tier(season, sp, w), up = war - w;
+      var x = { spot: sp, label: sp, without: w, up: up, tier: tr, rank: self.rank(season, sp, w), fills: /Fringe|Weak/.test(tr) && up >= 0.75 };
+      if (!best || (x.fills && !best.fills) || (x.fills === best.fills && x.up > best.up)) best = x;
+    });
+    return best;
+  };
 
   // This winter's free agents: what the model says each is worth over the crowd's contract length
   Hub.prototype.faBoard = function () {
@@ -683,7 +720,7 @@
       var mktAav = spotAav != null && mk ? spotAav * (1 + mk.lenPrem(yrs)) : spotAav;
       return { r: r, p: p, war: war, yrs: yrs, age: age, path: path, value: val, spotAav: spotAav, mktAav: mktAav,
         crowdAav: r.ma ? r.ma / 1e6 : null, signedAav: r.aav ? r.aav / 1e6 : null,
-        gap: r.aav && mktAav ? (r.aav / 1e6) / mktAav - 1 : null, grade: gradeDeal(r, yrs, war, val, mktAav, cfg) };
+        gap: r.aav && mktAav ? (r.aav / 1e6) / mktAav - 1 : null, grade: r.aav ? gradeDeal(r, yrs, war, val, mktAav, cfg, self.need(r, war)) : null };
     }).filter(function (x) { return x.war != null; }).sort(function (a, b) { return b.value - a.value; });
   };
 

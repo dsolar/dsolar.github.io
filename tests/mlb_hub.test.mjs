@@ -129,3 +129,11 @@ test('deal grades: at market is a B, a bargain an A, a QO pick costs the signing
   assert.equal(M.gradeDeal(r, 4, 0.5, 10, 3, cfg), null, 'low-WAR signings go ungraded');
   assert.equal(M.gradeDeal(Object.assign({}, r, { ctype: 'MiLB' }), 4, 2.5, 70, 15, cfg), null);
 });
+
+test('deal grades: a small overpay is still a B, and filling a hole buys more room', () => {
+  const r = { aav: 16.5e6, tot: 66e6, yrs: 4, from: 'MIL', to: 'BOS', ctype: 'Free Agent' };
+  assert.equal(M.gradeDeal(r, 4, 2.5, 70, 15, cfg).g, 'B', '10% over market is a B');
+  const over = Object.assign({}, r, { tot: 70e6, aav: 17.5e6 });
+  assert.equal(M.gradeDeal(over, 4, 2.5, 70, 15, cfg).g, 'B-');
+  assert.equal(M.gradeDeal(over, 4, 2.5, 70, 15, cfg, { fills: true }).g, 'B', 'fills a need');
+});
