@@ -2041,3 +2041,21 @@ aside .sbtwo .scoreboard.list,aside .card .sbtwo .scoreboard.list.n4{grid-templa
 .bk.cons .bk-col .bk-g::after{display:none}
 .bk-lab{display:grid;gap:4px}
 .bk-lab>small{font-size:11.5px;color:var(--muted);font-weight:700}
+
+/* the commissioner's pinned note */
+.cm-note{display:grid;gap:4px;padding:14px 18px;border-radius:14px;background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--lc, var(--brand))}
+.cm-note b{font-size:13px}
+.cm-note p{margin:0;font-size:15px;max-width:80ch}
+
+/* team stats: each category's total with its rank beneath, the top three and bottom three tinted */
+table.ts td small{display:block;font-size:10.5px;color:var(--muted);font-weight:700;line-height:1}
+table.ts td.top{background:color-mix(in srgb,var(--win) 12%,transparent)}
+table.ts td.bot{background:color-mix(in srgb,var(--loss) 10%,transparent)}
+table.ts .gs{border-left:2px solid var(--line-2)}
+/* every roster on one page */
+.rs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:12px;align-items:start}
+.rs-c.me{border-color:var(--brand)}
+.rs-l{list-style:none;margin:0;padding:6px 0}
+.rs-l li{display:grid;grid-template-columns:44px minmax(0,1fr);gap:8px;align-items:center;padding:3px 14px;font-size:13px}
+.rs-l .slot{font-size:10.5px;padding:1px 0;text-align:center}
+.rs-c .mod-h .ps{white-space:nowrap}

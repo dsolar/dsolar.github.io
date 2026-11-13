@@ -230,6 +230,16 @@ if (yr && yr.players) {
   L.ext = { source: 'Yahoo', season: 2026, ranks };
   console.log(`Yahoo ranks: ${Object.keys(ranks).length} players`);
 }
+// each team's season totals in every category, as Yahoo has them (the Team stats page)
+{
+  const race = tryRead('yoenis/race.json');
+  if (race && race.season_stats) {
+    const keyOfCat = { R: 'r', H: 'h', HR: 'hr', RBI: 'rbi', SB: 'sb', TB: 'tb', AVG: 'avg', OPS: 'ops', W: 'w', L: 'l', SV: 'sv', K: 'k', HLD: 'hld', ERA: 'era', WHIP: 'whip', QS: 'qs' };
+    const out = {};
+    for (const [tk, arr] of Object.entries(race.season_stats)) { const t = keyOf[tk]; if (t == null || t < 0) continue; out[t] = Object.fromEntries(race.cats.map((c, i) => [keyOfCat[c.abbr] || c.abbr.toLowerCase(), arr[i]])); }
+    L.imported.seasonStats = out;
+  }
+}
 const yb = tryRead('tools/yahoo_yoenis/box/2026.json');
 if (yb && yb.box && Object.keys(yb.box).length) {
   const weeks = {};

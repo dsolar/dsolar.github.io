@@ -132,7 +132,7 @@
     /* ---------- routing ---------- */
     const TABS = () => [["league", "League"], ["team", "My Team"], ["matchup", gl() ? "The block" : roto() ? "Categories" : allplay1() ? "Board" : "Matchup"], ["players", "Players"], ["draft", "Draft"]].concat(opts.commishTools ? [["commish", "Commissioner"]] : []);
     function subsOf(tab) {
-      if (tab === "league") return [["overview", "Overview"]].concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : roto() ? "By week" : "Scoreboard"]].concat(recapOn() && lastDone() >= 1 ? [["recap", "Recap"]] : []).concat([["transactions", "Transactions"], ["managers", "Managers"]]).concat(opts.dues ? [["dues", "Dues"]] : []).concat([["history", "History"], ["rules", "Rules"]]).concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []));
+      if (tab === "league") return [["overview", "Overview"]].concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : roto() ? "By week" : "Scoreboard"]].concat(recapOn() && lastDone() >= 1 ? [["recap", "Recap"]] : []).concat(!pts() && !gl() && sc().type === "cats" ? [["teamstats", "Team stats"]] : []).concat([["rosters", "Rosters"], ["transactions", "Transactions"], ["managers", "Managers"]]).concat(opts.dues ? [["dues", "Dues"]] : []).concat([["history", "History"], ["rules", "Rules"]]).concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []));
       if (tab === "team") return [["roster", "Roster"]].concat(roto() ? [] : [["schedule", gl() ? "History" : "Schedule"]]).concat(L().settings.trades === false ? [] : [["trades", "Trades", pendingTrades()]]);
       if (tab === "players") return [["fa", "Free agents"], ["all", "All players"], ["watch", "Watch list"]].concat(L().settings.trades !== false && me() != null && !pts() ? [["finder", "Trade finder"]] : []).concat([ ["claims", "Waiver claims", L().claims.filter((c) => c.team === me() && c.status === "open").length], ["tx", "Transactions"]]);
       return [];
@@ -367,6 +367,7 @@
       const total = G.totalWeeks(L());
       return `<div class="wrap page">
         <div class="head sr"><h1 class="disp">${over() ? "Season over" : w > L().settings.weeks ? `Playoffs, week ${w}` : `Week ${w}`}</h1><span class="ps">${esc(L().season || "")}${L().season ? " season, " : ""}${over() ? `${total} weeks played` : `${Math.max(0, total - w)} week${total - w === 1 ? "" : "s"} after this one`}${myRow ? `. You're ${ord(myRow.rank)} at ${myRow.w}-${myRow.l}${myRow.t ? "-" + myRow.t : ""}` : ""}.</span></div>
+        ${noteCard()}
         ${champ != null && oneWeekLg() ? finishCard() : champ != null ? champHero(champ) : ""}
         ${!games.length || over() ? "" : `<div class="stack" style="gap:8px"><div class="row"><h2 style="margin:0;font-size:15px">${over() ? "Final week" : mine ? `Around the league, week ${w}` : `Week ${w} scoreboard`}</h2><a href="#league/scoreboard" class="small" style="margin-left:auto">All scores</a></div>${U.scoreboard(mine ? games.filter((g) => !g.me) : games, fmtS)}</div>`}
         <div class="cols"><div class="stack">
@@ -813,6 +814,42 @@
         <div class="row txbar"><div class="chips" role="group" aria-label="Type">${[["", "All"], ["add", "Adds"], ["drop", "Drops"], ["waiver", "Waivers"], ["trade", "Trades"]].map(([k, n]) => `<button type="button" data-txf="${k}" aria-pressed="${k === f}">${n}</button>`).join("")}</div>
         <label class="sr" for="fk-txt">Team</label><select id="fk-txt" class="txsel"><option value="">Every team</option>${L().teams.map((t) => `<option value="${t.id}"${tf === t.id ? " selected" : ""}>${esc(t.name)}</option>`).join("")}</select></div>
         ${txTable(items.slice(0, lim))}${items.length > lim ? `<div class="row" style="justify-content:center;margin-top:12px"><button type="button" class="btn" data-txmore>Show more (${items.length - lim} left)</button></div>` : ""}</div>`;
+    }
+    /* Team stats: every team's season in each category and where it ranks (1 the best). A season brought in from
+       another site uses that site's totals (L.imported.seasonStats); otherwise the weeks add up here: counting
+       categories summed, rates averaged across the weeks played. */
+    function teamStatsPage() {
+      const cats = sc().cats, n = L().teams.length, given = L().imported && L().imported.seasonStats;
+      const tot = L().teams.map((t) => {
+        if (given && given[t.id]) return given[t.id];
+        const o = {}, cnt = {};
+        for (let w = 1; w <= Math.min(L().week - 1, L().settings.weeks); w++) for (const g of L().results[w] || []) {
+          const side = g.a === t.id ? 0 : g.b === t.id ? 1 : -1;
+          if (side < 0 || !g.cats) continue;
+          for (const c of cats) { const v = (g.cats[c.k] || [])[side]; if (v == null) continue; o[c.k] = (o[c.k] || 0) + v; cnt[c.k] = (cnt[c.k] || 0) + 1; }
+        }
+        for (const c of cats) if (c.rate && cnt[c.k]) o[c.k] = o[c.k] / cnt[c.k];
+        return o;
+      });
+      const rank = (c, t) => { const v = tot[t][c.k]; if (v == null) return null; return 1 + tot.filter((x) => x[c.k] != null && (c.low ? x[c.k] < v : x[c.k] > v)).length; };
+      const sk = ui.tsSort && cats.find((c) => c.k === ui.tsSort);
+      const st = standings(), order = sk ? L().teams.map((t) => t.id).sort((a, b) => (rank(sk, a) || 99) - (rank(sk, b) || 99)) : st.map((r) => r.team);
+      const fmt = (c, v) => (v == null ? "-" : c.fmt ? c.fmt(v) : String(Math.round(v)));
+      const heat = (r) => (r == null ? "" : r <= 3 ? " top" : r > n - 3 ? " bot" : "");
+      return `<div class="wrap page"><div class="head"><h1 class="disp">Team stats</h1><span class="ps">${esc(L().season || "")} season totals${given ? ` from ${esc(L().imported.from || "")}` : ""}. The small number is the rank; tap a category to sort by it.</span></div>
+        <div class="card"><div class="table-wrap"><table class="t ts"><thead><tr><th class="sortable${sk ? "" : " on"}" data-tssort="">Team</th>${cats.map((c, i) => `<th class="r sortable${sk === c ? " on" : ""}${i > 0 && (c.line || "") !== (cats[i - 1].line || "") ? " gs" : ""}" data-tssort="${esc(c.k)}">${esc(c.label)}</th>`).join("")}</tr></thead><tbody>
+          ${order.map((t) => `<tr${isMe(t) ? ' class="me"' : ""}><td class="nm"><a class="row" style="gap:8px;color:inherit;text-decoration:none" href="${teamHref(t)}">${teamAv(T(t), "sm")}<span class="ell">${esc(T(t).name)}</span></a></td>${cats.map((c, i) => { const r = rank(c, t); return `<td class="r num${heat(r)}${i > 0 && (c.line || "") !== (cats[i - 1].line || "") ? " gs" : ""}">${fmt(c, tot[t][c.k])}<small>${r || ""}</small></td>`; }).join("")}</tr>`).join("")}
+        </tbody></table></div></div></div>`;
+    }
+    // Every team's roster on one page, Yahoo's "Rosters": starters by slot, then the bench and IR, a card a team
+    function rostersPage() {
+      const w = curWeek();
+      const card = (t) => {
+        const lu = G.lineupFor(L(), ctx, t.id, w), ir = L().ir[t.id] || [], bench = L().rosters[t.id].filter((x) => !lu.includes(x) && !ir.includes(x));
+        const li = (sl, id) => { const p = id && ctx.byId[id]; return `<li><span class="slot">${esc(sl)}</span>${p ? `<span data-player="${esc(p.id)}" class="ell" style="cursor:pointer">${esc(p.n)} <small class="ps">${esc(S.positions(p).join(", "))} ${esc(p.t || "")}</small></span>` : `<span class="ps">Empty</span>`}</li>`; };
+        return `<div class="card rs-c${isMe(t.id) ? " me" : ""}"><div class="mod-h">${teamAv(t, "sm")}<h2 class="ell"><a href="${teamHref(t.id)}" style="color:inherit;text-decoration:none">${esc(t.name)}</a></h2><span class="ps">${esc(recOf(t.id))}</span></div><ul class="rs-l">${L().settings.lineup.map((sl, i) => li(sl, lu[i])).join("")}${bench.map((id) => li("BN", id)).join("")}${ir.map((id) => li("IR", id)).join("")}</ul></div>`;
+      };
+      return `<div class="wrap page"><div class="head"><h1 class="disp">Rosters</h1><span class="ps">Every team, starters first</span></div><div class="rs-grid">${L().teams.map(card).join("")}</div></div>`;
     }
     /* ---------- league history: past seasons (shared leagues pass opts.history()) plus this one ---------- */
     function seasonsAll() {
@@ -1821,7 +1858,10 @@
       // or any one team. Free agents opens on available, All players on everyone
       const show = ui.pshow && (sub === "fa" || sub === "all" || !sub) ? ui.pshow : sub === "fa" ? "avail" : "all";
       const onW = (p) => G.onWaivers(L(), p.id, now());
-      if (sub === "fa" || sub === "all" || !sub) rows = rows.filter((p) => { const o = ctx.own[p.id]; return show === "all" ? true : show === "avail" ? o == null : show === "fa" ? o == null && !onW(p) : show === "w" ? o == null && onW(p) : show === "taken" ? o != null : show === "mine" ? o === mid : o === +show; });
+      const proTeams = [...new Set(opts.players.map((p) => p.t).filter((t) => t && t !== "FA"))].sort();
+      if (ui.ppro && (sub === "fa" || sub === "all" || !sub)) rows = rows.filter((p) => p.t === ui.ppro);
+      const keptNow = new Set(((L().draft && L().draft.board) || []).filter((x) => x && x.keeper).map((x) => x.pid));
+      if (sub === "fa" || sub === "all" || !sub) rows = rows.filter((p) => { const o = ctx.own[p.id]; return show === "all" ? true : show === "avail" ? o == null : show === "fa" ? o == null && !onW(p) : show === "w" ? o == null && onW(p) : show === "taken" ? o != null : show === "mine" ? o === mid : show === "il" ? o == null && G.irEligible(p) : show === "keep" ? keptNow.has(p.id) : show === "watch" ? w.includes(p.id) : o === +show; });
       if (sub === "watch") rows = rows.filter((p) => w.includes(p.id));
       const actions = (p) => {
         const own = ctx.own[p.id];
@@ -1834,11 +1874,20 @@
         return L().settings.trades === false ? star : `${star}<button class="btn icon trade" data-trade="${own}" data-want="${esc(p.id)}" aria-label="Trade for ${esc(p.n)}">&#8644;</button>`;
       };
       const cols = U.poolColumns(sport, { money: auctionLg(), value: pts(), group: U.groupOf(sport, ui.pf), scoring: L().scoring, owner: statusOf, ownerHide: ["avail", "fa", "w"].includes(show) || sub === "watch", ownerSort: (p) => (ctx.own[p.id] == null ? -1 : ctx.own[p.id]), actions, extra: pts() ? [] : [] });
+      // Yahoo's columns beside ours: games played, last season's preseason and final ranks, and % rostered (another
+      // site's, when the league came from one: L.ext)
+      { const ext = (L().ext && L().ext.ranks) || null, xr = (p) => (ext && ext[p.id]) || {}, yr = Number(L().season) || "", grp = U.groupOf(sport, ui.pf);
+        const add = [].concat(grp && sport.cols[grp] && sport.cols[grp].g != null ? [{ k: "gp", label: "GP", cls: "r num", title: "Games played last season", sort: (p) => S.stat(sport, p, grp, "g") || 0, html: (p) => { const v = S.stat(sport, p, grp, "g"); return v == null ? `<span class="ps">-</span>` : String(Math.round(v)); } }] : [],
+          ext ? [{ k: "pre", label: "Pre", cls: "r num hide-s", title: `${L().ext.source} preseason rank, ${yr}`, sort: (p) => xr(p).pre || 1e4, asc: true, html: (p) => (xr(p).pre ? String(xr(p).pre) : `<span class="ps">-</span>`) },
+            { k: "fin", label: "Final", cls: "r num hide-s", title: `${L().ext.source} rank for the ${yr} season`, sort: (p) => xr(p).szn || 1e4, asc: true, html: (p) => (xr(p).szn ? String(xr(p).szn) : `<span class="ps">-</span>`) },
+            { k: "ros", label: "% Ros", cls: "r num hide-s", title: `Rostered in ${L().ext.source} leagues`, sort: (p) => (xr(p).own != null ? xr(p).own : -1), html: (p) => (xr(p).own != null ? `${Math.round(xr(p).own)}%` : `<span class="ps">-</span>`) }] : []);
+        const at = Math.max(1, cols.findIndex((c) => c.k === "pos" || c.k === "prank") + 1);
+        if (add.length) cols.splice(at, 0, ...add); }
       rows = U.sortRows(rows, cols, ui.psort);
       if (sub === "watch") return watchPage(actions);
       return `<div class="wrap page"><div class="head"><h1 class="disp">${sub === "fa" ? "Free agents" : sub === "watch" ? "Watchlist" : "All players"}</h1><span class="ps">${rows.length} players. FA is free to add now; W is on waivers, so put in a claim.</span></div>
         ${L().openWaivers > now() && sub !== "all" ? `<div class="banner" style="margin-bottom:12px"><b>Everyone the draft left is on waivers until ${esc(G.waiverWhen(L().openWaivers))}.</b> <span class="muted">Put in claims now${L().settings.waivers === "faab" ? " with a bid" : ""}. They all run then${L().settings.waivers === "faab" ? ", highest bid first" : ", in waiver order"}.</span></div>` : ""}
-        <div class="tools">${U.search(ui.pf)}${sub === "watch" ? "" : `<label class="sr" for="fk-pshow">Show</label><select id="fk-pshow" class="txsel"><optgroup label="Players">${[["all", "All players"], ["avail", "All available"], ["fa", "Free agents only"], ["w", "Waivers only"], ["taken", "All taken"]].map(([k, n]) => `<option value="${k}"${show === k ? " selected" : ""}>${n}</option>`).join("")}${mid != null ? `<option value="mine"${show === "mine" ? " selected" : ""}>My team</option>` : ""}</optgroup><optgroup label="A team">${L().teams.filter((t) => t.id !== mid).map((t) => `<option value="${t.id}"${show === String(t.id) ? " selected" : ""}>${esc(t.name)}</option>`).join("")}</optgroup></select>`}</div>${U.posFilter(sport, ui.pf.pos, [], L().settings.lineup)}
+        <div class="tools">${U.search(ui.pf)}${sub === "watch" ? "" : `<label class="sr" for="fk-pshow">Show</label><select id="fk-pshow" class="txsel"><optgroup label="Players">${[["all", "All players"], ["avail", "All available"], ["fa", "Free agents only"], ["w", "Waivers only"], ["il", "IL eligible, available"], ["keep", "Kept this season"], ["watch", "My watch list"], ["taken", "All taken"]].map(([k, n]) => `<option value="${k}"${show === k ? " selected" : ""}>${n}</option>`).join("")}${mid != null ? `<option value="mine"${show === "mine" ? " selected" : ""}>My team</option>` : ""}</optgroup><optgroup label="A team">${L().teams.filter((t) => t.id !== mid).map((t) => `<option value="${t.id}"${show === String(t.id) ? " selected" : ""}>${esc(t.name)}</option>`).join("")}</optgroup></select>`}${proTeams.length > 1 ? `<label class="sr" for="fk-pro">Pro team</label><select id="fk-pro" class="txsel"><option value="">Every ${esc(sport.league || "pro")} team</option>${proTeams.map((t) => `<option value="${esc(t)}"${ui.ppro === t ? " selected" : ""}>${esc(t)}</option>`).join("")}</select>` : ""}</div>${U.posFilter(sport, ui.pf.pos, [], L().settings.lineup)}
         ${U.table({ cols, rows, sort: ui.psort, dense: true, limit: ui.plimit || 250, id: "fk-players", empty: sub === "watch" ? "Star players to watch them here." : "No one matches.", rowAttr: (p) => `data-player="${esc(p.id)}"${ctx.own[p.id] === mid ? ' class="me"' : ""}` })}</div>`;
     }
     function claimsPage() {
@@ -2046,6 +2095,12 @@
 
     /* The season's last word on the front page, in the league's own colors: the champion and the title game on the
        left; the podium and what each place pays (the dues' prizes, when the league has them) on the right. */
+    // the commissioner's pinned note (L.notes, the last one), at the top of the front page
+    function noteCard() {
+      const n = (L().notes || [])[(L().notes || []).length - 1];
+      if (!n) return "";
+      return `<div class="cm-note"><b>From the commissioner</b><p>${esc(n.text).replace(/\n/g, "<br>")}</p><small class="ps">${esc(U.ago(n.at, now()))}</small></div>`;
+    }
     function champHero(champ) {
       const br = U.leagueBrand(L().name, L().settings.brand), tw = G.totalWeeks(L());
       const fin = gl() || roto() ? null : G.matchups(L(), ctx, tw, 1).find((m) => m.kind === "title" && (m.a === champ || m.b === champ));
@@ -2097,7 +2152,7 @@
       const keep = $("#fk-players") ? $("#fk-players").scrollTop : 0;
       const focus = U.focusKey(opts.el) || U.focusKey(opts.top);
       let html = "";
-      if (r.tab === "league") html = { overview, chat: chatPage, standings: standingsPage, scoreboard: () => scoreboardPage(r.arg), recap: () => recapPage(r.arg), managers: managersPage, transactions: txPage, dues: duesPage, history: pastPage, rules: settingsPage }[r.sub]();
+      if (r.tab === "league") html = { overview, chat: chatPage, standings: standingsPage, scoreboard: () => scoreboardPage(r.arg), recap: () => recapPage(r.arg), managers: managersPage, transactions: txPage, teamstats: teamStatsPage, rosters: rostersPage, dues: duesPage, history: pastPage, rules: settingsPage }[r.sub]();
       else if (r.tab === "team") html = { roster: () => rosterPage(r.arg), schedule: () => schedulePage(r.arg), trades: () => tradesPage(r.arg) }[r.sub]();
       else if (r.tab === "matchup") html = matchupPage(r.sub, r.arg);
       else if (r.tab === "players") html = playersPage(r.sub);
@@ -2258,11 +2313,12 @@
     opts.el.addEventListener("click", (e) => {
       const mb = e.target.closest("[data-more]");
       if (mb) { ui.plimit = (ui.plimit || 250) + 250; render(); return; }
-      const b = e.target.closest("[data-tfmode],[data-tfprop],[data-dview],[data-rview],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
+      const b = e.target.closest("[data-tssort],[data-tfmode],[data-tfprop],[data-dview],[data-rview],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
       if (b) {
         e.preventDefault(); e.stopPropagation();
         const d = b.dataset, mid = me();
-        if (d.tfmode) { ui.tfMode = d.tfmode; render(); }
+        if (d.tssort != null) { ui.tsSort = d.tssort || null; render(); }
+        else if (d.tfmode) { ui.tfMode = d.tfmode; render(); }
         else if (d.mgr != null) { const Dl = U.dialog(managerCard(+d.mgr, true)); Dl.onclick = (ev) => { if (ev.target.closest("[data-editprofile]")) { Dl.close(); opts.editProfile(); } }; }
         else if (b.hasAttribute("data-editprofile")) opts.editProfile();
         else if (d.unblock) act(() => G.setBlock(L(), mid, d.unblock, false), `${ctx.byId[d.unblock].n} is off the block.`);
@@ -2322,7 +2378,7 @@
     });
     opts.el.addEventListener("input", (e) => { if (e.target.id === "fk-q") { ui.pf.q = e.target.value; render(); } });
     opts.el.addEventListener("change", (e) => { if (e.target.id === "fk-txt") { ui.txt = e.target.value; ui.txlim = 200; render(); } });
-    opts.el.addEventListener("change", (e) => { if (e.target.id === "fk-pshow") { ui.pshow = e.target.value; ui.plimit = 0; render(); return; } if (e.target.id === "team-pick") { const r = route(); location.hash = `#team/${r.sub || "roster"}/${e.target.value}`; } });
+    opts.el.addEventListener("change", (e) => { if (e.target.id === "fk-pshow") { ui.pshow = e.target.value; ui.plimit = 0; render(); return; } if (e.target.id === "fk-pro") { ui.ppro = e.target.value; ui.plimit = 0; render(); return; } if (e.target.id === "team-pick") { const r = route(); location.hash = `#team/${r.sub || "roster"}/${e.target.value}`; } });
     opts.top.addEventListener("click", (e) => { const t = e.target.closest("[data-trade]"); if (t) { e.preventDefault(); openTrade(null); } });
     window.addEventListener("hashchange", () => { ui.moving = null; render(); window.scrollTo(0, 0); });
     render();

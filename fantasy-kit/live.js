@@ -846,6 +846,7 @@
     const trades = L ? L.trades.filter((t) => t.status === "accepted").slice(-12).reverse() : [];
     return `<div class="head"><h1 class="disp">Commissioner</h1><span class="ps">Every change here saves for the whole league and shows up in its transactions.</span></div>
       ${nextSeasonCard()}
+      ${L ? card("Note to the league", `<p class="small" style="margin:0">Pinned at the top of the league's front page for everyone: a deadline, a rule change, a reminder.${(L.notes || []).length ? ` The current note went up ${esc(U.ago(L.notes[L.notes.length - 1].at, now()))}.` : ""}</p>`, `<button class="btn" data-cm="note">${(L.notes || []).length ? "Change the note" : "Post a note"}</button>${(L.notes || []).length ? `<button class="btn ghost" data-cm="unnote">Take it down</button>` : ""}`) : ""}
       <div class="cols2">
         ${card("Invite and dues", `<p class="small" style="margin:0">${openSeats() ? `${openSeats()} team${openSeats() > 1 ? "s are" : " is"} open. ` : ""}Anyone with the invite link can sign in and take an open team, even mid-season.${duesOn() ? ` Dues: ${paidN()} of ${docTeams().length} paid.` : ""}</p>`, `<button class="btn go" data-live="invite">Invite managers</button><button class="btn" data-live="dues">${duesOn() ? "Dues" : "Set up dues"}</button>`)}
         <div class="card"><div class="mod-h"><h2>Managers</h2></div><div class="bd">${seatList()}</div></div>
@@ -863,6 +864,16 @@
   }
   // commissioner changes save like any other move, as the commissioner
   const commishSave = (r, msg) => { if (!r || r.ok === false) { U.toast((r && r.why) || "That didn't work", true); return false; } push(); if (app) app.refresh(); if (msg) U.toast(msg); return true; };
+  // the commissioner's note: one pinned message on the front page (the last few are kept)
+  function noteDialog() {
+    const cur = (L.notes || [])[(L.notes || []).length - 1];
+    U.dialog(`<h3>Note to the league</h3><form class="stack"><div class="field"><label for="fk-note">Everyone sees this at the top of the league's front page</label><textarea id="fk-note" name="note" rows="4" maxlength="600" required>${esc(cur ? cur.text : "")}</textarea></div><div class="acts"><button type="button" class="btn ghost" data-close>Cancel</button><button class="btn go">Post it</button></div></form>`, (fd) => {
+      const text = String(fd.get("note") || "").trim().slice(0, 600);
+      if (!text) return false;
+      L.notes = (L.notes || []).concat([{ at: now(), text }]).slice(-5);
+      commishSave({ ok: true }, "Posted for the league.");
+    });
+  }
   function rulesDialog() {
     const s = L.settings, started = now() >= L.start || L.week > 1, inPlayoffs = L.week > s.weeks, gl = G.isGuillotine(L);
     const medianOk = s.format === "h2h" && (s.tally || "game") === "game";
@@ -1063,7 +1074,7 @@
     const kt = e.target.closest("[data-kp-team]");
     if (kt && info.commish) keeperDialog(+kt.dataset.kpTeam);
     const cm = e.target.closest("[data-cm]");
-    if (cm && info.commish) { const k = cm.dataset.cm; if (k === "rules") rulesDialog(); else if (k === "look") lookDialog(); else if (k === "teams") teamsDialog(); else if (k === "move") moveDialog(); else if (k === "delete") deleteDialog(); }
+    if (cm && info.commish) { const k = cm.dataset.cm; if (k === "rules") rulesDialog(); else if (k === "look") lookDialog(); else if (k === "teams") teamsDialog(); else if (k === "move") moveDialog(); else if (k === "delete") deleteDialog(); else if (k === "note") noteDialog(); else if (k === "unnote") { L.notes = []; commishSave({ ok: true }, "The note is down."); } }
     const rv = e.target.closest("[data-cm-rev]");
     if (rv && info.commish) { const tid = Number(rv.dataset.cmRev); U.confirm("Reverse this trade?", "Every player, pick and FAAB dollar goes back to the team that sent it.", "Reverse the trade", () => commishSave(G.reverseTrade(L, lctx(), tid, now()), "Trade reversed.")); }
     if (lv && lv.dataset.live === "new-season") U.confirm("Start next season?", "This season goes into the league's history, and the league opens a new draft room. You can't undo it.", "Start next season", newSeason);
