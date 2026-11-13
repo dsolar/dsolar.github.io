@@ -27,7 +27,7 @@
     const sc = () => G.scoring(L(), ctx);
     const pts = () => sc().type === "points";
     const fmtS = (x) => (x == null ? "-" : pts() ? (Math.abs(x) < 0.05 ? 0 : x).toFixed(1) : String(Math.round(x) || 0));
-    const ui = { moving: null, week: null, pf: { q: "", pos: "" }, psort: { k: "rank", dir: 1 }, pshow: "fa", txf: "", sbWeek: null };
+    const ui = { moving: null, week: null, pf: { q: "", pos: sport.groups && (sport.scorings[L().scoring] || {}).type !== "points" ? "g:bat" : "" }, psort: { k: "rank", dir: 1 }, pshow: "fa", txf: "", sbWeek: null };
     const curWeek = () => Math.min(L().week, G.totalWeeks(L()));
     const over = () => L().week > G.totalWeeks(L());
     // real scores: nothing is live until the week's first game kicks off (a football Wednesday is still "Projected")
@@ -121,7 +121,7 @@
     /* ---------- routing ---------- */
     const TABS = () => [["league", "League"], ["team", "My Team"], ["matchup", gl() ? "The block" : roto() ? "Categories" : allplay1() ? "Board" : "Matchup"], ["players", "Players"], ["draft", "Draft"]].concat(opts.commishTools ? [["commish", "Commissioner"]] : []);
     function subsOf(tab) {
-      if (tab === "league") return [["overview", "Overview"]].concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : roto() ? "By week" : "Scoreboard"]].concat(recapOn() && lastDone() >= 1 ? [["recap", "Recap"]] : []).concat([["managers", "Managers"]]).concat(opts.dues ? [["dues", "Dues"]] : []).concat([["history", "History"], ["rules", "Rules"]]).concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []));
+      if (tab === "league") return [["overview", "Overview"]].concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : roto() ? "By week" : "Scoreboard"]].concat(recapOn() && lastDone() >= 1 ? [["recap", "Recap"]] : []).concat([["transactions", "Transactions"], ["managers", "Managers"]]).concat(opts.dues ? [["dues", "Dues"]] : []).concat([["history", "History"], ["rules", "Rules"]]).concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []));
       if (tab === "team") return [["roster", "Roster"]].concat(roto() ? [] : [["schedule", gl() ? "History" : "Schedule"]]).concat(L().settings.trades === false ? [] : [["trades", "Trades", pendingTrades()]]);
       if (tab === "players") return [["fa", "Free agents"], ["all", "All players"], ["watch", "Watchlist"], ["claims", "Waiver claims", L().claims.filter((c) => c.team === me() && c.status === "open").length], ["tx", "Transactions"]];
       return [];
@@ -156,7 +156,9 @@
       if (isMe(m.b)) m = flip(m);
       const live = !m.final;
       const pj = live && m.proj ? m.proj : null;
-      const cats = !pts() && m.cats ? sc().cats.map((c) => { const [x, y, d] = m.cats[c.k]; const f = c.fmt || ((v) => (Math.abs(v) >= 100 ? Math.round(v) : v.toFixed(1))); const q = pj && pj.probs[c.k], px = pj && pj.cats[c.k]; return { label: c.label, fa: f(x), fb: f(y), d, p: q, pa: px ? f(px[0]) : null, pb: px ? f(px[1]) : null }; }) : null;
+      // counting stats are whole numbers (runs, hits, strikeouts); rates keep their own format. The first pitching
+      // category starts a new group, so hitting and pitching read apart
+      const cats = !pts() && m.cats ? sc().cats.map((c, i, all) => { const [x, y, d] = m.cats[c.k]; const f = c.fmt || ((v) => String(Math.round(v))); const q = pj && pj.probs[c.k], px = pj && pj.cats[c.k]; return { label: c.label, fa: f(x), fb: f(y), d, p: q, pa: px ? f(px[0]) : null, pb: px ? f(px[1]) : null, grp: i > 0 && (c.line || "") !== (all[i - 1].line || "") }; }) : null;
       // a category week projects to a record: "Projected 6-3"
       const rec = (x, y, t) => `${x}-${y}${t ? `-${t}` : ""}`;
       return { a: { team: T(m.a), rec: recOf(m.a), score: m.sa, proj: live && pts() ? m.pa : null, projText: pj ? `Projected ${rec(pj.sa, pj.sb, pj.ties)}` : null }, b: { team: T(m.b), rec: recOf(m.b), score: m.sb, proj: live && pts() ? m.pb : null, projText: pj ? `Projected ${rec(pj.sb, pj.sa, pj.ties)}` : null },
@@ -585,6 +587,7 @@
       const rd = G.roundOf(L(), w);
       if (!rd) return "Playoffs";
       const leg = rd.weeks.length > 1 ? `, week ${rd.weeks.indexOf(w) + 1} of 2` : "";
+      if ((kind === "title" || !kind) && rd.name === "Final") return `Championship${leg}`;
       return kind === "third" ? `Third place${leg}` : /^p\d+$/.test(kind || "") ? `${placeGame(+kind.slice(1), rd)}${leg}` : kind === "cons" ? `Consolation ${rd.name.toLowerCase()}${leg}` : `${rd.name}${leg}`;
     }
     // short week chips: "Week 9", then "Semis", "Final 1", "Final 2"
@@ -640,6 +643,23 @@
         <div class="show-m sbm">${U.scoreboard(gamesVM(w), fmtS, { list: true })}</div></div>`;
     }
     const TXK = { add: "add", drop: "drop", "add/drop": "add", waiver: "waiver", trade: "trade", veto: "trade" };
+    // a week's dates: "Mar 30 to Apr 5"
+    const wkDates = (w) => { const a = new Date(G.weekStart(L(), w) + 12 * 36e5), b = new Date(G.weekStart(L(), w + 1) - 12 * 36e5), f = (d) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" }); return `${f(a)} to ${f(b)}`; };
+    // a move's date the way a transaction log reads: "Sep 21, 7:42 PM"
+    const txDate = (at) => new Date(at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+    // The transaction log as a table: when, who, what kind, who came and who went. One row per move.
+    function txTable(items) {
+      const cell = (ids, extra) => (ids || []).map((id) => `<div class="txp" data-player="${esc(id)}">${pname(sport, playerVM(id), extra || "", { size: "sm" })}</div>`).join("");
+      const kind = (x) => ({ trade: `<span class="tag info">Trade</span>`, waiver: `<span class="tag gold">Waiver</span>`, add: `<span class="tag win">Add</span>`, "add/drop": `<span class="tag win">Add</span>`, drop: `<span class="tag">Drop</span>`, ir: `<span class="tag">IR</span>`, commish: `<span class="tag">Commish</span>`, veto: `<span class="tag loss">Veto</span>`, outbid: `<span class="tag">Outbid</span>` }[x.type] || `<span class="tag">${esc(x.type)}</span>`);
+      const rows = items.map((x) => {
+        const who = x.team >= 0 ? `<span class="row" style="gap:7px">${teamAv(T(x.team), "sm")}<b class="ell">${esc(T(x.team).name)}</b></span>` : `<span class="ps">League</span>`;
+        const added = x.type === "trade" ? cell(x.adds, `from ${esc(T(x.other).abbr)}`) : cell(x.adds, x.type === "waiver" && x.faab != null ? `$${x.faab}` : "");
+        const gone = x.type === "trade" ? cell(x.drops, `to ${esc(T(x.other).abbr)}`) : cell(x.drops);
+        const note = !added && !gone && x.text ? `<span class="ps">${esc(x.text)}</span>` : "";
+        return `<tr><td class="txw"><b>${esc(txDate(x.at))}</b><small class="ps">Week ${x.week}</small></td><td class="txt">${who}</td><td class="c">${kind(x)}</td><td>${added || note}</td><td>${gone}</td></tr>`;
+      }).join("");
+      return items.length ? `<div class="table-wrap"><table class="t txtab"><thead><tr><th>When</th><th>Team</th><th class="c">Move</th><th>Added</th><th>Dropped</th></tr></thead><tbody>${rows}</tbody></table></div>` : `<div class="card"><p class="empty" style="margin:0">No moves like that yet.</p></div>`;
+    }
     function txVM(x) {
       const lines = [];
       if (x.type === "trade") { for (const id of x.adds) lines.push(U.txLine(sport, "trade", playerVM(id), `to ${esc(T(x.team).abbr)}`)); for (const id of x.drops) lines.push(U.txLine(sport, "trade", playerVM(id), `to ${esc(T(x.other).abbr)}`)); }
@@ -649,7 +669,7 @@
       if (x.type === "chop") { lines.length = 0; lines.push(`<span class="ps">${esc(x.text)}</span>`); }
       if (x.type === "bite") { lines.length = 0; for (const id of x.adds) lines.push(U.txLine(sport, "trade", playerVM(id), `from ${esc(T(x.other).abbr)}`)); for (const id of x.drops) lines.push(U.txLine(sport, "trade", playerVM(id), `to ${esc(T(x.other).abbr)}`)); }
       const badge = x.type === "bite" ? `<span class="tag loss">Bite</span>` : x.type === "chop" ? `<span class="tag loss">Chopped</span>` : x.type === "champion" ? `<span class="tag win">Champion</span>` : x.type === "trade" ? `<span class="tag info">Trade</span>` : x.type === "waiver" ? `<span class="tag gold">Waiver</span>` : x.type === "veto" ? `<span class="tag loss">Veto</span>` : "";
-      return { team: T(Math.max(0, x.team)), with: x.type === "trade" ? T(x.other) : null, when: now() - x.at < 2 * 864e5 && x.at <= now() ? `Week ${x.week}, ${U.ago(x.at, now())}` : `Week ${x.week}`, lines, badge };
+      return { team: T(Math.max(0, x.team)), with: x.type === "trade" ? T(x.other) : null, when: now() - x.at < 2 * 864e5 && x.at <= now() ? `Week ${x.week}, ${U.ago(x.at, now())}` : `${txDate(x.at)}, week ${x.week}`, lines, badge };
     }
     /* ---------- league chat (shared leagues pass opts.chat: posts(), send(body), unread(), seen()) ---------- */
     // Posts and the league's biggest moves, oldest first, so a trade shows up where people talked about it.
@@ -687,10 +707,13 @@
     }
     function txPage() {
       const f = ui.txf;
-      const items = L().tx.slice().reverse().filter((x) => x.type !== "draft" && (!f || (f === "add" ? /add/.test(x.type) : f === "drop" ? (x.drops || []).length && x.type !== "trade" : x.type === f)));
+      const tf = ui.txt != null && ui.txt !== "" ? +ui.txt : null;
+      const items = L().tx.slice().reverse().filter((x) => x.type !== "draft" && (tf == null || x.team === tf || x.other === tf) && (!f || (f === "add" ? /add/.test(x.type) : f === "drop" ? (x.drops || []).length && x.type !== "trade" : x.type === f)));
+      const lim = ui.txlim || 200;
       return `<div class="wrap page"><div class="head"><h1 class="disp">Transactions</h1><span class="ps">${((n) => (n ? `${n} move${n === 1 ? "" : "s"} this season` : "No moves yet this season"))(L().tx.filter((x) => x.type !== "draft").length)}</span></div>
-        <div class="chips" role="group" aria-label="Type">${[["", "All"], ["add", "Adds"], ["drop", "Drops"], ["waiver", "Waivers"], ["trade", "Trades"]].map(([k, n]) => `<button type="button" data-txf="${k}" aria-pressed="${k === f}">${n}</button>`).join("")}</div>
-        <div class="card">${U.feed(items.slice(0, 120).map(txVM), f ? "None of these yet." : "No adds, drops or trades yet.")}</div></div>`;
+        <div class="row txbar"><div class="chips" role="group" aria-label="Type">${[["", "All"], ["add", "Adds"], ["drop", "Drops"], ["waiver", "Waivers"], ["trade", "Trades"]].map(([k, n]) => `<button type="button" data-txf="${k}" aria-pressed="${k === f}">${n}</button>`).join("")}</div>
+        <label class="sr" for="fk-txt">Team</label><select id="fk-txt" class="txsel"><option value="">Every team</option>${L().teams.map((t) => `<option value="${t.id}"${tf === t.id ? " selected" : ""}>${esc(t.name)}</option>`).join("")}</select></div>
+        ${txTable(items.slice(0, lim))}${items.length > lim ? `<div class="row" style="justify-content:center;margin-top:12px"><button type="button" class="btn" data-txmore>Show more (${items.length - lim} left)</button></div>` : ""}</div>`;
     }
     /* ---------- league history: past seasons (shared leagues pass opts.history()) plus this one ---------- */
     function seasonsAll() {
@@ -1329,7 +1352,7 @@
           if (w > L().settings.weeks) {
             const rd = G.roundOf(L(), w), row = rd && w <= L().week && G.postseason(L()).find((x) => x.round === rd.round);
             const bye = row && row.main.some((g) => g.bye === id);
-            rows.push(`<tr><td>Week ${w}</td><td colspan="3" class="ps">${bye ? `A bye through the ${esc(rd.name.toLowerCase())}` : w <= L().week ? "Out of the playoffs" : "Playoffs"}</td></tr>`);
+            rows.push(`<tr><td class="c num">${w}</td><td class="ps hide-s">${esc(wkDates(w))}</td><td colspan="3" class="ps">${bye ? `A bye through the ${esc(rd.name.toLowerCase())}` : w <= L().week ? "Out of the playoffs" : "Playoffs"}</td></tr>`);
           }
           continue;
         }
@@ -1337,9 +1360,9 @@
         const res = L().results[w] && L().results[w][i];
         const mineA = a === id;
         const r = res ? (res.w === "t" ? "T" : (res.w === "a") === mineA ? "W" : "L") : "";
-        rows.push(`<tr${w === L().week ? ` class="me"` : ""}><td><a href="${matchHref(w, i)}">Week ${w}</a>${w > L().settings.weeks ? ` <span class="tag info">${esc(kindName(games[i].kind, w))}</span>` : ""}</td><td>${teamName(T(opp), { owner: false })}</td><td class="r num">${res ? `<span class="${r === "W" ? "win" : r === "L" ? "loss" : ""}" style="font-weight:850">${r}</span> ${fmtS(mineA ? res.sa : res.sb)}-${fmtS(mineA ? res.sb : res.sa)}` : w === L().week ? `<span class="pill live">Live</span>` : ""}</td><td class="ps hide-s">${recOf(opp)}</td></tr>`);
+        rows.push(`<tr${w === L().week ? ` class="me"` : ""}><td class="c num"><a href="${matchHref(w, i)}">${w}</a></td><td class="ps hide-s">${esc(wkDates(w))}</td><td>${teamName(T(opp), { owner: false })}${w > L().settings.weeks ? ` <span class="tag info">${esc(kindName(games[i].kind, w))}</span>` : ""}</td><td class="r num">${res ? `<span class="${r === "W" ? "win" : r === "L" ? "loss" : ""}" style="font-weight:850">${r}</span> ${fmtS(mineA ? res.sa : res.sb)}-${fmtS(mineA ? res.sb : res.sa)}` : w === L().week ? `<span class="pill live">Live</span>` : ""}</td><td class="ps hide-s r">${recOf(opp)}</td></tr>`);
       }
-      return `<div class="wrap page">${teamHead(id)}<div class="table-wrap"><table class="t"><thead><tr><th>Week</th><th>Opponent</th><th class="r">Result</th><th class="hide-s">Their record</th></tr></thead><tbody>${rows.join("")}</tbody></table></div></div>`;
+      return `<div class="wrap page">${teamHead(id)}<div class="table-wrap"><table class="t sched"><thead><tr><th class="c">Week</th><th class="hide-s">Dates</th><th>Opponent</th><th class="r">Result</th><th class="hide-s r">Their record</th></tr></thead><tbody>${rows.join("")}</tbody></table></div></div>`;
     }
     function tradeVM(t) {
       const mid = me();
@@ -1414,6 +1437,26 @@
     }
 
     /* ---------- Matchup ---------- */
+    // which stat group a lineup spot is: pitchers' spots (SP, RP, P) or hitters'
+    const slotGrp = (sl) => { const v = sport.slots[sl]; return sport.groups && Array.isArray(v) && v.every((x) => sport.groups.pit.includes(x)) ? "pit" : "bat"; };
+    // A baseball category matchup, Yahoo's way: each team's box for the week, hitters and pitchers apart, every
+    // category. A week brought in from Yahoo came as team totals, so it says so instead of making up player lines.
+    function catBoxes(w, m, la, lb) {
+      if (m.final && !m.ta && !m.tb && L().imported) return `<div class="card"><div class="bd"><p class="ps" style="margin:0">This week came over from Yahoo as each team's category totals (above), so there's no player-by-player box score for it.</p></div></div>`;
+      const cols = (grp) => U.statColumns(sport, L().scoring).filter((c) => c.group === grp);
+      const box = (team, lu) => {
+        const tbl = (grp, title) => {
+          const cs = cols(grp);
+          const rows = L().settings.lineup.map((sl, i) => [sl, i]).filter(([sl]) => slotGrp(sl) === grp).map(([sl, i]) => {
+            const p = lu[i] && ctx.byId[lu[i]], wl = p && frac(w) > 0 ? G.playerWeek(L(), ctx, p, w, frac(w)) : null, ps = wl ? { l: wl } : null;
+            return `<tr><td class="c"><span class="slot">${esc(sl)}</span></td><td class="nm">${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, "", { size: "sm" })}</span>` : `<span class="ps">Empty</span>`}</td>${cs.map((c) => { const v = ps ? U.statCell(sport, ps, c) : null; return `<td class="r num">${v == null ? `<span class="ps">-</span>` : c.fmt(v)}</td>`; }).join("")}</tr>`;
+          }).join("");
+          return `<table class="t mbox"><thead><tr><th class="c">Slot</th><th>${title}</th>${cs.map((c) => `<th class="r num"${c.title ? ` title="${esc(c.title)}"` : ""}>${esc(c.label)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>`;
+        };
+        return `<div class="card mbox-c"><div class="mod-h">${teamAv(T(team), "sm")}<h2>${esc(T(team).name)}</h2></div><div class="table-wrap">${tbl("bat", "Hitters")}${tbl("pit", "Pitchers")}</div></div>`;
+      };
+      return `<div class="mboxes">${box(m.a, la)}${box(m.b, lb)}</div>`;
+    }
     function matchupPage(sub, arg) {
       if (allplay1()) return weekBoardPage();
       if (gl()) return blockPage(sub);
@@ -1457,7 +1500,7 @@
         <div class="head"><h1 class="disp">${w > L().settings.weeks ? esc(kindName(m.kind, w)) : L().settings.showdown ? `${esc(L().settings.showdown.label)} showdown` : `Week ${w} matchup`}</h1>${!pts() ? `<span class="ps">Each starter's line for the week so far.</span>` : ""}</div>
         <div class="row" style="flex-wrap:wrap"><div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-mweek="${x}" aria-pressed="${x === w}">${weekChip(x)}</button>`).join("")}</div></div>
         ${over() && oneWeekLg() ? finishCard() : ""}<div class="card">${U.versus(versusVM(w, m))}${leftHtml || outlookLine(m)}${medianLine(w, m)}</div>${w === 1 && L().heist ? heistCard(m.a) : ""}${playsHtml}${gamedayStatus(w)}
-        <div class="cols2" style="grid-template-columns:minmax(0,1fr)">${U.vsTable(sport, rows, pts() ? { a: m.sa, b: m.sb } : null, (x) => (x == null ? "-" : typeof x === "string" ? (/^(No games|Didn't play|Yet to play|Playing now|Done this week|No games this week|\d+ games? left)$/.test(x) ? `<span class="ps">${x}</span>` : x) : x.toFixed(1)))}</div>
+        ${!pts() && sport.groups ? catBoxes(w, m, la, lb) : ""}<div class="cols2" style="grid-template-columns:minmax(0,1fr)${!pts() && sport.groups ? ";display:none" : ""}">${U.vsTable(sport, rows, pts() ? { a: m.sa, b: m.sb } : null, (x) => (x == null ? "-" : typeof x === "string" ? (/^(No games|Didn't play|Yet to play|Playing now|Done this week|No games this week|\d+ games? left)$/.test(x) ? `<span class="ps">${x}</span>` : x) : x.toFixed(1)))}</div>
         <div class="stack" style="gap:8px"><b class="ps">Other games, week ${w}</b>${U.scoreboard(gamesVM(w), fmtS)}</div></div>`;
     }
 
@@ -1711,7 +1754,7 @@
       const keep = $("#fk-players") ? $("#fk-players").scrollTop : 0;
       const focus = U.focusKey(opts.el) || U.focusKey(opts.top);
       let html = "";
-      if (r.tab === "league") html = { overview, chat: chatPage, standings: standingsPage, scoreboard: () => scoreboardPage(r.arg), recap: () => recapPage(r.arg), managers: managersPage, dues: duesPage, history: pastPage, rules: settingsPage }[r.sub]();
+      if (r.tab === "league") html = { overview, chat: chatPage, standings: standingsPage, scoreboard: () => scoreboardPage(r.arg), recap: () => recapPage(r.arg), managers: managersPage, transactions: txPage, dues: duesPage, history: pastPage, rules: settingsPage }[r.sub]();
       else if (r.tab === "team") html = { roster: () => rosterPage(r.arg), schedule: () => schedulePage(r.arg), trades: tradesPage }[r.sub]();
       else if (r.tab === "matchup") html = matchupPage(r.sub, r.arg);
       else if (r.tab === "players") html = playersPage(r.sub);
@@ -1871,7 +1914,7 @@
     opts.el.addEventListener("click", (e) => {
       const mb = e.target.closest("[data-more]");
       if (mb) { ui.plimit = (ui.plimit || 250) + 250; render(); return; }
-      const b = e.target.closest("[data-rview],[data-tr-rival],[data-rematch],[data-pyo],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
+      const b = e.target.closest("[data-rview],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
       if (b) {
         e.preventDefault(); e.stopPropagation();
         const d = b.dataset, mid = me();
@@ -1914,6 +1957,7 @@
         else if (d.trCmveto) { const id = +d.trCmveto; U.confirm("Veto this trade?", "It won't go through, and both teams keep their players.", "Veto trade", () => act(() => G.commishVeto(L(), id, now()), "Trade vetoed.")); }
         else if (d.trVeto) act(() => G.vote(L(), ctx, +d.trVeto, mid, true, now()), "You voted to veto.");
         else if (d.rview) { ui.rview = d.rview; render(); }
+        else if (b.hasAttribute("data-txmore")) { ui.txlim = (ui.txlim || 200) + 300; render(); }
         else if (d.trRival) {
           const t = L().trades.find((x) => x.id === +d.trRival), seller = +d.seller, isFrom = seller === t.from;
           openTrade(seller, null, { get: (isFrom ? t.give : t.get).slice(), pickGet: ((isFrom ? t.pickGive : t.pickGet) || []).slice(), give: [], rivalOf: t.id, lockGet: true });
@@ -1926,6 +1970,7 @@
       if (pl && !e.target.closest("a")) { e.preventDefault(); playerCard(pl.dataset.player); }
     });
     opts.el.addEventListener("input", (e) => { if (e.target.id === "fk-q") { ui.pf.q = e.target.value; render(); } });
+    opts.el.addEventListener("change", (e) => { if (e.target.id === "fk-txt") { ui.txt = e.target.value; ui.txlim = 200; render(); } });
     opts.el.addEventListener("change", (e) => { if (e.target.id === "team-pick") { const r = route(); location.hash = `#team/${r.sub || "roster"}/${e.target.value}`; } });
     opts.top.addEventListener("click", (e) => { const t = e.target.closest("[data-trade]"); if (t) { e.preventDefault(); openTrade(null); } });
     window.addEventListener("hashchange", () => { ui.moving = null; render(); window.scrollTo(0, 0); });

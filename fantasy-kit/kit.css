@@ -1798,7 +1798,27 @@ table.t.en-t td.act,table.t.en-t th.act{position:static;box-shadow:none;backgrou
 .lk-own legend{font-weight:700;font-size:13px;margin-bottom:8px;padding:0}
 .lk-pick{display:flex;align-items:center;gap:8px;font-size:13px}
 .lk-pick input[type=color]{width:40px;height:30px;padding:0;border:1px solid var(--line-2);border-radius:6px;background:none}
-.rtab{margin-top:12px}
+.rtab{margin-top:22px}
+table.t.sched td.c,table.t.sched th.c{width:1%;padding-left:14px;padding-right:14px}
+table.t.sched td.hide-s.ps{white-space:nowrap;width:1%}
+table.t.sched td.r.hide-s{width:1%;white-space:nowrap}
+table.t.txtab td{vertical-align:top}
+table.t.txtab td.txw{white-space:nowrap;width:1%}
+table.t.txtab td.txw small{display:block}
+table.t.txtab td.txt{width:1%;white-space:nowrap;max-width:240px}
+table.t.txtab .txp{cursor:pointer;padding:1px 0}
+table.t.txtab .txp+.txp{margin-top:4px}
+.txbar{flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.txbar .chips{margin:0}
+.txsel{max-width:260px;margin-left:auto}
+@media (max-width:700px){table.t.txtab td.txt{max-width:130px}}
+table.t td.st,table.t th.st{width:1%;white-space:nowrap}
+.catgrid>div.cgs{border-left:2px solid var(--line-2)}
+.mboxes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,560px),1fr));gap:14px}
+.mbox-c .table-wrap{border:0;box-shadow:none}
+table.t.mbox{font-size:13px}
+table.t.mbox td,table.t.mbox th{padding-left:7px;padding-right:7px}
+table.t.mbox + table.t.mbox{border-top:2px solid var(--line-2)}
 .seg.rv{margin:4px 0 2px;flex-wrap:wrap}
 .ipbar{display:grid;gap:6px;margin:12px 0 0;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:13px}
 .ipbar i{display:block;height:6px;border-radius:3px;background:var(--surface-3,#e8edf2);position:relative;overflow:hidden}
