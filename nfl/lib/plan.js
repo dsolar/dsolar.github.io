@@ -99,9 +99,17 @@
   // The same thing on the rating's own scale (standard deviations; 50 + 15z on screen)
   P.ratingZ = (W, p, y) => Math.max(-3, Math.min(3.25, zAt(W, p, y)));
   P.PEAK = PEAK;
+  // The chance he's still playing in a future season: full until a few years past most careers (37 for a
+  // quarterback, 35 for a kicker or punter, 33 for everyone else), then about 15 points less a year. A 43-year-old
+  // quarterback's next season is worth what he'd produce times the real chance he plays it.
+  const RETIRE_AT = { QB: 37, K: 35, P: 35, LS: 35 };
+  P.playingOdds = (p, y, W) => {
+    const g = P.group(p), age = (p.age || 26) + (y - W.season), start = RETIRE_AT[g] || 33;
+    return y <= W.season ? 1 : Math.max(0.1, Math.min(1, 1 - 0.15 * (age - start)));
+  };
   P.value = (W, p, y, shareOverride) => {
     const g = P.group(p), sh = shareOverride != null ? shareOverride : P.share(W, p), age = (p.age || 26) + (y - W.season);
-    const role = W.price[g] * Math.pow(sh, 1.25) * P.multAt(W, p, y);
+    const role = W.price[g] * Math.pow(sh, 1.25) * P.multAt(W, p, y) * P.playingOdds(p, y, W);
     if (P.rookieDeal(p) || !p.c || !p.c.apy) return role;
     const grown = p.c.apy * Math.pow(1.07, Math.max(0, W.season - (p.c.signed || W.season)));
     const own = grown * Math.min(1, sh / 0.6) * aging(g, age) / aging(g, p.age || 26);
@@ -211,7 +219,9 @@
     // a regular from the last two seasons counts as a starter only if he's on injured reserve, or off the depth chart
     // and missing most of this season (not if he's listed as a backup)
     const dr = P.depthRank(W, q), missed = q.st === "RES" || dr >= 4 && (!q.snaps || q.snaps[3] <= Math.max(2, ((W.week || 10) - 1) * 0.4));
-    return (W._role[q.id] = Math.min(1, Math.max(P.share(W, q), dr === 1 ? 0.8 : 0, plays >= 600 && missed ? 0.8 : 0)));
+    // a starting quarterback plays every snap when healthy (blowouts and a game missed shouldn't make him a part-timer)
+    const starter = P.group(q) === "QB" ? 0.97 : 0.8;
+    return (W._role[q.id] = Math.min(1, Math.max(P.share(W, q), dr === 1 ? starter : 0, plays >= 600 && missed ? starter : 0)));
   };
   P.contract = (W, p, y, roleOverride) => {
     W._ce = W._ce || {};
@@ -449,7 +459,7 @@
       // quarterbacks: the better he is, the bigger the premium (an average starter gets none, an MVP-level one about
       // 1.7x), because franchise quarterbacks almost never come available and teams pay No. 1-pick prices to find one
       const qbx = g === "QB" ? Math.min(1.9, QB_PREMIUM + 0.5 * Math.max(0, P.ratingZ(W, p, yy) - 1)) : 1;
-      talent += d * above * (under ? 1 : afterW) * qbx;
+      talent += d * above * (under ? 1 : afterW) * qbx * P.playingOdds(p, yy, W);
       if (under) surplus += d * (market >= cost ? TV_SUR : TV_OVER) * (market - cost);
       rows.push({ y: yy, w: d, above, market, cost: under && i === 0 && now ? cost * left : cost, under });
     });
@@ -468,7 +478,9 @@
       const k = W.season - p.draft[0], fade = [0.85, 0.75, 0.6, 0.45, 0.3][k];
       if (fade) {
         const q = P.quality(W, p), prior = p.draft[1] <= 5 ? 1.45 : p.draft[1] <= 15 ? 1.05 : 0.65, seen = q.zon != null || q.zpr != null;
-        const f = seen ? Math.max(0.25, Math.min(1, 1 - 0.35 * Math.max(0, prior - q.z))) : 1;
+        // unseen (a rookie with no rated snaps yet): the expected value of a quarterback taken there, not the best
+        // case; about two in five early-first quarterbacks turn into long-term starters
+        const f = seen ? Math.max(0.25, Math.min(1, 1 - 0.35 * Math.max(0, prior - q.z))) : 0.65;
         pedigree = { pts: P.pickPoints(p.draft[1]) * fade * f, pick: p.draft[1], year: p.draft[0], fade, f };
         if (pedigree.pts > pts) pts = pedigree.pts;
       }
