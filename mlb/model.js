@@ -46,6 +46,8 @@
     tiered: false,     // price WAR by tier: 1-2 WAR players are plentiful, stars aren't (from the free agent market)
     qoPickCost: 1.5,   // $M, a small dock for signing another team's qualifying-offer player (the lost draft pick
                        // and international pool money)
+    blend: 0.5,        // weight on his last three seasons' actual WAR against FanGraphs' projection (the hub's own
+                       // outlook), scaled by playing time; 0 is FanGraphs alone
     years: 5,          // seasons on the slider
     sims: 4000
   };
@@ -162,11 +164,34 @@
   function provenRecord(p) { return recordShare(p) >= 1; }
   // The WAR a season is credited with: the projection, less any margin of safety, and less the uncertainty on an
   // unproven player (or one with a thin big league record)
+  // The hub's own outlook: FanGraphs' projection blended with what he has actually done. His last three seasons'
+  // WAR per full season (600 PA; 180 innings as a starter, 65 in relief), weighted 5/4/3 toward the latest, is set
+  // against his projected full-season rate; cfg.blend of the gap counts, scaled by how much playing time backs it
+  // (full weight at two full seasons). Returns the share of his projection to count (1 with no record).
+  function recentRead(p) {
+    if (p._rr !== undefined) return p._rr;
+    var rec = p.rec || [], W = [5, 4, 3], unit = p.p ? (isReliever(p) ? 65 : 180) : 600, num = 0, den = 0, pt = 0;
+    var last = rec.length ? rec[rec.length - 1][0] : 0;
+    rec.forEach(function (r) {
+      var k = last - r[0], w = W[k] || 0, t = p.p ? (r[3] || 0) : (r[2] || 0);
+      if (!w || !t) return;
+      num += w * r[1]; den += w * t / unit; pt += t;
+    });
+    p._rr = den > 0 && pt >= unit / 2 ? { rate: num / den, rel: Math.min(1, pt / (2 * unit)) } : null;
+    return p._rr;
+  }
+  function outlookShare(p, cfg) {
+    if (!cfg.blend || !p || isProspect(p) || p.rate == null || p.rate <= 0.3) return 1;
+    var rr = recentRead(p);
+    if (!rr) return 1;
+    var r = p.rate + cfg.blend * rr.rel * (rr.rate - p.rate);
+    return Math.max(0.5, Math.min(1.6, r / p.rate));
+  }
   function countedWar(war, year, season, cfg, p) {
     var prospect = p && isProspect(p);
     var young = p && !prospect && p.g !== "min" && (p.st || 0) < 3 && !(p.c && p.c.type === "Free Agent") // a free agent signing (from Japan, say) is established
       && !provenRecord(p); // so is a young player who has already put in two full seasons' work
-    return Math.max(0, war) * (p && p.faith ? p.faith : 1) * (prospect || cfg.haircut == null ? 1 : cfg.haircut) * Math.pow(cfg.fade == null ? 1 : cfg.fade, year - season)
+    return Math.max(0, war) * outlookShare(p, cfg) * (p && p.faith ? p.faith : 1) * (prospect || cfg.haircut == null ? 1 : cfg.haircut) * Math.pow(cfg.fade == null ? 1 : cfg.fade, year - season)
       // after the coming season, an unproven player's projection counts at youngKeep, less of a cut the more big league
       // work he's already done (flat, not compounding: a player who keeps producing is still worth his projection)
       * (young && year > season ? 1 - (1 - youngKeep(p, cfg)) * (1 - recordShare(p)) : 1);
@@ -876,7 +901,7 @@
 
   var api = { Hub: Hub, DEFAULTS: DEFAULTS, tierMult: tierMult, setDecline: function (x) { DECLINE = x; }, agingDelta: agingDelta, fvWar: fvWar, rateAt: rateAt, warAt: warAt,
     yearTerms: yearTerms, controlStatus: controlStatus, surplus: surplus, simulate: simulate, seriesWin: seriesWin,
-    marketRead: marketRead, gradeDeal: gradeDeal, warPath: warPath, canPlay: canPlay, FIELD_ORDER: FIELD_ORDER, arrival: arrival };
+    marketRead: marketRead, outlookShare: outlookShare, recentRead: recentRead, gradeDeal: gradeDeal, warPath: warPath, canPlay: canPlay, FIELD_ORDER: FIELD_ORDER, arrival: arrival };
   if (typeof module === "object" && module.exports) module.exports = api;
   else root.MLBModel = api;
 })(typeof window !== "undefined" ? window : this);
