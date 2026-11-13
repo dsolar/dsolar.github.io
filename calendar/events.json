@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-12T18:35:46Z",
+ "updated": "2026-11-13T18:03:11Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -14,186 +14,6 @@
  },
  "events": [
   {
-   "id": "tm-vv177Z_oGkSO2pLq",
-   "date": "2026-11-12",
-   "time": "19:00",
-   "title": "An Evening With Alyssa Grace",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/an-evening-with-alyssa-grace-boston-massachusetts-11-12-2026/event/0100651CE03D67DD",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18571957"
-   ],
-   "score": 0
-  },
-  {
-   "id": "espn-401892696",
-   "date": "2026-11-12",
-   "time": "19:00",
-   "title": "Bruins vs Canadiens",
-   "cat": "sports",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://www.espn.com/nhl/game/_/gameId/401892696/canadiens-bruins",
-   "source": "espn",
-   "score": 1
-  },
-  {
-   "id": "tm-vv1AvZkoKGkdZ3kRs",
-   "date": "2026-11-12",
-   "time": "19:00",
-   "title": "Die Spitz",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/die-spitz-boston-massachusetts-11-12-2026/event/01006453C0486BF1",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18091232"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_aGkDJUR5q",
-   "date": "2026-11-12",
-   "time": "19:00",
-   "title": "Giant Rooks",
-   "cat": "music",
-   "venue": "Citizens House of Blues Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/giant-rooks-boston-massachusetts-11-12-2026/event/0100649EE6DAF2DD",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18238435",
-    "2026-11-12-giant-rooks-citizens-house-of-bl"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-k7vGF_3ljUWng",
-   "date": "2026-11-12",
-   "time": "19:00",
-   "title": "Trey Anastasio",
-   "cat": "music",
-   "venue": "The Palace Theatre Albany",
-   "city": "Albany, NY",
-   "url": "https://www.ticketmaster.com/trey-anastasio-albany-new-york-11-12-2026/event/0000652ADCDBDAB5",
-   "source": "ticketmaster",
-   "drive_hours": 3.25,
-   "act": "Trey Anastasio",
-   "aka": [
-    "sg-18593196"
-   ],
-   "score": 3,
-   "why": "love"
-  },
-  {
-   "id": "tm-vv177Z_KGkzNjON0",
-   "date": "2026-11-12",
-   "time": "19:15",
-   "title": "The 'Quin:  5th Anniversary 'House Celebration (21+)",
-   "cat": "music",
-   "venue": "MGM Music Hall at Fenway",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/the-quin-5th-anniversary-house-celebration-boston-massachusetts-11-12-2026/event/0100653E237208E4",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18685640",
-    "2026-11-12-john-legend-mgm-music-hall-at-fe"
-   ],
-   "sub": "with Gipsy Kings",
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1AAZ3uM",
-   "date": "2026-11-12",
-   "time": "19:30",
-   "title": "Dark Star Orchestra",
-   "cat": "music",
-   "venue": "Providence Performing Arts",
-   "city": "Providence, RI",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZ3uM",
-   "source": "ticketmaster",
-   "drive_hours": 1.0,
-   "act": "Dark Star Orchestra",
-   "aka": [
-    "sg-18406743"
-   ],
-   "score": 3,
-   "why": "love"
-  },
-  {
-   "id": "tm-G5diZ_2NJWaf8",
-   "date": "2026-11-12",
-   "time": "19:30",
-   "title": "Dave Matthews Band",
-   "cat": "music",
-   "venue": "Madison Square Garden",
-   "city": "New York, NY",
-   "url": "https://www.ticketmaster.com/dave-matthews-band-new-york-new-york-11-12-2026/event/3B0064F8E6F49510",
-   "source": "ticketmaster",
-   "drive_hours": 4.25,
-   "act": "Dave Matthews Band",
-   "aka": [
-    "sg-18474900"
-   ],
-   "score": 2,
-   "why": "big"
-  },
-  {
-   "id": "tm-vv1AvZkfYGkecbAvI",
-   "date": "2026-11-12",
-   "time": "19:30",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-11-12-2026/event/01006530AD605068",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A7PPb-",
-   "date": "2026-11-12",
-   "time": "20:00",
-   "title": "Sleep",
-   "cat": "music",
-   "venue": "Roadrunner-Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PPb-",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "sg-18319755",
-   "date": "2026-11-12",
-   "time": "20:00",
-   "title": "Sleep (Relocated from Roadrunner)",
-   "cat": "music",
-   "venue": "The Sinclair - Cambridge",
-   "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/sleep-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-11-12-8-pm/concert/18319755",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "date": "2026-11-12",
-   "time": null,
-   "title": "Joe Russo's Almost Dead",
-   "cat": "music",
-   "venue": "State Theatre",
-   "city": "New Brunswick, NJ",
-   "drive_hours": 4.25,
-   "url": "https://www.jambase.com/article/joe-russos-almost-dead-tour-dates-2026-november",
-   "source": "picks",
-   "id": "2026-11-12-joe-russo-s-almost-dead-state-theatre",
-   "act": "Joe Russo's Almost Dead",
-   "score": 3,
-   "why": "love"
-  },
-  {
    "id": "tm-rZ7HnEZ1AfCA0f",
    "date": "2026-11-13",
    "time": "17:00",
@@ -205,7 +25,7 @@
    "source": "ticketmaster",
    "drive_hours": 4.25,
    "act": "Dave Matthews Band",
-   "from": 22,
+   "from": 27,
    "score": 2,
    "why": "big"
   },
@@ -729,18 +549,6 @@
    "score": 0
   },
   {
-   "id": "sg-18720956",
-   "date": "2026-11-14",
-   "time": "20:00",
-   "title": "A Boogie Wit Da Hoodie",
-   "cat": "music",
-   "venue": "Agganis Arena",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/a-boogie-wit-da-hoodie-tickets/boston-massachusetts-agganis-arena-2026-11-14-8-pm/concert/18720956",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
    "id": "tm-Z7r9jZ1A70U3f",
    "date": "2026-11-14",
    "time": "20:00",
@@ -836,11 +644,11 @@
    "id": "tm-LvZ18QcYfkzX6__V71mXS",
    "date": "2026-11-14",
    "time": "21:30",
-   "title": "Favela Encantada Wig Party (18+) | Nov 14 @ Play Boston Big Night Live",
+   "title": "Favela Encantada Wig Party | Nov 14 @ Centro Nightclub Lawrence",
    "cat": "music",
    "venue": "Big Night Live",
    "city": "Boston, MA",
-   "url": "https://www.universe.com/events/favela-encantada-wig-party-18-nov-14-play-boston-big-night-live-tickets-GB9654?ref=ticketmaster",
+   "url": "https://www.universe.com/events/favela-encantada-wig-party-nov-14-centro-nightclub-lawrence-tickets-GB9654?ref=ticketmaster",
    "source": "ticketmaster",
    "aka": [
     "sg-18750255"
@@ -1138,6 +946,9 @@
    "source": "ticketmaster",
    "drive_hours": 3.25,
    "act": "Goose",
+   "aka": [
+    "sg-18762401"
+   ],
    "score": 3,
    "why": "love"
   },
@@ -1439,7 +1250,6 @@
    "url": "https://www.ticketmaster.com/trippie-redd-the-nondisclosure-agreement-tour-boston-massachusetts-11-19-2026/event/01006532AECD362E",
    "source": "ticketmaster",
    "aka": [
-    "sg-18617576",
     "2026-11-19-trippie-redd-citizens-house-of-bl"
    ],
    "score": 0
@@ -2893,11 +2703,11 @@
    "id": "tm-vvG17Z_CJSHePP",
    "date": "2026-12-01",
    "time": "19:00",
-   "title": "Nate Smith (18+)",
+   "title": "Nate Smith ft. Kiefer & CARRTOONS w/ Fonville x Fribush (18+)",
    "cat": "music",
    "venue": "Paradise Rock Club presented by Citizens",
    "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/nate-smith-18-boston-massachusetts-12-01-2026/event/010064E9B3F02965",
+   "url": "https://www.ticketmaster.com/nate-smith-ft-kiefer-carrtoons-w-boston-massachusetts-12-01-2026/event/010064E9B3F02965",
    "source": "ticketmaster",
    "aka": [
     "sg-18371966",
@@ -5401,6 +5211,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/gimme-gimme-disco-21-boston-massachusetts-12-31-2026/event/0100655CCF75B6D1",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18734188"
+   ],
    "score": 0
   },
   {
@@ -5802,6 +5615,18 @@
    ],
    "score": 3,
    "why": "love"
+  },
+  {
+   "id": "tm-vv177Z_pGkUoXM1u",
+   "date": "2027-01-16",
+   "time": "17:00",
+   "title": "Bingo Loco ( 21+ )",
+   "cat": "music",
+   "venue": "Big Night Live",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/bingo-loco-21-boston-massachusetts-01-16-2027/event/0100656D91FB728D",
+   "source": "ticketmaster",
+   "score": 0
   },
   {
    "id": "tm-vv1AvZk4PGkd0q4Bh",
@@ -6235,6 +6060,18 @@
    "score": 1
   },
   {
+   "id": "tm-Z7r9jZ1AAA6Ja",
+   "date": "2027-01-25",
+   "time": "20:00",
+   "title": "Jake Minch w/ Alix Page",
+   "cat": "music",
+   "venue": "The Sinclair Music Hall",
+   "city": "Cambridge, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAA6Ja",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "espn-401893226",
    "date": "2027-01-26",
    "time": "19:00",
@@ -6504,6 +6341,18 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7P47",
    "source": "ticketmaster",
+   "score": 0
+  },
+  {
+   "id": "sg-18761756",
+   "date": "2027-02-03",
+   "time": "21:00",
+   "title": "Clairan",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/bearface-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-02-03-9-pm/concert/18761756",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -8930,6 +8779,18 @@
    "score": 0
   },
   {
+   "id": "tm-Z7r9jZ1AAAZkK",
+   "date": "2027-03-20",
+   "time": "22:00",
+   "title": "LSDREAM - 18+",
+   "cat": "music",
+   "venue": "Roadrunner-Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAAZkK",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "espn-401910779",
    "date": "2027-03-21",
    "time": "15:00",
@@ -9020,6 +8881,18 @@
    "aka": [
     "sg-18747196"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18761536",
+   "date": "2027-03-24",
+   "time": "20:00",
+   "title": "Tiffany Day",
+   "cat": "music",
+   "venue": "Royale - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/tiffany-day-tickets/boston-massachusetts-royale-boston-2027-03-24-8-pm/concert/18761536",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -9320,15 +9193,18 @@
    "score": 0
   },
   {
-   "id": "sg-18753444",
+   "id": "tm-Z7r9jZ1AAAkos",
    "date": "2027-04-02",
    "time": "19:00",
-   "title": "Royal Blood",
+   "title": "Royal Blood: North AMerica 2027 - Ages 18+",
    "cat": "music",
-   "venue": "Royale - Boston",
+   "venue": "Royale Boston",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/royal-blood-tickets/boston-massachusetts-royale-boston-2027-04-02-7-pm/concert/18753444",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAAkos",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18753444"
+   ],
    "score": 0
   },
   {
@@ -9483,13 +9359,20 @@
   {
    "id": "tm-vvG17Z_GO7VQv9",
    "date": "2027-04-05",
-   "time": "19:30",
+   "time": "19:00",
    "title": "Luke Kidgell - Live In The USA",
    "cat": "comedy",
    "venue": "Crystal Ballroom at Somerville Theatre",
    "city": "Somerville, MA",
    "url": "https://www.ticketmaster.com/luke-kidgell-live-in-the-usa-somerville-massachusetts-04-05-2027/event/010064C804D1A057",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "19:30"
+   ],
+   "aka": [
+    "sg-18763053"
+   ],
    "score": 0
   },
   {
@@ -9523,15 +9406,18 @@
    "score": 0
   },
   {
-   "id": "sg-18753596",
+   "id": "tm-Z7r9jZ1AAAkZ7",
    "date": "2027-04-06",
    "time": "20:00",
-   "title": "TWRP",
+   "title": "TWRP: The Action Sequence Tour - Ages 18+",
    "cat": "music",
-   "venue": "Royale - Boston",
+   "venue": "Royale Boston",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/twrp-tickets/boston-massachusetts-royale-boston-2027-04-06-8-pm/concert/18753596",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAAkZ7",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18753596"
+   ],
    "score": 0
   },
   {
@@ -9615,6 +9501,25 @@
    "source": "ticketmaster",
    "aka": [
     "sg-18604106"
+   ],
+   "score": 0
+  },
+  {
+   "id": "tm-Z7r9jZ1AAAFqw",
+   "date": "2027-04-09",
+   "time": "18:30",
+   "title": "Noah Rinker - 18+",
+   "cat": "music",
+   "venue": "Royale Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAAFqw",
+   "source": "ticketmaster",
+   "times": [
+    "18:30",
+    "22:30"
+   ],
+   "aka": [
+    "sg-18773437"
    ],
    "score": 0
   },
@@ -9704,6 +9609,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/dalton-the-sheriffs-boston-massachusetts-04-10-2027/event/0100655EC0AE39D8",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18762193"
+   ],
    "score": 0
   },
   {
@@ -9851,6 +9759,18 @@
    "score": 0
   },
   {
+   "id": "tm-vv1AvZk4tGkdp7XCm",
+   "date": "2027-04-15",
+   "time": "19:00",
+   "title": "BeBe And CeCe Winans: The Encore",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/bebe-and-cece-winans-the-encore-boston-massachusetts-04-15-2027/event/01006569D613E3AE",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv177Z_3GknArbzq",
    "date": "2027-04-15",
    "time": "19:00",
@@ -9890,6 +9810,18 @@
    "city": "Cambridge, MA",
    "url": "https://seatgeek.com/diiv-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-04-15-8-pm/concert/18727445",
    "source": "seatgeek",
+   "score": 0
+  },
+  {
+   "id": "tm-vv1AvZk4tGkdKDqBm",
+   "date": "2027-04-16",
+   "time": "19:00",
+   "title": "An Evening with Dr. Dog",
+   "cat": "music",
+   "venue": "Citizens House of Blues Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/an-evening-with-dr-dog-boston-massachusetts-04-16-2027/event/01006569D3EDDEAE",
+   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -10194,15 +10126,18 @@
    "score": 0
   },
   {
-   "id": "sg-18760435",
+   "id": "tm-Z7r9jZ1AAA67F",
    "date": "2027-04-24",
    "time": "20:00",
-   "title": "The Dead South with Amigo The Devil ",
+   "title": "The Dead South: Silence, Please Tour 2027",
    "cat": "music",
-   "venue": "Roadrunner - Boston",
+   "venue": "Roadrunner-Boston",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/the-dead-south-tickets/boston-massachusetts-roadrunner-boston-2027-04-24-8-pm/concert/18760435",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAA67F",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18760435"
+   ],
    "score": 0
   },
   {
@@ -10768,10 +10703,10 @@
   }
  ],
  "sources": {
-  "picks": 5,
+  "picks": 4,
   "venues": 2,
-  "espn": 72,
+  "espn": 71,
   "ticketmaster": 522,
-  "seatgeek": 113
+  "seatgeek": 110
  }
 }
