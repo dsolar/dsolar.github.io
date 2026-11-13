@@ -647,10 +647,26 @@
     const cur = (L.next.picks && L.next.picks[teamId]) || (ro ? Z.keepersOf(L, ctx, teamId) : []);
     const ok = opts.filter((o) => !o.no), no = opts.filter((o) => o.no);
     const auction = L.draft && L.draft.type === "auction";
-    const row = (o) => `<li${o.no ? ' class="kp-no"' : ""}><label class="check" style="flex:1;min-width:0"><input type="checkbox" name="k" value="${esc(o.pid)}"${cur.includes(o.pid) ? " checked" : ""}${o.no || ro ? " disabled" : ""}> <span class="ell"><b>${esc(o.n)}</b> <small>${esc(o.pos)}, ${esc(o.cost.label)}</small></span></label><span class="kp-at" data-kp="${esc(o.pid)}"></span></li>`;
+    // each player: his season in a few categories, his rank and the round that rank goes in, what he'd cost, and the
+    // bargain: how many rounds earlier he'd go than he costs
+    const n = L.teams.length, yr = (data && data.season) || L.season || "";
+    const keyCats = { bat: ["r", "hr", "rbi", "sb", "avg"], pit: ["w", "k", "sv", "era", "whip"] };
+    const statsOf = (p) => {
+      const g = p.l && p.l.pit && !(p.l && p.l.bat) ? "pit" : p.l && p.l.bat ? "bat" : null;
+      if (!g || !sport.cols || !sport.cols[g]) return "";
+      return keyCats[g].filter((c) => sport.cols[g][c] != null).map((c) => { const v = S.stat(sport, p, g, c); const f = /^(avg|obp|ops)$/.test(c) ? S.fmt.r3 : /^(era|whip)$/.test(c) ? S.fmt.f2 : S.fmt.f0; return `<span><small>${c.toUpperCase()}</small>${v == null ? "-" : f(v)}</span>`; }).join("");
+    };
+    const row = (o) => {
+      const p = ctx.byId[o.pid] || {}, vr = p.rank ? Math.ceil(p.rank / n) : null, gain = !o.no && o.cost.round != null && vr != null ? o.cost.round - vr : null;
+      return `<li class="kp-r${o.no ? " kp-no" : ""}"><label class="check kp-who"><input type="checkbox" name="k" value="${esc(o.pid)}"${cur.includes(o.pid) ? " checked" : ""}${o.no || ro ? " disabled" : ""}><span class="ell"><b>${esc(o.n)}</b><small>${esc(S.positions(p).join(", ") || o.pos)} ${esc(p.t || "")}</small></span></label>
+        <span class="kp-st" aria-label="${esc(yr)} stats">${statsOf(p)}</span>
+        <span class="kp-rk" title="Rank in this league's categories, and the round a player at that rank goes in">${p.rank ? `#${p.rank}<small>plays like Rd ${vr}</small>` : ""}</span>
+        <span class="kp-cost">${o.no ? `<small>${esc(o.cost.label)}</small>` : `<b>${o.cost.round != null ? `Round ${o.cost.round}${o.cost.year ? ` <em>year ${o.cost.year}</em>` : ""}` : esc(o.cost.label)}</b>${gain != null ? `<small class="${gain > 0 ? "win" : gain < 0 ? "loss" : ""}">${gain > 0 ? `${gain} round${gain === 1 ? "" : "s"} of value` : gain < 0 ? `${-gain} round${gain === -1 ? "" : "s"} over` : "about even"}</small>` : ""}`}</span>
+        <span class="kp-at" data-kp="${esc(o.pid)}"></span></li>`;
+    };
     U.dialog(`<h3>${teamId === info.me ? "Your keepers" : `Keepers for ${esc(t.name)}`}</h3>
       <p class="muted" style="margin:0 0 10px">${ro ? `The deadline passed ${esc(whenTxt(keepDue()))}, so these are set.` : `Keep up to ${max}. Each costs ${auction ? "the price shown, out of next year's budget" : "the pick shown in next year's draft"}.${L.settings.keeperRule ? " A second keeper in a round you have one pick in moves up a round." : ""}${keepDue() ? ` Picks lock ${esc(whenTxt(keepDue()))}.` : ""}`}${asCommish && !ro ? " You're setting these as the commissioner." : ""}</p>
-      <form class="kp-f"><ul class="seatl kp">${ok.map(row).join("")}</ul>
+      <form class="kp-f"><div class="kp-hd" aria-hidden="true"><span>Player</span><span>${esc(String(yr))} stats</span><span>Rank</span><span>Cost</span><span></span></div><ul class="seatl kp">${ok.map(row).join("")}</ul>
       ${no.length ? `<details class="kp-nos"><summary>${no.length} can't be kept</summary><ul class="seatl kp">${no.map(row).join("")}</ul></details>` : ""}
       <p class="kp-why" role="status"></p>
       <div class="acts">${ro ? `<button type="button" class="btn" data-close>Close</button>` : `${asCommish ? `<button type="button" class="btn ghost" data-kp-clear>Clear (use the deadline rule)</button><span class="grow"></span>` : ""}<button type="button" class="btn" data-close>Cancel</button><button class="btn go">Save keepers</button>`}</div></form>`, ro ? null : (fd) => {
