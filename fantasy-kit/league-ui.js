@@ -123,7 +123,7 @@
     function subsOf(tab) {
       if (tab === "league") return [["overview", "Overview"]].concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : roto() ? "By week" : "Scoreboard"]].concat(recapOn() && lastDone() >= 1 ? [["recap", "Recap"]] : []).concat([["transactions", "Transactions"], ["managers", "Managers"]]).concat(opts.dues ? [["dues", "Dues"]] : []).concat([["history", "History"], ["rules", "Rules"]]).concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []));
       if (tab === "team") return [["roster", "Roster"]].concat(roto() ? [] : [["schedule", gl() ? "History" : "Schedule"]]).concat(L().settings.trades === false ? [] : [["trades", "Trades", pendingTrades()]]);
-      if (tab === "players") return [["fa", "Free agents"], ["all", "All players"], ["watch", "Watchlist"], ["claims", "Waiver claims", L().claims.filter((c) => c.team === me() && c.status === "open").length], ["tx", "Transactions"]];
+      if (tab === "players") return [["fa", "Free agents"], ["all", "All players"], ["watch", "Watch list"], ["claims", "Waiver claims", L().claims.filter((c) => c.team === me() && c.status === "open").length], ["tx", "Transactions"]];
       return [];
     }
     const pendingTrades = () => L().trades.filter((t) => (t.status === "pending" && t.to === me()) || (t.status === "review" && G.voters(L(), t).includes(me()) && !(t.votes || {})[me()])).length;
@@ -1513,7 +1513,10 @@
           }).join("");
           return `<table class="t mbox"><thead><tr><th class="c">Slot</th><th>${title}</th>${cs.map((c) => `<th class="r num"${c.title ? ` title="${esc(c.title)}"` : ""}>${esc(c.label)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>`;
         };
-        return `<div class="card mbox-c"><div class="mod-h">${teamAv(T(team), "sm")}<h2>${esc(T(team).name)}</h2></div><div class="table-wrap">${tbl("bat", "Hitters")}${tbl("pit", "Pitchers")}</div></div>`;
+        // the innings minimum: how far along this team is (short of it, ERA and WHIP go to the other side)
+        const min = L().settings.minIP, side = team === m.a ? m.ta : m.tb, ip = side && side.parts && side.parts.era ? side.parts.era[1] : null;
+        const ipTag = min && ip != null ? `<span class="tag ${ip >= min ? "win" : m.final ? "loss" : ""}" title="At least ${min} innings a week, or this team loses ERA and WHIP">${S.fmt.ip(ip)} of ${min} IP</span>` : "";
+        return `<div class="card mbox-c"><div class="mod-h">${teamAv(T(team), "sm")}<h2>${esc(T(team).name)}</h2><span class="grow"></span>${ipTag}</div><div class="table-wrap">${tbl("bat", "Hitters")}${tbl("pit", "Pitchers")}</div></div>`;
       };
       return `<div class="mboxes">${box(m.a, la)}${box(m.b, lb)}</div>`;
     }
@@ -1586,6 +1589,26 @@
       if (G.isLocked(L(), p, L().week, now())) return `<span class="tag gold" title="Game started; claims wait until next week">Locked</span>`;
       return `<span class="tag win">FA</span>`;
     }
+    /* The watch list: the players you're following, hitters and pitchers in their own tables with their stats and
+       who has them. Empty, it says how to add players and suggests the free agents worth a look. */
+    function watchPage(actions) {
+      const mid = me(), w = watch(), q = (ui.pf.q || "").toLowerCase();
+      const mine = opts.players.filter((p) => w.includes(p.id) && (!q || p.n.toLowerCase().includes(q)));
+      const groups = sport.groups && !pts() ? [["bat", "Hitters"], ["pit", "Pitchers"]] : [[null, "Players"]];
+      const inGrp = (p, g) => !g || (g === "pit" ? S.positions(p).every((x) => sport.groups.pit.includes(x)) : !S.positions(p).every((x) => sport.groups.pit.includes(x)));
+      const tbl = (list, g, title) => {
+        const cols = U.poolColumns(sport, { money: auctionLg(), value: pts(), group: g, scoring: L().scoring, owner: statusOf, ownerSort: (p) => (ctx.own[p.id] == null ? -1 : ctx.own[p.id]), actions });
+        const rows = U.sortRows(list, cols, ui.psort);
+        return `<div class="stack" style="gap:6px;margin-top:14px"><h2 style="margin:0;font-size:15px">${title} <span class="ps">${rows.length}</span></h2>${U.table({ cols, rows, sort: ui.psort, dense: true, id: g ? `fk-watch-${g}` : "fk-watch", empty: "None yet.", rowAttr: (p) => `data-player="${esc(p.id)}"${ctx.own[p.id] === mid ? ' class="me"' : ""}` })}</div>`;
+      };
+      const head = `<div class="head"><h1 class="disp">Watch list</h1><span class="ps">${mine.length ? `${mine.length} player${mine.length === 1 ? "" : "s"} you're following` : "Players you're following"}</span></div>`;
+      if (!w.length) {
+        const free = opts.players.filter((p) => ctx.own[p.id] == null).sort((a, b) => a.rank - b.rank);
+        return `<div class="wrap page">${head}<div class="card"><div class="bd stack"><p style="margin:0"><b>Follow players here.</b> Tap the star next to anyone on Free agents or All players, or on his player card. He shows up in this list with his stats, his status and who has him, so you can keep an eye on a pickup or a trade target.</p></div></div>
+          ${groups.map(([g, t]) => tbl(free.filter((p) => inGrp(p, g)).slice(0, 6), g, `Free agent ${g ? t.toLowerCase() : "players"} worth a look`)).join("")}</div>`;
+      }
+      return `<div class="wrap page">${head}<div class="tools">${U.search(ui.pf)}</div>${groups.map(([g, t]) => (mine.some((p) => inGrp(p, g)) ? tbl(mine.filter((p) => inGrp(p, g)), g, t) : "")).join("")}</div>`;
+    }
     function playersPage(sub) {
       const mid = me(), w = watch();
       if (sub === "claims") return claimsPage();
@@ -1605,6 +1628,7 @@
       };
       const cols = U.poolColumns(sport, { money: auctionLg(), value: pts(), group: U.groupOf(sport, ui.pf), scoring: L().scoring, owner: statusOf, ownerHide: sub === "fa" || sub === "watch", ownerSort: (p) => (ctx.own[p.id] == null ? -1 : ctx.own[p.id]), actions, extra: pts() ? [] : [] });
       rows = U.sortRows(rows, cols, ui.psort);
+      if (sub === "watch") return watchPage(actions);
       return `<div class="wrap page"><div class="head"><h1 class="disp">${sub === "fa" ? "Free agents" : sub === "watch" ? "Watchlist" : "All players"}</h1><span class="ps">${rows.length} players. FA is free to add now; W is on waivers, so put in a claim.</span></div>
         ${L().openWaivers > now() && sub !== "all" ? `<div class="banner" style="margin-bottom:12px"><b>Everyone the draft left is on waivers until ${esc(G.waiverWhen(L().openWaivers))}.</b> <span class="muted">Put in claims now${L().settings.waivers === "faab" ? " with a bid" : ""}. They all run then${L().settings.waivers === "faab" ? ", highest bid first" : ", in waiver order"}.</span></div>` : ""}
         <div class="tools">${U.search(ui.pf)}</div>${U.posFilter(sport, ui.pf.pos, [], L().settings.lineup)}
