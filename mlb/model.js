@@ -793,7 +793,8 @@
       return { r: r, p: p, war: war, proj: proj, trust: trust, yrs: yrs, age: age, path: path, value: val, spotAav: spotAav, mktAav: mktAav,
         crowdAav: r.ma ? r.ma / 1e6 : null, signedAav: r.aav ? r.aav / 1e6 : null,
         gap: r.aav && mktAav ? (r.aav / 1e6) / mktAav - 1 : null, grade: r.aav ? gradeDeal(r, yrs, war, val, mktAav, cfg, self.need(r, war)) : null };
-    }).filter(function (x) { return x.war != null; }).sort(function (a, b) { return b.value - a.value; });
+    }).filter(function (x) { return x.war != null; }).sort(function (a, b) { return b.value - a.value; })
+      .map(function (x, i) { x.rank = i + 1; return x; }); // rank in the whole class by value, signed or not
   };
 
   Hub.prototype.surplus = function (p) { return surplus(p, this.cfg, this.season, this.resigned[p.id]); };

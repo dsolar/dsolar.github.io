@@ -886,7 +886,7 @@
     html += '<div class="panel"><div class="scroll"><table class="t"><thead><tr><th>Player</th><th>Pos</th><th>Age</th><th>From</th><th>Proj WAR</th><th>QO</th><th>Crowd</th><th>Fair / yr</th><th>Market / yr</th>' + (withSigned ? "<th>Signed</th><th>vs Market</th><th>Grade</th>" : "") + "</tr></thead><tbody>";
     list.forEach(function (x, i) {
       var r = x.r, pl = faName(x, 24);
-      html += "<tr><td>" + (i + 1) + ". " + pl + "</td><td>" + esc(r.pos || "") + "</td><td>" + (x.age || "—") + "</td><td>" + teamMark(r.from, 20) + "</td><td>" + (x.trust < 1 ? '<span title="' + esc(faithNote(r, x.trust, x.proj)) + '">' + f1(x.war) + "*</span>" : f1(x.war)) + "</td><td>" + (r.qo ? '<span class="pill warn">QO</span>' : "") +
+      html += "<tr><td>" + x.rank + ". " + pl + "</td><td>" + esc(r.pos || "") + "</td><td>" + (x.age || "—") + "</td><td>" + teamMark(r.from, 20) + "</td><td>" + (x.trust < 1 ? '<span title="' + esc(faithNote(r, x.trust, x.proj)) + '">' + f1(x.war) + "*</span>" : f1(x.war)) + "</td><td>" + (r.qo ? '<span class="pill warn">QO</span>' : "") +
         "</td><td>" + (r.my ? r.my + " yr · " + money(x.crowdAav) : "—") + "</td><td>" + money(x.spotAav) + "</td><td><b>" + money(x.mktAav) + "</b></td>" + (!withSigned ? "</tr>" : "<td>" +
         (x.signedAav ? esc(r.to || "") + " " + (r.yrs || "?") + " yr · " + money(x.signedAav) : '<span class="note">unsigned</span>') + "</td><td class=\"" + (x.gap == null ? "" : x.gap > 0 ? "neg" : "pos") + '">' +
         (x.gap == null ? "" : (x.gap > 0 ? "+" : "") + pct(x.gap, 0)) + "</td><td>" + gradeTag(x.grade) + "</td></tr>");
@@ -911,7 +911,7 @@
       return a.grade ? b.grade.edge - a.grade.edge : (b.r.tot || b.r.aav) - (a.r.tot || a.r.aav);
     });
     if (!deals.length) return "";
-    var html = '<div class="panel"><h3>Deals so far <small>' + deals.length + " signing" + (deals.length > 1 ? "s" : "") + ', graded deals by value, then ones too small to grade</small></h3><div class="scroll"><table class="t grades"><thead><tr><th>Grade</th><th>Player</th><th>From</th><th></th><th>To</th><th>Deal</th><th>Market price</th><th>vs Market</th><th>Surplus</th></tr></thead><tbody>';
+    var html = '<div class="panel"><h3>Deals so far <small>' + deals.length + " signing" + (deals.length > 1 ? "s" : "") + ', graded deals by value, then ones too small to grade</small></h3><div class="scroll"><table class="t grades"><thead><tr><th>Grade</th><th title="Rank in this winter\'s free agent class, by projected value">FA rank</th><th>Player</th><th>From</th><th></th><th>To</th><th>Deal</th><th>Market price</th><th>vs Market</th><th>Surplus</th></tr></thead><tbody>';
     deals.forEach(function (x) {
       var r = x.r, gr = x.grade, sv = x.p ? H.surplus(x.p).total : gr ? gr.prod : null;
       var tot = gr ? gr.paid : r.tot ? r.tot / 1e6 : x.signedAav * (r.yrs || 1);
@@ -919,7 +919,7 @@
       var edge = gr ? gr.edge : mkt ? (mkt - tot) / mkt : null;
       var why = x.war != null && x.war < 1 ? "Not graded: projected under 1 WAR, where the market model has few deals to learn from (relievers especially)" : "Not graded: deal under $2M";
       html += "<tr" + (gr ? "" : ' class="ungraded"') + "><td>" + (gr ? gradeTag(gr) + (gr.credit ? ' <span class="pill up" title="Fills a hole on this team">Need</span>' : "") : '<span class="grade g-n" title="' + esc(why) + '">—</span>') +
-        "</td><td>" + faName(x, 24) + "</td><td>" + teamMark(r.from, 20) + '</td><td class="arrow">→</td><td>' + teamMark(r.to, 20) +
+        "</td><td>" + x.rank + "</td><td>" + faName(x, 24) + "</td><td>" + teamMark(r.from, 20) + '</td><td class="arrow">→</td><td>' + teamMark(r.to, 20) +
         "</td><td>" + (r.yrs || "?") + " yr · " + money(tot, tot < 10 ? 1 : 0) + (gr && gr.pick ? ' <span class="pill warn" title="Small dock for giving up a pick to sign a qualifying-offer player">QO</span>' : "") +
         "</td><td>" + (mkt != null ? money(mkt, mkt < 10 ? 1 : 0) : "—") + '</td><td class="' + (edge == null ? "" : edge >= 0 ? "pos" : "neg") + '">' + (edge == null ? "—" : pct(Math.abs(edge), 0) + (edge >= 0 ? " under" : " over")) +
         '</td><td class="' + (sv == null ? "" : sv >= 0 ? "pos" : "neg") + '">' + (sv == null ? "—" : signed(sv)) + "</td></tr>";
