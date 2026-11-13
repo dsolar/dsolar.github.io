@@ -543,8 +543,12 @@
     html += kv(svc(p.st), "Service (yrs.days)");
     if (p.fv) html += kv(esc(p.fv) + (p.risk ? " / " + esc(p.risk) : ""), "FV / risk") + kv(p.eta || "—", "ETA") + kv(p.ovr ? "#" + p.ovr : "—", "Overall rank");
     html += "</div>";
-    html += '<div class="vcs"><div><span>Value</span><b>' + money(s.valuePV) + '</b><small>what he should produce</small></div><i>−</i><div><span>Contract</span><b>' + money(s.contractPV) +
-      '</b><small>what he\'ll be paid</small></div><i>=</i><div class="' + (s.pv >= 0 ? "up" : "dn") + '"><span>Surplus</span><b>' + signed(s.pv) + "</b><small>" + (s.rows.length ? s.rows.length + " season" + (s.rows.length > 1 ? "s" : "") + ", discounted" : "not worth a roster spot") + "</small></div></div>";
+    // headline numbers are plain totals over the deal, so the contract reads as what he's actually owed; the
+    // discounted (today's dollars) figures sit underneath and in the table
+    var sumV = s.rows.reduce(function (a, r) { return a + r.value; }, 0), sumC = s.rows.reduce(function (a, r) { return a + r.salary; }, 0);
+    var nS = s.rows.length ? s.rows.length + " season" + (s.rows.length > 1 ? "s" : "") : "";
+    html += '<div class="vcs"><div><span>Value</span><b>' + money(sumV) + "</b><small>what he should produce" + (nS ? ", " + nS : "") + '</small></div><i>−</i><div><span>Contract</span><b>' + money(sumC) +
+      "</b><small>what he'll be paid" + (nS ? ", " + nS : "") + '</small></div><i>=</i><div class="' + (s.total >= 0 ? "up" : "dn") + '"><span>Surplus</span><b>' + signed(s.total) + "</b><small>" + (s.rows.length ? signed(s.pv) + " in today's dollars" : "not worth a roster spot") + "</small></div></div>";
     var fx = H.faBoard().filter(function (b) { return String(b.r.id) === String(p.id) && b.r.to === p.t; })[0];
     html += gradeLine(fx && fx.grade ? fx : null);
     if (fx && fx.trust < 1) html += '<p class="note">' + esc(faithNote(fx.r, fx.trust, fx.proj)) + " His value below counts it the same way.</p>";
@@ -909,7 +913,7 @@
     if (!deals.length) return "";
     var html = '<div class="panel"><h3>Deals so far <small>' + deals.length + " signing" + (deals.length > 1 ? "s" : "") + ', graded deals by value, then ones too small to grade</small></h3><div class="scroll"><table class="t grades"><thead><tr><th>Grade</th><th>Player</th><th>From</th><th></th><th>To</th><th>Deal</th><th>Market price</th><th>vs Market</th><th>Surplus</th></tr></thead><tbody>';
     deals.forEach(function (x) {
-      var r = x.r, gr = x.grade, sv = x.p ? H.surplus(x.p).pv : gr ? gr.prod : null;
+      var r = x.r, gr = x.grade, sv = x.p ? H.surplus(x.p).total : gr ? gr.prod : null;
       var tot = gr ? gr.paid : r.tot ? r.tot / 1e6 : x.signedAav * (r.yrs || 1);
       var mkt = gr ? gr.mkt : x.mktAav ? x.mktAav * (r.yrs || 1) : null;
       var edge = gr ? gr.edge : mkt ? (mkt - tot) / mkt : null;
