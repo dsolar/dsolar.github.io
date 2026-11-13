@@ -194,6 +194,27 @@
     }
     return any;
   }
+  /* Auto-start: a manager who turns it on gets his best lineup set for him, players with a game first (Yahoo's Start
+     Active Players): in a daily league once each day, in a weekly league once each week, unless he already set that
+     day's or week's lineup himself. Locked players stay where they are. Runs from catchUp. */
+  function setAutoStart(L, teamId, on) { if (!L.teams[teamId]) return { ok: false, why: "No such team" }; L.teams[teamId].autoStart = !!on; return { ok: true }; }
+  function autoStart(L, ctx, now) {
+    if (L.settings.bestBall || L.week > totalWeeks(L) || L.week < 1) return false;
+    const w = L.week, k = L.kick && L.kick.week === w ? L.kick : null, d = daily(L) ? dayIdx(L, w, now) : null, tag = `${w}:${d == null ? "w" : d}`;
+    let any = false;
+    L.autoDone = L.autoDone || {};
+    for (const t of L.teams) {
+      if (!t.autoStart || !isAlive(L, t.id) || L.autoDone[t.id] === tag) continue;
+      const mine = d != null ? L.dayLineups && L.dayLineups[w] && L.dayLineups[w][t.id] && L.dayLineups[w][t.id][d] : L.lineups[w] && L.lineups[w][t.id];
+      if (mine && !(L.autoSet && L.autoSet[t.id] === tag)) { L.autoDone[t.id] = tag; continue; }   // he set it himself
+      const plays = (p) => { if (!k || !p) return true; if (d != null && k.all) { const gs = k.all[p.t]; return !!gs && gs.some((at) => dayIdx(L, w, at) === d); } return k.teams[p.t] != null; };
+      const lu = bestLineup(L, ctx, t.id, w, now, d != null ? { only: plays, day: d } : { only: plays });
+      const r = setLineup(L, ctx, t.id, w, lu, now, d != null ? d : undefined);
+      L.autoDone[t.id] = tag;
+      if (r.ok) { (L.autoSet = L.autoSet || {})[t.id] = tag; any = true; }
+    }
+    return any;
+  }
   // settings.confMax: at most that many starters from one college conference (football, FBS conferences)
   const limitOf = (L) => (L.settings.confMax ? { of: S.confOf, max: L.settings.confMax } : null);
   function confCheck(L, ctx, ids) {
@@ -2461,7 +2482,7 @@
     const seeds = seedOrder(L); return seeds.indexOf(m.a) <= seeds.indexOf(m.b) ? m.a : m.b;
   }
   return { daily, dayIdx, dayNow, dayLines, hasDays, dailyLines, dailyPlayerLine, playoffWinner, recap, takerOf, openRaids, protectOf, kingOf, hungover, pyoTurn, pyoOptions, pyoPick, pyoAuto, runPyo, pyoLast, PYO_HOURS, realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
-    finishWeek, slotMult, setKicks, isLocked, freezeLineups, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, keeperMarket, tradeCheck, dropsNeeded, propose, respond, cancelTrade, botsAct, rivalCheck, rivalsOf, draftLottery,
+    finishWeek, slotMult, setKicks, isLocked, freezeLineups, autoStart, setAutoStart, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, keeperMarket, tradeCheck, dropsNeeded, propose, respond, cancelTrade, botsAct, rivalCheck, rivalsOf, draftLottery,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, waiverPrice, waiverClear, nextWeekClear, waiverDays, clearAt, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
 });

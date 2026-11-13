@@ -202,3 +202,20 @@ test('a bot taking a 2-for-1 drops its least valuable player itself', () => {
   assert.ok(yes.ok, yes.why);
   assert.equal(L.rosters[2].length, G.maxRoster(L));
 });
+
+test('auto-start: a team that turns it on gets its best lineup each week, unless its manager set it', () => {
+  const { L, ctx, t } = league();
+  const now = G.weekStart(L, L.week) + 3600e3;
+  G.setAutoStart(L, 1, true);
+  L.teams[1].owner = 'Someone';
+  delete (L.lineups[L.week] || {})[1];
+  assert.ok(G.autoStart(L, ctx, now), 'it set a lineup');
+  assert.ok(L.lineups[L.week][1], 'saved for the week');
+  assert.equal(G.autoStart(L, ctx, now + 1000), false, 'once a week');
+  // a manager who set his own lineup keeps it
+  G.setAutoStart(L, 2, true);
+  const mine = G.lineupFor(L, ctx, 2, L.week).slice();
+  G.setLineup(L, ctx, 2, L.week, mine, now);
+  G.autoStart(L, ctx, now + 2000);
+  assert.deepEqual(L.lineups[L.week][2], mine);
+});

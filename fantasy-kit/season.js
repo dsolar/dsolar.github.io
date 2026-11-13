@@ -227,6 +227,7 @@
       (L.botRan = L.botRan || {})[L.week] = true;
       G.botWeek(L, ctx, now, F.rng(L.seed + L.week * 13));
     }
+    G.autoStart(L, ctx, now);
     G.freezeLineups(L, ctx, now);
     G.tick(L, ctx, now);
     lineupCheck(L, ctx, now);
