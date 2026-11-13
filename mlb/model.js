@@ -40,8 +40,8 @@
                        // length premium included (the way Baseball Trade Values reads field value)
     lenPrem: null,     // {4: premium for 4-5 years, 6: premium for 6+}, read from the free agent market
     tiered: false,     // price WAR by tier: 1-2 WAR players are plentiful, stars aren't (from the free agent market)
-    qoPickCost: 4,     // $M, what signing another team's qualifying-offer player costs in lost draft picks and
-                       // international pool money (an average: tax payors lose more, revenue-sharing teams less)
+    qoPickCost: 1.5,   // $M, a small dock for signing another team's qualifying-offer player (the lost draft pick
+                       // and international pool money)
     years: 5,          // seasons on the slider
     sims: 4000
   };
@@ -303,6 +303,7 @@
     hub.players.forEach(function (p) { self.byId[p.id] = p; });
     this.resigned = {};
     this.fa = fa || { classes: {} };
+    applySignings(this);
     this.market = marketRead(this.fa, this.season, this.cfg);
     if (this.market && this.market.dpw && !(opts && opts.dpw)) this.cfg.dpw = this.market.dpw;
     if (this.market) { // length premiums for the market-price lens, from deals of 4-5 and 6+ years
@@ -311,6 +312,25 @@
       this.cfg.lenPrem = { 4: lb["4-5 years"] || 0, 6: lb["6+ years"] != null ? lb["6+ years"] : (lb["4-5 years"] || 0) };
     }
     this._cache = {};
+  }
+
+  // A free agent who just signed: RosterResource moves him to his new team within hours, but his year-by-year
+  // contract can take days to post. Until it does, build it from the signing (years and total, paid evenly), so his
+  // surplus covers the whole deal instead of treating him as an arbitration player with one year left.
+  function applySignings(hub) {
+    var season = hub.season;
+    ((hub.fa.classes || {})[season] || []).forEach(function (r) {
+      if (!r.id || !r.aav || !r.yrs || !r.to || /MiLB/i.test(r.ctype || "")) return;
+      var p = hub.byId[r.id];
+      if (!p || p.t !== r.to) return;
+      var has = p.c && p.c.yrs && p.c.yrs.length && p.c.yrs[0][0] === season && p.c.type && !/Arbitration|Pre-Arb/i.test(p.c.type) &&
+        p.c.yrs.filter(function (y) { return y[2] === "G"; }).length === r.yrs;
+      if (has) return;
+      var tot = r.tot || r.aav * r.yrs, per = tot / r.yrs, yrs = [];
+      for (var k = 0; k < r.yrs; k++) yrs.push([season + k, per, "G", null, null, per]);
+      p.c = { desc: r.yrs + " yr, $" + +(tot / 1e6).toFixed(1) + "M (" + season + (r.yrs > 1 ? "-" + String(season + r.yrs - 1).slice(2) : "") + ")",
+        type: "Free Agent", aav: per, yrs: yrs, note: "Signed this winter; salaries spread evenly until the year-by-year terms post.", fromSigning: true };
+    });
   }
 
   Hub.prototype.set = function (k, v) { this.cfg[k] = v; this._cache = {}; };

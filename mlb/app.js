@@ -50,12 +50,23 @@
     return (neg ? "-" : "") + "$" + s + "M";
   }
   function ord(n) { var v = n % 100; return n + (v >= 11 && v <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th"); }
-  // A free agent's name on the Free Agents tab: opens his free agent card (the deal and its grade) once he's signed,
-  // or when he isn't on a roster
+  // A free agent's name on the Free Agents tab: his player card once he's on a roster (a signing shows its grade
+  // there), otherwise his free agent card
   function faName(x, size) {
     var r = x.r;
-    if (x.p && !x.signedAav) return pname(x.p, size);
+    if (x.p) return pname(x.p, size);
     return '<span class="pl"' + (r.id ? ' data-fa="' + esc(r.id) + '"' : "") + ">" + window.DSFaces.html({ sport: "mlb", id: r.id, name: r.n, size: size }) + '<span class="nm">' + esc(r.n) + "</span></span>";
+  }
+  // One line on a signing: the grade and why
+  function gradeLine(x) {
+    var gr = x && x.grade, r = x && x.r;
+    if (!gr) return "";
+    var nd = gr.need, tn = r.to && team(r.to) ? team(r.to).name : r.to;
+    var needTxt = !nd ? "" : gr.credit
+      ? " It fills a hole: without him the " + esc(tn) + "' " + esc(nd.label) + " ranks " + ord(nd.rank) + " in the majors and he adds " + f1(nd.up) + " WAR there, so a bit more premium is forgiven."
+      : " Without him the " + esc(tn) + "' " + esc(nd.label) + " would rank " + ord(nd.rank) + " (he adds " + f1(nd.up) + " WAR there): an upgrade more than a hole filled.";
+    return '<p class="graded">' + gradeTag(gr) + "<span><b>" + r.yrs + " yr, " + money(gr.paid, 0) + "</b> against a market price of " + money(gr.mkt, 0) + " for deals this long: " +
+      pct(Math.abs(gr.edge), 0) + (gr.edge >= 0 ? " under" : " over") + " market" + (gr.pick ? ", counting a small dock for the qualifying-offer pick" : "") + "." + needTxt + "</span></p>";
   }
   function gradeTag(gr) { return gr ? '<span class="grade g-' + gr.g.charAt(0).toLowerCase() + '" title="' + esc(pct(Math.abs(gr.edge), 0) + (gr.edge >= 0 ? " under" : " over") + " market" + (gr.pick ? ", after the qualifying-offer pick" : "") + (gr.credit ? "; fills a need" : "")) + '">' + esc(gr.g) + "</span>" : ""; }
   function signed(m) { return m == null ? "—" : (m > 0 ? "+" : "") + money(m); }
@@ -527,6 +538,7 @@
     html += "</div>";
     html += '<div class="vcs"><div><span>Value</span><b>' + money(s.valuePV) + '</b><small>what he should produce</small></div><i>−</i><div><span>Contract</span><b>' + money(s.contractPV) +
       '</b><small>what he\'ll be paid</small></div><i>=</i><div class="' + (s.pv >= 0 ? "up" : "dn") + '"><span>Surplus</span><b>' + signed(s.pv) + "</b><small>" + (s.rows.length ? s.rows.length + " season" + (s.rows.length > 1 ? "s" : "") + ", discounted" : "not worth a roster spot") + "</small></div></div>";
+    html += gradeLine(H.faBoard().filter(function (b) { return String(b.r.id) === String(p.id) && b.grade && b.r.to === p.t; })[0]);
     if (p.tldr) html += '<p class="tldr">' + esc(p.tldr) + "</p>";
     if (p.c && p.c.desc) html += '<p class="tldr"><b>Contract:</b> ' + esc(p.c.desc) + (p.c.note ? " " + esc(p.c.note) : "") + "</p>";
     else if (p.acq) html += '<p class="tldr">' + esc(p.acq) + "</p>";
@@ -560,11 +572,7 @@
       '</b><small>what deals this long go for</small></div><i>·</i><div class="' + (x.signedAav ? (x.gap > 0 ? "dn" : "up") : "") + '"><span>' + (x.signedAav ? "Signed" : "Status") + "</span><b>" + (x.signedAav ? money(x.signedAav) : "Unsigned") + "</b><small>" +
       (x.signedAav ? esc(r.to || "") + " · " + (r.yrs || "?") + " yr" + (x.gap != null ? " · " + (x.gap > 0 ? "+" : "") + pct(x.gap, 0) + " vs market" : "") : "still on the market") + "</small></div></div>";
     var gr = x.grade, aavS = x.signedAav;
-    if (gr) {
-      var nd = gr.need, needTxt = nd ? (gr.credit ? " It fills a hole: without him " + esc(r.to) + "'s " + esc(nd.label) + " ranks " + ord(nd.rank) + " in the majors, and he adds " + f1(nd.up) + " WAR there, so a bit of extra premium is forgiven." : " " + esc(r.to) + "'s " + esc(nd.label) + " would rank " + ord(nd.rank) + " without him (he adds " + f1(nd.up) + " WAR there), so it's an upgrade more than a hole filled.") : "";
-      html += '<p class="graded">' + gradeTag(gr) + "<span>" + esc(r.to || "") + " pays " + money(gr.paid, 0) + " over " + r.yrs + " year" + (r.yrs > 1 ? "s" : "") + "; deals this long go for " + money(gr.mkt, 0) +
-        (gr.pick ? ", and signing a qualifying-offer player costs about " + money(gr.pick) + " in picks and pool money" : "") + ". That's " + pct(Math.abs(gr.edge), 0) + (gr.edge >= 0 ? " under" : " over") + " market" + (gr.pick ? " all in" : "") + "." + needTxt + "</span></p>";
-    }
+    html += gradeLine(x);
     html += '<h4 class="card-sec">Year by year over ' + (aavS ? "his " : "a ") + x.yrs + '-year deal</h4><div class="scroll"><table class="t"><thead><tr><th>Year</th><th>Age</th><th>WAR</th><th>Worth</th>' + (aavS ? "<th>Salary</th><th>Surplus</th>" : "") + "</tr></thead><tbody>";
     var tot = 0, totW = 0, totS = 0;
     x.path.forEach(function (w, k) {
@@ -590,6 +598,17 @@
         rows.map(function (r) { return "<tr>" + r.map(function (c) { return "<td>" + c + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody></table></div>" : "";
     };
     var bat = !p.p, pit = p.p || p.two;
+    var hb = (p.hist && p.hist.b) || [], hp = (p.hist && p.hist.p) || [];
+    if (bat || hb.length) html += tbl("Last seasons", ["Year", "Tm", "G", "PA", "HR", "R", "RBI", "SB", "AVG/OBP/SLG"],
+      hb.slice().sort(function (x, y) { return x[0] - y[0]; }).map(function (r) { return [r[0], esc(r[1] || ""), r[2], r[3], r[4], r[5], r[6], r[7], d3(r[8]) + "/" + d3(r[9]) + "/" + d3(r[10])]; }));
+    if (pit && hp.length) html += tbl(bat ? "Last seasons pitching" : "Last seasons", ["Year", "Tm", "G", "GS", "IP", "W-L", "SV", "K", "BB", "ERA", "WHIP"],
+      hp.slice().sort(function (x, y) { return x[0] - y[0]; }).map(function (r) { return [r[0], esc(r[1] || ""), r[2], r[3], r[4], r[5] + "-" + r[6], r[7], r[8], r[9], r[10] != null ? Number(r[10]).toFixed(2) : "—", r[11] != null ? Number(r[11]).toFixed(2) : "—"]; }));
+    if (p.ml) {
+      var m = p.ml;
+      html += m.ip != null
+        ? tbl("Minor leagues, " + (H.season - 1), ["Level", "G", "GS", "IP", "ERA", "WHIP", "K%", "BB%"], [[esc(m.lv || ""), m.G, m.GS, m.ip, m.era, m.whip, m.k != null ? m.k + "%" : "—", m.bb != null ? m.bb + "%" : "—"]])
+        : tbl("Minor leagues, " + (H.season - 1), ["Level", "G", "PA", "HR", "SB", "AVG/OBP/SLG", "wRC+"], [[esc(m.lv || ""), m.G, m.PA, m.HR, m.SB, d3(m.avg) + "/" + d3(m.obp) + "/" + d3(m.slg), m.wrc != null ? m.wrc : "—"]]);
+    }
     var proj = [];
     if (bat && p.pj) proj.push([H.season + " " + src, f0(pj.pa), f0(pj.hr), f0(pj.sb), d3(pj.avg) + "/" + d3(pj.obp) + "/" + d3(pj.slg), f0(pj.wrc), f1(pj.def), "<b>" + f1(pj.war) + "</b>"]);
     if (bat && p.zips && p.zips.pa) proj.push([H.season + " ZiPS", f0(p.zips.pa), "—", "—", "—", f0(p.zips.wrc), "—", "<b>" + f1(p.zips.war) + "</b>"]);
@@ -599,17 +618,6 @@
     if (p.two) pp.push([H.season + " pitching", f0(p.two.ip), f0(p.two.gs), p.two.era != null ? p.two.era.toFixed(2) : "—", "—", "—", "—", "—", "<b>" + f1(p.two.war) + "</b>"]);
     if (p.p && p.zips && p.zips.ip) pp.push([H.season + " ZiPS", f0(p.zips.ip), "—", p.zips.era != null ? p.zips.era.toFixed(2) : "—", "—", "—", "—", "—", "<b>" + f1(p.zips.war) + "</b>"]);
     if (pit) html += tbl(bat ? "Pitching projection" : "Projection", ["", "IP", "GS", "ERA", "FIP", "K-BB%", "K/9", "SV", "WAR"], pp);
-    var hb = (p.hist && p.hist.b) || [], hp = (p.hist && p.hist.p) || [];
-    if (bat || hb.length) html += tbl("Last seasons", ["Year", "Tm", "G", "PA", "HR", "R", "RBI", "SB", "AVG/OBP/SLG"],
-      hb.slice().reverse().map(function (r) { return [r[0], esc(r[1] || ""), r[2], r[3], r[4], r[5], r[6], r[7], d3(r[8]) + "/" + d3(r[9]) + "/" + d3(r[10])]; }));
-    if (pit && hp.length) html += tbl(bat ? "Last seasons pitching" : "Last seasons", ["Year", "Tm", "G", "GS", "IP", "W-L", "SV", "K", "BB", "ERA", "WHIP"],
-      hp.slice().reverse().map(function (r) { return [r[0], esc(r[1] || ""), r[2], r[3], r[4], r[5] + "-" + r[6], r[7], r[8], r[9], r[10] != null ? Number(r[10]).toFixed(2) : "—", r[11] != null ? Number(r[11]).toFixed(2) : "—"]; }));
-    if (p.ml) {
-      var m = p.ml;
-      html += m.ip != null
-        ? tbl("Minor leagues, " + (H.season - 1), ["Level", "G", "GS", "IP", "ERA", "WHIP", "K%", "BB%"], [[esc(m.lv || ""), m.G, m.GS, m.ip, m.era, m.whip, m.k != null ? m.k + "%" : "—", m.bb != null ? m.bb + "%" : "—"]])
-        : tbl("Minor leagues, " + (H.season - 1), ["Level", "G", "PA", "HR", "SB", "AVG/OBP/SLG", "wRC+"], [[esc(m.lv || ""), m.G, m.PA, m.HR, m.SB, d3(m.avg) + "/" + d3(m.obp) + "/" + d3(m.slg), m.wrc != null ? m.wrc : "—"]]);
-    }
     if (!html) html = '<p class="note">No stats on file yet.</p>';
     return html;
   }
@@ -839,7 +847,6 @@
     var signedN = board.filter(function (x) { return x.signedAav; }).length;
     html += '<p class="lede">' + board.length + " free agents, " + signedN + " signed so far. <b>Fair</b> is what each is worth per year over the crowd's contract length at the market price of a win (" + money(H.cfg.dpw) + "). <b>Market</b> adjusts for what deals of that length have actually gone for compared with that price. The crowd numbers are FanGraphs readers' median predictions.</p>";
     if (mk) html += marketCallout(mk);
-    html += gradesPanel(board);
     var show = q.f || "all";
     var opt = function (v, l) { return '<option value="' + v + '"' + (v === show ? " selected" : "") + ">" + l + "</option>"; };
     html += controls('<label>Show<select data-q="f">' + opt("all", "Everyone") + opt("open", "Still unsigned") + opt("signed", "Signed") + opt("bat", "Hitters") + opt("sp", "Starters") + opt("rp", "Relievers") + "</select></label>");
@@ -860,23 +867,9 @@
         (x.signedAav ? esc(r.to || "") + " " + (r.yrs || "?") + " yr · " + money(x.signedAav) : '<span class="note">unsigned</span>') + "</td><td class=\"" + (x.gap == null ? "" : x.gap > 0 ? "neg" : "pos") + '">' +
         (x.gap == null ? "" : (x.gap > 0 ? "+" : "") + pct(x.gap, 0)) + "</td><td>" + gradeTag(x.grade) + "</td></tr>";
     });
-    html += "</tbody></table></div></div>";
+    html += '</tbody></table></div><div class="body"><p class="note" style="margin:0"><b>Grades</b> weigh what a team pays against what deals of that length have gone for. B runs from 6% under market to 10% over, since teams expect to pay a small premium; a signing that fills a hole gets a little more room, and signing another club\'s qualifying-offer player costs a small dock (about ' + money(H.cfg.qoPickCost) + ' for the lost pick). Click a signed player for his projected WAR, salary and surplus each year of the deal.</p></div></div>';
     if (mk) html += marketSection(mk);
     view.innerHTML = html;
-  }
-  // Every signed deal this winter, best to worst
-  function gradesPanel(board) {
-    var deals = board.filter(function (x) { return x.grade; }).sort(function (a, b) { return b.grade.edge - a.grade.edge; });
-    if (!deals.length) return "";
-    var html = '<div class="panel"><h3>Deals so far, graded <small>' + deals.length + " signing" + (deals.length > 1 ? "s" : "") + ", best value first</small></h3><div class=\"scroll\"><table class=\"t grades\"><thead><tr><th>Grade</th><th>Player</th><th>Team</th><th>Deal</th><th>Market price</th><th>All in</th><th>Production</th></tr></thead><tbody>";
-    deals.forEach(function (x) {
-      var r = x.r, gr = x.grade;
-      var pl = faName(x, 24);
-      html += "<tr><td>" + gradeTag(gr) + (gr.credit ? ' <span class="pill up" title="Fills a hole on this team">Need</span>' : "") + "</td><td>" + pl + "</td><td>" + (r.to ? logo(r.to, 18) + " " + esc(r.to) : "") + "</td><td>" + r.yrs + " yr · " + money(gr.paid, 0) + (gr.pick ? ' <span class="pill warn" title="Gives up a draft pick and pool money for a qualifying-offer player">− pick</span>' : "") +
-        "</td><td>" + money(gr.mkt, 0) + '</td><td class="' + (gr.edge >= 0 ? "pos" : "neg") + '">' + pct(Math.abs(gr.edge), 0) + (gr.edge >= 0 ? " under" : " over") + "</td><td class=\"" + (gr.prod >= 0 ? "pos" : "neg") + '">' + signed(gr.prod) + "</td></tr>";
-    });
-    html += '</tbody></table></div><div class="body"><p class="note" style="margin:0">A grade weighs the deal against what contracts of that length have gone for (market price), less about ' + money(H.cfg.qoPickCost) + " in draft pick and pool money when a team signs another club's qualifying-offer player. B runs from 6% under market to 10% over, since teams expect to pay a small premium; an A- or better is 15% or more under, a C+ or worse 18% or more over. A signing that fills a hole (a spot in the bottom third of the league that he improves by most of a win) gets 8 more points of room. Production is what he should produce over the deal, at the price of a win, minus what he's paid and the pick.</p></div></div>";
-    return html;
   }
   function marketCallout(mk) {
     var b = mk.buckets[0].rows, get = function (k) { return b.filter(function (r) { return r.k === k; })[0]; };
@@ -936,7 +929,7 @@
       "<h3>The year slider</h3><p>" + H.season + " is FanGraphs' Depth Charts as published. Every later season is built here: a player stays while he's under a guaranteed contract, a club option worth picking up, a player option he'd keep, or team control (pre-arb under three years of service, arbitration until six). Everyone else becomes a free agent, unless you re-sign him on his team's page. Ratings age a year at a time by season age (modest gains into the mid-20s, flat at 27 and 28, then falling about a fifth of a win a year at 29-30 and a third of a win from the early 30s on), and playing time grows slowly from FanGraphs' share for the coming season. Prospects arrive at their ETA (or by level when there isn't one) and grow toward the WAR their FV grade implies over their first three seasons. Each spot goes to the best available player who can play it; a team gets five starters and eight relievers. Spots nobody can fill are \"FA Fill\": a replacement player, or a modest free agent if teams sign them (the switch). Wins scale from team WAR so later seasons spread the way Depth Charts' do.</p>" +
       "<h3>Surplus value</h3><p>For each season of contract or control: projected WAR × the price of a win, minus salary, discounted " + pct(H.cfg.discount, 0) + " a year. It counts the full projection, since the price of a win is read off what teams actually pay per projected WAR (cutting the WAR again would undervalue every veteran on a market deal; set a margin of safety on the Trade Value tab if you want one). A two-way player's pitching counts on top of his hitting. An unproven big leaguer (under three years of service) keeps " + pct(H.cfg.youngFade, 0) + " of his value from one year to the next, since long control on a short track record is worth less than its projection adds up to. Value never drops below zero (a team can always play a replacement for the minimum), and a pre-arb or arbitration year can't cost the team more than it's worth, since those salaries aren't guaranteed. Arbitration pays 25/40/60% of market value (a fourth year 70%); pre-arb players earn the minimum (" + money(H.cfg.minSalary) + ", until the next CBA says otherwise). Club options are exercised only when they're worth it, and a player option only comes back when it's bad for the team. A prospect's value is scaled by his risk grade.</p>" +
       "<h3>The price of a win</h3><p>" + (mk ? (mk.how === "crowd" ? "This winter's free agents: Steamer's projected WAR for each, aged over the contract the crowd predicts, against the crowd's predicted dollars, then adjusted by how far past crowds landed from real contracts (" + ((mk.crowdErr - 1) >= 0 ? "+" : "") + pct(mk.crowdErr - 1, 0) + "). That gives " + money(H.cfg.dpw) + " per win." : "Carried forward from the last three winters' deals: " + money(H.cfg.dpw) + " per win.") + " The premium patterns on the Free Agents tab come from every deal of the last five winters for a player projected at 1+ WAR, against that winter's going rate. Past classes don't carry the projection at signing, so it's estimated from the season before, fit to how Steamer projects this winter's class." : "The free agent data hasn't arrived yet, so the price of a win is an assumption: " + money(H.cfg.dpw) + ".") + "</p>" +
-      "<h3>Deal grades</h3><p>Every free agent who signs a big league deal gets a grade the morning after FanGraphs logs it. The grade compares what the team pays with what deals of that length have gone for (the market price on the Free Agents tab), and a team that signs another club's qualifying-offer player is charged about " + money(H.cfg.qoPickCost) + " for the draft pick and international pool money it gives up (an average: luxury tax payors lose more, revenue-sharing teams less). Teams expect to pay a little over the going rate, so a B runs from 6% under market to 10% over. 6-15% under is a B+, 15-25% an A-, 25-40% an A, more than that an A+. Over market, 10-18% is a B-, then C+, C at 27%, D at 37% and F at 50% or more. A signing that fills a hole gets 8 points more room: without him, the spot (or the rotation, for a starter) ranks in the bottom third of the league, and he improves it by at least three quarters of a win. The player card lays out his projected WAR, what it's worth and his salary, season by season, so the surplus behind the grade is visible. Only deals of $2M or more for players projected at 1+ WAR get a grade: that's the range the market study covers, so most relievers and depth signings go ungraded. Grades follow the projections, so a deal can move a little as Steamer updates.</p>" +
+      "<h3>Deal grades</h3><p>Every free agent who signs a big league deal gets a grade the morning after FanGraphs logs it. The grade compares what the team pays with what deals of that length have gone for (the market price on the Free Agents tab), and a team that signs another club's qualifying-offer player takes a small dock (about " + money(H.cfg.qoPickCost) + ") for the draft pick and pool money it gives up. Teams expect to pay a little over the going rate, so a B runs from 6% under market to 10% over. 6-15% under is a B+, 15-25% an A-, 25-40% an A, more than that an A+. Over market, 10-18% is a B-, then C+, C at 27%, D at 37% and F at 50% or more. A signing that fills a hole gets 8 points more room: without him, the spot (or the rotation, for a starter) ranks in the bottom third of the league, and he improves it by at least three quarters of a win. The player card lays out his projected WAR, what it's worth and his salary, season by season, so the surplus behind the grade is visible. Only deals of $2M or more for players projected at 1+ WAR get a grade: that's the range the market study covers, so most relievers and depth signings go ungraded. Grades follow the projections, so a deal can move a little as Steamer updates.</p>" +
       "<h3>Production value or market price</h3><p>By default, value is what a player should produce: projected WAR, aged a year at a time, at the going rate for a win. Some trade-value sites (Baseball Trade Values, for one) value a player at what he'd get as a free agent instead. Free agent deals pay a premium for length (deals of six years or more ran about 19% over the going rate in the last five winters), so a star's long contract can look fair there and underwater here. The Value as switch on the Trade Value tab flips to market price: a remaining term of four or five years gets the premium those deals drew (" + pct(H.cfg.lenPrem ? H.cfg.lenPrem[4] : 0, 0) + "), six or more theirs (" + pct(H.cfg.lenPrem ? H.cfg.lenPrem[6] : 0, 0) + ").</p>" +
       "<h3>What it doesn't know</h3><ul><li>Trades and signings that haven't happened, beyond the switch for filling open spots.</li><li>Injuries after the first season, platoons, and teams' payroll limits.</li><li>Super Two arbitration, and anything the next CBA changes (the current one expires December 1, 2026).</li></ul>" +
       '<p class="note">Data pulled ' + esc(HUB.pulled || "—") + ", built " + esc(HUB.built) + (HUB.failed && HUB.failed.length ? " (last pull missed: " + esc(HUB.failed.join(", ")) + "; using the previous copy)" : "") + ".</p></div>";
